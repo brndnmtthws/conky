@@ -1,0 +1,337 @@
+AC_INIT(conky.c)
+
+AM_INIT_AUTOMAKE(conky, 1.2)
+AM_CONFIG_HEADER(config.h)
+
+uname=`uname`
+
+case $uname in
+  Linux*)
+    WANT_SYSINFO=yes
+    ;;
+  FreeBSD*)
+    WANT_KVM=yes
+    ;;
+  NetBSD*)
+    WANT_KVM=yes
+    WANT_OSSLIB=yes
+    ;;
+# Solaris doesn't work at all right now
+
+#  SunOS*)
+#    WANT_KSTAT=yes
+#    ;;
+
+  *)
+    echo "Your operating system $uname isn't supported"
+    echo "Feel free to help. :P"
+    exit 1
+    ;;
+esac
+
+AM_CONDITIONAL(BUILD_LINUX, test x$uname = xLinux)
+AM_CONDITIONAL(BUILD_SOLARIS, test x$uname = xSunOS)
+AM_CONDITIONAL(BUILD_FREEBSD, test x$uname = xFreeBSD)
+AM_CONDITIONAL(BUILD_NETBSD, test x$uname = xNetBSD)
+
+dnl
+dnl XFT option
+dnl
+
+want_xft=no
+AC_ARG_ENABLE(xft,
+[  --enable-xft            enable if you want to use Xft [default=no]],
+  [want_xft="$enableval"])
+
+dnl
+dnl OWN_WINDOW option
+dnl
+
+dah=yes
+AC_ARG_ENABLE(own_window,
+[  --enable-own-window     enable if you want support for creating own window [default=yes]],
+  [dah="$enableval"])
+
+if test $dah != "no"; then
+  AC_DEFINE(OWN_WINDOW, 1, [Define if you want support for window creating])
+fi
+
+dnl
+dnl DOUBLE_BUFFER option
+dnl
+
+dah=yes
+AC_ARG_ENABLE(double_buffer,
+[  --enable-double-buffer  enable if you want to support flicker-free operation [default=yes]],
+  [dah="$enableval"])
+
+if test $dah != "no"; then
+  AC_DEFINE(DOUBLE_BUFFER, 1, [Define if you want support for the DBE extension])
+  AC_CHECK_HEADERS([X11/extensions/Xdbe.h], [AC_DEFINE([HAVE_XDBE], 1, [Xdbe])], [XDBE_MISSING=yes])
+  if test "x$XDBE_MISSING" = xyes; then
+      AC_MSG_ERROR([something went wrong when checking for Xdbe (double buffer extension])
+  fi
+fi
+
+dnl
+dnl PROC_UPTIME option
+dnl
+
+dah=no
+AC_ARG_ENABLE(proc_uptime,
+[  --enable-proc-uptime    enable using /proc/uptime for uptime [default=no]],
+  [dah="$enableval"])
+
+if test $dah = "yes"; then
+  AC_DEFINE(PROC_UPTIME, 1, [Define if you want to use /proc/uptime for uptime])
+fi
+
+dnl
+dnl Seti@Home
+dnl
+
+want_seti=no
+AC_ARG_ENABLE(seti,
+[  --enable-seti           enable if you want SETI at Home stats [default=no]],
+  [want_seti="$enableval"])
+
+AM_CONDITIONAL(BUILD_SETI, test x$want_seti == xyes)
+if test x$want_seti == xyes; then
+  AC_DEFINE(SETI, 1, [Define if you want SETI at Home stats])
+fi
+
+dnl
+dnl MPD
+dnl
+
+want_mpd=no
+AC_ARG_ENABLE(mpd,
+[  --enable-mpd           enable if you want MPD support [default=no]],
+  [want_mpd="$enableval"])
+
+AM_CONDITIONAL(BUILD_MPD, test x$want_mpd == xyes)
+if test x$want_mpd == xyes; then
+  AC_DEFINE(MPD, 1, [Define if you want MPD support])
+fi
+
+dnl
+dnl Cairo
+dnl
+
+want_cairo=no
+AC_ARG_ENABLE(cairo,
+[  --enable-cairo           enable if you want Cairo support [default=no]],
+  [want_cairo="$enableval"])
+
+AM_CONDITIONAL(BUILD_CAIRO, test x$want_cairo == xyes)
+
+
+if test "$want_cairo" = "yes"; then
+  AC_CHECK_HEADERS([cairo.h cairo-xlib.h], [], [CAIRO_MISSING=yes])
+    if test "x$CAIRO_MISSING" = xyes; then
+      AC_MSG_ERROR([something went wrong when checking for cairo, you're probably missing headers or it's not installed])
+  fi
+  AC_PATH_PROG(CAIROCONFIG, pkg-config)
+  if test x$CAIROCONFIG != x; then
+    dnl TODO: needs more checks
+
+    AC_DEFINE(CAIRO, 1, [Define if you are using Cairo])
+    CFLAGS="$CFLAGS `$CAIROCONFIG --cflags cairo` `$CAIROCONFIG --libs cairo` "
+    CAIRO_LIBS="`$CAIROCONFIG --libs cairo` `$CAIROCONFIG --cflags cairo`"
+  else
+    want_cairo=no
+  fi
+fi
+
+dnl metar
+dnl
+
+want_metar=no
+AC_ARG_ENABLE(metar,
+[  --enable-metar       enable if you want metar stats (weather information) [default=no]],
+  [want_metar="$enableval"])
+
+AM_CONDITIONAL(BUILD_METAR, test x$want_metar == xyes)
+if test x$want_metar == xyes; then
+AC_CHECK_HEADERS([metar.h], [], [METAR_MISSING=yes])
+    if test "x$METAR_MISSING" = xyes; then
+      AC_MSG_ERROR([something went wrong when checking for mdsplib, you're probably missing headers or it's not installed])
+  fi
+  AC_DEFINE(METAR, 1, [Define if you want metar stats (weather information)])
+fi
+dnl
+
+
+
+dnl
+dnl MLDonkey
+dnl
+
+want_mldonkey=no
+AC_ARG_ENABLE(mldonkey,
+[  --enable-mldonkey       enable if you want MLDonkey support [default=no]],
+  [want_mldonkey="$enableval"])
+
+AM_CONDITIONAL(BUILD_MLDONKEY, test x$want_mldonkey == xyes)
+if test x$want_mldonkey == xyes; then
+  AC_DEFINE(MLDONKEY, 1, [Define if you want MLDonkey support])
+fi
+
+dnl
+dnl C Compiler
+dnl
+
+AC_PROG_CC
+
+dnl
+dnl X
+dnl
+
+AC_PATH_X
+if test $have_x != "yes"; then
+  echo "Sorry, X is very much needed"
+  exit 1
+fi
+AC_DEFINE(HAVE_X11, 1, [Define if you have X11])
+
+dnl AC_CHECK_LIB([X11], [XOpenDisplay], [X11_LIBS="-lX11"], [], [[-L$x_libraries]])
+dnl AC_CHECK_LIB([Xext], [XdbeQueryExtension], [
+dnl   X11_LIBS="$X11_LIBS -lXext"
+dnl   AC_DEFINE(HAVE_LIBXEXT, 1, [Define if you have libXext])
+dnl ], [], [[-L$x_libraries $X11_LIBS]])
+
+if test "$x_libraries" != ""; then
+  LDFLAGS="$LDFLAGS -L$x_libraries"
+fi
+
+if test "$x_includes" != ""; then
+  CFLAGS="$CFLAGS -Wall -I$x_includes"
+fi
+
+dnl
+dnl Xft
+dnl
+
+if test "$want_xft" = "yes"; then
+  AC_PATH_PROG(XFTCONFIG, xft-config)
+  if test x$XFTCONFIG != x; then
+    dnl TODO: needs more checks
+  
+dnl This won't work for some reason
+dnl  AC_CHECK_HEADERS([X11/Xft/Xft.h], [], [XFT_MISSING=yes])
+    if test "x$XFT_MISSING" = xyes; then
+      AC_MSG_ERROR([something went wrong when checking for Xft, you're probably missing headers or it's not installed])
+  fi
+
+    AC_DEFINE(XFT, 1, [Define if you are using Xft])
+    CFLAGS="$CFLAGS `$XFTCONFIG --cflags`"
+    XFT_LIBS=`$XFTCONFIG --libs`
+  else
+    want_xft=no
+  fi
+fi
+
+dnl
+dnl KVM
+dnl
+
+if test x$WANT_KVM = xyes; then
+  AC_CHECK_LIB(kvm, kvm_open,
+  	LIBS="$LIBS -lkvm",
+	AC_MSG_ERROR([Could not find kvm_open in -lkvm.])
+  )
+fi
+
+dnl
+dnl OSSLIB for NetBSD
+dnl
+
+if test x$WANT_OSSLIB = xyes; then
+    AC_CHECK_LIB(ossaudio, _oss_ioctl,
+	LIBS="$LIBS -lossaudio",
+	AC_MSG_ERROR([Could not find oss_ioctl in -lossaudio.])
+    )
+fi
+
+dnl
+dnl Some random headers
+dnl
+
+
+AC_CHECK_HEADERS([signal.h unistd.h X11/Xlib.h sys/utsname.h sys/stat.h linux/soundcard.h dirent.h])
+AC_CHECK_HEADERS([sys/statfs.h sys/param.h sys/mount.h])
+dnl For cairo
+AC_CHECK_HEADERS([proc/procps.h proc/readproc.h], [], [PROCPS_MISSING=yes])
+  if test "x$PROCPS_MISSING" = xyes; then
+      AC_MSG_ERROR([something went wrong when checking for procps, you're probably missing the necessary headers])
+  fi
+
+dnl
+dnl Check help2man
+dnl
+
+AC_PATH_PROG(HELP2MAN, help2man)
+AM_CONDITIONAL(HAVE_HELP2MAN, test x$HELP2MAN != x)
+
+dnl
+dnl Check sysinfo()
+dnl
+
+if test x$WANT_SYSINFO = xyes; then
+  dah=no
+  AC_MSG_CHECKING(for sysinfo)
+  AC_TRY_COMPILE(
+    [#include <sys/types.h>
+     #include <sys/sysinfo.h>],
+    [struct sysinfo s; sysinfo(&s); (void) s.uptime; ],
+    [AC_MSG_RESULT(yes); dah=yes],
+    [AC_MSG_RESULT(not usable); dah=no])
+
+  if test x$dah = xyes; then
+    AC_DEFINE(HAVE_SYSINFO, 1, [Define if you have sysinfo (Linux)])
+  fi
+fi
+
+dnl
+dnl kstat in Solaris
+dnl
+
+if test x$WANT_KSTAT = xyes; then
+  dah=no
+  AC_CHECK_LIB([kstat], [kstat_open], [dah=yes], [])
+
+  if test x$dah = xyes; then
+    AC_DEFINE(HAVE_KSTAT, 1, [Define if you have kstat (Solaris)])
+    LDFLAGS="$LDFLAGS -lkstat"
+  fi
+fi
+
+dnl
+dnl Check getloadavg
+dnl
+
+AC_MSG_CHECKING(for getloadavg)
+AC_TRY_COMPILE(
+  [#include <stdlib.h>],
+  [double v[3]; getloadavg(v, 3);],
+  [AC_MSG_RESULT(yes)
+   AC_DEFINE(HAVE_GETLOADAVG, 1, [Define if you have getloadavg])],
+  [AC_MSG_RESULT(no)])
+
+dnl
+dnl Check popen
+dnl
+
+AC_CHECK_FUNCS(popen)
+
+dnl
+dnl Da.
+dnl
+
+CFLAGS="$CFLAGS -Wall -W"
+
+AC_SUBST(CFLAGS)
+AC_SUBST(X11_LIBS)
+AC_SUBST(XFT_LIBS)
+
+AC_OUTPUT(Makefile)

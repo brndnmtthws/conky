@@ -1,0 +1,197 @@
+2005-07-17
+	* Fixed a pile of bugs in configure script
+	* Added proper checking for headers in configure script
+	* Made METAR shit threaded so it would stop being retarded, also made
+	it try more then once to update
+	* Added $metar_tempf and ${i2c tempf} for americans
+
+2005-07-16
+	* Added option for Conky to update N times and quit, see
+	total_run_times in conkyrc.sample
+	* Added metar code for weather info, thanks to somebody on sf.net
+	* Added $alignr and $alignc for right and centre alignment
+	* Added wireless info and IP addr patch, thanks Bobby Beckmann,
+	options $addr and $linkstatus (please test!), as well as fixed a mem
+	leak in this patch
+	* adt746x fix, thanks to dan-h on sf.net
+	* Added mldonkey support patch, thanks Lucas Brutschy on sf.net 
+	* Added patch to allow hex colour values, thanks roiban adi on sf.net
+	* Added if constructs patch, thanks Lucas Brutschy on sf.net
+	* Fixed bug in tab code (hopefully for the last time)
+	* Added option to sort by cpu or memory for top, see top_sort_cpu
+
+2005-07-12
+	* Added fix for battery charged state (thanks to Lukas Zapletal
+	<lzap@seznam.cz>)
+
+2005-07-05
+	* Conky 1.1 released
+
+2005-07-03
+	* Added $mpd_bar and $mpd_bitrate
+	* Some minor code cleanups prior to release
+	* Fixed problem with Conky not compiling when XFT disabled
+	* Fixed configure.in problems with Xdbe
+
+2005-07-01
+	* Fixed memory leak in MPD code
+	* Added new $tail object (see conkyrc.sample) which loves to suck CPU
+	and memory
+	* Fixed more mem leaks
+
+2005-06-30
+	* Added use_spacer to config
+	* Added $mpd_status
+	* Added small fix for i2c from Filedil on forums.gentoo.org
+
+2005-06-28
+	* Made it possible to use tabs to right-justify (just add a bunch)
+	* Added ${execbar} (see conkyrc.sample)
+
+2005-06-26
+	* Added memory % to top output
+	* Added initial cairo backend (it's really quite useless at this stage actually, and I'm not sure if there is even any point to it)
+
+2005-06-25
+	* Conky now recognizes the tab character correctly
+	* Added simple config option to print to stdout (out_to_console
+	<yes/no>)
+
+2005-06-23
+	* Added top output.  Check the sample config.
+	* Cleaned up code.
+
+2005-06-22
+	* Finished MPD support ($mpd_title, $mpd_artist, $mpd_album, $mpd_vol)
+	* Removed NVCtrl code
+	* Added noswap and i2c patches
+
+2005-06-21
+	* Version 1.0. Conky is born from the ashes of torsmo. Main site: http://conky.rty.ca/
+	* Added xwin patch
+	* Added new feature for sample averaging of CPU and net info
+
+2004-12-22
+	* Version 0.18 released
+
+2004-12-21
+	* Fixed some double buffer + Xft stuff
+	* Applied X-Mozilla-Status patch (thanks affinity)
+	* Applied NVCtrl patch and modified it a bit (temperature monitoring
+	  for nvdia-based graphics cards) (I couldn't test this so it may or
+	  may not work or even compile) (thanks Dennis Frommknecht)
+	* Applied fs_used_perc and fs_bar_free patch (thanks killfire [send me
+	  mail, I didn't catch your name from sourceforge])
+	* Applied patch that supports mailbox that is in some 'maildir' format
+	  (thanks jolapache [send mail, I didn't catch your name from
+	  sourceforge])
+	* min -> m
+	* Applied pad_percents patch (thanks JL Farinacci)
+	* Fixed some stuff in acpi fan and acpi ac adapter
+	* Optional XFT even when compiled in
+
+2004-11-30
+	* Applied utime patch (UTC time) (thanks David McCabe)
+
+2004-11-29
+	* Applied Xdbe patch, this includes double_buffer configuration and
+	  -b command line option (thanks Bruce Merry)
+	* Applied some other seti patch, not tested (thanks William DiPlacido)
+
+2004-08-25
+	* Applied netbsd patch (thanks Rui Paulo)
+	* Applied cpu frequency patch (thanks William DiPlacido)
+	* Applied adt746x patch (thanks Dennis Kaandorp)
+	* Applied some other FreeBSD patch by the same guy
+
+2004-07-31
+	* Applied FreeBSD patch (thanks Roman Bogorodskiy)
+
+2004-07-25
+	* Xft support and xftfont configuration
+	* rewrote some stuff, there might be some new bugs in old places
+
+2004-07-24
+	* I2C divisor from a file (thanks Falk Feuersenger)
+
+2004-07-20
+	* changed battery thing to ${battery <filename in
+	  /proc/acpi/battery/>}
+	* SETI@Home stuff (thanks Jarski)
+
+2004-07-05
+	* changed signal for config file reloading to SIGUSR1
+	* mixer stuff, $mixer, $mixerl, $mixerr, $mixerbar, $mixerlbar,
+	  $mixerrbar
+
+2004-06-03
+	* maybe fixed acpi battery thing when "present rate" isn't known
+
+2004-06-01
+	* fixed width for all bars, use like ${cpubar 4,50}
+
+2004-05-25
+	* Version 0.17 released
+
+2004-05-23
+	* battery number for ACPI battery (thanks Leszek Krupiñski)
+	* default battery is now BAT0 instead of BAT1, set ${battery 1} if
+	  the old battery thing worked
+	* bug fix on load average reporting (thanks Leszek Krupiñski)
+	* outlines to text, draw_outline and default_outline_color
+	  configurations and $outlinecolor (thanks adi)
+	* $acpifan, $acpiacadapter, $uptime_short (thanks adi)
+
+2004-05-19
+	* fixed a bug when starting after Opera (and some other programs)
+	* sticky window
+	* minimum_size
+
+2004-05-18
+	* added border_width configuration
+
+2004-05-16
+	* fixed zero length bar bug
+
+2004-05-15
+	* file system stats, $fs_bar, $fs_free, $fs_free_perc, $fs_size,
+	  $fs_used
+	* leaves ACPI temperature file open (faster)
+	* -a option to change alignment on command line
+
+2004-05-14
+	* fixed ACPI temperature bug
+	* border_margin configuration
+	* ${execi <interval> <command>}, execute with specific interval
+	* added possibility to manually set the position (-x and -y options)
+	  (thanks to Gwenhael LE MOINE)
+	* $buffers and $cached (thanks to Jeremy Burch)
+	* WM_CLASS when drawing to own window (thanks to Gwenhael LE MOINE)
+
+2004-05-14
+	* Version 0.16 released
+
+2004-05-13
+	* $pre_exec, execute a shell command one time
+	* preparsing of text (faster but more memory usage)
+	* less system calls (faster)
+	* APM things to $battery (untested)
+
+2004-05-12
+	* added $new_mails changed $mails to tell total mail count
+
+2004-05-11
+	* transparent window, own_window configuration, -o cmdline option
+	* $exec, execute a shell command
+	* $acpitemp, $battery - acpi stuff (not really tested)
+
+2004-05-10
+	* $loadavg, load average
+	* $mails, unread local mails, mail_spool configuration
+
+2004-05-09
+	* Version 0.15 released
+
+2004-05-06
+	* SIGHUP reloads config file (thanks Jørgen P. Tjernø)
+	* Some other stuff

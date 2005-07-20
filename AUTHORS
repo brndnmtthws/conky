@@ -1,0 +1,91 @@
+Authors of conky in alphapetical order (please, send mail if I forgot
+somebody or email address / name is wrong):
+
+adi <razorbladeworks at yahoo dot com>
+  Outline stuff
+  ACPI fan & adapter
+
+affinity <affy at users dot sourceforge dot net>
+  X-Mozilla-Status support
+
+Bobby Beckmann <bbeckmann at users dot sourceforge dot net>
+  Interface IP and Wireless Quality patch
+
+Brenden Matthews <brenden at rty dot ca>
+  project maintainer
+
+Bruce Merry <bmerry at cs dot uct dot ac dot za>
+  Xdbe (double buffering)
+
+dan-h <dan-h at users dot sourceforge dot net>
+  adt746x fix
+
+David McCabe
+  utime
+
+Dennis Frommknecht
+  NVCtrl, temperature monitoring for nvdia-based graphics cards
+
+Dennis Kaandorp <addict at quicknet dot nl>
+  adt746x stuff
+
+Falk Feuersenger <lumberjack at users dot sourceforge dot net>
+  I2C divisor from a file
+
+Gwenhael LE MOINE <cycojesus at yahoo dot fr>
+  Manual setting of the position
+  WM_CLASS for window when drawing to own window
+
+Hannu Saransaari <hipo at users dot sourceforge dot net>
+  Main code
+
+Jarmo Hekkanen
+  SETI stuff
+
+Jeremy Burch <ascii021 at yahoo dot com>
+  $cached and $buffers
+
+JL Farinacci
+  pad_percents
+
+jolapache <jolapache at free dot fr>
+  maildir format
+
+Jørgen P. Tjernø <daxxar at mental dot mine dot nu>
+  Restores default settings before loading new config file in SIGHUP
+  Some cleaning and commenting apparently :)
+  SIGHUP config file reload
+
+killfire
+  fs_used_perc and fs_bar_free patch
+
+Lauri Hakkarainen <b10nik at users dot sourceforge dot net>
+  Some translating, web and other stuff
+
+Leszek Krupiñski <leszek at wafel dot com>
+  Battery number for ACPI battery
+  Load average bug fix
+
+Lucas Brutschy <lbrutschy at users dot sourceforge dot net>
+  MLDonkey patch
+  if constructs patch
+
+Moncelier Camille <pixdamix at users dot sourceforge dot net>
+  METAR patch
+
+roiban adi <adiroiban at users dot sourceforge dot net>
+  hex colour patch
+
+Rui Paulo <rpaulo at netbsd-pt dot org>
+  NetBSD support
+
+Roman Bogorodskiy <bogorodskiy at inbox dot ru>
+  FreeBSD support
+  more FreeBSD fixes
+
+Szymon Boniecki
+  Reads current LC_TIME
+
+William DiPlacido <bimbasaari at yahoo dot com>
+  Frequency from /proc/cpuinfo
+  Some other SETI stuff
