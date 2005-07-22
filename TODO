@@ -2,4 +2,5 @@
 	* fix conky -i N stuff
 	* fix bars not being centred
 	* fix lines not being centred
+	* fix bug where memory stuff gets messed when mpd_host is defined
 	
