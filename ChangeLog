@@ -1,3 +1,10 @@
+2005-07-24
+	* Conky now has UTF-8 support
+	* Fixed $freq for those with CPU scaling
+	* Fixed the problem with total_run_times
+	* Fixed alignment of bars and lines and stuff
+	* Reduced conky's memory usage (yay!)
+
 2005-07-17
 	* Fixed a pile of bugs in configure script
 	* Added proper checking for headers in configure script

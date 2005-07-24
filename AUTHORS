@@ -86,6 +86,9 @@ Roman Bogorodskiy <bogorodskiy at inbox dot ru>
 Szymon Boniecki
   Reads current LC_TIME
 
+Walt Nelson <wnelsonjr at comcast dot net>
+  $freq fix
+
 William DiPlacido <bimbasaari at yahoo dot com>
   Frequency from /proc/cpuinfo
   Some other SETI stuff

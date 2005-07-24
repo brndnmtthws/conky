@@ -6,6 +6,9 @@
 #include <sys/utsname.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <locale.h>
+#include <langinfo.h>
+#include <wchar.h>
 
 #if defined(HAVE_CAIRO_H) && defined(HAVE_CAIRO_XLIB_H) && defined(WANT_CAIRO)
 #define CAIRO
@@ -20,7 +23,7 @@
 #define TOP_PID 3
 #define TOP_MEM 4
 
-#define TEXT_BUFFER_SIZE (1024*4)
+#define TEXT_BUFFER_SIZE 1024
 
 #ifdef METAR
 #include <metar.h>
@@ -66,7 +69,7 @@ struct mpd_s {
 	char *status;
 	int volume;
 	unsigned int port;
-	char *host;
+	char host[128];
 	float progress;
 	int bitrate;
 };

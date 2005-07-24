@@ -628,30 +628,60 @@ char *get_adt746x_cpu()
 	return adt746x_cpu_state;
 }
 
-static char *frequency;
+/* Thanks to "Walt Nelson" <wnelsonjr@comcast.net> */
+
+/***********************************************************************/
+/*
+ *  $Id$
+ *  This file is part of x86info.
+ *  (C) 2001 Dave Jones.
+ *
+ *  Licensed under the terms of the GNU GPL License version 2.
+ *
+ * Estimate CPU MHz routine by Andrea Arcangeli <andrea@suse.de>
+ * Small changes by David Sterba <sterd9am@ss1000.ms.mff.cuni.cz>
+ *
+ */
+
+__inline__ unsigned long long int rdtsc()
+{
+	unsigned long long int x;
+	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
+	return x;
+}
+
+static char *buffer = NULL;
 
 char *get_freq()
 {
-	FILE *f;
-	char s[1000];
-	if (frequency == NULL) {
-		frequency = (char *) malloc(100);
-		assert(frequency != NULL);
-	}
-	//char frequency[10];
-	f = fopen("/proc/cpuinfo", "r");	//open the CPU information file
-	//if (!f)
-	//    return;
-	while (fgets(s, 1000, f) != NULL)	//read the file
-		if (strncmp(s, "cpu M", 5) == 0) {	//and search for the cpu mhz
-			//printf("%s", strchr(s, ':')+2);
-		strcpy(frequency, strchr(s, ':') + 2);	//copy just the number
-		frequency[strlen(frequency) - 1] = '\0';	// strip \n
-		break;
-		}
-		fclose(f);
-		return frequency;
+	if (buffer == NULL)
+		buffer = malloc(64);
+	struct timezone tz;
+	struct timeval tvstart, tvstop;
+	unsigned long long cycles[2]; /* gotta be 64 bit */
+	unsigned int microseconds; /* total time taken */
+        
+	memset(&tz, 0, sizeof(tz));
+
+	/* get this function in cached memory */
+	gettimeofday(&tvstart, &tz);
+	cycles[0] = rdtsc();
+	gettimeofday(&tvstart, &tz);
+
+	/* we don't trust that this is any specific length of time */
+	usleep(100);
+        
+	cycles[1] = rdtsc();
+	gettimeofday(&tvstop, &tz);
+	microseconds = ((tvstop.tv_sec-tvstart.tv_sec)*1000000) +
+			(tvstop.tv_usec-tvstart.tv_usec);
+
+	sprintf(buffer, "%lldMHz",
+		(cycles[1]-cycles[0])/microseconds);
+
+	return buffer;
 }
+
 
 #define ACPI_FAN_DIR "/proc/acpi/fan/"
 

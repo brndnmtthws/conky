@@ -264,7 +264,7 @@ static void new_bar(char *buf, int w, int h, int usage)
 static const char *scan_bar(const char *args, int *w, int *h)
 {
 	*w = 0;			/* zero width means all space that is available */
-	*h = 4;
+	*h = 6;
 	/* bar's argument is either height or height,width */
 	if (args) {
 		int n = 0;
@@ -2136,13 +2136,10 @@ static void draw_string(const char *s)
 			i2=0;
 			for(i2=0;i2<(8-(1+pos)%8) && added <= max;i2++)
 			{
-				//printf("pos thinger %i added %i max %i\n",(8-(1+pos)%8), added, max);
-				//printf("adding tab to: %s\n", s);
 				tmpstring2[pos+i2] = ' ';
 				added++;
 			}
 			pos += i2;
-			//printf("not adding tab to: %s\n", s);
 		}
 		else
 		{
@@ -2150,10 +2147,6 @@ static void draw_string(const char *s)
 				tmpstring2[pos] = tmpstring1[i];
 				pos++;
 			}
-/*			else {
-				tmpstring2[pos] = ' ';
-				pos++;
-		}*/
 	}
 }
 	s = tmpstring2;
@@ -2169,9 +2162,8 @@ static void draw_string(const char *s)
 		c2.color.green = c.green;
 		c2.color.blue = c.blue;
 		c2.color.alpha = font_alpha;
-		//printf("at: %i, %i\nstring: %s", cur_x, cur_y, s);
-		XftDrawString8(window.xftdraw, &c2, xftfont,
-			       cur_x, cur_y, (XftChar8 *) s, strlen(s));
+		XftDrawStringUtf8(window.xftdraw, &c2, xftfont,
+				  cur_x, cur_y, (XftChar8 *) s, strlen(s));
 	} else
 #endif
 	{
@@ -2220,8 +2212,8 @@ static void draw_line(char *s)
 							   JoinMiter);
 					XDrawLine(display, window.drawable,
 						  window.gc, cur_x,
-						  cur_y - mid, cur_x + w,
-						  cur_y - mid);
+						  cur_y - mid/2, cur_x + w,
+						  cur_y - mid/2);
 				}
 				break;
 
@@ -2245,8 +2237,8 @@ static void draw_line(char *s)
 						   ss, 2);
 					XDrawLine(display, window.drawable,
 						  window.gc, cur_x,
-						  cur_y - mid, cur_x + w,
-						  cur_y - mid);
+						  cur_y - mid/2, cur_x + w,
+						  cur_y - mid/2);
 				}
 				break;
 
@@ -2258,7 +2250,7 @@ static void draw_line(char *s)
 					    specials[special_index].arg;
 					int by =
 					    cur_y - (font_ascent() +
-						     h) / 2 + 1;
+						     h) / 2 - 1;
 					w = specials[special_index].width;
 					if (w == 0)
 						w = text_start_x +
@@ -2456,8 +2448,8 @@ static void update_text()
 static void main_loop()
 {
 	Region region = XCreateRegion();
-	info.looped = 0;
-	while (total_run_times == 0 || info.looped < total_run_times) {
+	info.looped = -1;
+	while (total_run_times == 0 || info.looped < total_run_times-1) {
 		info.looped++;
 		XFlush(display);
 
@@ -2828,7 +2820,7 @@ static void set_default_configurations(void)
 	info.net_avg_samples = 2;
 	info.memmax = 0;
 #ifdef MPD
-	info.mpd.host = "localhost";
+	strcpy(info.mpd.host, "localhost");
 	info.mpd.port = 6600;
 	info.mpd.status = "Checking status...";
 #endif
@@ -3001,11 +2993,10 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 #ifdef MPD
 									CONF("mpd_host") {
 	if (value)
-		info.
+		strcpy(info.
 				mpd.
 				host
-				=
-				value;
+				,				value);
 	else
 		CONF_ERR}
 	CONF("mpd_port") {
@@ -3384,6 +3375,20 @@ else
 
 	int main(int argc, char **argv) {
 		/* handle command line parameters that don't change configs */
+		char *s;
+		int utf8_mode = 0;
+
+		if (((s = getenv("LC_ALL"))   && *s) ||
+				    ((s = getenv("LC_CTYPE")) && *s) ||
+				    ((s = getenv("LANG"))     && *s)) {
+			if (strstr(s, "UTF-8"))
+				utf8_mode = 1;
+				    }
+		if (!setlocale(LC_CTYPE, "")) {
+			fprintf(stderr, "Can't set the specified locale! "
+					"Check LANG, LC_CTYPE, LC_ALL.\n");
+			return 1;
+		}
 		while
 		(1)
 		{
@@ -3465,7 +3470,7 @@ else
 		}
 		/* initalize X BEFORE we load config. (we need to so that 'screen' is set) */
 		init_X11
-			();
+				();
 		
 		tmpstring1 = (char*)malloc(2*TEXT_BUFFER_SIZE);
 		tmpstring2 = (char*)malloc(2*TEXT_BUFFER_SIZE);
