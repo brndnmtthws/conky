@@ -100,9 +100,6 @@ net_avg_samples 4
 # Add spaces to keep things from moving about?  This only affects certain objects.
 use_spacer no
 
-# Set to no to sort top output by mem usage instead of cpu
-top_sort_cpu yes
-
 #   mldonkey_hostname     Hostname for mldonkey stuff, defaults to localhost
 #   mldonkey_port         Mldonkey port, 4001 default
 #   mldonkey_login        Mldonkey login, default none
@@ -269,6 +266,8 @@ metar_station  CYBW
 #                                    The types are: "name", "pid", "cpu", and
 #                                    "mem".
 #                                    There can be a max of 10 processes listed.
+#  top_mem           type, num       Same as top, except sorted by mem usage
+#                                    instead of cpu
 #  totalup           net             Total upload, this one too, may overflow 
 #  updates                           Number of updates (for debugging)        
 #  upspeed           net             Upload speed in kilobytes                

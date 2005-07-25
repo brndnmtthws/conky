@@ -162,7 +162,7 @@ static inline int calc_text_width(const char *s, unsigned int l)
 #ifdef XFT
 	if (use_xft) {
 		XGlyphInfo gi;
-		XftTextExtents8(display, xftfont, s, l, &gi);
+		XftTextExtentsUtf8(display, xftfont, s, l, &gi);
 		return gi.xOff;
 	} else
 #endif
@@ -529,7 +529,7 @@ struct text_object {
 			char *logfile;
 			double last_update;
 			float interval;
-			char buffer[TEXT_BUFFER_SIZE*4];
+			char buffer[TEXT_BUFFER_SIZE];
 	} tail;
 
 		struct {

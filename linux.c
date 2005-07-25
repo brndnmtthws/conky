@@ -27,8 +27,6 @@
 
 static struct sysinfo s_info;
 
-#define TEXT_BUFFER_SIZE (1024*4)
-
 static int show_nice_processes;
 
 void prepare_update()

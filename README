@@ -95,8 +95,6 @@
    pad_percents          Pad percentages to this many decimals (0 = no        
                          padding)                                             
    stippled_borders      Border stippling (dashing) in pixels                 
-   top_sort_cpu          Set to yes to sort top output by cpu
-                         set to no to sort by mem usage
    total_run_times       Total number of times for Conky to update before
                          quitting.  Zero makes Conky run forever
    update_interval       Update interval in seconds                           
@@ -285,6 +283,8 @@
                                     The types are: "name", "pid", "cpu", and
                                     "mem".
                                     There can be a max of 10 processes listed.
+  top_mem           type, num       Same as top, except sorted by mem usage
+                                    instead of cpu
   totalup           net             Total upload, this one too, may overflow 
   updates                           Number of updates (for debugging)        
   upspeed           net             Upload speed in kilobytes                
