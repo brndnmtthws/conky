@@ -404,6 +404,7 @@ enum text_object_type {
 	OBJ_if_mounted,
 	OBJ_if_running,
 	OBJ_top,
+	OBJ_top_mem,
 	OBJ_tail,
 	OBJ_kernel,
 	OBJ_loadavg,
@@ -799,6 +800,7 @@ static void construct_text_object(const char *s, const char *arg)
 		}
 		else {
 			obj->data.top.num = n-1;
+			top_cpu = 1;
 		}
 	}
 	else {
@@ -806,7 +808,48 @@ static void construct_text_object(const char *s, const char *arg)
 		return;
 	}
 	END 
-  OBJ(addr, INFO_NET)
+	OBJ(top_mem, INFO_TOP)
+			char buf[64];
+	int n;
+	if(!arg) {
+		ERR("top_mem needs arguments");
+		obj->type = OBJ_text;
+		obj->data.s = strdup("${top_mem}");
+		return;
+	}
+	if(sscanf(arg, "%63s %i", buf, &n) == 2) {
+		if(strcmp(buf, "name") == 0) {
+			obj->data.top.type = TOP_NAME;
+		}
+		else if(strcmp(buf, "cpu") == 0) {
+			obj->data.top.type = TOP_CPU;
+		}
+		else if(strcmp(buf, "pid") == 0) {
+			obj->data.top.type = TOP_PID;
+		}
+		else if(strcmp(buf, "mem") == 0) {
+			obj->data.top.type = TOP_MEM;
+		}
+		else
+		{
+			ERR("invalid arg for top");
+			return;
+		}
+		if(n < 1 || n > 10) {
+			CRIT_ERR("invalid arg for top");
+			return;
+		}
+		else {
+			obj->data.top.num = n-1;
+			top_mem = 1;
+		}
+	}
+	else {
+		ERR("invalid args given for top");
+		return;
+	}
+	END 
+			OBJ(addr, INFO_NET)
      obj->data.net = get_net_stat(arg);
   END
   OBJ(linkstatus, INFO_WIFI)
@@ -1792,17 +1835,33 @@ static void generate_text()
 	if (obj->data.top.type == TOP_NAME && obj->data.top.num >= 0 && obj->data.top.num < 10){
 					// if we limit the buffer and add a bunch of space after, it stops the thing from
 					// moving other shit around, which is really fucking annoying
-		snprintf(p, 17, "%s                              ", cur->tops[obj->data.top.num]->name);
+		snprintf(p, 17, "%s                              ", cur->cpu[obj->data.top.num]->name);
 	}
 	else if (obj->data.top.type == TOP_CPU && obj->data.top.num >= 0 && obj->data.top.num < 10) {
-		snprintf(p, 7, "%3.2f      ", cur->tops[obj->data.top.num]->amount);
+		snprintf(p, 7, "%3.2f      ", cur->cpu[obj->data.top.num]->amount);
 	}
 	else if (obj->data.top.type == TOP_PID && obj->data.top.num >= 0 && obj->data.top.num < 10) {
-		snprintf(p, 8, "%i           ", cur->tops[obj->data.top.num]->pid);
+		snprintf(p, 8, "%i           ", cur->cpu[obj->data.top.num]->pid);
 	}
 	else if (obj->data.top.type == TOP_MEM && obj->data.top.num >= 0 && obj->data.top.num < 10) {
-		snprintf(p, 7, "%3.2f       ", cur->tops[obj->data.top.num]->totalmem);
+		snprintf(p, 7, "%3.2f       ", cur->cpu[obj->data.top.num]->totalmem);
 	}
+			}
+			OBJ(top_mem) {
+				if (obj->data.top.type == TOP_NAME && obj->data.top.num >= 0 && obj->data.top.num < 10){
+					// if we limit the buffer and add a bunch of space after, it stops the thing from
+					// moving other shit around, which is really fucking annoying
+					snprintf(p, 17, "%s                              ", cur->memu[obj->data.top.num]->name);
+				}
+				else if (obj->data.top.type == TOP_CPU && obj->data.top.num >= 0 && obj->data.top.num < 10) {
+					snprintf(p, 7, "%3.2f      ", cur->memu[obj->data.top.num]->amount);
+				}
+				else if (obj->data.top.type == TOP_PID && obj->data.top.num >= 0 && obj->data.top.num < 10) {
+					snprintf(p, 8, "%i           ", cur->memu[obj->data.top.num]->pid);
+				}
+				else if (obj->data.top.type == TOP_MEM && obj->data.top.num >= 0 && obj->data.top.num < 10) {
+					snprintf(p, 7, "%3.2f       ", cur->memu[obj->data.top.num]->totalmem);
+				}
 			}
 			
 			
@@ -2448,7 +2507,7 @@ static void update_text()
 static void main_loop()
 {
 	Region region = XCreateRegion();
-	info.looped = -1;
+	info.looped = 0;
 	while (total_run_times == 0 || info.looped < total_run_times-1) {
 		info.looped++;
 		XFlush(display);
@@ -2819,13 +2878,14 @@ static void set_default_configurations(void)
 	info.cpu_avg_samples = 2;
 	info.net_avg_samples = 2;
 	info.memmax = 0;
+	top_cpu = 0;
+	top_mem = 0;
 #ifdef MPD
 	strcpy(info.mpd.host, "localhost");
 	info.mpd.port = 6600;
 	info.mpd.status = "Checking status...";
 #endif
 	out_to_console = 0;
-	top_sort_cpu = 1;
 	use_spacer = 0;
 	default_fg_color = WhitePixel(display, screen);
 	default_bg_color = BlackPixel(display, screen);
@@ -3081,12 +3141,6 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 										}
 										CONF("out_to_console") {
 										out_to_console
-										=
-										string_to_bool
-										(value);
-										}
-										CONF("top_sort_cpu") {
-										top_sort_cpu
 										=
 										string_to_bool
 										(value);

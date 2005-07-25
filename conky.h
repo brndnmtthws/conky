@@ -145,7 +145,8 @@ struct information {
 	struct mpd_s mpd;
 	mpd_Connection *conn;
 #endif
-	struct process *tops[10];
+	struct process *cpu[10];
+	struct process *memu[10];
 	unsigned long looped;
 };
 
@@ -191,7 +192,8 @@ extern int use_xdbe;
 
 int out_to_console;
 
-int top_sort_cpu;
+int top_cpu;
+int top_mem;
 
 int use_spacer;
 

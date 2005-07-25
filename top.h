@@ -81,4 +81,4 @@
 /*
  * Pointer to head of process list
  */
-void process_find_top(struct process **);
+void process_find_top(struct process **, struct process **);

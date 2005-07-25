@@ -17,16 +17,16 @@ static struct process *find_process(pid_t pid)
 }
 
 /*
- * Create a new process object and insert it into the process list
- */
+* Create a new process object and insert it into the process list
+*/
 static struct process *new_process(int p)
 {
 	struct process *process;
 	process = malloc(sizeof(struct process));
 
 	/*
-	 * Do stitching necessary for doubly linked list
-	 */
+	* Do stitching necessary for doubly linked list
+	*/
 	process->name = 0;
 	process->previous = 0;
 	process->next = first_process;
@@ -40,7 +40,7 @@ static struct process *new_process(int p)
 	process->previous_kernel_time = INT_MAX;
 	process->counted = 1;
 
-/*    process_find_name(process);*/
+	/*    process_find_name(process);*/
 
 	return process;
 }
@@ -57,7 +57,6 @@ static void delete_process(struct process *);
 /*inline void draw_processes(void);*/
 static int calc_cpu_total(void);
 static void calc_cpu_each(int);
-void process_find_top(struct process **);
 
 
 /******************************************/
@@ -65,9 +64,9 @@ void process_find_top(struct process **);
 /******************************************/
 
 /*
- * These are the guts that extract information out of /proc.
- * Anyone hoping to port wmtop should look here first.
- */
+* These are the guts that extract information out of /proc.
+* Anyone hoping to port wmtop should look here first.
+*/
 static int process_parse_stat(struct process *process)
 {
 	struct information *cur;
@@ -195,15 +194,15 @@ static int update_process_table()
 	++g_time;
 
 	/*
-	 * Get list of processes from /proc directory
-	 */
+	* Get list of processes from /proc directory
+	*/
 	while ((entry = readdir(dir))) {
 		pid_t pid;
 
 		if (!entry) {
 			/*
-			 * Problem reading list of processes
-			 */
+			* Problem reading list of processes
+			*/
 			closedir(dir);
 			return 1;
 		}
@@ -229,9 +228,9 @@ static int update_process_table()
 /******************************************/
 
 /*
- * This function seems to hog all of the CPU time. I can't figure out why - it
- * doesn't do much.
- */
+* This function seems to hog all of the CPU time. I can't figure out why - it
+* doesn't do much.
+*/
 static int calculate_cpu(struct process *process)
 {
 	int rc;
@@ -245,11 +244,11 @@ static int calculate_cpu(struct process *process)
 	return 1;*/
 
 	/*
-	 * Check name against the exclusion list
-	 */
+	* Check name against the exclusion list
+	*/
 	if (process->counted && exclusion_expression
-	    && !regexec(exclusion_expression, process->name, 0, 0, 0))
-	process->counted = 0;
+		   && !regexec(exclusion_expression, process->name, 0, 0, 0))
+		process->counted = 0;
 
 	return 0;
 }
@@ -271,8 +270,8 @@ static void process_cleanup()
 
 		p = p->next;
 		/*
-		 * Delete processes that have died
-		 */
+		* Delete processes that have died
+		*/
 		if (current->time_stamp != g_time)
 			delete_process(current);
 	}
@@ -288,14 +287,14 @@ static void delete_process(struct process *p)
 	assert(p->id == 0x0badfeed);
 
 	/*
-	 * Ensure that deleted processes aren't reused.
-	 */
+	* Ensure that deleted processes aren't reused.
+	*/
 	p->id = 0x007babe;
 #endif				/* defined(PARANOID) */
 
 	/*
-	 * Maintain doubly linked list.
-	 */
+	* Maintain doubly linked list.
+	*/
 	if (p->next)
 		p->next->previous = p->previous;
 	if (p->previous)
@@ -346,12 +345,12 @@ inline static void calc_cpu_each(int total)
 	struct process *p = first_process;
 	while (p) {
 		/*p->amount = total ?
-		    (100.0 * (float) (p->user_time + p->kernel_time) /
-		     total) : 0;*/
-		     p->amount = (100.0 * (p->user_time + p->kernel_time) / total);
+		(100.0 * (float) (p->user_time + p->kernel_time) /
+		total) : 0;*/
+		p->amount = (100.0 * (p->user_time + p->kernel_time) / total);
 
 /*		if (p->amount > 100)
-		     p->amount = 0;*/
+		p->amount = 0;*/
 		p = p->next;
 	}
 }
@@ -361,20 +360,21 @@ inline static void calc_cpu_each(int total)
 /******************************************/
 
 /*
- * Result is stored in decreasing order in best[0-9].
- */
+* Result is stored in decreasing order in best[0-9].
+*/
 
 static struct process **sorttmp;
+static size_t sorttmp_size = 10;
 
-inline void process_find_top(struct process **best)
+inline void process_find_top(struct process **cpu, struct process **mem)
 {
 	struct process *pr;
 	if (sorttmp == NULL) {
-		sorttmp = malloc(sizeof(struct process)*10);
+		sorttmp = malloc(sizeof(struct process)*sorttmp_size);
 		assert(sorttmp != NULL);
 	}
 	int total;
-	int i, max;
+	unsigned int i, max;
 
 	total = calc_cpu_total();	/* calculate the total of the processor */
 
@@ -383,64 +383,87 @@ inline void process_find_top(struct process **best)
 	process_cleanup();	/* cleanup list from exited processes */
 
 	/*
-	 * this is really ugly,
-	 * not to mention probably not too efficient.
-	 * the main problem is that there could be any number of processes,
-	 * however we have to use a fixed size for the "best" array.
-	 * right now i can't think of a better way to do this,
-	 * although i'm sure there is one.
-	 * Perhaps just using a linked list would be more effecient?
-	 * I'm too fucking lazy to do that right now.
-	 */
-	pr = first_process;
-	i = 0;
-	while(pr) {
-		if(i<300 && pr->counted) {
-			sorttmp[i] = pr;
-			i++;
-		}
-		else if (i>299) {
-			/*ERR("too many processes, you will get innaccurate results from top");*/
-			break;
-		}
-		pr = pr->next;
-	}
-	max = i;
-	if(top_sort_cpu) {
-	for(i=0;i<max-1;i++)
-	{
-		while (sorttmp[i+1]->amount > sorttmp[i]->amount)
-		{
-			pr = sorttmp[i];
-			sorttmp[i] = sorttmp[i+1];
-			sorttmp[i+1] = pr;
-			if (i>0)
-				i--;
-			else
-				break;
-		}
-
-	}
-	for(i=max;i>1;i--);
-	{
-		while (sorttmp[i]->amount > sorttmp[i-1]->amount)
-		{
-			pr = sorttmp[i];
-			sorttmp[i] = sorttmp[i-1];
-			sorttmp[i-1] = pr;
-			if (i<max)
+	* this is really ugly,
+	* not to mention probably not too efficient.
+	* the main problem is that there could be any number of processes,
+	* however we have to use a fixed size for the "best" array.
+	* right now i can't think of a better way to do this,
+	* although i'm sure there is one.
+	* Perhaps just using a linked list would be more effecient?
+	* I'm too fucking lazy to do that right now.
+	*/
+	if(top_cpu) {
+		pr = first_process;
+		i = 0;
+		while(pr) {
+			if(i<sorttmp_size && pr->counted) {
+				sorttmp[i] = pr;
 				i++;
-			else
-				break;
+			}
+			else if (i == sorttmp_size && pr->counted) {
+				sorttmp_size++;
+				sorttmp = realloc(sorttmp, sizeof(struct process)*sorttmp_size);
+				sorttmp[i] = pr;
+				i++;
+			}
+			pr = pr->next;
+		}
+		if (i+1 < sorttmp_size) {
+			sorttmp = realloc(sorttmp, sizeof(struct process)*sorttmp_size);
+		}
+		max = i;
+		for(i=0;i<max-1;i++)
+		{
+			while (sorttmp[i+1]->amount > sorttmp[i]->amount)
+			{
+				pr = sorttmp[i];
+				sorttmp[i] = sorttmp[i+1];
+				sorttmp[i+1] = pr;
+				if (i>0)
+					i--;
+				else
+					break;
+			}
+
+		}
+		for(i=max;i>1;i--);
+		{
+			while (sorttmp[i]->amount > sorttmp[i-1]->amount)
+			{
+				pr = sorttmp[i];
+				sorttmp[i] = sorttmp[i-1];
+				sorttmp[i-1] = pr;
+				if (i<max)
+					i++;
+				else
+					break;
+			}
+		}
+		for(i=0;i<10;i++)
+		{
+			cpu[i] = sorttmp[i];
+
 		}
 	}
-	for(i=0;i<10;i++)
-	{
-		best[i] = sorttmp[i];
-
-	}
-	}
-	else {
+	if (top_mem) {
+		pr = first_process;
+		i = 0;
+		while(pr) {
+			if(i<sorttmp_size && pr->counted) {
+				sorttmp[i] = pr;
+				i++;
+			}
+			else if (i == sorttmp_size && pr->counted) {
+				sorttmp_size++;
+				sorttmp = realloc(sorttmp, sizeof(struct process)*sorttmp_size);
+				sorttmp[i] = pr;
+				i++;
+			}
+			pr = pr->next;
+		}
+		if (i+1 < sorttmp_size) {
+			sorttmp = realloc(sorttmp, sizeof(struct process)*sorttmp_size);
+		}		max = i;
 		for(i=0;i<max-1;i++)
 		{
 			while (sorttmp[i+1]->totalmem > sorttmp[i]->totalmem)
@@ -470,7 +493,7 @@ inline void process_find_top(struct process **best)
 		}
 		for(i=0;i<10;i++)
 		{
-			best[i] = sorttmp[i];
+			mem[i] = sorttmp[i];
 
 		}
 	}

@@ -4,6 +4,8 @@
 	* Fixed the problem with total_run_times
 	* Fixed alignment of bars and lines and stuff
 	* Reduced conky's memory usage (yay!)
+	* Removed top_sort_cpu, added top_mem which sorts by mem usage instead
+	of cpu
 
 2005-07-17
 	* Fixed a pile of bugs in configure script

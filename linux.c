@@ -1028,5 +1028,5 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 void update_top()
 {
 	show_nice_processes = 1;
-	process_find_top(info.tops);
+	process_find_top(info.cpu, info.memu);
 }

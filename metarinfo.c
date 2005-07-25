@@ -129,7 +129,7 @@ void *fetch_ftp( ) {
 		}
 		else {
 			ftp_ok = 0;
-	}
+		}
 
 	} while (ftp_ok == 0 && tries < 3);
 	status = 1;
@@ -140,7 +140,7 @@ static pthread_t thread1;
 void update_metar() {
 	int  iret1;
 	if (!status) {
-	status = 2;
+		status = 2;
 		iret1 = pthread_create( &thread1, NULL, fetch_ftp, NULL);
 	}
 	else if (status == 2) { /* thread is still running.  what else can we do? */
