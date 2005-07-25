@@ -399,7 +399,7 @@ int dataConnectFtp() {
     unsigned char ad[6], *cur, *adp, *portp;
     unsigned int temp[6];
     struct sockaddr_in dataAddr;
-    size_t dataAddrLen;
+    socklen_t dataAddrLen;
 
     dataFd = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (dataFd < 0) {
@@ -752,7 +752,7 @@ int getFtpSocket(const char *filename) {
  * closeFtpSocket
  */
 
-int closeFtpSocket(int socket) {
+int closeFtpSocket() {
     return(dataConnectEndFtp());
 }
 
@@ -808,7 +808,7 @@ int getFtp(ftpDataCallback callback, void *userData, const char *filename) {
         callback(userData, buf, len);
     } while (len != 0);
 
-    return(closeFtpSocket(dataFd));
+    return(closeFtpSocket());
 }
 
 /*

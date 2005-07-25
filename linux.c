@@ -209,14 +209,13 @@ inline void update_net_stats()
 		ns->last_read_trans = t;
 
 		/*** ip addr patch ***/
-
-		s = (char*)socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
+		i = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
 		
 		conf.ifc_buf = malloc(sizeof(struct ifreq) * 16);
 		
 		conf.ifc_len = sizeof(struct ifreq) * 16;
 
-		ioctl((long)s, SIOCGIFCONF, &conf);
+		ioctl((long)i, SIOCGIFCONF, &conf);
 
 		for (k=0; k < conf.ifc_len / sizeof(struct ifreq); k++) {
 			struct net_stat *ns;    
@@ -224,7 +223,7 @@ inline void update_net_stats()
 			ns->addr = ((struct ifreq*)conf.ifc_buf)[k].ifr_ifru.ifru_addr;
 		}
 
-		close((long)s);
+		close((long)i);
 		
 		free(conf.ifc_buf);
 

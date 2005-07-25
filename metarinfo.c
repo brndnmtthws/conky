@@ -2,6 +2,7 @@
 #include <string.h>
 #include "ftp.h"
 #include <math.h>
+#include <time.h>
 #include <pthread.h>
 #include "metarinfo.h"
 
@@ -69,7 +70,7 @@ const char*calculateShortWindDirectionString(int degree){
 
 void ftpData(void *userData, const char *data, int len)
 {
-
+	if(userData) {} // do nothing to make stupid warning go away
 	if (len <= 0)
 		return;
 
@@ -78,6 +79,7 @@ void ftpData(void *userData, const char *data, int len)
 	}
 }
 
+extern unsigned int sleep(unsigned int);
 
 void *fetch_ftp( ) {
 		// try three times if it fails
@@ -87,9 +89,10 @@ void *fetch_ftp( ) {
 			/* this happens too often, so i'll leave it commented fprintf(stderr, "METAR update failed for some reason, retry %i\n", tries); */
 			sleep(15); /* give it some time in case the server is busy or down */
 		}
+
 		tries++;
 		if ( strlen(metar_station) != 8 ){
-			fprintf(stderr,"You didn't supply a valid station code\n");     
+			ERR("You didn't supply a valid METAR station code\n");
 			return NULL;
 		}
 		if (metar_server == NULL)
@@ -101,22 +104,21 @@ void *fetch_ftp( ) {
 		initFtp();
 		res = connectFtp(metar_server, 0);
 		if (res < 0) {
-			fprintf(stderr, "Couldn't connect to %s\n", metar_server);
+			ERR("Couldn't connect to %s\n", metar_server);
 			return NULL;
 		}
 		res = changeFtpDirectory(metar_path);
 		if (res < 0) {
-			fprintf(stderr, "Metar update failed (couldn't CWD to %s)\n", metar_path);
+			ERR("Metar update failed (couldn't CWD to %s)\n", metar_path);
 			disconnectFtp();
 			return NULL;
 		}
 		if (res == 0) {
-			fprintf(stderr,
-				"Metar update failed\n");
+			ERR("Metar update failed\n");
 			return NULL;
 		}
 		if (getFtp(ftpData, NULL, metar_station) < 0) {
-			fprintf(stderr, "Failed to get file %s\n", metar_station);
+			ERR("Failed to get file %s\n", metar_station);
 		}
 		
 		disconnectFtp();
