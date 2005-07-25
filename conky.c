@@ -86,6 +86,10 @@ int no_buffers;
 /* pad percentages to decimals? */
 static int pad_percents = 0;
 
+/* UTF-8 */
+int utf8_mode = 0;
+
+
 /* Text that is shown */
 static char original_text[] =
     "$nodename - $sysname $kernel on $machine\n"
@@ -162,7 +166,12 @@ static inline int calc_text_width(const char *s, unsigned int l)
 #ifdef XFT
 	if (use_xft) {
 		XGlyphInfo gi;
-		XftTextExtentsUtf8(display, xftfont, s, l, &gi);
+		if(utf8_mode) {
+			XftTextExtentsUtf8(display, xftfont, s, l, &gi);
+		}
+		else {
+			XftTextExtents8(display, xftfont, s, l, &gi);
+		}
 		return gi.xOff;
 	} else
 #endif
@@ -2181,7 +2190,6 @@ static void draw_string(const char *s)
 	char space[2];
 	snprintf(space, 2, " ");
 	max = ((text_width-width_of_s)/get_string_width(space));
-	//printf("width: %i, length: %i, max: %i space: %i\n", text_width, width_of_s, max, get_string_width(space));
 	/*
 	 * This code looks for tabs in the text and coverts them to spaces.
 	 * The trick is getting the correct number of spaces,
@@ -2221,8 +2229,14 @@ static void draw_string(const char *s)
 		c2.color.green = c.green;
 		c2.color.blue = c.blue;
 		c2.color.alpha = font_alpha;
-		XftDrawStringUtf8(window.xftdraw, &c2, xftfont,
-				  cur_x, cur_y, (XftChar8 *) s, strlen(s));
+		if(utf8_mode) {
+			XftDrawStringUtf8(window.xftdraw, &c2, xftfont,
+					  cur_x, cur_y, (XftChar8 *) s, strlen(s));
+		}
+		else {
+			XftDrawString8(window.xftdraw, &c2, xftfont,
+					  cur_x, cur_y, (XftChar8 *) s, strlen(s));
+		}
 	} else
 #endif
 	{
@@ -3430,7 +3444,6 @@ else
 	int main(int argc, char **argv) {
 		/* handle command line parameters that don't change configs */
 		char *s;
-		int utf8_mode = 0;
 
 		if (((s = getenv("LC_ALL"))   && *s) ||
 				    ((s = getenv("LC_CTYPE")) && *s) ||

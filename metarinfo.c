@@ -90,7 +90,7 @@ void *fetch_ftp( ) {
 		tries++;
 		if ( strlen(metar_station) != 8 ){
 			fprintf(stderr,"You didn't supply a valid station code\n");     
-			return;
+			return NULL;
 		}
 		if (metar_server == NULL)
 			metar_server = strdup("weather.noaa.gov");
@@ -102,18 +102,18 @@ void *fetch_ftp( ) {
 		res = connectFtp(metar_server, 0);
 		if (res < 0) {
 			fprintf(stderr, "Couldn't connect to %s\n", metar_server);
-			return;
+			return NULL;
 		}
 		res = changeFtpDirectory(metar_path);
 		if (res < 0) {
 			fprintf(stderr, "Metar update failed (couldn't CWD to %s)\n", metar_path);
 			disconnectFtp();
-			return;
+			return NULL;
 		}
 		if (res == 0) {
 			fprintf(stderr,
 				"Metar update failed\n");
-			return;
+			return NULL;
 		}
 		if (getFtp(ftpData, NULL, metar_station) < 0) {
 			fprintf(stderr, "Failed to get file %s\n", metar_station);
@@ -133,6 +133,7 @@ void *fetch_ftp( ) {
 
 	} while (ftp_ok == 0 && tries < 3);
 	status = 1;
+	return NULL;
 }
 
 static pthread_t thread1;
