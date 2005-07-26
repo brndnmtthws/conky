@@ -105,16 +105,19 @@ void *fetch_ftp( ) {
 		res = connectFtp(metar_server, 0);
 		if (res < 0) {
 			ERR("Couldn't connect to %s\n", metar_server);
+			status = 1;
 			return NULL;
 		}
 		res = changeFtpDirectory(metar_path);
 		if (res < 0) {
 			ERR("Metar update failed (couldn't CWD to %s)\n", metar_path);
 			disconnectFtp();
+			status = 1;
 			return NULL;
 		}
 		if (res == 0) {
 			ERR("Metar update failed\n");
+			status = 1;
 			return NULL;
 		}
 		if (getFtp(ftpData, NULL, metar_station) < 0) {
