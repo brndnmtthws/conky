@@ -14,6 +14,16 @@ void update_mpd()
 	if (current_info->conn->error) {
 		//fprintf(stderr, "%s\n", current_info->conn->errorStr);
 		mpd_closeConnection(current_info->conn);
+		if(current_info->mpd.artist == NULL)
+			current_info->mpd.artist = malloc(TEXT_BUFFER_SIZE);
+		if(current_info->mpd.album == NULL)
+			current_info->mpd.album = malloc(TEXT_BUFFER_SIZE);
+		if(current_info->mpd.title == NULL)
+			current_info->mpd.title = malloc(TEXT_BUFFER_SIZE);
+		strcpy(current_info->mpd.artist, "Unknown");
+		strcpy(current_info->mpd.album, "Unknown");
+		strcpy(current_info->mpd.title, "Unknown");
+		current_info->mpd.status = "MPD not responding";
 		return;
 	}
 
@@ -26,6 +36,16 @@ void update_mpd()
  	if ((status = mpd_getStatus(current_info->conn)) == NULL) {
 		//fprintf(stderr, "%s\n", current_info->conn->errorStr);
 		mpd_closeConnection(current_info->conn);
+		if(current_info->mpd.artist == NULL)
+			current_info->mpd.artist = malloc(TEXT_BUFFER_SIZE);
+		if(current_info->mpd.album == NULL)
+			current_info->mpd.album = malloc(TEXT_BUFFER_SIZE);
+		if(current_info->mpd.title == NULL)
+			current_info->mpd.title = malloc(TEXT_BUFFER_SIZE);
+		strcpy(current_info->mpd.artist, "Unknown");
+		strcpy(current_info->mpd.album, "Unknown");
+		strcpy(current_info->mpd.title, "Unknown");
+		current_info->mpd.status = "MPD not responding";
 		return;
 	}
 	current_info->mpd.volume = status->volume;
