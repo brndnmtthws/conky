@@ -20,6 +20,7 @@ RDEPEND="virtual/libc
 	metar? ( dev-libs/mdsplib )"
 
 DEPEND="truetype? ( >=media-libs/freetype-2 )
+	metar? ( dev-libs/mdsplib )
 	virtual/x11
 	>=sys-devel/automake-1.4
 	sys-devel/autoconf
