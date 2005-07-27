@@ -80,6 +80,7 @@ alignment bottom_left
 #alignment bottom_right
 
 # Gap between borders of screen and text
+# same thing as passing -x at command line
 gap_x 12
 gap_y 12
 

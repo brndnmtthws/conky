@@ -76,8 +76,10 @@
    draw_outline          Draw outlines?                                       
    font                  Font name in X, xfontsel can be used to get a nice   
                          font                                                 
-   gap_x                 Gap between right or left border of screen           
-   gap_y                 Gap between top or bottom border of screen           
+   gap_x                 Gap between right or left border of screen, same as
+                         passing -x at command line
+   gap_y                 Gap between top or bottom border of screen, same as
+                         passing -y at command line
    no_buffers            Substract (file system) buffers from used memory?    
    mail_spool            Mail spool for mail checking                         
    metar_station         METAR station code for weather, see

@@ -2008,9 +2008,9 @@ static void generate_text()
 					         else if ( strcmp(&data.cldTypHgt[0].cloud_type[0], "FEW") == 0 )
 					           snprintf(p, n, "Few clouds");
 					         else if ( strcmp(&data.cldTypHgt[0].cloud_type[0], "SCT") == 0 )
-					           snprintf(p, n, "Scattered");
+					           snprintf(p, n, "Scattered clouds");
 					         else if ( strcmp(&data.cldTypHgt[0].cloud_type[0], "BKN") == 0 )
-					           snprintf(p, n, "Broken");
+					           snprintf(p, n, "Broken clouds");
 					         else if ( strcmp(&data.cldTypHgt[0].cloud_type[0], "OVC") == 0 )
 					           snprintf(p, n, "Overcast");
 										         else
@@ -3448,7 +3448,7 @@ else
 		if (((s = getenv("LC_ALL"))   && *s) ||
 				    ((s = getenv("LC_CTYPE")) && *s) ||
 				    ((s = getenv("LANG"))     && *s)) {
-			if (strstr(s, "UTF-8"))
+			if (strstr(s, "UTF-8") || strstr(s, "utf-8"))
 				utf8_mode = 1;
 				    }
 		if (!setlocale(LC_CTYPE, "")) {
