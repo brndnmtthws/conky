@@ -1483,9 +1483,8 @@ static void generate_text()
 				if (barnum > 100 || barnum < 0) {
 					ERR("your execgraph value is not between 0 and 100, therefore it will be ignored");
 				} else {
-					barnum = barnum / 100.0;
 					new_graph(p, 0,
-							4, (int) (barnum));
+							25, (int) (barnum));
 				}
 
 			}
@@ -2657,6 +2656,8 @@ static void draw_line(char *s)
 						       by,
 						       w * bar_usage / 255,
 						       h);
+					cur_y += h;
+
 				}
 				break;
 
