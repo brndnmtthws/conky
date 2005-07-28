@@ -3448,7 +3448,8 @@ else
 		if (((s = getenv("LC_ALL"))   && *s) ||
 				    ((s = getenv("LC_CTYPE")) && *s) ||
 				    ((s = getenv("LANG"))     && *s)) {
-			if (strstr(s, "UTF-8") || strstr(s, "utf-8"))
+			if (strstr(s, "UTF-8") || strstr(s, "utf-8")
+					|| strstr(s, "UTF8") || strstr(s, "utf8"))
 				utf8_mode = 1;
 				    }
 		if (!setlocale(LC_CTYPE, "")) {
