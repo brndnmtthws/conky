@@ -223,10 +223,14 @@ static struct special_t {
 	short height;
 	short width;
 	long arg;
+	unsigned int *graph;
+	int graph_width;
 } specials[128];
 
 static int special_count;
 static int special_index;	/* used when drawing */
+
+#define MAX_GRAPH_DEPTH 256 /* why 256? who knows. */
 
 static struct special_t *new_special(char *buf, int t)
 {
@@ -235,6 +239,13 @@ static struct special_t *new_special(char *buf, int t)
 
 	buf[0] = SPECIAL_CHAR;
 	buf[1] = '\0';
+	if (t == GRAPH && specials[special_count].graph == NULL) {
+		if (specials[special_count].height > 0)
+			specials[special_count].graph_width = specials[special_count].height;
+		else
+			specials[special_count].graph_width = MAX_GRAPH_DEPTH;
+		specials[special_count].graph = calloc(specials[special_count].graph_width, sizeof(long));
+	}
 	specials[special_count].type = t;
 	return &specials[special_count++];
 }
@@ -291,18 +302,26 @@ static const char *scan_bar(const char *args, int *w, int *h)
 	return args;
 }
 
-static void new_graph(char *buf, int w, int h, int usage)
+void graph_append(unsigned int *graph, long width, unsigned int f) {
+	int i;
+	for (i=0;i<width-1;i++) {
+		graph[i] = graph[i+1];
+	}
+	graph[width-1] = f;
+}
+
+static void new_graph(char *buf, int w, int h, unsigned int i)
 {
 	struct special_t *s = new_special(buf, GRAPH);
-	s->arg = (usage > 255) ? 255 : ((usage < 0) ? 0 : usage);
 	s->width = w;
 	s->height = h;
+	graph_append(s->graph, s->graph_width, i);
 }
 
 static const char *scan_graph(const char *args, int *w, int *h)
 {
 	*w = 0;			/* zero width means all space that is available */
-	*h = 15;
+	*h = 25;
 	/* graph's argument is either height or height,width */
 	if (args) {
 		int n = 0;
@@ -422,13 +441,16 @@ enum text_object_type {
 	OBJ_color,
 	OBJ_cpu,
 	OBJ_cpubar,
+	OBJ_cpugraph,
 	OBJ_downspeed,
 	OBJ_downspeedf,
+	OBJ_downspeedgraph,
 	OBJ_else,
 	OBJ_endif,
 	OBJ_exec,
 	OBJ_execi,
 	OBJ_execbar,
+	OBJ_execgraph,
 	OBJ_freq,
 	OBJ_fs_bar,
 	OBJ_fs_bar_free,
@@ -453,6 +475,7 @@ enum text_object_type {
 	OBJ_mails,
 	OBJ_mem,
 	OBJ_membar,
+	OBJ_memgraph,
 	OBJ_memmax,
 	OBJ_memperc,
 	OBJ_mixer,
@@ -496,6 +519,7 @@ enum text_object_type {
 	OBJ_updates,
 	OBJ_upspeed,
 	OBJ_upspeedf,
+	OBJ_upspeedgraph,
 	OBJ_uptime,
 	OBJ_uptime_short,
 #ifdef SETI
@@ -586,8 +610,7 @@ struct text_object {
 		struct {
 			int a, b;
 		} pair;		/* 2 */
-
-
+		
 	} data;
 };
 
@@ -631,6 +654,7 @@ static void free_text_objects()
 		case OBJ_text:
 		case OBJ_exec:
 		case OBJ_execbar:
+		case OBJ_execgraph:
 #ifdef MPD
 		case OBJ_mpd_title:
 		case OBJ_mpd_artist:
@@ -695,13 +719,15 @@ static void construct_text_object(const char *s, const char *arg)
 	END OBJ(cpu, INFO_CPU)
 	END OBJ(cpubar, INFO_CPU)
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+	END OBJ(cpugraph, INFO_CPU)
+			(void) scan_graph(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(color, 0) obj->data.l =
 	    arg ? get_x11_color(arg) : default_fg_color;
 	END OBJ(downspeed, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(downspeedf, INFO_NET) obj->data.net = get_net_stat(arg);
-	END OBJ(
-		       else
-		       , 0)
+	END OBJ(downspeedgraph, INFO_CPU)
+			(void) scan_graph(arg, &obj->data.pair.a, &obj->data.pair.b);
+	END OBJ(else, 0)
 	    if (blockdepth) {
 		text_objects[blockstart[blockdepth - 1] -
 			     1].data.ifblock.pos = text_object_count;
@@ -722,6 +748,8 @@ static void construct_text_object(const char *s, const char *arg)
 #ifdef HAVE_POPEN
 	    OBJ(exec, 0) obj->data.s = strdup(arg ? arg : "");
 	END OBJ(execbar, 0)
+	    obj->data.s = strdup(arg ? arg : "");
+	END OBJ(execgraph, 0)
 	    obj->data.s = strdup(arg ? arg : "");
 	END OBJ(execi, 0) unsigned int n;
 
@@ -1007,6 +1035,8 @@ static void construct_text_object(const char *s, const char *arg)
 	END OBJ(memperc, INFO_MEM)
 	END OBJ(membar, INFO_MEM)
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+	END OBJ(membar, INFO_MEM)
+	(void) scan_graph(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(mixer, INFO_MIXER) obj->data.l = mixer_init(arg);
 	END OBJ(mixerl, INFO_MIXER) obj->data.l = mixer_init(arg);
 	END OBJ(mixerr, INFO_MIXER) obj->data.l = mixer_init(arg);
@@ -1073,6 +1103,8 @@ static void construct_text_object(const char *s, const char *arg)
 	    obj->data.i = arg ? atoi(arg) : 1;
 	END OBJ(upspeed, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(upspeedf, INFO_NET) obj->data.net = get_net_stat(arg);
+	END OBJ(upspeedgraph, INFO_CPU)
+			(void) scan_graph(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(uptime_short, INFO_UPTIME) END OBJ(uptime, INFO_UPTIME) END
 	    OBJ(adt746xcpu, 0) END OBJ(adt746xfan, 0) END
 #ifdef SETI
@@ -1321,6 +1353,11 @@ static void generate_text()
 					obj->data.pair.b,
 					(int) (cur->cpu_usage * 255.0));
 			}
+			OBJ(cpugraph) {
+				new_graph(p, obj->data.pair.a,
+						obj->data.pair.b,
+						(unsigned int) (cur->cpu_usage * 100));
+			}
 			OBJ(color) {
 				new_fg(p, obj->data.l);
 			}
@@ -1346,9 +1383,12 @@ static void generate_text()
 						 obj->data.net->
 						 recv_speed / 1024.0);
 			}
-			OBJ(
-				   else
-			) {
+			OBJ(downspeedgraph) {
+				new_graph(p, obj->data.pair.a,
+					  obj->data.pair.b,
+					  (unsigned int) (obj->data.net->recv_speed / 1024.0));
+			}
+			OBJ(else) {
 				if (!if_jumped) {
 					i = obj->data.ifblock.pos - 2;
 				} else {
@@ -1358,8 +1398,25 @@ static void generate_text()
 			OBJ(endif) {
 				if_jumped = 0;
 			}
-
 #ifdef HAVE_POPEN
+			OBJ(addr) {
+	snprintf(p, n, "%u.%u.%u.%u",
+		 obj->data.net->addr.
+				 sa_data[2] & 255,
+		 obj->data.net->addr.
+				 sa_data[3] & 255,
+		 obj->data.net->addr.
+				 sa_data[4] & 255,
+		 obj->data.net->addr.
+				 sa_data[5] & 255);
+
+			}
+			OBJ(linkstatus) {
+				snprintf(p, n, "%d",
+					 obj->data.net->
+							 linkstatus);
+			}
+
 			OBJ(exec) {
 				char *p2 = p;
 				FILE *fp = popen(obj->data.s, "r");
@@ -1385,23 +1442,7 @@ static void generate_text()
 				p[n2] = '\0';
 				if (n2 && p[n2 - 1] == '\n')
 					p[n2 - 1] = '\0';
-				OBJ(addr) {
-					snprintf(p, n, "%u.%u.%u.%u",
-						 obj->data.net->addr.
-						 sa_data[2] & 255,
-						 obj->data.net->addr.
-						 sa_data[3] & 255,
-						 obj->data.net->addr.
-						 sa_data[4] & 255,
-						 obj->data.net->addr.
-						 sa_data[5] & 255);
 
-				}
-				OBJ(linkstatus) {
-					snprintf(p, n, "%d",
-						 obj->data.net->
-						 linkstatus);
-				}
 				while (*p2) {
 					if (*p2 == '\001')
 						*p2 = ' ';
@@ -1417,6 +1458,34 @@ static void generate_text()
 					barnum = barnum / 100.0;
 					new_bar(p, 0,
 						4, (int) (barnum * 255.0));
+				}
+
+			}
+			OBJ(execgraph) {
+				char *p2 = p;
+				FILE *fp = popen(obj->data.s, "r");
+				int n2 = fread(p, 1, n, fp);
+				(void) pclose(fp);
+
+				p[n2] = '\0';
+				if (n2 && p[n2 - 1] == '\n')
+					p[n2 - 1] = '\0';
+
+				while (*p2) {
+					if (*p2 == '\001')
+						*p2 = ' ';
+					p2++;
+				}
+				double barnum;
+				if (sscanf(p, "%lf", &barnum) == 0) {
+					ERR("reading execgraph value failed (perhaps it's not the correct format?)");
+				}
+				if (barnum > 100 || barnum < 0) {
+					ERR("your execgraph value is not between 0 and 100, therefore it will be ignored");
+				} else {
+					barnum = barnum / 100.0;
+					new_graph(p, 0,
+							4, (int) (barnum));
 				}
 
 			}
@@ -1646,6 +1715,12 @@ static void generate_text()
 					(cur->memmax) : 0);
 			}
 
+			OBJ(memgraph) {
+				new_graph(p, obj->data.pair.a,
+					obj->data.pair.b,
+					cur->memmax ? (cur->mem) /
+							(cur->memmax) : 0);
+			}
 			/* mixer stuff */
 			OBJ(mixer) {
 				snprintf(p, n, "%d",
@@ -1841,6 +1916,11 @@ static void generate_text()
 					snprintf(p, 8, "%.1f       ",
 						 obj->data.net->
 						 trans_speed / 1024.0);
+			}
+			OBJ(upspeedgraph) {
+				new_graph(p, obj->data.pair.a,
+					  obj->data.pair.b,
+					  (unsigned int) (obj->data.net->trans_speed / 1024.0));
 			}
 			OBJ(uptime_short) {
 				format_seconds_short(p, n,
@@ -2304,7 +2384,7 @@ static void text_size_updater(char *s)
 			w += get_string_width(s);
 			*p = SPECIAL_CHAR;
 
-			if (specials[special_index].type == BAR) {
+			if (specials[special_index].type == BAR || specials[special_index].type == GRAPH) {
 				w += specials[special_index].width;
 			}
 
@@ -2577,6 +2657,46 @@ static void draw_line(char *s)
 						       by,
 						       w * bar_usage / 255,
 						       h);
+				}
+				break;
+
+			case GRAPH:
+				{
+					int h =
+							specials[special_index].height;
+					int by =
+							cur_y - (font_ascent() +
+							h) / 2 - 1;
+					int line;
+					w = specials[special_index].width;
+					if (w == 0)
+						w = text_start_x +
+								text_width - cur_x - 1;
+					if (w < 0)
+						w = 0;
+					if (w >= specials[special_index].graph_width)
+						line = w/specials[special_index].graph_width+1;
+					else
+						line = 1;
+					XSetLineAttributes(display,
+							window.gc, 1,
+							LineSolid,
+							CapButt,
+							JoinMiter);
+					XDrawRectangle(display,
+							window.drawable,
+							window.gc, cur_x,
+							by, w, h);
+					XSetLineAttributes(display,
+							window.gc, line,
+							LineSolid,
+							CapButt,
+							JoinMiter);
+					int i;
+					for (i=0;i<specials[special_index].graph_width;i++) {
+						XDrawLine(display, window.drawable, window.gc, cur_x+(i*w*1.0/specials[special_index].graph_width)+2, by+h, cur_x+(i*w*1.0/specials[special_index].graph_width)+2, by+h-specials[special_index].graph[i]*h/100.0); /* this is mugfugly, but it works */
+					}
+					cur_y += h;
 				}
 				break;
 

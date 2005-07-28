@@ -1,3 +1,10 @@
+2005-07-28
+	* Added new graphing code, such as $cpugraph
+	* small fixes all round
+	* stuff
+	* things
+	* added more mpd objects
+
 2005-07-24
 	* Conky now has UTF-8 support
 	* Fixed $freq for those with CPU scaling

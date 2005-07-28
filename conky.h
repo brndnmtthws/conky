@@ -387,10 +387,4 @@ extern int show_nice_processes;
 
 extern int do_it(void);
 
-
-/* struct for graphs */
-typedef struct graph {
-	unsigned int *value;
-} graph;
-
 #endif
