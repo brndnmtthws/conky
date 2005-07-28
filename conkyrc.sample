@@ -229,6 +229,9 @@ metar_station  CYBW
 #  mpd_status                        Playing, stopped, et cetera.
 #  mpd_title			    Title of current MPD song
 #  mpd_vol			    MPD's volume
+#  mpd_elapsed                       Song's elapsed time
+#  mpd_length                        Song's length
+#  mpd_percent                       Percent of song's progress
 #  new_mails                         Unread mail count in mail spool.         
 #  nodename                          Hostname                                 
 #  outlinecolor      (color)         Change outline color                     
