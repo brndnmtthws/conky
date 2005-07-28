@@ -72,6 +72,8 @@ struct mpd_s {
 	char host[128];
 	float progress;
 	int bitrate;
+	int length;
+	int elapsed;
 };
 #endif
 
@@ -98,12 +100,12 @@ enum {
 #endif
 	INFO_TOP = 16,
 #ifdef METAR
-	INFO_METAR     = 17,
+	INFO_METAR = 17,
 #endif
 #ifdef MLDONKEY
 	INFO_MLDONKEY = 18,
 #endif
-        INFO_WIFI = 19,
+	INFO_WIFI = 19,
 };
 
 
@@ -355,24 +357,24 @@ typedef struct mldonkey_config {
 
 /* The MLDonkey status returned */
 typedef struct mldonkey_info {
-	int64  upload_counter;
+	int64 upload_counter;
 	int64 download_counter;
 	int nshared_files;
 	int64 shared_counter;
-	int  tcp_upload_rate;
-	int  tcp_download_rate;
-	int  udp_upload_rate;
-	int  udp_download_rate;
-	int  ndownloaded_files;
+	int tcp_upload_rate;
+	int tcp_download_rate;
+	int udp_upload_rate;
+	int udp_download_rate;
+	int ndownloaded_files;
 	int ndownloading_files;
 	int nconnected_networks;
 	int connected_networks[1];
 } mldonkey_info;
-	
+
 extern mldonkey_info mlinfo;
 extern mldonkey_config mlconfig;
-	
-int get_mldonkey_status(mldonkey_config *config, mldonkey_info *info);
+
+int get_mldonkey_status(mldonkey_config * config, mldonkey_info * info);
 #endif
 
 
@@ -384,5 +386,11 @@ extern int show_nice_processes;
 /* in cairo.c */
 
 extern int do_it(void);
+
+
+/* struct for graphs */
+typedef struct graph {
+	unsigned int *value;
+} graph;
 
 #endif

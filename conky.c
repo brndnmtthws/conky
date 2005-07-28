@@ -23,7 +23,7 @@
 #include <X11/Xutil.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-  
+
 #define CONFIG_FILE "$HOME/.conkyrc"
 #define MAIL_FILE "$MAIL"
 #define MAX_IF_BLOCK_DEPTH 5
@@ -115,15 +115,14 @@ static char original_text[] =
 #endif
 #ifdef MPD
     "${color grey}MPD: $mpd_status $mpd_artist - $mpd_title from $mpd_album at $mpd_vol\n"
-    "Bitrate: $mpd_bitrate\n"
-    "Progress: $mpd_bar\n"
+    "Bitrate: $mpd_bitrate\n" "Progress: $mpd_bar\n"
 #endif
     "${color grey}Name		PID	CPU%	MEM%\n"
     " ${color lightgrey} ${top name 1} ${top pid 1} ${top cpu 1} ${top mem 1}\n"
     " ${color lightgrey} ${top name 2} ${top pid 2} ${top cpu 2} ${top mem 2}\n"
     " ${color lightgrey} ${top name 3} ${top pid 3} ${top cpu 3} ${top mem 3}\n"
     " ${color lightgrey} ${top name 4} ${top pid 4} ${top cpu 4} ${top mem 4}\n"
-		"${tail /var/log/Xorg.0.log 3}"	;
+    "${tail /var/log/Xorg.0.log 3}";
 
 static char *text = original_text;
 
@@ -139,26 +138,30 @@ static int font_alpha = 65535;
 #endif
 
 /* if-blocks */
- static int blockdepth = 0;
- static int if_jumped = 0;
- static int blockstart[MAX_IF_BLOCK_DEPTH];
- 
- int check_mount (char* s)
- {
-   int ret=0;
-   FILE* mtab = fopen("/etc/mtab","r");
-   if(mtab) {
-     char buf1[256],buf2[128];
-     while(fgets (buf1,256,mtab))
-     {
-       sscanf(buf1,"%*s %128s",buf2);
-       if(!strcmp(s,buf2)) { ret=1; break; }
-    }
-   fclose(mtab);
-  } else { ERR("Could not open mtab"); }
-   return ret;
+static int blockdepth = 0;
+static int if_jumped = 0;
+static int blockstart[MAX_IF_BLOCK_DEPTH];
+
+int check_mount(char *s)
+{
+	int ret = 0;
+	FILE *mtab = fopen("/etc/mtab", "r");
+	if (mtab) {
+		char buf1[256], buf2[128];
+		while (fgets(buf1, 256, mtab)) {
+			sscanf(buf1, "%*s %128s", buf2);
+			if (!strcmp(s, buf2)) {
+				ret = 1;
+				break;
+			}
+		}
+		fclose(mtab);
+	} else {
+		ERR("Could not open mtab");
+	}
+	return ret;
 }
- 
+
 
 
 static inline int calc_text_width(const char *s, unsigned int l)
@@ -166,10 +169,9 @@ static inline int calc_text_width(const char *s, unsigned int l)
 #ifdef XFT
 	if (use_xft) {
 		XGlyphInfo gi;
-		if(utf8_mode) {
+		if (utf8_mode) {
 			XftTextExtentsUtf8(display, xftfont, s, l, &gi);
-		}
-		else {
+		} else {
 			XftTextExtents8(display, xftfont, s, l, &gi);
 		}
 		return gi.xOff;
@@ -198,7 +200,7 @@ static inline int calc_text_width(const char *s, unsigned int l)
 /* formatted text to render on screen, generated in generate_text(),
  * drawn in draw_stuff() */
 
-static char text_buffer[TEXT_BUFFER_SIZE*4];
+static char text_buffer[TEXT_BUFFER_SIZE * 4];
 
 /* special stuff in text_buffer */
 
@@ -213,6 +215,7 @@ enum {
 	OUTLINE,
 	ALIGNR,
 	ALIGNC,
+	GRAPH,
 };
 
 static struct special_t {
@@ -228,7 +231,7 @@ static int special_index;	/* used when drawing */
 static struct special_t *new_special(char *buf, int t)
 {
 	if (special_count >= 128)
-		CRIT_ERR("too much special things in text");
+		CRIT_ERR("too many special things in text");
 
 	buf[0] = SPECIAL_CHAR;
 	buf[1] = '\0';
@@ -241,7 +244,8 @@ typedef struct tailstring_list {
 	struct tailstring_list *next;
 } tailstring;
 
-void addtail(tailstring **head, char *data_in) {
+void addtail(tailstring ** head, char *data_in)
+{
 	tailstring *tmp;
 	if ((tmp = malloc(sizeof(*tmp))) == NULL) {
 		CRIT_ERR("malloc");
@@ -251,15 +255,17 @@ void addtail(tailstring **head, char *data_in) {
 	*head = tmp;
 }
 
-void freetail(tailstring *head) {
-	  tailstring *tmp;
+void freetail(tailstring * head)
+{
+	tailstring *tmp;
 
-	  while (head != NULL) {
-		  tmp = head->next;
-		  free(head);
-		  head = tmp;
-	  }
-  }
+	while (head != NULL) {
+		tmp = head->next;
+		free(head);
+		head = tmp;
+	}
+}
+
 
 
 static void new_bar(char *buf, int w, int h, int usage)
@@ -284,6 +290,30 @@ static const char *scan_bar(const char *args, int *w, int *h)
 
 	return args;
 }
+
+static void new_graph(char *buf, int w, int h, int usage)
+{
+	struct special_t *s = new_special(buf, GRAPH);
+	s->arg = (usage > 255) ? 255 : ((usage < 0) ? 0 : usage);
+	s->width = w;
+	s->height = h;
+}
+
+static const char *scan_graph(const char *args, int *w, int *h)
+{
+	*w = 0;			/* zero width means all space that is available */
+	*h = 15;
+	/* graph's argument is either height or height,width */
+	if (args) {
+		int n = 0;
+		if (sscanf(args, "%d,%d %n", h, w, &n) <= 1)
+			sscanf(args, "%d %n", h, &n);
+		args += n;
+	}
+
+	return args;
+}
+
 
 static inline void new_hr(char *buf, int a)
 {
@@ -312,11 +342,13 @@ static inline void new_outline(char *buf, long c)
 	new_special(buf, OUTLINE)->arg = c;
 }
 
-static inline void new_alignr(char *buf, long c) {
+static inline void new_alignr(char *buf, long c)
+{
 	new_special(buf, ALIGNR)->arg = c;
 }
 
-static inline void new_alignc(char *buf, long c) {
+static inline void new_alignc(char *buf, long c)
+{
 	new_special(buf, ALIGNC)->arg = c;
 }
 
@@ -381,8 +413,8 @@ enum text_object_type {
 	OBJ_adt746xcpu,
 	OBJ_adt746xfan,
 	OBJ_acpifan,
-  OBJ_addr,
-  OBJ_linkstatus,
+	OBJ_addr,
+	OBJ_linkstatus,
 	OBJ_acpitemp,
 	OBJ_battery,
 	OBJ_buffers,
@@ -433,16 +465,16 @@ enum text_object_type {
 	OBJ_nodename,
 	OBJ_pre_exec,
 #ifdef MLDONKEY
-OBJ_ml_upload_counter,
-	  OBJ_ml_download_counter,
-	   OBJ_ml_nshared_files,
-	   OBJ_ml_shared_counter,
-	   OBJ_ml_tcp_upload_rate,
-	   OBJ_ml_tcp_download_rate,
-	   OBJ_ml_udp_upload_rate,
- 	   OBJ_ml_udp_download_rate,
-	   OBJ_ml_ndownloaded_files,
-	   OBJ_ml_ndownloading_files,
+	OBJ_ml_upload_counter,
+	OBJ_ml_download_counter,
+	OBJ_ml_nshared_files,
+	OBJ_ml_shared_counter,
+	OBJ_ml_tcp_upload_rate,
+	OBJ_ml_tcp_download_rate,
+	OBJ_ml_udp_upload_rate,
+	OBJ_ml_udp_download_rate,
+	OBJ_ml_ndownloaded_files,
+	OBJ_ml_ndownloading_files,
 #endif
 	OBJ_processes,
 	OBJ_running_processes,
@@ -481,19 +513,22 @@ OBJ_ml_upload_counter,
 	OBJ_mpd_host,
 	OBJ_mpd_port,
 	OBJ_mpd_bar,
+	OBJ_mpd_elapsed,
+	OBJ_mpd_length,
+	OBJ_mpd_percent,
 #endif
 #ifdef METAR
-  OBJ_metar_ob_time,
-  OBJ_metar_temp,
-  OBJ_metar_tempf,
-  OBJ_metar_windchill,
-  OBJ_metar_dew_point,
-  OBJ_metar_rh,
-  OBJ_metar_windspeed,
-  OBJ_metar_winddir,
-  OBJ_metar_swinddir,
-  OBJ_metar_cloud,
-  OBJ_metar_u2d_time,
+	OBJ_metar_ob_time,
+	OBJ_metar_temp,
+	OBJ_metar_tempf,
+	OBJ_metar_windchill,
+	OBJ_metar_dew_point,
+	OBJ_metar_rh,
+	OBJ_metar_windspeed,
+	OBJ_metar_winddir,
+	OBJ_metar_swinddir,
+	OBJ_metar_cloud,
+	OBJ_metar_u2d_time,
 #endif
 };
 
@@ -524,22 +559,22 @@ struct text_object {
 			char type[64];
 		} i2c;		/* 2 */
 		struct {
-		       int pos;
-		       char* s;
+			int pos;
+			char *s;
 		} ifblock;
 		struct {
 			int num;
 			int type;
 		} top;
 
-			struct {
+		struct {
 			int wantedlines;
 			int readlines;
 			char *logfile;
 			double last_update;
 			float interval;
 			char buffer[TEXT_BUFFER_SIZE];
-	} tail;
+		} tail;
 
 		struct {
 			double last_update;
@@ -588,20 +623,20 @@ static void free_text_objects()
 			break;
 		case OBJ_time:
 		case OBJ_utime:
- 	case OBJ_if_existing:
- 	case OBJ_if_mounted:
- 	case OBJ_if_running:
- 	  free(text_objects[i].data.ifblock.s);
-       break;
+		case OBJ_if_existing:
+		case OBJ_if_mounted:
+		case OBJ_if_running:
+			free(text_objects[i].data.ifblock.s);
+			break;
 		case OBJ_text:
 		case OBJ_exec:
 		case OBJ_execbar:
 #ifdef MPD
 		case OBJ_mpd_title:
-			case OBJ_mpd_artist:
-			case OBJ_mpd_album:
-			case OBJ_mpd_status:
-			case OBJ_mpd_host:
+		case OBJ_mpd_artist:
+		case OBJ_mpd_album:
+		case OBJ_mpd_status:
+		case OBJ_mpd_host:
 #endif
 		case OBJ_pre_exec:
 		case OBJ_battery:
@@ -664,27 +699,31 @@ static void construct_text_object(const char *s, const char *arg)
 	    arg ? get_x11_color(arg) : default_fg_color;
 	END OBJ(downspeed, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(downspeedf, INFO_NET) obj->data.net = get_net_stat(arg);
+	END OBJ(
+		       else
+		       , 0)
+	    if (blockdepth) {
+		text_objects[blockstart[blockdepth - 1] -
+			     1].data.ifblock.pos = text_object_count;
+		blockstart[blockdepth - 1] = text_object_count;
+		obj->data.ifblock.pos = text_object_count + 2;
+	} else {
+		ERR("$else: no matching $if_*");
+	}
+	END OBJ(endif, 0)
+	    if (blockdepth) {
+		blockdepth--;
+		text_objects[blockstart[blockdepth] - 1].data.ifblock.pos =
+		    text_object_count;
+	} else {
+		ERR("$endif: no matching $if_*");
+	}
 	END
-			   OBJ(else,0)
-			 	if(blockdepth) {
-		 	  text_objects[blockstart[blockdepth-1]-1].data.ifblock.pos = text_object_count;
-		 	  blockstart[blockdepth-1] = text_object_count;
-		 	  obj->data.ifblock.pos = text_object_count + 2;
-		     } else { ERR("$else: no matching $if_*"); }
-		   END
-				   OBJ(endif,0)
-				     if(blockdepth) {
-			       blockdepth--;
-			       text_objects[blockstart[blockdepth]-1].data.ifblock.pos = text_object_count;
-			     } else { ERR("$endif: no matching $if_*"); }
-			   END
 #ifdef HAVE_POPEN
-	OBJ(exec, 0) obj->data.s = strdup(arg ? arg : "");
-	END
-	OBJ(execbar, 0) 
-		obj->data.s = strdup(arg ? arg : "");
-	END
-	OBJ(execi, 0) unsigned int n;
+	    OBJ(exec, 0) obj->data.s = strdup(arg ? arg : "");
+	END OBJ(execbar, 0)
+	    obj->data.s = strdup(arg ? arg : "");
+	END OBJ(execi, 0) unsigned int n;
 
 	if (!arg
 	    || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
@@ -775,147 +814,131 @@ static void construct_text_object(const char *s, const char *arg)
 				    obj->data.i2c.devtype);
 		strcpy(obj->data.i2c.type, buf2);
 	}
-	
+
 	END OBJ(top, INFO_TOP)
-			char buf[64];
+	char buf[64];
 	int n;
-	if(!arg) {
+	if (!arg) {
 		ERR("top needs arguments");
 		obj->type = OBJ_text;
 		obj->data.s = strdup("${top}");
 		return;
 	}
-	if(sscanf(arg, "%63s %i", buf, &n) == 2) {
-		if(strcmp(buf, "name") == 0) {
+	if (sscanf(arg, "%63s %i", buf, &n) == 2) {
+		if (strcmp(buf, "name") == 0) {
 			obj->data.top.type = TOP_NAME;
-		}
-		else if(strcmp(buf, "cpu") == 0) {
+		} else if (strcmp(buf, "cpu") == 0) {
 			obj->data.top.type = TOP_CPU;
-		}
-		else if(strcmp(buf, "pid") == 0) {
+		} else if (strcmp(buf, "pid") == 0) {
 			obj->data.top.type = TOP_PID;
-		}
-		else if(strcmp(buf, "mem") == 0) {
+		} else if (strcmp(buf, "mem") == 0) {
 			obj->data.top.type = TOP_MEM;
-		}
-		else
-		{
+		} else {
 			ERR("invalid arg for top");
 			return;
 		}
-		if(n < 1 || n > 10) {
+		if (n < 1 || n > 10) {
 			CRIT_ERR("invalid arg for top");
 			return;
-		}
-		else {
-			obj->data.top.num = n-1;
+		} else {
+			obj->data.top.num = n - 1;
 			top_cpu = 1;
 		}
-	}
-	else {
+	} else {
 		ERR("invalid args given for top");
 		return;
 	}
-	END 
-	OBJ(top_mem, INFO_TOP)
-			char buf[64];
+	END OBJ(top_mem, INFO_TOP)
+	char buf[64];
 	int n;
-	if(!arg) {
+	if (!arg) {
 		ERR("top_mem needs arguments");
 		obj->type = OBJ_text;
 		obj->data.s = strdup("${top_mem}");
 		return;
 	}
-	if(sscanf(arg, "%63s %i", buf, &n) == 2) {
-		if(strcmp(buf, "name") == 0) {
+	if (sscanf(arg, "%63s %i", buf, &n) == 2) {
+		if (strcmp(buf, "name") == 0) {
 			obj->data.top.type = TOP_NAME;
-		}
-		else if(strcmp(buf, "cpu") == 0) {
+		} else if (strcmp(buf, "cpu") == 0) {
 			obj->data.top.type = TOP_CPU;
-		}
-		else if(strcmp(buf, "pid") == 0) {
+		} else if (strcmp(buf, "pid") == 0) {
 			obj->data.top.type = TOP_PID;
-		}
-		else if(strcmp(buf, "mem") == 0) {
+		} else if (strcmp(buf, "mem") == 0) {
 			obj->data.top.type = TOP_MEM;
-		}
-		else
-		{
+		} else {
 			ERR("invalid arg for top");
 			return;
 		}
-		if(n < 1 || n > 10) {
+		if (n < 1 || n > 10) {
 			CRIT_ERR("invalid arg for top");
 			return;
-		}
-		else {
-			obj->data.top.num = n-1;
+		} else {
+			obj->data.top.num = n - 1;
 			top_mem = 1;
 		}
-	}
-	else {
+	} else {
 		ERR("invalid args given for top");
 		return;
 	}
-	END 
-			OBJ(addr, INFO_NET)
-     obj->data.net = get_net_stat(arg);
-  END
-  OBJ(linkstatus, INFO_WIFI)
-     obj->data.net = get_net_stat(arg);
-  END
-        OBJ(tail, 0)
+	END OBJ(addr, INFO_NET)
+	    obj->data.net = get_net_stat(arg);
+	END OBJ(linkstatus, INFO_WIFI)
+	    obj->data.net = get_net_stat(arg);
+	END OBJ(tail, 0)
 	char buf[64];
 	int n1, n2;
-	if(!arg) {
+	if (!arg) {
 		ERR("tail needs arguments");
 		obj->type = OBJ_text;
 		obj->data.s = strdup("${tail}");
 		return;
 	}
-	if(sscanf(arg, "%63s %i %i", buf, &n1, &n2) == 2) {
-		if(n1 < 1 || n1 > 30) {
-			CRIT_ERR("invalid arg for tail, number of lines must be between 1 and 30");
+	if (sscanf(arg, "%63s %i %i", buf, &n1, &n2) == 2) {
+		if (n1 < 1 || n1 > 30) {
+			CRIT_ERR
+			    ("invalid arg for tail, number of lines must be between 1 and 30");
 			return;
-		}
-		else {
-			FILE * fp;
-			fp = fopen (buf,"rt");
+		} else {
+			FILE *fp;
+			fp = fopen(buf, "rt");
 			if (fp != NULL) {
-				obj->data.tail.logfile = malloc(TEXT_BUFFER_SIZE);
+				obj->data.tail.logfile =
+				    malloc(TEXT_BUFFER_SIZE);
 				strcpy(obj->data.tail.logfile, buf);
-				obj->data.tail.wantedlines = n1-1;
-				obj->data.tail.interval = update_interval*2;
-				fclose (fp);
-			}
-			else {
+				obj->data.tail.wantedlines = n1 - 1;
+				obj->data.tail.interval =
+				    update_interval * 2;
+				fclose(fp);
+			} else {
 				//fclose (fp);
-				CRIT_ERR("tail logfile does not exist, or you do not have correct permissions");
+				CRIT_ERR
+				    ("tail logfile does not exist, or you do not have correct permissions");
 			}
 		}
-	}
-	else if (sscanf(arg, "%63s %i %i", buf, &n1, &n2) == 3) {
-		if(n1 < 1 || n1 > 30) {
-			CRIT_ERR("invalid arg for tail, number of lines must be between 1 and 30");
+	} else if (sscanf(arg, "%63s %i %i", buf, &n1, &n2) == 3) {
+		if (n1 < 1 || n1 > 30) {
+			CRIT_ERR
+			    ("invalid arg for tail, number of lines must be between 1 and 30");
 			return;
-		}
-		else if(n2 < 1 || n2 < update_interval) {
-			CRIT_ERR("invalid arg for tail, interval must be greater than 0 and Conky's interval");
+		} else if (n2 < 1 || n2 < update_interval) {
+			CRIT_ERR
+			    ("invalid arg for tail, interval must be greater than 0 and Conky's interval");
 			return;
-		}
-		else {
-			FILE * fp;
-			fp = fopen (buf,"rt");
+		} else {
+			FILE *fp;
+			fp = fopen(buf, "rt");
 			if (fp != NULL) {
-				obj->data.tail.logfile = malloc(TEXT_BUFFER_SIZE);
+				obj->data.tail.logfile =
+				    malloc(TEXT_BUFFER_SIZE);
 				strcpy(obj->data.tail.logfile, buf);
-				obj->data.tail.wantedlines = n1-1;
+				obj->data.tail.wantedlines = n1 - 1;
 				obj->data.tail.interval = n2;
-				fclose (fp);
-			}
-			else {
+				fclose(fp);
+			} else {
 				//fclose (fp);
-				CRIT_ERR("tail logfile does not exist, or you do not have correct permissions");
+				CRIT_ERR
+				    ("tail logfile does not exist, or you do not have correct permissions");
 			}
 		}
 	}
@@ -924,8 +947,7 @@ static void construct_text_object(const char *s, const char *arg)
 		ERR("invalid args given for tail");
 		return;
 	}
-			END 
-			OBJ(loadavg, INFO_LOADAVG) int a = 1, b = 2, c = 3, r = 3;
+	END OBJ(loadavg, INFO_LOADAVG) int a = 1, b = 2, c = 3, r = 3;
 	if (arg) {
 		r = sscanf(arg, "%d %d %d", &a, &b, &c);
 		if (r >= 3 && (c < 1 || c > 3))
@@ -938,49 +960,46 @@ static void construct_text_object(const char *s, const char *arg)
 	obj->data.loadavg[0] = (r >= 1) ? (unsigned char) a : 0;
 	obj->data.loadavg[1] = (r >= 2) ? (unsigned char) b : 0;
 	obj->data.loadavg[2] = (r >= 3) ? (unsigned char) c : 0;
-	END
-			   OBJ(if_existing,0)
-			 	if(blockdepth>=MAX_IF_BLOCK_DEPTH)
-			 	  {CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");}
-	 	if(!arg) {
-		 	  ERR("if_existing needs an argument");
-		 	  obj->data.ifblock.s = 0;
-		 	}
-		 	else
-		 	  obj->data.ifblock.s = strdup(arg);
-		 	blockstart[blockdepth] = text_object_count;
-		 	obj->data.ifblock.pos = text_object_count + 2;
-		 	blockdepth++;
-		   END
-				   OBJ(if_mounted,0)
-				 	if(blockdepth>=MAX_IF_BLOCK_DEPTH)
-				 	  {CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");}
-		 	if(!arg) {
-			 	  ERR("if_mounted needs an argument");
-			 	  obj->data.ifblock.s = 0;
-			 	}
-			 	else
-				 	  obj->data.ifblock.s = strdup(arg);
-			 	blockstart[blockdepth] = text_object_count;
-			 	obj->data.ifblock.pos = text_object_count + 2;
-			 	blockdepth++;
-			   END
-					   OBJ(if_running,0)
-					 	if(blockdepth>=MAX_IF_BLOCK_DEPTH)
-					 	  {CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");}
-			 	if(arg) {
-				 	  char buf[256];
-				 	  snprintf(buf,256,"pidof %s >/dev/null",arg);
-				 	  obj->data.ifblock.s = strdup(buf);
-				 	} else {
-					 	  ERR("if_running needs an argument");
-					 	  obj->data.ifblock.s = 0;
-					 	}
-					 	blockstart[blockdepth] = text_object_count;
-					 	obj->data.ifblock.pos = text_object_count + 2;
-					 	blockdepth++;
-					   END	
-			OBJ(kernel, 0)
+	END OBJ(if_existing, 0)
+	    if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
+		CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
+	}
+	if (!arg) {
+		ERR("if_existing needs an argument");
+		obj->data.ifblock.s = 0;
+	} else
+		obj->data.ifblock.s = strdup(arg);
+	blockstart[blockdepth] = text_object_count;
+	obj->data.ifblock.pos = text_object_count + 2;
+	blockdepth++;
+	END OBJ(if_mounted, 0)
+	    if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
+		CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
+	}
+	if (!arg) {
+		ERR("if_mounted needs an argument");
+		obj->data.ifblock.s = 0;
+	} else
+		obj->data.ifblock.s = strdup(arg);
+	blockstart[blockdepth] = text_object_count;
+	obj->data.ifblock.pos = text_object_count + 2;
+	blockdepth++;
+	END OBJ(if_running, 0)
+	    if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
+		CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
+	}
+	if (arg) {
+		char buf[256];
+		snprintf(buf, 256, "pidof %s >/dev/null", arg);
+		obj->data.ifblock.s = strdup(buf);
+	} else {
+		ERR("if_running needs an argument");
+		obj->data.ifblock.s = 0;
+	}
+	blockstart[blockdepth] = text_object_count;
+	obj->data.ifblock.pos = text_object_count + 2;
+	blockdepth++;
+	END OBJ(kernel, 0)
 	END OBJ(machine, 0)
 	END OBJ(mails, INFO_MAIL)
 	END OBJ(mem, INFO_MEM)
@@ -1001,29 +1020,20 @@ static void construct_text_object(const char *s, const char *arg)
 	    scan_mixer_bar(arg, &obj->data.mixerbar.l,
 			   &obj->data.mixerbar.w, &obj->data.mixerbar.h);
 	END
-			 #ifdef MLDONKEY
-			   OBJ(ml_upload_counter, INFO_MLDONKEY)
-			   END
-			  OBJ(ml_download_counter, INFO_MLDONKEY)
-			   END
-			   OBJ(ml_nshared_files, INFO_MLDONKEY)
-			  END
-			   OBJ(ml_shared_counter, INFO_MLDONKEY)
-			   END
-			   OBJ(ml_tcp_upload_rate, INFO_MLDONKEY)
-			   END
-			   OBJ(ml_tcp_download_rate, INFO_MLDONKEY)
-			   END
-			   OBJ(ml_udp_upload_rate, INFO_MLDONKEY)
-			   END
-			   OBJ(ml_udp_download_rate, INFO_MLDONKEY)
-			   END
-			   OBJ(ml_ndownloaded_files, INFO_MLDONKEY)
-			   END
-			   OBJ(ml_ndownloading_files, INFO_MLDONKEY)
-			   END
-			 #endif
-			OBJ(new_mails, INFO_MAIL)
+#ifdef MLDONKEY
+	    OBJ(ml_upload_counter, INFO_MLDONKEY)
+	    END OBJ(ml_download_counter, INFO_MLDONKEY)
+	    END OBJ(ml_nshared_files, INFO_MLDONKEY)
+	    END OBJ(ml_shared_counter, INFO_MLDONKEY)
+	    END OBJ(ml_tcp_upload_rate, INFO_MLDONKEY)
+	    END OBJ(ml_tcp_download_rate, INFO_MLDONKEY)
+	    END OBJ(ml_udp_upload_rate, INFO_MLDONKEY)
+	    END OBJ(ml_udp_download_rate, INFO_MLDONKEY)
+	    END OBJ(ml_ndownloaded_files, INFO_MLDONKEY)
+	    END OBJ(ml_ndownloading_files, INFO_MLDONKEY)
+	    END
+#endif
+	    OBJ(new_mails, INFO_MAIL)
 	END OBJ(nodename, 0)
 	END OBJ(processes, INFO_PROCS)
 	END OBJ(running_processes, INFO_RUN_PROCS)
@@ -1058,69 +1068,60 @@ static void construct_text_object(const char *s, const char *arg)
 	END OBJ(totaldown, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(totalup, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(updates, 0)
-END
-			OBJ(alignr, 0)
-			obj->data.i = arg ? atoi(arg) : 1;
-	END
-
-			OBJ(alignc, 0)
-			obj->data.i = arg ? atoi(arg) : 1;
+	    END OBJ(alignr, 0) obj->data.i = arg ? atoi(arg) : 1;
+	END OBJ(alignc, 0)
+	    obj->data.i = arg ? atoi(arg) : 1;
 	END OBJ(upspeed, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(upspeedf, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(uptime_short, INFO_UPTIME) END OBJ(uptime, INFO_UPTIME) END
-			OBJ(adt746xcpu, 0)
-			END
-			OBJ(adt746xfan, 0)
-			END
-
+	    OBJ(adt746xcpu, 0) END OBJ(adt746xfan, 0) END
 #ifdef SETI
 	 OBJ(seti_prog, INFO_SETI) END OBJ(seti_progbar, INFO_SETI)
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(seti_credit, INFO_SETI) END
 #endif
 #ifdef METAR
-			   OBJ(metar_ob_time, INFO_METAR)
-			   END
-			OBJ(metar_temp, INFO_METAR)
-			END
-			OBJ(metar_tempf, INFO_METAR)
-			END
-			OBJ(metar_windchill, INFO_METAR)
-			   END
-			   OBJ(metar_dew_point, INFO_METAR)
-			   END
-			   OBJ(metar_rh, INFO_METAR)
-   END
-
-			   OBJ(metar_windspeed, INFO_METAR)
-			   END
-			   OBJ(metar_winddir, INFO_METAR)
-			   END
-			   OBJ(metar_swinddir, INFO_METAR)
-			   END
-
-			   OBJ(metar_cloud, INFO_METAR)
-			   END
-			   OBJ(metar_u2d_time, INFO_METAR)
-			END
+	 OBJ(metar_ob_time, INFO_METAR)
+	    END
+	    OBJ(metar_temp, INFO_METAR)
+	    END
+	    OBJ(metar_tempf, INFO_METAR)
+	    END
+	    OBJ(metar_windchill, INFO_METAR)
+	    END
+	    OBJ(metar_dew_point, INFO_METAR)
+	    END
+	    OBJ(metar_rh, INFO_METAR)
+	    END
+	    OBJ(metar_windspeed, INFO_METAR)
+	    END
+	    OBJ(metar_winddir, INFO_METAR)
+	    END
+	    OBJ(metar_swinddir, INFO_METAR)
+	    END
+	    OBJ(metar_cloud, INFO_METAR)
+	    END OBJ(metar_u2d_time, INFO_METAR) END
 #endif
-			
 #ifdef MPD
-	 OBJ(mpd_artist, INFO_MPD) 
-			END OBJ(mpd_title, INFO_MPD)
-			END OBJ(mpd_album, INFO_MPD) END OBJ(mpd_vol, INFO_MPD) END OBJ(mpd_bitrate, INFO_MPD) END
-			OBJ(mpd_status, INFO_MPD) END
-			OBJ(mpd_bar, INFO_MPD)
-			(void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+	 OBJ(mpd_artist, INFO_MPD)
+	END OBJ(mpd_title, INFO_MPD)
+			END OBJ(mpd_elapsed, INFO_MPD)
+			END OBJ(mpd_length, INFO_MPD)
+			END OBJ(mpd_percent, INFO_MPD)
+			END OBJ(mpd_album, INFO_MPD) END OBJ(mpd_vol,
+					     INFO_MPD) END OBJ(mpd_bitrate,
+							       INFO_MPD)
+	    END OBJ(mpd_status, INFO_MPD) END OBJ(mpd_bar, INFO_MPD)
+	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END
 #endif
-{
+	{
 		char buf[256];
 		ERR("unknown variable %s", s);
 		obj->type = OBJ_text;
 		snprintf(buf, 256, "${%s}", s);
 		obj->data.s = strdup(buf);
-}
+	}
 #undef OBJ
 }
 
@@ -1227,7 +1228,8 @@ static void extract_variable_text(const char *p)
 		p++;
 	}
 	append_text(s);
-	if(blockdepth) ERR("one or more $endif's are missing");
+	if (blockdepth)
+		ERR("one or more $endif's are missing");
 }
 
 double current_update_time, last_update_time;
@@ -1248,7 +1250,7 @@ static void generate_text()
 
 	/* generate text */
 
-	n = TEXT_BUFFER_SIZE*4 - 2;
+	n = TEXT_BUFFER_SIZE * 4 - 2;
 	p = text_buffer;
 
 	for (i = 0; i < text_object_count; i++) {
@@ -1263,17 +1265,19 @@ static void generate_text()
 				    obj->type);
 			}
 			OBJ(acpitemp) {
-				/* does anyone have decimals in acpi temperature? */				
-				if(!use_spacer)
+				/* does anyone have decimals in acpi temperature? */
+				if (!use_spacer)
 					snprintf(p, n, "%d",
-						(int) get_acpi_temperature(obj->
-								data.
-								i));
+						 (int)
+						 get_acpi_temperature(obj->
+								      data.
+								      i));
 				else
 					snprintf(p, 5, "%d    ",
-						(int) get_acpi_temperature(obj->
-								data.
-								i));
+						 (int)
+						 get_acpi_temperature(obj->
+								      data.
+								      i));
 			}
 			OBJ(freq) {
 				snprintf(p, n, "%s", get_freq());
@@ -1295,18 +1299,22 @@ static void generate_text()
 				get_battery_stuff(p, n, obj->data.s);
 			}
 			OBJ(buffers) {
-				human_readable(cur->buffers * 1024, p, 255);
+				human_readable(cur->buffers * 1024, p,
+					       255);
 			}
 			OBJ(cached) {
 				human_readable(cur->cached * 1024, p, 255);
 			}
 			OBJ(cpu) {
-				if(!use_spacer)
-				snprintf(p, n, "%*d", pad_percents,
-										(int) (cur->cpu_usage * 100.0));		
+				if (!use_spacer)
+					snprintf(p, n, "%*d", pad_percents,
+						 (int) (cur->cpu_usage *
+							100.0));
 				else
-				snprintf(p, 4, "%*d    ", pad_percents,
-					 (int) (cur->cpu_usage * 100.0));
+					snprintf(p, 4, "%*d    ",
+						 pad_percents,
+						 (int) (cur->cpu_usage *
+							100.0));
 			}
 			OBJ(cpubar) {
 				new_bar(p, obj->data.pair.a,
@@ -1317,50 +1325,51 @@ static void generate_text()
 				new_fg(p, obj->data.l);
 			}
 			OBJ(downspeed) {
-				if(!use_spacer)
+				if (!use_spacer)
 					snprintf(p, n, "%d",
-					 (int) (obj->data.net->recv_speed /
-						1024));
+						 (int) (obj->data.net->
+							recv_speed /
+							1024));
 				else
 					snprintf(p, 6, "%d     ",
-						(int) (obj->data.net->recv_speed /
-								1024));
+						 (int) (obj->data.net->
+							recv_speed /
+							1024));
 			}
 			OBJ(downspeedf) {
-				if(!use_spacer)
+				if (!use_spacer)
 					snprintf(p, n, "%.1f",
-					 obj->data.net->recv_speed /
-					 1024.0);
+						 obj->data.net->
+						 recv_speed / 1024.0);
 				else
 					snprintf(p, 8, "%.1f       ",
-						obj->data.net->recv_speed /
-								1024.0);
+						 obj->data.net->
+						 recv_speed / 1024.0);
 			}
-			 	OBJ(else) {
-			 	  if(!if_jumped)
-			 	  {
-					 		i=obj->data.ifblock.pos-2;
-					 	  }
-					 	  else
-						 	  {
-						 		if_jumped = 0;
-						 	  }
-						     }
-						 	OBJ(endif) {
-							 	  if_jumped = 0;
-							     }
-			
+			OBJ(
+				   else
+			) {
+				if (!if_jumped) {
+					i = obj->data.ifblock.pos - 2;
+				} else {
+					if_jumped = 0;
+				}
+			}
+			OBJ(endif) {
+				if_jumped = 0;
+			}
+
 #ifdef HAVE_POPEN
 			OBJ(exec) {
 				char *p2 = p;
 				FILE *fp = popen(obj->data.s, "r");
 				int n2 = fread(p, 1, n, fp);
 				(void) pclose(fp);
-			
+
 				p[n2] = '\0';
 				if (n2 && p[n2 - 1] == '\n')
 					p[n2 - 1] = '\0';
-			
+
 				while (*p2) {
 					if (*p2 == '\001')
 						*p2 = ' ';
@@ -1376,39 +1385,40 @@ static void generate_text()
 				p[n2] = '\0';
 				if (n2 && p[n2 - 1] == '\n')
 					p[n2 - 1] = '\0';
-    OBJ(addr) {
-      snprintf(p, n, "%u.%u.%u.%u",
-               obj->data.net->addr.sa_data[2] & 255,
-               obj->data.net->addr.sa_data[3] & 255,
-               obj->data.net->addr.sa_data[4] & 255,
-               obj->data.net->addr.sa_data[5] & 255);
-               
-               }
-    OBJ(linkstatus) {
-      snprintf(p, n, "%d", obj->data.net->linkstatus);
-    }
+				OBJ(addr) {
+					snprintf(p, n, "%u.%u.%u.%u",
+						 obj->data.net->addr.
+						 sa_data[2] & 255,
+						 obj->data.net->addr.
+						 sa_data[3] & 255,
+						 obj->data.net->addr.
+						 sa_data[4] & 255,
+						 obj->data.net->addr.
+						 sa_data[5] & 255);
+
+				}
+				OBJ(linkstatus) {
+					snprintf(p, n, "%d",
+						 obj->data.net->
+						 linkstatus);
+				}
 				while (*p2) {
 					if (*p2 == '\001')
 						*p2 = ' ';
 					p2++;
 				}
 				double barnum;
-				if (sscanf(p, "%lf", &barnum) == 0)
-				{
+				if (sscanf(p, "%lf", &barnum) == 0) {
 					ERR("reading execbar value failed (perhaps it's not the correct format?)");
 				}
-				if (barnum > 100 || barnum < 0)
-				{
+				if (barnum > 100 || barnum < 0) {
 					ERR("your execbar value is not between 0 and 100, therefore it will be ignored");
-				}
-				else
-				{
-					barnum = barnum/100.0;
+				} else {
+					barnum = barnum / 100.0;
 					new_bar(p, 0,
-							4,
-							(int) (barnum * 255.0));
-			}
-				
+						4, (int) (barnum * 255.0));
+				}
+
 			}
 			OBJ(execi) {
 				if (current_update_time -
@@ -1472,10 +1482,17 @@ static void generate_text()
 			OBJ(fs_free_perc) {
 				if (obj->data.fs != NULL) {
 					if (obj->data.fs->size)
-						snprintf(p, n, "%*d", pad_percents, (int) ((obj->data.fs->avail *100) / obj->data.fs->size));
+						snprintf(p, n, "%*d",
+							 pad_percents,
+							 (int) ((obj->data.
+								 fs->
+								 avail *
+								 100) /
+								obj->data.
+								fs->size));
 					else
-							snprintf(p, n, "0");
-			}
+						snprintf(p, n, "0");
+				}
 			}
 			OBJ(fs_size) {
 				if (obj->data.fs != NULL)
@@ -1557,7 +1574,7 @@ static void generate_text()
 						 obj->data.i2c.type);
 
 				if (r >= 100.0 || r == 0)
-					snprintf(p, n,"%d", (int) r);
+					snprintf(p, n, "%d", (int) r);
 				else
 					snprintf(p, n, "%.1f", r);
 			}
@@ -1567,25 +1584,33 @@ static void generate_text()
 			OBJ(alignc) {
 				new_alignc(p, obj->data.i);
 			}
-			    OBJ(if_existing) {
-				       struct stat tmp;
-				       if((obj->data.ifblock.s)&&(stat(obj->data.ifblock.s,&tmp) == -1)) {
-					 		i=obj->data.ifblock.pos-2;
-					 		if_jumped = 1;
-					 	  } else if_jumped = 0;
-					     }
-					     OBJ(if_mounted) {
-						 	  if((obj->data.ifblock.s)&&(!check_mount(obj->data.ifblock.s))) {
-							 		i=obj->data.ifblock.pos-2;
-							 		if_jumped = 1;
-							 	  } else if_jumped = 0;
-							     }
-							     OBJ(if_running) {
-								 	  if((obj->data.ifblock.s)&&system(obj->data.ifblock.s)) {
-									 	    i=obj->data.ifblock.pos-2;
-									 		if_jumped = 1;
-									 	  } else if_jumped = 0;
-									     }
+			OBJ(if_existing) {
+				struct stat tmp;
+				if ((obj->data.ifblock.s)
+				    && (stat(obj->data.ifblock.s, &tmp) ==
+					-1)) {
+					i = obj->data.ifblock.pos - 2;
+					if_jumped = 1;
+				} else
+					if_jumped = 0;
+			}
+			OBJ(if_mounted) {
+				if ((obj->data.ifblock.s)
+				    && (!check_mount(obj->data.ifblock.s)))
+				{
+					i = obj->data.ifblock.pos - 2;
+					if_jumped = 1;
+				} else
+					if_jumped = 0;
+			}
+			OBJ(if_running) {
+				if ((obj->data.ifblock.s)
+				    && system(obj->data.ifblock.s)) {
+					i = obj->data.ifblock.pos - 2;
+					if_jumped = 1;
+				} else
+					if_jumped = 0;
+			}
 			OBJ(kernel) {
 				snprintf(p, n, "%s", cur->uname_s.release);
 			}
@@ -1601,16 +1626,17 @@ static void generate_text()
 				human_readable(cur->memmax * 1024, p, 255);
 			}
 			OBJ(memperc) {
-				if (cur->memmax)
-				{
-					if(!use_spacer)
-						snprintf(p, n, "%*d", pad_percents,
-							(cur->mem * 100) /
-									(cur->memmax));
+				if (cur->memmax) {
+					if (!use_spacer)
+						snprintf(p, n, "%*d",
+							 pad_percents,
+							 (cur->mem * 100) /
+							 (cur->memmax));
 					else
-						snprintf(p, 4, "%*d   ", pad_percents,
-							(cur->mem * 100) /
-									(cur->memmax));
+						snprintf(p, 4, "%*d   ",
+							 pad_percents,
+							 (cur->mem * 100) /
+							 (cur->memmax));
 				}
 			}
 			OBJ(membar) {
@@ -1660,37 +1686,51 @@ static void generate_text()
 				snprintf(p, n, "%d", cur->new_mail_count);
 			}
 #ifdef MLDONKEY
-	OBJ(ml_upload_counter) {
-	 	  snprintf(p, n, "%lld", mlinfo.upload_counter/1048576);
-	 	}
-	     OBJ(ml_download_counter) {
-		 	  snprintf(p, n, "%lld", mlinfo.download_counter/1048576);
-		 	}
-		     OBJ(ml_nshared_files) {
-			 	  snprintf(p, n, "%i", mlinfo.nshared_files);
-			 	}
-			     OBJ(ml_shared_counter) {
-				 	  snprintf(p, n, "%lld", mlinfo.shared_counter/1048576);
-				 	}
-				     OBJ(ml_tcp_upload_rate) {
-						  snprintf(p, n, "%.2f", (float)mlinfo.tcp_upload_rate/1024);
-					 	}
-					     OBJ(ml_tcp_download_rate) {
-						 	  snprintf(p, n, "%.2f",(float)mlinfo.tcp_download_rate/1024);
-						 	}
-						     OBJ(ml_udp_upload_rate) {
-							 	  snprintf(p, n, "%.2f",(float)mlinfo.udp_upload_rate/1024);
-							 	}
-							     OBJ(ml_udp_download_rate) {
-								 	  snprintf(p, n, "%.2f",(float)mlinfo.udp_download_rate/1024);
-								 	}
-								     OBJ(ml_ndownloaded_files) {
-									 	  snprintf(p, n, "%i", mlinfo.ndownloaded_files);
-									 	}
-									     OBJ(ml_ndownloading_files) {
-										 	  snprintf(p, n, "%i", mlinfo.ndownloading_files);
-										 	}
-										 #endif
+			OBJ(ml_upload_counter) {
+				snprintf(p, n, "%lld",
+					 mlinfo.upload_counter / 1048576);
+			}
+			OBJ(ml_download_counter) {
+				snprintf(p, n, "%lld",
+					 mlinfo.download_counter /
+					 1048576);
+			}
+			OBJ(ml_nshared_files) {
+				snprintf(p, n, "%i", mlinfo.nshared_files);
+			}
+			OBJ(ml_shared_counter) {
+				snprintf(p, n, "%lld",
+					 mlinfo.shared_counter / 1048576);
+			}
+			OBJ(ml_tcp_upload_rate) {
+				snprintf(p, n, "%.2f",
+					 (float) mlinfo.tcp_upload_rate /
+					 1024);
+			}
+			OBJ(ml_tcp_download_rate) {
+				snprintf(p, n, "%.2f",
+					 (float) mlinfo.tcp_download_rate /
+					 1024);
+			}
+			OBJ(ml_udp_upload_rate) {
+				snprintf(p, n, "%.2f",
+					 (float) mlinfo.udp_upload_rate /
+					 1024);
+			}
+			OBJ(ml_udp_download_rate) {
+				snprintf(p, n, "%.2f",
+					 (float) mlinfo.udp_download_rate /
+					 1024);
+			}
+			OBJ(ml_ndownloaded_files) {
+				snprintf(p, n, "%i",
+					 mlinfo.ndownloaded_files);
+			}
+			OBJ(ml_ndownloading_files) {
+				snprintf(p, n, "%i",
+					 mlinfo.ndownloading_files);
+			}
+#endif
 
 			OBJ(nodename) {
 				snprintf(p, n, "%s",
@@ -1700,16 +1740,19 @@ static void generate_text()
 				new_outline(p, obj->data.l);
 			}
 			OBJ(processes) {
-				if(!use_spacer)
+				if (!use_spacer)
 					snprintf(p, n, "%d", cur->procs);
 				else
-					snprintf(p, 5, "%d    ", cur->procs);
+					snprintf(p, 5, "%d    ",
+						 cur->procs);
 			}
 			OBJ(running_processes) {
-				if(!use_spacer)
-					snprintf(p, n, "%d", cur->run_procs);
+				if (!use_spacer)
+					snprintf(p, n, "%d",
+						 cur->run_procs);
 				else
-					snprintf(p, 3, "%d     ", cur->run_procs);
+					snprintf(p, 3, "%d     ",
+						 cur->run_procs);
 			}
 			OBJ(text) {
 				snprintf(p, n, "%s", obj->data.s);
@@ -1725,22 +1768,25 @@ static void generate_text()
 				human_readable(cur->swap * 1024, p, 255);
 			}
 			OBJ(swapmax) {
-				human_readable(cur->swapmax * 1024, p, 255);
+				human_readable(cur->swapmax * 1024, p,
+					       255);
 			}
 			OBJ(swapperc) {
 				if (cur->swapmax == 0) {
 					strncpy(p, "No swap", 255);
 				} else {
-					if(!use_spacer)
+					if (!use_spacer)
 						snprintf(p, 255, "%*u",
-							pad_percents,
-							(cur->swap * 100) /
-									cur->swapmax);
+							 pad_percents,
+							 (cur->swap *
+							  100) /
+							 cur->swapmax);
 					else
 						snprintf(p, 4, "%*u   ",
-							pad_percents,
-							(cur->swap * 100) /
-									cur->swapmax);
+							 pad_percents,
+							 (cur->swap *
+							  100) /
+							 cur->swapmax);
 				}
 			}
 			OBJ(swapbar) {
@@ -1764,33 +1810,37 @@ static void generate_text()
 				strftime(p, n, obj->data.s, tm);
 			}
 			OBJ(totaldown) {
-				human_readable(obj->data.net->recv, p, 255);
+				human_readable(obj->data.net->recv, p,
+					       255);
 			}
 			OBJ(totalup) {
-				human_readable(obj->data.net->trans, p, 255);
+				human_readable(obj->data.net->trans, p,
+					       255);
 			}
 			OBJ(updates) {
 				snprintf(p, n, "%d", total_updates);
 			}
 			OBJ(upspeed) {
-				if(!use_spacer)
+				if (!use_spacer)
 					snprintf(p, n, "%d",
-						(int) (obj->data.net->
-								trans_speed / 1024));
+						 (int) (obj->data.net->
+							trans_speed /
+							1024));
 				else
 					snprintf(p, 5, "%d     ",
-						(int) (obj->data.net->
-								trans_speed / 1024));
+						 (int) (obj->data.net->
+							trans_speed /
+							1024));
 			}
 			OBJ(upspeedf) {
-				if(!use_spacer)
+				if (!use_spacer)
 					snprintf(p, n, "%.1f",
-						obj->data.net->trans_speed /
-								1024.0);
+						 obj->data.net->
+						 trans_speed / 1024.0);
 				else
 					snprintf(p, 8, "%.1f       ",
-						obj->data.net->trans_speed /
-								1024.0);
+						 obj->data.net->
+						 trans_speed / 1024.0);
 			}
 			OBJ(uptime_short) {
 				format_seconds_short(p, n,
@@ -1834,195 +1884,375 @@ static void generate_text()
 			OBJ(mpd_status) {
 				snprintf(p, n, "%s", cur->mpd.status);
 			}
+			OBJ(mpd_elapsed) {
+				int days=0, hours=0, minutes=0, seconds=0;
+				int tmp = cur->mpd.elapsed;
+				while (tmp >= 86400) {
+					tmp -= 86400;
+					days++;
+				}
+				while (tmp >= 3600) {
+					tmp -= 3600;
+					hours++;
+				}
+				while (tmp >= 60) {
+					tmp -= 60;
+					minutes++;
+				}
+				seconds = tmp;
+				if (days > 0)
+					snprintf(p, n, "%i days %i:%i:%2i", days, hours, minutes, seconds);
+				else if (days > 0)
+					snprintf(p, n, "%i:%i:%02i", hours, minutes, seconds);
+				else
+					snprintf(p, n, "%i:%02i", minutes, seconds);
+			}
+			OBJ(mpd_length) {
+				int days=0, hours=0, minutes=0, seconds=0;
+				int tmp = cur->mpd.length;
+				while (tmp >= 86400) {
+					tmp -= 86400;
+					days++;
+				}
+				while (tmp >= 3600) {
+					tmp -= 3600;
+					hours++;
+				}
+				while (tmp >= 60) {
+					tmp -= 60;
+					minutes++;
+				}
+				seconds = tmp;
+				if (days > 0)
+					snprintf(p, n, "%i days %i:%i:%i", days, hours, minutes, seconds);
+				else if (days > 0)
+					snprintf(p, n, "%i:%i:%i", hours, minutes, seconds);
+				else
+					snprintf(p, n, "%i:%i", minutes, seconds);
+			}
+			OBJ(mpd_percent) {
+				snprintf(p, n, "%2.0f", cur->mpd.progress*100);
+			}
 			OBJ(mpd_bar) {
 				new_bar(p, obj->data.pair.a,
 					obj->data.pair.b,
-					(int) (cur->mpd.progress * 255.0f));
+					(int) (cur->mpd.progress *
+					       255.0f));
 			}
 #endif
 			OBJ(top) {
-	if (obj->data.top.type == TOP_NAME && obj->data.top.num >= 0 && obj->data.top.num < 10){
+				if (obj->data.top.type == TOP_NAME
+				    && obj->data.top.num >= 0
+				    && obj->data.top.num < 10) {
 					// if we limit the buffer and add a bunch of space after, it stops the thing from
 					// moving other shit around, which is really fucking annoying
-		snprintf(p, 17, "%s                              ", cur->cpu[obj->data.top.num]->name);
-	}
-	else if (obj->data.top.type == TOP_CPU && obj->data.top.num >= 0 && obj->data.top.num < 10) {
-		snprintf(p, 7, "%3.2f      ", cur->cpu[obj->data.top.num]->amount);
-	}
-	else if (obj->data.top.type == TOP_PID && obj->data.top.num >= 0 && obj->data.top.num < 10) {
-		snprintf(p, 8, "%i           ", cur->cpu[obj->data.top.num]->pid);
-	}
-	else if (obj->data.top.type == TOP_MEM && obj->data.top.num >= 0 && obj->data.top.num < 10) {
-		snprintf(p, 7, "%3.2f       ", cur->cpu[obj->data.top.num]->totalmem);
-	}
+					snprintf(p, 17,
+						 "%s                              ",
+						 cur->cpu[obj->data.top.
+							  num]->name);
+				} else if (obj->data.top.type == TOP_CPU
+					   && obj->data.top.num >= 0
+					   && obj->data.top.num < 10) {
+					snprintf(p, 7, "%3.2f      ",
+						 cur->cpu[obj->data.top.
+							  num]->amount);
+				} else if (obj->data.top.type == TOP_PID
+					   && obj->data.top.num >= 0
+					   && obj->data.top.num < 10) {
+					snprintf(p, 8, "%i           ",
+						 cur->cpu[obj->data.top.
+							  num]->pid);
+				} else if (obj->data.top.type == TOP_MEM
+					   && obj->data.top.num >= 0
+					   && obj->data.top.num < 10) {
+					snprintf(p, 7, "%3.2f       ",
+						 cur->cpu[obj->data.top.
+							  num]->totalmem);
+				}
 			}
 			OBJ(top_mem) {
-				if (obj->data.top.type == TOP_NAME && obj->data.top.num >= 0 && obj->data.top.num < 10){
+				if (obj->data.top.type == TOP_NAME
+				    && obj->data.top.num >= 0
+				    && obj->data.top.num < 10) {
 					// if we limit the buffer and add a bunch of space after, it stops the thing from
 					// moving other shit around, which is really fucking annoying
-					snprintf(p, 17, "%s                              ", cur->memu[obj->data.top.num]->name);
-				}
-				else if (obj->data.top.type == TOP_CPU && obj->data.top.num >= 0 && obj->data.top.num < 10) {
-					snprintf(p, 7, "%3.2f      ", cur->memu[obj->data.top.num]->amount);
-				}
-				else if (obj->data.top.type == TOP_PID && obj->data.top.num >= 0 && obj->data.top.num < 10) {
-					snprintf(p, 8, "%i           ", cur->memu[obj->data.top.num]->pid);
-				}
-				else if (obj->data.top.type == TOP_MEM && obj->data.top.num >= 0 && obj->data.top.num < 10) {
-					snprintf(p, 7, "%3.2f       ", cur->memu[obj->data.top.num]->totalmem);
+					snprintf(p, 17,
+						 "%s                              ",
+						 cur->memu[obj->data.top.
+							   num]->name);
+				} else if (obj->data.top.type == TOP_CPU
+					   && obj->data.top.num >= 0
+					   && obj->data.top.num < 10) {
+					snprintf(p, 7, "%3.2f      ",
+						 cur->memu[obj->data.top.
+							   num]->amount);
+				} else if (obj->data.top.type == TOP_PID
+					   && obj->data.top.num >= 0
+					   && obj->data.top.num < 10) {
+					snprintf(p, 8, "%i           ",
+						 cur->memu[obj->data.top.
+							   num]->pid);
+				} else if (obj->data.top.type == TOP_MEM
+					   && obj->data.top.num >= 0
+					   && obj->data.top.num < 10) {
+					snprintf(p, 7, "%3.2f       ",
+						 cur->memu[obj->data.top.
+							   num]->totalmem);
 				}
 			}
-			
-			
-			
+
+
+
 			/*
 			 * I'm tired of everything being packed in
 			 * pee
 			 * poop
 			 */
-			
-			
+
+
 			OBJ(tail) {
 				if (current_update_time -
-				obj->data.tail.last_update <
-						obj->data.tail.interval) {
+				    obj->data.tail.last_update <
+				    obj->data.tail.interval) {
 					snprintf(p, n, "%s",
-							obj->data.tail.buffer);
-						} else {
-							
-							obj->data.tail.last_update =
-									current_update_time;
-			
-				FILE * fp;
-				int i;
-				tailstring *head = NULL;
-				tailstring *headtmp1 = NULL;
-				tailstring *headtmp2 = NULL;
-				tailstring *headtmp2tmp = NULL;
-				fp = fopen (obj->data.tail.logfile , "rt");
-				if (fp == NULL) ERR("tail logfile failed to open");
-				else {
-					obj->data.tail.readlines = 0;
-					
-					while (fgets(obj->data.tail.buffer, TEXT_BUFFER_SIZE*4, fp) != NULL) {
-						addtail(&head, obj->data.tail.buffer);
-						obj->data.tail.readlines++;
-					}
-					
-					fclose(fp);
-					
-					headtmp1 = head;
-					if (obj->data.tail.readlines > 0) {
-						for(i=0;i<obj->data.tail.wantedlines;i++) {
-							if(head)
-							{
-								addtail(&headtmp2, head->data);
-								head = head->next;
-							}
-							else
-								break;
+						 obj->data.tail.buffer);
+				} else {
+
+					obj->data.tail.last_update =
+					    current_update_time;
+
+					FILE *fp;
+					int i;
+					tailstring *head = NULL;
+					tailstring *headtmp1 = NULL;
+					tailstring *headtmp2 = NULL;
+					tailstring *headtmp2tmp = NULL;
+					fp = fopen(obj->data.tail.logfile,
+						   "rt");
+					if (fp == NULL)
+						ERR("tail logfile failed to open");
+					else {
+						obj->data.tail.readlines =
+						    0;
+
+						while (fgets
+						       (obj->data.tail.
+							buffer,
+							TEXT_BUFFER_SIZE *
+							4, fp) != NULL) {
+							addtail(&head,
+								obj->data.
+								tail.
+								buffer);
+							obj->data.tail.
+							    readlines++;
 						}
-						headtmp2tmp = headtmp2;
-						for(i=0;i<obj->data.tail.wantedlines;i++) {
-							if(headtmp2) {
-								strncat(obj->data.tail.buffer, headtmp2->data, TEXT_BUFFER_SIZE*4/obj->data.tail.wantedlines);
-								headtmp2 = headtmp2->next;
+
+						fclose(fp);
+
+						headtmp1 = head;
+						if (obj->data.tail.
+						    readlines > 0) {
+							for (i = 0;
+							     i <
+							     obj->data.
+							     tail.
+							     wantedlines;
+							     i++) {
+								if (head) {
+									addtail
+									    (&headtmp2,
+									     head->
+									     data);
+									head = head->next;
+								} else
+									break;
 							}
+							headtmp2tmp =
+							    headtmp2;
+							for (i = 0;
+							     i <
+							     obj->data.
+							     tail.
+							     wantedlines;
+							     i++) {
+								if (headtmp2) {
+									strncat
+									    (obj->
+									     data.
+									     tail.
+									     buffer,
+									     headtmp2->
+									     data,
+									     TEXT_BUFFER_SIZE
+									     *
+									     4
+									     /
+									     obj->
+									     data.
+									     tail.
+									     wantedlines);
+									headtmp2
+									    =
+									    headtmp2->
+									    next;
+								}
+							}
+
+							/* this is good enough for now. */
+							snprintf(p, n,
+								 "%s",
+								 obj->data.
+								 tail.
+								 buffer);
+
+							freetail
+							    (headtmp2tmp);
 						}
-						
-						/* this is good enough for now. */
-						snprintf(p, n, "%s", obj->data.tail.buffer);
-						
-						freetail(headtmp2tmp);
+						freetail(headtmp1);
 					}
-					freetail(headtmp1);
 				}
 			}
-			}	
-			
-			
-			 #ifdef METAR
-			 // Hmm, it's expensive to calculate this shit every time FIXME
-			     OBJ(metar_ob_time){
-			       if ( data.ob_hour != INT_MAX && data.ob_minute != INT_MAX && metar_worked )
-			               format_seconds(p, n, data.ob_hour*3600+data.ob_minute*60);
-			       else
-					               format_seconds(p, n, 0);
- 				     }
-				     OBJ(metar_temp){
-				       if ( data.temp != INT_MAX && metar_worked)
-					       snprintf(p, n, "%i", data.temp);
-				       else
-				         snprintf(p, n, "-");
-				     }
-				     OBJ(metar_tempf){
-					     if ( data.temp != INT_MAX && metar_worked)
-						     snprintf(p, n, "%3.1f", (data.temp+40)*9.0/5-40);
-					     else
-						     snprintf(p, n, "-");
-				     }
-				     OBJ(metar_windchill){
-				       if ( data.temp != INT_MAX && data.winData.windSpeed != INT_MAX && metar_worked)
-					         snprintf(p, n, "%i", calculateWindChill(data.temp, data.winData.windSpeed));
-					       else
-					         snprintf(p, n, "-");
-					     }
-					     OBJ(metar_dew_point){
-					       if ( data.dew_pt_temp != INT_MAX && metar_worked)
-					         snprintf(p, n, "%i", data.dew_pt_temp);
-					       else
-					         snprintf(p, n, "-");
-					     }
-					          OBJ(metar_rh){
-						            if ( data.temp != INT_MAX && data.dew_pt_temp != INT_MAX && metar_worked)
-							              snprintf(p, n, "%i", calculateRelativeHumidity(data.temp, data.dew_pt_temp));
-						            else
-							              snprintf(p, n, "-");
-						          }
 
-					     OBJ(metar_windspeed){
-					       if ( data.winData.windSpeed != INT_MAX && metar_worked)
-					         snprintf(p, n, "%i", knTokph(data.winData.windSpeed));
-					       else
-					         snprintf(p, n, "-");
-					     }
-					     OBJ(metar_winddir){
-						     if ( data.winData.windDir != INT_MAX && metar_worked)
-								snprintf(p, n, "%s", calculateWindDirectionString(data.winData.windDir));
-					       else
-					         snprintf(p, n, "-");
-					     }
-					          OBJ(metar_swinddir){
-						            if ( data.winData.windDir != INT_MAX && metar_worked)
-							              snprintf(p, n, "%s", calculateShortWindDirectionString(data.winData.windDir));
-						            else
-							              snprintf(p, n, "-");
-						          }
 
-					     OBJ(metar_cloud){
-					       if (data.cldTypHgt[0].cloud_type[0] != '\0' && metar_worked){
-					         if ( strcmp(&data.cldTypHgt[0].cloud_type[0], "SKC") == 0 )
-					           snprintf(p, n, "Clear Sky");
-					         else if ( strcmp(&data.cldTypHgt[0].cloud_type[0], "CLR") == 0 )
-					           snprintf(p, n, "Clear Sky");
-					         else if ( strcmp(&data.cldTypHgt[0].cloud_type[0], "FEW") == 0 )
-					           snprintf(p, n, "Few clouds");
-					         else if ( strcmp(&data.cldTypHgt[0].cloud_type[0], "SCT") == 0 )
-					           snprintf(p, n, "Scattered clouds");
-					         else if ( strcmp(&data.cldTypHgt[0].cloud_type[0], "BKN") == 0 )
-					           snprintf(p, n, "Broken clouds");
-					         else if ( strcmp(&data.cldTypHgt[0].cloud_type[0], "OVC") == 0 )
-					           snprintf(p, n, "Overcast");
-										         else
-										           snprintf(p, n, "Checking...");
-										       }
-										       else
-										         snprintf(p, n, "Checking...");
-										     }
-										     OBJ(metar_u2d_time){
-										      format_seconds(p, n, (int)last_metar_update%(3600*24)+3600);
-										     }
-										 #endif
+#ifdef METAR
+			// Hmm, it's expensive to calculate this shit every time FIXME
+			OBJ(metar_ob_time) {
+				if (data.ob_hour != INT_MAX
+				    && data.ob_minute != INT_MAX
+				    && metar_worked)
+					format_seconds(p, n,
+						       data.ob_hour *
+						       3600 +
+						       data.ob_minute *
+						       60);
+				else
+					format_seconds(p, n, 0);
+			}
+			OBJ(metar_temp) {
+				if (data.temp != INT_MAX && metar_worked)
+					snprintf(p, n, "%i", data.temp);
+				else
+					snprintf(p, n, "-");
+			}
+			OBJ(metar_tempf) {
+				if (data.temp != INT_MAX && metar_worked)
+					snprintf(p, n, "%3.1f",
+						 (data.temp +
+						  40) * 9.0 / 5 - 40);
+				else
+					snprintf(p, n, "-");
+			}
+			OBJ(metar_windchill) {
+				if (data.temp != INT_MAX
+				    && data.winData.windSpeed != INT_MAX
+				    && metar_worked)
+					snprintf(p, n, "%i",
+						 calculateWindChill(data.
+								    temp,
+								    data.
+								    winData.
+								    windSpeed));
+				else
+					snprintf(p, n, "-");
+			}
+			OBJ(metar_dew_point) {
+				if (data.dew_pt_temp != INT_MAX
+				    && metar_worked)
+					snprintf(p, n, "%i",
+						 data.dew_pt_temp);
+				else
+					snprintf(p, n, "-");
+			}
+			OBJ(metar_rh) {
+				if (data.temp != INT_MAX
+				    && data.dew_pt_temp != INT_MAX
+				    && metar_worked)
+					snprintf(p, n, "%i",
+						 calculateRelativeHumidity
+						 (data.temp,
+						  data.dew_pt_temp));
+				else
+					snprintf(p, n, "-");
+			}
+
+			OBJ(metar_windspeed) {
+				if (data.winData.windSpeed != INT_MAX
+				    && metar_worked)
+					snprintf(p, n, "%i",
+						 knTokph(data.winData.
+							 windSpeed));
+				else
+					snprintf(p, n, "-");
+			}
+			OBJ(metar_winddir) {
+				if (data.winData.windDir != INT_MAX
+				    && metar_worked)
+					snprintf(p, n, "%s",
+						 calculateWindDirectionString
+						 (data.winData.windDir));
+				else
+					snprintf(p, n, "-");
+			}
+			OBJ(metar_swinddir) {
+				if (data.winData.windDir != INT_MAX
+				    && metar_worked)
+					snprintf(p, n, "%s",
+						 calculateShortWindDirectionString
+						 (data.winData.windDir));
+				else
+					snprintf(p, n, "-");
+			}
+
+			OBJ(metar_cloud) {
+				if (data.cldTypHgt[0].cloud_type[0] != '\0'
+				    && metar_worked) {
+					if (strcmp
+					    (&data.cldTypHgt[0].
+					     cloud_type[0], "SKC") == 0)
+						snprintf(p, n,
+							 "Clear Sky");
+					else if (strcmp
+						 (&data.cldTypHgt[0].
+						  cloud_type[0],
+						  "CLR") == 0)
+						snprintf(p, n,
+							 "Clear Sky");
+					else if (strcmp
+						 (&data.cldTypHgt[0].
+						  cloud_type[0],
+						  "FEW") == 0)
+						snprintf(p, n,
+							 "Few clouds");
+					else if (strcmp
+						 (&data.cldTypHgt[0].
+						  cloud_type[0],
+						  "SCT") == 0)
+						snprintf(p, n,
+							 "Scattered clouds");
+					else if (strcmp
+						 (&data.cldTypHgt[0].
+						  cloud_type[0],
+						  "BKN") == 0)
+						snprintf(p, n,
+							 "Broken clouds");
+					else if (strcmp
+						 (&data.cldTypHgt[0].
+						  cloud_type[0],
+						  "OVC") == 0)
+						snprintf(p, n, "Overcast");
+					else
+						snprintf(p, n,
+							 "Checking...");
+				} else
+					snprintf(p, n, "Checking...");
+			}
+			OBJ(metar_u2d_time) {
+				format_seconds(p, n,
+					       (int) last_metar_update %
+					       (3600 * 24) + 3600);
+			}
+#endif
 
 			break;
 		}
@@ -2180,8 +2410,7 @@ static void draw_string(const char *s)
 	int i, i2, pos, width_of_s;
 	int max, added;
 	width_of_s = get_string_width(s);
-	if (out_to_console)
-	{
+	if (out_to_console) {
 		printf("%s\n", s);
 	}
 	strcpy(tmpstring1, s);
@@ -2189,33 +2418,31 @@ static void draw_string(const char *s)
 	added = 0;
 	char space[2];
 	snprintf(space, 2, " ");
-	max = ((text_width-width_of_s)/get_string_width(space));
+	max = ((text_width - width_of_s) / get_string_width(space));
 	/*
 	 * This code looks for tabs in the text and coverts them to spaces.
 	 * The trick is getting the correct number of spaces,
 	 * and not going over the window's size without forcing
 	 * the window larger.
 	 */
-	for(i=0;i<TEXT_BUFFER_SIZE;i++)
-	{
-		if (tmpstring1[i] == '\t') // 9 is ascii tab
+	for (i = 0; i < TEXT_BUFFER_SIZE; i++) {
+		if (tmpstring1[i] == '\t')	// 9 is ascii tab
 		{
-			i2=0;
-			for(i2=0;i2<(8-(1+pos)%8) && added <= max;i2++)
-			{
-				tmpstring2[pos+i2] = ' ';
+			i2 = 0;
+			for (i2 = 0;
+			     i2 < (8 - (1 + pos) % 8) && added <= max;
+			     i2++) {
+				tmpstring2[pos + i2] = ' ';
 				added++;
 			}
 			pos += i2;
-		}
-		else
-		{
+		} else {
 			if (tmpstring1[i] != 9) {
 				tmpstring2[pos] = tmpstring1[i];
 				pos++;
 			}
+		}
 	}
-}
 	s = tmpstring2;
 #ifdef XFT
 	if (use_xft) {
@@ -2229,13 +2456,14 @@ static void draw_string(const char *s)
 		c2.color.green = c.green;
 		c2.color.blue = c.blue;
 		c2.color.alpha = font_alpha;
-		if(utf8_mode) {
+		if (utf8_mode) {
 			XftDrawStringUtf8(window.xftdraw, &c2, xftfont,
-					  cur_x, cur_y, (XftChar8 *) s, strlen(s));
-		}
-		else {
+					  cur_x, cur_y, (XftChar8 *) s,
+					  strlen(s));
+		} else {
 			XftDrawString8(window.xftdraw, &c2, xftfont,
-					  cur_x, cur_y, (XftChar8 *) s, strlen(s));
+				       cur_x, cur_y, (XftChar8 *) s,
+				       strlen(s));
 		}
 	} else
 #endif
@@ -2285,8 +2513,9 @@ static void draw_line(char *s)
 							   JoinMiter);
 					XDrawLine(display, window.drawable,
 						  window.gc, cur_x,
-						  cur_y - mid/2, cur_x + w,
-						  cur_y - mid/2);
+						  cur_y - mid / 2,
+						  cur_x + w,
+						  cur_y - mid / 2);
 				}
 				break;
 
@@ -2310,8 +2539,9 @@ static void draw_line(char *s)
 						   ss, 2);
 					XDrawLine(display, window.drawable,
 						  window.gc, cur_x,
-						  cur_y - mid/2, cur_x + w,
-						  cur_y - mid/2);
+						  cur_y - mid / 2,
+						  cur_x + w,
+						  cur_y - mid / 2);
 				}
 				break;
 
@@ -2364,26 +2594,39 @@ static void draw_line(char *s)
 							     arg);
 				break;
 
-				case OUTLINE:
-					if (draw_mode == OUTLINE)
-						set_foreground_color(specials
-								[special_index].
-								arg);
-					break;
+			case OUTLINE:
+				if (draw_mode == OUTLINE)
+					set_foreground_color(specials
+							     [special_index].
+							     arg);
+				break;
 
-				case ALIGNR:
+			case ALIGNR:
 				{
-					int pos_x = text_start_x + text_width - cur_x - 1 - get_string_width(p);
-					if ( pos_x > specials[special_index].arg)
-						w = pos_x - specials[special_index].arg;
+					int pos_x =
+					    text_start_x + text_width -
+					    cur_x - 1 -
+					    get_string_width(p);
+					if (pos_x >
+					    specials[special_index].arg)
+						w = pos_x -
+						    specials
+						    [special_index].arg;
 				}
 				break;
 
-				case ALIGNC:
+			case ALIGNC:
 				{
-					int pos_x = text_start_x + text_width - cur_x - 1 - get_string_width(p)/2 - (text_width/2);
-					if ( pos_x > specials[special_index].arg)
-						w = pos_x - specials[special_index].arg;
+					int pos_x =
+					    text_start_x + text_width -
+					    cur_x - 1 -
+					    get_string_width(p) / 2 -
+					    (text_width / 2);
+					if (pos_x >
+					    specials[special_index].arg)
+						w = pos_x -
+						    specials
+						    [special_index].arg;
 				}
 				break;
 
@@ -2522,7 +2765,7 @@ static void main_loop()
 {
 	Region region = XCreateRegion();
 	info.looped = 0;
-	while (total_run_times == 0 || info.looped < total_run_times-1) {
+	while (total_run_times == 0 || info.looped < total_run_times - 1) {
 		info.looped++;
 		XFlush(display);
 
@@ -2934,17 +3177,17 @@ static void set_default_configurations(void)
 	stippled_borders = 0;
 	update_interval = 10.0;
 	stuff_in_upper_case = 0;
-	 #ifdef MLDONKEY
-	   mlconfig.mldonkey_hostname="127.0.0.1";
-	   mlconfig.mldonkey_port=4001;
-	   mlconfig.mldonkey_login=NULL;
-	   mlconfig.mldonkey_password=NULL;
-	 #endif
+#ifdef MLDONKEY
+	mlconfig.mldonkey_hostname = "127.0.0.1";
+	mlconfig.mldonkey_port = 4001;
+	mlconfig.mldonkey_login = NULL;
+	mlconfig.mldonkey_password = NULL;
+#endif
 #ifdef METAR
-	 metar_station = NULL;
-	 metar_server = NULL;
-	 metar_path = NULL;
-	 last_metar_update = 0;
+	metar_station = NULL;
+	metar_server = NULL;
+	metar_path = NULL;
+	last_metar_update = 0;
 #endif
 }
 
@@ -3012,115 +3255,116 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 
 
 		CONF2("alignment") {
-	if (value) {
-		int a = string_to_alignment(value);
-		if (a <= 0)
-			CONF_ERR
+			if (value) {
+				int a = string_to_alignment(value);
+				if (a <= 0)
+					CONF_ERR
 					else
 					text_alignment = a;
-	} else
-		CONF_ERR}
-		CONF("background") {
-			fork_to_background = string_to_bool(value);
-		}
-		CONF("border_margin") {
-			if (value)
-				border_margin =
-						strtol(value, 0, 0);
-			else
-				CONF_ERR}
-			CONF("border_width") {
-				if (value)
-					border_width =
-							strtol(value, 0, 0);
-				else
-					CONF_ERR}
-				CONF("default_color") {
-					if (value)
-						default_fg_color =
-								get_x11_color
-								(value);
-					else
-						CONF_ERR}
-					CONF3
-							("default_shade_color",
-							"default_shadecolor")
-					{
-						if (value)
-							default_bg_color
-									=
-									get_x11_color
-									(value);
-						else
-							CONF_ERR}
-						CONF3
-								("default_outline_color",
-								"default_outlinecolor")
-						{
-							if (value)
-								default_out_color
-										=
-										get_x11_color
-										(value);
-							else
-								CONF_ERR}
-#ifdef MPD
-									CONF("mpd_host") {
-	if (value)
-		strcpy(info.
-				mpd.
-				host
-				,				value);
-	else
-		CONF_ERR}
-	CONF("mpd_port") {
-		if (value) {
-			info.
-					mpd.
-					port
-					=
-					strtol
-					(value,
-					 0,
-					 0);
-			if (info.mpd.port < 1 || info.mpd.port > 0xffff)
-				CONF_ERR}
-	}
-#endif
-													CONF("cpu_avg_samples") {
-	if (value) {
-		cpu_avg_samples
-				=
-				strtol
-				(value,
-				 0,
-				 0);
-		if (cpu_avg_samples < 1 || cpu_avg_samples > 14)
-			CONF_ERR
-					else
-					info.
-					cpu_avg_samples
-					=
-					cpu_avg_samples;
-	} else
-		CONF_ERR}
-		CONF("net_avg_samples") {
-			if (value) {
-				net_avg_samples
-						=
-						strtol
-						(value,
-						0,
-						0);
-				if (net_avg_samples < 1 || net_avg_samples > 14)
-					CONF_ERR
-							else
-							info.
-							net_avg_samples
-							=
-							net_avg_samples;
 			} else
 				CONF_ERR}
+				CONF("background") {
+				fork_to_background = string_to_bool(value);
+				}
+			CONF("border_margin") {
+				if (value)
+					border_margin =
+					    strtol(value, 0, 0);
+				else
+					CONF_ERR}
+					CONF("border_width") {
+					if (value)
+						border_width =
+						    strtol(value, 0, 0);
+					else
+						CONF_ERR}
+						CONF("default_color") {
+						if (value)
+							default_fg_color =
+							    get_x11_color
+							    (value);
+						else
+							CONF_ERR}
+							CONF3
+							    ("default_shade_color",
+							     "default_shadecolor")
+						{
+							if (value)
+								default_bg_color
+								    =
+								    get_x11_color
+								    (value);
+							else
+								CONF_ERR}
+								CONF3
+								    ("default_outline_color",
+								     "default_outlinecolor")
+							{
+								if (value)
+									default_out_color
+									    =
+									    get_x11_color
+									    (value);
+								else
+									CONF_ERR}
+#ifdef MPD
+									CONF("mpd_host") {
+									if (value)
+										strcpy
+										    (info.
+										     mpd.
+										     host,
+										     value);
+									else
+										CONF_ERR}
+										CONF("mpd_port") {
+										if (value) {
+											info.
+											    mpd.
+											    port
+											    =
+											    strtol
+											    (value,
+											     0,
+											     0);
+											if (info.mpd.port < 1 || info.mpd.port > 0xffff)
+												CONF_ERR}
+												}
+#endif
+												CONF("cpu_avg_samples") {
+												if (value) {
+													cpu_avg_samples
+													    =
+													    strtol
+													    (value,
+													     0,
+													     0);
+													if (cpu_avg_samples < 1 || cpu_avg_samples > 14)
+														CONF_ERR
+														else
+														info.
+														    cpu_avg_samples
+														    =
+														    cpu_avg_samples;
+												} else
+													CONF_ERR}
+													CONF("net_avg_samples") {
+													if (value) {
+														net_avg_samples
+														    =
+														    strtol
+														    (value,
+														     0,
+														     0);
+														if (net_avg_samples < 1 || net_avg_samples > 14)
+															CONF_ERR
+															else
+															info.
+															    net_avg_samples
+															    =
+															    net_avg_samples;
+													} else
+														CONF_ERR}
 
 
 
@@ -3128,594 +3372,668 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 
 
 #ifdef XDBE
-															CONF("double_buffer") {
-	use_xdbe
-			=
-			string_to_bool
-			(value);
-										}
+														CONF("double_buffer") {
+														use_xdbe
+														    =
+														    string_to_bool
+														    (value);
+														}
 #endif
-														CONF("draw_borders") {
-	draw_borders
-			=
-			string_to_bool
-			(value);
-										}
-										CONF("draw_shades") {
-										draw_shades
-										=
-										string_to_bool
-										(value);
-										}
-										CONF("draw_outline") {
-										draw_outline
-										=
-										string_to_bool
-										(value);
-										}
-										CONF("out_to_console") {
-										out_to_console
-										=
-										string_to_bool
-										(value);
-										}
-										CONF("use_spacer") {
-										use_spacer
-										=
-										string_to_bool
-										(value);
-										}
+													CONF("draw_borders") {
+														draw_borders
+														    =
+														    string_to_bool
+														    (value);
+													}
+													CONF("draw_shades") {
+														draw_shades
+														    =
+														    string_to_bool
+														    (value);
+													}
+													CONF("draw_outline") {
+														draw_outline
+														    =
+														    string_to_bool
+														    (value);
+													}
+													CONF("out_to_console") {
+														out_to_console
+														    =
+														    string_to_bool
+														    (value);
+													}
+													CONF("use_spacer") {
+														use_spacer
+														    =
+														    string_to_bool
+														    (value);
+													}
 #ifdef XFT
-														CONF("use_xft") {
-	use_xft
-			=
-			string_to_bool
-			(value);
-										}
-										CONF("font") {
-										/* font silently ignored when Xft */
-										}
-										CONF("xftalpha") {
-										if (value)
-										font_alpha
-										=
-										atof
-										(value)
-										*
-										65535.0;
-										else
-										CONF_ERR}
-										CONF("xftfont") {
+													CONF("use_xft") {
+														use_xft
+														    =
+														    string_to_bool
+														    (value);
+													}
+													CONF("font") {
+														/* font silently ignored when Xft */
+													}
+													CONF("xftalpha") {
+														if (value)
+															font_alpha
+															    =
+															    atof
+															    (value)
+															    *
+															    65535.0;
+														else
+															CONF_ERR}
+															CONF("xftfont") {
 #else
-														CONF("use_xft") {
-	if (string_to_bool(value))
-		ERR("Xft not enabled");
-										}
-										CONF("xftfont") {
-										/* xftfont silently ignored when no Xft */
-										}
-										CONF("xftalpha") {
-										/* xftalpha is silently ignored when no Xft */
-										}
-										CONF("font") {
+													CONF("use_xft") {
+														if (string_to_bool(value))
+															ERR("Xft not enabled");
+													}
+													CONF("xftfont") {
+														/* xftfont silently ignored when no Xft */
+													}
+													CONF("xftalpha") {
+														/* xftalpha is silently ignored when no Xft */
+													}
+													CONF("font") {
 #endif
-															if (value) {
-	free(font_name);
-	font_name
-			=
-			strdup
-			(value);
-										} else
-										CONF_ERR}
-										CONF("gap_x") {
-										if (value)
-										gap_x
-										=
-										atoi
-										(value);
-										else
-										CONF_ERR}
-										CONF("gap_y") {
-										if (value)
-										gap_y
-										=
-										atoi
-										(value);
-										else
-										CONF_ERR}
-										CONF("mail_spool") {
-										if (value) {
-										char buf[256];
-										variable_substitute
-										(value,
-										buf,
-										256);
+														if (value) {
+															free(font_name);
+															font_name
+															    =
+															    strdup
+															    (value);
+														} else
+															CONF_ERR}
+															CONF("gap_x") {
+															if (value)
+																gap_x
+																    =
+																    atoi
+																    (value);
+															else
+																CONF_ERR}
+																CONF("gap_y") {
+																if (value)
+																	gap_y
+																	    =
+																	    atoi
+																	    (value);
+																else
+																	CONF_ERR}
+																	CONF("mail_spool") {
+																	if (value) {
+																		char buf[256];
+																		variable_substitute
+																		    (value,
+																		     buf,
+																		     256);
 
-										if (buf[0]
-										!=
-										'\0')
-										{
-										if (current_mail_spool)
-										free(current_mail_spool);
-										current_mail_spool
-										=
-										strdup
-										(buf);
-										}
-										} else
-										CONF_ERR}
-										CONF("minimum_size") {
-										if (value) {
-										if (sscanf(value, "%d %d", &minimum_width, &minimum_height) != 2)
-										if (sscanf(value, "%d", &minimum_width) != 1)
-										CONF_ERR}
-										else
-										CONF_ERR}
-										CONF("no_buffers") {
-										no_buffers
-										=
-										string_to_bool(value);
-										}
+																		if (buf[0]
+																		    !=
+																		    '\0')
+																		{
+																			if (current_mail_spool)
+																				free(current_mail_spool);
+																			current_mail_spool
+																			    =
+																			    strdup
+																			    (buf);
+																		}
+																	} else
+																		CONF_ERR}
+																		CONF("minimum_size") {
+																		if (value) {
+																			if (sscanf(value, "%d %d", &minimum_width, &minimum_height) != 2)
+																				if (sscanf(value, "%d", &minimum_width) != 1)
+																					CONF_ERR}
+																					else
+																					CONF_ERR}
+																					CONF("no_buffers") {
+																					no_buffers
+																					    =
+																					    string_to_bool
+																					    (value);
+																					}
 #ifdef MLDONKEY
-CONF("mldonkey_hostname") {
-if (value)
-	mlconfig.mldonkey_hostname = strdup(value);
-else
-CONF_ERR
-}
-CONF("mldonkey_port") {
-if (value)
-	mlconfig.mldonkey_port = atoi(value);
-else
-	CONF_ERR
-}
-CONF("mldonkey_login") {
-if (value)
-	mlconfig.mldonkey_login = strdup(value);
-else
-	CONF_ERR
-}
-CONF("mldonkey_password") {
-if (value)
-	mlconfig.mldonkey_password = strdup(value);
-else
-	CONF_ERR
-}
+																			CONF("mldonkey_hostname") {
+																				if (value)
+																					mlconfig.
+																					    mldonkey_hostname
+																					    =
+																					    strdup
+																					    (value);
+																				else
+																					CONF_ERR}
+																					CONF("mldonkey_port") {
+																					if (value)
+																						mlconfig.
+																						    mldonkey_port
+																						    =
+																						    atoi
+																						    (value);
+																					else
+																						CONF_ERR}
+																						CONF("mldonkey_login") {
+																						if (value)
+																							mlconfig.
+																							    mldonkey_login
+																							    =
+																							    strdup
+																							    (value);
+																						else
+																							CONF_ERR}
+																							CONF("mldonkey_password") {
+																							if (value)
+																								mlconfig.
+																								    mldonkey_password
+																								    =
+																								    strdup
+																								    (value);
+																							else
+																								CONF_ERR}
 #endif
 #ifdef OWN_WINDOW
-																				CONF("own_window") {
-	own_window
-			=
-			string_to_bool
-			(value);
-										}
+																								CONF("own_window") {
+																								own_window
+																								    =
+																								    string_to_bool
+																								    (value);
+																								}
 #endif
-																				CONF("pad_percents") {
-	pad_percents
-			=
-			atoi
-			(value);
-										}
-										CONF("stippled_borders") {
-										if (value)
-										stippled_borders
-										=
-										strtol
-										(value,
-										0,
-										0);
-										else
-										stippled_borders
-										=
-										4;
-										}
-										CONF("temp1") {
-										ERR("temp1 configuration is obsolete, use ${i2c <i2c device here> temp 1}");
-										}
-										CONF("temp1") {
-										ERR("temp2 configuration is obsolete, use ${i2c <i2c device here> temp 2}");
-										}
-										CONF("update_interval") {
-										if (value)
-										update_interval
-										=
-										strtod
-										(value,
-										0);
-										else
-										CONF_ERR}										CONF("total_run_times") {
-										if (value)
-										total_run_times
-										=
-										strtod
-										(value,
-										0);
-										else
-										CONF_ERR}
-										CONF("uppercase") {
-										stuff_in_upper_case
-										=
-										string_to_bool
-										(value);
-										}
+																							CONF("pad_percents") {
+																								pad_percents
+																								    =
+																								    atoi
+																								    (value);
+																							}
+																							CONF("stippled_borders") {
+																								if (value)
+																									stippled_borders
+																									    =
+																									    strtol
+																									    (value,
+																									     0,
+																									     0);
+																								else
+																									stippled_borders
+																									    =
+																									    4;
+																							}
+																							CONF("temp1") {
+																								ERR("temp1 configuration is obsolete, use ${i2c <i2c device here> temp 1}");
+																							}
+																							CONF("temp1") {
+																								ERR("temp2 configuration is obsolete, use ${i2c <i2c device here> temp 2}");
+																							}
+																							CONF("update_interval") {
+																								if (value)
+																									update_interval
+																									    =
+																									    strtod
+																									    (value,
+																									     0);
+																								else
+																									CONF_ERR}
+																									    CONF
+																									    ("total_run_times")
+																								{
+																									if (value)
+																										total_run_times
+																										    =
+																										    strtod
+																										    (value,
+																										     0);
+																									else
+																										CONF_ERR}
+																										CONF("uppercase") {
+																										stuff_in_upper_case
+																										    =
+																										    string_to_bool
+																										    (value);
+																										}
 #ifdef SETI
-																					CONF("seti_dir") {
-	seti_dir
-			=
-			(char
-			*)
-			malloc
-			(strlen
-			(value)
-			+
-			1);
-	strcpy
-			(seti_dir,
-			 value);
-										}
+																									CONF("seti_dir") {
+																										seti_dir
+																										    =
+																										    (char
+																										     *)
+																										    malloc
+																										    (strlen
+																										     (value)
+																										     +
+																										     1);
+																										strcpy
+																										    (seti_dir,
+																										     value);
+																									}
 #endif
 #ifdef METAR
-     CONF("metar_station"){
-	       metar_station = (char*)malloc(strlen(value) + 5);
-	       strcpy(metar_station, value);
-	       strcat(metar_station,".TXT");
-	     }
-	     CONF("metar_server"){
-		       metar_server = (char*)malloc(strlen(value) + 1);
-		       strcpy(metar_server, value);      
-		     }
-		     CONF("metar_path"){
-			       metar_path = (char*)malloc(strlen(value) + 1);
-			       strcpy(metar_path, value);
+																									CONF("metar_station") {
+																										metar_station
+																										    =
+																										    (char
+																										     *)
+																										    malloc
+																										    (strlen
+																										     (value)
+																										     +
+																										     5);
+																										strcpy
+																										    (metar_station,
+																										     value);
+																										strcat
+																										    (metar_station,
+																										     ".TXT");
+																									}
+																									CONF("metar_server") {
+																										metar_server
+																										    =
+																										    (char
+																										     *)
+																										    malloc
+																										    (strlen
+																										     (value)
+																										     +
+																										     1);
+																										strcpy
+																										    (metar_server,
+																										     value);
+																									}
+																									CONF("metar_path") {
+																										metar_path
+																										    =
+																										    (char
+																										     *)
+																										    malloc
+																										    (strlen
+																										     (value)
+																										     +
+																										     1);
+																										strcpy
+																										    (metar_path,
+																										     value);
 
-	     }
-	 #endif
-																					CONF("text") {
-	if (text != original_text)
-		free(text);
+																									}
+#endif
+																									CONF("text") {
+																										if (text != original_text)
+																											free(text);
 
-	text = (char *)
-			malloc
-			(1);
-	text[0]
-			=
-			'\0';
+																										text = (char *)
+																										    malloc
+																										    (1);
+																										text[0]
+																										    =
+																										    '\0';
 
-	while
-	(!feof
-		 (fp))
-	{
-		unsigned
-				int
-				l
-				=
-				strlen
-				(text);
-		if (fgets(buf, 256, fp) == NULL)
-			break;
-		text = (char *)
-				realloc
-				(text,
-				 l
-						 +
-						 strlen
-						 (buf)
-						 +
-						 1);
-		strcat
-				(text,
-				 buf);
+																										while
+																										    (!feof
+																										     (fp))
+																										{
+																											unsigned
+																											int
+																											    l
+																											    =
+																											    strlen
+																											    (text);
+																											if (fgets(buf, 256, fp) == NULL)
+																												break;
+																											text = (char *)
+																											    realloc
+																											    (text,
+																											     l
+																											     +
+																											     strlen
+																											     (buf)
+																											     +
+																											     1);
+																											strcat
+																											    (text,
+																											     buf);
 
-		if (strlen(text) > 1024 * 8)
-			break;
-	}
-	fclose
-			(fp);
-	return;
-										}
-										else
-										ERR("%s: %d: no such configuration: '%s'", f, line, name);
+																											if (strlen(text) > 1024 * 8)
+																												break;
+																										}
+																										fclose
+																										    (fp);
+																										return;
+																									}
+																									else
+																									ERR("%s: %d: no such configuration: '%s'", f, line, name);
 
 #undef CONF
 #undef CONF2
-										}
+																									}
 
-										fclose
-										(fp);
+																								fclose
+																								    (fp);
 #undef CONF_ERR
-	}
+																							}
 
-	/* : means that character before that takes an argument */
-	static
-			const
-			char
-			*getopt_string
-			=
-			"vVdt:f:u:i:hc:w:x:y:a:"
+																							/* : means that character before that takes an argument */
+																							static
+																							    const
+																							    char
+																							*getopt_string
+																							    =
+																							    "vVdt:f:u:i:hc:w:x:y:a:"
 #ifdef OWN_WINDOW
-			"o"
+																							    "o"
 #endif
 #ifdef XDBE
-			"b"
+																							    "b"
 #endif
-;
+																							    ;
 
 
-	int main(int argc, char **argv) {
-		/* handle command line parameters that don't change configs */
-		char *s;
+																							int main(int argc, char **argv) {
+																								/* handle command line parameters that don't change configs */
+																								char *s;
 
-		if (((s = getenv("LC_ALL"))   && *s) ||
-				    ((s = getenv("LC_CTYPE")) && *s) ||
-				    ((s = getenv("LANG"))     && *s)) {
-			if (strstr(s, "UTF-8") || strstr(s, "utf-8")
-					|| strstr(s, "UTF8") || strstr(s, "utf8"))
-				utf8_mode = 1;
-				    }
-		if (!setlocale(LC_CTYPE, "")) {
-			fprintf(stderr, "Can't set the specified locale! "
-					"Check LANG, LC_CTYPE, LC_ALL.\n");
-			return 1;
-		}
-		while
-		(1)
-		{
-			int c = getopt(argc,
-				argv,
-				getopt_string);
-			if (c == -1)
-				break;
+																								if (((s = getenv("LC_ALL")) && *s) || ((s = getenv("LC_CTYPE")) && *s) || ((s = getenv("LANG")) && *s)) {
+										if (strstr(s, "UTF-8") || strstr(s, "utf-8")
+																									    ||
+																									    strstr
+																									    (s,
+																									     "UTF8")
+																									    ||
+																									    strstr
+																									    (s,
+																									     "utf8"))
+																										utf8_mode
+																										    =
+																										    1;
+																								}
+																								if (!setlocale(LC_CTYPE, "")) {
+																									fprintf
+																									    (stderr,
+																									     "Can't set the specified locale! "
+																									     "Check LANG, LC_CTYPE, LC_ALL.\n");
+																									return
+																									    1;
+																								}
+																								while
+																								    (1)
+																								{
+																									int c = getopt(argc,
+																										       argv,
+																										       getopt_string);
+																									if (c == -1)
+																										break;
 
-			switch
-			(c)
-			{
-				case 'v':
-				case 'V':
-					printf
-							("Conky "
-							VERSION
-							" compiled "
-							__DATE__
-							"\n");
-					return
-							0;
+																									switch
+																									    (c)
+																									{
+																									case 'v':
+																									case 'V':
+																										printf
+																										    ("Conky "
+																										     VERSION
+																										     " compiled "
+																										     __DATE__
+																										     "\n");
+																										return
+																										    0;
 
-				case 'c':
-																						/* if current_config is set to a strdup of CONFIG_FILE, free it (even
-										* though free() does the NULL check itself;), then load optarg value */
-					if (current_config)
-						free(current_config);
-					current_config
-							=
-							strdup
-							(optarg);
-					break;
+																									case 'c':
+																										/* if current_config is set to a strdup of CONFIG_FILE, free it (even
+																										 * though free() does the NULL check itself;), then load optarg value */
+																										if (current_config)
+																											free(current_config);
+																										current_config
+																										    =
+																										    strdup
+																										    (optarg);
+																										break;
 
-				case 'h':
-					printf
-							("Usage: %s [OPTION]...\n"
-							"Conky is a system monitor that renders text on desktop or to own transparent\n"
-							"window. Command line options will override configurations defined in config\n"
-							"file.\n"
-							"   -V            version\n"
-							"   -a ALIGNMENT  text alignment on screen, {top,bottom}_{left,right}\n"
-							"   -c FILE       config file to load instead of "
-							CONFIG_FILE
-							"\n"
-							"   -d            daemonize, fork to background\n"
-							"   -f FONT       font to use\n"
-							"   -h            help\n"
+																									case 'h':
+																										printf
+																										    ("Usage: %s [OPTION]...\n"
+																										     "Conky is a system monitor that renders text on desktop or to own transparent\n"
+																										     "window. Command line options will override configurations defined in config\n"
+																										     "file.\n"
+																										     "   -V            version\n"
+																										     "   -a ALIGNMENT  text alignment on screen, {top,bottom}_{left,right}\n"
+																										     "   -c FILE       config file to load instead of "
+																										     CONFIG_FILE
+																										     "\n"
+																										     "   -d            daemonize, fork to background\n"
+																										     "   -f FONT       font to use\n"
+																										     "   -h            help\n"
 #ifdef OWN_WINDOW
-							"   -o            create own window to draw\n"
+																										     "   -o            create own window to draw\n"
 #endif
 #ifdef XDBE
-							"   -b            double buffer (prevents flickering)\n"
+																										     "   -b            double buffer (prevents flickering)\n"
 #endif
-							"   -t TEXT       text to render, remember single quotes, like -t '$uptime'\n"
-							"   -u SECS       update interval\n"
-							"   -i NUM        number of times to update Conky\n"
-							"   -w WIN_ID     window id to draw\n"
-							"   -x X          x position\n"
-							"   -y Y          y position\n",
-					argv
-							[0]);
-					return
-							0;
+																										     "   -t TEXT       text to render, remember single quotes, like -t '$uptime'\n"
+																										     "   -u SECS       update interval\n"
+																										     "   -i NUM        number of times to update Conky\n"
+																										     "   -w WIN_ID     window id to draw\n"
+																										     "   -x X          x position\n"
+																										     "   -y Y          y position\n",
+																										     argv
+																										     [0]);
+																										return
+																										    0;
 
-				case 'w':
-					window.
-							window
-							=
-							strtol
-							(optarg,
-							0,
-							0);
-					break;
+																									case 'w':
+																										window.
+																										    window
+																										    =
+																										    strtol
+																										    (optarg,
+																										     0,
+																										     0);
+																										break;
 
-				case '?':
-					exit(EXIT_FAILURE);
-			}
-		}
-		/* initalize X BEFORE we load config. (we need to so that 'screen' is set) */
-		init_X11
-				();
-		
-		tmpstring1 = (char*)malloc(2*TEXT_BUFFER_SIZE);
-		tmpstring2 = (char*)malloc(2*TEXT_BUFFER_SIZE);
+																									case '?':
+																										exit(EXIT_FAILURE);
+																									}
+																								}
+																								/* initalize X BEFORE we load config. (we need to so that 'screen' is set) */
+																								init_X11
+																								    ();
 
-		/* load current_config or CONFIG_FILE */
+																								tmpstring1
+																								    =
+																								    (char
+																								     *)
+																								    malloc
+																								    (2
+																								     *
+																								     TEXT_BUFFER_SIZE);
+																								tmpstring2
+																								    =
+																								    (char
+																								     *)
+																								    malloc
+																								    (2
+																								     *
+																								     TEXT_BUFFER_SIZE);
+
+																								/* load current_config or CONFIG_FILE */
 
 #ifdef CONFIG_FILE
-																				if (current_config == NULL) {
-	/* load default config file */
-	char buf[256];
+																								if (current_config == NULL) {
+																									/* load default config file */
+																									char buf[256];
 
-	variable_substitute
-			(CONFIG_FILE,
-			buf,
-			256);
+																									variable_substitute
+																									    (CONFIG_FILE,
+																									     buf,
+																									     256);
 
-	if (buf[0] != '\0')
-		current_config
-				=
-				strdup
-				(buf);
-										}
+																									if (buf[0] != '\0')
+																										current_config
+																										    =
+																										    strdup
+																										    (buf);
+																								}
 #endif
 
-																				if (current_config != NULL)
-																					load_config_file
-																					(current_config);
-																				else
-										set_default_configurations
-										();
+																								if (current_config != NULL)
+																									load_config_file
+																									    (current_config);
+																								else
+																									set_default_configurations
+																									    ();
 
 #ifdef MAIL_FILE
-																				if (current_mail_spool == NULL) {
-	char buf[256];
-	variable_substitute
-			(MAIL_FILE,
-			buf,
-			256);
+																								if (current_mail_spool == NULL) {
+																									char buf[256];
+																									variable_substitute
+																									    (MAIL_FILE,
+																									     buf,
+																									     256);
 
-	if (buf[0] != '\0')
-		current_mail_spool
-				=
-				strdup
-				(buf);
-										}
+																									if (buf[0] != '\0')
+																										current_mail_spool
+																										    =
+																										    strdup
+																										    (buf);
+																								}
 #endif
 
-																				/* handle other command line arguments */
+																								/* handle other command line arguments */
 
-																				optind = 0;
+																								optind
+																								    =
+																								    0;
 
-																				while
-										(1)
-										{
-										int c = getopt(argc,
-										argv,
-										getopt_string);
-										if (c == -1)
-										break;
+																								while
+																								    (1)
+																								{
+																									int c = getopt(argc,
+																										       argv,
+																										       getopt_string);
+																									if (c == -1)
+																										break;
 
-										switch
-										(c)
-										{
-										case 'a':
-										text_alignment
-										=
-										string_to_alignment
-										(optarg);
-										break;
+																									switch
+																									    (c)
+																									{
+																									case 'a':
+																										text_alignment
+																										    =
+																										    string_to_alignment
+																										    (optarg);
+																										break;
 
-										case 'd':
-										fork_to_background
-										=
-										1;
-										break;
+																									case 'd':
+																										fork_to_background
+																										    =
+																										    1;
+																										break;
 
-										case 'f':
-										font_name
-										=
-										strdup
-										(optarg);
-										break;
+																									case 'f':
+																										font_name
+																										    =
+																										    strdup
+																										    (optarg);
+																										break;
 
 #ifdef OWN_WINDOW
-										case 'o':
-										own_window
-										=
-										1;
-										break;
+																									case 'o':
+																										own_window
+																										    =
+																										    1;
+																										break;
 #endif
 #ifdef XDBE
-										case 'b':
-										use_xdbe
-										=
-										1;
-										break;
+																									case 'b':
+																										use_xdbe
+																										    =
+																										    1;
+																										break;
 #endif
 
-										case 't':
-										if (text != original_text)
-										free(text);
-										text = strdup(optarg);
-										convert_escapes
-										(text);
-										break;
+																									case 't':
+																										if (text != original_text)
+																											free(text);
+																										text = strdup(optarg);
+																										convert_escapes
+																										    (text);
+																										break;
 
-										case 'u':
-										update_interval
-										=
-										strtod
-										(optarg,
-										0);
-										break;
-										
-										case 'i':
-										total_run_times
-										=
-										strtod
-										(optarg,
-										0);
-										break;
+																									case 'u':
+																										update_interval
+																										    =
+																										    strtod
+																										    (optarg,
+																										     0);
+																										break;
 
-										case 'x':
-										gap_x
-										=
-										atoi
-										(optarg);
-										break;
+																									case 'i':
+																										total_run_times
+																										    =
+																										    strtod
+																										    (optarg,
+																										     0);
+																										break;
 
-										case 'y':
-										gap_y
-										=
-										atoi
-										(optarg);
-										break;
+																									case 'x':
+																										gap_x
+																										    =
+																										    atoi
+																										    (optarg);
+																										break;
 
-										case '?':
-										exit(EXIT_FAILURE);
-										}
-										}
+																									case 'y':
+																										gap_y
+																										    =
+																										    atoi
+																										    (optarg);
+																										break;
 
-										/* load font */
-										load_font
-										();
+																									case '?':
+																										exit(EXIT_FAILURE);
+																									}
+																								}
 
-										/* generate text and get initial size */
-										extract_variable_text
-										(text);
-										if (text != original_text)
-										free(text);
-										text = NULL;
+																								/* load font */
+																								load_font
+																								    ();
 
-										update_uname
-										();
+																								/* generate text and get initial size */
+																								extract_variable_text
+																								    (text);
+																								if (text != original_text)
+																									free(text);
+																								text = NULL;
 
-										generate_text
-										();
-										update_text_area();	/* to get initial size of the window */
+																								update_uname
+																								    ();
 
-										init_window
-										(own_window,
-										text_width
-										+
-										border_margin
-										*
-										2
-										+
-										1,
-										text_height
-										+
-										border_margin
-										*
-										2
-										+
-										1);
+																								generate_text
+																								    ();
+																								update_text_area();	/* to get initial size of the window */
 
-										update_text_area();	/* to position text/window on screen */
+																								init_window
+																								    (own_window,
+																								     text_width
+																								     +
+																								     border_margin
+																								     *
+																								     2
+																								     +
+																								     1,
+																								     text_height
+																								     +
+																								     border_margin
+																								     *
+																								     2
+																								     +
+																								     1);
+
+																								update_text_area();	/* to position text/window on screen */
 
 #ifdef CAIRO
 // why the fuck not?
@@ -3723,82 +4041,83 @@ else
 #endif
 
 #ifdef OWN_WINDOW
-																				if (own_window)
-																					XMoveWindow
-																					(display,
-		window.
-				window,
-		window.
-				x,
-		window.
-				y);
+																								if (own_window)
+																									XMoveWindow
+																									    (display,
+																									     window.
+																									     window,
+																									     window.
+																									     x,
+																									     window.
+																									     y);
 #endif
 
-																				create_gc
-																				();
+																								create_gc
+																								    ();
 
-																				set_font
-										();
+																								set_font
+																								    ();
 
-										draw_stuff
-										();
+																								draw_stuff
+																								    ();
 
-										/* fork */
-										if (fork_to_background) {
-										int ret = fork();
-										switch
-										(ret)
-										{
-										case -1:
-										ERR("can't fork() to background: %s", strerror(errno));
-										break;
+																								/* fork */
+																								if (fork_to_background) {
+																									int ret = fork();
+																									switch
+																									    (ret)
+																									{
+																									case -1:
+																										ERR("can't fork() to background: %s", strerror(errno));
+																										break;
 
-										case 0:
-										break;
+																									case 0:
+																										break;
 
-										default:
-										fprintf
-										(stderr,
-										"Conky: forked to background, pid is %d\n",
-										ret);
-										return 0;
-										}
-										}
+																									default:
+																										fprintf
+																										    (stderr,
+																										     "Conky: forked to background, pid is %d\n",
+																										     ret);
+																										return
+																										    0;
+																									}
+																								}
 
-										/* set SIGUSR1, SIGINT and SIGTERM handlers */
-										{
-										struct
-										sigaction
-										sa;
+																								/* set SIGUSR1, SIGINT and SIGTERM handlers */
+																								{
+																									struct
+																									sigaction
+																									    sa;
 
-										sa.sa_handler = reload_handler;
-										sigemptyset
-										(&sa.
-										sa_mask);
-										sa.sa_flags = SA_RESTART;
-										if (sigaction(SIGUSR1, &sa, NULL) != 0)
-										ERR("can't set signal handler for SIGUSR1: %s", strerror(errno));
+																									sa.sa_handler = reload_handler;
+																									sigemptyset
+																									    (&sa.
+																									     sa_mask);
+																									sa.sa_flags = SA_RESTART;
+																									if (sigaction(SIGUSR1, &sa, NULL) != 0)
+																										ERR("can't set signal handler for SIGUSR1: %s", strerror(errno));
 
-										sa.sa_handler = term_handler;
-										sigemptyset
-										(&sa.
-										sa_mask);
-										sa.sa_flags = SA_RESTART;
-										if (sigaction(SIGINT, &sa, NULL) != 0)
-										ERR("can't set signal handler for SIGINT: %s", strerror(errno));
+																									sa.sa_handler = term_handler;
+																									sigemptyset
+																									    (&sa.
+																									     sa_mask);
+																									sa.sa_flags = SA_RESTART;
+																									if (sigaction(SIGINT, &sa, NULL) != 0)
+																										ERR("can't set signal handler for SIGINT: %s", strerror(errno));
 
-										sa.sa_handler = term_handler;
-										sigemptyset
-										(&sa.
-										sa_mask);
-										sa.sa_flags = SA_RESTART;
-										if (sigaction(SIGTERM, &sa, NULL) != 0)
-										ERR("can't set signal handler for SIGTERM: %s", strerror(errno));
-										}
-										main_loop
-										();
-										free(tmpstring1);
-										free(tmpstring2);
-										return
-										0;
-	}
+																									sa.sa_handler = term_handler;
+																									sigemptyset
+																									    (&sa.
+																									     sa_mask);
+																									sa.sa_flags = SA_RESTART;
+																									if (sigaction(SIGTERM, &sa, NULL) != 0)
+																										ERR("can't set signal handler for SIGTERM: %s", strerror(errno));
+																								}
+																								main_loop
+																								    ();
+																								free(tmpstring1);
+																								free(tmpstring2);
+																								return
+																								    0;
+																							}

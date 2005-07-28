@@ -26,38 +26,39 @@
 #if defined(i386) || defined(__i386__)
 static unsigned int get_timer();
 static unsigned int get_cpu_speed(void);
-static inline unsigned long long int rdtsc( void );
+static inline unsigned long long int rdtsc(void);
 
 /* cpu frequency detection code based on mplayer's one */
 
-static unsigned int get_timer() {
+static unsigned int get_timer()
+{
 	struct timeval tv;
 	struct timezone tz;
-	gettimeofday(&tv,&tz);
-       
-	return (tv.tv_sec*1000000+tv.tv_usec);
+	gettimeofday(&tv, &tz);
+
+	return (tv.tv_sec * 1000000 + tv.tv_usec);
 }
 
-static inline unsigned long long int rdtsc( void )
+static inline unsigned long long int rdtsc(void)
 {
 	unsigned long long int retval;
-	__asm __volatile ("rdtsc":"=A"(retval)::"memory");
+	__asm __volatile("rdtsc":"=A"(retval)::"memory");
 	return retval;
 }
-				    
+
 static unsigned int get_cpu_speed(void)
 {
 	unsigned long long int tscstart, tscstop;
 	unsigned int start, stop;
-    
+
 	tscstart = rdtsc();
 	start = get_timer();
 	usleep(50000);
 	stop = get_timer();
 	tscstop = rdtsc();
 
-    	return((tscstop-tscstart)/((stop-start)/1000.0));
-} 
+	return ((tscstop - tscstart) / ((stop - start) / 1000.0));
+}
 #endif
 
 
@@ -410,29 +411,33 @@ char *get_acpi_fan()
 	return "";
 }
 
-char* get_adt746x_cpu() {
+char *get_adt746x_cpu()
+{
 	return "";
 }
 
-char* get_adt746x_fan() {
+char *get_adt746x_fan()
+{
 	return "";
 }
 
-char* get_freq() {
+char *get_freq()
+{
 #if defined(i386) || defined(__i386__)
 	int i;
 	char *cpuspeed;
 
-	if ((cpuspeed = (char *)malloc(16)) == NULL)
+	if ((cpuspeed = (char *) malloc(16)) == NULL)
 		exit(1);
-	
+
 	i = 0;
 	if ((i = get_cpu_speed()) > 0) {
-        	if (i < 1000000) {
-			i += 50; /* for rounding */
-			snprintf(cpuspeed, 15, "%d.%d MHz", i/1000, (i/100)%10);
+		if (i < 1000000) {
+			i += 50;	/* for rounding */
+			snprintf(cpuspeed, 15, "%d.%d MHz", i / 1000,
+				 (i / 100) % 10);
 		} else {
-			snprintf(cpuspeed, 15, "%d MHz", i/1000);
+			snprintf(cpuspeed, 15, "%d MHz", i / 1000);
 		}
 	} else {
 		cpuspeed = "";

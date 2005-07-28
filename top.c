@@ -25,8 +25,8 @@ static struct process *new_process(int p)
 	process = malloc(sizeof(struct process));
 
 	/*
-	* Do stitching necessary for doubly linked list
-	*/
+	 * Do stitching necessary for doubly linked list
+	 */
 	process->name = 0;
 	process->previous = 0;
 	process->next = first_process;
@@ -40,7 +40,7 @@ static struct process *new_process(int p)
 	process->previous_kernel_time = INT_MAX;
 	process->counted = 1;
 
-	/*    process_find_name(process);*/
+	/*    process_find_name(process); */
 
 	return process;
 }
@@ -86,13 +86,13 @@ static int process_parse_stat(struct process *process)
 	ps = open(filename, O_RDONLY);
 	if (ps < 0)
 		/*
-		* The process must have finished in the last few jiffies!
-		*/
+		 * The process must have finished in the last few jiffies!
+		 */
 		return 1;
 
 	/*
-	* Mark process as up-to-date.
-	*/
+	 * Mark process as up-to-date.
+	 */
 	process->time_stamp = g_time;
 
 	rc = read(ps, line, sizeof(line));
@@ -101,8 +101,8 @@ static int process_parse_stat(struct process *process)
 		return 1;
 
 	/*
-	* Extract cpu times from data in /proc filesystem
-	*/
+	 * Extract cpu times from data in /proc filesystem
+	 */
 	rc = sscanf(line,
 		    "%*s %s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %d %d %*s %*s %*s %d %*s %*s %*s %d %d",
 		    procname, &process->user_time, &process->kernel_time,
@@ -110,8 +110,8 @@ static int process_parse_stat(struct process *process)
 	if (rc < 5)
 		return 1;
 	/*
-	* Remove parentheses from the process name stored in /proc/ under Linux...
-	*/
+	 * Remove parentheses from the process name stored in /proc/ under Linux...
+	 */
 	r = procname + 1;
 	/* remove any "kdeinit: " */
 	if (r == strstr(r, "kdeinit")) {
@@ -121,8 +121,8 @@ static int process_parse_stat(struct process *process)
 		ps = open(filename, O_RDONLY);
 		if (ps < 0)
 			/*
-			* The process must have finished in the last few jiffies!
-			*/
+			 * The process must have finished in the last few jiffies!
+			 */
 			return 1;
 
 		endl = read(ps, line, sizeof(line));
@@ -147,16 +147,16 @@ static int process_parse_stat(struct process *process)
 			*q++ = *r++;
 		*q = 0;
 	}
-	
+
 	if (process->name)
 		free(process->name);
 	process->name = strdup(deparenthesised_name);
 	process->rss *= getpagesize();
-	
-	if(!cur->memmax)
+
+	if (!cur->memmax)
 		update_total_processes();
-	
-	process->totalmem = ( (float) process->rss / cur->memmax ) / 10;
+
+	process->totalmem = ((float) process->rss / cur->memmax) / 10;
 
 	if (process->previous_user_time == INT_MAX)
 		process->previous_user_time = process->user_time;
@@ -194,15 +194,15 @@ static int update_process_table()
 	++g_time;
 
 	/*
-	* Get list of processes from /proc directory
-	*/
+	 * Get list of processes from /proc directory
+	 */
 	while ((entry = readdir(dir))) {
 		pid_t pid;
 
 		if (!entry) {
 			/*
-			* Problem reading list of processes
-			*/
+			 * Problem reading list of processes
+			 */
 			closedir(dir);
 			return 1;
 		}
@@ -240,14 +240,14 @@ static int calculate_cpu(struct process *process)
 	if (rc)
 		return 1;
 	/*rc = process_parse_statm(process);
-	if (rc)
-	return 1;*/
+	   if (rc)
+	   return 1; */
 
 	/*
-	* Check name against the exclusion list
-	*/
+	 * Check name against the exclusion list
+	 */
 	if (process->counted && exclusion_expression
-		   && !regexec(exclusion_expression, process->name, 0, 0, 0))
+	    && !regexec(exclusion_expression, process->name, 0, 0, 0))
 		process->counted = 0;
 
 	return 0;
@@ -270,8 +270,8 @@ static void process_cleanup()
 
 		p = p->next;
 		/*
-		* Delete processes that have died
-		*/
+		 * Delete processes that have died
+		 */
 		if (current->time_stamp != g_time)
 			delete_process(current);
 	}
@@ -287,14 +287,14 @@ static void delete_process(struct process *p)
 	assert(p->id == 0x0badfeed);
 
 	/*
-	* Ensure that deleted processes aren't reused.
-	*/
+	 * Ensure that deleted processes aren't reused.
+	 */
 	p->id = 0x007babe;
 #endif				/* defined(PARANOID) */
 
 	/*
-	* Maintain doubly linked list.
-	*/
+	 * Maintain doubly linked list.
+	 */
 	if (p->next)
 		p->next->previous = p->previous;
 	if (p->previous)
@@ -345,9 +345,10 @@ inline static void calc_cpu_each(int total)
 	struct process *p = first_process;
 	while (p) {
 		/*p->amount = total ?
-		(100.0 * (float) (p->user_time + p->kernel_time) /
-		total) : 0;*/
-		p->amount = (100.0 * (p->user_time + p->kernel_time) / total);
+		   (100.0 * (float) (p->user_time + p->kernel_time) /
+		   total) : 0; */
+		p->amount =
+		    (100.0 * (p->user_time + p->kernel_time) / total);
 
 /*		if (p->amount > 100)
 		p->amount = 0;*/
@@ -370,7 +371,7 @@ inline void process_find_top(struct process **cpu, struct process **mem)
 {
 	struct process *pr;
 	if (sorttmp == NULL) {
-		sorttmp = malloc(sizeof(struct process)*sorttmp_size);
+		sorttmp = malloc(sizeof(struct process) * sorttmp_size);
 		assert(sorttmp != NULL);
 	}
 	int total;
@@ -383,64 +384,64 @@ inline void process_find_top(struct process **cpu, struct process **mem)
 	process_cleanup();	/* cleanup list from exited processes */
 
 	/*
-	* this is really ugly,
-	* not to mention probably not too efficient.
-	* the main problem is that there could be any number of processes,
-	* however we have to use a fixed size for the "best" array.
-	* right now i can't think of a better way to do this,
-	* although i'm sure there is one.
-	* Perhaps just using a linked list would be more effecient?
-	* I'm too fucking lazy to do that right now.
-	*/
-	if(top_cpu) {
+	 * this is really ugly,
+	 * not to mention probably not too efficient.
+	 * the main problem is that there could be any number of processes,
+	 * however we have to use a fixed size for the "best" array.
+	 * right now i can't think of a better way to do this,
+	 * although i'm sure there is one.
+	 * Perhaps just using a linked list would be more effecient?
+	 * I'm too fucking lazy to do that right now.
+	 */
+	if (top_cpu) {
 		pr = first_process;
 		i = 0;
-		while(pr) {
-			if(i<sorttmp_size && pr->counted) {
+		while (pr) {
+			if (i < sorttmp_size && pr->counted) {
 				sorttmp[i] = pr;
 				i++;
-			}
-			else if (i == sorttmp_size && pr->counted) {
+			} else if (i == sorttmp_size && pr->counted) {
 				sorttmp_size++;
-				sorttmp = realloc(sorttmp, sizeof(struct process)*sorttmp_size);
+				sorttmp =
+				    realloc(sorttmp,
+					    sizeof(struct process) *
+					    sorttmp_size);
 				sorttmp[i] = pr;
 				i++;
 			}
 			pr = pr->next;
 		}
-		if (i+1 < sorttmp_size) {
-			sorttmp = realloc(sorttmp, sizeof(struct process)*sorttmp_size);
+		if (i + 1 < sorttmp_size) {
+			sorttmp =
+			    realloc(sorttmp,
+				    sizeof(struct process) * sorttmp_size);
 		}
 		max = i;
-		for(i=0;i<max-1;i++)
-		{
-			while (sorttmp[i+1]->amount > sorttmp[i]->amount)
-			{
+		for (i = 0; i < max - 1; i++) {
+			while (sorttmp[i + 1]->amount > sorttmp[i]->amount) {
 				pr = sorttmp[i];
-				sorttmp[i] = sorttmp[i+1];
-				sorttmp[i+1] = pr;
-				if (i>0)
+				sorttmp[i] = sorttmp[i + 1];
+				sorttmp[i + 1] = pr;
+				if (i > 0)
 					i--;
 				else
 					break;
 			}
 
 		}
-		for(i=max;i>1;i--);
+		for (i = max; i > 1; i--);
 		{
-			while (sorttmp[i]->amount > sorttmp[i-1]->amount)
-			{
+			while (sorttmp[i]->amount > sorttmp[i - 1]->amount) {
 				pr = sorttmp[i];
-				sorttmp[i] = sorttmp[i-1];
-				sorttmp[i-1] = pr;
-				if (i<max)
+				sorttmp[i] = sorttmp[i - 1];
+				sorttmp[i - 1] = pr;
+				if (i < max)
 					i++;
 				else
 					break;
 			}
 		}
-		for(i=0;i<10;i++)
-		{
+		for (i = 0; i < 10; i++) {
 			cpu[i] = sorttmp[i];
 
 		}
@@ -448,51 +449,54 @@ inline void process_find_top(struct process **cpu, struct process **mem)
 	if (top_mem) {
 		pr = first_process;
 		i = 0;
-		while(pr) {
-			if(i<sorttmp_size && pr->counted) {
+		while (pr) {
+			if (i < sorttmp_size && pr->counted) {
 				sorttmp[i] = pr;
 				i++;
-			}
-			else if (i == sorttmp_size && pr->counted) {
+			} else if (i == sorttmp_size && pr->counted) {
 				sorttmp_size++;
-				sorttmp = realloc(sorttmp, sizeof(struct process)*sorttmp_size);
+				sorttmp =
+				    realloc(sorttmp,
+					    sizeof(struct process) *
+					    sorttmp_size);
 				sorttmp[i] = pr;
 				i++;
 			}
 			pr = pr->next;
 		}
-		if (i+1 < sorttmp_size) {
-			sorttmp = realloc(sorttmp, sizeof(struct process)*sorttmp_size);
-		}		max = i;
-		for(i=0;i<max-1;i++)
-		{
-			while (sorttmp[i+1]->totalmem > sorttmp[i]->totalmem)
-			{
+		if (i + 1 < sorttmp_size) {
+			sorttmp =
+			    realloc(sorttmp,
+				    sizeof(struct process) * sorttmp_size);
+		}
+		max = i;
+		for (i = 0; i < max - 1; i++) {
+			while (sorttmp[i + 1]->totalmem >
+			       sorttmp[i]->totalmem) {
 				pr = sorttmp[i];
-				sorttmp[i] = sorttmp[i+1];
-				sorttmp[i+1] = pr;
-				if (i>0)
+				sorttmp[i] = sorttmp[i + 1];
+				sorttmp[i + 1] = pr;
+				if (i > 0)
 					i--;
 				else
 					break;
 			}
 
 		}
-		for(i=max;i>1;i--);
+		for (i = max; i > 1; i--);
 		{
-			while (sorttmp[i]->totalmem > sorttmp[i-1]->totalmem)
-			{
+			while (sorttmp[i]->totalmem >
+			       sorttmp[i - 1]->totalmem) {
 				pr = sorttmp[i];
-				sorttmp[i] = sorttmp[i-1];
-				sorttmp[i-1] = pr;
-				if (i<max)
+				sorttmp[i] = sorttmp[i - 1];
+				sorttmp[i - 1] = pr;
+				if (i < max)
 					i++;
 				else
 					break;
 			}
 		}
-		for(i=0;i<10;i++)
-		{
+		for (i = 0; i < 10; i++) {
 			mem[i] = sorttmp[i];
 
 		}

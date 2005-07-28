@@ -53,9 +53,8 @@ void variable_substitute(const char *s, char *dest, unsigned int n)
 						s++;
 				} else {
 					a = s;
-					while (*s
-					       && (isalnum((int) *s)
-						   || *s == '_'))
+					while (*s && (isalnum((int) *s)
+						      || *s == '_'))
 						s++;
 				}
 
@@ -197,9 +196,10 @@ void update_stuff()
 		update_top();
 
 #ifdef MLDONKEY
-  if (NEED(INFO_MLDONKEY)) get_mldonkey_status(&mlconfig, &mlinfo);
+	if (NEED(INFO_MLDONKEY))
+		get_mldonkey_status(&mlconfig, &mlinfo);
 #endif
-  
+
 #ifdef SETI
 	if (NEED(INFO_SETI))
 		update_seti();
@@ -214,10 +214,12 @@ void update_stuff()
 		update_load_average();
 
 #ifdef METAR
-   if (NEED(INFO_METAR) && current_update_time - last_metar_update > 1200.9 && info.looped) {
-	update_metar();
-	last_metar_update = current_update_time;
-   }
+	if (NEED(INFO_METAR)
+	    && current_update_time - last_metar_update > 1200.9
+	    && info.looped) {
+		update_metar();
+		last_metar_update = current_update_time;
+	}
 #endif
 
 

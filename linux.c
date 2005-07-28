@@ -41,7 +41,7 @@ static void update_sysinfo()
 
 	/* there was some problem with these */
 #if 0
-// 	info.loadavg[0] = s_info.loads[0] / 100000.0f;
+//      info.loadavg[0] = s_info.loads[0] / 100000.0f;
 	info.loadavg[1] = s_info.loads[1] / 100000.0f;
 	info.loadavg[2] = s_info.loads[2] / 100000.0f;
 	gkrelltop_process_find_top_three info.mask |= 1 << INFO_LOADAVG;
@@ -64,7 +64,7 @@ static void update_sysinfo()
 void update_uptime()
 {
 	/* prefers sysinfo() for uptime, I don't really know which one is better
-	* (=faster?) */
+	 * (=faster?) */
 #ifdef USE_PROC_UPTIME
 	static int rep;
 	FILE *fp = open_file("/proc/uptime", &rep);
@@ -91,7 +91,7 @@ void update_meminfo()
 	char buf[256];
 
 	info.mem = info.memmax = info.swap = info.swapmax = info.bufmem =
-			info.buffers = info.cached = 0;
+	    info.buffers = info.cached = 0;
 
 	if (meminfo_fp == NULL)
 		meminfo_fp = open_file("/proc/meminfo", &rep);
@@ -194,37 +194,40 @@ inline void update_net_stats()
 
 		if (r < ns->last_read_recv)
 			ns->recv +=
-					((long long) 4294967295U -
-					ns->last_read_recv) + r;
+			    ((long long) 4294967295U -
+			     ns->last_read_recv) + r;
 		else
 			ns->recv += (r - ns->last_read_recv);
 		ns->last_read_recv = r;
 
 		if (t < ns->last_read_trans)
 			ns->trans +=
-					((long long) 4294967295U -
-					ns->last_read_trans) + t;
+			    ((long long) 4294967295U -
+			     ns->last_read_trans) + t;
 		else
 			ns->trans += (t - ns->last_read_trans);
 		ns->last_read_trans = t;
 
 		/*** ip addr patch ***/
 		i = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
-		
+
 		conf.ifc_buf = malloc(sizeof(struct ifreq) * 16);
-		
+
 		conf.ifc_len = sizeof(struct ifreq) * 16;
 
-		ioctl((long)i, SIOCGIFCONF, &conf);
+		ioctl((long) i, SIOCGIFCONF, &conf);
 
-		for (k=0; k < conf.ifc_len / sizeof(struct ifreq); k++) {
-			struct net_stat *ns;    
-			ns = get_net_stat(((struct ifreq*)conf.ifc_buf)[k].ifr_ifrn.ifrn_name);
-			ns->addr = ((struct ifreq*)conf.ifc_buf)[k].ifr_ifru.ifru_addr;
+		for (k = 0; k < conf.ifc_len / sizeof(struct ifreq); k++) {
+			struct net_stat *ns;
+			ns = get_net_stat(((struct ifreq *) conf.
+					   ifc_buf)[k].ifr_ifrn.ifrn_name);
+			ns->addr =
+			    ((struct ifreq *) conf.ifc_buf)[k].ifr_ifru.
+			    ifru_addr;
 		}
 
-		close((long)i);
-		
+		close((long) i);
+
 		free(conf.ifc_buf);
 
 
@@ -247,7 +250,7 @@ inline void update_net_stats()
 			for (i = info.net_avg_samples; i > 1; i--) {
 				ns->net_rec[i - 1] = ns->net_rec[i - 2];
 				ns->net_trans[i - 1] =
-						ns->net_trans[i - 2];
+				    ns->net_trans[i - 2];
 			}
 		}
 
@@ -258,45 +261,49 @@ inline void update_net_stats()
 	/* fclose(net_dev_fp); net_dev_fp = NULL; */
 }
 
-inline void update_wifi_stats() {
+inline void update_wifi_stats()
+{
 	/** wireless stats patch by Bobby Beckmann **/
 	static int rep;
 	int i;
 	char buf[256];
-	/*open file and ignore first two lines       sorry, this code sucks ass right now, i'll clean it up later*/
+	/*open file and ignore first two lines       sorry, this code sucks ass right now, i'll clean it up later */
 	if (net_wireless_fp == NULL)
 		net_wireless_fp = open_file("/proc/net/wireless", &rep);
 	else
 		fseek(net_wireless_fp, 0, SEEK_SET);
-	if (!net_wireless_fp) return;
+	if (!net_wireless_fp)
+		return;
 
-	fgets(buf, 255, net_wireless_fp); /* garbage */
-	fgets(buf, 255, net_wireless_fp); /* garbage (field names) */
+	fgets(buf, 255, net_wireless_fp);	/* garbage */
+	fgets(buf, 255, net_wireless_fp);	/* garbage (field names) */
 
 	/* read each interface */
-	for (i=0; i<16; i++) {
+	for (i = 0; i < 16; i++) {
 		struct net_stat *ns;
 		char *s, *p;
 		int l, m, n;
 
-		if (fgets(buf, 255, net_wireless_fp) == NULL) break;
+		if (fgets(buf, 255, net_wireless_fp) == NULL)
+			break;
 		p = buf;
-		while (isspace((int) *p)) p++;
+		while (isspace((int) *p))
+			p++;
 
 		s = p;
 
-		while (*p && *p != ':') p++;
-		if (*p == '\0') continue;
+		while (*p && *p != ':')
+			p++;
+		if (*p == '\0')
+			continue;
 		*p = '\0';
 		p++;
 
 		ns = get_net_stat(s);
 
-		sscanf(p,
-		       "%*d   %d.  %d.  %d",
-		       &l,  &m,  &n);
+		sscanf(p, "%*d   %d.  %d.  %d", &l, &m, &n);
 
-		ns->linkstatus = (int)(log(l) / log(92) * 100);
+		ns->linkstatus = (int) (log(l) / log(92) * 100);
 	}
 
 	/*** end wireless patch ***/
@@ -359,9 +366,9 @@ inline static void update_stat()
 			clock_ticks = sysconf(_SC_CLK_TCK);
 		curtmp = 0;
 		cpu_val[0] =
-				(cpu_user + cpu_nice + cpu_system -
-				last_cpu_sum) / delta / (double) clock_ticks /
-				info.cpu_count;
+		    (cpu_user + cpu_nice + cpu_system -
+		     last_cpu_sum) / delta / (double) clock_ticks /
+		    info.cpu_count;
 		for (i = 0; i < info.cpu_avg_samples; i++)
 			curtmp += cpu_val[i];
 		info.cpu_usage = curtmp / info.cpu_avg_samples;
@@ -428,7 +435,7 @@ static int no_dots(const struct dirent *d)
 }
 
 static int
-		get_first_file_in_a_directory(const char *dir, char *s, int *rep)
+get_first_file_in_a_directory(const char *dir, char *s, int *rep)
 {
 	struct dirent **namelist;
 	int i, n;
@@ -480,9 +487,9 @@ open_i2c_sensor(const char *dev, const char *type, int n, int *div,
 		type = "in";
 
 	if (strcmp(type, "tempf") == 0) {
-		snprintf(path, 255, I2C_DIR "%s/%s%d_input", dev, "temp", n);
-	}
-	else {
+		snprintf(path, 255, I2C_DIR "%s/%s%d_input", dev, "temp",
+			 n);
+	} else {
 		snprintf(path, 255, I2C_DIR "%s/%s%d_input", dev, type, n);
 	}
 	strcpy(devtype, path);
@@ -492,7 +499,8 @@ open_i2c_sensor(const char *dev, const char *type, int n, int *div,
 	if (fd < 0)
 		ERR("can't open '%s': %s", path, strerror(errno));
 
-	if (strcmp(type, "in") == 0 || strcmp(type, "temp") == 0 || strcmp(type, "tempf") == 0)
+	if (strcmp(type, "in") == 0 || strcmp(type, "temp") == 0
+	    || strcmp(type, "tempf") == 0)
 		*div = 1;
 	else
 		*div = 0;
@@ -502,9 +510,9 @@ open_i2c_sensor(const char *dev, const char *type, int n, int *div,
 
 	/* test if *_div file exist, open it and use it as divisor */
 	if (strcmp(type, "tempf") == 0) {
-		snprintf(path, 255, I2C_DIR "%s/%s%d_div", "one", "two", n);
-	}
-	else {
+		snprintf(path, 255, I2C_DIR "%s/%s%d_div", "one", "two",
+			 n);
+	} else {
 		snprintf(path, 255, I2C_DIR "%s/%s%d_div", dev, type, n);
 	}
 
@@ -515,7 +523,7 @@ open_i2c_sensor(const char *dev, const char *type, int n, int *div,
 		unsigned int divn;
 		divn = read(divfd, divbuf, 63);
 		/* should read until n == 0 but I doubt that kernel will give these
-		* in multiple pieces. :) */
+		 * in multiple pieces. :) */
 		divbuf[divn] = '\0';
 		*div = atoi(divbuf);
 	}
@@ -540,7 +548,7 @@ double get_i2c_info(int *fd, int div, char *devtype, char *type)
 		unsigned int n;
 		n = read(*fd, buf, 63);
 		/* should read until n == 0 but I doubt that kernel will give these
-		* in multiple pieces. :) */
+		 * in multiple pieces. :) */
 		buf[n] = '\0';
 		val = atoi(buf);
 	}
@@ -549,26 +557,25 @@ double get_i2c_info(int *fd, int div, char *devtype, char *type)
 	/* open file */
 	*fd = open(devtype, O_RDONLY);
 	if (*fd < 0)
-		ERR("can't open '%s': %s", devtype, strerror(errno));  
-	
+		ERR("can't open '%s': %s", devtype, strerror(errno));
+
 	/* My dirty hack for computing CPU value 
-	* Filedil, from forums.gentoo.org
-	*/
+	 * Filedil, from forums.gentoo.org
+	 */
 /*	if (strstr(devtype, "temp1_input") != NULL)
 	return -15.096+1.4893*(val / 1000.0); */
-	
-	
+
+
 	/* divide voltage and temperature by 1000 */
 	/* or if any other divisor is given, use that */
 	if (strcmp(type, "tempf") == 0) {
 		if (div > 1)
-			return ((val / div + 40)*9.0/5)-40;
+			return ((val / div + 40) * 9.0 / 5) - 40;
 		else if (div)
-			return ((val / 1000.0 + 40)*9.0/5)-40;
+			return ((val / 1000.0 + 40) * 9.0 / 5) - 40;
 		else
-			return ((val + 40)*9.0/5)-40;
-	}
-	else {
+			return ((val + 40) * 9.0 / 5) - 40;
+	} else {
 		if (div > 1)
 			return val / div;
 		else if (div)
@@ -643,7 +650,7 @@ char *get_adt746x_cpu()
 __inline__ unsigned long long int rdtsc()
 {
 	unsigned long long int x;
-	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
+	__asm__ volatile (".byte 0x0f, 0x31":"=A" (x));
 	return x;
 }
 
@@ -655,9 +662,9 @@ char *get_freq()
 		buffer = malloc(64);
 	struct timezone tz;
 	struct timeval tvstart, tvstop;
-	unsigned long long cycles[2]; /* gotta be 64 bit */
-	unsigned int microseconds; /* total time taken */
-        
+	unsigned long long cycles[2];	/* gotta be 64 bit */
+	unsigned int microseconds;	/* total time taken */
+
 	memset(&tz, 0, sizeof(tz));
 
 	/* get this function in cached memory */
@@ -667,14 +674,13 @@ char *get_freq()
 
 	/* we don't trust that this is any specific length of time */
 	usleep(100);
-        
+
 	cycles[1] = rdtsc();
 	gettimeofday(&tvstop, &tz);
-	microseconds = ((tvstop.tv_sec-tvstart.tv_sec)*1000000) +
-			(tvstop.tv_usec-tvstart.tv_usec);
+	microseconds = ((tvstop.tv_sec - tvstart.tv_sec) * 1000000) +
+	    (tvstop.tv_usec - tvstart.tv_usec);
 
-	sprintf(buffer, "%lldMHz",
-		(cycles[1]-cycles[0])/microseconds);
+	sprintf(buffer, "%lldMHz", (cycles[1] - cycles[0]) / microseconds);
 
 	return buffer;
 }
@@ -772,7 +778,7 @@ int open_acpi_temperature(const char *name)
 	if (name == NULL || strcmp(name, "*") == 0) {
 		static int rep;
 		if (!get_first_file_in_a_directory
-				   (ACPI_THERMAL_DIR, buf, &rep))
+		    (ACPI_THERMAL_DIR, buf, &rep))
 			return -1;
 		name = buf;
 	}
@@ -910,8 +916,8 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 						break;
 
 					if (sscanf
-									       (b, "last full capacity: %d",
-							&acpi_last_full) != 0)
+					    (b, "last full capacity: %d",
+					     &acpi_last_full) != 0)
 						break;
 				}
 
@@ -947,45 +953,47 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 				format_seconds(last_battery_str + 9,
 					       63 - 9,
 					       (acpi_last_full -
-							       remaining_capacity) * 60 *
-							       60 / present_rate);
+						remaining_capacity) * 60 *
+					       60 / present_rate);
 			} else if (acpi_last_full != 0
-							&& present_rate <= 0) {
-								sprintf(last_battery_str, "charging %d%%",
-										remaining_capacity * 100 /
-										acpi_last_full);
-							} else {
-								strcpy(last_battery_str, "charging");
-							}
+				   && present_rate <= 0) {
+				sprintf(last_battery_str, "charging %d%%",
+					remaining_capacity * 100 /
+					acpi_last_full);
+			} else {
+				strcpy(last_battery_str, "charging");
+			}
 		}
 		/* discharging */
 		else if (strcmp(charging_state, "discharging") == 0) {
 			if (present_rate > 0)
 				format_seconds(last_battery_str, 63,
 					       (remaining_capacity * 60 *
-							       60) / present_rate);
+						60) / present_rate);
 			else
 				sprintf(last_battery_str,
 					"discharging %d%%",
 					remaining_capacity * 100 /
-							acpi_last_full);
+					acpi_last_full);
 		}
 		/* charged */
 		/* thanks to Lukas Zapletal <lzap@seznam.cz> */
 		else if (strcmp(charging_state, "charged") == 0) {
-			if (acpi_last_full != 0 && remaining_capacity != acpi_last_full)
+			if (acpi_last_full != 0
+			    && remaining_capacity != acpi_last_full)
 				sprintf(last_battery_str, "charged %d%%",
-					remaining_capacity * 100 / acpi_last_full);
+					remaining_capacity * 100 /
+					acpi_last_full);
 			else
 				strcpy(last_battery_str, "charged");
 		}
 		/* unknown, probably full / AC */
 		else {
 			if (acpi_last_full != 0
-						 && remaining_capacity != acpi_last_full)
+			    && remaining_capacity != acpi_last_full)
 				sprintf(last_battery_str, "unknown %d%%",
 					remaining_capacity * 100 /
-							acpi_last_full);
+					acpi_last_full);
 			else
 				strcpy(last_battery_str, "AC");
 		}
@@ -1013,7 +1021,7 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 			}
 
 			/* it seemed to buffer it so file must be closed (or could use syscalls
-			* directly but I don't feel like coding it now) */
+			 * directly but I don't feel like coding it now) */
 			fclose(apm_bat_fp);
 			apm_bat_fp = NULL;
 		}

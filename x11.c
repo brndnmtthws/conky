@@ -311,11 +311,12 @@ static Window find_subwindow(Window win, int w, int h)
 
 long get_x11_color(const char *name)
 {
-   XColor color;
+	XColor color;
 	color.pixel = 0;
-	   if (!XParseColor(display, DefaultColormap(display, screen), name, &color)) {
-		     ERR("can't parse X color '%s'", name);
-		     return 0xFF00FF;
+	if (!XParseColor
+	    (display, DefaultColormap(display, screen), name, &color)) {
+		ERR("can't parse X color '%s'", name);
+		return 0xFF00FF;
 	}
 	if (!XAllocColor
 	    (display, DefaultColormap(display, screen), &color))
