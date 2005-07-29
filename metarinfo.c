@@ -163,7 +163,7 @@ void update_metar()
 		iret1 = pthread_create(&thread1, NULL, fetch_ftp, NULL);
 	} else if (status == 2) {	/* thread is still running.  what else can we do? */
 		return;
-	} else {
+	} else { /* status must be 1 */
 		pthread_join(thread1, NULL);
 		status = 2;
 		iret1 = pthread_create(&thread1, NULL, fetch_ftp, NULL);

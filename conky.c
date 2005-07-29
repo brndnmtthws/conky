@@ -240,7 +240,7 @@ static struct special_t *new_special(char *buf, int t)
 	buf[0] = SPECIAL_CHAR;
 	buf[1] = '\0';
 	if (t == GRAPH && specials[special_count].graph == NULL) {
-		if (specials[special_count].height > 0)
+		if (specials[special_count].height > 0 && specials[special_count].height < MAX_GRAPH_DEPTH)
 			specials[special_count].graph_width = specials[special_count].height;
 		else
 			specials[special_count].graph_width = MAX_GRAPH_DEPTH;
@@ -2374,6 +2374,7 @@ static void text_size_updater(char *s)
 {
 	int w = 0;
 	char *p;
+	int h = font_height();
 
 	/* get string widths and skip specials */
 	p = s;
@@ -2385,6 +2386,9 @@ static void text_size_updater(char *s)
 
 			if (specials[special_index].type == BAR || specials[special_index].type == GRAPH) {
 				w += specials[special_index].width;
+				if ( specials[special_index].height > h ) {
+					h = specials[special_index].height;
+				}
 			}
 
 			special_index++;
@@ -2394,11 +2398,10 @@ static void text_size_updater(char *s)
 	}
 
 	w += get_string_width(s);
-
 	if (w > text_width)
 		text_width = w;
 
-	text_height += font_height();
+	text_height += h;
 }
 
 static void update_text_area()
@@ -2559,6 +2562,7 @@ static void draw_string(const char *s)
 static void draw_line(char *s)
 {
 	char *p;
+	short font_h = font_height();
 
 	cur_x = text_start_x;
 	cur_y += font_ascent();
@@ -2656,8 +2660,10 @@ static void draw_line(char *s)
 						       by,
 						       w * bar_usage / 255,
 						       h);
-					cur_y += h;
-
+					if (specials[special_index].height > font_h) {
+						cur_y += specials[special_index].height;
+						cur_y -= font_descent();
+					}
 				}
 				break;
 
@@ -2697,7 +2703,10 @@ static void draw_line(char *s)
 					for (i=0;i<specials[special_index].graph_width;i++) {
 						XDrawLine(display, window.drawable, window.gc, cur_x+(i*w*1.0/specials[special_index].graph_width)+2, by+h, cur_x+(i*w*1.0/specials[special_index].graph_width)+2, by+h-specials[special_index].graph[i]*h/100.0); /* this is mugfugly, but it works */
 					}
-					cur_y += h;
+					if (specials[special_index].height > font_h) {
+						cur_y += specials[special_index].height;
+						cur_y -= font_ascent();
+					}
 				}
 				break;
 

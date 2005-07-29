@@ -67,12 +67,20 @@ void update_mpd()
 	}
 	if (status->state == MPD_STATUS_STATE_STOP) {
 		current_info->mpd.status = "Stopped";
+		current_info->mpd.bitrate = 0;
+		current_info->mpd.progress = 0;
+		current_info->mpd.elapsed = 0;
+		current_info->mpd.length = 0;
 	}
 	if (status->state == MPD_STATUS_STATE_PAUSE) {
 		current_info->mpd.status = "Paused";
 	}
 	if (status->state == MPD_STATUS_STATE_UNKNOWN) {
 		current_info->mpd.status = "Unknown";
+		current_info->mpd.bitrate = 0;
+		current_info->mpd.progress = 0;
+		current_info->mpd.elapsed = 0;
+		current_info->mpd.length = 0;
 	}
 	if (status->state == MPD_STATUS_STATE_PLAY ||
 	    status->state == MPD_STATUS_STATE_PAUSE) {
