@@ -223,8 +223,10 @@ static struct special_t {
 	short height;
 	short width;
 	long arg;
-	unsigned int *graph;
+	double *graph;
+	double graph_scale;
 	int graph_width;
+	int scaled;
 } specials[128];
 
 static int special_count;
@@ -244,7 +246,8 @@ static struct special_t *new_special(char *buf, int t)
 			specials[special_count].graph_width = specials[special_count].height;
 		else
 			specials[special_count].graph_width = MAX_GRAPH_DEPTH;
-		specials[special_count].graph = calloc(specials[special_count].graph_width, sizeof(long));
+		specials[special_count].graph = calloc(specials[special_count].graph_width, sizeof(double));
+		specials[special_count].graph_scale = 100;
 	}
 	specials[special_count].type = t;
 	return &specials[special_count++];
@@ -302,20 +305,33 @@ static const char *scan_bar(const char *args, int *w, int *h)
 	return args;
 }
 
-void graph_append(unsigned int *graph, long width, unsigned int f) {
-	int i;
-	for (i=0;i<width-1;i++) {
-		graph[i] = graph[i+1];
+inline void graph_append(struct special_t *graph, double f) {
+ 	int i;
+	if (graph->scaled) {
+		graph->graph_scale = 0;
 	}
-	graph[width-1] = f;
+	for (i=0;i<graph->graph_width-1;i++) {
+		graph->graph[i] = graph->graph[i+1];
+		if (graph->scaled && graph->graph[i] > graph->graph_scale) {
+			graph->graph_scale = graph->graph[i];
+		}
+	}
+	graph->graph[graph->graph_width-1] = f;
 }
 
-static void new_graph(char *buf, int w, int h, unsigned int i)
+static void new_graph(char *buf, int w, int h, double i, int scaled)
 {
 	struct special_t *s = new_special(buf, GRAPH);
 	s->width = w;
 	s->height = h;
-	graph_append(s->graph, s->graph_width, i);
+	s->scaled = scaled;
+	if (scaled) {
+		s->graph_scale = 0;
+	}
+	else {
+		s->graph_scale = 100;
+	}
+	graph_append(s, i);
 }
 
 static const char *scan_graph(const char *args, int *w, int *h)
@@ -725,8 +741,9 @@ static void construct_text_object(const char *s, const char *arg)
 	    arg ? get_x11_color(arg) : default_fg_color;
 	END OBJ(downspeed, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(downspeedf, INFO_NET) obj->data.net = get_net_stat(arg);
-	END OBJ(downspeedgraph, INFO_CPU)
-			(void) scan_graph(arg, &obj->data.pair.a, &obj->data.pair.b);
+	END OBJ(downspeedgraph, INFO_NET)
+			obj->data.net = get_net_stat(arg);
+			(void) scan_graph("", &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(else, 0)
 	    if (blockdepth) {
 		text_objects[blockstart[blockdepth - 1] -
@@ -1103,7 +1120,7 @@ static void construct_text_object(const char *s, const char *arg)
 	    obj->data.i = arg ? atoi(arg) : 1;
 	END OBJ(upspeed, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(upspeedf, INFO_NET) obj->data.net = get_net_stat(arg);
-	END OBJ(upspeedgraph, INFO_CPU)
+	END OBJ(upspeedgraph, INFO_NET)
 			(void) scan_graph(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(uptime_short, INFO_UPTIME) END OBJ(uptime, INFO_UPTIME) END
 	    OBJ(adt746xcpu, 0) END OBJ(adt746xfan, 0) END
@@ -1356,17 +1373,18 @@ static void generate_text()
 			OBJ(cpugraph) {
 				new_graph(p, obj->data.pair.a,
 						obj->data.pair.b,
-						(unsigned int) (cur->cpu_usage * 100));
+						(unsigned int) (cur->cpu_usage * 100), 0);
 			}
 			OBJ(color) {
 				new_fg(p, obj->data.l);
 			}
 			OBJ(downspeed) {
-				if (!use_spacer)
+				if (!use_spacer) {
 					snprintf(p, n, "%d",
 						 (int) (obj->data.net->
 							recv_speed /
-							1024));
+					1024));
+				}
 				else
 					snprintf(p, 6, "%d     ",
 						 (int) (obj->data.net->
@@ -1384,9 +1402,8 @@ static void generate_text()
 						 recv_speed / 1024.0);
 			}
 			OBJ(downspeedgraph) {
-				new_graph(p, obj->data.pair.a,
-					  obj->data.pair.b,
-					  (unsigned int) (obj->data.net->recv_speed / 1024.0));
+				CRIT_ERR("the net graph stuff is broken right now.  don't use it.");
+				new_graph(p, obj->data.pair.a, obj->data.pair.b, (obj->data.net->recv_speed / 1024.0), 1);
 			}
 			OBJ(else) {
 				if (!if_jumped) {
@@ -1484,7 +1501,7 @@ static void generate_text()
 					ERR("your execgraph value is not between 0 and 100, therefore it will be ignored");
 				} else {
 					new_graph(p, 0,
-							25, (int) (barnum));
+							25, (int) (barnum), 0);
 				}
 
 			}
@@ -1718,7 +1735,7 @@ static void generate_text()
 				new_graph(p, obj->data.pair.a,
 					obj->data.pair.b,
 					cur->memmax ? (cur->mem) /
-							(cur->memmax) : 0);
+							(cur->memmax) : 0, 0);
 			}
 			/* mixer stuff */
 			OBJ(mixer) {
@@ -1917,10 +1934,11 @@ static void generate_text()
 						 trans_speed / 1024.0);
 			}
 			OBJ(upspeedgraph) {
+				CRIT_ERR("the net graph stuff is broken right now.  don't use it.");
 				new_graph(p, obj->data.pair.a,
 					  obj->data.pair.b,
-					  (unsigned int) (obj->data.net->trans_speed / 1024.0));
-			}
+					  (obj->data.net->trans_speed / 1024.0), 1);
+		}
 			OBJ(uptime_short) {
 				format_seconds_short(p, n,
 						     (int) cur->uptime);
@@ -2701,7 +2719,7 @@ static void draw_line(char *s)
 							JoinMiter);
 					int i;
 					for (i=0;i<specials[special_index].graph_width;i++) {
-						XDrawLine(display, window.drawable, window.gc, cur_x+(i*w*1.0/specials[special_index].graph_width)+2, by+h, cur_x+(i*w*1.0/specials[special_index].graph_width)+2, by+h-specials[special_index].graph[i]*h/100.0); /* this is mugfugly, but it works */
+						XDrawLine(display, window.drawable, window.gc, cur_x+(i*w*1.0/specials[special_index].graph_width)+2, by+h, cur_x+(i*w*1.0/specials[special_index].graph_width)+2, by+h-specials[special_index].graph[i]*h/specials[special_index].graph_scale); /* this is mugfugly, but it works */
 					}
 					if (specials[special_index].height > font_h) {
 						cur_y += specials[special_index].height;
