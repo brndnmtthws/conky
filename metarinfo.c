@@ -116,7 +116,8 @@ void *fetch_ftp()
 		initFtp();
 		res = connectFtp(metar_server, 0);
 		if (res < 0) {
-			ERR("Couldn't connect to %s, retrying\n", metar_server);
+			ERR("Couldn't connect to %s, retrying\n",
+			    metar_server);
 			continue;
 		}
 		res = changeFtpDirectory(metar_path);
@@ -162,7 +163,7 @@ void update_metar()
 		pthread_cancel(thread1);
 		status = 2;
 		iret1 = pthread_create(&thread1, NULL, fetch_ftp, NULL);
-	} else { /* status must be 1 */
+	} else {		/* status must be 1 */
 		pthread_join(thread1, NULL);
 		status = 2;
 		iret1 = pthread_create(&thread1, NULL, fetch_ftp, NULL);
