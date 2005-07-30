@@ -315,11 +315,11 @@ inline void graph_append(struct special_t *graph, double f)
 	if (graph->scaled) {
 		graph->graph_scale = 0;
 	}
-	graph->graph[graph->graph_width - 1] = f;
-	for (i = 0; i < graph->graph_width - 1; i++) {
+	graph->graph[graph->graph_width - 1] = f; /* add new data */
+	for (i = 0; i < graph->graph_width - 1; i++) { /* shift all the data by 1 */
 		graph->graph[i] = graph->graph[i + 1];
 		if (graph->scaled && graph->graph[i] > graph->graph_scale) {
-			graph->graph_scale = graph->graph[i];
+			graph->graph_scale = graph->graph[i]; /* check if we need to update the scale */
 		}
 	}
 }
