@@ -11,7 +11,7 @@ SRC_URI="http://conky.rty.ca/${P}.tar.bz2"
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64 ~ppc ~sparc ~x86"
-IUSE="truetype seti metar"
+IUSE="truetype seti metar mldonkey mpd"
 
 RDEPEND="virtual/libc
 	virtual/x11
@@ -33,12 +33,13 @@ DEPEND="truetype? ( >=media-libs/freetype-2 )
 
 src_compile() {
 	local myconf
-	myconf="--enable-double-buffer --enable-own-window --enable-proc-uptime
-	--enable-mpd"
+	myconf="--enable-double-buffer --enable-own-window --enable-proc-uptime"
 	econf \
 	   ${myconf} \
 	   $(use_enable truetype xft) \
 	   $(use_enable metar) \
+	   $(use_enable mldonkey) \
+	   $(use_enable mpd) \
 	   $(use_enable seti) || die "econf failed"
 	emake || die "compile failed"
 }
