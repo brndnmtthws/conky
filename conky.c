@@ -2426,6 +2426,7 @@ static void text_size_updater(char *s)
 				w += specials[special_index].width;
 				if ( specials[special_index].height > h ) {
 					h = specials[special_index].height;
+					h += font_ascent();
 				}
 			}
 
@@ -2810,7 +2811,7 @@ static void draw_line(char *s)
 	}
 	if (cur_y_add > 0) {
 		cur_y += cur_y_add;
-		cur_y -= font_ascent();
+		cur_y -= font_descent();
 	}
 
 	draw_string(s);
