@@ -242,8 +242,8 @@ static struct special_t *new_special(char *buf, int t)
 	buf[0] = SPECIAL_CHAR;
 	buf[1] = '\0';
 	if (t == GRAPH && specials[special_count].graph == NULL) {
-		if (specials[special_count].height > 0 && specials[special_count].height < MAX_GRAPH_DEPTH)
-			specials[special_count].graph_width = specials[special_count].height;
+		if (specials[special_count].width > 0 && specials[special_count].width < MAX_GRAPH_DEPTH)
+			specials[special_count].graph_width = specials[special_count].width - 3; // subtract 3 for the box
 		else
 			specials[special_count].graph_width = MAX_GRAPH_DEPTH;
 		specials[special_count].graph = calloc(specials[special_count].graph_width, sizeof(double));
@@ -310,13 +310,14 @@ inline void graph_append(struct special_t *graph, double f) {
 	if (graph->scaled) {
 		graph->graph_scale = 0;
 	}
+	graph->graph[graph->graph_width-1] = f;
 	for (i=0;i<graph->graph_width-1;i++) {
 		graph->graph[i] = graph->graph[i+1];
 		if (graph->scaled && graph->graph[i] > graph->graph_scale) {
 			graph->graph_scale = graph->graph[i];
 		}
 	}
-	graph->graph[graph->graph_width-1] = f;
+//	graph->graph[graph->graph_width-1] = f;
 }
 
 static void new_graph(char *buf, int w, int h, double i, int scaled)
@@ -325,8 +326,11 @@ static void new_graph(char *buf, int w, int h, double i, int scaled)
 	s->width = w;
 	s->height = h;
 	s->scaled = scaled;
+	if (s->width) {
+		s->graph_width = s->width - 3; // subtract 3 for rectangle around
+	}
 	if (scaled) {
-		s->graph_scale = 0;
+		s->graph_scale = 1;
 	}
 	else {
 		s->graph_scale = 100;
@@ -342,8 +346,8 @@ static const char *scan_graph(const char *args, int *w, int *h)
 	if (args) {
 		int n = 0;
 		if (sscanf(args, "%d,%d %n", h, w, &n) <= 1)
-			sscanf(args, "%d %n", h, &n);
-		args += n;
+			sscanf(args, "%*s %d %n", h, &n);
+		//args += n;
 	}
 
 	return args;
@@ -574,6 +578,7 @@ enum text_object_type {
 
 struct text_object {
 	int type;
+	int a, b;
 	union {
 		char *s;	/* some string */
 		int i;		/* some integer */
@@ -626,7 +631,6 @@ struct text_object {
 		struct {
 			int a, b;
 		} pair;		/* 2 */
-		
 	} data;
 };
 
@@ -742,8 +746,16 @@ static void construct_text_object(const char *s, const char *arg)
 	END OBJ(downspeed, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(downspeedf, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(downspeedgraph, INFO_NET)
-			obj->data.net = get_net_stat(arg);
-			(void) scan_graph("", &obj->data.pair.a, &obj->data.pair.b);
+			(void) scan_graph(arg, &obj->a, &obj->b);
+			char buf[64];
+			sscanf(arg, "%63s %*i,%*i %*i", buf);
+			obj->data.net = get_net_stat(buf);
+			if (sscanf(arg, "%*s %d,%d %*d", &obj->a, &obj->b) <= 1) {
+				if (sscanf(arg, "%*s %d,%d", &obj->a, &obj->b) <= 1) {
+					obj->a = 0;
+					obj->b = 25;
+				}
+			}
 	END OBJ(else, 0)
 	    if (blockdepth) {
 		text_objects[blockstart[blockdepth - 1] -
@@ -1121,7 +1133,16 @@ static void construct_text_object(const char *s, const char *arg)
 	END OBJ(upspeed, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(upspeedf, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(upspeedgraph, INFO_NET)
-			(void) scan_graph(arg, &obj->data.pair.a, &obj->data.pair.b);
+			(void) scan_graph(arg, &obj->a, &obj->b);
+	char buf[64];
+	sscanf(arg, "%63s %*i,%*i %*i", buf);
+	obj->data.net = get_net_stat(buf);
+	if (sscanf(arg, "%*s %d,%d %*d", &obj->a, &obj->b) <= 1) {
+		if (sscanf(arg, "%*s %d,%d", &obj->a, &obj->b) <= 1) {
+			obj->a = 0;
+			obj->b = 25;
+		}
+	}
 	END OBJ(uptime_short, INFO_UPTIME) END OBJ(uptime, INFO_UPTIME) END
 	    OBJ(adt746xcpu, 0) END OBJ(adt746xfan, 0) END
 #ifdef SETI
@@ -1402,8 +1423,7 @@ static void generate_text()
 						 recv_speed / 1024.0);
 			}
 			OBJ(downspeedgraph) {
-				CRIT_ERR("the net graph stuff is broken right now.  don't use it.");
-				new_graph(p, obj->data.pair.a, obj->data.pair.b, (obj->data.net->recv_speed / 1024.0), 1);
+				new_graph(p, obj->a, obj->b, (obj->data.net->recv_speed / 1024.0), 1);
 			}
 			OBJ(else) {
 				if (!if_jumped) {
@@ -1934,11 +1954,8 @@ static void generate_text()
 						 trans_speed / 1024.0);
 			}
 			OBJ(upspeedgraph) {
-				CRIT_ERR("the net graph stuff is broken right now.  don't use it.");
-				new_graph(p, obj->data.pair.a,
-					  obj->data.pair.b,
-					  (obj->data.net->trans_speed / 1024.0), 1);
-		}
+				new_graph(p, obj->a, obj->b, (obj->data.net->trans_speed / 1024.0), 1);
+			}
 			OBJ(uptime_short) {
 				format_seconds_short(p, n,
 						     (int) cur->uptime);
@@ -2692,17 +2709,12 @@ static void draw_line(char *s)
 					int by =
 							cur_y - (font_ascent() +
 							h) / 2 - 1;
-					int line;
 					w = specials[special_index].width;
 					if (w == 0)
 						w = text_start_x +
 								text_width - cur_x - 1;
 					if (w < 0)
 						w = 0;
-					if (w >= specials[special_index].graph_width)
-						line = w/specials[special_index].graph_width+1;
-					else
-						line = 1;
 					XSetLineAttributes(display,
 							window.gc, 1,
 							LineSolid,
@@ -2713,13 +2725,21 @@ static void draw_line(char *s)
 							window.gc, cur_x,
 							by, w, h);
 					XSetLineAttributes(display,
-							window.gc, line,
+							window.gc, 1,
 							LineSolid,
 							CapButt,
 							JoinMiter);
 					int i;
-					for (i=0;i<specials[special_index].graph_width;i++) {
-						XDrawLine(display, window.drawable, window.gc, cur_x+(i*w*1.0/specials[special_index].graph_width)+2, by+h, cur_x+(i*w*1.0/specials[special_index].graph_width)+2, by+h-specials[special_index].graph[i]*h/specials[special_index].graph_scale); /* this is mugfugly, but it works */
+					int j=0;
+					for (i=0;i<w-3;i++) {
+						if (i / ((float)(w - 3) / (specials[special_index].graph_width)) > j) { 
+							j++;
+						}
+						XDrawLine(display, window.drawable, window.gc,
+								cur_x+i+2, by+h,
+								cur_x+i+2,
+								by+h-specials[special_index].graph[j]*h/specials[special_index]
+										.graph_scale); /* this is mugfugly, but it works */
 					}
 					if (specials[special_index].height > font_h) {
 						cur_y += specials[special_index].height;
@@ -3519,6 +3539,12 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 
 
 
+										CONF("override_utf8_locale") {
+										utf8_mode
+										=
+										string_to_bool
+										(value);
+										}
 #ifdef XDBE
 														CONF("double_buffer") {
 														use_xdbe

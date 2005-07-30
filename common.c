@@ -146,7 +146,7 @@ void format_seconds_short(char *buf, unsigned int n, long t)
 static double last_meminfo_update;
 static double last_fs_update;
 
-unsigned int need_mask;
+unsigned long long need_mask;
 
 void update_stuff()
 {

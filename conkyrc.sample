@@ -98,6 +98,10 @@ cpu_avg_samples 4
 # set to 1 to disable averaging
 net_avg_samples 4
 
+# Force UTF8? note that UTF8 support required XFT
+override_utf8_locale no 
+
+
 # Add spaces to keep things from moving about?  This only affects certain objects.
 use_spacer no
 
@@ -139,9 +143,11 @@ metar_station  CYBW
 #  cpu                               CPU usage in percents                    
 #  cpubar            (height)        Bar that shows CPU usage, height is      
 #                                    bar's height in pixels                   
+#  cpugraph          (height),(width)CPU usage graph
 #  downspeed         net             Download speed in kilobytes              
 #  downspeedf        net             Download speed in kilobytes with one     
 #                                    decimal                                  
+#  downspeedgraph    net (height),(width) Download speed graph
 #  exec              shell command   Executes a shell command and displays    
 #                                    the output in conky. warning: this      
 #                                    takes a lot more resources than other    
@@ -152,6 +158,7 @@ metar_station  CYBW
 #                                    will use that number for a bar.
 #                                    The size for the bar is currently fixed,
 #                                    but that may change in the future.
+#  execgraph         shell command   Same as execbar, but graphs values
 #  execi             interval, shell Same as exec but with specific interval. 
 #                    command         Interval can't be less than              
 #                                    update_interval in configuration.        
@@ -277,6 +284,7 @@ metar_station  CYBW
 #  upspeed           net             Upload speed in kilobytes                
 #  upspeedf          net             Upload speed in kilobytes with one       
 #                                    decimal                                  
+#  upspeedgraph      net (height),(width) Upload speed graph
 #  uptime                            Uptime                                   
 #  uptime_short                      Uptime in a shorter format               
 #

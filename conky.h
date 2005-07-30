@@ -237,7 +237,7 @@ struct net_stat *get_net_stat(const char *dev);
 void update_stuff();
 
 #define SET_NEED(a) need_mask |= 1 << (a)
-extern unsigned int need_mask;
+extern unsigned long long need_mask;
 
 extern double current_update_time, last_update_time;
 

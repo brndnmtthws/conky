@@ -93,6 +93,7 @@
    mldonkey_login        Mldonkey login, default none
    mldonkey_password     Mldonkey password, default none
    net_avg_samples       The number of samples to average for net data
+   override_utf8_locale  Force UTF8? requires XFT
    own_window            Boolean, create own window to draw?                  
    pad_percents          Pad percentages to this many decimals (0 = no        
                          padding)                                             
@@ -156,10 +157,12 @@
   color             (color)         Change drawing color to color            
   cpu                               CPU usage in percents                    
   cpubar            (height)        Bar that shows CPU usage, height is      
-                                    bar's height in pixels                   
+                                    bar's height in pixels                 
+  cpugraph          (height),(width)CPU usage graph
   downspeed         net             Download speed in kilobytes              
   downspeedf        net             Download speed in kilobytes with one     
                                     decimal                                  
+  downspeedgraph    net (height),(width) Download speed graph
   exec              shell command   Executes a shell command and displays    
                                     the output in conky. warning: this      
                                     takes a lot more resources than other    
@@ -170,6 +173,7 @@
                                     will use that number for a bar.
                                     The size for the bar is currently fixed,
                                     but that may change in the future.
+  execgraph         shell command   Same as execbar, but graphs values
   execi             interval, shell Same as exec but with specific interval. 
                     command         Interval can't be less than              
                                     update_interval in configuration.        
@@ -295,6 +299,7 @@
   upspeed           net             Upload speed in kilobytes                
   upspeedf          net             Upload speed in kilobytes with one       
                                     decimal                                  
+  upspeedgraph      net (height),(width) Upload speed graph
   uptime                            Uptime                                   
   uptime_short                      Uptime in a shorter format               
 

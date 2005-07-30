@@ -1,3 +1,9 @@
+2005-07-30
+	* finalized graphing code, see $cpugraph, $memgraph, $execgraph,
+	$downspeedgraph, and $upspeedgraph
+	* added override_utf8_locale option
+	* poop
+
 2005-07-28
 	* Added new graphing code, such as $cpugraph
 	* small fixes all round
