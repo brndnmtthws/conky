@@ -2041,11 +2041,11 @@ static void generate_text()
 				}
 				seconds = tmp;
 				if (days > 0)
-					snprintf(p, n, "%i days %i:%i:%i", days, hours, minutes, seconds);
+					snprintf(p, n, "%i days %i:%i:%02i", days, hours, minutes, seconds);
 				else if (days > 0)
-					snprintf(p, n, "%i:%i:%i", hours, minutes, seconds);
+					snprintf(p, n, "%i:%i:%02i", hours, minutes, seconds);
 				else
-					snprintf(p, n, "%i:%i", minutes, seconds);
+					snprintf(p, n, "%i:%02i", minutes, seconds);
 			}
 			OBJ(mpd_percent) {
 				snprintf(p, n, "%2.0f", cur->mpd.progress*100);

@@ -116,22 +116,19 @@ void *fetch_ftp()
 		initFtp();
 		res = connectFtp(metar_server, 0);
 		if (res < 0) {
-			ERR("Couldn't connect to %s\n", metar_server);
-			status = 1;
-			return NULL;
+			ERR("Couldn't connect to %s, retrying\n", metar_server);
+			continue;
 		}
 		res = changeFtpDirectory(metar_path);
 		if (res < 0) {
 			ERR("Metar update failed (couldn't CWD to %s)\n",
 			    metar_path);
 			disconnectFtp();
-			status = 1;
-			return NULL;
+			continue;
 		}
 		if (res == 0) {
 			ERR("Metar update failed\n");
-			status = 1;
-			return NULL;
+			continue;
 		}
 		if (getFtp(ftpData, NULL, metar_station) < 0) {
 			ERR("Failed to get file %s\n", metar_station);
@@ -161,8 +158,10 @@ void update_metar()
 	if (!status) {
 		status = 2;
 		iret1 = pthread_create(&thread1, NULL, fetch_ftp, NULL);
-	} else if (status == 2) {	/* thread is still running.  what else can we do? */
-		return;
+	} else if (status == 2) {	/* thread is still running.  let's kill it and start again */
+		pthread_cancel(thread1);
+		status = 2;
+		iret1 = pthread_create(&thread1, NULL, fetch_ftp, NULL);
 	} else { /* status must be 1 */
 		pthread_join(thread1, NULL);
 		status = 2;
