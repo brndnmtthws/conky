@@ -317,7 +317,6 @@ inline void graph_append(struct special_t *graph, double f) {
 			graph->graph_scale = graph->graph[i];
 		}
 	}
-//	graph->graph[graph->graph_width-1] = f;
 }
 
 static void new_graph(char *buf, int w, int h, double i, int scaled)
@@ -750,8 +749,8 @@ static void construct_text_object(const char *s, const char *arg)
 			char buf[64];
 			sscanf(arg, "%63s %*i,%*i %*i", buf);
 			obj->data.net = get_net_stat(buf);
-			if (sscanf(arg, "%*s %d,%d %*d", &obj->a, &obj->b) <= 1) {
-				if (sscanf(arg, "%*s %d,%d", &obj->a, &obj->b) <= 1) {
+			if (sscanf(arg, "%*s %d,%d %*d", &obj->b, &obj->a) <= 1) {
+				if (sscanf(arg, "%*s %d,%d", &obj->b, &obj->a) <= 1) {
 					obj->a = 0;
 					obj->b = 25;
 				}
@@ -1134,15 +1133,15 @@ static void construct_text_object(const char *s, const char *arg)
 	END OBJ(upspeedf, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(upspeedgraph, INFO_NET)
 			(void) scan_graph(arg, &obj->a, &obj->b);
-	char buf[64];
-	sscanf(arg, "%63s %*i,%*i %*i", buf);
-	obj->data.net = get_net_stat(buf);
-	if (sscanf(arg, "%*s %d,%d %*d", &obj->a, &obj->b) <= 1) {
-		if (sscanf(arg, "%*s %d,%d", &obj->a, &obj->b) <= 1) {
-			obj->a = 0;
-			obj->b = 25;
-		}
-	}
+			char buf[64];
+			sscanf(arg, "%63s %*i,%*i %*i", buf);
+			obj->data.net = get_net_stat(buf);
+			if (sscanf(arg, "%*s %d,%d %*d", &obj->b, &obj->a) <= 1) {
+				if (sscanf(arg, "%*s %d,%d", &obj->a, &obj->a) <= 1) {
+					obj->a = 0;
+					obj->b = 25;
+				}
+			}
 	END OBJ(uptime_short, INFO_UPTIME) END OBJ(uptime, INFO_UPTIME) END
 	    OBJ(adt746xcpu, 0) END OBJ(adt746xfan, 0) END
 #ifdef SETI
@@ -1423,6 +1422,8 @@ static void generate_text()
 						 recv_speed / 1024.0);
 			}
 			OBJ(downspeedgraph) {
+				if ( obj->data.net->recv_speed == 0 ) // this is just to make the ugliness at start go away
+					obj->data.net->recv_speed = 0.01;
 				new_graph(p, obj->a, obj->b, (obj->data.net->recv_speed / 1024.0), 1);
 			}
 			OBJ(else) {
@@ -1954,6 +1955,8 @@ static void generate_text()
 						 trans_speed / 1024.0);
 			}
 			OBJ(upspeedgraph) {
+				if ( obj->data.net->trans_speed == 0 ) // this is just to make the ugliness at start go away
+					obj->data.net->trans_speed = 0.01;
 				new_graph(p, obj->a, obj->b, (obj->data.net->trans_speed / 1024.0), 1);
 			}
 			OBJ(uptime_short) {
@@ -2597,10 +2600,11 @@ static void draw_string(const char *s)
 static void draw_line(char *s)
 {
 	char *p;
-	short font_h = font_height();
 
 	cur_x = text_start_x;
 	cur_y += font_ascent();
+	int cur_y_add = 0;
+	short font_h = font_height();
 
 	/* find specials and draw stuff */
 	p = s;
@@ -2695,9 +2699,8 @@ static void draw_line(char *s)
 						       by,
 						       w * bar_usage / 255,
 						       h);
-					if (specials[special_index].height > font_h) {
-						cur_y += specials[special_index].height;
-						cur_y -= font_descent();
+					if (specials[special_index].height > cur_y_add && specials[special_index].height > font_h) {
+						cur_y_add = specials[special_index].height;
 					}
 				}
 				break;
@@ -2711,8 +2714,7 @@ static void draw_line(char *s)
 							h) / 2 - 1;
 					w = specials[special_index].width;
 					if (w == 0)
-						w = text_start_x +
-								text_width - cur_x - 1;
+						w = text_start_x + text_width - cur_x - 1;
 					if (w < 0)
 						w = 0;
 					XSetLineAttributes(display,
@@ -2741,9 +2743,8 @@ static void draw_line(char *s)
 								by+h-specials[special_index].graph[j]*h/specials[special_index]
 										.graph_scale); /* this is mugfugly, but it works */
 					}
-					if (specials[special_index].height > font_h) {
-						cur_y += specials[special_index].height;
-						cur_y -= font_ascent();
+					if (specials[special_index].height > cur_y_add && specials[special_index].height > font_h) {
+						cur_y_add = specials[special_index].height;
 					}
 				}
 				break;
@@ -2806,6 +2807,10 @@ static void draw_line(char *s)
 		}
 
 		p++;
+	}
+	if (cur_y_add > 0) {
+		cur_y += cur_y_add;
+		cur_y -= font_ascent();
 	}
 
 	draw_string(s);
