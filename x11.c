@@ -139,7 +139,6 @@ void set_transparent_background(Window win)
 {
 	Window parent = win;
 	unsigned int i;
-
 	for (i = 0; i < 16 && parent != RootWindow(display, screen); i++) {
 		Window r, *children;
 		unsigned int n;
@@ -150,7 +149,6 @@ void set_transparent_background(Window win)
 		XQueryTree(display, parent, &r, &parent, &children, &n);
 		XFree(children);
 	}
-
 	XClearWindow(display, win);
 }
 

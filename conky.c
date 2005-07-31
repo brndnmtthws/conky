@@ -216,6 +216,7 @@ enum {
 	ALIGNR,
 	ALIGNC,
 	GRAPH,
+	TAB,
 };
 
 static struct special_t {
@@ -384,6 +385,11 @@ static inline void new_outline(char *buf, long c)
 	new_special(buf, OUTLINE)->arg = c;
 }
 
+static inline void new_tab(char *buf, long c)
+{
+       new_special(buf, TAB)->arg = c;
+}
+
 static inline void new_alignr(char *buf, long c)
 {
 	new_special(buf, ALIGNR)->arg = c;
@@ -483,6 +489,7 @@ enum text_object_type {
 	OBJ_fs_used,
 	OBJ_fs_used_perc,
 	OBJ_hr,
+	OBJ_tab,
 	OBJ_alignr,
 	OBJ_alignc,
 	OBJ_i2c,
@@ -850,6 +857,7 @@ static void construct_text_object(const char *s, const char *arg)
 		 arg = "/";
 	obj->data.fs = prepare_fs_stat(arg);
 	END OBJ(hr, 0) obj->data.i = arg ? atoi(arg) : 1;
+	END OBJ(tab, 0) obj->data.i = arg ? atoi(arg) : 1;
 	END OBJ(i2c, INFO_I2C) char buf1[64], buf2[64];
 	int n;
 
@@ -1671,7 +1679,10 @@ static void generate_text()
 			OBJ(hr) {
 				new_hr(p, obj->data.i);
 			}
-			OBJ(i2c) {
+                        OBJ(tab) {
+				new_tab(p, obj->data.i);
+			}
+                        OBJ(i2c) {
 				double r;
 
 				r = get_i2c_info(&obj->data.i2c.fd,
@@ -2807,6 +2818,14 @@ static void draw_line(char *s)
 							     [special_index].
 							     arg);
 				break;
+
+			case TAB:
+				{
+					int pos_x = text_start_x + text_width - cur_x - 1;
+					if ( pos_x > specials[special_index].arg)
+						w = pos_x - specials[special_index].arg;
+				}
+			break;
 
 			case ALIGNR:
 				{
