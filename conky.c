@@ -2455,6 +2455,10 @@ static void text_size_updater(char *s)
 				}
 			}
 			
+			if (specials[special_index].type == OFFSET) {
+				w += specials[special_index].arg + get_string_width("a"); /* filthy, but works */
+			}
+			
 			special_index++;
 			s = p + 1;
 		}
@@ -2822,9 +2826,6 @@ static void draw_line(char *s)
 			case OFFSET:
 				{
 					w = text_start_x + specials[special_index].arg;
-					printf("w %i width %i\n", w, text_width);
-					if ((w + get_string_width(p)) > text_width)
-						w = text_width - get_string_width(p);
 				}
 			break;
 
