@@ -216,7 +216,7 @@ enum {
 	ALIGNR,
 	ALIGNC,
 	GRAPH,
-	TAB,
+	OFFSET,
 };
 
 static struct special_t {
@@ -385,9 +385,9 @@ static inline void new_outline(char *buf, long c)
 	new_special(buf, OUTLINE)->arg = c;
 }
 
-static inline void new_tab(char *buf, long c)
+static inline void new_offset(char *buf, long c)
 {
-       new_special(buf, TAB)->arg = c;
+       new_special(buf, OFFSET)->arg = c;
 }
 
 static inline void new_alignr(char *buf, long c)
@@ -489,7 +489,7 @@ enum text_object_type {
 	OBJ_fs_used,
 	OBJ_fs_used_perc,
 	OBJ_hr,
-	OBJ_tab,
+	OBJ_offset,
 	OBJ_alignr,
 	OBJ_alignc,
 	OBJ_i2c,
@@ -857,7 +857,7 @@ static void construct_text_object(const char *s, const char *arg)
 		 arg = "/";
 	obj->data.fs = prepare_fs_stat(arg);
 	END OBJ(hr, 0) obj->data.i = arg ? atoi(arg) : 1;
-	END OBJ(tab, 0) obj->data.i = arg ? atoi(arg) : 1;
+	END OBJ(offset, 0) obj->data.i = arg ? atoi(arg) : 1;
 	END OBJ(i2c, INFO_I2C) char buf1[64], buf2[64];
 	int n;
 
@@ -1679,8 +1679,8 @@ static void generate_text()
 			OBJ(hr) {
 				new_hr(p, obj->data.i);
 			}
-                        OBJ(tab) {
-				new_tab(p, obj->data.i);
+                        OBJ(offset) {
+				new_offset(p, obj->data.i);
 			}
                         OBJ(i2c) {
 				double r;
@@ -2454,7 +2454,7 @@ static void text_size_updater(char *s)
 					h += font_ascent();
 				}
 			}
-
+			
 			special_index++;
 			s = p + 1;
 		}
@@ -2819,11 +2819,12 @@ static void draw_line(char *s)
 							     arg);
 				break;
 
-			case TAB:
+			case OFFSET:
 				{
-					int pos_x = text_start_x + text_width - cur_x - 1;
-					if ( pos_x > specials[special_index].arg)
-						w = pos_x - specials[special_index].arg;
+					w = text_start_x + specials[special_index].arg;
+					printf("w %i width %i\n", w, text_width);
+					if ((w + get_string_width(p)) > text_width)
+						w = text_width - get_string_width(p);
 				}
 			break;
 

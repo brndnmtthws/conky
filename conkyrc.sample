@@ -256,7 +256,7 @@ metar_station  CYBW
 #  swapmax                           Total amount of swap                     
 #  swapperc                          Percentage of swap in use                
 #  sysname                           System name, Linux for example           
-#  tab               pixels          Move text over by N pixels
+#  offset            pixels          Move text over by N pixels
 #  tail              logfile, lines (interval)
 #                                    Displays last N lines of supplied text
 #                                    text file.  If interval is not supplied,
