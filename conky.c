@@ -628,7 +628,7 @@ struct text_object {
 			char *logfile;
 			double last_update;
 			float interval;
-			char buffer[TEXT_BUFFER_SIZE];
+			char buffer[TEXT_BUFFER_SIZE*4];
 		} tail;
 
 		struct {
@@ -2152,105 +2152,54 @@ static void generate_text()
 
 
 			OBJ(tail) {
-				if (current_update_time -
-				    obj->data.tail.last_update <
-				    obj->data.tail.interval) {
-					snprintf(p, n, "%s",
-						 obj->data.tail.buffer);
+				if (current_update_time -obj->data.tail.last_update < obj->data.tail.interval) {
+					snprintf(p, n, "%s", obj->data.tail.buffer);
 				} else {
-
-					obj->data.tail.last_update =
-					    current_update_time;
-
+					obj->data.tail.last_update = current_update_time;
 					FILE *fp;
 					int i;
 					tailstring *head = NULL;
-					tailstring *headtmp1 = NULL;
-					tailstring *headtmp2 = NULL;
-					tailstring *headtmp2tmp = NULL;
-					fp = fopen(obj->data.tail.logfile,
-						   "rt");
+					tailstring *headtmp = NULL;
+					fp = fopen(obj->data.tail.logfile, "rt");
 					if (fp == NULL)
 						ERR("tail logfile failed to open");
 					else {
-						obj->data.tail.readlines =
-						    0;
+						obj->data.tail.readlines = 0;
 
-						while (fgets
-						       (obj->data.tail.
-							buffer,
-							TEXT_BUFFER_SIZE *
-							4, fp) != NULL) {
-							addtail(&head,
-								obj->data.
-								tail.
-								buffer);
-							obj->data.tail.
-							    readlines++;
+						while (fgets(obj->data.tail.buffer, TEXT_BUFFER_SIZE*4, fp) != NULL) {
+							addtail(&head, obj->data.tail.buffer);
+							obj->data.tail.readlines++;
 						}
 
 						fclose(fp);
 
-						headtmp1 = head;
-						if (obj->data.tail.
-						    readlines > 0) {
-							for (i = 0;
-							     i <
-							     obj->data.
-							     tail.
-							     wantedlines;
-							     i++) {
-								if (head) {
-									addtail
-									    (&headtmp2,
-									     head->
-									     data);
-									head = head->next;
-								} else
-									break;
+						if (obj->data.tail.readlines > 0) {
+							for (i = 0;i < obj->data.tail.wantedlines + 1 && i < obj->data.tail.readlines; i++) {
+								addtail(&headtmp, head->data);
+								head = head->next;
 							}
-							headtmp2tmp =
-							    headtmp2;
-							for (i = 0;
-							     i <
-							     obj->data.
-							     tail.
-							     wantedlines;
-							     i++) {
-								if (headtmp2) {
-									strncat
-									    (obj->
-									     data.
-									     tail.
-									     buffer,
-									     headtmp2->
-									     data,
-									     TEXT_BUFFER_SIZE
-									     *
-									     4
-									     /
-									     obj->
-									     data.
-									     tail.
-									     wantedlines);
-									headtmp2
-									    =
-									    headtmp2->
-									    next;
+							strcpy(obj->data.tail.buffer, headtmp->data);
+							headtmp = headtmp->next;
+							for (i = 1;i < obj->data.tail.wantedlines + 1 && i < obj->data.tail.readlines; i++) {
+								if (headtmp) {
+									strncat(obj->data.tail.buffer, headtmp->data, TEXT_BUFFER_SIZE * 4 / obj->data.tail.wantedlines);
+									headtmp = headtmp->next;
 								}
 							}
 
-							/* this is good enough for now. */
-							snprintf(p, n,
-								 "%s",
-								 obj->data.
-								 tail.
-								 buffer);
+							/* get rid of any ugly newlines at the end */
+							if (obj->data.tail.buffer[strlen(obj->data.tail.buffer)-1] == '\n') {
+								obj->data.tail.buffer[strlen(obj->data.tail.buffer)-1] = '\0';
+							}
+							snprintf(p, n, "%s", obj->data.tail.buffer);
 
-							freetail
-							    (headtmp2tmp);
+							freetail(headtmp);
 						}
-						freetail(headtmp1);
+						else {
+							strcpy(obj->data.tail.buffer, "Logfile Empty");
+							snprintf(p, n, "Logfile Empty");
+						}
+						freetail(head);
 					}
 				}
 			}
@@ -3898,9 +3847,9 @@ int main(int argc, char **argv)
 	init_X11();
 
 	tmpstring1 = (char *)
-	    malloc(2 * TEXT_BUFFER_SIZE);
+	    malloc(TEXT_BUFFER_SIZE);
 	tmpstring2 = (char *)
-	    malloc(2 * TEXT_BUFFER_SIZE);
+	    malloc(TEXT_BUFFER_SIZE);
 
 	/* load current_config or CONFIG_FILE */
 
