@@ -2588,7 +2588,7 @@ static void draw_string(const char *s)
 
 }
 
-unsigned long do_gradient(unsigned long first_colour, unsigned long last_colour) { /* this function returns the next colour between two colours for a gradient */
+inline unsigned long do_gradient(unsigned long first_colour, unsigned long last_colour) { /* this function returns the next colour between two colours for a gradient */
 	int tmp_color = 0;
 	int red1, green1, blue1; // first colour
 	int red2, green2, blue2; // second colour
@@ -2642,7 +2642,7 @@ unsigned long do_gradient(unsigned long first_colour, unsigned long last_colour)
 	return tmp_color;
 }
 
-unsigned long gradient_max(unsigned long first_colour, unsigned long last_colour) { /* this function returns the max diff for a gradient */
+inline unsigned long gradient_max(unsigned long first_colour, unsigned long last_colour) { /* this function returns the max diff for a gradient */
 	int red1, green1, blue1; // first colour
 	int red2, green2, blue2; // second colour
 	int red3 = 0, green3 = 0, blue3 = 0; // difference
