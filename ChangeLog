@@ -1,3 +1,8 @@
+2005-07-01
+	* stabilized code
+	* added gradiest to graphs (very pretty)
+	* things
+
 2005-07-30
 	* finalized graphing code, see $cpugraph, $memgraph, $execgraph,
 	$downspeedgraph, and $upspeedgraph

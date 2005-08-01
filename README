@@ -158,11 +158,13 @@
   cpu                               CPU usage in percents                    
   cpubar            (height)        Bar that shows CPU usage, height is      
                                     bar's height in pixels                 
-  cpugraph          (height),(width)CPU usage graph
+  cpugraph          (height),(width) (gradient colour 1) (gradient colour 2)
+                                    CPU usage graph
   downspeed         net             Download speed in kilobytes              
   downspeedf        net             Download speed in kilobytes with one     
                                     decimal                                  
-  downspeedgraph    net (height),(width) Download speed graph
+  downspeedgraph    net (height),(width) (gradient colour 1) (gradient colour 2)
+                                    Download speed graph
   exec              shell command   Executes a shell command and displays    
                                     the output in conky. warning: this      
                                     takes a lot more resources than other    
@@ -300,7 +302,8 @@
   upspeed           net             Upload speed in kilobytes                
   upspeedf          net             Upload speed in kilobytes with one       
                                     decimal                                  
-  upspeedgraph      net (height),(width) Upload speed graph
+  upspeedgraph      net (height),(width)  (gradient colour 1) (gradient colour 2)
+  Upload speed graph
   uptime                            Uptime                                   
   uptime_short                      Uptime in a shorter format               
 

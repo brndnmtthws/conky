@@ -228,6 +228,8 @@ static struct special_t {
 	double graph_scale;
 	int graph_width;
 	int scaled;
+	unsigned long first_colour; // for graph gradient
+	unsigned long last_colour;
 } specials[128];
 
 static int special_count;
@@ -325,11 +327,13 @@ inline void graph_append(struct special_t *graph, double f)
 	}
 }
 
-static void new_graph(char *buf, int w, int h, double i, int scaled)
+static void new_graph(char *buf, int w, int h, unsigned int first_colour, unsigned int second_colour, double i, int scaled)
 {
 	struct special_t *s = new_special(buf, GRAPH);
 	s->width = w;
 	s->height = h;
+	s->first_colour = first_colour;
+	s->last_colour = second_colour;
 	s->scaled = scaled;
 	if (s->width) {
 		s->graph_width = s->width - 3;	// subtract 3 for rectangle around
@@ -342,16 +346,27 @@ static void new_graph(char *buf, int w, int h, double i, int scaled)
 	graph_append(s, i);
 }
 
-static const char *scan_graph(const char *args, int *w, int *h)
+static const char *scan_graph(const char *args, int *w, int *h, unsigned int *first_colour, unsigned int *last_colour)
 {
 	*w = 0;			/* zero width means all space that is available */
 	*h = 25;
+	*first_colour = 0;
+	*last_colour = 0;
 	/* graph's argument is either height or height,width */
 	if (args) {
-		int n = 0;
-		if (sscanf(args, "%d,%d %n", h, w, &n) <= 1)
-			sscanf(args, "%*s %d %n", h, &n);
-		//args += n;
+		if (sscanf(args, "%x %x", first_colour, last_colour) < 2) {
+			if (sscanf(args, "%d,%d", h, w) < 2) {
+				if (sscanf(args, "%*s %x %x", first_colour, last_colour) < 2) {
+					if (sscanf(args, "%*s %d,%d", h, w) < 2) {
+						if (sscanf(args, "%d,%d %x %x", h, w, first_colour, last_colour) < 4) {
+							if (sscanf(args, "%*s %x %x", first_colour, last_colour) < 2) {
+								sscanf(args, "%*s %d,%d %x %x", h, w, first_colour, last_colour);
+							}
+						}
+					}						
+				}
+			}
+		}
 	}
 
 	return args;
@@ -589,6 +604,7 @@ enum text_object_type {
 struct text_object {
 	int type;
 	int a, b;
+	unsigned int c, d;
 	union {
 		char *s;	/* some string */
 		int i;		/* some integer */
@@ -750,13 +766,13 @@ static void construct_text_object(const char *s, const char *arg)
 	END OBJ(cpubar, INFO_CPU)
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(cpugraph, INFO_CPU)
-	 (void) scan_graph(arg, &obj->data.pair.a, &obj->data.pair.b);
+			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d);
 	END OBJ(color, 0) obj->data.l =
 	    arg ? get_x11_color(arg) : default_fg_color;
 	END OBJ(downspeed, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(downspeedf, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(downspeedgraph, INFO_NET)
-	 (void) scan_graph(arg, &obj->a, &obj->b);
+			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d);
 	char buf[64];
 	sscanf(arg, "%63s %*i,%*i %*i", buf);
 	obj->data.net = get_net_stat(buf);
@@ -1074,7 +1090,7 @@ static void construct_text_object(const char *s, const char *arg)
 	END OBJ(membar, INFO_MEM)
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(membar, INFO_MEM)
-	 (void) scan_graph(arg, &obj->data.pair.a, &obj->data.pair.b);
+			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d);
 	END OBJ(mixer, INFO_MIXER) obj->data.l = mixer_init(arg);
 	END OBJ(mixerl, INFO_MIXER) obj->data.l = mixer_init(arg);
 	END OBJ(mixerr, INFO_MIXER) obj->data.l = mixer_init(arg);
@@ -1140,7 +1156,7 @@ static void construct_text_object(const char *s, const char *arg)
 	END OBJ(upspeed, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(upspeedf, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(upspeedgraph, INFO_NET)
-	 (void) scan_graph(arg, &obj->a, &obj->b);
+			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d);
 	char buf[64];
 	sscanf(arg, "%63s %*i,%*i %*i", buf);
 	obj->data.net = get_net_stat(buf);
@@ -1396,8 +1412,8 @@ static void generate_text()
 					(int) (cur->cpu_usage * 255.0));
 			}
 			OBJ(cpugraph) {
-				new_graph(p, obj->data.pair.a,
-					  obj->data.pair.b,
+				new_graph(p, obj->a,
+					  obj->b, obj->c, obj->d,
 					  (unsigned int) (cur->cpu_usage *
 							  100), 0);
 			}
@@ -1429,9 +1445,9 @@ static void generate_text()
 			OBJ(downspeedgraph) {
 				if (obj->data.net->recv_speed == 0)	// this is just to make the ugliness at start go away
 					obj->data.net->recv_speed = 0.01;
-				new_graph(p, obj->a, obj->b,
+				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 					  (obj->data.net->recv_speed /
-					   1024.0), 1);
+				1024.0), 1);
 			}
 			OBJ(
 				   else
@@ -1530,7 +1546,7 @@ static void generate_text()
 					ERR("your execgraph value is not between 0 and 100, therefore it will be ignored");
 				} else {
 					new_graph(p, 0,
-						  25, (int) (barnum), 0);
+					25, obj->c, obj->d, (int) (barnum), 0);
 				}
 
 			}
@@ -1763,10 +1779,10 @@ static void generate_text()
 			}
 
 			OBJ(memgraph) {
-				new_graph(p, obj->data.pair.a,
-					  obj->data.pair.b,
+				new_graph(p, obj->a,
+					  obj->b, obj->c, obj->d,
 					  cur->memmax ? (cur->mem) /
-					  (cur->memmax) : 0, 0);
+				(cur->memmax) : 0, 0);
 			}
 			/* mixer stuff */
 			OBJ(mixer) {
@@ -1967,9 +1983,9 @@ static void generate_text()
 			OBJ(upspeedgraph) {
 				if (obj->data.net->trans_speed == 0)	// this is just to make the ugliness at start go away
 					obj->data.net->trans_speed = 0.01;
-				new_graph(p, obj->a, obj->b,
+				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 					  (obj->data.net->trans_speed /
-					   1024.0), 1);
+				1024.0), 1);
 			}
 			OBJ(uptime_short) {
 				format_seconds_short(p, n,
@@ -2576,6 +2592,82 @@ static void draw_string(const char *s)
 
 }
 
+unsigned long do_gradient(unsigned long first_colour, unsigned long last_colour) { /* this function returns the next colour between two colours for a gradient */
+	int tmp_color = 0;
+	int red1, green1, blue1; // first colour
+	int red2, green2, blue2; // second colour
+	int red3 = 0, green3 = 0, blue3 = 0; // difference
+	red1 = (first_colour & 0xff0000) >> 16;
+	green1 = (first_colour & 0xff00) >> 8;
+	blue1 = first_colour & 0xff;
+	red2 = (last_colour & 0xff0000) >> 16;
+	green2 = (last_colour & 0xff00) >> 8;
+	blue2 = last_colour & 0xff;
+	if (red1 > red2) {
+		red3 = -1;
+	}
+	if (red1 < red2) {
+		red3 = 1;
+	}
+	if (green1 > green2) {
+		green3 = -1;
+	}
+	if (green1 < green2) {
+		green3 = 1;
+	}
+	if (blue1 > blue2) {
+		blue3 = -1;
+	}
+	if (blue1 < blue2) {
+		blue3 = 1;
+	}
+	red1 += red3;
+	green1 += green3;
+	blue1 += blue3;
+	if (red1 < 0) {
+		red1 = 0;
+	}
+	if (green1 < 0) {
+		green1 = 0;
+	}
+	if (blue1 < 0) {
+		blue1 = 0;
+	}
+	if (red1 > 0xff) {
+		red1 = 0xff;
+	}
+	if (green1 > 0xff) {
+		green1 = 0xff;
+	}
+	if (blue1 > 0xff) {
+		blue1 = 0xff;
+	}
+	tmp_color = (red1 << 16) | (green1 << 8) | blue1;
+	return tmp_color;
+}
+
+unsigned long gradient_max(unsigned long first_colour, unsigned long last_colour) { /* this function returns the max diff for a gradient */
+	int red1, green1, blue1; // first colour
+	int red2, green2, blue2; // second colour
+	int red3 = 0, green3 = 0, blue3 = 0; // difference
+	red1 = (first_colour & 0xff0000) >> 16;
+	green1 = (first_colour & 0xff00) >> 8;
+	blue1 = first_colour & 0xff;
+	red2 = (last_colour & 0xff0000) >> 16;
+	green2 = (last_colour & 0xff00) >> 8;
+	blue2 = last_colour & 0xff;
+	red3 = abs(red1 - red2);
+	green3 = abs(green1 - green2);
+	blue3 = abs(blue1 - blue2);
+	int max = red3;
+	if (green3 > max)
+		max = green3;
+	if (blue3 > max)
+		max = blue3;
+	return max;
+}
+
+
 static void draw_line(char *s)
 {
 	char *p;
@@ -2716,30 +2808,34 @@ static void draw_line(char *s)
 							   LineSolid,
 							   CapButt,
 							   JoinMiter);
-					int i;
-					int j = 0;
-					for (i = 0; i < w - 3; i++) {
-						if (i /
-						    ((float) (w - 3) /
-						     (specials
-						      [special_index].
-						      graph_width)) > j) {
-							j++;
+	int i;
+	int j = 0;
+	int gradient_size = 0;
+	float gradient_factor = 0;
+	float gradient_update = 0;
+	if (specials[special_index].first_colour != 0 && specials[special_index].last_colour != 0) {
+		current_color = specials[special_index].first_colour;
+		gradient_size = gradient_max(specials[special_index].first_colour, specials[special_index].last_colour);
+		gradient_factor = (float)gradient_size / (w - 3);
+	}
+	for (i = 0; i < w - 3; i++) {
+		if (specials[special_index].first_colour != 0 && specials[special_index].last_colour != 0) {
+			XSetForeground(display, window.gc, current_color);
+			gradient_update = gradient_factor;
+			while (gradient_update > 0) {
+				current_color = do_gradient(current_color, specials[special_index].last_colour);
+				gradient_update--;
+			}
+		}
+		if (i /
+						((float) (w - 3) /
+						(specials
+						[special_index].
+						graph_width)) > j) {
+			j++;
 						}
-						XDrawLine(display,
-							  window.drawable,
-							  window.gc,
-							  cur_x + i + 2,
-							  by + h,
-							  cur_x + i + 2,
-							  by + h -
-							  specials
-							  [special_index].
-							  graph[j] * h /
-							  specials
-							  [special_index]
-							  .graph_scale);	/* this is mugfugly, but it works */
-					}
+						XDrawLine(display,  window.drawable, window.gc, cur_x + i + 2, by + h, cur_x + i + 2, by + h - specials[special_index].graph[j] * (h - 1) / specials[special_index].graph_scale);	/* this is mugfugly, but it works */
+	}
 					if (specials[special_index].
 					    height > cur_y_add
 					    && specials[special_index].
