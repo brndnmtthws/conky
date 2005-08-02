@@ -356,7 +356,15 @@ static const char *scan_graph(const char *args, int *w, int *h, unsigned int *fi
 	if (args) {
 		if (sscanf(args, "%*s %d,%d %x %x", h, w, first_colour, last_colour) < 4) {
 			if (sscanf(args, "%*s %x %x", first_colour, last_colour) < 2) {
-				sscanf(args, "%x %x", first_colour, last_colour);
+				if (sscanf(args, "%x %x", first_colour, last_colour) < 2) {
+					if (sscanf(args, "%d,%d", h, w) < 2) {
+						sscanf(args, "%*s %d,%d", h, w);
+						*first_colour = 0;
+						*last_colour = 0;
+					}
+					*first_colour = 0;
+					*last_colour = 0;
+				}
 				*w = 0;
 				*h = 25;
 			}
