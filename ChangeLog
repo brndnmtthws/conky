@@ -3,6 +3,7 @@
 	* added gradients to graphs (very pretty)
 	* things
 	* added $font, yay
+	* feature freeze; only bugfixes now
 
 2005-07-30
 	* finalized graphing code, see $cpugraph, $memgraph, $execgraph,
