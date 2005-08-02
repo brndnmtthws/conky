@@ -381,7 +381,7 @@ int get_mldonkey_status(mldonkey_config * config, mldonkey_info * info);
 
 /* in linux.c */
 
-//static int show_nice_processes;
+/* nothing to see here */
 
 /* in cairo.c */
 
