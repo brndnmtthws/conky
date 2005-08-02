@@ -89,6 +89,10 @@ static int pad_percents = 0;
 /* UTF-8 */
 int utf8_mode = 0;
 
+static void load_font();
+static void set_font();
+
+
 
 /* Text that is shown */
 static char original_text[] =
@@ -217,6 +221,7 @@ enum {
 	ALIGNC,
 	GRAPH,
 	OFFSET,
+	FONT,
 };
 
 static struct special_t {
@@ -225,6 +230,7 @@ static struct special_t {
 	short width;
 	long arg;
 	double *graph;
+	char *args;
 	double graph_scale;
 	int graph_width;
 	int scaled;
@@ -310,6 +316,21 @@ static const char *scan_bar(const char *args, int *w, int *h)
 	}
 
 	return args;
+}
+
+static char *scan_font(const char *args)
+{
+	if (args && sizeof(args) < 127) {
+		return strdup(args);
+	}
+	else {
+		ERR("font scan failed, lets hope it doesn't mess stuff up");
+	}
+}
+
+static void new_font(char *buf, char * args) {
+	struct special_t *s = new_special(buf, FONT);
+	s->args = args;
 }
 
 inline void graph_append(struct special_t *graph, double f)
@@ -487,6 +508,7 @@ enum text_object_type {
 	OBJ_buffers,
 	OBJ_cached,
 	OBJ_color,
+	OBJ_font,
 	OBJ_cpu,
 	OBJ_cpubar,
 	OBJ_cpugraph,
@@ -773,7 +795,11 @@ static void construct_text_object(const char *s, const char *arg)
 			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d);
 	END OBJ(color, 0) obj->data.l =
 	    arg ? get_x11_color(arg) : default_fg_color;
-	END OBJ(downspeed, INFO_NET) obj->data.net = get_net_stat(arg);
+	END
+			OBJ(font, 0)
+			obj->data.s = scan_font(arg);
+			END
+			OBJ(downspeed, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(downspeedf, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(downspeedgraph, INFO_NET)
 			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d);
@@ -1423,6 +1449,9 @@ static void generate_text()
 			}
 			OBJ(color) {
 				new_fg(p, obj->data.l);
+			}
+			OBJ(font) {
+				new_font(p, obj->data.s);
 			}
 			OBJ(downspeed) {
 				if (!use_spacer) {
@@ -2401,12 +2430,14 @@ static inline int get_string_width(const char *s)
 	return *s ? calc_text_width(s, strlen(s)) : 0;
 }
 
+static int fontchange = 0;
+static char *tmpfont = NULL;
+
 static void text_size_updater(char *s)
 {
 	int w = 0;
 	char *p;
 	int h = font_height();
-
 	/* get string widths and skip specials */
 	p = s;
 	while (*p) {
@@ -2424,17 +2455,36 @@ static void text_size_updater(char *s)
 				}
 			}
 			
-			if (specials[special_index].type == OFFSET) {
+			else if (specials[special_index].type == OFFSET) {
 				w += specials[special_index].arg + get_string_width("a"); /* filthy, but works */
 			}
+			
+			else if (specials[special_index].type == FONT) {
+				fontchange = 1;
+				tmpfont = strdup(font_name);
+				free(font_name);
+				font_name = strdup(specials[special_index].args);
+				load_font();
+				set_font();
+				h = font_height();
+			}
+
 			
 			special_index++;
 			s = p + 1;
 		}
 		p++;
 	}
-
+	
 	w += get_string_width(s);
+	if (fontchange) {
+		fontchange = 0;
+		free(font_name);
+		font_name = tmpfont;
+		tmpfont = NULL;
+		load_font();
+		set_font();
+	}	
 	if (w > text_width)
 		text_width = w;
 
@@ -2825,7 +2875,7 @@ static void draw_line(char *s)
 	for (i = 0; i < w - 3; i++) {
 		if (specials[special_index].first_colour != 0 && specials[special_index].last_colour != 0) {
 			XSetForeground(display, window.gc, current_color);
-			gradient_update = gradient_factor;
+			gradient_update += gradient_factor;
 			while (gradient_update > 0) {
 				current_color = do_gradient(current_color, specials[special_index].last_colour);
 				gradient_update--;
@@ -2850,7 +2900,17 @@ static void draw_line(char *s)
 					}
 				}
 				break;
-
+			
+				case FONT:
+							fontchange = 1;
+							tmpfont = strdup(font_name);
+							free(font_name);
+							font_name = strdup(specials[special_index].args);
+							load_font();
+							set_font();
+							cur_y += font_height();
+							cur_y -= font_h;
+						break;
 			case FG:
 				if (draw_mode == FG)
 					set_foreground_color(specials
@@ -2922,6 +2982,15 @@ static void draw_line(char *s)
 	}
 
 	draw_string(s);
+	
+	if (fontchange) {
+		fontchange = 0;
+		free(font_name);
+		font_name = tmpfont;
+		tmpfont = NULL;
+		load_font();
+		set_font();
+	}
 
 	cur_y += font_descent();
 }

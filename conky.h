@@ -152,6 +152,7 @@ struct information {
 	unsigned long looped;
 };
 
+
 /* in x11.c */
 
 #include <X11/Xlib.h>

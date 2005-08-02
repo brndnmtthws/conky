@@ -169,6 +169,8 @@ metar_station  CYBW
 #  					Same as exec but with specific interval. 
 # 					Interval can't be less than              
 # 					update_interval in configuration.        
+#	font		  font		Specify a different font.  Only applies
+#					to one line.
 # 	fs_bar            (height), (fs)Bar that shows how much space is used on 
 # 					a file system. height is the height in   
 # 					pixels. fs is any file on that file      

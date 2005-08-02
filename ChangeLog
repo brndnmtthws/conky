@@ -1,7 +1,8 @@
 2005-07-01
 	* stabilized code
-	* added gradiest to graphs (very pretty)
+	* added gradients to graphs (very pretty)
 	* things
+	* added $font, yay
 
 2005-07-30
 	* finalized graphing code, see $cpugraph, $memgraph, $execgraph,
