@@ -1,3 +1,9 @@
+2005-07-02
+	* dramatically improved how conky handles fonts
+	* fixed issues with graph args
+	* shades and outlines don't work properly with graph gradients
+	(sorry!)
+
 2005-07-01
 	* stabilized code
 	* added gradients to graphs (very pretty)

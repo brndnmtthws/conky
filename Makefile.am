@@ -38,7 +38,8 @@ mldonkey = mldonkey.c
 endif
 
 conky_SOURCES = common.c fs.c top.c $(linux) mail.c mixer.c $(seti) $(mpd) \
-$(solaris) $(freebsd) $(netbsd) $(cairo) conky.c conky.h x11.c $(metar) $(mldonkey)
+	$(solaris) $(freebsd) $(netbsd) $(cairo) conky.c conky.h x11.c $(metar) \
+	$(mldonkey)
 
 conky_LDFLAGS = $(X11_LIBS) $(XFT_LIBS) $(CAIRO_LIBS)
 

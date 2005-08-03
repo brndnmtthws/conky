@@ -1,7 +1,7 @@
 #ifndef _conky_h_
 #define _conky_h_
 
-//#include <mcheck.h>
+#include <mcheck.h>
 #include "config.h"
 #include <sys/utsname.h>
 #include <stdio.h>
@@ -377,8 +377,6 @@ extern mldonkey_config mlconfig;
 
 int get_mldonkey_status(mldonkey_config * config, mldonkey_info * info);
 #endif
-
-
 
 /* in linux.c */
 

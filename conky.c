@@ -36,6 +36,130 @@ enum alignment {
 	BOTTOM_RIGHT,
 };
 
+
+/* for fonts */
+struct font_list {
+
+	char name[TEXT_BUFFER_SIZE];
+	int num;
+	XFontStruct *font;
+
+#ifdef XFT
+	XftFont *xftfont;
+	int font_alpha;
+#endif	
+
+};
+static int selected_font = 0;
+static int font_count = -1;
+struct font_list *fonts = NULL;
+
+#ifdef XFT
+
+#define font_height() use_xft ? (fonts[selected_font].xftfont->ascent + fonts[selected_font].xftfont->descent) : \
+(fonts[selected_font].font->max_bounds.ascent + fonts[selected_font].font->max_bounds.descent)
+#define font_ascent() use_xft ? fonts[selected_font].xftfont->ascent : fonts[selected_font].font->max_bounds.ascent
+#define font_descent() use_xft ? fonts[selected_font].xftfont->descent : fonts[selected_font].font->max_bounds.descent
+
+#else
+
+#define font_height() (fonts[selected_font].font->max_bounds.ascent + fonts[selected_font].font->max_bounds.descent)
+#define font_ascent() fonts[selected_font].font->max_bounds.ascent
+#define font_descent() fonts[selected_font].font->max_bounds.descent
+
+#endif
+
+#define MAX_FONTS 64 // hmm, no particular reason, just makes sense.
+
+
+
+int addfont(const char *data_in)
+{
+	if (font_count > MAX_FONTS) {
+		CRIT_ERR("you don't need that many fonts, sorry.");
+	}
+	font_count++;
+	if (font_count == 0) {
+		if ((fonts = (struct font_list*)malloc(sizeof(struct font_list))) == NULL) {
+			CRIT_ERR("malloc");
+		}
+	}
+	fonts = realloc(fonts, (sizeof(struct font_list) * (font_count+1)));
+	if (fonts == NULL) {
+		CRIT_ERR("realloc in addfont");
+	}
+	if (strlen(data_in) < TEXT_BUFFER_SIZE) { // must account for null terminator
+		strncpy(fonts[font_count].name, data_in, TEXT_BUFFER_SIZE);
+		fonts[font_count].font_alpha = 0xffff;
+	} else {
+		CRIT_ERR("Oops...looks like something overflowed in addfont().");
+	}
+	return font_count;
+}
+
+void set_first_font(const char *data_in)
+{
+	if (font_count < 0) {
+		if ((fonts = (struct font_list*)malloc(sizeof(struct font_list))) == NULL) {
+			CRIT_ERR("malloc");
+		}
+		font_count++;
+	}
+	if (strlen(data_in) > 1) {
+		strncpy(fonts[0].name, data_in, TEXT_BUFFER_SIZE-1);
+		fonts[0].font_alpha = 0xffff;
+	}
+}
+
+/*void freefonts()
+{
+	free(fonts);
+}*/
+
+
+static void load_fonts()
+{
+	int i;
+	for (i=0;i<=font_count;i++) {
+#ifdef XFT
+	/* load Xft font */
+	if (use_xft) {
+		if (fonts[i].xftfont != NULL)
+		XftFontClose(display, fonts[i].xftfont);
+	
+		if ((fonts[i].xftfont =
+				   XftFontOpenName(display, screen, fonts[i].name)) != NULL)
+			continue;
+	
+		ERR("can't load Xft font '%s'", fonts[i].name);
+		if ((fonts[i].xftfont =
+				   XftFontOpenName(display, screen,
+				"courier-12")) != NULL)
+			continue;
+	
+		ERR("can't load Xft font '%s'", "courier-12");
+	
+		if ((fonts[i].font = XLoadQueryFont(display, "fixed")) == NULL) {
+			CRIT_ERR("can't load font '%s'", "fixed");
+		}
+		use_xft = 0;
+	
+		continue;
+	}
+#endif
+	/* load normal font */
+	if (fonts[i].font != NULL)
+		XFreeFont(display, fonts[i].font);
+	
+	if ((fonts[i].font = XLoadQueryFont(display, fonts[i].name)) == NULL) {
+		ERR("can't load font '%s'", fonts[i].name);
+		if ((fonts[i].font = XLoadQueryFont(display, "fixed")) == NULL) {
+			CRIT_ERR("can't load font '%s'", "fixed");
+		}
+	}
+	}
+}
+
 /* default config file */
 static char *current_config;
 
@@ -45,9 +169,6 @@ static unsigned int stuff_in_upper_case;
 /* Position on the screen */
 static int text_alignment;
 static int gap_x, gap_y;
-
-/* Font used */
-static char *font_name;
 
 /* Update interval */
 static double update_interval;
@@ -89,10 +210,6 @@ static int pad_percents = 0;
 /* UTF-8 */
 int utf8_mode = 0;
 
-static void load_font();
-static void set_font();
-
-
 
 /* Text that is shown */
 static char original_text[] =
@@ -132,15 +249,6 @@ static char *text = original_text;
 
 static int total_updates;
 
-/* font stuff */
-
-static XFontStruct *font;
-
-#ifdef XFT
-static XftFont *xftfont;
-static int font_alpha = 65535;
-#endif
-
 /* if-blocks */
 static int blockdepth = 0;
 static int if_jumped = 0;
@@ -174,32 +282,17 @@ static inline int calc_text_width(const char *s, unsigned int l)
 	if (use_xft) {
 		XGlyphInfo gi;
 		if (utf8_mode) {
-			XftTextExtentsUtf8(display, xftfont, s, l, &gi);
+			XftTextExtentsUtf8(display, fonts[selected_font].xftfont, s, l, &gi);
 		} else {
-			XftTextExtents8(display, xftfont, s, l, &gi);
+			XftTextExtents8(display, fonts[selected_font].xftfont, s, l, &gi);
 		}
 		return gi.xOff;
 	} else
 #endif
 	{
-		return XTextWidth(font, s, l);
+		return XTextWidth(fonts[selected_font].font, s, l);
 	}
 }
-
-#ifdef XFT
-
-#define font_height() use_xft ? (xftfont->ascent + xftfont->descent) : \
-    (font->max_bounds.ascent + font->max_bounds.descent)
-#define font_ascent() use_xft ? xftfont->ascent : font->max_bounds.ascent
-#define font_descent() use_xft ? xftfont->descent : font->max_bounds.descent
-
-#else
-
-#define font_height() (font->max_bounds.ascent + font->max_bounds.descent)
-#define font_ascent() font->max_bounds.ascent
-#define font_descent() font->max_bounds.descent
-
-#endif
 
 /* formatted text to render on screen, generated in generate_text(),
  * drawn in draw_stuff() */
@@ -230,10 +323,10 @@ static struct special_t {
 	short width;
 	long arg;
 	double *graph;
-	char *args;
 	double graph_scale;
 	int graph_width;
 	int scaled;
+	short font_added;
 	unsigned long first_colour; // for graph gradient
 	unsigned long last_colour;
 } specials[128];
@@ -326,11 +419,15 @@ static char *scan_font(const char *args)
 	else {
 		ERR("font scan failed, lets hope it doesn't mess stuff up");
 	}
+	return NULL;
 }
 
 static void new_font(char *buf, char * args) {
 	struct special_t *s = new_special(buf, FONT);
-	s->args = args;
+	if (!s->font_added) {
+		s->font_added = addfont(args);
+		load_fonts();
+	}
 }
 
 inline void graph_append(struct special_t *graph, double f)
@@ -376,21 +473,23 @@ static const char *scan_graph(const char *args, int *w, int *h, unsigned int *fi
 	/* graph's argument is either height or height,width */
 	if (args) {
 		if (sscanf(args, "%*s %d,%d %x %x", h, w, first_colour, last_colour) < 4) {
-			if (sscanf(args, "%*s %x %x", first_colour, last_colour) < 2) {
-				if (sscanf(args, "%x %x", first_colour, last_colour) < 2) {
-					if (sscanf(args, "%d,%d", h, w) < 2) {
-						sscanf(args, "%*s %d,%d", h, w);
-						*first_colour = 0;
-						*last_colour = 0;
-					}
-					*first_colour = 0;
-					*last_colour = 0;
-				}
+			if (sscanf(args, "%d,%d %x %x", h, w, first_colour, last_colour) < 4) {
+				*w = 0;
+				*h = 25;			
+				if (sscanf(args, "%*s %x %x", first_colour, last_colour) < 2) {
 				*w = 0;
 				*h = 25;
+				if (sscanf(args, "%x %x", first_colour, last_colour) < 2) {
+					*first_colour = 0;
+					*last_colour = 0;
+					if (sscanf(args, "%d,%d", h, w) < 2) {
+						*first_colour = 0;
+						*last_colour = 0;
+						sscanf(args, "%*s %d,%d", h, w);
+					}
+				}
 			}
-			*w = 0;
-			*h = 25;			
+			}
 		}
 	}
 
@@ -2418,6 +2517,27 @@ static void generate_text()
 	//free(p);
 }
 
+
+static void set_font()
+{
+#ifdef XFT
+	if (use_xft) {
+			if (window.xftdraw != NULL)
+				XftDrawDestroy(window.xftdraw);
+			window.xftdraw = XftDrawCreate(display, window.drawable,
+					DefaultVisual(display,
+							screen),
+					DefaultColormap(display,
+							screen));
+
+		} else
+#endif
+{
+	XSetFont(display, window.gc, fonts[selected_font].font->fid);
+}
+}
+
+
 /*
  * text size
  */
@@ -2430,8 +2550,7 @@ static inline int get_string_width(const char *s)
 	return *s ? calc_text_width(s, strlen(s)) : 0;
 }
 
-static int fontchange = 0;
-static char *tmpfont = NULL;
+int fontchange = 0;
 
 static void text_size_updater(char *s)
 {
@@ -2460,12 +2579,8 @@ static void text_size_updater(char *s)
 			}
 			
 			else if (specials[special_index].type == FONT) {
-				fontchange = 1;
-				tmpfont = strdup(font_name);
-				free(font_name);
-				font_name = strdup(specials[special_index].args);
-				load_font();
-				set_font();
+				fontchange = specials[special_index].font_added;
+				selected_font = specials[special_index].font_added;
 				h = font_height();
 			}
 
@@ -2475,16 +2590,10 @@ static void text_size_updater(char *s)
 		}
 		p++;
 	}
-	
-	w += get_string_width(s);
-	if (fontchange) {
-		fontchange = 0;
-		free(font_name);
-		font_name = tmpfont;
-		tmpfont = NULL;
-		load_font();
-		set_font();
-	}	
+		w += get_string_width(s);
+		if (fontchange) {
+			selected_font = 0;
+		}	
 	if (w > text_width)
 		text_width = w;
 
@@ -2624,13 +2733,13 @@ static void draw_string(const char *s)
 		c2.color.red = c.red;
 		c2.color.green = c.green;
 		c2.color.blue = c.blue;
-		c2.color.alpha = font_alpha;
+		c2.color.alpha = fonts[selected_font].font_alpha;
 		if (utf8_mode) {
-			XftDrawStringUtf8(window.xftdraw, &c2, xftfont,
+			XftDrawStringUtf8(window.xftdraw, &c2, fonts[selected_font].xftfont,
 					  cur_x, cur_y, (XftChar8 *) s,
 					  strlen(s));
 		} else {
-			XftDrawString8(window.xftdraw, &c2, xftfont,
+			XftDrawString8(window.xftdraw, &c2, fonts[selected_font].xftfont,
 				       cur_x, cur_y, (XftChar8 *) s,
 				       strlen(s));
 		}
@@ -2867,17 +2976,18 @@ static void draw_line(char *s)
 	int gradient_size = 0;
 	float gradient_factor = 0;
 	float gradient_update = 0;
+	unsigned int tmpcolour = current_color;
 	if (specials[special_index].first_colour != 0 && specials[special_index].last_colour != 0) {
-		current_color = specials[special_index].first_colour;
+		tmpcolour = specials[special_index].first_colour;
 		gradient_size = gradient_max(specials[special_index].first_colour, specials[special_index].last_colour);
 		gradient_factor = (float)gradient_size / (w - 3);
 	}
 	for (i = 0; i < w - 3; i++) {
 		if (specials[special_index].first_colour != 0 && specials[special_index].last_colour != 0) {
-			XSetForeground(display, window.gc, current_color);
+			XSetForeground(display, window.gc, tmpcolour);
 			gradient_update += gradient_factor;
 			while (gradient_update > 0) {
-				current_color = do_gradient(current_color, specials[special_index].last_colour);
+				tmpcolour = do_gradient(tmpcolour, specials[special_index].last_colour);
 				gradient_update--;
 			}
 		}
@@ -2902,15 +3012,14 @@ static void draw_line(char *s)
 				break;
 			
 				case FONT:
-							fontchange = 1;
-							tmpfont = strdup(font_name);
-							free(font_name);
-							font_name = strdup(specials[special_index].args);
-							load_font();
-							set_font();
-							cur_y += font_height();
-							cur_y -= font_h;
-						break;
+				if (fontchange) {
+					cur_y -= font_ascent();
+				selected_font = fontchange;
+				cur_y += font_ascent();
+				set_font();
+			}
+						
+				break;
 			case FG:
 				if (draw_mode == FG)
 					set_foreground_color(specials
@@ -2982,15 +3091,19 @@ static void draw_line(char *s)
 	}
 
 	draw_string(s);
-	
 	if (fontchange) {
+		selected_font = 0;
+		set_font();
+	}
+
+	/*if (fontchange) {
 		fontchange = 0;
 		free(font_name);
 		font_name = tmpfont;
 		tmpfont = NULL;
 		load_font();
 		set_font();
-	}
+}*/
 
 	cur_y += font_descent();
 }
@@ -3321,65 +3434,6 @@ static void main_loop()
 	}
 }
 
-static void load_font()
-{
-#ifdef XFT
-	/* load Xft font */
-	if (use_xft) {
-		if (xftfont != NULL)
-			XftFontClose(display, xftfont);
-
-		if ((xftfont =
-		     XftFontOpenName(display, screen, font_name)) != NULL)
-			return;
-
-		ERR("can't load Xft font '%s'", font_name);
-		if ((xftfont =
-		     XftFontOpenName(display, screen,
-				     "courier-12")) != NULL)
-			return;
-
-		ERR("can't load Xft font '%s'", "courier-12");
-
-		if ((font = XLoadQueryFont(display, "fixed")) == NULL) {
-			CRIT_ERR("can't load font '%s'", "fixed");
-		}
-		use_xft = 0;
-
-		return;
-	}
-#endif
-
-	/* load normal font */
-	if (font != NULL)
-		XFreeFont(display, font);
-
-	if ((font = XLoadQueryFont(display, font_name)) == NULL) {
-		ERR("can't load font '%s'", font_name);
-		if ((font = XLoadQueryFont(display, "fixed")) == NULL) {
-			CRIT_ERR("can't load font '%s'", "fixed");
-		}
-	}
-}
-
-static void set_font()
-{
-#ifdef XFT
-	if (use_xft) {
-		if (window.xftdraw != NULL)
-			XftDrawDestroy(window.xftdraw);
-		window.xftdraw = XftDrawCreate(display, window.drawable,
-					       DefaultVisual(display,
-							     screen),
-					       DefaultColormap(display,
-							       screen));
-	} else
-#endif
-	{
-		XSetFont(display, window.gc, font->fid);
-	}
-}
-
 static void load_config_file(const char *);
 
 /* signal handler that reloads config file */
@@ -3391,7 +3445,7 @@ static void reload_handler(int a)
 	if (current_config) {
 		clear_fs_stats();
 		load_config_file(current_config);
-		load_font();
+		load_fonts();
 		set_font();
 		extract_variable_text(text);
 		free(text);
@@ -3500,12 +3554,11 @@ static void set_default_configurations(void)
 	draw_borders = 0;
 	draw_shades = 1;
 	draw_outline = 0;
-	free(font_name);
 #ifdef XFT
 	use_xft = 1;
-	font_name = strdup("courier-12");
+	set_first_font("courier-12");
 #else
-	font_name = strdup("6x10");
+	set_first_font("6x10");
 #endif
 	gap_x = 5;
 	gap_y = 5;
@@ -3726,8 +3779,8 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 			/* font silently ignored when Xft */
 		}
 		CONF("xftalpha") {
-			if (value)
-				font_alpha = atof(value)
+			if (value && font_count >= 0)
+				fonts[0].font_alpha = atof(value)
 				    * 65535.0;
 			else
 				CONF_ERR;
@@ -3747,8 +3800,8 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 		CONF("font") {
 #endif
 			if (value) {
-				free(font_name);
-				font_name = strdup(value);
+				set_first_font(value);
+				load_fonts();
 			} else
 				CONF_ERR;
 		}
@@ -4070,7 +4123,7 @@ int main(int argc, char **argv)
 			break;
 
 		case 'f':
-			font_name = strdup(optarg);
+			set_first_font(optarg);
 			break;
 
 #ifdef OWN_WINDOW
@@ -4113,7 +4166,7 @@ int main(int argc, char **argv)
 	}
 
 	/* load font */
-	load_font();
+	load_fonts();
 
 	/* generate text and get initial size */
 	extract_variable_text(text);
