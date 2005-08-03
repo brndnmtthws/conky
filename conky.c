@@ -3009,6 +3009,14 @@ static void draw_line(char *s)
 						    [special_index].height;
 					}
 				}
+				if (draw_mode == BG) {
+					set_foreground_color(default_bg_color);
+				}
+				else if (draw_mode == OUTLINE) {
+					set_foreground_color(default_out_color);
+				} else {
+					set_foreground_color(default_fg_color);
+				}
 				break;
 			
 				case FONT:
