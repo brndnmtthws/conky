@@ -90,7 +90,9 @@ int addfont(const char *data_in)
 	}
 	if (strlen(data_in) < TEXT_BUFFER_SIZE) { // must account for null terminator
 		strncpy(fonts[font_count].name, data_in, TEXT_BUFFER_SIZE);
+#ifdef XFT
 		fonts[font_count].font_alpha = 0xffff;
+#endif
 	} else {
 		CRIT_ERR("Oops...looks like something overflowed in addfont().");
 	}
@@ -107,7 +109,9 @@ void set_first_font(const char *data_in)
 	}
 	if (strlen(data_in) > 1) {
 		strncpy(fonts[0].name, data_in, TEXT_BUFFER_SIZE-1);
+#ifdef XFT
 		fonts[0].font_alpha = 0xffff;
+#endif
 	}
 }
 
