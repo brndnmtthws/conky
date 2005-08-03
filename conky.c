@@ -3014,7 +3014,7 @@ static void draw_line(char *s)
 				case FONT:
 				if (fontchange) {
 					cur_y -= font_ascent();
-				selected_font = fontchange;
+					selected_font = specials[special_index].font_added;
 				cur_y += font_ascent();
 				set_font();
 			}
