@@ -11,7 +11,7 @@ int use_xdbe;
 #endif
 
 #ifdef XFT
-int use_xft;
+int use_xft = 0;
 #endif
 
 /* some basic X11 stuff */

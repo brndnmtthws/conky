@@ -1,7 +1,7 @@
 #ifndef _conky_h_
 #define _conky_h_
 
-#include <mcheck.h>
+//#include <mcheck.h>
 #include "config.h"
 #include <sys/utsname.h>
 #include <stdio.h>

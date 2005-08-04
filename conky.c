@@ -75,6 +75,7 @@ struct font_list *fonts = NULL;
 
 int addfont(const char *data_in)
 {
+	//printf("setting additional font %s\n");
 	if (font_count > MAX_FONTS) {
 		CRIT_ERR("you don't need that many fonts, sorry.");
 	}
@@ -101,6 +102,7 @@ int addfont(const char *data_in)
 
 void set_first_font(const char *data_in)
 {
+	//printf("setting first font %s\n");
 	if (font_count < 0) {
 		if ((fonts = (struct font_list*)malloc(sizeof(struct font_list))) == NULL) {
 			CRIT_ERR("malloc");
@@ -2595,13 +2597,13 @@ static void text_size_updater(char *s)
 		p++;
 	}
 		w += get_string_width(s);
-		if (fontchange) {
-			selected_font = 0;
-		}	
 	if (w > text_width)
 		text_width = w;
 
 	text_height += h;
+	if (fontchange) {
+		selected_font = 0;
+	}
 }
 
 static void update_text_area()
@@ -2755,8 +2757,6 @@ static void draw_string(const char *s)
 	}
 	memcpy(tmpstring1, s, TEXT_BUFFER_SIZE);
 	cur_x += width_of_s;
-
-
 }
 
 inline unsigned long do_gradient(unsigned long first_colour, unsigned long last_colour) { /* this function returns the next colour between two colours for a gradient */
@@ -2952,9 +2952,16 @@ static void draw_line(char *s)
 				{
 					int h =
 					    specials[special_index].height;
-					int by =
-					    cur_y - (font_ascent() +
+					int by;
+#ifdef XFT
+					if (use_xft) {
+					    by = cur_y - (font_ascent() +
 						     h) / 2 - 1;
+					} else
+#endif
+					{
+						by = cur_y - (font_ascent()/2);
+					}
 					w = specials[special_index].width;
 					if (w == 0)
 						w = text_start_x +
@@ -3028,7 +3035,7 @@ static void draw_line(char *s)
 					cur_y -= font_ascent();
 					selected_font = specials[special_index].font_added;
 				cur_y += font_ascent();
-				set_font();
+				//set_font();
 			}
 						
 				break;
@@ -3103,21 +3110,11 @@ static void draw_line(char *s)
 	}
 
 	draw_string(s);
-	if (fontchange) {
-		selected_font = 0;
-		set_font();
-	}
-
-	/*if (fontchange) {
-		fontchange = 0;
-		free(font_name);
-		font_name = tmpfont;
-		tmpfont = NULL;
-		load_font();
-		set_font();
-}*/
 
 	cur_y += font_descent();
+	if (fontchange) {
+		selected_font = 0;
+	}
 }
 
 static void draw_text()
