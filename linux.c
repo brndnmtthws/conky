@@ -647,13 +647,14 @@ char *get_adt746x_cpu()
  *
  */
 
+#if defined(CPU_X86)
 __inline__ unsigned long long int rdtsc()
 {
 	unsigned long long int x;
 	__asm__ volatile (".byte 0x0f, 0x31":"=A" (x));
 	return x;
 }
-
+#endif
 static char *buffer = NULL;
 
 char *get_freq()
@@ -669,13 +670,16 @@ char *get_freq()
 
 	/* get this function in cached memory */
 	gettimeofday(&tvstart, &tz);
+	#if defined(CPU_X86)
 	cycles[0] = rdtsc();
+	#endif
 	gettimeofday(&tvstart, &tz);
 
 	/* we don't trust that this is any specific length of time */
 	usleep(100);
-
+	#if defined(CPU_X86)
 	cycles[1] = rdtsc();
+	#endif
 	gettimeofday(&tvstop, &tz);
 	microseconds = ((tvstop.tv_sec - tvstart.tv_sec) * 1000000) +
 	    (tvstop.tv_usec - tvstart.tv_usec);
