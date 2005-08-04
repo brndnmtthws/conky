@@ -1,29 +1,34 @@
 #!/bin/sh
 
-if [ -x aclocal-1.9 ]
+alocver=1.9
+aheadver=2.59
+amakever=1.9
+aconfver=2.59
+
+if [ -x aclocal-$alocver ]
 then
-	aclocal-1.9
+	aclocal-$alocver
 else
 	aclocal
 fi
 
-if [ -x autoheader-2.59 ]
+if [ -x autoheader-$aheadver ]
 then
-	autoheader-2.59
+	autoheader-$aheadver
 else
 	autoheader
 fi
 
-if [ -x automake-1.9 ]
+if [ -x automake-$amakever ]
 then
-	automake-1.9 -a
+	automake-$amakever -a
 else
 	automake
 fi
 
-if [ -x autoconf-2.59 ]
+if [ -x autoconf-$aconfver ]
 then
-	autoconf-2.59
+	autoconf-$aconfver
 else
 	autoconf
 fi
