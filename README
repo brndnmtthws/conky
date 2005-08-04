@@ -29,7 +29,7 @@
 
 	To compile and run Conky with all optional components (If you run Gentoo, see the "Ebuild" Section below):
 
-		./configure --prefix=/usr --enable-xft --enable-mpd --enable-seti --enable-double-buffer --enable-own-window --enable-proc-uptime --enable-metar --enable-mldonkey
+		./configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --datadir=/usr/share --sysconfdir=/etc --localstatedir=/var/lib --enable-double-buffer --enable-own-window --enable-proc-uptime --enable-mpd --enable-xft --enable-metar --enable-seti
 		make
 		./conky
 
