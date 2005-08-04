@@ -75,7 +75,6 @@ struct font_list *fonts = NULL;
 
 int addfont(const char *data_in)
 {
-	//printf("setting additional font %s\n");
 	if (font_count > MAX_FONTS) {
 		CRIT_ERR("you don't need that many fonts, sorry.");
 	}
@@ -102,7 +101,6 @@ int addfont(const char *data_in)
 
 void set_first_font(const char *data_in)
 {
-	//printf("setting first font %s\n");
 	if (font_count < 0) {
 		if ((fonts = (struct font_list*)malloc(sizeof(struct font_list))) == NULL) {
 			CRIT_ERR("malloc");
@@ -130,9 +128,9 @@ static void load_fonts()
 #ifdef XFT
 	/* load Xft font */
 	if (use_xft) {
-		if (fonts[i].xftfont != NULL)
+	if (fonts[i].xftfont != NULL && font_count < 1) {
 		XftFontClose(display, fonts[i].xftfont);
-	
+	}	
 		if ((fonts[i].xftfont =
 				   XftFontOpenName(display, screen, fonts[i].name)) != NULL)
 			continue;
@@ -2964,8 +2962,7 @@ static void draw_line(char *s)
 					}
 					w = specials[special_index].width;
 					if (w == 0)
-						w = text_start_x +
-						    text_width - cur_x - 1;
+						w = text_start_x + text_width - cur_x - 1;
 					if (w < 0)
 						w = 0;
 					XSetLineAttributes(display,

@@ -21,7 +21,7 @@
       <mainprogram>conky</mainprogram>
       <directoryradio>build</directoryradio>
       <customdirectory>/</customdirectory>
-      <programargs/>
+      <programargs></programargs>
       <terminal>false</terminal>
       <autocompile>true</autocompile>
       <envvars/>
@@ -48,7 +48,7 @@
         <f77flags/>
       </optimized>
       <debug>
-        <configargs>--enable-debug=full --prefix=/usr --enable-mpd --disable-xft --enable-seti --enable-double-buffer --enable-own-window --enable-metar --enable-mldonkey</configargs>
+        <configargs>--enable-debug=full --prefix=/usr --enable-mpd --enable-xft --enable-seti --enable-double-buffer --enable-own-window --enable-metar --enable-mldonkey</configargs>
         <builddir>debug</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
