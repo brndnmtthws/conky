@@ -23,7 +23,7 @@ if [ -x automake-$amakever ]
 then
 	automake-$amakever -a
 else
-	automake
+	automake -a
 fi
 
 if [ -x autoconf-$aconfver ]
