@@ -1,4 +1,5 @@
 #!/bin/sh
+# $Id$
 
 alocver=1.9
 aheadver=2.59
