@@ -83,6 +83,9 @@ int addfont(const char *data_in)
 	}
 	font_count++;
 	if (font_count == 0) {
+		if (fonts != NULL) {
+			free(fonts);
+		}
 		if ((fonts = (struct font_list*)malloc(sizeof(struct font_list))) == NULL) {
 			CRIT_ERR("malloc");
 		}
@@ -118,9 +121,23 @@ void set_first_font(const char *data_in)
 	}
 }
 
-/*void freefonts()
+/*void free_fonts()
 {
+	int i;       uhm...this stuff seems to do nothing but cause troubles, and there don't seem to be memory issues
+	for (i=0;i<=font_count;i++) {
+#ifdef XFT
+		if (use_xft) {
+			XftFontClose(display, fonts[i].xftfont);
+		} else
+#endif
+		{
+			XFreeFont(display, fonts[i].font);
+		}
+}
 	free(fonts);
+	fonts = NULL;
+	font_count = -1;
+	selected_font = 0;
 }*/
 
 
@@ -131,32 +148,32 @@ static void load_fonts()
 #ifdef XFT
 	/* load Xft font */
 	if (use_xft) {
-	if (fonts[i].xftfont != NULL && selected_font == 0) {
-		XftFontClose(display, fonts[i].xftfont);
-	}	
+	/*if (fonts[i].xftfont != NULL && selected_font == 0) {
+			XftFontClose(display, fonts[i].xftfont);
+	}*/
 		if ((fonts[i].xftfont =
-				   XftFontOpenName(display, screen, fonts[i].name)) != NULL)
+			XftFontOpenName(display, screen, fonts[i].name)) != NULL)
 			continue;
-	
+		
 		ERR("can't load Xft font '%s'", fonts[i].name);
 		if ((fonts[i].xftfont =
-				   XftFontOpenName(display, screen,
-				"courier-12")) != NULL)
+			XftFontOpenName(display, screen,
+					"courier-12")) != NULL)
 			continue;
-	
+		
 		ERR("can't load Xft font '%s'", "courier-12");
-	
+		
 		if ((fonts[i].font = XLoadQueryFont(display, "fixed")) == NULL) {
 			CRIT_ERR("can't load font '%s'", "fixed");
 		}
 		use_xft = 0;
-	
+		
 		continue;
 	}
 #endif
 	/* load normal font */
-	if (fonts[i].font != NULL)
-		XFreeFont(display, fonts[i].font);
+/*	if (fonts[i].font != NULL)
+		XFreeFont(display, fonts[i].font);*/
 	
 	if ((fonts[i].font = XLoadQueryFont(display, fonts[i].name)) == NULL) {
 		ERR("can't load font '%s'", fonts[i].name);
@@ -3035,8 +3052,10 @@ static void draw_line(char *s)
 					cur_y -= font_ascent();
 					selected_font = specials[special_index].font_added;
 				cur_y += font_ascent();
-				//set_font();
-			}
+				if (!use_xft) {
+					set_font();
+				}
+				}
 						
 				break;
 			case FG:
@@ -3448,8 +3467,7 @@ static void load_config_file(const char *);
 /* signal handler that reloads config file */
 static void reload_handler(int a)
 {
-	fprintf(stderr, "Conky: received signal %d, reloading config\n",
-		a);
+	ERR("Conky: received signal %d, reloading config\n", a);
 
 	if (current_config) {
 		clear_fs_stats();
@@ -3564,11 +3582,11 @@ static void set_default_configurations(void)
 	draw_shades = 1;
 	draw_outline = 0;
 #ifdef XFT
-	use_xft = 1;
-	set_first_font("courier-12");
-#else
-	set_first_font("6x10");
+	//use_xft = 1;
+	//set_first_font("courier-12");
 #endif
+//#else
+	//set_first_font("6x10");
 	gap_x = 5;
 	gap_y = 5;
 
@@ -3785,7 +3803,12 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 			use_xft = string_to_bool(value);
 		}
 		CONF("font") {
-			/* font silently ignored when Xft */
+			if (!use_xft) {
+				if (value) {
+					set_first_font(value);
+				} else
+					CONF_ERR;
+			}
 		}
 		CONF("xftalpha") {
 			if (value && font_count >= 0)
@@ -3810,7 +3833,6 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 #endif
 			if (value) {
 				set_first_font(value);
-				load_fonts();
 			} else
 				CONF_ERR;
 		}
@@ -3857,8 +3879,12 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 		}
 #ifdef MLDONKEY
 		CONF("mldonkey_hostname") {
-			if (value)
-				mlconfig.mldonkey_hostname = strdup(value);
+			if (value) {
+				if (mlconfig.mldonkey_hostname != NULL) {
+					free(mlconfig.mldonkey_hostname);
+				}
+			mlconfig.mldonkey_hostname = strdup(value);
+			}
 			else
 				CONF_ERR;
 		}
@@ -3869,14 +3895,22 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 				CONF_ERR;
 		}
 		CONF("mldonkey_login") {
-			if (value)
+			if (value) {
+				if (mlconfig.mldonkey_login != NULL) {
+					free(mlconfig.mldonkey_login);
+				}
 				mlconfig.mldonkey_login = strdup(value);
+			}
 			else
 				CONF_ERR;
 		}
 		CONF("mldonkey_password") {
-			if (value)
+			if (value) {
+				if (mlconfig.mldonkey_password != NULL) {
+					free(mlconfig.mldonkey_password);
+				}
 				mlconfig.mldonkey_password = strdup(value);
+			}
 			else
 				CONF_ERR;
 		}
