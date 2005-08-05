@@ -1,6 +1,9 @@
-/* Conky, a system monitor, based on torsmo
+/*
+ * Conky, a system monitor, based on torsmo
  *
  * This program is licensed under BSD license, read COPYING
+ *
+ *  $Id$
  */
 
 #include "conky.h"
@@ -128,7 +131,7 @@ static void load_fonts()
 #ifdef XFT
 	/* load Xft font */
 	if (use_xft) {
-	if (fonts[i].xftfont != NULL && font_count < 1) {
+	if (fonts[i].xftfont != NULL && selected_font == 0) {
 		XftFontClose(display, fonts[i].xftfont);
 	}	
 		if ((fonts[i].xftfont =
@@ -3997,20 +4000,21 @@ int main(int argc, char **argv)
 {
 	/* handle command line parameters that don't change configs */
 	char *s;
+	char temp[10];
+	unsigned int x;
 
-	if (((s = getenv("LC_ALL")) && *s)
-	    || ((s = getenv("LC_CTYPE")) && *s) || ((s = getenv("LANG"))
-						    && *s)) {
-		if (strstr(s, "UTF-8") || strstr(s, "utf-8")
-		    || strstr(s, "UTF8")
-		    || strstr(s, "utf8"))
+	if (((s = getenv("LC_ALL")) && *s) || ((s = getenv("LC_CTYPE")) && 
+		     *s) || ((s = getenv("LANG")) && *s)) {
+		strcpy(temp, s);
+		for(x = 0; x < strlen(s) ; x++) {
+			temp[x] = tolower(s[x]);
+		}
+		if (strstr(temp, "utf-8") || strstr(temp, "utf8")) {
 			utf8_mode = 1;
+		}
 	}
 	if (!setlocale(LC_CTYPE, "")) {
-		fprintf
-		    (stderr,
-		     "Can't set the specified locale! "
-		     "Check LANG, LC_CTYPE, LC_ALL.\n");
+		ERR("Can't set the specified locale!\nCheck LANG, LC_CTYPE, LC_ALL.");
 		return 1;
 	}
 	while (1) {

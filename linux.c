@@ -1,3 +1,10 @@
+/* linux.c
+ * Contains linux specific code
+ *
+ *  $Id$
+ */
+
+
 #include "conky.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -636,7 +643,6 @@ char *get_adt746x_cpu()
 
 /***********************************************************************/
 /*
- *  $Id$
  *  This file is part of x86info.
  *  (C) 2001 Dave Jones.
  *
@@ -646,19 +652,21 @@ char *get_adt746x_cpu()
  * Small changes by David Sterba <sterd9am@ss1000.ms.mff.cuni.cz>
  *
  */
-
-#if defined(CPU_X86)
+#if  defined(__i386) || defined(__x86_64)
 __inline__ unsigned long long int rdtsc()
 {
 	unsigned long long int x;
 	__asm__ volatile (".byte 0x0f, 0x31":"=A" (x));
 	return x;
 }
-#endif
 static char *buffer = NULL;
+#else
+static char *frequency;
+#endif
 
 char *get_freq()
 {
+#if  defined(__i386) || defined(__x86_64)
 	if (buffer == NULL)
 		buffer = malloc(64);
 	struct timezone tz;
@@ -670,16 +678,12 @@ char *get_freq()
 
 	/* get this function in cached memory */
 	gettimeofday(&tvstart, &tz);
-	#if defined(CPU_X86)
 	cycles[0] = rdtsc();
-	#endif
 	gettimeofday(&tvstart, &tz);
 
 	/* we don't trust that this is any specific length of time */
 	usleep(100);
-	#if defined(CPU_X86)
 	cycles[1] = rdtsc();
-	#endif
 	gettimeofday(&tvstop, &tz);
 	microseconds = ((tvstop.tv_sec - tvstart.tv_sec) * 1000000) +
 	    (tvstop.tv_usec - tvstart.tv_usec);
@@ -687,6 +691,27 @@ char *get_freq()
 	sprintf(buffer, "%lldMHz", (cycles[1] - cycles[0]) / microseconds);
 
 	return buffer;
+#else
+	FILE *f;
+	char s[1000];
+	if (frequency == NULL) {
+		frequency = (char *) malloc(100);
+		assert(frequency != NULL);
+	}
+	//char frequency[10];
+	f = fopen("/proc/cpuinfo", "r");	//open the CPU information file
+	//if (!f)
+	//    return;
+	while (fgets(s, 1000, f) != NULL)	//read the file
+		if (strncmp(s, "cpu M", 5) == 0) {	//and search for the cpu mhz
+			//printf("%s", strchr(s, ':')+2);
+		strcpy(frequency, strchr(s, ':') + 2);	//copy just the number
+		frequency[strlen(frequency) - 1] = '\0';	// strip \n
+		break;
+		}
+		fclose(f);
+		return frequency;
+#endif
 }
 
 

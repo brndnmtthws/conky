@@ -1,3 +1,11 @@
+/*
+ * Conky, a system monitor, based on torsmo
+ *
+ * This program is licensed under BSD license, read COPYING
+ *
+ *  $Id$
+ */
+
 #ifndef _conky_h_
 #define _conky_h_
 

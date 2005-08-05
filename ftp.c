@@ -3,6 +3,8 @@
  *        directory availability. No transfer is needed.
  *
  *  Reference: RFC 959
+ *
+ *  $Id$
  */
 
 #include <sys/types.h>

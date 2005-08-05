@@ -11,6 +11,8 @@
  * from code originally contained in wmsysmon by Dave Clark 
 (clarkd@skynet.ca)
  * This software is licensed through the GNU General Public License.
+ 
+ *  $Id$
  */
 
 /*

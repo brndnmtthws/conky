@@ -3,6 +3,8 @@
  *        to check for directory availability. No transfer is needed.
  *
  *  Reference: RFC 959
+ *
+ *  $Id$
  */
 
 #ifndef __MIRRORS_FTP_H__

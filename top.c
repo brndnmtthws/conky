@@ -1,3 +1,11 @@
+/*
+ * Conky, a system monitor, based on torsmo
+ *
+ * This program is licensed under BSD license, read COPYING
+ *
+ *  $Id$
+ */
+
 #include "top.h"
 
 static regex_t *exclusion_expression = 0;
