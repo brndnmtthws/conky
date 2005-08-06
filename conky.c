@@ -80,7 +80,6 @@ static void set_font();
 
 int addfont(const char *data_in)
 {
-	printf("adding font %s number %i\n", data_in, font_count+1);
 	if (font_count > MAX_FONTS) {
 		CRIT_ERR("you don't need that many fonts, sorry.");
 	}
