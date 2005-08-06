@@ -3012,13 +3012,13 @@ static void draw_line(char *s)
 	float gradient_factor = 0;
 	float gradient_update = 0;
 	unsigned int tmpcolour = current_color;
-	if (specials[special_index].first_colour != 0 && specials[special_index].last_colour != 0) {
+	if (specials[special_index].first_colour != specials[special_index].last_colour) {
 		tmpcolour = specials[special_index].first_colour;
 		gradient_size = gradient_max(specials[special_index].first_colour, specials[special_index].last_colour);
 		gradient_factor = (float)gradient_size / (w - 3);
 	}
 	for (i = 0; i < w - 3; i++) {
-		if (specials[special_index].first_colour != 0 && specials[special_index].last_colour != 0) {
+		if (specials[special_index].first_colour != specials[special_index].last_colour) {
 			XSetForeground(display, window.gc, tmpcolour);
 			gradient_update += gradient_factor;
 			while (gradient_update > 0) {

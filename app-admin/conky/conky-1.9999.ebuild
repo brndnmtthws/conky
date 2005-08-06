@@ -5,7 +5,7 @@ ECVS_SERVER="cvs.sourceforge.net:/cvsroot/conky"
 ECVS_MODULE="conky"
 inherit cvs
 
-DESCRIPTION="minimalist system monitor for X based on torsmo"
+DESCRIPTION="Conky is an advanced, highly configurable system monitor for X"
 HOMEPAGE="http://conky.rty.ca"
 
 LICENSE="BSD"

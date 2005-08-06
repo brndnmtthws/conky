@@ -4,7 +4,7 @@
 
 inherit eutils
 
-DESCRIPTION="minimalist system monitor for X based on torsmo"
+DESCRIPTION="Conky is an advanced, highly configurable system monitor for X"
 HOMEPAGE="http://conky.rty.ca"
 SRC_URI="http://conky.rty.ca/${P}.tar.bz2"
 
