@@ -75,9 +75,12 @@ struct font_list *fonts = NULL;
 #define MAX_FONTS 64 // hmm, no particular reason, just makes sense.
 
 
+static void set_font();
+
 
 int addfont(const char *data_in)
 {
+	printf("adding font %s number %i\n", data_in, font_count+1);
 	if (font_count > MAX_FONTS) {
 		CRIT_ERR("you don't need that many fonts, sorry.");
 	}
@@ -121,9 +124,9 @@ void set_first_font(const char *data_in)
 	}
 }
 
-/*void free_fonts()
+void free_fonts()
 {
-	int i;       uhm...this stuff seems to do nothing but cause troubles, and there don't seem to be memory issues
+	int i;
 	for (i=0;i<=font_count;i++) {
 #ifdef XFT
 		if (use_xft) {
@@ -138,7 +141,8 @@ void set_first_font(const char *data_in)
 	fonts = NULL;
 	font_count = -1;
 	selected_font = 0;
-}*/
+	set_first_font("6x10");
+}
 
 
 static void load_fonts()
@@ -448,9 +452,12 @@ static char *scan_font(const char *args)
 
 static void new_font(char *buf, char * args) {
 	struct special_t *s = new_special(buf, FONT);
-	if (!s->font_added) {
-		s->font_added = addfont(args);
+	if (!s->font_added || strcmp(args, fonts[s->font_added].name)) {
+		int tmp = selected_font;
+		selected_font = s->font_added = addfont(args);
 		load_fonts();
+		set_font();
+		selected_font = tmp;
 	}
 }
 
@@ -1473,8 +1480,9 @@ static void extract_variable_text(const char *p)
 		p++;
 	}
 	append_text(s);
-	if (blockdepth)
+	if (blockdepth) {
 		ERR("one or more $endif's are missing");
+	}
 }
 
 double current_update_time, last_update_time;
@@ -3584,12 +3592,12 @@ static void set_default_configurations(void)
 	draw_borders = 0;
 	draw_shades = 1;
 	draw_outline = 0;
-#ifdef XFT
-	//use_xft = 1;
-	//set_first_font("courier-12");
+/*#ifdef XFT
+	use_xft = 1;
+	set_first_font("courier-12");
 #endif
-//#else
-	//set_first_font("6x10");
+#else*/
+	set_first_font("6x10");
 	gap_x = 5;
 	gap_y = 5;
 
