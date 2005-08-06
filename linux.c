@@ -503,8 +503,9 @@ open_i2c_sensor(const char *dev, const char *type, int n, int *div,
 
 	/* open file */
 	fd = open(path, O_RDONLY);
-	if (fd < 0)
-		ERR("can't open '%s': %s", path, strerror(errno));
+	if (fd < 0) {
+		CRIT_ERR("can't open '%s': %s", path, strerror(errno));
+	}
 
 	if (strcmp(type, "in") == 0 || strcmp(type, "temp") == 0
 	    || strcmp(type, "tempf") == 0)

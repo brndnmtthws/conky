@@ -48,7 +48,7 @@
         <f77flags/>
       </optimized>
       <debug>
-        <configargs>--enable-debug=full --prefix=/usr --enable-mpd --disable-xft --enable-seti --enable-double-buffer --disable-own-window --enable-metar --enable-mldonkey</configargs>
+        <configargs>--enable-debug=full --prefix=/usr --enable-mpd --enable-xft --enable-seti --enable-double-buffer --enable-own-window --enable-metar --enable-mldonkey</configargs>
         <builddir>debug</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>

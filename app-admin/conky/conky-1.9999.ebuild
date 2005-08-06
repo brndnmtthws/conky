@@ -1,4 +1,4 @@
-# CVS ebuild for Conky
+# CVS ebuild for Conky, thanks to Hopeless
 # $Header$
 
 ECVS_SERVER="cvs.sourceforge.net:/cvsroot/conky"
