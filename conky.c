@@ -215,13 +215,13 @@ static long default_fg_color, default_bg_color, default_out_color;
 
 static int cpu_avg_samples, net_avg_samples;
 
-/*#ifdef OWN_WINDOW*/
 /* create own window or draw stuff to root? */
 static int own_window = 0;
 
+#ifdef OWN_WINDOW
 /* fixed size/pos is set if wm/user changes them */
 static int fixed_size = 0, fixed_pos = 0;
-/*#endif*/
+#endif
 
 static int minimum_width, minimum_height;
 
@@ -3051,10 +3051,13 @@ static void draw_line(char *s)
 				if (fontchange) {
 					cur_y -= font_ascent();
 					selected_font = specials[special_index].font_added;
-				cur_y += font_ascent();
-				if (!use_xft) {
-					set_font();
-				}
+					cur_y += font_ascent();
+#ifdef XFT
+					if (!use_xft)
+#endif
+					{
+						set_font();
+					}
 				}
 						
 				break;
@@ -4214,8 +4217,9 @@ int main(int argc, char **argv)
 
 	/* generate text and get initial size */
 	extract_variable_text(text);
-	if (text != original_text)
+	if (text != original_text) {
 		free(text);
+	}
 	text = NULL;
 
 	update_uname();
