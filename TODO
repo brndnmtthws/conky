@@ -3,5 +3,5 @@
 	* simple buttons?
 	* icecast status
 	* rewrite parts of code, making them more effecient and modular (in particular, the way objects are handled is a complete mess)
-	* network transparency
+	* network transparency (aim for 1.5)
 	* think of new features to add
