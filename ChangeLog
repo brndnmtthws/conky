@@ -1,11 +1,11 @@
-2005-07-06
+2005-08-06
 	* Conky 1.2 released
 
-2005-07-05
+2005-08-05
 	* small fixes
 	* added CVS ebuild, huge thanks to Hopeless for this
 
-2005-07-04
+2005-08-04
 	* special thanks to Citizen_X and his patience
 	* Citizen_X pwns
 	* keep shakin' those big 'ol titties
@@ -14,15 +14,15 @@
 	* Citizen_X
 	* Citizen_X
 
-2005-07-03
+2005-08-03
 	* many small fixes, thanks to those who reported problems
 
-2005-07-02
+2005-08-02
 	* dramatically improved how conky handles fonts
 	* fixed issues with graph args
 	* fixed shades and outlines
 
-2005-07-01
+2005-08-01
 	* stabilized code
 	* added gradients to graphs (very pretty)
 	* things

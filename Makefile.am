@@ -55,8 +55,8 @@ conky.1: conky conky.x
 endif
 
 # conky.1 is in EXTRA_DIST in case that someone doesn't have help2man
-EXTRA_DIST = changelog.html conkyrc.sample conky.1 conky.x \
-             changelog2html.py app-admin/conky/conky-1.2.ebuild
+EXTRA_DIST = conkyrc.sample conky.1 conky.x \
+             app-admin/conky/conky-1.2.ebuild
 
 EXTRA_conky_SOURCES = seti.c linux.c solaris.c freebsd.c netbsd.c mpd.c libmpdclient.c \
 cairo.c libmpdclient.h top.h mldonkey.c ftp.c metarinfo.c ftp.h metarinfo.h
