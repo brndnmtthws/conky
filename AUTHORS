@@ -57,6 +57,9 @@ JL Farinacci
 jolapache <jolapache at free dot fr>
   maildir format
 
+Joshua Gerrish <jgerrish at users dot sourceforge dot net>
+  mpd password patch
+
 Jørgen P. Tjernø <daxxar at mental dot mine dot nu>
   Restores default settings before loading new config file in SIGHUP
   Some cleaning and commenting apparently :)
