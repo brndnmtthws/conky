@@ -11,36 +11,46 @@ SRC_URI="mirror://sourceforge/conky/${P}.tar.bz2"
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64 ~ppc ~sparc ~x86"
-IUSE="truetype seti metar mldonkey mpd"
+IUSE="truetype seti metar"
 
-RDEPEND="virtual/libc
+DEPEND_COMMON="
+	virtual/libc
 	virtual/x11
 	truetype? ( >=media-libs/freetype-2 )
-	seti? ( sci-astronomy/setiathome )
-	metar? ( dev-libs/mdsplib )"
+	!amd64? (
+		!sparc? (
+			metar? ( dev-libs/mdsplib )
+		)
+	)"
 
-DEPEND="truetype? ( >=media-libs/freetype-2 )
-	metar? ( dev-libs/mdsplib )
-	virtual/x11
+#sparc and am64 awaiting keywords as per bug #99262
+
+
+RDEPEND="${DEPEND_COMMON}
+	seti? ( sci-astronomy/setiathome )"
+
+DEPEND="
+	${DEPEND_COMMON}
 	>=sys-devel/automake-1.4
 	sys-devel/autoconf
 	sys-apps/grep
 	sys-apps/sed
 	sys-devel/gcc
-	>=sys-process/procps-3.2.5
-	"
+	>=sys-process/procps-3.2.5"
 
 
 src_compile() {
 	local myconf
-	myconf="--enable-double-buffer --enable-own-window --enable-proc-uptime"
+	myconf="--enable-double-buffer --enable-own-window --enable-proc-uptime --enable-mpd --enable-mldonkey"
+	if !use amd64 && !use sparc
+	then
+		myconf="${myconf} $(use_enable metar)"
+	fi
 	econf \
-	   ${myconf} \
-	   $(use_enable truetype xft) \
-	   $(use_enable metar) \
-	   $(use_enable mldonkey) \
-	   $(use_enable mpd) \
-	   $(use_enable seti) || die "econf failed"
+		${myconf} \
+		$(use_enable truetype xft) \
+		$(use_enable seti) \
+		$(use_enable metar) || die "econf failed"
 	emake || die "compile failed"
 }
 

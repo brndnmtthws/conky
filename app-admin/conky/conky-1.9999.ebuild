@@ -11,7 +11,7 @@ HOMEPAGE="http://conky.rty.ca"
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64 ~ppc ~sparc ~x86"
-IUSE="truetype seti metar mldonkey mpd"
+IUSE="truetype seti metar"
 
 RDEPEND="virtual/libc
    virtual/x11
@@ -42,12 +42,12 @@ src_compile() {
    econf \
       $(use_enable truetype xft) \
       $(use_enable metar) \
-      $(use_enable mldonkey) \
-      $(use_enable mpd) \
       $(use_enable seti) \
       --enable-double-buffer \
       --enable-own-window \
       --enable-proc-uptime \
+	  --enable-mpd \
+	  --enable-mldonkey \
       || die "econf failed"
    emake || die "compile failed"
 }
