@@ -6,7 +6,7 @@ inherit eutils
 
 DESCRIPTION="Conky is an advanced, highly configurable system monitor for X"
 HOMEPAGE="http://conky.rty.ca"
-SRC_URI="http://conky.rty.ca/${P}.tar.bz2"
+SRC_URI="mirror://sourceforge/conky/${P}.tar.bz2"
 
 LICENSE="BSD"
 SLOT="0"
