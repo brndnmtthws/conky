@@ -3112,6 +3112,7 @@ static void draw_line(char *s)
 			case ALIGNC:
 				{
 					int pos_x = (text_start_x*2) + text_width - cur_x -  ((float)get_string_width(p) / 2) - ((float)text_width / 2);
+					/*printf("pos_x %i text_start_x %i text_width %i cur_x %i get_string_width(p) %i\n", pos_x, text_start_x, text_width, cur_x, get_string_width(p));*/
 					if (pos_x >
 					    specials[special_index].arg)
 						w = pos_x -

@@ -8,6 +8,7 @@ Heres a very simplified roadmap for Conky.  By no means does this mean any of th
 	* rewrite parts of code, making them more effecient and modular (in particular, the way objects are handled is a complete mess)
 	* conditional colours (ie if temp > 40C, make it red)
 	* think of new features to add
+	* max_width
 1.4
 	* ideas needed
 1.5 (maybe in december?)
