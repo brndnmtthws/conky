@@ -56,7 +56,8 @@ binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 am__conky_SOURCES_DIST = common.c fs.c top.c linux.c mail.c mixer.c \
 	seti.c mpd.c libmpdclient.c solaris.c freebsd.c netbsd.c \
-	cairo.c conky.c conky.h x11.c ftp.c metarinfo.c mldonkey.c
+	cairo.c conky.c conky.h x11.c ftp.c metarinfo.c mldonkey.c \
+	remoted.c remoted.h remotec.c remotec.h
 @BUILD_LINUX_TRUE@am__objects_1 = linux.$(OBJEXT)
 @BUILD_SETI_TRUE@am__objects_2 = seti.$(OBJEXT)
 @BUILD_MPD_TRUE@am__objects_3 = mpd.$(OBJEXT) libmpdclient.$(OBJEXT)
@@ -72,7 +73,7 @@ am_conky_OBJECTS = common.$(OBJEXT) fs.$(OBJEXT) top.$(OBJEXT) \
 	$(am__objects_2) $(am__objects_3) $(am__objects_4) \
 	$(am__objects_5) $(am__objects_6) $(am__objects_7) \
 	conky.$(OBJEXT) $(am__objects_8) $(am__objects_9) \
-	$(am__objects_10)
+	$(am__objects_10) remoted.$(OBJEXT) remotec.$(OBJEXT)
 conky_OBJECTS = $(am_conky_OBJECTS)
 am__DEPENDENCIES_1 =
 conky_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -212,7 +213,7 @@ target_alias = @target_alias@
 @BUILD_X11_TRUE@x11 = x11.c
 conky_SOURCES = common.c fs.c top.c $(linux) mail.c mixer.c $(seti) $(mpd) \
 	$(solaris) $(freebsd) $(netbsd) $(cairo) conky.c conky.h $(x11) $(metar) \
-	$(mldonkey)
+	$(mldonkey) remoted.c remoted.h remotec.c remotec.h
 
 conky_LDFLAGS = $(X11_LIBS) $(XFT_LIBS) $(CAIRO_LIBS)
 conky_LDADD = $(METAR_LIBS)
@@ -327,6 +328,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mldonkey.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mpd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/netbsd.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/remotec.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/remoted.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/seti.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/solaris.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/top.Po@am__quote@
