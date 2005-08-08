@@ -2431,7 +2431,7 @@ static void generate_text()
 			}
 			OBJ(metar_tempf) {
 				if (data.temp != INT_MAX && metar_worked)
-					snprintf(p, n, "%3f",
+					snprintf(p, n, "%'.1f",
 						 (data.temp +
 						  40) * 9.0 / 5 - 40);
 				else
