@@ -15,7 +15,7 @@
   <kdevautoproject>
     <general>
       <activetarget>conky</activetarget>
-      <useconfiguration>debug-no-x</useconfiguration>
+      <useconfiguration>debug</useconfiguration>
     </general>
     <run>
       <mainprogram>conky</mainprogram>

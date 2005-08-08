@@ -3872,7 +3872,9 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 
 #ifdef XDBE
 		CONF("double_buffer") {
-			use_xdbe = string_to_bool(value);
+	if (!own_window) {
+		use_xdbe = string_to_bool(value);
+	}
 		}
 #endif
 #ifdef X11
@@ -4024,6 +4026,7 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 #ifdef OWN_WINDOW
 		CONF("own_window") {
 			own_window = string_to_bool(value);
+			use_xdbe = 0;
 		}
 #endif
 		CONF("stippled_borders") {
@@ -4284,6 +4287,7 @@ int main(int argc, char **argv)
 #ifdef OWN_WINDOW
 		case 'o':
 			own_window = 1;
+			use_xdbe = 0;
 			break;
 #endif
 #ifdef XDBE
