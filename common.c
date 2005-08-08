@@ -33,7 +33,7 @@ FILE *open_file(const char *file, int *reported)
 	FILE *fp = fopen(file, "r");
 	if (!fp) {
 		if (!reported || *reported == 0) {
-			ERR("can't open %s: %s", file, strerror(errno));
+			CRIT_ERR("can't open %s: %s", file, strerror(errno));
 			if (reported)
 				*reported = 1;
 		}

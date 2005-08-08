@@ -279,7 +279,7 @@ inline void update_wifi_stats()
 		net_wireless_fp = open_file("/proc/net/wireless", &rep);
 	else
 		fseek(net_wireless_fp, 0, SEEK_SET);
-	if (!net_wireless_fp)
+	if (net_wireless_fp == NULL)
 		return;
 
 	fgets(buf, 255, net_wireless_fp);	/* garbage */

@@ -371,7 +371,7 @@ inline static void calc_cpu_each(int total)
 /*
 * Result is stored in decreasing order in best[0-9].
 */
-
+#define MAX_TOP_SIZE 400 /* this is plenty big */
 static struct process **sorttmp;
 static size_t sorttmp_size = 10;
 
@@ -408,7 +408,7 @@ inline void process_find_top(struct process **cpu, struct process **mem)
 			if (i < sorttmp_size && pr->counted) {
 				sorttmp[i] = pr;
 				i++;
-			} else if (i == sorttmp_size && pr->counted) {
+			} else if (i == sorttmp_size && pr->counted && sorttmp_size < MAX_TOP_SIZE) {
 				sorttmp_size++;
 				sorttmp =
 				    realloc(sorttmp,
@@ -420,6 +420,7 @@ inline void process_find_top(struct process **cpu, struct process **mem)
 			pr = pr->next;
 		}
 		if (i + 1 < sorttmp_size) {
+			sorttmp_size--;
 			sorttmp =
 			    realloc(sorttmp,
 				    sizeof(struct process) * sorttmp_size);
@@ -461,7 +462,7 @@ inline void process_find_top(struct process **cpu, struct process **mem)
 			if (i < sorttmp_size && pr->counted) {
 				sorttmp[i] = pr;
 				i++;
-			} else if (i == sorttmp_size && pr->counted) {
+			} else if (i == sorttmp_size && pr->counted && sorttmp_size < MAX_TOP_SIZE) {
 				sorttmp_size++;
 				sorttmp =
 				    realloc(sorttmp,
@@ -473,6 +474,7 @@ inline void process_find_top(struct process **cpu, struct process **mem)
 			pr = pr->next;
 		}
 		if (i + 1 < sorttmp_size) {
+			sorttmp_size--;
 			sorttmp =
 			    realloc(sorttmp,
 				    sizeof(struct process) * sorttmp_size);

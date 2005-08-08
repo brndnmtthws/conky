@@ -9,6 +9,7 @@
 #ifndef _conky_h_
 #define _conky_h_
 
+#undef MALLOC_CHECK_
 
 //#include <mcheck.h>
 #include "config.h"
