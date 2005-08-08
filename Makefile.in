@@ -64,14 +64,15 @@ am__conky_SOURCES_DIST = common.c fs.c top.c linux.c mail.c mixer.c \
 @BUILD_FREEBSD_TRUE@am__objects_5 = freebsd.$(OBJEXT)
 @BUILD_NETBSD_TRUE@am__objects_6 = netbsd.$(OBJEXT)
 @BUILD_CAIRO_TRUE@am__objects_7 = cairo.$(OBJEXT)
-@BUILD_METAR_TRUE@am__objects_8 = ftp.$(OBJEXT) metarinfo.$(OBJEXT)
-@BUILD_MLDONKEY_TRUE@am__objects_9 = mldonkey.$(OBJEXT)
+@BUILD_X11_TRUE@am__objects_8 = x11.$(OBJEXT)
+@BUILD_METAR_TRUE@am__objects_9 = ftp.$(OBJEXT) metarinfo.$(OBJEXT)
+@BUILD_MLDONKEY_TRUE@am__objects_10 = mldonkey.$(OBJEXT)
 am_conky_OBJECTS = common.$(OBJEXT) fs.$(OBJEXT) top.$(OBJEXT) \
 	$(am__objects_1) mail.$(OBJEXT) mixer.$(OBJEXT) \
 	$(am__objects_2) $(am__objects_3) $(am__objects_4) \
 	$(am__objects_5) $(am__objects_6) $(am__objects_7) \
-	conky.$(OBJEXT) x11.$(OBJEXT) $(am__objects_8) \
-	$(am__objects_9)
+	conky.$(OBJEXT) $(am__objects_8) $(am__objects_9) \
+	$(am__objects_10)
 conky_OBJECTS = $(am_conky_OBJECTS)
 am__DEPENDENCIES_1 =
 conky_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -126,6 +127,8 @@ BUILD_SETI_FALSE = @BUILD_SETI_FALSE@
 BUILD_SETI_TRUE = @BUILD_SETI_TRUE@
 BUILD_SOLARIS_FALSE = @BUILD_SOLARIS_FALSE@
 BUILD_SOLARIS_TRUE = @BUILD_SOLARIS_TRUE@
+BUILD_X11_FALSE = @BUILD_X11_FALSE@
+BUILD_X11_TRUE = @BUILD_X11_TRUE@
 CAIROCONFIG = @CAIROCONFIG@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
@@ -206,8 +209,9 @@ target_alias = @target_alias@
 @BUILD_METAR_TRUE@metar = ftp.c metarinfo.c
 @BUILD_METAR_TRUE@METAR_LIBS = -lmetar
 @BUILD_MLDONKEY_TRUE@mldonkey = mldonkey.c
+@BUILD_X11_TRUE@x11 = x11.c
 conky_SOURCES = common.c fs.c top.c $(linux) mail.c mixer.c $(seti) $(mpd) \
-	$(solaris) $(freebsd) $(netbsd) $(cairo) conky.c conky.h x11.c $(metar) \
+	$(solaris) $(freebsd) $(netbsd) $(cairo) conky.c conky.h $(x11) $(metar) \
 	$(mldonkey)
 
 conky_LDFLAGS = $(X11_LIBS) $(XFT_LIBS) $(CAIRO_LIBS)
@@ -219,7 +223,7 @@ EXTRA_DIST = conkyrc.sample conky.1 conky.x \
              app-admin/conky/conky-1.2.ebuild
 
 EXTRA_conky_SOURCES = seti.c linux.c solaris.c freebsd.c netbsd.c mpd.c libmpdclient.c \
-cairo.c libmpdclient.h top.h mldonkey.c ftp.c metarinfo.c ftp.h metarinfo.h
+cairo.c libmpdclient.h top.h mldonkey.c ftp.c metarinfo.c ftp.h metarinfo.h x11.c
 
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am

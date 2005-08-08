@@ -135,5 +135,8 @@
 /* Version number of package */
 #undef VERSION
 
+/* Define if you want to use X11 */
+#undef X11
+
 /* Define if you are using Xft */
 #undef XFT

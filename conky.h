@@ -9,6 +9,7 @@
 #ifndef _conky_h_
 #define _conky_h_
 
+
 //#include <mcheck.h>
 #include "config.h"
 #include <sys/utsname.h>
@@ -18,6 +19,7 @@
 #include <langinfo.h>
 #include <wchar.h>
 
+#ifdef X11
 #if defined(HAVE_CAIRO_H) && defined(HAVE_CAIRO_XLIB_H) && defined(WANT_CAIRO)
 #define CAIRO
 #include <X11/Xlib.h>
@@ -25,6 +27,7 @@
 #include <cairo.h>
 #include <cairo-xlib.h>
 #endif
+#endif /* X11 */
 
 #define TOP_CPU 1
 #define TOP_NAME 2
@@ -160,7 +163,17 @@ struct information {
 	unsigned long looped;
 };
 
+int out_to_console;
 
+int top_cpu;
+int top_mem;
+
+int use_spacer;
+
+char *tmpstring1;
+char *tmpstring2;
+
+#ifdef X11
 /* in x11.c */
 
 #include <X11/Xlib.h>
@@ -201,15 +214,6 @@ struct conky_window {
 extern int use_xdbe;
 #endif
 
-int out_to_console;
-
-int top_cpu;
-int top_mem;
-
-int use_spacer;
-
-char *tmpstring1;
-char *tmpstring2;
 
 #ifdef XFT
 extern int use_xft;
@@ -229,6 +233,8 @@ void init_window(int use_own_window, int width, int height, int on_bottom);
 void create_gc();
 void set_transparent_background(Window win);
 long get_x11_color(const char *);
+
+#endif /* X11 */
 
 /* in common.c */
 

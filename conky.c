@@ -23,13 +23,17 @@
 #include <dirent.h>
 #endif
 #include <sys/time.h>
+#ifdef X11
 #include <X11/Xutil.h>
+#endif /* X11 */
 #include <sys/types.h>
 #include <sys/stat.h>
 
 #define CONFIG_FILE "$HOME/.conkyrc"
 #define MAIL_FILE "$MAIL"
 #define MAX_IF_BLOCK_DEPTH 5
+
+#ifdef X11
 
 /* alignments */
 enum alignment {
@@ -187,18 +191,13 @@ static void load_fonts()
 	}
 }
 
+#endif /* X11 */
+
 /* default config file */
 static char *current_config;
 
 /* set to 1 if you want all text to be in uppercase */
 static unsigned int stuff_in_upper_case;
-
-/* Position on the screen */
-static int text_alignment;
-static int gap_x, gap_y;
-
-/* Always on bottom */
-static int on_bottom;
 
 /* Update interval */
 static double update_interval;
@@ -208,6 +207,17 @@ static unsigned long total_run_times;
 
 /* fork? */
 static int fork_to_background;
+
+static int cpu_avg_samples, net_avg_samples;
+
+#ifdef X11
+
+/* Always on bottom */
+static int on_bottom;
+
+/* Position on the screen */
+static int text_alignment;
+static int gap_x, gap_y;
 
 /* border */
 static int draw_borders;
@@ -219,8 +229,6 @@ static int border_margin, border_width;
 
 static long default_fg_color, default_bg_color, default_out_color;
 
-static int cpu_avg_samples, net_avg_samples;
-
 /* create own window or draw stuff to root? */
 static int own_window = 0;
 
@@ -231,15 +239,16 @@ static int fixed_size = 0, fixed_pos = 0;
 
 static int minimum_width, minimum_height;
 
+/* UTF-8 */
+int utf8_mode = 0;
+
+#endif /* X11 */
+
 /* no buffers in used memory? */
 int no_buffers;
 
 /* pad percentages to decimals? */
 static int pad_percents = 0;
-
-/* UTF-8 */
-int utf8_mode = 0;
-
 
 /* Text that is shown */
 static char original_text[] =
@@ -305,7 +314,7 @@ int check_mount(char *s)
 }
 
 
-
+#ifdef X11
 static inline int calc_text_width(const char *s, unsigned int l)
 {
 #ifdef XFT
@@ -323,6 +332,7 @@ static inline int calc_text_width(const char *s, unsigned int l)
 		return XTextWidth(fonts[selected_font].font, s, l);
 	}
 }
+#endif /* X11 */
 
 /* formatted text to render on screen, generated in generate_text(),
  * drawn in draw_stuff() */
@@ -440,7 +450,6 @@ static const char *scan_bar(const char *args, int *w, int *h)
 
 	return args;
 }
-
 static char *scan_font(const char *args)
 {
 	if (args && sizeof(args) < 127) {
@@ -454,6 +463,7 @@ static char *scan_font(const char *args)
 
 static void new_font(char *buf, char * args) {
 	struct special_t *s = new_special(buf, FONT);
+#ifdef X11
 	if (!s->font_added || strcmp(args, fonts[s->font_added].name)) {
 		int tmp = selected_font;
 		selected_font = s->font_added = addfont(args);
@@ -461,6 +471,7 @@ static void new_font(char *buf, char * args) {
 		set_font();
 		selected_font = tmp;
 	}
+#endif /* X11 */
 }
 
 inline void graph_append(struct special_t *graph, double f)
@@ -905,11 +916,13 @@ static void construct_text_object(const char *s, const char *arg)
 #define OBJ(a, n) if (strcmp(s, #a) == 0) { obj->type = OBJ_##a; need_mask |= (1 << n); {
 #define END ; } } else
 
-	if (s[0] == '#') {
+#ifdef X11	
+if (s[0] == '#') {
 		obj->type = OBJ_color;
 		obj->data.l = get_x11_color(s);
 	} else
-		OBJ(acpitemp, 0) obj->data.i = open_acpi_temperature(arg);
+#endif /* X11 */
+	OBJ(acpitemp, 0) obj->data.i = open_acpi_temperature(arg);
 	END OBJ(acpiacadapter, 0)
 	END OBJ(freq, 0) END OBJ(acpifan, 0) END OBJ(battery,
 						     0) char bat[64];
@@ -925,8 +938,10 @@ static void construct_text_object(const char *s, const char *arg)
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(cpugraph, INFO_CPU)
 			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d);
-	END OBJ(color, 0) obj->data.l =
-	    arg ? get_x11_color(arg) : default_fg_color;
+	END OBJ(color, 0) 
+#ifdef X11
+			obj->data.l = arg ? get_x11_color(arg) : default_fg_color;
+#endif /* X11 */
 	END
 			OBJ(font, 0)
 			obj->data.s = scan_font(arg);
@@ -1283,10 +1298,16 @@ static void construct_text_object(const char *s, const char *arg)
 	END OBJ(processes, INFO_PROCS)
 	END OBJ(running_processes, INFO_RUN_PROCS)
 	END OBJ(shadecolor, 0)
+#ifdef X11
 	    obj->data.l = arg ? get_x11_color(arg) : default_bg_color;
+#endif /* X11 */
 	END OBJ(outlinecolor, 0)
+#ifdef X11
 	    obj->data.l = arg ? get_x11_color(arg) : default_out_color;
-	END OBJ(stippled_hr, 0) int a = stippled_borders, b = 1;
+#endif /* X11 */
+	END OBJ(stippled_hr, 0)
+#ifdef X11
+int a = stippled_borders, b = 1;
 	if (arg) {
 		if (sscanf(arg, "%d %d", &a, &b) != 2)
 			sscanf(arg, "%d", &b);
@@ -1295,6 +1316,7 @@ static void construct_text_object(const char *s, const char *arg)
 		a = 1;
 	obj->data.pair.a = a;
 	obj->data.pair.b = b;
+#endif /* X11 */
 	END OBJ(swap, INFO_MEM)
 	END OBJ(swapmax, INFO_MEM)
 	END OBJ(swapperc, INFO_MEM)
@@ -2409,7 +2431,7 @@ static void generate_text()
 			}
 			OBJ(metar_tempf) {
 				if (data.temp != INT_MAX && metar_worked)
-					snprintf(p, n, "%3.1f",
+					snprintf(p, n, "%3f",
 						 (data.temp +
 						  40) * 9.0 / 5 - 40);
 				else
@@ -2447,7 +2469,6 @@ static void generate_text()
 				else
 					snprintf(p, n, "-");
 			}
-
 			OBJ(metar_windspeed) {
 				if (data.winData.windSpeed != INT_MAX
 				    && metar_worked)
@@ -2551,7 +2572,7 @@ static void generate_text()
 	//free(p);
 }
 
-
+#ifdef X11
 static void set_font()
 {
 #ifdef XFT
@@ -2579,9 +2600,15 @@ static void set_font()
 static int text_start_x, text_start_y;	/* text start position in window */
 static int text_width, text_height;
 
+#endif /* X11 */
+
 static inline int get_string_width(const char *s)
 {
+#ifdef X11
 	return *s ? calc_text_width(s, strlen(s)) : 0;
+#else
+	return strlen(s);
+#endif /* X11 */
 }
 
 int fontchange = 0;
@@ -2611,12 +2638,13 @@ static void text_size_updater(char *s)
 			else if (specials[special_index].type == OFFSET) {
 				w += specials[special_index].arg + get_string_width("a"); /* filthy, but works */
 			}
-			
+#ifdef X11
 			else if (specials[special_index].type == FONT) {
 				fontchange = specials[special_index].font_added;
 				selected_font = specials[special_index].font_added;
 				h = font_height();
 			}
+#endif /* X11 */
 
 			
 			special_index++;
@@ -2624,6 +2652,7 @@ static void text_size_updater(char *s)
 		}
 		p++;
 	}
+#ifdef X11
 		w += get_string_width(s);
 	if (w > text_width)
 		text_width = w;
@@ -2632,8 +2661,10 @@ static void text_size_updater(char *s)
 	if (fontchange) {
 		selected_font = 0;
 	}
+#endif /* X11 */
 }
 
+#ifdef X11
 static void update_text_area()
 {
 	int x, y;
@@ -2714,6 +2745,7 @@ static inline void set_foreground_color(long c)
 	current_color = c;
 	XSetForeground(display, window.gc, c);
 }
+#endif /* X11 */
 
 static void draw_string(const char *s)
 {
@@ -2730,7 +2762,9 @@ static void draw_string(const char *s)
 	added = 0;
 	char space[2];
 	snprintf(space, 2, " ");
+#ifdef X11
 	max = ((text_width - width_of_s) / get_string_width(space));
+#endif /* X11 */
 	/*
 	 * This code looks for tabs in the text and coverts them to spaces.
 	 * The trick is getting the correct number of spaces,
@@ -2756,6 +2790,7 @@ static void draw_string(const char *s)
 		}
 	}
 	s = tmpstring2;
+#ifdef X11
 #ifdef XFT
 	if (use_xft) {
 		XColor c;
@@ -2783,8 +2818,9 @@ static void draw_string(const char *s)
 		XDrawString(display, window.drawable, window.gc,
 			    cur_x, cur_y, s, strlen(s));
 	}
-	memcpy(tmpstring1, s, TEXT_BUFFER_SIZE);
 	cur_x += width_of_s;
+#endif /* X11 */
+	memcpy(tmpstring1, s, TEXT_BUFFER_SIZE);
 }
 
 inline unsigned long do_gradient(unsigned long first_colour, unsigned long last_colour) { /* this function returns the next colour between two colours for a gradient */
@@ -2862,11 +2898,10 @@ inline unsigned long gradient_max(unsigned long first_colour, unsigned long last
 	return max;
 }
 
-
 static void draw_line(char *s)
 {
+#ifdef X11
 	char *p;
-
 	cur_x = text_start_x;
 	cur_y += font_ascent();
 	int cur_y_add = 0;
@@ -3133,6 +3168,10 @@ static void draw_line(char *s)
 
 		p++;
 	}
+#else
+	draw_string(s);
+#endif
+#ifdef X11
 	if (cur_y_add > 0) {
 		cur_y += cur_y_add;
 		cur_y -= font_descent();
@@ -3144,10 +3183,12 @@ static void draw_line(char *s)
 	if (fontchange) {
 		selected_font = 0;
 	}
+#endif /* X11 */
 }
 
 static void draw_text()
 {
+#ifdef X11
 	cur_y = text_start_y;
 
 	/* draw borders */
@@ -3177,11 +3218,13 @@ static void draw_text()
 
 	/* draw text */
 	special_index = 0;
+#endif /* X11 */
 	for_each_line(text_buffer, draw_line);
 }
 
 static void draw_stuff()
 {
+#ifdef X11
 	if (draw_shades && !draw_outline) {
 		text_start_x++;
 		text_start_y++;
@@ -3210,8 +3253,9 @@ static void draw_stuff()
 
 	set_foreground_color(default_fg_color);
 	draw_mode = FG;
+#endif /* X11 */
 	draw_text();
-
+#ifdef X11
 #ifdef XDBE
 	if (use_xdbe) {
 		XdbeSwapInfo swap;
@@ -3234,9 +3278,9 @@ if (metar_path != NULL) {
 	metar_path = NULL;
 }
 #endif*/
-
+#endif /* X11 */
 }
-
+#ifdef X11
 static void clear_text(int exposures)
 {
 #ifdef XDBE
@@ -3251,6 +3295,7 @@ static void clear_text(int exposures)
 		   text_height + border_margin * 2 + 2,
 		   exposures ? True : 0);
 }
+#endif /* X11 */
 
 static int need_to_update;
 
@@ -3258,16 +3303,22 @@ static int need_to_update;
 static void update_text()
 {
 	generate_text();
+#ifdef X11
 	clear_text(1);
+#endif /* X11 */
 	need_to_update = 1;
 }
 
 static void main_loop()
 {
+#ifdef X11
 	Region region = XCreateRegion();
+#endif /* X11 */
+
 	info.looped = 0;
 	while (total_run_times == 0 || info.looped < total_run_times - 1) {
 		info.looped++;
+#ifdef X11
 		XFlush(display);
 
 		/* wait for X event or timeout */
@@ -3285,12 +3336,16 @@ static void main_loop()
 
 			tv.tv_sec = (long) t;
 			tv.tv_usec = (long) (t * 1000000) % 1000000;
-
 			FD_ZERO(&fdsr);
 			FD_SET(ConnectionNumber(display), &fdsr);
 
+
 			s = select(ConnectionNumber(display) + 1, &fdsr, 0,
 				   0, &tv);
+#else
+			usleep(update_interval*1000000); /* FIXME just sleep for the interval time if no X11 */
+#endif /* X11 */
+#ifdef X11
 			if (s == -1) {
 				if (errno != EINTR)
 					ERR("can't select(): %s",
@@ -3298,7 +3353,9 @@ static void main_loop()
 			} else {
 				/* timeout */
 				if (s == 0)
+#endif /* X11 */
 					update_text();
+#ifdef X11
 			}
 		}
 
@@ -3465,10 +3522,14 @@ static void main_loop()
 			if (use_xft)
 				XftDrawSetClip(window.xftdraw, region);
 #endif
+#endif /* X11 */
 			draw_stuff();
+#ifdef X11
 			XDestroyRegion(region);
 			region = XCreateRegion();
 		}
+#endif /* X11 */
+
 	}
 }
 
@@ -3482,8 +3543,10 @@ static void reload_handler(int a)
 	if (current_config) {
 		clear_fs_stats();
 		load_config_file(current_config);
+#ifdef X11
 		load_fonts();
 		set_font();
+#endif /* X11 */
 		extract_variable_text(text);
 		free(text);
 		text = NULL;
@@ -3493,6 +3556,7 @@ static void reload_handler(int a)
 
 static void clean_up()
 {
+#ifdef X11
 #ifdef XDBE
 	if (use_xdbe)
 		XdbeDeallocateBackBufferName(display, window.back_buffer);
@@ -3508,6 +3572,8 @@ static void clean_up()
 	}
 
 	XFreeGC(display, window.gc);
+#endif /* X11 */
+
 
 	/* it is really pointless to free() memory at the end of program but ak|ra
 	 * wants me to do this */
@@ -3543,7 +3609,7 @@ static int string_to_bool(const char *s)
 		return 1;
 	return 0;
 }
-
+#ifdef X11
 static enum alignment string_to_alignment(const char *s)
 {
 	if (strcasecmp(s, "top_left") == 0)
@@ -3565,14 +3631,12 @@ static enum alignment string_to_alignment(const char *s)
 
 	return TOP_LEFT;
 }
+#endif /* X11 */
+
 
 static void set_default_configurations(void)
 {
-	text_alignment = BOTTOM_LEFT;
-	on_bottom = 1;
 	fork_to_background = 0;
-	border_margin = 3;
-	border_width = 1;
 	total_run_times = 0;
 	info.cpu_avg_samples = 2;
 	info.net_avg_samples = 2;
@@ -3584,22 +3648,33 @@ static void set_default_configurations(void)
 	info.mpd.port = 6600;
 	info.mpd.status = "Checking status...";
 #endif
-	out_to_console = 0;
 	use_spacer = 0;
+#ifdef X11
+	out_to_console = 0;
+#else
+	out_to_console = 1;
+#endif
+#ifdef X11
 	default_fg_color = WhitePixel(display, screen);
 	default_bg_color = BlackPixel(display, screen);
 	default_out_color = BlackPixel(display, screen);
 	draw_borders = 0;
 	draw_shades = 1;
 	draw_outline = 0;
-/*#ifdef XFT
-	use_xft = 1;
-	set_first_font("courier-12");
-#endif
-#else*/
 	set_first_font("6x10");
 	gap_x = 5;
 	gap_y = 5;
+	minimum_width = 5;
+	minimum_height = 5;
+#ifdef OWN_WINDOW
+	own_window = 0;
+#endif
+	stippled_borders = 0;
+	border_margin = 3;
+	border_width = 1;
+	text_alignment = BOTTOM_LEFT;
+	on_bottom = 1;
+#endif /* X11 */
 
 	free(current_mail_spool);
 	{
@@ -3609,13 +3684,7 @@ static void set_default_configurations(void)
 			current_mail_spool = strdup(buf);
 	}
 
-	minimum_width = 5;
-	minimum_height = 5;
 	no_buffers = 1;
-#ifdef OWN_WINDOW
-	own_window = 0;
-#endif
-	stippled_borders = 0;
 	update_interval = 10.0;
 	stuff_in_upper_case = 0;
 #ifdef MLDONKEY
@@ -3695,15 +3764,16 @@ static void load_config_file(const char *f)
 else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 
 
+#ifdef X11
 		CONF2("alignment") {
-			if (value) {
-				int a = string_to_alignment(value);
-				if (a <= 0)
-					CONF_ERR;
-				else
-					text_alignment = a;
-			} else
-				CONF_ERR;
+	if (value) {
+		int a = string_to_alignment(value);
+		if (a <= 0)
+			CONF_ERR;
+		else
+			text_alignment = a;
+	} else
+		CONF_ERR;
 		}
 		CONF("on_bottom") {
 			if(value)
@@ -3714,6 +3784,13 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 		CONF("background") {
 			fork_to_background = string_to_bool(value);
 		}
+
+#else
+		CONF2("background") {
+	fork_to_background = string_to_bool(value);
+		}
+#endif /* X11 */
+#ifdef X11
 		CONF("border_margin") {
 			if (value)
 				border_margin = strtol(value, 0, 0);
@@ -3744,6 +3821,7 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 			else
 				CONF_ERR;
 		}
+#endif /* X11 */
 #ifdef MPD
 		CONF("mpd_host") {
 			if (value)
@@ -3792,14 +3870,16 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 
 
 
-		CONF("override_utf8_locale") {
-			utf8_mode = string_to_bool(value);
-		}
 #ifdef XDBE
 		CONF("double_buffer") {
 			use_xdbe = string_to_bool(value);
 		}
 #endif
+#ifdef X11
+		CONF("override_utf8_locale") {
+	utf8_mode = string_to_bool(value);
+		}
+
 		CONF("draw_borders") {
 			draw_borders = string_to_bool(value);
 		}
@@ -3809,12 +3889,14 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 		CONF("draw_outline") {
 			draw_outline = string_to_bool(value);
 		}
+#endif /* X11 */
 		CONF("out_to_console") {
 			out_to_console = string_to_bool(value);
 		}
 		CONF("use_spacer") {
 			use_spacer = string_to_bool(value);
 		}
+#ifdef X11
 #ifdef XFT
 		CONF("use_xft") {
 			use_xft = string_to_bool(value);
@@ -3865,6 +3947,7 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 			else
 				CONF_ERR;
 		}
+#endif /* X11 */
 		CONF("mail_spool") {
 			if (value) {
 				char buf[256];
@@ -3879,6 +3962,7 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 			} else
 				CONF_ERR;
 		}
+#ifdef X11
 		CONF("minimum_size") {
 			if (value) {
 				if (sscanf
@@ -3891,6 +3975,7 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 			} else
 				CONF_ERR;
 		}
+#endif /* X11 */
 		CONF("no_buffers") {
 			no_buffers = string_to_bool(value);
 		}
@@ -3932,20 +4017,22 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 				CONF_ERR;
 		}
 #endif
+		CONF("pad_percents") {
+	pad_percents = atoi(value);
+		}
+#ifdef X11
 #ifdef OWN_WINDOW
 		CONF("own_window") {
 			own_window = string_to_bool(value);
 		}
 #endif
-		CONF("pad_percents") {
-			pad_percents = atoi(value);
-		}
 		CONF("stippled_borders") {
 			if (value)
 				stippled_borders = strtol(value, 0, 0);
 			else
 				stippled_borders = 4;
 		}
+#endif /* X11 */
 		CONF("temp1") {
 			ERR("temp1 configuration is obsolete, use ${i2c <i2c device here> temp 1}");
 		}
@@ -4034,22 +4121,23 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 }
 
 																							/* : means that character before that takes an argument */
-static
-    const
-    char
-*getopt_string = "vVdt:f:u:i:hc:w:x:y:a:"
+static const char *getopt_string = "vVdt:f:u:i:hc:w:x:y:a:"
+#ifdef X11
+		"x:y:w:a:f:"
 #ifdef OWN_WINDOW
     "o"
 #endif
 #ifdef XDBE
     "b"
 #endif
+#endif /* X11 */
     ;
 
 
 int main(int argc, char **argv)
 {
 	/* handle command line parameters that don't change configs */
+#ifdef X11
 	char *s;
 	char temp[10];
 	unsigned int x;
@@ -4068,6 +4156,7 @@ int main(int argc, char **argv)
 		ERR("Can't set the specified locale!\nCheck LANG, LC_CTYPE, LC_ALL.");
 		return 1;
 	}
+#endif /* X11 */
 	while (1) {
 		int c = getopt(argc,
 			       argv,
@@ -4092,42 +4181,47 @@ int main(int argc, char **argv)
 
 		case 'h':
 			printf
-			    ("Usage: %s [OPTION]...\n"
-			     "Conky is a system monitor that renders text on desktop or to own transparent\n"
-			     "window. Command line options will override configurations defined in config\n"
-			     "file.\n"
-			     "   -V            version\n"
-			     "   -a ALIGNMENT  text alignment on screen, {top,bottom}_{left,right}\n"
-			     "   -c FILE       config file to load instead of "
-			     CONFIG_FILE
-			     "\n"
-			     "   -d            daemonize, fork to background\n"
-			     "   -f FONT       font to use\n"
-			     "   -h            help\n"
+					("Usage: %s [OPTION]...\n"
+					"Conky is a system monitor that renders text on desktop or to own transparent\n"
+					"window. Command line options will override configurations defined in config\n"
+					"file.\n"
+					"   -V            version\n"
+					"   -c FILE       config file to load instead of "
+					CONFIG_FILE
+					"\n"
+					"   -d            daemonize, fork to background\n"
+					"   -h            help\n"
+#ifdef X11
+					"   -a ALIGNMENT  text alignment on screen, {top,bottom}_{left,right}\n"
+					"   -f FONT       font to use\n"
 #ifdef OWN_WINDOW
-			     "   -o            create own window to draw\n"
+					"   -o            create own window to draw\n"
 #endif
 #ifdef XDBE
-			     "   -b            double buffer (prevents flickering)\n"
+					"   -b            double buffer (prevents flickering)\n"
 #endif
-			     "   -t TEXT       text to render, remember single quotes, like -t '$uptime'\n"
-			     "   -u SECS       update interval\n"
-			     "   -i NUM        number of times to update Conky\n"
-			     "   -w WIN_ID     window id to draw\n"
-			     "   -x X          x position\n"
-			     "   -y Y          y position\n", argv[0]);
+					"   -w WIN_ID     window id to draw\n"
+					"   -x X          x position\n"
+					"   -y Y          y position\n"
+#endif /* X11 */
+					"   -t TEXT       text to render, remember single quotes, like -t '$uptime'\n"
+					"   -u SECS       update interval\n"
+					"   -i NUM        number of times to update Conky\n", argv[0]);
 			return 0;
-
+#ifdef X11
 		case 'w':
 			window.window = strtol(optarg, 0, 0);
 			break;
+#endif /* X11 */
 
 		case '?':
 			exit(EXIT_FAILURE);
 		}
 	}
+#ifdef X11
 	/* initalize X BEFORE we load config. (we need to so that 'screen' is set) */
 	init_X11();
+#endif /* X11 */
 
 	tmpstring1 = (char *)
 	    malloc(TEXT_BUFFER_SIZE);
@@ -4175,17 +4269,17 @@ int main(int argc, char **argv)
 			break;
 
 		switch (c) {
-		case 'a':
-			text_alignment = string_to_alignment(optarg);
-			break;
-
 		case 'd':
 			fork_to_background = 1;
 			break;
 
-		case 'f':
+#ifdef X11
+			case 'f':
 			set_first_font(optarg);
 			break;
+			case 'a':
+				text_alignment = string_to_alignment(optarg);
+				break;
 
 #ifdef OWN_WINDOW
 		case 'o':
@@ -4197,7 +4291,7 @@ int main(int argc, char **argv)
 			use_xdbe = 1;
 			break;
 #endif
-
+#endif /* X11 */
 		case 't':
 			if (text != original_text)
 				free(text);
@@ -4212,7 +4306,7 @@ int main(int argc, char **argv)
 		case 'i':
 			total_run_times = strtod(optarg, 0);
 			break;
-
+#ifdef X11
 		case 'x':
 			gap_x = atoi(optarg);
 			break;
@@ -4220,14 +4314,17 @@ int main(int argc, char **argv)
 		case 'y':
 			gap_y = atoi(optarg);
 			break;
+#endif /* X11 */
 
 		case '?':
 			exit(EXIT_FAILURE);
 		}
 	}
 
+#ifdef X11
 	/* load font */
 	load_fonts();
+#endif /* X11 */
 
 	/* generate text and get initial size */
 	extract_variable_text(text);
@@ -4239,6 +4336,7 @@ int main(int argc, char **argv)
 	update_uname();
 
 	generate_text();
+#ifdef X11
 	update_text_area();	/* to get initial size of the window */
 
 	init_window
@@ -4247,12 +4345,14 @@ int main(int argc, char **argv)
 	     + border_margin * 2 + 1, text_height + border_margin * 2 + 1, on_bottom);
 
 	update_text_area();	/* to position text/window on screen */
+#endif /* X11 */
 
-#ifdef CAIRO
+/*#ifdef CAIRO
 // why the fuck not?
 //do_it();
-#endif
+#endif*/
 
+#ifdef X11
 #ifdef OWN_WINDOW
 	if (own_window)
 		XMoveWindow(display, window.window, window.x, window.y);
@@ -4261,8 +4361,8 @@ int main(int argc, char **argv)
 	create_gc();
 
 	set_font();
-
 	draw_stuff();
+#endif /* X11 */
 
 	/* fork */
 	if (fork_to_background) {

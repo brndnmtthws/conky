@@ -37,8 +37,12 @@ if BUILD_MLDONKEY
 mldonkey = mldonkey.c
 endif
 
+if BUILD_X11
+x11 = x11.c
+endif
+
 conky_SOURCES = common.c fs.c top.c $(linux) mail.c mixer.c $(seti) $(mpd) \
-	$(solaris) $(freebsd) $(netbsd) $(cairo) conky.c conky.h x11.c $(metar) \
+	$(solaris) $(freebsd) $(netbsd) $(cairo) conky.c conky.h $(x11) $(metar) \
 	$(mldonkey)
 
 conky_LDFLAGS = $(X11_LIBS) $(XFT_LIBS) $(CAIRO_LIBS)
@@ -59,4 +63,4 @@ EXTRA_DIST = conkyrc.sample conky.1 conky.x \
              app-admin/conky/conky-1.2.ebuild
 
 EXTRA_conky_SOURCES = seti.c linux.c solaris.c freebsd.c netbsd.c mpd.c libmpdclient.c \
-cairo.c libmpdclient.h top.h mldonkey.c ftp.c metarinfo.c ftp.h metarinfo.h
+cairo.c libmpdclient.h top.h mldonkey.c ftp.c metarinfo.c ftp.h metarinfo.h x11.c

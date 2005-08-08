@@ -167,17 +167,11 @@ void update_metar()
 	if (!status) {
 		status = 2;
 		iret1 = pthread_create(&thread1, NULL, fetch_ftp, NULL);
-<<<<<<< metarinfo.c
-	} else if (status == 2) {	/* thread is still running.  what else can we do? */
-		return;
-	} else {		/* status must be 1 */
-=======
 	} else if (status == 2) {	/* thread is still running.  let's kill it and start again */
 		pthread_cancel(thread1);
 		status = 2;
 		iret1 = pthread_create(&thread1, NULL, fetch_ftp, NULL);
 	} else {		/* status must be 1 */
->>>>>>> 1.9
 		pthread_join(thread1, NULL);
 		status = 2;
 		iret1 = pthread_create(&thread1, NULL, fetch_ftp, NULL);

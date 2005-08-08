@@ -1,5 +1,6 @@
 2005-08-07
 	* mpd password patch from Joshua Gerrish
+	* conky can run without X now, use --disable-x11 when configuring
 
 2005-08-06
 	* Conky 1.2 released
