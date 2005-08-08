@@ -58,32 +58,28 @@
 	
 		Conf                                Meaning                        
 	alignment             Aligned position on screen, may be top_left,         
-				top_right, bottom_left, bottom_right                 
+								 top_right, bottom_left, bottom_right                 
 	background            Boolean value, if true, Conky will be forked to     
-				background when started                              
+								 background when started                              
+	on_bottom 				 Set conky on the bottom of all other applications
 	border_margin         Border margin in pixels                              
 	border_width          Border width in pixels                               
 	cpu_avg_samples       The number of samples to average for CPU monitoring
 	default_color         Default color and border color                       
 	default_shade_color   Default shading color and border's shading color     
 	default_outline_color Default outline color                                
-				Use the Xdbe extension? (eliminates flicker) It is   
+								 Use the Xdbe extension? (eliminates flicker) It is   
 	double_buffer         highly recommended to use own window with this one   
-				so double buffer won't be so big.                    
+								 so double buffer won't be so big.                    
 	draw_borders          Draw borders around text?                            
 	draw_shades           Draw shades?                                         
 	draw_outline          Draw outlines?                                       
-	font                  Font name in X, xfontsel can be used to get a nice   
-				font                                                 
-	gap_x                 Gap between right or left border of screen, same as
-				passing -x at command line
-	gap_y                 Gap between top or bottom border of screen, same as
-				passing -y at command line
+	font                  Font name in X, xfontsel can be used to get a nice font                                                 
+	gap_x                 Gap between right or left border of screen, same as passing -x at command line
+	gap_y                 Gap between top or bottom border of screen, same as passing -y at command line
 	no_buffers            Substract (file system) buffers from used memory?    
 	mail_spool            Mail spool for mail checking                         
-	metar_station         METAR station code for weather, see
-				http://www.wrh.noaa.gov/ if you need to find
-				your code.
+	metar_station         METAR station code for weather, see http://www.wrh.noaa.gov/ if you need to find your code.
 	metar_server          Define a custom METAR ftp server
 	metar_path            Path on server to use
 	minimum_size          Minimum size of window                               

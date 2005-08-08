@@ -16,6 +16,9 @@ background no
 # Use Xft?
 use_xft yes
 
+# Set conky on the bottom of all other applications
+on_bottom yes
+
 # Xft font when Xft is enabled
 xftfont Bitstream Vera Sans Mono:size=8
 
