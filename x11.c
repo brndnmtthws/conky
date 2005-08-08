@@ -160,7 +160,7 @@ void set_transparent_background(Window win)
 	XClearWindow(display, win);
 }
 
-void init_window(int own_window, int w, int h)
+void init_window(int own_window, int w, int h, int l)
 {
 	/* There seems to be some problems with setting transparent background (on
 	 * fluxbox this time). It doesn't happen always and I don't know why it
@@ -172,8 +172,9 @@ void init_window(int own_window, int w, int h)
 			XSetWindowAttributes attrs;
 			XClassHint class_hints;
 
-			/* just test color */
+			/* just test color
 			attrs.background_pixel = get_x11_color("green");
+			*/
 
 			window.window = XCreateWindow(display, RootWindow(display, screen), window.x, window.y, w, h, 0, CopyFromParent,	/* depth */
 						      CopyFromParent,	/* class */
@@ -215,6 +216,17 @@ void init_window(int own_window, int w, int h)
 						PropModeReplace,
 						(unsigned char *) &prop,
 						1);
+			}
+			if(l) {
+			/* make sure the layer is on the bottom */
+         a = XInternAtom(display, "_WIN_LAYER", True);
+         if (a != None) {
+            long prop = 0;
+            XChangeProperty(display, window.window, a,
+            XA_CARDINAL, 32,
+            PropModeReplace,
+            (unsigned char *) &prop, 1);
+         }
 			}
 		}
 

@@ -39,12 +39,22 @@ Gwenhael LE MOINE <cycojesus at yahoo dot fr>
 Hannu Saransaari <hipo at users dot sourceforge dot net>
   Main code
 
+<<<<<<< AUTHORS
+<<<<<<< AUTHORS
+Jason Mitchell <jason.mitchell03 at saintleo dot edu>
+  UTF8 fix
+  Source clean up
+
+=======
+=======
 j-rock - #otw on freenode
   small fix for XFT
 
+>>>>>>> 1.4
 jack_mort - gentoo forums
   $tab patch
 
+>>>>>>> 1.3
 Jarmo Hekkanen
   SETI stuff
 
@@ -101,3 +111,4 @@ Walt Nelson <wnelsonjr at comcast dot net>
 William DiPlacido <bimbasaari at yahoo dot com>
   Frequency from /proc/cpuinfo
   Some other SETI stuff
+

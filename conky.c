@@ -197,6 +197,9 @@ static unsigned int stuff_in_upper_case;
 static int text_alignment;
 static int gap_x, gap_y;
 
+/* Always on bottom */
+static int on_bottom;
+
 /* Update interval */
 static double update_interval;
 
@@ -3566,6 +3569,7 @@ static enum alignment string_to_alignment(const char *s)
 static void set_default_configurations(void)
 {
 	text_alignment = BOTTOM_LEFT;
+	on_bottom = 1;
 	fork_to_background = 0;
 	border_margin = 3;
 	border_width = 1;
@@ -3699,6 +3703,12 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 				else
 					text_alignment = a;
 			} else
+				CONF_ERR;
+		}
+		CONF("on_bottom") {
+			if(value)
+				on_bottom = string_to_bool(value);
+			else
 				CONF_ERR;
 		}
 		CONF("background") {
@@ -4234,7 +4244,7 @@ int main(int argc, char **argv)
 	init_window
 	    (own_window,
 	     text_width
-	     + border_margin * 2 + 1, text_height + border_margin * 2 + 1);
+	     + border_margin * 2 + 1, text_height + border_margin * 2 + 1, on_bottom);
 
 	update_text_area();	/* to position text/window on screen */
 
