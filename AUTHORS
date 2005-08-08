@@ -1,3 +1,5 @@
+# $Id$
+
 Authors of conky in alphapetical order (please, send mail if I forgot
 somebody or email address / name is wrong):
 
@@ -39,22 +41,16 @@ Gwenhael LE MOINE <cycojesus at yahoo dot fr>
 Hannu Saransaari <hipo at users dot sourceforge dot net>
   Main code
 
-<<<<<<< AUTHORS
-<<<<<<< AUTHORS
 Jason Mitchell <jason.mitchell03 at saintleo dot edu>
   UTF8 fix
   Source clean up
 
-=======
-=======
-j-rock - #otw on freenode
-  small fix for XFT
+Joe Myre - <joemyre at users dot sourceforge dot net>
+  developer
 
->>>>>>> 1.4
 jack_mort - gentoo forums
   $tab patch
 
->>>>>>> 1.3
 Jarmo Hekkanen
   SETI stuff
 
