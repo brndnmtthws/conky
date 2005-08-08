@@ -14,6 +14,8 @@ static int daemon_status = 0;
 /* okay, heres how it will basically work.
  * when something connects, it will first send the conkyrc on the local (daemonized) server
  * after this, it will simply continue to send all the buffered text to the remote client
+ * http://analyser.oli.tudelft.nl/beej/mirror/net/html/
+ *  http://www.kegel.com/c10k.html
  */
 
 void *daemon_thread()
