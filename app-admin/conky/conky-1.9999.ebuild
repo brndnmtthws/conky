@@ -27,7 +27,6 @@ DEPEND="truetype? ( >=media-libs/freetype-2 )
    sys-apps/grep
    sys-apps/sed
    sys-devel/gcc
-   >=sys-process/procps-3.2.5
    "
 
 S=${WORKDIR}/conky
