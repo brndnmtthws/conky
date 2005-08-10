@@ -36,12 +36,6 @@
 /* Define to 1 if you have the `popen' function. */
 #undef HAVE_POPEN
 
-/* Define to 1 if you have the <proc/procps.h> header file. */
-#undef HAVE_PROC_PROCPS_H
-
-/* Define to 1 if you have the <proc/readproc.h> header file. */
-#undef HAVE_PROC_READPROC_H
-
 /* Define to 1 if you have the <signal.h> header file. */
 #undef HAVE_SIGNAL_H
 

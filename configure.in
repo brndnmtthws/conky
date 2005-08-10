@@ -275,10 +275,6 @@ dnl
 AC_CHECK_HEADERS([signal.h unistd.h X11/Xlib.h sys/utsname.h sys/stat.h linux/soundcard.h dirent.h])
 AC_CHECK_HEADERS([sys/statfs.h sys/param.h sys/mount.h])
 dnl For cairo
-AC_CHECK_HEADERS([proc/procps.h proc/readproc.h], [], [PROCPS_MISSING=yes])
-  if test "x$PROCPS_MISSING" = xyes; then
-      AC_MSG_ERROR([something went wrong when checking for procps, you're probably missing the necessary headers])
-  fi
 
 dnl
 dnl Check help2man

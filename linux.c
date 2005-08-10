@@ -20,8 +20,6 @@
 #include <unistd.h>
 // #include <assert.h>
 #include <time.h>
-#include <proc/procps.h>
-#include <proc/readproc.h>
 #include "top.h"
 
 #include <sys/ioctl.h>
