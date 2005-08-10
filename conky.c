@@ -1965,16 +1965,10 @@ static void generate_text()
 			}
 
 			OBJ(memgraph) {
-				/*new_graph(p, obj->a,
-					  obj->b, obj->c, obj->d,
-					  cur->memmax ? (cur->mem) /
-				(cur->memmax) : 0, 0);*/
 				new_graph(p, obj->a,
 				obj->b, obj->c, obj->d,
 				cur->memmax ? (cur->mem * 100.0) /
 						(cur->memmax) : 0.0, 0);
-				printf("%f\n", cur->memmax ? (cur->mem * 100.0) /
-						(cur->memmax) : 0.0);
 			}
 			/* mixer stuff */
 			OBJ(mixer) {
