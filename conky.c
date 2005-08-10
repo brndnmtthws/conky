@@ -813,7 +813,7 @@ struct text_object {
 			char *logfile;
 			double last_update;
 			float interval;
-			char buffer[TEXT_BUFFER_SIZE*4];
+			char *buffer;
 		} tail;
 
 		struct {
@@ -1155,8 +1155,7 @@ if (s[0] == '#') {
 	}
 	if (sscanf(arg, "%63s %i %i", buf, &n1, &n2) == 2) {
 		if (n1 < 1 || n1 > 30) {
-			CRIT_ERR
-			    ("invalid arg for tail, number of lines must be between 1 and 30");
+			CRIT_ERR("invalid arg for tail, number of lines must be between 1 and 30");
 			return;
 		} else {
 			FILE *fp;
@@ -1171,8 +1170,7 @@ if (s[0] == '#') {
 				fclose(fp);
 			} else {
 				//fclose (fp);
-				CRIT_ERR
-				    ("tail logfile does not exist, or you do not have correct permissions");
+				CRIT_ERR("tail logfile does not exist, or you do not have correct permissions");
 			}
 		}
 	} else if (sscanf(arg, "%63s %i %i", buf, &n1, &n2) == 3) {
@@ -1196,8 +1194,7 @@ if (s[0] == '#') {
 				fclose(fp);
 			} else {
 				//fclose (fp);
-				CRIT_ERR
-				    ("tail logfile does not exist, or you do not have correct permissions");
+				CRIT_ERR("tail logfile does not exist, or you do not have correct permissions");
 			}
 		}
 	}
@@ -1206,6 +1203,7 @@ if (s[0] == '#') {
 		ERR("invalid args given for tail");
 		return;
 	}
+	obj->data.tail.buffer = malloc(TEXT_BUFFER_SIZE * 6); /* asumming all else worked */
 	END OBJ(loadavg, INFO_LOADAVG) int a = 1, b = 2, c = 3, r = 3;
 	if (arg) {
 		r = sscanf(arg, "%d %d %d", &a, &b, &c);
@@ -1335,8 +1333,8 @@ int a = stippled_borders, b = 1;
 	END OBJ(totaldown, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(totalup, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(updates, 0)
-	END OBJ(alignr, 0) obj->data.i = arg ? atoi(arg) : 1;
-	END OBJ(alignc, 0) obj->data.i = arg ? atoi(arg) : 1;
+	END OBJ(alignr, 0) obj->data.i = arg ? atoi(arg) : 0;
+	END OBJ(alignc, 0) obj->data.i = arg ? atoi(arg) : 0;
 	END OBJ(upspeed, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(upspeedf, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(upspeedgraph, INFO_NET)
@@ -2365,8 +2363,9 @@ static void generate_text()
 					tailstring *head = NULL;
 					tailstring *headtmp = NULL;
 					fp = fopen(obj->data.tail.logfile, "rt");
-					if (fp == NULL)
+					if (fp == NULL) {
 						ERR("tail logfile failed to open");
+					}
 					else {
 						obj->data.tail.readlines = 0;
 
@@ -2386,7 +2385,7 @@ static void generate_text()
 							headtmp = headtmp->next;
 							for (i = 1;i < obj->data.tail.wantedlines + 1 && i < obj->data.tail.readlines; i++) {
 								if (headtmp) {
-									strncat(obj->data.tail.buffer, headtmp->data, TEXT_BUFFER_SIZE * 4 / obj->data.tail.wantedlines);
+									strncat(obj->data.tail.buffer, headtmp->data, (TEXT_BUFFER_SIZE * 6 / obj->data.tail.wantedlines) - strlen(obj->data.tail.buffer)); /* without strlen() at the end this becomes a possible */
 									headtmp = headtmp->next;
 								}
 							}
@@ -3104,7 +3103,6 @@ static void draw_line(char *s)
 						set_font();
 					}
 				}
-						
 				break;
 			case FG:
 				if (draw_mode == FG)
@@ -3149,8 +3147,8 @@ static void draw_line(char *s)
 
 			case ALIGNC:
 				{
-					int pos_x = (text_start_x*2) + text_width - cur_x -  ((float)get_string_width(p) / 2) - ((float)text_width / 2);
-					/*printf("pos_x %i text_start_x %i text_width %i cur_x %i get_string_width(p) %i\n", pos_x, text_start_x, text_width, cur_x, get_string_width(p));*/
+					int pos_x = (text_width)/2 - get_string_width(p)/2 - (cur_x - text_start_x);
+					/*printf("pos_x %i text_start_x %i text_width %i cur_x %i get_string_width(p) %i gap_x %i specials[special_index].arg %i\n", pos_x, text_start_x, text_width, cur_x, get_string_width(p), gap_x, specials[special_index].arg);*/
 					if (pos_x >
 					    specials[special_index].arg)
 						w = pos_x -
