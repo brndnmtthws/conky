@@ -1,0 +1,838 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Conky Variables</title>
+</head>
+<body bgcolor="#FFFFFF"><table cellpadding="4">
+<tr bgcolor="#ffd700">
+<th>Variable</th>
+<th>Arguments () = optional</th>
+<th>Explanation</th>
+<th>Example</th>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">addr</font></td>
+<td align="center">(interface)</td>
+<td>
+		IP address for an interface
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">acpiacadapter</font></td>
+<td align="center"></td>
+<td>
+		ACPI ac adapter state.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">acpifan</font></td>
+<td align="center"></td>
+<td>
+		ACPI fan state
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">acpitemp</font></td>
+<td align="center"></td>
+<td>
+		ACPI temperature.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">adt746xcpu</font></td>
+<td align="center"></td>
+<td>
+		CPU temperature from therm_adt746x
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">adt746xfan</font></td>
+<td align="center"></td>
+<td>
+		Fan speed from therm_adt746x
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">alignr</font></td>
+<td align="center">(num)</td>
+<td>
+		Right-justify text, with space of N
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">alignc</font></td>
+<td align="center">(num)</td>
+<td>
+		Align text to centre
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">battery</font></td>
+<td align="center">(num)</td>
+<td>
+		Remaining capacity in ACPI or APM battery. ACPI battery number can be given as argument (default is BAT0).
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">buffers</font></td>
+<td align="center"></td>
+<td>
+		Amount of memory buffered
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">cached</font></td>
+<td align="center"></td>
+<td>
+		Amount of memory cached
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">color</font></td>
+<td align="center">(color)</td>
+<td>
+		Change drawing color to color
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">cpu</font></td>
+<td align="center"></td>
+<td>
+		CPU usage in percents
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">cpubar</font></td>
+<td align="center">(height)</td>
+<td>
+		Bar that shows CPU usage, height is bar's height in pixels
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">cpugraph</font></td>
+<td align="center">(height, width, gradient colour 1, gradient colour 2)</td>
+<td>
+		CPU usage graph, with optional colours in hex, minus the #.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">downspeed</font></td>
+<td align="center">net</td>
+<td>
+		Download speed in kilobytes
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">downspeedf</font></td>
+<td align="center">net</td>
+<td>
+		Download speed in kilobytes with one decimal
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">downspeedgraph</font></td>
+<td align="center">net, (height, width, gradient colour 1, gradient colour 2)</td>
+<td>
+		Download speed graph, colours defined in hex, minus the #.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">else</font></td>
+<td align="center"></td>
+<td>
+		Text to show if any of the above are not true
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">exec</font></td>
+<td align="center">shell command</td>
+<td>
+		Executes a shell command and displays the output in conky. warning: this takes a lot more resources than other variables. I'd recommend coding wanted behaviour in C and posting a patch.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">execbar</font></td>
+<td align="center">shell command</td>
+<td>
+		Same as exec, except if the first value return is a value between 0-100, it will use that number for a bar. The size for the bar is currently fixed, but that may change in the future.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">execgraph</font></td>
+<td align="center">shell command</td>
+<td>
+		Same as execbar, but graphs values
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">execi</font></td>
+<td align="center">interval, shell command</td>
+<td>
+		Same as exec but with specific interval. Interval can't be less than update_interval in configuration.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">font</font></td>
+<td align="center">font</td>
+<td>
+		Specify a different font. Only applies to one line.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">fs_bar</font></td>
+<td align="center">(height, fs)</td>
+<td>
+		Bar that shows how much space is used on a file system. height is the height in pixels. fs is any file on that file system.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">fs_free</font></td>
+<td align="center">(fs)</td>
+<td>
+		Free space on a file system available for users.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">fs_free_perc</font></td>
+<td align="center">(fs)</td>
+<td>
+		Free percentage of space on a file system available for users.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">fs_size</font></td>
+<td align="center">(fs)</td>
+<td>
+		File system size
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">fs_used</font></td>
+<td align="center">(fs)</td>
+<td>
+		File system used space
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">hr</font></td>
+<td align="center">(height)</td>
+<td>
+		Horizontal line, height is the height in pixels
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">i2c</font></td>
+<td align="center">(dev), type, n</td>
+<td>
+		I2C sensor from sysfs (Linux 2.6). dev may be omitted if you have only one I2C device. type is either in (or vol) meaning voltage, fan meaning fan or temp/tempf (first in C, second in F) meaning temperature. n is number of the sensor. See /sys/bus/i2c/devices/ on your local computer.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">if_running</font></td>
+<td align="center">(process)</td>
+<td>
+		if PROCESS is running, display everything if_running and the matching $endif
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">if_existing</font></td>
+<td align="center">(file)</td>
+<td>
+		if FILE exists, display everything between if_existing and the matching $endif
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">if_mounted</font></td>
+<td align="center">(mountpoint)</td>
+<td>
+		if MOUNTPOINT is mounted, display everything between if_mounted and the matching $endif
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">kernel</font></td>
+<td align="center"></td>
+<td>
+		Kernel version
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">linkstatus</font></td>
+<td align="center">(interface)</td>
+<td>
+		Get the link status for wireless connections
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">loadavg</font></td>
+<td align="center"></td>
+<td>
+		(1,2,3)&gt; System load average, 1 is for past 1 minute, 2 for past 5 minutes and 3 for past 15 minutes.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">machine</font></td>
+<td align="center"></td>
+<td>
+		Machine, i686 for example
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">mails</font></td>
+<td align="center"></td>
+<td>
+		Mail count in mail spool. You can use program like fetchmail to get mails from some server using your favourite protocol. See also new_mails.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">mem</font></td>
+<td align="center"></td>
+<td>
+		Amount of memory in use
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">membar</font></td>
+<td align="center">(height)</td>
+<td>
+		Bar that shows amount of memory in use
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">memmax</font></td>
+<td align="center"></td>
+<td>
+		Total amount of memory
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">memperc</font></td>
+<td align="center"></td>
+<td>
+		Percentage of memory in use
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">metar_ob_time</font></td>
+<td align="center"></td>
+<td>
+		self-explanatory
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">metar_temp</font></td>
+<td align="center"></td>
+<td>
+		self-explanatory
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">metar_tempf</font></td>
+<td align="center"></td>
+<td>
+		temp in F
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">metar_windchill</font></td>
+<td align="center"></td>
+<td>
+		self-explanatory
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">metar_dew_poin</font></td>
+<td align="center"></td>
+<td>
+		self-explanatory
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">metar_rh</font></td>
+<td align="center"></td>
+<td>
+		self-explanatory
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">metar_windspeed</font></td>
+<td align="center"></td>
+<td>
+		self-explanatory
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">metar_winddir</font></td>
+<td align="center"></td>
+<td>
+		self-explanatory
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">metar_swinddir</font></td>
+<td align="center"></td>
+<td>
+		self-explanatory
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">metar_cloud</font></td>
+<td align="center"></td>
+<td>
+		self-explanatory
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">metar_u2d_time</font></td>
+<td align="center"></td>
+<td>
+		self-explanatory
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">ml_upload_counter</font></td>
+<td align="center"></td>
+<td>
+		total session upload in mb
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">ml_download_counter</font></td>
+<td align="center"></td>
+<td>
+		total session download in mb
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">ml_nshared_files</font></td>
+<td align="center"></td>
+<td>
+		number of shared files
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">ml_shared_counter</font></td>
+<td align="center"></td>
+<td>
+		total session shared in mb, buggy in some mldonkey versions
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">ml_tcp_upload_rate</font></td>
+<td align="center"></td>
+<td>
+		tcp upload rate in kb/s
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">ml_tcp_download_rate</font></td>
+<td align="center"></td>
+<td>
+		tcp download rate in kb/s
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">ml_udp_upload_rate</font></td>
+<td align="center"></td>
+<td>
+		udp upload rate in kb/s
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">ml_udp_download_rate</font></td>
+<td align="center"></td>
+<td>
+		udp download rate in kb/s
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">ml_ndownloaded_files</font></td>
+<td align="center"></td>
+<td>
+		number of completed files
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">ml_ndownloading_files</font></td>
+<td align="center"></td>
+<td>
+		number of downloading files
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">mpd_artist</font></td>
+<td align="center"></td>
+<td>
+		Artist in current MPD song must be enabled at compile
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">mpd_album</font></td>
+<td align="center"></td>
+<td>
+		Album in current MPD song
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">mpd_bar</font></td>
+<td align="center">height</td>
+<td>
+		Bar of mpd's progress
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">mpd_bitrate</font></td>
+<td align="center"></td>
+<td>
+		Bitrate of current song
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">mpd_status</font></td>
+<td align="center"></td>
+<td>
+		Playing, stopped, et cetera.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">mpd_title</font></td>
+<td align="center"></td>
+<td>
+		Title of current MPD song
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">mpd_vol</font></td>
+<td align="center"></td>
+<td>
+		MPD's volume
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">mpd_elapsed</font></td>
+<td align="center"></td>
+<td>
+		Song's elapsed time
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">mpd_length</font></td>
+<td align="center"></td>
+<td>
+		Song's length
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">mpd_percent</font></td>
+<td align="center"></td>
+<td>
+		Percent of song's progress
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">new_mails</font></td>
+<td align="center"></td>
+<td>
+		Unread mail count in mail spool.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">nodename</font></td>
+<td align="center"></td>
+<td>
+		Hostname
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">outlinecolor</font></td>
+<td align="center">(color)</td>
+<td>
+		Change outline color
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">pre_exec</font></td>
+<td align="center">shell command</td>
+<td>
+		Executes a shell command one time before conky displays anything and puts output as text.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">processes</font></td>
+<td align="center"></td>
+<td>
+		Total processes (sleeping and running)
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">running_processes</font></td>
+<td align="center"></td>
+<td>
+		Running processes (not sleeping), requires Linux 2.6
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">shadecolor</font></td>
+<td align="center">(color)</td>
+<td>
+		Change shading color
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">stippled_hr</font></td>
+<td align="center">(space)</td>
+<td>
+		Stippled (dashed) horizontal line
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">swapbar</font></td>
+<td align="center">(height)</td>
+<td>
+		Bar that shows amount of swap in use
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">swap</font></td>
+<td align="center"></td>
+<td>
+		Amount of swap in use
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">swapmax</font></td>
+<td align="center"></td>
+<td>
+		Total amount of swap
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">swapperc</font></td>
+<td align="center"></td>
+<td>
+		Percentage of swap in use
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">sysname</font></td>
+<td align="center"></td>
+<td>
+		System name, Linux for example
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">offse</font></td>
+<td align="center">pixels</td>
+<td>
+		Move text over by N pixels
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">tail</font></td>
+<td align="center"></td>
+<td>
+		logfile, lines interval&gt; Displays last N lines of supplied text text file. If interval is not supplied, Conky assumes 2x Conky's interval. Max of 30 lines. Max of 30 lines can be displayed.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">time</font></td>
+<td align="center">(format)</td>
+<td>
+		Local time, see man strftime to get more information about format
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">totaldown</font></td>
+<td align="center">net</td>
+<td>
+		Total download, overflows at 4 GB on Linux with 32-bit arch and there doesn't seem to be a way to know how many times it has already done that before conky has started.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">top</font></td>
+<td align="center">type, num</td>
+<td>
+		This takes arguments in the form:top (name) (number) Basically, processes are ranked from highest to lowest in terms of cpu usage, which is what (num) represents. The types are: "name", "pid", "cpu", and mem". There can be a max of 10 processes listed.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">top_mem</font></td>
+<td align="center">type, num</td>
+<td>
+		Same as top, except sorted by mem usage instead of cpu
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">totalup</font></td>
+<td align="center">net</td>
+<td>
+		Total upload, this one too, may overflow
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">updates</font></td>
+<td align="center">Number of updates</td>
+<td>
+		for debugging
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">upspeed</font></td>
+<td align="center">net</td>
+<td>
+		Upload speed in kilobytes
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">upspeedf</font></td>
+<td align="center">net</td>
+<td>
+		Upload speed in kilobytes with one decimal
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">upspeedgraph</font></td>
+<td align="center">net, (height, width, gradient colour 1, gradient colour 2)</td>
+<td>
+		Upload speed graph, colours defined in hex, minus the #.
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">uptime</font></td>
+<td align="center"></td>
+<td>
+		Uptime
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">uptime_short</font></td>
+<td align="center"></td>
+<td>
+		Uptime in a shorter format
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">seti_prog</font></td>
+<td align="center"></td>
+<td>
+		Seti@home current progress
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">seti_progbar</font></td>
+<td align="center">(height)</td>
+<td>
+		Seti@home current progress bar
+	</td>
+<td></td>
+</tr>
+<tr bgcolor="#4a708b">
+<td align="center" bgcolor="#2e8b57"><font color="FFFFFF">seti_credit</font></td>
+<td align="center"></td>
+<td>
+		Seti@home total user credit
+	</td>
+<td></td>
+</tr>
+</table></body>
+</html>

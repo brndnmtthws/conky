@@ -1,0 +1,931 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--jtan325 created this-->
+<variables>
+<variable>
+	<name>addr</name>
+	<arguments>(interface)</arguments>
+	<explanation>
+		IP address for an interface
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>acpiacadapter</name>
+	<arguments></arguments>
+	<explanation>
+		ACPI ac adapter state.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>acpifan</name>
+	<arguments></arguments>
+	<explanation>
+		ACPI fan state
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>acpitemp</name>
+	<arguments></arguments>
+	<explanation>
+		ACPI temperature.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>adt746xcpu</name>
+	<arguments></arguments>
+	<explanation>
+		CPU temperature from therm_adt746x
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>adt746xfan</name>
+	<arguments></arguments>
+	<explanation>
+		Fan speed from therm_adt746x
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>alignr</name>
+	<arguments>(num)</arguments>
+	<explanation>
+		Right-justify text, with space of N
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>alignc</name>
+	<arguments>(num)</arguments>
+	<explanation>
+		Align text to centre
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>battery</name>
+	<arguments>(num)</arguments>
+	<explanation>
+		Remaining capacity in ACPI or APM battery. ACPI battery number can be given as argument (default is BAT0).
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>buffers</name>
+	<arguments></arguments>
+	<explanation>
+		Amount of memory buffered
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>cached</name>
+	<arguments></arguments>
+	<explanation>
+		Amount of memory cached
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>color</name>
+	<arguments>(color)</arguments>
+	<explanation>
+		Change drawing color to color
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>cpu</name>
+	<arguments></arguments>
+	<explanation>
+		CPU usage in percents
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>cpubar</name>
+	<arguments>(height)</arguments>
+	<explanation>
+		Bar that shows CPU usage, height is bar's height in pixels
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>cpugraph</name>
+	<arguments>(height, width, gradient colour 1, gradient colour 2)</arguments>
+	<explanation>
+		CPU usage graph, with optional colours in hex, minus the #.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>downspeed</name>
+	<arguments>net</arguments>
+	<explanation>
+		Download speed in kilobytes
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>downspeedf</name>
+	<arguments>net</arguments>
+	<explanation>
+		Download speed in kilobytes with one decimal
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>downspeedgraph</name>
+	<arguments>net, (height, width, gradient colour 1, gradient colour 2)</arguments>
+	<explanation>
+		Download speed graph, colours defined in hex, minus the #.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>else</name>
+	<arguments></arguments>
+	<explanation>
+		Text to show if any of the above are not true
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>exec</name>
+	<arguments>shell command</arguments>
+	<explanation>
+		Executes a shell command and displays the output in conky. warning: this takes a lot more resources than other variables. I'd recommend coding wanted behaviour in C and posting a patch.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>execbar</name>
+	<arguments>shell command</arguments>
+	<explanation>
+		Same as exec, except if the first value return is a value between 0-100, it will use that number for a bar. The size for the bar is currently fixed, but that may change in the future.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>execgraph</name>
+	<arguments>shell command</arguments>
+	<explanation>
+		Same as execbar, but graphs values
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>execi</name>
+	<arguments>interval, shell command</arguments>
+	<explanation>
+		Same as exec but with specific interval. Interval can't be less than update_interval in configuration.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>font</name>
+	<arguments>font</arguments>
+	<explanation>
+		Specify a different font. Only applies to one line.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>fs_bar</name>
+	<arguments>(height, fs)</arguments>
+	<explanation>
+		Bar that shows how much space is used on a file system. height is the height in pixels. fs is any file on that file system.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>fs_free</name>
+	<arguments>(fs)</arguments>
+	<explanation>
+		Free space on a file system available for users.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>fs_free_perc</name>
+	<arguments>(fs)</arguments>
+	<explanation>
+		Free percentage of space on a file system available for users.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>fs_size</name>
+	<arguments>(fs)</arguments>
+	<explanation>
+		File system size
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>fs_used</name>
+	<arguments>(fs)</arguments>
+	<explanation>
+		File system used space
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>hr</name>
+	<arguments>(height)</arguments>
+	<explanation>
+		Horizontal line, height is the height in pixels
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>i2c</name>
+	<arguments>(dev), type, n</arguments>
+	<explanation>
+		I2C sensor from sysfs (Linux 2.6). dev may be omitted if you have only one I2C device. type is either in (or vol) meaning voltage, fan meaning fan or temp/tempf (first in C, second in F) meaning temperature. n is number of the sensor. See /sys/bus/i2c/devices/ on your local computer.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>if_running</name>
+	<arguments>(process)</arguments>
+	<explanation>
+		if PROCESS is running, display everything if_running and the matching $endif
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>if_existing</name>
+	<arguments>(file)</arguments>
+	<explanation>
+		if FILE exists, display everything between if_existing and the matching $endif
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>if_mounted</name>
+	<arguments>(mountpoint)</arguments>
+	<explanation>
+		if MOUNTPOINT is mounted, display everything between if_mounted and the matching $endif
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>kernel</name>
+	<arguments></arguments>
+	<explanation>
+		Kernel version
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>linkstatus</name>
+	<arguments>(interface)</arguments>
+	<explanation>
+		Get the link status for wireless connections
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>loadavg</name>
+	<arguments></arguments>
+	<explanation>
+		(1,2,3)> System load average, 1 is for past 1 minute, 2 for past 5 minutes and 3 for past 15 minutes.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>machine</name>
+	<arguments></arguments>
+	<explanation>
+		Machine, i686 for example
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>mails</name>
+	<arguments></arguments>
+	<explanation>
+		Mail count in mail spool. You can use program like fetchmail to get mails from some server using your favourite protocol. See also new_mails.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>mem</name>
+	<arguments></arguments>
+	<explanation>
+		Amount of memory in use
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>membar</name>
+	<arguments>(height)</arguments>
+	<explanation>
+		Bar that shows amount of memory in use
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>memmax</name>
+	<arguments></arguments>
+	<explanation>
+		Total amount of memory
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>memperc</name>
+	<arguments></arguments>
+	<explanation>
+		Percentage of memory in use
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>metar_ob_time</name>
+	<arguments></arguments>
+	<explanation>
+		self-explanatory
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>metar_temp</name>
+	<arguments></arguments>
+	<explanation>
+		self-explanatory
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>metar_tempf</name>
+	<arguments></arguments>
+	<explanation>
+		temp in F
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>metar_windchill</name>
+	<arguments></arguments>
+	<explanation>
+		self-explanatory
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>metar_dew_poin</name>
+	<arguments></arguments>
+	<explanation>
+		self-explanatory
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>metar_rh</name>
+	<arguments></arguments>
+	<explanation>
+		self-explanatory
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>metar_windspeed</name>
+	<arguments></arguments>
+	<explanation>
+		self-explanatory
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>metar_winddir</name>
+	<arguments></arguments>
+	<explanation>
+		self-explanatory
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>metar_swinddir</name>
+	<arguments></arguments>
+	<explanation>
+		self-explanatory
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>metar_cloud</name>
+	<arguments></arguments>
+	<explanation>
+		self-explanatory
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>metar_u2d_time</name>
+	<arguments></arguments>
+	<explanation>
+		self-explanatory
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>ml_upload_counter</name>
+	<arguments></arguments>
+	<explanation>
+		total session upload in mb
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>ml_download_counter</name>
+	<arguments></arguments>
+	<explanation>
+		total session download in mb
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>ml_nshared_files</name>
+	<arguments></arguments>
+	<explanation>
+		number of shared files
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>ml_shared_counter</name>
+	<arguments></arguments>
+	<explanation>
+		total session shared in mb, buggy in some mldonkey versions
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>ml_tcp_upload_rate</name>
+	<arguments></arguments>
+	<explanation>
+		tcp upload rate in kb/s
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>ml_tcp_download_rate</name>
+	<arguments></arguments>
+	<explanation>
+		tcp download rate in kb/s
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>ml_udp_upload_rate</name>
+	<arguments></arguments>
+	<explanation>
+		udp upload rate in kb/s
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>ml_udp_download_rate</name>
+	<arguments></arguments>
+	<explanation>
+		udp download rate in kb/s
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>ml_ndownloaded_files</name>
+	<arguments></arguments>
+	<explanation>
+		number of completed files
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>ml_ndownloading_files</name>
+	<arguments></arguments>
+	<explanation>
+		number of downloading files
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>mpd_artist</name>
+	<arguments></arguments>
+	<explanation>
+		Artist in current MPD song must be enabled at compile
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>mpd_album</name>
+	<arguments></arguments>
+	<explanation>
+		Album in current MPD song
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>mpd_bar</name>
+	<arguments>height</arguments>
+	<explanation>
+		Bar of mpd's progress
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>mpd_bitrate</name>
+	<arguments></arguments>
+	<explanation>
+		Bitrate of current song
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>mpd_status</name>
+	<arguments></arguments>
+	<explanation>
+		Playing, stopped, et cetera.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>mpd_title</name>
+	<arguments></arguments>
+	<explanation>
+		Title of current MPD song
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>mpd_vol</name>
+	<arguments></arguments>
+	<explanation>
+		MPD's volume
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>mpd_elapsed</name>
+	<arguments></arguments>
+	<explanation>
+		Song's elapsed time
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>mpd_length</name>
+	<arguments></arguments>
+	<explanation>
+		Song's length
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>mpd_percent</name>
+	<arguments></arguments>
+	<explanation>
+		Percent of song's progress
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>new_mails</name>
+	<arguments></arguments>
+	<explanation>
+		Unread mail count in mail spool.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>nodename</name>
+	<arguments></arguments>
+	<explanation>
+		Hostname
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>outlinecolor</name>
+	<arguments>(color)</arguments>
+	<explanation>
+		Change outline color
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>pre_exec</name>
+	<arguments>shell command</arguments>
+	<explanation>
+		Executes a shell command one time before conky displays anything and puts output as text.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>processes</name>
+	<arguments></arguments>
+	<explanation>
+		Total processes (sleeping and running)
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>running_processes</name>
+	<arguments></arguments>
+	<explanation>
+		Running processes (not sleeping), requires Linux 2.6
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>shadecolor</name>
+	<arguments>(color)</arguments>
+	<explanation>
+		Change shading color
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>stippled_hr</name>
+	<arguments>(space)</arguments>
+	<explanation>
+		Stippled (dashed) horizontal line
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>swapbar</name>
+	<arguments>(height)</arguments>
+	<explanation>
+		Bar that shows amount of swap in use
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>swap</name>
+	<arguments></arguments>
+	<explanation>
+		Amount of swap in use
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>swapmax</name>
+	<arguments></arguments>
+	<explanation>
+		Total amount of swap
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>swapperc</name>
+	<arguments></arguments>
+	<explanation>
+		Percentage of swap in use
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>sysname</name>
+	<arguments></arguments>
+	<explanation>
+		System name, Linux for example
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>offse</name>
+	<arguments>pixels</arguments>
+	<explanation>
+		Move text over by N pixels
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>tail</name>
+	<arguments></arguments>
+	<explanation>
+		logfile, lines interval> Displays last N lines of supplied text text file. If interval is not supplied, Conky assumes 2x Conky's interval. Max of 30 lines. Max of 30 lines can be displayed.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>time</name>
+	<arguments>(format)</arguments>
+	<explanation>
+		Local time, see man strftime to get more information about format
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>totaldown</name>
+	<arguments>net</arguments>
+	<explanation>
+		Total download, overflows at 4 GB on Linux with 32-bit arch and there doesn't seem to be a way to know how many times it has already done that before conky has started.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>top</name>
+	<arguments>type, num</arguments>
+	<explanation>
+		This takes arguments in the form:top (name) (number) Basically, processes are ranked from highest to lowest in terms of cpu usage, which is what (num) represents. The types are: "name", "pid", "cpu", and mem". There can be a max of 10 processes listed.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>top_mem</name>
+	<arguments>type, num</arguments>
+	<explanation>
+		Same as top, except sorted by mem usage instead of cpu
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>totalup</name>
+	<arguments>net</arguments>
+	<explanation>
+		Total upload, this one too, may overflow
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>updates</name>
+	<arguments>Number of updates</arguments>
+	<explanation>
+		for debugging
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>upspeed</name>
+	<arguments>net</arguments>
+	<explanation>
+		Upload speed in kilobytes
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>upspeedf</name>
+	<arguments>net</arguments>
+	<explanation>
+		Upload speed in kilobytes with one decimal
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>upspeedgraph</name>
+	<arguments>net, (height, width, gradient colour 1, gradient colour 2)</arguments>
+	<explanation>
+		Upload speed graph, colours defined in hex, minus the #.
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>uptime</name>
+	<arguments></arguments>
+	<explanation>
+		Uptime
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>uptime_short</name>
+	<arguments></arguments>
+	<explanation>
+		Uptime in a shorter format
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>seti_prog</name>
+	<arguments></arguments>
+	<explanation>
+		Seti@home current progress
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>seti_progbar</name>
+	<arguments>(height)</arguments>
+	<explanation>
+		Seti@home current progress bar
+	</explanation>
+	<example></example>
+</variable>
+
+<variable>
+	<name>seti_credit</name>
+	<arguments></arguments>
+	<explanation>
+		Seti@home total user credit
+	</explanation>
+	<example></example>
+</variable>
+
+</variables>
