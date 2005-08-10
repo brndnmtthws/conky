@@ -1264,7 +1264,7 @@ if (s[0] == '#') {
 	END OBJ(memperc, INFO_MEM)
 	END OBJ(membar, INFO_MEM)
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
-	END OBJ(membar, INFO_MEM)
+	END OBJ(memgraph, INFO_MEM)
 			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d);
 	END OBJ(mixer, INFO_MIXER) obj->data.l = mixer_init(arg);
 	END OBJ(mixerl, INFO_MIXER) obj->data.l = mixer_init(arg);
