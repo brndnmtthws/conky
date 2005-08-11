@@ -256,6 +256,7 @@ static char original_text[] =
     "$hr\n"
     "${color grey}Uptime:$color $uptime\n"
     "${color grey}Frequency (in MHz):$color $freq\n"
+    "${color grey}Frequency (in Ghz):$color $freq_G\n"
     "${color grey}RAM Usage:$color $mem/$memmax - $memperc% ${membar 4}\n"
     "${color grey}Swap Usage:$color $swap/$swapmax - $swapperc% ${swapbar 4}\n"
     "${color grey}CPU Usage:$color $cpu% ${cpubar 4}\n"
@@ -263,6 +264,8 @@ static char original_text[] =
     "$hr\n"
     "${color grey}File systems:\n"
     " / $color${fs_free /}/${fs_size /} ${fs_bar 6 /}\n"
+    " / $color${fs_free /}/$$fs_size_G /} $(fs_bar 6 /}\n"
+    " / $color${fs_free /}/$$fs_size_T /} $(fs_bar 6 /}\n"
     "${color grey}Networking:\n"
     " Up:$color ${upspeed eth0} k/s${color grey} - Down:$color ${downspeed eth0} k/s\n"
     "${color grey}Temperatures:\n"
@@ -668,11 +671,14 @@ enum text_object_type {
 	OBJ_execbar,
 	OBJ_execgraph,
 	OBJ_freq,
+	OBJ_freq_G,
 	OBJ_fs_bar,
 	OBJ_fs_bar_free,
 	OBJ_fs_free,
 	OBJ_fs_free_perc,
 	OBJ_fs_size,
+	OBJ_fs_size_G,
+	OBJ_fs_size_T,
 	OBJ_fs_used,
 	OBJ_fs_used_perc,
 	OBJ_hr,
@@ -927,8 +933,11 @@ if (s[0] == '#') {
 #endif /* X11 */
 	OBJ(acpitemp, 0) obj->data.i = open_acpi_temperature(arg);
 	END OBJ(acpiacadapter, 0)
-	END OBJ(freq, 0) END OBJ(acpifan, 0) END OBJ(battery,
-						     0) char bat[64];
+	END OBJ(freq, 0);
+	END OBJ(freq_G, 0);
+	END OBJ(acpifan, 0);
+	END OBJ(battery, 0);
+	char bat[64];
 	if (arg)
 		sscanf(arg, "%63s", bat);
 	else
@@ -1047,6 +1056,12 @@ if (s[0] == '#') {
 		 arg = "/";
 	obj->data.fs = prepare_fs_stat(arg);
 	END OBJ(fs_size, INFO_FS) if (!arg)
+		 arg = "/";
+	obj->data.fs = prepare_fs_stat(arg);
+	END OBJ(fs_size_G, INFO_FS) if (!arg)
+		 arg = "/";
+	obj->data.fs = prepare_fs_stat(arg);
+	END OBJ(fs_size_T, INFO_FS) if (!arg)
 		 arg = "/";
 	obj->data.fs = prepare_fs_stat(arg);
 	END OBJ(fs_used, INFO_FS) if (!arg)
@@ -1558,6 +1573,10 @@ static void generate_text()
 			OBJ(freq) {
 				snprintf(p, n, "%s", get_freq());
 			}
+			OBJ(freq_G) {
+				float ghz = (float)(atof(get_freq())/10);
+				snprintf(p, n, "%f", ghz);
+			}
 			OBJ(adt746xcpu) {
 				snprintf(p, n, "%s", get_adt746x_cpu());
 			}
@@ -1818,6 +1837,16 @@ static void generate_text()
 			OBJ(fs_size) {
 				if (obj->data.fs != NULL)
 					human_readable(obj->data.fs->size,
+						       p, 255);
+			}
+			OBJ(fs_size_G) {
+				if (obj->data.fs != NULL)
+					human_readable((obj->data.fs->size)/10,
+						       p, 255);
+			}
+			OBJ(fs_size_T) {
+				if (obj->data.fs != NULL)
+					human_readable((obj->data.fs->size)/100,
 						       p, 255);
 			}
 			OBJ(fs_used) {
