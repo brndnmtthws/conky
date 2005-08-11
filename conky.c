@@ -676,8 +676,7 @@ enum text_object_type {
 	OBJ_fs_bar_free,
 	OBJ_fs_free,
 	OBJ_fs_free_perc,
-	OBJ_fs_size,
-	OBJ_fs_size_g,
+	OBJ_fs_size, //This already outputs in gigs
 	OBJ_fs_size_t,
 	OBJ_fs_used,
 	OBJ_fs_used_perc,
@@ -1056,9 +1055,6 @@ if (s[0] == '#') {
 		 arg = "/";
 	obj->data.fs = prepare_fs_stat(arg);
 	END OBJ(fs_size, INFO_FS) if (!arg)
-		 arg = "/";
-	obj->data.fs = prepare_fs_stat(arg);
-	END OBJ(fs_size_g, INFO_FS) if (!arg)
 		 arg = "/";
 	obj->data.fs = prepare_fs_stat(arg);
 	END OBJ(fs_size_t, INFO_FS) if (!arg)
@@ -1840,14 +1836,9 @@ static void generate_text()
 					human_readable(obj->data.fs->size,
 						       p, 255);
 			}
-			OBJ(fs_size_g) {
-				if (obj->data.fs != NULL)
-					human_readable((obj->data.fs->size)/10,
-						       p, 255);
-			}
 			OBJ(fs_size_t) {
 				if (obj->data.fs != NULL)
-					human_readable((obj->data.fs->size)/100,
+					human_readable((obj->data.fs->size)/1000,
 						       p, 255);
 			}
 			OBJ(fs_used) {
