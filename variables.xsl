@@ -31,21 +31,27 @@
           <td align="center" bgcolor="#2e8b57">
             <font color = "FFFFFF">
               <xsl:value-of select="name" />
+            </font>              
+          </td>
+          <td align="center"> 
+            <font color = "#c1cdcd">
+              <xsl:value-of select="arguments" />
             </font>
           </td>
-          <td align="center">
-            <xsl:value-of select="arguments" />
+          <td>
+            <font color = "#c1cdcd"> 
+              <xsl:value-of select="explanation" />
+            </font>
           </td>
           <td>
-            <xsl:value-of select="explanation" />
-          </td>
-          <td>
-            <xsl:value-of select="example" />
+            <font color = "#c1cdcd">            
+              <xsl:value-of select="example" />
+            </font>
           </td>
         </tr>
       </xsl:for-each>
-
+      
     </table>
   </xsl:template>
-
+  
 </xsl:stylesheet>
