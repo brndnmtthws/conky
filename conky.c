@@ -671,14 +671,14 @@ enum text_object_type {
 	OBJ_execbar,
 	OBJ_execgraph,
 	OBJ_freq,
-	OBJ_freq_G,
+	OBJ_freq_g,
 	OBJ_fs_bar,
 	OBJ_fs_bar_free,
 	OBJ_fs_free,
 	OBJ_fs_free_perc,
 	OBJ_fs_size,
-	OBJ_fs_size_G,
-	OBJ_fs_size_T,
+	OBJ_fs_size_g,
+	OBJ_fs_size_t,
 	OBJ_fs_used,
 	OBJ_fs_used_perc,
 	OBJ_hr,
@@ -934,7 +934,7 @@ if (s[0] == '#') {
 	OBJ(acpitemp, 0) obj->data.i = open_acpi_temperature(arg);
 	END OBJ(acpiacadapter, 0)
 	END OBJ(freq, 0);
-	END OBJ(freq_G, 0);
+	END OBJ(freq_g, 0);
 	END OBJ(acpifan, 0);
 	END OBJ(battery, 0);
 	char bat[64];
@@ -1058,10 +1058,10 @@ if (s[0] == '#') {
 	END OBJ(fs_size, INFO_FS) if (!arg)
 		 arg = "/";
 	obj->data.fs = prepare_fs_stat(arg);
-	END OBJ(fs_size_G, INFO_FS) if (!arg)
+	END OBJ(fs_size_g, INFO_FS) if (!arg)
 		 arg = "/";
 	obj->data.fs = prepare_fs_stat(arg);
-	END OBJ(fs_size_T, INFO_FS) if (!arg)
+	END OBJ(fs_size_t, INFO_FS) if (!arg)
 		 arg = "/";
 	obj->data.fs = prepare_fs_stat(arg);
 	END OBJ(fs_used, INFO_FS) if (!arg)
@@ -1573,8 +1573,9 @@ static void generate_text()
 			OBJ(freq) {
 				snprintf(p, n, "%s", get_freq());
 			}
-			OBJ(freq_G) {
+			OBJ(freq_g) {
 				float ghz = (float)(atof(get_freq())/10);
+				printf("%f", ghz);
 				snprintf(p, n, "%f", ghz);
 			}
 			OBJ(adt746xcpu) {
@@ -1839,12 +1840,12 @@ static void generate_text()
 					human_readable(obj->data.fs->size,
 						       p, 255);
 			}
-			OBJ(fs_size_G) {
+			OBJ(fs_size_g) {
 				if (obj->data.fs != NULL)
 					human_readable((obj->data.fs->size)/10,
 						       p, 255);
 			}
-			OBJ(fs_size_T) {
+			OBJ(fs_size_t) {
 				if (obj->data.fs != NULL)
 					human_readable((obj->data.fs->size)/100,
 						       p, 255);
