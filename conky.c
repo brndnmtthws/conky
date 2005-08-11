@@ -256,7 +256,7 @@ static char original_text[] =
     "$hr\n"
     "${color grey}Uptime:$color $uptime\n"
     "${color grey}Frequency (in MHz):$color $freq\n"
-    "${color grey}Frequency (in Ghz):$color $freq_G\n"
+    "${color grey}Frequency (in Ghz):$color $freq_g\n"
     "${color grey}RAM Usage:$color $mem/$memmax - $memperc% ${membar 4}\n"
     "${color grey}Swap Usage:$color $swap/$swapmax - $swapperc% ${swapbar 4}\n"
     "${color grey}CPU Usage:$color $cpu% ${cpubar 4}\n"
@@ -264,8 +264,6 @@ static char original_text[] =
     "$hr\n"
     "${color grey}File systems:\n"
     " / $color${fs_free /}/${fs_size /} ${fs_bar 6 /}\n"
-    " / $color${fs_free /}/$$fs_size_G /} $(fs_bar 6 /}\n"
-    " / $color${fs_free /}/$$fs_size_T /} $(fs_bar 6 /}\n"
     "${color grey}Networking:\n"
     " Up:$color ${upspeed eth0} k/s${color grey} - Down:$color ${downspeed eth0} k/s\n"
     "${color grey}Temperatures:\n"
@@ -626,11 +624,16 @@ static void convert_escapes(char *buf)
 	*p = '\0';
 }
 
-/* converts from bytes to human readable format (k, M, G) */
+/* converts from bytes to human readable format (k, M, G, T) */
 static void human_readable(long long a, char *buf, int size)
 {
-	if (a >= 1024 * 1024 * 1024)
+	//Strange conditional due to possible overflows
+	if(a / 1024 / 1024 / 1024.0 > 1024.0){
+		snprintf(buf, size, "%.2fT", (a / 1024 / 1024) / 1024 / 1024.0);
+	}
+	else if (a >= 1024 * 1024 * 1024){
 		snprintf(buf, size, "%.2fG", (a / 1024 / 1024) / 1024.0);
+	}
 	else if (a >= 1024 * 1024) {
 		double m = (a / 1024) / 1024.0;
 		if (m >= 100.0)
@@ -676,8 +679,7 @@ enum text_object_type {
 	OBJ_fs_bar_free,
 	OBJ_fs_free,
 	OBJ_fs_free_perc,
-	OBJ_fs_size, //This already outputs in gigs
-	OBJ_fs_size_t,
+	OBJ_fs_size,
 	OBJ_fs_used,
 	OBJ_fs_used_perc,
 	OBJ_hr,
@@ -1055,9 +1057,6 @@ if (s[0] == '#') {
 		 arg = "/";
 	obj->data.fs = prepare_fs_stat(arg);
 	END OBJ(fs_size, INFO_FS) if (!arg)
-		 arg = "/";
-	obj->data.fs = prepare_fs_stat(arg);
-	END OBJ(fs_size_t, INFO_FS) if (!arg)
 		 arg = "/";
 	obj->data.fs = prepare_fs_stat(arg);
 	END OBJ(fs_used, INFO_FS) if (!arg)
@@ -1567,12 +1566,12 @@ static void generate_text()
 								      i));
 			}
 			OBJ(freq) {
-				snprintf(p, n, "%s", get_freq());
+				snprintf(p, n, "%sMhz", get_freq());
 			}
 			OBJ(freq_g) {
 				float ghz = (float)(atof(get_freq())/1000);
 				//printf("%f\n", ghz);
-				snprintf(p, n, "%'.2f", ghz);
+				snprintf(p, n, "%'.2fGhz", ghz);
 			}
 			OBJ(adt746xcpu) {
 				snprintf(p, n, "%s", get_adt746x_cpu());
@@ -1834,11 +1833,6 @@ static void generate_text()
 			OBJ(fs_size) {
 				if (obj->data.fs != NULL)
 					human_readable(obj->data.fs->size,
-						       p, 255);
-			}
-			OBJ(fs_size_t) {
-				if (obj->data.fs != NULL)
-					human_readable((obj->data.fs->size)/1000,
 						       p, 255);
 			}
 			OBJ(fs_used) {

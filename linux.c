@@ -687,7 +687,7 @@ char *get_freq()
 	microseconds = ((tvstop.tv_sec - tvstart.tv_sec) * 1000000) +
 	    (tvstop.tv_usec - tvstart.tv_usec);
 
-	sprintf(buffer, "%lldMHz", (cycles[1] - cycles[0]) / microseconds);
+	sprintf(buffer, "%lld", (cycles[1] - cycles[0]) / microseconds);
 
 	return buffer;
 #else
@@ -701,14 +701,16 @@ char *get_freq()
 	f = fopen("/proc/cpuinfo", "r");	//open the CPU information file
 	//if (!f)
 	//    return;
-	while (fgets(s, 1000, f) != NULL)	//read the file
-		if (strncmp(s, "cpu M", 5) == 0) {	//and search for the cpu mhz
+	while (fgets(s, 1000, f) != NULL){	//read the file
+		if (strncmp(s, "clock", 5) == 0) {	//and search for the cpu mhz
 			//printf("%s", strchr(s, ':')+2);
 		strcpy(frequency, strchr(s, ':') + 2);	//copy just the number
 		frequency[strlen(frequency) - 1] = '\0';	// strip \n
 		break;
 		}
+	}
 		fclose(f);
+		//printf("%s\n", frequency);
 		return frequency;
 #endif
 }
