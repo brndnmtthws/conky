@@ -230,7 +230,7 @@
 	metar_windchill
 	metar_dew_point                 There are a bunch of these
 	metar_rh                        and they are self-explanatory
-	metar_windspeed
+	metar_windspeed					Windspeed units are in knots
 	metar_winddir
 	metar_swinddir
 	metar_cloud
