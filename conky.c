@@ -1574,9 +1574,9 @@ static void generate_text()
 				snprintf(p, n, "%s", get_freq());
 			}
 			OBJ(freq_g) {
-				float ghz = (float)(atof(get_freq())/10);
-				printf("%f", ghz);
-				snprintf(p, n, "%f", ghz);
+				float ghz = (float)(atof(get_freq())/1000);
+				//printf("%f\n", ghz);
+				snprintf(p, n, "%'.2f", ghz);
 			}
 			OBJ(adt746xcpu) {
 				snprintf(p, n, "%s", get_adt746x_cpu());
