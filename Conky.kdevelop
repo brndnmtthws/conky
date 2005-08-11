@@ -53,7 +53,7 @@
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevpgf77options</f77compiler>
-        <cflags>-O2 -Wall -fexceptions -fomit-frame-pointer -fshort-enums -g3 -CB</cflags>
+        <cflags>-O2 -Wall -fexceptions -fomit-frame-pointer -fshort-enums -g3</cflags>
         <envvars/>
         <topsourcedir></topsourcedir>
         <cppflags></cppflags>

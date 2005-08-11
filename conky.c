@@ -372,7 +372,9 @@ static struct special_t {
 } specials[128];
 
 static int special_count;
+#ifdef X11
 static int special_index;	/* used when drawing */
+#endif /* X11 */
 
 #define MAX_GRAPH_DEPTH 256	/* why 256? who knows. */
 
@@ -450,6 +452,7 @@ static const char *scan_bar(const char *args, int *w, int *h)
 
 	return args;
 }
+
 static char *scan_font(const char *args)
 {
 	if (args && sizeof(args) < 127) {
@@ -461,9 +464,9 @@ static char *scan_font(const char *args)
 	return NULL;
 }
 
+#ifdef X11
 static void new_font(char *buf, char * args) {
 	struct special_t *s = new_special(buf, FONT);
-#ifdef X11
 	if (!s->font_added || strcmp(args, fonts[s->font_added].name)) {
 		int tmp = selected_font;
 		selected_font = s->font_added = addfont(args);
@@ -471,8 +474,8 @@ static void new_font(char *buf, char * args) {
 		set_font();
 		selected_font = tmp;
 	}
-#endif /* X11 */
 }
+#endif
 
 inline void graph_append(struct special_t *graph, double f)
 {
@@ -1603,9 +1606,11 @@ static void generate_text()
 			OBJ(color) {
 				new_fg(p, obj->data.l);
 			}
+#ifdef X11
 			OBJ(font) {
 				new_font(p, obj->data.s);
 			}
+#endif /* X11 */
 			OBJ(downspeed) {
 				if (!use_spacer) {
 					snprintf(p, n, "%d",
@@ -2612,6 +2617,7 @@ static inline int get_string_width(const char *s)
 
 int fontchange = 0;
 
+#ifdef X11
 static void text_size_updater(char *s)
 {
 	int w = 0;
@@ -2637,13 +2643,11 @@ static void text_size_updater(char *s)
 			else if (specials[special_index].type == OFFSET) {
 				w += specials[special_index].arg + get_string_width("a"); /* filthy, but works */
 			}
-#ifdef X11
 			else if (specials[special_index].type == FONT) {
 				fontchange = specials[special_index].font_added;
 				selected_font = specials[special_index].font_added;
 				h = font_height();
 			}
-#endif /* X11 */
 
 			
 			special_index++;
@@ -2651,7 +2655,6 @@ static void text_size_updater(char *s)
 		}
 		p++;
 	}
-#ifdef X11
 		w += get_string_width(s);
 	if (w > text_width)
 		text_width = w;
@@ -2660,8 +2663,9 @@ static void text_size_updater(char *s)
 	if (fontchange) {
 		selected_font = 0;
 	}
-#endif /* X11 */
 }
+#endif /* X11 */
+
 
 #ifdef X11
 static void update_text_area()
@@ -2751,7 +2755,8 @@ static void draw_string(const char *s)
 	if (s[0] == '\0')
 		return;
 	int i, i2, pos, width_of_s;
-	int max, added;
+	int max=0;
+	int added;
 	width_of_s = get_string_width(s);
 	if (out_to_console) {
 		printf("%s\n", s);
