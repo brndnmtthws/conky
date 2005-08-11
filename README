@@ -87,6 +87,9 @@
 	mldonkey_port         Mldonkey port, 4001 default
 	mldonkey_login        Mldonkey login, default none
 	mldonkey_password     Mldonkey password, default none
+	mpd_host	      Host of MPD server
+	mpd_post	      Port of MPD server
+	mpd_password	      MPD server password
 	net_avg_samples       The number of samples to average for net data
 	override_utf8_locale  Force UTF8? requires XFT
 	own_window            Boolean, create own window to draw?                  

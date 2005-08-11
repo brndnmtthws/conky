@@ -31,6 +31,7 @@ xftalpha 0.8
 # MPD host/port
 # mpd_host localhost
 # mpd_port 6600
+# mpd_password tinker_bell
 
 # Print everything to console?
 # out_to_console no
