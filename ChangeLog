@@ -1,5 +1,8 @@
 # $Id$
 
+2005-08-12
+	* Multiple unit additions and modifications
+
 2005-08-07
 	* mpd password patch from Joshua Gerrish
 	* conky can run without X now, use --disable-x11 when configuring
