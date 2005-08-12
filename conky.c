@@ -3,7 +3,11 @@
  *
  * This program is licensed under BSD license, read COPYING
  *
+<<<<<<< conky.c
  *  $Id$
+=======
+ *  $Id$
+>>>>>>> 1.58
  */
 
 #include "conky.h"
@@ -773,6 +777,8 @@ enum text_object_type {
 	OBJ_metar_dew_point,
 	OBJ_metar_rh,
 	OBJ_metar_windspeed,
+	OBJ_metar_windspeed_km,
+	OBJ_metar_windspeed_mph,
 	OBJ_metar_winddir,
 	OBJ_metar_swinddir,
 	OBJ_metar_cloud,
@@ -1382,6 +1388,10 @@ int a = stippled_borders, b = 1;
 	    OBJ(metar_rh, INFO_METAR)
 	    END
 	    OBJ(metar_windspeed, INFO_METAR)
+	    END
+	    OBJ(metar_windspeed_km, INFO_METAR)
+	    END
+	    OBJ(metar_windspeed_mph, INFO_METAR)
 	    END
 	    OBJ(metar_winddir, INFO_METAR)
 	    END
@@ -2492,8 +2502,23 @@ static void generate_text()
 				if (data.winData.windSpeed != INT_MAX
 				    && metar_worked)
 					snprintf(p, n, "%i",
-						 knTokph(data.winData.
-							 windSpeed));
+						 data.winData.windSpeed);
+				else
+					snprintf(p, n, "-");
+			}
+			OBJ(metar_windspeed_km) {
+				if (data.winData.windSpeed != INT_MAX
+				    && metar_worked)
+					snprintf(p, n, "%'.2f",
+						 (data.winData.windSpeed * 1.852));
+				else
+					snprintf(p, n, "-");
+			}
+			OBJ(metar_windspeed_mph) {
+				if (data.winData.windSpeed != INT_MAX
+				    && metar_worked)
+					snprintf(p, n, "%'.2f",
+						 (data.winData.windSpeed * 1.151));
 				else
 					snprintf(p, n, "-");
 			}

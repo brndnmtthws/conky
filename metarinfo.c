@@ -28,18 +28,19 @@ int calculateRelativeHumidity(int temp, int dew)
 
 int calculateWindChill(int temperatureC, int windKn)
 {
-	double windKmh = knTokph(windKn);
+	double windKmh = windKn * 1.852;
 	return (int) (13.112 + 0.6215 * temperatureC -
 		      11.37 * powf(windKmh,
 				   .16) +
 		      0.3965 * temperatureC * powf(windKmh, .16));
 }
 
+/*Should no longer be needed
 int knTokph(int knSpeed)
 {
 	return (knSpeed * 1.852);
 }
-
+*/
 const char *calculateWindDirectionString(int degree)
 {
 	if (degree < 22.5) {

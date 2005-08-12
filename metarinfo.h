@@ -12,7 +12,7 @@
 
 int calculateRelativeHumidity(int, int);
 int calculateWindChill(int, int);
-int knTokph(int);
+//int knTokph(int);
 const char *calculateWindDirectionString(int);
 const char *calculateShortWindDirectionString(int);
 
