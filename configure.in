@@ -195,6 +195,7 @@ AC_ARG_ENABLE(x11,
 
 AM_CONDITIONAL(BUILD_X11, test x$want_x11 == xyes)
 if test x$want_x11 == xyes; then
+AC_PATH_X
 AC_CHECK_HEADERS([X11/Xlib.h], [], [X11_MISSING=yes])
 AC_CHECK_LIB([X11], [XOpenDisplay], [X11_LIBS="-lX11"], [], [[-L$x_libraries]])
 AC_CHECK_LIB([Xext], [XdbeQueryExtension], [

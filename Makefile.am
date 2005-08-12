@@ -51,7 +51,7 @@ conky_LDADD = $(METAR_LIBS)
 
 man_MANS = conky.1
 
-LIBS = -lm -lpthread -lX11 -lXext
+LIBS = -lm -lpthread
 
 if HAVE_HELP2MAN
 conky.1: conky conky.x
