@@ -24,6 +24,9 @@
 /* Define if you have kstat (Solaris) */
 #undef HAVE_KSTAT
 
+/* Define if you have libXext */
+#undef HAVE_LIBXEXT
+
 /* Define to 1 if you have the <linux/soundcard.h> header file. */
 #undef HAVE_LINUX_SOUNDCARD_H
 

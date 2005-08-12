@@ -631,7 +631,7 @@ static void human_readable(long long a, char *buf, int size)
 	if(a / 1024 / 1024 / 1024.0 > 1024.0){
 		snprintf(buf, size, "%.2fT", (a / 1024 / 1024) / 1024 / 1024.0);
 	}
-	else if (a >= 1024 * 1024 * 1024){
+	else if (a >= 1024 * 1024 * 1024) {
 		snprintf(buf, size, "%.2fG", (a / 1024 / 1024) / 1024.0);
 	}
 	else if (a >= 1024 * 1024) {
