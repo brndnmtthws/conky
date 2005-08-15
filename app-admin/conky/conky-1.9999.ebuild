@@ -6,7 +6,7 @@ ECVS_MODULE="conky"
 inherit cvs
 
 DESCRIPTION="Conky is an advanced, highly configurable system monitor for X"
-HOMEPAGE="http://conky.rty.ca"
+HOMEPAGE="http://conky.sf.net"
 
 LICENSE="BSD"
 SLOT="0"
