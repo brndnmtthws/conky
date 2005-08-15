@@ -10,6 +10,7 @@ Heres a very simplified roadmap for Conky.  By no means does this mean any of th
 	* think of new features to add
 	* max_width
 	* move things out of conky.c, since it's far too big
+	* better xinerama support, allow display1:0,0 et cetera
 1.4
 	* ideas needed
 1.5 (maybe in december?)
