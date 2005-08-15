@@ -6,4 +6,6 @@
  *  $Id$
  */
 
-static void daemon_loop();
+#include "conky.h"
+
+void daemon_run(const char *s);

@@ -3,11 +3,7 @@
  *
  * This program is licensed under BSD license, read COPYING
  *
-<<<<<<< conky.c
  *  $Id$
-=======
- *  $Id$
->>>>>>> 1.58
  */
 
 #include "conky.h"
@@ -2801,6 +2797,7 @@ static void draw_string(const char *s)
 	if (out_to_console) {
 		printf("%s\n", s);
 	}
+	/* daemon_run(s);  the daemon can be called here, but we need to have a buffer in daemon_run() and we need to tell it when everything is ready to be sent */
 	strcpy(tmpstring1, s);
 	pos = 0;
 	added = 0;

@@ -172,7 +172,7 @@ void update_metar()
 		pthread_cancel(thread1);
 		status = 2;
 		iret1 = pthread_create(&thread1, NULL, fetch_ftp, NULL);
-	} else {		/* status must be 1 */
+	} else if (status == 1) {		/* status must be 1 */
 		pthread_join(thread1, NULL);
 		status = 2;
 		iret1 = pthread_create(&thread1, NULL, fetch_ftp, NULL);

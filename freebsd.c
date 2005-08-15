@@ -427,8 +427,9 @@ char *get_freq()
 	int i;
 	char *cpuspeed;
 
-	if ((cpuspeed = (char *) malloc(16)) == NULL)
-		exit(1);
+	if ((cpuspeed = (char *) malloc(16)) == NULL) {
+		CRIT_ERR("get_freq()");
+	}
 
 	i = 0;
 	if ((i = get_cpu_speed()) > 0) {

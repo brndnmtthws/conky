@@ -7,6 +7,8 @@
  */
 
 #include "conky.h"
+#include "remoted.h"
+#include "remotec.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -176,7 +178,7 @@ void update_stuff()
 	}
 
 	prepare_update();
-
+	/* client(); this is approximately where the client should be called */
 #define NEED(a) ((need_mask & (1 << a)) && ((info.mask & (1 << a)) == 0))
 
 	if (NEED(INFO_UPTIME))
@@ -229,8 +231,6 @@ void update_stuff()
 		last_metar_update = current_update_time;
 	}
 #endif
-
-
 	if ((NEED(INFO_MEM) || NEED(INFO_BUFFERS)) &&
 	    current_update_time - last_meminfo_update > 6.9) {
 		update_meminfo();
