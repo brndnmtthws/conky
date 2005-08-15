@@ -11,17 +11,18 @@ HOMEPAGE="http://conky.rty.ca"
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64 ~ppc ~sparc ~x86"
-IUSE="truetype seti metar"
+IUSE="truetype seti metar X"
 
 RDEPEND="virtual/libc
-   virtual/x11
+   X? ( virtual/x11 )
    truetype? ( >=media-libs/freetype-2 )
    seti? ( sci-astronomy/setiathome )
-   metar? ( dev-libs/mdsplib )"
+   metar? ( dev-libs/mdsplib )
+   "
 
 DEPEND="truetype? ( >=media-libs/freetype-2 )
    metar? ( dev-libs/mdsplib )
-   virtual/x11
+   X? ( virtual/x11 )
    >=sys-devel/automake-1.4
    sys-devel/autoconf
    sys-apps/grep
@@ -42,6 +43,7 @@ src_compile() {
       $(use_enable truetype xft) \
       $(use_enable metar) \
       $(use_enable seti) \
+	  $(use_enable x x11) \
       --enable-double-buffer \
       --enable-own-window \
       --enable-proc-uptime \
