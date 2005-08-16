@@ -3175,15 +3175,11 @@ static void draw_line(char *s)
 
 			case ALIGNR:
 				{
-					int pos_x =
-					    text_start_x + text_width -
-					    cur_x - 1 -
-					    get_string_width(p);
-					if (pos_x >
-					    specials[special_index].arg)
-						w = pos_x -
-						    specials
-						    [special_index].arg;
+					int pos_x = text_width - gap_x - get_string_width(p) - border_margin*2 - 1;
+					/*printf("pos_x %i text_start_x %i text_width %i cur_x %i get_string_width(p) %i gap_x %i specials[special_index].arg %i border_margin %i border_width %i\n", pos_x, text_start_x, text_width, cur_x, get_string_width(p), gap_x, specials[special_index].arg, border_margin, border_width);*/
+					if (pos_x > specials[special_index].arg) {
+						w = pos_x - specials[special_index].arg;
+					}
 				}
 				break;
 
