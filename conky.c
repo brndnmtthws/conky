@@ -2864,7 +2864,7 @@ static void draw_string(const char *s)
 	memcpy(tmpstring1, s, TEXT_BUFFER_SIZE);
 }
 
-inline unsigned long long do_gradient(unsigned long long first_colour, unsigned long long last_colour) { /* this function returns the next colour between two colours for a gradient */
+inline unsigned long do_gradient(unsigned long first_colour, unsigned long last_colour) { /* this function returns the next colour between two colours for a gradient */
 	int tmp_color = 0;
 	int red1, green1, blue1; // first colour
 	int red2, green2, blue2; // second colour
@@ -2918,7 +2918,7 @@ inline unsigned long long do_gradient(unsigned long long first_colour, unsigned 
 	return tmp_color;
 }
 
-inline unsigned long long gradient_max(unsigned long long first_colour, unsigned long long last_colour) { /* this function returns the max diff for a gradient */
+inline unsigned long gradient_max(unsigned long first_colour, unsigned long last_colour) { /* this function returns the max diff for a gradient */
 	int red1, green1, blue1; // first colour
 	int red2, green2, blue2; // second colour
 	int red3 = 0, green3 = 0, blue3 = 0; // difference
@@ -3090,7 +3090,7 @@ static void draw_line(char *s)
 	int gradient_size = 0;
 	float gradient_factor = 0;
 	float gradient_update = 0;
-	unsigned int tmpcolour = current_color;
+	unsigned long tmpcolour = current_color;
 	if (specials[special_index].first_colour != specials[special_index].last_colour) {
 		tmpcolour = specials[special_index].first_colour;
 		gradient_size = gradient_max(specials[special_index].first_colour, specials[special_index].last_colour);
