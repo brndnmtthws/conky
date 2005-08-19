@@ -1,0 +1,282 @@
+<variablelist>
+<varlistentry>
+	<term><command><option>alignment</option></command></term>
+	<listitem>
+		Aligned position on screen, may be top_left, top_right, bottom_left, bottom_right
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>background</option></command></term>
+	<listitem>
+		Boolean value, if true, Conky will be forked to background when started
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>on_bottom</option></command></term>
+	<listitem>
+		Set conky on the bottom of all other applications
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>border_margin</option></command></term>
+	<listitem>
+		Border margin in pixels
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>border_width</option></command></term>
+	<listitem>
+		Border width in pixels
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>cpu_avg_samples</option></command></term>
+	<listitem>
+		The number of samples to average for CPU monitoring
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>default_color</option></command></term>
+	<listitem>
+		Default color and border color
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>default_shade_color</option></command></term>
+	<listitem>
+		Default shading color and border's shading color
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>default_outline_color</option></command></term>
+	<listitem>
+		Default outline color
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>double_buffer</option></command></term>
+	<listitem>
+		Use the Xdbe extension? (eliminates flicker) It is highly recommended to use own window with this one so double buffer won't be so big.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>draw_borders</option></command></term>
+	<listitem>
+		Draw borders around text?
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>draw_shades</option></command></term>
+	<listitem>
+		Draw shades?
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>draw_outline</option></command></term>
+	<listitem>
+		Draw outlines?
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>font</option></command></term>
+	<listitem>
+		Font name in X, xfontsel can be used to get a nice font
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>gap_x</option></command></term>
+	<listitem>
+		Gap between right or left border of screen, same as passing -x at command line
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>gap_y</option></command></term>
+	<listitem>
+		Gap between top or bottom border of screen, same as passing -y at command line
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>no_buffers</option></command></term>
+	<listitem>
+		Substract (file system) buffers from used memory?
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>mail_spool</option></command></term>
+	<listitem>
+		Mail spool for mail checking
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>metar_station</option></command></term>
+	<listitem>
+		METAR station code for weather, see http://www.wrh.noaa.gov/ if you need to find your code.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>metar_server</option></command></term>
+	<listitem>
+		Define a custom METAR ftp server
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>metar_path</option></command></term>
+	<listitem>
+		Path on server to use
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>minimum_size</option></command></term>
+	<listitem>
+		Minimum size of window
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>mldonkey_hostname</option></command></term>
+	<listitem>
+		Hostname for mldonkey stuff, defaults to localhost
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>mldonkey_port</option></command></term>
+	<listitem>
+		Mldonkey port, 4001 default
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>mldonkey_login</option></command></term>
+	<listitem>
+		Mldonkey login, default none
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>mldonkey_password</option></command></term>
+	<listitem>
+		Mldonkey password, default none
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>mpd_host</option></command></term>
+	<listitem>
+		Host of MPD server
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>mpd_post</option></command></term>
+	<listitem>
+		Port of MPD server
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>mpd_password</option></command></term>
+	<listitem>
+		MPD server password
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>net_avg_samples</option></command></term>
+	<listitem>
+		The number of samples to average for net data
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>override_utf8_locale</option></command></term>
+	<listitem>
+		Force UTF8? requires XFT
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>own_window</option></command></term>
+	<listitem>
+		Boolean, create own window to draw?
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>pad_percents</option></command></term>
+	<listitem>
+		Pad percentages to this many decimals (0 = no padding)
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>stippled_borders</option></command></term>
+	<listitem>
+		Border stippling (dashing) in pixels
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>total_run_times</option></command></term>
+	<listitem>
+		Total number of times for Conky to update before quitting. Zero makes Conky run forever
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>update_interval</option></command></term>
+	<listitem>
+		Update interval in seconds
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>uppercase</option></command></term>
+	<listitem>
+		Boolean value, if true, text is rendered in upper case
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>use_spacer</option></command></term>
+	<listitem>
+		Adds spaces after certain objects to stop them from moving other things around. Note that this only helps if you are using a mono font, such as Bitstream Vera Sans Mono.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>use_xft</option></command></term>
+	<listitem>
+		Use Xft (anti-aliased font and stuff)
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>text</option></command></term>
+	<listitem>
+		After this begins text to be formatted on screen
+	<para></para></listitem>
+</varlistentry>
+
+</variablelist>

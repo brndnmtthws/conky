@@ -1,931 +1,973 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--jtan325 created this-->
-<variables>
-<variable>
-	<name>addr</name>
-	<arguments>(interface)</arguments>
-	<explanation>
+<variablelist>
+<varlistentry>
+	<term>
+		<command><option>addr</option></command>
+	<option>(interface)</option>
+	</term>
+	<listitem>
 		IP address for an interface
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>acpiacadapter</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>acpiacadapter</option></command>
+	</term>
+	<listitem>
 		ACPI ac adapter state.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>acpifan</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>acpifan</option></command>
+	</term>
+	<listitem>
 		ACPI fan state
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>acpitemp</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>acpitemp</option></command>
+	</term>
+	<listitem>
 		ACPI temperature.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>adt746xcpu</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>adt746xcpu</option></command>
+	</term>
+	<listitem>
 		CPU temperature from therm_adt746x
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>adt746xfan</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>adt746xfan</option></command>
+	</term>
+	<listitem>
 		Fan speed from therm_adt746x
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>alignr</name>
-	<arguments>(num)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>alignr</option></command>
+	<option>(num)</option>
+	</term>
+	<listitem>
 		Right-justify text, with space of N
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>alignc</name>
-	<arguments>(num)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>alignc</option></command>
+	<option>(num)</option>
+	</term>
+	<listitem>
 		Align text to centre
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>battery</name>
-	<arguments>(num)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>battery</option></command>
+	<option>(num)</option>
+	</term>
+	<listitem>
 		Remaining capacity in ACPI or APM battery. ACPI battery number can be given as argument (default is BAT0).
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>buffers</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>buffers</option></command>
+	</term>
+	<listitem>
 		Amount of memory buffered
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>cached</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>cached</option></command>
+	</term>
+	<listitem>
 		Amount of memory cached
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>color</name>
-	<arguments>(color)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>color</option></command>
+	<option>(color)</option>
+	</term>
+	<listitem>
 		Change drawing color to color
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>cpu</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>cpu</option></command>
+	</term>
+	<listitem>
 		CPU usage in percents
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>cpubar</name>
-	<arguments>(height)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>cpubar</option></command>
+	<option>(height)</option>
+	</term>
+	<listitem>
 		Bar that shows CPU usage, height is bar's height in pixels
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>cpugraph</name>
-	<arguments>(height, width, gradient colour 1, gradient colour 2)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>cpugraph</option></command>
+	<option>(height, width, gradient colour 1, gradient colour 2)</option>
+	</term>
+	<listitem>
 		CPU usage graph, with optional colours in hex, minus the #.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>downspeed</name>
-	<arguments>net</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>downspeed</option></command>
+	<option>net</option>
+	</term>
+	<listitem>
 		Download speed in kilobytes
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>downspeedf</name>
-	<arguments>net</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>downspeedf</option></command>
+	<option>net</option>
+	</term>
+	<listitem>
 		Download speed in kilobytes with one decimal
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>downspeedgraph</name>
-	<arguments>net, (height, width, gradient colour 1, gradient colour 2)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>downspeedgraph</option></command>
+	<option>net, (height, width, gradient colour 1, gradient colour 2)</option>
+	</term>
+	<listitem>
 		Download speed graph, colours defined in hex, minus the #.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>else</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>else</option></command>
+	</term>
+	<listitem>
 		Text to show if any of the above are not true
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>exec</name>
-	<arguments>shell command</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>exec</option></command>
+	<option>shell command</option>
+	</term>
+	<listitem>
 		Executes a shell command and displays the output in conky. warning: this takes a lot more resources than other variables. I'd recommend coding wanted behaviour in C and posting a patch.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>execbar</name>
-	<arguments>shell command</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>execbar</option></command>
+	<option>shell command</option>
+	</term>
+	<listitem>
 		Same as exec, except if the first value return is a value between 0-100, it will use that number for a bar. The size for the bar is currently fixed, but that may change in the future.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>execgraph</name>
-	<arguments>shell command</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>execgraph</option></command>
+	<option>shell command</option>
+	</term>
+	<listitem>
 		Same as execbar, but graphs values
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>execi</name>
-	<arguments>interval, shell command</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>execi</option></command>
+	<option>interval, shell command</option>
+	</term>
+	<listitem>
 		Same as exec but with specific interval. Interval can't be less than update_interval in configuration.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>font</name>
-	<arguments>font</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>font</option></command>
+	<option>font</option>
+	</term>
+	<listitem>
 		Specify a different font. Only applies to one line.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>fs_bar</name>
-	<arguments>(height, fs)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>fs_bar</option></command>
+	<option>(height, fs)</option>
+	</term>
+	<listitem>
 		Bar that shows how much space is used on a file system. height is the height in pixels. fs is any file on that file system.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>fs_free</name>
-	<arguments>(fs)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>fs_free</option></command>
+	<option>(fs)</option>
+	</term>
+	<listitem>
 		Free space on a file system available for users.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>fs_free_perc</name>
-	<arguments>(fs)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>fs_free_perc</option></command>
+	<option>(fs)</option>
+	</term>
+	<listitem>
 		Free percentage of space on a file system available for users.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>fs_size</name>
-	<arguments>(fs)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>fs_size</option></command>
+	<option>(fs)</option>
+	</term>
+	<listitem>
 		File system size
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>fs_used</name>
-	<arguments>(fs)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>fs_used</option></command>
+	<option>(fs)</option>
+	</term>
+	<listitem>
 		File system used space
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>hr</name>
-	<arguments>(height)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>hr</option></command>
+	<option>(height)</option>
+	</term>
+	<listitem>
 		Horizontal line, height is the height in pixels
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>i2c</name>
-	<arguments>(dev), type, n</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>i2c</option></command>
+	<option>(dev), type, n</option>
+	</term>
+	<listitem>
 		I2C sensor from sysfs (Linux 2.6). dev may be omitted if you have only one I2C device. type is either in (or vol) meaning voltage, fan meaning fan or temp/tempf (first in C, second in F) meaning temperature. n is number of the sensor. See /sys/bus/i2c/devices/ on your local computer.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>if_running</name>
-	<arguments>(process)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>if_running</option></command>
+	<option>(process)</option>
+	</term>
+	<listitem>
 		if PROCESS is running, display everything if_running and the matching $endif
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>if_existing</name>
-	<arguments>(file)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>if_existing</option></command>
+	<option>(file)</option>
+	</term>
+	<listitem>
 		if FILE exists, display everything between if_existing and the matching $endif
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>if_mounted</name>
-	<arguments>(mountpoint)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>if_mounted</option></command>
+	<option>(mountpoint)</option>
+	</term>
+	<listitem>
 		if MOUNTPOINT is mounted, display everything between if_mounted and the matching $endif
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>kernel</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>kernel</option></command>
+	</term>
+	<listitem>
 		Kernel version
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>linkstatus</name>
-	<arguments>(interface)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>linkstatus</option></command>
+	<option>(interface)</option>
+	</term>
+	<listitem>
 		Get the link status for wireless connections
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>loadavg</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>loadavg</option></command>
+	</term>
+	<listitem>
 		(1,2,3)> System load average, 1 is for past 1 minute, 2 for past 5 minutes and 3 for past 15 minutes.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>machine</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>machine</option></command>
+	</term>
+	<listitem>
 		Machine, i686 for example
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>mails</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>mails</option></command>
+	</term>
+	<listitem>
 		Mail count in mail spool. You can use program like fetchmail to get mails from some server using your favourite protocol. See also new_mails.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>mem</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>mem</option></command>
+	</term>
+	<listitem>
 		Amount of memory in use
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>membar</name>
-	<arguments>(height)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>membar</option></command>
+	<option>(height)</option>
+	</term>
+	<listitem>
 		Bar that shows amount of memory in use
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>memmax</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>memmax</option></command>
+	</term>
+	<listitem>
 		Total amount of memory
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>memperc</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>memperc</option></command>
+	</term>
+	<listitem>
 		Percentage of memory in use
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>metar_ob_time</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>metar_ob_time</option></command>
+	</term>
+	<listitem>
 		self-explanatory
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>metar_temp</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>metar_temp</option></command>
+	</term>
+	<listitem>
 		self-explanatory
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>metar_tempf</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>metar_tempf</option></command>
+	</term>
+	<listitem>
 		temp in F
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>metar_windchill</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>metar_windchill</option></command>
+	</term>
+	<listitem>
 		self-explanatory
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>metar_dew_poin</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>metar_dew_poin</option></command>
+	</term>
+	<listitem>
 		self-explanatory
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>metar_rh</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>metar_rh</option></command>
+	</term>
+	<listitem>
 		self-explanatory
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>metar_windspeed</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>metar_windspeed</option></command>
+	</term>
+	<listitem>
 		self-explanatory
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>metar_winddir</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>metar_winddir</option></command>
+	</term>
+	<listitem>
 		self-explanatory
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>metar_swinddir</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>metar_swinddir</option></command>
+	</term>
+	<listitem>
 		self-explanatory
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>metar_cloud</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>metar_cloud</option></command>
+	</term>
+	<listitem>
 		self-explanatory
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>metar_u2d_time</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>metar_u2d_time</option></command>
+	</term>
+	<listitem>
 		self-explanatory
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>ml_upload_counter</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>ml_upload_counter</option></command>
+	</term>
+	<listitem>
 		total session upload in mb
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>ml_download_counter</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>ml_download_counter</option></command>
+	</term>
+	<listitem>
 		total session download in mb
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>ml_nshared_files</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>ml_nshared_files</option></command>
+	</term>
+	<listitem>
 		number of shared files
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>ml_shared_counter</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>ml_shared_counter</option></command>
+	</term>
+	<listitem>
 		total session shared in mb, buggy in some mldonkey versions
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>ml_tcp_upload_rate</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>ml_tcp_upload_rate</option></command>
+	</term>
+	<listitem>
 		tcp upload rate in kb/s
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>ml_tcp_download_rate</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>ml_tcp_download_rate</option></command>
+	</term>
+	<listitem>
 		tcp download rate in kb/s
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>ml_udp_upload_rate</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>ml_udp_upload_rate</option></command>
+	</term>
+	<listitem>
 		udp upload rate in kb/s
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>ml_udp_download_rate</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>ml_udp_download_rate</option></command>
+	</term>
+	<listitem>
 		udp download rate in kb/s
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>ml_ndownloaded_files</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>ml_ndownloaded_files</option></command>
+	</term>
+	<listitem>
 		number of completed files
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>ml_ndownloading_files</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>ml_ndownloading_files</option></command>
+	</term>
+	<listitem>
 		number of downloading files
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>mpd_artist</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>mpd_artist</option></command>
+	</term>
+	<listitem>
 		Artist in current MPD song must be enabled at compile
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>mpd_album</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>mpd_album</option></command>
+	</term>
+	<listitem>
 		Album in current MPD song
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>mpd_bar</name>
-	<arguments>height</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>mpd_bar</option></command>
+	<option>height</option>
+	</term>
+	<listitem>
 		Bar of mpd's progress
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>mpd_bitrate</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>mpd_bitrate</option></command>
+	</term>
+	<listitem>
 		Bitrate of current song
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>mpd_status</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>mpd_status</option></command>
+	</term>
+	<listitem>
 		Playing, stopped, et cetera.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>mpd_title</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>mpd_title</option></command>
+	</term>
+	<listitem>
 		Title of current MPD song
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>mpd_vol</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>mpd_vol</option></command>
+	</term>
+	<listitem>
 		MPD's volume
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>mpd_elapsed</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>mpd_elapsed</option></command>
+	</term>
+	<listitem>
 		Song's elapsed time
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>mpd_length</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>mpd_length</option></command>
+	</term>
+	<listitem>
 		Song's length
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>mpd_percent</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>mpd_percent</option></command>
+	</term>
+	<listitem>
 		Percent of song's progress
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>new_mails</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>new_mails</option></command>
+	</term>
+	<listitem>
 		Unread mail count in mail spool.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>nodename</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>nodename</option></command>
+	</term>
+	<listitem>
 		Hostname
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>outlinecolor</name>
-	<arguments>(color)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>outlinecolor</option></command>
+	<option>(color)</option>
+	</term>
+	<listitem>
 		Change outline color
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>pre_exec</name>
-	<arguments>shell command</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>pre_exec</option></command>
+	<option>shell command</option>
+	</term>
+	<listitem>
 		Executes a shell command one time before conky displays anything and puts output as text.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>processes</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>processes</option></command>
+	</term>
+	<listitem>
 		Total processes (sleeping and running)
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>running_processes</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>running_processes</option></command>
+	</term>
+	<listitem>
 		Running processes (not sleeping), requires Linux 2.6
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>shadecolor</name>
-	<arguments>(color)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>shadecolor</option></command>
+	<option>(color)</option>
+	</term>
+	<listitem>
 		Change shading color
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>stippled_hr</name>
-	<arguments>(space)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>stippled_hr</option></command>
+	<option>(space)</option>
+	</term>
+	<listitem>
 		Stippled (dashed) horizontal line
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>swapbar</name>
-	<arguments>(height)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>swapbar</option></command>
+	<option>(height)</option>
+	</term>
+	<listitem>
 		Bar that shows amount of swap in use
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>swap</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>swap</option></command>
+	</term>
+	<listitem>
 		Amount of swap in use
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>swapmax</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>swapmax</option></command>
+	</term>
+	<listitem>
 		Total amount of swap
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>swapperc</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>swapperc</option></command>
+	</term>
+	<listitem>
 		Percentage of swap in use
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>sysname</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>sysname</option></command>
+	</term>
+	<listitem>
 		System name, Linux for example
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>offse</name>
-	<arguments>pixels</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>offse</option></command>
+	<option>pixels</option>
+	</term>
+	<listitem>
 		Move text over by N pixels
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>tail</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>tail</option></command>
+	</term>
+	<listitem>
 		logfile, lines interval> Displays last N lines of supplied text text file. If interval is not supplied, Conky assumes 2x Conky's interval. Max of 30 lines. Max of 30 lines can be displayed.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>time</name>
-	<arguments>(format)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>time</option></command>
+	<option>(format)</option>
+	</term>
+	<listitem>
 		Local time, see man strftime to get more information about format
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>totaldown</name>
-	<arguments>net</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>totaldown</option></command>
+	<option>net</option>
+	</term>
+	<listitem>
 		Total download, overflows at 4 GB on Linux with 32-bit arch and there doesn't seem to be a way to know how many times it has already done that before conky has started.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>top</name>
-	<arguments>type, num</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>top</option></command>
+	<option>type, num</option>
+	</term>
+	<listitem>
 		This takes arguments in the form:top (name) (number) Basically, processes are ranked from highest to lowest in terms of cpu usage, which is what (num) represents. The types are: "name", "pid", "cpu", and mem". There can be a max of 10 processes listed.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>top_mem</name>
-	<arguments>type, num</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>top_mem</option></command>
+	<option>type, num</option>
+	</term>
+	<listitem>
 		Same as top, except sorted by mem usage instead of cpu
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>totalup</name>
-	<arguments>net</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>totalup</option></command>
+	<option>net</option>
+	</term>
+	<listitem>
 		Total upload, this one too, may overflow
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>updates</name>
-	<arguments>Number of updates</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>updates</option></command>
+	<option>Number of updates</option>
+	</term>
+	<listitem>
 		for debugging
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>upspeed</name>
-	<arguments>net</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>upspeed</option></command>
+	<option>net</option>
+	</term>
+	<listitem>
 		Upload speed in kilobytes
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>upspeedf</name>
-	<arguments>net</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>upspeedf</option></command>
+	<option>net</option>
+	</term>
+	<listitem>
 		Upload speed in kilobytes with one decimal
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>upspeedgraph</name>
-	<arguments>net, (height, width, gradient colour 1, gradient colour 2)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>upspeedgraph</option></command>
+	<option>net, (height, width, gradient colour 1, gradient colour 2)</option>
+	</term>
+	<listitem>
 		Upload speed graph, colours defined in hex, minus the #.
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>uptime</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>uptime</option></command>
+	</term>
+	<listitem>
 		Uptime
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>uptime_short</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>uptime_short</option></command>
+	</term>
+	<listitem>
 		Uptime in a shorter format
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>seti_prog</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>seti_prog</option></command>
+	</term>
+	<listitem>
 		Seti@home current progress
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>seti_progbar</name>
-	<arguments>(height)</arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>seti_progbar</option></command>
+	<option>(height)</option>
+	</term>
+	<listitem>
 		Seti@home current progress bar
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-<variable>
-	<name>seti_credit</name>
-	<arguments></arguments>
-	<explanation>
+<varlistentry>
+	<term>
+		<command><option>seti_credit</option></command>
+	</term>
+	<listitem>
 		Seti@home total user credit
-	</explanation>
-	<example></example>
-</variable>
+	<para></para></listitem>
+</varlistentry>
 
-</variables>
+</variablelist>
