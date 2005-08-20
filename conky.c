@@ -3178,7 +3178,7 @@ static void draw_line(char *s)
 
 			case OFFSET:
 				{
-					w = text_start_x + specials[special_index].arg;
+					w += specials[special_index].arg;
 				}
 			break;
 
