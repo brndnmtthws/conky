@@ -1,5 +1,8 @@
 # $Id$
 
+2005-08-20
+	* Applied patch from zimba-tm, closes bug 1260225
+
 2005-08-12
 	* Multiple unit additions and modifications
 

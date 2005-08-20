@@ -160,7 +160,11 @@ void set_transparent_background(Window win)
 	XClearWindow(display, win);
 }
 
+#if defined OWN_WINDOW
+void init_window(int own_window, int w, int h, int l, int fixed_pos)
+#else
 void init_window(int own_window, int w, int h, int l)
+#endif
 {
 	/* There seems to be some problems with setting transparent background (on
 	 * fluxbox this time). It doesn't happen always and I don't know why it
@@ -192,8 +196,9 @@ void init_window(int own_window, int w, int h, int l)
 
 			XClearWindow(display, window.window);
 
-			XMoveWindow(display, window.window, window.x,
-				    window.y);
+			if (!fixed_pos)
+				XMoveWindow(display, window.window, window.x,
+					    window.y);
 		}
 
 		{

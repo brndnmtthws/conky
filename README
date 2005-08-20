@@ -58,7 +58,7 @@
 	
 		Conf                                Meaning                        
 	alignment             Aligned position on screen, may be top_left,         
-								 top_right, bottom_left, bottom_right                 
+								 top_right, bottom_left, bottom_right, none                 
 	background            Boolean value, if true, Conky will be forked to     
 								 background when started                              
 	on_bottom 				 Set conky on the bottom of all other applications
@@ -119,7 +119,7 @@
 	
 	Argument                          Description                        
 	-V           Prints version and exits                                  
-	-a ALIGNMENT Text alignment on screen, {top,bottom}_{left,right}       
+	-a ALIGNMENT Text alignment on screen, {top,bottom}_{left,right} | none       
 	-b           Use double buffering (eliminates flicker)                 
 	-c FILE      Config file to load instead of $HOME/.conkyrc            
 	-d           Daemonize, fork to background                             

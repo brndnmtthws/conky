@@ -41,6 +41,7 @@ enum alignment {
 	TOP_RIGHT,
 	BOTTOM_LEFT,
 	BOTTOM_RIGHT,
+	NONE
 };
 
 
@@ -2744,10 +2745,18 @@ static void update_text_area()
 		x = workarea[2] - text_width - gap_x;
 		y = workarea[3] - text_height - gap_y;
 		break;
+	
+	case NONE: // Let the WM manage the window
+		x = window.x;
+		y = window.y;
+
+		fixed_pos  = 1;
+		fixed_size = 1;
+		break;
 	}
 
 #ifdef OWN_WINDOW
-	if (own_window) {
+	if (own_window && !fixed_pos) {
 		x += workarea[0];
 		y += workarea[1];
 		text_start_x = border_margin + 1;
@@ -3664,7 +3673,8 @@ static enum alignment string_to_alignment(const char *s)
 		return BOTTOM_LEFT;
 	else if (strcasecmp(s, "br") == 0)
 		return BOTTOM_RIGHT;
-
+	else if (strcasecmp(s, "none") == 0)
+		return NONE;
 	return TOP_LEFT;
 }
 #endif /* X11 */
@@ -4379,10 +4389,20 @@ int main(int argc, char **argv)
 #ifdef X11
 	update_text_area();	/* to get initial size of the window */
 
+#if defined OWN_WINDOW
 	init_window
 	    (own_window,
-	     text_width
-	     + border_margin * 2 + 1, text_height + border_margin * 2 + 1, on_bottom);
+	     text_width + border_margin * 2 + 1,
+	     text_height + border_margin * 2 + 1,
+	     on_bottom, fixed_pos);
+#else
+	init_winow
+		(own_window,
+		 text_width + border_margin * 2 + 1,
+		 text_height + border_margin * 2 + 1,
+		 on_bottom);
+	
+#endif
 
 	update_text_area();	/* to position text/window on screen */
 #endif /* X11 */
@@ -4394,7 +4414,7 @@ int main(int argc, char **argv)
 
 #ifdef X11
 #ifdef OWN_WINDOW
-	if (own_window)
+	if (own_window && !fixed_pos)
 		XMoveWindow(display, window.window, window.x, window.y);
 #endif
 

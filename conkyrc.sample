@@ -83,6 +83,7 @@ default_outline_color black
 #alignment top_right
 alignment bottom_left
 #alignment bottom_right
+#alignment none
 
 # Gap between borders of screen and text
 # same thing as passing -x at command line
