@@ -32,8 +32,17 @@
 		<command><option>acpitemp</option></command>
 	</term>
 	<listitem>
-		ACPI temperature.
-	<para></para></listitem>
+		ACPI temperature in C.
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>acpitempf</option></command>
+	</term>
+	<listitem>
+		ACPI temperature in F.
+		<para></para></listitem>
 </varlistentry>
 
 <varlistentry>
@@ -428,121 +437,6 @@
 	</term>
 	<listitem>
 		Percentage of memory in use
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>metar_ob_time</option></command>
-	</term>
-	<listitem>
-		self-explanatory
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>metar_temp</option></command>
-	</term>
-	<listitem>
-		self-explanatory
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>metar_tempf</option></command>
-	</term>
-	<listitem>
-		temp in F
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>metar_windchill</option></command>
-	</term>
-	<listitem>
-		self-explanatory
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>metar_dew_poin</option></command>
-	</term>
-	<listitem>
-		self-explanatory
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>metar_rh</option></command>
-	</term>
-	<listitem>
-		self-explanatory
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>metar_windspeed</option></command>
-	</term>
-	<listitem>
-		Windspeed in knots
-		<para></para></listitem>
-</varlistentry>
-<varlistentry>
-	<term>
-		<command><option>metar_windspeed_km</option></command>
-	</term>
-	<listitem>
-		Windspeed in kph
-		<para></para></listitem>
-</varlistentry>
-<varlistentry>
-	<term>
-		<command><option>metar_windspeed_mph</option></command>
-	</term>
-	<listitem>
-		Windspeed in mph
-		<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>metar_winddir</option></command>
-	</term>
-	<listitem>
-		self-explanatory
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>metar_swinddir</option></command>
-	</term>
-	<listitem>
-		self-explanatory
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>metar_cloud</option></command>
-	</term>
-	<listitem>
-		self-explanatory
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>metar_u2d_time</option></command>
-	</term>
-	<listitem>
-		self-explanatory
 	<para></para></listitem>
 </varlistentry>
 

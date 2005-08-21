@@ -126,27 +126,6 @@
 </varlistentry>
 
 <varlistentry>
-	<term><command><option>metar_station</option></command></term>
-	<listitem>
-		METAR station code for weather, see http://www.wrh.noaa.gov/ if you need to find your code.
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term><command><option>metar_server</option></command></term>
-	<listitem>
-		Define a custom METAR ftp server
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term><command><option>metar_path</option></command></term>
-	<listitem>
-		Path on server to use
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
 	<term><command><option>minimum_size</option></command></term>
 	<listitem>
 		Minimum size of window

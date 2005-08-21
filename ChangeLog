@@ -5,6 +5,7 @@
 	* Fixed ugly gradient bug.  closes bug 1255608
 	* Added $voffset
 	* Removed metar code.  It sucked.
+	* Added $acpitempf for amooricans
 
 2005-08-12
 	* Multiple unit additions and modifications

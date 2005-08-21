@@ -663,6 +663,7 @@ enum text_object_type {
 	OBJ_addr,
 	OBJ_linkstatus,
 	OBJ_acpitemp,
+	OBJ_acpitempf,
 	OBJ_battery,
 	OBJ_buffers,
 	OBJ_cached,
@@ -860,7 +861,9 @@ static void free_text_objects()
 		case OBJ_acpitemp:
 			close(text_objects[i].data.i);
 			break;
-
+		case OBJ_acpitempf:
+			close(text_objects[i].data.i);
+			break;
 		case OBJ_i2c:
 			close(text_objects[i].data.i2c.fd);
 			break;
@@ -928,6 +931,7 @@ if (s[0] == '#') {
 	} else
 #endif /* X11 */
 	OBJ(acpitemp, 0) obj->data.i = open_acpi_temperature(arg);
+	END OBJ(acpitempf, 0) obj->data.i = open_acpi_temperature(arg);
 	END OBJ(acpiacadapter, 0)
 	END OBJ(freq, 0);
 	END OBJ(freq_g, 0);
@@ -1531,14 +1535,27 @@ static void generate_text()
 				/* does anyone have decimals in acpi temperature? */
 				if (!use_spacer)
 					snprintf(p, n, "%d", (int)
-						 get_acpi_temperature(obj->
-								      data.
-								      i));
+							get_acpi_temperature(obj->
+									data.
+									i));
 				else
 					snprintf(p, 5, "%d    ", (int)
-						 get_acpi_temperature(obj->
-								      data.
-								      i));
+							get_acpi_temperature(obj->
+									data.
+									i));
+			}
+			OBJ(acpitempf) {
+				/* does anyone have decimals in acpi temperature? */
+				if (!use_spacer)
+					snprintf(p, n, "%d", (int)
+							((get_acpi_temperature(obj->
+									data.
+									i)+ 40) * 9.0 / 5 - 40));
+				else
+					snprintf(p, 5, "%d    ", (int)
+							((get_acpi_temperature(obj->
+									data.
+									i)+ 40) * 9.0 / 5 - 40));
 			}
 			OBJ(freq) {
 				snprintf(p, n, "%sMhz", get_freq());
