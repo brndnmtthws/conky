@@ -21,8 +21,8 @@ RDEPEND="virtual/libc
 
 DEPEND="truetype? ( >=media-libs/freetype-2 )
    X? ( virtual/x11 )
-   >=sys-devel/automake-1.4
-   sys-devel/autoconf
+   >=sys-devel/automake-1.9
+   >=sys-devel/autoconf-2.59
    sys-apps/grep
    sys-apps/sed
    sys-devel/gcc
