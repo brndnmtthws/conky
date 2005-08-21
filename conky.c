@@ -2611,6 +2611,7 @@ static void update_text_area()
 		y = workarea[3] - text_height - gap_y;
 		break;
 	
+#ifdef OWN_WINDOW
 	case NONE: // Let the WM manage the window
 		x = window.x;
 		y = window.y;
@@ -2618,9 +2619,10 @@ static void update_text_area()
 		fixed_pos  = 1;
 		fixed_size = 1;
 		break;
+#endif
 	}
-
 #ifdef OWN_WINDOW
+
 	if (own_window && !fixed_pos) {
 		x += workarea[0];
 		y += workarea[1];
@@ -4253,7 +4255,7 @@ int main(int argc, char **argv)
 	     text_height + border_margin * 2 + 1,
 	     on_bottom, fixed_pos);
 #else
-	init_winow
+	init_window
 		(own_window,
 		 text_width + border_margin * 2 + 1,
 		 text_height + border_margin * 2 + 1,

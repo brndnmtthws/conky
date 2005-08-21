@@ -40,7 +40,7 @@ src_compile() {
    econf \
       $(use_enable truetype xft) \
       $(use_enable seti) \
-	  $(use_enable x x11) \
+	  $(use_enable X x11) \
       --enable-double-buffer \
       --enable-own-window \
       --enable-proc-uptime \
