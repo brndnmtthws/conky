@@ -223,14 +223,6 @@ void update_stuff()
 	if (NEED(INFO_LOADAVG))
 		update_load_average();
 
-#ifdef METAR
-	if (NEED(INFO_METAR)
-	    && current_update_time - last_metar_update > 1200.9
-	    && info.looped) {
-		update_metar();
-		last_metar_update = current_update_time;
-	}
-#endif
 	if ((NEED(INFO_MEM) || NEED(INFO_BUFFERS)) &&
 	    current_update_time - last_meminfo_update > 6.9) {
 		update_meminfo();

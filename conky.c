@@ -773,21 +773,6 @@ enum text_object_type {
 	OBJ_mpd_length,
 	OBJ_mpd_percent,
 #endif
-#ifdef METAR
-	OBJ_metar_ob_time,
-	OBJ_metar_temp,
-	OBJ_metar_tempf,
-	OBJ_metar_windchill,
-	OBJ_metar_dew_point,
-	OBJ_metar_rh,
-	OBJ_metar_windspeed,
-	OBJ_metar_windspeed_km,
-	OBJ_metar_windspeed_mph,
-	OBJ_metar_winddir,
-	OBJ_metar_swinddir,
-	OBJ_metar_cloud,
-	OBJ_metar_u2d_time,
-#endif
 };
 
 struct text_object {
@@ -1378,31 +1363,6 @@ int a = stippled_borders, b = 1;
 	 OBJ(seti_prog, INFO_SETI) END OBJ(seti_progbar, INFO_SETI)
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(seti_credit, INFO_SETI) END
-#endif
-#ifdef METAR
-	 OBJ(metar_ob_time, INFO_METAR)
-	    END
-	    OBJ(metar_temp, INFO_METAR)
-	    END
-	    OBJ(metar_tempf, INFO_METAR)
-	    END
-	    OBJ(metar_windchill, INFO_METAR)
-	    END
-	    OBJ(metar_dew_point, INFO_METAR)
-	    END
-	    OBJ(metar_rh, INFO_METAR)
-	    END
-	    OBJ(metar_windspeed, INFO_METAR)
-	    END
-	    OBJ(metar_windspeed_km, INFO_METAR)
-	    END
-	    OBJ(metar_windspeed_mph, INFO_METAR)
-	    END
-	    OBJ(metar_winddir, INFO_METAR)
-	    END
-	    OBJ(metar_swinddir, INFO_METAR)
-	    END OBJ(metar_cloud, INFO_METAR)
-	END OBJ(metar_u2d_time, INFO_METAR) END
 #endif
 #ifdef MPD
 	 OBJ(mpd_artist, INFO_MPD)
@@ -2446,158 +2406,6 @@ static void generate_text()
 			}
 
 
-#ifdef METAR
-			// Hmm, it's expensive to calculate this shit every time FIXME
-			OBJ(metar_ob_time) {
-				if (data.ob_hour != INT_MAX
-				    && data.ob_minute != INT_MAX
-				    && metar_worked)
-					format_seconds(p, n,
-						       data.ob_hour *
-						       3600 +
-						       data.ob_minute *
-						       60);
-				else
-					format_seconds(p, n, 0);
-			}
-			OBJ(metar_temp) {
-				if (data.temp != INT_MAX && metar_worked)
-					snprintf(p, n, "%i", data.temp);
-				else
-					snprintf(p, n, "-");
-			}
-			OBJ(metar_tempf) {
-				if (data.temp != INT_MAX && metar_worked)
-					snprintf(p, n, "%'.1f",
-						 (data.temp +
-						  40) * 9.0 / 5 - 40);
-				else
-					snprintf(p, n, "-");
-			}
-			OBJ(metar_windchill) {
-				if (data.temp != INT_MAX
-				    && data.winData.windSpeed != INT_MAX
-				    && metar_worked)
-					snprintf(p, n, "%i",
-						 calculateWindChill(data.
-								    temp,
-								    data.
-								    winData.
-								    windSpeed));
-				else
-					snprintf(p, n, "-");
-			}
-			OBJ(metar_dew_point) {
-				if (data.dew_pt_temp != INT_MAX
-				    && metar_worked)
-					snprintf(p, n, "%i",
-						 data.dew_pt_temp);
-				else
-					snprintf(p, n, "-");
-			}
-			OBJ(metar_rh) {
-				if (data.temp != INT_MAX
-				    && data.dew_pt_temp != INT_MAX
-				    && metar_worked)
-					snprintf(p, n, "%i",
-						 calculateRelativeHumidity
-						 (data.temp,
-						  data.dew_pt_temp));
-				else
-					snprintf(p, n, "-");
-			}
-			OBJ(metar_windspeed) {
-				if (data.winData.windSpeed != INT_MAX
-				    && metar_worked)
-					snprintf(p, n, "%i",
-						 data.winData.windSpeed);
-				else
-					snprintf(p, n, "-");
-			}
-			OBJ(metar_windspeed_km) {
-				if (data.winData.windSpeed != INT_MAX
-				    && metar_worked)
-					snprintf(p, n, "%'.2f",
-						 (data.winData.windSpeed * 1.852));
-				else
-					snprintf(p, n, "-");
-			}
-			OBJ(metar_windspeed_mph) {
-				if (data.winData.windSpeed != INT_MAX
-				    && metar_worked)
-					snprintf(p, n, "%'.2f",
-						 (data.winData.windSpeed * 1.151));
-				else
-					snprintf(p, n, "-");
-			}
-			OBJ(metar_winddir) {
-				if (data.winData.windDir != INT_MAX
-				    && metar_worked)
-					snprintf(p, n, "%s",
-						 calculateWindDirectionString
-						 (data.winData.windDir));
-				else
-					snprintf(p, n, "-");
-			}
-			OBJ(metar_swinddir) {
-				if (data.winData.windDir != INT_MAX
-				    && metar_worked)
-					snprintf(p, n, "%s",
-						 calculateShortWindDirectionString
-						 (data.winData.windDir));
-				else
-					snprintf(p, n, "-");
-			}
-
-			OBJ(metar_cloud) {
-				if (data.cldTypHgt[0].cloud_type[0] != '\0'
-				    && metar_worked) {
-					if (strcmp
-					    (&data.cldTypHgt[0].
-					     cloud_type[0], "SKC") == 0)
-						snprintf(p, n,
-							 "Clear Sky");
-					else if (strcmp
-						 (&data.cldTypHgt[0].
-						  cloud_type[0],
-						  "CLR") == 0)
-						snprintf(p, n,
-							 "Clear Sky");
-					else if (strcmp
-						 (&data.cldTypHgt[0].
-						  cloud_type[0],
-						  "FEW") == 0)
-						snprintf(p, n,
-							 "Few clouds");
-					else if (strcmp
-						 (&data.cldTypHgt[0].
-						  cloud_type[0],
-						  "SCT") == 0)
-						snprintf(p, n,
-							 "Scattered clouds");
-					else if (strcmp
-						 (&data.cldTypHgt[0].
-						  cloud_type[0],
-						  "BKN") == 0)
-						snprintf(p, n,
-							 "Broken clouds");
-					else if (strcmp
-						 (&data.cldTypHgt[0].
-						  cloud_type[0],
-						  "OVC") == 0)
-						snprintf(p, n, "Overcast");
-					else
-						snprintf(p, n,
-							 "Checking...");
-				} else
-					snprintf(p, n, "Checking...");
-			}
-			OBJ(metar_u2d_time) {
-				format_seconds(p, n,
-					       (int) last_metar_update %
-					       (3600 * 24) + 3600);
-			}
-#endif
 
 			break;
 		}
@@ -3355,20 +3163,6 @@ static void draw_stuff()
 		XdbeSwapBuffers(display, &swap, 1);
 	}
 #endif
-/*#ifdef METAR wtf is this for exactly? aside from trying to cause segfaults?
-if (metar_station != NULL) {
-	free(metar_station);
-	metar_station = NULL;
-}
-if (metar_server != NULL) {
-	free(metar_server);
-	metar_server = NULL;
-}
-if (metar_path != NULL) {
-	free(metar_path);
-	metar_path = NULL;
-}
-#endif*/
 #endif /* X11 */
 }
 #ifdef X11
@@ -3785,12 +3579,6 @@ static void set_default_configurations(void)
 	mlconfig.mldonkey_login = NULL;
 	mlconfig.mldonkey_password = NULL;
 #endif
-#ifdef METAR
-	metar_station = NULL;
-	metar_server = NULL;
-	metar_path = NULL;
-	last_metar_update = 0;
-#endif
 }
 
 static void load_config_file(const char *f)
@@ -4155,28 +3943,6 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 			    malloc(strlen(value)
 				   + 1);
 			strcpy(seti_dir, value);
-		}
-#endif
-#ifdef METAR
-		CONF("metar_station") {
-			metar_station = (char *)
-			    malloc(strlen(value)
-				   + 5);
-			strcpy(metar_station, value);
-			strcat(metar_station, ".TXT");
-		}
-		CONF("metar_server") {
-			metar_server = (char *)
-			    malloc(strlen(value)
-				   + 1);
-			strcpy(metar_server, value);
-		}
-		CONF("metar_path") {
-			metar_path = (char *)
-			    malloc(strlen(value)
-				   + 1);
-			strcpy(metar_path, value);
-
 		}
 #endif
 		CONF("text") {

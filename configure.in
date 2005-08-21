@@ -143,25 +143,6 @@ if test "$want_cairo" = "yes"; then
   fi
 fi
 
-dnl metar
-dnl
-
-want_metar=no
-AC_ARG_ENABLE(metar,
-[  --enable-metar       enable if you want metar stats (weather information) [default=no]],
-  [want_metar="$enableval"])
-
-AM_CONDITIONAL(BUILD_METAR, test x$want_metar == xyes)
-if test x$want_metar == xyes; then
-AC_CHECK_HEADERS([metar.h], [], [METAR_MISSING=yes])
-    if test "x$METAR_MISSING" = xyes; then
-      AC_MSG_ERROR([something went wrong when checking for mdsplib, you're probably missing headers or it's not installed])
-  fi
-  AC_DEFINE(METAR, 1, [Define if you want metar stats (weather information)])
-fi
-dnl
-
-
 
 dnl
 dnl MLDonkey

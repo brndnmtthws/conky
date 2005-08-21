@@ -28,11 +28,6 @@ if BUILD_CAIRO
 cairo = cairo.c
 endif
 
-if BUILD_METAR
-metar = ftp.c metarinfo.c
-METAR_LIBS = -lmetar
-endif
-
 if BUILD_MLDONKEY
 mldonkey = mldonkey.c
 endif
@@ -42,7 +37,7 @@ x11 = x11.c
 endif
 
 conky_SOURCES = common.c fs.c top.c $(linux) mail.c mixer.c $(seti) $(mpd) \
-	$(solaris) $(freebsd) $(netbsd) $(cairo) conky.c conky.h $(x11) $(metar) \
+	$(solaris) $(freebsd) $(netbsd) $(cairo) conky.c conky.h $(x11) \
 	$(mldonkey) remoted.c remoted.h remotec.c remotec.h
 
 conky_LDFLAGS = $(X11_LIBS) $(XFT_LIBS) $(CAIRO_LIBS)
@@ -55,7 +50,7 @@ LIBS = -lm -lpthread
 
 # conky.1 is in EXTRA_DIST in case that someone doesn't have help2man
 EXTRA_DIST = conkyrc.sample conky.1 conky.x \
-             app-admin/conky/conky-1.2.ebuild
+             app-admin/conky/conky-1.2.ebuild app-admin/conky/conky-1.9999.ebuild
 
 EXTRA_conky_SOURCES = seti.c linux.c solaris.c freebsd.c netbsd.c mpd.c libmpdclient.c \
-cairo.c libmpdclient.h top.h mldonkey.c ftp.c metarinfo.c ftp.h metarinfo.h x11.c
+cairo.c libmpdclient.h top.h mldonkey.c ftp.c ftp.h x11.c

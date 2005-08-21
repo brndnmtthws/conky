@@ -36,10 +36,6 @@
 
 #define TEXT_BUFFER_SIZE 1024
 
-#ifdef METAR
-#include <metar.h>
-#endif
-
 #include <sys/socket.h>
 
 #define ERR(s, varargs...) \
@@ -110,9 +106,6 @@ enum {
 	INFO_MPD = 15,
 #endif
 	INFO_TOP = 16,
-#ifdef METAR
-	INFO_METAR = 17,
-#endif
 #ifdef MLDONKEY
 	INFO_MLDONKEY = 18,
 #endif
@@ -307,28 +300,7 @@ struct process {
 	float totalmem;
 };
 
-#ifdef METAR
-double last_metar_update;
-extern char *metar_station;
-extern char *metar_server;
-extern char *metar_path;
-extern char ftp_ok;
-extern char metar_worked;
-extern Decoded_METAR data;
-
-extern int calculateRelativeHumidity(int, int);
-extern int calculateWindChill(int, int);
-extern int knTokph(int);
-extern const char *calculateWindDirectionString(int);
-extern const char *calculateShortWindDirectionString(int);
-
-void update_metar();
-#endif
-
-
-
 void update_top();
-
 
 /* fs-stuff is possibly system dependant (in fs.c) */
 

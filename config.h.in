@@ -33,9 +33,6 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
-/* Define to 1 if you have the <metar.h> header file. */
-#undef HAVE_METAR_H
-
 /* Define to 1 if you have the `popen' function. */
 #undef HAVE_POPEN
 
@@ -89,9 +86,6 @@
 
 /* Xdbe */
 #undef HAVE_XDBE
-
-/* Define if you want metar stats (weather information) */
-#undef METAR
 
 /* Define if you want MLDonkey support */
 #undef MLDONKEY

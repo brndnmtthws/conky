@@ -4,6 +4,7 @@
 	* Applied patch from zimba-tm, closes patch 1260225
 	* Fixed ugly gradient bug.  closes bug 1255608
 	* Added $voffset
+	* Removed metar code.  It sucked.
 
 2005-08-12
 	* Multiple unit additions and modifications

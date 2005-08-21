@@ -56,8 +56,8 @@ binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 am__conky_SOURCES_DIST = common.c fs.c top.c linux.c mail.c mixer.c \
 	seti.c mpd.c libmpdclient.c solaris.c freebsd.c netbsd.c \
-	cairo.c conky.c conky.h x11.c ftp.c metarinfo.c mldonkey.c \
-	remoted.c remoted.h remotec.c remotec.h
+	cairo.c conky.c conky.h x11.c mldonkey.c remoted.c remoted.h \
+	remotec.c remotec.h
 @BUILD_LINUX_TRUE@am__objects_1 = linux.$(OBJEXT)
 @BUILD_SETI_TRUE@am__objects_2 = seti.$(OBJEXT)
 @BUILD_MPD_TRUE@am__objects_3 = mpd.$(OBJEXT) libmpdclient.$(OBJEXT)
@@ -66,17 +66,15 @@ am__conky_SOURCES_DIST = common.c fs.c top.c linux.c mail.c mixer.c \
 @BUILD_NETBSD_TRUE@am__objects_6 = netbsd.$(OBJEXT)
 @BUILD_CAIRO_TRUE@am__objects_7 = cairo.$(OBJEXT)
 @BUILD_X11_TRUE@am__objects_8 = x11.$(OBJEXT)
-@BUILD_METAR_TRUE@am__objects_9 = ftp.$(OBJEXT) metarinfo.$(OBJEXT)
-@BUILD_MLDONKEY_TRUE@am__objects_10 = mldonkey.$(OBJEXT)
+@BUILD_MLDONKEY_TRUE@am__objects_9 = mldonkey.$(OBJEXT)
 am_conky_OBJECTS = common.$(OBJEXT) fs.$(OBJEXT) top.$(OBJEXT) \
 	$(am__objects_1) mail.$(OBJEXT) mixer.$(OBJEXT) \
 	$(am__objects_2) $(am__objects_3) $(am__objects_4) \
 	$(am__objects_5) $(am__objects_6) $(am__objects_7) \
 	conky.$(OBJEXT) $(am__objects_8) $(am__objects_9) \
-	$(am__objects_10) remoted.$(OBJEXT) remotec.$(OBJEXT)
+	remoted.$(OBJEXT) remotec.$(OBJEXT)
 conky_OBJECTS = $(am_conky_OBJECTS)
-am__DEPENDENCIES_1 =
-conky_DEPENDENCIES = $(am__DEPENDENCIES_1)
+conky_DEPENDENCIES =
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -116,8 +114,6 @@ BUILD_FREEBSD_FALSE = @BUILD_FREEBSD_FALSE@
 BUILD_FREEBSD_TRUE = @BUILD_FREEBSD_TRUE@
 BUILD_LINUX_FALSE = @BUILD_LINUX_FALSE@
 BUILD_LINUX_TRUE = @BUILD_LINUX_TRUE@
-BUILD_METAR_FALSE = @BUILD_METAR_FALSE@
-BUILD_METAR_TRUE = @BUILD_METAR_TRUE@
 BUILD_MLDONKEY_FALSE = @BUILD_MLDONKEY_FALSE@
 BUILD_MLDONKEY_TRUE = @BUILD_MLDONKEY_TRUE@
 BUILD_MPD_FALSE = @BUILD_MPD_FALSE@
@@ -204,12 +200,10 @@ target_alias = @target_alias@
 @BUILD_FREEBSD_TRUE@freebsd = freebsd.c
 @BUILD_NETBSD_TRUE@netbsd = netbsd.c
 @BUILD_CAIRO_TRUE@cairo = cairo.c
-@BUILD_METAR_TRUE@metar = ftp.c metarinfo.c
-@BUILD_METAR_TRUE@METAR_LIBS = -lmetar
 @BUILD_MLDONKEY_TRUE@mldonkey = mldonkey.c
 @BUILD_X11_TRUE@x11 = x11.c
 conky_SOURCES = common.c fs.c top.c $(linux) mail.c mixer.c $(seti) $(mpd) \
-	$(solaris) $(freebsd) $(netbsd) $(cairo) conky.c conky.h $(x11) $(metar) \
+	$(solaris) $(freebsd) $(netbsd) $(cairo) conky.c conky.h $(x11) \
 	$(mldonkey) remoted.c remoted.h remotec.c remotec.h
 
 conky_LDFLAGS = $(X11_LIBS) $(XFT_LIBS) $(CAIRO_LIBS)
@@ -218,10 +212,10 @@ man_MANS = conky.1
 
 # conky.1 is in EXTRA_DIST in case that someone doesn't have help2man
 EXTRA_DIST = conkyrc.sample conky.1 conky.x \
-             app-admin/conky/conky-1.2.ebuild
+             app-admin/conky/conky-1.2.ebuild app-admin/conky/conky-1.9999.ebuild
 
 EXTRA_conky_SOURCES = seti.c linux.c solaris.c freebsd.c netbsd.c mpd.c libmpdclient.c \
-cairo.c libmpdclient.h top.h mldonkey.c ftp.c metarinfo.c ftp.h metarinfo.h x11.c
+cairo.c libmpdclient.h top.h mldonkey.c ftp.c ftp.h x11.c
 
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -320,7 +314,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmpdclient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/linux.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mail.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/metarinfo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mixer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mldonkey.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mpd.Po@am__quote@
