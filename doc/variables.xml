@@ -124,7 +124,7 @@
 <varlistentry>
 	<term>
 		<command><option>cpubar</option></command>
-	<option>(height)</option>
+	<option>(height),(width)</option>
 	</term>
 	<listitem>
 		Bar that shows CPU usage, height is bar's height in pixels
@@ -134,7 +134,7 @@
 <varlistentry>
 	<term>
 		<command><option>cpugraph</option></command>
-	<option>(height, width, gradient colour 1, gradient colour 2)</option>
+	<option>(height),(width) (gradient colour 1) (gradient colour 2)</option>
 	</term>
 	<listitem>
 		CPU usage graph, with optional colours in hex, minus the #.
@@ -164,7 +164,7 @@
 <varlistentry>
 	<term>
 		<command><option>downspeedgraph</option></command>
-	<option>net, (height, width, gradient colour 1, gradient colour 2)</option>
+		<option>net, (height),(width) (gradient colour 1) (gradient colour 2)</option>
 	</term>
 	<listitem>
 		Download speed graph, colours defined in hex, minus the #.
@@ -230,10 +230,28 @@
 	<para></para></listitem>
 </varlistentry>
 
-<varlistentry>
+	
+	<varlistentry>
+		<term>
+			<command><option>freq</option></command>
+		</term>
+		<listitem>
+			Returns CPU frequency in MHz
+			<para></para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+			<command><option>freq_g</option></command>
+		</term>
+		<listitem>
+			Returns CPU frequency in GHz
+			<para></para></listitem>
+	</varlistentry>
+	
+	<varlistentry>
 	<term>
 		<command><option>fs_bar</option></command>
-	<option>(height, fs)</option>
+	<option>(height),(width) fs</option>
 	</term>
 	<listitem>
 		Bar that shows how much space is used on a file system. height is the height in pixels. fs is any file on that file system.
@@ -388,7 +406,7 @@
 <varlistentry>
 	<term>
 		<command><option>membar</option></command>
-	<option>(height)</option>
+	<option>(height),(width)</option>
 	</term>
 	<listitem>
 		Bar that shows amount of memory in use
@@ -472,8 +490,24 @@
 		<command><option>metar_windspeed</option></command>
 	</term>
 	<listitem>
-		self-explanatory
-	<para></para></listitem>
+		Windspeed in knots
+		<para></para></listitem>
+</varlistentry>
+<varlistentry>
+	<term>
+		<command><option>metar_windspeed_km</option></command>
+	</term>
+	<listitem>
+		Windspeed in kph
+		<para></para></listitem>
+</varlistentry>
+<varlistentry>
+	<term>
+		<command><option>metar_windspeed_mph</option></command>
+	</term>
+	<listitem>
+		Windspeed in mph
+		<para></para></listitem>
 </varlistentry>
 
 <varlistentry>
@@ -623,7 +657,7 @@
 <varlistentry>
 	<term>
 		<command><option>mpd_bar</option></command>
-	<option>height</option>
+	<option>(height),(width)</option>
 	</term>
 	<listitem>
 		Bar of mpd's progress
@@ -772,7 +806,7 @@
 <varlistentry>
 	<term>
 		<command><option>swapbar</option></command>
-	<option>(height)</option>
+	<option>(height),(width)</option>
 	</term>
 	<listitem>
 		Bar that shows amount of swap in use
@@ -817,12 +851,12 @@
 
 <varlistentry>
 	<term>
-		<command><option>offse</option></command>
-	<option>pixels</option>
+		<command><option>offset</option></command>
+		<option>(pixels)</option>
 	</term>
 	<listitem>
-		Move text over by N pixels
-	<para></para></listitem>
+		Move text over by N pixels.  See also $voffset.
+		<para></para></listitem>
 </varlistentry>
 
 <varlistentry>
@@ -917,7 +951,7 @@
 <varlistentry>
 	<term>
 		<command><option>upspeedgraph</option></command>
-	<option>net, (height, width, gradient colour 1, gradient colour 2)</option>
+		<option>net, (height),(width) (gradient colour 1) (gradient colour 2)</option>
 	</term>
 	<listitem>
 		Upload speed graph, colours defined in hex, minus the #.
@@ -954,7 +988,7 @@
 <varlistentry>
 	<term>
 		<command><option>seti_progbar</option></command>
-	<option>(height)</option>
+	<option>(height),(width)</option>
 	</term>
 	<listitem>
 		Seti@home current progress bar
@@ -969,5 +1003,15 @@
 		Seti@home total user credit
 	<para></para></listitem>
 </varlistentry>
+<varlistentry>
+	<term>
+		<command><option>voffset</option></command>
+		<option>(pixels)</option>
+	</term>
+	<listitem>
+		Change verticle offset by N pixels.  Negative values will cause text to overlap.  See also $offset.
+		<para></para></listitem>
+</varlistentry>
+
 
 </variablelist>

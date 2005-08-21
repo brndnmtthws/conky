@@ -356,6 +356,7 @@ enum {
 	ALIGNC,
 	GRAPH,
 	OFFSET,
+	VOFFSET,
 	FONT,
 };
 
@@ -575,7 +576,12 @@ static inline void new_outline(char *buf, long c)
 
 static inline void new_offset(char *buf, long c)
 {
-       new_special(buf, OFFSET)->arg = c;
+	new_special(buf, OFFSET)->arg = c;
+}
+
+static inline void new_voffset(char *buf, long c)
+{
+	new_special(buf, VOFFSET)->arg = c;
 }
 
 static inline void new_alignr(char *buf, long c)
@@ -685,6 +691,7 @@ enum text_object_type {
 	OBJ_fs_used_perc,
 	OBJ_hr,
 	OBJ_offset,
+	OBJ_voffset,
 	OBJ_alignr,
 	OBJ_alignc,
 	OBJ_i2c,
@@ -1067,6 +1074,7 @@ if (s[0] == '#') {
 	obj->data.fs = prepare_fs_stat(arg);
 	END OBJ(hr, 0) obj->data.i = arg ? atoi(arg) : 1;
 	END OBJ(offset, 0) obj->data.i = arg ? atoi(arg) : 1;
+	END OBJ(voffset, 0) obj->data.i = arg ? atoi(arg) : 1;
 	END OBJ(i2c, INFO_I2C) char buf1[64], buf2[64];
 	int n;
 
@@ -1908,10 +1916,13 @@ static void generate_text()
 			OBJ(hr) {
 				new_hr(p, obj->data.i);
 			}
-                        OBJ(offset) {
+			OBJ(offset) {
 				new_offset(p, obj->data.i);
 			}
-                        OBJ(i2c) {
+			OBJ(voffset) {
+				new_voffset(p, obj->data.i);
+			}
+			OBJ(i2c) {
 				double r;
 
 				r = get_i2c_info(&obj->data.i2c.fd,
@@ -2679,6 +2690,9 @@ static void text_size_updater(char *s)
 			else if (specials[special_index].type == OFFSET) {
 				w += specials[special_index].arg + get_string_width("a"); /* filthy, but works */
 			}
+			else if (specials[special_index].type == VOFFSET) {
+				h += specials[special_index].arg;
+			}
 			else if (specials[special_index].type == FONT) {
 				fontchange = specials[special_index].font_added;
 				selected_font = specials[special_index].font_added;
@@ -3203,11 +3217,16 @@ static void draw_line(char *s)
 							     arg);
 				break;
 
-			case OFFSET:
+				case OFFSET:
 				{
 					w += specials[special_index].arg;
 				}
-			break;
+				break;
+				case VOFFSET:
+				{
+					cur_y += specials[special_index].arg;
+				}
+				break;
 
 			case ALIGNR:
 				{
