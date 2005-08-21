@@ -525,7 +525,7 @@ static const char *scan_graph(const char *args, int *w, int *h, unsigned int *fi
 			if (sscanf(args, "%d,%d %x %x", h, w, first_colour, last_colour) < 4) {
 				*w = 0;
 				*h = 25;			
-				if (sscanf(args, "%*s %x %x", first_colour, last_colour) < 2) {
+				if (sscanf(args, "%*s %x %x", first_colour, last_colour) < 3) {
 				*w = 0;
 				*h = 25;
 				if (sscanf(args, "%x %x", first_colour, last_colour) < 2) {
@@ -2625,7 +2625,6 @@ static void set_font()
 							screen),
 					DefaultColormap(display,
 							screen));
-
 		} else
 #endif
 {
@@ -2873,17 +2872,44 @@ static void draw_string(const char *s)
 	memcpy(tmpstring1, s, TEXT_BUFFER_SIZE);
 }
 
+long redmask, greenmask, bluemask;
+short colour_depth = 0;
+
+void set_up_gradient()
+{
+	colour_depth = DisplayPlanes(display, screen);
+	if (colour_depth != 24 && colour_depth != 16) {
+		ERR("using non-standard colour depth, gradients may look like a lolly-pop");
+	}
+	int i;
+	redmask = 0;
+	greenmask = 0;
+	bluemask = 0;
+	for(i = (colour_depth / 3)-1; i>=0; i--) {
+		redmask |= 1 << i;
+		greenmask |= 1 << i;
+		bluemask |= 1 << i;
+	}
+	if (colour_depth%3 == 1) {
+		greenmask |= 1 << (colour_depth / 3);
+	}
+	redmask = redmask << (2*colour_depth / 3 + colour_depth%3);
+	greenmask = greenmask << (colour_depth / 3);
+}
+
 inline unsigned long do_gradient(unsigned long first_colour, unsigned long last_colour) { /* this function returns the next colour between two colours for a gradient */
 	int tmp_color = 0;
 	int red1, green1, blue1; // first colour
 	int red2, green2, blue2; // second colour
 	int red3 = 0, green3 = 0, blue3 = 0; // difference
-	red1 = (first_colour & 0xff0000) >> 16;
-	green1 = (first_colour & 0xff00) >> 8;
-	blue1 = first_colour & 0xff;
-	red2 = (last_colour & 0xff0000) >> 16;
-	green2 = (last_colour & 0xff00) >> 8;
-	blue2 = last_colour & 0xff;
+	short redshift = (2*colour_depth / 3 + colour_depth%3);
+	short greenshift = (colour_depth / 3);
+	red1 = (first_colour & redmask) >> redshift;
+	green1 = (first_colour & greenmask) >> greenshift;
+	blue1 = first_colour & bluemask;
+	red2 = (last_colour & redmask) >> redshift;
+	green2 = (last_colour & greenmask) >> greenshift;
+	blue2 = last_colour & bluemask;
 	if (red1 > red2) {
 		red3 = -1;
 	}
@@ -2914,29 +2940,34 @@ inline unsigned long do_gradient(unsigned long first_colour, unsigned long last_
 	if (blue1 < 0) {
 		blue1 = 0;
 	}
-	if (red1 > 0xff) {
-		red1 = 0xff;
+	if (red1 > bluemask) {
+		red1 = bluemask;
 	}
-	if (green1 > 0xff) {
-		green1 = 0xff;
+	if (green1 > bluemask) {
+		green1 = bluemask;
 	}
-	if (blue1 > 0xff) {
-		blue1 = 0xff;
+	if (blue1 > bluemask) {
+		blue1 = bluemask;
 	}
-	tmp_color = (red1 << 16) | (green1 << 8) | blue1;
+	tmp_color = (red1 << redshift) | (green1 << greenshift) | blue1;
 	return tmp_color;
 }
 
 inline unsigned long gradient_max(unsigned long first_colour, unsigned long last_colour) { /* this function returns the max diff for a gradient */
+	if (colour_depth == 0) {
+		set_up_gradient();
+	}
 	int red1, green1, blue1; // first colour
 	int red2, green2, blue2; // second colour
+	long redshift = (2*colour_depth / 3 + colour_depth%3);
+	long greenshift = (colour_depth / 3);
 	int red3 = 0, green3 = 0, blue3 = 0; // difference
-	red1 = (first_colour & 0xff0000) >> 16;
-	green1 = (first_colour & 0xff00) >> 8;
-	blue1 = first_colour & 0xff;
-	red2 = (last_colour & 0xff0000) >> 16;
-	green2 = (last_colour & 0xff00) >> 8;
-	blue2 = last_colour & 0xff;
+	red1 = (first_colour & redmask) >> redshift;
+	green1 = (first_colour & greenmask) >> greenshift;
+	blue1 = first_colour & bluemask;
+	red2 = (last_colour & redmask) >> redshift;
+	green2 = (last_colour & greenmask) >> greenshift;
+	blue2 = last_colour & bluemask;
 	red3 = abs(red1 - red2);
 	green3 = abs(green1 - green2);
 	blue3 = abs(blue1 - blue2);
@@ -3114,11 +3145,7 @@ static void draw_line(char *s)
 				gradient_update--;
 			}
 		}
-		if (i /
-						((float) (w - 3) /
-						(specials
-						[special_index].
-						graph_width)) > j) {
+		if (i / ((float) (w - 3) / (specials[special_index].graph_width)) > j) {
 			j++;
 						}
 						XDrawLine(display,  window.drawable, window.gc, cur_x + i + 2, by + h, cur_x + i + 2, by + h - specials[special_index].graph[j] * (h - 1) / specials[special_index].graph_scale);	/* this is mugfugly, but it works */
@@ -3184,11 +3211,11 @@ static void draw_line(char *s)
 
 			case ALIGNR:
 				{
-					int pos_x = text_width - gap_x - get_string_width(p) - border_margin*2 - 1;
+					int pos_x = text_width + gap_x - get_string_width(p) /*- border_margin*2 - 1*/;
 					/*printf("pos_x %i text_start_x %i text_width %i cur_x %i get_string_width(p) %i gap_x %i specials[special_index].arg %i border_margin %i border_width %i\n", pos_x, text_start_x, text_width, cur_x, get_string_width(p), gap_x, specials[special_index].arg, border_margin, border_width);*/
-					if (pos_x > specials[special_index].arg) {
-						w = pos_x - specials[special_index].arg;
-					}
+					if (pos_x > specials[special_index].arg && pos_x > cur_x) {
+					cur_x = pos_x - specials[special_index].arg;
+				}
 				}
 				break;
 

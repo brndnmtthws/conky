@@ -53,11 +53,6 @@ man_MANS = conky.1
 
 LIBS = -lm -lpthread
 
-if HAVE_HELP2MAN
-conky.1: conky conky.x
-	help2man -h -h -v -V -i conky.x -o conky.1 -N ./conky
-endif
-
 # conky.1 is in EXTRA_DIST in case that someone doesn't have help2man
 EXTRA_DIST = conkyrc.sample conky.1 conky.x \
              app-admin/conky/conky-1.2.ebuild

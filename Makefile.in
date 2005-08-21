@@ -144,9 +144,6 @@ ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
-HAVE_HELP2MAN_FALSE = @HAVE_HELP2MAN_FALSE@
-HAVE_HELP2MAN_TRUE = @HAVE_HELP2MAN_TRUE@
-HELP2MAN = @HELP2MAN@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -669,9 +666,6 @@ uninstall-man: uninstall-man1
 	ps ps-am tags uninstall uninstall-am uninstall-binPROGRAMS \
 	uninstall-info-am uninstall-man uninstall-man1
 
-
-@HAVE_HELP2MAN_TRUE@conky.1: conky conky.x
-@HAVE_HELP2MAN_TRUE@	help2man -h -h -v -V -i conky.x -o conky.1 -N ./conky
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

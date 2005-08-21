@@ -286,9 +286,6 @@ dnl
 dnl Check help2man
 dnl
 
-AC_PATH_PROG(HELP2MAN, help2man)
-AM_CONDITIONAL(HAVE_HELP2MAN, test x$HELP2MAN != x)
-
 dnl
 dnl Check sysinfo()
 dnl
