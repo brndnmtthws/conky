@@ -1,319 +1,756 @@
-  Conky (http://conky.sf.net)
+conky(1)							      conky(1)
 
-  WHAT IS CONKY?
 
-	Conky is a system monitor for X originally based on the torsmo code.
-	Since it's original conception, Conky has changed a fair bit from
-	it's predecessor.  Conky can display just about anything, either on
-	your root desktop or in it's own window.  Conky has many built-in
-	objects, as well as the ability to execute programs and scripts,
-	then display the output from stdout.
-	
-	We are always looking for help, and anyone interested in becoming
-	a developer is welcome.  Please use the facilities at SourceForge
-	to make bug reports, feature requests, and submit patches.
-	
-	Thanks for your interest in Conky.
 
-  THINGS YOU SHOULD KNOW
+NAME
+       conky - a system monitor for X originally based on the torsmo code, but
+       more kickass.
 
-	Conky is generally very good on resources.  However, certain objects in
-	Conky are harder on resources then others.  In particular, the $tail,
-	$top, $font, and $graph objects are quite costly in comparison to 
-	the rest of Conky.
+SYNOPSIS
+       conky [options]
 
-	If you do use them, please do not complain about memory or CPU usage,
-	unless you think something is going seriously wrong (mem leak, et cetera).
+DESCRIPTION
+       Conky is a system monitor for X originally based on  the  torsmo  code.
+       Since  its original conception, Conky has changed a fair bit from its
+       predecessor.  Conky can display just about  anything,  either  on  your
+       root  desktop  or in its own window.  Conky has many built-in objects,
+       as well as the ability to execute programs and  scripts,  then  display
+       the output from stdout.
 
-  COMPILING
+       We  are	always	looking  for help, and anyone interested in becoming a
+       developer is welcome.  Please use the facilities at SourceForge to make
+       bug reports, feature requests, and submit patches.
 
-	To compile and run Conky with all optional components (If you run Gentoo, see the "Ebuild" Section below):
+       Thanks for your interest in Conky.
 
-		./configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --datadir=/usr/share --sysconfdir=/etc --localstatedir=/var/lib --enable-double-buffer --enable-own-window --enable-proc-uptime --enable-mpd --enable-xft --enable-seti
-		make
-		./conky
+COMPILING
+       To  compile and run Conky with all optional components (If you run Gen
+       too, see the "Ebuild" Section below):
 
-	Conky doesn't probably compile with other compilers than gcc and icc. It
-	doesn't compile with C89 compiler and not even with pure C99. It uses few
-	things that might not exist: strdup(), strcasecmp(), strncasecmp(), optarg
-	variable with getopt() and long long (not in C89). Crashes in file system
-	statistics stuff when compiled with icc, I don't know exactly why.
-	
-	You can disable 'drawing to own window' feature in case you don't need it
-	by passing --disable-own-window to configure -script.
+       ./configure	      --prefix=/usr	       --mandir=/usr/share/man
+       --infodir=/usr/share/info   --datadir=/usr/   share   --sysconfdir=/etc
+       --localstatedir=/var/lib   --enable-double-buffer   --enable-own-window
+       --enable-proc-uptime	--enable-mpd	--enable-xft	--enable-metar
+       --enable-seti
 
-  EBUILD
+       make
 
-	Conky is in Gentoo's Portage.  Simply use "emerge conky" to install conky.
-	There is also usually an up-to-date ebuild within Conky's package or in
-	CVS.
+       ./conky
 
-  CONFIGURING
+       Conky doesnt probably compile with other compilers than gcc  and  icc.
+       It  doesnt  compile  with C89 compiler and not even with pure C99.  It
+       uses few things that might not  exist:  strdup(),  strcasecmp(),  strn
+       casecmp(),  optarg  variable  with getopt() and long long (not in C89).
+       Crashes in file system statistics stuff when compiled with icc, I dont
+       know exactly why.
 
-	Default configuration file is $HOME/.conkyrc (can be changed from
-	conky.c among other things). See conkyrc.sample. You might want to copy
-	it to $HOME/.conkyrc and then start modifying it.
-	
-	Configuration file confs
-	
-		Conf                                Meaning                        
-	alignment             Aligned position on screen, may be top_left,         
-								 top_right, bottom_left, bottom_right, none                 
-	background            Boolean value, if true, Conky will be forked to     
-								 background when started                              
-	on_bottom 				 Set conky on the bottom of all other applications
-	border_margin         Border margin in pixels                              
-	border_width          Border width in pixels                               
-	cpu_avg_samples       The number of samples to average for CPU monitoring
-	default_color         Default color and border color                       
-	default_shade_color   Default shading color and border's shading color     
-	default_outline_color Default outline color                                
-								 Use the Xdbe extension? (eliminates flicker) It is   
-	double_buffer         highly recommended to use own window with this one   
-								 so double buffer won't be so big.                    
-	draw_borders          Draw borders around text?                            
-	draw_shades           Draw shades?                                         
-	draw_outline          Draw outlines?                                       
-	font                  Font name in X, xfontsel can be used to get a nice font                                                 
-	gap_x                 Gap between right or left border of screen, same as passing -x at command line
-	gap_y                 Gap between top or bottom border of screen, same as passing -y at command line
-	no_buffers            Substract (file system) buffers from used memory?    
-	mail_spool            Mail spool for mail checking                         
-	minimum_size          Minimum size of window                               
-	mldonkey_hostname     Hostname for mldonkey stuff, defaults to localhost
-	mldonkey_port         Mldonkey port, 4001 default
-	mldonkey_login        Mldonkey login, default none
-	mldonkey_password     Mldonkey password, default none
-	mpd_host	      Host of MPD server
-	mpd_post	      Port of MPD server
-	mpd_password	      MPD server password
-	net_avg_samples       The number of samples to average for net data
-	override_utf8_locale  Force UTF8? requires XFT
-	own_window            Boolean, create own window to draw?                  
-	pad_percents          Pad percentages to this many decimals (0 = no        
-				padding)                                             
-	stippled_borders      Border stippling (dashing) in pixels                 
-	total_run_times       Total number of times for Conky to update before
-				quitting.  Zero makes Conky run forever
-	update_interval       Update interval in seconds                           
-	uppercase             Boolean value, if true, text is rendered in upper    
-				case                                                 
-	use_spacer            Adds spaces after certain objects to stop them
-				from moving other things around.  Note that
-				this only helps if you are using a mono font,
-				such as Bitstream Vera Sans Mono.
-	use_xft               Use Xft (anti-aliased font and stuff)                
-	text                  After this begins text to be formatted on screen     
-	
-	Boolean variable without value in text means yes. Value may be also yes,
-	true or any negative or positive integer meaning yes. No, false or zero
-	meaning no.
-	There may be some variables in text. Variable is given either in format
-	$variable or in ${variable}. Latter allows characters right after the
-	variable and must be used in some stuff because of arguments.
-	
-	Command line options
-	
-	Argument                          Description                        
-	-V           Prints version and exits                                  
-	-a ALIGNMENT Text alignment on screen, {top,bottom}_{left,right} | none       
-	-b           Use double buffering (eliminates flicker)                 
-	-c FILE      Config file to load instead of $HOME/.conkyrc            
-	-d           Daemonize, fork to background                             
-	-f FONT      Font to use                                               
-	-h           Prints command line help and exits                        
-	-o           Create own window to draw                                 
-	-t TEXT      Text to render, remember single quotes, like -t '$uptime' 
-	-u SECS      Update interval                                           
-	-w WIN_ID    Window id to draw                                         
-	-x X         X position                                                
-	-y Y         Y position                                                
-	
-	Command line options override configurations defined in configuration
-	file.
-	
-	Variables in text
-	
-	Variable          Arguments                   Description              
-	
-	addr              (interface)   IP address for an interface
-	acpiacadapter                   ACPI ac adapter state.                   
-	acpifan                         ACPI fan state                           
-	acpitemp                        ACPI temperature.                        
-	adt746xcpu                      CPU temperature from therm_adt746x       
-	adt746xfan                      Fan speed from therm_adt746x             
-	alignr            (num)         Right-justify text, with space of N
-	alignc                          Align text to centre
-	battery           (num)         Remaining capasity in ACPI or APM        
-					battery. ACPI battery number can be      
-					given as argument (default is BAT0).     
-	buffers                         Amount of memory buffered                
-	cached                          Amount of memory cached                  
-	color             (color)       Change drawing color to color            
-	cpu                             CPU usage in percents                    
-	cpubar            (height)      Bar that shows CPU usage, height is      
-					bar's height in pixels                 
-	cpugraph          (height),(width) (gradient colour 1) (gradient colour 2)
-					CPU usage graph, with optional colours in hex,
-					minus the #.
-	downspeed         net           Download speed in kilobytes              
-	downspeedf        net           Download speed in kilobytes with one     
-					decimal                                  
-	downspeedgraph    net (height),(width) (gradient colour 1) (gradient colour 2)
-					Download speed graph, colours defined in
-					hex, minus the #.
-	exec              shell command Executes a shell command and displays    
-					the output in conky. warning: this      
-					takes a lot more resources than other    
-					variables. I'd recommend coding wanted   
-					behaviour in C and posting a patch :-).  
-	execbar           shell command Same as exec, except if the first value
-					return is a value between 0-100, it
-					will use that number for a bar.
-					The size for the bar is currently fixed,
-					but that may change in the future.
-	execgraph         shell command Same as execbar, but graphs values
-	execi             interval, shell command
- 					Same as exec but with specific interval. 
-					Interval can't be less than              
-					update_interval in configuration.        
-	font		  font		Specify a different font.  Only applies
-					to one line.
-	fs_bar            (height), (fs)Bar that shows how much space is used on 
-					a file system. height is the height in   
-					pixels. fs is any file on that file      
-					system.                                  
-	fs_free           (fs)          Free space on a file system available    
-					for users.                               
-	fs_free_perc      (fs)          Free percentage of space on a file       
-					system available for users.              
-	fs_size           (fs)          File system size                         
-	fs_used           (fs)          File system used space                   
-	hr                (height)      Horizontal line, height is the height in 
-					pixels                                   
-	i2c               (dev), type, n  I2C sensor from sysfs (Linux 2.6). dev   
-					may be omitted if you have only one I2C  
-					device. type is either in (or vol)       
-					meaning voltage, fan meaning fan or
-					temp/tempf (first in C, second in F)
-					meaning temperature. n is number of the  
-					sensor. See /sys/bus/i2c/devices/ on     
-					your local computer.                     
-	if_running        (process)     if PROCESS is running, display
-					everything if_running and the matching $endif
-	if_existing       (file)        if FILE exists, display everything between
-					if_existing and the matching $endif
-	if_mounted        (mountpoint)  if MOUNTPOINT is mounted, display everything between
-					if_mounted and the matching $endif
-	else                            Text to show if any of the above are not true
-	kernel                          Kernel version                          
-	linkstatus        (interface)   Get the link status for wireless connections
-	loadavg           (1), (2), (3) System load average, 1 is for past 1     
-					minute, 2 for past 5 minutes and 3 for   
-					past 15 minutes.                         
-	machine                         Machine, i686 for example                
-	mails                           Mail count in mail spool. You can use    
-					program like fetchmail to get mails from 
-					some server using your favourite         
-					protocol. See also new_mails.            
-	mem                             Amount of memory in use                  
-	membar            (height)      Bar that shows amount of memory in use   
-	memmax                          Total amount of memory                   
-	memperc                         Percentage of memory in use
-	
-	ml_upload_counter               total session upload in mb
-	ml_download_counter             total session download in mb
-	ml_nshared_files                number of shared files
-	ml_shared_counter               total session shared in mb, buggy
-					in some mldonkey versions
-	ml_tcp_upload_rate              tcp upload rate in kb/s
-	ml_tcp_download_rate            tcp download rate in kb/s
-	ml_udp_upload_rate              udp upload rate in kb/s
-	ml_udp_download_rate            udp download rate in kb/s
-	ml_ndownloaded_files            number of completed files
-	ml_ndownloading_files           number of downloading files
-	
-	mpd_artist			Artist in current MPD song
-					(must be enabled at compile)
-	mpd_album			Album in current MPD song
-	mpd_bar           (height)      Bar of mpd's progress
-	mpd_bitrate                     Bitrate of current song
-	mpd_status                      Playing, stopped, et cetera.
-	mpd_title			Title of current MPD song
-	mpd_vol				MPD's volume
-	mpd_elapsed                     Song's elapsed time
-	mpd_length                      Song's length
-	mpd_percent                     Percent of song's progress
-	new_mails                       Unread mail count in mail spool.         
-	nodename                        Hostname                                 
-	outlinecolor      (color)       Change outline color                     
-	pre_exec          shell command Executes a shell command one time before 
-					conky displays anything and puts output 
-					as text.                                 
-	processes                       Total processes (sleeping and running)   
-	running_processes               Running processes (not sleeping),        
-					requires Linux 2.6                       
-	shadecolor        (color)       Change shading color                     
-	stippled_hr       (space),      Stippled (dashed) horizontal line        
-			(height)        
-	swapbar           (height)      Bar that shows amount of swap in use     
-	swap                            Amount of swap in use                    
-	swapmax                         Total amount of swap                     
-	swapperc                        Percentage of swap in use                
-	sysname                         System name, Linux for example           
-	offset            pixels        Move text over by N pixels
-	tail              logfile, lines (interval)
-					Displays last N lines of supplied text
-					text file.  If interval is not supplied,
-					Conky assumes 2x Conky's interval.
-					Max of 30 lines.
-					Max of 30 lines can be displayed.
-	time              (format)      Local time, see man strftime to get more 
-					information about format                 
-	totaldown         net           Total download, overflows at 4 GB on     
-					Linux with 32-bit arch and there doesn't 
-					seem to be a way to know how many times  
-					it has already done that before conky   
-					has started.                            
-	top               type, num     This takes arguments in the form:
-					top <name> <number>
-					Basically, processes are ranked from 
-					highest to lowest in terms of cpu
-					usage, which is what <num> represents.
-					The types are: "name", "pid", "cpu", and
-					"mem".
-					There can be a max of 10 processes listed.
-	top_mem           type, num     Same as top, except sorted by mem usage
-					instead of cpu
-	totalup           net           Total upload, this one too, may overflow 
-	updates                         Number of updates (for debugging)        
-	upspeed           net           Upload speed in kilobytes                
-	upspeedf          net           Upload speed in kilobytes with one       
-					decimal                                  
-	upspeedgraph      net (height),(width)  (gradient colour 1) (gradient colour 2)
-					Upload speed graph, colours defined in
-					hex, minus the #.
-	uptime                          Uptime                                   
-	uptime_short                    Uptime in a shorter format               
-	
-	seti_prog                       Seti@home current progress
-	seti_progbar      (height)      Seti@home current progress bar
-	seti_credit                     Seti@hoome total user credit
-	
-	
-	colors are parsed using XParsecolor(), there might be a list of them:
-	/usr/X11R6/lib/X11/rgb.txt. color can be also in #rrggbb format (hex).
-	
-	Note that when displaying bytes, power is 1024 and not 1000 so 1M really
-	means 1024*1024 bytes and not 1000*1000.
-	
-  KNOWN PROBLEMS
-	
-	Drawing to root or some other desktop window directly doesn't work with
-	all window managers. Especially doesn't work well with Gnome and it has
-	been reported that it doesn't work with KDE either. Nautilus can be
-	disabled from drawing to desktop with program gconf-editor. Uncheck
-	show_desktop in /apps/nautilus/preferences/. There is -w switch in Conky
-	to set some specific window id. You might find xwininfo -tree useful to
-	find the window to draw to. You can also use -o argument which makes
-	Conky to create its own window.
+       You  can disable drawing to own window feature in case you dont need
+       it by passing --disable-own-window to configure -script.
+
+       Conky is in Gentoos Portage. Simply  use  "emerge  conky"  to  install
+       conky.  There is also usually an up-to-date ebuild within Conkys pack
+       age or in CVS.
+
+YOU SHOULD KNOW
+       Conky is generally very good on resources. However, certain objects  in
+       Conky  are  harder  on resources then others. In particular, the $tail,
+       $top, $font, and $graph objects are quite costly in comparison  to  the
+       rest of Conky.
+
+       If  you	do use them, please do not complain about memory or CPU usage,
+       unless you think something is  going  seriously	wrong  (mem  leak,  et
+       cetera).
+
+OPTIONS
+       Command	line  options override configurations defined in configuration
+       file.
+
+       -V     Prints version and exits
+
+
+       -a ALIGNMENT
+	      Text alignment on screen, {top,bottom}_{left,right}
+
+
+       -b     Use double buffering (eliminates flicker)
+
+
+       -c FILE
+	      Config file to load instead of $HOME/.conkyrc
+
+
+       -d     Daemonize, fork to background
+
+
+       -f FONT
+	      Font to use
+
+
+       -h     Prints command line help and exits
+
+
+       -o     Create own window to draw
+
+
+       -t TEXT
+	      Text to render, remember single quotes, like -t  $uptime
+
+
+       -u SECONDS
+	      Update interval
+
+
+       -w WIN_ID
+	      Window id to draw
+
+
+       -x X_COORDINATE
+	      X position
+
+
+       -y Y_COORDINATE
+	      Y position
+
+
+CONFIGURATION SETTINGS
+       Default configuration file  is  $HOME/.conkyrc  (can  be  changed  from
+       conky.c among other things). See conkyrc.sample. You might want to copy
+       it to $HOME/.conkyrc and then start modifying it.
+
+       alignment
+	      Aligned position on screen, may  be  top_left,  top_right,  bot
+	      tom_left, bottom_right
+
+
+       background
+	      Boolean  value, if true, Conky will be forked to background when
+	      started
+
+
+       on_bottom
+	      Set conky on the bottom of all other applications
+
+
+       border_margin
+	      Border margin in pixels
+
+
+       border_width
+	      Border width in pixels
+
+
+       cpu_avg_samples
+	      The number of samples to average for CPU monitoring
+
+
+       default_color
+	      Default color and border color
+
+
+       default_shade_color
+	      Default shading color and borders shading color
+
+
+       default_outline_color
+	      Default outline color
+
+
+       double_buffer
+	      Use the Xdbe extension? (eliminates flicker) It is highly recom
+	      mended to use own window with this one so double buffer wont be
+	      so big.
+
+
+       draw_borders
+	      Draw borders around text?
+
+
+       draw_shades
+	      Draw shades?
+
+
+       draw_outline
+	      Draw outlines?
+
+
+       font   Font name in X, xfontsel can be used to get a nice font
+
+
+       gap_x  Gap between right or left border of screen, same as  passing  -x
+	      at command line
+
+
+       gap_y  Gap  between  top or bottom border of screen, same as passing -y
+	      at command line
+
+
+       no_buffers
+	      Substract (file system) buffers from used memory?
+
+
+       mail_spool
+	      Mail spool for mail checking
+
+
+       metar_station
+	      METAR station code for weather, see http://www.wrh.noaa.gov/  if
+	      you need to find your code.
+
+
+       metar_server
+	      Define a custom METAR ftp server
+
+
+       metar_path
+	      Path on server to use
+
+
+       minimum_size
+	      Minimum size of window
+
+
+       mldonkey_hostname
+	      Hostname for mldonkey stuff, defaults to localhost
+
+
+       mldonkey_port
+	      Mldonkey port, 4001 default
+
+
+       mldonkey_login
+	      Mldonkey login, default none
+
+
+       mldonkey_password
+	      Mldonkey password, default none
+
+
+       mpd_host
+	      Host of MPD server
+
+
+       mpd_post
+	      Port of MPD server
+
+
+       mpd_password
+	      MPD server password
+
+
+       net_avg_samples
+	      The number of samples to average for net data
+
+
+       override_utf8_locale
+	      Force UTF8? requires XFT
+
+
+       own_window
+	      Boolean, create own window to draw?
+
+
+       pad_percents
+	      Pad percentages to this many decimals (0 = no padding)
+
+
+       stippled_borders
+	      Border stippling (dashing) in pixels
+
+
+       total_run_times
+	      Total  number of times for Conky to update before quitting. Zero
+	      makes Conky run forever
+
+
+       update_interval
+	      Update interval in seconds
+
+
+       uppercase
+	      Boolean value, if true, text is rendered in upper case
+
+
+       use_spacer
+	      Adds spaces after certain objects to stop them from moving other
+	      things around. Note that this only helps if you are using a mono
+	      font, such as Bitstream Vera Sans Mono.
+
+
+       use_xft
+	      Use Xft (anti-aliased font and stuff)
+
+
+       text   After this begins text to be formatted on screen
+
+
+VARIABLES
+       Colors are parsed using XParsecolor(), there might be a list  of  them:
+       /usr/X11R6/lib/X11/rgb.txt.   Also,   http://sedition.com/perl/rgb.html
+       Color can be also in #rrggbb format (hex).  Note that  when  displaying
+       bytes,  power  is  1024 and not 1000 so 1M really means 1024*1024 bytes
+       and not 1000*1000.
+
+       addr (interface)
+	      IP address for an interface
+
+
+       acpiacadapter
+	      ACPI ac adapter state.
+
+
+       acpifan
+	      ACPI fan state
+
+
+       acpitemp
+	      ACPI temperature.
+
+
+       adt746xcpu
+	      CPU temperature from therm_adt746x
+
+
+       adt746xfan
+	      Fan speed from therm_adt746x
+
+
+       alignr (num)
+	      Right-justify text, with space of N
+
+
+       alignc (num)
+	      Align text to centre
+
+
+       battery (num)
+	      Remaining capacity in ACPI or APM battery. ACPI  battery	number
+	      can be given as argument (default is BAT0).
+
+
+       buffers
+	      Amount of memory buffered
+
+
+       cached Amount of memory cached
+
+
+       color (color)
+	      Change drawing color to color
+
+
+       cpu    CPU usage in percents
+
+
+       cpubar (height)
+	      Bar that shows CPU usage, height is bars height in pixels
+
+
+       cpugraph (height, width, gradient colour 1, gradient colour 2)
+	      CPU usage graph, with optional colours in hex, minus the #.
+
+
+       downspeed net
+	      Download speed in kilobytes
+
+
+       downspeedf net
+	      Download speed in kilobytes with one decimal
+
+
+       downspeedgraph  net, (height, width, gradient colour 1, gradient colour
+       2)
+	      Download speed graph, colours defined in hex, minus the #.
+
+
+       else   Text to show if any of the above are not true
+
+
+       exec shell command
+	      Executes a shell command and displays the output in conky. warn
+	      ing: this takes a lot more resources than other  variables.  Id
+	      recommend coding wanted behaviour in C and posting a patch.
+
+
+       execbar shell command
+	      Same  as	exec,  except  if  the	first  value return is a value
+	      between 0-100, it will use that number for a bar. The  size  for
+	      the bar is currently fixed, but that may change in the future.
+
+
+       execgraph shell command
+	      Same as execbar, but graphs values
+
+
+       execi interval, shell command
+	      Same  as exec but with specific interval. Interval cant be less
+	      than update_interval in configuration.
+
+
+       font font
+	      Specify a different font. Only applies to one line.
+
+
+       fs_bar (height, fs)
+	      Bar that shows how much space is used on a file  system.	height
+	      is the height in pixels. fs is any file on that file system.
+
+
+       fs_free (fs)
+	      Free space on a file system available for users.
+
+
+       fs_free_perc (fs)
+	      Free percentage of space on a file system available for users.
+
+
+       fs_size (fs)
+	      File system size
+
+
+       fs_used (fs)
+	      File system used space
+
+
+       hr (height)
+	      Horizontal line, height is the height in pixels
+
+
+       i2c (dev), type, n
+	      I2C  sensor  from  sysfs	(Linux 2.6). dev may be omitted if you
+	      have only one I2C device. type is either	in  (or  vol)  meaning
+	      voltage, fan meaning fan or temp/tempf (first in C, second in F)
+	      meaning  temperature.  n	is   number   of   the	 sensor.   See
+	      /sys/bus/i2c/devices/ on your local computer.
+
+
+       if_running (process)
+	      if  PROCESS  is  running,  display everything if_running and the
+	      matching $endif
+
+
+       if_existing (file)
+	      if FILE exists, display everything between if_existing  and  the
+	      matching $endif
+
+
+       if_mounted (mountpoint)
+	      if  MOUNTPOINT is mounted, display everything between if_mounted
+	      and the matching $endif
+
+
+       kernel Kernel version
+
+
+       linkstatus (interface)
+	      Get the link status for wireless connections
+
+
+       loadavg
+	      (1,2,3)> System load average, 1 is for past 1 minute, 2 for past
+	      5 minutes and 3 for past 15 minutes.
+
+
+       machine
+	      Machine, i686 for example
+
+
+       mails  Mail  count in mail spool. You can use program like fetchmail to
+	      get mails from some server using your  favourite	protocol.  See
+	      also new_mails.
+
+
+       mem    Amount of memory in use
+
+
+       membar (height)
+	      Bar that shows amount of memory in use
+
+
+       memmax Total amount of memory
+
+
+       memperc
+	      Percentage of memory in use
+
+
+       metar_ob_time
+	      self-explanatory
+
+
+       metar_temp
+	      self-explanatory
+
+
+       metar_tempf
+	      temp in F
+
+
+       metar_windchill
+	      self-explanatory
+
+
+       metar_dew_poin
+	      self-explanatory
+
+
+       metar_rh
+	      self-explanatory
+
+
+       metar_windspeed
+	      self-explanatory
+
+
+       metar_winddir
+	      self-explanatory
+
+
+       metar_swinddir
+	      self-explanatory
+
+
+       metar_cloud
+	      self-explanatory
+
+
+       metar_u2d_time
+	      self-explanatory
+
+
+       ml_upload_counter
+	      total session upload in mb
+
+
+       ml_download_counter
+	      total session download in mb
+
+
+       ml_nshared_files
+	      number of shared files
+
+
+       ml_shared_counter
+	      total session shared in mb, buggy in some mldonkey versions
+
+
+       ml_tcp_upload_rate
+	      tcp upload rate in kb/s
+
+
+       ml_tcp_download_rate
+	      tcp download rate in kb/s
+
+
+       ml_udp_upload_rate
+	      udp upload rate in kb/s
+
+
+       ml_udp_download_rate
+	      udp download rate in kb/s
+
+
+       ml_ndownloaded_files
+	      number of completed files
+
+
+       ml_ndownloading_files
+	      number of downloading files
+
+
+       mpd_artist
+	      Artist in current MPD song must be enabled at compile
+
+
+       mpd_album
+	      Album in current MPD song
+
+
+       mpd_bar height
+	      Bar of mpds progress
+
+
+       mpd_bitrate
+	      Bitrate of current song
+
+
+       mpd_status
+	      Playing, stopped, et cetera.
+
+
+       mpd_title
+	      Title of current MPD song
+
+
+       mpd_vol
+	      MPDs volume
+
+
+       mpd_elapsed
+	      Songs elapsed time
+
+
+       mpd_length
+	      Songs length
+
+
+       mpd_percent
+	      Percent of songs progress
+
+
+       new_mails
+	      Unread mail count in mail spool.
+
+
+       nodename
+	      Hostname
+
+
+       outlinecolor (color)
+	      Change outline color
+
+
+       pre_exec shell command
+	      Executes a shell command one time before conky displays anything
+	      and puts output as text.
+
+
+       processes
+	      Total processes (sleeping and running)
+
+
+       running_processes
+	      Running processes (not sleeping), requires Linux 2.6
+
+
+       shadecolor (color)
+	      Change shading color
+
+
+       stippled_hr (space)
+	      Stippled (dashed) horizontal line
+
+
+       swapbar (height)
+	      Bar that shows amount of swap in use
+
+
+       swap   Amount of swap in use
+
+
+       swapmax
+	      Total amount of swap
+
+
+       swapperc
+	      Percentage of swap in use
+
+
+       sysname
+	      System name, Linux for example
+
+
+       offse pixels
+	      Move text over by N pixels
+
+
+       tail   logfile, lines interval> Displays last N lines of supplied  text
+	      text file. If interval is not supplied, Conky assumes 2x Conkys
+	      interval. Max of 30 lines. Max of 30 lines can be displayed.
+
+
+       time (format)
+	      Local time, see man strftime to get more information about  for
+	      mat
+
+
+       totaldown net
+	      Total  download, overflows at 4 GB on Linux with 32-bit arch and
+	      there doesnt seem to be a way to know how  many  times  it  has
+	      already done that before conky has started.
+
+
+       top type, num
+	      This  takes arguments in the form:top (name) (number) Basically,
+	      processes are ranked from highest to  lowest  in	terms  of  cpu
+	      usage,  which  is  what (num) represents. The types are: "name",
+	      "pid", "cpu", and mem". There can  be  a	max  of  10  processes
+	      listed.
+
+
+       top_mem type, num
+	      Same as top, except sorted by mem usage instead of cpu
+
+
+       totalup net
+	      Total upload, this one too, may overflow
+
+
+       updates Number of updates
+	      for debugging
+
+
+       upspeed net
+	      Upload speed in kilobytes
+
+
+       upspeedf net
+	      Upload speed in kilobytes with one decimal
+
+
+       upspeedgraph net, (height, width, gradient colour 1, gradient colour 2)
+	      Upload speed graph, colours defined in hex, minus the #.
+
+
+       uptime Uptime
+
+
+       uptime_short
+	      Uptime in a shorter format
+
+
+       seti_prog
+	      Seti@home current progress
+
+
+       seti_progbar (height)
+	      Seti@home current progress bar
+
+
+       seti_credit
+	      Seti@home total user credit
+
+
+EXAMPLES
+       conky -t${time %D %H:%m}-o -u 30
+	      Start Conky in its own window with date and clock as text and 30
+	      sec update interval.
+
+       conky -a top_left -x 5 -y 500 -d
+	      Start Conky to background at coordinates (5, 500).
+
+FILES
+       ~/.conkyrc default configuration file
+
+BUGS
+       Drawing to root or some other desktop window directly doesnt work with
+       all window managers. Especially doesnt work well with Gnome and it has
+       been reported that it doesnt work with KDE  either.  Nautilus  can  be
+       disabled  from  drawing	to  desktop with program gconf-editor. Uncheck
+       show_desktop in /apps/nautilus/preferences/.  There  is	-w  switch  in
+       Conky  to  set  some  specific window id. You might find xwininfo -tree
+       useful to find the window to draw to. You  can  also  use  -o  argument
+       which makes Conky to create its own window.
+
+SEE ALSO
+       http://conky.sourceforge.net
+
+       http://www.sourceforge.net/projects/conky
+
+       #conky on irc.freenode.net
+
+AUTHORS
+       The Conky dev team. Whats up now??!
+
+
+
+				  2005-08-18			      conky(1)
