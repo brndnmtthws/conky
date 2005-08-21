@@ -1,7 +1,7 @@
-AC_INIT(conky.c)
+AC_INIT(src/conky.c)
 
 AM_INIT_AUTOMAKE(conky, 1.3)
-AM_CONFIG_HEADER(config.h)
+AM_CONFIG_HEADER(src/config.h)
 
 uname=`uname`
 

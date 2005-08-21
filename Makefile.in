@@ -39,9 +39,9 @@ POST_UNINSTALL = :
 bin_PROGRAMS = conky$(EXEEXT)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
-	TODO depcomp install-sh missing mkinstalldirs
+	$(srcdir)/Makefile.in $(top_srcdir)/configure \
+	$(top_srcdir)/src/config.h.in AUTHORS COPYING ChangeLog \
+	INSTALL NEWS TODO depcomp install-sh missing mkinstalldirs
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.in
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -49,15 +49,16 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
-CONFIG_HEADER = config.h
+CONFIG_HEADER = $(top_builddir)/src/config.h
 CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
-am__conky_SOURCES_DIST = common.c fs.c top.c linux.c mail.c mixer.c \
-	seti.c mpd.c libmpdclient.c solaris.c freebsd.c netbsd.c \
-	cairo.c conky.c conky.h x11.c mldonkey.c remoted.c remoted.h \
-	remotec.c remotec.h
+am__conky_SOURCES_DIST = src/common.c src/fs.c src/top.c src/linux.c \
+	src/mail.c src/mixer.c src/seti.c src/mpd.c src/libmpdclient.c \
+	src/solaris.c src/freebsd.c src/netbsd.c src/cairo.c \
+	src/conky.c src/conky.h src/x11.c src/mldonkey.c src/remoted.c \
+	src/remoted.h src/remotec.c src/remotec.h
 @BUILD_LINUX_TRUE@am__objects_1 = linux.$(OBJEXT)
 @BUILD_SETI_TRUE@am__objects_2 = seti.$(OBJEXT)
 @BUILD_MPD_TRUE@am__objects_3 = mpd.$(OBJEXT) libmpdclient.$(OBJEXT)
@@ -75,7 +76,7 @@ am_conky_OBJECTS = common.$(OBJEXT) fs.$(OBJEXT) top.$(OBJEXT) \
 	remoted.$(OBJEXT) remotec.$(OBJEXT)
 conky_OBJECTS = $(am_conky_OBJECTS)
 conky_DEPENDENCIES =
-DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
+DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/src
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -193,32 +194,31 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-@BUILD_SETI_TRUE@seti = seti.c
-@BUILD_MPD_TRUE@mpd = mpd.c libmpdclient.c
-@BUILD_LINUX_TRUE@linux = linux.c
-@BUILD_SOLARIS_TRUE@solaris = solaris.c
-@BUILD_FREEBSD_TRUE@freebsd = freebsd.c
-@BUILD_NETBSD_TRUE@netbsd = netbsd.c
-@BUILD_CAIRO_TRUE@cairo = cairo.c
-@BUILD_MLDONKEY_TRUE@mldonkey = mldonkey.c
-@BUILD_X11_TRUE@x11 = x11.c
-conky_SOURCES = common.c fs.c top.c $(linux) mail.c mixer.c $(seti) $(mpd) \
-	$(solaris) $(freebsd) $(netbsd) $(cairo) conky.c conky.h $(x11) \
-	$(mldonkey) remoted.c remoted.h remotec.c remotec.h
+@BUILD_SETI_TRUE@seti = src/seti.c
+@BUILD_MPD_TRUE@mpd = src/mpd.c src/libmpdclient.c
+@BUILD_LINUX_TRUE@linux = src/linux.c
+@BUILD_SOLARIS_TRUE@solaris = src/solaris.c
+@BUILD_FREEBSD_TRUE@freebsd = src/freebsd.c
+@BUILD_NETBSD_TRUE@netbsd = src/netbsd.c
+@BUILD_CAIRO_TRUE@cairo = src/cairo.c
+@BUILD_MLDONKEY_TRUE@mldonkey = src/mldonkey.c
+@BUILD_X11_TRUE@x11 = src/x11.c
+conky_SOURCES = src/common.c src/fs.c src/top.c $(linux) src/mail.c src/mixer.c $(seti) $(mpd) \
+	$(solaris) $(freebsd) $(netbsd) $(cairo) src/conky.c src/conky.h $(x11) \
+	$(mldonkey) src/remoted.c src/remoted.h src/remotec.c src/remotec.h
 
 conky_LDFLAGS = $(X11_LIBS) $(XFT_LIBS) $(CAIRO_LIBS)
 conky_LDADD = $(METAR_LIBS)
-man_MANS = conky.1
+man_MANS = doc/conky.1
 
 # conky.1 is in EXTRA_DIST in case that someone doesn't have help2man
-EXTRA_DIST = conkyrc.sample conky.1 conky.x \
+EXTRA_DIST = conkyrc.sample doc/conky.1 \
              app-admin/conky/conky-1.2.ebuild app-admin/conky/conky-1.9999.ebuild
 
-EXTRA_conky_SOURCES = seti.c linux.c solaris.c freebsd.c netbsd.c mpd.c libmpdclient.c \
-cairo.c libmpdclient.h top.h mldonkey.c ftp.c ftp.h x11.c
+EXTRA_conky_SOURCES = src/seti.c src/linux.c src/solaris.c src/freebsd.c src/netbsd.c src/mpd.c src/libmpdclient.c \
+src/cairo.c src/libmpdclient.h src/top.h src/mldonkey.c src/ftp.c src/ftp.h src/x11.c
 
-all: config.h
-	$(MAKE) $(AM_MAKEFLAGS) all-am
+all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .o .obj
@@ -256,22 +256,22 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 
-config.h: stamp-h1
+src/config.h: src/stamp-h1
 	@if test ! -f $@; then \
-	  rm -f stamp-h1; \
-	  $(MAKE) stamp-h1; \
+	  rm -f src/stamp-h1; \
+	  $(MAKE) src/stamp-h1; \
 	else :; fi
 
-stamp-h1: $(srcdir)/config.h.in $(top_builddir)/config.status
-	@rm -f stamp-h1
-	cd $(top_builddir) && $(SHELL) ./config.status config.h
-$(srcdir)/config.h.in:  $(am__configure_deps) 
+src/stamp-h1: $(top_srcdir)/src/config.h.in $(top_builddir)/config.status
+	@rm -f src/stamp-h1
+	cd $(top_builddir) && $(SHELL) ./config.status src/config.h
+$(top_srcdir)/src/config.h.in:  $(am__configure_deps) 
 	cd $(top_srcdir) && $(AUTOHEADER)
-	rm -f stamp-h1
+	rm -f src/stamp-h1
 	touch $@
 
 distclean-hdr:
-	-rm -f config.h stamp-h1
+	-rm -f src/config.h src/stamp-h1
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	test -z "$(bindir)" || $(mkdir_p) "$(DESTDIR)$(bindir)"
@@ -338,6 +338,272 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+
+common.o: src/common.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT common.o -MD -MP -MF "$(DEPDIR)/common.Tpo" -c -o common.o `test -f 'src/common.c' || echo '$(srcdir)/'`src/common.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/common.Tpo" "$(DEPDIR)/common.Po"; else rm -f "$(DEPDIR)/common.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/common.c' object='common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o common.o `test -f 'src/common.c' || echo '$(srcdir)/'`src/common.c
+
+common.obj: src/common.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT common.obj -MD -MP -MF "$(DEPDIR)/common.Tpo" -c -o common.obj `if test -f 'src/common.c'; then $(CYGPATH_W) 'src/common.c'; else $(CYGPATH_W) '$(srcdir)/src/common.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/common.Tpo" "$(DEPDIR)/common.Po"; else rm -f "$(DEPDIR)/common.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/common.c' object='common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o common.obj `if test -f 'src/common.c'; then $(CYGPATH_W) 'src/common.c'; else $(CYGPATH_W) '$(srcdir)/src/common.c'; fi`
+
+fs.o: src/fs.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fs.o -MD -MP -MF "$(DEPDIR)/fs.Tpo" -c -o fs.o `test -f 'src/fs.c' || echo '$(srcdir)/'`src/fs.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/fs.Tpo" "$(DEPDIR)/fs.Po"; else rm -f "$(DEPDIR)/fs.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/fs.c' object='fs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fs.o `test -f 'src/fs.c' || echo '$(srcdir)/'`src/fs.c
+
+fs.obj: src/fs.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fs.obj -MD -MP -MF "$(DEPDIR)/fs.Tpo" -c -o fs.obj `if test -f 'src/fs.c'; then $(CYGPATH_W) 'src/fs.c'; else $(CYGPATH_W) '$(srcdir)/src/fs.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/fs.Tpo" "$(DEPDIR)/fs.Po"; else rm -f "$(DEPDIR)/fs.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/fs.c' object='fs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fs.obj `if test -f 'src/fs.c'; then $(CYGPATH_W) 'src/fs.c'; else $(CYGPATH_W) '$(srcdir)/src/fs.c'; fi`
+
+top.o: src/top.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT top.o -MD -MP -MF "$(DEPDIR)/top.Tpo" -c -o top.o `test -f 'src/top.c' || echo '$(srcdir)/'`src/top.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/top.Tpo" "$(DEPDIR)/top.Po"; else rm -f "$(DEPDIR)/top.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/top.c' object='top.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o top.o `test -f 'src/top.c' || echo '$(srcdir)/'`src/top.c
+
+top.obj: src/top.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT top.obj -MD -MP -MF "$(DEPDIR)/top.Tpo" -c -o top.obj `if test -f 'src/top.c'; then $(CYGPATH_W) 'src/top.c'; else $(CYGPATH_W) '$(srcdir)/src/top.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/top.Tpo" "$(DEPDIR)/top.Po"; else rm -f "$(DEPDIR)/top.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/top.c' object='top.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o top.obj `if test -f 'src/top.c'; then $(CYGPATH_W) 'src/top.c'; else $(CYGPATH_W) '$(srcdir)/src/top.c'; fi`
+
+linux.o: src/linux.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT linux.o -MD -MP -MF "$(DEPDIR)/linux.Tpo" -c -o linux.o `test -f 'src/linux.c' || echo '$(srcdir)/'`src/linux.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/linux.Tpo" "$(DEPDIR)/linux.Po"; else rm -f "$(DEPDIR)/linux.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/linux.c' object='linux.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o linux.o `test -f 'src/linux.c' || echo '$(srcdir)/'`src/linux.c
+
+linux.obj: src/linux.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT linux.obj -MD -MP -MF "$(DEPDIR)/linux.Tpo" -c -o linux.obj `if test -f 'src/linux.c'; then $(CYGPATH_W) 'src/linux.c'; else $(CYGPATH_W) '$(srcdir)/src/linux.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/linux.Tpo" "$(DEPDIR)/linux.Po"; else rm -f "$(DEPDIR)/linux.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/linux.c' object='linux.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o linux.obj `if test -f 'src/linux.c'; then $(CYGPATH_W) 'src/linux.c'; else $(CYGPATH_W) '$(srcdir)/src/linux.c'; fi`
+
+mail.o: src/mail.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mail.o -MD -MP -MF "$(DEPDIR)/mail.Tpo" -c -o mail.o `test -f 'src/mail.c' || echo '$(srcdir)/'`src/mail.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/mail.Tpo" "$(DEPDIR)/mail.Po"; else rm -f "$(DEPDIR)/mail.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/mail.c' object='mail.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mail.o `test -f 'src/mail.c' || echo '$(srcdir)/'`src/mail.c
+
+mail.obj: src/mail.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mail.obj -MD -MP -MF "$(DEPDIR)/mail.Tpo" -c -o mail.obj `if test -f 'src/mail.c'; then $(CYGPATH_W) 'src/mail.c'; else $(CYGPATH_W) '$(srcdir)/src/mail.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/mail.Tpo" "$(DEPDIR)/mail.Po"; else rm -f "$(DEPDIR)/mail.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/mail.c' object='mail.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mail.obj `if test -f 'src/mail.c'; then $(CYGPATH_W) 'src/mail.c'; else $(CYGPATH_W) '$(srcdir)/src/mail.c'; fi`
+
+mixer.o: src/mixer.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mixer.o -MD -MP -MF "$(DEPDIR)/mixer.Tpo" -c -o mixer.o `test -f 'src/mixer.c' || echo '$(srcdir)/'`src/mixer.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/mixer.Tpo" "$(DEPDIR)/mixer.Po"; else rm -f "$(DEPDIR)/mixer.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/mixer.c' object='mixer.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mixer.o `test -f 'src/mixer.c' || echo '$(srcdir)/'`src/mixer.c
+
+mixer.obj: src/mixer.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mixer.obj -MD -MP -MF "$(DEPDIR)/mixer.Tpo" -c -o mixer.obj `if test -f 'src/mixer.c'; then $(CYGPATH_W) 'src/mixer.c'; else $(CYGPATH_W) '$(srcdir)/src/mixer.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/mixer.Tpo" "$(DEPDIR)/mixer.Po"; else rm -f "$(DEPDIR)/mixer.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/mixer.c' object='mixer.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mixer.obj `if test -f 'src/mixer.c'; then $(CYGPATH_W) 'src/mixer.c'; else $(CYGPATH_W) '$(srcdir)/src/mixer.c'; fi`
+
+seti.o: src/seti.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT seti.o -MD -MP -MF "$(DEPDIR)/seti.Tpo" -c -o seti.o `test -f 'src/seti.c' || echo '$(srcdir)/'`src/seti.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/seti.Tpo" "$(DEPDIR)/seti.Po"; else rm -f "$(DEPDIR)/seti.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/seti.c' object='seti.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o seti.o `test -f 'src/seti.c' || echo '$(srcdir)/'`src/seti.c
+
+seti.obj: src/seti.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT seti.obj -MD -MP -MF "$(DEPDIR)/seti.Tpo" -c -o seti.obj `if test -f 'src/seti.c'; then $(CYGPATH_W) 'src/seti.c'; else $(CYGPATH_W) '$(srcdir)/src/seti.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/seti.Tpo" "$(DEPDIR)/seti.Po"; else rm -f "$(DEPDIR)/seti.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/seti.c' object='seti.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o seti.obj `if test -f 'src/seti.c'; then $(CYGPATH_W) 'src/seti.c'; else $(CYGPATH_W) '$(srcdir)/src/seti.c'; fi`
+
+mpd.o: src/mpd.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mpd.o -MD -MP -MF "$(DEPDIR)/mpd.Tpo" -c -o mpd.o `test -f 'src/mpd.c' || echo '$(srcdir)/'`src/mpd.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/mpd.Tpo" "$(DEPDIR)/mpd.Po"; else rm -f "$(DEPDIR)/mpd.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/mpd.c' object='mpd.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mpd.o `test -f 'src/mpd.c' || echo '$(srcdir)/'`src/mpd.c
+
+mpd.obj: src/mpd.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mpd.obj -MD -MP -MF "$(DEPDIR)/mpd.Tpo" -c -o mpd.obj `if test -f 'src/mpd.c'; then $(CYGPATH_W) 'src/mpd.c'; else $(CYGPATH_W) '$(srcdir)/src/mpd.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/mpd.Tpo" "$(DEPDIR)/mpd.Po"; else rm -f "$(DEPDIR)/mpd.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/mpd.c' object='mpd.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mpd.obj `if test -f 'src/mpd.c'; then $(CYGPATH_W) 'src/mpd.c'; else $(CYGPATH_W) '$(srcdir)/src/mpd.c'; fi`
+
+libmpdclient.o: src/libmpdclient.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libmpdclient.o -MD -MP -MF "$(DEPDIR)/libmpdclient.Tpo" -c -o libmpdclient.o `test -f 'src/libmpdclient.c' || echo '$(srcdir)/'`src/libmpdclient.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libmpdclient.Tpo" "$(DEPDIR)/libmpdclient.Po"; else rm -f "$(DEPDIR)/libmpdclient.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/libmpdclient.c' object='libmpdclient.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libmpdclient.o `test -f 'src/libmpdclient.c' || echo '$(srcdir)/'`src/libmpdclient.c
+
+libmpdclient.obj: src/libmpdclient.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libmpdclient.obj -MD -MP -MF "$(DEPDIR)/libmpdclient.Tpo" -c -o libmpdclient.obj `if test -f 'src/libmpdclient.c'; then $(CYGPATH_W) 'src/libmpdclient.c'; else $(CYGPATH_W) '$(srcdir)/src/libmpdclient.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libmpdclient.Tpo" "$(DEPDIR)/libmpdclient.Po"; else rm -f "$(DEPDIR)/libmpdclient.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/libmpdclient.c' object='libmpdclient.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libmpdclient.obj `if test -f 'src/libmpdclient.c'; then $(CYGPATH_W) 'src/libmpdclient.c'; else $(CYGPATH_W) '$(srcdir)/src/libmpdclient.c'; fi`
+
+solaris.o: src/solaris.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT solaris.o -MD -MP -MF "$(DEPDIR)/solaris.Tpo" -c -o solaris.o `test -f 'src/solaris.c' || echo '$(srcdir)/'`src/solaris.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/solaris.Tpo" "$(DEPDIR)/solaris.Po"; else rm -f "$(DEPDIR)/solaris.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/solaris.c' object='solaris.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o solaris.o `test -f 'src/solaris.c' || echo '$(srcdir)/'`src/solaris.c
+
+solaris.obj: src/solaris.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT solaris.obj -MD -MP -MF "$(DEPDIR)/solaris.Tpo" -c -o solaris.obj `if test -f 'src/solaris.c'; then $(CYGPATH_W) 'src/solaris.c'; else $(CYGPATH_W) '$(srcdir)/src/solaris.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/solaris.Tpo" "$(DEPDIR)/solaris.Po"; else rm -f "$(DEPDIR)/solaris.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/solaris.c' object='solaris.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o solaris.obj `if test -f 'src/solaris.c'; then $(CYGPATH_W) 'src/solaris.c'; else $(CYGPATH_W) '$(srcdir)/src/solaris.c'; fi`
+
+freebsd.o: src/freebsd.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT freebsd.o -MD -MP -MF "$(DEPDIR)/freebsd.Tpo" -c -o freebsd.o `test -f 'src/freebsd.c' || echo '$(srcdir)/'`src/freebsd.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/freebsd.Tpo" "$(DEPDIR)/freebsd.Po"; else rm -f "$(DEPDIR)/freebsd.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/freebsd.c' object='freebsd.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o freebsd.o `test -f 'src/freebsd.c' || echo '$(srcdir)/'`src/freebsd.c
+
+freebsd.obj: src/freebsd.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT freebsd.obj -MD -MP -MF "$(DEPDIR)/freebsd.Tpo" -c -o freebsd.obj `if test -f 'src/freebsd.c'; then $(CYGPATH_W) 'src/freebsd.c'; else $(CYGPATH_W) '$(srcdir)/src/freebsd.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/freebsd.Tpo" "$(DEPDIR)/freebsd.Po"; else rm -f "$(DEPDIR)/freebsd.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/freebsd.c' object='freebsd.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o freebsd.obj `if test -f 'src/freebsd.c'; then $(CYGPATH_W) 'src/freebsd.c'; else $(CYGPATH_W) '$(srcdir)/src/freebsd.c'; fi`
+
+netbsd.o: src/netbsd.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT netbsd.o -MD -MP -MF "$(DEPDIR)/netbsd.Tpo" -c -o netbsd.o `test -f 'src/netbsd.c' || echo '$(srcdir)/'`src/netbsd.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/netbsd.Tpo" "$(DEPDIR)/netbsd.Po"; else rm -f "$(DEPDIR)/netbsd.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/netbsd.c' object='netbsd.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o netbsd.o `test -f 'src/netbsd.c' || echo '$(srcdir)/'`src/netbsd.c
+
+netbsd.obj: src/netbsd.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT netbsd.obj -MD -MP -MF "$(DEPDIR)/netbsd.Tpo" -c -o netbsd.obj `if test -f 'src/netbsd.c'; then $(CYGPATH_W) 'src/netbsd.c'; else $(CYGPATH_W) '$(srcdir)/src/netbsd.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/netbsd.Tpo" "$(DEPDIR)/netbsd.Po"; else rm -f "$(DEPDIR)/netbsd.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/netbsd.c' object='netbsd.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o netbsd.obj `if test -f 'src/netbsd.c'; then $(CYGPATH_W) 'src/netbsd.c'; else $(CYGPATH_W) '$(srcdir)/src/netbsd.c'; fi`
+
+cairo.o: src/cairo.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cairo.o -MD -MP -MF "$(DEPDIR)/cairo.Tpo" -c -o cairo.o `test -f 'src/cairo.c' || echo '$(srcdir)/'`src/cairo.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cairo.Tpo" "$(DEPDIR)/cairo.Po"; else rm -f "$(DEPDIR)/cairo.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/cairo.c' object='cairo.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cairo.o `test -f 'src/cairo.c' || echo '$(srcdir)/'`src/cairo.c
+
+cairo.obj: src/cairo.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cairo.obj -MD -MP -MF "$(DEPDIR)/cairo.Tpo" -c -o cairo.obj `if test -f 'src/cairo.c'; then $(CYGPATH_W) 'src/cairo.c'; else $(CYGPATH_W) '$(srcdir)/src/cairo.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cairo.Tpo" "$(DEPDIR)/cairo.Po"; else rm -f "$(DEPDIR)/cairo.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/cairo.c' object='cairo.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cairo.obj `if test -f 'src/cairo.c'; then $(CYGPATH_W) 'src/cairo.c'; else $(CYGPATH_W) '$(srcdir)/src/cairo.c'; fi`
+
+conky.o: src/conky.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT conky.o -MD -MP -MF "$(DEPDIR)/conky.Tpo" -c -o conky.o `test -f 'src/conky.c' || echo '$(srcdir)/'`src/conky.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/conky.Tpo" "$(DEPDIR)/conky.Po"; else rm -f "$(DEPDIR)/conky.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/conky.c' object='conky.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o conky.o `test -f 'src/conky.c' || echo '$(srcdir)/'`src/conky.c
+
+conky.obj: src/conky.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT conky.obj -MD -MP -MF "$(DEPDIR)/conky.Tpo" -c -o conky.obj `if test -f 'src/conky.c'; then $(CYGPATH_W) 'src/conky.c'; else $(CYGPATH_W) '$(srcdir)/src/conky.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/conky.Tpo" "$(DEPDIR)/conky.Po"; else rm -f "$(DEPDIR)/conky.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/conky.c' object='conky.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o conky.obj `if test -f 'src/conky.c'; then $(CYGPATH_W) 'src/conky.c'; else $(CYGPATH_W) '$(srcdir)/src/conky.c'; fi`
+
+x11.o: src/x11.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT x11.o -MD -MP -MF "$(DEPDIR)/x11.Tpo" -c -o x11.o `test -f 'src/x11.c' || echo '$(srcdir)/'`src/x11.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/x11.Tpo" "$(DEPDIR)/x11.Po"; else rm -f "$(DEPDIR)/x11.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/x11.c' object='x11.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o x11.o `test -f 'src/x11.c' || echo '$(srcdir)/'`src/x11.c
+
+x11.obj: src/x11.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT x11.obj -MD -MP -MF "$(DEPDIR)/x11.Tpo" -c -o x11.obj `if test -f 'src/x11.c'; then $(CYGPATH_W) 'src/x11.c'; else $(CYGPATH_W) '$(srcdir)/src/x11.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/x11.Tpo" "$(DEPDIR)/x11.Po"; else rm -f "$(DEPDIR)/x11.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/x11.c' object='x11.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o x11.obj `if test -f 'src/x11.c'; then $(CYGPATH_W) 'src/x11.c'; else $(CYGPATH_W) '$(srcdir)/src/x11.c'; fi`
+
+mldonkey.o: src/mldonkey.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mldonkey.o -MD -MP -MF "$(DEPDIR)/mldonkey.Tpo" -c -o mldonkey.o `test -f 'src/mldonkey.c' || echo '$(srcdir)/'`src/mldonkey.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/mldonkey.Tpo" "$(DEPDIR)/mldonkey.Po"; else rm -f "$(DEPDIR)/mldonkey.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/mldonkey.c' object='mldonkey.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mldonkey.o `test -f 'src/mldonkey.c' || echo '$(srcdir)/'`src/mldonkey.c
+
+mldonkey.obj: src/mldonkey.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mldonkey.obj -MD -MP -MF "$(DEPDIR)/mldonkey.Tpo" -c -o mldonkey.obj `if test -f 'src/mldonkey.c'; then $(CYGPATH_W) 'src/mldonkey.c'; else $(CYGPATH_W) '$(srcdir)/src/mldonkey.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/mldonkey.Tpo" "$(DEPDIR)/mldonkey.Po"; else rm -f "$(DEPDIR)/mldonkey.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/mldonkey.c' object='mldonkey.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mldonkey.obj `if test -f 'src/mldonkey.c'; then $(CYGPATH_W) 'src/mldonkey.c'; else $(CYGPATH_W) '$(srcdir)/src/mldonkey.c'; fi`
+
+remoted.o: src/remoted.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT remoted.o -MD -MP -MF "$(DEPDIR)/remoted.Tpo" -c -o remoted.o `test -f 'src/remoted.c' || echo '$(srcdir)/'`src/remoted.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/remoted.Tpo" "$(DEPDIR)/remoted.Po"; else rm -f "$(DEPDIR)/remoted.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/remoted.c' object='remoted.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o remoted.o `test -f 'src/remoted.c' || echo '$(srcdir)/'`src/remoted.c
+
+remoted.obj: src/remoted.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT remoted.obj -MD -MP -MF "$(DEPDIR)/remoted.Tpo" -c -o remoted.obj `if test -f 'src/remoted.c'; then $(CYGPATH_W) 'src/remoted.c'; else $(CYGPATH_W) '$(srcdir)/src/remoted.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/remoted.Tpo" "$(DEPDIR)/remoted.Po"; else rm -f "$(DEPDIR)/remoted.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/remoted.c' object='remoted.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o remoted.obj `if test -f 'src/remoted.c'; then $(CYGPATH_W) 'src/remoted.c'; else $(CYGPATH_W) '$(srcdir)/src/remoted.c'; fi`
+
+remotec.o: src/remotec.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT remotec.o -MD -MP -MF "$(DEPDIR)/remotec.Tpo" -c -o remotec.o `test -f 'src/remotec.c' || echo '$(srcdir)/'`src/remotec.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/remotec.Tpo" "$(DEPDIR)/remotec.Po"; else rm -f "$(DEPDIR)/remotec.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/remotec.c' object='remotec.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o remotec.o `test -f 'src/remotec.c' || echo '$(srcdir)/'`src/remotec.c
+
+remotec.obj: src/remotec.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT remotec.obj -MD -MP -MF "$(DEPDIR)/remotec.Tpo" -c -o remotec.obj `if test -f 'src/remotec.c'; then $(CYGPATH_W) 'src/remotec.c'; else $(CYGPATH_W) '$(srcdir)/src/remotec.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/remotec.Tpo" "$(DEPDIR)/remotec.Po"; else rm -f "$(DEPDIR)/remotec.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/remotec.c' object='remotec.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o remotec.obj `if test -f 'src/remotec.c'; then $(CYGPATH_W) 'src/remotec.c'; else $(CYGPATH_W) '$(srcdir)/src/remotec.c'; fi`
+
+ftp.o: src/ftp.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ftp.o -MD -MP -MF "$(DEPDIR)/ftp.Tpo" -c -o ftp.o `test -f 'src/ftp.c' || echo '$(srcdir)/'`src/ftp.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/ftp.Tpo" "$(DEPDIR)/ftp.Po"; else rm -f "$(DEPDIR)/ftp.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/ftp.c' object='ftp.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ftp.o `test -f 'src/ftp.c' || echo '$(srcdir)/'`src/ftp.c
+
+ftp.obj: src/ftp.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ftp.obj -MD -MP -MF "$(DEPDIR)/ftp.Tpo" -c -o ftp.obj `if test -f 'src/ftp.c'; then $(CYGPATH_W) 'src/ftp.c'; else $(CYGPATH_W) '$(srcdir)/src/ftp.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/ftp.Tpo" "$(DEPDIR)/ftp.Po"; else rm -f "$(DEPDIR)/ftp.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='src/ftp.c' object='ftp.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ftp.obj `if test -f 'src/ftp.c'; then $(CYGPATH_W) 'src/ftp.c'; else $(CYGPATH_W) '$(srcdir)/src/ftp.c'; fi`
 uninstall-info-am:
 install-man1: $(man1_MANS) $(man_MANS)
 	@$(NORMAL_INSTALL)
@@ -395,11 +661,11 @@ ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	mkid -fID $$unique
 tags: TAGS
 
-TAGS:  $(HEADERS) $(SOURCES) config.h.in $(TAGS_DEPENDENCIES) \
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
 	tags=; \
 	here=`pwd`; \
-	list='$(SOURCES) $(HEADERS) config.h.in $(LISP) $(TAGS_FILES)'; \
+	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
 	  done | \
@@ -411,11 +677,11 @@ TAGS:  $(HEADERS) $(SOURCES) config.h.in $(TAGS_DEPENDENCIES) \
 	    $$tags $$unique; \
 	fi
 ctags: CTAGS
-CTAGS:  $(HEADERS) $(SOURCES) config.h.in $(TAGS_DEPENDENCIES) \
+CTAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
 	tags=; \
 	here=`pwd`; \
-	list='$(SOURCES) $(HEADERS) config.h.in $(LISP) $(TAGS_FILES)'; \
+	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
 	  done | \
@@ -436,7 +702,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/app-admin/conky
+	$(mkdir_p) $(distdir)/app-admin/conky $(distdir)/doc $(distdir)/src
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
@@ -562,7 +828,7 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS) $(MANS) config.h
+all-am: Makefile $(PROGRAMS) $(MANS)
 installdirs:
 	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
