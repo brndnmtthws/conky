@@ -29,7 +29,7 @@
 
 	To compile and run Conky with all optional components (If you run Gentoo, see the "Ebuild" Section below):
 
-		./configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --datadir=/usr/share --sysconfdir=/etc --localstatedir=/var/lib --enable-double-buffer --enable-own-window --enable-proc-uptime --enable-mpd --enable-xft --enable-metar --enable-seti
+		./configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --datadir=/usr/share --sysconfdir=/etc --localstatedir=/var/lib --enable-double-buffer --enable-own-window --enable-proc-uptime --enable-mpd --enable-xft --enable-seti
 		make
 		./conky
 
@@ -79,9 +79,6 @@
 	gap_y                 Gap between top or bottom border of screen, same as passing -y at command line
 	no_buffers            Substract (file system) buffers from used memory?    
 	mail_spool            Mail spool for mail checking                         
-	metar_station         METAR station code for weather, see http://www.wrh.noaa.gov/ if you need to find your code.
-	metar_server          Define a custom METAR ftp server
-	metar_path            Path on server to use
 	minimum_size          Minimum size of window                               
 	mldonkey_hostname     Hostname for mldonkey stuff, defaults to localhost
 	mldonkey_port         Mldonkey port, 4001 default
@@ -223,20 +220,6 @@
 	membar            (height)      Bar that shows amount of memory in use   
 	memmax                          Total amount of memory                   
 	memperc                         Percentage of memory in use
-	
-	metar_ob_time
-	metar_temp
-	metar_tempf                     Temp in F
-	metar_windchill
-	metar_dew_point                 There are a bunch of these
-	metar_rh                        and they are self-explanatory
-	metar_windspeed					Windspeed in knots
-	metar_windspeed_km				Windspeed in km/hr
-	metar_windspeed_mph				Windspeed in mph
-	metar_winddir
-	metar_swinddir
-	metar_cloud
-	metar_u2d_time
 	
 	ml_upload_counter               total session upload in mb
 	ml_download_counter             total session download in mb

@@ -407,6 +407,7 @@ static struct special_t *new_special(char *buf, int t)
 typedef struct tailstring_list {
 	char data[TEXT_BUFFER_SIZE];
 	struct tailstring_list *next;
+	struct tailstring_list *first;
 } tailstring;
 
 void addtail(tailstring ** head, char *data_in)
@@ -414,6 +415,11 @@ void addtail(tailstring ** head, char *data_in)
 	tailstring *tmp;
 	if ((tmp = malloc(sizeof(*tmp))) == NULL) {
 		CRIT_ERR("malloc");
+	}
+	if (*head == NULL) {
+		tmp->first = tmp;
+	} else {
+		tmp->first = (*head)->first;
 	}
 	strncpy(tmp->data, data_in, TEXT_BUFFER_SIZE);
 	tmp->next = *head;
@@ -423,7 +429,6 @@ void addtail(tailstring ** head, char *data_in)
 void freetail(tailstring * head)
 {
 	tailstring *tmp;
-
 	while (head != NULL) {
 		tmp = head->next;
 		free(head);
@@ -431,7 +436,22 @@ void freetail(tailstring * head)
 	}
 }
 
-
+void freelasttail(tailstring * head)
+{
+	tailstring * tmp = head;
+	while(tmp != NULL) {
+		if (tmp->next == head->first) {
+			tmp->next = NULL;
+			break;
+		}
+		tmp = tmp->next;
+	}
+	free(head->first);
+	while(head != NULL && tmp != NULL) {
+		head->first = tmp;
+		head = head->next;
+	}
+}
 
 static void new_bar(char *buf, int w, int h, int usage)
 {
@@ -2375,6 +2395,7 @@ static void generate_text()
 					obj->data.tail.last_update = current_update_time;
 					FILE *fp;
 					int i;
+					int added = 0;
 					tailstring *head = NULL;
 					tailstring *headtmp = NULL;
 					fp = fopen(obj->data.tail.logfile, "rt");
@@ -2385,6 +2406,12 @@ static void generate_text()
 						obj->data.tail.readlines = 0;
 
 						while (fgets(obj->data.tail.buffer, TEXT_BUFFER_SIZE*4, fp) != NULL) {
+							if (added >= 30) {
+								freelasttail(head);
+							}
+							else {
+								added++;
+							}
 							addtail(&head, obj->data.tail.buffer);
 							obj->data.tail.readlines++;
 						}
@@ -3469,6 +3496,7 @@ static void clean_up()
 	else
 #endif
 	{
+		XClearWindow(display, RootWindow(display, screen));
 		clear_text(1);
 		XFlush(display);
 	}

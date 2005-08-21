@@ -6,6 +6,7 @@
 	* Added $voffset
 	* Removed metar code.  It sucked.
 	* Added $acpitempf for amooricans
+	* $tail fixes
 
 2005-08-12
 	* Multiple unit additions and modifications

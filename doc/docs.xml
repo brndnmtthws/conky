@@ -67,7 +67,7 @@
 					--prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info 
 					--datadir=/usr/ share --sysconfdir=/etc --localstatedir=/var/lib 
 					--enable-double-buffer --enable-own-window --enable-proc-uptime 
-					--enable-mpd --enable-xft --enable-metar --enable-seti</option>
+					--enable-mpd --enable-xft --enable-seti</option>
 				</term>
 			</varlistentry>
 			<varlistentry>

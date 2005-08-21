@@ -120,16 +120,6 @@ use_spacer no
 #   mldonkey_login        Mldonkey login, default none
 #   mldonkey_password     Mldonkey password, default none
 
-# METAR station code for weather, get codes from weather.noaa.gov or google
-# or http://www.maltalinks.com/weather/ (thanks Hopeless @ f.g.o)
-metar_station  CYBW
-
-# METAR ftp server
-# metar_server weather.noaa.gov
-
-# METAR path on server
-# metar_path /data/observations/metar/stations
-
 # boinc (seti) dir
 # seti_dir /opt/seti
 
@@ -168,5 +158,4 @@ ${color}Mem usage
 ${color #ddaa00} ${top_mem name 1} ${top_mem pid 1} ${top_mem cpu 1} ${top_mem mem 1}
 ${color lightgrey} ${top_mem name 2} ${top_mem pid 2} ${top_mem cpu 2} ${top_mem mem 2}
 ${color lightgrey} ${top_mem name 3} ${top_mem pid 3} ${top_mem cpu 3} ${top_mem mem 3}
-${color}Current conditions:  ${color lightgrey}${metar_temp}C $metar_cloud
 ${tail /var/log/Xorg.0.log 3 30}
