@@ -1,0 +1,48 @@
+bin_PROGRAMS = conky
+
+if BUILD_SETI
+seti = seti.c
+endif
+
+if BUILD_MPD
+mpd = mpd.c libmpdclient.c
+endif
+
+if BUILD_LINUX
+linux = linux.c
+endif
+
+if BUILD_SOLARIS
+solaris = solaris.c
+endif
+
+if BUILD_FREEBSD
+freebsd = freebsd.c
+endif
+
+if BUILD_NETBSD
+netbsd = netbsd.c
+endif
+
+if BUILD_CAIRO
+cairo = cairo.c
+endif
+
+if BUILD_MLDONKEY
+mldonkey = mldonkey.c
+endif
+
+if BUILD_X11
+x11 = x11.c
+endif
+
+conky_SOURCES = common.c fs.c top.c $(linux) mail.c mixer.c $(seti) $(mpd) $(solaris) $(freebsd) $(netbsd) $(cairo) conky.c conky.h $(x11) $(mldonkey) remoted.c remoted.h remotec.c remotec.h
+
+AM_LDFLAGS = $(X11_LIBS) $(XFT_LIBS) $(CAIRO_LIBS)
+
+LDADD = $(METAR_LIBS)
+
+LIBS = -lm -lpthread
+
+EXTRA_DIST = seti.c linux.c solaris.c freebsd.c netbsd.c mpd.c libmpdclient.c \
+cairo.c libmpdclient.h top.h mldonkey.c ftp.c ftp.h x11.c

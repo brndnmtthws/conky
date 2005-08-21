@@ -1,7 +1,13 @@
-AC_INIT(src/conky.c)
+AC_INIT([Conky],[1.3],[brenden1@users.sourceforge.net])
 
 AM_INIT_AUTOMAKE(conky, 1.3)
 AM_CONFIG_HEADER(src/config.h)
+
+AC_CONFIG_FILES(
+	Makefile
+	doc/Makefile
+	src/Makefile
+	)
 
 uname=`uname`
 
@@ -342,4 +348,4 @@ AC_SUBST(CFLAGS)
 AC_SUBST(X11_LIBS)
 AC_SUBST(XFT_LIBS)
 
-AC_OUTPUT(Makefile)
+AC_OUTPUT
