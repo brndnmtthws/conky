@@ -35,3 +35,5 @@ gzip conky.1
 
 conky.1.gz can be viewed in man-form by doing "man -l conky.1.gz"
 ==============================================================================================================
+making the README (text-only) file is just some simple unix:
+man -l conky.1.gz | col -b > README
