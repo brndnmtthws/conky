@@ -63,11 +63,16 @@
 		<variablelist>
 			<varlistentry>
 				<term>
-					<command><option>./configure </option></command><option>
-					--prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info 
-					--datadir=/usr/ share --sysconfdir=/etc --localstatedir=/var/lib 
-					--enable-double-buffer --enable-own-window --enable-proc-uptime 
-					--enable-mpd --enable-xft --enable-seti</option>
+					<command><option>sh autogen.sh</option></command> <option># Only required if building from CVS</option>
+				</term>
+			</varlistentry>
+			<varlistentry>
+				<term>
+				<command><option>./configure </option></command><option>
+--prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info
+--datadir=/usr/ share --sysconfdir=/etc --localstatedir=/var/lib 
+--enable-double-buffer --enable-own-window --enable-proc-uptime 
+--enable-mpd --enable-xft --enable-seti</option>
 				</term>
 			</varlistentry>
 			<varlistentry>
