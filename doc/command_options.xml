@@ -16,7 +16,7 @@
   <varlistentry>
     <term><command><option>-b</option></command></term>
     <listitem>
-      Use double buffering (eliminates flicker)
+      Use double buffering (eliminates "flicker")
     <para></para></listitem>
   </varlistentry>
         

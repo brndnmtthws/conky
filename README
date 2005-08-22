@@ -75,7 +75,7 @@ OPTIONS
 	      Text alignment on screen, {top,bottom}_{left,right} or none
 
 
-       -b     Use double buffering (eliminates flicker)
+       -b     Use double buffering (eliminates "flicker")
 
 
        -c FILE
