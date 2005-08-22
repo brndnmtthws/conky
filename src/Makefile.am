@@ -10,6 +10,7 @@ endif
 
 if BUILD_LINUX
 linux = linux.c
+PTHREAD_LIBS =  -lpthread
 endif
 
 if BUILD_SOLARIS
@@ -18,6 +19,7 @@ endif
 
 if BUILD_FREEBSD
 freebsd = freebsd.c
+PTHREAD_LIBS =  -pthread
 endif
 
 if BUILD_NETBSD
@@ -38,11 +40,7 @@ endif
 
 conky_SOURCES = common.c fs.c top.c $(linux) mail.c mixer.c $(seti) $(mpd) $(solaris) $(freebsd) $(netbsd) $(cairo) conky.c conky.h $(x11) $(mldonkey) remoted.c remoted.h remotec.c remotec.h
 
-AM_LDFLAGS = $(X11_LIBS) $(XFT_LIBS) $(CAIRO_LIBS)
-
-LDADD = $(METAR_LIBS)
-
-LIBS = -lm -lpthread
+AM_LDFLAGS = $(X11_LIBS) $(XFT_LIBS) $(CAIRO_LIBS) $(PTHREAD_LIBS) -lm
 
 EXTRA_DIST = seti.c linux.c solaris.c freebsd.c netbsd.c mpd.c libmpdclient.c \
 cairo.c libmpdclient.h top.h mldonkey.c ftp.c ftp.h x11.c

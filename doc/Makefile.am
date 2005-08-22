@@ -2,7 +2,6 @@ man_MANS = conky.1.gz
 
 clean-am: clean-generic mostlyclean-am
 	rm -f docs.mxml
-	rm -f ${top_srcdir}/README
 	rm -f conky.1.gz
 
 if HAVE_DOCSTUFF

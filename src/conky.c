@@ -3957,7 +3957,9 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 #ifdef OWN_WINDOW
 		CONF("own_window") {
 			own_window = string_to_bool(value);
+#ifdef XDBE
 			use_xdbe = 0;
+#endif
 		}
 #endif
 		CONF("stippled_borders") {
@@ -4196,7 +4198,9 @@ int main(int argc, char **argv)
 #ifdef OWN_WINDOW
 		case 'o':
 			own_window = 1;
+#ifdef XDBE
 			use_xdbe = 0;
+#endif
 			break;
 #endif
 #ifdef XDBE
