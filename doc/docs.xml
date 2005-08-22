@@ -86,6 +86,11 @@
 			</varlistentry>
 			<varlistentry>
 				<term>
+					<command><option>make install</option></command> <option># Optional</option>
+				</term>
+			</varlistentry>
+			<varlistentry>
+				<term>
 					<command><option>./conky</option></command>	
 				</term>
 			</varlistentry>

@@ -41,6 +41,8 @@ COMPILING
 
        make
 
+       make install # Optional
+
        ./conky
 
        Conky  doesn't  probably compile with other compilers than gcc and icc.
@@ -716,4 +718,4 @@ AUTHORS
 
 
 
-Conky				  2005-08-18			      conky(1)
+				  2005-08-18			      conky(1)
