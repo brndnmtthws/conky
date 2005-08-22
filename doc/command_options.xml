@@ -30,7 +30,7 @@
   <varlistentry>
     <term><command><option>-d</option></command></term>
     <listitem>
-      Daemonize, fork to background
+      Daemonize Conky, aka fork to background
     <para></para></listitem>
   </varlistentry>
 

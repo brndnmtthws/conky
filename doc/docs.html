@@ -1,4 +1,4 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>conky</title><meta name="generator" content="DocBook XSL Stylesheets V1.66.1"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="refentry" lang="en"><a name="id2447920"></a><div class="titlepage"></div><div class="refnamediv"><h2>Name</h2><p>conky &#8212; a system monitor for X originally based on the torsmo code, but more kickass.</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p><tt class="command">conky</tt>  [<i class="replaceable"><tt>options</tt></i>]</p></div></div><div class="refsect1" lang="en"><a name="id2476569"></a><h2>Description</h2><p>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>conky</title><meta name="generator" content="DocBook XSL Stylesheets V1.66.1"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="refentry" lang="en"><a name="id257345"></a><div class="titlepage"></div><div class="refnamediv"><h2>Name</h2><p>conky &#8212; a system monitor for X originally based on the torsmo code, but more kickass.</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p><tt class="command">conky</tt>  [<i class="replaceable"><tt>options</tt></i>]</p></div></div><div class="refsect1" lang="en"><a name="id222072"></a><h2>Description</h2><p>
     Conky is a system monitor for X originally based on the torsmo code. 
     Since it's original conception, Conky has changed a fair bit from it's predecessor.  
     Conky can display just about anything, either on your root desktop or in it's own window.  
@@ -9,7 +9,7 @@
 		Please use the facilities at SourceForge to make bug reports, feature requests, and submit patches.
 		</p><p>
 		Thanks for your interest in Conky.
-		</p></div><div class="refsect1" lang="en"><a name="id2476596"></a><h2>Compiling</h2><p>
+		</p></div><div class="refsect1" lang="en"><a name="id222093"></a><h2>Compiling</h2><p>
 		First, make sure you have the X development libraries installed, this should be a package along the lines 
 		of "libx11-dev or xorg-x11-dev". Gentoo users, Conky is in Gentoo's Portage.  Simply use "emerge conky" for installation.
 		There is also usually an up-to-date ebuild within Conky's package or in	CVS.
@@ -26,6 +26,8 @@
 				</span></dt><dd></dd><dt><span class="term">
 					<span><b class="command"><tt class="option">make</tt></b></span>
 				</span></dt><dd></dd><dt><span class="term">
+					<span><b class="command"><tt class="option">make install</tt></b></span> <tt class="option"># Optional</tt>
+				</span></dt><dd></dd><dt><span class="term">
 					<span><b class="command"><tt class="option">./conky</tt></b></span>	
 				</span></dt><dd></dd></dl></div><p>
 			Conky doesn't probably compile with other compilers than gcc and icc. 
@@ -38,14 +40,14 @@
 			--disable-own-window to configure -script.
 		</p><p>
 			
-		</p></div><div class="refsect1" lang="en"><a name="id2447477"></a><h2>You Should Know</h2><p>
+		</p></div><div class="refsect1" lang="en"><a name="id239630"></a><h2>You Should Know</h2><p>
 		Conky is generally very good on resources.  However, certain objects in
 		Conky are harder on resources then others.  In particular, the $tail,
 		$top, $font, and $graph objects are quite costly in comparison to the rest of Conky.
 		</p><p>
 		If you do use them, please do not complain about memory or CPU usage, 
 		unless you think something is going seriously wrong (mem leak, et cetera).
-		</p></div><div class="refsect1" lang="en"><a name="id2447496"></a><h2>Options</h2><p>Command line options override configurations defined in configuration file.</p><div class="variablelist"><dl><dt><span class="term"><span><b class="command"><tt class="option">-V</tt></b></span></span></dt><dd>
+		</p></div><div class="refsect1" lang="en"><a name="id239646"></a><h2>Options</h2><p>Command line options override configurations defined in configuration file.</p><div class="variablelist"><dl><dt><span class="term"><span><b class="command"><tt class="option">-V</tt></b></span></span></dt><dd>
     Prints version and exits
     <p></p></dd><dt><span class="term"><span><b class="command"><tt class="option">-a </tt></b></span><tt class="option">ALIGNMENT</tt></span></dt><dd>
       Text alignment on screen, {top,bottom}_{left,right} or none
@@ -54,7 +56,7 @@
     <p></p></dd><dt><span class="term"><span><b class="command"><tt class="option">-c </tt></b></span><tt class="option">FILE</tt></span></dt><dd>
       Config file to load instead of $HOME/.conkyrc
     <p></p></dd><dt><span class="term"><span><b class="command"><tt class="option">-d</tt></b></span></span></dt><dd>
-      Daemonize, fork to background
+      Daemonize Conky, aka fork to background
     <p></p></dd><dt><span class="term"><span><b class="command"><tt class="option">-f </tt></b></span><tt class="option">FONT</tt></span></dt><dd>
       Font to use
     <p></p></dd><dt><span class="term"><span><b class="command"><tt class="option">-h</tt></b></span></span></dt><dd>
@@ -71,7 +73,7 @@
       X position
     <p></p></dd><dt><span class="term"><span><b class="command"><tt class="option">-y </tt></b></span><tt class="option">Y_COORDINATE</tt></span></dt><dd>
       Y position
-    <p></p></dd></dl></div></div><div class="refsect1" lang="en"><a name="id2448119"></a><h2>Configuration Settings</h2><p>
+    <p></p></dd></dl></div></div><div class="refsect1" lang="en"><a name="id221293"></a><h2>Configuration Settings</h2><p>
 		Default configuration file is $HOME/.conkyrc (can be changed from
 		conky.c among other things). See conkyrc.sample. You might want to copy
 		it to $HOME/.conkyrc and then start modifying it.
@@ -149,7 +151,7 @@
 		Use Xft (anti-aliased font and stuff)
 	<p></p></dd><dt><span class="term"><span><b class="command"><tt class="option">text</tt></b></span></span></dt><dd>
 		After this begins text to be formatted on screen
-	<p></p></dd></dl></div></div><div class="refsect1" lang="en"><a name="id2517432"></a><h2>Variables</h2><p>
+	<p></p></dd></dl></div></div><div class="refsect1" lang="en"><a name="id265122"></a><h2>Variables</h2><p>
 		Colors are parsed using XParsecolor(), there might be a list of them:
 		/usr/X11R6/lib/X11/rgb.txt. Also, <a href="http://sedition.com/perl/rgb.html" target="_top">
 																			 http://sedition.com/perl/rgb.html</a>
@@ -586,8 +588,8 @@
 		<tt class="option">(pixels)</tt>
 	</span></dt><dd>
 		Change verticle offset by N pixels.  Negative values will cause text to overlap.  See also $offset.
-		<p></p></dd></dl></div></div><div class="refsect1" lang="en"><a name="id2521506"></a><h2>Examples</h2><div class="variablelist"><dl><dt><span class="term"><tt class="varname">conky </tt><tt class="option">-t '${time %D %H:%m}' -o -u 30</tt></span></dt><dd>Start Conky in its own window with date and clock as text and 30 sec update interval.</dd><dt><span class="term"><tt class="varname">conky </tt><tt class="option">-a top_left -x 5 -y 500 -d</tt></span></dt><dd>Start Conky to background at coordinates (5, 500).</dd></dl></div></div><div class="refsect1" lang="en"><a name="id2521547"></a><h2>Files</h2><tt class="filename">~/.conkyrc</tt> default configuration file
-	</div><div class="refsect1" lang="en"><a name="id2521560"></a><h2>Bugs</h2><p>	
+		<p></p></dd></dl></div></div><div class="refsect1" lang="en"><a name="id269094"></a><h2>Examples</h2><div class="variablelist"><dl><dt><span class="term"><tt class="varname">conky </tt><tt class="option">-t '${time %D %H:%m}' -o -u 30</tt></span></dt><dd>Start Conky in its own window with date and clock as text and 30 sec update interval.</dd><dt><span class="term"><tt class="varname">conky </tt><tt class="option">-a top_left -x 5 -y 500 -d</tt></span></dt><dd>Start Conky to background at coordinates (5, 500).</dd></dl></div></div><div class="refsect1" lang="en"><a name="id269133"></a><h2>Files</h2><tt class="filename">~/.conkyrc</tt> default configuration file
+	</div><div class="refsect1" lang="en"><a name="id269145"></a><h2>Bugs</h2><p>	
 		Drawing to root or some other desktop window directly doesn't work with 
 		all window managers. Especially doesn't work well with Gnome and it has 
 		been reported that it doesn't work with KDE either. Nautilus can be 
@@ -596,10 +598,10 @@
 		to set some specific window id. You might find xwininfo -tree useful to 
 		find the window to draw to. You can also use -o argument which makes
 		Conky to create its own window.
-		</p></div><div class="refsect1" lang="en"><a name="id2521579"></a><h2>See Also</h2><p><a href="http://conky.sourceforge.net" target="_top">
+		</p></div><div class="refsect1" lang="en"><a name="id269160"></a><h2>See Also</h2><p><a href="http://conky.sourceforge.net" target="_top">
     http://conky.sourceforge.net</a></p><p><a href="http://www.sourceforge.net/projects/conky" target="_top">
     http://www.sourceforge.net/projects/conky</a></p><p>
 			#conky on irc.freenode.net
-		</p></div><div class="refsect1" lang="en"><a name="id2521605"></a><h2>Authors</h2><p>
+		</p></div><div class="refsect1" lang="en"><a name="id269185"></a><h2>Authors</h2><p>
 			The Conky dev team. What's up now??!
 		</p></div></div></body></html>
