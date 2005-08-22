@@ -24,6 +24,8 @@ or something, look in docs.xml
 
 BUILDING DA DOCS
 ================
+(NOTE that the docs are now built automatically via doc/Makefile.am, but it requires that you have docbook2x and xsltproc installed)
+
 making the html is easy. xsltproc should more than likely already be on your system:
 
 xsltproc http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl docs.xml > docs.html
