@@ -270,8 +270,13 @@ AC_CHECK_HEADERS([sys/statfs.h sys/param.h sys/mount.h])
 dnl For cairo
 
 dnl
-dnl Check help2man
+dnl Check doc stuff
 dnl
+
+AC_PATH_PROG(DB2X_XSLPROC, db2x_xsltproc)
+AC_PATH_PROG(DB2X_MANXML, db2x_manxml)
+AC_PATH_PROG(XSLPROC, xsltproc)
+AM_CONDITIONAL(HAVE_DOCSTUFF, test $DB2X_XSLPROC -a $DB2X_MANXML -a $XSLPROC)
 
 dnl
 dnl Check sysinfo()
