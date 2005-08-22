@@ -1,5 +1,9 @@
 # $Id$
 
+2005-08-21
+	* Moved source into src/, moved docs into doc/
+	* Updated makefiles
+
 2005-08-20
 	* Applied patch from zimba-tm, closes patch 1260225
 	* Fixed ugly gradient bug.  closes bug 1255608
