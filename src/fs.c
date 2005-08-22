@@ -57,13 +57,25 @@ void clear_fs_stats()
 			close(fs_stats[i].fd);
 			fs_stats[i].fd = -1;
 		}
-
 		if (fs_stats[i].path != NULL) {
 			free(fs_stats[i].path);
 			fs_stats[i].path = NULL;
 		}
 	}
 }
+
+/*void clear_fs_stat(unsigned int i)
+{
+	if (fs_stats[i].fd) {
+		close(fs_stats[i].fd);
+		fs_stats[i].fd = -1;
+	}
+	if (fs_stats[i].path != NULL) {
+		free(fs_stats[i].path);
+		fs_stats[i].path = NULL;
+	}
+}*/
+
 
 struct fs_stat *prepare_fs_stat(const char *s)
 {
@@ -77,7 +89,8 @@ struct fs_stat *prepare_fs_stat(const char *s)
 
 		if (fs->fd <= 0) {
 			/* when compiled with icc, it crashes when leaving function and open()
-			 * is used, I don't know why */
+			 * is used, I don't know why 
+			 * fuck icc */
 
 			/* this icc workaround didn't seem to work */
 #if 0

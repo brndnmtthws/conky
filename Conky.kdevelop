@@ -9,7 +9,7 @@
     <ignoreparts/>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
-    <description/>
+    <description></description>
     <versioncontrol/>
   </general>
   <kdevautoproject>
@@ -21,7 +21,7 @@
       <mainprogram>conky</mainprogram>
       <directoryradio>build</directoryradio>
       <customdirectory>/</customdirectory>
-      <programargs/>
+      <programargs></programargs>
       <terminal>false</terminal>
       <autocompile>true</autocompile>
       <envvars/>
@@ -48,21 +48,21 @@
         <f77flags/>
       </optimized>
       <debug>
-        <configargs>--enable-debug=full --prefix=/usr --enable-mpd --disable-xft --enable-seti --enable-double-buffer --disable-own-window --enable-metar --enable-mldonkey --enable-x11</configargs>
+        <configargs>--enable-debug=full --prefix=/usr --enable-mpd --enable-xft --enable-seti --enable-double-buffer --enable-own-window --enable-metar --enable-mldonkey --enable-x11</configargs>
         <builddir>debug</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevpgf77options</f77compiler>
         <cflags>-O2 -Wall -fexceptions -fomit-frame-pointer -fshort-enums -ggdb</cflags>
         <envvars/>
-        <topsourcedir/>
-        <cppflags/>
-        <ldflags/>
-        <ccompilerbinary/>
-        <cxxcompilerbinary/>
-        <f77compilerbinary/>
-        <cxxflags/>
-        <f77flags/>
+        <topsourcedir></topsourcedir>
+        <cppflags></cppflags>
+        <ldflags></ldflags>
+        <ccompilerbinary></ccompilerbinary>
+        <cxxcompilerbinary></cxxcompilerbinary>
+        <f77compilerbinary></f77compilerbinary>
+        <cxxflags></cxxflags>
+        <f77flags></f77flags>
       </debug>
       <debug-no-x>
         <envvars/>
@@ -97,11 +97,11 @@
   <kdevdebugger>
     <general>
       <dbgshell>/usr/bin/libtool</dbgshell>
-      <programargs/>
+      <programargs></programargs>
       <gdbpath>/usr/bin/</gdbpath>
-      <configGdbScript/>
-      <runShellScript/>
-      <runGdbScript/>
+      <configGdbScript></configGdbScript>
+      <runShellScript></runShellScript>
+      <runGdbScript></runGdbScript>
       <breakonloadinglibs>true</breakonloadinglibs>
       <separatetty>false</separatetty>
       <floatingtoolbar>false</floatingtoolbar>
@@ -182,7 +182,7 @@
       <headerCompletionDelay>250</headerCompletionDelay>
     </codecompletion>
     <creategettersetter>
-      <prefixGet/>
+      <prefixGet></prefixGet>
       <prefixSet>set</prefixSet>
       <prefixVariable>m_,_</prefixVariable>
       <parameterName>theValue</parameterName>
