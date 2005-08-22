@@ -2745,7 +2745,11 @@ short colour_depth = 0;
 
 void set_up_gradient()
 {
+#ifdef X11
 	colour_depth = DisplayPlanes(display, screen);
+#else
+	colour_depth = 16;
+#endif /* X11 */
 	if (colour_depth != 24 && colour_depth != 16) {
 		ERR("using non-standard colour depth, gradients may look like a lolly-pop");
 	}
