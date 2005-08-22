@@ -58,7 +58,12 @@
 	<refsect1>
 		<title>Compiling</title>
 		<para>
-		To compile and run Conky with all optional components (If you run Gentoo, see the "Ebuild" Section below):
+		First, make sure you have the X development libraries installed, this should be a package along the lines 
+		of "libx11-dev or xorg-x11-dev". Gentoo users, Conky is in Gentoo's Portage.  Simply use "emerge conky" for installation.
+		There is also usually an up-to-date ebuild within Conky's package or in	CVS.
+		</para>
+		<para>
+		To compile and run Conky with all optional components:
 		</para>
 		<variablelist>
 			<varlistentry>
@@ -98,8 +103,7 @@
 			--disable-own-window to configure -script.
 		</para>
 		<para>
-			Conky is in Gentoo's Portage.  Simply use "emerge conky" to install conky. 
-			There is also usually an up-to-date ebuild within Conky's package or in	CVS.
+			
 		</para>
 	</refsect1>
 

@@ -1,0 +1,29 @@
+First, read the README. This contains instructions specific to building conky 
+fresh from a CVS checkout: 
+
+* As the README says, you need to have the X	development libraries installed. 
+	This should be a package along the lines of libx11-dev or xorg-x11-dev .
+* Conky requires three "auto-tools", with at least the specific version numbers.
+	Make sure these are installed:
+	
+	aclocal-1.9
+	automake-1.9
+	autoconf-2.59
+
+* In the directory where you checked out conky from CVS, 
+	run "aclocal", "automake", and then "autoconf". 
+	Make sure you run those commands with the latest versions...
+	it is very possible that older versions are installed, and 
+	plain "automake" really means automake-1.4, not what we want,
+	but "automake-1.9" instead.
+	Use the "--version" option to check the program version, i.e.
+	"autoconf --version". 
+* After that, it's the familiar 
+
+	./configure 
+	make 
+	make install
+
+	You might have to do the last two steps as root. 
+
+Need more help? Try channel #conky on irc, or email conky-users@lists.sourceforge.net
