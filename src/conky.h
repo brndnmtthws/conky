@@ -9,8 +9,9 @@
 #ifndef _conky_h_
 #define _conky_h_
 
-
+#if defined(HAS_MCHECK_H)
 #include <mcheck.h>
+#endif /* HAS_MCHECK_H */
 #include "config.h"
 #include <sys/utsname.h>
 #include <stdio.h>

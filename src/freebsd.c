@@ -331,7 +331,7 @@ void update_cpu_usage()
 	oldtotal = total;
 }
 
-double get_i2c_info(int *fd, int div, char *devtype)
+double get_i2c_info(int *fd, int arg, char *devtype, char *type)
 {
 	return 0;
 }
@@ -448,4 +448,12 @@ char *get_freq()
 #else
 	return "";
 #endif
+}
+
+void update_top()
+{
+}
+
+void update_wifi_stats()
+{
 }
