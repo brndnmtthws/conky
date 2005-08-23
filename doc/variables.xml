@@ -222,7 +222,7 @@
 <varlistentry>
 	<term>
 		<command><option>execi</option></command>
-		<option>interval, shell command</option>
+		<option>interval command</option>
 	</term>
 	<listitem>
 		Same as exec but with specific interval. Interval can't be less than update_interval in configuration.
