@@ -23,6 +23,7 @@ DEPEND="truetype? ( >=media-libs/freetype-2 )
    X? ( virtual/x11 )
    >=sys-devel/automake-1.9
    >=sys-devel/autoconf-2.59
+   sys-devel/libtool
    sys-apps/grep
    sys-apps/sed
    sys-devel/gcc
