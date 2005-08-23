@@ -192,7 +192,7 @@
 <varlistentry>
 	<term>
 		<command><option>exec</option></command>
-	<option>shell command</option>
+	<option>command</option>
 	</term>
 	<listitem>
 		Executes a shell command and displays the output in conky. warning: this takes a lot more resources than other variables. I'd recommend coding wanted behaviour in C and posting a patch.
@@ -202,7 +202,7 @@
 <varlistentry>
 	<term>
 		<command><option>execbar</option></command>
-	<option>shell command</option>
+	<option>command</option>
 	</term>
 	<listitem>
 		Same as exec, except if the first value return is a value between 0-100, it will use that number for a bar. The size for the bar is currently fixed, but that may change in the future.
@@ -212,7 +212,7 @@
 <varlistentry>
 	<term>
 		<command><option>execgraph</option></command>
-	<option>shell command</option>
+	<option>command</option>
 	</term>
 	<listitem>
 		Same as execbar, but graphs values
@@ -222,11 +222,31 @@
 <varlistentry>
 	<term>
 		<command><option>execi</option></command>
-	<option>interval, shell command</option>
+		<option>interval, shell command</option>
 	</term>
 	<listitem>
 		Same as exec but with specific interval. Interval can't be less than update_interval in configuration.
-	<para></para></listitem>
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>execibar</option></command>
+		<option>interval command</option>
+	</term>
+	<listitem>
+		Same as execbar, except with an interval
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>execigraph</option></command>
+		<option>interval command</option>
+	</term>
+	<listitem>
+		Same as execigraph, but takes an interval arg graphs values
+		<para></para></listitem>
 </varlistentry>
 
 <varlistentry>

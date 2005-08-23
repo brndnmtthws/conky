@@ -1,5 +1,8 @@
 # $Id$
 
+2005-08-22
+	* Added $execibar and $execigraph
+
 2005-08-21
 	* Moved source into src/, moved docs into doc/
 	* Updated makefiles

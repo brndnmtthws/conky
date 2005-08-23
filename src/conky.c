@@ -515,7 +515,7 @@ inline void graph_append(struct special_t *graph, double f)
 	}
 }
 
-static void new_graph(char *buf, int w, int h, unsigned int first_colour, unsigned int second_colour, double i, int scaled)
+static void new_graph(char *buf, int w, int h, unsigned int first_colour, unsigned int second_colour, double i, int scaled, int append)
 {
 	struct special_t *s = new_special(buf, GRAPH);
 	s->width = w;
@@ -531,7 +531,9 @@ static void new_graph(char *buf, int w, int h, unsigned int first_colour, unsign
 	} else {
 		s->graph_scale = 100;
 	}
-	graph_append(s, i);
+	if (append) {
+		graph_append(s, i);
+	}
 }
 
 static const char *scan_graph(const char *args, int *w, int *h, unsigned int *first_colour, unsigned int *last_colour)
@@ -701,6 +703,8 @@ enum text_object_type {
 	OBJ_execi,
 	OBJ_execbar,
 	OBJ_execgraph,
+	OBJ_execibar,
+	OBJ_execigraph,
 	OBJ_freq,
 	OBJ_freq_g,
 	OBJ_fs_bar,
@@ -847,6 +851,7 @@ struct text_object {
 			float interval;
 			char *cmd;
 			char *buffer;
+			double data;
 		} execi;	/* 5 */
 
 		struct {
@@ -875,7 +880,6 @@ static struct text_object *new_text_object()
 static void free_text_objects()
 {
 	unsigned int i;
-
 	for (i = 0; i < text_object_count; i++) {
 		switch (text_objects[i].type) {
 		case OBJ_acpitemp:
@@ -896,8 +900,20 @@ static void free_text_objects()
 			break;
 		case OBJ_text:
 		case OBJ_exec:
+			free(text_objects[i].data.s);
+			break;
 		case OBJ_execbar:
+			free(text_objects[i].data.s);
+			break;
 		case OBJ_execgraph:
+			free(text_objects[i].data.s);
+			break;
+/*		case OBJ_execibar:
+			free(text_objects[i].data.s);
+			break;
+		case OBJ_execigraph:
+			free(text_objects[i].data.s);
+			break;*/
 #ifdef MPD
 		case OBJ_mpd_title:
 		case OBJ_mpd_artist:
@@ -1015,6 +1031,26 @@ if (s[0] == '#') {
 	    OBJ(exec, 0) obj->data.s = strdup(arg ? arg : "");
 	END OBJ(execbar, 0) obj->data.s = strdup(arg ? arg : "");
 	END OBJ(execgraph, 0) obj->data.s = strdup(arg ? arg : "");
+	END OBJ(execibar, 0) unsigned int n;
+	if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
+		char buf[256];
+		ERR("${execibar <interval> command}");
+		obj->type = OBJ_text;
+		snprintf(buf, 256, "${%s}", s);
+		obj->data.s = strdup(buf);
+		} else {
+			obj->data.s = strdup(arg + n);
+		    }
+	END OBJ(execigraph, 0) unsigned int n;
+	if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
+		char buf[256];
+		ERR("${execigraph <interval> command}");
+		obj->type = OBJ_text;
+		snprintf(buf, 256, "${%s}", s);
+		obj->data.s = strdup(buf);
+		    } else {
+			    obj->data.s = strdup(arg + n);
+		    }
 	END OBJ(execi, 0) unsigned int n;
 
 	if (!arg
@@ -1628,7 +1664,7 @@ static void generate_text()
 				new_graph(p, obj->a,
 					  obj->b, obj->c, obj->d,
 					  (unsigned int) (cur->cpu_usage *
-							  100), 0);
+							  100), 0, 1);
 			}
 			OBJ(color) {
 				new_fg(p, obj->data.l);
@@ -1665,7 +1701,7 @@ static void generate_text()
 					obj->data.net->recv_speed = 0.01;
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 					  (obj->data.net->recv_speed /
-				1024.0), 1);
+				1024.0), 1, 1);
 			}
 			OBJ(
 				   else
@@ -1736,8 +1772,7 @@ static void generate_text()
 					ERR("your execbar value is not between 0 and 100, therefore it will be ignored");
 				} else {
 					barnum = barnum / 100.0;
-					new_bar(p, 0,
-						4, (int) (barnum * 255.0));
+					new_bar(p, 0, 4, (int) (barnum * 255.0));
 				}
 
 			}
@@ -1764,7 +1799,70 @@ static void generate_text()
 					ERR("your execgraph value is not between 0 and 100, therefore it will be ignored");
 				} else {
 					new_graph(p, 0,
-					25, obj->c, obj->d, (int) (barnum), 0);
+					25, obj->c, obj->d, (int) (barnum), 0, 1);
+				}
+
+			}
+			OBJ(execibar) {
+				if (current_update_time - obj->data.execi.last_update <	obj->data.execi.interval) {
+					new_bar(p, 0, 4, (int) obj->data.execi.data);
+				} else {
+					char *p2 = p;
+					FILE *fp = popen(obj->data.s, "r");
+					int n2 = fread(p, 1, n, fp);
+					(void) pclose(fp);
+					p[n2] = '\0';
+					if (n2 && p[n2 - 1] == '\n')
+						p[n2 - 1] = '\0';
+
+					while (*p2) {
+						if (*p2 == '\001')
+							*p2 = ' ';
+						p2++;
+					}
+					double barnum;
+					if (sscanf(p, "%lf", &barnum) == 0) {
+						ERR("reading execibar value failed (perhaps it's not the correct format?)");
+					}
+					if (barnum > 100 || barnum < 0) {
+						ERR("your execibar value is not between 0 and 100, therefore it will be ignored");
+					} else {
+						obj->data.execi.data = 255 * barnum / 100.0;
+						new_bar(p, 0, 4, (int) obj->data.execi.data);
+					}
+					obj->data.execi.last_update =
+							current_update_time;
+				}
+			}
+			OBJ(execigraph) {
+				if (current_update_time - obj->data.execi.last_update <	obj->data.execi.interval) {
+					new_graph(p, 0,	25, obj->c, obj->d, (int) (obj->data.execi.data), 0, 0);
+				} else {
+					char *p2 = p;
+					FILE *fp = popen(obj->data.s, "r");
+					int n2 = fread(p, 1, n, fp);
+					(void) pclose(fp);
+					p[n2] = '\0';
+					if (n2 && p[n2 - 1] == '\n')
+						p[n2 - 1] = '\0';
+
+					while (*p2) {
+						if (*p2 == '\001')
+							*p2 = ' ';
+						p2++;
+					}
+					double barnum;
+					if (sscanf(p, "%lf", &barnum) == 0) {
+						ERR("reading execigraph value failed (perhaps it's not the correct format?)");
+					}
+					if (barnum > 100 || barnum < 0) {
+						ERR("your execigraph value is not between 0 and 100, therefore it will be ignored");
+					} else {
+						obj->data.execi.data = barnum;
+						new_graph(p, 0,	25, obj->c, obj->d, (int) (obj->data.execi.data), 0, 1);
+					}
+					obj->data.execi.last_update = current_update_time;
+	
 				}
 
 			}
@@ -2003,7 +2101,7 @@ static void generate_text()
 				new_graph(p, obj->a,
 				obj->b, obj->c, obj->d,
 				cur->memmax ? (cur->mem * 100.0) /
-						(cur->memmax) : 0.0, 0);
+						(cur->memmax) : 0.0, 0, 1);
 			}
 			/* mixer stuff */
 			OBJ(mixer) {
@@ -2206,7 +2304,7 @@ static void generate_text()
 					obj->data.net->trans_speed = 0.01;
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 					  (obj->data.net->trans_speed /
-				1024.0), 1);
+				1024.0), 1, 1);
 			}
 			OBJ(uptime_short) {
 				format_seconds_short(p, n,
