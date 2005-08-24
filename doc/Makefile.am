@@ -6,7 +6,7 @@ if HAVE_DOCSTUFF
 
 man_MANS = conky.1 ../README docs.html
 
-conky.1.gz: command_options.xml config_settings.xml docs.xml variables.xml 
+conky.1: command_options.xml config_settings.xml docs.xml variables.xml 
 	${DB2X_XSLPROC} -s man ${srcdir}/docs.xml -o docs.mxml
 	${DB2X_MANXML} docs.mxml
 
