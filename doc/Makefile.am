@@ -22,4 +22,4 @@ man_MANS = ../README
 
 endif
 
-EXTRA_DIST = conkyrc.sample conky.1.gz docs.html command_options.xml config_settings.xml docgen.sh docs.xml variables.xml
+EXTRA_DIST = conkyrc.sample conky.1 docs.html command_options.xml config_settings.xml docgen.sh docs.xml variables.xml
