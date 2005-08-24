@@ -1615,10 +1615,10 @@ static void generate_text()
 									i)+ 40) * 9.0 / 5 - 40));
 			}
 			OBJ(freq) {
-				snprintf(p, n, "%sMhz", get_freq());
+				snprintf(p, n, "%.0fMhz", get_freq());
 			}
 			OBJ(freq_g) {
-				float ghz = (float)(atof(get_freq())/1000);
+				float ghz = (float)(get_freq()/1000);
 				//printf("%f\n", ghz);
 				snprintf(p, n, "%'.2fGhz", ghz);
 			}

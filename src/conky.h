@@ -266,7 +266,7 @@ void update_wifi_stats(void);
 void update_cpu_usage(void);
 void update_total_processes(void);
 void update_running_processes(void);
-char *get_freq();
+float get_freq();
 void update_load_average();
 int open_i2c_sensor(const char *dev, const char *type, int n, int *div,
 		    char *devtype);

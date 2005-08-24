@@ -663,7 +663,7 @@ static char *buffer = NULL;
 static char *frequency;
 #endif
 
-char *get_freq()
+float get_freq()
 {
 #if  defined(__i386) || defined(__x86_64)
 	if (buffer == NULL)
@@ -689,7 +689,7 @@ char *get_freq()
 
 	sprintf(buffer, "%lld", (cycles[1] - cycles[0]) / microseconds);
 
-	return buffer;
+	return strtod(buffer, (char **)NULL);
 #else
 	FILE *f;
 	char s[1000];
@@ -711,7 +711,7 @@ char *get_freq()
 	}
 		fclose(f);
 		//printf("%s\n", frequency);
-		return frequency;
+		return strtod(frequency, (char **)NULL);
 #endif
 }
 
