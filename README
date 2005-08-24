@@ -197,7 +197,11 @@ CONFIGURATION SETTINGS
 	      Mail spool for mail checking
 
 
-       minimum_size
+       maximum_width pixels
+	      Maximum width of window
+
+
+       minimum_size width (height)
 	      Minimum size of window
 
 

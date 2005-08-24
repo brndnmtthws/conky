@@ -1,5 +1,8 @@
 # $Id$
 
+2005-08-23
+	* Added maximum_width
+
 2005-08-22
 	* Added $execibar and $execigraph
 

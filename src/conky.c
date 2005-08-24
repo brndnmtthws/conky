@@ -239,6 +239,7 @@ static int fixed_size = 0, fixed_pos = 0;
 #endif
 
 static int minimum_width, minimum_height;
+static int maximum_width;
 
 /* UTF-8 */
 int utf8_mode = 0;
@@ -2658,6 +2659,8 @@ static void text_size_updater(char *s)
 		w += get_string_width(s);
 	if (w > text_width)
 		text_width = w;
+	if (text_width > maximum_width && maximum_width)
+		text_width = maximum_width;
 
 	text_height += h;
 	if (fontchange) {
@@ -2684,6 +2687,8 @@ static void update_text_area()
 		text_width += 1;
 		if (text_height < minimum_height)
 			text_height = minimum_height;
+		if (text_width > maximum_width && maximum_width > 0)
+			text_width = maximum_width;
 	}
 
 	/* get text position on workarea */
@@ -2802,6 +2807,12 @@ static void draw_string(const char *s)
 				tmpstring2[pos] = tmpstring1[i];
 				pos++;
 			}
+		}
+	}
+	if (text_width == maximum_width) {
+		/* this means the text is probably pushing the limit, so we'll chop it */
+		while (cur_x + get_string_width(tmpstring2) - text_start_x > maximum_width && strlen(tmpstring2) > 0) {
+			tmpstring2[strlen(tmpstring2)-1] = '\0';
 		}
 	}
 	s = tmpstring2;
@@ -3021,6 +3032,9 @@ static void draw_line(char *s)
 
 			case BAR:
 				{
+					if (cur_x > maximum_width - text_start_x) {
+						break;
+					}
 					int h =
 					    specials[special_index].height;
 					int bar_usage =
@@ -3064,6 +3078,9 @@ static void draw_line(char *s)
 
 			case GRAPH:
 				{
+					if (cur_x > maximum_width - text_start_x && maximum_width > 0) {
+						break;
+					}
 					int h =
 					    specials[special_index].height;
 					int by;
@@ -3508,6 +3525,8 @@ static void main_loop()
 						text_height =
 						    window.height -
 						    border_margin * 2 - 1;
+						if (text_width > maximum_width && maximum_width > 0)
+							text_width = maximum_width;
 					}
 
 					/* if position isn't what expected, set fixed pos, total_updates
@@ -3701,6 +3720,7 @@ static void set_default_configurations(void)
 	gap_y = 5;
 	minimum_width = 5;
 	minimum_height = 5;
+	maximum_width = 0;
 #ifdef OWN_WINDOW
 	own_window = 0;
 #endif
@@ -3995,14 +4015,21 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 		}
 #ifdef X11
 		CONF("minimum_size") {
+	if (value) {
+		if (sscanf
+				  (value, "%d %d", &minimum_width,
+				   &minimum_height) != 2)
+			if (sscanf
+						 (value, "%d",
+						   &minimum_width) != 1)
+				CONF_ERR;
+	} else
+		CONF_ERR;
+		}
+		CONF("maximum_width") {
 			if (value) {
-				if (sscanf
-				    (value, "%d %d", &minimum_width,
-				     &minimum_height) != 2)
-					if (sscanf
-					    (value, "%d",
-					     &minimum_width) != 1)
-						CONF_ERR;
+				if (sscanf(value, "%d",	&maximum_width) != 1)
+					CONF_ERR;
 			} else
 				CONF_ERR;
 		}

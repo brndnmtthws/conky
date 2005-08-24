@@ -126,7 +126,18 @@
 </varlistentry>
 
 <varlistentry>
-	<term><command><option>minimum_size</option></command></term>
+	<term><command><option>maximum_width</option></command>
+		<option>pixels</option>
+	</term>
+	<listitem>
+		Maximum width of window
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>minimum_size</option></command>
+	<option>width (height)</option>
+	</term>
 	<listitem>
 		Minimum size of window
 	<para></para></listitem>
