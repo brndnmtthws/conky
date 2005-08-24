@@ -1,6 +1,6 @@
 if HAVE_DOCSTUFF
 
-man_MANS = conky.1 ../README docs.html
+man_MANS = conky.1
 
 clean-am: clean-generic mostlyclean-am
 	rm -f docs.mxml
@@ -16,10 +16,6 @@ docs.html: command_options.xml config_settings.xml docs.xml variables.xml
 ../README: conky.1
 	man ./conky.1 | col -b > README
 	mv README ${top_srcdir}
-else
-
-man_MANS = ../README
-
 endif
 
 EXTRA_DIST = conkyrc.sample conky.1 docs.html command_options.xml config_settings.xml docgen.sh docs.xml variables.xml
