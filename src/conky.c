@@ -3032,7 +3032,7 @@ static void draw_line(char *s)
 
 			case BAR:
 				{
-					if (cur_x > maximum_width - text_start_x) {
+					if (cur_x > maximum_width - text_start_x && maximum_width > 0) {
 						break;
 					}
 					int h =
