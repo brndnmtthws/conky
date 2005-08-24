@@ -1,4 +1,9 @@
-#include "conky.h"
+/** freebsd.c
+ * Contains FreeBSD specific stuff
+ *
+ * $Id$
+ */
+
 #include <fcntl.h>
 #include <limits.h>
 #include <stdio.h>
@@ -19,6 +24,8 @@
 #include <net/if_mib.h>
 #include <sys/socket.h>
 #include <ifaddrs.h>
+
+#include "conky.h"
 
 #define GETSYSCTL(name, var) getsysctl(name, &(var), sizeof(var))
 #define KELVTOC(x)      ((x - 2732) / 10.0)
@@ -59,8 +66,7 @@ static unsigned int get_cpu_speed(void)
 
 	return ((tscstop - tscstart) / ((stop - start) / 1000.0));
 }
-#endif
-
+#endif /* i386 */
 
 static int getsysctl(char *name, void *ptr, size_t len)
 {
@@ -79,7 +85,6 @@ static int getsysctl(char *name, void *ptr, size_t len)
 static kvm_t *kd = NULL;
 struct ifmibdata *data = NULL;
 size_t len = 0;
-
 
 static int swapmode(int *retavail, int *retfree)
 {
@@ -119,12 +124,10 @@ static int swapmode(int *retavail, int *retfree)
 	return n;
 }
 
-
 void prepare_update()
 {
 }
 
-/*double get_uptime() */
 void update_uptime()
 {
 	int mib[2] = { CTL_KERN, KERN_BOOTTIME };
@@ -141,7 +144,6 @@ void update_uptime()
 		info.uptime = 0;
 	}
 }
-
 
 void update_meminfo()
 {
@@ -237,8 +239,6 @@ void update_net_stats()
 
 void update_total_processes()
 {
-	/* It's easier to use kvm here than sysctl */
-
 	int n_processes;
 	static int kd_init = 1;
 
@@ -423,31 +423,38 @@ char *get_adt746x_fan()
 
 char *get_freq()
 {
-#if defined(i386) || defined(__i386__)
-	int i;
+	/* First, try to obtain CPU frequency via dev.cpu.0.freq sysctl
+	 * (cpufreq(4)). If failed, do i386 magic. */
+	int freq;
 	char *cpuspeed;
 
-	if ((cpuspeed = (char *) malloc(16)) == NULL) {
+	if ((cpuspeed = malloc(8)) == NULL)
 		CRIT_ERR("get_freq()");
-	}
+	
+	if (GETSYSCTL("dev.cpu.0.freq", freq) == 0) {
+		snprintf(cpuspeed, 8, "%d", freq);
+		return cpuspeed;
+	} 
+#if defined(i386) || defined(__i386__)
+	else {
+		int i;
 
-	i = 0;
-	if ((i = get_cpu_speed()) > 0) {
-		if (i < 1000000) {
-			i += 50;	/* for rounding */
-			snprintf(cpuspeed, 15, "%d.%d MHz", i / 1000,
-				 (i / 100) % 10);
-		} else {
-			snprintf(cpuspeed, 15, "%d MHz", i / 1000);
-		}
-	} else {
-		cpuspeed = "";
+		i = 0;
+		if ((i = get_cpu_speed()) > 0) {
+			if (i < 1000000) {
+				i += 50;	/* for rounding */
+				snprintf(cpuspeed, 8, "%d.%d", i / 1000,
+					 (i / 100) % 10);
+			} else
+				snprintf(cpuspeed, 8, "%d", i / 1000);
+		} else
+			cpuspeed = "";
+		
+		return cpuspeed;
 	}
-
-	return cpuspeed;
 #else
 	return "";
-#endif
+#endif /* i386 */
 }
 
 void update_top()
