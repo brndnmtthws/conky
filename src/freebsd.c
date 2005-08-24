@@ -421,39 +421,27 @@ char *get_adt746x_fan()
 	return "";
 }
 
-char *get_freq()
+float get_freq()
 {
 	/* First, try to obtain CPU frequency via dev.cpu.0.freq sysctl
 	 * (cpufreq(4)). If failed, do i386 magic. */
 	int freq;
-	char *cpuspeed;
-
-	if ((cpuspeed = malloc(8)) == NULL)
-		CRIT_ERR("get_freq()");
 	
-	if (GETSYSCTL("dev.cpu.0.freq", freq) == 0) {
-		snprintf(cpuspeed, 8, "%d", freq);
-		return cpuspeed;
-	} 
-#if defined(i386) || defined(__i386__)
+	if (GETSYSCTL("dev.cpu.0.freq", freq) == 0)
+		return (float)freq;
 	else {
+#if defined(i386) || defined(__i386__)
 		int i;
 
 		i = 0;
 		if ((i = get_cpu_speed()) > 0) {
-			if (i < 1000000) {
-				i += 50;	/* for rounding */
-				snprintf(cpuspeed, 8, "%d.%d", i / 1000,
-					 (i / 100) % 10);
-			} else
-				snprintf(cpuspeed, 8, "%d", i / 1000);
+			return (float)(i / 1000);
 		} else
-			cpuspeed = "";
-		
-		return cpuspeed;
+			return 0;
 	}
 #else
-	return "";
+		return 0;
+	}
 #endif /* i386 */
 }
 
