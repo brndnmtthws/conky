@@ -377,7 +377,7 @@ VARIABLES
 	      Same as execbar, but graphs values
 
 
-       execi interval, shell command
+       execi interval command
 	      Same  as exec but with specific interval. Interval can't be less
 	      than update_interval in configuration.
 
