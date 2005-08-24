@@ -1,19 +1,19 @@
-clean-am: clean-generic mostlyclean-am
-	rm -f docs.mxml
-	rm -f conky.1
-
 if HAVE_DOCSTUFF
 
 man_MANS = conky.1 ../README docs.html
 
+clean-am: clean-generic mostlyclean-am
+	rm -f docs.mxml
+	rm -f conky.1
+
 conky.1: command_options.xml config_settings.xml docs.xml variables.xml 
-	${DB2X_XSLPROC} -s man ${srcdir}/docs.xml -o docs.mxml
-	${DB2X_MANXML} docs.mxml
+	${db2x_xsltproc_cmd} -s man ${srcdir}/docs.xml -o docs.mxml
+	${db2x_manxml_cmd} docs.mxml
 
 docs.html: command_options.xml config_settings.xml docs.xml variables.xml
-	${XSLPROC} http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl ${srcdir}/docs.xml > docs.html
+	${xsltproc_cmd} http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl ${srcdir}/docs.xml > docs.html
 
-../README: conky.1.gz
+../README: conky.1
 	man ./conky.1 | col -b > README
 	mv README ${top_srcdir}
 else

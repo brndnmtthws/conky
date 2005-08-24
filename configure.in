@@ -250,10 +250,14 @@ dnl
 dnl Check doc stuff
 dnl
 
-AC_PATH_PROG(DB2X_XSLPROC, db2x_xsltproc)
-AC_PATH_PROG(DB2X_MANXML, db2x_manxml)
-AC_PATH_PROG(XSLPROC, xsltproc)
-AM_CONDITIONAL(HAVE_DOCSTUFF, test $DB2X_XSLPROC -a $DB2X_MANXML -a $XSLPROC)
+AC_CHECK_PROGS(db2x_xsltproc_cmd, db2x_xsltproc)
+AC_CHECK_PROGS(db2x_manxml_cmd, db2x_manxml)
+AC_CHECK_PROGS(xsltproc_cmd, xsltproc)
+if test x$db2x_xsltproc_cmd = "x" -o x$xsltproc_cmd = "x"; then
+	AM_CONDITIONAL(HAVE_DOCSTUFF, false)
+else
+	AM_CONDITIONAL(HAVE_DOCSTUFF, true)
+fi
 
 dnl
 dnl Check sysinfo()
