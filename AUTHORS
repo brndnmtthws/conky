@@ -95,9 +95,8 @@ roiban adi <adiroiban at users dot sourceforge dot net>
 Rui Paulo <rpaulo at netbsd-pt dot org>
   NetBSD support
 
-Roman Bogorodskiy <bogorodskiy at inbox dot ru>
+Roman Bogorodskiy <novel at clublife dot ru>
   FreeBSD support
-  more FreeBSD fixes
 
 Szymon Boniecki
   Reads current LC_TIME
