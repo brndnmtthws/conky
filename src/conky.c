@@ -4298,8 +4298,12 @@ int main(int argc, char **argv)
 
 	/* handle other command line arguments */
 
+#if defined(__FreeBSD__) || defined (__OpenBSD__) || defined(__NetBSD__)
+	optind = optreset = 1;
+#else
 	optind = 0;
-
+#endif
+	
 	while (1) {
 		int c = getopt(argc,
 			       argv,
