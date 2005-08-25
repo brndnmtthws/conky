@@ -198,7 +198,7 @@ void init_window(int own_window, int w, int h, int l)
 
 			if (!fixed_pos)
 				XMoveWindow(display, window.window, window.x,
-					    window.y);
+			window.y);
 		}
 
 		{

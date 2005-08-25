@@ -3540,7 +3540,7 @@ static void main_loop()
 					/* if position isn't what expected, set fixed pos, total_updates
 					 * avoids setting fixed_pos when window is set to weird locations
 					 * when started */
-					if (total_updates >= 2
+					/*if (total_updates >= 2 this is broken
 					    && !fixed_pos
 					    && (window.x != ev.xconfigure.x
 						|| window.y !=
@@ -3548,7 +3548,7 @@ static void main_loop()
 					    && (ev.xconfigure.x != 0
 						|| ev.xconfigure.y != 0)) {
 						fixed_pos = 1;
-					}
+				}*/
 				}
 				break;
 #endif
