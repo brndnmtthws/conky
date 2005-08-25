@@ -1,0 +1,2 @@
+?package(conky):needs="text" section="Apps/Tools"\
+  title="Conky" command="/usr/bin/conky"
