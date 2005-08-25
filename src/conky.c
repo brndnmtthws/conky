@@ -577,8 +577,6 @@ static const char *scan_graph(const char *args, int *w, int *h, unsigned int *fi
 			}
 		}
 	}
-	printf("scale is %i\n", *scale);
-
 	return args;
 }
 
