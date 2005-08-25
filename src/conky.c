@@ -503,6 +503,9 @@ static void new_font(char *buf, char * args) {
 
 inline void graph_append(struct special_t *graph, double f)
 {
+	if (!graph->scaled && f > graph->graph_scale) {
+		f = graph->graph_scale;
+	}
 	int i;
 	if (graph->scaled) {
 		graph->graph_scale = 0;
@@ -516,28 +519,32 @@ inline void graph_append(struct special_t *graph, double f)
 	}
 }
 
-static void new_graph(char *buf, int w, int h, unsigned int first_colour, unsigned int second_colour, double i, int scaled, int append)
+static void new_graph(char *buf, int w, int h, unsigned int first_colour, unsigned int second_colour, double i, int scale, int append)
 {
 	struct special_t *s = new_special(buf, GRAPH);
 	s->width = w;
 	s->height = h;
 	s->first_colour = first_colour;
 	s->last_colour = second_colour;
-	s->scaled = scaled;
+	if (scale != 0) {
+		s->scaled = 0;
+	} else {
+		s->scaled = 1;
+	}
 	if (s->width) {
 		s->graph_width = s->width - 3;	// subtract 3 for rectangle around
 	}
-	if (scaled) {
+	if (s->scaled) {
 		s->graph_scale = 1;
 	} else {
-		s->graph_scale = 100;
+		s->graph_scale = scale;
 	}
 	if (append) {
 		graph_append(s, i);
 	}
 }
 
-static const char *scan_graph(const char *args, int *w, int *h, unsigned int *first_colour, unsigned int *last_colour)
+static const char *scan_graph(const char *args, int *w, int *h, unsigned int *first_colour, unsigned int *last_colour, unsigned int *scale)
 {
 	*w = 0;			/* zero width means all space that is available */
 	*h = 25;
@@ -545,9 +552,13 @@ static const char *scan_graph(const char *args, int *w, int *h, unsigned int *fi
 	*last_colour = 0;
 	/* graph's argument is either height or height,width */
 	if (args) {
-		if (sscanf(args, "%*s %d,%d %x %x", h, w, first_colour, last_colour) < 4) {
-			if (sscanf(args, "%d,%d %x %x", h, w, first_colour, last_colour) < 4) {
-				*w = 0;
+		if (sscanf(args, "%*s %d,%d %x %x %i", h, w, first_colour, last_colour, scale) < 5) {
+			if (sscanf(args, "%*s %d,%d %x %x", h, w, first_colour, last_colour) < 4) {
+				*scale = 0;
+				if (sscanf(args, "%d,%d %x %x %i", h, w, first_colour, last_colour, scale) < 5) {
+					*scale = 0;
+					if (sscanf(args, "%d,%d %x %x", h, w, first_colour, last_colour) < 4) {
+						*w = 0;
 				*h = 25;			
 				if (sscanf(args, "%*s %x %x", first_colour, last_colour) < 3) {
 				*w = 0;
@@ -560,11 +571,13 @@ static const char *scan_graph(const char *args, int *w, int *h, unsigned int *fi
 						*last_colour = 0;
 						sscanf(args, "%*s %d,%d", h, w);
 					}
-				}
+				}}
+			}
 			}
 			}
 		}
 	}
+	printf("scale is %i\n", *scale);
 
 	return args;
 }
@@ -804,7 +817,7 @@ enum text_object_type {
 struct text_object {
 	int type;
 	int a, b;
-	unsigned int c, d;
+	unsigned int c, d, e;
 	union {
 		char *s;	/* some string */
 		int i;		/* some integer */
@@ -986,7 +999,7 @@ if (s[0] == '#') {
 	END OBJ(cpubar, INFO_CPU)
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(cpugraph, INFO_CPU)
-			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d);
+			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
 	END OBJ(color, 0) 
 #ifdef X11
 			obj->data.l = arg ? get_x11_color(arg) : default_fg_color;
@@ -998,7 +1011,7 @@ if (s[0] == '#') {
 			OBJ(downspeed, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(downspeedf, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(downspeedgraph, INFO_NET)
-			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d);
+			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
 	char buf[64];
 	sscanf(arg, "%63s %*i,%*i %*i", buf);
 	obj->data.net = get_net_stat(buf);
@@ -1335,7 +1348,7 @@ if (s[0] == '#') {
 	END OBJ(membar, INFO_MEM)
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(memgraph, INFO_MEM)
-			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d);
+			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
 	END OBJ(mixer, INFO_MIXER) obj->data.l = mixer_init(arg);
 	END OBJ(mixerl, INFO_MIXER) obj->data.l = mixer_init(arg);
 	END OBJ(mixerr, INFO_MIXER) obj->data.l = mixer_init(arg);
@@ -1408,7 +1421,7 @@ int a = stippled_borders, b = 1;
 	END OBJ(upspeed, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(upspeedf, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(upspeedgraph, INFO_NET)
-			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d);
+			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
 	char buf[64];
 	sscanf(arg, "%63s %*i,%*i %*i", buf);
 	obj->data.net = get_net_stat(buf);
@@ -1665,7 +1678,7 @@ static void generate_text()
 				new_graph(p, obj->a,
 					  obj->b, obj->c, obj->d,
 					  (unsigned int) (cur->cpu_usage *
-							  100), 0, 1);
+							  100), 100, 1);
 			}
 			OBJ(color) {
 				new_fg(p, obj->data.l);
@@ -1702,7 +1715,7 @@ static void generate_text()
 					obj->data.net->recv_speed = 0.01;
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 					  (obj->data.net->recv_speed /
-				1024.0), 1, 1);
+				1024.0), obj->e, 1);
 			}
 			OBJ(
 				   else
@@ -1800,7 +1813,7 @@ static void generate_text()
 					ERR("your execgraph value is not between 0 and 100, therefore it will be ignored");
 				} else {
 					new_graph(p, 0,
-					25, obj->c, obj->d, (int) (barnum), 0, 1);
+					25, obj->c, obj->d, (int) (barnum), obj->e, 1);
 				}
 
 			}
@@ -1837,7 +1850,7 @@ static void generate_text()
 			}
 			OBJ(execigraph) {
 				if (current_update_time - obj->data.execi.last_update <	obj->data.execi.interval) {
-					new_graph(p, 0,	25, obj->c, obj->d, (int) (obj->data.execi.data), 0, 0);
+					new_graph(p, 0,	25, obj->c, obj->d, (int) (obj->data.execi.data), obj->e, 0);
 				} else {
 					char *p2 = p;
 					FILE *fp = popen(obj->data.s, "r");
@@ -1860,7 +1873,7 @@ static void generate_text()
 						ERR("your execigraph value is not between 0 and 100, therefore it will be ignored");
 					} else {
 						obj->data.execi.data = barnum;
-						new_graph(p, 0,	25, obj->c, obj->d, (int) (obj->data.execi.data), 0, 1);
+						new_graph(p, 0,	25, obj->c, obj->d, (int) (obj->data.execi.data), obj->e, 1);
 					}
 					obj->data.execi.last_update = current_update_time;
 	
@@ -2102,7 +2115,7 @@ static void generate_text()
 				new_graph(p, obj->a,
 				obj->b, obj->c, obj->d,
 				cur->memmax ? (cur->mem * 100.0) /
-						(cur->memmax) : 0.0, 0, 1);
+						(cur->memmax) : 0.0, 100, 1);
 			}
 			/* mixer stuff */
 			OBJ(mixer) {
@@ -2305,7 +2318,7 @@ static void generate_text()
 					obj->data.net->trans_speed = 0.01;
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 					  (obj->data.net->trans_speed /
-				1024.0), 1, 1);
+				1024.0), obj->e, 1);
 			}
 			OBJ(uptime_short) {
 				format_seconds_short(p, n,

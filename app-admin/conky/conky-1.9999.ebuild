@@ -53,7 +53,7 @@ src_compile() {
 
 src_install() {
    emake DESTDIR=${D} install || die "make install failed"
-   dodoc ChangeLog AUTHORS README conkyrc.sample
+   dodoc ChangeLog AUTHORS README doc/conkyrc.sample
 }
 
 pkg_postinst() {

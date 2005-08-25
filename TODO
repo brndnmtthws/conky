@@ -2,19 +2,16 @@
 
 Heres a very simplified roadmap for Conky.  By no means does this mean any of this stuff will actually get implemented.
 
-1.3
-	* simple buttons?
-	* icecast status
-	* rewrite parts of code, making them more effecient and modular (in particular, the way objects are handled is a complete mess)
-	* conditional colours (ie if temp > 40C, make it red)
-	* think of new features to add
-	* max_width
-	* move things out of conky.c, since it's far too big
-	* better xinerama support, allow display1:0,0 et cetera
-1.4
-	* ideas needed
-1.5 (maybe in december?)
-	* network transparency
+1.3.0 - probably end of august/beginning of sept
+	* make it rock-solid
+	* release ASAP
+
+after 1.3.0 only maintenance releases will follow, no new features for the 1.x series
+
+2.0.0 - hopefully by christmas at the latest
+	* rewrite core of Conky in C++
+	* implement new features like a cairo backend, network transparency, and whatever else
+	
 
 ######################################
 # POSSIBLE FEATURES TO ADD  #
