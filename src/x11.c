@@ -27,6 +27,8 @@ Display *display;
 int display_width;
 int display_height;
 int screen;
+static int set_transparent;
+static int background_colour;
 
 /* workarea from _NET_WORKAREA, this is where window / text is aligned */
 int workarea[4];
@@ -145,32 +147,38 @@ static Window find_window_to_draw()
 /* sets background to ParentRelative for the Window and all parents */
 void set_transparent_background(Window win)
 {
-	Window parent = win;
-	unsigned int i;
-	for (i = 0; i < 16 && parent != RootWindow(display, screen); i++) {
-		Window r, *children;
-		unsigned int n;
-
-		XSetWindowBackgroundPixmap(display, parent,
-					   ParentRelative);
-
-		XQueryTree(display, parent, &r, &parent, &children, &n);
-		XFree(children);
+	if (set_transparent) {
+		Window parent = win;
+		unsigned int i;
+		for (i = 0; i < 16 && parent != RootWindow(display, screen); i++) {
+			Window r, *children;
+			unsigned int n;
+			
+			XSetWindowBackgroundPixmap(display, parent, ParentRelative);
+	
+			XQueryTree(display, parent, &r, &parent, &children, &n);
+			XFree(children);
+		}
+	} else {
+		XSetWindowBackground(display, win, background_colour);
 	}
 	XClearWindow(display, win);
 }
 
 #if defined OWN_WINDOW
-void init_window(int own_window, int w, int h, int l, int fixed_pos)
+void init_window(int own_window, int w, int h, int l, int fixed_pos, int set_trans, int back_colour)
 #else
-void init_window(int own_window, int w, int h, int l)
+void init_window(int own_window, int w, int h, int l, int set_trans, int back_colour)
 #endif
 {
 	/* There seems to be some problems with setting transparent background (on
 	 * fluxbox this time). It doesn't happen always and I don't know why it
 	 * happens but I bet the bug is somewhere here. */
+	set_transparent = set_trans;
+	background_colour = back_colour;
 #ifdef OWN_WINDOW
 	if (own_window) {
+
 		/* looks like root pixmap isn't needed for anything */
 		{
 			XSetWindowAttributes attrs;
@@ -280,7 +288,7 @@ void init_window(int own_window, int w, int h, int l)
 
 	XFlush(display);
 
-	/* set_transparent_background() must be done after double buffer stuff? */
+	/*set_transparent_background(window.window); must be done after double buffer stuff? */
 #ifdef OWN_WINDOW
 	if (own_window) {
 		set_transparent_background(window.window);

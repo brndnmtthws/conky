@@ -224,9 +224,9 @@ extern struct conky_window window;
 
 void init_X11();
 #if defined OWN_WINDOW
-void init_window(int use_own_window, int width, int height, int on_bottom, int fixed_pos);
+void init_window(int use_own_window, int width, int height, int on_bottom, int fixed_pos, int set_trans, int back_colour);
 #else
-void init_window(int use_own_window, int width, int height, int on_bottom);
+void init_window(int use_own_window, int width, int height, int on_bottom, int set_trans, int back_colour);
 #endif
 void create_gc();
 void set_transparent_background(Window win);

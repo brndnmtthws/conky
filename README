@@ -245,6 +245,16 @@ CONFIGURATION SETTINGS
 	      Boolean, create own window to draw?
 
 
+       own_window_transparent
+	      Boolean, set pseudo-transparency?
+
+
+       own_window_colour colour
+	      If  own_window_transparent no, set a specified background colour
+	      (defaults to black). Takes either a hex  value  (#ffffff)	 or  a
+	      valid RGB name (see /usr/lib/X11/rgb.txt)
+
+
        pad_percents
 	      Pad percentages to this many decimals (0 = no padding)
 

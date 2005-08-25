@@ -3,7 +3,9 @@
 2005-08-24
 	* More configure and makefile updates
 	* Added scale arg for net graphs
-	* Fixed bug in own_window stuff
+	* Fixed bug in own_window stuff--amazing fake transparency now works
+	properly
+	* added own_window_colour, own_window_transparent
 
 2005-08-23
 	* Added maximum_width

@@ -232,6 +232,9 @@ static long default_fg_color, default_bg_color, default_out_color;
 
 /* create own window or draw stuff to root? */
 static int own_window = 0;
+static int set_transparent = 0;
+static int background_colour = 0;
+
 
 #ifdef OWN_WINDOW
 /* fixed size/pos is set if wm/user changes them */
@@ -3425,7 +3428,6 @@ static void main_loop()
 			need_to_update = 0;
 
 			update_text_area();
-
 #ifdef OWN_WINDOW
 			if (own_window) {
 				/* resize window if it isn't right size */
@@ -3444,6 +3446,7 @@ static void main_loop()
 						      window.window,
 						      window.width,
 						      window.height);
+					set_transparent_background(window.window);
 				}
 
 				/* move window if it isn't in right position */
@@ -3475,7 +3478,6 @@ static void main_loop()
 		while (XPending(display)) {
 			XEvent ev;
 			XNextEvent(display, &ev);
-
 			switch (ev.type) {
 			case Expose:
 				{
@@ -3492,9 +3494,10 @@ static void main_loop()
 #ifdef OWN_WINDOW
 			case ReparentNotify:
 				/* set background to ParentRelative for all parents */
-				if (own_window)
+				if (own_window) {
 					set_transparent_background(window.
 								   window);
+				}
 				break;
 
 			case ConfigureNotify:
@@ -4094,6 +4097,12 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
 			use_xdbe = 0;
 #endif
 		}
+		CONF("own_window_transparent") {
+			set_transparent = string_to_bool(value);
+		}
+		CONF("own_window_colour") {
+			background_colour = get_x11_color(value);
+		}
 #endif
 		CONF("stippled_borders") {
 			if (value)
@@ -4398,13 +4407,13 @@ int main(int argc, char **argv)
 	    (own_window,
 	     text_width + border_margin * 2 + 1,
 	     text_height + border_margin * 2 + 1,
-	     on_bottom, fixed_pos);
+	     on_bottom, fixed_pos, set_transparent, background_colour);
 #else
 	init_window
 		(own_window,
 		 text_width + border_margin * 2 + 1,
 		 text_height + border_margin * 2 + 1,
-		 on_bottom);
+		 on_bottom, set_transparent, background_colour);
 	
 #endif
 

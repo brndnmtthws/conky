@@ -214,6 +214,22 @@
 </varlistentry>
 
 <varlistentry>
+	<term><command><option>own_window_transparent</option></command></term>
+	<listitem>
+		Boolean, set pseudo-transparency?
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>own_window_colour</option></command>
+		<option>colour</option>
+	</term>
+	<listitem>
+		If own_window_transparent no, set a specified background colour (defaults to black).  Takes either a hex value (#ffffff) or a valid RGB name (see /usr/lib/X11/rgb.txt)
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
 	<term><command><option>pad_percents</option></command></term>
 	<listitem>
 		Pad percentages to this many decimals (0 = no padding)
