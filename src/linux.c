@@ -687,9 +687,7 @@ float get_freq()
 	microseconds = ((tvstop.tv_sec - tvstart.tv_sec) * 1000000) +
 	    (tvstop.tv_usec - tvstart.tv_usec);
 
-	sprintf(buffer, "%lld", (cycles[1] - cycles[0]) / microseconds);
-
-	return strtod(buffer, (char **)NULL);
+	return (cycles[1] - cycles[0]) / microseconds;
 #else
 	FILE *f;
 	char s[1000];

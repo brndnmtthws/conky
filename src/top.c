@@ -375,6 +375,28 @@ inline static void calc_cpu_each(int total)
 static struct process **sorttmp;
 static size_t sorttmp_size = 10;
 
+int comparecpu(const void * a, const void * b)
+{
+	if ((*(struct process **)a)->amount > (*(struct process **)b)->amount) {
+		return -1;
+	}
+	if ((*(struct process **)a)->amount < (*(struct process **)b)->amount) {
+		return 1;
+	}
+	return 0;
+}
+
+int comparemem(const void * a, const void * b)
+{
+	if ((*(struct process **)a)->totalmem > (*(struct process **)b)->totalmem) {
+		return -1;
+	}
+	if ((*(struct process **)a)->totalmem < (*(struct process **)b)->totalmem) {
+		return 1;
+	}
+	return 0;
+}
+
 inline void process_find_top(struct process **cpu, struct process **mem)
 {
 	struct process *pr;
@@ -383,7 +405,7 @@ inline void process_find_top(struct process **cpu, struct process **mem)
 		assert(sorttmp != NULL);
 	}
 	int total;
-	unsigned int i, max;
+	unsigned int i/*, max*/;
 
 	total = calc_cpu_total();	/* calculate the total of the processor */
 
@@ -425,34 +447,9 @@ inline void process_find_top(struct process **cpu, struct process **mem)
 			    realloc(sorttmp,
 				    sizeof(struct process) * sorttmp_size);
 		}
-		max = i;
-		for (i = 0; i < max - 1; i++) {
-			while (sorttmp[i + 1]->amount > sorttmp[i]->amount) {
-				pr = sorttmp[i];
-				sorttmp[i] = sorttmp[i + 1];
-				sorttmp[i + 1] = pr;
-				if (i > 0)
-					i--;
-				else
-					break;
-			}
-
-		}
-		for (i = max; i > 1; i--);
-		{
-			while (sorttmp[i]->amount > sorttmp[i - 1]->amount) {
-				pr = sorttmp[i];
-				sorttmp[i] = sorttmp[i - 1];
-				sorttmp[i - 1] = pr;
-				if (i < max)
-					i++;
-				else
-					break;
-			}
-		}
+		qsort(sorttmp, i, sizeof(struct process *), comparecpu);
 		for (i = 0; i < 10; i++) {
 			cpu[i] = sorttmp[i];
-
 		}
 	}
 	if (top_mem) {
@@ -479,33 +476,7 @@ inline void process_find_top(struct process **cpu, struct process **mem)
 			    realloc(sorttmp,
 				    sizeof(struct process) * sorttmp_size);
 		}
-		max = i;
-		for (i = 0; i < max - 1; i++) {
-			while (sorttmp[i + 1]->totalmem >
-			       sorttmp[i]->totalmem) {
-				pr = sorttmp[i];
-				sorttmp[i] = sorttmp[i + 1];
-				sorttmp[i + 1] = pr;
-				if (i > 0)
-					i--;
-				else
-					break;
-			}
-
-		}
-		for (i = max; i > 1; i--);
-		{
-			while (sorttmp[i]->totalmem >
-			       sorttmp[i - 1]->totalmem) {
-				pr = sorttmp[i];
-				sorttmp[i] = sorttmp[i - 1];
-				sorttmp[i - 1] = pr;
-				if (i < max)
-					i++;
-				else
-					break;
-			}
-		}
+		qsort(sorttmp, i, sizeof(struct process *), comparemem);
 		for (i = 0; i < 10; i++) {
 			mem[i] = sorttmp[i];
 

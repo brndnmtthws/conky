@@ -2423,10 +2423,7 @@ static void generate_text()
 				    && obj->data.top.num < 10) {
 					// if we limit the buffer and add a bunch of space after, it stops the thing from
 					// moving other shit around, which is really fucking annoying
-					snprintf(p, 17,
-						 "%s                              ",
-						 cur->cpu[obj->data.top.
-							  num]->name);
+					snprintf(p, 17, "%s                              ", cur->cpu[obj->data.top.num]->name);
 				} else if (obj->data.top.type == TOP_CPU
 					   && obj->data.top.num >= 0
 					   && obj->data.top.num < 10) {
