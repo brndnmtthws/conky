@@ -54,7 +54,7 @@ total_run_times 0
 own_window no
 
 # Use double buffering (reduces flicker, may not work for everyone)
-double_buffer no
+double_buffer yes
 
 # Minimum size of text area
 minimum_size 280 5
