@@ -493,7 +493,7 @@ VARIABLES
        kernel Kernel version
 
 
-       linkstatus (interface)
+       linkstatus interface
 	      Get the link status for wireless connections
 
 

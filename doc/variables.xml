@@ -435,7 +435,7 @@
 <varlistentry>
 	<term>
 		<command><option>linkstatus</option></command>
-	<option>(interface)</option>
+	<option>interface</option>
 	</term>
 	<listitem>
 		Get the link status for wireless connections
