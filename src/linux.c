@@ -29,6 +29,7 @@
 #include <net/if.h>
 #include <math.h>
 
+#include <linux/major.h>
 
 static struct sysinfo s_info;
 
@@ -1093,9 +1094,10 @@ void update_diskio()
 	static FILE* fp;
 
 	char buf[512];
-	int minor;
+	int major, minor;
 	unsigned int current = 0;
 	unsigned int reads, writes = 0;
+	int col_count = 0;
 
 	if (!fp) {
 		fp = fopen("/proc/diskstats", "r");
@@ -1109,9 +1111,16 @@ void update_diskio()
 	current = 0;
 	while (!feof(fp)) {
 		fgets(buf, 512, fp);
-		sscanf(buf, "%*u %u %*s %*u %*u %u %*u %*u %*u %u",
-		       &minor, &reads, &writes);
-		if (minor == 0) {
+		col_count = sscanf(buf, "%u %u %*s %*u %*u %u %*u %*u %*u %u",
+				   &major, &minor, &reads, &writes);
+		/* ignore subdevices (they have only 7 entries in their line)
+		 * and virtual devices (LVM, network block devices, RAM disks, Loopback)
+		 *
+		 * XXX ignore devices which are part of a SW RAID (MD_MAJOR)
+		 */
+		if (col_count > 7 &&
+		    major != LVM_BLK_MAJOR && major != NBD_MAJOR &&
+		    major != RAMDISK_MAJOR && major != LOOP_MAJOR) {
 			current += reads + writes;
 		}
 	}
