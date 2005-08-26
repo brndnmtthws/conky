@@ -1778,7 +1778,7 @@ static void generate_text()
 				if (!use_spacer) {
 					if (diskio_value > 1024*1024) {
 						snprintf(p, n, "%.1fG",
-						 		(double)diskio_value/1024);
+						 		(double)diskio_value/1024/1024);
 					} else if (diskio_value > 1024) {
 						snprintf(p, n, "%.1fM",
 							 	(double)diskio_value/1024);
@@ -3217,9 +3217,19 @@ static void draw_line(char *s)
 					    specials[special_index].height;
 					int bar_usage =
 					    specials[special_index].arg;
-					int by =
-					    cur_y - (font_ascent() +
-						     h) / 2 - 1;
+					int by;
+
+#ifdef XFT
+					if (use_xft) {
+						by = cur_y - (font_ascent() + h) / 2 - 1;
+					} else 
+#endif
+					{
+						by = cur_y - (font_ascent()/2) - 1;
+					}
+					if (h < (font_height())) {
+						by -= h / 2 - 1;
+					}
 					w = specials[special_index].width;
 					if (w == 0)
 						w = text_start_x +
@@ -3264,11 +3274,14 @@ static void draw_line(char *s)
 					int by;
 #ifdef XFT
 					if (use_xft) {
-					    by = cur_y - (font_ascent() + h) / 2 + 1;
+                                            by = cur_y - (font_ascent() + h) / 2 - 1;
 					} else
 #endif
 					{
-						by = cur_y - (font_ascent()/2) + 1;
+						by = cur_y - (font_ascent()/2) - 1;
+					}
+					if (h < (font_height())) {
+						by -= h / 2 - 1;
 					}
 					w = specials[special_index].width;
 					if (w == 0)

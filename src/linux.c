@@ -1089,7 +1089,7 @@ void update_top()
 
 void update_diskio()
 {
-	static unsigned int last = 0;
+	static unsigned int last = UINT_MAX;
 	static FILE* fp;
 
 	char buf[512];
@@ -1121,10 +1121,10 @@ void update_diskio()
 	 * "sectors read", and we therefore have to divide by two to
 	 * get KB */
 	int tot = ((double)(current-last)/2);
-	if (last == 0) {
-		/* initial case: return zero since we don't have a
-		 * 'last' value yet; it's a safe assumption that if
-		 * last isn't zero, since it's counting from the start */
+	if (last > current) {
+		/* we hit this either if it's the very first time we
+                 * run this, or when /proc/diskstats overflows; while
+                 * 0 is not correct, it's at least not way off */
 		tot = 0;
 	}
 	last = current;
