@@ -31,7 +31,7 @@ configure-stamp:
 	autoheader
 	automake-1.9 -a
 	autoconf
-	./configure --host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info
+	./configure --host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info --enable-double-buffer   --enable-own-window --enable-proc-uptime --enable-mpd --enable-xft --enable-seti
 	touch configure-stamp
 
 
