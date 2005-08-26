@@ -30,44 +30,6 @@
 #define GETSYSCTL(name, var) getsysctl(name, &(var), sizeof(var))
 #define KELVTOC(x)      ((x - 2732) / 10.0)
 
-#if defined(i386) || defined(__i386__)
-static unsigned int get_timer();
-static unsigned int get_cpu_speed(void);
-static inline unsigned long long int rdtsc(void);
-
-/* cpu frequency detection code based on mplayer's one */
-
-static unsigned int get_timer()
-{
-	struct timeval tv;
-	struct timezone tz;
-	gettimeofday(&tv, &tz);
-
-	return (tv.tv_sec * 1000000 + tv.tv_usec);
-}
-
-static inline unsigned long long int rdtsc(void)
-{
-	unsigned long long int retval;
-	__asm __volatile("rdtsc":"=A"(retval)::"memory");
-	return retval;
-}
-
-static unsigned int get_cpu_speed(void)
-{
-	unsigned long long int tscstart, tscstop;
-	unsigned int start, stop;
-
-	tscstart = rdtsc();
-	start = get_timer();
-	usleep(50000);
-	stop = get_timer();
-	tscstop = rdtsc();
-
-	return ((tscstop - tscstart) / ((stop - start) / 1000.0));
-}
-#endif /* i386 */
-
 static int getsysctl(char *name, void *ptr, size_t len)
 {
 	size_t nlen = len;
@@ -421,10 +383,43 @@ char *get_adt746x_fan()
 	return "";
 }
 
+/* rdtsc() and get_freq_dynamic() copied from linux.c */
+
+#if  defined(__i386) || defined(__x86_64)
+__inline__ unsigned long long int rdtsc()
+{
+        unsigned long long int x;
+        __asm__ volatile (".byte 0x0f, 0x31":"=A" (x));
+        return x;
+}
+#endif
+
 float get_freq_dynamic()
 {
-    /* TODO: implement */
-    return get_freq();
+#if  defined(__i386) || defined(__x86_64)
+        struct timezone tz;
+        struct timeval tvstart, tvstop;
+        unsigned long long cycles[2];   /* gotta be 64 bit */
+        unsigned int microseconds;      /* total time taken */
+
+        memset(&tz, 0, sizeof(tz));
+
+        /* get this function in cached memory */
+        gettimeofday(&tvstart, &tz);
+        cycles[0] = rdtsc();
+        gettimeofday(&tvstart, &tz);
+         
+        /* we don't trust that this is any specific length of time */
+        usleep(100);
+        cycles[1] = rdtsc();
+        gettimeofday(&tvstop, &tz);
+        microseconds = ((tvstop.tv_sec - tvstart.tv_sec) * 1000000) +
+            (tvstop.tv_usec - tvstart.tv_usec);
+                             
+        return (cycles[1] - cycles[0]) / microseconds;
+#else
+        return get_freq();
+#endif
 }
 
 float get_freq()
@@ -435,20 +430,8 @@ float get_freq()
 	
 	if (GETSYSCTL("dev.cpu.0.freq", freq) == 0)
 		return (float)freq;
-	else {
-#if defined(i386) || defined(__i386__)
-		int i;
-
-		i = 0;
-		if ((i = get_cpu_speed()) > 0) {
-			return (float)(i / 1000);
-		} else
-			return 0;
-	}
-#else
-		return 0;
-	}
-#endif /* i386 */
+	else
+		return (float)0;
 }
 
 void update_top()
