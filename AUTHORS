@@ -65,7 +65,7 @@ Jeremy Burch <ascii021 at yahoo dot com>
 JL Farinacci
   pad_percents
 
-Johannes Winkelmann <winkj at users dot sourceforge dot net>
+Johannes Winkelmann <jw at tks6 dot net>
   disk I/O on linux
   more consistent cpu freq handling on linux
   capitalize Hertz in cpu frequeny
