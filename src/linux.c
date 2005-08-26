@@ -29,8 +29,6 @@
 #include <net/if.h>
 #include <math.h>
 
-#include <linux/major.h>
-
 static struct sysinfo s_info;
 
 static int show_nice_processes;
@@ -1087,6 +1085,28 @@ void update_top()
 	show_nice_processes = 1;
 	process_find_top(info.cpu, info.memu);
 }
+
+
+/*
+ *  This file is part of gkrellm
+ *  Copyright (C) 1999-2005 Bill Wilson
+ *
+ *  Licensed under the terms of the GNU GPL License version 2.
+ */
+
+#include <linux/major.h>
+
+#if ! defined (MD_MAJOR)
+#define MD_MAJOR	9
+#endif
+
+#if !defined(LVM_BLK_MAJOR)
+#define LVM_BLK_MAJOR 58
+#endif
+
+#if !defined(NBD_MAJOR)
+#define NBD_MAJOR 43
+#endif
 
 void update_diskio()
 {
