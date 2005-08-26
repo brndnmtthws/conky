@@ -1087,7 +1087,7 @@ void update_top()
 	process_find_top(info.cpu, info.memu);
 }
 
-unsigned int get_diskio()
+void update_diskio()
 {
 	static unsigned int last = 0;
 	static FILE* fp;
@@ -1129,5 +1129,5 @@ unsigned int get_diskio()
 	}
 	last = current;
 
-	return tot;
+	diskio_value = tot;
 }

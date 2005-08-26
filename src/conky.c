@@ -187,6 +187,7 @@ static void load_fonts()
 		ERR("can't load font '%s'", fonts[i].name);
 		if ((fonts[i].font = XLoadQueryFont(display, "fixed")) == NULL) {
 			CRIT_ERR("can't load font '%s'", "fixed");
+			printf("loaded fixed?\n");
 		}
 	}
 	}
@@ -498,7 +499,7 @@ static void new_font(char *buf, char * args) {
 		int tmp = selected_font;
 		selected_font = s->font_added = addfont(args);
 		load_fonts();
-		set_font();
+//		set_font();
 		selected_font = tmp;
 	}
 }
@@ -1014,8 +1015,8 @@ if (s[0] == '#') {
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(cpugraph, INFO_CPU)
 			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
-	END OBJ(diskio, 0)
-	END OBJ(diskiograph, 0) (void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
+	END OBJ(diskio, INFO_DISKIO)
+	END OBJ(diskiograph, INFO_DISKIO) (void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
 	END OBJ(color, 0) 
 #ifdef X11
 			obj->data.l = arg ? get_x11_color(arg) : default_fg_color;
@@ -1712,21 +1713,19 @@ static void generate_text()
 			}
 #endif /* X11 */
 			OBJ(diskio) {
-				int io = get_diskio();
-				if (io > 1024) {
+				if (diskio_value > 1024) {
 					snprintf(p, n, "%.1fM",
-						 (double)io/1024);
-				} else if (io > 0) {
-					snprintf(p, n, "%dK", io);
+						 (double)diskio_value/1024);
+				} else if (diskio_value > 0) {
+					snprintf(p, n, "%dK", diskio_value);
 				} else {
-					snprintf(p, n, "%d", io);
+					snprintf(p, n, "%d", diskio_value);
 				}
 			}
 			OBJ(diskiograph) {
-				int io = get_diskio();
 				new_graph(p, obj->a,
 					  obj->b, obj->c, obj->d,
-					  (unsigned int) (io), obj->e, 1);
+					  diskio_value, obj->e, 1);
 			}
 	
 			OBJ(downspeed) {
@@ -3137,12 +3136,11 @@ static void draw_line(char *s)
 					int by;
 #ifdef XFT
 					if (use_xft) {
-					    by = cur_y - (font_ascent() +
-						     h) / 2 - 1;
+					    by = cur_y - (font_ascent() + h) / 2 + 1;
 					} else
 #endif
 					{
-						by = cur_y - (font_ascent()/2);
+						by = cur_y - (font_ascent()/2) + 1;
 					}
 					w = specials[special_index].width;
 					if (w == 0)

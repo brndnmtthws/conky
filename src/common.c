@@ -196,6 +196,9 @@ void update_stuff()
 	if (NEED(INFO_NET))
 		update_net_stats();
 
+	if (NEED(INFO_DISKIO))
+		update_diskio();
+
 	if (NEED(INFO_WIFI))
 		update_wifi_stats();
 

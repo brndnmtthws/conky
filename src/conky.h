@@ -57,6 +57,8 @@ struct net_stat {
 	double net_rec[15], net_trans[15];
 };
 
+unsigned int diskio_value;
+
 struct fs_stat {
 	int fd;
 	char *path;
@@ -111,6 +113,7 @@ enum {
 	INFO_MLDONKEY = 18,
 #endif
 	INFO_WIFI = 19,
+	INFO_DISKIO = 20,
 };
 
 
@@ -258,6 +261,7 @@ extern int no_buffers;
 
 /* system dependant (in linux.c) */
 
+void update_diskio(void);
 void prepare_update(void);
 void update_uptime(void);
 void update_meminfo(void);
