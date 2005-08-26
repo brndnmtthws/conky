@@ -164,7 +164,7 @@ inline void set_transparent_background(Window win)
 		XSetWindowBackground(display, win, background_colour);
 		colour_set = background_colour;
 	}
-	//XClearWindow(display, win);
+	//XClearWindow(display, win); not sure why this was here
 }
 
 #if defined OWN_WINDOW

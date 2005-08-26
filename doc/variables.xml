@@ -365,6 +365,16 @@
 
 <varlistentry>
 	<term>
+		<command><option>head</option></command>
+		<option>logfile lines (interval)</option>
+	</term>
+	<listitem>
+		Displays first N lines of supplied text text file. If interval is not supplied, Conky assumes 2x Conky's interval. Max of 30 lines can be displayed, or until the text buffer is filled.
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>hr</option></command>
 	<option>(height)</option>
 	</term>
@@ -812,9 +822,10 @@
 <varlistentry>
 	<term>
 		<command><option>tail</option></command>
+		<option>logfile lines (interval)</option>
 	</term>
 	<listitem>
-		logfile, lines interval> Displays last N lines of supplied text text file. If interval is not supplied, Conky assumes 2x Conky's interval. Max of 30 lines. Max of 30 lines can be displayed.
+		Displays last N lines of supplied text text file. If interval is not supplied, Conky assumes 2x Conky's interval. Max of 30 lines can be displayed, or until the text buffer is filled.
 	<para></para></listitem>
 </varlistentry>
 

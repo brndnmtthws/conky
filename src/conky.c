@@ -678,9 +678,9 @@ static void convert_escapes(char *buf)
 /* converts from bytes to human readable format (k, M, G, T) */
 static void human_readable(long long a, char *buf, int size)
 {
-	//Strange conditional due to possible overflows
+	// Strange conditional due to possible overflows
 	if(a / 1024 / 1024 / 1024.0 > 1024.0){
-		snprintf(buf, size, "%.2fT", (a / 1024 / 1024) / 1024 / 1024.0);
+		snprintf(buf, size, "%.2fT", (a / 1024 / 1024 / 1024) / 1024.0);
 	}
 	else if (a >= 1024 * 1024 * 1024) {
 		snprintf(buf, size, "%.2fG", (a / 1024 / 1024) / 1024.0);
@@ -752,6 +752,7 @@ enum text_object_type {
 	OBJ_top,
 	OBJ_top_mem,
 	OBJ_tail,
+	OBJ_head,
 	OBJ_kernel,
 	OBJ_loadavg,
 	OBJ_machine,
@@ -1304,7 +1305,67 @@ if (s[0] == '#') {
 		ERR("invalid args given for tail");
 		return;
 	}
-	obj->data.tail.buffer = malloc(TEXT_BUFFER_SIZE * 6); /* asumming all else worked */
+	obj->data.tail.buffer = malloc(TEXT_BUFFER_SIZE * 20); /* asumming all else worked */
+	END OBJ(head, 0)
+			char buf[64];
+	int n1, n2;
+	if (!arg) {
+		ERR("head needs arguments");
+		obj->type = OBJ_text;
+		obj->data.s = strdup("${head}");
+		return;
+	}
+	if (sscanf(arg, "%63s %i %i", buf, &n1, &n2) == 2) {
+		if (n1 < 1 || n1 > 30) {
+			CRIT_ERR("invalid arg for head, number of lines must be between 1 and 30");
+			return;
+		} else {
+			FILE *fp;
+			fp = fopen(buf, "rt");
+			if (fp != NULL) {
+				obj->data.tail.logfile =
+						malloc(TEXT_BUFFER_SIZE);
+				strcpy(obj->data.tail.logfile, buf);
+				obj->data.tail.wantedlines = n1 - 1;
+				obj->data.tail.interval =
+						update_interval * 2;
+				fclose(fp);
+			} else {
+				//fclose (fp);
+				CRIT_ERR("head logfile does not exist, or you do not have correct permissions");
+			}
+		}
+	} else if (sscanf(arg, "%63s %i %i", buf, &n1, &n2) == 3) {
+		if (n1 < 1 || n1 > 30) {
+			CRIT_ERR
+					("invalid arg for head, number of lines must be between 1 and 30");
+			return;
+		} else if (n2 < 1 || n2 < update_interval) {
+			CRIT_ERR
+					("invalid arg for head, interval must be greater than 0 and Conky's interval");
+			return;
+		} else {
+			FILE *fp;
+			fp = fopen(buf, "rt");
+			if (fp != NULL) {
+				obj->data.tail.logfile =
+						malloc(TEXT_BUFFER_SIZE);
+				strcpy(obj->data.tail.logfile, buf);
+				obj->data.tail.wantedlines = n1 - 1;
+				obj->data.tail.interval = n2;
+				fclose(fp);
+			} else {
+				//fclose (fp);
+				CRIT_ERR("head logfile does not exist, or you do not have correct permissions");
+			}
+		}
+	}
+
+	else {
+		ERR("invalid args given for head");
+		return;
+	}
+	obj->data.tail.buffer = malloc(TEXT_BUFFER_SIZE * 20); /* asumming all else worked */
 	END OBJ(loadavg, INFO_LOADAVG) int a = 1, b = 2, c = 3, r = 3;
 	if (arg) {
 		r = sscanf(arg, "%d %d %d", &a, &b, &c);
@@ -1714,13 +1775,30 @@ static void generate_text()
 			}
 #endif /* X11 */
 			OBJ(diskio) {
-				if (diskio_value > 1024) {
-					snprintf(p, n, "%.1fM",
-						 (double)diskio_value/1024);
-				} else if (diskio_value > 0) {
-					snprintf(p, n, "%dK", diskio_value);
+				if (!use_spacer) {
+					if (diskio_value > 1024*1024) {
+						snprintf(p, n, "%.1fG",
+						 		(double)diskio_value/1024);
+					} else if (diskio_value > 1024) {
+						snprintf(p, n, "%.1fM",
+							 	(double)diskio_value/1024);
+					} else if (diskio_value > 0) {
+						snprintf(p, n, "%dK", diskio_value);
+					} else {
+						snprintf(p, n, "%d", diskio_value);
+					}
 				} else {
-					snprintf(p, n, "%d", diskio_value);
+					if (diskio_value > 1024*1024) {
+						snprintf(p, 6, "%.1fG   ",
+								(double)diskio_value/1024/1024);
+					} else if (diskio_value > 1024) {
+						snprintf(p, 6, "%.1fM   ",
+								(double)diskio_value/1024);
+					} else if (diskio_value > 0) {
+						snprintf(p, 6, "%dK ", diskio_value);
+					} else {
+						snprintf(p, 6, "%d     ", diskio_value);
+					}
 				}
 			}
 			OBJ(diskiograph) {
@@ -2548,6 +2626,7 @@ static void generate_text()
 					int added = 0;
 					tailstring *head = NULL;
 					tailstring *headtmp = NULL;
+					tailstring *freetmp = NULL;
 					fp = fopen(obj->data.tail.logfile, "rt");
 					if (fp == NULL) {
 						ERR("tail logfile failed to open");
@@ -2567,17 +2646,20 @@ static void generate_text()
 						}
 
 						fclose(fp);
+						freetmp = head;
 
 						if (obj->data.tail.readlines > 0) {
 							for (i = 0;i < obj->data.tail.wantedlines + 1 && i < obj->data.tail.readlines; i++) {
 								addtail(&headtmp, head->data);
 								head = head->next;
 							}
+							freetail(freetmp);
+							freetmp = headtmp;
 							strcpy(obj->data.tail.buffer, headtmp->data);
 							headtmp = headtmp->next;
 							for (i = 1;i < obj->data.tail.wantedlines + 1 && i < obj->data.tail.readlines; i++) {
 								if (headtmp) {
-									strncat(obj->data.tail.buffer, headtmp->data, (TEXT_BUFFER_SIZE * 6 / obj->data.tail.wantedlines) - strlen(obj->data.tail.buffer)); /* without strlen() at the end this becomes a possible */
+									strncat(obj->data.tail.buffer, headtmp->data, (TEXT_BUFFER_SIZE * 20 / obj->data.tail.wantedlines) - strlen(obj->data.tail.buffer)); /* without strlen() at the end this becomes a possible */
 									headtmp = headtmp->next;
 								}
 							}
@@ -2588,18 +2670,63 @@ static void generate_text()
 							}
 							snprintf(p, n, "%s", obj->data.tail.buffer);
 
-							freetail(headtmp);
+							freetail(freetmp);
 						}
 						else {
 							strcpy(obj->data.tail.buffer, "Logfile Empty");
 							snprintf(p, n, "Logfile Empty");
 						}
-						freetail(head);
 					}
 				}
 			}
-
-
+			OBJ(head) {
+				if (current_update_time -obj->data.tail.last_update < obj->data.tail.interval) {
+					snprintf(p, n, "%s", obj->data.tail.buffer);
+				} else {
+					obj->data.tail.last_update = current_update_time;
+					FILE *fp;
+					tailstring *head = NULL;
+					tailstring *headtmp = NULL;
+					tailstring *freetmp = NULL;
+					fp = fopen(obj->data.tail.logfile, "rt");
+					if (fp == NULL) {
+						ERR("head logfile failed to open");
+					}
+					else {
+						obj->data.tail.readlines = 0;
+						while (fgets(obj->data.tail.buffer, TEXT_BUFFER_SIZE*4, fp) != NULL && obj->data.tail.readlines <= obj->data.tail.wantedlines) {
+							addtail(&head, obj->data.tail.buffer);
+							obj->data.tail.readlines++;
+						}
+						fclose(fp);
+						freetmp = head;
+						if (obj->data.tail.readlines > 0) {
+							while (head) {
+								addtail(&headtmp, head->data);
+								head = head->next;
+							}
+							freetail(freetmp);
+							freetmp = headtmp;
+							strcpy(obj->data.tail.buffer, headtmp->data);
+							headtmp = headtmp->next;
+							while (headtmp) {
+								strncat(obj->data.tail.buffer, headtmp->data, (TEXT_BUFFER_SIZE * 20 / obj->data.tail.wantedlines) - strlen(obj->data.tail.buffer)); /* without strlen() at the end this becomes a possible */
+								headtmp = headtmp->next;
+							}
+							freetail(freetmp);
+							/* get rid of any ugly newlines at the end */
+							if (obj->data.tail.buffer[strlen(obj->data.tail.buffer)-1] == '\n') {
+								obj->data.tail.buffer[strlen(obj->data.tail.buffer)-1] = '\0';
+							}
+							snprintf(p, n, "%s", obj->data.tail.buffer);
+						}
+						else {
+							strcpy(obj->data.tail.buffer, "Logfile Empty");
+							snprintf(p, n, "Logfile Empty");
+						}
+					}
+				}
+			}
 
 			break;
 		}

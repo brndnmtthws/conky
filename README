@@ -457,6 +457,12 @@ VARIABLES
 	      File system used space
 
 
+       head logfile lines (interval)
+	      Displays	first  N lines of supplied text text file. If interval
+	      is not supplied, Conky assumes 2x Conky's interval.  Max	of  30
+	      lines can be displayed, or until the text buffer is filled.
+
+
        hr (height)
 	      Horizontal line, height is the height in pixels
 
@@ -655,9 +661,10 @@ VARIABLES
 	      Move text over by N pixels. See also $voffset.
 
 
-       tail   logfile, lines interval> Displays last N lines of supplied  text
-	      text file. If interval is not supplied, Conky assumes 2x Conky's
-	      interval. Max of 30 lines. Max of 30 lines can be displayed.
+       tail logfile lines (interval)
+	      Displays last N lines of supplied text text file. If interval is
+	      not supplied, Conky assumes 2x Conky's interval. Max of 30 lines
+	      can be displayed, or until the text buffer is filled.
 
 
        time (format)

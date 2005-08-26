@@ -6,6 +6,7 @@
 	* applied $freq fixes patch, adds new $freq_dyn (sf.net patch 1271633)
 	* removed units from $freq* output
 	* fix for graph config parsing
+	* Added $head, fixed mem leak with $tail
 
 2005-08-24
 	* More configure and makefile updates
