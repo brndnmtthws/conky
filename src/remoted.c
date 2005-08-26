@@ -34,7 +34,7 @@ static char *data;
 
 #define BACKLOG 10     // how many pending connections queue will hold
 
-void sigchld_handler(int s)
+void sigchld_handler(/*int s*/)
 {
 	while(wait(NULL) > 0);
 }
@@ -111,7 +111,7 @@ void *daemon_loop()
 void daemon_run(const char *s)
 {
 	/* create thread, keep an eye on it */
-	data = s;
+	data = (char *)s;
 	int iret;
 	if (!daemon_status) {
 		daemon_status = 1;

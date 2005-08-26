@@ -65,5 +65,5 @@ void client()
 
 	    close(sockfd);
 
-	    return 0;
+	    return;
 }

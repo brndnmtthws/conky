@@ -830,6 +830,7 @@ struct text_object {
 	int type;
 	int a, b;
 	unsigned int c, d, e;
+	float f;
 	union {
 		char *s;	/* some string */
 		int i;		/* some integer */
@@ -1070,7 +1071,7 @@ if (s[0] == '#') {
 		snprintf(buf, 256, "${%s}", s);
 		obj->data.s = strdup(buf);
 		} else {
-			obj->data.s = strdup(arg + n);
+			obj->data.execi.cmd = strdup(arg + n);
 		    }
 	END OBJ(execigraph, 0) unsigned int n;
 	if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
@@ -1080,7 +1081,7 @@ if (s[0] == '#') {
 		snprintf(buf, 256, "${%s}", s);
 		obj->data.s = strdup(buf);
 		    } else {
-			    obj->data.s = strdup(arg + n);
+			    obj->data.execi.cmd = strdup(arg + n);
 		    }
 	END OBJ(execi, 0) unsigned int n;
 
@@ -1859,10 +1860,10 @@ static void generate_text()
 			}
 			OBJ(execibar) {
 				if (current_update_time - obj->data.execi.last_update <	obj->data.execi.interval) {
-					new_bar(p, 0, 4, (int) obj->data.execi.data);
+					new_bar(p, 0, 4, (int) obj->f);
 				} else {
 					char *p2 = p;
-					FILE *fp = popen(obj->data.s, "r");
+					FILE *fp = popen(obj->data.execi.cmd, "r");
 					int n2 = fread(p, 1, n, fp);
 					(void) pclose(fp);
 					p[n2] = '\0';
@@ -1874,15 +1875,15 @@ static void generate_text()
 							*p2 = ' ';
 						p2++;
 					}
-					double barnum;
-					if (sscanf(p, "%lf", &barnum) == 0) {
+					float barnum;
+					if (sscanf(p, "%f", &barnum) == 0) {
 						ERR("reading execibar value failed (perhaps it's not the correct format?)");
 					}
 					if (barnum > 100 || barnum < 0) {
 						ERR("your execibar value is not between 0 and 100, therefore it will be ignored");
 					} else {
-						obj->data.execi.data = 255 * barnum / 100.0;
-						new_bar(p, 0, 4, (int) obj->data.execi.data);
+						obj->f = 255 * barnum / 100.0;
+						new_bar(p, 0, 4, (int) obj->f);
 					}
 					obj->data.execi.last_update =
 							current_update_time;
@@ -1890,10 +1891,10 @@ static void generate_text()
 			}
 			OBJ(execigraph) {
 				if (current_update_time - obj->data.execi.last_update <	obj->data.execi.interval) {
-					new_graph(p, 0,	25, obj->c, obj->d, (int) (obj->data.execi.data), obj->e, 0);
+					new_graph(p, 0,	25, obj->c, obj->d, (int) (obj->f), 100, 0);
 				} else {
 					char *p2 = p;
-					FILE *fp = popen(obj->data.s, "r");
+					FILE *fp = popen(obj->data.execi.cmd, "r");
 					int n2 = fread(p, 1, n, fp);
 					(void) pclose(fp);
 					p[n2] = '\0';
@@ -1905,15 +1906,15 @@ static void generate_text()
 							*p2 = ' ';
 						p2++;
 					}
-					double barnum;
-					if (sscanf(p, "%lf", &barnum) == 0) {
+					float barnum;
+					if (sscanf(p, "%f", &barnum) == 0) {
 						ERR("reading execigraph value failed (perhaps it's not the correct format?)");
 					}
 					if (barnum > 100 || barnum < 0) {
 						ERR("your execigraph value is not between 0 and 100, therefore it will be ignored");
 					} else {
-						obj->data.execi.data = barnum;
-						new_graph(p, 0,	25, obj->c, obj->d, (int) (obj->data.execi.data), obj->e, 1);
+						obj->f = barnum;
+						new_graph(p, 0,	25, obj->c, obj->d, (int) (obj->f), 100, 1);
 					}
 					obj->data.execi.last_update = current_update_time;
 	
