@@ -4298,10 +4298,11 @@ int main(int argc, char **argv)
 	}
 #endif
 
-	if (current_config != NULL)
+	if (current_config != NULL && fopen((const char *)current_config, (const char *)"r"))
 		load_config_file(current_config);
-	else
+	else { 
 		set_default_configurations();
+	}
 
 #ifdef MAIL_FILE
 	if (current_mail_spool == NULL) {
