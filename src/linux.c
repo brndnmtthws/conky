@@ -1088,16 +1088,12 @@ void update_top()
 
 
 /*
- *  This file is part of gkrellm
- *  Copyright (C) 1999-2005 Bill Wilson
- *
- *  Licensed under the terms of the GNU GPL License version 2.
+ *  The following ifdefs were adapted from gkrellm
  */
-
 #include <linux/major.h>
 
 #if ! defined (MD_MAJOR)
-#define MD_MAJOR	9
+#define MD_MAJOR 9
 #endif
 
 #if !defined(LVM_BLK_MAJOR)
