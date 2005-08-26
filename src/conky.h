@@ -267,6 +267,7 @@ void update_cpu_usage(void);
 void update_total_processes(void);
 void update_running_processes(void);
 float get_freq();
+float get_freq_dynamic();
 void update_load_average();
 int open_i2c_sensor(const char *dev, const char *type, int n, int *div,
 		    char *devtype);
@@ -274,6 +275,7 @@ double get_i2c_info(int *fd, int arg, char *devtype, char *type);
 
 char *get_adt746x_cpu(void);
 char *get_adt746x_fan(void);
+unsigned int get_diskio(void);
 
 int open_acpi_temperature(const char *name);
 double get_acpi_temperature(int fd);

@@ -421,6 +421,12 @@ char *get_adt746x_fan()
 	return "";
 }
 
+float get_freq_dynamic()
+{
+    /* TODO: implement */
+    reeturn get_freq();
+}
+
 float get_freq()
 {
 	/* First, try to obtain CPU frequency via dev.cpu.0.freq sysctl

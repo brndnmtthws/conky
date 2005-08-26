@@ -145,12 +145,13 @@ static Window find_window_to_draw()
 }
 
 /* sets background to ParentRelative for the Window and all parents */
-void set_transparent_background(Window win)
+inline void set_transparent_background(Window win)
 {
+	static int colour_set = -1;
 	if (set_transparent) {
 		Window parent = win;
 		unsigned int i;
-		for (i = 0; i < 16 && parent != RootWindow(display, screen); i++) {
+		for (i = 0; i < 50 && parent != RootWindow(display, screen); i++) {
 			Window r, *children;
 			unsigned int n;
 			
@@ -158,11 +159,12 @@ void set_transparent_background(Window win)
 	
 			XQueryTree(display, parent, &r, &parent, &children, &n);
 			XFree(children);
-		}
-	} else {
+			}
+	} else if (colour_set != background_colour) {
 		XSetWindowBackground(display, win, background_colour);
+		colour_set = background_colour;
 	}
-	XClearWindow(display, win);
+	//XClearWindow(display, win);
 }
 
 #if defined OWN_WINDOW
@@ -198,7 +200,7 @@ void init_window(int own_window, int w, int h, int l, int set_trans, int back_co
 			XSetClassHint(display, window.window,
 				      &class_hints);
 
-			set_transparent_background(window.window);
+			/*set_transparent_background(window.window);*/
 
 			XStoreName(display, window.window, "conky");
 
@@ -290,10 +292,10 @@ void init_window(int own_window, int w, int h, int l, int set_trans, int back_co
 
 	/*set_transparent_background(window.window); must be done after double buffer stuff? */
 #ifdef OWN_WINDOW
-	if (own_window) {
-		set_transparent_background(window.window);
+	/*if (own_window) {
+	set_transparent_background(window.window);
 		XClearWindow(display, window.window);
-	}
+}*/
 #endif
 
 	XSelectInput(display, window.window, ExposureMask

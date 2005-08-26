@@ -659,11 +659,9 @@ __inline__ unsigned long long int rdtsc()
 	return x;
 }
 static char *buffer = NULL;
-#else
-static char *frequency;
 #endif
 
-float get_freq()
+float get_freq_dynamic()
 {
 #if  defined(__i386) || defined(__x86_64)
 	if (buffer == NULL)
@@ -689,28 +687,53 @@ float get_freq()
 
 	return (cycles[1] - cycles[0]) / microseconds;
 #else
+	return get_freq();
+#endif
+}
+
+#define CPUFREQ_CURRENT "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"
+
+static char *frequency;
+	
+float get_freq()
+{
 	FILE *f;
 	char s[1000];
 	if (frequency == NULL) {
 		frequency = (char *) malloc(100);
 		assert(frequency != NULL);
 	}
-	//char frequency[10];
+	f = fopen(CPUFREQ_CURRENT, "r");
+	if (f) {
+		/* if there's a cpufreq /sys node, read the current
+		 * frequency there from this node; divice by 1000 to
+		 * get MHz
+		 */
+		double freq = 0;
+		if (fgets(s, 1000,f)) {
+			s[strlen(s)-1] = '\0';
+			freq = strtod(s, NULL);
+		}
+		fclose(f);
+		return (freq/1000);
+	}
+	
 	f = fopen("/proc/cpuinfo", "r");	//open the CPU information file
-	//if (!f)
-	//    return;
+	if (!f)
+	    return 0;
 	while (fgets(s, 1000, f) != NULL){	//read the file
-		if (strncmp(s, "clock", 5) == 0) {	//and search for the cpu mhz
-			//printf("%s", strchr(s, ':')+2);
+#if defined(__i386) || defined(__x86_64)
+		if (strncmp(s, "cpu MHz", 5) == 0) {	//and search for the cpu mhz
+#else
+		if (strncmp(s, "clock", 5) == 0) {	// this is different on ppc for some reason
+#endif
 		strcpy(frequency, strchr(s, ':') + 2);	//copy just the number
 		frequency[strlen(frequency) - 1] = '\0';	// strip \n
 		break;
 		}
 	}
 		fclose(f);
-		//printf("%s\n", frequency);
 		return strtod(frequency, (char **)NULL);
-#endif
 }
 
 
@@ -1062,4 +1085,49 @@ void update_top()
 {
 	show_nice_processes = 1;
 	process_find_top(info.cpu, info.memu);
+}
+
+unsigned int get_diskio()
+{
+	static unsigned int last = 0;
+	static FILE* fp;
+
+	char buf[512];
+	int minor;
+	unsigned int current = 0;
+	unsigned int reads, writes = 0;
+
+	if (!fp) {
+		fp = fopen("/proc/diskstats", "r");
+	} else {
+		fseek(fp, 0, SEEK_SET);
+	}
+
+	/* read reads and writes from all disks (minor = 0), including
+	 * cd-roms and floppies, and summ them up
+	 */
+	current = 0;
+	while (!feof(fp)) {
+		fgets(buf, 512, fp);
+		sscanf(buf, "%*u %u %*s %*u %*u %u %*u %*u %*u %u",
+		       &minor, &reads, &writes);
+		if (minor == 0) {
+			current += reads + writes;
+		}
+	}
+
+	/* since the values in /proc/diststats are absolute, we have
+	 * to substract our last reading. The numbers stand for
+	 * "sectors read", and we therefore have to divide by two to
+	 * get KB */
+	int tot = ((double)(current-last)/2);
+	if (last == 0) {
+		/* initial case: return zero since we don't have a
+		 * 'last' value yet; it's a safe assumption that if
+		 * last isn't zero, since it's counting from the start */
+		tot = 0;
+	}
+	last = current;
+
+	return tot;
 }

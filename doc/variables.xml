@@ -152,6 +152,25 @@
 
 <varlistentry>
 	<term>
+		<command><option>diskio</option></command>
+	</term>
+	<listitem>
+		Displays current disk IO.
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>diskiograph</option></command>
+		<option>(height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+	</term>
+	<listitem>
+		Disk IO graph, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>downspeed</option></command>
 	<option>net</option>
 	</term>
@@ -274,6 +293,23 @@
 		</term>
 		<listitem>
 			Returns CPU frequency in GHz
+			<para></para></listitem>
+	</varlistentry>
+	
+	<varlistentry>
+		<term>
+			<command><option>freq_dyn</option></command>
+		</term>
+		<listitem>
+			Returns CPU frequency in MHz, but is calculated by counting to clock cycles to complete an instruction.  Only available for x86/amd64.
+			<para></para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+			<command><option>freq_dyn_g</option></command>
+		</term>
+		<listitem>
+			Returns CPU frequency in GHz, but is calculated by counting to clock cycles to complete an instruction.  Only available for x86/amd64.
 			<para></para></listitem>
 	</varlistentry>
 	

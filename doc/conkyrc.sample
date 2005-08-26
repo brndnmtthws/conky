@@ -53,6 +53,12 @@ total_run_times 0
 # Create own window instead of using desktop (required in nautilus)
 own_window no
 
+# Use pseudo transparency with own_window?
+own_window_transparent yes
+
+# If own_window_transparent is set to no, you can set the background colour here
+own_window_colour hotpink
+
 # Use double buffering (reduces flicker, may not work for everyone)
 double_buffer yes
 

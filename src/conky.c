@@ -231,12 +231,12 @@ static int border_margin, border_width;
 static long default_fg_color, default_bg_color, default_out_color;
 
 /* create own window or draw stuff to root? */
-static int own_window = 0;
 static int set_transparent = 0;
-static int background_colour = 0;
 
 
 #ifdef OWN_WINDOW
+static int own_window = 0;
+static int background_colour = 0;
 /* fixed size/pos is set if wm/user changes them */
 static int fixed_size = 0, fixed_pos = 0;
 #endif
@@ -261,7 +261,7 @@ static char original_text[] =
     "$hr\n"
     "${color grey}Uptime:$color $uptime\n"
     "${color grey}Frequency (in MHz):$color $freq\n"
-    "${color grey}Frequency (in Ghz):$color $freq_g\n"
+    "${color grey}Frequency (in GHz):$color $freq_g\n"
     "${color grey}RAM Usage:$color $mem/$memmax - $memperc% ${membar 4}\n"
     "${color grey}Swap Usage:$color $swap/$swapmax - $swapperc% ${swapbar 4}\n"
     "${color grey}CPU Usage:$color $cpu% ${cpubar 4}\n"
@@ -511,7 +511,7 @@ inline void graph_append(struct special_t *graph, double f)
 	}
 	int i;
 	if (graph->scaled) {
-		graph->graph_scale = 0;
+		graph->graph_scale = 1;
 	}
 	graph->graph[graph->graph_width - 1] = f; /* add new data */
 	for (i = 0; i < graph->graph_width - 1; i++) { /* shift all the data by 1 */
@@ -563,23 +563,29 @@ static const char *scan_graph(const char *args, int *w, int *h, unsigned int *fi
 					if (sscanf(args, "%d,%d %x %x", h, w, first_colour, last_colour) < 4) {
 						*w = 0;
 				*h = 25;			
-				if (sscanf(args, "%*s %x %x", first_colour, last_colour) < 3) {
+				if (sscanf(args, "%*s %x %x %i", first_colour, last_colour, scale) < 3) {
 				*w = 0;
 				*h = 25;
-				if (sscanf(args, "%x %x", first_colour, last_colour) < 2) {
-					*first_colour = 0;
-					*last_colour = 0;
-					if (sscanf(args, "%d,%d", h, w) < 2) {
+				*scale = 0;
+				if (sscanf(args, "%*s %x %x", first_colour, last_colour) < 2) {
+					*w = 0;
+					*h = 25;
+					if (sscanf(args, "%x %x %i", first_colour, last_colour, scale) < 3) {
 						*first_colour = 0;
 						*last_colour = 0;
-						sscanf(args, "%*s %d,%d", h, w);
-					}
-				}}
-			}
-			}
-			}
-		}
-	}
+						*scale = 0;
+						if (sscanf(args, "%x %x", first_colour, last_colour) < 2) {
+					*first_colour = 0;
+					*last_colour = 0;
+					if (sscanf(args, "%d,%d %i", h, w, scale) < 3) {
+						*first_colour = 0;
+						*last_colour = 0;
+						*scale = 0;
+						if (sscanf(args, "%d,%d", h, w) < 2) {
+							*first_colour = 0;
+							*last_colour = 0;
+							sscanf(args, "%*s %d,%d", h, w);
+	}}}}}}}}}}} // haha
 	return args;
 }
 
@@ -709,6 +715,8 @@ enum text_object_type {
 	OBJ_cpu,
 	OBJ_cpubar,
 	OBJ_cpugraph,
+	OBJ_diskio,
+	OBJ_diskiograph,
 	OBJ_downspeed,
 	OBJ_downspeedf,
 	OBJ_downspeedgraph,
@@ -722,6 +730,8 @@ enum text_object_type {
 	OBJ_execigraph,
 	OBJ_freq,
 	OBJ_freq_g,
+	OBJ_freq_dyn,
+	OBJ_freq_dyn_g,
 	OBJ_fs_bar,
 	OBJ_fs_bar_free,
 	OBJ_fs_free,
@@ -826,6 +836,7 @@ struct text_object {
 		struct net_stat *net;
 		struct fs_stat *fs;
 		unsigned char loadavg[3];
+		unsigned int diskio;
 
 		struct {
 			struct fs_stat *fs;
@@ -986,6 +997,8 @@ if (s[0] == '#') {
 	END OBJ(acpiacadapter, 0)
 	END OBJ(freq, 0);
 	END OBJ(freq_g, 0);
+	END OBJ(freq_dyn, 0);
+	END OBJ(freq_dyn_g, 0);
 	END OBJ(acpifan, 0);
 	END OBJ(battery, 0);
 	char bat[64];
@@ -1001,6 +1014,8 @@ if (s[0] == '#') {
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(cpugraph, INFO_CPU)
 			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
+	END OBJ(diskio, 0)
+	END OBJ(diskiograph, 0) (void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
 	END OBJ(color, 0) 
 #ifdef X11
 			obj->data.l = arg ? get_x11_color(arg) : default_fg_color;
@@ -1629,12 +1644,19 @@ static void generate_text()
 									i)+ 40) * 9.0 / 5 - 40));
 			}
 			OBJ(freq) {
-				snprintf(p, n, "%.0fMhz", get_freq());
+				snprintf(p, n, "%.0f", get_freq());
 			}
 			OBJ(freq_g) {
 				float ghz = (float)(get_freq()/1000);
 				//printf("%f\n", ghz);
-				snprintf(p, n, "%'.2fGhz", ghz);
+				snprintf(p, n, "%'.2f", ghz);
+			}
+			OBJ(freq_dyn) {
+				snprintf(p, n, "%.0f", get_freq_dynamic());
+			}
+			OBJ(freq_dyn_g) {
+				float ghz = (float)(get_freq_dynamic()/1000);
+				snprintf(p, n, "%'.2f", ghz);
 			}
 			OBJ(adt746xcpu) {
 				snprintf(p, n, "%s", get_adt746x_cpu());
@@ -1689,6 +1711,24 @@ static void generate_text()
 				new_font(p, obj->data.s);
 			}
 #endif /* X11 */
+			OBJ(diskio) {
+				int io = get_diskio();
+				if (io > 1024) {
+					snprintf(p, n, "%.1fM",
+						 (double)io/1024);
+				} else if (io > 0) {
+					snprintf(p, n, "%dK", io);
+				} else {
+					snprintf(p, n, "%d", io);
+				}
+			}
+			OBJ(diskiograph) {
+				int io = get_diskio();
+				new_graph(p, obj->a,
+					  obj->b, obj->c, obj->d,
+					  (unsigned int) (io), obj->e, 1);
+			}
+	
 			OBJ(downspeed) {
 				if (!use_spacer) {
 					snprintf(p, n, "%d",
@@ -3147,7 +3187,7 @@ static void draw_line(char *s)
 			j++;
 						}
 						XDrawLine(display,  window.drawable, window.gc, cur_x + i + 2, by + h, cur_x + i + 2, by + h - specials[special_index].graph[j] * (h - 1) / specials[special_index].graph_scale);	/* this is mugfugly, but it works */
-	}
+					}
 					if (specials[special_index].
 					    height > cur_y_add
 					    && specials[special_index].
@@ -3418,8 +3458,13 @@ static void main_loop()
 					update_text();
 #ifdef X11
 			}
+#ifdef OWN_WINDOW
+			if (own_window) {
+	set_transparent_background(window.window);
+			}
+#endif
 		}
-
+		
 		if (need_to_update) {
 #ifdef OWN_WINDOW
 			int wx = window.x, wy = window.y;
@@ -3446,8 +3491,7 @@ static void main_loop()
 						      window.window,
 						      window.width,
 						      window.height);
-					set_transparent_background(window.window);
-				}
+				     }
 
 				/* move window if it isn't in right position */
 				if (!fixed_pos
@@ -3492,13 +3536,13 @@ static void main_loop()
 				break;
 
 #ifdef OWN_WINDOW
-			case ReparentNotify:
-				/* set background to ParentRelative for all parents */
+			/*case ReparentNotify:
+				 set background to ParentRelative for all parents 
 				if (own_window) {
 					set_transparent_background(window.
-								   window);
+					window);
 				}
-				break;
+				break;*/
 
 			case ConfigureNotify:
 				if (own_window) {
@@ -3591,6 +3635,8 @@ static void main_loop()
 			XDestroyRegion(region);
 			region = XCreateRegion();
 		}
+
+
 #endif /* X11 */
 
 	}
@@ -4352,7 +4398,9 @@ int main(int argc, char **argv)
 #endif
 #ifdef XDBE
 		case 'b':
-			use_xdbe = 1;
+			if (!own_window) {
+				use_xdbe = 1;
+			}
 			break;
 #endif
 #endif /* X11 */
@@ -4428,8 +4476,12 @@ int main(int argc, char **argv)
 
 #ifdef X11
 #ifdef OWN_WINDOW
-	if (own_window && !fixed_pos)
+	if (own_window && !fixed_pos) {
 		XMoveWindow(display, window.window, window.x, window.y);
+	}
+	if (own_window) {
+		set_transparent_background(window.window);
+	}
 #endif
 
 	create_gc();

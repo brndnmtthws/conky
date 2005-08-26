@@ -359,6 +359,15 @@ VARIABLES
 	      CPU usage graph, with optional colours in hex, minus the #.
 
 
+       diskio Displays current disk IO.
+
+
+       diskiograph  (height),(width)  (gradient	 colour 1) (gradient colour 2)
+       (scale)
+	      Disk  IO graph, colours defined in hex, minus the #. If scale is
+	      non-zero, it becomes the scale for the graph.
+
+
        downspeed net
 	      Download speed in kilobytes
 
@@ -367,9 +376,9 @@ VARIABLES
 	      Download speed in kilobytes with one decimal
 
 
-       downspeedgraph  net,  (height),(width)  (gradient  colour  1) (gradient
+       downspeedgraph net,  (height),(width)  (gradient	 colour	 1)  (gradient
        colour 2) (scale)
-	      Download	speed  graph,  colours defined in hex, minus the #. If
+	      Download speed graph, colours defined in hex, minus  the	#.  If
 	      scale is non-zero, it becomes the scale for the graph.
 
 
@@ -378,13 +387,13 @@ VARIABLES
 
        exec command
 	      Executes a shell command and displays the output in conky. warn-
-	      ing:  this  takes a lot more resources than other variables. I'd
+	      ing: this takes a lot more resources than other  variables.  I'd
 	      recommend coding wanted behaviour in C and posting a patch.
 
 
        execbar command
-	      Same as exec, except if  the  first  value  return  is  a	 value
-	      between  0-100,  it will use that number for a bar. The size for
+	      Same  as	exec,  except  if  the	first  value return is a value
+	      between 0-100, it will use that number for a bar. The  size  for
 	      the bar is currently fixed, but that may change in the future.
 
 
@@ -393,7 +402,7 @@ VARIABLES
 
 
        execi interval command
-	      Same as exec but with specific interval. Interval can't be  less
+	      Same  as exec but with specific interval. Interval can't be less
 	      than update_interval in configuration.
 
 
@@ -415,8 +424,20 @@ VARIABLES
        freq_g Returns CPU frequency in GHz
 
 
+       freq_dyn
+	      Returns CPU frequency in MHz, but is calculated by  counting  to
+	      clock  cycles  to	 complete  an  instruction. Only available for
+	      x86/amd64.
+
+
+       freq_dyn_g
+	      Returns CPU frequency in GHz, but is calculated by  counting  to
+	      clock  cycles  to	 complete  an  instruction. Only available for
+	      x86/amd64.
+
+
        fs_bar (height),(width) fs
-	      Bar  that	 shows how much space is used on a file system. height
+	      Bar that shows how much space is used on a file  system.	height
 	      is the height in pixels. fs is any file on that file system.
 
 
@@ -441,25 +462,25 @@ VARIABLES
 
 
        i2c (dev), type, n
-	      I2C sensor from sysfs (Linux 2.6). dev may  be  omitted  if  you
-	      have  only  one  I2C  device. type is either in (or vol) meaning
+	      I2C  sensor  from	 sysfs	(Linux 2.6). dev may be omitted if you
+	      have only one I2C device. type is either	in  (or	 vol)  meaning
 	      voltage, fan meaning fan or temp/tempf (first in C, second in F)
-	      meaning	temperature.   n   is	number	 of  the  sensor.  See
+	      meaning  temperature.  n	is   number   of   the	 sensor.   See
 	      /sys/bus/i2c/devices/ on your local computer.
 
 
        if_running (process)
-	      if PROCESS is running, display  everything  if_running  and  the
+	      if  PROCESS  is  running,	 display everything if_running and the
 	      matching $endif
 
 
        if_existing (file)
-	      if  FILE	exists, display everything between if_existing and the
+	      if FILE exists, display everything between if_existing  and  the
 	      matching $endif
 
 
        if_mounted (mountpoint)
-	      if MOUNTPOINT is mounted, display everything between  if_mounted
+	      if  MOUNTPOINT is mounted, display everything between if_mounted
 	      and the matching $endif
 
 
@@ -479,8 +500,8 @@ VARIABLES
 	      Machine, i686 for example
 
 
-       mails  Mail count in mail spool. You can use program like fetchmail  to
-	      get  mails  from	some server using your favourite protocol. See
+       mails  Mail  count in mail spool. You can use program like fetchmail to
+	      get mails from some server using your  favourite	protocol.  See
 	      also new_mails.
 
 
@@ -634,27 +655,27 @@ VARIABLES
 	      Move text over by N pixels. See also $voffset.
 
 
-       tail   logfile,	lines interval> Displays last N lines of supplied text
+       tail   logfile, lines interval> Displays last N lines of supplied  text
 	      text file. If interval is not supplied, Conky assumes 2x Conky's
 	      interval. Max of 30 lines. Max of 30 lines can be displayed.
 
 
        time (format)
-	      Local  time, see man strftime to get more information about for-
+	      Local time, see man strftime to get more information about  for-
 	      mat
 
 
        totaldown net
-	      Total download, overflows at 4 GB on Linux with 32-bit arch  and
-	      there  doesn't  seem  to	be a way to know how many times it has
+	      Total  download, overflows at 4 GB on Linux with 32-bit arch and
+	      there doesn't seem to be a way to know how  many	times  it  has
 	      already done that before conky has started.
 
 
        top type, num
-	      This takes arguments in the form:top (name) (number)  Basically,
-	      processes	 are  ranked  from  highest  to lowest in terms of cpu
-	      usage, which is what (num) represents. The  types	 are:  "name",
-	      "pid",  "cpu",  and  mem".  There	 can  be a max of 10 processes
+	      This  takes arguments in the form:top (name) (number) Basically,
+	      processes are ranked from highest to  lowest  in	terms  of  cpu
+	      usage,  which  is	 what (num) represents. The types are: "name",
+	      "pid", "cpu", and mem". There can	 be  a	max  of	 10  processes
 	      listed.
 
 
@@ -680,7 +701,7 @@ VARIABLES
 
        upspeedgraph net, (height),(width) (gradient colour 1) (gradient colour
        2) (scale)
-	      Upload speed graph, colours defined in  hex,  minus  the	#.  If
+	      Upload  speed  graph,  colours  defined  in hex, minus the #. If
 	      scale is non-zero, it becomes the scale for the graph.
 
 
@@ -704,7 +725,7 @@ VARIABLES
 
 
        voffset (pixels)
-	      Change  verticle	offset by N pixels. Negative values will cause
+	      Change verticle offset by N pixels. Negative values  will	 cause
 	      text to overlap. See also $offset.
 
 
@@ -722,11 +743,11 @@ FILES
 BUGS
        Drawing to root or some other desktop window directly doesn't work with
        all window managers. Especially doesn't work well with Gnome and it has
-       been  reported  that  it	 doesn't work with KDE either. Nautilus can be
-       disabled from drawing to desktop	 with  program	gconf-editor.  Uncheck
-       show_desktop  in	 /apps/nautilus/preferences/.  There  is  -w switch in
-       Conky to set some specific window id. You  might	 find  xwininfo	 -tree
-       useful  to  find	 the  window  to draw to. You can also use -o argument
+       been reported that it doesn't work with KDE  either.  Nautilus  can  be
+       disabled	 from  drawing	to  desktop with program gconf-editor. Uncheck
+       show_desktop in /apps/nautilus/preferences/.  There  is	-w  switch  in
+       Conky  to  set  some  specific window id. You might find xwininfo -tree
+       useful to find the window to draw to. You  can  also  use  -o  argument
        which makes Conky to create its own window.
 
 SEE ALSO

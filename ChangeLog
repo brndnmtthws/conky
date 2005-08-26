@@ -1,5 +1,12 @@
 # $Id$
 
+2005-08-25
+	* More own_window fixes
+	* applied disk io patch (sf.net patch 1271691)
+	* applied $freq fixes patch, adds new $freq_dyn (sf.net patch 1271633)
+	* removed units from $freq* output
+	* fix for graph config parsing
+
 2005-08-24
 	* More configure and makefile updates
 	* Added scale arg for net graphs
