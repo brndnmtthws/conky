@@ -424,7 +424,7 @@ char *get_adt746x_fan()
 float get_freq_dynamic()
 {
     /* TODO: implement */
-    reeturn get_freq();
+    return get_freq();
 }
 
 float get_freq()
@@ -453,8 +453,16 @@ float get_freq()
 
 void update_top()
 {
+	/* XXX */
 }
 
 void update_wifi_stats()
 {
+	/* XXX */
 }
+
+void update_diskio()
+{
+	/* XXX */
+}
+
