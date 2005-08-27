@@ -444,8 +444,6 @@ float get_freq_dynamic()
 
 float get_freq()
 {
-	/* First, try to obtain CPU frequency via dev.cpu.0.freq sysctl
-	 * (cpufreq(4)). If failed, do i386 magic. */
 	int freq;
 	
 	if (GETSYSCTL("dev.cpu.0.freq", freq) == 0)
