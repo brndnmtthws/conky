@@ -19,6 +19,7 @@ case $uname in
     ;;
   FreeBSD*)
     WANT_KVM=yes
+    WANT_DEVSTAT=yes
     ;;
   NetBSD*)
     WANT_KVM=yes
@@ -224,6 +225,17 @@ if test x$WANT_KVM = xyes; then
   	LIBS="$LIBS -lkvm",
 	AC_MSG_ERROR([Could not find kvm_open in -lkvm.])
   )
+fi
+
+dnl
+dnl devstat
+dnl
+
+if test x$WANT_DEVSTAT = xyes; then
+	AC_CHECK_LIB(devstat, devstat_getversion,
+		     LIBS="$LIBS -ldevstat",
+		     AC_MSG_ERROR([Cound not find devstat_getversion in -ldevstat.])
+	)
 fi
 
 dnl

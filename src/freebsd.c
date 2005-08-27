@@ -24,11 +24,15 @@
 #include <net/if_mib.h>
 #include <sys/socket.h>
 #include <ifaddrs.h>
+#include <devstat.h>
 
 #include "conky.h"
 
 #define GETSYSCTL(name, var) getsysctl(name, &(var), sizeof(var))
 #define KELVTOC(x)      ((x - 2732) / 10.0)
+#define MAXSHOWDEVS	16
+
+u_int64_t diskio_prev = 0;
 
 static int getsysctl(char *name, void *ptr, size_t len)
 {
@@ -443,9 +447,42 @@ void update_wifi_stats()
 {
 	/* XXX */
 }
-
 void update_diskio()
 {
-	/* XXX */
-}
+        int devs_count,
+	    num_selected,
+	    num_selections;
+        struct device_selection *dev_select = NULL;
+        long select_generation;
+        int dn;
+	static struct statinfo  statinfo_cur;
+	u_int64_t diskio_current = 0;
 
+        bzero(&statinfo_cur, sizeof(statinfo_cur));
+        statinfo_cur.dinfo = (struct devinfo *)malloc(sizeof(struct devinfo));
+        bzero(statinfo_cur.dinfo, sizeof(struct devinfo));
+	
+	if (devstat_getdevs(NULL, &statinfo_cur) < 0)
+		return;
+
+	devs_count = statinfo_cur.dinfo->numdevs;
+	if (devstat_selectdevs(&dev_select, &num_selected, &num_selections,
+			&select_generation, statinfo_cur.dinfo->generation,
+			statinfo_cur.dinfo->devices, devs_count, NULL, 0, 
+			NULL, 0, DS_SELECT_ONLY, MAXSHOWDEVS, 1) >= 0) {
+		for (dn = 0; dn < devs_count; ++dn) {
+			int di;
+                        struct devstat  *dev;
+
+			di = dev_select[dn].position;
+                        dev = &statinfo_cur.dinfo->devices[di];
+
+			diskio_current += dev->bytes[DEVSTAT_READ] + dev->bytes[DEVSTAT_WRITE];
+		}
+                
+		free(dev_select);
+	}
+
+	diskio_value = (unsigned int)((diskio_current - diskio_prev)/1024);
+	diskio_prev = diskio_current;
+}
