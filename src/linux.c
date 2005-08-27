@@ -1209,12 +1209,12 @@ void update_diskio()
 		fgets(buf, 512, fp);
 		col_count = sscanf(buf, "%u %u %*s %*u %*u %u %*u %*u %*u %u",
 				   &major, &minor, &reads, &writes);
-		/* ignore subdevices (they have only 7 entries in their line)
+		/* ignore subdevices (they have only 3 matching entries in their line)
 		 * and virtual devices (LVM, network block devices, RAM disks, Loopback)
 		 *
 		 * XXX ignore devices which are part of a SW RAID (MD_MAJOR)
 		 */
-		if (col_count > 7 &&
+		if (col_count > 3 &&
 		    major != LVM_BLK_MAJOR && major != NBD_MAJOR &&
 		    major != RAMDISK_MAJOR && major != LOOP_MAJOR) {
 			current += reads + writes;
