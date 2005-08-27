@@ -939,6 +939,9 @@ static void free_text_objects()
 			free(text_objects[i].data.ifblock.s);
 			break;
 		case OBJ_text:
+		case OBJ_font:
+			free(text_objects[i].data.s);
+			break;
 		case OBJ_exec:
 			free(text_objects[i].data.s);
 			break;
@@ -1046,9 +1049,9 @@ if (s[0] == '#') {
 			obj->data.l = arg ? get_x11_color(arg) : default_fg_color;
 #endif /* X11 */
 	END
-			OBJ(font, 0)
+	OBJ(font, 0)
 			obj->data.s = scan_font(arg);
-			END
+	END
 			OBJ(downspeed, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(downspeedf, INFO_NET) obj->data.net = get_net_stat(arg);
 	END OBJ(downspeedgraph, INFO_NET)
@@ -2890,7 +2893,7 @@ static inline int get_string_width_special(char *s)
 	unsigned int i;
 	while (*p) {
 		if (*p == SPECIAL_CHAR) {
-			/* shift everything over by 1 */
+			/* shift everything over by 1 so that the special char doesn't mess up the size calculation */
 			for (i = 0; i < strlen(p); i++) {
 				*(p + i) = *(p + i + 1);
 			}
@@ -3901,6 +3904,9 @@ static void main_loop()
 #endif /* X11 */
 
 	}
+#ifdef X11
+	XDestroyRegion(region);
+#endif /* X11 */
 }
 
 static void load_config_file(const char *);
