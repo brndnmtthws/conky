@@ -208,6 +208,9 @@ void update_stuff()
 	if (NEED(INFO_TOP))
 		update_top();
 
+	if (NEED(INFO_I8K))
+		update_i8k();
+
 #ifdef MLDONKEY
 	if (NEED(INFO_MLDONKEY))
 		get_mldonkey_status(&mlconfig, &mlinfo);

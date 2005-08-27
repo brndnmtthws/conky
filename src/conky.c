@@ -746,6 +746,17 @@ enum text_object_type {
 	OBJ_alignr,
 	OBJ_alignc,
 	OBJ_i2c,
+	OBJ_i8k_version,
+	OBJ_i8k_bios,
+	OBJ_i8k_serial,
+	OBJ_i8k_cpu_temp,
+	OBJ_i8k_cpu_tempf,
+	OBJ_i8k_left_fan_status,
+	OBJ_i8k_right_fan_status,
+	OBJ_i8k_left_fan_rpm,
+	OBJ_i8k_right_fan_rpm,
+	OBJ_i8k_ac_status,	
+	OBJ_i8k_buttons_status,
 	OBJ_if_existing,
 	OBJ_if_mounted,
 	OBJ_if_running,
@@ -1004,12 +1015,23 @@ if (s[0] == '#') {
 	END OBJ(freq_dyn_g, 0);
 	END OBJ(acpifan, 0);
 	END OBJ(battery, 0);
-		char bat[64];
-		if (arg)
-			sscanf(arg, "%63s", bat);
-		else
-			strcpy(bat, "BAT0");
-		obj->data.s = strdup(bat);
+	char bat[64];
+	if (arg)
+		sscanf(arg, "%63s", bat);
+	else
+		strcpy(bat, "BAT0");
+	obj->data.s = strdup(bat);
+	END OBJ(i8k_version, INFO_I8K)
+	END OBJ(i8k_bios, INFO_I8K)
+	END OBJ(i8k_serial, INFO_I8K)
+	END OBJ(i8k_cpu_temp, INFO_I8K)
+	END OBJ(i8k_cpu_tempf, INFO_I8K)
+	END OBJ(i8k_left_fan_status, INFO_I8K)	
+  END OBJ(i8k_right_fan_status, INFO_I8K)
+	END OBJ(i8k_left_fan_rpm, INFO_I8K)
+	END OBJ(i8k_right_fan_rpm, INFO_I8K)
+	END OBJ(i8k_ac_status, INFO_I8K)
+	END OBJ(i8k_buttons_status, INFO_I8K)
 	END OBJ(buffers, INFO_BUFFERS)
 	END OBJ(cached, INFO_BUFFERS)
 	END OBJ(cpu, INFO_CPU)
@@ -1769,6 +1791,69 @@ static void generate_text()
 			OBJ(color) {
 				new_fg(p, obj->data.l);
 			}
+			OBJ(i8k_version) {
+				snprintf(p, n, "%s", i8k.version);
+			}
+			OBJ(i8k_bios) {
+				snprintf(p, n, "%s", i8k.bios);
+			}
+			OBJ(i8k_serial) { 
+				snprintf(p, n, "%s", i8k.serial);
+			}
+			OBJ(i8k_cpu_temp) { 
+				snprintf(p, n, "%s", i8k.cpu_temp);
+			}
+			OBJ(i8k_cpu_tempf) { 
+				int cpu_temp;
+				sscanf(i8k.cpu_temp, "%d", &cpu_temp);
+				snprintf(p, n, "%.1f", cpu_temp*(9.0/5.0)+32.0);
+			}
+			OBJ(i8k_left_fan_status) { 
+				int left_fan_status;
+				sscanf(i8k.left_fan_status, "%d", &left_fan_status);
+				if(left_fan_status == 0) {
+					snprintf(p, n,"off");
+				} if(left_fan_status == 1) {
+					snprintf(p, n, "low");
+				}	if(left_fan_status == 2) {
+					snprintf(p, n, "high");
+				}
+
+			}
+			OBJ(i8k_right_fan_status) { 
+				int right_fan_status;
+				sscanf(i8k.right_fan_status, "%d", &right_fan_status);
+				if(right_fan_status == 0) {
+					snprintf(p, n,"off");
+				} if(right_fan_status == 1) {
+					snprintf(p, n, "low");
+				}	if(right_fan_status == 2) {
+					snprintf(p, n, "high");
+				}
+			}
+			OBJ(i8k_left_fan_rpm) { 
+				snprintf(p, n, "%s", i8k.left_fan_rpm);
+			}
+			OBJ(i8k_right_fan_rpm) { 
+				snprintf(p, n, "%s", i8k.right_fan_rpm);
+			}
+			OBJ(i8k_ac_status) { 
+				int ac_status;
+				sscanf(i8k.ac_status, "%d", &ac_status);
+				if(ac_status == -1) {
+					snprintf(p, n,"disabled (read i8k docs)");
+				} if(ac_status == 0) {
+					snprintf(p, n, "off");
+				}	if(ac_status == 1) {
+					snprintf(p, n, "on");
+				}
+			}
+			OBJ(i8k_buttons_status) {
+				snprintf(p, n, "%s", i8k.buttons_status); 
+
+			}
+
+
 #ifdef X11
 			OBJ(font) {
 				new_font(p, obj->data.s);

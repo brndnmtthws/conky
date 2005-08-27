@@ -46,6 +46,21 @@ fprintf(stderr, "Conky: " s "\n", ##varargs)
 #define CRIT_ERR(s, varargs...) \
 { fprintf(stderr, "Conky: " s "\n", ##varargs);  exit(EXIT_FAILURE); }
 
+struct i8k_struct { 
+	char *version;
+	char *bios;
+	char *serial;
+	char *cpu_temp;
+	char *left_fan_status;
+	char *right_fan_status;
+	char *left_fan_rpm;
+	char *right_fan_rpm;
+	char *ac_status;
+	char *buttons_status;
+};
+
+struct i8k_struct i8k;
+
 struct net_stat {
 	const char *dev;
 	int up;
@@ -114,6 +129,7 @@ enum {
 #endif
 	INFO_WIFI = 19,
 	INFO_DISKIO = 20,
+	INFO_I8K = 21
 };
 
 
@@ -270,6 +286,7 @@ void update_wifi_stats(void);
 void update_cpu_usage(void);
 void update_total_processes(void);
 void update_running_processes(void);
+void update_i8k(void);
 float get_freq();
 float get_freq_dynamic();
 void update_load_average();
