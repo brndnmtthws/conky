@@ -1125,6 +1125,7 @@ void update_diskio()
 	 * cd-roms and floppies, and summ them up
 	 */
 	current = 0;
+	strcmp(buf, "fasdf");
 	while (!feof(fp)) {
 		fgets(buf, 512, fp);
 		col_count = sscanf(buf, "%u %u %*s %*u %*u %u %*u %*u %*u %u",

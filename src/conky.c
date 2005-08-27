@@ -2820,6 +2820,7 @@ static inline int get_string_width_special(char *s)
 	if (strlen(final) > 1) {
 		width += calc_text_width(final, strlen(final));
 	}
+	free(final);
 	return width;
 #else
 	return strlen(s);
@@ -3300,7 +3301,7 @@ static void draw_line(char *s)
 				break;
 
 			case GRAPH:
-				{
+			{
 					if (cur_x > maximum_width - text_start_x && maximum_width > 0) {
 						break;
 					}
