@@ -395,6 +395,117 @@
 
 <varlistentry>
 	<term>
+		<command><option>i8k_ac_status</option></command>
+	<option></option>
+	</term>
+	<listitem>
+		If running the i8k kernel driver for Inspiron laptops, displays whether ac power is on, as listed in /proc/i8k (translated to human-readable). Beware that this is by default not enabled by i8k itself.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>i8k_bios</option></command>
+	<option></option>
+	</term>
+	<listitem>
+		If running the i8k kernel driver for Inspiron laptops, displays the bios version as listed in /proc/i8k.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>i8k_buttons_status</option></command>
+	<option></option>
+	</term>
+	<listitem>
+		If running the i8k kernel driver for Inspiron laptops, displays the volume buttons status as listed in /proc/i8k.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>i8k_cpu_temp</option></command>
+	<option></option>
+	</term>
+	<listitem>
+		If running the i8k kernel driver for Inspiron laptops, displays the cpu temperature in celsius, as reported by /proc/i8k.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>i8k_cpu_tempf</option></command>
+	<option></option>
+	</term>
+	<listitem>
+		If running the i8k kernel driver for Inspiron laptops, displays the cpu temperature in farenheit, as reported by /proc/i8k.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>i8k_left_fan_rpm</option></command>
+	<option></option>
+	</term>
+	<listitem>
+		If running the i8k kernel driver for Inspiron laptops, displays the left fan's rate of rotation, in revolutions per minute as listed in /proc/i8k. Beware, some laptops i8k reports these fans in reverse order.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>i8k_left_fan_status</option></command>
+	<option></option>
+	</term>
+	<listitem>
+		If running the i8k kernel driver for Inspiron laptops, displays the left fan status as listed in /proc/i8k (translated to human-readable). Beware, some laptops i8k reports these fans in reverse order.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>i8k_right_fan_rpm</option></command>
+	<option></option>
+	</term>
+	<listitem>
+		If running the i8k kernel driver for Inspiron laptops, displays the right fan's rate of rotation, in revolutions per minute as listed in /proc/i8k. Beware, some laptops i8k reports these fans in reverse order.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>i8k_right_fan_status</option></command>
+	<option></option>
+	</term>
+	<listitem>
+		If running the i8k kernel driver for Inspiron laptops, displays the right fan status as listed in /proc/i8k (translated to human-readable). Beware, some laptops i8k reports these fans in reverse order.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>i8k_serial</option></command>
+	<option></option>
+	</term>
+	<listitem>
+		If running the i8k kernel driver for Inspiron laptops, displays your laptop serial number as listed in /proc/i8k.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>i8k_version</option></command>
+	<option></option>
+	</term>
+	<listitem>
+		If running the i8k kernel driver for Inspiron laptops, displays the version formatting of /proc/i8k.
+	<para></para></listitem>
+</varlistentry>
+
+
+<varlistentry>
+	<term>
 		<command><option>if_running</option></command>
 	<option>(process)</option>
 	</term>
