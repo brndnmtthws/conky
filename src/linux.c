@@ -361,7 +361,6 @@ void get_cpu_count()
 
 inline static void update_stat()
 {
-	// FIXME: arbitrary size?
 	static struct cpu_info *cpu = NULL;
 	char buf[256];
 	unsigned int i;
@@ -374,21 +373,23 @@ inline static void update_stat()
 	if (cpu == NULL) {
 			cpu = malloc(info.cpu_count * sizeof(struct cpu_info));
 	}
-	if (stat_fp == NULL)
+	if (stat_fp == NULL) {
 		stat_fp = open_file("/proc/stat", &rep);
-	else
+	} else {
 		fseek(stat_fp, 0, SEEK_SET);
-	if (stat_fp == NULL)
+	}
+	if (stat_fp == NULL) {
 		return;
+	}
 	index = 0;
-	while (!feof(stat_fp) && index < info.cpu_count) {
+	while (!feof(stat_fp)) {
 		if (fgets(buf, 255, stat_fp) == NULL)
 			break;
 
 		if (strncmp(buf, "procs_running ", 14) == 0) {
 			sscanf(buf, "%*s %d", &info.run_procs);
 			info.mask |= (1 << INFO_RUN_PROCS);
-		} else if (strncmp(buf, "cpu", 3) == 0 && isdigit(buf[3])) {
+		} else if (strncmp(buf, "cpu", 3) == 0 && isdigit(buf[3]) && index < info.cpu_count) {
 			sscanf(buf, "%*s %u %u %u", &(cpu[index].cpu_user), &(cpu[index].cpu_nice),
 			       &(cpu[index].cpu_system));
 			index++;
@@ -399,11 +400,13 @@ inline static void update_stat()
 	for (index = 0; index < info.cpu_count; index++) {
 		double delta;
 		delta = current_update_time - last_update_time;
-		if (delta <= 0.001)
+		if (delta <= 0.001) {
 			return;
+		}
 
-		if (cpu[index].clock_ticks == 0)
+		if (cpu[index].clock_ticks == 0) {
 			cpu[index].clock_ticks = sysconf(_SC_CLK_TCK);
+		}
 		curtmp = 0;
 		cpu[index].cpu_val[0] =
 				(cpu[index].cpu_user + cpu[index].cpu_nice + cpu[index].cpu_system -
