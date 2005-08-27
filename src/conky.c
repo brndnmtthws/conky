@@ -839,7 +839,7 @@ struct text_object {
 		struct net_stat *net;
 		struct fs_stat *fs;
 		unsigned char loadavg[3];
-		unsigned int diskio;
+		//unsigned int diskio;
 
 		struct {
 			struct fs_stat *fs;
@@ -1004,12 +1004,12 @@ if (s[0] == '#') {
 	END OBJ(freq_dyn_g, 0);
 	END OBJ(acpifan, 0);
 	END OBJ(battery, 0);
-	char bat[64];
-	if (arg)
-		sscanf(arg, "%63s", bat);
-	else
-		strcpy(bat, "BAT0");
-	obj->data.s = strdup(bat);
+		char bat[64];
+		if (arg)
+			sscanf(arg, "%63s", bat);
+		else
+			strcpy(bat, "BAT0");
+		obj->data.s = strdup(bat);
 	END OBJ(buffers, INFO_BUFFERS)
 	END OBJ(cached, INFO_BUFFERS)
 	END OBJ(cpu, INFO_CPU)
@@ -2791,6 +2791,41 @@ static inline int get_string_width(const char *s)
 #endif /* X11 */
 }
 
+static inline int get_string_width_special(char *s)
+{
+	if (!s) {
+		return 0;
+	}
+#ifdef X11
+	char *p, *final;
+	p = strdup(s);
+	final = p;
+	int index = 1;
+	int width = 0;
+	unsigned int i;
+	while (*p) {
+		if (*p == SPECIAL_CHAR) {
+			/* shift everything over by 1 */
+			for (i = 0; i < strlen(p); i++) {
+				*(p + i) = *(p + i + 1);
+			}
+			if (specials[special_index+index].type == GRAPH || specials[special_index+index].type == BAR) {
+				width += specials[special_index+index].width;
+			}
+			index++;
+		} else {
+			p++;
+		}
+	}
+	if (strlen(final) > 1) {
+		width += calc_text_width(final, strlen(final));
+	}
+	return width;
+#else
+	return strlen(s);
+#endif /* X11 */
+}
+
 int fontchange = 0;
 
 #ifdef X11
@@ -3393,18 +3428,19 @@ static void draw_line(char *s)
 
 			case ALIGNR:
 				{
-					int pos_x = text_width + gap_x - get_string_width(p) /*- border_margin*2 - 1*/;
-					/*printf("pos_x %i text_start_x %i text_width %i cur_x %i get_string_width(p) %i gap_x %i specials[special_index].arg %i border_margin %i border_width %i\n", pos_x, text_start_x, text_width, cur_x, get_string_width(p), gap_x, specials[special_index].arg, border_margin, border_width);*/
+					int pos_x = text_start_x + text_width - get_string_width_special(s) /*+ border_margin*/;
+					/*printf("pos_x %i text_start_x %i text_width %i cur_x %i get_string_width(p) %i gap_x %i specials[special_index].arg %i border_margin %i border_width %i\n", pos_x, text_start_x, text_width, cur_x, get_string_width_special(s), gap_x, specials[special_index].arg, border_margin, border_width);*/
 					if (pos_x > specials[special_index].arg && pos_x > cur_x) {
-					cur_x = pos_x - specials[special_index].arg;
+						cur_x = pos_x - specials[special_index].arg;
 				}
 				}
 				break;
 
 			case ALIGNC:
 				{
-					int pos_x = (text_width)/2 - get_string_width(p)/2 - (cur_x - text_start_x);
-					/*printf("pos_x %i text_start_x %i text_width %i cur_x %i get_string_width(p) %i gap_x %i specials[special_index].arg %i\n", pos_x, text_start_x, text_width, cur_x, get_string_width(p), gap_x, specials[special_index].arg);*/
+					int pos_x = (text_width)/2 - get_string_width_special(s)/2 - (cur_x - text_start_x);
+					/*int pos_x = text_start_x + text_width/2 - get_string_width_special(s)/2;*/
+					/*printf("pos_x %i text_start_x %i text_width %i cur_x %i get_string_width(p) %i gap_x %i specials[special_index].arg %i\n", pos_x, text_start_x, text_width, cur_x, get_string_width(s), gap_x, specials[special_index].arg);*/
 					if (pos_x >
 					    specials[special_index].arg)
 						w = pos_x -
