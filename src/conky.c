@@ -1042,8 +1042,9 @@ if (s[0] == '#') {
 		if (sscanf(arg, "%i", &obj->data.cpu_index) < 1) {
 			ERR("$cpu takes an int as an arg");
 			}
+			printf("got %i\n", obj->data.cpu_index);
 			} else {
-				obj->data.cpu_index = 1;
+				obj->data.cpu_index = 0;
 			}
 				END OBJ(cpubar, INFO_CPU)
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
@@ -1777,7 +1778,8 @@ static void generate_text()
 				human_readable(cur->cached * 1024, p, 255);
 			}
 			OBJ(cpu) {
-				if (obj->data.cpu_index > info.cpu_count) {
+				if (obj->data.cpu_index > (info.cpu_count - 1)) {
+					printf("obj->data.cpu_index %i info.cpu_count %i", obj->data.cpu_index, info.cpu_count);
 					CRIT_ERR("attempting to use more CPUs then you have!");
 				}
 				if (!use_spacer)

@@ -338,7 +338,7 @@ void get_cpu_count()
 {
 	char buf[256];
 	if (stat_fp == NULL)
-		stat_fp = open_file("/tmp/testcpu", &rep);
+		stat_fp = open_file("/proc/stat", &rep);
 	else
 		fseek(stat_fp, 0, SEEK_SET);
 	if (stat_fp == NULL)
@@ -375,7 +375,7 @@ inline static void update_stat()
 			cpu = malloc(info.cpu_count * sizeof(struct cpu_info));
 	}
 	if (stat_fp == NULL)
-		stat_fp = open_file("/tmp/testcpu", &rep);
+		stat_fp = open_file("/proc/stat", &rep);
 	else
 		fseek(stat_fp, 0, SEEK_SET);
 	if (stat_fp == NULL)
@@ -408,8 +408,9 @@ inline static void update_stat()
 		cpu[index].cpu_val[0] =
 				(cpu[index].cpu_user + cpu[index].cpu_nice + cpu[index].cpu_system -
 				cpu[index].last_cpu_sum) / delta / (double) cpu[index].clock_ticks;
-		for (i = 0; i < info.cpu_avg_samples; i++)
+		for (i = 0; i < info.cpu_avg_samples; i++) {
 			curtmp += cpu[index].cpu_val[i];
+		}
 		printf("setting usage to %f\n", curtmp / info.cpu_avg_samples);
 		info.cpu_usage[index] = curtmp / info.cpu_avg_samples;
 		cpu[index].last_cpu_sum = cpu[index].cpu_user + cpu[index].cpu_nice + cpu[index].cpu_system;
