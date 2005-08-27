@@ -3,7 +3,7 @@
 2005-08-26
 	* Fixed slight vertical misalignment of bars/graphs (sf.net 1273994)
 	* Diskio fixes (sf.net 1274140)
-	* $alignr and $alignc now have 25% more goodness!
+	* $alignr and $alignc now have 25% more goodness! (sf.net bug 1273905)
 
 2005-08-25
 	* More own_window fixes
