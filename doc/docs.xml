@@ -58,7 +58,7 @@
 		<title>Compiling</title>
 		<para>
 		First, make sure you have the X development libraries installed, this should be a package along the lines 
-		of "libx11-dev or xorg-x11-dev". Gentoo users, Conky is in Gentoo's Portage.  Simply use "emerge conky" for installation.
+		of "libx11-dev or xorg-x11-dev". Gentoo users, Conky is in Gentoo's Portage.  Simply use "emerge app-admin/conky" for installation.
 		There is also usually an up-to-date ebuild within Conky's package or in	CVS.
 		</para>
 		<para>
