@@ -851,7 +851,7 @@ struct text_object {
 		struct fs_stat *fs;
 		unsigned char loadavg[3];
 		//unsigned int diskio;
-		int cpu_index;
+		unsigned int cpu_index;
 		struct {
 			struct fs_stat *fs;
 			int w, h;
@@ -1041,11 +1041,11 @@ if (s[0] == '#') {
 			if (arg) {
 		if (sscanf(arg, "%i", &obj->data.cpu_index) < 1) {
 			ERR("$cpu takes an int as an arg");
+			}
 			} else {
 				obj->data.cpu_index = 1;
 			}
-			}
-	END OBJ(cpubar, INFO_CPU)
+				END OBJ(cpubar, INFO_CPU)
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(cpugraph, INFO_CPU)
 			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
@@ -1777,6 +1777,9 @@ static void generate_text()
 				human_readable(cur->cached * 1024, p, 255);
 			}
 			OBJ(cpu) {
+				if (obj->data.cpu_index > info.cpu_count) {
+					CRIT_ERR("attempting to use more CPUs then you have!");
+				}
 				if (!use_spacer)
 					snprintf(p, n, "%*d", pad_percents,
 						(int) (cur->cpu_usage[obj->data.cpu_index] *
