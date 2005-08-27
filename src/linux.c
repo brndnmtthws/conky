@@ -370,11 +370,7 @@ inline static void update_stat()
 		cpu_setup = 1;
 	}
 	if (cpu == NULL) {
-		if (info.cpu_count > 1) {
-			cpu = malloc((info.cpu_count + 1) * sizeof(struct cpu_info));
-		} else {
-			cpu = malloc(info.cpu_count * sizeof(struct cpu_info));
-		}			
+		cpu = malloc((info.cpu_count + 1) * sizeof(struct cpu_info));
 	}
 	if (stat_fp == NULL) {
 		stat_fp = open_file("/proc/stat", &rep);
@@ -396,13 +392,13 @@ inline static void update_stat()
 			sscanf(buf, "%*s %u %u %u", &(cpu[index].cpu_user), &(cpu[index].cpu_nice), &(cpu[index].cpu_system));
 			index++;
 			info.mask |= (1 << INFO_CPU);
-		} else if (strncmp(buf, "cpu", 3) == 0 && isdigit(buf[3]) && index < info.cpu_count) {
+		} else if (strncmp(buf, "cpu", 3) == 0 && isdigit(buf[3]) && index <= info.cpu_count) {
 			sscanf(buf, "%*s %u %u %u", &(cpu[index].cpu_user), &(cpu[index].cpu_nice), &(cpu[index].cpu_system));
 			index++;
 			info.mask |= (1 << INFO_CPU);
 		}
 	}
-	for (index = 0; index < info.cpu_count; index++) {
+	for (index = 0; index < info.cpu_count + 1; index++) {
 		double delta;
 		delta = current_update_time - last_update_time;
 		if (delta <= 0.001) {

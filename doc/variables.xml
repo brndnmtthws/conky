@@ -124,16 +124,17 @@
 <varlistentry>
 	<term>
 		<command><option>cpu</option></command>
+		<option>(cpu number)</option>
 	</term>
 	<listitem>
-		CPU usage in percents
+		CPU usage in percents.  For SMP machines, the CPU number can be provided as an argument.  0 is the total usage, and >=1 are individual CPUs.  See $cpu for more info on SMP.
 	<para></para></listitem>
 </varlistentry>
 
 <varlistentry>
 	<term>
 		<command><option>cpubar</option></command>
-	<option>(height),(width)</option>
+		<option>(cpu number) (height),(width)</option>
 	</term>
 	<listitem>
 		Bar that shows CPU usage, height is bar's height in pixels
@@ -143,10 +144,10 @@
 <varlistentry>
 	<term>
 		<command><option>cpugraph</option></command>
-	<option>(height),(width) (gradient colour 1) (gradient colour 2)</option>
+	<option>(cpu number) (height),(width) (gradient colour 1) (gradient colour 2)</option>
 	</term>
 	<listitem>
-		CPU usage graph, with optional colours in hex, minus the #.
+		CPU usage graph, with optional colours in hex, minus the #.  See $cpu for more info on SMP.
 	<para></para></listitem>
 </varlistentry>
 
