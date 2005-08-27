@@ -33,6 +33,7 @@
 #define MAXSHOWDEVS	16
 
 u_int64_t diskio_prev = 0;
+static short cpu_setup = 0;
 
 static int getsysctl(char *name, void *ptr, size_t len)
 {
@@ -265,12 +266,29 @@ struct cpu_load_struct {
 struct cpu_load_struct fresh = { {0, 0, 0, 0, 0} };
 long cpu_used, oldtotal, oldused;
 
+void get_cpu_count()
+{
+	int cpu_count = 0;	
+
+	if (GETSYSCTL("hw.ncpu", cpu_count) == 0)
+		info.cpu_count = cpu_count;
+
+	info.cpu_usage = malloc(info.cpu_count * sizeof(float));
+	if (info.cpu_usage == NULL)
+		CRIT_ERR("malloc");
+}
+
 void update_cpu_usage()
 {
 	long used, total;
 	long cp_time[CPUSTATES];
 	size_t len = sizeof(cp_time);
-
+	
+	if (cpu_setup == 0) {
+		get_cpu_count();
+		cpu_setup = 1;
+	}
+	
 	if (sysctlbyname("kern.cp_time", &cp_time, &len, NULL, 0) < 0) {
 		(void) fprintf(stderr, "Cannot get kern.cp_time");
 	}
@@ -286,11 +304,9 @@ void update_cpu_usage()
 	    fresh.load[0] + fresh.load[1] + fresh.load[2] + fresh.load[3];
 
 	if ((total - oldtotal) != 0) {
-		info.cpu_usage =
-		    ((double) (used - oldused)) / (double) (total -
-							    oldtotal);
+		info.cpu_usage[0] = ((double) (used - oldused)) / (double) (total - oldtotal);
 	} else {
-		info.cpu_usage = 0;
+		info.cpu_usage[0] = 0;
 	}
 
 	oldused = used;

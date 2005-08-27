@@ -746,6 +746,7 @@ enum text_object_type {
 	OBJ_alignr,
 	OBJ_alignc,
 	OBJ_i2c,
+#if defined(__linux__)
 	OBJ_i8k_version,
 	OBJ_i8k_bios,
 	OBJ_i8k_serial,
@@ -757,6 +758,7 @@ enum text_object_type {
 	OBJ_i8k_right_fan_rpm,
 	OBJ_i8k_ac_status,	
 	OBJ_i8k_buttons_status,
+#endif /* __linux__ */
 	OBJ_if_existing,
 	OBJ_if_mounted,
 	OBJ_if_running,
@@ -1024,6 +1026,7 @@ if (s[0] == '#') {
 	else
 		strcpy(bat, "BAT0");
 	obj->data.s = strdup(bat);
+#if defined(__linux__)
 	END OBJ(i8k_version, INFO_I8K)
 	END OBJ(i8k_bios, INFO_I8K)
 	END OBJ(i8k_serial, INFO_I8K)
@@ -1035,6 +1038,7 @@ if (s[0] == '#') {
 	END OBJ(i8k_right_fan_rpm, INFO_I8K)
 	END OBJ(i8k_ac_status, INFO_I8K)
 	END OBJ(i8k_buttons_status, INFO_I8K)
+#endif /* __linux__ */
 	END OBJ(buffers, INFO_BUFFERS)
 	END OBJ(cached, INFO_BUFFERS)
 	END OBJ(cpu, INFO_CPU)
@@ -1825,6 +1829,7 @@ static void generate_text()
 			OBJ(color) {
 				new_fg(p, obj->data.l);
 			}
+#if defined(__linux__)
 			OBJ(i8k_version) {
 				snprintf(p, n, "%s", i8k.version);
 			}
@@ -1886,7 +1891,7 @@ static void generate_text()
 				snprintf(p, n, "%s", i8k.buttons_status); 
 
 			}
-
+#endif /* __linux__ */
 
 #ifdef X11
 			OBJ(font) {
