@@ -320,23 +320,25 @@ void update_total_processes()
 	update_sysinfo();
 }
 
-static unsigned int cpu_user, cpu_system, cpu_nice;
-static double last_cpu_sum;
-static int clock_ticks;
+struct cpu_info {
+	unsigned int cpu_user;
+	unsigned int cpu_system;
+	unsigned int cpu_nice;
+	double last_cpu_sum;
+	int clock_ticks;
+	double cpu_val[15];
+};
+static short cpu_setup = 0;
+static int rep;
+
 
 static FILE *stat_fp;
 
-inline static void update_stat()
+void get_cpu_count()
 {
-	// FIXME: arbitrary size?
-	static double cpu_val[15];
-	static int rep;
 	char buf[256];
-	unsigned int i;
-	double curtmp;
-
 	if (stat_fp == NULL)
-		stat_fp = open_file("/proc/stat", &rep);
+		stat_fp = open_file("/tmp/testcpu", &rep);
 	else
 		fseek(stat_fp, 0, SEEK_SET);
 	if (stat_fp == NULL)
@@ -348,37 +350,71 @@ inline static void update_stat()
 		if (fgets(buf, 255, stat_fp) == NULL)
 			break;
 
-		if (strncmp(buf, "procs_running ", 14) == 0) {
-			sscanf(buf, "%*s %d", &info.run_procs);
-			info.mask |= (1 << INFO_RUN_PROCS);
-		} else if (strncmp(buf, "cpu ", 4) == 0) {
-			sscanf(buf, "%*s %u %u %u", &cpu_user, &cpu_nice,
-			       &cpu_system);
-			info.mask |= (1 << INFO_CPU);
-		} else if (strncmp(buf, "cpu", 3) == 0 && isdigit(buf[3])) {
+		if (strncmp(buf, "cpu", 3) == 0 && isdigit(buf[3])) {
 			info.cpu_count++;
 		}
 	}
+	info.cpu_usage = malloc(info.cpu_count * sizeof(float));
+	printf("cpu count is %i\n", info.cpu_count);
+}
 
-	{
+
+inline static void update_stat()
+{
+	// FIXME: arbitrary size?
+	static struct cpu_info *cpu = NULL;
+	char buf[256];
+	unsigned int i;
+	unsigned int index;
+	double curtmp;
+	if (!cpu_setup) {
+		get_cpu_count();
+		cpu_setup = 1;
+	}
+	if (cpu == NULL) {
+			cpu = malloc(info.cpu_count * sizeof(struct cpu_info));
+	}
+	if (stat_fp == NULL)
+		stat_fp = open_file("/tmp/testcpu", &rep);
+	else
+		fseek(stat_fp, 0, SEEK_SET);
+	if (stat_fp == NULL)
+		return;
+	index = 0;
+	while (!feof(stat_fp) && index < info.cpu_count) {
+		if (fgets(buf, 255, stat_fp) == NULL)
+			break;
+
+		if (strncmp(buf, "procs_running ", 14) == 0) {
+			sscanf(buf, "%*s %d", &info.run_procs);
+			info.mask |= (1 << INFO_RUN_PROCS);
+		} else if (strncmp(buf, "cpu", 3) == 0 && isdigit(buf[3])) {
+			sscanf(buf, "%*s %u %u %u", &(cpu[index].cpu_user), &(cpu[index].cpu_nice),
+			       &(cpu[index].cpu_system));
+			index++;
+			info.mask |= (1 << INFO_CPU);
+		}
+	}
+
+	for (index = 0; index < info.cpu_count; index++) {
 		double delta;
 		delta = current_update_time - last_update_time;
 		if (delta <= 0.001)
 			return;
 
-		if (clock_ticks == 0)
-			clock_ticks = sysconf(_SC_CLK_TCK);
+		if (cpu[index].clock_ticks == 0)
+			cpu[index].clock_ticks = sysconf(_SC_CLK_TCK);
 		curtmp = 0;
-		cpu_val[0] =
-		    (cpu_user + cpu_nice + cpu_system -
-		     last_cpu_sum) / delta / (double) clock_ticks /
-		    info.cpu_count;
+		cpu[index].cpu_val[0] =
+				(cpu[index].cpu_user + cpu[index].cpu_nice + cpu[index].cpu_system -
+				cpu[index].last_cpu_sum) / delta / (double) cpu[index].clock_ticks;
 		for (i = 0; i < info.cpu_avg_samples; i++)
-			curtmp += cpu_val[i];
-		info.cpu_usage = curtmp / info.cpu_avg_samples;
-		last_cpu_sum = cpu_user + cpu_nice + cpu_system;
+			curtmp += cpu[index].cpu_val[i];
+		printf("setting usage to %f\n", curtmp / info.cpu_avg_samples);
+		info.cpu_usage[index] = curtmp / info.cpu_avg_samples;
+		cpu[index].last_cpu_sum = cpu[index].cpu_user + cpu[index].cpu_nice + cpu[index].cpu_system;
 		for (i = info.cpu_avg_samples; i > 1; i--)
-			cpu_val[i - 1] = cpu_val[i - 2];
+			cpu[index].cpu_val[i - 1] = cpu[index].cpu_val[i - 2];
 
 	}
 

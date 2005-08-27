@@ -851,7 +851,7 @@ struct text_object {
 		struct fs_stat *fs;
 		unsigned char loadavg[3];
 		//unsigned int diskio;
-
+		int cpu_index;
 		struct {
 			struct fs_stat *fs;
 			int w, h;
@@ -1030,7 +1030,7 @@ if (s[0] == '#') {
 	END OBJ(i8k_cpu_temp, INFO_I8K)
 	END OBJ(i8k_cpu_tempf, INFO_I8K)
 	END OBJ(i8k_left_fan_status, INFO_I8K)	
-  END OBJ(i8k_right_fan_status, INFO_I8K)
+  	END OBJ(i8k_right_fan_status, INFO_I8K)
 	END OBJ(i8k_left_fan_rpm, INFO_I8K)
 	END OBJ(i8k_right_fan_rpm, INFO_I8K)
 	END OBJ(i8k_ac_status, INFO_I8K)
@@ -1038,6 +1038,13 @@ if (s[0] == '#') {
 	END OBJ(buffers, INFO_BUFFERS)
 	END OBJ(cached, INFO_BUFFERS)
 	END OBJ(cpu, INFO_CPU)
+			if (arg) {
+		if (sscanf(arg, "%i", &obj->data.cpu_index) < 1) {
+			ERR("$cpu takes an int as an arg");
+			} else {
+				obj->data.cpu_index = 1;
+			}
+			}
 	END OBJ(cpubar, INFO_CPU)
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(cpugraph, INFO_CPU)
@@ -1772,23 +1779,23 @@ static void generate_text()
 			OBJ(cpu) {
 				if (!use_spacer)
 					snprintf(p, n, "%*d", pad_percents,
-						 (int) (cur->cpu_usage *
+						(int) (cur->cpu_usage[obj->data.cpu_index] *
 							100.0));
 				else
 					snprintf(p, 4, "%*d    ",
 						 pad_percents,
-						 (int) (cur->cpu_usage *
+						 (int) (cur->cpu_usage[obj->data.cpu_index] *
 							100.0));
 			}
 			OBJ(cpubar) {
 				new_bar(p, obj->data.pair.a,
 					obj->data.pair.b,
-					(int) (cur->cpu_usage * 255.0));
+					(int) (cur->cpu_usage[0] * 255.0));
 			}
 			OBJ(cpugraph) {
 				new_graph(p, obj->a,
 					  obj->b, obj->c, obj->d,
-					  (unsigned int) (cur->cpu_usage *
+					  (unsigned int) (cur->cpu_usage[0] *
 							  100), 100, 1);
 			}
 			OBJ(color) {

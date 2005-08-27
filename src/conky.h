@@ -81,10 +81,10 @@ struct fs_stat {
 	long long avail;
 };
 
-struct cpu_stat {
+/*struct cpu_stat {
 	unsigned int user, nice, system, idle, iowait, irq, softirq;
 	int cpu_avg_samples;
-};
+};*/
 
 #ifdef MPD
 struct mpd_s {
@@ -129,7 +129,7 @@ enum {
 #endif
 	INFO_WIFI = 19,
 	INFO_DISKIO = 20,
-	INFO_I8K = 21
+	INFO_I8K = 21,
 };
 
 
@@ -153,8 +153,8 @@ struct information {
 	unsigned int procs;
 	unsigned int run_procs;
 
-	float cpu_usage;
-	struct cpu_stat cpu_summed;
+	float *cpu_usage;
+	/*	struct cpu_stat cpu_summed; what the hell is this? */
 	unsigned int cpu_count;
 	unsigned int cpu_avg_samples;
 
