@@ -320,13 +320,14 @@ void update_total_processes()
 	update_sysinfo();
 }
 
+#define CPU_SAMPLE_COUNT 15
 struct cpu_info {
 	unsigned int cpu_user;
 	unsigned int cpu_system;
 	unsigned int cpu_nice;
 	double last_cpu_sum;
 	int clock_ticks;
-	double cpu_val[15];
+	double cpu_val[CPU_SAMPLE_COUNT];
 };
 static short cpu_setup = 0;
 static int rep;
@@ -354,7 +355,7 @@ void get_cpu_count()
 			info.cpu_count++;
 		}
 	}
-	info.cpu_usage = malloc(info.cpu_count * sizeof(float));
+	info.cpu_usage = malloc((info.cpu_count + 1) * sizeof(float));
 }
 
 
@@ -371,6 +372,13 @@ inline static void update_stat()
 	}
 	if (cpu == NULL) {
 		cpu = malloc((info.cpu_count + 1) * sizeof(struct cpu_info));
+		for (index = 0; index < info.cpu_count + 1; ++index) {
+			cpu[index].clock_ticks = 0;
+			cpu[index].last_cpu_sum = 0;
+			for (i = 0; i < CPU_SAMPLE_COUNT; ++i) {
+				cpu[index].cpu_val[i] = 0;
+			}
+		}
 	}
 	if (stat_fp == NULL) {
 		stat_fp = open_file("/proc/stat", &rep);
