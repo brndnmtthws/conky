@@ -355,7 +355,6 @@ void get_cpu_count()
 		}
 	}
 	info.cpu_usage = malloc(info.cpu_count * sizeof(float));
-	printf("cpu count is %i\n", info.cpu_count);
 }
 
 
@@ -371,7 +370,11 @@ inline static void update_stat()
 		cpu_setup = 1;
 	}
 	if (cpu == NULL) {
+		if (info.cpu_count > 1) {
+			cpu = malloc((info.cpu_count + 1) * sizeof(struct cpu_info));
+		} else {
 			cpu = malloc(info.cpu_count * sizeof(struct cpu_info));
+		}			
 	}
 	if (stat_fp == NULL) {
 		stat_fp = open_file("/proc/stat", &rep);
@@ -389,14 +392,16 @@ inline static void update_stat()
 		if (strncmp(buf, "procs_running ", 14) == 0) {
 			sscanf(buf, "%*s %d", &info.run_procs);
 			info.mask |= (1 << INFO_RUN_PROCS);
+		} else if (strncmp(buf, "cpu ", 4) == 0) {
+			sscanf(buf, "%*s %u %u %u", &(cpu[index].cpu_user), &(cpu[index].cpu_nice), &(cpu[index].cpu_system));
+			index++;
+			info.mask |= (1 << INFO_CPU);
 		} else if (strncmp(buf, "cpu", 3) == 0 && isdigit(buf[3]) && index < info.cpu_count) {
-			sscanf(buf, "%*s %u %u %u", &(cpu[index].cpu_user), &(cpu[index].cpu_nice),
-			       &(cpu[index].cpu_system));
+			sscanf(buf, "%*s %u %u %u", &(cpu[index].cpu_user), &(cpu[index].cpu_nice), &(cpu[index].cpu_system));
 			index++;
 			info.mask |= (1 << INFO_CPU);
 		}
 	}
-
 	for (index = 0; index < info.cpu_count; index++) {
 		double delta;
 		delta = current_update_time - last_update_time;
@@ -414,7 +419,6 @@ inline static void update_stat()
 		for (i = 0; i < info.cpu_avg_samples; i++) {
 			curtmp += cpu[index].cpu_val[i];
 		}
-		printf("setting usage to %f\n", curtmp / info.cpu_avg_samples);
 		info.cpu_usage[index] = curtmp / info.cpu_avg_samples;
 		cpu[index].last_cpu_sum = cpu[index].cpu_user + cpu[index].cpu_nice + cpu[index].cpu_system;
 		for (i = info.cpu_avg_samples; i > 1; i--)
@@ -1201,7 +1205,6 @@ void update_diskio()
 	 * cd-roms and floppies, and summ them up
 	 */
 	current = 0;
-	strcmp(buf, "fasdf");
 	while (!feof(fp)) {
 		fgets(buf, 512, fp);
 		col_count = sscanf(buf, "%u %u %*s %*u %*u %u %*u %*u %*u %u",

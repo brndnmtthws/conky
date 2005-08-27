@@ -1038,18 +1038,41 @@ if (s[0] == '#') {
 	END OBJ(buffers, INFO_BUFFERS)
 	END OBJ(cached, INFO_BUFFERS)
 	END OBJ(cpu, INFO_CPU)
-			if (arg) {
-		if (sscanf(arg, "%i", &obj->data.cpu_index) < 1) {
-			ERR("$cpu takes an int as an arg");
+		if (arg) {
+			if (sscanf(arg, "%i", &obj->data.cpu_index) < 1) {
+				ERR("$cpu takes an int as an arg");
 			}
-			printf("got %i\n", obj->data.cpu_index);
 			} else {
 				obj->data.cpu_index = 0;
 			}
-				END OBJ(cpubar, INFO_CPU)
-	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+	END OBJ(cpubar, INFO_CPU)
+		if (arg) {
+			if (sscanf(arg, "%i", &obj->data.cpu_index) < 1) {
+				if (sscanf(arg, "%i %*s", &obj->data.cpu_index) < 1) {
+					ERR("$cpu takes an int as an arg");
+				} else {
+					char buf[128];
+					sscanf(arg, "%*i %127s", buf);
+					(void) scan_bar(buf, &obj->a, &obj->b);
+				}
+			}
+			} else {
+				obj->data.cpu_index = 0;
+			}
 	END OBJ(cpugraph, INFO_CPU)
-			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
+			if (arg) {
+		if (sscanf(arg, "%i", &obj->data.cpu_index) < 1) {
+			if (sscanf(arg, "%i %*s", &obj->data.cpu_index) < 1) {
+				ERR("$cpu takes an int as an arg");
+			} else {
+				char buf[128];
+				sscanf(arg, "%*i %127s", buf);
+				(void) scan_graph(buf, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
+			}
+		}
+			} else {
+				obj->data.cpu_index = 0;
+			}
 	END OBJ(diskio, INFO_DISKIO)
 	END OBJ(diskiograph, INFO_DISKIO) (void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
 	END OBJ(color, 0) 
@@ -1778,7 +1801,7 @@ static void generate_text()
 				human_readable(cur->cached * 1024, p, 255);
 			}
 			OBJ(cpu) {
-				if (obj->data.cpu_index > (info.cpu_count - 1)) {
+				if (obj->data.cpu_index > info.cpu_count) {
 					printf("obj->data.cpu_index %i info.cpu_count %i", obj->data.cpu_index, info.cpu_count);
 					CRIT_ERR("attempting to use more CPUs then you have!");
 				}
@@ -1793,8 +1816,8 @@ static void generate_text()
 							100.0));
 			}
 			OBJ(cpubar) {
-				new_bar(p, obj->data.pair.a,
-					obj->data.pair.b,
+				new_bar(p, obj->a,
+					obj->b,
 					(int) (cur->cpu_usage[0] * 255.0));
 			}
 			OBJ(cpugraph) {
