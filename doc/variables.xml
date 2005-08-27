@@ -124,10 +124,10 @@
 <varlistentry>
 	<term>
 		<command><option>cpu</option></command>
-		<option>(cpu number)</option>
+		<option>(cpuN)</option>
 	</term>
 	<listitem>
-		CPU usage in percents.  For SMP machines, the CPU number can be provided as an argument.  0 is the total usage, and >=1 are individual CPUs.  See $cpu for more info on SMP.
+		CPU usage in percents.  For SMP machines, the CPU number can be provided as an argument.  cpu0 is the total usage, and >=cpu1 are individual CPUs.  See $cpu for more info on SMP.
 	<para></para></listitem>
 </varlistentry>
 

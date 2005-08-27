@@ -1039,38 +1039,31 @@ if (s[0] == '#') {
 	END OBJ(cached, INFO_BUFFERS)
 	END OBJ(cpu, INFO_CPU)
 		if (arg) {
-			if (sscanf(arg, "%i", &obj->data.cpu_index) < 1) {
-				ERR("$cpu takes an int as an arg");
-			}
-			} else {
+		if (strncmp(arg, "cpu", 3) == 0 && isdigit(arg[3])) {
+			obj->data.cpu_index = atoi(&arg[3]);
+			arg += 4;
+		} else {obj->data.cpu_index = 0; }
+		} else {
 				obj->data.cpu_index = 0;
 			}
 	END OBJ(cpubar, INFO_CPU)
 		if (arg) {
-			if (sscanf(arg, "%i", &obj->data.cpu_index) < 1) {
-				if (sscanf(arg, "%i %*s", &obj->data.cpu_index) < 1) {
-					ERR("$cpu takes an int as an arg");
-				} else {
-					char buf[128];
-					sscanf(arg, "%*i %127s", buf);
-					(void) scan_bar(buf, &obj->a, &obj->b);
-				}
-			}
+		if (strncmp(arg, "cpu", 3) == 0 && isdigit(arg[3])) {
+			obj->data.cpu_index = atoi(&arg[3]);
+			arg += 4;
+		}
+		(void) scan_bar(arg, &obj->a, &obj->b);
 			} else {
 				obj->data.cpu_index = 0;
 			}
 	END OBJ(cpugraph, INFO_CPU)
 			if (arg) {
-		if (sscanf(arg, "%i", &obj->data.cpu_index) < 1) {
-			if (sscanf(arg, "%i %*s", &obj->data.cpu_index) < 1) {
-				ERR("$cpu takes an int as an arg");
-			} else {
-				char buf[128];
-				sscanf(arg, "%*i %127s", buf);
-				(void) scan_graph(buf, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
-			}
+		if (strncmp(arg, "cpu", 3) == 0 && isdigit(arg[3])) {
+			obj->data.cpu_index = atoi(&arg[3]);
+			arg += 4;
 		}
-			} else {
+				(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
+} else {
 				obj->data.cpu_index = 0;
 			}
 	END OBJ(diskio, INFO_DISKIO)

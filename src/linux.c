@@ -415,7 +415,11 @@ inline static void update_stat()
 		for (i = 0; i < info.cpu_avg_samples; i++) {
 			curtmp += cpu[index].cpu_val[i];
 		}
-		info.cpu_usage[index] = curtmp / info.cpu_avg_samples;
+		if (index == 0) {
+			info.cpu_usage[index] = curtmp / info.cpu_avg_samples / info.cpu_count;
+		} else {
+			info.cpu_usage[index] = curtmp / info.cpu_avg_samples;
+		}
 		cpu[index].last_cpu_sum = cpu[index].cpu_user + cpu[index].cpu_nice + cpu[index].cpu_system;
 		for (i = info.cpu_avg_samples; i > 1; i--)
 			cpu[index].cpu_val[i - 1] = cpu[index].cpu_val[i - 2];
