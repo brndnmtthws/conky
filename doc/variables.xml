@@ -193,7 +193,7 @@
 <varlistentry>
 	<term>
 		<command><option>downspeedgraph</option></command>
-		<option>net, (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+		<option>net (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
 	</term>
 	<listitem>
 		Download speed graph, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.
@@ -1024,7 +1024,7 @@
 <varlistentry>
 	<term>
 		<command><option>upspeedgraph</option></command>
-		<option>net, (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+		<option>net (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
 	</term>
 	<listitem>
 		Upload speed graph, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.
