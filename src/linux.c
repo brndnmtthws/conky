@@ -432,11 +432,11 @@ void update_load_average()
 
 #define PROC_I8K "/proc/i8k"
 #define I8K_DELIM " "
-
+static char *i8k_procbuf; 
 void update_i8k()
 {
 	FILE *fp;
-	char *i8k_procbuf = (char*)malloc(128*sizeof(char));
+	i8k_procbuf = (char*)malloc(128*sizeof(char));
 	if ((fp = fopen(PROC_I8K,"r")) == NULL) {
 		CRIT_ERR("/proc/i8k doesn't exist! use insmod to make sure the kernel driver is loaded...");
 	}
@@ -458,6 +458,10 @@ void update_i8k()
 	i8k.right_fan_rpm = strtok(NULL,I8K_DELIM);
 	i8k.ac_status = strtok(NULL,I8K_DELIM);
 	i8k.buttons_status = strtok(NULL,I8K_DELIM);
+
+	if(i8k_procbuf) {
+		free(i8k_procbuf);
+	}
 }
 
 
