@@ -1052,8 +1052,10 @@ if (s[0] == '#') {
 			obj->data.cpu_index = atoi(&arg[3]);
 			arg += 4;
 		}
+		else {obj->data.cpu_index = 0;}
 		(void) scan_bar(arg, &obj->a, &obj->b);
-			} else {
+		} else {
+				(void) scan_bar(arg, &obj->a, &obj->b);
 				obj->data.cpu_index = 0;
 			}
 	END OBJ(cpugraph, INFO_CPU)
@@ -1064,7 +1066,8 @@ if (s[0] == '#') {
 		}
 				(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
 } else {
-				obj->data.cpu_index = 0;
+	(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
+	obj->data.cpu_index = 0;
 			}
 	END OBJ(diskio, INFO_DISKIO)
 	END OBJ(diskiograph, INFO_DISKIO) (void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
@@ -1811,12 +1814,12 @@ static void generate_text()
 			OBJ(cpubar) {
 				new_bar(p, obj->a,
 					obj->b,
-					(int) (cur->cpu_usage[0] * 255.0));
+					(int) (cur->cpu_usage[obj->data.cpu_index] * 255.0));
 			}
 			OBJ(cpugraph) {
 				new_graph(p, obj->a,
 					  obj->b, obj->c, obj->d,
-					  (unsigned int) (cur->cpu_usage[0] *
+					  (unsigned int) (cur->cpu_usage[obj->data.cpu_index] *
 							  100), 100, 1);
 			}
 			OBJ(color) {
