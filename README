@@ -10,14 +10,14 @@ SYNOPSIS
        conky [options]
 
 DESCRIPTION
-       Conky is a system monitor for X originally based on  the	 torsmo	 code.
-       Since  it's original conception, Conky has changed a fair bit from it's
+       Conky is a system monitor for X originally based on  the  torsmo  code.
+       Since  its original conception, Conky has changed a fair bit from its
        predecessor.  Conky can display just about  anything,  either  on  your
-       root  desktop  or in it's own window.  Conky has many built-in objects,
-       as well as the ability to execute programs and  scripts,	 then  display
+       root  desktop  or in its own window.  Conky has many built-in objects,
+       as well as the ability to execute programs and  scripts,  then  display
        the output from stdout.
 
-       We  are	always	looking	 for help, and anyone interested in becoming a
+       We  are	always	looking  for help, and anyone interested in becoming a
        developer is welcome.  Please use the facilities at SourceForge to make
        bug reports, feature requests, and submit patches.
 
@@ -26,9 +26,9 @@ DESCRIPTION
 COMPILING
        First,  make  sure you have the X development libraries installed, this
        should be a package along the lines of  "libx11-dev  or	xorg-x11-dev".
-       Gentoo  users,  Conky is in Gentoo's Portage. Simply use "emerge conky"
+       Gentoo  users,  Conky is in Gentoos Portage. Simply use "emerge conky"
        for installation.  There is also usually an  up-to-date	ebuild	within
-       Conky's package or in CVS.
+       Conkys package or in CVS.
 
        To compile and run Conky with all optional components:
 
@@ -36,7 +36,7 @@ COMPILING
 
        ./configure	      --prefix=/usr	       --mandir=/usr/share/man
        --infodir=/usr/share/info    --datadir=/usr/share     --sysconfdir=/etc
-       --localstatedir=/var/lib	  --enable-double-buffer   --enable-own-window
+       --localstatedir=/var/lib   --enable-double-buffer   --enable-own-window
        --enable-proc-uptime --enable-mpd --enable-xft --enable-seti
 
        make
@@ -45,14 +45,14 @@ COMPILING
 
        ./conky
 
-       Conky  doesn't  probably compile with other compilers than gcc and icc.
-       It doesn't compile with C89 compiler and not even with  pure  C99.   It
-       uses  few  things  that	might not exist: strdup(), strcasecmp(), strn-
-       casecmp(), optarg variable with getopt() and long long  (not  in	 C89).
-       Crashes in file system statistics stuff when compiled with icc, I don't
+       Conky  doesnt  probably compile with other compilers than gcc and icc.
+       It doesnt compile with C89 compiler and not even with  pure  C99.   It
+       uses  few  things  that	might not exist: strdup(), strcasecmp(), strn
+       casecmp(), optarg variable with getopt() and long long  (not  in  C89).
+       Crashes in file system statistics stuff when compiled with icc, I dont
        know exactly why.
 
-       You can disable 'drawing to own window' feature in case you don't  need
+       You can disable drawing to own window feature in case you dont  need
        it by passing --disable-own-window to configure -script.
 
 
@@ -63,11 +63,14 @@ YOU SHOULD KNOW
        rest of Conky.
 
        If you do use them, please do not complain about memory or  CPU	usage,
-       unless  you  think  something  is  going	 seriously wrong (mem leak, et
+       unless  you  think  something  is  going  seriously wrong (mem leak, et
        cetera).
 
+       Easy way to force Conky to reload your  ~/.conkyrc:  "killall  -SIGUSR1
+       conky".	Saves you the trouble of having to stop and then restart!
+
 OPTIONS
-       Command line options override configurations defined  in	 configuration
+       Command	line  options override configurations defined in configuration
        file.
 
        -V     Prints version and exits
@@ -98,7 +101,7 @@ OPTIONS
 
 
        -t TEXT
-	      Text to render, remember single quotes, like -t ' $uptime '
+	      Text to render, remember single quotes, like -t  $uptime
 
 
        -u SECONDS
@@ -118,17 +121,17 @@ OPTIONS
 
 
 CONFIGURATION SETTINGS
-       Default	configuration  file  is	 $HOME/.conkyrc	 (can  be changed from
+       Default configuration file  is  $HOME/.conkyrc  (can  be  changed  from
        conky.c among other things). See conkyrc.sample. You might want to copy
        it to $HOME/.conkyrc and then start modifying it.
 
        alignment
-	      Aligned  position	 on  screen,  may be top_left, top_right, bot-
+	      Aligned position on screen, may  be  top_left,  top_right,  bot
 	      tom_left, bottom_right, or none
 
 
        background
-	      Boolean value, if true, Conky will be forked to background  when
+	      Boolean  value, if true, Conky will be forked to background when
 	      started
 
 
@@ -153,7 +156,7 @@ CONFIGURATION SETTINGS
 
 
        default_shade_color
-	      Default shading color and border's shading color
+	      Default shading color and borders shading color
 
 
        default_outline_color
@@ -161,8 +164,8 @@ CONFIGURATION SETTINGS
 
 
        double_buffer
-	      Use the Xdbe extension? (eliminates flicker) It is highly recom-
-	      mended to use own window with this one so double buffer won't be
+	      Use the Xdbe extension? (eliminates flicker) It is highly recom
+	      mended to use own window with this one so double buffer wont be
 	      so big.
 
 
@@ -181,11 +184,11 @@ CONFIGURATION SETTINGS
        font   Font name in X, xfontsel can be used to get a nice font
 
 
-       gap_x  Gap  between  right or left border of screen, same as passing -x
+       gap_x  Gap between right or left border of screen, same as  passing  -x
 	      at command line
 
 
-       gap_y  Gap between top or bottom border of screen, same as  passing  -y
+       gap_y  Gap  between  top or bottom border of screen, same as passing -y
 	      at command line
 
 
@@ -225,7 +228,7 @@ CONFIGURATION SETTINGS
 	      Host of MPD server
 
 
-       mpd_post
+       mpd_port
 	      Port of MPD server
 
 
@@ -250,8 +253,8 @@ CONFIGURATION SETTINGS
 
 
        own_window_colour colour
-	      If  own_window_transparent no, set a specified background colour
-	      (defaults to black). Takes either a hex  value  (#ffffff)	 or  a
+	      If own_window_transparent no, set a specified background	colour
+	      (defaults  to  black).  Takes  either a hex value (#ffffff) or a
 	      valid RGB name (see /usr/lib/X11/rgb.txt)
 
 
@@ -264,7 +267,7 @@ CONFIGURATION SETTINGS
 
 
        total_run_times
-	      Total  number of times for Conky to update before quitting. Zero
+	      Total number of times for Conky to update before quitting.  Zero
 	      makes Conky run forever
 
 
@@ -290,11 +293,11 @@ CONFIGURATION SETTINGS
 
 
 VARIABLES
-       Colors are parsed using XParsecolor(), there might be a list  of	 them:
+       Colors  are  parsed using XParsecolor(), there might be a list of them:
        /usr/X11R6/lib/X11/rgb.txt.   Also,   http://sedition.com/perl/rgb.html
-       [http://sedition.com/perl/rgb.html] Color can be also in #rrggbb format
-       (hex).	Note that when displaying bytes, power is 1024 and not 1000 so
-       1M really means 1024*1024 bytes and not 1000*1000.
+       Color  can  be also in #rrggbb format (hex).  Note that when displaying
+       bytes, power is 1024 and not 1000 so 1M really  means  1024*1024  bytes
+       and not 1000*1000.
 
        addr (interface)
 	      IP address for an interface
@@ -333,7 +336,7 @@ VARIABLES
 
 
        battery (num)
-	      Remaining capacity in ACPI or APM battery. ACPI  battery	number
+	      Remaining  capacity  in ACPI or APM battery. ACPI battery number
 	      can be given as argument (default is BAT0).
 
 
@@ -349,27 +352,27 @@ VARIABLES
 
 
        cpu (cpuN)
-	      CPU  usage  in percents. For SMP machines, the CPU number can be
+	      CPU usage in percents. For SMP machines, the CPU number  can  be
 	      provided as an argument. cpu0 is the total usage, and >=cpu1 are
 	      individual CPUs. See $cpu for more info on SMP.
 
 
        cpubar (cpu number) (height),(width)
-	      Bar that shows CPU usage, height is bar's height in pixels
+	      Bar that shows CPU usage, height is bars height in pixels
 
 
-       cpugraph	 (cpu  number)	(height),(width) (gradient colour 1) (gradient
+       cpugraph (cpu number) (height),(width) (gradient  colour  1)  (gradient
        colour 2)
-	      CPU  usage graph, with optional colours in hex, minus the #. See
+	      CPU usage graph, with optional colours in hex, minus the #.  See
 	      $cpu for more info on SMP.
 
 
        diskio Displays current disk IO.
 
 
-       diskiograph (height),(width) (gradient colour 1)	 (gradient  colour  2)
+       diskiograph  (height),(width)  (gradient  colour 1) (gradient colour 2)
        (scale)
-	      Disk IO graph, colours defined in hex, minus the #. If scale  is
+	      Disk  IO graph, colours defined in hex, minus the #. If scale is
 	      non-zero, it becomes the scale for the graph.
 
 
@@ -381,9 +384,9 @@ VARIABLES
 	      Download speed in kilobytes with one decimal
 
 
-       downspeedgraph  net,  (height),(width)  (gradient  colour  1) (gradient
+       downspeedgraph net,  (height),(width)  (gradient  colour  1)  (gradient
        colour 2) (scale)
-	      Download	speed  graph,  colours defined in hex, minus the #. If
+	      Download speed graph, colours defined in hex, minus  the	#.  If
 	      scale is non-zero, it becomes the scale for the graph.
 
 
@@ -391,14 +394,14 @@ VARIABLES
 
 
        exec command
-	      Executes a shell command and displays the output in conky. warn-
-	      ing:  this  takes a lot more resources than other variables. I'd
+	      Executes a shell command and displays the output in conky. warn
+	      ing: this takes a lot more resources than other  variables.  Id
 	      recommend coding wanted behaviour in C and posting a patch.
 
 
        execbar command
-	      Same as exec, except if  the  first  value  return  is  a	 value
-	      between  0-100,  it will use that number for a bar. The size for
+	      Same  as	exec,  except  if  the	first  value return is a value
+	      between 0-100, it will use that number for a bar. The  size  for
 	      the bar is currently fixed, but that may change in the future.
 
 
@@ -407,7 +410,7 @@ VARIABLES
 
 
        execi interval command
-	      Same as exec but with specific interval. Interval can't be  less
+	      Same  as exec but with specific interval. Interval cant be less
 	      than update_interval in configuration.
 
 
@@ -430,19 +433,19 @@ VARIABLES
 
 
        freq_dyn
-	      Returns  CPU  frequency in MHz, but is calculated by counting to
-	      clock cycles to complete	an  instruction.  Only	available  for
+	      Returns CPU frequency in MHz, but is calculated by  counting  to
+	      clock  cycles  to  complete  an  instruction. Only available for
 	      x86/amd64.
 
 
        freq_dyn_g
-	      Returns  CPU  frequency in GHz, but is calculated by counting to
-	      clock cycles to complete	an  instruction.  Only	available  for
+	      Returns CPU frequency in GHz, but is calculated by  counting  to
+	      clock  cycles  to  complete  an  instruction. Only available for
 	      x86/amd64.
 
 
        fs_bar (height),(width) fs
-	      Bar  that	 shows how much space is used on a file system. height
+	      Bar that shows how much space is used on a file  system.	height
 	      is the height in pixels. fs is any file on that file system.
 
 
@@ -463,8 +466,8 @@ VARIABLES
 
 
        head logfile lines (interval)
-	      Displays first N lines of supplied text text file.  If  interval
-	      is  not  supplied,  Conky assumes 2x Conky's interval. Max of 30
+	      Displays	first  N lines of supplied text text file. If interval
+	      is not supplied, Conky assumes 2x Conkys interval.  Max  of  30
 	      lines can be displayed, or until the text buffer is filled.
 
 
@@ -473,90 +476,90 @@ VARIABLES
 
 
        i2c (dev), type, n
-	      I2C sensor from sysfs (Linux 2.6). dev may  be  omitted  if  you
-	      have  only  one  I2C  device. type is either in (or vol) meaning
+	      I2C  sensor  from  sysfs	(Linux 2.6). dev may be omitted if you
+	      have only one I2C device. type is either	in  (or  vol)  meaning
 	      voltage, fan meaning fan or temp/tempf (first in C, second in F)
-	      meaning	temperature.   n   is	number	 of  the  sensor.  See
+	      meaning  temperature.  n	is   number   of   the	 sensor.   See
 	      /sys/bus/i2c/devices/ on your local computer.
 
 
        i8k_ac_status
-	      If running the i8k kernel driver for Inspiron laptops,  displays
-	      whether  ac  power  is on, as listed in /proc/i8k (translated to
-	      human-readable). Beware that this is by default not  enabled  by
+	      If  running the i8k kernel driver for Inspiron laptops, displays
+	      whether ac power is on, as listed in  /proc/i8k  (translated  to
+	      human-readable).	Beware	that this is by default not enabled by
 	      i8k itself.
 
 
        i8k_bios
-	      If  running the i8k kernel driver for Inspiron laptops, displays
+	      If running the i8k kernel driver for Inspiron laptops,  displays
 	      the bios version as listed in /proc/i8k.
 
 
        i8k_buttons_status
-	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      If  running the i8k kernel driver for Inspiron laptops, displays
 	      the volume buttons status as listed in /proc/i8k.
 
 
        i8k_cpu_temp
-	      If  running the i8k kernel driver for Inspiron laptops, displays
+	      If running the i8k kernel driver for Inspiron laptops,  displays
 	      the cpu temperature in celsius, as reported by /proc/i8k.
 
 
        i8k_cpu_tempf
-	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      If  running the i8k kernel driver for Inspiron laptops, displays
 	      the cpu temperature in farenheit, as reported by /proc/i8k.
 
 
        i8k_left_fan_rpm
-	      If  running the i8k kernel driver for Inspiron laptops, displays
-	      the left fan's rate of rotation, in revolutions  per  minute  as
+	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      the  left  fans  rate of rotation, in revolutions per minute as
 	      listed in /proc/i8k. Beware, some laptops i8k reports these fans
 	      in reverse order.
 
 
        i8k_left_fan_status
-	      If running the i8k kernel driver for Inspiron laptops,  displays
-	      the left fan status as listed in /proc/i8k (translated to human-
-	      readable). Beware,  some	laptops	 i8k  reports  these  fans  in
+	      If  running the i8k kernel driver for Inspiron laptops, displays
+	      the left fan  status  as	listed	in  /proc/i8k  (translated  to
+	      human-readable).	Beware, some laptops i8k reports these fans in
 	      reverse order.
 
 
        i8k_right_fan_rpm
-	      If  running the i8k kernel driver for Inspiron laptops, displays
-	      the right fan's rate of rotation, in revolutions per  minute  as
+	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      the  right  fans rate of rotation, in revolutions per minute as
 	      listed in /proc/i8k. Beware, some laptops i8k reports these fans
 	      in reverse order.
 
 
        i8k_right_fan_status
-	      If running the i8k kernel driver for Inspiron laptops,  displays
-	      the  right  fan  status  as  listed  in /proc/i8k (translated to
-	      human-readable). Beware, some laptops i8k reports these fans  in
+	      If  running the i8k kernel driver for Inspiron laptops, displays
+	      the right fan status  as	listed	in  /proc/i8k  (translated  to
+	      human-readable).	Beware, some laptops i8k reports these fans in
 	      reverse order.
 
 
        i8k_serial
-	      If  running the i8k kernel driver for Inspiron laptops, displays
+	      If running the i8k kernel driver for Inspiron laptops,  displays
 	      your laptop serial number as listed in /proc/i8k.
 
 
        i8k_version
-	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      If  running the i8k kernel driver for Inspiron laptops, displays
 	      the version formatting of /proc/i8k.
 
 
        if_running (process)
-	      if  PROCESS  is  running,	 display everything if_running and the
+	      if PROCESS is running, display  everything  if_running  and  the
 	      matching $endif
 
 
        if_existing (file)
-	      if FILE exists, display everything between if_existing  and  the
+	      if  FILE	exists, display everything between if_existing and the
 	      matching $endif
 
 
        if_mounted (mountpoint)
-	      if  MOUNTPOINT is mounted, display everything between if_mounted
+	      if MOUNTPOINT is mounted, display everything between  if_mounted
 	      and the matching $endif
 
 
@@ -576,8 +579,8 @@ VARIABLES
 	      Machine, i686 for example
 
 
-       mails  Mail  count in mail spool. You can use program like fetchmail to
-	      get mails from some server using your  favourite	protocol.  See
+       mails  Mail count in mail spool. You can use program like fetchmail  to
+	      get  mails  from	some server using your favourite protocol. See
 	      also new_mails.
 
 
@@ -644,7 +647,7 @@ VARIABLES
 
 
        mpd_bar (height),(width)
-	      Bar of mpd's progress
+	      Bar of mpds progress
 
 
        mpd_bitrate
@@ -660,19 +663,19 @@ VARIABLES
 
 
        mpd_vol
-	      MPD's volume
+	      MPDs volume
 
 
        mpd_elapsed
-	      Song's elapsed time
+	      Songs elapsed time
 
 
        mpd_length
-	      Song's length
+	      Songs length
 
 
        mpd_percent
-	      Percent of song's progress
+	      Percent of songs progress
 
 
        new_mails
@@ -733,26 +736,26 @@ VARIABLES
 
        tail logfile lines (interval)
 	      Displays last N lines of supplied text text file. If interval is
-	      not supplied, Conky assumes 2x Conky's interval. Max of 30 lines
+	      not supplied, Conky assumes 2x Conkys interval. Max of 30 lines
 	      can be displayed, or until the text buffer is filled.
 
 
        time (format)
-	      Local time, see man strftime to get more information about  for-
+	      Local  time, see man strftime to get more information about for
 	      mat
 
 
        totaldown net
-	      Total  download, overflows at 4 GB on Linux with 32-bit arch and
-	      there doesn't seem to be a way to know how  many	times  it  has
+	      Total download, overflows at 4 GB on Linux with 32-bit arch  and
+	      there  doesnt  seem  to  be a way to know how many times it has
 	      already done that before conky has started.
 
 
        top type, num
-	      This  takes arguments in the form:top (name) (number) Basically,
-	      processes are ranked from highest to  lowest  in	terms  of  cpu
-	      usage,  which  is	 what (num) represents. The types are: "name",
-	      "pid", "cpu", and mem". There can	 be  a	max  of	 10  processes
+	      This takes arguments in the form:top (name) (number)  Basically,
+	      processes  are  ranked  from  highest  to lowest in terms of cpu
+	      usage, which is what (num) represents. The  types  are:  "name",
+	      "pid",  "cpu",  and  mem".  There  can  be a max of 10 processes
 	      listed.
 
 
@@ -778,7 +781,7 @@ VARIABLES
 
        upspeedgraph net, (height),(width) (gradient colour 1) (gradient colour
        2) (scale)
-	      Upload  speed  graph,  colours  defined  in hex, minus the #. If
+	      Upload speed graph, colours defined in  hex,  minus  the	#.  If
 	      scale is non-zero, it becomes the scale for the graph.
 
 
@@ -802,12 +805,12 @@ VARIABLES
 
 
        voffset (pixels)
-	      Change verticle offset by N pixels. Negative values  will	 cause
+	      Change  verticle	offset by N pixels. Negative values will cause
 	      text to overlap. See also $offset.
 
 
 EXAMPLES
-       conky -t '${time %D %H:%m}' -o -u 30
+       conky -t${time %D %H:%m}-o -u 30
 	      Start Conky in its own window with date and clock as text and 30
 	      sec update interval.
 
@@ -818,25 +821,24 @@ FILES
        ~/.conkyrc default configuration file
 
 BUGS
-       Drawing to root or some other desktop window directly doesn't work with
-       all window managers. Especially doesn't work well with Gnome and it has
-       been reported that it doesn't work with KDE  either.  Nautilus  can  be
-       disabled	 from  drawing	to  desktop with program gconf-editor. Uncheck
-       show_desktop in /apps/nautilus/preferences/.  There  is	-w  switch  in
-       Conky  to  set  some  specific window id. You might find xwininfo -tree
-       useful to find the window to draw to. You  can  also  use  -o  argument
+       Drawing to root or some other desktop window directly doesnt work with
+       all window managers. Especially doesnt work well with Gnome and it has
+       been  reported  that  it  doesnt work with KDE either. Nautilus can be
+       disabled from drawing to desktop  with  program	gconf-editor.  Uncheck
+       show_desktop  in  /apps/nautilus/preferences/.  There  is  -w switch in
+       Conky to set some specific window id. You  might  find  xwininfo  -tree
+       useful  to  find  the  window  to draw to. You can also use -o argument
        which makes Conky to create its own window.
 
 SEE ALSO
-       http://conky.sourceforge.net [http://conky.sourceforge.net]
+       http://conky.sourceforge.net
 
-       http://www.sourceforge.net/projects/conky	   [http://www.source-
-       forge.net/projects/conky]
+       http://www.sourceforge.net/projects/conky
 
        #conky on irc.freenode.net
 
 AUTHORS
-       The Conky dev team. What's up now??!
+       The Conky dev team. Whats up now??!
 
 
 

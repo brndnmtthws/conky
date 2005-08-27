@@ -72,7 +72,7 @@ binary-arch: build install
 	dh_testdir
 	dh_testroot
 	dh_installchangelogs ChangeLog
-	dh_installdocs AUTHORS README TODO
+	dh_installdocs AUTHORS README TODO doc/docs.html doc/variables.html doc/config_settings.html
 	dh_installexamples doc/conkyrc.sample
 	dh_installmenu
 	dh_installman doc/conky.1

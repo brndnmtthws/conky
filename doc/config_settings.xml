@@ -179,7 +179,7 @@
 </varlistentry>
 
 <varlistentry>
-	<term><command><option>mpd_post</option></command></term>
+	<term><command><option>mpd_port</option></command></term>
 	<listitem>
 		Port of MPD server
 	<para></para></listitem>

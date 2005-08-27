@@ -8,7 +8,7 @@
   <xsl:template match="/">
     <html>
       <head>
-        <title>Conky Variables</title>
+        <title>~/.conkyrc settings</title>
       </head>
       <body bgcolor="#FFFFFF">
         <xsl:apply-templates />
@@ -17,28 +17,29 @@
   </xsl:template>
 
   <xsl:template match="variablelist" >
-    <table cellpadding="4">
+    <table cellpadding="3">
 
-      <tr bgcolor = "#ffd700">
-        <th>Option</th>
+      <tr bgcolor = "#eecfa1">
+        <th>Variable</th>
         <th>Explanation</th>
       </tr>
-
+	
       <xsl:for-each select="varlistentry">
-        <tr bgcolor = "#4a708b">
-          <td align="center" bgcolor="#2e8b57">
-            <font color = "FFFFFF">
-              <xsl:value-of select="term/command/option" />
-            </font>              
-          </td>
-          <td>
-            <font color = "#c1cdcd"> 
+	 			<xsl:variable name="row_bg">
+					<xsl:choose>
+						<xsl:when test="position() mod 2 = 1">#fffafa</xsl:when>
+						<xsl:otherwise>#b4cdcd</xsl:otherwise>
+					</xsl:choose>
+				</xsl:variable>
+        <tr bgcolor = "{$row_bg}">
+            <td align="center">
+                <xsl:value-of select="term/command/option" />
+            </td>
+	          <td>
               <xsl:value-of select="listitem" />
-            </font>
-          </td>
+	          </td>
         </tr>
       </xsl:for-each>
-      
     </table>
   </xsl:template>
   

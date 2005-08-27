@@ -124,6 +124,10 @@
 		If you do use them, please do not complain about memory or CPU usage, 
 		unless you think something is going seriously wrong (mem leak, et cetera).
 		</para>
+		<para>
+		Easy way to force Conky to reload your ~/.conkyrc: "killall -SIGUSR1 conky".
+		Saves you the trouble of having to stop and then restart!
+		</para>
   </refsect1>  
   
   <refsect1>
