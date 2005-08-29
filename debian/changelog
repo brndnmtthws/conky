@@ -1,7 +1,6 @@
-conky (1.2.9) hoary; urgency=low
+conky (1.3.0-1) unstable; urgency=low
 
-  * Initial Release.
-  * This is my first Debian Package, hopefully it works.
+  * Initial Release (Closes: #320978).
 
  -- Jason Tan <jtan325@gmail.com>  Wed, 24 Aug 2005 00:10:49 -0700
 

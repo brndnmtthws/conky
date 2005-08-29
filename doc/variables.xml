@@ -2,7 +2,7 @@
 <varlistentry>
 	<term>
 		<command><option>addr</option></command>
-	<option>(interface)</option>
+	<option>interface</option>
 	</term>
 	<listitem>
 		IP address for an interface

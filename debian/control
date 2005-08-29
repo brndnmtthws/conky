@@ -2,9 +2,8 @@ Source: conky
 Section: utils
 Priority: optional
 Maintainer: Jason Tan <jtan325@gmail.com>
-Build-Depends: debhelper (>= 4.0.0), xlibs-dev, libtool (>= 1.5.6), automake1.9, autoconf (>= 2.59)
-Build-Conflicts: autoconf2.13, automake1.4
-Standards-Version: 3.6.1
+Build-Depends: debhelper (>= 4.0.0), libx11-dev
+Standards-Version: 3.6.2
 
 Package: conky
 Architecture: any
