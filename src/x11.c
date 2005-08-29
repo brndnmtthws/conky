@@ -6,6 +6,8 @@
  *  $Id$
  */
 
+#ifdef X11
+
 #include "conky.h"
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
@@ -366,3 +368,5 @@ void create_gc()
 	window.gc = XCreateGC(display, window.drawable,
 			      GCFunction | GCGraphicsExposures, &values);
 }
+
+#endif /* X11 */

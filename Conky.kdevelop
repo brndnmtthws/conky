@@ -15,7 +15,7 @@
   <kdevautoproject>
     <general>
       <activetarget>conky</activetarget>
-      <useconfiguration>debug</useconfiguration>
+      <useconfiguration>debug-no-x</useconfiguration>
     </general>
     <run>
       <mainprogram>conky</mainprogram>
@@ -66,20 +66,20 @@
       </debug>
       <debug-no-x>
         <envvars/>
-        <configargs>--enable-debug=full --prefix=/usr --enable-mpd --enable-xft --enable-seti --enable-double-buffer --enable-own-window --enable-metar --enable-mldonkey --disable-x11</configargs>
+        <configargs>--enable-debug=full --prefix=/usr --enable-mpd --enable-xft --enable-seti --enable-double-buffer --enable-own-window --enable-metar --enable-mldonkey --disable-x11 --without-x</configargs>
         <builddir>debug-no-x</builddir>
-        <topsourcedir/>
-        <cppflags/>
-        <ldflags/>
+        <topsourcedir></topsourcedir>
+        <cppflags></cppflags>
+        <ldflags></ldflags>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevpgf77options</f77compiler>
-        <ccompilerbinary/>
-        <cxxcompilerbinary/>
-        <f77compilerbinary/>
+        <ccompilerbinary></ccompilerbinary>
+        <cxxcompilerbinary></cxxcompilerbinary>
+        <f77compilerbinary></f77compilerbinary>
         <cflags>-O2 -Wall -fexceptions -fomit-frame-pointer -fshort-enums -ggdb</cflags>
-        <cxxflags/>
-        <f77flags/>
+        <cxxflags></cxxflags>
+        <f77flags></f77flags>
       </debug-no-x>
     </configurations>
     <make>

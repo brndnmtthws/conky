@@ -245,7 +245,7 @@
 		<option>interval command</option>
 	</term>
 	<listitem>
-		Same as exec but with specific interval. Interval can't be less than update_interval in configuration.
+		Same as exec but with specific interval. Interval can't be less than update_interval in configuration. See also $texeci
 		<para></para></listitem>
 </varlistentry>
 
@@ -919,6 +919,16 @@
 	<listitem>
 		System name, Linux for example
 	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>texeci</option></command>
+		<option>interval command</option>
+	</term>
+	<listitem>
+		Runs a command at an interval inside a thread and displays the output.  Same as $execi, except the command is run inside a thread.  Use this if you have a slow script to keep Conky updating.  You should make the interval slightly longer then the time it takes your script to execute.  For example, if you have a script that take 5 seconds to execute, you should make the interval at least 6 seconds. See also $execi.
+		<para></para></listitem>
 </varlistentry>
 
 <varlistentry>

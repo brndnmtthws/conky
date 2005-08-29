@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <pthread.h>
 #include <string.h>
 #include <limits.h>
 #if HAVE_DIRENT_H
@@ -725,6 +726,7 @@ enum text_object_type {
 	OBJ_endif,
 	OBJ_exec,
 	OBJ_execi,
+	OBJ_texeci,
 	OBJ_execbar,
 	OBJ_execgraph,
 	OBJ_execibar,
@@ -905,6 +907,27 @@ struct text_object {
 static unsigned int text_object_count;
 static struct text_object *text_objects;
 
+pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
+
+void *threaded_exec( struct text_object *obj ) {
+	char *p2 = obj->data.execi.buffer;
+	FILE *fp = popen(obj->data.execi.cmd,"r");
+	pthread_mutex_lock( &mutex1 );
+	int n2 = fread(p2, 1, TEXT_BUFFER_SIZE, fp);
+	(void) pclose(fp);	
+	p2[n2] = '\0';
+	if (n2 && p2[n2 - 1] == '\n')
+		p2[n2 - 1] = '\0';
+	
+	while (*p2) {
+		if (*p2 == '\001')
+			*p2 = ' ';
+		p2++;
+	}
+	pthread_mutex_unlock( &mutex1 );
+	return NULL;
+}
+
 /* new_text_object() allocates a new zeroed text_object */
 static struct text_object *new_text_object()
 {
@@ -972,6 +995,10 @@ static void free_text_objects()
 			break;
 
 		case OBJ_execi:
+			free(text_objects[i].data.execi.cmd);
+			free(text_objects[i].data.execi.buffer);
+			break;
+		case OBJ_texeci:
 			free(text_objects[i].data.execi.cmd);
 			free(text_objects[i].data.execi.buffer);
 			break;
@@ -1166,6 +1193,20 @@ if (s[0] == '#') {
 		obj->data.execi.buffer =
 		    (char *) calloc(1, TEXT_BUFFER_SIZE);
 	}
+	END OBJ(texeci, 0) unsigned int n;
+
+	if (!arg
+		    || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
+		char buf[256];
+		ERR("${texeci <interval> command}");
+		obj->type = OBJ_text;
+		snprintf(buf, 256, "${%s}", s);
+		obj->data.s = strdup(buf);
+		    } else {
+			    obj->data.execi.cmd = strdup(arg + n);
+			    obj->data.execi.buffer =
+					    (char *) calloc(1, TEXT_BUFFER_SIZE);
+		    }
 	END OBJ(pre_exec, 0) obj->type = OBJ_text;
 	if (arg) {
 		FILE *fp = popen(arg, "r");
@@ -2205,6 +2246,25 @@ static void generate_text()
 					    current_update_time;
 				}
 			}
+			OBJ(texeci) {
+				static int running = 0;
+				if (current_update_time - obj->data.execi.last_update <	obj->data.execi.interval) {
+					snprintf(p, n, "%s", obj->data.execi.buffer);
+				} else {
+					static pthread_t execthread;
+					if (!running) {
+						running = 1;
+						pthread_create( &execthread, NULL, (void*)threaded_exec, (void*) obj);
+						pthread_mutex_lock( &mutex1 );
+						obj->data.execi.last_update = current_update_time;
+						pthread_mutex_unlock( &mutex1 );
+					} else {
+						pthread_join( execthread, NULL);
+						running = 0;
+					}
+					snprintf(p, n, "%s", obj->data.execi.buffer);
+				}
+			}
 #endif
 			OBJ(fs_bar) {
 				if (obj->data.fs != NULL) {
@@ -2931,8 +2991,9 @@ static void set_font()
 {
 #ifdef XFT
 	if (use_xft) {
-			if (window.xftdraw != NULL)
+			if (window.xftdraw != NULL) {
 				XftDrawDestroy(window.xftdraw);
+			}
 			window.xftdraw = XftDrawCreate(display, window.drawable,
 					DefaultVisual(display,
 							screen),
@@ -3196,12 +3257,14 @@ static void draw_string(const char *s)
 			}
 		}
 	}
+#ifdef X11
 	if (text_width == maximum_width) {
 		/* this means the text is probably pushing the limit, so we'll chop it */
 		while (cur_x + get_string_width(tmpstring2) - text_start_x > maximum_width && strlen(tmpstring2) > 0) {
 			tmpstring2[strlen(tmpstring2)-1] = '\0';
 		}
 	}
+#endif /* X11 */
 	s = tmpstring2;
 #ifdef X11
 #ifdef XFT
@@ -3561,7 +3624,7 @@ static void draw_line(char *s)
 					selected_font = specials[special_index].font_added;
 					cur_y += font_ascent();
 #ifdef XFT
-					if (!use_xft)
+					if (!use_xft || use_xdbe)
 #endif
 					{
 						set_font();
@@ -3734,8 +3797,9 @@ static void draw_stuff()
 static void clear_text(int exposures)
 {
 #ifdef XDBE
-	if (use_xdbe)
+	if (use_xdbe) {
 		return;		/* The swap action is XdbeBackground, which clears */
+	}
 #endif
 	/* there is some extra space for borders and outlines */
 	XClearArea(display, window.drawable,
@@ -3809,7 +3873,7 @@ static void main_loop()
 			}
 #ifdef OWN_WINDOW
 			if (own_window) {
-	set_transparent_background(window.window);
+				set_transparent_background(window.window);
 			}
 #endif
 		}
@@ -3885,13 +3949,13 @@ static void main_loop()
 				break;
 
 #ifdef OWN_WINDOW
-			/*case ReparentNotify:
-				 set background to ParentRelative for all parents 
+			case ReparentNotify:
+				/* set background to ParentRelative for all parents */
 				if (own_window) {
 					set_transparent_background(window.
 					window);
 				}
-				break;*/
+				break;
 
 			case ConfigureNotify:
 				if (own_window) {
@@ -3971,12 +4035,13 @@ static void main_loop()
 				r.width = text_width + border_margin * 2;
 				r.height = text_height + border_margin * 2;
 				XUnionRectWithRegion(&r, region, region);
-			}
+		}
 #endif
 			XSetRegion(display, window.gc, region);
 #ifdef XFT
-			if (use_xft)
+			if (use_xft) {
 				XftDrawSetClip(window.xftdraw, region);
+			}
 #endif
 #endif /* X11 */
 			draw_stuff();
@@ -3984,14 +4049,9 @@ static void main_loop()
 			XDestroyRegion(region);
 			region = XCreateRegion();
 		}
-
-
 #endif /* X11 */
 
 	}
-#ifdef X11
-	XDestroyRegion(region);
-#endif /* X11 */
 }
 
 static void load_config_file(const char *);
@@ -4019,8 +4079,9 @@ static void clean_up()
 {
 #ifdef X11
 #ifdef XDBE
-	if (use_xdbe)
+	if (use_xdbe) {
 		XdbeDeallocateBackBufferName(display, window.back_buffer);
+	}
 #endif
 #ifdef OWN_WINDOW
 	if (own_window)

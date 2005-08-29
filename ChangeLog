@@ -1,5 +1,9 @@
 # $Id$
 
+2005-08-27
+	* added threaded execi, $texeci
+	* feature freeze
+
 2005-08-26
 	* Fixed slight vertical misalignment of bars/graphs (sf.net 1273994)
 	* Diskio fixes (sf.net 1274140)
