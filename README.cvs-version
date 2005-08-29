@@ -26,4 +26,4 @@ fresh from a CVS checkout:
 	make 
 	make install
 
-	You might have to do the last two steps as root. 
+	You might have to do the last step as root.
