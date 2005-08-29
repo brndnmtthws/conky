@@ -32,8 +32,11 @@
 #define KELVTOC(x)      ((x - 2732) / 10.0)
 #define MAXSHOWDEVS	16
 
+inline void proc_find_top(struct process **cpu, struct process **mem);
+
 u_int64_t diskio_prev = 0;
 static short cpu_setup = 0;
+static short diskio_setup = 0;
 
 static int getsysctl(char *name, void *ptr, size_t len)
 {
@@ -278,6 +281,7 @@ void get_cpu_count()
 		CRIT_ERR("malloc");
 }
 
+/* XXX: SMP support */
 void update_cpu_usage()
 {
 	long used, total;
@@ -454,7 +458,7 @@ float get_freq()
 
 void update_top()
 {
-	/* XXX */
+	proc_find_top(info.cpu, info.memu);
 }
 
 void update_wifi_stats()
@@ -497,6 +501,89 @@ void update_diskio()
 		free(dev_select);
 	}
 
-	diskio_value = (unsigned int)((diskio_current - diskio_prev)/1024);
+	/* 
+	 * Since we return (diskio_total_current - diskio_total_old), first
+	 * frame will be way too high (it will be equal to diskio_total_current, i.e.
+	 * all disk I/O since boot). That's why it is better to return 0 first time;
+	 */
+	if (diskio_setup == 0) {
+		diskio_setup = 1;
+		diskio_value = 0;
+	} else
+		diskio_value = (unsigned int)((diskio_current - diskio_prev)/1024);
 	diskio_prev = diskio_current;
+}
+
+/*
+ * While topless is obviously better, top is also not bad.
+ */
+
+int comparecpu(const void * a, const void * b)
+{
+	if (((struct process *)a)->amount > ((struct process *)b)->amount)
+                return -1;
+        
+        if (((struct process *)a)->amount < ((struct process *)b)->amount)
+                return 1;
+        
+	return 0;
+}
+
+int comparemem(const void * a, const void * b)
+{
+	if (((struct process *)a)->totalmem > ((struct process *)b)->totalmem)
+                return -1;
+        
+	if (((struct process *)a)->totalmem < ((struct process *)b)->totalmem)
+                return 1;
+        
+	return 0;
+}
+
+inline void proc_find_top(struct process **cpu, struct process **mem)
+{
+	static int kd_init = 1;
+	struct kinfo_proc *p;
+	int n_processes;
+	int i, j = 0;
+	struct process *processes;
+	
+	if (kd_init) {
+		kd_init = 0;
+		if ((kd =
+		     kvm_open("/dev/null", "/dev/null", "/dev/null",
+			      O_RDONLY, "kvm_open")) == NULL) {
+			(void) fprintf(stderr, "Cannot read kvm.");
+		}
+	}
+
+	if (kd != NULL) {
+		int total_pages;
+
+		/* we get total pages count again to be sure it is up to date */
+		if (GETSYSCTL("vm.stats.vm.v_page_count", total_pages) != 0)
+			CRIT_ERR("Cannot read sysctl \"vm.stats.vm.v_page_count\"");
+		
+		p = kvm_getprocs(kd, KERN_PROC_PROC, 0, &n_processes);
+		processes = malloc(n_processes * sizeof(struct process));
+
+		for (i = 0; i < n_processes; i++) {
+			if (!((p[i].ki_flag & P_SYSTEM)) && p[i].ki_comm != NULL) {
+				processes[j].pid = p[i].ki_pid;
+				processes[j].name =  strdup(p[i].ki_comm);
+				processes[j].amount = 100.0 * p[i].ki_pctcpu / FSCALE;
+				processes[j].totalmem = (float)(p[i].ki_rssize / (float)total_pages) * 100.0;
+				j++;
+			}
+		}
+
+		qsort(processes, j, sizeof(struct process), comparemem);
+		for (i = 0; i < 10; mem[i] = &processes[i], i++);
+
+		qsort(processes, j, sizeof(struct process), comparecpu);
+		for (i = 0; i < 10; cpu[i] = &processes[i], i++);
+		
+		free(processes);
+	} else
+		return;
 }
