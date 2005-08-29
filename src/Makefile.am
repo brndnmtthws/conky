@@ -9,7 +9,7 @@ mpd = mpd.c libmpdclient.c
 endif
 
 if BUILD_LINUX
-linux = linux.c
+linux = linux.c top.c
 PTHREAD_LIBS =  -lpthread
 endif
 
@@ -38,7 +38,7 @@ if BUILD_X11
 x11 = x11.c
 endif
 
-conky_SOURCES = common.c fs.c top.c $(linux) mail.c mixer.c $(seti) $(mpd) $(solaris) $(freebsd) $(netbsd) $(cairo) conky.c conky.h $(x11) $(mldonkey) remoted.c remoted.h remotec.c remotec.h
+conky_SOURCES = common.c fs.c $(linux) mail.c mixer.c $(seti) $(mpd) $(solaris) $(freebsd) $(netbsd) $(cairo) conky.c conky.h $(x11) $(mldonkey) remoted.c remoted.h remotec.c remotec.h
 
 AM_LDFLAGS = $(X11_LIBS) $(XFT_LIBS) $(CAIRO_LIBS) $(PTHREAD_LIBS) -lm
 
