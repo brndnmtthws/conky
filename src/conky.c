@@ -1083,8 +1083,20 @@ if (s[0] == '#') {
 	OBJ(font, 0)
 			obj->data.s = scan_font(arg);
 	END
-			OBJ(downspeed, INFO_NET) obj->data.net = get_net_stat(arg);
-	END OBJ(downspeedf, INFO_NET) obj->data.net = get_net_stat(arg);
+		OBJ(downspeed, INFO_NET) 
+		if(arg) {
+			obj->data.net = get_net_stat(arg);
+		}
+		else {
+			CRIT_ERR("downspeed needs argument");
+		}
+	END OBJ(downspeedf, INFO_NET)
+		if(arg) {
+			obj->data.net = get_net_stat(arg);
+		}
+		else {
+			CRIT_ERR("downspeedf needs argument");
+		}
 	END OBJ(downspeedgraph, INFO_NET)
 			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
 	char buf[64];
@@ -1300,8 +1312,20 @@ if (s[0] == '#') {
 		ERR("invalid args given for top");
 		return;
 	}
-	END OBJ(addr, INFO_NET) obj->data.net = get_net_stat(arg);
-	END OBJ(linkstatus, INFO_WIFI) obj->data.net = get_net_stat(arg);
+	END OBJ(addr, INFO_NET)
+		if(arg) {
+			obj->data.net = get_net_stat(arg);
+		}
+		else {
+			CRIT_ERR("addr needs argument");
+		}
+	END OBJ(linkstatus, INFO_WIFI) 
+		if(arg) {
+			obj->data.net = get_net_stat(arg);
+		}
+		else {
+			CRIT_ERR("linkstatus needs argument");
+		}
 	END OBJ(tail, 0)
 	char buf[64];
 	int n1, n2;
@@ -1548,13 +1572,38 @@ int a = stippled_borders, b = 1;
 			    obj->data.i2c.devtype);
 	END OBJ(time, 0) obj->data.s = strdup(arg ? arg : "%F %T");
 	END OBJ(utime, 0) obj->data.s = strdup(arg ? arg : "%F %T");
-	END OBJ(totaldown, INFO_NET) obj->data.net = get_net_stat(arg);
+	END OBJ(totaldown, INFO_NET)
+		if(arg) {
+			obj->data.net = get_net_stat(arg);
+		}
+		else {
+			CRIT_ERR("totaldown needs argument");
+		}
 	END OBJ(totalup, INFO_NET) obj->data.net = get_net_stat(arg);
+		if(arg) {
+			obj->data.net = get_net_stat(arg);
+		}
+		else {
+			CRIT_ERR("totalup needs argument");
+		}
 	END OBJ(updates, 0)
 	END OBJ(alignr, 0) obj->data.i = arg ? atoi(arg) : 0;
 	END OBJ(alignc, 0) obj->data.i = arg ? atoi(arg) : 0;
-	END OBJ(upspeed, INFO_NET) obj->data.net = get_net_stat(arg);
-	END OBJ(upspeedf, INFO_NET) obj->data.net = get_net_stat(arg);
+	END OBJ(upspeed, INFO_NET)
+		if(arg) {
+			obj->data.net = get_net_stat(arg);
+		}
+		else {
+			CRIT_ERR("upspeed needs argument");
+		}
+	END OBJ(upspeedf, INFO_NET) 
+		if(arg) {
+			obj->data.net = get_net_stat(arg);
+		}
+		else {
+			CRIT_ERR("upspeedf needs argument");
+		}
+
 	END OBJ(upspeedgraph, INFO_NET)
 			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
 	char buf[64];
