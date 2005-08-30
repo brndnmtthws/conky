@@ -524,13 +524,34 @@ inline void graph_append(struct special_t *graph, double f)
 	}
 }
 
+short colour_depth = 0;
+void set_up_gradient();
+
+/* adjust color values depending on color depth*/
+static unsigned int adjust_colors(unsigned int color)
+{
+	double r, g, b;
+	if (colour_depth == 0) {
+		set_up_gradient();
+	}
+	if (colour_depth == 16) {
+		r = (color & 0xff0000) >> 16;
+		g = (color & 0xff00) >> 8;
+		b =  color & 0xff;
+		color  = (int)(r / 0xff * 0x1f) << 11;
+		color |= (int)(g / 0xff * 0x3f) << 5;
+		color |= (int)(b / 0xff * 0x1f);
+	}
+	return color;
+}
+
 static void new_graph(char *buf, int w, int h, unsigned int first_colour, unsigned int second_colour, double i, int scale, int append)
 {
 	struct special_t *s = new_special(buf, GRAPH);
 	s->width = w;
 	s->height = h;
-	s->first_colour = first_colour;
-	s->last_colour = second_colour;
+	s->first_colour = adjust_colors(first_colour);
+	s->last_colour = adjust_colors(second_colour);
 	if (scale != 0) {
 		s->scaled = 0;
 	} else {
@@ -1907,23 +1928,23 @@ static void generate_text()
 				}
 				if (!use_spacer)
 					snprintf(p, n, "%*d", pad_percents,
-						(int) (cur->cpu_usage[obj->data.cpu_index] *
+						(int) round_to_int(cur->cpu_usage[obj->data.cpu_index] *
 							100.0));
 				else
 					snprintf(p, 4, "%*d    ",
 						 pad_percents,
-						 (int) (cur->cpu_usage[obj->data.cpu_index] *
+						 (int) round_to_int(cur->cpu_usage[obj->data.cpu_index] *
 							100.0));
 			}
 			OBJ(cpubar) {
 				new_bar(p, obj->a,
 					obj->b,
-					(int) (cur->cpu_usage[obj->data.cpu_index] * 255.0));
+					(int) round_to_int(cur->cpu_usage[obj->data.cpu_index] * 255.0));
 			}
 			OBJ(cpugraph) {
 				new_graph(p, obj->a,
 					  obj->b, obj->c, obj->d,
-					  (unsigned int) (cur->cpu_usage[obj->data.cpu_index] *
+					  (unsigned int) round_to_int(cur->cpu_usage[obj->data.cpu_index] *
 							  100), 100, 1);
 			}
 			OBJ(color) {
@@ -3327,7 +3348,6 @@ static void draw_string(const char *s)
 }
 
 long redmask, greenmask, bluemask;
-short colour_depth = 0;
 
 void set_up_gradient()
 {

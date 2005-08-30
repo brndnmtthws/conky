@@ -50,7 +50,7 @@ fprintf(stderr, "Conky: " s "\n", ##varargs)
 #define CRIT_ERR(s, varargs...) \
 { fprintf(stderr, "Conky: " s "\n", ##varargs);  exit(EXIT_FAILURE); }
 
-struct i8k_struct { 
+struct i8k_struct {
 	char *version;
 	char *bios;
 	char *serial;
@@ -271,6 +271,8 @@ void format_seconds_short(char *buf, unsigned int n, long t);
 struct net_stat *get_net_stat(const char *dev);
 
 void update_stuff();
+
+int round_to_int(float f);
 
 #define SET_NEED(a) need_mask |= 1 << (a)
 extern unsigned long long need_mask;

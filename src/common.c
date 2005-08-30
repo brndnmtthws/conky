@@ -245,3 +245,14 @@ void update_stuff()
 		last_fs_update = current_update_time;
 	}
 }
+
+int round_to_int(float f)
+{
+    int intval = (int)f;
+    double delta = f - intval;
+    if (!(delta < 0.5)) {
+        ++intval;
+    }
+
+    return intval;
+}
