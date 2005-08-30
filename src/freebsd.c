@@ -512,6 +512,8 @@ void update_diskio()
 	} else
 		diskio_value = (unsigned int)((diskio_current - diskio_prev)/1024);
 	diskio_prev = diskio_current;
+
+	free(statinfo_cur.dinfo);
 }
 
 /*
