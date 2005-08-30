@@ -30,6 +30,10 @@
 #endif
 #endif /* X11 */
 
+#if defined(__FreeBSD__)
+#include <machine/apm_bios.h>
+#endif /* __FreeBSD__ */
+
 #define TOP_CPU 1
 #define TOP_NAME 2
 #define TOP_PID 3
@@ -353,6 +357,13 @@ extern char *seti_dir;
 void update_seti();
 #endif
 
+/* in freebsd.c */
+#ifdef __FreeBSD__
+int apm_getinfo(int fd, apm_info_t aip);
+char *get_apm_adapter(void);
+char *get_apm_battery_life(void);
+char *get_apm_battery_time(void);
+#endif
 /* in mpd.c */
 
 #ifdef MPD

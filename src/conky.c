@@ -821,6 +821,11 @@ enum text_object_type {
 	OBJ_upspeedgraph,
 	OBJ_uptime,
 	OBJ_uptime_short,
+#ifdef __FreeBSD__
+	OBJ_apm_adapter,
+	OBJ_apm_battery_time,
+	OBJ_apm_battery_life,
+#endif /* __FreeBSD__ */
 #ifdef SETI
 	OBJ_seti_prog,
 	OBJ_seti_progbar,
@@ -1658,6 +1663,11 @@ int a = stippled_borders, b = 1;
 	}
 	END OBJ(uptime_short, INFO_UPTIME) END OBJ(uptime, INFO_UPTIME) END
 	    OBJ(adt746xcpu, 0) END OBJ(adt746xfan, 0) END
+#ifdef __FreeBSD__
+	OBJ(apm_adapter, 0) END
+	OBJ(apm_battery_life, 0) END
+	OBJ(apm_battery_time, 0) END
+#endif /* __FreeBSD__ */
 #ifdef SETI
 	 OBJ(seti_prog, INFO_SETI) END OBJ(seti_progbar, INFO_SETI)
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
@@ -2680,6 +2690,23 @@ static void generate_text()
 				format_seconds(p, n, (int) cur->uptime);
 			}
 
+#ifdef __FreeBSD__
+			OBJ(apm_adapter) {
+				snprintf(p, n, "%s", get_apm_adapter());
+			}
+			OBJ(apm_battery_life) {
+				char    *msg;
+				msg = get_apm_battery_life();
+				snprintf(p, n, "%s", msg);
+				free(msg);
+			}
+			OBJ(apm_battery_time) {
+				char    *msg;
+				msg = get_apm_battery_time();
+				snprintf(p, n, "%s", msg);
+				free(msg);
+			}
+#endif /* __FreeBSD__ */
 #ifdef SETI
 			OBJ(seti_prog) {
 				snprintf(p, n, "%.2f",

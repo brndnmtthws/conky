@@ -587,3 +587,120 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 	} else
 		return;
 }
+
+#define APMDEV  "/dev/apm"
+#define APM_UNKNOWN     255
+
+int apm_getinfo(int fd, apm_info_t aip)
+{
+        if (ioctl(fd, APMIO_GETINFO, aip) == -1)
+                return -1;
+
+        return 0;
+}
+
+char *get_apm_adapter()
+{
+        int fd;
+        struct apm_info info;
+
+        fd = open(APMDEV, O_RDONLY);
+        if(fd < 0) 
+                return "ERR";
+
+        if(apm_getinfo(fd, &info) != 0 ) {
+		close(fd);
+                return "ERR";
+	}
+	close(fd);
+
+        switch(info.ai_acline) {
+                case 0:
+                        return "off-line";
+                        break;
+                case 1:
+                        if(info.ai_batt_stat == 3)
+                                return "charging";
+                        else
+                                return "on-line";
+                        break;
+                default:
+                        return "unknown";
+                        break;
+        }
+}
+
+char *get_apm_battery_life()
+{
+        int fd;
+        u_int batt_life;
+        struct apm_info info;
+        char *out;
+
+	out = (char *)calloc(16, sizeof(char));
+	
+
+        fd = open(APMDEV, O_RDONLY);
+        if(fd < 0) {
+		strncpy(out, "ERR", 16);
+		return out;
+	}
+
+        if(apm_getinfo(fd, &info) != 0 ) {
+		close(fd);
+		strncpy(out, "ERR", 16);
+		return out;
+	}
+	close(fd);
+
+        batt_life = info.ai_batt_life;
+        if (batt_life == APM_UNKNOWN)
+		strncpy(out, "unknown", 16);
+        else if (batt_life <= 100) {
+                snprintf(out, 20,"%d%%", batt_life);
+                return out;
+        }
+        else
+		strncpy(out, "ERR", 16);
+
+	return out;
+}
+
+char *get_apm_battery_time()
+{
+        int fd;
+        int batt_time;
+        int h, m, s;
+        struct apm_info info;
+        char *out;
+
+	out = (char *)calloc(16, sizeof(char));
+
+        fd = open(APMDEV, O_RDONLY);
+        if(fd < 0) {
+		strncpy(out, "ERR", 16);
+		return out;
+	}
+
+        if(apm_getinfo(fd, &info) != 0 ) {
+		close(fd);
+		strncpy(out, "ERR", 16);
+		return out;
+	}
+	close(fd);
+
+        batt_time = info.ai_batt_time;
+
+        if (batt_time == -1)
+		strncpy(out, "unknown", 16);
+        else {
+                h = batt_time;
+                s = h % 60;
+                h /= 60;
+                m = h % 60;
+                h /= 60;
+                snprintf(out, 16, "%2d:%02d:%02d", h, m, s);
+        }
+
+	return out;
+}
