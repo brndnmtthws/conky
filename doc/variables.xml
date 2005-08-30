@@ -85,6 +85,34 @@
 
 <varlistentry>
 	<term>
+		<command><option>apm_adapter</option></command>
+	</term>
+	<listitem>
+		Display APM AC adapter status (FreeBSD only)
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>apm_battery_life</option></command>
+	</term>
+	<listitem>
+		Display APM battery life in percent (FreeBSD only)
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+        <term>
+                <command><option>apm_battery_time</option></command>
+        </term>
+        <listitem>
+		Display remaining APM battery life in hh:mm:ss or "unknown" if
+	        AC adapterstatus is on-line or charging (FreeBSD only)
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>battery</option></command>
 	<option>(num)</option>
 	</term>
