@@ -527,6 +527,10 @@ inline void graph_append(struct special_t *graph, double f)
 short colour_depth = 0;
 void set_up_gradient();
 
+/* precalculated: 31/255, and 63/255 */
+#define CONST_8_TO_5_BITS 0.12156862745098
+#define CONST_8_TO_6_BITS 0.247058823529412
+
 /* adjust color values depending on color depth*/
 static unsigned int adjust_colors(unsigned int color)
 {
@@ -538,9 +542,9 @@ static unsigned int adjust_colors(unsigned int color)
 		r = (color & 0xff0000) >> 16;
 		g = (color & 0xff00) >> 8;
 		b =  color & 0xff;
-		color  = (int)(r / 0xff * 0x1f) << 11;
-		color |= (int)(g / 0xff * 0x3f) << 5;
-		color |= (int)(b / 0xff * 0x1f);
+		color  = (int)(r * CONST_8_TO_5_BITS) << 11;
+		color |= (int)(g * CONST_8_TO_6_BITS) << 5;
+		color |= (int)(b * CONST_8_TO_5_BITS);
 	}
 	return color;
 }
