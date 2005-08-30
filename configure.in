@@ -171,7 +171,7 @@ AC_ARG_ENABLE(x11,
  [want_x11="$enableval"])
 
 
-if test x$want_x11 == xyes; then
+if test "x$want_x11" = "xyes"; then
 	AC_PATH_X
 	AC_PATH_XTRA
 	CFLAGS="$CFLAGS $X_CFLAGS"
@@ -253,8 +253,13 @@ dnl Some random headers
 dnl
 
 
-AC_CHECK_HEADERS([signal.h unistd.h X11/Xlib.h sys/utsname.h sys/stat.h linux/soundcard.h dirent.h mcheck.h])
-AC_CHECK_HEADERS([sys/statfs.h sys/param.h sys/mount.h])
+AC_CHECK_HEADERS([signal.h unistd.h sys/utsname.h sys/stat.h linux/soundcard.h dirent.h mcheck.h])
+AC_CHECK_HEADERS([sys/statfs.h sys/param.h])
+AC_CHECK_HEADERS([sys/mount.h], [], [],
+		 [#ifdef HAVE_SYS_PARAM_H
+		  #include <sys/param.h>
+		  #endif
+])
 dnl For cairo
 
 dnl
