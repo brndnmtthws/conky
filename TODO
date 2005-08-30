@@ -11,16 +11,3 @@ after 1.3.0 only maintenance releases will follow, no new features for the 1.x s
 2.0.0 - hopefully by christmas at the latest
 	* rewrite core of Conky in C++
 	* implement new features like a cairo backend, network transparency, and whatever else
-	
-
-######################################
-# POSSIBLE FEATURES TO ADD  #
-######################################
-
-[jtan325] 
-
-- math computation. for example, a user wants to know the total memory used by the top two memory-hogging processes, the user could do math operations, something like ${top mem 1} [+] ${top mem 2}, where "[" and "]" are special symbols (obviously this would be a bad choice of special symbol delimiter, but it's just for example) to denote a mathematical operation to perform and print the result. 
-
-- stock quotes. not sure if this is something within conky's intended realm, but yeah, it'd basically query some free quote websites and the user would provide the stock symbol(s) or something. i know konfabulator! has a stock quotes widget...
-
-- more customizable placement of information. users may not want everything in one big box, but rather, spread along the bottom/top of the screen. this would be pretty hard to code right, for varying levels of flexibility. 

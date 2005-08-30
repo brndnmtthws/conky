@@ -279,7 +279,7 @@
 </varlistentry>
 
 <varlistentry>
-	<term><command><option>text</option></command></term>
+	<term><command><option>TEXT</option></command></term>
 	<listitem>
 		After this begins text to be formatted on screen
 	<para></para></listitem>

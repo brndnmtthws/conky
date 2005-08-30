@@ -1,6 +1,6 @@
 <variablelist>
   <varlistentry>
-    <term><command><option>-V</option></command></term>
+    <term><command><option>-v | -V</option></command></term>
     <listitem>
     Prints version and exits
     <para></para></listitem>
