@@ -1,5 +1,7 @@
 if HAVE_DOCSTUFF
 
+DOCS = conky.1 docs.html variables.html config_settings.html
+
 clean-am: clean-generic mostlyclean-am
 	rm -f docs.mxml
 	rm -f conky.1
@@ -18,6 +20,5 @@ conky.1: command_options.xml config_settings.xml docs.xml variables.xml
 endif
 
 man_MANS = conky.1
-DOCS = conky.1 docs.html variables.html config_settings.html
 
 EXTRA_DIST = $(DOCS) conkyrc.sample command_options.xml config_settings.xml docgen.sh docs.xml variables.xml variables.xsl config_settings.xsl
