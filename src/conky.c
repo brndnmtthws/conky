@@ -385,7 +385,7 @@ static int special_count;
 static int special_index;	/* used when drawing */
 #endif /* X11 */
 
-#define MAX_GRAPH_DEPTH 256	/* why 256? who knows. */
+#define MAX_GRAPH_DEPTH 512	/* why 512? who knows. */
 
 static struct special_t *new_special(char *buf, int t)
 {
@@ -552,7 +552,7 @@ static unsigned int adjust_colors(unsigned int color)
 static void new_graph(char *buf, int w, int h, unsigned int first_colour, unsigned int second_colour, double i, int scale, int append)
 {
 	struct special_t *s = new_special(buf, GRAPH);
-	s->width = w;
+	s->width = (w < MAX_GRAPH_DEPTH) ? w : MAX_GRAPH_DEPTH;
 	s->height = h;
 	s->first_colour = adjust_colors(first_colour);
 	s->last_colour = adjust_colors(second_colour);
