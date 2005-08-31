@@ -155,7 +155,7 @@
 		<option>(cpuN)</option>
 	</term>
 	<listitem>
-		CPU usage in percents.  For SMP machines, the CPU number can be provided as an argument.  cpu0 is the total usage, and >=cpu1 are individual CPUs.  See $cpu for more info on SMP.
+		CPU usage in percents.  For SMP machines, the CPU number can be provided as an argument.  cpu0 is the total usage, and >=cpu1 are individual CPUs. 
 	<para></para></listitem>
 </varlistentry>
 
@@ -165,7 +165,7 @@
 		<option>(cpu number) (height),(width)</option>
 	</term>
 	<listitem>
-		Bar that shows CPU usage, height is bar's height in pixels
+		Bar that shows CPU usage, height is bar's height in pixels.  See $cpu for more info on SMP.
 	<para></para></listitem>
 </varlistentry>
 
