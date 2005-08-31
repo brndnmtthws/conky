@@ -1,5 +1,8 @@
 # $Id$
 
+2005-08-31
+	* FreeBSD support was added
+
 2005-08-27
 	* added threaded execi, $texeci
 	* feature freeze

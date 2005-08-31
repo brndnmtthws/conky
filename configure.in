@@ -21,12 +21,12 @@ case $uname in
     WANT_KVM=yes
     WANT_DEVSTAT=yes
     ;;
-  NetBSD*)
-    WANT_KVM=yes
-    WANT_OSSLIB=yes
-    ;;
-# Solaris doesn't work at all right now
+#  NetBSD*)
+#    WANT_KVM=yes
+#    WANT_OSSLIB=yes
+#    ;;
 
+# Solaris doesn't work at all right now
 #  SunOS*)
 #    WANT_KSTAT=yes
 #    ;;
