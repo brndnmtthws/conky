@@ -385,7 +385,7 @@ static int special_count;
 static int special_index;	/* used when drawing */
 #endif /* X11 */
 
-#define MAX_GRAPH_DEPTH 512	/* why 512? who knows. */
+#define MAX_GRAPH_DEPTH 256	/* why 256? cause an array of more then 256 doubles seems excessive, and who needs that kind of precision anyway? */
 
 static struct special_t *new_special(char *buf, int t)
 {
@@ -394,18 +394,6 @@ static struct special_t *new_special(char *buf, int t)
 
 	buf[0] = SPECIAL_CHAR;
 	buf[1] = '\0';
-	if (t == GRAPH && specials[special_count].graph == NULL) {
-		if (specials[special_count].width > 0
-		    && specials[special_count].width < MAX_GRAPH_DEPTH)
-			specials[special_count].graph_width = specials[special_count].width - 3;	// subtract 3 for the box
-		else
-			specials[special_count].graph_width =
-			    MAX_GRAPH_DEPTH;
-		specials[special_count].graph =
-		    calloc(specials[special_count].graph_width,
-			   sizeof(double));
-		specials[special_count].graph_scale = 100;
-	}
 	specials[special_count].type = t;
 	return &specials[special_count++];
 }
@@ -552,7 +540,16 @@ static unsigned int adjust_colors(unsigned int color)
 static void new_graph(char *buf, int w, int h, unsigned int first_colour, unsigned int second_colour, double i, int scale, int append)
 {
 	struct special_t *s = new_special(buf, GRAPH);
-	s->width = (w < MAX_GRAPH_DEPTH) ? w : MAX_GRAPH_DEPTH;
+	s->width = w;
+	if (s->graph == NULL) {
+		if (s->width > 0 && s->width < MAX_GRAPH_DEPTH) {
+			s->graph_width = s->width - 3;	// subtract 3 for the box
+		} else {
+			s->graph_width = MAX_GRAPH_DEPTH - 3;
+		}
+		s->graph = malloc(s->graph_width * sizeof(double));
+		s->graph_scale = 100;
+	}
 	s->height = h;
 	s->first_colour = adjust_colors(first_colour);
 	s->last_colour = adjust_colors(second_colour);
@@ -561,9 +558,9 @@ static void new_graph(char *buf, int w, int h, unsigned int first_colour, unsign
 	} else {
 		s->scaled = 1;
 	}
-	if (s->width) {
+	/*if (s->width) {
 		s->graph_width = s->width - 3;	// subtract 3 for rectangle around
-	}
+	}*/
 	if (s->scaled) {
 		s->graph_scale = 1;
 	} else {
@@ -1126,7 +1123,7 @@ if (s[0] == '#') {
 			arg += 4;
 		}
 				(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
-} else {
+			} else {
 	(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
 	obj->data.cpu_index = 0;
 			}
@@ -2784,11 +2781,11 @@ static void generate_text()
 				}
 				seconds = tmp;
 				if (days > 0)
-					snprintf(p, n, "%i days %i:%i:%2i",
+					snprintf(p, n, "%i days %i:%02i:%02i",
 						 days, hours, minutes,
 						 seconds);
-				else if (days > 0)
-					snprintf(p, n, "%i:%i:%02i", hours,
+				else if (hours > 0)
+					snprintf(p, n, "%i:%02i:%02i", hours,
 						 minutes, seconds);
 				else
 					snprintf(p, n, "%i:%02i", minutes,
@@ -2813,11 +2810,11 @@ static void generate_text()
 				seconds = tmp;
 				if (days > 0)
 					snprintf(p, n,
-						 "%i days %i:%i:%02i",
+						 "%i days %i:%02i:%02i",
 						 days, hours, minutes,
 						 seconds);
-				else if (days > 0)
-					snprintf(p, n, "%i:%i:%02i", hours,
+				else if (hours > 0)
+					snprintf(p, n, "%i:%02i:%02i", hours,
 						 minutes, seconds);
 				else
 					snprintf(p, n, "%i:%02i", minutes,

@@ -30,7 +30,7 @@ static struct process *find_process(pid_t pid)
 static struct process *new_process(int p)
 {
 	struct process *process;
-	process = malloc(sizeof(struct process));
+	process = (struct process*)malloc(sizeof(struct process));
 
 	/*
 	 * Do stitching necessary for doubly linked list

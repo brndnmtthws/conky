@@ -1,5 +1,9 @@
 # $Id$
 
+2005-09-03
+	* MPD patch (sf.net patch 1281108)
+	* Fixed graph width bug
+
 2005-08-31
 	* FreeBSD support was added
 
