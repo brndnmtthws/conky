@@ -1295,7 +1295,7 @@ if (s[0] == '#') {
 	if (!arg) {
 		ERR("i2c needs arguments");
 		obj->type = OBJ_text;
-		obj->data.s = strdup("${i2c}");
+		//obj->data.s = strdup("${i2c}");
 		return;
 	}
 
@@ -1306,12 +1306,12 @@ if (s[0] == '#') {
 		obj->data.i2c.fd =
 		    open_i2c_sensor(0, buf2, n, &obj->data.i2c.arg,
 				    obj->data.i2c.devtype);
-		strcpy(obj->data.i2c.type, buf2);
+		strncpy(obj->data.i2c.type, buf2, 63);
 	} else {
 		obj->data.i2c.fd =
 		    open_i2c_sensor(buf1, buf2, n, &obj->data.i2c.arg,
 				    obj->data.i2c.devtype);
-		strcpy(obj->data.i2c.type, buf2);
+		strncpy(obj->data.i2c.type, buf2, 63);
 	}
 
 	END OBJ(top, INFO_TOP)
@@ -1320,7 +1320,7 @@ if (s[0] == '#') {
 	if (!arg) {
 		ERR("top needs arguments");
 		obj->type = OBJ_text;
-		obj->data.s = strdup("${top}");
+		//obj->data.s = strdup("${top}");
 		return;
 	}
 	if (sscanf(arg, "%63s %i", buf, &n) == 2) {
@@ -2916,7 +2916,7 @@ static void generate_text()
 					else {
 						obj->data.tail.readlines = 0;
 
-						while (fgets(obj->data.tail.buffer, TEXT_BUFFER_SIZE*4, fp) != NULL) {
+						while (fgets(obj->data.tail.buffer, TEXT_BUFFER_SIZE*20, fp) != NULL) {
 							if (added >= 30) {
 								freelasttail(head);
 							}
@@ -2941,7 +2941,7 @@ static void generate_text()
 							headtmp = headtmp->next;
 							for (i = 1;i < obj->data.tail.wantedlines + 1 && i < obj->data.tail.readlines; i++) {
 								if (headtmp) {
-									strncat(obj->data.tail.buffer, headtmp->data, (TEXT_BUFFER_SIZE * 20 / obj->data.tail.wantedlines) - strlen(obj->data.tail.buffer)); /* without strlen() at the end this becomes a possible */
+									strncat(obj->data.tail.buffer, headtmp->data, (TEXT_BUFFER_SIZE * 20) - strlen(obj->data.tail.buffer)); /* without strlen() at the end this becomes a possible */
 									headtmp = headtmp->next;
 								}
 							}
@@ -2976,7 +2976,7 @@ static void generate_text()
 					}
 					else {
 						obj->data.tail.readlines = 0;
-						while (fgets(obj->data.tail.buffer, TEXT_BUFFER_SIZE*4, fp) != NULL && obj->data.tail.readlines <= obj->data.tail.wantedlines) {
+						while (fgets(obj->data.tail.buffer, TEXT_BUFFER_SIZE*20, fp) != NULL && obj->data.tail.readlines <= obj->data.tail.wantedlines) {
 							addtail(&head, obj->data.tail.buffer);
 							obj->data.tail.readlines++;
 						}
@@ -2992,7 +2992,7 @@ static void generate_text()
 							strcpy(obj->data.tail.buffer, headtmp->data);
 							headtmp = headtmp->next;
 							while (headtmp) {
-								strncat(obj->data.tail.buffer, headtmp->data, (TEXT_BUFFER_SIZE * 20 / obj->data.tail.wantedlines) - strlen(obj->data.tail.buffer)); /* without strlen() at the end this becomes a possible */
+								strncat(obj->data.tail.buffer, headtmp->data, (TEXT_BUFFER_SIZE * 20) - strlen(obj->data.tail.buffer)); /* without strlen() at the end this becomes a possible */
 								headtmp = headtmp->next;
 							}
 							freetail(freetmp);

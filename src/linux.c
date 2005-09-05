@@ -579,12 +579,11 @@ open_i2c_sensor(const char *dev, const char *type, int n, int *div,
 		type = "in";
 
 	if (strcmp(type, "tempf") == 0) {
-		snprintf(path, 255, I2C_DIR "%s/%s%d_input", dev, "temp",
-			 n);
+		snprintf(path, 255, I2C_DIR "%s/%s%d_input", dev, "temp", n);
 	} else {
 		snprintf(path, 255, I2C_DIR "%s/%s%d_input", dev, type, n);
 	}
-	strcpy(devtype, path);
+	strncpy(devtype, path, 255);
 
 	/* open file */
 	fd = open(path, O_RDONLY);

@@ -1,5 +1,8 @@
 # $Id$
 
+2005-09-04
+	* Misc small bug fixes
+
 2005-09-03
 	* MPD patch (sf.net patch 1281108)
 	* Fixed graph width bug
