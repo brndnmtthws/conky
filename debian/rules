@@ -23,16 +23,14 @@ else
 	CFLAGS += -O2
 endif
 
-configure: configure-stamp
-configure-stamp:
+config.status:
 	dh_testdir
 	./configure --host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info --enable-double-buffer   --enable-own-window --enable-proc-uptime --enable-mpd --enable-xft --enable-seti
-	touch configure-stamp
 
 
 build: build-stamp
 
-build-stamp: configure-stamp 
+build-stamp: config.status
 	dh_testdir
 
 	$(MAKE)
@@ -44,8 +42,8 @@ clean:
 	dh_testdir
 	dh_testroot
 	rm -f build-stamp configure-stamp
-	rm -f config.cache config.status config.log
 	-$(MAKE) clean
+	-$(MAKE) distclean
 
 	dh_clean 
 
