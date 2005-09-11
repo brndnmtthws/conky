@@ -166,7 +166,7 @@ inline void set_transparent_background(Window win)
 	} else if (colour_set != background_colour) {
 		XSetWindowBackground(display, win, background_colour);
 		colour_set = background_colour;
-	}
+}
 	//XClearWindow(display, win); not sure why this was here
 }
 

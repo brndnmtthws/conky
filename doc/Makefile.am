@@ -17,6 +17,9 @@ conky.1: command_options.xml config_settings.xml docs.xml variables.xml
 	xsltproc ${srcdir}/variables.xsl ${srcdir}/variables.xml > variables.html
 	xsltproc ${srcdir}/config_settings.xsl ${srcdir}/config_settings.xml > config_settings.html
 
+else
+conky.1:
+
 endif
 
 man_MANS = conky.1

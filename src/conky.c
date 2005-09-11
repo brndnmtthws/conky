@@ -3847,8 +3847,9 @@ static void clear_text(int exposures)
 #ifdef XDBE
 	if (use_xdbe) {
 		return;		/* The swap action is XdbeBackground, which clears */
-	}
+	} else
 #endif
+	{
 	/* there is some extra space for borders and outlines */
 	XClearArea(display, window.drawable,
 		   text_start_x - border_margin - 1,
@@ -3856,6 +3857,7 @@ static void clear_text(int exposures)
 		   text_width + border_margin * 2 + 2,
 		   text_height + border_margin * 2 + 2,
 		   exposures ? True : 0);
+	}
 }
 #endif /* X11 */
 
@@ -4057,6 +4059,7 @@ static void main_loop()
 						|| ev.xconfigure.y != 0)) {
 						fixed_pos = 1;
 				}*/
+					set_font();
 				}
 				break;
 #endif
