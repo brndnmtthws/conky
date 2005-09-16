@@ -1,5 +1,9 @@
 # $Id$
 
+2005-09-15
+	* Fixed right-alignment bug thanks to Pascal Eberhard
+	* Applied patch 1291420 from sf.net
+
 2005-09-11
 	* Fixed bug with xft and double buffer in own window
 	* 1.3.1 released

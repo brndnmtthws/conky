@@ -197,6 +197,13 @@ void init_window(int own_window, int w, int h, int l, int set_trans, int back_co
 						      CopyFromParent,	/* class */
 						      CopyFromParent,	/* visual */
 						      CWBackPixel, &attrs);
+			XWMHints wmhints;
+
+			wmhints.flags = StateHint;
+			wmhints.initial_state = WithdrawnState;
+			XSetWMHints(display, window.window, &wmhints);
+
+
 
 			class_hints.res_class = "conky";
 			class_hints.res_name = "conky";
