@@ -548,6 +548,7 @@ static void new_graph(char *buf, int w, int h, unsigned int first_colour, unsign
 			s->graph_width = MAX_GRAPH_DEPTH - 3;
 		}
 		s->graph = malloc(s->graph_width * sizeof(double));
+		memset(s->graph, 0, s->graph_width * sizeof(double));
 		s->graph_scale = 100;
 	}
 	s->height = h;
