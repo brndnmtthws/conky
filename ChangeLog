@@ -1,5 +1,8 @@
 # $Id$
 
+2005-09-24
+	* Fixed bug where graphs/bars don't show when maximum_width is enabled
+
 2005-09-15
 	* Fixed right-alignment bug thanks to Pascal Eberhard
 	* Applied patch 1291420 from sf.net
