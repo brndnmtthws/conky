@@ -197,11 +197,13 @@ void init_window(int own_window, int w, int h, int l, int set_trans, int back_co
 						      CopyFromParent,	/* class */
 						      CopyFromParent,	/* visual */
 						      CWBackPixel, &attrs);
-			XWMHints wmhints;
+/*			XWMHints wmhints;
+
+			this doesn't work properly
 
 			wmhints.flags = StateHint;
 			wmhints.initial_state = WithdrawnState;
-			XSetWMHints(display, window.window, &wmhints);
+			XSetWMHints(display, window.window, &wmhints);*/
 
 
 
