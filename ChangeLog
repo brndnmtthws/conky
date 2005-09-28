@@ -1,5 +1,8 @@
 # $Id$
 
+2005-09-27
+	* Fixed small bug in config parsing (thanks robgrady, bug 1306032)
+
 2005-09-24
 	* Fixed bug where graphs/bars don't show when maximum_width is enabled
 

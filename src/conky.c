@@ -4332,7 +4332,7 @@ static void load_config_file(const char *f)
 #define CONF2(a) if (strcasecmp(name, a) == 0)
 #define CONF(a) else CONF2(a)
 #define CONF3(a,b) \
-else if (strcasecmp(name, a) == 0 || strcasecmp(name, a) == 0)
+else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 
 
 #ifdef X11
