@@ -590,6 +590,7 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 		return;
 }
 
+#if defined(i386) || defined(__i386__)
 #define APMDEV  "/dev/apm"
 #define APM_UNKNOWN     255
 
@@ -706,3 +707,4 @@ char *get_apm_battery_time()
 
 	return out;
 }
+#endif

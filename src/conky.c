@@ -844,7 +844,7 @@ enum text_object_type {
 	OBJ_upspeedgraph,
 	OBJ_uptime,
 	OBJ_uptime_short,
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) && (defined(i386) || defined(__i386__))
 	OBJ_apm_adapter,
 	OBJ_apm_battery_time,
 	OBJ_apm_battery_life,
@@ -1686,8 +1686,8 @@ int a = stippled_borders, b = 1;
 	}
 	END OBJ(uptime_short, INFO_UPTIME) END OBJ(uptime, INFO_UPTIME) END
 	    OBJ(adt746xcpu, 0) END OBJ(adt746xfan, 0) END
-#ifdef __FreeBSD__
-	OBJ(apm_adapter, 0) END
+#if defined(__FreeBSD__) && (defined(i386) || defined(__i386__))
+        OBJ(apm_adapter, 0) END
 	OBJ(apm_battery_life, 0) END
 	OBJ(apm_battery_time, 0) END
 #endif /* __FreeBSD__ */
@@ -2713,7 +2713,7 @@ static void generate_text()
 				format_seconds(p, n, (int) cur->uptime);
 			}
 
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) && (defined(i386) || defined(__i386__))
 			OBJ(apm_adapter) {
 				snprintf(p, n, "%s", get_apm_adapter());
 			}
