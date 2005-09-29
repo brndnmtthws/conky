@@ -101,6 +101,9 @@ Lucas Brutschy <lbrutschy at users dot sourceforge dot net>
 Moncelier Camille <pixdamix at users dot sourceforge dot net>
   METAR patch
 
+Nattfodd <Nattfodd@gmail.com>
+  Fixed top_mem dupes
+
 nathanj439 <nathanj439 at users dot sourceforge dot net>
   MPD time fix
 

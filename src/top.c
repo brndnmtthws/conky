@@ -477,6 +477,7 @@ inline void process_find_top(struct process **cpu, struct process **mem)
 				    sizeof(struct process) * sorttmp_size);
 		}
 		qsort(sorttmp, i, sizeof(struct process *), comparemem);
+		sorttmp_size = i;
 		for (i = 0, j = 0; i < sorttmp_size && j < 10; i++) {
 			if (j == 0 || sorttmp[i]->totalmem != mem[j-1]->totalmem
 					|| strncmp(sorttmp[i]->name, mem[j-1]->name,128)) {
