@@ -405,7 +405,7 @@ inline void process_find_top(struct process **cpu, struct process **mem)
 		assert(sorttmp != NULL);
 	}
 	int total;
-	unsigned int i/*, max*/;
+	unsigned int i, j;
 
 	total = calc_cpu_total();	/* calculate the total of the processor */
 
@@ -477,9 +477,12 @@ inline void process_find_top(struct process **cpu, struct process **mem)
 				    sizeof(struct process) * sorttmp_size);
 		}
 		qsort(sorttmp, i, sizeof(struct process *), comparemem);
-		for (i = 0; i < 10; i++) {
-			mem[i] = sorttmp[i];
-
+		for (i = 0, j = 0; i < sorttmp_size && j < 10; i++) {
+			if (j == 0 || sorttmp[i]->totalmem != mem[j-1]->totalmem
+					|| strncmp(sorttmp[i]->name, mem[j-1]->name,128)) {
+				mem[j++] = sorttmp[i];
+			}
 		}
 	}
 }
+

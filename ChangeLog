@@ -2,6 +2,7 @@
 
 2005-09-29
 	* Fixed build on FreeBSD for non-i386
+	* Made it so top_mem doesn't show all the forks of one process
 
 2005-09-27
 	* Fixed small bug in config parsing (thanks robgrady, bug 1306032)
