@@ -29,9 +29,6 @@
 #include <net/if.h>
 #include <math.h>
 
-#define MIN(a,b) (((a) <= (b)) ? (a) : (b))
-#define MAX(a,b) (((a) >= (b)) ? (a) : (b))
-
 static struct sysinfo s_info;
 
 static int show_nice_processes;
