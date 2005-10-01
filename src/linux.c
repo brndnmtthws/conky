@@ -29,6 +29,9 @@
 #include <net/if.h>
 #include <math.h>
 
+#define MIN(a,b) (((a) <= (b)) ? (a) : (b))
+#define MAX(a,b) (((a) >= (b)) ? (a) : (b))
+
 static struct sysinfo s_info;
 
 static int show_nice_processes;
@@ -307,7 +310,8 @@ inline void update_wifi_stats()
 
 		sscanf(p, "%*d   %d.  %d.  %d", &l, &m, &n);
 
-		ns->linkstatus = (int) (log(l) / log(92) * 100);
+		ns->linkstatus = (int) (log(MIN(MAX(l,1),92)) / log(92) * 100);
+
 	}
 
 	/*** end wireless patch ***/

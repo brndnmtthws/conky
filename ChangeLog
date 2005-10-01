@@ -1,5 +1,9 @@
 # $Id$
 
+2005-09-30
+	* Linkstatus patch from btlee on f.g.o (see
+	http://forums.gentoo.org/viewtopic-p-2765647.html#2765647)
+
 2005-09-29
 	* Fixed build on FreeBSD for non-i386
 	* Made it so top_mem doesn't show all the forks of one process
