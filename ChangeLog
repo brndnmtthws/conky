@@ -1,5 +1,8 @@
 # $Id$
 
+2005-10-07
+	* fixed mldonkey bug? sf.net bug 1316531
+
 2005-09-30
 	* Linkstatus patch from btlee on f.g.o (see
 	http://forums.gentoo.org/viewtopic-p-2765647.html#2765647)

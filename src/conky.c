@@ -4265,7 +4265,7 @@ static void set_default_configurations(void)
 	update_interval = 10.0;
 	stuff_in_upper_case = 0;
 #ifdef MLDONKEY
-	mlconfig.mldonkey_hostname = "127.0.0.1";
+	mlconfig.mldonkey_hostname = strdup("127.0.0.1");
 	mlconfig.mldonkey_port = 4001;
 	mlconfig.mldonkey_login = NULL;
 	mlconfig.mldonkey_password = NULL;
