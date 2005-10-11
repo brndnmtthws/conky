@@ -1,5 +1,8 @@
 # $Id$
 
+2005-10-10
+	* More MPD objects (sf.net patch 1319461)
+
 2005-10-07
 	* fixed mldonkey bug? sf.net bug 1316531
 

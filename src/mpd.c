@@ -21,9 +21,18 @@ void update_mpd()
 			current_info->mpd.album = malloc(TEXT_BUFFER_SIZE);
 		if (current_info->mpd.title == NULL)
 			current_info->mpd.title = malloc(TEXT_BUFFER_SIZE);
+		if (current_info->mpd.random == NULL)
+			current_info->mpd.random = malloc(TEXT_BUFFER_SIZE);
+		if (current_info->mpd.repeat == NULL)
+			current_info->mpd.repeat = malloc(TEXT_BUFFER_SIZE);
+		if (current_info->mpd.track == NULL)
+			current_info->mpd.track = malloc(TEXT_BUFFER_SIZE);
 		strcpy(current_info->mpd.artist, "Unknown");
 		strcpy(current_info->mpd.album, "Unknown");
 		strcpy(current_info->mpd.title, "Unknown");
+		strcpy(current_info->mpd.random, "Unknown");
+		strcpy(current_info->mpd.repeat, "Unknown");
+		strcpy(current_info->mpd.track, "Unknown");
 		current_info->mpd.status = "MPD not responding";
 		current_info->mpd.bitrate = 0;
 		current_info->mpd.progress = 0;
@@ -48,14 +57,22 @@ void update_mpd()
 			current_info->mpd.album = malloc(TEXT_BUFFER_SIZE);
 		if (current_info->mpd.title == NULL)
 			current_info->mpd.title = malloc(TEXT_BUFFER_SIZE);
+		if (current_info->mpd.random == NULL)
+			current_info->mpd.random = malloc(TEXT_BUFFER_SIZE);
+		if (current_info->mpd.track == NULL)
+			current_info->mpd.track = malloc(TEXT_BUFFER_SIZE);
 		strcpy(current_info->mpd.artist, "Unknown");
 		strcpy(current_info->mpd.album, "Unknown");
 		strcpy(current_info->mpd.title, "Unknown");
+		strcpy(current_info->mpd.random, "Unknown");
+		strcpy(current_info->mpd.repeat, "Unknown");
+		strcpy(current_info->mpd.track, "Unknown");
 		current_info->mpd.status = "MPD not responding";
 		current_info->mpd.bitrate = 0;
 		current_info->mpd.progress = 0;
 		current_info->mpd.elapsed = 0;
 		current_info->mpd.length = 0;
+		current_info->mpd.track = 0;
 		return;
 	}
 	current_info->mpd.volume = status->volume;
@@ -71,6 +88,7 @@ void update_mpd()
 		current_info->mpd.progress = 0;
 		current_info->mpd.elapsed = 0;
 		current_info->mpd.length = 0;
+		current_info->mpd.track = 0;
 		if (current_info->mpd.artist == NULL)
 			current_info->mpd.artist =
 					malloc(TEXT_BUFFER_SIZE);
@@ -78,9 +96,18 @@ void update_mpd()
 			current_info->mpd.album = malloc(TEXT_BUFFER_SIZE);
 		if (current_info->mpd.title == NULL)
 			current_info->mpd.title = malloc(TEXT_BUFFER_SIZE);
+		if (current_info->mpd.random == NULL)
+			current_info->mpd.random = malloc(TEXT_BUFFER_SIZE);
+		if (current_info->mpd.repeat == NULL)
+			current_info->mpd.repeat = malloc(TEXT_BUFFER_SIZE);
+		if (current_info->mpd.track == NULL)
+			current_info->mpd.track = malloc(TEXT_BUFFER_SIZE);
 		strcpy(current_info->mpd.artist, "Stopped");
 		strcpy(current_info->mpd.album, "Stopped");
 		strcpy(current_info->mpd.title, "Stopped");
+		strcpy(current_info->mpd.random, "Stopped");
+		strcpy(current_info->mpd.repeat, "Stopped");
+		strcpy(current_info->mpd.track, "Stopped");
 	}
 	if (status->state == MPD_STATUS_STATE_PAUSE) {
 		current_info->mpd.status = "Paused";
@@ -91,6 +118,7 @@ void update_mpd()
 		current_info->mpd.progress = 0;
 		current_info->mpd.elapsed = 0;
 		current_info->mpd.length = 0;
+		current_info->mpd.track = 0;
 		if (current_info->mpd.artist == NULL)
 			current_info->mpd.artist =
 					malloc(TEXT_BUFFER_SIZE);
@@ -98,9 +126,18 @@ void update_mpd()
 			current_info->mpd.album = malloc(TEXT_BUFFER_SIZE);
 		if (current_info->mpd.title == NULL)
 			current_info->mpd.title = malloc(TEXT_BUFFER_SIZE);
+		if (current_info->mpd.random == NULL)
+			current_info->mpd.random = malloc(TEXT_BUFFER_SIZE);
+		if (current_info->mpd.repeat == NULL)
+			current_info->mpd.repeat = malloc(TEXT_BUFFER_SIZE);
+		if (current_info->mpd.track == NULL)
+			current_info->mpd.track = malloc(TEXT_BUFFER_SIZE);
 		strcpy(current_info->mpd.artist, "Unknown");
 		strcpy(current_info->mpd.album, "Unknown");
 		strcpy(current_info->mpd.title, "Unknown");
+		strcpy(current_info->mpd.random, "Unknown");
+		strcpy(current_info->mpd.repeat, "Unknown");
+		strcpy(current_info->mpd.track, "Unknown");
 	}
 	if (status->state == MPD_STATUS_STATE_PLAY ||
 		   status->state == MPD_STATUS_STATE_PAUSE) {
@@ -109,9 +146,28 @@ void update_mpd()
 				(float) status->elapsedTime / status->totalTime;
 		current_info->mpd.elapsed = status->elapsedTime;
 		current_info->mpd.length = status->totalTime;
-		   }
-
-
+        if (current_info->mpd.random == NULL)
+            current_info->mpd.random = malloc(TEXT_BUFFER_SIZE);
+        if (current_info->mpd.repeat == NULL)
+            current_info->mpd.repeat = malloc(TEXT_BUFFER_SIZE);
+        if (status->random == 0) {
+            strcpy(current_info->mpd.random, "Off");
+        } else if (status->random == 1){
+            strcpy(current_info->mpd.random, "On");
+        } else {
+            strcpy(current_info->mpd.random, "Unknown");
+        }
+        if (status->repeat == 0) {
+            strcpy(current_info->mpd.repeat, "Off");
+        } else if (status->repeat == 1){
+            strcpy(current_info->mpd.repeat, "On");
+        } else {
+            strcpy(current_info->mpd.repeat, "Unknown");
+            }
+    }
+        
+        
+        
 		   if (current_info->conn->error) {
 		//fprintf(stderr, "%s\n", current_info->conn->errorStr);
 			   mpd_closeConnection(current_info->conn);
@@ -134,6 +190,8 @@ void update_mpd()
 				   current_info->mpd.album = malloc(TEXT_BUFFER_SIZE);
 			   if (current_info->mpd.title == NULL)
 				   current_info->mpd.title = malloc(TEXT_BUFFER_SIZE);
+			   if (current_info->mpd.track == NULL)
+				   current_info->mpd.track = malloc(TEXT_BUFFER_SIZE);
 			   if (song->artist) {
 				   strcpy(current_info->mpd.artist, song->artist);
 			   } else {
@@ -149,6 +207,11 @@ void update_mpd()
 			   } else {
 				   strcpy(current_info->mpd.title, "Unknown");
 			   }
+			   if (song->track) {
+				   strcpy(current_info->mpd.track, song->track);
+			   } else {
+				   strcpy(current_info->mpd.track, "Unknown");
+                   }
 			   if (entity != NULL) {
 				   mpd_freeInfoEntity(entity);
 			   }
@@ -171,4 +234,4 @@ void update_mpd()
 		   }
 		   mpd_freeStatus(status);
 		   mpd_closeConnection(current_info->conn);
-}
+    }

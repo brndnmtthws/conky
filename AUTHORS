@@ -125,6 +125,9 @@ Roman Bogorodskiy <novel at clublife dot ru>
 Szymon Boniecki
   Reads current LC_TIME
 
+tyir <tyir at users dot sourceforge dot net>
+  MPD features patch 1319461
+
 Walt Nelson <wnelsonjr at comcast dot net>
   $freq fix
 

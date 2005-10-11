@@ -858,6 +858,8 @@ enum text_object_type {
 	OBJ_mpd_title,
 	OBJ_mpd_artist,
 	OBJ_mpd_album,
+	OBJ_mpd_random,
+	OBJ_mpd_repeat,
 	OBJ_mpd_vol,
 	OBJ_mpd_bitrate,
 	OBJ_mpd_status,
@@ -866,6 +868,7 @@ enum text_object_type {
 	OBJ_mpd_bar,
 	OBJ_mpd_elapsed,
 	OBJ_mpd_length,
+	OBJ_mpd_track,
 	OBJ_mpd_percent,
 #endif
 };
@@ -1014,6 +1017,9 @@ static void free_text_objects()
 		case OBJ_mpd_title:
 		case OBJ_mpd_artist:
 		case OBJ_mpd_album:
+		case OBJ_mpd_random:
+		case OBJ_mpd_repeat:
+		case OBJ_mpd_track:
 		case OBJ_mpd_status:
 		case OBJ_mpd_host:
 #endif
@@ -1699,13 +1705,17 @@ int a = stippled_borders, b = 1;
 #ifdef MPD
 	 OBJ(mpd_artist, INFO_MPD)
 	END OBJ(mpd_title, INFO_MPD)
+	END OBJ(mpd_random, INFO_MPD)
+	END OBJ(mpd_repeat, INFO_MPD)
 	END OBJ(mpd_elapsed, INFO_MPD)
 	END OBJ(mpd_length, INFO_MPD)
+	END OBJ(mpd_track, INFO_MPD)
 	END OBJ(mpd_percent, INFO_MPD)
 	END OBJ(mpd_album, INFO_MPD) END OBJ(mpd_vol,
 					     INFO_MPD) END OBJ(mpd_bitrate,
 							       INFO_MPD)
-	END OBJ(mpd_status, INFO_MPD) END OBJ(mpd_bar, INFO_MPD)
+	END OBJ(mpd_status, INFO_MPD)
+        END OBJ(mpd_bar, INFO_MPD)
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END
 #endif
@@ -2754,6 +2764,15 @@ static void generate_text()
 			}
 			OBJ(mpd_album) {
 				snprintf(p, n, "%s", cur->mpd.album);
+			}
+			OBJ(mpd_random) {
+				snprintf(p, n, "%s", cur->mpd.random);
+			}
+			OBJ(mpd_repeat) {
+				snprintf(p, n, "%s", cur->mpd.repeat);
+			}
+			OBJ(mpd_track) {
+				snprintf(p, n, "%s", cur->mpd.track);
 			}
 			OBJ(mpd_vol) {
 				snprintf(p, n, "%i", cur->mpd.volume);

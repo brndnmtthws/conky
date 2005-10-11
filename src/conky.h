@@ -96,6 +96,9 @@ struct mpd_s {
 	char *artist;
 	char *album;
 	char *status;
+	char *random;
+	char *repeat;
+	char *track;
 	int volume;
 	unsigned int port;
 	char host[128];
