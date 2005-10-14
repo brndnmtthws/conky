@@ -1244,3 +1244,4 @@ void update_diskio()
 
 	diskio_value = tot;
 }
+
