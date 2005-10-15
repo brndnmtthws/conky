@@ -563,7 +563,7 @@ open_i2c_sensor(const char *dev, const char *type, int n, int *div,
 		char *devtype)
 {
 	char path[256];
-	char buf[64];
+	char buf[256];
 	int fd;
 	int divfd;
 
