@@ -72,7 +72,6 @@ void update_mpd()
 		current_info->mpd.progress = 0;
 		current_info->mpd.elapsed = 0;
 		current_info->mpd.length = 0;
-		current_info->mpd.track = 0;
 		return;
 	}
 	current_info->mpd.volume = status->volume;
@@ -88,7 +87,6 @@ void update_mpd()
 		current_info->mpd.progress = 0;
 		current_info->mpd.elapsed = 0;
 		current_info->mpd.length = 0;
-		current_info->mpd.track = 0;
 		if (current_info->mpd.artist == NULL)
 			current_info->mpd.artist =
 					malloc(TEXT_BUFFER_SIZE);
@@ -118,7 +116,6 @@ void update_mpd()
 		current_info->mpd.progress = 0;
 		current_info->mpd.elapsed = 0;
 		current_info->mpd.length = 0;
-		current_info->mpd.track = 0;
 		if (current_info->mpd.artist == NULL)
 			current_info->mpd.artist =
 					malloc(TEXT_BUFFER_SIZE);
