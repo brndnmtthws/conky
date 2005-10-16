@@ -19,6 +19,11 @@
 #include <locale.h>
 #include <langinfo.h>
 #include <wchar.h>
+#if defined(__FreeBSD__)
+#include <sys/param.h>
+#include <sys/mount.h>
+#include <sys/ucred.h>
+#endif /* __FreeBSD__ */
 
 #ifdef X11
 #if defined(HAVE_CAIRO_H) && defined(HAVE_CAIRO_XLIB_H) && defined(WANT_CAIRO)

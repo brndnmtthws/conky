@@ -37,6 +37,9 @@ Dennis Frommknecht
 Dennis Kaandorp <addict at quicknet dot nl>
   adt746x stuff
 
+Elisey O. Savateev <bio3k at softboard dot ru>
+  Fixed if_mounted on FreeBSD
+
 Falk Feuersenger <lumberjack at users dot sourceforge dot net>
   I2C divisor from a file
 

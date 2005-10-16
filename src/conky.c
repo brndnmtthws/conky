@@ -303,6 +303,7 @@ static int blockstart[MAX_IF_BLOCK_DEPTH];
 
 int check_mount(char *s)
 {
+#if defined(__linux__)
 	int ret = 0;
 	FILE *mtab = fopen("/etc/mtab", "r");
 	if (mtab) {
@@ -319,6 +320,17 @@ int check_mount(char *s)
 		ERR("Could not open mtab");
 	}
 	return ret;
+#elif defined(__FreeBSD__)
+	struct statfs *mntbuf;
+	int i, mntsize;
+
+	mntsize = getmntinfo(&mntbuf, MNT_NOWAIT);
+	for (i = mntsize - 1; i >= 0; i--)
+		if (strcmp(mntbuf[i].f_mntonname, s) == 0)
+			return 1;
+
+	return 0;
+#endif
 }
 
 
