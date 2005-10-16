@@ -1006,6 +1006,10 @@ static void free_text_objects()
 		case OBJ_if_running:
 			free(text_objects[i].data.ifblock.s);
 			break;
+		case OBJ_tail:
+			free(text_objects[i].data.tail.logfile);
+			free(text_objects[i].data.tail.buffer);
+			break;
 		case OBJ_text:
 		case OBJ_font:
 			free(text_objects[i].data.s);
