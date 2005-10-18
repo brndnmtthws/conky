@@ -159,8 +159,8 @@ struct information {
 	double uptime;
 
 	/* memory information in kilobytes */
-	unsigned int mem, memmax, swap, swapmax;
-	unsigned int bufmem, buffers, cached;
+	unsigned long mem, memmax, swap, swapmax;
+	unsigned long bufmem, buffers, cached;
 
 	unsigned int procs;
 	unsigned int run_procs;

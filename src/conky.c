@@ -2504,12 +2504,12 @@ static void generate_text()
 			OBJ(memperc) {
 				if (cur->memmax) {
 					if (!use_spacer)
-						snprintf(p, n, "%*d",
+						snprintf(p, n, "%*lu",
 							 pad_percents,
 							 (cur->mem * 100) /
 							 (cur->memmax));
 					else
-						snprintf(p, 4, "%*d   ",
+						snprintf(p, 4, "%*lu   ",
 							 pad_percents,
 							 (cur->mem * 100) /
 							 (cur->memmax));
@@ -2658,13 +2658,13 @@ static void generate_text()
 					strncpy(p, "No swap", 255);
 				} else {
 					if (!use_spacer)
-						snprintf(p, 255, "%*u",
+						snprintf(p, 255, "%*lu",
 							 pad_percents,
 							 (cur->swap *
 							  100) /
 							 cur->swapmax);
 					else
-						snprintf(p, 4, "%*u   ",
+						snprintf(p, 4, "%*lu   ",
 							 pad_percents,
 							 (cur->swap *
 							  100) /
