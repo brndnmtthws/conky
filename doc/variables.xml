@@ -829,6 +829,33 @@
 
 <varlistentry>
 	<term>
+		<command><option>mpd_random</option></command>
+	</term>
+	<listitem>
+		Random status (On/Off)
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>mpd_repeat</option></command>
+	</term>
+	<listitem>
+		Repeat status (On/Off)
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>mpd_track</option></command>
+	</term>
+	<listitem>
+		Prints the MPD track field
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>new_mails</option></command>
 	</term>
 	<listitem>

@@ -4751,7 +4751,6 @@ int main(int argc, char **argv)
 	}
 	if (!setlocale(LC_CTYPE, "")) {
 		ERR("Can't set the specified locale!\nCheck LANG, LC_CTYPE, LC_ALL.");
-		return 1;
 	}
 #endif /* X11 */
 	while (1) {

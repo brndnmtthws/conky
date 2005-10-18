@@ -1,5 +1,11 @@
 # $Id$
 
+2005-10-17
+	* Ugly MPD mem leak fixed
+	* Other mem leaks fixed
+	* Fixed thing where conky exits if LC_ALL and friends isn't set
+	* Conky 1.3.3 released
+
 2005-10-13
 	* Conky 1.3.2 released
 

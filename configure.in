@@ -1,6 +1,6 @@
-AC_INIT([Conky],[1.3.1],[brenden1@users.sourceforge.net])
+AC_INIT([Conky],[1.3.2],[brenden1@users.sourceforge.net])
 
-AM_INIT_AUTOMAKE(conky, 1.3.1)
+AM_INIT_AUTOMAKE(conky, 1.3.2)
 AM_CONFIG_HEADER(src/config.h)
 AC_PROG_LIBTOOL
 

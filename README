@@ -706,6 +706,18 @@ VARIABLES
 	      Percent of song's progress
 
 
+       mpd_random
+	      Random status (On/Off)
+
+
+       mpd_repeat
+	      Repeat status (On/Off)
+
+
+       mpd_track
+	      Prints the MPD track field
+
+
        new_mails
 	      Unread mail count in mail spool.
 
@@ -881,4 +893,4 @@ AUTHORS
 
 
 
-				  2005-09-24			      conky(1)
+				  2005-10-17			      conky(1)
