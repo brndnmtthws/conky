@@ -1,5 +1,8 @@
 # $Id$
 
+2005-10-21
+	* acpi segfault should be fixed
+
 2005-10-17
 	* Ugly MPD mem leak fixed
 	* Other mem leaks fixed

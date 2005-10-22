@@ -910,7 +910,7 @@ passive:                 73 C: tc1=4 tc2=3 tsp=40 devices=0xcdf6e6c0
 int open_acpi_temperature(const char *name)
 {
 	char path[256];
-	char buf[64];
+	char buf[256];
 	int fd;
 
 	if (name == NULL || strcmp(name, "*") == 0) {
