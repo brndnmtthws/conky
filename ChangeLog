@@ -1,7 +1,8 @@
 # $Id$
 
 2005-10-21
-	* acpi segfault should be fixed
+	* acpi segfault should be fixed (sf.net bug 1330893)
+	* SIGUSR1 bug fixed? (sf.net bug 1330914)
 
 2005-10-17
 	* Ugly MPD mem leak fixed

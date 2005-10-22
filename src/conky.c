@@ -4154,6 +4154,8 @@ static void reload_handler(int a)
 #ifdef X11
 		load_fonts();
 		set_font();
+		XClearWindow(display, RootWindow(display, screen)); // clear the window first
+
 #endif /* X11 */
 		extract_variable_text(text);
 		free(text);
