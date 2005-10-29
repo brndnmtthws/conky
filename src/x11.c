@@ -171,7 +171,7 @@ inline void set_transparent_background(Window win)
 }
 
 #if defined OWN_WINDOW
-void init_window(int own_window, int w, int h, int l, int fixed_pos, int set_trans, int back_colour)
+void init_window(int own_window, char* wm_class_name, int w, int h, int l, int fixed_pos, int set_trans, int back_colour)
 #else
 void init_window(int own_window, int w, int h, int l, int set_trans, int back_colour)
 #endif
@@ -207,8 +207,8 @@ void init_window(int own_window, int w, int h, int l, int set_trans, int back_co
 
 
 
-			class_hints.res_class = "conky";
-			class_hints.res_name = "conky";
+			class_hints.res_class = wm_class_name;
+			class_hints.res_name = wm_class_name;
 			XSetClassHint(display, window.window,
 				      &class_hints);
 

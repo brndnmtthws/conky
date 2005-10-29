@@ -31,6 +31,9 @@ David McCabe
 Daniel Thiele <dthiele at gmx dot net>
   APM support for FreeBSD
 
+Denis <d-st at users dot sourceforge dot net>
+  WM_CLASS patch
+
 Dennis Frommknecht
   NVCtrl, temperature monitoring for nvdia-based graphics cards
 

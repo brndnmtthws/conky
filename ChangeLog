@@ -1,5 +1,8 @@
 # $Id$
 
+2005-10-28
+	* Added WM_CLASS patch from sf.net patch 1340825
+
 2005-10-21
 	* acpi segfault should be fixed (sf.net bug 1330893)
 	* SIGUSR1 bug fixed? (sf.net bug 1330914)

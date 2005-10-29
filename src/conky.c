@@ -239,6 +239,7 @@ static int set_transparent = 0;
 #ifdef OWN_WINDOW
 static int own_window = 0;
 static int background_colour = 0;
+static char wm_class_name[256];
 /* fixed size/pos is set if wm/user changes them */
 static int fixed_size = 0, fixed_pos = 0;
 #endif
@@ -4282,6 +4283,7 @@ static void set_default_configurations(void)
 	maximum_width = 0;
 #ifdef OWN_WINDOW
 	own_window = 0;
+    strcpy(wm_class_name, "conky");
 #endif
 	stippled_borders = 0;
 	border_margin = 3;
@@ -4640,6 +4642,10 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 		CONF("own_window") {
 			own_window = string_to_bool(value);
 		}
+        CONF("wm_class_name") {
+            strncpy(wm_class_name, value, sizeof(wm_class_name)-1);
+            wm_class_name[sizeof(wm_class_name)-1] = 0;
+        }
 		CONF("own_window_transparent") {
 			set_transparent = string_to_bool(value);
 		}
@@ -4945,6 +4951,7 @@ int main(int argc, char **argv)
 #if defined OWN_WINDOW
 	init_window
 	    (own_window,
+         wm_class_name,
 	     text_width + border_margin * 2 + 1,
 	     text_height + border_margin * 2 + 1,
 	     on_bottom, fixed_pos, set_transparent, background_colour);
