@@ -244,6 +244,10 @@ void update_stuff()
 		update_fs_stats();
 		last_fs_update = current_update_time;
 	}
+#ifdef TCP_PORT_MONITOR
+	if (NEED(INFO_TCP_PORT_MONITOR))
+		update_tcp_port_monitor_collection( info.p_tcp_port_monitor_collection );
+#endif
 }
 
 int round_to_int(float f)

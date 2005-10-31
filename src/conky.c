@@ -884,6 +884,9 @@ enum text_object_type {
 	OBJ_mpd_track,
 	OBJ_mpd_percent,
 #endif
+#ifdef TCP_PORT_MONITOR
+	OBJ_tcp_portmon,
+#endif
 };
 
 struct text_object {
@@ -945,6 +948,14 @@ struct text_object {
 		struct {
 			int a, b;
 		} pair;		/* 2 */
+#ifdef TCP_PORT_MONITOR
+		struct {
+			in_port_t  port_range_begin;  /* starting port to monitor */
+			in_port_t  port_range_end;    /* ending port to monitor */
+			int        item;              /* enum value in tcp_port_monitor.h, e.g. COUNT, REMOTEIP, etc. */
+			int        connection_index;  /* 0 to n-1 connections. */
+               } tcp_port_monitor;
+#endif
 	} data;
 };
 
@@ -1734,6 +1745,89 @@ int a = stippled_borders, b = 1;
 	END OBJ(mpd_status, INFO_MPD)
         END OBJ(mpd_bar, INFO_MPD)
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+	END
+#endif
+#ifdef TCP_PORT_MONITOR
+	OBJ(tcp_portmon, INFO_TCP_PORT_MONITOR) 
+		int argc, port_begin, port_end, item, connection_index;
+		char itembuf[32];
+		memset(itembuf,0,sizeof(itembuf));
+		/* massive argument checking */
+		if (!arg) {
+			CRIT_ERR("tcp_portmon: needs arguments");
+		}
+		argc=sscanf(arg, "%d %d %31s %d", &port_begin, &port_end, itembuf, &connection_index);
+		if ( (argc != 3) && (argc != 4) ) 
+		{
+			CRIT_ERR("tcp_portmon: requires 3 or 4 arguments");
+		}
+		if ( (port_begin<1) || (port_begin>65535) || (port_end<1) || (port_end>65535) )
+		{
+			CRIT_ERR("tcp_portmon: port values must be from 1 to 65535");
+		}
+		if ( port_begin > port_end )
+		{
+			CRIT_ERR("tcp_portmon: starting port must be <= ending port");
+		}
+		if ( strncmp(itembuf,"count",31) == 0 )
+			item=COUNT;
+		else if ( strncmp(itembuf,"rip",31) == 0 )
+			item=REMOTEIP;
+		else if ( strncmp(itembuf,"rhost",31) == 0 )
+			item=REMOTEHOST;
+		else if ( strncmp(itembuf,"rport",31) == 0 )
+			item=REMOTEPORT;
+		else if ( strncmp(itembuf,"lip",31) == 0 )
+			item=LOCALIP;
+		else if ( strncmp(itembuf,"lhost",31) == 0 )
+			item=LOCALHOST;
+		else if ( strncmp(itembuf,"lport",31) == 0 )
+			item=LOCALPORT;
+		else if ( strncmp(itembuf,"lservice",31) == 0 )
+			item=LOCALSERVICE;
+		else
+		{
+			CRIT_ERR("tcp_portmon: invalid item specified"); 
+		}
+		if ( (argc==3) && (item!=COUNT) )
+		{
+			CRIT_ERR("tcp_portmon: 3 argument form valid only for \"count\" item");
+		}
+		if ( (argc==4) && (connection_index<0) )
+		{
+			CRIT_ERR("tcp_portmon: connection index must be non-negative");
+		}
+		/* ok, args looks good. save the text object data */
+		obj->data.tcp_port_monitor.port_range_begin = (in_addr_t)port_begin;
+		obj->data.tcp_port_monitor.port_range_end = (in_addr_t)port_end;
+		obj->data.tcp_port_monitor.item = item;
+		obj->data.tcp_port_monitor.connection_index = connection_index;
+
+	 	/* if the port monitor collection hasn't been created, we must create it */
+	 	if ( !info.p_tcp_port_monitor_collection )
+		{
+			info.p_tcp_port_monitor_collection = create_tcp_port_monitor_collection();
+			if ( !info.p_tcp_port_monitor_collection )
+			{
+				CRIT_ERR("tcp_portmon: unable to create port monitor collection");
+			}
+		}
+
+		/* if a port monitor for this port does not exist, create one and add it to the collection */
+		if ( find_tcp_port_monitor( info.p_tcp_port_monitor_collection, port_begin, port_end ) == NULL )
+		{
+			tcp_port_monitor_t * p_monitor = create_tcp_port_monitor( port_begin, port_end );
+			if ( !p_monitor )
+			{
+				CRIT_ERR("tcp_portmon: unable to create port monitor");
+			}
+			/* add the newly created monitor to the collection */
+			if ( insert_tcp_port_monitor_into_collection( info.p_tcp_port_monitor_collection,
+								      p_monitor ) != 0 )
+			{
+				CRIT_ERR("tcp_portmon: unable to add port monitor to collection");
+			}
+		}
 	END
 #endif
 	{
@@ -3046,6 +3140,30 @@ static void generate_text()
 					}
 				}
 			}
+#ifdef TCP_PORT_MONITOR
+			OBJ(tcp_portmon)
+			{
+				/* grab a pointer to this port monitor */
+				tcp_port_monitor_t * p_monitor = 
+					find_tcp_port_monitor( info.p_tcp_port_monitor_collection,
+							        obj->data.tcp_port_monitor.port_range_begin,
+								obj->data.tcp_port_monitor.port_range_end );
+				if ( !p_monitor ) {
+					snprintf(p, n, "monitor not found");
+					break;
+				}
+
+				/* now grab the text of interest */
+				if ( peek_tcp_port_monitor( p_monitor, 
+				      	    		    obj->data.tcp_port_monitor.item, 
+				            		    obj->data.tcp_port_monitor.connection_index,
+				                            p, n ) != 0 )
+				{
+					snprintf(p, n, "monitor peek error");
+					break;
+				}
+			}
+#endif
 
 			break;
 		}
@@ -4158,6 +4276,10 @@ static void reload_handler(int a)
 		XClearWindow(display, RootWindow(display, screen)); // clear the window first
 
 #endif /* X11 */
+#ifdef TCP_PORT_MONITOR
+		destroy_tcp_port_monitor_collection( info.p_tcp_port_monitor_collection );
+		info.p_tcp_port_monitor_collection = NULL; 
+#endif
 		extract_variable_text(text);
 		free(text);
 		text = NULL;
@@ -4200,6 +4322,10 @@ static void clean_up()
 	free(current_mail_spool);
 #ifdef SETI
 	free(seti_dir);
+#endif
+#ifdef TCP_PORT_MONITOR
+	destroy_tcp_port_monitor_collection( info.p_tcp_port_monitor_collection );
+	info.p_tcp_port_monitor_collection = NULL;
 #endif
 }
 
@@ -4283,7 +4409,7 @@ static void set_default_configurations(void)
 	maximum_width = 0;
 #ifdef OWN_WINDOW
 	own_window = 0;
-    strcpy(wm_class_name, "conky");
+     	strcpy(wm_class_name, "conky");	
 #endif
 	stippled_borders = 0;
 	border_margin = 3;
@@ -4642,10 +4768,10 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 		CONF("own_window") {
 			own_window = string_to_bool(value);
 		}
-        CONF("wm_class_name") {
-            strncpy(wm_class_name, value, sizeof(wm_class_name)-1);
-            wm_class_name[sizeof(wm_class_name)-1] = 0;
-        }
+		CONF("wm_class_name") {
+			strncpy(wm_class_name, value, sizeof(wm_class_name)-1);
+			wm_class_name[sizeof(wm_class_name)-1] = 0;
+		}
 		CONF("own_window_transparent") {
 			set_transparent = string_to_bool(value);
 		}
@@ -4741,6 +4867,8 @@ static const char *getopt_string = "vVdt:f:u:i:hc:w:x:y:a:"
 
 int main(int argc, char **argv)
 {
+	memset(&info, 0, sizeof(info) );
+
 	/* handle command line parameters that don't change configs */
 #ifdef X11
 	char *s;
@@ -4951,7 +5079,7 @@ int main(int argc, char **argv)
 #if defined OWN_WINDOW
 	init_window
 	    (own_window,
-         wm_class_name,
+	     wm_class_name,
 	     text_width + border_margin * 2 + 1,
 	     text_height + border_margin * 2 + 1,
 	     on_bottom, fixed_pos, set_transparent, background_colour);

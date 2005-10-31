@@ -1,5 +1,8 @@
 # $Id$
 
+2005-10-30
+	* Added tcp port monitor support (pkovacs)
+
 2005-10-28
 	* Added WM_CLASS patch from sf.net patch 1340825
 

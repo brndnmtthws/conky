@@ -114,6 +114,10 @@ struct mpd_s {
 };
 #endif
 
+#ifdef TCP_PORT_MONITOR
+#include "libtcp-portmon.h"
+#endif
+
 enum {
 	INFO_CPU = 0,
 	INFO_MAIL = 1,
@@ -142,6 +146,9 @@ enum {
 	INFO_WIFI = 19,
 	INFO_DISKIO = 20,
 	INFO_I8K = 21,
+#ifdef TCP_PORT_MONITOR
+        INFO_TCP_PORT_MONITOR = 22,
+#endif
 };
 
 
@@ -186,6 +193,9 @@ struct information {
 	struct process *cpu[10];
 	struct process *memu[10];
 	unsigned long looped;
+#ifdef TCP_PORT_MONITOR
+        tcp_port_monitor_collection_t * p_tcp_port_monitor_collection;
+#endif
 };
 
 int out_to_console;

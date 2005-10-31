@@ -26,6 +26,10 @@ if BUILD_NETBSD
 netbsd = netbsd.c
 endif
 
+if BUILD_PORT_MONITORS
+port_monitors = libtcp-portmon.h libtcp-portmon.c hash.h hash.c
+endif
+
 if BUILD_CAIRO
 cairo = cairo.c
 endif
@@ -38,7 +42,7 @@ if BUILD_X11
 x11 = x11.c
 endif
 
-conky_SOURCES = common.c fs.c $(linux) mail.c mixer.c $(seti) $(mpd) $(solaris) $(freebsd) $(netbsd) $(cairo) conky.c conky.h $(x11) $(mldonkey) remoted.c remoted.h remotec.c remotec.h
+conky_SOURCES = common.c fs.c $(linux) mail.c mixer.c $(seti) $(mpd) $(solaris) $(freebsd) $(netbsd) $(port_monitors) $(cairo) conky.c conky.h $(x11) $(mldonkey) remoted.c remoted.h remotec.c remotec.h
 
 AM_LDFLAGS = $(X11_LIBS) $(XFT_LIBS) $(CAIRO_LIBS) $(PTHREAD_LIBS) -lm
 
