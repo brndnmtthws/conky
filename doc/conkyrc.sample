@@ -170,7 +170,7 @@ ${color #ddaa00}TCP Connection Summary:
 ${color #ff1133}Port(s)                #Connections
 ${color #88aadd}ALL:                  $color ${tcp_portmon 1 65535 count}
 ${color #88aadd}sshd (22):            $color ${tcp_portmon 22 22 count}
-${color #88aadd}http (80):            $color ${tcp_portmon 22 22 count}
+${color #88aadd}http (80):            $color ${tcp_portmon 80 80 count}
 ${color #88aadd}torrent (6881-6889):  $color ${tcp_portmon 6881 6889 count}
 ${color #ddaa00}TCP Connection Detail (${color #88aadd}Ports 1-65535${color #ddaa00}):${color #ff1133}
 Remote Address ${alignr} Local Service/Port${color #88aadd}
