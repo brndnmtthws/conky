@@ -978,6 +978,48 @@
 
 <varlistentry>
 	<term>
+		<command><option>tcp_portmon</option></command>
+		<option>port_begin port_end item (index)</option>
+		<emphasis>(ip4 only at present)</emphasis>
+	</term>
+	<listitem>
+		TCP port monitor for specified ports.  Port numbers must be in the range 1 to 65535. Valid items are:
+		<simplelist>
+			<member><command>count</command> total number of connections in the range
+				<emphasis>(index must be omitted)</emphasis></member>
+			<member><command>rip</command> remote ip address
+				<emphasis>(index >=0 required)</emphasis></member>
+			<member><command>rhost</command> remote host name 
+				<emphasis>(index >=0 required)</emphasis></member>
+			<member><command>rport</command> remote port number
+				<emphasis>(index >=0 required)</emphasis></member>
+			<member><command>lip</command> local ip address
+				<emphasis>(index >=0 required)</emphasis></member>
+			<member><command>lhost</command> local host name
+				<emphasis>(connection index >=0 required)</emphasis></member>
+			<member><command>lservice</command> local service name from /etc/services
+				<emphasis>(index >=0 required)</emphasis></member>
+		</simplelist>The connection index gives you access to each connection in the monitor, i.e. values can be 0 through n-1 connections.  Values higher than n-1 are simply ignored.
+		<simplelist>
+			<member>Examples:</member>
+			<member><code>${tcp_portmon 6881 6889 count}</code> 
+				displays the number of connections in the torrent port range</member>
+			<member><code>${tcp_portmon 22 22 rip 0}</code>
+				displays the remote host ip of the first sshd connection</member>
+			<member><code>${tcp_portmon 22 22 rip 9}</code>
+				displays the remote host ip of the tenth sshd connection</member>
+			<member><code>${tcp_portmon 1 1024 rhost 0}</code>
+				displays the remote host name of the first connection on a privileged port</member>
+			<member><code>${tcp_portmon 1 1024 rport 4}</code>
+				displays the remote host port of the fifth connection on a privileged port</member>
+			<member><code>${tcp_portmon 1 65535 lservice 14}</code>
+				displays the local service name of the fifteenth connection in the range of all ports</member>
+		</simplelist>
+	</listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>texeci</option></command>
 		<option>interval command</option>
 	</term>
