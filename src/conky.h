@@ -84,7 +84,6 @@ struct net_stat {
 unsigned int diskio_value;
 
 struct fs_stat {
-	int fd;
 	char *path;
 	long long size;
 	long long avail;

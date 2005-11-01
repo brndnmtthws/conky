@@ -33,6 +33,7 @@ Daniel Thiele <dthiele at gmx dot net>
 
 Denis <d-st at users dot sourceforge dot net>
   WM_CLASS patch
+  statfs patch
 
 Dennis Frommknecht
   NVCtrl, temperature monitoring for nvdia-based graphics cards

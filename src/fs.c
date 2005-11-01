@@ -27,95 +27,64 @@
 #include <sys/mount.h>
 #endif
 
-/* TODO: benchmark which is faster, fstatvfs() or pre-opened fd and
- * statvfs() (fstatvfs() would handle mounts I think...) */
+#define MAX_FS_STATS 64
 
-static struct fs_stat fs_stats_[64];
+static struct fs_stat fs_stats_[MAX_FS_STATS];
 struct fs_stat *fs_stats = fs_stats_;
+
+static void update_fs_stat(struct fs_stat* fs);
 
 void update_fs_stats()
 {
-	unsigned int i;
-	struct statfs s;
-	for (i = 0; i < 16; i++) {
-		if (fs_stats[i].fd <= 0)
-			break;
-
-		fstatfs(fs_stats[i].fd, &s);
-
-		fs_stats[i].size = (long long) s.f_blocks * s.f_bsize;
-		/* bfree (root) or bavail (non-roots) ? */
-		fs_stats[i].avail = (long long) s.f_bavail * s.f_bsize;
-	}
+	unsigned i;
+	for(i=0; i<MAX_FS_STATS; ++i)
+		if(fs_stats[i].path)
+			update_fs_stat(&fs_stats[i]);
 }
 
 void clear_fs_stats()
 {
-	unsigned int i;
-	for (i = 0; i < 16; i++) {
-		if (fs_stats[i].fd) {
-			close(fs_stats[i].fd);
-			fs_stats[i].fd = -1;
-		}
-		if (fs_stats[i].path != NULL) {
+	unsigned i;
+	for(i=0; i<MAX_FS_STATS; ++i)
+		if(fs_stats[i].path) {
 			free(fs_stats[i].path);
-			fs_stats[i].path = NULL;
+			fs_stats[i].path = 0;
 		}
-	}
 }
-
-/*void clear_fs_stat(unsigned int i)
-{
-	if (fs_stats[i].fd) {
-		close(fs_stats[i].fd);
-		fs_stats[i].fd = -1;
-	}
-	if (fs_stats[i].path != NULL) {
-		free(fs_stats[i].path);
-		fs_stats[i].path = NULL;
-	}
-}*/
-
 
 struct fs_stat *prepare_fs_stat(const char *s)
 {
-	unsigned int i;
-
-	for (i = 0; i < 16; i++) {
-		struct fs_stat *fs = &fs_stats[i];
-
-		if (fs->path && strcmp(fs->path, s) == 0)
-			return fs;
-
-		if (fs->fd <= 0) {
-			/* when compiled with icc, it crashes when leaving function and open()
-			 * is used, I don't know why 
-			 * fuck icc */
-
-			/* this icc workaround didn't seem to work */
-#if 0
-			{
-				FILE *fp = fopen(s, "r");
-				if (fp)
-					fs->fd = fileno(fp);
-				else
-					fs->fd = -1;
-			}
-#endif
-
-			fs->fd = open(s, O_RDONLY);
-
-			if (fs->fd <= 0) {	/* 0 isn't error but actually it is :) */
-				ERR("open '%s': %s", s, strerror(errno));
-				return 0;
-			}
-
-			fs->path = strdup(s);
-			update_fs_stats();
-			return fs;
-		}
+	struct fs_stat* new = 0;
+	unsigned i;
+	/* lookup existing or get new */
+	for(i=0; i<MAX_FS_STATS; ++i) {
+		if(fs_stats[i].path) {
+			if(strcmp(fs_stats[i].path, s) == 0)
+				return &fs_stats[i];
+		} else
+			new = &fs_stats[i];
 	}
+	/* new path */
+	if(!new) {
+		ERR("too many fs stats");
+		return 0;
+	}
+	new->path = strdup(s);
+	update_fs_stat(new);
+	return new;
+}
 
-	ERR("too many fs stats");
-	return 0;
+static
+void update_fs_stat(struct fs_stat* fs)
+{
+	struct statfs s;
+	if(statfs(fs->path, &s) == 0) {
+		fs->size = (long long) s.f_blocks * s.f_bsize;
+		/* bfree (root) or bavail (non-roots) ? */
+		fs->avail = (long long) s.f_bavail * s.f_bsize;
+	} else {
+		fs->size = 0;
+		fs->avail = 0;
+		ERR("statfs '%s': %s", fs->path, strerror(errno));
+	}
 }
