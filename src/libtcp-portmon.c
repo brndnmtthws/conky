@@ -243,6 +243,7 @@ void destroy_tcp_port_monitor(
 
    /* destroy the monitor */
    free( p_monitor );
+   p_monitor=NULL;
 }
 
 void age_tcp_port_monitor(
@@ -706,6 +707,7 @@ void destroy_tcp_port_monitor_collection(
    }
    
    free( p_collection );
+   p_collection=NULL;
 }
 
 /* Updates the tcp statistics for all monitors within a collection */

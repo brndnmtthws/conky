@@ -1752,6 +1752,7 @@ int a = stippled_borders, b = 1;
 		int argc, port_begin, port_end, item, connection_index;
 		char itembuf[32];
 		memset(itembuf,0,sizeof(itembuf));
+		connection_index=0;
 		/* massive argument checking */
 		if (!arg) {
 			CRIT_ERR("tcp_portmon: needs arguments");
@@ -4257,16 +4258,42 @@ static void main_loop()
 		}
 #endif /* X11 */
 
+		/* inspect pending signal prior to entering next loop */
+		switch(g_signal_pending) {
+		case SIGUSR1:
+			{
+			ERR("received SIGUSR1. reloading the config file.");
+			reload_config();
+			break;
+			}
+		case SIGINT:
+		case SIGTERM:
+			{
+			ERR("received SIGINT or SIGTERM to terminate. bye!");
+			clean_up();
+			exit(0);
+			/*break;*/
+			}
+		default:
+			{
+			/* Reaching here means someone set a signal( SIGXXXX, signal_handler )
+			 * but didn't write any code to deal with it.   if you don't want to
+			 * handle a signal, don't set a handler on it in the first place. */
+			if (g_signal_pending)
+				ERR("ignoring signal (%d)", g_signal_pending);
+			break;
+			}
+		}
+		g_signal_pending=0;
+	
 	}
 }
 
 static void load_config_file(const char *);
 
-/* signal handler that reloads config file */
-static void reload_handler(int a)
+/* reload the config file */
+void reload_config(void)
 {
-	ERR("Conky: received signal %d, reloading config\n", a);
-
 	if (current_config) {
 		clear_fs_stats();
 		load_config_file(current_config);
@@ -4287,7 +4314,7 @@ static void reload_handler(int a)
 	}
 }
 
-static void clean_up()
+void clean_up(void)
 {
 #ifdef X11
 #ifdef XDBE
@@ -4327,13 +4354,6 @@ static void clean_up()
 	destroy_tcp_port_monitor_collection( info.p_tcp_port_monitor_collection );
 	info.p_tcp_port_monitor_collection = NULL;
 #endif
-}
-
-static void term_handler(int a)
-{
-	a = a;			/* to get rid of warning */
-	clean_up();
-	exit(0);
 }
 
 static int string_to_bool(const char *s)
@@ -4867,6 +4887,7 @@ static const char *getopt_string = "vVdt:f:u:i:hc:w:x:y:a:"
 
 int main(int argc, char **argv)
 {
+	g_signal_pending=0;
 	memset(&info, 0, sizeof(info) );
 
 	/* handle command line parameters that don't change configs */
@@ -5137,34 +5158,24 @@ int main(int argc, char **argv)
 		}
 	}
 
-	/* set SIGUSR1, SIGINT and SIGTERM handlers */
+	/* Set signal handlers */
+	if ( signal(SIGINT,signal_handler) == SIG_ERR ||
+	     signal(SIGUSR1,signal_handler) == SIG_ERR ||
+	     signal(SIGTERM,signal_handler) == SIG_ERR )
 	{
-		struct
-		sigaction sa;
-
-		sa.sa_handler = reload_handler;
-		sigemptyset(&sa.sa_mask);
-		sa.sa_flags = SA_RESTART;
-		if (sigaction(SIGUSR1, &sa, NULL) != 0)
-			ERR("can't set signal handler for SIGUSR1: %s",
-			    strerror(errno));
-
-		sa.sa_handler = term_handler;
-		sigemptyset(&sa.sa_mask);
-		sa.sa_flags = SA_RESTART;
-		if (sigaction(SIGINT, &sa, NULL) != 0)
-			ERR("can't set signal handler for SIGINT: %s",
-			    strerror(errno));
-
-		sa.sa_handler = term_handler;
-		sigemptyset(&sa.sa_mask);
-		sa.sa_flags = SA_RESTART;
-		if (sigaction(SIGTERM, &sa, NULL) != 0)
-			ERR("can't set signal handler for SIGTERM: %s",
-			    strerror(errno));
+		ERR("error setting signal handler: %s", strerror(errno) );
 	}
+
 	main_loop();
 	free(tmpstring1);
 	free(tmpstring2);
 	return 0;
+}
+
+void signal_handler(int sig)
+{
+	/* signal handler is light as a feather, as it should be. 
+	 * we will poll g_signal_pending with each loop of conky
+	 * and do any signal processing there, NOT here.  pkovacs. */
+	g_signal_pending=sig;
 }

@@ -155,6 +155,8 @@ enum {
 #include "libmpdclient.h"
 #endif
 
+volatile int g_signal_pending;
+
 struct information {
 	unsigned int mask;
 
@@ -278,6 +280,10 @@ long get_x11_color(const char *);
 
 /* struct that has all info */
 struct information info;
+
+void signal_handler(int);
+void reload_config(void);
+void clean_up(void);
 
 void update_uname();
 double get_time(void);
