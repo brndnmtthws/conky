@@ -1,13 +1,12 @@
 /* ------------------------------------------------------
  * test-hash.c: unit testing for hash functions in hash.h
- *
  * Philip Kovacs kovacsp3@comcast.net 2005
  * ------------------------------------------------------*/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../src/hash.h"
+#include "hash.h"
 
 char *data[] = { 
 	"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", 
