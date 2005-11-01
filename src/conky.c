@@ -952,7 +952,7 @@ struct text_object {
 		struct {
 			in_port_t  port_range_begin;  /* starting port to monitor */
 			in_port_t  port_range_end;    /* ending port to monitor */
-			int        item;              /* enum value in tcp_port_monitor.h, e.g. COUNT, REMOTEIP, etc. */
+			int        item;              /* enum value from libtcp-portmon.h, e.g. COUNT, REMOTEIP, etc. */
 			int        connection_index;  /* 0 to n-1 connections. */
                } tcp_port_monitor;
 #endif

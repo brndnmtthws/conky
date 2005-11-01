@@ -708,7 +708,7 @@ void destroy_tcp_port_monitor_collection(
    free( p_collection );
 }
 
-/* Updates the tcp statitics for all monitors within a collection */
+/* Updates the tcp statistics for all monitors within a collection */
 void update_tcp_port_monitor_collection(
         tcp_port_monitor_collection_t *         p_collection
         )

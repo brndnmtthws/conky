@@ -56,7 +56,7 @@
 
 /* ----------------------------------------------------------------------------------------
  * The tcp port monitor collection also contains a hash to track the monitors it contains.
- * This hash, unlike the connection hash describes above, is not very dynamic.  Client of
+ * This hash, unlike the connection hash describes above, is not very dynamic.  Clients of
  * this library typically create a fixed number of monitors and let them run until program 
  * termination.  For this reason, I haven't included any load governors or hash rebuilding
  * steps as is done above.  You may store up to TCP_MONITOR_HASH_SIZE monitors in this hash,
@@ -79,9 +79,12 @@
 /* The inventory of peekable items within the port monitor. */
 enum tcp_port_monitor_peekables { COUNT=0, REMOTEIP, REMOTEHOST, REMOTEPORT, LOCALIP, LOCALHOST, LOCALPORT, LOCALSERVICE };
 
-/* -----------------------
+/* ------------------------------------------------------------------------
  * A single tcp connection 
- * ----------------------- */
+ *
+ * The age variable provides the mechanism for removing connections if they
+ * are not seen again in subsequent update cycles.
+ * ------------------------------------------------------------------------ */
 typedef struct _tcp_connection_t {
         in_addr_t local_addr;
         in_port_t local_port;
@@ -96,8 +99,6 @@ typedef struct _tcp_connection_t {
  * A tcp connection node/list
  *
  * Connections within each monitor are stored in a double-linked list.
- * The age variable provides the mechanism for removing connections if they
- * are not seen again in subsequent update cycles.
  * ------------------------------------------------------------------------ */
 typedef struct _tcp_connection_node_t {
 	tcp_connection_t connection;
