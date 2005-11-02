@@ -38,9 +38,9 @@ if BUILD_X11
 x11 = x11.c
 endif
 
-conky_SOURCES = common.c fs.c $(linux) mail.c mixer.c $(seti) $(mpd) $(solaris) $(freebsd) $(netbsd) $(port_monitors) $(cairo) conky.c conky.h $(x11) $(mldonkey) remoted.c remoted.h remotec.c remotec.h
+conky_SOURCES = common.c fs.c $(linux) mail.c mixer.c $(seti) $(mpd) $(solaris) $(freebsd) $(netbsd) $(port_monitors) conky.c conky.h $(x11) $(mldonkey) remoted.c remoted.h remotec.c remotec.h
 
 AM_LDFLAGS = $(X11_LIBS) $(XFT_LIBS) $(CAIRO_LIBS) $(PTHREAD_LIBS) -lm
 
 EXTRA_DIST = seti.c linux.c solaris.c freebsd.c netbsd.c mpd.c libmpdclient.c \
-cairo.c libmpdclient.h top.h mldonkey.c ftp.c ftp.h x11.c
+libmpdclient.h top.h mldonkey.c ftp.c ftp.h x11.c
