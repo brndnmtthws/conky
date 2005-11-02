@@ -1,5 +1,9 @@
 # $Id$
 
+2005-11-01
+	* Documentation updates for compiling and port monitoring
+	* Removed cairo stuff (it's useless)
+
 2005-10-31
 	* Added statfs sf.net patch 1344493
 
