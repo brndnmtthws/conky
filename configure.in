@@ -49,7 +49,7 @@ dnl
 
 want_xft=no
 AC_ARG_ENABLE(xft,
-[  --enable-xft            enable if you want to use Xft [default=no]],
+[  --enable-xft            enable if you want to use Xft [[default=no]]],
   [want_xft="$enableval"])
 
 dnl
@@ -58,7 +58,7 @@ dnl
 
 dah=yes
 AC_ARG_ENABLE(own_window,
-[  --enable-own-window     enable if you want support for creating own window [default=yes]],
+[  --enable-own-window     enable if you want support for creating own window [[default=yes]]],
   [dah="$enableval"])
 
 if test $dah != "no"; then
@@ -71,7 +71,7 @@ dnl
 
 dah=no
 AC_ARG_ENABLE(proc_uptime,
-[  --enable-proc-uptime    enable using /proc/uptime for uptime [default=no]],
+[  --enable-proc-uptime    enable using /proc/uptime for uptime [[default=no]]],
   [dah="$enableval"])
 
 if test $dah = "yes"; then
@@ -84,7 +84,7 @@ dnl
 
 want_seti=no
 AC_ARG_ENABLE(seti,
-[  --enable-seti           enable if you want SETI at Home stats [default=no]],
+[  --enable-seti           enable if you want SETI at Home stats [[default=no]]],
   [want_seti="$enableval"])
 
 AM_CONDITIONAL(BUILD_SETI, test x$want_seti = xyes)
@@ -98,7 +98,7 @@ dnl
 
 want_mpd=no
 AC_ARG_ENABLE(mpd,
-[  --enable-mpd            enable if you want MPD support [default=no]],
+[  --enable-mpd            enable if you want MPD support [[default=no]]],
   [want_mpd="$enableval"])
 
 AM_CONDITIONAL(BUILD_MPD, test x$want_mpd = xyes)
@@ -130,7 +130,7 @@ dnl
 
 want_cairo=no
 AC_ARG_ENABLE(cairo,
-[  --enable-cairo          enable if you want Cairo support [default=no]],
+[  --enable-cairo          enable if you want Cairo support [[default=no]]],
   [want_cairo="$enableval"])
 
 AM_CONDITIONAL(BUILD_CAIRO, test x$want_cairo = xyes)
@@ -160,7 +160,7 @@ dnl
 
 want_mldonkey=no
 AC_ARG_ENABLE(mldonkey,
-[  --enable-mldonkey       enable if you want MLDonkey support [default=no]],
+[  --enable-mldonkey       enable if you want MLDonkey support [[default=no]]],
   [want_mldonkey="$enableval"])
 
 AM_CONDITIONAL(BUILD_MLDONKEY, test x$want_mldonkey = xyes)
@@ -180,12 +180,12 @@ dnl
 
 dah=yes
 AC_ARG_ENABLE(double_buffer,
-[  --enable-double-buffer  enable if you want to support flicker-free operation [default=yes]],
+[  --enable-double-buffer  enable if you want to support flicker-free operation [[default=yes]]],
   [dah="$enableval"])
 
 want_x11=yes
 AC_ARG_ENABLE(x11,
-[  --enable-x11            enable if you want X11 support [default=yes]],
+[  --enable-x11            enable if you want X11 support [[default=yes]]],
  [want_x11="$enableval"])
 
 
