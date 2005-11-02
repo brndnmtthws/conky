@@ -38,17 +38,15 @@ src_unpack() {
 }
 
 src_compile() {
-   econf \
-      $(use_enable truetype xft) \
-      $(use_enable seti) \
-	  $(use_enable X x11) \
-      --enable-double-buffer \
-      --enable-own-window \
-      --enable-proc-uptime \
-	  --enable-mpd \
-	  --enable-mldonkey \
-      || die "econf failed"
-   emake || die "compile failed"
+    local myconf
+    myconf="--enable-double-buffer --enable-own-window --enable-proc-uptime --enable-mpd --enable-mldonkey"
+    econf \
+        ${myconf} \
+        $(use_enable truetype xft) \
+        $(use_enable X x11) \
+        $(use_enable !ipv6 portmon) \
+        $(use_enable seti) || die "econf failed"
+    emake || die "compile failed"
 }
 
 src_install() {
