@@ -69,7 +69,7 @@
 		Ubuntu shortly thereafter. Until then, "dpkg -i" the .deb package to install. 
 		</para>
 		<para>
-		To compile and run Conky with all optional components:
+		Example to compile and run Conky with all optional components (note that some configure options may differ for your system):
 		</para>
 		<variablelist>
 			<varlistentry>
@@ -79,11 +79,7 @@
 			</varlistentry>
 			<varlistentry>
 				<term>
-				<command><option>./configure </option></command><option>
-				--prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info
-				--datadir=/usr/share --sysconfdir=/etc --localstatedir=/var/lib 
-				--enable-double-buffer --enable-own-window --enable-proc-uptime 
-				--enable-mpd --enable-xft --enable-seti</option>
+					<command><option>./configure </option></command><option>--prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --datadir=/usr/share --sysconfdir=/etc --localstatedir=/var/lib --enable-xft --enable-seti --enable-double-buffer --enable-own-window --enable-proc-uptime --enable-mpd --enable-mldonkey --enable-x11 --enable-portmon</option>
 				</term>
 			</varlistentry>
 			<varlistentry>

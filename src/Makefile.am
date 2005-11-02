@@ -30,10 +30,6 @@ if BUILD_PORT_MONITORS
 port_monitors = libtcp-portmon.h libtcp-portmon.c hash.h hash.c
 endif
 
-if BUILD_CAIRO
-cairo = cairo.c
-endif
-
 if BUILD_MLDONKEY
 mldonkey = mldonkey.c
 endif

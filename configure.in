@@ -128,32 +128,6 @@ dnl
 dnl Cairo
 dnl
 
-want_cairo=no
-AC_ARG_ENABLE(cairo,
-[  --enable-cairo          enable if you want Cairo support [[default=no]]],
-  [want_cairo="$enableval"])
-
-AM_CONDITIONAL(BUILD_CAIRO, test x$want_cairo = xyes)
-
-
-if test "$want_cairo" = "yes"; then
-  AC_CHECK_HEADERS([cairo.h cairo-xlib.h], [], [CAIRO_MISSING=yes])
-    if test "x$CAIRO_MISSING" = xyes; then
-      AC_MSG_ERROR([something went wrong when checking for cairo, you're probably missing headers or it's not installed])
-  fi
-  AC_PATH_PROG(CAIROCONFIG, pkg-config)
-  if test x$CAIROCONFIG != x; then
-    dnl TODO: needs more checks
-
-    AC_DEFINE(CAIRO, 1, [Define if you are using Cairo])
-    CFLAGS="$CFLAGS `$CAIROCONFIG --cflags cairo` `$CAIROCONFIG --libs cairo` "
-    CAIRO_LIBS="`$CAIROCONFIG --libs cairo` `$CAIROCONFIG --cflags cairo`"
-  else
-    want_cairo=no
-  fi
-fi
-
-
 dnl
 dnl MLDonkey
 dnl
@@ -278,7 +252,6 @@ AC_CHECK_HEADERS([sys/mount.h], [], [],
 		  #include <sys/param.h>
 		  #endif
 ])
-dnl For cairo
 
 dnl
 dnl Check doc stuff
