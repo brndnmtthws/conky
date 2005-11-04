@@ -150,8 +150,6 @@ ${color lightgrey}Networking:
 ${color #0000ff}${downspeedgraph eth0 32,150 ff0000 0000ff} ${color #22ccff}${upspeedgraph eth0 32,150 0000ff ff0000}
 ${color lightgrey}File systems:
  / $color${fs_used /}/${fs_size /} ${fs_bar /}
-${color lightgrey}Temperatures:
- CPU:$color ${i2c temp 2}C${color grey} - MB:$color ${i2c temp 1}C
 ${color #88aadd}MPD: ${alignc}$mpd_artist - $mpd_title
 ${color #88aadd}$mpd_bar
 ${color #88aadd}${alignc}$mpd_status
