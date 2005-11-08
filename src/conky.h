@@ -340,11 +340,11 @@ struct process {
 	pid_t pid;
 	char *name;
 	float amount;
-	unsigned int user_time;
-	unsigned int total;
-	unsigned int kernel_time;
-	unsigned int previous_user_time;
-	unsigned int previous_kernel_time;
+	unsigned long user_time;
+	unsigned long total;
+	unsigned long kernel_time;
+	unsigned long previous_user_time;
+	unsigned long previous_kernel_time;
 	unsigned int vsize;
 	unsigned int rss;
 	unsigned int time_stamp;

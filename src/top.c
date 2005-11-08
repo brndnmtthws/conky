@@ -10,7 +10,7 @@
 
 static regex_t *exclusion_expression = 0;
 static unsigned int g_time = 0;
-static int previous_total = 0;
+static unsigned long previous_total = 0;
 static struct process *first_process = 0;
 
 static struct process *find_process(pid_t pid)
@@ -63,8 +63,8 @@ static int calculate_cpu(struct process *);
 static void process_cleanup(void);
 static void delete_process(struct process *);
 /*inline void draw_processes(void);*/
-static int calc_cpu_total(void);
-static void calc_cpu_each(int);
+static unsigned long calc_cpu_total(void);
+static void calc_cpu_each(unsigned long);
 
 
 /******************************************/
@@ -81,7 +81,7 @@ static int process_parse_stat(struct process *process)
 	cur = &info;
 	char line[BUFFER_LEN], filename[BUFFER_LEN], procname[BUFFER_LEN];
 	int ps;
-	int user_time, kernel_time;
+	unsigned long user_time, kernel_time;
 	int rc;
 	char *r, *q;
 	char deparenthesised_name[BUFFER_LEN];
@@ -112,7 +112,7 @@ static int process_parse_stat(struct process *process)
 	 * Extract cpu times from data in /proc filesystem
 	 */
 	rc = sscanf(line,
-		    "%*s %s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %d %d %*s %*s %*s %d %*s %*s %*s %d %d",
+		    "%*s %s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %lu %lu %*s %*s %*s %d %*s %*s %*s %d %d",
 		    procname, &process->user_time, &process->kernel_time,
 		    &nice_val, &process->vsize, &process->rss);
 	if (rc < 5)
@@ -166,9 +166,9 @@ static int process_parse_stat(struct process *process)
 
 	process->totalmem = ((float) process->rss / cur->memmax) / 10;
 
-	if (process->previous_user_time == INT_MAX)
+	if (process->previous_user_time == ULONG_MAX)
 		process->previous_user_time = process->user_time;
-	if (process->previous_kernel_time == INT_MAX)
+	if (process->previous_kernel_time == ULONG_MAX)
 		process->previous_kernel_time = process->kernel_time;
 
 	/* store the difference of the user_time */
@@ -319,27 +319,25 @@ static void delete_process(struct process *p)
 /* Calculate cpu total                    */
 /******************************************/
 
-static int calc_cpu_total()
+static unsigned long calc_cpu_total()
 {
-	int total, t;
+	unsigned long total, t;
 	int rc;
 	int ps;
 	char line[BUFFER_LEN];
-	int cpu, nice, system, idle;
+	unsigned long cpu, nice, system, idle;
 
 	ps = open("/proc/stat", O_RDONLY);
 	rc = read(ps, line, sizeof(line));
 	close(ps);
 	if (rc < 0)
 		return 0;
-	sscanf(line, "%*s %d %d %d %d", &cpu, &nice, &system, &idle);
+	sscanf(line, "%*s %lu %lu %lu %lu", &cpu, &nice, &system, &idle);
 	total = cpu + nice + system + idle;
 
 	t = total - previous_total;
 	previous_total = total;
 
-	if (t < 0)
-		t = 0;
 
 	return t;
 }
@@ -348,7 +346,7 @@ static int calc_cpu_total()
 /* Calculate each processes cpu           */
 /******************************************/
 
-inline static void calc_cpu_each(int total)
+inline static void calc_cpu_each(unsigned long total)
 {
 	struct process *p = first_process;
 	while (p) {
@@ -404,8 +402,8 @@ inline void process_find_top(struct process **cpu, struct process **mem)
 		sorttmp = malloc(sizeof(struct process) * sorttmp_size);
 		assert(sorttmp != NULL);
 	}
-	int total;
-	unsigned int i, j;
+	unsigned long total;
+	unsigned long i, j;
 
 	total = calc_cpu_total();	/* calculate the total of the processor */
 
