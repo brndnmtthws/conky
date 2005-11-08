@@ -1,5 +1,8 @@
 # $Id$
 
+2005-11-08
+	* Fix bug# 1351686.  Patch by boojit.
+
 2005-11-01
 	* Documentation updates for compiling and port monitoring
 	* Removed cairo stuff (it's useless)
