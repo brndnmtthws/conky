@@ -1,3 +1,19 @@
+/* ------------------------------------------------------
+ * Open-addressed hash using double hash probing
+ *
+ * for i in 0 to m-1: 
+ *      h(k, i) = ( h1(k) + i*h2(k) ) mod m 
+ *
+ * requires: 1) m must be a power of two
+ *           2) h2(k) must return an odd number
+ *
+ * Besed on code published in _Mastering Algorithms in C_
+ * by Kyle Loudon (O'Reilly 1999).
+ * Modified by Philip Kovacs (kovacsp3@comcast.net)
+ * 
+ * $Id$
+ * ------------------------------------------------------ */
+
 #ifdef HASH_DEBUG
 #include <stdio.h>
 #endif

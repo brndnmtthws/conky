@@ -1,6 +1,3 @@
-#ifndef HASH_H
-#define HASH_H
-
 /* ------------------------------------------------------
  * Open-addressed hash using double hash probing
  *
@@ -13,7 +10,12 @@
  * Besed on code published in _Mastering Algorithms in C_
  * by Kyle Loudon (O'Reilly 1999).
  * Modified by Philip Kovacs (kovacsp3@comcast.net)
+ * 
+ * $Id$
  * ------------------------------------------------------ */
+
+#ifndef HASH_H
+#define HASH_H
 
 typedef struct _hash_table_t {
 	int 	positions;
