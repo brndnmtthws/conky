@@ -425,7 +425,7 @@ void show_connection_to_tcp_port_monitor(
 	 * connection limit.  Future versions should probably allow the client to set the hash size
 	 * and load limits and/or provide for automatic resizing of hashes. */
 
-	if ( p_monitor->hash.size / p_monitor->hash.positions > TCP_CONNECTION_HASH_MAX_LOAD_PCT )
+	if ( (double)p_monitor->hash.size / (double)p_monitor->hash.positions > TCP_CONNECTION_HASH_MAX_LOAD_PCT )
 	{
 		/* hash exceeds our load limit is now "full" */
 		return;
