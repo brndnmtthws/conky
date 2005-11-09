@@ -172,14 +172,13 @@ ${color #88aadd}http (80):            $color ${tcp_portmon 80 80 count}
 ${color #88aadd}torrent (6881-6889):  $color ${tcp_portmon 6881 6889 count}
 ${color #ddaa00}TCP Connection Detail (${color #88aadd}Ports 1-65535${color #ddaa00}):${color #ff1133}
 Remote Address ${alignr} Local Service/Port${color #88aadd}
-${tcp_portmon 1 65535 rhost 0} ${alignr} ${tcp_portmon 1 65535 lservice 0}      
-${tcp_portmon 1 65535 rhost 1} ${alignr} ${tcp_portmon 1 65535 lservice 1}       
-${tcp_portmon 1 65535 rhost 2} ${alignr} ${tcp_portmon 1 65535 lservice 2}      
-${tcp_portmon 1 65535 rhost 3} ${alignr} ${tcp_portmon 1 65535 lservice 3}      
-${tcp_portmon 1 65535 rhost 4} ${alignr} ${tcp_portmon 1 65535 lservice 4}      
-${tcp_portmon 1 65535 rhost 5} ${alignr} ${tcp_portmon 1 65535 lservice 5}      
-${tcp_portmon 1 65535 rhost 6} ${alignr} ${tcp_portmon 1 65535 lservice 6}      
-${tcp_portmon 1 65535 rhost 7} ${alignr} ${tcp_portmon 1 65535 lservice 7}      
-${tcp_portmon 1 65535 rhost 8} ${alignr} ${tcp_portmon 1 65535 lservice 8}      
-${tcp_portmon 1 65535 rhost 9} ${alignr} ${tcp_portmon 1 65535 lservice 9}      
-
+${tcp_portmon 1 65535 rhost 0} ${alignr} ${tcp_portmon 1 65535 lservice 0}
+${tcp_portmon 1 65535 rhost 1} ${alignr} ${tcp_portmon 1 65535 lservice 1}
+${tcp_portmon 1 65535 rhost 2} ${alignr} ${tcp_portmon 1 65535 lservice 2}
+${tcp_portmon 1 65535 rhost 3} ${alignr} ${tcp_portmon 1 65535 lservice 3}
+${tcp_portmon 1 65535 rhost 4} ${alignr} ${tcp_portmon 1 65535 lservice 4}
+${tcp_portmon 1 65535 rhost 5} ${alignr} ${tcp_portmon 1 65535 lservice 5}
+${tcp_portmon 1 65535 rhost 6} ${alignr} ${tcp_portmon 1 65535 lservice 6}
+${tcp_portmon 1 65535 rhost 7} ${alignr} ${tcp_portmon 1 65535 lservice 7}
+${tcp_portmon 1 65535 rhost 8} ${alignr} ${tcp_portmon 1 65535 lservice 8}
+${tcp_portmon 1 65535 rhost 9} ${alignr} ${tcp_portmon 1 65535 lservice 9}
