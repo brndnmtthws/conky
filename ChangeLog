@@ -2,6 +2,7 @@
 
 2005-11-08
 	* Fix bug# 1351686.  Patch by boojit.
+	* Fixed 1331576 (I think) with bad cpu usage reporting
 
 2005-11-01
 	* Documentation updates for compiling and port monitoring

@@ -323,11 +323,11 @@ void update_total_processes()
 
 #define CPU_SAMPLE_COUNT 15
 struct cpu_info {
-	unsigned int cpu_user;
-	unsigned int cpu_system;
-	unsigned int cpu_nice;
+	unsigned long cpu_user;
+	unsigned long cpu_system;
+	unsigned long cpu_nice;
 	double last_cpu_sum;
-	int clock_ticks;
+	unsigned long clock_ticks;
 	double cpu_val[CPU_SAMPLE_COUNT];
 };
 static short cpu_setup = 0;
@@ -398,11 +398,11 @@ inline static void update_stat()
 			sscanf(buf, "%*s %d", &info.run_procs);
 			info.mask |= (1 << INFO_RUN_PROCS);
 		} else if (strncmp(buf, "cpu ", 4) == 0) {
-			sscanf(buf, "%*s %u %u %u", &(cpu[index].cpu_user), &(cpu[index].cpu_nice), &(cpu[index].cpu_system));
+			sscanf(buf, "%*s %lu %lu %lu", &(cpu[index].cpu_user), &(cpu[index].cpu_nice), &(cpu[index].cpu_system));
 			index++;
 			info.mask |= (1 << INFO_CPU);
 		} else if (strncmp(buf, "cpu", 3) == 0 && isdigit(buf[3]) && index <= info.cpu_count) {
-			sscanf(buf, "%*s %u %u %u", &(cpu[index].cpu_user), &(cpu[index].cpu_nice), &(cpu[index].cpu_system));
+			sscanf(buf, "%*s %lu %lu %lu", &(cpu[index].cpu_user), &(cpu[index].cpu_nice), &(cpu[index].cpu_system));
 			index++;
 			info.mask |= (1 << INFO_CPU);
 		}
