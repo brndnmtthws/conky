@@ -32,6 +32,9 @@ static struct process *new_process(int p)
 	struct process *process;
 	process = (struct process*)malloc(sizeof(struct process));
 
+	// clean up memory first
+	memset(process, 0, sizeof(struct process));
+
 	/*
 	 * Do stitching necessary for doubly linked list
 	 */
@@ -48,6 +51,7 @@ static struct process *new_process(int p)
 	process->previous_kernel_time = INT_MAX;
 	process->counted = 1;
 
+	
 	/*    process_find_name(process); */
 
 	return process;
@@ -81,7 +85,8 @@ static int process_parse_stat(struct process *process)
 	cur = &info;
 	char line[BUFFER_LEN], filename[BUFFER_LEN], procname[BUFFER_LEN];
 	int ps;
-	unsigned long user_time, kernel_time;
+	unsigned long user_time = 0;
+	unsigned long kernel_time = 0;
 	int rc;
 	char *r, *q;
 	char deparenthesised_name[BUFFER_LEN];
@@ -321,11 +326,15 @@ static void delete_process(struct process *p)
 
 static unsigned long calc_cpu_total()
 {
-	unsigned long total, t;
+	unsigned long total = 0;
+	unsigned long t = 0;
 	int rc;
 	int ps;
 	char line[BUFFER_LEN];
-	unsigned long cpu, nice, system, idle;
+	unsigned long cpu = 0;
+	unsigned long nice = 0;
+	unsigned long system = 0;
+	unsigned long idle = 0;
 
 	ps = open("/proc/stat", O_RDONLY);
 	rc = read(ps, line, sizeof(line));
@@ -371,7 +380,7 @@ inline static void calc_cpu_each(unsigned long total)
 */
 #define MAX_TOP_SIZE 400 /* this is plenty big */
 static struct process **sorttmp;
-static size_t sorttmp_size = 10;
+static size_t sorttmp_size = 1;
 
 int comparecpu(const void * a, const void * b)
 {
@@ -402,7 +411,7 @@ inline void process_find_top(struct process **cpu, struct process **mem)
 		sorttmp = malloc(sizeof(struct process) * sorttmp_size);
 		assert(sorttmp != NULL);
 	}
-	unsigned long total;
+	unsigned long total = 0;
 	unsigned long i, j;
 
 	total = calc_cpu_total();	/* calculate the total of the processor */
