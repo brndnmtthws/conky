@@ -4271,7 +4271,7 @@ static void main_loop()
 			{
 			ERR("received SIGINT or SIGTERM to terminate. bye!");
 			clean_up();
-			exit(0);
+			return;  /* return from main_loop */
 			/*break;*/
 			}
 		default:
