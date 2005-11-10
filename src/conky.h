@@ -193,6 +193,7 @@ struct information {
 #endif
 	struct process *cpu[10];
 	struct process *memu[10];
+	struct process *first_process;
 	unsigned long looped;
 #ifdef TCP_PORT_MONITOR
         tcp_port_monitor_collection_t * p_tcp_port_monitor_collection;
@@ -354,6 +355,8 @@ struct process {
 };
 
 void update_top();
+void free_all_processes();
+struct process *get_first_process();
 
 /* fs-stuff is possibly system dependant (in fs.c) */
 

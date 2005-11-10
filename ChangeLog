@@ -2,6 +2,7 @@
 
 2005-11-09
 	* Cleaned up top code, bug fixes
+	* Fixed some memory leaks
 
 2005-11-08
 	* Fix bug# 1351686.  Patch by boojit.

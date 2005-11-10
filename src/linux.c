@@ -1172,6 +1172,7 @@ void update_top()
 {
 	show_nice_processes = 1;
 	process_find_top(info.cpu, info.memu);
+	info.first_process = get_first_process();
 }
 
 

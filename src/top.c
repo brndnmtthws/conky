@@ -13,7 +13,23 @@ static unsigned long g_time = 0;
 static unsigned long previous_total = 0;
 static struct process *first_process = 0;
 
+struct process *get_first_process()
+{
+	return first_process;
+}
 
+void free_all_processes(struct process *pr)
+{
+	struct process *next = NULL;
+	while (pr) {
+		next = pr->next;
+		if (pr->name) {
+			free(pr->name);
+		}
+		free(pr);
+		pr = next;
+	}
+}
 
 static struct process *find_process(pid_t pid)
 {
@@ -163,8 +179,9 @@ static int process_parse_stat(struct process *process)
 		*q = 0;
 	}
 
-	if (process->name)
+	if (process->name) {
 		free(process->name);
+	}
 	process->name = strdup(deparenthesised_name);
 	process->rss *= getpagesize();
 
@@ -318,8 +335,9 @@ static void delete_process(struct process *p)
 	else
 		first_process = p->next;
 
-	if (p->name)
+	if (p->name) {
 		free(p->name);
+	}
 	free(p);
 }
 
@@ -428,14 +446,14 @@ int insert_sp_element(
 			sp_readthru->greater=sp_cur;
 			did_insert = ++x;  /* element was inserted, so increase the counter */
 		}
-	}  
+	}
 	if (x < max_elements && sp_readthru == NULL && !did_insert) {
 		/* sp_cur is the smallest element and list isn't full, so insert at the end */  
 		(*p_sp_tail)->less=sp_cur;
 		sp_cur->greater=*p_sp_tail;
 		*p_sp_tail = sp_cur;
 		did_insert=x;
-	} else if (x==max_elements && sp_readthru != NULL) {
+	} else if (x == max_elements && sp_readthru != NULL) {
 		/* we inserted an element and now the list is too big by one. Destroy the smallest element */
 		sp_destroy = sp_readthru;
 		sp_readthru->greater->less = NULL;
@@ -464,16 +482,16 @@ struct sorted_process * malloc_sp(struct process * proc) {
 /*
  * copy the procs in the sorted list to the array, and destroy the list 
  */
-void sp_acopy(struct sorted_process *sp_head, struct process ** ar, int max_size) {
-
+void sp_acopy(struct sorted_process *sp_head, struct process ** ar, int max_size)
+{
 	struct sorted_process * sp_cur, * sp_tmp;
 	int x;
 	sp_cur = sp_head;
-	for (x=0; x < max_size && sp_cur != NULL; x++) {
+	for (x = 0; x < max_size && sp_cur != NULL; x++) {
 		ar[x] = sp_cur->proc;	
 		sp_tmp = sp_cur;
-		sp_cur= sp_cur->less;
-		free(sp_tmp);	
+		sp_cur = sp_cur->less;
+		free(sp_tmp);
 	}
 }
 
@@ -484,10 +502,10 @@ void sp_acopy(struct sorted_process *sp_head, struct process ** ar, int max_size
 
 inline void process_find_top(struct process **cpu, struct process **mem)
 {
-	struct sorted_process *spc_head=NULL, *spc_tail=NULL, *spc_cur=NULL;
-	struct sorted_process *spm_head=NULL, *spm_tail=NULL, *spm_cur=NULL;
-	struct process *cur_proc=NULL;
-	unsigned long total =0;
+	struct sorted_process *spc_head = NULL, *spc_tail = NULL, *spc_cur = NULL;
+	struct sorted_process *spm_head = NULL, *spm_tail = NULL, *spm_cur = NULL;
+	struct process *cur_proc = NULL;
+	unsigned long total = 0;
 
 	if (!top_cpu && !top_mem) return;
 
@@ -499,16 +517,17 @@ inline void process_find_top(struct process **cpu, struct process **mem)
 	cur_proc = first_process;
 
 	while (cur_proc !=NULL) {
-		if (top_cpu) { 
+		if (top_cpu) {
 			spc_cur = malloc_sp(cur_proc);
-			insert_sp_element(spc_cur, &spc_head, &spc_tail, MAX_SP, &compare_cpu); 
-		} 
+			insert_sp_element(spc_cur, &spc_head, &spc_tail, MAX_SP, &compare_cpu);
+		}
 		if (top_mem) {
 			spm_cur = malloc_sp(cur_proc);
-			insert_sp_element(spm_cur, &spm_head, &spm_tail, MAX_SP, &compare_mem); 
+			insert_sp_element(spm_cur, &spm_head, &spm_tail, MAX_SP, &compare_mem);
 		}
 		cur_proc = cur_proc->next;
 	}
 	sp_acopy(spc_head, cpu, MAX_SP);
 	sp_acopy(spm_head, mem, MAX_SP);
-} 
+}
+

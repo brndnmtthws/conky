@@ -1012,6 +1012,8 @@ static void free_text_objects()
 			close(text_objects[i].data.i2c.fd);
 			break;
 		case OBJ_time:
+			free(text_objects[i].data.s);
+			break;
 		case OBJ_utime:
 		case OBJ_if_existing:
 		case OBJ_if_mounted:
@@ -1063,6 +1065,18 @@ static void free_text_objects()
 		case OBJ_texeci:
 			free(text_objects[i].data.execi.cmd);
 			free(text_objects[i].data.execi.buffer);
+			break;
+		case OBJ_top:
+			if (info.first_process) {
+				free_all_processes(info.first_process);
+				info.first_process = NULL;
+			}
+			break;
+		case OBJ_top_mem:
+			if (info.first_process) {
+				free_all_processes(info.first_process);
+				info.first_process = NULL;
+			}
 			break;
 		}
 	}
@@ -4271,6 +4285,10 @@ static void main_loop()
 			{
 			ERR("received SIGINT or SIGTERM to terminate. bye!");
 			clean_up();
+#ifdef X11
+			XDestroyRegion(region);
+			region = NULL;
+#endif /* X11 */
 			return;  /* return from main_loop */
 			/*break;*/
 			}
@@ -4287,6 +4305,10 @@ static void main_loop()
 		g_signal_pending=0;
 	
 	}
+#ifdef X11
+	XDestroyRegion(region);
+	region = NULL;
+#endif /* X11 */
 }
 
 static void load_config_file(const char *);
