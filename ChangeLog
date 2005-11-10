@@ -1,5 +1,8 @@
 # $Id$
 
+2005-11-09
+	* Cleaned up top code, bug fixes
+
 2005-11-08
 	* Fix bug# 1351686.  Patch by boojit.
 	* Fixed 1331576 (I think) with bad cpu usage reporting

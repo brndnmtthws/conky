@@ -9,7 +9,7 @@
 #include "top.h"
 
 static regex_t *exclusion_expression = 0;
-static unsigned int g_time = 0;
+static unsigned long g_time = 0;
 static unsigned long previous_total = 0;
 static struct process *first_process = 0;
 
@@ -49,8 +49,8 @@ static struct process *new_process(int p)
 
 	process->pid = p;
 	process->time_stamp = 0;
-	process->previous_user_time = INT_MAX;
-	process->previous_kernel_time = INT_MAX;
+	process->previous_user_time = ULONG_MAX;
+	process->previous_kernel_time = ULONG_MAX;
 	process->counted = 1;
 
 	
@@ -399,7 +399,7 @@ int compare_mem(struct process *a, struct process *b) {
  * insert this process into the list in a sorted fashion,
  * or destroy it if it doesn't fit on the list
 */ 
-int insert_sp_element(  
+int insert_sp_element(
                      struct sorted_process * sp_cur
                    , struct sorted_process ** p_sp_head
                    , struct sorted_process ** p_sp_tail
@@ -414,7 +414,7 @@ int insert_sp_element(
 		*p_sp_head = sp_cur;
 		*p_sp_tail = sp_cur;
 		return(1);
-	}	
+	}
 	for(sp_readthru=*p_sp_head, x=0; sp_readthru != NULL && x < max_elements; sp_readthru=sp_readthru->less, x++) {
 		if (compare_funct(sp_readthru->proc, sp_cur->proc) && !did_insert) {
 			/* sp_cur is bigger than sp_readthru so insert it before sp_readthru */
@@ -447,7 +447,7 @@ int insert_sp_element(
 		free(sp_cur);
 	}
 	return did_insert;
-}		
+}
 
 /*
  * create a new sp_process structure
@@ -468,7 +468,6 @@ void sp_acopy(struct sorted_process *sp_head, struct process ** ar, int max_size
 
 	struct sorted_process * sp_cur, * sp_tmp;
 	int x;
-
 	sp_cur = sp_head;
 	for (x=0; x < max_size && sp_cur != NULL; x++) {
 		ar[x] = sp_cur->proc;	
