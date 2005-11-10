@@ -1,6 +1,8 @@
 /* ------------------------------------------------------
  * test-hash.c: unit testing for hash functions in hash.h
  * Philip Kovacs kovacsp3@comcast.net 2005
+ * 
+ * $Id$
  * ------------------------------------------------------*/
 
 #include <stdio.h>
