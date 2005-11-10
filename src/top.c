@@ -13,6 +13,8 @@ static unsigned int g_time = 0;
 static unsigned long previous_total = 0;
 static struct process *first_process = 0;
 
+
+
 static struct process *find_process(pid_t pid)
 {
 	struct process *p = first_process;
@@ -169,8 +171,9 @@ static int process_parse_stat(struct process *process)
 	if (!cur->memmax)
 		update_total_processes();
 
-	process->totalmem = ((float) process->rss / cur->memmax) / 10;
 
+
+	process->totalmem = (float)(((float) process->rss / cur->memmax) / 10);
 	if (process->previous_user_time == ULONG_MAX)
 		process->previous_user_time = process->user_time;
 	if (process->previous_kernel_time == ULONG_MAX)
@@ -375,122 +378,138 @@ inline static void calc_cpu_each(unsigned long total)
 /* Find the top processes                 */
 /******************************************/
 
+
 /*
-* Result is stored in decreasing order in best[0-9].
+ * cpu comparison function for insert_sp_element 
+ */
+int compare_cpu(struct process *a, struct process *b) {
+	if (a->amount < b->amount) return 1; 
+	return 0;
+}
+
+/*
+ * mem comparison function for insert_sp_element 
+ */
+int compare_mem(struct process *a, struct process *b) {
+	if (a->totalmem < b->totalmem) return 1; 
+	return 0;
+}
+
+/*
+ * insert this process into the list in a sorted fashion,
+ * or destroy it if it doesn't fit on the list
+*/ 
+int insert_sp_element(  
+                     struct sorted_process * sp_cur
+                   , struct sorted_process ** p_sp_head
+                   , struct sorted_process ** p_sp_tail
+		   , int max_elements
+                   , int (*compare_funct) (struct process *, struct process *)
+		  ) {
+
+	struct sorted_process * sp_readthru=NULL, * sp_destroy=NULL;
+	int did_insert = 0, x = 0;
+
+	if (*p_sp_head == NULL) {
+		*p_sp_head = sp_cur;
+		*p_sp_tail = sp_cur;
+		return(1);
+	}	
+	for(sp_readthru=*p_sp_head, x=0; sp_readthru != NULL && x < max_elements; sp_readthru=sp_readthru->less, x++) {
+		if (compare_funct(sp_readthru->proc, sp_cur->proc) && !did_insert) {
+			/* sp_cur is bigger than sp_readthru so insert it before sp_readthru */
+			sp_cur->less=sp_readthru;
+			if (sp_readthru == *p_sp_head) { 
+				*p_sp_head = sp_cur;  /* insert as the new head of the list */
+			} else {
+				sp_readthru->greater->less = sp_cur;  /* insert inside  the list */
+				sp_cur->greater = sp_readthru->greater; 
+			}
+			sp_readthru->greater=sp_cur;
+			did_insert = ++x;  /* element was inserted, so increase the counter */
+		}
+	}  
+	if (x < max_elements && sp_readthru == NULL && !did_insert) {
+		/* sp_cur is the smallest element and list isn't full, so insert at the end */  
+		(*p_sp_tail)->less=sp_cur;
+		sp_cur->greater=*p_sp_tail;
+		*p_sp_tail = sp_cur;
+		did_insert=x;
+	} else if (x==max_elements && sp_readthru != NULL) {
+		/* we inserted an element and now the list is too big by one. Destroy the smallest element */
+		sp_destroy = sp_readthru;
+		sp_readthru->greater->less = NULL;
+		*p_sp_tail = sp_readthru->greater;
+		free(sp_destroy);
+	}
+	if (!did_insert) {
+		/* sp_cur wasn't added to the sorted list, so destroy it */
+		free(sp_cur);
+	}
+	return did_insert;
+}		
+
+/*
+ * create a new sp_process structure
 */
-#define MAX_TOP_SIZE 400 /* this is plenty big */
-static struct process **sorttmp;
-static size_t sorttmp_size = 1;
+struct sorted_process * malloc_sp(struct process * proc) {
+	struct sorted_process * sp;
+	sp = malloc(sizeof(struct sorted_process));
+	sp->greater = NULL;
+	sp->less = NULL;
+	sp->proc = proc;
+	return(sp);
+} 
+  
+/*
+ * copy the procs in the sorted list to the array, and destroy the list 
+ */
+void sp_acopy(struct sorted_process *sp_head, struct process ** ar, int max_size) {
 
-int comparecpu(const void * a, const void * b)
-{
-	if ((*(struct process **)a)->amount > (*(struct process **)b)->amount) {
-		return -1;
+	struct sorted_process * sp_cur, * sp_tmp;
+	int x;
+
+	sp_cur = sp_head;
+	for (x=0; x < max_size && sp_cur != NULL; x++) {
+		ar[x] = sp_cur->proc;	
+		sp_tmp = sp_cur;
+		sp_cur= sp_cur->less;
+		free(sp_tmp);	
 	}
-	if ((*(struct process **)a)->amount < (*(struct process **)b)->amount) {
-		return 1;
-	}
-	return 0;
 }
 
-int comparemem(const void * a, const void * b)
-{
-	if ((*(struct process **)a)->totalmem > (*(struct process **)b)->totalmem) {
-		return -1;
-	}
-	if ((*(struct process **)a)->totalmem < (*(struct process **)b)->totalmem) {
-		return 1;
-	}
-	return 0;
-}
+/* ****************************************************************** */
+/* Get a sorted list of the top cpu hogs and top mem hogs.            */
+/* Results are stored in the cpu,mem arrays in decreasing order[0-9]. */
+/* ****************************************************************** */
 
 inline void process_find_top(struct process **cpu, struct process **mem)
 {
-	struct process *pr;
-	if (sorttmp == NULL) {
-		sorttmp = malloc(sizeof(struct process) * sorttmp_size);
-		assert(sorttmp != NULL);
-	}
-	unsigned long total = 0;
-	unsigned long i, j;
+	struct sorted_process *spc_head=NULL, *spc_tail=NULL, *spc_cur=NULL;
+	struct sorted_process *spm_head=NULL, *spm_tail=NULL, *spm_cur=NULL;
+	struct process *cur_proc=NULL;
+	unsigned long total =0;
+
+	if (!top_cpu && !top_mem) return;
 
 	total = calc_cpu_total();	/* calculate the total of the processor */
+	update_process_table();	        /* update the table with process list */
+	calc_cpu_each(total);	        /* and then the percentage for each task */
+	process_cleanup();	        /* cleanup list from exited processes */
+	update_meminfo();
+	cur_proc = first_process;
 
-	update_process_table();	/* update the table with process list */
-	calc_cpu_each(total);	/* and then the percentage for each task */
-	process_cleanup();	/* cleanup list from exited processes */
-
-	/*
-	 * this is really ugly,
-	 * not to mention probably not too efficient.
-	 * the main problem is that there could be any number of processes,
-	 * however we have to use a fixed size for the "best" array.
-	 * right now i can't think of a better way to do this,
-	 * although i'm sure there is one.
-	 * Perhaps just using a linked list would be more effecient?
-	 * I'm too fucking lazy to do that right now.
-	 */
-	if (top_cpu) {
-		pr = first_process;
-		i = 0;
-		while (pr) {
-			if (i < sorttmp_size && pr->counted) {
-				sorttmp[i] = pr;
-				i++;
-			} else if (i == sorttmp_size && pr->counted && sorttmp_size < MAX_TOP_SIZE) {
-				sorttmp_size++;
-				sorttmp =
-				    realloc(sorttmp,
-					    sizeof(struct process) *
-					    sorttmp_size);
-				sorttmp[i] = pr;
-				i++;
-			}
-			pr = pr->next;
+	while (cur_proc !=NULL) {
+		if (top_cpu) { 
+			spc_cur = malloc_sp(cur_proc);
+			insert_sp_element(spc_cur, &spc_head, &spc_tail, MAX_SP, &compare_cpu); 
+		} 
+		if (top_mem) {
+			spm_cur = malloc_sp(cur_proc);
+			insert_sp_element(spm_cur, &spm_head, &spm_tail, MAX_SP, &compare_mem); 
 		}
-		if (i + 1 < sorttmp_size) {
-			sorttmp_size--;
-			sorttmp =
-			    realloc(sorttmp,
-				    sizeof(struct process) * sorttmp_size);
-		}
-		qsort(sorttmp, i, sizeof(struct process *), comparecpu);
-		for (i = 0; i < 10; i++) {
-			cpu[i] = sorttmp[i];
-		}
+		cur_proc = cur_proc->next;
 	}
-	if (top_mem) {
-		pr = first_process;
-		i = 0;
-		while (pr) {
-			if (i < sorttmp_size && pr->counted) {
-				sorttmp[i] = pr;
-				i++;
-			} else if (i == sorttmp_size && pr->counted && sorttmp_size < MAX_TOP_SIZE) {
-				sorttmp_size++;
-				sorttmp =
-				    realloc(sorttmp,
-					    sizeof(struct process) *
-					    sorttmp_size);
-				sorttmp[i] = pr;
-				i++;
-			}
-			pr = pr->next;
-		}
-		if (i + 1 < sorttmp_size) {
-			sorttmp_size--;
-			sorttmp =
-			    realloc(sorttmp,
-				    sizeof(struct process) * sorttmp_size);
-		}
-		qsort(sorttmp, i, sizeof(struct process *), comparemem);
-		sorttmp_size = i;
-		for (i = 0, j = 0; i < sorttmp_size && j < 10; i++) {
-			if (j == 0 || sorttmp[i]->totalmem != mem[j-1]->totalmem
-					|| strncmp(sorttmp[i]->name, mem[j-1]->name,128)) {
-				mem[j++] = sorttmp[i];
-			}
-		}
-	}
-}
-
+	sp_acopy(spc_head, cpu, MAX_SP);
+	sp_acopy(spm_head, mem, MAX_SP);
+} 

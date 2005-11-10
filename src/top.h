@@ -64,21 +64,22 @@
 #define PROCFS_TEMPLATE "/proc/%d/stat"
 #define PROCFS_TEMPLATE_MEM "/proc/%d/statm"
 #define PROCFS_CMDLINE_TEMPLATE "/proc/%d/cmdline"
+#define MAX_SP 10  //number of elements to sort
 
 
 /******************************************/
 /* Globals                                */
 /******************************************/
 
-
-
-
-
-
-
 /******************************************/
 /* Process class                          */
 /******************************************/
+
+struct sorted_process {
+	struct sorted_process *greater;
+	struct sorted_process *less;	
+	struct process *proc;
+}; 
 
 /*
  * Pointer to head of process list

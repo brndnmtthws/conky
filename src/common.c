@@ -205,8 +205,6 @@ void update_stuff()
 	if (NEED(INFO_MAIL))
 		update_mail_count();
 
-	if (NEED(INFO_TOP))
-		update_top();
 
 #if defined(__linux__)
 	if (NEED(INFO_I8K))
@@ -231,6 +229,7 @@ void update_stuff()
 	if (NEED(INFO_LOADAVG))
 		update_load_average();
 
+
 	if ((NEED(INFO_MEM) || NEED(INFO_BUFFERS)) &&
 	    current_update_time - last_meminfo_update > 6.9) {
 		update_meminfo();
@@ -238,6 +237,9 @@ void update_stuff()
 			info.mem -= info.bufmem;
 		last_meminfo_update = current_update_time;
 	}
+
+	if (NEED(INFO_TOP))
+		update_top();
 
 	/* update_fs_stat() won't do anything if there aren't fs -things */
 	if (NEED(INFO_FS) && current_update_time - last_fs_update > 12.9) {
