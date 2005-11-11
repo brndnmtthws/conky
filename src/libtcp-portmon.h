@@ -93,8 +93,6 @@ typedef struct _tcp_connection_t {
         in_port_t local_port;
         in_addr_t remote_addr;
         in_port_t remote_port;
-        unsigned int uid;
-        unsigned int inode;
 	int age;
 } tcp_connection_t;
 

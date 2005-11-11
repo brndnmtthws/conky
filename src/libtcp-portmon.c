@@ -763,7 +763,7 @@ void update_tcp_port_monitor_collection(
 	FILE *fp;
         char buf[256];
         tcp_connection_t conn;
-        unsigned long state;
+        unsigned long inode,uid,state;
 
 	if ( !p_collection )
 		return;
@@ -788,11 +788,11 @@ void update_tcp_port_monitor_collection(
                 if ( sscanf (buf, "%*d: %lx:%lx %lx:%lx %lx %*x:%*x %*x:%*x %*x %lu %*d %lu",
                         (unsigned long *)&conn.local_addr, (unsigned long *)&conn.local_port,
                         (unsigned long *)&conn.remote_addr, (unsigned long *)&conn.remote_port,
-                        (unsigned long *)&state, (unsigned long *)&conn.uid, (unsigned long *)&conn.inode) != 7 )
+                        (unsigned long *)&state, (unsigned long *)&uid, (unsigned long *)&inode) != 7 )
 
                         fprintf( stderr, "/proc/net/tcp: bad file format\n" );
 
-                if ((conn.inode == 0) || (state != TCP_ESTABLISHED)) continue;
+                if ((inode == 0) || (state != TCP_ESTABLISHED)) continue;
 
 		/* show the connection to each port monitor. */
 		for_each_tcp_port_monitor_in_collection(
