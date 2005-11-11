@@ -38,8 +38,8 @@
  * Each port monitor contains a connection hash whose contents changes dynamically as the monitor 
  * is presented with connections on each update cycle.   This implementation maintains the health
  * of this hash by enforcing several rules.  First, the hash cannot contain more items than the
- * TCP_CONNECTION_HASH_MAX_LOAD_RATIO permits.  For example, a 256 element hash with a max load of 
- * 0.5 cannot contain more than 128 connections.  Additional connections are ignored by the monitor.
+ * TCP_CONNECTION_HASH_MAX_LOAD_RATIO permits.  For example, a 512 element hash with a max load of 
+ * 0.5 cannot contain more than 256 connections.  Additional connections are ignored by the monitor.
  * The load factor of 0.5 is low enough to keep the hash running at near O(1) performanace at all 
  * times.  As elements are removed from the hash, the hash slots are tagged vacated, as required 
  * by open address hashing.  The vacated tags are essential as they enable the hash to find elements
@@ -62,10 +62,9 @@
  * The tcp port monitor collection also contains a hash to track the monitors it contains.
  * This hash, unlike the connection hash describes above, is not very dynamic.  Clients of
  * this library typically create a fixed number of monitors and let them run until program 
- * termination.  For this reason, I haven't included any load governors or hash rebuilding
- * steps as is done above.  You may store up to TCP_MONITOR_HASH_SIZE monitors in this hash,
- * but you _should_ remember that keeping the load low (e.g. max of 0.5) keeps the monitor
- * lookups at O(1).  
+ * termination.  For this reason, I haven't included any hash rebuilding code as is done
+ * above.  You may store up to TCP_MONITOR_HASH_SIZE_MAX monitors in this hash, but you
+ * should remember that keeping the load low (e.g. 0.5) keeps the monitor lookups at O(1).  
  * ----------------------------------------------------------------------------------------*/
 
 #define TCP_MONITOR_HASH_SIZE_DEFAULT 32		/* monitor hash size default -- must be a power of two */
