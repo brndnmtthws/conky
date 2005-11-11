@@ -371,7 +371,7 @@ void rebuild_tcp_port_monitor_peek_table(
 	return;
 
    /* zero out the peek array */
-   memset( p_monitor->p_peek, 0, p_monitor->hash.size * sizeof(tcp_connection_t *) );
+   memset( p_monitor->p_peek, 0, p_monitor->hash.positions * sizeof(tcp_connection_t *) );
 
    for ( p_node=p_monitor->connection_list.p_head; p_node!=NULL; p_node=p_node->p_next, i++ )
    {
@@ -424,8 +424,7 @@ void show_connection_to_tcp_port_monitor(
 	 * if our load factor cap is now exceeded.  The benefit of limiting connections in this way
 	 * is that the hash will continue to function at an average (1) speed by keeping the load
 	 * load factor down.  Of course the downside is that each port monitor has a strict maximum 
-	 * connection limit.  Future versions should probably allow the client to set the hash size
-	 * and load limits and/or provide for automatic resizing of hashes. */
+	 * connection limit. */
 
 	if ( (double)p_monitor->hash.size / (double)p_monitor->hash.positions >= TCP_CONNECTION_HASH_MAX_LOAD_RATIO )
 	{
@@ -571,7 +570,7 @@ tcp_port_monitor_t * create_tcp_port_monitor(
    }
 
    /* create the monitor's peek array */
-   if ( (p_monitor->p_peek = (tcp_connection_t **) calloc( p_monitor->hash.size, sizeof(tcp_connection_t *))) == NULL )
+   if ( (p_monitor->p_peek = (tcp_connection_t **) calloc( p_monitor->hash.positions, sizeof(tcp_connection_t *))) == NULL )
    {
 	/* we failed to create the peek array, so destroy the monitor completely, again, so we don't leak */
 	destroy_tcp_port_monitor(p_monitor,NULL);
