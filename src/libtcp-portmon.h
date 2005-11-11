@@ -51,7 +51,7 @@
  * at an average access time of O(1).
  * ------------------------------------------------------------------------------------------------*/
 
-#define TCP_CONNECTION_HASH_SIZE 256 			/* connection hash size -- must be a power of two */
+#define TCP_CONNECTION_HASH_SIZE 512			/* connection hash size -- must be a power of two */
 #define TCP_CONNECTION_HASH_MAX_LOAD_PCT 0.5		/* disallow inserts after this % load is exceeded */
 #define TCP_CONNECIION_HASH_MAX_VACATED_PCT 0.25 	/* rebalance hash after this % of vacated slots is exceeded */ 
 #define TCP_CONNECIION_STARTING_AGE 1			/* connection deleted if unseen again after this # of refreshes */
@@ -66,9 +66,8 @@
  * lookups at O(1).  
  * ----------------------------------------------------------------------------------------*/
 
-/* TODO: Make TCP_CONNECTION_HASH_SIZE and TCP_MONITOR_HASH_SIZE variables the client can supply */
-
-#define TCP_MONITOR_HASH_SIZE 64			/* monitor hash size -- must be a power of two */
+#define TCP_MONITOR_HASH_SIZE 32			/* monitor hash size -- must be a power of two */
+#define TCP_MONITOR_HASH_MAX_LOAD_PCT 0.5               /* disallow new monitors after this % load is exceeded */
 
 /* -------------------------------------------------------------------
  * IMPLEMENTATION INTERFACE
@@ -233,7 +232,8 @@ void for_each_tcp_port_monitor_in_collection(
    so that there are no redundant monitors. */
 tcp_port_monitor_t * create_tcp_port_monitor(
 	in_port_t 				/* port_range_begin */, 
-	in_port_t 				/* port_range_end */ 
+	in_port_t 				/* port_range_end */,
+	int					/* hash_size */
 	);
 
 /* Clients use this function to get connection data from the indicated port monitor.
@@ -252,7 +252,9 @@ int peek_tcp_port_monitor(
  * -------------------------------- */
 
 /* Create a monitor collection.  Do this one first. */
-tcp_port_monitor_collection_t * create_tcp_port_monitor_collection( void );
+tcp_port_monitor_collection_t * create_tcp_port_monitor_collection(
+	int					 /* hash_size */ 
+	);
 
 /* Destroy the monitor collection (and everything it contains).  Do this one last. */
 void destroy_tcp_port_monitor_collection( 

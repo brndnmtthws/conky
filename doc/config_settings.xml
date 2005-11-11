@@ -279,6 +279,20 @@
 </varlistentry>
 
 <varlistentry>
+	<term><command><option>min_port_monitors</option></command></term>
+	<listitem>
+		Allow for the creation of at least this number of port monitors (if 0 or not set, default is 16) 
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>min_port_monitor_connections</option></command></term>
+	<listitem>
+		Allow each port monitor to track at least this many connections (if 0 or not set, default is 256)
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
 	<term><command><option>TEXT</option></command></term>
 	<listitem>
 		After this begins text to be formatted on screen

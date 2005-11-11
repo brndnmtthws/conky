@@ -258,6 +258,11 @@ int no_buffers;
 /* pad percentages to decimals? */
 static int pad_percents = 0;
 
+#ifdef TCP_PORT_MONITOR
+static int min_port_monitors = 0;		 	/* config item */
+static int min_port_monitor_connections = 0;		/* config item */
+#endif
+
 /* Text that is shown */
 static char original_text[] =
     "$nodename - $sysname $kernel on $machine\n"
@@ -1821,7 +1826,18 @@ int a = stippled_borders, b = 1;
 	 	/* if the port monitor collection hasn't been created, we must create it */
 	 	if ( !info.p_tcp_port_monitor_collection )
 		{
-			info.p_tcp_port_monitor_collection = create_tcp_port_monitor_collection();
+			double hash_size, log_base_2;
+
+			/* calculate hash_size from min_port_monitors */
+			hash_size = (double)min_port_monitors / (double)TCP_MONITOR_HASH_MAX_LOAD_PCT;
+			/* correct hash_size to nearest power of two */
+			log_base_2 = log(hash_size) / log(2);
+			if ( log_base_2 - (int)log_base_2 > 0.001 )
+				log_base_2 = (double)( (int)log_base_2 + 1 );
+			hash_size = pow(2,log_base_2); 
+			/*fprintf(stderr,"collection hash size is %d\n",(int)hash_size);*/
+
+			info.p_tcp_port_monitor_collection = create_tcp_port_monitor_collection( (int)hash_size );
 			if ( !info.p_tcp_port_monitor_collection )
 			{
 				CRIT_ERR("tcp_portmon: unable to create port monitor collection");
@@ -1831,7 +1847,19 @@ int a = stippled_borders, b = 1;
 		/* if a port monitor for this port does not exist, create one and add it to the collection */
 		if ( find_tcp_port_monitor( info.p_tcp_port_monitor_collection, port_begin, port_end ) == NULL )
 		{
-			tcp_port_monitor_t * p_monitor = create_tcp_port_monitor( port_begin, port_end );
+			double hash_size, log_base_2;
+
+			/* calculate hash_size from min_port_monitor_connections */
+			hash_size = (double)min_port_monitor_connections / (double)TCP_CONNECTION_HASH_MAX_LOAD_PCT;
+			/* correct hash_size to nearest power of two */
+			log_base_2 = log(hash_size) / log(2);
+			if ( log_base_2 - (int)log_base_2 > 0.001)
+				log_base_2 = (double)( (int)log_base_2 + 1 );
+			hash_size = pow(2, log_base_2);
+			/*fprintf(stderr,"monitor hash size is %d\n",(int)hash_size);*/
+
+			tcp_port_monitor_t * p_monitor = 
+				create_tcp_port_monitor( port_begin, port_end, (int)hash_size );
 			if ( !p_monitor )
 			{
 				CRIT_ERR("tcp_portmon: unable to create port monitor");
@@ -4477,6 +4505,11 @@ static void set_default_configurations(void)
 	mlconfig.mldonkey_login = NULL;
 	mlconfig.mldonkey_password = NULL;
 #endif
+
+#ifdef TCP_PORT_MONITOR
+	min_port_monitors = MIN_PORT_MONITORS_DEFAULT;
+	min_port_monitor_connections = MIN_PORT_MONITOR_CONNECTIONS_DEFAULT;
+#endif
 }
 
 static void load_config_file(const char *f)
@@ -4882,6 +4915,28 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 			fclose(fp);
 			return;
 		}
+#ifdef TCP_PORT_MONITOR
+		CONF("min_port_monitors") 
+		{
+			if ( !value || 
+			     (sscanf(value, "%d", &min_port_monitors) != 1) || 
+			     min_port_monitors <= 0 )
+			{
+				min_port_monitors = MIN_PORT_MONITORS_DEFAULT;
+				CONF_ERR;
+			}
+		}
+		CONF("min_port_monitor_connections") 
+		{
+			if ( !value || 
+			     (sscanf(value, "%d", &min_port_monitor_connections) != 1) 
+			     || min_port_monitor_connections <= 0 )
+			{
+				min_port_monitor_connections = MIN_PORT_MONITOR_CONNECTIONS_DEFAULT;
+				CONF_ERR;
+			}
+		}
+#endif
 		else
 		ERR("%s: %d: no such configuration: '%s'", f, line, name);
 

@@ -513,7 +513,8 @@ void for_each_tcp_port_monitor_in_collection(
    so that there are no redundant monitors. */
 tcp_port_monitor_t * create_tcp_port_monitor(
 	in_port_t 				port_range_begin, 
-	in_port_t 				port_range_end
+	in_port_t 				port_range_end,
+	int					hash_size
 	)
 {
    tcp_port_monitor_t * p_monitor;
@@ -524,7 +525,8 @@ tcp_port_monitor_t * create_tcp_port_monitor(
       	return NULL;
 
    /* create the monitor's connection hash */
-   if ( hash_create( &p_monitor->hash, TCP_CONNECTION_HASH_SIZE, 
+   if ( hash_create( &p_monitor->hash, 
+			hash_size > 0 ? hash_size : TCP_CONNECTION_HASH_SIZE,
 			&connection_hash_function_1, &connection_hash_function_2,
 			&connection_match_function, NULL ) != 0 ) 
    {
@@ -655,7 +657,9 @@ int peek_tcp_port_monitor(
  * -------------------------------- */
 
 /* Create a monitor collection.  Do this one first. */
-tcp_port_monitor_collection_t * create_tcp_port_monitor_collection( void )
+tcp_port_monitor_collection_t * create_tcp_port_monitor_collection(
+	int					hash_size
+	)
 {
    tcp_port_monitor_collection_t * p_collection;
 
@@ -664,7 +668,8 @@ tcp_port_monitor_collection_t * create_tcp_port_monitor_collection( void )
 	   return NULL;
 
    /* create the collection's monitor hash */
-   if ( hash_create( &p_collection->hash, TCP_MONITOR_HASH_SIZE,
+   if ( hash_create( &p_collection->hash, 
+			hash_size > 0 ? hash_size : TCP_MONITOR_HASH_SIZE,
 			&monitor_hash_function_1, &monitor_hash_function_2,
 			&monitor_match_function, NULL ) != 0 )
    {
