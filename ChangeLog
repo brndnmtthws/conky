@@ -1,5 +1,8 @@
 # $Id$
 
+2005-11-10
+	* Added config items min_port_monitors / min_port_monitor_connections
+
 2005-11-09
 	* Cleaned up top code, bug fixes
 	* Fixed some memory leaks
