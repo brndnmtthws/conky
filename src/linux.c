@@ -122,11 +122,15 @@ void update_meminfo()
 			sscanf(buf, "%*s %lu", &info.cached);
 		}
 	}
-
+	
 	info.mem = info.memmax - info.mem;
 	info.swap = info.swapmax - info.swap;
 
 	info.bufmem = info.cached + info.buffers;
+
+	/*if (no_buffers) {
+		info.mem -= info.bufmem;
+	}*/
 
 	info.mask |= (1 << INFO_MEM) | (1 << INFO_BUFFERS);
 }

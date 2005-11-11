@@ -230,11 +230,12 @@ void update_stuff()
 		update_load_average();
 
 
-	if ((NEED(INFO_MEM) || NEED(INFO_BUFFERS)) &&
+	if ((NEED(INFO_MEM) || NEED(INFO_BUFFERS) || NEED(INFO_TOP)) &&
 	    current_update_time - last_meminfo_update > 6.9) {
 		update_meminfo();
-		if (no_buffers)
+		if (no_buffers) {
 			info.mem -= info.bufmem;
+		}
 		last_meminfo_update = current_update_time;
 	}
 

@@ -495,6 +495,9 @@ void sp_acopy(struct sorted_process *sp_head, struct process ** ar, int max_size
 	}
 }
 
+// stole from common.c
+#define NEED(a) ((need_mask & (1 << a)) && ((info.mask & (1 << a)) == 0))
+
 /* ****************************************************************** */
 /* Get a sorted list of the top cpu hogs and top mem hogs.            */
 /* Results are stored in the cpu,mem arrays in decreasing order[0-9]. */
@@ -513,7 +516,7 @@ inline void process_find_top(struct process **cpu, struct process **mem)
 	update_process_table();	        /* update the table with process list */
 	calc_cpu_each(total);	        /* and then the percentage for each task */
 	process_cleanup();	        /* cleanup list from exited processes */
-	update_meminfo();
+	
 	cur_proc = first_process;
 
 	while (cur_proc !=NULL) {
