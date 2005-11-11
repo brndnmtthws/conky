@@ -360,7 +360,7 @@ void rebuild_tcp_port_monitor_peek_table(
 	void *					p_void
 	)
 {
-   /* Run through the monitori's connections and rebuild the peek table
+   /* Run through the monitor's connections and rebuild the peek table
     * of connection pointers.  This is done so peeking into the monitor
     * can be done in O(1) time instead of O(n) time for each peek. */
 
