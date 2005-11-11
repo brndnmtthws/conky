@@ -4899,21 +4899,35 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 		{
 			if ( !value || 
 			     (sscanf(value, "%d", &tcp_port_monitor_collection_args.min_port_monitors) != 1) || 
-			     tcp_port_monitor_collection_args.min_port_monitors <= 0 )
+			     tcp_port_monitor_collection_args.min_port_monitors < 0 )
 			{
+				/* an error. use default, warn and continue. */
 				tcp_port_monitor_collection_args.min_port_monitors = MIN_PORT_MONITORS_DEFAULT;
 				CONF_ERR;
 			}
+			else if ( tcp_port_monitor_collection_args.min_port_monitors == 0 )
+			{
+				/* no error, just use default */
+				tcp_port_monitor_collection_args.min_port_monitors = MIN_PORT_MONITORS_DEFAULT;
+			}
+			/* else tcp_port_monitor_collection_args.min_port_monitors > 0 as per config */
 		}
 		CONF("min_port_monitor_connections") 
 		{
 			if ( !value || 
 			     (sscanf(value, "%d", &tcp_port_monitor_args.min_port_monitor_connections) != 1) 
-			     || tcp_port_monitor_args.min_port_monitor_connections <= 0 )
+			     || tcp_port_monitor_args.min_port_monitor_connections < 0 )
 			{
+				/* an error. use default, warni and continue. */
 				tcp_port_monitor_args.min_port_monitor_connections = MIN_PORT_MONITOR_CONNECTIONS_DEFAULT;
 				CONF_ERR;
 			}
+			else if ( tcp_port_monitor_args.min_port_monitor_connections == 0 )
+			{
+				/* no error, just use default */
+				tcp_port_monitor_args.min_port_monitor_connections = MIN_PORT_MONITOR_CONNECTIONS_DEFAULT;
+			}
+			/* else tcp_port_monitor_args.min_port_monitor_connections > 0 as per config */
 		}
 #endif
 		else
@@ -4946,6 +4960,11 @@ int main(int argc, char **argv)
 	g_signal_pending=0;
 	memset(&info, 0, sizeof(info) );
 
+#ifdef TCP_PORT_MONITOR
+	tcp_port_monitor_collection_args.min_port_monitors = MIN_PORT_MONITORS_DEFAULT;
+	tcp_port_monitor_args.min_port_monitor_connections = MIN_PORT_MONITOR_CONNECTIONS_DEFAULT;
+#endif
+		
 	/* handle command line parameters that don't change configs */
 #ifdef X11
 	char *s;
