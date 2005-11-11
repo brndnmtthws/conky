@@ -53,7 +53,7 @@
  * ------------------------------------------------------------------------------------------------*/
 
 #define TCP_CONNECTION_HASH_SIZE_DEFAULT 512		/* connection hash size default -- must be a power of two */
-#define TCP_CONNECTION_HASH_SIZE_MAX 65535            	/* connection hash size maximum -- must be a power of two */
+#define TCP_CONNECTION_HASH_SIZE_MAX 65536            	/* connection hash size maximum -- must be a power of two */
 #define TCP_CONNECTION_HASH_MAX_LOAD_RATIO 0.5		/* disallow inserts after this load ratio is exceeded */
 #define TCP_CONNECIION_HASH_MAX_VACATED_RATIO 0.25 	/* rebalance hash after this ratio of vacated slots is exceeded */ 
 #define TCP_CONNECIION_STARTING_AGE 1			/* connection deleted if unseen again after this # of refreshes */
