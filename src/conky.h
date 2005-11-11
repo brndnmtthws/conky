@@ -114,7 +114,6 @@ struct mpd_s {
 #endif
 
 #ifdef TCP_PORT_MONITOR
-#include <math.h>
 #include "libtcp-portmon.h"
 #define MIN_PORT_MONITORS_DEFAULT 16
 #define MIN_PORT_MONITOR_CONNECTIONS_DEFAULT 256

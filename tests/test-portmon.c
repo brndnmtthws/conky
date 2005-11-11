@@ -25,12 +25,12 @@ int main()
 
    (void) signal(SIGINT,set_terminate);
 
-   if ( (p_collection = create_tcp_port_monitor_collection( 0 )) == NULL) {
+   if ( (p_collection = create_tcp_port_monitor_collection( NULL )) == NULL) {
 	fprintf(stderr,"error: create_tcp_port_monitor_collection()\n");
    	exit(1);
    }
 
-   if ( (p_monitor = create_tcp_port_monitor( 1, 65535, 0 )) == NULL) {
+   if ( (p_monitor = create_tcp_port_monitor( 1, 65535, NULL )) == NULL) {
 	fprintf(stderr,"error: create_tcp_port_monitor()\n");
 	exit(1);
    }

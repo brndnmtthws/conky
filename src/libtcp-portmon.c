@@ -328,7 +328,7 @@ void maintain_tcp_port_monitor_hash(
 #ifdef HASH_DEBUG
     fprintf(stderr,"--- num vacated is %d, vacated factor is %.3f\n", p_monitor->hash.vacated, vacated_load );
 #endif
-    if ( vacated_load <= TCP_CONNECIION_HASH_MAX_VACATED_PCT )
+    if ( vacated_load <= TCP_CONNECIION_HASH_MAX_VACATED_RATIO )
     {
 	    /* hash is fine and needs no rebalancing */
 	    return;
@@ -371,7 +371,7 @@ void rebuild_tcp_port_monitor_peek_table(
 	return;
 
    /* zero out the peek array */
-   memset( p_monitor->p_peek, 0, TCP_CONNECTION_HASH_SIZE * sizeof(tcp_connection_t *) );
+   memset( p_monitor->p_peek, 0, p_monitor->hash.size * sizeof(tcp_connection_t *) );
 
    for ( p_node=p_monitor->connection_list.p_head; p_node!=NULL; p_node=p_node->p_next, i++ )
    {
@@ -427,7 +427,7 @@ void show_connection_to_tcp_port_monitor(
 	 * connection limit.  Future versions should probably allow the client to set the hash size
 	 * and load limits and/or provide for automatic resizing of hashes. */
 
-	if ( (double)p_monitor->hash.size / (double)p_monitor->hash.positions >= TCP_CONNECTION_HASH_MAX_LOAD_PCT )
+	if ( (double)p_monitor->hash.size / (double)p_monitor->hash.positions >= TCP_CONNECTION_HASH_MAX_LOAD_RATIO )
 	{
 		/* hash exceeds our load limit is now "full" */
 		return;
@@ -498,7 +498,38 @@ void for_each_tcp_port_monitor_in_collection(
   
 }
 
+/* ----------------------------------------------------------------------------------------
+ * Calculate an efficient hash size based on the desired number of elements and load factor.
+ * ---------------------------------------------------------------------------------------- */
+int calc_efficient_hash_size(
+	int                                     min_elements,
+	int					max_hash_size,
+	double                                  max_load_factor
+	)
+{
+   double min_size, hash_size, log_base_2;
+   
+   /* the size of the hash will the smallest power of two such that the minimum number
+      of desired elements does not exceed the maximum load factor. */                 
+   
+   min_size = (double)min_elements / max_load_factor;   /* starting point */
+     
+   /* now adjust size up to nearest power of two */
+   log_base_2 = (double) (int) ( log(min_size) / log(2) ) ;  /* lop off fractional portion of log */
 
+   hash_size = pow(2,log_base_2) >= min_size ? min_size : pow(2,(double)++log_base_2);
+
+   /* respect the maximum */
+   hash_size = hash_size <= max_hash_size ? hash_size : max_hash_size;
+
+   /*
+   fprintf(stderr,"hash size is %d, based on %d min_elements and %.02f max load, %d maximum\n",
+		   (int)hash_size, min_elements, max_load_factor, max_hash_size);
+   */
+
+   return hash_size;
+}
+		
 /* ----------------------------------------------------------------------
  * CLIENT INTERFACE 
  *
@@ -514,7 +545,7 @@ void for_each_tcp_port_monitor_in_collection(
 tcp_port_monitor_t * create_tcp_port_monitor(
 	in_port_t 				port_range_begin, 
 	in_port_t 				port_range_end,
-	int					hash_size
+	tcp_port_monitor_args_t *		p_creation_args
 	)
 {
    tcp_port_monitor_t * p_monitor;
@@ -526,7 +557,11 @@ tcp_port_monitor_t * create_tcp_port_monitor(
 
    /* create the monitor's connection hash */
    if ( hash_create( &p_monitor->hash, 
-			hash_size > 0 ? hash_size : TCP_CONNECTION_HASH_SIZE,
+			p_creation_args && p_creation_args->min_port_monitor_connections > 0 ?
+				calc_efficient_hash_size( p_creation_args->min_port_monitor_connections,
+							  TCP_CONNECTION_HASH_SIZE_MAX,
+							  TCP_CONNECTION_HASH_MAX_LOAD_RATIO ) :
+				TCP_CONNECTION_HASH_SIZE_DEFAULT,
 			&connection_hash_function_1, &connection_hash_function_2,
 			&connection_match_function, NULL ) != 0 ) 
    {
@@ -536,7 +571,7 @@ tcp_port_monitor_t * create_tcp_port_monitor(
    }
 
    /* create the monitor's peek array */
-   if ( (p_monitor->p_peek = (tcp_connection_t **) calloc( TCP_CONNECTION_HASH_SIZE, sizeof(tcp_connection_t *))) == NULL )
+   if ( (p_monitor->p_peek = (tcp_connection_t **) calloc( p_monitor->hash.size, sizeof(tcp_connection_t *))) == NULL )
    {
 	/* we failed to create the peek array, so destroy the monitor completely, again, so we don't leak */
 	destroy_tcp_port_monitor(p_monitor,NULL);
@@ -658,7 +693,7 @@ int peek_tcp_port_monitor(
 
 /* Create a monitor collection.  Do this one first. */
 tcp_port_monitor_collection_t * create_tcp_port_monitor_collection(
-	int					hash_size
+	tcp_port_monitor_collection_args_t * 	p_creation_args
 	)
 {
    tcp_port_monitor_collection_t * p_collection;
@@ -669,7 +704,11 @@ tcp_port_monitor_collection_t * create_tcp_port_monitor_collection(
 
    /* create the collection's monitor hash */
    if ( hash_create( &p_collection->hash, 
-			hash_size > 0 ? hash_size : TCP_MONITOR_HASH_SIZE,
+			p_creation_args && p_creation_args->min_port_monitors > 0 ?
+				calc_efficient_hash_size( p_creation_args->min_port_monitors,
+							  TCP_MONITOR_HASH_SIZE_MAX,
+							  TCP_MONITOR_HASH_MAX_LOAD_RATIO ) :
+				TCP_MONITOR_HASH_SIZE_DEFAULT,
 			&monitor_hash_function_1, &monitor_hash_function_2,
 			&monitor_match_function, NULL ) != 0 )
    {

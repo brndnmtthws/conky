@@ -23,6 +23,7 @@
 #ifndef LIBTCP_PORTMON_H
 #define LIBTCP_PORTMON_H
 
+#include <math.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -37,7 +38,7 @@
  * Each port monitor contains a connection hash whose contents changes dynamically as the monitor 
  * is presented with connections on each update cycle.   This implementation maintains the health
  * of this hash by enforcing several rules.  First, the hash cannot contain more items than the
- * TCP_CONNECTION_HASH_MAX_LOAD_PCT permits.  For example, a 256 element hash with a max load of 
+ * TCP_CONNECTION_HASH_MAX_LOAD_RATIO permits.  For example, a 256 element hash with a max load of 
  * 0.5 cannot contain more than 128 connections.  Additional connections are ignored by the monitor.
  * The load factor of 0.5 is low enough to keep the hash running at near O(1) performanace at all 
  * times.  As elements are removed from the hash, the hash slots are tagged vacated, as required 
@@ -46,14 +47,15 @@
  * The problem with vacated slots (even though they are reused) is that, as they increase in number,
  * esp. past about 1/4 of all slots, the average number of probes the hash has to perform increases
  * from O(1) on average to O(n) worst case. To keep the hash healthy, we simply rebuild it when the
- * percentage of vacated slots gets too high (above TCP_CONNECTION_HASH_MAX_VACATED_PCT).  Rebuilding
- * the hash takes O(n) on the number of elements, but it well worth it as it keeps the hash running
- * at an average access time of O(1).
+ * percentage of vacated slots gets too high (above TCP_CONNECTION_HASH_MAX_VACATED_RATIO).  
+ * Rebuilding the hash takes O(n) on the number of elements, but it well worth it as it keeps the
+ * hash running at an average access time of O(1).
  * ------------------------------------------------------------------------------------------------*/
 
-#define TCP_CONNECTION_HASH_SIZE 512			/* connection hash size -- must be a power of two */
-#define TCP_CONNECTION_HASH_MAX_LOAD_PCT 0.5		/* disallow inserts after this % load is exceeded */
-#define TCP_CONNECIION_HASH_MAX_VACATED_PCT 0.25 	/* rebalance hash after this % of vacated slots is exceeded */ 
+#define TCP_CONNECTION_HASH_SIZE_DEFAULT 512		/* connection hash size default -- must be a power of two */
+#define TCP_CONNECTION_HASH_SIZE_MAX 65535            	/* connection hash size maximum -- must be a power of two */
+#define TCP_CONNECTION_HASH_MAX_LOAD_RATIO 0.5		/* disallow inserts after this load ratio is exceeded */
+#define TCP_CONNECIION_HASH_MAX_VACATED_RATIO 0.25 	/* rebalance hash after this ratio of vacated slots is exceeded */ 
 #define TCP_CONNECIION_STARTING_AGE 1			/* connection deleted if unseen again after this # of refreshes */
 
 /* ----------------------------------------------------------------------------------------
@@ -66,8 +68,9 @@
  * lookups at O(1).  
  * ----------------------------------------------------------------------------------------*/
 
-#define TCP_MONITOR_HASH_SIZE 32			/* monitor hash size -- must be a power of two */
-#define TCP_MONITOR_HASH_MAX_LOAD_PCT 0.5               /* disallow new monitors after this % load is exceeded */
+#define TCP_MONITOR_HASH_SIZE_DEFAULT 32		/* monitor hash size default -- must be a power of two */
+#define TCP_MONITOR_HASH_SIZE_MAX 512                	/* monitor hash size maximum -- must be a power of two */
+#define TCP_MONITOR_HASH_MAX_LOAD_RATIO 0.5             /* disallow new monitors after this load ratio is exceeded */
 
 /* -------------------------------------------------------------------
  * IMPLEMENTATION INTERFACE
@@ -217,12 +220,31 @@ void for_each_tcp_port_monitor_in_collection(
 	void *					/* p_function_args (for user arguments) */
 	);
 
+/* ----------------------------------------------------------------------------------------
+ * Calculate an efficient hash size based on the desired number of elements and load factor.
+ * ---------------------------------------------------------------------------------------- */
+int calc_efficient_hash_size(
+	int 					/* min_elements, the minimum number of elements to store */,
+	int					/* max_hash_size, the maximum permissible hash size */,
+	double					/* max_load_factor, the fractional load we wish not to exceed, e.g. 0.5 */
+	);
 
 /* ----------------------------------------------------------------------
  * CLIENT INTERFACE 
  *
  * Clients should call only those functions below this line.
  * ---------------------------------------------------------------------- */
+
+/* struct to hold monitor creation arguments */
+typedef struct _tcp_port_monitor_args_t {
+	int 	min_port_monitor_connections;	/* monitor must support tracking at least this many connections */
+} tcp_port_monitor_args_t;
+
+
+/* struct to hold collection creation arguments */
+typedef struct _tcp_port_monitor_collection_args_t {
+	int	min_port_monitors;		/* collection must support creation of at least this many monitors */
+} tcp_port_monitor_collection_args_t; 
 
 /* ----------------------------------
  * Client operations on port monitors
@@ -233,7 +255,7 @@ void for_each_tcp_port_monitor_in_collection(
 tcp_port_monitor_t * create_tcp_port_monitor(
 	in_port_t 				/* port_range_begin */, 
 	in_port_t 				/* port_range_end */,
-	int					/* hash_size */
+	tcp_port_monitor_args_t *		/* p_creation_args, NULL ok for library defaults */
 	);
 
 /* Clients use this function to get connection data from the indicated port monitor.
@@ -253,7 +275,7 @@ int peek_tcp_port_monitor(
 
 /* Create a monitor collection.  Do this one first. */
 tcp_port_monitor_collection_t * create_tcp_port_monitor_collection(
-	int					 /* hash_size */ 
+	tcp_port_monitor_collection_args_t *	/* p_creation_args, NULL ok for library defaults */
 	);
 
 /* Destroy the monitor collection (and everything it contains).  Do this one last. */

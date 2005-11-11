@@ -16,7 +16,7 @@ test-hash:		test-hash.o hash.o
 			$(CC) $(CFLAGS) -o $@ test-hash.o hash.o
 
 test-portmon:		test-portmon.o libtcp-portmon.o hash.o
-			$(CC) $(CFLAGS) -o $@ test-portmon.o libtcp-portmon.o hash.o
+			$(CC) $(CFLAGS) -o $@ test-portmon.o libtcp-portmon.o hash.o -lm
 
 test-hash.o:		test-hash.c hash.h
 test-portmon.o:		test-portmon.c libtcp-portmon.h hash.h
