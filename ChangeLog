@@ -1,5 +1,8 @@
 # $Id$
 
+2005-11-11
+	* moved hash sizing code into portmon lib, where it belongs
+
 2005-11-10
 	* Added config items min_port_monitors / min_port_monitor_connections
 
