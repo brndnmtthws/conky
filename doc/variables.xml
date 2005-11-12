@@ -912,7 +912,7 @@
 		</simplelist>The connection index provides you with access to each connection in the port monitor.  The monitor will return information for index values from 0 to n-1 connections.  Values higher than n-1 are simply ignored.  For the "count" item, the connection index must be omitted.  It is required for all other items.
 		<simplelist>
 			<member>Examples:</member>
-			<member><command>${tcp_portmon 6881 6889 count}</command> -
+			<member><command>${tcp_portmon 6881 6999 count}</command> -
 				displays the number of connections in the bittorrent port range</member>
 			<member><command>${tcp_portmon 22 22 rip 0}</command> -
 				displays the remote host ip of the first sshd connection</member>
