@@ -186,7 +186,6 @@ void init_window(int own_window, int w, int h, int l, int set_trans, int back_co
 	set_transparent = set_trans;
 	background_colour = back_colour;
 	char * window_name = NULL;
-	int num_chars = 0;
 #ifdef OWN_WINDOW
 	if (own_window) {
 
