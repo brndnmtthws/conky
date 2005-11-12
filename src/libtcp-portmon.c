@@ -30,6 +30,28 @@
  * functions.  Use the "Client interface" functions defined at bottom.
  * ------------------------------------------------------------------- */
 
+/* ----------------------------------
+ * Copy a tcp_connection_t
+ *
+ * Returns 0 on success, -1 otherwise.
+ * ----------------------------------*/
+int copy_tcp_connection( 
+	tcp_connection_t *			p_dest_connection,
+	tcp_connection_t *			p_source_connection
+	)
+{
+   if ( !p_dest_connection || !p_source_connection )
+	return (-1);
+
+   p_dest_connection->local_addr = p_source_connection->local_addr;
+   p_dest_connection->local_port = p_source_connection->local_port;
+   p_dest_connection->remote_addr = p_source_connection->remote_addr;
+   p_dest_connection->remote_port = p_source_connection->remote_port;
+   p_dest_connection->age = p_source_connection->age;
+
+   return 0;
+}
+
 /* -----------------------------------------------------------------------------
  * Open-addressed hash implementation requires that we supply two hash functions
  * and a match function to compare two hash elements for identity.
@@ -397,6 +419,8 @@ void show_connection_to_tcp_port_monitor(
    if ( !p_monitor || !p_void )
 	return;
 
+   /* This p_connection is on caller's stack and not the heap.  If we are interested,
+    * we will create a copy of the connection (on the heap) and add it to our list. */
    tcp_connection_t *p_connection = (tcp_connection_t *)p_void;
    
    /* inspect the local port number of the connection to see if we're interested. */
@@ -436,7 +460,14 @@ void show_connection_to_tcp_port_monitor(
 	if ( (p_node = (tcp_connection_node_t *) calloc(1, sizeof(tcp_connection_node_t))) == NULL )
 		return;
 
-	p_node->connection = *p_connection;  /* bitwise copy of the struct */
+	/* copy the connection data */
+	if ( copy_tcp_connection( &p_node->connection, p_connection ) != 0 )
+  	{
+	 	/* error copying the connection data. deallocate p_node to avoid leaks and return. */
+		free( p_node );
+		return;
+ 	}
+
 	p_node->connection.age = TCP_CONNECIION_STARTING_AGE;
 	p_node->p_next = NULL;
 

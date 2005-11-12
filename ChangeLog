@@ -1,5 +1,9 @@
 # $Id$
 
+2005-11-12
+	* Replaced bitwise copy of tcp_connection_t with function
+	copy_tcp_connection().
+
 2005-11-11
 	* moved hash sizing code into portmon lib, where it belongs
 	* More mem leaks fixed.

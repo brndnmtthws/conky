@@ -96,6 +96,16 @@ typedef struct _tcp_connection_t {
 	int age;
 } tcp_connection_t;
 
+/* ----------------------------------
+ * Copy a connection
+ *
+ * Returns 0 on success, -1 otherwise
+ * ----------------------------------*/
+int copy_tcp_connection( 
+	tcp_connection_t * 			/* p_dest_connection */,
+	tcp_connection_t *			/* p_source_connection */
+	);
+
 /* ------------------------------------------------------------------------
  * A tcp connection node/list
  *
