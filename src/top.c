@@ -18,6 +18,8 @@ struct process *get_first_process()
 	return first_process;
 }
 
+
+
 void free_all_processes(struct process *pr)
 {
 	struct process *next = NULL;
@@ -396,6 +398,28 @@ inline static void calc_cpu_each(unsigned long total)
 /* Find the top processes                 */
 /******************************************/
 
+// static int tot_struct;  //for debugging..uncomment this and the 2 printfs in the next two functs
+
+/*
+ * free a  sp_process structure
+*/
+void free_sp(struct sorted_process * sp) {
+	free(sp);
+	//printf("free: %d structs\n",--tot_struct );
+}
+
+/*
+ * create a new sp_process structure
+*/
+struct sorted_process * malloc_sp(struct process * proc) {
+	struct sorted_process * sp;
+	sp = malloc(sizeof(struct sorted_process));
+	sp->greater = NULL;
+	sp->less = NULL;
+	sp->proc = proc;
+	//printf("malloc: %d structs\n", ++tot_struct);
+	return(sp);
+} 
 
 /*
  * cpu comparison function for insert_sp_element 
@@ -453,31 +477,19 @@ int insert_sp_element(
 		sp_cur->greater=*p_sp_tail;
 		*p_sp_tail = sp_cur;
 		did_insert=x;
-	} else if (x == max_elements && sp_readthru != NULL) {
+	} else if (x >= max_elements) {
 		/* we inserted an element and now the list is too big by one. Destroy the smallest element */
-		sp_destroy = sp_readthru;
-		sp_readthru->greater->less = NULL;
-		*p_sp_tail = sp_readthru->greater;
-		free(sp_destroy);
+		sp_destroy = *p_sp_tail;
+		*p_sp_tail = sp_destroy->greater;
+		(*p_sp_tail)->less = NULL;
+		free_sp(sp_destroy);
 	}
 	if (!did_insert) {
 		/* sp_cur wasn't added to the sorted list, so destroy it */
-		free(sp_cur);
+		free_sp(sp_cur);
 	}
 	return did_insert;
 }
-
-/*
- * create a new sp_process structure
-*/
-struct sorted_process * malloc_sp(struct process * proc) {
-	struct sorted_process * sp;
-	sp = malloc(sizeof(struct sorted_process));
-	sp->greater = NULL;
-	sp->less = NULL;
-	sp->proc = proc;
-	return(sp);
-} 
   
 /*
  * copy the procs in the sorted list to the array, and destroy the list 
@@ -487,11 +499,11 @@ void sp_acopy(struct sorted_process *sp_head, struct process ** ar, int max_size
 	struct sorted_process * sp_cur, * sp_tmp;
 	int x;
 	sp_cur = sp_head;
-	for (x = 0; x < max_size && sp_cur != NULL; x++) {
+	for (x=0; x < max_size && sp_cur != NULL; x++) {
 		ar[x] = sp_cur->proc;	
 		sp_tmp = sp_cur;
-		sp_cur = sp_cur->less;
-		free(sp_tmp);
+		sp_cur= sp_cur->less;
+		free_sp(sp_tmp);	
 	}
 }
 
@@ -520,6 +532,7 @@ inline void process_find_top(struct process **cpu, struct process **mem)
 	cur_proc = first_process;
 
 	while (cur_proc !=NULL) {
+		//printf("\n\n cur_proc: %s %f %f\n",cur_proc->name, cur_proc->totalmem, cur_proc->amount );
 		if (top_cpu) {
 			spc_cur = malloc_sp(cur_proc);
 			insert_sp_element(spc_cur, &spc_head, &spc_tail, MAX_SP, &compare_cpu);
