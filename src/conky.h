@@ -332,8 +332,8 @@ unsigned int get_diskio(void);
 
 int open_acpi_temperature(const char *name);
 double get_acpi_temperature(int fd);
-char *get_acpi_ac_adapter(void);
-char *get_acpi_fan(void);
+void get_acpi_ac_adapter( char *, size_t ); /* pk */
+void get_acpi_fan( char *, size_t ); /* pk */
 void get_battery_stuff(char *buf, unsigned int n, const char *bat);
 
 struct process {

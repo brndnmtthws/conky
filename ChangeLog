@@ -3,6 +3,9 @@
 2005-11-12
 	* Replaced bitwise copy of tcp_connection_t with function
 	copy_tcp_connection().
+	* Changed call interfaces for get_acpi_fan() /
+	get_acpi_ac_adapter() to eliminate need to malloc.  
+	More functions need same correction.  See bug 1355470.
 
 2005-11-11
 	* moved hash sizing code into portmon lib, where it belongs

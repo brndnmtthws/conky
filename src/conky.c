@@ -2062,11 +2062,13 @@ static void generate_text()
 				snprintf(p, n, "%s", get_adt746x_fan());
 			}
 			OBJ(acpifan) {
-				snprintf(p, n, "%s", get_acpi_fan());
+				/*snprintf(p, n, "%s", get_acpi_fan()); */
+				get_acpi_fan(p, n);  /* pk */
 			}
 			OBJ(acpiacadapter) {
-				snprintf(p, n, "%s",
-					 get_acpi_ac_adapter());
+				/* snprintf(p, n, "%s",
+					 get_acpi_ac_adapter()); */
+				get_acpi_ac_adapter(p, n);
 			}
 			OBJ(battery) {
 				get_battery_stuff(p, n, obj->data.s);

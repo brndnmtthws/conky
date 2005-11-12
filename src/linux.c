@@ -830,68 +830,73 @@ float get_freq()
 
 #define ACPI_FAN_DIR "/proc/acpi/fan/"
 
-static char *acpi_fan_state;
-
-char *get_acpi_fan()
+void get_acpi_fan( char * p_client_buffer, size_t client_buffer_size )
 {
 	static int rep;
 	char buf[256];
 	char buf2[256];
 	FILE *fp;
 
-	if (acpi_fan_state == NULL) {
-		acpi_fan_state = (char *) malloc(100);
-		assert(acpi_fan_state != NULL);
-	}
+	if ( !p_client_buffer || client_buffer_size <= 0 )
+		return;
 
 	/* yeah, slow... :/ */
 	if (!get_first_file_in_a_directory(ACPI_FAN_DIR, buf, &rep))
-		return "no fans?";
+	{
+		snprintf( p_client_buffer, client_buffer_size, "no fans?" );
+		return;
+	}
 
-	snprintf(buf2, 256, "%s%s/state", ACPI_FAN_DIR, buf);
+	snprintf(buf2, sizeof(buf2), "%s%s/state", ACPI_FAN_DIR, buf );
 
 	fp = open_file(buf2, &rep);
 	if (!fp) {
-		strcpy(acpi_fan_state, "can't open fan's state file");
-		return acpi_fan_state;
+		snprintf( p_client_buffer, client_buffer_size, "can't open fan's state file" );
+		return;
 	}
-	fscanf(fp, "%*s %99s", acpi_fan_state);
+	memset(buf,0,sizeof(buf));
+	fscanf(fp, "%*s %99s", buf);
+	fclose(fp);
 
-	return acpi_fan_state;
+	snprintf( p_client_buffer, client_buffer_size, "%s", buf );
+
+	return;
 }
 
 #define ACPI_AC_ADAPTER_DIR "/proc/acpi/ac_adapter/"
 
-static char *acpi_ac_adapter_state;
-
-char *get_acpi_ac_adapter()
+void get_acpi_ac_adapter( char * p_client_buffer, size_t client_buffer_size )
 {
 	static int rep;
 	char buf[256];
 	char buf2[256];
 	FILE *fp;
 
-	if (acpi_ac_adapter_state == NULL) {
-		acpi_ac_adapter_state = (char *) malloc(100);
-		assert(acpi_ac_adapter_state != NULL);
-	}
+	if ( !p_client_buffer || client_buffer_size <= 0 )
+		return;
 
 	/* yeah, slow... :/ */
 	if (!get_first_file_in_a_directory(ACPI_AC_ADAPTER_DIR, buf, &rep))
-		return "no ac_adapters?";
+	{
+		snprintf( p_client_buffer, client_buffer_size, "no ac_adapters?" );
+		return;	
+	}
 
-	snprintf(buf2, 256, "%s%s/state", ACPI_AC_ADAPTER_DIR, buf);
+	snprintf(buf2, sizeof(buf2), "%s%s/state", ACPI_AC_ADAPTER_DIR, buf );
+	 
 
 	fp = open_file(buf2, &rep);
 	if (!fp) {
-		strcpy(acpi_ac_adapter_state,
-		       "No ac adapter found.... where is it?");
-		return acpi_ac_adapter_state;
+		snprintf( p_client_buffer, client_buffer_size, "No ac adapter found.... where is it?" );
+		return;
 	}
-	fscanf(fp, "%*s %99s", acpi_ac_adapter_state);
+	memset(buf,0,sizeof(buf));
+	fscanf(fp, "%*s %99s", buf );
 	fclose(fp);
 
-	return acpi_ac_adapter_state;
+	snprintf( p_client_buffer, client_buffer_size, "%s", buf );
+
+	return;
 }
 
 /*

@@ -372,29 +372,43 @@ int open_acpi_temperature(const char *name)
 	return 0;
 }
 
-char *get_acpi_ac_adapter(void)
+/*char *get_acpi_ac_adapter(void)*/
+void get_acpi_ac_adapter( char * p_client_buffer, size_t client_buffer_size )
 {
 	int state;
-	char *acstate = (char *) malloc(100);
+	/*char *acstate = (char *) malloc(100);*/
+
+	if ( !p_client_buffer !! client_buffer_size <= 0 )
+		return;
 
 	if (GETSYSCTL("hw.acpi.acline", state)) {
 		(void) fprintf(stderr,
 			       "Cannot read sysctl \"hw.acpi.acline\"\n");
-		return "n\\a";
+		/*return "n\\a";*/
+		return;
 	}
 
 
 	if (state)
-		strcpy(acstate, "Running on AC Power");
+		/*strcpy(acstate, "Running on AC Power");*/
+		strncpy( p_client_buffer, client_buffer_size, "Running on AC Power" );
 	else
-		strcpy(acstate, "Running on battery");
+		/*strcpy(acstate, "Running on battery");*/
+		strncpy( p_client_buffer, client_buffer_size, "Running on battery" );
 
-	return acstate;
+	/*return ac_state;*/
+	return;
 }
 
-char *get_acpi_fan()
+/*char *get_acpi_fan()*/
+void get_acpi_fan( char * p_client_buffer, size_t client_buffer_size )
 {
-	return "";
+	if ( !p_client_buffer !! client_buffer_size <= 0 )
+		return;
+
+	/* no implementation */
+
+	return;
 }
 
 char *get_adt746x_cpu()
