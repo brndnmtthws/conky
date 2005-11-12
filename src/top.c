@@ -20,9 +20,9 @@ struct process *get_first_process()
 
 
 
-void free_all_processes(struct process *pr)
+void free_all_processes()
 {
-	struct process *next = NULL;
+	struct process *next = NULL, *pr = first_process;
 	while (pr) {
 		next = pr->next;
 		if (pr->name) {
@@ -31,6 +31,7 @@ void free_all_processes(struct process *pr)
 		free(pr);
 		pr = next;
 	}
+	first_process = NULL;
 }
 
 static struct process *find_process(pid_t pid)
@@ -398,14 +399,14 @@ inline static void calc_cpu_each(unsigned long total)
 /* Find the top processes                 */
 /******************************************/
 
-// static int tot_struct;  //for debugging..uncomment this and the 2 printfs in the next two functs
+//static int tot_struct;  //for debugging..uncomment this and the 2 printfs in the next two functs
 
 /*
  * free a  sp_process structure
 */
 void free_sp(struct sorted_process * sp) {
 	free(sp);
-	//printf("free: %d structs\n",--tot_struct );
+//	printf("free: %d structs\n",--tot_struct );
 }
 
 /*
@@ -417,7 +418,7 @@ struct sorted_process * malloc_sp(struct process * proc) {
 	sp->greater = NULL;
 	sp->less = NULL;
 	sp->proc = proc;
-	//printf("malloc: %d structs\n", ++tot_struct);
+//	printf("malloc: %d structs\n", ++tot_struct);
 	return(sp);
 } 
 

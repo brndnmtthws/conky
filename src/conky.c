@@ -1073,13 +1073,13 @@ static void free_text_objects()
 			break;
 		case OBJ_top:
 			if (info.first_process) {
-				free_all_processes(info.first_process);
+				free_all_processes();
 				info.first_process = NULL;
 			}
 			break;
 		case OBJ_top_mem:
 			if (info.first_process) {
-				free_all_processes(info.first_process);
+				free_all_processes();
 				info.first_process = NULL;
 			}
 			break;
@@ -5178,13 +5178,13 @@ int main(int argc, char **argv)
 	     wm_class_name,
 	     text_width + border_margin * 2 + 1,
 	     text_height + border_margin * 2 + 1,
-	     on_bottom, fixed_pos, set_transparent, background_colour);
+	     on_bottom, fixed_pos, set_transparent, background_colour, info.uname_s.nodename);
 #else
 	init_window
 		(own_window,
 		 text_width + border_margin * 2 + 1,
 		 text_height + border_margin * 2 + 1,
-		 on_bottom, set_transparent, background_colour);
+		 on_bottom, set_transparent, background_colour, info.uname_s.nodename);
 	
 #endif
 

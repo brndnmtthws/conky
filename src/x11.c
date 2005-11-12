@@ -17,6 +17,8 @@
 #include <X11/Xft/Xft.h>
 #endif
 
+#include <stdio.h>
+
 #ifdef XDBE
 int use_xdbe;
 #endif
@@ -24,6 +26,8 @@ int use_xdbe;
 #ifdef XFT
 int use_xft = 0;
 #endif
+
+#define WINDOW_NAME_FMT "%s - conky" 
 
 /* some basic X11 stuff */
 Display *display;
@@ -171,9 +175,9 @@ inline void set_transparent_background(Window win)
 }
 
 #if defined OWN_WINDOW
-void init_window(int own_window, char* wm_class_name, int w, int h, int l, int fixed_pos, int set_trans, int back_colour)
+void init_window(int own_window, char* wm_class_name, int w, int h, int l, int fixed_pos, int set_trans, int back_colour, char * nodename)
 #else
-void init_window(int own_window, int w, int h, int l, int set_trans, int back_colour)
+void init_window(int own_window, int w, int h, int l, int set_trans, int back_colour, char * nodename)
 #endif
 {
 	/* There seems to be some problems with setting transparent background (on
@@ -181,6 +185,8 @@ void init_window(int own_window, int w, int h, int l, int set_trans, int back_co
 	 * happens but I bet the bug is somewhere here. */
 	set_transparent = set_trans;
 	background_colour = back_colour;
+	char * window_name = NULL;
+	int num_chars = 0;
 #ifdef OWN_WINDOW
 	if (own_window) {
 
@@ -213,9 +219,10 @@ void init_window(int own_window, int w, int h, int l, int set_trans, int back_co
 				      &class_hints);
 
 			/*set_transparent_background(window.window);*/
-
-			XStoreName(display, window.window, "conky");
-
+			window_name = (char *) malloc(strlen(WINDOW_NAME_FMT) + strlen(nodename)+1);
+		        sprintf(window_name, WINDOW_NAME_FMT, nodename);
+			XStoreName(display, window.window, window_name);
+			free(window_name);
 			XClearWindow(display, window.window);
 
 			if (!fixed_pos)

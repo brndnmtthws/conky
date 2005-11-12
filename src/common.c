@@ -206,6 +206,7 @@ void update_stuff()
 		update_mail_count();
 
 
+
 #if defined(__linux__)
 	if (NEED(INFO_I8K))
 		update_i8k();
