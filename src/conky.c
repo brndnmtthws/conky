@@ -1002,6 +1002,7 @@ static struct text_object *new_text_object()
 	return &text_objects[text_object_count - 1];
 }
 
+#ifdef MLDONKEY
 void ml_cleanup()
 {
 	if (mlconfig.mldonkey_hostname) {
@@ -1009,6 +1010,7 @@ void ml_cleanup()
 		mlconfig.mldonkey_hostname = NULL;
 	}
 }
+#endif
 
 static void free_text_objects()
 {
