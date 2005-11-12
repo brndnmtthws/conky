@@ -387,7 +387,7 @@ inline static void calc_cpu_each(unsigned long total)
 		   (100.0 * (float) (p->user_time + p->kernel_time) /
 		   total) : 0; */
 		p->amount =
-		    (100.0 * (p->user_time + p->kernel_time) / total);
+		    100.0 * ((float)(p->user_time + p->kernel_time) / (float)total);
 
 /*		if (p->amount > 100)
 		p->amount = 0;*/
