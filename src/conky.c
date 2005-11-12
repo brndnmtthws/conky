@@ -1002,6 +1002,14 @@ static struct text_object *new_text_object()
 	return &text_objects[text_object_count - 1];
 }
 
+void ml_cleanup()
+{
+	if (mlconfig.mldonkey_hostname) {
+		free(mlconfig.mldonkey_hostname);
+		mlconfig.mldonkey_hostname = NULL;
+	}
+}
+
 static void free_text_objects()
 {
 	unsigned int i;
@@ -1085,7 +1093,9 @@ static void free_text_objects()
 			break;
 		}
 	}
-
+#ifdef MLDONKEY
+	ml_cleanup();
+#endif /* MLDONKEY */
 	free(text_objects);
 	text_objects = NULL;
 	text_object_count = 0;
@@ -1462,9 +1472,9 @@ if (s[0] == '#') {
 			CRIT_ERR("invalid arg for tail, number of lines must be between 1 and 30");
 			return;
 		} else {
-			FILE *fp;
-			fp = fopen(buf, "rt");
-			if (fp != NULL) {
+			FILE *fp = NULL;
+			fp = fopen(buf, "r");
+			if (fp) {
 				obj->data.tail.logfile =
 				    malloc(TEXT_BUFFER_SIZE);
 				strcpy(obj->data.tail.logfile, buf);
@@ -1488,7 +1498,7 @@ if (s[0] == '#') {
 			return;
 		} else {
 			FILE *fp;
-			fp = fopen(buf, "rt");
+			fp = fopen(buf, "r");
 			if (fp != NULL) {
 				obj->data.tail.logfile =
 				    malloc(TEXT_BUFFER_SIZE);
@@ -1523,7 +1533,7 @@ if (s[0] == '#') {
 			return;
 		} else {
 			FILE *fp;
-			fp = fopen(buf, "rt");
+			fp = fopen(buf, "r");
 			if (fp != NULL) {
 				obj->data.tail.logfile =
 						malloc(TEXT_BUFFER_SIZE);
@@ -1548,7 +1558,7 @@ if (s[0] == '#') {
 			return;
 		} else {
 			FILE *fp;
-			fp = fopen(buf, "rt");
+			fp = fopen(buf, "r");
 			if (fp != NULL) {
 				obj->data.tail.logfile =
 						malloc(TEXT_BUFFER_SIZE);
@@ -4498,8 +4508,7 @@ static void load_config_file(const char *f)
 	FILE *fp;
 
 	set_default_configurations();
-
-	fp = open_file(f, 0);
+	fp = fopen(f, "r");
 	if (!fp)
 		return;
 
