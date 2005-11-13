@@ -319,8 +319,8 @@ void update_cpu_usage(void);
 void update_total_processes(void);
 void update_running_processes(void);
 void update_i8k(void);
-float get_freq();
-float get_freq_dynamic();
+void get_freq( char *, size_t, char *, int ); /* pk */
+void get_freq_dynamic( char *, size_t, char *, int ); /* pk */
 void update_load_average();
 int open_i2c_sensor(const char *dev, const char *type, int n, int *div,
 		    char *devtype);

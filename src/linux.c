@@ -128,10 +128,6 @@ void update_meminfo()
 
 	info.bufmem = info.cached + info.buffers;
 
-	/*if (no_buffers) {
-		info.mem -= info.bufmem;
-	}*/
-
 	info.mask |= (1 << INFO_MEM) | (1 << INFO_BUFFERS);
 }
 
@@ -749,18 +745,19 @@ __inline__ unsigned long long int rdtsc()
 	__asm__ volatile (".byte 0x0f, 0x31":"=A" (x));
 	return x;
 }
-static char *buffer = NULL;
 #endif
 
-float get_freq_dynamic()
+/* return system frequency in MHz (use divisor=1) or GHz (use divisor=1000) */
+void get_freq_dynamic( char * p_client_buffer, size_t client_buffer_size, char * p_format, int divisor )
 {
 #if  defined(__i386) || defined(__x86_64)
-	if (buffer == NULL)
-		buffer = malloc(64);
 	struct timezone tz;
 	struct timeval tvstart, tvstop;
 	unsigned long long cycles[2];	/* gotta be 64 bit */
 	unsigned int microseconds;	/* total time taken */
+
+	if ( !p_client_buffer || client_buffer_size <= 0 || !p_format || divisor <= 0 )
+	     return;
 
 	memset(&tz, 0, sizeof(tz));
 
@@ -776,55 +773,60 @@ float get_freq_dynamic()
 	microseconds = ((tvstop.tv_sec - tvstart.tv_sec) * 1000000) +
 	    (tvstop.tv_usec - tvstart.tv_usec);
 
-	return (cycles[1] - cycles[0]) / microseconds;
+	snprintf( p_client_buffer, client_buffer_size, p_format, (float)((cycles[1] - cycles[0]) / microseconds) / divisor );
+	return;
 #else
-	return get_freq();
+	get_freq( p_client_buffer, client_buffer_size, p_format, divisor );
+	return;
 #endif
 }
 
 #define CPUFREQ_CURRENT "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"
 
-static char *frequency;
-	
-float get_freq()
+/* return system frequency in MHz (use divisor=1) or GHz (use divisor=1000) */
+void get_freq( char * p_client_buffer, size_t client_buffer_size, char * p_format, int divisor )
 {
 	FILE *f;
-	char s[1000];
-	if (frequency == NULL) {
-		frequency = (char *) malloc(100);
-		assert(frequency != NULL);
-	}
+	char frequency[32];
+	char s[256];
+	double freq = 0;
+
+	if ( !p_client_buffer || client_buffer_size <= 0 || !p_format || divisor <= 0 )
+		return;
+
 	f = fopen(CPUFREQ_CURRENT, "r");
 	if (f) {
-		/* if there's a cpufreq /sys node, read the current
-		 * frequency there from this node; divice by 1000 to
-		 * get MHz
-		 */
-		double freq = 0;
-		if (fgets(s, 1000,f)) {
+		/* if there's a cpufreq /sys node, read the current frequency from this node;
+		 * divide by 1000 to get Mhz. */
+		if (fgets(s, sizeof(s), f)) {
 			s[strlen(s)-1] = '\0';
 			freq = strtod(s, NULL);
 		}
 		fclose(f);
-		return (freq/1000);
+		snprintf( p_client_buffer, client_buffer_size, p_format, (freq/1000)/divisor );
+		return;
 	}
 	
-	f = fopen("/proc/cpuinfo", "r");	//open the CPU information file
+	f = fopen("/proc/cpuinfo", "r");		//open the CPU information file
 	if (!f)
-	    return 0;
-	while (fgets(s, 1000, f) != NULL){	//read the file
+	    return;
+
+	while (fgets(s, sizeof(s), f) != NULL){		//read the file
 #if defined(__i386) || defined(__x86_64)
-		if (strncmp(s, "cpu MHz", 5) == 0) {	//and search for the cpu mhz
+		if (strncmp(s, "cpu MHz", 7) == 0) {	//and search for the cpu mhz
 #else
 		if (strncmp(s, "clock", 5) == 0) {	// this is different on ppc for some reason
 #endif
 		strcpy(frequency, strchr(s, ':') + 2);	//copy just the number
-		frequency[strlen(frequency) - 1] = '\0';	// strip \n
+		frequency[strlen(frequency) - 1] = '\0'; // strip \n
+		freq = strtod(frequency, NULL);
 		break;
 		}
 	}
-		fclose(f);
-		return strtod(frequency, (char **)NULL);
+	
+	fclose(f);
+	snprintf( p_client_buffer, client_buffer_size, p_format, (float)freq/divisor );
+	return;
 }
 
 

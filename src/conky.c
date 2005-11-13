@@ -2041,19 +2041,16 @@ static void generate_text()
 									i)+ 40) * 9.0 / 5 - 40));
 			}
 			OBJ(freq) {
-				snprintf(p, n, "%.0f", get_freq());
+				get_freq(p, n, "%.0f", 1); /* pk */
 			}
 			OBJ(freq_g) {
-				float ghz = (float)(get_freq()/1000);
-				//printf("%f\n", ghz);
-				snprintf(p, n, "%'.2f", ghz);
+				get_freq(p, n, "%'.2f", 1000); /* pk */
 			}
 			OBJ(freq_dyn) {
-				snprintf(p, n, "%.0f", get_freq_dynamic());
+				get_freq_dynamic(p, n, "%.0f", 1 ); /* pk */
 			}
 			OBJ(freq_dyn_g) {
-				float ghz = (float)(get_freq_dynamic()/1000);
-				snprintf(p, n, "%'.2f", ghz);
+				get_freq_dynamic(p, n, "%'.2f", 1000); /* pk */
 			}
 			OBJ(adt746xcpu) {
 				snprintf(p, n, "%s", get_adt746x_cpu());
@@ -2062,12 +2059,9 @@ static void generate_text()
 				snprintf(p, n, "%s", get_adt746x_fan());
 			}
 			OBJ(acpifan) {
-				/*snprintf(p, n, "%s", get_acpi_fan()); */
 				get_acpi_fan(p, n);  /* pk */
 			}
 			OBJ(acpiacadapter) {
-				/* snprintf(p, n, "%s",
-					 get_acpi_ac_adapter()); */
 				get_acpi_ac_adapter(p, n);
 			}
 			OBJ(battery) {
