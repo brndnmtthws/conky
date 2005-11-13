@@ -680,49 +680,54 @@ double get_i2c_info(int *fd, int div, char *devtype, char *type)
 
 #define ADT746X_FAN "/sys/devices/temperatures/cpu_fan_speed"
 
-static char *adt746x_fan_state;
-
-char *get_adt746x_fan()
+void get_adt746x_fan( char * p_client_buffer, size_t client_buffer_size )
 {
 	static int rep;
+	char adt746x_fan_state[64];
 	FILE *fp;
 
-	if (adt746x_fan_state == NULL) {
-		adt746x_fan_state = (char *) malloc(100);
-		assert(adt746x_fan_state != NULL);
-	}
+	if ( !p_client_buffer || client_buffer_size <= 0 )
+		return;
 
 	fp = open_file(ADT746X_FAN, &rep);
-	if (!fp) {
-		strcpy(adt746x_fan_state,
-		       "No fan found! Hey, you don't have one?");
-		return adt746x_fan_state;
+	if (!fp) 
+	{
+		sprintf(adt746x_fan_state, "adt746x not found");
 	}
-	fscanf(fp, "%s", adt746x_fan_state);
-	fclose(fp);
+	else
+	{
+		fscanf(fp, "%s", adt746x_fan_state);
+		fclose(fp);
+	}
 
-	return adt746x_fan_state;
+	snprintf( p_client_buffer, client_buffer_size, "%s", adt746x_fan_state );
+	return;
 }
 
 #define ADT746X_CPU "/sys/devices/temperatures/cpu_temperature"
 
-static char *adt746x_cpu_state;
-
-char *get_adt746x_cpu()
+void get_adt746x_cpu( char * p_client_buffer, size_t client_buffer_size )
 {
 	static int rep;
+	char adt746x_cpu_state[64];
 	FILE *fp;
 
-	if (adt746x_cpu_state == NULL) {
-		adt746x_cpu_state = (char *) malloc(100);
-		assert(adt746x_cpu_state != NULL);
+	if ( !p_client_buffer || client_buffer_size <= 0 )
+		return;
+	
+	fp = open_file(ADT746X_CPU, &rep);
+	if (!fp)
+	{
+		sprintf(adt746x_cpu_state, "adt746x not found");
+	}
+	else
+	{
+		fscanf(fp, "%2s", adt746x_cpu_state);
+		fclose(fp);
 	}
 
-	fp = open_file(ADT746X_CPU, &rep);
-	fscanf(fp, "%2s", adt746x_cpu_state);
-	fclose(fp);
-
-	return adt746x_cpu_state;
+	snprintf( p_client_buffer, client_buffer_size, "%s", adt746x_cpu_state ); 
+	return;
 }
 
 /* Thanks to "Walt Nelson" <wnelsonjr@comcast.net> */

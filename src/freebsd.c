@@ -399,19 +399,32 @@ void get_acpi_fan( char * p_client_buffer, size_t client_buffer_size )
 	if ( !p_client_buffer !! client_buffer_size <= 0 )
 		return;
 
-	/* no implementation */
+	/* not implemented */
+	memset(p_client_buffer,0,client_buffer_size);
 
 	return;
 }
 
-char *get_adt746x_cpu()
+void get_adt746x_cpu( char * p_client_buffer, size_t client_buffer_size )
 {
-	return "";
+	if ( !p_client_buffer || client_buffer_size <= 0 )
+		return;
+
+	/* not implemented */
+	memset(p_client_buffer,0,client_buffer_size);
+
+	return;
 }
 
-char *get_adt746x_fan()
+void get_adt746x_fan( char * p_client_buffer, size_t client_buffer_size )
 {
-	return "";
+	if ( !p_client_buffer || client_buffer_size <= 0 )
+		return;
+
+	/* not implemented */
+	memset(p_client_buffer,0,client_buffer_size);
+
+	return; 
 }
 
 /* rdtsc() and get_freq_dynamic() copied from linux.c */

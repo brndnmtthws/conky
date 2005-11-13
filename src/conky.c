@@ -2053,16 +2053,16 @@ static void generate_text()
 				get_freq_dynamic(p, n, "%'.2f", 1000); /* pk */
 			}
 			OBJ(adt746xcpu) {
-				snprintf(p, n, "%s", get_adt746x_cpu());
+				get_adt746x_cpu(p, n); /* pk */
 			}
 			OBJ(adt746xfan) {
-				snprintf(p, n, "%s", get_adt746x_fan());
+				get_adt746x_fan(p, n); /* pk */
 			}
 			OBJ(acpifan) {
 				get_acpi_fan(p, n);  /* pk */
 			}
 			OBJ(acpiacadapter) {
-				get_acpi_ac_adapter(p, n);
+				get_acpi_ac_adapter(p, n); /* pk */
 			}
 			OBJ(battery) {
 				get_battery_stuff(p, n, obj->data.s);

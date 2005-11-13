@@ -4,8 +4,8 @@
 	* Replaced bitwise copy of tcp_connection_t with function
 	copy_tcp_connection().
 	* Changed call interfaces for get_acpi_fan(), get_acpi_ac_adapter(),   
-	get_freq(), get_freq_dynamic(), eliminating mallocs.  pkovacs.
-	More to come.  See bug 1355470.
+	get_freq(), get_freq_dynamic(), get_adt746x_cpu(), get_adt746x_fan(),
+	eliminating all mallocs.  pkovacs.  See bug 1355470.
 
 2005-11-11
 	* moved hash sizing code into portmon lib, where it belongs

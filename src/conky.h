@@ -326,8 +326,8 @@ int open_i2c_sensor(const char *dev, const char *type, int n, int *div,
 		    char *devtype);
 double get_i2c_info(int *fd, int arg, char *devtype, char *type);
 
-char *get_adt746x_cpu(void);
-char *get_adt746x_fan(void);
+void get_adt746x_cpu( char *, size_t ); /* pk */
+void get_adt746x_fan( char *, size_t ); /* pk */
 unsigned int get_diskio(void);
 
 int open_acpi_temperature(const char *name);
