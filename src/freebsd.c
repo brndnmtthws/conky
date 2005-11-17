@@ -376,7 +376,7 @@ void get_acpi_ac_adapter( char * p_client_buffer, size_t client_buffer_size )
 {
 	int state;
 
-	if ( !p_client_buffer !! client_buffer_size <= 0 )
+	if ( !p_client_buffer || client_buffer_size <= 0 )
 		return;
 
 	if (GETSYSCTL("hw.acpi.acline", state)) {
@@ -387,9 +387,9 @@ void get_acpi_ac_adapter( char * p_client_buffer, size_t client_buffer_size )
 
 
 	if (state)
-		strncpy( p_client_buffer, client_buffer_size, "Running on AC Power" );
+		strncpy( p_client_buffer, "Running on AC Power", client_buffer_size );
 	else
-		strncpy( p_client_buffer, client_buffer_size, "Running on battery" );
+		strncpy( p_client_buffer, "Running on battery", client_buffer_size );
 
 	return;
 }
