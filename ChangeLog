@@ -1,5 +1,8 @@
 # $Id$
 
+2005-11-16
+	* Conky 1.3.4 released
+
 2005-11-12
 	* Replaced bitwise copy of tcp_connection_t with function
 	copy_tcp_connection().

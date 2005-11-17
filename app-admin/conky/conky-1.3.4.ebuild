@@ -34,6 +34,14 @@ DEPEND="
 
 
 src_compile() {
+	if useq ipv6 ; then
+		ewarn
+		ewarn "You have the ipv6 USE flag enabled.  Please note that"
+		ewarn "using the ipv6 USE flag with Conky disables the port"
+		ewarn "monitor."
+		ewarn
+		sleep 5
+	fi
 	local myconf
 	myconf="--enable-double-buffer --enable-own-window --enable-proc-uptime
 	--enable-mpd --enable-mldonkey"
