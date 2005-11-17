@@ -347,7 +347,7 @@ int open_acpi_temperature(const char *name)
 
 void get_acpi_ac_adapter( char * p_client_buffer, size_t client_buffer_size )
 {
-	if ( !p_client_buffer !! client_buffer_size <= 0 )
+	if ( !p_client_buffer || client_buffer_size <= 0 )
 		return;
 
 	/* not implemented */
@@ -359,7 +359,7 @@ void get_acpi_ac_adapter( char * p_client_buffer, size_t client_buffer_size )
 /*char *get_acpi_fan()*/
 void get_acpi_fan( char * p_client_buffer, size_t client_buffer_size )
 {
-	if ( !p_client_buffer !! client_buffer_size <= 0 )
+	if ( !p_client_buffer || client_buffer_size <= 0 )
 		return;
 
 	/* not implemented */
