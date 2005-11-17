@@ -740,4 +740,10 @@ char *get_apm_battery_time()
 
 	return out;
 }
+
+/* empty stub so conky links */
+void free_all_processes( void )
+{
+}
+	
 #endif
