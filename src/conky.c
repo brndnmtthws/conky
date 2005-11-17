@@ -341,7 +341,7 @@ int check_mount(char *s)
 
 
 #ifdef X11
-static inline int calc_text_width(const char *s, unsigned int l)
+static inline int calc_text_width(const char *s, int l)
 {
 #ifdef XFT
 	if (use_xft) {
