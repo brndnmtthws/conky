@@ -350,7 +350,7 @@ void maintain_tcp_port_monitor_hash(
 #ifdef HASH_DEBUG
     fprintf(stderr,"--- num vacated is %d, vacated factor is %.3f\n", p_monitor->hash.vacated, vacated_load );
 #endif
-    if ( vacated_load <= TCP_CONNECIION_HASH_MAX_VACATED_RATIO )
+    if ( vacated_load <= TCP_CONNECTION_HASH_MAX_VACATED_RATIO )
     {
 	    /* hash is fine and needs no rebalancing */
 	    return;
@@ -437,7 +437,7 @@ void show_connection_to_tcp_port_monitor(
 		/* it's already in the hash.  reset the age of the connection. */
 		if ( p_connection != NULL )
 		{
-			p_connection->age = TCP_CONNECIION_STARTING_AGE;
+			p_connection->age = TCP_CONNECTION_STARTING_AGE;
 		}
 
 		return;
@@ -468,7 +468,7 @@ void show_connection_to_tcp_port_monitor(
 		return;
  	}
 
-	p_node->connection.age = TCP_CONNECIION_STARTING_AGE;
+	p_node->connection.age = TCP_CONNECTION_STARTING_AGE;
 	p_node->p_next = NULL;
 
 	/* insert it into the monitor's hash table */
