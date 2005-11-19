@@ -153,8 +153,10 @@ inline void update_net_stats()
 		return;
 
 	/* open file and ignore first two lines */
-	if (net_dev_fp == NULL)
-		net_dev_fp = open_file("/proc/net/dev", &rep);
+	if (net_dev_fp == NULL) {
+		// net_dev_fp = open_file("/proc/net/dev", &rep);
+		net_dev_fp = open_file("/home/brenden/fake", &rep);
+	}
 	else
 		fseek(net_dev_fp, 0, SEEK_SET);
 	if (!net_dev_fp)
@@ -169,8 +171,9 @@ inline void update_net_stats()
 		char *s, *p;
 		long long r, t, last_recv, last_trans;
 
-		if (fgets(buf, 255, net_dev_fp) == NULL)
+		if (fgets(buf, 255, net_dev_fp) == NULL) {
 			break;
+		}
 		p = buf;
 		while (isspace((int) *p))
 			p++;
@@ -186,6 +189,7 @@ inline void update_net_stats()
 
 		ns = get_net_stat(s);
 		ns->up = 1;
+		memset(&(ns->addr.sa_data), 0, 14);
 		last_recv = ns->recv;
 		last_trans = ns->trans;
 
