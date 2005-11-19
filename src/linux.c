@@ -154,8 +154,7 @@ inline void update_net_stats()
 
 	/* open file and ignore first two lines */
 	if (net_dev_fp == NULL) {
-		// net_dev_fp = open_file("/proc/net/dev", &rep);
-		net_dev_fp = open_file("/home/brenden/fake", &rep);
+		net_dev_fp = open_file("/proc/net/dev", &rep);
 	}
 	else
 		fseek(net_dev_fp, 0, SEEK_SET);
