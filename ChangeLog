@@ -1,5 +1,8 @@
 # $Id$
 
+2005-11-22
+	* Fixed IP address bug (sf.net bug 1359055)
+
 2005-11-16
 	* Conky 1.3.4 released
 
