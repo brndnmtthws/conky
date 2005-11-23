@@ -1,5 +1,8 @@
 # $Id$
 
+2005-11-23
+	* Synchronous signal processing.  Fixes gentoo bug# 113219
+
 2005-11-22
 	* Fixed IP address bug (sf.net bug 1359055)
 

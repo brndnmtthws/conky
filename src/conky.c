@@ -4060,6 +4060,13 @@ static void update_text()
 
 static void main_loop()
 {
+	sigset_t  newmask, oldmask, pendmask;
+
+	sigemptyset(&newmask);
+	sigaddset(&newmask,SIGINT);
+	sigaddset(&newmask,SIGTERM);
+	sigaddset(&newmask,SIGUSR1);
+
 #ifdef X11
 	Region region = XCreateRegion();
 #endif /* X11 */
@@ -4067,6 +4074,11 @@ static void main_loop()
 	info.looped = 0;
 	while (total_run_times == 0 || info.looped < total_run_times - 1) {
 		info.looped++;
+
+		/* block signals.  we will inspect for pending signals later */
+		if (sigprocmask(SIG_BLOCK, &newmask, &oldmask) < 0)
+			CRIT_ERR("unable to sigprocmask()");
+
 #ifdef X11
 		XFlush(display);
 
@@ -4287,7 +4299,14 @@ static void main_loop()
 		}
 #endif /* X11 */
 
-		/* inspect pending signal prior to entering next loop */
+		/* fetch pending signals prior to entering next loop */
+		if (sigpending(&pendmask) < 0)
+			CRIT_ERR("unable to sigpending()");
+
+		/* unblock signals of interest and let handler fly */
+		if (sigprocmask(SIG_SETMASK, &oldmask, NULL) < 0)
+			CRIT_ERR("unable to sigprocmask()");
+
 		switch(g_signal_pending) {
 		case SIGUSR1:
 			{
@@ -4964,6 +4983,8 @@ static const char *getopt_string = "vVdt:f:u:i:hc:w:x:y:a:"
 
 int main(int argc, char **argv)
 {
+	struct sigaction act, oact;
+
 	g_signal_pending=0;
 	memset(&info, 0, sizeof(info) );
 
@@ -5241,9 +5262,14 @@ int main(int argc, char **argv)
 	}
 
 	/* Set signal handlers */
-	if ( signal(SIGINT,signal_handler) == SIG_ERR ||
-	     signal(SIGUSR1,signal_handler) == SIG_ERR ||
-	     signal(SIGTERM,signal_handler) == SIG_ERR )
+	act.sa_handler = signal_handler;
+	sigemptyset(&act.sa_mask);
+	act.sa_flags = 0;
+	act.sa_flags |= SA_RESTART;
+
+	if ( sigaction(SIGINT,&act,&oact) < 0 ||
+	     sigaction(SIGUSR1,&act,&oact) < 0 ||
+	     sigaction(SIGTERM,&act,&oact) < 0 )
 	{
 		ERR("error setting signal handler: %s", strerror(errno) );
 	}
