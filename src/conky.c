@@ -34,6 +34,14 @@
 #define MAIL_FILE "$MAIL"
 #define MAX_IF_BLOCK_DEPTH 5
 
+/* defining SIGNAL_BLOCKING will cause conky to block asynchronous signal handlin,
+ * in favor of inspecting for pending signals synchronously.  this is experimental
+ * code designed to avoid signal events in slow/blocking system calls like select().
+ * use #undef SIGNAL_BLOCKING for the tradiational, asynchronous signal handling. */
+
+/* #define SIGNAL_BLOCKING */
+#undef SIGNAL_BLOCKING
+
 #ifdef X11
 
 /* alignments */
@@ -4060,12 +4068,14 @@ static void update_text()
 
 static void main_loop()
 {
-	sigset_t  newmask, oldmask, pendmask;
+#ifdef SIGNAL_BLOCKING
+	sigset_t  newmask, oldmask;
 
 	sigemptyset(&newmask);
 	sigaddset(&newmask,SIGINT);
 	sigaddset(&newmask,SIGTERM);
 	sigaddset(&newmask,SIGUSR1);
+#endif
 
 #ifdef X11
 	Region region = XCreateRegion();
@@ -4075,9 +4085,11 @@ static void main_loop()
 	while (total_run_times == 0 || info.looped < total_run_times - 1) {
 		info.looped++;
 
+#ifdef SIGNAL_BLOCKING
 		/* block signals.  we will inspect for pending signals later */
 		if (sigprocmask(SIG_BLOCK, &newmask, &oldmask) < 0)
 			CRIT_ERR("unable to sigprocmask()");
+#endif
 
 #ifdef X11
 		XFlush(display);
@@ -4299,13 +4311,11 @@ static void main_loop()
 		}
 #endif /* X11 */
 
-		/* fetch pending signals prior to entering next loop */
-		if (sigpending(&pendmask) < 0)
-			CRIT_ERR("unable to sigpending()");
-
+#ifdef SIGNAL_BLOCKING
 		/* unblock signals of interest and let handler fly */
 		if (sigprocmask(SIG_SETMASK, &oldmask, NULL) < 0)
 			CRIT_ERR("unable to sigprocmask()");
+#endif
 
 		switch(g_signal_pending) {
 		case SIGUSR1:
@@ -5265,7 +5275,9 @@ int main(int argc, char **argv)
 	act.sa_handler = signal_handler;
 	sigemptyset(&act.sa_mask);
 	act.sa_flags = 0;
+#ifdef SA_RESTART
 	act.sa_flags |= SA_RESTART;
+#endif
 
 	if ( sigaction(SIGINT,&act,&oact) < 0 ||
 	     sigaction(SIGUSR1,&act,&oact) < 0 ||

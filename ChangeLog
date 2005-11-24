@@ -1,7 +1,9 @@
 # $Id$
 
 2005-11-23
-	* Synchronous signal processing.  Fixes gentoo bug# 113219
+	* Added #define/#undef SIGNAL_BLOCKING in conky.c for experimenting
+	with synchronous signal processing. set to #undef for previous behavior.
+	* Use POSIX signal api's, not the ANSI signal().
 
 2005-11-22
 	* Fixed IP address bug (sf.net bug 1359055)
