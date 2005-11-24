@@ -230,6 +230,13 @@
 </varlistentry>
 
 <varlistentry>
+	<term><command><option>out_to_console</option></command>
+	</term>
+	<listitem>
+		Print text to stdout.
+		<para></para></listitem>
+</varlistentry>
+<varlistentry>
 	<term><command><option>pad_percents</option></command></term>
 	<listitem>
 		Pad percentages to this many decimals (0 = no padding)

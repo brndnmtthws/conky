@@ -274,6 +274,10 @@ CONFIGURATION SETTINGS
 	      valid RGB name (see /usr/lib/X11/rgb.txt)
 
 
+       out_to_console
+	      Print text to stdout.
+
+
        pad_percents
 	      Pad percentages to this many decimals (0 = no padding)
 
