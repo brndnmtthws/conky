@@ -1,5 +1,8 @@
 # $Id$
 
+2005-11-24
+	* Fixed gentoo bug# 113219
+
 2005-11-23
 	* Added #define/#undef SIGNAL_BLOCKING in conky.c for experimenting
 	with synchronous signal processing. set to #undef for previous behavior.
