@@ -34,11 +34,6 @@
 #define MAIL_FILE "$MAIL"
 #define MAX_IF_BLOCK_DEPTH 5
 
-/* defining SIGNAL_BLOCKING will cause conky to block asynchronous signal handlin,
- * in favor of inspecting for pending signals synchronously.  this is experimental
- * code designed to avoid signal events in slow/blocking system calls like select().
- * use #undef SIGNAL_BLOCKING for the tradiational, asynchronous signal handling. */
-
 /* #define SIGNAL_BLOCKING */
 #undef SIGNAL_BLOCKING
 
@@ -5089,11 +5084,6 @@ int main(int argc, char **argv)
 	init_X11();
 #endif /* X11 */
 
-	tmpstring1 = (char *)
-	    malloc(TEXT_BUFFER_SIZE);
-	tmpstring2 = (char *)
-	    malloc(TEXT_BUFFER_SIZE);
-
 	/* load current_config or CONFIG_FILE */
 
 #ifdef CONFIG_FILE
@@ -5287,8 +5277,7 @@ int main(int argc, char **argv)
 	}
 
 	main_loop();
-	free(tmpstring1);
-	free(tmpstring2);
+
 	return 0;
 }
 

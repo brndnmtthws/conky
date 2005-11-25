@@ -209,8 +209,8 @@ int top_mem;
 
 int use_spacer;
 
-char *tmpstring1;
-char *tmpstring2;
+char tmpstring1[TEXT_BUFFER_SIZE];
+char tmpstring2[TEXT_BUFFER_SIZE];
 
 #ifdef X11
 /* in x11.c */
