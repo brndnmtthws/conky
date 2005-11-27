@@ -471,11 +471,11 @@ inline static void update_stat()
 			}
 			/* TESTING -- I've removed this, because I don't think it is right. You shouldn't divide 
 			              by the cpu count here ... removing for testing */
-	                if (index == 0) {
+	                /* if (index == 0) {
         	                info.cpu_usage[index] = curtmp / info.cpu_avg_samples / info.cpu_count; 
 	                } else {
         	                info.cpu_usage[index] = curtmp / info.cpu_avg_samples;
-  		        } 
+  		        }  */
 			/* TESTING -- this line replaces the prev. "suspect" if/else */
 			info.cpu_usage[index] = curtmp / info.cpu_avg_samples;
 
