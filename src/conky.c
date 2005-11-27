@@ -2751,17 +2751,17 @@ static void generate_text()
 			}
 			OBJ(processes) {
 				if (!use_spacer)
-					snprintf(p, n, "%d", cur->procs);
+					snprintf(p, n, "%hu", cur->procs);
 				else
-					snprintf(p, 5, "%d    ",
+					snprintf(p, 5, "%hu    ",
 						 cur->procs);
 			}
 			OBJ(running_processes) {
 				if (!use_spacer)
-					snprintf(p, n, "%d",
+					snprintf(p, n, "%hu",
 						 cur->run_procs);
 				else
-					snprintf(p, 3, "%d     ",
+					snprintf(p, 3, "%hu     ",
 						 cur->run_procs);
 			}
 			OBJ(text) {

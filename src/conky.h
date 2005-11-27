@@ -172,8 +172,8 @@ struct information {
 	unsigned long mem, memmax, swap, swapmax;
 	unsigned long bufmem, buffers, cached;
 
-	unsigned int procs;
-	unsigned int run_procs;
+	unsigned short procs;
+	unsigned short run_procs;
 
 	float *cpu_usage;
 	/*	struct cpu_stat cpu_summed; what the hell is this? */
@@ -200,7 +200,20 @@ struct information {
 #ifdef TCP_PORT_MONITOR
         tcp_port_monitor_collection_t * p_tcp_port_monitor_collection;
 #endif
+	short kflags;  /* kernel settings, see enum KFLAG */
 };
+
+enum {
+	KFLAG_IS_LONGSTAT = 0x01,         /* set to true if kernel uses "long" format for /proc/stats */
+	KFLAG_PROC_IS_THREADS=0x02       /* set to true if kernel shows # of threads for the proc value in sysinfo() call */
+/* 	KFLAG_NEXT_ONE=0x04                 bits 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 available for future use */
+     };	
+
+#define KFLAG_SETON(a) info.kflags |= a 
+#define KFLAG_SETOFF(a) info.kflags &= (~a)
+#define KFLAG_FLIP(a) info.kflags ^= a
+#define KFLAG_ISSET(a) info.kflags & a
+
 
 int out_to_console;
 

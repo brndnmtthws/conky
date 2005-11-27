@@ -8,9 +8,8 @@
 
 #include "top.h"
 
-static regex_t *exclusion_expression = 0;
 static unsigned long g_time = 0;
-static unsigned long previous_total = 0;
+static unsigned long long previous_total = 0;
 static struct process *first_process = 0;
 
 struct process *get_first_process()
@@ -88,8 +87,8 @@ static int calculate_cpu(struct process *);
 static void process_cleanup(void);
 static void delete_process(struct process *);
 /*inline void draw_processes(void);*/
-static unsigned long calc_cpu_total(void);
-static void calc_cpu_each(unsigned long);
+static unsigned long long calc_cpu_total(void);
+static void calc_cpu_each(unsigned long long);
 
 
 /******************************************/
@@ -210,7 +209,7 @@ static int process_parse_stat(struct process *process)
 	/* store only the difference of the user_time here... */
 	process->user_time = user_time;
 	process->kernel_time = kernel_time;
-
+		  
 
 	return 0;
 }
@@ -282,9 +281,10 @@ static int calculate_cpu(struct process *process)
 	/*
 	 * Check name against the exclusion list
 	 */
-	if (process->counted && exclusion_expression
+/*	if (process->counted && exclusion_expression
 	    && !regexec(exclusion_expression, process->name, 0, 0, 0))
 		process->counted = 0;
+*/
 
 	return 0;
 }
@@ -347,30 +347,37 @@ static void delete_process(struct process *p)
 /******************************************/
 /* Calculate cpu total                    */
 /******************************************/
+#define TMPL_SHORTPROC "%*s %llu %llu %llu %llu"
+#define TMPL_LONGPROC "%*s %llu %llu %llu %llu %llu %llu %llu %llu"
 
-static unsigned long calc_cpu_total()
+static unsigned long long calc_cpu_total()
 {
-	unsigned long total = 0;
-	unsigned long t = 0;
+	unsigned long long total = 0;
+	unsigned long long t = 0;
 	int rc;
 	int ps;
 	char line[BUFFER_LEN];
-	unsigned long cpu = 0;
-	unsigned long nice = 0;
-	unsigned long system = 0;
-	unsigned long idle = 0;
-
+	unsigned long long cpu = 0;
+	unsigned long long nice = 0;
+	unsigned long long system = 0;
+	unsigned long long idle = 0;
+	unsigned long long iowait = 0;
+	unsigned long long irq = 0;
+	unsigned long long softirq = 0;
+	unsigned long long steal = 0;
+	char * template = KFLAG_ISSET(KFLAG_IS_LONGSTAT) ? TMPL_LONGPROC : TMPL_SHORTPROC; 
+ 
 	ps = open("/proc/stat", O_RDONLY);
 	rc = read(ps, line, sizeof(line));
 	close(ps);
 	if (rc < 0)
 		return 0;
-	sscanf(line, "%*s %lu %lu %lu %lu", &cpu, &nice, &system, &idle);
-	total = cpu + nice + system + idle;
+
+	sscanf(line, template, &cpu, &nice, &system, &idle, &iowait, &irq, &softirq, &steal);
+	total = cpu + nice + system + idle + iowait + irq + softirq + steal;
 
 	t = total - previous_total;
 	previous_total = total;
-
 
 	return t;
 }
@@ -379,18 +386,13 @@ static unsigned long calc_cpu_total()
 /* Calculate each processes cpu           */
 /******************************************/
 
-inline static void calc_cpu_each(unsigned long total)
+inline static void calc_cpu_each(unsigned long long total)
 {
 	struct process *p = first_process;
 	while (p) {
-		/*p->amount = total ?
-		   (100.0 * (float) (p->user_time + p->kernel_time) /
-		   total) : 0; */
 		p->amount =
-		    100.0 * ((float)(p->user_time + p->kernel_time) / (float)total);
+		    100.0 * (p->user_time + p->kernel_time) / (float)total;
 
-/*		if (p->amount > 100)
-		p->amount = 0;*/
 		p = p->next;
 	}
 }
@@ -399,14 +401,11 @@ inline static void calc_cpu_each(unsigned long total)
 /* Find the top processes                 */
 /******************************************/
 
-//static int tot_struct;  //for debugging..uncomment this and the 2 printfs in the next two functs
-
 /*
  * free a  sp_process structure
 */
 void free_sp(struct sorted_process * sp) {
 	free(sp);
-//	printf("free: %d structs\n",--tot_struct );
 }
 
 /*
@@ -418,7 +417,6 @@ struct sorted_process * malloc_sp(struct process * proc) {
 	sp->greater = NULL;
 	sp->less = NULL;
 	sp->proc = proc;
-//	printf("malloc: %d structs\n", ++tot_struct);
 	return(sp);
 } 
 
@@ -521,7 +519,7 @@ inline void process_find_top(struct process **cpu, struct process **mem)
 	struct sorted_process *spc_head = NULL, *spc_tail = NULL, *spc_cur = NULL;
 	struct sorted_process *spm_head = NULL, *spm_tail = NULL, *spm_cur = NULL;
 	struct process *cur_proc = NULL;
-	unsigned long total = 0;
+	unsigned long long total = 0;
 
 	if (!top_cpu && !top_mem) return;
 
@@ -533,7 +531,6 @@ inline void process_find_top(struct process **cpu, struct process **mem)
 	cur_proc = first_process;
 
 	while (cur_proc !=NULL) {
-		//printf("\n\n cur_proc: %s %f %f\n",cur_proc->name, cur_proc->totalmem, cur_proc->amount );
 		if (top_cpu) {
 			spc_cur = malloc_sp(cur_proc);
 			insert_sp_element(spc_cur, &spc_head, &spc_tail, MAX_SP, &compare_cpu);

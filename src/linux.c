@@ -29,6 +29,10 @@
 #include <net/if.h>
 #include <math.h>
 
+#define SHORTSTAT_TEMPL "%*s %llu %llu %llu"
+#define LONGSTAT_TEMPL "%*s %llu %llu %llu "
+
+
 static struct sysinfo s_info;
 
 static int show_nice_processes;
@@ -326,11 +330,18 @@ void update_total_processes()
 
 #define CPU_SAMPLE_COUNT 15
 struct cpu_info {
-	unsigned long cpu_user;
-	unsigned long cpu_system;
-	unsigned long cpu_nice;
-	double last_cpu_sum;
-	unsigned long clock_ticks;
+	unsigned long long cpu_user;
+	unsigned long long cpu_system;
+	unsigned long long cpu_nice;
+	unsigned long long cpu_idle;
+	unsigned long long cpu_iowait;
+	unsigned long long cpu_irq;
+	unsigned long long cpu_softirq;
+	unsigned long long cpu_steal;
+	unsigned long long cpu_total;
+	unsigned long long cpu_active_total;
+	unsigned long long cpu_last_total;
+	unsigned long long cpu_last_active_total;
 	double cpu_val[CPU_SAMPLE_COUNT];
 };
 static short cpu_setup = 0;
@@ -338,6 +349,18 @@ static int rep;
 
 
 static FILE *stat_fp;
+
+/* 
+   determine if this kernel gives us "extended" statistics information in /proc/stat. 
+   Kernels around 2.5 and earlier only reported user, system, nice and idle values in proc stat. 
+   Kernels around 2.6 and greater report these PLUS iowait, irq, softirq, and steal 
+*/
+void determine_longstat(char * buf) { 
+	unsigned long long iowait=0;
+	KFLAG_SETOFF(KFLAG_IS_LONGSTAT);	
+	/* scanf will either return -1 or 1 because there is only 1 assignment  */
+	if (sscanf(buf, "%*s %*d %*d %*d %*d %llu",&iowait)>0) KFLAG_SETON(KFLAG_IS_LONGSTAT);
+}
 
 void get_cpu_count()
 {
@@ -356,12 +379,18 @@ void get_cpu_count()
 			break;
 
 		if (strncmp(buf, "cpu", 3) == 0 && isdigit(buf[3])) {
+			if (info.cpu_count == 0) {
+				determine_longstat(buf);
+			}
 			info.cpu_count++;
 		}
 	}
 	info.cpu_usage = malloc((info.cpu_count + 1) * sizeof(float));
+
 }
 
+#define TMPL_LONGSTAT "%*s %llu %llu %llu %llu %llu %llu %llu %llu"
+#define TMPL_SHORTSTAT "%*s %llu %llu %llu %llu"
 
 inline static void update_stat()
 {
@@ -370,20 +399,25 @@ inline static void update_stat()
 	unsigned int i;
 	unsigned int index;
 	double curtmp;
+	char * stat_template=NULL; 
+	unsigned int malloc_cpu_size=0;
+	
+
 	if (!cpu_setup) {
 		get_cpu_count();
 		cpu_setup = 1;
 	}
+
+	if (stat_template == NULL) {
+		stat_template = KFLAG_ISSET(KFLAG_IS_LONGSTAT) ? TMPL_LONGSTAT : TMPL_SHORTSTAT ;
+	}	
+
 	if (cpu == NULL) {
-		cpu = malloc((info.cpu_count + 1) * sizeof(struct cpu_info));
-		for (index = 0; index < info.cpu_count + 1; ++index) {
-			cpu[index].clock_ticks = 0;
-			cpu[index].last_cpu_sum = 0;
-			for (i = 0; i < CPU_SAMPLE_COUNT; ++i) {
-				cpu[index].cpu_val[i] = 0;
-			}
-		}
+		malloc_cpu_size = (info.cpu_count + 1) *  sizeof(struct cpu_info);
+		cpu = malloc(malloc_cpu_size);
+		memset(cpu, 0, malloc_cpu_size);
 	}
+
 	if (stat_fp == NULL) {
 		stat_fp = open_file("/proc/stat", &rep);
 	} else {
@@ -398,57 +432,61 @@ inline static void update_stat()
 			break;
 
 		if (strncmp(buf, "procs_running ", 14) == 0) {
-			sscanf(buf, "%*s %d", &info.run_procs);
+			sscanf(buf, "%*s %hu", &info.run_procs);
 			info.mask |= (1 << INFO_RUN_PROCS);
-		} else if (strncmp(buf, "cpu ", 4) == 0) {
-			sscanf(buf, "%*s %lu %lu %lu", &(cpu[index].cpu_user), &(cpu[index].cpu_nice), &(cpu[index].cpu_system));
-			index++;
-			info.mask |= (1 << INFO_CPU);
-		} else if (strncmp(buf, "cpu", 3) == 0 && isdigit(buf[3]) && index <= info.cpu_count) {
-			sscanf(buf, "%*s %lu %lu %lu", &(cpu[index].cpu_user), &(cpu[index].cpu_nice), &(cpu[index].cpu_system));
-			index++;
-			info.mask |= (1 << INFO_CPU);
-		}
-	}
-	for (index = 0; index < info.cpu_count + 1; index++) {
-		double delta;
-		delta = current_update_time - last_update_time;
-		if (delta <= 0.001) {
-			return;
-		}
+		} else if (strncmp(buf, "cpu", 3) == 0) {
+			index = isdigit(buf[3]) ? ((int)buf[3]) - 0x2F : 0;
+			sscanf(buf, stat_template 
+				, &(cpu[index].cpu_user)
+				, &(cpu[index].cpu_nice)
+				, &(cpu[index].cpu_system)
+				, &(cpu[index].cpu_idle)
+				, &(cpu[index].cpu_iowait)
+				, &(cpu[index].cpu_irq)
+				, &(cpu[index].cpu_softirq)
+				, &(cpu[index].cpu_steal)
+				);
 
-		if (cpu[index].clock_ticks == 0) {
-			cpu[index].clock_ticks = sysconf(_SC_CLK_TCK);
-		}
-		curtmp = 0;
-		cpu[index].cpu_val[0] =
-				(cpu[index].cpu_user + cpu[index].cpu_nice + cpu[index].cpu_system -
-				cpu[index].last_cpu_sum) / delta / (double) cpu[index].clock_ticks;
-		for (i = 0; i < info.cpu_avg_samples; i++) {
-			curtmp += cpu[index].cpu_val[i];
-		}
-		if (index == 0) {
-			info.cpu_usage[index] = curtmp / info.cpu_avg_samples / info.cpu_count;
-		} else {
+			cpu[index].cpu_total = cpu[index].cpu_user 
+			                 + cpu[index].cpu_nice 
+			                 + cpu[index].cpu_system 
+			                 + cpu[index].cpu_idle 
+			                 + cpu[index].cpu_iowait 
+			                 + cpu[index].cpu_irq
+			                 + cpu[index].cpu_softirq
+			                 + cpu[index].cpu_steal 
+			                 ; 
+
+			cpu[index].cpu_active_total = cpu[index].cpu_total - (cpu[index].cpu_idle + cpu[index].cpu_iowait);
+			info.mask |= (1 << INFO_CPU);
+
+			double delta = current_update_time - last_update_time;
+			if (delta <= 0.001) return; 	
+
+			cpu[index].cpu_val[0] = (cpu[index].cpu_active_total -  cpu[index].cpu_last_active_total) / 
+			                        (float )(cpu[index].cpu_total - cpu[index].cpu_last_total); 
+			curtmp = 0;
+			for (i=0; i < info.cpu_avg_samples; i++ ) {
+				curtmp += cpu[index].cpu_val[i];
+			}
+			/* TESTING -- I've removed this, because I don't think it is right. You shouldn't divide 
+			              by the cpu count here ... removing for testing */
+	                if (index == 0) {
+        	                info.cpu_usage[index] = curtmp / info.cpu_avg_samples / info.cpu_count; 
+	                } else {
+        	                info.cpu_usage[index] = curtmp / info.cpu_avg_samples;
+  		        } 
+			/* TESTING -- this line replaces the prev. "suspect" if/else */
 			info.cpu_usage[index] = curtmp / info.cpu_avg_samples;
+
+			cpu[index].cpu_last_total = cpu[index].cpu_total;
+			cpu[index].cpu_last_active_total = cpu[index].cpu_active_total;
+        	        for (i = info.cpu_avg_samples - 1; i > 0; i--) {
+                	        cpu[index].cpu_val[i] = cpu[index].cpu_val[i - 1];
+			}
 		}
-		cpu[index].last_cpu_sum = cpu[index].cpu_user + cpu[index].cpu_nice + cpu[index].cpu_system;
-		for (i = info.cpu_avg_samples; i > 1; i--)
-			cpu[index].cpu_val[i - 1] = cpu[index].cpu_val[i - 2];
 
 	}
-
-// test code
-// this is for getting proc shit
-// pee pee
-// poo
-	//
-
-
-
-
-
-
 }
 
 void update_running_processes()

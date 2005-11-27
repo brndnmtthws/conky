@@ -1,4 +1,6 @@
 # $Id$
+2005-11-27 
+	* new code in linux.c and top.c to calculate CPU % correctly on 2.6 kernels.
 
 2005-11-24
 	* Fixed gentoo bug# 113219
