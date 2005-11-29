@@ -3462,7 +3462,9 @@ static void draw_string(const char *s)
 		printf("%s\n", s);
 	}
 	/* daemon_run(s);  the daemon can be called here, but we need to have a buffer in daemon_run() and we need to tell it when everything is ready to be sent */
-	strcpy(tmpstring1, s);
+	memset(tmpstring1,0,TEXT_BUFFER_SIZE);
+	memset(tmpstring2,0,TEXT_BUFFER_SIZE);
+	strncpy(tmpstring1, s, TEXT_BUFFER_SIZE-1);
 	pos = 0;
 	added = 0;
 	char space[2];
@@ -3483,13 +3485,21 @@ static void draw_string(const char *s)
 			for (i2 = 0;
 			     i2 < (8 - (1 + pos) % 8) && added <= max;
 			     i2++) {
-				tmpstring2[pos + i2] = ' ';
+				/*
+				if ( pos + i2 > TEXT_BUFFER_SIZE-1 )
+					fprintf(stderr,"buffer overrun detected\n");
+				*/
+				tmpstring2[ MIN(pos + i2, TEXT_BUFFER_SIZE-1) ] = ' '; /* guard against overrun */
 				added++;
 			}
 			pos += i2;
 		} else {
 			if (tmpstring1[i] != 9) {
-				tmpstring2[pos] = tmpstring1[i];
+				/*
+				if ( pos > TEXT_BUFFER_SIZE-1 )
+					 fprintf(stderr,"buffer overrun detected\n");
+				*/
+				tmpstring2[ MIN(pos, TEXT_BUFFER_SIZE-1) ] = tmpstring1[i]; /* guard against overrun */
 				pos++;
 			}
 		}

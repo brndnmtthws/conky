@@ -55,6 +55,9 @@ fprintf(stderr, "Conky: " s "\n", ##varargs)
 #define CRIT_ERR(s, varargs...) \
 { fprintf(stderr, "Conky: " s "\n", ##varargs);  exit(EXIT_FAILURE); }
 
+#define MIN(a,b) (a>b ? b : a)
+#define MAX(a,b) (a<b ? b : a)
+
 struct i8k_struct {
 	char *version;
 	char *bios;
