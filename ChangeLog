@@ -3,6 +3,8 @@
 2003-11-30
 	* Fixed sf.net bugs 1369607, 1367735 and gentoo bug 113921, 
 	  all variations of the same array out of bounds issue.
+	* "Fixed" code in fs.c and conky.c to make fs stats match those displayed by df 
+          (affects reporting against ext3 filesystems only)
 
 2005-11-27 
 	* new code in linux.c and top.c to calculate CPU % correctly on 2.6 kernels.

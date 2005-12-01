@@ -2501,7 +2501,7 @@ static void generate_text()
 			OBJ(fs_used) {
 				if (obj->data.fs != NULL)
 					human_readable(obj->data.fs->size -
-						       obj->data.fs->avail,
+						       (obj->data.fs->free ? obj->data.fs->free :obj->data.fs->avail),
 						       p, 255);
 			}
 			OBJ(fs_bar_free) {

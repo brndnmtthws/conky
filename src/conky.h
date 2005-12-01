@@ -90,6 +90,7 @@ struct fs_stat {
 	char *path;
 	long long size;
 	long long avail;
+	long long free;
 };
 
 /*struct cpu_stat {

@@ -81,10 +81,12 @@ void update_fs_stat(struct fs_stat* fs)
 	if(statfs(fs->path, &s) == 0) {
 		fs->size = (long long) s.f_blocks * s.f_bsize;
 		/* bfree (root) or bavail (non-roots) ? */
-		fs->avail = (long long) s.f_bavail * s.f_bsize;
+		fs->avail = (long long) s.f_bavail* s.f_bsize;
+		fs->free = (long long) s.f_bfree * s.f_bsize;;
 	} else {
 		fs->size = 0;
 		fs->avail = 0;
+		fs->free = 0;
 		ERR("statfs '%s': %s", fs->path, strerror(errno));
 	}
 }
