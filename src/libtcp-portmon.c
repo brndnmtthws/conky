@@ -37,7 +37,7 @@
  * ----------------------------------*/
 int copy_tcp_connection( 
 	tcp_connection_t *			p_dest_connection,
-	tcp_connection_t *			p_source_connection
+	const tcp_connection_t *		p_source_connection
 	)
 {
    if ( !p_dest_connection || !p_source_connection )
@@ -621,7 +621,7 @@ tcp_port_monitor_t * create_tcp_port_monitor(
    The requested monitor value is copied into a client-supplied char buffer.
    Returns 0 on success, -1 otherwise. */
 int peek_tcp_port_monitor(
-        tcp_port_monitor_t *                    p_monitor,
+        const tcp_port_monitor_t *              p_monitor,
         int                                     item,
         int                                     connection_index,
         char *                                  p_buffer,
@@ -902,7 +902,7 @@ int insert_tcp_port_monitor_into_collection(
 
 /* Clients need a way to find monitors */
 tcp_port_monitor_t * find_tcp_port_monitor( 
-	tcp_port_monitor_collection_t * 	p_collection, 
+	const tcp_port_monitor_collection_t * 	p_collection, 
 	in_port_t 				port_range_begin,
 	in_port_t 				port_range_end
 	)
