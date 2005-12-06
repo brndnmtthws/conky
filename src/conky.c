@@ -2050,10 +2050,18 @@ static void generate_text()
 				get_freq(p, n, "%'.2f", 1000); /* pk */
 			}
 			OBJ(freq_dyn) {
-				get_freq_dynamic(p, n, "%.0f", 1 ); /* pk */
+				if (use_spacer) {
+					get_freq_dynamic(p, 6, "%.0f     ", 1 ); /* pk */
+				} else {
+					get_freq_dynamic(p, n, "%.0f", 1 ); /* pk */
+				}
 			}
 			OBJ(freq_dyn_g) {
-				get_freq_dynamic(p, n, "%'.2f", 1000); /* pk */
+				if (use_spacer) {
+					get_freq_dynamic(p, 6, "%'.2f     ", 1000); /* pk */
+				} else {
+					get_freq_dynamic(p, n, "%'.2f", 1000); /* pk */
+				}
 			}
 			OBJ(adt746xcpu) {
 				get_adt746x_cpu(p, n); /* pk */

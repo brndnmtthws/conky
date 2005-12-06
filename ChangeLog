@@ -1,6 +1,9 @@
 # $Id$
 
-2003-11-30
+2005-12-05
+	* Fixed sf.net bug 1367745
+
+2005-11-30
 	* Fixed sf.net bugs 1369607, 1367735 and gentoo bug 113921, 
 	  all variations of the same array out of bounds issue.
 	* "Fixed" code in fs.c and conky.c to make fs stats match those displayed by df 
