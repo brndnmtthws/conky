@@ -86,7 +86,6 @@ struct font_list *fonts = NULL;
 
 static void set_font();
 
-
 int addfont(const char *data_in)
 {
 	if (font_count > MAX_FONTS) {
@@ -974,6 +973,7 @@ struct text_object_list {
 
 static unsigned int text_object_count;
 static struct text_object *text_objects;
+static void generate_text_internal(char *p, int p_max_size, struct text_object *objs, unsigned int object_count, struct information *cur);
 
 pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 
@@ -1001,20 +1001,6 @@ static struct text_object *new_text_object_internal()
   struct text_object *obj = malloc(sizeof(struct text_object));
   memset(obj, 0, sizeof(struct text_object));    
   return obj;
-}
-
-/* new_text_object() allocates a new zeroed text_object */
-static struct text_object *new_text_object()
-{
-	text_object_count++;
-	text_objects = (struct text_object *) realloc(text_objects,
-						      sizeof(struct
-							     text_object) *
-						      text_object_count);
-	memset(&text_objects[text_object_count - 1], 0,
-	       sizeof(struct text_object));
-
-	return &text_objects[text_object_count - 1];
 }
 
 #ifdef MLDONKEY
@@ -1128,6 +1114,7 @@ void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
 		(void) scan_bar(arg, w, h);
 	}
 }
+
 
 /* construct_text_object() creates a new text_object */
 static struct text_object *construct_text_object(const char *s, const char *arg)
@@ -1904,33 +1891,6 @@ static struct text_object *create_plain_text(const char *s)
   return obj;
 }
 
-/* append_text() appends text to last text_object if it's text, if it isn't
- * it creates a new text_object  [DEPRECATED] 
-*/
-static void append_text(const char *s)
-{
-	struct text_object *obj;
-
-	if (s == NULL || *s == '\0')
-		return;
-
-	obj = text_object_count ? &text_objects[text_object_count - 1] : 0;
-
-	/* create a new text object? */
-	if (!obj || obj->type != OBJ_text) {
-		obj = new_text_object();
-		obj->type = OBJ_text;
-		obj->data.s = strdup(s);
-	} else {
-		/* append */
-		obj->data.s = (char *) realloc(obj->data.s,
-					       strlen(obj->data.s) +
-					       strlen(s) + 1);
-		strcat(obj->data.s, s);
-	}
-}
-
-
 static struct text_object_list *extract_variable_text_internal(const char *p)
 {
     struct text_object_list *retval;
@@ -2084,6 +2044,11 @@ static void extract_variable_text(const char *p)
   return;
 }
 
+void parse_conky_vars(char * text, char * p, struct information *cur){ 
+	struct text_object_list *object_list = extract_variable_text_internal(text);
+	generate_text_internal(p, P_MAX_SIZE, object_list->text_objects, object_list->text_object_count, cur);
+	free(object_list);
+}
 
 static void generate_text_internal(char *p, int p_max_size, struct text_object *objs, unsigned int object_count, struct information *cur)
 {
@@ -2368,20 +2333,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					output[length - 1] = '\0';
 				}
 				    
-				struct text_object_list *object_list = extract_variable_text_internal(output);
-				generate_text_internal(p, length, object_list->text_objects, object_list->text_object_count, cur);
-				free(object_list);
-/* DaC
-				p[n2] = '\0';
-				if (n2 && p[n2 - 1] == '\n')
-					p[n2 - 1] = '\0';
-
-				while (*p2) {
-					if (*p2 == '\001')
-						*p2 = ' ';
-					p2++;
-				} 
-*/
+				parse_conky_vars(output, p, cur);
 			}
 			OBJ(execbar) {
 				char *p2 = p;
@@ -2501,50 +2453,23 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 
 			}
 			OBJ(execi) {
-				if (current_update_time - obj->data.execi.last_update < obj->data.execi.interval) {
-				    snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
-				} else {
-				    char *output = obj->data.execi.buffer;
-				    FILE *fp = popen(obj->data.execi.cmd, "r");
-				    int length = fread(output, 1, TEXT_BUFFER_SIZE, fp);
-				    (void) pclose(fp);
-				    
-				    output[length] = '\0';
-				    if (length > 0 && output[length - 1] == '\n')
-					output[length - 1] = '\0';
-				    
-				    struct text_object_list *object_list = extract_variable_text_internal(output);
-				    generate_text_internal(p, length, object_list->text_objects, object_list->text_object_count, cur);
-				    free(object_list);
-									    
-				    /*
-					char *p2 = obj->data.execi.buffer;
+				char *output = obj->data.execi.buffer;
+				if (current_update_time - obj->data.execi.last_update >= obj->data.execi.interval) {
+					char *output = obj->data.execi.buffer;
 					FILE *fp = popen(obj->data.execi.cmd, "r");
-					int n2 = fread(p2, 1, TEXT_BUFFER_SIZE, fp);
+					int length = fread(output, 1, TEXT_BUFFER_SIZE, fp);
 					(void) pclose(fp);
-
-					p2[n2] = '\0';
-					if (n2 && p2[n2 - 1] == '\n')
-						p2[n2 - 1] = '\0';
-
-					while (*p2) {
-					  if (*p2 == '\001') {
-					    *p2 = ' ';
-					  } else if(*p2 == '$') {
-					      //memset(*t, 0, sizeof(struct text_object));
-					  }
-					  p2++;
+				    
+					output[length] = '\0';
+					if (length > 0 && output[length - 1] == '\n') {
+						output[length - 1] = '\0';
 					}
-
-					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
-					obj->data.execi.last_update = current_update_time;*/
 				}
+				parse_conky_vars(output, p, cur);
 			}
 			OBJ(texeci) {
 				static int running = 0;
-				if (current_update_time - obj->data.execi.last_update <	obj->data.execi.interval) {
-					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
-				} else {
+				if (current_update_time - obj->data.execi.last_update >= obj->data.execi.interval) {
 					static pthread_t execthread;
 					if (!running) {
 						running = 1;
@@ -2556,8 +2481,8 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						pthread_join( execthread, NULL);
 						running = 0;
 					}
-					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
 				}
+				parse_conky_vars(obj->data.execi.buffer, p, cur);
 			}
 #endif
 			OBJ(fs_bar) {
@@ -3161,18 +3086,8 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			}
 
 
-
-			/*
-			 * I'm tired of everything being packed in
-			 * pee
-			 * poop
-			 */
-
-
 			OBJ(tail) {
-				if (current_update_time -obj->data.tail.last_update < obj->data.tail.interval) {
-					snprintf(p, p_max_size, "%s", obj->data.tail.buffer);
-				} else {
+				if (current_update_time -obj->data.tail.last_update >= obj->data.tail.interval) {
 					obj->data.tail.last_update = current_update_time;
 					FILE *fp;
 					int i;
@@ -3221,21 +3136,19 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							if (obj->data.tail.buffer[strlen(obj->data.tail.buffer)-1] == '\n') {
 								obj->data.tail.buffer[strlen(obj->data.tail.buffer)-1] = '\0';
 							}
-							snprintf(p, p_max_size, "%s", obj->data.tail.buffer);
 
 							freetail(freetmp);
-						}
-						else {
+						} else {
 							strcpy(obj->data.tail.buffer, "Logfile Empty");
-							snprintf(p, p_max_size, "Logfile Empty");
-						}
-					}
-				}
+						}  /* if readlines */
+					} /*  fp == NULL  */
+				} /* if cur_upd_time >= */
+	
+				parse_conky_vars(obj->data.tail.buffer, p, cur);
+
 			}
 			OBJ(head) {
-				if (current_update_time -obj->data.tail.last_update < obj->data.tail.interval) {
-					snprintf(p, p_max_size, "%s", obj->data.tail.buffer);
-				} else {
+				if (current_update_time -obj->data.tail.last_update >= obj->data.tail.interval) {
 					obj->data.tail.last_update = current_update_time;
 					FILE *fp;
 					tailstring *head = NULL;
@@ -3244,8 +3157,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					fp = fopen(obj->data.tail.logfile, "rt");
 					if (fp == NULL) {
 						ERR("head logfile failed to open");
-					}
-					else {
+					} else {
 						obj->data.tail.readlines = 0;
 						while (fgets(obj->data.tail.buffer, TEXT_BUFFER_SIZE*20, fp) != NULL && obj->data.tail.readlines <= obj->data.tail.wantedlines) {
 							addtail(&head, obj->data.tail.buffer);
@@ -3271,14 +3183,14 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							if (obj->data.tail.buffer[strlen(obj->data.tail.buffer)-1] == '\n') {
 								obj->data.tail.buffer[strlen(obj->data.tail.buffer)-1] = '\0';
 							}
-							snprintf(p, p_max_size, "%s", obj->data.tail.buffer);
-						}
-						else {
+						} else {
 							strcpy(obj->data.tail.buffer, "Logfile Empty");
-							snprintf(p, p_max_size, "Logfile Empty");
-						}
-					}
-				}
+						} /* if readlines > 0 */
+					} /* if fp == null */
+				} /* cur_upd_time >= */
+
+				parse_conky_vars(obj->data.tail.buffer, p, cur);
+
 			}
 #ifdef TCP_PORT_MONITOR
 			OBJ(tcp_portmon)
@@ -3321,7 +3233,6 @@ double current_update_time, last_update_time;
 
 static void generate_text()
 {
-	unsigned int n;
 	struct information *cur = &info;
 	char *p;
 
@@ -3335,10 +3246,9 @@ static void generate_text()
 
 	/* generate text */
 
-	n = TEXT_BUFFER_SIZE * 4 - 2;
 	p = text_buffer;
 
-	generate_text_internal(p, n, text_objects, text_object_count, cur);
+	generate_text_internal(p, P_MAX_SIZE, text_objects, text_object_count, cur);
 
 	if (stuff_in_upper_case) {
 		char *p;
