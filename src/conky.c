@@ -967,6 +967,11 @@ struct text_object {
 	} data;
 };
 
+struct text_object_list {
+  unsigned int text_object_count;
+  struct text_object *text_objects;
+};
+
 static unsigned int text_object_count;
 static struct text_object *text_objects;
 
@@ -989,6 +994,13 @@ void *threaded_exec( struct text_object *obj ) {
 	}
 	pthread_mutex_unlock( &mutex1 );
 	return NULL;
+}
+
+static struct text_object *new_text_object_internal()
+{
+  struct text_object *obj = malloc(sizeof(struct text_object));
+  memset(obj, 0, sizeof(struct text_object));    
+  return obj;
 }
 
 /* new_text_object() allocates a new zeroed text_object */
@@ -1015,51 +1027,51 @@ void ml_cleanup()
 }
 #endif
 
-static void free_text_objects()
+static void free_text_objects(unsigned int count, struct text_object *objs)
 {
 	unsigned int i;
-	for (i = 0; i < text_object_count; i++) {
-		switch (text_objects[i].type) {
+	for (i = 0; i < count; i++) {
+	    switch (objs[i].type) {
 		case OBJ_acpitemp:
-			close(text_objects[i].data.i);
+			close(objs[i].data.i);
 			break;
 		case OBJ_acpitempf:
-			close(text_objects[i].data.i);
+			close(objs[i].data.i);
 			break;
 		case OBJ_i2c:
-			close(text_objects[i].data.i2c.fd);
+			close(objs[i].data.i2c.fd);
 			break;
 		case OBJ_time:
-			free(text_objects[i].data.s);
+			free(objs[i].data.s);
 			break;
 		case OBJ_utime:
 		case OBJ_if_existing:
 		case OBJ_if_mounted:
 		case OBJ_if_running:
-			free(text_objects[i].data.ifblock.s);
+			free(objs[i].data.ifblock.s);
 			break;
 		case OBJ_tail:
-			free(text_objects[i].data.tail.logfile);
-			free(text_objects[i].data.tail.buffer);
+			free(objs[i].data.tail.logfile);
+			free(objs[i].data.tail.buffer);
 			break;
 		case OBJ_text:
 		case OBJ_font:
-			free(text_objects[i].data.s);
+			free(objs[i].data.s);
 			break;
 		case OBJ_exec:
-			free(text_objects[i].data.s);
+			free(objs[i].data.s);
 			break;
 		case OBJ_execbar:
-			free(text_objects[i].data.s);
+			free(objs[i].data.s);
 			break;
 		case OBJ_execgraph:
-			free(text_objects[i].data.s);
+			free(objs[i].data.s);
 			break;
 /*		case OBJ_execibar:
-			free(text_objects[i].data.s);
+			free(objs[i].data.s);
 			break;
 		case OBJ_execigraph:
-			free(text_objects[i].data.s);
+			free(objs[i].data.s);
 			break;*/
 #ifdef MPD
 		case OBJ_mpd_title:
@@ -1073,16 +1085,16 @@ static void free_text_objects()
 #endif
 		case OBJ_pre_exec:
 		case OBJ_battery:
-			free(text_objects[i].data.s);
+			free(objs[i].data.s);
 			break;
 
 		case OBJ_execi:
-			free(text_objects[i].data.execi.cmd);
-			free(text_objects[i].data.execi.buffer);
+			free(objs[i].data.execi.cmd);
+			free(objs[i].data.execi.buffer);
 			break;
 		case OBJ_texeci:
-			free(text_objects[i].data.execi.cmd);
-			free(text_objects[i].data.execi.buffer);
+			free(objs[i].data.execi.cmd);
+			free(objs[i].data.execi.buffer);
 			break;
 		case OBJ_top:
 			if (info.first_process) {
@@ -1098,12 +1110,9 @@ static void free_text_objects()
 			break;
 		}
 	}
-#ifdef MLDONKEY
-	ml_cleanup();
-#endif /* MLDONKEY */
-	free(text_objects);
-	text_objects = NULL;
-	text_object_count = 0;
+	free(objs);
+	//text_objects = NULL;
+	//text_object_count = 0;
 }
 
 void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
@@ -1121,9 +1130,10 @@ void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
 }
 
 /* construct_text_object() creates a new text_object */
-static void construct_text_object(const char *s, const char *arg)
+static struct text_object *construct_text_object(const char *s, const char *arg)
 {
-	struct text_object *obj = new_text_object();
+    //struct text_object *obj = new_text_object();
+    struct text_object *obj = new_text_object_internal();
 
 #define OBJ(a, n) if (strcmp(s, #a) == 0) { obj->type = OBJ_##a; need_mask |= (1 << n); {
 #define END ; } } else
@@ -1365,7 +1375,7 @@ if (s[0] == '#') {
 		ERR("i2c needs arguments");
 		obj->type = OBJ_text;
 		//obj->data.s = strdup("${i2c}");
-		return;
+		return NULL;
 	}
 
 	if (sscanf(arg, "%63s %63s %d", buf1, buf2, &n) != 3) {
@@ -1390,7 +1400,7 @@ if (s[0] == '#') {
 		ERR("top needs arguments");
 		obj->type = OBJ_text;
 		//obj->data.s = strdup("${top}");
-		return;
+		return NULL;
 	}
 	if (sscanf(arg, "%63s %i", buf, &n) == 2) {
 		if (strcmp(buf, "name") == 0) {
@@ -1403,18 +1413,18 @@ if (s[0] == '#') {
 			obj->data.top.type = TOP_MEM;
 		} else {
 			ERR("invalid arg for top");
-			return;
+			return NULL;
 		}
 		if (n < 1 || n > 10) {
 			CRIT_ERR("invalid arg for top");
-			return;
+			return NULL;
 		} else {
 			obj->data.top.num = n - 1;
 			top_cpu = 1;
 		}
 	} else {
 		ERR("invalid args given for top");
-		return;
+		return NULL;
 	}
 	END OBJ(top_mem, INFO_TOP)
 	char buf[64];
@@ -1423,7 +1433,7 @@ if (s[0] == '#') {
 		ERR("top_mem needs arguments");
 		obj->type = OBJ_text;
 		obj->data.s = strdup("${top_mem}");
-		return;
+		return NULL;
 	}
 	if (sscanf(arg, "%63s %i", buf, &n) == 2) {
 		if (strcmp(buf, "name") == 0) {
@@ -1436,18 +1446,18 @@ if (s[0] == '#') {
 			obj->data.top.type = TOP_MEM;
 		} else {
 			ERR("invalid arg for top");
-			return;
+			return NULL;
 		}
 		if (n < 1 || n > 10) {
 			CRIT_ERR("invalid arg for top");
-			return;
+			return NULL;
 		} else {
 			obj->data.top.num = n - 1;
 			top_mem = 1;
 		}
 	} else {
 		ERR("invalid args given for top");
-		return;
+		return NULL;
 	}
 	END OBJ(addr, INFO_NET)
 		if(arg) {
@@ -1470,12 +1480,12 @@ if (s[0] == '#') {
 		ERR("tail needs arguments");
 		obj->type = OBJ_text;
 		obj->data.s = strdup("${tail}");
-		return;
+		return NULL;
 	}
 	if (sscanf(arg, "%63s %i %i", buf, &n1, &n2) == 2) {
 		if (n1 < 1 || n1 > 30) {
 			CRIT_ERR("invalid arg for tail, number of lines must be between 1 and 30");
-			return;
+			return NULL;
 		} else {
 			FILE *fp = NULL;
 			fp = fopen(buf, "r");
@@ -1496,11 +1506,11 @@ if (s[0] == '#') {
 		if (n1 < 1 || n1 > 30) {
 			CRIT_ERR
 			    ("invalid arg for tail, number of lines must be between 1 and 30");
-			return;
+			return NULL;
 		} else if (n2 < 1 || n2 < update_interval) {
 			CRIT_ERR
 			    ("invalid arg for tail, interval must be greater than 0 and Conky's interval");
-			return;
+			return NULL;
 		} else {
 			FILE *fp;
 			fp = fopen(buf, "r");
@@ -1520,7 +1530,7 @@ if (s[0] == '#') {
 
 	else {
 		ERR("invalid args given for tail");
-		return;
+		return NULL;
 	}
 	obj->data.tail.buffer = malloc(TEXT_BUFFER_SIZE * 20); /* asumming all else worked */
 	END OBJ(head, 0)
@@ -1530,12 +1540,12 @@ if (s[0] == '#') {
 		ERR("head needs arguments");
 		obj->type = OBJ_text;
 		obj->data.s = strdup("${head}");
-		return;
+		return NULL;
 	}
 	if (sscanf(arg, "%63s %i %i", buf, &n1, &n2) == 2) {
 		if (n1 < 1 || n1 > 30) {
 			CRIT_ERR("invalid arg for head, number of lines must be between 1 and 30");
-			return;
+			return NULL;
 		} else {
 			FILE *fp;
 			fp = fopen(buf, "r");
@@ -1556,11 +1566,11 @@ if (s[0] == '#') {
 		if (n1 < 1 || n1 > 30) {
 			CRIT_ERR
 					("invalid arg for head, number of lines must be between 1 and 30");
-			return;
+			return NULL;
 		} else if (n2 < 1 || n2 < update_interval) {
 			CRIT_ERR
 					("invalid arg for head, interval must be greater than 0 and Conky's interval");
-			return;
+			return NULL;
 		} else {
 			FILE *fp;
 			fp = fopen(buf, "r");
@@ -1580,7 +1590,7 @@ if (s[0] == '#') {
 
 	else {
 		ERR("invalid args given for head");
-		return;
+		return NULL;
 	}
 	obj->data.tail.buffer = malloc(TEXT_BUFFER_SIZE * 20); /* asumming all else worked */
 	END OBJ(loadavg, INFO_LOADAVG) int a = 1, b = 2, c = 3, r = 3;
@@ -1875,10 +1885,28 @@ int a = stippled_borders, b = 1;
 		obj->data.s = strdup(buf);
 	}
 #undef OBJ
+
+	return obj;
+}
+
+static struct text_object *create_plain_text(const char *s)
+{
+  struct text_object *obj;
+
+  if (s == NULL || *s == '\0') {
+      return NULL;
+  }
+  
+  obj = new_text_object_internal();
+
+  obj->type = OBJ_text;
+  obj->data.s = strdup(s);
+  return obj;
 }
 
 /* append_text() appends text to last text_object if it's text, if it isn't
- * it creates a new text_object */
+ * it creates a new text_object  [DEPRECATED] 
+*/
 static void append_text(const char *s)
 {
 	struct text_object *obj;
@@ -1902,16 +1930,30 @@ static void append_text(const char *s)
 	}
 }
 
-static void extract_variable_text(const char *p)
+
+static struct text_object_list *extract_variable_text_internal(const char *p)
 {
-	const char *s = p;
-
-	free_text_objects();
-
+    struct text_object_list *retval;
+    struct text_object *obj;
+    const char *s = p;
+    
+    retval = malloc(sizeof(struct text_object_list));
+    memset(retval, 0, sizeof(struct text_object_list));
+    retval->text_object_count = 0;
+	
 	while (*p) {
 		if (*p == '$') {
 			*(char *) p = '\0';
-			append_text(s);
+			obj = create_plain_text(s);
+			if(obj != NULL) {
+			    // allocate memory for the object
+			    retval->text_objects = realloc(retval->text_objects, 
+							   sizeof(struct text_object) * (retval->text_object_count+1));
+			    // assign the new object to the end of the list.
+			    memcpy(&retval->text_objects[retval->text_object_count++],
+				   obj, sizeof(struct text_object));
+			    free(obj);
+			}
 			*(char *) p = '$';
 			p++;
 			s = p;
@@ -1970,44 +2012,85 @@ static void extract_variable_text(const char *p)
 						p++;
 					}
 
-					construct_text_object(buf, arg);
+					// create new object
+					obj = construct_text_object(buf, arg);
+					if(obj != NULL) {
+					    // allocate memory for the object
+					    retval->text_objects = realloc(retval->text_objects, 
+									   sizeof(struct text_object) * (retval->text_object_count+1));
+					    // assign the new object to the end of the list.
+					    memcpy(&retval->text_objects[retval->text_object_count++],
+						   obj, sizeof(struct text_object));
+					    free(obj);
+					}
+
+					
 				}
 				continue;
-			} else
-				append_text("$");
+			} else {
+			    obj = create_plain_text("$");
+			    if(obj != NULL) {
+				// allocate memory for the object
+				retval->text_objects = realloc(retval->text_objects, 
+							       sizeof(struct text_object) * (retval->text_object_count+1));
+				// assign the new object to the end of the list.
+				memcpy(&retval->text_objects[retval->text_object_count++],
+				       obj, sizeof(struct text_object));
+				free(obj);
+			    }
+			}
+
 		}
 
 		p++;
 	}
-	append_text(s);
+
+	obj = create_plain_text(s);
+	if(obj != NULL) {
+	    // allocate memory for the object
+	    retval->text_objects = realloc(retval->text_objects, 
+					   sizeof(struct text_object) * (retval->text_object_count+1));
+	    // assign the new object to the end of the list.
+	    memcpy(&retval->text_objects[retval->text_object_count++],
+		   obj, sizeof(struct text_object));
+	    free(obj);
+	}
+
 	if (blockdepth) {
 		ERR("one or more $endif's are missing");
 	}
+
+	return retval;
 }
 
-double current_update_time, last_update_time;
-
-static void generate_text()
+static void extract_variable_text(const char *p)
 {
-	unsigned int i, n;
-	struct information *cur = &info;
-	char *p;
+  struct text_object_list *list;
 
-	special_count = 0;
+  free_text_objects(text_object_count, text_objects);
+  text_object_count = 0;
+  text_objects = NULL;
 
-	/* update info */
+#ifdef MLDONKEY	
+  ml_cleanup();
+#endif /* MLDONKEY */
+         
+  list = extract_variable_text_internal(p);
+  text_objects = list->text_objects;
+  text_object_count = list->text_object_count;  
 
-	current_update_time = get_time();
+  free(list);
 
-	update_stuff(cur);
+  return;
+}
 
-	/* generate text */
 
-	n = TEXT_BUFFER_SIZE * 4 - 2;
-	p = text_buffer;
+static void generate_text_internal(char *p, int p_max_size, struct text_object *objs, unsigned int object_count, struct information *cur)
+{
+    unsigned int i;
 
-	for (i = 0; i < text_object_count; i++) {
-		struct text_object *obj = &text_objects[i];
+	for (i = 0; i < object_count; i++) {
+		struct text_object *obj = &objs[i];
 
 #define OBJ(a) break; case OBJ_##a:
 
@@ -2020,7 +2103,7 @@ static void generate_text()
 			OBJ(acpitemp) {
 				/* does anyone have decimals in acpi temperature? */
 				if (!use_spacer)
-					snprintf(p, n, "%d", (int)
+					snprintf(p, p_max_size, "%d", (int)
 							get_acpi_temperature(obj->
 									data.
 									i));
@@ -2033,7 +2116,7 @@ static void generate_text()
 			OBJ(acpitempf) {
 				/* does anyone have decimals in acpi temperature? */
 				if (!use_spacer)
-					snprintf(p, n, "%d", (int)
+					snprintf(p, p_max_size, "%d", (int)
 							((get_acpi_temperature(obj->
 									data.
 									i)+ 40) * 9.0 / 5 - 40));
@@ -2044,43 +2127,42 @@ static void generate_text()
 									i)+ 40) * 9.0 / 5 - 40));
 			}
 			OBJ(freq) {
-				get_freq(p, n, "%.0f", 1); /* pk */
+				get_freq(p, p_max_size, "%.0f", 1); /* pk */
 			}
 			OBJ(freq_g) {
-				get_freq(p, n, "%'.2f", 1000); /* pk */
+				get_freq(p, p_max_size, "%'.2f", 1000); /* pk */
 			}
 			OBJ(freq_dyn) {
 				if (use_spacer) {
 					get_freq_dynamic(p, 6, "%.0f     ", 1 ); /* pk */
 				} else {
-					get_freq_dynamic(p, n, "%.0f", 1 ); /* pk */
+					get_freq_dynamic(p, p_max_size, "%.0f", 1 ); /* pk */
 				}
 			}
 			OBJ(freq_dyn_g) {
 				if (use_spacer) {
 					get_freq_dynamic(p, 6, "%'.2f     ", 1000); /* pk */
 				} else {
-					get_freq_dynamic(p, n, "%'.2f", 1000); /* pk */
+					get_freq_dynamic(p, p_max_size, "%'.2f", 1000); /* pk */
 				}
 			}
 			OBJ(adt746xcpu) {
-				get_adt746x_cpu(p, n); /* pk */
+				get_adt746x_cpu(p, p_max_size); /* pk */
 			}
 			OBJ(adt746xfan) {
-				get_adt746x_fan(p, n); /* pk */
+				get_adt746x_fan(p, p_max_size); /* pk */
 			}
 			OBJ(acpifan) {
-				get_acpi_fan(p, n);  /* pk */
+				get_acpi_fan(p, p_max_size);  /* pk */
 			}
 			OBJ(acpiacadapter) {
-				get_acpi_ac_adapter(p, n); /* pk */
+				get_acpi_ac_adapter(p, p_max_size); /* pk */
 			}
 			OBJ(battery) {
-				get_battery_stuff(p, n, obj->data.s);
+				get_battery_stuff(p, p_max_size, obj->data.s);
 			}
 			OBJ(buffers) {
-				human_readable(cur->buffers * 1024, p,
-					       255);
+				human_readable(cur->buffers * 1024, p, 255);
 			}
 			OBJ(cached) {
 				human_readable(cur->cached * 1024, p, 255);
@@ -2091,7 +2173,7 @@ static void generate_text()
 					CRIT_ERR("attempting to use more CPUs then you have!");
 				}
 				if (!use_spacer)
-					snprintf(p, n, "%*d", pad_percents,
+					snprintf(p, p_max_size, "%*d", pad_percents,
 						(int) round_to_int(cur->cpu_usage[obj->data.cpu_index] *
 							100.0));
 				else
@@ -2116,31 +2198,31 @@ static void generate_text()
 			}
 #if defined(__linux__)
 			OBJ(i8k_version) {
-				snprintf(p, n, "%s", i8k.version);
+				snprintf(p, p_max_size, "%s", i8k.version);
 			}
 			OBJ(i8k_bios) {
-				snprintf(p, n, "%s", i8k.bios);
+				snprintf(p, p_max_size, "%s", i8k.bios);
 			}
 			OBJ(i8k_serial) { 
-				snprintf(p, n, "%s", i8k.serial);
+				snprintf(p, p_max_size, "%s", i8k.serial);
 			}
 			OBJ(i8k_cpu_temp) { 
-				snprintf(p, n, "%s", i8k.cpu_temp);
+				snprintf(p, p_max_size, "%s", i8k.cpu_temp);
 			}
 			OBJ(i8k_cpu_tempf) { 
 				int cpu_temp;
 				sscanf(i8k.cpu_temp, "%d", &cpu_temp);
-				snprintf(p, n, "%.1f", cpu_temp*(9.0/5.0)+32.0);
+				snprintf(p, p_max_size, "%.1f", cpu_temp*(9.0/5.0)+32.0);
 			}
 			OBJ(i8k_left_fan_status) { 
 				int left_fan_status;
 				sscanf(i8k.left_fan_status, "%d", &left_fan_status);
 				if(left_fan_status == 0) {
-					snprintf(p, n,"off");
+					snprintf(p, p_max_size,"off");
 				} if(left_fan_status == 1) {
-					snprintf(p, n, "low");
+					snprintf(p, p_max_size, "low");
 				}	if(left_fan_status == 2) {
-					snprintf(p, n, "high");
+					snprintf(p, p_max_size, "high");
 				}
 
 			}
@@ -2148,32 +2230,32 @@ static void generate_text()
 				int right_fan_status;
 				sscanf(i8k.right_fan_status, "%d", &right_fan_status);
 				if(right_fan_status == 0) {
-					snprintf(p, n,"off");
+					snprintf(p, p_max_size,"off");
 				} if(right_fan_status == 1) {
-					snprintf(p, n, "low");
+					snprintf(p, p_max_size, "low");
 				}	if(right_fan_status == 2) {
-					snprintf(p, n, "high");
+					snprintf(p, p_max_size, "high");
 				}
 			}
 			OBJ(i8k_left_fan_rpm) { 
-				snprintf(p, n, "%s", i8k.left_fan_rpm);
+				snprintf(p, p_max_size, "%s", i8k.left_fan_rpm);
 			}
 			OBJ(i8k_right_fan_rpm) { 
-				snprintf(p, n, "%s", i8k.right_fan_rpm);
+				snprintf(p, p_max_size, "%s", i8k.right_fan_rpm);
 			}
 			OBJ(i8k_ac_status) { 
 				int ac_status;
 				sscanf(i8k.ac_status, "%d", &ac_status);
 				if(ac_status == -1) {
-					snprintf(p, n,"disabled (read i8k docs)");
+					snprintf(p, p_max_size,"disabled (read i8k docs)");
 				} if(ac_status == 0) {
-					snprintf(p, n, "off");
+					snprintf(p, p_max_size, "off");
 				}	if(ac_status == 1) {
-					snprintf(p, n, "on");
+					snprintf(p, p_max_size, "on");
 				}
 			}
 			OBJ(i8k_buttons_status) {
-				snprintf(p, n, "%s", i8k.buttons_status); 
+				snprintf(p, p_max_size, "%s", i8k.buttons_status); 
 
 			}
 #endif /* __linux__ */
@@ -2186,15 +2268,15 @@ static void generate_text()
 			OBJ(diskio) {
 				if (!use_spacer) {
 					if (diskio_value > 1024*1024) {
-						snprintf(p, n, "%.1fG",
+						snprintf(p, p_max_size, "%.1fG",
 						 		(double)diskio_value/1024/1024);
 					} else if (diskio_value > 1024) {
-						snprintf(p, n, "%.1fM",
+						snprintf(p, p_max_size, "%.1fM",
 							 	(double)diskio_value/1024);
 					} else if (diskio_value > 0) {
-						snprintf(p, n, "%dK", diskio_value);
+						snprintf(p, p_max_size, "%dK", diskio_value);
 					} else {
-						snprintf(p, n, "%d", diskio_value);
+						snprintf(p, p_max_size, "%d", diskio_value);
 					}
 				} else {
 					if (diskio_value > 1024*1024) {
@@ -2218,7 +2300,7 @@ static void generate_text()
 	
 			OBJ(downspeed) {
 				if (!use_spacer) {
-					snprintf(p, n, "%d",
+					snprintf(p, p_max_size, "%d",
 						 (int) (obj->data.net->
 							recv_speed /
 							1024));
@@ -2230,7 +2312,7 @@ static void generate_text()
 			}
 			OBJ(downspeedf) {
 				if (!use_spacer)
-					snprintf(p, n, "%.1f",
+					snprintf(p, p_max_size, "%.1f",
 						 obj->data.net->
 						 recv_speed / 1024.0);
 				else
@@ -2259,7 +2341,7 @@ static void generate_text()
 			}
 #ifdef HAVE_POPEN
 			OBJ(addr) {
-				snprintf(p, n, "%u.%u.%u.%u",
+				snprintf(p, p_max_size, "%u.%u.%u.%u",
 					 obj->data.net->addr.
 					 sa_data[2] & 255,
 					 obj->data.net->addr.
@@ -2271,16 +2353,25 @@ static void generate_text()
 
 			}
 			OBJ(linkstatus) {
-				snprintf(p, n, "%d",
+				snprintf(p, p_max_size, "%d",
 					 obj->data.net->linkstatus);
 			}
 
 			OBJ(exec) {
-				char *p2 = p;
+				char *output = p;
 				FILE *fp = popen(obj->data.s, "r");
-				int n2 = fread(p, 1, n, fp);
+				int length = fread(p, 1, p_max_size, fp);
 				(void) pclose(fp);
-
+				    
+				output[length] = '\0';
+				if (length > 0 && output[length - 1] == '\n') {
+					output[length - 1] = '\0';
+				}
+				    
+				struct text_object_list *object_list = extract_variable_text_internal(output);
+				generate_text_internal(p, length, object_list->text_objects, object_list->text_object_count, cur);
+				free(object_list);
+/* DaC
 				p[n2] = '\0';
 				if (n2 && p[n2 - 1] == '\n')
 					p[n2 - 1] = '\0';
@@ -2289,12 +2380,13 @@ static void generate_text()
 					if (*p2 == '\001')
 						*p2 = ' ';
 					p2++;
-				}
+				} 
+*/
 			}
 			OBJ(execbar) {
 				char *p2 = p;
 				FILE *fp = popen(obj->data.s, "r");
-				int n2 = fread(p, 1, n, fp);
+				int n2 = fread(p, 1, p_max_size, fp);
 				(void) pclose(fp);
 
 				p[n2] = '\0';
@@ -2321,7 +2413,7 @@ static void generate_text()
 			OBJ(execgraph) {
 				char *p2 = p;
 				FILE *fp = popen(obj->data.s, "r");
-				int n2 = fread(p, 1, n, fp);
+				int n2 = fread(p, 1, p_max_size, fp);
 				(void) pclose(fp);
 
 				p[n2] = '\0';
@@ -2351,7 +2443,7 @@ static void generate_text()
 				} else {
 					char *p2 = p;
 					FILE *fp = popen(obj->data.execi.cmd, "r");
-					int n2 = fread(p, 1, n, fp);
+					int n2 = fread(p, 1, p_max_size, fp);
 					(void) pclose(fp);
 					p[n2] = '\0';
 					if (n2 && p[n2 - 1] == '\n')
@@ -2382,7 +2474,7 @@ static void generate_text()
 				} else {
 					char *p2 = p;
 					FILE *fp = popen(obj->data.execi.cmd, "r");
-					int n2 = fread(p, 1, n, fp);
+					int n2 = fread(p, 1, p_max_size, fp);
 					(void) pclose(fp);
 					p[n2] = '\0';
 					if (n2 && p[n2 - 1] == '\n')
@@ -2409,19 +2501,26 @@ static void generate_text()
 
 			}
 			OBJ(execi) {
-				if (current_update_time -
-				    obj->data.execi.last_update <
-				    obj->data.execi.interval) {
-					snprintf(p, n, "%s",
-						 obj->data.execi.buffer);
+				if (current_update_time - obj->data.execi.last_update < obj->data.execi.interval) {
+				    snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
 				} else {
+				    char *output = obj->data.execi.buffer;
+				    FILE *fp = popen(obj->data.execi.cmd, "r");
+				    int length = fread(output, 1, TEXT_BUFFER_SIZE, fp);
+				    (void) pclose(fp);
+				    
+				    output[length] = '\0';
+				    if (length > 0 && output[length - 1] == '\n')
+					output[length - 1] = '\0';
+				    
+				    struct text_object_list *object_list = extract_variable_text_internal(output);
+				    generate_text_internal(p, length, object_list->text_objects, object_list->text_object_count, cur);
+				    free(object_list);
+									    
+				    /*
 					char *p2 = obj->data.execi.buffer;
-					FILE *fp =
-					    popen(obj->data.execi.cmd,
-						  "r");
-					int n2 =
-					    fread(p2, 1, TEXT_BUFFER_SIZE,
-						  fp);
+					FILE *fp = popen(obj->data.execi.cmd, "r");
+					int n2 = fread(p2, 1, TEXT_BUFFER_SIZE, fp);
 					(void) pclose(fp);
 
 					p2[n2] = '\0';
@@ -2429,22 +2528,22 @@ static void generate_text()
 						p2[n2 - 1] = '\0';
 
 					while (*p2) {
-						if (*p2 == '\001')
-							*p2 = ' ';
-						p2++;
+					  if (*p2 == '\001') {
+					    *p2 = ' ';
+					  } else if(*p2 == '$') {
+					      //memset(*t, 0, sizeof(struct text_object));
+					  }
+					  p2++;
 					}
 
-					snprintf(p, n, "%s",
-						 obj->data.execi.buffer);
-
-					obj->data.execi.last_update =
-					    current_update_time;
+					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
+					obj->data.execi.last_update = current_update_time;*/
 				}
 			}
 			OBJ(texeci) {
 				static int running = 0;
 				if (current_update_time - obj->data.execi.last_update <	obj->data.execi.interval) {
-					snprintf(p, n, "%s", obj->data.execi.buffer);
+					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
 				} else {
 					static pthread_t execthread;
 					if (!running) {
@@ -2457,7 +2556,7 @@ static void generate_text()
 						pthread_join( execthread, NULL);
 						running = 0;
 					}
-					snprintf(p, n, "%s", obj->data.execi.buffer);
+					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
 				}
 			}
 #endif
@@ -2489,7 +2588,7 @@ static void generate_text()
 			OBJ(fs_free_perc) {
 				if (obj->data.fs != NULL) {
 					if (obj->data.fs->size)
-						snprintf(p, n, "%*d",
+						snprintf(p, p_max_size, "%*d",
 							 pad_percents,
 							 (int) ((obj->data.
 								 fs->
@@ -2498,7 +2597,7 @@ static void generate_text()
 								obj->data.
 								fs->size));
 					else
-						snprintf(p, n, "0");
+						snprintf(p, p_max_size, "0");
 				}
 			}
 			OBJ(fs_size) {
@@ -2544,14 +2643,14 @@ static void generate_text()
 								 fs->
 								 size)));
 					else
-						snprintf(p, n, "0");
+						snprintf(p, p_max_size, "0");
 				}
 			}
 			OBJ(loadavg) {
 				float *v = info.loadavg;
 
 				if (obj->data.loadavg[2])
-					snprintf(p, n, "%.2f %.2f %.2f",
+					snprintf(p, p_max_size, "%.2f %.2f %.2f",
 						 v[obj->data.loadavg[0] -
 						   1],
 						 v[obj->data.loadavg[1] -
@@ -2559,13 +2658,13 @@ static void generate_text()
 						 v[obj->data.loadavg[2] -
 						   1]);
 				else if (obj->data.loadavg[1])
-					snprintf(p, n, "%.2f %.2f",
+					snprintf(p, p_max_size, "%.2f %.2f",
 						 v[obj->data.loadavg[0] -
 						   1],
 						 v[obj->data.loadavg[1] -
 						   1]);
 				else if (obj->data.loadavg[0])
-					snprintf(p, n, "%.2f",
+					snprintf(p, p_max_size, "%.2f",
 						 v[obj->data.loadavg[0] -
 						   1]);
 			}
@@ -2587,9 +2686,9 @@ static void generate_text()
 						 obj->data.i2c.type);
 
 				if (r >= 100.0 || r == 0)
-					snprintf(p, n, "%d", (int) r);
+					snprintf(p, p_max_size, "%d", (int) r);
 				else
-					snprintf(p, n, "%.1f", r);
+					snprintf(p, p_max_size, "%.1f", r);
 			}
 			OBJ(alignr) {
 				new_alignr(p, obj->data.i);
@@ -2624,10 +2723,10 @@ static void generate_text()
 					if_jumped = 0;
 			}
 			OBJ(kernel) {
-				snprintf(p, n, "%s", cur->uname_s.release);
+				snprintf(p, p_max_size, "%s", cur->uname_s.release);
 			}
 			OBJ(machine) {
-				snprintf(p, n, "%s", cur->uname_s.machine);
+				snprintf(p, p_max_size, "%s", cur->uname_s.machine);
 			}
 
 			/* memory stuff */
@@ -2640,7 +2739,7 @@ static void generate_text()
 			OBJ(memperc) {
 				if (cur->memmax) {
 					if (!use_spacer)
-						snprintf(p, n, "%*lu",
+						snprintf(p, p_max_size, "%*lu",
 							 pad_percents,
 							 (cur->mem * 100) /
 							 (cur->memmax));
@@ -2666,15 +2765,15 @@ static void generate_text()
 			}
 			/* mixer stuff */
 			OBJ(mixer) {
-				snprintf(p, n, "%d",
+				snprintf(p, p_max_size, "%d",
 					 mixer_get_avg(obj->data.l));
 			}
 			OBJ(mixerl) {
-				snprintf(p, n, "%d",
+				snprintf(p, p_max_size, "%d",
 					 mixer_get_left(obj->data.l));
 			}
 			OBJ(mixerr) {
-				snprintf(p, n, "%d",
+				snprintf(p, p_max_size, "%d",
 					 mixer_get_right(obj->data.l));
 			}
 			OBJ(mixerbar) {
@@ -2698,60 +2797,60 @@ static void generate_text()
 
 			/* mail stuff */
 			OBJ(mails) {
-				snprintf(p, n, "%d", cur->mail_count);
+				snprintf(p, p_max_size, "%d", cur->mail_count);
 			}
 			OBJ(new_mails) {
-				snprintf(p, n, "%d", cur->new_mail_count);
+				snprintf(p, p_max_size, "%d", cur->new_mail_count);
 			}
 #ifdef MLDONKEY
 			OBJ(ml_upload_counter) {
-				snprintf(p, n, "%lld",
+				snprintf(p, p_max_size, "%lld",
 					 mlinfo.upload_counter / 1048576);
 			}
 			OBJ(ml_download_counter) {
-				snprintf(p, n, "%lld",
+				snprintf(p, p_max_size, "%lld",
 					 mlinfo.download_counter /
 					 1048576);
 			}
 			OBJ(ml_nshared_files) {
-				snprintf(p, n, "%i", mlinfo.nshared_files);
+				snprintf(p, p_max_size, "%i", mlinfo.nshared_files);
 			}
 			OBJ(ml_shared_counter) {
-				snprintf(p, n, "%lld",
+				snprintf(p, p_max_size, "%lld",
 					 mlinfo.shared_counter / 1048576);
 			}
 			OBJ(ml_tcp_upload_rate) {
-				snprintf(p, n, "%.2f",
+				snprintf(p, p_max_size, "%.2f",
 					 (float) mlinfo.tcp_upload_rate /
 					 1024);
 			}
 			OBJ(ml_tcp_download_rate) {
-				snprintf(p, n, "%.2f",
+				snprintf(p, p_max_size, "%.2f",
 					 (float) mlinfo.tcp_download_rate /
 					 1024);
 			}
 			OBJ(ml_udp_upload_rate) {
-				snprintf(p, n, "%.2f",
+				snprintf(p, p_max_size, "%.2f",
 					 (float) mlinfo.udp_upload_rate /
 					 1024);
 			}
 			OBJ(ml_udp_download_rate) {
-				snprintf(p, n, "%.2f",
+				snprintf(p, p_max_size, "%.2f",
 					 (float) mlinfo.udp_download_rate /
 					 1024);
 			}
 			OBJ(ml_ndownloaded_files) {
-				snprintf(p, n, "%i",
+				snprintf(p, p_max_size, "%i",
 					 mlinfo.ndownloaded_files);
 			}
 			OBJ(ml_ndownloading_files) {
-				snprintf(p, n, "%i",
+				snprintf(p, p_max_size, "%i",
 					 mlinfo.ndownloading_files);
 			}
 #endif
 
 			OBJ(nodename) {
-				snprintf(p, n, "%s",
+				snprintf(p, p_max_size, "%s",
 					 cur->uname_s.nodename);
 			}
 			OBJ(outlinecolor) {
@@ -2759,21 +2858,21 @@ static void generate_text()
 			}
 			OBJ(processes) {
 				if (!use_spacer)
-					snprintf(p, n, "%hu", cur->procs);
+					snprintf(p, p_max_size, "%hu", cur->procs);
 				else
 					snprintf(p, 5, "%hu    ",
 						 cur->procs);
 			}
 			OBJ(running_processes) {
 				if (!use_spacer)
-					snprintf(p, n, "%hu",
+					snprintf(p, p_max_size, "%hu",
 						 cur->run_procs);
 				else
 					snprintf(p, 3, "%hu     ",
 						 cur->run_procs);
 			}
 			OBJ(text) {
-				snprintf(p, n, "%s", obj->data.s);
+				snprintf(p, p_max_size, "%s", obj->data.s);
 			}
 			OBJ(shadecolor) {
 				new_bg(p, obj->data.l);
@@ -2814,18 +2913,18 @@ static void generate_text()
 					(cur->swapmax) : 0);
 			}
 			OBJ(sysname) {
-				snprintf(p, n, "%s", cur->uname_s.sysname);
+				snprintf(p, p_max_size, "%s", cur->uname_s.sysname);
 			}
 			OBJ(time) {
 				time_t t = time(NULL);
 				struct tm *tm = localtime(&t);
 				setlocale(LC_TIME, "");
-				strftime(p, n, obj->data.s, tm);
+				strftime(p, p_max_size, obj->data.s, tm);
 			}
 			OBJ(utime) {
 				time_t t = time(NULL);
 				struct tm *tm = gmtime(&t);
-				strftime(p, n, obj->data.s, tm);
+				strftime(p, p_max_size, obj->data.s, tm);
 			}
 			OBJ(totaldown) {
 				human_readable(obj->data.net->recv, p,
@@ -2836,11 +2935,11 @@ static void generate_text()
 					       255);
 			}
 			OBJ(updates) {
-				snprintf(p, n, "%d", total_updates);
+				snprintf(p, p_max_size, "%d", total_updates);
 			}
 			OBJ(upspeed) {
 				if (!use_spacer)
-					snprintf(p, n, "%d",
+					snprintf(p, p_max_size, "%d",
 						 (int) (obj->data.net->
 							trans_speed /
 							1024));
@@ -2852,7 +2951,7 @@ static void generate_text()
 			}
 			OBJ(upspeedf) {
 				if (!use_spacer)
-					snprintf(p, n, "%.1f",
+					snprintf(p, p_max_size, "%.1f",
 						 obj->data.net->
 						 trans_speed / 1024.0);
 				else
@@ -2868,33 +2967,33 @@ static void generate_text()
 				1024.0), obj->e, 1);
 			}
 			OBJ(uptime_short) {
-				format_seconds_short(p, n,
+				format_seconds_short(p, p_max_size,
 						     (int) cur->uptime);
 			}
 			OBJ(uptime) {
-				format_seconds(p, n, (int) cur->uptime);
+				format_seconds(p, p_max_size, (int) cur->uptime);
 			}
 
 #if defined(__FreeBSD__) && (defined(i386) || defined(__i386__))
 			OBJ(apm_adapter) {
-				snprintf(p, n, "%s", get_apm_adapter());
+				snprintf(p, p_max_size, "%s", get_apm_adapter());
 			}
 			OBJ(apm_battery_life) {
 				char    *msg;
 				msg = get_apm_battery_life();
-				snprintf(p, n, "%s", msg);
+				snprintf(p, p_max_size, "%s", msg);
 				free(msg);
 			}
 			OBJ(apm_battery_time) {
 				char    *msg;
 				msg = get_apm_battery_time();
-				snprintf(p, n, "%s", msg);
+				snprintf(p, p_max_size, "%s", msg);
 				free(msg);
 			}
 #endif /* __FreeBSD__ */
 #ifdef SETI
 			OBJ(seti_prog) {
-				snprintf(p, n, "%.2f",
+				snprintf(p, p_max_size, "%.2f",
 					 cur->seti_prog * 100.0f);
 			}
 			OBJ(seti_progbar) {
@@ -2903,37 +3002,37 @@ static void generate_text()
 					(int) (cur->seti_prog * 255.0f));
 			}
 			OBJ(seti_credit) {
-				snprintf(p, n, "%.0f", cur->seti_credit);
+				snprintf(p, p_max_size, "%.0f", cur->seti_credit);
 			}
 #endif
 
 #ifdef MPD
 			OBJ(mpd_title) {
-				snprintf(p, n, "%s", cur->mpd.title);
+				snprintf(p, p_max_size, "%s", cur->mpd.title);
 			}
 			OBJ(mpd_artist) {
-				snprintf(p, n, "%s", cur->mpd.artist);
+				snprintf(p, p_max_size, "%s", cur->mpd.artist);
 			}
 			OBJ(mpd_album) {
-				snprintf(p, n, "%s", cur->mpd.album);
+				snprintf(p, p_max_size, "%s", cur->mpd.album);
 			}
 			OBJ(mpd_random) {
-				snprintf(p, n, "%s", cur->mpd.random);
+				snprintf(p, p_max_size, "%s", cur->mpd.random);
 			}
 			OBJ(mpd_repeat) {
-				snprintf(p, n, "%s", cur->mpd.repeat);
+				snprintf(p, p_max_size, "%s", cur->mpd.repeat);
 			}
 			OBJ(mpd_track) {
-				snprintf(p, n, "%s", cur->mpd.track);
+				snprintf(p, p_max_size, "%s", cur->mpd.track);
 			}
 			OBJ(mpd_vol) {
-				snprintf(p, n, "%i", cur->mpd.volume);
+				snprintf(p, p_max_size, "%i", cur->mpd.volume);
 			}
 			OBJ(mpd_bitrate) {
-				snprintf(p, n, "%i", cur->mpd.bitrate);
+				snprintf(p, p_max_size, "%i", cur->mpd.bitrate);
 			}
 			OBJ(mpd_status) {
-				snprintf(p, n, "%s", cur->mpd.status);
+				snprintf(p, p_max_size, "%s", cur->mpd.status);
 			}
 			OBJ(mpd_elapsed) {
 				int days = 0, hours = 0, minutes =
@@ -2953,14 +3052,14 @@ static void generate_text()
 				}
 				seconds = tmp;
 				if (days > 0)
-					snprintf(p, n, "%i days %i:%02i:%02i",
+					snprintf(p, p_max_size, "%i days %i:%02i:%02i",
 						 days, hours, minutes,
 						 seconds);
 				else if (hours > 0)
-					snprintf(p, n, "%i:%02i:%02i", hours,
+					snprintf(p, p_max_size, "%i:%02i:%02i", hours,
 						 minutes, seconds);
 				else
-					snprintf(p, n, "%i:%02i", minutes,
+					snprintf(p, p_max_size, "%i:%02i", minutes,
 						 seconds);
 			}
 			OBJ(mpd_length) {
@@ -2981,19 +3080,19 @@ static void generate_text()
 				}
 				seconds = tmp;
 				if (days > 0)
-					snprintf(p, n,
+					snprintf(p, p_max_size,
 						 "%i days %i:%02i:%02i",
 						 days, hours, minutes,
 						 seconds);
 				else if (hours > 0)
-					snprintf(p, n, "%i:%02i:%02i", hours,
+					snprintf(p, p_max_size, "%i:%02i:%02i", hours,
 						 minutes, seconds);
 				else
-					snprintf(p, n, "%i:%02i", minutes,
+					snprintf(p, p_max_size, "%i:%02i", minutes,
 						 seconds);
 			}
 			OBJ(mpd_percent) {
-				snprintf(p, n, "%2.0f",
+				snprintf(p, p_max_size, "%2.0f",
 					 cur->mpd.progress * 100);
 			}
 			OBJ(mpd_bar) {
@@ -3072,7 +3171,7 @@ static void generate_text()
 
 			OBJ(tail) {
 				if (current_update_time -obj->data.tail.last_update < obj->data.tail.interval) {
-					snprintf(p, n, "%s", obj->data.tail.buffer);
+					snprintf(p, p_max_size, "%s", obj->data.tail.buffer);
 				} else {
 					obj->data.tail.last_update = current_update_time;
 					FILE *fp;
@@ -3122,20 +3221,20 @@ static void generate_text()
 							if (obj->data.tail.buffer[strlen(obj->data.tail.buffer)-1] == '\n') {
 								obj->data.tail.buffer[strlen(obj->data.tail.buffer)-1] = '\0';
 							}
-							snprintf(p, n, "%s", obj->data.tail.buffer);
+							snprintf(p, p_max_size, "%s", obj->data.tail.buffer);
 
 							freetail(freetmp);
 						}
 						else {
 							strcpy(obj->data.tail.buffer, "Logfile Empty");
-							snprintf(p, n, "Logfile Empty");
+							snprintf(p, p_max_size, "Logfile Empty");
 						}
 					}
 				}
 			}
 			OBJ(head) {
 				if (current_update_time -obj->data.tail.last_update < obj->data.tail.interval) {
-					snprintf(p, n, "%s", obj->data.tail.buffer);
+					snprintf(p, p_max_size, "%s", obj->data.tail.buffer);
 				} else {
 					obj->data.tail.last_update = current_update_time;
 					FILE *fp;
@@ -3172,11 +3271,11 @@ static void generate_text()
 							if (obj->data.tail.buffer[strlen(obj->data.tail.buffer)-1] == '\n') {
 								obj->data.tail.buffer[strlen(obj->data.tail.buffer)-1] = '\0';
 							}
-							snprintf(p, n, "%s", obj->data.tail.buffer);
+							snprintf(p, p_max_size, "%s", obj->data.tail.buffer);
 						}
 						else {
 							strcpy(obj->data.tail.buffer, "Logfile Empty");
-							snprintf(p, n, "Logfile Empty");
+							snprintf(p, p_max_size, "Logfile Empty");
 						}
 					}
 				}
@@ -3190,7 +3289,7 @@ static void generate_text()
 							        obj->data.tcp_port_monitor.port_range_begin,
 								obj->data.tcp_port_monitor.port_range_end );
 				if ( !p_monitor ) {
-					snprintf(p, n, "monitor not found");
+					snprintf(p, p_max_size, "monitor not found");
 					break;
 				}
 
@@ -3198,9 +3297,9 @@ static void generate_text()
 				if ( peek_tcp_port_monitor( p_monitor, 
 				      	    		    obj->data.tcp_port_monitor.item, 
 				            		    obj->data.tcp_port_monitor.connection_index,
-				                            p, n ) != 0 )
+				                            p, p_max_size ) != 0 )
 				{
-					snprintf(p, n, "monitor peek error");
+					snprintf(p, p_max_size, "monitor peek error");
 					break;
 				}
 			}
@@ -3212,9 +3311,34 @@ static void generate_text()
 		{
 			unsigned int a = strlen(p);
 			p += a;
-			n -= a;
+			p_max_size -= a;
 		}
 	}
+}
+
+
+double current_update_time, last_update_time;
+
+static void generate_text()
+{
+	unsigned int n;
+	struct information *cur = &info;
+	char *p;
+
+	special_count = 0;
+
+	/* update info */
+
+	current_update_time = get_time();
+
+	update_stuff(cur);
+
+	/* generate text */
+
+	n = TEXT_BUFFER_SIZE * 4 - 2;
+	p = text_buffer;
+
+	generate_text_internal(p, n, text_objects, text_object_count, cur);
 
 	if (stuff_in_upper_case) {
 		char *p;
@@ -3230,6 +3354,7 @@ static void generate_text()
 	total_updates++;
 	//free(p);
 }
+
 
 #ifdef X11
 static void set_font()
@@ -4419,7 +4544,13 @@ void clean_up(void)
 	/* it is really pointless to free() memory at the end of program but ak|ra
 	 * wants me to do this */
 
-	free_text_objects();
+	free_text_objects(text_object_count, text_objects);
+	text_object_count = 0;
+	text_objects = NULL;
+
+#ifdef MLDONKEY	
+	ml_cleanup();
+#endif /* MLDONKEY */
 
 	if (text != original_text)
 		free(text);
