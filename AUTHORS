@@ -138,6 +138,9 @@ Roman Bogorodskiy <novel at clublife dot ru>
 Szymon Boniecki
   Reads current LC_TIME
 
+Toni <bleach at users dot sourceforge dot net>
+  exec*/tail/head output evalution
+
 tyir <tyir at users dot sourceforge dot net>
   MPD features patch 1319461
 
