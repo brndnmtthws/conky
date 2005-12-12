@@ -1040,8 +1040,7 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 			free(objs[i].data.tail.logfile);
 			free(objs[i].data.tail.buffer);
 			break;
-		case OBJ_text:
-		case OBJ_font:
+		case OBJ_text: case OBJ_font:
 			free(objs[i].data.s);
 			break;
 		case OBJ_exec:
@@ -1983,8 +1982,6 @@ static struct text_object_list *extract_variable_text_internal(const char *p)
 						   obj, sizeof(struct text_object));
 					    free(obj);
 					}
-
-					
 				}
 				continue;
 			} else {
@@ -1999,7 +1996,6 @@ static struct text_object_list *extract_variable_text_internal(const char *p)
 				free(obj);
 			    }
 			}
-
 		}
 
 		p++;
@@ -2037,7 +2033,7 @@ static void extract_variable_text(const char *p)
          
   list = extract_variable_text_internal(p);
   text_objects = list->text_objects;
-  text_object_count = list->text_object_count;  
+  text_object_count = list->text_object_count;
 
   free(list);
 
@@ -2454,7 +2450,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			}
 			OBJ(execi) {
 				char *output = obj->data.execi.buffer;
-				if (current_update_time - obj->data.execi.last_update >= obj->data.execi.interval) {
+				if (current_update_time - obj->data.execi.last_update < obj->data.execi.interval) {
 					char *output = obj->data.execi.buffer;
 					FILE *fp = popen(obj->data.execi.cmd, "r");
 					int length = fread(output, 1, TEXT_BUFFER_SIZE, fp);
@@ -2469,7 +2465,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			}
 			OBJ(texeci) {
 				static int running = 0;
-				if (current_update_time - obj->data.execi.last_update >= obj->data.execi.interval) {
+				if (current_update_time - obj->data.execi.last_update < obj->data.execi.interval) {
 					static pthread_t execthread;
 					if (!running) {
 						running = 1;
