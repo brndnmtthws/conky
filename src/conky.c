@@ -1268,9 +1268,9 @@ if (s[0] == '#') {
 		obj->type = OBJ_text;
 		snprintf(buf, 256, "${%s}", s);
 		obj->data.s = strdup(buf);
-		    } else {
-			    obj->data.execi.cmd = strdup(arg + n);
-		    }
+	} else {
+		obj->data.execi.cmd = strdup(arg + n);
+	}
 	END OBJ(execi, 0) unsigned int n;
 
 	if (!arg
@@ -2386,7 +2386,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 
 			}
 			OBJ(execibar) {
-				if (current_update_time - obj->data.execi.last_update <	obj->data.execi.interval) {
+				if (current_update_time - obj->data.execi.last_update <	obj->data.execi.interval || !obj->data.execi.last_update) {
 					new_bar(p, 0, 4, (int) obj->f);
 				} else {
 					char *p2 = p;
@@ -2417,7 +2417,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				}
 			}
 			OBJ(execigraph) {
-				if (current_update_time - obj->data.execi.last_update <	obj->data.execi.interval) {
+				if (current_update_time - obj->data.execi.last_update <	obj->data.execi.interval || !obj->data.execi.last_update) {
 					new_graph(p, 0,	25, obj->c, obj->d, (int) (obj->f), 100, 0);
 				} else {
 					char *p2 = p;
@@ -2450,7 +2450,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			}
 			OBJ(execi) {
 				char *output = obj->data.execi.buffer;
-				if (current_update_time - obj->data.execi.last_update < obj->data.execi.interval) {
+				if (current_update_time - obj->data.execi.last_update <	obj->data.execi.interval || !obj->data.execi.last_update) {
 					char *output = obj->data.execi.buffer;
 					FILE *fp = popen(obj->data.execi.cmd, "r");
 					int length = fread(output, 1, TEXT_BUFFER_SIZE, fp);
@@ -2460,12 +2460,13 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					if (length > 0 && output[length - 1] == '\n') {
 						output[length - 1] = '\0';
 					}
+					obj->data.execi.last_update = current_update_time;
 				}
 				parse_conky_vars(output, p, cur);
 			}
 			OBJ(texeci) {
 				static int running = 0;
-				if (current_update_time - obj->data.execi.last_update < obj->data.execi.interval) {
+				if (current_update_time - obj->data.execi.last_update <	obj->data.execi.interval || !obj->data.execi.last_update) {
 					static pthread_t execthread;
 					if (!running) {
 						running = 1;
