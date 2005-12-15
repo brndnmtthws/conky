@@ -2317,17 +2317,20 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			}
 
 			OBJ(exec) {
-				char *output = p;
 				FILE *fp = popen(obj->data.s, "r");
 				int length = fread(p, 1, p_max_size, fp);
 				(void) pclose(fp);
-				    
-				output[length] = '\0';
+
+				/*output[length] = '\0';
 				if (length > 0 && output[length - 1] == '\n') {
 					output[length - 1] = '\0';
-				}
+				}*/
+					p[length] = '\0';
+					if (length > 0 && p[length - 1] == '\n') {
+						p[length - 1] = '\0';
+					}
 				    
-				parse_conky_vars(output, p, cur);
+				//parse_conky_vars(output, p, cur);
 			}
 			OBJ(execbar) {
 				char *p2 = p;
@@ -2447,10 +2450,12 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 
 			}
 			OBJ(execi) {
-				char *output = obj->data.execi.buffer;
-				if (current_update_time - obj->data.execi.last_update >= obj->data.execi.interval) {
+				if (current_update_time - obj->data.execi.last_update < obj->data.execi.interval || obj->data.execi.interval == 0) {
+					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
+				} else {
 					char *output = obj->data.execi.buffer;
 					FILE *fp = popen(obj->data.execi.cmd, "r");
+					//int length = fread(output, 1, TEXT_BUFFER_SIZE, fp);
 					int length = fread(output, 1, TEXT_BUFFER_SIZE, fp);
 					(void) pclose(fp);
 				    
@@ -2459,12 +2464,15 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						output[length - 1] = '\0';
 					}
 					obj->data.execi.last_update = current_update_time;
+					snprintf(p, p_max_size, "%s", output);
 				}
-				parse_conky_vars(output, p, cur);
+				//parse_conky_vars(output, p, cur);
 			}
 			OBJ(texeci) {
 				static int running = 0;
-				if (current_update_time - obj->data.execi.last_update >= obj->data.execi.interval) {
+				if (current_update_time - obj->data.execi.last_update < obj->data.execi.interval) {
+					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
+				} else {
 					static pthread_t execthread;
 					if (running) {
 						pthread_join( execthread, NULL);
@@ -2477,8 +2485,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						obj->data.execi.last_update = current_update_time;
 						pthread_mutex_unlock( &mutex1 );
 					}
+					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
 				}
-				parse_conky_vars(obj->data.execi.buffer, p, cur);
+				//parse_conky_vars(obj->data.execi.buffer, p, cur);
 			}
 #endif
 			OBJ(fs_bar) {
@@ -3140,7 +3149,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					} /*  fp == NULL  */
 				} /* if cur_upd_time >= */
 	
-				parse_conky_vars(obj->data.tail.buffer, p, cur);
+				//parse_conky_vars(obj->data.tail.buffer, p, cur);
 
 			}
 			OBJ(head) {
@@ -3185,7 +3194,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					} /* if fp == null */
 				} /* cur_upd_time >= */
 
-				parse_conky_vars(obj->data.tail.buffer, p, cur);
+				//parse_conky_vars(obj->data.tail.buffer, p, cur);
 
 			}
 #ifdef TCP_PORT_MONITOR
