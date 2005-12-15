@@ -2004,7 +2004,7 @@ static struct text_object_list *extract_variable_text_internal(const char *p)
 	obj = create_plain_text(s);
 	if(obj != NULL) {
 	    // allocate memory for the object
-	    retval->text_objects = realloc(retval->text_objects, 
+	    retval->text_objects = realloc(retval->text_objects,
 					   sizeof(struct text_object) * (retval->text_object_count+1));
 	    // assign the new object to the end of the list.
 	    memcpy(&retval->text_objects[retval->text_object_count++],
@@ -2386,7 +2386,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 
 			}
 			OBJ(execibar) {
-				if (current_update_time - obj->data.execi.last_update <	obj->data.execi.interval || !obj->data.execi.last_update) {
+				if (current_update_time - obj->data.execi.last_update >= obj->data.execi.interval || !obj->data.execi.last_update) {
 					new_bar(p, 0, 4, (int) obj->f);
 				} else {
 					char *p2 = p;
@@ -2417,7 +2417,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				}
 			}
 			OBJ(execigraph) {
-				if (current_update_time - obj->data.execi.last_update <	obj->data.execi.interval || !obj->data.execi.last_update) {
+				if (current_update_time - obj->data.execi.last_update >= obj->data.execi.interval || !obj->data.execi.last_update) {
 					new_graph(p, 0,	25, obj->c, obj->d, (int) (obj->f), 100, 0);
 				} else {
 					char *p2 = p;
@@ -2450,7 +2450,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			}
 			OBJ(execi) {
 				char *output = obj->data.execi.buffer;
-				if (current_update_time - obj->data.execi.last_update <	obj->data.execi.interval || !obj->data.execi.last_update) {
+				if (current_update_time - obj->data.execi.last_update >= obj->data.execi.interval || !obj->data.execi.last_update) {
 					char *output = obj->data.execi.buffer;
 					FILE *fp = popen(obj->data.execi.cmd, "r");
 					int length = fread(output, 1, TEXT_BUFFER_SIZE, fp);
@@ -2466,17 +2466,18 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			}
 			OBJ(texeci) {
 				static int running = 0;
-				if (current_update_time - obj->data.execi.last_update <	obj->data.execi.interval || !obj->data.execi.last_update) {
+				if (current_update_time - obj->data.execi.last_update >= obj->data.execi.interval) {
 					static pthread_t execthread;
+					if (running) {
+						pthread_join( execthread, NULL);
+						running = 0;
+					}
 					if (!running) {
 						running = 1;
 						pthread_create( &execthread, NULL, (void*)threaded_exec, (void*) obj);
 						pthread_mutex_lock( &mutex1 );
 						obj->data.execi.last_update = current_update_time;
 						pthread_mutex_unlock( &mutex1 );
-					} else {
-						pthread_join( execthread, NULL);
-						running = 0;
 					}
 				}
 				parse_conky_vars(obj->data.execi.buffer, p, cur);
