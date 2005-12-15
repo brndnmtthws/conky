@@ -1997,10 +1997,8 @@ static struct text_object_list *extract_variable_text_internal(const char *p)
 			    }
 			}
 		}
-
 		p++;
 	}
-
 	obj = create_plain_text(s);
 	if(obj != NULL) {
 	    // allocate memory for the object
@@ -2040,7 +2038,7 @@ static void extract_variable_text(const char *p)
   return;
 }
 
-void parse_conky_vars(char * text, char * p, struct information *cur){ 
+void parse_conky_vars(char * text, char * p, struct information *cur) { 
 	struct text_object_list *object_list = extract_variable_text_internal(text);
 	generate_text_internal(p, P_MAX_SIZE, object_list->text_objects, object_list->text_object_count, cur);
 	free(object_list);
@@ -2386,7 +2384,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 
 			}
 			OBJ(execibar) {
-				if (current_update_time - obj->data.execi.last_update >= obj->data.execi.interval || !obj->data.execi.last_update) {
+				if (current_update_time - obj->data.execi.last_update < obj->data.execi.interval) {
 					new_bar(p, 0, 4, (int) obj->f);
 				} else {
 					char *p2 = p;
@@ -2417,7 +2415,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				}
 			}
 			OBJ(execigraph) {
-				if (current_update_time - obj->data.execi.last_update >= obj->data.execi.interval || !obj->data.execi.last_update) {
+				if (current_update_time - obj->data.execi.last_update < obj->data.execi.interval) {
 					new_graph(p, 0,	25, obj->c, obj->d, (int) (obj->f), 100, 0);
 				} else {
 					char *p2 = p;
@@ -2450,7 +2448,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			}
 			OBJ(execi) {
 				char *output = obj->data.execi.buffer;
-				if (current_update_time - obj->data.execi.last_update >= obj->data.execi.interval || !obj->data.execi.last_update) {
+				if (current_update_time - obj->data.execi.last_update >= obj->data.execi.interval) {
 					char *output = obj->data.execi.buffer;
 					FILE *fp = popen(obj->data.execi.cmd, "r");
 					int length = fread(output, 1, TEXT_BUFFER_SIZE, fp);
@@ -3241,6 +3239,8 @@ static void generate_text()
 	current_update_time = get_time();
 
 	update_stuff(cur);
+
+	/* add things to the buffer */
 
 	/* generate text */
 
