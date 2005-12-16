@@ -3510,6 +3510,7 @@ static void draw_string(const char *s)
 	width_of_s = get_string_width(s);
 	if (out_to_console) {
 		printf("%s\n", s);
+		fflush(stdout);   /* output immediately, don't buffer */
 	}
 	/* daemon_run(s);  the daemon can be called here, but we need to have a buffer in daemon_run() and we need to tell it when everything is ready to be sent */
 	memset(tmpstring1,0,TEXT_BUFFER_SIZE);
