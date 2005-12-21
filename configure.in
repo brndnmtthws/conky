@@ -47,7 +47,7 @@ dnl
 dnl XFT option
 dnl
 
-want_xft=no
+want_xft=yes
 AC_ARG_ENABLE(xft,
 [  --enable-xft            enable if you want to use Xft [[default=no]]],
   [want_xft="$enableval"])
@@ -69,7 +69,7 @@ dnl
 dnl PROC_UPTIME option
 dnl
 
-dah=no
+dah=yes
 AC_ARG_ENABLE(proc_uptime,
 [  --enable-proc-uptime    enable using /proc/uptime for uptime [[default=no]]],
   [dah="$enableval"])
@@ -82,7 +82,7 @@ dnl
 dnl Seti@Home
 dnl
 
-want_seti=no
+want_seti=yes
 AC_ARG_ENABLE(seti,
 [  --enable-seti           enable if you want SETI at Home stats [[default=no]]],
   [want_seti="$enableval"])
@@ -96,7 +96,7 @@ dnl
 dnl MPD
 dnl
 
-want_mpd=no
+want_mpd=yes
 AC_ARG_ENABLE(mpd,
 [  --enable-mpd            enable if you want MPD support [[default=no]]],
   [want_mpd="$enableval"])
@@ -110,7 +110,7 @@ dnl
 dnl PORT_MONITORS
 dnl
 
-want_portmon=no
+want_portmon=yes
 AC_ARG_ENABLE(portmon,
 [  --enable-portmon        enable if you want tcp (ip4) port monitoring [[default=no]]],
   [want_portmon="$enableval"])
