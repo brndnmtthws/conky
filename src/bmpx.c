@@ -6,7 +6,6 @@
 
 #include <dbus/dbus-glib.h>
 #include <bmpx/dbus.h>
-
 #include <stdio.h>
 #include <string.h>
 
@@ -32,6 +31,7 @@ void update_bmpx()
 		bus = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
 		if (bus == NULL) {
 			ERR("%s\n", error->message);
+			goto fail;
 		}
 		
 		remote_object = dbus_g_proxy_new_for_name(bus,
@@ -41,10 +41,11 @@ void update_bmpx()
 		if (!remote_object) {
 			ERR("%s\n", error->message);
 			goto fail;
-		} else
-			connected = 1;
-	}
+		} 
 
+		connected = 1;
+	} 
+	
 	if (connected == 1) {
 		if (dbus_g_proxy_call(remote_object, "GetCurrentUri", &error,
 					G_TYPE_INVALID,
