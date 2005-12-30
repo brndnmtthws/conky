@@ -79,6 +79,23 @@ if test $dah = "yes"; then
 fi
 
 dnl
+dnl BMPx
+dnl
+
+want_bmpx=no
+AC_ARG_ENABLE(bmpx,
+	      [ --enable-bmpx		enable if you want BMPx support [[default=no]]],
+	      [want_bmpx="$enableval"])
+
+AM_CONDITIONAL(BUILD_BMPX, test x$want_bmpx = xyes)
+if test x$want_bmpx = xyes; then
+	PKG_CHECK_MODULES([DBUS], [dbus-1 >= 0.35 dbus-glib-1 >= 0.35])
+	CFLAGS="$CFLAGS $DBUS_CFLAGS"
+	LIBS="$LIBS $DBUS_LIBS"
+	AC_DEFINE(BMPX, 1, [Define if you want BMPx support])
+fi
+
+dnl
 dnl Seti@Home
 dnl
 

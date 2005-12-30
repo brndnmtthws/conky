@@ -891,6 +891,14 @@ enum text_object_type {
 	OBJ_mpd_track,
 	OBJ_mpd_percent,
 #endif
+#ifdef BMPX
+	OBJ_bmpx_title,
+	OBJ_bmpx_artist,
+	OBJ_bmpx_album,
+	OBJ_bmpx_track,
+	OBJ_bmpx_uri,
+	OBJ_bmpx_bitrate,
+#endif
 #ifdef TCP_PORT_MONITOR
 	OBJ_tcp_portmon,
 #endif
@@ -1067,6 +1075,14 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 		case OBJ_mpd_track:
 		case OBJ_mpd_status:
 		case OBJ_mpd_host:
+#endif
+#ifdef BMPX
+		case OBJ_bmpx_title:
+		case OBJ_bmpx_artist:
+		case OBJ_bmpx_album:
+		case OBJ_bmpx_track:
+		case OBJ_bmpx_uri:
+		case OBJ_bmpx_bitrate:
 #endif
 		case OBJ_pre_exec:
 		case OBJ_battery:
@@ -1775,6 +1791,20 @@ int a = stippled_borders, b = 1;
 	END OBJ(mpd_status, INFO_MPD)
         END OBJ(mpd_bar, INFO_MPD)
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+	END
+#endif
+#ifdef BMPX
+	OBJ(bmpx_title, INFO_BMPX)
+	END
+	OBJ(bmpx_artist, INFO_BMPX)
+	END
+	OBJ(bmpx_album, INFO_BMPX)
+	END
+	OBJ(bmpx_track, INFO_BMPX)
+	END
+	OBJ(bmpx_uri, INFO_BMPX)
+	END
+	OBJ(bmpx_bitrate, INFO_BMPX)
 	END
 #endif
 #ifdef TCP_PORT_MONITOR
@@ -3030,6 +3060,26 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					obj->data.pair.b,
 					(int) (cur->mpd.progress *
 					       255.0f));
+			}
+#endif
+#ifdef BMPX
+			OBJ(bmpx_title) {
+				snprintf(p, p_max_size, "%s", cur->bmpx.title);
+			}
+			OBJ(bmpx_artist) {
+				snprintf(p, p_max_size, "%s", cur->bmpx.artist);
+			}
+			OBJ(bmpx_album) {
+				snprintf(p, p_max_size, "%s", cur->bmpx.album);
+			}
+			OBJ(bmpx_uri) {
+				snprintf(p, p_max_size, "%s", cur->bmpx.uri);
+			}
+			OBJ(bmpx_track) {
+				 snprintf(p, p_max_size, "%i", cur->bmpx.track);
+			}
+			OBJ(bmpx_bitrate) {
+				snprintf(p, p_max_size, "%i", cur->bmpx.bitrate);
 			}
 #endif
 			OBJ(top) {

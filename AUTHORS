@@ -134,6 +134,7 @@ Rui Paulo <rpaulo at netbsd-pt dot org>
 
 Roman Bogorodskiy <novel at clublife dot ru>
   FreeBSD support
+  BMPx support
 
 Szymon Boniecki
   Reads current LC_TIME

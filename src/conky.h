@@ -56,8 +56,12 @@ fprintf(stderr, "Conky: " s "\n", ##varargs)
 #define CRIT_ERR(s, varargs...) \
 { fprintf(stderr, "Conky: " s "\n", ##varargs);  exit(EXIT_FAILURE); }
 
+#ifndef MIN
 #define MIN(a,b) (a>b ? b : a)
+#endif
+#ifndef MAX
 #define MAX(a,b) (a<b ? b : a)
+#endif
 
 struct i8k_struct {
 	char *version;
@@ -118,6 +122,17 @@ struct mpd_s {
 };
 #endif
 
+#ifdef BMPX
+struct bmpx_s {
+	char *title;
+	char *artist;
+	char *album;
+	char *uri;
+	int bitrate;
+	int track;
+};
+#endif
+
 #ifdef TCP_PORT_MONITOR
 #include "libtcp-portmon.h"
 #define MIN_PORT_MONITORS_DEFAULT 16
@@ -154,6 +169,9 @@ enum {
 	INFO_I8K = 21,
 #ifdef TCP_PORT_MONITOR
         INFO_TCP_PORT_MONITOR = 22,
+#endif
+#ifdef BMPX
+	INFO_BMPX = 23,
 #endif
 };
 
@@ -197,6 +215,9 @@ struct information {
 #ifdef MPD
 	struct mpd_s mpd;
 	mpd_Connection *conn;
+#endif
+#ifdef BMPX
+	struct bmpx_s bmpx;
 #endif
 	struct process *cpu[10];
 	struct process *memu[10];
