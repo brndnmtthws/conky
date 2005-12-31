@@ -19,8 +19,8 @@
 #include <locale.h>
 #include <langinfo.h>
 #include <wchar.h>
-#if defined(__FreeBSD__)
 #include <sys/param.h>
+#if defined(__FreeBSD__)
 #include <sys/mount.h>
 #include <sys/ucred.h>
 #endif /* __FreeBSD__ */
@@ -56,12 +56,14 @@ fprintf(stderr, "Conky: " s "\n", ##varargs)
 #define CRIT_ERR(s, varargs...) \
 { fprintf(stderr, "Conky: " s "\n", ##varargs);  exit(EXIT_FAILURE); }
 
+/* in sys/param.h
 #ifndef MIN
 #define MIN(a,b) (a>b ? b : a)
 #endif
 #ifndef MAX
 #define MAX(a,b) (a<b ? b : a)
 #endif
+*/
 
 struct i8k_struct {
 	char *version;
