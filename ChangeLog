@@ -1,5 +1,10 @@
 # $Id$
 
+2005-12-31
+	* Fixed bug with use_xft causing ignorance of font selection (sf.net
+	bug 1387564)
+	* Fixed issue with parsing of hex values for colours
+
 2005-12-30
 	* Added BMPx (http://beep-media-player.org/) support
 

@@ -4840,12 +4840,10 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 			use_xft = string_to_bool(value);
 		}
 		CONF("font") {
-			if (!use_xft) {
-				if (value) {
-					set_first_font(value);
-				} else
-					CONF_ERR;
-			}
+			if (value) {
+				set_first_font(value);
+			} else
+				CONF_ERR;
 		}
 		CONF("xftalpha") {
 			if (value && font_count >= 0)
@@ -4868,10 +4866,12 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 		}
 		CONF("font") {
 #endif
-			if (value) {
-				set_first_font(value);
-			} else
-				CONF_ERR;
+			if (use_xft) {
+				if (value) {
+					set_first_font(value);
+				} else
+					CONF_ERR;
+			}
 		}
 		CONF("gap_x") {
 			if (value)

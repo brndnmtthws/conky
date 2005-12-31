@@ -366,8 +366,17 @@ long get_x11_color(const char *name)
 	color.pixel = 0;
 	if (!XParseColor
 	    (display, DefaultColormap(display, screen), name, &color)) {
-		ERR("can't parse X color '%s'", name);
-		return 0xFF00FF;
+		/* lets check if it's a hex colour with the # missing in front
+		 * if yes, then do something about it
+		 */
+		char newname[64];
+		newname[0] = '#';
+		strncpy(&newname[1], name, 62);
+		/* now lets try again */
+		if (!XParseColor(display, DefaultColormap(display, screen), &newname[0], &color)) {
+			ERR("can't parse X color '%s'", name);
+			return 0xFF00FF;
+		}
 	}
 	if (!XAllocColor
 	    (display, DefaultColormap(display, screen), &color))
