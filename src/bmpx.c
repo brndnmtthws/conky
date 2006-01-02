@@ -16,6 +16,7 @@
 static DBusGConnection *bus;
 static DBusGProxy *remote_object;
 static int connected = 0;
+char unknown[8];
 
 void update_bmpx()
 {
@@ -30,7 +31,7 @@ void update_bmpx()
 		
 		bus = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
 		if (bus == NULL) {
-			ERR("%s\n", error->message);
+			ERR("BMPx error 1: %s\n", error->message);
 			goto fail;
 		}
 		
@@ -39,7 +40,7 @@ void update_bmpx()
 			BMP_DBUS_PATH_SYSTEMCONTROL,
 			BMP_DBUS_INTERFACE);
 		if (!remote_object) {
-			ERR("%s\n", error->message);
+			ERR("BMPx error 2: %s\n", error->message);
 			goto fail;
 		} 
 
@@ -52,7 +53,7 @@ void update_bmpx()
 					G_TYPE_STRING, &uri, G_TYPE_INVALID)) {
 			current_info->bmpx.uri = uri;
 		} else {
-			ERR("%s\n", error->message);
+			ERR("BMPx error 3: %s\n", error->message);
 			goto fail;
 		}
 	
@@ -63,13 +64,13 @@ void update_bmpx()
 				DBUS_TYPE_G_STRING_VALUE_HASHTABLE,
 				&metadata,
 				G_TYPE_INVALID)) {
-			current_info->bmpx.title= g_value_get_string(g_hash_table_lookup(metadata, "title"));
+			current_info->bmpx.title = g_value_get_string(g_hash_table_lookup(metadata, "title"));
 			current_info->bmpx.artist = g_value_get_string(g_hash_table_lookup(metadata, "artist"));
 			current_info->bmpx.album = g_value_get_string(g_hash_table_lookup(metadata, "album"));
 			current_info->bmpx.bitrate = g_value_get_int(g_hash_table_lookup(metadata, "bitrate"));
 			current_info->bmpx.track = g_value_get_int(g_hash_table_lookup(metadata, "track-number"));
 		} else {
-			ERR("%s\n", error->message);
+			ERR("BMPx error 4: %s\n", error->message);
 			goto fail;
 		}
 		
@@ -77,11 +78,13 @@ void update_bmpx()
 			free(uri);
 		g_hash_table_destroy(metadata);
 	} else {
-fail:
-		current_info->bmpx.title = strdup("Unknown");
-		current_info->bmpx.artist = strdup("Unknown");
-		current_info->bmpx.album = strdup("Unknown");
+fail: 
+		strcpy(unknown, "Unknown");
+		current_info->bmpx.title = unknown;
+		current_info->bmpx.artist = unknown;
+		current_info->bmpx.album = unknown;
 		current_info->bmpx.bitrate = 0;
 		current_info->bmpx.track = 0;
 	}
 }
+

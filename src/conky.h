@@ -125,6 +125,7 @@ struct mpd_s {
 #endif
 
 #ifdef BMPX
+void update_bmpx();
 struct bmpx_s {
 	char *title;
 	char *artist;
