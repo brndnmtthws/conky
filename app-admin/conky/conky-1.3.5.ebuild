@@ -32,7 +32,6 @@ DEPEND_COMMON="
 	)"
 
 RDEPEND="${DEPEND_COMMON}"
-#	seti? ( sci-astronomy/setiathome )"
 
 DEPEND="
 	${DEPEND_COMMON}
@@ -73,8 +72,8 @@ src_compile() {
 		${myconf} \
 		$(use_enable truetype xft) \
 		$(use_enable X x11) \
+		$(use_enable bmpx bmpx) \
 		$(use_enable !ipv6 portmon) || die "econf failed"
-#		$(use_enable seti)
 	emake ${mymake} || die "compile failed"
 }
 
@@ -96,13 +95,7 @@ pkg_postinst() {
 	einfo "There are also pretty html docs available"
 	einfo "on Conky's site or in /usr/share/doc/${PF}"
 	einfo
-	einfo "Comment out temperature info lines if you have no kernel"
-	einfo "support for it."
-	einfo
 	einfo "Check out app-vim/conky-syntax for conkyrc"
 	einfo "syntax highlighting in Vim"
 	einfo
-	ewarn "Conky doesn't work with window managers that"
-	ewarn "take control over root window such as Gnome's nautilus."
-	ewarn
 }
