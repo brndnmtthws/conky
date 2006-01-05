@@ -35,6 +35,7 @@
 #include <string.h>
 #include "conky.h"
 
+/* access to this item array is synchronized with mutexes */
 static char g_item[14][256];
 
 /* ----------------------------------------
@@ -99,15 +100,14 @@ void *infopipe_service(void *pvoid)
             if (read(fd,buf,sizeof(buf))>0) {
 		    
 		pbuf=buf;
+		pthread_mutex_lock(&info.infopipe.item_mutex);
 		for (i=0;i<14;i++) {
                     sscanf(pbuf,"%*[^:]: %[^\n]",g_item[i]);
 		    while(*pbuf++ != '\n');
 		}
-
-		pthread_mutex_lock(&info.infopipe.item_mutex);
-		memcpy(&info.infopipe.item,g_item,sizeof(g_item));
 		pthread_mutex_unlock(&info.infopipe.item_mutex);
-                /*
+
+                /* -- debug to console --
 		for(i=0;i<14;i++)
 		    printf("%s\n",g_item[i]);
                 */
