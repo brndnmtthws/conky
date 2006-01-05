@@ -74,6 +74,9 @@ draw_outline no
 # Draw borders around text
 draw_borders yes
 
+# Draw borders around graphs
+draw_graph_borders yes
+
 # Stippled borders?
 stippled_borders 8
 

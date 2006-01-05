@@ -77,6 +77,13 @@
 </varlistentry>
 
 <varlistentry>
+	<term><command><option>draw_graph_borders</option></command></term>
+	<listitem>
+		Draw borders around graphs?
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
 	<term><command><option>draw_shades</option></command></term>
 	<listitem>
 		Draw shades?

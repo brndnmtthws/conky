@@ -226,6 +226,7 @@ static int gap_x, gap_y;
 
 /* border */
 static int draw_borders;
+static int draw_graph_borders;
 static int stippled_borders;
 
 static int draw_shades, draw_outline;
@@ -3983,15 +3984,10 @@ static void draw_line(char *s)
 						w = text_start_x + text_width - cur_x - 1;
 					if (w < 0)
 						w = 0;
-					XSetLineAttributes(display,
-							   window.gc, 1,
-							   LineSolid,
-							   CapButt,
-							   JoinMiter);
-					XDrawRectangle(display,
-						       window.drawable,
-						       window.gc, cur_x,
-						       by, w, h);
+					if (draw_graph_borders) {
+						XSetLineAttributes(display, window.gc, 1, LineSolid, CapButt, JoinMiter);
+						XDrawRectangle(display,window.drawable, window.gc, cur_x, by, w, h);
+					}
 					XSetLineAttributes(display,
 							   window.gc, 1,
 							   LineSolid,
@@ -4672,8 +4668,9 @@ static void set_default_configurations(void)
 	default_fg_color = WhitePixel(display, screen);
 	default_bg_color = BlackPixel(display, screen);
 	default_out_color = BlackPixel(display, screen);
-	draw_borders = 0;
 	draw_shades = 1;
+	draw_borders = 0;
+	draw_graph_borders = 1;
 	draw_outline = 0;
 	set_first_font("6x10");
 	gap_x = 5;
@@ -4896,6 +4893,9 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 
 		CONF("draw_borders") {
 			draw_borders = string_to_bool(value);
+		}
+		CONF("draw_graph_borders") {
+			draw_graph_borders = string_to_bool(value);
 		}
 		CONF("draw_shades") {
 			draw_shades = string_to_bool(value);

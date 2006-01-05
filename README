@@ -189,6 +189,10 @@ CONFIGURATION SETTINGS
 	      Draw borders around text?
 
 
+       draw_graph_borders
+	      Draw borders around graphs?
+
+
        draw_shades
 	      Draw shades?
 
