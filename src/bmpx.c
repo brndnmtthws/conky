@@ -16,7 +16,7 @@
 static DBusGConnection *bus;
 static DBusGProxy *remote_object;
 static int connected = 0;
-char unknown[8];
+static char *unknown = "unknown";
 
 void update_bmpx()
 {
@@ -79,7 +79,8 @@ void update_bmpx()
 		g_hash_table_destroy(metadata);
 	} else {
 fail: 
-		strcpy(unknown, "Unknown");
+		if (error)
+			g_error_free(error);
 		current_info->bmpx.title = unknown;
 		current_info->bmpx.artist = unknown;
 		current_info->bmpx.album = unknown;
@@ -87,4 +88,3 @@ fail:
 		current_info->bmpx.track = 0;
 	}
 }
-
