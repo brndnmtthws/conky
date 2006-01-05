@@ -90,28 +90,28 @@ void *infopipe_service(void *pvoid)
             FD_ZERO(&readset);
 	    FD_SET(fd,&readset);
 
-	    /* This select() can block for a brief while (tm time value) and is 
-               ideally suited for a worker thread such as this. We don't want to 
-               slow down ui updates in the main thread as there is already excess 
-               latency there. */
-            if (select(fd+1,&readset,NULL,NULL,&tm) != 1) /* nothing to read yet */
-                break;
+	    /* The select() below can block for a brief time (tm value) and is 
+               ideally suited for a worker thread such as this.  We don't want 
+               to slow down ui updates in the main thread as there is already 
+	       excess latency there. */
+            if (select(fd+1,&readset,NULL,NULL,&tm) == 1) { /* something to read */
 		    
-            if (read(fd,buf,sizeof(buf))>0) {
+                if (read(fd,buf,sizeof(buf)) > 0) { /* buf has data */
 		    
-		pbuf=buf;
-		pthread_mutex_lock(&info.infopipe.item_mutex);
-		for (i=0;i<14;i++) {
-                    sscanf(pbuf,"%*[^:]: %[^\n]",g_item[i]);
-		    while(*pbuf++ != '\n');
-		}
-		pthread_mutex_unlock(&info.infopipe.item_mutex);
+		    pbuf=buf;
+		    pthread_mutex_lock(&info.infopipe.item_mutex);
+		    for (i=0;i<14;i++) {
+			/* 14 lines of key: value pairs presented in a known order */
+                        sscanf(pbuf,"%*[^:]: %[^\n]",g_item[i]);
+		        while(*pbuf++ != '\n');
+		    }
+		    pthread_mutex_unlock(&info.infopipe.item_mutex);
 
-                /* -- debug to console --
-		for(i=0;i<14;i++)
-		    printf("%s\n",g_item[i]);
-                */
-
+                    /* -- debug to console --
+		    for(i=0;i<14;i++)
+		        printf("%s\n",g_item[i]);
+                    */
+	        }
 	    }
 
 	    if (close(fd)<0)
