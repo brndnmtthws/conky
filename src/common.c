@@ -230,7 +230,10 @@ void update_stuff()
 	if (NEED(INFO_BMPX))
 		update_bmpx();
 #endif
-	
+#ifdef INFOPIPE
+	if (NEED(INFO_INFOPIPE))
+		update_infopipe();
+#endif
 	if (NEED(INFO_LOADAVG))
 		update_load_average();
 

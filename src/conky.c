@@ -899,6 +899,22 @@ enum text_object_type {
 	OBJ_bmpx_uri,
 	OBJ_bmpx_bitrate,
 #endif
+#ifdef INFOPIPE
+	OBJ_infopipe_protocol,
+	OBJ_infopipe_version,
+	OBJ_infopipe_status,
+	OBJ_infopipe_playlist_tunes,
+	OBJ_infopipe_playlist_currtune,
+	OBJ_infopipe_usec_position,
+	OBJ_infopipe_position,
+	OBJ_infopipe_usec_time,
+	OBJ_infopipe_time,
+	OBJ_infopipe_bitrate,
+	OBJ_infopipe_frequency,
+	OBJ_infopipe_channels,
+	OBJ_infopipe_title,
+	OBJ_infopipe_file,
+#endif
 #ifdef TCP_PORT_MONITOR
 	OBJ_tcp_portmon,
 #endif
@@ -1806,6 +1822,22 @@ int a = stippled_borders, b = 1;
 	END
 	OBJ(bmpx_bitrate, INFO_BMPX)
 	END
+#endif
+#ifdef INFOPIPE
+	OBJ(infopipe_protocol, INFO_INFOPIPE) END
+	OBJ(infopipe_version, INFO_INFOPIPE) END
+	OBJ(infopipe_status, INFO_INFOPIPE) END
+	OBJ(infopipe_playlist_tunes, INFO_INFOPIPE) END
+	OBJ(infopipe_playlist_currtune, INFO_INFOPIPE) END
+	OBJ(infopipe_usec_position, INFO_INFOPIPE) END
+	OBJ(infopipe_position, INFO_INFOPIPE) END
+	OBJ(infopipe_usec_time, INFO_INFOPIPE) END
+	OBJ(infopipe_time, INFO_INFOPIPE) END
+	OBJ(infopipe_bitrate, INFO_INFOPIPE) END
+	OBJ(infopipe_frequency, INFO_INFOPIPE) END
+	OBJ(infopipe_channels, INFO_INFOPIPE) END
+	OBJ(infopipe_title, INFO_INFOPIPE) END
+	OBJ(infopipe_file, INFO_INFOPIPE) END
 #endif
 #ifdef TCP_PORT_MONITOR
 	OBJ(tcp_portmon, INFO_TCP_PORT_MONITOR) 
@@ -3080,6 +3112,50 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			}
 			OBJ(bmpx_bitrate) {
 				snprintf(p, p_max_size, "%i", cur->bmpx.bitrate);
+			}
+#endif
+#ifdef INFOPIPE
+                        OBJ(infopipe_protocol) {
+                          	snprintf(p, p_max_size, "%s", cur->infopipe.item[INFOPIPE_PROTOCOL]);
+			}
+                        OBJ(infopipe_version) {
+                          	snprintf(p, p_max_size, "%s", cur->infopipe.item[INFOPIPE_VERSION]);
+			}
+                        OBJ(infopipe_status) {
+                          	snprintf(p, p_max_size, "%s", cur->infopipe.item[INFOPIPE_STATUS]);
+			}
+                        OBJ(infopipe_playlist_tunes) {
+                          	snprintf(p, p_max_size, "%s", cur->infopipe.item[INFOPIPE_PLAYLIST_TUNES]);
+			}
+                        OBJ(infopipe_playlist_currtune) {
+                          	snprintf(p, p_max_size, "%s", cur->infopipe.item[INFOPIPE_PLAYLIST_CURRTUNE]);
+			}
+                        OBJ(infopipe_usec_position) {
+                          	snprintf(p, p_max_size, "%s", cur->infopipe.item[INFOPIPE_USEC_POSITION]);
+			}
+                        OBJ(infopipe_position) {
+                          	snprintf(p, p_max_size, "%s", cur->infopipe.item[INFOPIPE_POSITION]);
+			}
+                        OBJ(infopipe_usec_time) {
+                          	snprintf(p, p_max_size, "%s", cur->infopipe.item[INFOPIPE_USEC_TIME]);
+			}
+                        OBJ(infopipe_time) {
+                          	snprintf(p, p_max_size, "%s", cur->infopipe.item[INFOPIPE_TIME]);
+			}
+                        OBJ(infopipe_bitrate) {
+                          	snprintf(p, p_max_size, "%s", cur->infopipe.item[INFOPIPE_BITRATE]);
+			}
+                        OBJ(infopipe_frequency) {
+                          	snprintf(p, p_max_size, "%s", cur->infopipe.item[INFOPIPE_FREQUENCY]);
+			}
+                        OBJ(infopipe_channels) {
+                          	snprintf(p, p_max_size, "%s", cur->infopipe.item[INFOPIPE_CHANNELS]);
+			}
+                        OBJ(infopipe_title) {
+                          	snprintf(p, p_max_size, "%s", cur->infopipe.item[INFOPIPE_TITLE]);
+			}
+                        OBJ(infopipe_file) {
+                          	snprintf(p, p_max_size, "%s", cur->infopipe.item[INFOPIPE_FILE]);
 			}
 #endif
 			OBJ(top) {
@@ -5393,7 +5469,40 @@ int main(int argc, char **argv)
 		ERR("error setting signal handler: %s", strerror(errno) );
 	}
 
+#ifdef INFOPIPE
+	/* joinable thread for infopipe activity */
+        pthread_attr_init(&info.infopipe.thread_attr);
+	pthread_attr_setdetachstate(&info.infopipe.thread_attr, PTHREAD_CREATE_JOINABLE);
+	/* init mutexex */
+	pthread_mutex_init(&info.infopipe.item_mutex, NULL);
+	pthread_mutex_init(&info.infopipe.runnable_mutex, NULL);
+	/* init runnable condition for worker thread */
+	pthread_mutex_lock(&info.infopipe.runnable_mutex);
+	info.infopipe.runnable=1;
+	pthread_mutex_unlock(&info.infopipe.runnable_mutex);
+	if (pthread_create(&info.infopipe.thread, &info.infopipe.thread_attr, infopipe_service, NULL))
+	{
+	    CRIT_ERR("unable to create infopipe thread!");
+	}
+#endif
+
 	main_loop();
+	
+#ifdef INFOPIPE
+	/* signal infopipe worker thread to terminate */
+	pthread_mutex_lock(&info.infopipe.runnable_mutex);
+	info.infopipe.runnable=0;
+	pthread_mutex_unlock(&info.infopipe.runnable_mutex);
+	/* destroy thread attribute and wait for thread */
+	pthread_attr_destroy(&info.infopipe.thread_attr);
+	if (pthread_join(info.infopipe.thread, NULL))
+	{
+	    ERR("error joining infopipe thread");
+        }
+	/* destroy mutexes */
+	pthread_mutex_destroy(&info.infopipe.item_mutex);
+	pthread_mutex_destroy(&info.infopipe.runnable_mutex);
+#endif
 
 	return 0;
 }

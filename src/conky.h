@@ -9,6 +9,9 @@
 #ifndef _conky_h_
 #define _conky_h_
 
+#ifdef INFOPIPE
+#include <pthread.h>
+#endif
 #if defined(HAS_MCHECK_H)
 #include <mcheck.h>
 #endif /* HAS_MCHECK_H */
@@ -136,6 +139,34 @@ struct bmpx_s {
 };
 #endif
 
+#ifdef INFOPIPE
+#include "infopipe.h"
+enum _infopipe_keys {
+	INFOPIPE_PROTOCOL,
+	INFOPIPE_VERSION,
+	INFOPIPE_STATUS,
+	INFOPIPE_PLAYLIST_TUNES,
+	INFOPIPE_PLAYLIST_CURRTUNE,
+	INFOPIPE_USEC_POSITION,
+	INFOPIPE_POSITION,
+	INFOPIPE_USEC_TIME,
+	INFOPIPE_TIME,
+	INFOPIPE_BITRATE,
+	INFOPIPE_FREQUENCY,
+	INFOPIPE_CHANNELS,
+	INFOPIPE_TITLE,
+	INFOPIPE_FILE
+};
+struct infopipe_s {
+	char item[14][256];             /* use enum as first array index, e.g. item[INFOPIPE_STATUS] */
+	int runnable;                   /* used to signal infopipe thread to stop */
+	pthread_t thread;               /* worker thread for infopipe updating */
+	pthread_attr_t thread_attr;     /* thread attributes */
+	pthread_mutex_t item_mutex;     /* mutex for item array */
+	pthread_mutex_t runnable_mutex; /* mutex for runnable flag */
+};
+#endif
+
 #ifdef TCP_PORT_MONITOR
 #include "libtcp-portmon.h"
 #define MIN_PORT_MONITORS_DEFAULT 16
@@ -175,6 +206,9 @@ enum {
 #endif
 #ifdef BMPX
 	INFO_BMPX = 23,
+#endif
+#ifdef INFOPIPE
+	INFO_INFOPIPE = 24,
 #endif
 };
 
@@ -221,6 +255,9 @@ struct information {
 #endif
 #ifdef BMPX
 	struct bmpx_s bmpx;
+#endif
+#ifdef INFOPIPE
+	struct infopipe_s infopipe;
 #endif
 	struct process *cpu[10];
 	struct process *memu[10];
