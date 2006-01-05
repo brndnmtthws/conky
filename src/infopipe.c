@@ -36,7 +36,7 @@
 #include "conky.h"
 
 /* access to this item array is synchronized with mutexes */
-static char g_item[14][256];
+static infopipe_t g_items;
 
 /* ----------------------------------------
  * Conky update function for InfoPipe data.
@@ -44,13 +44,13 @@ static char g_item[14][256];
 void update_infopipe(void)
 {
     /* 
-      The worker thread is updating ihe g_item array asynchronously to the main 
-      conky thread.  We merely copy the g_item array into the main thread's info
+      The worker thread is updating ihe g_items array asynchronously to the main 
+      conky thread.  We merely copy the g_items array into the main thread's info
       structure when the main thread's update cycle fires.   Note that using the
       mutexes here makes it easier since we won't have to do any sync in conky.c.
     */
     pthread_mutex_lock(&info.infopipe.item_mutex);
-    memcpy(&info.infopipe.item,g_item,sizeof(g_item));
+    memcpy(&info.infopipe.items,g_items,sizeof(g_items));
     pthread_mutex_unlock(&info.infopipe.item_mutex);
 }
 
@@ -58,17 +58,18 @@ void update_infopipe(void)
 /* --------------------------------------------------
  * Worker thread function for InfoPipe data sampling.
  * -------------------------------------------------- */ 
-void *infopipe_service(void *pvoid)
+void *infopipe_thread_func(void *pvoid)
 {
     int i,fd,runnable;
     fd_set readset;
     struct timeval tm;
     char buf[2048],*pbuf;
+    infopipe_t items;
 
     pvoid=(void*)pvoid; /* useless cast to avoid unused var warning */
 
-    /* I/O multiplexing timer is set for one second select() */
-    tm.tv_sec=1;
+    /* I/O multiplexing timer */
+    tm.tv_sec=10;  /* high enough to reduce persistent select() failures */
     tm.tv_usec=0;
 
     /* Grab the runnable signal.  Should be non-zero here or we do nothing. */
@@ -82,10 +83,11 @@ void *infopipe_service(void *pvoid)
 	for (;;) {  /* convenience loop so we can break below */
 
 	    memset(buf,0,sizeof(buf));
-	    memset(g_item,0,sizeof(g_item));
+	    memset(items,0,sizeof(items));
 
-	    if ((fd=open(INFOPIPE_NAMED_PIPE, O_RDONLY | O_NONBLOCK)) < 0)
+	    if ((fd=open(INFOPIPE_NAMED_PIPE, O_RDONLY | O_NONBLOCK)) < 0) {
 	        break;
+	    }
 
             FD_ZERO(&readset);
 	    FD_SET(fd,&readset);
@@ -94,38 +96,45 @@ void *infopipe_service(void *pvoid)
                ideally suited for a worker thread such as this.  We don't want 
                to slow down ui updates in the main thread as there is already 
 	       excess latency there. */
-            if (select(fd+1,&readset,NULL,NULL,&tm) == 1) { /* something to read */
+            if ((i=select(fd+1,&readset,NULL,NULL,&tm)) == 1) { /* something to read */
 		    
                 if (read(fd,buf,sizeof(buf)) > 0) { /* buf has data */
 		    
 		    pbuf=buf;
-		    pthread_mutex_lock(&info.infopipe.item_mutex);
 		    for (i=0;i<14;i++) {
 			/* 14 lines of key: value pairs presented in a known order */
-                        sscanf(pbuf,"%*[^:]: %[^\n]",g_item[i]);
+                        sscanf(pbuf,"%*[^:]: %[^\n]",items[i]);
 		        while(*pbuf++ != '\n');
 		    }
-		    pthread_mutex_unlock(&info.infopipe.item_mutex);
 
                     /* -- debug to console --
 		    for(i=0;i<14;i++)
-		        printf("%s\n",g_item[i]);
+		        printf("%s\n",items[i]);
                     */
 	        }
 	    }
+	    else {
+		printf("select() says nothing to read: %d, fd %d\n",i,fd);
+	    }
 
-	    if (close(fd)<0)
+	    if (close(fd) < 0) {
                 break;
+	    }
 
 	    break;
         }
 
-	sleep(2);   /* need a var here */
+	/* Deliver the refreshed items array to g_items. */
+	pthread_mutex_lock(&info.infopipe.item_mutex);
+        memcpy(&g_items,items,sizeof(items));
+	pthread_mutex_unlock(&info.infopipe.item_mutex);
 
 	/* Grab the runnable signal for next loop. */
         pthread_mutex_lock(&info.infopipe.runnable_mutex);
         runnable=info.infopipe.runnable;
         pthread_mutex_unlock(&info.infopipe.runnable_mutex);
+
+	sleep(1);
     }
 
     pthread_exit(NULL);

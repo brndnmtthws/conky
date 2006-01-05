@@ -28,9 +28,34 @@
 #ifndef INFOPIPE_H
 #define INFOPIPE_H
 
+/* The named pipe created by the infopipe plugin (actually a symlink) */
 #define INFOPIPE_NAMED_PIPE "/tmp/xmms-info"
 
+/* 14 keys comprise the output of the infopipe plugin. */
+enum _infopipe_keys {
+        INFOPIPE_PROTOCOL,
+        INFOPIPE_VERSION,
+        INFOPIPE_STATUS,
+        INFOPIPE_PLAYLIST_TUNES,
+        INFOPIPE_PLAYLIST_CURRTUNE,
+        INFOPIPE_USEC_POSITION,
+        INFOPIPE_POSITION,
+        INFOPIPE_USEC_TIME,
+        INFOPIPE_TIME,
+        INFOPIPE_BITRATE,
+        INFOPIPE_FREQUENCY,
+        INFOPIPE_CHANNELS,
+        INFOPIPE_TITLE,
+        INFOPIPE_FILE
+};
+
+/* 14 slots for the infopipe values */
+typedef char infopipe_t[14][256];
+
+/* Service routine for the conky main thread */
 void update_infopipe(void);
-void *infopipe_service(void *);
+
+/* Thread function */
+void *infopipe_thread_func(void *);
 
 #endif

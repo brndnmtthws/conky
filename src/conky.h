@@ -141,24 +141,8 @@ struct bmpx_s {
 
 #ifdef INFOPIPE
 #include "infopipe.h"
-enum _infopipe_keys {
-	INFOPIPE_PROTOCOL,
-	INFOPIPE_VERSION,
-	INFOPIPE_STATUS,
-	INFOPIPE_PLAYLIST_TUNES,
-	INFOPIPE_PLAYLIST_CURRTUNE,
-	INFOPIPE_USEC_POSITION,
-	INFOPIPE_POSITION,
-	INFOPIPE_USEC_TIME,
-	INFOPIPE_TIME,
-	INFOPIPE_BITRATE,
-	INFOPIPE_FREQUENCY,
-	INFOPIPE_CHANNELS,
-	INFOPIPE_TITLE,
-	INFOPIPE_FILE
-};
 struct infopipe_s {
-	char item[14][256];             /* use enum as first array index, e.g. item[INFOPIPE_STATUS] */
+	infopipe_t items;               /* e.g. items[INFOPIPE_STATUS] yields char[] */
 	int runnable;                   /* used to signal infopipe thread to stop */
 	pthread_t thread;               /* worker thread for infopipe updating */
 	pthread_attr_t thread_attr;     /* thread attributes */
