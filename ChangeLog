@@ -315,7 +315,8 @@
 =========================================================================
 	
 2005-06-21
-	* Version 1.0. Conky is born from the ashes of torsmo. Main site: http://conky.rty.ca/
+	* Version 1.0. Conky is born from the ashes of torsmo. Main site:
+	http://conky.sf.ca/
 	* Added xwin patch
 	* Added new feature for sample averaging of CPU and net info
 
