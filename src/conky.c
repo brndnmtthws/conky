@@ -915,6 +915,7 @@ enum text_object_type {
 	OBJ_infopipe_channels,
 	OBJ_infopipe_title,
 	OBJ_infopipe_file,
+	OBJ_infopipe_bar,
 #endif
 #ifdef TCP_PORT_MONITOR
 	OBJ_tcp_portmon,
@@ -1839,6 +1840,7 @@ int a = stippled_borders, b = 1;
 	OBJ(infopipe_channels, INFO_INFOPIPE) END
 	OBJ(infopipe_title, INFO_INFOPIPE) END
 	OBJ(infopipe_file, INFO_INFOPIPE) END
+	OBJ(infopipe_bar, INFO_INFOPIPE) END
 #endif
 #ifdef TCP_PORT_MONITOR
 	OBJ(tcp_portmon, INFO_TCP_PORT_MONITOR) 
@@ -3157,6 +3159,12 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			}
                         OBJ(infopipe_file) {
                           	snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_FILE]);
+			}
+			OBJ(infopipe_bar) {
+				double progress;
+				progress= atof(cur->infopipe.items[INFOPIPE_USEC_POSITION]) /
+					  atof(cur->infopipe.items[INFOPIPE_USEC_TIME]);
+				new_bar(p,obj->a,obj->b,(int)(progress*255.0f));
 			}
 #endif
 			OBJ(top) {

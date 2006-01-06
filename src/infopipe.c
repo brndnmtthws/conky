@@ -69,7 +69,7 @@ void *infopipe_thread_func(void *pvoid)
     pvoid=(void*)pvoid; /* useless cast to avoid unused var warning */
 
     /* I/O multiplexing timer */
-    tm.tv_sec=10;  /* high enough to reduce persistent select() failures */
+    tm.tv_sec=30;  /* high enough to reduce persistent select() failures */
     tm.tv_usec=0;
 
     /* Grab the runnable signal.  Should be non-zero here or we do nothing. */
@@ -96,7 +96,7 @@ void *infopipe_thread_func(void *pvoid)
                ideally suited for a worker thread such as this.  We don't want 
                to slow down ui updates in the main thread as there is already 
 	       excess latency there. */
-            if ((i=select(fd+1,&readset,NULL,NULL,&tm)) == 1) { /* something to read */
+            if (select(fd+1,&readset,NULL,NULL,&tm) == 1) { /* something to read */
 		    
                 if (read(fd,buf,sizeof(buf)) > 0) { /* buf has data */
 		    
@@ -112,9 +112,6 @@ void *infopipe_thread_func(void *pvoid)
 		        printf("%s\n",items[i]);
                     */
 	        }
-	    }
-	    else {
-		printf("select() says nothing to read: %d, fd %d\n",i,fd);
 	    }
 
 	    if (close(fd) < 0) {
