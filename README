@@ -45,7 +45,8 @@ COMPILING
        --infodir=/usr/share/info     --datadir=/usr/share    --sysconfdir=/etc
        --localstatedir=/var/lib	  --enable-xft	 --enable-seti	 --enable-dou‐
        ble-buffer    --enable-own-window   --enable-proc-uptime	  --enable-mpd
-       --enable-mldonkey --enable-x11 --enable-portmon
+       --enable-mldonkey    --enable-x11    --enable-portmon	 --enable-bmpx
+       --enable-infopipe
 
        make
 

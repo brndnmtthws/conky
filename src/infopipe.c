@@ -65,13 +65,9 @@ void *infopipe_thread_func(void *pvoid)
     struct timeval tm;
     static char buf[2048];  /* should equal or exceed sizeof(infopipe_t) */
     static infopipe_t items;
-    char *pbuf;
+    char *pbuf,c;
 
     pvoid=(void*)pvoid; /* useless cast to avoid unused var warning */
-
-    /* I/O multiplexing timer */
-    tm.tv_sec=30;  /* high enough to reduce persistent select() failures */
-    tm.tv_usec=0;
 
     /* Grab the runnable signal.  Should be non-zero here or we do nothing. */
     pthread_mutex_lock(&info.infopipe.runnable_mutex);
@@ -94,32 +90,40 @@ void *infopipe_thread_func(void *pvoid)
             FD_ZERO(&readset);
 	    FD_SET(fd,&readset);
 
-	    /* The select() below can block for time tm and is ideally suited
-               for a worker thread such as this.  We don't want to slow down
-               user interface updates in the main thread as there is already 
-	       excess latency there. */
+	    /* On Linux, select() reduces the timer by the amount of time not slept,
+	     * so we must rest the timer with each loop. */
+	    tm.tv_sec=1;
+	    tm.tv_usec=0;
 	    rc=select(fd+1,&readset,NULL,NULL,&tm);
-	    if (rc == -1)
-		perror("infopipe select()");
-	    else if (rc && FD_ISSET(fd,&readset)) {
-		    
+
+	    if (rc == -1) {
+		/* -- debug -- 
+		perror("infopipe select()"); 
+		*/
+	    }
+	    else if (rc && FD_ISSET(fd,&readset)) {  /* ready to read */
+
                 if (read(fd,buf,sizeof(buf)) > 0) { /* buf has data */
 		    
 		    pbuf=buf;
 		    for (i=0;i<14;i++) {
 			/* 14 lines of key: value pairs presented in a known order */
-                        sscanf(pbuf,"%*[^:]: %[^\n]",items[i]);
-		        while(*pbuf++ != '\n');
+                        if ( sscanf(pbuf,"%*[^:]: %[^\n]",items[i]) == EOF )
+			    break;
+		        while((c = *pbuf++) && (c != '\n'));
 		    }
 
-                    /* -- debug to console --
+                    /* -- debug --
 		    for(i=0;i<14;i++)
 		        printf("%s\n",items[i]);
                     */
 		} 
 	    }
-	    else
-		printf("no infopipe data to read.\n");
+	    else {
+		/* -- debug --
+		printf("no infopipe data\n"); 
+		*/
+            }
 
 	    close(fd);
 
