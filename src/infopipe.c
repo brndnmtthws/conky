@@ -63,7 +63,7 @@ void *infopipe_thread_func(void *pvoid)
     int i,fd,runnable;
     fd_set readset;
     struct timeval tm;
-    static char buf[2048];  /* such equal or exceed sizeof(infopipe_t) */
+    static char buf[2048];  /* should equal or exceed sizeof(infopipe_t) */
     static infopipe_t items;
     char *pbuf;
 
