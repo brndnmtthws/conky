@@ -50,7 +50,7 @@ enum _infopipe_keys {
 };
 
 /* 14 slots for the infopipe values */
-typedef char infopipe_t[14][256];
+typedef char infopipe_t[14][128];
 
 /* Service routine for the conky main thread */
 void update_infopipe(void);

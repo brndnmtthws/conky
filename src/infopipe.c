@@ -63,8 +63,9 @@ void *infopipe_thread_func(void *pvoid)
     int i,fd,runnable;
     fd_set readset;
     struct timeval tm;
-    char buf[2048],*pbuf;
-    infopipe_t items;
+    static char buf[2048];  /* such equal or exceed sizeof(infopipe_t) */
+    static infopipe_t items;
+    char *pbuf;
 
     pvoid=(void*)pvoid; /* useless cast to avoid unused var warning */
 
@@ -92,9 +93,9 @@ void *infopipe_thread_func(void *pvoid)
             FD_ZERO(&readset);
 	    FD_SET(fd,&readset);
 
-	    /* The select() below can block for a brief time (tm value) and is 
-               ideally suited for a worker thread such as this.  We don't want 
-               to slow down ui updates in the main thread as there is already 
+	    /* The select() below can block for time tm and is ideally suited
+               for a worker thread such as this.  We don't want to slow down
+               user interface updates in the main thread as there is already 
 	       excess latency there. */
             if (select(fd+1,&readset,NULL,NULL,&tm) == 1) { /* something to read */
 		    
