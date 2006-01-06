@@ -1840,7 +1840,9 @@ int a = stippled_borders, b = 1;
 	OBJ(infopipe_channels, INFO_INFOPIPE) END
 	OBJ(infopipe_title, INFO_INFOPIPE) END
 	OBJ(infopipe_file, INFO_INFOPIPE) END
-	OBJ(infopipe_bar, INFO_INFOPIPE) END
+	OBJ(infopipe_bar, INFO_INFOPIPE) 
+	    (void) scan_bar(arg, &obj->a, &obj->b);
+	END
 #endif
 #ifdef TCP_PORT_MONITOR
 	OBJ(tcp_portmon, INFO_TCP_PORT_MONITOR) 
