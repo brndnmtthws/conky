@@ -3229,7 +3229,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 
 
 			OBJ(tail) {
-				if (current_update_time -obj->data.tail.last_update >= obj->data.tail.interval) {
+				if (current_update_time -obj->data.tail.last_update < obj->data.tail.interval) {
+							snprintf(p, p_max_size, "%s", obj->data.tail.buffer);
+				} else {
 					obj->data.tail.last_update = current_update_time;
 					FILE *fp;
 					int i;
@@ -3278,10 +3280,12 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							if (obj->data.tail.buffer[strlen(obj->data.tail.buffer)-1] == '\n') {
 								obj->data.tail.buffer[strlen(obj->data.tail.buffer)-1] = '\0';
 							}
+							snprintf(p, p_max_size, "%s", obj->data.tail.buffer);
 
 							freetail(freetmp);
 						} else {
 							strcpy(obj->data.tail.buffer, "Logfile Empty");
+							snprintf(p, p_max_size, "Logfile Empty");
 						}  /* if readlines */
 					} /*  fp == NULL  */
 				} /* if cur_upd_time >= */
@@ -3290,7 +3294,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 
 			}
 			OBJ(head) {
-				if (current_update_time -obj->data.tail.last_update >= obj->data.tail.interval) {
+				if (current_update_time -obj->data.tail.last_update < obj->data.tail.interval) {
+							snprintf(p, p_max_size, "%s", obj->data.tail.buffer);
+				} else {
 					obj->data.tail.last_update = current_update_time;
 					FILE *fp;
 					tailstring *head = NULL;
@@ -3325,8 +3331,10 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							if (obj->data.tail.buffer[strlen(obj->data.tail.buffer)-1] == '\n') {
 								obj->data.tail.buffer[strlen(obj->data.tail.buffer)-1] = '\0';
 							}
+							snprintf(p, p_max_size, "%s", obj->data.tail.buffer);
 						} else {
 							strcpy(obj->data.tail.buffer, "Logfile Empty");
+							snprintf(p, p_max_size, "Logfile Empty");
 						} /* if readlines > 0 */
 					} /* if fp == null */
 				} /* cur_upd_time >= */
