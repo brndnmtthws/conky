@@ -64,9 +64,21 @@ void update_bmpx()
 				DBUS_TYPE_G_STRING_VALUE_HASHTABLE,
 				&metadata,
 				G_TYPE_INVALID)) {
-			current_info->bmpx.title = g_value_get_string(g_hash_table_lookup(metadata, "title"));
-			current_info->bmpx.artist = g_value_get_string(g_hash_table_lookup(metadata, "artist"));
-			current_info->bmpx.album = g_value_get_string(g_hash_table_lookup(metadata, "album"));
+			if (current_info->bmpx.title) {
+				free(current_info->bmpx.title);
+				current_info->bmpx.title = 0;
+			}
+			if (current_info->bmpx.artist) {
+				free(current_info->bmpx.artist);
+				current_info->bmpx.artist = 0;
+			}
+			if (current_info->bmpx.album) {
+				free(current_info->bmpx.album);
+				current_info->bmpx.album = 0;
+			}
+			current_info->bmpx.title = g_value_dup_string(g_hash_table_lookup(metadata, "title"));
+			current_info->bmpx.artist = g_value_dup_string(g_hash_table_lookup(metadata, "artist"));
+			current_info->bmpx.album = g_value_dup_string(g_hash_table_lookup(metadata, "album"));
 			current_info->bmpx.bitrate = g_value_get_int(g_hash_table_lookup(metadata, "bitrate"));
 			current_info->bmpx.track = g_value_get_int(g_hash_table_lookup(metadata, "track-number"));
 		} else {
@@ -82,6 +94,18 @@ fail:
 		if (error)
 			g_error_free(error);
 		current_info->bmpx.title = unknown;
+		if (current_info->bmpx.title) {
+			free(current_info->bmpx.title);
+			current_info->bmpx.title = 0;
+		}
+		if (current_info->bmpx.artist) {
+			free(current_info->bmpx.artist);
+			current_info->bmpx.artist = 0;
+		}
+		if (current_info->bmpx.album) {
+			free(current_info->bmpx.album);
+			current_info->bmpx.album = 0;
+		}
 		current_info->bmpx.artist = unknown;
 		current_info->bmpx.album = unknown;
 		current_info->bmpx.bitrate = 0;

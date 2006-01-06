@@ -1813,16 +1813,22 @@ int a = stippled_borders, b = 1;
 #endif
 #ifdef BMPX
 	OBJ(bmpx_title, INFO_BMPX)
+		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
 	END
 	OBJ(bmpx_artist, INFO_BMPX)
+		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
 	END
 	OBJ(bmpx_album, INFO_BMPX)
+		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
 	END
 	OBJ(bmpx_track, INFO_BMPX)
+		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
 	END
 	OBJ(bmpx_uri, INFO_BMPX)
+		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
 	END
 	OBJ(bmpx_bitrate, INFO_BMPX)
+		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
 	END
 #endif
 #ifdef INFOPIPE
