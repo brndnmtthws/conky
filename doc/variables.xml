@@ -665,15 +665,6 @@
 
 <varlistentry>
 	<term>
-		<command><option>infopipe_protocol</option></command>
-	</term>
-	<listitem>
-		XMMS/BMP InfoPipe protocol
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
 		<command><option>infopipe_playlist_currtune</option></command>
 	</term>
 	<listitem>

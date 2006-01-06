@@ -655,10 +655,6 @@ VARIABLES
 	      XMMS/BMP InfoPipe sampling frequency of current tune
 
 
-       infopipe_protocol
-	      XMMS/BMP InfoPipe protocol
-
-
        infopipe_playlist_currtune
 	      XMMS/BMP InfoPipe playlist index number of current tune
 
