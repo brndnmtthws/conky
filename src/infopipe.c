@@ -82,6 +82,7 @@ void *infopipe_thread_func(void *pvoid)
 	    memset(buf,0,sizeof(buf));
 
 	    if ((fd=open(INFOPIPE_NAMED_PIPE, O_RDONLY | O_NONBLOCK)) < 0) {
+		/* InfoPipe is not running */
 		memset(items,0,sizeof(items));
 		strcpy(items[INFOPIPE_STATUS],"Not running");
 	        break;
@@ -91,7 +92,7 @@ void *infopipe_thread_func(void *pvoid)
 	    FD_SET(fd,&readset);
 
 	    /* On Linux, select() reduces the timer by the amount of time not slept,
-	     * so we must rest the timer with each loop. */
+	     * so we must reset the timer with each loop. */
 	    tm.tv_sec=1;
 	    tm.tv_usec=0;
 	    rc=select(fd+1,&readset,NULL,NULL,&tm);
