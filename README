@@ -672,7 +672,7 @@ VARIABLES
 
 
        infopipe_status
-	      XMMS/BMP InfoPipe status (Playing/Paused/Stopped)
+	      XMMS/BMP InfoPipe status (Playing/Paused/Stopped/Not running)
 
 
        infopipe_time

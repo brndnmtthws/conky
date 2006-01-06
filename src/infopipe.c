@@ -84,9 +84,10 @@ void *infopipe_thread_func(void *pvoid)
 	for (;;) {  /* convenience loop so we can break below */
 
 	    memset(buf,0,sizeof(buf));
-	    memset(items,0,sizeof(items));
 
 	    if ((fd=open(INFOPIPE_NAMED_PIPE, O_RDONLY | O_NONBLOCK)) < 0) {
+		memset(items,0,sizeof(items));
+		strcpy(items[INFOPIPE_STATUS],"Not running");
 	        break;
 	    }
 

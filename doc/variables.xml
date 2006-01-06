@@ -704,7 +704,7 @@
 		<command><option>infopipe_status</option></command>
 	</term>
 	<listitem>
-		XMMS/BMP InfoPipe status (Playing/Paused/Stopped)
+		XMMS/BMP InfoPipe status (Playing/Paused/Stopped/Not running)
 	<para></para></listitem>
 </varlistentry>
 
