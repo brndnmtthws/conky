@@ -2,6 +2,7 @@
 
 2006-01-05
 	* Added draw_graph_borders option
+	* Added XMMS/BMP InfoPipe plugin support
 
 2006-01-01
 	* Conky 1.3.5 released
