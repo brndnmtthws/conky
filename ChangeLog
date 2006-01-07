@@ -1,5 +1,8 @@
 # $Id$
 
+2006-01-07
+	* Added Audacious media player support.
+
 2006-01-06
 	* Fixed infopipe bug (select() affects timer as a side effect on
 	Linux!)

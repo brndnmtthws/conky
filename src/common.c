@@ -226,6 +226,10 @@ void update_stuff()
 	if (NEED(INFO_MPD))
 		update_mpd();
 #endif
+#ifdef AUDACIOUS
+        if (NEED(INFO_AUDACIOUS))
+                update_audacious();
+#endif
 #ifdef BMPX
 	if (NEED(INFO_BMPX))
 		update_bmpx();

@@ -892,6 +892,20 @@ enum text_object_type {
 	OBJ_mpd_track,
 	OBJ_mpd_percent,
 #endif
+#ifdef AUDACIOUS
+        OBJ_audacious_status,
+        OBJ_audacious_song,
+        OBJ_audacious_song_length,
+        OBJ_audacious_song_length_seconds,
+        OBJ_audacious_song_length_frames,
+        OBJ_audacious_song_output_length,
+        OBJ_audacious_song_output_length_seconds,
+        OBJ_audacious_song_output_length_frames,
+        OBJ_audacious_song_bitrate,
+        OBJ_audacious_song_frequency,
+        OBJ_audacious_song_channels,
+        OBJ_audacious_bar,
+#endif
 #ifdef BMPX
 	OBJ_bmpx_title,
 	OBJ_bmpx_artist,
@@ -1810,6 +1824,22 @@ int a = stippled_borders, b = 1;
         END OBJ(mpd_bar, INFO_MPD)
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END
+#endif
+#ifdef AUDACIOUS
+        OBJ(audacious_status, INFO_AUDACIOUS) END
+        OBJ(audacious_song, INFO_AUDACIOUS) END
+        OBJ(audacious_song_length, INFO_AUDACIOUS) END
+        OBJ(audacious_song_length_seconds, INFO_AUDACIOUS) END
+        OBJ(audacious_song_length_frames, INFO_AUDACIOUS) END
+        OBJ(audacious_song_output_length, INFO_AUDACIOUS) END
+        OBJ(audacious_song_output_length_seconds, INFO_AUDACIOUS) END
+        OBJ(audacious_song_output_length_frames, INFO_AUDACIOUS) END
+        OBJ(audacious_song_bitrate, INFO_AUDACIOUS) END
+        OBJ(audacious_song_frequency, INFO_AUDACIOUS) END
+        OBJ(audacious_song_channels, INFO_AUDACIOUS) END
+        OBJ(audacious_bar, INFO_AUDACIOUS)
+            (void) scan_bar(arg, &obj->a, &obj->b);
+        END
 #endif
 #ifdef BMPX
 	OBJ(bmpx_title, INFO_BMPX)
@@ -3103,6 +3133,48 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					obj->data.pair.b,
 					(int) (cur->mpd.progress *
 					       255.0f));
+			}
+#endif
+#ifdef AUDACIOUS
+                        OBJ(audacious_status) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_STATUS]);
+                        }
+                        OBJ(audacious_song) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_SONG]);
+			}
+                        OBJ(audacious_song_length) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_SONG_LENGTH]);
+			}
+                        OBJ(audacious_song_length_seconds) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_SONG_LENGTH_SECONDS]);
+			}
+                        OBJ(audacious_song_length_frames) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_SONG_LENGTH_FRAMES]);
+			}
+                        OBJ(audacious_song_output_length) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_SONG_OUTPUT_LENGTH]);
+			}
+                        OBJ(audacious_song_output_length_seconds) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_SONG_OUTPUT_LENGTH_SECONDS]);
+			}
+                        OBJ(audacious_song_output_length_frames) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_SONG_OUTPUT_LENGTH_FRAMES]);
+			}
+                        OBJ(audacious_song_bitrate) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_SONG_BITRATE]);
+			}
+                        OBJ(audacious_song_frequency) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_SONG_FREQUENCY]);
+			}
+                        OBJ(audacious_song_channels) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_STATUS]);
+			}
+                        OBJ(audacious_bar) {
+                            double progress;
+                            progress= atof(cur->audacious.items[AUDACIOUS_SONG_OUTPUT_LENGTH_SECONDS]) /
+                                      atof(cur->audacious.items[AUDACIOUS_SONG_LENGTH_SECONDS]);
+                            new_bar(p,obj->a,obj->b,(int)(progress*255.0f));
+
 			}
 #endif
 #ifdef BMPX
@@ -5493,6 +5565,22 @@ int main(int argc, char **argv)
 		ERR("error setting signal handler: %s", strerror(errno) );
 	}
 
+#ifdef AUDACIOUS
+	/* joinable thread for audacious activity */
+        pthread_attr_init(&info.audacious.thread_attr);
+	pthread_attr_setdetachstate(&info.audacious.thread_attr, PTHREAD_CREATE_JOINABLE);
+	/* init mutexex */
+	pthread_mutex_init(&info.audacious.item_mutex, NULL);
+	pthread_mutex_init(&info.audacious.runnable_mutex, NULL);
+	/* init runnable condition for worker thread */
+	pthread_mutex_lock(&info.audacious.runnable_mutex);
+	info.audacious.runnable=1;
+	pthread_mutex_unlock(&info.audacious.runnable_mutex);
+	if (pthread_create(&info.audacious.thread, &info.audacious.thread_attr, audacious_thread_func, NULL))
+	{
+	    CRIT_ERR("unable to create audacious thread!");
+	}
+#endif
 #ifdef INFOPIPE
 	/* joinable thread for infopipe activity */
         pthread_attr_init(&info.infopipe.thread_attr);
@@ -5511,7 +5599,22 @@ int main(int argc, char **argv)
 #endif
 
 	main_loop();
-	
+
+#ifdef AUDACIOUS
+        /* signal audacious worker thread to terminate */
+        pthread_mutex_lock(&info.audacious.runnable_mutex);
+        info.audacious.runnable=0;
+        pthread_mutex_unlock(&info.audacious.runnable_mutex);
+        /* destroy thread attribute and wait for thread */
+        pthread_attr_destroy(&info.audacious.thread_attr);
+        if (pthread_join(info.audacious.thread, NULL))
+        {
+            ERR("error joining audacious thread");
+        }
+        /* destroy mutexes */
+        pthread_mutex_destroy(&info.audacious.item_mutex);
+        pthread_mutex_destroy(&info.audacious.runnable_mutex);
+#endif	
 #ifdef INFOPIPE
 	/* signal infopipe worker thread to terminate */
 	pthread_mutex_lock(&info.infopipe.runnable_mutex);

@@ -9,7 +9,7 @@
 #ifndef _conky_h_
 #define _conky_h_
 
-#ifdef INFOPIPE
+#if defined(AUDACIOUS) || defined(INFOPIPE)
 #include <pthread.h>
 #endif
 #if defined(HAS_MCHECK_H)
@@ -127,6 +127,18 @@ struct mpd_s {
 };
 #endif
 
+#ifdef AUDACIOUS
+#include "audacious.h"
+struct audacious_s {
+	audacious_t items;              /* e.g. items[AUDACIOUS_STATUS] yields char[] */
+	int runnable;                   /* used to signal infopipe thread to stop */
+	pthread_t thread;               /* worker thread for infopipe updating */
+	pthread_attr_t thread_attr;     /* thread attributes */
+	pthread_mutex_t item_mutex;     /* mutex for item array */
+	pthread_mutex_t runnable_mutex; /* mutex for runnable flag */
+};
+#endif
+
 #ifdef BMPX
 void update_bmpx();
 struct bmpx_s {
@@ -194,6 +206,9 @@ enum {
 #ifdef INFOPIPE
 	INFO_INFOPIPE = 24,
 #endif
+#ifdef AUDACIOUS
+        INFO_AUDACIOUS = 25,
+#endif
 };
 
 
@@ -236,6 +251,9 @@ struct information {
 #ifdef MPD
 	struct mpd_s mpd;
 	mpd_Connection *conn;
+#endif
+#ifdef AUDACIOUS
+	struct audacious_s audacious;
 #endif
 #ifdef BMPX
 	struct bmpx_s bmpx;
