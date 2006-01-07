@@ -5025,6 +5025,7 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 				CONF_ERR;
 		}
 		CONF("xftfont") {
+			if (use_xft) {
 #else
 		CONF("use_xft") {
 			if (string_to_bool(value))
@@ -5038,12 +5039,13 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 		}
 		CONF("font") {
 #endif
-			if (use_xft) {
 				if (value) {
 					set_first_font(value);
 				} else
 					CONF_ERR;
+#ifdef XFT
 			}
+#endif
 		}
 		CONF("gap_x") {
 			if (value)
