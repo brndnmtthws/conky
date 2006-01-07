@@ -33,6 +33,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include "infopipe.h"
 #include "conky.h"
 
 /* access to this item array is synchronized with mutexes */
@@ -44,7 +45,7 @@ static infopipe_t g_items;
 void update_infopipe(void)
 {
     /* 
-      The worker thread is updating ihe g_items array asynchronously to the main 
+      The worker thread is updating the g_items array asynchronously to the main 
       conky thread.  We merely copy the g_items array into the main thread's info
       structure when the main thread's update cycle fires.   Note that using the
       mutexes here makes it easier since we won't have to do any sync in conky.c.
