@@ -93,7 +93,6 @@ void update_bmpx()
 fail: 
 		if (error)
 			g_error_free(error);
-		current_info->bmpx.title = unknown;
 		if (current_info->bmpx.title) {
 			free(current_info->bmpx.title);
 			current_info->bmpx.title = 0;
@@ -106,6 +105,7 @@ fail:
 			free(current_info->bmpx.album);
 			current_info->bmpx.album = 0;
 		}
+		current_info->bmpx.title = unknown;
 		current_info->bmpx.artist = unknown;
 		current_info->bmpx.album = unknown;
 		current_info->bmpx.bitrate = 0;
