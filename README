@@ -46,7 +46,7 @@ COMPILING
        --localstatedir=/var/lib	  --enable-xft	 --enable-seti	 --enable-dou‐
        ble-buffer    --enable-own-window   --enable-proc-uptime	  --enable-mpd
        --enable-mldonkey    --enable-x11    --enable-portmon	 --enable-bmpx
-       --enable-infopipe
+       --enable-xmms=[project]
 
        make
 
@@ -636,66 +636,6 @@ VARIABLES
 	      and the matching $endif
 
 
-       infopipe_bar (height),(width)
-	      XMMS/BMP InfoPipe progress bar
-
-
-       infopipe_bitrate
-	      XMMS/BMP InfoPipe bitrate of current tune
-
-
-       infopipe_channels
-	      XMMS/BMP InfoPipe number of audio channels of current tune
-
-
-       infopipe_file
-	      XMMS/BMP InfoPipe full path and file name of current tune
-
-
-       infopipe_frequency
-	      XMMS/BMP InfoPipe sampling frequency of current tune
-
-
-       infopipe_playlist_currtune
-	      XMMS/BMP InfoPipe playlist index number of current tune
-
-
-       infopipe_playlist_tunes
-	      XMMS/BMP InfoPipe number of tunes in the playlist
-
-
-       infopipe_position
-	      XMMS/BMP InfoPipe play position (MM:SS) of current tune
-
-
-       infopipe_protocol
-	      XMMS/BMP InfoPipe protocol
-
-
-       infopipe_status
-	      XMMS/BMP InfoPipe status (Playing/Paused/Stopped/Not running)
-
-
-       infopipe_time
-	      XMMS/BMP InfoPipe total time length (MM:SS) of current tune
-
-
-       infopipe_title
-	      XMMS/BMP InfoPipe title of current tune
-
-
-       infopipe_usec_position
-	      XMMS/BMP InfoPipe uSec position of current tune
-
-
-       infopipe_usec_time
-	      XMMS/BMP InfoPipe uSec total time length of current tune
-
-
-       infopipe_version
-	      XMMS/BMP InfoPipe plugin version
-
-
        kernel Kernel version
 
 
@@ -974,6 +914,67 @@ VARIABLES
 	      text to overlap. See also $offset.
 
 
+       xmms_bar (height),(width)
+	      xmms / bmp / audacious / infopipe: progress bar
+
+
+       xmms_bitrate
+	      xmms / bmp / audacious / infopipe: bitrate of current tune
+
+
+       xmms_channels
+	      xmms  /  bmp / audacious / infopipe: number of audio channels of
+	      current tune
+
+
+       xmms_filename
+	      xmms / bmp / audacious / infopipe: full  path  and  filename  of
+	      current tune
+
+
+       xmms_frequency
+	      xmms / bmp / audacious / infopipe: sampling frequency of current
+	      tune
+
+
+       xmms_length
+	      xmms / bmp / audacious / infopipe: total length of current  tune
+	      as MM:SS
+
+
+       xmms_length_seconds
+	      xmms  / bmp / audacious / infopipe: total length of current tune
+	      in seconds
+
+
+       xmms_playlist_position
+	      xmms / bmp / audacious / infopipe: playlist position of  current
+	      tune
+
+
+       xmms_playlist_length
+	      xmms / bmp / audacious / infopipe: number of tunes in playlist
+
+
+       xmms_position
+	      xmms  /  bmp  /  audacious / infopipe: MM:SS position of current
+	      tune
+
+
+       xmms_position_seconds
+	      xmms / bmp / audacious / infopipe: position of current  tune  in
+	      seconds
+
+
+       xmms_status
+	      xmms  /  bmp  /  audacious  /  infopipe:	player	status	(Play‐
+	      ing/Paused/Stopped/Not running)
+
+
+       xmms_title
+	      xmms / bmp / audacious / infopipe: title of current tune
+
+
 EXAMPLES
        conky -t ’${time %D %H:%m}’ -o -u 30
 	      Start Conky in its own window with date and clock as text and 30
@@ -988,11 +989,11 @@ FILES
 BUGS
        Drawing to root or some other desktop window directly doesn’t work with
        all window managers. Especially doesn’t work well with Gnome and it has
-       been reported that it doesn’t work with KDE  either.  Nautilus  can  be
-       disabled	 from  drawing	to  desktop with program gconf-editor. Uncheck
-       show_desktop in /apps/nautilus/preferences/.  There  is	-w  switch  in
-       Conky  to  set  some  specific window id. You might find xwininfo -tree
-       useful to find the window to draw to. You  can  also  use  -o  argument
+       been  reported  that  it	 doesn’t work with KDE either. Nautilus can be
+       disabled from drawing to desktop	 with  program	gconf-editor.  Uncheck
+       show_desktop  in	 /apps/nautilus/preferences/.  There  is  -w switch in
+       Conky to set some specific window id. You  might	 find  xwininfo	 -tree
+       useful  to  find	 the  window  to draw to. You can also use -o argument
        which makes Conky to create its own window.
 
 SEE ALSO

@@ -35,7 +35,7 @@ Example to compile and run Conky with all optional components (note that some co
 .TP 
 \fBsh autogen.sh\fR \fB# Only required if building from CVS\fR 
 .TP 
-\fB\&./configure \fR\fB\-\-prefix=/usr \-\-mandir=/usr/share/man \-\-infodir=/usr/share/info \-\-datadir=/usr/share \-\-sysconfdir=/etc \-\-localstatedir=/var/lib \-\-enable\-xft \-\-enable\-seti \-\-enable\-double\-buffer \-\-enable\-own\-window \-\-enable\-proc\-uptime \-\-enable\-mpd \-\-enable\-mldonkey \-\-enable\-x11 \-\-enable\-portmon \-\-enable\-bmpx \-\-enable\-infopipe\fR 
+\fB\&./configure \fR\fB\-\-prefix=/usr \-\-mandir=/usr/share/man \-\-infodir=/usr/share/info \-\-datadir=/usr/share \-\-sysconfdir=/etc \-\-localstatedir=/var/lib \-\-enable\-xft \-\-enable\-seti \-\-enable\-double\-buffer \-\-enable\-own\-window \-\-enable\-proc\-uptime \-\-enable\-mpd \-\-enable\-mldonkey \-\-enable\-x11 \-\-enable\-portmon \-\-enable\-bmpx \-\-enable\-xmms=[project]\fR 
 .TP 
 \fBmake\fR 
 .TP 
@@ -567,66 +567,6 @@ if FILE exists, display everything between if_existing and the matching $endif
 if MOUNTPOINT is mounted, display everything between if_mounted and the matching $endif
 
 .TP 
-\fBinfopipe_bar\fR \fB(height),(width)\fR 
-XMMS/BMP InfoPipe progress bar
-
-.TP 
-\fBinfopipe_bitrate\fR 
-XMMS/BMP InfoPipe bitrate of current tune
-
-.TP 
-\fBinfopipe_channels\fR 
-XMMS/BMP InfoPipe number of audio channels of current tune
-
-.TP 
-\fBinfopipe_file\fR 
-XMMS/BMP InfoPipe full path and file name of current tune
-
-.TP 
-\fBinfopipe_frequency\fR 
-XMMS/BMP InfoPipe sampling frequency of current tune
-
-.TP 
-\fBinfopipe_playlist_currtune\fR 
-XMMS/BMP InfoPipe playlist index number of current tune
-
-.TP 
-\fBinfopipe_playlist_tunes\fR 
-XMMS/BMP InfoPipe number of tunes in the playlist
-
-.TP 
-\fBinfopipe_position\fR 
-XMMS/BMP InfoPipe play position (MM:SS) of current tune
-
-.TP 
-\fBinfopipe_protocol\fR 
-XMMS/BMP InfoPipe protocol
-
-.TP 
-\fBinfopipe_status\fR 
-XMMS/BMP InfoPipe status (Playing/Paused/Stopped/Not running)
-
-.TP 
-\fBinfopipe_time\fR 
-XMMS/BMP InfoPipe total time length (MM:SS) of current tune
-
-.TP 
-\fBinfopipe_title\fR 
-XMMS/BMP InfoPipe title of current tune
-
-.TP 
-\fBinfopipe_usec_position\fR 
-XMMS/BMP InfoPipe uSec position of current tune
-
-.TP 
-\fBinfopipe_usec_time\fR 
-XMMS/BMP InfoPipe uSec total time length of current tune 
-
-.TP 
-\fBinfopipe_version\fR 
-XMMS/BMP InfoPipe plugin version
-
-.TP 
 \fBkernel\fR 
 Kernel version
 
@@ -878,6 +818,58 @@ Seti@home total user credit
 .TP 
 \fBvoffset\fR \fB(pixels)\fR 
 Change verticle offset by N pixels. Negative values will cause text to overlap. See also $offset.
+
+.TP 
+\fBxmms_bar\fR \fB(height),(width)\fR 
+xmms / bmp / audacious / infopipe: progress bar
+
+.TP 
+\fBxmms_bitrate\fR 
+xmms / bmp / audacious / infopipe: bitrate of current tune
+
+.TP 
+\fBxmms_channels\fR 
+xmms / bmp / audacious / infopipe: number of audio channels of current tune
+
+.TP 
+\fBxmms_filename\fR 
+xmms / bmp / audacious / infopipe: full path and filename of current tune
+
+.TP 
+\fBxmms_frequency\fR 
+xmms / bmp / audacious / infopipe: sampling frequency of current tune
+
+.TP 
+\fBxmms_length\fR 
+xmms / bmp / audacious / infopipe: total length of current tune as MM:SS
+
+.TP 
+\fBxmms_length_seconds\fR 
+xmms / bmp / audacious / infopipe: total length of current tune in seconds
+
+.TP 
+\fBxmms_playlist_position\fR 
+xmms / bmp / audacious / infopipe: playlist position of current tune
+
+.TP 
+\fBxmms_playlist_length\fR 
+xmms / bmp / audacious / infopipe: number of tunes in playlist
+
+.TP 
+\fBxmms_position\fR 
+xmms / bmp / audacious / infopipe: MM:SS position of current tune
+
+.TP 
+\fBxmms_position_seconds\fR 
+xmms / bmp / audacious / infopipe: position of current tune in seconds
+
+.TP 
+\fBxmms_status\fR 
+xmms / bmp / audacious / infopipe: player status (Playing/Paused/Stopped/Not running)
+
+.TP 
+\fBxmms_title\fR 
+xmms / bmp / audacious / infopipe: title of current tune
 
 .SH EXAMPLES
 .TP 

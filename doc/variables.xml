@@ -619,142 +619,6 @@
 
 <varlistentry>
 	<term>
-		<command><option>infopipe_bar</option></command>
-                <option>(height),(width)</option>
-	</term>
-	<listitem>
-		XMMS/BMP InfoPipe progress bar
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>infopipe_bitrate</option></command>
-	</term>
-	<listitem>
-		XMMS/BMP InfoPipe bitrate of current tune
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>infopipe_channels</option></command>
-	</term>
-	<listitem>
-		XMMS/BMP InfoPipe number of audio channels of current tune
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>infopipe_file</option></command>
-	</term>
-	<listitem>
-		XMMS/BMP InfoPipe full path and file name of current tune
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>infopipe_frequency</option></command>
-	</term>
-	<listitem>
-		XMMS/BMP InfoPipe sampling frequency of current tune
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>infopipe_playlist_currtune</option></command>
-	</term>
-	<listitem>
-		XMMS/BMP InfoPipe playlist index number of current tune
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>infopipe_playlist_tunes</option></command>
-	</term>
-	<listitem>
-		XMMS/BMP InfoPipe number of tunes in the playlist
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>infopipe_position</option></command>
-	</term>
-	<listitem>
-		XMMS/BMP InfoPipe play position (MM:SS) of current tune
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>infopipe_protocol</option></command>
-	</term>
-	<listitem>
-		XMMS/BMP InfoPipe protocol
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>infopipe_status</option></command>
-	</term>
-	<listitem>
-		XMMS/BMP InfoPipe status (Playing/Paused/Stopped/Not running)
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>infopipe_time</option></command>
-	</term>
-	<listitem>
-		XMMS/BMP InfoPipe total time length (MM:SS) of current tune
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>infopipe_title</option></command>
-	</term>
-	<listitem>
-		XMMS/BMP InfoPipe title of current tune
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>infopipe_usec_position</option></command>
-	</term>
-	<listitem>
-		XMMS/BMP InfoPipe uSec position of current tune
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>infopipe_usec_time</option></command>
-	</term>
-	<listitem>
-		XMMS/BMP InfoPipe uSec total time length of current tune 
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>infopipe_version</option></command>
-	</term>
-	<listitem>
-		XMMS/BMP InfoPipe plugin version
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
 		<command><option>kernel</option></command>
 	</term>
 	<listitem>
@@ -1291,6 +1155,124 @@
 	<listitem>
 		Change verticle offset by N pixels.  Negative values will cause text to overlap.  See also $offset.
 		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms_bar</option></command>
+                <option>(height),(width)</option>
+	</term>
+	<listitem>
+		xmms / bmp / audacious / infopipe: progress bar
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms_bitrate</option></command>
+	</term>
+	<listitem>
+		xmms / bmp / audacious / infopipe: bitrate of current tune
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms_channels</option></command>
+	</term>
+	<listitem>
+		xmms / bmp / audacious / infopipe: number of audio channels of current tune
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms_filename</option></command>
+	</term>
+	<listitem>
+		xmms / bmp / audacious / infopipe: full path and filename of current tune
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms_frequency</option></command>
+	</term>
+	<listitem>
+	        xmms / bmp / audacious / infopipe: sampling frequency of current tune
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms_length</option></command>
+	</term>
+	<listitem>
+		xmms / bmp / audacious / infopipe: total length of current tune as MM:SS
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms_length_seconds</option></command>
+	</term>
+	<listitem>
+		xmms / bmp / audacious / infopipe: total length of current tune in seconds
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms_playlist_position</option></command>
+	</term>
+	<listitem>
+		xmms / bmp / audacious / infopipe: playlist position of current tune
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms_playlist_length</option></command>
+	</term>
+	<listitem>
+		xmms / bmp / audacious / infopipe: number of tunes in playlist
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms_position</option></command>
+	</term>
+	<listitem>
+		xmms / bmp / audacious / infopipe: MM:SS position of current tune
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms_position_seconds</option></command>
+	</term>
+	<listitem>
+		xmms / bmp / audacious / infopipe: position of current tune in seconds
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms_status</option></command>
+	</term>
+	<listitem>
+		xmms / bmp / audacious / infopipe: player status (Playing/Paused/Stopped/Not running)
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms_title</option></command>
+	</term>
+	<listitem>
+		xmms / bmp / audacious / infopipe: title of current tune
+	<para></para></listitem>
 </varlistentry>
 
 
