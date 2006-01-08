@@ -4,15 +4,15 @@ if BUILD_XMMS
 xmms = xmms.c xmms.h
 endif
 
-if BUILD_XMMS_BMP
+if BUILD_BMP
 xmms = xmms.c xmms.h
 endif
 
-if BUILD_XMMS_AUDACIOUS
+if BUILD_AUDACIOUS
 xmms = xmms.c xmms.h
 endif
 
-if BUILD_XMMS_INFOPIPE
+if BUILD_INFOPIPE
 xmms = xmms.c xmms.h
 endif
 

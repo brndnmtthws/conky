@@ -226,7 +226,7 @@ void update_stuff()
 	if (NEED(INFO_MPD))
 		update_mpd();
 #endif
-#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H) || defined(INFOPIPE_H)
+#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
 	if (NEED(INFO_XMMS))
 		update_xmms();
 #endif

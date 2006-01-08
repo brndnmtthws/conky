@@ -25,22 +25,45 @@
 #include <string.h>
 #include <unistd.h>
 
-#if defined(XMMS_H)
+#include "config.h"
+#include "conky.h"
+#include "xmms.h"
+
+#if defined(XMMS)
 #include <xmms/xmmsctrl.h>
-#elif defined(BMP_H)
+
+#elif defined(BMP)
 #include <bmp/beepctrl.h>
-#elif defined(AUDACIOUS_H)
+
+#elif defined(AUDACIOUS)
 #include <audacious/beepctrl.h>
-#elif defined(INFOPIPE_H)
+
+#elif defined(INFOPIPE)
 #include <sys/select.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <fcntl.h>
-#define INFOPIPE_NAMED_PIPE "/tmp/xmms-info"
-#endif
 
-#include "xmms.h"
-#include "conky.h"
+#define INFOPIPE_NAMED_PIPE "/tmp/xmms-info"
+
+/* 14 keys comprise the output of the infopipe plugin. */
+enum _infopipe_keys {
+        INFOPIPE_PROTOCOL=0,
+        INFOPIPE_VERSION,
+        INFOPIPE_STATUS,
+        INFOPIPE_PLAYLIST_TUNES,
+        INFOPIPE_PLAYLIST_CURRTUNE,
+        INFOPIPE_USEC_POSITION,
+        INFOPIPE_POSITION,
+        INFOPIPE_USEC_TIME,
+        INFOPIPE_TIME,
+        INFOPIPE_BITRATE,
+        INFOPIPE_FREQUENCY,
+        INFOPIPE_CHANNELS,
+        INFOPIPE_TITLE,
+        INFOPIPE_FILE
+};
+#endif
 
 
 /* access to this item array is synchronized with mutexes */
@@ -63,7 +86,7 @@ void update_xmms(void)
 }
 
 
-#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H)
+#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS)
 /* ------------------------------------------------------------
  * Worker thread function for XMMS/BMP/Audacious data sampling.
  * ------------------------------------------------------------ */ 
@@ -168,7 +191,7 @@ void *xmms_thread_func(void *pvoid)
     pthread_exit(NULL);
 }
 
-#elif defined(INFOPIPE_H)
+#elif defined(INFOPIPE)
 /* --------------------------------------------------
  * Worker thread function for InfoPipe data sampling.
  * -------------------------------------------------- */ 
@@ -177,16 +200,16 @@ void *xmms_thread_func(void *pvoid)
     int i,rc,fd,runnable;
     fd_set readset;
     struct timeval tm;
-    static char buf[2048];  /* should equal or exceed sizeof(infopipe_t) */
+    static char buf[2048],line[128];
     static xmms_t items;
     char *pbuf,c;
 
     pvoid=(void*)pvoid; /* useless cast to avoid unused var warning */
 
     /* Grab the runnable signal.  Should be non-zero here or we do nothing. */
-    pthread_mutex_lock(&info.infopipe.runnable_mutex);
-    runnable=info.infopipe.runnable;
-    pthread_mutex_unlock(&info.infopipe.runnable_mutex );
+    pthread_mutex_lock(&info.xmms.runnable_mutex);
+    runnable=info.xmms.runnable;
+    pthread_mutex_unlock(&info.xmms.runnable_mutex );
 
     /* Loop until the main thread sets the runnable signal to 0. */
     while(runnable) {
@@ -226,6 +249,25 @@ void *xmms_thread_func(void *pvoid)
                         if ( sscanf(pbuf,"%*[^:]: %[^\n]",items[i]) == EOF )
 			    break;
 		        while((c = *pbuf++) && (c != '\n'));
+
+			switch(i) {
+			case INFOPIPE_PROTOCOL:
+                        case INFOPIPE_VERSION:
+                        case INFOPIPE_STATUS:
+                        case INFOPIPE_PLAYLIST_TUNES:
+                        case INFOPIPE_PLAYLIST_CURRTUNE:
+                        case INFOPIPE_USEC_POSITION:
+                        case INFOPIPE_POSITION:
+                        case INFOPIPE_USEC_TIME:
+                        case INFOPIPE_TIME:
+                        case INFOPIPE_BITRATE:
+                        case INFOPIPE_FREQUENCY:
+                        case INFOPIPE_CHANNELS:
+                        case INFOPIPE_TITLE:
+                        case INFOPIPE_FILE:
+			default:
+			    break;     
+			}
 		    }
 
                     /* -- debug --
@@ -246,14 +288,14 @@ void *xmms_thread_func(void *pvoid)
         }
 
 	/* Deliver the refreshed items array to g_items. */
-	pthread_mutex_lock(&info.infopipe.item_mutex);
+	pthread_mutex_lock(&info.xmms.item_mutex);
         memcpy(&g_items,items,sizeof(items));
-	pthread_mutex_unlock(&info.infopipe.item_mutex);
+	pthread_mutex_unlock(&info.xmms.item_mutex);
 
 	/* Grab the runnable signal for next loop. */
-        pthread_mutex_lock(&info.infopipe.runnable_mutex);
-        runnable=info.infopipe.runnable;
-        pthread_mutex_unlock(&info.infopipe.runnable_mutex);
+        pthread_mutex_lock(&info.xmms.runnable_mutex);
+        runnable=info.xmms.runnable;
+        pthread_mutex_unlock(&info.xmms.runnable_mutex);
 
 	sleep(1);
     }

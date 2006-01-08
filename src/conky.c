@@ -892,7 +892,7 @@ enum text_object_type {
 	OBJ_mpd_track,
 	OBJ_mpd_percent,
 #endif
-#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H) || defined(INFOPIPE_H)
+#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
 	OBJ_xmms_status,
 	OBJ_xmms_title,
 	OBJ_xmms_length,
@@ -1809,7 +1809,7 @@ int a = stippled_borders, b = 1;
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END
 #endif
-#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H) || defined(INFOPIPE_H)
+#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
 	OBJ(xmms_status, INFO_XMMS) END
         OBJ(xmms_title, INFO_XMMS) END
         OBJ(xmms_length, INFO_XMMS) END
@@ -3101,7 +3101,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					       255.0f));
 			}
 #endif
-#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H) || defined(INFOPIPE_H)
+#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
 			OBJ(xmms_status) {
 			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_STATUS]);
 			}
@@ -5485,7 +5485,7 @@ int main(int argc, char **argv)
 		ERR("error setting signal handler: %s", strerror(errno) );
 	}
 
-#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H) || defined(INFOPIPE_H)
+#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
 	/* joinable thread for xmms activity */
         pthread_attr_init(&info.xmms.thread_attr);
 	pthread_attr_setdetachstate(&info.xmms.thread_attr, PTHREAD_CREATE_JOINABLE);
@@ -5504,7 +5504,7 @@ int main(int argc, char **argv)
 
 	main_loop();
 
-#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H) || defined(INFOPIPE_H)
+#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
         /* signal xmms worker thread to terminate */
         pthread_mutex_lock(&info.xmms.runnable_mutex);
         info.xmms.runnable=0;

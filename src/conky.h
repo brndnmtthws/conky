@@ -9,7 +9,7 @@
 #ifndef _conky_h_
 #define _conky_h_
 
-#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H) || defined(INFOPIPE_H)
+#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
 #include <pthread.h>
 #endif
 #if defined(HAS_MCHECK_H)
@@ -127,7 +127,7 @@ struct mpd_s {
 };
 #endif
 
-#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H) || defined(INFOPIPE_H)
+#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
 #include "xmms.h"
 struct xmms_s {
 	xmms_t items;                  /* e.g. items[XMMS_STATUS] yields char[] */
@@ -188,7 +188,7 @@ enum {
 #ifdef TCP_PORT_MONITOR
         INFO_TCP_PORT_MONITOR = 22,
 #endif
-#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H) || defined(INFOPIPE_H)
+#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
 	INFO_XMMS = 23,
 #endif
 #ifdef BMPX
@@ -237,7 +237,7 @@ struct information {
 	struct mpd_s mpd;
 	mpd_Connection *conn;
 #endif
-#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H) || defined(INFOPIPE_H)
+#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
 	struct xmms_s xmms;
 #endif
 #ifdef BMPX
