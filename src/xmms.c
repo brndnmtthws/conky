@@ -129,48 +129,48 @@ void *xmms_thread_func(void *pvoid)
 	    playpos = (int) xmms_remote_get_playlist_pos(session);
 	    psong = (char *) xmms_remote_get_playlist_title(session, playpos);
 	    if (psong)
-                strncpy(items[XMMS_TITLE],psong,sizeof(items[XMMS_TITLE]));
+                strncpy(items[XMMS_TITLE],psong,sizeof(items[XMMS_TITLE])-1);
 
 	    /* Current song length as MM:SS */ 
             frames = xmms_remote_get_playlist_time(session,playpos);
 	    length = frames / 1000;
-            snprintf(items[XMMS_LENGTH],sizeof(items[XMMS_LENGTH]),
+            snprintf(items[XMMS_LENGTH],sizeof(items[XMMS_LENGTH])-1,
 	             "%d:%.2d", length / 60, length % 60);
 	 
 	    /* Current song length in seconds */
-	    snprintf(items[XMMS_LENGTH_SECONDS],sizeof(items[XMMS_LENGTH_SECONDS]),
+	    snprintf(items[XMMS_LENGTH_SECONDS],sizeof(items[XMMS_LENGTH_SECONDS])-1,
 	             "%d", length);
 
 	    /* Current song position as MM:SS */ 
             frames = xmms_remote_get_output_time(session);
 	    length = frames / 1000;
-            snprintf(items[XMMS_POSITION],sizeof(items[XMMS_POSITION]),
+            snprintf(items[XMMS_POSITION],sizeof(items[XMMS_POSITION])-1,
 	             "%d:%.2d", length / 60, length % 60);
 	 
 	    /* Current song position in seconds */
-	    snprintf(items[XMMS_POSITION_SECONDS],sizeof(items[XMMS_POSITION_SECONDS]),
+	    snprintf(items[XMMS_POSITION_SECONDS],sizeof(items[XMMS_POSITION_SECONDS])-1,
 	             "%d", length);
 
             /* Current song bitrate */
             xmms_remote_get_info(session, &rate, &freq, &chans);
-            snprintf(items[XMMS_BITRATE],sizeof(items[XMMS_BITRATE]), "%d", rate);
+            snprintf(items[XMMS_BITRATE],sizeof(items[XMMS_BITRATE])-1, "%d", rate);
 
             /* Current song frequency */
-            snprintf(items[XMMS_FREQUENCY],sizeof(items[XMMS_FREQUENCY]), "%d", freq);
+            snprintf(items[XMMS_FREQUENCY],sizeof(items[XMMS_FREQUENCY])-1, "%d", freq);
 
             /* Current song channels */
-            snprintf(items[XMMS_CHANNELS],sizeof(items[XMMS_CHANNELS]), "%d", chans);
+            snprintf(items[XMMS_CHANNELS],sizeof(items[XMMS_CHANNELS])-1, "%d", chans);
             
             /* Current song filename */
 	    pfilename = xmms_remote_get_playlist_file(session,playpos);
-	    strncpy(items[XMMS_FILENAME],pfilename,sizeof(items[XMMS_FILENAME]));
+	    strncpy(items[XMMS_FILENAME],pfilename,sizeof(items[XMMS_FILENAME])-1);
 
 	    /* Length of the Playlist (number of songs) */
 	    length = xmms_remote_get_playlist_length(session);
-	    snprintf(items[XMMS_PLAYLIST_LENGTH],sizeof(items[XMMS_PLAYLIST_LENGTH]), "%d", length);
+	    snprintf(items[XMMS_PLAYLIST_LENGTH],sizeof(items[XMMS_PLAYLIST_LENGTH])-1, "%d", length);
 
 	    /* Playlist position (index of song) */
-	    snprintf(items[XMMS_PLAYLIST_POSITION],sizeof(items[XMMS_PLAYLIST_POSITION]), "%d", playpos+1);
+	    snprintf(items[XMMS_PLAYLIST_POSITION],sizeof(items[XMMS_PLAYLIST_POSITION])-1, "%d", playpos+1);
 
 	    break;
 	}
@@ -246,25 +246,54 @@ void *xmms_thread_func(void *pvoid)
 		    pbuf=buf;
 		    for (i=0;i<14;i++) {
 			/* 14 lines of key: value pairs presented in a known order */
-                        if ( sscanf(pbuf,"%*[^:]: %[^\n]",items[i]) == EOF )
+			memset(line,0,sizeof(line));
+                        if ( sscanf(pbuf,"%*[^:]: %[^\n]",line) == EOF )
 			    break;
 		        while((c = *pbuf++) && (c != '\n'));
 
 			switch(i) {
 			case INFOPIPE_PROTOCOL:
+				break;
                         case INFOPIPE_VERSION:
+				break;
                         case INFOPIPE_STATUS:
+				strncpy(items[XMMS_STATUS],line,sizeof(items[XMMS_STATUS])-1);
+				break;
                         case INFOPIPE_PLAYLIST_TUNES:
+				strncpy(items[XMMS_PLAYLIST_LENGTH],line,sizeof(items[XMMS_PLAYLIST_LENGTH])-1);
+				break;
                         case INFOPIPE_PLAYLIST_CURRTUNE:
+				strncpy(items[XMMS_PLAYLIST_POSITION],line,sizeof(items[XMMS_PLAYLIST_POSITION])-1);
+				break;
                         case INFOPIPE_USEC_POSITION:
+				snprintf(items[XMMS_POSITION_SECONDS],sizeof(items[XMMS_POSITION_SECONDS])-1,
+					 "%d", atoi(line) / 1000);
+				break;
                         case INFOPIPE_POSITION:
+				strncpy(items[XMMS_POSITION],line,sizeof(items[XMMS_POSITION])-1);
+				break;
                         case INFOPIPE_USEC_TIME:
+				snprintf(items[XMMS_LENGTH_SECONDS],sizeof(items[XMMS_LENGTH_SECONDS])-1,
+					 "%d", atoi(line) / 1000);
+				break;
                         case INFOPIPE_TIME:
+			 	strncpy(items[XMMS_LENGTH],line,sizeof(items[XMMS_LENGTH])-1);
+				break;
                         case INFOPIPE_BITRATE:
+				strncpy(items[XMMS_BITRATE],line,sizeof(items[XMMS_BITRATE])-1);
+				break;
                         case INFOPIPE_FREQUENCY:
+				strncpy(items[XMMS_FREQUENCY],line,sizeof(items[XMMS_FREQUENCY])-1);
+				break;
                         case INFOPIPE_CHANNELS:
+				strncpy(items[XMMS_CHANNELS],line,sizeof(items[XMMS_CHANNELS])-1);
+				break;
                         case INFOPIPE_TITLE:
+				strncpy(items[XMMS_TITLE],line,sizeof(items[XMMS_TITLE])-1);
+				break;
                         case INFOPIPE_FILE:
+				strncpy(items[XMMS_FILENAME],line,sizeof(items[XMMS_FILENAME])-1);
+				break;
 			default:
 			    break;     
 			}
