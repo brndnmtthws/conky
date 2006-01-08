@@ -226,18 +226,15 @@ void update_stuff()
 	if (NEED(INFO_MPD))
 		update_mpd();
 #endif
-#ifdef AUDACIOUS
-        if (NEED(INFO_AUDACIOUS))
-                update_audacious();
+#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H) || defined(INFOPIPE_H)
+	if (NEED(INFO_XMMS))
+		update_xmms();
 #endif
 #ifdef BMPX
 	if (NEED(INFO_BMPX))
-		update_bmpx();
+                update_bmpx();
 #endif
-#ifdef INFOPIPE
-	if (NEED(INFO_INFOPIPE))
-		update_infopipe();
-#endif
+
 	if (NEED(INFO_LOADAVG))
 		update_load_average();
 

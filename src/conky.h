@@ -9,7 +9,7 @@
 #ifndef _conky_h_
 #define _conky_h_
 
-#if defined(AUDACIOUS) || defined(INFOPIPE)
+#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H) || defined(INFOPIPE_H)
 #include <pthread.h>
 #endif
 #if defined(HAS_MCHECK_H)
@@ -127,12 +127,12 @@ struct mpd_s {
 };
 #endif
 
-#ifdef AUDACIOUS
-#include "audacious.h"
-struct audacious_s {
-	audacious_t items;              /* e.g. items[AUDACIOUS_STATUS] yields char[] */
-	int runnable;                   /* used to signal infopipe thread to stop */
-	pthread_t thread;               /* worker thread for infopipe updating */
+#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H) || defined(INFOPIPE_H)
+#include "xmms.h"
+struct xmms_s {
+	xmms_t items;                  /* e.g. items[XMMS_STATUS] yields char[] */
+	int runnable;                   /* used to signal worker thread to stop */
+	pthread_t thread;               /* worker thread for xmms updating */
 	pthread_attr_t thread_attr;     /* thread attributes */
 	pthread_mutex_t item_mutex;     /* mutex for item array */
 	pthread_mutex_t runnable_mutex; /* mutex for runnable flag */
@@ -148,18 +148,6 @@ struct bmpx_s {
 	char *uri;
 	int bitrate;
 	int track;
-};
-#endif
-
-#ifdef INFOPIPE
-#include "infopipe.h"
-struct infopipe_s {
-	infopipe_t items;               /* e.g. items[INFOPIPE_STATUS] yields char[] */
-	int runnable;                   /* used to signal infopipe thread to stop */
-	pthread_t thread;               /* worker thread for infopipe updating */
-	pthread_attr_t thread_attr;     /* thread attributes */
-	pthread_mutex_t item_mutex;     /* mutex for item array */
-	pthread_mutex_t runnable_mutex; /* mutex for runnable flag */
 };
 #endif
 
@@ -200,14 +188,11 @@ enum {
 #ifdef TCP_PORT_MONITOR
         INFO_TCP_PORT_MONITOR = 22,
 #endif
+#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H) || defined(INFOPIPE_H)
+	INFO_XMMS = 23,
+#endif
 #ifdef BMPX
-	INFO_BMPX = 23,
-#endif
-#ifdef INFOPIPE
-	INFO_INFOPIPE = 24,
-#endif
-#ifdef AUDACIOUS
-        INFO_AUDACIOUS = 25,
+	INFO_BMPX = 24,
 #endif
 };
 
@@ -252,14 +237,11 @@ struct information {
 	struct mpd_s mpd;
 	mpd_Connection *conn;
 #endif
-#ifdef AUDACIOUS
-	struct audacious_s audacious;
+#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H) || defined(INFOPIPE_H)
+	struct xmms_s xmms;
 #endif
 #ifdef BMPX
 	struct bmpx_s bmpx;
-#endif
-#ifdef INFOPIPE
-	struct infopipe_s infopipe;
 #endif
 	struct process *cpu[10];
 	struct process *memu[10];

@@ -1,6 +1,6 @@
-AC_INIT([Conky],[1.3.6_CVS_20060107],[brenden1@users.sourceforge.net])
+AC_INIT([Conky],[1.3.6_CVS_20060108],[brenden1@users.sourceforge.net])
 
-AM_INIT_AUTOMAKE(conky, 1.3.6_CVS_20060107)
+AM_INIT_AUTOMAKE(conky, 1.3.6_CVS_20060108)
 AM_CONFIG_HEADER(src/config.h)
 AC_PROG_LIBTOOL
 
@@ -99,7 +99,7 @@ case x$xmms_support in
     xnone|xyes|xno)
         ;;
     xxmms)
-        AC_DEFINE(XMMS, 1, [Define for XMMS support])
+        AC_DEFINE(XMMS_H, 1, [Define for XMMS support])
 	echo "Sorry, xmms isn't supported yet"
 	exit -1
 	;;
@@ -107,16 +107,16 @@ case x$xmms_support in
 	PKG_CHECK_MODULES([BMP], [bmp], [])
 	CFLAGS="$CFLAGS $BMP_CFLAGS"
 	LIBS="$LIBS $BMP_LIBS"
-	AC_DEFINE(BMP, 1, [Define for BMP support])
+	AC_DEFINE(BMP_H, 1, [Define for BMP support])
 	;;
     xaudacious)
         PKG_CHECK_MODULES([AUDACIOUS], [audacious >= 0.1])
         CFLAGS="$CFLAGS $AUDACIOUS_CFLAGS"
 	LIBS="$LIBS $AUDACIOUS_LIBS"
-        AC_DEFINE(AUDACIOUS, 1, [Define for Audacious support])
+        AC_DEFINE(AUDACIOUS_H, 1, [Define for Audacious support])
         ;;
     xinfopipe)
-        AC_DEFINE(INFOPIPE, 1, [Define for XMMS/BMP InfoPipe support])
+        AC_DEFINE(INFOPIPE_H, 1, [Define for XMMS/BMP InfoPipe support])
 	;;
     *)
         echo "Error: invalid xmms-status specified: $xmms_support"
@@ -124,9 +124,9 @@ case x$xmms_support in
 	;;
 esac
 AM_CONDITIONAL(BUILD_XMMS, test x$xmms_support = xxmms)
-AM_CONDITIONAL(BUILD_BMP, test x$xmms_support = xbmp)
-AM_CONDITIONAL(BUILD_AUDACIOUS, test x$xmms_support = xaudacious)
-AM_CONDITIONAL(BUILD_INFOPIPE, test x$xmms_support = xinfopipe)
+AM_CONDITIONAL(BUILD_XMMS_BMP, test x$xmms_support = xbmp)
+AM_CONDITIONAL(BUILD_XMMS_AUDACIOUS, test x$xmms_support = xaudacious)
+AM_CONDITIONAL(BUILD_XMMS_INFOPIPE, test x$xmms_support = xinfopipe)
 
 dnl
 dnl BMPx

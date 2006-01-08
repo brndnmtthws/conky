@@ -1,7 +1,5 @@
 /* -------------------------------------------------------------------------
- * audacious.h:  conky support for Audacious audio player
- * 
- * http://audacious-media-player.org
+ * xmms.h:  conky support for XMMS-related projects
  * 
  * Copyright (C) 2005  Philip Kovacs kovacsp3@comcast.net
  *
@@ -22,31 +20,31 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * --------------------------------------------------------------------------- */
 
-#ifndef AUDACIOUS_H
-#define AUDACIOUS_H
+#ifndef XMMS_H
+#define XMMS_H
 
-/* 11 keys comprise the audacious information. */
-enum _audacious_keys {
-	AUDACIOUS_STATUS,
-	AUDACIOUS_SONG,
-	AUDACIOUS_SONG_LENGTH,
-	AUDACIOUS_SONG_LENGTH_SECONDS,
-	AUDACIOUS_SONG_LENGTH_FRAMES,
-	AUDACIOUS_SONG_OUTPUT_LENGTH,
-	AUDACIOUS_SONG_OUTPUT_LENGTH_SECONDS,
-	AUDACIOUS_SONG_OUTPUT_LENGTH_FRAMES,
-	AUDACIOUS_SONG_BITRATE,
-	AUDACIOUS_SONG_FREQUENCY,
-	AUDACIOUS_SONG_CHANNELS
+enum _xmms_items {
+	XMMS_STATUS=0,
+	XMMS_TITLE,
+	XMMS_LENGTH,
+	XMMS_LENGTH_SECONDS,
+	XMMS_POSITION,
+	XMMS_POSITION_SECONDS,
+	XMMS_BITRATE,
+	XMMS_FREQUENCY,
+	XMMS_CHANNELS,
+	XMMS_FILENAME,
+	XMMS_PLAYLIST_LENGTH,
+	XMMS_PLAYLIST_POSITION,
 };
-		
-/* 11 slots for the audacious values */
-typedef char audacious_t[11][128];
+
+/* 12 slots for the xmms values */
+typedef char xmms_t[12][128];
 
 /* Service routine for the conky main thread */
-void update_audacious(void);
+void update_xmms(void);
 
 /* Thread function */
-void *audacious_thread_func(void *);
+void *xmms_thread_func(void *);
 
 #endif

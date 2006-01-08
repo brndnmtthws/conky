@@ -1,15 +1,23 @@
 bin_PROGRAMS = conky
 
-if BUILD_AUDACIOUS
-audacious = audacious.c
+if BUILD_XMMS
+xmms = xmms.c xmms.h
+endif
+
+if BUILD_XMMS_BMP
+xmms = xmms.c xmms.h
+endif
+
+if BUILD_XMMS_AUDACIOUS
+xmms = xmms.c xmms.h
+endif
+
+if BUILD_XMMS_INFOPIPE
+xmms = xmms.c xmms.h
 endif
 
 if BUILD_BMPX
 bmpx = bmpx.c
-endif
-
-if BUILD_INFOPIPE
-infopipe = infopipe.c
 endif
 
 if BUILD_SETI
@@ -50,7 +58,7 @@ if BUILD_X11
 x11 = x11.c
 endif
 
-conky_SOURCES = common.c fs.c $(linux) mail.c mixer.c $(seti) $(mpd) $(solaris) $(freebsd) $(netbsd) $(port_monitors) conky.c conky.h $(x11) $(mldonkey) remoted.c remoted.h remotec.c remotec.h $(audacious) $(bmpx) $(infopipe)
+conky_SOURCES = common.c fs.c $(linux) mail.c mixer.c $(seti) $(mpd) $(solaris) $(freebsd) $(netbsd) $(port_monitors) conky.c conky.h $(x11) $(mldonkey) remoted.c remoted.h remotec.c remotec.h $(xmms) $(bmpx)
 
 AM_LDFLAGS = $(X11_LIBS) $(XFT_LIBS) $(CAIRO_LIBS) $(PTHREAD_LIBS) -lm
 

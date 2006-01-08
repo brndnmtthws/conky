@@ -892,19 +892,20 @@ enum text_object_type {
 	OBJ_mpd_track,
 	OBJ_mpd_percent,
 #endif
-#ifdef AUDACIOUS
-        OBJ_audacious_status,
-        OBJ_audacious_song,
-        OBJ_audacious_song_length,
-        OBJ_audacious_song_length_seconds,
-        OBJ_audacious_song_length_frames,
-        OBJ_audacious_song_output_length,
-        OBJ_audacious_song_output_length_seconds,
-        OBJ_audacious_song_output_length_frames,
-        OBJ_audacious_song_bitrate,
-        OBJ_audacious_song_frequency,
-        OBJ_audacious_song_channels,
-        OBJ_audacious_bar,
+#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H) || defined(INFOPIPE_H)
+	OBJ_xmms_status,
+	OBJ_xmms_title,
+	OBJ_xmms_length,
+	OBJ_xmms_length_seconds,
+	OBJ_xmms_position,
+	OBJ_xmms_position_seconds,
+	OBJ_xmms_bitrate,
+	OBJ_xmms_frequency,
+	OBJ_xmms_channels,
+	OBJ_xmms_filename,
+	OBJ_xmms_playlist_length,
+	OBJ_xmms_playlist_position,
+        OBJ_xmms_bar,
 #endif
 #ifdef BMPX
 	OBJ_bmpx_title,
@@ -913,23 +914,6 @@ enum text_object_type {
 	OBJ_bmpx_track,
 	OBJ_bmpx_uri,
 	OBJ_bmpx_bitrate,
-#endif
-#ifdef INFOPIPE
-	OBJ_infopipe_protocol,
-	OBJ_infopipe_version,
-	OBJ_infopipe_status,
-	OBJ_infopipe_playlist_tunes,
-	OBJ_infopipe_playlist_currtune,
-	OBJ_infopipe_usec_position,
-	OBJ_infopipe_position,
-	OBJ_infopipe_usec_time,
-	OBJ_infopipe_time,
-	OBJ_infopipe_bitrate,
-	OBJ_infopipe_frequency,
-	OBJ_infopipe_channels,
-	OBJ_infopipe_title,
-	OBJ_infopipe_file,
-	OBJ_infopipe_bar,
 #endif
 #ifdef TCP_PORT_MONITOR
 	OBJ_tcp_portmon,
@@ -1825,19 +1809,20 @@ int a = stippled_borders, b = 1;
 	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END
 #endif
-#ifdef AUDACIOUS
-        OBJ(audacious_status, INFO_AUDACIOUS) END
-        OBJ(audacious_song, INFO_AUDACIOUS) END
-        OBJ(audacious_song_length, INFO_AUDACIOUS) END
-        OBJ(audacious_song_length_seconds, INFO_AUDACIOUS) END
-        OBJ(audacious_song_length_frames, INFO_AUDACIOUS) END
-        OBJ(audacious_song_output_length, INFO_AUDACIOUS) END
-        OBJ(audacious_song_output_length_seconds, INFO_AUDACIOUS) END
-        OBJ(audacious_song_output_length_frames, INFO_AUDACIOUS) END
-        OBJ(audacious_song_bitrate, INFO_AUDACIOUS) END
-        OBJ(audacious_song_frequency, INFO_AUDACIOUS) END
-        OBJ(audacious_song_channels, INFO_AUDACIOUS) END
-        OBJ(audacious_bar, INFO_AUDACIOUS)
+#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H) || defined(INFOPIPE_H)
+	OBJ(xmms_status, INFO_XMMS) END
+        OBJ(xmms_title, INFO_XMMS) END
+        OBJ(xmms_length, INFO_XMMS) END
+        OBJ(xmms_length_seconds, INFO_XMMS) END
+        OBJ(xmms_position, INFO_XMMS) END
+        OBJ(xmms_position_seconds, INFO_XMMS) END
+        OBJ(xmms_bitrate, INFO_XMMS) END
+        OBJ(xmms_frequency, INFO_XMMS) END
+        OBJ(xmms_channels, INFO_XMMS) END
+        OBJ(xmms_filename, INFO_XMMS) END
+        OBJ(xmms_playlist_length, INFO_XMMS) END
+        OBJ(xmms_playlist_position, INFO_XMMS) END
+        OBJ(xmms_bar, INFO_XMMS)
             (void) scan_bar(arg, &obj->a, &obj->b);
         END
 #endif
@@ -1859,25 +1844,6 @@ int a = stippled_borders, b = 1;
 	END
 	OBJ(bmpx_bitrate, INFO_BMPX)
 		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
-	END
-#endif
-#ifdef INFOPIPE
-	OBJ(infopipe_protocol, INFO_INFOPIPE) END
-	OBJ(infopipe_version, INFO_INFOPIPE) END
-	OBJ(infopipe_status, INFO_INFOPIPE) END
-	OBJ(infopipe_playlist_tunes, INFO_INFOPIPE) END
-	OBJ(infopipe_playlist_currtune, INFO_INFOPIPE) END
-	OBJ(infopipe_usec_position, INFO_INFOPIPE) END
-	OBJ(infopipe_position, INFO_INFOPIPE) END
-	OBJ(infopipe_usec_time, INFO_INFOPIPE) END
-	OBJ(infopipe_time, INFO_INFOPIPE) END
-	OBJ(infopipe_bitrate, INFO_INFOPIPE) END
-	OBJ(infopipe_frequency, INFO_INFOPIPE) END
-	OBJ(infopipe_channels, INFO_INFOPIPE) END
-	OBJ(infopipe_title, INFO_INFOPIPE) END
-	OBJ(infopipe_file, INFO_INFOPIPE) END
-	OBJ(infopipe_bar, INFO_INFOPIPE) 
-	    (void) scan_bar(arg, &obj->a, &obj->b);
 	END
 #endif
 #ifdef TCP_PORT_MONITOR
@@ -3135,46 +3101,48 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					       255.0f));
 			}
 #endif
-#ifdef AUDACIOUS
-                        OBJ(audacious_status) {
-			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_STATUS]);
-                        }
-                        OBJ(audacious_song) {
-			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_SONG]);
+#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H) || defined(INFOPIPE_H)
+			OBJ(xmms_status) {
+			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_STATUS]);
 			}
-                        OBJ(audacious_song_length) {
-			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_SONG_LENGTH]);
+        		OBJ(xmms_title) {
+			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_TITLE]);
 			}
-                        OBJ(audacious_song_length_seconds) {
-			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_SONG_LENGTH_SECONDS]);
+        		OBJ(xmms_length) {
+			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_LENGTH]);
 			}
-                        OBJ(audacious_song_length_frames) {
-			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_SONG_LENGTH_FRAMES]);
+        		OBJ(xmms_length_seconds) {
+			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_LENGTH_SECONDS]);
 			}
-                        OBJ(audacious_song_output_length) {
-			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_SONG_OUTPUT_LENGTH]);
+        		OBJ(xmms_position) {
+			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_POSITION]);
 			}
-                        OBJ(audacious_song_output_length_seconds) {
-			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_SONG_OUTPUT_LENGTH_SECONDS]);
+        		OBJ(xmms_position_seconds) {
+			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_POSITION_SECONDS]);
 			}
-                        OBJ(audacious_song_output_length_frames) {
-			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_SONG_OUTPUT_LENGTH_FRAMES]);
+        		OBJ(xmms_bitrate) {
+			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_BITRATE]);
 			}
-                        OBJ(audacious_song_bitrate) {
-			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_SONG_BITRATE]);
+        		OBJ(xmms_frequency) {
+			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_FREQUENCY]);
 			}
-                        OBJ(audacious_song_frequency) {
-			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_SONG_FREQUENCY]);
+        		OBJ(xmms_channels) {
+			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_CHANNELS]);
 			}
-                        OBJ(audacious_song_channels) {
-			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_STATUS]);
+        		OBJ(xmms_filename) {
+			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_FILENAME]);
 			}
-                        OBJ(audacious_bar) {
+        		OBJ(xmms_playlist_length) {
+			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_PLAYLIST_LENGTH]);
+			}
+        		OBJ(xmms_playlist_position) {
+			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_PLAYLIST_POSITION]);
+			}
+        		OBJ(xmms_bar) {
                             double progress;
-                            progress= atof(cur->audacious.items[AUDACIOUS_SONG_OUTPUT_LENGTH_SECONDS]) /
-                                      atof(cur->audacious.items[AUDACIOUS_SONG_LENGTH_SECONDS]);
+                            progress= atof(cur->xmms.items[XMMS_POSITION_SECONDS]) /
+                                      atof(cur->xmms.items[XMMS_LENGTH_SECONDS]);
                             new_bar(p,obj->a,obj->b,(int)(progress*255.0f));
-
 			}
 #endif
 #ifdef BMPX
@@ -3195,56 +3163,6 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			}
 			OBJ(bmpx_bitrate) {
 				snprintf(p, p_max_size, "%i", cur->bmpx.bitrate);
-			}
-#endif
-#ifdef INFOPIPE
-                        OBJ(infopipe_protocol) {
-                          	snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_PROTOCOL]);
-			}
-                        OBJ(infopipe_version) {
-                          	snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_VERSION]);
-			}
-                        OBJ(infopipe_status) {
-                          	snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_STATUS]);
-			}
-                        OBJ(infopipe_playlist_tunes) {
-                          	snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_PLAYLIST_TUNES]);
-			}
-                        OBJ(infopipe_playlist_currtune) {
-                          	snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_PLAYLIST_CURRTUNE]);
-			}
-                        OBJ(infopipe_usec_position) {
-                          	snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_USEC_POSITION]);
-			}
-                        OBJ(infopipe_position) {
-                          	snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_POSITION]);
-			}
-                        OBJ(infopipe_usec_time) {
-                          	snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_USEC_TIME]);
-			}
-                        OBJ(infopipe_time) {
-                          	snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_TIME]);
-			}
-                        OBJ(infopipe_bitrate) {
-                          	snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_BITRATE]);
-			}
-                        OBJ(infopipe_frequency) {
-                          	snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_FREQUENCY]);
-			}
-                        OBJ(infopipe_channels) {
-                          	snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_CHANNELS]);
-			}
-                        OBJ(infopipe_title) {
-                          	snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_TITLE]);
-			}
-                        OBJ(infopipe_file) {
-                          	snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_FILE]);
-			}
-			OBJ(infopipe_bar) {
-				double progress;
-				progress= atof(cur->infopipe.items[INFOPIPE_USEC_POSITION]) /
-					  atof(cur->infopipe.items[INFOPIPE_USEC_TIME]);
-				new_bar(p,obj->a,obj->b,(int)(progress*255.0f));
 			}
 #endif
 			OBJ(top) {
@@ -5567,71 +5485,40 @@ int main(int argc, char **argv)
 		ERR("error setting signal handler: %s", strerror(errno) );
 	}
 
-#ifdef AUDACIOUS
-	/* joinable thread for audacious activity */
-        pthread_attr_init(&info.audacious.thread_attr);
-	pthread_attr_setdetachstate(&info.audacious.thread_attr, PTHREAD_CREATE_JOINABLE);
+#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H) || defined(INFOPIPE_H)
+	/* joinable thread for xmms activity */
+        pthread_attr_init(&info.xmms.thread_attr);
+	pthread_attr_setdetachstate(&info.xmms.thread_attr, PTHREAD_CREATE_JOINABLE);
 	/* init mutexex */
-	pthread_mutex_init(&info.audacious.item_mutex, NULL);
-	pthread_mutex_init(&info.audacious.runnable_mutex, NULL);
+	pthread_mutex_init(&info.xmms.item_mutex, NULL);
+	pthread_mutex_init(&info.xmms.runnable_mutex, NULL);
 	/* init runnable condition for worker thread */
-	pthread_mutex_lock(&info.audacious.runnable_mutex);
-	info.audacious.runnable=1;
-	pthread_mutex_unlock(&info.audacious.runnable_mutex);
-	if (pthread_create(&info.audacious.thread, &info.audacious.thread_attr, audacious_thread_func, NULL))
+	pthread_mutex_lock(&info.xmms.runnable_mutex);
+	info.xmms.runnable=1;
+	pthread_mutex_unlock(&info.xmms.runnable_mutex);
+	if (pthread_create(&info.xmms.thread, &info.xmms.thread_attr, xmms_thread_func, NULL))
 	{
-	    CRIT_ERR("unable to create audacious thread!");
-	}
-#endif
-#ifdef INFOPIPE
-	/* joinable thread for infopipe activity */
-        pthread_attr_init(&info.infopipe.thread_attr);
-	pthread_attr_setdetachstate(&info.infopipe.thread_attr, PTHREAD_CREATE_JOINABLE);
-	/* init mutexex */
-	pthread_mutex_init(&info.infopipe.item_mutex, NULL);
-	pthread_mutex_init(&info.infopipe.runnable_mutex, NULL);
-	/* init runnable condition for worker thread */
-	pthread_mutex_lock(&info.infopipe.runnable_mutex);
-	info.infopipe.runnable=1;
-	pthread_mutex_unlock(&info.infopipe.runnable_mutex);
-	if (pthread_create(&info.infopipe.thread, &info.infopipe.thread_attr, infopipe_thread_func, NULL))
-	{
-	    CRIT_ERR("unable to create infopipe thread!");
+	    CRIT_ERR("unable to create xmms thread!");
 	}
 #endif
 
 	main_loop();
 
-#ifdef AUDACIOUS
-        /* signal audacious worker thread to terminate */
-        pthread_mutex_lock(&info.audacious.runnable_mutex);
-        info.audacious.runnable=0;
-        pthread_mutex_unlock(&info.audacious.runnable_mutex);
+#if defined(XMMS_H) || defined(BMP_H) || defined(AUDACIOUS_H) || defined(INFOPIPE_H)
+        /* signal xmms worker thread to terminate */
+        pthread_mutex_lock(&info.xmms.runnable_mutex);
+        info.xmms.runnable=0;
+        pthread_mutex_unlock(&info.xmms.runnable_mutex);
         /* destroy thread attribute and wait for thread */
-        pthread_attr_destroy(&info.audacious.thread_attr);
-        if (pthread_join(info.audacious.thread, NULL))
+        pthread_attr_destroy(&info.xmms.thread_attr);
+        if (pthread_join(info.xmms.thread, NULL))
         {
-            ERR("error joining audacious thread");
+            ERR("error joining xmms thread");
         }
         /* destroy mutexes */
-        pthread_mutex_destroy(&info.audacious.item_mutex);
-        pthread_mutex_destroy(&info.audacious.runnable_mutex);
+        pthread_mutex_destroy(&info.xmms.item_mutex);
+        pthread_mutex_destroy(&info.xmms.runnable_mutex);
 #endif	
-#ifdef INFOPIPE
-	/* signal infopipe worker thread to terminate */
-	pthread_mutex_lock(&info.infopipe.runnable_mutex);
-	info.infopipe.runnable=0;
-	pthread_mutex_unlock(&info.infopipe.runnable_mutex);
-	/* destroy thread attribute and wait for thread */
-	pthread_attr_destroy(&info.infopipe.thread_attr);
-	if (pthread_join(info.infopipe.thread, NULL))
-	{
-	    ERR("error joining infopipe thread");
-        }
-	/* destroy mutexes */
-	pthread_mutex_destroy(&info.infopipe.item_mutex);
-	pthread_mutex_destroy(&info.infopipe.runnable_mutex);
-#endif
 
 	return 0;
 }
