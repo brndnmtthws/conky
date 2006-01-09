@@ -29,6 +29,10 @@
 #include "conky.h"
 #include "xmms.h"
 
+#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS)
+#include <glib.h>
+#endif
+
 #if defined(XMMS)
 #include <xmms/xmmsctrl.h>
 
@@ -94,12 +98,14 @@ void *xmms_thread_func(void *pvoid)
 {
     int runnable;
     static xmms_t items;
-    int session,playpos,frames,length;
-    int rate,freq,chans;
-    char *psong,*pfilename;
+    gint session,playpos,frames,length;
+    gint rate,freq,chans;
+    gchar *psong,*pfilename;
 
     pvoid=(void*)pvoid; /* useless cast to avoid unused var warning */
     session=0;
+    psong=NULL;
+    pfilename=NULL;
 
     /* Grab the runnable signal.  Should be non-zero here or we do nothing. */
     pthread_mutex_lock(&info.xmms.runnable_mutex);
@@ -126,10 +132,13 @@ void *xmms_thread_func(void *pvoid)
 	         strcpy(items[XMMS_STATUS],"Stopped");
 
 	    /* Current song title */
-	    playpos = (int) xmms_remote_get_playlist_pos(session);
-	    psong = (char *) xmms_remote_get_playlist_title(session, playpos);
-	    if (psong)
+	    playpos = xmms_remote_get_playlist_pos(session);
+	    psong = xmms_remote_get_playlist_title(session, playpos);
+	    if (psong) {
                 strncpy(items[XMMS_TITLE],psong,sizeof(items[XMMS_TITLE])-1);
+		g_free(psong);
+		psong=NULL;
+	    }
 
 	    /* Current song length as MM:SS */ 
             frames = xmms_remote_get_playlist_time(session,playpos);
@@ -163,7 +172,11 @@ void *xmms_thread_func(void *pvoid)
             
             /* Current song filename */
 	    pfilename = xmms_remote_get_playlist_file(session,playpos);
-	    strncpy(items[XMMS_FILENAME],pfilename,sizeof(items[XMMS_FILENAME])-1);
+	    if (pfilename) {
+	        strncpy(items[XMMS_FILENAME],pfilename,sizeof(items[XMMS_FILENAME])-1);
+		g_free(pfilename);
+		pfilename=NULL;
+	    }
 
 	    /* Length of the Playlist (number of songs) */
 	    length = xmms_remote_get_playlist_length(session);
