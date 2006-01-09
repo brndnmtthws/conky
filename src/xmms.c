@@ -221,7 +221,7 @@ void *xmms_thread_func(void *pvoid)
 	    if ((fd=open(INFOPIPE_NAMED_PIPE, O_RDONLY | O_NONBLOCK)) < 0) {
 		/* InfoPipe is not running */
 		memset(items,0,sizeof(items));
-		strcpy(items[INFOPIPE_STATUS],"Not running");
+		strcpy(items[XMMS_STATUS],"Not running");
 	        break;
 	    }
 
