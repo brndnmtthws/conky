@@ -123,8 +123,8 @@ case x$want_bmp in
             AC_CHECK_HEADERS([dlfcn.h], [], [want_bmp=no])
             if test x$want_bmp = xyes; then
                 AC_CHECK_LIB(dl, dlopen, [LIBS="$LIBS -ldl"],
-                                         [AC_CHECK_LIB(c,dlopen,[LIBS="$LIBS -lc"],
-                                                                 [want_bmp=no])])
+                                         [AC_CHECK_FUNCS(dlopen,[],
+                                                                [want_bmp=no])])
                 if test x$want_bmp = xyes; then
                      CFLAGS="$CFLAGS $BMP_CFLAGS"
                      LIBS="$LIBS $BMP_LIBS"
@@ -140,7 +140,7 @@ case x$want_bmp in
         AC_CHECK_HEADERS([dlfcn.h], [],
              [AC_MSG_ERROR(["dlfcn.h not found: dynamic library loading not supported"])])
         AC_CHECK_LIB(dl, dlopen, [LIBS="$LIBS -ldl"],
-                                 [AC_CHECK_LIB(c,dlopen,[LIBS="$LIBS -lc"],
+                                 [AC_CHECK_FUNCS(dlopen,[],
                                                         [AC_MSG_ERROR([dlopen() not available])])])
         AC_DEFINE(BMP, 1, [Define for Beep Media Player support])
         ;;
@@ -170,7 +170,7 @@ case x$want_audacious in
 	    AC_CHECK_HEADERS([dlfcn.h], [], [want_audacious=no])
 	    if test x$want_audacious = xyes; then
 	        AC_CHECK_LIB(dl, dlopen, [LIBS="$LIBS -ldl"], 
-                                         [AC_CHECK_LIB(c,dlopen,[LIBS="$LIBS -lc"],
+                                         [AC_CHECK_FUNCS(dlopen,[],
                                                                 [want_audacious=no])])
 		if test x$want_audacious = xyes; then
 	             CFLAGS="$CFLAGS $AUDACIOUS_CFLAGS"
@@ -187,7 +187,7 @@ case x$want_audacious in
         AC_CHECK_HEADERS([dlfcn.h], [], 
              [AC_MSG_ERROR(["dlfcn.h not found: dynamic library loading not supported"])])
 	AC_CHECK_LIB(dl, dlopen, [LIBS="$LIBS -ldl"], 
-                                 [AC_CHECK_LIB(c,dlopen,[LIBS="$LIBS -lc"], 
+                                 [AC_CHECK_FUNCS(dlopen,[], 
                                                         [AC_MSG_ERROR([dlopen() not available])])])
         AC_DEFINE(AUDACIOUS, 1, [Define for Audacious support])
         ;;
