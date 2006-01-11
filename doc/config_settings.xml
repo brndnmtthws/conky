@@ -151,6 +151,20 @@
 </varlistentry>
 
 <varlistentry>
+	<term><command><option>min_port_monitors</option></command></term>
+	<listitem>
+		Allow for the creation of at least this number of port monitors (if 0 or not set, default is 16) 
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>min_port_monitor_connections</option></command></term>
+	<listitem>
+		Allow each port monitor to track at least this many connections (if 0 or not set, default is 256)
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
 	<term><command><option>mldonkey_hostname</option></command></term>
 	<listitem>
 		Hostname for mldonkey stuff, defaults to localhost
@@ -293,16 +307,9 @@
 </varlistentry>
 
 <varlistentry>
-	<term><command><option>min_port_monitors</option></command></term>
+	<term><command><option>xmms_player</option></command></term>
 	<listitem>
-		Allow for the creation of at least this number of port monitors (if 0 or not set, default is 16) 
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term><command><option>min_port_monitor_connections</option></command></term>
-	<listitem>
-		Allow each port monitor to track at least this many connections (if 0 or not set, default is 256)
+		Use specified player/plugin for the xmms status variables.  Valid items are: none, xmms, bmp, audacious and infopipe. (default is none).  Note that bmpx is currently handled separately.
 	<para></para></listitem>
 </varlistentry>
 

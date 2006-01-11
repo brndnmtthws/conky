@@ -38,13 +38,31 @@ enum _xmms_items {
 	XMMS_PLAYLIST_POSITION,
 };
 
+enum _xmms_projects {
+	PROJECT_NONE = 0,
+	PROJECT_XMMS = 1,
+	PROJECT_BMP = 2,
+	PROJECT_AUDACIOUS = 3,
+	PROJECT_INFOPIPE = 4
+};
+
+#define SET_XMMS_PROJECT_AVAILABLE(mask,project) 	(mask |= (1<<project))
+#define TEST_XMMS_PROJECT_AVAILABLE(mask,project)	(mask & (1<<project))
+
 /* 12 slots for the xmms values */
 typedef char xmms_t[12][128];
+
+/* create a worker thread for xmms media player status */
+int create_xmms_thread(void);
+
+/* destroy xmms media player worker thread */
+int destroy_xmms_thread(void);
 
 /* Service routine for the conky main thread */
 void update_xmms(void);
 
-/* Thread function */
-void *xmms_thread_func(void *);
+/* Thread functions */
+void *xmms_thread_func_dynamic(void *);
+void *xmms_thread_func_infopipe(void *);
 
 #endif

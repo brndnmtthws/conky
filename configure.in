@@ -3,6 +3,7 @@ AC_INIT([Conky],[1.3.6_CVS_20060108],[brenden1@users.sourceforge.net])
 AM_INIT_AUTOMAKE(conky, 1.3.6_CVS_20060108)
 AM_CONFIG_HEADER(src/config.h)
 AC_PROG_LIBTOOL
+PKG_PROG_PKG_CONFIG([0.17.2])
 
 
 AC_CONFIG_FILES(
@@ -43,8 +44,6 @@ AM_CONDITIONAL(BUILD_SOLARIS, test x$uname = xSunOS)
 AM_CONDITIONAL(BUILD_FREEBSD, test x$uname = xFreeBSD)
 AM_CONDITIONAL(BUILD_NETBSD, test x$uname = xNetBSD)
 
-PKG_PROG_PKG_CONFIG([0.17.2])
-
 dnl
 dnl XFT option
 dnl
@@ -81,46 +80,82 @@ if test $dah = "yes"; then
 fi
 
 dnl
-dnl XMMS_SUPPORT
+dnl XMMS (Version 1)
 dnl
 
-xmms_support=none
+want_xmms=no
 AC_ARG_ENABLE(xmms,
-   [  --enable-xmms[[=project]] none,xmms,bmp,audacious,infopipe [[default=none]]],
-   [xmms_support="$enableval"])
+   [  --enable-xmms           enable xmms (ver. 1) media player support [[default=no]]],
+   [want_xmms="$enableval"])
 
-case x$xmms_support in
-    xnone|xyes|xno)
-        ;;
-    xxmms)
-        AC_DEFINE(XMMS, 1, [Define for XMMS Version 1 support])
-	echo "Sorry, xmms isn't supported yet"
-	exit -1
-	;;
-    xbmp)
-	PKG_CHECK_MODULES([XMMS], [bmp], [])
-	CFLAGS="$CFLAGS $XMMS_CFLAGS"
-	LIBS="$LIBS $XMMS_LIBS"
-	AC_DEFINE(BMP, 1, [Define for BMP support])
-	;;
-    xaudacious)
-        PKG_CHECK_MODULES([XMMS], [audacious >= 0.1])
-        CFLAGS="$CFLAGS $XMMS_CFLAGS"
-	LIBS="$LIBS $XMMS_LIBS"
-        AC_DEFINE(AUDACIOUS, 1, [Define for Audacious support])
-        ;;
-    xinfopipe)
-        AC_DEFINE(INFOPIPE, 1, [Define for XMMS/BMP InfoPipe support])
-	;;
-    *)
-        echo "Error: invalid xmms support specified: $xmms_support"
-	exit -1
-	;;
-esac
-AM_CONDITIONAL(BUILD_XMMS, test x$xmms_support = xxmms)
-AM_CONDITIONAL(BUILD_BMP, test x$xmms_support = xbmp)
-AM_CONDITIONAL(BUILD_AUDACIOUS, test x$xmms_support = xaudacious)
-AM_CONDITIONAL(BUILD_INFOPIPE, test x$xmms_support = xinfopipe)
+if test x$want_xmms = "xyes"; then
+    AC_DEFINE(XMMS, 1, [Define for XMMS Version 1 support])
+    echo "Sorry, xmms isn't supported yet"
+    exit -1
+fi
+AM_CONDITIONAL(BUILD_XMMS, test x$want_xmms = xyes)
+
+dnl
+dnl BMP (through 0.9.7.1)
+dnl
+
+want_bmp=no
+AC_ARG_ENABLE(bmp,
+   [  --enable-bmp            enable beep media media player support [[default=no]]],
+   [want_bmp="$enableval"])
+
+if test x$want_bmp = "xyes"; then
+    AC_DEFINE(BMP, 1, [Define for Beep Media Player support])
+    PKG_CHECK_MODULES([BMP], [glib-2.0], [])
+    CFLAGS="$CFLAGS $BMP_CFLAGS"
+    LIBS="$LIBS $BMP_LIBS"
+    AC_CHECK_HEADERS([dlfcn.h], [], [DLFCN_MISSING=yes])
+    if test "x$DLFCN_MISSING" = xyes; then
+        AC_MSG_ERROR(["dlfcn.h missing: dynamic library loading not supported"])
+    fi
+    AC_CHECK_LIB(dl, dlopen,
+        LIBS="$LIBS -ldl",
+        AC_MSG_ERROR([Could not find dlopen in libdl]))
+fi
+AM_CONDITIONAL(BUILD_BMP, test x$want_bmp = xyes)
+
+dnl
+dnl Audacious Media Player
+dnl
+
+want_audacious=no
+AC_ARG_ENABLE(audacious,
+   [  --enable-audacious      enable beep audacious player support [[default=no]]],
+   [want_audacious="$enableval"])
+
+if test x$want_audacious = "xyes"; then
+    AC_DEFINE(AUDACIOUS, 1, [Define for Audacious support])
+    PKG_CHECK_MODULES([AUDACIOUS], [glib-2.0], [])
+    CFLAGS="$CFLAGS $AUDACIOUS_CFLAGS"
+    LIBS="$LIBS $AUDACIOUS_LIBS"
+    AC_CHECK_HEADERS([dlfcn.h], [], [DLFCN_MISSING=yes])
+    if test "x$DLFCN_MISSING" = xyes; then
+        AC_MSG_ERROR(["dlfcn.h missing: dynamic library loading not supported"])
+    fi
+    AC_CHECK_LIB(dl, dlopen,
+        LIBS="$LIBS -ldl",
+        AC_MSG_ERROR([Could not find dlopen in libdl]))
+fi
+AM_CONDITIONAL(BUILD_AUDACIOUS, test x$want_audacious = xyes)
+
+dnl
+dnl InfoPipe (Version 1.3)
+dnl
+
+want_infopipe=no
+AC_ARG_ENABLE(infopipe,
+   [  --enable-infopipe       enable xmms/bmp infopipe support [[default=no]]],
+   [want_infopipe="$enableval"])
+
+if test x$want_infopipe = "xyes"; then
+    AC_DEFINE(INFOPIPE, 1, [Define for InfoPipe support])
+fi
+AM_CONDITIONAL(BUILD_INFOPIPE, test x$want_infopipe = xyes)
 
 dnl
 dnl BMPx

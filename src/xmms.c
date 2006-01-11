@@ -31,18 +31,10 @@
 
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS)
 #include <glib.h>
+#include <dlfcn.h>
 #endif
 
-#if defined(XMMS)
-#include <xmms/xmmsctrl.h>
-
-#elif defined(BMP)
-#include <bmp/beepctrl.h>
-
-#elif defined(AUDACIOUS)
-#include <audacious/beepctrl.h>
-
-#elif defined(INFOPIPE)
+#if defined(INFOPIPE)
 #include <sys/select.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -90,22 +82,193 @@ void update_xmms(void)
 }
 
 
+/* ------------------------------------------------------------
+ * Create a worker thread for xmms-related media player status.
+ *
+ * Returns 0 on success, -1 on error. 
+ * ------------------------------------------------------------*/
+int create_xmms_thread(void)
+{
+    /* Was an an available project requested? */
+    if (!TEST_XMMS_PROJECT_AVAILABLE(info.xmms.project_mask, info.xmms.current_project))
+        return(-1);
+    
+    /* The project should not be PROJECT_NONE */
+    if (info.xmms.current_project==PROJECT_NONE)
+        return(-1);
+
+    /* Is a worker is thread already running? */
+    if (info.xmms.thread)
+	return(-1);
+
+    /* Joinable thread for xmms activity */
+    pthread_attr_init(&info.xmms.thread_attr);
+    pthread_attr_setdetachstate(&info.xmms.thread_attr, PTHREAD_CREATE_JOINABLE);
+    /* Init mutexes */
+    pthread_mutex_init(&info.xmms.item_mutex, NULL);
+    pthread_mutex_init(&info.xmms.runnable_mutex, NULL);
+    /* Init runnable condition for worker thread */
+    pthread_mutex_lock(&info.xmms.runnable_mutex);
+    info.xmms.runnable=1;
+    pthread_mutex_unlock(&info.xmms.runnable_mutex);
+#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS)	    
+    if (info.xmms.current_project==PROJECT_XMMS || 
+        info.xmms.current_project==PROJECT_BMP || 
+	info.xmms.current_project==PROJECT_AUDACIOUS) {
+        if (pthread_create(&info.xmms.thread, &info.xmms.thread_attr, xmms_thread_func_dynamic, NULL))
+            return(-1);
+    }
+#endif
+#if defined(INFOPIPE)
+    if (info.xmms.current_project==PROJECT_INFOPIPE) {
+	if (pthread_create(&info.xmms.thread, &info.xmms.thread_attr, xmms_thread_func_infopipe, NULL))
+            return(-1);
+    }
+#endif
+
+    return 0;
+}
+
+/* ------------------------------------------------
+ * Destroy xmms-related media player status thread.
+ *
+ * Returns 0 on success, -1 on error.
+ * ------------------------------------------------ */
+int destroy_xmms_thread(void)
+{
+    /* Is a worker is thread running? If not, no error. */
+    if (!info.xmms.thread)
+        return(0);
+
+    /* Signal xmms worker thread to terminate */
+    pthread_mutex_lock(&info.xmms.runnable_mutex);
+    info.xmms.runnable=0;
+    pthread_mutex_unlock(&info.xmms.runnable_mutex);
+    /* Destroy thread attribute and wait for thread */
+    pthread_attr_destroy(&info.xmms.thread_attr);
+    if (pthread_join(info.xmms.thread, NULL))
+        return(-1);
+    /* Destroy mutexes */
+    pthread_mutex_destroy(&info.xmms.item_mutex);
+    pthread_mutex_destroy(&info.xmms.runnable_mutex);
+
+    info.xmms.thread=(pthread_t)0;
+    return 0;
+}
+
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS)
 /* ------------------------------------------------------------
  * Worker thread function for XMMS/BMP/Audacious data sampling.
  * ------------------------------------------------------------ */ 
-void *xmms_thread_func(void *pvoid)
+void *xmms_thread_func_dynamic(void *pvoid)
 {
+    void *handle;
+    const char *error;
     int runnable;
     static xmms_t items;
     gint session,playpos,frames,length;
     gint rate,freq,chans;
     gchar *psong,*pfilename;
 
-    pvoid=(void*)pvoid; /* useless cast to avoid unused var warning */
+    /* Function pointers for the functions we load dynamically */
+    gboolean (*xmms_remote_is_running)(gint session);
+    gboolean (*xmms_remote_is_paused)(gint session);
+    gboolean (*xmms_remote_is_playing)(gint session);
+    gint (*xmms_remote_get_playlist_pos)(gint session);
+    gchar *(*xmms_remote_get_playlist_title)(gint session, gint pos);
+    gint (*xmms_remote_get_playlist_time)(gint session, gint pos);
+    gint (*xmms_remote_get_output_time)(gint session);
+    void (*xmms_remote_get_info)(gint session, gint *rate, gint *freq, gint *chans);
+    gchar *(*xmms_remote_get_playlist_file)(gint session, gint pos);
+    gint (*xmms_remote_get_playlist_length)(gint session);
+
+    pvoid=(void *)pvoid;  /* avoid warning */
     session=0;
     psong=NULL;
     pfilename=NULL;
+
+    switch(info.xmms.current_project) {
+
+    case (PROJECT_XMMS) :
+	    handle = dlopen("libxmms.so", RTLD_LAZY);
+	    if (!handle) {
+	        ERR("unable to open libxmms.so");
+		pthread_exit(NULL);
+	    }
+	    break;
+		    
+    case (PROJECT_BMP) :
+	    handle = dlopen("libbeep.so", RTLD_LAZY);
+	    if (!handle) {
+		 ERR("unable to open libbeep.so");
+		 pthread_exit(NULL);
+            }
+	    break;
+
+    case (PROJECT_AUDACIOUS) :
+	    handle = dlopen("libaudacious.so", RTLD_LAZY);
+	    if (!handle) {
+		 ERR("unable to open libaudacious.so");
+	         pthread_exit(NULL);
+            }
+	    break;
+
+    case (PROJECT_NONE) :
+    default :
+         pthread_exit(NULL);
+    }
+
+    /* Grab the function pointers from the library */
+    xmms_remote_is_running = dlsym(handle, "xmms_remote_is_running");
+    if ((error = dlerror()) != NULL) {
+        ERR("error grabbing function symbol");
+	pthread_exit(NULL);
+    }
+    xmms_remote_is_paused = dlsym(handle, "xmms_remote_is_paused");
+    if ((error = dlerror()) != NULL) {
+        ERR("error grabbing function symbol");
+	pthread_exit(NULL);
+    }
+    xmms_remote_is_playing = dlsym(handle, "xmms_remote_is_playing");
+    if ((error = dlerror()) != NULL) {
+        ERR("error grabbing function symbol");
+	pthread_exit(NULL);
+    }
+    xmms_remote_get_playlist_pos = dlsym(handle, "xmms_remote_get_playlist_pos");
+    if ((error = dlerror()) != NULL) {
+        ERR("error grabbing function symbol");
+	pthread_exit(NULL);
+    }
+    xmms_remote_get_playlist_title = dlsym(handle, "xmms_remote_get_playlist_title");
+    if ((error = dlerror()) != NULL) {
+        ERR("error grabbing function symbol");
+	pthread_exit(NULL);
+    }
+    xmms_remote_get_playlist_time = dlsym(handle, "xmms_remote_get_playlist_time");
+    if ((error = dlerror()) != NULL) {
+        ERR("error grabbing function symbol");
+	pthread_exit(NULL);
+    }
+    xmms_remote_get_output_time = dlsym(handle, "xmms_remote_get_output_time");
+    if ((error = dlerror()) != NULL) {
+        ERR("error grabbing function symbol");
+	pthread_exit(NULL);
+    }
+    xmms_remote_get_info = dlsym(handle, "xmms_remote_get_info");
+    if ((error = dlerror()) != NULL) {
+        ERR("error grabbing function symbol");
+	pthread_exit(NULL);
+    }
+    xmms_remote_get_playlist_file = dlsym(handle, "xmms_remote_get_playlist_file");
+    if ((error = dlerror()) != NULL) {
+        ERR("error grabbing function symbol");
+	pthread_exit(NULL);
+    }
+    xmms_remote_get_playlist_length = dlsym(handle, "xmms_remote_get_playlist_length");
+    if ((error = dlerror()) != NULL) {
+        ERR("error grabbing function symbol");
+	pthread_exit(NULL);
+    }
 
     /* Grab the runnable signal.  Should be non-zero here or we do nothing. */
     pthread_mutex_lock(&info.xmms.runnable_mutex);
@@ -115,53 +278,53 @@ void *xmms_thread_func(void *pvoid)
     /* Loop until the main thread sets the runnable signal to 0. */
     while(runnable) {
 
-	for (;;) {  /* convenience loop so we can break below */
-	
-            if (!xmms_remote_is_running(session)) {
+        for (;;) {  /* convenience loop so we can break below */
+
+            if (!(*xmms_remote_is_running)(session)) {
                 memset(&items,0,sizeof(items));
-		strcpy(items[XMMS_STATUS],"Not running");
-		break;
+                strcpy(items[XMMS_STATUS],"Not running");
+                break;
             }
 
-	    /* Player status */
-	    if (xmms_remote_is_paused(session))
-	        strcpy(items[XMMS_STATUS],"Paused");
-	    else if (xmms_remote_is_playing(session))
-		 strcpy(items[XMMS_STATUS],"Playing");
-	    else
-	         strcpy(items[XMMS_STATUS],"Stopped");
+            /* Player status */
+            if ((*xmms_remote_is_paused)(session))
+                strcpy(items[XMMS_STATUS],"Paused");
+            else if ((*xmms_remote_is_playing)(session))
+                 strcpy(items[XMMS_STATUS],"Playing");
+            else
+                 strcpy(items[XMMS_STATUS],"Stopped");
 
-	    /* Current song title */
-	    playpos = xmms_remote_get_playlist_pos(session);
-	    psong = xmms_remote_get_playlist_title(session, playpos);
-	    if (psong) {
+            /* Current song title */
+            playpos = (*xmms_remote_get_playlist_pos)(session);
+            psong = (*xmms_remote_get_playlist_title)(session, playpos);
+            if (psong) {
                 strncpy(items[XMMS_TITLE],psong,sizeof(items[XMMS_TITLE])-1);
-		g_free(psong);
-		psong=NULL;
-	    }
+                g_free(psong);
+                psong=NULL;
+            }
 
-	    /* Current song length as MM:SS */ 
-            frames = xmms_remote_get_playlist_time(session,playpos);
-	    length = frames / 1000;
+            /* Current song length as MM:SS */
+            frames = (*xmms_remote_get_playlist_time)(session,playpos);
+            length = frames / 1000;
             snprintf(items[XMMS_LENGTH],sizeof(items[XMMS_LENGTH])-1,
-	             "%d:%.2d", length / 60, length % 60);
-	 
-	    /* Current song length in seconds */
-	    snprintf(items[XMMS_LENGTH_SECONDS],sizeof(items[XMMS_LENGTH_SECONDS])-1,
-	             "%d", length);
+                     "%d:%.2d", length / 60, length % 60);
 
-	    /* Current song position as MM:SS */ 
-            frames = xmms_remote_get_output_time(session);
-	    length = frames / 1000;
+            /* Current song length in seconds */
+            snprintf(items[XMMS_LENGTH_SECONDS],sizeof(items[XMMS_LENGTH_SECONDS])-1,
+                     "%d", length);
+
+            /* Current song position as MM:SS */
+            frames = (*xmms_remote_get_output_time)(session);
+            length = frames / 1000;
             snprintf(items[XMMS_POSITION],sizeof(items[XMMS_POSITION])-1,
-	             "%d:%.2d", length / 60, length % 60);
-	 
-	    /* Current song position in seconds */
-	    snprintf(items[XMMS_POSITION_SECONDS],sizeof(items[XMMS_POSITION_SECONDS])-1,
-	             "%d", length);
+                     "%d:%.2d", length / 60, length % 60);
+
+            /* Current song position in seconds */
+            snprintf(items[XMMS_POSITION_SECONDS],sizeof(items[XMMS_POSITION_SECONDS])-1,
+                     "%d", length);
 
             /* Current song bitrate */
-            xmms_remote_get_info(session, &rate, &freq, &chans);
+            (*xmms_remote_get_info)(session, &rate, &freq, &chans);
             snprintf(items[XMMS_BITRATE],sizeof(items[XMMS_BITRATE])-1, "%d", rate);
 
             /* Current song frequency */
@@ -169,46 +332,48 @@ void *xmms_thread_func(void *pvoid)
 
             /* Current song channels */
             snprintf(items[XMMS_CHANNELS],sizeof(items[XMMS_CHANNELS])-1, "%d", chans);
-            
+
             /* Current song filename */
-	    pfilename = xmms_remote_get_playlist_file(session,playpos);
-	    if (pfilename) {
-	        strncpy(items[XMMS_FILENAME],pfilename,sizeof(items[XMMS_FILENAME])-1);
-		g_free(pfilename);
-		pfilename=NULL;
-	    }
+            pfilename = (*xmms_remote_get_playlist_file)(session,playpos);
+            if (pfilename) {
+                strncpy(items[XMMS_FILENAME],pfilename,sizeof(items[XMMS_FILENAME])-1);
+                g_free(pfilename);
+                pfilename=NULL;
+            }
 
-	    /* Length of the Playlist (number of songs) */
-	    length = xmms_remote_get_playlist_length(session);
-	    snprintf(items[XMMS_PLAYLIST_LENGTH],sizeof(items[XMMS_PLAYLIST_LENGTH])-1, "%d", length);
+            /* Length of the Playlist (number of songs) */
+            length = (*xmms_remote_get_playlist_length)(session);
+            snprintf(items[XMMS_PLAYLIST_LENGTH],sizeof(items[XMMS_PLAYLIST_LENGTH])-1, "%d", length);
 
-	    /* Playlist position (index of song) */
-	    snprintf(items[XMMS_PLAYLIST_POSITION],sizeof(items[XMMS_PLAYLIST_POSITION])-1, "%d", playpos+1);
+            /* Playlist position (index of song) */
+            snprintf(items[XMMS_PLAYLIST_POSITION],sizeof(items[XMMS_PLAYLIST_POSITION])-1, "%d", playpos+1);
 
-	    break;
-	}
+            break;
+        }
 
-	/* Deliver the refreshed items array to g_items. */
-	pthread_mutex_lock(&info.xmms.item_mutex);
+        /* Deliver the refreshed items array to g_items. */
+        pthread_mutex_lock(&info.xmms.item_mutex);
         memcpy(&g_items,items,sizeof(items));
-	pthread_mutex_unlock(&info.xmms.item_mutex);
+        pthread_mutex_unlock(&info.xmms.item_mutex);
 
-	/* Grab the runnable signal for next loop. */
+        /* Grab the runnable signal for next loop. */
         pthread_mutex_lock(&info.xmms.runnable_mutex);
         runnable=info.xmms.runnable;
         pthread_mutex_unlock(&info.xmms.runnable_mutex);
 
-	sleep(1);
+        sleep(1);
     }
 
+    dlclose(handle);
     pthread_exit(NULL);
 }
+#endif
 
-#elif defined(INFOPIPE)
+#if defined(INFOPIPE)
 /* --------------------------------------------------
  * Worker thread function for InfoPipe data sampling.
  * -------------------------------------------------- */ 
-void *xmms_thread_func(void *pvoid)
+void *xmms_thread_func_infopipe(void *pvoid)
 {
     int i,rc,fd,runnable;
     fd_set readset;
@@ -217,7 +382,7 @@ void *xmms_thread_func(void *pvoid)
     static xmms_t items;
     char *pbuf,c;
 
-    pvoid=(void*)pvoid; /* useless cast to avoid unused var warning */
+    pvoid=(void*)pvoid; /* avoid warning */
 
     /* Grab the runnable signal.  Should be non-zero here or we do nothing. */
     pthread_mutex_lock(&info.xmms.runnable_mutex);

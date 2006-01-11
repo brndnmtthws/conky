@@ -4565,6 +4565,19 @@ void reload_config(void)
 		destroy_tcp_port_monitor_collection( info.p_tcp_port_monitor_collection );
 		info.p_tcp_port_monitor_collection = NULL; 
 #endif
+#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
+                if (info.xmms.thread) {
+                    if (destroy_xmms_thread()!=0)
+                    {
+                        ERR("error destroying xmms thread");
+                    }
+		}
+                if ( (!info.xmms.thread) && (info.xmms.current_project > PROJECT_NONE) && 
+		     (create_xmms_thread() !=0) )
+                    {
+                        CRIT_ERR("unable to create xmms thread!");
+                    }
+#endif
 		extract_variable_text(text);
 		free(text);
 		text = NULL;
@@ -4617,6 +4630,12 @@ void clean_up(void)
 #ifdef TCP_PORT_MONITOR
 	destroy_tcp_port_monitor_collection( info.p_tcp_port_monitor_collection );
 	info.p_tcp_port_monitor_collection = NULL;
+#endif
+#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
+        if ( info.xmms.thread && (destroy_xmms_thread()!=0) )
+        {
+            ERR("error destroying xmms thread");
+        }
 #endif
 }
 
@@ -4724,6 +4743,10 @@ static void set_default_configurations(void)
 #ifdef TCP_PORT_MONITOR
 	tcp_port_monitor_collection_args.min_port_monitors = MIN_PORT_MONITORS_DEFAULT;
 	tcp_port_monitor_args.min_port_monitor_connections = MIN_PORT_MONITOR_CONNECTIONS_DEFAULT;
+#endif
+
+#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
+	info.xmms.current_project=PROJECT_NONE;
 #endif
 }
 
@@ -4847,6 +4870,26 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 				CONF_ERR;
 		}
 #endif /* X11 */
+#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
+		CONF("xmms_player") {
+			if (value) {
+				if (strncmp(value,"none",4)==0)
+				    info.xmms.current_project=PROJECT_NONE;
+				else if (strncmp(value,"xmms",4)==0)
+				    info.xmms.current_project=PROJECT_XMMS;
+				else if (strncmp(value,"bmp",3)==0)
+				    info.xmms.current_project=PROJECT_BMP;
+				else if (strncmp(value,"audacious",9)==0)
+				    info.xmms.current_project=PROJECT_AUDACIOUS;
+				else if  (strncmp(value,"infopipe",8)==0)
+				    info.xmms.current_project=PROJECT_INFOPIPE;
+				else
+					CONF_ERR;
+			}
+			else
+				CONF_ERR;
+		}
+#endif
 #ifdef MPD
 		CONF("mpd_host") {
 			if (value)
@@ -5206,6 +5249,19 @@ int main(int argc, char **argv)
 	tcp_port_monitor_collection_args.min_port_monitors = MIN_PORT_MONITORS_DEFAULT;
 	tcp_port_monitor_args.min_port_monitor_connections = MIN_PORT_MONITOR_CONNECTIONS_DEFAULT;
 #endif
+
+#if defined(XMMS)
+	SET_XMMS_PROJECT_AVAILABLE(info.xmms.project_mask, PROJECT_XMMS);
+#endif
+#if defined(BMP)
+	SET_XMMS_PROJECT_AVAILABLE(info.xmms.project_mask, PROJECT_BMP);
+#endif
+#if defined(AUDACIOUS)
+	SET_XMMS_PROJECT_AVAILABLE(info.xmms.project_mask, PROJECT_AUDACIOUS);
+#endif
+#if defined(INFOPIPE)
+	SET_XMMS_PROJECT_AVAILABLE(info.xmms.project_mask, PROJECT_INFOPIPE);
+#endif
 		
 	/* handle command line parameters that don't change configs */
 #ifdef X11
@@ -5486,17 +5542,7 @@ int main(int argc, char **argv)
 	}
 
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
-	/* joinable thread for xmms activity */
-        pthread_attr_init(&info.xmms.thread_attr);
-	pthread_attr_setdetachstate(&info.xmms.thread_attr, PTHREAD_CREATE_JOINABLE);
-	/* init mutexex */
-	pthread_mutex_init(&info.xmms.item_mutex, NULL);
-	pthread_mutex_init(&info.xmms.runnable_mutex, NULL);
-	/* init runnable condition for worker thread */
-	pthread_mutex_lock(&info.xmms.runnable_mutex);
-	info.xmms.runnable=1;
-	pthread_mutex_unlock(&info.xmms.runnable_mutex);
-	if (pthread_create(&info.xmms.thread, &info.xmms.thread_attr, xmms_thread_func, NULL))
+	if ( (info.xmms.current_project > PROJECT_NONE) && (create_xmms_thread() !=0) )
 	{
 	    CRIT_ERR("unable to create xmms thread!");
 	}
@@ -5505,19 +5551,10 @@ int main(int argc, char **argv)
 	main_loop();
 
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
-        /* signal xmms worker thread to terminate */
-        pthread_mutex_lock(&info.xmms.runnable_mutex);
-        info.xmms.runnable=0;
-        pthread_mutex_unlock(&info.xmms.runnable_mutex);
-        /* destroy thread attribute and wait for thread */
-        pthread_attr_destroy(&info.xmms.thread_attr);
-        if (pthread_join(info.xmms.thread, NULL))
+	if ( info.xmms.thread && (destroy_xmms_thread()!=0) )
         {
-            ERR("error joining xmms thread");
+            ERR("error destroying xmms thread");
         }
-        /* destroy mutexes */
-        pthread_mutex_destroy(&info.xmms.item_mutex);
-        pthread_mutex_destroy(&info.xmms.runnable_mutex);
 #endif	
 
 	return 0;

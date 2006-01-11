@@ -42,6 +42,10 @@
 #include <machine/apm_bios.h>
 #endif /* __FreeBSD__ */
 
+#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
+#include "xmms.h"
+#endif
+
 #define TOP_CPU 1
 #define TOP_NAME 2
 #define TOP_PID 3
@@ -128,9 +132,10 @@ struct mpd_s {
 #endif
 
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
-#include "xmms.h"
 struct xmms_s {
-	xmms_t items;                  /* e.g. items[XMMS_STATUS] yields char[] */
+	unsigned int project_mask;
+	unsigned int current_project;
+	xmms_t items;                   /* e.g. items[XMMS_STATUS] yields char[] */
 	int runnable;                   /* used to signal worker thread to stop */
 	pthread_t thread;               /* worker thread for xmms updating */
 	pthread_attr_t thread_attr;     /* thread attributes */
