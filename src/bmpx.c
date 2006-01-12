@@ -94,15 +94,15 @@ fail:
 		if (error)
 			g_error_free(error);
 		if (current_info->bmpx.title) {
-			free(current_info->bmpx.title);
+			g_free(current_info->bmpx.title);
 			current_info->bmpx.title = 0;
 		}
 		if (current_info->bmpx.artist) {
-			free(current_info->bmpx.artist);
+			g_free(current_info->bmpx.artist);
 			current_info->bmpx.artist = 0;
 		}
 		if (current_info->bmpx.album) {
-			free(current_info->bmpx.album);
+			g_free(current_info->bmpx.album);
 			current_info->bmpx.album = 0;
 		}
 		current_info->bmpx.title = unknown;

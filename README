@@ -4,16 +4,16 @@ conky(1)							      conky(1)
 
 NAME
        conky - A system monitor for X originally based on the torsmo code, but
-       more kickass. It just keeps on given’er. Yeah.
+       more kickass. It just keeps on given'er. Yeah.
 
 SYNOPSIS
        conky [options]
 
 DESCRIPTION
        Conky is a system monitor for X originally based on  the	 torsmo	 code.
-       Since  it’s original conception, Conky has changed a fair bit from it’s
+       Since  it's original conception, Conky has changed a fair bit from it's
        predecessor.  Conky can display just about  anything,  either  on  your
-       root  desktop  or in it’s own window.  Conky has many built-in objects,
+       root  desktop  or in it's own window.  Conky has many built-in objects,
        as well as the ability to execute programs and  scripts,	 then  display
        the output from stdout.
 
@@ -28,11 +28,11 @@ COMPILING
        libraries installed.  This should be  a	package	 along	the  lines  of
        "libx11-dev or xorg-x11-dev".
 
-       Gentoo users -- Conky is in Gentoo’s Portage... simply use "emerge app-
+       Gentoo users -- Conky is in Gentoo's Portage... simply use "emerge app-
        admin/conky" for installation.  There is	 also  usually	an  up-to-date
-       ebuild within Conky’s package or in CVS.
+       ebuild within Conky's package or in CVS.
 
-       Debian,etc.  users  --  Conky will be in Debian’s repositories soon (by
+       Debian,etc.  users  --  Conky will be in Debian's repositories soon (by
        mid-September, hopefully), and then Ubuntu  shortly  thereafter.	 Until
        then, "dpkg -i" the .deb package to install.
 
@@ -43,10 +43,10 @@ COMPILING
 
        ./configure	      --prefix=/usr	       --mandir=/usr/share/man
        --infodir=/usr/share/info     --datadir=/usr/share    --sysconfdir=/etc
-       --localstatedir=/var/lib	  --enable-xft	 --enable-seti	 --enable-dou‐
+       --localstatedir=/var/lib	  --enable-xft	 --enable-seti	 --enable-dou-
        ble-buffer    --enable-own-window   --enable-proc-uptime	  --enable-mpd
-       --enable-mldonkey    --enable-x11    --enable-portmon	 --enable-bmpx
-       --enable-xmms=[project]
+       --enable-mldonkey    --enable-x11    --enable-portmon	 --enable-xmms
+       --enable-bmp --enable-audacious --enable-infopipe --enable-bmpx
 
        make
 
@@ -54,14 +54,14 @@ COMPILING
 
        src/conky
 
-       Conky probably doesn’t compile with compilers other than gcc  and  icc.
-       It  doesn’t  compile  with C89 compiler and not even with pure C99.  It
-       uses a few things that might not exist: strdup(),  strcasecmp(),	 strn‐
+       Conky probably doesn't compile with compilers other than gcc  and  icc.
+       It  doesn't  compile  with C89 compiler and not even with pure C99.  It
+       uses a few things that might not exist: strdup(),  strcasecmp(),	 strn-
        casecmp(),  optarg  variable  with getopt() and long long (not in C89).
-       Crashes in file system statistics stuff when compiled with icc, I don’t
+       Crashes in file system statistics stuff when compiled with icc, I don't
        know exactly why.
 
-       You  can disable ’drawing to own window’ feature in case you don’t need
+       You  can disable 'drawing to own window' feature in case you don't need
        it by passing --disable-own-window to configure -script.
 
 
@@ -72,14 +72,14 @@ YOU SHOULD KNOW
        rest of Conky.
 
        If  you	do use them, please do not complain about memory or CPU usage,
-       unless you think something’s seriously wrong (mem leak, etc.).
+       unless you think something's seriously wrong (mem leak, etc.).
 
        An easy way to force Conky to reload your ~/.conkyrc: "killall -SIGUSR1
        conky".	Saves you the trouble of having to kill and then restart.
 
        IMPORTANT:  For	previous Conky users, Conky 1.3 no longer supports the
        metar stuff.  mdsplib was causing  way  too  many  problems.  Hopefully
-       there’ll be a better solution in Conky 2.x...
+       there'll be a better solution in Conky 2.x...
 
 OPTIONS
        Command	line  options override configurations defined in configuration
@@ -114,7 +114,7 @@ OPTIONS
 
 
        -t TEXT
-	      Text to render, remember single quotes, like -t ’ $uptime ’
+	      Text to render, remember single quotes, like -t ' $uptime '
 
 
        -u SECONDS
@@ -136,14 +136,14 @@ OPTIONS
 CONFIGURATION SETTINGS
        Default configuration file  is  $HOME/.conkyrc  (can  be	 changed  from
        conky.c	among  other  things).	See conkyrc.sample. If installing from
-       Debian package, this should be in /usr/share/doc/conky/examples	("gun‐
+       Debian package, this should be in /usr/share/doc/conky/examples	("gun-
        zip conkyrc.sample.gz" to get conkyrc.sample).
 
        You  might  want	 to copy it to $HOME/.conkyrc and then start modifying
        it.  Other configs can be found at http://conky.sf.net
 
        alignment
-	      Aligned position on screen, may  be  top_left,  top_right,  bot‐
+	      Aligned position on screen, may  be  top_left,  top_right,  bot-
 	      tom_left, bottom_right, or none
 
 
@@ -173,7 +173,7 @@ CONFIGURATION SETTINGS
 
 
        default_shade_color
-	      Default shading color and border’s shading color
+	      Default shading color and border's shading color
 
 
        default_outline_color
@@ -181,8 +181,8 @@ CONFIGURATION SETTINGS
 
 
        double_buffer
-	      Use the Xdbe extension? (eliminates flicker) It is highly recom‐
-	      mended to use own window with this one so double buffer won’t be
+	      Use the Xdbe extension? (eliminates flicker) It is highly recom-
+	      mended to use own window with this one so double buffer won't be
 	      so big.
 
 
@@ -227,6 +227,16 @@ CONFIGURATION SETTINGS
 
        minimum_size width (height)
 	      Minimum size of window
+
+
+       min_port_monitors
+	      Allow for the creation of at least this number of port  monitors
+	      (if 0 or not set, default is 16)
+
+
+       min_port_monitor_connections
+	      Allow  each port monitor to track at least this many connections
+	      (if 0 or not set, default is 256)
 
 
        mldonkey_hostname
@@ -314,14 +324,10 @@ CONFIGURATION SETTINGS
 	      Use Xft (anti-aliased font and stuff)
 
 
-       min_port_monitors
-	      Allow  for the creation of at least this number of port monitors
-	      (if 0 or not set, default is 16)
-
-
-       min_port_monitor_connections
-	      Allow each port monitor to track at least this many  connections
-	      (if 0 or not set, default is 256)
+       xmms_player
+	      Use specified player/plugin for the xmms status variables. Valid
+	      items are: none, xmms, bmp, audacious and infopipe. (default  is
+	      none). Note that bmpx is currently handled separately.
 
 
        TEXT   After this begins text to be formatted on screen
@@ -330,7 +336,7 @@ CONFIGURATION SETTINGS
 VARIABLES
        Colors  are  parsed using XParsecolor(), there might be a list of them:
        /usr/X11R6/lib/X11/rgb.txt.   Also,   http://sedition.com/perl/rgb.html
-       [http://sedition.com/perl/rgb.html].  Color can be also in #rrggbb for‐
+       [http://sedition.com/perl/rgb.html].  Color can be also in #rrggbb for-
        mat (hex).  Note that when displaying bytes, power is 1024 and not 1000
        so 1M really means 1024*1024 bytes and not 1000*1000.
 
@@ -430,7 +436,7 @@ VARIABLES
 
 
        cpubar (cpu number) (height),(width)
-	      Bar  that shows CPU usage, height is bar’s height in pixels. See
+	      Bar  that shows CPU usage, height is bar's height in pixels. See
 	      $cpu for more info on SMP.
 
 
@@ -467,8 +473,8 @@ VARIABLES
 
 
        exec command
-	      Executes a shell command and displays the output in conky. warn‐
-	      ing: this takes a lot more resources than other  variables.  I’d
+	      Executes a shell command and displays the output in conky. warn-
+	      ing: this takes a lot more resources than other  variables.  I'd
 	      recommend coding wanted behaviour in C and posting a patch.
 
 
@@ -483,7 +489,7 @@ VARIABLES
 
 
        execi interval command
-	      Same  as exec but with specific interval. Interval can’t be less
+	      Same  as exec but with specific interval. Interval can't be less
 	      than update_interval in configuration. See also $texeci
 
 
@@ -540,7 +546,7 @@ VARIABLES
 
        head logfile lines (interval)
 	      Displays	first  N lines of supplied text text file. If interval
-	      is not supplied, Conky assumes 2x Conky’s interval.  Max	of  30
+	      is not supplied, Conky assumes 2x Conky's interval.  Max	of  30
 	      lines can be displayed, or until the text buffer is filled.
 
 
@@ -585,7 +591,7 @@ VARIABLES
 
        i8k_left_fan_rpm
 	      If running the i8k kernel driver for Inspiron laptops,  displays
-	      the  left	 fan’s	rate of rotation, in revolutions per minute as
+	      the  left	 fan's	rate of rotation, in revolutions per minute as
 	      listed in /proc/i8k. Beware, some laptops i8k reports these fans
 	      in reverse order.
 
@@ -599,7 +605,7 @@ VARIABLES
 
        i8k_right_fan_rpm
 	      If running the i8k kernel driver for Inspiron laptops,  displays
-	      the  right  fan’s rate of rotation, in revolutions per minute as
+	      the  right  fan's rate of rotation, in revolutions per minute as
 	      listed in /proc/i8k. Beware, some laptops i8k reports these fans
 	      in reverse order.
 
@@ -680,7 +686,7 @@ VARIABLES
 
 
        mpd_bar (height),(width)
-	      Bar of mpd’s progress
+	      Bar of mpd's progress
 
 
        mpd_bitrate
@@ -696,19 +702,19 @@ VARIABLES
 
 
        mpd_vol
-	      MPD’s volume
+	      MPD's volume
 
 
        mpd_elapsed
-	      Song’s elapsed time
+	      Song's elapsed time
 
 
        mpd_length
-	      Song’s length
+	      Song's length
 
 
        mpd_percent
-	      Percent of song’s progress
+	      Percent of song's progress
 
 
        mpd_random
@@ -801,7 +807,7 @@ VARIABLES
 
 	      Examples:
 
-	      ${tcp_portmon 6881 6999 count} - displays the number of  connec‐
+	      ${tcp_portmon 6881 6999 count} - displays the number of  connec-
 	      tions in the bittorrent port range
 
 	      ${tcp_portmon  22 22 rip 0} - displays the remote host ip of the
@@ -820,7 +826,7 @@ VARIABLES
 	      name of the fifteenth connection in the range of all ports
 
 	      Note that port monitor variables which share the same port range
-	      actually refer to the same monitor, so many references to a sin‐
+	      actually refer to the same monitor, so many references to a sin-
 	      gle port range for different items and different indexes all use
 	      the  same monitor internally. In other words, the program avoids
 	      creating redundant monitors.
@@ -828,7 +834,7 @@ VARIABLES
        texeci interval command
 	      Runs a command at an interval inside a thread and	 displays  the
 	      output.  Same  as	 $execi,  except  the  command is run inside a
-	      thread. Use this if you have a slow script to keep Conky	updat‐
+	      thread. Use this if you have a slow script to keep Conky	updat-
 	      ing.  You should make the interval slightly longer then the time
 	      it takes your script to execute. For  example,  if  you  have  a
 	      script  that  take  5  seconds  to  execute, you should make the
@@ -841,18 +847,18 @@ VARIABLES
 
        tail logfile lines (interval)
 	      Displays last N lines of supplied text text file. If interval is
-	      not supplied, Conky assumes 2x Conky’s interval. Max of 30 lines
+	      not supplied, Conky assumes 2x Conky's interval. Max of 30 lines
 	      can be displayed, or until the text buffer is filled.
 
 
        time (format)
-	      Local time, see man strftime to get more information about  for‐
+	      Local time, see man strftime to get more information about  for-
 	      mat
 
 
        totaldown net
 	      Total  download, overflows at 4 GB on Linux with 32-bit arch and
-	      there doesn’t seem to be a way to know how  many	times  it  has
+	      there doesn't seem to be a way to know how  many	times  it  has
 	      already done that before conky has started.
 
 
@@ -967,7 +973,7 @@ VARIABLES
 
 
        xmms_status
-	      xmms  /  bmp  /  audacious  /  infopipe:	player	status	(Play‐
+	      xmms  /  bmp  /  audacious  /  infopipe:	player	status	(Play-
 	      ing/Paused/Stopped/Not running)
 
 
@@ -976,7 +982,7 @@ VARIABLES
 
 
 EXAMPLES
-       conky -t ’${time %D %H:%m}’ -o -u 30
+       conky -t '${time %D %H:%m}' -o -u 30
 	      Start Conky in its own window with date and clock as text and 30
 	      sec update interval.
 
@@ -987,9 +993,9 @@ FILES
        ~/.conkyrc default configuration file
 
 BUGS
-       Drawing to root or some other desktop window directly doesn’t work with
-       all window managers. Especially doesn’t work well with Gnome and it has
-       been  reported  that  it	 doesn’t work with KDE either. Nautilus can be
+       Drawing to root or some other desktop window directly doesn't work with
+       all window managers. Especially doesn't work well with Gnome and it has
+       been  reported  that  it	 doesn't work with KDE either. Nautilus can be
        disabled from drawing to desktop	 with  program	gconf-editor.  Uncheck
        show_desktop  in	 /apps/nautilus/preferences/.  There  is  -w switch in
        Conky to set some specific window id. You  might	 find  xwininfo	 -tree
@@ -999,13 +1005,13 @@ BUGS
 SEE ALSO
        http://conky.sourceforge.net [http://conky.sourceforge.net]
 
-       http://www.sourceforge.net/projects/conky	   [http://www.source‐
+       http://www.sourceforge.net/projects/conky	   [http://www.source-
        forge.net/projects/conky]
 
        #conky on irc.freenode.net
 
 AUTHORS
-       The Conky dev team. What’s up now!
+       The Conky dev team. What's up now!
 
 
 
