@@ -52,7 +52,7 @@ enum _infopipe_keys {
         INFOPIPE_USEC_POSITION,
         INFOPIPE_POSITION,
         INFOPIPE_USEC_TIME,
-        INFOPIPE_TIME,
+	INFOPIPE_TIME,
         INFOPIPE_BITRATE,
         INFOPIPE_FREQUENCY,
         INFOPIPE_CHANNELS,
@@ -60,6 +60,14 @@ enum _infopipe_keys {
         INFOPIPE_FILE
 };
 #endif
+
+static char *xmms_project_name[] = {
+        "none",
+        "xmms",
+        "bmp",
+        "audacious",
+        "infopipe"
+};
 
 
 /* access to this item array is synchronized with mutexes */
@@ -90,8 +98,10 @@ void update_xmms(void)
 int create_xmms_thread(void)
 {
     /* Was an an available project requested? */
-    if (!TEST_XMMS_PROJECT_AVAILABLE(info.xmms.project_mask, info.xmms.current_project))
+    if (!TEST_XMMS_PROJECT_AVAILABLE(info.xmms.project_mask, info.xmms.current_project)) {
+	fprintf(stderr, "xmms_player '%s' not configured\n", xmms_project_name[info.xmms.current_project]);
         return(-1);
+    }
     
     /* The project should not be PROJECT_NONE */
     if (info.xmms.current_project==PROJECT_NONE)
@@ -157,6 +167,16 @@ int destroy_xmms_thread(void)
 }
 
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS)
+void check_dlerror(void)
+{
+    const char *error;
+
+    if ((error = dlerror()) != NULL) {
+        ERR("error grabbing function symbol");
+        pthread_exit(NULL);
+    }
+}
+
 /* ------------------------------------------------------------
  * Worker thread function for XMMS/BMP/Audacious data sampling.
  * ------------------------------------------------------------ */ 
@@ -220,10 +240,8 @@ void *xmms_thread_func_dynamic(void *pvoid)
 
     /* Grab the function pointers from the library */
     xmms_remote_is_running = dlsym(handle, "xmms_remote_is_running");
-    if ((error = dlerror()) != NULL) {
-        ERR("error grabbing function symbol");
-	pthread_exit(NULL);
-    }
+    check_dlerror();
+
     xmms_remote_is_paused = dlsym(handle, "xmms_remote_is_paused");
     if ((error = dlerror()) != NULL) {
         ERR("error grabbing function symbol");

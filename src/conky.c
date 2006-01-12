@@ -4569,13 +4569,13 @@ void reload_config(void)
                 if (info.xmms.thread) {
                     if (destroy_xmms_thread()!=0)
                     {
-                        ERR("error destroying xmms thread");
+                        ERR("error destroying xmms_player thread");
                     }
 		}
                 if ( (!info.xmms.thread) && (info.xmms.current_project > PROJECT_NONE) && 
 		     (create_xmms_thread() !=0) )
                     {
-                        CRIT_ERR("unable to create xmms thread!");
+                        CRIT_ERR("unable to create xmms_player thread!");
                     }
 #endif
 		extract_variable_text(text);
@@ -4634,7 +4634,7 @@ void clean_up(void)
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
         if ( info.xmms.thread && (destroy_xmms_thread()!=0) )
         {
-            ERR("error destroying xmms thread");
+            ERR("error destroying xmms_player thread");
         }
 #endif
 }
@@ -5544,7 +5544,7 @@ int main(int argc, char **argv)
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
 	if ( (info.xmms.current_project > PROJECT_NONE) && (create_xmms_thread() !=0) )
 	{
-	    CRIT_ERR("unable to create xmms thread!");
+	    CRIT_ERR("unable to create xmms_player thread!");
 	}
 #endif
 
@@ -5553,7 +5553,7 @@ int main(int argc, char **argv)
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
 	if ( info.xmms.thread && (destroy_xmms_thread()!=0) )
         {
-            ERR("error destroying xmms thread");
+            ERR("error destroying xmms_player thread");
         }
 #endif	
 
