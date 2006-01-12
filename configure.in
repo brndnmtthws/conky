@@ -102,8 +102,9 @@ case x$want_xmms in
                                                                 [want_xmms=no])])
                 if test x$want_xmms = xyes; then
                      CFLAGS="$CFLAGS $XMMS_CFLAGS"
-                     ### do not link to glib 1.2 ### 
-                     ### LIBS="$LIBS $XMMS_LIBS"
+		     ### if we link to glib 1.2, that means 2.0 wasn't found ###
+		     ### if we link to glib 2.0, that's ok, we will load libglib-1.2.so.0 dynamically ###
+                     LIBS="$LIBS $XMMS_LIBS"
                      AC_DEFINE(XMMS, 1, [Define for XMMS Ver. 1 support])
                 fi
             fi
@@ -113,8 +114,9 @@ case x$want_xmms in
         ## its ok to favor the glib 2.0 headers over 1.2 for our purposes ##
 	PKG_CHECK_MODULES([XMMS], [glib-2.0], [], [PKG_CHECK_MODULES([XMMS], [glib-1.2])])
         CFLAGS="$CFLAGS $XMMS_CFLAGS"
-        ### do not link to glib 1.2 ###
-        ### LIBS="$LIBS $XMMS_LIBS" ###
+	### if we link to glib 1.2, that means 2.0 wasn't found ###
+	### if we link to glib 2.0, that's ok, we will load libglib-1.2.so.0 dynamically ###
+        LIBS="$LIBS $XMMS_LIBS"
         AC_CHECK_HEADERS([dlfcn.h], [],
              [AC_MSG_ERROR(["dlfcn.h not found: dynamic library loading not supported"])])
         AC_CHECK_LIB(dl, dlopen, [LIBS="$LIBS -ldl"],
