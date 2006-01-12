@@ -169,7 +169,7 @@ int destroy_xmms_thread(void)
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS)
 void check_dlerror(void)
 {
-    const char *error;
+    static const char *error;
 
     if ((error = dlerror()) != NULL) {
         ERR("error grabbing function symbol");
@@ -243,50 +243,30 @@ void *xmms_thread_func_dynamic(void *pvoid)
     check_dlerror();
 
     xmms_remote_is_paused = dlsym(handle, "xmms_remote_is_paused");
-    if ((error = dlerror()) != NULL) {
-        ERR("error grabbing function symbol");
-	pthread_exit(NULL);
-    }
+    check_dlerror();
+
     xmms_remote_is_playing = dlsym(handle, "xmms_remote_is_playing");
-    if ((error = dlerror()) != NULL) {
-        ERR("error grabbing function symbol");
-	pthread_exit(NULL);
-    }
+    check_dlerror();
+
     xmms_remote_get_playlist_pos = dlsym(handle, "xmms_remote_get_playlist_pos");
-    if ((error = dlerror()) != NULL) {
-        ERR("error grabbing function symbol");
-	pthread_exit(NULL);
-    }
+    check_dlerror();
+
     xmms_remote_get_playlist_title = dlsym(handle, "xmms_remote_get_playlist_title");
-    if ((error = dlerror()) != NULL) {
-        ERR("error grabbing function symbol");
-	pthread_exit(NULL);
-    }
+    check_dlerror();
+
     xmms_remote_get_playlist_time = dlsym(handle, "xmms_remote_get_playlist_time");
-    if ((error = dlerror()) != NULL) {
-        ERR("error grabbing function symbol");
-	pthread_exit(NULL);
-    }
+    check_dlerror();
+
     xmms_remote_get_output_time = dlsym(handle, "xmms_remote_get_output_time");
-    if ((error = dlerror()) != NULL) {
-        ERR("error grabbing function symbol");
-	pthread_exit(NULL);
-    }
+    check_dlerror();
+
     xmms_remote_get_info = dlsym(handle, "xmms_remote_get_info");
-    if ((error = dlerror()) != NULL) {
-        ERR("error grabbing function symbol");
-	pthread_exit(NULL);
-    }
+
     xmms_remote_get_playlist_file = dlsym(handle, "xmms_remote_get_playlist_file");
-    if ((error = dlerror()) != NULL) {
-        ERR("error grabbing function symbol");
-	pthread_exit(NULL);
-    }
+    check_dlerror();
+
     xmms_remote_get_playlist_length = dlsym(handle, "xmms_remote_get_playlist_length");
-    if ((error = dlerror()) != NULL) {
-        ERR("error grabbing function symbol");
-	pthread_exit(NULL);
-    }
+    check_dlerror();
 
     /* Grab the runnable signal.  Should be non-zero here or we do nothing. */
     pthread_mutex_lock(&info.xmms.runnable_mutex);
