@@ -210,7 +210,7 @@ void *xmms_thread_func_dynamic(void *pvoid)
     glib_v1_2_handle=NULL;
     g_free_v1_2=NULL;
 
-    /* Conky likely be linked to libglib-2.0.so and not libglib-1.2.so.0.  If conky is receiving
+    /* Conky will likely be linked to libglib-2.0.so and not libglib-1.2.so.0.  If conky is receiving
      * gchar * data from xmms, these strings need to be freed using g_free() from libglib-1.2.so.0.
      * This macro selects the g_free() from the correct library. */
     #define G_FREE(mem) (info.xmms.current_project==PROJECT_XMMS ? (*g_free_v1_2)(mem) : g_free(mem))
