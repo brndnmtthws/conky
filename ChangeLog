@@ -1,5 +1,11 @@
 # $Id$
 
+2006-01-11
+	* Added xmms version 1 support.
+	* Added bmp through 0.9.7.1 support.
+	* Added config item xmms_player: none, xmms, bmp, audacious or
+	infopipe.
+
 2006-01-07
 	* Added Audacious media player support.
 
