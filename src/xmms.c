@@ -99,7 +99,7 @@ int create_xmms_thread(void)
 {
     /* Was an an available project requested? */
     if (!TEST_XMMS_PROJECT_AVAILABLE(info.xmms.project_mask, info.xmms.current_project)) {
-	fprintf(stderr, "xmms_player '%s' not configured\n", xmms_project_name[info.xmms.current_project]);
+	ERR("xmms_player '%s' not configured", xmms_project_name[info.xmms.current_project]);
         return(-1);
     }
     
@@ -182,8 +182,7 @@ void check_dlerror(void)
  * ------------------------------------------------------------ */ 
 void *xmms_thread_func_dynamic(void *pvoid)
 {
-    void *handle;
-    const char *error;
+    void *handle,*glib_v1_2_handle;
     int runnable;
     static xmms_t items;
     gint session,playpos,frames,length;
@@ -191,6 +190,7 @@ void *xmms_thread_func_dynamic(void *pvoid)
     gchar *psong,*pfilename;
 
     /* Function pointers for the functions we load dynamically */
+    void (*g_free_v1_2)(gpointer mem);
     gboolean (*xmms_remote_is_running)(gint session);
     gboolean (*xmms_remote_is_paused)(gint session);
     gboolean (*xmms_remote_is_playing)(gint session);
@@ -206,10 +206,25 @@ void *xmms_thread_func_dynamic(void *pvoid)
     session=0;
     psong=NULL;
     pfilename=NULL;
+    handle=NULL;
+    glib_v1_2_handle=NULL;
+    g_free_v1_2=NULL;
+
+    /* If g_char *'s are coming from libglib-1.2.so, we need to free them with the g_free()
+     * function from that library.  This macro selects the g_free() from the correct lib. */
+    #define G_FREE(mem) (info.xmms.current_project==PROJECT_XMMS ? (*g_free_v1_2)(mem) : g_free(mem))
 
     switch(info.xmms.current_project) {
 
     case (PROJECT_XMMS) :
+	    glib_v1_2_handle = dlopen("libglib-1.2.so.0", RTLD_LAZY);
+	    if (!glib_v1_2_handle) {
+		ERR("unable to open libglib-1.2.so");
+		pthread_exit(NULL);
+	    }
+	    g_free_v1_2=dlsym(glib_v1_2_handle, "g_free");
+	    check_dlerror();
+
 	    handle = dlopen("libxmms.so", RTLD_LAZY);
 	    if (!handle) {
 	        ERR("unable to open libxmms.so");
@@ -297,7 +312,7 @@ void *xmms_thread_func_dynamic(void *pvoid)
             psong = (*xmms_remote_get_playlist_title)(session, playpos);
             if (psong) {
                 strncpy(items[XMMS_TITLE],psong,sizeof(items[XMMS_TITLE])-1);
-                g_free(psong);
+                G_FREE(psong);
                 psong=NULL;
             }
 
@@ -335,7 +350,7 @@ void *xmms_thread_func_dynamic(void *pvoid)
             pfilename = (*xmms_remote_get_playlist_file)(session,playpos);
             if (pfilename) {
                 strncpy(items[XMMS_FILENAME],pfilename,sizeof(items[XMMS_FILENAME])-1);
-                g_free(pfilename);
+                G_FREE(pfilename);
                 pfilename=NULL;
             }
 
@@ -362,7 +377,11 @@ void *xmms_thread_func_dynamic(void *pvoid)
         sleep(1);
     }
 
-    dlclose(handle);
+    if (handle)
+        dlclose(handle);
+    if (glib_v1_2_handle)
+	dlclose(glib_v1_2_handle);
+
     pthread_exit(NULL);
 }
 #endif
