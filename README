@@ -324,6 +324,10 @@ CONFIGURATION SETTINGS
 	      Use Xft (anti-aliased font and stuff)
 
 
+       wm_class_name
+	      Manually set the WM_CLASS name. Defaults to "conky".
+
+
        xmms_player
 	      Use specified player/plugin for the xmms status variables. Valid
 	      items are: none, xmms, bmp, audacious and infopipe. (default  is
