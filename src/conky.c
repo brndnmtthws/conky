@@ -282,8 +282,6 @@ static char original_text[] =
     " / $color${fs_free /}/${fs_size /} ${fs_bar 6 /}\n"
     "${color grey}Networking:\n"
     " Up:$color ${upspeed eth0} k/s${color grey} - Down:$color ${downspeed eth0} k/s\n"
-    "${color grey}Temperatures:\n"
-    " CPU:$color ${i2c temp 1}°C${color grey} - MB:$color ${i2c temp 2}°C\n"
     "$hr\n"
 #ifdef SETI
     "${color grey}SETI@Home Statistics:\n"
