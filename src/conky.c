@@ -930,7 +930,6 @@ struct text_object {
 		struct net_stat *net;
 		struct fs_stat *fs;
 		unsigned char loadavg[3];
-		//unsigned int diskio;
 		unsigned int cpu_index;
 		struct {
 			struct fs_stat *fs;
@@ -1146,7 +1145,7 @@ void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
 
 
 /* construct_text_object() creates a new text_object */
-static struct text_object *construct_text_object(const char *s, const char *arg)
+static struct text_object *construct_text_object(const char *s, const char *arg, unsigned int object_count, struct text_object *text_objects)
 {
     //struct text_object *obj = new_text_object();
     struct text_object *obj = new_text_object_internal();
@@ -1257,22 +1256,19 @@ if (s[0] == '#') {
 			obj->b = 25;
 		}
 	}
-	END OBJ(
-		       else
-		       , 0)
+	END OBJ(else, 0)
 	if (blockdepth) {
-		text_objects[blockstart[blockdepth - 1] -
-			     1].data.ifblock.pos = text_object_count;
-		blockstart[blockdepth - 1] = text_object_count;
-		obj->data.ifblock.pos = text_object_count + 2;
+		(text_objects[blockstart[blockdepth - 1]]).data.ifblock.pos = object_count;
+		blockstart[blockdepth - 1] = object_count;
+		obj->data.ifblock.pos = object_count + 2;
 	} else {
 		ERR("$else: no matching $if_*");
 	}
 	END OBJ(endif, 0)
 	if (blockdepth) {
+		printf("blockdepth is %i and blockstart[blockdepth] is %i and object_count is %i\n", blockdepth, blockstart[blockdepth - 1], object_count);
 		blockdepth--;
-		text_objects[blockstart[blockdepth] - 1].data.ifblock.pos =
-		    text_object_count;
+		text_objects[blockstart[blockdepth]].data.ifblock.pos = object_count;
 	} else {
 		ERR("$endif: no matching $if_*");
 	}
@@ -1631,8 +1627,8 @@ if (s[0] == '#') {
 		obj->data.ifblock.s = 0;
 	} else
 		obj->data.ifblock.s = strdup(arg);
-	blockstart[blockdepth] = text_object_count;
-	obj->data.ifblock.pos = text_object_count + 2;
+	blockstart[blockdepth] = object_count;
+	obj->data.ifblock.pos = object_count + 2;
 	blockdepth++;
 	END OBJ(if_mounted, 0)
 	if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
@@ -1643,9 +1639,10 @@ if (s[0] == '#') {
 		obj->data.ifblock.s = 0;
 	} else
 		obj->data.ifblock.s = strdup(arg);
-	blockstart[blockdepth] = text_object_count;
-	obj->data.ifblock.pos = text_object_count + 2;
+	blockstart[blockdepth] = object_count;
+	obj->data.ifblock.pos = object_count + 2;
 	blockdepth++;
+	printf("blockdepth is %i and blockstart[blockdepth] is %i and object_count is %i\n", blockdepth, blockstart[blockdepth - 1], object_count);
 	END OBJ(if_running, 0)
 	if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
 		CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
@@ -1658,8 +1655,8 @@ if (s[0] == '#') {
 		ERR("if_running needs an argument");
 		obj->data.ifblock.s = 0;
 	}
-	blockstart[blockdepth] = text_object_count;
-	obj->data.ifblock.pos = text_object_count + 2;
+	blockstart[blockdepth] = object_count;
+	obj->data.ifblock.pos = object_count + 2;
 	blockdepth++;
 	END OBJ(kernel, 0)
 	END OBJ(machine, 0)
@@ -2039,7 +2036,7 @@ static struct text_object_list *extract_variable_text_internal(const char *p)
 					}
 
 					// create new object
-					obj = construct_text_object(buf, arg);
+					obj = construct_text_object(buf, arg, retval->text_object_count, retval->text_objects);
 					if(obj != NULL) {
 					    // allocate memory for the object
 					    retval->text_objects = realloc(retval->text_objects, 
