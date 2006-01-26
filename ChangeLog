@@ -1,8 +1,15 @@
 # $Id$
 
+2006-01-26
+	* Added freedesktop.org extended window manager hints (EWMH)
+	for window type NORMAL and state's STICKY/SKIP_PAGER/SKIP_TASKBAR.
+	Fixes stacking order issues with freedesktop-compliant wm's,
+	such as XFCE4+. 
+
 2006-01-25
 	* Fixed stupid graph code (it still sucks) sf.net bug 1372962
 	* Fixed $if_* stuff, sf.net bug 1401338 and 1400854
+	* Fixed xmms.c code to load glib 1.2 shared object lib.
 
 2006-01-11
 	* Added xmms version 1 support.
