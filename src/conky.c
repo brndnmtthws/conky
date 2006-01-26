@@ -2695,26 +2695,29 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				if ((obj->data.ifblock.s)
 				    && (stat(obj->data.ifblock.s, &tmp) ==
 					-1)) {
-					i = obj->data.ifblock.pos - 2;
+					i = obj->data.ifblock.pos;
 					if_jumped = 1;
-				} else
+				} else {
 					if_jumped = 0;
+				}
 			}
 			OBJ(if_mounted) {
 				if ((obj->data.ifblock.s)
 				    && (!check_mount(obj->data.ifblock.s))) {
-					i = obj->data.ifblock.pos - 2;
+					i = obj->data.ifblock.pos;
 					if_jumped = 1;
-				} else
+				} else {
 					if_jumped = 0;
+				}
 			}
 			OBJ(if_running) {
 				if ((obj->data.ifblock.s)
 				    && system(obj->data.ifblock.s)) {
-					i = obj->data.ifblock.pos - 2;
+					i = obj->data.ifblock.pos;
 					if_jumped = 1;
-				} else
+				} else {
 					if_jumped = 0;
+				}
 			}
 			OBJ(kernel) {
 				snprintf(p, p_max_size, "%s", cur->uname_s.release);
