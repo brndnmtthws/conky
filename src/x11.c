@@ -251,17 +251,47 @@ void init_window(int own_window, int w, int h, int l, int set_trans, int back_co
 						1);
 			}
 
-			/* PHK: Set EWMH _NET_WM_WINDOW_TYPE to _NET_WM_WINDOW_TYPE_UTILITY. 
-                           This addresses the issue where conky can disappear under the desktop
-                           while running in its own window with property on_bottom=yes and the 
-                           desktop gets raised over it.  As a utility window, this wont happen. 
-                        */
+			/* PHK: Use EWMH window type NORMAL for _NET_WM_WINDOW_TYPE. 
+                           For XFCE 4+, keeps the window from going under the desktop. */
 			a = XInternAtom(display, "_NET_WM_WINDOW_TYPE", True);
 			if (a != None) {
-				Atom prop = XInternAtom(display, "_NET_WM_WINDOW_TYPE_UTILITY", True);
+				Atom prop = XInternAtom(display, "_NET_WM_WINDOW_TYPE_NORMAL", True);
 				XChangeProperty(display, window.window, a,
 						XA_ATOM, 32,
 						PropModeReplace,
+						(unsigned char *) &prop,
+						1);
+			}
+
+			/* PHK: Add EWMH hint STICKY to _NET_WM_STATE */
+			a = XInternAtom(display, "_NET_WM_STATE", True);
+			if (a != None) {
+				Atom prop = XInternAtom(display, "_NET_WM_STATE_STICKY", True);
+				XChangeProperty(display, window.window, a,
+						XA_ATOM, 32,
+						PropModeAppend,
+						(unsigned char *) &prop,
+						1);
+			}
+
+			/* PHK: Add EWMH hint SKIP_TASKBAR to _NET_WM_STATE */
+			a = XInternAtom(display, "_NET_WM_STATE", True);
+			if (a != None) {
+				Atom prop = XInternAtom(display, "_NET_WM_STATE_SKIP_TASKBAR", True);
+				XChangeProperty(display, window.window, a,
+						XA_ATOM, 32,
+						PropModeAppend,
+						(unsigned char *) &prop,
+						1);
+			}
+
+			/* PHK: Add EWMH hint SKIP_PAGER to _NET_WM_STATE */
+			a = XInternAtom(display, "_NET_WM_STATE", True);
+			if (a != None) {
+				Atom prop = XInternAtom(display, "_NET_WM_STATE_SKIP_PAGER", True);
+				XChangeProperty(display, window.window, a,
+						XA_ATOM, 32,
+						PropModeAppend,
 						(unsigned char *) &prop,
 						1);
 			}
@@ -276,6 +306,16 @@ void init_window(int own_window, int w, int h, int l, int set_trans, int back_co
             						PropModeReplace,
             						(unsigned char *) &prop, 1);
          			}
+				/* PHK: also append EWMH hint for BELOW also */
+				a = XInternAtom(display, "_NET_WM_STATE", True);
+				if (a != None) {
+					Atom prop = XInternAtom(display, "_NET_WM_STATE_BELOW", True);
+					XChangeProperty(display, window.window, a,
+						XA_ATOM, 32,
+						PropModeAppend,
+						(unsigned char *) &prop,
+						1);
+				}
 			}
 		}
 
