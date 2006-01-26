@@ -250,16 +250,32 @@ void init_window(int own_window, int w, int h, int l, int set_trans, int back_co
 						(unsigned char *) &prop,
 						1);
 			}
+
+			/* PHK: Set EWMH _NET_WM_WINDOW_TYPE to _NET_WM_WINDOW_TYPE_UTILITY. 
+                           This addresses the issue where conky can disappear under the desktop
+                           while running in its own window with property on_bottom=yes and the 
+                           desktop gets raised over it.  As a utility window, this wont happen. 
+                        */
+			a = XInternAtom(display, "_NET_WM_WINDOW_TYPE", True);
+			if (a != None) {
+				Atom prop = XInternAtom(display, "_NET_WM_WINDOW_TYPE_UTILITY", True);
+				XChangeProperty(display, window.window, a,
+						XA_ATOM, 32,
+						PropModeReplace,
+						(unsigned char *) &prop,
+						1);
+			}
+
 			if(l) {
-			/* make sure the layer is on the bottom */
-         a = XInternAtom(display, "_WIN_LAYER", True);
-         if (a != None) {
-            long prop = 0;
-            XChangeProperty(display, window.window, a,
-            XA_CARDINAL, 32,
-            PropModeReplace,
-            (unsigned char *) &prop, 1);
-         }
+				/* make sure the layer is on the bottom */
+         			a = XInternAtom(display, "_WIN_LAYER", True);
+         			if (a != None) {
+            				long prop = 0;
+            				XChangeProperty(display, window.window, a,
+            						XA_CARDINAL, 32,
+            						PropModeReplace,
+            						(unsigned char *) &prop, 1);
+         			}
 			}
 		}
 
