@@ -219,10 +219,10 @@ void *xmms_thread_func_dynamic(void *pvoid)
 
     case (PROJECT_XMMS) :
 	    /* make an effort to find the glib 1.2 shared lib */
-	    glib_v1_2_handle = dlopen("libglib-1.2.so.0", RTLD_LAZY) ||
-		    	       dlopen("libglib12.so", RTLD_LAZY) ||
-			       dlopen("libglib.so", RTLD_LAZY);
-	    if (!glib_v1_2_handle) {
+	    if ( ((glib_v1_2_handle = dlopen("libglib-1.2.so.0", RTLD_LAZY))==NULL) &&
+		 ((glib_v1_2_handle = dlopen("libglib12.so", RTLD_LAZY))==NULL) &&
+		 ((glib_v1_2_handle = dlopen("libglib.so", RTLD_LAZY))==NULL) )
+	    {
 		ERR("unable to find glib 1.2 shared object lib!");
 		pthread_exit(NULL);
 	    }
