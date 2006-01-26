@@ -558,7 +558,7 @@ VARIABLES
 	      Horizontal line, height is the height in pixels
 
 
-       i2c (dev), type, n
+       i2c (dev) type n
 	      I2C  sensor  from	 sysfs	(Linux 2.6). dev may be omitted if you
 	      have only one I2C device. type is either	in  (or	 vol)  meaning
 	      voltage, fan meaning fan or temp/tempf (first in C, second in F)

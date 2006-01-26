@@ -522,9 +522,9 @@ inline void graph_append(struct special_t *graph, double f)
 	if (graph->scaled) {
 		graph->graph_scale = 1;
 	}
-	graph->graph[graph->graph_width - 1] = f; /* add new data */
-	for (i = 0; i < graph->graph_width - 1; i++) { /* shift all the data by 1 */
-		graph->graph[i] = graph->graph[i + 1];
+	graph->graph[0] = f; /* add new data */
+	for (i = graph->graph_width - 1; i > 0; i--) { /* shift all the data by 1 */
+		graph->graph[i] = graph->graph[i - 1];
 		if (graph->scaled && graph->graph[i] > graph->graph_scale) {
 			graph->graph_scale = graph->graph[i]; /* check if we need to update the scale */
 		}
@@ -2445,8 +2445,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				if (barnum > 100 || barnum < 0) {
 					ERR("your execgraph value is not between 0 and 100, therefore it will be ignored");
 				} else {
-					new_graph(p, 0,
-					25, obj->c, obj->d, (int) (barnum), obj->e, 1);
+					new_graph(p, 0, 25, obj->c, obj->d, (int) (barnum), obj->e, 1);
 				}
 
 			}
@@ -4011,23 +4010,23 @@ static void draw_line(char *s)
 	float gradient_factor = 0;
 	float gradient_update = 0;
 	unsigned long tmpcolour = current_color;
-	if (specials[special_index].first_colour != specials[special_index].last_colour) {
-		tmpcolour = specials[special_index].first_colour;
-		gradient_size = gradient_max(specials[special_index].first_colour, specials[special_index].last_colour);
+	if (specials[special_index].last_colour != specials[special_index].first_colour) {
+		tmpcolour = specials[special_index].last_colour;
+		gradient_size = gradient_max(specials[special_index].last_colour, specials[special_index].first_colour);
 		gradient_factor = (float)gradient_size / (w - 3);
 	}
-	for (i = 0; i < w - 3; i++) {
-		if (specials[special_index].first_colour != specials[special_index].last_colour) {
+	for (i = w - 3; i > 0; i--) {
+		if (specials[special_index].last_colour != specials[special_index].first_colour) {
 			XSetForeground(display, window.gc, tmpcolour);
 			gradient_update += gradient_factor;
 			while (gradient_update > 0) {
-				tmpcolour = do_gradient(tmpcolour, specials[special_index].last_colour);
+				tmpcolour = do_gradient(tmpcolour, specials[special_index].first_colour);
 				gradient_update--;
 			}
 		}
-		if (i / ((float) (w - 3) / (specials[special_index].graph_width)) > j) {
+		if ((w - 3 - i) / ((float) (w - 3) / (specials[special_index].graph_width)) > j) {
 			j++;
-						}
+		}
 						XDrawLine(display,  window.drawable, window.gc, cur_x + i + 2, by + h, cur_x + i + 2, by + h - specials[special_index].graph[j] * (h - 1) / specials[special_index].graph_scale);	/* this is mugfugly, but it works */
 					}
 					if (specials[special_index].

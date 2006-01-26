@@ -1,5 +1,9 @@
 # $Id$
 
+2006-01-25
+	* Fixed stupid graph code (it still sucks) sf.net bug 1372962
+	* Fixed $if_* stuff, sf.net bug 1401338 and 1400854
+
 2006-01-11
 	* Added xmms version 1 support.
 	* Added bmp through 0.9.7.1 support.
