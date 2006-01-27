@@ -4549,6 +4549,18 @@ static void load_config_file(const char *);
 /* reload the config file */
 void reload_config(void)
 {
+#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
+        if (info.xmms.thread) {
+		if (destroy_xmms_thread()!=0)
+		{
+			ERR("error destroying xmms_player thread");
+		}
+	}
+#endif
+#ifdef TCP_PORT_MONITOR
+	destroy_tcp_port_monitor_collection( info.p_tcp_port_monitor_collection );
+#endif
+
 	if (current_config) {
 		clear_fs_stats();
 		load_config_file(current_config);
@@ -4559,16 +4571,9 @@ void reload_config(void)
 
 #endif /* X11 */
 #ifdef TCP_PORT_MONITOR
-		destroy_tcp_port_monitor_collection( info.p_tcp_port_monitor_collection );
 		info.p_tcp_port_monitor_collection = NULL; 
 #endif
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
-                if (info.xmms.thread) {
-                    if (destroy_xmms_thread()!=0)
-                    {
-                        ERR("error destroying xmms_player thread");
-                    }
-		}
                 if ( (!info.xmms.thread) && (info.xmms.current_project > PROJECT_NONE) && 
 		     (create_xmms_thread() !=0) )
                     {
