@@ -214,9 +214,6 @@ static int fork_to_background;
 
 static int cpu_avg_samples, net_avg_samples;
 
-pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
-pthread_t execthread = (pthread_t)0;
-
 #ifdef X11
 
 /* Always on bottom */
@@ -410,7 +407,7 @@ static int special_index;	/* used when drawing */
 
 static struct special_t *new_special(char *buf, int t)
 {
-	if (special_count >= 128)
+	if (special_count >= 256)
 		CRIT_ERR("too many special things in text");
 
 	buf[0] = SPECIAL_CHAR;
@@ -920,6 +917,11 @@ enum text_object_type {
 #endif
 };
 
+struct thread_info_s {
+	pthread_mutex_t mutex;
+	pthread_t thread;
+};
+
 struct text_object {
 	int type;
 	int a, b;
@@ -973,6 +975,8 @@ struct text_object {
 			char *cmd;
 			char *buffer;
 			double data;
+			int pos;
+			struct thread_info_s thread_info;
 		} execi;	/* 5 */
 
 		struct {
@@ -998,8 +1002,59 @@ static unsigned int text_object_count;
 static struct text_object *text_objects;
 static void generate_text_internal(char *p, int p_max_size, struct text_object *objs, unsigned int object_count, struct information *cur);
 
-void *threaded_exec( struct text_object *obj ) {
-	pthread_mutex_lock( &mutex1 );
+#define MAX_THREADS 512 // sure whatever
+typedef struct thread_info_s *thread_info;
+thread_info thread_list[MAX_THREADS];
+int thread_count = 0;
+
+int register_thread(struct thread_info_s *new_thread)
+{
+	if (thread_count >= MAX_THREADS) {
+		CRIT_ERR("Uh oh, tried to register too many threads");
+	} else {
+		thread_list[thread_count] = new_thread;
+		thread_count++;
+	}
+	return thread_count - 1;
+}
+
+void print_shit()
+{
+	int i;
+	for (i = 0; i < thread_count; i++) {
+		printf("thread is %i\n", (int)(thread_list[i])->thread);
+	}
+
+}
+
+void replace_thread(struct thread_info_s *new_thread, int pos)
+{
+	if (pos >= 0 && pos < MAX_THREADS) {
+		thread_list[pos] = new_thread;
+	} else {
+		ERR("thread position out of bounds");
+	}
+}
+
+void join_all_threads()
+{
+	int i;
+	// now we wait to get the locks
+	for (i = 0; i < thread_count; i++) {
+		// try to lock mutex
+		if (thread_list[i]) {
+			if (thread_list[i]->thread) {
+				printf("thread is %i\n", (int)thread_list[i]->thread);
+/*				pthread_mutex_lock(&(thread_list[i]->mutex));
+				if (pthread_join(thread_list[i]->thread, NULL))
+					ERR("Problem joining thread %i\n", (int)thread_list[i]->thread);*/
+			}
+		}
+	}
+}
+
+void *threaded_exec(struct text_object *obj) {
+	pthread_mutex_lock(&(obj->data.execi.thread_info.mutex));
 	char *p2 = obj->data.execi.buffer;
 	FILE *fp = popen(obj->data.execi.cmd,"r");
 	int n2 = fread(p2, 1, TEXT_BUFFER_SIZE, fp);
@@ -1014,7 +1069,7 @@ void *threaded_exec( struct text_object *obj ) {
 		p2++;
 	}
 	obj->data.execi.last_update = current_update_time;
-	pthread_mutex_unlock( &mutex1 );
+	pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
 	pthread_exit(NULL);
 }
 
@@ -1314,8 +1369,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	}
 	END OBJ(texeci, 0) unsigned int n;
 
-	if (!arg
-			|| sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
+	if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
 		char buf[256];
 		ERR("${texeci <interval> command}");
 		obj->type = OBJ_text;
@@ -1326,6 +1380,8 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		obj->data.execi.buffer =
 			(char *) calloc(1, TEXT_BUFFER_SIZE);
 	}
+	pthread_mutex_init(&(obj->data.execi.thread_info.mutex), NULL);
+	obj->data.execi.pos = register_thread(&(obj->data.execi.thread_info));
 	END OBJ(pre_exec, 0) obj->type = OBJ_text;
 	if (arg) {
 		FILE *fp = popen(arg, "r");
@@ -2536,19 +2592,19 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				if (current_update_time - obj->data.execi.last_update < obj->data.execi.interval) {
 					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
 				} else {
-					if (!execthread && !pthread_mutex_trylock(&mutex1)) {
+					if (!obj->data.execi.thread_info.thread && !pthread_mutex_trylock(&(obj->data.execi.thread_info.mutex))) {
 						
-						if (pthread_create(&execthread, NULL, (void*)threaded_exec, (void*) obj)) {
+						if (pthread_create(&(obj->data.execi.thread_info.thread), NULL, (void*)threaded_exec, (void*) obj)) {
 							ERR("Error starting thread");
 						}
-						pthread_mutex_unlock(&mutex1);
+//						printf("thread is %i\n", (int)obj->data.execi.thread_info.thread);
+						pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
 					}
 					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
 				}
-				if (!pthread_mutex_trylock(&mutex1)) {
-				//	pthread_join(execthread, NULL);
-					execthread = (pthread_t)0;
-					pthread_mutex_unlock(&mutex1);
+				if (!pthread_mutex_trylock(&(obj->data.execi.thread_info.mutex))) {
+					obj->data.execi.thread_info.thread = (pthread_t)0;
+					pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
 				}
 				//parse_conky_vars(obj->data.execi.buffer, p, cur);
 			}
@@ -4273,6 +4329,8 @@ static void main_loop()
 	info.looped = 0;
 	while (total_run_times == 0 || info.looped < total_run_times - 1) {
 		info.looped++;
+		printf("loop %i:\n", (int)info.looped);
+			print_shit();
 
 #ifdef SIGNAL_BLOCKING
 		/* block signals.  we will inspect for pending signals later */
@@ -4549,7 +4607,7 @@ static void load_config_file(const char *);
 /* reload the config file */
 void reload_config(void)
 {
-	pthread_mutex_lock(&mutex1);
+	join_all_threads();
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
         if (info.xmms.thread) {
 		if (destroy_xmms_thread()!=0)
@@ -4586,13 +4644,12 @@ void reload_config(void)
 		text = NULL;
 		update_text();
 	}
-	pthread_mutex_unlock(&mutex1);
+	thread_count = 0;
 }
 
 void clean_up(void)
 {
-	pthread_mutex_lock(&mutex1);
-	execthread = (pthread_t)0;
+	join_all_threads();
 #ifdef X11
 #ifdef XDBE
 	if (use_xdbe) {
