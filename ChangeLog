@@ -1,5 +1,8 @@
 # $Id$
 
+2006-01-27
+	* Cleaned up texeci code
+
 2006-01-26
 	* Added freedesktop.org extended window manager hints (EWMH)
 	for window type NORMAL and state's STICKY/SKIP_PAGER/SKIP_TASKBAR.

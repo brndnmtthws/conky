@@ -9,9 +9,7 @@
 #ifndef _conky_h_
 #define _conky_h_
 
-#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
 #include <pthread.h>
-#endif
 #if defined(HAS_MCHECK_H)
 #include <mcheck.h>
 #endif /* HAS_MCHECK_H */

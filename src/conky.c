@@ -17,7 +17,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-#include <pthread.h>
 #include <string.h>
 #include <limits.h>
 #if HAVE_DIRENT_H
@@ -214,6 +213,9 @@ static unsigned long total_run_times;
 static int fork_to_background;
 
 static int cpu_avg_samples, net_avg_samples;
+
+pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
+pthread_t execthread = (pthread_t)0;
 
 #ifdef X11
 
@@ -903,7 +905,7 @@ enum text_object_type {
 	OBJ_xmms_filename,
 	OBJ_xmms_playlist_length,
 	OBJ_xmms_playlist_position,
-        OBJ_xmms_bar,
+	OBJ_xmms_bar,
 #endif
 #ifdef BMPX
 	OBJ_bmpx_title,
@@ -982,46 +984,45 @@ struct text_object {
 			in_port_t  port_range_end;    /* ending port to monitor */
 			int        item;              /* enum value from libtcp-portmon.h, e.g. COUNT, REMOTEIP, etc. */
 			int        connection_index;  /* 0 to n-1 connections. */
-               } tcp_port_monitor;
+		} tcp_port_monitor;
 #endif
 	} data;
 };
 
 struct text_object_list {
-  unsigned int text_object_count;
-  struct text_object *text_objects;
+	unsigned int text_object_count;
+	struct text_object *text_objects;
 };
 
 static unsigned int text_object_count;
 static struct text_object *text_objects;
 static void generate_text_internal(char *p, int p_max_size, struct text_object *objs, unsigned int object_count, struct information *cur);
 
-pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
-
 void *threaded_exec( struct text_object *obj ) {
+	pthread_mutex_lock( &mutex1 );
 	char *p2 = obj->data.execi.buffer;
 	FILE *fp = popen(obj->data.execi.cmd,"r");
-	pthread_mutex_lock( &mutex1 );
 	int n2 = fread(p2, 1, TEXT_BUFFER_SIZE, fp);
 	(void) pclose(fp);	
 	p2[n2] = '\0';
 	if (n2 && p2[n2 - 1] == '\n')
 		p2[n2 - 1] = '\0';
-	
+
 	while (*p2) {
 		if (*p2 == '\001')
 			*p2 = ' ';
 		p2++;
 	}
+	obj->data.execi.last_update = current_update_time;
 	pthread_mutex_unlock( &mutex1 );
-	return NULL;
+	pthread_exit(NULL);
 }
 
 static struct text_object *new_text_object_internal()
 {
-  struct text_object *obj = malloc(sizeof(struct text_object));
-  memset(obj, 0, sizeof(struct text_object));    
-  return obj;
+	struct text_object *obj = malloc(sizeof(struct text_object));
+	memset(obj, 0, sizeof(struct text_object));    
+	return obj;
 }
 
 #ifdef MLDONKEY
@@ -1038,90 +1039,90 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 {
 	unsigned int i;
 	for (i = 0; i < count; i++) {
-	    switch (objs[i].type) {
-		case OBJ_acpitemp:
-			close(objs[i].data.i);
-			break;
-		case OBJ_acpitempf:
-			close(objs[i].data.i);
-			break;
-		case OBJ_i2c:
-			close(objs[i].data.i2c.fd);
-			break;
-		case OBJ_time:
-			free(objs[i].data.s);
-			break;
-		case OBJ_utime:
-		case OBJ_if_existing:
-		case OBJ_if_mounted:
-		case OBJ_if_running:
-			free(objs[i].data.ifblock.s);
-			break;
-		case OBJ_tail:
-			free(objs[i].data.tail.logfile);
-			free(objs[i].data.tail.buffer);
-			break;
-		case OBJ_text: case OBJ_font:
-			free(objs[i].data.s);
-			break;
-		case OBJ_exec:
-			free(objs[i].data.s);
-			break;
-		case OBJ_execbar:
-			free(objs[i].data.s);
-			break;
-		case OBJ_execgraph:
-			free(objs[i].data.s);
-			break;
-/*		case OBJ_execibar:
-			free(objs[i].data.s);
-			break;
-		case OBJ_execigraph:
-			free(objs[i].data.s);
-			break;*/
+		switch (objs[i].type) {
+			case OBJ_acpitemp:
+				close(objs[i].data.i);
+				break;
+			case OBJ_acpitempf:
+				close(objs[i].data.i);
+				break;
+			case OBJ_i2c:
+				close(objs[i].data.i2c.fd);
+				break;
+			case OBJ_time:
+				free(objs[i].data.s);
+				break;
+			case OBJ_utime:
+			case OBJ_if_existing:
+			case OBJ_if_mounted:
+			case OBJ_if_running:
+				free(objs[i].data.ifblock.s);
+				break;
+			case OBJ_tail:
+				free(objs[i].data.tail.logfile);
+				free(objs[i].data.tail.buffer);
+				break;
+			case OBJ_text: case OBJ_font:
+				free(objs[i].data.s);
+				break;
+			case OBJ_exec:
+				free(objs[i].data.s);
+				break;
+			case OBJ_execbar:
+				free(objs[i].data.s);
+				break;
+			case OBJ_execgraph:
+				free(objs[i].data.s);
+				break;
+				/*		case OBJ_execibar:
+						free(objs[i].data.s);
+						break;
+						case OBJ_execigraph:
+						free(objs[i].data.s);
+						break;*/
 #ifdef MPD
-		case OBJ_mpd_title:
-		case OBJ_mpd_artist:
-		case OBJ_mpd_album:
-		case OBJ_mpd_random:
-		case OBJ_mpd_repeat:
-		case OBJ_mpd_track:
-		case OBJ_mpd_status:
-		case OBJ_mpd_host:
+			case OBJ_mpd_title:
+			case OBJ_mpd_artist:
+			case OBJ_mpd_album:
+			case OBJ_mpd_random:
+			case OBJ_mpd_repeat:
+			case OBJ_mpd_track:
+			case OBJ_mpd_status:
+			case OBJ_mpd_host:
 #endif
 #ifdef BMPX
-		case OBJ_bmpx_title:
-		case OBJ_bmpx_artist:
-		case OBJ_bmpx_album:
-		case OBJ_bmpx_track:
-		case OBJ_bmpx_uri:
-		case OBJ_bmpx_bitrate:
+			case OBJ_bmpx_title:
+			case OBJ_bmpx_artist:
+			case OBJ_bmpx_album:
+			case OBJ_bmpx_track:
+			case OBJ_bmpx_uri:
+			case OBJ_bmpx_bitrate:
 #endif
-		case OBJ_pre_exec:
-		case OBJ_battery:
-			free(objs[i].data.s);
-			break;
+			case OBJ_pre_exec:
+			case OBJ_battery:
+				free(objs[i].data.s);
+				break;
 
-		case OBJ_execi:
-			free(objs[i].data.execi.cmd);
-			free(objs[i].data.execi.buffer);
-			break;
-		case OBJ_texeci:
-			free(objs[i].data.execi.cmd);
-			free(objs[i].data.execi.buffer);
-			break;
-		case OBJ_top:
-			if (info.first_process) {
-				free_all_processes();
-				info.first_process = NULL;
-			}
-			break;
-		case OBJ_top_mem:
-			if (info.first_process) {
-				free_all_processes();
-				info.first_process = NULL;
-			}
-			break;
+			case OBJ_execi:
+				free(objs[i].data.execi.cmd);
+				free(objs[i].data.execi.buffer);
+				break;
+			case OBJ_texeci:
+				free(objs[i].data.execi.cmd);
+				free(objs[i].data.execi.buffer);
+				break;
+			case OBJ_top:
+				if (info.first_process) {
+					free_all_processes();
+					info.first_process = NULL;
+				}
+				break;
+			case OBJ_top_mem:
+				if (info.first_process) {
+					free_all_processes();
+					info.first_process = NULL;
+				}
+				break;
 		}
 	}
 	free(objs);
@@ -1147,22 +1148,22 @@ void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
 /* construct_text_object() creates a new text_object */
 static struct text_object *construct_text_object(const char *s, const char *arg, unsigned int object_count, struct text_object *text_objects)
 {
-    //struct text_object *obj = new_text_object();
-    struct text_object *obj = new_text_object_internal();
+	//struct text_object *obj = new_text_object();
+	struct text_object *obj = new_text_object_internal();
 
 #define OBJ(a, n) if (strcmp(s, #a) == 0) { obj->type = OBJ_##a; need_mask |= (1 << n); {
 #define END ; } } else
 
 #ifdef X11	
-if (s[0] == '#') {
+	if (s[0] == '#') {
 		obj->type = OBJ_color;
 		obj->data.l = get_x11_color(s);
 	} else
 #endif /* X11 */
-	OBJ(acpitemp, 0) obj->data.i = open_acpi_temperature(arg);
+		OBJ(acpitemp, 0) obj->data.i = open_acpi_temperature(arg);
 	END OBJ(acpitempf, 0) obj->data.i = open_acpi_temperature(arg);
 	END OBJ(acpiacadapter, 0)
-	END OBJ(freq, 0);
+		END OBJ(freq, 0);
 	END OBJ(freq_g, 0);
 	END OBJ(freq_dyn, 0);
 	END OBJ(freq_dyn_g, 0);
@@ -1176,60 +1177,60 @@ if (s[0] == '#') {
 	obj->data.s = strdup(bat);
 #if defined(__linux__)
 	END OBJ(i8k_version, INFO_I8K)
-	END OBJ(i8k_bios, INFO_I8K)
-	END OBJ(i8k_serial, INFO_I8K)
-	END OBJ(i8k_cpu_temp, INFO_I8K)
-	END OBJ(i8k_cpu_tempf, INFO_I8K)
-	END OBJ(i8k_left_fan_status, INFO_I8K)	
-  	END OBJ(i8k_right_fan_status, INFO_I8K)
-	END OBJ(i8k_left_fan_rpm, INFO_I8K)
-	END OBJ(i8k_right_fan_rpm, INFO_I8K)
-	END OBJ(i8k_ac_status, INFO_I8K)
-	END OBJ(i8k_buttons_status, INFO_I8K)
+		END OBJ(i8k_bios, INFO_I8K)
+		END OBJ(i8k_serial, INFO_I8K)
+		END OBJ(i8k_cpu_temp, INFO_I8K)
+		END OBJ(i8k_cpu_tempf, INFO_I8K)
+		END OBJ(i8k_left_fan_status, INFO_I8K)	
+		END OBJ(i8k_right_fan_status, INFO_I8K)
+		END OBJ(i8k_left_fan_rpm, INFO_I8K)
+		END OBJ(i8k_right_fan_rpm, INFO_I8K)
+		END OBJ(i8k_ac_status, INFO_I8K)
+		END OBJ(i8k_buttons_status, INFO_I8K)
 #endif /* __linux__ */
-	END OBJ(buffers, INFO_BUFFERS)
-	END OBJ(cached, INFO_BUFFERS)
-	END OBJ(cpu, INFO_CPU)
+		END OBJ(buffers, INFO_BUFFERS)
+		END OBJ(cached, INFO_BUFFERS)
+		END OBJ(cpu, INFO_CPU)
 		if (arg) {
-		if (strncmp(arg, "cpu", 3) == 0 && isdigit(arg[3])) {
-			obj->data.cpu_index = atoi(&arg[3]);
-			arg += 4;
-		} else {obj->data.cpu_index = 0; }
+			if (strncmp(arg, "cpu", 3) == 0 && isdigit(arg[3])) {
+				obj->data.cpu_index = atoi(&arg[3]);
+				arg += 4;
+			} else {obj->data.cpu_index = 0; }
 		} else {
-				obj->data.cpu_index = 0;
-			}
+			obj->data.cpu_index = 0;
+		}
 	END OBJ(cpubar, INFO_CPU)
 		if (arg) {
-		if (strncmp(arg, "cpu", 3) == 0 && isdigit(arg[3])) {
-			obj->data.cpu_index = atoi(&arg[3]);
-			arg += 4;
-		}
-		else {obj->data.cpu_index = 0;}
-		(void) scan_bar(arg, &obj->a, &obj->b);
+			if (strncmp(arg, "cpu", 3) == 0 && isdigit(arg[3])) {
+				obj->data.cpu_index = atoi(&arg[3]);
+				arg += 4;
+			}
+			else {obj->data.cpu_index = 0;}
+			(void) scan_bar(arg, &obj->a, &obj->b);
 		} else {
-				(void) scan_bar(arg, &obj->a, &obj->b);
-				obj->data.cpu_index = 0;
-			}
-	END OBJ(cpugraph, INFO_CPU)
-			if (arg) {
-		if (strncmp(arg, "cpu", 3) == 0 && isdigit(arg[3])) {
-			obj->data.cpu_index = atoi(&arg[3]);
-			arg += 4;
+			(void) scan_bar(arg, &obj->a, &obj->b);
+			obj->data.cpu_index = 0;
 		}
-				(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
-			} else {
-	(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
-	obj->data.cpu_index = 0;
+	END OBJ(cpugraph, INFO_CPU)
+		if (arg) {
+			if (strncmp(arg, "cpu", 3) == 0 && isdigit(arg[3])) {
+				obj->data.cpu_index = atoi(&arg[3]);
+				arg += 4;
 			}
+			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
+		} else {
+			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
+			obj->data.cpu_index = 0;
+		}
 	END OBJ(diskio, INFO_DISKIO)
-	END OBJ(diskiograph, INFO_DISKIO) (void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
+		END OBJ(diskiograph, INFO_DISKIO) (void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
 	END OBJ(color, 0) 
 #ifdef X11
-			obj->data.l = arg ? get_x11_color(arg) : default_fg_color;
+		obj->data.l = arg ? get_x11_color(arg) : default_fg_color;
 #endif /* X11 */
 	END
-	OBJ(font, 0)
-			obj->data.s = scan_font(arg);
+		OBJ(font, 0)
+		obj->data.s = scan_font(arg);
 	END
 		OBJ(downspeed, INFO_NET) 
 		if(arg) {
@@ -1246,7 +1247,7 @@ if (s[0] == '#') {
 			CRIT_ERR("downspeedf needs argument");
 		}
 	END OBJ(downspeedgraph, INFO_NET)
-			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
+		(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
 	char buf[64];
 	sscanf(arg, "%63s %*i,%*i %*i", buf);
 	obj->data.net = get_net_stat(buf);
@@ -1257,24 +1258,24 @@ if (s[0] == '#') {
 		}
 	}
 	END OBJ(else, 0)
-	if (blockdepth) {
-		(text_objects[blockstart[blockdepth - 1]]).data.ifblock.pos = object_count;
-		blockstart[blockdepth - 1] = object_count;
-		obj->data.ifblock.pos = object_count + 2;
-	} else {
-		ERR("$else: no matching $if_*");
-	}
+		if (blockdepth) {
+			(text_objects[blockstart[blockdepth - 1]]).data.ifblock.pos = object_count;
+			blockstart[blockdepth - 1] = object_count;
+			obj->data.ifblock.pos = object_count + 2;
+		} else {
+			ERR("$else: no matching $if_*");
+		}
 	END OBJ(endif, 0)
-	if (blockdepth) {
-		printf("blockdepth is %i and blockstart[blockdepth] is %i and object_count is %i\n", blockdepth, blockstart[blockdepth - 1], object_count);
-		blockdepth--;
-		text_objects[blockstart[blockdepth]].data.ifblock.pos = object_count;
-	} else {
-		ERR("$endif: no matching $if_*");
-	}
+		if (blockdepth) {
+			printf("blockdepth is %i and blockstart[blockdepth] is %i and object_count is %i\n", blockdepth, blockstart[blockdepth - 1], object_count);
+			blockdepth--;
+			text_objects[blockstart[blockdepth]].data.ifblock.pos = object_count;
+		} else {
+			ERR("$endif: no matching $if_*");
+		}
 	END
 #ifdef HAVE_POPEN
-	    OBJ(exec, 0) obj->data.s = strdup(arg ? arg : "");
+		OBJ(exec, 0) obj->data.s = strdup(arg ? arg : "");
 	END OBJ(execbar, 0) obj->data.s = strdup(arg ? arg : "");
 	END OBJ(execgraph, 0) obj->data.s = strdup(arg ? arg : "");
 	END OBJ(execibar, 0) unsigned int n;
@@ -1284,9 +1285,9 @@ if (s[0] == '#') {
 		obj->type = OBJ_text;
 		snprintf(buf, 256, "${%s}", s);
 		obj->data.s = strdup(buf);
-		} else {
-			obj->data.execi.cmd = strdup(arg + n);
-		    }
+	} else {
+		obj->data.execi.cmd = strdup(arg + n);
+	}
 	END OBJ(execigraph, 0) unsigned int n;
 	if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
 		char buf[256];
@@ -1300,7 +1301,7 @@ if (s[0] == '#') {
 	END OBJ(execi, 0) unsigned int n;
 
 	if (!arg
-	    || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
+			|| sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
 		char buf[256];
 		ERR("${execi <interval> command}");
 		obj->type = OBJ_text;
@@ -1309,22 +1310,22 @@ if (s[0] == '#') {
 	} else {
 		obj->data.execi.cmd = strdup(arg + n);
 		obj->data.execi.buffer =
-		    (char *) calloc(1, TEXT_BUFFER_SIZE);
+			(char *) calloc(1, TEXT_BUFFER_SIZE);
 	}
 	END OBJ(texeci, 0) unsigned int n;
 
 	if (!arg
-		    || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
+			|| sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
 		char buf[256];
 		ERR("${texeci <interval> command}");
 		obj->type = OBJ_text;
 		snprintf(buf, 256, "${%s}", s);
 		obj->data.s = strdup(buf);
-		    } else {
-			    obj->data.execi.cmd = strdup(arg + n);
-			    obj->data.execi.buffer =
-					    (char *) calloc(1, TEXT_BUFFER_SIZE);
-		    }
+	} else {
+		obj->data.execi.cmd = strdup(arg + n);
+		obj->data.execi.buffer =
+			(char *) calloc(1, TEXT_BUFFER_SIZE);
+	}
 	END OBJ(pre_exec, 0) obj->type = OBJ_text;
 	if (arg) {
 		FILE *fp = popen(arg, "r");
@@ -1344,7 +1345,7 @@ if (s[0] == '#') {
 		obj->data.s = strdup("");
 	END
 #endif
-	    OBJ(fs_bar, INFO_FS) obj->data.fsbar.h = 4;
+		OBJ(fs_bar, INFO_FS) obj->data.fsbar.h = 4;
 	arg = scan_bar(arg, &obj->data.fsbar.w, &obj->data.fsbar.h);
 	if (arg) {
 		while (isspace(*arg))
@@ -1363,19 +1364,19 @@ if (s[0] == '#') {
 		arg = "/";
 	obj->data.fsbar.fs = prepare_fs_stat(arg);
 	END OBJ(fs_free, INFO_FS) if (!arg)
-		 arg = "/";
+		arg = "/";
 	obj->data.fs = prepare_fs_stat(arg);
 	END OBJ(fs_used_perc, INFO_FS) if (!arg)
-		 arg = "/";
+		arg = "/";
 	obj->data.fs = prepare_fs_stat(arg);
 	END OBJ(fs_free_perc, INFO_FS) if (!arg)
-		 arg = "/";
+		arg = "/";
 	obj->data.fs = prepare_fs_stat(arg);
 	END OBJ(fs_size, INFO_FS) if (!arg)
-		 arg = "/";
+		arg = "/";
 	obj->data.fs = prepare_fs_stat(arg);
 	END OBJ(fs_used, INFO_FS) if (!arg)
-		 arg = "/";
+		arg = "/";
 	obj->data.fs = prepare_fs_stat(arg);
 	END OBJ(hr, 0) obj->data.i = arg ? atoi(arg) : 1;
 	END OBJ(offset, 0) obj->data.i = arg ? atoi(arg) : 1;
@@ -1395,18 +1396,18 @@ if (s[0] == '#') {
 		 * default device */
 		sscanf(arg, "%63s %d", buf2, &n);
 		obj->data.i2c.fd =
-		    open_i2c_sensor(0, buf2, n, &obj->data.i2c.arg,
-				    obj->data.i2c.devtype);
+			open_i2c_sensor(0, buf2, n, &obj->data.i2c.arg,
+					obj->data.i2c.devtype);
 		strncpy(obj->data.i2c.type, buf2, 63);
 	} else {
 		obj->data.i2c.fd =
-		    open_i2c_sensor(buf1, buf2, n, &obj->data.i2c.arg,
-				    obj->data.i2c.devtype);
+			open_i2c_sensor(buf1, buf2, n, &obj->data.i2c.arg,
+					obj->data.i2c.devtype);
 		strncpy(obj->data.i2c.type, buf2, 63);
 	}
 
 	END OBJ(top, INFO_TOP)
-	char buf[64];
+		char buf[64];
 	int n;
 	if (!arg) {
 		ERR("top needs arguments");
@@ -1439,7 +1440,7 @@ if (s[0] == '#') {
 		return NULL;
 	}
 	END OBJ(top_mem, INFO_TOP)
-	char buf[64];
+		char buf[64];
 	int n;
 	if (!arg) {
 		ERR("top_mem needs arguments");
@@ -1486,7 +1487,7 @@ if (s[0] == '#') {
 			CRIT_ERR("linkstatus needs argument");
 		}
 	END OBJ(tail, 0)
-	char buf[64];
+		char buf[64];
 	int n1, n2;
 	if (!arg) {
 		ERR("tail needs arguments");
@@ -1503,11 +1504,11 @@ if (s[0] == '#') {
 			fp = fopen(buf, "r");
 			if (fp) {
 				obj->data.tail.logfile =
-				    malloc(TEXT_BUFFER_SIZE);
+					malloc(TEXT_BUFFER_SIZE);
 				strcpy(obj->data.tail.logfile, buf);
 				obj->data.tail.wantedlines = n1 - 1;
 				obj->data.tail.interval =
-				    update_interval * 2;
+					update_interval * 2;
 				fclose(fp);
 			} else {
 				//fclose (fp);
@@ -1517,18 +1518,18 @@ if (s[0] == '#') {
 	} else if (sscanf(arg, "%63s %i %i", buf, &n1, &n2) == 3) {
 		if (n1 < 1 || n1 > 30) {
 			CRIT_ERR
-			    ("invalid arg for tail, number of lines must be between 1 and 30");
+				("invalid arg for tail, number of lines must be between 1 and 30");
 			return NULL;
 		} else if (n2 < 1 || n2 < update_interval) {
 			CRIT_ERR
-			    ("invalid arg for tail, interval must be greater than 0 and Conky's interval");
+				("invalid arg for tail, interval must be greater than 0 and Conky's interval");
 			return NULL;
 		} else {
 			FILE *fp;
 			fp = fopen(buf, "r");
 			if (fp != NULL) {
 				obj->data.tail.logfile =
-				    malloc(TEXT_BUFFER_SIZE);
+					malloc(TEXT_BUFFER_SIZE);
 				strcpy(obj->data.tail.logfile, buf);
 				obj->data.tail.wantedlines = n1 - 1;
 				obj->data.tail.interval = n2;
@@ -1546,7 +1547,7 @@ if (s[0] == '#') {
 	}
 	obj->data.tail.buffer = malloc(TEXT_BUFFER_SIZE * 20); /* asumming all else worked */
 	END OBJ(head, 0)
-			char buf[64];
+		char buf[64];
 	int n1, n2;
 	if (!arg) {
 		ERR("head needs arguments");
@@ -1563,11 +1564,11 @@ if (s[0] == '#') {
 			fp = fopen(buf, "r");
 			if (fp != NULL) {
 				obj->data.tail.logfile =
-						malloc(TEXT_BUFFER_SIZE);
+					malloc(TEXT_BUFFER_SIZE);
 				strcpy(obj->data.tail.logfile, buf);
 				obj->data.tail.wantedlines = n1 - 1;
 				obj->data.tail.interval =
-						update_interval * 2;
+					update_interval * 2;
 				fclose(fp);
 			} else {
 				//fclose (fp);
@@ -1577,18 +1578,18 @@ if (s[0] == '#') {
 	} else if (sscanf(arg, "%63s %i %i", buf, &n1, &n2) == 3) {
 		if (n1 < 1 || n1 > 30) {
 			CRIT_ERR
-					("invalid arg for head, number of lines must be between 1 and 30");
+				("invalid arg for head, number of lines must be between 1 and 30");
 			return NULL;
 		} else if (n2 < 1 || n2 < update_interval) {
 			CRIT_ERR
-					("invalid arg for head, interval must be greater than 0 and Conky's interval");
+				("invalid arg for head, interval must be greater than 0 and Conky's interval");
 			return NULL;
 		} else {
 			FILE *fp;
 			fp = fopen(buf, "r");
 			if (fp != NULL) {
 				obj->data.tail.logfile =
-						malloc(TEXT_BUFFER_SIZE);
+					malloc(TEXT_BUFFER_SIZE);
 				strcpy(obj->data.tail.logfile, buf);
 				obj->data.tail.wantedlines = n1 - 1;
 				obj->data.tail.interval = n2;
@@ -1619,9 +1620,9 @@ if (s[0] == '#') {
 	obj->data.loadavg[1] = (r >= 2) ? (unsigned char) b : 0;
 	obj->data.loadavg[2] = (r >= 3) ? (unsigned char) c : 0;
 	END OBJ(if_existing, 0)
-	if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-		CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-	}
+		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
+			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
+		}
 	if (!arg) {
 		ERR("if_existing needs an argument");
 		obj->data.ifblock.s = 0;
@@ -1631,9 +1632,9 @@ if (s[0] == '#') {
 	obj->data.ifblock.pos = object_count + 2;
 	blockdepth++;
 	END OBJ(if_mounted, 0)
-	if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-		CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-	}
+		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
+			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
+		}
 	if (!arg) {
 		ERR("if_mounted needs an argument");
 		obj->data.ifblock.s = 0;
@@ -1644,9 +1645,9 @@ if (s[0] == '#') {
 	blockdepth++;
 	printf("blockdepth is %i and blockstart[blockdepth] is %i and object_count is %i\n", blockdepth, blockstart[blockdepth - 1], object_count);
 	END OBJ(if_running, 0)
-	if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-		CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-	}
+		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
+			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
+		}
 	if (arg) {
 		char buf[256];
 		snprintf(buf, 256, "pidof %s >/dev/null", arg);
@@ -1659,55 +1660,55 @@ if (s[0] == '#') {
 	obj->data.ifblock.pos = object_count + 2;
 	blockdepth++;
 	END OBJ(kernel, 0)
-	END OBJ(machine, 0)
-	END OBJ(mails, INFO_MAIL)
-	END OBJ(mem, INFO_MEM)
-	END OBJ(memmax, INFO_MEM)
-	END OBJ(memperc, INFO_MEM)
-	END OBJ(membar, INFO_MEM)
-	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+		END OBJ(machine, 0)
+		END OBJ(mails, INFO_MAIL)
+		END OBJ(mem, INFO_MEM)
+		END OBJ(memmax, INFO_MEM)
+		END OBJ(memperc, INFO_MEM)
+		END OBJ(membar, INFO_MEM)
+		(void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(memgraph, INFO_MEM)
-			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
+		(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
 	END OBJ(mixer, INFO_MIXER) obj->data.l = mixer_init(arg);
 	END OBJ(mixerl, INFO_MIXER) obj->data.l = mixer_init(arg);
 	END OBJ(mixerr, INFO_MIXER) obj->data.l = mixer_init(arg);
 	END OBJ(mixerbar, INFO_MIXER)
-	    scan_mixer_bar(arg, &obj->data.mixerbar.l,
-			   &obj->data.mixerbar.w, &obj->data.mixerbar.h);
+		scan_mixer_bar(arg, &obj->data.mixerbar.l,
+				&obj->data.mixerbar.w, &obj->data.mixerbar.h);
 	END OBJ(mixerlbar, INFO_MIXER)
-	    scan_mixer_bar(arg, &obj->data.mixerbar.l,
-			   &obj->data.mixerbar.w, &obj->data.mixerbar.h);
+		scan_mixer_bar(arg, &obj->data.mixerbar.l,
+				&obj->data.mixerbar.w, &obj->data.mixerbar.h);
 	END OBJ(mixerrbar, INFO_MIXER)
-	    scan_mixer_bar(arg, &obj->data.mixerbar.l,
-			   &obj->data.mixerbar.w, &obj->data.mixerbar.h);
+		scan_mixer_bar(arg, &obj->data.mixerbar.l,
+				&obj->data.mixerbar.w, &obj->data.mixerbar.h);
 	END
 #ifdef MLDONKEY
-	    OBJ(ml_upload_counter, INFO_MLDONKEY)
-	END OBJ(ml_download_counter, INFO_MLDONKEY)
-	END OBJ(ml_nshared_files, INFO_MLDONKEY)
-	END OBJ(ml_shared_counter, INFO_MLDONKEY)
-	END OBJ(ml_tcp_upload_rate, INFO_MLDONKEY)
-	END OBJ(ml_tcp_download_rate, INFO_MLDONKEY)
-	END OBJ(ml_udp_upload_rate, INFO_MLDONKEY)
-	END OBJ(ml_udp_download_rate, INFO_MLDONKEY)
-	END OBJ(ml_ndownloaded_files, INFO_MLDONKEY)
-	END OBJ(ml_ndownloading_files, INFO_MLDONKEY) END
+		OBJ(ml_upload_counter, INFO_MLDONKEY)
+		END OBJ(ml_download_counter, INFO_MLDONKEY)
+		END OBJ(ml_nshared_files, INFO_MLDONKEY)
+		END OBJ(ml_shared_counter, INFO_MLDONKEY)
+		END OBJ(ml_tcp_upload_rate, INFO_MLDONKEY)
+		END OBJ(ml_tcp_download_rate, INFO_MLDONKEY)
+		END OBJ(ml_udp_upload_rate, INFO_MLDONKEY)
+		END OBJ(ml_udp_download_rate, INFO_MLDONKEY)
+		END OBJ(ml_ndownloaded_files, INFO_MLDONKEY)
+		END OBJ(ml_ndownloading_files, INFO_MLDONKEY) END
 #endif
-	 OBJ(new_mails, INFO_MAIL)
-	END OBJ(nodename, 0)
-	END OBJ(processes, INFO_PROCS)
-	END OBJ(running_processes, INFO_RUN_PROCS)
-	END OBJ(shadecolor, 0)
+		OBJ(new_mails, INFO_MAIL)
+		END OBJ(nodename, 0)
+		END OBJ(processes, INFO_PROCS)
+		END OBJ(running_processes, INFO_RUN_PROCS)
+		END OBJ(shadecolor, 0)
 #ifdef X11
-	    obj->data.l = arg ? get_x11_color(arg) : default_bg_color;
+		obj->data.l = arg ? get_x11_color(arg) : default_bg_color;
 #endif /* X11 */
 	END OBJ(outlinecolor, 0)
 #ifdef X11
-	    obj->data.l = arg ? get_x11_color(arg) : default_out_color;
+		obj->data.l = arg ? get_x11_color(arg) : default_out_color;
 #endif /* X11 */
 	END OBJ(stippled_hr, 0)
 #ifdef X11
-int a = stippled_borders, b = 1;
+		int a = stippled_borders, b = 1;
 	if (arg) {
 		if (sscanf(arg, "%d %d", &a, &b) != 2)
 			sscanf(arg, "%d", &b);
@@ -1718,18 +1719,18 @@ int a = stippled_borders, b = 1;
 	obj->data.pair.b = b;
 #endif /* X11 */
 	END OBJ(swap, INFO_MEM)
-	END OBJ(swapmax, INFO_MEM)
-	END OBJ(swapperc, INFO_MEM)
-	END OBJ(swapbar, INFO_MEM)
-	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+		END OBJ(swapmax, INFO_MEM)
+		END OBJ(swapperc, INFO_MEM)
+		END OBJ(swapbar, INFO_MEM)
+		(void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(sysname, 0) END OBJ(temp1, INFO_I2C) obj->type = OBJ_i2c;
 	obj->data.i2c.fd =
-	    open_i2c_sensor(0, "temp", 1, &obj->data.i2c.arg,
-			    obj->data.i2c.devtype);
+		open_i2c_sensor(0, "temp", 1, &obj->data.i2c.arg,
+				obj->data.i2c.devtype);
 	END OBJ(temp2, INFO_I2C) obj->type = OBJ_i2c;
 	obj->data.i2c.fd =
-	    open_i2c_sensor(0, "temp", 2, &obj->data.i2c.arg,
-			    obj->data.i2c.devtype);
+		open_i2c_sensor(0, "temp", 2, &obj->data.i2c.arg,
+				obj->data.i2c.devtype);
 	END OBJ(time, 0) obj->data.s = strdup(arg ? arg : "%F %T");
 	END OBJ(utime, 0) obj->data.s = strdup(arg ? arg : "%F %T");
 	END OBJ(totaldown, INFO_NET)
@@ -1740,14 +1741,14 @@ int a = stippled_borders, b = 1;
 			CRIT_ERR("totaldown needs argument");
 		}
 	END OBJ(totalup, INFO_NET) obj->data.net = get_net_stat(arg);
-		if(arg) {
-			obj->data.net = get_net_stat(arg);
-		}
-		else {
-			CRIT_ERR("totalup needs argument");
-		}
+	if(arg) {
+		obj->data.net = get_net_stat(arg);
+	}
+	else {
+		CRIT_ERR("totalup needs argument");
+	}
 	END OBJ(updates, 0)
-	END OBJ(alignr, 0) obj->data.i = arg ? atoi(arg) : 0;
+		END OBJ(alignr, 0) obj->data.i = arg ? atoi(arg) : 0;
 	END OBJ(alignc, 0) obj->data.i = arg ? atoi(arg) : 0;
 	END OBJ(upspeed, INFO_NET)
 		if(arg) {
@@ -1765,7 +1766,7 @@ int a = stippled_borders, b = 1;
 		}
 
 	END OBJ(upspeedgraph, INFO_NET)
-			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
+		(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
 	char buf[64];
 	sscanf(arg, "%63s %*i,%*i %*i", buf);
 	obj->data.net = get_net_stat(buf);
@@ -1776,155 +1777,155 @@ int a = stippled_borders, b = 1;
 		}
 	}
 	END OBJ(uptime_short, INFO_UPTIME) END OBJ(uptime, INFO_UPTIME) END
-	    OBJ(adt746xcpu, 0) END OBJ(adt746xfan, 0) END
+		OBJ(adt746xcpu, 0) END OBJ(adt746xfan, 0) END
 #if defined(__FreeBSD__) && (defined(i386) || defined(__i386__))
-        OBJ(apm_adapter, 0) END
-	OBJ(apm_battery_life, 0) END
-	OBJ(apm_battery_time, 0) END
+		OBJ(apm_adapter, 0) END
+		OBJ(apm_battery_life, 0) END
+		OBJ(apm_battery_time, 0) END
 #endif /* __FreeBSD__ */
 #ifdef SETI
-	 OBJ(seti_prog, INFO_SETI) END OBJ(seti_progbar, INFO_SETI)
-	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+		OBJ(seti_prog, INFO_SETI) END OBJ(seti_progbar, INFO_SETI)
+		(void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(seti_credit, INFO_SETI) END
 #endif
 #ifdef MPD
-	 OBJ(mpd_artist, INFO_MPD)
-	END OBJ(mpd_title, INFO_MPD)
-	END OBJ(mpd_random, INFO_MPD)
-	END OBJ(mpd_repeat, INFO_MPD)
-	END OBJ(mpd_elapsed, INFO_MPD)
-	END OBJ(mpd_length, INFO_MPD)
-	END OBJ(mpd_track, INFO_MPD)
-	END OBJ(mpd_percent, INFO_MPD)
-	END OBJ(mpd_album, INFO_MPD) END OBJ(mpd_vol,
-					     INFO_MPD) END OBJ(mpd_bitrate,
-							       INFO_MPD)
-	END OBJ(mpd_status, INFO_MPD)
-        END OBJ(mpd_bar, INFO_MPD)
-	 (void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+		OBJ(mpd_artist, INFO_MPD)
+		END OBJ(mpd_title, INFO_MPD)
+		END OBJ(mpd_random, INFO_MPD)
+		END OBJ(mpd_repeat, INFO_MPD)
+		END OBJ(mpd_elapsed, INFO_MPD)
+		END OBJ(mpd_length, INFO_MPD)
+		END OBJ(mpd_track, INFO_MPD)
+		END OBJ(mpd_percent, INFO_MPD)
+		END OBJ(mpd_album, INFO_MPD) END OBJ(mpd_vol,
+				INFO_MPD) END OBJ(mpd_bitrate,
+					INFO_MPD)
+					END OBJ(mpd_status, INFO_MPD)
+					END OBJ(mpd_bar, INFO_MPD)
+					(void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END
 #endif
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
-	OBJ(xmms_status, INFO_XMMS) END
-        OBJ(xmms_title, INFO_XMMS) END
-        OBJ(xmms_length, INFO_XMMS) END
-        OBJ(xmms_length_seconds, INFO_XMMS) END
-        OBJ(xmms_position, INFO_XMMS) END
-        OBJ(xmms_position_seconds, INFO_XMMS) END
-        OBJ(xmms_bitrate, INFO_XMMS) END
-        OBJ(xmms_frequency, INFO_XMMS) END
-        OBJ(xmms_channels, INFO_XMMS) END
-        OBJ(xmms_filename, INFO_XMMS) END
-        OBJ(xmms_playlist_length, INFO_XMMS) END
-        OBJ(xmms_playlist_position, INFO_XMMS) END
-        OBJ(xmms_bar, INFO_XMMS)
-            (void) scan_bar(arg, &obj->a, &obj->b);
-        END
+		OBJ(xmms_status, INFO_XMMS) END
+		OBJ(xmms_title, INFO_XMMS) END
+		OBJ(xmms_length, INFO_XMMS) END
+		OBJ(xmms_length_seconds, INFO_XMMS) END
+		OBJ(xmms_position, INFO_XMMS) END
+		OBJ(xmms_position_seconds, INFO_XMMS) END
+		OBJ(xmms_bitrate, INFO_XMMS) END
+		OBJ(xmms_frequency, INFO_XMMS) END
+		OBJ(xmms_channels, INFO_XMMS) END
+		OBJ(xmms_filename, INFO_XMMS) END
+		OBJ(xmms_playlist_length, INFO_XMMS) END
+		OBJ(xmms_playlist_position, INFO_XMMS) END
+		OBJ(xmms_bar, INFO_XMMS)
+		(void) scan_bar(arg, &obj->a, &obj->b);
+	END
 #endif
 #ifdef BMPX
-	OBJ(bmpx_title, INFO_BMPX)
+		OBJ(bmpx_title, INFO_BMPX)
 		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
 	END
-	OBJ(bmpx_artist, INFO_BMPX)
+		OBJ(bmpx_artist, INFO_BMPX)
 		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
 	END
-	OBJ(bmpx_album, INFO_BMPX)
+		OBJ(bmpx_album, INFO_BMPX)
 		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
 	END
-	OBJ(bmpx_track, INFO_BMPX)
+		OBJ(bmpx_track, INFO_BMPX)
 		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
 	END
-	OBJ(bmpx_uri, INFO_BMPX)
+		OBJ(bmpx_uri, INFO_BMPX)
 		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
 	END
-	OBJ(bmpx_bitrate, INFO_BMPX)
+		OBJ(bmpx_bitrate, INFO_BMPX)
 		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
 	END
 #endif
 #ifdef TCP_PORT_MONITOR
-	OBJ(tcp_portmon, INFO_TCP_PORT_MONITOR) 
+		OBJ(tcp_portmon, INFO_TCP_PORT_MONITOR) 
 		int argc, port_begin, port_end, item, connection_index;
-		char itembuf[32];
-		memset(itembuf,0,sizeof(itembuf));
-		connection_index=0;
-		/* massive argument checking */
-		if (!arg) {
-			CRIT_ERR("tcp_portmon: needs arguments");
-		}
-		argc=sscanf(arg, "%d %d %31s %d", &port_begin, &port_end, itembuf, &connection_index);
-		if ( (argc != 3) && (argc != 4) ) 
-		{
-			CRIT_ERR("tcp_portmon: requires 3 or 4 arguments");
-		}
-		if ( (port_begin<1) || (port_begin>65535) || (port_end<1) || (port_end>65535) )
-		{
-			CRIT_ERR("tcp_portmon: port values must be from 1 to 65535");
-		}
-		if ( port_begin > port_end )
-		{
-			CRIT_ERR("tcp_portmon: starting port must be <= ending port");
-		}
-		if ( strncmp(itembuf,"count",31) == 0 )
-			item=COUNT;
-		else if ( strncmp(itembuf,"rip",31) == 0 )
-			item=REMOTEIP;
-		else if ( strncmp(itembuf,"rhost",31) == 0 )
-			item=REMOTEHOST;
-		else if ( strncmp(itembuf,"rport",31) == 0 )
-			item=REMOTEPORT;
-		else if ( strncmp(itembuf,"lip",31) == 0 )
-			item=LOCALIP;
-		else if ( strncmp(itembuf,"lhost",31) == 0 )
-			item=LOCALHOST;
-		else if ( strncmp(itembuf,"lport",31) == 0 )
-			item=LOCALPORT;
-		else if ( strncmp(itembuf,"lservice",31) == 0 )
-			item=LOCALSERVICE;
-		else
-		{
-			CRIT_ERR("tcp_portmon: invalid item specified"); 
-		}
-		if ( (argc==3) && (item!=COUNT) )
-		{
-			CRIT_ERR("tcp_portmon: 3 argument form valid only for \"count\" item");
-		}
-		if ( (argc==4) && (connection_index<0) )
-		{
-			CRIT_ERR("tcp_portmon: connection index must be non-negative");
-		}
-		/* ok, args looks good. save the text object data */
-		obj->data.tcp_port_monitor.port_range_begin = (in_addr_t)port_begin;
-		obj->data.tcp_port_monitor.port_range_end = (in_addr_t)port_end;
-		obj->data.tcp_port_monitor.item = item;
-		obj->data.tcp_port_monitor.connection_index = connection_index;
+	char itembuf[32];
+	memset(itembuf,0,sizeof(itembuf));
+	connection_index=0;
+	/* massive argument checking */
+	if (!arg) {
+		CRIT_ERR("tcp_portmon: needs arguments");
+	}
+	argc=sscanf(arg, "%d %d %31s %d", &port_begin, &port_end, itembuf, &connection_index);
+	if ( (argc != 3) && (argc != 4) ) 
+	{
+		CRIT_ERR("tcp_portmon: requires 3 or 4 arguments");
+	}
+	if ( (port_begin<1) || (port_begin>65535) || (port_end<1) || (port_end>65535) )
+	{
+		CRIT_ERR("tcp_portmon: port values must be from 1 to 65535");
+	}
+	if ( port_begin > port_end )
+	{
+		CRIT_ERR("tcp_portmon: starting port must be <= ending port");
+	}
+	if ( strncmp(itembuf,"count",31) == 0 )
+		item=COUNT;
+	else if ( strncmp(itembuf,"rip",31) == 0 )
+		item=REMOTEIP;
+	else if ( strncmp(itembuf,"rhost",31) == 0 )
+		item=REMOTEHOST;
+	else if ( strncmp(itembuf,"rport",31) == 0 )
+		item=REMOTEPORT;
+	else if ( strncmp(itembuf,"lip",31) == 0 )
+		item=LOCALIP;
+	else if ( strncmp(itembuf,"lhost",31) == 0 )
+		item=LOCALHOST;
+	else if ( strncmp(itembuf,"lport",31) == 0 )
+		item=LOCALPORT;
+	else if ( strncmp(itembuf,"lservice",31) == 0 )
+		item=LOCALSERVICE;
+	else
+	{
+		CRIT_ERR("tcp_portmon: invalid item specified"); 
+	}
+	if ( (argc==3) && (item!=COUNT) )
+	{
+		CRIT_ERR("tcp_portmon: 3 argument form valid only for \"count\" item");
+	}
+	if ( (argc==4) && (connection_index<0) )
+	{
+		CRIT_ERR("tcp_portmon: connection index must be non-negative");
+	}
+	/* ok, args looks good. save the text object data */
+	obj->data.tcp_port_monitor.port_range_begin = (in_addr_t)port_begin;
+	obj->data.tcp_port_monitor.port_range_end = (in_addr_t)port_end;
+	obj->data.tcp_port_monitor.item = item;
+	obj->data.tcp_port_monitor.connection_index = connection_index;
 
-	 	/* if the port monitor collection hasn't been created, we must create it */
-	 	if ( !info.p_tcp_port_monitor_collection )
+	/* if the port monitor collection hasn't been created, we must create it */
+	if ( !info.p_tcp_port_monitor_collection )
+	{
+		info.p_tcp_port_monitor_collection = 
+			create_tcp_port_monitor_collection( &tcp_port_monitor_collection_args );
+		if ( !info.p_tcp_port_monitor_collection )
 		{
-			info.p_tcp_port_monitor_collection = 
-				create_tcp_port_monitor_collection( &tcp_port_monitor_collection_args );
-			if ( !info.p_tcp_port_monitor_collection )
-			{
-				CRIT_ERR("tcp_portmon: unable to create port monitor collection");
-			}
+			CRIT_ERR("tcp_portmon: unable to create port monitor collection");
 		}
+	}
 
-		/* if a port monitor for this port does not exist, create one and add it to the collection */
-		if ( find_tcp_port_monitor( info.p_tcp_port_monitor_collection, port_begin, port_end ) == NULL )
+	/* if a port monitor for this port does not exist, create one and add it to the collection */
+	if ( find_tcp_port_monitor( info.p_tcp_port_monitor_collection, port_begin, port_end ) == NULL )
+	{
+		tcp_port_monitor_t * p_monitor = 
+			create_tcp_port_monitor( port_begin, port_end, &tcp_port_monitor_args );
+		if ( !p_monitor )
 		{
-			tcp_port_monitor_t * p_monitor = 
-				create_tcp_port_monitor( port_begin, port_end, &tcp_port_monitor_args );
-			if ( !p_monitor )
-			{
-				CRIT_ERR("tcp_portmon: unable to create port monitor");
-			}
-			/* add the newly created monitor to the collection */
-			if ( insert_tcp_port_monitor_into_collection( info.p_tcp_port_monitor_collection,
-								      p_monitor ) != 0 )
-			{
-				CRIT_ERR("tcp_portmon: unable to add port monitor to collection");
-			}
+			CRIT_ERR("tcp_portmon: unable to create port monitor");
 		}
+		/* add the newly created monitor to the collection */
+		if ( insert_tcp_port_monitor_into_collection( info.p_tcp_port_monitor_collection,
+					p_monitor ) != 0 )
+		{
+			CRIT_ERR("tcp_portmon: unable to add port monitor to collection");
+		}
+	}
 	END
 #endif
 	{
@@ -1941,41 +1942,41 @@ int a = stippled_borders, b = 1;
 
 static struct text_object *create_plain_text(const char *s)
 {
-  struct text_object *obj;
+	struct text_object *obj;
 
-  if (s == NULL || *s == '\0') {
-      return NULL;
-  }
-  
-  obj = new_text_object_internal();
+	if (s == NULL || *s == '\0') {
+		return NULL;
+	}
 
-  obj->type = OBJ_text;
-  obj->data.s = strdup(s);
-  return obj;
+	obj = new_text_object_internal();
+
+	obj->type = OBJ_text;
+	obj->data.s = strdup(s);
+	return obj;
 }
 
 static struct text_object_list *extract_variable_text_internal(const char *p)
 {
-    struct text_object_list *retval;
-    struct text_object *obj;
-    const char *s = p;
-    
-    retval = malloc(sizeof(struct text_object_list));
-    memset(retval, 0, sizeof(struct text_object_list));
-    retval->text_object_count = 0;
-	
+	struct text_object_list *retval;
+	struct text_object *obj;
+	const char *s = p;
+
+	retval = malloc(sizeof(struct text_object_list));
+	memset(retval, 0, sizeof(struct text_object_list));
+	retval->text_object_count = 0;
+
 	while (*p) {
 		if (*p == '$') {
 			*(char *) p = '\0';
 			obj = create_plain_text(s);
 			if(obj != NULL) {
-			    // allocate memory for the object
-			    retval->text_objects = realloc(retval->text_objects, 
-							   sizeof(struct text_object) * (retval->text_object_count+1));
-			    // assign the new object to the end of the list.
-			    memcpy(&retval->text_objects[retval->text_object_count++],
-				   obj, sizeof(struct text_object));
-			    free(obj);
+				// allocate memory for the object
+				retval->text_objects = realloc(retval->text_objects, 
+						sizeof(struct text_object) * (retval->text_object_count+1));
+				// assign the new object to the end of the list.
+				memcpy(&retval->text_objects[retval->text_object_count++],
+						obj, sizeof(struct text_object));
+				free(obj);
 			}
 			*(char *) p = '$';
 			p++;
@@ -1997,7 +1998,7 @@ static struct text_object_list *extract_variable_text_internal(const char *p)
 					if (*p == '#')
 						p++;
 					while (*p && (isalnum((int) *p)
-						      || *p == '_'))
+								|| *p == '_'))
 						p++;
 				}
 
@@ -2038,40 +2039,40 @@ static struct text_object_list *extract_variable_text_internal(const char *p)
 					// create new object
 					obj = construct_text_object(buf, arg, retval->text_object_count, retval->text_objects);
 					if(obj != NULL) {
-					    // allocate memory for the object
-					    retval->text_objects = realloc(retval->text_objects, 
-									   sizeof(struct text_object) * (retval->text_object_count+1));
-					    // assign the new object to the end of the list.
-					    memcpy(&retval->text_objects[retval->text_object_count++],
-						   obj, sizeof(struct text_object));
-					    free(obj);
+						// allocate memory for the object
+						retval->text_objects = realloc(retval->text_objects, 
+								sizeof(struct text_object) * (retval->text_object_count+1));
+						// assign the new object to the end of the list.
+						memcpy(&retval->text_objects[retval->text_object_count++],
+								obj, sizeof(struct text_object));
+						free(obj);
 					}
 				}
 				continue;
 			} else {
-			    obj = create_plain_text("$");
-			    if(obj != NULL) {
-				// allocate memory for the object
-				retval->text_objects = realloc(retval->text_objects, 
-							       sizeof(struct text_object) * (retval->text_object_count+1));
-				// assign the new object to the end of the list.
-				memcpy(&retval->text_objects[retval->text_object_count++],
-				       obj, sizeof(struct text_object));
-				free(obj);
-			    }
+				obj = create_plain_text("$");
+				if(obj != NULL) {
+					// allocate memory for the object
+					retval->text_objects = realloc(retval->text_objects, 
+							sizeof(struct text_object) * (retval->text_object_count+1));
+					// assign the new object to the end of the list.
+					memcpy(&retval->text_objects[retval->text_object_count++],
+							obj, sizeof(struct text_object));
+					free(obj);
+				}
 			}
 		}
 		p++;
 	}
 	obj = create_plain_text(s);
 	if(obj != NULL) {
-	    // allocate memory for the object
-	    retval->text_objects = realloc(retval->text_objects,
-					   sizeof(struct text_object) * (retval->text_object_count+1));
-	    // assign the new object to the end of the list.
-	    memcpy(&retval->text_objects[retval->text_object_count++],
-		   obj, sizeof(struct text_object));
-	    free(obj);
+		// allocate memory for the object
+		retval->text_objects = realloc(retval->text_objects,
+				sizeof(struct text_object) * (retval->text_object_count+1));
+		// assign the new object to the end of the list.
+		memcpy(&retval->text_objects[retval->text_object_count++],
+				obj, sizeof(struct text_object));
+		free(obj);
 	}
 
 	if (blockdepth) {
@@ -2083,23 +2084,23 @@ static struct text_object_list *extract_variable_text_internal(const char *p)
 
 static void extract_variable_text(const char *p)
 {
-  struct text_object_list *list;
+	struct text_object_list *list;
 
-  free_text_objects(text_object_count, text_objects);
-  text_object_count = 0;
-  text_objects = NULL;
+	free_text_objects(text_object_count, text_objects);
+	text_object_count = 0;
+	text_objects = NULL;
 
 #ifdef MLDONKEY	
-  ml_cleanup();
+	ml_cleanup();
 #endif /* MLDONKEY */
-         
-  list = extract_variable_text_internal(p);
-  text_objects = list->text_objects;
-  text_object_count = list->text_object_count;
 
-  free(list);
+	list = extract_variable_text_internal(p);
+	text_objects = list->text_objects;
+	text_object_count = list->text_object_count;
 
-  return;
+	free(list);
+
+	return;
 }
 
 void parse_conky_vars(char * text, char * p, struct information *cur) { 
@@ -2110,7 +2111,7 @@ void parse_conky_vars(char * text, char * p, struct information *cur) {
 
 static void generate_text_internal(char *p, int p_max_size, struct text_object *objs, unsigned int object_count, struct information *cur)
 {
-    unsigned int i;
+	unsigned int i;
 
 	for (i = 0; i < object_count; i++) {
 		struct text_object *obj = &objs[i];
@@ -2118,345 +2119,290 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 #define OBJ(a) break; case OBJ_##a:
 
 		switch (obj->type) {
-		default:
-			{
-				ERR("not implemented obj type %d",
-				    obj->type);
-			}
-			OBJ(acpitemp) {
-				/* does anyone have decimals in acpi temperature? */
-				if (!use_spacer)
-					snprintf(p, p_max_size, "%d", (int)
-							get_acpi_temperature(obj->
+			default:
+				{
+					ERR("not implemented obj type %d",
+							obj->type);
+				}
+				OBJ(acpitemp) {
+					/* does anyone have decimals in acpi temperature? */
+					if (!use_spacer)
+						snprintf(p, p_max_size, "%d", (int)
+								get_acpi_temperature(obj->
 									data.
 									i));
-				else
-					snprintf(p, 5, "%d    ", (int)
-							get_acpi_temperature(obj->
+					else
+						snprintf(p, 5, "%d    ", (int)
+								get_acpi_temperature(obj->
 									data.
 									i));
-			}
-			OBJ(acpitempf) {
-				/* does anyone have decimals in acpi temperature? */
-				if (!use_spacer)
-					snprintf(p, p_max_size, "%d", (int)
-							((get_acpi_temperature(obj->
-									data.
-									i)+ 40) * 9.0 / 5 - 40));
-				else
-					snprintf(p, 5, "%d    ", (int)
-							((get_acpi_temperature(obj->
-									data.
-									i)+ 40) * 9.0 / 5 - 40));
-			}
-			OBJ(freq) {
-				get_freq(p, p_max_size, "%.0f", 1); /* pk */
-			}
-			OBJ(freq_g) {
-				get_freq(p, p_max_size, "%'.2f", 1000); /* pk */
-			}
-			OBJ(freq_dyn) {
-				if (use_spacer) {
-					get_freq_dynamic(p, 6, "%.0f     ", 1 ); /* pk */
-				} else {
-					get_freq_dynamic(p, p_max_size, "%.0f", 1 ); /* pk */
 				}
-			}
-			OBJ(freq_dyn_g) {
-				if (use_spacer) {
-					get_freq_dynamic(p, 6, "%'.2f     ", 1000); /* pk */
-				} else {
-					get_freq_dynamic(p, p_max_size, "%'.2f", 1000); /* pk */
+				OBJ(acpitempf) {
+					/* does anyone have decimals in acpi temperature? */
+					if (!use_spacer)
+						snprintf(p, p_max_size, "%d", (int)
+								((get_acpi_temperature(obj->
+										       data.
+										       i)+ 40) * 9.0 / 5 - 40));
+					else
+						snprintf(p, 5, "%d    ", (int)
+								((get_acpi_temperature(obj->
+										       data.
+										       i)+ 40) * 9.0 / 5 - 40));
 				}
-			}
-			OBJ(adt746xcpu) {
-				get_adt746x_cpu(p, p_max_size); /* pk */
-			}
-			OBJ(adt746xfan) {
-				get_adt746x_fan(p, p_max_size); /* pk */
-			}
-			OBJ(acpifan) {
-				get_acpi_fan(p, p_max_size);  /* pk */
-			}
-			OBJ(acpiacadapter) {
-				get_acpi_ac_adapter(p, p_max_size); /* pk */
-			}
-			OBJ(battery) {
-				get_battery_stuff(p, p_max_size, obj->data.s);
-			}
-			OBJ(buffers) {
-				human_readable(cur->buffers * 1024, p, 255);
-			}
-			OBJ(cached) {
-				human_readable(cur->cached * 1024, p, 255);
-			}
-			OBJ(cpu) {
-				if (obj->data.cpu_index > info.cpu_count) {
-					printf("obj->data.cpu_index %i info.cpu_count %i", obj->data.cpu_index, info.cpu_count);
-					CRIT_ERR("attempting to use more CPUs then you have!");
+				OBJ(freq) {
+					get_freq(p, p_max_size, "%.0f", 1); /* pk */
 				}
-				if (!use_spacer)
-					snprintf(p, p_max_size, "%*d", pad_percents,
-						(int) round_to_int(cur->cpu_usage[obj->data.cpu_index] *
-							100.0));
-				else
-					snprintf(p, 4, "%*d    ",
-						 pad_percents,
-						 (int) round_to_int(cur->cpu_usage[obj->data.cpu_index] *
-							100.0));
-			}
-			OBJ(cpubar) {
-				new_bar(p, obj->a,
-					obj->b,
-					(int) round_to_int(cur->cpu_usage[obj->data.cpu_index] * 255.0));
-			}
-			OBJ(cpugraph) {
-				new_graph(p, obj->a,
-					  obj->b, obj->c, obj->d,
-					  (unsigned int) round_to_int(cur->cpu_usage[obj->data.cpu_index] *
-							  100), 100, 1);
-			}
-			OBJ(color) {
-				new_fg(p, obj->data.l);
-			}
+				OBJ(freq_g) {
+					get_freq(p, p_max_size, "%'.2f", 1000); /* pk */
+				}
+				OBJ(freq_dyn) {
+					if (use_spacer) {
+						get_freq_dynamic(p, 6, "%.0f     ", 1 ); /* pk */
+					} else {
+						get_freq_dynamic(p, p_max_size, "%.0f", 1 ); /* pk */
+					}
+				}
+				OBJ(freq_dyn_g) {
+					if (use_spacer) {
+						get_freq_dynamic(p, 6, "%'.2f     ", 1000); /* pk */
+					} else {
+						get_freq_dynamic(p, p_max_size, "%'.2f", 1000); /* pk */
+					}
+				}
+				OBJ(adt746xcpu) {
+					get_adt746x_cpu(p, p_max_size); /* pk */
+				}
+				OBJ(adt746xfan) {
+					get_adt746x_fan(p, p_max_size); /* pk */
+				}
+				OBJ(acpifan) {
+					get_acpi_fan(p, p_max_size);  /* pk */
+				}
+				OBJ(acpiacadapter) {
+					get_acpi_ac_adapter(p, p_max_size); /* pk */
+				}
+				OBJ(battery) {
+					get_battery_stuff(p, p_max_size, obj->data.s);
+				}
+				OBJ(buffers) {
+					human_readable(cur->buffers * 1024, p, 255);
+				}
+				OBJ(cached) {
+					human_readable(cur->cached * 1024, p, 255);
+				}
+				OBJ(cpu) {
+					if (obj->data.cpu_index > info.cpu_count) {
+						printf("obj->data.cpu_index %i info.cpu_count %i", obj->data.cpu_index, info.cpu_count);
+						CRIT_ERR("attempting to use more CPUs then you have!");
+					}
+					if (!use_spacer)
+						snprintf(p, p_max_size, "%*d", pad_percents,
+								(int) round_to_int(cur->cpu_usage[obj->data.cpu_index] *
+										   100.0));
+					else
+						snprintf(p, 4, "%*d    ",
+								pad_percents,
+								(int) round_to_int(cur->cpu_usage[obj->data.cpu_index] *
+										   100.0));
+				}
+				OBJ(cpubar) {
+					new_bar(p, obj->a,
+							obj->b,
+							(int) round_to_int(cur->cpu_usage[obj->data.cpu_index] * 255.0));
+				}
+				OBJ(cpugraph) {
+					new_graph(p, obj->a,
+							obj->b, obj->c, obj->d,
+							(unsigned int) round_to_int(cur->cpu_usage[obj->data.cpu_index] *
+										    100), 100, 1);
+				}
+				OBJ(color) {
+					new_fg(p, obj->data.l);
+				}
 #if defined(__linux__)
-			OBJ(i8k_version) {
-				snprintf(p, p_max_size, "%s", i8k.version);
-			}
-			OBJ(i8k_bios) {
-				snprintf(p, p_max_size, "%s", i8k.bios);
-			}
-			OBJ(i8k_serial) { 
-				snprintf(p, p_max_size, "%s", i8k.serial);
-			}
-			OBJ(i8k_cpu_temp) { 
-				snprintf(p, p_max_size, "%s", i8k.cpu_temp);
-			}
-			OBJ(i8k_cpu_tempf) { 
-				int cpu_temp;
-				sscanf(i8k.cpu_temp, "%d", &cpu_temp);
-				snprintf(p, p_max_size, "%.1f", cpu_temp*(9.0/5.0)+32.0);
-			}
-			OBJ(i8k_left_fan_status) { 
-				int left_fan_status;
-				sscanf(i8k.left_fan_status, "%d", &left_fan_status);
-				if(left_fan_status == 0) {
-					snprintf(p, p_max_size,"off");
-				} if(left_fan_status == 1) {
-					snprintf(p, p_max_size, "low");
-				}	if(left_fan_status == 2) {
-					snprintf(p, p_max_size, "high");
+				OBJ(i8k_version) {
+					snprintf(p, p_max_size, "%s", i8k.version);
 				}
+				OBJ(i8k_bios) {
+					snprintf(p, p_max_size, "%s", i8k.bios);
+				}
+				OBJ(i8k_serial) { 
+					snprintf(p, p_max_size, "%s", i8k.serial);
+				}
+				OBJ(i8k_cpu_temp) { 
+					snprintf(p, p_max_size, "%s", i8k.cpu_temp);
+				}
+				OBJ(i8k_cpu_tempf) { 
+					int cpu_temp;
+					sscanf(i8k.cpu_temp, "%d", &cpu_temp);
+					snprintf(p, p_max_size, "%.1f", cpu_temp*(9.0/5.0)+32.0);
+				}
+				OBJ(i8k_left_fan_status) { 
+					int left_fan_status;
+					sscanf(i8k.left_fan_status, "%d", &left_fan_status);
+					if(left_fan_status == 0) {
+						snprintf(p, p_max_size,"off");
+					} if(left_fan_status == 1) {
+						snprintf(p, p_max_size, "low");
+					}	if(left_fan_status == 2) {
+						snprintf(p, p_max_size, "high");
+					}
 
-			}
-			OBJ(i8k_right_fan_status) { 
-				int right_fan_status;
-				sscanf(i8k.right_fan_status, "%d", &right_fan_status);
-				if(right_fan_status == 0) {
-					snprintf(p, p_max_size,"off");
-				} if(right_fan_status == 1) {
-					snprintf(p, p_max_size, "low");
-				}	if(right_fan_status == 2) {
-					snprintf(p, p_max_size, "high");
 				}
-			}
-			OBJ(i8k_left_fan_rpm) { 
-				snprintf(p, p_max_size, "%s", i8k.left_fan_rpm);
-			}
-			OBJ(i8k_right_fan_rpm) { 
-				snprintf(p, p_max_size, "%s", i8k.right_fan_rpm);
-			}
-			OBJ(i8k_ac_status) { 
-				int ac_status;
-				sscanf(i8k.ac_status, "%d", &ac_status);
-				if(ac_status == -1) {
-					snprintf(p, p_max_size,"disabled (read i8k docs)");
-				} if(ac_status == 0) {
-					snprintf(p, p_max_size, "off");
-				}	if(ac_status == 1) {
-					snprintf(p, p_max_size, "on");
+				OBJ(i8k_right_fan_status) { 
+					int right_fan_status;
+					sscanf(i8k.right_fan_status, "%d", &right_fan_status);
+					if(right_fan_status == 0) {
+						snprintf(p, p_max_size,"off");
+					} if(right_fan_status == 1) {
+						snprintf(p, p_max_size, "low");
+					}	if(right_fan_status == 2) {
+						snprintf(p, p_max_size, "high");
+					}
 				}
-			}
-			OBJ(i8k_buttons_status) {
-				snprintf(p, p_max_size, "%s", i8k.buttons_status); 
+				OBJ(i8k_left_fan_rpm) { 
+					snprintf(p, p_max_size, "%s", i8k.left_fan_rpm);
+				}
+				OBJ(i8k_right_fan_rpm) { 
+					snprintf(p, p_max_size, "%s", i8k.right_fan_rpm);
+				}
+				OBJ(i8k_ac_status) { 
+					int ac_status;
+					sscanf(i8k.ac_status, "%d", &ac_status);
+					if(ac_status == -1) {
+						snprintf(p, p_max_size,"disabled (read i8k docs)");
+					} if(ac_status == 0) {
+						snprintf(p, p_max_size, "off");
+					}	if(ac_status == 1) {
+						snprintf(p, p_max_size, "on");
+					}
+				}
+				OBJ(i8k_buttons_status) {
+					snprintf(p, p_max_size, "%s", i8k.buttons_status); 
 
-			}
+				}
 #endif /* __linux__ */
 
 #ifdef X11
-			OBJ(font) {
-				new_font(p, obj->data.s);
-			}
+				OBJ(font) {
+					new_font(p, obj->data.s);
+				}
 #endif /* X11 */
-			OBJ(diskio) {
-				if (!use_spacer) {
-					if (diskio_value > 1024*1024) {
-						snprintf(p, p_max_size, "%.1fG",
-						 		(double)diskio_value/1024/1024);
-					} else if (diskio_value > 1024) {
-						snprintf(p, p_max_size, "%.1fM",
-							 	(double)diskio_value/1024);
-					} else if (diskio_value > 0) {
-						snprintf(p, p_max_size, "%dK", diskio_value);
+				OBJ(diskio) {
+					if (!use_spacer) {
+						if (diskio_value > 1024*1024) {
+							snprintf(p, p_max_size, "%.1fG",
+									(double)diskio_value/1024/1024);
+						} else if (diskio_value > 1024) {
+							snprintf(p, p_max_size, "%.1fM",
+									(double)diskio_value/1024);
+						} else if (diskio_value > 0) {
+							snprintf(p, p_max_size, "%dK", diskio_value);
+						} else {
+							snprintf(p, p_max_size, "%d", diskio_value);
+						}
 					} else {
-						snprintf(p, p_max_size, "%d", diskio_value);
-					}
-				} else {
-					if (diskio_value > 1024*1024) {
-						snprintf(p, 6, "%.1fG   ",
-								(double)diskio_value/1024/1024);
-					} else if (diskio_value > 1024) {
-						snprintf(p, 6, "%.1fM   ",
-								(double)diskio_value/1024);
-					} else if (diskio_value > 0) {
-						snprintf(p, 6, "%dK ", diskio_value);
-					} else {
-						snprintf(p, 6, "%d     ", diskio_value);
+						if (diskio_value > 1024*1024) {
+							snprintf(p, 6, "%.1fG   ",
+									(double)diskio_value/1024/1024);
+						} else if (diskio_value > 1024) {
+							snprintf(p, 6, "%.1fM   ",
+									(double)diskio_value/1024);
+						} else if (diskio_value > 0) {
+							snprintf(p, 6, "%dK ", diskio_value);
+						} else {
+							snprintf(p, 6, "%d     ", diskio_value);
+						}
 					}
 				}
-			}
-			OBJ(diskiograph) {
-				new_graph(p, obj->a,
-					  obj->b, obj->c, obj->d,
-					  diskio_value, obj->e, 1);
-			}
-	
-			OBJ(downspeed) {
-				if (!use_spacer) {
-					snprintf(p, p_max_size, "%d",
-						 (int) (obj->data.net->
-							recv_speed /
-							1024));
-				} else
-					snprintf(p, 6, "%d     ",
-						 (int) (obj->data.net->
-							recv_speed /
-							1024));
-			}
-			OBJ(downspeedf) {
-				if (!use_spacer)
-					snprintf(p, p_max_size, "%.1f",
-						 obj->data.net->
-						 recv_speed / 1024.0);
-				else
-					snprintf(p, 8, "%.1f       ",
-						 obj->data.net->
-						 recv_speed / 1024.0);
-			}
-			OBJ(downspeedgraph) {
-				if (obj->data.net->recv_speed == 0)	// this is just to make the ugliness at start go away
-					obj->data.net->recv_speed = 0.01;
-				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-					  (obj->data.net->recv_speed /
-				1024.0), obj->e, 1);
-			}
-			OBJ(
-				   else
-			) {
-				if (!if_jumped) {
-					i = obj->data.ifblock.pos - 2;
-				} else {
+				OBJ(diskiograph) {
+					new_graph(p, obj->a,
+							obj->b, obj->c, obj->d,
+							diskio_value, obj->e, 1);
+				}
+
+				OBJ(downspeed) {
+					if (!use_spacer) {
+						snprintf(p, p_max_size, "%d",
+								(int) (obj->data.net->
+								       recv_speed /
+								       1024));
+					} else
+						snprintf(p, 6, "%d     ",
+								(int) (obj->data.net->
+								       recv_speed /
+								       1024));
+				}
+				OBJ(downspeedf) {
+					if (!use_spacer)
+						snprintf(p, p_max_size, "%.1f",
+								obj->data.net->
+								recv_speed / 1024.0);
+					else
+						snprintf(p, 8, "%.1f       ",
+								obj->data.net->
+								recv_speed / 1024.0);
+				}
+				OBJ(downspeedgraph) {
+					if (obj->data.net->recv_speed == 0)	// this is just to make the ugliness at start go away
+						obj->data.net->recv_speed = 0.01;
+					new_graph(p, obj->a, obj->b, obj->c, obj->d,
+							(obj->data.net->recv_speed /
+							 1024.0), obj->e, 1);
+				}
+				OBJ(
+						else
+				   ) {
+					if (!if_jumped) {
+						i = obj->data.ifblock.pos - 2;
+					} else {
+						if_jumped = 0;
+					}
+				}
+				OBJ(endif) {
 					if_jumped = 0;
 				}
-			}
-			OBJ(endif) {
-				if_jumped = 0;
-			}
 #ifdef HAVE_POPEN
-			OBJ(addr) {
-				snprintf(p, p_max_size, "%u.%u.%u.%u",
-					 obj->data.net->addr.
-					 sa_data[2] & 255,
-					 obj->data.net->addr.
-					 sa_data[3] & 255,
-					 obj->data.net->addr.
-					 sa_data[4] & 255,
-					 obj->data.net->addr.
-					 sa_data[5] & 255);
+				OBJ(addr) {
+					snprintf(p, p_max_size, "%u.%u.%u.%u",
+							obj->data.net->addr.
+							sa_data[2] & 255,
+							obj->data.net->addr.
+							sa_data[3] & 255,
+							obj->data.net->addr.
+							sa_data[4] & 255,
+							obj->data.net->addr.
+							sa_data[5] & 255);
 
-			}
-			OBJ(linkstatus) {
-				snprintf(p, p_max_size, "%d",
-					 obj->data.net->linkstatus);
-			}
+				}
+				OBJ(linkstatus) {
+					snprintf(p, p_max_size, "%d",
+							obj->data.net->linkstatus);
+				}
 
-			OBJ(exec) {
-				FILE *fp = popen(obj->data.s, "r");
-				int length = fread(p, 1, p_max_size, fp);
-				(void) pclose(fp);
+				OBJ(exec) {
+					FILE *fp = popen(obj->data.s, "r");
+					int length = fread(p, 1, p_max_size, fp);
+					(void) pclose(fp);
 
-				/*output[length] = '\0';
-				if (length > 0 && output[length - 1] == '\n') {
-					output[length - 1] = '\0';
-				}*/
+					/*output[length] = '\0';
+					  if (length > 0 && output[length - 1] == '\n') {
+					  output[length - 1] = '\0';
+					  }*/
 					p[length] = '\0';
 					if (length > 0 && p[length - 1] == '\n') {
 						p[length - 1] = '\0';
 					}
-				    
-				//parse_conky_vars(output, p, cur);
-			}
-			OBJ(execbar) {
-				char *p2 = p;
-				FILE *fp = popen(obj->data.s, "r");
-				int n2 = fread(p, 1, p_max_size, fp);
-				(void) pclose(fp);
 
-				p[n2] = '\0';
-				if (n2 && p[n2 - 1] == '\n')
-					p[n2 - 1] = '\0';
-
-				while (*p2) {
-					if (*p2 == '\001')
-						*p2 = ' ';
-					p2++;
+					//parse_conky_vars(output, p, cur);
 				}
-				double barnum;
-				if (sscanf(p, "%lf", &barnum) == 0) {
-					ERR("reading execbar value failed (perhaps it's not the correct format?)");
-				}
-				if (barnum > 100 || barnum < 0) {
-					ERR("your execbar value is not between 0 and 100, therefore it will be ignored");
-				} else {
-					barnum = barnum / 100.0;
-					new_bar(p, 0, 4, (int) (barnum * 255.0));
-				}
-
-			}
-			OBJ(execgraph) {
-				char *p2 = p;
-				FILE *fp = popen(obj->data.s, "r");
-				int n2 = fread(p, 1, p_max_size, fp);
-				(void) pclose(fp);
-
-				p[n2] = '\0';
-				if (n2 && p[n2 - 1] == '\n')
-					p[n2 - 1] = '\0';
-
-				while (*p2) {
-					if (*p2 == '\001')
-						*p2 = ' ';
-					p2++;
-				}
-				double barnum;
-				if (sscanf(p, "%lf", &barnum) == 0) {
-					ERR("reading execgraph value failed (perhaps it's not the correct format?)");
-				}
-				if (barnum > 100 || barnum < 0) {
-					ERR("your execgraph value is not between 0 and 100, therefore it will be ignored");
-				} else {
-					new_graph(p, 0, 25, obj->c, obj->d, (int) (barnum), obj->e, 1);
-				}
-
-			}
-			OBJ(execibar) {
-				if (current_update_time - obj->data.execi.last_update < obj->data.execi.interval) {
-					new_bar(p, 0, 4, (int) obj->f);
-				} else {
+				OBJ(execbar) {
 					char *p2 = p;
-					FILE *fp = popen(obj->data.execi.cmd, "r");
+					FILE *fp = popen(obj->data.s, "r");
 					int n2 = fread(p, 1, p_max_size, fp);
 					(void) pclose(fp);
+
 					p[n2] = '\0';
 					if (n2 && p[n2 - 1] == '\n')
 						p[n2 - 1] = '\0';
@@ -2466,89 +2412,143 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							*p2 = ' ';
 						p2++;
 					}
-					float barnum;
-					if (sscanf(p, "%f", &barnum) == 0) {
-						ERR("reading execibar value failed (perhaps it's not the correct format?)");
+					double barnum;
+					if (sscanf(p, "%lf", &barnum) == 0) {
+						ERR("reading execbar value failed (perhaps it's not the correct format?)");
 					}
 					if (barnum > 100 || barnum < 0) {
-						ERR("your execibar value is not between 0 and 100, therefore it will be ignored");
+						ERR("your execbar value is not between 0 and 100, therefore it will be ignored");
 					} else {
-						obj->f = 255 * barnum / 100.0;
+						barnum = barnum / 100.0;
+						new_bar(p, 0, 4, (int) (barnum * 255.0));
+					}
+
+				}
+				OBJ(execgraph) {
+					char *p2 = p;
+					FILE *fp = popen(obj->data.s, "r");
+					int n2 = fread(p, 1, p_max_size, fp);
+					(void) pclose(fp);
+
+					p[n2] = '\0';
+					if (n2 && p[n2 - 1] == '\n')
+						p[n2 - 1] = '\0';
+
+					while (*p2) {
+						if (*p2 == '\001')
+							*p2 = ' ';
+						p2++;
+					}
+					double barnum;
+					if (sscanf(p, "%lf", &barnum) == 0) {
+						ERR("reading execgraph value failed (perhaps it's not the correct format?)");
+					}
+					if (barnum > 100 || barnum < 0) {
+						ERR("your execgraph value is not between 0 and 100, therefore it will be ignored");
+					} else {
+						new_graph(p, 0, 25, obj->c, obj->d, (int) (barnum), obj->e, 1);
+					}
+
+				}
+				OBJ(execibar) {
+					if (current_update_time - obj->data.execi.last_update < obj->data.execi.interval) {
 						new_bar(p, 0, 4, (int) obj->f);
-					}
-					obj->data.execi.last_update =
-							current_update_time;
-				}
-			}
-			OBJ(execigraph) {
-				if (current_update_time - obj->data.execi.last_update < obj->data.execi.interval) {
-					new_graph(p, 0,	25, obj->c, obj->d, (int) (obj->f), 100, 0);
-				} else {
-					char *p2 = p;
-					FILE *fp = popen(obj->data.execi.cmd, "r");
-					int n2 = fread(p, 1, p_max_size, fp);
-					(void) pclose(fp);
-					p[n2] = '\0';
-					if (n2 && p[n2 - 1] == '\n')
-						p[n2 - 1] = '\0';
-
-					while (*p2) {
-						if (*p2 == '\001')
-							*p2 = ' ';
-						p2++;
-					}
-					float barnum;
-					if (sscanf(p, "%f", &barnum) == 0) {
-						ERR("reading execigraph value failed (perhaps it's not the correct format?)");
-					}
-					if (barnum > 100 || barnum < 0) {
-						ERR("your execigraph value is not between 0 and 100, therefore it will be ignored");
 					} else {
-						obj->f = barnum;
-						new_graph(p, 0,	25, obj->c, obj->d, (int) (obj->f), 100, 1);
-					}
-					obj->data.execi.last_update = current_update_time;
-	
-				}
+						char *p2 = p;
+						FILE *fp = popen(obj->data.execi.cmd, "r");
+						int n2 = fread(p, 1, p_max_size, fp);
+						(void) pclose(fp);
+						p[n2] = '\0';
+						if (n2 && p[n2 - 1] == '\n')
+							p[n2 - 1] = '\0';
 
-			}
-			OBJ(execi) {
-				if (current_update_time - obj->data.execi.last_update < obj->data.execi.interval || obj->data.execi.interval == 0) {
-					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
-				} else {
-					char *output = obj->data.execi.buffer;
-					FILE *fp = popen(obj->data.execi.cmd, "r");
-					//int length = fread(output, 1, TEXT_BUFFER_SIZE, fp);
-					int length = fread(output, 1, TEXT_BUFFER_SIZE, fp);
-					(void) pclose(fp);
-				    
-					output[length] = '\0';
-					if (length > 0 && output[length - 1] == '\n') {
-						output[length - 1] = '\0';
+						while (*p2) {
+							if (*p2 == '\001')
+								*p2 = ' ';
+							p2++;
+						}
+						float barnum;
+						if (sscanf(p, "%f", &barnum) == 0) {
+							ERR("reading execibar value failed (perhaps it's not the correct format?)");
+						}
+						if (barnum > 100 || barnum < 0) {
+							ERR("your execibar value is not between 0 and 100, therefore it will be ignored");
+						} else {
+							obj->f = 255 * barnum / 100.0;
+							new_bar(p, 0, 4, (int) obj->f);
+						}
+						obj->data.execi.last_update =
+							current_update_time;
 					}
-					obj->data.execi.last_update = current_update_time;
-					snprintf(p, p_max_size, "%s", output);
 				}
-				//parse_conky_vars(output, p, cur);
-			}
-			OBJ(texeci) {
-				static int running = 0;
+				OBJ(execigraph) {
+					if (current_update_time - obj->data.execi.last_update < obj->data.execi.interval) {
+						new_graph(p, 0,	25, obj->c, obj->d, (int) (obj->f), 100, 0);
+					} else {
+						char *p2 = p;
+						FILE *fp = popen(obj->data.execi.cmd, "r");
+						int n2 = fread(p, 1, p_max_size, fp);
+						(void) pclose(fp);
+						p[n2] = '\0';
+						if (n2 && p[n2 - 1] == '\n')
+							p[n2 - 1] = '\0';
+
+						while (*p2) {
+							if (*p2 == '\001')
+								*p2 = ' ';
+							p2++;
+						}
+						float barnum;
+						if (sscanf(p, "%f", &barnum) == 0) {
+							ERR("reading execigraph value failed (perhaps it's not the correct format?)");
+						}
+						if (barnum > 100 || barnum < 0) {
+							ERR("your execigraph value is not between 0 and 100, therefore it will be ignored");
+						} else {
+							obj->f = barnum;
+							new_graph(p, 0,	25, obj->c, obj->d, (int) (obj->f), 100, 1);
+						}
+						obj->data.execi.last_update = current_update_time;
+
+					}
+
+				}
+				OBJ(execi) {
+					if (current_update_time - obj->data.execi.last_update < obj->data.execi.interval || obj->data.execi.interval == 0) {
+						snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
+					} else {
+						char *output = obj->data.execi.buffer;
+						FILE *fp = popen(obj->data.execi.cmd, "r");
+						//int length = fread(output, 1, TEXT_BUFFER_SIZE, fp);
+						int length = fread(output, 1, TEXT_BUFFER_SIZE, fp);
+						(void) pclose(fp);
+
+						output[length] = '\0';
+						if (length > 0 && output[length - 1] == '\n') {
+							output[length - 1] = '\0';
+						}
+						obj->data.execi.last_update = current_update_time;
+						snprintf(p, p_max_size, "%s", output);
+					}
+					//parse_conky_vars(output, p, cur);
+				}
+				OBJ(texeci) {
 				if (current_update_time - obj->data.execi.last_update < obj->data.execi.interval) {
 					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
 				} else {
-					static pthread_t execthread;
-					if (running) {
-						pthread_join( execthread, NULL);
-						running = 0;
-					}
-					if (!running) {
-						running = 1;
-						pthread_create( &execthread, NULL, (void*)threaded_exec, (void*) obj);
-						pthread_mutex_lock( &mutex1 );
-						obj->data.execi.last_update = current_update_time;
-						pthread_mutex_unlock( &mutex1 );
+					if (!execthread && !pthread_mutex_trylock(&mutex1)) {
+						
+						if (pthread_create(&execthread, NULL, (void*)threaded_exec, (void*) obj)) {
+							ERR("Error starting thread");
+						}
+						pthread_mutex_unlock(&mutex1);
 					}
 					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
+				}
+				if (!pthread_mutex_trylock(&mutex1)) {
+				//	pthread_join(execthread, NULL);
+					execthread = (pthread_t)0;
+					pthread_mutex_unlock(&mutex1);
 				}
 				//parse_conky_vars(obj->data.execi.buffer, p, cur);
 			}
@@ -4549,6 +4549,7 @@ static void load_config_file(const char *);
 /* reload the config file */
 void reload_config(void)
 {
+	pthread_mutex_lock(&mutex1);
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
         if (info.xmms.thread) {
 		if (destroy_xmms_thread()!=0)
@@ -4585,10 +4586,13 @@ void reload_config(void)
 		text = NULL;
 		update_text();
 	}
+	pthread_mutex_unlock(&mutex1);
 }
 
 void clean_up(void)
 {
+	pthread_mutex_lock(&mutex1);
+	execthread = (pthread_t)0;
 #ifdef X11
 #ifdef XDBE
 	if (use_xdbe) {
