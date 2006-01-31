@@ -1004,8 +1004,8 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 
 #define MAX_THREADS 512 // sure whatever
 typedef struct thread_info_s *thread_info;
-thread_info thread_list[MAX_THREADS];
-int thread_count = 0;
+static thread_info thread_list[MAX_THREADS];
+static int thread_count = 0;
 
 int register_thread(struct thread_info_s *new_thread)
 {
@@ -1022,16 +1022,44 @@ void lock_all_threads()
 {
 	if (thread_count) {
 		ERR("trying to end all threads");
-		int i, ret;
+		int i, ret, tries;
 		// now we wait to get the locks
 		for (i = 0; i < thread_count; i++) {
 			ret = 1;
-			while (ret) {
-				ret = pthread_mutex_trylock(&(thread_list[i]->mutex));
+			tries = 0;
+			if (!thread_list[i]->thread) {
+				while (ret) {
+					tries++;
+					usleep(50);
+					ret = pthread_mutex_trylock(&(thread_list[i]->mutex));
+					if (tries > 25) {
+						ERR("giving up on thread %i", (int)thread_list[i]->thread);
+						break;
+					}
+				}
+			} else { 
+				if (pthread_join(thread_list[i]->thread, NULL))
+					ERR("Problem joining thread %i\n", (int)thread_list[i]->thread);
+				while (ret) {
+					tries++;
+					usleep(50);
+					ret = pthread_mutex_trylock(&(thread_list[i]->mutex));
+					if (tries > 25) {
+						ERR("giving up on thread %i", (int)thread_list[i]->thread);
+						break;
+					}
+				}
 			}
-			/*if (pthread_join(thread_list[i]->thread, NULL))
-			 * ERR("Problem joining thread %i\n", (int)thread_list[i]->thread);*/
 		}
+	}
+}
+
+void replace_thread(struct thread_info_s *new_thread, int pos)
+{
+	if (pos >= 0 && pos < MAX_THREADS) {
+		thread_list[pos] = new_thread;
+	} else {
+		ERR("thread position out of bounds");
 	}
 }
 
@@ -2582,7 +2610,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						if (pthread_create(&(obj->data.execi.thread_info.thread), NULL, (void*)threaded_exec, (void*) obj)) {
 							ERR("Error starting thread");
 						}
-//						printf("thread is %i\n", (int)obj->data.execi.thread_info.thread);
+						replace_thread(&(obj->data.execi.thread_info), obj->data.execi.pos);
 						pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
 					}
 					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
