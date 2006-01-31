@@ -733,6 +733,14 @@ VARIABLES
 	      Prints the MPD track field
 
 
+       mpd_name
+	      Prints the MPD name field
+
+
+       mpd_file
+	      Prints the file name of the current MPD song
+
+
        new_mails
 	      Unread mail count in mail spool.
 

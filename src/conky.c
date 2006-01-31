@@ -883,10 +883,13 @@ enum text_object_type {
 	OBJ_mpd_status,
 	OBJ_mpd_host,
 	OBJ_mpd_port,
+	OBJ_mpd_password,
 	OBJ_mpd_bar,
 	OBJ_mpd_elapsed,
 	OBJ_mpd_length,
 	OBJ_mpd_track,
+	OBJ_mpd_name,
+	OBJ_mpd_file,
 	OBJ_mpd_percent,
 #endif
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
@@ -1150,12 +1153,59 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 						break;*/
 #ifdef MPD
 			case OBJ_mpd_title:
+				if (info.mpd.title) {
+					free(info.mpd.title);
+					info.mpd.title = 0;
+				}
+				break;
 			case OBJ_mpd_artist:
+				if (info.mpd.artist) {
+					free(info.mpd.artist);
+					info.mpd.artist = 0;
+				}
+				break;
 			case OBJ_mpd_album:
+				if (info.mpd.album) {
+					free(info.mpd.album);
+					info.mpd.album = 0;
+				}
+				break;
 			case OBJ_mpd_random:
+				if (info.mpd.random) {
+					free(info.mpd.random);
+					info.mpd.random = 0;
+				}
+				break;
 			case OBJ_mpd_repeat:
+				if (info.mpd.repeat) {
+					free(info.mpd.repeat);
+					info.mpd.repeat = 0;
+				}
+				break;
 			case OBJ_mpd_track:
+				if (info.mpd.track) {
+					free(info.mpd.track);
+					info.mpd.track = 0;
+				}
+				break;
+			case OBJ_mpd_name:
+				if (info.mpd.name) {
+					free(info.mpd.name);
+					info.mpd.name = 0;
+				}
+				break;
+			case OBJ_mpd_file:
+				if (info.mpd.file) {
+					free(info.mpd.file);
+					info.mpd.file = 0;
+				}
+				break;
 			case OBJ_mpd_status:
+				if (info.mpd.status) {
+					free(info.mpd.status);
+					info.mpd.status = 0;
+				}
+				break;
 			case OBJ_mpd_host:
 #endif
 #ifdef BMPX
@@ -1865,6 +1915,8 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		END OBJ(mpd_elapsed, INFO_MPD)
 		END OBJ(mpd_length, INFO_MPD)
 		END OBJ(mpd_track, INFO_MPD)
+		END OBJ(mpd_name, INFO_MPD)
+		END OBJ(mpd_file, INFO_MPD)
 		END OBJ(mpd_percent, INFO_MPD)
 		END OBJ(mpd_album, INFO_MPD) END OBJ(mpd_vol,
 				INFO_MPD) END OBJ(mpd_bitrate,
@@ -3089,6 +3141,12 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			}
 			OBJ(mpd_track) {
 				snprintf(p, p_max_size, "%s", cur->mpd.track);
+			}
+			OBJ(mpd_name) {
+				snprintf(p, p_max_size, "%s", cur->mpd.name);
+			}
+			OBJ(mpd_file) {
+				snprintf(p, p_max_size, "%s", cur->mpd.file);
 			}
 			OBJ(mpd_vol) {
 				snprintf(p, p_max_size, "%i", cur->mpd.volume);
@@ -4763,7 +4821,14 @@ static void set_default_configurations(void)
 #ifdef MPD
 	strcpy(info.mpd.host, "localhost");
 	info.mpd.port = 6600;
-	info.mpd.status = "Checking status...";
+	info.mpd.status = NULL;
+	info.mpd.artist = NULL;
+	info.mpd.album = NULL;
+	info.mpd.title = NULL;
+	info.mpd.random = NULL;
+	info.mpd.track = NULL;
+	info.mpd.name = NULL;
+	info.mpd.file = NULL;
 #endif
 	use_spacer = 0;
 #ifdef X11
@@ -4967,7 +5032,7 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 #ifdef MPD
 		CONF("mpd_host") {
 			if (value)
-				strcpy(info.mpd.host, value);
+				strncpy(info.mpd.host, value, 127);
 			else
 				CONF_ERR;
 		}
@@ -4978,6 +5043,12 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 				    || info.mpd.port > 0xffff)
 					CONF_ERR;
 			}
+		}
+		CONF("mpd_password") {
+			if (value)
+				strncpy(info.mpd.password, value, 127);
+			else
+				CONF_ERR;
 		}
 #endif
 		CONF("cpu_avg_samples") {

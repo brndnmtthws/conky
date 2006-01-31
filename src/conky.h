@@ -119,9 +119,12 @@ struct mpd_s {
 	char *random;
 	char *repeat;
 	char *track;
+	char *name;
+	char *file;
 	int volume;
 	unsigned int port;
 	char host[128];
+	char password[128];
 	float progress;
 	int bitrate;
 	int length;

@@ -820,6 +820,24 @@
 
 <varlistentry>
 	<term>
+		<command><option>mpd_name</option></command>
+	</term>
+	<listitem>
+		Prints the MPD name field
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>mpd_file</option></command>
+	</term>
+	<listitem>
+		Prints the file name of the current MPD song
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>new_mails</option></command>
 	</term>
 	<listitem>
