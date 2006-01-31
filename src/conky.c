@@ -1018,37 +1018,19 @@ int register_thread(struct thread_info_s *new_thread)
 	return thread_count - 1;
 }
 
-void print_shit()
+void lock_all_threads()
 {
-	int i;
-	for (i = 0; i < thread_count; i++) {
-		printf("thread is %i\n", (int)(thread_list[i])->thread);
-	}
-
-}
-
-void replace_thread(struct thread_info_s *new_thread, int pos)
-{
-	if (pos >= 0 && pos < MAX_THREADS) {
-		thread_list[pos] = new_thread;
-	} else {
-		ERR("thread position out of bounds");
-	}
-}
-
-void join_all_threads()
-{
-	int i;
-	// now we wait to get the locks
-	for (i = 0; i < thread_count; i++) {
-		// try to lock mutex
-		if (thread_list[i]) {
-			if (thread_list[i]->thread) {
-				printf("thread is %i\n", (int)thread_list[i]->thread);
-/*				pthread_mutex_lock(&(thread_list[i]->mutex));
-				if (pthread_join(thread_list[i]->thread, NULL))
-					ERR("Problem joining thread %i\n", (int)thread_list[i]->thread);*/
+	if (thread_count) {
+		ERR("trying to end all threads");
+		int i, ret;
+		// now we wait to get the locks
+		for (i = 0; i < thread_count; i++) {
+			ret = 1;
+			while (ret) {
+				ret = pthread_mutex_trylock(&(thread_list[i]->mutex));
 			}
+			/*if (pthread_join(thread_list[i]->thread, NULL))
+			 * ERR("Problem joining thread %i\n", (int)thread_list[i]->thread);*/
 		}
 	}
 }
@@ -1069,7 +1051,10 @@ void *threaded_exec(struct text_object *obj) {
 		p2++;
 	}
 	obj->data.execi.last_update = current_update_time;
-	pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
+	int unlock = pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
+	if (unlock) {
+		ERR("error %i unlocking thread", unlock);
+	}
 	pthread_exit(NULL);
 }
 
@@ -4329,8 +4314,6 @@ static void main_loop()
 	info.looped = 0;
 	while (total_run_times == 0 || info.looped < total_run_times - 1) {
 		info.looped++;
-		printf("loop %i:\n", (int)info.looped);
-			print_shit();
 
 #ifdef SIGNAL_BLOCKING
 		/* block signals.  we will inspect for pending signals later */
@@ -4607,7 +4590,7 @@ static void load_config_file(const char *);
 /* reload the config file */
 void reload_config(void)
 {
-	join_all_threads();
+	lock_all_threads();
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
         if (info.xmms.thread) {
 		if (destroy_xmms_thread()!=0)
@@ -4649,7 +4632,7 @@ void reload_config(void)
 
 void clean_up(void)
 {
-	join_all_threads();
+	lock_all_threads();
 #ifdef X11
 #ifdef XDBE
 	if (use_xdbe) {
