@@ -1025,39 +1025,19 @@ void lock_all_threads()
 {
 	if (thread_count) {
 		ERR("trying to end all threads");
-		int i, ret, tries;
+		int i, ret;
 		// now we wait to get the locks
 		for (i = 0; i < thread_count; i++) {
-			ret = 1;
-			tries = 0;
-			if (!thread_list[i]->thread) {
-				while (ret) {
-					tries++;
-					usleep(50);
-					ret = pthread_mutex_trylock(&(thread_list[i]->mutex));
-					if (tries > 25) {
-						ERR("giving up on thread %i", (int)thread_list[i]->thread);
-						break;
-					}
-				}
-			} else { 
-				if (pthread_join(thread_list[i]->thread, NULL))
-					ERR("Problem joining thread %i\n", (int)thread_list[i]->thread);
-				while (ret) {
-					tries++;
-					usleep(50);
-					ret = pthread_mutex_trylock(&(thread_list[i]->mutex));
-					if (tries > 25) {
-						ERR("giving up on thread %i", (int)thread_list[i]->thread);
-						break;
-					}
-				}
+			usleep(50);
+			ret = pthread_mutex_lock(&(thread_list[i]->mutex));
+			if (ret) {
+				ERR("giving up on thread %i", (int)thread_list[i]->thread);
 			}
 		}
 	}
 }
 
-void replace_thread(struct thread_info_s *new_thread, int pos)
+void replace_thread(struct thread_info_s *new_thread, int pos) // this isn't even used anymore; oh wells
 {
 	if (pos >= 0 && pos < MAX_THREADS) {
 		thread_list[pos] = new_thread;
@@ -1066,25 +1046,38 @@ void replace_thread(struct thread_info_s *new_thread, int pos)
 	}
 }
 
-void *threaded_exec(struct text_object *obj) {
-	pthread_mutex_lock(&(obj->data.execi.thread_info.mutex));
-	char *p2 = obj->data.execi.buffer;
-	FILE *fp = popen(obj->data.execi.cmd,"r");
-	int n2 = fread(p2, 1, TEXT_BUFFER_SIZE, fp);
-	(void) pclose(fp);	
-	p2[n2] = '\0';
-	if (n2 && p2[n2 - 1] == '\n')
-		p2[n2 - 1] = '\0';
-
-	while (*p2) {
-		if (*p2 == '\001')
-			*p2 = ' ';
-		p2++;
-	}
-	obj->data.execi.last_update = current_update_time;
-	int unlock = pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
-	if (unlock) {
-		ERR("error %i unlocking thread", unlock);
+void *threaded_exec(struct text_object *obj) { // pthreads are really beginning to piss me off
+	double update_time;
+	while (1) {
+		update_time = get_time();
+		pthread_mutex_lock(&(obj->data.execi.thread_info.mutex));
+		char *p2 = obj->data.execi.buffer;
+		FILE *fp = popen(obj->data.execi.cmd,"r");
+		int n2 = fread(p2, 1, TEXT_BUFFER_SIZE, fp);
+		(void) pclose(fp);
+		p2[n2] = '\0';
+		if (n2 && p2[n2 - 1] == '\n')
+			p2[n2 - 1] = '\0';
+		while (*p2) {
+			if (*p2 == '\001')
+				*p2 = ' ';
+			p2++;
+		}
+		obj->data.execi.last_update = update_time;
+		usleep(100); // prevent race condition
+		int unlock = pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
+		if (unlock) {
+			ERR("error %i unlocking thread", unlock);
+		}
+		if (get_time() - obj->data.execi.last_update > obj->data.execi.interval) {
+			continue;
+		} else {
+			unsigned int delay = 1000000 * (obj->data.execi.interval -(get_time() - obj->data.execi.last_update));
+			if (delay < update_interval * 500000) {
+				delay = update_interval * 1000000;
+			}
+			usleep(delay);
+		}
 	}
 	pthread_exit(NULL);
 }
@@ -1092,7 +1085,7 @@ void *threaded_exec(struct text_object *obj) {
 static struct text_object *new_text_object_internal()
 {
 	struct text_object *obj = malloc(sizeof(struct text_object));
-	memset(obj, 0, sizeof(struct text_object));    
+	memset(obj, 0, sizeof(struct text_object));
 	return obj;
 }
 
@@ -1385,7 +1378,6 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		}
 	END OBJ(endif, 0)
 		if (blockdepth) {
-			printf("blockdepth is %i and blockstart[blockdepth] is %i and object_count is %i\n", blockdepth, blockstart[blockdepth - 1], object_count);
 			blockdepth--;
 			text_objects[blockstart[blockdepth]].data.ifblock.pos = object_count;
 		} else {
@@ -1443,8 +1435,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		obj->data.execi.buffer =
 			(char *) calloc(1, TEXT_BUFFER_SIZE);
 	}
-	pthread_mutex_init(&(obj->data.execi.thread_info.mutex), NULL);
-	obj->data.execi.pos = register_thread(&(obj->data.execi.thread_info));
+	obj->data.execi.pos = -1;
 	END OBJ(pre_exec, 0) obj->type = OBJ_text;
 	if (arg) {
 		FILE *fp = popen(arg, "r");
@@ -1762,7 +1753,6 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	blockstart[blockdepth] = object_count;
 	obj->data.ifblock.pos = object_count + 2;
 	blockdepth++;
-	printf("blockdepth is %i and blockstart[blockdepth] is %i and object_count is %i\n", blockdepth, blockstart[blockdepth - 1], object_count);
 	END OBJ(if_running, 0)
 		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
 			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
@@ -2654,25 +2644,19 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					//parse_conky_vars(output, p, cur);
 				}
 				OBJ(texeci) {
-				if (current_update_time - obj->data.execi.last_update < obj->data.execi.interval) {
-					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
-				} else {
-					if (!obj->data.execi.thread_info.thread && !pthread_mutex_trylock(&(obj->data.execi.thread_info.mutex))) {
-						
-						if (pthread_create(&(obj->data.execi.thread_info.thread), NULL, (void*)threaded_exec, (void*) obj)) {
-							ERR("Error starting thread");
+					if (obj->data.execi.pos < 0) {
+						obj->data.execi.last_update = current_update_time;
+						pthread_mutex_init(&(obj->data.execi.thread_info.mutex), NULL);
+						if (!obj->data.execi.thread_info.thread && !pthread_mutex_trylock(&(obj->data.execi.thread_info.mutex))) {
+							if (pthread_create(&(obj->data.execi.thread_info.thread), NULL, (void*)threaded_exec, (void*) obj)) {
+								ERR("Error starting thread");
+							}
+							obj->data.execi.pos = register_thread(&(obj->data.execi.thread_info));
+							pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
 						}
-						replace_thread(&(obj->data.execi.thread_info), obj->data.execi.pos);
-						pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
 					}
 					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
 				}
-				if (!pthread_mutex_trylock(&(obj->data.execi.thread_info.mutex))) {
-					obj->data.execi.thread_info.thread = (pthread_t)0;
-					pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
-				}
-				//parse_conky_vars(obj->data.execi.buffer, p, cur);
-			}
 #endif
 			OBJ(fs_bar) {
 				if (obj->data.fs != NULL) {
