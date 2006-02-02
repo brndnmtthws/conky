@@ -1050,7 +1050,9 @@ void *threaded_exec(struct text_object *obj) { // pthreads are really beginning 
 	double update_time;
 	while (1) {
 		update_time = get_time();
-		pthread_mutex_lock(&(obj->data.execi.thread_info.mutex));
+		if (pthread_mutex_trylock(&(obj->data.execi.thread_info.mutex))) {
+			break;
+		}
 		char *p2 = obj->data.execi.buffer;
 		FILE *fp = popen(obj->data.execi.cmd,"r");
 		int n2 = fread(p2, 1, TEXT_BUFFER_SIZE, fp);
