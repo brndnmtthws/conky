@@ -1032,6 +1032,8 @@ void lock_all_threads()
 			ret = pthread_mutex_lock(&(thread_list[i]->mutex));
 			if (ret) {
 				ERR("giving up on thread %i", (int)thread_list[i]->thread);
+			} else {
+				ERR("locked %i of %i", i+1, thread_count);
 			}
 		}
 	}
@@ -1048,10 +1050,11 @@ void replace_thread(struct thread_info_s *new_thread, int pos) // this isn't eve
 
 void *threaded_exec(struct text_object *obj) { // pthreads are really beginning to piss me off
 	double update_time;
+	int unlock;
 	while (1) {
 		update_time = get_time();
 		if (pthread_mutex_trylock(&(obj->data.execi.thread_info.mutex))) {
-			break;
+			pthread_exit(NULL);
 		}
 		char *p2 = obj->data.execi.buffer;
 		FILE *fp = popen(obj->data.execi.cmd,"r");
@@ -1066,15 +1069,24 @@ void *threaded_exec(struct text_object *obj) { // pthreads are really beginning 
 			p2++;
 		}
 		obj->data.execi.last_update = update_time;
-		usleep(100); // prevent race condition
-		int unlock = pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
+		unlock = pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
 		if (unlock) {
 			ERR("error %i unlocking thread", unlock);
+			pthread_exit(NULL);
+		}
+		usleep(100); // prevent race condition
+		if (pthread_mutex_trylock(&(obj->data.execi.thread_info.mutex))) {
+			pthread_exit(NULL);
+		}
+		unlock = pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
+		if (unlock) {
+			ERR("error %i unlocking thread", unlock);
+			pthread_exit(NULL);
 		}
 		if (get_time() - obj->data.execi.last_update > obj->data.execi.interval) {
 			continue;
 		} else {
-			unsigned int delay = 1000000 * (obj->data.execi.interval -(get_time() - obj->data.execi.last_update));
+			unsigned int delay = 1000000.0 * (obj->data.execi.interval -(get_time() - obj->data.execi.last_update));
 			if (delay < update_interval * 500000) {
 				delay = update_interval * 1000000;
 			}
