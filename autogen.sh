@@ -3,6 +3,6 @@
 
 aclocal-1.9
 libtoolize --force
-autoheader
+autoheader-2.59
 automake-1.9 -a
-autoconf
+autoconf-2.59

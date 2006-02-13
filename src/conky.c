@@ -407,7 +407,7 @@ static int special_index;	/* used when drawing */
 
 static struct special_t *new_special(char *buf, int t)
 {
-	if (special_count >= 256)
+	if (special_count >= 512)
 		CRIT_ERR("too many special things in text");
 
 	buf[0] = SPECIAL_CHAR;
@@ -921,7 +921,6 @@ enum text_object_type {
 };
 
 struct thread_info_s {
-	pthread_mutex_t mutex;
 	pthread_t thread;
 };
 
@@ -1009,6 +1008,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 typedef struct thread_info_s *thread_info;
 static thread_info thread_list[MAX_THREADS];
 static int thread_count = 0;
+static int threads_runnable = 1;
 
 int register_thread(struct thread_info_s *new_thread)
 {
@@ -1019,24 +1019,6 @@ int register_thread(struct thread_info_s *new_thread)
 		thread_count++;
 	}
 	return thread_count - 1;
-}
-
-void lock_all_threads()
-{
-	if (thread_count) {
-		ERR("trying to end all threads");
-		int i, ret;
-		// now we wait to get the locks
-		for (i = 0; i < thread_count; i++) {
-			usleep(50);
-			ret = pthread_mutex_lock(&(thread_list[i]->mutex));
-			if (ret) {
-				ERR("giving up on thread %i", (int)thread_list[i]->thread);
-			} else {
-				ERR("locked %i of %i", i+1, thread_count);
-			}
-		}
-	}
 }
 
 void replace_thread(struct thread_info_s *new_thread, int pos) // this isn't even used anymore; oh wells
@@ -1050,39 +1032,25 @@ void replace_thread(struct thread_info_s *new_thread, int pos) // this isn't eve
 
 void *threaded_exec(struct text_object *obj) { // pthreads are really beginning to piss me off
 	double update_time;
-	int unlock;
-	while (1) {
+	int run_code = threads_runnable;
+	while (threads_runnable == run_code) {
 		update_time = get_time();
-		if (pthread_mutex_trylock(&(obj->data.execi.thread_info.mutex))) {
-			pthread_exit(NULL);
-		}
 		char *p2 = obj->data.execi.buffer;
 		FILE *fp = popen(obj->data.execi.cmd,"r");
 		int n2 = fread(p2, 1, TEXT_BUFFER_SIZE, fp);
 		(void) pclose(fp);
 		p2[n2] = '\0';
-		if (n2 && p2[n2 - 1] == '\n')
+		if (n2 && p2[n2 - 1] == '\n') {
 			p2[n2 - 1] = '\0';
+		}
 		while (*p2) {
-			if (*p2 == '\001')
+			if (*p2 == '\001') {
 				*p2 = ' ';
+			}
 			p2++;
 		}
 		obj->data.execi.last_update = update_time;
-		unlock = pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
-		if (unlock) {
-			ERR("error %i unlocking thread", unlock);
-			pthread_exit(NULL);
-		}
 		usleep(100); // prevent race condition
-		if (pthread_mutex_trylock(&(obj->data.execi.thread_info.mutex))) {
-			pthread_exit(NULL);
-		}
-		unlock = pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
-		if (unlock) {
-			ERR("error %i unlocking thread", unlock);
-			pthread_exit(NULL);
-		}
 		if (get_time() - obj->data.execi.last_update > obj->data.execi.interval) {
 			continue;
 		} else {
@@ -1093,7 +1061,9 @@ void *threaded_exec(struct text_object *obj) { // pthreads are really beginning 
 			usleep(delay);
 		}
 	}
+	ERR("exiting thread");
 	pthread_exit(NULL);
+	return 0;
 }
 
 static struct text_object *new_text_object_internal()
@@ -2237,7 +2207,6 @@ void parse_conky_vars(char * text, char * p, struct information *cur) {
 static void generate_text_internal(char *p, int p_max_size, struct text_object *objs, unsigned int object_count, struct information *cur)
 {
 	unsigned int i;
-
 	for (i = 0; i < object_count; i++) {
 		struct text_object *obj = &objs[i];
 
@@ -2660,14 +2629,10 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				OBJ(texeci) {
 					if (obj->data.execi.pos < 0) {
 						obj->data.execi.last_update = current_update_time;
-						pthread_mutex_init(&(obj->data.execi.thread_info.mutex), NULL);
-						if (!obj->data.execi.thread_info.thread && !pthread_mutex_trylock(&(obj->data.execi.thread_info.mutex))) {
-							if (pthread_create(&(obj->data.execi.thread_info.thread), NULL, (void*)threaded_exec, (void*) obj)) {
-								ERR("Error starting thread");
-							}
-							obj->data.execi.pos = register_thread(&(obj->data.execi.thread_info));
-							pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
+						if (pthread_create(&(obj->data.execi.thread_info.thread), NULL, (void*)threaded_exec, (void*) obj)) {
+							ERR("Error starting thread");
 						}
+						obj->data.execi.pos = register_thread(&(obj->data.execi.thread_info));
 					}
 					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
 				}
@@ -4674,7 +4639,8 @@ static void load_config_file(const char *);
 /* reload the config file */
 void reload_config(void)
 {
-	lock_all_threads();
+	//lock_all_threads();
+	threads_runnable++;
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
         if (info.xmms.thread) {
 		if (destroy_xmms_thread()!=0)
@@ -4716,7 +4682,8 @@ void reload_config(void)
 
 void clean_up(void)
 {
-	lock_all_threads();
+	//lock_all_threads();
+	threads_runnable++;
 #ifdef X11
 #ifdef XDBE
 	if (use_xdbe) {
@@ -5256,7 +5223,11 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 			set_transparent = string_to_bool(value);
 		}
 		CONF("own_window_colour") {
-			background_colour = get_x11_color(value);
+			if (value) {
+				background_colour = get_x11_color(value);
+			} else {
+				ERR("Invalid colour for own_winder_colour (try omitting the '#' for hex colours");
+			}
 		}
 #endif
 		CONF("stippled_borders") {

@@ -49,7 +49,7 @@
 #define TOP_PID 3
 #define TOP_MEM 4
 
-#define TEXT_BUFFER_SIZE 1024
+#define TEXT_BUFFER_SIZE 1280
 #define P_MAX_SIZE ((TEXT_BUFFER_SIZE * 4) - 2) 
 
 #include <sys/socket.h>
