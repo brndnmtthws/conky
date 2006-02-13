@@ -31,7 +31,7 @@ DEPEND_COMMON="
 			)
 		bmp? ( media-sound/beep-media-player )
 		audacious? ( media-sound/audacious )
-		infopipe? ( media-plugins/xmms-infopipe || media-plugins/bmp-infopipe )
+		infopipe? ( || ( media-plugins/xmms-infopipe media-plugins/bmp-infopipe ) )
 		xmms? ( media-sound/xmms )
 	)"
 
