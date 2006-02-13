@@ -8,9 +8,9 @@
 void update_mpd()
 {
 	struct information *current_info = &info;
-	current_info->conn =
-	    mpd_newConnection(current_info->mpd.host,
-			      current_info->mpd.port, 10);
+	if (current_info->conn == NULL) {
+		current_info->conn = mpd_newConnection(current_info->mpd.host, current_info->mpd.port, 10);
+	}
 	if (strlen(current_info->mpd.password) > 1) {
 		mpd_sendPasswordCommand(current_info->conn,
 					current_info->mpd.password);
@@ -19,6 +19,7 @@ void update_mpd()
 	if (current_info->conn->error) {
 		//ERR("%MPD error: s\n", current_info->conn->errorStr);
 		mpd_closeConnection(current_info->conn);
+		current_info->conn = 0;
 		if (current_info->mpd.artist == NULL)
 			current_info->mpd.artist =
 			    malloc(TEXT_BUFFER_SIZE);
@@ -57,15 +58,7 @@ void update_mpd()
 			TEXT_BUFFER_SIZE - 1);
 		strncpy(current_info->mpd.track, "Unknown",
 			TEXT_BUFFER_SIZE - 1);
-		if (strlen(current_info->conn->errorStr) > 1) {
-			strncpy(current_info->mpd.status,
-				current_info->conn->errorStr,
-				TEXT_BUFFER_SIZE - 1);
-		} else {
-			strncpy(current_info->mpd.status,
-				"MPD not responding",
-				TEXT_BUFFER_SIZE - 1);
-		}
+		strncpy(current_info->mpd.status, "MPD not responding",	TEXT_BUFFER_SIZE - 1);
 		current_info->mpd.bitrate = 0;
 		current_info->mpd.progress = 0;
 		current_info->mpd.elapsed = 0;
@@ -82,6 +75,7 @@ void update_mpd()
 	if ((status = mpd_getStatus(current_info->conn)) == NULL) {
 		//ERR("MPD error: %s\n", current_info->conn->errorStr);
 		mpd_closeConnection(current_info->conn);
+		current_info->conn = 0;
 		if (current_info->mpd.artist == NULL)
 			current_info->mpd.artist =
 			    malloc(TEXT_BUFFER_SIZE);
@@ -98,8 +92,7 @@ void update_mpd()
 		if (current_info->mpd.track == NULL)
 			current_info->mpd.track = malloc(TEXT_BUFFER_SIZE);
 		if (current_info->mpd.status == NULL)
-			current_info->mpd.status =
-			    malloc(TEXT_BUFFER_SIZE);
+			current_info->mpd.status = malloc(TEXT_BUFFER_SIZE);
 		if (current_info->mpd.name == NULL)
 			current_info->mpd.name = malloc(TEXT_BUFFER_SIZE);
 		if (current_info->mpd.file == NULL)
@@ -120,15 +113,7 @@ void update_mpd()
 			TEXT_BUFFER_SIZE - 1);
 		strncpy(current_info->mpd.track, "Unknown",
 			TEXT_BUFFER_SIZE - 1);
-		if (strlen(current_info->conn->errorStr) > 1) {
-			strncpy(current_info->mpd.status,
-				current_info->conn->errorStr,
-				TEXT_BUFFER_SIZE - 1);
-		} else {
-			strncpy(current_info->mpd.status,
-				"MPD not responding",
-				TEXT_BUFFER_SIZE - 1);
-		}
+		strncpy(current_info->mpd.status, "MPD not responding", TEXT_BUFFER_SIZE - 1);
 		current_info->mpd.bitrate = 0;
 		current_info->mpd.progress = 0;
 		current_info->mpd.elapsed = 0;
@@ -277,6 +262,7 @@ void update_mpd()
 	if (current_info->conn->error) {
 		//fprintf(stderr, "%s\n", current_info->conn->errorStr);
 		mpd_closeConnection(current_info->conn);
+		current_info->conn = 0;
 		return;
 	}
 
@@ -351,6 +337,7 @@ void update_mpd()
 	if (current_info->conn->error) {
 		//fprintf(stderr, "%s\n", current_info->conn->errorStr);
 		mpd_closeConnection(current_info->conn);
+		current_info->conn = 0;
 		return;
 	}
 
@@ -358,8 +345,9 @@ void update_mpd()
 	if (current_info->conn->error) {
 		//fprintf(stderr, "%s\n", current_info->conn->errorStr);
 		mpd_closeConnection(current_info->conn);
+		current_info->conn = 0;
 		return;
 	}
 	mpd_freeStatus(status);
-	mpd_closeConnection(current_info->conn);
+//	mpd_closeConnection(current_info->conn);
 }
