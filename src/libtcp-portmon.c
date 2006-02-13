@@ -231,8 +231,8 @@ int monitor_match_function( const void *p_data1, const void *p_data2 )
    p_monitor1 = (tcp_port_monitor_t *)p_data1;
    p_monitor2 = (tcp_port_monitor_t *)p_data2;
 
-   return (p_monitor1->port_range_begin == p_monitor1->port_range_begin &&
-	   p_monitor2->port_range_end == p_monitor2->port_range_end);
+   return (p_monitor1->port_range_begin == p_monitor2->port_range_begin &&
+	   p_monitor1->port_range_end == p_monitor2->port_range_end);
 }
 
 /* ---------------------------------------------------------------------------

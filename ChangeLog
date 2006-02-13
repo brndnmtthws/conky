@@ -1,5 +1,9 @@
 # $Id$
 
+2006-02-13
+	* Fixed typo bug in portmon code that caused incorrect monitor data 
+	to be displayed.
+
 2006-02-12
 	* Conky 1.4.0 released
 
