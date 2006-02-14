@@ -42,22 +42,14 @@ void update_mpd()
 			current_info->mpd.name = malloc(TEXT_BUFFER_SIZE);
 		if (current_info->mpd.file == NULL)
 			current_info->mpd.file = malloc(TEXT_BUFFER_SIZE);
-		strncpy(current_info->mpd.name, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.file, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.artist, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.album, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.title, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.random, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.repeat, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.track, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
+		*current_info->mpd.name=0;
+		*current_info->mpd.file=0;
+		*current_info->mpd.artist=0;
+		*current_info->mpd.album=0;
+		*current_info->mpd.title=0;
+		*current_info->mpd.random=0;
+		*current_info->mpd.repeat=0;
+		*current_info->mpd.track=0;
 		strncpy(current_info->mpd.status, "MPD not responding",	TEXT_BUFFER_SIZE - 1);
 		current_info->mpd.bitrate = 0;
 		current_info->mpd.progress = 0;
@@ -97,22 +89,14 @@ void update_mpd()
 			current_info->mpd.name = malloc(TEXT_BUFFER_SIZE);
 		if (current_info->mpd.file == NULL)
 			current_info->mpd.file = malloc(TEXT_BUFFER_SIZE);
-		strncpy(current_info->mpd.name, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.file, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.artist, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.album, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.title, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.random, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.repeat, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.track, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
+		*current_info->mpd.name=0;
+		*current_info->mpd.file=0;
+		*current_info->mpd.artist=0;
+		*current_info->mpd.album=0;
+		*current_info->mpd.title=0;
+		*current_info->mpd.random=0;
+		*current_info->mpd.repeat=0;
+		*current_info->mpd.track=0;
 		strncpy(current_info->mpd.status, "MPD not responding", TEXT_BUFFER_SIZE - 1);
 		current_info->mpd.bitrate = 0;
 		current_info->mpd.progress = 0;
@@ -158,22 +142,14 @@ void update_mpd()
 			current_info->mpd.name = malloc(TEXT_BUFFER_SIZE);
 		if (current_info->mpd.file == NULL)
 			current_info->mpd.file = malloc(TEXT_BUFFER_SIZE);
-		strncpy(current_info->mpd.name, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.file, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.artist, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.album, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.title, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.random, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.repeat, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.track, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
+		*current_info->mpd.name=0;
+		*current_info->mpd.file=0;
+		*current_info->mpd.artist=0;
+		*current_info->mpd.album=0;
+		*current_info->mpd.title=0;
+		*current_info->mpd.random=0;
+		*current_info->mpd.repeat=0;
+		*current_info->mpd.track=0;
 		strncpy(current_info->mpd.status, "Stopped",
 			TEXT_BUFFER_SIZE - 1);
 	}
@@ -211,24 +187,15 @@ void update_mpd()
 			current_info->mpd.name = malloc(TEXT_BUFFER_SIZE);
 		if (current_info->mpd.file == NULL)
 			current_info->mpd.file = malloc(TEXT_BUFFER_SIZE);
-		strncpy(current_info->mpd.name, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.file, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.artist, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.album, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.title, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.random, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.repeat, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.track, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.status, "Unknown",
-			TEXT_BUFFER_SIZE - 1);
+		*current_info->mpd.name=0;
+		*current_info->mpd.file=0;
+		*current_info->mpd.artist=0;
+		*current_info->mpd.album=0;
+		*current_info->mpd.title=0;
+		*current_info->mpd.random=0;
+		*current_info->mpd.repeat=0;
+		*current_info->mpd.track=0;
+		*current_info->mpd.status=0;
 	}
 	if (status->state == MPD_STATUS_STATE_PLAY ||
 	    status->state == MPD_STATUS_STATE_PAUSE) {
@@ -248,14 +215,14 @@ void update_mpd()
 		} else if (status->random == 1) {
 			strcpy(current_info->mpd.random, "On");
 		} else {
-			strcpy(current_info->mpd.random, "Unknown");
+			*current_info->mpd.random=0;
 		}
 		if (status->repeat == 0) {
 			strcpy(current_info->mpd.repeat, "Off");
 		} else if (status->repeat == 1) {
 			strcpy(current_info->mpd.repeat, "On");
 		} else {
-			strcpy(current_info->mpd.repeat, "Unknown");
+			*current_info->mpd.repeat=0;
 		}
 	}
 
@@ -292,37 +259,37 @@ void update_mpd()
 			strncpy(current_info->mpd.artist, song->artist,
 				TEXT_BUFFER_SIZE - 1);
 		} else {
-			strcpy(current_info->mpd.artist, "Unknown");
+			*current_info->mpd.artist=0;
 		}
 		if (song->album) {
 			strncpy(current_info->mpd.album, song->album,
 				TEXT_BUFFER_SIZE - 1);
 		} else {
-			strcpy(current_info->mpd.album, "Unknown");
+			*current_info->mpd.album=0;
 		}
 		if (song->title) {
 			strncpy(current_info->mpd.title, song->title,
 				TEXT_BUFFER_SIZE - 1);
 		} else {
-			strcpy(current_info->mpd.title, "Unknown");
+			*current_info->mpd.title=0;
 		}
 		if (song->track) {
 			strncpy(current_info->mpd.track, song->track,
 				TEXT_BUFFER_SIZE - 1);
 		} else {
-			strcpy(current_info->mpd.track, "Unknown");
+			*current_info->mpd.track=0;
 		}
 		if (song->name) {
 			strncpy(current_info->mpd.name, song->name,
 				TEXT_BUFFER_SIZE - 1);
 		} else {
-			strcpy(current_info->mpd.name, "Unknown");
+			*current_info->mpd.name=0;
 		}
 		if (song->file) {
 			strncpy(current_info->mpd.file,
 				song->file, TEXT_BUFFER_SIZE - 1);
 		} else {
-			strcpy(current_info->mpd.file, "Unknown");
+			*current_info->mpd.file=0;
 		}
 		if (entity != NULL) {
 			mpd_freeInfoEntity(entity);
