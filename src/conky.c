@@ -5583,22 +5583,12 @@ int main(int argc, char **argv)
 #ifdef X11
 	update_text_area();	/* to get initial size of the window */
 
-#if defined OWN_WINDOW
-	init_window
-	    (own_window,
-	     wm_class_name,
-	     text_width + border_margin * 2 + 1,
-	     text_height + border_margin * 2 + 1,
-	     on_bottom, fixed_pos, set_transparent, background_colour, info.uname_s.nodename);
-#else
 	init_window
 		(own_window,
 		 text_width + border_margin * 2 + 1,
 		 text_height + border_margin * 2 + 1,
-		 on_bottom, set_transparent, background_colour, info.uname_s.nodename);
+		 set_transparent, background_colour, info.uname_s.nodename);
 	
-#endif
-
 	update_text_area();	/* to position text/window on screen */
 #endif /* X11 */
 

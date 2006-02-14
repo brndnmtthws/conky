@@ -2,6 +2,7 @@
 
 2006-02-14
 	* Drastically simplified own_window=yes window creation code.
+	* on_bottom and wm_class_name deprecated (they do nothing)
 
 2006-02-13
 	* Fixed typo bug in portmon code that caused incorrect monitor data 

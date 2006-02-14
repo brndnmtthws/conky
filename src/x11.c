@@ -173,11 +173,7 @@ inline void set_transparent_background(Window win)
 	//XClearWindow(display, win); not sure why this was here
 }
 
-#if defined OWN_WINDOW
-void init_window(int own_window, char* wm_class_name, int w, int h, int l, int fixed_pos, int set_trans, int back_colour, char * nodename)
-#else
-void init_window(int own_window, int w, int h, int l, int set_trans, int back_colour, char * nodename)
-#endif
+void init_window(int own_window, int w, int h, int set_trans, int back_colour, char * nodename)
 {
 	/* There seems to be some problems with setting transparent background (on
 	 * fluxbox this time). It doesn't happen always and I don't know why it
@@ -185,9 +181,6 @@ void init_window(int own_window, int w, int h, int l, int set_trans, int back_co
 	set_transparent = set_trans;
 	background_colour = back_colour;
 
-	wm_class_name = (char *)wm_class_name;
-	l = (int)l;
-	fixed_pos = (int)fixed_pos;
 	nodename = (char *)nodename;
 
 #ifdef OWN_WINDOW
