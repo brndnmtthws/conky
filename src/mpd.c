@@ -174,7 +174,7 @@ void update_mpd()
 			TEXT_BUFFER_SIZE - 1);
 		strncpy(current_info->mpd.track, "Unknown",
 			TEXT_BUFFER_SIZE - 1);
-		strncpy(current_info->mpd.status, "Unknown",
+		strncpy(current_info->mpd.status, "Stopped",
 			TEXT_BUFFER_SIZE - 1);
 	}
 	if (status->state == MPD_STATUS_STATE_PAUSE) {
