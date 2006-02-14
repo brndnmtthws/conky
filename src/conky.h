@@ -300,7 +300,7 @@ char tmpstring2[TEXT_BUFFER_SIZE];
 #define ATOM(a) XInternAtom(display, #a, False)
 
 struct conky_window {
-	Window window;
+	Window root,window;
 	Drawable drawable;
 	GC gc;
 #ifdef XDBE

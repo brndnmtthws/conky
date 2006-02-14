@@ -4691,8 +4691,12 @@ void clean_up(void)
 	}
 #endif
 #ifdef OWN_WINDOW
-	if (own_window)
+	if (own_window) 
+	{
 		XDestroyWindow(display, window.window);
+		XClearWindow(display, RootWindow(display, screen));
+		XFlush(display);
+	}
 	else
 #endif
 	{

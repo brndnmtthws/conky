@@ -45,7 +45,7 @@ struct conky_window window;
 
 /* local prototypes */
 static void update_workarea();
-static Window find_window_to_draw();
+static Window find_desktop_window();
 static Window find_subwindow(Window win, int w, int h);
 
 /* X11 initializer */
@@ -95,7 +95,7 @@ static void update_workarea()
 	}
 }
 
-static Window find_window_to_draw()
+static Window find_desktop_window()
 {
 	Atom type;
 	int format, i;
@@ -118,7 +118,7 @@ static Window find_window_to_draw()
 			XFree(buf);
 			XFree(children);
 			fprintf(stderr,
-				"Conky: drawing to window from __SWM_VROOT property\n");
+				"Conky: desktop window (%lx) found from __SWM_VROOT property\n", win);
 			return win;
 		}
 
@@ -143,10 +143,9 @@ static Window find_window_to_draw()
 
 	if (win != root)
 		fprintf(stderr,
-			"Conky: drawing to subwindow of root window (%lx)\n",
-			win);
+			"Conky: desktop window (%lx) is subwindow of root window (%lx)\n",win,root);
 	else
-		fprintf(stderr, "Conky: drawing to root window\n");
+		fprintf(stderr, "Conky: desktop window (%lx) is root window\n",win);
 
 	return win;
 }
@@ -185,141 +184,41 @@ void init_window(int own_window, int w, int h, int l, int set_trans, int back_co
 	 * happens but I bet the bug is somewhere here. */
 	set_transparent = set_trans;
 	background_colour = back_colour;
-	char * window_name = NULL;
+
+	wm_class_name = (char *)wm_class_name;
+	l = (int)l;
+	fixed_pos = (int)fixed_pos;
+	nodename = (char *)nodename;
+
 #ifdef OWN_WINDOW
 	if (own_window) {
-
-		/* looks like root pixmap isn't needed for anything */
 		{
-			XSetWindowAttributes attrs;
-			XClassHint class_hints;
+			/* DRASTICALLY SIMPLIFIED - 
+			 * override_redirect=True impedes the WM from manipulating
+			 * the window, adding decorations, etc.  we do not register
+			 * for button events so you should have menu clicking over
+			 * the conky window now too.  PHK. */
+			XSetWindowAttributes attrs = {
+				ParentRelative,0L,0,0L,0,0,Always,0L,0L,False,
+				StructureNotifyMask|ExposureMask,
+				0L,True,0,0 };
 
-			/* just test color
-			attrs.background_pixel = get_x11_color("green");
-			*/
+			window.root = find_desktop_window();
 
-			window.window = XCreateWindow(display, RootWindow(display, screen), window.x, window.y, w, h, 0, CopyFromParent,	/* depth */
-						      CopyFromParent,	/* class */
-						      CopyFromParent,	/* visual */
-						      CWBackPixel, &attrs);
-/*			XWMHints wmhints;
+			window.window = XCreateWindow(display, window.root, 
+					      	      window.x, window.y, w, h, 0, 
+						      CopyFromParent,
+						      InputOutput,
+						      CopyFromParent,
+						      CWBackPixel|CWOverrideRedirect, &attrs);
 
-			this doesn't work properly
+			fprintf(stderr, "Conky: drawing to created window (%lx)\n", window.window);
 
-			wmhints.flags = StateHint;
-			wmhints.initial_state = WithdrawnState;
-			XSetWMHints(display, window.window, &wmhints);*/
+			XLowerWindow(display, window.window);
 
+			XMapWindow(display, window.window);
 
-
-			class_hints.res_class = wm_class_name;
-			class_hints.res_name = wm_class_name;
-			XSetClassHint(display, window.window,
-				      &class_hints);
-
-			/*set_transparent_background(window.window);*/
-			window_name = (char *) malloc(strlen(WINDOW_NAME_FMT) + strlen(nodename)+1);
-		        sprintf(window_name, WINDOW_NAME_FMT, nodename);
-			XStoreName(display, window.window, window_name);
-			free(window_name);
-			XClearWindow(display, window.window);
-
-			if (!fixed_pos)
-				XMoveWindow(display, window.window, window.x,
-			window.y);
 		}
-
-		{
-			/* turn off decorations */
-			Atom a =
-			    XInternAtom(display, "_MOTIF_WM_HINTS", True);
-			if (a != None) {
-				long prop[5] = { 2, 0, 0, 0, 0 };
-				XChangeProperty(display, window.window, a,
-						a, 32, PropModeReplace,
-						(unsigned char *) prop, 5);
-			}
-
-			/* set window sticky (to all desktops) */
-			a = XInternAtom(display, "_NET_WM_DESKTOP", True);
-			if (a != None) {
-				long prop = 0xFFFFFFFF;
-				XChangeProperty(display, window.window, a,
-						XA_CARDINAL, 32,
-						PropModeReplace,
-						(unsigned char *) &prop,
-						1);
-			}
-
-			/* PHK: Use EWMH window type NORMAL for _NET_WM_WINDOW_TYPE. 
-                           For XFCE 4+, keeps the window from going under the desktop. */
-			a = XInternAtom(display, "_NET_WM_WINDOW_TYPE", True);
-			if (a != None) {
-				Atom prop = XInternAtom(display, "_NET_WM_WINDOW_TYPE_NORMAL", True);
-				XChangeProperty(display, window.window, a,
-						XA_ATOM, 32,
-						PropModeReplace,
-						(unsigned char *) &prop,
-						1);
-			}
-
-			/* PHK: Add EWMH hint STICKY to _NET_WM_STATE */
-			a = XInternAtom(display, "_NET_WM_STATE", True);
-			if (a != None) {
-				Atom prop = XInternAtom(display, "_NET_WM_STATE_STICKY", True);
-				XChangeProperty(display, window.window, a,
-						XA_ATOM, 32,
-						PropModeAppend,
-						(unsigned char *) &prop,
-						1);
-			}
-
-			/* PHK: Add EWMH hint SKIP_TASKBAR to _NET_WM_STATE */
-			a = XInternAtom(display, "_NET_WM_STATE", True);
-			if (a != None) {
-				Atom prop = XInternAtom(display, "_NET_WM_STATE_SKIP_TASKBAR", True);
-				XChangeProperty(display, window.window, a,
-						XA_ATOM, 32,
-						PropModeAppend,
-						(unsigned char *) &prop,
-						1);
-			}
-
-			/* PHK: Add EWMH hint SKIP_PAGER to _NET_WM_STATE */
-			a = XInternAtom(display, "_NET_WM_STATE", True);
-			if (a != None) {
-				Atom prop = XInternAtom(display, "_NET_WM_STATE_SKIP_PAGER", True);
-				XChangeProperty(display, window.window, a,
-						XA_ATOM, 32,
-						PropModeAppend,
-						(unsigned char *) &prop,
-						1);
-			}
-
-			if(l) {
-				/* make sure the layer is on the bottom */
-         			a = XInternAtom(display, "_WIN_LAYER", True);
-         			if (a != None) {
-            				long prop = 0;
-            				XChangeProperty(display, window.window, a,
-            						XA_CARDINAL, 32,
-            						PropModeReplace,
-            						(unsigned char *) &prop, 1);
-         			}
-				/* PHK: also append EWMH hint for BELOW also */
-				a = XInternAtom(display, "_NET_WM_STATE", True);
-				if (a != None) {
-					Atom prop = XInternAtom(display, "_NET_WM_STATE_BELOW", True);
-					XChangeProperty(display, window.window, a,
-						XA_ATOM, 32,
-						PropModeAppend,
-						(unsigned char *) &prop,
-						1);
-				}
-			}
-		}
-
-		XMapWindow(display, window.window);
 	} else
 #endif
 		/* root / desktop window */
@@ -327,12 +226,14 @@ void init_window(int own_window, int w, int h, int l, int set_trans, int back_co
 		XWindowAttributes attrs;
 
 		if (!window.window)
-			window.window = find_window_to_draw();
+			window.window = find_desktop_window();
 
 		if (XGetWindowAttributes(display, window.window, &attrs)) {
 			window.width = attrs.width;
 			window.height = attrs.height;
 		}
+
+		fprintf(stderr, "Conky: drawing to desktop window\n");
 	}
 
 	/* Drawable is same as window. This may be changed by double buffering. */

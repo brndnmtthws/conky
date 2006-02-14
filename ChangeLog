@@ -1,5 +1,8 @@
 # $Id$
 
+2006-02-14
+	* Drastically simplified own_window=yes window creation code.
+
 2006-02-13
 	* Fixed typo bug in portmon code that caused incorrect monitor data 
 	to be displayed.
