@@ -1,7 +1,7 @@
 Source: conky
 Section: utils
 Priority: optional
-Maintainer: Jason Tan <jtan325@gmail.com>
+Maintainer: Brenden Matthews <brenden@rty.ca>
 Build-Depends: cdbs, debhelper (>= 4.1.0), xlibs-dev, libxt-dev
 Standards-Version: 3.6.2
 
