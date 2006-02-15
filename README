@@ -585,12 +585,12 @@ VARIABLES
 
        i8k_cpu_temp
 	      If running the i8k kernel driver for Inspiron laptops,  displays
-	      the cpu temperature in celsius, as reported by /proc/i8k.
+	      the cpu temperature in Celsius, as reported by /proc/i8k.
 
 
        i8k_cpu_tempf
 	      If  running the i8k kernel driver for Inspiron laptops, displays
-	      the cpu temperature in farenheit, as reported by /proc/i8k.
+	      the cpu temperature in Farenheit, as reported by /proc/i8k.
 
 
        i8k_left_fan_rpm
@@ -928,7 +928,7 @@ VARIABLES
 
 
        voffset (pixels)
-	      Change verticle offset by N pixels. Negative values  will	 cause
+	      Change vertical offset by N pixels. Negative values  will	 cause
 	      text to overlap. See also $offset.
 
 
