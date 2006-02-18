@@ -10,7 +10,7 @@ SRC_URI="mirror://sourceforge/conky/${P}.tar.bz2"
 
 LICENSE="BSD"
 SLOT="0"
-KEYWORDS="~amd64 ~ppc ~ppc64 ~sparc ~x86"
+KEYWORDS="~amd64 ~ppc ~ppc64 ~sparc ~x86 ~alpha"
 IUSE="truetype X ipv6 bmpx bmp xmms infopipe audacious"
 
 DEPEND_COMMON="
