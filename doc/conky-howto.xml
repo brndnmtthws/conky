@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding="UTF-8"?>
 <!DOCTYPE guide SYSTEM "http://www.gentoo.org/dtd/guide.dtd">
 
-<guide link="/doc/en/Conky-howto.xml">
+<guide link="/doc/en/conky-howto.xml">
 <title>Gentoo Linux Conky Howto</title>
 
 <author title="Author">
@@ -59,7 +59,7 @@ Gentoo provides an ebuild to quickly and easily install Conky.  Pay particular a
 
 <pre caption="/etc/portage/package.use">
 <comment># Example line to append to /etc/portage/package.use if you don't want the default USE flags.</comment>
-<i>app-admin/Conky xmms infopipe -ipv6</i>
+<i>app-admin/conky xmms infopipe -ipv6</i>
 </pre>
 
 <p>
