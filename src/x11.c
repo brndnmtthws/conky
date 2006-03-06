@@ -119,6 +119,7 @@ static Window find_desktop_window()
 			XFree(children);
 			fprintf(stderr,
 				"Conky: desktop window (%lx) found from __SWM_VROOT property\n", win);
+			fflush(stderr);
 			return win;
 		}
 
@@ -147,6 +148,7 @@ static Window find_desktop_window()
 	else
 		fprintf(stderr, "Conky: desktop window (%lx) is root window\n",win);
 
+	fflush(stderr);
 	return win;
 }
 
@@ -199,6 +201,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 
 			XClassHint classHint;
 			XWMHints wmHint;
+			Atom xa;
 			char window_title[256];
 
 			window.root = find_desktop_window();
@@ -208,11 +211,13 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 						      CopyFromParent,
 						      InputOutput,
 						      CopyFromParent,
-						      CWBackPixel|CWOverrideRedirect, &attrs);
+						      CWBackPixel|CWOverrideRedirect,
+						      &attrs);
 
 			fprintf(stderr, "Conky: drawing to created window (%lx)\n", window.window);
+			fflush(stderr);
 
-			classHint.res_name = "conky";
+			classHint.res_name = window.wm_class_name;
 			classHint.res_class = classHint.res_name;
 
 			wmHint.flags = InputHint | StateHint;
@@ -228,7 +233,128 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 			/* Sets an empty WM_PROTOCOLS property */
 			XSetWMProtocols(display,window.window,NULL,0);
 
-			XLowerWindow(display, window.window);
+
+			/* Set NORMAL window type for _NET_WM_WINDOW_TYPE. */
+			xa = ATOM(_NET_WM_WINDOW_TYPE);
+			if (xa != None) {
+				Atom prop = ATOM(_NET_WM_WINDOW_TYPE_NORMAL);
+				XChangeProperty(display, window.window, xa,
+						XA_ATOM, 32,
+						PropModeReplace,
+						(unsigned char *) &prop,
+						1);
+			}
+
+			/* Set desired hints */
+			
+			/* Window decorations */
+			if (TEST_HINT(window.hints,HINT_UNDECORATED)) {
+			    fprintf(stderr, "Conky: hint - undecorated\n"); fflush(stderr);
+
+			    xa = ATOM(_MOTIF_WM_HINTS);
+			    if (xa != None) {
+				long prop[5] = { 2, 0, 0, 0, 0 };
+				XChangeProperty(display, window.window, xa,
+						xa, 32, PropModeReplace,
+						(unsigned char *) prop, 5);
+			    }
+			}
+
+			/* Below other windows */
+			if (TEST_HINT(window.hints,HINT_BELOW)) {
+			    fprintf(stderr, "Conky: hint - below\n"); fflush(stderr);
+
+         		    xa = ATOM(_WIN_LAYER);
+         		    if (xa != None) {
+            			long prop = 0;
+            			XChangeProperty(display, window.window, xa,
+            					XA_CARDINAL, 32,
+            					PropModeReplace,
+            					(unsigned char *) &prop, 1);
+			    }
+			
+			    xa = ATOM("_NET_WM_STATE");
+			    if (xa != None) {
+				Atom xa_prop = ATOM(_NET_WM_STATE_BELOW);
+				XChangeProperty(display, window.window, xa,
+					XA_ATOM, 32,
+					PropModeAppend,
+					(unsigned char *) &xa_prop,
+					1);
+			    }
+			}
+
+			/* Above other windows */
+			if (TEST_HINT(window.hints,HINT_ABOVE)) {
+                            fprintf(stderr, "Conky: hint - above\n"); fflush(stderr);
+
+                            xa = ATOM(_WIN_LAYER);
+                            if (xa != None) {
+                                long prop = 6;
+                                XChangeProperty(display, window.window, xa,
+                                                XA_CARDINAL, 32,
+                                                PropModeReplace,
+                                                (unsigned char *) &prop, 1);
+                            }
+
+                            xa = ATOM("_NET_WM_STATE");
+                            if (xa != None) {
+                                Atom xa_prop = ATOM(_NET_WM_STATE_ABOVE);
+                                XChangeProperty(display, window.window, xa,
+                                        XA_ATOM, 32,
+                                        PropModeAppend,
+                                        (unsigned char *) &xa_prop,
+                                        1);
+                            }
+                        }
+
+			/* Sticky */
+			if (TEST_HINT(window.hints,HINT_STICKY)) {
+                            fprintf(stderr, "Conky: hint - sticky\n"); fflush(stderr);
+
+                            xa = ATOM("_NET_WM_STATE");
+                            if (xa != None) {
+                                Atom xa_prop = ATOM(_NET_WM_STATE_STICKY);
+                                XChangeProperty(display, window.window, xa,
+                                        XA_ATOM, 32,
+                                        PropModeAppend,
+                                        (unsigned char *) &xa_prop,
+                                        1);
+                            }
+                        }
+
+			/* Skip taskbar */
+                        if (TEST_HINT(window.hints,HINT_SKIP_TASKBAR)) {
+                            fprintf(stderr, "Conky: hint - skip_taskbar\n"); fflush(stderr);
+
+                            xa = ATOM("_NET_WM_STATE");
+                            if (xa != None) {
+                                Atom xa_prop = ATOM(_NET_WM_STATE_SKIP_TASKBAR);
+                                XChangeProperty(display, window.window, xa,
+                                        XA_ATOM, 32,
+                                        PropModeAppend,
+                                        (unsigned char *) &xa_prop,
+                                        1);
+                            }
+                        }
+
+			/* Skip pager */
+                        if (TEST_HINT(window.hints,HINT_SKIP_PAGER)) {
+                            fprintf(stderr, "Conky: hint - skip_pager\n"); fflush(stderr);
+
+                            xa = ATOM("_NET_WM_STATE");
+                            if (xa != None) {
+                                Atom xa_prop = ATOM(_NET_WM_STATE_SKIP_PAGER);
+                                XChangeProperty(display, window.window, xa,
+                                        XA_ATOM, 32,
+                                        PropModeAppend,
+                                        (unsigned char *) &xa_prop,
+                                        1);
+                            }
+                        }
+
+
+
 			XMapWindow(display, window.window);
 
 		}

@@ -289,6 +289,11 @@ CONFIGURATION SETTINGS
 	      valid RGB name (see /usr/lib/X11/rgb.txt)
 
 
+       own_window_hints undecorated,below,above,sticky,skip_taskbar,skip_pager
+	      If own_window is yes, you may use these window manager hints  to
+	      affect the way conky displays
+
+
        out_to_console
 	      Print text to stdout.
 
@@ -302,7 +307,7 @@ CONFIGURATION SETTINGS
 
 
        total_run_times
-	      Total number of times for Conky to update before quitting.  Zero
+	      Total  number of times for Conky to update before quitting. Zero
 	      makes Conky run forever
 
 
@@ -330,7 +335,7 @@ CONFIGURATION SETTINGS
 
        xmms_player
 	      Use specified player/plugin for the xmms status variables. Valid
-	      items are: none, xmms, bmp, audacious and infopipe. (default  is
+	      items  are: none, xmms, bmp, audacious and infopipe. (default is
 	      none). Note that bmpx is currently handled separately.
 
 
@@ -338,7 +343,7 @@ CONFIGURATION SETTINGS
 
 
 VARIABLES
-       Colors  are  parsed using XParsecolor(), there might be a list of them:
+       Colors are parsed using XParsecolor(), there might be a list  of	 them:
        /usr/X11R6/lib/X11/rgb.txt.   Also,   http://sedition.com/perl/rgb.html
        [http://sedition.com/perl/rgb.html].  Color can be also in #rrggbb for-
        mat (hex).  Note that when displaying bytes, power is 1024 and not 1000
@@ -389,12 +394,12 @@ VARIABLES
 
 
        apm_battery_time
-	      Display  remaining  APM battery life in hh:mm:ss or "unknown" if
+	      Display remaining APM battery life in hh:mm:ss or	 "unknown"  if
 	      AC adapterstatus is on-line or charging (FreeBSD only)
 
 
        battery (num)
-	      Remaining capacity in ACPI or APM battery. ACPI  battery	number
+	      Remaining	 capacity  in ACPI or APM battery. ACPI battery number
 	      can be given as argument (default is BAT0).
 
 
@@ -434,28 +439,28 @@ VARIABLES
 
 
        cpu (cpuN)
-	      CPU  usage  in percents. For SMP machines, the CPU number can be
+	      CPU usage in percents. For SMP machines, the CPU number  can  be
 	      provided as an argument. cpu0 is the total usage, and >=cpu1 are
 	      individual CPUs.
 
 
        cpubar (cpu number) (height),(width)
-	      Bar  that shows CPU usage, height is bar's height in pixels. See
+	      Bar that shows CPU usage, height is bar's height in pixels.  See
 	      $cpu for more info on SMP.
 
 
-       cpugraph (cpu number) (height),(width) (gradient	 colour	 1)  (gradient
+       cpugraph	 (cpu  number)	(height),(width) (gradient colour 1) (gradient
        colour 2)
-	      CPU usage graph, with optional colours in hex, minus the #.  See
+	      CPU  usage graph, with optional colours in hex, minus the #. See
 	      $cpu for more info on SMP.
 
 
        diskio Displays current disk IO.
 
 
-       diskiograph  (height),(width)  (gradient	 colour 1) (gradient colour 2)
+       diskiograph (height),(width) (gradient colour 1)	 (gradient  colour  2)
        (scale)
-	      Disk  IO graph, colours defined in hex, minus the #. If scale is
+	      Disk IO graph, colours defined in hex, minus the #. If scale  is
 	      non-zero, it becomes the scale for the graph.
 
 
@@ -469,7 +474,7 @@ VARIABLES
 
        downspeedgraph  net  (height),(width)  (gradient	 colour	 1)  (gradient
        colour 2) (scale)
-	      Download speed graph, colours defined in hex, minus  the	#.  If
+	      Download	speed  graph,  colours defined in hex, minus the #. If
 	      scale is non-zero, it becomes the scale for the graph.
 
 
@@ -478,13 +483,13 @@ VARIABLES
 
        exec command
 	      Executes a shell command and displays the output in conky. warn-
-	      ing: this takes a lot more resources than other  variables.  I'd
+	      ing:  this  takes a lot more resources than other variables. I'd
 	      recommend coding wanted behaviour in C and posting a patch.
 
 
        execbar command
-	      Same  as	exec,  except  if  the	first  value return is a value
-	      between 0-100, it will use that number for a bar. The  size  for
+	      Same as exec, except if  the  first  value  return  is  a	 value
+	      between  0-100,  it will use that number for a bar. The size for
 	      the bar is currently fixed, but that may change in the future.
 
 
@@ -493,7 +498,7 @@ VARIABLES
 
 
        execi interval command
-	      Same  as exec but with specific interval. Interval can't be less
+	      Same as exec but with specific interval. Interval can't be  less
 	      than update_interval in configuration. See also $texeci
 
 
@@ -516,19 +521,19 @@ VARIABLES
 
 
        freq_dyn
-	      Returns CPU frequency in MHz, but is calculated by  counting  to
-	      clock  cycles  to	 complete  an  instruction. Only available for
+	      Returns  CPU  frequency in MHz, but is calculated by counting to
+	      clock cycles to complete	an  instruction.  Only	available  for
 	      x86/amd64.
 
 
        freq_dyn_g
-	      Returns CPU frequency in GHz, but is calculated by  counting  to
-	      clock  cycles  to	 complete  an  instruction. Only available for
+	      Returns  CPU  frequency in GHz, but is calculated by counting to
+	      clock cycles to complete	an  instruction.  Only	available  for
 	      x86/amd64.
 
 
        fs_bar (height),(width) fs
-	      Bar that shows how much space is used on a file  system.	height
+	      Bar  that	 shows how much space is used on a file system. height
 	      is the height in pixels. fs is any file on that file system.
 
 
@@ -549,8 +554,8 @@ VARIABLES
 
 
        head logfile lines (interval)
-	      Displays	first  N lines of supplied text text file. If interval
-	      is not supplied, Conky assumes 2x Conky's interval.  Max	of  30
+	      Displays first N lines of supplied text text file.  If  interval
+	      is  not  supplied,  Conky assumes 2x Conky's interval. Max of 30
 	      lines can be displayed, or until the text buffer is filled.
 
 
@@ -559,90 +564,90 @@ VARIABLES
 
 
        i2c (dev) type n
-	      I2C  sensor  from	 sysfs	(Linux 2.6). dev may be omitted if you
-	      have only one I2C device. type is either	in  (or	 vol)  meaning
+	      I2C sensor from sysfs (Linux 2.6). dev may  be  omitted  if  you
+	      have  only  one  I2C  device. type is either in (or vol) meaning
 	      voltage, fan meaning fan or temp/tempf (first in C, second in F)
-	      meaning  temperature.  n	is   number   of   the	 sensor.   See
+	      meaning	temperature.   n   is	number	 of  the  sensor.  See
 	      /sys/bus/i2c/devices/ on your local computer.
 
 
        i8k_ac_status
-	      If  running the i8k kernel driver for Inspiron laptops, displays
-	      whether ac power is on, as listed in  /proc/i8k  (translated  to
-	      human-readable).	Beware	that this is by default not enabled by
+	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      whether  ac  power  is on, as listed in /proc/i8k (translated to
+	      human-readable). Beware that this is by default not  enabled  by
 	      i8k itself.
 
 
        i8k_bios
-	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      If  running the i8k kernel driver for Inspiron laptops, displays
 	      the bios version as listed in /proc/i8k.
 
 
        i8k_buttons_status
-	      If  running the i8k kernel driver for Inspiron laptops, displays
+	      If running the i8k kernel driver for Inspiron laptops,  displays
 	      the volume buttons status as listed in /proc/i8k.
 
 
        i8k_cpu_temp
-	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      If  running the i8k kernel driver for Inspiron laptops, displays
 	      the cpu temperature in Celsius, as reported by /proc/i8k.
 
 
        i8k_cpu_tempf
-	      If  running the i8k kernel driver for Inspiron laptops, displays
+	      If running the i8k kernel driver for Inspiron laptops,  displays
 	      the cpu temperature in Farenheit, as reported by /proc/i8k.
 
 
        i8k_left_fan_rpm
-	      If running the i8k kernel driver for Inspiron laptops,  displays
-	      the  left	 fan's	rate of rotation, in revolutions per minute as
+	      If  running the i8k kernel driver for Inspiron laptops, displays
+	      the left fan's rate of rotation, in revolutions  per  minute  as
 	      listed in /proc/i8k. Beware, some laptops i8k reports these fans
 	      in reverse order.
 
 
        i8k_left_fan_status
-	      If  running the i8k kernel driver for Inspiron laptops, displays
+	      If running the i8k kernel driver for Inspiron laptops,  displays
 	      the left fan status as listed in /proc/i8k (translated to human-
-	      readable).  Beware,  some	 laptops  i8k  reports	these  fans in
+	      readable). Beware,  some	laptops	 i8k  reports  these  fans  in
 	      reverse order.
 
 
        i8k_right_fan_rpm
-	      If running the i8k kernel driver for Inspiron laptops,  displays
-	      the  right  fan's rate of rotation, in revolutions per minute as
+	      If  running the i8k kernel driver for Inspiron laptops, displays
+	      the right fan's rate of rotation, in revolutions per  minute  as
 	      listed in /proc/i8k. Beware, some laptops i8k reports these fans
 	      in reverse order.
 
 
        i8k_right_fan_status
-	      If  running the i8k kernel driver for Inspiron laptops, displays
-	      the right fan status  as	listed	in  /proc/i8k  (translated  to
-	      human-readable).	Beware, some laptops i8k reports these fans in
+	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      the  right  fan  status  as  listed  in /proc/i8k (translated to
+	      human-readable). Beware, some laptops i8k reports these fans  in
 	      reverse order.
 
 
        i8k_serial
-	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      If  running the i8k kernel driver for Inspiron laptops, displays
 	      your laptop serial number as listed in /proc/i8k.
 
 
        i8k_version
-	      If  running the i8k kernel driver for Inspiron laptops, displays
+	      If running the i8k kernel driver for Inspiron laptops,  displays
 	      the version formatting of /proc/i8k.
 
 
        if_running (process)
-	      if PROCESS is running, display  everything  if_running  and  the
+	      if  PROCESS  is  running,	 display everything if_running and the
 	      matching $endif
 
 
        if_existing (file)
-	      if  FILE	exists, display everything between if_existing and the
+	      if FILE exists, display everything between if_existing  and  the
 	      matching $endif
 
 
        if_mounted (mountpoint)
-	      if MOUNTPOINT is mounted, display everything between  if_mounted
+	      if  MOUNTPOINT is mounted, display everything between if_mounted
 	      and the matching $endif
 
 
@@ -662,8 +667,8 @@ VARIABLES
 	      Machine, i686 for example
 
 
-       mails  Mail count in mail spool. You can use program like fetchmail  to
-	      get  mails  from	some server using your favourite protocol. See
+       mails  Mail  count in mail spool. You can use program like fetchmail to
+	      get mails from some server using your  favourite	protocol.  See
 	      also new_mails.
 
 
@@ -812,20 +817,20 @@ VARIABLES
 	      lservice - local service name from /etc/services
 
 	      The connection index provides you with access to each connection
-	      in  the  port  monitor.  The monitor will return information for
-	      index values from 0 to n-1 connections. Values higher  than  n-1
-	      are  simply  ignored. For the "count" item, the connection index
+	      in the port monitor. The monitor	will  return  information  for
+	      index  values  from 0 to n-1 connections. Values higher than n-1
+	      are simply ignored. For the "count" item, the  connection	 index
 	      must be omitted. It is required for all other items.
 
 	      Examples:
 
-	      ${tcp_portmon 6881 6999 count} - displays the number of  connec-
+	      ${tcp_portmon  6881 6999 count} - displays the number of connec-
 	      tions in the bittorrent port range
 
-	      ${tcp_portmon  22 22 rip 0} - displays the remote host ip of the
+	      ${tcp_portmon 22 22 rip 0} - displays the remote host ip of  the
 	      first sshd connection
 
-	      ${tcp_portmon 22 22 rip 9} - displays the remote host ip of  the
+	      ${tcp_portmon  22 22 rip 9} - displays the remote host ip of the
 	      tenth sshd connection
 
 	      ${tcp_portmon 1 1024 rhost 0} - displays the remote host name of
@@ -834,22 +839,22 @@ VARIABLES
 	      ${tcp_portmon 1 1024 rport 4} - displays the remote host port of
 	      the fifth connection on a privileged port
 
-	      ${tcp_portmon  1 65535 lservice 14} - displays the local service
+	      ${tcp_portmon 1 65535 lservice 14} - displays the local  service
 	      name of the fifteenth connection in the range of all ports
 
 	      Note that port monitor variables which share the same port range
 	      actually refer to the same monitor, so many references to a sin-
 	      gle port range for different items and different indexes all use
-	      the  same monitor internally. In other words, the program avoids
+	      the same monitor internally. In other words, the program	avoids
 	      creating redundant monitors.
 
        texeci interval command
-	      Runs a command at an interval inside a thread and	 displays  the
-	      output.  Same  as	 $execi,  except  the  command is run inside a
-	      thread. Use this if you have a slow script to keep Conky	updat-
-	      ing.  You should make the interval slightly longer then the time
-	      it takes your script to execute. For  example,  if  you  have  a
-	      script  that  take  5  seconds  to  execute, you should make the
+	      Runs  a  command at an interval inside a thread and displays the
+	      output. Same as $execi, except  the  command  is	run  inside  a
+	      thread.  Use this if you have a slow script to keep Conky updat-
+	      ing. You should make the interval slightly longer then the  time
+	      it  takes	 your  script  to  execute. For example, if you have a
+	      script that take 5 seconds  to  execute,	you  should  make  the
 	      interval at least 6 seconds. See also $execi.
 
 
@@ -864,21 +869,21 @@ VARIABLES
 
 
        time (format)
-	      Local time, see man strftime to get more information about  for-
+	      Local  time, see man strftime to get more information about for-
 	      mat
 
 
        totaldown net
-	      Total  download, overflows at 4 GB on Linux with 32-bit arch and
-	      there doesn't seem to be a way to know how  many	times  it  has
+	      Total download, overflows at 4 GB on Linux with 32-bit arch  and
+	      there  doesn't  seem  to	be a way to know how many times it has
 	      already done that before conky has started.
 
 
        top type, num
-	      This  takes arguments in the form:top (name) (number) Basically,
-	      processes are ranked from highest to  lowest  in	terms  of  cpu
-	      usage,  which  is	 what (num) represents. The types are: "name",
-	      "pid", "cpu", and mem". There can	 be  a	max  of	 10  processes
+	      This takes arguments in the form:top (name) (number)  Basically,
+	      processes	 are  ranked  from  highest  to lowest in terms of cpu
+	      usage, which is what (num) represents. The  types	 are:  "name",
+	      "pid",  "cpu",  and  mem".  There	 can  be a max of 10 processes
 	      listed.
 
 
@@ -902,9 +907,9 @@ VARIABLES
 	      Upload speed in kilobytes with one decimal
 
 
-       upspeedgraph  net (height),(width) (gradient colour 1) (gradient colour
+       upspeedgraph net (height),(width) (gradient colour 1) (gradient	colour
        2) (scale)
-	      Upload  speed  graph,  colours  defined  in hex, minus the #. If
+	      Upload speed graph, colours defined in  hex,  minus  the	#.  If
 	      scale is non-zero, it becomes the scale for the graph.
 
 
@@ -928,7 +933,7 @@ VARIABLES
 
 
        voffset (pixels)
-	      Change vertical offset by N pixels. Negative values  will	 cause
+	      Change  vertical	offset by N pixels. Negative values will cause
 	      text to overlap. See also $offset.
 
 
@@ -941,12 +946,12 @@ VARIABLES
 
 
        xmms_channels
-	      xmms  /  bmp / audacious / infopipe: number of audio channels of
+	      xmms / bmp / audacious / infopipe: number of audio  channels  of
 	      current tune
 
 
        xmms_filename
-	      xmms / bmp / audacious / infopipe: full  path  and  filename  of
+	      xmms  /  bmp  /  audacious / infopipe: full path and filename of
 	      current tune
 
 
@@ -956,17 +961,17 @@ VARIABLES
 
 
        xmms_length
-	      xmms / bmp / audacious / infopipe: total length of current  tune
+	      xmms  / bmp / audacious / infopipe: total length of current tune
 	      as MM:SS
 
 
        xmms_length_seconds
-	      xmms  / bmp / audacious / infopipe: total length of current tune
+	      xmms / bmp / audacious / infopipe: total length of current  tune
 	      in seconds
 
 
        xmms_playlist_position
-	      xmms / bmp / audacious / infopipe: playlist position of  current
+	      xmms  / bmp / audacious / infopipe: playlist position of current
 	      tune
 
 
@@ -975,12 +980,12 @@ VARIABLES
 
 
        xmms_position
-	      xmms  /  bmp  /  audacious / infopipe: MM:SS position of current
+	      xmms / bmp / audacious / infopipe:  MM:SS	 position  of  current
 	      tune
 
 
        xmms_position_seconds
-	      xmms / bmp / audacious / infopipe: position of current  tune  in
+	      xmms  /  bmp / audacious / infopipe: position of current tune in
 	      seconds
 
 
@@ -1007,11 +1012,11 @@ FILES
 BUGS
        Drawing to root or some other desktop window directly doesn't work with
        all window managers. Especially doesn't work well with Gnome and it has
-       been  reported  that  it	 doesn't work with KDE either. Nautilus can be
-       disabled from drawing to desktop	 with  program	gconf-editor.  Uncheck
-       show_desktop  in	 /apps/nautilus/preferences/.  There  is  -w switch in
-       Conky to set some specific window id. You  might	 find  xwininfo	 -tree
-       useful  to  find	 the  window  to draw to. You can also use -o argument
+       been reported that it doesn't work with KDE  either.  Nautilus  can  be
+       disabled	 from  drawing	to  desktop with program gconf-editor. Uncheck
+       show_desktop in /apps/nautilus/preferences/.  There  is	-w  switch  in
+       Conky  to  set  some  specific window id. You might find xwininfo -tree
+       useful to find the window to draw to. You  can  also  use  -o  argument
        which makes Conky to create its own window.
 
 SEE ALSO

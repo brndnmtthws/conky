@@ -241,7 +241,6 @@ static int set_transparent = 0;
 #ifdef OWN_WINDOW
 static int own_window = 0;
 static int background_colour = 0;
-static char wm_class_name[256];
 /* fixed size/pos is set if wm/user changes them */
 static int fixed_size = 0, fixed_pos = 0;
 #endif
@@ -4831,7 +4830,7 @@ static void set_default_configurations(void)
 	maximum_width = 0;
 #ifdef OWN_WINDOW
 	own_window = 0;
-     	strcpy(wm_class_name, "conky");	
+     	strcpy(window.wm_class_name, "conky");	
 #endif
 	stippled_borders = 0;
 	border_margin = 3;
@@ -4943,7 +4942,11 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 		}
 		CONF("on_bottom") {
 			if(value)
+				ERR("on_bottom is deprecated.  use own_window_hints below");
 				on_bottom = string_to_bool(value);
+				if (on_bottom)
+				    SET_HINT(window.hints,HINT_BELOW);
+
 			else
 				CONF_ERR;
 		}
@@ -5230,8 +5233,8 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 			own_window = string_to_bool(value);
 		}
 		CONF("wm_class_name") {
-			strncpy(wm_class_name, value, sizeof(wm_class_name)-1);
-			wm_class_name[sizeof(wm_class_name)-1] = 0;
+			memset(window.wm_class_name,0,sizeof(window.wm_class_name));
+			strncpy(window.wm_class_name, value, sizeof(window.wm_class_name)-1);
 		}
 		CONF("own_window_transparent") {
 			set_transparent = string_to_bool(value);
@@ -5241,6 +5244,35 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 				background_colour = get_x11_color(value);
 			} else {
 				ERR("Invalid colour for own_winder_colour (try omitting the '#' for hex colours");
+			}
+		}
+		CONF("own_window_hints") {
+			if (value) {
+				char *p_hint, *p_save;
+				char delim[] = ", ";
+
+				/* tokenize the value into individual hints */
+				if ((p_hint=strtok_r(value, delim, &p_save)) != NULL)
+				do {
+					 /*fprintf(stderr, "hint [%s] parsed\n", p_hint);*/
+					 if (strncmp(p_hint,"undecorate",10) == 0)
+					     SET_HINT(window.hints,HINT_UNDECORATED);
+					 else if (strncmp(p_hint,"below",5) == 0)
+					     SET_HINT(window.hints,HINT_BELOW);
+					 else if (strncmp(p_hint,"above",5) == 0)
+					     SET_HINT(window.hints,HINT_ABOVE);
+					 else if (strncmp(p_hint,"sticky",6) == 0)
+					     SET_HINT(window.hints,HINT_STICKY);
+					 else if (strncmp(p_hint,"skip_taskbar",12) == 0)
+					     SET_HINT(window.hints,HINT_SKIP_TASKBAR);
+					 else if (strncmp(p_hint,"skip_pager",10) == 0)
+					     SET_HINT(window.hints,HINT_SKIP_PAGER);
+					 else
+					     CONF_ERR;
+
+					 p_hint=strtok_r(NULL, delim, &p_save);
+				}
+				while (p_hint!=NULL);
 			}
 		}
 #endif
@@ -5603,6 +5635,7 @@ int main(int argc, char **argv)
 			    (stderr,
 			     "Conky: forked to background, pid is %d\n",
 			     ret);
+			fflush(stderr);
 			return 0;
 		}
 	}

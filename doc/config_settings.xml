@@ -251,6 +251,15 @@
 </varlistentry>
 
 <varlistentry>
+        <term><command><option>own_window_hints</option></command>
+                <option>undecorated,below,above,sticky,skip_taskbar,skip_pager</option>
+	</term>
+	<listitem>
+		If own_window is yes, you may use these window manager hints to affect the way conky displays
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
 	<term><command><option>out_to_console</option></command>
 	</term>
 	<listitem>

@@ -299,6 +299,18 @@ char tmpstring2[TEXT_BUFFER_SIZE];
 
 #define ATOM(a) XInternAtom(display, #a, False)
 
+#ifdef OWN_WINDOW
+enum _window_hints {
+	HINT_UNDECORATED = 0,
+	HINT_BELOW,
+	HINT_ABOVE,
+	HINT_STICKY,
+	HINT_SKIP_TASKBAR,
+	HINT_SKIP_PAGER
+};
+#define SET_HINT(mask,hint)	(mask |= (1<<hint))
+#define TEST_HINT(mask,hint)	(mask & (1<<hint))
+#endif
 struct conky_window {
 	Window root,window;
 	Drawable drawable;
@@ -313,8 +325,10 @@ struct conky_window {
 	int width;
 	int height;
 #ifdef OWN_WINDOW
+	char wm_class_name[256];
 	int x;
 	int y;
+	unsigned long hints;
 #endif
 };
 

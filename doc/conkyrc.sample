@@ -59,6 +59,9 @@ own_window_transparent yes
 # If own_window_transparent is set to no, you can set the background colour here
 own_window_colour hotpink
 
+# If own_window is yes, these window manager hints may be used
+#own_window_hints undecorated,below,sticky,skip_taskbar,skip_pager
+
 # Use double buffering (reduces flicker, may not work for everyone)
 double_buffer yes
 
@@ -179,7 +182,7 @@ $stippled_hr
 ${color #ddaa00}Port(s)${alignr}#Connections
 $color ALL:     ${alignr}$color ${tcp_portmon 1 65535 count}
 $color mpd:     ${alignr}$color ${tcp_portmon 6600 6600 count}
-$color sshd:    ${alignr}$color ${tcp_portmon 9229 9229 count}
+$color sshd:    ${alignr}$color ${tcp_portmon 22 22 count}
 $color torrent: ${alignr}$color ${tcp_portmon 6881 6999 count}
 ${color #ddaa00}Remote Address ${alignr} Local Service/Port$color
  ${tcp_portmon 1 65535 rhost 0} ${alignr} ${tcp_portmon 1 65535 lservice 0}
