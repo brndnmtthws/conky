@@ -337,7 +337,8 @@ extern int workarea[4];
 extern struct conky_window window;
 
 void init_X11();
-void init_window(int use_own_window, int width, int height, int set_trans, int back_colour, char * nodename);
+void init_window(int use_own_window, int width, int height, int set_trans, int back_colour, char * nodename,
+		 char **argv, int argc);
 void create_gc();
 void set_transparent_background(Window win);
 long get_x11_color(const char *);

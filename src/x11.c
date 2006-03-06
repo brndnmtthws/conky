@@ -173,7 +173,8 @@ inline void set_transparent_background(Window win)
 	//XClearWindow(display, win); not sure why this was here
 }
 
-void init_window(int own_window, int w, int h, int set_trans, int back_colour, char * nodename)
+void init_window(int own_window, int w, int h, int set_trans, int back_colour, char * nodename, 
+		 char **argv, int argc)
 {
 	/* There seems to be some problems with setting transparent background (on
 	 * fluxbox this time). It doesn't happen always and I don't know why it
@@ -186,15 +187,19 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 #ifdef OWN_WINDOW
 	if (own_window) {
 		{
-			/* DRASTICALLY SIMPLIFIED - 
-			 * override_redirect=True impedes the WM from manipulating
-			 * the window, adding decorations, etc.  we do not register
-			 * for button events so you should have menu clicking over
-			 * the conky window now too.  PHK. */
+			/* Allow WM control of conky again.  Shielding conky from the WM 
+			 * via override redirect creates more problems than it's worth and
+			 * makes it impossible to use tools like devilspie to manage the
+			 * conky windows beyond the parametsrs we offer.  Also, button 
+			 * press events are now explicitly forwarded to the root window. */
 			XSetWindowAttributes attrs = {
 				ParentRelative,0L,0,0L,0,0,Always,0L,0L,False,
-				StructureNotifyMask|ExposureMask,
-				0L,True,0,0 };
+				StructureNotifyMask|ExposureMask|ButtonPressMask,
+				0L,False,0,0 };
+
+			XClassHint classHint;
+			XWMHints wmHint;
+			char window_title[256];
 
 			window.root = find_desktop_window();
 
@@ -207,8 +212,23 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 
 			fprintf(stderr, "Conky: drawing to created window (%lx)\n", window.window);
 
-			XLowerWindow(display, window.window);
+			classHint.res_name = "conky";
+			classHint.res_class = classHint.res_name;
 
+			wmHint.flags = InputHint | StateHint;
+			wmHint.input = False;
+			wmHint.initial_state = NormalState;
+
+			sprintf(window_title,WINDOW_NAME_FMT,nodename);
+
+			XmbSetWMProperties (display, window.window, window_title, NULL, 
+					    argv, argc,
+					    NULL, &wmHint, &classHint);
+
+			/* Sets an empty WM_PROTOCOLS property */
+			XSetWMProtocols(display,window.window,NULL,0);
+
+			XLowerWindow(display, window.window);
 			XMapWindow(display, window.window);
 
 		}
@@ -269,7 +289,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 	XSelectInput(display, window.window, ExposureMask
 #ifdef OWN_WINDOW
 		     | (own_window
-			? (StructureNotifyMask | PropertyChangeMask) : 0)
+			? (StructureNotifyMask | PropertyChangeMask | ButtonPressMask) : 0)
 #endif
 	    );
 }

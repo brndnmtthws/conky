@@ -4550,6 +4550,16 @@ static void main_loop()
 					set_font();
 				}
 				break;
+
+			case ButtonPress:
+				if (own_window)
+				{
+				    /* forward the click to the root window */
+				    XUngrabPointer(display, ev.xbutton.time);
+				    ev.xbutton.window = window.root;
+				    XSendEvent(display, ev.xbutton.window, False, ButtonPressMask, &ev);
+				}
+				break;
 #endif
 
 			default:
@@ -5587,7 +5597,7 @@ int main(int argc, char **argv)
 		(own_window,
 		 text_width + border_margin * 2 + 1,
 		 text_height + border_margin * 2 + 1,
-		 set_transparent, background_colour, info.uname_s.nodename);
+		 set_transparent, background_colour, info.uname_s.nodename, argv, argc);
 	
 	update_text_area();	/* to position text/window on screen */
 #endif /* X11 */
