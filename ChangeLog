@@ -5,6 +5,7 @@
 	http://bugs.gentoo.org/show_bug.cgi?id=122637#c3
 	* Stop using override_redirect true -- conky back under WM control
 	when using 'own_window yes'.
+	* Fixed texeci breakage when forking to background is on
 
 2006-02-14
 	* Drastically simplified own_window=yes window creation code.

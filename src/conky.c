@@ -5586,6 +5586,26 @@ int main(int argc, char **argv)
 		free(text);
 	}
 	text = NULL;
+	/* fork */
+	if (fork_to_background) {
+		int ret = fork();
+		switch (ret) {
+		case -1:
+			ERR("can't fork() to background: %s",
+			    strerror(errno));
+			break;
+
+		case 0:
+			break;
+
+		default:
+			fprintf
+			    (stderr,
+			     "Conky: forked to background, pid is %d\n",
+			     ret);
+			return 0;
+		}
+	}
 
 	update_uname();
 
@@ -5623,26 +5643,6 @@ int main(int argc, char **argv)
 	draw_stuff();
 #endif /* X11 */
 
-	/* fork */
-	if (fork_to_background) {
-		int ret = fork();
-		switch (ret) {
-		case -1:
-			ERR("can't fork() to background: %s",
-			    strerror(errno));
-			break;
-
-		case 0:
-			break;
-
-		default:
-			fprintf
-			    (stderr,
-			     "Conky: forked to background, pid is %d\n",
-			     ret);
-			return 0;
-		}
-	}
 
 	/* Set signal handlers */
 	act.sa_handler = signal_handler;
