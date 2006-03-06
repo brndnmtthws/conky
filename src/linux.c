@@ -861,11 +861,21 @@ void get_freq( char * p_client_buffer, size_t client_buffer_size, char * p_forma
 #if defined(__i386) || defined(__x86_64)
 		if (strncmp(s, "cpu MHz", 7) == 0) {	//and search for the cpu mhz
 #else
+#if defined(__alpha)
+		if (strncmp(s, "cycle frequency [Hz]", 20) == 0) {		// different on alpha
+#else
 		if (strncmp(s, "clock", 5) == 0) {	// this is different on ppc for some reason
-#endif
+#endif // defined(__alpha)
+#endif // defined(__i386) || defined(__x86_64)
+
 		strcpy(frequency, strchr(s, ':') + 2);	//copy just the number
+#if defined(__alpha)
+		frequency[strlen(frequency) - 6] = '\0';// strip " est.\n"
+		freq = strtod(frequency, NULL)/1000000; // kernel reports in Hz 
+#else
 		frequency[strlen(frequency) - 1] = '\0'; // strip \n
 		freq = strtod(frequency, NULL);
+#endif
 		break;
 		}
 	}

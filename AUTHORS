@@ -139,6 +139,9 @@ Roman Bogorodskiy <novel at clublife dot ru>
 Szymon Boniecki
   Reads current LC_TIME
 
+Thomas Cort
+  CPU frequency patch for alpha
+
 Toni <bleach at users dot sourceforge dot net>
   exec*/tail/head output evalution
 

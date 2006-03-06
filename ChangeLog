@@ -1,5 +1,9 @@
 # $Id$
 
+2006-03-05
+	* Added patch to make $cpu stuff work on alpha (thanks Thomas Cort)
+	http://bugs.gentoo.org/show_bug.cgi?id=122637#c3
+
 2006-02-14
 	* Drastically simplified own_window=yes window creation code.
 	* on_bottom and wm_class_name deprecated (they do nothing)
