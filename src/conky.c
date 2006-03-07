@@ -4573,9 +4573,9 @@ static void main_loop()
 			case ButtonPress:
 				if (own_window)
 				{
-				    /* forward the click to the root window */
+				    /* forward the click to the desktop window */
 				    XUngrabPointer(display, ev.xbutton.time);
-				    ev.xbutton.window = window.root;
+				    ev.xbutton.window = window.desktop;
 				    XSendEvent(display, ev.xbutton.window, False, ButtonPressMask, &ev);
 				}
 				break;

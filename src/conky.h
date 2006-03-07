@@ -312,7 +312,7 @@ enum _window_hints {
 #define TEST_HINT(mask,hint)	(mask & (1<<hint))
 #endif
 struct conky_window {
-	Window root,window;
+	Window root,window,desktop;
 	Drawable drawable;
 	GC gc;
 #ifdef XDBE

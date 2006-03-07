@@ -45,7 +45,7 @@ struct conky_window window;
 
 /* local prototypes */
 static void update_workarea();
-static Window find_desktop_window();
+static Window find_desktop_window(Window *p_root, Window *p_desktop);
 static Window find_subwindow(Window win, int w, int h);
 
 /* X11 initializer */
@@ -95,7 +95,9 @@ static void update_workarea()
 	}
 }
 
-static Window find_desktop_window()
+/* Find root window and desktop window.  Return desktop window on success, 
+ * and set root and desktop byref return values.  Return 0 on failure. */  
+static Window find_desktop_window(Window *p_root, Window *p_desktop)
 {
 	Atom type;
 	int format, i;
@@ -105,6 +107,9 @@ static Window find_desktop_window()
 	Window win = root;
 	Window troot, parent, *children;
 	unsigned char *buf = NULL;
+
+	if (!p_root || !p_desktop)
+	    return(0);
 
 	/* some window managers set __SWM_VROOT to some child of root window */
 
@@ -120,6 +125,8 @@ static Window find_desktop_window()
 			fprintf(stderr,
 				"Conky: desktop window (%lx) found from __SWM_VROOT property\n", win);
 			fflush(stderr);
+			*p_root=win;
+			*p_desktop=win;
 			return win;
 		}
 
@@ -144,11 +151,15 @@ static Window find_desktop_window()
 
 	if (win != root)
 		fprintf(stderr,
-			"Conky: desktop window (%lx) is subwindow of root window (%lx)\n",win,root);
+			"\nConky: desktop window (%lx) is subwindow of root window (%lx)\n",win,root);
 	else
-		fprintf(stderr, "Conky: desktop window (%lx) is root window\n",win);
+		fprintf(stderr, "\nConky: desktop window (%lx) is root window\n",win);
 
 	fflush(stderr);
+
+	*p_root=root;
+	*p_desktop=win;
+
 	return win;
 }
 
@@ -204,7 +215,11 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 			Atom xa;
 			char window_title[256];
 
-			window.root = find_desktop_window();
+			/* We want to parent the window to the root so it's under WM control,
+			 * but we want to forward button clicks to the desktop window for menus. 
+			 * On some desktop systems, the desktop window != root window. */
+			if ( !find_desktop_window( &window.root, &window.desktop ) )
+			    return;
 
 			window.window = XCreateWindow(display, window.root, 
 					      	      window.x, window.y, w, h, 0, 
@@ -373,7 +388,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 		XWindowAttributes attrs;
 
 		if (!window.window)
-			window.window = find_desktop_window();
+			window.window = find_desktop_window( &window.root, &window.desktop );
 
 		if (XGetWindowAttributes(display, window.window, &attrs)) {
 			window.width = attrs.width;
