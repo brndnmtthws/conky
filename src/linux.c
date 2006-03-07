@@ -1182,11 +1182,7 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 		/* charged */
 		/* thanks to Lukas Zapletal <lzap@seznam.cz> */
 		else if (strcmp(charging_state, "charged") == 0) {
-			if (acpi_last_full != 0 && remaining_capacity != acpi_last_full) {
-				sprintf(last_battery_str, "charged 100%");
-			} else {
 				strcpy(last_battery_str, "charged");
-			}
 		}
 		/* unknown, probably full / AC */
 		else {
