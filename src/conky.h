@@ -297,7 +297,7 @@ char tmpstring2[TEXT_BUFFER_SIZE];
 #include <X11/extensions/Xdbe.h>
 #endif
 
-#define ATOM(a) XInternAtom(display, #a, True)
+#define ATOM(a) XInternAtom(display, #a, False)
 
 #ifdef OWN_WINDOW
 enum _window_hints {
