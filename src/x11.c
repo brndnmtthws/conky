@@ -255,7 +255,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 			    if (xa != None) {
 				long prop[5] = { 2, 0, 0, 0, 0 };
 				XChangeProperty(display, window.window, xa,
-						xa, 32, PropModeAppend,
+						xa, 32, PropModeReplace,
 						(unsigned char *) prop, 5);
 			    }
 			}
