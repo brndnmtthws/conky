@@ -1087,7 +1087,6 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 {
 	static int rep, rep2;
 	char acpi_path[128];
-	int design_capacity;
 	snprintf(acpi_path, 127, ACPI_BATTERY_BASE_PATH "/%s/state", bat);
 
 	/* don't update battery too often */
@@ -1120,9 +1119,6 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 					char b[256];
 					if (fgets(b, 256, fp) == NULL)
 						break;
-					if (sscanf(b, "design capacity: %d", &design_capacity) != 0) {
-						continue;
-					}
 					if (sscanf(b, "last full capacity: %d", &acpi_last_full) != 0) {
 						break;
 					}
@@ -1187,7 +1183,7 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 		/* thanks to Lukas Zapletal <lzap@seznam.cz> */
 		else if (strcmp(charging_state, "charged") == 0) {
 			if (acpi_last_full != 0 && remaining_capacity != acpi_last_full) {
-				sprintf(last_battery_str, "charged %d%%", remaining_capacity * 100 / design_capacity);
+				sprintf(last_battery_str, "charged 100%");
 			} else {
 				strcpy(last_battery_str, "charged");
 			}

@@ -4430,11 +4430,6 @@ static void main_loop()
 					update_text();
 #ifdef X11
 			}
-#ifdef OWN_WINDOW
-			if (own_window) {
-				set_transparent_background(window.window);
-			}
-#endif
 		}
 		
 		if (need_to_update) {
@@ -4449,9 +4444,9 @@ static void main_loop()
 			if (own_window) {
 				/* resize window if it isn't right size */
 				if (!fixed_size &&
-				    (text_width + border_margin * 2 !=
+				    (text_width + border_margin * 2 + 1 !=
 				     window.width
-				     || text_height + border_margin * 2 !=
+				     || text_height + border_margin * 2 + 1 !=
 				     window.height)) {
 					window.width =
 					    text_width +
@@ -4463,6 +4458,9 @@ static void main_loop()
 						      window.window,
 						      window.width,
 						      window.height);
+			if (own_window) {
+				set_transparent_background(window.window);
+			}
 				     }
 
 				/* move window if it isn't in right position */
