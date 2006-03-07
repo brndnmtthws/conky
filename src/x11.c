@@ -273,7 +273,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
             					(unsigned char *) &prop, 1);
 			    }
 			
-			    xa = ATOM("_NET_WM_STATE");
+			    xa = ATOM(_NET_WM_STATE);
 			    if (xa != None) {
 				Atom xa_prop = ATOM(_NET_WM_STATE_BELOW);
 				XChangeProperty(display, window.window, xa,
@@ -297,7 +297,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
                                                 (unsigned char *) &prop, 1);
                             }
 
-                            xa = ATOM("_NET_WM_STATE");
+                            xa = ATOM(_NET_WM_STATE);
                             if (xa != None) {
                                 Atom xa_prop = ATOM(_NET_WM_STATE_ABOVE);
                                 XChangeProperty(display, window.window, xa,
@@ -312,7 +312,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 			if (TEST_HINT(window.hints,HINT_STICKY)) {
                             fprintf(stderr, "Conky: hint - sticky\n"); fflush(stderr);
 
-                            xa = ATOM("_NET_WM_STATE");
+                            xa = ATOM(_NET_WM_STATE);
                             if (xa != None) {
                                 Atom xa_prop = ATOM(_NET_WM_STATE_STICKY);
                                 XChangeProperty(display, window.window, xa,
@@ -327,7 +327,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
                         if (TEST_HINT(window.hints,HINT_SKIP_TASKBAR)) {
                             fprintf(stderr, "Conky: hint - skip_taskbar\n"); fflush(stderr);
 
-                            xa = ATOM("_NET_WM_STATE");
+                            xa = ATOM(_NET_WM_STATE);
                             if (xa != None) {
                                 Atom xa_prop = ATOM(_NET_WM_STATE_SKIP_TASKBAR);
                                 XChangeProperty(display, window.window, xa,
@@ -342,7 +342,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
                         if (TEST_HINT(window.hints,HINT_SKIP_PAGER)) {
                             fprintf(stderr, "Conky: hint - skip_pager\n"); fflush(stderr);
 
-                            xa = ATOM("_NET_WM_STATE");
+                            xa = ATOM(_NET_WM_STATE);
                             if (xa != None) {
                                 Atom xa_prop = ATOM(_NET_WM_STATE_SKIP_PAGER);
                                 XChangeProperty(display, window.window, xa,
