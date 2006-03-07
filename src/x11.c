@@ -255,7 +255,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 			    if (xa != None) {
 				long prop[5] = { 2, 0, 0, 0, 0 };
 				XChangeProperty(display, window.window, xa,
-						xa, 32, PropModeReplace,
+						xa, 32, PropModeAppend,
 						(unsigned char *) prop, 5);
 			    }
 			}
@@ -269,7 +269,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
             			long prop = 0;
             			XChangeProperty(display, window.window, xa,
             					XA_CARDINAL, 32,
-            					PropModeReplace,
+            					PropModeAppend,
             					(unsigned char *) &prop, 1);
 			    }
 			
@@ -278,7 +278,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 				Atom xa_prop = ATOM(_NET_WM_STATE_BELOW);
 				XChangeProperty(display, window.window, xa,
 					XA_ATOM, 32,
-					PropModeReplace,
+					PropModeAppend,
 					(unsigned char *) &xa_prop,
 					1);
 			    }
@@ -293,7 +293,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
                                 long prop = 6;
                                 XChangeProperty(display, window.window, xa,
                                                 XA_CARDINAL, 32,
-                                                PropModeReplace,
+                                                PropModeAppend,
                                                 (unsigned char *) &prop, 1);
                             }
 
@@ -302,7 +302,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
                                 Atom xa_prop = ATOM(_NET_WM_STATE_ABOVE);
                                 XChangeProperty(display, window.window, xa,
                                         XA_ATOM, 32,
-                                        PropModeReplace,
+                                        PropModeAppend,
                                         (unsigned char *) &xa_prop,
                                         1);
                             }
@@ -317,7 +317,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
                                 Atom xa_prop = ATOM(_NET_WM_STATE_STICKY);
                                 XChangeProperty(display, window.window, xa,
                                         XA_ATOM, 32,
-                                        PropModeReplace,
+                                        PropModeAppend,
                                         (unsigned char *) &xa_prop,
                                         1);
                             }
@@ -332,7 +332,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
                                 Atom xa_prop = ATOM(_NET_WM_STATE_SKIP_TASKBAR);
                                 XChangeProperty(display, window.window, xa,
                                         XA_ATOM, 32,
-                                        PropModeReplace,
+                                        PropModeAppend,
                                         (unsigned char *) &xa_prop,
                                         1);
                             }
@@ -347,7 +347,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
                                 Atom xa_prop = ATOM(_NET_WM_STATE_SKIP_PAGER);
                                 XChangeProperty(display, window.window, xa,
                                         XA_ATOM, 32,
-                                        PropModeReplace,
+                                        PropModeAppend,
                                         (unsigned char *) &xa_prop,
                                         1);
                             }
