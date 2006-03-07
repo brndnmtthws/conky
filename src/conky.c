@@ -5640,21 +5640,22 @@ int main(int argc, char **argv)
 	text = NULL;
 	/* fork */
 	if (fork_to_background) {
-		int ret = fork();
-		switch (ret) {
+		int pid = fork();
+		switch (pid) {
 		case -1:
 			ERR("can't fork() to background: %s",
 			    strerror(errno));
 			break;
 
 		case 0:
+			/* child process */
+			sleep(1);
+			fprintf(stderr,"\n");fflush(stderr);
 			break;
 
 		default:
-			fprintf
-			    (stderr,
-			     "Conky: forked to background, pid is %d\n",
-			     ret);
+			/* parent process */
+			fprintf(stderr,"Conky: forked to background, pid is %d\n",pid);
 			fflush(stderr);
 			return 0;
 		}

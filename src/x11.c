@@ -151,9 +151,9 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop)
 
 	if (win != root)
 		fprintf(stderr,
-			"\nConky: desktop window (%lx) is subwindow of root window (%lx)\n",win,root);
+			"Conky: desktop window (%lx) is subwindow of root window (%lx)\n",win,root);
 	else
-		fprintf(stderr, "\nConky: desktop window (%lx) is root window\n",win);
+		fprintf(stderr, "Conky: desktop window (%lx) is root window\n",win);
 
 	fflush(stderr);
 
