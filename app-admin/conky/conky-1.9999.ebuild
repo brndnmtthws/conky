@@ -1,9 +1,9 @@
-# CVS ebuild for Conky, thanks to Hopeless
+# CVS ebuild for Conky, thanks to Hopeless; Subversion ver. by drphibes
 # $Header$
 
-ECVS_SERVER="cvs.sourceforge.net:/cvsroot/conky"
-ECVS_MODULE="conky"
-inherit cvs
+ESVN_REPO_URI="https://svn.sourceforge.net/svnroot/conky/trunk/conky"
+ESVN_PROJECT="conky"
+inherit subversion
 
 DESCRIPTION="Conky is an advanced, highly configurable system monitor for X"
 HOMEPAGE="http://conky.sf.net"
@@ -52,13 +52,9 @@ DEPEND="
 
 S=${WORKDIR}/conky
 
-src_unpack() {
-        cvs_src_unpack
-        cd ${S}
-        ./autogen.sh
-}
-
 src_compile() {
+	./autogen.sh
+
 	local mymake
 	if useq ipv6 ; then
 		ewarn
