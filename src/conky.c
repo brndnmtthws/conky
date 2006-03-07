@@ -890,6 +890,7 @@ enum text_object_type {
 	OBJ_mpd_name,
 	OBJ_mpd_file,
 	OBJ_mpd_percent,
+	OBJ_mpd_smart,
 #endif
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
 	OBJ_xmms_status,
@@ -1180,6 +1181,20 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 				if (info.mpd.status) {
 					free(info.mpd.status);
 					info.mpd.status = 0;
+				}
+				break;
+			case OBJ_mpd_smart:
+				if (info.mpd.artist) {
+					free(info.mpd.artist);
+					info.mpd.artist = 0;
+				}
+				if (info.mpd.title) {
+					free(info.mpd.title);
+					info.mpd.title = 0;
+				}
+				if (info.mpd.file) {
+					free(info.mpd.file);
+					info.mpd.file = 0;
 				}
 				break;
 			case OBJ_mpd_host:
@@ -1891,13 +1906,13 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		END OBJ(mpd_name, INFO_MPD)
 		END OBJ(mpd_file, INFO_MPD)
 		END OBJ(mpd_percent, INFO_MPD)
-		END OBJ(mpd_album, INFO_MPD) END OBJ(mpd_vol,
-				INFO_MPD) END OBJ(mpd_bitrate,
-					INFO_MPD)
-					END OBJ(mpd_status, INFO_MPD)
-					END OBJ(mpd_bar, INFO_MPD)
-					(void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
-	END
+		END OBJ(mpd_album, INFO_MPD)
+		END OBJ(mpd_vol, INFO_MPD)
+		END OBJ(mpd_bitrate, INFO_MPD)
+		END OBJ(mpd_status, INFO_MPD)
+		END OBJ(mpd_bar, INFO_MPD)
+		(void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+		END OBJ(mpd_smart, INFO_MPD) END
 #endif
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
 		OBJ(xmms_status, INFO_XMMS) END
@@ -3185,6 +3200,13 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					obj->data.pair.b,
 					(int) (cur->mpd.progress *
 					       255.0f));
+			}
+			OBJ(mpd_smart) {
+				if (strlen(cur->mpd.title) < 2 && strlen(cur->mpd.title) < 2) {
+					snprintf(p, p_max_size, "%s", cur->mpd.file);
+				} else {
+					snprintf(p, p_max_size, "%s - %s", cur->mpd.artist, cur->mpd.title);
+				}
 			}
 #endif
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)

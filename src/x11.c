@@ -312,11 +312,11 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 			if (TEST_HINT(window.hints,HINT_STICKY)) {
                             fprintf(stderr, "Conky: hint - sticky\n"); fflush(stderr);
 
-                            xa = ATOM(_NET_WM_STATE);
+                            xa = ATOM(_NET_WM_DESKTOP);
                             if (xa != None) {
-                                Atom xa_prop = ATOM(_NET_WM_STATE_STICKY);
+                                uint32_t xa_prop = UINT32_MAX;
                                 XChangeProperty(display, window.window, xa,
-                                        XA_ATOM, 32,
+                                        XA_CARDINAL, 32,
                                         PropModeAppend,
                                         (unsigned char *) &xa_prop,
                                         1);

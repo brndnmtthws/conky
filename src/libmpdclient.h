@@ -503,6 +503,9 @@ extern "C" {
  * returns -1 if it advanced to an OK or ACK */
 	int mpd_nextListOkCommand(mpd_Connection * connection);
 
+/* handles SIGPIPE from full close on the server side */
+	void mpd_signalHandler(int);
+
 #ifdef __cplusplus
 }
 #endif

@@ -45,12 +45,15 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <sys/signal.h>
 
 #ifndef MPD_NO_IPV6
 #ifdef AF_INET6
 #define MPD_HAVE_IPV6
 #endif
 #endif
+
+static char sigpipe = 0;
 
 #define COMMAND_LIST	1
 #define COMMAND_LIST_OK	2
@@ -136,6 +139,8 @@ mpd_Connection *mpd_newConnection(const char *host, int port,
 	mpd_Connection *connection = malloc(sizeof(mpd_Connection));
 	struct timeval tv;
 	fd_set fds;
+        struct sigaction sapipe;           /* definition of signal action */
+
 #ifdef MPD_HAVE_IPV6
 	struct sockaddr_in6 sin6;
 #endif
@@ -149,6 +154,7 @@ mpd_Connection *mpd_newConnection(const char *host, int port,
 	connection->listOks = 0;
 	connection->doneListOk = 0;
 	connection->returnElement = NULL;
+	sigpipe = 0;
 
 	if (!(he = gethostbyname(host))) {
 		snprintf(connection->errorStr, MPD_BUFFER_MAX_LENGTH,
@@ -204,6 +210,13 @@ mpd_Connection *mpd_newConnection(const char *host, int port,
 	}
 
 	mpd_setConnectionTimeout(connection, timeout);
+        
+	/* install the signal handler */
+	sapipe.sa_handler = mpd_signalHandler;
+//	sapipe.sa_mask = 0;
+	sapipe.sa_flags = 0;
+	sapipe.sa_restorer = NULL;
+	sigaction(SIGPIPE,&sapipe,NULL);
 
 	/* connect stuff */
 	{
@@ -367,28 +380,33 @@ void mpd_executeCommand(mpd_Connection * connection, char *command)
 	tv.tv_sec = connection->timeout.tv_sec;
 	tv.tv_usec = connection->timeout.tv_usec;
 
-	while ((ret =
-		select(connection->sock + 1, NULL, &fds, NULL, &tv) == 1)
-	       || (ret == -1 && errno == EINTR)) {
-		ret =
-		    send(connection->sock, commandPtr, commandLen,
-			 MSG_DONTWAIT);
-		if (ret <= 0) {
-			if (ret == EAGAIN || ret == EINTR)
-				continue;
-			snprintf(connection->errorStr,
-				 MPD_BUFFER_MAX_LENGTH,
-				 "problems giving command \"%s\"",
-				 command);
+	if (sigpipe) {
+		perror("");
+		snprintf(connection->errorStr, MPD_BUFFER_MAX_LENGTH, "got SIGINT");
+		connection->error = MPD_ERROR_SENDING;
+		return;
+	}
+	while ((ret = select(connection->sock + 1, NULL, &fds, NULL, &tv) == 1) || (ret == -1 && errno == EINTR)) {
+		if (sigpipe) {
+			perror("");
+			snprintf(connection->errorStr, MPD_BUFFER_MAX_LENGTH, "got SIGINT");
 			connection->error = MPD_ERROR_SENDING;
 			return;
 		} else {
-			commandPtr += ret;
-			commandLen -= ret;
+			ret = send(connection->sock, commandPtr, commandLen, MSG_DONTWAIT);
+			if (ret <= 0) {
+				if (ret == EAGAIN || ret == EINTR)
+					continue;
+				snprintf(connection->errorStr, MPD_BUFFER_MAX_LENGTH, "problems giving command \"%s\"", command);
+				connection->error = MPD_ERROR_SENDING;
+				return;
+			} else {
+				commandPtr += ret;
+				commandLen -= ret;
+			}
+			if (commandLen <= 0)
+				break;
 		}
-
-		if (commandLen <= 0)
-			break;
 	}
 
 	if (commandLen > 0) {
@@ -1515,3 +1533,12 @@ void mpd_sendCommandListEnd(mpd_Connection * connection)
 	connection->commandList = 0;
 	mpd_executeCommand(connection, "command_list_end\n");
 }
+
+void mpd_signalHandler(int signal)
+{
+	if (signal == SIGPIPE) {
+		fprintf(stderr, "Conky: recieved SIGPIPE from MPD connection\n");
+		sigpipe = 1;
+	}
+}
+

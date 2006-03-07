@@ -2,6 +2,7 @@
 
 2006-03-06
 	* Fixed battery problems when charged
+	* MPD code handles broken pipe now, instead of just killing conky
 
 2006-03-05
 	* Added patch to make $cpu stuff work on alpha (thanks Thomas Cort)

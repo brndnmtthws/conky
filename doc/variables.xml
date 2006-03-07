@@ -838,6 +838,15 @@
 
 <varlistentry>
 	<term>
+		<command><option>mpd_smart<option></command>
+	</term>
+	<listitem>
+		Prints the song name in either the form "artist - title" or file name, depending on whats available
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>new_mails</option></command>
 	</term>
 	<listitem>
