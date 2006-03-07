@@ -321,6 +321,16 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
                                         (unsigned char *) &xa_prop,
                                         1);
                             }
+
+			    xa = ATOM(_NET_WM_STATE);
+                            if (xa != None) {
+                                Atom xa_prop = ATOM(_NET_WM_STATE_STICKY);
+                                XChangeProperty(display, window.window, xa,
+                                        XA_ATOM, 32,
+                                        PropModeAppend,
+                                        (unsigned char *) &xa_prop,
+                                        1);
+                            }
                         }
 
 			/* Skip taskbar */
