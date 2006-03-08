@@ -12,6 +12,7 @@
 #ifdef X11
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <X11/Xmd.h>
 #include <X11/Xutil.h>
 #ifdef XFT
 #include <X11/Xft/Xft.h>
@@ -329,7 +330,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 
                             xa = ATOM(_NET_WM_DESKTOP);
                             if (xa != None) {
-                                unsigned long xa_prop = 0xFFFFFFFF;
+                                CARD32 xa_prop = 0xFFFFFFFF;
                                 XChangeProperty(display, window.window, xa,
                                         XA_CARDINAL, 32,
                                         PropModeAppend,
