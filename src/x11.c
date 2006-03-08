@@ -329,7 +329,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 
                             xa = ATOM(_NET_WM_DESKTOP);
                             if (xa != None) {
-                                uint32_t xa_prop = UINT32_MAX;
+                                unsigned long xa_prop = 0xFFFFFFFF;
                                 XChangeProperty(display, window.window, xa,
                                         XA_CARDINAL, 32,
                                         PropModeAppend,
