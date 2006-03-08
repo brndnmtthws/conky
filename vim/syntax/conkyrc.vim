@@ -184,6 +184,9 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 	\ mpd_percent 
 	\ mpd_status 
 	\ mpd_title 
+	\ mpd_file 
+	\ mpd_name 
+	\ mpd_smart 
 	\ mpd_vol 
 	\ new_mails 
 	\ nodename 

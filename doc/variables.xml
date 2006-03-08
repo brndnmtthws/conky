@@ -838,7 +838,7 @@
 
 <varlistentry>
 	<term>
-		<command><option>mpd_smart<option></command>
+		<command><option>mpd_smart</option></command>
 	</term>
 	<listitem>
 		Prints the song name in either the form "artist - title" or file name, depending on whats available
