@@ -203,8 +203,8 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 			/* Allow WM control of conky again.  Shielding conky from the WM 
 			 * via override redirect creates more problems than it's worth and
 			 * makes it impossible to use tools like devilspie to manage the
-			 * conky windows beyond the parametsrs we offer.  Also, button 
-			 * press events are now explicitly forwarded to the root window. */
+			 * conky windows beyond the parameters we offer.  ButtonPress 
+			 * events are now explicitly forwarded to the desktop window. */
 			XSetWindowAttributes attrs = {
 				ParentRelative,0L,0,0L,0,0,Always,0L,0L,False,
 				StructureNotifyMask|ExposureMask|ButtonPressMask,
