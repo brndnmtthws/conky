@@ -4581,6 +4581,16 @@ static void main_loop()
 				    XSendEvent(display, ev.xbutton.window, False, ButtonPressMask, &ev);
 				}
 				break;
+
+ 			case ButtonRelease:
+                                if (own_window)
+                                {
+                                    /* forward the release to the desktop window */
+                                    ev.xbutton.window = window.desktop;
+                                    XSendEvent(display, ev.xbutton.window, False, ButtonReleaseMask, &ev);
+                                }
+                                break;
+
 #endif
 
 			default:

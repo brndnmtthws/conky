@@ -208,7 +208,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 			 * events are now explicitly forwarded to the desktop window. */
 			XSetWindowAttributes attrs = {
 				ParentRelative,0L,0,0L,0,0,Always,0L,0L,False,
-				StructureNotifyMask|ExposureMask|ButtonPressMask,
+				StructureNotifyMask|ExposureMask|ButtonPressMask|ButtonReleaseMask,
 				0L,False,0,0 };
 
 			XClassHint classHint;
@@ -454,7 +454,8 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 	XSelectInput(display, window.window, ExposureMask
 #ifdef OWN_WINDOW
 		     | (own_window
-			? (StructureNotifyMask | PropertyChangeMask | ButtonPressMask) : 0)
+			? (StructureNotifyMask | PropertyChangeMask | 
+			   ButtonPressMask | ButtonReleaseMask) : 0)
 #endif
 	    );
 }
