@@ -4090,6 +4090,7 @@ static void draw_line(char *s)
 					int h =
 					    specials[special_index].height;
 					int by;
+					unsigned long last_colour = current_color;
 #ifdef XFT
 					if (use_xft) {
                                             by = cur_y - (font_ascent() + h) / 2 - 1;
@@ -4148,15 +4149,16 @@ static void draw_line(char *s)
 						    specials
 						    [special_index].height;
 					}
-				}
-				if (draw_mode == BG) {
+/*				if (draw_mode == BG) {
 					set_foreground_color(default_bg_color);
 				}
 				else if (draw_mode == OUTLINE) {
 					set_foreground_color(default_out_color);
 				} else {
 					set_foreground_color(default_fg_color);
-				}
+				}*/
+				set_foreground_color(last_colour);
+			}
 				break;
 			
 				case FONT:

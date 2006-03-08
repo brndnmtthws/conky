@@ -1,11 +1,14 @@
 # $Id$
 
+2006-03-07
+	* Fixed issue where some WM's don't control conky own_window windows.
+	* Added newly-updated vim file detection and syntax hilighting files to svn.
+	* Fixed issue with graphs resetting colours (sf.net bug #1420473)
+
 2006-03-06
 	* Fixed battery problems when charged
 	* MPD code handles broken pipe now, instead of just killing conky
 	* Switch from CVS to SVN.  Thanks SourceForge.
-	* Fixed issue where some WM's don't control conky own_window windows.
-	* Added newly-updated vim file detection and syntax hilighting files to svn.
 
 2006-03-05
 	* Added patch to make $cpu stuff work on alpha (thanks Thomas Cort)
