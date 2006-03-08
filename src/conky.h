@@ -300,6 +300,11 @@ char tmpstring2[TEXT_BUFFER_SIZE];
 #define ATOM(a) XInternAtom(display, #a, False)
 
 #ifdef OWN_WINDOW
+enum _window_type {
+        TYPE_NORMAL = 0,
+        TYPE_DESKTOP
+};
+
 enum _window_hints {
 	HINT_UNDECORATED = 0,
 	HINT_BELOW,
@@ -328,6 +333,7 @@ struct conky_window {
 	char wm_class_name[256];
 	int x;
 	int y;
+	unsigned int type;
 	unsigned long hints;
 #endif
 };

@@ -51,7 +51,10 @@ update_interval 5.0
 total_run_times 0
 
 # Create own window instead of using desktop (required in nautilus)
-own_window no
+own_window yes
+
+# If own_window is yes, you may use type normal or desktop
+own_window desktop
 
 # Use pseudo transparency with own_window?
 own_window_transparent yes

@@ -51,6 +51,7 @@ syn keyword ConkyrcSetting
         \ own_window_colour
         \ own_window_hints
         \ own_window_transparent
+	\ own_window_type
         \ pad_percents
         \ stippled_borders
         \ total_run_times
@@ -70,8 +71,10 @@ syn keyword ConkyrcConstant
         \ bmp
         \ bottom_left
         \ bottom_right
+	\ desktop
         \ no
         \ none
+	\ normal
         \ skip_pager
         \ skip_taskbar
         \ sticky

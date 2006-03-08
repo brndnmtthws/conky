@@ -242,6 +242,15 @@
 </varlistentry>
 
 <varlistentry>
+	<term><command><option>own_window_type</option></command></term>
+	<listitem>
+		if own_window is yes, you may specify type normal or desktop (default: normal).
+		Desktop windows are special windows that have no window decorations; are always visible 
+		on your desktop; do not appear in your pager or taskbar; and are sticky across all workspaces.
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
 	<term><command><option>own_window_colour</option></command>
 		<option>colour</option>
 	</term>
@@ -255,7 +264,8 @@
                 <option>undecorated,below,above,sticky,skip_taskbar,skip_pager</option>
 	</term>
 	<listitem>
-		If own_window is yes, you may use these window manager hints to affect the way conky displays
+		If own_window is yes, you may use these window manager hints to affect the way conky displays.  
+		Note: own_window_type desktop is another way to implement many of these hints.
 	<para></para></listitem>
 </varlistentry>
 

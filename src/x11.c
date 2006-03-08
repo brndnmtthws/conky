@@ -250,15 +250,30 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 			XSetWMProtocols(display,window.window,NULL,0);
 
 
-			/* Set NORMAL window type for _NET_WM_WINDOW_TYPE. */
-			xa = ATOM(_NET_WM_WINDOW_TYPE);
-			if (xa != None) {
-				Atom prop = ATOM(_NET_WM_WINDOW_TYPE_NORMAL);
+			/* Set window type */
+			if ( (xa = ATOM(_NET_WM_WINDOW_TYPE)) != None ) 
+			{
+				Atom prop;
+				switch(window.type) {
+				case TYPE_DESKTOP:
+					{
+				    	prop = ATOM(_NET_WM_WINDOW_TYPE_DESKTOP);
+					fprintf(stderr, "Conky: window type - desktop\n"); fflush(stderr);
+					}
+					break;
+				
+				case TYPE_NORMAL:
+				default:
+					{
+				    	prop = ATOM(_NET_WM_WINDOW_TYPE_NORMAL);
+					fprintf(stderr, "Conky: window type - normal\n"); fflush(stderr);
+					}
+					break;
+				}
 				XChangeProperty(display, window.window, xa,
 						XA_ATOM, 32,
 						PropModeReplace,
-						(unsigned char *) &prop,
-						1);
+						(unsigned char *) &prop, 1);
 			}
 
 			/* Set desired hints */

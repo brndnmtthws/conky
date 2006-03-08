@@ -263,12 +263,19 @@ Boolean, create own window to draw?
 Boolean, set pseudo-transparency?
 
 .TP 
+\fBown_window_type\fR
+if own_window is yes, you may specify type normal or desktop (default: normal).
+Desktop windows are special windows that have no window decorations; are always visible 
+on your desktop; do not appear in your pager or taskbar; and are sticky across all workspaces.
+
+.TP 
 \fBown_window_colour\fR \fBcolour\fR 
 If own_window_transparent no, set a specified background colour (defaults to black). Takes either a hex value (#ffffff) or a valid RGB name (see /usr/lib/X11/rgb.txt)
 
 .TP 
 \fBown_window_hints\fR \fBundecorated,below,above,sticky,skip_taskbar,skip_pager\fR 
-If own_window is yes, you may use these window manager hints to affect the way conky displays
+If own_window is yes, you may use these window manager hints to affect the way conky displays. 
+Note: own_window_type desktop is another way to implement many of these hints.
 
 .TP 
 \fBout_to_console\fR 

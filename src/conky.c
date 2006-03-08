@@ -4852,6 +4852,8 @@ static void set_default_configurations(void)
 	maximum_width = 0;
 #ifdef OWN_WINDOW
 	own_window = 0;
+	window.type=TYPE_NORMAL;
+	window.hints=0;
      	strcpy(window.wm_class_name, "conky");	
 #endif
 	stippled_borders = 0;
@@ -5295,6 +5297,16 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 					 p_hint=strtok_r(NULL, delim, &p_save);
 				}
 				while (p_hint!=NULL);
+			}
+		}
+		CONF("own_window_type") {
+			if (value) {
+				if (strncmp(value,"normal",6)==0)
+					window.type = TYPE_NORMAL;
+				else if  (strncmp(value,"desktop",7)==0)
+					window.type = TYPE_DESKTOP;
+				else
+				    	CONF_ERR;
 			}
 		}
 #endif
