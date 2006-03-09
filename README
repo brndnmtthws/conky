@@ -289,8 +289,8 @@ CONFIGURATION SETTINGS
 	      that have no window decorations;	are  always  visible  on  your
 	      desktop;	do not appear in your pager or taskbar; and are sticky
 	      across all workspaces.  Override windows are not under the  con-
-	      trol  of the window manager. This type can be useful for certain
-	      situations.
+	      trol of the window manager. Hints are ignored. This type of win-
+	      dow can be useful for certain situations.
 
 
        own_window_colour colour
@@ -301,8 +301,10 @@ CONFIGURATION SETTINGS
 
        own_window_hints undecorated,below,above,sticky,skip_taskbar,skip_pager
 	      If own_window is yes, you may use these window manager hints  to
-	      affect the way conky displays.  Note: own_window_type desktop is
-	      another way to implement many of these hints.
+	      affect the way conky displays.  Notes: Use own_window_type desk-
+	      top as another way to implement many of these hints  implicitly.
+	      If  you  use own_window_type override, window manager hints have
+	      no meaning and are ignored.
 
 
        out_to_console
