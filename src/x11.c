@@ -208,8 +208,11 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 			 * events are now explicitly forwarded to the desktop window. */
 			XSetWindowAttributes attrs = {
 				ParentRelative,0L,0,0L,0,0,Always,0L,0L,False,
-				StructureNotifyMask|ExposureMask|ButtonPressMask|ButtonReleaseMask,
-				0L,False,0,0 };
+				StructureNotifyMask|ExposureMask|
+				(window.type==TYPE_OVERRIDE ? ButtonPressMask|ButtonReleaseMask : 0),
+				0L,
+				(window.type==TYPE_OVERRIDE ? True : False),
+				0,0 };
 
 			XClassHint classHint;
 			XWMHints wmHint;
@@ -222,13 +225,14 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 			if ( !find_desktop_window( &window.root, &window.desktop ) )
 			    return;
 
-			window.window = XCreateWindow(display, window.root, 
-					      	      window.x, window.y, w, h, 0, 
-						      CopyFromParent,
-						      InputOutput,
-						      CopyFromParent,
-						      CWBackPixel|CWOverrideRedirect,
-						      &attrs);
+			window.window = XCreateWindow(display, 
+						   window.type==TYPE_OVERRIDE ? window.desktop : window.root, 
+					      	   window.x, window.y, w, h, 0, 
+						   CopyFromParent,
+						   InputOutput,
+						   CopyFromParent,
+						   CWBackPixel|CWOverrideRedirect,
+						   &attrs);
 
 			fprintf(stderr, "Conky: drawing to created window (%lx)\n", window.window);
 			fflush(stderr);
@@ -262,6 +266,11 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 					}
 					break;
 				
+				case TYPE_OVERRIDE:
+					{
+					fprintf(stderr, "Conky: window type - override\n"); fflush(stderr);
+					}
+					break;
 				case TYPE_NORMAL:
 				default:
 					{
@@ -270,10 +279,11 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 					}
 					break;
 				}
-				XChangeProperty(display, window.window, xa,
-						XA_ATOM, 32,
-						PropModeReplace,
-						(unsigned char *) &prop, 1);
+				if (window.type != TYPE_OVERRIDE)
+					XChangeProperty(display, window.window, xa,
+							XA_ATOM, 32,
+							PropModeReplace,
+							(unsigned char *) &prop, 1);
 			}
 
 			/* Set desired hints */
@@ -394,8 +404,10 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
                             }
                         }
 
+			if (window.type == TYPE_OVERRIDE)
+				XLowerWindow(display, window.window);	
+			
 			XMapWindow(display, window.window);
-
 		}
 	} else
 #endif

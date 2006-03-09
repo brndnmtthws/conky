@@ -54,7 +54,7 @@ total_run_times 0
 own_window yes
 
 # If own_window is yes, you may use type normal or desktop
-own_window desktop
+own_window normal
 
 # Use pseudo transparency with own_window?
 own_window_transparent yes

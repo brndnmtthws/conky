@@ -302,7 +302,8 @@ char tmpstring2[TEXT_BUFFER_SIZE];
 #ifdef OWN_WINDOW
 enum _window_type {
         TYPE_NORMAL = 0,
-        TYPE_DESKTOP
+        TYPE_DESKTOP,
+	TYPE_OVERRIDE
 };
 
 enum _window_hints {

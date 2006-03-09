@@ -5315,6 +5315,8 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 					window.type = TYPE_NORMAL;
 				else if  (strncmp(value,"desktop",7)==0)
 					window.type = TYPE_DESKTOP;
+				else if (strncmp(value,"override",8)==0)
+					window.type = TYPE_OVERRIDE;
 				else
 				    	CONF_ERR;
 			}

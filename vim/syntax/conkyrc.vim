@@ -75,6 +75,7 @@ syn keyword ConkyrcConstant
         \ no
         \ none
 	\ normal
+	\ override
         \ skip_pager
         \ skip_taskbar
         \ sticky
@@ -119,7 +120,6 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 	\ buffers 
 	\ cached 
 	\ color 
-      	\ colour 
 	\ colour 
 	\ cpu 
 	\ cpubar 
