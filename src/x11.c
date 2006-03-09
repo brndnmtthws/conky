@@ -200,33 +200,25 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 
 #ifdef OWN_WINDOW
 	if (own_window) {
-		{
-			/* Allow WM control of conky again.  Shielding conky from the WM 
-			 * via override redirect creates more problems than it's worth and
-			 * makes it impossible to use tools like devilspie to manage the
-			 * conky windows beyond the parameters we offer.  ButtonPress 
-			 * events are now explicitly forwarded to the desktop window. */
+		
+		if ( !find_desktop_window( &window.root, &window.desktop ) )
+		     	return;
+
+		if (window.type == TYPE_OVERRIDE) {
+	
+			/* 
+			   An override_redirect True window.  No WM hints or button processing needed. 
+			*/
 			XSetWindowAttributes attrs = {
 				ParentRelative,0L,0,0L,0,0,Always,0L,0L,False,
-				StructureNotifyMask|ExposureMask|
-				(window.type==TYPE_OVERRIDE ? ButtonPressMask|ButtonReleaseMask : 0),
+				StructureNotifyMask|ExposureMask,
 				0L,
-				(window.type==TYPE_OVERRIDE ? True : False),
+				True,
 				0,0 };
 
-			XClassHint classHint;
-			XWMHints wmHint;
-			Atom xa;
-			char window_title[256];
-
-			/* We want to parent the window to the root so it's under WM control,
-			 * but we want to forward button clicks to the desktop window for menus. 
-			 * On some desktop systems, the desktop window != root window. */
-			if ( !find_desktop_window( &window.root, &window.desktop ) )
-			    return;
-
+			/* Parent is desktop window (which might be a child of root) */
 			window.window = XCreateWindow(display, 
-						   window.type==TYPE_OVERRIDE ? window.desktop : window.root, 
+						   window.desktop, 
 					      	   window.x, window.y, w, h, 0, 
 						   CopyFromParent,
 						   InputOutput,
@@ -234,8 +226,38 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 						   CWBackPixel|CWOverrideRedirect,
 						   &attrs);
 
-			fprintf(stderr, "Conky: drawing to created window (%lx)\n", window.window);
-			fflush(stderr);
+			XLowerWindow(display, window.window);	
+
+			fprintf(stderr, "Conky: window type - override\n"); fflush(stderr);
+
+		}
+
+		else { /* window.type != TYPE_OVERRIDE */
+
+			/* 
+			   A window managed by the window manager.  Process hints and buttons. 
+			*/
+			XSetWindowAttributes attrs = {
+				ParentRelative,0L,0,0L,0,0,Always,0L,0L,False,
+				StructureNotifyMask|ExposureMask|ButtonPressMask|ButtonReleaseMask,
+				0L,
+				False,
+				0,0 };
+
+			XClassHint classHint;
+			XWMHints wmHint;
+			Atom xa;
+			char window_title[256];
+
+			/* Parent is root window so WM can take control */
+			window.window = XCreateWindow(display, 
+						   window.root, 
+					      	   window.x, window.y, w, h, 0, 
+						   CopyFromParent,
+						   InputOutput,
+						   CopyFromParent,
+						   CWBackPixel|CWOverrideRedirect,
+						   &attrs);
 
 			classHint.res_name = window.wm_class_name;
 			classHint.res_class = classHint.res_name;
@@ -264,13 +286,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 				    	prop = ATOM(_NET_WM_WINDOW_TYPE_DESKTOP);
 					fprintf(stderr, "Conky: window type - desktop\n"); fflush(stderr);
 					}
-					break;
-				
-				case TYPE_OVERRIDE:
-					{
-					fprintf(stderr, "Conky: window type - override\n"); fflush(stderr);
-					}
-					break;
+					break;				
 				case TYPE_NORMAL:
 				default:
 					{
@@ -279,11 +295,10 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 					}
 					break;
 				}
-				if (window.type != TYPE_OVERRIDE)
-					XChangeProperty(display, window.window, xa,
-							XA_ATOM, 32,
-							PropModeReplace,
-							(unsigned char *) &prop, 1);
+				XChangeProperty(display, window.window, xa,
+						XA_ATOM, 32,
+						PropModeReplace,
+						(unsigned char *) &prop, 1);
 			}
 
 			/* Set desired hints */
@@ -404,12 +419,14 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
                             }
                         }
 
-			if (window.type == TYPE_OVERRIDE)
-				XLowerWindow(display, window.window);	
+		} /* else { window.type != TYPE_OVERRIDE */
 			
-			XMapWindow(display, window.window);
-		}
-	} else
+		fprintf(stderr, "Conky: drawing to created window (%lx)\n", window.window);
+		fflush(stderr);
+
+		XMapWindow(display, window.window);
+
+	} else /* if (own_window) { */
 #endif
 		/* root / desktop window */
 	{
