@@ -30,7 +30,7 @@ COMPILING
 
        Gentoo users -- Conky is in Gentoo's Portage... simply use "emerge app-
        admin/conky" for installation.  There is	 also  usually	an  up-to-date
-       ebuild within Conky's package or in CVS.
+       ebuild within Conky's package or in Svn.
 
        Debian,etc.  users  --  Conky will be in Debian's repositories soon (by
        mid-September, hopefully), and then Ubuntu  shortly  thereafter.	 Until
@@ -39,7 +39,7 @@ COMPILING
        Example	to  compile  and  run Conky with all optional components (note
        that some configure options may differ for your system):
 
-       sh autogen.sh # Only required if building from CVS
+       sh autogen.sh # Only required if building from Svn
 
        ./configure	      --prefix=/usr	       --mandir=/usr/share/man
        --infodir=/usr/share/info     --datadir=/usr/share    --sysconfdir=/etc
@@ -1050,4 +1050,4 @@ AUTHORS
 
 
 
-				  2006-02-12			      conky(1)
+				  2006-03-12			      conky(1)

@@ -16,7 +16,7 @@
       <firstname>Brenden</firstname>
       <surname>Matthews</surname>
     </author>
-    <date>2006-02-12</date>
+    <date>2006-03-12</date>
   </refentryinfo>
 
   <refmeta>
@@ -62,7 +62,7 @@
 		</para>
 		<para>
 		Gentoo users -- Conky is in Gentoo's Portage... simply use "emerge app-admin/conky" for installation.
-		There is also usually an up-to-date ebuild within Conky's package or in	CVS.
+		There is also usually an up-to-date ebuild within Conky's package or in	Svn.
 		</para>
 		<para>
 		Debian,etc. users -- Conky will be in Debian's repositories soon (by mid-September, hopefully), and then 
@@ -74,7 +74,7 @@
 		<variablelist>
 			<varlistentry>
 				<term>
-					<command><option>sh autogen.sh</option></command> <option># Only required if building from CVS</option>
+					<command><option>sh autogen.sh</option></command> <option># Only required if building from Svn</option>
 				</term>
 			</varlistentry>
 			<varlistentry>
