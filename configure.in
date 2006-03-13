@@ -1,6 +1,6 @@
-AC_INIT([Conky],[1.4.1-pre-cvs],[brenden1@users.sourceforge.net])
+AC_INIT([Conky],[1.4.1],[brenden1@users.sourceforge.net])
 
-AM_INIT_AUTOMAKE(conky, 1.4.1-pre-cvs)
+AM_INIT_AUTOMAKE(conky, 1.4.1)
 AM_CONFIG_HEADER(src/config.h)
 AC_PROG_LIBTOOL
 PKG_PROG_PKG_CONFIG([0.17.2])

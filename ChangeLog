@@ -1,5 +1,9 @@
 # $Id$
 
+2006-03-12
+	* FreeBSD cpu info patch
+	* Conky 1.4.1 released
+
 2006-03-07
 	* Fixed issue where some WM's don't control conky own_window windows.
 	* Added newly-updated vim file detection and syntax hilighting files to svn.
