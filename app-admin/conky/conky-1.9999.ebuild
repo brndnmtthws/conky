@@ -1,8 +1,8 @@
 # CVS ebuild for Conky, thanks to Hopeless; Subversion ver. by drphibes
 # $Header$
 
-ESVN_REPO_URI="https://svn.sourceforge.net/svnroot/conky/trunk/conky"
-ESVN_PROJECT="conky"
+ESVN_REPO_URI="https://svn.sourceforge.net/svnroot/conky/trunk/conky1"
+ESVN_PROJECT="conky1"
 inherit subversion
 
 DESCRIPTION="Conky is an advanced, highly configurable system monitor for X"
