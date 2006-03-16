@@ -17,7 +17,6 @@
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #include <sys/types.h>
-#include <sys/time.h>
 #include <sys/user.h>
 #include <sys/socket.h>
 #include <sys/swap.h>
