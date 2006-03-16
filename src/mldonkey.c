@@ -1,11 +1,13 @@
-#include "conky.h"
-#include <string.h>
-#include <unistd.h>
-#include <errno.h>
-#include <netdb.h>
-#include <fcntl.h>
+
 #include <arpa/inet.h>
 
+#include <errno.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "conky.h"
 
 int64 buf_to_int(char *buf, int pos, int size);
 void int_to_buf(int64 i, char *buf, int pos, int size);

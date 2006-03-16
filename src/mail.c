@@ -6,13 +6,15 @@
  *  $Id$
  */
 
-#include "conky.h"
+#include <sys/stat.h>
+#include <sys/time.h>
+
+#include <dirent.h>
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
-#include <sys/time.h>
-#include <sys/stat.h>
-#include <dirent.h>
+
+#include "conky.h"
 
 char *current_mail_spool;
 
@@ -105,8 +107,6 @@ void update_mail_count()
 	}
 #endif
 	/* mbox format */
-
-
 	if (buf.st_mtime != last_mail_mtime) {
 		/* yippee, modification time has changed, let's read mail count! */
 		static int rep;
