@@ -112,7 +112,7 @@ void update_uptime()
 		time(&now);
 		info.uptime = now - boottime.tv_sec;
 	} else {
-		(void) fprintf(stderr, "Could not get uptime\n");
+		(void)fprintf(stderr, "Could not get uptime\n");
 		info.uptime = 0;
 	}
 }
@@ -125,15 +125,15 @@ void update_meminfo()
 	int pagesize = getpagesize();
 
 	if (GETSYSCTL("vm.stats.vm.v_page_count", total_pages))
-		(void) fprintf(stderr,
+		(void)fprintf(stderr,
 			       "Cannot read sysctl \"vm.stats.vm.v_page_count\"");
 
 	if (GETSYSCTL("vm.stats.vm.v_free_count", free_pages))
-		(void) fprintf(stderr,
+		(void)fprintf(stderr,
 			       "Cannot read sysctl \"vm.stats.vm.v_free_count\"");
 
 	if (GETSYSCTL("vm.stats.vm.v_inactive_count", inactive_pages))
-		(void) fprintf(stderr,
+		(void)fprintf(stderr,
 			       "Cannot read sysctl \"vm.stats.vm.v_inactive_count\"");
 
 	info.memmax = (total_pages * pagesize) >> 10;
@@ -218,7 +218,7 @@ void update_total_processes()
 		kd_init = 0;
 		if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null",
 				   O_RDONLY, "kvm_open")) == NULL) {
-			(void) fprintf(stderr, "Cannot read kvm.");
+			(void)fprintf(stderr, "Cannot read kvm.");
 			return;
 		}
 	}
@@ -349,7 +349,7 @@ double get_acpi_temperature(int fd)
 	int temp;
 
 	if (GETSYSCTL("hw.acpi.thermal.tz0.temperature", temp)) {
-		(void) fprintf(stderr,
+		(void)fprintf(stderr,
 			       "Cannot read sysctl \"hw.acpi.thermal.tz0.temperature\"\n");
 		return 0.0;
 	}
@@ -384,53 +384,53 @@ int open_acpi_temperature(const char *name)
 	return 0;
 }
 
-void get_acpi_ac_adapter( char * p_client_buffer, size_t client_buffer_size )
+void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size)
 {
 	int state;
 
-	if ( !p_client_buffer || client_buffer_size <= 0 )
+	if (!p_client_buffer || client_buffer_size <= 0)
 		return;
 
 	if (GETSYSCTL("hw.acpi.acline", state)) {
-		(void) fprintf(stderr,
+		(void)fprintf(stderr,
 			       "Cannot read sysctl \"hw.acpi.acline\"\n");
 		return;
 	}
 
 
 	if (state)
-		strncpy( p_client_buffer, "Running on AC Power", client_buffer_size );
+		strncpy(p_client_buffer, "Running on AC Power", client_buffer_size);
 	else
-		strncpy( p_client_buffer, "Running on battery", client_buffer_size );
+		strncpy(p_client_buffer, "Running on battery", client_buffer_size);
 
 	return;
 }
 
-void get_acpi_fan( char * p_client_buffer, size_t client_buffer_size )
+void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
 {
-	if ( !p_client_buffer || client_buffer_size <= 0 )
+	if (!p_client_buffer || client_buffer_size <= 0)
 		return;
 
 	/* not implemented */
-	memset(p_client_buffer,0,client_buffer_size);
+	memset(p_client_buffer, 0, client_buffer_size);
 
 	return;
 }
 
-void get_adt746x_cpu( char * p_client_buffer, size_t client_buffer_size )
+void get_adt746x_cpu(char *p_client_buffer, size_t client_buffer_size)
 {
-	if ( !p_client_buffer || client_buffer_size <= 0 )
+	if (!p_client_buffer || client_buffer_size <= 0)
 		return;
 
 	/* not implemented */
-	memset(p_client_buffer,0,client_buffer_size);
+	memset(p_client_buffer, 0, client_buffer_size);
 
 	return;
 }
 
-void get_adt746x_fan( char * p_client_buffer, size_t client_buffer_size )
+void get_adt746x_fan(char *p_client_buffer, size_t client_buffer_size)
 {
-	if ( !p_client_buffer || client_buffer_size <= 0 )
+	if (!p_client_buffer || client_buffer_size <= 0)
 		return;
 
 	/* not implemented */
@@ -451,7 +451,7 @@ __inline__ unsigned long long int rdtsc()
 #endif
 
 /* return system frequency in MHz (use divisor=1) or GHz (use divisor=1000) */
-void get_freq_dynamic( char * p_client_buffer, size_t client_buffer_size, char * p_format, int divisor )
+void get_freq_dynamic(char * p_client_buffer, size_t client_buffer_size, char * p_format, int divisor)
 {
 #if  defined(__i386) || defined(__x86_64)
         struct timezone tz;
@@ -473,29 +473,30 @@ void get_freq_dynamic( char * p_client_buffer, size_t client_buffer_size, char *
         microseconds = ((tvstop.tv_sec - tvstart.tv_sec) * 1000000) +
             (tvstop.tv_usec - tvstart.tv_usec);
                              
-	snprintf( p_client_buffer, client_buffer_size, p_format, (float)((cycles[1] - cycles[0]) / microseconds) / divisor );
+	snprintf(p_client_buffer, client_buffer_size, p_format, 
+			(float)((cycles[1] - cycles[0]) / microseconds) / divisor);
         return;
 #else
-	get_freq( p_client_buffer, client_buffer_size, p_format, divisor );
+	get_freq(p_client_buffer, client_buffer_size, p_format, divisor);
         return;
 #endif
 }
 
 /* return system frequency in MHz (use divisor=1) or GHz (use divisor=1000) */
-void get_freq( char * p_client_buffer, size_t client_buffer_size, char * p_format, int divisor )
+void get_freq(char *p_client_buffer, size_t client_buffer_size, char *p_format, int divisor)
 {
 	int freq;
 
-	if ( !p_client_buffer || client_buffer_size <= 0 || !p_format || divisor <= 0 )
+	if (!p_client_buffer || client_buffer_size <= 0 || !p_format || divisor <= 0)
               return;
 	
 	if (GETSYSCTL("dev.cpu.0.freq", freq) == 0)
 	{
-		snprintf( p_client_buffer, client_buffer_size, p_format, freq/divisor );
+		snprintf(p_client_buffer, client_buffer_size, p_format, freq/divisor);
 	}
 	else
 	{
-		snprintf( p_client_buffer, client_buffer_size, p_format, (float)0 );
+		snprintf(p_client_buffer, client_buffer_size, p_format, (float)0);
 	}
 
 	return;
@@ -565,7 +566,7 @@ void update_diskio()
  * While topless is obviously better, top is also not bad.
  */
 
-int comparecpu(const void * a, const void * b)
+int comparecpu(const void *a, const void *b)
 {
 	if (((struct process *)a)->amount > ((struct process *)b)->amount)
                 return -1;
@@ -576,7 +577,7 @@ int comparecpu(const void * a, const void * b)
 	return 0;
 }
 
-int comparemem(const void * a, const void * b)
+int comparemem(const void *a, const void *b)
 {
 	if (((struct process *)a)->totalmem > ((struct process *)b)->totalmem)
                 return -1;
@@ -600,7 +601,7 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 		if ((kd =
 		     kvm_open("/dev/null", "/dev/null", "/dev/null",
 			      O_RDONLY, "kvm_open")) == NULL) {
-			(void) fprintf(stderr, "Cannot read kvm.");
+			(void)fprintf(stderr, "Cannot read kvm.");
 		}
 	}
 
@@ -653,21 +654,21 @@ char *get_apm_adapter()
         struct apm_info info;
 
         fd = open(APMDEV, O_RDONLY);
-        if(fd < 0) 
+        if (fd < 0) 
                 return "ERR";
 
-        if(apm_getinfo(fd, &info) != 0 ) {
+        if (apm_getinfo(fd, &info) != 0) {
 		close(fd);
                 return "ERR";
 	}
 	close(fd);
 
-        switch(info.ai_acline) {
+        switch (info.ai_acline) {
                 case 0:
                         return "off-line";
                         break;
                 case 1:
-                        if(info.ai_batt_stat == 3)
+                        if (info.ai_batt_stat == 3)
                                 return "charging";
                         else
                                 return "on-line";
@@ -689,12 +690,12 @@ char *get_apm_battery_life()
 	
 
         fd = open(APMDEV, O_RDONLY);
-        if(fd < 0) {
+        if (fd < 0) {
 		strncpy(out, "ERR", 16);
 		return out;
 	}
 
-        if(apm_getinfo(fd, &info) != 0 ) {
+        if (apm_getinfo(fd, &info) != 0 ) {
 		close(fd);
 		strncpy(out, "ERR", 16);
 		return out;
@@ -725,12 +726,12 @@ char *get_apm_battery_time()
 	out = (char *)calloc(16, sizeof(char));
 
         fd = open(APMDEV, O_RDONLY);
-        if(fd < 0) {
+        if (fd < 0) {
 		strncpy(out, "ERR", 16);
 		return out;
 	}
 
-        if(apm_getinfo(fd, &info) != 0 ) {
+        if (apm_getinfo(fd, &info) != 0 ) {
 		close(fd);
 		strncpy(out, "ERR", 16);
 		return out;
