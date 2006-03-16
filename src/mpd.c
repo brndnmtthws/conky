@@ -1,3 +1,9 @@
+/*
+ * mpd.c: MPD stuff for Conky
+ *
+ * $Id$
+ */
+
 #include "conky.h"
 #include <stdio.h>
 #include <string.h>

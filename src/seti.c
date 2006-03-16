@@ -1,3 +1,9 @@
+/*
+ * seti.c: information about SETI for Conky
+ *
+ *  $Id$
+ */
+
 #include "conky.h"
 #include <stdio.h>
 #include <string.h>
@@ -5,8 +11,10 @@
 
 char *seti_dir = NULL;
 
-//Need to code for BOINC, because the old SETI@Home does not use xml to store data.
-//Perhaps in the .conkyrc file there could be an option for BOINC or old SETI.
+/*
+ * Need to code for BOINC, because the old SETI@Home does not use xml to store data.
+ * Perhaps in the .conkyrc file there could be an option for BOINC or old SETI.
+ */
 
 /*static float seti_get_float (FILE *fp, const char *name)
 {
