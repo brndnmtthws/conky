@@ -23,15 +23,18 @@
 #ifndef LIBTCP_PORTMON_H
 #define LIBTCP_PORTMON_H
 
-#include <math.h>
-#include <netdb.h>
+#include <sys/socket.h>
+
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+
+#include <math.h>
+#include <netdb.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
+
 #include "hash.h"
 
 /* ------------------------------------------------------------------------------------------------
