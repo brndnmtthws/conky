@@ -167,7 +167,7 @@ void update_stuff()
 		need_mask |= 1 << INFO_BUFFERS;
 
 	/* clear speeds and up status in case device was removed and doesn't get
-	 * updated */
+	   updated */
 
 	for (i = 0; i < 16; i++) {
 		if (netstats[i].dev) {

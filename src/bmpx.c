@@ -1,11 +1,13 @@
-/** bmpx.c
+/*
+ * bmpx.c
  * BMPx client
  *
  * $Id$
  */
 
-#include <dbus/dbus-glib.h>
 #include <bmpx/dbus.h>
+#include <dbus/dbus-glib.h>
+
 #include <stdio.h>
 #include <string.h>
 
