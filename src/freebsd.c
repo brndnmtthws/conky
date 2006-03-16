@@ -1,30 +1,32 @@
-/** freebsd.c
+/*
+ * freebsd.c
  * Contains FreeBSD specific stuff
  *
  * $Id$
  */
 
+#include <sys/dkstat.h>
+#include <sys/param.h>
+#include <sys/resource.h>
+#include <sys/socket.h>
+#include <sys/sysctl.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/vmmeter.h>
+#include <sys/user.h>
+
+#include <net/if.h>
+#include <net/if_mib.h>
+
+#include <devstat.h>
 #include <fcntl.h>
+#include <ifaddrs.h>
+#include <kvm.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <kvm.h>
-#include <sys/param.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <sys/sysctl.h>
-#include <sys/vmmeter.h>
-#include <sys/dkstat.h>
 #include <unistd.h>
-#include <sys/user.h>
-#include <sys/socket.h>
-#include <net/if.h>
-#include <net/if_mib.h>
-#include <sys/socket.h>
-#include <ifaddrs.h>
-#include <devstat.h>
 
 #include "conky.h"
 
