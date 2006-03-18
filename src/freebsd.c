@@ -34,6 +34,10 @@
 #define KELVTOC(x)      ((x - 2732) / 10.0)
 #define MAXSHOWDEVS	16
 
+#if 0
+#define FREEBSD_DEBUG
+#endif
+
 inline void proc_find_top(struct process **cpu, struct process **mem);
 
 u_int64_t diskio_prev = 0;
@@ -273,7 +277,7 @@ long cpu_used, oldtotal, oldused;
 
 void get_cpu_count()
 {
-	int cpu_count = 0;	
+	/* int cpu_count = 0; */
 
 	/* XXX
 	 * FreeBSD doesn't allow to get per CPU load stats
@@ -595,7 +599,7 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 	int n_processes;
 	int i, j = 0;
 	struct process *processes;
-	
+
 	if (kd_init) {
 		kd_init = 0;
 		if ((kd =
@@ -625,11 +629,43 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 			}
 		}
 
-		qsort(processes, j, sizeof(struct process), comparemem);
-		for (i = 0; i < 10; mem[i] = &processes[i], i++);
+		qsort(processes, j - 1, sizeof(struct process), comparemem);
+		for (i = 0; i < 10; i++) {
+			struct process *tmp;
 
-		qsort(processes, j, sizeof(struct process), comparecpu);
-		for (i = 0; i < 10; cpu[i] = &processes[i], i++);
+			tmp = malloc(sizeof(struct process));
+			tmp->pid = processes[i].pid;
+			tmp->amount = processes[i].amount;
+			tmp->totalmem = processes[i].totalmem;
+			tmp->name = strdup(processes[i].name);
+
+			mem[i] = tmp;
+		}
+
+		qsort(processes, j - 1, sizeof(struct process), comparecpu);
+		for (i = 0; i < 10; i++) {
+			struct process *tmp;
+
+			tmp = malloc(sizeof(struct process));
+			tmp->pid = processes[i].pid;
+			tmp->amount = processes[i].amount;
+			tmp->totalmem = processes[i].totalmem;
+			tmp->name = strdup(processes[i].name);
+
+			cpu[i] = tmp;
+		}
+			
+#if defined(FREEBSD_DEBUG)
+		printf("=====\nmem\n");
+		for (i = 0; i < 10; i++) {
+			printf("%d: %s(%d) %.2f\n", i, mem[i]->name, mem[i]->pid, mem[i]->totalmem);
+		}
+
+/*		printf("=====\ncpu\n");
+		for (i = 0; i <= 10; i++) {
+			printf("%d: %s\n", i, cpu[i]->name);
+		}*/
+#endif
 		
 		free(processes);
 	} else
