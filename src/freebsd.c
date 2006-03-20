@@ -30,12 +30,12 @@
 
 #include "conky.h"
 
-#define GETSYSCTL(name, var) getsysctl(name, &(var), sizeof(var))
-#define KELVTOC(x)      ((x - 2732) / 10.0)
-#define MAXSHOWDEVS	16
+#define	GETSYSCTL(name, var)	getsysctl(name, &(var), sizeof (var))
+#define	KELVTOC(x)		((x - 2732) / 10.0)
+#define	MAXSHOWDEVS		16
 
 #if 0
-#define FREEBSD_DEBUG
+#define	FREEBSD_DEBUG
 #endif
 
 inline void proc_find_top(struct process **cpu, struct process **mem);
@@ -48,14 +48,14 @@ static int getsysctl(char *name, void *ptr, size_t len)
 {
 	size_t nlen = len;
 	if (sysctlbyname(name, ptr, &nlen, NULL, 0) == -1) {
-		return -1;
+		return (-1);
 	}
 
 	if (nlen != len) {
-		return -1;
+		return (-1);
 	}
 
-	return 0;
+	return (0);
 }
 
 static kvm_t *kd = NULL;
@@ -72,20 +72,20 @@ static int swapmode(int *retavail, int *retfree)
 	if (kd_init) {
 		kd_init = 0;
 		if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null",
-				   O_RDONLY, "kvm_open")) == NULL) {
+			O_RDONLY, "kvm_open")) == NULL) {
 			(void) fprintf(stderr, "Cannot read kvm.");
-			return -1;
+			return (-1);
 		}
 	}
 
 	if (kd == NULL) {
-		return -1;
+		return (-1);
 	}
 
 	*retavail = 0;
 	*retfree = 0;
 
-#define CONVERT(v)      ((quad_t)(v) * pagesize / 1024)
+#define	CONVERT(v)	((quad_t)(v) * pagesize / 1024)
 
 	n = kvm_getswapinfo(kd, swapary, 1, 0);
 	if (n < 0 || swapary[0].ksw_total == 0)
@@ -95,33 +95,36 @@ static int swapmode(int *retavail, int *retfree)
 	*retfree = CONVERT(swapary[0].ksw_total - swapary[0].ksw_used);
 
 	n = (int) ((double) swapary[0].ksw_used * 100.0 /
-		   (double) swapary[0].ksw_total);
+		(double) swapary[0].ksw_total);
 
-	return n;
+	return (n);
 }
 
-void prepare_update()
+void
+prepare_update()
 {
 }
 
-void update_uptime()
+void
+update_uptime()
 {
 	int mib[2] = { CTL_KERN, KERN_BOOTTIME };
 	struct timeval boottime;
 	time_t now;
-	size_t size = sizeof(boottime);
+	size_t size = sizeof (boottime);
 
 	if ((sysctl(mib, 2, &boottime, &size, NULL, 0) != -1)
 	    && (boottime.tv_sec != 0)) {
 		time(&now);
 		info.uptime = now - boottime.tv_sec;
 	} else {
-		(void)fprintf(stderr, "Could not get uptime\n");
+		fprintf(stderr, "Could not get uptime\n");
 		info.uptime = 0;
 	}
 }
 
-void update_meminfo()
+void
+update_meminfo()
 {
 	int total_pages, inactive_pages, free_pages;
 	int swap_avail, swap_free;
@@ -129,16 +132,16 @@ void update_meminfo()
 	int pagesize = getpagesize();
 
 	if (GETSYSCTL("vm.stats.vm.v_page_count", total_pages))
-		(void)fprintf(stderr,
-			       "Cannot read sysctl \"vm.stats.vm.v_page_count\"");
+		fprintf(stderr,
+			"Cannot read sysctl \"vm.stats.vm.v_page_count\"");
 
 	if (GETSYSCTL("vm.stats.vm.v_free_count", free_pages))
-		(void)fprintf(stderr,
-			       "Cannot read sysctl \"vm.stats.vm.v_free_count\"");
+		fprintf(stderr,
+			"Cannot read sysctl \"vm.stats.vm.v_free_count\"");
 
 	if (GETSYSCTL("vm.stats.vm.v_inactive_count", inactive_pages))
-		(void)fprintf(stderr,
-			       "Cannot read sysctl \"vm.stats.vm.v_inactive_count\"");
+		fprintf(stderr,
+			"Cannot read sysctl \"vm.stats.vm.v_inactive_count\"");
 
 	info.memmax = (total_pages * pagesize) >> 10;
 	info.mem =
@@ -154,7 +157,8 @@ void update_meminfo()
 	}
 }
 
-void update_net_stats()
+void
+update_net_stats()
 {
 	struct net_stat *ns;
 	double delta;
@@ -188,7 +192,7 @@ void update_net_stats()
 			if (r < ns->last_read_recv)
 				ns->recv +=
 				    ((long long) 4294967295U -
-				     ns->last_read_recv) + r;
+					ns->last_read_recv) + r;
 			else
 				ns->recv += (r - ns->last_read_recv);
 
@@ -197,7 +201,7 @@ void update_net_stats()
 			if (t < ns->last_read_trans)
 				ns->trans +=
 				    ((long long) 4294967295U -
-				     ns->last_read_trans) + t;
+					ns->last_read_trans) + t;
 			else
 				ns->trans += (t - ns->last_read_trans);
 
@@ -213,7 +217,8 @@ void update_net_stats()
 	freeifaddrs(ifap);
 }
 
-void update_total_processes()
+void
+update_total_processes()
 {
 	int n_processes;
 	static int kd_init = 1;
@@ -221,8 +226,8 @@ void update_total_processes()
 	if (kd_init) {
 		kd_init = 0;
 		if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null",
-				   O_RDONLY, "kvm_open")) == NULL) {
-			(void)fprintf(stderr, "Cannot read kvm.");
+				O_RDONLY, "kvm_open")) == NULL) {
+			fprintf(stderr, "Cannot read kvm.");
 			return;
 		}
 	}
@@ -236,7 +241,8 @@ void update_total_processes()
 	info.procs = n_processes;
 }
 
-void update_running_processes()
+void
+update_running_processes()
 {
 	static int kd_init = 1;
 	struct kinfo_proc *p;
@@ -245,9 +251,8 @@ void update_running_processes()
 
 	if (kd_init) {
 		kd_init = 0;
-		if ((kd =
-		     kvm_open("/dev/null", "/dev/null", "/dev/null",
-			      O_RDONLY, "kvm_open")) == NULL) {
+		if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null",
+				O_RDONLY, "kvm_open")) == NULL) {
 			(void) fprintf(stderr, "Cannot read kvm.");
 		}
 	}
@@ -275,11 +280,13 @@ struct cpu_load_struct {
 struct cpu_load_struct fresh = { {0, 0, 0, 0, 0} };
 long cpu_used, oldtotal, oldused;
 
-void get_cpu_count()
+void
+get_cpu_count()
 {
 	/* int cpu_count = 0; */
 
-	/* XXX
+	/*
+	 * XXX
 	 * FreeBSD doesn't allow to get per CPU load stats
 	 * on SMP machines. It's possible to get a CPU count,
 	 * but as we fulfil only info.cpu_usage[0], it's better
@@ -291,24 +298,25 @@ void get_cpu_count()
 		info.cpu_count = cpu_count;
 #endif
 	info.cpu_count = 1;
-	
-	info.cpu_usage = malloc(info.cpu_count * sizeof(float));
+
+	info.cpu_usage = malloc(info.cpu_count * sizeof (float));
 	if (info.cpu_usage == NULL)
 		CRIT_ERR("malloc");
 }
 
 /* XXX: SMP support */
-void update_cpu_usage()
+void
+update_cpu_usage()
 {
 	long used, total;
 	long cp_time[CPUSTATES];
-	size_t len = sizeof(cp_time);
-	
+	size_t len = sizeof (cp_time);
+
 	if (cpu_setup == 0) {
 		get_cpu_count();
 		cpu_setup = 1;
 	}
-	
+
 	if (sysctlbyname("kern.cp_time", &cp_time, &len, NULL, 0) < 0) {
 		(void) fprintf(stderr, "Cannot get kern.cp_time");
 	}
@@ -324,7 +332,8 @@ void update_cpu_usage()
 	    fresh.load[0] + fresh.load[1] + fresh.load[2] + fresh.load[3];
 
 	if ((total - oldtotal) != 0) {
-		info.cpu_usage[0] = ((double) (used - oldused)) / (double) (total - oldtotal);
+		info.cpu_usage[0] = ((double) (used - oldused)) /
+			(double) (total - oldtotal);
 	} else {
 		info.cpu_usage[0] = 0;
 	}
@@ -333,12 +342,14 @@ void update_cpu_usage()
 	oldtotal = total;
 }
 
-double get_i2c_info(int *fd, int arg, char *devtype, char *type)
+double
+get_i2c_info(int *fd, int arg, char *devtype, char *type)
 {
-	return 0;
+	return (0);
 }
 
-void update_load_average()
+void
+update_load_average()
 {
 	double v[3];
 	getloadavg(v, 3);
@@ -348,30 +359,32 @@ void update_load_average()
 	info.loadavg[2] = (float) v[2];
 }
 
-double get_acpi_temperature(int fd)
+double
+get_acpi_temperature(int fd)
 {
 	int temp;
 
 	if (GETSYSCTL("hw.acpi.thermal.tz0.temperature", temp)) {
-		(void)fprintf(stderr,
-			       "Cannot read sysctl \"hw.acpi.thermal.tz0.temperature\"\n");
-		return 0.0;
+		fprintf(stderr,
+		"Cannot read sysctl \"hw.acpi.thermal.tz0.temperature\"\n");
+		return (0.0);
 	}
 
-	return KELVTOC(temp);
+	return (KELVTOC(temp));
 }
 
-void get_battery_stuff(char *buf, unsigned int n, const char *bat)
+void
+get_battery_stuff(char *buf, unsigned int n, const char *bat)
 {
 	int battime;
 
 	if (GETSYSCTL("hw.acpi.battery.time", battime))
 		(void) fprintf(stderr,
-			       "Cannot read sysctl \"hw.acpi.battery.time\"\n");
+			"Cannot read sysctl \"hw.acpi.battery.time\"\n");
 
 	if (battime != -1)
 		snprintf(buf, n, "Discharging, remaining %d:%2.2d",
-			 battime / 60, battime % 60);
+			battime / 60, battime % 60);
 	else
 		snprintf(buf, n, "Battery is charging");
 }
@@ -380,15 +393,17 @@ int
 open_i2c_sensor(const char *dev, const char *type, int n, int *div,
 		char *devtype)
 {
-	return 0;
+	return (0);
 }
 
-int open_acpi_temperature(const char *name)
+int
+open_acpi_temperature(const char *name)
 {
-	return 0;
+	return (0);
 }
 
-void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size)
+void
+get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size)
 {
 	int state;
 
@@ -396,171 +411,174 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size)
 		return;
 
 	if (GETSYSCTL("hw.acpi.acline", state)) {
-		(void)fprintf(stderr,
-			       "Cannot read sysctl \"hw.acpi.acline\"\n");
+		fprintf(stderr,
+			"Cannot read sysctl \"hw.acpi.acline\"\n");
 		return;
 	}
 
 
 	if (state)
-		strncpy(p_client_buffer, "Running on AC Power", client_buffer_size);
+		strncpy(p_client_buffer, "Running on AC Power",
+				client_buffer_size);
 	else
-		strncpy(p_client_buffer, "Running on battery", client_buffer_size);
+		strncpy(p_client_buffer, "Running on battery",
+				client_buffer_size);
 
-	return;
 }
 
-void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
+void
+get_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
 {
 	if (!p_client_buffer || client_buffer_size <= 0)
 		return;
 
 	/* not implemented */
 	memset(p_client_buffer, 0, client_buffer_size);
-
-	return;
 }
 
-void get_adt746x_cpu(char *p_client_buffer, size_t client_buffer_size)
+void
+get_adt746x_cpu(char *p_client_buffer, size_t client_buffer_size)
 {
 	if (!p_client_buffer || client_buffer_size <= 0)
 		return;
 
 	/* not implemented */
 	memset(p_client_buffer, 0, client_buffer_size);
-
-	return;
 }
 
-void get_adt746x_fan(char *p_client_buffer, size_t client_buffer_size)
+void
+get_adt746x_fan(char *p_client_buffer, size_t client_buffer_size)
 {
 	if (!p_client_buffer || client_buffer_size <= 0)
 		return;
 
 	/* not implemented */
-	memset(p_client_buffer,0,client_buffer_size);
-
-	return; 
+	memset(p_client_buffer, 0, client_buffer_size);
 }
 
 /* rdtsc() and get_freq_dynamic() copied from linux.c */
 
 #if  defined(__i386) || defined(__x86_64)
-__inline__ unsigned long long int rdtsc()
+__inline__ unsigned long long int
+rdtsc()
 {
-        unsigned long long int x;
-        __asm__ volatile (".byte 0x0f, 0x31":"=A" (x));
-        return x;
+	unsigned long long int x;
+	__asm__ volatile(".byte 0x0f, 0x31":"=A" (x));
+	return (x);
 }
 #endif
 
 /* return system frequency in MHz (use divisor=1) or GHz (use divisor=1000) */
-void get_freq_dynamic(char * p_client_buffer, size_t client_buffer_size, char * p_format, int divisor)
+void
+get_freq_dynamic(char *p_client_buffer, size_t client_buffer_size,
+		char *p_format, int divisor)
 {
 #if  defined(__i386) || defined(__x86_64)
-        struct timezone tz;
-        struct timeval tvstart, tvstop;
-        unsigned long long cycles[2];   /* gotta be 64 bit */
-        unsigned int microseconds;      /* total time taken */
+	struct timezone tz;
+	struct timeval tvstart, tvstop;
+	unsigned long long cycles[2];	/* gotta be 64 bit */
+	unsigned int microseconds;	/* total time taken */
 
-        memset(&tz, 0, sizeof(tz));
+	memset(&tz, 0, sizeof (tz));
 
-        /* get this function in cached memory */
-        gettimeofday(&tvstart, &tz);
-        cycles[0] = rdtsc();
-        gettimeofday(&tvstart, &tz);
-         
-        /* we don't trust that this is any specific length of time */
-        usleep(100);
-        cycles[1] = rdtsc();
-        gettimeofday(&tvstop, &tz);
-        microseconds = ((tvstop.tv_sec - tvstart.tv_sec) * 1000000) +
-            (tvstop.tv_usec - tvstart.tv_usec);
-                             
-	snprintf(p_client_buffer, client_buffer_size, p_format, 
-			(float)((cycles[1] - cycles[0]) / microseconds) / divisor);
-        return;
+	/* get this function in cached memory */
+	gettimeofday(&tvstart, &tz);
+	cycles[0] = rdtsc();
+	gettimeofday(&tvstart, &tz);
+
+	/* we don't trust that this is any specific length of time */
+	usleep(100);
+	cycles[1] = rdtsc();
+	gettimeofday(&tvstop, &tz);
+	microseconds = ((tvstop.tv_sec - tvstart.tv_sec) * 1000000) +
+		(tvstop.tv_usec - tvstart.tv_usec);
+
+	snprintf(p_client_buffer, client_buffer_size, p_format,
+		(float)((cycles[1] - cycles[0]) / microseconds) / divisor);
 #else
 	get_freq(p_client_buffer, client_buffer_size, p_format, divisor);
-        return;
 #endif
 }
 
 /* return system frequency in MHz (use divisor=1) or GHz (use divisor=1000) */
-void get_freq(char *p_client_buffer, size_t client_buffer_size, char *p_format, int divisor)
+void
+get_freq(char *p_client_buffer, size_t client_buffer_size,
+		char *p_format, int divisor)
 {
 	int freq;
 
-	if (!p_client_buffer || client_buffer_size <= 0 || !p_format || divisor <= 0)
-              return;
-	
-	if (GETSYSCTL("dev.cpu.0.freq", freq) == 0)
-	{
-		snprintf(p_client_buffer, client_buffer_size, p_format, freq/divisor);
-	}
-	else
-	{
-		snprintf(p_client_buffer, client_buffer_size, p_format, (float)0);
-	}
+	if (!p_client_buffer || client_buffer_size <= 0
+			|| !p_format || divisor <= 0)
+		return;
 
-	return;
+	if (GETSYSCTL("dev.cpu.0.freq", freq) == 0)
+		snprintf(p_client_buffer, client_buffer_size,
+				p_format, freq/divisor);
+	else
+		snprintf(p_client_buffer, client_buffer_size, p_format, 0f);
 }
 
-void update_top()
+void
+update_top()
 {
 	proc_find_top(info.cpu, info.memu);
 }
 
-void update_wifi_stats()
+void
+update_wifi_stats()
 {
 	/* XXX */
 }
-void update_diskio()
+void
+update_diskio()
 {
-        int devs_count,
+	int devs_count,
 	    num_selected,
 	    num_selections;
-        struct device_selection *dev_select = NULL;
-        long select_generation;
-        int dn;
+	struct device_selection *dev_select = NULL;
+	long select_generation;
+	int dn;
 	static struct statinfo  statinfo_cur;
 	u_int64_t diskio_current = 0;
 
-        bzero(&statinfo_cur, sizeof(statinfo_cur));
-        statinfo_cur.dinfo = (struct devinfo *)malloc(sizeof(struct devinfo));
-        bzero(statinfo_cur.dinfo, sizeof(struct devinfo));
-	
+	bzero(&statinfo_cur, sizeof (statinfo_cur));
+	statinfo_cur.dinfo = (struct devinfo *)malloc(sizeof (struct devinfo));
+	bzero(statinfo_cur.dinfo, sizeof (struct devinfo));
+
 	if (devstat_getdevs(NULL, &statinfo_cur) < 0)
 		return;
 
 	devs_count = statinfo_cur.dinfo->numdevs;
 	if (devstat_selectdevs(&dev_select, &num_selected, &num_selections,
 			&select_generation, statinfo_cur.dinfo->generation,
-			statinfo_cur.dinfo->devices, devs_count, NULL, 0, 
+			statinfo_cur.dinfo->devices, devs_count, NULL, 0,
 			NULL, 0, DS_SELECT_ONLY, MAXSHOWDEVS, 1) >= 0) {
 		for (dn = 0; dn < devs_count; ++dn) {
 			int di;
-                        struct devstat  *dev;
+			struct devstat  *dev;
 
 			di = dev_select[dn].position;
-                        dev = &statinfo_cur.dinfo->devices[di];
+			dev = &statinfo_cur.dinfo->devices[di];
 
-			diskio_current += dev->bytes[DEVSTAT_READ] + dev->bytes[DEVSTAT_WRITE];
+			diskio_CUrrent += dev->bytes[DEVSTAT_READ] +
+				dev->bytes[DEVSTAT_WRITE];
 		}
-                
+
 		free(dev_select);
 	}
 
-	/* 
+	/*
 	 * Since we return (diskio_total_current - diskio_total_old), first
-	 * frame will be way too high (it will be equal to diskio_total_current, i.e.
-	 * all disk I/O since boot). That's why it is better to return 0 first time;
+	 * frame will be way too high (it will be equal to
+	 * diskio_total_current, i.e. all disk I/O since boot). That's why
+	 * it is better to return 0 first time;
 	 */
 	if (diskio_setup == 0) {
 		diskio_setup = 1;
 		diskio_value = 0;
 	} else
-		diskio_value = (unsigned int)((diskio_current - diskio_prev)/1024);
+		diskio_value = (unsigned int)((diskio_current - diskio_prev)/
+				1024);
 	diskio_prev = diskio_current;
 
 	free(statinfo_cur.dinfo);
@@ -570,29 +588,32 @@ void update_diskio()
  * While topless is obviously better, top is also not bad.
  */
 
-int comparecpu(const void *a, const void *b)
+int
+comparecpu(const void *a, const void *b)
 {
 	if (((struct process *)a)->amount > ((struct process *)b)->amount)
-                return -1;
-        
-        if (((struct process *)a)->amount < ((struct process *)b)->amount)
-                return 1;
-        
-	return 0;
+		return (-1);
+
+	if (((struct process *)a)->amount < ((struct process *)b)->amount)
+		return (1);
+
+	return (0);
 }
 
-int comparemem(const void *a, const void *b)
+int
+comparemem(const void *a, const void *b)
 {
 	if (((struct process *)a)->totalmem > ((struct process *)b)->totalmem)
-                return -1;
-        
+		return (-1);
+
 	if (((struct process *)a)->totalmem < ((struct process *)b)->totalmem)
-                return 1;
-        
-	return 0;
+		return (1);
+
+	return (0);
 }
 
-inline void proc_find_top(struct process **cpu, struct process **mem)
+inline void
+proc_find_top(struct process **cpu, struct process **mem)
 {
 	static int kd_init = 1;
 	struct kinfo_proc *p;
@@ -602,10 +623,9 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 
 	if (kd_init) {
 		kd_init = 0;
-		if ((kd =
-		     kvm_open("/dev/null", "/dev/null", "/dev/null",
-			      O_RDONLY, "kvm_open")) == NULL) {
-			(void)fprintf(stderr, "Cannot read kvm.");
+		if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null",
+			O_RDONLY, "kvm_open")) == NULL) {
+			fprintf(stderr, "Cannot read kvm.");
 		}
 	}
 
@@ -614,26 +634,30 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 
 		/* we get total pages count again to be sure it is up to date */
 		if (GETSYSCTL("vm.stats.vm.v_page_count", total_pages) != 0)
-			CRIT_ERR("Cannot read sysctl \"vm.stats.vm.v_page_count\"");
-		
+			CRIT_ERR("Cannot read sysctl"
+				"\"vm.stats.vm.v_page_count\"");
+
 		p = kvm_getprocs(kd, KERN_PROC_PROC, 0, &n_processes);
-		processes = malloc(n_processes * sizeof(struct process));
+		processes = malloc(n_processes * sizeof (struct process));
 
 		for (i = 0; i < n_processes; i++) {
-			if (!((p[i].ki_flag & P_SYSTEM)) && p[i].ki_comm != NULL) {
+			if (!((p[i].ki_flag & P_SYSTEM)) &&
+					p[i].ki_comm != NULL) {
 				processes[j].pid = p[i].ki_pid;
 				processes[j].name =  strdup(p[i].ki_comm);
-				processes[j].amount = 100.0 * p[i].ki_pctcpu / FSCALE;
-				processes[j].totalmem = (float)(p[i].ki_rssize / (float)total_pages) * 100.0;
+				processes[j].amount = 100.0 *
+					p[i].ki_pctcpu / FSCALE;
+				processes[j].totalmem = (float)(p[i].ki_rssize /
+						(float)total_pages) * 100.0;
 				j++;
 			}
 		}
 
-		qsort(processes, j - 1, sizeof(struct process), comparemem);
+		qsort(processes, j - 1, sizeof (struct process), comparemem);
 		for (i = 0; i < 10; i++) {
 			struct process *tmp;
 
-			tmp = malloc(sizeof(struct process));
+			tmp = malloc(sizeof (struct process));
 			tmp->pid = processes[i].pid;
 			tmp->amount = processes[i].amount;
 			tmp->totalmem = processes[i].totalmem;
@@ -642,11 +666,11 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 			mem[i] = tmp;
 		}
 
-		qsort(processes, j - 1, sizeof(struct process), comparecpu);
+		qsort(processes, j - 1, sizeof (struct process), comparecpu);
 		for (i = 0; i < 10; i++) {
 			struct process *tmp;
 
-			tmp = malloc(sizeof(struct process));
+			tmp = malloc(sizeof (struct process));
 			tmp->pid = processes[i].pid;
 			tmp->amount = processes[i].amount;
 			tmp->totalmem = processes[i].totalmem;
@@ -654,145 +678,142 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 
 			cpu[i] = tmp;
 		}
-			
+
 #if defined(FREEBSD_DEBUG)
 		printf("=====\nmem\n");
 		for (i = 0; i < 10; i++) {
-			printf("%d: %s(%d) %.2f\n", i, mem[i]->name, mem[i]->pid, mem[i]->totalmem);
+			printf("%d: %s(%d) %.2f\n", i, mem[i]->name,
+					mem[i]->pid, mem[i]->totalmem);
 		}
-
-/*		printf("=====\ncpu\n");
-		for (i = 0; i <= 10; i++) {
-			printf("%d: %s\n", i, cpu[i]->name);
-		}*/
 #endif
-		
 		free(processes);
+	}
+}
+
+#if	defined(i386) || defined(__i386__)
+#define	APMDEV		"/dev/apm"
+#define	APM_UNKNOWN	255
+
+int
+apm_getinfo(int fd, apm_info_t aip)
+{
+	if (ioctl(fd, APMIO_GETINFO, aip) == -1)
+		return (-1);
+
+	return (0);
+}
+
+char
+*get_apm_adapter()
+{
+	int fd;
+	struct apm_info info;
+
+	fd = open(APMDEV, O_RDONLY);
+	if (fd < 0)
+		return ("ERR");
+
+	if (apm_getinfo(fd, &info) != 0) {
+		close(fd);
+		return ("ERR");
+	}
+	close(fd);
+
+	switch (info.ai_acline) {
+		case 0:
+			return ("off-line");
+			break;
+		case 1:
+			if (info.ai_batt_stat == 3)
+				return ("charging");
+			else
+				return ("on-line");
+			break;
+		default:
+			return ("unknown");
+			break;
+	}
+}
+
+char
+*get_apm_battery_life()
+{
+	int fd;
+	u_int batt_life;
+	struct apm_info info;
+	char *out;
+
+	out = (char *)calloc(16, sizeof (char));
+
+	fd = open(APMDEV, O_RDONLY);
+	if (fd < 0) {
+		strncpy(out, "ERR", 16);
+		return (out);
+	}
+
+	if (apm_getinfo(fd, &info) != 0) {
+		close(fd);
+		strncpy(out, "ERR", 16);
+		return (out);
+	}
+	close(fd);
+
+	batt_life = info.ai_batt_life;
+	if (batt_life == APM_UNKNOWN)
+		strncpy(out, "unknown", 16);
+	else if (batt_life <= 100) {
+		snprintf(out, 16, "%d%%", batt_life);
+		return (out);
 	} else
-		return;
+		strncpy(out, "ERR", 16);
+
+	return (out);
 }
 
-#if defined(i386) || defined(__i386__)
-#define APMDEV  "/dev/apm"
-#define APM_UNKNOWN     255
-
-int apm_getinfo(int fd, apm_info_t aip)
+char
+*get_apm_battery_time()
 {
-        if (ioctl(fd, APMIO_GETINFO, aip) == -1)
-                return -1;
+	int fd;
+	int batt_time;
+	int h, m, s;
+	struct apm_info info;
+	char *out;
 
-        return 0;
-}
+	out = (char *)calloc(16, sizeof (char));
 
-char *get_apm_adapter()
-{
-        int fd;
-        struct apm_info info;
+	fd = open(APMDEV, O_RDONLY);
+	if (fd < 0) {
+		strncpy(out, "ERR", 16);
+		return (out);
+	}
 
-        fd = open(APMDEV, O_RDONLY);
-        if (fd < 0) 
-                return "ERR";
-
-        if (apm_getinfo(fd, &info) != 0) {
+	if (apm_getinfo(fd, &info) != 0) {
 		close(fd);
-                return "ERR";
+		strncpy(out, "ERR", 16);
+		return (out);
 	}
 	close(fd);
 
-        switch (info.ai_acline) {
-                case 0:
-                        return "off-line";
-                        break;
-                case 1:
-                        if (info.ai_batt_stat == 3)
-                                return "charging";
-                        else
-                                return "on-line";
-                        break;
-                default:
-                        return "unknown";
-                        break;
-        }
-}
+	batt_time = info.ai_batt_time;
 
-char *get_apm_battery_life()
-{
-        int fd;
-        u_int batt_life;
-        struct apm_info info;
-        char *out;
-
-	out = (char *)calloc(16, sizeof(char));
-	
-
-        fd = open(APMDEV, O_RDONLY);
-        if (fd < 0) {
-		strncpy(out, "ERR", 16);
-		return out;
-	}
-
-        if (apm_getinfo(fd, &info) != 0 ) {
-		close(fd);
-		strncpy(out, "ERR", 16);
-		return out;
-	}
-	close(fd);
-
-        batt_life = info.ai_batt_life;
-        if (batt_life == APM_UNKNOWN)
+	if (batt_time == -1)
 		strncpy(out, "unknown", 16);
-        else if (batt_life <= 100) {
-                snprintf(out, 20,"%d%%", batt_life);
-                return out;
-        }
-        else
-		strncpy(out, "ERR", 16);
-
-	return out;
-}
-
-char *get_apm_battery_time()
-{
-        int fd;
-        int batt_time;
-        int h, m, s;
-        struct apm_info info;
-        char *out;
-
-	out = (char *)calloc(16, sizeof(char));
-
-        fd = open(APMDEV, O_RDONLY);
-        if (fd < 0) {
-		strncpy(out, "ERR", 16);
-		return out;
+	else {
+		h = batt_time;
+		s = h % 60;
+		h /= 60;
+		m = h % 60;
+		h /= 60;
+		snprintf(out, 16, "%2d:%02d:%02d", h, m, s);
 	}
 
-        if (apm_getinfo(fd, &info) != 0 ) {
-		close(fd);
-		strncpy(out, "ERR", 16);
-		return out;
-	}
-	close(fd);
-
-        batt_time = info.ai_batt_time;
-
-        if (batt_time == -1)
-		strncpy(out, "unknown", 16);
-        else {
-                h = batt_time;
-                s = h % 60;
-                h /= 60;
-                m = h % 60;
-                h /= 60;
-                snprintf(out, 16, "%2d:%02d:%02d", h, m, s);
-        }
-
-	return out;
+	return (out);
 }
 
 #endif
 
 /* empty stub so conky links */
-void free_all_processes(void)
+void
+free_all_processes(void)
 {
 }
