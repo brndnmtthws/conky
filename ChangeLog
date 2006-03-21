@@ -1,5 +1,9 @@
 # $Id$
 
+2006-03-21
+	* Fixed ${top(_mem)} related code on FreeBSD (with help of Petr
+	Holub <hopet@users.sourceforge.net>)
+
 2006-03-15
         * Removed bmp-infopipe dependency from 1.4.1 and 1.9999 ebuilds for Gentoo 
 	(Gentoo bug# 125226).

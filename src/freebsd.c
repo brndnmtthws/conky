@@ -515,7 +515,7 @@ get_freq(char *p_client_buffer, size_t client_buffer_size,
 		snprintf(p_client_buffer, client_buffer_size,
 				p_format, freq/divisor);
 	else
-		snprintf(p_client_buffer, client_buffer_size, p_format, 0f);
+		snprintf(p_client_buffer, client_buffer_size, p_format, 0.0f);
 }
 
 void
@@ -560,7 +560,7 @@ update_diskio()
 			di = dev_select[dn].position;
 			dev = &statinfo_cur.dinfo->devices[di];
 
-			diskio_CUrrent += dev->bytes[DEVSTAT_READ] +
+			diskio_current += dev->bytes[DEVSTAT_READ] +
 				dev->bytes[DEVSTAT_WRITE];
 		}
 
@@ -655,7 +655,7 @@ proc_find_top(struct process **cpu, struct process **mem)
 
 		qsort(processes, j - 1, sizeof (struct process), comparemem);
 		for (i = 0; i < 10; i++) {
-			struct process *tmp;
+			struct process *tmp, *ttmp;
 
 			tmp = malloc(sizeof (struct process));
 			tmp->pid = processes[i].pid;
@@ -663,12 +663,17 @@ proc_find_top(struct process **cpu, struct process **mem)
 			tmp->totalmem = processes[i].totalmem;
 			tmp->name = strdup(processes[i].name);
 
+			ttmp = mem[i];
+			if (ttmp != NULL) {
+				free(ttmp->name);
+				free(ttmp);
+			}
 			mem[i] = tmp;
 		}
 
 		qsort(processes, j - 1, sizeof (struct process), comparecpu);
 		for (i = 0; i < 10; i++) {
-			struct process *tmp;
+			struct process *tmp, *ttmp;
 
 			tmp = malloc(sizeof (struct process));
 			tmp->pid = processes[i].pid;
@@ -676,6 +681,11 @@ proc_find_top(struct process **cpu, struct process **mem)
 			tmp->totalmem = processes[i].totalmem;
 			tmp->name = strdup(processes[i].name);
 
+			ttmp = cpu[i];
+			if (ttmp != NULL) {
+				free(ttmp->name);
+				free(ttmp);
+			}
 			cpu[i] = tmp;
 		}
 
@@ -686,6 +696,8 @@ proc_find_top(struct process **cpu, struct process **mem)
 					mem[i]->pid, mem[i]->totalmem);
 		}
 #endif
+
+		for (i = 0; i < j; free(processes[i++].name));
 		free(processes);
 	}
 }
