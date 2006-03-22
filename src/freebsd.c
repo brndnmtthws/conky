@@ -21,7 +21,6 @@
 #include <devstat.h>
 #include <fcntl.h>
 #include <ifaddrs.h>
-#include <kvm.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,7 +57,6 @@ static int getsysctl(char *name, void *ptr, size_t len)
 	return (0);
 }
 
-static kvm_t *kd = NULL;
 struct ifmibdata *data = NULL;
 size_t len = 0;
 
@@ -67,20 +65,6 @@ static int swapmode(int *retavail, int *retfree)
 	int n;
 	int pagesize = getpagesize();
 	struct kvm_swap swapary[1];
-	static int kd_init = 1;
-
-	if (kd_init) {
-		kd_init = 0;
-		if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null",
-			O_RDONLY, "kvm_open")) == NULL) {
-			(void) fprintf(stderr, "Cannot read kvm.");
-			return (-1);
-		}
-	}
-
-	if (kd == NULL) {
-		return (-1);
-	}
 
 	*retavail = 0;
 	*retfree = 0;
@@ -221,22 +205,8 @@ void
 update_total_processes()
 {
 	int n_processes;
-	static int kd_init = 1;
 
-	if (kd_init) {
-		kd_init = 0;
-		if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null",
-				O_RDONLY, "kvm_open")) == NULL) {
-			fprintf(stderr, "Cannot read kvm.");
-			return;
-		}
-	}
-
-
-	if (kd != NULL)
-		kvm_getprocs(kd, KERN_PROC_ALL, 0, &n_processes);
-	else
-		return;
+	kvm_getprocs(kd, KERN_PROC_ALL, 0, &n_processes);
 
 	info.procs = n_processes;
 }
@@ -244,31 +214,19 @@ update_total_processes()
 void
 update_running_processes()
 {
-	static int kd_init = 1;
 	struct kinfo_proc *p;
 	int n_processes;
 	int i, cnt = 0;
 
-	if (kd_init) {
-		kd_init = 0;
-		if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null",
-				O_RDONLY, "kvm_open")) == NULL) {
-			(void) fprintf(stderr, "Cannot read kvm.");
-		}
-	}
-
-	if (kd != NULL) {
-		p = kvm_getprocs(kd, KERN_PROC_ALL, 0, &n_processes);
-		for (i = 0; i < n_processes; i++) {
+	p = kvm_getprocs(kd, KERN_PROC_ALL, 0, &n_processes);
+	for (i = 0; i < n_processes; i++) {
 #if __FreeBSD__ < 5
-			if (p[i].kp_proc.p_stat == SRUN)
+		if (p[i].kp_proc.p_stat == SRUN)
 #else
-			if (p[i].ki_stat == SRUN)
+		if (p[i].ki_stat == SRUN)
 #endif
-				cnt++;
-		}
-	} else
-		return;
+			cnt++;
+	}
 
 	info.run_procs = cnt;
 }
@@ -615,91 +573,80 @@ comparemem(const void *a, const void *b)
 inline void
 proc_find_top(struct process **cpu, struct process **mem)
 {
-	static int kd_init = 1;
 	struct kinfo_proc *p;
 	int n_processes;
 	int i, j = 0;
 	struct process *processes;
 
-	if (kd_init) {
-		kd_init = 0;
-		if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null",
-			O_RDONLY, "kvm_open")) == NULL) {
-			fprintf(stderr, "Cannot read kvm.");
+	int total_pages;
+
+	/* we get total pages count again to be sure it is up to date */
+	if (GETSYSCTL("vm.stats.vm.v_page_count", total_pages) != 0)
+		CRIT_ERR("Cannot read sysctl"
+			"\"vm.stats.vm.v_page_count\"");
+
+	p = kvm_getprocs(kd, KERN_PROC_PROC, 0, &n_processes);
+	processes = malloc(n_processes * sizeof (struct process));
+
+	for (i = 0; i < n_processes; i++) {
+		if (!((p[i].ki_flag & P_SYSTEM)) &&
+				p[i].ki_comm != NULL) {
+			processes[j].pid = p[i].ki_pid;
+			processes[j].name =  strdup(p[i].ki_comm);
+			processes[j].amount = 100.0 *
+				p[i].ki_pctcpu / FSCALE;
+			processes[j].totalmem = (float)(p[i].ki_rssize /
+					(float)total_pages) * 100.0;
+			j++;
 		}
 	}
 
-	if (kd != NULL) {
-		int total_pages;
+	qsort(processes, j - 1, sizeof (struct process), comparemem);
+	for (i = 0; i < 10; i++) {
+		struct process *tmp, *ttmp;
 
-		/* we get total pages count again to be sure it is up to date */
-		if (GETSYSCTL("vm.stats.vm.v_page_count", total_pages) != 0)
-			CRIT_ERR("Cannot read sysctl"
-				"\"vm.stats.vm.v_page_count\"");
+		tmp = malloc(sizeof (struct process));
+		tmp->pid = processes[i].pid;
+		tmp->amount = processes[i].amount;
+		tmp->totalmem = processes[i].totalmem;
+		tmp->name = strdup(processes[i].name);
 
-		p = kvm_getprocs(kd, KERN_PROC_PROC, 0, &n_processes);
-		processes = malloc(n_processes * sizeof (struct process));
-
-		for (i = 0; i < n_processes; i++) {
-			if (!((p[i].ki_flag & P_SYSTEM)) &&
-					p[i].ki_comm != NULL) {
-				processes[j].pid = p[i].ki_pid;
-				processes[j].name =  strdup(p[i].ki_comm);
-				processes[j].amount = 100.0 *
-					p[i].ki_pctcpu / FSCALE;
-				processes[j].totalmem = (float)(p[i].ki_rssize /
-						(float)total_pages) * 100.0;
-				j++;
-			}
+		ttmp = mem[i];
+		if (ttmp != NULL) {
+			free(ttmp->name);
+			free(ttmp);
 		}
+		mem[i] = tmp;
+	}
 
-		qsort(processes, j - 1, sizeof (struct process), comparemem);
-		for (i = 0; i < 10; i++) {
-			struct process *tmp, *ttmp;
+	qsort(processes, j - 1, sizeof (struct process), comparecpu);
+	for (i = 0; i < 10; i++) {
+		struct process *tmp, *ttmp;
 
-			tmp = malloc(sizeof (struct process));
-			tmp->pid = processes[i].pid;
-			tmp->amount = processes[i].amount;
-			tmp->totalmem = processes[i].totalmem;
-			tmp->name = strdup(processes[i].name);
+		tmp = malloc(sizeof (struct process));
+		tmp->pid = processes[i].pid;
+		tmp->amount = processes[i].amount;
+		tmp->totalmem = processes[i].totalmem;
+		tmp->name = strdup(processes[i].name);
 
-			ttmp = mem[i];
-			if (ttmp != NULL) {
-				free(ttmp->name);
-				free(ttmp);
-			}
-			mem[i] = tmp;
+		ttmp = cpu[i];
+		if (ttmp != NULL) {
+			free(ttmp->name);
+			free(ttmp);
 		}
-
-		qsort(processes, j - 1, sizeof (struct process), comparecpu);
-		for (i = 0; i < 10; i++) {
-			struct process *tmp, *ttmp;
-
-			tmp = malloc(sizeof (struct process));
-			tmp->pid = processes[i].pid;
-			tmp->amount = processes[i].amount;
-			tmp->totalmem = processes[i].totalmem;
-			tmp->name = strdup(processes[i].name);
-
-			ttmp = cpu[i];
-			if (ttmp != NULL) {
-				free(ttmp->name);
-				free(ttmp);
-			}
-			cpu[i] = tmp;
-		}
+		cpu[i] = tmp;
+	}
 
 #if defined(FREEBSD_DEBUG)
-		printf("=====\nmem\n");
-		for (i = 0; i < 10; i++) {
-			printf("%d: %s(%d) %.2f\n", i, mem[i]->name,
-					mem[i]->pid, mem[i]->totalmem);
-		}
+	printf("=====\nmem\n");
+	for (i = 0; i < 10; i++) {
+		printf("%d: %s(%d) %.2f\n", i, mem[i]->name,
+				mem[i]->pid, mem[i]->totalmem);
+	}
 #endif
 
-		for (i = 0; i < j; free(processes[i++].name));
-		free(processes);
-	}
+	for (i = 0; i < j; free(processes[i++].name));
+	free(processes);
 }
 
 #if	defined(i386) || defined(__i386__)

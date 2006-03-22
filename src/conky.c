@@ -28,7 +28,6 @@
 #endif /* X11 */
 #include <sys/types.h>
 #include <sys/stat.h>
-
 #define CONFIG_FILE "$HOME/.conkyrc"
 #define MAIL_FILE "$MAIL"
 #define MAX_IF_BLOCK_DEPTH 5
@@ -5592,6 +5591,12 @@ int main(int argc, char **argv)
 #else
 	optind = 0;
 #endif
+
+#if defined(__FreeBSD__)
+	if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null",
+			O_RDONLY, "kvm_open")) == NULL)
+		CRIT_ERR( "cannot read kvm");
+#endif
 	
 	while (1) {
 		int c = getopt(argc,
@@ -5755,6 +5760,10 @@ int main(int argc, char **argv)
         }
 #endif	
 
+#if defined(__FreeBSD__)
+	kvm_close(kd);
+#endif
+	
 	return 0;
 }
 

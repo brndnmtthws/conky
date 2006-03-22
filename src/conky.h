@@ -24,6 +24,8 @@
 #if defined(__FreeBSD__)
 #include <sys/mount.h>
 #include <sys/ucred.h>
+#include <fcntl.h>
+#include <kvm.h>
 #endif /* __FreeBSD__ */
 
 #ifdef X11
@@ -60,15 +62,6 @@ fprintf(stderr, "Conky: " s "\n", ##varargs)
 /* critical error */
 #define CRIT_ERR(s, varargs...) \
 { fprintf(stderr, "Conky: " s "\n", ##varargs);  exit(EXIT_FAILURE); }
-
-/* in sys/param.h
-#ifndef MIN
-#define MIN(a,b) (a>b ? b : a)
-#endif
-#ifndef MAX
-#define MAX(a,b) (a<b ? b : a)
-#endif
-*/
 
 struct i8k_struct {
 	char *version;
@@ -475,6 +468,10 @@ void update_seti();
 #endif
 
 /* in freebsd.c */
+#if defined(__FreeBSD__)
+kvm_t *kd;
+#endif
+
 #if defined(__FreeBSD__) && (defined(i386) || defined(__i386__))
 int apm_getinfo(int fd, apm_info_t aip);
 char *get_apm_adapter(void);
