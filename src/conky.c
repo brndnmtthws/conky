@@ -28,6 +28,7 @@
 #endif /* X11 */
 #include <sys/types.h>
 #include <sys/stat.h>
+
 #define CONFIG_FILE "$HOME/.conkyrc"
 #define MAIL_FILE "$MAIL"
 #define MAX_IF_BLOCK_DEPTH 5
