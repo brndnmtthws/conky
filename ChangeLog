@@ -5,9 +5,9 @@
 	Holub <hopet@users.sourceforge.net>)
 
 2006-03-15
-        * Removed bmp-infopipe dependency from 1.4.1 and 1.9999 ebuilds for Gentoo 
+	* Removed bmp-infopipe dependency from 1.4.1 and 1.9999 ebuilds for Gentoo 
 	(Gentoo bug# 125226).
-        * Fixed subversion ebuild for conky1 (1.9999) so it pulls the new trunk
+i	* Fixed subversion ebuild for conky1 (1.9999) so it pulls the new trunk
 	path for conky1.
 
 2006-03-12
