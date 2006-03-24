@@ -122,6 +122,9 @@ nathanj439 <nathanj439 at users dot sourceforge dot net>
 
 Pascal Eberhard <pascal dor eberhard at gmail dot com>
   graph and bar fix for right alignment
+  
+Petr Holub <hopet@users.sourceforge.net>  
+  fix autotools on FreeBSD in autogen.sh
 
 Philip Kovacs <pkovacs at users dot sourceforge dot net>
   tcp port monitor with hashing functionality
