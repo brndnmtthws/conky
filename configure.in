@@ -27,6 +27,11 @@ case $uname in
 #    WANT_OSSLIB=yes
 #    ;;
 
+#  OpenBSD*)
+#    WANT_KVM=yes
+#    WANT_OSSLIB=yes
+#    ;;
+
 # Solaris doesn't work at all right now
 #  SunOS*)
 #    WANT_KSTAT=yes
@@ -43,6 +48,7 @@ AM_CONDITIONAL(BUILD_LINUX, test x$uname = xLinux)
 AM_CONDITIONAL(BUILD_SOLARIS, test x$uname = xSunOS)
 AM_CONDITIONAL(BUILD_FREEBSD, test x$uname = xFreeBSD)
 AM_CONDITIONAL(BUILD_NETBSD, test x$uname = xNetBSD)
+# AM_CONDITIONAL(BUILD_OPENBSD, test x$uname = xOpenBSD)
 
 dnl
 dnl XFT option
@@ -422,7 +428,7 @@ if test x$WANT_DEVSTAT = xyes; then
 fi
 
 dnl
-dnl OSSLIB for NetBSD
+dnl OSSLIB for NetBSD/OpenBSD
 dnl
 
 if test x$WANT_OSSLIB = xyes; then
