@@ -612,11 +612,11 @@ proc_find_top(struct process **cpu, struct process **mem)
 		tmp->name = strdup(processes[i].name);
 
 		ttmp = mem[i];
+		mem[i] = tmp;
 		if (ttmp != NULL) {
 			free(ttmp->name);
 			free(ttmp);
 		}
-		mem[i] = tmp;
 	}
 
 	qsort(processes, j - 1, sizeof (struct process), comparecpu);
@@ -630,11 +630,11 @@ proc_find_top(struct process **cpu, struct process **mem)
 		tmp->name = strdup(processes[i].name);
 
 		ttmp = cpu[i];
+		cpu[i] = tmp;
 		if (ttmp != NULL) {
 			free(ttmp->name);
 			free(ttmp);
 		}
-		cpu[i] = tmp;
 	}
 
 #if defined(FREEBSD_DEBUG)
