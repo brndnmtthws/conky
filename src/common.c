@@ -226,6 +226,12 @@ void update_stuff()
 	if (NEED(INFO_MPD))
 		update_mpd();
 #endif
+
+#ifdef XMMS2
+	if (NEED(INFO_XMMS2))
+		update_xmms2();
+#endif
+
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
 	if (NEED(INFO_XMMS))
 		update_xmms();

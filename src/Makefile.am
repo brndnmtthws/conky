@@ -28,6 +28,10 @@ if BUILD_MPD
 mpd = mpd.c libmpdclient.c
 endif
 
+if BUILD_XMMS2
+xmms2 = xmms2.c
+endif
+
 if BUILD_LINUX
 linux = linux.c top.c
 PTHREAD_LIBS =  -lpthread
@@ -58,9 +62,9 @@ if BUILD_X11
 x11 = x11.c
 endif
 
-conky_SOURCES = common.c fs.c $(linux) mail.c mixer.c $(seti) $(mpd) $(solaris) $(freebsd) $(netbsd) $(port_monitors) conky.c conky.h $(x11) $(mldonkey) remoted.c remoted.h remotec.c remotec.h $(xmms) $(bmpx)
+conky_SOURCES = common.c fs.c $(linux) mail.c mixer.c $(seti) $(mpd) $(xmms2) $(solaris) $(freebsd) $(netbsd) $(port_monitors) conky.c conky.h $(x11) $(mldonkey) remoted.c remoted.h remotec.c remotec.h $(xmms) $(bmpx)
 
 AM_LDFLAGS = $(X11_LIBS) $(XFT_LIBS) $(CAIRO_LIBS) $(PTHREAD_LIBS) -lm
 
 EXTRA_DIST = seti.c linux.c solaris.c freebsd.c netbsd.c mpd.c libmpdclient.c \
-libmpdclient.h top.h mldonkey.c ftp.c ftp.h x11.c
+libmpdclient.h xmms2.c top.h mldonkey.c ftp.c ftp.h x11.c

@@ -46,6 +46,10 @@
 #include "xmms.h"
 #endif
 
+#ifdef XMMS2
+#include <xmmsclient/xmmsclient.h>
+#endif
+
 #define TOP_CPU 1
 #define TOP_NAME 2
 #define TOP_PID 3
@@ -125,6 +129,25 @@ struct mpd_s {
 };
 #endif
 
+#ifdef XMMS2
+struct xmms2_s {
+	char *title;
+	char *artist;
+	char *album;
+	char *status;
+//	char *random;
+//	char *repeat;
+//	char *name;
+	char *file;
+//	int volume;
+	float progress;
+	int track;
+//	int bitrate;
+	unsigned int length;
+	unsigned int elapsed;
+};
+#endif
+
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
 struct xmms_s {
 	unsigned int project_mask;
@@ -193,6 +216,9 @@ enum {
 #ifdef BMPX
 	INFO_BMPX = 24,
 #endif
+#ifdef XMMS2
+	INFO_XMMS2 = 25,
+#endif
 };
 
 
@@ -235,6 +261,13 @@ struct information {
 #ifdef MPD
 	struct mpd_s mpd;
 	mpd_Connection *conn;
+#endif
+#ifdef XMMS2
+	struct xmms2_s xmms2;
+	int xmms2_conn_state;
+	xmms_socket_t xmms2_fd; 
+	fd_set xmms2_fdset;
+	xmmsc_connection_t *xmms2_conn;
 #endif
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
 	struct xmms_s xmms;
@@ -478,10 +511,15 @@ char *get_apm_adapter(void);
 char *get_apm_battery_life(void);
 char *get_apm_battery_time(void);
 #endif
-/* in mpd.c */
 
+/* in mpd.c */
 #ifdef MPD
 void update_mpd();
+#endif
+
+/* in xmm2.c */
+#ifdef XMMS2
+void update_xmms2();
 #endif
 
 #ifdef MLDONKEY

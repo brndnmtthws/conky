@@ -1,5 +1,8 @@
 # $Id$
 
+2006-03-25
+	* Added XMMS2 patch 1456203 from Lassi Selander
+
 2006-03-21
 	* Fixed ${top(_mem)} related code on FreeBSD (with help of Petr
 	Holub <hopet@users.sourceforge.net>)
