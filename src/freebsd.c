@@ -97,8 +97,8 @@ update_uptime()
 	time_t now;
 	size_t size = sizeof (boottime);
 
-	if ((sysctl(mib, 2, &boottime, &size, NULL, 0) != -1)
-	    && (boottime.tv_sec != 0)) {
+	if ((sysctl(mib, 2, &boottime, &size, NULL, 0) != -1) &&
+			(boottime.tv_sec != 0)) {
 		time(&now);
 		info.uptime = now - boottime.tv_sec;
 	} else {
@@ -163,11 +163,22 @@ update_net_stats()
 		ns = get_net_stat((const char *) ifa->ifa_name);
 
 		if (ifa->ifa_flags & IFF_UP) {
+			struct ifaddrs *iftmp;
+
+			ns->up = 1;
+			ns->linkstatus = 1;
 			last_recv = ns->recv;
 			last_trans = ns->trans;
 
 			if (ifa->ifa_addr->sa_family != AF_LINK)
 				continue;
+
+			for (iftmp = ifa->ifa_next; iftmp != NULL &&
+				strcmp(ifa->ifa_name, iftmp->ifa_name) == 0;
+				iftmp = iftmp->ifa_next)
+				if (iftmp->ifa_addr->sa_family == AF_INET)
+					memcpy(&(ns->addr), iftmp->ifa_addr,
+						iftmp->ifa_addr->sa_len);
 
 			ifd = (struct if_data *) ifa->ifa_data;
 			r = ifd->ifi_ibytes;
@@ -191,10 +202,12 @@ update_net_stats()
 
 			ns->last_read_trans = t;
 
-
 			/* calculate speeds */
 			ns->recv_speed = (ns->recv - last_recv) / delta;
 			ns->trans_speed = (ns->trans - last_trans) / delta;
+		} else {
+			ns->up = 0;
+			ns->linkstatus = 0;
 		}
 	}
 
@@ -465,8 +478,8 @@ get_freq(char *p_client_buffer, size_t client_buffer_size,
 {
 	int freq;
 
-	if (!p_client_buffer || client_buffer_size <= 0
-			|| !p_format || divisor <= 0)
+	if (!p_client_buffer || client_buffer_size <= 0 ||
+			!p_format || divisor <= 0)
 		return;
 
 	if (GETSYSCTL("dev.cpu.0.freq", freq) == 0)
