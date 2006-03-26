@@ -2,6 +2,7 @@
 
 2006-03-25
 	* Added XMMS2 patch 1456203 from Lassi Selander
+	* Added FreeBSD battery patch 1456008 from Petr Holub
 
 2006-03-21
 	* Fixed ${top(_mem)} related code on FreeBSD (with help of Petr

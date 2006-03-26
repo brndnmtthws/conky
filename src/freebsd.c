@@ -347,17 +347,41 @@ get_acpi_temperature(int fd)
 void
 get_battery_stuff(char *buf, unsigned int n, const char *bat)
 {
-	int battime;
+	int battime, batcapacity, batstate, ac;
 
 	if (GETSYSCTL("hw.acpi.battery.time", battime))
 		(void) fprintf(stderr,
 			"Cannot read sysctl \"hw.acpi.battery.time\"\n");
+	if (GETSYSCTL("hw.acpi.battery.life", batcapacity))
+		(void) fprintf(stderr,
+					   "Cannot read sysctl \"hw.acpi.battery.life\"\n");
 
-	if (battime != -1)
-		snprintf(buf, n, "Discharging, remaining %d:%2.2d",
-			battime / 60, battime % 60);
-	else
-		snprintf(buf, n, "Battery is charging");
+	if (GETSYSCTL("hw.acpi.battery.state", batstate))
+		(void) fprintf(stderr,
+					   "Cannot read sysctl \"hw.acpi.battery.state\"\n");
+
+	if (GETSYSCTL("hw.acpi.acline", ac))
+		(void) fprintf(stderr,
+					   "Cannot read sysctl \"hw.acpi.acline\"\n");
+
+	if (batstate == 1) {
+		if (battime != -1)
+			snprintf(buf, n, "remaining %d%% (%d:%2.2d)",
+					batcapacity, battime / 60, battime % 60);
+		else
+			/* no time estimate available yet */
+			snprintf(buf, n, "remaining %d%%",
+					batcapacity);
+		if (ac == 1)
+			(void) fprintf(stderr, "Discharging while on AC!\n");
+	} else {
+		snprintf(buf, n, batstate == 2 ? "charging (%d%%)" : "charged (%d%%)", batcapacity);
+		if (batstate != 2 && batstate != 0)
+			(void) fprintf(stderr, "Unknow battery state %d!\n", batstate);
+		if (ac == 0)
+			(void) fprintf(stderr, "Charging while not on AC!\n");
+	}
+
 }
 
 int
