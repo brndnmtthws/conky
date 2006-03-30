@@ -816,9 +816,9 @@ void update_tcp_port_monitor_collection(
         /* read all tcp connections */
         while (fgets (buf, sizeof (buf), fp) != NULL) {
 
-                if ( sscanf (buf, "%*d: %lx:%lx %lx:%lx %lx %*x:%*x %*x:%*x %*x %lu %*d %lu",
-                        (unsigned long *)&conn.local_addr, (unsigned long *)&conn.local_port,
-                        (unsigned long *)&conn.remote_addr, (unsigned long *)&conn.remote_port,
+                if ( sscanf (buf, "%*d: %lx:%hx %lx:%hx %lx %*x:%*x %*x:%*x %*x %lu %*d %lu",
+                        (unsigned long *)&conn.local_addr, &conn.local_port,
+                        (unsigned long *)&conn.remote_addr, &conn.remote_port,
                         (unsigned long *)&state, (unsigned long *)&uid, (unsigned long *)&inode) != 7 )
 
                         fprintf( stderr, "/proc/net/tcp: bad file format\n" );

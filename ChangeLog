@@ -1,5 +1,8 @@
 # $Id$
 
+2006-03-29
+	* Scan port numbers as short.  Fixes debian bug# 359974.
+
 2006-03-25
 	* Added XMMS2 patch 1456203 from Lassi Selander
 	* Added FreeBSD battery patch 1456008 from Petr Holub
