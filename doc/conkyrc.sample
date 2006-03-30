@@ -182,24 +182,19 @@ ${color lightgrey} ${top_mem name 2} ${top_mem pid 2} ${top_mem cpu 2} ${top_mem
 ${color lightgrey} ${top_mem name 3} ${top_mem pid 3} ${top_mem cpu 3} ${top_mem mem 3}
 ${tail /var/log/Xorg.0.log 3 30}
 $stippled_hr
-${color #ddaa00}Port(s)${alignr}#Connections
-$color ALL:     ${alignr}$color ${tcp_portmon 1 65535 count}
-$color mpd:     ${alignr}$color ${tcp_portmon 6600 6600 count}
-$color sshd:    ${alignr}$color ${tcp_portmon 22 22 count}
-$color torrent: ${alignr}$color ${tcp_portmon 6881 6999 count}
-${color #ddaa00}Remote Address ${alignr} Local Service/Port$color
- ${tcp_portmon 1 65535 rhost 0} ${alignr} ${tcp_portmon 1 65535 lservice 0}
- ${tcp_portmon 1 65535 rhost 1} ${alignr} ${tcp_portmon 1 65535 lservice 1}
- ${tcp_portmon 1 65535 rhost 2} ${alignr} ${tcp_portmon 1 65535 lservice 2}
- ${tcp_portmon 1 65535 rhost 3} ${alignr} ${tcp_portmon 1 65535 lservice 3}
- ${tcp_portmon 1 65535 rhost 4} ${alignr} ${tcp_portmon 1 65535 lservice 4}
- ${tcp_portmon 1 65535 rhost 5} ${alignr} ${tcp_portmon 1 65535 lservice 5}
- ${tcp_portmon 1 65535 rhost 6} ${alignr} ${tcp_portmon 1 65535 lservice 6}
- ${tcp_portmon 1 65535 rhost 7} ${alignr} ${tcp_portmon 1 65535 lservice 7}
- ${tcp_portmon 1 65535 rhost 8} ${alignr} ${tcp_portmon 1 65535 lservice 8}
- ${tcp_portmon 1 65535 rhost 9} ${alignr} ${tcp_portmon 1 65535 lservice 9}
- ${tcp_portmon 1 65535 rhost 10} ${alignr} ${tcp_portmon 1 65535 lservice 10}
- ${tcp_portmon 1 65535 rhost 11} ${alignr} ${tcp_portmon 1 65535 lservice 11}
- ${tcp_portmon 1 65535 rhost 12} ${alignr} ${tcp_portmon 1 65535 lservice 12}
- ${tcp_portmon 1 65535 rhost 13} ${alignr} ${tcp_portmon 1 65535 lservice 13}
- ${tcp_portmon 1 65535 rhost 14} ${alignr} ${tcp_portmon 1 65535 lservice 14}
+${color #ddaa00}Port(s)${alignr}#Connections   
+$color Inbound: ${tcp_portmon 1 32767 count}  Outbound: ${tcp_portmon 32768 61000 count}${alignr}ALL: ${tcp_portmon 1 65535 count}
+${color #ddaa00}Inbound Connection ${alignr} Local Service/Port$color
+ ${tcp_portmon 1 32767 rhost 0} ${alignr} ${tcp_portmon 1 32767 lservice 0}
+ ${tcp_portmon 1 32767 rhost 1} ${alignr} ${tcp_portmon 1 32767 lservice 1}
+ ${tcp_portmon 1 32767 rhost 2} ${alignr} ${tcp_portmon 1 32767 lservice 2}
+ ${tcp_portmon 1 32767 rhost 3} ${alignr} ${tcp_portmon 1 32767 lservice 3}
+ ${tcp_portmon 1 32767 rhost 4} ${alignr} ${tcp_portmon 1 32767 lservice 4}
+ ${tcp_portmon 1 32767 rhost 5} ${alignr} ${tcp_portmon 1 32767 lservice 5}
+${color #ddaa00}Outbound Connection ${alignr} Remote Service/Port$color
+ ${tcp_portmon 32768 61000 rhost 0} ${alignr} ${tcp_portmon 32768 61000 rservice 0}
+ ${tcp_portmon 32768 61000 rhost 1} ${alignr} ${tcp_portmon 32768 61000 rservice 1}
+ ${tcp_portmon 32768 61000 rhost 2} ${alignr} ${tcp_portmon 32768 61000 rservice 2}
+ ${tcp_portmon 32768 61000 rhost 3} ${alignr} ${tcp_portmon 32768 61000 rservice 3}
+ ${tcp_portmon 32768 61000 rhost 4} ${alignr} ${tcp_portmon 32768 61000 rservice 4}
+ ${tcp_portmon 32768 61000 rhost 5} ${alignr} ${tcp_portmon 32768 61000 rservice 5}
