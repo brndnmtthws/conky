@@ -83,7 +83,7 @@
  * ------------------------------------------------------------------- */
 
 /* The inventory of peekable items within the port monitor. */
-enum tcp_port_monitor_peekables { COUNT=0, REMOTEIP, REMOTEHOST, REMOTEPORT, LOCALIP, LOCALHOST, LOCALPORT, LOCALSERVICE };
+enum tcp_port_monitor_peekables { COUNT=0, REMOTEIP, REMOTEHOST, REMOTEPORT, REMOTESERVICE, LOCALIP, LOCALHOST, LOCALPORT, LOCALSERVICE };
 
 /* ------------------------------------------------------------------------
  * A single tcp connection 

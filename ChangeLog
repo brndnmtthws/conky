@@ -1,5 +1,8 @@
 # $Id$
 
+2006-03-30
+	* Added patch to support new port monitor REMOTESERVICE peekable.
+
 2006-03-29
 	* Scan port numbers as short.  Fixes debian bug# 359974.
 

@@ -2071,6 +2071,8 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		item=REMOTEHOST;
 	else if ( strncmp(itembuf,"rport",31) == 0 )
 		item=REMOTEPORT;
+	else if ( strncmp(itembuf,"rservice",31) == 0 )
+		item=REMOTESERVICE;
 	else if ( strncmp(itembuf,"lip",31) == 0 )
 		item=LOCALIP;
 	else if ( strncmp(itembuf,"lhost",31) == 0 )

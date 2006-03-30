@@ -673,7 +673,18 @@ int peek_tcp_port_monitor(
 
         snprintf( p_buffer, buffer_size, "%d", p_monitor->p_peek[ connection_index ]->remote_port );                          
 	break;
-	
+
+   case REMOTESERVICE:
+
+        p_servent = getservbyport( htons(p_monitor->p_peek[ connection_index ]->remote_port ), "tcp" );
+        /* if no service name found for the port, just use the port number. */
+        if ( !p_servent || !p_servent->s_name ) {
+            snprintf( p_buffer, buffer_size, "%d", p_monitor->p_peek[ connection_index ]->remote_port );
+        } else {
+            snprintf( p_buffer, buffer_size, "%s", p_servent->s_name );
+        }
+        break;
+
    case LOCALIP:
 
 	net.s_addr = p_monitor->p_peek[ connection_index ]->local_addr;
