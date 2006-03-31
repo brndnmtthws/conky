@@ -984,9 +984,13 @@
 				</member>
 			<member><command>rport</command> - remote port number
 				</member>
+			<member><command>rservice</command> - remote service name from /etc/services
+				</member>
 			<member><command>lip</command> - local ip address
 				</member>
 			<member><command>lhost</command> - local host name
+				</member>
+			<member><command>lport</command> - local port number
 				</member>
 			<member><command>lservice</command> - local service name from /etc/services
 				</member>
