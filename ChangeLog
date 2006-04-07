@@ -1,5 +1,8 @@
 # $Id$
 
+2006-04-07
+	* Added patch for adt746x fan/cpu speed for kernel >=2.6.12
+
 2006-03-30
 	* Added patch to support new port monitor REMOTESERVICE peekable.
 

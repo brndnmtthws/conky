@@ -719,7 +719,12 @@ double get_i2c_info(int *fd, int div, char *devtype, char *type)
 	}
 }
 
-#define ADT746X_FAN "/sys/devices/temperatures/cpu_fan_speed"
+/* Prior to kernel version 2.6.12, the CPU fan speed was available
+ * in ADT746X_FAN_OLD, whereas later kernel versions provide this
+ * information in ADT746X_FAN.
+ */
+#define ADT746X_FAN "/sys/devices/temperatures/sensor1_fan_speed"
+#define ADT746X_FAN_OLD "/sys/devices/temperatures/cpu_fan_speed"
 
 void get_adt746x_fan( char * p_client_buffer, size_t client_buffer_size )
 {
@@ -730,14 +735,16 @@ void get_adt746x_fan( char * p_client_buffer, size_t client_buffer_size )
 	if ( !p_client_buffer || client_buffer_size <= 0 )
 		return;
 
-	fp = open_file(ADT746X_FAN, &rep);
-	if (!fp) 
+	if ((fp = open_file(ADT746X_FAN, &rep)) == NULL
+	         && (fp = open_file(ADT746X_FAN_OLD, &rep)) == NULL)
+
 	{
 		sprintf(adt746x_fan_state, "adt746x not found");
 	}
 	else
 	{
-		fscanf(fp, "%s", adt746x_fan_state);
+		fgets(adt746x_fan_state, sizeof(adt746x_fan_state), fp);
+		adt746x_fan_state[strlen(adt746x_fan_state) - 1] = 0;
 		fclose(fp);
 	}
 
@@ -745,7 +752,12 @@ void get_adt746x_fan( char * p_client_buffer, size_t client_buffer_size )
 	return;
 }
 
-#define ADT746X_CPU "/sys/devices/temperatures/cpu_temperature"
+/* Prior to kernel version 2.6.12, the CPU temperature was found
+ * in ADT746X_CPU_OLD, whereas later kernel versions provide this
+ * information in ADT746X_CPU.
+ */
+#define ADT746X_CPU "/sys/devices/temperatures/sensor1_temperature"
+#define ADT746X_CPU_OLD "/sys/devices/temperatures/cpu_temperature"
 
 void get_adt746x_cpu( char * p_client_buffer, size_t client_buffer_size )
 {
@@ -756,8 +768,8 @@ void get_adt746x_cpu( char * p_client_buffer, size_t client_buffer_size )
 	if ( !p_client_buffer || client_buffer_size <= 0 )
 		return;
 	
-	fp = open_file(ADT746X_CPU, &rep);
-	if (!fp)
+	if ((fp = open_file(ADT746X_CPU, &rep)) == NULL
+		 && (fp = open_file(ADT746X_CPU_OLD, &rep)) == NULL)
 	{
 		sprintf(adt746x_cpu_state, "adt746x not found");
 	}
