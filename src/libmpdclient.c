@@ -216,9 +216,6 @@ mpd_Connection *mpd_newConnection(const char *host, int port,
 	sapipe.sa_handler = mpd_signalHandler;
 //	sapipe.sa_mask = 0;
 	sapipe.sa_flags = 0;
-#ifdef __linux__
-	sapipe.sa_restorer = NULL;
-#endif /* __linux__ */
 	sigaction(SIGPIPE,&sapipe,NULL);
 
 	/* connect stuff */

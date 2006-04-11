@@ -1,5 +1,9 @@
 # $Id$
 
+2006-04-11
+	* Removed sa_restorer crap (may fix some compile errors for some
+	people)
+
 2006-04-07
 	* Added patch for adt746x fan/cpu speed for kernel >=2.6.12
 
