@@ -1306,5 +1306,45 @@
 	<para></para></listitem>
 </varlistentry>
 
+<varlistentry>
+	<term>
+		<command><option>ibm_fan</option></command>
+	</term>
+	<listitem>
+		If running the IBM ACPI, displays the fan speed.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>ibm_temps</option></command>
+		<option>N</option>
+	</term>
+	<listitem>
+		If running the IBM ACPI, displays the temperatures
+		from the IBM temperature sensors (N=0..7) Sensor 0 is
+		on the CPU, 3 is on the GPU.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>ibm_volume</option></command>
+	</term>
+	<listitem>
+		If running the IBM ACPI, displays the "master" volume,
+	controlled by the volume keys (0-14).
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>ibm_brightness</option></command>
+	</term>
+	<listitem>
+		If running the IBM ACPI, displays the brigtness of the
+	laptops's LCD (0-7).
+	<para></para></listitem>
+</varlistentry>
 
 </variablelist>

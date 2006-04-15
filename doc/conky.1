@@ -1,5 +1,5 @@
 .\" -*- coding: us-ascii -*-
-.TH conky 1 2006-03-12  
+.TH conky 1 2006-04-15  
 .SH NAME
 conky \- A system monitor for X originally based on the torsmo code, but more kickass. It just keeps on given'er. Yeah.
 .SH SYNOPSIS
@@ -315,6 +315,14 @@ Use Xft (anti-aliased font and stuff)
 .TP 
 \fBwm_class_name\fR
 Manually set the WM_CLASS name. Defaults to "conky".
+
+.TP 
+\fBxftalpha\fR
+Alpha of Xft font. Must be a value at or between 1 and 0.
+
+.TP 
+\fBxftfont\fR
+Xft font to use.
 
 .TP 
 \fBxmms_player\fR
@@ -908,6 +916,26 @@ xmms / bmp / audacious / infopipe: player status (Playing/Paused/Stopped/Not run
 .TP 
 \fBxmms_title\fR 
 xmms / bmp / audacious / infopipe: title of current tune
+
+.TP 
+\fBibm_fan\fR 
+If running the IBM ACPI, displays the fan speed.
+
+.TP 
+\fBibm_temps\fR \fBN\fR 
+If running the IBM ACPI, displays the temperatures
+from the IBM temperature sensors (N=0..7) Sensor 0 is
+on the CPU, 3 is on the GPU.
+
+.TP 
+\fBibm_volume\fR 
+If running the IBM ACPI, displays the "master" volume,
+controlled by the volume keys (0-14).
+
+.TP 
+\fBibm_brightness\fR 
+If running the IBM ACPI, displays the brigtness of the
+laptops's LCD (0-7).
 
 .SH EXAMPLES
 .TP 

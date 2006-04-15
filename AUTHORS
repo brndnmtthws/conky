@@ -125,6 +125,9 @@ nathanj439 <nathanj439 at users dot sourceforge dot net>
 
 Pascal Eberhard <pascal dor eberhard at gmail dot com>
   graph and bar fix for right alignment
+
+Peter Tarjan <ptarjan at citromail dot hu>
+  IBM acpi support patch
   
 Petr Holub <hopet@users.sourceforge.net>  
   fix autotools on FreeBSD in autogen.sh

@@ -448,6 +448,16 @@ double get_acpi_temperature(int fd);
 void get_acpi_ac_adapter( char *, size_t ); /* pk */
 void get_acpi_fan( char *, size_t ); /* pk */
 void get_battery_stuff(char *buf, unsigned int n, const char *bat);
+void get_ibm_acpi_fan(char *buf, size_t client_buffer_size);
+void get_ibm_acpi_temps(void);
+void get_ibm_acpi_volume(char *buf, size_t client_buffer_size);
+void get_ibm_acpi_brightness(char *buf, size_t client_buffer_size);
+
+struct ibm_acpi_struct {
+    unsigned int temps[8];
+};
+
+struct ibm_acpi_struct ibm_acpi;
 
 struct process {
 	struct process *next;
@@ -560,7 +570,6 @@ int get_mldonkey_status(mldonkey_config * config, mldonkey_info * info);
 /* nothing to see here */
 
 /* in cairo.c */
-
 extern int do_it(void);
 
 #endif

@@ -346,6 +346,14 @@ CONFIGURATION SETTINGS
 	      Manually set the WM_CLASS name. Defaults to "conky".
 
 
+       xftalpha
+	      Alpha of Xft font. Must be a value at or between 1 and 0.
+
+
+       xftfont
+	      Xft font to use.
+
+
        xmms_player
 	      Use specified player/plugin for the xmms status variables. Valid
 	      items are: none, xmms, bmp, audacious and infopipe. (default  is
@@ -1020,6 +1028,26 @@ VARIABLES
 	      xmms / bmp / audacious / infopipe: title of current tune
 
 
+       ibm_fan
+	      If running the IBM ACPI, displays the fan speed.
+
+
+       ibm_temps N
+	      If  running the IBM ACPI, displays the temperatures from the IBM
+	      temperature sensors (N=0..7) Sensor 0 is on the CPU, 3 is on the
+	      GPU.
+
+
+       ibm_volume
+	      If  running  the	IBM  ACPI,  displays the "master" volume, con-
+	      trolled by the volume keys (0-14).
+
+
+       ibm_brightness
+	      If running the IBM ACPI, displays the brigtness of the laptops's
+	      LCD (0-7).
+
+
 EXAMPLES
        conky -t '${time %D %H:%m}' -o -u 30
 	      Start Conky in its own window with date and clock as text and 30
@@ -1054,4 +1082,4 @@ AUTHORS
 
 
 
-				  2006-03-12			      conky(1)
+				  2006-04-15			      conky(1)

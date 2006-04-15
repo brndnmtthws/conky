@@ -804,6 +804,10 @@ enum text_object_type {
 	OBJ_i8k_right_fan_rpm,
 	OBJ_i8k_ac_status,	
 	OBJ_i8k_buttons_status,
+	OBJ_ibm_fan,
+	OBJ_ibm_temps,
+	OBJ_ibm_volume,
+	OBJ_ibm_brightness,
 #endif /* __linux__ */
 	OBJ_if_existing,
 	OBJ_if_mounted,
@@ -955,7 +959,8 @@ struct text_object {
 		char *s;	/* some string */
 		int i;		/* some integer */
 		long l;		/* some other integer */
-		struct net_stat *net;
+	    unsigned int sensor;
+	        struct net_stat *net;
 		struct fs_stat *fs;
 		unsigned char loadavg[3];
 		unsigned int cpu_index;
@@ -1370,6 +1375,19 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		END OBJ(i8k_right_fan_rpm, INFO_I8K)
 		END OBJ(i8k_ac_status, INFO_I8K)
 		END OBJ(i8k_buttons_status, INFO_I8K)
+	END OBJ(ibm_fan, 0)
+	END OBJ(ibm_temps, 0)
+	    if (!isdigit(arg[0])
+			 || strlen(arg) >=2
+			 || atoi(&arg[0]) >=8)
+	    {
+		obj->data.sensor=0;
+		ERR("Invalid temperature sensor! Sensor number must be 0 to 7. Using 0 (CPU temp sensor).");
+	    }
+		obj->data.sensor = atoi(&arg[0]);
+	END OBJ(ibm_volume, 0)
+	END OBJ(ibm_brightness, 0)
+		
 #endif /* __linux__ */
 		END OBJ(buffers, INFO_BUFFERS)
 		END OBJ(cached, INFO_BUFFERS)
@@ -2481,6 +2499,20 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					snprintf(p, p_max_size, "%s", i8k.buttons_status); 
 
 				}
+                                OBJ(ibm_fan) {
+                                    get_ibm_acpi_fan(p, p_max_size);
+                                }
+				OBJ(ibm_temps) {
+                                    get_ibm_acpi_temps();
+                                    snprintf(p, p_max_size, "%d",
+                                             ibm_acpi.temps[obj->data.sensor]);
+                                }
+                                OBJ(ibm_volume) {
+                                    get_ibm_acpi_volume(p, p_max_size);
+                                }
+                                OBJ(ibm_brightness) {
+                                    get_ibm_acpi_brightness(p, p_max_size);
+                                }
 #endif /* __linux__ */
 
 #ifdef X11
