@@ -131,20 +131,24 @@ struct mpd_s {
 
 #ifdef XMMS2
 struct xmms2_s {
-	char *title;
-	char *artist;
-	char *album;
-	char *status;
-//	char *random;
-//	char *repeat;
-//	char *name;
-	char *file;
-//	int volume;
-	float progress;
-	int track;
-//	int bitrate;
-	unsigned int length;
-	unsigned int elapsed;
+    char* artist;
+    char* album;
+    char* title;
+    char* genre;
+    char* comment;
+    char* decoder;
+    char* transport;
+    char* url;
+    char* date;
+    int tracknr;
+    int bitrate;
+    unsigned int id;
+    int duration;
+    int elapsed;
+    float size;
+
+    float progress;
+    char* status;
 };
 #endif
 

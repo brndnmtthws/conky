@@ -901,22 +901,25 @@ enum text_object_type {
 	OBJ_mpd_smart,
 #endif
 #ifdef XMMS2
-	OBJ_xmms2_title,
-	OBJ_xmms2_artist,
-	OBJ_xmms2_album,
-//	OBJ_xmms2_random,
-//	OBJ_xmms2_repeat,
-//	OBJ_xmms2_vol,
-//	OBJ_xmms2_bitrate,
+    OBJ_xmms2_artist,
+    OBJ_xmms2_album,
+    OBJ_xmms2_title,
+    OBJ_xmms2_genre,
+    OBJ_xmms2_comment,
+    OBJ_xmms2_decoder,
+    OBJ_xmms2_transport,
+    OBJ_xmms2_url,
+    OBJ_xmms2_date,
+    OBJ_xmms2_tracknr,
+    OBJ_xmms2_bitrate,
+    OBJ_xmms2_id,
+    OBJ_xmms2_duration,
+    OBJ_xmms2_elapsed,
+    OBJ_xmms2_size,
+	OBJ_xmms2_percent,
 	OBJ_xmms2_status,
 	OBJ_xmms2_bar,
-	OBJ_xmms2_elapsed,
-	OBJ_xmms2_length,
-	OBJ_xmms2_track,
-//	OBJ_xmms2_name,
-	OBJ_xmms2_file,
-	OBJ_xmms2_percent,
-//	OBJ_xmms2_smart,
+	OBJ_xmms2_smart,
 #endif
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
 	OBJ_xmms_status,
@@ -1227,12 +1230,6 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 			case OBJ_mpd_host:
 #endif
 #ifdef XMMS2
-			case OBJ_xmms2_title:
-				if (info.xmms2.title) {
-					free(info.xmms2.title);
-					info.xmms2.title = 0;
-				}
-				break;
 			case OBJ_xmms2_artist:
 				if (info.xmms2.artist) {
 					free(info.xmms2.artist);
@@ -1245,16 +1242,46 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 					info.xmms2.album = 0;
 				}
 				break;
-			case OBJ_xmms2_track:
-				if (info.xmms2.track) {
-					free(info.xmms2.track);
-					info.xmms2.track = 0;
+			case OBJ_xmms2_title:
+				if (info.xmms2.title) {
+					free(info.xmms2.title);
+					info.xmms2.title = 0;
 				}
 				break;
-			case OBJ_xmms2_file:
-				if (info.xmms2.file) {
-					free(info.xmms2.file);
-					info.xmms2.file = 0;
+			case OBJ_xmms2_genre:
+				if (info.xmms2.genre) {
+					free(info.xmms2.genre);
+					info.xmms2.genre = 0;
+				}
+				break;
+			case OBJ_xmms2_comment:
+				if (info.xmms2.comment) {
+					free(info.xmms2.comment);
+					info.xmms2.comment = 0;
+				}
+				break;
+			case OBJ_xmms2_decoder:
+				if (info.xmms2.decoder) {
+					free(info.xmms2.decoder);
+					info.xmms2.url = 0;
+				}
+				break;
+			case OBJ_xmms2_transport:
+				if (info.xmms2.transport) {
+					free(info.xmms2.transport);
+					info.xmms2.url = 0;
+				}
+				break;
+			case OBJ_xmms2_url:
+				if (info.xmms2.url) {
+					free(info.xmms2.url);
+					info.xmms2.url = 0;
+				}
+				break;
+			case OBJ_xmms2_date:
+				if (info.xmms2.date) {
+					free(info.xmms2.date);
+					info.xmms2.date = 0;
 				}
 				break;
 			case OBJ_xmms2_status:
@@ -1263,7 +1290,7 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 					info.xmms2.status = 0;
 				}
 				break;
-	/*		case OBJ_xmms2_smart:
+			case OBJ_xmms2_smart:
 				if (info.xmms2.artist) {
 					free(info.xmms2.artist);
 					info.xmms2.artist = 0;
@@ -1272,11 +1299,11 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 					free(info.xmms2.title);
 					info.xmms2.title = 0;
 				}
-				if (info.xmms2.file) {
-					free(info.xmms2.file);
-					info.xmms2.file = 0;
+				if (info.xmms2.url) {
+					free(info.xmms2.url);
+					info.xmms2.url = 0;
 				}
-				break;*/
+				break;
 #endif
 #ifdef BMPX
 			case OBJ_bmpx_title:
@@ -2008,17 +2035,25 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 #endif
 #ifdef XMMS2
 		OBJ(xmms2_artist, INFO_XMMS2)
-		END OBJ(xmms2_title, INFO_XMMS2)
-		END OBJ(xmms2_length, INFO_XMMS2)
-		END OBJ(xmms2_track, INFO_XMMS2)
-		END OBJ(xmms2_file, INFO_XMMS2)
 		END OBJ(xmms2_album, INFO_XMMS2)
+		END OBJ(xmms2_title, INFO_XMMS2)
+		END OBJ(xmms2_genre, INFO_XMMS2)
+		END OBJ(xmms2_comment, INFO_XMMS2)
+		END OBJ(xmms2_decoder, INFO_XMMS2)
+		END OBJ(xmms2_transport, INFO_XMMS2)
+		END OBJ(xmms2_url, INFO_XMMS2)
+		END OBJ(xmms2_tracknr, INFO_XMMS2)
+		END OBJ(xmms2_bitrate, INFO_XMMS2)
+		END OBJ(xmms2_date, INFO_XMMS2)
+		END OBJ(xmms2_id, INFO_XMMS2)
+		END OBJ(xmms2_duration, INFO_XMMS2)
+        END OBJ(xmms2_elapsed, INFO_XMMS2)
+		END OBJ(xmms2_size, INFO_XMMS2)
 		END OBJ(xmms2_status, INFO_XMMS2)
-		END OBJ(xmms2_elapsed, INFO_XMMS2)
-		END OBJ(xmms2_length, INFO_XMMS2)
 		END OBJ(xmms2_percent, INFO_XMMS2)
 		END OBJ(xmms2_bar, INFO_XMMS2)
 		(void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+		END OBJ(xmms2_smart, INFO_XMMS2)
 		END
 #endif
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
@@ -3333,32 +3368,57 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			}
 #endif
 #ifdef XMMS2
-			OBJ(xmms2_title) {
-				snprintf(p, p_max_size, "%s", cur->xmms2.title);
-			}
 			OBJ(xmms2_artist) {
 				snprintf(p, p_max_size, "%s", cur->xmms2.artist);
 			}
 			OBJ(xmms2_album) {
 				snprintf(p, p_max_size, "%s", cur->xmms2.album);
 			}
-			OBJ(xmms2_track) {
-				snprintf(p, p_max_size, "%i", cur->xmms2.track);
+			OBJ(xmms2_title) {
+				snprintf(p, p_max_size, "%s", cur->xmms2.title);
 			}
-			OBJ(xmms2_file) {
-				snprintf(p, p_max_size, "%s", cur->xmms2.file);
+			OBJ(xmms2_genre) {
+				snprintf(p, p_max_size, "%s", cur->xmms2.genre);
 			}
-			OBJ(xmms2_status) {			
+			OBJ(xmms2_comment) {
+				snprintf(p, p_max_size, "%s", cur->xmms2.comment);
+			}
+			OBJ(xmms2_decoder) {
+				snprintf(p, p_max_size, "%s", cur->xmms2.decoder);
+			}
+			OBJ(xmms2_transport) {
+				snprintf(p, p_max_size, "%s", cur->xmms2.transport);
+			}
+			OBJ(xmms2_url) {
+				snprintf(p, p_max_size, "%s", cur->xmms2.url);
+			}
+			OBJ(xmms2_status) {
 				snprintf(p, p_max_size, "%s", cur->xmms2.status);
+			}
+            OBJ(xmms2_date) {
+                    snprintf(p, p_max_size, "%s", cur->xmms2.date);
+			}
+			OBJ(xmms2_tracknr) {
+			    if (cur->xmms2.tracknr != -1)
+                    snprintf(p, p_max_size, "%i", cur->xmms2.tracknr);
+			}
+			OBJ(xmms2_bitrate) {
+				snprintf(p, p_max_size, "%i", cur->xmms2.bitrate);
+			}
+            OBJ(xmms2_id) {
+				snprintf(p, p_max_size, "%u", cur->xmms2.id);
+			}
+            OBJ(xmms2_size) {
+				snprintf(p, p_max_size, "%2.1f", cur->xmms2.size);
 			}
 			OBJ(xmms2_elapsed) {
 				int tmp = cur->xmms2.elapsed;
-				snprintf(p, p_max_size, "%02d:%02d", 
+				snprintf(p, p_max_size, "%02d:%02d",
 				    tmp / 60000, (tmp / 1000) % 60);
 			}
-			OBJ(xmms2_length) {
-				int tmp = cur->xmms2.length;
-				snprintf(p, p_max_size, "%02d:%02d", 
+			OBJ(xmms2_duration) {
+				int tmp = cur->xmms2.duration;
+				snprintf(p, p_max_size, "%02d:%02d",
 				    tmp / 60000, (tmp / 1000) % 60);
 			}
 			OBJ(xmms2_percent) {
@@ -3371,7 +3431,13 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					(int) (cur->xmms2.progress *
 					       255.0f));
 			}
-			
+			OBJ(xmms2_smart) {
+				if (strlen(cur->xmms2.title) < 2 && strlen(cur->xmms2.title) < 2) {
+					snprintf(p, p_max_size, "%s", cur->xmms2.url);
+				} else {
+					snprintf(p, p_max_size, "%s - %s", cur->xmms2.artist, cur->xmms2.title);
+				}
+			}
 #endif
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
 			OBJ(xmms_status) {
@@ -5005,15 +5071,15 @@ static void set_default_configurations(void)
 	info.mpd.file = NULL;
 #endif
 #ifdef XMMS2
-	info.xmms2.status = NULL;
-	info.xmms2.artist = NULL;
-	info.xmms2.album = NULL;
-	info.xmms2.title = NULL;
-//	info.xmms2.random = NULL;
-//	info.xmms2.track = NULL;
-//	info.xmms2.name = NULL;
-	info.xmms2.file = NULL;
-//	info.xmms2.connection = NULL;
+    info.xmms2.artist = NULL;
+    info.xmms2.album = NULL;
+    info.xmms2.title = NULL;
+    info.xmms2.genre = NULL;
+    info.xmms2.comment = NULL;
+    info.xmms2.decoder = NULL;
+    info.xmms2.transport = NULL;
+    info.xmms2.url = NULL;
+    info.xmms2.status = NULL;
 #endif
 	use_spacer = 0;
 #ifdef X11

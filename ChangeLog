@@ -2,6 +2,7 @@
 
 2006-04-15
 	* Added patch from Peter Tarjan to add support for IBM ACPI
+	* Added xmms2 patch from Lassi Selander (sf.net patch 1469523)
 
 2006-04-11
 	* Removed sa_restorer crap (may fix some compile errors for some
