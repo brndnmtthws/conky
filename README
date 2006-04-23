@@ -784,6 +784,24 @@ VARIABLES
 	      Change outline color
 
 
+       pb_battery item
+	      If running on Apple powerbook/ibook, display information on bat-
+	      tery status. The item parameter specifies, what  information  to
+	      display. Exactly one item must be specified. Valid items are:
+
+	      status: Display if battery is fully charged, charging, discharg-
+	      ing or absent (running on AC)
+
+	      percent: Display charge of battery in percent,  if  charging  or
+	      discharging.  Nothing  will  be  displayed,  if battery is fully
+	      charged or absent.
+
+	      time: Display the time remaining until the battery will be fully
+	      charged  or discharged at current rate. Nothing is displayed, if
+	      battery is absent or if it's present but fully charged  and  not
+	      discharging.
+
+
        pre_exec shell command
 	      Executes a shell command one time before conky displays anything
 	      and puts output as text.
@@ -1082,4 +1100,4 @@ AUTHORS
 
 
 
-				  2006-04-15			      conky(1)
+				  2006-04-23			      conky(1)

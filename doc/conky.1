@@ -1,5 +1,5 @@
 .\" -*- coding: us-ascii -*-
-.TH conky 1 2006-04-15  
+.TH conky 1 2006-04-23  
 .SH NAME
 conky \- A system monitor for X originally based on the torsmo code, but more kickass. It just keeps on given'er. Yeah.
 .SH SYNOPSIS
@@ -707,6 +707,30 @@ Hostname
 .TP 
 \fBoutlinecolor\fR \fB(color)\fR 
 Change outline color
+
+.TP 
+\fBpb_battery\fR \fBitem\fR 
+If running on Apple powerbook/ibook, display
+information on battery status. The item parameter
+specifies, what information to display. Exactly one item
+must be specified. Valid items are:
+
+status:
+Display if battery is fully charged, charging,
+discharging or absent (running on AC)
+
+percent:
+Display charge of battery in percent, if
+charging or discharging. Nothing will be
+displayed, if battery is fully charged
+or absent.
+
+time:
+Display the time remaining until the battery
+will be fully charged or discharged at current
+rate. Nothing is displayed, if battery is
+absent or if it's present but fully charged
+and not discharging.
 
 .TP 
 \fBpre_exec\fR \fBshell command\fR 

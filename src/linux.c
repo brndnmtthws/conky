@@ -1264,7 +1264,7 @@ static char pb_battery_info[3][32];
 static double pb_battery_info_update;
  
 #define PMU_PATH "/proc/pmu"
-void get_powerbook_batt_info(char *buf, unsigned int n, int i)
+void get_powerbook_batt_info(char *buf, size_t n, int i)
 {
         static int rep;
         const char* batt_path = PMU_PATH "/battery_0";

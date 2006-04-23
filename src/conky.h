@@ -464,7 +464,7 @@ struct ibm_acpi_struct {
 struct ibm_acpi_struct ibm_acpi;
 
 enum { PB_BATT_STATUS, PB_BATT_PERCENT, PB_BATT_TIME};
-void get_powerbook_batt_info(char* buf, size_t size, int i);
+void get_powerbook_batt_info(char*, size_t, int);
 
 struct process {
 	struct process *next;
