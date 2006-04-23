@@ -2633,11 +2633,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							(obj->data.net->recv_speed /
 							 1024.0), obj->e, 1);
 				}
-				OBJ(
-						else
-				   ) {
+				OBJ(else) {
 					if (!if_jumped) {
-						i = obj->data.ifblock.pos - 2;
+						i = obj->data.ifblock.pos - 1;
 					} else {
 						if_jumped = 0;
 					}

@@ -2,6 +2,7 @@
 
 2006-04-23
 	* Added support for PowerBook batteries
+	* Fixed broken $if/$else stuff
 
 2006-04-15
 	* Added patch from Peter Tarjan to add support for IBM ACPI
