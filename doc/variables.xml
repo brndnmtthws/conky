@@ -875,6 +875,38 @@
 
 <varlistentry>
 	<term>
+		<command><option>pb_battery</option></command>
+		<option>item</option>
+	</term>
+	<listitem>
+                If running on Apple powerbook/ibook, display
+                information on battery status. The item parameter
+                specifies, what information to display. Exactly one item
+                must be specified. Valid items are:
+		<simplelist>
+                        <member><command>status</command>:
+                                Display if battery is fully charged, charging,
+                                discharging or absent (running on AC)
+                        </member>
+                        <member><command>percent</command>:
+                                Display charge of battery in percent, if
+                                charging or discharging. Nothing will be
+                                displayed, if battery is fully charged
+                                or absent.
+                        </member>
+                        <member><command>time</command>:
+                                Display the time remaining until the battery
+                                will be fully charged or discharged at current
+                                rate.  Nothing is displayed, if battery is
+                                absent or if it's present but fully charged
+                                and not discharging.
+                        </member>
+                </simplelist>
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>pre_exec</option></command>
 	<option>shell command</option>
 	</term>

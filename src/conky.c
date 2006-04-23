@@ -808,6 +808,7 @@ enum text_object_type {
 	OBJ_ibm_temps,
 	OBJ_ibm_volume,
 	OBJ_ibm_brightness,
+        OBJ_pb_battery,
 #endif /* __linux__ */
 	OBJ_if_existing,
 	OBJ_if_mounted,
@@ -1414,7 +1415,19 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		obj->data.sensor = atoi(&arg[0]);
 	END OBJ(ibm_volume, 0)
 	END OBJ(ibm_brightness, 0)
-		
+	END OBJ(pb_battery, 0)
+                if (arg && strcmp(arg, "status") == 0) {
+                        obj->data.i = PB_BATT_STATUS;
+                } else if (arg && strcmp(arg, "percent") == 0) {
+                        obj->data.i = PB_BATT_PERCENT;
+                } else if (arg && strcmp(arg, "time") == 0) {
+                        obj->data.i = PB_BATT_TIME;
+                } else {
+                        ERR("pb_battery: needs one argument: status, percent or time");
+                        free(obj);
+                        return NULL;
+                }
+
 #endif /* __linux__ */
 		END OBJ(buffers, INFO_BUFFERS)
 		END OBJ(cached, INFO_BUFFERS)
@@ -2547,6 +2560,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
                                 }
                                 OBJ(ibm_brightness) {
                                     get_ibm_acpi_brightness(p, p_max_size);
+                                }
+                                OBJ(pb_battery) {
+                                    get_powerbook_batt_info(p, p_max_size, obj->data.i);
                                 }
 #endif /* __linux__ */
 

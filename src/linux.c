@@ -1239,6 +1239,112 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 	snprintf(buf, n, "%s", last_battery_str);
 }
 
+/* On Apple powerbook and ibook:
+$ cat /proc/pmu/battery_0
+flags      : 00000013
+charge     : 3623
+max_charge : 3720
+current    : 388
+voltage    : 16787
+time rem.  : 900
+$ cat /proc/pmu/info
+PMU driver version     : 2
+PMU firmware version   : 0c
+AC Power               : 1
+Battery count          : 1
+*/
+
+/* defines as in <linux/pmu.h> */
+#define PMU_BATT_PRESENT        0x00000001
+#define PMU_BATT_CHARGING       0x00000002
+
+static FILE* pmu_battery_fp;
+static FILE* pmu_info_fp;
+static char pb_battery_info[3][32];
+static double pb_battery_info_update;
+ 
+#define PMU_PATH "/proc/pmu"
+void get_powerbook_batt_info(char *buf, unsigned int n, int i)
+{
+        static int rep;
+        const char* batt_path = PMU_PATH "/battery_0";
+        const char* info_path = PMU_PATH "/info";
+        int flags, charge, max_charge, ac = -1;
+        long time = -1;
+
+        /* don't update battery too often */
+        if (current_update_time - pb_battery_info_update < 29.5) {
+                snprintf(buf, n, "%s", pb_battery_info[i]);
+                return;
+        }
+        pb_battery_info_update = current_update_time;
+
+        if (pmu_battery_fp == NULL)
+                pmu_battery_fp = open_file(batt_path, &rep);
+
+        if (pmu_battery_fp != NULL) {
+        	rewind(pmu_battery_fp);
+                while (!feof(pmu_battery_fp)) {
+                        char buf[32];
+                        if (fgets(buf, sizeof(buf), pmu_battery_fp) == NULL)
+                                break;
+
+                        if (buf[0] == 'f')
+                                sscanf(buf, "flags      : %8x", &flags);
+                        else if (buf[0] == 'c' && buf[1] == 'h')
+                                sscanf(buf, "charge     : %d", &charge);
+                        else if (buf[0] == 'm')
+                                sscanf(buf, "max_charge : %d", &max_charge);
+                        else if (buf[0] == 't')
+                                sscanf(buf, "time rem.  : %ld", &time);
+                }
+        }
+        if (pmu_info_fp == NULL)
+                pmu_info_fp = open_file(info_path, &rep);
+
+        if (pmu_info_fp != NULL) {
+        	rewind(pmu_info_fp);
+                while (!feof(pmu_info_fp)) {
+                        char buf[32];
+                        if (fgets(buf, sizeof(buf), pmu_info_fp) == NULL)
+                                break;
+                        if (buf[0] == 'A')
+                                sscanf(buf, "AC Power               : %d", &ac);
+                }
+        }
+        /* update status string */
+        if ((ac && !(flags & PMU_BATT_PRESENT)))
+                strcpy(pb_battery_info[PB_BATT_STATUS], "AC");
+        else if (ac && (flags & PMU_BATT_PRESENT)
+                  && !(flags & PMU_BATT_CHARGING))
+                strcpy(pb_battery_info[PB_BATT_STATUS], "charged");
+        else if ((flags & PMU_BATT_PRESENT)
+                && (flags & PMU_BATT_CHARGING))
+                strcpy(pb_battery_info[PB_BATT_STATUS], "charging");
+        else
+                strcpy(pb_battery_info[PB_BATT_STATUS], "discharging");
+
+        /* update percentage string */
+        if (time == 0)
+                pb_battery_info[PB_BATT_PERCENT][0] = 0; 
+        else
+                snprintf(pb_battery_info[PB_BATT_PERCENT],
+                        sizeof(pb_battery_info[PB_BATT_PERCENT]),
+                        "%d%%", (charge * 100)/max_charge);
+
+        /* update time string */
+        if (time == 0) /* fully charged or battery not present */
+                pb_battery_info[PB_BATT_TIME][0] = 0; 
+        else if (time < 60*60) /* don't show secs */
+                format_seconds_short(pb_battery_info[PB_BATT_TIME],
+                        sizeof(pb_battery_info[PB_BATT_TIME]), time);
+        else
+                format_seconds(pb_battery_info[PB_BATT_TIME],
+                        sizeof(pb_battery_info[PB_BATT_TIME]), time);
+
+        snprintf(buf, n, "%s", pb_battery_info[i]);
+}
+
 void update_top()
 {
 	show_nice_processes = 1;
