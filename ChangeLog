@@ -1,5 +1,8 @@
 # $Id$
 
+2006-05-08
+	* Added simple POP3/IMAP mail clients
+
 2006-04-23
 	* Added support for PowerBook batteries
 	* Fixed broken $if/$else stuff

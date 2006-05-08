@@ -136,7 +136,7 @@ Boolean value, if true, Conky will be forked to background when started
 
 .TP 
 \fBon_bottom\fR
-Set conky on the bottom of all other applications
+Set Conky on the bottom of all other applications
 
 .TP 
 \fBborder_margin\fR
@@ -193,6 +193,10 @@ Gap between right or left border of screen, same as passing -x at command line
 .TP 
 \fBgap_y\fR
 Gap between top or bottom border of screen, same as passing -y at command line
+
+.TP 
+\fBimap\fR
+Default global IMAP server. Arguments are: "host user pass [-i interval] [-f folder] [-p port] [-e command]". Default port is 143, default folder is 'INBOX', default interval is 5 minutes. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
 
 .TP 
 \fBno_buffers\fR
@@ -276,7 +280,7 @@ If own_window_transparent no, set a specified background colour (defaults to bla
 
 .TP 
 \fBown_window_hints\fR \fBundecorated,below,above,sticky,skip_taskbar,skip_pager\fR 
-If own_window is yes, you may use these window manager hints to affect the way conky displays. 
+If own_window is yes, you may use these window manager hints to affect the way Conky displays. 
 Notes: Use own_window_type desktop as another way to implement many of these hints implicitly.
 If you use own_window_type override, window manager hints have no meaning and are ignored.
 
@@ -287,6 +291,10 @@ Print text to stdout.
 .TP 
 \fBpad_percents\fR
 Pad percentages to this many decimals (0 = no padding)
+
+.TP 
+\fBpop3\fR
+Default global POP3 server. Arguments are: "host user pass [-i interval] [-p port] [-e command]". Default port is 110, default interval is 5 minutes. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
 
 .TP 
 \fBstippled_borders\fR
@@ -597,6 +605,14 @@ if FILE exists, display everything between if_existing and the matching $endif
 if MOUNTPOINT is mounted, display everything between if_mounted and the matching $endif
 
 .TP 
+\fBimap_messages\fR \fB(args)\fR 
+Displays the number of messages in your global IMAP inbox by default. You can define individual IMAP inboxes seperately by passing arguments to this object. Arguments are: "host user pass [-i interval] [-p port] [-e command]". Default port is 110, default interval is 5 minutes. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
+
+.TP 
+\fBimap_unseen\fR \fB(args)\fR 
+Displays the number of unseen messages in your global IMAP inbox by default. You can define individual IMAP inboxes seperately by passing arguments to this object. Arguments are: "host user pass [-i interval] [-p port] [-e command]". Default port is 110, default interval is 5 minutes. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
+
+.TP 
 \fBkernel\fR 
 Kernel version
 
@@ -731,6 +747,14 @@ will be fully charged or discharged at current
 rate. Nothing is displayed, if battery is
 absent or if it's present but fully charged
 and not discharging.
+
+.TP 
+\fBpop3_unseen\fR \fB(args)\fR 
+Displays the number of unseen messages in your global POP3 inbox by default. You can define individual POP3 inboxes seperately by passing arguments to this object. Arguments are: "host user pass [-i interval] [-p port] [-e command]". Default port is 110, default interval is 5 minutes. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
+
+.TP 
+\fBpop3_used\fR \fB(args)\fR 
+Displays the amount of space (in MiB, 2^20) used in your global POP3 inbox by default. You can define individual POP3 inboxes seperately by passing arguments to this object. Arguments are: "host user pass [-i interval] [-p port] [-e command]". Default port is 110, default interval is 5 minutes. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
 
 .TP 
 \fBpre_exec\fR \fBshell command\fR 

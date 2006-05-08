@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <termios.h>
 #include <string.h>
 #include <limits.h>
 #if HAVE_DIRENT_H
@@ -870,6 +871,12 @@ enum text_object_type {
 	OBJ_upspeedgraph,
 	OBJ_uptime,
 	OBJ_uptime_short,
+	OBJ_imap,
+	OBJ_imap_messages,
+	OBJ_imap_unseen,
+	OBJ_pop3,
+	OBJ_pop3_unseen,
+	OBJ_pop3_used,
 #if defined(__FreeBSD__) && (defined(i386) || defined(__i386__))
 	OBJ_apm_adapter,
 	OBJ_apm_battery_time,
@@ -950,24 +957,22 @@ enum text_object_type {
 #endif
 };
 
-struct thread_info_s {
-	pthread_t thread;
-};
-
 struct text_object {
 	int type;
 	int a, b;
 	unsigned int c, d, e;
 	float f;
+	char global_mode;
 	union {
 		char *s;	/* some string */
 		int i;		/* some integer */
 		long l;		/* some other integer */
-	    unsigned int sensor;
+		unsigned int sensor;
 	        struct net_stat *net;
 		struct fs_stat *fs;
 		unsigned char loadavg[3];
 		unsigned int cpu_index;
+		struct mail_s *mail;
 		struct {
 			struct fs_stat *fs;
 			int w, h;
@@ -1061,6 +1066,416 @@ void replace_thread(struct thread_info_s *new_thread, int pos) // this isn't eve
 	}
 }
 
+#define MAXDATASIZE 1000
+
+void *imap_thread(struct mail_s* mail)
+{				// pthreads are really beginning to piss me off
+	double update_time;
+	int run_code = threads_runnable;
+	update_time = get_time();
+	int sockfd, numbytes;
+	char recvbuf[MAXDATASIZE];
+	char sendbuf[MAXDATASIZE];
+	char *reply;
+	int fail = 0;
+	unsigned int old_unseen = UINT_MAX;
+	struct hostent *he;
+	struct sockaddr_in their_addr;	// connector's address information
+	if ((he = gethostbyname(mail->host)) == NULL) {	// get the host info 
+		herror("gethostbyname");
+		exit(1);
+	}
+	while (threads_runnable == run_code && fail < 5) {
+		update_time = get_time();
+		if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
+			perror("socket");
+			fail++;
+			break;
+		}
+
+		their_addr.sin_family = AF_INET;	// host byte order 
+		their_addr.sin_port = htons(mail->port);	// short, network byte order 
+		their_addr.sin_addr = *((struct in_addr *) he->h_addr);
+		memset(&(their_addr.sin_zero), '\0', 8);	// zero the rest of the struct 
+
+		if (connect
+		    (sockfd, (struct sockaddr *) &their_addr,
+		     sizeof(struct sockaddr)) == -1) {
+			perror("connect");
+			fail++;
+			break;
+		}
+		struct timeval timeout;
+		int res;
+		fd_set fdset;
+		timeout.tv_sec = 60;	// 60 second timeout i guess
+		timeout.tv_usec = 0;
+		FD_ZERO(&fdset);
+		FD_SET(sockfd, &fdset);
+		res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+		if (res > 0) {
+			if ((numbytes =
+			     recv(sockfd, recvbuf, MAXDATASIZE - 1,
+				  0)) == -1) {
+				perror("recv");
+				fail++;
+				break;
+			}
+		} else {
+			ERR("IMAP connection failed: timeout\n");
+			fail++;
+			break;
+		}
+		recvbuf[numbytes] = '\0';
+		if (strstr(recvbuf, "* OK") != recvbuf) {
+			ERR("IMAP connection failed, probably not an IMAP server\n");
+			fail++;
+			break;
+		}
+		strncpy(sendbuf, "a1 login ", MAXDATASIZE);
+		strncat(sendbuf, mail->user,
+			MAXDATASIZE - strlen(sendbuf) - 1);
+		strncat(sendbuf, " ", MAXDATASIZE - strlen(sendbuf) - 1);
+		strncat(sendbuf, mail->pass,
+			MAXDATASIZE - strlen(sendbuf) - 1);
+		strncat(sendbuf, "\n", MAXDATASIZE - strlen(sendbuf) - 1);
+		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
+			perror("send a1");
+			fail++;
+			break;
+		}
+		timeout.tv_sec = 60;	// 60 second timeout i guess
+		timeout.tv_usec = 0;
+		FD_ZERO(&fdset);
+		FD_SET(sockfd, &fdset);
+		res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+		if (res > 0) {
+			if ((numbytes =
+			     recv(sockfd, recvbuf, MAXDATASIZE - 1,
+				  0)) == -1) {
+				perror("recv a1");
+				fail++;
+				break;
+			}
+		}
+		recvbuf[numbytes] = '\0';
+		if (strstr(recvbuf, "a1 OK") == NULL) {
+			ERR("IMAP server login failed: %s\n", recvbuf);
+			fail++;
+			break;
+		}
+		strncpy(sendbuf, "a2 STATUS ", MAXDATASIZE);
+		strncat(sendbuf, mail->folder,
+			MAXDATASIZE - strlen(sendbuf) - 1);
+		strncat(sendbuf, " (MESSAGES UNSEEN)\n",
+			MAXDATASIZE - strlen(sendbuf) - 1);
+		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
+			perror("send a2");
+			fail++;
+			break;
+		}
+		timeout.tv_sec = 60;	// 60 second timeout i guess
+		timeout.tv_usec = 0;
+		FD_ZERO(&fdset);
+		FD_SET(sockfd, &fdset);
+		res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+		if (res > 0) {
+			if ((numbytes =
+			     recv(sockfd, recvbuf, MAXDATASIZE - 1,
+				  0)) == -1) {
+				perror("recv a2");
+				fail++;
+				break;
+			}
+		}
+		recvbuf[numbytes] = '\0';
+		if (strstr(recvbuf, "a2 OK") == NULL) {
+			ERR("IMAP status failed: %s\n", recvbuf);
+			fail++;
+			break;
+		}
+		// now we get the data
+		reply = strstr(recvbuf, " (MESSAGES ");
+		reply += 2;
+		*strchr(reply, ')') = '\0';
+		if (reply == NULL) {
+			ERR("Error parsing IMAP response: %s", recvbuf);
+			fail++;
+			break;
+		} else {
+			sscanf(reply, "MESSAGES %u UNSEEN %u",
+			       &mail->messages,
+			       &mail->unseen);
+		}
+		strncpy(sendbuf, "a3 logout\n", MAXDATASIZE);
+		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
+			perror("send a3");
+			fail++;
+			break;
+		}
+		timeout.tv_sec = 60;	// 60 second timeout i guess
+		timeout.tv_usec = 0;
+		FD_ZERO(&fdset);
+		FD_SET(sockfd, &fdset);
+		res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+		if (res > 0) {
+			if ((numbytes =
+			     recv(sockfd, recvbuf, MAXDATASIZE - 1,
+				  0)) == -1) {
+				perror("recv a3");
+				fail++;
+				break;
+			}
+		}
+		recvbuf[numbytes] = '\0';
+		if (strstr(recvbuf, "a3 OK") == NULL) {
+			ERR("IMAP logout failed: %s\n", recvbuf);
+			fail++;
+			break;
+		}
+		close(sockfd);
+		if (strlen(mail->command) > 1 && mail->unseen > old_unseen) {	// new mail goodie
+			if (system(mail->command) == -1) {
+				perror("system()");
+			}
+		}
+		fail = 0;
+		old_unseen = mail->unseen;
+		mail->last_update = update_time;
+		usleep(100);	// prevent race condition
+		if (get_time() - mail->last_update >
+		    mail->interval) {
+			continue;
+		} else {
+			unsigned int delay =
+			    1000000.0 * (mail->interval -
+					 (get_time() -
+					  mail->last_update));
+			if (delay < update_interval * 500000) {
+				delay = update_interval * 1000000;
+			}
+			usleep(delay);
+		}
+	}
+	ERR("exiting imap thread");
+	pthread_exit(NULL);
+	return 0;
+}
+
+void *pop3_thread(struct mail_s *mail)
+{				// pthreads are really beginning to piss me off
+	double update_time;
+	int run_code = threads_runnable;
+	update_time = get_time();
+	int sockfd, numbytes;
+	char recvbuf[MAXDATASIZE];
+	char sendbuf[MAXDATASIZE];
+	char *reply;
+	int fail = 0;
+	unsigned int old_unseen = UINT_MAX;
+	struct hostent *he;
+	struct sockaddr_in their_addr;	// connector's address information
+	if ((he = gethostbyname(mail->host)) == NULL) {	// get the host info 
+		herror("gethostbyname");
+		exit(1);
+	}
+	while (threads_runnable == run_code && fail < 5) {
+		update_time = get_time();
+		if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
+			perror("socket");
+			fail++;
+			break;
+		}
+
+		their_addr.sin_family = AF_INET;	// host byte order 
+		their_addr.sin_port = htons(mail->port);	// short, network byte order 
+		their_addr.sin_addr = *((struct in_addr *) he->h_addr);
+		memset(&(their_addr.sin_zero), '\0', 8);	// zero the rest of the struct 
+
+		if (connect
+		    (sockfd, (struct sockaddr *) &their_addr,
+		     sizeof(struct sockaddr)) == -1) {
+			perror("connect");
+			fail++;
+			break;
+		}
+		struct timeval timeout;
+		int res;
+		fd_set fdset;
+		timeout.tv_sec = 60;	// 60 second timeout i guess
+		timeout.tv_usec = 0;
+		FD_ZERO(&fdset);
+		FD_SET(sockfd, &fdset);
+		res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+		if (res > 0) {
+			if ((numbytes =
+			     recv(sockfd, recvbuf, MAXDATASIZE - 1,
+				  0)) == -1) {
+				perror("recv");
+				fail++;
+				break;
+			}
+		} else {
+			ERR("POP3 connection failed: timeout\n");
+			fail++;
+			break;
+		}
+		recvbuf[numbytes] = '\0';
+		if (strstr(recvbuf, "+OK ") != recvbuf) {
+			ERR("POP3 connection failed, probably not a POP3 server\n");
+			fail++;
+			break;
+		}
+		strncpy(sendbuf, "USER ", MAXDATASIZE);
+		strncat(sendbuf, mail->user,
+			MAXDATASIZE - strlen(sendbuf) - 1);
+		strncat(sendbuf, "\n", MAXDATASIZE - strlen(sendbuf) - 1);
+		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
+			perror("send USER");
+			fail++;
+			break;
+		}
+		timeout.tv_sec = 60;	// 60 second timeout i guess
+		timeout.tv_usec = 0;
+		FD_ZERO(&fdset);
+		FD_SET(sockfd, &fdset);
+		res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+		if (res > 0) {
+			if ((numbytes =
+			     recv(sockfd, recvbuf, MAXDATASIZE - 1,
+				  0)) == -1) {
+				perror("recv USER");
+				fail++;
+				break;
+			}
+		}
+		recvbuf[numbytes] = '\0';
+		if (strstr(recvbuf, "+OK ") == NULL) {
+			ERR("POP3 server login failed: %s\n", recvbuf);
+			fail++;
+			break;
+		}
+		strncpy(sendbuf, "PASS ", MAXDATASIZE);
+		strncat(sendbuf, mail->pass,
+			MAXDATASIZE - strlen(sendbuf) - 1);
+		strncat(sendbuf, "\n", MAXDATASIZE - strlen(sendbuf) - 1);
+		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
+			perror("send PASS");
+			fail++;
+			break;
+		}
+		timeout.tv_sec = 60;	// 60 second timeout i guess
+		timeout.tv_usec = 0;
+		FD_ZERO(&fdset);
+		FD_SET(sockfd, &fdset);
+		res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+		if (res > 0) {
+			if ((numbytes =
+			     recv(sockfd, recvbuf, MAXDATASIZE - 1,
+				  0)) == -1) {
+				perror("recv PASS");
+				fail++;
+				break;
+			}
+		}
+		recvbuf[numbytes] = '\0';
+		if (strstr(recvbuf, "+OK ") == NULL) {
+			ERR("POP3 server login failed: %s\n", recvbuf);
+			fail++;
+			break;
+		}
+		strncpy(sendbuf, "STAT\n", MAXDATASIZE);
+		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
+			perror("send STAT");
+			fail++;
+			break;
+		}
+		timeout.tv_sec = 60;	// 60 second timeout i guess
+		timeout.tv_usec = 0;
+		FD_ZERO(&fdset);
+		FD_SET(sockfd, &fdset);
+		res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+		if (res > 0) {
+			if ((numbytes =
+			     recv(sockfd, recvbuf, MAXDATASIZE - 1,
+				  0)) == -1) {
+				perror("recv STAT");
+				fail++;
+				break;
+			}
+		}
+		recvbuf[numbytes] = '\0';
+		if (strstr(recvbuf, "+OK ") == NULL) {
+			ERR("POP3 status failed: %s\n", recvbuf);
+			fail++;
+			break;
+		}
+		// now we get the data
+		reply = recvbuf + 4;
+		if (reply == NULL) {
+			ERR("Error parsing POP3 response: %s", recvbuf);
+			fail++;
+			break;
+		} else {
+			sscanf(reply, "%u %u", &mail->unseen,
+			       &mail->used);
+		}
+		strncpy(sendbuf, "QUIT\n", MAXDATASIZE);
+		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
+			perror("send QUIT");
+			fail++;
+			break;
+		}
+		timeout.tv_sec = 60;	// 60 second timeout i guess
+		timeout.tv_usec = 0;
+		FD_ZERO(&fdset);
+		FD_SET(sockfd, &fdset);
+		res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+		if (res > 0) {
+			if ((numbytes =
+			     recv(sockfd, recvbuf, MAXDATASIZE - 1,
+				  0)) == -1) {
+				perror("recv QUIT");
+				fail++;
+				break;
+			}
+		}
+		recvbuf[numbytes] = '\0';
+		if (strstr(recvbuf, "+OK") == NULL) {
+			ERR("POP3 logout failed: %s\n", recvbuf);
+			fail++;
+			break;
+		}
+		close(sockfd);
+		if (strlen(mail->command) > 1 && mail->unseen > old_unseen) {	// new mail goodie
+			if (system(mail->command) == -1) {
+				perror("system()");
+			}
+		}
+		fail = 0;
+		old_unseen = mail->unseen;
+		mail->last_update = update_time;
+		usleep(100);	// prevent race condition
+		if (get_time() - mail->last_update >
+		    mail->interval) {
+			continue;
+		} else {
+			unsigned int delay =
+			    1000000.0 * (mail->interval -
+					 (get_time() -
+					  mail->last_update));
+			if (delay < update_interval * 500000) {
+				delay = update_interval * 1000000;
+			}
+			usleep(delay);
+		}
+	}
+	ERR("exiting pop3 thread");
+	pthread_exit(NULL);
+	return 0;
+}
+
+
 void *threaded_exec(struct text_object *obj) { // pthreads are really beginning to piss me off
 	double update_time;
 	int run_code = threads_runnable;
@@ -1132,6 +1547,32 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 				free(objs[i].data.s);
 				break;
 			case OBJ_utime:
+			case OBJ_imap:
+				free(info.mail);
+				break;
+			case OBJ_imap_unseen:
+				if (!objs[i].global_mode) {
+					free(objs[i].data.mail);
+				}
+				break;
+			case OBJ_imap_messages:
+				if (!objs[i].global_mode) {
+					free(objs[i].data.mail);
+				}
+				break;
+			case OBJ_pop3:
+				free(info.mail);
+				break;
+			case OBJ_pop3_unseen:
+				if (!objs[i].global_mode) {
+					free(objs[i].data.mail);
+				}
+				break;
+			case OBJ_pop3_used:
+				if (!objs[i].global_mode) {
+					free(objs[i].data.mail);
+				}
+				break;
 			case OBJ_if_existing:
 			case OBJ_if_mounted:
 			case OBJ_if_running:
@@ -2027,6 +2468,244 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		(void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(seti_credit, INFO_SETI) END
 #endif
+		OBJ(imap_unseen, 0)
+		if (arg) {
+			// proccss
+				obj->data.mail = malloc(sizeof(struct mail_s));
+				char *tmp;
+				if (sscanf(arg, "%128s %128s %128s", obj->data.mail->host, obj->data.mail->user, obj->data.mail->pass) != 3) {
+					ERR("Scanning IMAP args failed");
+				}
+				// see if password needs prompting
+				if (obj->data.mail->pass[0] == '*' && obj->data.mail->pass[1] == '\0') {
+					int fp = fileno(stdin);
+					struct termios term;
+					tcgetattr(fp, &term);
+					term.c_lflag &= ~ECHO;
+					tcsetattr(fp, TCSANOW, &term);
+					printf("Mailbox password (%s@%s): ", obj->data.mail->user, obj->data.mail->host);
+					scanf("%128s", obj->data.mail->pass);
+					printf("\n");
+					term.c_lflag |= ECHO;
+					tcsetattr(fp, TCSANOW, &term);
+				}
+				// now we check for optional args
+				tmp = strstr(arg, "-i ");
+	if (tmp) {
+		tmp += 3;
+		sscanf(tmp, "%f", &obj->data.mail->interval);
+	} else {
+		obj->data.mail->interval = 300;	// 5 minutes
+	}
+	tmp = strstr(arg, "-p ");
+	if (tmp) {
+		tmp += 3;
+		sscanf(tmp, "%u", &obj->data.mail->port);
+	} else {
+		obj->data.mail->port = 143;	// default imap port
+	}
+	tmp = strstr(arg, "-f ");
+	if (tmp) {
+		tmp += 3;
+		sscanf(tmp, "%s", obj->data.mail->folder);
+	} else {
+		strncpy(obj->data.mail->folder, "INBOX", 128);	// default imap inbox
+	}
+	tmp = strstr(arg, "-e ");
+	if (tmp) {
+		tmp += 3;
+		int len = 1024;
+		if (tmp[0] == '\'') {
+			len = strstr(tmp+1, "'") - tmp - 1;
+			if (len > 1024) {
+				len = 1024;
+			}
+		}
+		strncpy(obj->data.mail->command, tmp+1, len);
+	} else {
+		obj->data.mail->command[0] = '\0';
+	}
+	obj->data.mail->pos = -1;
+			obj->global_mode = 0;
+		} else {
+			obj->global_mode = 1;
+		}
+		END
+		OBJ(imap_messages, 0)
+		if (arg) {
+			// proccss
+				obj->data.mail = malloc(sizeof(struct mail_s));
+				char *tmp;
+				if (sscanf(arg, "%128s %128s %128s", obj->data.mail->host, obj->data.mail->user, obj->data.mail->pass) != 3) {
+					ERR("Scanning IMAP args failed");
+				}
+				// see if password needs prompting
+				if (obj->data.mail->pass[0] == '*' && obj->data.mail->pass[1] == '\0') {
+					int fp = fileno(stdin);
+					struct termios term;
+					tcgetattr(fp, &term);
+					term.c_lflag &= ~ECHO;
+					tcsetattr(fp, TCSANOW, &term);
+					printf("Mailbox password (%s@%s): ", obj->data.mail->user, obj->data.mail->host);
+					scanf("%128s", obj->data.mail->pass);
+					printf("\n");
+					term.c_lflag |= ECHO;
+					tcsetattr(fp, TCSANOW, &term);
+				}
+				// now we check for optional args
+				tmp = strstr(arg, "-i ");
+	if (tmp) {
+		tmp += 3;
+		sscanf(tmp, "%f", &obj->data.mail->interval);
+	} else {
+		obj->data.mail->interval = 300;	// 5 minutes
+	}
+	tmp = strstr(arg, "-p ");
+	if (tmp) {
+		tmp += 3;
+		sscanf(tmp, "%u", &obj->data.mail->port);
+	} else {
+		obj->data.mail->port = 143;	// default imap port
+	}
+	tmp = strstr(arg, "-f ");
+	if (tmp) {
+		tmp += 3;
+		sscanf(tmp, "%s", obj->data.mail->folder);
+	} else {
+		strncpy(obj->data.mail->folder, "INBOX", 128);	// default imap inbox
+	}
+	tmp = strstr(arg, "-e ");
+	if (tmp) {
+		tmp += 3;
+		int len = 1024;
+		if (tmp[0] == '\'') {
+			len = strstr(tmp+1, "'") - tmp - 1;
+			if (len > 1024) {
+				len = 1024;
+			}
+		}
+		strncpy(obj->data.mail->command, tmp+1, len);
+	} else {
+		obj->data.mail->command[0] = '\0';
+	}
+	obj->data.mail->pos = -1;
+			obj->global_mode = 0;
+		} else {
+			obj->global_mode = 1;
+		}
+		END
+		OBJ(pop3_unseen, 0)
+		if (arg) {
+			// proccss
+				obj->data.mail = malloc(sizeof(struct mail_s));
+				char *tmp;
+				if (sscanf(arg, "%128s %128s %128s", obj->data.mail->host, obj->data.mail->user, obj->data.mail->pass) != 3) {
+					ERR("Scanning POP3 args failed");
+				}
+				// see if password needs prompting
+				if (obj->data.mail->pass[0] == '*' && obj->data.mail->pass[1] == '\0') {
+					int fp = fileno(stdin);
+					struct termios term;
+					tcgetattr(fp, &term);
+					term.c_lflag &= ~ECHO;
+					tcsetattr(fp, TCSANOW, &term);
+					printf("Mailbox password (%s@%s): ", obj->data.mail->user, obj->data.mail->host);
+					scanf("%128s", obj->data.mail->pass);
+					printf("\n");
+					term.c_lflag |= ECHO;
+					tcsetattr(fp, TCSANOW, &term);
+				}
+				// now we check for optional args
+				tmp = strstr(arg, "-i ");
+	if (tmp) {
+		tmp += 3;
+		sscanf(tmp, "%f", &obj->data.mail->interval);
+	} else {
+		obj->data.mail->interval = 300;	// 5 minutes
+	}
+	tmp = strstr(arg, "-p ");
+	if (tmp) {
+		tmp += 3;
+		sscanf(tmp, "%u", &obj->data.mail->port);
+	} else {
+		obj->data.mail->port = 110;	// default pop3 port
+	}
+	tmp = strstr(arg, "-e ");
+	if (tmp) {
+		tmp += 3;
+		int len = 1024;
+		if (tmp[0] == '\'') {
+			len = strstr(tmp+1, "'") - tmp - 1;
+			if (len > 1024) {
+				len = 1024;
+			}
+		}
+		strncpy(obj->data.mail->command, tmp+1, len);
+	} else {
+		obj->data.mail->command[0] = '\0';
+	}
+	obj->data.mail->pos = -1;
+			obj->global_mode = 0;
+		} else {
+			obj->global_mode = 1;
+		}
+		END
+		OBJ(pop3_used, 0)
+		if (arg) {
+			// proccss
+				obj->data.mail = malloc(sizeof(struct mail_s));
+				char *tmp;
+				if (sscanf(arg, "%128s %128s %128s", obj->data.mail->host, obj->data.mail->user, obj->data.mail->pass) != 3) {
+					ERR("Scanning POP3 args failed");
+				}
+				// see if password needs prompting
+				if (obj->data.mail->pass[0] == '*' && obj->data.mail->pass[1] == '\0') {
+					int fp = fileno(stdin);
+					struct termios term;
+					tcgetattr(fp, &term);
+					term.c_lflag &= ~ECHO;
+					tcsetattr(fp, TCSANOW, &term);
+					printf("Mailbox password (%s@%s): ", obj->data.mail->user, obj->data.mail->host);
+					scanf("%128s", obj->data.mail->pass);
+					printf("\n");
+					term.c_lflag |= ECHO;
+					tcsetattr(fp, TCSANOW, &term);
+				}
+				// now we check for optional args
+				tmp = strstr(arg, "-i ");
+	if (tmp) {
+		tmp += 3;
+		sscanf(tmp, "%f", &obj->data.mail->interval);
+	} else {
+		obj->data.mail->interval = 300;	// 5 minutes
+	}
+	tmp = strstr(arg, "-p ");
+	if (tmp) {
+		tmp += 3;
+		sscanf(tmp, "%u", &obj->data.mail->port);
+	} else {
+		obj->data.mail->port = 110;	// default pop3 port
+	}
+	tmp = strstr(arg, "-e ");
+	if (tmp) {
+		tmp += 3;
+		int len = 1024;
+		if (tmp[0] == '\'') {
+			len = strstr(tmp+1, "'") - tmp - 1;
+			if (len > 1024) {
+				len = 1024;
+			}
+		}
+		strncpy(obj->data.mail->command, tmp+1, len);
+	} else {
+		obj->data.mail->command[0] = '\0';
+	}
+	obj->data.mail->pos = -1;
+			obj->global_mode = 0;
+		} else {
+			obj->global_mode = 1;
+		}
+		END
 #ifdef MPD
 		OBJ(mpd_artist, INFO_MPD)
 		END OBJ(mpd_title, INFO_MPD)
@@ -2822,7 +3501,91 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					}
 					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
 				}
-#endif
+#endif /* HAVE_POPEN */
+				OBJ(imap_unseen) {
+					if (obj->global_mode) { // this means we use info
+						if (info.mail->pos < 0) {
+							info.mail->last_update = current_update_time;
+							if (pthread_create(&(info.mail->thread_info.thread), NULL, (void*)imap_thread, (void*) info.mail)) {
+								ERR("Error starting thread");
+							}
+							info.mail->pos = register_thread(&(info.mail->thread_info));
+						}
+						snprintf(p, p_max_size, "%u", info.mail->unseen);
+					} else { // this means we use obj
+						if (obj->data.mail->pos < 0) {
+							obj->data.mail->last_update = current_update_time;
+							if (pthread_create(&(obj->data.mail->thread_info.thread), NULL, (void*)imap_thread, (void*) obj->data.mail)) {
+								ERR("Error starting thread");
+							}
+							obj->data.mail->pos = register_thread(&(obj->data.mail->thread_info));
+						}
+						snprintf(p, p_max_size, "%u", obj->data.mail->unseen);
+					}
+				}
+				OBJ(imap_messages) {
+					if (obj->global_mode) { // this means we use info
+						if (info.mail->pos < 0) {
+							info.mail->last_update = current_update_time;
+							if (pthread_create(&(info.mail->thread_info.thread), NULL, (void*)imap_thread, (void*) info.mail)) {
+								ERR("Error starting thread");
+							}
+							info.mail->pos = register_thread(&(info.mail->thread_info));
+						}
+						snprintf(p, p_max_size, "%u", info.mail->messages);
+					} else { // this means we use obj
+						if (obj->data.mail->pos < 0) {
+							obj->data.mail->last_update = current_update_time;
+							if (pthread_create(&(obj->data.mail->thread_info.thread), NULL, (void*)imap_thread, (void*) obj->data.mail)) {
+								ERR("Error starting thread");
+							}
+							obj->data.mail->pos = register_thread(&(obj->data.mail->thread_info));
+						}
+						snprintf(p, p_max_size, "%u", obj->data.mail->messages);
+					}
+				}
+				OBJ(pop3_unseen) {
+					if (obj->global_mode) { // this means we use info
+						if (info.mail->pos < 0) {
+							info.mail->last_update = current_update_time;
+							if (pthread_create(&(info.mail->thread_info.thread), NULL, (void*)pop3_thread, (void*) info.mail)) {
+								ERR("Error starting thread");
+							}
+							info.mail->pos = register_thread(&(info.mail->thread_info));
+						}
+						snprintf(p, p_max_size, "%u", info.mail->unseen);
+					} else { // this means we use obj
+						if (obj->data.mail->pos < 0) {
+							obj->data.mail->last_update = current_update_time;
+							if (pthread_create(&(obj->data.mail->thread_info.thread), NULL, (void*)pop3_thread, (void*) obj->data.mail)) {
+								ERR("Error starting thread");
+							}
+							obj->data.mail->pos = register_thread(&(obj->data.mail->thread_info));
+						}
+						snprintf(p, p_max_size, "%u", obj->data.mail->unseen);
+					}
+				}
+				OBJ(pop3_used) {
+					if (obj->global_mode) { // this means we use info
+						if (info.mail->pos < 0) {
+							info.mail->last_update = current_update_time;
+							if (pthread_create(&(info.mail->thread_info.thread), NULL, (void*)pop3_thread, (void*) info.mail)) {
+								ERR("Error starting thread");
+							}
+							info.mail->pos = register_thread(&(info.mail->thread_info));
+						}
+						snprintf(p, p_max_size, "%.1f", info.mail->used/1024.0/1024.0);
+					} else { // this means we use obj
+						if (obj->data.mail->pos < 0) {
+							obj->data.mail->last_update = current_update_time;
+							if (pthread_create(&(obj->data.mail->thread_info.thread), NULL, (void*)pop3_thread, (void*) obj->data.mail)) {
+								ERR("Error starting thread");
+							}
+							obj->data.mail->pos = register_thread(&(obj->data.mail->thread_info));
+						}
+						snprintf(p, p_max_size, "%.1f", obj->data.mail->used/1024.0/1024.0);
+					}
+				}
 			OBJ(fs_bar) {
 				if (obj->data.fs != NULL) {
 					if (obj->data.fs->size == 0)
@@ -5300,6 +6063,121 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 				CONF_ERR;
 		}
 #endif
+		CONF("imap") {
+			if (value) {
+				info.mail = malloc(sizeof(struct mail_s));
+				char *tmp;
+				if (sscanf(value, "%128s %128s %128s", info.mail->host, info.mail->user, info.mail->pass) != 3) {
+					ERR("Scanning IMAP args failed");
+				}
+				// see if password needs prompting
+				if (info.mail->pass[0] == '*' && info.mail->pass[1] == '\0') {
+					int fp = fileno(stdin);
+					struct termios term;
+					tcgetattr(fp, &term);
+					term.c_lflag &= ~ECHO;
+					tcsetattr(fp, TCSANOW, &term);
+					printf("Mailbox password (%s@%s): ", info.mail->user, info.mail->host);
+					scanf("%128s", info.mail->pass);
+					printf("\n");
+					term.c_lflag |= ECHO;
+					tcsetattr(fp, TCSANOW, &term);
+				}
+				// now we check for optional args
+				tmp = strstr(value, "-i ");
+	if (tmp) {
+		tmp += 3;
+		sscanf(tmp, "%f", &info.mail->interval);
+	} else {
+		info.mail->interval = 300;	// 5 minutes
+	}
+	tmp = strstr(value, "-p ");
+	if (tmp) {
+		tmp += 3;
+		sscanf(tmp, "%u", &info.mail->port);
+	} else {
+		info.mail->port = 143;	// default imap port
+	}
+	tmp = strstr(value, "-f ");
+	if (tmp) {
+		tmp += 3;
+		sscanf(tmp, "%s", info.mail->folder);
+	} else {
+		strncpy(info.mail->folder, "INBOX", 128);	// default imap inbox
+	}
+	tmp = strstr(value, "-e ");
+	if (tmp) {
+		tmp += 3;
+		int len = 1024;
+		if (tmp[0] == '\'') {
+			len = strstr(tmp+1, "'") - tmp - 1;
+			if (len > 1024) {
+				len = 1024;
+			}
+		}
+		strncpy(info.mail->command, tmp+1, len);
+	} else {
+		info.mail->command[0] = '\0';
+	}
+	info.mail->pos = -1;
+			} else {
+				CONF_ERR;
+			}
+		}
+		CONF("pop3") {
+			if (value) {
+				info.mail = malloc(sizeof(struct mail_s));
+				char *tmp;
+				if (sscanf(value, "%128s %128s %128s", info.mail->host, info.mail->user, info.mail->pass) != 3) {
+					ERR("Scanning POP3 args failed");
+				}
+				// see if password needs prompting
+				if (info.mail->pass[0] == '*' && info.mail->pass[1] == '\0') {
+					int fp = fileno(stdin);
+					struct termios term;
+					tcgetattr(fp, &term);
+					term.c_lflag &= ~ECHO;
+					tcsetattr(fp, TCSANOW, &term);
+					printf("Mailbox password (%s@%s): ", info.mail->user, info.mail->host);
+					scanf("%128s", info.mail->pass);
+					printf("\n");
+					term.c_lflag |= ECHO;
+					tcsetattr(fp, TCSANOW, &term);
+				}
+				// now we check for optional args
+				tmp = strstr(value, "-i ");
+	if (tmp) {
+		tmp += 3;
+		sscanf(tmp, "%f", &info.mail->interval);
+	} else {
+		info.mail->interval = 300;	// 5 minutes
+	}
+	tmp = strstr(value, "-p ");
+	if (tmp) {
+		tmp += 3;
+		sscanf(tmp, "%u", &info.mail->port);
+	} else {
+		info.mail->port = 110;	// default pop3 port
+	}
+	tmp = strstr(value, "-e ");
+	if (tmp) {
+		tmp += 3;
+		int len = 1024;
+		if (tmp[0] == '\'') {
+			len = strstr(tmp+1, "'") - tmp - 1;
+			if (len > 1024) {
+				len = 1024;
+			}
+		}
+		strncpy(info.mail->command, tmp+1, len);
+	} else {
+		info.mail->command[0] = '\0';
+	}
+	info.mail->pos = -1;
+			} else {
+				CONF_ERR;
+			}
+		}
 #ifdef MPD
 		CONF("mpd_host") {
 			if (value)

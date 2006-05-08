@@ -102,6 +102,27 @@ struct fs_stat {
 	long long free;
 };
 
+struct thread_info_s {
+	pthread_t thread;
+};
+
+struct mail_s {			// for imap and pop3
+	unsigned int unseen;
+	unsigned int messages;
+	unsigned int used;
+	unsigned int quota;
+	unsigned int port;
+	float interval;
+	double last_update;
+	char host[128];
+	char user[128];
+	char pass[128];
+	char command[1024];
+	char folder[128];
+	int pos;
+	struct thread_info_s thread_info;
+} mail;
+
 /*struct cpu_stat {
 	unsigned int user, nice, system, idle, iowait, irq, softirq;
 	int cpu_avg_samples;
@@ -258,6 +279,8 @@ struct information {
 	float loadavg[3];
 
 	int new_mail_count, mail_count;
+	struct mail_s* mail;
+	int mail_running;
 #ifdef SETI
 	float seti_prog;
 	float seti_credit;
