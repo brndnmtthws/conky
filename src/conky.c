@@ -155,7 +155,7 @@ void free_fonts()
 static void load_fonts()
 {
 	int i;
-	for (i=0;i<=font_count;i++) {
+	for (i=0; i <= font_count; i++) {
 #ifdef XFT
 	/* load Xft font */
 	if (use_xft) {
@@ -497,20 +497,30 @@ static char *scan_font(const char *args)
 	if (args && sizeof(args) < 127) {
 		return strdup(args);
 	}
-	else {
+/*	else {
 		ERR("font scan failed, lets hope it doesn't mess stuff up");
-	}
+		we'll assume this means to use the default font now, like $color
+	}*/
 	return NULL;
 }
 
 #ifdef X11
 static void new_font(char *buf, char * args) {
-	struct special_t *s = new_special(buf, FONT);
-	if (!s->font_added || strcmp(args, fonts[s->font_added].name)) {
+	if (args) {
+		struct special_t *s = new_special(buf, FONT);
+		if (!s->font_added || strcmp(args, fonts[s->font_added].name)) {
+			int tmp = selected_font;
+			selected_font = s->font_added = addfont(args);
+			load_fonts();
+			//set_font();
+			selected_font = tmp;
+		}
+	} else {
+		struct special_t *s = new_special(buf, FONT);
 		int tmp = selected_font;
-		selected_font = s->font_added = addfont(args);
+		selected_font = s->font_added = 0;
 		load_fonts();
-//		set_font();
+		//set_font();
 		selected_font = tmp;
 	}
 }
@@ -1055,15 +1065,6 @@ int register_thread(struct thread_info_s *new_thread)
 		thread_count++;
 	}
 	return thread_count - 1;
-}
-
-void replace_thread(struct thread_info_s *new_thread, int pos) // this isn't even used anymore; oh wells
-{
-	if (pos >= 0 && pos < MAX_THREADS) {
-		thread_list[pos] = new_thread;
-	} else {
-		ERR("thread position out of bounds");
-	}
 }
 
 #define MAXDATASIZE 1000
@@ -4524,9 +4525,9 @@ static void text_size_updater(char *s)
 		text_width = maximum_width;
 
 	text_height += h;
-	if (fontchange) {
+/*	if (fontchange) {
 		selected_font = 0;
-	}
+	}*/
 }
 #endif /* X11 */
 
@@ -5127,9 +5128,9 @@ static void draw_line(char *s)
 	draw_string(s);
 
 	cur_y += font_descent();
-	if (fontchange) {
+/*	if (fontchange) {
 		selected_font = 0;
-	}
+	}*/
 #endif /* X11 */
 }
 

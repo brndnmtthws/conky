@@ -1,5 +1,10 @@
 # $Id$
 
+2006-05-09
+	* Changed $font behavior so that the font persists past the next
+	newline.  It can be set back to the default with $font with no args.
+	(closes bug 1478676 on sf.net)
+
 2006-05-08
 	* Added simple POP3/IMAP mail clients
 

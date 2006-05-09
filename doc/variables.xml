@@ -354,10 +354,10 @@
 <varlistentry>
 	<term>
 		<command><option>font</option></command>
-	<option>font</option>
+	<option>(font)</option>
 	</term>
 	<listitem>
-		Specify a different font. Only applies to one line.
+		Specify a different font. This new font will apply to the current line and everything following.  You can use a $font with no arguments to change back to the default font (much like with $color)
 	<para></para></listitem>
 </varlistentry>
 
