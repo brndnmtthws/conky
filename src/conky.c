@@ -1067,6 +1067,78 @@ void replace_thread(struct thread_info_s *new_thread, int pos) // this isn't eve
 }
 
 #define MAXDATASIZE 1000
+#define POP3 0
+#define IMAP 1
+
+struct mail_s* parse_mail_args(char type, const char *arg) {
+	struct mail_s *mail;
+	mail = malloc(sizeof(struct mail_s));
+	char *tmp;
+	if (sscanf(arg, "%128s %128s %128s", mail->host, mail->user, mail->pass) != 3) {
+		if (type == POP3) {
+			ERR("Scanning IMAP args failed");
+		} else  if (type == IMAP) {
+			ERR("Scanning POP3 args failed");
+		}
+	}
+	// see if password needs prompting
+	if (mail->pass[0] == '*' && mail->pass[1] == '\0') {
+		int fp = fileno(stdin);
+		struct termios term;
+		tcgetattr(fp, &term);
+		term.c_lflag &= ~ECHO;
+		tcsetattr(fp, TCSANOW, &term);
+		printf("Enter mailbox password (%s@%s): ", mail->user, mail->host);
+		scanf("%128s", mail->pass);
+		printf("\n");
+		term.c_lflag |= ECHO;
+		tcsetattr(fp, TCSANOW, &term);
+	}
+	// now we check for optional args
+	tmp = strstr(arg, "-i ");
+	if (tmp) {
+		tmp += 3;
+		sscanf(tmp, "%f", &mail->interval);
+	} else {
+		mail->interval = 300;	// 5 minutes
+	}
+	tmp = strstr(arg, "-p ");
+	if (tmp) {
+		tmp += 3;
+		sscanf(tmp, "%u", &mail->port);
+	} else {
+		if (type == POP3) {
+			mail->port = 143;	// default pop3 port
+		} else if (type == IMAP) {
+			mail->port = 143;	// default imap port
+		}
+	}
+	if (type == IMAP) {
+		tmp = strstr(arg, "-f ");
+		if (tmp) {
+			tmp += 3;
+			sscanf(tmp, "%s", mail->folder);
+		} else {
+			strncpy(mail->folder, "INBOX", 128);	// default imap inbox
+		}
+	}
+	tmp = strstr(arg, "-e ");
+	if (tmp) {
+		tmp += 3;
+		int len = 1024;
+		if (tmp[0] == '\'') {
+			len = strstr(tmp+1, "'") - tmp - 1;
+			if (len > 1024) {
+				len = 1024;
+			}
+		}
+		strncpy(mail->command, tmp+1, len);
+	} else {
+		mail->command[0] = '\0';
+	}
+	mail->pos = -1;
+	return mail;
+}
 
 void *imap_thread(struct mail_s* mail)
 {				// pthreads are really beginning to piss me off
@@ -2471,61 +2543,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		OBJ(imap_unseen, 0)
 		if (arg) {
 			// proccss
-				obj->data.mail = malloc(sizeof(struct mail_s));
-				char *tmp;
-				if (sscanf(arg, "%128s %128s %128s", obj->data.mail->host, obj->data.mail->user, obj->data.mail->pass) != 3) {
-					ERR("Scanning IMAP args failed");
-				}
-				// see if password needs prompting
-				if (obj->data.mail->pass[0] == '*' && obj->data.mail->pass[1] == '\0') {
-					int fp = fileno(stdin);
-					struct termios term;
-					tcgetattr(fp, &term);
-					term.c_lflag &= ~ECHO;
-					tcsetattr(fp, TCSANOW, &term);
-					printf("Mailbox password (%s@%s): ", obj->data.mail->user, obj->data.mail->host);
-					scanf("%128s", obj->data.mail->pass);
-					printf("\n");
-					term.c_lflag |= ECHO;
-					tcsetattr(fp, TCSANOW, &term);
-				}
-				// now we check for optional args
-				tmp = strstr(arg, "-i ");
-	if (tmp) {
-		tmp += 3;
-		sscanf(tmp, "%f", &obj->data.mail->interval);
-	} else {
-		obj->data.mail->interval = 300;	// 5 minutes
-	}
-	tmp = strstr(arg, "-p ");
-	if (tmp) {
-		tmp += 3;
-		sscanf(tmp, "%u", &obj->data.mail->port);
-	} else {
-		obj->data.mail->port = 143;	// default imap port
-	}
-	tmp = strstr(arg, "-f ");
-	if (tmp) {
-		tmp += 3;
-		sscanf(tmp, "%s", obj->data.mail->folder);
-	} else {
-		strncpy(obj->data.mail->folder, "INBOX", 128);	// default imap inbox
-	}
-	tmp = strstr(arg, "-e ");
-	if (tmp) {
-		tmp += 3;
-		int len = 1024;
-		if (tmp[0] == '\'') {
-			len = strstr(tmp+1, "'") - tmp - 1;
-			if (len > 1024) {
-				len = 1024;
-			}
-		}
-		strncpy(obj->data.mail->command, tmp+1, len);
-	} else {
-		obj->data.mail->command[0] = '\0';
-	}
-	obj->data.mail->pos = -1;
+			obj->data.mail = parse_mail_args(IMAP, arg);
 			obj->global_mode = 0;
 		} else {
 			obj->global_mode = 1;
@@ -2534,61 +2552,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		OBJ(imap_messages, 0)
 		if (arg) {
 			// proccss
-				obj->data.mail = malloc(sizeof(struct mail_s));
-				char *tmp;
-				if (sscanf(arg, "%128s %128s %128s", obj->data.mail->host, obj->data.mail->user, obj->data.mail->pass) != 3) {
-					ERR("Scanning IMAP args failed");
-				}
-				// see if password needs prompting
-				if (obj->data.mail->pass[0] == '*' && obj->data.mail->pass[1] == '\0') {
-					int fp = fileno(stdin);
-					struct termios term;
-					tcgetattr(fp, &term);
-					term.c_lflag &= ~ECHO;
-					tcsetattr(fp, TCSANOW, &term);
-					printf("Mailbox password (%s@%s): ", obj->data.mail->user, obj->data.mail->host);
-					scanf("%128s", obj->data.mail->pass);
-					printf("\n");
-					term.c_lflag |= ECHO;
-					tcsetattr(fp, TCSANOW, &term);
-				}
-				// now we check for optional args
-				tmp = strstr(arg, "-i ");
-	if (tmp) {
-		tmp += 3;
-		sscanf(tmp, "%f", &obj->data.mail->interval);
-	} else {
-		obj->data.mail->interval = 300;	// 5 minutes
-	}
-	tmp = strstr(arg, "-p ");
-	if (tmp) {
-		tmp += 3;
-		sscanf(tmp, "%u", &obj->data.mail->port);
-	} else {
-		obj->data.mail->port = 143;	// default imap port
-	}
-	tmp = strstr(arg, "-f ");
-	if (tmp) {
-		tmp += 3;
-		sscanf(tmp, "%s", obj->data.mail->folder);
-	} else {
-		strncpy(obj->data.mail->folder, "INBOX", 128);	// default imap inbox
-	}
-	tmp = strstr(arg, "-e ");
-	if (tmp) {
-		tmp += 3;
-		int len = 1024;
-		if (tmp[0] == '\'') {
-			len = strstr(tmp+1, "'") - tmp - 1;
-			if (len > 1024) {
-				len = 1024;
-			}
-		}
-		strncpy(obj->data.mail->command, tmp+1, len);
-	} else {
-		obj->data.mail->command[0] = '\0';
-	}
-	obj->data.mail->pos = -1;
+			obj->data.mail = parse_mail_args(IMAP, arg);
 			obj->global_mode = 0;
 		} else {
 			obj->global_mode = 1;
@@ -2597,54 +2561,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		OBJ(pop3_unseen, 0)
 		if (arg) {
 			// proccss
-				obj->data.mail = malloc(sizeof(struct mail_s));
-				char *tmp;
-				if (sscanf(arg, "%128s %128s %128s", obj->data.mail->host, obj->data.mail->user, obj->data.mail->pass) != 3) {
-					ERR("Scanning POP3 args failed");
-				}
-				// see if password needs prompting
-				if (obj->data.mail->pass[0] == '*' && obj->data.mail->pass[1] == '\0') {
-					int fp = fileno(stdin);
-					struct termios term;
-					tcgetattr(fp, &term);
-					term.c_lflag &= ~ECHO;
-					tcsetattr(fp, TCSANOW, &term);
-					printf("Mailbox password (%s@%s): ", obj->data.mail->user, obj->data.mail->host);
-					scanf("%128s", obj->data.mail->pass);
-					printf("\n");
-					term.c_lflag |= ECHO;
-					tcsetattr(fp, TCSANOW, &term);
-				}
-				// now we check for optional args
-				tmp = strstr(arg, "-i ");
-	if (tmp) {
-		tmp += 3;
-		sscanf(tmp, "%f", &obj->data.mail->interval);
-	} else {
-		obj->data.mail->interval = 300;	// 5 minutes
-	}
-	tmp = strstr(arg, "-p ");
-	if (tmp) {
-		tmp += 3;
-		sscanf(tmp, "%u", &obj->data.mail->port);
-	} else {
-		obj->data.mail->port = 110;	// default pop3 port
-	}
-	tmp = strstr(arg, "-e ");
-	if (tmp) {
-		tmp += 3;
-		int len = 1024;
-		if (tmp[0] == '\'') {
-			len = strstr(tmp+1, "'") - tmp - 1;
-			if (len > 1024) {
-				len = 1024;
-			}
-		}
-		strncpy(obj->data.mail->command, tmp+1, len);
-	} else {
-		obj->data.mail->command[0] = '\0';
-	}
-	obj->data.mail->pos = -1;
+			obj->data.mail = parse_mail_args(POP3, arg);
 			obj->global_mode = 0;
 		} else {
 			obj->global_mode = 1;
@@ -2653,54 +2570,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		OBJ(pop3_used, 0)
 		if (arg) {
 			// proccss
-				obj->data.mail = malloc(sizeof(struct mail_s));
-				char *tmp;
-				if (sscanf(arg, "%128s %128s %128s", obj->data.mail->host, obj->data.mail->user, obj->data.mail->pass) != 3) {
-					ERR("Scanning POP3 args failed");
-				}
-				// see if password needs prompting
-				if (obj->data.mail->pass[0] == '*' && obj->data.mail->pass[1] == '\0') {
-					int fp = fileno(stdin);
-					struct termios term;
-					tcgetattr(fp, &term);
-					term.c_lflag &= ~ECHO;
-					tcsetattr(fp, TCSANOW, &term);
-					printf("Mailbox password (%s@%s): ", obj->data.mail->user, obj->data.mail->host);
-					scanf("%128s", obj->data.mail->pass);
-					printf("\n");
-					term.c_lflag |= ECHO;
-					tcsetattr(fp, TCSANOW, &term);
-				}
-				// now we check for optional args
-				tmp = strstr(arg, "-i ");
-	if (tmp) {
-		tmp += 3;
-		sscanf(tmp, "%f", &obj->data.mail->interval);
-	} else {
-		obj->data.mail->interval = 300;	// 5 minutes
-	}
-	tmp = strstr(arg, "-p ");
-	if (tmp) {
-		tmp += 3;
-		sscanf(tmp, "%u", &obj->data.mail->port);
-	} else {
-		obj->data.mail->port = 110;	// default pop3 port
-	}
-	tmp = strstr(arg, "-e ");
-	if (tmp) {
-		tmp += 3;
-		int len = 1024;
-		if (tmp[0] == '\'') {
-			len = strstr(tmp+1, "'") - tmp - 1;
-			if (len > 1024) {
-				len = 1024;
-			}
-		}
-		strncpy(obj->data.mail->command, tmp+1, len);
-	} else {
-		obj->data.mail->command[0] = '\0';
-	}
-	obj->data.mail->pos = -1;
+			obj->data.mail = parse_mail_args(POP3, arg);
 			obj->global_mode = 0;
 		} else {
 			obj->global_mode = 1;
@@ -6065,115 +5935,14 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 #endif
 		CONF("imap") {
 			if (value) {
-				info.mail = malloc(sizeof(struct mail_s));
-				char *tmp;
-				if (sscanf(value, "%128s %128s %128s", info.mail->host, info.mail->user, info.mail->pass) != 3) {
-					ERR("Scanning IMAP args failed");
-				}
-				// see if password needs prompting
-				if (info.mail->pass[0] == '*' && info.mail->pass[1] == '\0') {
-					int fp = fileno(stdin);
-					struct termios term;
-					tcgetattr(fp, &term);
-					term.c_lflag &= ~ECHO;
-					tcsetattr(fp, TCSANOW, &term);
-					printf("Mailbox password (%s@%s): ", info.mail->user, info.mail->host);
-					scanf("%128s", info.mail->pass);
-					printf("\n");
-					term.c_lflag |= ECHO;
-					tcsetattr(fp, TCSANOW, &term);
-				}
-				// now we check for optional args
-				tmp = strstr(value, "-i ");
-	if (tmp) {
-		tmp += 3;
-		sscanf(tmp, "%f", &info.mail->interval);
-	} else {
-		info.mail->interval = 300;	// 5 minutes
-	}
-	tmp = strstr(value, "-p ");
-	if (tmp) {
-		tmp += 3;
-		sscanf(tmp, "%u", &info.mail->port);
-	} else {
-		info.mail->port = 143;	// default imap port
-	}
-	tmp = strstr(value, "-f ");
-	if (tmp) {
-		tmp += 3;
-		sscanf(tmp, "%s", info.mail->folder);
-	} else {
-		strncpy(info.mail->folder, "INBOX", 128);	// default imap inbox
-	}
-	tmp = strstr(value, "-e ");
-	if (tmp) {
-		tmp += 3;
-		int len = 1024;
-		if (tmp[0] == '\'') {
-			len = strstr(tmp+1, "'") - tmp - 1;
-			if (len > 1024) {
-				len = 1024;
-			}
-		}
-		strncpy(info.mail->command, tmp+1, len);
-	} else {
-		info.mail->command[0] = '\0';
-	}
-	info.mail->pos = -1;
+				info.mail = parse_mail_args(IMAP, value);
 			} else {
 				CONF_ERR;
 			}
 		}
 		CONF("pop3") {
 			if (value) {
-				info.mail = malloc(sizeof(struct mail_s));
-				char *tmp;
-				if (sscanf(value, "%128s %128s %128s", info.mail->host, info.mail->user, info.mail->pass) != 3) {
-					ERR("Scanning POP3 args failed");
-				}
-				// see if password needs prompting
-				if (info.mail->pass[0] == '*' && info.mail->pass[1] == '\0') {
-					int fp = fileno(stdin);
-					struct termios term;
-					tcgetattr(fp, &term);
-					term.c_lflag &= ~ECHO;
-					tcsetattr(fp, TCSANOW, &term);
-					printf("Mailbox password (%s@%s): ", info.mail->user, info.mail->host);
-					scanf("%128s", info.mail->pass);
-					printf("\n");
-					term.c_lflag |= ECHO;
-					tcsetattr(fp, TCSANOW, &term);
-				}
-				// now we check for optional args
-				tmp = strstr(value, "-i ");
-	if (tmp) {
-		tmp += 3;
-		sscanf(tmp, "%f", &info.mail->interval);
-	} else {
-		info.mail->interval = 300;	// 5 minutes
-	}
-	tmp = strstr(value, "-p ");
-	if (tmp) {
-		tmp += 3;
-		sscanf(tmp, "%u", &info.mail->port);
-	} else {
-		info.mail->port = 110;	// default pop3 port
-	}
-	tmp = strstr(value, "-e ");
-	if (tmp) {
-		tmp += 3;
-		int len = 1024;
-		if (tmp[0] == '\'') {
-			len = strstr(tmp+1, "'") - tmp - 1;
-			if (len > 1024) {
-				len = 1024;
-			}
-		}
-		strncpy(info.mail->command, tmp+1, len);
-	} else {
-		info.mail->command[0] = '\0';
-	}
-	info.mail->pos = -1;
+				info.mail = parse_mail_args(IMAP, value);
 			} else {
 				CONF_ERR;
 			}
