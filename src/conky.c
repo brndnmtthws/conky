@@ -1076,6 +1076,7 @@ int register_thread(struct thread_info_s *new_thread)
 struct mail_s* parse_mail_args(char type, const char *arg) {
 	struct mail_s *mail;
 	mail = malloc(sizeof(struct mail_s));
+	memset(mail, 0, sizeof(struct mail_s));
 	char *tmp;
 	if (sscanf(arg, "%128s %128s %128s", mail->host, mail->user, mail->pass) != 3) {
 		if (type == POP3) {
