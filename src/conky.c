@@ -29,6 +29,8 @@
 #endif /* X11 */
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <netinet/in.h>
+#include <netdb.h>
 
 #define CONFIG_FILE "$HOME/.conkyrc"
 #define MAIL_FILE "$MAIL"
