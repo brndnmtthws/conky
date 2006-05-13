@@ -33,7 +33,7 @@
 #include <netdb.h>
 
 
-#ifdef ICONV
+#ifdef HAVE_ICONV
 #include <iconv.h>
 #endif
 
@@ -258,7 +258,7 @@ static int maximum_width;
 
 
 
-#ifdef ICONV
+#ifdef HAVE_ICONV
 #define CODEPAGE_LENGTH 20
 long iconv_selected;
 long iconv_count;
@@ -1018,7 +1018,7 @@ enum text_object_type {
 	OBJ_tcp_portmon,
 #endif
 
-#ifdef ICONV
+#ifdef HAVE_ICONV
 	OBJ_iconv_start,
 	OBJ_iconv_stop,
 #endif
@@ -1731,7 +1731,7 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 						case OBJ_execigraph:
 						free(objs[i].data.s);
 						break;*/
-#ifdef ICONV
+#ifdef HAVE_ICONV
 			case OBJ_iconv_start:
 				free_iconv();
 				break;
@@ -2549,7 +2549,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 				obj->data.i2c.devtype);
 	END OBJ(time, 0) obj->data.s = strdup(arg ? arg : "%F %T");
 	END OBJ(utime, 0) obj->data.s = strdup(arg ? arg : "%F %T");
-#ifdef ICONV
+#ifdef HAVE_ICONV
 	END OBJ(iconv_start, 0)
 		if (iconv_converting) {
 			CRIT_ERR("You must stop your last iconv conversion before starting another");
@@ -3020,7 +3020,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 {
 	unsigned int i;
 
-#ifdef ICONV
+#ifdef HAVE_ICONV
 	char buff_in[P_MAX_SIZE] = {0};
 	iconv_converting = 0;
 #endif
@@ -4446,7 +4446,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			}
 #endif
 
-#ifdef ICONV
+#ifdef HAVE_ICONV
 			OBJ(iconv_start)
 			{
 				iconv_converting = 1;
@@ -4466,7 +4466,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 		{
 			unsigned int a = strlen(p);
 
-#ifdef ICONV
+#ifdef HAVE_ICONV
 			if (a > 0 && iconv_converting && iconv_selected > 0 && (iconv_cd[iconv_selected - 1] != (iconv_t)(-1))) {
 				int bytes;
 				size_t dummy1, dummy2;
