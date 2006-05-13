@@ -107,11 +107,11 @@ struct thread_info_s {
 };
 
 struct mail_s {			// for imap and pop3
-	unsigned int unseen;
-	unsigned int messages;
-	unsigned int used;
-	unsigned int quota;
-	unsigned int port;
+	unsigned long unseen;
+	unsigned long messages;
+	unsigned long used;
+	unsigned long quota;
+	unsigned long port;
 	float interval;
 	double last_update;
 	char host[128];
@@ -121,6 +121,7 @@ struct mail_s {			// for imap and pop3
 	char folder[128];
 	int pos;
 	struct thread_info_s thread_info;
+	char secure;
 } mail;
 
 /*struct cpu_stat {

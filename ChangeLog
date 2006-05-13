@@ -1,5 +1,8 @@
 # $Id$
 
+2006-05-13
+	* GNU Iconv support added, new objects $iconv_start and $iconv_stop
+
 2006-05-09
 	* Changed $font behavior so that the font persists past the next
 	newline.  It can be set back to the default with $font with no args.

@@ -1,5 +1,5 @@
 .\" -*- coding: us-ascii -*-
-.TH conky 1 2006-05-09  
+.TH conky 1 2006-05-13  
 .SH NAME
 conky \- A system monitor for X originally based on the torsmo code, but more kickass. It just keeps on given'er. Yeah.
 .SH SYNOPSIS
@@ -543,6 +543,14 @@ Displays first N lines of supplied text text file. If interval is not supplied, 
 .TP 
 \fBhr\fR \fB(height)\fR 
 Horizontal line, height is the height in pixels
+
+.TP 
+\fBiconv_start\fR \fBcodeset_from codeset_to\fR 
+Convert text from one codeset to another using GNU iconv. Needs to be stopped with iconv_stop.
+
+.TP 
+\fBiconv_stop\fR \fB\fR
+Stop iconv codeset conversion.
 
 .TP 
 \fBi2c\fR \fB(dev) type n\fR 

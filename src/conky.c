@@ -32,6 +32,11 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
+
+#ifdef ICONV
+#include <iconv.h>
+#endif
+
 #define CONFIG_FILE "$HOME/.conkyrc"
 #define MAIL_FILE "$MAIL"
 #define MAX_IF_BLOCK_DEPTH 5
@@ -250,6 +255,51 @@ static int fixed_size = 0, fixed_pos = 0;
 
 static int minimum_width, minimum_height;
 static int maximum_width;
+
+
+
+#ifdef ICONV
+#define CODEPAGE_LENGTH 20
+long iconv_selected;
+long iconv_count;
+char iconv_converting;
+static iconv_t **iconv_cd = 0;
+
+int register_iconv(iconv_t *new_iconv)
+{
+	if (iconv_cd) {
+		iconv_cd = realloc(iconv, sizeof(iconv_t *) * (iconv_count + 1));
+	} else {
+		iconv_cd = malloc(sizeof(iconv_t *));
+	}
+	if (!iconv_cd) {
+		CRIT_ERR("Out of memory");
+	}
+	iconv_cd[iconv_count] = malloc(sizeof(iconv_t));
+	if (!iconv_cd[iconv_count]) {
+		CRIT_ERR("Out of memory");
+	}
+	memcpy(iconv_cd[iconv_count], new_iconv, sizeof(iconv_t));
+	iconv_count++;
+	return iconv_count;
+}
+
+void free_iconv(void)
+{
+	if (iconv_cd) {
+		long i;
+		for (i = iconv_count; i < 0; i++) {
+			if (iconv_cd[i]) {
+				free(iconv_cd[i]);
+			}
+		}
+		free(iconv_cd);
+	}
+	iconv_cd = 0;
+		
+}
+
+#endif
 
 /* UTF-8 */
 int utf8_mode = 0;
@@ -967,6 +1017,11 @@ enum text_object_type {
 #ifdef TCP_PORT_MONITOR
 	OBJ_tcp_portmon,
 #endif
+
+#ifdef ICONV
+	OBJ_iconv_start,
+	OBJ_iconv_stop,
+#endif
 };
 
 struct text_object {
@@ -1109,7 +1164,7 @@ struct mail_s* parse_mail_args(char type, const char *arg) {
 	tmp = strstr(arg, "-p ");
 	if (tmp) {
 		tmp += 3;
-		sscanf(tmp, "%u", &mail->port);
+		sscanf(tmp, "%lu", &mail->port);
 	} else {
 		if (type == POP3) {
 			mail->port = 143;	// default pop3 port
@@ -1279,7 +1334,7 @@ void *imap_thread(struct mail_s* mail)
 			fail++;
 			break;
 		} else {
-			sscanf(reply, "MESSAGES %u UNSEEN %u",
+			sscanf(reply, "MESSAGES %lu UNSEEN %lu",
 			       &mail->messages,
 			       &mail->unseen);
 		}
@@ -1493,7 +1548,7 @@ void *pop3_thread(struct mail_s *mail)
 			fail++;
 			break;
 		} else {
-			sscanf(reply, "%u %u", &mail->unseen,
+			sscanf(reply, "%lu %lu", &mail->unseen,
 			       &mail->used);
 		}
 		strncpy(sendbuf, "QUIT\n", MAXDATASIZE);
@@ -1676,6 +1731,11 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 						case OBJ_execigraph:
 						free(objs[i].data.s);
 						break;*/
+#ifdef ICONV
+			case OBJ_iconv_start:
+				free_iconv();
+				break;
+#endif
 #ifdef MPD
 			case OBJ_mpd_title:
 				if (info.mpd.title) {
@@ -2489,6 +2549,33 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 				obj->data.i2c.devtype);
 	END OBJ(time, 0) obj->data.s = strdup(arg ? arg : "%F %T");
 	END OBJ(utime, 0) obj->data.s = strdup(arg ? arg : "%F %T");
+#ifdef ICONV
+	END OBJ(iconv_start, 0)
+		if (iconv_converting) {
+			CRIT_ERR("You must stop your last iconv conversion before starting another");
+		}
+		if (arg) {
+			char iconv_from[CODEPAGE_LENGTH];
+			char iconv_to[CODEPAGE_LENGTH];
+			if (sscanf(arg, "%s %s", iconv_from, iconv_to) != 2) {
+				CRIT_ERR("Invalid arguments for iconv_start");
+			} else {
+				iconv_t new_iconv;
+				new_iconv = iconv_open(iconv_to, iconv_from);
+				if (new_iconv == (iconv_t)(-1)) {
+					ERR("Can't convert from %s to %s.", iconv_from, iconv_to);
+				} else {
+					obj->a = register_iconv(&new_iconv);
+					iconv_converting = 1;
+				}
+			}
+		} else {
+			CRIT_ERR("Iconv requires arguments");
+		}
+	END OBJ(iconv_stop, 0)
+		iconv_converting = 0;
+	
+#endif
 	END OBJ(totaldown, INFO_NET)
 		if(arg) {
 			obj->data.net = get_net_stat(arg);
@@ -2913,6 +3000,7 @@ static void extract_variable_text(const char *p)
 	ml_cleanup();
 #endif /* MLDONKEY */
 
+
 	list = extract_variable_text_internal(p);
 	text_objects = list->text_objects;
 	text_object_count = list->text_object_count;
@@ -2931,6 +3019,12 @@ void parse_conky_vars(char * text, char * p, struct information *cur) {
 static void generate_text_internal(char *p, int p_max_size, struct text_object *objs, unsigned int object_count, struct information *cur)
 {
 	unsigned int i;
+
+#ifdef ICONV
+	char buff_in[P_MAX_SIZE] = {0};
+	iconv_converting = 0;
+#endif
+
 	for (i = 0; i < object_count; i++) {
 		struct text_object *obj = &objs[i];
 
@@ -3385,7 +3479,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							}
 							info.mail->pos = register_thread(&(info.mail->thread_info));
 						}
-						snprintf(p, p_max_size, "%u", info.mail->unseen);
+						snprintf(p, p_max_size, "%lu", info.mail->unseen);
 					} else { // this means we use obj
 						if (obj->data.mail->pos < 0) {
 							obj->data.mail->last_update = current_update_time;
@@ -3394,7 +3488,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							}
 							obj->data.mail->pos = register_thread(&(obj->data.mail->thread_info));
 						}
-						snprintf(p, p_max_size, "%u", obj->data.mail->unseen);
+						snprintf(p, p_max_size, "%lu", obj->data.mail->unseen);
 					}
 				}
 				OBJ(imap_messages) {
@@ -3406,7 +3500,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							}
 							info.mail->pos = register_thread(&(info.mail->thread_info));
 						}
-						snprintf(p, p_max_size, "%u", info.mail->messages);
+						snprintf(p, p_max_size, "%lu", info.mail->messages);
 					} else { // this means we use obj
 						if (obj->data.mail->pos < 0) {
 							obj->data.mail->last_update = current_update_time;
@@ -3415,7 +3509,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							}
 							obj->data.mail->pos = register_thread(&(obj->data.mail->thread_info));
 						}
-						snprintf(p, p_max_size, "%u", obj->data.mail->messages);
+						snprintf(p, p_max_size, "%lu", obj->data.mail->messages);
 					}
 				}
 				OBJ(pop3_unseen) {
@@ -3427,7 +3521,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							}
 							info.mail->pos = register_thread(&(info.mail->thread_info));
 						}
-						snprintf(p, p_max_size, "%u", info.mail->unseen);
+						snprintf(p, p_max_size, "%lu", info.mail->unseen);
 					} else { // this means we use obj
 						if (obj->data.mail->pos < 0) {
 							obj->data.mail->last_update = current_update_time;
@@ -3436,7 +3530,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							}
 							obj->data.mail->pos = register_thread(&(obj->data.mail->thread_info));
 						}
-						snprintf(p, p_max_size, "%u", obj->data.mail->unseen);
+						snprintf(p, p_max_size, "%lu", obj->data.mail->unseen);
 					}
 				}
 				OBJ(pop3_used) {
@@ -4352,11 +4446,50 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			}
 #endif
 
+#ifdef ICONV
+			OBJ(iconv_start)
+			{
+				iconv_converting = 1;
+				iconv_selected = obj->a;
+				
+			}
+			OBJ(iconv_stop)
+			{
+				iconv_converting = 0;
+				iconv_selected = 0;
+			}
+#endif
+
 			break;
 		}
 
 		{
 			unsigned int a = strlen(p);
+
+#ifdef ICONV
+			if (a > 0 && iconv_converting && iconv_selected > 0 && (iconv_cd[iconv_selected - 1] != (iconv_t)(-1))) {
+				int bytes;
+				size_t dummy1, dummy2;
+				char *ptr = buff_in;
+				char *outptr = p;
+
+				dummy1 = dummy2 = a;
+				
+				strncpy(buff_in, p, P_MAX_SIZE);
+
+				iconv(*iconv_cd[iconv_selected - 1], NULL, NULL, NULL, NULL);
+				while (dummy1 > 0) {
+					bytes = iconv(*iconv_cd[iconv_selected - 1], &ptr, &dummy1, &outptr, &dummy2);
+					if (bytes == -1) {
+						ERR("Iconv codeset conversion failed");
+						break;
+					}
+				}
+
+				/* It is nessecary when we are converting from multibyte to singlebyte codepage */
+				a = outptr - p;
+			}
+#endif
 			p += a;
 			p_max_size -= a;
 		}
@@ -4370,6 +4503,7 @@ static void generate_text()
 {
 	struct information *cur = &info;
 	char *p;
+
 
 	special_count = 0;
 
@@ -4396,6 +4530,7 @@ static void generate_text()
 			p++;
 		}
 	}
+
 
 	last_update_time = current_update_time;
 	total_updates++;
@@ -6334,6 +6469,8 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 
 	fclose(fp);
 #undef CONF_ERR
+
+
 }
 
 																							/* : means that character before that takes an argument */

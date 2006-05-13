@@ -7,6 +7,9 @@ adi <razorbladeworks at yahoo dot com>
   Outline stuff
   ACPI fan & adapter
 
+Alex <godexsoft at bk dot ru>
+  Iconv patch
+
 affinity <affy at users dot sourceforge dot net>
   X-Mozilla-Status support
 
@@ -47,8 +50,14 @@ Dennis Kaandorp <addict at quicknet dot nl>
 Elisey O. Savateev <bio3k at softboard dot ru>
   Fixed if_mounted on FreeBSD
 
+Egor(knick_)
+  Iconv patch
+
 Falk Feuersenger <lumberjack at users dot sourceforge dot net>
   I2C divisor from a file
+
+Fanat1k
+  Iconv patch
 
 Gwenhael LE MOINE <cycojesus at yahoo dot fr>
   Manual setting of the position

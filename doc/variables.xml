@@ -468,6 +468,26 @@
 
 <varlistentry>
 	<term>
+		<command><option>iconv_start</option></command>
+	<option>codeset_from codeset_to</option>
+	</term>
+	<listitem>
+		Convert text from one codeset to another using GNU iconv.  Needs to be stopped with iconv_stop.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>iconv_stop</option></command>
+	<option></option>
+	</term>
+	<listitem>
+		Stop iconv codeset conversion.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>i2c</option></command>
 	<option>(dev) type n</option>
 	</term>
