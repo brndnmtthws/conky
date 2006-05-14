@@ -104,6 +104,7 @@ struct fs_stat {
 
 struct thread_info_s {
 	pthread_t thread;
+	pthread_mutex_t mutex;
 };
 
 struct mail_s {			// for imap and pop3

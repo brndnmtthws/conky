@@ -1120,6 +1120,8 @@ int register_thread(struct thread_info_s *new_thread)
 	} else {
 		thread_list[thread_count] = new_thread;
 		thread_count++;
+		// may as well fix the mutex for them as well
+		pthread_mutex_init(&(new_thread->mutex), NULL);
 	}
 	return thread_count - 1;
 }
@@ -1334,9 +1336,11 @@ void *imap_thread(struct mail_s* mail)
 			fail++;
 			break;
 		} else {
+			pthread_mutex_lock(&(mail->thread_info.mutex));
 			sscanf(reply, "MESSAGES %lu UNSEEN %lu",
 			       &mail->messages,
 			       &mail->unseen);
+			pthread_mutex_unlock(&(mail->thread_info.mutex));
 		}
 		strncpy(sendbuf, "a3 logout\n", MAXDATASIZE);
 		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
@@ -1548,8 +1552,10 @@ void *pop3_thread(struct mail_s *mail)
 			fail++;
 			break;
 		} else {
+			pthread_mutex_lock(&(mail->thread_info.mutex));
 			sscanf(reply, "%lu %lu", &mail->unseen,
 			       &mail->used);
+			pthread_mutex_unlock(&(mail->thread_info.mutex));
 		}
 		strncpy(sendbuf, "QUIT\n", MAXDATASIZE);
 		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
@@ -1614,6 +1620,7 @@ void *threaded_exec(struct text_object *obj) { // pthreads are really beginning 
 		update_time = get_time();
 		char *p2 = obj->data.execi.buffer;
 		FILE *fp = popen(obj->data.execi.cmd,"r");
+		pthread_mutex_lock(&(obj->data.execi.thread_info.mutex));
 		int n2 = fread(p2, 1, TEXT_BUFFER_SIZE, fp);
 		(void) pclose(fp);
 		p2[n2] = '\0';
@@ -1626,6 +1633,7 @@ void *threaded_exec(struct text_object *obj) { // pthreads are really beginning 
 			}
 			p2++;
 		}
+		pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
 		obj->data.execi.last_update = update_time;
 		usleep(100); // prevent race condition
 		if (get_time() - obj->data.execi.last_update > obj->data.execi.interval) {
@@ -3467,7 +3475,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						}
 						obj->data.execi.pos = register_thread(&(obj->data.execi.thread_info));
 					}
+					pthread_mutex_lock(&(obj->data.execi.thread_info.mutex));
 					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
+					pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
 				}
 #endif /* HAVE_POPEN */
 				OBJ(imap_unseen) {
@@ -3479,7 +3489,10 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							}
 							info.mail->pos = register_thread(&(info.mail->thread_info));
 						}
+						// get a lock before reading
+						pthread_mutex_lock(&(info.mail->thread_info.mutex));
 						snprintf(p, p_max_size, "%lu", info.mail->unseen);
+						pthread_mutex_unlock(&(info.mail->thread_info.mutex));
 					} else { // this means we use obj
 						if (obj->data.mail->pos < 0) {
 							obj->data.mail->last_update = current_update_time;
@@ -3488,7 +3501,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							}
 							obj->data.mail->pos = register_thread(&(obj->data.mail->thread_info));
 						}
+						pthread_mutex_lock(&(info.mail->thread_info.mutex));
 						snprintf(p, p_max_size, "%lu", obj->data.mail->unseen);
+						pthread_mutex_unlock(&(info.mail->thread_info.mutex));
 					}
 				}
 				OBJ(imap_messages) {
@@ -3500,7 +3515,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							}
 							info.mail->pos = register_thread(&(info.mail->thread_info));
 						}
+						pthread_mutex_lock(&(info.mail->thread_info.mutex));
 						snprintf(p, p_max_size, "%lu", info.mail->messages);
+						pthread_mutex_unlock(&(info.mail->thread_info.mutex));
 					} else { // this means we use obj
 						if (obj->data.mail->pos < 0) {
 							obj->data.mail->last_update = current_update_time;
@@ -3509,7 +3526,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							}
 							obj->data.mail->pos = register_thread(&(obj->data.mail->thread_info));
 						}
+						pthread_mutex_lock(&(info.mail->thread_info.mutex));
 						snprintf(p, p_max_size, "%lu", obj->data.mail->messages);
+						pthread_mutex_unlock(&(info.mail->thread_info.mutex));
 					}
 				}
 				OBJ(pop3_unseen) {
@@ -3521,7 +3540,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							}
 							info.mail->pos = register_thread(&(info.mail->thread_info));
 						}
+						pthread_mutex_lock(&(info.mail->thread_info.mutex));
 						snprintf(p, p_max_size, "%lu", info.mail->unseen);
+						pthread_mutex_unlock(&(info.mail->thread_info.mutex));
 					} else { // this means we use obj
 						if (obj->data.mail->pos < 0) {
 							obj->data.mail->last_update = current_update_time;
@@ -3530,7 +3551,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							}
 							obj->data.mail->pos = register_thread(&(obj->data.mail->thread_info));
 						}
+						pthread_mutex_lock(&(info.mail->thread_info.mutex));
 						snprintf(p, p_max_size, "%lu", obj->data.mail->unseen);
+						pthread_mutex_unlock(&(info.mail->thread_info.mutex));
 					}
 				}
 				OBJ(pop3_used) {
@@ -3542,7 +3565,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							}
 							info.mail->pos = register_thread(&(info.mail->thread_info));
 						}
+						pthread_mutex_lock(&(info.mail->thread_info.mutex));
 						snprintf(p, p_max_size, "%.1f", info.mail->used/1024.0/1024.0);
+						pthread_mutex_unlock(&(info.mail->thread_info.mutex));
 					} else { // this means we use obj
 						if (obj->data.mail->pos < 0) {
 							obj->data.mail->last_update = current_update_time;
@@ -3551,7 +3576,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							}
 							obj->data.mail->pos = register_thread(&(obj->data.mail->thread_info));
 						}
+						pthread_mutex_lock(&(info.mail->thread_info.mutex));
 						snprintf(p, p_max_size, "%.1f", obj->data.mail->used/1024.0/1024.0);
+						pthread_mutex_unlock(&(info.mail->thread_info.mutex));
 					}
 				}
 			OBJ(fs_bar) {
