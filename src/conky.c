@@ -1169,7 +1169,7 @@ struct mail_s* parse_mail_args(char type, const char *arg) {
 		sscanf(tmp, "%lu", &mail->port);
 	} else {
 		if (type == POP3) {
-			mail->port = 143;	// default pop3 port
+			mail->port = 110;	// default pop3 port
 		} else if (type == IMAP) {
 			mail->port = 143;	// default imap port
 		}
@@ -1258,13 +1258,13 @@ void *imap_thread(struct mail_s* mail)
 				continue;
 			}
 		} else {
-			ERR("IMAP connection failed: timeout\n");
+			ERR("IMAP connection failed: timeout");
 			fail++;
 			continue;
 		}
 		recvbuf[numbytes] = '\0';
 		if (strstr(recvbuf, "* OK") != recvbuf) {
-			ERR("IMAP connection failed, probably not an IMAP server\n");
+			ERR("IMAP connection failed, probably not an IMAP server");
 			fail++;
 			continue;
 		}
@@ -1296,7 +1296,7 @@ void *imap_thread(struct mail_s* mail)
 		}
 		recvbuf[numbytes] = '\0';
 		if (strstr(recvbuf, "a1 OK") == NULL) {
-			ERR("IMAP server login failed: %s\n", recvbuf);
+			ERR("IMAP server login failed: %s", recvbuf);
 			fail++;
 			continue;
 		}
@@ -1326,7 +1326,7 @@ void *imap_thread(struct mail_s* mail)
 		}
 		recvbuf[numbytes] = '\0';
 		if (strstr(recvbuf, "a2 OK") == NULL) {
-			ERR("IMAP status failed: %s\n", recvbuf);
+			ERR("IMAP status failed: %s", recvbuf);
 			fail++;
 			continue;
 		}
@@ -1367,7 +1367,7 @@ void *imap_thread(struct mail_s* mail)
 		}
 		recvbuf[numbytes] = '\0';
 		if (strstr(recvbuf, "a3 OK") == NULL) {
-			ERR("IMAP logout failed: %s\n", recvbuf);
+			ERR("IMAP logout failed: %s", recvbuf);
 			fail++;
 			continue;
 		}
@@ -1463,7 +1463,7 @@ void *pop3_thread(struct mail_s *mail)
 		}
 		recvbuf[numbytes] = '\0';
 		if (strstr(recvbuf, "+OK ") != recvbuf) {
-			ERR("POP3 connection failed, probably not a POP3 server\n");
+			ERR("POP3 connection failed, probably not a POP3 server");
 			fail++;
 			continue;
 		}
@@ -1492,7 +1492,7 @@ void *pop3_thread(struct mail_s *mail)
 		}
 		recvbuf[numbytes] = '\0';
 		if (strstr(recvbuf, "+OK ") == NULL) {
-			ERR("POP3 server login failed: %s\n", recvbuf);
+			ERR("POP3 server login failed: %s", recvbuf);
 			fail++;
 			continue;
 		}
@@ -1521,7 +1521,7 @@ void *pop3_thread(struct mail_s *mail)
 		}
 		recvbuf[numbytes] = '\0';
 		if (strstr(recvbuf, "+OK ") == NULL) {
-			ERR("POP3 server login failed: %s\n", recvbuf);
+			ERR("POP3 server login failed: %s", recvbuf);
 			fail++;
 			continue;
 		}
@@ -1547,7 +1547,7 @@ void *pop3_thread(struct mail_s *mail)
 		}
 		recvbuf[numbytes] = '\0';
 		if (strstr(recvbuf, "+OK ") == NULL) {
-			ERR("POP3 status failed: %s\n", recvbuf);
+			ERR("POP3 status failed: %s", recvbuf);
 			fail++;
 			continue;
 		}
@@ -1585,7 +1585,7 @@ void *pop3_thread(struct mail_s *mail)
 		}
 		recvbuf[numbytes] = '\0';
 		if (strstr(recvbuf, "+OK") == NULL) {
-			ERR("POP3 logout failed: %s\n", recvbuf);
+			ERR("POP3 logout failed: %s", recvbuf);
 			fail++;
 			continue;
 		}
@@ -6114,7 +6114,7 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 		}
 		CONF("pop3") {
 			if (value) {
-				info.mail = parse_mail_args(IMAP, value);
+				info.mail = parse_mail_args(POP3, value);
 			} else {
 				CONF_ERR;
 			}
