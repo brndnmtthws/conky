@@ -1214,6 +1214,7 @@ void *imap_thread(struct mail_s* mail)
 	char *reply;
 	int fail = 0;
 	unsigned int old_unseen = UINT_MAX;
+	unsigned int old_messages = UINT_MAX;
 	struct hostent *he;
 	struct sockaddr_in their_addr;	// connector's address information
 	if ((he = gethostbyname(mail->host)) == NULL) {	// get the host info 
@@ -1374,13 +1375,14 @@ void *imap_thread(struct mail_s* mail)
 			continue;
 		}
 		close(sockfd);
-		if (strlen(mail->command) > 1 && mail->unseen > old_unseen) {	// new mail goodie
+		if (strlen(mail->command) > 1 && (mail->unseen > old_unseen || (mail->messages > old_messages && mail->unseen > 0))) {	// new mail goodie
 			if (system(mail->command) == -1) {
 				perror("system()");
 			}
 		}
 		fail = 0;
 		old_unseen = mail->unseen;
+		old_messages = mail->messages;
 		mail->last_update = update_time;
 		usleep(100);	// prevent race condition
 		if (get_time() - mail->last_update >
