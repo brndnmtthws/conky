@@ -355,6 +355,7 @@ static char original_text[] =
     "${tail /var/log/Xorg.0.log 3}";
 
 static char *text = original_text;
+long text_lines;
 
 static int total_updates;
 
@@ -1027,6 +1028,7 @@ enum text_object_type {
 struct text_object {
 	int type;
 	int a, b;
+	long line;
 	unsigned int c, d, e;
 	float f;
 	char global_mode;
@@ -1954,10 +1956,11 @@ void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
 
 
 /* construct_text_object() creates a new text_object */
-static struct text_object *construct_text_object(const char *s, const char *arg, unsigned int object_count, struct text_object *text_objects)
+static struct text_object *construct_text_object(const char *s, const char *arg, unsigned int object_count, struct text_object *text_objects, long line)
 {
 	//struct text_object *obj = new_text_object();
 	struct text_object *obj = new_text_object_internal();
+	obj->line = line;
 
 #define OBJ(a, n) if (strcmp(s, #a) == 0) { obj->type = OBJ_##a; need_mask |= (1 << n); {
 #define END ; } } else
@@ -2886,7 +2889,12 @@ static struct text_object_list *extract_variable_text_internal(const char *p)
 	memset(retval, 0, sizeof(struct text_object_list));
 	retval->text_object_count = 0;
 
+	long line = text_lines;
+
 	while (*p) {
+		if (*p == '\n') {
+			line++;
+		}
 		if (*p == '$') {
 			*(char *) p = '\0';
 			obj = create_plain_text(s);
@@ -2958,7 +2966,7 @@ static struct text_object_list *extract_variable_text_internal(const char *p)
 					}
 
 					// create new object
-					obj = construct_text_object(buf, arg, retval->text_object_count, retval->text_objects);
+					obj = construct_text_object(buf, arg, retval->text_object_count, retval->text_objects, line);
 					if(obj != NULL) {
 						// allocate memory for the object
 						retval->text_objects = realloc(retval->text_objects, 
@@ -3511,6 +3519,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						pthread_mutex_lock(&(obj->data.mail->thread_info.mutex));
 						snprintf(p, p_max_size, "%lu", obj->data.mail->unseen);
 						pthread_mutex_unlock(&(obj->data.mail->thread_info.mutex));
+					} else if (!obj->a) { // something is wrong, warn once then stop
+						ERR("Theres a problem with your imap_unseen settings.  Check that the global IMAP settings are defined properly (line %li).", obj->line);
+							obj->a++;
 					}
 				}
 				OBJ(imap_messages) {
@@ -3536,6 +3547,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						pthread_mutex_lock(&(obj->data.mail->thread_info.mutex));
 						snprintf(p, p_max_size, "%lu", obj->data.mail->messages);
 						pthread_mutex_unlock(&(obj->data.mail->thread_info.mutex));
+					} else if (!obj->a) { // something is wrong, warn once then stop
+						ERR("Theres a problem with your imap_messages settings.  Check that the global IMAP settings are defined properly (line %li).", obj->line);
+							obj->a++;
 					}
 				}
 				OBJ(pop3_unseen) {
@@ -3561,6 +3575,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						pthread_mutex_lock(&(obj->data.mail->thread_info.mutex));
 						snprintf(p, p_max_size, "%lu", obj->data.mail->unseen);
 						pthread_mutex_unlock(&(obj->data.mail->thread_info.mutex));
+					} else if (!obj->a) { // something is wrong, warn once then stop
+						ERR("Theres a problem with your pop3_unseen settings.  Check that the global POP3 settings are defined properly (line %li).", obj->line);
+							obj->a++;
 					}
 				}
 				OBJ(pop3_used) {
@@ -3586,6 +3603,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						pthread_mutex_lock(&(obj->data.mail->thread_info.mutex));
 						snprintf(p, p_max_size, "%.1f", obj->data.mail->used/1024.0/1024.0);
 						pthread_mutex_unlock(&(obj->data.mail->thread_info.mutex));
+					} else if (!obj->a) { // something is wrong, warn once then stop
+						ERR("Theres a problem with your pop3_used settings.  Check that the global POP3 settings are defined properly (line %li).", obj->line);
+							obj->a++;
 					}
 				}
 			OBJ(fs_bar) {
@@ -6456,6 +6476,7 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 					break;
 			}
 			fclose(fp);
+			text_lines = line + 1;
 			return;
 		}
 #ifdef TCP_PORT_MONITOR
