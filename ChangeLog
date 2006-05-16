@@ -1,5 +1,8 @@
 # $Id$
 
+2006-05-15
+	* Conky 1.4.2 released
+
 2006-05-13
 	* GNU Iconv support added, new objects $iconv_start and $iconv_stop
 	* Added some safety to the threading code
