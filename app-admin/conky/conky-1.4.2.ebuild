@@ -1,6 +1,6 @@
 # Copyright 1999-2006 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/app-admin/conky/conky-1.4.1.ebuild,v 1.3 2006/04/12 16:43:24 tcort Exp $
+# $Header$
 
 inherit eutils
 
