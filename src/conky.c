@@ -1224,6 +1224,7 @@ void *imap_thread(struct mail_s* mail)
 	while (threads_runnable == run_code && fail < 5) {
 		if (fail > 0) {
 			ERR("Trying IMAP connection again for %s@%s (try %i/5)", mail->user, mail->host, fail + 1);
+			sleep((int)mail->interval);
 		}
 		update_time = get_time();
 		if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
@@ -1424,6 +1425,7 @@ void *pop3_thread(struct mail_s *mail)
 	while (threads_runnable == run_code && fail < 5) {
 		if (fail > 0) {
 			ERR("Trying POP3 connection again for %s@%s (try %i/5)", mail->user, mail->host, fail + 1);
+			sleep((int)mail->interval);
 		}
 		update_time = get_time();
 		if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
