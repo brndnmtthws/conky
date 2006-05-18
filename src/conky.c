@@ -789,21 +789,21 @@ static void human_readable(long long a, char *buf, int size)
 {
 	// Strange conditional due to possible overflows
 	if(a / 1024 / 1024 / 1024.0 > 1024.0){
-		snprintf(buf, size, "%.2fT", (a / 1024 / 1024 / 1024) / 1024.0);
+		snprintf(buf, size, "%.2fTiB", (a / 1024 / 1024 / 1024) / 1024.0);
 	}
 	else if (a >= 1024 * 1024 * 1024) {
-		snprintf(buf, size, "%.2fG", (a / 1024 / 1024) / 1024.0);
+		snprintf(buf, size, "%.2fGiB", (a / 1024 / 1024) / 1024.0);
 	}
 	else if (a >= 1024 * 1024) {
 		double m = (a / 1024) / 1024.0;
 		if (m >= 100.0)
-			snprintf(buf, size, "%.0fM", m);
+			snprintf(buf, size, "%.0fMiB", m);
 		else
-			snprintf(buf, size, "%.1fM", m);
+			snprintf(buf, size, "%.1fMiB", m);
 	} else if (a >= 1024)
-		snprintf(buf, size, "%Ldk", a / (long long) 1024);
+		snprintf(buf, size, "%LdKiB", a / (long long) 1024);
 	else
-		snprintf(buf, size, "%Ld", a);
+		snprintf(buf, size, "%LdB", a);
 }
 
 /* text handling */
@@ -3256,19 +3256,19 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						} else if (diskio_value > 0) {
 							snprintf(p, p_max_size, "%dKiB", diskio_value);
 						} else {
-							snprintf(p, p_max_size, "%d", diskio_value);
+							snprintf(p, p_max_size, "%dB", diskio_value);
 						}
 					} else {
 						if (diskio_value > 1024*1024) {
-							snprintf(p, 6, "%.1fG   ",
+							snprintf(p, 6, "%.1fGiB   ",
 									(double)diskio_value/1024/1024);
 						} else if (diskio_value > 1024) {
-							snprintf(p, 6, "%.1fM   ",
+							snprintf(p, 6, "%.1fMiB   ",
 									(double)diskio_value/1024);
 						} else if (diskio_value > 0) {
-							snprintf(p, 6, "%dK ", diskio_value);
+							snprintf(p, 6, "%dKiB ", diskio_value);
 						} else {
-							snprintf(p, 6, "%d     ", diskio_value);
+							snprintf(p, 6, "%dB     ", diskio_value);
 						}
 					}
 				}
