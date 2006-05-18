@@ -5199,9 +5199,9 @@ static void draw_line(char *s)
 	if (specials[special_index].last_colour != specials[special_index].first_colour) {
 		tmpcolour = specials[special_index].last_colour;
 		gradient_size = gradient_max(specials[special_index].last_colour, specials[special_index].first_colour);
-		gradient_factor = (float)gradient_size / (w - 3);
+		gradient_factor = (float)gradient_size / (w);
 	}
-	for (i = w - 3; i > 0; i--) {
+	for (i = w; i > -1; i--) {
 		if (specials[special_index].last_colour != specials[special_index].first_colour) {
 			XSetForeground(display, window.gc, tmpcolour);
 			gradient_update += gradient_factor;
@@ -5210,10 +5210,10 @@ static void draw_line(char *s)
 				gradient_update--;
 			}
 		}
-		if ((w - 3 - i) / ((float) (w - 3) / (specials[special_index].graph_width)) > j) {
+		if ((w - i) / ((float) (w) / (specials[special_index].graph_width)) > j) {
 			j++;
 		}
-						XDrawLine(display,  window.drawable, window.gc, cur_x + i + 2, by + h, cur_x + i + 2, by + h - specials[special_index].graph[j] * (h - 1) / specials[special_index].graph_scale);	/* this is mugfugly, but it works */
+						XDrawLine(display,  window.drawable, window.gc, cur_x + i - 1, by + h, cur_x + i - 1, by + h - specials[special_index].graph[j] * (h - 1) / specials[special_index].graph_scale);	/* this is mugfugly, but it works */
 					}
 					if (specials[special_index].
 					    height > cur_y_add

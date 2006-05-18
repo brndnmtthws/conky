@@ -1,5 +1,10 @@
 # $Id$
 
+2006-05-17
+	* Fixed issue with graphs not reaching all the way to the borders
+	(sf.net bug 1470480)
+	* Cleaned up units
+
 2006-05-15
 	* Conky 1.4.2 released
 
