@@ -3786,7 +3786,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 
 			/* memory stuff */
 			OBJ(mem) {
-				human_readable(cur->mem * 1024, p, 6);
+				human_readable(cur->mem * 1024, p, 255);
 			}
 			OBJ(memmax) {
 				human_readable(cur->memmax * 1024, p, 255);
