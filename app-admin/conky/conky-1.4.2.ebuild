@@ -11,7 +11,7 @@ SRC_URI="mirror://sourceforge/conky/${P}.tar.bz2"
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~ppc ~ppc64 ~sparc ~x86"
-IUSE="truetype X ipv6 bmpx bmp xmms infopipe audacious"
+IUSE="truetype X ipv6 bmpx bmp xmms xmms2 infopipe audacious"
 
 DEPEND_COMMON="
 	virtual/libc
@@ -33,6 +33,7 @@ DEPEND_COMMON="
 		audacious? ( media-sound/audacious )
 		infopipe? ( media-plugins/xmms-infopipe )
 		xmms? ( media-sound/xmms )
+		xmms2? ( medis-sound/xmms2 )
 	)"
 
 RDEPEND="${DEPEND_COMMON}"
@@ -72,6 +73,7 @@ src_compile() {
 		$(use_enable bmpx) \
 		$(use_enable bmp) \
 		$(use_enable xmms) \
+		$(use_enable xmms2) \
 		$(use_enable audacious) \
 		$(use_enable infopipe) \
 		$(use_enable !ipv6 portmon) || die "econf failed"

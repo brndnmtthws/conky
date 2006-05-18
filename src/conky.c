@@ -3248,13 +3248,13 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				OBJ(diskio) {
 					if (!use_spacer) {
 						if (diskio_value > 1024*1024) {
-							snprintf(p, p_max_size, "%.1fG",
+							snprintf(p, p_max_size, "%.1fGiB",
 									(double)diskio_value/1024/1024);
 						} else if (diskio_value > 1024) {
-							snprintf(p, p_max_size, "%.1fM",
+							snprintf(p, p_max_size, "%.1fMiB",
 									(double)diskio_value/1024);
 						} else if (diskio_value > 0) {
-							snprintf(p, p_max_size, "%dK", diskio_value);
+							snprintf(p, p_max_size, "%dKiB", diskio_value);
 						} else {
 							snprintf(p, p_max_size, "%d", diskio_value);
 						}
