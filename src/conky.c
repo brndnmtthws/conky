@@ -628,9 +628,9 @@ static void new_graph(char *buf, int w, int h, unsigned int first_colour, unsign
 	s->width = w;
 	if (s->graph == NULL) {
 		if (s->width > 0 && s->width < MAX_GRAPH_DEPTH) {
-			s->graph_width = s->width - 3;	// subtract 3 for the box
+			s->graph_width = s->width/* - 2*/;	// subtract 2 for the box
 		} else {
-			s->graph_width = MAX_GRAPH_DEPTH - 3;
+			s->graph_width = MAX_GRAPH_DEPTH - 2;
 		}
 		s->graph = malloc(s->graph_width * sizeof(double));
 		memset(s->graph, 0, s->graph_width * sizeof(double));
@@ -645,7 +645,7 @@ static void new_graph(char *buf, int w, int h, unsigned int first_colour, unsign
 		s->scaled = 1;
 	}
 	/*if (s->width) {
-		s->graph_width = s->width - 3;	// subtract 3 for rectangle around
+		s->graph_width = s->width - 2;	// subtract 2 for rectangle around
 	}*/
 	if (s->scaled) {
 		s->graph_scale = 1;
@@ -5199,9 +5199,9 @@ static void draw_line(char *s)
 	if (specials[special_index].last_colour != specials[special_index].first_colour) {
 		tmpcolour = specials[special_index].last_colour;
 		gradient_size = gradient_max(specials[special_index].last_colour, specials[special_index].first_colour);
-		gradient_factor = (float)gradient_size / (w);
+		gradient_factor = (float)gradient_size / (w - 2);
 	}
-	for (i = w; i > -1; i--) {
+	for (i = w - 2; i > -1; i--) {
 		if (specials[special_index].last_colour != specials[special_index].first_colour) {
 			XSetForeground(display, window.gc, tmpcolour);
 			gradient_update += gradient_factor;
@@ -5210,10 +5210,10 @@ static void draw_line(char *s)
 				gradient_update--;
 			}
 		}
-		if ((w - i) / ((float) (w) / (specials[special_index].graph_width)) > j) {
+		if ((w - i) / ((float) (w - 2) / (specials[special_index].graph_width)) > j && j < MAX_GRAPH_DEPTH - 3) {
 			j++;
 		}
-						XDrawLine(display,  window.drawable, window.gc, cur_x + i - 1, by + h, cur_x + i - 1, by + h - specials[special_index].graph[j] * (h - 1) / specials[special_index].graph_scale);	/* this is mugfugly, but it works */
+						XDrawLine(display,  window.drawable, window.gc, cur_x + i + 1, by + h, cur_x + i + 1, by + h - specials[special_index].graph[j] * (h - 1) / specials[special_index].graph_scale);	/* this is mugfugly, but it works */
 					}
 					if (specials[special_index].
 					    height > cur_y_add
