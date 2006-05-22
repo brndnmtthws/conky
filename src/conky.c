@@ -1980,10 +1980,6 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	END OBJ(acpiacadapter, 0)
 #if defined(__linux__)
 	    END OBJ(freq, 0)
-/* gives an 'implicit declaration' warning when compiled 
-   not nice but as of now it shouldn't be a problem: only 
-   linux.c and freebsd.c have get_freq functions and both platforms
-   have their respective get_cpu_count() functions (ptarjan) */
 	    get_cpu_count();
 	if (!arg
 	    || !isdigit(arg[0])
@@ -1992,17 +1988,13 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	    || (unsigned int)atoi(&arg[0])>info.cpu_count)
 	{
 	    obj->data.cpu_index=1;
-	    ERR("freq: Invalid CPU number or you don't have that many CPUs! Displaying the clock for CPU 1.");
+//	    ERR("freq: Invalid CPU number or you don't have that many CPUs! Displaying the clock for CPU 1.");
 	}
 	else 
 	{
 	    obj->data.cpu_index=atoi(&arg[0]);
 	}
 	END OBJ(freq_g, 0)
-/* gives an 'implicit declaration' warning when compiled 
-   not nice but as of now it shouldn't be a problem: only 
-   linux.c and freebsd.c have get_freq functions and both platforms
-   have their respective get_cpu_count() functions (ptarjan) */
 	    get_cpu_count();
 	if (!arg
 	    || !isdigit(arg[0])
@@ -2011,7 +2003,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	    || (unsigned int)atoi(&arg[0])>info.cpu_count)
 	{
 	    obj->data.cpu_index=1;
-	    ERR("freq_g: Invalid CPU number or you don't have that many CPUs! Displaying the clock for CPU 1.");
+//	    ERR("freq_g: Invalid CPU number or you don't have that many CPUs! Displaying the clock for CPU 1.");
 	}
 	else 
 	{
