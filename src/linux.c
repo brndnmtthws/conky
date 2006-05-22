@@ -364,6 +364,9 @@ void determine_longstat(char * buf) {
 
 void get_cpu_count()
 {
+	if (info.cpu_usage) {
+		return;
+	}
 	char buf[256];
 	if (stat_fp == NULL)
 		stat_fp = open_file("/proc/stat", &rep);
@@ -386,7 +389,6 @@ void get_cpu_count()
 		}
 	}
 	info.cpu_usage = malloc((info.cpu_count + 1) * sizeof(float));
-
 }
 
 #define TMPL_LONGSTAT "%*s %llu %llu %llu %llu %llu %llu %llu %llu"
