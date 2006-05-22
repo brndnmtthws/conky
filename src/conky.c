@@ -5797,6 +5797,10 @@ void reload_config(void)
 {
 	//lock_all_threads();
 	threads_runnable++;
+	if (info.cpu_usage) {
+		free(info.cpu_usage);
+		info.cpu_usage = NULL;
+	}
 #if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
         if (info.xmms.thread) {
 		if (destroy_xmms_thread()!=0)
@@ -5840,6 +5844,10 @@ void clean_up(void)
 {
 	//lock_all_threads();
 	threads_runnable++;
+	if (info.cpu_usage) {
+		free(info.cpu_usage);
+		info.cpu_usage = NULL;
+	}
 #ifdef X11
 #ifdef XDBE
 	if (use_xdbe) {
