@@ -359,6 +359,8 @@ dnl
 AM_ICONV
 if test "$am_cv_func_iconv" != yes; then
 	AC_MSG_WARN([Could not find libiconv])
+else
+	LIBS="$LIBS $LIBICONV"
 fi
 
 
