@@ -834,25 +834,37 @@ void get_freq_dynamic( char * p_client_buffer, size_t client_buffer_size, char *
 	snprintf( p_client_buffer, client_buffer_size, p_format, (float)((cycles[1] - cycles[0]) / microseconds) / divisor );
 	return;
 #else
-	get_freq( p_client_buffer, client_buffer_size, p_format, divisor );
+/* FIXME: hardwired: get freq for first cpu!
+   this whole function needs to be rethought and redone for
+   multi-cpu/multi-core/multi-threaded environments and 
+   arbitrary combinations thereof 
+*/
+	get_freq( p_client_buffer, client_buffer_size, p_format, divisor, 1 );
 	return;
 #endif
 }
 
-#define CPUFREQ_CURRENT "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq"
+
+#define CPUFREQ_PREFIX "/sys/devices/system/cpu"
+#define CPUFREQ_POSTFIX "cpufreq/scaling_cur_freq"
 
 /* return system frequency in MHz (use divisor=1) or GHz (use divisor=1000) */
-void get_freq( char * p_client_buffer, size_t client_buffer_size, char * p_format, int divisor )
+void get_freq( char * p_client_buffer, size_t client_buffer_size, char * p_format, int divisor, unsigned int cpu )
 {
 	FILE *f;
 	char frequency[32];
 	char s[256];
 	double freq = 0;
+	char current_freq_file[128];
+	
+	cpu--;
+	snprintf(current_freq_file, 127, "%s/cpu%d/%s",
+		 CPUFREQ_PREFIX, cpu, CPUFREQ_POSTFIX);
 
 	if ( !p_client_buffer || client_buffer_size <= 0 || !p_format || divisor <= 0 )
 		return;
 
-	f = fopen(CPUFREQ_CURRENT, "r");
+	f = fopen(current_freq_file, "r");
 	if (f) {
 		/* if there's a cpufreq /sys node, read the current frequency from this node;
 		 * divide by 1000 to get Mhz. */
@@ -865,18 +877,20 @@ void get_freq( char * p_client_buffer, size_t client_buffer_size, char * p_forma
 		return;
 	}
 	
+	cpu++;
 	f = fopen("/proc/cpuinfo", "r");		//open the CPU information file
 	if (!f)
 	    return;
 
 	while (fgets(s, sizeof(s), f) != NULL){		//read the file
+
 #if defined(__i386) || defined(__x86_64)
-		if (strncmp(s, "cpu MHz", 7) == 0) {	//and search for the cpu mhz
+		if (strncmp(s, "cpu MHz", 7) == 0 && cpu == 0) {	//and search for the cpu mhz
 #else
 #if defined(__alpha)
-		if (strncmp(s, "cycle frequency [Hz]", 20) == 0) {		// different on alpha
+		if (strncmp(s, "cycle frequency [Hz]", 20) == 0 && cpu == 0) {		// different on alpha
 #else
-		if (strncmp(s, "clock", 5) == 0) {	// this is different on ppc for some reason
+		if (strncmp(s, "clock", 5) == 0 && cpu == 0) {	// this is different on ppc for some reason
 #endif // defined(__alpha)
 #endif // defined(__i386) || defined(__x86_64)
 
@@ -890,6 +904,11 @@ void get_freq( char * p_client_buffer, size_t client_buffer_size, char * p_forma
 #endif
 		break;
 		}
+		if (strncmp(s, "processor", 9) == 0) {
+		    cpu--; 
+		    continue;
+		}
+		
 	}
 	
 	fclose(f);

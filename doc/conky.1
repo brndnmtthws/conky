@@ -501,12 +501,16 @@ Same as execigraph, but takes an interval arg graphs values
 Specify a different font. This new font will apply to the current line and everything following. You can use a $font with no arguments to change back to the default font (much like with $color)
 
 .TP 
-\fBfreq\fR 
-Returns CPU frequency in MHz
+\fBfreq\fR \fB(n)\fR 
+Returns CPU #n's frequency in MHz. CPUs are
+counted from 1. If omitted, the parameter
+defaults to 1. 
 
 .TP 
-\fBfreq_g\fR 
-Returns CPU frequency in GHz
+\fBfreq_g\fR \fB(n)\fR 
+Returns CPU #n's frequency in GHz. CPUs are
+counted from 1. If omitted, the parameter
+defaults to 1.
 
 .TP 
 \fBfreq_dyn\fR 
@@ -871,7 +875,7 @@ Total download, overflows at 4 GB on Linux with 32-bit arch and there doesn't se
 
 .TP 
 \fBtop\fR \fBtype, num\fR 
-This takes arguments in the form:top (name) (number) Basically, processes are ranked from highest to lowest in terms of cpu usage, which is what (num) represents. The types are: "name", "pid", "cpu", and mem". There can be a max of 10 processes listed.
+This takes arguments in the form:top (name) (number) Basically, processes are ranked from highest to lowest in terms of cpu usage, which is what (num) represents. The types are: "name", "pid", "cpu", and "mem". There can be a max of 10 processes listed.
 
 .TP 
 \fBtop_mem\fR \fBtype, num\fR 

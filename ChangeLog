@@ -1,5 +1,9 @@
 # $Id$
 
+2006-05-21
+	* SMP support for $freq and $freq_g (thanks to Peter Tarjan for the
+	patch)
+
 2006-05-17
 	* Fixed issue with graphs not reaching all the way to the borders
 	(sf.net bug 1470480)

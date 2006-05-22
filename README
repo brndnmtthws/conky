@@ -551,10 +551,14 @@ VARIABLES
 	      $color)
 
 
-       freq   Returns CPU frequency in MHz
+       freq (n)
+	      Returns CPU #n's frequency in MHz. CPUs are counted from	1.  If
+	      omitted, the parameter defaults to 1.
 
 
-       freq_g Returns CPU frequency in GHz
+       freq_g (n)
+	      Returns  CPU  #n's frequency in GHz. CPUs are counted from 1. If
+	      omitted, the parameter defaults to 1.
 
 
        freq_dyn
@@ -996,7 +1000,7 @@ VARIABLES
 	      This  takes arguments in the form:top (name) (number) Basically,
 	      processes are ranked from highest to  lowest  in	terms  of  cpu
 	      usage,  which  is	 what (num) represents. The types are: "name",
-	      "pid", "cpu", and mem". There can	 be  a	max  of	 10  processes
+	      "pid", "cpu", and "mem". There can be  a	max  of	 10  processes
 	      listed.
 
 

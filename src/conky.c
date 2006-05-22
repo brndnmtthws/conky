@@ -1978,8 +1978,49 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		OBJ(acpitemp, 0) obj->data.i = open_acpi_temperature(arg);
 	END OBJ(acpitempf, 0) obj->data.i = open_acpi_temperature(arg);
 	END OBJ(acpiacadapter, 0)
-		END OBJ(freq, 0);
+#if defined(__linux__)
+	    END OBJ(freq, 0)
+/* gives an 'implicit declaration' warning when compiled 
+   not nice but as of now it shouldn't be a problem: only 
+   linux.c and freebsd.c have get_freq functions and both platforms
+   have their respective get_cpu_count() functions (ptarjan) */
+	    get_cpu_count();
+	if (!arg
+	    || !isdigit(arg[0])
+	    || strlen(arg) >=2
+	    || atoi(&arg[0])==0
+	    || (unsigned int)atoi(&arg[0])>info.cpu_count)
+	{
+	    obj->data.cpu_index=1;
+	    ERR("freq: Invalid CPU number or you don't have that many CPUs! Displaying the clock for CPU 1.");
+	}
+	else 
+	{
+	    obj->data.cpu_index=atoi(&arg[0]);
+	}
+	END OBJ(freq_g, 0)
+/* gives an 'implicit declaration' warning when compiled 
+   not nice but as of now it shouldn't be a problem: only 
+   linux.c and freebsd.c have get_freq functions and both platforms
+   have their respective get_cpu_count() functions (ptarjan) */
+	    get_cpu_count();
+	if (!arg
+	    || !isdigit(arg[0])
+	    || strlen(arg) >=2
+	    || atoi(&arg[0])==0
+	    || (unsigned int)atoi(&arg[0])>info.cpu_count)
+	{
+	    obj->data.cpu_index=1;
+	    ERR("freq_g: Invalid CPU number or you don't have that many CPUs! Displaying the clock for CPU 1.");
+	}
+	else 
+	{
+	    obj->data.cpu_index=atoi(&arg[0]);
+	}
+#else 
+	END OBJ(freq, 0);
 	END OBJ(freq_g, 0);
+#endif /* __linux__ */
 	END OBJ(freq_dyn, 0);
 	END OBJ(freq_dyn_g, 0);
 	END OBJ(acpifan, 0);
@@ -3090,10 +3131,10 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 										       i)+ 40) * 9.0 / 5 - 40));
 				}
 				OBJ(freq) {
-					get_freq(p, p_max_size, "%.0f", 1); /* pk */
+					get_freq(p, p_max_size, "%.0f", 1, obj->data.cpu_index); /* pk */
 				}
 				OBJ(freq_g) {
-					get_freq(p, p_max_size, "%'.2f", 1000); /* pk */
+					get_freq(p, p_max_size, "%'.2f", 1000, obj->data.cpu_index); /* pk */
 				}
 				OBJ(freq_dyn) {
 					if (use_spacer) {
