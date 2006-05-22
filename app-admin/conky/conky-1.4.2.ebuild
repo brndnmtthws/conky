@@ -81,9 +81,9 @@ src_compile() {
 }
 
 src_install() {
-	emake DESTDIR=${D} install || die "make install failed"
-	dodoc ChangeLog AUTHORS README doc/conkyrc.sample doc/variables.html
-	dodoc doc/docs.html doc/config_settings.html
+	make DESTDIR=${D} install || die "make install failed"
+	dodoc ChangeLog AUTHORS README doc/conkyrc.sample
+	dohtml doc/variables.html doc/docs.html doc/config_settings.html
 }
 
 pkg_postinst() {
