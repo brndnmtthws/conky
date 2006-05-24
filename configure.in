@@ -398,6 +398,7 @@ if test "x$want_x11" = "xyes"; then
 	AC_DEFINE(X11, 1, [Define if you want to use X11])
 	AC_DEFINE(HAVE_X11, 1, [Define if you have X11])
 	AM_CONDITIONAL(BUILD_X11, true)
+	AC_CHECK_LIB(Xdamage, XDamageQueryExtension, [AC_DEFINE([HAVE_XDAMAGE], 1, [Xdamage]) LIBS="$LIBS -lXdamage"], [AC_MSG_ERROR([something went wrong when checking for Xdamage])])
 	if test $dah != "no"; then
 		AC_DEFINE(DOUBLE_BUFFER, 1, [Define if you want support for the DBE extension])
 		AC_CHECK_LIB(Xext, XdbeQueryExtension, [AC_DEFINE([HAVE_XDBE], 1, [Xdbe]) LIBS="$LIBS -lXext"],

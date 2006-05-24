@@ -26,6 +26,7 @@
 #include <sys/time.h>
 #ifdef X11
 #include <X11/Xutil.h>
+#include <X11/extensions/Xdamage.h>
 #endif /* X11 */
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -5539,6 +5540,16 @@ static void main_loop()
 
 #ifdef X11
 	Region region = XCreateRegion();
+	int event_base, error_base;
+	if (!XDamageQueryExtension (display, &event_base, &error_base)) {
+		ERR("Xdamage extension unavailable");
+	}
+	Window root = RootWindow(display, screen);
+	Damage damage = XDamageCreate(display, root, XDamageReportRawRectangles);
+/*	XserverRegion region2 = XFixesCreateRegion(display, 0, 0);
+	XserverRegion part = XFixesCreateRegion(display, 0, 0);*/
+	XserverRegion region2 = XFixesCreateRegionFromWindow(display, window.window, 0);
+	XserverRegion part = XFixesCreateRegionFromWindow(display, window.window, 0);
 #endif /* X11 */
 
 	info.looped = 0;
@@ -5552,6 +5563,8 @@ static void main_loop()
 #endif
 
 #ifdef X11
+		XDamageSubtract(display, damage, region2, None);
+		XFixesSetRegion(display, region2, 0, 0);
 		XFlush(display);
 
 		/* wait for X event or timeout */
@@ -5752,6 +5765,11 @@ static void main_loop()
 #endif
 
 			default:
+				if (ev.type == event_base + XDamageNotify) {
+								XDamageNotifyEvent  *dev = (XDamageNotifyEvent *) &ev;
+		XFixesSetRegion(display, part, &dev->area, 1);
+		XFixesUnionRegion(display, region2, region2, part);
+					}
 				break;
 			}
 		}
