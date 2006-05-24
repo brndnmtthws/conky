@@ -461,9 +461,9 @@ void update_cpu_usage(void);
 void update_total_processes(void);
 void update_running_processes(void);
 void update_i8k(void);
-void get_freq( char *, size_t, char *, int, unsigned int ); /* pk */
+char get_freq( char *, size_t, char *, int, unsigned int ); /* pk */
 void get_freq_dynamic( char *, size_t, char *, int ); /* pk */
-void get_voltage(char *, size_t, char *, int, unsigned int ); /* ptarjan */
+char get_voltage(char *, size_t, char *, int, unsigned int ); /* ptarjan */
 void update_load_average();
 int open_i2c_sensor(const char *dev, const char *type, int n, int *div,
 		    char *devtype);

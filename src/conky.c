@@ -1996,6 +1996,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	{
 	    obj->data.cpu_index=atoi(&arg[0]);
 	}
+	obj->a = 1;
 	END OBJ(freq_g, 0)
 	    get_cpu_count();
 	if (!arg
@@ -2011,6 +2012,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	{
 	    obj->data.cpu_index=atoi(&arg[0]);
 	}
+	obj->a = 1;
 	END OBJ(voltage_mv, 0)
 	    get_cpu_count();
 	if (!arg
@@ -2020,12 +2022,13 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	    || (unsigned int)atoi(&arg[0])>info.cpu_count)
 	{
 	    obj->data.cpu_index=1;
-	    ERR("voltage_mv: Invalid CPU number or you don't have that many CPUs! Displaying voltage for CPU 1.");
+//	    ERR("voltage_mv: Invalid CPU number or you don't have that many CPUs! Displaying voltage for CPU 1.");
 	}
 	else 
 	{
 	    obj->data.cpu_index=atoi(&arg[0]);
 	}
+	obj->a = 1;
 	END OBJ(voltage_v, 0)
 	    get_cpu_count();
 	if (!arg
@@ -2035,12 +2038,13 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	    || (unsigned int)atoi(&arg[0])>info.cpu_count)
 	{
 	    obj->data.cpu_index=1;
-	    ERR("voltage_v: Invalid CPU number or you don't have that many CPUs! Displaying voltage for CPU 1.");
+//	    ERR("voltage_v: Invalid CPU number or you don't have that many CPUs! Displaying voltage for CPU 1.");
 	}
 	else 
 	{
 	    obj->data.cpu_index=atoi(&arg[0]);
 	}
+	obj->a = 1;
 #else 
 	END OBJ(freq, 0);
 	END OBJ(freq_g, 0);
@@ -3155,16 +3159,24 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 										       i)+ 40) * 9.0 / 5 - 40));
 				}
 				OBJ(freq) {
-					get_freq(p, p_max_size, "%.0f", 1, obj->data.cpu_index); /* pk */
+					if (obj->a) {
+						obj->a = get_freq(p, p_max_size, "%.0f", 1, obj->data.cpu_index); /* pk */
+					}
 				}
 				OBJ(freq_g) {
-					get_freq(p, p_max_size, "%'.2f", 1000, obj->data.cpu_index); /* pk */
+					if (obj->a) {
+						obj->a = get_freq(p, p_max_size, "%'.2f", 1000, obj->data.cpu_index); /* pk */
+					}
 				}
 				OBJ(voltage_mv) {
-					get_voltage(p, p_max_size, "%.0f", 1, obj->data.cpu_index); /* ptarjan */
+					if (obj->a) {
+						obj->a = get_voltage(p, p_max_size, "%.0f", 1, obj->data.cpu_index); /* ptarjan */
+					}
 				}
 				OBJ(voltage_v) {
-					get_voltage(p, p_max_size, "%'.3f", 1000, obj->data.cpu_index); /* ptarjan */
+					if (obj->a) {
+						obj->a = get_voltage(p, p_max_size, "%'.3f", 1000, obj->data.cpu_index); /* ptarjan */
+					}
 				}
 
 				OBJ(freq_dyn) {

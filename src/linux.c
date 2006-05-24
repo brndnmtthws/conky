@@ -851,7 +851,7 @@ void get_freq_dynamic( char * p_client_buffer, size_t client_buffer_size, char *
 #define CPUFREQ_POSTFIX "cpufreq/scaling_cur_freq"
 
 /* return system frequency in MHz (use divisor=1) or GHz (use divisor=1000) */
-void get_freq( char * p_client_buffer, size_t client_buffer_size, char * p_format, int divisor, unsigned int cpu )
+char get_freq( char * p_client_buffer, size_t client_buffer_size, char * p_format, int divisor, unsigned int cpu )
 {
 	FILE *f;
 	char frequency[32];
@@ -864,8 +864,8 @@ void get_freq( char * p_client_buffer, size_t client_buffer_size, char * p_forma
 		 CPUFREQ_PREFIX, cpu, CPUFREQ_POSTFIX);
 
 	if ( !p_client_buffer || client_buffer_size <= 0 || !p_format || divisor <= 0 )
-		return;
-
+		return 0;
+	
 	f = fopen(current_freq_file, "r");
 	if (f) {
 		/* if there's a cpufreq /sys node, read the current frequency from this node;
@@ -876,13 +876,15 @@ void get_freq( char * p_client_buffer, size_t client_buffer_size, char * p_forma
 		}
 		fclose(f);
 		snprintf( p_client_buffer, client_buffer_size, p_format, (freq/1000)/divisor );
-		return;
+		return 1;
 	}
 	
 	cpu++;
 	f = fopen("/proc/cpuinfo", "r");		//open the CPU information file
-	if (!f)
-	    return;
+	if (!f) {
+		perror("Conky: Failed to access '/proc/cpuinfo' at get_freq()");
+		return 0;
+	}
 
 	while (fgets(s, sizeof(s), f) != NULL){		//read the file
 
@@ -915,13 +917,13 @@ void get_freq( char * p_client_buffer, size_t client_buffer_size, char * p_forma
 	
 	fclose(f);
 	snprintf( p_client_buffer, client_buffer_size, p_format, (float)freq/divisor );
-	return;
+	return 1;
 }
 
 #define CPUFREQ_VOLTAGE "cpufreq/scaling_voltages"
 
 /* return cpu voltage in mV (use divisor=1) or V (use divisor=1000) */
-void get_voltage( char * p_client_buffer, size_t client_buffer_size, char * p_format, int divisor, unsigned int cpu )
+char get_voltage( char * p_client_buffer, size_t client_buffer_size, char * p_format, int divisor, unsigned int cpu )
 {
 /* /sys/devices/system/cpu/cpu0/cpufreq/scaling_voltages looks 
    something like this:
@@ -950,7 +952,7 @@ void get_voltage( char * p_client_buffer, size_t client_buffer_size, char * p_fo
 		 CPUFREQ_PREFIX, cpu, CPUFREQ_POSTFIX);
 
 	if ( !p_client_buffer || client_buffer_size <= 0 || !p_format || divisor <= 0 )
-		return;
+		return 0;
 
 	/* read the current cpu frequency from the /sys node */
 	f = fopen(current_freq_file, "r");
@@ -960,12 +962,13 @@ void get_voltage( char * p_client_buffer, size_t client_buffer_size, char * p_fo
 		freq = strtod(s, NULL);
 	    }
 	    fclose(f);
-	}
-	else 
-	    {
-		ERR("voltage: No %s.", current_freq_file);
-		fclose(f);
-		return;
+	} else {
+		fprintf(stderr, "Conky: Failed to access '%s' at ", current_freq_file);
+		perror("get_voltage()");
+		if (f) {
+			fclose(f);
+		}
+		return 0;
 	    }
 
 	snprintf(current_freq_file, 127, "%s/cpu%d/%s",
@@ -974,26 +977,24 @@ void get_voltage( char * p_client_buffer, size_t client_buffer_size, char * p_fo
 /* use the current cpu frequency to find the corresponding voltage */
 	f = fopen(current_freq_file, "r");
 
-	if (f)
-	{
-	    while (!feof(f))
-	    {
-		char line[256];
-		if (fgets(line, 255, f) == NULL) break;
-		sscanf(line, "%d %d", &freq_comp, &voltage);
-		if(freq_comp == freq) break;
-	    }
-	    fclose(f);
+	if (f) {
+		while (!feof(f)) {
+			char line[256];
+			if (fgets(line, 255, f) == NULL) break;
+			sscanf(line, "%d %d", &freq_comp, &voltage);
+			if(freq_comp == freq) break;
+		}
+		fclose(f);
+	} else {
+		fprintf(stderr, "Conky: Failed to access '%s' at ", current_freq_file);
+		perror("get_voltage()");
+		if (f) {
+			fclose(f);
+		}
+		return 0;
 	}
-	else
-	{
-	    ERR("voltage: No %s.", current_freq_file);
-	    fclose(f);
-	    return;
-	}
-
 	snprintf( p_client_buffer, client_buffer_size, p_format, (float)voltage/divisor );
-	return;
+	return 1;
 
 }
 
