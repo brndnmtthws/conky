@@ -873,6 +873,8 @@ enum text_object_type {
 	OBJ_ibm_volume,
 	OBJ_ibm_brightness,
         OBJ_pb_battery,
+	OBJ_voltage_mv,
+	OBJ_voltage_v,
 #endif /* __linux__ */
 	OBJ_if_existing,
 	OBJ_if_mounted,
@@ -2009,6 +2011,36 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	{
 	    obj->data.cpu_index=atoi(&arg[0]);
 	}
+	END OBJ(voltage_mv, 0)
+	    get_cpu_count();
+	if (!arg
+	    || !isdigit(arg[0])
+	    || strlen(arg) >=2
+	    || atoi(&arg[0])==0
+	    || (unsigned int)atoi(&arg[0])>info.cpu_count)
+	{
+	    obj->data.cpu_index=1;
+	    ERR("voltage_mv: Invalid CPU number or you don't have that many CPUs! Displaying voltage for CPU 1.");
+	}
+	else 
+	{
+	    obj->data.cpu_index=atoi(&arg[0]);
+	}
+	END OBJ(voltage_v, 0)
+	    get_cpu_count();
+	if (!arg
+	    || !isdigit(arg[0])
+	    || strlen(arg) >=2
+	    || atoi(&arg[0])==0
+	    || (unsigned int)atoi(&arg[0])>info.cpu_count)
+	{
+	    obj->data.cpu_index=1;
+	    ERR("voltage_v: Invalid CPU number or you don't have that many CPUs! Displaying voltage for CPU 1.");
+	}
+	else 
+	{
+	    obj->data.cpu_index=atoi(&arg[0]);
+	}
 #else 
 	END OBJ(freq, 0);
 	END OBJ(freq_g, 0);
@@ -3128,6 +3160,13 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				OBJ(freq_g) {
 					get_freq(p, p_max_size, "%'.2f", 1000, obj->data.cpu_index); /* pk */
 				}
+				OBJ(voltage_mv) {
+					get_voltage(p, p_max_size, "%.0f", 1, obj->data.cpu_index); /* ptarjan */
+				}
+				OBJ(voltage_v) {
+					get_voltage(p, p_max_size, "%'.3f", 1000, obj->data.cpu_index); /* ptarjan */
+				}
+
 				OBJ(freq_dyn) {
 					if (use_spacer) {
 						get_freq_dynamic(p, 6, "%.0f     ", 1 ); /* pk */

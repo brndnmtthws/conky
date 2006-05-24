@@ -387,6 +387,29 @@
 	
 	<varlistentry>
 		<term>
+			<command><option>voltage_mv</option></command>
+			<option>(n)</option>
+		</term>
+		<listitem>
+			Returns CPU #n's voltage in mV. CPUs are
+			counted from 1. If omitted, the parameter
+			defaults to 1. 
+			<para></para></listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>
+			<command><option>voltage_v</option></command>
+			<option>(n)</option>
+		</term>
+		<listitem>
+			Returns CPU #n's voltage in V. CPUs are
+			counted from 1. If omitted, the parameter
+			defaults to 1.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
 			<command><option>freq_dyn</option></command>
 		</term>
 		<listitem>

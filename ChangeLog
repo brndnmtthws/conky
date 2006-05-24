@@ -1,5 +1,9 @@
 # $Id$
 
+2006-05-23
+	* CPU voltage support via $voltage_mv and $voltage_v (thanks to Peter
+	Tarjan for the patch)
+
 2006-05-21
 	* SMP support for $freq and $freq_g (thanks to Peter Tarjan for the
 	patch)

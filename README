@@ -561,6 +561,16 @@ VARIABLES
 	      omitted, the parameter defaults to 1.
 
 
+       voltage_mv (n)
+	      Returns CPU #n's voltage in mV. CPUs  are	 counted  from	1.  If
+	      omitted, the parameter defaults to 1.
+
+
+       voltage_v (n)
+	      Returns CPU #n's voltage in V. CPUs are counted from 1. If omit-
+	      ted, the parameter defaults to 1.
+
+
        freq_dyn
 	      Returns CPU frequency in MHz, but is calculated by  counting  to
 	      clock  cycles  to	 complete  an  instruction. Only available for

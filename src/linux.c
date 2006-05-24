@@ -918,6 +918,84 @@ void get_freq( char * p_client_buffer, size_t client_buffer_size, char * p_forma
 	return;
 }
 
+#define CPUFREQ_VOLTAGE "cpufreq/scaling_voltages"
+
+/* return cpu voltage in mV (use divisor=1) or V (use divisor=1000) */
+void get_voltage( char * p_client_buffer, size_t client_buffer_size, char * p_format, int divisor, unsigned int cpu )
+{
+/* /sys/devices/system/cpu/cpu0/cpufreq/scaling_voltages looks 
+   something like this:
+# frequency voltage
+1800000 1340
+1600000 1292
+1400000 1100
+1200000 988
+1000000 1116
+800000 1004
+600000 988
+*/
+
+/* Peter Tarjan (ptarjan@citromail.hu) */
+	FILE *f;
+	char s[256];
+	int freq = 0;
+	int voltage = 0;
+	char current_freq_file[128];
+	int freq_comp = 0;
+	
+
+/* build the voltage file name */
+	cpu--;
+	snprintf(current_freq_file, 127, "%s/cpu%d/%s",
+		 CPUFREQ_PREFIX, cpu, CPUFREQ_POSTFIX);
+
+	if ( !p_client_buffer || client_buffer_size <= 0 || !p_format || divisor <= 0 )
+		return;
+
+	/* read the current cpu frequency from the /sys node */
+	f = fopen(current_freq_file, "r");
+	if (f) {
+	    if (fgets(s, sizeof(s), f)) {
+		s[strlen(s)-1] = '\0';
+		freq = strtod(s, NULL);
+	    }
+	    fclose(f);
+	}
+	else 
+	    {
+		ERR("voltage: No %s.", current_freq_file);
+		fclose(f);
+		return;
+	    }
+
+	snprintf(current_freq_file, 127, "%s/cpu%d/%s",
+		 CPUFREQ_PREFIX, cpu, CPUFREQ_VOLTAGE);
+
+/* use the current cpu frequency to find the corresponding voltage */
+	f = fopen(current_freq_file, "r");
+
+	if (f)
+	{
+	    while (!feof(f))
+	    {
+		char line[256];
+		if (fgets(line, 255, f) == NULL) break;
+		sscanf(line, "%d %d", &freq_comp, &voltage);
+		if(freq_comp == freq) break;
+	    }
+	    fclose(f);
+	}
+	else
+	{
+	    ERR("voltage: No %s.", current_freq_file);
+	    fclose(f);
+	    return;
+	}
+
+	snprintf( p_client_buffer, client_buffer_size, p_format, (float)voltage/divisor );
+	return;
+
+}
 
 #define ACPI_FAN_DIR "/proc/acpi/fan/"
 

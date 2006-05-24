@@ -138,6 +138,7 @@ Pascal Eberhard <pascal dor eberhard at gmail dot com>
 Peter Tarjan <ptarjan at citromail dot hu>
   IBM acpi support patch
   SMP support for freq stuff
+  CPU voltage patch
   
 Petr Holub <hopet@users.sourceforge.net>  
   fix autotools on FreeBSD in autogen.sh
