@@ -27,6 +27,9 @@
 #ifdef X11
 #include <X11/Xutil.h>
 #include <X11/extensions/Xdamage.h>
+#ifdef IMLIB2
+#include <Imlib2.h>
+#endif /* IMLIB2 */
 #endif /* X11 */
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -46,6 +49,13 @@
 #undef SIGNAL_BLOCKING
 
 #ifdef X11
+
+/*
+ * text size
+ */
+
+static int text_start_x, text_start_y;	/* text start position in window */
+static int text_width, text_height;
 
 /* alignments */
 enum alignment {
@@ -833,6 +843,7 @@ enum text_object_type {
 	OBJ_downspeedgraph,
 	OBJ_else,
 	OBJ_endif,
+	OBJ_image,
 	OBJ_exec,
 	OBJ_execi,
 	OBJ_texeci,
@@ -1740,6 +1751,9 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 			case OBJ_text: case OBJ_font:
 				free(objs[i].data.s);
 				break;
+			case OBJ_image:
+				free(objs[i].data.s);
+				break;
 			case OBJ_exec:
 				free(objs[i].data.s);
 				break;
@@ -2183,8 +2197,10 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 			ERR("$endif: no matching $if_*");
 		}
 	END
+	OBJ(image, 0) obj->data.s = strdup(arg ? arg : "");
+	END
 #ifdef HAVE_POPEN
-		OBJ(exec, 0) obj->data.s = strdup(arg ? arg : "");
+	OBJ(exec, 0) obj->data.s = strdup(arg ? arg : "");
 	END OBJ(execbar, 0) obj->data.s = strdup(arg ? arg : "");
 	END OBJ(execgraph, 0) obj->data.s = strdup(arg ? arg : "");
 	END OBJ(execibar, 0) unsigned int n;
@@ -3419,7 +3435,33 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					snprintf(p, p_max_size, "%d",
 							obj->data.net->linkstatus);
 				}
-
+#if defined(IMLIB2) && defined(X11)
+				OBJ(image) {
+					if (obj->a < 1) {
+						obj->a++;
+					} else {
+						Imlib_Image image, buffer;
+						image = imlib_load_image(obj->data.s);
+						imlib_context_set_image(image);
+						if (image) {
+							int w, h;
+							w = imlib_image_get_width();
+							h = imlib_image_get_height();
+							buffer = imlib_create_image(w, h);
+							imlib_context_set_display(display);
+							imlib_context_set_drawable(window.drawable);
+							imlib_context_set_colormap(DefaultColormap(display, screen));
+							imlib_context_set_visual(DefaultVisual(display, screen));
+							imlib_context_set_image(buffer);
+							imlib_blend_image_onto_image(image, 0, 0, 0, w, h, text_start_x, text_start_y, w, h);
+							imlib_render_image_on_drawable(text_start_x, text_start_y);
+							imlib_free_image();
+							imlib_context_set_image(image);
+							imlib_free_image();
+						}
+					}
+				}
+#endif /* IMLIB2 */
 				OBJ(exec) {
 					FILE *fp = popen(obj->data.s, "r");
 					int length = fread(p, 1, p_max_size, fp);
@@ -4701,14 +4743,6 @@ static void set_font()
 }
 }
 
-
-/*
- * text size
- */
-
-static int text_start_x, text_start_y;	/* text start position in window */
-static int text_width, text_height;
-
 #endif /* X11 */
 
 static inline int get_string_width(const char *s)
@@ -5544,12 +5578,7 @@ static void main_loop()
 	if (!XDamageQueryExtension (display, &event_base, &error_base)) {
 		ERR("Xdamage extension unavailable");
 	}
-//	Damage damage = XDamageCreate(display, window.drawable, XDamageReportRawRectangles);
-//	Damage damage = XDamageCreate(display, window.drawable, XDamageReportDeltaRectangles);
-//	Damage damage = XDamageCreate(display, window.drawable, XDamageReportBoundingBox);
 	Damage damage = XDamageCreate(display, window.window, XDamageReportNonEmpty);
-/*	XserverRegion region2 = XFixesCreateRegion(display, 0, 0);
-	XserverRegion part = XFixesCreateRegion(display, 0, 0);*/
 	XserverRegion region2 = XFixesCreateRegionFromWindow(display, window.window, 0);
 	XserverRegion part = XFixesCreateRegionFromWindow(display, window.window, 0);
 #endif /* X11 */
@@ -5766,15 +5795,12 @@ static void main_loop()
 
 			default:
 				if (ev.type == event_base + XDamageNotify) {
-								XDamageNotifyEvent  *dev = (XDamageNotifyEvent *) &ev;
-		/*						printf ("Damage %3d, %3d x %3d, %3d\n",
-			dev->area.x, dev->area.x + dev->area.width,
-			dev->area.y, dev->area.y + dev->area.height);*/
-		XFixesSetRegion(display, part, &dev->area, 1);
-		XFixesUnionRegion(display, region2, region2, part);
-		XDamageSubtract(display, damage, region2, None);
-		XFixesSetRegion(display, region2, 0, 0);
-					}
+					XDamageNotifyEvent  *dev = (XDamageNotifyEvent *) &ev;
+					XFixesSetRegion(display, part, &dev->area, 1);
+					XFixesUnionRegion(display, region2, region2, part);
+					XDamageSubtract(display, damage, region2, None);
+					XFixesSetRegion(display, region2, 0, 0);
+				}
 				break;
 			}
 		}
