@@ -5544,8 +5544,10 @@ static void main_loop()
 	if (!XDamageQueryExtension (display, &event_base, &error_base)) {
 		ERR("Xdamage extension unavailable");
 	}
-	Window root = RootWindow(display, screen);
-	Damage damage = XDamageCreate(display, root, XDamageReportRawRectangles);
+//	Damage damage = XDamageCreate(display, window.drawable, XDamageReportRawRectangles);
+//	Damage damage = XDamageCreate(display, window.drawable, XDamageReportDeltaRectangles);
+//	Damage damage = XDamageCreate(display, window.drawable, XDamageReportBoundingBox);
+	Damage damage = XDamageCreate(display, window.window, XDamageReportNonEmpty);
 /*	XserverRegion region2 = XFixesCreateRegion(display, 0, 0);
 	XserverRegion part = XFixesCreateRegion(display, 0, 0);*/
 	XserverRegion region2 = XFixesCreateRegionFromWindow(display, window.window, 0);
@@ -5563,8 +5565,6 @@ static void main_loop()
 #endif
 
 #ifdef X11
-		XDamageSubtract(display, damage, region2, None);
-		XFixesSetRegion(display, region2, 0, 0);
 		XFlush(display);
 
 		/* wait for X event or timeout */
@@ -5628,11 +5628,11 @@ static void main_loop()
 					    text_height +
 					    border_margin * 2 + 1;
 					XResizeWindow(display,
-						      window.window,
+						      window.drawable,
 						      window.width,
 						      window.height);
 			if (own_window) {
-				set_transparent_background(window.window);
+				set_transparent_background(window.drawable);
 			}
 				     }
 
@@ -5767,8 +5767,13 @@ static void main_loop()
 			default:
 				if (ev.type == event_base + XDamageNotify) {
 								XDamageNotifyEvent  *dev = (XDamageNotifyEvent *) &ev;
+		/*						printf ("Damage %3d, %3d x %3d, %3d\n",
+			dev->area.x, dev->area.x + dev->area.width,
+			dev->area.y, dev->area.y + dev->area.height);*/
 		XFixesSetRegion(display, part, &dev->area, 1);
 		XFixesUnionRegion(display, region2, region2, part);
+		XDamageSubtract(display, damage, region2, None);
+		XFixesSetRegion(display, region2, 0, 0);
 					}
 				break;
 			}
@@ -5846,6 +5851,9 @@ static void main_loop()
 	
 	}
 #ifdef X11
+	XDamageDestroy(display, damage);
+	XFixesDestroyRegion(display, region2);
+	XFixesDestroyRegion(display, part);
 	XDestroyRegion(region);
 	region = NULL;
 #endif /* X11 */
