@@ -1,5 +1,8 @@
 # $Id$
 
+2006-05-27
+	* Fixed a bug with $font
+
 2006-05-24
 	* Xdamage support for composite and pals
 

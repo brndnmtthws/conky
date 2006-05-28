@@ -561,10 +561,6 @@ static char *scan_font(const char *args)
 	if (args && sizeof(args) < 127) {
 		return strdup(args);
 	}
-/*	else {
-		ERR("font scan failed, lets hope it doesn't mess stuff up");
-		we'll assume this means to use the default font now, like $color
-	}*/
 	return NULL;
 }
 
@@ -576,7 +572,6 @@ static void new_font(char *buf, char * args) {
 			int tmp = selected_font;
 			selected_font = s->font_added = addfont(args);
 			load_fonts();
-			//set_font();
 			selected_font = tmp;
 		}
 	} else {
@@ -584,7 +579,6 @@ static void new_font(char *buf, char * args) {
 		int tmp = selected_font;
 		selected_font = s->font_added = 0;
 		load_fonts();
-		//set_font();
 		selected_font = tmp;
 	}
 }
@@ -4822,7 +4816,7 @@ static void text_size_updater(char *s)
 				h += specials[special_index].arg;
 			}
 			else if (specials[special_index].type == FONT) {
-				fontchange = specials[special_index].font_added;
+				fontchange = 1;
 				selected_font = specials[special_index].font_added;
 				h = font_height();
 			}
@@ -5356,15 +5350,15 @@ static void draw_line(char *s)
 			
 				case FONT:
 				if (fontchange) {
+					int old = font_ascent();
 					cur_y -= font_ascent();
 					selected_font = specials[special_index].font_added;
-					cur_y += font_ascent();
-#ifdef XFT
-					if (!use_xft || use_xdbe)
-#endif
-					{
-						set_font();
+					if (cur_y + (font_ascent()) < old) {
+						cur_y = old;
+					} else {
+						cur_y += font_ascent();
 					}
+					set_font();
 				}
 				break;
 			case FG:
