@@ -86,10 +86,10 @@ struct font_list *fonts = NULL;
 
 #ifdef XFT
 
-#define font_height() use_xft ? (fonts[selected_font].xftfont->ascent + fonts[selected_font].xftfont->descent) : \
-(fonts[selected_font].font->max_bounds.ascent + fonts[selected_font].font->max_bounds.descent)
-#define font_ascent() use_xft ? fonts[selected_font].xftfont->ascent : fonts[selected_font].font->max_bounds.ascent
-#define font_descent() use_xft ? fonts[selected_font].xftfont->descent : fonts[selected_font].font->max_bounds.descent
+#define font_height() (use_xft ? (fonts[selected_font].xftfont->ascent + fonts[selected_font].xftfont->descent) : \
+(fonts[selected_font].font->max_bounds.ascent + fonts[selected_font].font->max_bounds.descent))
+#define font_ascent() (use_xft ? fonts[selected_font].xftfont->ascent : fonts[selected_font].font->max_bounds.ascent)
+#define font_descent() (use_xft ? fonts[selected_font].xftfont->descent : fonts[selected_font].font->max_bounds.descent)
 
 #else
 
@@ -4784,14 +4784,12 @@ static inline int get_string_width_special(char *s)
 #endif /* X11 */
 }
 
-int fontchange = 0;
-
 #ifdef X11
+int last_font_height;
 static void text_size_updater(char *s)
 {
 	int w = 0;
 	char *p;
-	int h = font_height();
 	/* get string widths and skip specials */
 	p = s;
 	while (*p) {
@@ -4803,40 +4801,36 @@ static void text_size_updater(char *s)
 			if (specials[special_index].type == BAR
 			    || specials[special_index].type == GRAPH) {
 				w += specials[special_index].width;
-				if (specials[special_index].height > h) {
-					h = specials[special_index].height;
-					h += font_ascent();
+				if (specials[special_index].height > last_font_height) {
+					last_font_height = specials[special_index].height;
+					last_font_height += font_ascent();
+				}
+			} else if (specials[special_index].type == OFFSET) {
+				w += specials[special_index].arg + get_string_width("a"); /* filthy, but works */
+			} else if (specials[special_index].type == VOFFSET) {
+				last_font_height += specials[special_index].arg;
+			} else if (specials[special_index].type == FONT) {
+				selected_font = specials[special_index].font_added;
+				if (font_height() > last_font_height) {
+					last_font_height = font_height();
 				}
 			}
-			
-			else if (specials[special_index].type == OFFSET) {
-				w += specials[special_index].arg + get_string_width("a"); /* filthy, but works */
-			}
-			else if (specials[special_index].type == VOFFSET) {
-				h += specials[special_index].arg;
-			}
-			else if (specials[special_index].type == FONT) {
-				fontchange = 1;
-				selected_font = specials[special_index].font_added;
-				h = font_height();
-			}
-
 			
 			special_index++;
 			s = p + 1;
 		}
 		p++;
 	}
-		w += get_string_width(s);
-	if (w > text_width)
+	w += get_string_width(s);
+	if (w > text_width) {
 		text_width = w;
-	if (text_width > maximum_width && maximum_width)
+	}
+	if (text_width > maximum_width && maximum_width) {
 		text_width = maximum_width;
+	}
 
-	text_height += h;
-/*	if (fontchange) {
-		selected_font = 0;
-	}*/
+	text_height += last_font_height;
+	last_font_height = font_height();
 }
 #endif /* X11 */
 
@@ -4854,7 +4848,9 @@ static void update_text_area()
 		text_width = minimum_width;
 		text_height = 0;
 		special_index = 0;
+		int first_font_height = last_font_height = font_height();
 		for_each_line(text_buffer, text_size_updater);
+		text_height -= first_font_height;
 		text_width += 1;
 		if (text_height < minimum_height)
 			text_height = minimum_height;
@@ -5222,17 +5218,8 @@ static void draw_line(char *s)
 					    specials[special_index].height;
 					int bar_usage =
 					    specials[special_index].arg;
-					int by;
-
-#ifdef XFT
-					if (use_xft) {
-						by = cur_y - (font_ascent() + h) / 2 - 1;
-					} else 
-#endif
-					{
-						by = cur_y - (font_ascent()/2) - 1;
-					}
-					if (h < (font_height())) {
+					int by = cur_y - (font_ascent() / 2) - 1;
+					if (h < font_height()) {
 						by -= h / 2 - 1;
 					}
 					w = specials[special_index].width;
@@ -5276,17 +5263,9 @@ static void draw_line(char *s)
 					}
 					int h =
 					    specials[special_index].height;
-					int by;
 					unsigned long last_colour = current_color;
-#ifdef XFT
-					if (use_xft) {
-                                            by = cur_y - (font_ascent() + h) / 2 - 1;
-					} else
-#endif
-					{
-						by = cur_y - (font_ascent()/2) - 1;
-					}
-					if (h < (font_height())) {
+					int by = cur_y - (font_ascent()/2) - 1;
+					if (h < font_height()) {
 						by -= h / 2 - 1;
 					}
 					w = specials[special_index].width;
@@ -5349,12 +5328,12 @@ static void draw_line(char *s)
 				break;
 			
 				case FONT:
-				if (fontchange) {
+				{
 					int old = font_ascent();
 					cur_y -= font_ascent();
 					selected_font = specials[special_index].font_added;
-					if (cur_y + (font_ascent()) < old) {
-						cur_y = old;
+					if (cur_y + font_ascent() < cur_y + old) {
+						cur_y += old;
 					} else {
 						cur_y += font_ascent();
 					}
@@ -5437,9 +5416,6 @@ static void draw_line(char *s)
 	draw_string(s);
 
 	cur_y += font_descent();
-/*	if (fontchange) {
-		selected_font = 0;
-	}*/
 #endif /* X11 */
 }
 
@@ -5482,6 +5458,7 @@ static void draw_text()
 static void draw_stuff()
 {
 #ifdef X11
+	selected_font = 0;
 	if (draw_shades && !draw_outline) {
 		text_start_x++;
 		text_start_y++;
@@ -5493,6 +5470,7 @@ static void draw_stuff()
 	}
 
 	if (draw_outline) {
+		selected_font = 0;
 		int i, j;
 		for (i = -1; i < 2; i++)
 			for (j = -1; j < 2; j++) {
@@ -5634,7 +5612,7 @@ static void main_loop()
 #endif
 
 			need_to_update = 0;
-
+			selected_font = 0;
 			update_text_area();
 #ifdef OWN_WINDOW
 			if (own_window) {
@@ -6937,6 +6915,7 @@ int main(int argc, char **argv)
 
 	generate_text();
 #ifdef X11
+	selected_font = 0;
 	update_text_area();	/* to get initial size of the window */
 
 	init_window
@@ -6945,6 +6924,7 @@ int main(int argc, char **argv)
 		 text_height + border_margin * 2 + 1,
 		 set_transparent, background_colour, info.uname_s.nodename, argv, argc);
 	
+	selected_font = 0;
 	update_text_area();	/* to position text/window on screen */
 #endif /* X11 */
 
