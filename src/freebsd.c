@@ -495,22 +495,30 @@ get_freq_dynamic(char *p_client_buffer, size_t client_buffer_size,
 #endif
 }
 
-/* return system frequency in MHz (use divisor=1) or GHz (use divisor=1000) */
 void
 get_freq(char *p_client_buffer, size_t client_buffer_size,
-		char *p_format, int divisor)
+		char *p_format, int divisor, unsigned int cpu)
 {
 	int freq;
+	char *freq_sysctl;
 
+	freq_sysctl = (char *)calloc(16, sizeof(char));
+	if (freq_sysctl == NULL)
+		exit(-1);
+
+	snprintf(freq_sysctl, 16, "dev.cpu.%d.freq", cpu);
+	
 	if (!p_client_buffer || client_buffer_size <= 0 ||
 			!p_format || divisor <= 0)
 		return;
 
-	if (GETSYSCTL("dev.cpu.0.freq", freq) == 0)
+	if (GETSYSCTL(freq_sysctl, freq) == 0)
 		snprintf(p_client_buffer, client_buffer_size,
-				p_format, freq/divisor);
+				p_format, (float)freq/divisor);
 	else
 		snprintf(p_client_buffer, client_buffer_size, p_format, 0.0f);
+
+	free(freq_sysctl);
 }
 
 void
