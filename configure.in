@@ -6,9 +6,6 @@ dnl
 dnl C Compiler
 dnl
 
-if test x$CFLAGS = x; then
-	AC_SUBST(CFLAGS, [ ])
-fi
 AC_PROG_CC
 AC_PROG_LIBTOOL
 PKG_PROG_PKG_CONFIG([0.17.2])

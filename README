@@ -561,16 +561,6 @@ VARIABLES
 	      omitted, the parameter defaults to 1.
 
 
-       voltage_mv (n)
-	      Returns CPU #n's voltage in mV. CPUs  are	 counted  from	1.  If
-	      omitted, the parameter defaults to 1.
-
-
-       voltage_v (n)
-	      Returns CPU #n's voltage in V. CPUs are counted from 1. If omit-
-	      ted, the parameter defaults to 1.
-
-
        freq_dyn
 	      Returns CPU frequency in MHz, but is calculated by  counting  to
 	      clock  cycles  to	 complete  an  instruction. Only available for
@@ -694,6 +684,26 @@ VARIABLES
        i8k_version
 	      If running the i8k kernel driver for Inspiron laptops,  displays
 	      the version formatting of /proc/i8k.
+
+
+       ibm_fan
+	      If running the IBM ACPI, displays the fan speed.
+
+
+       ibm_temps N
+	      If  running the IBM ACPI, displays the temperatures from the IBM
+	      temperature sensors (N=0..7) Sensor 0 is on the CPU, 3 is on the
+	      GPU.
+
+
+       ibm_volume
+	      If  running  the	IBM  ACPI,  displays the "master" volume, con-
+	      trolled by the volume keys (0-14).
+
+
+       ibm_brightness
+	      If running the IBM ACPI, displays the brigtness of the laptops's
+	      LCD (0-7).
 
 
        if_running (process)
@@ -1064,6 +1074,16 @@ VARIABLES
 	      text to overlap. See also $offset.
 
 
+       voltage_mv (n)
+	      Returns  CPU  #n's  voltage  in  mV. CPUs are counted from 1. If
+	      omitted, the parameter defaults to 1.
+
+
+       voltage_v (n)
+	      Returns CPU #n's voltage in V. CPUs are counted from 1. If omit-
+	      ted, the parameter defaults to 1.
+
+
        xmms_bar (height),(width)
 	      xmms / bmp / audacious / infopipe: progress bar
 
@@ -1123,26 +1143,6 @@ VARIABLES
 
        xmms_title
 	      xmms / bmp / audacious / infopipe: title of current tune
-
-
-       ibm_fan
-	      If running the IBM ACPI, displays the fan speed.
-
-
-       ibm_temps N
-	      If running the IBM ACPI, displays the temperatures from the  IBM
-	      temperature sensors (N=0..7) Sensor 0 is on the CPU, 3 is on the
-	      GPU.
-
-
-       ibm_volume
-	      If running the IBM ACPI,	displays  the  "master"	 volume,  con-
-	      trolled by the volume keys (0-14).
-
-
-       ibm_brightness
-	      If running the IBM ACPI, displays the brigtness of the laptops's
-	      LCD (0-7).
 
 
 EXAMPLES

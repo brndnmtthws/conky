@@ -1264,7 +1264,7 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 		/* charging */
 		if (strcmp(charging_state, "charging") == 0) {
 			if (acpi_last_full != 0 && present_rate > 0) {
-				strcpy(last_battery_str, "charging ");
+				strncpy(last_battery_str, "charging ", 64);
 				format_seconds(last_battery_str + 9,
 					       63 - 9,
 					       (acpi_last_full -
@@ -1272,39 +1272,42 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 					       60 / present_rate);
 			} else if (acpi_last_full != 0
 				   && present_rate <= 0) {
-				sprintf(last_battery_str, "charging %d%%",
+				snprintf(last_battery_str, 64, "charging %d%%",
 					remaining_capacity * 100 /
 					acpi_last_full);
 			} else {
-				strcpy(last_battery_str, "charging");
+				strncpy(last_battery_str, "charging", 63);
 			}
 		}
 		/* discharging */
-		else if (strcmp(charging_state, "discharging") == 0) {
-			if (present_rate > 0)
+		else if (strncmp(charging_state, "discharging", 64) == 0) {
+			if (present_rate > 0) {
 				format_seconds(last_battery_str, 63,
 					       (remaining_capacity * 60 *
 						60) / present_rate);
-			else
-				sprintf(last_battery_str,
+			} else if (present_rate == 0) { /* Thanks to Nexox for this one */
+				snprintf(last_battery_str, 64, "full");
+			} else {
+				snprintf(last_battery_str, 64,
 					"discharging %d%%",
 					remaining_capacity * 100 /
 					acpi_last_full);
+			}
 		}
 		/* charged */
 		/* thanks to Lukas Zapletal <lzap@seznam.cz> */
-		else if (strcmp(charging_state, "charged") == 0) {
+		else if (strncmp(charging_state, "charged", 64) == 0) {
 				strcpy(last_battery_str, "charged");
 		}
 		/* unknown, probably full / AC */
 		else {
 			if (acpi_last_full != 0
 			    && remaining_capacity != acpi_last_full)
-				sprintf(last_battery_str, "unknown %d%%",
+				snprintf(last_battery_str, 64, "unknown %d%%",
 					remaining_capacity * 100 /
 					acpi_last_full);
 			else
-				strcpy(last_battery_str, "AC");
+				strncpy(last_battery_str, "AC", 64);
 		}
 	} else {
 		/* APM */

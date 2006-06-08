@@ -1,5 +1,9 @@
 # $Id$
 
+2006-06-07
+	* Small battery fix (thanks Nexox, sf.net patch 1500014)
+	* Fixed order of variables/objects in docs (thanks Peter Tarjan)
+
 2006-05-27
 	* Fixed a bug with $font
 

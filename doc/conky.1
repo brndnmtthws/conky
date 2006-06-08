@@ -504,23 +504,11 @@ Specify a different font. This new font will apply to the current line and every
 \fBfreq\fR \fB(n)\fR 
 Returns CPU #n's frequency in MHz. CPUs are
 counted from 1. If omitted, the parameter
-defaults to 1. 
+defaults to 1.
 
 .TP 
 \fBfreq_g\fR \fB(n)\fR 
 Returns CPU #n's frequency in GHz. CPUs are
-counted from 1. If omitted, the parameter
-defaults to 1.
-
-.TP 
-\fBvoltage_mv\fR \fB(n)\fR 
-Returns CPU #n's voltage in mV. CPUs are
-counted from 1. If omitted, the parameter
-defaults to 1. 
-
-.TP 
-\fBvoltage_v\fR \fB(n)\fR 
-Returns CPU #n's voltage in V. CPUs are
 counted from 1. If omitted, the parameter
 defaults to 1.
 
@@ -615,6 +603,26 @@ If running the i8k kernel driver for Inspiron laptops, displays your laptop seri
 .TP 
 \fBi8k_version\fR \fB\fR
 If running the i8k kernel driver for Inspiron laptops, displays the version formatting of /proc/i8k.
+
+.TP 
+\fBibm_fan\fR 
+If running the IBM ACPI, displays the fan speed.
+
+.TP 
+\fBibm_temps\fR \fBN\fR 
+If running the IBM ACPI, displays the temperatures
+from the IBM temperature sensors (N=0..7) Sensor 0 is
+on the CPU, 3 is on the GPU.
+
+.TP 
+\fBibm_volume\fR 
+If running the IBM ACPI, displays the "master" volume,
+controlled by the volume keys (0-14).
+
+.TP 
+\fBibm_brightness\fR 
+If running the IBM ACPI, displays the brigtness of the
+laptops's LCD (0-7).
 
 .TP 
 \fBif_running\fR \fB(process)\fR 
@@ -938,6 +946,18 @@ Seti@home total user credit
 Change vertical offset by N pixels. Negative values will cause text to overlap. See also $offset.
 
 .TP 
+\fBvoltage_mv\fR \fB(n)\fR 
+Returns CPU #n's voltage in mV. CPUs are
+counted from 1. If omitted, the parameter
+defaults to 1. 
+
+.TP 
+\fBvoltage_v\fR \fB(n)\fR 
+Returns CPU #n's voltage in V. CPUs are
+counted from 1. If omitted, the parameter
+defaults to 1.
+
+.TP 
 \fBxmms_bar\fR \fB(height),(width)\fR 
 xmms / bmp / audacious / infopipe: progress bar
 
@@ -988,26 +1008,6 @@ xmms / bmp / audacious / infopipe: player status (Playing/Paused/Stopped/Not run
 .TP 
 \fBxmms_title\fR 
 xmms / bmp / audacious / infopipe: title of current tune
-
-.TP 
-\fBibm_fan\fR 
-If running the IBM ACPI, displays the fan speed.
-
-.TP 
-\fBibm_temps\fR \fBN\fR 
-If running the IBM ACPI, displays the temperatures
-from the IBM temperature sensors (N=0..7) Sensor 0 is
-on the CPU, 3 is on the GPU.
-
-.TP 
-\fBibm_volume\fR 
-If running the IBM ACPI, displays the "master" volume,
-controlled by the volume keys (0-14).
-
-.TP 
-\fBibm_brightness\fR 
-If running the IBM ACPI, displays the brigtness of the
-laptops's LCD (0-7).
 
 .SH EXAMPLES
 .TP 

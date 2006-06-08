@@ -361,71 +361,48 @@
 	<para></para></listitem>
 </varlistentry>
 
+<varlistentry>
+	<term>
+		<command><option>freq</option></command>
+		<option>(n)</option>
+	</term>
+	<listitem>
+		Returns CPU #n's frequency in MHz. CPUs are
+		counted from 1. If omitted, the parameter
+		defaults to 1.
+		<para></para></listitem>
+</varlistentry>
+<varlistentry>
+	<term>
+		<command><option>freq_g</option></command>
+		<option>(n)</option>
+	</term>
+	<listitem>
+		Returns CPU #n's frequency in GHz. CPUs are
+		counted from 1. If omitted, the parameter
+		defaults to 1.
+		<para></para></listitem>
+</varlistentry>
 	
-	<varlistentry>
-		<term>
-			<command><option>freq</option></command>
-			<option>(n)</option>
-		</term>
-		<listitem>
-			Returns CPU #n's frequency in MHz. CPUs are
-			counted from 1. If omitted, the parameter
-			defaults to 1. 
-			<para></para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term>
-			<command><option>freq_g</option></command>
-			<option>(n)</option>
-		</term>
-		<listitem>
-			Returns CPU #n's frequency in GHz. CPUs are
-			counted from 1. If omitted, the parameter
-			defaults to 1.
-			<para></para></listitem>
-	</varlistentry>
-	
-	<varlistentry>
-		<term>
-			<command><option>voltage_mv</option></command>
-			<option>(n)</option>
-		</term>
-		<listitem>
-			Returns CPU #n's voltage in mV. CPUs are
-			counted from 1. If omitted, the parameter
-			defaults to 1. 
-			<para></para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term>
-			<command><option>voltage_v</option></command>
-			<option>(n)</option>
-		</term>
-		<listitem>
-			Returns CPU #n's voltage in V. CPUs are
-			counted from 1. If omitted, the parameter
-			defaults to 1.
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term>
-			<command><option>freq_dyn</option></command>
-		</term>
-		<listitem>
+<varlistentry>
+	<term>
+		<command><option>freq_dyn</option></command>
+	</term>
+	<listitem>
 			Returns CPU frequency in MHz, but is calculated by counting to clock cycles to complete an instruction.  Only available for x86/amd64.
 			<para></para></listitem>
-	</varlistentry>
-	<varlistentry>
-		<term>
-			<command><option>freq_dyn_g</option></command>
-		</term>
-		<listitem>
-			Returns CPU frequency in GHz, but is calculated by counting to clock cycles to complete an instruction.  Only available for x86/amd64.
-			<para></para></listitem>
-	</varlistentry>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>freq_dyn_g</option></command>
+	</term>
+	<listitem>
+		Returns CPU frequency in GHz, but is calculated by counting to clock cycles to complete an instruction.  Only available for x86/amd64.
+	<para></para></listitem>
+</varlistentry>
 	
-	<varlistentry>
+<varlistentry>
 	<term>
 		<command><option>fs_bar</option></command>
 	<option>(height),(width) fs</option>
@@ -632,6 +609,47 @@
 	</term>
 	<listitem>
 		If running the i8k kernel driver for Inspiron laptops, displays the version formatting of /proc/i8k.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>ibm_fan</option></command>
+	</term>
+	<listitem>
+		If running the IBM ACPI, displays the fan speed.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>ibm_temps</option></command>
+		<option>N</option>
+	</term>
+	<listitem>
+		If running the IBM ACPI, displays the temperatures
+		from the IBM temperature sensors (N=0..7) Sensor 0 is
+		on the CPU, 3 is on the GPU.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>ibm_volume</option></command>
+	</term>
+	<listitem>
+		If running the IBM ACPI, displays the "master" volume,
+	controlled by the volume keys (0-14).
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>ibm_brightness</option></command>
+	</term>
+	<listitem>
+		If running the IBM ACPI, displays the brigtness of the
+	laptops's LCD (0-7).
 	<para></para></listitem>
 </varlistentry>
 
@@ -1301,6 +1319,7 @@
 		Seti@home total user credit
 	<para></para></listitem>
 </varlistentry>
+
 <varlistentry>
 	<term>
 		<command><option>voffset</option></command>
@@ -1311,6 +1330,30 @@
 		<para></para></listitem>
 </varlistentry>
 
+<varlistentry>
+	<term>
+		<command><option>voltage_mv</option></command>
+		<option>(n)</option>
+	</term>
+	<listitem>
+		Returns CPU #n's voltage in mV. CPUs are
+		counted from 1. If omitted, the parameter
+		defaults to 1. 
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>voltage_v</option></command>
+		<option>(n)</option>
+	</term>
+	<listitem>
+		Returns CPU #n's voltage in V. CPUs are
+		counted from 1. If omitted, the parameter
+		defaults to 1.
+		<para></para></listitem>
+</varlistentry>
+		
 <varlistentry>
 	<term>
 		<command><option>xmms_bar</option></command>
@@ -1426,47 +1469,6 @@
 	</term>
 	<listitem>
 		xmms / bmp / audacious / infopipe: title of current tune
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>ibm_fan</option></command>
-	</term>
-	<listitem>
-		If running the IBM ACPI, displays the fan speed.
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>ibm_temps</option></command>
-		<option>N</option>
-	</term>
-	<listitem>
-		If running the IBM ACPI, displays the temperatures
-		from the IBM temperature sensors (N=0..7) Sensor 0 is
-		on the CPU, 3 is on the GPU.
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>ibm_volume</option></command>
-	</term>
-	<listitem>
-		If running the IBM ACPI, displays the "master" volume,
-	controlled by the volume keys (0-14).
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>ibm_brightness</option></command>
-	</term>
-	<listitem>
-		If running the IBM ACPI, displays the brigtness of the
-	laptops's LCD (0-7).
 	<para></para></listitem>
 </varlistentry>
 
