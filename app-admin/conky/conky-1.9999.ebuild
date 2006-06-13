@@ -21,6 +21,7 @@ DEPEND_COMMON="
 				x11-libs/libX11
 				x11-libs/libSM
 				x11-libs/libXrender
+				x11-libs/libXdamage
 				x11-libs/libXft
 				)
 				virtual/x11
