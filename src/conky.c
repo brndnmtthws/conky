@@ -2902,8 +2902,8 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		CRIT_ERR("tcp_portmon: connection index must be non-negative");
 	}
 	/* ok, args looks good. save the text object data */
-	obj->data.tcp_port_monitor.port_range_begin = (in_addr_t)port_begin;
-	obj->data.tcp_port_monitor.port_range_end = (in_addr_t)port_end;
+	obj->data.tcp_port_monitor.port_range_begin = (in_port_t)port_begin;
+	obj->data.tcp_port_monitor.port_range_end = (in_port_t)port_end;
 	obj->data.tcp_port_monitor.item = item;
 	obj->data.tcp_port_monitor.connection_index = connection_index;
 
