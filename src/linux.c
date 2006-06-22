@@ -1217,6 +1217,7 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 		int present_rate = -1;
 		int remaining_capacity = -1;
 		char charging_state[64];
+		char present[4];
 
 		/* read last full capacity if it's zero */
 		if (acpi_last_full == 0) {
@@ -1250,7 +1251,9 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 				break;
 
 			/* let's just hope units are ok */
-			if (buf[0] == 'c')
+			if (buf[0] == 'p') {
+				sscanf(buf, "present: %4s", present);
+			} else if (buf[0] == 'c')
 				sscanf(buf, "charging state: %63s",
 				       charging_state);
 			else if (buf[0] == 'p')
@@ -1260,9 +1263,13 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 				sscanf(buf, "remaining capacity: %d",
 				       &remaining_capacity);
 		}
-
+		
+		/* not present */
+		if (strcmp(present, "no") == 0) {
+			strncpy(last_battery_str, "not present", 64);
+		}
 		/* charging */
-		if (strcmp(charging_state, "charging") == 0) {
+		else if (strcmp(charging_state, "charging") == 0) {
 			if (acpi_last_full != 0 && present_rate > 0) {
 				strncpy(last_battery_str, "charging ", 64);
 				format_seconds(last_battery_str + 9,
@@ -1298,7 +1305,7 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 		/* thanks to Lukas Zapletal <lzap@seznam.cz> */
 		else if (strncmp(charging_state, "charged", 64) == 0) {
 				strcpy(last_battery_str, "charged");
-		}
+		} 
 		/* unknown, probably full / AC */
 		else {
 			if (acpi_last_full != 0
