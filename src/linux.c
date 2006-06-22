@@ -1271,9 +1271,9 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 		/* charging */
 		else if (strcmp(charging_state, "charging") == 0) {
 			if (acpi_last_full != 0 && present_rate > 0) {
-				strncpy(last_battery_str, "charging ", 64);
-				format_seconds(last_battery_str + 9,
-					       63 - 9,
+				snprintf(last_battery_str, 63, "charging %i%% ", (int) (remaining_capacity / acpi_last_full) * 100);
+				format_seconds(last_battery_str + 14,
+					       63 - 14,
 					       (acpi_last_full -
 						remaining_capacity) * 60 *
 					       60 / present_rate);
@@ -1289,7 +1289,8 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 		/* discharging */
 		else if (strncmp(charging_state, "discharging", 64) == 0) {
 			if (present_rate > 0) {
-				format_seconds(last_battery_str, 63,
+				snprintf(last_battery_str, 63, "discharging %i%% ", (int)(remaining_capacity / acpi_last_full) * 100);
+				format_seconds(last_battery_str + 17, 63 - 17,
 					       (remaining_capacity * 60 *
 						60) / present_rate);
 			} else if (present_rate == 0) { /* Thanks to Nexox for this one */
