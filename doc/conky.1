@@ -890,6 +890,10 @@ Displays last N lines of supplied text text file. If interval is not supplied, C
 Local time, see man strftime to get more information about format
 
 .TP 
+\fBtztime\fR \fB(timezone) (format)\fR 
+Local time for specified timezone, see man strftime to get more information about format. The timezone argument is specified in similar fashion as TZ environment variable. For hints, look in /usr/share/zoneinfo. e.g. US/Pacific, Europe/Zurich, etc.
+
+.TP 
 \fBtotaldown\fR \fBnet\fR 
 Total download, overflows at 4 GB on Linux with 32-bit arch and there doesn't seem to be a way to know how many times it has already done that before conky has started.
 

@@ -1196,6 +1196,26 @@
 
 <varlistentry>
 	<term>
+		<command><option>utime</option></command>
+	<option>(format)</option>
+	</term>
+	<listitem>
+		Display time in UTC (universal coordinate time).
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>tztime</option></command>
+	<option>(timezone) (format)</option>
+	</term>
+	<listitem>
+		Local time for specified timezone, see man strftime to get more information about format. The timezone argument is  specified in similar fashion as TZ environment variable. For hints, look in /usr/share/zoneinfo. e.g. US/Pacific, Europe/Zurich, etc.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>totaldown</option></command>
 	<option>net</option>
 	</term>

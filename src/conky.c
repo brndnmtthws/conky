@@ -934,6 +934,7 @@ enum text_object_type {
 	OBJ_text,
 	OBJ_time,
 	OBJ_utime,
+	OBJ_tztime,
 	OBJ_totaldown,
 	OBJ_totalup,
 	OBJ_updates,
@@ -1050,6 +1051,12 @@ struct text_object {
 		unsigned char loadavg[3];
 		unsigned int cpu_index;
 		struct mail_s *mail;
+
+		struct {
+			char *tz;    /* timezone variable */
+			char *fmt;   /* time display formatting */
+		} tztime;
+
 		struct {
 			struct fs_stat *fs;
 			int w, h;
@@ -1707,6 +1714,12 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 				free(objs[i].data.s);
 				break;
 			case OBJ_utime:
+				free(objs[i].data.s);
+				break;
+			case OBJ_tztime:
+				free(objs[i].data.tztime.tz);
+				free(objs[i].data.tztime.fmt);
+				break;
 			case OBJ_imap:
 				free(info.mail);
 				break;
@@ -2651,6 +2664,21 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 				obj->data.i2c.devtype);
 	END OBJ(time, 0) obj->data.s = strdup(arg ? arg : "%F %T");
 	END OBJ(utime, 0) obj->data.s = strdup(arg ? arg : "%F %T");
+	END OBJ(tztime, 0)
+		char buf1[256], buf2[256], *fmt, *tz;
+		fmt = tz = NULL;
+		if (arg) {
+			int nArgs = sscanf(arg, "%255s %255[^\n]", buf1, buf2);
+			switch (nArgs) {
+				case 2:
+					tz = buf1;
+				case 1:
+					fmt = buf2;
+			}
+		}
+
+		obj->data.tztime.fmt = strdup(fmt ? fmt : "%F %T");
+		obj->data.tztime.tz = tz ? strdup(tz) : NULL;
 #ifdef HAVE_ICONV
 	END OBJ(iconv_start, 0)
 		if (iconv_converting) {
@@ -4101,6 +4129,25 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				time_t t = time(NULL);
 				struct tm *tm = gmtime(&t);
 				strftime(p, p_max_size, obj->data.s, tm);
+			}
+			OBJ(tztime) {
+				char* oldTZ = NULL;
+				if (obj->data.tztime.tz) {
+					oldTZ = getenv("TZ");
+					setenv("TZ", obj->data.tztime.tz, 1);
+					tzset();
+				}
+				time_t t = time(NULL);
+				struct tm *tm = localtime(&t);
+				setlocale(LC_TIME, "");
+				strftime(p, p_max_size, obj->data.tztime.fmt, tm);
+				if (oldTZ) {
+					setenv("TZ", oldTZ, 1);
+					tzset();
+				} else {
+					unsetenv("TZ");
+				}
+				// Needless to free oldTZ since getenv gives ptr to static data 
 			}
 			OBJ(totaldown) {
 				human_readable(obj->data.net->recv, p,
