@@ -386,8 +386,6 @@ else
 fi
 
 
-
-
 dnl
 dnl X
 dnl
@@ -396,6 +394,11 @@ dah=yes
 AC_ARG_ENABLE(double_buffer,
 [  --enable-double-buffer  enable if you want to support flicker-free operation [[default=yes]]],
   [dah="$enableval"])
+
+want_xdamage=yes
+AC_ARG_ENABLE(xdamage,
+[  --enable-xdamage        enable if you want Xdamage support [[default=yes]]],
+  [want_xdamage="$enableval"])
 
 want_x11=yes
 AC_ARG_ENABLE(x11,
@@ -415,11 +418,17 @@ if test "x$want_x11" = "xyes"; then
 	AC_DEFINE(X11, 1, [Define if you want to use X11])
 	AC_DEFINE(HAVE_X11, 1, [Define if you have X11])
 	AM_CONDITIONAL(BUILD_X11, true)
-	AC_CHECK_LIB(Xdamage, XDamageQueryExtension, [AC_DEFINE([HAVE_XDAMAGE], 1, [Xdamage]) LIBS="$LIBS -lXdamage"], [AC_MSG_ERROR([something went wrong when checking for Xdamage])])
-	if test $dah != "no"; then
+	if test "x$dah" != xno; then
 		AC_DEFINE(DOUBLE_BUFFER, 1, [Define if you want support for the DBE extension])
 		AC_CHECK_LIB(Xext, XdbeQueryExtension, [AC_DEFINE([HAVE_XDBE], 1, [Xdbe]) LIBS="$LIBS -lXext"],
 		     [AC_MSG_ERROR([something went wrong when checking for Xdbe (double buffer extension)])])
+	fi
+
+	if test "x$want_xdamage" = "xyes"; then
+		AC_DEFINE(XDAMAGE, 1, [Define if you want support for the Xdamage extension])
+		AC_CHECK_LIB(Xdamage, XDamageQueryExtension, 
+			     [AC_DEFINE([HAVE_XDAMAGE], 1, [Xdamage]) LIBS="$LIBS -lXdamage"],
+			      [AC_MSG_ERROR([something went wrong when checking for Xdamage])])
 	fi
 else
 	AM_CONDITIONAL(BUILD_X11, false)

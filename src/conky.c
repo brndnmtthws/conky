@@ -3207,16 +3207,18 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						obj->a = get_freq(p, p_max_size, "%'.2f", 1000, obj->data.cpu_index); /* pk */
 					}
 				}
+#if defined(__linux__)
 				OBJ(voltage_mv) {
 					if (obj->a) {
-						obj->a = get_voltage(p, p_max_size, "%.0f", 1, obj->data.cpu_index); /* ptarjan */
+						obj->a = get_voltage(p, p_max_size, "%.0f", 1, obj->data.cpu_index);
 					}
 				}
 				OBJ(voltage_v) {
 					if (obj->a) {
-						obj->a = get_voltage(p, p_max_size, "%'.3f", 1000, obj->data.cpu_index); /* ptarjan */
+						obj->a = get_voltage(p, p_max_size, "%'.3f", 1000, obj->data.cpu_index);
 					}
 				}
+#endif /* __linux__ */
 
 				OBJ(freq_dyn) {
 					if (use_spacer) {
@@ -5594,12 +5596,14 @@ static void main_loop()
 #ifdef X11
 	Region region = XCreateRegion();
 	int event_base, error_base;
+#ifdef HAVE_XDAMAGE
 	if (!XDamageQueryExtension (display, &event_base, &error_base)) {
 		ERR("Xdamage extension unavailable");
 	}
 	Damage damage = XDamageCreate(display, window.window, XDamageReportNonEmpty);
 	XserverRegion region2 = XFixesCreateRegionFromWindow(display, window.window, 0);
 	XserverRegion part = XFixesCreateRegionFromWindow(display, window.window, 0);
+#endif /* HAVE_XDAMAGE */
 #endif /* X11 */
 
 	info.looped = 0;
@@ -5813,6 +5817,7 @@ static void main_loop()
 #endif
 
 			default:
+#ifdef HAVE_XDAMAGE
 				if (ev.type == event_base + XDamageNotify) {
 					XDamageNotifyEvent  *dev = (XDamageNotifyEvent *) &ev;
 					XFixesSetRegion(display, part, &dev->area, 1);
@@ -5820,6 +5825,7 @@ static void main_loop()
 					XDamageSubtract(display, damage, region2, None);
 					XFixesSetRegion(display, region2, 0, 0);
 				}
+#endif /* HAVE_XDAMAGE */
 				break;
 			}
 		}
@@ -5895,13 +5901,13 @@ static void main_loop()
 		g_signal_pending=0;
 	
 	}
-#ifdef X11
+#if defined(X11) && defined(HAVE_XDAMAGE)
 	XDamageDestroy(display, damage);
 	XFixesDestroyRegion(display, region2);
 	XFixesDestroyRegion(display, part);
 	XDestroyRegion(region);
 	region = NULL;
-#endif /* X11 */
+#endif /* X11 && HAVE_XDAMAGE */
 }
 
 static void load_config_file(const char *);

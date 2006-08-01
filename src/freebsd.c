@@ -495,7 +495,8 @@ get_freq_dynamic(char *p_client_buffer, size_t client_buffer_size,
 #endif
 }
 
-void
+/*void*/
+char
 get_freq(char *p_client_buffer, size_t client_buffer_size,
 		char *p_format, int divisor, unsigned int cpu)
 {
@@ -519,6 +520,7 @@ get_freq(char *p_client_buffer, size_t client_buffer_size,
 		snprintf(p_client_buffer, client_buffer_size, p_format, 0.0f);
 
 	free(freq_sysctl);
+	return 1;
 }
 
 void
