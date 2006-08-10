@@ -292,6 +292,20 @@ if test x$want_seti = xyes; then
 fi
 
 dnl
+dnl Hddtemp
+dnl
+
+want_hddtemp=yes
+AC_ARG_ENABLE(hddtemp,
+[  --enable-hddtemp        enable if you want hddtemp support [[default=yes]]],
+  [want_hddtemp="$enableval"])
+
+AM_CONDITIONAL(BUILD_HDDTEMP, test x$want_hddtemp = xyes)
+if test x$want_hddtemp = xyes; then
+  AC_DEFINE(HDDTEMP, 1, [Define if you want hddtemp support])
+fi
+
+dnl
 dnl MPD
 dnl
 
@@ -311,7 +325,7 @@ dnl
 
 want_xmms2=no
 AC_ARG_ENABLE(xmms2,
-[  --enable-xmms2            enable if you want XMMS2 support [[default=no]]],
+[  --enable-xmms2          enable if you want XMMS2 support [[default=no]]],
   [want_xmms2="$enableval"])
 
 AM_CONDITIONAL(BUILD_XMMS2, test x$want_xmms2 = xyes)
@@ -327,7 +341,7 @@ dnl
 
 want_imlib2=no
 AC_ARG_ENABLE(imlib2,
-[  --enable-imlib2            enable if you want Imlib2 support [[default=no]]],
+[  --enable-imlib2         enable if you want Imlib2 support [[default=no]]],
   [want_imlib2="$enableval"])
 
 AM_CONDITIONAL(BUILD_IMLIB2, test x$want_imlib2 = xyes)

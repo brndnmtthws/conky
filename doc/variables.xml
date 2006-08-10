@@ -454,6 +454,27 @@
 
 <varlistentry>
 	<term>
+		<command><option>goto</option></command>
+		<option>x</option>
+	</term>
+	<listitem>
+        The next element will be printed at position 'x'.
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>hddtemp</option></command>
+		<option>dev, (host,(port))</option>
+	</term>
+	<listitem>
+		Displays temperature of a selected hard disk drive as reported by the hddtemp daemon running on host:port.
+		Default host is 127.0.0.1, default port is 7634.
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>head</option></command>
 		<option>logfile lines (interval)</option>
 	</term>
@@ -1172,6 +1193,16 @@
 	<listitem>
 		Move text over by N pixels.  See also $voffset.
 		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>tab</option></command>
+		<option>(width, (start))</option>
+	</term>
+	<listitem>
+        Puts a tab of the specified width, starting from column 'start'.
+	<para></para></listitem>
 </varlistentry>
 
 <varlistentry>

@@ -599,6 +599,12 @@ extern mldonkey_config mlconfig;
 int get_mldonkey_status(mldonkey_config * config, mldonkey_info * info);
 #endif
 
+/* in hddtemp.c */
+#ifdef HDDTEMP
+int scan_hddtemp(const char *arg, char **dev, char **addr, int *port);
+char *get_hddtemp_info(char *dev, char *addr, int port, char *unit);
+#endif /* HDDTEMP */
+
 /* in linux.c */
 
 /* nothing to see here */
@@ -607,3 +613,5 @@ int get_mldonkey_status(mldonkey_config * config, mldonkey_info * info);
 extern int do_it(void);
 
 #endif
+
+

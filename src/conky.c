@@ -450,6 +450,8 @@ enum {
 	OFFSET,
 	VOFFSET,
 	FONT,
+	GOTO,
+	TAB,
 };
 
 static struct special_t {
@@ -752,6 +754,17 @@ static inline void new_alignc(char *buf, long c)
 	new_special(buf, ALIGNC)->arg = c;
 }
 
+static inline void new_goto(char *buf, long c)
+{
+	new_special(buf, GOTO)->arg = c;
+}
+
+static inline void new_tab(char *buf, int a, int b) {
+	struct special_t *s = new_special(buf, TAB);
+	s->width = a;
+	s->arg = b;
+}
+
 /* quite boring functions */
 
 static inline void for_each_line(char *b, void (*f) (char *))
@@ -856,6 +869,8 @@ enum text_object_type {
 	OBJ_fs_size,
 	OBJ_fs_used,
 	OBJ_fs_used_perc,
+	OBJ_goto,
+	OBJ_tab,
 	OBJ_hr,
 	OBJ_offset,
 	OBJ_voffset,
@@ -1032,6 +1047,9 @@ enum text_object_type {
 	OBJ_iconv_start,
 	OBJ_iconv_stop,
 #endif
+#ifdef HDDTEMP
+	OBJ_hddtemp,
+#endif
 };
 
 struct text_object {
@@ -1112,6 +1130,11 @@ struct text_object {
 			int        connection_index;  /* 0 to n-1 connections. */
 		} tcp_port_monitor;
 #endif
+		struct {
+			char *addr;
+			int port;
+			char *dev;
+		} hddtemp; /* 2 */
 	} data;
 };
 
@@ -1961,6 +1984,12 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 					info.first_process = NULL;
 				}
 				break;
+#ifdef HDDTEMP
+			case OBJ_hddtemp:
+				free(objs[i].data.hddtemp.dev);
+				free(objs[i].data.hddtemp.addr);
+				break;
+#endif
 		}
 	}
 	free(objs);
@@ -2313,6 +2342,28 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	END OBJ(hr, 0) obj->data.i = arg ? atoi(arg) : 1;
 	END OBJ(offset, 0) obj->data.i = arg ? atoi(arg) : 1;
 	END OBJ(voffset, 0) obj->data.i = arg ? atoi(arg) : 1;
+	END OBJ(goto, 0)
+
+	if (!arg) {
+		ERR("goto needs arguments");
+		obj->type = OBJ_text;
+		obj->data.s = strdup("${goto}");
+		return NULL;
+	}
+	
+	obj->data.i = atoi(arg);
+	
+	END OBJ(tab, 0)
+	int a = 10, b = 0;
+	if (arg) {
+		if (sscanf(arg, "%d %d", &a, &b) != 2)
+			sscanf(arg, "%d", &b);
+	}
+	if (a <= 0) 
+		a = 1;
+	obj->data.pair.a = a;
+	obj->data.pair.b = b;
+
 	END OBJ(i2c, INFO_I2C) char buf1[64], buf2[64];
 	int n;
 
@@ -2874,6 +2925,17 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	END
 		OBJ(bmpx_bitrate, INFO_BMPX)
 		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+	END
+#endif
+#ifdef HDDTEMP
+	OBJ(hddtemp, 0)
+		if (!arg || scan_hddtemp(arg, &obj->data.hddtemp.dev, 
+			&obj->data.hddtemp.addr, &obj->data.hddtemp.port)) {
+			ERR("hddtemp needs arguments");
+			obj->type = OBJ_text;
+			obj->data.s = strdup("${hddtemp}");
+			return NULL;
+		}
 	END
 #endif
 #ifdef TCP_PORT_MONITOR
@@ -3871,8 +3933,28 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						 v[obj->data.loadavg[0] -
 						   1]);
 			}
+			OBJ(goto) {
+				new_goto(p, obj->data.i);
+			}
+			OBJ(tab) {
+				new_tab(p, obj->data.pair.a, obj->data.pair.b);
+			}
 			OBJ(hr) {
 				new_hr(p, obj->data.i);
+			}
+			OBJ(hddtemp) {
+				char *temp;
+				char unit;
+				
+				temp = get_hddtemp_info(obj->data.hddtemp.dev, 
+						obj->data.hddtemp.addr, obj->data.hddtemp.port, &unit);
+				if (!temp) {
+					snprintf(p, p_max_size, "N/A");
+				} else if (unit == '*') {
+					snprintf(p, p_max_size, "%s", temp);
+				} else {
+					 snprintf(p, p_max_size, "%s?%c", temp, unit);
+				}
 			}
 			OBJ(offset) {
 				new_offset(p, obj->data.i);
@@ -4834,57 +4916,9 @@ static inline int get_string_width_special(char *s)
 }
 
 #ifdef X11
+static void text_size_updater(char *s);
+
 int last_font_height;
-static void text_size_updater(char *s)
-{
-	int w = 0;
-	char *p;
-	/* get string widths and skip specials */
-	p = s;
-	while (*p) {
-		if (*p == SPECIAL_CHAR) {
-			*p = '\0';
-			w += get_string_width(s);
-			*p = SPECIAL_CHAR;
-
-			if (specials[special_index].type == BAR
-			    || specials[special_index].type == GRAPH) {
-				w += specials[special_index].width;
-				if (specials[special_index].height > last_font_height) {
-					last_font_height = specials[special_index].height;
-					last_font_height += font_ascent();
-				}
-			} else if (specials[special_index].type == OFFSET) {
-				w += specials[special_index].arg + get_string_width("a"); /* filthy, but works */
-			} else if (specials[special_index].type == VOFFSET) {
-				last_font_height += specials[special_index].arg;
-			} else if (specials[special_index].type == FONT) {
-				selected_font = specials[special_index].font_added;
-				if (font_height() > last_font_height) {
-					last_font_height = font_height();
-				}
-			}
-			
-			special_index++;
-			s = p + 1;
-		}
-		p++;
-	}
-	w += get_string_width(s);
-	if (w > text_width) {
-		text_width = w;
-	}
-	if (text_width > maximum_width && maximum_width) {
-		text_width = maximum_width;
-	}
-
-	text_height += last_font_height;
-	last_font_height = font_height();
-}
-#endif /* X11 */
-
-
-#ifdef X11
 static void update_text_area()
 {
 	int x, y;
@@ -4973,6 +5007,64 @@ static void update_text_area()
 static int cur_x, cur_y;	/* current x and y for drawing */
 static int draw_mode;		/* FG, BG or OUTLINE */
 static long current_color;
+
+#ifdef X11
+static void text_size_updater(char *s)
+{
+	int w = 0;
+	char *p;
+	/* get string widths and skip specials */
+	p = s;
+	while (*p) {
+		if (*p == SPECIAL_CHAR) {
+			*p = '\0';
+			w += get_string_width(s);
+			*p = SPECIAL_CHAR;
+
+			if (specials[special_index].type == BAR
+			    || specials[special_index].type == GRAPH) {
+				w += specials[special_index].width;
+				if (specials[special_index].height > last_font_height) {
+					last_font_height = specials[special_index].height;
+					last_font_height += font_ascent();
+				}
+			} else if (specials[special_index].type == OFFSET) {
+				w += specials[special_index].arg + get_string_width("a"); /* filthy, but works */
+			} else if (specials[special_index].type == VOFFSET) {
+				last_font_height += specials[special_index].arg;
+			} else if (specials[special_index].type == GOTO) {
+				if (specials[special_index].arg >= 0)
+					w += (int)specials[special_index].arg - cur_x;
+			} else if (specials[special_index].type == TAB) { 
+			 	int start = specials[special_index].arg;
+				int step = specials[special_index].width;
+				if (!step || step < 0)
+					step = 10;
+				w += step - (cur_x - text_start_x - start) % step;
+			} else if (specials[special_index].type == FONT) {
+				selected_font = specials[special_index].font_added;
+				if (font_height() > last_font_height) {
+					last_font_height = font_height();
+				}
+			}
+			
+			special_index++;
+			s = p + 1;
+		}
+		p++;
+	}
+	w += get_string_width(s);
+	if (w > text_width) {
+		text_width = w;
+	}
+	if (text_width > maximum_width && maximum_width) {
+		text_width = maximum_width;
+	}
+
+	text_height += last_font_height;
+	last_font_height = font_height();
+}
+#endif /* X11 */
 
 static inline void set_foreground_color(long c)
 {
@@ -5410,14 +5502,26 @@ static void draw_line(char *s)
 							     arg);
 				break;
 
-				case OFFSET:
-				{
-					w += specials[special_index].arg;
-				}
+			case OFFSET:
+				w += specials[special_index].arg;
 				break;
-				case VOFFSET:
+		
+			case VOFFSET:
+				cur_y += specials[special_index].arg;
+				break;
+
+			case GOTO:
+				if (specials[special_index].arg >= 0)
+					cur_x = (int)specials[special_index].arg;
+				break;
+
+			case TAB:
 				{
-					cur_y += specials[special_index].arg;
+					int start = specials[special_index].arg;
+					int step = specials[special_index].width;
+					if (!step || step < 0)
+						step = 10;
+					w = step - (cur_x - text_start_x - start) % step;
 				}
 				break;
 
