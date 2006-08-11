@@ -3953,7 +3953,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				} else if (unit == '*') {
 					snprintf(p, p_max_size, "%s", temp);
 				} else {
-					 snprintf(p, p_max_size, "%s %c", temp, unit);
+					 snprintf(p, p_max_size, "%s%c", temp, unit);
 				}
 			}
 			OBJ(offset) {
