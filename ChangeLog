@@ -1,5 +1,8 @@
 # $Id$
 
+2006-08-10
+	* Added Spock's patches, adding hddtemp, goto and tab variables.
+
 2006-07-13
 	* Added tztime patch to show time in arbitrary time zones (thanks Ram
 	Yalamanchili)
