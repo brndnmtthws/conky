@@ -7,6 +7,7 @@
 #include <netdb.h>
 #include <sys/select.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 
 #define BUFLEN 512
 #define PORT 7634
