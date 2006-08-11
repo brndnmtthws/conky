@@ -1,4 +1,5 @@
 #include "conky.h"
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -81,7 +82,12 @@ char *get_hddtemp_info(char *dev, char *hostaddr, int port, char *unit)
 	
 	i = select(sockfd+1, &rfds, NULL, NULL, &tv);
 	if (i == -1)
-		perror("select");
+	{
+		if (errno == EINTR)  	/* silently ignore interrupted system call */
+		    goto out;
+		else
+		    perror("select");
+	}
 
 	/* No data available */
 	if (i <= 0)
