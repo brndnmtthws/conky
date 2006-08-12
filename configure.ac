@@ -619,7 +619,9 @@ dnl
 cat << EOF
 
 $PACKAGE $VERSION configured successfully:
-  
+
+ Installing into:	$prefix
+
  * x11:
   x11 support:		$want_x11
   xft support:		$want_xft
