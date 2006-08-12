@@ -110,6 +110,58 @@ static void print_version()
 {
 	printf("Conky %s compiled %s for %s\n",
 			VERSION, BUILD_DATE, BUILD_ARCH);
+
+	printf(
+	"\nCompiled in features:\n\n"
+#ifdef X11
+	" X11:\n"
+# ifdef XFT
+	"  * xft\n"
+# endif /* XFT */
+# ifdef HAVE_XDAMAGE
+	"  * Xdamage extension\n"
+# endif /* HAVE_XDAMAGE */
+# ifdef HAVE_XDBE
+	"  * Xdbe extension (double buffer)\n"
+# endif /* HAVE_XDBE */
+#endif /* X11 */
+	"\n Music detection:\n"
+#ifdef XMMS
+	"  * xmms\n"
+#endif /* XMMS */
+#ifdef BMP
+	"  * bmp\n"
+#endif /* BMP */
+#ifdef AUDACIOUS
+	"  * audacious\n"
+#endif /* AUDACIOUS */
+#ifdef INFOPIPE
+	"  * infopipe\n"
+#endif /* INFOPIPE */
+#ifdef BMPX
+	"  * bmpx\n"
+#endif /* BMPX */
+#ifdef XMMS2
+	"  * xmms2\n"
+#endif /* XMMS2 */
+#ifdef MPD
+	"  * mpd\n"
+#endif /* MPD */
+	"\n General features:\n"
+#ifdef TCP_PORT_MONITOR
+	"  * portmon\n"
+#endif /* TCP_PORT_MONITOR */
+#ifdef MLDONKEY
+	"  * mldonkey\n"
+#endif /* MLDONKEY */
+#ifdef HDDTEMP
+        "  * hddtemp\n"
+#endif /* HDDTEMP */
+#ifdef SETI
+	"  * seti\n"
+#endif /* SETI*/
+	"\n");	
+
 	exit(0);
 }
 
