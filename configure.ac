@@ -606,3 +606,31 @@ AC_SUBST(X11_LIBS)
 AC_SUBST(XFT_LIBS)
 
 AC_OUTPUT
+
+dnl
+dnl Print summary
+dnl
+cat << EOF
+
+$PACKAGE $VERSION configured successfully:
+  
+ * x11:
+  x11 support:		$want_x11
+  xft support:		$want_xft
+  xdamage extension:	$want_xdamage  
+
+ * music detection:
+  xmms:			$want_xmms
+  bmp:			$want_bmp
+  audacious:		$want_audacious
+  infopipe:		$want_infopipe
+  bmpx:			$want_bmpx
+  xmms2:		$want_xmms2
+  mpd:			$want_mpd
+
+ * general:
+  portmon:		$want_portmon  
+  mldonkey:		$want_mldonkey
+  hddtemp:		$want_hddtemp
+
+EOF

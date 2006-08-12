@@ -57,7 +57,15 @@ void update_bmpx()
 			ERR("BMPx error 3: %s\n", error->message);
 			goto fail;
 		}
-	
+
+		if (current_track == -1) {
+			printf("Here!!!\n");
+			goto fail;
+		}
+
+		printf("Here!!! ct = %d\n", current_track);
+
+		
 		if (dbus_g_proxy_call(remote_object, "GetMetadataForListItem", &error,
 				G_TYPE_INT,
 				current_track,
@@ -65,24 +73,36 @@ void update_bmpx()
 				DBUS_TYPE_G_STRING_VALUE_HASHTABLE,
 				&metadata,
 				G_TYPE_INVALID)) {
-			if (current_info->bmpx.title) {
-				free(current_info->bmpx.title);
-				current_info->bmpx.title = 0;
+			gchar *tmp_title, *tmp_artist, *tmp_album;
+			tmp_title = current_info->bmpx.title;
+			tmp_artist = current_info->bmpx.artist;
+			tmp_album = current_info->bmpx.album;
+			/*			if (current_info->bmpx.title) {
+				g_free(current_info->bmpx.title);
+				current_info->bmpx.title = NULL;
 			}
 			if (current_info->bmpx.artist) {
-				free(current_info->bmpx.artist);
-				current_info->bmpx.artist = 0;
+				g_free(current_info->bmpx.artist);
+				current_info->bmpx.artist = NULL;
 			}
 			if (current_info->bmpx.album) {
-				free(current_info->bmpx.album);
-				current_info->bmpx.album = 0;
-			}
+				g_free(current_info->bmpx.album);
+				current_info->bmpx.album = NULL;
+			}*/
 			current_info->bmpx.title = g_value_dup_string(g_hash_table_lookup(metadata, "title"));
 			current_info->bmpx.artist = g_value_dup_string(g_hash_table_lookup(metadata, "artist"));
 			current_info->bmpx.album = g_value_dup_string(g_hash_table_lookup(metadata, "album"));
 			current_info->bmpx.bitrate = g_value_get_int(g_hash_table_lookup(metadata, "bitrate"));
 			current_info->bmpx.track = g_value_get_int(g_hash_table_lookup(metadata, "track-number"));
 			current_info->bmpx.uri = g_value_get_string(g_hash_table_lookup(metadata, "location"));
+
+			if (tmp_title != NULL)
+				g_free(tmp_title);
+
+			if (tmp_artist != NULL)
+				g_free(tmp_artist);
+			if (tmp_album != NULL)
+				g_free(tmp_album);
 		} else {
 			ERR("BMPx error 4: %s\n", error->message);
 			goto fail;
