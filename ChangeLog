@@ -1,5 +1,9 @@
 # $Id$
 
+2006-08-12
+	* Make configure script print summary info
+	* Make `conky -v` show compiled-in features
+
 2006-08-10
 	* Added Spock's patches, adding hddtemp, goto and tab variables.
 
