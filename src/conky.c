@@ -41,6 +41,8 @@
 #include <iconv.h>
 #endif
 
+#include "build.h"
+
 #define CONFIG_FILE "$HOME/.conkyrc"
 #define MAIL_FILE "$MAIL"
 #define MAX_IF_BLOCK_DEPTH 5
@@ -103,6 +105,13 @@ struct font_list *fonts = NULL;
 
 
 static void set_font();
+
+static void print_version()
+{
+	printf("Conky %s compiled %s for %s\n",
+			VERSION, BUILD_DATE, BUILD_ARCH);
+	exit(0);
+}
 
 int addfont(const char *data_in)
 {
@@ -6874,10 +6883,7 @@ int main(int argc, char **argv)
 		switch (c) {
 		case 'v':
 		case 'V':
-			printf
-			    ("Conky " VERSION " compiled " __DATE__ "\n");
-			return 0;
-
+			print_version();
 		case 'c':
 			/* if current_config is set to a strdup of CONFIG_FILE, free it (even
 			 * though free() does the NULL check itself;), then load optarg value */

@@ -15,6 +15,7 @@ AC_CONFIG_FILES(
 	Makefile
 	doc/Makefile
 	src/Makefile
+	src/build.h
 	)
 
 uname=`uname`
@@ -50,10 +51,15 @@ case $uname in
 esac
 
 AM_CONDITIONAL(BUILD_LINUX, test x$uname = xLinux)
-AM_CONDITIONAL(BUILD_SOLARIS, test x$uname = xSunOS)
+#AM_CONDITIONAL(BUILD_SOLARIS, test x$uname = xSunOS)
 AM_CONDITIONAL(BUILD_FREEBSD, test x$uname = xFreeBSD)
-AM_CONDITIONAL(BUILD_NETBSD, test x$uname = xNetBSD)
+#AM_CONDITIONAL(BUILD_NETBSD, test x$uname = xNetBSD)
 # AM_CONDITIONAL(BUILD_OPENBSD, test x$uname = xOpenBSD)
+
+BUILD_DATE=$(LANG=en_US LC_ALL=en_US LOCALE=en_US date)
+BUILD_ARCH="$(uname -sr) ($(uname -m))"
+AC_SUBST(BUILD_DATE)
+AC_SUBST(BUILD_ARCH)
 
 dnl
 dnl XFT option

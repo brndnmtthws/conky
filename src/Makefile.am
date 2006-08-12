@@ -37,18 +37,18 @@ linux = linux.c top.c
 PTHREAD_LIBS =  -lpthread
 endif
 
-if BUILD_SOLARIS
-solaris = solaris.c
-endif
+#if BUILD_SOLARIS
+#solaris = solaris.c
+#endif
 
 if BUILD_FREEBSD
 freebsd = freebsd.c
 PTHREAD_LIBS =  -pthread
 endif
 
-if BUILD_NETBSD
-netbsd = netbsd.c
-endif
+#if BUILD_NETBSD
+#netbsd = netbsd.c
+#endif
 
 if BUILD_PORT_MONITORS
 port_monitors = libtcp-portmon.h libtcp-portmon.c hash.h hash.c
