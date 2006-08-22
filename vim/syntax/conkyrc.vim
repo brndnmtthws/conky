@@ -143,6 +143,8 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 	\ fs_free_perc 
 	\ fs_size 
 	\ fs_used head
+	\ goto
+	\ hddtemp
       	\ hr 
 	\ i2c 
 	\ i8k_ac_status 
@@ -208,6 +210,7 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 	\ swapmax 
 	\ swapperc 
 	\ sysname
+	\ tab
 	\ tail 
       	\ tcp_portmon 
       	\ texeci 
