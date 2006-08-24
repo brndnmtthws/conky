@@ -50,62 +50,6 @@
 /* #define SIGNAL_BLOCKING */
 #undef SIGNAL_BLOCKING
 
-#ifdef X11
-
-/*
- * text size
- */
-
-static int text_start_x, text_start_y;	/* text start position in window */
-static int text_width, text_height;
-
-/* alignments */
-enum alignment {
-	TOP_LEFT = 1,
-	TOP_RIGHT,
-	BOTTOM_LEFT,
-	BOTTOM_RIGHT,
-	NONE
-};
-
-
-/* for fonts */
-struct font_list {
-
-	char name[TEXT_BUFFER_SIZE];
-	int num;
-	XFontStruct *font;
-
-#ifdef XFT
-	XftFont *xftfont;
-	int font_alpha;
-#endif	
-
-};
-static int selected_font = 0;
-static int font_count = -1;
-struct font_list *fonts = NULL;
-
-#ifdef XFT
-
-#define font_height() (use_xft ? (fonts[selected_font].xftfont->ascent + fonts[selected_font].xftfont->descent) : \
-(fonts[selected_font].font->max_bounds.ascent + fonts[selected_font].font->max_bounds.descent))
-#define font_ascent() (use_xft ? fonts[selected_font].xftfont->ascent : fonts[selected_font].font->max_bounds.ascent)
-#define font_descent() (use_xft ? fonts[selected_font].xftfont->descent : fonts[selected_font].font->max_bounds.descent)
-
-#else
-
-#define font_height() (fonts[selected_font].font->max_bounds.ascent + fonts[selected_font].font->max_bounds.descent)
-#define font_ascent() fonts[selected_font].font->max_bounds.ascent
-#define font_descent() fonts[selected_font].font->max_bounds.descent
-
-#endif
-
-#define MAX_FONTS 64 // hmm, no particular reason, just makes sense.
-
-
-static void set_font();
-
 static void print_version()
 {
 	printf("Conky %s compiled %s for %s\n",
@@ -164,6 +108,62 @@ static void print_version()
 
 	exit(0);
 }
+
+#ifdef X11
+
+/*
+ * text size
+ */
+
+static int text_start_x, text_start_y;	/* text start position in window */
+static int text_width, text_height;
+
+/* alignments */
+enum alignment {
+	TOP_LEFT = 1,
+	TOP_RIGHT,
+	BOTTOM_LEFT,
+	BOTTOM_RIGHT,
+	NONE
+};
+
+
+/* for fonts */
+struct font_list {
+
+	char name[TEXT_BUFFER_SIZE];
+	int num;
+	XFontStruct *font;
+
+#ifdef XFT
+	XftFont *xftfont;
+	int font_alpha;
+#endif	
+
+};
+static int selected_font = 0;
+static int font_count = -1;
+struct font_list *fonts = NULL;
+
+#ifdef XFT
+
+#define font_height() (use_xft ? (fonts[selected_font].xftfont->ascent + fonts[selected_font].xftfont->descent) : \
+(fonts[selected_font].font->max_bounds.ascent + fonts[selected_font].font->max_bounds.descent))
+#define font_ascent() (use_xft ? fonts[selected_font].xftfont->ascent : fonts[selected_font].font->max_bounds.ascent)
+#define font_descent() (use_xft ? fonts[selected_font].xftfont->descent : fonts[selected_font].font->max_bounds.descent)
+
+#else
+
+#define font_height() (fonts[selected_font].font->max_bounds.ascent + fonts[selected_font].font->max_bounds.descent)
+#define font_ascent() fonts[selected_font].font->max_bounds.ascent
+#define font_descent() fonts[selected_font].font->max_bounds.descent
+
+#endif
+
+#define MAX_FONTS 64 // hmm, no particular reason, just makes sense.
+
+
+static void set_font();
 
 int addfont(const char *data_in)
 {
