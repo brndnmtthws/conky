@@ -5772,7 +5772,7 @@ static void main_loop()
 #endif /* X11 */
 
 	info.looped = 0;
-	while (total_run_times == 0 || info.looped < total_run_times - 1) {
+	while (total_run_times == 0 || info.looped < total_run_times) {
 		info.looped++;
 
 #ifdef SIGNAL_BLOCKING
