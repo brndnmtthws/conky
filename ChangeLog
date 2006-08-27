@@ -1,5 +1,8 @@
 # $Id$
 
+2006-08-27
+	* Fix compilation errors when building with --diable-x11; bug #1547164
+
 2006-08-12
 	* Make configure script print summary info
 	* Make `conky -v` show compiled-in features

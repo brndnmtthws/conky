@@ -328,7 +328,7 @@ static int fixed_size = 0, fixed_pos = 0;
 static int minimum_width, minimum_height;
 static int maximum_width;
 
-
+#endif /* X11 */
 
 #ifdef HAVE_ICONV
 #define CODEPAGE_LENGTH 20
@@ -375,8 +375,6 @@ void free_iconv(void)
 
 /* UTF-8 */
 int utf8_mode = 0;
-
-#endif /* X11 */
 
 /* no buffers in used memory? */
 int no_buffers;

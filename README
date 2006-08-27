@@ -474,8 +474,8 @@ VARIABLES
 
        cpu (cpuN)
 	      CPU usage in percents. For SMP machines, the CPU number  can  be
-	      provided as an argument. cpu0 is the total usage, and >=cpu1 are
-	      individual CPUs.
+	      provided	as an argument. ${cpu 0} is the total usage, and ${cpu
+	      X} (X >= 1) are individual CPUs.
 
 
        cpubar (cpu number) (height),(width)
