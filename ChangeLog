@@ -1,5 +1,9 @@
 # $Id$
 
+2006-09-01
+	* Fix type-punning and "differ in signedness" warnings seen with
+	gcc-4.1 -O2.
+
 2006-08-27
 	* Fix compilation errors when building with --diable-x11; bug #1547164
 
