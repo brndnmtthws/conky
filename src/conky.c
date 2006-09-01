@@ -474,9 +474,9 @@ static inline int calc_text_width(const char *s, int l)
 	if (use_xft) {
 		XGlyphInfo gi;
 		if (utf8_mode) {
-			XftTextExtentsUtf8(display, fonts[selected_font].xftfont, s, l, &gi);
+			XftTextExtentsUtf8(display, fonts[selected_font].xftfont, (FcChar8 *)s, l, &gi);
 		} else {
-			XftTextExtents8(display, fonts[selected_font].xftfont, s, l, &gi);
+			XftTextExtents8(display, fonts[selected_font].xftfont, (FcChar8 *)s, l, &gi);
 		}
 		return gi.xOff;
 	} else
