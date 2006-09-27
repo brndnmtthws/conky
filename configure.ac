@@ -3,7 +3,7 @@ AC_INIT([Conky],[1.4.2],[brenden1@users.sourceforge.net])
 AM_INIT_AUTOMAKE(conky, 1.4.2)
 AM_CONFIG_HEADER(src/config.h)
 dnl
-dnl C Compiler
+nl C Compiler
 dnl
 
 AC_PROG_CC
@@ -459,22 +459,13 @@ dnl Xft
 dnl
 
 if test x$want_xft && test x$want_x11; then
-  AC_PATH_PROG(XFTCONFIG, xft-config)
-  if test x$XFTCONFIG != x; then
-    dnl TODO: needs more checks
-  
-dnl This won't work for some reason
-dnl  AC_CHECK_HEADERS([X11/Xft/Xft.h], [], [XFT_MISSING=yes])
-    if test "x$XFT_MISSING" = xyes; then
-      AC_MSG_ERROR([something went wrong when checking for Xft, you're probably missing headers or it's not installed])
-  fi
-
-    AC_DEFINE(XFT, 1, [Define if you are using Xft])
-    CFLAGS="$CFLAGS `$XFTCONFIG --cflags`"
-    XFT_LIBS=`$XFTCONFIG --libs`
-  else
-    want_xft=no
-  fi
+  PKG_CHECK_MODULES(XFT, [xft],
+		    [
+		     AC_DEFINE(XFT, 1, [Define if you are using Xft])
+		     CFLAGS="$CFLAGS $XFT_CFLAGS"
+		     AC_SUBST(XFT_LIBS)
+		    ], 
+		    [want_xft=no])
 fi
 
 dnl
@@ -609,7 +600,6 @@ CFLAGS="$CFLAGS -Wall -W"
 
 AC_SUBST(CFLAGS)
 AC_SUBST(X11_LIBS)
-AC_SUBST(XFT_LIBS)
 
 AC_OUTPUT
 
