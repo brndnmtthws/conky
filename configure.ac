@@ -3,7 +3,7 @@ AC_INIT([Conky],[1.4.2],[brenden1@users.sourceforge.net])
 AM_INIT_AUTOMAKE(conky, 1.4.2)
 AM_CONFIG_HEADER(src/config.h)
 dnl
-nl C Compiler
+dnl C Compiler
 dnl
 
 AC_PROG_CC
