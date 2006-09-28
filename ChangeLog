@@ -1,5 +1,10 @@
 # $Id$
 
+2006-09-28
+	* Use pkg-config instead of xft-config.
+	* Fix last line bug which had required padding text with extra blank line 
+	to see text on last line.
+
 2006-09-01
 	* Fix type-punning and "differ in signedness" warnings seen with
 	gcc-4.1 -O2.

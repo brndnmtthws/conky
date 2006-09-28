@@ -4990,9 +4990,8 @@ static void update_text_area()
 		text_width = minimum_width;
 		text_height = 0;
 		special_index = 0;
-		int first_font_height = last_font_height = font_height();
+		last_font_height = font_height();
 		for_each_line(text_buffer, text_size_updater);
-		text_height -= first_font_height;
 		text_width += 1;
 		if (text_height < minimum_height)
 			text_height = minimum_height;
