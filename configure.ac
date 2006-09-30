@@ -1,6 +1,6 @@
-AC_INIT([Conky],[1.4.2],[brenden1@users.sourceforge.net])
+AC_INIT([Conky],[1.4.3],[brenden1@users.sourceforge.net])
 
-AM_INIT_AUTOMAKE(conky, 1.4.2)
+AM_INIT_AUTOMAKE(conky, 1.4.3)
 AM_CONFIG_HEADER(src/config.h)
 dnl
 dnl C Compiler
@@ -405,6 +405,18 @@ else
 	LIBS="$LIBS $LIBICONV"
 fi
 
+dnl
+dnl debug
+dnl
+
+want_debug=no
+AC_ARG_ENABLE(debug, 
+	[  --enable-debug	compile with debug symbols [[default=no]]],
+	[want_debug="$enableval"])
+
+if test "x$want_debug" = "xyes" -a $ac_cv_c_compiler_gnu != no; then
+	CFLAGS="$CFLAGS -g3"
+fi
 
 dnl
 dnl X
@@ -611,6 +623,9 @@ cat << EOF
 $PACKAGE $VERSION configured successfully:
 
  Installing into:	$prefix
+ C compiler flags:	$CFLAGS
+ Linker flags:		$LDFLAGS
+ Libraries:		$LIBS
 
  * x11:
   x11 support:		$want_x11
