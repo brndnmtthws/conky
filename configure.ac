@@ -6,6 +6,12 @@ dnl
 dnl C Compiler
 dnl
 
+dnl prevent libtool setting LTCFLAGS to default of -g -O2 when CFLAGS unset.
+dnl libtool must be deleted with make distclean to see this fix.
+if test x"$CFLAGS" = x""; then
+    AC_SUBST(CFLAGS, [ ])
+fi
+
 AC_PROG_CC
 AC_PROG_LIBTOOL
 PKG_PROG_PKG_CONFIG([0.17.2])
