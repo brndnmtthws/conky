@@ -5984,13 +5984,15 @@ static void main_loop()
 					XDamageNotifyEvent  *dev = (XDamageNotifyEvent *) &ev;
 					XFixesSetRegion(display, part, &dev->area, 1);
 					XFixesUnionRegion(display, region2, region2, part);
-					XDamageSubtract(display, damage, region2, None);
-					XFixesSetRegion(display, region2, 0, 0);
 				}
 #endif /* HAVE_XDAMAGE */
 				break;
 			}
-		}
+	}
+#ifdef HAVE_XDAMAGE
+		XDamageSubtract(display, damage, region2, None);
+		XFixesSetRegion(display, region2, 0, 0);
+#endif /* HAVE_XDAMAGE */
 
 		/* XDBE doesn't seem to provide a way to clear the back buffer without
 		 * interfering with the front buffer, other than passing XdbeBackground
