@@ -6906,19 +6906,23 @@ int main(int argc, char **argv)
 		
 	/* handle command line parameters that don't change configs */
 #ifdef X11
-	char *s;
-	char temp[10];
+	char *s, *temp;
 	unsigned int x;
 
 	if (((s = getenv("LC_ALL")) && *s) || ((s = getenv("LC_CTYPE")) && 
 		     *s) || ((s = getenv("LANG")) && *s)) {
-		strcpy(temp, s);
-		for(x = 0; x < strlen(s) ; x++) {
+		temp = (char *)malloc((strlen(s) + 1) * sizeof(char));
+		if (temp == NULL) {
+			ERR("malloc failed");
+		}
+		for (x = 0; x < strlen(s); x++) {
 			temp[x] = tolower(s[x]);
 		}
 		if (strstr(temp, "utf-8") || strstr(temp, "utf8")) {
 			utf8_mode = 1;
 		}
+		
+		free(temp);
 	}
 	if (!setlocale(LC_CTYPE, "")) {
 		ERR("Can't set the specified locale!\nCheck LANG, LC_CTYPE, LC_ALL.");
