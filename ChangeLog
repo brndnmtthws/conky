@@ -1,5 +1,10 @@
 # $Id$
 
+2006-10-04
+	* Fix buffer overflow in parsing LC_ALL, LC_CTYPE and LANG
+	environment variables and fix crash for users with locale
+	name longer than 10 chars (repored by Michael Schwendt)
+
 2006-09-30
 	* --enable-debug added.
 	* prevent libtool from adding its default CFLAGS
