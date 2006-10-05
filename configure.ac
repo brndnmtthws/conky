@@ -428,10 +428,10 @@ dnl
 dnl X
 dnl
 
-dah=yes
+want_double_buffer=yes
 AC_ARG_ENABLE(double_buffer,
 [  --enable-double-buffer  enable if you want to support flicker-free operation [[default=yes]]],
-  [dah="$enableval"])
+  [want_double_buffer="$enableval"])
 
 want_xdamage=yes
 AC_ARG_ENABLE(xdamage,
@@ -450,13 +450,21 @@ if test "x$want_x11" = "xyes"; then
 	CFLAGS="$CFLAGS $X_CFLAGS"
 	LIBS="$LIBS $X_LIBS $X11_LIBS"
 	LDFLAGS="$LDFLAGS $LIBS $X_PRE_LIBS"
-	if test "x$X_DISPLAY_MISSING" = xyes; then
+	
+	if test "x$no_x" = xyes; then
 		AC_MSG_ERROR([something went wrong when checking for X11, you're probably missing headers or it's not installed, either re-run configure with --disable-x11, or fix this])
 	fi
+	
+	AC_CHECK_LIB(
+		[X11], [XOpenDisplay],[], 
+		AC_MSG_ERROR([Could not find XOpenDisplay in -lX11.])
+	)
+
 	AC_DEFINE(X11, 1, [Define if you want to use X11])
 	AC_DEFINE(HAVE_X11, 1, [Define if you have X11])
 	AM_CONDITIONAL(BUILD_X11, true)
-	if test "x$dah" != xno; then
+	
+	if test "x$want_double_buffer" != xno; then
 		AC_DEFINE(DOUBLE_BUFFER, 1, [Define if you want support for the DBE extension])
 		AC_CHECK_LIB(Xext, XdbeQueryExtension, [AC_DEFINE([HAVE_XDBE], 1, [Xdbe]) LIBS="$LIBS -lXext"],
 		     [AC_MSG_ERROR([something went wrong when checking for Xdbe (double buffer extension)])])
