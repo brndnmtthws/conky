@@ -3320,12 +3320,12 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				}
 				OBJ(freq) {
 					if (obj->a) {
-						obj->a = get_freq(p, p_max_size, "%.0f", 1, obj->data.cpu_index); /* pk */
+						obj->a = get_freq(p, p_max_size, "%.0f", 1, obj->data.cpu_index); 
 					}
 				}
 				OBJ(freq_g) {
 					if (obj->a) {
-						obj->a = get_freq(p, p_max_size, "%'.2f", 1000, obj->data.cpu_index); /* pk */
+						obj->a = get_freq(p, p_max_size, "%'.2f", 1000, obj->data.cpu_index); 
 					}
 				}
 #if defined(__linux__)
@@ -3343,29 +3343,29 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 
 				OBJ(freq_dyn) {
 					if (use_spacer) {
-						get_freq_dynamic(p, 6, "%.0f     ", 1 ); /* pk */
+						get_freq_dynamic(p, 6, "%.0f     ", 1 ); 
 					} else {
-						get_freq_dynamic(p, p_max_size, "%.0f", 1 ); /* pk */
+						get_freq_dynamic(p, p_max_size, "%.0f", 1 ); 
 					}
 				}
 				OBJ(freq_dyn_g) {
 					if (use_spacer) {
-						get_freq_dynamic(p, 6, "%'.2f     ", 1000); /* pk */
+						get_freq_dynamic(p, 6, "%'.2f     ", 1000); 
 					} else {
-						get_freq_dynamic(p, p_max_size, "%'.2f", 1000); /* pk */
+						get_freq_dynamic(p, p_max_size, "%'.2f", 1000); 
 					}
 				}
 				OBJ(adt746xcpu) {
-					get_adt746x_cpu(p, p_max_size); /* pk */
+					get_adt746x_cpu(p, p_max_size); 
 				}
 				OBJ(adt746xfan) {
-					get_adt746x_fan(p, p_max_size); /* pk */
+					get_adt746x_fan(p, p_max_size); 
 				}
 				OBJ(acpifan) {
-					get_acpi_fan(p, p_max_size);  /* pk */
+					get_acpi_fan(p, p_max_size);  
 				}
 				OBJ(acpiacadapter) {
-					get_acpi_ac_adapter(p, p_max_size); /* pk */
+					get_acpi_ac_adapter(p, p_max_size); 
 				}
 				OBJ(battery) {
 					get_battery_stuff(p, p_max_size, obj->data.s);
@@ -7210,6 +7210,6 @@ void signal_handler(int sig)
 {
 	/* signal handler is light as a feather, as it should be. 
 	 * we will poll g_signal_pending with each loop of conky
-	 * and do any signal processing there, NOT here.  pkovacs. */
+	 * and do any signal processing there, NOT here. */
 	g_signal_pending=sig;
 }

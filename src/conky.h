@@ -461,22 +461,22 @@ void update_cpu_usage(void);
 void update_total_processes(void);
 void update_running_processes(void);
 void update_i8k(void);
-char get_freq( char *, size_t, char *, int, unsigned int ); /* pk */
-void get_freq_dynamic( char *, size_t, char *, int ); /* pk */
+char get_freq( char *, size_t, char *, int, unsigned int ); 
+void get_freq_dynamic( char *, size_t, char *, int ); 
 char get_voltage(char *, size_t, char *, int, unsigned int ); /* ptarjan */
 void update_load_average();
 int open_i2c_sensor(const char *dev, const char *type, int n, int *div,
 		    char *devtype);
 double get_i2c_info(int *fd, int arg, char *devtype, char *type);
 
-void get_adt746x_cpu( char *, size_t ); /* pk */
-void get_adt746x_fan( char *, size_t ); /* pk */
+void get_adt746x_cpu( char *, size_t ); 
+void get_adt746x_fan( char *, size_t ); 
 unsigned int get_diskio(void);
 
 int open_acpi_temperature(const char *name);
 double get_acpi_temperature(int fd);
-void get_acpi_ac_adapter( char *, size_t ); /* pk */
-void get_acpi_fan( char *, size_t ); /* pk */
+void get_acpi_ac_adapter( char *, size_t ); 
+void get_acpi_fan( char *, size_t ); 
 void get_battery_stuff(char *buf, unsigned int n, const char *bat);
 void get_ibm_acpi_fan(char *buf, size_t client_buffer_size);
 void get_ibm_acpi_temps(void);
