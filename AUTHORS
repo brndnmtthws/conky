@@ -163,6 +163,9 @@ Roman Bogorodskiy <novel at clublife dot ru>
   FreeBSD support
   BMPx support
 
+Stepan Zastupov <redchrom at gmail dot com>
+  WiFi signal level detection support on FreeBSD
+
 Szymon Boniecki
   Reads current LC_TIME
 

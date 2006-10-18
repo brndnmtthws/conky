@@ -14,9 +14,13 @@
 #include <sys/types.h>
 #include <sys/vmmeter.h>
 #include <sys/user.h>
+#include <sys/ioctl.h>
 
 #include <net/if.h>
 #include <net/if_mib.h>
+#include <net/if_media.h>
+#include <net/if_var.h>
+#include <netinet/in.h>
 
 #include <devstat.h>
 #include <fcntl.h>
@@ -26,6 +30,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#include <dev/wi/if_wavelan_ieee.h>
 
 #include "conky.h"
 
@@ -511,7 +517,7 @@ get_freq(char *p_client_buffer, size_t client_buffer_size,
 	
 	if (!p_client_buffer || client_buffer_size <= 0 ||
 			!p_format || divisor <= 0)
-		return;
+		return 0;
 
 	if (GETSYSCTL(freq_sysctl, freq) == 0)
 		snprintf(p_client_buffer, client_buffer_size,
@@ -532,7 +538,66 @@ update_top()
 void
 update_wifi_stats()
 {
-	/* XXX */
+	struct ifreq ifr;		/* interface stats */
+	struct wi_req wireq;
+	struct net_stat * ns;
+	struct ifaddrs *ifap, *ifa;
+	struct ifmediareq ifmr;
+	int s;
+
+	/*
+	 * Get iface table
+	 */
+	if (getifaddrs(&ifap) < 0)
+		return;
+
+	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
+		ns = get_net_stat((const char *) ifa->ifa_name);
+
+		if (!strcmp(ifa->ifa_name, "lo0") ||
+			!strncmp(ifa->ifa_name, "fwe", 3) ||
+			!strncmp(ifa->ifa_name, "tun", 3))
+			continue;
+
+		s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
+		/* Get media type */
+		bzero(&ifmr, sizeof(ifmr));
+		strncpy(ifmr.ifm_name, ifa->ifa_name, strlen(ifmr.ifm_name) - 1);
+		ifmr.ifm_name[sizeof(ifmr.ifm_name) - 1] = '\0';
+		if (ioctl(s, SIOCGIFMEDIA, (caddr_t) &ifmr) < 0) {
+			perror("ioctl (getting media type)");
+			exit(1);
+		}
+		/*
+		 * We can monitor only wireless interfaces
+		 * which not in hostap mode
+		 */
+		if ((ifmr.ifm_active & IFM_IEEE80211) &&
+				!(ifmr.ifm_active & IFM_IEEE80211_HOSTAP)) {
+			/* Get wi status */
+			bzero(&ifr, sizeof(ifr));
+			strncpy(ifr.ifr_name, ifa->ifa_name, strlen(ifr.ifr_name) - 1);
+			ifr.ifr_name[sizeof(ifr.ifr_name) - 1] = '\0';
+			wireq.wi_type	= WI_RID_COMMS_QUALITY;
+			wireq.wi_len	= WI_MAX_DATALEN;
+			ifr.ifr_data	= (void *) &wireq;
+
+			if (ioctl(s, SIOCGWAVELAN, (caddr_t) &ifr) < 0) {
+				perror("ioctl (getting wi status)");
+				exit(1);
+			}
+
+			/*
+			 * wi_val[0] = quality
+			 * wi_val[1] = signal
+			 * wi_val[2] = noise
+			 */
+			ns->linkstatus = (int) wireq.wi_val[1];
+		}
+		
+		close(s);
+	}
 }
 void
 update_diskio()

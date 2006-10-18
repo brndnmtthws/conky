@@ -1,5 +1,9 @@
 # $Id$
 
+2006-10-18
+	* Implement WiFi signal level detection on FreeBSD (patch
+	by Stepan Zastupov)
+
 2006-10-04
 	* Fix buffer overflow in parsing LC_ALL, LC_CTYPE and LANG
 	environment variables and fix crash for users with locale
