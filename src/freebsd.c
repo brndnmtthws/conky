@@ -563,8 +563,7 @@ update_wifi_stats()
 
 		/* Get media type */
 		bzero(&ifmr, sizeof(ifmr));
-		strncpy(ifmr.ifm_name, ifa->ifa_name, strlen(ifmr.ifm_name) - 1);
-		ifmr.ifm_name[sizeof(ifmr.ifm_name) - 1] = '\0';
+		strlcpy(ifmr.ifm_name, ifa->ifa_name, IFNAMSIZ);
 		if (ioctl(s, SIOCGIFMEDIA, (caddr_t) &ifmr) < 0) {
 			perror("ioctl (getting media type)");
 			exit(1);
@@ -577,8 +576,7 @@ update_wifi_stats()
 				!(ifmr.ifm_active & IFM_IEEE80211_HOSTAP)) {
 			/* Get wi status */
 			bzero(&ifr, sizeof(ifr));
-			strncpy(ifr.ifr_name, ifa->ifa_name, strlen(ifr.ifr_name) - 1);
-			ifr.ifr_name[sizeof(ifr.ifr_name) - 1] = '\0';
+			strlcpy(ifr.ifr_name, ifa->ifa_name, IFNAMSIZ);
 			wireq.wi_type	= WI_RID_COMMS_QUALITY;
 			wireq.wi_len	= WI_MAX_DATALEN;
 			ifr.ifr_data	= (void *) &wireq;
