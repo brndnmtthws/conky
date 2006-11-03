@@ -32,7 +32,7 @@
 
 #include "config.h"
 #include "conky.h"
-#include "xmms.h"
+#include "infopipe.h"
 
 #define INFOPIPE_NAMED_PIPE "/tmp/xmms-info"
 
