@@ -1,19 +1,11 @@
 bin_PROGRAMS = conky
 
-if BUILD_XMMS
-xmms = xmms.c xmms.h
-endif
-
-if BUILD_BMP
-xmms = xmms.c xmms.h
-endif
-
 if BUILD_AUDACIOUS
-xmms = xmms.c xmms.h
+audacious = audacious.c audacious.h
 endif
 
 if BUILD_INFOPIPE
-xmms = xmms.c xmms.h
+infopipe = infopipe.c infopipe.h
 endif
 
 if BUILD_BMPX
@@ -66,9 +58,56 @@ if BUILD_HDDTEMP
 hddtemp = hddtemp.c
 endif
 
-conky_SOURCES = common.c fs.c $(linux) mail.c mixer.c $(seti) $(mpd) $(xmms2) $(solaris) $(freebsd) $(netbsd) $(port_monitors) conky.c conky.h $(x11) $(mldonkey) remoted.c remoted.h remotec.c remotec.h $(xmms) $(bmpx) $(hddtemp)
+conky_SOURCES = 		\
+	$(audacious)            \
+	$(bmpx)                 \
+	common.c 		\
+	conky.c                 \
+	conky.h                 \
+	$(freebsd)              \
+	fs.c 			\
+	$(hddtemp)		\
+	$(infopipe)             \
+	$(linux) 		\
+	mail.c 			\
+	mixer.c 		\
+	$(mldonkey)             \
+	$(mpd)                  \
+	$(netbsd)               \
+	$(port_monitors)        \
+	$(seti) 		\
+	$(solaris) 		\
+	remotec.c               \
+	remotec.h               \
+	remoted.c 		\
+	remoted.h 		\
+	$(x11)                  \
+	$(xmms2) 
 
 AM_LDFLAGS = $(X11_LIBS) $(XFT_LIBS) $(CAIRO_LIBS) $(PTHREAD_LIBS) -lm
 
-EXTRA_DIST = seti.c linux.c solaris.c freebsd.c netbsd.c mpd.c libmpdclient.c \
-libmpdclient.h xmms2.c top.h mldonkey.c ftp.c ftp.h x11.c hddtemp.c
+EXTRA_DIST = 			\
+	audacious.c		\
+	audacious.h		\
+	bmpx.c			\
+	freebsd.c		\
+	ftp.c                   \
+	ftp.h                   \
+	hash.c			\
+	hash.h			\
+	hddtemp.c		\
+	infopipe.c		\
+	infopipe.h		\
+	linux.c			\
+	libmpdclient.c          \
+	libmpdclient.h          \
+	libtcp-portmon.c	\
+	libtcp-portmon.h	\
+	mldonkey.c              \
+	mpd.c			\
+	netbsd.c		\
+	seti.c 			\
+	solaris.c 		\
+	top.h                   \
+	x11.c                   \
+	xmms2.c

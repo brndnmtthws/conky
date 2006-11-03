@@ -42,8 +42,12 @@
 #include <machine/apm_bios.h>
 #endif /* __FreeBSD__ */
 
-#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
-#include "xmms.h"
+#ifdef AUDACIOUS
+#include "audacious.h"
+#endif
+
+#ifdef INFOPIPE
+#include "infopipe.h"
 #endif
 
 #ifdef XMMS2
@@ -175,13 +179,22 @@ struct xmms2_s {
 };
 #endif
 
-#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
-struct xmms_s {
-	unsigned int project_mask;
-	unsigned int current_project;
-	xmms_t items;                   /* e.g. items[XMMS_STATUS] yields char[] */
+#ifdef AUDACIOUS
+struct audacious_s {
+	audacious_t items;              /* e.g. items[AUDACIOUS_STATUS] */
 	int runnable;                   /* used to signal worker thread to stop */
-	pthread_t thread;               /* worker thread for xmms updating */
+	pthread_t thread;               /* worker thread */
+	pthread_attr_t thread_attr;     /* thread attributes */
+	pthread_mutex_t item_mutex;     /* mutex for item array */
+	pthread_mutex_t runnable_mutex; /* mutex for runnable flag */
+};
+#endif
+
+#ifdef INFOPIPE
+struct infopipe_s {
+	infopipe_t items;               /* e.g. items[INFOPIPE_STATUS] */	
+	int runnable;                   /* used to signal worker thread to stop */
+	pthread_t thread;               /* worker thread */
 	pthread_attr_t thread_attr;     /* thread attributes */
 	pthread_mutex_t item_mutex;     /* mutex for item array */
 	pthread_mutex_t runnable_mutex; /* mutex for runnable flag */
@@ -237,14 +250,17 @@ enum {
 #ifdef TCP_PORT_MONITOR
         INFO_TCP_PORT_MONITOR = 22,
 #endif
-#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
-	INFO_XMMS = 23,
+#ifdef AUDACIOUS
+	INFO_AUDACIOUS = 23,
+#endif
+#ifdef INFOPIPE
+	INFO_INFOPIPE = 24,
 #endif
 #ifdef BMPX
-	INFO_BMPX = 24,
+	INFO_BMPX = 25,
 #endif
 #ifdef XMMS2
-	INFO_XMMS2 = 25,
+	INFO_XMMS2 = 26,
 #endif
 };
 
@@ -298,8 +314,11 @@ struct information {
 	fd_set xmms2_fdset;
 	xmmsc_connection_t *xmms2_conn;
 #endif
-#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
-	struct xmms_s xmms;
+#ifdef AUDACIOUS
+	struct audacious_s audacious;
+#endif
+#ifdef INFOPIPE
+	struct infopipe_s infopipe;
 #endif
 #ifdef BMPX
 	struct bmpx_s bmpx;

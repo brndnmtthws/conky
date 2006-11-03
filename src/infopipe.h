@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------
- * xmms.h:  conky support for XMMS-related projects
+ * infopipe.h: conky support for infopipe plugin
  * 
  * Copyright (C) 2005  Philip Kovacs kovacsp3@comcast.net
  *
- * $Id$
+ * $Id $
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,49 +20,37 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * --------------------------------------------------------------------------- */
 
-#ifndef XMMS_H
-#define XMMS_H
+#ifndef INFOPIPE_H
+#define INFOPIPE_H
 
-enum _xmms_items {
-	XMMS_STATUS=0,
-	XMMS_TITLE,
-	XMMS_LENGTH,
-	XMMS_LENGTH_SECONDS,
-	XMMS_POSITION,
-	XMMS_POSITION_SECONDS,
-	XMMS_BITRATE,
-	XMMS_FREQUENCY,
-	XMMS_CHANNELS,
-	XMMS_FILENAME,
-	XMMS_PLAYLIST_LENGTH,
-	XMMS_PLAYLIST_POSITION,
+enum _infopipe_items {
+	INFOPIPE_STATUS=0,
+	INFOPIPE_TITLE,
+	INFOPIPE_LENGTH,
+	INFOPIPE_LENGTH_SECONDS,
+	INFOPIPE_POSITION,
+	INFOPIPE_POSITION_SECONDS,
+	INFOPIPE_BITRATE,
+	INFOPIPE_FREQUENCY,
+	INFOPIPE_CHANNELS,
+	INFOPIPE_FILENAME,
+	INFOPIPE_PLAYLIST_LENGTH,
+	INFOPIPE_PLAYLIST_POSITION,
 };
 
-enum _xmms_projects {
-	PROJECT_NONE = 0,
-	PROJECT_XMMS = 1,
-	PROJECT_BMP = 2,
-	PROJECT_AUDACIOUS = 3,
-	PROJECT_INFOPIPE = 4
-};
+/* 12 slots for the infopipe values */
+typedef char infopipe_t[12][128];
 
-#define SET_XMMS_PROJECT_AVAILABLE(mask,project) 	(mask |= (1<<project))
-#define TEST_XMMS_PROJECT_AVAILABLE(mask,project)	(mask & (1<<project))
+/* create a worker thread for infopipe media player status */
+int create_infopipe_thread(void);
 
-/* 12 slots for the xmms values */
-typedef char xmms_t[12][128];
-
-/* create a worker thread for xmms media player status */
-int create_xmms_thread(void);
-
-/* destroy xmms media player worker thread */
-int destroy_xmms_thread(void);
+/* destroy infopipe media player worker thread */
+int destroy_infopipe_thread(void);
 
 /* Service routine for the conky main thread */
-void update_xmms(void);
+void update_infopipe(void);
 
 /* Thread functions */
-void *xmms_thread_func_dynamic(void *);
-void *xmms_thread_func_infopipe(void *);
+void *infopipe_thread_func(void *);
 
 #endif

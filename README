@@ -43,10 +43,11 @@ COMPILING
 
        ./configure	--prefix=/usr	   --mandir=/usr/share/man	 --in-
        fodir=/usr/share/info  --datadir=/usr/share  --sysconfdir=/etc --local-
-       statedir=/var/lib  --enable-xft	--enable-seti	--enable-double-buffer
-       --enable-own-window --enable-proc-uptime --enable-mpd --enable-mldonkey
-       --enable-x11 --enable-portmon --enable-xmms --enable-bmp --enable-auda-
-       cious --enable-infopipe --enable-bmpx
+       statedir=/var/lib --enable-xft --enable-own-window --enable-proc-uptime
+       --enable-audacious  --enable-infopipe --enable-bmpx --enable-seti --en-
+       able-hddtemp --enable-mpd --enable-xmms2 --enable-imlib2 --enable-port-
+       mon   --enable-mldonkey	 --enable-debug	 --enable-double-buffer	 --en-
+       able-xdamage --enable-x11
 
        make
 
@@ -367,12 +368,6 @@ CONFIGURATION SETTINGS
 	      Xft font to use.
 
 
-       xmms_player
-	      Use specified player/plugin for the xmms status variables. Valid
-	      items  are: none, xmms, bmp, audacious and infopipe. (default is
-	      none). Note that bmpx is currently handled separately.
-
-
        TEXT   After this begins text to be formatted on screen
 
 
@@ -430,6 +425,58 @@ VARIABLES
        apm_battery_time
 	      Display remaining APM battery life in hh:mm:ss or	 "unknown"  if
 	      AC adapterstatus is on-line or charging (FreeBSD only)
+
+
+       audacious_bar (height),(width)
+	      Progress bar
+
+
+       audacious_bitrate
+	      Bitrate of current tune
+
+
+       audacious_channels
+	      Number of audio channels of current tune
+
+
+       audacious_filename
+	      Full path and filename of current tune
+
+
+       audacious_frequency
+	      Sampling frequency of current tune
+
+
+       audacious_length
+	      Total length of current tune as MM:SS
+
+
+       audacious_length_seconds
+	      Total length of current tune in seconds
+
+
+       audacious_playlist_position
+	      Playlist position of current tune
+
+
+       audacious_playlist_length
+	      Number of tunes in playlist
+
+
+       audacious_position
+	      Position of current tune (MM:SS)
+
+
+       audacious_position_seconds
+	      Position of current tune in seconds
+
+
+       audacious_status
+	      Player status (Playing/Paused/Stopped/Not running)
+
+
+       audacious_title
+	      Title of current tune
 
 
        battery (num)
@@ -746,6 +793,58 @@ VARIABLES
 	      [-i interval] [-p port] [-e command]". Default port is 110,  de-
 	      fault interval is 5 minutes. If the password is supplied as '*',
 	      you will be prompted to enter the password when Conky starts.
+
+
+       infopipe_bar (height),(width)
+	      Progress bar
+
+
+       infopipe_bitrate
+	      Bitrate of current tune
+
+
+       infopipe_channels
+	      Number of audio channels of current tune
+
+
+       infopipe_filename
+	      Full path and filename of current tune
+
+
+       infopipe_frequency
+	      Sampling frequency of current tune
+
+
+       infopipe_length
+	      Total length of current tune as MM:SS
+
+
+       infopipe_length_seconds
+	      Total length of current tune in seconds
+
+
+       infopipe_playlist_position
+	      Playlist position of current tune
+
+
+       infopipe_playlist_length
+	      Number of tunes in playlist
+
+
+       infopipe_position
+	      Position of current tune (MM:SS)
+
+
+       infopipe_position_seconds
+	      Position of current tune in seconds
+
+
+       infopipe_status
+	      Player status (Playing/Paused/Stopped/Not running)
+
+
+       infopipe_title
+	      Title of current tune
 
 
        kernel Kernel version
@@ -1089,67 +1188,6 @@ VARIABLES
 	      ted, the parameter defaults to 1.
 
 
-       xmms_bar (height),(width)
-	      xmms / bmp / audacious / infopipe: progress bar
-
-
-       xmms_bitrate
-	      xmms / bmp / audacious / infopipe: bitrate of current tune
-
-
-       xmms_channels
-	      xmms / bmp / audacious / infopipe: number of audio  channels  of
-	      current tune
-
-
-       xmms_filename
-	      xmms  /  bmp  /  audacious / infopipe: full path and filename of
-	      current tune
-
-
-       xmms_frequency
-	      xmms / bmp / audacious / infopipe: sampling frequency of current
-	      tune
-
-
-       xmms_length
-	      xmms  / bmp / audacious / infopipe: total length of current tune
-	      as MM:SS
-
-
-       xmms_length_seconds
-	      xmms / bmp / audacious / infopipe: total length of current  tune
-	      in seconds
-
-
-       xmms_playlist_position
-	      xmms  / bmp / audacious / infopipe: playlist position of current
-	      tune
-
-
-       xmms_playlist_length
-	      xmms / bmp / audacious / infopipe: number of tunes in playlist
-
-
-       xmms_position
-	      xmms / bmp / audacious / infopipe:  MM:SS	 position  of  current
-	      tune
-
-
-       xmms_position_seconds
-	      xmms  /  bmp / audacious / infopipe: position of current tune in
-	      seconds
-
-
-       xmms_status
-	      xmms  /  bmp  /  audacious  /  infopipe:	player	status	(Play-
-	      ing/Paused/Stopped/Not running)
-
-
-       xmms_title
-	      xmms / bmp / audacious / infopipe: title of current tune
-
-
 EXAMPLES
        conky -t '${time %D %H:%m}' -o -u 30
 	      Start Conky in its own window with date and clock as text and 30
@@ -1164,11 +1202,11 @@ FILES
 BUGS
        Drawing to root or some other desktop window directly doesn't work with
        all window managers. Especially doesn't work well with Gnome and it has
-       been reported that it doesn't work with KDE  either.  Nautilus  can  be
-       disabled	 from  drawing	to  desktop with program gconf-editor. Uncheck
-       show_desktop in /apps/nautilus/preferences/.  There  is	-w  switch  in
-       Conky  to  set  some  specific window id. You might find xwininfo -tree
-       useful to find the window to draw to. You  can  also  use  -o  argument
+       been  reported  that  it	 doesn't work with KDE either. Nautilus can be
+       disabled from drawing to desktop	 with  program	gconf-editor.  Uncheck
+       show_desktop  in	 /apps/nautilus/preferences/.  There  is  -w switch in
+       Conky to set some specific window id. You  might	 find  xwininfo	 -tree
+       useful  to  find	 the  window  to draw to. You can also use -o argument
        which makes Conky to create its own window.
 
 SEE ALSO

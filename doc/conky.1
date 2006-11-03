@@ -44,7 +44,7 @@ Example to compile and run Conky with all optional components (note that some co
 .TP 
 \fB\*(T<\fBsh autogen.sh\fR\*(T>\fR \*(T<\fB# Only required if building from Svn\fR\*(T> 
 .TP 
-\fB\*(T<\fB\&./configure \fR\*(T>\fR\*(T<\fB\-\-prefix=/usr \-\-mandir=/usr/share/man \-\-infodir=/usr/share/info \-\-datadir=/usr/share \-\-sysconfdir=/etc \-\-localstatedir=/var/lib \-\-enable\-xft \-\-enable\-seti \-\-enable\-double\-buffer \-\-enable\-own\-window \-\-enable\-proc\-uptime \-\-enable\-mpd \-\-enable\-mldonkey \-\-enable\-x11 \-\-enable\-portmon \-\-enable\-xmms \-\-enable\-bmp \-\-enable\-audacious \-\-enable\-infopipe \-\-enable\-bmpx \fR\*(T>
+\fB\*(T<\fB\&./configure \fR\*(T>\fR\*(T<\fB\-\-prefix=/usr \-\-mandir=/usr/share/man \-\-infodir=/usr/share/info \-\-datadir=/usr/share \-\-sysconfdir=/etc \-\-localstatedir=/var/lib \-\-enable\-xft \-\-enable\-own\-window \-\-enable\-proc\-uptime \-\-enable\-audacious \-\-enable\-infopipe \-\-enable\-bmpx \-\-enable\-seti \-\-enable\-hddtemp \-\-enable\-mpd \-\-enable\-xmms2 \-\-enable\-imlib2 \-\-enable\-portmon \-\-enable\-mldonkey \-\-enable\-debug \-\-enable\-double\-buffer \-\-enable\-xdamage \-\-enable\-x11\fR\*(T> 
 .TP 
 \fB\*(T<\fBmake\fR\*(T>\fR 
 .TP 
@@ -342,10 +342,6 @@ Alpha of Xft font. Must be a value at or between 1 and 0.
 Xft font to use.
 
 .TP 
-\fB\*(T<\fBxmms_player\fR\*(T>\fR
-Use specified player/plugin for the xmms status variables. Valid items are: none, xmms, bmp, audacious and infopipe. (default is none). Note that bmpx is currently handled separately.
-
-.TP 
 \fB\*(T<\fBTEXT\fR\*(T>\fR
 After this begins text to be formatted on screen
 
@@ -403,6 +399,58 @@ Display APM battery life in percent (FreeBSD only)
 \fB\*(T<\fBapm_battery_time\fR\*(T>\fR 
 Display remaining APM battery life in hh:mm:ss or "unknown" if
 AC adapterstatus is on-line or charging (FreeBSD only)
+
+.TP 
+\fB\*(T<\fBaudacious_bar\fR\*(T>\fR \*(T<\fB(height),(width)\fR\*(T> 
+Progress bar
+
+.TP 
+\fB\*(T<\fBaudacious_bitrate\fR\*(T>\fR 
+Bitrate of current tune
+
+.TP 
+\fB\*(T<\fBaudacious_channels\fR\*(T>\fR 
+Number of audio channels of current tune
+
+.TP 
+\fB\*(T<\fBaudacious_filename\fR\*(T>\fR 
+Full path and filename of current tune
+
+.TP 
+\fB\*(T<\fBaudacious_frequency\fR\*(T>\fR 
+Sampling frequency of current tune
+
+.TP 
+\fB\*(T<\fBaudacious_length\fR\*(T>\fR 
+Total length of current tune as MM:SS
+
+.TP 
+\fB\*(T<\fBaudacious_length_seconds\fR\*(T>\fR 
+Total length of current tune in seconds
+
+.TP 
+\fB\*(T<\fBaudacious_playlist_position\fR\*(T>\fR 
+Playlist position of current tune
+
+.TP 
+\fB\*(T<\fBaudacious_playlist_length\fR\*(T>\fR 
+Number of tunes in playlist
+
+.TP 
+\fB\*(T<\fBaudacious_position\fR\*(T>\fR 
+Position of current tune (MM:SS)
+
+.TP 
+\fB\*(T<\fBaudacious_position_seconds\fR\*(T>\fR 
+Position of current tune in seconds
+
+.TP 
+\fB\*(T<\fBaudacious_status\fR\*(T>\fR 
+Player status (Playing/Paused/Stopped/Not running)
+
+.TP 
+\fB\*(T<\fBaudacious_title\fR\*(T>\fR 
+Title of current tune
 
 .TP 
 \fB\*(T<\fBbattery\fR\*(T>\fR \*(T<\fB(num)\fR\*(T> 
@@ -660,6 +708,58 @@ Displays the number of messages in your global IMAP inbox by default. You can de
 .TP 
 \fB\*(T<\fBimap_unseen\fR\*(T>\fR \*(T<\fB(args)\fR\*(T> 
 Displays the number of unseen messages in your global IMAP inbox by default. You can define individual IMAP inboxes seperately by passing arguments to this object. Arguments are: "host user pass [-i interval] [-p port] [-e command]". Default port is 110, default interval is 5 minutes. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
+
+.TP 
+\fB\*(T<\fBinfopipe_bar\fR\*(T>\fR \*(T<\fB(height),(width)\fR\*(T> 
+Progress bar
+
+.TP 
+\fB\*(T<\fBinfopipe_bitrate\fR\*(T>\fR 
+Bitrate of current tune
+
+.TP 
+\fB\*(T<\fBinfopipe_channels\fR\*(T>\fR 
+Number of audio channels of current tune
+
+.TP 
+\fB\*(T<\fBinfopipe_filename\fR\*(T>\fR 
+Full path and filename of current tune
+
+.TP 
+\fB\*(T<\fBinfopipe_frequency\fR\*(T>\fR 
+Sampling frequency of current tune
+
+.TP 
+\fB\*(T<\fBinfopipe_length\fR\*(T>\fR 
+Total length of current tune as MM:SS
+
+.TP 
+\fB\*(T<\fBinfopipe_length_seconds\fR\*(T>\fR 
+Total length of current tune in seconds
+
+.TP 
+\fB\*(T<\fBinfopipe_playlist_position\fR\*(T>\fR 
+Playlist position of current tune
+
+.TP 
+\fB\*(T<\fBinfopipe_playlist_length\fR\*(T>\fR 
+Number of tunes in playlist
+
+.TP 
+\fB\*(T<\fBinfopipe_position\fR\*(T>\fR 
+Position of current tune (MM:SS)
+
+.TP 
+\fB\*(T<\fBinfopipe_position_seconds\fR\*(T>\fR 
+Position of current tune in seconds
+
+.TP 
+\fB\*(T<\fBinfopipe_status\fR\*(T>\fR 
+Player status (Playing/Paused/Stopped/Not running)
+
+.TP 
+\fB\*(T<\fBinfopipe_title\fR\*(T>\fR 
+Title of current tune
 
 .TP 
 \fB\*(T<\fBkernel\fR\*(T>\fR 
@@ -985,58 +1085,6 @@ defaults to 1.
 Returns CPU #n's voltage in V. CPUs are
 counted from 1. If omitted, the parameter
 defaults to 1.
-
-.TP 
-\fB\*(T<\fBxmms_bar\fR\*(T>\fR \*(T<\fB(height),(width)\fR\*(T> 
-xmms / bmp / audacious / infopipe: progress bar
-
-.TP 
-\fB\*(T<\fBxmms_bitrate\fR\*(T>\fR 
-xmms / bmp / audacious / infopipe: bitrate of current tune
-
-.TP 
-\fB\*(T<\fBxmms_channels\fR\*(T>\fR 
-xmms / bmp / audacious / infopipe: number of audio channels of current tune
-
-.TP 
-\fB\*(T<\fBxmms_filename\fR\*(T>\fR 
-xmms / bmp / audacious / infopipe: full path and filename of current tune
-
-.TP 
-\fB\*(T<\fBxmms_frequency\fR\*(T>\fR 
-xmms / bmp / audacious / infopipe: sampling frequency of current tune
-
-.TP 
-\fB\*(T<\fBxmms_length\fR\*(T>\fR 
-xmms / bmp / audacious / infopipe: total length of current tune as MM:SS
-
-.TP 
-\fB\*(T<\fBxmms_length_seconds\fR\*(T>\fR 
-xmms / bmp / audacious / infopipe: total length of current tune in seconds
-
-.TP 
-\fB\*(T<\fBxmms_playlist_position\fR\*(T>\fR 
-xmms / bmp / audacious / infopipe: playlist position of current tune
-
-.TP 
-\fB\*(T<\fBxmms_playlist_length\fR\*(T>\fR 
-xmms / bmp / audacious / infopipe: number of tunes in playlist
-
-.TP 
-\fB\*(T<\fBxmms_position\fR\*(T>\fR 
-xmms / bmp / audacious / infopipe: MM:SS position of current tune
-
-.TP 
-\fB\*(T<\fBxmms_position_seconds\fR\*(T>\fR 
-xmms / bmp / audacious / infopipe: position of current tune in seconds
-
-.TP 
-\fB\*(T<\fBxmms_status\fR\*(T>\fR 
-xmms / bmp / audacious / infopipe: player status (Playing/Paused/Stopped/Not running)
-
-.TP 
-\fB\*(T<\fBxmms_title\fR\*(T>\fR 
-xmms / bmp / audacious / infopipe: title of current tune
 
 .SH EXAMPLES
 .TP 

@@ -102,106 +102,6 @@ if test $dah = "yes"; then
   AC_DEFINE(PROC_UPTIME, 1, [Define if you want to use /proc/uptime for uptime])
 fi
 
-dnl
-dnl XMMS (Version 1)
-dnl
-
-want_xmms=auto
-AC_ARG_ENABLE(xmms,
-   [  --enable-xmms           enable xmms (ver. 1) media player support [[default=auto]]],
-   [want_xmms="$enableval"])
-
-case x$want_xmms in
-    xauto)
-        want_xmms=yes
-        ## its ok to favor the glib 2.0 headers over 1.2 for our purposes ##
-        PKG_CHECK_MODULES([XMMS], [glib-2.0], [], [PKG_CHECK_MODULES([XMMS], [glib-1.2], [], [want_xmms=no])]) 
-
-        if test x$want_xmms = xyes; then
-            AC_CHECK_HEADERS([dlfcn.h], [], [want_xmms=no])
-            if test x$want_xmms = xyes; then
-                AC_CHECK_LIB(dl, dlopen, [LIBS="$LIBS -ldl"],
-                                         [AC_CHECK_FUNCS(dlopen,[],
-                                                                [want_xmms=no])])
-                if test x$want_xmms = xyes; then
-                     CFLAGS="$CFLAGS $XMMS_CFLAGS"
-		     ### if we link to glib 1.2, that means 2.0 wasn't found ###
-		     ### if we link to glib 2.0, that's ok, we will load libglib-1.2.so.0 dynamically ###
-                     LIBS="$LIBS $XMMS_LIBS"
-                     AC_DEFINE(XMMS, 1, [Define for XMMS Ver. 1 support])
-                fi
-            fi
-        fi
-        ;;
-    xyes)
-        ## its ok to favor the glib 2.0 headers over 1.2 for our purposes ##
-	PKG_CHECK_MODULES([XMMS], [glib-2.0], [], [PKG_CHECK_MODULES([XMMS], [glib-1.2])])
-        CFLAGS="$CFLAGS $XMMS_CFLAGS"
-	### if we link to glib 1.2, that means 2.0 wasn't found ###
-	### if we link to glib 2.0, that's ok, we will load libglib-1.2.so.0 dynamically ###
-        LIBS="$LIBS $XMMS_LIBS"
-        AC_CHECK_HEADERS([dlfcn.h], [],
-             [AC_MSG_ERROR(["dlfcn.h not found: dynamic library loading not supported"])])
-        AC_CHECK_LIB(dl, dlopen, [LIBS="$LIBS -ldl"],
-                                 [AC_CHECK_FUNCS(dlopen,[],
-                                                        [AC_MSG_ERROR([dlopen() not available])])])
-        AC_DEFINE(XMMS, 1, [Define for XMMS Ver. 1 support])
-        ;;
-    xno)
-        ;;
-    *)
-        echo "Error: invalid xmms parameter specified: $want_xmms"
-        exit -1
-        ;;
-esac
-AM_CONDITIONAL(BUILD_XMMS, test x$want_xmms = xyes)
-
-dnl
-dnl BMP (through 0.9.7.1)
-dnl
-
-want_bmp=auto
-AC_ARG_ENABLE(bmp,
-   [  --enable-bmp            enable beep media media player support [[default=auto]]],
-   [want_bmp="$enableval"])
-
-case x$want_bmp in
-    xauto)
-        want_bmp=yes
-        PKG_CHECK_MODULES([BMP], [glib-2.0], [], [want_bmp=no])
-        if test x$want_bmp = xyes; then
-            AC_CHECK_HEADERS([dlfcn.h], [], [want_bmp=no])
-            if test x$want_bmp = xyes; then
-                AC_CHECK_LIB(dl, dlopen, [LIBS="$LIBS -ldl"],
-                                         [AC_CHECK_FUNCS(dlopen,[],
-                                                                [want_bmp=no])])
-                if test x$want_bmp = xyes; then
-                     CFLAGS="$CFLAGS $BMP_CFLAGS"
-                     LIBS="$LIBS $BMP_LIBS"
-                     AC_DEFINE(BMP, 1, [Define for Beep Media Player support])
-                fi
-            fi
-        fi
-        ;;
-    xyes)
-        PKG_CHECK_MODULES([BMP], [glib-2.0 >= 2.0])
-        CFLAGS="$CFLAGS $BMP_CFLAGS"
-        LIBS="$LIBS $BMP_LIBS"
-        AC_CHECK_HEADERS([dlfcn.h], [],
-             [AC_MSG_ERROR(["dlfcn.h not found: dynamic library loading not supported"])])
-        AC_CHECK_LIB(dl, dlopen, [LIBS="$LIBS -ldl"],
-                                 [AC_CHECK_FUNCS(dlopen,[],
-                                                        [AC_MSG_ERROR([dlopen() not available])])])
-        AC_DEFINE(BMP, 1, [Define for Beep Media Player support])
-        ;;
-    xno)
-        ;;
-    *)
-        echo "Error: invalid bmp parameter specified: $want_bmp"
-        exit -1
-        ;;
-esac
-AM_CONDITIONAL(BUILD_BMP, test x$want_bmp = xyes)
 
 dnl
 dnl Audacious Media Player
@@ -215,30 +115,18 @@ AC_ARG_ENABLE(audacious,
 case x$want_audacious in
     xauto)
         want_audacious=yes
-        PKG_CHECK_MODULES([AUDACIOUS], [glib-2.0], [], [want_audacious=no])  
+        PKG_CHECK_MODULES([AUDACIOUS], [audacious >= 0.1], [], [want_audacious=no])  
 	if test x$want_audacious = xyes; then
-	    AC_CHECK_HEADERS([dlfcn.h], [], [want_audacious=no])
-	    if test x$want_audacious = xyes; then
-	        AC_CHECK_LIB(dl, dlopen, [LIBS="$LIBS -ldl"], 
-                                         [AC_CHECK_FUNCS(dlopen,[],
-                                                                [want_audacious=no])])
-		if test x$want_audacious = xyes; then
-	             CFLAGS="$CFLAGS $AUDACIOUS_CFLAGS"
-		     LIBS="$LIBS $AUDACIOUS_LIBS"
-		     AC_DEFINE(AUDACIOUS, 1, [Define for Audacious support])
-		fi
-	    fi
+	     CFLAGS="$CFLAGS $AUDACIOUS_CFLAGS"
+	     LIBS="$LIBS $AUDACIOUS_LIBS"
+	     AC_DEFINE(AUDACIOUS, 1, [Define for Audacious support])
         fi
         ;;
     xyes)
-        PKG_CHECK_MODULES([AUDACIOUS], [glib-2.0])
+	PKG_CHECK_MODULES([AUDACIOUS], [audacious >= 0.1], [], 
+			  [AC_MSG_ERROR([Can't find Audacious development files.])])
         CFLAGS="$CFLAGS $AUDACIOUS_CFLAGS"
         LIBS="$LIBS $AUDACIOUS_LIBS"
-        AC_CHECK_HEADERS([dlfcn.h], [], 
-             [AC_MSG_ERROR(["dlfcn.h not found: dynamic library loading not supported"])])
-	AC_CHECK_LIB(dl, dlopen, [LIBS="$LIBS -ldl"], 
-                                 [AC_CHECK_FUNCS(dlopen,[], 
-                                                        [AC_MSG_ERROR([dlopen() not available])])])
         AC_DEFINE(AUDACIOUS, 1, [Define for Audacious support])
         ;;
     xno)
@@ -254,9 +142,9 @@ dnl
 dnl InfoPipe (Version 1.3)
 dnl
 
-want_infopipe=yes
+want_infopipe=no
 AC_ARG_ENABLE(infopipe,
-   [  --enable-infopipe       enable xmms/bmp infopipe support [[default=yes]]],
+   [  --enable-infopipe       enable xmms/bmp infopipe support [[default=no]]],
    [want_infopipe="$enableval"])
 
 case x$want_infopipe in
@@ -647,8 +535,6 @@ $PACKAGE $VERSION configured successfully:
   xdamage extension:	$want_xdamage  
 
  * music detection:
-  xmms:			$want_xmms
-  bmp:			$want_bmp
   audacious:		$want_audacious
   infopipe:		$want_infopipe
   bmpx:			$want_bmpx

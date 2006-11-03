@@ -364,13 +364,6 @@
 </varlistentry>
 
 <varlistentry>
-	<term><command><option>xmms_player</option></command></term>
-	<listitem>
-		Use specified player/plugin for the xmms status variables.  Valid items are: none, xmms, bmp, audacious and infopipe. (default is none).  Note that bmpx is currently handled separately.
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
 	<term><command><option>TEXT</option></command></term>
 	<listitem>
 		After this begins text to be formatted on screen

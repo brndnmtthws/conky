@@ -232,10 +232,16 @@ void update_stuff()
 		update_xmms2();
 #endif
 
-#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
-	if (NEED(INFO_XMMS))
-		update_xmms();
+#ifdef AUDACIOUS
+	if (NEED(INFO_AUDACIOUS))
+		update_audacious();
 #endif
+
+#ifdef INFOPIPE
+	if (NEED(INFO_INFOPIPE))
+		update_infopipe();
+#endif
+
 #ifdef BMPX
 	if (NEED(INFO_BMPX))
                 update_bmpx();

@@ -70,12 +70,6 @@ static void print_version()
 # endif /* HAVE_XDBE */
 #endif /* X11 */
 	"\n Music detection:\n"
-#ifdef XMMS
-	"  * xmms\n"
-#endif /* XMMS */
-#ifdef BMP
-	"  * bmp\n"
-#endif /* BMP */
 #ifdef AUDACIOUS
 	"  * audacious\n"
 #endif /* AUDACIOUS */
@@ -1075,20 +1069,35 @@ enum text_object_type {
 	OBJ_xmms2_bar,
 	OBJ_xmms2_smart,
 #endif
-#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
-	OBJ_xmms_status,
-	OBJ_xmms_title,
-	OBJ_xmms_length,
-	OBJ_xmms_length_seconds,
-	OBJ_xmms_position,
-	OBJ_xmms_position_seconds,
-	OBJ_xmms_bitrate,
-	OBJ_xmms_frequency,
-	OBJ_xmms_channels,
-	OBJ_xmms_filename,
-	OBJ_xmms_playlist_length,
-	OBJ_xmms_playlist_position,
-	OBJ_xmms_bar,
+#ifdef AUDACIOUS
+	OBJ_audacious_status,
+	OBJ_audacious_title,
+	OBJ_audacious_length,
+	OBJ_audacious_length_seconds,
+	OBJ_audacious_position,
+	OBJ_audacious_position_seconds,
+	OBJ_audacious_bitrate,
+	OBJ_audacious_frequency,
+	OBJ_audacious_channels,
+	OBJ_audacious_filename,
+	OBJ_audacious_playlist_length,
+	OBJ_audacious_playlist_position,
+	OBJ_audacious_bar,
+#endif
+#ifdef INFOPIPE
+	OBJ_infopipe_status,
+	OBJ_infopipe_title,
+	OBJ_infopipe_length,
+	OBJ_infopipe_length_seconds,
+	OBJ_infopipe_position,
+	OBJ_infopipe_position_seconds,
+	OBJ_infopipe_bitrate,
+	OBJ_infopipe_frequency,
+	OBJ_infopipe_channels,
+	OBJ_infopipe_filename,
+	OBJ_infopipe_playlist_length,
+	OBJ_infopipe_playlist_position,
+	OBJ_infopipe_bar,
 #endif
 #ifdef BMPX
 	OBJ_bmpx_title,
@@ -2949,22 +2958,40 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		END OBJ(xmms2_smart, INFO_XMMS2)
 		END
 #endif
-#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
-		OBJ(xmms_status, INFO_XMMS) END
-		OBJ(xmms_title, INFO_XMMS) END
-		OBJ(xmms_length, INFO_XMMS) END
-		OBJ(xmms_length_seconds, INFO_XMMS) END
-		OBJ(xmms_position, INFO_XMMS) END
-		OBJ(xmms_position_seconds, INFO_XMMS) END
-		OBJ(xmms_bitrate, INFO_XMMS) END
-		OBJ(xmms_frequency, INFO_XMMS) END
-		OBJ(xmms_channels, INFO_XMMS) END
-		OBJ(xmms_filename, INFO_XMMS) END
-		OBJ(xmms_playlist_length, INFO_XMMS) END
-		OBJ(xmms_playlist_position, INFO_XMMS) END
-		OBJ(xmms_bar, INFO_XMMS)
+#ifdef AUDACIOUS
+		OBJ(audacious_status, INFO_AUDACIOUS) END
+		OBJ(audacious_title, INFO_AUDACIOUS) END
+		OBJ(audacious_length, INFO_AUDACIOUS) END
+		OBJ(audacious_length_seconds, INFO_AUDACIOUS) END
+		OBJ(audacious_position, INFO_AUDACIOUS) END
+		OBJ(audacious_position_seconds, INFO_AUDACIOUS) END
+		OBJ(audacious_bitrate, INFO_AUDACIOUS) END
+		OBJ(audacious_frequency, INFO_AUDACIOUS) END
+		OBJ(audacious_channels, INFO_AUDACIOUS) END
+		OBJ(audacious_filename, INFO_AUDACIOUS) END
+		OBJ(audacious_playlist_length, INFO_AUDACIOUS) END
+		OBJ(audacious_playlist_position, INFO_AUDACIOUS) END
+		OBJ(audacious_bar, INFO_AUDACIOUS)
 		(void) scan_bar(arg, &obj->a, &obj->b);
 	END
+#endif
+#ifdef INFOPIPE
+		OBJ(infopipe_status, INFO_INFOPIPE) END
+		OBJ(infopipe_title, INFO_INFOPIPE) END
+		OBJ(infopipe_length, INFO_INFOPIPE) END
+		OBJ(infopipe_length_seconds, INFO_INFOPIPE) END
+		OBJ(infopipe_position, INFO_INFOPIPE) END
+		OBJ(infopipe_position_seconds, INFO_INFOPIPE) END
+		OBJ(infopipe_bitrate, INFO_INFOPIPE) END
+		OBJ(infopipe_frequency, INFO_INFOPIPE) END
+		OBJ(infopipe_channels, INFO_INFOPIPE) END
+		OBJ(infopipe_filename, INFO_INFOPIPE) END
+		OBJ(infopipe_playlist_length, INFO_INFOPIPE) END
+		OBJ(infopipe_playlist_position, INFO_INFOPIPE) END
+		OBJ(infopipe_bar, INFO_INFOPIPE)
+		(void) scan_bar(arg, &obj->a, &obj->b);
+	END
+
 #endif
 #ifdef BMPX
 		OBJ(bmpx_title, INFO_BMPX)
@@ -4553,47 +4580,91 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				}
 			}
 #endif
-#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
-			OBJ(xmms_status) {
-			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_STATUS]);
+#ifdef AUDACIOUS
+			OBJ(audacious_status) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_STATUS]);
 			}
-        		OBJ(xmms_title) {
-			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_TITLE]);
+        		OBJ(audacious_title) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_TITLE]);
 			}
-        		OBJ(xmms_length) {
-			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_LENGTH]);
+        		OBJ(audacious_length) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_LENGTH]);
 			}
-        		OBJ(xmms_length_seconds) {
-			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_LENGTH_SECONDS]);
+        		OBJ(audacious_length_seconds) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_LENGTH_SECONDS]);
 			}
-        		OBJ(xmms_position) {
-			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_POSITION]);
+        		OBJ(audacious_position) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_POSITION]);
 			}
-        		OBJ(xmms_position_seconds) {
-			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_POSITION_SECONDS]);
+        		OBJ(audacious_position_seconds) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_POSITION_SECONDS]);
 			}
-        		OBJ(xmms_bitrate) {
-			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_BITRATE]);
+        		OBJ(audacious_bitrate) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_BITRATE]);
 			}
-        		OBJ(xmms_frequency) {
-			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_FREQUENCY]);
+        		OBJ(audacious_frequency) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_FREQUENCY]);
 			}
-        		OBJ(xmms_channels) {
-			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_CHANNELS]);
+        		OBJ(audacious_channels) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_CHANNELS]);
 			}
-        		OBJ(xmms_filename) {
-			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_FILENAME]);
+        		OBJ(audacious_filename) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_FILENAME]);
 			}
-        		OBJ(xmms_playlist_length) {
-			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_PLAYLIST_LENGTH]);
+        		OBJ(audacious_playlist_length) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_PLAYLIST_LENGTH]);
 			}
-        		OBJ(xmms_playlist_position) {
-			    snprintf(p, p_max_size, "%s", cur->xmms.items[XMMS_PLAYLIST_POSITION]);
+        		OBJ(audacious_playlist_position) {
+			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_PLAYLIST_POSITION]);
 			}
-        		OBJ(xmms_bar) {
+        		OBJ(audacious_bar) {
                             double progress;
-                            progress= atof(cur->xmms.items[XMMS_POSITION_SECONDS]) /
-                                      atof(cur->xmms.items[XMMS_LENGTH_SECONDS]);
+                            progress= atof(cur->audacious.items[AUDACIOUS_POSITION_SECONDS]) /
+                                      atof(cur->audacious.items[AUDACIOUS_LENGTH_SECONDS]);
+                            new_bar(p,obj->a,obj->b,(int)(progress*255.0f));
+			}
+#endif
+#ifdef INFOPIPE
+			OBJ(infopipe_status) {
+			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_STATUS]);
+			}
+        		OBJ(infopipe_title) {
+			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_TITLE]);
+			}
+        		OBJ(infopipe_length) {
+			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_LENGTH]);
+			}
+        		OBJ(infopipe_length_seconds) {
+			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_LENGTH_SECONDS]);
+			}
+        		OBJ(infopipe_position) {
+			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_POSITION]);
+			}
+        		OBJ(infopipe_position_seconds) {
+			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_POSITION_SECONDS]);
+			}
+        		OBJ(infopipe_bitrate) {
+			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_BITRATE]);
+			}
+        		OBJ(infopipe_frequency) {
+			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_FREQUENCY]);
+			}
+        		OBJ(infopipe_channels) {
+			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_CHANNELS]);
+			}
+        		OBJ(infopipe_filename) {
+			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_FILENAME]);
+			}
+        		OBJ(infopipe_playlist_length) {
+			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_PLAYLIST_LENGTH]);
+			}
+        		OBJ(infopipe_playlist_position) {
+			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_PLAYLIST_POSITION]);
+			}
+        		OBJ(infopipe_bar) {
+                            double progress;
+                            progress= atof(cur->infopipe.items[INFOPIPE_POSITION_SECONDS]) /
+                                      atof(cur->infopipe.items[INFOPIPE_LENGTH_SECONDS]);
                             new_bar(p,obj->a,obj->b,(int)(progress*255.0f));
 			}
 #endif
@@ -6085,13 +6156,13 @@ void reload_config(void)
 		free(info.cpu_usage);
 		info.cpu_usage = NULL;
 	}
-#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
-        if (info.xmms.thread) {
-		if (destroy_xmms_thread()!=0)
-		{
-			ERR("error destroying xmms_player thread");
-		}
-	}
+#ifdef AUDACIOUS
+        if ( (info.audacious.thread) && (destroy_audacious_thread()!=0) )
+	    ERR("error destroying audacious thread");
+#endif
+#ifdef INFOPIPE
+	if ( (info.infopipe.thread) && (destroy_infopipe_thread()!=0) )
+	    ERR("error destroying audacious thread");
 #endif
 #ifdef TCP_PORT_MONITOR
 	destroy_tcp_port_monitor_collection( info.p_tcp_port_monitor_collection );
@@ -6109,12 +6180,13 @@ void reload_config(void)
 #ifdef TCP_PORT_MONITOR
 		info.p_tcp_port_monitor_collection = NULL; 
 #endif
-#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
-                if ( (!info.xmms.thread) && (info.xmms.current_project > PROJECT_NONE) && 
-		     (create_xmms_thread() !=0) )
-                    {
-                        CRIT_ERR("unable to create xmms_player thread!");
-                    }
+#ifdef AUDACIOUS
+                if ( (!info.audacious.thread) && (create_audacious_thread() !=0) )
+                    CRIT_ERR("unable to create audacious thread!");
+#endif
+#ifdef INFOPIPE
+		if ( (!info.infopipe.thread) && (create_infopipe_thread() !=0) )
+		    CRIT_ERR("unable to create infopipe thread!");
 #endif
 		extract_variable_text(text);
 		free(text);
@@ -6180,11 +6252,13 @@ void clean_up(void)
 	destroy_tcp_port_monitor_collection( info.p_tcp_port_monitor_collection );
 	info.p_tcp_port_monitor_collection = NULL;
 #endif
-#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
-        if ( info.xmms.thread && (destroy_xmms_thread()!=0) )
-        {
-            ERR("error destroying xmms_player thread");
-        }
+#ifdef AUDACIOUS
+        if ( info.audacious.thread && (destroy_audacious_thread()!=0) )
+            ERR("error destroying audacious thread");
+#endif
+#ifdef INFOPIPE
+	if ( info.infopipe.thread && (destroy_infopipe_thread()!=0) )
+	    ERR("error destroying infopipe thread");
 #endif
 }
 
@@ -6313,10 +6387,6 @@ static void set_default_configurations(void)
 	tcp_port_monitor_collection_args.min_port_monitors = MIN_PORT_MONITORS_DEFAULT;
 	tcp_port_monitor_args.min_port_monitor_connections = MIN_PORT_MONITOR_CONNECTIONS_DEFAULT;
 #endif
-
-#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
-	info.xmms.current_project=PROJECT_NONE;
-#endif
 }
 
 static void load_config_file(const char *f)
@@ -6443,26 +6513,10 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 				CONF_ERR;
 		}
 #endif /* X11 */
-#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
 		CONF("xmms_player") {
-			if (value) {
-				if (strncmp(value,"none",4)==0)
-				    info.xmms.current_project=PROJECT_NONE;
-				else if (strncmp(value,"xmms",4)==0)
-				    info.xmms.current_project=PROJECT_XMMS;
-				else if (strncmp(value,"bmp",3)==0)
-				    info.xmms.current_project=PROJECT_BMP;
-				else if (strncmp(value,"audacious",9)==0)
-				    info.xmms.current_project=PROJECT_AUDACIOUS;
-				else if  (strncmp(value,"infopipe",8)==0)
-				    info.xmms.current_project=PROJECT_INFOPIPE;
-				else
-					CONF_ERR;
-			}
-			else
-				CONF_ERR;
+			if (value) 
+				ERR("xmms_player is deprecated. see ./configure --help");
 		}
-#endif
 		CONF("imap") {
 			if (value) {
 				info.mail = parse_mail_args(IMAP, value);
@@ -6891,19 +6945,6 @@ int main(int argc, char **argv)
 	tcp_port_monitor_args.min_port_monitor_connections = MIN_PORT_MONITOR_CONNECTIONS_DEFAULT;
 #endif
 
-#if defined(XMMS)
-	SET_XMMS_PROJECT_AVAILABLE(info.xmms.project_mask, PROJECT_XMMS);
-#endif
-#if defined(BMP)
-	SET_XMMS_PROJECT_AVAILABLE(info.xmms.project_mask, PROJECT_BMP);
-#endif
-#if defined(AUDACIOUS)
-	SET_XMMS_PROJECT_AVAILABLE(info.xmms.project_mask, PROJECT_AUDACIOUS);
-#endif
-#if defined(INFOPIPE)
-	SET_XMMS_PROJECT_AVAILABLE(info.xmms.project_mask, PROJECT_INFOPIPE);
-#endif
-		
 	/* handle command line parameters that don't change configs */
 #ifdef X11
 	char *s, *temp;
@@ -7183,21 +7224,23 @@ int main(int argc, char **argv)
 		ERR("error setting signal handler: %s", strerror(errno) );
 	}
 
-#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
-	if ( (info.xmms.current_project > PROJECT_NONE) && (create_xmms_thread() !=0) )
+#ifdef AUDACIOUS
+	if ( (create_audacious_thread() !=0) )
 	{
-	    CRIT_ERR("unable to create xmms_player thread!");
+	    CRIT_ERR("unable to create audacious thread!");
 	}
 #endif
 
 	main_loop();
 
-#if defined(XMMS) || defined(BMP) || defined(AUDACIOUS) || defined(INFOPIPE)
-	if ( info.xmms.thread && (destroy_xmms_thread()!=0) )
-        {
-            ERR("error destroying xmms_player thread");
-        }
+#ifdef AUDACIOUS
+	if ( info.audacious.thread && (destroy_audacious_thread()!=0) )
+            ERR("error destroying audacious thread");
 #endif	
+#ifdef INFOPIPE
+	if ( info.infopipe.thread && (destroy_infopipe_thread()!=0) )
+	    ERR("error destroying infopipe thread");
+#endif
 
 #if defined(__FreeBSD__)
 	kvm_close(kd);
