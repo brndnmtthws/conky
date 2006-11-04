@@ -202,7 +202,7 @@ void *audacious_thread_func(void *pvoid)
             break;
         }
 
-        /* Deliver the refreshed items array to g_items. */
+        /* Deliver the refreshed items array to audacious_items. */
         pthread_mutex_lock(&info.audacious.item_mutex);
         memcpy(&audacious_items,items,sizeof(items));
         pthread_mutex_unlock(&info.audacious.item_mutex);
