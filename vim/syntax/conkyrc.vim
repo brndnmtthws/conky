@@ -62,7 +62,6 @@ syn keyword ConkyrcSetting
         \ wm_class_name
         \ xftalpha
         \ xftfont
-        \ xmms_player
 
 syn keyword ConkyrcConstant 
         \ above
@@ -82,7 +81,6 @@ syn keyword ConkyrcConstant
         \ top_left
         \ top_right
         \ undecorated
-        \ xmms
         \ yes
 
 syn match ConkyrcNumber /\S\@<!\d\+\(\.\d\+\)\?\(\S\@!\|}\@=\)/
@@ -226,19 +224,19 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 	\ uptime 
 	\ uptime_short 
 	\ voffset
-	\ xmms_bar 
-	\ xmms_bitrate 
-	\ xmms_channels 
-	\ xmms_filename 
-	\ xmms_frequency
-      	\ xmms_length 
-	\ xmms_length_seconds 
-	\ xmms_playlist_length
-	\ xmms_playlist_position 
-      	\ xmms_position 
-	\ xmms_position_seconds 
-	\ xmms_status 
-	\ xmms_title
+	\ audacious_bar 
+	\ audacious_bitrate 
+	\ audacious_channels 
+	\ audacious_filename 
+	\ audacious_frequency
+      	\ audacious_length 
+	\ audacious_length_seconds 
+	\ audacious_playlist_length
+	\ audacious_playlist_position 
+      	\ audacious_position 
+	\ audacious_position_seconds 
+	\ audacious_status 
+	\ audacious_title
 
 hi def link ConkyrcComment   Comment
 hi def link ConkyrcSetting   Keyword
