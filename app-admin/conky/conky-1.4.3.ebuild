@@ -30,7 +30,6 @@ DEPEND_COMMON="
 				>=sys-apps/dbus-0.35
 			)
 		audacious? ( >=media-sound/audacious-0.1 )
-		infopipe? ( media-plugins/xmms-infopipe )
 		xmms2? ( medis-sound/xmms2 )
 	)"
 
