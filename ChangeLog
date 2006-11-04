@@ -1,13 +1,10 @@
 # $Id$
 
 2006-11-03	pkovacs
-	* Removed direct xmms support from conky.  The Xmms and Bmp players
-	are now no longer directly supported as those projects are dead and
-	distros such as gentoo are slated them for removal.  
-	* Added direct support for Audacious and Infopipe plugin via two new 
-	sets of variables (audacious_ and infopipe_).  Users can still view 
-	Xmms and Bmp status within conky by use of the Infopipe support.  
-	* Conky no longer loads Audacious music player library dynamically.
+	* Removed direct support for Xmms, BMP and Infopipe from conky.  
+	The Xmms and Bmp players are projects are dead and distros such 
+	as Gentoo are slating them for removal.  
+	* Added direct support for Audacious with conventional linking.
 
 2006-10-18
 	* Implement WiFi signal level detection on FreeBSD (patch

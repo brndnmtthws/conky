@@ -44,10 +44,10 @@ COMPILING
        ./configure	--prefix=/usr	   --mandir=/usr/share/man	 --in-
        fodir=/usr/share/info  --datadir=/usr/share  --sysconfdir=/etc --local-
        statedir=/var/lib --enable-xft --enable-own-window --enable-proc-uptime
-       --enable-audacious  --enable-infopipe --enable-bmpx --enable-seti --en-
-       able-hddtemp --enable-mpd --enable-xmms2 --enable-imlib2 --enable-port-
-       mon   --enable-mldonkey	 --enable-debug	 --enable-double-buffer	 --en-
-       able-xdamage --enable-x11
+       --enable-audacious  --enable-bmpx  --enable-seti --enable-hddtemp --en-
+       able-mpd --enable-xmms2 --enable-imlib2	--enable-portmon  --enable-ml-
+       donkey  --enable-debug  --enable-double-buffer  --enable-xdamage	 --en-
+       able-x11
 
        make
 
@@ -793,58 +793,6 @@ VARIABLES
 	      [-i interval] [-p port] [-e command]". Default port is 110,  de-
 	      fault interval is 5 minutes. If the password is supplied as '*',
 	      you will be prompted to enter the password when Conky starts.
-
-
-       infopipe_bar (height),(width)
-	      Progress bar
-
-
-       infopipe_bitrate
-	      Bitrate of current tune
-
-
-       infopipe_channels
-	      Number of audio channels of current tune
-
-
-       infopipe_filename
-	      Full path and filename of current tune
-
-
-       infopipe_frequency
-	      Sampling frequency of current tune
-
-
-       infopipe_length
-	      Total length of current tune as MM:SS
-
-
-       infopipe_length_seconds
-	      Total length of current tune in seconds
-
-
-       infopipe_playlist_position
-	      Playlist position of current tune
-
-
-       infopipe_playlist_length
-	      Number of tunes in playlist
-
-
-       infopipe_position
-	      Position of current tune (MM:SS)
-
-
-       infopipe_position_seconds
-	      Position of current tune in seconds
-
-
-       infopipe_status
-	      Player status (Playing/Paused/Stopped/Not running)
-
-
-       infopipe_title
-	      Title of current tune
 
 
        kernel Kernel version

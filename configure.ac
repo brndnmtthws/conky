@@ -138,27 +138,6 @@ case x$want_audacious in
 esac
 AM_CONDITIONAL(BUILD_AUDACIOUS, test x$want_audacious = xyes)
 
-dnl
-dnl InfoPipe (Version 1.3)
-dnl
-
-want_infopipe=no
-AC_ARG_ENABLE(infopipe,
-   [  --enable-infopipe       enable xmms/bmp infopipe support [[default=no]]],
-   [want_infopipe="$enableval"])
-
-case x$want_infopipe in
-    xyes)
-        AC_DEFINE(INFOPIPE, 1, [Define for InfoPipe support])
-        ;;
-    xno)
-        ;;
-    *)
-        echo "Error: invalid infopipe parameter specified: $want_infopipe"
-        exit -1
-        ;;
-esac
-AM_CONDITIONAL(BUILD_INFOPIPE, test x$want_infopipe = xyes)
 
 dnl
 dnl BMPx
@@ -536,7 +515,6 @@ $PACKAGE $VERSION configured successfully:
 
  * music detection:
   audacious:		$want_audacious
-  infopipe:		$want_infopipe
   bmpx:			$want_bmpx
   xmms2:		$want_xmms2
   mpd:			$want_mpd

@@ -141,9 +141,6 @@ use_spacer no
 # Allow each port monitor to track at least this many connections (if 0 or not set, default is 256)
 #min_port_monitor_connections 256
 
-# none, xmms, bmp, audacious, infopipe (default is none)
-#xmms_player none
-
 # variable is given either in format $variable or in ${variable}. Latter
 # allows characters right after the variable and must be used in network
 # stuff because of an argument
