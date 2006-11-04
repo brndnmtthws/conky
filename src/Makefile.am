@@ -91,8 +91,6 @@ EXTRA_DIST = 			\
 	hash.c			\
 	hash.h			\
 	hddtemp.c		\
-	infopipe.c		\
-	infopipe.h		\
 	linux.c			\
 	libmpdclient.c          \
 	libmpdclient.h          \

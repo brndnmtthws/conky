@@ -70,7 +70,6 @@ src_compile() {
 		$(use_enable bmpx) \
 		$(use_enable xmms2) \
 		$(use_enable audacious) \
-		$(use_enable infopipe) \
 		$(use_enable !ipv6 portmon) || die "econf failed"
 	emake ${mymake} || die "compile failed"
 }
