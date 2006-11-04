@@ -1180,11 +1180,13 @@ struct text_object {
 			int        connection_index;  /* 0 to n-1 connections. */
 		} tcp_port_monitor;
 #endif
+#ifdef HDDTEMP
 		struct {
 			char *addr;
 			int port;
 			char *dev;
 		} hddtemp; /* 2 */
+#endif
 	} data;
 };
 
@@ -3992,6 +3994,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			OBJ(hr) {
 				new_hr(p, obj->data.i);
 			}
+#ifdef HDDTEMP
 			OBJ(hddtemp) {
 				char *temp;
 				char unit;
@@ -4006,6 +4009,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					 snprintf(p, p_max_size, "%s°%c", temp, unit);
 				}
 			}
+#endif
 			OBJ(offset) {
 				new_offset(p, obj->data.i);
 			}
