@@ -71,19 +71,17 @@ dnl
 dnl XFT option
 dnl
 
-want_xft=yes
-AC_ARG_ENABLE(xft,
-[  --enable-xft            enable if you want to use Xft [[default=yes]]],
-  [want_xft="$enableval"])
+AC_ARG_ENABLE([xft],
+    AC_HELP_STRING([--enable-xft], [enable if you want to use Xft [[default=yes]]]),
+    [want_xft="$enableval"], [want_xft=yes])
 
 dnl
 dnl OWN_WINDOW option
 dnl
 
-dah=yes
-AC_ARG_ENABLE(own_window,
-[  --enable-own-window     enable if you want support for creating own window [[default=yes]]],
-  [dah="$enableval"])
+AC_ARG_ENABLE([own_window],
+    AC_HELP_STRING([--enable-own-window], [enable if you want support for creating own window [[default=yes]]]),
+    [dah="$enableval"], [dah=yes])
 
 if test $dah != "no"; then
   AC_DEFINE(OWN_WINDOW, 1, [Define if you want support for window creating])
@@ -93,10 +91,9 @@ dnl
 dnl PROC_UPTIME option
 dnl
 
-dah=yes
-AC_ARG_ENABLE(proc_uptime,
-[  --enable-proc-uptime    enable using /proc/uptime for uptime [[default=yes]]],
-  [dah="$enableval"])
+AC_ARG_ENABLE([proc_uptime],
+    AC_HELP_STRING([--enable-proc-uptime], [enable using /proc/uptime for uptime [[default=yes]]]),
+    [dah="$enableval"], [dah=yes])
 
 if test $dah = "yes"; then
   AC_DEFINE(PROC_UPTIME, 1, [Define if you want to use /proc/uptime for uptime])
@@ -107,10 +104,9 @@ dnl
 dnl Audacious Media Player
 dnl
 
-want_audacious=auto
-AC_ARG_ENABLE(audacious,
-   [  --enable-audacious      enable audacious player support [[default=auto]]],
-   [want_audacious="$enableval"])
+AC_ARG_ENABLE([audacious],
+    AC_HELP_STRING([--enable-audacious], [enable audacious player support [[default=auto]]]),
+    [want_audacious="$enableval"], [want_audacious=auto])
 
 case x$want_audacious in
     xauto)
@@ -143,10 +139,9 @@ dnl
 dnl BMPx
 dnl
 
-want_bmpx=no
-AC_ARG_ENABLE(bmpx,
-	      [  --enable-bmpx           enable if you want BMPx support [[default=no]]],
-	      [want_bmpx="$enableval"])
+AC_ARG_ENABLE([bmpx],
+    AC_HELP_STRING([--enable-bmpx], [enable if you want BMPx support [[default=no]]]),
+    [want_bmpx="$enableval"], [want_bmpx=no])
 
 AM_CONDITIONAL(BUILD_BMPX, test x$want_bmpx = xyes)
 if test x$want_bmpx = xyes; then
@@ -160,10 +155,9 @@ dnl
 dnl Seti@Home
 dnl
 
-want_seti=yes
-AC_ARG_ENABLE(seti,
-[  --enable-seti           enable if you want SETI at Home stats [[default=yes]]],
-  [want_seti="$enableval"])
+AC_ARG_ENABLE([seti],
+    AC_HELP_STRING([--enable-seti], [enable if you want SETI at Home stats [[default=yes]]]),
+    [want_seti="$enableval"], [want_seti=yes])
 
 AM_CONDITIONAL(BUILD_SETI, test x$want_seti = xyes)
 if test x$want_seti = xyes; then
@@ -174,10 +168,9 @@ dnl
 dnl Hddtemp
 dnl
 
-want_hddtemp=yes
-AC_ARG_ENABLE(hddtemp,
-[  --enable-hddtemp        enable if you want hddtemp support [[default=yes]]],
-  [want_hddtemp="$enableval"])
+AC_ARG_ENABLE([hddtemp],
+    AC_HELP_STRING([--enable-hddtemp], [enable if you want hddtemp support [[default=yes]]]),
+    [want_hddtemp="$enableval"], [want_hddtemp=yes])
 
 AM_CONDITIONAL(BUILD_HDDTEMP, test x$want_hddtemp = xyes)
 if test x$want_hddtemp = xyes; then
@@ -188,10 +181,9 @@ dnl
 dnl MPD
 dnl
 
-want_mpd=yes
-AC_ARG_ENABLE(mpd,
-[  --enable-mpd            enable if you want MPD support [[default=yes]]],
-  [want_mpd="$enableval"])
+AC_ARG_ENABLE([mpd],
+    AC_HELP_STRING([--enable-mpd], [enable if you want MPD support [[default=yes]]]),
+    [want_mpd="$enableval"], [want_mpd=yes])
 
 AM_CONDITIONAL(BUILD_MPD, test x$want_mpd = xyes)
 if test x$want_mpd = xyes; then
@@ -202,10 +194,9 @@ dnl
 dnl XMMS2
 dnl
 
-want_xmms2=no
-AC_ARG_ENABLE(xmms2,
-[  --enable-xmms2          enable if you want XMMS2 support [[default=no]]],
-  [want_xmms2="$enableval"])
+AC_ARG_ENABLE([xmms2],
+    AC_HELP_STRING([--enable-xmms2], [enable if you want XMMS2 support [[default=no]]]),
+    [want_xmms2="$enableval"], [want_xmms2=no])
 
 AM_CONDITIONAL(BUILD_XMMS2, test x$want_xmms2 = xyes)
 if test x$want_xmms2 = xyes; then
@@ -218,10 +209,9 @@ dnl
 dnl IMLIB2
 dnl
 
-want_imlib2=no
-AC_ARG_ENABLE(imlib2,
-[  --enable-imlib2         enable if you want Imlib2 support [[default=no]]],
-  [want_imlib2="$enableval"])
+AC_ARG_ENABLE([imlib2],
+    AC_HELP_STRING([--enable-imlib2], [enable if you want Imlib2 support [[default=no]]]),
+    [want_imlib2="$enableval"], [want_imlib2=no])
 
 AM_CONDITIONAL(BUILD_IMLIB2, test x$want_imlib2 = xyes)
 if test x$want_imlib2 = xyes; then
@@ -235,10 +225,9 @@ dnl
 dnl PORT_MONITORS
 dnl
 
-want_portmon=yes
-AC_ARG_ENABLE(portmon,
-[  --enable-portmon        enable if you want tcp (ip4) port monitoring [[default=yes]]],
-  [want_portmon="$enableval"])
+AC_ARG_ENABLE([portmon],
+    AC_HELP_STRING([--enable-portmon], [enable if you want tcp (ip4) port monitoring [[default=yes]]]),
+    [want_portmon="$enableval"], [want_portmon=yes])
 
 AM_CONDITIONAL(BUILD_PORT_MONITORS, test x$want_portmon = xyes)
 if test x$want_portmon = xyes; then
@@ -257,10 +246,9 @@ dnl
 dnl MLDonkey
 dnl
 
-want_mldonkey=no
-AC_ARG_ENABLE(mldonkey,
-[  --enable-mldonkey       enable if you want MLDonkey support [[default=no]]],
-  [want_mldonkey="$enableval"])
+AC_ARG_ENABLE([mldonkey],
+    AC_HELP_STRING([--enable-mldonkey], [enable if you want MLDonkey support [[default=no]]]),
+    [want_mldonkey="$enableval"], [want_mldonkey=no])
 
 AM_CONDITIONAL(BUILD_MLDONKEY, test x$want_mldonkey = xyes)
 if test x$want_mldonkey = xyes; then
@@ -282,10 +270,9 @@ dnl
 dnl debug
 dnl
 
-want_debug=no
-AC_ARG_ENABLE(debug, 
-	[  --enable-debug	compile with debug symbols [[default=no]]],
-	[want_debug="$enableval"])
+AC_ARG_ENABLE([debug], 
+    AC_HELP_STRING([--enable-debug], [compile with debug symbols [[default=no]]]),
+    [want_debug="$enableval"], [want_debug=no])
 
 if test "x$want_debug" = "xyes" -a $ac_cv_c_compiler_gnu != no; then
 	CFLAGS="$CFLAGS -g3"
@@ -295,20 +282,17 @@ dnl
 dnl X
 dnl
 
-want_double_buffer=yes
-AC_ARG_ENABLE(double_buffer,
-[  --enable-double-buffer  enable if you want to support flicker-free operation [[default=yes]]],
-  [want_double_buffer="$enableval"])
+AC_ARG_ENABLE([double_buffer],
+    AC_HELP_STRING([--enable-double-buffer], [enable if you want to support flicker-free operation [[default=yes]]]),
+    [want_double_buffer="$enableval"], [want_double_buffer=yes])
 
-want_xdamage=yes
-AC_ARG_ENABLE(xdamage,
-[  --enable-xdamage        enable if you want Xdamage support [[default=yes]]],
-  [want_xdamage="$enableval"])
+AC_ARG_ENABLE([xdamage],
+    AC_HELP_STRING([--enable-xdamage], [enable if you want Xdamage support [[default=yes]]]),
+    [want_xdamage="$enableval"], [want_xdamage=yes])
 
-want_x11=yes
-AC_ARG_ENABLE(x11,
-[  --enable-x11            enable if you want X11 support [[default=yes]]],
- [want_x11="$enableval"])
+AC_ARG_ENABLE([x11],
+    AC_HELP_STRING([--enable-x11], [enable if you want X11 support [[default=yes]]]),
+    [want_x11="$enableval"], [want_x11=yes])
 
 
 if test "x$want_x11" = "xyes"; then
