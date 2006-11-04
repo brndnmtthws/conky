@@ -4,10 +4,6 @@ if BUILD_AUDACIOUS
 audacious = audacious.c audacious.h
 endif
 
-if BUILD_INFOPIPE
-infopipe = infopipe.c infopipe.h
-endif
-
 if BUILD_BMPX
 bmpx = bmpx.c
 endif
@@ -67,7 +63,6 @@ conky_SOURCES = 		\
 	$(freebsd)              \
 	fs.c 			\
 	$(hddtemp)		\
-	$(infopipe)             \
 	$(linux) 		\
 	mail.c 			\
 	mixer.c 		\

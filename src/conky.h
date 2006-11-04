@@ -46,10 +46,6 @@
 #include "audacious.h"
 #endif
 
-#ifdef INFOPIPE
-#include "infopipe.h"
-#endif
-
 #ifdef XMMS2
 #include <xmmsclient/xmmsclient.h>
 #endif
@@ -190,17 +186,6 @@ struct audacious_s {
 };
 #endif
 
-#ifdef INFOPIPE
-struct infopipe_s {
-	infopipe_t items;               /* e.g. items[INFOPIPE_STATUS] */	
-	int runnable;                   /* used to signal worker thread to stop */
-	pthread_t thread;               /* worker thread */
-	pthread_attr_t thread_attr;     /* thread attributes */
-	pthread_mutex_t item_mutex;     /* mutex for item array */
-	pthread_mutex_t runnable_mutex; /* mutex for runnable flag */
-};
-#endif
-
 #ifdef BMPX
 void update_bmpx();
 struct bmpx_s {
@@ -253,14 +238,11 @@ enum {
 #ifdef AUDACIOUS
 	INFO_AUDACIOUS = 23,
 #endif
-#ifdef INFOPIPE
-	INFO_INFOPIPE = 24,
-#endif
 #ifdef BMPX
-	INFO_BMPX = 25,
+	INFO_BMPX = 24,
 #endif
 #ifdef XMMS2
-	INFO_XMMS2 = 26,
+	INFO_XMMS2 = 25,
 #endif
 };
 
@@ -316,9 +298,6 @@ struct information {
 #endif
 #ifdef AUDACIOUS
 	struct audacious_s audacious;
-#endif
-#ifdef INFOPIPE
-	struct infopipe_s infopipe;
 #endif
 #ifdef BMPX
 	struct bmpx_s bmpx;

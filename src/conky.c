@@ -73,9 +73,6 @@ static void print_version()
 #ifdef AUDACIOUS
 	"  * audacious\n"
 #endif /* AUDACIOUS */
-#ifdef INFOPIPE
-	"  * infopipe\n"
-#endif /* INFOPIPE */
 #ifdef BMPX
 	"  * bmpx\n"
 #endif /* BMPX */
@@ -1083,21 +1080,6 @@ enum text_object_type {
 	OBJ_audacious_playlist_length,
 	OBJ_audacious_playlist_position,
 	OBJ_audacious_bar,
-#endif
-#ifdef INFOPIPE
-	OBJ_infopipe_status,
-	OBJ_infopipe_title,
-	OBJ_infopipe_length,
-	OBJ_infopipe_length_seconds,
-	OBJ_infopipe_position,
-	OBJ_infopipe_position_seconds,
-	OBJ_infopipe_bitrate,
-	OBJ_infopipe_frequency,
-	OBJ_infopipe_channels,
-	OBJ_infopipe_filename,
-	OBJ_infopipe_playlist_length,
-	OBJ_infopipe_playlist_position,
-	OBJ_infopipe_bar,
 #endif
 #ifdef BMPX
 	OBJ_bmpx_title,
@@ -2975,24 +2957,6 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		(void) scan_bar(arg, &obj->a, &obj->b);
 	END
 #endif
-#ifdef INFOPIPE
-		OBJ(infopipe_status, INFO_INFOPIPE) END
-		OBJ(infopipe_title, INFO_INFOPIPE) END
-		OBJ(infopipe_length, INFO_INFOPIPE) END
-		OBJ(infopipe_length_seconds, INFO_INFOPIPE) END
-		OBJ(infopipe_position, INFO_INFOPIPE) END
-		OBJ(infopipe_position_seconds, INFO_INFOPIPE) END
-		OBJ(infopipe_bitrate, INFO_INFOPIPE) END
-		OBJ(infopipe_frequency, INFO_INFOPIPE) END
-		OBJ(infopipe_channels, INFO_INFOPIPE) END
-		OBJ(infopipe_filename, INFO_INFOPIPE) END
-		OBJ(infopipe_playlist_length, INFO_INFOPIPE) END
-		OBJ(infopipe_playlist_position, INFO_INFOPIPE) END
-		OBJ(infopipe_bar, INFO_INFOPIPE)
-		(void) scan_bar(arg, &obj->a, &obj->b);
-	END
-
-#endif
 #ifdef BMPX
 		OBJ(bmpx_title, INFO_BMPX)
 		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
@@ -4624,50 +4588,6 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
                             new_bar(p,obj->a,obj->b,(int)(progress*255.0f));
 			}
 #endif
-#ifdef INFOPIPE
-			OBJ(infopipe_status) {
-			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_STATUS]);
-			}
-        		OBJ(infopipe_title) {
-			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_TITLE]);
-			}
-        		OBJ(infopipe_length) {
-			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_LENGTH]);
-			}
-        		OBJ(infopipe_length_seconds) {
-			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_LENGTH_SECONDS]);
-			}
-        		OBJ(infopipe_position) {
-			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_POSITION]);
-			}
-        		OBJ(infopipe_position_seconds) {
-			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_POSITION_SECONDS]);
-			}
-        		OBJ(infopipe_bitrate) {
-			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_BITRATE]);
-			}
-        		OBJ(infopipe_frequency) {
-			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_FREQUENCY]);
-			}
-        		OBJ(infopipe_channels) {
-			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_CHANNELS]);
-			}
-        		OBJ(infopipe_filename) {
-			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_FILENAME]);
-			}
-        		OBJ(infopipe_playlist_length) {
-			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_PLAYLIST_LENGTH]);
-			}
-        		OBJ(infopipe_playlist_position) {
-			    snprintf(p, p_max_size, "%s", cur->infopipe.items[INFOPIPE_PLAYLIST_POSITION]);
-			}
-        		OBJ(infopipe_bar) {
-                            double progress;
-                            progress= atof(cur->infopipe.items[INFOPIPE_POSITION_SECONDS]) /
-                                      atof(cur->infopipe.items[INFOPIPE_LENGTH_SECONDS]);
-                            new_bar(p,obj->a,obj->b,(int)(progress*255.0f));
-			}
-#endif
 #ifdef BMPX
 			OBJ(bmpx_title) {
 				snprintf(p, p_max_size, "%s", cur->bmpx.title);
@@ -6160,10 +6080,6 @@ void reload_config(void)
         if ( (info.audacious.thread) && (destroy_audacious_thread()!=0) )
 	    ERR("error destroying audacious thread");
 #endif
-#ifdef INFOPIPE
-	if ( (info.infopipe.thread) && (destroy_infopipe_thread()!=0) )
-	    ERR("error destroying audacious thread");
-#endif
 #ifdef TCP_PORT_MONITOR
 	destroy_tcp_port_monitor_collection( info.p_tcp_port_monitor_collection );
 #endif
@@ -6183,10 +6099,6 @@ void reload_config(void)
 #ifdef AUDACIOUS
                 if ( (!info.audacious.thread) && (create_audacious_thread() !=0) )
                     CRIT_ERR("unable to create audacious thread!");
-#endif
-#ifdef INFOPIPE
-		if ( (!info.infopipe.thread) && (create_infopipe_thread() !=0) )
-		    CRIT_ERR("unable to create infopipe thread!");
 #endif
 		extract_variable_text(text);
 		free(text);
@@ -6255,10 +6167,6 @@ void clean_up(void)
 #ifdef AUDACIOUS
         if ( info.audacious.thread && (destroy_audacious_thread()!=0) )
             ERR("error destroying audacious thread");
-#endif
-#ifdef INFOPIPE
-	if ( info.infopipe.thread && (destroy_infopipe_thread()!=0) )
-	    ERR("error destroying infopipe thread");
 #endif
 }
 
@@ -7237,10 +7145,6 @@ int main(int argc, char **argv)
 	if ( info.audacious.thread && (destroy_audacious_thread()!=0) )
             ERR("error destroying audacious thread");
 #endif	
-#ifdef INFOPIPE
-	if ( info.infopipe.thread && (destroy_infopipe_thread()!=0) )
-	    ERR("error destroying infopipe thread");
-#endif
 
 #if defined(__FreeBSD__)
 	kvm_close(kd);

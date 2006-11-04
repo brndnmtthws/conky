@@ -237,11 +237,6 @@ void update_stuff()
 		update_audacious();
 #endif
 
-#ifdef INFOPIPE
-	if (NEED(INFO_INFOPIPE))
-		update_infopipe();
-#endif
-
 #ifdef BMPX
 	if (NEED(INFO_BMPX))
                 update_bmpx();
