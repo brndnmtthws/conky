@@ -1,10 +1,13 @@
 # $Id$
 
+2006-11-04	pkovacs
+	* Removed broken mldonkey and seti support.
+
 2006-11-03	pkovacs
-	* Removed direct support for Xmms, BMP and Infopipe from conky.  
+	* Removed support for Xmms, BMP and Infopipe from conky.  
 	The Xmms and Bmp players are projects are dead and distros such 
 	as Gentoo are slating them for removal.  
-	* Added direct support for Audacious with conventional linking.
+	* Added support for Audacious with conventional linking.
 
 2006-10-18
 	* Implement WiFi signal level detection on FreeBSD (patch

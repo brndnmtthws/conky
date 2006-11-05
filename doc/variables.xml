@@ -1463,34 +1463,6 @@
 
 <varlistentry>
 	<term>
-		<command><option>seti_prog</option></command>
-	</term>
-	<listitem>
-		Seti@home current progress
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>seti_progbar</option></command>
-	<option>(height),(width)</option>
-	</term>
-	<listitem>
-		Seti@home current progress bar
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>seti_credit</option></command>
-	</term>
-	<listitem>
-		Seti@home total user credit
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
 		<command><option>voffset</option></command>
 		<option>(pixels)</option>
 	</term>

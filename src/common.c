@@ -212,16 +212,6 @@ void update_stuff()
 		update_i8k();
 #endif /* __linux__ */
 	
-#ifdef MLDONKEY
-	if (NEED(INFO_MLDONKEY))
-		get_mldonkey_status(&mlconfig, &mlinfo);
-#endif
-
-#ifdef SETI
-	if (NEED(INFO_SETI))
-		update_seti();
-#endif
-
 #ifdef MPD
 	if (NEED(INFO_MPD))
 		update_mpd();

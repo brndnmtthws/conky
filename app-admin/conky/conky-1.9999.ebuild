@@ -11,7 +11,7 @@ HOMEPAGE="http://conky.sf.net"
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64 ~ppc ~ppc64 ~sparc ~x86 ~alpha"
-IUSE="truetype X ipv6 bmpx bmp xmms infopipe audacious"
+IUSE="truetype X ipv6 audacious bmpx"
 
 DEPEND_COMMON="
 	virtual/libc
@@ -27,13 +27,10 @@ DEPEND_COMMON="
 				virtual/x11
 		)
 		truetype? ( >=media-libs/freetype-2 )
+		audacious? ( >=media-sound/audacious-0.1 )
 		bmpx? ( media-sound/bmpx
 				>=sys-apps/dbus-0.35
 			)
-		bmp? ( media-sound/beep-media-player )
-		audacious? ( media-sound/audacious )
-		infopipe? ( || ( media-plugins/xmms-infopipe media-plugins/bmp-infopipe ) )
-		xmms? ( media-sound/xmms )
 	)"
 
 RDEPEND="${DEPEND_COMMON}"
@@ -69,16 +66,13 @@ src_compile() {
 	fi
 	local myconf
 	myconf="--enable-double-buffer --enable-own-window --enable-proc-uptime \
-		--enable-mpd --enable-mldonkey"
+		--enable-mpd"
 	econf \
 		${myconf} \
 		$(use_enable truetype xft) \
 		$(use_enable X x11) \
-		$(use_enable bmpx) \
-		$(use_enable bmp) \
-		$(use_enable xmms) \
 		$(use_enable audacious) \
-		$(use_enable infopipe) \
+		$(use_enable bmpx) \
 		$(use_enable !ipv6 portmon) || die "econf failed"
 	emake ${mymake} || die "compile failed"
 }

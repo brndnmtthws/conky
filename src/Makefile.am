@@ -8,10 +8,6 @@ if BUILD_BMPX
 bmpx = bmpx.c
 endif
 
-if BUILD_SETI
-seti = seti.c
-endif
-
 if BUILD_MPD
 mpd = mpd.c libmpdclient.c
 endif
@@ -42,10 +38,6 @@ if BUILD_PORT_MONITORS
 port_monitors = libtcp-portmon.h libtcp-portmon.c hash.h hash.c
 endif
 
-if BUILD_MLDONKEY
-mldonkey = mldonkey.c
-endif
-
 if BUILD_X11
 x11 = x11.c
 endif
@@ -66,11 +58,9 @@ conky_SOURCES = 		\
 	$(linux) 		\
 	mail.c 			\
 	mixer.c 		\
-	$(mldonkey)             \
 	$(mpd)                  \
 	$(netbsd)               \
 	$(port_monitors)        \
-	$(seti) 		\
 	$(solaris) 		\
 	remotec.c               \
 	remotec.h               \
@@ -96,10 +86,8 @@ EXTRA_DIST = 			\
 	libmpdclient.h          \
 	libtcp-portmon.c	\
 	libtcp-portmon.h	\
-	mldonkey.c              \
 	mpd.c			\
 	netbsd.c		\
-	seti.c 			\
 	solaris.c 		\
 	top.h                   \
 	x11.c                   \

@@ -44,10 +44,9 @@ COMPILING
        ./configure	--prefix=/usr	   --mandir=/usr/share/man	 --in-
        fodir=/usr/share/info  --datadir=/usr/share  --sysconfdir=/etc --local-
        statedir=/var/lib --enable-xft --enable-own-window --enable-proc-uptime
-       --enable-audacious  --enable-bmpx  --enable-seti --enable-hddtemp --en-
-       able-mpd --enable-xmms2 --enable-imlib2	--enable-portmon  --enable-ml-
-       donkey  --enable-debug  --enable-double-buffer  --enable-xdamage	 --en-
-       able-x11
+       --enable-audacious  --enable-bmpx  --enable-hddtemp  --enable-mpd --en-
+       able-xmms2  --enable-imlib2   --enable-portmon	--enable-debug	 --en-
+       able-double-buffer --enable-xdamage --enable-x11
 
        make
 
@@ -245,22 +244,6 @@ CONFIGURATION SETTINGS
        min_port_monitor_connections
 	      Allow  each port monitor to track at least this many connections
 	      (if 0 or not set, default is 256)
-
-
-       mldonkey_hostname
-	      Hostname for mldonkey stuff, defaults to localhost
-
-
-       mldonkey_port
-	      Mldonkey port, 4001 default
-
-
-       mldonkey_login
-	      Mldonkey login, default none
-
-
-       mldonkey_password
-	      Mldonkey password, default none
 
 
        mpd_host
@@ -1107,18 +1090,6 @@ VARIABLES
 
        uptime_short
 	      Uptime in a shorter format
-
-
-       seti_prog
-	      Seti@home current progress
-
-
-       seti_progbar (height),(width)
-	      Seti@home current progress bar
-
-
-       seti_credit
-	      Seti@home total user credit
 
 
        voffset (pixels)

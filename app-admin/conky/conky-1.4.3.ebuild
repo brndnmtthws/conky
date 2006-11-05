@@ -11,7 +11,7 @@ SRC_URI="mirror://sourceforge/conky/${P}.tar.bz2"
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~ppc ~ppc64 ~sparc ~x86"
-IUSE="truetype X ipv6 bmpx bmp xmms xmms2 infopipe audacious"
+IUSE="truetype X ipv6 audacious bmpx"
 
 DEPEND_COMMON="
 	virtual/libc
@@ -21,16 +21,16 @@ DEPEND_COMMON="
 				x11-libs/libX11
 				x11-libs/libSM
 				x11-libs/libXrender
+				x11-libs/libXdamage
 				x11-libs/libXft
 				)
 				virtual/x11
 		)
 		truetype? ( >=media-libs/freetype-2 )
+		audacious? ( >=media-sound/audacious-0.1 )
 		bmpx? ( media-sound/bmpx
 				>=sys-apps/dbus-0.35
 			)
-		audacious? ( >=media-sound/audacious-0.1 )
-		xmms2? ( medis-sound/xmms2 )
 	)"
 
 RDEPEND="${DEPEND_COMMON}"
@@ -62,14 +62,13 @@ src_compile() {
 	fi
 	local myconf
 	myconf="--enable-double-buffer --enable-own-window --enable-proc-uptime \
-		--enable-mpd --enable-mldonkey"
+		--enable-mpd"
 	econf \
 		${myconf} \
 		$(use_enable truetype xft) \
 		$(use_enable X x11) \
-		$(use_enable bmpx) \
-		$(use_enable xmms2) \
 		$(use_enable audacious) \
+		$(use_enable bmpx) \
 		$(use_enable !ipv6 portmon) || die "econf failed"
 	emake ${mymake} || die "compile failed"
 }

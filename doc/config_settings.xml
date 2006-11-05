@@ -172,34 +172,6 @@
 </varlistentry>
 
 <varlistentry>
-	<term><command><option>mldonkey_hostname</option></command></term>
-	<listitem>
-		Hostname for mldonkey stuff, defaults to localhost
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term><command><option>mldonkey_port</option></command></term>
-	<listitem>
-		Mldonkey port, 4001 default
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term><command><option>mldonkey_login</option></command></term>
-	<listitem>
-		Mldonkey login, default none
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term><command><option>mldonkey_password</option></command></term>
-	<listitem>
-		Mldonkey password, default none
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
 	<term><command><option>mpd_host</option></command></term>
 	<listitem>
 		Host of MPD server

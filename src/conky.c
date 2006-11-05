@@ -76,25 +76,19 @@ static void print_version()
 #ifdef BMPX
 	"  * bmpx\n"
 #endif /* BMPX */
-#ifdef XMMS2
-	"  * xmms2\n"
-#endif /* XMMS2 */
 #ifdef MPD
 	"  * mpd\n"
 #endif /* MPD */
+#ifdef XMMS2
+	"  * xmms2\n"
+#endif /* XMMS2 */
 	"\n General features:\n"
+#ifdef HDDTEMP
+	"  * hddtemp\n"
+#endif /* HDDTEMP */
 #ifdef TCP_PORT_MONITOR
 	"  * portmon\n"
 #endif /* TCP_PORT_MONITOR */
-#ifdef MLDONKEY
-	"  * mldonkey\n"
-#endif /* MLDONKEY */
-#ifdef HDDTEMP
-        "  * hddtemp\n"
-#endif /* HDDTEMP */
-#ifdef SETI
-	"  * seti\n"
-#endif /* SETI*/
 	"\n");	
 
 	exit(0);
@@ -395,11 +389,6 @@ static char original_text[] =
     "${color grey}Networking:\n"
     " Up:$color ${upspeed eth0} k/s${color grey} - Down:$color ${downspeed eth0} k/s\n"
     "$hr\n"
-#ifdef SETI
-    "${color grey}SETI@Home Statistics:\n"
-    "${color grey}Seti Unit Number:$color $seti_credit\n"
-    "${color grey}Seti Progress:$color $seti_prog% $seti_progbar\n"
-#endif
 #ifdef MPD
     "${color grey}MPD: $mpd_status $mpd_artist - $mpd_title from $mpd_album at $mpd_vol\n"
     "Bitrate: $mpd_bitrate\n" "Progress: $mpd_bar\n"
@@ -972,18 +961,6 @@ enum text_object_type {
 	OBJ_new_mails,
 	OBJ_nodename,
 	OBJ_pre_exec,
-#ifdef MLDONKEY
-	OBJ_ml_upload_counter,
-	OBJ_ml_download_counter,
-	OBJ_ml_nshared_files,
-	OBJ_ml_shared_counter,
-	OBJ_ml_tcp_upload_rate,
-	OBJ_ml_tcp_download_rate,
-	OBJ_ml_udp_upload_rate,
-	OBJ_ml_udp_download_rate,
-	OBJ_ml_ndownloaded_files,
-	OBJ_ml_ndownloading_files,
-#endif
 	OBJ_processes,
 	OBJ_running_processes,
 	OBJ_shadecolor,
@@ -1019,11 +996,6 @@ enum text_object_type {
 	OBJ_apm_battery_time,
 	OBJ_apm_battery_life,
 #endif /* __FreeBSD__ */
-#ifdef SETI
-	OBJ_seti_prog,
-	OBJ_seti_progbar,
-	OBJ_seti_credit,
-#endif
 #ifdef MPD
 	OBJ_mpd_title,
 	OBJ_mpd_artist,
@@ -1760,16 +1732,6 @@ static struct text_object *new_text_object_internal()
 	memset(obj, 0, sizeof(struct text_object));
 	return obj;
 }
-
-#ifdef MLDONKEY
-void ml_cleanup()
-{
-	if (mlconfig.mldonkey_hostname) {
-		free(mlconfig.mldonkey_hostname);
-		mlconfig.mldonkey_hostname = NULL;
-	}
-}
-#endif
 
 static void free_text_objects(unsigned int count, struct text_object *objs)
 {
@@ -2716,18 +2678,6 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		scan_mixer_bar(arg, &obj->data.mixerbar.l,
 				&obj->data.mixerbar.w, &obj->data.mixerbar.h);
 	END
-#ifdef MLDONKEY
-		OBJ(ml_upload_counter, INFO_MLDONKEY)
-		END OBJ(ml_download_counter, INFO_MLDONKEY)
-		END OBJ(ml_nshared_files, INFO_MLDONKEY)
-		END OBJ(ml_shared_counter, INFO_MLDONKEY)
-		END OBJ(ml_tcp_upload_rate, INFO_MLDONKEY)
-		END OBJ(ml_tcp_download_rate, INFO_MLDONKEY)
-		END OBJ(ml_udp_upload_rate, INFO_MLDONKEY)
-		END OBJ(ml_udp_download_rate, INFO_MLDONKEY)
-		END OBJ(ml_ndownloaded_files, INFO_MLDONKEY)
-		END OBJ(ml_ndownloading_files, INFO_MLDONKEY) END
-#endif
 		OBJ(new_mails, INFO_MAIL)
 		END OBJ(nodename, 0)
 		END OBJ(processes, INFO_PROCS)
@@ -2859,11 +2809,6 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		OBJ(apm_battery_life, 0) END
 		OBJ(apm_battery_time, 0) END
 #endif /* __FreeBSD__ */
-#ifdef SETI
-		OBJ(seti_prog, INFO_SETI) END OBJ(seti_progbar, INFO_SETI)
-		(void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
-	END OBJ(seti_credit, INFO_SETI) END
-#endif
 		OBJ(imap_unseen, 0)
 		if (arg) {
 			// proccss
@@ -3244,10 +3189,6 @@ static void extract_variable_text(const char *p)
 	free_text_objects(text_object_count, text_objects);
 	text_object_count = 0;
 	text_objects = NULL;
-
-#ifdef MLDONKEY	
-	ml_cleanup();
-#endif /* MLDONKEY */
 
 
 	list = extract_variable_text_internal(p);
@@ -4144,52 +4085,6 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			OBJ(new_mails) {
 				snprintf(p, p_max_size, "%d", cur->new_mail_count);
 			}
-#ifdef MLDONKEY
-			OBJ(ml_upload_counter) {
-				snprintf(p, p_max_size, "%lld",
-					 mlinfo.upload_counter / 1048576);
-			}
-			OBJ(ml_download_counter) {
-				snprintf(p, p_max_size, "%lld",
-					 mlinfo.download_counter /
-					 1048576);
-			}
-			OBJ(ml_nshared_files) {
-				snprintf(p, p_max_size, "%i", mlinfo.nshared_files);
-			}
-			OBJ(ml_shared_counter) {
-				snprintf(p, p_max_size, "%lld",
-					 mlinfo.shared_counter / 1048576);
-			}
-			OBJ(ml_tcp_upload_rate) {
-				snprintf(p, p_max_size, "%.2f",
-					 (float) mlinfo.tcp_upload_rate /
-					 1024);
-			}
-			OBJ(ml_tcp_download_rate) {
-				snprintf(p, p_max_size, "%.2f",
-					 (float) mlinfo.tcp_download_rate /
-					 1024);
-			}
-			OBJ(ml_udp_upload_rate) {
-				snprintf(p, p_max_size, "%.2f",
-					 (float) mlinfo.udp_upload_rate /
-					 1024);
-			}
-			OBJ(ml_udp_download_rate) {
-				snprintf(p, p_max_size, "%.2f",
-					 (float) mlinfo.udp_download_rate /
-					 1024);
-			}
-			OBJ(ml_ndownloaded_files) {
-				snprintf(p, p_max_size, "%i",
-					 mlinfo.ndownloaded_files);
-			}
-			OBJ(ml_ndownloading_files) {
-				snprintf(p, p_max_size, "%i",
-					 mlinfo.ndownloading_files);
-			}
-#endif
 
 			OBJ(nodename) {
 				snprintf(p, p_max_size, "%s",
@@ -4352,20 +4247,6 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				free(msg);
 			}
 #endif /* __FreeBSD__ */
-#ifdef SETI
-			OBJ(seti_prog) {
-				snprintf(p, p_max_size, "%.2f",
-					 cur->seti_prog * 100.0f);
-			}
-			OBJ(seti_progbar) {
-				new_bar(p, obj->data.pair.a,
-					obj->data.pair.b,
-					(int) (cur->seti_prog * 255.0f));
-			}
-			OBJ(seti_credit) {
-				snprintf(p, p_max_size, "%.0f", cur->seti_credit);
-			}
-#endif
 
 #ifdef MPD
 			OBJ(mpd_title) {
@@ -6152,18 +6033,11 @@ void clean_up(void)
 	text_object_count = 0;
 	text_objects = NULL;
 
-#ifdef MLDONKEY	
-	ml_cleanup();
-#endif /* MLDONKEY */
-
 	if (text != original_text)
 		free(text);
 
 	free(current_config);
 	free(current_mail_spool);
-#ifdef SETI
-	free(seti_dir);
-#endif
 #ifdef TCP_PORT_MONITOR
 	destroy_tcp_port_monitor_collection( info.p_tcp_port_monitor_collection );
 	info.p_tcp_port_monitor_collection = NULL;
@@ -6288,12 +6162,6 @@ static void set_default_configurations(void)
 	no_buffers = 1;
 	update_interval = 10.0;
 	stuff_in_upper_case = 0;
-#ifdef MLDONKEY
-	mlconfig.mldonkey_hostname = strdup("127.0.0.1");
-	mlconfig.mldonkey_port = 4001;
-	mlconfig.mldonkey_login = NULL;
-	mlconfig.mldonkey_password = NULL;
-#endif
 
 #ifdef TCP_PORT_MONITOR
 	tcp_port_monitor_collection_args.min_port_monitors = MIN_PORT_MONITORS_DEFAULT;
@@ -6618,44 +6486,6 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 		CONF("no_buffers") {
 			no_buffers = string_to_bool(value);
 		}
-#ifdef MLDONKEY
-		CONF("mldonkey_hostname") {
-			if (value) {
-				if (mlconfig.mldonkey_hostname != NULL) {
-					free(mlconfig.mldonkey_hostname);
-				}
-			mlconfig.mldonkey_hostname = strdup(value);
-			}
-			else
-				CONF_ERR;
-		}
-		CONF("mldonkey_port") {
-			if (value)
-				mlconfig.mldonkey_port = atoi(value);
-			else
-				CONF_ERR;
-		}
-		CONF("mldonkey_login") {
-			if (value) {
-				if (mlconfig.mldonkey_login != NULL) {
-					free(mlconfig.mldonkey_login);
-				}
-				mlconfig.mldonkey_login = strdup(value);
-			}
-			else
-				CONF_ERR;
-		}
-		CONF("mldonkey_password") {
-			if (value) {
-				if (mlconfig.mldonkey_password != NULL) {
-					free(mlconfig.mldonkey_password);
-				}
-				mlconfig.mldonkey_password = strdup(value);
-			}
-			else
-				CONF_ERR;
-		}
-#endif
 		CONF("pad_percents") {
 	pad_percents = atoi(value);
 		}
@@ -6748,14 +6578,6 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 		CONF("uppercase") {
 			stuff_in_upper_case = string_to_bool(value);
 		}
-#ifdef SETI
-		CONF("seti_dir") {
-			seti_dir = (char *)
-			    malloc(strlen(value)
-				   + 1);
-			strcpy(seti_dir, value);
-		}
-#endif
 		CONF("text") {
 			if (text != original_text)
 				free(text);

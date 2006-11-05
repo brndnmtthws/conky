@@ -209,40 +209,34 @@ enum {
 	INFO_MAIL = 1,
 	INFO_MEM = 2,
 	INFO_NET = 3,
-#ifdef SETI
-	INFO_SETI = 4,
-#endif
-	INFO_PROCS = 5,
-	INFO_RUN_PROCS = 6,
-	INFO_UPTIME = 7,
-	INFO_BUFFERS = 8,
-	INFO_FS = 9,
-	INFO_I2C = 10,
-	INFO_MIXER = 11,
-	INFO_LOADAVG = 12,
-	INFO_UNAME = 13,
-	INFO_FREQ = 14,
+	INFO_PROCS = 4,
+	INFO_RUN_PROCS = 5,
+	INFO_UPTIME = 6,
+	INFO_BUFFERS = 7,
+	INFO_FS = 8,
+	INFO_I2C = 9,
+	INFO_MIXER = 10,
+	INFO_LOADAVG = 11,
+	INFO_UNAME = 12,
+	INFO_FREQ = 13,
 #ifdef MPD
-	INFO_MPD = 15,
+	INFO_MPD = 14,
 #endif
-	INFO_TOP = 16,
-#ifdef MLDONKEY
-	INFO_MLDONKEY = 18,
-#endif
-	INFO_WIFI = 19,
-	INFO_DISKIO = 20,
-	INFO_I8K = 21,
+	INFO_TOP = 15,
+	INFO_WIFI = 16,
+	INFO_DISKIO = 17,
+	INFO_I8K = 18,
 #ifdef TCP_PORT_MONITOR
-        INFO_TCP_PORT_MONITOR = 22,
+        INFO_TCP_PORT_MONITOR = 19,
 #endif
 #ifdef AUDACIOUS
-	INFO_AUDACIOUS = 23,
+	INFO_AUDACIOUS = 20,
 #endif
 #ifdef BMPX
-	INFO_BMPX = 24,
+	INFO_BMPX = 21,
 #endif
 #ifdef XMMS2
-	INFO_XMMS2 = 25,
+	INFO_XMMS2 = 22,
 #endif
 };
 
@@ -281,10 +275,6 @@ struct information {
 	int new_mail_count, mail_count;
 	struct mail_s* mail;
 	int mail_running;
-#ifdef SETI
-	float seti_prog;
-	float seti_credit;
-#endif
 #ifdef MPD
 	struct mpd_s mpd;
 	mpd_Connection *conn;
@@ -534,14 +524,6 @@ extern char *current_mail_spool;
 
 void update_mail_count();
 
-/* in seti.c */
-
-#ifdef SETI
-extern char *seti_dir;
-
-void update_seti();
-#endif
-
 /* in freebsd.c */
 #if defined(__FreeBSD__)
 kvm_t *kd;
@@ -559,42 +541,9 @@ char *get_apm_battery_time(void);
 void update_mpd();
 #endif
 
-/* in xmm2.c */
+/* in xmms2.c */
 #ifdef XMMS2
 void update_xmms2();
-#endif
-
-#ifdef MLDONKEY
-/* in mldonkey.c */
-typedef long long int64;
-/* The info necessary to connect to mldonkey. login and password can be NULL. */
-typedef struct mldonkey_config {
-	char *mldonkey_hostname;
-	int mldonkey_port;
-	char *mldonkey_login;
-	char *mldonkey_password;
-} mldonkey_config;
-
-/* The MLDonkey status returned */
-typedef struct mldonkey_info {
-	int64 upload_counter;
-	int64 download_counter;
-	int nshared_files;
-	int64 shared_counter;
-	int tcp_upload_rate;
-	int tcp_download_rate;
-	int udp_upload_rate;
-	int udp_download_rate;
-	int ndownloaded_files;
-	int ndownloading_files;
-	int nconnected_networks;
-	int connected_networks[1];
-} mldonkey_info;
-
-extern mldonkey_info mlinfo;
-extern mldonkey_config mlconfig;
-
-int get_mldonkey_status(mldonkey_config * config, mldonkey_info * info);
 #endif
 
 /* in hddtemp.c */

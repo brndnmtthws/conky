@@ -151,18 +151,6 @@ if test x$want_bmpx = xyes; then
 	AC_DEFINE(BMPX, 1, [Define if you want BMPx support])
 fi
 
-dnl
-dnl Seti@Home
-dnl
-
-AC_ARG_ENABLE([seti],
-    AC_HELP_STRING([--enable-seti], [enable if you want SETI at Home stats [[default=yes]]]),
-    [want_seti="$enableval"], [want_seti=yes])
-
-AM_CONDITIONAL(BUILD_SETI, test x$want_seti = xyes)
-if test x$want_seti = xyes; then
-  AC_DEFINE(SETI, 1, [Define if you want SETI at Home stats])
-fi
 
 dnl
 dnl Hddtemp
@@ -242,18 +230,6 @@ dnl
 dnl Cairo
 dnl
 
-dnl
-dnl MLDonkey
-dnl
-
-AC_ARG_ENABLE([mldonkey],
-    AC_HELP_STRING([--enable-mldonkey], [enable if you want MLDonkey support [[default=no]]]),
-    [want_mldonkey="$enableval"], [want_mldonkey=no])
-
-AM_CONDITIONAL(BUILD_MLDONKEY, test x$want_mldonkey = xyes)
-if test x$want_mldonkey = xyes; then
-  AC_DEFINE(MLDONKEY, 1, [Define if you want MLDonkey support])
-fi
 
 dnl
 dnl ICONV
@@ -500,12 +476,11 @@ $PACKAGE $VERSION configured successfully:
  * music detection:
   audacious:		$want_audacious
   bmpx:			$want_bmpx
-  xmms2:		$want_xmms2
   mpd:			$want_mpd
+  xmms2:                $want_xmms2
 
  * general:
+  hddtemp:              $want_hddtemp
   portmon:		$want_portmon  
-  mldonkey:		$want_mldonkey
-  hddtemp:		$want_hddtemp
 
 EOF
