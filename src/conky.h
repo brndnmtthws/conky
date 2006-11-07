@@ -335,7 +335,7 @@ char tmpstring2[TEXT_BUFFER_SIZE];
 #include <X11/Xft/Xft.h>
 #endif
 
-#if defined(HAVE_XDBE) && defined(DOUBLE_BUFFER)
+#ifdef HAVE_XDBE
 #define XDBE
 #include <X11/extensions/Xdbe.h>
 #endif

@@ -67,13 +67,6 @@ BUILD_ARCH="$(uname -sr) ($(uname -m))"
 AC_SUBST(BUILD_DATE)
 AC_SUBST(BUILD_ARCH)
 
-dnl
-dnl XFT option
-dnl
-
-AC_ARG_ENABLE([xft],
-    AC_HELP_STRING([--enable-xft], [enable if you want to use Xft [[default=yes]]]),
-    [want_xft="$enableval"], [want_xft=yes])
 
 dnl
 dnl OWN_WINDOW option
@@ -105,34 +98,16 @@ dnl Audacious Media Player
 dnl
 
 AC_ARG_ENABLE([audacious],
-    AC_HELP_STRING([--enable-audacious], [enable audacious player support [[default=auto]]]),
-    [want_audacious="$enableval"], [want_audacious=auto])
+    AC_HELP_STRING([--enable-audacious], [enable audacious player support [[default=no]]]),
+    [want_audacious="$enableval"], [want_audacious=no])
 
-case x$want_audacious in
-    xauto)
-        want_audacious=yes
-        PKG_CHECK_MODULES([AUDACIOUS], [audacious >= 0.1], [], [want_audacious=no])  
-	if test x$want_audacious = xyes; then
-	     CFLAGS="$CFLAGS $AUDACIOUS_CFLAGS"
-	     LIBS="$LIBS $AUDACIOUS_LIBS"
-	     AC_DEFINE(AUDACIOUS, 1, [Define for Audacious support])
-        fi
-        ;;
-    xyes)
-	PKG_CHECK_MODULES([AUDACIOUS], [audacious >= 0.1], [], 
-			  [AC_MSG_ERROR([Can't find Audacious development files.])])
-        CFLAGS="$CFLAGS $AUDACIOUS_CFLAGS"
-        LIBS="$LIBS $AUDACIOUS_LIBS"
-        AC_DEFINE(AUDACIOUS, 1, [Define for Audacious support])
-        ;;
-    xno)
-	;;
-    *)
-        echo "Error: invalid audacious parameter specified: $want_audacious"
-        exit -1
-	;;
-esac
 AM_CONDITIONAL(BUILD_AUDACIOUS, test x$want_audacious = xyes)
+if test x$want_audacious = xyes; then
+	PKG_CHECK_MODULES([AUDACIOUS], [audacious >= 0.1])
+    	CFLAGS="$CFLAGS $AUDACIOUS_CFLAGS"
+    	LIBS="$LIBS $AUDACIOUS_LIBS"
+    	AC_DEFINE(AUDACIOUS, 1, [Define for Audacious support])
+fi
 
 
 dnl
@@ -188,10 +163,12 @@ AC_ARG_ENABLE([xmms2],
 
 AM_CONDITIONAL(BUILD_XMMS2, test x$want_xmms2 = xyes)
 if test x$want_xmms2 = xyes; then
-  CFLAGS="$CFLAGS `pkg-config --cflags xmms2-client`"
-  LIBS="$LIBS `pkg-config --libs xmms2-client`"
-  AC_DEFINE(XMMS2, 1, [Define if you want XMMS2 support])
+	PKG_CHECK_MODULES([XMMS2], [xmms2-client])
+  	CFLAGS="$CFLAGS $XMMS2_CFLAGS"
+  	LIBS="$LIBS $XMMS2_LIBS"
+  	AC_DEFINE(XMMS2, 1, [Define if you want XMMS2 support])
 fi
+
 
 dnl
 dnl IMLIB2
@@ -219,16 +196,13 @@ AC_ARG_ENABLE([portmon],
 
 AM_CONDITIONAL(BUILD_PORT_MONITORS, test x$want_portmon = xyes)
 if test x$want_portmon = xyes; then
-  AC_CHECK_HEADERS([netdb.h netinet/in.h netinet/tcp.h sys/socket.h arpa/inet.h], [], [PORT_MONITORS_MISSING=yes])
-  if test "x$PORT_MONITORS_MISSING" = xyes; then
-         AC_MSG_ERROR([missing a needed network header for port monitoring])
-  fi
-  AC_DEFINE(TCP_PORT_MONITOR, 1, [Define if you want tcp port monitoring support])
+  	AC_CHECK_HEADERS([netdb.h netinet/in.h netinet/tcp.h sys/socket.h arpa/inet.h], [], 
+			 [PORT_MONITORS_MISSING=yes])
+  	if test "x$PORT_MONITORS_MISSING" = xyes; then
+            AC_MSG_ERROR([missing a needed network header for port monitoring])
+  	fi
+  	AC_DEFINE(TCP_PORT_MONITOR, 1, [Define if you want tcp port monitoring support])
 fi
-
-dnl
-dnl Cairo
-dnl
 
 
 dnl
@@ -255,71 +229,78 @@ if test "x$want_debug" = "xyes" -a $ac_cv_c_compiler_gnu != no; then
 fi
 
 dnl
-dnl X
+dnl X11
 dnl
-
-AC_ARG_ENABLE([double_buffer],
-    AC_HELP_STRING([--enable-double-buffer], [enable if you want to support flicker-free operation [[default=yes]]]),
-    [want_double_buffer="$enableval"], [want_double_buffer=yes])
-
-AC_ARG_ENABLE([xdamage],
-    AC_HELP_STRING([--enable-xdamage], [enable if you want Xdamage support [[default=yes]]]),
-    [want_xdamage="$enableval"], [want_xdamage=yes])
 
 AC_ARG_ENABLE([x11],
     AC_HELP_STRING([--enable-x11], [enable if you want X11 support [[default=yes]]]),
     [want_x11="$enableval"], [want_x11=yes])
 
-
+AM_CONDITIONAL(BUILD_X11, test x$want_x11 = xyes)
 if test "x$want_x11" = "xyes"; then
-	AC_PATH_X
-	AC_PATH_XTRA
-	CFLAGS="$CFLAGS $X_CFLAGS"
-	LIBS="$LIBS $X_LIBS $X11_LIBS"
-	LDFLAGS="$LDFLAGS $LIBS $X_PRE_LIBS"
-	
-	if test "x$no_x" = xyes; then
-		AC_MSG_ERROR([something went wrong when checking for X11, you're probably missing headers or it's not installed, either re-run configure with --disable-x11, or fix this])
-	fi
-	
-	AC_CHECK_LIB(
-		[X11], [XOpenDisplay],[], 
-		AC_MSG_ERROR([Could not find XOpenDisplay in -lX11.])
-	)
-
-	AC_DEFINE(X11, 1, [Define if you want to use X11])
-	AC_DEFINE(HAVE_X11, 1, [Define if you have X11])
-	AM_CONDITIONAL(BUILD_X11, true)
-	
-	if test "x$want_double_buffer" != xno; then
-		AC_DEFINE(DOUBLE_BUFFER, 1, [Define if you want support for the DBE extension])
-		AC_CHECK_LIB(Xext, XdbeQueryExtension, [AC_DEFINE([HAVE_XDBE], 1, [Xdbe]) LIBS="$LIBS -lXext"],
-		     [AC_MSG_ERROR([something went wrong when checking for Xdbe (double buffer extension)])])
-	fi
-
-	if test "x$want_xdamage" = "xyes"; then
-		AC_DEFINE(XDAMAGE, 1, [Define if you want support for the Xdamage extension])
-		AC_CHECK_LIB(Xdamage, XDamageQueryExtension, 
-			     [AC_DEFINE([HAVE_XDAMAGE], 1, [Xdamage]) LIBS="$LIBS -lXdamage"],
-			      [AC_MSG_ERROR([something went wrong when checking for Xdamage])])
-	fi
-else
-	AM_CONDITIONAL(BUILD_X11, false)
+    PKG_CHECK_MODULES([X11], [x11])
+    CFLAGS="$CFLAGS $X11_CFLAGS"
+    LIBS="$LIBS $X11_LIBS"
+    AC_DEFINE(X11, 1, [Define if you want to use X11])
 fi
+	
+
+dnl
+dnl Xext Double-buffering Extension
+dnl
+
+AC_ARG_ENABLE([double_buffer],
+    AC_HELP_STRING([--enable-double-buffer], [enable for flicker-free operation [[default=yes]]]),
+    [want_double_buffer="$enableval"], [want_double_buffer=yes])
+
+if test "x$want_double_buffer" = "xyes"; then
+    if test "x$want_x11" != "xyes"; then
+	    AC_MSG_ERROR([--enable-x11 is required for double-buffering])
+    fi
+    PKG_CHECK_MODULES([XEXT],[xext])
+    CFLAGS="$CFLAGS $XEXT_CFLAGS"
+    LIBS="$LIBS $XEXT_LIBS"
+    AC_DEFINE(HAVE_XDBE, 1, [Define for X11 double-buffering])
+fi
+
+
+dnl
+dnl Xdamage Extension
+dnl
+
+AC_ARG_ENABLE([xdamage],
+    AC_HELP_STRING([--enable-xdamage], [enable if you want Xdamage support [[default=yes]]]),
+    [want_xdamage="$enableval"], [want_xdamage=yes])
+
+if test "x$want_xdamage" = "xyes"; then
+    if test "x$want_x11" != "xyes"; then
+	    AC_MSG_ERROR([--enable-x11 is required for xdamage])
+    fi
+    PKG_CHECK_MODULES([XDAMAGE],[xdamage])
+    CFLAGS="$CFLAGS $XDAMAGE_CFLAGS"
+    LIBS="$LIBS $XDAMAGE_LIBS"
+    AC_DEFINE(HAVE_XDAMAGE, 1, [Define for X11 Xdamage extension])
+fi
+
 
 dnl
 dnl Xft
 dnl
 
-if test x$want_xft && test x$want_x11; then
-  PKG_CHECK_MODULES(XFT, [xft],
-		    [
-		     AC_DEFINE(XFT, 1, [Define if you are using Xft])
-		     CFLAGS="$CFLAGS $XFT_CFLAGS"
-		     AC_SUBST(XFT_LIBS)
-		    ], 
-		    [want_xft=no])
+AC_ARG_ENABLE([xft],
+    AC_HELP_STRING([--enable-xft], [enable if you want to use Xft [[default=yes]]]),
+    [want_xft="$enableval"], [want_xft=yes])
+
+if test x$want_xft = "xyes"; then
+    if test "x$want_x11" != "xyes"; then
+	    AC_MSG_ERROR([--enable-x11 is required for xft])
+    fi
+    PKG_CHECK_MODULES(XFT, [xft])
+    CFLAGS="$CFLAGS $XFT_CFLAGS"
+    LIBS="$LIBS $XFT_LIBS"
+    AC_DEFINE(XFT, 1, [Define for Xft support])
 fi
+
 
 dnl
 dnl KVM
@@ -470,8 +451,9 @@ $PACKAGE $VERSION configured successfully:
 
  * x11:
   x11 support:		$want_x11
-  xft support:		$want_xft
-  xdamage extension:	$want_xdamage  
+  xdamage support:	$want_xdamage
+  xdbe support:		$want_double_buffer
+  xft support:          $want_xft
 
  * music detection:
   audacious:		$want_audacious

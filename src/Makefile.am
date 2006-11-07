@@ -69,7 +69,7 @@ conky_SOURCES = 		\
 	$(x11)                  \
 	$(xmms2) 
 
-AM_LDFLAGS = $(X11_LIBS) $(XFT_LIBS) $(CAIRO_LIBS) $(PTHREAD_LIBS) -lm
+AM_LDFLAGS = $(CAIRO_LIBS) $(PTHREAD_LIBS) -lm
 
 EXTRA_DIST = 			\
 	audacious.c		\

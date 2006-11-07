@@ -59,15 +59,16 @@ static void print_version()
 	"\nCompiled in features:\n\n"
 #ifdef X11
 	" X11:\n"
-# ifdef XFT
-	"  * xft\n"
-# endif /* XFT */
 # ifdef HAVE_XDAMAGE
 	"  * Xdamage extension\n"
 # endif /* HAVE_XDAMAGE */
 # ifdef HAVE_XDBE
 	"  * Xdbe extension (double buffer)\n"
 # endif /* HAVE_XDBE */
+# ifdef XFT
+	"  * xft\n"
+# endif /* XFT */
+
 #endif /* X11 */
 	"\n Music detection:\n"
 #ifdef AUDACIOUS
@@ -5633,8 +5634,8 @@ static void main_loop()
 
 #ifdef X11
 	Region region = XCreateRegion();
-	int event_base, error_base;
 #ifdef HAVE_XDAMAGE
+	int event_base, error_base;
 	if (!XDamageQueryExtension (display, &event_base, &error_base)) {
 		ERR("Xdamage extension unavailable");
 	}
