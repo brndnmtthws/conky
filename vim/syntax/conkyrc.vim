@@ -35,10 +35,6 @@ syn keyword ConkyrcSetting
         \ minimum_size
         \ min_port_monitor_connections
         \ min_port_monitors
-        \ mldonkey_hostname
-        \ mldonkey_login
-        \ mldonkey_password
-        \ mldonkey_port
         \ mpd_host
         \ mpd_password
         \ mpd_port
@@ -108,6 +104,19 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 	\ apm_adapter 
 	\ apm_battery_life 
 	\ apm_battery_time
+ 	\ audacious_bar
+        \ audacious_bitrate
+        \ audacious_channels
+        \ audacious_filename
+        \ audacious_frequency
+        \ audacious_length
+        \ audacious_length_seconds
+        \ audacious_playlist_length
+        \ audacious_playlist_position
+        \ audacious_position
+        \ audacious_position_seconds
+        \ audacious_status
+        \ audacious_title
       	\ battery 
 	\ bmpx_album 
 	\ bmpx_artist 
@@ -168,16 +177,6 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 	\ membar 
 	\ memmax 
 	\ memperc 
-	\ ml_download_counter
-	\ ml_ndownloaded_files 
-	\ ml_ndownloading_files
-      	\ ml_nshared_files 
-	\ ml_shared_counter 
-	\ ml_tcp_download_rate
-	\ ml_tcp_upload_rate 
-	\ ml_udp_download_rate 
-      	\ ml_udp_upload_rate 
-	\ ml_upload_counter 
 	\ mpd_album 
       	\ mpd_artist 
 	\ mpd_bar 
@@ -198,9 +197,6 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 	\ pre_exec 
 	\ processes
       	\ running_processes 
-	\ seti_credit 
-	\ seti_prog 
-	\ seti_progbar 
 	\ shadecolor 
 	\ stippled_hr 
 	\ swap 
@@ -224,19 +220,6 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 	\ uptime 
 	\ uptime_short 
 	\ voffset
-	\ audacious_bar 
-	\ audacious_bitrate 
-	\ audacious_channels 
-	\ audacious_filename 
-	\ audacious_frequency
-      	\ audacious_length 
-	\ audacious_length_seconds 
-	\ audacious_playlist_length
-	\ audacious_playlist_position 
-      	\ audacious_position 
-	\ audacious_position_seconds 
-	\ audacious_status 
-	\ audacious_title
 
 hi def link ConkyrcComment   Comment
 hi def link ConkyrcSetting   Keyword
