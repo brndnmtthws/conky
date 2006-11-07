@@ -1,0 +1,10 @@
+##
+## Syntax highlighting for conky .rc files.
+##
+syntax "conky" "\.*conkyrc.*$"
+
+color green "\<(alignment|background|on_bottom|border_margin|border_width|cpu_avg_samples|default_color|default_shade_color|default_outline_color|double_buffer|draw_borders|draw_shades|draw_outline|font|gap_x|gap_y|no_buffers|mail_spool|maximum_width|minimum_size|mldonkey_hostname|mldonkey_port|mldonkey_login|mldonkey_password|mpd_host|mpd_port|mpd_password|net_avg_samples|override_utf8_locale|own_window|own_window_transparent|own_window_type|own_window_hints|own_window_colour|pad_percents|stippled_borders|total_run_times|update_interval|uppercase|use_spacer|use_xft)\>"
+color brightblue "\<(addr|acpiacadapter|acpifan|acpitemp|acpitempf|adt746xcpu|adt746xfan|alignr|alignc|apm_adapter|apm_battery_life|apm_battery_time|battery|buffers|cached|color|cpu|cpubar|colour|diskio|downspeed|downspeedf|colour|else|exec|execbar|execgraph|execi|execibar|execigraph|font|freq|freq_g|freq_dyn|freq_dyn_g|fs_bar|fs_free|fs_free_perc|fs_size|fs_used|head|hr|i2c|i8k_ac_status|i8k_bios|i8k_buttons_status|i8k_cpu_temp|i8k_cpu_tempf|i8k_left_fan_rpm|i8k_left_fan_status|i8k_right_fan_rpm|i8k_right_fan_status|i8k_serial|i8k_version|if_running|if_existing|if_mounted|kernel|linkstatus|loadavg|machine|mails|mem|membar|memmax|memperc|ml_upload_counter|ml_download_counter|ml_nshared_files|ml_shared_counter|ml_tcp_upload_rate|ml_tcp_download_rate|ml_udp_upload_rate|ml_udp_download_rate|ml_ndownloaded_files|ml_ndownloading_files|mpd_artist|mpd_album|mpd_bar|mpd_bitrate|mpd_status|mpd_title|mpd_vol|mpd_elapsed||mpd_length|mpd_percent|new_mails|nodename|outlinecolor|pre_exec|processes|running_processes|shadecolor|stippled_hr|swapbar|swap|swapmax|swapperc|sysname|texeci|offset|tail|time|totaldown|top|top_mem|totalup|updates|upspeed|upspeedf|upspeedgraph|uptime|uptime_short|seti_prog|seti_progbar|seti_credit|voffset)\>"
+icolor brightblue "\$\{?[0-9A-Z_!@#$*?-]+\}?"
+color cyan "(\{|\}|\(|\)|\;|\]|\[|`|\\|\$|<|>|!|=|&|\|)"
+color brightred "^TEXT$"
