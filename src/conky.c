@@ -6922,11 +6922,6 @@ int main(int argc, char **argv)
 	update_text_area();	/* to position text/window on screen */
 #endif /* X11 */
 
-/*#ifdef CAIRO
-// why the fuck not?
-//do_it();
-#endif*/
-
 #ifdef X11
 #ifdef OWN_WINDOW
 	if (own_window && !fixed_pos) {
