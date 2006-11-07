@@ -10,7 +10,7 @@ HOMEPAGE="http://conky.sf.net"
 
 LICENSE="BSD"
 SLOT="0"
-KEYWORDS="~amd64 ~ppc ~ppc64 ~sparc ~x86 ~alpha"
+KEYWORDS="~alpha ~amd64 ~ppc ~ppc64 ~sparc ~x86"
 IUSE="truetype X ipv6 audacious bmpx"
 
 DEPEND_COMMON="
@@ -65,12 +65,11 @@ src_compile() {
 		mymake="MPD_NO_IPV6=noipv6"
 	fi
 	local myconf
-	myconf="--enable-double-buffer --enable-own-window --enable-proc-uptime \
-		--enable-mpd"
+	myconf="--enable-own-window --enable-proc-uptime --enable-mpd"
+	use X && myconf="${myconf} --enable-x11 --enable-double-buffer --enable-xdamage"
 	econf \
 		${myconf} \
 		$(use_enable truetype xft) \
-		$(use_enable X x11) \
 		$(use_enable audacious) \
 		$(use_enable bmpx) \
 		$(use_enable !ipv6 portmon) || die "econf failed"
