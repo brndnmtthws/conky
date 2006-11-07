@@ -20,7 +20,7 @@
 
 #include <stdio.h>
 
-#ifdef XDBE
+#ifdef HAVE_XDBE
 int use_xdbe;
 #endif
 
@@ -446,7 +446,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 	/* Drawable is same as window. This may be changed by double buffering. */
 	window.drawable = window.window;
 
-#ifdef XDBE
+#ifdef HAVE_XDBE
 	if (use_xdbe) {
 		int major, minor;
 		if (!XdbeQueryExtension(display, &major, &minor)) {

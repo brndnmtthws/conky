@@ -5579,7 +5579,7 @@ static void draw_stuff()
 #endif /* X11 */
 	draw_text();
 #ifdef X11
-#ifdef XDBE
+#ifdef HAVE_XDBE
 	if (use_xdbe) {
 		XdbeSwapInfo swap;
 		swap.swap_window = window.window;
@@ -5592,7 +5592,7 @@ static void draw_stuff()
 #ifdef X11
 static void clear_text(int exposures)
 {
-#ifdef XDBE
+#ifdef HAVE_XDBE
 	if (use_xdbe) {
 		return;		/* The swap action is XdbeBackground, which clears */
 	} else
@@ -5739,7 +5739,7 @@ static void main_loop()
 
 			clear_text(1);
 
-#ifdef XDBE
+#ifdef HAVE_XDBE
 			if (use_xdbe) {
 				XRectangle r;
 				r.x = text_start_x - border_margin;
@@ -5880,7 +5880,7 @@ static void main_loop()
 		 */
 
 		if (!XEmptyRegion(region)) {
-#ifdef XDBE
+#ifdef HAVE_XDBE
 			if (use_xdbe) {
 				XRectangle r;
 				r.x = text_start_x - border_margin;
@@ -6003,7 +6003,7 @@ void clean_up(void)
 		info.cpu_usage = NULL;
 	}
 #ifdef X11
-#ifdef XDBE
+#ifdef HAVE_XDBE
 	if (use_xdbe) {
 		XdbeDeallocateBackBufferName(display, window.back_buffer);
 	}
@@ -6366,7 +6366,7 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 
 
 
-#ifdef XDBE
+#ifdef HAVE_XDBE
 		CONF("double_buffer") {
 		use_xdbe = string_to_bool(value);
 		}
@@ -6661,7 +6661,7 @@ static const char *getopt_string = "vVdt:f:u:i:hc:w:x:y:a:"
 #ifdef OWN_WINDOW
     "o"
 #endif
-#ifdef XDBE
+#ifdef HAVE_XDBE
     "b"
 #endif
 #endif /* X11 */
@@ -6741,7 +6741,7 @@ int main(int argc, char **argv)
 #ifdef OWN_WINDOW
 					"   -o            create own window to draw\n"
 #endif
-#ifdef XDBE
+#ifdef HAVE_XDBE
 					"   -b            double buffer (prevents flickering)\n"
 #endif
 					"   -w WIN_ID     window id to draw\n"
@@ -6836,7 +6836,7 @@ int main(int argc, char **argv)
 			own_window = 1;
 			break;
 #endif
-#ifdef XDBE
+#ifdef HAVE_XDBE
 		case 'b':
 				use_xdbe = 1;
 			break;

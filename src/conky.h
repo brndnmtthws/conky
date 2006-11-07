@@ -336,7 +336,6 @@ char tmpstring2[TEXT_BUFFER_SIZE];
 #endif
 
 #ifdef HAVE_XDBE
-#define XDBE
 #include <X11/extensions/Xdbe.h>
 #endif
 
@@ -364,7 +363,7 @@ struct conky_window {
 	Window root,window,desktop;
 	Drawable drawable;
 	GC gc;
-#ifdef XDBE
+#ifdef HAVE_XDBE
 	XdbeBackBuffer back_buffer;
 #endif
 #ifdef XFT
@@ -382,7 +381,7 @@ struct conky_window {
 #endif
 };
 
-#ifdef XDBE
+#ifdef HAVE_XDBE
 extern int use_xdbe;
 #endif
 
