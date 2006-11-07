@@ -238,9 +238,22 @@ AC_ARG_ENABLE([x11],
 
 AM_CONDITIONAL(BUILD_X11, test x$want_x11 = xyes)
 if test "x$want_x11" = "xyes"; then
-    PKG_CHECK_MODULES([X11], [x11])
-    CFLAGS="$CFLAGS $X11_CFLAGS"
-    LIBS="$LIBS $X11_LIBS"
+    if $PKG_CONFIG --exists x11; then
+    	PKG_CHECK_MODULES([X11], [x11])
+    	CFLAGS="$CFLAGS $X11_CFLAGS"
+    	LIBS="$LIBS $X11_LIBS"
+    else
+	dnl non-modular X11 installations
+	AC_PATH_X
+	AC_PATH_XTRA
+	CFLAGS="$CFLAGS $X_CFLAGS"
+	LIBS="$LIBS $X_LIBS"
+	LDFLAGS="$LDFLAGS $LIBS $X_PRE_LIBS"
+	if test "x$no_x" = "xyes"; then
+	    AC_MSG_ERROR([Can't locate your X11 installation])
+	fi
+	AC_CHECK_LIB([X11], [XOpenDisplay], [], AC_MSG_ERROR([Could not find XOpenDisplay in -lX11]))
+    fi
     AC_DEFINE(X11, 1, [Define if you want to use X11])
 fi
 	
@@ -257,9 +270,15 @@ if test "x$want_double_buffer" = "xyes"; then
     if test "x$want_x11" != "xyes"; then
 	    AC_MSG_ERROR([--enable-x11 is required for double-buffering])
     fi
-    PKG_CHECK_MODULES([XEXT],[xext])
-    CFLAGS="$CFLAGS $XEXT_CFLAGS"
-    LIBS="$LIBS $XEXT_LIBS"
+    if $PKG_CONFIG --exists xext; then
+    	PKG_CHECK_MODULES([XEXT],[xext])
+    	CFLAGS="$CFLAGS $XEXT_CFLAGS"
+    	LIBS="$LIBS $XEXT_LIBS"
+    else
+	dnl non-modular X11 installation
+	AC_CHECK_LIB([Xext], [XdbeQueryExtension], [LIBS="$LIBS -lXext"], 
+		     AC_MSG_ERROR([Could not find XdbeQueryExtension in -lXext]))
+    fi
     AC_DEFINE(HAVE_XDBE, 1, [Define for X11 double-buffering])
 fi
 
@@ -276,9 +295,15 @@ if test "x$want_xdamage" = "xyes"; then
     if test "x$want_x11" != "xyes"; then
 	    AC_MSG_ERROR([--enable-x11 is required for xdamage])
     fi
-    PKG_CHECK_MODULES([XDAMAGE],[xdamage])
-    CFLAGS="$CFLAGS $XDAMAGE_CFLAGS"
-    LIBS="$LIBS $XDAMAGE_LIBS"
+    if $PKG_CONFIG --exists xdamage; then
+    	PKG_CHECK_MODULES([XDAMAGE],[xdamage])
+    	CFLAGS="$CFLAGS $XDAMAGE_CFLAGS"
+    	LIBS="$LIBS $XDAMAGE_LIBS"
+    else
+	dnl non-modular X11 installation
+	AC_CHECK_LIB([Xdamage], [XDamageQueryExtension], [LIBS="$LIBS -lXdamage"],
+		     AC_MSG_ERROR([Could not find XDamageQueryExtension in -lXdamage]))
+    fi
     AC_DEFINE(HAVE_XDAMAGE, 1, [Define for X11 Xdamage extension])
 fi
 
