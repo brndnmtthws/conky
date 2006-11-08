@@ -9,6 +9,7 @@
 
 2006-11-04	pkovacs
 	* Removed broken mldonkey and seti support.
+	* Added Hellf[i]re's nano syntax coloring script to svn.
 
 2006-11-03	pkovacs
 	* Removed support for Xmms, BMP and Infopipe from conky.  
