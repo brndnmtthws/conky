@@ -405,8 +405,7 @@ inline static void update_stat()
 	unsigned int malloc_cpu_size=0;
 	
 
-	/* added check for !info.cpu_usage since that mem is freed on a SIGUSR1
-	 * and linux.c was assuming it ws still allocated, leading to a sigsegv */
+	/* add check for !info.cpu_usage since that mem is freed on a SIGUSR1 */
 	if (!cpu_setup || !info.cpu_usage) {
 		get_cpu_count();
 		cpu_setup = 1;
