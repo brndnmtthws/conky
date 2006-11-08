@@ -1,5 +1,12 @@
 # $Id$
 
+2006-11-07	pkovacs
+	* Changes to configure.ac for pkg-config on x11/xext/xdamage,
+	with fallback to conventional checks.
+	* Fixed segmentation fault on SUGUSR1 bug.
+	* Commented out Imlib2 from configure.ac since it's only partially
+	implemented.
+
 2006-11-04	pkovacs
 	* Removed broken mldonkey and seti support.
 
@@ -7,7 +14,7 @@
 	* Removed support for Xmms, BMP and Infopipe from conky.  
 	The Xmms and Bmp players are projects are dead and distros such 
 	as Gentoo are slating them for removal.  
-	* Added support for Audacious with conventional linking.
+	* Added support for Audacious using new audacious vars.
 
 2006-10-18
 	* Implement WiFi signal level detection on FreeBSD (patch
