@@ -28,16 +28,6 @@
 #include <kvm.h>
 #endif /* __FreeBSD__ */
 
-#ifdef X11
-#if defined(HAVE_CAIRO_H) && defined(HAVE_CAIRO_XLIB_H) && defined(WANT_CAIRO)
-#define CAIRO
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <cairo.h>
-#include <cairo-xlib.h>
-#endif
-#endif /* X11 */
-
 #if defined(__FreeBSD__) && (defined(i386) || defined(__i386__))
 #include <machine/apm_bios.h>
 #endif /* __FreeBSD__ */
@@ -552,11 +542,6 @@ char *get_hddtemp_info(char *dev, char *addr, int port, char *unit);
 #endif /* HDDTEMP */
 
 /* in linux.c */
-
-/* nothing to see here */
-
-/* in cairo.c */
-extern int do_it(void);
 
 #endif
 
