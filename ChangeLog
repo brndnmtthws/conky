@@ -1,5 +1,9 @@
 # $Id$
 
+2006-11-09
+	* Updated vim and nano syntax coloring scripts.
+	* Added extras/ dir with syntax stuff to distribution tarball.
+
 2006-11-08
 	* Added new config item 'max_user_text' with default 16384,
 	twice as large as previous hard-coded default of 8192 bytes.
