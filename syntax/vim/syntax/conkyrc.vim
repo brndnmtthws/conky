@@ -41,7 +41,6 @@ syn keyword ConkyrcSetting
         \ mpd_port
         \ net_avg_samples
         \ no_buffers
-        \ on_bottom
         \ out_to_console
         \ override_utf8_locale
         \ own_window
@@ -62,9 +61,7 @@ syn keyword ConkyrcSetting
 
 syn keyword ConkyrcConstant 
         \ above
-        \ audacious
         \ below
-        \ bmp
         \ bottom_left
         \ bottom_right
 	\ desktop
@@ -150,9 +147,10 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 	\ fs_free 
 	\ fs_free_perc 
 	\ fs_size 
-	\ fs_used head
+	\ fs_used 
 	\ goto
 	\ hddtemp
+	\ head
       	\ hr 
 	\ i2c 
 	\ i8k_ac_status 
@@ -183,13 +181,13 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 	\ mpd_bar 
 	\ mpd_bitrate 
 	\ mpd_elapsed
+	\ mpd_file
       	\ mpd_length 
+	\ mpd_name
 	\ mpd_percent 
+	\ mpd_smart
 	\ mpd_status 
-	\ mpd_title 
-	\ mpd_file 
-	\ mpd_name 
-	\ mpd_smart 
+	\ mpd_title
 	\ mpd_vol 
 	\ new_mails 
 	\ nodename 

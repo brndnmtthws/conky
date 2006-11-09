@@ -1,5 +1,3 @@
-$Id$
-
 Vim filetype detection and syntax highlighting scripts for conky.
 
 Individual users can place them your personal .vim directory:
