@@ -31,6 +31,7 @@ syn keyword ConkyrcSetting
         \ gap_x
         \ gap_y
         \ mail_spool
+	\ max_user_text
         \ maximum_width
         \ minimum_size
         \ min_port_monitor_connections

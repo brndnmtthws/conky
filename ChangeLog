@@ -1,17 +1,23 @@
 # $Id$
 
-2006-11-07	pkovacs
+2006-11-08
+	* Added new config item 'max_user_text' with default 16384,
+	twice as large as previous hard-coded default of 8192 bytes.
+	Increase as needed to accomodate large config files with a
+	great deal of text.  This closes SF bug #1574523.
+
+2006-11-07
 	* Changes to configure.ac for pkg-config on x11/xext/xdamage,
 	with fallback to conventional checks.
 	* Fixed segmentation fault on SUGUSR1 bug.
 	* Commented out Imlib2 from configure.ac since it's only partially
 	implemented.
 
-2006-11-04	pkovacs
+2006-11-04
 	* Removed broken mldonkey and seti support.
 	* Added Hellf[i]re's nano syntax coloring script to svn.
 
-2006-11-03	pkovacs
+2006-11-03
 	* Removed support for Xmms, BMP and Infopipe from conky.  
 	The Xmms and Bmp players are projects are dead and distros such 
 	as Gentoo are slating them for removal.  

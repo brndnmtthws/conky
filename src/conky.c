@@ -311,6 +311,9 @@ static int background_colour = 0;
 static int fixed_size = 0, fixed_pos = 0;
 #endif
 
+/* maximum size of config TEXT buffer, i.e. below TEXT line. */
+static unsigned int max_user_text = MAX_USER_TEXT_DEFAULT;
+
 static int minimum_width, minimum_height;
 static int maximum_width;
 
@@ -6579,6 +6582,12 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 		CONF("uppercase") {
 			stuff_in_upper_case = string_to_bool(value);
 		}
+		CONF("max_user_text") {
+			if (value)
+				max_user_text = atoi(value);
+			else
+				CONF_ERR;
+		}
 		CONF("text") {
 			if (text != original_text)
 				free(text);
@@ -6598,7 +6607,7 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 					    + 1);
 				strcat(text, buf);
 
-				if (strlen(text) > 1024 * 8)
+				if (strlen(text) > max_user_text)
 					break;
 			}
 			fclose(fp);
