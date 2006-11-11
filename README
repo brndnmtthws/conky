@@ -224,6 +224,11 @@ CONFIGURATION SETTINGS
 	      Mail spool for mail checking
 
 
+       max_user_text bytes
+	      Maximum size of user text buffer, i.e. layout below TEXT line in
+	      config file
+
+
        maximum_width pixels
 	      Maximum width of window
 
@@ -233,12 +238,12 @@ CONFIGURATION SETTINGS
 
 
        min_port_monitors
-	      Allow for the creation of at least this number of port  monitors
+	      Allow  for the creation of at least this number of port monitors
 	      (if 0 or not set, default is 16)
 
 
        min_port_monitor_connections
-	      Allow  each port monitor to track at least this many connections
+	      Allow each port monitor to track at least this many  connections
 	      (if 0 or not set, default is 256)
 
 
@@ -271,26 +276,26 @@ CONFIGURATION SETTINGS
 
 
        own_window_type
-	      if own_window is yes, you may specify type  normal,  desktop  or
+	      if  own_window  is  yes, you may specify type normal, desktop or
 	      override (default: normal).  Desktop windows are special windows
-	      that have no window decorations;	are  always  visible  on  your
-	      desktop;	do not appear in your pager or taskbar; and are sticky
-	      across all workspaces.  Override windows are not under the  con-
+	      that  have  no  window  decorations;  are always visible on your
+	      desktop; do not appear in your pager or taskbar; and are	sticky
+	      across  all workspaces.  Override windows are not under the con-
 	      trol of the window manager. Hints are ignored. This type of win-
 	      dow can be useful for certain situations.
 
 
        own_window_colour colour
-	      If own_window_transparent no, set a specified background	colour
-	      (defaults	 to  black).  Takes  either a hex value (#ffffff) or a
+	      If  own_window_transparent no, set a specified background colour
+	      (defaults to black). Takes either a hex  value  (#ffffff)	 or  a
 	      valid RGB name (see /usr/lib/X11/rgb.txt)
 
 
        own_window_hints undecorated,below,above,sticky,skip_taskbar,skip_pager
-	      If own_window is yes, you may use these window manager hints  to
+	      If  own_window is yes, you may use these window manager hints to
 	      affect the way Conky displays.  Notes: Use own_window_type desk-
-	      top as another way to implement many of these hints  implicitly.
-	      If  you  use own_window_type override, window manager hints have
+	      top  as another way to implement many of these hints implicitly.
+	      If you use own_window_type override, window manager  hints  have
 	      no meaning and are ignored.
 
 
@@ -302,9 +307,9 @@ CONFIGURATION SETTINGS
 	      Pad percentages to this many decimals (0 = no padding)
 
 
-       pop3   Default global POP3 server. Arguments are: "host user  pass  [-i
-	      interval]	 [-p port] [-e command]". Default port is 110, default
-	      interval is 5 minutes. If the password is supplied as  '*',  you
+       pop3   Default  global  POP3 server. Arguments are: "host user pass [-i
+	      interval] [-p port] [-e command]". Default port is 110,  default
+	      interval	is  5 minutes. If the password is supplied as '*', you
 	      will be prompted to enter the password when Conky starts.
 
 
@@ -313,7 +318,7 @@ CONFIGURATION SETTINGS
 
 
        total_run_times
-	      Total  number of times for Conky to update before quitting. Zero
+	      Total number of times for Conky to update before quitting.  Zero
 	      makes Conky run forever
 
 
@@ -351,10 +356,10 @@ CONFIGURATION SETTINGS
 
 
 VARIABLES
-       Colors are parsed using XParsecolor(), there might be a list  of	 them:
-       /usr/X11R6/lib/X11/rgb.txt.  Also, <http://sedition.com/perl/rgb.html>.
-       Color can be also in #rrggbb format (hex).  Note that  when  displaying
-       bytes,  power  is  1024 and not 1000 so 1M really means 1024*1024 bytes
+       Colors  are  parsed using XParsecolor(), there might be a list of them:
+       /usr/X11R6/lib/X11/rgb.txt. Also,  <http://sedition.com/perl/rgb.html>.
+       Color  can  be also in #rrggbb format (hex).  Note that when displaying
+       bytes, power is 1024 and not 1000 so 1M really  means  1024*1024	 bytes
        and not 1000*1000.
 
        addr interface
@@ -402,7 +407,7 @@ VARIABLES
 
 
        apm_battery_time
-	      Display remaining APM battery life in hh:mm:ss or	 "unknown"  if
+	      Display  remaining  APM battery life in hh:mm:ss or "unknown" if
 	      AC adapterstatus is on-line or charging (FreeBSD only)
 
 
@@ -459,7 +464,7 @@ VARIABLES
 
 
        battery (num)
-	      Remaining	 capacity  in ACPI or APM battery. ACPI battery number
+	      Remaining capacity in ACPI or APM battery. ACPI  battery	number
 	      can be given as argument (default is BAT0).
 
 
@@ -499,28 +504,28 @@ VARIABLES
 
 
        cpu (cpuN)
-	      CPU usage in percents. For SMP machines, the CPU number  can  be
-	      provided	as an argument. ${cpu 0} is the total usage, and ${cpu
+	      CPU  usage  in percents. For SMP machines, the CPU number can be
+	      provided as an argument. ${cpu 0} is the total usage, and	 ${cpu
 	      X} (X >= 1) are individual CPUs.
 
 
        cpubar (cpu number) (height),(width)
-	      Bar that shows CPU usage, height is bar's height in pixels.  See
+	      Bar  that shows CPU usage, height is bar's height in pixels. See
 	      $cpu for more info on SMP.
 
 
-       cpugraph	 (cpu  number)	(height),(width) (gradient colour 1) (gradient
+       cpugraph (cpu number) (height),(width) (gradient	 colour	 1)  (gradient
        colour 2)
-	      CPU  usage graph, with optional colours in hex, minus the #. See
+	      CPU usage graph, with optional colours in hex, minus the #.  See
 	      $cpu for more info on SMP.
 
 
        diskio Displays current disk IO.
 
 
-       diskiograph (height),(width) (gradient colour 1)	 (gradient  colour  2)
+       diskiograph  (height),(width)  (gradient	 colour 1) (gradient colour 2)
        (scale)
-	      Disk IO graph, colours defined in hex, minus the #. If scale  is
+	      Disk  IO graph, colours defined in hex, minus the #. If scale is
 	      non-zero, it becomes the scale for the graph.
 
 
@@ -534,7 +539,7 @@ VARIABLES
 
        downspeedgraph  net  (height),(width)  (gradient	 colour	 1)  (gradient
        colour 2) (scale)
-	      Download	speed  graph,  colours defined in hex, minus the #. If
+	      Download speed graph, colours defined in hex, minus  the	#.  If
 	      scale is non-zero, it becomes the scale for the graph.
 
 
@@ -543,12 +548,12 @@ VARIABLES
 
        exec command
 	      Executes a shell command and displays the output in conky. warn-
-	      ing:  this  takes a lot more resources than other variables. I'd
+	      ing: this takes a lot more resources than other  variables.  I'd
 	      recommend coding wanted behaviour in C and posting a patch.
 
 
        execbar command
-	      Same as exec, except if the first value return is	 a  value  be-
+	      Same  as	exec,  except if the first value return is a value be-
 	      tween 0-100, it will use that number for a bar. The size for the
 	      bar is currently fixed, but that may change in the future.
 
@@ -558,7 +563,7 @@ VARIABLES
 
 
        execi interval command
-	      Same as exec but with specific interval. Interval can't be  less
+	      Same  as exec but with specific interval. Interval can't be less
 	      than update_interval in configuration. See also $texeci
 
 
@@ -571,36 +576,36 @@ VARIABLES
 
 
        font (font)
-	      Specify  a  different font. This new font will apply to the cur-
-	      rent line and everything following. You can use a $font with  no
-	      arguments	 to  change  back  to the default font (much like with
+	      Specify a different font. This new font will apply to  the  cur-
+	      rent  line and everything following. You can use a $font with no
+	      arguments to change back to the default  font  (much  like  with
 	      $color)
 
 
        freq (n)
-	      Returns CPU #n's frequency in MHz. CPUs are counted from	1.  If
+	      Returns  CPU  #n's frequency in MHz. CPUs are counted from 1. If
 	      omitted, the parameter defaults to 1.
 
 
        freq_g (n)
-	      Returns  CPU  #n's frequency in GHz. CPUs are counted from 1. If
+	      Returns CPU #n's frequency in GHz. CPUs are counted from	1.  If
 	      omitted, the parameter defaults to 1.
 
 
        freq_dyn
-	      Returns CPU frequency in MHz, but is calculated by  counting  to
-	      clock  cycles  to	 complete  an  instruction. Only available for
+	      Returns  CPU  frequency in MHz, but is calculated by counting to
+	      clock cycles to complete	an  instruction.  Only	available  for
 	      x86/amd64.
 
 
        freq_dyn_g
-	      Returns CPU frequency in GHz, but is calculated by  counting  to
-	      clock  cycles  to	 complete  an  instruction. Only available for
+	      Returns  CPU  frequency in GHz, but is calculated by counting to
+	      clock cycles to complete	an  instruction.  Only	available  for
 	      x86/amd64.
 
 
        fs_bar (height),(width) fs
-	      Bar that shows how much space is used on a file  system.	height
+	      Bar  that	 shows how much space is used on a file system. height
 	      is the height in pixels. fs is any file on that file system.
 
 
@@ -624,14 +629,14 @@ VARIABLES
 
 
        hddtemp dev, (host,(port))
-	      Displays	temperature  of a selected hard disk drive as reported
-	      by the hddtemp daemon running on	host:port.   Default  host  is
+	      Displays temperature of a selected hard disk drive  as  reported
+	      by  the  hddtemp	daemon	running on host:port.  Default host is
 	      127.0.0.1, default port is 7634.
 
 
        head logfile lines (interval)
-	      Displays	first  N lines of supplied text text file. If interval
-	      is not supplied, Conky assumes 2x Conky's interval.  Max	of  30
+	      Displays first N lines of supplied text text file.  If  interval
+	      is  not  supplied,  Conky assumes 2x Conky's interval. Max of 30
 	      lines can be displayed, or until the text buffer is filled.
 
 
@@ -640,7 +645,7 @@ VARIABLES
 
 
        iconv_start codeset_from codeset_to
-	      Convert  text from one codeset to another using GNU iconv. Needs
+	      Convert text from one codeset to another using GNU iconv.	 Needs
 	      to be stopped with iconv_stop.
 
 
@@ -649,75 +654,75 @@ VARIABLES
 
 
        i2c (dev) type n
-	      I2C sensor from sysfs (Linux 2.6). dev may  be  omitted  if  you
-	      have  only  one  I2C  device. type is either in (or vol) meaning
+	      I2C  sensor  from	 sysfs	(Linux 2.6). dev may be omitted if you
+	      have only one I2C device. type is either	in  (or	 vol)  meaning
 	      voltage, fan meaning fan or temp/tempf (first in C, second in F)
-	      meaning	temperature.   n   is	number	 of  the  sensor.  See
+	      meaning  temperature.  n	is   number   of   the	 sensor.   See
 	      /sys/bus/i2c/devices/ on your local computer.
 
 
        i8k_ac_status
-	      If running the i8k kernel driver for Inspiron laptops,  displays
-	      whether  ac  power  is on, as listed in /proc/i8k (translated to
-	      human-readable). Beware that this is by default not  enabled  by
+	      If  running the i8k kernel driver for Inspiron laptops, displays
+	      whether ac power is on, as listed in  /proc/i8k  (translated  to
+	      human-readable).	Beware	that this is by default not enabled by
 	      i8k itself.
 
 
        i8k_bios
-	      If  running the i8k kernel driver for Inspiron laptops, displays
+	      If running the i8k kernel driver for Inspiron laptops,  displays
 	      the bios version as listed in /proc/i8k.
 
 
        i8k_buttons_status
-	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      If  running the i8k kernel driver for Inspiron laptops, displays
 	      the volume buttons status as listed in /proc/i8k.
 
 
        i8k_cpu_temp
-	      If  running the i8k kernel driver for Inspiron laptops, displays
+	      If running the i8k kernel driver for Inspiron laptops,  displays
 	      the cpu temperature in Celsius, as reported by /proc/i8k.
 
 
        i8k_cpu_tempf
-	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      If  running the i8k kernel driver for Inspiron laptops, displays
 	      the cpu temperature in Farenheit, as reported by /proc/i8k.
 
 
        i8k_left_fan_rpm
-	      If  running the i8k kernel driver for Inspiron laptops, displays
-	      the left fan's rate of rotation, in revolutions  per  minute  as
+	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      the  left	 fan's	rate of rotation, in revolutions per minute as
 	      listed in /proc/i8k. Beware, some laptops i8k reports these fans
 	      in reverse order.
 
 
        i8k_left_fan_status
-	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      If  running the i8k kernel driver for Inspiron laptops, displays
 	      the left fan status as listed in /proc/i8k (translated to human-
-	      readable). Beware, some laptops i8k reports these	 fans  in  re-
+	      readable).  Beware,  some	 laptops i8k reports these fans in re-
 	      verse order.
 
 
        i8k_right_fan_rpm
-	      If  running the i8k kernel driver for Inspiron laptops, displays
-	      the right fan's rate of rotation, in revolutions per  minute  as
+	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      the  right  fan's rate of rotation, in revolutions per minute as
 	      listed in /proc/i8k. Beware, some laptops i8k reports these fans
 	      in reverse order.
 
 
        i8k_right_fan_status
-	      If running the i8k kernel driver for Inspiron laptops,  displays
-	      the  right  fan status as listed in /proc/i8k (translated to hu-
-	      man-readable). Beware, some laptops i8k reports  these  fans  in
+	      If  running the i8k kernel driver for Inspiron laptops, displays
+	      the right fan status as listed in /proc/i8k (translated  to  hu-
+	      man-readable).  Beware,  some  laptops i8k reports these fans in
 	      reverse order.
 
 
        i8k_serial
-	      If  running the i8k kernel driver for Inspiron laptops, displays
+	      If running the i8k kernel driver for Inspiron laptops,  displays
 	      your laptop serial number as listed in /proc/i8k.
 
 
        i8k_version
-	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      If  running the i8k kernel driver for Inspiron laptops, displays
 	      the version formatting of /proc/i8k.
 
 
@@ -726,13 +731,13 @@ VARIABLES
 
 
        ibm_temps N
-	      If  running the IBM ACPI, displays the temperatures from the IBM
+	      If running the IBM ACPI, displays the temperatures from the  IBM
 	      temperature sensors (N=0..7) Sensor 0 is on the CPU, 3 is on the
 	      GPU.
 
 
        ibm_volume
-	      If  running  the	IBM  ACPI,  displays the "master" volume, con-
+	      If running the IBM ACPI,	displays  the  "master"	 volume,  con-
 	      trolled by the volume keys (0-14).
 
 
@@ -742,25 +747,25 @@ VARIABLES
 
 
        if_running (process)
-	      if  PROCESS  is  running,	 display everything if_running and the
+	      if PROCESS is running, display  everything  if_running  and  the
 	      matching $endif
 
 
        if_existing (file)
-	      if FILE exists, display everything between if_existing  and  the
+	      if  FILE	exists, display everything between if_existing and the
 	      matching $endif
 
 
        if_mounted (mountpoint)
-	      if  MOUNTPOINT is mounted, display everything between if_mounted
+	      if MOUNTPOINT is mounted, display everything between  if_mounted
 	      and the matching $endif
 
 
        imap_messages (args)
 	      Displays the number of messages in your global IMAP inbox by de-
-	      fault.  You  can	define	individual  IMAP inboxes seperately by
+	      fault. You can define  individual	 IMAP  inboxes	seperately  by
 	      passing arguments to this object. Arguments are: "host user pass
-	      [-i  interval] [-p port] [-e command]". Default port is 110, de-
+	      [-i interval] [-p port] [-e command]". Default port is 110,  de-
 	      fault interval is 5 minutes. If the password is supplied as '*',
 	      you will be prompted to enter the password when Conky starts.
 
@@ -769,7 +774,7 @@ VARIABLES
 	      Displays the number of unseen messages in your global IMAP inbox
 	      by default. You can define individual IMAP inboxes seperately by
 	      passing arguments to this object. Arguments are: "host user pass
-	      [-i interval] [-p port] [-e command]". Default port is 110,  de-
+	      [-i  interval] [-p port] [-e command]". Default port is 110, de-
 	      fault interval is 5 minutes. If the password is supplied as '*',
 	      you will be prompted to enter the password when Conky starts.
 
@@ -790,8 +795,8 @@ VARIABLES
 	      Machine, i686 for example
 
 
-       mails  Mail  count in mail spool. You can use program like fetchmail to
-	      get mails from some server using your  favourite	protocol.  See
+       mails  Mail count in mail spool. You can use program like fetchmail  to
+	      get  mails  from	some server using your favourite protocol. See
 	      also new_mails.
 
 
@@ -888,17 +893,17 @@ VARIABLES
 
        pb_battery item
 	      If running on Apple powerbook/ibook, display information on bat-
-	      tery  status.  The item parameter specifies, what information to
+	      tery status. The item parameter specifies, what  information  to
 	      display. Exactly one item must be specified. Valid items are:
 
 	      status: Display if battery is fully charged, charging, discharg-
 	      ing or absent (running on AC)
-	      percent:	Display	 charge	 of battery in percent, if charging or
-	      discharging. Nothing will be  displayed,	if  battery  is	 fully
+	      percent: Display charge of battery in percent,  if  charging  or
+	      discharging.  Nothing  will  be  displayed,  if battery is fully
 	      charged or absent.
 	      time: Display the time remaining until the battery will be fully
-	      charged or discharged at current rate. Nothing is displayed,  if
-	      battery  is  absent or if it's present but fully charged and not
+	      charged  or discharged at current rate. Nothing is displayed, if
+	      battery is absent or if it's present but fully charged  and  not
 	      discharging.
 
 
@@ -906,17 +911,17 @@ VARIABLES
 	      Displays the number of unseen messages in your global POP3 inbox
 	      by default. You can define individual POP3 inboxes seperately by
 	      passing arguments to this object. Arguments are: "host user pass
-	      [-i  interval] [-p port] [-e command]". Default port is 110, de-
+	      [-i interval] [-p port] [-e command]". Default port is 110,  de-
 	      fault interval is 5 minutes. If the password is supplied as '*',
 	      you will be prompted to enter the password when Conky starts.
 
 
        pop3_used (args)
-	      Displays	the amount of space (in MiB, 2^20) used in your global
-	      POP3 inbox by default. You can define  individual	 POP3  inboxes
-	      seperately  by  passing arguments to this object. Arguments are:
-	      "host user pass [-i interval] [-p port] [-e  command]".  Default
-	      port  is	110, default interval is 5 minutes. If the password is
+	      Displays the amount of space (in MiB, 2^20) used in your	global
+	      POP3  inbox  by  default. You can define individual POP3 inboxes
+	      seperately by passing arguments to this object.  Arguments  are:
+	      "host  user  pass [-i interval] [-p port] [-e command]". Default
+	      port is 110, default interval is 5 minutes. If the  password  is
 	      supplied as '*', you will be prompted to enter the password when
 	      Conky starts.
 
@@ -978,36 +983,36 @@ VARIABLES
 	      The connection index provides you with access to each connection
 	      in the port monitor. The monitor will return information for in-
 	      dex values from 0 to n-1 connections. Values higher than n-1 are
-	      simply ignored. For the "count" item, the connection index  must
+	      simply  ignored. For the "count" item, the connection index must
 	      be omitted. It is required for all other items.
 
 	      Examples:
-	      ${tcp_portmon  6881 6999 count} - displays the number of connec-
+	      ${tcp_portmon 6881 6999 count} - displays the number of  connec-
 	      tions in the bittorrent port range
-	      ${tcp_portmon 22 22 rip 0} - displays the remote host ip of  the
+	      ${tcp_portmon  22 22 rip 0} - displays the remote host ip of the
 	      first sshd connection
-	      ${tcp_portmon  22 22 rip 9} - displays the remote host ip of the
+	      ${tcp_portmon 22 22 rip 9} - displays the remote host ip of  the
 	      tenth sshd connection
 	      ${tcp_portmon 1 1024 rhost 0} - displays the remote host name of
 	      the first connection on a privileged port
 	      ${tcp_portmon 1 1024 rport 4} - displays the remote host port of
 	      the fifth connection on a privileged port
-	      ${tcp_portmon 1 65535 lservice 14} - displays the local  service
+	      ${tcp_portmon  1 65535 lservice 14} - displays the local service
 	      name of the fifteenth connection in the range of all ports
 
 	      Note that port monitor variables which share the same port range
 	      actually refer to the same monitor, so many references to a sin-
 	      gle port range for different items and different indexes all use
-	      the same monitor internally. In other words, the program	avoids
+	      the  same monitor internally. In other words, the program avoids
 	      creating redundant monitors.
 
        texeci interval command
-	      Runs  a  command at an interval inside a thread and displays the
-	      output. Same as $execi, except  the  command  is	run  inside  a
-	      thread.  Use this if you have a slow script to keep Conky updat-
-	      ing. You should make the interval slightly longer then the  time
-	      it  takes	 your  script  to  execute. For example, if you have a
-	      script that take 5 seconds to execute, you should make  the  in-
+	      Runs a command at an interval inside a thread and	 displays  the
+	      output.  Same  as	 $execi,  except  the  command is run inside a
+	      thread. Use this if you have a slow script to keep Conky	updat-
+	      ing.  You should make the interval slightly longer then the time
+	      it takes your script to execute. For  example,  if  you  have  a
+	      script  that  take 5 seconds to execute, you should make the in-
 	      terval at least 6 seconds. See also $execi.
 
 
@@ -1026,7 +1031,7 @@ VARIABLES
 
 
        time (format)
-	      Local time, see man strftime to get more information about  for-
+	      Local  time, see man strftime to get more information about for-
 	      mat
 
 
@@ -1035,23 +1040,23 @@ VARIABLES
 
 
        tztime (timezone) (format)
-	      Local  time for specified timezone, see man strftime to get more
-	      information about format. The timezone argument is specified  in
-	      similar  fashion	as TZ environment variable. For hints, look in
+	      Local time for specified timezone, see man strftime to get  more
+	      information  about format. The timezone argument is specified in
+	      similar fashion as TZ environment variable. For hints,  look  in
 	      /usr/share/zoneinfo. e.g. US/Pacific, Europe/Zurich, etc.
 
 
        totaldown net
-	      Total download, overflows at 4 GB on Linux with 32-bit arch  and
+	      Total  download, overflows at 4 GB on Linux with 32-bit arch and
 	      there doesn't seem to be a way to know how many times it has al-
 	      ready done that before conky has started.
 
 
        top type, num
-	      This takes arguments in the form:top (name) (number)  Basically,
-	      processes	 are ranked from highest to lowest in terms of cpu us-
-	      age, which is what (num)	represents.  The  types	 are:  "name",
-	      "pid",  "cpu",  and  "mem".  There  can be a max of 10 processes
+	      This  takes arguments in the form:top (name) (number) Basically,
+	      processes are ranked from highest to lowest in terms of cpu  us-
+	      age,  which  is  what  (num)  represents. The types are: "name",
+	      "pid", "cpu", and "mem". There can be  a	max  of	 10  processes
 	      listed.
 
 
@@ -1075,9 +1080,9 @@ VARIABLES
 	      Upload speed in kilobytes with one decimal
 
 
-       upspeedgraph net (height),(width) (gradient colour 1) (gradient	colour
+       upspeedgraph  net (height),(width) (gradient colour 1) (gradient colour
        2) (scale)
-	      Upload speed graph, colours defined in  hex,  minus  the	#.  If
+	      Upload  speed  graph,  colours  defined  in hex, minus the #. If
 	      scale is non-zero, it becomes the scale for the graph.
 
 
@@ -1089,12 +1094,12 @@ VARIABLES
 
 
        voffset (pixels)
-	      Change  vertical	offset by N pixels. Negative values will cause
+	      Change vertical offset by N pixels. Negative values  will	 cause
 	      text to overlap. See also $offset.
 
 
        voltage_mv (n)
-	      Returns CPU #n's voltage in mV. CPUs  are	 counted  from	1.  If
+	      Returns  CPU  #n's  voltage  in  mV. CPUs are counted from 1. If
 	      omitted, the parameter defaults to 1.
 
 
@@ -1117,11 +1122,11 @@ FILES
 BUGS
        Drawing to root or some other desktop window directly doesn't work with
        all window managers. Especially doesn't work well with Gnome and it has
-       been  reported  that  it	 doesn't work with KDE either. Nautilus can be
-       disabled from drawing to desktop	 with  program	gconf-editor.  Uncheck
-       show_desktop  in	 /apps/nautilus/preferences/.  There  is  -w switch in
-       Conky to set some specific window id. You  might	 find  xwininfo	 -tree
-       useful  to  find	 the  window  to draw to. You can also use -o argument
+       been reported that it doesn't work with KDE  either.  Nautilus  can  be
+       disabled	 from  drawing	to  desktop with program gconf-editor. Uncheck
+       show_desktop in /apps/nautilus/preferences/.  There  is	-w  switch  in
+       Conky  to  set  some  specific window id. You might find xwininfo -tree
+       useful to find the window to draw to. You  can  also  use  -o  argument
        which makes Conky to create its own window.
 
 SEE ALSO

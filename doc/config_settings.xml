@@ -133,6 +133,15 @@
 </varlistentry>
 
 <varlistentry>
+	<term><command><option>max_user_text</option></command>
+		<option>bytes</option>
+	</term>
+	<listitem>
+		Maximum size of user text buffer, i.e. layout below TEXT line in config file
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
 	<term><command><option>maximum_width</option></command>
 		<option>pixels</option>
 	</term>

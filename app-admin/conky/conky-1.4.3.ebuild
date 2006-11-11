@@ -92,6 +92,8 @@ pkg_postinst() {
 	einfo "There are also pretty html docs available"
 	einfo "on Conky's site or in /usr/share/doc/${PF}"
 	einfo
+	einfo "Also see http://www.gentoo.org/doc/en/conky-howto.xml"
+	einfo
 	einfo "Check out app-vim/conky-syntax for conkyrc"
 	einfo "syntax highlighting in Vim"
 	einfo
