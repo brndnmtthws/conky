@@ -1,4 +1,4 @@
-# CVS ebuild for Conky, thanks to Hopeless; Subversion ver. by drphibes
+# SVN ebuild for Conky, thanks to Hopeless; Subversion ver. by drphibes
 # $Header$
 
 ESVN_REPO_URI="https://svn.sourceforge.net/svnroot/conky/trunk/conky1"
@@ -11,7 +11,7 @@ HOMEPAGE="http://conky.sf.net"
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~ppc ~ppc64 ~sparc ~x86"
-IUSE="truetype X ipv6 audacious bmpx"
+IUSE="truetype X ipv6 audacious bmpx hddtemp mpd"
 
 DEPEND_COMMON="
 	virtual/libc
@@ -33,7 +33,9 @@ DEPEND_COMMON="
 			)
 	)"
 
-RDEPEND="${DEPEND_COMMON}"
+RDEPEND="${DEPEND_COMMON}
+	hddtemp? ( app-admin/hddtemp )
+	mpd? ( media-sound/mpd )"
 
 DEPEND="
 	${DEPEND_COMMON}
@@ -56,35 +58,35 @@ src_compile() {
 	local mymake
 	if useq ipv6 ; then
 		ewarn
-		ewarn "You have the ipv6 USE flag enabled.  Please note that"
-		ewarn "using the ipv6 USE flag with Conky disables the port"
-		ewarn "monitor."
-		ewarn
+		ewarn "You have the ipv6 USE flag enabled.  Please note that using"
+		ewarn "the ipv6 USE flag with Conky disables the port monitor."
 		epause
 	else
 		mymake="MPD_NO_IPV6=noipv6"
 	fi
 	local myconf
-	myconf="--enable-own-window --enable-proc-uptime --enable-mpd"
+	myconf="--enable-own-window --enable-proc-uptime"
 	use X && myconf="${myconf} --enable-x11 --enable-double-buffer --enable-xdamage"
 	econf \
 		${myconf} \
 		$(use_enable truetype xft) \
 		$(use_enable audacious) \
 		$(use_enable bmpx) \
+		$(use_enable hddtemp ) \
+		$(use_enable mpd) \
 		$(use_enable !ipv6 portmon) || die "econf failed"
 	emake ${mymake} || die "compile failed"
 }
 
 src_install() {
 	emake DESTDIR=${D} install || die "make install failed"
-	dodoc ChangeLog AUTHORS README doc/conkyrc.sample doc/variables.html
-	dodoc doc/docs.html doc/config_settings.html
+	dodoc ChangeLog AUTHORS README doc/conkyrc.sample
+	dohtml doc/docs.html doc/config_settings.html doc/variables.html
 }
 
 pkg_postinst() {
 	einfo 'Default configuration file is "~/.conkyrc"'
-	einfo "you can find a sample configuration file in"
+	einfo "You can find a sample configuration file in"
 	einfo "/usr/share/doc/${PF}/conkyrc.sample.gz"
 	einfo
 	einfo "For more info on Conky's new features,"
