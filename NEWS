@@ -19,6 +19,9 @@ Summary of changes for Conky release 1.4.3:
 	- xmms_status
 	- xmms_title
 
+* Removed configuration item:
+	- on_bottom: please use 'own_window_hints below' instead.
+
 * Added support for Audacious music player: http://audacious-media-player.org
   - Added the following related variables:
 	- audacious_bar
@@ -34,9 +37,6 @@ Summary of changes for Conky release 1.4.3:
         - audacious_position_seconds
         - audacious_status
         - audacious_title
-
-* Removed configuration item:
-	- on_bottom: please use 'own_window_hints below' instead.
 
 * Added new configuration item:
 	- max_user_text <bytes> [default: 16384]: specifies the maximum buffer size for user text
@@ -54,5 +54,5 @@ Summary of changes for Conky release 1.4.3:
 	- added WiFi signal level detection on FreeBSD
 	- added Xdamage support for X11
 	- added verbose configuration information to conky -v
-	- added extras/ directory to tarball with nano and vim syntax coloring scripts.
+	- added extras directory to tarball with nano and vim syntax coloring scripts.
 	- fixed as many bugs as we could :]

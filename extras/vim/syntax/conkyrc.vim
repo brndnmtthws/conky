@@ -212,6 +212,7 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 	\ top_mem 
 	\ totaldown 
 	\ totalup 
+	\ tztime
 	\ updates 
 	\ upspeed 
 	\ upspeedf
@@ -219,6 +220,8 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 	\ uptime 
 	\ uptime_short 
 	\ voffset
+	\ voltage_mv
+	\ voltage_v
 
 hi def link ConkyrcComment   Comment
 hi def link ConkyrcSetting   Keyword
