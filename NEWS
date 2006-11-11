@@ -55,3 +55,4 @@ Summary of changes for Conky release 1.4.3:
 	- added Xdamage support for X11
 	- added verbose configuration information to conky -v
 	- added extras/ directory to tarball with nano and vim syntax coloring scripts.
+	- fixed as many bugs as we could :]
