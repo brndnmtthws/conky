@@ -282,9 +282,6 @@ static int cpu_avg_samples, net_avg_samples;
 
 #ifdef X11
 
-/* Always on bottom */
-static int on_bottom;
-
 /* Position on the screen */
 static int text_alignment;
 static int gap_x, gap_y;
@@ -2142,6 +2139,9 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		END OBJ(i8k_buttons_status, INFO_I8K)
 	END OBJ(ibm_fan, 0)
 	END OBJ(ibm_temps, 0)
+	    if (!arg) {
+		CRIT_ERR("ibm_temps: needs an argument");
+	    }
 	    if (!isdigit(arg[0])
 			 || strlen(arg) >=2
 			 || atoi(&arg[0]) >=8)
@@ -6152,7 +6152,6 @@ static void set_default_configurations(void)
 	border_margin = 3;
 	border_width = 1;
 	text_alignment = BOTTOM_LEFT;
-	on_bottom = 1;
 #endif /* X11 */
 
 	free(current_mail_spool);
@@ -6237,24 +6236,14 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 
 #ifdef X11
 		CONF2("alignment") {
-	if (value) {
-		int a = string_to_alignment(value);
-		if (a <= 0)
-			CONF_ERR;
-		else
-			text_alignment = a;
-	} else
-		CONF_ERR;
-		}
-		CONF("on_bottom") {
-			if(value)
-				ERR("on_bottom is deprecated.  use own_window_hints below");
-				on_bottom = string_to_bool(value);
-				if (on_bottom)
-				    SET_HINT(window.hints,HINT_BELOW);
-
-			else
+		if (value) {
+			int a = string_to_alignment(value);
+			if (a <= 0)
 				CONF_ERR;
+			else
+				text_alignment = a;
+		} else
+			CONF_ERR;
 		}
 		CONF("background") {
 			fork_to_background = string_to_bool(value);
@@ -6262,7 +6251,7 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 
 #else
 		CONF2("background") {
-	fork_to_background = string_to_bool(value);
+			fork_to_background = string_to_bool(value);
 		}
 #endif /* X11 */
 #ifdef X11
@@ -6297,10 +6286,6 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 				CONF_ERR;
 		}
 #endif /* X11 */
-		CONF("xmms_player") {
-			if (value) 
-				ERR("xmms_player is deprecated. see ./configure --help");
-		}
 		CONF("imap") {
 			if (value) {
 				info.mail = parse_mail_args(IMAP, value);

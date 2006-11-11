@@ -14,13 +14,6 @@
 </varlistentry>
 
 <varlistentry>
-	<term><command><option>on_bottom</option></command></term>
-	<listitem>
-		Set Conky on the bottom of all other applications
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
 	<term><command><option>border_margin</option></command></term>
 	<listitem>
 		Border margin in pixels

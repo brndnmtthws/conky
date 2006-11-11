@@ -152,10 +152,6 @@ CONFIGURATION SETTINGS
 	      started
 
 
-       on_bottom
-	      Set Conky on the bottom of all other applications
-
-
        border_margin
 	      Border margin in pixels
 
