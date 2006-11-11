@@ -1,0 +1,57 @@
+Summary of changes for Conky release 1.4.3:
+-------------------------------------------
+
+* Removed support for dead projects: Xmms 1, Beep Media Player (BMP) and the Infopipe plugin.
+  - Removed the following related configuration items:
+  	- xmms_player
+  - Removed the following related variables:
+	- xmms_bar
+  	- xmms_bitrate
+	- xmms_channels
+	- xmms_filename
+	- xmms_frequency
+	- xmms_length
+	- xmms_length_seconds
+	- xmms_playlist_position
+	- xmms_playlist_length
+	- xmms_position
+	- xmms_position_seconds
+	- xmms_status
+	- xmms_title
+
+* Added support for Audacious music player: http://audacious-media-player.org
+  - Added the following related variables:
+	- audacious_bar
+        - audacious_bitrate
+        - audacious_channels
+        - audacious_filename
+        - audacious_frequency
+        - audacious_length
+        - audacious_length_seconds
+        - audacious_playlist_position
+        - audacious_playlist_length
+        - audacious_position
+        - audacious_position_seconds
+        - audacious_status
+        - audacious_title
+
+* Removed configuration item:
+	- on_bottom: please use 'own_window_hints below' instead.
+
+* Added new configuration item:
+	- max_user_text <bytes> [default: 16384]: specifies the maximum buffer size for user text
+		in the .conkyrc file.  Useful for people with enormous config files who were running
+		up against the hard-coded default of 8192 bytes.
+
+* Added new variables:
+	- tztime:  Local time for specified timezone
+	- hddtemp: interface to hddtemp hard disk temp monitor: http://www.guzu.net/linux/hddtemp.php
+	- goto and tab: additional alignment control
+	- voltage_mv and voltage_v: CPU voltages
+
+* Other changes:
+	- added SMP support for $freq and $freq_g
+	- added WiFi signal level detection on FreeBSD
+	- added Xdamage support for X11
+	- added verbose configuration information to conky -v
+	- added extras/ directory to tarball with nano and vim syntax coloring scripts.
