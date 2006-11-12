@@ -18,8 +18,6 @@
 #include <X11/Xft/Xft.h>
 #endif
 
-#include <stdio.h>
-
 #ifdef HAVE_XDBE
 int use_xdbe;
 #endif
