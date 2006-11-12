@@ -168,12 +168,12 @@ CONFIGURATION SETTINGS
 	      Default color and border color
 
 
-       default_shade_color
-	      Default shading color and border's shading color
-
-
        default_outline_color
 	      Default outline color
+
+
+       default_shade_color
+	      Default shading color and border's shading color
 
 
        double_buffer
@@ -190,12 +190,12 @@ CONFIGURATION SETTINGS
 	      Draw borders around graphs?
 
 
-       draw_shades
-	      Draw shades?
-
-
        draw_outline
 	      Draw outlines?
+
+
+       draw_shades
+	      Draw shades?
 
 
        font   Font name in X, xfontsel can be used to get a nice font
@@ -216,17 +216,13 @@ CONFIGURATION SETTINGS
 	      ter the password when Conky starts.
 
 
-       no_buffers
-	      Substract (file system) buffers from used memory?
-
-
        mail_spool
 	      Mail spool for mail checking
 
 
        max_user_text bytes
 	      Maximum size of user text buffer, i.e. layout below TEXT line in
-	      config file
+	      config file (default is 16384 bytes)
 
 
        maximum_width pixels
@@ -261,6 +257,10 @@ CONFIGURATION SETTINGS
 
        net_avg_samples
 	      The number of samples to average for net data
+
+
+       no_buffers
+	      Substract (file system) buffers from used memory?
 
 
        override_utf8_locale

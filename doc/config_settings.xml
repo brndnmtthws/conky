@@ -42,16 +42,16 @@
 </varlistentry>
 
 <varlistentry>
-	<term><command><option>default_shade_color</option></command></term>
+	<term><command><option>default_outline_color</option></command></term>
 	<listitem>
-		Default shading color and border's shading color
+		Default outline color
 	<para></para></listitem>
 </varlistentry>
 
 <varlistentry>
-	<term><command><option>default_outline_color</option></command></term>
+	<term><command><option>default_shade_color</option></command></term>
 	<listitem>
-		Default outline color
+		Default shading color and border's shading color
 	<para></para></listitem>
 </varlistentry>
 
@@ -77,16 +77,16 @@
 </varlistentry>
 
 <varlistentry>
-	<term><command><option>draw_shades</option></command></term>
+	<term><command><option>draw_outline</option></command></term>
 	<listitem>
-		Draw shades?
+		Draw outlines?
 	<para></para></listitem>
 </varlistentry>
 
 <varlistentry>
-	<term><command><option>draw_outline</option></command></term>
+	<term><command><option>draw_shades</option></command></term>
 	<listitem>
-		Draw outlines?
+		Draw shades?
 	<para></para></listitem>
 </varlistentry>
 
@@ -119,13 +119,6 @@
 </varlistentry>
 
 <varlistentry>
-	<term><command><option>no_buffers</option></command></term>
-	<listitem>
-		Substract (file system) buffers from used memory?
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
 	<term><command><option>mail_spool</option></command></term>
 	<listitem>
 		Mail spool for mail checking
@@ -138,6 +131,7 @@
 	</term>
 	<listitem>
 		Maximum size of user text buffer, i.e. layout below TEXT line in config file
+		(default is 16384 bytes)
 		<para></para></listitem>
 </varlistentry>
 
@@ -198,6 +192,13 @@
 	<term><command><option>net_avg_samples</option></command></term>
 	<listitem>
 		The number of samples to average for net data
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>no_buffers</option></command></term>
+	<listitem>
+		Substract (file system) buffers from used memory?
 	<para></para></listitem>
 </varlistentry>
 

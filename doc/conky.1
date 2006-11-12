@@ -160,12 +160,12 @@ The number of samples to average for CPU monitoring
 Default color and border color
 
 .TP 
-\fB\*(T<\fBdefault_shade_color\fR\*(T>\fR
-Default shading color and border's shading color
-
-.TP 
 \fB\*(T<\fBdefault_outline_color\fR\*(T>\fR
 Default outline color
+
+.TP 
+\fB\*(T<\fBdefault_shade_color\fR\*(T>\fR
+Default shading color and border's shading color
 
 .TP 
 \fB\*(T<\fBdouble_buffer\fR\*(T>\fR
@@ -180,12 +180,12 @@ Draw borders around text?
 Draw borders around graphs?
 
 .TP 
-\fB\*(T<\fBdraw_shades\fR\*(T>\fR
-Draw shades?
-
-.TP 
 \fB\*(T<\fBdraw_outline\fR\*(T>\fR
 Draw outlines?
+
+.TP 
+\fB\*(T<\fBdraw_shades\fR\*(T>\fR
+Draw shades?
 
 .TP 
 \fB\*(T<\fBfont\fR\*(T>\fR
@@ -204,16 +204,13 @@ Gap between top or bottom border of screen, same as passing -y at command line
 Default global IMAP server. Arguments are: "host user pass [-i interval] [-f folder] [-p port] [-e command]". Default port is 143, default folder is 'INBOX', default interval is 5 minutes. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
 
 .TP 
-\fB\*(T<\fBno_buffers\fR\*(T>\fR
-Substract (file system) buffers from used memory?
-
-.TP 
 \fB\*(T<\fBmail_spool\fR\*(T>\fR
 Mail spool for mail checking
 
 .TP 
 \fB\*(T<\fBmax_user_text\fR\*(T>\fR \*(T<\fBbytes\fR\*(T> 
 Maximum size of user text buffer, i.e. layout below TEXT line in config file
+(default is 16384 bytes)
 
 .TP 
 \fB\*(T<\fBmaximum_width\fR\*(T>\fR \*(T<\fBpixels\fR\*(T> 
@@ -246,6 +243,10 @@ MPD server password
 .TP 
 \fB\*(T<\fBnet_avg_samples\fR\*(T>\fR
 The number of samples to average for net data
+
+.TP 
+\fB\*(T<\fBno_buffers\fR\*(T>\fR
+Substract (file system) buffers from used memory?
 
 .TP 
 \fB\*(T<\fBoverride_utf8_locale\fR\*(T>\fR
