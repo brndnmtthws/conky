@@ -555,20 +555,14 @@ update_wifi_stats()
 	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
 		ns = get_net_stat((const char *) ifa->ifa_name);
 
-		if (!strcmp(ifa->ifa_name, "lo0") ||
-			!strncmp(ifa->ifa_name, "fwe", 3) ||
-			!strncmp(ifa->ifa_name, "tun", 3))
-			continue;
-
 		s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
 		/* Get media type */
 		bzero(&ifmr, sizeof(ifmr));
 		strlcpy(ifmr.ifm_name, ifa->ifa_name, IFNAMSIZ);
-		if (ioctl(s, SIOCGIFMEDIA, (caddr_t) &ifmr) < 0) {
-			perror("ioctl (getting media type)");
-			exit(1);
-		}
+		if (ioctl(s, SIOCGIFMEDIA, (caddr_t) &ifmr) < 0)
+			goto cleanup;
+		
 		/*
 		 * We can monitor only wireless interfaces
 		 * which not in hostap mode
@@ -594,7 +588,7 @@ update_wifi_stats()
 			 */
 			ns->linkstatus = (int) wireq.wi_val[1];
 		}
-		
+cleanup:
 		close(s);
 	}
 }
