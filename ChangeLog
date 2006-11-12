@@ -1,5 +1,9 @@
 # $Id$
 
+2006-11-11
+	* Add max_user_text to documentation.
+	* Fixed BadWindow bugs (#1568366, #1588384).
+
 2006-11-10
 	* Remove on_bottom and xmms_player completely.
 	* Closed ibm_temps bug #1591609.

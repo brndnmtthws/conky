@@ -5602,7 +5602,7 @@ static void clear_text(int exposures)
 #endif
 	{
 	/* there is some extra space for borders and outlines */
-	XClearArea(display, window.drawable,
+	XClearArea(display, window.window,
 		   text_start_x - border_margin - 1,
 		   text_start_y - border_margin - 1,
 		   text_width + border_margin * 2 + 2,
@@ -5722,11 +5722,11 @@ static void main_loop()
 					    text_height +
 					    border_margin * 2 + 1;
 					XResizeWindow(display,
-						      window.drawable,
+						      window.window,
 						      window.width,
 						      window.height);
 			if (own_window) {
-				set_transparent_background(window.drawable);
+				set_transparent_background(window.window);
 			}
 				     }
 
