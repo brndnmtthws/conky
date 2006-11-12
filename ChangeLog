@@ -1,5 +1,8 @@
 # $Id$
 
+2006-11-12
+	* Fix freebsd build.
+
 2006-11-11
 	* Add max_user_text to documentation.
 	* Fixed BadWindow bugs (#1568366, #1588384).
