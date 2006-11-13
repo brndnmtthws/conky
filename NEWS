@@ -1,3 +1,11 @@
+Summary of changes for Conky release 1.4.4:
+-------------------------------------------
+* fix build error for freebsd.
+* fix BadWindow errors when using own_window_type override or desktop.
+* minor documentation updates
+* minor wifi code changes for freebsd.
+
+
 Summary of changes for Conky release 1.4.3:
 -------------------------------------------
 

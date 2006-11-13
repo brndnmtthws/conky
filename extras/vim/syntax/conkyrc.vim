@@ -234,4 +234,3 @@ hi def link ConkyrcVar       Identifier
 hi def link ConkyrcVarName   Keyword
 
 let b:current_syntax = "conkyrc"
-

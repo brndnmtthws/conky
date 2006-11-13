@@ -1,7 +1,9 @@
 # $Id$
 
 2006-11-12
-	* Fix freebsd build.
+	* Fix freebsd build error.
+	r Minor changes to syntax files.
+	* Conky 1.4.4 released.
 
 2006-11-11
 	* Add max_user_text to documentation.
