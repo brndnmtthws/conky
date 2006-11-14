@@ -21,6 +21,7 @@
  * --------------------------------------------------------------------------- */
 
 #include <pthread.h>
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -69,9 +70,7 @@ int create_audacious_thread(void)
     pthread_mutex_init(&info.audacious.item_mutex, NULL);
     pthread_mutex_init(&info.audacious.runnable_mutex, NULL);
     /* Init runnable condition for worker thread */
-    pthread_mutex_lock(&info.audacious.runnable_mutex);
-    info.audacious.runnable=1;
-    pthread_mutex_unlock(&info.audacious.runnable_mutex);
+    pthread_cond_init(&info.audacious.runnable_cond, NULL);
     if (pthread_create(&info.audacious.thread, &info.audacious.thread_attr, audacious_thread_func, NULL))
         return(-1);
 
@@ -90,16 +89,19 @@ int destroy_audacious_thread(void)
         return(0);
 
     /* Signal audacious thread to terminate */
-    pthread_mutex_lock(&info.audacious.runnable_mutex);
-    info.audacious.runnable=0;
-    pthread_mutex_unlock(&info.audacious.runnable_mutex);
+    pthread_mutex_lock (&info.audacious.runnable_mutex);
+    pthread_cond_signal (&info.audacious.runnable_cond);
+    pthread_mutex_unlock (&info.audacious.runnable_mutex);
+
     /* Destroy thread attribute and wait for thread */
     pthread_attr_destroy(&info.audacious.thread_attr);
     if (pthread_join(info.audacious.thread, NULL))
         return(-1);
-    /* Destroy mutexes */
+
+    /* Destroy mutexes and cond */
     pthread_mutex_destroy(&info.audacious.item_mutex);
     pthread_mutex_destroy(&info.audacious.runnable_mutex);
+    pthread_cond_destroy(&info.audacious.runnable_cond);
 
     info.audacious.thread=(pthread_t)0;
     return 0;
@@ -110,21 +112,17 @@ int destroy_audacious_thread(void)
  * --------------------------------------------------- */ 
 void *audacious_thread_func(void *pvoid)
 {
-    int runnable;
+    int runnable=1;
     static audacious_t items;
     gint session,playpos,frames,length;
     gint rate,freq,chans;
     gchar *psong,*pfilename;
+    struct timespec abstime;
 
     pvoid=(void *)pvoid;  /* avoid warning */
     session=0;
     psong=NULL;
     pfilename=NULL;
-
-    /* Grab the runnable signal.  Should be non-zero here or we do nothing. */
-    pthread_mutex_lock(&info.audacious.runnable_mutex);
-    runnable=info.audacious.runnable;
-    pthread_mutex_unlock(&info.audacious.runnable_mutex );
 
     /* Loop until the main thread sets the runnable signal to 0. */
     while(runnable) {
@@ -207,12 +205,19 @@ void *audacious_thread_func(void *pvoid)
         memcpy(&audacious_items,items,sizeof(items));
         pthread_mutex_unlock(&info.audacious.item_mutex);
 
-        /* Grab the runnable signal for next loop. */
-        pthread_mutex_lock(&info.audacious.runnable_mutex);
-        runnable=info.audacious.runnable;
-        pthread_mutex_unlock(&info.audacious.runnable_mutex);
+        /* Get absolute time 1 sec in the future. */
+	clock_gettime (CLOCK_REALTIME, &abstime);
+	abstime.tv_sec += 1;
 
-        sleep(1);
+	/* Wait for a second before looping or until signalled to stop. */
+	if (pthread_cond_timedwait (&info.audacious.runnable_cond, 
+				     &info.audacious.runnable_mutex, 
+				     &abstime) != ETIMEDOUT)
+	{
+	    runnable=0;
+	    (void) pthread_mutex_unlock (&info.audacious.runnable_mutex);
+	}
+
     }
 
     pthread_exit(NULL);

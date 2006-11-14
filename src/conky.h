@@ -172,11 +172,11 @@ struct xmms2_s {
 #ifdef AUDACIOUS
 struct audacious_s {
 	audacious_t items;              /* e.g. items[AUDACIOUS_STATUS] */
-	int runnable;                   /* used to signal worker thread to stop */
 	pthread_t thread;               /* worker thread */
 	pthread_attr_t thread_attr;     /* thread attributes */
 	pthread_mutex_t item_mutex;     /* mutex for item array */
-	pthread_mutex_t runnable_mutex; /* mutex for runnable flag */
+	pthread_mutex_t runnable_mutex; /* mutex for runnable */
+	pthread_cond_t runnable_cond;   /* cond for runnable */
 };
 #endif
 
