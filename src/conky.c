@@ -308,13 +308,13 @@ static int background_colour = 0;
 static int fixed_size = 0, fixed_pos = 0;
 #endif
 
-/* maximum size of config TEXT buffer, i.e. below TEXT line. */
-static unsigned int max_user_text = MAX_USER_TEXT_DEFAULT;
-
 static int minimum_width, minimum_height;
 static int maximum_width;
 
 #endif /* X11 */
+
+/* maximum size of config TEXT buffer, i.e. below TEXT line. */
+static unsigned int max_user_text = MAX_USER_TEXT_DEFAULT;
 
 #ifdef HAVE_ICONV
 #define CODEPAGE_LENGTH 20

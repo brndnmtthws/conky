@@ -1,5 +1,8 @@
 # $Id$
 
+2006-11-14
+	* Fix compile error with --disable-x11.
+
 2006-11-13
 	* Use pthread_cond_timedwait() instead of sleep() in audacious
 	thread.  Will convert all worker threads to this timing method.  
