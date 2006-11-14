@@ -1,4 +1,4 @@
-/* $Id $ */
+/* $Id$ */
 
 /* timed_thread.c
  * Author: Philip Kovacs
