@@ -1,5 +1,9 @@
 # $Id$
 
+2006-11-13
+	* Use pthread_cond_timedwait() instead of sleep() in audacious
+	thread.  Will convert all worker threads to this timing method.  
+
 2006-11-12
 	* Fix freebsd build error.
 	* Minor changes to syntax files.
