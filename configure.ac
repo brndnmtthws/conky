@@ -1,6 +1,6 @@
-AC_INIT([Conky],[1.4.4],[brenden1@users.sourceforge.net])
+AC_INIT([Conky],[1.4.5],[brenden1@users.sourceforge.net])
 
-AM_INIT_AUTOMAKE(conky, 1.4.4)
+AM_INIT_AUTOMAKE(conky, 1.4.5)
 AM_CONFIG_HEADER(src/config.h)
 dnl
 dnl C Compiler
@@ -362,17 +362,23 @@ if test x$WANT_OSSLIB = xyes; then
 fi
 
 dnl
-dnl Some random headers
+dnl Some headers
 dnl
 
-
-AC_CHECK_HEADERS([signal.h unistd.h sys/utsname.h sys/stat.h linux/soundcard.h dirent.h mcheck.h])
-AC_CHECK_HEADERS([sys/statfs.h sys/param.h])
+AC_CHECK_HEADERS([signal.h unistd.h sys/utsname.h sys/stat.h linux/soundcard.h dirent.h mcheck.h \
+		  sys/statfs.h sys/param.h pthread.h assert.h errno.h time.h])
 AC_CHECK_HEADERS([sys/mount.h], [], [],
 		 [#ifdef HAVE_SYS_PARAM_H
 		  #include <sys/param.h>
 		  #endif
-])
+		  ])
+dnl
+dnl Some functions
+dnl
+
+AC_CHECK_FUNCS([calloc malloc free popen])
+AC_SEARCH_LIBS(clock_gettime, [rt], [], AC_MSG_ERROR([clock_gettime() not found]))
+
 
 dnl
 dnl Check doc stuff
@@ -446,11 +452,6 @@ AC_TRY_COMPILE(
    AC_DEFINE(HAVE_GETLOADAVG, 1, [Define if you have getloadavg])],
   [AC_MSG_RESULT(no)])
 
-dnl
-dnl Check popen
-dnl
-
-AC_CHECK_FUNCS(popen)
 
 dnl
 dnl Da.

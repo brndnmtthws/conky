@@ -66,6 +66,8 @@ conky_SOURCES = 		\
 	remotec.h               \
 	remoted.c 		\
 	remoted.h 		\
+	timed_thread.c		\
+	timed_thread.h		\
 	$(x11)                  \
 	$(xmms2) 
 
