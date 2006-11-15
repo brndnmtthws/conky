@@ -6,6 +6,8 @@
  * Abstraction layer for timed threads
  * */
 
+#ifndef _TIMED_THREAD_H_
+#define _TIMED_THREAD_H_
 
 #define MINIMUM_INTERVAL_USECS 50000  /* 50000 microseconds = 50 ms =  0.05 sec */
 
@@ -13,7 +15,7 @@
 typedef struct _timed_thread timed_thread;
 
 /* create a timed thread */
-timed_thread* timed_thread_create (void *(*start_routine)(void*), void *arg, unsigned int interval_ms);
+timed_thread* timed_thread_create (void *(*start_routine)(void*), void *arg, unsigned int interval_usecs);
 
 /* destroy a timed thread */
 void timed_thread_destroy (timed_thread* p_timed_thread, timed_thread** addr_of_p_timed_thread);
@@ -30,8 +32,10 @@ int timed_thread_test (timed_thread* p_timed_thread);
 /* exit a timed thread */
 void timed_thread_exit (timed_thread* p_timed_thread);
 
-/* register a timed thread for future destruction */
+/* register a timed thread for future destruction via timed_thread_destroy_registered_threads() */
 int timed_thread_register (timed_thread* p_timed_thread, timed_thread** addr_of_p_timed_thread);
 
 /* destroy all registered timed threads */
 void timed_thread_destroy_registered_threads (void);
+
+#endif /* #ifdef _TIMED_THREAD_H_ */

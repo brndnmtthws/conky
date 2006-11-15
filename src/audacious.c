@@ -20,11 +20,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * --------------------------------------------------------------------------- */
 
-#include <pthread.h>
-#include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 
 #include <glib.h>
 #include <audacious/beepctrl.h>
@@ -32,6 +29,7 @@
 #include "config.h"
 #include "conky.h"
 #include "audacious.h"
+#include "timed_thread.h"
 
 /* access to this item array is synchronized */
 static audacious_t audacious_items;
@@ -46,9 +44,12 @@ void update_audacious(void)
       conky thread.  We merely copy the audacious_items array into the main thread's 
       info structure when the main thread's update cycle fires. 
     */
-    pthread_mutex_lock(&info.audacious.item_mutex);
+    if (!info.audacious.p_timed_thread)
+	return;
+
+    timed_thread_lock (info.audacious.p_timed_thread);
     memcpy(&info.audacious.items,audacious_items,sizeof(audacious_items));
-    pthread_mutex_unlock(&info.audacious.item_mutex);
+    timed_thread_unlock (info.audacious.p_timed_thread);
 }
 
 
@@ -59,20 +60,11 @@ void update_audacious(void)
  * ------------------------------------------------------------*/
 int create_audacious_thread(void)
 {
-    /* Is a worker is thread already running? */
-    if (info.audacious.thread)
-	return(-1);
+    if (!info.audacious.p_timed_thread)
+	info.audacious.p_timed_thread = timed_thread_create (audacious_thread_func, NULL, 1000000);
 
-    /* Joinable thread for audacious activity */
-    pthread_attr_init(&info.audacious.thread_attr);
-    pthread_attr_setdetachstate(&info.audacious.thread_attr, PTHREAD_CREATE_JOINABLE);
-    /* Init mutexes */
-    pthread_mutex_init(&info.audacious.item_mutex, NULL);
-    pthread_mutex_init(&info.audacious.runnable_mutex, NULL);
-    /* Init runnable condition for worker thread */
-    pthread_cond_init(&info.audacious.runnable_cond, NULL);
-    if (pthread_create(&info.audacious.thread, &info.audacious.thread_attr, audacious_thread_func, NULL))
-        return(-1);
+    if (!info.audacious.p_timed_thread)
+	return (-1);
 
     return 0;
 }
@@ -85,25 +77,11 @@ int create_audacious_thread(void)
 int destroy_audacious_thread(void)
 {
     /* Is a worker is thread running? If not, no error. */
-    if (!info.audacious.thread)
+    if (!info.audacious.p_timed_thread)
         return(0);
 
-    /* Signal audacious thread to terminate */
-    pthread_mutex_lock (&info.audacious.runnable_mutex);
-    pthread_cond_signal (&info.audacious.runnable_cond);
-    pthread_mutex_unlock (&info.audacious.runnable_mutex);
+    timed_thread_destroy (info.audacious.p_timed_thread, &info.audacious.p_timed_thread);
 
-    /* Destroy thread attribute and wait for thread */
-    pthread_attr_destroy(&info.audacious.thread_attr);
-    if (pthread_join(info.audacious.thread, NULL))
-        return(-1);
-
-    /* Destroy mutexes and cond */
-    pthread_mutex_destroy(&info.audacious.item_mutex);
-    pthread_mutex_destroy(&info.audacious.runnable_mutex);
-    pthread_cond_destroy(&info.audacious.runnable_cond);
-
-    info.audacious.thread=(pthread_t)0;
     return 0;
 }
 
@@ -112,20 +90,18 @@ int destroy_audacious_thread(void)
  * --------------------------------------------------- */ 
 void *audacious_thread_func(void *pvoid)
 {
-    int runnable=1;
     static audacious_t items;
     gint session,playpos,frames,length;
     gint rate,freq,chans;
     gchar *psong,*pfilename;
-    struct timespec abstime;
 
     pvoid=(void *)pvoid;  /* avoid warning */
     session=0;
     psong=NULL;
     pfilename=NULL;
 
-    /* Loop until the main thread sets the runnable signal to 0. */
-    while(runnable) {
+    /* Loop until the main thread sets the runnable signal to 0i via timed_thread_destroy. */
+    while (1) {
 
         if (!xmms_remote_is_running (session)) {
             memset(&items,0,sizeof(items));
@@ -199,24 +175,12 @@ void *audacious_thread_func(void *pvoid)
 next_iter:
 
         /* Deliver the refreshed items array to audacious_items. */
-        pthread_mutex_lock(&info.audacious.item_mutex);
+	timed_thread_lock (info.audacious.p_timed_thread);
         memcpy(&audacious_items,items,sizeof(items));
-        pthread_mutex_unlock(&info.audacious.item_mutex);
+	timed_thread_unlock (info.audacious.p_timed_thread);
 
-        /* Get absolute time 1 sec in the future. */
-	clock_gettime (CLOCK_REALTIME, &abstime);
-	abstime.tv_sec += 1;
-
-	/* Wait for a second before looping or until signalled to stop. */
-	if (pthread_cond_timedwait (&info.audacious.runnable_cond, 
-				     &info.audacious.runnable_mutex, 
-				     &abstime) != ETIMEDOUT)
-	{
-	    runnable=0;
-	    pthread_mutex_unlock (&info.audacious.runnable_mutex);
-	}
+	if (timed_thread_test (info.audacious.p_timed_thread))
+	    timed_thread_exit (info.audacious.p_timed_thread);
 
     }
-
-    pthread_exit(NULL);
 }

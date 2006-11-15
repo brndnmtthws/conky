@@ -3,6 +3,8 @@
 2006-11-14
 	* Fix compile error with --disable-x11.
 	* Add new timed thread abstraction file.
+	* Convert thread activity to timed threads, including
+	texeci, imap, pop3, audacious.
 
 2006-11-13
 	* Use pthread_cond_timedwait() instead of sleep() in audacious

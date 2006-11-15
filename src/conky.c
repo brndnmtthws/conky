@@ -1138,9 +1138,15 @@ struct text_object {
 			char *cmd;
 			char *buffer;
 			double data;
-			int pos;
-			struct thread_info_s thread_info;
 		} execi;	/* 5 */
+
+		struct {
+			float interval;
+			char *cmd;
+			char *buffer;
+			double data;
+			timed_thread *p_timed_thread;
+		} texeci;
 
 		struct {
 			int a, b;
@@ -1171,25 +1177,6 @@ struct text_object_list {
 static unsigned int text_object_count;
 static struct text_object *text_objects;
 static void generate_text_internal(char *p, int p_max_size, struct text_object *objs, unsigned int object_count, struct information *cur);
-
-#define MAX_THREADS 512 // sure whatever
-typedef struct thread_info_s *thread_info;
-static thread_info thread_list[MAX_THREADS];
-static int thread_count = 0;
-static int threads_runnable = 1;
-
-int register_thread(struct thread_info_s *new_thread)
-{
-	if (thread_count >= MAX_THREADS) {
-		CRIT_ERR("Uh oh, tried to register too many threads");
-	} else {
-		thread_list[thread_count] = new_thread;
-		thread_count++;
-		// may as well fix the mutex for them as well
-		pthread_mutex_init(&(new_thread->mutex), NULL);
-	}
-	return thread_count - 1;
-}
 
 #define MAXDATASIZE 1000
 #define POP3 1
@@ -1262,15 +1249,12 @@ struct mail_s* parse_mail_args(char type, const char *arg) {
 	} else {
 		mail->command[0] = '\0';
 	}
-	mail->pos = -1;
+	mail->p_timed_thread = NULL;
 	return mail;
 }
 
 void *imap_thread(struct mail_s* mail)
-{				// pthreads are really beginning to piss me off
-	double update_time;
-	int run_code = threads_runnable;
-	update_time = get_time();
+{
 	int sockfd, numbytes;
 	char recvbuf[MAXDATASIZE];
 	char sendbuf[MAXDATASIZE];
@@ -1284,12 +1268,11 @@ void *imap_thread(struct mail_s* mail)
 		herror("gethostbyname");
 		exit(1);
 	}
-	while (threads_runnable == run_code && fail < 5) {
+	while (fail < 5) {
 		if (fail > 0) {
 			ERR("Trying IMAP connection again for %s@%s (try %i/5)", mail->user, mail->host, fail + 1);
 			sleep((int)mail->interval);
 		}
-		update_time = get_time();
 		if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
 			perror("socket");
 			fail++;
@@ -1406,11 +1389,11 @@ void *imap_thread(struct mail_s* mail)
 			fail++;
 			continue;
 		} else {
-			pthread_mutex_lock(&(mail->thread_info.mutex));
+			timed_thread_lock (mail->p_timed_thread);
 			sscanf(reply, "MESSAGES %lu UNSEEN %lu",
 			       &mail->messages,
 			       &mail->unseen);
-			pthread_mutex_unlock(&(mail->thread_info.mutex));
+			timed_thread_unlock (mail->p_timed_thread);
 		}
 		strncpy(sendbuf, "a3 logout\n", MAXDATASIZE);
 		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
@@ -1447,32 +1430,14 @@ void *imap_thread(struct mail_s* mail)
 		fail = 0;
 		old_unseen = mail->unseen;
 		old_messages = mail->messages;
-		mail->last_update = update_time;
-		usleep(100);	// prevent race condition
-		if (get_time() - mail->last_update >
-		    mail->interval) {
-			continue;
-		} else {
-			unsigned int delay =
-			    1000000.0 * (mail->interval -
-					 (get_time() -
-					  mail->last_update));
-			if (delay < update_interval * 500000) {
-				delay = update_interval * 1000000;
-			}
-			usleep(delay);
-		}
+		if (timed_thread_test (mail->p_timed_thread))
+		    timed_thread_exit (mail->p_timed_thread);
 	}
-	ERR("exiting imap thread");
-	pthread_exit(NULL);
 	return 0;
 }
 
 void *pop3_thread(struct mail_s *mail)
-{				// pthreads are really beginning to piss me off
-	double update_time;
-	int run_code = threads_runnable;
-	update_time = get_time();
+{
 	int sockfd, numbytes;
 	char recvbuf[MAXDATASIZE];
 	char sendbuf[MAXDATASIZE];
@@ -1485,12 +1450,11 @@ void *pop3_thread(struct mail_s *mail)
 		herror("gethostbyname");
 		exit(1);
 	}
-	while (threads_runnable == run_code && fail < 5) {
+	while (fail < 5) {
 		if (fail > 0) {
 			ERR("Trying POP3 connection again for %s@%s (try %i/5)", mail->user, mail->host, fail + 1);
 			sleep((int)mail->interval);
 		}
-		update_time = get_time();
 		if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
 			perror("socket");
 			fail++;
@@ -1627,11 +1591,10 @@ void *pop3_thread(struct mail_s *mail)
 			fail++;
 			continue;
 		} else {
-			pthread_mutex_lock(&(mail->thread_info.mutex));
+			timed_thread_lock (mail->p_timed_thread);
 			sscanf(reply, "%lu %lu", &mail->unseen,
 			       &mail->used);
-//			sleep(60);
-			pthread_mutex_unlock(&(mail->thread_info.mutex));
+			timed_thread_unlock (mail->p_timed_thread);
 		}
 		strncpy(sendbuf, "QUIT\n", MAXDATASIZE);
 		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
@@ -1667,36 +1630,18 @@ void *pop3_thread(struct mail_s *mail)
 		}
 		fail = 0;
 		old_unseen = mail->unseen;
-		mail->last_update = update_time;
-		usleep(100);	// prevent race condition
-		if (get_time() - mail->last_update >
-		    mail->interval) {
-			continue;
-		} else {
-			unsigned int delay =
-			    1000000.0 * (mail->interval -
-					 (get_time() -
-					  mail->last_update));
-			if (delay < update_interval * 500000) {
-				delay = update_interval * 1000000;
-			}
-			usleep(delay);
-		}
+		if (timed_thread_test (mail->p_timed_thread))
+		    timed_thread_exit (mail->p_timed_thread);
 	}
-	ERR("exiting pop3 thread");
-	pthread_exit(NULL);
 	return 0;
 }
 
 
-void *threaded_exec(struct text_object *obj) { // pthreads are really beginning to piss me off
-	double update_time;
-	int run_code = threads_runnable;
-	while (threads_runnable == run_code) {
-		update_time = get_time();
-		char *p2 = obj->data.execi.buffer;
-		FILE *fp = popen(obj->data.execi.cmd,"r");
-		pthread_mutex_lock(&(obj->data.execi.thread_info.mutex));
+void *threaded_exec(struct text_object *obj) { 
+	while (1) {
+		char *p2 = obj->data.texeci.buffer;
+		FILE *fp = popen(obj->data.texeci.cmd,"r");
+		timed_thread_lock (obj->data.texeci.p_timed_thread);
 		int n2 = fread(p2, 1, TEXT_BUFFER_SIZE, fp);
 		(void) pclose(fp);
 		p2[n2] = '\0';
@@ -1709,21 +1654,10 @@ void *threaded_exec(struct text_object *obj) { // pthreads are really beginning 
 			}
 			p2++;
 		}
-		pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
-		obj->data.execi.last_update = update_time;
-		usleep(100); // prevent race condition
-		if (get_time() - obj->data.execi.last_update > obj->data.execi.interval) {
-			continue;
-		} else {
-			unsigned int delay = 1000000.0 * (obj->data.execi.interval -(get_time() - obj->data.execi.last_update));
-			if (delay < update_interval * 500000) {
-				delay = update_interval * 1000000;
-			}
-			usleep(delay);
-		}
+		timed_thread_unlock (obj->data.texeci.p_timed_thread);
+		if (timed_thread_test (obj->data.texeci.p_timed_thread))
+		    timed_thread_exit (obj->data.texeci.p_timed_thread);
 	}
-	ERR("exiting thread");
-	pthread_exit(NULL);
 	return 0;
 }
 
@@ -1984,8 +1918,8 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 				free(objs[i].data.execi.buffer);
 				break;
 			case OBJ_texeci:
-				free(objs[i].data.execi.cmd);
-				free(objs[i].data.execi.buffer);
+				free(objs[i].data.texeci.cmd);
+				free(objs[i].data.texeci.buffer);
 				break;
 			case OBJ_top:
 				if (info.first_process) {
@@ -2278,9 +2212,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		obj->data.execi.cmd = strdup(arg + n);
 	}
 	END OBJ(execi, 0) unsigned int n;
-
-	if (!arg
-			|| sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
+	if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
 		char buf[256];
 		ERR("${execi <interval> command}");
 		obj->type = OBJ_text;
@@ -2292,19 +2224,18 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 			(char *) calloc(1, TEXT_BUFFER_SIZE);
 	}
 	END OBJ(texeci, 0) unsigned int n;
-
-	if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
+	if (!arg || sscanf(arg, "%f %n", &obj->data.texeci.interval, &n) <= 0) {
 		char buf[256];
 		ERR("${texeci <interval> command}");
 		obj->type = OBJ_text;
 		snprintf(buf, 256, "${%s}", s);
 		obj->data.s = strdup(buf);
 	} else {
-		obj->data.execi.cmd = strdup(arg + n);
-		obj->data.execi.buffer =
+		obj->data.texeci.cmd = strdup(arg + n);
+		obj->data.texeci.buffer =
 			(char *) calloc(1, TEXT_BUFFER_SIZE);
 	}
-	obj->data.execi.pos = -1;
+	obj->data.texeci.p_timed_thread = NULL;
 	END OBJ(pre_exec, 0) obj->type = OBJ_text;
 	if (arg) {
 		FILE *fp = popen(arg, "r");
@@ -3697,42 +3628,52 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					//parse_conky_vars(output, p, cur);
 				}
 				OBJ(texeci) {
-					if (obj->data.execi.pos < 0) {
-						obj->data.execi.last_update = current_update_time;
-						if (pthread_create(&(obj->data.execi.thread_info.thread), NULL, (void*)threaded_exec, (void*) obj)) {
-							ERR("Error starting thread");
-						}
-						obj->data.execi.pos = register_thread(&(obj->data.execi.thread_info));
+					if (!obj->data.texeci.p_timed_thread)
+					{
+					    obj->data.texeci.p_timed_thread=
+					    timed_thread_create ((void*)threaded_exec, (void*) obj, 
+							         obj->data.texeci.interval * 1000000);
+					    if (!obj->data.texeci.p_timed_thread)
+						ERR("Error starting texeci thread");
+					    timed_thread_register (obj->data.texeci.p_timed_thread,
+							    	   &obj->data.texeci.p_timed_thread);
 					}
-					pthread_mutex_lock(&(obj->data.execi.thread_info.mutex));
-					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
-					pthread_mutex_unlock(&(obj->data.execi.thread_info.mutex));
+					timed_thread_lock (obj->data.texeci.p_timed_thread);
+					snprintf(p, p_max_size, "%s", obj->data.texeci.buffer);
+					timed_thread_unlock (obj->data.texeci.p_timed_thread);
 				}
 #endif /* HAVE_POPEN */
 				OBJ(imap_unseen) {
 					if (obj->global_mode && info.mail) { // this means we use info
-						if (info.mail->pos < 0) {
-							info.mail->last_update = current_update_time;
-							if (pthread_create(&(info.mail->thread_info.thread), NULL, (void*)imap_thread, (void*) info.mail)) {
-								ERR("Error starting thread");
-							}
-							info.mail->pos = register_thread(&(info.mail->thread_info));
+						if (!info.mail->p_timed_thread)
+						{
+						    info.mail->p_timed_thread = 
+						    timed_thread_create ((void*)imap_thread, 
+								         (void*)info.mail,
+								         info.mail->interval * 1000000);
+						    if (!info.mail->p_timed_thread)
+							 ERR("Error starting imap thread");
+						    timed_thread_register (info.mail->p_timed_thread,
+								    	   &info.mail->p_timed_thread);
 						}
-						// get a lock before reading
-						pthread_mutex_lock(&(info.mail->thread_info.mutex));
+						timed_thread_lock (info.mail->p_timed_thread);
 						snprintf(p, p_max_size, "%lu", info.mail->unseen);
-						pthread_mutex_unlock(&(info.mail->thread_info.mutex));
+						timed_thread_unlock (info.mail->p_timed_thread);
 					} else if (obj->data.mail) { // this means we use obj
-						if (obj->data.mail->pos < 0) {
-							obj->data.mail->last_update = current_update_time;
-							if (pthread_create(&(obj->data.mail->thread_info.thread), NULL, (void*)imap_thread, (void*) obj->data.mail)) {
-								ERR("Error starting thread");
-							}
-							obj->data.mail->pos = register_thread(&(obj->data.mail->thread_info));
+						if (!obj->data.mail->p_timed_thread)
+						{
+						    obj->data.mail->p_timed_thread = 
+						    timed_thread_create ((void*)imap_thread, 
+								         (void*)obj->data.mail,
+									 obj->data.mail->interval * 1000000);
+						    if (!obj->data.mail->p_timed_thread)
+							ERR("Error starting imap thread");
+						    timed_thread_register (obj->data.mail->p_timed_thread,
+								           &obj->data.mail->p_timed_thread);
 						}
-						pthread_mutex_lock(&(obj->data.mail->thread_info.mutex));
+						timed_thread_lock (obj->data.mail->p_timed_thread);
 						snprintf(p, p_max_size, "%lu", obj->data.mail->unseen);
-						pthread_mutex_unlock(&(obj->data.mail->thread_info.mutex));
+						timed_thread_unlock (obj->data.mail->p_timed_thread);
 					} else if (!obj->a) { // something is wrong, warn once then stop
 						ERR("Theres a problem with your imap_unseen settings.  Check that the global IMAP settings are defined properly (line %li).", obj->line);
 							obj->a++;
@@ -3740,27 +3681,35 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				}
 				OBJ(imap_messages) {
 					if (obj->global_mode && info.mail) { // this means we use info
-						if (info.mail->pos < 0) {
-							info.mail->last_update = current_update_time;
-							if (pthread_create(&(info.mail->thread_info.thread), NULL, (void*)imap_thread, (void*) info.mail)) {
-								ERR("Error starting thread");
-							}
-							info.mail->pos = register_thread(&(info.mail->thread_info));
+						if (!info.mail->p_timed_thread)
+						{
+						    info.mail->p_timed_thread =
+                                                    timed_thread_create ((void*)imap_thread, 
+								         (void*)info.mail,
+                                                                         info.mail->interval * 1000000);
+                                                    if (!info.mail->p_timed_thread)
+                                                         ERR("Error starting imap thread");
+                                                    timed_thread_register (info.mail->p_timed_thread,
+                                                                           &info.mail->p_timed_thread);
 						}
-						pthread_mutex_lock(&(info.mail->thread_info.mutex));
+						timed_thread_lock (info.mail->p_timed_thread);
 						snprintf(p, p_max_size, "%lu", info.mail->messages);
-						pthread_mutex_unlock(&(info.mail->thread_info.mutex));
+						timed_thread_unlock (info.mail->p_timed_thread);
 					} else if (obj->data.mail) { // this means we use obj
-						if (obj->data.mail->pos < 0) {
-							obj->data.mail->last_update = current_update_time;
-							if (pthread_create(&(obj->data.mail->thread_info.thread), NULL, (void*)imap_thread, (void*) obj->data.mail)) {
-								ERR("Error starting thread");
-							}
-							obj->data.mail->pos = register_thread(&(obj->data.mail->thread_info));
-						}
-						pthread_mutex_lock(&(obj->data.mail->thread_info.mutex));
+						if (!obj->data.mail->p_timed_thread)
+                                                {
+                                                    obj->data.mail->p_timed_thread =
+                                                    timed_thread_create ((void*)imap_thread,
+                                                                         (void*)obj->data.mail,
+                                                                         obj->data.mail->interval * 1000000);
+                                                    if (!obj->data.mail->p_timed_thread)
+                                                        ERR("Error starting imap thread");
+                                                    timed_thread_register (obj->data.mail->p_timed_thread,
+                                                                           &obj->data.mail->p_timed_thread);
+                                                }
+						timed_thread_lock (obj->data.mail->p_timed_thread);
 						snprintf(p, p_max_size, "%lu", obj->data.mail->messages);
-						pthread_mutex_unlock(&(obj->data.mail->thread_info.mutex));
+						timed_thread_lock (obj->data.mail->p_timed_thread);
 					} else if (!obj->a) { // something is wrong, warn once then stop
 						ERR("Theres a problem with your imap_messages settings.  Check that the global IMAP settings are defined properly (line %li).", obj->line);
 							obj->a++;
@@ -3768,27 +3717,35 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				}
 				OBJ(pop3_unseen) {
 					if (obj->global_mode && info.mail) { // this means we use info
-						if (info.mail->pos < 0) {
-							info.mail->last_update = current_update_time;
-							if (pthread_create(&(info.mail->thread_info.thread), NULL, (void*)pop3_thread, (void*) info.mail)) {
-								ERR("Error starting thread");
-							}
-							info.mail->pos = register_thread(&(info.mail->thread_info));
+						if (!info.mail->p_timed_thread)
+						{
+						    info.mail->p_timed_thread = 
+						    timed_thread_create ((void*)pop3_thread,
+								         (void*)info.mail,
+									 info.mail->interval * 1000000);
+						    if (!info.mail->p_timed_thread)
+							ERR("Error starting pop3 thread");
+						    timed_thread_register (info.mail->p_timed_thread,
+								           &info.mail->p_timed_thread);
 						}
-						pthread_mutex_lock(&(info.mail->thread_info.mutex));
+						timed_thread_lock (info.mail->p_timed_thread);
 						snprintf(p, p_max_size, "%lu", info.mail->unseen);
-						pthread_mutex_unlock(&(info.mail->thread_info.mutex));
+						timed_thread_unlock (info.mail->p_timed_thread);
 					} else if (obj->data.mail) { // this means we use obj
-						if (obj->data.mail->pos < 0) {
-							obj->data.mail->last_update = current_update_time;
-							if (pthread_create(&(obj->data.mail->thread_info.thread), NULL, (void*)pop3_thread, (void*) obj->data.mail)) {
-								ERR("Error starting thread");
-							}
-							obj->data.mail->pos = register_thread(&(obj->data.mail->thread_info));
+						if (!obj->data.mail->p_timed_thread)
+						{
+						    obj->data.mail->p_timed_thread = 
+						    timed_thread_create ((void*)pop3_thread,
+								         (void*)info.mail,
+									 obj->data.mail->interval * 1000000);
+						    if (!obj->data.mail->p_timed_thread)
+							ERR("Error starting pop3 thread");
+						    timed_thread_register (obj->data.mail->p_timed_thread,
+								    	   &obj->data.mail->p_timed_thread);
 						}
-						pthread_mutex_lock(&(obj->data.mail->thread_info.mutex));
+						timed_thread_lock (obj->data.mail->p_timed_thread);
 						snprintf(p, p_max_size, "%lu", obj->data.mail->unseen);
-						pthread_mutex_unlock(&(obj->data.mail->thread_info.mutex));
+						timed_thread_unlock (obj->data.mail->p_timed_thread);
 					} else if (!obj->a) { // something is wrong, warn once then stop
 						ERR("Theres a problem with your pop3_unseen settings.  Check that the global POP3 settings are defined properly (line %li).", obj->line);
 							obj->a++;
@@ -3796,27 +3753,35 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				}
 				OBJ(pop3_used) {
 					if (obj->global_mode && info.mail) { // this means we use info
-						if (info.mail->pos < 0) {
-							info.mail->last_update = current_update_time;
-							if (pthread_create(&(info.mail->thread_info.thread), NULL, (void*)pop3_thread, (void*) info.mail)) {
-								ERR("Error starting thread");
-							}
-							info.mail->pos = register_thread(&(info.mail->thread_info));
+						if (!info.mail->p_timed_thread)
+						{
+						    info.mail->p_timed_thread = 
+						    timed_thread_create ((void*)pop3_thread,
+								    	 (void*)info.mail,
+								    	 info.mail->interval * 1000000);
+						    if (!info.mail->p_timed_thread)
+							ERR("Error starting pop3 thread");
+						    timed_thread_register (info.mail->p_timed_thread,
+								    	   &info.mail->p_timed_thread);
 						}
-						pthread_mutex_lock(&(info.mail->thread_info.mutex));
+						timed_thread_lock (info.mail->p_timed_thread);
 						snprintf(p, p_max_size, "%.1f", info.mail->used/1024.0/1024.0);
-						pthread_mutex_unlock(&(info.mail->thread_info.mutex));
+						timed_thread_unlock (info.mail->p_timed_thread);
 					} else if (obj->data.mail) { // this means we use obj
-						if (obj->data.mail->pos < 0) {
-							obj->data.mail->last_update = current_update_time;
-							if (pthread_create(&(obj->data.mail->thread_info.thread), NULL, (void*)pop3_thread, (void*) obj->data.mail)) {
-								ERR("Error starting thread");
-							}
-							obj->data.mail->pos = register_thread(&(obj->data.mail->thread_info));
+						if (!obj->data.mail->p_timed_thread)
+						{
+						    obj->data.mail->p_timed_thread =
+						    timed_thread_create ((void*)pop3_thread,
+								    	 (void*)obj->data.mail,
+									 obj->data.mail->interval * 1000000);
+						    if (!obj->data.mail->p_timed_thread)
+							ERR("Error starting pop3 thread");
+						    timed_thread_register (obj->data.mail->p_timed_thread,
+								    	   &obj->data.mail->p_timed_thread);
 						}
-						pthread_mutex_lock(&(obj->data.mail->thread_info.mutex));
+						timed_thread_lock (obj->data.mail->p_timed_thread);
 						snprintf(p, p_max_size, "%.1f", obj->data.mail->used/1024.0/1024.0);
-						pthread_mutex_unlock(&(obj->data.mail->thread_info.mutex));
+						timed_thread_unlock (obj->data.mail->p_timed_thread);
 					} else if (!obj->a) { // something is wrong, warn once then stop
 						ERR("Theres a problem with your pop3_used settings.  Check that the global POP3 settings are defined properly (line %li).", obj->line);
 							obj->a++;
@@ -5959,16 +5924,13 @@ static void load_config_file(const char *);
 /* reload the config file */
 void reload_config(void)
 {
-	//lock_all_threads();
-	threads_runnable++;
+	timed_thread_destroy_registered_threads ();
+
 	if (info.cpu_usage) {
 		free(info.cpu_usage);
 		info.cpu_usage = NULL;
 	}
-#ifdef AUDACIOUS
-        if ( (info.audacious.thread) && (destroy_audacious_thread()!=0) )
-	    ERR("error destroying audacious thread");
-#endif
+
 #ifdef TCP_PORT_MONITOR
 	destroy_tcp_port_monitor_collection( info.p_tcp_port_monitor_collection );
 #endif
@@ -5986,21 +5948,21 @@ void reload_config(void)
 		info.p_tcp_port_monitor_collection = NULL; 
 #endif
 #ifdef AUDACIOUS
-                if ( (!info.audacious.thread) && (create_audacious_thread() !=0) )
+                if (create_audacious_thread() !=0)
                     CRIT_ERR("unable to create audacious thread!");
+		timed_thread_register (info.audacious.p_timed_thread, &info.audacious.p_timed_thread);
 #endif
 		extract_variable_text(text);
 		free(text);
 		text = NULL;
 		update_text();
 	}
-	thread_count = 0;
 }
 
 void clean_up(void)
 {
-	//lock_all_threads();
-	threads_runnable++;
+	timed_thread_destroy_registered_threads ();
+
 	if (info.cpu_usage) {
 		free(info.cpu_usage);
 		info.cpu_usage = NULL;
@@ -6045,10 +6007,6 @@ void clean_up(void)
 #ifdef TCP_PORT_MONITOR
 	destroy_tcp_port_monitor_collection( info.p_tcp_port_monitor_collection );
 	info.p_tcp_port_monitor_collection = NULL;
-#endif
-#ifdef AUDACIOUS
-        if ( info.audacious.thread && (destroy_audacious_thread()!=0) )
-            ERR("error destroying audacious thread");
 #endif
 }
 
@@ -6949,18 +6907,12 @@ int main(int argc, char **argv)
 	}
 
 #ifdef AUDACIOUS
-	if ( (create_audacious_thread() !=0) )
-	{
+	if (create_audacious_thread() !=0) 
 	    CRIT_ERR("unable to create audacious thread!");
-	}
+	timed_thread_register (info.audacious.p_timed_thread, &info.audacious.p_timed_thread);
 #endif
 
 	main_loop();
-
-#ifdef AUDACIOUS
-	if ( info.audacious.thread && (destroy_audacious_thread()!=0) )
-            ERR("error destroying audacious thread");
-#endif	
 
 #if defined(__FreeBSD__)
 	kvm_close(kd);

@@ -9,7 +9,6 @@
 #ifndef _conky_h_
 #define _conky_h_
 
-#include <pthread.h>
 #if defined(HAS_MCHECK_H)
 #include <mcheck.h>
 #endif /* HAS_MCHECK_H */
@@ -40,6 +39,8 @@
 #ifdef XMMS2
 #include <xmmsclient/xmmsclient.h>
 #endif
+
+#include "timed_thread.h"
 
 #define TOP_CPU 1
 #define TOP_NAME 2
@@ -96,11 +97,6 @@ struct fs_stat {
 	long long free;
 };
 
-struct thread_info_s {
-	pthread_t thread;
-	pthread_mutex_t mutex;
-};
-
 struct mail_s {			// for imap and pop3
 	unsigned long unseen;
 	unsigned long messages;
@@ -114,9 +110,8 @@ struct mail_s {			// for imap and pop3
 	char pass[128];
 	char command[1024];
 	char folder[128];
-	int pos;
-	struct thread_info_s thread_info;
 	char secure;
+	timed_thread *p_timed_thread;
 } mail;
 
 /*struct cpu_stat {
@@ -172,11 +167,7 @@ struct xmms2_s {
 #ifdef AUDACIOUS
 struct audacious_s {
 	audacious_t items;              /* e.g. items[AUDACIOUS_STATUS] */
-	pthread_t thread;               /* worker thread */
-	pthread_attr_t thread_attr;     /* thread attributes */
-	pthread_mutex_t item_mutex;     /* mutex for item array */
-	pthread_mutex_t runnable_mutex; /* mutex for runnable */
-	pthread_cond_t runnable_cond;   /* cond for runnable */
+	timed_thread *p_timed_thread;
 };
 #endif
 

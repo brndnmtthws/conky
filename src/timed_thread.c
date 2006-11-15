@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <time.h>
 #include "timed_thread.h"
 
@@ -67,6 +68,7 @@ timed_thread_create (void *(*start_routine)(void*), void *arg, unsigned int inte
 	return NULL;
     }
 
+    /*fprintf (stderr, "created timed thread 0x%08X\n", (unsigned)p_timed_thread);*/
     return p_timed_thread;
 }
 
@@ -93,6 +95,7 @@ timed_thread_destroy (timed_thread* p_timed_thread, timed_thread** addr_of_p_tim
     pthread_mutex_destroy (&p_timed_thread->runnable_mutex);
     pthread_cond_destroy (&p_timed_thread->runnable_cond);
 
+    fprintf (stderr, "destroying timed thread 0x%08X\n", (unsigned)p_timed_thread);
     free (p_timed_thread);
     if (addr_of_p_timed_thread)
 	*addr_of_p_timed_thread = NULL;
