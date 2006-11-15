@@ -212,7 +212,7 @@ timed_thread_destroy_registered_threads (void)
 	p_next = p_node->next;
 	timed_thread_destroy (p_node->p_timed_thread, p_node->addr_of_p_timed_thread);
 	free (p_node);
-	p_node=NULL:
+	p_node = NULL;
     }
 
     p_timed_thread_list_head = NULL;
