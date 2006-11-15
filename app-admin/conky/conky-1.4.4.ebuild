@@ -37,7 +37,8 @@ DEPEND_COMMON="
 RDEPEND="${DEPEND_COMMON}
 	hddtemp? ( app-admin/hddtemp )
 	mpd? ( media-sound/mpd )
-	vim-syntax? ( app-editors/vim )"
+	vim-syntax? ( || ( app-editors/vim
+		app-editors/gvim ) )"
 
 DEPEND="
 	${DEPEND_COMMON}
@@ -84,7 +85,7 @@ src_install() {
 		doins "${S}"/extras/vim/ftdetect/conkyrc.vim
 
 		insinto /usr/share/vim/vimfiles/syntax
-		doins "${S}"/extras/vim/syntax/conkyrc.vim 
+		doins "${S}"/extras/vim/syntax/conkyrc.vim
 	fi
 }
 

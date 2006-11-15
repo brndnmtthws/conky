@@ -23,8 +23,8 @@ struct _timed_thread
     pthread_attr_t thread_attr;	    	/* thread attributes */
     pthread_mutex_t cs_mutex;     	/* critical section mutex */
     pthread_mutex_t runnable_mutex; 	/* only for the runnable_cond */
-    pthread_cond_t runnable_cond;  	/* used to time and stop the thread */
-    unsigned int interval_usecs;    	/* firing interval in microseconds */
+    pthread_cond_t runnable_cond;  	/* signalled to stop the thread */
+    unsigned int interval_usecs;    	/* timed_thread_test() wait interval in microseconds */
 };
 
 /* linked list of created threads */
