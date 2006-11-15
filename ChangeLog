@@ -2,7 +2,7 @@
 
 2006-11-14
 	* Fix compile error with --disable-x11.
-	* Add new timed thread abstraction file.
+	* Add new timed thread abstraction routines.
 	* Convert thread activity to timed threads, including
 	texeci, imap, pop3, audacious.
 	* Change memory vars from unsigned long to unsigned long long
