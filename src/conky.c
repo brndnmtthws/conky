@@ -3446,8 +3446,14 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 
 				}
 				OBJ(linkstatus) {
-					snprintf(p, p_max_size, "%d",
+					if (!use_spacer) {
+						snprintf(p, p_max_size, "%d",
 							obj->data.net->linkstatus);
+					} else
+					{
+						snprintf(p, 6, "%d     ",
+							obj->data.net->linkstatus);
+					}
 				}
 #if defined(IMLIB2) && defined(X11)
 				OBJ(image) {

@@ -1,5 +1,8 @@
 # $Id$
 
+2006-11-15
+	* Change linkstatus display for use_spacer.  Closes bug #1577580.
+
 2006-11-14
 	* Fix compile error with --disable-x11.
 	* Add new timed thread abstraction routines.
