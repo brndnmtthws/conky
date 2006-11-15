@@ -3451,7 +3451,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							obj->data.net->linkstatus);
 					} else
 					{
-						snprintf(p, 6, "%d     ",
+						snprintf(p, 5, "%4d ",
 							obj->data.net->linkstatus);
 					}
 				}
