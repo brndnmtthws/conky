@@ -5,6 +5,8 @@
 	* Add new timed thread abstraction file.
 	* Convert thread activity to timed threads, including
 	texeci, imap, pop3, audacious.
+	* Change memory vars from unsigned long to unsigned long long
+	to fix reported overflow, e.g. swapmax >= 4Gb.
 
 2006-11-13
 	* Use pthread_cond_timedwait() instead of sleep() in audacious

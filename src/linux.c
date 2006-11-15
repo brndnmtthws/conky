@@ -113,17 +113,17 @@ void update_meminfo()
 			break;
 
 		if (strncmp(buf, "MemTotal:", 9) == 0) {
-			sscanf(buf, "%*s %lu", &info.memmax);
+			sscanf(buf, "%*s %Lu", &info.memmax);
 		} else if (strncmp(buf, "MemFree:", 8) == 0) {
-			sscanf(buf, "%*s %lu", &info.mem);
+			sscanf(buf, "%*s %Lu", &info.mem);
 		} else if (strncmp(buf, "SwapTotal:", 10) == 0) {
-			sscanf(buf, "%*s %lu", &info.swapmax);
+			sscanf(buf, "%*s %Lu", &info.swapmax);
 		} else if (strncmp(buf, "SwapFree:", 9) == 0) {
-			sscanf(buf, "%*s %lu", &info.swap);
+			sscanf(buf, "%*s %Lu", &info.swap);
 		} else if (strncmp(buf, "Buffers:", 8) == 0) {
-			sscanf(buf, "%*s %lu", &info.buffers);
+			sscanf(buf, "%*s %Lu", &info.buffers);
 		} else if (strncmp(buf, "Cached:", 7) == 0) {
-			sscanf(buf, "%*s %lu", &info.cached);
+			sscanf(buf, "%*s %Lu", &info.cached);
 		}
 	}
 	

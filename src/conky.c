@@ -3991,12 +3991,12 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			OBJ(memperc) {
 				if (cur->memmax) {
 					if (!use_spacer)
-						snprintf(p, p_max_size, "%*lu",
+						snprintf(p, p_max_size, "%*Lu",
 							 pad_percents,
 							 (cur->mem * 100) /
 							 (cur->memmax));
 					else
-						snprintf(p, 4, "%*lu   ",
+						snprintf(p, 4, "%*Lu   ",
 							 pad_percents,
 							 (cur->mem * 100) /
 							 (cur->memmax));
@@ -4099,13 +4099,13 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					strncpy(p, "No swap", 255);
 				} else {
 					if (!use_spacer)
-						snprintf(p, 255, "%*lu",
+						snprintf(p, 255, "%*Lu",
 							 pad_percents,
 							 (cur->swap *
 							  100) /
 							 cur->swapmax);
 					else
-						snprintf(p, 4, "%*lu   ",
+						snprintf(p, 4, "%*Lu   ",
 							 pad_percents,
 							 (cur->swap *
 							  100) /
