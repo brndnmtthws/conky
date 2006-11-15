@@ -3,6 +3,7 @@
 # $Header: $
 
 inherit eutils
+# used for epause
 
 DESCRIPTION="Conky is an advanced, highly configurable system monitor for X"
 HOMEPAGE="http://conky.sf.net"
@@ -35,7 +36,8 @@ DEPEND_COMMON="
 
 RDEPEND="${DEPEND_COMMON}
 	hddtemp? ( app-admin/hddtemp )
-	mpd? ( media-sound/mpd )"
+	mpd? ( media-sound/mpd )
+	vim-syntax? ( app-editors/vim )"
 
 DEPEND="
 	${DEPEND_COMMON}
@@ -46,11 +48,7 @@ DEPEND="
 				)
 				virtual/x11
 		)
-	)
-	sys-apps/grep
-	sys-apps/sed"
-
-PDEPEND="vim-syntax? ( app-vim/conky-syntax )"
+	)"
 
 src_compile() {
 	local mymake
@@ -77,9 +75,17 @@ src_compile() {
 }
 
 src_install() {
-	emake DESTDIR=${D} install || die "make install failed"
+	emake DESTDIR="${D}" install || die "make install failed"
 	dodoc ChangeLog AUTHORS README doc/conkyrc.sample
 	dohtml doc/docs.html doc/config_settings.html doc/variables.html
+
+	if use vim-syntax; then
+		insinto /usr/share/vim/vimfiles/ftdetect
+		doins "${S}"/extras/vim/ftdetect/conkyrc.vim
+
+		insinto /usr/share/vim/vimfiles/syntax
+		doins "${S}"/extras/vim/syntax/conkyrc.vim 
+	fi
 }
 
 pkg_postinst() {
@@ -96,7 +102,7 @@ pkg_postinst() {
 	einfo
 	einfo "Also see http://www.gentoo.org/doc/en/conky-howto.xml"
 	einfo
-	einfo "Check out app-vim/conky-syntax for conkyrc"
-	einfo "syntax highlighting in Vim"
+	einfo "Vim syntax highlighting for conkyrc now enabled with"
+	einfo "USE=vim-syntax"
 	einfo
 }

@@ -1,4 +1,4 @@
-# SVN ebuild for Conky, thanks to Hopeless; Subversion ver. by drphibes
+# Subversion repository ebuild for conky by drphibes
 # $Header: $
 
 ESVN_REPO_URI="https://svn.sourceforge.net/svnroot/conky/trunk/conky1"
@@ -35,7 +35,8 @@ DEPEND_COMMON="
 
 RDEPEND="${DEPEND_COMMON}
 	hddtemp? ( app-admin/hddtemp )
-	mpd? ( media-sound/mpd )"
+	mpd? ( media-sound/mpd )
+	vim-syntax? ( app-editors/vim )"
 
 DEPEND="
 	${DEPEND_COMMON}
@@ -46,11 +47,7 @@ DEPEND="
 				)
 				virtual/x11
 		)
-	)
-	sys-apps/grep
-	sys-apps/sed"
-
-PDEPEND="vim-syntax? ( app-vim/conky-syntax )"
+	)"
 
 S=${WORKDIR}/conky
 
@@ -81,9 +78,17 @@ src_compile() {
 }
 
 src_install() {
-	emake DESTDIR=${D} install || die "make install failed"
+	emake DESTDIR="${D}" install || die "make install failed"
 	dodoc ChangeLog AUTHORS README doc/conkyrc.sample
 	dohtml doc/docs.html doc/config_settings.html doc/variables.html
+
+	if use vim-syntax; then
+		insinto /usr/share/vim/vimfiles/ftdetect
+		doins "${S}"/extras/vim/ftdetect/conkyrc.vim
+
+		insinto /usr/share/vim/vimfiles/syntax
+		doins "${S}"/extras/vim/syntax/conkyrc.vim 
+	fi
 }
 
 pkg_postinst() {
@@ -100,7 +105,7 @@ pkg_postinst() {
 	einfo
 	einfo "Also see http://www.gentoo.org/doc/en/conky-howto.xml"
 	einfo
-	einfo "Check out app-vim/conky-syntax for conkyrc"
-	einfo "syntax highlighting in Vim"
+	einfo "Vim syntax highlighting for conkyrc now enabled with"
+	einfo "USE=vim-syntax"
 	einfo
 }
