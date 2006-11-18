@@ -1,5 +1,9 @@
 # $Id$
 
+2006-11-18
+	* fix bug where present rate var was not being read from acpi battery
+	state file: /proc/acpi/battery/%s/state.
+
 2006-11-15
 	* Change linkstatus display for use_spacer.  Closes bug #1577580.
 
