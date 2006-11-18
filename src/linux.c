@@ -1252,17 +1252,14 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 				break;
 
 			/* let's just hope units are ok */
-			if (buf[0] == 'p') {
+			if (strncmp (buf, "present:", 8) == 0) 
 				sscanf(buf, "present: %4s", present);
-			} else if (buf[0] == 'c')
-				sscanf(buf, "charging state: %63s",
-				       charging_state);
-			else if (buf[0] == 'p')
-				sscanf(buf, "present rate: %d",
-				       &present_rate);
-			else if (buf[0] == 'r')
-				sscanf(buf, "remaining capacity: %d",
-				       &remaining_capacity);
+			else if (strncmp (buf, "charging state:", 15) == 0)
+				sscanf(buf, "charging state: %63s", charging_state);
+			else if (strncmp (buf, "present rate:", 13) == 0)
+				sscanf(buf, "present rate: %d", &present_rate);
+			else if (strncmp(buf, "remaining capacity:", 19) == 0)
+				sscanf(buf, "remaining capacity: %d", &remaining_capacity);
 		}
 		
 		/* not present */
