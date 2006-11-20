@@ -26,7 +26,9 @@
 #include <sys/time.h>
 #ifdef X11
 #include <X11/Xutil.h>
+#ifdef HAVE_XDAMAGE
 #include <X11/extensions/Xdamage.h>
+#endif
 #ifdef IMLIB2
 #include <Imlib2.h>
 #endif /* IMLIB2 */

@@ -1,5 +1,8 @@
 # $Id$
 
+2006-11-20
+	* fix compile error with --disable-xdamage when Xdamage.h not present.
+
 2006-11-18
 	* fix bug where present rate var was not being read from acpi battery
 	state file: /proc/acpi/battery/%s/state.
