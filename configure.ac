@@ -1,6 +1,24 @@
-AC_INIT([Conky],[1.4.5],[brenden1@users.sourceforge.net])
+dnl major, minor and micro version macros.
+m4_define([conky_version_major], [1])
+m4_define([conky_version_minor], [4])
+m4_define([conky_version_micro], [5])
 
-AM_INIT_AUTOMAKE(conky, 1.4.5)
+dnl conky_version_tag() macro. change [svn] to [] for releases.
+m4_define([conky_version_tag], [svn])
+
+dnl conky_version_revision() macro creates svn revision string, e.g. r784.
+m4_define([conky_version_revision],[r`svn info | grep "^Revision:" | sed -e "s/^Revision: \(.*\)/\1/"`])
+
+dnl conky_version() macro creates e.g. 1.4.5 for releases or 1.4.5-svn-r784 for svn versions.
+m4_define([conky_version], 
+	  [conky_version_major().conky_version_minor().conky_version_micro()ifelse(
+	   	conky_version_tag(), [svn], 
+			[-conky_version_tag()-conky_version_revision()], 
+	   		[conky_version_tag()])])
+
+AC_INIT([Conky], [conky_version()], [brenden1@users.sourceforge.net])
+
+AM_INIT_AUTOMAKE(conky, conky_version())
 AM_CONFIG_HEADER(src/config.h)
 dnl
 dnl C Compiler
