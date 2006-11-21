@@ -5,15 +5,17 @@ m4_define([conky_version_major], [1])
 m4_define([conky_version_minor], [4])
 m4_define([conky_version_micro], [5])
 
-dnl conky_version_tag() macro. change [svn] to [] for releases.
+dnl [svn] for versions with svn revision numbers, e.g. 1.4.5-svn-r00790
+dnl [rc1] for release candidates, e.g. 1.4.5-rc1
+dnl [] for releases, e.g. 1.4.5
 m4_define([conky_version_tag], [svn])
 
 m4_define([conky_version_revision],[r@REVISION@])
 m4_define([conky_version], 
 	  [conky_version_major().conky_version_minor().conky_version_micro()ifelse(
 	   	conky_version_tag(), [svn], 
-			[-conky_version_tag()-conky_version_revision()], 
-	   		[-conky_version_tag()])])
+			[-conky_version_tag()-conky_version_revision()],
+			[ifelse(conky_version_tag(), [], [], [-conky_version_tag()])])])
 
 AC_INIT([Conky], [conky_version()], [brenden1@users.sourceforge.net])
 
