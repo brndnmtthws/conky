@@ -100,14 +100,16 @@
 <varlistentry>
 	<term><command><option>gap_x</option></command></term>
 	<listitem>
-		Gap between right or left border of screen, same as passing -x at command line
+		Gap, in pixels, between right or left border of screen, same as passing -x at command line,
+		e.g. gap_x 10
 	<para></para></listitem>
 </varlistentry>
 
 <varlistentry>
 	<term><command><option>gap_y</option></command></term>
 	<listitem>
-		Gap between top or bottom border of screen, same as passing -y at command line
+		Gap, in pixels, between top or bottom border of screen, same as passing -y at command line,
+		e.g. gap_y 10.
 	<para></para></listitem>
 </varlistentry>
 

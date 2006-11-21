@@ -3,6 +3,7 @@
 2006-11-21
 	* Changed autotools for subversion versioning.
 	* Updated svn ebuild for gentoo.
+	* Documentation updates for clarity, i.e. close bug #1599041.
 
 2006-11-20
 	* fix compile error with --disable-xdamage when Xdamage.h not present.

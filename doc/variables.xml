@@ -687,7 +687,7 @@
 	<option></option>
 	</term>
 	<listitem>
-		If running the i8k kernel driver for Inspiron laptops, displays the cpu temperature in Farenheit, as reported by /proc/i8k.
+		If running the i8k kernel driver for Inspiron laptops, displays the cpu temperature in Fahrenheit, as reported by /proc/i8k.
 	<para></para></listitem>
 </varlistentry>
 
