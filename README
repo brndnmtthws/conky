@@ -201,12 +201,12 @@ CONFIGURATION SETTINGS
        font   Font name in X, xfontsel can be used to get a nice font
 
 
-       gap_x  Gap between right or left border of screen, same as  passing  -x
-	      at command line
+       gap_x  Gap, in pixels, between right or left border of screen, same  as
+	      passing -x at command line, e.g. gap_x 10
 
 
-       gap_y  Gap  between  top or bottom border of screen, same as passing -y
-	      at command line
+       gap_y  Gap,  in pixels, between top or bottom border of screen, same as
+	      passing -y at command line, e.g. gap_y 10.
 
 
        imap   Default global IMAP server. Arguments are: "host user  pass  [-i
@@ -685,7 +685,7 @@ VARIABLES
 
        i8k_cpu_tempf
 	      If  running the i8k kernel driver for Inspiron laptops, displays
-	      the cpu temperature in Farenheit, as reported by /proc/i8k.
+	      the cpu temperature in Fahrenheit, as reported by /proc/i8k.
 
 
        i8k_left_fan_rpm
