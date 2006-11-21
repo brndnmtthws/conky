@@ -53,7 +53,7 @@ DEPEND="
 S=${WORKDIR}/conky
 
 src_compile() {
-	./autogen.sh
+	./autogen.sh ${ESVN_STORE_DIR}/${ESVN_PROJECT}/conky1
 
 	local mymake
 	if useq ipv6 ; then
