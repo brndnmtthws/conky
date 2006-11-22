@@ -50,6 +50,9 @@
 #define TEXT_BUFFER_SIZE 1280
 #define P_MAX_SIZE ((TEXT_BUFFER_SIZE * 4) - 2) 
 
+/* maximum number of special things, e.g. fonts, offsets, aligns, etc. */
+#define MAX_SPECIALS_DEFAULT 512
+
 /* maximum size of config TEXT buffer, i.e. below TEXT line. */
 #define MAX_USER_TEXT_DEFAULT 16384
 

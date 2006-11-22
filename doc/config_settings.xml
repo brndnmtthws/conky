@@ -128,6 +128,13 @@
 </varlistentry>
 
 <varlistentry>
+	<term><command><option>max_specials</option></command></term>
+	<listitem>
+		Maximum number of special things, e.g. fonts, offsets, aligns, etc. (default is 512)
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
 	<term><command><option>max_user_text</option></command>
 		<option>bytes</option>
 	</term>

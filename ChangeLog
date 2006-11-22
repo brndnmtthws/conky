@@ -1,5 +1,10 @@
 # $Id$
 
+2006-11-22
+	* Added max_specials config item with default 512.  This should
+	close bug #1574523 for real this time.  Thanks to John Harrigan
+	<jfharrigan@fedex.com> for this one.
+
 2006-11-21
 	* Changed autotools for subversion versioning.
 	* Updated svn ebuild for gentoo.

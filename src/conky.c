@@ -315,6 +315,9 @@ static int maximum_width;
 
 #endif /* X11 */
 
+/* maximum number of special things, e.g. fonts, offsets, aligns, etc. */
+static unsigned int max_specials = MAX_SPECIALS_DEFAULT;
+
 /* maximum size of config TEXT buffer, i.e. below TEXT line. */
 static unsigned int max_user_text = MAX_USER_TEXT_DEFAULT;
 
@@ -496,7 +499,7 @@ enum {
 	TAB,
 };
 
-static struct special_t {
+struct special_t {
 	int type;
 	short height;
 	short width;
@@ -508,18 +511,21 @@ static struct special_t {
 	short font_added;
 	unsigned long first_colour; // for graph gradient
 	unsigned long last_colour;
-} specials[128];
+};
 
-static int special_count;
+/* create specials array on heap instead of stack with introduction of max_specials */
+static struct special_t *specials = NULL;
+
+static unsigned int special_count;
 #ifdef X11
-static int special_index;	/* used when drawing */
+static unsigned int special_index;	/* used when drawing */
 #endif /* X11 */
 
 #define MAX_GRAPH_DEPTH 256	/* why 256? cause an array of more then 256 doubles seems excessive, and who needs that kind of precision anyway? */
 
 static struct special_t *new_special(char *buf, int t)
 {
-	if (special_count >= 512)
+	if (special_count >= max_specials)
 		CRIT_ERR("too many special things in text");
 
 	buf[0] = SPECIAL_CHAR;
@@ -5946,6 +5952,11 @@ void reload_config(void)
 	if (current_config) {
 		clear_fs_stats();
 		load_config_file(current_config);
+
+		/* re-init specials array */
+		if ((specials = realloc ((void *)specials, sizeof(struct special_t)*max_specials)) == 0)
+		    ERR("failed to realloc specials array");
+
 #ifdef X11
 		load_fonts();
 		set_font();
@@ -5999,10 +6010,6 @@ void clean_up(void)
 	XFreeGC(display, window.gc);
 #endif /* X11 */
 
-
-	/* it is really pointless to free() memory at the end of program but ak|ra
-	 * wants me to do this */
-
 	free_text_objects(text_object_count, text_objects);
 	text_object_count = 0;
 	text_objects = NULL;
@@ -6012,10 +6019,16 @@ void clean_up(void)
 
 	free(current_config);
 	free(current_mail_spool);
+
 #ifdef TCP_PORT_MONITOR
 	destroy_tcp_port_monitor_collection( info.p_tcp_port_monitor_collection );
 	info.p_tcp_port_monitor_collection = NULL;
 #endif
+
+	if (specials) {
+	    free (specials);
+	    specials=NULL;
+	}
 }
 
 static int string_to_bool(const char *s)
@@ -6533,6 +6546,12 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 		CONF("uppercase") {
 			stuff_in_upper_case = string_to_bool(value);
 		}
+		CONF("max_specials") {
+			if (value)
+				max_specials = atoi(value);
+			else
+				CONF_ERR;
+		}
 		CONF("max_user_text") {
 			if (value)
 				max_user_text = atoi(value);
@@ -6746,6 +6765,10 @@ int main(int argc, char **argv)
 	else { 
 		set_default_configurations();
 	}
+
+	/* init specials array */
+	if ((specials = calloc (sizeof(struct special_t), max_specials)) == 0)
+	    ERR("failed to create specials array");
 
 #ifdef MAIL_FILE
 	if (current_mail_spool == NULL) {
