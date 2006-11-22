@@ -16,7 +16,6 @@ background no
 #font *mintsmild.se*
 #font -*-*-*-*-*-*-34-*-*-*-*-*-*-*
 
-
 # Use Xft?
 use_xft yes
 
@@ -125,6 +124,9 @@ override_utf8_locale no
 
 # Add spaces to keep things from moving about?  This only affects certain objects.
 use_spacer no
+
+# Maximum number of special things, e.g. fonts, offsets, aligns, etc.
+#max_specials 512
 
 # Maximum size of buffer for user text, i.e. below TEXT line.
 #max_user_text 16384
