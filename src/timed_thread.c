@@ -95,7 +95,7 @@ timed_thread_destroy (timed_thread* p_timed_thread, timed_thread** addr_of_p_tim
     pthread_mutex_destroy (&p_timed_thread->runnable_mutex);
     pthread_cond_destroy (&p_timed_thread->runnable_cond);
 
-    fprintf (stderr, "destroying timed thread 0x%08X\n", (unsigned)p_timed_thread);
+    /*fprintf (stderr, "Conky: destroying thread 0x%08X\n", (unsigned)p_timed_thread);*/
     free (p_timed_thread);
     if (addr_of_p_timed_thread)
 	*addr_of_p_timed_thread = NULL;

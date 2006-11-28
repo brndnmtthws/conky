@@ -303,7 +303,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 			
 			/* Window decorations */
 			if (TEST_HINT(window.hints,HINT_UNDECORATED)) {
-			    fprintf(stderr, "Conky: hint - undecorated\n"); fflush(stderr);
+			    /*fprintf(stderr, "Conky: hint - undecorated\n"); fflush(stderr);*/
 
 			    xa = ATOM(_MOTIF_WM_HINTS);
 			    if (xa != None) {
@@ -316,7 +316,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 
 			/* Below other windows */
 			if (TEST_HINT(window.hints,HINT_BELOW)) {
-			    fprintf(stderr, "Conky: hint - below\n"); fflush(stderr);
+			    /*fprintf(stderr, "Conky: hint - below\n"); fflush(stderr); */
 
          		    xa = ATOM(_WIN_LAYER);
          		    if (xa != None) {
@@ -340,7 +340,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 
 			/* Above other windows */
 			if (TEST_HINT(window.hints,HINT_ABOVE)) {
-                            fprintf(stderr, "Conky: hint - above\n"); fflush(stderr);
+                            /*fprintf(stderr, "Conky: hint - above\n"); fflush(stderr);*/
 
                             xa = ATOM(_WIN_LAYER);
                             if (xa != None) {
@@ -364,7 +364,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 
 			/* Sticky */
 			if (TEST_HINT(window.hints,HINT_STICKY)) {
-                            fprintf(stderr, "Conky: hint - sticky\n"); fflush(stderr);
+                            /*fprintf(stderr, "Conky: hint - sticky\n"); fflush(stderr); */
 
                             xa = ATOM(_NET_WM_DESKTOP);
                             if (xa != None) {
@@ -389,7 +389,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 
 			/* Skip taskbar */
                         if (TEST_HINT(window.hints,HINT_SKIP_TASKBAR)) {
-                            fprintf(stderr, "Conky: hint - skip_taskbar\n"); fflush(stderr);
+                            /*fprintf(stderr, "Conky: hint - skip_taskbar\n"); fflush(stderr);*/
 
                             xa = ATOM(_NET_WM_STATE);
                             if (xa != None) {
@@ -404,7 +404,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour, c
 
 			/* Skip pager */
                         if (TEST_HINT(window.hints,HINT_SKIP_PAGER)) {
-                            fprintf(stderr, "Conky: hint - skip_pager\n"); fflush(stderr);
+                            /*fprintf(stderr, "Conky: hint - skip_pager\n"); fflush(stderr);*/
 
                             xa = ATOM(_NET_WM_STATE);
                             if (xa != None) {
