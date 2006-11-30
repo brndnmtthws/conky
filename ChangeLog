@@ -1,5 +1,9 @@
 # $Id$
 
+2006-11-30
+	* Added $entropy_avail, $entropy_poolsize and $entropy_bar
+	for the crypto freaks.
+
 2006-11-28
 	* Rearrange retry attempts in pop3 and imap code, removing sleep() 
 	calls which cause the whole process to sleep, not just the thread.

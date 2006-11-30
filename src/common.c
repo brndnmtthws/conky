@@ -257,6 +257,8 @@ void update_stuff()
 	if (NEED(INFO_TCP_PORT_MONITOR))
 		update_tcp_port_monitor_collection( info.p_tcp_port_monitor_collection );
 #endif
+	if (NEED(INFO_ENTROPY))
+		update_entropy();
 }
 
 int round_to_int(float f)

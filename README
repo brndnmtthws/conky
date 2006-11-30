@@ -551,6 +551,18 @@ VARIABLES
        else   Text to show if any of the above are not true
 
 
+       entropy_avail
+	      Current entropy available for crypto freaks
+
+
+       entropy_bar (height),(width)
+	      Normalized bar of available entropy for crypto freaks
+
+
+       entropy_poolsize
+	      Total size of system entropy pool for crypto freaks
+
+
        exec command
 	      Executes a shell command and displays the output in conky. warn-
 	      ing:  this  takes a lot more resources than other variables. I'd

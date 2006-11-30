@@ -411,6 +411,35 @@
 
 <varlistentry>
 	<term>
+		<command><option>entropy_avail</option></command>
+	</term>
+	<listitem>
+		Current entropy available for crypto freaks
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>entropy_bar</option></command>
+		<option>(height),(width)</option>
+	</term>
+	<listitem>
+		Normalized bar of available entropy for crypto freaks
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>entropy_poolsize</option></command>
+	</term>
+	<listitem>
+		Total size of system entropy pool for crypto freaks
+	<para></para></listitem>
+</varlistentry>
+
+
+<varlistentry>
+	<term>
 		<command><option>exec</option></command>
 	<option>command</option>
 	</term>

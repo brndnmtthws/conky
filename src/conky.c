@@ -1081,6 +1081,9 @@ enum text_object_type {
 #ifdef HDDTEMP
 	OBJ_hddtemp,
 #endif
+	OBJ_entropy_avail,
+	OBJ_entropy_poolsize,
+	OBJ_entropy_bar
 };
 
 struct text_object {
@@ -1947,6 +1950,10 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 				free(objs[i].data.hddtemp.addr);
 				break;
 #endif
+			case OBJ_entropy_avail:
+			case OBJ_entropy_poolsize:
+			case OBJ_entropy_bar:
+				break;
 		}
 	}
 	free(objs);
@@ -2966,6 +2973,12 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	}
 	END
 #endif
+	OBJ(entropy_avail, INFO_ENTROPY) END
+	OBJ(entropy_poolsize, INFO_ENTROPY) END
+	OBJ(entropy_bar, INFO_ENTROPY)
+		(void) scan_bar(arg, &obj->a, &obj->b);
+	END
+
 	{
 		char buf[256];
 		ERR("unknown variable %s", s);
@@ -4687,6 +4700,22 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				iconv_selected = 0;
 			}
 #endif
+			OBJ(entropy_avail) 
+			{
+			 	snprintf(p, p_max_size, "%d", cur->entropy.entropy_avail);
+			}
+			OBJ(entropy_poolsize)
+			{
+				snprintf(p, p_max_size, "%d", cur->entropy.poolsize);
+			}
+			OBJ(entropy_bar)
+			{
+				double entropy_perc;
+				entropy_perc = (double)cur->entropy.entropy_avail / 
+					       (double)cur->entropy.poolsize;
+				new_bar(p,obj->a,obj->b,(int)(entropy_perc * 255.0f));
+			}
+
 
 			break;
 		}

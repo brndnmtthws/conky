@@ -366,3 +366,7 @@ void get_acpi_fan( char * p_client_buffer, size_t client_buffer_size )
 
 	return;
 }
+
+void update_entropy (void)
+{
+}

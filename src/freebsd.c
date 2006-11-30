@@ -876,6 +876,11 @@ char
 
 #endif
 
+void update_entropy (void)
+{
+     /* mirrorbox: can you do anything equivalent in freebsd? -drphibes. */
+}
+
 /* empty stub so conky links */
 void
 free_all_processes(void)

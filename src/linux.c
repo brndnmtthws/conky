@@ -1756,3 +1756,24 @@ Peter Tarjan (ptarjan@citromail.hu)
     return;
     
 }    
+
+void update_entropy (void)
+{
+    static int rep;
+    const char *entropy_avail = "/proc/sys/kernel/random/entropy_avail";
+    const char *entropy_poolsize = "/proc/sys/kernel/random/poolsize";
+    FILE *fp1, *fp2;
+
+    info.entropy.entropy_avail=0;
+    info.entropy.poolsize=0;
+
+    if ( ((fp1 = open_file (entropy_avail, &rep))==NULL) ||
+         ((fp2 = open_file (entropy_poolsize, &rep))==NULL) )
+	return;
+
+    fscanf (fp1, "%u", &info.entropy.entropy_avail);
+    fscanf (fp2, "%u", &info.entropy.poolsize);
+
+    fclose (fp1);
+    fclose (fp2);
+}

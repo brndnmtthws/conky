@@ -186,6 +186,12 @@ struct bmpx_s {
 };
 #endif
 
+void update_entropy();
+struct entropy_s {
+	unsigned int entropy_avail;
+	unsigned int poolsize;
+};
+
 #ifdef TCP_PORT_MONITOR
 #include "libtcp-portmon.h"
 #define MIN_PORT_MONITORS_DEFAULT 16
@@ -226,6 +232,7 @@ enum {
 #ifdef XMMS2
 	INFO_XMMS2 = 22,
 #endif
+	INFO_ENTROPY = 23,
 };
 
 
@@ -288,6 +295,7 @@ struct information {
         tcp_port_monitor_collection_t * p_tcp_port_monitor_collection;
 #endif
 	short kflags;  /* kernel settings, see enum KFLAG */
+	struct entropy_s entropy;
 };
 
 enum {
