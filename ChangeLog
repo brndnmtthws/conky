@@ -2,7 +2,8 @@
 
 2006-11-30
 	* Added $entropy_avail, $entropy_poolsize and $entropy_bar
-	for the crypto freaks.
+	for the crypto freaks.  Idea suggested by Perttu Luukko
+	<nuteater@users.sourceforge.net> in feature request 1497050.
 
 2006-11-28
 	* Rearrange retry attempts in pop3 and imap code, removing sleep() 
