@@ -30,6 +30,7 @@ syn keyword ConkyrcSetting
         \ font
         \ gap_x
         \ gap_y
+	\ imap
         \ mail_spool
 	\ max_specials
 	\ max_user_text
@@ -50,6 +51,7 @@ syn keyword ConkyrcSetting
         \ own_window_transparent
 	\ own_window_type
         \ pad_percents
+	\ pop3
         \ stippled_borders
         \ total_run_times
         \ update_interval
@@ -133,6 +135,9 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 	\ downspeed 
 	\ downspeedf
 	\ else 
+	\ entropy_avail
+	\ entropy_bar
+	\ entropy_poolsize
 	\ exec 
 	\ execbar 
 	\ execgraph 
