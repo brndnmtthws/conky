@@ -1767,9 +1767,14 @@ void update_entropy (void)
     info.entropy.entropy_avail=0;
     info.entropy.poolsize=0;
 
-    if ( ((fp1 = open_file (entropy_avail, &rep))==NULL) ||
-         ((fp2 = open_file (entropy_poolsize, &rep))==NULL) )
+    if ((fp1 = open_file (entropy_avail, &rep))==NULL)
 	return;
+
+    if ((fp2 = open_file (entropy_poolsize, &rep))==NULL)
+    {
+	fclose (fp1);
+	return;
+    }
 
     fscanf (fp1, "%u", &info.entropy.entropy_avail);
     fscanf (fp2, "%u", &info.entropy.poolsize);
