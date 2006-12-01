@@ -464,8 +464,8 @@ VARIABLES
 	      Player status (Playing/Paused/Stopped/Not running)
 
 
-       audacious_title
-	      Title of current tune
+       audacious_title (max length)
+	      Title of current tune with optional maximum length specifier
 
 
        battery (num)

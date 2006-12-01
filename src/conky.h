@@ -170,6 +170,7 @@ struct xmms2_s {
 #ifdef AUDACIOUS
 struct audacious_s {
 	audacious_t items;              /* e.g. items[AUDACIOUS_STATUS] */
+	int max_title_len;		/* e.g. ${audacious_title 50} */
 	timed_thread *p_timed_thread;
 };
 #endif

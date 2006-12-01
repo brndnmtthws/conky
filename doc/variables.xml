@@ -223,9 +223,10 @@
 <varlistentry>
 	<term>
 		<command><option>audacious_title</option></command>
+		<option>(max length)</option>
 	</term>
 	<listitem>
-		Title of current tune
+		Title of current tune with optional maximum length specifier
 	<para></para></listitem>
 </varlistentry>
 

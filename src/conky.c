@@ -2828,7 +2828,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		END OBJ(xmms2_date, INFO_XMMS2)
 		END OBJ(xmms2_id, INFO_XMMS2)
 		END OBJ(xmms2_duration, INFO_XMMS2)
-        END OBJ(xmms2_elapsed, INFO_XMMS2)
+        	END OBJ(xmms2_elapsed, INFO_XMMS2)
 		END OBJ(xmms2_size, INFO_XMMS2)
 		END OBJ(xmms2_status, INFO_XMMS2)
 		END OBJ(xmms2_percent, INFO_XMMS2)
@@ -2839,7 +2839,18 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 #endif
 #ifdef AUDACIOUS
 		OBJ(audacious_status, INFO_AUDACIOUS) END
-		OBJ(audacious_title, INFO_AUDACIOUS) END
+		OBJ(audacious_title, INFO_AUDACIOUS) 
+		{
+			if (arg)
+			{
+			    sscanf (arg, "%d", &info.audacious.max_title_len);
+			    if (info.audacious.max_title_len > 0)
+				info.audacious.max_title_len++;
+			    else
+				CRIT_ERR ("audacious_title: invalid length argument");
+			}
+		}
+		END
 		OBJ(audacious_length, INFO_AUDACIOUS) END
 		OBJ(audacious_length_seconds, INFO_AUDACIOUS) END
 		OBJ(audacious_position, INFO_AUDACIOUS) END
@@ -4430,7 +4441,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_STATUS]);
 			}
         		OBJ(audacious_title) {
-			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_TITLE]);
+			    snprintf(p, cur->audacious.max_title_len > 0 ?
+					cur->audacious.max_title_len : p_max_size, "%s", 
+				     cur->audacious.items[AUDACIOUS_TITLE]);
 			}
         		OBJ(audacious_length) {
 			    snprintf(p, p_max_size, "%s", cur->audacious.items[AUDACIOUS_LENGTH]);
