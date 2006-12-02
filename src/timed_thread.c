@@ -127,6 +127,7 @@ int
 timed_thread_test (timed_thread* p_timed_thread)
 {
     struct timespec abstime, reltime;
+    int rc;
 
     assert (p_timed_thread != NULL);
 
@@ -140,16 +141,19 @@ timed_thread_test (timed_thread* p_timed_thread)
     abstime.tv_sec += reltime.tv_sec;
     abstime.tv_nsec += reltime.tv_nsec;
 
-    /* wait until future time for runnable_cond to signal */
-    if (pthread_cond_timedwait (&p_timed_thread->runnable_cond,
+    /* acquire runnable_cond mutex */
+    if (pthread_mutex_lock (&p_timed_thread->runnable_mutex))
+	return (-1);  /* could not acquire runnable_cond mutex, so tell caller to exit thread */
+
+    /* release mutex and wait until future time for runnable_cond to signal */
+    rc = pthread_cond_timedwait (&p_timed_thread->runnable_cond,
 			        &p_timed_thread->runnable_mutex,
-				&abstime) != ETIMEDOUT)
-    {
-	/* runnable_cond was signalled or some error occured */
-	pthread_mutex_unlock (&p_timed_thread->runnable_mutex);
-	/* tell caller to exit */
-	return 1;
-    }
+				&abstime);
+    /* mutex re-acquired, so release it */
+    pthread_mutex_unlock (&p_timed_thread->runnable_mutex);
+
+    if (rc==0)
+	return 1; /* runnable_cond was signaled, so tell caller to exit thread */
 
     /* tell caller not to exit yet */
     return 0;
