@@ -122,7 +122,9 @@ timed_thread_unlock (timed_thread* p_timed_thread)
 }
 
 
-/* waits required interval for termination signal and returns 1 if got it, 0 otherwise */
+/* thread waits interval_usecs for runnable_cond to be signaled.  returns 1 if signaled, 
+ * -1 on error, and 0 otherwise.  caller should call timed_thread_exit() on any non-zero 
+ * return value. */
 int 
 timed_thread_test (timed_thread* p_timed_thread)
 {
@@ -130,6 +132,10 @@ timed_thread_test (timed_thread* p_timed_thread)
     int rc;
 
     assert (p_timed_thread != NULL);
+
+    /* acquire runnable_cond mutex */
+    if (pthread_mutex_lock (&p_timed_thread->runnable_mutex))
+	return (-1);  /* could not acquire runnable_cond mutex, so tell caller to exit thread */
 
     /* get the absolute time in the future we stop waiting for condition to signal */
     clock_gettime (CLOCK_REALTIME, &abstime);
@@ -140,10 +146,6 @@ timed_thread_test (timed_thread* p_timed_thread)
     /* absolute future time */
     abstime.tv_sec += reltime.tv_sec;
     abstime.tv_nsec += reltime.tv_nsec;
-
-    /* acquire runnable_cond mutex */
-    if (pthread_mutex_lock (&p_timed_thread->runnable_mutex))
-	return (-1);  /* could not acquire runnable_cond mutex, so tell caller to exit thread */
 
     /* release mutex and wait until future time for runnable_cond to signal */
     rc = pthread_cond_timedwait (&p_timed_thread->runnable_cond,
