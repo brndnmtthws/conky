@@ -1995,8 +1995,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		OBJ(acpitemp, 0) obj->data.i = open_acpi_temperature(arg);
 	END OBJ(acpitempf, 0) obj->data.i = open_acpi_temperature(arg);
 	END OBJ(acpiacadapter, 0)
-#if defined(__linux__)
-	    END OBJ(freq, 0)
+	END OBJ(freq, 0)
 	    get_cpu_count();
 	if (!arg
 	    || !isdigit(arg[0])
@@ -2028,6 +2027,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	    obj->data.cpu_index=atoi(&arg[0]);
 	}
 	obj->a = 1;
+#if defined(__linux__)
 	END OBJ(voltage_mv, 0)
 	    get_cpu_count();
 	if (!arg

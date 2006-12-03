@@ -514,7 +514,7 @@ get_freq(char *p_client_buffer, size_t client_buffer_size,
 	if (freq_sysctl == NULL)
 		exit(-1);
 
-	snprintf(freq_sysctl, 16, "dev.cpu.%d.freq", cpu);
+	snprintf(freq_sysctl, 16, "dev.cpu.%d.freq", (cpu - 1));
 	
 	if (!p_client_buffer || client_buffer_size <= 0 ||
 			!p_format || divisor <= 0)
