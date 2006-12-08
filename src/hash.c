@@ -1,3 +1,4 @@
+/* $Id$ */
 /* ------------------------------------------------------
  * Open-addressed hash using double hash probing
  *
@@ -7,11 +8,9 @@
  * requires: 1) m must be a power of two
  *           2) h2(k) must return an odd number
  *
- * Besed on code published in _Mastering Algorithms in C_
- * by Kyle Loudon (O'Reilly 1999).
+ * Besed on code published in _Mastering Algorithms With C_
+ * by Kyle Loudon (O'Reilly & Associates, 1999), ISBN 1565924533.
  * Modified by Philip Kovacs (kovacsp3@comcast.net)
- * 
- * $Id$
  * ------------------------------------------------------ */
 
 #ifdef HASH_DEBUG
