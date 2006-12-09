@@ -31,6 +31,7 @@ DEPEND_COMMON="
 		bmpx? ( media-sound/bmpx
 				>=sys-apps/dbus-0.35
 			)
+		!ipv6? (dev-libs/glib-2.0)
 	)"
 
 RDEPEND="${DEPEND_COMMON}

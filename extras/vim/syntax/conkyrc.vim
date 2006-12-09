@@ -32,12 +32,11 @@ syn keyword ConkyrcSetting
         \ gap_y
 	\ imap
         \ mail_spool
+	\ max_port_monitor_connections
 	\ max_specials
 	\ max_user_text
         \ maximum_width
         \ minimum_size
-        \ min_port_monitor_connections
-        \ min_port_monitors
         \ mpd_host
         \ mpd_password
         \ mpd_port

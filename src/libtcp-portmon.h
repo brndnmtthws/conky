@@ -35,44 +35,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "hash.h"
+#include <glib.h>
 
-/* ------------------------------------------------------------------------------------------------
- * Each port monitor contains a connection hash whose contents changes dynamically as the monitor 
- * is presented with connections on each update cycle.   This implementation maintains the health
- * of this hash by enforcing several rules.  First, the hash cannot contain more items than the
- * TCP_CONNECTION_HASH_MAX_LOAD_RATIO permits.  For example, a 512 element hash with a max load of 
- * 0.5 cannot contain more than 256 connections.  Additional connections are ignored by the monitor.
- * The load factor of 0.5 is low enough to keep the hash running at near O(1) performanace at all 
- * times.  As elements are removed from the hash, the hash slots are tagged vacated, as required 
- * by open address hashing.  The vacated tags are essential as they enable the hash to find elements
- * for which there were collisions during insert (requiring additional probing for an open slot).
- * The problem with vacated slots (even though they are reused) is that, as they increase in number,
- * esp. past about 1/4 of all slots, the average number of probes the hash has to perform increases
- * from O(1) on average to O(n) worst case. To keep the hash healthy, we simply rebuild it when the
- * percentage of vacated slots gets too high (above TCP_CONNECTION_HASH_MAX_VACATED_RATIO).  
- * Rebuilding the hash takes O(n) on the number of elements, but it well worth it as it keeps the
- * hash running at an average access time of O(1).
- * ------------------------------------------------------------------------------------------------*/
-
-#define TCP_CONNECTION_HASH_SIZE_DEFAULT 512		/* connection hash size default -- must be a power of two */
-#define TCP_CONNECTION_HASH_SIZE_MAX 65536            	/* connection hash size maximum -- must be a power of two */
-#define TCP_CONNECTION_HASH_MAX_LOAD_RATIO 0.5		/* disallow inserts after this load ratio is exceeded */
-#define TCP_CONNECTION_HASH_MAX_VACATED_RATIO 0.25 	/* rebalance hash after this ratio of vacated slots is exceeded */ 
-#define TCP_CONNECTION_STARTING_AGE 1			/* connection deleted if unseen again after this # of refreshes */
-
-/* ----------------------------------------------------------------------------------------
- * The tcp port monitor collection also contains a hash to track the monitors it contains.
- * This hash, unlike the connection hash describes above, is not very dynamic.  Clients of
- * this library typically create a fixed number of monitors and let them run until program 
- * termination.  For this reason, I haven't included any hash rebuilding code as is done
- * above.  You may store up to TCP_MONITOR_HASH_SIZE_MAX monitors in this hash, but you
- * should remember that keeping the load low (e.g. 0.5) keeps the monitor lookups at O(1).  
- * ----------------------------------------------------------------------------------------*/
-
-#define TCP_MONITOR_HASH_SIZE_DEFAULT 32		/* monitor hash size default -- must be a power of two */
-#define TCP_MONITOR_HASH_SIZE_MAX 512                	/* monitor hash size maximum -- must be a power of two */
-#define TCP_MONITOR_HASH_MAX_LOAD_RATIO 0.5             /* disallow new monitors after this load ratio is exceeded */
+#define TCP_CONNECTION_STARTING_AGE 1	/* connection deleted if unseen again after this # of refreshes */
+#define TCP_CONNECTION_HASH_KEY_SIZE 28
+#define TCP_PORT_MONITOR_HASH_KEY_SIZE 12
 
 /* -------------------------------------------------------------------
  * IMPLEMENTATION INTERFACE
@@ -83,7 +50,17 @@
  * ------------------------------------------------------------------- */
 
 /* The inventory of peekable items within the port monitor. */
-enum tcp_port_monitor_peekables { COUNT=0, REMOTEIP, REMOTEHOST, REMOTEPORT, REMOTESERVICE, LOCALIP, LOCALHOST, LOCALPORT, LOCALSERVICE };
+enum tcp_port_monitor_peekables { 
+	COUNT=0, 
+	REMOTEIP, 
+	REMOTEHOST, 
+	REMOTEPORT, 
+	REMOTESERVICE, 
+	LOCALIP, 
+	LOCALHOST, 
+	LOCALPORT, 
+	LOCALSERVICE 
+};
 
 /* ------------------------------------------------------------------------
  * A single tcp connection 
@@ -92,6 +69,7 @@ enum tcp_port_monitor_peekables { COUNT=0, REMOTEIP, REMOTEHOST, REMOTEPORT, REM
  * are not seen again in subsequent update cycles.
  * ------------------------------------------------------------------------ */
 typedef struct _tcp_connection_t {
+	gchar key[TCP_CONNECTION_HASH_KEY_SIZE];	/* connection's key in monitor hash */
         in_addr_t local_addr;
         in_port_t local_port;
         in_addr_t remote_addr;
@@ -129,43 +107,14 @@ typedef struct _tcp_connection_list_t {
  * A port monitor 
  * -------------- */
 typedef struct _tcp_port_monitor_t {
-        in_port_t port_range_begin;
+	gchar key[TCP_PORT_MONITOR_HASH_KEY_SIZE]; /* monitor's key in collection hash */
+        in_port_t port_range_begin;		/* start of monitor port range */
         in_port_t port_range_end;   		/* begin = end to monitor a single port */
 	tcp_connection_list_t connection_list;	/* list of connections for this monitor */
-	hash_table_t hash;                      /* hash table contains pointers into monitor's connection list */
+	GHashTable *hash;                      	/* hash table of pointers into monitor's connection list */
 	tcp_connection_t **p_peek;		/* array of connection pointers for O(1) peeking by index */ 
+	unsigned int max_port_monitor_connections;	/* max number of connections */
 } tcp_port_monitor_t;
-
-/* -----------------------------------------------------------------------------
- * Open-addressed hash implementation requires that we supply two hash functions
- * and a match function to compare two hash elements for identity.
- * ----------------------------------------------------------------------------- */
-
-/* --------------------------------------------------
- * Functions to hash the connections within a monitor
- * --------------------------------------------------*/
-
-/* First connection hash function */
-int connection_hash_function_1( const void * /* p_data */ );
-
-/* Second connection hash function */
-int connection_hash_function_2( const void * /* p_data */ );
-
-/* Connection match function returns non-zero if hash elements are identical. */
-int connection_match_function( const void * /* p_data1 */, const void * /* p_data2 */ );
-
-/* --------------------------------------------------
- * Functions to hash the monitors within a collection
- * --------------------------------------------------*/
-
-/* First monitor hash function */
-int monitor_hash_function_1( const void * /* p_data */ );
-
-/* Second monitor hash function */
-int monitor_hash_function_2( const void * /* p_data */ );
-
-/* Monitor match function returns non-zero if hash elements are identical. */
-int monitor_match_function( const void * /* p_data1 */, const void * /* p_data2 */ );
 
 /* ------------------------
  * A port monitor node/list 
@@ -198,11 +147,6 @@ void age_tcp_port_monitor(
 	void *					/* p_void (use NULL for this function) */
 	);
 
-void maintain_tcp_port_monitor_hash(
-	tcp_port_monitor_t *                    /* p_monitor */,
-	void *                                  /* p_void (use NULL for this function) */
-	);
-
 void rebuild_tcp_port_monitor_peek_table(
 	tcp_port_monitor_t * 			/* p_monitor */,
 	void *					/* p_void (use NULL for this function) */
@@ -218,7 +162,7 @@ void show_connection_to_tcp_port_monitor(
  * -----------------------------*/
 typedef struct _tcp_port_monitor_collection_t {
 	tcp_port_monitor_list_t monitor_list;	/* list of monitors for this collection */
-	hash_table_t hash;			/* hash table contains pointers into collection's monitor list */
+	GHashTable *hash;			/* hash table of pointers into collection's monitor list */
 } tcp_port_monitor_collection_t;
 
 /* ---------------------------------------------------------------------------------------
@@ -230,15 +174,6 @@ void for_each_tcp_port_monitor_in_collection(
 	void *					/* p_function_args (for user arguments) */
 	);
 
-/* ----------------------------------------------------------------------------------------
- * Calculate an efficient hash size based on the desired number of elements and load factor.
- * ---------------------------------------------------------------------------------------- */
-int calc_efficient_hash_size(
-	int 					/* min_elements, the minimum number of elements to store */,
-	int					/* max_hash_size, the maximum permissible hash size */,
-	double					/* max_load_factor, the fractional load we wish not to exceed, e.g. 0.5 */
-	);
-
 /* ----------------------------------------------------------------------
  * CLIENT INTERFACE 
  *
@@ -247,14 +182,9 @@ int calc_efficient_hash_size(
 
 /* struct to hold monitor creation arguments */
 typedef struct _tcp_port_monitor_args_t {
-	int 	min_port_monitor_connections;	/* monitor must support tracking at least this many connections */
+	int 	max_port_monitor_connections;	/* monitor supports tracking at most this many connections */
 } tcp_port_monitor_args_t;
 
-
-/* struct to hold collection creation arguments */
-typedef struct _tcp_port_monitor_collection_args_t {
-	int	min_port_monitors;		/* collection must support creation of at least this many monitors */
-} tcp_port_monitor_collection_args_t; 
 
 /* ----------------------------------
  * Client operations on port monitors
@@ -263,20 +193,20 @@ typedef struct _tcp_port_monitor_collection_args_t {
 /* Clients should first try to "find_tcp_port_monitor" before creating one
    so that there are no redundant monitors. */
 tcp_port_monitor_t * create_tcp_port_monitor(
-	in_port_t 				/* port_range_begin */, 
-	in_port_t 				/* port_range_end */,
-	tcp_port_monitor_args_t *		/* p_creation_args, NULL ok for library defaults */
+	in_port_t 			/* port_range_begin */, 
+	in_port_t 			/* port_range_end */,
+	tcp_port_monitor_args_t *     	/* p_creation_args */
 	);
 
 /* Clients use this function to get connection data from the indicated port monitor.
    The requested monitor value is copied into a client-supplied char buffer. 
    Returns 0 on success, -1 otherwise. */
 int peek_tcp_port_monitor(
-	const tcp_port_monitor_t * 		/* p_monitor */,
-	int					/* item, ( item of interest, from tcp_port_monitor_peekables enum ) */,
-	int					/* connection_index, ( 0 to number of connections in monitor - 1 )*/,
-	char *					/* p_buffer, buffer to receive requested value */,
-	size_t					/* buffer_size, size of p_buffer */
+	const tcp_port_monitor_t * 	/* p_monitor */,
+	int				/* item, ( item of interest, from tcp_port_monitor_peekables enum ) */,
+	int				/* connection_index, ( 0 to number of connections in monitor - 1 )*/,
+	char *				/* p_buffer, buffer to receive requested value */,
+	size_t				/* buffer_size, size of p_buffer */
 	);
 
 /* --------------------------------
@@ -284,9 +214,7 @@ int peek_tcp_port_monitor(
  * -------------------------------- */
 
 /* Create a monitor collection.  Do this one first. */
-tcp_port_monitor_collection_t * create_tcp_port_monitor_collection(
-	tcp_port_monitor_collection_args_t *	/* p_creation_args, NULL ok for library defaults */
-	);
+tcp_port_monitor_collection_t * create_tcp_port_monitor_collection (void);
 
 /* Destroy the monitor collection (and everything it contains).  Do this one last. */
 void destroy_tcp_port_monitor_collection( 

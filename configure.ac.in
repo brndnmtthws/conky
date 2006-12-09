@@ -221,6 +221,9 @@ if test x$want_portmon = xyes; then
   	if test "x$PORT_MONITORS_MISSING" = xyes; then
             AC_MSG_ERROR([missing a needed network header for port monitoring])
   	fi
+	PKG_CHECK_MODULES([GLIB], [glib-2.0])
+	CFLAGS="$CFLAGS $GLIB_CFLAGS"
+	LIBS="$LIBS $GLIB_LIBS"
   	AC_DEFINE(TCP_PORT_MONITOR, 1, [Define if you want tcp port monitoring support])
 fi
 

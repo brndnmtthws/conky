@@ -1,5 +1,14 @@
 # $Id$
 
+2006-12-09
+	* Replaced hash module used by libtcp-portmon with GLib's GHashTable,
+	due to licensing issue noted by Fedora Core packagers.
+	* Eliminated config items: 
+		min_port_monitors,
+		min_port_monitor_connections
+	* Added config item:
+		max_port_monitor_connections
+
 2006-11-30
 	* Added $entropy_avail, $entropy_poolsize and $entropy_bar
 	for the crypto freaks.  Idea suggested by Perttu Luukko

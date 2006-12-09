@@ -374,8 +374,7 @@ int no_buffers;
 static int pad_percents = 0;
 
 #ifdef TCP_PORT_MONITOR
-tcp_port_monitor_collection_args_t 	tcp_port_monitor_collection_args;
-tcp_port_monitor_args_t 		tcp_port_monitor_args;
+tcp_port_monitor_args_t 	tcp_port_monitor_args;
 #endif
 
 /* Text that is shown */
@@ -1166,7 +1165,7 @@ struct text_object {
 		struct {
 			in_port_t  port_range_begin;  /* starting port to monitor */
 			in_port_t  port_range_end;    /* ending port to monitor */
-			int        item;              /* enum value from libtcp-portmon.h, e.g. COUNT, REMOTEIP, etc. */
+			int        item;              /* enum from libtcp-portmon.h, e.g. COUNT, etc. */
 			int        connection_index;  /* 0 to n-1 connections. */
 		} tcp_port_monitor;
 #endif
@@ -2959,7 +2958,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	if ( !info.p_tcp_port_monitor_collection )
 	{
 		info.p_tcp_port_monitor_collection = 
-			create_tcp_port_monitor_collection( &tcp_port_monitor_collection_args );
+			create_tcp_port_monitor_collection ();
 		if ( !info.p_tcp_port_monitor_collection )
 		{
 			CRIT_ERR("tcp_portmon: unable to create port monitor collection");
@@ -6188,8 +6187,7 @@ static void set_default_configurations(void)
 	stuff_in_upper_case = 0;
 
 #ifdef TCP_PORT_MONITOR
-	tcp_port_monitor_collection_args.min_port_monitors = MIN_PORT_MONITORS_DEFAULT;
-	tcp_port_monitor_args.min_port_monitor_connections = MIN_PORT_MONITOR_CONNECTIONS_DEFAULT;
+	tcp_port_monitor_args.max_port_monitor_connections = MAX_PORT_MONITOR_CONNECTIONS_DEFAULT;
 #endif
 }
 
@@ -6627,41 +6625,27 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 			return;
 		}
 #ifdef TCP_PORT_MONITOR
-		CONF("min_port_monitors") 
+		CONF("max_port_monitor_connections") 
 		{
 			if ( !value || 
-			     (sscanf(value, "%d", &tcp_port_monitor_collection_args.min_port_monitors) != 1) || 
-			     tcp_port_monitor_collection_args.min_port_monitors < 0 )
+			     (sscanf(value, "%d", &tcp_port_monitor_args.max_port_monitor_connections) != 1) 
+			     || tcp_port_monitor_args.max_port_monitor_connections < 0 )
 			{
 				/* an error. use default, warn and continue. */
-				tcp_port_monitor_collection_args.min_port_monitors = MIN_PORT_MONITORS_DEFAULT;
+				tcp_port_monitor_args.max_port_monitor_connections = 
+					MAX_PORT_MONITOR_CONNECTIONS_DEFAULT;
 				CONF_ERR;
 			}
-			else if ( tcp_port_monitor_collection_args.min_port_monitors == 0 )
+			else if ( tcp_port_monitor_args.max_port_monitor_connections == 0 )
 			{
 				/* no error, just use default */
-				tcp_port_monitor_collection_args.min_port_monitors = MIN_PORT_MONITORS_DEFAULT;
+				tcp_port_monitor_args.max_port_monitor_connections = 
+					MAX_PORT_MONITOR_CONNECTIONS_DEFAULT;
 			}
-			/* else tcp_port_monitor_collection_args.min_port_monitors > 0 as per config */
-		}
-		CONF("min_port_monitor_connections") 
-		{
-			if ( !value || 
-			     (sscanf(value, "%d", &tcp_port_monitor_args.min_port_monitor_connections) != 1) 
-			     || tcp_port_monitor_args.min_port_monitor_connections < 0 )
-			{
-				/* an error. use default, warni and continue. */
-				tcp_port_monitor_args.min_port_monitor_connections = MIN_PORT_MONITOR_CONNECTIONS_DEFAULT;
-				CONF_ERR;
-			}
-			else if ( tcp_port_monitor_args.min_port_monitor_connections == 0 )
-			{
-				/* no error, just use default */
-				tcp_port_monitor_args.min_port_monitor_connections = MIN_PORT_MONITOR_CONNECTIONS_DEFAULT;
-			}
-			/* else tcp_port_monitor_args.min_port_monitor_connections > 0 as per config */
+			/* else tcp_port_monitor_args.max_port_monitor_connections > 0 as per config */
 		}
 #endif
+
 		else
 		ERR("%s: %d: no such configuration: '%s'", f, line, name);
 
@@ -6697,8 +6681,7 @@ int main(int argc, char **argv)
 	memset(&info, 0, sizeof(info) );
 
 #ifdef TCP_PORT_MONITOR
-	tcp_port_monitor_collection_args.min_port_monitors = MIN_PORT_MONITORS_DEFAULT;
-	tcp_port_monitor_args.min_port_monitor_connections = MIN_PORT_MONITOR_CONNECTIONS_DEFAULT;
+	tcp_port_monitor_args.max_port_monitor_connections = MAX_PORT_MONITOR_CONNECTIONS_DEFAULT;
 #endif
 
 	/* handle command line parameters that don't change configs */

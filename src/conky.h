@@ -195,8 +195,7 @@ struct entropy_s {
 
 #ifdef TCP_PORT_MONITOR
 #include "libtcp-portmon.h"
-#define MIN_PORT_MONITORS_DEFAULT 16
-#define MIN_PORT_MONITOR_CONNECTIONS_DEFAULT 256
+#define MAX_PORT_MONITOR_CONNECTIONS_DEFAULT 256
 #endif
 
 enum {

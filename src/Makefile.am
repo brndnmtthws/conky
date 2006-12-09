@@ -35,7 +35,7 @@ endif
 #endif
 
 if BUILD_PORT_MONITORS
-port_monitors = libtcp-portmon.h libtcp-portmon.c hash.h hash.c
+port_monitors = libtcp-portmon.h libtcp-portmon.c
 endif
 
 if BUILD_X11
@@ -80,8 +80,6 @@ EXTRA_DIST = 			\
 	freebsd.c		\
 	ftp.c                   \
 	ftp.h                   \
-	hash.c			\
-	hash.h			\
 	hddtemp.c		\
 	linux.c			\
 	libmpdclient.c          \

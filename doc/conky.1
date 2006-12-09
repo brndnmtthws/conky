@@ -210,6 +210,10 @@ Default global IMAP server. Arguments are: "host user pass [-i interval] [-f fol
 Mail spool for mail checking
 
 .TP 
+\fB\*(T<\fBmax_port_monitor_connections\fR\*(T>\fR
+Allow each port monitor to track at most this many connections (if 0 or not set, default is 256)
+
+.TP 
 \fB\*(T<\fBmax_specials\fR\*(T>\fR
 Maximum number of special things, e.g. fonts, offsets, aligns, etc. (default is 512)
 
@@ -225,14 +229,6 @@ Maximum width of window
 .TP 
 \fB\*(T<\fBminimum_size\fR\*(T>\fR \*(T<\fBwidth (height)\fR\*(T> 
 Minimum size of window
-
-.TP 
-\fB\*(T<\fBmin_port_monitors\fR\*(T>\fR
-Allow for the creation of at least this number of port monitors (if 0 or not set, default is 16) 
-
-.TP 
-\fB\*(T<\fBmin_port_monitor_connections\fR\*(T>\fR
-Allow each port monitor to track at least this many connections (if 0 or not set, default is 256)
 
 .TP 
 \fB\*(T<\fBmpd_host\fR\*(T>\fR
