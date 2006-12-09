@@ -1,12 +1,13 @@
-# Subversion repository ebuild for conky by drphibes
+# Copyright 1999-2006 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-ESVN_REPO_URI="https://svn.sourceforge.net/svnroot/conky/trunk/conky1"
-ESVN_PROJECT="conky1"
-inherit subversion
+inherit eutils
+# used for epause
 
 DESCRIPTION="Conky is an advanced, highly configurable system monitor for X"
 HOMEPAGE="http://conky.sf.net"
+SRC_URI="mirror://sourceforge/conky/${P}.tar.bz2"
 
 LICENSE="BSD"
 SLOT="0"
@@ -51,11 +52,7 @@ DEPEND="
 		)
 	)"
 
-S=${WORKDIR}/conky
-
 src_compile() {
-	./autogen.sh ${ESVN_STORE_DIR}/${ESVN_PROJECT}/conky1
-
 	local mymake
 	if useq ipv6 ; then
 		ewarn
