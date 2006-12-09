@@ -125,17 +125,14 @@ override_utf8_locale no
 # Add spaces to keep things from moving about?  This only affects certain objects.
 use_spacer no
 
+# Allow each port monitor to track at most this many connections (if 0 or not set, default is 256)
+#max_port_monitor_connections 256
+
 # Maximum number of special things, e.g. fonts, offsets, aligns, etc.
 #max_specials 512
 
 # Maximum size of buffer for user text, i.e. below TEXT line.
 #max_user_text 16384
-
-# Allow for the creation of at least this number of port monitors (if 0 or not set, default is 16) 
-#min_port_monitors 16
-
-# Allow each port monitor to track at least this many connections (if 0 or not set, default is 256)
-#min_port_monitor_connections 256
 
 # variable is given either in format $variable or in ${variable}. Latter
 # allows characters right after the variable and must be used in network
