@@ -167,7 +167,7 @@ void rebuild_tcp_port_monitor_peek_table(
 	return;
 
    /* zero out the peek array */
-   memset( p_monitor->p_peek, 0, g_hash_table_size (p_monitor->hash) * sizeof(tcp_connection_t *) );
+   memset( p_monitor->p_peek, 0, p_monitor->max_port_monitor_connections * sizeof(tcp_connection_t *) );
 
    for ( p_node=p_monitor->connection_list.p_head; p_node!=NULL; p_node=p_node->p_next, i++ )
    {
