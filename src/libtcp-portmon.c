@@ -365,7 +365,7 @@ int peek_tcp_port_monitor(
 
    /* if the connection index is out of range, we simply return with no error
     * having first cleared the client-supplied buffer. */
-   if ( (item!=COUNT) && ((unsigned)connection_index > g_hash_table_size (p_monitor->hash) - 1) )
+   if ( (item!=COUNT) && (connection_index > (int)g_hash_table_size (p_monitor->hash) - 1) )
 	   return(0);
 		   
    switch (item) {
