@@ -38,12 +38,15 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
-
 #ifdef HAVE_ICONV
 #include <iconv.h>
 #endif
 
 #include "build.h"
+
+#ifndef S_ISSOCK
+#define S_ISSOCK(x)   ((x & S_IFMT) == S_IFSOCK)
+#endif
 
 #define CONFIG_FILE "$HOME/.conkyrc"
 #define MAIL_FILE "$MAIL"
@@ -1272,6 +1275,7 @@ void *imap_thread(struct mail_s* mail)
 	int fail = 0;
 	unsigned int old_unseen = UINT_MAX;
 	unsigned int old_messages = UINT_MAX;
+	struct stat stat_buf;
 	struct hostent *he;
 	struct sockaddr_in their_addr;	// connector's address information
 	if ((he = gethostbyname(mail->host)) == NULL) {	// get the host info 
@@ -1430,7 +1434,6 @@ void *imap_thread(struct mail_s* mail)
 			fail++;
 			goto next_iteration;
 		}
-		close(sockfd);
 		if (strlen(mail->command) > 1 && (mail->unseen > old_unseen || (mail->messages > old_messages && mail->unseen > 0))) {	// new mail goodie
 			if (system(mail->command) == -1) {
 				perror("system()");
@@ -1440,6 +1443,9 @@ void *imap_thread(struct mail_s* mail)
 		old_unseen = mail->unseen;
 		old_messages = mail->messages;
 next_iteration:
+		if ((fstat(sockfd, &stat_buf)==0) && S_ISSOCK(stat_buf.st_mode))
+		    /* if a valid socket, close it */
+		    close(sockfd);
 		if (timed_thread_test (mail->p_timed_thread))
 		    timed_thread_exit (mail->p_timed_thread);
 	}
@@ -1454,6 +1460,7 @@ void *pop3_thread(struct mail_s *mail)
 	char *reply;
 	int fail = 0;
 	unsigned int old_unseen = UINT_MAX;
+	struct stat stat_buf;
 	struct hostent *he;
 	struct sockaddr_in their_addr;	// connector's address information
 	if ((he = gethostbyname(mail->host)) == NULL) {	// get the host info 
@@ -1631,7 +1638,6 @@ void *pop3_thread(struct mail_s *mail)
 			fail++;
 			goto next_iteration;
 		}
-		close(sockfd);
 		if (strlen(mail->command) > 1 && mail->unseen > old_unseen) {	// new mail goodie
 			if (system(mail->command) == -1) {
 				perror("system()");
@@ -1640,6 +1646,9 @@ void *pop3_thread(struct mail_s *mail)
 		fail = 0;
 		old_unseen = mail->unseen;
 next_iteration:
+		if ((fstat(sockfd, &stat_buf)==0) && S_ISSOCK(stat_buf.st_mode))  
+		    /* if a valid socket, close it */
+		    close(sockfd);
 		if (timed_thread_test (mail->p_timed_thread))
 		    timed_thread_exit (mail->p_timed_thread);
 	}

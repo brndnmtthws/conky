@@ -185,8 +185,8 @@ void show_connection_to_tcp_port_monitor(
     * the monitor's port range of interest.  Connections of interest are first
     * looked up in the hash to see if they are already there.  If they are, we
     * reset the age of the connection so it is not deleted.  If the connection 
-    * is not in the hash, we add it, but only if the hash is not saturated.  
-    * The function takes O(1) time. */
+    * is not in the hash, we add it, but only if we haven't exceeded the maximum
+    * connection limit for the monitor. The function takes O(1) time. */
 
    tcp_connection_node_t *p_node;
    tcp_connection_t *p_connection, *p_conn_hash;

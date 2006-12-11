@@ -1,5 +1,8 @@
 # $Id$
 
+2006-12-11
+	* Close pop3/imap sockets.
+
 2006-12-10
 	* Fix peek table bug with new portmon code.
 
