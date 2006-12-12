@@ -1276,18 +1276,18 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 			if (acpi_last_full != 0 && present_rate > 0) {
 				/* e.g. charging 75% */
 				snprintf(tmp_battery, sizeof(tmp_battery)-1, "charging %i%%", 
-					(int) (((float)remaining_capacity / (float)acpi_last_full) * 100));
+					(int) ((remaining_capacity * 100) / acpi_last_full));
 				/* e.g. 2h 37m */
 				format_seconds(tmp_time_left, sizeof(tmp_time_left)-1,
-					      (long)((float) ((acpi_last_full - remaining_capacity) * 3600) / 
-					              (float) present_rate));
+					      (long) (((acpi_last_full - remaining_capacity) * 3600) / 
+					              present_rate));
 				/* e.g. charging 75% (2h 37m) */
 				snprintf (last_battery_str, sizeof(last_battery_str)-1, 
 					  "%s (%s)", tmp_battery, tmp_time_left);
 
 			} else if (acpi_last_full != 0 && present_rate <= 0) {
 				snprintf(last_battery_str, sizeof(last_battery_str)-1, "charging %d%%",
-					(int) ((float) (remaining_capacity * 100) / (float) acpi_last_full));
+					(int) ((remaining_capacity * 100) / acpi_last_full));
 			} else {
 				strncpy(last_battery_str, "charging", sizeof(last_battery_str)-1);
 			}
@@ -1297,11 +1297,10 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 			if (present_rate > 0) {
 				/* e.g. discharging 35% */
 				snprintf(tmp_battery, sizeof(tmp_battery)-1, "discharging %i%%",
-					(int) (((float)remaining_capacity / (float)acpi_last_full) * 100));
+					(int) ((remaining_capacity * 100) / acpi_last_full));
 				/* e.g. 1h 12m */
 				format_seconds(tmp_time_left, sizeof(tmp_time_left)-1,
-					      (long) ((float)(remaining_capacity * 3600) / 
-					      	      (float)present_rate));
+					      (long) ((remaining_capacity * 3600) / present_rate));
 				/* e.g. discharging 35% (1h 12m) */
 				snprintf (last_battery_str, sizeof(last_battery_str)-1,
 					  "%s (%s)", tmp_battery, tmp_time_left);
@@ -1310,7 +1309,7 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 			} else {
 				snprintf(last_battery_str, sizeof(last_battery_str)-1,
 					"discharging %d%%",
-					(int) ((float) (remaining_capacity * 100) / (float) acpi_last_full));
+					(int) ((remaining_capacity * 100) / acpi_last_full));
 			}
 		}
 		/* charged */
@@ -1323,7 +1322,7 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 			if (acpi_last_full != 0
 			    && remaining_capacity != acpi_last_full)
 				snprintf(last_battery_str, 64, "unknown %d%%",
-					(int) ((float) (remaining_capacity * 100) / (float) acpi_last_full));
+					(int) ((remaining_capacity * 100) / acpi_last_full));
 			else
 				strncpy(last_battery_str, "AC", 64);
 		}
