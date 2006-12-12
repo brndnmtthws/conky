@@ -886,6 +886,7 @@ enum text_object_type {
 	OBJ_acpitemp,
 	OBJ_acpitempf,
 	OBJ_battery,
+	OBJ_battery_time,
 	OBJ_buffers,
 	OBJ_cached,
 	OBJ_color,
@@ -1931,7 +1932,9 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 			case OBJ_battery:
 				free(objs[i].data.s);
 				break;
-
+			case OBJ_battery_time:
+				free(objs[i].data.s);
+				break;
 			case OBJ_execi:
 				free(objs[i].data.execi.cmd);
 				free(objs[i].data.execi.buffer);
@@ -2076,6 +2079,13 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	END OBJ(freq_dyn_g, 0);
 	END OBJ(acpifan, 0);
 	END OBJ(battery, 0);
+	char bat[64];
+	if (arg)
+		sscanf(arg, "%63s", bat);
+	else
+		strcpy(bat, "BAT0");
+	obj->data.s = strdup(bat);
+	END OBJ(battery_time, 0);
 	char bat[64];
 	if (arg)
 		sscanf(arg, "%63s", bat);
@@ -3277,7 +3287,10 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					get_acpi_ac_adapter(p, p_max_size); 
 				}
 				OBJ(battery) {
-					get_battery_stuff(p, p_max_size, obj->data.s);
+					get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_STATUS);
+				}
+				OBJ(battery_time) {
+					get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_TIME);
 				}
 				OBJ(buffers) {
 					human_readable(cur->buffers * 1024, p, 255);

@@ -328,7 +328,7 @@ double get_acpi_temperature(int fd)
 	return -1;
 }
 
-void get_battery_stuff(char *buf, unsigned int n, const char *bat)
+void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 {
 }
 

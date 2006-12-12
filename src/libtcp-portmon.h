@@ -23,6 +23,7 @@
 #ifndef LIBTCP_PORTMON_H
 #define LIBTCP_PORTMON_H
 
+#include <sys/types.h>
 #include <sys/socket.h>
 
 #include <arpa/inet.h>

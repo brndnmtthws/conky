@@ -236,6 +236,12 @@ enum {
 };
 
 
+/* get_battery_stuff() item selector */
+enum {
+	BATTERY_STATUS,
+	BATTERY_TIME
+};
+
 #ifdef MPD
 #include "libmpdclient.h"
 #endif
@@ -460,7 +466,7 @@ int open_acpi_temperature(const char *name);
 double get_acpi_temperature(int fd);
 void get_acpi_ac_adapter( char *, size_t ); 
 void get_acpi_fan( char *, size_t ); 
-void get_battery_stuff(char *buf, unsigned int n, const char *bat);
+void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item);
 void get_ibm_acpi_fan(char *buf, size_t client_buffer_size);
 void get_ibm_acpi_temps(void);
 void get_ibm_acpi_volume(char *buf, size_t client_buffer_size);

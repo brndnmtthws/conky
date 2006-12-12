@@ -92,7 +92,7 @@ dnl OWN_WINDOW option
 dnl
 
 AC_ARG_ENABLE([own_window],
-    AC_HELP_STRING([--enable-own-window], [enable if you want support for creating own window [[default=yes]]]),
+    AC_HELP_STRING([--enable-own-window], [enable if you want support for creating own window @<:@default=yes@:>@]),
     [dah="$enableval"], [dah=yes])
 
 if test $dah != "no"; then
@@ -104,7 +104,7 @@ dnl PROC_UPTIME option
 dnl
 
 AC_ARG_ENABLE([proc_uptime],
-    AC_HELP_STRING([--enable-proc-uptime], [enable using /proc/uptime for uptime [[default=yes]]]),
+    AC_HELP_STRING([--enable-proc-uptime], [enable using /proc/uptime for uptime @<:@default=yes@:>@]),
     [dah="$enableval"], [dah=yes])
 
 if test $dah = "yes"; then
@@ -117,7 +117,7 @@ dnl Audacious Media Player
 dnl
 
 AC_ARG_ENABLE([audacious],
-    AC_HELP_STRING([--enable-audacious], [enable audacious player support [[default=no]]]),
+    AC_HELP_STRING([--enable-audacious], [enable audacious player support @<:@default=no@:>@]),
     [want_audacious="$enableval"], [want_audacious=no])
 
 AM_CONDITIONAL(BUILD_AUDACIOUS, test x$want_audacious = xyes)
@@ -134,7 +134,7 @@ dnl BMPx
 dnl
 
 AC_ARG_ENABLE([bmpx],
-    AC_HELP_STRING([--enable-bmpx], [enable if you want BMPx support [[default=no]]]),
+    AC_HELP_STRING([--enable-bmpx], [enable if you want BMPx support @<:@default=no@:>@]),
     [want_bmpx="$enableval"], [want_bmpx=no])
 
 AM_CONDITIONAL(BUILD_BMPX, test x$want_bmpx = xyes)
@@ -151,7 +151,7 @@ dnl Hddtemp
 dnl
 
 AC_ARG_ENABLE([hddtemp],
-    AC_HELP_STRING([--enable-hddtemp], [enable if you want hddtemp support [[default=yes]]]),
+    AC_HELP_STRING([--enable-hddtemp], [enable if you want hddtemp support @<:@default=yes@:>@]),
     [want_hddtemp="$enableval"], [want_hddtemp=yes])
 
 AM_CONDITIONAL(BUILD_HDDTEMP, test x$want_hddtemp = xyes)
@@ -164,7 +164,7 @@ dnl MPD
 dnl
 
 AC_ARG_ENABLE([mpd],
-    AC_HELP_STRING([--enable-mpd], [enable if you want MPD support [[default=yes]]]),
+    AC_HELP_STRING([--enable-mpd], [enable if you want MPD support @<:@default=yes@:>@]),
     [want_mpd="$enableval"], [want_mpd=yes])
 
 AM_CONDITIONAL(BUILD_MPD, test x$want_mpd = xyes)
@@ -177,7 +177,7 @@ dnl XMMS2
 dnl
 
 AC_ARG_ENABLE([xmms2],
-    AC_HELP_STRING([--enable-xmms2], [enable if you want XMMS2 support [[default=no]]]),
+    AC_HELP_STRING([--enable-xmms2], [enable if you want XMMS2 support @<:@default=no@:>@]),
     [want_xmms2="$enableval"], [want_xmms2=no])
 
 AM_CONDITIONAL(BUILD_XMMS2, test x$want_xmms2 = xyes)
@@ -211,20 +211,25 @@ dnl PORT_MONITORS
 dnl
 
 AC_ARG_ENABLE([portmon],
-    AC_HELP_STRING([--enable-portmon], [enable if you want tcp (ip4) port monitoring [[default=yes]]]),
+    AC_HELP_STRING([--enable-portmon], [enable if you want tcp (ip4) port monitoring @<:@default=yes@:>@]),
     [want_portmon="$enableval"], [want_portmon=yes])
 
 AM_CONDITIONAL(BUILD_PORT_MONITORS, test x$want_portmon = xyes)
 if test x$want_portmon = xyes; then
-  	AC_CHECK_HEADERS([netdb.h netinet/in.h netinet/tcp.h sys/socket.h arpa/inet.h], [], 
-			 [PORT_MONITORS_MISSING=yes])
-  	if test "x$PORT_MONITORS_MISSING" = xyes; then
-            AC_MSG_ERROR([missing a needed network header for port monitoring])
-  	fi
-	PKG_CHECK_MODULES([GLIB], [glib-2.0])
-	CFLAGS="$CFLAGS $GLIB_CFLAGS"
-	LIBS="$LIBS $GLIB_LIBS"
-  	AC_DEFINE(TCP_PORT_MONITOR, 1, [Define if you want tcp port monitoring support])
+	if test "x$uname" != xLinux; then
+	    AC_MSG_NOTICE([port monitors not supported on $uname... disabling])
+	    want_portmon=no
+	else
+  	    AC_CHECK_HEADERS([netdb.h netinet/in.h netinet/tcp.h sys/socket.h arpa/inet.h], [], 
+			     [PORT_MONITORS_MISSING=yes])
+  	    if test "x$PORT_MONITORS_MISSING" = xyes; then
+            	AC_MSG_ERROR([missing a needed network header for port monitoring])
+  	    fi
+	    PKG_CHECK_MODULES([GLIB], [glib-2.0])
+	    CFLAGS="$CFLAGS $GLIB_CFLAGS"
+	    LIBS="$LIBS $GLIB_LIBS"
+  	    AC_DEFINE(TCP_PORT_MONITOR, 1, [Define if you want tcp port monitoring support])
+	fi
 fi
 
 
@@ -244,7 +249,7 @@ dnl debug
 dnl
 
 AC_ARG_ENABLE([debug], 
-    AC_HELP_STRING([--enable-debug], [compile with debug symbols [[default=no]]]),
+    AC_HELP_STRING([--enable-debug], [compile with debug symbols @<:@default=no@:>@]),
     [want_debug="$enableval"], [want_debug=no])
 
 if test "x$want_debug" = "xyes" -a $ac_cv_c_compiler_gnu != no; then
@@ -256,7 +261,7 @@ dnl X11
 dnl
 
 AC_ARG_ENABLE([x11],
-    AC_HELP_STRING([--enable-x11], [enable if you want X11 support [[default=yes]]]),
+    AC_HELP_STRING([--enable-x11], [enable if you want X11 support @<:@default=yes@:>@]),
     [want_x11="$enableval"], [want_x11=yes])
 
 AM_CONDITIONAL(BUILD_X11, test x$want_x11 = xyes)
@@ -286,7 +291,7 @@ dnl Xext Double-buffering Extension
 dnl
 
 AC_ARG_ENABLE([double_buffer],
-    AC_HELP_STRING([--enable-double-buffer], [enable for flicker-free operation [[default=yes]]]),
+    AC_HELP_STRING([--enable-double-buffer], [enable for flicker-free operation @<:@default=yes@:>@]),
     [want_double_buffer="$enableval"], [want_double_buffer=yes])
 
 if test "x$want_double_buffer" = "xyes"; then
@@ -311,7 +316,7 @@ dnl Xdamage Extension
 dnl
 
 AC_ARG_ENABLE([xdamage],
-    AC_HELP_STRING([--enable-xdamage], [enable if you want Xdamage support [[default=yes]]]),
+    AC_HELP_STRING([--enable-xdamage], [enable if you want Xdamage support @<:@default=yes@:>@]),
     [want_xdamage="$enableval"], [want_xdamage=yes])
 
 if test "x$want_xdamage" = "xyes"; then
@@ -336,7 +341,7 @@ dnl Xft
 dnl
 
 AC_ARG_ENABLE([xft],
-    AC_HELP_STRING([--enable-xft], [enable if you want to use Xft [[default=yes]]]),
+    AC_HELP_STRING([--enable-xft], [enable if you want to use Xft @<:@default=yes@:>@]),
     [want_xft="$enableval"], [want_xft=yes])
 
 if test x$want_xft = "xyes"; then

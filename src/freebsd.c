@@ -352,9 +352,11 @@ get_acpi_temperature(int fd)
 }
 
 void
-get_battery_stuff(char *buf, unsigned int n, const char *bat)
+get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 {
 	int battime, batcapacity, batstate, ac;
+	char battery_status[64];
+	char battery_time[64];
 
 	if (GETSYSCTL("hw.acpi.battery.time", battime))
 		(void) fprintf(stderr,
@@ -372,23 +374,53 @@ get_battery_stuff(char *buf, unsigned int n, const char *bat)
 					   "Cannot read sysctl \"hw.acpi.acline\"\n");
 
 	if (batstate == 1) {
-		if (battime != -1)
+		if (battime != -1) {
+			snprintf (battery_status, sizeof(battery_status)-1,
+				  "remaining %d%%", batcapacity);
+			snprintf (battery_time, sizeof(battery_time)-1,
+				  "%d:%2.2d", battime / 60, battime % 60);
+			/*
 			snprintf(buf, n, "remaining %d%% (%d:%2.2d)",
 					batcapacity, battime / 60, battime % 60);
+			*/
+		}
 		else
 			/* no time estimate available yet */
+			snprintf(battery_status, sizeof(battery_status)-1,
+				 "remaining %d%%", batcapacity);
+			/*
 			snprintf(buf, n, "remaining %d%%",
 					batcapacity);
+			*/
 		if (ac == 1)
 			(void) fprintf(stderr, "Discharging while on AC!\n");
 	} else {
+		snprintf (battery_status, sizeof(battery_status)-1,
+			  batstate == 2 ? "charging (%d%%)" : "charged (%d%%)", batcapacity);
+		/*
 		snprintf(buf, n, batstate == 2 ? "charging (%d%%)" : "charged (%d%%)", batcapacity);
+		*/
 		if (batstate != 2 && batstate != 0)
-			(void) fprintf(stderr, "Unknow battery state %d!\n", batstate);
+			(void) fprintf(stderr, "Unknown battery state %d!\n", batstate);
 		if (ac == 0)
 			(void) fprintf(stderr, "Charging while not on AC!\n");
 	}
 
+	switch (item) {
+        case BATTERY_STATUS:
+                {
+                        snprintf(buf, n, "%s", battery_status);
+                        break;
+                }
+        case BATTERY_TIME:
+                {
+                        snprintf(buf, n, "%s", battery_time);
+                        break;
+                }
+        default:
+                        break;
+        }
+        return;
 }
 
 int

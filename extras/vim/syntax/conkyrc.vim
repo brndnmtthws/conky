@@ -118,6 +118,7 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
         \ audacious_status
         \ audacious_title
       	\ battery 
+	\ battery_time
 	\ bmpx_album 
 	\ bmpx_artist 
 	\ bmpx_bitrate

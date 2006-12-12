@@ -1192,23 +1192,25 @@ static FILE *apm_bat_fp;
 
 static int acpi_last_full;
 
-static char last_battery_str[64];
+static char last_battery_str[64];	/* e.g. "charging 75%" */
+static char last_battery_time_str[64];	/* e.g. "3h 15m" */
 
 static double last_battery_time;
 
-void get_battery_stuff(char *buf, unsigned int n, const char *bat)
+void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 {
 	static int rep, rep2;
 	char acpi_path[128];
-	char tmp_battery[64], tmp_time_left[64];
 	snprintf(acpi_path, 127, ACPI_BATTERY_BASE_PATH "/%s/state", bat);
 
 	/* don't update battery too often */
-	if (current_update_time - last_battery_time < 29.5) {
-		snprintf(buf, n, "%s", last_battery_str);
-		return;
-	}
+	if (current_update_time - last_battery_time < 29.5) 
+		goto set_return_value;	
+
 	last_battery_time = current_update_time;
+
+	memset (last_battery_str, 0, sizeof (last_battery_str));
+	memset (last_battery_time_str, 0, sizeof (last_battery_time_str));
 
 	/* first try ACPI */
 
@@ -1275,16 +1277,12 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 		else if (strcmp(charging_state, "charging") == 0) {
 			if (acpi_last_full != 0 && present_rate > 0) {
 				/* e.g. charging 75% */
-				snprintf(tmp_battery, sizeof(tmp_battery)-1, "charging %i%%", 
+				snprintf(last_battery_str, sizeof(last_battery_str)-1, "charging %i%%", 
 					(int) ((remaining_capacity * 100) / acpi_last_full));
 				/* e.g. 2h 37m */
-				format_seconds(tmp_time_left, sizeof(tmp_time_left)-1,
+				format_seconds(last_battery_time_str, sizeof(last_battery_time_str)-1,
 					      (long) (((acpi_last_full - remaining_capacity) * 3600) / 
 					              present_rate));
-				/* e.g. charging 75% (2h 37m) */
-				snprintf (last_battery_str, sizeof(last_battery_str)-1, 
-					  "%s (%s)", tmp_battery, tmp_time_left);
-
 			} else if (acpi_last_full != 0 && present_rate <= 0) {
 				snprintf(last_battery_str, sizeof(last_battery_str)-1, "charging %d%%",
 					(int) ((remaining_capacity * 100) / acpi_last_full));
@@ -1296,14 +1294,11 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 		else if (strncmp(charging_state, "discharging", 64) == 0) {
 			if (present_rate > 0) {
 				/* e.g. discharging 35% */
-				snprintf(tmp_battery, sizeof(tmp_battery)-1, "discharging %i%%",
+				snprintf(last_battery_str, sizeof(last_battery_str)-1, "discharging %i%%",
 					(int) ((remaining_capacity * 100) / acpi_last_full));
 				/* e.g. 1h 12m */
-				format_seconds(tmp_time_left, sizeof(tmp_time_left)-1,
+				format_seconds(last_battery_time_str, sizeof(last_battery_time_str)-1,
 					      (long) ((remaining_capacity * 3600) / present_rate));
-				/* e.g. discharging 35% (1h 12m) */
-				snprintf (last_battery_str, sizeof(last_battery_str)-1,
-					  "%s (%s)", tmp_battery, tmp_time_left);
 			} else if (present_rate == 0) { /* Thanks to Nexox for this one */
 				snprintf(last_battery_str, sizeof(last_battery_str)-1, "full");
 			} else {
@@ -1356,7 +1351,22 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat)
 		}
 	}
 
-	snprintf(buf, n, "%s", last_battery_str);
+set_return_value:
+	switch (item) {
+        case BATTERY_STATUS:
+		{
+            		snprintf(buf, n, "%s", last_battery_str);
+            		break;
+          	}
+        case BATTERY_TIME:
+          	{
+            		snprintf(buf, n, "%s", last_battery_time_str);
+            		break;
+          	}
+	default:
+            		break;
+        }              
+	return;
 }
 
 /* On Apple powerbook and ibook:

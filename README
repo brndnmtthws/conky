@@ -464,8 +464,14 @@ VARIABLES
 
 
        battery (num)
-	      Remaining capacity in ACPI or APM battery. ACPI  battery	number
-	      can be given as argument (default is BAT0).
+	      Battery status and remaining percentage capacity of ACPI or  APM
+	      battery.	ACPI  battery number can be given as argument (default
+	      is BAT0).
+
+
+       battery_time (num)
+	      Battery charge/discharge time remaining of  ACPI	battery.  ACPI
+	      battery number can be given as argument (default is BAT0).
 
 
        bmpx_artist

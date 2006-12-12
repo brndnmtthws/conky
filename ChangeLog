@@ -1,5 +1,10 @@
 # $Id$
 
+2006-12-12
+	* Split battery variable into two:
+		battery, e.g. "charging 75%" and
+		battery_time, e.g. "3h 15m".
+
 2006-12-11
 	* Close pop3/imap sockets.
 	* Fix outstanding battery issues.
