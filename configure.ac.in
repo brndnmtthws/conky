@@ -4,12 +4,7 @@ dnl major, minor and micro version macros.
 m4_define([conky_version_major], [1])
 m4_define([conky_version_minor], [4])
 m4_define([conky_version_micro], [5])
-
-dnl [svn] for versions with svn revision numbers, e.g. 1.4.5-svn-r00790
-dnl [rc1] for release candidates, e.g. 1.4.5-rc1
-dnl [] for releases, e.g. 1.4.5
-m4_define([conky_version_tag], [svn])
-
+m4_define([conky_version_tag], []) dnl [] for releases
 m4_define([conky_version_revision],[r@REVISION@])
 m4_define([conky_version], 
 	  [conky_version_major().conky_version_minor().conky_version_micro()ifelse(

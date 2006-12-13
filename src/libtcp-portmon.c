@@ -383,7 +383,7 @@ int peek_tcp_port_monitor(
 
    case REMOTEHOST:
 
-	p_hostent = gethostbyaddr( (const char *)&p_monitor->p_peek[ connection_index ]->remote_addr, 
+	p_hostent = gethostbyaddr( (const void *)&p_monitor->p_peek[ connection_index ]->remote_addr, 
 				   sizeof(in_addr_t), AF_INET);
 	/* if no host name found, just use ip address. */
   	if ( !p_hostent || !p_hostent->h_name )
@@ -419,7 +419,7 @@ int peek_tcp_port_monitor(
 
    case LOCALHOST:
 
-	p_hostent = gethostbyaddr( (const char *)&p_monitor->p_peek[ connection_index ]->local_addr, 
+	p_hostent = gethostbyaddr( (const void *)&p_monitor->p_peek[ connection_index ]->local_addr, 
 				   sizeof(in_addr_t), AF_INET);
 	/* if no host name found, just use ip address. */
 	if ( !p_hostent || !p_hostent->h_name )

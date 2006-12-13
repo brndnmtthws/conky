@@ -108,12 +108,12 @@ typedef struct _tcp_connection_list_t {
  * A port monitor 
  * -------------- */
 typedef struct _tcp_port_monitor_t {
-	gchar key[TCP_PORT_MONITOR_HASH_KEY_SIZE]; /* monitor's key in collection hash */
-        in_port_t port_range_begin;		/* start of monitor port range */
-        in_port_t port_range_end;   		/* begin = end to monitor a single port */
-	tcp_connection_list_t connection_list;	/* list of connections for this monitor */
-	GHashTable *hash;                      	/* hash table of pointers into monitor's connection list */
-	tcp_connection_t **p_peek;		/* array of connection pointers for O(1) peeking by index */ 
+	gchar key[TCP_PORT_MONITOR_HASH_KEY_SIZE]; 	/* monitor's key in collection hash */
+        in_port_t port_range_begin;			/* start of monitor port range */
+        in_port_t port_range_end;   			/* begin = end to monitor a single port */
+	tcp_connection_list_t connection_list;		/* list of connections for this monitor */
+	GHashTable *hash;                      		/* hash table of pointers into connection list */
+	tcp_connection_t **p_peek;			/* array of connection pointers for O(1) peeking */ 
 	unsigned int max_port_monitor_connections;	/* max number of connections */
 } tcp_port_monitor_t;
 

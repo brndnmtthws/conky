@@ -4,6 +4,7 @@
 	* Split battery variable into two:
 		battery, e.g. "charging 75%" and
 		battery_time, e.g. "3h 15m".
+	* Conky 1.4.5 released.
 
 2006-12-11
 	* Close pop3/imap sockets.
