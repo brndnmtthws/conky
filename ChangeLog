@@ -1,5 +1,9 @@
 # $Id$
 
+2006-12-13
+	* Clarify LGPL license on timed_thread modules.
+	* Update NEWS files.
+
 2006-12-12
 	* Split battery variable into two:
 		battery, e.g. "charging 75%" and

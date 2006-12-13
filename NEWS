@@ -1,3 +1,34 @@
+Summary of changes for Conky release 1.4.5:
+-------------------------------------------
+Added config items: 
+- max_specials 
+- max_port_monitor_connections 
+ 
+Removed config items: 
+- min_port_monitors 
+- min_port_monitor_connections 
+ 
+Added variables: 
+- entropy_avail 
+- entropy_poolsize 
+- entropy_bar 
+ 
+Added length specifier to audacious_title. 
+ 
+Split battery var into: 
+- battery and battery_time 
+ 
+Fixed broken texeci variable. 
+Fixed build error with --disable-x11. 
+Fixed build error with --disable-xdamage. 
+Fixed acpi battery issues. 
+Fixed mem var overflows when >= 4GB. 
+Close pop3/imap sockets properly. 
+Improved internal thread handling. 
+Converted tcp_portmon internal hash to GLib  
+for GPL compatibility.
+
+
 Summary of changes for Conky release 1.4.4:
 -------------------------------------------
 * fix build error for freebsd.

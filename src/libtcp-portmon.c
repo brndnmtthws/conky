@@ -1,10 +1,10 @@
-/* -------------------------------------------------------------------------
+/* $Id$ */
+
+/*
  * libtcp-portmon.c:  tcp port monitoring library.               
  *
- * Copyright (C) 2005  Philip Kovacs kovacsp3@comcast.net
+ * Copyright (C) 2005  Philip Kovacs pkovacs@users.sourceforge.net
  * 
- * $Id$
- *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -17,8 +17,10 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- * --------------------------------------------------------------------------- */
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301
+ * USA.
+ *
+ */
 
 #include <glib/gprintf.h>
 #include "libtcp-portmon.h"
