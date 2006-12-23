@@ -1,5 +1,8 @@
 # $Id$
 
+2006-12-23
+	* Updated to libmpdclient 0.12.0
+
 2006-12-22
 	* client/server infrastructure and prototype for linux only (so far):
 		- requires libdexter (http://sourceforge.net/projects/libdexter)
