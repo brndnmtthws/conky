@@ -56,6 +56,27 @@
 </varlistentry>
 
 <varlistentry>
+	<term><command><option>dexter_client</option></command></term>
+	<listitem>
+		Act as client and connect to libdexter server for remote monitoring?
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>dexter_config</option></command></term>
+	<listitem>
+		Full path to libdexter configuration file (default search order: $HOME/.dexterrc; /etc/libdexter/dexter.conf)
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>dexter_server</option></command></term>
+	<listitem>
+		Act as server for libdexter services?
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
 	<term><command><option>double_buffer</option></command></term>
 	<listitem>
 		Use the Xdbe extension? (eliminates flicker) It is highly recommended to use own window with this one so double buffer won't be so big.
@@ -219,21 +240,10 @@
 </varlistentry>
 
 <varlistentry>
-	<term><command><option>own_window_transparent</option></command></term>
-	<listitem>
-		Boolean, set pseudo-transparency?
-		<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term><command><option>own_window_type</option></command></term>
-	<listitem>
-		if own_window is yes, you may specify type normal, desktop or override (default: normal).
-		Desktop windows are special windows that have no window decorations; are always visible 
-		on your desktop; do not appear in your pager or taskbar; and are sticky across all workspaces.
-		Override windows are not under the control of the window manager.  Hints are ignored. This type
-		of window can be useful for certain situations.
-		<para></para></listitem>
+        <term><command><option>own_window_class</option></command></term>
+        <listitem>
+                Manually set the WM_CLASS name.  Defaults to "Conky".
+        <para></para></listitem>
 </varlistentry>
 
 <varlistentry>
@@ -254,6 +264,31 @@
 		Notes: Use own_window_type desktop as another way to implement many of these hints implicitly.
 		If you use own_window_type override, window manager hints have no meaning and are ignored.
 	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+        <term><command><option>own_window_title</option></command></term>
+        <listitem>
+                Manually set the window name.  Defaults to "&lt;hostname&gt; - conky".
+        <para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>own_window_transparent</option></command></term>
+	<listitem>
+		Boolean, set pseudo-transparency?
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>own_window_type</option></command></term>
+	<listitem>
+		if own_window is yes, you may specify type normal, desktop or override (default: normal).
+		Desktop windows are special windows that have no window decorations; are always visible 
+		on your desktop; do not appear in your pager or taskbar; and are sticky across all workspaces.
+		Override windows are not under the control of the window manager.  Hints are ignored. This type
+		of window can be useful for certain situations.
+		<para></para></listitem>
 </varlistentry>
 
 <varlistentry>
@@ -316,13 +351,6 @@
 	<term><command><option>use_xft</option></command></term>
 	<listitem>
 		Use Xft (anti-aliased font and stuff)
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term><command><option>wm_class_name</option></command></term>
-	<listitem>
-		Manually set the WM_CLASS name.  Defaults to "conky".
 	<para></para></listitem>
 </varlistentry>
 

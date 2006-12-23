@@ -44,7 +44,7 @@ Example to compile and run Conky with all optional components (note that some co
 .TP 
 \fB\*(T<\fBsh autogen.sh\fR\*(T>\fR \*(T<\fB# Only required if building from Svn\fR\*(T> 
 .TP 
-\fB\*(T<\fB\&./configure \fR\*(T>\fR\*(T<\fB\-\-prefix=/usr \-\-mandir=/usr/share/man \-\-infodir=/usr/share/info \-\-datadir=/usr/share \-\-sysconfdir=/etc \-\-localstatedir=/var/lib \-\-enable\-xft \-\-enable\-own\-window \-\-enable\-proc\-uptime \-\-enable\-audacious \-\-enable\-bmpx \-\-enable\-hddtemp \-\-enable\-mpd \-\-enable\-xmms2 \-\-enable\-imlib2 \-\-enable\-portmon \-\-enable\-debug \-\-enable\-double\-buffer \-\-enable\-xdamage \-\-enable\-x11\fR\*(T> 
+\fB\*(T<\fB\&./configure \fR\*(T>\fR\*(T<\fB\-\-prefix=/usr \-\-mandir=/usr/share/man \-\-infodir=/usr/share/info \-\-datadir=/usr/share \-\-sysconfdir=/etc \-\-localstatedir=/var/lib \-\-disable\-own\-window \-\-enable\-audacious \-\-enable\-bmpx \-\-disable\-hddtemp \-\-disable\-mpd \-\-enable\-xmms2 \-\-disable\-portmon \-\-disable\-network \-\-enable\-debug \-\-disable\-x11 \-\-disable\-double\-buffer \-\-disable\-xdamage \-\-disable\-xft\fR\*(T> 
 .TP 
 \fB\*(T<\fBmake\fR\*(T>\fR 
 .TP 
@@ -168,6 +168,18 @@ Default outline color
 Default shading color and border's shading color
 
 .TP 
+\fB\*(T<\fBdexter_client\fR\*(T>\fR
+Act as client and connect to libdexter server for remote monitoring?
+
+.TP 
+\fB\*(T<\fBdexter_config\fR\*(T>\fR
+Full path to libdexter configuration file (default search order: $HOME/.dexterrc; /etc/libdexter/dexter.conf)
+
+.TP 
+\fB\*(T<\fBdexter_server\fR\*(T>\fR
+Act as server for libdexter services?
+
+.TP 
 \fB\*(T<\fBdouble_buffer\fR\*(T>\fR
 Use the Xdbe extension? (eliminates flicker) It is highly recommended to use own window with this one so double buffer won't be so big.
 
@@ -259,16 +271,8 @@ Force UTF8? requires XFT
 Boolean, create own window to draw?
 
 .TP 
-\fB\*(T<\fBown_window_transparent\fR\*(T>\fR
-Boolean, set pseudo-transparency?
-
-.TP 
-\fB\*(T<\fBown_window_type\fR\*(T>\fR
-if own_window is yes, you may specify type normal, desktop or override (default: normal).
-Desktop windows are special windows that have no window decorations; are always visible 
-on your desktop; do not appear in your pager or taskbar; and are sticky across all workspaces.
-Override windows are not under the control of the window manager. Hints are ignored. This type
-of window can be useful for certain situations.
+\fB\*(T<\fBown_window_class\fR\*(T>\fR
+Manually set the WM_CLASS name. Defaults to "Conky".
 
 .TP 
 \fB\*(T<\fBown_window_colour\fR\*(T>\fR \*(T<\fBcolour\fR\*(T> 
@@ -279,6 +283,22 @@ If own_window_transparent no, set a specified background colour (defaults to bla
 If own_window is yes, you may use these window manager hints to affect the way Conky displays. 
 Notes: Use own_window_type desktop as another way to implement many of these hints implicitly.
 If you use own_window_type override, window manager hints have no meaning and are ignored.
+
+.TP 
+\fB\*(T<\fBown_window_title\fR\*(T>\fR
+Manually set the window name. Defaults to "<hostname> - conky".
+
+.TP 
+\fB\*(T<\fBown_window_transparent\fR\*(T>\fR
+Boolean, set pseudo-transparency?
+
+.TP 
+\fB\*(T<\fBown_window_type\fR\*(T>\fR
+if own_window is yes, you may specify type normal, desktop or override (default: normal).
+Desktop windows are special windows that have no window decorations; are always visible 
+on your desktop; do not appear in your pager or taskbar; and are sticky across all workspaces.
+Override windows are not under the control of the window manager. Hints are ignored. This type
+of window can be useful for certain situations.
 
 .TP 
 \fB\*(T<\fBout_to_console\fR\*(T>\fR 
@@ -315,10 +335,6 @@ Adds spaces after certain objects to stop them from moving other things around. 
 .TP 
 \fB\*(T<\fBuse_xft\fR\*(T>\fR
 Use Xft (anti-aliased font and stuff)
-
-.TP 
-\fB\*(T<\fBwm_class_name\fR\*(T>\fR
-Manually set the WM_CLASS name. Defaults to "conky".
 
 .TP 
 \fB\*(T<\fBxftalpha\fR\*(T>\fR

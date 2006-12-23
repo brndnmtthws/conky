@@ -93,6 +93,11 @@ default_color white
 default_shade_color black
 default_outline_color black
 
+dexter_client no
+dexter_server no
+# config file for libdexter (default search path: $HOME/.dexterrc; /etc/libdexter/dexter.conf)
+dexter_config
+
 # Text alignment, other possible values are commented
 #alignment top_left
 #alignment top_right

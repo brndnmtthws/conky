@@ -7,8 +7,6 @@
  */
 
 #include "conky.h"
-#include "remoted.h"
-#include "remotec.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,6 +28,11 @@ double get_time()
 	return tv.tv_sec + (tv.tv_usec / 1000000.0);
 }
 
+#if defined(HAVE_LIBDEXTER) && defined(__linux__)
+#define USE_OS_SPECIFIC_OPEN_FILE
+#endif
+
+#ifndef USE_OS_SPECIFIC_OPEN_FILE
 FILE *open_file(const char *file, int *reported)
 {
 	FILE *fp = fopen(file, "r");
@@ -44,6 +47,7 @@ FILE *open_file(const char *file, int *reported)
 
 	return fp;
 }
+#endif
 
 void variable_substitute(const char *s, char *dest, unsigned int n)
 {
@@ -129,6 +133,11 @@ struct net_stat *get_net_stat(const char *dev)
 	return 0;
 }
 
+void clear_net_stats (void)
+{
+  memset (netstats, 0, sizeof(netstats));
+}
+
 void format_seconds(char *buf, unsigned int n, long t)
 {
 	if (t >= 24 * 60 * 60)	/* hours necessary when there are days? */
@@ -157,6 +166,7 @@ static double last_meminfo_update;
 static double last_fs_update;
 
 unsigned long long need_mask;
+#define NEED(a) ((need_mask & (1 << a)) && ((info.mask & (1 << a)) == 0))
 
 void update_stuff()
 {
@@ -178,8 +188,6 @@ void update_stuff()
 	}
 
 	prepare_update();
-	/* client(); this is approximately where the client should be called */
-#define NEED(a) ((need_mask & (1 << a)) && ((info.mask & (1 << a)) == 0))
 
 	if (NEED(INFO_UPTIME))
 		update_uptime();
@@ -204,8 +212,6 @@ void update_stuff()
 
 	if (NEED(INFO_MAIL))
 		update_mail_count();
-
-
 
 #if defined(__linux__)
 	if (NEED(INFO_I8K))

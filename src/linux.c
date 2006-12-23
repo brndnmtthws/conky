@@ -32,81 +32,72 @@
 #define SHORTSTAT_TEMPL "%*s %llu %llu %llu"
 #define LONGSTAT_TEMPL "%*s %llu %llu %llu "
 
-
-static struct sysinfo s_info;
+#ifdef HAVE_LIBDEXTER
+/* need the procraw service from the libdexter dxt-sysinfo plugin */
+#include <dxt-sysinfo/procraw-public.h>
+#define PROCRAW_SERVICE_UUID "ce975a10-0e52-458a-a4b9-253734760436"
+/* timed sampler that delivers the procraw data */
+static DexterTimedSampler *procraw_sampler = NULL;
+/* procraw structure used as /proc surrogate */
+static DxtSysinfoProcrawData procraw_data;
+/* data selector mask for the service */
+gint procraw_mask;
+#endif
 
 static int show_nice_processes;
+
+/* this flags tells the linux routines to use the /proc system
+ * where possible, even if other api's are available, e.g. sysinfo() 
+ * or getloadavg(). the reason for this is to allow for /proc-based 
+ * distributed monitoring. using a flag in this manner creates less
+ * confusing code.
+ */
+static int prefer_proc = 0;
 
 void prepare_update()
 {
 }
 
-static void update_sysinfo()
-{
-	sysinfo(&s_info);
-
-	info.uptime = (double) s_info.uptime;
-
-	/* there was some problem with these */
-#if 0
-//      info.loadavg[0] = s_info.loads[0] / 100000.0f;
-	info.loadavg[1] = s_info.loads[1] / 100000.0f;
-	info.loadavg[2] = s_info.loads[2] / 100000.0f;
-	gkrelltop_process_find_top_three info.mask |= 1 << INFO_LOADAVG;
-#endif
-
-	info.procs = s_info.procs;
-
-	/* these aren't nice, no cache and should check kernel version for mem_unit */
-#if 0
-	info.memmax = s_info.totalram;
-	info.mem = s_info.totalram - s_info.freeram;
-	info.swapmax = s_info.totalswap;
-	info.swap = s_info.totalswap - s_info.swap;
-	info.mask |= 1 << INFO_MEM;
-#endif
-
-	info.mask |= (1 << INFO_UPTIME) | (1 << INFO_PROCS);
-}
-
 void update_uptime()
 {
-	/* prefers sysinfo() for uptime, I don't really know which one is better
-	 * (=faster?) */
-#ifdef USE_PROC_UPTIME
-	static int rep;
-	FILE *fp = open_file("/proc/uptime", &rep);
-	if (!fp)
-		return 0;
-	fscanf(fp, "%lf", &info.uptime);
-	fclose(fp);
-
-	info.mask |= (1 << INFO_UPTIME);
-#else
-	update_sysinfo();
+#ifdef HAVE_SYSINFO
+  if (!prefer_proc)
+  {
+    struct sysinfo s_info;
+    sysinfo(&s_info);
+    info.uptime = (double) s_info.uptime;
+  }
+  else
 #endif
+  {
+	  static int rep = 0;
+	  FILE *fp;
+  
+    if (!(fp = open_file("/proc/uptime", &rep)))
+    {
+      return;
+    }
+	  fscanf(fp, "%lf", &info.uptime);
+	  fclose(fp);
+  }
+  info.mask |= (1 << INFO_UPTIME);
 }
 
 /* these things are also in sysinfo except Buffers:, that's why I'm reading
 * them from proc */
 
-static FILE *meminfo_fp;
-
 void update_meminfo()
 {
-	static int rep;
+  FILE *meminfo_fp;
+	static int rep = 0;
 	/*  unsigned int a; */
 	char buf[256];
 
 	info.mem = info.memmax = info.swap = info.swapmax = info.bufmem =
 	    info.buffers = info.cached = 0;
 
-	if (meminfo_fp == NULL)
-		meminfo_fp = open_file("/proc/meminfo", &rep);
-	else
-		fseek(meminfo_fp, 0, SEEK_SET);
-	if (meminfo_fp == NULL)
-		return;
+  if (!(meminfo_fp = open_file("/proc/meminfo", &rep)))
+      return;
 
 	while (!feof(meminfo_fp)) {
 		if (fgets(buf, 255, meminfo_fp) == NULL)
@@ -133,21 +124,21 @@ void update_meminfo()
 	info.bufmem = info.cached + info.buffers;
 
 	info.mask |= (1 << INFO_MEM) | (1 << INFO_BUFFERS);
+
+  fclose (meminfo_fp);
 }
 
-static FILE *net_dev_fp;
 static FILE *net_wireless_fp;
 
 inline void update_net_stats()
 {
-	static int rep;
+  FILE *net_dev_fp;
+	static int rep = 0;
 	// FIXME: arbitrary size chosen to keep code simple.
 	int i, i2;
 	unsigned int curtmp1, curtmp2;
 	unsigned int k;
 	struct ifconf conf;
-
-
 	char buf[256];
 	double delta;
 
@@ -157,13 +148,8 @@ inline void update_net_stats()
 		return;
 
 	/* open file and ignore first two lines */
-	if (net_dev_fp == NULL) {
-		net_dev_fp = open_file("/proc/net/dev", &rep);
-	}
-	else
-		fseek(net_dev_fp, 0, SEEK_SET);
-	if (!net_dev_fp)
-		return;
+  if (!(net_dev_fp = open_file("/proc/net/dev", &rep)))
+    return;
 
 	fgets(buf, 255, net_dev_fp);	/* garbage */
 	fgets(buf, 255, net_dev_fp);	/* garbage (field names) */
@@ -265,17 +251,17 @@ inline void update_net_stats()
 			}
 		}
 
-
-
 	}
 
-	/* fclose(net_dev_fp); net_dev_fp = NULL; */
+	fclose(net_dev_fp);
+
+  info.mask |= (1 << INFO_NET);
 }
 
 inline void update_wifi_stats()
 {
 	/** wireless stats patch by Bobby Beckmann **/
-	static int rep;
+	static int rep = 0;
 	int i;
 	char buf[256];
 	/*open file and ignore first two lines       sorry, this code sucks ass right now, i'll clean it up later */
@@ -325,7 +311,27 @@ int result;
 
 void update_total_processes()
 {
-	update_sysinfo();
+#ifdef HAVE_SYSINFO
+  if (!prefer_proc)
+  {
+    struct sysinfo s_info;
+    sysinfo(&s_info);
+    info.procs = s_info.procs;
+  }
+  else
+#endif
+  {
+    static int rep = 0;
+    FILE *fp;
+
+    if (!(fp = open_file("/proc/loadavg", &rep)))
+    {
+      return;
+    }
+    fscanf(fp, "%*f %*f %*f %*d/%hd", &info.procs );
+    fclose(fp);
+  }
+  info.mask |= (1 << INFO_PROCS);
 }
 
 #define CPU_SAMPLE_COUNT 15
@@ -345,10 +351,6 @@ struct cpu_info {
 	double cpu_val[CPU_SAMPLE_COUNT];
 };
 static short cpu_setup = 0;
-static int rep;
-
-
-static FILE *stat_fp;
 
 /* 
    determine if this kernel gives us "extended" statistics information in /proc/stat. 
@@ -364,16 +366,16 @@ void determine_longstat(char * buf) {
 
 void get_cpu_count()
 {
+  FILE *stat_fp;
+  static int rep = 0;
+
 	if (info.cpu_usage) {
 		return;
 	}
 	char buf[256];
-	if (stat_fp == NULL)
-		stat_fp = open_file("/proc/stat", &rep);
-	else
-		fseek(stat_fp, 0, SEEK_SET);
-	if (stat_fp == NULL)
-		return;
+
+  if (!(stat_fp = open_file("/proc/stat", &rep)))
+    return;
 
 	info.cpu_count = 0;
 
@@ -389,6 +391,8 @@ void get_cpu_count()
 		}
 	}
 	info.cpu_usage = malloc((info.cpu_count + 1) * sizeof(float));
+
+  fclose (stat_fp);
 }
 
 #define TMPL_LONGSTAT "%*s %llu %llu %llu %llu %llu %llu %llu %llu"
@@ -396,6 +400,8 @@ void get_cpu_count()
 
 inline static void update_stat()
 {
+  FILE *stat_fp;
+  static int rep = 0;
 	static struct cpu_info *cpu = NULL;
 	char buf[256];
 	unsigned int i;
@@ -411,24 +417,19 @@ inline static void update_stat()
 		cpu_setup = 1;
 	}
 
-	if (stat_template == NULL) {
+	if (!stat_template) {
 		stat_template = KFLAG_ISSET(KFLAG_IS_LONGSTAT) ? TMPL_LONGSTAT : TMPL_SHORTSTAT ;
 	}	
 
-	if (cpu == NULL) {
-		malloc_cpu_size = (info.cpu_count + 1) *  sizeof(struct cpu_info);
+	if (!cpu) {
+		malloc_cpu_size = (info.cpu_count + 1) * sizeof(struct cpu_info);
 		cpu = malloc(malloc_cpu_size);
 		memset(cpu, 0, malloc_cpu_size);
 	}
 
-	if (stat_fp == NULL) {
-		stat_fp = open_file("/proc/stat", &rep);
-	} else {
-		fseek(stat_fp, 0, SEEK_SET);
-	}
-	if (stat_fp == NULL) {
-		return;
-	}
+  if (!(stat_fp = open_file("/proc/stat", &rep)))
+    return;
+
 	index = 0;
 	while (!feof(stat_fp)) {
 		if (fgets(buf, 255, stat_fp) == NULL)
@@ -464,7 +465,7 @@ inline static void update_stat()
 			info.mask |= (1 << INFO_CPU);
 
 			double delta = current_update_time - last_update_time;
-			if (delta <= 0.001) return; 	
+			if (delta <= 0.001) break; 	
 
 			cpu[index].cpu_val[0] = (cpu[index].cpu_active_total -  cpu[index].cpu_last_active_total) / 
 			                        (float )(cpu[index].cpu_total - cpu[index].cpu_last_total); 
@@ -490,6 +491,7 @@ inline static void update_stat()
 		}
 
 	}
+  fclose (stat_fp);
 }
 
 void update_running_processes()
@@ -505,26 +507,29 @@ void update_cpu_usage()
 void update_load_average()
 {
 #ifdef HAVE_GETLOADAVG
-	double v[3];
-	getloadavg(v, 3);
-	info.loadavg[0] = (float) v[0];
-	info.loadavg[1] = (float) v[1];
-	info.loadavg[2] = (float) v[2];
-#else
-	static int rep;
-	FILE *fp;
-
-	fp = open_file("/proc/loadavg", &rep);
-	if (!fp) {
-		v[0] = v[1] = v[2] = 0.0;
-		return;
-	}
-
-	fscanf(fp, "%f %f %f", &info.loadavg[0], &info.loadavg[1],
-	       &info.loadavg[2]);
-
-	fclose(fp);
+  if (!prefer_proc)
+  {
+	  double v[3];
+	  getloadavg(v, 3);
+	  info.loadavg[0] = (float) v[0];
+	  info.loadavg[1] = (float) v[1];
+	  info.loadavg[2] = (float) v[2];
+  }
+  else
 #endif
+  {
+    static int rep = 0;
+    FILE *fp;
+
+    if (!(fp = open_file("/proc/loadavg", &rep)))
+    {
+      info.loadavg[0] = info.loadavg[1] = info.loadavg[2] = 0.0;
+      return;
+    }
+    fscanf(fp, "%f %f %f", &info.loadavg[0], &info.loadavg[1], &info.loadavg[2]);
+    fclose(fp);
+  }
+  info.mask |= (1 << INFO_LOADAVG);
 }
 
 #define PROC_I8K "/proc/i8k"
@@ -613,7 +618,7 @@ open_i2c_sensor(const char *dev, const char *type, int n, int *div,
 
 	/* if i2c device is NULL or *, get first */
 	if (dev == NULL || strcmp(dev, "*") == 0) {
-		static int rep;
+		static int rep = 0;
 		if (!get_first_file_in_a_directory(I2C_DIR, buf, &rep))
 			return -1;
 		dev = buf;
@@ -731,7 +736,7 @@ double get_i2c_info(int *fd, int div, char *devtype, char *type)
 
 void get_adt746x_fan( char * p_client_buffer, size_t client_buffer_size )
 {
-	static int rep;
+	static int rep = 0;
 	char adt746x_fan_state[64];
 	FILE *fp;
 
@@ -764,7 +769,7 @@ void get_adt746x_fan( char * p_client_buffer, size_t client_buffer_size )
 
 void get_adt746x_cpu( char * p_client_buffer, size_t client_buffer_size )
 {
-	static int rep;
+	static int rep = 0;
 	char adt746x_cpu_state[64];
 	FILE *fp;
 
@@ -855,33 +860,34 @@ void get_freq_dynamic( char * p_client_buffer, size_t client_buffer_size, char *
 char get_freq( char * p_client_buffer, size_t client_buffer_size, char * p_format, int divisor, unsigned int cpu )
 {
 	FILE *f;
+  static int rep = 0;
 	char frequency[32];
 	char s[256];
 	double freq = 0;
-	char current_freq_file[128];
 	
-	cpu--;
-	snprintf(current_freq_file, 127, "%s/cpu%d/%s",
-		 CPUFREQ_PREFIX, cpu, CPUFREQ_POSTFIX);
-
 	if ( !p_client_buffer || client_buffer_size <= 0 || !p_format || divisor <= 0 )
 		return 0;
 	
-	f = fopen(current_freq_file, "r");
-	if (f) {
-		/* if there's a cpufreq /sys node, read the current frequency from this node;
-		 * divide by 1000 to get Mhz. */
-		if (fgets(s, sizeof(s), f)) {
-			s[strlen(s)-1] = '\0';
-			freq = strtod(s, NULL);
-		}
-		fclose(f);
-		snprintf( p_client_buffer, client_buffer_size, p_format, (freq/1000)/divisor );
-		return 1;
+  if (!prefer_proc)
+  {
+    char current_freq_file[128];
+    snprintf(current_freq_file, 127, "%s/cpu%d/%s",CPUFREQ_PREFIX, cpu-1, CPUFREQ_POSTFIX);
+	  f = fopen(current_freq_file, "r");
+	  if (f) 
+    {
+		  /* if there's a cpufreq /sys node, read the current frequency from this node;
+		   * divide by 1000 to get Mhz. */
+		  if (fgets(s, sizeof(s), f)) {
+			    s[strlen(s)-1] = '\0';
+			    freq = strtod(s, NULL);
+		  }
+		  fclose(f);
+		  snprintf( p_client_buffer, client_buffer_size, p_format, (freq/1000)/divisor );
+		  return 1;
+    }
 	}
 	
-	cpu++;
-	f = fopen("/proc/cpuinfo", "r");		//open the CPU information file
+	f = open_file("/proc/cpuinfo", &rep);		//open the CPU information file
 	if (!f) {
 		perror("Conky: Failed to access '/proc/cpuinfo' at get_freq()");
 		return 0;
@@ -1003,7 +1009,7 @@ char get_voltage( char * p_client_buffer, size_t client_buffer_size, char * p_fo
 
 void get_acpi_fan( char * p_client_buffer, size_t client_buffer_size )
 {
-	static int rep;
+	static int rep = 0;
 	char buf[256];
 	char buf2[256];
 	FILE *fp;
@@ -1038,7 +1044,7 @@ void get_acpi_fan( char * p_client_buffer, size_t client_buffer_size )
 
 void get_acpi_ac_adapter( char * p_client_buffer, size_t client_buffer_size )
 {
-	static int rep;
+	static int rep = 0;
 	char buf[256];
 	char buf2[256];
 	FILE *fp;
@@ -1094,7 +1100,7 @@ int open_acpi_temperature(const char *name)
 	int fd;
 
 	if (name == NULL || strcmp(name, "*") == 0) {
-		static int rep;
+		static int rep = 0;
 		if (!get_first_file_in_a_directory
 		    (ACPI_THERMAL_DIR, buf, &rep))
 			return -1;
@@ -1199,7 +1205,7 @@ static double last_battery_time;
 
 void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 {
-	static int rep, rep2;
+	static int rep = 0, rep2 = 0;
 	char acpi_path[128];
 	snprintf(acpi_path, 127, ACPI_BATTERY_BASE_PATH "/%s/state", bat);
 
@@ -1225,8 +1231,8 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 
 		/* read last full capacity if it's zero */
 		if (acpi_last_full == 0) {
-			static int rep;
-			char path[128];
+			static int rep = 0;
+      char path[128];
 			FILE *fp;
 			snprintf(path, 127,
 				 ACPI_BATTERY_BASE_PATH "/%s/info", bat);
@@ -1396,7 +1402,7 @@ static double pb_battery_info_update;
 #define PMU_PATH "/proc/pmu"
 void get_powerbook_batt_info(char *buf, size_t n, int i)
 {
-        static int rep;
+        static int rep = 0;
         const char* batt_path = PMU_PATH "/battery_0";
         const char* info_path = PMU_PATH "/info";
         int flags, charge, max_charge, ac = -1;
@@ -1503,7 +1509,8 @@ void update_top()
 void update_diskio()
 {
 	static unsigned int last = UINT_MAX;
-	static FILE* fp;
+	FILE* fp;
+  static int rep=0;
 
 	char buf[512];
 	int major, minor;
@@ -1511,11 +1518,8 @@ void update_diskio()
 	unsigned int reads, writes = 0;
 	int col_count = 0;
 
-	if (!fp) {
-		fp = fopen("/proc/diskstats", "r");
-	} else {
-		fseek(fp, 0, SEEK_SET);
-	}
+	if (!(fp =open_file("/proc/diskstats", &rep)))
+      return;
 
 	/* read reads and writes from all disks (minor = 0), including
 	 * cd-roms and floppies, and summ them up
@@ -1551,6 +1555,8 @@ void update_diskio()
 	last = current;
 
 	diskio_value = tot;
+
+  fclose(fp);
 }
 
 /* Here come the IBM ACPI-specific things. For reference, see
@@ -1780,26 +1786,444 @@ Peter Tarjan (ptarjan@citromail.hu)
 
 void update_entropy (void)
 {
-    static int rep;
-    const char *entropy_avail = "/proc/sys/kernel/random/entropy_avail";
-    const char *entropy_poolsize = "/proc/sys/kernel/random/poolsize";
-    FILE *fp1, *fp2;
+  static int rep = 0;
+  const char *entropy_avail = "/proc/sys/kernel/random/entropy_avail";
+  const char *entropy_poolsize = "/proc/sys/kernel/random/poolsize";
+  FILE *fp1, *fp2;
 
-    info.entropy.entropy_avail=0;
-    info.entropy.poolsize=0;
+  info.entropy.entropy_avail=0;
+  info.entropy.poolsize=0;
 
-    if ((fp1 = open_file (entropy_avail, &rep))==NULL)
-	return;
+  if ((fp1 = open_file (entropy_avail, &rep))==NULL)
+    return;
 
-    if ((fp2 = open_file (entropy_poolsize, &rep))==NULL)
+  if ((fp2 = open_file (entropy_poolsize, &rep))==NULL)
+  {
+    fclose (fp1);
+    return;
+  }
+
+  fscanf (fp1, "%u", &info.entropy.entropy_avail);
+  fscanf (fp2, "%u", &info.entropy.poolsize);
+
+  fclose (fp1);
+  fclose (fp2);
+
+  info.mask |= (1 << INFO_ENTROPY);
+}
+
+#ifdef HAVE_LIBDEXTER
+FILE *open_file(const char *file, int *reported)
+{
+  /* this version of open_file() is the hook that ties the client/server code 
+   * into conky. if conky wants to open a /proc file that the server is feeding 
+   * us, we do not return an ordinary file stream pointer to the local /proc 
+   * filesystem. instead, we return a string stream pointer to the proc surrogate, 
+   * so conky parses remote data as if it were local.
+   */
+  FILE *fp;
+
+  if ((strcmp (file,"/proc/cpuinfo")==0) && (procraw_mask & PROCRAW_CPUINFO))
+  {
+    if (!procraw_sampler)
+      return NULL;
+    fp = fmemopen (procraw_data.cpuinfo, procraw_data.cpuinfo_sz, "r");
+  }
+  else if ((strcmp (file,"/proc/loadavg")==0) && (procraw_mask & PROCRAW_LOADAVG))
+  {
+    if (!procraw_sampler)
+      return NULL;
+    fp = fmemopen (procraw_data.loadavg, procraw_data.loadavg_sz, "r");
+  }
+  else if ((strcmp (file,"/proc/meminfo")==0) && (procraw_mask & PROCRAW_MEMINFO))
+  {
+    if (!procraw_sampler)
+      return NULL;
+    fp = fmemopen (procraw_data.meminfo, procraw_data.meminfo_sz, "r");
+  }
+  else if ((strcmp (file,"/proc/stat")==0) && (procraw_mask & PROCRAW_STAT))
+  {
+    if (!procraw_sampler)
+      return NULL;
+    fp = fmemopen (procraw_data.stat, procraw_data.stat_sz, "r");
+  }
+  else if ((strcmp (file,"/proc/uptime")==0) && (procraw_mask & PROCRAW_UPTIME))
+  {
+    if (!procraw_sampler)
+      return NULL;
+    fp = fmemopen (procraw_data.uptime, procraw_data.uptime_sz, "r");
+  }
+  else if ((strcmp (file,"/proc/net/dev")==0) && (procraw_mask & PROCRAW_NET_DEV))
+  {
+    if (!procraw_sampler)
+      return NULL;
+    fp = fmemopen (procraw_data.net_dev, procraw_data.net_dev_sz, "r");
+  }
+  else if ((strcmp (file,"/proc/diskstats")==0) && (procraw_mask & PROCRAW_DISKSTATS))
+  {
+    if (!procraw_sampler)
+      return NULL;
+    fp = fmemopen (procraw_data.diskstats, procraw_data.diskstats_sz, "r");
+  }
+  else
+  {
+    fp = fopen(file, "r");
+  }
+
+  if (!fp)
+  {
+    if (!reported || *reported == 0)
     {
-	fclose (fp1);
-	return;
+      ERR("can't open %s: %s", file, strerror(errno));
+      if (reported)
+        *reported = 1;
+    }
+    return 0;
+  }
+  return fp;
+}
+
+void sampler_data_callback (gpointer sampler, gpointer sampler_data)
+{
+  /* callback runs in a thread */
+  if (!sampler)
+    return;
+
+  if (sampler_data)
+  {
+    FILE *out;
+    char *p;
+    unsigned int i;
+    DxtSysinfoProcrawData *data = (DxtSysinfoProcrawData *)sampler_data;
+
+    /* use GNU string streams and stdio locking to exchange data with main thread. */
+
+    /* update /proc/cpuinfo surrogate */
+    for (;data->cpuinfo;)
+    {
+      if (!(out = open_memstream (&procraw_data.cpuinfo, &procraw_data.cpuinfo_sz)))
+        break;
+
+      flockfile (out);
+      if (procraw_data.cpuinfo)
+      {
+        free (procraw_data.cpuinfo); procraw_data.cpuinfo=NULL;
+      }
+      for (p=data->cpuinfo, i=0; i<data->cpuinfo_sz; i++, p++)
+      {
+        /* we have the FILE lock so use faster putc_unlocked() */
+        if (fputc_unlocked (*p, out) == EOF)
+          break;
+      }
+      fclose (out);
+      funlockfile (out);
+      break;
     }
 
-    fscanf (fp1, "%u", &info.entropy.entropy_avail);
-    fscanf (fp2, "%u", &info.entropy.poolsize);
+    /* update /proc/loadavg surrogate */
+    for (;data->loadavg;)
+    {
+      if (!(out = open_memstream (&procraw_data.loadavg, &procraw_data.loadavg_sz)))
+        break;
 
-    fclose (fp1);
-    fclose (fp2);
+      flockfile (out);
+      if (procraw_data.loadavg)
+      {
+        free (procraw_data.loadavg); procraw_data.loadavg=NULL;
+      }
+      for (p=data->loadavg, i=0; i<data->loadavg_sz; i++, p++)
+      {
+        /* we have the FILE lock so use faster putc_unlocked() */
+        if (fputc_unlocked (*p, out) == EOF)
+          break;
+      }
+      fclose (out);
+      funlockfile (out);
+      break;
+    }
+
+    /* update /proc/meminfo surrogate */
+    for (;data->meminfo;)
+    {
+      if (!(out = open_memstream (&procraw_data.meminfo, &procraw_data.meminfo_sz)))
+        break;
+
+      flockfile (out);
+      if (procraw_data.meminfo)
+      {
+        free (procraw_data.meminfo); procraw_data.meminfo=NULL;
+      }
+      for (p=data->meminfo, i=0; i<data->meminfo_sz; i++, p++)
+      {
+        /* we have the FILE lock so use faster putc_unlocked() */
+        if (fputc_unlocked (*p, out) == EOF)
+          break;
+      }
+      fclose (out);
+      funlockfile (out);
+      break;
+    }
+
+    /* update /proc/stat surrogate */
+    for (;data->stat;)
+    {
+      if (!(out = open_memstream (&procraw_data.stat, &procraw_data.stat_sz)))
+        break;
+
+      flockfile (out);
+      if (procraw_data.stat)
+      {
+        free (procraw_data.stat); procraw_data.stat=NULL;
+      }
+      for (p=data->stat, i=0; i<data->stat_sz; i++, p++)
+      {
+        /* we have the FILE lock so use faster putc_unlocked() */
+        if (fputc_unlocked (*p, out) == EOF)
+          break;
+      }
+      fclose (out);
+      funlockfile (out);
+      break;
+    }
+
+    /* update /proc/uptime surrogate */
+    for (;data->uptime;)
+    {
+      if (!(out = open_memstream (&procraw_data.uptime, &procraw_data.uptime_sz)))
+        break;
+
+      flockfile (out);
+      if (procraw_data.uptime)
+      {
+        free (procraw_data.uptime); procraw_data.uptime=NULL;
+      }
+      for (p=data->uptime, i=0; i<data->uptime_sz; i++, p++)
+      {
+        /* we have the FILE lock so use faster putc_unlocked() */
+        if (fputc_unlocked (*p, out) == EOF)
+          break;
+      }
+      fclose (out);
+      funlockfile (out);
+      break;
+    }
+
+    /* update /proc/net/dev surrogate */
+    for (;data->net_dev;)
+    {
+      if (!(out = open_memstream (&procraw_data.net_dev, &procraw_data.net_dev_sz)))
+        break;
+
+      flockfile (out);
+      if (procraw_data.net_dev)
+      {
+        free (procraw_data.net_dev); procraw_data.net_dev=NULL;
+      }
+      for (p=data->net_dev, i=0; i<data->net_dev_sz; i++, p++)
+      {
+        /* we have the FILE lock so use faster putc_unlocked() */
+        if (fputc_unlocked (*p, out) == EOF)
+          break;
+      }
+      fclose (out);
+      funlockfile (out);
+      break;
+    }
+
+    /* update /proc/diskstats surrogate */
+    for (;data->diskstats;)
+    {
+      if (!(out = open_memstream (&procraw_data.diskstats, &procraw_data.diskstats_sz)))
+        break;
+
+      flockfile (out);
+      if (procraw_data.diskstats)
+      {
+        free (procraw_data.diskstats); procraw_data.diskstats=NULL;
+      }
+      for (p=data->diskstats, i=0; i<data->diskstats_sz; i++, p++)
+      {
+        /* we have the FILE lock so use faster putc_unlocked() */
+        if (fputc_unlocked (*p, out) == EOF)
+          break;
+      }
+      fclose (out);
+      funlockfile (out);
+      break;
+    }
+
+  /* record data packet arrival time */
+  g_mutex_lock (packet_mutex);
+  clock_gettime (CLOCK_REALTIME, &packet_arrival_time);
+  g_mutex_unlock (packet_mutex);
+#ifdef DEBUG
+  fprintf(stderr, "Conky: data packet arrived\n");
+#endif
+
+  } /* if (sampler_data) ... */
 }
+
+/* return 0 on success, -1 on failure */
+int dexter_client_init (void)
+{
+  /* init libdexter for linux-specific client-side activity */
+
+  DexterServiceBroker       *broker;
+  DexterPluginServiceGroup  *service_group;
+  DexterPluginService       *procraw_service;
+  DexterSamplerDataCallback *callbacks;
+  GError                    *error = NULL;
+
+  /* create a service broker so we can query the server for its services */
+  if (!(broker = dexter_service_broker_new (info.dexter.channel)))
+  {
+    ERR ("unable to create service broker");
+    return (-1);
+  }
+
+  /* fetch the services from the server */
+  service_group = dexter_service_broker_get_services (broker, DEXTER_SERVICE_SAMPLER, &error);
+  if (error)
+  {
+    ERR("%s", error->message);
+    g_clear_error (&error);
+    dexter_service_broker_free (broker);
+    return (-1);
+  }
+
+  /* dont need service broker any more */
+  dexter_service_broker_free (broker);
+  broker=NULL;
+
+  /* find the procraw service */
+  procraw_service=NULL;
+  if (!dexterplugin_service_group_find_uuid (&procraw_service, service_group, PROCRAW_SERVICE_UUID))
+  {
+    ERR ("server doesn't offer the procraw service: (%s)", PROCRAW_SERVICE_UUID);
+    dexterplugin_service_group_free (service_group);
+    return (-1);
+  }
+
+  /* create null-terminated callback list with one callback on it */
+  callbacks = g_new0 (DexterSamplerDataCallback, 2);
+  callbacks[0] = sampler_data_callback;
+
+  /* create the procraw timed sampler, timed to match conky's update_interval */
+  procraw_sampler = dexter_timedsampler_new (procraw_service, update_interval*G_USEC_PER_SEC,
+                                             callbacks, info.dexter.channel, &error);
+  if (error)
+  {
+    ERR("%s", error->message);
+    g_clear_error (&error);
+    dexterplugin_service_group_free (service_group);
+    return (-1);
+  }
+
+  /* free callbacks as libdexter makes internal copy */
+  g_free (callbacks);
+  callbacks=NULL;
+
+  /* initialize the timed sampler */
+  procraw_mask = 0;
+  if (need_mask & (1 << INFO_FREQ))
+    procraw_mask |= PROCRAW_CPUINFO;
+  if (need_mask & (1 << INFO_LOADAVG))
+    procraw_mask |= PROCRAW_LOADAVG;
+  if ((need_mask & (1 << INFO_MEM)) || (need_mask & (1 << INFO_BUFFERS)))
+    procraw_mask |= PROCRAW_MEMINFO;
+  if ((need_mask & (1 << INFO_CPU)) || (need_mask & (1 << INFO_PROCS)) || 
+      (need_mask & (1 << INFO_RUN_PROCS)) || (need_mask & (1 << INFO_FREQ )))
+    procraw_mask |= PROCRAW_STAT;
+  if (need_mask & (1 << INFO_UPTIME))
+    procraw_mask |= PROCRAW_UPTIME;
+  if (need_mask & (1 << INFO_NET))
+    procraw_mask |= PROCRAW_NET_DEV;
+  if (need_mask & (1 << INFO_DISKIO))
+    procraw_mask |= PROCRAW_DISKSTATS;
+
+  dexter_timedsampler_initialize (procraw_sampler, &procraw_mask, NULL, &error);
+  if (error)
+  {
+    ERR("%s", error->message);
+    g_clear_error (&error);
+    dexter_timedsampler_free (procraw_sampler, NULL);
+    dexterplugin_service_group_free (service_group);
+    return (-1);
+  }
+
+  /* start the timed sampler and begin receiving updates from server */
+  dexter_timedsampler_start (procraw_sampler, &error);
+  if (error)
+  {
+    ERR("%s", error->message);
+    g_clear_error (&error);
+    dexter_timedsampler_free (procraw_sampler, NULL);
+    dexterplugin_service_group_free (service_group);
+    return (-1);
+  }
+
+  dexterplugin_service_group_free (service_group);
+
+  /* so far, so good.  tell the linux routines to read /proc, 
+   * even if other api's are available. */
+  prefer_proc = 1;
+
+  return 0;
+}
+
+/* return 0 on success, -1 on failure */
+int dexter_client_exit (void)
+{
+  /* de-init libdexter for linux-specific client-side activity */
+
+  if (procraw_sampler)
+  {
+    dexter_timedsampler_stop (procraw_sampler, NULL);
+    dexter_timedsampler_free (procraw_sampler, NULL);
+    procraw_sampler=NULL;
+  }
+  
+  /* free left-over sampler data.  ok to do this without thread sync because 
+   * this function runs in the same thread that conky issues open_file(). */
+  if (procraw_data.cpuinfo)
+  {
+    free (procraw_data.cpuinfo); procraw_data.cpuinfo=NULL;
+  }
+  if (procraw_data.loadavg)
+  {
+    free (procraw_data.loadavg); procraw_data.loadavg=NULL;
+  }
+  if (procraw_data.meminfo)
+  {
+    free (procraw_data.meminfo); procraw_data.meminfo=NULL;
+  }
+  if (procraw_data.stat)
+  {
+    free (procraw_data.stat); procraw_data.stat=NULL;
+  }
+  if (procraw_data.uptime)
+  {
+    free (procraw_data.uptime); procraw_data.uptime=NULL;
+  }
+  if (procraw_data.net_dev)
+  {
+    free (procraw_data.net_dev); procraw_data.net_dev=NULL;
+  }
+  if (procraw_data.diskstats)
+  {
+    free (procraw_data.diskstats); procraw_data.diskstats=NULL;
+  }
+
+  info.uptime=0.0;
+  info.procs=0;
+  info.mem = info.memmax = info.swap = info.swapmax = info.bufmem = info.buffers = info.cached = 0;
+  info.run_procs=0;
+  if (info.cpu_usage)
+  {
+    memset(info.cpu_usage, 0, info.cpu_count * sizeof (float));
+  }
+  clear_net_stats ();
+  diskio_value=0;
+  return 0;
+}
+#endif

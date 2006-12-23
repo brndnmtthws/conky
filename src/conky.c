@@ -95,6 +95,9 @@ static void print_version()
 #ifdef TCP_PORT_MONITOR
 	"  * portmon\n"
 #endif /* TCP_PORT_MONITOR */
+#ifdef HAVE_LIBDEXTER
+  "  * network\n"
+#endif
 	"\n");	
 
 	exit(0);
@@ -274,9 +277,6 @@ static char *current_config;
 /* set to 1 if you want all text to be in uppercase */
 static unsigned int stuff_in_upper_case;
 
-/* Update interval */
-static double update_interval;
-
 /* Run how many times? */
 static unsigned long total_run_times;
 
@@ -378,6 +378,11 @@ static int pad_percents = 0;
 
 #ifdef TCP_PORT_MONITOR
 tcp_port_monitor_args_t 	tcp_port_monitor_args;
+#endif
+
+#ifdef HAVE_LIBDEXTER
+/* private config items for libdexter */
+static char *dexter_config = NULL;
 #endif
 
 /* Text that is shown */
@@ -1076,7 +1081,6 @@ enum text_object_type {
 #ifdef TCP_PORT_MONITOR
 	OBJ_tcp_portmon,
 #endif
-
 #ifdef HAVE_ICONV
 	OBJ_iconv_start,
 	OBJ_iconv_stop,
@@ -2006,7 +2010,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		OBJ(acpitemp, 0) obj->data.i = open_acpi_temperature(arg);
 	END OBJ(acpitempf, 0) obj->data.i = open_acpi_temperature(arg);
 	END OBJ(acpiacadapter, 0)
-	END OBJ(freq, 0)
+	END OBJ(freq, INFO_FREQ)
 	    get_cpu_count();
 	if (!arg
 	    || !isdigit(arg[0])
@@ -2022,7 +2026,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	    obj->data.cpu_index=atoi(&arg[0]);
 	}
 	obj->a = 1;
-	END OBJ(freq_g, 0)
+	END OBJ(freq_g, INFO_FREQ)
 	    get_cpu_count();
 	if (!arg
 	    || !isdigit(arg[0])
@@ -2071,9 +2075,6 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	    obj->data.cpu_index=atoi(&arg[0]);
 	}
 	obj->a = 1;
-#else 
-	END OBJ(freq, 0);
-	END OBJ(freq_g, 0);
 #endif /* __linux__ */
 	END OBJ(freq_dyn, 0);
 	END OBJ(freq_dyn_g, 0);
@@ -3428,15 +3429,15 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						}
 					} else {
 						if (diskio_value > 1024*1024) {
-							snprintf(p, 6, "%.1fGiB   ",
+							snprintf(p, 12, "%.1fGiB   ",
 									(double)diskio_value/1024/1024);
 						} else if (diskio_value > 1024) {
-							snprintf(p, 6, "%.1fMiB   ",
+							snprintf(p, 12, "%.1fMiB   ",
 									(double)diskio_value/1024);
 						} else if (diskio_value > 0) {
-							snprintf(p, 6, "%dKiB ", diskio_value);
+							snprintf(p, 12, "%dKiB ", diskio_value);
 						} else {
-							snprintf(p, 6, "%dB     ", diskio_value);
+							snprintf(p, 12, "%dB     ", diskio_value);
 						}
 					}
 				}
@@ -3469,8 +3470,10 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 								recv_speed / 1024.0);
 				}
 				OBJ(downspeedgraph) {
-					if (obj->data.net->recv_speed == 0)	// this is just to make the ugliness at start go away
+          /*
+					if (obj->data.net->recv_speed == 0)	
 						obj->data.net->recv_speed = 0.01;
+            */
 					new_graph(p, obj->a, obj->b, obj->c, obj->d,
 							(obj->data.net->recv_speed /
 							 1024.0), obj->e, 1);
@@ -4244,8 +4247,10 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						 trans_speed / 1024.0);
 			}
 			OBJ(upspeedgraph) {
-				if (obj->data.net->trans_speed == 0)	// this is just to make the ugliness at start go away
+        /*
+				if (obj->data.net->trans_speed == 0)
 					obj->data.net->trans_speed = 0.01;
+          */
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 					  (obj->data.net->trans_speed /
 				1024.0), obj->e, 1);
@@ -5065,7 +5070,6 @@ static void draw_string(const char *s)
 		printf("%s\n", s);
 		fflush(stdout);   /* output immediately, don't buffer */
 	}
-	/* daemon_run(s);  the daemon can be called here, but we need to have a buffer in daemon_run() and we need to tell it when everything is ready to be sent */
 	memset(tmpstring1,0,TEXT_BUFFER_SIZE);
 	memset(tmpstring2,0,TEXT_BUFFER_SIZE);
 	strncpy(tmpstring1, s, TEXT_BUFFER_SIZE-1);
@@ -5881,22 +5885,41 @@ static void main_loop()
 
 			case ButtonPress:
 				if (own_window)
-				{
+        {
+          /* if an ordinary window with decorations */
+          if ((window.type==TYPE_NORMAL) && (!TEST_HINT(window.hints,HINT_UNDECORATED)))
+          {
+            /* allow conky to hold input focus.*/
+            break;
+          }
+          else
+				  {
 				    /* forward the click to the desktop window */
 				    XUngrabPointer(display, ev.xbutton.time);
 				    ev.xbutton.window = window.desktop;
 				    XSendEvent(display, ev.xbutton.window, False, ButtonPressMask, &ev);
-				}
+            XSetInputFocus(display, ev.xbutton.window,RevertToParent,ev.xbutton.time);
+				  }
+        }
 				break;
 
  			case ButtonRelease:
-                                if (own_window)
-                                {
-                                    /* forward the release to the desktop window */
-                                    ev.xbutton.window = window.desktop;
-                                    XSendEvent(display, ev.xbutton.window, False, ButtonReleaseMask, &ev);
-                                }
-                                break;
+        if (own_window)
+        {
+          /* if an ordinary window with decorations */
+          if ((window.type==TYPE_NORMAL) && (!TEST_HINT(window.hints,HINT_UNDECORATED)))
+          {
+            /* allow conky to hold input focus.*/
+            break;
+          }
+          else
+          {
+            /* forward the release to the desktop window */
+            ev.xbutton.window = window.desktop;
+            XSendEvent(display, ev.xbutton.window, False, ButtonReleaseMask, &ev);
+          }
+        }
+        break;
 
 #endif
 
@@ -6092,6 +6115,12 @@ void clean_up(void)
 	    free (specials);
 	    specials=NULL;
 	}
+
+#ifdef HAVE_LIBDEXTER
+  dexter_library_exit ();
+  if (dexter_config)
+    free (dexter_config);
+#endif
 }
 
 static int string_to_bool(const char *s)
@@ -6188,7 +6217,9 @@ static void set_default_configurations(void)
 	own_window = 0;
 	window.type=TYPE_NORMAL;
 	window.hints=0;
-     	strcpy(window.wm_class_name, "conky");	
+  strcpy(window.class_name, "Conky");	
+  update_uname();
+  sprintf(window.title,"%s - conky",info.uname_s.nodename);
 #endif
 	stippled_borders = 0;
 	border_margin = 3;
@@ -6522,14 +6553,34 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 #ifdef X11
 #ifdef OWN_WINDOW
 		CONF("own_window") {
-			own_window = string_to_bool(value);
+      if (value)
+			  own_window = string_to_bool(value);
+      else
+        CONF_ERR;
 		}
-		CONF("wm_class_name") {
-			memset(window.wm_class_name,0,sizeof(window.wm_class_name));
-			strncpy(window.wm_class_name, value, sizeof(window.wm_class_name)-1);
+		CONF("own_window_class") {
+      if (value)
+      {
+			  memset(window.class_name,0,sizeof(window.class_name));
+			  strncpy(window.class_name, value, sizeof(window.class_name)-1);
+      }
+      else 
+        CONF_ERR;
 		}
+    CONF("own_window_title") {
+      if (value)
+      {
+        memset(window.title,0,sizeof(window.title));
+        strncpy(window.title, value, sizeof(window.title)-1);
+      }
+      else
+        CONF_ERR;
+    }
 		CONF("own_window_transparent") {
-			set_transparent = string_to_bool(value);
+      if (value)
+			  set_transparent = string_to_bool(value);
+      else
+        CONF_ERR;
 		}
 		CONF("own_window_colour") {
 			if (value) {
@@ -6566,6 +6617,8 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 				}
 				while (p_hint!=NULL);
 			}
+      else
+        CONF_ERR;
 		}
 		CONF("own_window_type") {
 			if (value) {
@@ -6576,8 +6629,10 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 				else if (strncmp(value,"override",8)==0)
 					window.type = TYPE_OVERRIDE;
 				else
-				    	CONF_ERR;
+				  CONF_ERR;
 			}
+      else
+        CONF_ERR;
 		}
 #endif
 		CONF("stippled_borders") {
@@ -6666,6 +6721,29 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 			}
 			/* else tcp_port_monitor_args.max_port_monitor_connections > 0 as per config */
 		}
+#endif
+#ifdef HAVE_LIBDEXTER
+    CONF("dexter_client")
+    {
+      if (value)
+        dexter_client = string_to_bool (value);
+      else
+        CONF_ERR;
+    }
+    CONF("dexter_server")
+    {
+      if (value)
+        dexter_server = string_to_bool (value);
+      else 
+        CONF_ERR;
+    }
+    CONF("dexter_config")
+    {
+      if (value)
+        dexter_config = strdup (value);
+      else
+        CONF_ERR;
+    }
 #endif
 
 		else
@@ -6933,9 +7011,48 @@ int main(int argc, char **argv)
 		}
 	}
 
-	update_uname();
+#ifdef HAVE_LIBDEXTER
+  memset (&packet_arrival_time, 0, sizeof (struct timespec));
+  dexter_library_init ();
+  if (dexter_client)
+  {
+    /* wait until some data packets arrive, else conky complains
+     * bittery that /proc filesystems cannot be opened and, worse,
+     * will likely segfault when it references unchecked pointers
+     * in get_text_internal() -- those should be cleaned up.
+     */
+    int try;
+    const int max_tries=30;
+    gboolean got_packet;
+    GTimeVal timeval;
+    fprintf (stderr, "Conky: waiting for data packets to arrive ...\n");
+    for (try=0;try<max_tries;try++)
+    {
+      /* pause main thread for 1 sec */
+      g_get_current_time (&timeval);
+      g_time_val_add (&timeval, G_USEC_PER_SEC); 
+      g_mutex_lock (packet_mutex);
+      /* mutex released before sleeping; re-acquired after time elapses */
+      g_cond_timed_wait (packet_cond, packet_mutex, &timeval);
+      got_packet = packet_arrival_time.tv_sec>0;
+      g_mutex_unlock (packet_mutex);
 
-	generate_text();
+      if (got_packet)
+        break;
+    }
+    if (got_packet)
+    {
+      fprintf(stderr, "Conky: packets arriving ...\n");
+    }
+    else
+    {
+      fprintf(stderr, "Conky: no data packets ...\n");
+      dexter_library_exit ();
+      exit(1);
+    }
+  }
+#endif
+
 #ifdef X11
 	selected_font = 0;
 	update_text_area();	/* to get initial size of the window */
@@ -6944,7 +7061,7 @@ int main(int argc, char **argv)
 		(own_window,
 		 text_width + border_margin * 2 + 1,
 		 text_height + border_margin * 2 + 1,
-		 set_transparent, background_colour, info.uname_s.nodename, argv, argc);
+		 set_transparent, background_colour, argv, argc);
 	
 	selected_font = 0;
 	update_text_area();	/* to position text/window on screen */
@@ -6988,7 +7105,13 @@ int main(int argc, char **argv)
 	timed_thread_register (info.audacious.p_timed_thread, &info.audacious.p_timed_thread);
 #endif
 
-	main_loop();
+  /*
+   * ***************
+   * MAIN CONKY LOOP
+   * ***************
+   *
+   */
+  main_loop();
 
 #if defined(__FreeBSD__)
 	kvm_close(kd);
@@ -7004,3 +7127,119 @@ void signal_handler(int sig)
 	 * and do any signal processing there, NOT here. */
 	g_signal_pending=sig;
 }
+
+#ifdef HAVE_LIBDEXTER
+void dexter_library_init (void)
+{
+  /* start libdexter */
+  if (dexter_client || dexter_server)
+  {
+    GError *error = NULL;
+    dexter_init (dexter_config, &error);
+    if (error)
+      CRIT_ERR ("%s", error->message);
+
+    if (dexter_client)
+    {
+      if (!(info.dexter.channel = dexter_channel_new (NULL, NULL, NULL, dexter_channel_events)))
+        CRIT_ERR("unable to create channel to server");
+      dexter_channel_open (info.dexter.channel, &error);
+      if (error)
+        CRIT_ERR ("%s", error->message);
+      dexter_channel_greet (info.dexter.channel, &error);
+      if (error)
+        CRIT_ERR ("%s", error->message);
+      if (dexter_client_init () < 0)
+        CRIT_ERR ("error initializing dexter client");
+
+      packet_mutex = g_mutex_new ();
+      packet_cond = g_cond_new ();
+    }
+
+    if (dexter_server)
+    {
+      if (!(info.dexter.server = dexter_server_new (NULL, NULL, NULL)))
+        CRIT_ERR("unable to create server");
+      dexter_server_start (info.dexter.server, &error);
+      if (error)
+        CRIT_ERR ("%s", error->message);
+    }
+
+  }
+}
+
+void dexter_library_exit (void)
+{
+  /* shutdown libdexter */
+  if (dexter_client || dexter_server)
+  {
+    GError *error = NULL;
+
+    if (dexter_client)
+    {
+      if (dexter_client_exit () < 0)
+        ERR ("error de-initializing dexter client");
+      if (info.dexter.channel)
+      {
+        dexter_channel_part (info.dexter.channel, &error);
+        if (error)
+        {
+          ERR("%s", error->message);
+          g_clear_error (&error);
+        }
+        dexter_channel_close (info.dexter.channel, &error);
+        if (error)
+        {
+          ERR("%s", error->message);
+          g_clear_error (&error);
+        }
+        dexter_channel_free (info.dexter.channel);
+        info.dexter.channel=NULL;
+      }
+
+      if (packet_mutex)
+      {
+        g_mutex_free (packet_mutex);
+        packet_mutex=NULL;
+      }
+      if (packet_cond)
+      {
+        g_cond_free (packet_cond);
+        packet_cond=NULL;
+      }
+    }
+
+    if (dexter_server)
+    {
+      if (info.dexter.server)
+      {
+        dexter_server_stop (info.dexter.server, &error);
+        if (error)
+        {
+          ERR("%s", error->message);
+          g_clear_error (&error);
+        }
+        dexter_server_free (info.dexter.server);
+        info.dexter.server=NULL;
+      }
+    }
+
+    dexter_exit ();
+  }
+}
+
+void dexter_channel_events (DexterChannel *channel, gint event)
+{
+  if (!channel)
+    return;
+
+  /* if server disconnects we get this event.  we also get it normally
+   * following dexter_channel_part(). */
+  if (event == DEXTER_CHANNEL_EVENT_NOCONN)
+  {
+    fprintf (stderr, "Conky: channel to server closed\n");
+    if (dexter_client && (dexter_client_exit () < 0))
+      ERR ("error de-initializing dexter client");
+  }
+}
+#endif

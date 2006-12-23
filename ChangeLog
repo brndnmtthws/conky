@@ -1,5 +1,30 @@
 # $Id$
 
+2006-12-22
+	* client/server infrastructure and prototype for linux only (so far):
+		- requires libdexter (http://sourceforge.net/projects/libdexter)
+	  	and the dxt-sysinfo plugin (svn only at the moment).
+	* new config items:
+		- dexter_client yes/no
+		- dexter_server yes/no
+		- dexter_config /path/to/libdexter/config (default: $HOME/.dexterrc)
+		- own_window_class <WM Class Name> (default: Conky)
+			- replaces wm_class_name
+		- own_window_title <Window Title> (default: <hostname> - conky)
+	* removed config items:
+		- wm_class_name (use own_window_class, same function)
+	* configure changes:
+	  --disable-network (default=yes) with auto-detection for libdexter.
+		- remove useless --enable-proc-uptime (PROC_UPTIME never referenced).  
+			HAVE_SYSINFO and others determine if /proc/uptime is used.
+		- silently disable xft, double-buffer and xdamage if no x11.
+		- change enable/disable labels to reflect defaults accurately.
+		- simplified compile-based checks for sysinfo/getloadavg and by moving
+		  them into AC_CHECK_FUNCS.
+	* allow decorated, own_window=yes windows to be given input focus by WM:
+		- do not pass button clicks through to desktop in this scenario as conky
+		  immediately loses focus.  
+
 2006-12-13
 	* Clarify LGPL license on timed_thread modules.
 	* Update NEWS files.

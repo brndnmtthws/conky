@@ -62,10 +62,6 @@ conky_SOURCES = 		\
 	$(netbsd)               \
 	$(port_monitors)        \
 	$(solaris) 		\
-	remotec.c               \
-	remotec.h               \
-	remoted.c 		\
-	remoted.h 		\
 	timed_thread.c		\
 	timed_thread.h		\
 	$(x11)                  \

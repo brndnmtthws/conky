@@ -23,5 +23,5 @@ sed -e "s/@REVISION@/${revision}/g" \
 echo Running $ACLOCAL ... && $ACLOCAL
 echo Running $LIBTOOLIZE --force ... && $LIBTOOLIZE --force
 echo Running $AUTOHEADER ... && $AUTOHEADER
-echo Running $AUTOMAKE -a ... && $AUTOMAKE -a
+echo Running $AUTOMAKE --add-missing ... && $AUTOMAKE --add-missing
 echo Running $AUTOCONF ... && $AUTOCONF
