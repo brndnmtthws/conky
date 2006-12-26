@@ -75,6 +75,7 @@ void update_uptime()
   
     if (!(fp = open_file("/proc/uptime", &rep)))
     {
+      info.uptime=0.0;
       return;
     }
 	  fscanf(fp, "%lf", &info.uptime);
@@ -149,7 +150,10 @@ inline void update_net_stats()
 
 	/* open file and ignore first two lines */
   if (!(net_dev_fp = open_file("/proc/net/dev", &rep)))
+  {
+    clear_net_stats ();
     return;
+  }
 
 	fgets(buf, 255, net_dev_fp);	/* garbage */
 	fgets(buf, 255, net_dev_fp);	/* garbage (field names) */
@@ -326,6 +330,7 @@ void update_total_processes()
 
     if (!(fp = open_file("/proc/loadavg", &rep)))
     {
+      info.procs=0;
       return;
     }
     fscanf(fp, "%*f %*f %*f %*d/%hd", &info.procs );
@@ -428,7 +433,14 @@ inline static void update_stat()
 	}
 
   if (!(stat_fp = open_file("/proc/stat", &rep)))
+  {
+    info.run_procs=0;
+    if (info.cpu_usage)
+    {
+       memset(info.cpu_usage, 0, info.cpu_count * sizeof (float));
+    }
     return;
+  }
 
 	index = 0;
 	while (!feof(stat_fp)) {
@@ -1519,7 +1531,10 @@ void update_diskio()
 	int col_count = 0;
 
 	if (!(fp =open_file("/proc/diskstats", &rep)))
+  {
+      diskio_value=0;
       return;
+  }
 
 	/* read reads and writes from all disks (minor = 0), including
 	 * cd-roms and floppies, and summ them up

@@ -1,5 +1,8 @@
 # $Id$
 
+2006-12-26
+	* Clear conky vars on disconnect/failure to open files.
+
 2006-12-23
 	* Updated to libmpdclient 0.12.0
 
