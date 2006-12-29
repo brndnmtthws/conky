@@ -542,7 +542,7 @@ static struct special_t *new_special(char *buf, int t)
 long fwd_fcharfind(FILE* fp, char val, unsigned int step) {
 #define BUFSZ 0x1000
 	long ret = -1;
-	long count = 0;
+	unsigned int count = 0;
 	static char buf[BUFSZ];
 	long orig_pos = ftell(fp);
 	long buf_pos = -1;
@@ -573,7 +573,7 @@ long fwd_fcharfind(FILE* fp, char val, unsigned int step) {
 long rev_fcharfind(FILE* fp, char val, unsigned int step) {
 #define BUFSZ 0x1000
 	long ret = -1;
-	long count = 0;
+	unsigned int count = 0;
 	static char buf[BUFSZ];
 	long orig_pos = ftell(fp);
 	long buf_pos = -1;
