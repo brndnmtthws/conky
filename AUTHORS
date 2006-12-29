@@ -13,6 +13,9 @@ Alex <godexsoft at bk dot ru>
 affinity <affy at users dot sourceforge dot net>
   X-Mozilla-Status support
 
+Blondak <blondak_nesercz at users dot sourceforge dot net>
+  diskio read & write patch
+
 Bobby Beckmann <bbeckmann at users dot sourceforge dot net>
   Interface IP and Wireless Quality patch
 
@@ -164,6 +167,9 @@ Rui Paulo <rpaulo at netbsd-pt dot org>
 Roman Bogorodskiy <novel at clublife dot ru>
   FreeBSD support
   BMPx support
+
+Ryan Twitchell <tryan2 at rochester dot rr dot com>
+  head/tail rewrite patch
 
 Stepan Zastupov <redchrom at gmail dot com>
   WiFi signal level detection support on FreeBSD

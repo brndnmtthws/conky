@@ -9,13 +9,11 @@
 #include "conky.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <ctype.h>
 #include <time.h>
 #include <locale.h>
 #include <signal.h>
 #include <unistd.h>
-#include <string.h>
 #include <errno.h>
 #include <termios.h>
 #include <string.h>
@@ -541,53 +539,79 @@ static struct special_t *new_special(char *buf, int t)
 	return &specials[special_count++];
 }
 
-typedef struct tailstring_list {
-	char data[TEXT_BUFFER_SIZE];
-	struct tailstring_list *next;
-	struct tailstring_list *first;
-} tailstring;
-
-void addtail(tailstring ** head, char *data_in)
-{
-	tailstring *tmp;
-	if ((tmp = malloc(sizeof(*tmp))) == NULL) {
-		CRIT_ERR("malloc");
-	}
-	if (*head == NULL) {
-		tmp->first = tmp;
-	} else {
-		tmp->first = (*head)->first;
-	}
-	strncpy(tmp->data, data_in, TEXT_BUFFER_SIZE);
-	tmp->next = *head;
-	*head = tmp;
-}
-
-void freetail(tailstring * head)
-{
-	tailstring *tmp;
-	while (head != NULL) {
-		tmp = head->next;
-		free(head);
-		head = tmp;
-	}
-}
-
-void freelasttail(tailstring * head)
-{
-	tailstring * tmp = head;
-	while(tmp != NULL) {
-		if (tmp->next == head->first) {
-			tmp->next = NULL;
-			break;
+long fwd_fcharfind(FILE* fp, char val, unsigned int step) {
+#define BUFSZ 0x1000
+	long ret = -1;
+	long count = 0;
+	static char buf[BUFSZ];
+	long orig_pos = ftell(fp);
+	long buf_pos = -1;
+	long buf_size = BUFSZ;
+	char* cur_found = NULL;
+	while(count < step) {
+		if(cur_found == NULL) {
+			buf_size = fread(buf, 1, buf_size, fp);
+			buf_pos = 0;
 		}
-		tmp = tmp->next;
+		cur_found = memchr(buf+buf_pos, val, buf_size-buf_pos);
+		if(cur_found != NULL) {
+			buf_pos = cur_found-buf+1;
+			count++;
+		}
+		else {
+			if(feof(fp))
+				break;
+		}
 	}
-	free(head->first);
-	while(head != NULL && tmp != NULL) {
-		head->first = tmp;
-		head = head->next;
+	if(count == step)
+		ret = ftell(fp) - buf_size + buf_pos - 1;
+	fseek(fp, orig_pos, SEEK_SET);
+	return ret;
+#undef BUFSZ
+}
+
+long rev_fcharfind(FILE* fp, char val, unsigned int step) {
+#define BUFSZ 0x1000
+	long ret = -1;
+	long count = 0;
+	static char buf[BUFSZ];
+	long orig_pos = ftell(fp);
+	long buf_pos = -1;
+	long file_pos = orig_pos;
+	long buf_size = BUFSZ;
+	char* cur_found;
+	while(count < step) {
+		if(buf_pos <= 0) {
+			if(file_pos > BUFSZ) {
+				fseek(fp, file_pos-BUFSZ, SEEK_SET);
+			}
+			else {
+				buf_size = file_pos;
+				fseek(fp, 0, SEEK_SET);
+			}
+			file_pos = ftell(fp);
+			buf_pos = fread(buf, 1, buf_size, fp);
+		}
+		cur_found = 
+			memrchr(
+					buf,
+					(int)val,
+					(size_t)buf_pos);
+		if(cur_found != NULL) {
+			buf_pos = cur_found-buf;
+			count++;
+		} else {
+			buf_pos = -1;
+			if(file_pos == 0) {
+				break;
+			}
+		}
 	}
+	fseek(fp, orig_pos, SEEK_SET);
+	if(count == step)
+		ret = file_pos + buf_pos;
+	return ret;
+#undef BUFSZ
 }
 
 static void new_bar(char *buf, int w, int h, int usage)
@@ -900,7 +924,11 @@ enum text_object_type {
 	OBJ_cpubar,
 	OBJ_cpugraph,
 	OBJ_diskio,
+	OBJ_diskio_read,
+	OBJ_diskio_write,
 	OBJ_diskiograph,
+	OBJ_diskiograph_read,
+	OBJ_diskiograph_write,
 	OBJ_downspeed,
 	OBJ_downspeedf,
 	OBJ_downspeedgraph,
@@ -2169,7 +2197,11 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 			obj->data.cpu_index = 0;
 		}
 	END OBJ(diskio, INFO_DISKIO)
-		END OBJ(diskiograph, INFO_DISKIO) (void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
+	END OBJ(diskio_read, INFO_DISKIO)
+	END OBJ(diskio_write, INFO_DISKIO)
+	END OBJ(diskiograph, INFO_DISKIO) (void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
+	END OBJ(diskiograph_read, INFO_DISKIO) (void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
+	END OBJ(diskiograph_write, INFO_DISKIO) (void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
 	END OBJ(color, 0) 
 #ifdef X11
 		obj->data.l = arg ? get_x11_color(arg) : default_fg_color;
@@ -2472,7 +2504,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 				obj->data.tail.logfile =
 					malloc(TEXT_BUFFER_SIZE);
 				strcpy(obj->data.tail.logfile, buf);
-				obj->data.tail.wantedlines = n1 - 1;
+				obj->data.tail.wantedlines = n1;
 				obj->data.tail.interval =
 					update_interval * 2;
 				fclose(fp);
@@ -2497,7 +2529,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 				obj->data.tail.logfile =
 					malloc(TEXT_BUFFER_SIZE);
 				strcpy(obj->data.tail.logfile, buf);
-				obj->data.tail.wantedlines = n1 - 1;
+				obj->data.tail.wantedlines = n1;
 				obj->data.tail.interval = n2;
 				fclose(fp);
 			} else {
@@ -2532,7 +2564,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 				obj->data.tail.logfile =
 					malloc(TEXT_BUFFER_SIZE);
 				strcpy(obj->data.tail.logfile, buf);
-				obj->data.tail.wantedlines = n1 - 1;
+				obj->data.tail.wantedlines = n1;
 				obj->data.tail.interval =
 					update_interval * 2;
 				fclose(fp);
@@ -2557,7 +2589,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 				obj->data.tail.logfile =
 					malloc(TEXT_BUFFER_SIZE);
 				strcpy(obj->data.tail.logfile, buf);
-				obj->data.tail.wantedlines = n1 - 1;
+				obj->data.tail.wantedlines = n1;
 				obj->data.tail.interval = n2;
 				fclose(fp);
 			} else {
@@ -3414,7 +3446,8 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					new_font(p, obj->data.s);
 				}
 #endif /* X11 */
-				OBJ(diskio) {
+				void format_diskio(unsigned int diskio_value)
+				{
 					if (!use_spacer) {
 						if (diskio_value > 1024*1024) {
 							snprintf(p, p_max_size, "%.1fGiB",
@@ -3441,12 +3474,30 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						}
 					}
 				}
-				OBJ(diskiograph) {
-					new_graph(p, obj->a,
-							obj->b, obj->c, obj->d,
-							diskio_value, obj->e, 1);
+				OBJ(diskio) {
+					format_diskio(diskio_value);
 				}
-
+				OBJ(diskio_write) {
+					format_diskio(diskio_write_value);
+				}
+ 				OBJ(diskio_read) {
+ 					format_diskio(diskio_read_value);
+  				}
+  				OBJ(diskiograph) {
+  					new_graph(p, obj->a,
+  							obj->b, obj->c, obj->d,
+  							diskio_value, obj->e, 1);
+  				}
+ 				OBJ(diskiograph_read) {
+ 					new_graph(p, obj->a,
+ 							obj->b, obj->c, obj->d,
+ 							diskio_read_value, obj->e, 1);
+ 				}
+ 				OBJ(diskiograph_write) {
+ 					new_graph(p, obj->a,
+ 							obj->b, obj->c, obj->d,
+ 							diskio_write_value, obj->e, 1);
+ 				}
 				OBJ(downspeed) {
 					if (!use_spacer) {
 						snprintf(p, p_max_size, "%d",
@@ -4593,108 +4644,112 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				} else {
 					obj->data.tail.last_update = current_update_time;
 					FILE *fp;
-					int i;
-					int added = 0;
-					tailstring *head = NULL;
-					tailstring *headtmp = NULL;
-					tailstring *freetmp = NULL;
+					long nl, bsize;
+					int iter;
 					fp = fopen(obj->data.tail.logfile, "rt");
 					if (fp == NULL) {
-						ERR("tail logfile failed to open");
+						/* Send one message, but do not consistently spam on
+						 * missing logfiles. */
+						if(obj->data.tail.readlines != 0) {
+							ERR("tail logfile failed to open");
+							strcpy(obj->data.tail.buffer, "Logfile Missing");
+						}
+						obj->data.tail.readlines = 0;
+						snprintf(p, p_max_size, "Logfile Missing");
 					}
 					else {
 						obj->data.tail.readlines = 0;
-
-						while (fgets(obj->data.tail.buffer, TEXT_BUFFER_SIZE*20, fp) != NULL) {
-							if (added >= 30) {
-								freelasttail(head);
-							}
-							else {
-								added++;
-							}
-							addtail(&head, obj->data.tail.buffer);
-							obj->data.tail.readlines++;
+						/* -1 instead of 0 to avoid counting a trailing newline */
+						fseek(fp, -1, SEEK_END); 
+						bsize = ftell(fp) + 1;
+						for(iter = obj->data.tail.wantedlines; iter > 0; iter--) {
+							nl = rev_fcharfind(fp, '\n', iter);
+							if(nl >= 0)
+								break;
 						}
-
+						obj->data.tail.readlines = iter;
+						if(obj->data.tail.readlines < obj->data.tail.wantedlines) {
+							fseek(fp, 0, SEEK_SET);
+						}
+						else {
+							fseek(fp, nl+1, SEEK_SET);
+							bsize -= ftell(fp);
+						}
+						/* Make sure bsize is at least 1 byte smaller than
+						 * the buffer max size. */
+						if(bsize > TEXT_BUFFER_SIZE*20 - 1) {
+							fseek(fp, bsize - TEXT_BUFFER_SIZE*20 - 1, SEEK_CUR);
+							bsize = TEXT_BUFFER_SIZE*20 - 1;
+						}
+						bsize = fread(obj->data.tail.buffer, 1, bsize, fp);
 						fclose(fp);
-						freetmp = head;
-
-						if (obj->data.tail.readlines > 0) {
-							for (i = 0;i < obj->data.tail.wantedlines + 1 && i < obj->data.tail.readlines; i++) {
-								addtail(&headtmp, head->data);
-								head = head->next;
-							}
-							freetail(freetmp);
-							freetmp = headtmp;
-							strcpy(obj->data.tail.buffer, headtmp->data);
-							headtmp = headtmp->next;
-							for (i = 1;i < obj->data.tail.wantedlines + 1 && i < obj->data.tail.readlines; i++) {
-								if (headtmp) {
-									strncat(obj->data.tail.buffer, headtmp->data, (TEXT_BUFFER_SIZE * 20) - strlen(obj->data.tail.buffer)); /* without strlen() at the end this becomes a possible */
-									headtmp = headtmp->next;
-								}
-							}
-
-							/* get rid of any ugly newlines at the end */
-							if (obj->data.tail.buffer[strlen(obj->data.tail.buffer)-1] == '\n') {
-								obj->data.tail.buffer[strlen(obj->data.tail.buffer)-1] = '\0';
-							}
+						if(bsize > 0) {
+							/* Clean up trailing newline, make sure the buffer
+							 * is null terminated. */
+							if(obj->data.tail.buffer[bsize-1] == '\n')
+								obj->data.tail.buffer[bsize-1] = '\0';
+							else
+								obj->data.tail.buffer[bsize] = '\0';
 							snprintf(p, p_max_size, "%s", obj->data.tail.buffer);
-
-							freetail(freetmp);
-						} else {
+						}
+						else {
 							strcpy(obj->data.tail.buffer, "Logfile Empty");
 							snprintf(p, p_max_size, "Logfile Empty");
-						}  /* if readlines */
+						} /* bsize > 0 */
 					} /*  fp == NULL  */
 				} /* if cur_upd_time >= */
-	
+
 				//parse_conky_vars(obj->data.tail.buffer, p, cur);
 
 			}
 			OBJ(head) {
 				if (current_update_time -obj->data.tail.last_update < obj->data.tail.interval) {
-							snprintf(p, p_max_size, "%s", obj->data.tail.buffer);
+					snprintf(p, p_max_size, "%s", obj->data.tail.buffer);
 				} else {
 					obj->data.tail.last_update = current_update_time;
 					FILE *fp;
-					tailstring *head = NULL;
-					tailstring *headtmp = NULL;
-					tailstring *freetmp = NULL;
+					long nl;
+					int iter;
 					fp = fopen(obj->data.tail.logfile, "rt");
 					if (fp == NULL) {
-						ERR("head logfile failed to open");
+						/* Send one message, but do not consistently spam on
+						 * missing logfiles. */
+						if(obj->data.tail.readlines != 0) {
+							ERR("head logfile failed to open");
+							strcpy(obj->data.tail.buffer, "Logfile Missing");
+						}
+						obj->data.tail.readlines = 0;
+						snprintf(p, p_max_size, "Logfile Missing");
 					} else {
 						obj->data.tail.readlines = 0;
-						while (fgets(obj->data.tail.buffer, TEXT_BUFFER_SIZE*20, fp) != NULL && obj->data.tail.readlines <= obj->data.tail.wantedlines) {
-							addtail(&head, obj->data.tail.buffer);
-							obj->data.tail.readlines++;
+						for(iter = obj->data.tail.wantedlines; iter > 0; iter--) {
+							nl = fwd_fcharfind(fp, '\n', iter);
+							if(nl >= 0)
+								break;
 						}
+						obj->data.tail.readlines = iter;
+						/* Make sure nl is at least 1 byte smaller than
+						 * the buffer max size. */
+						if(nl > TEXT_BUFFER_SIZE*20 - 1) {
+							nl = TEXT_BUFFER_SIZE*20 - 1;
+						}
+						nl = fread(obj->data.tail.buffer, 1, nl, fp);
 						fclose(fp);
-						freetmp = head;
-						if (obj->data.tail.readlines > 0) {
-							while (head) {
-								addtail(&headtmp, head->data);
-								head = head->next;
+						if(nl > 0) {
+							/* Clean up trailing newline, make sure the buffer
+							 * is null terminated. */
+							if (obj->data.tail.buffer[nl-1] == '\n') {
+								obj->data.tail.buffer[nl-1] = '\0';
 							}
-							freetail(freetmp);
-							freetmp = headtmp;
-							strcpy(obj->data.tail.buffer, headtmp->data);
-							headtmp = headtmp->next;
-							while (headtmp) {
-								strncat(obj->data.tail.buffer, headtmp->data, (TEXT_BUFFER_SIZE * 20) - strlen(obj->data.tail.buffer)); /* without strlen() at the end this becomes a possible */
-								headtmp = headtmp->next;
-							}
-							freetail(freetmp);
-							/* get rid of any ugly newlines at the end */
-							if (obj->data.tail.buffer[strlen(obj->data.tail.buffer)-1] == '\n') {
-								obj->data.tail.buffer[strlen(obj->data.tail.buffer)-1] = '\0';
+							else {
+								obj->data.tail.buffer[nl] = '\0';
 							}
 							snprintf(p, p_max_size, "%s", obj->data.tail.buffer);
-						} else {
+						} 
+						else {
 							strcpy(obj->data.tail.buffer, "Logfile Empty");
 							snprintf(p, p_max_size, "Logfile Empty");
-						} /* if readlines > 0 */
+						} /* nl > 0 */
 					} /* if fp == null */
 				} /* cur_upd_time >= */
 
@@ -4808,6 +4863,11 @@ static void generate_text()
 	current_update_time = get_time();
 
 	update_stuff(cur);
+	/* fix diskio rates to b/s (use update_interval */
+	diskio_read_value = diskio_read_value / update_interval;
+	diskio_write_value = diskio_write_value / update_interval;
+	diskio_value = diskio_value / update_interval;
+	
 
 	/* add things to the buffer */
 

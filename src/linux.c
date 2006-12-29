@@ -1521,25 +1521,27 @@ void update_top()
 void update_diskio()
 {
 	static unsigned int last = UINT_MAX;
+ 	static unsigned int last_read = UINT_MAX;
+ 	static unsigned int last_write = UINT_MAX;
 	FILE* fp;
-  static int rep=0;
+	static int rep=0;
 
 	char buf[512];
 	int major, minor;
 	unsigned int current = 0;
+ 	unsigned int current_read = 0;
+ 	unsigned int current_write = 0;
 	unsigned int reads, writes = 0;
 	int col_count = 0;
 
-	if (!(fp =open_file("/proc/diskstats", &rep)))
-  {
-      diskio_value=0;
-      return;
-  }
+	if (!(fp =open_file("/proc/diskstats", &rep))) {
+		diskio_value=0;
+		return;
+	}
 
 	/* read reads and writes from all disks (minor = 0), including
 	 * cd-roms and floppies, and summ them up
 	 */
-	current = 0;
 	while (!feof(fp)) {
 		fgets(buf, 512, fp);
 		col_count = sscanf(buf, "%u %u %*s %*u %*u %u %*u %*u %*u %u",
@@ -1553,6 +1555,8 @@ void update_diskio()
 		    major != LVM_BLK_MAJOR && major != NBD_MAJOR &&
 		    major != RAMDISK_MAJOR && major != LOOP_MAJOR) {
 			current += reads + writes;
+			current_read += reads;
+			current_write += writes;
 		}
 	}
 
@@ -1561,6 +1565,14 @@ void update_diskio()
 	 * "sectors read", and we therefore have to divide by two to
 	 * get KB */
 	int tot = ((double)(current-last)/2);
+	int tot_read = ((double)(current_read-last_read)/2);
+	int tot_write = ((double)(current_write-last_write)/2);
+	
+	if (last_read > current_read)
+	    tot_read = 0;
+	if (last_write > current_write)
+	    tot_write = 0;    
+	
 	if (last > current) {
 		/* we hit this either if it's the very first time we
                  * run this, or when /proc/diskstats overflows; while
@@ -1568,10 +1580,14 @@ void update_diskio()
 		tot = 0;
 	}
 	last = current;
+ 	last_read = current_read;
+ 	last_write = current_write;
 
 	diskio_value = tot;
+ 	diskio_read_value = tot_read;
+ 	diskio_write_value = tot_write;
 
-  fclose(fp);
+	fclose(fp);
 }
 
 /* Here come the IBM ACPI-specific things. For reference, see

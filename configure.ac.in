@@ -432,6 +432,14 @@ dnl
 AC_CHECK_FUNCS([calloc malloc free popen sysinfo getloadavg])
 AC_SEARCH_LIBS(clock_gettime, [rt], [], AC_MSG_ERROR([clock_gettime() not found]))
 
+dnl
+dnl Check for zlib
+dnl
+
+AC_CHECK_HEADER(zlib.h,
+		[],
+		[AC_MSG_ERROR([zlib is missing; please install the headers first])])
+
 
 dnl
 dnl Check doc stuff

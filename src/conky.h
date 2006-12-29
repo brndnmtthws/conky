@@ -96,6 +96,8 @@ struct net_stat {
 };
 
 unsigned int diskio_value;
+unsigned int diskio_read_value;
+unsigned int diskio_write_value;
 
 struct fs_stat {
 	char *path;

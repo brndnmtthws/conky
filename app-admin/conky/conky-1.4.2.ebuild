@@ -33,7 +33,7 @@ DEPEND_COMMON="
 		audacious? ( media-sound/audacious )
 		infopipe? ( media-plugins/xmms-infopipe )
 		xmms? ( media-sound/xmms )
-		xmms2? ( medis-sound/xmms2 )
+		xmms2? ( media-sound/xmms2 )
 	)"
 
 RDEPEND="${DEPEND_COMMON}"

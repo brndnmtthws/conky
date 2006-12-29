@@ -383,6 +383,44 @@
 
 <varlistentry>
 	<term>
+		<command><option>diskio_read</option></command>
+	</term>
+	<listitem>
+		Displays current disk IO for reads.
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>diskio_readgraph</option></command>
+		<option>(height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+	</term>
+	<listitem>
+		Disk IO graph for reads, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>diskio_write</option></command>
+	</term>
+	<listitem>
+		Displays current disk IO for writes.
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>diskio_writegraph</option></command>
+		<option>(height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+	</term>
+	<listitem>
+		Disk IO graph for writes, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>downspeed</option></command>
 	<option>net</option>
 	</term>
