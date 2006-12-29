@@ -1,7 +1,7 @@
 # Subversion repository ebuild for conky by drphibes
 # $Header: $
 
-ESVN_REPO_URI="https://svn.sourceforge.net/svnroot/conky/trunk/conky1"
+ESVN_REPO_URI="https://conky.svn.sourceforge.net/svnroot/conky/trunk/conky1"
 ESVN_PROJECT="conky1"
 inherit subversion
 
