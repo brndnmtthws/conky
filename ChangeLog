@@ -1,7 +1,7 @@
 # $Id$
 
 2006-01-07
-	* Add config.rpath (created by gettextize -copy) to distributtion
+	* Add config.rpath (created by gettextize -copy) to distribution
 	  to satisfy AM_ICONV.
 	* Clean up some warnings; remove ftp.[ch] from src/Makefile.am.
 
