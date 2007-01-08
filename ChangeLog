@@ -3,7 +3,7 @@
 2006-01-07
 	* Add config.rpath (created by gettextize -copy) to distributtion
 	  to satisfy AM_ICONV.
-	* Clean up some warnings.
+	* Clean up some warnings; remove ftp.[ch] from src/Makefile.am.
 
 2006-12-29
 	* Update svn ebuild to new sourceforge url scheme.

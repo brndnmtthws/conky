@@ -74,8 +74,6 @@ EXTRA_DIST = 			\
 	audacious.h		\
 	bmpx.c			\
 	freebsd.c		\
-	ftp.c                   \
-	ftp.h                   \
 	hddtemp.c		\
 	linux.c			\
 	libmpdclient.c          \
