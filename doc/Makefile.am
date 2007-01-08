@@ -25,3 +25,5 @@ endif
 man_MANS = conky.1
 
 EXTRA_DIST = $(DOCS) conkyrc.sample command_options.xml config_settings.xml docgen.sh docs.xml variables.xml variables.xsl config_settings.xsl
+
+# vi:set ts=8 sw=8 noet ai nocindent syntax=automake:

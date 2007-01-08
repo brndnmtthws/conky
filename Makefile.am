@@ -9,6 +9,7 @@ AUTOMAKE_OPTIONS = 				\
 EXTRA_DIST = 					\
 	autogen.sh				\
 	configure.ac.in				\
+	config.rpath				\
 	extras/nano/README			\
 	extras/nano/conky.nanorc		\
 	extras/vim/README			\
@@ -20,3 +21,5 @@ DISTCLEANFILES =				\
 
 distclean-local:
 	/bin/rm -rf *.cache *~
+
+# vi:set ts=8 sw=8 noet ai nocindent syntax=automake:

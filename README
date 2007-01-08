@@ -553,6 +553,26 @@ VARIABLES
 	      non-zero, it becomes the scale for the graph.
 
 
+       diskio_read
+	      Displays current disk IO for reads.
+
+
+       diskio_readgraph	 (height),(width) (gradient colour 1) (gradient colour
+       2) (scale)
+	      Disk IO graph for reads, colours defined in hex, minus the #. If
+	      scale is non-zero, it becomes the scale for the graph.
+
+
+       diskio_write
+	      Displays current disk IO for writes.
+
+
+       diskio_writegraph (height),(width) (gradient colour 1) (gradient colour
+       2) (scale)
+	      Disk IO graph for writes, colours defined in hex, minus  the  #.
+	      If scale is non-zero, it becomes the scale for the graph.
+
+
        downspeed net
 	      Download speed in kilobytes
 
