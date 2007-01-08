@@ -4644,7 +4644,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				} else {
 					obj->data.tail.last_update = current_update_time;
 					FILE *fp;
-					long nl, bsize;
+					long nl=0, bsize;
 					int iter;
 					fp = fopen(obj->data.tail.logfile, "rt");
 					if (fp == NULL) {
@@ -4708,7 +4708,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				} else {
 					obj->data.tail.last_update = current_update_time;
 					FILE *fp;
-					long nl;
+					long nl=0;
 					int iter;
 					fp = fopen(obj->data.tail.logfile, "rt");
 					if (fp == NULL) {

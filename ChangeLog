@@ -3,6 +3,7 @@
 2006-01-07
 	* Add config.rpath (created by gettextize -copy) to distributtion
 	  to satisfy AM_ICONV.
+	* Clean up some warnings.
 
 2006-12-29
 	* Update svn ebuild to new sourceforge url scheme.
