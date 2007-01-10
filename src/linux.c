@@ -2140,7 +2140,7 @@ int dexter_client_init (void)
   callbacks[0] = sampler_data_callback;
 
   /* create the procraw timed sampler, timed to match conky's update_interval */
-  procraw_sampler = dexter_timedsampler_new (procraw_service, update_interval*G_USEC_PER_SEC,
+  procraw_sampler = dexter_timedsampler_new (procraw_service, update_interval*1000 /* millsecs */,
                                              callbacks, info.dexter.channel, &error);
   if (error)
   {
