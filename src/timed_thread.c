@@ -28,6 +28,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#ifndef HAVE_CLOCK_GETTIME
+#include <sys/time.h>
+#endif
 #include "timed_thread.h"
 
 /* Abstraction layer for timed threads */
@@ -154,7 +157,22 @@ timed_thread_test (timed_thread* p_timed_thread)
     return (-1);  /* could not acquire runnable_cond mutex, so tell caller to exit thread */
 
   /* get the absolute time in the future we stop waiting for condition to signal */
+#ifdef HAVE_CLOCK_GETTIME
   clock_gettime (CLOCK_REALTIME, &abstime);
+#else
+  {
+    /* fallback to gettimeofday () */
+    struct timeval tv;
+    if (gettimeofday (&tv, NULL) != 0)
+    {
+      pthread_mutex_unlock (&p_timed_thread->runnable_mutex);
+      return (-1);
+    }
+
+    abstime.tv_sec = tv.tv_sec;
+    abstime.tv_nsec = tv.tv_usec * 1000;
+  }
+#endif
   /* seconds portion of the microseconds interval */
   reltime.tv_sec = (time_t)(p_timed_thread->interval_usecs / 1000000);
   /* remaining microseconds convert to nanoseconds */

@@ -16,6 +16,9 @@
 #include <sys/types.h>
 #include <sys/sysinfo.h>
 #include <sys/stat.h>
+#ifndef HAVE_CLOCK_GETTIME
+#include <sys/time.h>
+#endif
 #include <fcntl.h>
 #include <unistd.h>
 // #include <assert.h>
@@ -2085,7 +2088,19 @@ void sampler_data_callback (gpointer sampler, gpointer sampler_data)
 
   /* record data packet arrival time */
   g_mutex_lock (packet_mutex);
+#ifdef HAVE_CLOCK_GETTIME
   clock_gettime (CLOCK_REALTIME, &packet_arrival_time);
+#else
+  {
+    /* fallback to gettimeofday () */
+    struct timeval tv;
+    if (gettimeofday (&tv, NULL) == 0)
+    {
+      packet_arrival_time.tv_sec = tv.tv_sec;
+      packet_arrival_time.tv_nsec = tv.tv_usec * 1000;
+    }
+  }
+#endif
   g_mutex_unlock (packet_mutex);
 #ifdef DEBUG
   fprintf(stderr, "Conky: data packet arrived\n");

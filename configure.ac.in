@@ -430,7 +430,10 @@ dnl Some functions
 dnl
 
 AC_CHECK_FUNCS([calloc malloc free popen sysinfo getloadavg])
-AC_SEARCH_LIBS(clock_gettime, [rt], [], AC_MSG_ERROR([clock_gettime() not found]))
+AC_SEARCH_LIBS(clock_gettime, [rt], 
+               [AC_DEFINE(HAVE_CLOCK_GETTIME, 1, [Define if you have clock_gettime()])],
+               [AC_CHECK_FUNCS([gettimeofday], [], [AC_MSG_ERROR([gettimeofday() not available!])])], [])
+
 
 dnl
 dnl Check for zlib
