@@ -173,6 +173,15 @@
 </varlistentry>
 
 <varlistentry>
+	<term><command><option>text_buffer_size</option></command>
+		<option>bytes</option>
+	</term>
+	<listitem>
+		Size of the standard text buffer (default is 1280 bytes).
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
 	<term><command><option>maximum_width</option></command>
 		<option>pixels</option>
 	</term>

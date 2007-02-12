@@ -64,6 +64,8 @@ conky_SOURCES = 		\
 	$(solaris) 		\
 	timed_thread.c		\
 	timed_thread.h		\
+	mboxscan.c		\
+	mboxscan.h		\
 	$(x11)                  \
 	$(xmms2) 
 

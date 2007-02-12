@@ -53,6 +53,7 @@
 
 #define TEXT_BUFFER_SIZE 1280
 #define P_MAX_SIZE ((TEXT_BUFFER_SIZE * 4) - 2) 
+extern unsigned int text_buffer_size;
 
 /* maximum number of special things, e.g. fonts, offsets, aligns, etc. */
 #define MAX_SPECIALS_DEFAULT 512

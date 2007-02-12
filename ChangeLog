@@ -1,5 +1,12 @@
 # $Id$
 
+2007-02-11
+	* Added buffer_text_size option to change the size of the buffer for
+	things like $exec, $tail, et cetera
+	* Added $mboxscan which lets you display the Subject and From fields
+	from recent email in an mbox file
+	* Disambiguated (is that a word?) $cpu docs
+
 2007-01-14
 	* Fallback to gettimeofday() when clock_gettime () not available (mac os).
 
