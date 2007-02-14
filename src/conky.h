@@ -44,6 +44,7 @@
 #include <xmmsclient/xmmsclient.h>
 #endif
 
+#include "mboxscan.h"
 #include "timed_thread.h"
 
 #define TOP_CPU 1

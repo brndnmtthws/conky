@@ -235,6 +235,10 @@ Maximum size of user text buffer, i.e. layout below TEXT line in config file
 (default is 16384 bytes)
 
 .TP 
+\fB\*(T<\fBtext_buffer_size\fR\*(T>\fR \*(T<\fBbytes\fR\*(T> 
+Size of the standard text buffer (default is 1280 bytes).
+
+.TP 
 \fB\*(T<\fBmaximum_width\fR\*(T>\fR \*(T<\fBpixels\fR\*(T> 
 Maximum width of window
 
@@ -501,7 +505,7 @@ Change drawing color to color
 
 .TP 
 \fB\*(T<\fBcpu\fR\*(T>\fR \*(T<\fB(cpuN)\fR\*(T> 
-CPU usage in percents. For SMP machines, the CPU number can be provided as an argument. ${cpu 0} is the total usage, and ${cpu X} (X >= 1) are individual CPUs. 
+CPU usage in percents. For SMP machines, the CPU number can be provided as an argument. ${cpu cpu0} is the total usage, and ${cpu cpuX} (X >= 1) are individual CPUs.
 
 .TP 
 \fB\*(T<\fBcpubar\fR\*(T>\fR \*(T<\fB(cpu number) (height),(width)\fR\*(T> 
@@ -763,6 +767,10 @@ Machine, i686 for example
 .TP 
 \fB\*(T<\fBmails\fR\*(T>\fR 
 Mail count in mail spool. You can use program like fetchmail to get mails from some server using your favourite protocol. See also new_mails.
+
+.TP 
+\fB\*(T<\fBmboxscan\fR\*(T>\fR \*(T<\fB(\-n number of messages to print) (\-fw from width) (\-sw subject width) mbox\fR\*(T> 
+Print a summary of recent messages in an mbox format mailbox. mbox parameter is the filename of the mailbox (can be encapsulated using '"', ie. ${mboxscan -n 10 "/home/brenden/some box"}
 
 .TP 
 \fB\*(T<\fBmem\fR\*(T>\fR 

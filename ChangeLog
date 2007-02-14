@@ -1,5 +1,9 @@
 # $Id$
 
+2007-02-14
+	* Include missing mboxscan.h in conky.h.
+	* Fixed signedness warnings in conky.c.
+
 2007-02-11
 	* Added buffer_text_size option to change the size of the buffer for
 	things like $exec, $tail, et cetera

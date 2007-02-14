@@ -249,6 +249,10 @@ CONFIGURATION SETTINGS
 	      config file (default is 16384 bytes)
 
 
+       text_buffer_size bytes
+	      Size of the standard text buffer (default is 1280 bytes).
+
+
        maximum_width pixels
 	      Maximum width of window
 
@@ -529,8 +533,8 @@ VARIABLES
 
        cpu (cpuN)
 	      CPU usage in percents. For SMP machines, the CPU number  can  be
-	      provided	as an argument. ${cpu 0} is the total usage, and ${cpu
-	      X} (X >= 1) are individual CPUs.
+	      provided	as  an	argument.  ${cpu cpu0} is the total usage, and
+	      ${cpu cpuX} (X >= 1) are individual CPUs.
 
 
        cpubar (cpu number) (height),(width)
@@ -854,6 +858,13 @@ VARIABLES
        mails  Mail  count in mail spool. You can use program like fetchmail to
 	      get mails from some server using your  favourite	protocol.  See
 	      also new_mails.
+
+
+       mboxscan (-n number of messages to print) (-fw from width) (-sw subject
+       width) mbox
+	      Print  a	summary	 of recent messages in an mbox format mailbox.
+	      mbox parameter is the filename of the mailbox (can  be  encapsu-
+	      lated using '"', ie. ${mboxscan -n 10 "/home/brenden/some box"}
 
 
        mem    Amount of memory in use

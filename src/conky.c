@@ -4698,7 +4698,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						}
 						/* Make sure bsize is at least 1 byte smaller than
 						 * the buffer max size. */
-						if(bsize > text_buffer_size*20 - 1) {
+						if(bsize > (long)((text_buffer_size*20) - 1)) {
 							fseek(fp, bsize - text_buffer_size*20 - 1, SEEK_CUR);
 							bsize = text_buffer_size*20 - 1;
 						}
@@ -4751,7 +4751,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						obj->data.tail.readlines = iter;
 						/* Make sure nl is at least 1 byte smaller than
 						 * the buffer max size. */
-						if(nl > text_buffer_size*20 - 1) {
+						if(nl > (long)((text_buffer_size*20) - 1)) {
 							nl = text_buffer_size*20 - 1;
 						}
 						nl = fread(obj->data.tail.buffer, 1, nl, fp);
