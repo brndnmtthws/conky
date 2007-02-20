@@ -69,11 +69,16 @@ src_compile() {
 		mymake="MPD_NO_IPV6=noipv6"
 	fi
 	local myconf
-	myconf="--enable-own-window"
-	use X && myconf="${myconf} --enable-x11 --enable-double-buffer --enable-xdamage"
+	myconf="--enable-proc-uptime"
+	if useq X; then
+		myconf="${myconf} --enable-x11 --enable-double-buffer --enable-xdamage --enable-own-window"
+		myconf="${myconf} $(use_enable truetype xft)"
+	else
+		myconf="${myconf} --disable-x11 --disable-double-buffer --disable-xdamage --disable-own-window"
+		myconf="${myconf} --disable-xft"
+	fi
 	econf \
 		${myconf} \
-		$(use_enable truetype xft) \
 		$(use_enable audacious) \
 		$(use_enable bmpx) \
 		$(use_enable hddtemp ) \

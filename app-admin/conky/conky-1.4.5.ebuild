@@ -1,6 +1,6 @@
-# Copyright 1999-2006 Gentoo Foundation
+# Copyright 1999-2007 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: $
+# $Header: 
 
 inherit eutils
 # used for epause
@@ -11,7 +11,7 @@ SRC_URI="mirror://sourceforge/conky/${P}.tar.bz2"
 
 LICENSE="BSD"
 SLOT="0"
-KEYWORDS="~alpha ~amd64 ~ppc ~ppc64 ~sparc ~x86"
+KEYWORDS="~alpha amd64 ppc ppc64 sparc x86"
 IUSE="truetype X ipv6 audacious bmpx hddtemp mpd vim-syntax"
 
 DEPEND_COMMON="
@@ -63,11 +63,16 @@ src_compile() {
 		mymake="MPD_NO_IPV6=noipv6"
 	fi
 	local myconf
-	myconf="--enable-own-window --enable-proc-uptime"
-	use X && myconf="${myconf} --enable-x11 --enable-double-buffer --enable-xdamage"
+	myconf="--enable-proc-uptime"
+	if useq X; then
+		myconf="${myconf} --enable-x11 --enable-double-buffer --enable-xdamage --enable-own-window"
+		myconf="${myconf} $(use_enable truetype xft)"
+	else
+		myconf="${myconf} --disable-x11 --disable-double-buffer --disable-xdamage --disable-own-window"
+		myconf="${myconf} --disable-xft"
+	fi
 	econf \
 		${myconf} \
-		$(use_enable truetype xft) \
 		$(use_enable audacious) \
 		$(use_enable bmpx) \
 		$(use_enable hddtemp ) \
@@ -91,20 +96,20 @@ src_install() {
 }
 
 pkg_postinst() {
-	einfo 'Default configuration file is "~/.conkyrc"'
-	einfo "You can find a sample configuration file in"
-	einfo "/usr/share/doc/${PF}/conkyrc.sample.gz"
-	einfo
-	einfo "For more info on Conky's new features,"
-	einfo "please look at the README and ChangeLog:"
-	einfo "/usr/share/doc/${PF}/README.gz"
-	einfo "/usr/share/doc/${PF}/ChangeLog.gz"
-	einfo "There are also pretty html docs available"
-	einfo "on Conky's site or in /usr/share/doc/${PF}"
-	einfo
-	einfo "Also see http://www.gentoo.org/doc/en/conky-howto.xml"
-	einfo
-	einfo "Vim syntax highlighting for conkyrc now enabled with"
-	einfo "USE=vim-syntax"
-	einfo
+	elog 'Default configuration file is "~/.conkyrc"'
+	elog "You can find a sample configuration file in"
+	elog "/usr/share/doc/${PF}/conkyrc.sample.gz"
+	elog
+	elog "For more info on Conky's new features,"
+	elog "please look at the README and ChangeLog:"
+	elog "/usr/share/doc/${PF}/README.gz"
+	elog "/usr/share/doc/${PF}/ChangeLog.gz"
+	elog "There are also pretty html docs available"
+	elog "on Conky's site or in /usr/share/doc/${PF}"
+	elog
+	elog "Also see http://www.gentoo.org/doc/en/conky-howto.xml"
+	elog
+	elog "Vim syntax highlighting for conkyrc now enabled with"
+	elog "USE=vim-syntax"
+	elog
 }
