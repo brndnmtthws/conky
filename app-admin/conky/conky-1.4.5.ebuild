@@ -37,7 +37,6 @@ DEPEND_COMMON="
 
 RDEPEND="${DEPEND_COMMON}
 	hddtemp? ( app-admin/hddtemp )
-	mpd? ( media-sound/mpd )
 	vim-syntax? ( || ( app-editors/vim
 		app-editors/gvim ) )"
 
