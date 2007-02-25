@@ -1,5 +1,9 @@
 # $Id$
 
+2007-02-25
+	* Created branch/1.5 copy of trunk/conky1.  Removing all experimental
+	  network code from trunk/conky1.
+
 2007-02-14
 	* Include missing mboxscan.h in conky.h.
 	* Fixed signedness warnings in conky.c.

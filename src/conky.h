@@ -32,10 +32,6 @@
 #include <machine/apm_bios.h>
 #endif /* __FreeBSD__ */
 
-#ifdef HAVE_LIBDEXTER
-#include <dexter.h>
-#endif
-
 #ifdef AUDACIOUS
 #include "audacious.h"
 #endif
@@ -206,35 +202,6 @@ struct entropy_s {
 #define MAX_PORT_MONITOR_CONNECTIONS_DEFAULT 256
 #endif
 
-#ifdef HAVE_LIBDEXTER
-/* main start/stop for libdexter */
-void dexter_library_init (void);
-void dexter_library_exit (void);
-
-/* os-specific init/exit for libdexter client activity */
-int dexter_client_init (void);
-int dexter_client_exit (void);
-
-/* dexter channel events, i.e. we want to know if channel closes */
-void dexter_channel_events (DexterChannel *, gint);
-
-/* info struct for libdexter */
-struct dexter_s {
-  DexterChannel       *channel;
-  DexterServer        *server;
-  DexterServiceBroker *broker;
-};
-
-/* public config items for libdexter */
-int dexter_client;
-int dexter_server;
-
-/* data packet arrival time */
-struct timespec packet_arrival_time;
-GMutex *packet_mutex;
-GCond  *packet_cond;
-#endif
-
 enum {
 	INFO_CPU = 0,
 	INFO_MAIL = 1,
@@ -339,9 +306,6 @@ struct information {
 	unsigned long looped;
 #ifdef TCP_PORT_MONITOR
   tcp_port_monitor_collection_t * p_tcp_port_monitor_collection;
-#endif
-#ifdef HAVE_LIBDEXTER
-  struct dexter_s dexter;
 #endif
 	short kflags;  /* kernel settings, see enum KFLAG */
 	struct entropy_s entropy;

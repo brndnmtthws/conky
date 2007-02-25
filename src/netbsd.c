@@ -370,20 +370,3 @@ void get_acpi_fan( char * p_client_buffer, size_t client_buffer_size )
 void update_entropy (void)
 {
 }
-
-#ifdef HAVE_LIBDEXTER
-/* return 0 on success, -1 on failure */
-int dexter_client_init (void)
-{
-    /* init libdexter for netbsd-specific client-side activity */
-    return 0;
-}
-
-/* return 0 on success, -1 on failure */
-int dexter_client_exit (void)
-{
-    /* de-init libdexter for netbsd-specific client-side activity */
-    return 0;
-}
-#endif
-

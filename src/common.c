@@ -28,11 +28,6 @@ double get_time()
 	return tv.tv_sec + (tv.tv_usec / 1000000.0);
 }
 
-#if defined(HAVE_LIBDEXTER) && defined(__linux__)
-#define USE_OS_SPECIFIC_OPEN_FILE
-#endif
-
-#ifndef USE_OS_SPECIFIC_OPEN_FILE
 FILE *open_file(const char *file, int *reported)
 {
 	FILE *fp = fopen(file, "r");
@@ -47,7 +42,6 @@ FILE *open_file(const char *file, int *reported)
 
 	return fp;
 }
-#endif
 
 void variable_substitute(const char *s, char *dest, unsigned int n)
 {

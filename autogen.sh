@@ -21,7 +21,7 @@ sed -e "s/@REVISION@/${revision}/g" \
     < "configure.ac.in" > "configure.ac"
 
 echo Running $ACLOCAL ... && $ACLOCAL
-echo Running $LIBTOOLIZE --force ... && $LIBTOOLIZE --force
+echo Running $LIBTOOLIZE --force --copy ... && $LIBTOOLIZE --force --copy
 echo Running $AUTOHEADER ... && $AUTOHEADER
-echo Running $AUTOMAKE --add-missing ... && $AUTOMAKE --add-missing
+echo Running $AUTOMAKE --add-missing --copy --gnu ... && $AUTOMAKE --add-missing --copy --gnu
 echo Running $AUTOCONF ... && $AUTOCONF

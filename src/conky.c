@@ -93,9 +93,6 @@ static void print_version()
 #ifdef TCP_PORT_MONITOR
 	"  * portmon\n"
 #endif /* TCP_PORT_MONITOR */
-#ifdef HAVE_LIBDEXTER
-  "  * network\n"
-#endif
 	"\n");	
 
 	exit(0);
@@ -379,11 +376,6 @@ static int pad_percents = 0;
 
 #ifdef TCP_PORT_MONITOR
 tcp_port_monitor_args_t 	tcp_port_monitor_args;
-#endif
-
-#ifdef HAVE_LIBDEXTER
-/* private config items for libdexter */
-static char *dexter_config = NULL;
 #endif
 
 /* Text that is shown */
@@ -6196,12 +6188,6 @@ void clean_up(void)
 	    free (specials);
 	    specials=NULL;
 	}
-
-#ifdef HAVE_LIBDEXTER
-  dexter_library_exit ();
-  if (dexter_config)
-    free (dexter_config);
-#endif
 }
 
 static int string_to_bool(const char *s)
@@ -6809,29 +6795,6 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 			/* else tcp_port_monitor_args.max_port_monitor_connections > 0 as per config */
 		}
 #endif
-#ifdef HAVE_LIBDEXTER
-    CONF("dexter_client")
-    {
-      if (value)
-        dexter_client = string_to_bool (value);
-      else
-        CONF_ERR;
-    }
-    CONF("dexter_server")
-    {
-      if (value)
-        dexter_server = string_to_bool (value);
-      else 
-        CONF_ERR;
-    }
-    CONF("dexter_config")
-    {
-      if (value)
-        dexter_config = strdup (value);
-      else
-        CONF_ERR;
-    }
-#endif
 
 		else
 		ERR("%s: %d: no such configuration: '%s'", f, line, name);
@@ -7098,48 +7061,6 @@ int main(int argc, char **argv)
 		}
 	}
 
-#ifdef HAVE_LIBDEXTER
-  memset (&packet_arrival_time, 0, sizeof (struct timespec));
-  dexter_library_init ();
-  if (dexter_client)
-  {
-    /* wait until some data packets arrive, else conky complains
-     * bittery that /proc filesystems cannot be opened and, worse,
-     * will likely segfault when it references unchecked pointers
-     * in get_text_internal() -- those should be cleaned up.
-     */
-    int try;
-    const int max_tries=30;
-    gboolean got_packet;
-    GTimeVal timeval;
-    fprintf (stderr, "Conky: waiting for data packets to arrive ...\n");
-    for (try=0;try<max_tries;try++)
-    {
-      /* pause main thread for 1 sec */
-      g_get_current_time (&timeval);
-      g_time_val_add (&timeval, G_USEC_PER_SEC); 
-      g_mutex_lock (packet_mutex);
-      /* mutex released before sleeping; re-acquired after time elapses */
-      g_cond_timed_wait (packet_cond, packet_mutex, &timeval);
-      got_packet = packet_arrival_time.tv_sec>0;
-      g_mutex_unlock (packet_mutex);
-
-      if (got_packet)
-        break;
-    }
-    if (got_packet)
-    {
-      fprintf(stderr, "Conky: packets arriving ...\n");
-    }
-    else
-    {
-      fprintf(stderr, "Conky: no data packets ...\n");
-      dexter_library_exit ();
-      exit(1);
-    }
-  }
-#endif
-
 #ifdef X11
 	selected_font = 0;
 	update_text_area();	/* to get initial size of the window */
@@ -7214,119 +7135,3 @@ void signal_handler(int sig)
 	 * and do any signal processing there, NOT here. */
 	g_signal_pending=sig;
 }
-
-#ifdef HAVE_LIBDEXTER
-void dexter_library_init (void)
-{
-  /* start libdexter */
-  if (dexter_client || dexter_server)
-  {
-    GError *error = NULL;
-    dexter_init (dexter_config, &error);
-    if (error)
-      CRIT_ERR ("%s", error->message);
-
-    if (dexter_client)
-    {
-      if (!(info.dexter.channel = dexter_channel_new (NULL, NULL, NULL, dexter_channel_events)))
-        CRIT_ERR("unable to create channel to server");
-      dexter_channel_open (info.dexter.channel, &error);
-      if (error)
-        CRIT_ERR ("%s", error->message);
-      dexter_channel_greet (info.dexter.channel, &error);
-      if (error)
-        CRIT_ERR ("%s", error->message);
-      if (dexter_client_init () < 0)
-        CRIT_ERR ("error initializing dexter client");
-
-      packet_mutex = g_mutex_new ();
-      packet_cond = g_cond_new ();
-    }
-
-    if (dexter_server)
-    {
-      if (!(info.dexter.server = dexter_server_new (NULL, NULL, NULL)))
-        CRIT_ERR("unable to create server");
-      dexter_server_start (info.dexter.server, &error);
-      if (error)
-        CRIT_ERR ("%s", error->message);
-    }
-
-  }
-}
-
-void dexter_library_exit (void)
-{
-  /* shutdown libdexter */
-  if (dexter_client || dexter_server)
-  {
-    GError *error = NULL;
-
-    if (dexter_client)
-    {
-      if (dexter_client_exit () < 0)
-        ERR ("error de-initializing dexter client");
-      if (info.dexter.channel)
-      {
-        dexter_channel_part (info.dexter.channel, &error);
-        if (error)
-        {
-          ERR("%s", error->message);
-          g_clear_error (&error);
-        }
-        dexter_channel_close (info.dexter.channel, &error);
-        if (error)
-        {
-          ERR("%s", error->message);
-          g_clear_error (&error);
-        }
-        dexter_channel_free (info.dexter.channel);
-        info.dexter.channel=NULL;
-      }
-
-      if (packet_mutex)
-      {
-        g_mutex_free (packet_mutex);
-        packet_mutex=NULL;
-      }
-      if (packet_cond)
-      {
-        g_cond_free (packet_cond);
-        packet_cond=NULL;
-      }
-    }
-
-    if (dexter_server)
-    {
-      if (info.dexter.server)
-      {
-        dexter_server_stop (info.dexter.server, &error);
-        if (error)
-        {
-          ERR("%s", error->message);
-          g_clear_error (&error);
-        }
-        dexter_server_free (info.dexter.server);
-        info.dexter.server=NULL;
-      }
-    }
-
-    dexter_exit ();
-  }
-}
-
-void dexter_channel_events (DexterChannel *channel, gint event)
-{
-  if (!channel)
-    return;
-
-  /* if server disconnects we get this event.  we also get it normally
-   * following dexter_channel_part(). */
-  if (event == DEXTER_CHANNEL_EVENT_NOCONN)
-  {
-    fprintf (stderr, "Conky: channel to server closed\n");
-    if (dexter_client && (dexter_client_exit () < 0))
-      ERR ("error de-initializing dexter client");
-  }
-}
-#endif
