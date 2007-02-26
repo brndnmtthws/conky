@@ -11,7 +11,7 @@ HOMEPAGE="http://conky.sf.net"
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~ppc ~ppc64 ~sparc ~x86"
-IUSE="truetype X ipv6 audacious bmpx hddtemp mpd network vim-syntax"
+IUSE="truetype X ipv6 audacious bmpx hddtemp mpd vim-syntax"
 
 DEPEND_COMMON="
 	virtual/libc
