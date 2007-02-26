@@ -93,7 +93,7 @@ void mbox_scan(char *args, char *output, size_t max_len)
 	/* end - argument checking */
 
 	/* build up double-linked ring-list to hold data, while scanning down the mbox */
-	struct ring_list *curr, *prev, *start;
+	struct ring_list *curr=0, *prev=0, *start=0;
 
 	for (i = 0; i < print_mails; i++) {
 		curr = (struct ring_list *)malloc(sizeof(struct ring_list));
