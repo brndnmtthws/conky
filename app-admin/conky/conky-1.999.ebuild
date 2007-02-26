@@ -31,9 +31,6 @@ DEPEND_COMMON="
 		bmpx? ( media-sound/bmpx
 				>=sys-apps/dbus-0.35
 			)
-		network? ( net-libs/libdexter
-					net-libs/dxt-plugins-sysinfo
-				)
 		!ipv6? ( >=dev-libs/glib-2.0 )
 	)"
 
@@ -82,7 +79,6 @@ src_compile() {
 		$(use_enable audacious) \
 		$(use_enable bmpx) \
 		$(use_enable hddtemp ) \
-		$(use_enable network ) \
 		$(use_enable mpd) \
 		$(use_enable !ipv6 portmon) || die "econf failed"
 	emake ${mymake} || die "compile failed"
