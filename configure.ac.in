@@ -59,10 +59,10 @@ case $uname in
 #    WANT_OSSLIB=yes
 #    ;;
 
-#  OpenBSD*)
-#    WANT_KVM=yes
-#    WANT_OSSLIB=yes
-#    ;;
+  OpenBSD*)
+    WANT_KVM=yes
+    WANT_OSSLIB=yes
+    ;;
 
 # Solaris doesn't work at all right now
 #  SunOS*)
@@ -80,7 +80,7 @@ AM_CONDITIONAL(BUILD_LINUX, test x$uname = xLinux)
 #AM_CONDITIONAL(BUILD_SOLARIS, test x$uname = xSunOS)
 AM_CONDITIONAL(BUILD_FREEBSD, test x$uname = xFreeBSD)
 #AM_CONDITIONAL(BUILD_NETBSD, test x$uname = xNetBSD)
-# AM_CONDITIONAL(BUILD_OPENBSD, test x$uname = xOpenBSD)
+AM_CONDITIONAL(BUILD_OPENBSD, test x$uname = xOpenBSD)
 
 BUILD_DATE=$(LANG=en_US LC_ALL=en_US LOCALE=en_US date)
 BUILD_ARCH="$(uname -sr) ($(uname -m))"

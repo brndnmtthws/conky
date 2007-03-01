@@ -1,6 +1,10 @@
 # $Id$
 
 2007-02-25
+	* OpenBSD support added to Conky (thanks hifi)
+	* Updated mboxscan stuff (thanks calmar)
+
+2007-02-25
 	* Created branch/1.5 copy of trunk/conky1.  Removing all experimental
 	  network code from trunk/conky1.
 

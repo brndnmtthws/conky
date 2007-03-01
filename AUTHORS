@@ -75,6 +75,9 @@ Gwenhael LE MOINE <cycojesus at yahoo dot fr>
 Hannu Saransaari <hipo at users dot sourceforge dot net>
   Main code
 
+hifi <anon>
+  OpenBSD support
+
 Jason Mitchell <jason.mitchell03 at saintleo dot edu>
   developer
   UTF8 fix

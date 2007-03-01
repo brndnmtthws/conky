@@ -32,6 +32,11 @@
 #include <machine/apm_bios.h>
 #endif /* __FreeBSD__ */
 
+#if defined(__OpenBSD__)
+#include <sys/sysctl.h>
+#include <sys/sensors.h>
+#endif /* __OpenBSD__ */
+
 #ifdef AUDACIOUS
 #include "audacious.h"
 #endif
@@ -487,6 +492,22 @@ struct ibm_acpi_struct {
 };
 
 struct ibm_acpi_struct ibm_acpi;
+
+#if defined(__OpenBSD__)
+void update_obsd_sensors(void);
+void get_obsd_vendor(char *buf, size_t client_buffer_size);
+void get_obsd_product(char *buf, size_t client_buffer_size);
+
+#define OBSD_MAX_SENSORS 256
+struct obsd_sensors_struct {
+	int device;
+	float temp[MAXSENSORDEVICES][OBSD_MAX_SENSORS];
+	unsigned int fan[MAXSENSORDEVICES][OBSD_MAX_SENSORS];
+	float volt[MAXSENSORDEVICES][OBSD_MAX_SENSORS];
+};
+struct obsd_sensors_struct obsd_sensors;
+#endif /* __OpenBSD__ */
+
 
 enum { PB_BATT_STATUS, PB_BATT_PERCENT, PB_BATT_TIME};
 void get_powerbook_batt_info(char*, size_t, int);

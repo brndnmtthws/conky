@@ -34,6 +34,11 @@ endif
 #netbsd = netbsd.c
 #endif
 
+if BUILD_OPENBSD
+openbsd = openbsd.c
+PTHREAD_LIBS =  -pthread
+endif
+
 if BUILD_PORT_MONITORS
 port_monitors = libtcp-portmon.h libtcp-portmon.c
 endif
@@ -60,6 +65,7 @@ conky_SOURCES = 		\
 	mixer.c 		\
 	$(mpd)                  \
 	$(netbsd)               \
+	$(openbsd)              \
 	$(port_monitors)        \
 	$(solaris) 		\
 	timed_thread.c		\
@@ -84,6 +90,7 @@ EXTRA_DIST = 			\
 	libtcp-portmon.h	\
 	mpd.c			\
 	netbsd.c		\
+	openbsd.c		\
 	solaris.c 		\
 	top.h                   \
 	x11.c                   \

@@ -18,7 +18,11 @@
 #ifdef HAVE_LINUX_SOUNDCARD_H
 #include <linux/soundcard.h>
 #else
+#ifdef __OpenBSD__
+#include <soundcard.h>
+#else
 #include <sys/soundcard.h>
+#endif				/* __OpenBSD__ */
 #endif				/* HAVE_LINUX_SOUNDCARD_H */
 
 #define MIXER_DEV "/dev/mixer"

@@ -313,6 +313,10 @@ static int maximum_width;
 
 #endif /* X11 */
 
+#ifdef __OpenBSD__
+static int sensor_device;
+#endif
+
 /* maximum number of special things, e.g. fonts, offsets, aligns, etc. */
 static unsigned int max_specials = MAX_SPECIALS_DEFAULT;
 
@@ -565,6 +569,18 @@ long fwd_fcharfind(FILE* fp, char val, unsigned int step) {
 #undef BUFSZ
 }
 
+#ifdef __OpenBSD__
+void *
+memrchr (const void *buffer, int c, size_t n)
+{
+	const unsigned char *p = buffer;
+
+	for (p += n; n ; n--)
+		if (*--p == c)
+			return p;
+	return NULL;
+}
+#endif
 long rev_fcharfind(FILE* fp, char val, unsigned int step) {
 #define BUFSZ 0x1000
 	long ret = -1;
@@ -1037,6 +1053,13 @@ enum text_object_type {
 	OBJ_apm_battery_time,
 	OBJ_apm_battery_life,
 #endif /* __FreeBSD__ */
+#ifdef __OpenBSD__
+	OBJ_obsd_sensors_temp,
+	OBJ_obsd_sensors_fan,
+	OBJ_obsd_sensors_volt,
+	OBJ_obsd_vendor,
+	OBJ_obsd_product,
+#endif /* __OpenBSD__ */
 #ifdef MPD
 	OBJ_mpd_title,
 	OBJ_mpd_artist,
@@ -2167,6 +2190,37 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
                 }
 
 #endif /* __linux__ */
+#if defined(__OpenBSD__)
+	END OBJ(obsd_sensors_temp, 0);
+		if(!arg) {
+			CRIT_ERR("obsd_sensors_temp: needs an argument");
+		}
+		if(!isdigit(arg[0]) || atoi(&arg[0]) < 0 || atoi(&arg[0]) > OBSD_MAX_SENSORS-1) {
+			obj->data.sensor=0;
+			ERR("Invalid temperature sensor number!");
+		}
+			obj->data.sensor = atoi(&arg[0]);
+	END OBJ(obsd_sensors_fan, 0);
+		if(!arg) {
+			CRIT_ERR("obsd_sensors_fan: needs 2 arguments (device and sensor number)");
+		}
+		if(!isdigit(arg[0]) || atoi(&arg[0]) < 0 || atoi(&arg[0]) > OBSD_MAX_SENSORS-1) {
+			obj->data.sensor=0;
+			ERR("Invalid fan sensor number!");
+		}
+			obj->data.sensor = atoi(&arg[0]);
+	END OBJ(obsd_sensors_volt, 0);
+		if(!arg) {
+			CRIT_ERR("obsd_sensors_volt: needs 2 arguments (device and sensor number)");
+		}
+		if(!isdigit(arg[0]) || atoi(&arg[0]) < 0 || atoi(&arg[0]) > OBSD_MAX_SENSORS-1) {
+			obj->data.sensor=0;
+			ERR("Invalid voltage sensor number!");
+		}
+			obj->data.sensor = atoi(&arg[0]);
+	END OBJ(obsd_vendor, 0);
+	END OBJ(obsd_product, 0);
+#endif /* __OpenBSD__ */
 		END OBJ(buffers, INFO_BUFFERS)
 		END OBJ(cached, INFO_BUFFERS)
 		END OBJ(cpu, INFO_CPU)
@@ -2667,6 +2721,8 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		END OBJ(mboxscan, 0)
 		obj->data.mboxscan.args = (char*)malloc(TEXT_BUFFER_SIZE);
 		obj->data.mboxscan.output = (char*)malloc(text_buffer_size);
+		/* if '1' (in mboxscan.c) then there was SIGUSR1, hmm */
+		obj->data.mboxscan.output[0] = 1;
 		strncpy(obj->data.mboxscan.args, arg, TEXT_BUFFER_SIZE);
 		END OBJ(mem, INFO_MEM)
 		END OBJ(memmax, INFO_MEM)
@@ -3450,6 +3506,37 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
                                 }
 #endif /* __linux__ */
 
+#ifdef __OpenBSD__
+				OBJ(obsd_sensors_temp) {
+					obsd_sensors.device = sensor_device;
+					update_obsd_sensors();
+					snprintf(p, p_max_size, "%.1f",
+						obsd_sensors.temp[obsd_sensors.device][obj->data.sensor]);
+				}
+
+				OBJ(obsd_sensors_fan) {
+					obsd_sensors.device = sensor_device;
+					update_obsd_sensors();
+					snprintf(p, p_max_size, "%d",
+						obsd_sensors.fan[obsd_sensors.device][obj->data.sensor]);
+				}
+
+				OBJ(obsd_sensors_volt) {
+					obsd_sensors.device = sensor_device;
+					update_obsd_sensors();
+					snprintf(p, p_max_size, "%.2f",
+						obsd_sensors.volt[obsd_sensors.device][obj->data.sensor]);
+				}
+
+				OBJ(obsd_vendor) {
+					get_obsd_vendor(p, p_max_size);
+				}
+
+				OBJ(obsd_product) {
+					get_obsd_product(p, p_max_size);
+				}
+#endif /* __OpenBSD__ */
+
 #ifdef X11
 				OBJ(font) {
 					new_font(p, obj->data.s);
@@ -4174,7 +4261,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				snprintf(p, p_max_size, "%d", cur->mail_count);
 			}
 			OBJ(mboxscan) {
-				mbox_scan(obj->data.mboxscan.args, obj->data.mboxscan.output, text_buffer_size);
+                mbox_scan(obj->data.mboxscan.args, obj->data.mboxscan.output, TEXT_BUFFER_SIZE);
 				snprintf(p, p_max_size, "%s", obj->data.mboxscan.output);
 			}
 			OBJ(new_mails) {
@@ -6457,6 +6544,14 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 		CONF("mpd_password") {
 			if (value)
 				strncpy(info.mpd.password, value, 127);
+			else
+				CONF_ERR;
+		}
+#endif
+#ifdef __OpenBSD__
+		CONF("sensor_device") {
+			if(value)
+				sensor_device = strtol(value, 0, 0);
 			else
 				CONF_ERR;
 		}
