@@ -569,7 +569,7 @@ long fwd_fcharfind(FILE* fp, char val, unsigned int step) {
 #undef BUFSZ
 }
 
-#ifdef __OpenBSD__
+#ifndef HAVE_MEMRCHR
 void *
 memrchr (const void *buffer, int c, size_t n)
 {
