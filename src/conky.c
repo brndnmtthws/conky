@@ -3945,7 +3945,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						{
 						    obj->data.mail->p_timed_thread = 
 						    timed_thread_create ((void*)pop3_thread,
-								         (void*)info.mail,
+								         (void*)obj->data.mail,
 									 obj->data.mail->interval * 1000000);
 						    if (!obj->data.mail->p_timed_thread)
 							ERR("Error starting pop3 thread");
