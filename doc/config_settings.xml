@@ -56,27 +56,6 @@
 </varlistentry>
 
 <varlistentry>
-	<term><command><option>dexter_client</option></command></term>
-	<listitem>
-		Act as client and connect to libdexter server for remote monitoring?
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term><command><option>dexter_config</option></command></term>
-	<listitem>
-		Full path to libdexter configuration file (default search order: $HOME/.dexterrc; /etc/libdexter/dexter.conf)
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term><command><option>dexter_server</option></command></term>
-	<listitem>
-		Act as server for libdexter services?
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
 	<term><command><option>double_buffer</option></command></term>
 	<listitem>
 		Use the Xdbe extension? (eliminates flicker) It is highly recommended to use own window with this one so double buffer won't be so big.
