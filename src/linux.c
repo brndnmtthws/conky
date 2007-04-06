@@ -1200,11 +1200,15 @@ static FILE *acpi_bat_fp;
 static FILE *apm_bat_fp;
 
 static int acpi_last_full;
+static int acpi_design_capacity;
 
 static char last_battery_str[64];	/* e.g. "charging 75%" */
 static char last_battery_time_str[64];	/* e.g. "3h 15m" */
 
 static double last_battery_time;
+
+static int last_battery_perct;
+static double last_battery_perct_time;
 
 void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 {
@@ -1377,6 +1381,74 @@ set_return_value:
         }              
 	return;
 }
+
+int get_battery_perct(const char *bat)
+{
+	static int rep;
+	char acpi_path[128];
+	snprintf(acpi_path, 127, ACPI_BATTERY_BASE_PATH "/%s/state", bat);
+
+	/* don't update battery too often */
+	if (current_update_time - last_battery_perct_time < 30) {
+		return last_battery_perct;
+	}
+	last_battery_perct_time = current_update_time;
+
+	/* Only check for ACPI */
+
+	if (acpi_bat_fp == NULL && apm_bat_fp == NULL)
+		acpi_bat_fp = open_file(acpi_path, &rep);
+
+	int remaining_capacity = -1;
+	if (acpi_bat_fp != NULL) {
+		/* read last full capacity if it's zero */
+		if (acpi_design_capacity == 0) {
+			static int rep;
+			char path[128];
+			FILE *fp;
+			snprintf(path, 127,
+				 ACPI_BATTERY_BASE_PATH "/%s/info", bat);
+			fp = open_file(path, &rep);
+			if (fp != NULL) {
+				while (!feof(fp)) {
+					char b[256];
+					if (fgets(b, 256, fp) == NULL)
+						break;
+					if (sscanf(b, "design capacity: %d", &acpi_design_capacity) != 0) {
+						break;
+					}
+				}
+				fclose(fp);
+			}
+		}
+
+		fseek(acpi_bat_fp, 0, SEEK_SET);
+
+		while (!feof(acpi_bat_fp)) {
+			char buf[256];
+			if (fgets(buf, 256, acpi_bat_fp) == NULL)
+				break;
+
+			if (buf[0] == 'r')
+				sscanf(buf, "remaining capacity: %d",
+				       &remaining_capacity);
+		}
+	}
+	if(remaining_capacity < 0)
+		return 0;
+	/* compute the battery percentage */
+	last_battery_perct = 
+		(int) (((float)remaining_capacity/acpi_design_capacity) * 100);
+	return last_battery_perct;
+}
+
+int get_battery_perct_bar(const char *bar)
+{
+	get_battery_perct(bar);
+	return (int) (last_battery_perct * 2.56 - 1);
+}
+
+
 
 /* On Apple powerbook and ibook:
 $ cat /proc/pmu/battery_0

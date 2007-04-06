@@ -1,5 +1,12 @@
 # $Id$
 
+2007-04-5
+	* Added if_empty patch (thanks Erik)
+	* Added if_existing patch for string matching (thanks cromka)
+	* Added hwmon support (thanks flitsch)
+	* Some xmms2 updates (thanks sleipner)
+	* Added $battery_percent and $battery_bar (thanks akash)
+
 2007-02-25
 	* OpenBSD support added to Conky (thanks hifi)
 	* Updated mboxscan stuff (thanks calmar)

@@ -457,6 +457,27 @@ int check_mount(char *s)
 }
 
 
+int check_contains(char *f, char *s)
+{
+	int ret = 0;
+	FILE *where = fopen(f, "r");
+	if (where) {
+		char buf1[256], buf2[256];
+		while (fgets(buf1, 256, where)) {
+			sscanf(buf1, "%255s", buf2);
+			if (strstr(buf2, s)) {
+				ret = 1;
+				break;
+			}
+		}
+		fclose(where);
+	} else {
+		ERR("Could not open the file");
+	}
+	return ret;
+}
+
+
 #ifdef X11
 static inline int calc_text_width(const char *s, int l)
 {
@@ -927,6 +948,8 @@ enum text_object_type {
 	OBJ_acpitempf,
 	OBJ_battery,
 	OBJ_battery_time,
+	OBJ_battery_percent,
+	OBJ_battery_bar,
 	OBJ_buffers,
 	OBJ_cached,
 	OBJ_color,
@@ -1185,10 +1208,13 @@ struct text_object {
 			char devtype[256];
 			char type[64];
 		} i2c;		/* 2 */
+
 		struct {
 			int pos;
 			char *s;
+			char *str;
 		} ifblock;
+
 		struct {
 			int num;
 			int type;
@@ -1804,6 +1830,7 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 			case OBJ_if_mounted:
 			case OBJ_if_running:
 				free(objs[i].data.ifblock.s);
+				free(objs[i].data.ifblock.str);
 				break;
 			case OBJ_tail:
 				free(objs[i].data.tail.logfile);
@@ -2151,6 +2178,21 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	else
 		strcpy(bat, "BAT0");
 	obj->data.s = strdup(bat);
+	END OBJ(battery_percent, 0);
+	char bat[64];
+	if (arg)
+		sscanf(arg, "%63s", bat);
+	else
+		strcpy(bat, "BAT0");
+	obj->data.s = strdup(bat);
+	END OBJ(battery_bar, 0);
+	char bat[64];
+	if (arg) {
+		arg = scan_bar(arg, &obj->a, &obj->b);
+		sscanf(arg, "%63s", bat);
+	} else {
+		strcpy(bat, "BAT0");
+	}
 #if defined(__linux__)
 	END OBJ(i8k_version, INFO_I8K)
 		END OBJ(i8k_bios, INFO_I8K)
@@ -2695,10 +2737,20 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
 		}
 	if (!arg) {
-		ERR("if_existing needs an argument");
-		obj->data.ifblock.s = 0;
-	} else
-		obj->data.ifblock.s = strdup(arg);
+		ERR("if_existing needs an argument or two");
+		obj->data.ifblock.s = NULL;
+		obj->data.ifblock.str = NULL;	    
+	} else {
+		char buf1[256], buf2[256];
+		int r = sscanf(arg, "%255s %255[^\n]", buf1, buf2);
+		if (r == 1) {
+			obj->data.ifblock.s = strdup(buf1);		
+    			obj->data.ifblock.str = NULL;	    
+		} else {
+	    		obj->data.ifblock.s = strdup(buf1);
+			obj->data.ifblock.str = strdup(buf2);
+		}
+	}		
 	blockstart[blockdepth] = object_count;
 	obj->data.ifblock.pos = object_count + 2;
 	blockdepth++;
@@ -3408,6 +3460,13 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				}
 				OBJ(battery_time) {
 					get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_TIME);
+				}
+				OBJ(battery_percent) {
+					snprintf(p, p_max_size, "%d", 
+						get_battery_perct(obj->data.s));
+				}
+				OBJ(battery_bar) {
+					new_bar(p, obj->a, obj->b, get_battery_perct_bar(obj->data.s));
 				}
 				OBJ(buffers) {
 					human_readable(cur->buffers * 1024, p, 255);
@@ -4195,7 +4254,15 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					i = obj->data.ifblock.pos;
 					if_jumped = 1;
 				} else {
-					if_jumped = 0;
+    					if (obj->data.ifblock.str) {
+						if (!check_contains(obj->data.ifblock.s, 
+					    	        obj->data.ifblock.str)) {
+							i = obj->data.ifblock.pos;
+							if_jumped = 1;
+						} else 
+					    		if_jumped = 0;
+					} else 
+				    		if_jumped = 0;
 				}
 			}
 			OBJ(if_mounted) {

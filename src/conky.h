@@ -481,6 +481,8 @@ double get_acpi_temperature(int fd);
 void get_acpi_ac_adapter( char *, size_t ); 
 void get_acpi_fan( char *, size_t ); 
 void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item);
+int get_battery_perct(const char *bat);
+int get_battery_perct_bar(const char *bat);
 void get_ibm_acpi_fan(char *buf, size_t client_buffer_size);
 void get_ibm_acpi_temps(void);
 void get_ibm_acpi_volume(char *buf, size_t client_buffer_size);

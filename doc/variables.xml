@@ -242,6 +242,26 @@
 
 <varlistentry>
 	<term>
+		<command><option>battery_bar</option></command>
+	<option>(height),(width) (num)</option>
+	</term>
+	<listitem>
+		Battery percentage remaining of ACPI battery in a bar.  ACPI battery number can be given as argument (default is BAT0).
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>battery_percent</option></command>
+	<option>(num)</option>
+	</term>
+	<listitem>
+		Battery percentage remaining for ACPI battery.  ACPI battery number can be given as argument (default is BAT0).
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>battery_time</option></command>
 	<option>(num)</option>
 	</term>
@@ -691,6 +711,16 @@
 
 <varlistentry>
 	<term>
+		<command><option>hwmon</option></command>
+	<option>N sensor number input</option>
+	</term>
+	<listitem>
+		This has the ability to display the contents of hwmon files located under "/sys/class/hwmon/hwmonX/device/N".  For example, use ${hwmon 0 temp 1 input} to read the temperature of the CPU (in °C) from "/sys/class/hwmon/hwmon0/device/temp1_input".  If the sensor name equals "temp", then the value read will be divided by 1000, otherwise the number will be used unchanged.  The factor 1000 is just for the Abit uGuru sensor.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>iconv_start</option></command>
 	<option>codeset_from codeset_to</option>
 	</term>
@@ -876,7 +906,7 @@
 	<option>(var)</option>
 	</term>
 	<listitem>
-		if conky variable VAR is empty, display everything between if_empty and the matching $endif
+		if conky variable VAR is empty, display everything between $if_empty and the matching $endif
 	<para></para></listitem>
 </varlistentry>
 
@@ -886,17 +916,17 @@
 	<option>(process)</option>
 	</term>
 	<listitem>
-		if PROCESS is running, display everything if_running and the matching $endif
+		if PROCESS is running, display everything $if_running and the matching $endif
 	<para></para></listitem>
 </varlistentry>
 
 <varlistentry>
 	<term>
 		<command><option>if_existing</option></command>
-	<option>(file)</option>
+	<option>file (string)</option>
 	</term>
 	<listitem>
-		if FILE exists, display everything between if_existing and the matching $endif
+		if FILE exists, display everything between if_existing and the matching $endif.  The optional second paramater checks for FILE containing the specified string and prints everything between $if_existing and the matching $endif.
 	<para></para></listitem>
 </varlistentry>
 
@@ -906,7 +936,7 @@
 	<option>(mountpoint)</option>
 	</term>
 	<listitem>
-		if MOUNTPOINT is mounted, display everything between if_mounted and the matching $endif
+		if MOUNTPOINT is mounted, display everything between $if_mounted and the matching $endif
 	<para></para></listitem>
 </varlistentry>
 
@@ -1591,5 +1621,168 @@
 		defaults to 1.
 		<para></para></listitem>
 </varlistentry>
-		
+
+<varlistentry>
+	<term>
+		<command><option>xmms2_artist</option></command>
+	</term>
+	<listitem>
+		Artist in current XMMS2 song
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms2_album</option></command>
+	</term>
+	<listitem>
+		Album in current XMMS2 song
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms2_title</option></command>
+	</term>
+	<listitem>
+		Title in current XMMS2 song
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms2_genre</option></command>
+	</term>
+	<listitem>
+		Genre in current XMMS2 song
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms2_comment</option></command>
+	</term>
+	<listitem>
+		Comment in current XMMS2 song
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms2_decoder</option></command>
+	</term>
+	<listitem>
+		Decoder plugin used
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms2_transport</option></command>
+	</term>
+	<listitem>
+		Transport plugin used
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms2_url</option></command>
+	</term>
+	<listitem>
+		Full path to current song
+<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms2_tracknr</option></command>
+	</term>
+	<listitem>
+		Track number in current XMMS2 song
+<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms2_bitrate</option></command>
+	</term>
+	<listitem>
+	Bitrate of current song
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms2_id</option></command>
+	</term>
+	<listitem>
+		XMMS2 id of current song
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms2_duration</option></command>
+	</term>
+	<listitem>
+		Duration of current song
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms2_elapsed</option></command>
+	</term>
+	<listitem>
+		Song's elapsed time
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms2_size</option></command>
+	</term>
+	<listitem>
+	Size of current song
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms2_percent</option></command>
+	</term>
+	<listitem>
+		Percent of song's progress
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms2_status</option></command>
+	</term>
+	<listitem>
+		XMMS2 status (Playing, Paused, Stopped, or Disconnected)
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms2_bar</option></command>
+	<option>(height),(width)</option>
+	</term>
+	<listitem>
+		Bar of XMMS2's progress
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>xmms2_smart</option></command>
+	</term>
+	<listitem>
+		Prints the song name in either the form "artist - title" or file name, depending on whats available
+	<para></para></listitem>
+</varlistentry>
+
 </variablelist>

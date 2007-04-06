@@ -13,6 +13,9 @@ Alex <godexsoft at bk dot ru>
 affinity <affy at users dot sourceforge dot net>
   X-Mozilla-Status support
 
+akash <akash at users dot sourceforge dot net>
+  battery_percent and battery_bar
+
 Blondak <blondak_nesercz at users dot sourceforge dot net>
   diskio read & write patch
 
@@ -33,6 +36,9 @@ btlee
 
 calmar <mac at calmar dot ws>
   mboxscan
+
+cromka <cromka at users dot sourceforge dot net>
+  if_existing patch for string matching
 
 dan-h <dan-h at users dot sourceforge dot net>
   adt746x fix
@@ -70,6 +76,9 @@ Falk Feuersenger <lumberjack at users dot sourceforge dot net>
 
 Fanat1k
   Iconv patch
+
+flitsch <flitsch at users dot sourceforge dot net>
+  hwmon support
 
 Gwenhael LE MOINE <cycojesus at yahoo dot fr>
   Manual setting of the position
