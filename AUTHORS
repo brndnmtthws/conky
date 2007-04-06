@@ -62,6 +62,9 @@ Elisey O. Savateev <bio3k at softboard dot ru>
 Egor(knick_)
   Iconv patch
 
+Erik Scharwaechter <erik at diozaka dot org>
+  $if_empty patch
+
 Falk Feuersenger <lumberjack at users dot sourceforge dot net>
   I2C divisor from a file
 

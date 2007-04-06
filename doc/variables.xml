@@ -870,6 +870,15 @@
 	<para></para></listitem>
 </varlistentry>
 
+<varlistentry>
+	<term>
+		<command><option>if_empty</option></command>
+	<option>(var)</option>
+	</term>
+	<listitem>
+		if conky variable VAR is empty, display everything between if_empty and the matching $endif
+	<para></para></listitem>
+</varlistentry>
 
 <varlistentry>
 	<term>

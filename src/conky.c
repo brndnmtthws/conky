@@ -992,6 +992,7 @@ enum text_object_type {
 	OBJ_voltage_mv,
 	OBJ_voltage_v,
 #endif /* __linux__ */
+	OBJ_if_empty,
 	OBJ_if_existing,
 	OBJ_if_mounted,
 	OBJ_if_running,
@@ -1798,6 +1799,7 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 					free(objs[i].data.mail);
 				}
 				break;
+			case OBJ_if_empty:
 			case OBJ_if_existing:
 			case OBJ_if_mounted:
 			case OBJ_if_running:
@@ -2676,6 +2678,18 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	obj->data.loadavg[0] = (r >= 1) ? (unsigned char) a : 0;
 	obj->data.loadavg[1] = (r >= 2) ? (unsigned char) b : 0;
 	obj->data.loadavg[2] = (r >= 3) ? (unsigned char) c : 0;
+	END OBJ(if_empty, 0)
+		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
+			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
+		}
+	if (!arg) {
+		ERR("if_empty needs an argument");
+		obj->data.ifblock.s = 0;
+	} else
+		obj->data.ifblock.s = strdup(arg);
+	blockstart[blockdepth] = object_count;
+	obj->data.ifblock.pos = object_count + 2;
+	blockdepth++;
 	END OBJ(if_existing, 0)
 		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
 			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
@@ -3172,10 +3186,15 @@ static struct text_object_list *extract_variable_text_internal(const char *p)
 
 				/* variable is either $foo or ${foo} */
 				if (*p == '{') {
+					unsigned int brl = 1, brr = 0;
 					p++;
 					s = p;
-					while (*p && *p != '}')
+					while (*p && brl != brr) {
+						if (*p == '{') brl++;
+						if (*p == '}') brr++;
 						p++;
+					}
+					p--;
 				} else {
 					s = p;
 					if (*p == '#')
@@ -4153,6 +4172,20 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			}
 			OBJ(alignc) {
 				new_alignc(p, obj->data.i);
+			}
+			OBJ(if_empty) {
+				struct information *my_info =
+				    malloc(sizeof(struct information));
+				memcpy(my_info, cur, sizeof(struct information));
+				parse_conky_vars(obj->data.ifblock.s, p, my_info);
+				if (strlen(p) != 0) {
+					i = obj->data.ifblock.pos;
+					if_jumped = 1;
+				} else {
+					if_jumped = 0;
+				}
+				p[0] = '\0';
+				free(my_info);
 			}
 			OBJ(if_existing) {
 				struct stat tmp;
