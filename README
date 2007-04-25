@@ -160,6 +160,36 @@ CONFIGURATION SETTINGS
 	      Border width in pixels
 
 
+       color0 A color variable for use inside TEXT segments
+
+
+       color1 A color variable for use inside TEXT segments
+
+
+       color2 A color variable for use inside TEXT segments
+
+
+       color3 A color variable for use inside TEXT segments
+
+
+       color4 A color variable for use inside TEXT segments
+
+
+       color5 A color variable for use inside TEXT segments
+
+
+       color6 A color variable for use inside TEXT segments
+
+
+       color7 A color variable for use inside TEXT segments
+
+
+       color8 A color variable for use inside TEXT segments
+
+
+       color9 A color variable for use inside TEXT segments
+
+
        cpu_avg_samples
 	      The number of samples to average for CPU monitoring
 
@@ -174,20 +204,6 @@ CONFIGURATION SETTINGS
 
        default_shade_color
 	      Default shading color and border's shading color
-
-
-       dexter_client
-	      Act as client and connect to libdexter server for	 remote	 moni-
-	      toring?
-
-
-       dexter_config
-	      Full path to libdexter configuration file (default search order:
-	      $HOME/.dexterrc; /etc/libdexter/dexter.conf)
-
-
-       dexter_server
-	      Act as server for libdexter services?
 
 
        double_buffer
@@ -491,6 +507,16 @@ VARIABLES
 	      is BAT0).
 
 
+       battery_bar (height),(width) (num)
+	      Battery percentage remaining of ACPI battery in a bar. ACPI bat-
+	      tery number can be given as argument (default is BAT0).
+
+
+       battery_percent (num)
+	      Battery percentage remaining for ACPI battery. ACPI battery num-
+	      ber can be given as argument (default is BAT0).
+
+
        battery_time (num)
 	      Battery  charge/discharge	 time  remaining of ACPI battery. ACPI
 	      battery number can be given as argument (default is BAT0).
@@ -529,6 +555,36 @@ VARIABLES
 
        color (color)
 	      Change drawing color to color
+
+
+       color0 Change drawing color to color0 configuration option
+
+
+       color1 Change drawing color to color1 configuration option
+
+
+       color2 Change drawing color to color2 configuration option
+
+
+       color3 Change drawing color to color3 configuration option
+
+
+       color4 Change drawing color to color4 configuration option
+
+
+       color5 Change drawing color to color5 configuration option
+
+
+       color6 Change drawing color to color6 configuration option
+
+
+       color7 Change drawing color to color7 configuration option
+
+
+       color8 Change drawing color to color8 configuration option
+
+
+       color9 Change drawing color to color9 configuration option
 
 
        cpu (cpuN)
@@ -704,6 +760,16 @@ VARIABLES
 	      Horizontal line, height is the height in pixels
 
 
+       hwmon N sensor number input
+	      This  has the ability to display the contents of hwmon files lo-
+	      cated under "/sys/class/hwmon/hwmonX/device/N". For example, use
+	      ${hwmon  0  temp 1 input} to read the temperature of the CPU (in
+	      oC) from	"/sys/class/hwmon/hwmon0/device/temp1_input".  If  the
+	      sensor  name  equals "temp", then the value read will be divided
+	      by 1000, otherwise the number will be used unchanged. The factor
+	      1000 is just for the Abit uGuru sensor.
+
+
        iconv_start codeset_from codeset_to
 	      Convert  text from one codeset to another using GNU iconv. Needs
 	      to be stopped with iconv_stop.
@@ -806,26 +872,33 @@ VARIABLES
 	      LCD (0-7).
 
 
+       if_empty (var)
+	      if  conky	 variable  VAR	is  empty,  display everything between
+	      $if_empty and the matching $endif
+
+
        if_running (process)
-	      if  PROCESS  is  running,	 display everything if_running and the
+	      if PROCESS is running, display everything	 $if_running  and  the
 	      matching $endif
 
 
-       if_existing (file)
-	      if FILE exists, display everything between if_existing  and  the
-	      matching $endif
+       if_existing file (string)
+	      if  FILE	exists, display everything between if_existing and the
+	      matching $endif. The optional second paramater checks  for  FILE
+	      containing  the  specified  string and prints everything between
+	      $if_existing and the matching $endif.
 
 
        if_mounted (mountpoint)
-	      if  MOUNTPOINT is mounted, display everything between if_mounted
+	      if MOUNTPOINT is mounted, display everything between $if_mounted
 	      and the matching $endif
 
 
        imap_messages (args)
 	      Displays the number of messages in your global IMAP inbox by de-
-	      fault.  You  can	define	individual  IMAP inboxes seperately by
+	      fault. You can define  individual	 IMAP  inboxes	seperately  by
 	      passing arguments to this object. Arguments are: "host user pass
-	      [-i  interval] [-p port] [-e command]". Default port is 143, de-
+	      [-i interval] [-p port] [-e command]". Default port is 143,  de-
 	      fault interval is 5 minutes. If the password is supplied as '*',
 	      you will be prompted to enter the password when Conky starts.
 
@@ -834,7 +907,7 @@ VARIABLES
 	      Displays the number of unseen messages in your global IMAP inbox
 	      by default. You can define individual IMAP inboxes seperately by
 	      passing arguments to this object. Arguments are: "host user pass
-	      [-i interval] [-p port] [-e command]". Default port is 143,  de-
+	      [-i  interval] [-p port] [-e command]". Default port is 143, de-
 	      fault interval is 5 minutes. If the password is supplied as '*',
 	      you will be prompted to enter the password when Conky starts.
 
@@ -855,15 +928,15 @@ VARIABLES
 	      Machine, i686 for example
 
 
-       mails  Mail  count in mail spool. You can use program like fetchmail to
-	      get mails from some server using your  favourite	protocol.  See
+       mails  Mail count in mail spool. You can use program like fetchmail  to
+	      get  mails  from	some server using your favourite protocol. See
 	      also new_mails.
 
 
        mboxscan (-n number of messages to print) (-fw from width) (-sw subject
        width) mbox
-	      Print  a	summary	 of recent messages in an mbox format mailbox.
-	      mbox parameter is the filename of the mailbox (can  be  encapsu-
+	      Print a summary of recent messages in an	mbox  format  mailbox.
+	      mbox  parameter  is the filename of the mailbox (can be encapsu-
 	      lated using '"', ie. ${mboxscan -n 10 "/home/brenden/some box"}
 
 
@@ -960,17 +1033,17 @@ VARIABLES
 
        pb_battery item
 	      If running on Apple powerbook/ibook, display information on bat-
-	      tery  status.  The item parameter specifies, what information to
+	      tery status. The item parameter specifies, what  information  to
 	      display. Exactly one item must be specified. Valid items are:
 
 	      status: Display if battery is fully charged, charging, discharg-
 	      ing or absent (running on AC)
-	      percent:	Display	 charge	 of battery in percent, if charging or
-	      discharging. Nothing will be  displayed,	if  battery  is	 fully
+	      percent: Display charge of battery in percent,  if  charging  or
+	      discharging.  Nothing  will  be  displayed,  if battery is fully
 	      charged or absent.
 	      time: Display the time remaining until the battery will be fully
-	      charged or discharged at current rate. Nothing is displayed,  if
-	      battery  is  absent or if it's present but fully charged and not
+	      charged  or discharged at current rate. Nothing is displayed, if
+	      battery is absent or if it's present but fully charged  and  not
 	      discharging.
 
 
@@ -978,17 +1051,17 @@ VARIABLES
 	      Displays the number of unseen messages in your global POP3 inbox
 	      by default. You can define individual POP3 inboxes seperately by
 	      passing arguments to this object. Arguments are: "host user pass
-	      [-i  interval] [-p port] [-e command]". Default port is 110, de-
+	      [-i interval] [-p port] [-e command]". Default port is 110,  de-
 	      fault interval is 5 minutes. If the password is supplied as '*',
 	      you will be prompted to enter the password when Conky starts.
 
 
        pop3_used (args)
-	      Displays	the amount of space (in MiB, 2^20) used in your global
-	      POP3 inbox by default. You can define  individual	 POP3  inboxes
-	      seperately  by  passing arguments to this object. Arguments are:
-	      "host user pass [-i interval] [-p port] [-e  command]".  Default
-	      port  is	110, default interval is 5 minutes. If the password is
+	      Displays the amount of space (in MiB, 2^20) used in your	global
+	      POP3  inbox  by  default. You can define individual POP3 inboxes
+	      seperately by passing arguments to this object.  Arguments  are:
+	      "host  user  pass [-i interval] [-p port] [-e command]". Default
+	      port is 110, default interval is 5 minutes. If the  password  is
 	      supplied as '*', you will be prompted to enter the password when
 	      Conky starts.
 
@@ -1050,36 +1123,36 @@ VARIABLES
 	      The connection index provides you with access to each connection
 	      in the port monitor. The monitor will return information for in-
 	      dex values from 0 to n-1 connections. Values higher than n-1 are
-	      simply ignored. For the "count" item, the connection index  must
+	      simply  ignored. For the "count" item, the connection index must
 	      be omitted. It is required for all other items.
 
 	      Examples:
-	      ${tcp_portmon  6881 6999 count} - displays the number of connec-
+	      ${tcp_portmon 6881 6999 count} - displays the number of  connec-
 	      tions in the bittorrent port range
-	      ${tcp_portmon 22 22 rip 0} - displays the remote host ip of  the
+	      ${tcp_portmon  22 22 rip 0} - displays the remote host ip of the
 	      first sshd connection
-	      ${tcp_portmon  22 22 rip 9} - displays the remote host ip of the
+	      ${tcp_portmon 22 22 rip 9} - displays the remote host ip of  the
 	      tenth sshd connection
 	      ${tcp_portmon 1 1024 rhost 0} - displays the remote host name of
 	      the first connection on a privileged port
 	      ${tcp_portmon 1 1024 rport 4} - displays the remote host port of
 	      the fifth connection on a privileged port
-	      ${tcp_portmon 1 65535 lservice 14} - displays the local  service
+	      ${tcp_portmon  1 65535 lservice 14} - displays the local service
 	      name of the fifteenth connection in the range of all ports
 
 	      Note that port monitor variables which share the same port range
 	      actually refer to the same monitor, so many references to a sin-
 	      gle port range for different items and different indexes all use
-	      the same monitor internally. In other words, the program	avoids
+	      the  same monitor internally. In other words, the program avoids
 	      creating redundant monitors.
 
        texeci interval command
-	      Runs  a  command at an interval inside a thread and displays the
-	      output. Same as $execi, except  the  command  is	run  inside  a
-	      thread.  Use this if you have a slow script to keep Conky updat-
-	      ing. You should make the interval slightly longer then the  time
-	      it  takes	 your  script  to  execute. For example, if you have a
-	      script that take 5 seconds to execute, you should make  the  in-
+	      Runs a command at an interval inside a thread and	 displays  the
+	      output.  Same  as	 $execi,  except  the  command is run inside a
+	      thread. Use this if you have a slow script to keep Conky	updat-
+	      ing.  You should make the interval slightly longer then the time
+	      it takes your script to execute. For  example,  if  you  have  a
+	      script  that  take 5 seconds to execute, you should make the in-
 	      terval at least 6 seconds. See also $execi.
 
 
@@ -1098,7 +1171,7 @@ VARIABLES
 
 
        time (format)
-	      Local time, see man strftime to get more information about  for-
+	      Local  time, see man strftime to get more information about for-
 	      mat
 
 
@@ -1107,23 +1180,23 @@ VARIABLES
 
 
        tztime (timezone) (format)
-	      Local  time for specified timezone, see man strftime to get more
-	      information about format. The timezone argument is specified  in
-	      similar  fashion	as TZ environment variable. For hints, look in
+	      Local time for specified timezone, see man strftime to get  more
+	      information  about format. The timezone argument is specified in
+	      similar fashion as TZ environment variable. For hints,  look  in
 	      /usr/share/zoneinfo. e.g. US/Pacific, Europe/Zurich, etc.
 
 
        totaldown net
-	      Total download, overflows at 4 GB on Linux with 32-bit arch  and
+	      Total  download, overflows at 4 GB on Linux with 32-bit arch and
 	      there doesn't seem to be a way to know how many times it has al-
 	      ready done that before conky has started.
 
 
        top type, num
-	      This takes arguments in the form:top (name) (number)  Basically,
-	      processes	 are ranked from highest to lowest in terms of cpu us-
-	      age, which is what (num)	represents.  The  types	 are:  "name",
-	      "pid",  "cpu",  and  "mem".  There  can be a max of 10 processes
+	      This  takes arguments in the form:top (name) (number) Basically,
+	      processes are ranked from highest to lowest in terms of cpu  us-
+	      age,  which  is  what  (num)  represents. The types are: "name",
+	      "pid", "cpu", and "mem". There can be  a	max  of	 10  processes
 	      listed.
 
 
@@ -1147,9 +1220,9 @@ VARIABLES
 	      Upload speed in kilobytes with one decimal
 
 
-       upspeedgraph net (height),(width) (gradient colour 1) (gradient	colour
+       upspeedgraph  net (height),(width) (gradient colour 1) (gradient colour
        2) (scale)
-	      Upload speed graph, colours defined in  hex,  minus  the	#.  If
+	      Upload  speed  graph,  colours  defined  in hex, minus the #. If
 	      scale is non-zero, it becomes the scale for the graph.
 
 
@@ -1161,18 +1234,91 @@ VARIABLES
 
 
        voffset (pixels)
-	      Change  vertical	offset by N pixels. Negative values will cause
+	      Change vertical offset by N pixels. Negative values  will	 cause
 	      text to overlap. See also $offset.
 
 
        voltage_mv (n)
-	      Returns CPU #n's voltage in mV. CPUs  are	 counted  from	1.  If
+	      Returns  CPU  #n's  voltage  in  mV. CPUs are counted from 1. If
 	      omitted, the parameter defaults to 1.
 
 
        voltage_v (n)
 	      Returns CPU #n's voltage in V. CPUs are counted from 1. If omit-
 	      ted, the parameter defaults to 1.
+
+
+       xmms2_artist
+	      Artist in current XMMS2 song
+
+
+       xmms2_album
+	      Album in current XMMS2 song
+
+
+       xmms2_title
+	      Title in current XMMS2 song
+
+
+       xmms2_genre
+	      Genre in current XMMS2 song
+
+
+       xmms2_comment
+	      Comment in current XMMS2 song
+
+
+       xmms2_decoder
+	      Decoder plugin used
+
+
+       xmms2_transport
+	      Transport plugin used
+
+
+       xmms2_url
+	      Full path to current song
+
+
+       xmms2_tracknr
+	      Track number in current XMMS2 song
+
+
+       xmms2_bitrate
+	      Bitrate of current song
+
+
+       xmms2_id
+	      XMMS2 id of current song
+
+
+       xmms2_duration
+	      Duration of current song
+
+
+       xmms2_elapsed
+	      Song's elapsed time
+
+
+       xmms2_size
+	      Size of current song
+
+
+       xmms2_percent
+	      Percent of song's progress
+
+
+       xmms2_status
+	      XMMS2 status (Playing, Paused, Stopped, or Disconnected)
+
+
+       xmms2_bar (height),(width)
+	      Bar of XMMS2's progress
+
+
+       xmms2_smart
+	      Prints the song name in either the form "artist - title" or file
+	      name, depending on whats available
 
 
 EXAMPLES

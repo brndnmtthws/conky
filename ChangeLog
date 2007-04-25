@@ -1,6 +1,9 @@
 # $Id$
 
-2007-04-5
+2007-04-25
+	* Added color[0-9] variable patch (thanks jieryn)
+
+2007-04-05
 	* Added if_empty patch (thanks Erik)
 	* Added if_existing patch for string matching (thanks cromka)
 	* Added hwmon support (thanks flitsch)

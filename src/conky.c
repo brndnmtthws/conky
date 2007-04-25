@@ -296,6 +296,7 @@ static int draw_shades, draw_outline;
 static int border_margin, border_width;
 
 static long default_fg_color, default_bg_color, default_out_color;
+static long color0, color1, color2, color3, color4, color5, color6, color7, color8, color9;
 
 /* create own window or draw stuff to root? */
 static int set_transparent = 0;
@@ -953,6 +954,16 @@ enum text_object_type {
 	OBJ_buffers,
 	OBJ_cached,
 	OBJ_color,
+	OBJ_color0,
+	OBJ_color1,
+	OBJ_color2,
+	OBJ_color3,
+	OBJ_color4,
+	OBJ_color5,
+	OBJ_color6,
+	OBJ_color7,
+	OBJ_color8,
+	OBJ_color9,
 	OBJ_font,
 	OBJ_cpu,
 	OBJ_cpubar,
@@ -2309,8 +2320,27 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 #ifdef X11
 		obj->data.l = arg ? get_x11_color(arg) : default_fg_color;
 #endif /* X11 */
-	END
-		OBJ(font, 0)
+	END OBJ(color0, 0)
+		obj->data.l = color0;
+	END OBJ(color1, 0)
+		obj->data.l = color1;
+	END OBJ(color2, 0)
+		obj->data.l = color2;
+	END OBJ(color3, 0)
+		obj->data.l = color3;
+	END OBJ(color4, 0)
+		obj->data.l = color4;
+	END OBJ(color5, 0)
+		obj->data.l = color5;
+	END OBJ(color6, 0)
+		obj->data.l = color6;
+	END OBJ(color7, 0)
+		obj->data.l = color7;
+	END OBJ(color8, 0)
+		obj->data.l = color8;
+	END OBJ(color9, 0)
+		obj->data.l = color9;
+	END OBJ(font, 0)
 		obj->data.s = scan_font(arg);
 	END
 		OBJ(downspeed, INFO_NET) 
@@ -3502,6 +3532,36 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				}
 				OBJ(color) {
 					new_fg(p, obj->data.l);
+				}
+				OBJ(color0) {
+					new_fg(p, color0);
+				}
+				OBJ(color1) {
+					new_fg(p, color1);
+				}
+				OBJ(color2) {
+					new_fg(p, color2);
+				}
+				OBJ(color3) {
+					new_fg(p, color3);
+				}
+				OBJ(color4) {
+					new_fg(p, color4);
+				}
+				OBJ(color5) {
+					new_fg(p, color5);
+				}
+				OBJ(color6) {
+					new_fg(p, color6);
+				}
+				OBJ(color7) {
+					new_fg(p, color7);
+				}
+				OBJ(color8) {
+					new_fg(p, color8);
+				}
+				OBJ(color9) {
+					new_fg(p, color9);
 				}
 #if defined(__linux__)
 				OBJ(i8k_version) {
@@ -6457,6 +6517,16 @@ static void set_default_configurations(void)
 	default_fg_color = WhitePixel(display, screen);
 	default_bg_color = BlackPixel(display, screen);
 	default_out_color = BlackPixel(display, screen);
+	color0 = default_fg_color;
+	color1 = default_fg_color;
+	color2 = default_fg_color;
+	color3 = default_fg_color;
+	color4 = default_fg_color;
+	color5 = default_fg_color;
+	color6 = default_fg_color;
+	color7 = default_fg_color;
+	color8 = default_fg_color;
+	color9 = default_fg_color;
 	draw_shades = 1;
 	draw_borders = 0;
 	draw_graph_borders = 1;
@@ -6590,6 +6660,66 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 		CONF("border_width") {
 			if (value)
 				border_width = strtol(value, 0, 0);
+			else
+				CONF_ERR;
+		}
+		CONF("color0") {
+			if (value)
+				color0 = get_x11_color(value);
+			else
+				CONF_ERR;
+		}
+		CONF("color1") {
+			if (value)
+				color1 = get_x11_color(value);
+			else
+				CONF_ERR;
+		}
+		CONF("color2") {
+			if (value)
+				color2 = get_x11_color(value);
+			else
+				CONF_ERR;
+		}
+		CONF("color3") {
+			if (value)
+				color3 = get_x11_color(value);
+			else
+				CONF_ERR;
+		}
+		CONF("color4") {
+			if (value)
+				color4 = get_x11_color(value);
+			else
+				CONF_ERR;
+		}
+		CONF("color5") {
+			if (value)
+				color5 = get_x11_color(value);
+			else
+				CONF_ERR;
+		}
+		CONF("color6") {
+			if (value)
+				color6 = get_x11_color(value);
+			else
+				CONF_ERR;
+		}
+		CONF("color7") {
+			if (value)
+				color7 = get_x11_color(value);
+			else
+				CONF_ERR;
+		}
+		CONF("color8") {
+			if (value)
+				color8 = get_x11_color(value);
+			else
+				CONF_ERR;
+		}
+		CONF("color9") {
+			if (value)
+				color9 = get_x11_color(value);
 			else
 				CONF_ERR;
 		}

@@ -28,6 +28,76 @@
 </varlistentry>
 
 <varlistentry>
+	<term><command><option>color0</option></command></term>
+	<listitem>
+		A color variable for use inside TEXT segments
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>color1</option></command></term>
+	<listitem>
+		A color variable for use inside TEXT segments
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>color2</option></command></term>
+	<listitem>
+		A color variable for use inside TEXT segments
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>color3</option></command></term>
+	<listitem>
+		A color variable for use inside TEXT segments
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>color4</option></command></term>
+	<listitem>
+		A color variable for use inside TEXT segments
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>color5</option></command></term>
+	<listitem>
+		A color variable for use inside TEXT segments
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>color6</option></command></term>
+	<listitem>
+		A color variable for use inside TEXT segments
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>color7</option></command></term>
+	<listitem>
+		A color variable for use inside TEXT segments
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>color8</option></command></term>
+	<listitem>
+		A color variable for use inside TEXT segments
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term><command><option>color9</option></command></term>
+	<listitem>
+		A color variable for use inside TEXT segments
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
 	<term><command><option>cpu_avg_samples</option></command></term>
 	<listitem>
 		The number of samples to average for CPU monitoring

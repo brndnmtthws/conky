@@ -152,6 +152,46 @@ Border margin in pixels
 Border width in pixels
 
 .TP 
+\fB\*(T<\fBcolor0\fR\*(T>\fR
+A color variable for use inside TEXT segments
+
+.TP 
+\fB\*(T<\fBcolor1\fR\*(T>\fR
+A color variable for use inside TEXT segments
+
+.TP 
+\fB\*(T<\fBcolor2\fR\*(T>\fR
+A color variable for use inside TEXT segments
+
+.TP 
+\fB\*(T<\fBcolor3\fR\*(T>\fR
+A color variable for use inside TEXT segments
+
+.TP 
+\fB\*(T<\fBcolor4\fR\*(T>\fR
+A color variable for use inside TEXT segments
+
+.TP 
+\fB\*(T<\fBcolor5\fR\*(T>\fR
+A color variable for use inside TEXT segments
+
+.TP 
+\fB\*(T<\fBcolor6\fR\*(T>\fR
+A color variable for use inside TEXT segments
+
+.TP 
+\fB\*(T<\fBcolor7\fR\*(T>\fR
+A color variable for use inside TEXT segments
+
+.TP 
+\fB\*(T<\fBcolor8\fR\*(T>\fR
+A color variable for use inside TEXT segments
+
+.TP 
+\fB\*(T<\fBcolor9\fR\*(T>\fR
+A color variable for use inside TEXT segments
+
+.TP 
 \fB\*(T<\fBcpu_avg_samples\fR\*(T>\fR
 The number of samples to average for CPU monitoring
 
@@ -166,18 +206,6 @@ Default outline color
 .TP 
 \fB\*(T<\fBdefault_shade_color\fR\*(T>\fR
 Default shading color and border's shading color
-
-.TP 
-\fB\*(T<\fBdexter_client\fR\*(T>\fR
-Act as client and connect to libdexter server for remote monitoring?
-
-.TP 
-\fB\*(T<\fBdexter_config\fR\*(T>\fR
-Full path to libdexter configuration file (default search order: $HOME/.dexterrc; /etc/libdexter/dexter.conf)
-
-.TP 
-\fB\*(T<\fBdexter_server\fR\*(T>\fR
-Act as server for libdexter services?
 
 .TP 
 \fB\*(T<\fBdouble_buffer\fR\*(T>\fR
@@ -464,6 +492,14 @@ Title of current tune with optional maximum length specifier
 Battery status and remaining percentage capacity of ACPI or APM battery. ACPI battery number can be given as argument (default is BAT0).
 
 .TP 
+\fB\*(T<\fBbattery_bar\fR\*(T>\fR \*(T<\fB(height),(width) (num)\fR\*(T> 
+Battery percentage remaining of ACPI battery in a bar. ACPI battery number can be given as argument (default is BAT0).
+
+.TP 
+\fB\*(T<\fBbattery_percent\fR\*(T>\fR \*(T<\fB(num)\fR\*(T> 
+Battery percentage remaining for ACPI battery. ACPI battery number can be given as argument (default is BAT0).
+
+.TP 
 \fB\*(T<\fBbattery_time\fR\*(T>\fR \*(T<\fB(num)\fR\*(T> 
 Battery charge/discharge time remaining of ACPI battery. ACPI battery number can be given as argument (default is BAT0).
 
@@ -502,6 +538,46 @@ Amount of memory cached
 .TP 
 \fB\*(T<\fBcolor\fR\*(T>\fR \*(T<\fB(color)\fR\*(T> 
 Change drawing color to color
+
+.TP 
+\fB\*(T<\fBcolor0\fR\*(T>\fR 
+Change drawing color to color0 configuration option
+
+.TP 
+\fB\*(T<\fBcolor1\fR\*(T>\fR 
+Change drawing color to color1 configuration option
+
+.TP 
+\fB\*(T<\fBcolor2\fR\*(T>\fR 
+Change drawing color to color2 configuration option
+
+.TP 
+\fB\*(T<\fBcolor3\fR\*(T>\fR 
+Change drawing color to color3 configuration option
+
+.TP 
+\fB\*(T<\fBcolor4\fR\*(T>\fR 
+Change drawing color to color4 configuration option
+
+.TP 
+\fB\*(T<\fBcolor5\fR\*(T>\fR 
+Change drawing color to color5 configuration option
+
+.TP 
+\fB\*(T<\fBcolor6\fR\*(T>\fR 
+Change drawing color to color6 configuration option
+
+.TP 
+\fB\*(T<\fBcolor7\fR\*(T>\fR 
+Change drawing color to color7 configuration option
+
+.TP 
+\fB\*(T<\fBcolor8\fR\*(T>\fR 
+Change drawing color to color8 configuration option
+
+.TP 
+\fB\*(T<\fBcolor9\fR\*(T>\fR 
+Change drawing color to color9 configuration option
 
 .TP 
 \fB\*(T<\fBcpu\fR\*(T>\fR \*(T<\fB(cpuN)\fR\*(T> 
@@ -653,6 +729,10 @@ Displays first N lines of supplied text text file. If interval is not supplied, 
 Horizontal line, height is the height in pixels
 
 .TP 
+\fB\*(T<\fBhwmon\fR\*(T>\fR \*(T<\fBN sensor number input\fR\*(T> 
+This has the ability to display the contents of hwmon files located under "/sys/class/hwmon/hwmonX/device/N". For example, use ${hwmon 0 temp 1 input} to read the temperature of the CPU (in \(deC) from "/sys/class/hwmon/hwmon0/device/temp1_input". If the sensor name equals "temp", then the value read will be divided by 1000, otherwise the number will be used unchanged. The factor 1000 is just for the Abit uGuru sensor.
+
+.TP 
 \fB\*(T<\fBiconv_start\fR\*(T>\fR \*(T<\fBcodeset_from codeset_to\fR\*(T> 
 Convert text from one codeset to another using GNU iconv. Needs to be stopped with iconv_stop.
 
@@ -729,16 +809,20 @@ If running the IBM ACPI, displays the brigtness of the
 laptops's LCD (0-7).
 
 .TP 
-\fB\*(T<\fBif_running\fR\*(T>\fR \*(T<\fB(process)\fR\*(T> 
-if PROCESS is running, display everything if_running and the matching $endif
+\fB\*(T<\fBif_empty\fR\*(T>\fR \*(T<\fB(var)\fR\*(T> 
+if conky variable VAR is empty, display everything between $if_empty and the matching $endif
 
 .TP 
-\fB\*(T<\fBif_existing\fR\*(T>\fR \*(T<\fB(file)\fR\*(T> 
-if FILE exists, display everything between if_existing and the matching $endif
+\fB\*(T<\fBif_running\fR\*(T>\fR \*(T<\fB(process)\fR\*(T> 
+if PROCESS is running, display everything $if_running and the matching $endif
+
+.TP 
+\fB\*(T<\fBif_existing\fR\*(T>\fR \*(T<\fBfile (string)\fR\*(T> 
+if FILE exists, display everything between if_existing and the matching $endif. The optional second paramater checks for FILE containing the specified string and prints everything between $if_existing and the matching $endif.
 
 .TP 
 \fB\*(T<\fBif_mounted\fR\*(T>\fR \*(T<\fB(mountpoint)\fR\*(T> 
-if MOUNTPOINT is mounted, display everything between if_mounted and the matching $endif
+if MOUNTPOINT is mounted, display everything between $if_mounted and the matching $endif
 
 .TP 
 \fB\*(T<\fBimap_messages\fR\*(T>\fR \*(T<\fB(args)\fR\*(T> 
@@ -1131,7 +1215,7 @@ XMMS2 status (Playing, Paused, Stopped, or Disconnected)
 
 .TP 
 \fB\*(T<\fBxmms2_bar\fR\*(T>\fR \*(T<\fB(height),(width)\fR\*(T> 
-XMMS2 progress bar
+Bar of XMMS2's progress
 
 .TP 
 \fB\*(T<\fBxmms2_smart\fR\*(T>\fR 
