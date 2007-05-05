@@ -424,6 +424,20 @@ get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 }
 
 int
+get_battery_perct(const char *bat)
+{
+	/* not implemented */
+	return (0);
+}
+
+int
+get_battery_perct_bar(const char *bar)
+{
+	/* not implemented */
+	return (0);
+}
+
+int
 open_i2c_sensor(const char *dev, const char *type, int n, int *div,
 		char *devtype)
 {
