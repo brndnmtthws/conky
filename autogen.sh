@@ -10,7 +10,7 @@ ACLOCAL=${ACLOCAL:-aclocal}
 AUTOHEADER=${AUTOHEADER:-autoheader}
 LIBTOOLIZE=${LIBTOOLIZE:-libtoolize}
 
-if [ "$1" == "clean" ]; then
+if [ "$1" = "clean" ]; then
     /bin/rm -f configure.ac
     exit 0
 fi
