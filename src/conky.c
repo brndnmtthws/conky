@@ -454,6 +454,9 @@ int check_mount(char *s)
 			return 1;
 
 	return 0;
+#elif defined(__OpenBSD__)
+	/* stub */
+	return 0;
 #endif
 }
 
@@ -599,7 +602,7 @@ memrchr (const void *buffer, int c, size_t n)
 
 	for (p += n; n ; n--)
 		if (*--p == c)
-			return p;
+			return (void *)p;
 	return NULL;
 }
 #endif
@@ -1083,11 +1086,11 @@ enum text_object_type {
 	OBJ_pop3,
 	OBJ_pop3_unseen,
 	OBJ_pop3_used,
-#if defined(__FreeBSD__) && (defined(i386) || defined(__i386__))
+#if (defined(__FreeBSD__) || defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
 	OBJ_apm_adapter,
 	OBJ_apm_battery_time,
 	OBJ_apm_battery_life,
-#endif /* __FreeBSD__ */
+#endif /* __FreeBSD__ __OpenBSD__ */
 #ifdef __OpenBSD__
 	OBJ_obsd_sensors_temp,
 	OBJ_obsd_sensors_fan,
@@ -2966,7 +2969,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	}
 	END OBJ(uptime_short, INFO_UPTIME) END OBJ(uptime, INFO_UPTIME) END
 		OBJ(adt746xcpu, 0) END OBJ(adt746xfan, 0) END
-#if defined(__FreeBSD__) && (defined(i386) || defined(__i386__))
+#if (defined(__FreeBSD__) || defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
 		OBJ(apm_adapter, 0) END
 		OBJ(apm_battery_life, 0) END
 		OBJ(apm_battery_time, 0) END
@@ -4574,9 +4577,12 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				format_seconds(p, p_max_size, (int) cur->uptime);
 			}
 
-#if defined(__FreeBSD__) && (defined(i386) || defined(__i386__))
+#if (defined(__FreeBSD__) || defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
 			OBJ(apm_adapter) {
-				snprintf(p, p_max_size, "%s", get_apm_adapter());
+				char	*msg;
+				msg = get_apm_adapter();
+				snprintf(p, p_max_size, "%s", msg);
+				free(msg);
 			}
 			OBJ(apm_battery_life) {
 				char    *msg;
@@ -4590,7 +4596,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				snprintf(p, p_max_size, "%s", msg);
 				free(msg);
 			}
-#endif /* __FreeBSD__ */
+#endif /* __FreeBSD__ __OpenBSD__ */
 
 #ifdef MPD
 			OBJ(mpd_title) {

@@ -562,8 +562,10 @@ void update_mail_count();
 kvm_t *kd;
 #endif
 
-#if defined(__FreeBSD__) && (defined(i386) || defined(__i386__))
+#if (defined(__FreeBSD__) || defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
+#ifdef __FreeBSD__
 int apm_getinfo(int fd, apm_info_t aip);
+#endif
 char *get_apm_adapter(void);
 char *get_apm_battery_life(void);
 char *get_apm_battery_time(void);

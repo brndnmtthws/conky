@@ -688,29 +688,40 @@ char
 {
 	int fd;
 	struct apm_power_info info;
+	char *out;
+
+	out  = (char *)calloc(16, sizeof (char));
 
 	fd = open(APMDEV, O_RDONLY);
-	if (fd < 0)
-		return ("ERR");
+	if (fd < 0) {
+		strncpy(out, "ERR", 16);
+		return (out);
+	}
 
 	if (apm_getinfo(fd, &info) != 0) {
 		close(fd);
-		return ("ERR");
+		strncpy(out, "ERR", 16);
+		return (out);
 	}
 	close(fd);
 
 	switch (info.ac_state) {
 		case APM_AC_OFF:
-			return ("off-line");
+			strncpy(out, "off-line", 16);
+			return (out);
 			break;
 		case APM_AC_ON:
-			if (info.battery_state == APM_BATT_CHARGING)
-				return ("charging");
-			else
-				return ("on-line");
+			if (info.battery_state == APM_BATT_CHARGING) {
+				strncpy(out, "charging", 16);
+				return (out);
+			} else {
+				strncpy(out, "on-line", 16);
+				return (out);
+			}
 			break;
 		default:
-			return ("unknown");
+			strncpy(out, "unknown", 16);
+			return (out);
 			break;
 	}
 }

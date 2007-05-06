@@ -819,28 +819,38 @@ char
 	int fd;
 	struct apm_info info;
 
+	out = (char *)calloc(16, sizeof (char));
+
 	fd = open(APMDEV, O_RDONLY);
-	if (fd < 0)
-		return ("ERR");
+	if (fd < 0) {
+		strncpy(out, "ERR", 16);
+		return (out);
+	}
 
 	if (apm_getinfo(fd, &info) != 0) {
 		close(fd);
-		return ("ERR");
+		strncpy(out, "ERR", 16);
+		return (out);
 	}
 	close(fd);
 
 	switch (info.ai_acline) {
 		case 0:
-			return ("off-line");
+			strncpy(out, "off-line", 16);
+			return (out);
 			break;
 		case 1:
-			if (info.ai_batt_stat == 3)
-				return ("charging");
-			else
-				return ("on-line");
+			if (info.ai_batt_stat == 3) {
+				strncpy(out, "charging", 16);
+				return (out);
+			} else {
+				strncpy(out, "on-line", 16);
+				return (out);
+			}
 			break;
 		default:
-			return ("unknown");
+			strncpy(out, "unknown", 16);
+			return (out);
 			break;
 	}
 }
