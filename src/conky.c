@@ -3123,7 +3123,6 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 			char *uri = (char *)malloc(64 * sizeof(char *));
 
 			argc = sscanf(arg, "%63s %d", uri, &count);
-			printf("argc: %d, uri: %s, count: %d\n", argc, uri, count);
 			obj->data.rss.uri = uri;
 			obj->data.rss.count = count;
 		} else
@@ -4300,7 +4299,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				}
 
 				/* we don't need last \n */
-				titles[strlen(titles)-2] = '\0';
+				titles[strlen(titles)-1] = '\0';
 			
 				snprintf(p, p_max_size, "%s", titles);
 
