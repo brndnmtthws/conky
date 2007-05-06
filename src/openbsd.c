@@ -62,7 +62,7 @@ static int kvm_init()
 
 	kd = kvm_open(NULL, NULL, NULL, KVM_NO_FILES, NULL);
 	if(kd == NULL)
-		fprintf(stderr, "error opening kvm\n");
+		ERR("error opening kvm");
 	else	init_kvm = 1;
 
 	return 1;
@@ -118,7 +118,7 @@ update_uptime()
 		time(&now);
 		info.uptime = now - boottime.tv_sec;
 	} else {
-		fprintf(stderr, "Could not get uptime\n");
+		ERR("Could not get uptime");
 		info.uptime = 0;
 	}
 }
@@ -305,7 +305,7 @@ update_cpu_usage()
 	}
 
 	if (sysctl(mib, 2, &cp_time, &len, NULL, 0) < 0) {
-		(void) fprintf(stderr, "Cannot get kern.cp_time");
+		ERR("Cannot get kern.cp_time");
 	}
 
 	fresh.load[0] = cp_time[CP_USER];
@@ -379,11 +379,9 @@ void update_obsd_sensors()
 
 				switch (type) {
 					case SENSOR_TEMP:
-						//printf("num: %i value: %.2f\n", sensor.numt, (sensor.value - 273150000) / 1000000.0);
 						obsd_sensors.temp[dev][sensor.numt] = (sensor.value - 273150000) / 1000000.0;
 						break;
 					case SENSOR_FANRPM:
-						//printf("num: %i value: %i\n", sensor.numt, sensor.value);
 						obsd_sensors.fan[dev][sensor.numt] = sensor.value;
 						break;
 					case SENSOR_VOLTS_DC:
@@ -410,7 +408,7 @@ void get_obsd_vendor(char *buf, size_t client_buffer_size)
 	char vendor[64];
 	size_t size = sizeof(vendor);
 	if(sysctl(mib, 2, vendor, &size, NULL, 0) == -1) {
-		fprintf(stderr, "error reading vendor");
+		ERR("error reading vendor");
 		snprintf(buf, client_buffer_size, "unknown");
 	} else {
 		snprintf(buf, client_buffer_size, "%s", vendor);
@@ -426,7 +424,7 @@ void get_obsd_product(char *buf, size_t client_buffer_size)
 	char product[64];
 	size_t size = sizeof(product);
 	if(sysctl(mib, 2, product, &size, NULL, 0) == -1) {
-		fprintf(stderr, "error reading product");
+		ERR("error reading product");
 		snprintf(buf, client_buffer_size, "unknown");
 	} else {
 		snprintf(buf, client_buffer_size, "%s", product);
@@ -548,12 +546,8 @@ update_wifi_stats()
 			bcopy(bssid.i_bssid, &nr.nr_macaddr, sizeof(nr.nr_macaddr));
 			strlcpy(nr.nr_ifname, ifa->ifa_name, sizeof(nr.nr_ifname));
 
-			if (ioctl(s, SIOCG80211NODE, &nr) == 0 && nr.nr_rssi) {
-				//if (nr.nr_max_rssi)
-				//	printf(" %u%%", IEEE80211_NODEREQ_RSSI(&nr));
-				//else 
-					ns->linkstatus = nr.nr_rssi;
-			}
+			if (ioctl(s, SIOCG80211NODE, &nr) == 0 && nr.nr_rssi)
+				ns->linkstatus = nr.nr_rssi;
 		}
 cleanup:
 		close(s);
@@ -610,7 +604,7 @@ proc_find_top(struct process **cpu, struct process **mem)
 	mib[1] = HW_USERMEM;
 	size_t size = sizeof(total_pages);
 	if(sysctl(mib, 2, &total_pages, &size, NULL, 0) == -1)
-		fprintf(stderr, "error reading nmempages\n");
+		ERR("error reading nmempages");
 
 	int max_size = sizeof(struct kinfo_proc2);
 	p = kvm_getproc2(kd, KERN_PROC_ALL, 0, max_size, &n_processes);
