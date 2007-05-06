@@ -44,10 +44,6 @@
 #define LOG1024			10
 #define pagetok(size) ((size) << pageshift)
 
-#if 0
-#define	OPENBSD_DEBUG
-#endif
-
 inline void proc_find_top(struct process **cpu, struct process **mem);
 
 static short cpu_setup = 0;
@@ -278,7 +274,6 @@ get_cpu_count()
 {
 	/*
 	 * FIXME: is it possible to get per cpu stats with openbsd?
-	 * btw. this function is complete
 	 */
 #if 0
 	int cpu_count = 0;
@@ -556,7 +551,7 @@ update_wifi_stats()
 			if (ioctl(s, SIOCG80211NODE, &nr) == 0 && nr.nr_rssi) {
 				//if (nr.nr_max_rssi)
 				//	printf(" %u%%", IEEE80211_NODEREQ_RSSI(&nr));
-				//else
+				//else 
 					ns->linkstatus = nr.nr_rssi;
 			}
 		}
@@ -567,7 +562,7 @@ cleanup:
 void
 update_diskio()
 {
-	return; /* XXX implement? */
+	return; /* XXX implement? hifi: not sure how */
 }
 
 /*
@@ -670,15 +665,6 @@ proc_find_top(struct process **cpu, struct process **mem)
 			free(ttmp);
 		}
 	}
-
-
-#if defined(OPENBSD_DEBUG)
-	printf("=====\nmem\n");
-	for (i = 0; i < 10; i++) {
-		printf("%d: %s(%d) %.2f\n", i, mem[i]->name,
-				mem[i]->pid, mem[i]->totalmem);
-	}
-#endif
 
 	for (i = 0; i < j; free(processes[i++].name));
 	free(processes);
@@ -802,6 +788,17 @@ char
 #endif
 
 /* empty stubs so conky links */
+int
+get_battery_perct(const char *bat)
+{
+	return (0);
+}
+
+int
+get_battery_perct_bar(const char *bar)
+{
+	return (0);
+}
 
 void
 prepare_update()
