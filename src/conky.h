@@ -35,6 +35,7 @@
 #if defined(__OpenBSD__)
 #include <sys/sysctl.h>
 #include <sys/sensors.h>
+#include <machine/apmvar.h>
 #endif /* __OpenBSD__ */
 
 #ifdef AUDACIOUS
@@ -563,9 +564,10 @@ kvm_t *kd;
 #endif
 
 #if (defined(__FreeBSD__) || defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
-#ifdef __FreeBSD__
-int apm_getinfo(int fd, apm_info_t aip);
+#ifdef __OpenBSD__
+typedef struct apm_power_info *apm_info_t;
 #endif
+int apm_getinfo(int fd, apm_info_t aip);
 char *get_apm_adapter(void);
 char *get_apm_battery_life(void);
 char *get_apm_battery_time(void);

@@ -675,9 +675,9 @@ proc_find_top(struct process **cpu, struct process **mem)
 #define	APM_UNKNOWN	255
 
 int
-apm_getinfo(int fd, void *null)
+apm_getinfo(int fd, apm_info_t aip)
 {
-	if (ioctl(fd, APM_IOC_GETPOWER) == -1)
+	if (ioctl(fd, APM_IOC_GETPOWER, aip) == -1)
 		return (-1);
 
 	return (0);
