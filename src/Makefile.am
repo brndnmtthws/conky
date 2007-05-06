@@ -51,6 +51,10 @@ if BUILD_HDDTEMP
 hddtemp = hddtemp.c
 endif
 
+if BUILD_RSS
+rss = rss.c
+endif
+
 conky_SOURCES = 		\
 	$(audacious)            \
 	$(bmpx)                 \
@@ -67,6 +71,7 @@ conky_SOURCES = 		\
 	$(netbsd)               \
 	$(openbsd)              \
 	$(port_monitors)        \
+	$(rss)			\
 	$(solaris) 		\
 	timed_thread.c		\
 	timed_thread.h		\

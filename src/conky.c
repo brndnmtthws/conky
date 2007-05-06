@@ -93,6 +93,9 @@ static void print_version()
 #ifdef TCP_PORT_MONITOR
 	"  * portmon\n"
 #endif /* TCP_PORT_MONITOR */
+#ifdef RSS
+	"  * rss\n"
+#endif
 	"\n");	
 
 	exit(0);
@@ -1163,6 +1166,9 @@ enum text_object_type {
 	OBJ_bmpx_uri,
 	OBJ_bmpx_bitrate,
 #endif
+#ifdef RSS
+	OBJ_rss,
+#endif
 #ifdef TCP_PORT_MONITOR
 	OBJ_tcp_portmon,
 #endif
@@ -1276,6 +1282,12 @@ struct text_object {
 			int port;
 			char *dev;
 		} hddtemp; /* 2 */
+#endif
+#ifdef RSS
+		struct {
+			char *uri;
+			int count;
+		} rss;
 #endif
 	} data;
 };
@@ -2030,6 +2042,10 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 			case OBJ_bmpx_track:
 			case OBJ_bmpx_uri:
 			case OBJ_bmpx_bitrate:
+#endif
+#ifdef RSS
+			case OBJ_rss:
+				free(objs[i].data.rss.uri);
 #endif
 			case OBJ_pre_exec:
 			case OBJ_battery:
@@ -3098,6 +3114,21 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	END
 		OBJ(bmpx_bitrate, INFO_BMPX)
 		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+	END
+#endif
+#ifdef RSS
+	OBJ(rss, 0) 
+		if (arg) {
+			int argc, count;
+			char *uri = (char *)malloc(64 * sizeof(char *));
+
+			argc = sscanf(arg, "%63s %d", uri, &count);
+			printf("argc: %d, uri: %s, count: %d\n", argc, uri, count);
+			obj->data.rss.uri = uri;
+			obj->data.rss.count = count;
+		} else
+			CRIT_ERR("rss: needs arguments");
+
 	END
 #endif
 #ifdef HDDTEMP
@@ -4254,6 +4285,30 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			OBJ(hr) {
 				new_hr(p, obj->data.i);
 			}
+#ifdef RSS
+			OBJ(rss) {
+				GList *walk = NULL;
+				GList *list = NULL;
+				char *titles = malloc(1024*sizeof(char *));
+
+				memset(titles, 0, sizeof(titles));
+				list = get_rss_info(obj->data.rss.uri, obj->data.rss.count);
+				
+				for (walk = g_list_first(list); walk != NULL; walk = g_list_next(walk)) {
+					snprintf(titles, 1023, "%s%s\n", titles, (char *)walk->data);
+					free(walk->data);
+				}
+
+				/* we don't need last \n */
+				titles[strlen(titles)-2] = '\0';
+			
+				snprintf(p, p_max_size, "%s", titles);
+
+				free(titles);
+				g_list_free(walk);
+				g_list_free(list);		
+			}
+#endif
 #ifdef HDDTEMP
 			OBJ(hddtemp) {
 				char *temp;

@@ -179,6 +179,22 @@ if test x$want_xmms2 = xyes; then
     AC_DEFINE(XMMS2, 1, [Define if you want XMMS2 support])
 fi
 
+dnl
+dnl RSS
+dnl
+
+AC_ARG_ENABLE([rss],
+	      AC_HELP_STRING([--enable-rss], [enable if you want rss support (requires libmrss) @<:@default=no@:>@]),
+	      [want_rss="$enableval"], [want_rss=no])
+#
+AM_CONDITIONAL(BUILD_RSS, test x$want_rss = xyes)
+if test x$want_rss = xyes; then
+	WANT_GLIB=yes
+	PKG_CHECK_MODULES([MRSS], [mrss])
+	CFLAGS="$CFLAGS $MRSS_CFLAGS"
+	LIBS="$LIBS $MRSS_LIBS"
+	AC_DEFINE(RSS, 1, [Define if you want rss support])
+fi
 
 dnl
 dnl IMLIB2
@@ -218,10 +234,8 @@ if test x$want_portmon = xyes; then
         if test "x$PORT_MONITORS_MISSING" = xyes; then
               AC_MSG_ERROR([missing a needed network header for port monitoring])
         fi
-      PKG_CHECK_MODULES([GLIB], [glib-2.0])
-      CFLAGS="$CFLAGS $GLIB_CFLAGS"
-      LIBS="$LIBS $GLIB_LIBS"
-        AC_DEFINE(TCP_PORT_MONITOR, 1, [Define if you want tcp port monitoring support])
+	WANT_GLIB=yes
+	AC_DEFINE(TCP_PORT_MONITOR, 1, [Define if you want tcp port monitoring support])
   fi
 fi
 
@@ -356,6 +370,15 @@ if test x$want_xft = "xyes"; then
     fi
 fi
 
+dnl
+dnl GLIB
+dnl
+
+if test x$WANT_GLIB = xyes; then
+	PKG_CHECK_MODULES([GLIB], [glib-2.0])
+        CFLAGS="$CFLAGS $GLIB_CFLAGS"
+	LIBS="$LIBS $GLIB_LIBS"
+fi
 
 dnl
 dnl KVM
@@ -519,4 +542,5 @@ $PACKAGE $VERSION configured successfully:
  * general:
   hddtemp:          $want_hddtemp
   portmon:          $want_portmon  
+  RSS:		    $want_rss
 EOF

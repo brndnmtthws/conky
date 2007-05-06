@@ -46,6 +46,10 @@
 #include <xmmsclient/xmmsclient.h>
 #endif
 
+#ifdef RSS
+#include <glib.h>
+#endif
+
 #include "mboxscan.h"
 #include "timed_thread.h"
 
@@ -243,6 +247,9 @@ enum {
 	INFO_XMMS2 = 22,
 #endif
 	INFO_ENTROPY = 23,
+#ifdef RSS
+	INFO_RSS = 24,
+#endif
 };
 
 
@@ -588,6 +595,11 @@ void update_xmms2();
 int scan_hddtemp(const char *arg, char **dev, char **addr, int *port);
 char *get_hddtemp_info(char *dev, char *addr, int port, char *unit);
 #endif /* HDDTEMP */
+
+/* in rss.c */
+#ifdef RSS
+GList* get_rss_info(char *uri, int count);
+#endif /* RSS */
 
 /* in linux.c */
 
