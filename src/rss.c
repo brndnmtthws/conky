@@ -42,7 +42,7 @@ int rss_delay(int delay)
 
 	// make it minutes
 	if(delay < 1) delay = 1;
-	//delay *= 60;
+	delay *= 60;
 
 	if(!wait) {
 		wait = now + delay;
