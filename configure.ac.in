@@ -184,14 +184,15 @@ dnl RSS
 dnl
 
 AC_ARG_ENABLE([rss],
-	      AC_HELP_STRING([--enable-rss], [enable if you want rss support (requires libmrss) @<:@default=no@:>@]),
+	      AC_HELP_STRING([--enable-rss], [enable if you want rss support @<:@default=no@:>@]),
 	      [want_rss="$enableval"], [want_rss=no])
 #
 AM_CONDITIONAL(BUILD_RSS, test x$want_rss = xyes)
 if test x$want_rss = xyes; then
 	WANT_GLIB=yes
-	CFLAGS="$CFLAGS `xml2-config --cflags` `curl-config --cflags`"
-	LIBS="$LIBS `xml2-config --libs` `curl-config --libs`"
+	PKG_CHECK_MODULES(RSS, libxml-2.0 libcurl,,exit)
+	CFLAGS="$CFLAGS $RSS_CFLAGS"
+	LIBS="$LIBS $RSS_LIBS"
 	AC_DEFINE(RSS, 1, [Define if you want rss support])
 fi
 
