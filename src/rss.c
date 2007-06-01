@@ -1,6 +1,9 @@
 /*
  * rss.c
  * RSS stuff (prss version)
+ *
+ * prss.c and prss.h written by Sisu (Mikko Sysikaski)
+ * new rss.c written by hifi (Toni Spets)
  */
 
 #include <stdio.h>
@@ -12,12 +15,21 @@
 #include <curl/types.h>
 #include <curl/easy.h>
 
-PRSS* save = NULL;
+#define MAX_FEEDS 16
 
 struct MemoryStruct {
 	char *memory;
 	size_t size;
 };
+
+typedef struct feed_ {
+	char* uri;
+	int last_update;
+	PRSS* data;
+} feed;
+
+int num_feeds = 0;
+feed feeds[MAX_FEEDS];
 
 size_t
 WriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void *data)
@@ -35,22 +47,21 @@ WriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void *data)
 }
 
 
-int rss_delay(int delay)
+int rss_delay(int *wait, int delay)
 {
-	static int wait = 0;
 	time_t now = time(NULL);
 
 	// make it minutes
 	if(delay < 1) delay = 1;
 	delay *= 60;
 
-	if(!wait) {
-		wait = now + delay;
+	if(!*wait) {
+		*wait = now + delay;
 		return 1;
 	}
 
-	if(now >= wait + delay) {
-		wait = now + delay;
+	if(now >= *wait + delay) {
+		*wait = now + delay;
 		return 1;
 	}
 
@@ -62,15 +73,45 @@ get_rss_info(char *uri, int delay)
 {
 	CURL *curl = NULL;
 	CURLcode res;
+	// curl temps
 	struct MemoryStruct chunk;
 	chunk.memory = NULL;
 	chunk.size = 0;
 
-	if(!rss_delay(delay))
-		return save; // wait for delay to pass
+	// pointers to struct
+	feed *curfeed = NULL;
+	PRSS *curdata = NULL;
+	int *last_update = 0;
 
-	if(save != NULL)
-		prss_free(save); // clean up old data
+	int i;
+
+	// first seek for the uri in list
+	if(num_feeds > 0) {
+		for(i = 0; i < num_feeds; i++) {
+			if(feeds[i].uri != NULL)
+				if(!strcmp(feeds[i].uri, uri)) {
+					curfeed = &feeds[i];
+					break;
+				}
+		}
+	}
+
+	if(!curfeed) { // new feed
+		if(num_feeds == MAX_FEEDS-1) return NULL;
+		curfeed = &feeds[num_feeds];
+		curfeed->uri = (char *)malloc(sizeof(char) * strlen(uri)+1);
+		strncpy(curfeed->uri, uri, strlen(uri)+1);
+		num_feeds++;
+	}
+
+	last_update = &curfeed->last_update;
+	curdata = curfeed->data;
+
+	if(!rss_delay(last_update, delay))
+		return curdata; // wait for delay to pass
+
+	if(curdata != NULL)
+		prss_free(curdata); // clean up old data
 
 	curl = curl_easy_init();
 	if(curl) {
@@ -82,12 +123,14 @@ get_rss_info(char *uri, int delay)
 
 		res = curl_easy_perform(curl);
 		if(chunk.size) {
-			save = prss_parse_data(chunk.memory);
+			curdata = prss_parse_data(chunk.memory);
 			free(chunk.memory);
 		}
+
+		curfeed->data = curdata;
 
 		curl_easy_cleanup(curl);
 	}
 
-	return save;
+	return curdata;
 }

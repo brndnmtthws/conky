@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2007 Mikko Sysikaski <mikko.sysikaski@gmail.com>
+ *                    Toni Spets <toni.spets@gmail.com>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <string.h>
@@ -17,8 +34,7 @@ PRSS* prss_parse_data(const char* xml_data)
 	if (!doc)
 		return NULL;
 	
-	PRSS* data = get_data(doc);
-	return data;
+	return get_data(doc);
 }
 PRSS* prss_parse_file(const char* xml_file)
 {
@@ -26,18 +42,33 @@ PRSS* prss_parse_file(const char* xml_file)
 	if (!doc)
 		return NULL;
 	
-	PRSS* data = get_data(doc);
-	return data;
+	return get_data(doc);
 }
 void prss_free(PRSS* data)
 {
+	if (!data)
+		return;
 	xmlFreeDoc(data->_data);
 	free(data->items);
+	free(data);
+}
+
+static inline void prss_null(PRSS* p)
+{
+	p->title = p->link = p->description = p->language = NULL;
+	p->items = NULL;
+	p->item_count = 0;
+}
+static inline void prss_null_item(PRSS_Item* i)
+{
+	i->title = i->link = i->description = i->category = i->pubdate = NULL;
 }
 
 static inline void read_item(PRSS_Item* res, xmlNodePtr data)
 {
-	res->title = res->link = res->description = 0;
+	prss_null_item(res);
+	
+	res->title = res->link = res->description = NULL;
 	for(; data; data = data->next) {
 		if (data->type != XML_ELEMENT_NODE)
 			continue;
@@ -55,51 +86,126 @@ static inline void read_item(PRSS_Item* res, xmlNodePtr data)
 			res->category = (char*)child->content;
 		} else if (!strcmp((char*)data->name, "pubDate")) {
 			res->pubdate = (char*)child->content;
+		} else if (!strcmp((char*)data->name, "guid")) {
+			res->guid = (char*)child->content;
 		}
 	}
 }
-
-PRSS* get_data(xmlDocPtr doc)
+static inline void read_element(PRSS* res, xmlNodePtr n)
 {
-	PRSS* result = malloc(sizeof(PRSS));
-	xmlNodePtr channel = xmlDocGetRootElement(doc)->children->next;
-	if (!channel) {
-		fprintf(stderr, "Got root? No!\n");
-		return NULL;
+	if (n->type != XML_ELEMENT_NODE)
+		return;
+	xmlNodePtr child = n->children;
+	if (!child)
+		return;
+		
+	if (!strcmp((char*)n->name, "title")) {
+		res->title = (char*)child->content;
+	} else if (!strcmp((char*)n->name, "link")) {
+		res->link = (char*)child->content;
+	} else if (!strcmp((char*)n->name, "description")) {
+		res->description = (char*)child->content;
+	} else if (!strcmp((char*)n->name, "language")) {
+		res->language = (char*)child->content;
+	} else if (!strcmp((char*)n->name, "pubDate")) {
+		res->pubdate = (char*)child->content;
+	} else if (!strcmp((char*)n->name, "lastBuildDate")) {
+		res->lastbuilddate = (char*)child->content;
+	} else if (!strcmp((char*)n->name, "generator")) {
+		res->generator = (char*)child->content;
+	} else if (!strcmp((char*)n->name, "docs")) {
+		res->docs = (char*)child->content;
+	} else if (!strcmp((char*)n->name, "managingEditor")) {
+		res->managingeditor = (char*)child->content;
+	} else if (!strcmp((char*)n->name, "webMaster")) {
+		res->webmaster = (char*)child->content;
+	} else if (!strcmp((char*)n->name, "item")) {
+		read_item(&res->items[res->item_count++], n->children);
 	}
-	result->_data = doc;
-	result->title = result->link = result->description = result->language = NULL;
-	
-	/* Get item count */
+}
+
+static inline int parse_rss_2_0(PRSS* res, xmlNodePtr root)
+{
+	xmlNodePtr channel = root->children;
+	while(channel && (channel->type!=XML_ELEMENT_NODE || strcmp((char*)channel->name, "channel")))
+		channel = channel->next;
+	if (!channel)
+		return 0;
+
 	int items = 0;
 	xmlNodePtr n;
 	for(n = channel->children; n; n = n->next)
 		if (n->type==XML_ELEMENT_NODE && !strcmp((char*)n->name, "item"))
 			++items;
+	
+	res->items = malloc(items*sizeof(PRSS_Item));
+	res->item_count = 0;
 
-	result->item_count = items;
-	result->items = malloc(items*sizeof(PRSS_Item));
-
-	int cur_item = 0;
 	for(n = channel->children; n; n = n->next) {
-		if (n->type != XML_ELEMENT_NODE)
-			continue;
-		xmlNodePtr child = n->children;
-		if (!child)
-			continue;
-		
-		if (!strcmp((char*)n->name, "title")) {
-			result->title = (char*)child->content;
-		} else if (!strcmp((char*)n->name, "link")) {
-			result->link = (char*)child->content;
-		} else if (!strcmp((char*)n->name, "description")) {
-			result->description = (char*)child->content;
-		} else if (!strcmp((char*)n->name, "language")) {
-			result->language = (char*)child->content;
-		} else if (!strcmp((char*)n->name, "item")) {
-			read_item(&result->items[cur_item++], n->children);
+		read_element(res, n);
+	}
+
+	return 1;
+}
+static inline int parse_rss_1_0(PRSS* res, xmlNodePtr root)
+{
+	int items = 0;
+	xmlNodePtr n;
+	for(n = root->children; n; n = n->next) {
+		if (n->type==XML_ELEMENT_NODE) {
+			if (!strcmp((char*)n->name, "item"))
+				++items;
+			else if (!strcmp((char*)n->name, "channel")) {
+				xmlNodePtr i;
+				for(i = n->children; i; i = i->next) {
+					read_element(res, i);
+				}
+			}
 		}
 	}
 	
-	return result;
+	res->items = malloc(items*sizeof(PRSS_Item));
+	res->item_count = 0;
+
+	for(n = root->children; n; n = n->next) {
+		if (n->type==XML_ELEMENT_NODE && !strcmp((char*)n->name, "item"))
+			read_item(&res->items[res->item_count++], n->children);
+	}
+	
+	return 1;
+}
+static inline int parse_rss_0_9x(PRSS* res, xmlNodePtr root)
+{
+	// almost same...
+	return parse_rss_2_0(res, root);
+}
+
+PRSS* get_data(xmlDocPtr doc)
+{
+	xmlNodePtr root = xmlDocGetRootElement(doc);
+	PRSS* result = malloc(sizeof(PRSS));
+	prss_null(result);
+	result->_data = doc;
+	do {
+		if (root->type == XML_ELEMENT_NODE) {
+			if (!strcmp((char*)root->name, "RDF")) {
+				// RSS 1.0 document
+				if (!parse_rss_1_0(result, root)) {
+					free(result);
+					return NULL;
+				}
+				return result;
+			} else if (!strcmp((char*)root->name, "rss")) {
+				// RSS 2.0 or <1.0 document
+				if (!parse_rss_2_0(result, root)) {
+					free(result);
+					return NULL;
+				}
+				return result;
+			}
+		}
+		root = root->next;
+	} while(root);
+	free(result);
+	return NULL;
 }
