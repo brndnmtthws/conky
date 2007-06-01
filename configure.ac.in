@@ -190,8 +190,8 @@ AC_ARG_ENABLE([rss],
 AM_CONDITIONAL(BUILD_RSS, test x$want_rss = xyes)
 if test x$want_rss = xyes; then
 	WANT_GLIB=yes
-	CFLAGS="$CFLAGS `xml2-config --cflags`"
-	LIBS="$LIBS `xml2-config --libs`"
+	CFLAGS="$CFLAGS `xml2-config --cflags` `curl-config --cflags`"
+	LIBS="$LIBS `xml2-config --libs` `curl-config --libs`"
 	AC_DEFINE(RSS, 1, [Define if you want rss support])
 fi
 
