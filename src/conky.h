@@ -47,7 +47,7 @@
 #endif
 
 #ifdef RSS
-#include <glib.h>
+#include "prss.h"
 #endif
 
 #include "mboxscan.h"
@@ -598,7 +598,7 @@ char *get_hddtemp_info(char *dev, char *addr, int port, char *unit);
 
 /* in rss.c */
 #ifdef RSS
-GList* get_rss_info(char *uri, int count);
+PRSS* get_rss_info(char *uri, int delay);
 #endif /* RSS */
 
 /* in linux.c */

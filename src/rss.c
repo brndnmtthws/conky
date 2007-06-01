@@ -1,41 +1,45 @@
 /*
  * rss.c
- * RSS stuff
- *
- * $Id$
+ * RSS stuff (prss version)
  */
 
-#include <mrss.h>
 #include <stdio.h>
 #include <string.h>
-#include <glib.h>
+#include <time.h>
+#include <assert.h>
+#include "prss.h"
 
-GList*
-get_rss_info(char *uri, int count)
+PRSS* save = NULL;
+
+int rss_delay(int delay)
 {
-        mrss_t *data;
-        mrss_item_t *item;
-        mrss_error_t ret;
-	GList *titles = NULL;
-	int i = 0;
+	static int wait = 0;
+	time_t now = time(NULL);
 
-        ret = mrss_parse_url(uri, &data);
-
-        if (ret) {
-		titles = g_list_append(titles, mrss_strerror(ret));
-		return titles;
+	if(!wait) {
+		wait = now + delay;
+		return 1;
 	}
 
-        for (item = data->item; item; item = item->next) {
-		char *tmp = strdup(item->title);
-		titles = g_list_append(titles, tmp);
-		
-		if ((count > 0) && (++i > count - 1))
-			goto cleanup;
-        }
+	if(now >= wait + delay) {
+		wait = now + delay;
+		return 1;
+	}
 
-cleanup:
-	mrss_free(data);
+	return 0;
+}
 
-	return titles;
+PRSS*
+get_rss_info(char *uri, int delay)
+{
+	if(!rss_delay(delay))
+		return save; // wait for delay to pass
+
+	if(save != NULL)
+		prss_free(save); // clean up old data
+
+	save = prss_parse_file("test.xml");
+	//assert(save);
+
+	return save;
 }

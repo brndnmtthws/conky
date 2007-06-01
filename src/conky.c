@@ -1287,6 +1287,7 @@ struct text_object {
 		struct {
 			char *uri;
 			int count;
+			int delay;
 		} rss;
 #endif
 	} data;
@@ -3119,14 +3120,15 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 #ifdef RSS
 	OBJ(rss, 0) 
 		if (arg) {
-			int argc, count;
+			int argc, count, delay;
 			char *uri = (char *)malloc(64 * sizeof(char *));
 
-			argc = sscanf(arg, "%63s %d", uri, &count);
+			argc = sscanf(arg, "%63s %d %d", uri, &count, &delay);
 			obj->data.rss.uri = uri;
 			obj->data.rss.count = count;
+			obj->data.rss.delay = delay;
 		} else
-			CRIT_ERR("rss: needs arguments");
+			CRIT_ERR("rss: needs arguments (uri, item count, delay in minutes)");
 
 	END
 #endif
@@ -4286,26 +4288,28 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			}
 #ifdef RSS
 			OBJ(rss) {
-				GList *walk = NULL;
-				GList *list = NULL;
-				char *titles = malloc(1024*sizeof(char *));
-
-				memset(titles, 0, sizeof(titles));
-				list = get_rss_info(obj->data.rss.uri, obj->data.rss.count);
-				
-				for (walk = g_list_first(list); walk != NULL; walk = g_list_next(walk)) {
-					snprintf(titles, 1023, "%s%s\n", titles, (char *)walk->data);
-					free(walk->data);
+				PRSS* data = get_rss_info(obj->data.rss.uri, obj->data.rss.delay);
+				if(data == NULL)
+					snprintf(p, p_max_size, "prss: Error reading RSS data\n");
+				else {
+					if(data->item_count > 0) {
+						int itmp;
+						char ctmp[64];
+						p[0] = 0;
+						int show;
+						if(obj->data.rss.count > data->item_count)
+							show = data->item_count;
+						else	show = obj->data.rss.count;
+						for(itmp = 0; itmp < show; itmp++) {
+							PRSS_Item *item = &data->items[itmp];
+							if(i>0)
+								strncat(p, "\n", p_max_size);
+							snprintf(ctmp, 64, "%s", item->title);
+							strncat(p, ctmp, p_max_size);
+						}
+					} else
+						snprintf(p, p_max_size, "prss: Empty feed");
 				}
-
-				/* we don't need last \n */
-				titles[strlen(titles)-1] = '\0';
-			
-				snprintf(p, p_max_size, "%s", titles);
-
-				free(titles);
-				g_list_free(walk);
-				g_list_free(list);		
 			}
 #endif
 #ifdef HDDTEMP

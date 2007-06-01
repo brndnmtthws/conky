@@ -52,7 +52,7 @@ hddtemp = hddtemp.c
 endif
 
 if BUILD_RSS
-rss = rss.c
+rss = rss.c prss.c
 endif
 
 conky_SOURCES = 		\
