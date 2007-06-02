@@ -95,7 +95,7 @@ static void print_version()
 #endif /* TCP_PORT_MONITOR */
 #ifdef RSS
 	"  * rss\n"
-#endif
+#endif /* RSS */
 	"\n");	
 
 	exit(0);
@@ -1286,7 +1286,8 @@ struct text_object {
 #ifdef RSS
 		struct {
 			char *uri;
-			int count;
+			char *action;
+			int act_par;
 			int delay;
 		} rss;
 #endif
@@ -2047,6 +2048,7 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 #ifdef RSS
 			case OBJ_rss:
 				free(objs[i].data.rss.uri);
+				free(objs[i].data.rss.action);
 #endif
 			case OBJ_pre_exec:
 			case OBJ_battery:
@@ -3120,15 +3122,17 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 #ifdef RSS
 	OBJ(rss, 0) 
 		if (arg) {
-			int argc, count, delay;
-			char *uri = (char *)malloc(64 * sizeof(char *));
+			int argc, delay, act_par;
+			char *uri = (char *)malloc(128 * sizeof(char *));
+			char *action = (char *)malloc(64 * sizeof(char *));
 
-			argc = sscanf(arg, "%63s %d %d", uri, &count, &delay);
+			argc = sscanf(arg, "%127s %d %63s %d", uri, &delay, action, &act_par);
 			obj->data.rss.uri = uri;
-			obj->data.rss.count = count;
 			obj->data.rss.delay = delay;
+			obj->data.rss.action = action;
+			obj->data.rss.act_par = act_par;
 		} else
-			CRIT_ERR("rss: needs arguments (uri, item count, delay in minutes)");
+			CRIT_ERR("rss needs arguments: <uri> <delay in minutes> <action> [act_par]");
 
 	END
 #endif
@@ -4292,23 +4296,32 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				if(data == NULL)
 					snprintf(p, p_max_size, "prss: Error reading RSS data\n");
 				else {
-					if(data->item_count > 0) {
-						int itmp;
-						char ctmp[64];
-						p[0] = 0;
-						int show;
-						if(obj->data.rss.count > data->item_count)
-							show = data->item_count;
-						else	show = obj->data.rss.count;
-						for(itmp = 0; itmp < show; itmp++) {
-							PRSS_Item *item = &data->items[itmp];
-							if(i>0)
-								strncat(p, "\n", p_max_size);
-							snprintf(ctmp, 64, "%s", item->title);
-							strncat(p, ctmp, p_max_size);
+					if(!strcmp(obj->data.rss.action, "feed_title")) {
+							snprintf(p, p_max_size, "%s", data->title);
+					} else if(!strcmp(obj->data.rss.action, "item_title")) {
+						if(obj->data.rss.act_par < data->item_count) {
+							snprintf(p, p_max_size, "%s", data->items[obj->data.rss.act_par].title);
 						}
-					} else
-						snprintf(p, p_max_size, "prss: Empty feed");
+					} else if(!strcmp(obj->data.rss.action, "item_desc")) {
+						if(obj->data.rss.act_par < data->item_count) {
+							snprintf(p, p_max_size, "%s", data->items[obj->data.rss.act_par].description);
+						}
+					} else if(!strcmp(obj->data.rss.action, "item_titles")) {
+						if(data->item_count > 0) {
+							int itmp;
+							p[0] = 0;
+							int show;
+							if(obj->data.rss.act_par > data->item_count)
+								show = data->item_count;
+							else	show = obj->data.rss.act_par;
+							for(itmp = 0; itmp < show; itmp++) {
+								PRSS_Item *item = &data->items[itmp];
+								if(i>0)
+									strncat(p, "\n", p_max_size);
+								strncat(p, item->title, p_max_size);
+							}
+						}
+					}
 				}
 			}
 #endif

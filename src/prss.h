@@ -50,6 +50,7 @@ typedef struct PRSS_ {
 /* Functions for parsing RSS-data */
 PRSS* prss_parse_data(const char *xml_data);
 PRSS* prss_parse_file(const char *xml_file);
+PRSS* prss_parse_doc(xmlDocPtr doc);
 
 /* Frees the PRSS-stucture returned by prss_parse_*.
  * The memory area pointed by data becomes invalid

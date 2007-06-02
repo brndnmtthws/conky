@@ -15,6 +15,8 @@
 #include <curl/types.h>
 #include <curl/easy.h>
 
+#include "conky.h"
+
 #define MAX_FEEDS 16
 
 struct MemoryStruct {
@@ -125,7 +127,8 @@ get_rss_info(char *uri, int delay)
 		if(chunk.size) {
 			curdata = prss_parse_data(chunk.memory);
 			free(chunk.memory);
-		}
+		} else
+			ERR("No data from server");
 
 		curfeed->data = curdata;
 

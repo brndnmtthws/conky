@@ -26,15 +26,13 @@
 #define PARSE_OPTIONS 0
 #endif
 
-static PRSS* get_data(xmlDocPtr doc);
-
 PRSS* prss_parse_data(const char* xml_data)
 {
 	xmlDocPtr doc = xmlReadMemory(xml_data, strlen(xml_data), "", NULL, PARSE_OPTIONS);
 	if (!doc)
 		return NULL;
 	
-	return get_data(doc);
+	return prss_parse_doc(doc);
 }
 PRSS* prss_parse_file(const char* xml_file)
 {
@@ -42,7 +40,7 @@ PRSS* prss_parse_file(const char* xml_file)
 	if (!doc)
 		return NULL;
 	
-	return get_data(doc);
+	return prss_parse_doc(doc);
 }
 void prss_free(PRSS* data)
 {
@@ -55,13 +53,11 @@ void prss_free(PRSS* data)
 
 static inline void prss_null(PRSS* p)
 {
-	p->title = p->link = p->description = p->language = NULL;
-	p->items = NULL;
-	p->item_count = 0;
+	memset(p, 0, sizeof(PRSS));
 }
 static inline void prss_null_item(PRSS_Item* i)
 {
-	i->title = i->link = i->description = i->category = i->pubdate = NULL;
+	memset(i, 0, sizeof(PRSS_Item));
 }
 
 static inline void read_item(PRSS_Item* res, xmlNodePtr data)
@@ -127,7 +123,9 @@ static inline void read_element(PRSS* res, xmlNodePtr n)
 static inline int parse_rss_2_0(PRSS* res, xmlNodePtr root)
 {
 	xmlNodePtr channel = root->children;
-	while(channel && (channel->type!=XML_ELEMENT_NODE || strcmp((char*)channel->name, "channel")))
+	while(channel
+			&& (channel->type!=XML_ELEMENT_NODE
+			 || strcmp((char*)channel->name, "channel")))
 		channel = channel->next;
 	if (!channel)
 		return 0;
@@ -180,7 +178,7 @@ static inline int parse_rss_0_9x(PRSS* res, xmlNodePtr root)
 	return parse_rss_2_0(res, root);
 }
 
-PRSS* get_data(xmlDocPtr doc)
+PRSS* prss_parse_doc(xmlDocPtr doc)
 {
 	xmlNodePtr root = xmlDocGetRootElement(doc);
 	PRSS* result = malloc(sizeof(PRSS));
