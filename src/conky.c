@@ -7250,6 +7250,7 @@ int main(int argc, char **argv)
 		for (x = 0; x < strlen(s); x++) {
 			temp[x] = tolower(s[x]);
 		}
+		temp[x] = 0;
 		if (strstr(temp, "utf-8") || strstr(temp, "utf8")) {
 			utf8_mode = 1;
 		}

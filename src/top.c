@@ -103,7 +103,7 @@ static int process_parse_stat(struct process *process)
 {
 	struct information *cur;
 	cur = &info;
-	char line[BUFFER_LEN], filename[BUFFER_LEN], procname[BUFFER_LEN];
+	char line[BUFFER_LEN] = { 0 }, filename[BUFFER_LEN], procname[BUFFER_LEN];
 	int ps;
 	unsigned long user_time = 0;
 	unsigned long kernel_time = 0;
@@ -356,7 +356,7 @@ static unsigned long long calc_cpu_total()
 	unsigned long long t = 0;
 	int rc;
 	int ps;
-	char line[BUFFER_LEN];
+	char line[BUFFER_LEN] = { 0 };
 	unsigned long long cpu = 0;
 	unsigned long long nice = 0;
 	unsigned long long system = 0;
