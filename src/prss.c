@@ -26,6 +26,8 @@
 #define PARSE_OPTIONS 0
 #endif
 
+PRSS* prss_parse_doc(xmlDocPtr doc);
+
 PRSS* prss_parse_data(const char* xml_data)
 {
 	xmlDocPtr doc = xmlReadMemory(xml_data, strlen(xml_data), "", NULL, PARSE_OPTIONS);
@@ -180,6 +182,8 @@ static inline int parse_rss_0_9x(PRSS* res, xmlNodePtr root)
 
 PRSS* prss_parse_doc(xmlDocPtr doc)
 {
+	// FIXME: doc shouldn't be freed after failure when called explicitly from program!
+
 	xmlNodePtr root = xmlDocGetRootElement(doc);
 	PRSS* result = malloc(sizeof(PRSS));
 	prss_null(result);
@@ -190,6 +194,7 @@ PRSS* prss_parse_doc(xmlDocPtr doc)
 				// RSS 1.0 document
 				if (!parse_rss_1_0(result, root)) {
 					free(result);
+					xmlFreeDoc(doc);
 					return NULL;
 				}
 				return result;
@@ -197,6 +202,7 @@ PRSS* prss_parse_doc(xmlDocPtr doc)
 				// RSS 2.0 or <1.0 document
 				if (!parse_rss_2_0(result, root)) {
 					free(result);
+					xmlFreeDoc(doc);
 					return NULL;
 				}
 				return result;

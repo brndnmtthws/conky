@@ -112,8 +112,10 @@ get_rss_info(char *uri, int delay)
 	if(!rss_delay(last_update, delay))
 		return curdata; // wait for delay to pass
 
-	if(curdata != NULL)
+	if(curdata != NULL) {
 		prss_free(curdata); // clean up old data
+		curdata = NULL;
+	}
 
 	curl = curl_easy_init();
 	if(curl) {
@@ -130,10 +132,10 @@ get_rss_info(char *uri, int delay)
 		} else
 			ERR("No data from server");
 
-		curfeed->data = curdata;
-
 		curl_easy_cleanup(curl);
 	}
+
+	curfeed->data = curdata;
 
 	return curdata;
 }
