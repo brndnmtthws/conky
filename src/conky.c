@@ -333,7 +333,7 @@ unsigned int text_buffer_size = TEXT_BUFFER_SIZE;
 #ifdef HAVE_ICONV
 #define CODEPAGE_LENGTH 20
 long iconv_selected;
-long iconv_count;
+long iconv_count = 0;
 char iconv_converting;
 static iconv_t **iconv_cd = 0;
 
@@ -360,8 +360,9 @@ void free_iconv(void)
 {
 	if (iconv_cd) {
 		long i;
-		for (i = iconv_count; i < 0; i++) {
+		for (i = 0; i < iconv_count; i++) {
 			if (iconv_cd[i]) {
+				iconv_close(*iconv_cd[i]);
 				free(iconv_cd[i]);
 			}
 		}
@@ -2049,6 +2050,7 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 			case OBJ_rss:
 				free(objs[i].data.rss.uri);
 				free(objs[i].data.rss.action);
+				break;
 #endif
 			case OBJ_pre_exec:
 			case OBJ_battery:
@@ -3123,14 +3125,16 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	OBJ(rss, 0) 
 		if (arg) {
 			int argc, delay, act_par;
-			char *uri = (char *)malloc(128 * sizeof(char *));
-			char *action = (char *)malloc(64 * sizeof(char *));
+			char *uri = (char *)malloc(128 * sizeof(char));
+			char *action = (char *)malloc(64 * sizeof(char));
 
 			argc = sscanf(arg, "%127s %d %63s %d", uri, &delay, action, &act_par);
 			obj->data.rss.uri = uri;
 			obj->data.rss.delay = delay;
 			obj->data.rss.action = action;
 			obj->data.rss.act_par = act_par;
+
+			init_rss_info();
 		} else
 			CRIT_ERR("rss needs arguments: <uri> <delay in minutes> <action> [act_par]");
 
@@ -4293,18 +4297,28 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 #ifdef RSS
 			OBJ(rss) {
 				PRSS* data = get_rss_info(obj->data.rss.uri, obj->data.rss.delay);
+				char *str;
 				if(data == NULL)
 					snprintf(p, p_max_size, "prss: Error reading RSS data\n");
 				else {
 					if(!strcmp(obj->data.rss.action, "feed_title")) {
-							snprintf(p, p_max_size, "%s", data->title);
+							str = data->title;
+							if(str[strlen(str)-1] == '\n')
+								str[strlen(str)-1] = 0; // remove trailing new line if one exists
+							snprintf(p, p_max_size, "%s", str);
 					} else if(!strcmp(obj->data.rss.action, "item_title")) {
 						if(obj->data.rss.act_par < data->item_count) {
-							snprintf(p, p_max_size, "%s", data->items[obj->data.rss.act_par].title);
+							str = data->items[obj->data.rss.act_par].title;
+							if(str[strlen(str)-1] == '\n')
+								str[strlen(str)-1] = 0; // remove trailing new line if one exists
+							snprintf(p, p_max_size, "%s", str);
 						}
 					} else if(!strcmp(obj->data.rss.action, "item_desc")) {
 						if(obj->data.rss.act_par < data->item_count) {
-							snprintf(p, p_max_size, "%s", data->items[obj->data.rss.act_par].description);
+							str = data->items[obj->data.rss.act_par].description;
+							if(str[strlen(str)-1] == '\n')
+								str[strlen(str)-1] = 0; // remove trailing new line if one exists
+							snprintf(p, p_max_size, "%s", str);
 						}
 					} else if(!strcmp(obj->data.rss.action, "item_titles")) {
 						if(data->item_count > 0) {
@@ -4318,6 +4332,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 								PRSS_Item *item = &data->items[itmp];
 								if(i>0)
 									strncat(p, "\n", p_max_size);
+								str = item->title;
+								if(str[strlen(str)-1] == '\n')
+									str[strlen(str)-1] = 0; // remove trailing new line if one exists
 								strncat(p, item->title, p_max_size);
 							}
 						}
@@ -6507,10 +6524,17 @@ void clean_up(void)
 	destroy_tcp_port_monitor_collection( info.p_tcp_port_monitor_collection );
 	info.p_tcp_port_monitor_collection = NULL;
 #endif
+#ifdef RSS
+	free_rss_info();
+#endif
 
 	if (specials) {
-	    free (specials);
-	    specials=NULL;
+		unsigned int i;
+		for(i=0;i<special_count;i++)
+			if(specials[i].type == GRAPH)
+				free(specials[i].graph);
+		free (specials);
+		specials=NULL;
 	}
 }
 

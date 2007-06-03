@@ -599,6 +599,8 @@ char *get_hddtemp_info(char *dev, char *addr, int port, char *unit);
 /* in rss.c */
 #ifdef RSS
 PRSS* get_rss_info(char *uri, int delay);
+void init_rss_info();
+void free_rss_info();
 #endif /* RSS */
 
 /* in linux.c */

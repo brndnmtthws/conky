@@ -70,6 +70,24 @@ int rss_delay(int *wait, int delay)
 	return 0;
 }
 
+void init_rss_info()
+{
+	int i;
+	for(i = 0; i < MAX_FEEDS; i++) {
+		feeds[i].uri = NULL;
+		feeds[i].data = NULL;
+		feeds[i].last_update = 0;
+	}
+}
+
+void free_rss_info()
+{
+	int i;
+	for(i = 0; i < num_feeds; i++)
+		if(feeds[i].uri != NULL)
+			free(feeds[i].uri);
+}
+
 PRSS*
 get_rss_info(char *uri, int delay)
 {
@@ -88,21 +106,18 @@ get_rss_info(char *uri, int delay)
 	int i;
 
 	// first seek for the uri in list
-	if(num_feeds > 0) {
-		for(i = 0; i < num_feeds; i++) {
-			if(feeds[i].uri != NULL)
-				if(!strcmp(feeds[i].uri, uri)) {
-					curfeed = &feeds[i];
-					break;
-				}
-		}
+	for(i = 0; i < num_feeds; i++) {
+		if(feeds[i].uri != NULL)
+			if(!strcmp(feeds[i].uri, uri)) {
+				curfeed = &feeds[i];
+				break;
+			}
 	}
 
 	if(!curfeed) { // new feed
 		if(num_feeds == MAX_FEEDS-1) return NULL;
 		curfeed = &feeds[num_feeds];
-		curfeed->uri = (char *)malloc(sizeof(char) * strlen(uri)+1);
-		strncpy(curfeed->uri, uri, strlen(uri)+1);
+		curfeed->uri = strdup(uri);
 		num_feeds++;
 	}
 
