@@ -681,7 +681,7 @@ static char *scan_font(const char *args)
 {
   if (args && *args)
 		return strdup(args);
-	}
+  
 	return NULL;
 }
 
