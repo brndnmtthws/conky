@@ -679,7 +679,7 @@ static const char *scan_bar(const char *args, int *w, int *h)
 
 static char *scan_font(const char *args)
 {
-	if (args && sizeof(args) < 127) {
+  if (args && *args)
 		return strdup(args);
 	}
 	return NULL;
