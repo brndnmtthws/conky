@@ -4330,12 +4330,14 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							else	show = obj->data.rss.act_par;
 							for(itmp = 0; itmp < show; itmp++) {
 								PRSS_Item *item = &data->items[itmp];
-								if(i>0)
-									strncat(p, "\n", p_max_size);
 								str = item->title;
-								if(str[strlen(str)-1] == '\n')
-									str[strlen(str)-1] = 0; // remove trailing new line if one exists
-								strncat(p, item->title, p_max_size);
+								if(str) {
+									if(i>0)
+										strncat(p, "\n", p_max_size);
+									if(str[strlen(str)-1] == '\n')
+										str[strlen(str)-1] = 0; // remove trailing new line if one exists
+									strncat(p, item->title, p_max_size);
+								}
 							}
 						}
 					}
