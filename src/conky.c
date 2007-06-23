@@ -4939,25 +4939,23 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				if (obj->data.top.type == TOP_NAME
 				    && obj->data.top.num >= 0
 				    && obj->data.top.num < 10) {
-					// if we limit the buffer and add a bunch of space after, it stops the thing from
-					// moving other shit around, which is really fucking annoying
-					snprintf(p, 17, "%s                              ", cur->cpu[obj->data.top.num]->name);
+					snprintf(p, 17, "%-17s", cur->cpu[obj->data.top.num]->name);
 				} else if (obj->data.top.type == TOP_CPU
 					   && obj->data.top.num >= 0
 					   && obj->data.top.num < 10) {
-					snprintf(p, 7, "%3.2f      ",
+					snprintf(p, 7, "%7.3f",
 						 cur->cpu[obj->data.top.
 							  num]->amount);
 				} else if (obj->data.top.type == TOP_PID
 					   && obj->data.top.num >= 0
 					   && obj->data.top.num < 10) {
-					snprintf(p, 8, "%i           ",
+					snprintf(p, 8, "%8i",
 						 cur->cpu[obj->data.top.
 							  num]->pid);
 				} else if (obj->data.top.type == TOP_MEM
 					   && obj->data.top.num >= 0
 					   && obj->data.top.num < 10) {
-					snprintf(p, 7, "%3.2f       ",
+					snprintf(p, 7, "%7.3f",
 						 cur->cpu[obj->data.top.
 							  num]->totalmem);
 				}
@@ -4966,28 +4964,25 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				if (obj->data.top.type == TOP_NAME
 				    && obj->data.top.num >= 0
 				    && obj->data.top.num < 10) {
-					// if we limit the buffer and add a bunch of space after, it stops the thing from
-					// moving other shit around, which is really fucking annoying
-					snprintf(p, 17,
-						 "%s                              ",
+					snprintf(p, 17, "%-17s",
 						 cur->memu[obj->data.top.
 							   num]->name);
 				} else if (obj->data.top.type == TOP_CPU
 					   && obj->data.top.num >= 0
 					   && obj->data.top.num < 10) {
-					snprintf(p, 7, "%3.2f      ",
+					snprintf(p, 7, "%7.3f",
 						 cur->memu[obj->data.top.
 							   num]->amount);
 				} else if (obj->data.top.type == TOP_PID
 					   && obj->data.top.num >= 0
 					   && obj->data.top.num < 10) {
-					snprintf(p, 8, "%i           ",
+					snprintf(p, 8, "%8i",
 						 cur->memu[obj->data.top.
 							   num]->pid);
 				} else if (obj->data.top.type == TOP_MEM
 					   && obj->data.top.num >= 0
 					   && obj->data.top.num < 10) {
-					snprintf(p, 7, "%3.2f       ",
+					snprintf(p, 7, "%7.3f",
 						 cur->memu[obj->data.top.
 							   num]->totalmem);
 				}
