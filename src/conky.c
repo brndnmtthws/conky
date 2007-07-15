@@ -4949,7 +4949,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				} else if (obj->data.top.type == TOP_PID
 					   && obj->data.top.num >= 0
 					   && obj->data.top.num < 10) {
-					snprintf(p, 8, "%8i",
+					snprintf(p, 8, "%7i",
 						 cur->cpu[obj->data.top.
 							  num]->pid);
 				} else if (obj->data.top.type == TOP_MEM
@@ -4976,7 +4976,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				} else if (obj->data.top.type == TOP_PID
 					   && obj->data.top.num >= 0
 					   && obj->data.top.num < 10) {
-					snprintf(p, 8, "%8i",
+					snprintf(p, 8, "%7i",
 						 cur->memu[obj->data.top.
 							   num]->pid);
 				} else if (obj->data.top.type == TOP_MEM

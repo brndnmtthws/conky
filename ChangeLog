@@ -1,5 +1,8 @@
 # $Id$
 
+2007-07-15
+	* Fix PID display, patch #1753934.  thanks to sohalt.
+
 2007-06-21
 	* Right-justify top/top_mem vars (pid/cpu/mem} so they align on the decimal.
 
