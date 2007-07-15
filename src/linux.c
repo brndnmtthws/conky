@@ -185,17 +185,13 @@ inline void update_net_stats()
 		/* if recv or trans is less than last time, an overflow happened */
 
 		if (r < ns->last_read_recv)
-			ns->recv +=
-			    ((long long) 4294967295U -
-			     ns->last_read_recv) + r;
+      last_recv = 0;
 		else
 			ns->recv += (r - ns->last_read_recv);
 		ns->last_read_recv = r;
 
 		if (t < ns->last_read_trans)
-			ns->trans +=
-			    ((long long) 4294967295U -
-			     ns->last_read_trans) + t;
+      last_trans = 0;
 		else
 			ns->trans += (t - ns->last_read_trans);
 		ns->last_read_trans = t;
