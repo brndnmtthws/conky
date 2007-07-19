@@ -4332,11 +4332,11 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 								PRSS_Item *item = &data->items[itmp];
 								str = item->title;
 								if(str) {
-									if(i>0)
+									if(itmp>0) // don't add new line before first item
 										strncat(p, "\n", p_max_size);
 									if(str[strlen(str)-1] == '\n')
-										str[strlen(str)-1] = 0; // remove trailing new line if one exists
-									strncat(p, item->title, p_max_size);
+										str[strlen(str)-1] = 0; // remove trailing new line if one exists, we have our own
+									strncat(p, str, p_max_size);
 								}
 							}
 						}
