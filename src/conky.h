@@ -605,6 +605,10 @@ void init_rss_info();
 void free_rss_info();
 #endif /* RSS */
 
+#if defined(__linux__)
+extern int post_21_kernel;
+#endif /* __linux__ */
+
 /* in linux.c */
 
 #endif

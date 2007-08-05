@@ -252,6 +252,8 @@ inline void update_net_stats()
 			curtmp1 += ns->net_rec[i];
 			curtmp2 += ns->net_trans[i];
 		}
+		if (curtmp1 == 0) curtmp1 = 1;
+		if (curtmp2 == 0) curtmp2 = 1;
 		ns->recv_speed = curtmp1 / (double) info.net_avg_samples;
 		ns->trans_speed = curtmp2 / (double) info.net_avg_samples;
 		if (info.net_avg_samples > 1) {
@@ -624,12 +626,14 @@ get_first_file_in_a_directory(const char *dir, char *s, int *rep)
 	}
 }
 
-#define I2C_DIR "/sys/bus/i2c/devices/"
-
-int
-open_i2c_sensor(const char *dev, const char *type, int n, int *div,
-		char *devtype)
+int open_i2c_sensor(const char *dev, const char *type, int n, int *div, char *devtype)
 {
+	char i2c_dir[64];
+	if (post_21_kernel) {
+		strncpy(i2c_dir, "/sys/bus/platform/devices/", 64);
+	} else {
+		strncpy(i2c_dir, "/sys/bus/i2c/devices/", 64);
+	}
 	char path[256];
 	char buf[256];
 	int fd;
@@ -638,7 +642,7 @@ open_i2c_sensor(const char *dev, const char *type, int n, int *div,
 	/* if i2c device is NULL or *, get first */
 	if (dev == NULL || strcmp(dev, "*") == 0) {
 		static int rep = 0;
-		if (!get_first_file_in_a_directory(I2C_DIR, buf, &rep))
+		if (!get_first_file_in_a_directory(i2c_dir, buf, &rep))
 			return -1;
 		dev = buf;
 	}
@@ -648,9 +652,9 @@ open_i2c_sensor(const char *dev, const char *type, int n, int *div,
 		type = "in";
 
 	if (strcmp(type, "tempf") == 0) {
-		snprintf(path, 255, I2C_DIR "%s/%s%d_input", dev, "temp", n);
+		snprintf(path, 255, "%s%s/%s%d_input", i2c_dir, dev, "temp", n);
 	} else {
-		snprintf(path, 255, I2C_DIR "%s/%s%d_input", dev, type, n);
+		snprintf(path, 255, "%s%s/%s%d_input", i2c_dir, dev, type, n);
 	}
 	strncpy(devtype, path, 255);
 
@@ -671,10 +675,10 @@ open_i2c_sensor(const char *dev, const char *type, int n, int *div,
 
 	/* test if *_div file exist, open it and use it as divisor */
 	if (strcmp(type, "tempf") == 0) {
-		snprintf(path, 255, I2C_DIR "%s/%s%d_div", "one", "two",
+		snprintf(path, 255, "%s%s/%s%d_div", i2c_dir, "one", "two",
 			 n);
 	} else {
-		snprintf(path, 255, I2C_DIR "%s/%s%d_div", dev, type, n);
+		snprintf(path, 255, "%s%s/%s%d_div", i2c_dir, dev, type, n);
 	}
 
 	divfd = open(path, O_RDONLY);

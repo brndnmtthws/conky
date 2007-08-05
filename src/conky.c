@@ -101,6 +101,10 @@ static void print_version()
 	exit(0);
 }
 
+#if defined(__linux__)
+int post_21_kernel;
+#endif /* __linux__ */
+
 #ifdef X11
 
 /*
@@ -6583,6 +6587,9 @@ static void set_default_configurations(void)
     info.xmms2.status = NULL;
 #endif
 	use_spacer = 0;
+#if defined(__linux__)
+	post_21_kernel = 0;
+#endif /* __linux__ */
 #ifdef X11
 	out_to_console = 0;
 #else
@@ -6915,6 +6922,11 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 		CONF("draw_outline") {
 			draw_outline = string_to_bool(value);
 		}
+#if defined(__linux__)
+		CONF("post_21_kernel") {
+			post_21_kernel = string_to_bool(value);
+		}
+#endif /* __linux__ */
 #endif /* X11 */
 		CONF("out_to_console") {
 			out_to_console = string_to_bool(value);
