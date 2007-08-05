@@ -38,8 +38,8 @@
 static int show_nice_processes;
 
 /* this flags tells the linux routines to use the /proc system
- * where possible, even if other api's are available, e.g. sysinfo() 
- * or getloadavg(). the reason for this is to allow for /proc-based 
+ * where possible, even if other api's are available, e.g. sysinfo()
+ * or getloadavg(). the reason for this is to allow for /proc-based
  * distributed monitoring. using a flag in this manner creates less
  * confusing code.
  */
@@ -63,7 +63,7 @@ void update_uptime()
   {
 	  static int rep = 0;
 	  FILE *fp;
-  
+
     if (!(fp = open_file("/proc/uptime", &rep)))
     {
       info.uptime=0.0;
@@ -73,6 +73,26 @@ void update_uptime()
 	  fclose(fp);
   }
   info.mask |= (1 << INFO_UPTIME);
+}
+
+int check_mount(char *s)
+{
+	int ret = 0;
+	FILE *mtab = fopen("/etc/mtab", "r");
+	if (mtab) {
+		char buf1[256], buf2[128];
+		while (fgets(buf1, 256, mtab)) {
+			sscanf(buf1, "%*s %128s", buf2);
+			if (!strcmp(s, buf2)) {
+				ret = 1;
+				break;
+			}
+		}
+		fclose(mtab);
+	} else {
+		ERR("Could not open mtab");
+	}
+	return ret;
 }
 
 /* these things are also in sysinfo except Buffers:, that's why I'm reading
@@ -109,7 +129,7 @@ void update_meminfo()
 			sscanf(buf, "%*s %Lu", &info.cached);
 		}
 	}
-	
+
 	info.mem = info.memmax - info.mem;
 	info.swap = info.swapmax - info.swap;
 
@@ -344,14 +364,14 @@ struct cpu_info {
 };
 static short cpu_setup = 0;
 
-/* 
-   determine if this kernel gives us "extended" statistics information in /proc/stat. 
-   Kernels around 2.5 and earlier only reported user, system, nice and idle values in proc stat. 
-   Kernels around 2.6 and greater report these PLUS iowait, irq, softirq, and steal 
+/*
+   determine if this kernel gives us "extended" statistics information in /proc/stat.
+   Kernels around 2.5 and earlier only reported user, system, nice and idle values in proc stat.
+   Kernels around 2.6 and greater report these PLUS iowait, irq, softirq, and steal
 */
-void determine_longstat(char * buf) { 
+void determine_longstat(char * buf) {
 	unsigned long long iowait=0;
-	KFLAG_SETOFF(KFLAG_IS_LONGSTAT);	
+	KFLAG_SETOFF(KFLAG_IS_LONGSTAT);
 	/* scanf will either return -1 or 1 because there is only 1 assignment  */
 	if (sscanf(buf, "%*s %*d %*d %*d %*d %llu",&iowait)>0) KFLAG_SETON(KFLAG_IS_LONGSTAT);
 }
@@ -399,9 +419,9 @@ inline static void update_stat()
 	unsigned int i;
 	unsigned int index;
 	double curtmp;
-	char * stat_template=NULL; 
+	char * stat_template=NULL;
 	unsigned int malloc_cpu_size=0;
-	
+
 
 	/* add check for !info.cpu_usage since that mem is freed on a SIGUSR1 */
 	if (!cpu_setup || !info.cpu_usage) {
@@ -411,7 +431,7 @@ inline static void update_stat()
 
 	if (!stat_template) {
 		stat_template = KFLAG_ISSET(KFLAG_IS_LONGSTAT) ? TMPL_LONGSTAT : TMPL_SHORTSTAT ;
-	}	
+	}
 
 	if (!cpu) {
 		malloc_cpu_size = (info.cpu_count + 1) * sizeof(struct cpu_info);
@@ -439,7 +459,7 @@ inline static void update_stat()
 			info.mask |= (1 << INFO_RUN_PROCS);
 		} else if (strncmp(buf, "cpu", 3) == 0) {
 			index = isdigit(buf[3]) ? ((int)buf[3]) - 0x2F : 0;
-			sscanf(buf, stat_template 
+			sscanf(buf, stat_template
 				, &(cpu[index].cpu_user)
 				, &(cpu[index].cpu_nice)
 				, &(cpu[index].cpu_system)
@@ -450,32 +470,32 @@ inline static void update_stat()
 				, &(cpu[index].cpu_steal)
 				);
 
-			cpu[index].cpu_total = cpu[index].cpu_user 
-			                 + cpu[index].cpu_nice 
-			                 + cpu[index].cpu_system 
-			                 + cpu[index].cpu_idle 
-			                 + cpu[index].cpu_iowait 
+			cpu[index].cpu_total = cpu[index].cpu_user
+			                 + cpu[index].cpu_nice
+			                 + cpu[index].cpu_system
+			                 + cpu[index].cpu_idle
+			                 + cpu[index].cpu_iowait
 			                 + cpu[index].cpu_irq
 			                 + cpu[index].cpu_softirq
-			                 + cpu[index].cpu_steal 
-			                 ; 
+			                 + cpu[index].cpu_steal
+			                 ;
 
 			cpu[index].cpu_active_total = cpu[index].cpu_total - (cpu[index].cpu_idle + cpu[index].cpu_iowait);
 			info.mask |= (1 << INFO_CPU);
 
 			double delta = current_update_time - last_update_time;
-			if (delta <= 0.001) break; 	
+			if (delta <= 0.001) break;
 
-			cpu[index].cpu_val[0] = (cpu[index].cpu_active_total -  cpu[index].cpu_last_active_total) / 
-			                        (float )(cpu[index].cpu_total - cpu[index].cpu_last_total); 
+			cpu[index].cpu_val[0] = (cpu[index].cpu_active_total -  cpu[index].cpu_last_active_total) /
+			                        (float )(cpu[index].cpu_total - cpu[index].cpu_last_total);
 			curtmp = 0;
 			for (i=0; i < info.cpu_avg_samples; i++ ) {
 				curtmp += cpu[index].cpu_val[i];
 			}
-			/* TESTING -- I've removed this, because I don't think it is right. You shouldn't divide 
+			/* TESTING -- I've removed this, because I don't think it is right. You shouldn't divide
 			              by the cpu count here ... removing for testing */
 	                /* if (index == 0) {
-        	                info.cpu_usage[index] = curtmp / info.cpu_avg_samples / info.cpu_count; 
+        	                info.cpu_usage[index] = curtmp / info.cpu_avg_samples / info.cpu_count;
 	                } else {
         	                info.cpu_usage[index] = curtmp / info.cpu_avg_samples;
   		        }  */
@@ -555,8 +575,8 @@ void update_i8k()
 	i8k.bios = strtok(NULL,I8K_DELIM);
 	i8k.serial = strtok(NULL,I8K_DELIM);
 	i8k.cpu_temp = strtok(NULL,I8K_DELIM);
-	i8k.left_fan_status = strtok(NULL,I8K_DELIM);	
-	i8k.right_fan_status = strtok(NULL,I8K_DELIM);	
+	i8k.left_fan_status = strtok(NULL,I8K_DELIM);
+	i8k.right_fan_status = strtok(NULL,I8K_DELIM);
 	i8k.left_fan_rpm = strtok(NULL,I8K_DELIM);
 	i8k.right_fan_rpm = strtok(NULL,I8K_DELIM);
 	i8k.ac_status = strtok(NULL,I8K_DELIM);
@@ -700,7 +720,7 @@ double get_i2c_info(int *fd, int div, char *devtype, char *type)
 	if (*fd < 0)
 		ERR("can't open '%s': %s", devtype, strerror(errno));
 
-	/* My dirty hack for computing CPU value 
+	/* My dirty hack for computing CPU value
 	 * Filedil, from forums.gentoo.org
 	 */
 /*	if (strstr(devtype, "temp1_input") != NULL)
@@ -774,7 +794,7 @@ void get_adt746x_cpu( char * p_client_buffer, size_t client_buffer_size )
 
 	if ( !p_client_buffer || client_buffer_size <= 0 )
 		return;
-	
+
 	if ((fp = open_file(ADT746X_CPU, &rep)) == NULL
 		 && (fp = open_file(ADT746X_CPU_OLD, &rep)) == NULL)
 	{
@@ -786,7 +806,7 @@ void get_adt746x_cpu( char * p_client_buffer, size_t client_buffer_size )
 		fclose(fp);
 	}
 
-	snprintf( p_client_buffer, client_buffer_size, "%s", adt746x_cpu_state ); 
+	snprintf( p_client_buffer, client_buffer_size, "%s", adt746x_cpu_state );
 	return;
 }
 
@@ -843,8 +863,8 @@ void get_freq_dynamic( char * p_client_buffer, size_t client_buffer_size, char *
 #else
 /* FIXME: hardwired: get freq for first cpu!
    this whole function needs to be rethought and redone for
-   multi-cpu/multi-core/multi-threaded environments and 
-   arbitrary combinations thereof 
+   multi-cpu/multi-core/multi-threaded environments and
+   arbitrary combinations thereof
 */
 	get_freq( p_client_buffer, client_buffer_size, p_format, divisor, 1 );
 	return;
@@ -863,16 +883,16 @@ char get_freq( char * p_client_buffer, size_t client_buffer_size, char * p_forma
 	char frequency[32];
 	char s[256];
 	double freq = 0;
-	
+
 	if ( !p_client_buffer || client_buffer_size <= 0 || !p_format || divisor <= 0 )
 		return 0;
-	
+
   if (!prefer_proc)
   {
     char current_freq_file[128];
     snprintf(current_freq_file, 127, "%s/cpu%d/%s",CPUFREQ_PREFIX, cpu-1, CPUFREQ_POSTFIX);
 	  f = fopen(current_freq_file, "r");
-	  if (f) 
+	  if (f)
     {
 		  /* if there's a cpufreq /sys node, read the current frequency from this node;
 		   * divide by 1000 to get Mhz. */
@@ -885,7 +905,7 @@ char get_freq( char * p_client_buffer, size_t client_buffer_size, char * p_forma
 		  return 1;
     }
 	}
-	
+
 	f = open_file("/proc/cpuinfo", &rep);		//open the CPU information file
 	if (!f) {
 		perror("Conky: Failed to access '/proc/cpuinfo' at get_freq()");
@@ -907,7 +927,7 @@ char get_freq( char * p_client_buffer, size_t client_buffer_size, char * p_forma
 		strcpy(frequency, strchr(s, ':') + 2);	//copy just the number
 #if defined(__alpha)
 		frequency[strlen(frequency) - 6] = '\0';// strip " est.\n"
-		freq = strtod(frequency, NULL)/1000000; // kernel reports in Hz 
+		freq = strtod(frequency, NULL)/1000000; // kernel reports in Hz
 #else
 		frequency[strlen(frequency) - 1] = '\0'; // strip \n
 		freq = strtod(frequency, NULL);
@@ -915,12 +935,12 @@ char get_freq( char * p_client_buffer, size_t client_buffer_size, char * p_forma
 		break;
 		}
 		if (strncmp(s, "processor", 9) == 0) {
-		    cpu--; 
+		    cpu--;
 		    continue;
 		}
-		
+
 	}
-	
+
 	fclose(f);
 	snprintf( p_client_buffer, client_buffer_size, p_format, (float)freq/divisor );
 	return 1;
@@ -931,7 +951,7 @@ char get_freq( char * p_client_buffer, size_t client_buffer_size, char * p_forma
 /* return cpu voltage in mV (use divisor=1) or V (use divisor=1000) */
 char get_voltage( char * p_client_buffer, size_t client_buffer_size, char * p_format, int divisor, unsigned int cpu )
 {
-/* /sys/devices/system/cpu/cpu0/cpufreq/scaling_voltages looks 
+/* /sys/devices/system/cpu/cpu0/cpufreq/scaling_voltages looks
    something like this:
 # frequency voltage
 1800000 1340
@@ -950,7 +970,7 @@ char get_voltage( char * p_client_buffer, size_t client_buffer_size, char * p_fo
 	int voltage = 0;
 	char current_freq_file[128];
 	int freq_comp = 0;
-	
+
 
 /* build the voltage file name */
 	cpu--;
@@ -1055,11 +1075,11 @@ void get_acpi_ac_adapter( char * p_client_buffer, size_t client_buffer_size )
 	if (!get_first_file_in_a_directory(ACPI_AC_ADAPTER_DIR, buf, &rep))
 	{
 		snprintf( p_client_buffer, client_buffer_size, "no ac_adapters?" );
-		return;	
+		return;
 	}
 
 	snprintf(buf2, sizeof(buf2), "%s%s/state", ACPI_AC_ADAPTER_DIR, buf );
-	 
+
 
 	fp = open_file(buf2, &rep);
 	if (!fp) {
@@ -1149,7 +1169,7 @@ double get_acpi_temperature(int fd)
 }
 
 /*
-hipo@lepakko hipo $ cat /proc/acpi/battery/BAT1/info 
+hipo@lepakko hipo $ cat /proc/acpi/battery/BAT1/info
 present:                 yes
 design capacity:         4400 mAh
 last full capacity:      4064 mAh
@@ -1176,10 +1196,10 @@ present voltage:         16608 mV
 */
 
 /*
-2213<@jupet kellari ö> jupet@lagi-unstable:~$ cat /proc/apm 
+2213<@jupet kellari ö> jupet@lagi-unstable:~$ cat /proc/apm
 2213<@jupet kellari ö> 1.16 1.2 0x03 0x01 0xff 0x10 -1% -1 ?
 2213<@jupet kellari ö> (-1 ollee ei akkua kiinni, koska akku on pöydällä)
-2214<@jupet kellari ö> jupet@lagi-unstable:~$ cat /proc/apm 
+2214<@jupet kellari ö> jupet@lagi-unstable:~$ cat /proc/apm
 2214<@jupet kellari ö> 1.16 1.2 0x03 0x01 0x03 0x09 98% -1 ?
 
 2238<@jupet kellari ö> 1.16 1.2 0x03 0x00 0x00 0x01 100% -1 ? ilman verkkovirtaa
@@ -1191,51 +1211,84 @@ present voltage:         16608 mV
 
 #define ACPI_BATTERY_BASE_PATH "/proc/acpi/battery"
 #define APM_PATH "/proc/apm"
+#define MAX_BATTERY_COUNT 4
 
-static FILE *acpi_bat_fp;
-static FILE *apm_bat_fp;
+static FILE *acpi_bat_fp[MAX_BATTERY_COUNT];
+static FILE *apm_bat_fp[MAX_BATTERY_COUNT];
 
-static int acpi_last_full;
-static int acpi_design_capacity;
+static int batteries_initialized = 0;
+static char batteries[MAX_BATTERY_COUNT][32];
 
-static char last_battery_str[64];	/* e.g. "charging 75%" */
-static char last_battery_time_str[64];	/* e.g. "3h 15m" */
+static int acpi_last_full[MAX_BATTERY_COUNT];
+static int acpi_design_capacity[MAX_BATTERY_COUNT];
 
-static double last_battery_time;
+static char last_battery_str[MAX_BATTERY_COUNT][64];	/* e.g. "charging 75%" */
+static char last_battery_time_str[MAX_BATTERY_COUNT][64];	/* e.g. "3h 15m" */
 
-static int last_battery_perct;
-static double last_battery_perct_time;
+static double last_battery_time[MAX_BATTERY_COUNT];
+
+static int last_battery_perct[MAX_BATTERY_COUNT];
+static double last_battery_perct_time[MAX_BATTERY_COUNT];
+
+
+void init_batteries(void)
+{
+	int idx;
+	if(batteries_initialized)
+		return;
+	for(idx = 0; idx < MAX_BATTERY_COUNT; idx++)
+		batteries[idx][0] = '\0';
+	batteries_initialized = 1;
+}
+
+int get_battery_idx(const char *bat)
+{
+	int idx;
+	for(idx = 0; idx < MAX_BATTERY_COUNT; idx++)
+		if(!strlen(batteries[idx]) || !strcmp(batteries[idx], bat))
+			break;
+
+	/* if not found, enter a new entry */
+	if(!strlen(batteries[idx]))
+		snprintf(batteries[idx], 31, "%s", bat);
+
+	return idx;
+}
 
 void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 {
-	static int rep = 0, rep2 = 0;
+	static int idx, rep = 0, rep2 = 0;
 	char acpi_path[128];
 	snprintf(acpi_path, 127, ACPI_BATTERY_BASE_PATH "/%s/state", bat);
 
+	init_batteries();
+
+	idx = get_battery_idx(bat);
+
 	/* don't update battery too often */
-	if (current_update_time - last_battery_time < 29.5) 
-		goto set_return_value;	
+	if (current_update_time - last_battery_time[idx] < 29.5)
+		goto set_return_value;
 
-	last_battery_time = current_update_time;
+	last_battery_time[idx] = current_update_time;
 
-	memset (last_battery_str, 0, sizeof (last_battery_str));
-	memset (last_battery_time_str, 0, sizeof (last_battery_time_str));
+	memset (last_battery_str[idx], 0, sizeof (last_battery_str[idx]));
+	memset (last_battery_time_str[idx], 0, sizeof (last_battery_time_str[idx]));
 
 	/* first try ACPI */
 
-	if (acpi_bat_fp == NULL && apm_bat_fp == NULL)
-		acpi_bat_fp = open_file(acpi_path, &rep);
+	if (acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL)
+		acpi_bat_fp[idx] = open_file(acpi_path, &rep);
 
-	if (acpi_bat_fp != NULL) {
+	if (acpi_bat_fp[idx] != NULL) {
 		int present_rate = -1;
 		int remaining_capacity = -1;
 		char charging_state[64];
 		char present[4];
 
 		/* read last full capacity if it's zero */
-		if (acpi_last_full == 0) {
+		if (acpi_last_full[idx] == 0) {
 			static int rep = 0;
-      char path[128];
+			char path[128];
 			FILE *fp;
 			snprintf(path, 127,
 				 ACPI_BATTERY_BASE_PATH "/%s/info", bat);
@@ -1245,7 +1298,7 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 					char b[256];
 					if (fgets(b, 256, fp) == NULL)
 						break;
-					if (sscanf(b, "last full capacity: %d", &acpi_last_full) != 0) {
+					if (sscanf(b, "last full capacity: %d", &acpi_last_full[idx]) != 0) {
 						break;
 					}
 				}
@@ -1254,17 +1307,17 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 			}
 		}
 
-		fseek(acpi_bat_fp, 0, SEEK_SET);
+		fseek(acpi_bat_fp[idx], 0, SEEK_SET);
 
 		strcpy(charging_state, "unknown");
 
-		while (!feof(acpi_bat_fp)) {
+		while (!feof(acpi_bat_fp[idx])) {
 			char buf[256];
-			if (fgets(buf, 256, acpi_bat_fp) == NULL)
+			if (fgets(buf, 256, acpi_bat_fp[idx]) == NULL)
 				break;
 
 			/* let's just hope units are ok */
-			if (strncmp (buf, "present:", 8) == 0) 
+			if (strncmp (buf, "present:", 8) == 0)
 				sscanf(buf, "present: %4s", present);
 			else if (strncmp (buf, "charging state:", 15) == 0)
 				sscanf(buf, "charging state: %63s", charging_state);
@@ -1275,88 +1328,94 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 		}
 
 		/* Hellf[i]re notes that remaining capacity can exceed acpi_last_full */
-		if (remaining_capacity > acpi_last_full)
-			acpi_last_full = remaining_capacity;  /* normalize to 100% */
+		if (remaining_capacity > acpi_last_full[idx])
+			acpi_last_full[idx] = remaining_capacity;  /* normalize to 100% */
 
 		/* not present */
 		if (strcmp(present, "no") == 0) {
-			strncpy(last_battery_str, "not present", 64);
+			strncpy(last_battery_str[idx], "not present", 64);
 		}
 		/* charging */
 		else if (strcmp(charging_state, "charging") == 0) {
-			if (acpi_last_full != 0 && present_rate > 0) {
+			if (acpi_last_full[idx] != 0 && present_rate > 0) {
 				/* e.g. charging 75% */
-				snprintf(last_battery_str, sizeof(last_battery_str)-1, "charging %i%%", 
-					(int) ((remaining_capacity * 100) / acpi_last_full));
+				snprintf(last_battery_str[idx], sizeof(last_battery_str[idx])-1, "charging %i%%",
+					(int) ((remaining_capacity * 100) / acpi_last_full[idx]));
 				/* e.g. 2h 37m */
-				format_seconds(last_battery_time_str, sizeof(last_battery_time_str)-1,
-					      (long) (((acpi_last_full - remaining_capacity) * 3600) / 
+				format_seconds(last_battery_time_str[idx], sizeof(last_battery_time_str[idx])-1,
+					      (long) (((acpi_last_full[idx] - remaining_capacity) * 3600) /
 					              present_rate));
-			} else if (acpi_last_full != 0 && present_rate <= 0) {
-				snprintf(last_battery_str, sizeof(last_battery_str)-1, "charging %d%%",
-					(int) ((remaining_capacity * 100) / acpi_last_full));
+			} else if (acpi_last_full[idx] != 0 && present_rate <= 0) {
+				snprintf(last_battery_str[idx], sizeof(last_battery_str[idx])-1, "charging %d%%",
+					(int) ((remaining_capacity * 100) / acpi_last_full[idx]));
 			} else {
-				strncpy(last_battery_str, "charging", sizeof(last_battery_str)-1);
+				strncpy(last_battery_str[idx], "charging", sizeof(last_battery_str[idx])-1);
 			}
 		}
 		/* discharging */
 		else if (strncmp(charging_state, "discharging", 64) == 0) {
 			if (present_rate > 0) {
 				/* e.g. discharging 35% */
-				snprintf(last_battery_str, sizeof(last_battery_str)-1, "discharging %i%%",
-					(int) ((remaining_capacity * 100) / acpi_last_full));
+				snprintf(last_battery_str[idx], sizeof(last_battery_str[idx])-1, "discharging %i%%",
+					(int) ((remaining_capacity * 100) / acpi_last_full[idx]));
 				/* e.g. 1h 12m */
-				format_seconds(last_battery_time_str, sizeof(last_battery_time_str)-1,
+				format_seconds(last_battery_time_str[idx], sizeof(last_battery_time_str[idx])-1,
 					      (long) ((remaining_capacity * 3600) / present_rate));
 			} else if (present_rate == 0) { /* Thanks to Nexox for this one */
-				snprintf(last_battery_str, sizeof(last_battery_str)-1, "full");
+				snprintf(last_battery_str[idx], sizeof(last_battery_str[idx])-1, "full");
 			} else {
-				snprintf(last_battery_str, sizeof(last_battery_str)-1,
+				snprintf(last_battery_str[idx], sizeof(last_battery_str[idx])-1,
 					"discharging %d%%",
-					(int) ((remaining_capacity * 100) / acpi_last_full));
+					(int) ((remaining_capacity * 100) / acpi_last_full[idx]));
 			}
 		}
 		/* charged */
 		/* thanks to Lukas Zapletal <lzap@seznam.cz> */
 		else if (strncmp(charging_state, "charged", 64) == 0) {
-				strcpy(last_battery_str, "charged");
-		} 
+				/* Below happens with the second battery on my X40,
+				 * when the second one is empty and the first one
+				 * being charged. */
+				if (remaining_capacity == 0)
+					strcpy(last_battery_str[idx], "empty");
+				else
+					strcpy(last_battery_str[idx], "charged");
+		}
 		/* unknown, probably full / AC */
 		else {
-			if (acpi_last_full != 0
-			    && remaining_capacity != acpi_last_full)
-				snprintf(last_battery_str, 64, "unknown %d%%",
-					(int) ((remaining_capacity * 100) / acpi_last_full));
+			if (acpi_last_full[idx] != 0
+			    && remaining_capacity != acpi_last_full[idx])
+				snprintf(last_battery_str[idx], 64, "unknown %d%%",
+					(int) ((remaining_capacity * 100) / acpi_last_full[idx]));
 			else
-				strncpy(last_battery_str, "AC", 64);
+				strncpy(last_battery_str[idx], "AC", 64);
 		}
 	} else {
 		/* APM */
-		if (apm_bat_fp == NULL)
-			apm_bat_fp = open_file(APM_PATH, &rep2);
+		if (apm_bat_fp[idx] == NULL)
+			apm_bat_fp[idx] = open_file(APM_PATH, &rep2);
 
-		if (apm_bat_fp != NULL) {
+		if (apm_bat_fp[idx] != NULL) {
 			int ac, status, flag, life;
 
-			fscanf(apm_bat_fp,
+			fscanf(apm_bat_fp[idx],
 			       "%*s %*s %*x %x   %x       %x     %d%%",
 			       &ac, &status, &flag, &life);
 
 			if (life == -1) {
 				/* could check now that there is ac */
-				snprintf(last_battery_str, 64, "AC");
+				snprintf(last_battery_str[idx], 64, "AC");
 			} else if (ac && life != 100) {	/* could check that status==3 here? */
-				snprintf(last_battery_str, 64,
+				snprintf(last_battery_str[idx], 64,
 					 "charging %d%%", life);
 			} else {
-				snprintf(last_battery_str, 64, "%d%%",
+				snprintf(last_battery_str[idx], 64, "%d%%",
 					 life);
 			}
 
 			/* it seemed to buffer it so file must be closed (or could use syscalls
 			 * directly but I don't feel like coding it now) */
-			fclose(apm_bat_fp);
-			apm_bat_fp = NULL;
+			fclose(apm_bat_fp[idx]);
+			apm_bat_fp[idx] = NULL;
 		}
 	}
 
@@ -1364,41 +1423,46 @@ set_return_value:
 	switch (item) {
         case BATTERY_STATUS:
 		{
-            		snprintf(buf, n, "%s", last_battery_str);
+            		snprintf(buf, n, "%s", last_battery_str[idx]);
             		break;
           	}
         case BATTERY_TIME:
           	{
-            		snprintf(buf, n, "%s", last_battery_time_str);
+            		snprintf(buf, n, "%s", last_battery_time_str[idx]);
             		break;
           	}
 	default:
             		break;
-        }              
+        }
 	return;
 }
 
 int get_battery_perct(const char *bat)
 {
 	static int rep;
+	int idx;
 	char acpi_path[128];
 	snprintf(acpi_path, 127, ACPI_BATTERY_BASE_PATH "/%s/state", bat);
 
+	init_batteries();
+
+	idx = get_battery_idx(bat);
+
 	/* don't update battery too often */
-	if (current_update_time - last_battery_perct_time < 30) {
-		return last_battery_perct;
+	if (current_update_time - last_battery_perct_time[idx] < 30) {
+		return last_battery_perct[idx];
 	}
-	last_battery_perct_time = current_update_time;
+	last_battery_perct_time[idx] = current_update_time;
 
 	/* Only check for ACPI */
 
 	if (acpi_bat_fp == NULL && apm_bat_fp == NULL)
-		acpi_bat_fp = open_file(acpi_path, &rep);
+		acpi_bat_fp[idx] = open_file(acpi_path, &rep);
 
 	int remaining_capacity = -1;
-	if (acpi_bat_fp != NULL) {
+	if (acpi_bat_fp[idx] != NULL) {
 		/* read last full capacity if it's zero */
-		if (acpi_design_capacity == 0) {
+		if (acpi_design_capacity[idx] == 0) {
 			static int rep;
 			char path[128];
 			FILE *fp;
@@ -1410,7 +1474,7 @@ int get_battery_perct(const char *bat)
 					char b[256];
 					if (fgets(b, 256, fp) == NULL)
 						break;
-					if (sscanf(b, "design capacity: %d", &acpi_design_capacity) != 0) {
+					if (sscanf(b, "design capacity: %d", &acpi_design_capacity[idx]) != 0) {
 						break;
 					}
 				}
@@ -1418,11 +1482,11 @@ int get_battery_perct(const char *bat)
 			}
 		}
 
-		fseek(acpi_bat_fp, 0, SEEK_SET);
+		fseek(acpi_bat_fp[idx], 0, SEEK_SET);
 
-		while (!feof(acpi_bat_fp)) {
+		while (!feof(acpi_bat_fp[idx])) {
 			char buf[256];
-			if (fgets(buf, 256, acpi_bat_fp) == NULL)
+			if (fgets(buf, 256, acpi_bat_fp[idx]) == NULL)
 				break;
 
 			if (buf[0] == 'r')
@@ -1433,15 +1497,17 @@ int get_battery_perct(const char *bat)
 	if(remaining_capacity < 0)
 		return 0;
 	/* compute the battery percentage */
-	last_battery_perct = 
-		(int) (((float)remaining_capacity/acpi_design_capacity) * 100);
-	return last_battery_perct;
+	last_battery_perct[idx] =
+		(int) (((float)remaining_capacity/acpi_design_capacity[idx]) * 100);
+	return last_battery_perct[idx];
 }
 
 int get_battery_perct_bar(const char *bar)
 {
+	int idx;
 	get_battery_perct(bar);
-	return (int) (last_battery_perct * 2.56 - 1);
+	idx = get_battery_idx(bar);
+	return (int) (last_battery_perct[idx] * 2.56 - 1);
 }
 
 
@@ -1469,7 +1535,7 @@ static FILE* pmu_battery_fp;
 static FILE* pmu_info_fp;
 static char pb_battery_info[3][32];
 static double pb_battery_info_update;
- 
+
 #define PMU_PATH "/proc/pmu"
 void get_powerbook_batt_info(char *buf, size_t n, int i)
 {
@@ -1533,7 +1599,7 @@ void get_powerbook_batt_info(char *buf, size_t n, int i)
 
         /* update percentage string */
         if (time == 0)
-                pb_battery_info[PB_BATT_PERCENT][0] = 0; 
+                pb_battery_info[PB_BATT_PERCENT][0] = 0;
         else
                 snprintf(pb_battery_info[PB_BATT_PERCENT],
                         sizeof(pb_battery_info[PB_BATT_PERCENT]),
@@ -1541,7 +1607,7 @@ void get_powerbook_batt_info(char *buf, size_t n, int i)
 
         /* update time string */
         if (time == 0) /* fully charged or battery not present */
-                pb_battery_info[PB_BATT_TIME][0] = 0; 
+                pb_battery_info[PB_BATT_TIME][0] = 0;
         else if (time < 60*60) /* don't show secs */
                 format_seconds_short(pb_battery_info[PB_BATT_TIME],
                         sizeof(pb_battery_info[PB_BATT_TIME]), time);
@@ -1626,12 +1692,12 @@ void update_diskio()
 	int tot = ((double)(current-last)/2);
 	int tot_read = ((double)(current_read-last_read)/2);
 	int tot_write = ((double)(current_write-last_write)/2);
-	
+
 	if (last_read > current_read)
 	    tot_read = 0;
 	if (last_write > current_write)
-	    tot_write = 0;    
-	
+	    tot_write = 0;
+
 	if (last > current) {
 		/* we hit this either if it's the very first time we
                  * run this, or when /proc/diskstats overflows; while
@@ -1686,11 +1752,11 @@ Peter Tarjan (ptarjan@citromail.hu)
 
     if ( !p_client_buffer || client_buffer_size <= 0 )
 	return;
-    
+
     FILE *fp;
     unsigned int speed=0;
     char fan[128];
-    snprintf(fan, 127, "%s/fan",IBM_ACPI_DIR);    
+    snprintf(fan, 127, "%s/fan",IBM_ACPI_DIR);
 
     fp = fopen(fan, "r");
     if (fp != NULL)
@@ -1699,10 +1765,10 @@ Peter Tarjan (ptarjan@citromail.hu)
 	{
 	    char line[256];
 	    if (fgets(line, 255, fp) == NULL) break;
-	    if (sscanf(line, "speed: %d", &speed)) break;	
+	    if (sscanf(line, "speed: %d", &speed)) break;
 	}
     }
-    else 
+    else
     {
 	CRIT_ERR("can't open '%s': %s\nYou are not using the IBM ACPI. Remove ibm* from your Conky config file.", fan, strerror(errno));
     }
@@ -1710,15 +1776,15 @@ Peter Tarjan (ptarjan@citromail.hu)
     fclose(fp);
     snprintf( p_client_buffer, client_buffer_size, "%d", speed );
     return;
-    
-}    
+
+}
 
 static double last_ibm_acpi_temp_time;
 void get_ibm_acpi_temps()
 {
-/* get the measured temperatures from the temperature sensors 
+/* get the measured temperatures from the temperature sensors
    on IBM/Lenovo laptops running the ibm acpi.
-   There are 8 values in /proc/acpi/ibm/thermal, and according to 
+   There are 8 values in /proc/acpi/ibm/thermal, and according to
    http://ibm-acpi.sourceforge.net/README
    these mean the following (at least on an IBM R51...)
 0:  CPU (also on the T series laptops)
@@ -1728,30 +1794,30 @@ void get_ibm_acpi_temps()
 4:  Battery (?)
 5:  N/A
 6:  Battery (?)
-7:  N/A 
-   I'm not too sure about those with the question mark, but the values I'm 
-   reading from *my* thermal file (on a T42p) look realistic for the 
-   hdd and the battery. 
-   #5 and #7 are always -128. 
+7:  N/A
+   I'm not too sure about those with the question mark, but the values I'm
+   reading from *my* thermal file (on a T42p) look realistic for the
+   hdd and the battery.
+   #5 and #7 are always -128.
    /proc/acpi/ibm/thermal looks like this (1 line):
 temperatures:   41 43 31 46 33 -128 29 -128
 Peter Tarjan (ptarjan@citromail.hu)
 */
 
 /*    don't update too often */
-    if (current_update_time - last_ibm_acpi_temp_time < 10.00) 
+    if (current_update_time - last_ibm_acpi_temp_time < 10.00)
     {
 	return;
     }
-    last_ibm_acpi_temp_time = current_update_time; 
-    
+    last_ibm_acpi_temp_time = current_update_time;
+
 /*    if ( !p_client_buffer || client_buffer_size <= 0 )
       return; */
 
     FILE *fp;
 
     char thermal[128];
-    snprintf(thermal, 127, "%s/thermal",IBM_ACPI_DIR);    
+    snprintf(thermal, 127, "%s/thermal",IBM_ACPI_DIR);
     fp = fopen(thermal, "r");
 
     if (fp != NULL)
@@ -1763,18 +1829,18 @@ Peter Tarjan (ptarjan@citromail.hu)
 	    if (sscanf(line, "temperatures: %d %d %d %d %d %d %d %d",
 		       &ibm_acpi.temps[0], &ibm_acpi.temps[1],
 		       &ibm_acpi.temps[2], &ibm_acpi.temps[3],
-		       &ibm_acpi.temps[4], &ibm_acpi.temps[5], 
+		       &ibm_acpi.temps[4], &ibm_acpi.temps[5],
 		       &ibm_acpi.temps[6], &ibm_acpi.temps[7])) break;
 	}
     }
-    else 
+    else
     {
 	CRIT_ERR("can't open '%s': %s\nYou are not using the IBM ACPI. Remove ibm* from your Conky config file.", thermal, strerror(errno));
     }
 
     fclose(fp);
 
-}	       
+}
 
 
 void get_ibm_acpi_volume( char * p_client_buffer, size_t client_buffer_size )
@@ -1790,14 +1856,14 @@ commands:       up, down, mute
 commands:       level <level> (<level> is 0-15)
 Peter Tarjan (ptarjan@citromail.hu)
 */
-    
+
     if ( !p_client_buffer || client_buffer_size <= 0 )
 	return;
-    
+
     FILE *fp;
 
     char volume[128];
-    snprintf(volume, 127, "%s/volume",IBM_ACPI_DIR);    
+    snprintf(volume, 127, "%s/volume",IBM_ACPI_DIR);
     unsigned int vol=-1;
     char mute[3]="";
 
@@ -1812,7 +1878,7 @@ Peter Tarjan (ptarjan@citromail.hu)
 	    if (sscanf(line, "mute: %s", mute)) break;
 	}
     }
-    else 
+    else
     {
 	CRIT_ERR("can't open '%s': %s\nYou are not using the IBM ACPI. Remove ibm* from your Conky config file.", volume, strerror(errno));
     }
@@ -1850,7 +1916,7 @@ Peter Tarjan (ptarjan@citromail.hu)
     FILE *fp;
     unsigned int brightness=0;
     char filename[128];
-    snprintf(filename, 127, "%s/brightness",IBM_ACPI_DIR);    
+    snprintf(filename, 127, "%s/brightness",IBM_ACPI_DIR);
 
     fp = fopen(filename, "r");
     if (fp != NULL)
@@ -1859,10 +1925,10 @@ Peter Tarjan (ptarjan@citromail.hu)
 	{
 	    char line[256];
 	    if (fgets(line, 255, fp) == NULL) break;
-	    if (sscanf(line, "level: %d", &brightness)) break;	
+	    if (sscanf(line, "level: %d", &brightness)) break;
 	}
     }
-    else 
+    else
     {
 	CRIT_ERR("can't open '%s': %s\nYou are not using the IBM ACPI. Remove ibm* from your Conky config file.", filename, strerror(errno));
     }
@@ -1871,8 +1937,8 @@ Peter Tarjan (ptarjan@citromail.hu)
 
     snprintf( p_client_buffer, client_buffer_size, "%d", brightness );
     return;
-    
-}    
+
+}
 
 void update_entropy (void)
 {

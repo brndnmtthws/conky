@@ -10,6 +10,40 @@
 #include <stdlib.h>
 #include "libmpdclient.h"
 
+static void clear_mpd_stats(struct information *current_info)
+{
+	if (current_info->mpd.artist == NULL)
+		current_info->mpd.artist = malloc(TEXT_BUFFER_SIZE);
+	if (current_info->mpd.album == NULL)
+		current_info->mpd.album = malloc(TEXT_BUFFER_SIZE);
+	if (current_info->mpd.title == NULL)
+		current_info->mpd.title = malloc(TEXT_BUFFER_SIZE);
+	if (current_info->mpd.random == NULL)
+		current_info->mpd.random = malloc(TEXT_BUFFER_SIZE);
+	if (current_info->mpd.repeat == NULL)
+		current_info->mpd.repeat = malloc(TEXT_BUFFER_SIZE);
+	if (current_info->mpd.track == NULL)
+		current_info->mpd.track = malloc(TEXT_BUFFER_SIZE);
+	if (current_info->mpd.status == NULL)
+		current_info->mpd.status = malloc(TEXT_BUFFER_SIZE);
+	if (current_info->mpd.name == NULL)
+		current_info->mpd.name = malloc(TEXT_BUFFER_SIZE);
+	if (current_info->mpd.file == NULL)
+		current_info->mpd.file = malloc(TEXT_BUFFER_SIZE);
+
+	*current_info->mpd.name=0;
+	*current_info->mpd.file=0;
+	*current_info->mpd.artist=0;
+	*current_info->mpd.album=0;
+	*current_info->mpd.title=0;
+	*current_info->mpd.random=0;
+	*current_info->mpd.repeat=0;
+	*current_info->mpd.track=0;
+	current_info->mpd.bitrate = 0;
+	current_info->mpd.progress = 0;
+	current_info->mpd.elapsed = 0;
+	current_info->mpd.length = 0;
+}
 
 void update_mpd()
 {
@@ -22,45 +56,16 @@ void update_mpd()
 					current_info->mpd.password);
 		mpd_finishCommand(current_info->conn);
 	}
+
+	// This makes sure everything we need is malloc'ed and clear
+	clear_mpd_stats(current_info); 
+
 	if (current_info->conn->error) {
 		//ERR("%MPD error: s\n", current_info->conn->errorStr);
 		mpd_closeConnection(current_info->conn);
 		current_info->conn = 0;
-		if (current_info->mpd.artist == NULL)
-			current_info->mpd.artist =
-			    malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.album == NULL)
-			current_info->mpd.album = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.title == NULL)
-			current_info->mpd.title = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.random == NULL)
-			current_info->mpd.random =
-			    malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.repeat == NULL)
-			current_info->mpd.repeat =
-			    malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.track == NULL)
-			current_info->mpd.track = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.status == NULL)
-			current_info->mpd.status =
-			    malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.name == NULL)
-			current_info->mpd.name = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.file == NULL)
-			current_info->mpd.file = malloc(TEXT_BUFFER_SIZE);
-		*current_info->mpd.name=0;
-		*current_info->mpd.file=0;
-		*current_info->mpd.artist=0;
-		*current_info->mpd.album=0;
-		*current_info->mpd.title=0;
-		*current_info->mpd.random=0;
-		*current_info->mpd.repeat=0;
-		*current_info->mpd.track=0;
+
 		strncpy(current_info->mpd.status, "MPD not responding",	TEXT_BUFFER_SIZE - 1);
-		current_info->mpd.bitrate = 0;
-		current_info->mpd.progress = 0;
-		current_info->mpd.elapsed = 0;
-		current_info->mpd.length = 0;
 		return;
 	}
 
@@ -74,134 +79,29 @@ void update_mpd()
 		//ERR("MPD error: %s\n", current_info->conn->errorStr);
 		mpd_closeConnection(current_info->conn);
 		current_info->conn = 0;
-		if (current_info->mpd.artist == NULL)
-			current_info->mpd.artist =
-			    malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.album == NULL)
-			current_info->mpd.album = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.title == NULL)
-			current_info->mpd.title = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.random == NULL)
-			current_info->mpd.random =
-			    malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.repeat == NULL)
-			current_info->mpd.repeat =
-			    malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.track == NULL)
-			current_info->mpd.track = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.status == NULL)
-			current_info->mpd.status = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.name == NULL)
-			current_info->mpd.name = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.file == NULL)
-			current_info->mpd.file = malloc(TEXT_BUFFER_SIZE);
-		*current_info->mpd.name=0;
-		*current_info->mpd.file=0;
-		*current_info->mpd.artist=0;
-		*current_info->mpd.album=0;
-		*current_info->mpd.title=0;
-		*current_info->mpd.random=0;
-		*current_info->mpd.repeat=0;
-		*current_info->mpd.track=0;
+
 		strncpy(current_info->mpd.status, "MPD not responding", TEXT_BUFFER_SIZE - 1);
-		current_info->mpd.bitrate = 0;
-		current_info->mpd.progress = 0;
-		current_info->mpd.elapsed = 0;
-		current_info->mpd.length = 0;
 		return;
 	}
+	
 	current_info->mpd.volume = status->volume;
 	//if (status->error)
 	//printf("error: %s\n", status->error);
 
 	if (status->state == MPD_STATUS_STATE_PLAY) {
-		if (current_info->mpd.status == NULL)
-			current_info->mpd.status =
-			    malloc(TEXT_BUFFER_SIZE);
 		strncpy(current_info->mpd.status, "Playing",
 			TEXT_BUFFER_SIZE - 1);
 	}
 	if (status->state == MPD_STATUS_STATE_STOP) {
-		current_info->mpd.bitrate = 0;
-		current_info->mpd.progress = 0;
-		current_info->mpd.elapsed = 0;
-		current_info->mpd.length = 0;
-		if (current_info->mpd.artist == NULL)
-			current_info->mpd.artist =
-			    malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.album == NULL)
-			current_info->mpd.album = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.title == NULL)
-			current_info->mpd.title = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.random == NULL)
-			current_info->mpd.random =
-			    malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.repeat == NULL)
-			current_info->mpd.repeat =
-			    malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.track == NULL)
-			current_info->mpd.track = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.status == NULL)
-			current_info->mpd.status =
-			    malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.name == NULL)
-			current_info->mpd.name = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.file == NULL)
-			current_info->mpd.file = malloc(TEXT_BUFFER_SIZE);
-		*current_info->mpd.name=0;
-		*current_info->mpd.file=0;
-		*current_info->mpd.artist=0;
-		*current_info->mpd.album=0;
-		*current_info->mpd.title=0;
-		*current_info->mpd.random=0;
-		*current_info->mpd.repeat=0;
-		*current_info->mpd.track=0;
 		strncpy(current_info->mpd.status, "Stopped",
 			TEXT_BUFFER_SIZE - 1);
 	}
 	if (status->state == MPD_STATUS_STATE_PAUSE) {
-		if (current_info->mpd.status == NULL)
-			current_info->mpd.status =
-			    malloc(TEXT_BUFFER_SIZE);
 		strncpy(current_info->mpd.status, "Paused",
 			TEXT_BUFFER_SIZE - 1);
 	}
 	if (status->state == MPD_STATUS_STATE_UNKNOWN) {
-		current_info->mpd.bitrate = 0;
-		current_info->mpd.progress = 0;
-		current_info->mpd.elapsed = 0;
-		current_info->mpd.length = 0;
-		if (current_info->mpd.artist == NULL)
-			current_info->mpd.artist =
-			    malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.album == NULL)
-			current_info->mpd.album = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.title == NULL)
-			current_info->mpd.title = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.random == NULL)
-			current_info->mpd.random =
-			    malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.repeat == NULL)
-			current_info->mpd.repeat =
-			    malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.track == NULL)
-			current_info->mpd.track = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.status == NULL)
-			current_info->mpd.status =
-			    malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.name == NULL)
-			current_info->mpd.name = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.file == NULL)
-			current_info->mpd.file = malloc(TEXT_BUFFER_SIZE);
-		*current_info->mpd.name=0;
-		*current_info->mpd.file=0;
-		*current_info->mpd.artist=0;
-		*current_info->mpd.album=0;
-		*current_info->mpd.title=0;
-		*current_info->mpd.random=0;
-		*current_info->mpd.repeat=0;
-		*current_info->mpd.track=0;
-		*current_info->mpd.status=0;
+		// current_info was already cleaned up by clear_mpd_stats()
 	}
 	if (status->state == MPD_STATUS_STATE_PLAY ||
 	    status->state == MPD_STATUS_STATE_PAUSE) {
@@ -210,12 +110,6 @@ void update_mpd()
 		    (float) status->elapsedTime / status->totalTime;
 		current_info->mpd.elapsed = status->elapsedTime;
 		current_info->mpd.length = status->totalTime;
-		if (current_info->mpd.random == NULL)
-			current_info->mpd.random =
-			    malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.repeat == NULL)
-			current_info->mpd.repeat =
-			    malloc(TEXT_BUFFER_SIZE);
 		if (status->random == 0) {
 			strcpy(current_info->mpd.random, "Off");
 		} else if (status->random == 1) {
@@ -248,19 +142,6 @@ void update_mpd()
 			continue;
 		}
 
-		if (current_info->mpd.artist == NULL)
-			current_info->mpd.artist =
-			    malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.album == NULL)
-			current_info->mpd.album = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.title == NULL)
-			current_info->mpd.title = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.track == NULL)
-			current_info->mpd.track = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.name == NULL)
-			current_info->mpd.name = malloc(TEXT_BUFFER_SIZE);
-		if (current_info->mpd.file == NULL)
-			current_info->mpd.file = malloc(TEXT_BUFFER_SIZE);
 		if (song->artist) {
 			strncpy(current_info->mpd.artist, song->artist,
 				TEXT_BUFFER_SIZE - 1);

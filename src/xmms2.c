@@ -16,191 +16,195 @@
 
 /* callbacks */
 
-void connection_lost( void *ptr ) {
-    ((struct information *)ptr)->xmms2_conn_state = CONN_NO;
+static void xmms_alloc(struct information *ptr)
+{
+	if (ptr->xmms2.status == NULL) {
+		ptr->xmms2.status = malloc(TEXT_BUFFER_SIZE);
+		ptr->xmms2.status[0] = '\0';
+	}
 
-    if ( ((struct information *)ptr)->xmms2.status == NULL )
-        ((struct information *)ptr)->xmms2.status = malloc( TEXT_BUFFER_SIZE );
-    strncpy( ((struct information *)ptr)->xmms2.status, "xmms2 not responding", TEXT_BUFFER_SIZE - 1 );
+	if (ptr->xmms2.artist == NULL) {
+		ptr->xmms2.artist = malloc(TEXT_BUFFER_SIZE);
+		ptr->xmms2.artist[0] = '\0';
+	}
 
+	if (ptr->xmms2.album == NULL) {
+		ptr->xmms2.album = malloc(TEXT_BUFFER_SIZE);
+		ptr->xmms2.album[0] = '\0';
+	}
 
-    if ( ((struct information *)ptr)->xmms2.artist == NULL )
-        ((struct information *)ptr)->xmms2.artist = malloc( TEXT_BUFFER_SIZE );
-    strncpy( ((struct information *)ptr)->xmms2.artist, "", TEXT_BUFFER_SIZE - 1 );
+	if (ptr->xmms2.title == NULL) {
+		ptr->xmms2.title = malloc(TEXT_BUFFER_SIZE);
+		ptr->xmms2.title[0] = '\0';
+	}
 
-    if ( ((struct information *)ptr)->xmms2.album == NULL )
-        ((struct information *)ptr)->xmms2.album = malloc( TEXT_BUFFER_SIZE );
-    strncpy( ((struct information *)ptr)->xmms2.album, "", TEXT_BUFFER_SIZE - 1 );
+	if (ptr->xmms2.genre == NULL) {
+		ptr->xmms2.genre = malloc(TEXT_BUFFER_SIZE);
+		ptr->xmms2.genre[0] = '\0';
+	}
 
-    if ( ((struct information *)ptr)->xmms2.title == NULL )
-        ((struct information *)ptr)->xmms2.title = malloc( TEXT_BUFFER_SIZE );
-    strncpy( ((struct information *)ptr)->xmms2.title, "", TEXT_BUFFER_SIZE - 1 );
+	if (ptr->xmms2.comment == NULL) {
+		ptr->xmms2.comment = malloc(TEXT_BUFFER_SIZE);
+		ptr->xmms2.comment[0] = '\0';
+	}
 
-    if ( ((struct information *)ptr)->xmms2.genre == NULL )
-        ((struct information *)ptr)->xmms2.genre = malloc( TEXT_BUFFER_SIZE );
-    strncpy( ((struct information *)ptr)->xmms2.genre, "", TEXT_BUFFER_SIZE - 1 );
+	if (ptr->xmms2.decoder == NULL) {
+		ptr->xmms2.decoder = malloc(TEXT_BUFFER_SIZE);
+		ptr->xmms2.decoder[0] = '\0';
+	}
 
-    if ( ((struct information *)ptr)->xmms2.comment == NULL )
-        ((struct information *)ptr)->xmms2.comment = malloc( TEXT_BUFFER_SIZE );
-    strncpy( ((struct information *)ptr)->xmms2.comment, "", TEXT_BUFFER_SIZE - 1 );
+	if (ptr->xmms2.transport == NULL) {
+		ptr->xmms2.transport = malloc(TEXT_BUFFER_SIZE);
+		ptr->xmms2.transport[0] = '\0';
+	}
 
-    if ( ((struct information *)ptr)->xmms2.decoder == NULL )
-        ((struct information *)ptr)->xmms2.decoder = malloc( TEXT_BUFFER_SIZE );
-    strncpy( ((struct information *)ptr)->xmms2.decoder, "", TEXT_BUFFER_SIZE - 1 );
+	if (ptr->xmms2.url == NULL) {
+		ptr->xmms2.url = malloc(TEXT_BUFFER_SIZE);
+		ptr->xmms2.url[0] = '\0';
+	}
 
-    if ( ((struct information *)ptr)->xmms2.transport == NULL )
-        ((struct information *)ptr)->xmms2.transport = malloc( TEXT_BUFFER_SIZE );
-    strncpy( ((struct information *)ptr)->xmms2.transport, "", TEXT_BUFFER_SIZE - 1 );
-
-    if ( ((struct information *)ptr)->xmms2.url == NULL )
-        ((struct information *)ptr)->xmms2.url = malloc( TEXT_BUFFER_SIZE );
-    strncpy( ((struct information *)ptr)->xmms2.url, "", TEXT_BUFFER_SIZE - 1 );
-
-    if ( ((struct information *)ptr)->xmms2.date == NULL )
-        ((struct information *)ptr)->xmms2.date = malloc( TEXT_BUFFER_SIZE );
-    strncpy( ((struct information *)ptr)->xmms2.date, "", TEXT_BUFFER_SIZE - 1 );
-
-    ((struct information *)ptr)->xmms2.tracknr = 0;
-    ((struct information *)ptr)->xmms2.id = 0;
-    ((struct information *)ptr)->xmms2.bitrate = 0;
-    ((struct information *)ptr)->xmms2.duration = 0;
-    ((struct information *)ptr)->xmms2.elapsed = 0;
-    ((struct information *)ptr)->xmms2.size = 0;
-    ((struct information *)ptr)->xmms2.progress = 0;
+	if (ptr->xmms2.date == NULL) {
+		ptr->xmms2.date = malloc(TEXT_BUFFER_SIZE);
+		ptr->xmms2.date[0] = '\0';
+	}
 }
 
-void handle_curent_id( xmmsc_result_t *res, void *ptr ) {
+static void xmms_clear(struct information *ptr) {
+	xmms_alloc(ptr);
+	ptr->xmms2.status[0] = '\0';
+	ptr->xmms2.artist[0] = '\0';
+	ptr->xmms2.album[0] = '\0';
+	ptr->xmms2.title[0] = '\0';
+	ptr->xmms2.genre[0] = '\0';
+	ptr->xmms2.comment[0] = '\0';
+	ptr->xmms2.decoder[0] = '\0';
+	ptr->xmms2.transport[0] = '\0';
+	ptr->xmms2.url[0] = '\0';
+	ptr->xmms2.date[0] = '\0';
+}
 
+void connection_lost(void *p)
+{
+	struct information *ptr = p;
+	ptr->xmms2_conn_state = CONN_NO;
+
+	xmms_clear(ptr);
+	ptr->xmms2.tracknr = 0;
+	ptr->xmms2.id = 0;
+	ptr->xmms2.bitrate = 0;
+	ptr->xmms2.duration = 0;
+	ptr->xmms2.elapsed = 0;
+	ptr->xmms2.size = 0;
+	ptr->xmms2.progress = 0;
+}
+
+void handle_curent_id(xmmsc_result_t *res, void *p)
+{
     uint current_id;
+    struct information *ptr = p;
 
     if ( xmmsc_result_get_uint( res, &current_id ) ) {
 
         xmmsc_result_t *res2;
-        res2 = xmmsc_medialib_get_info( ((struct information *)ptr)->xmms2_conn, current_id );
+        res2 = xmmsc_medialib_get_info(ptr->xmms2_conn, current_id);
         xmmsc_result_wait( res2 );
+		
+       	xmms_clear(ptr);
 
-
-        if ( ((struct information *)ptr)->xmms2.artist == NULL )
-            ((struct information *)ptr)->xmms2.artist = malloc( TEXT_BUFFER_SIZE );
-
-        if ( ((struct information *)ptr)->xmms2.album == NULL )
-            ((struct information *)ptr)->xmms2.album = malloc( TEXT_BUFFER_SIZE );
-
-        if ( ((struct information *)ptr)->xmms2.title == NULL )
-            ((struct information *)ptr)->xmms2.title = malloc( TEXT_BUFFER_SIZE );
-
-        if ( ((struct information *)ptr)->xmms2.genre == NULL )
-            ((struct information *)ptr)->xmms2.genre = malloc( TEXT_BUFFER_SIZE );
-
-        if ( ((struct information *)ptr)->xmms2.comment == NULL )
-            ((struct information *)ptr)->xmms2.comment = malloc( TEXT_BUFFER_SIZE );
-
-        if ( ((struct information *)ptr)->xmms2.decoder == NULL )
-            ((struct information *)ptr)->xmms2.decoder = malloc( TEXT_BUFFER_SIZE );
-
-        if ( ((struct information *)ptr)->xmms2.transport == NULL )
-            ((struct information *)ptr)->xmms2.transport = malloc( TEXT_BUFFER_SIZE );
-
-        if ( ((struct information *)ptr)->xmms2.url == NULL )
-            ((struct information *)ptr)->xmms2.url = malloc( TEXT_BUFFER_SIZE );
-
-        if ( ((struct information *)ptr)->xmms2.date == NULL )
-            ((struct information *)ptr)->xmms2.date = malloc( TEXT_BUFFER_SIZE );
-
-
-        ((struct information *)ptr)->xmms2.id = current_id;
+        ptr->xmms2.id = current_id;
 
         char *temp;
         xmmsc_result_get_dict_entry_string( res2, "artist", &temp );
         if ( temp != NULL ) {
-            strncpy( ((struct information *)ptr)->xmms2.artist, temp, TEXT_BUFFER_SIZE - 1 );
+            strncpy(ptr->xmms2.artist, temp, TEXT_BUFFER_SIZE - 1);
         } else {
-            strncpy( ((struct information *)ptr)->xmms2.artist, "[Unknown]", TEXT_BUFFER_SIZE - 1 );
+            strncpy(ptr->xmms2.artist, "[Unknown]", TEXT_BUFFER_SIZE - 1);
         }
 
 
         xmmsc_result_get_dict_entry_string( res2, "title", &temp );
         if ( temp != NULL ) {
-            strncpy( ((struct information *)ptr)->xmms2.title, temp, TEXT_BUFFER_SIZE - 1 );
+            strncpy(ptr->xmms2.title, temp, TEXT_BUFFER_SIZE - 1);
         } else {
-            strncpy( ((struct information *)ptr)->xmms2.title, "[Unknown]", TEXT_BUFFER_SIZE - 1 );
+            strncpy(ptr->xmms2.title, "[Unknown]", TEXT_BUFFER_SIZE - 1);
         }
 
         xmmsc_result_get_dict_entry_string( res2, "album", &temp );
         if ( temp != NULL ) {
-            strncpy( ((struct information *)ptr)->xmms2.album, temp, TEXT_BUFFER_SIZE - 1 );
+            strncpy(ptr->xmms2.album, temp, TEXT_BUFFER_SIZE - 1);
         } else {
-            strncpy( ((struct information *)ptr)->xmms2.album, "[Unknown]", TEXT_BUFFER_SIZE - 1 );
+            strncpy(ptr->xmms2.album, "[Unknown]", TEXT_BUFFER_SIZE - 1);
         }
 
 
         xmmsc_result_get_dict_entry_string( res2, "genre", &temp );
         if ( temp != NULL ) {
 
-            strncpy( ((struct information *)ptr)->xmms2.genre, temp, TEXT_BUFFER_SIZE - 1 );
+            strncpy(ptr->xmms2.genre, temp, TEXT_BUFFER_SIZE - 1);
         } else {
-            strncpy( ((struct information *)ptr)->xmms2.genre, "[Unknown]", TEXT_BUFFER_SIZE - 1 );
+            strncpy(ptr->xmms2.genre, "[Unknown]", TEXT_BUFFER_SIZE - 1);
         }
 
 
         xmmsc_result_get_dict_entry_string( res2, "comment", &temp );
         if ( temp != NULL ) {
-            strncpy( ((struct information *)ptr)->xmms2.comment, temp, TEXT_BUFFER_SIZE - 1 );
+            strncpy(ptr->xmms2.comment, temp, TEXT_BUFFER_SIZE - 1);
         } else {
-            strncpy( ((struct information *)ptr)->xmms2.comment, "", TEXT_BUFFER_SIZE - 1 );
+            strncpy(ptr->xmms2.comment, "", TEXT_BUFFER_SIZE - 1);
         }
 
 
         xmmsc_result_get_dict_entry_string( res2, "decoder", &temp );
         if ( temp != NULL ) {
-            strncpy( ((struct information *)ptr)->xmms2.decoder, temp, TEXT_BUFFER_SIZE - 1 );
+            strncpy(ptr->xmms2.decoder, temp, TEXT_BUFFER_SIZE - 1);
         } else {
-            strncpy( ((struct information *)ptr)->xmms2.decoder, "[Unknown]", TEXT_BUFFER_SIZE - 1 );
+            strncpy(ptr->xmms2.decoder, "[Unknown]", TEXT_BUFFER_SIZE - 1);
         }
 
 
         xmmsc_result_get_dict_entry_string( res2, "transport", &temp );
         if ( temp != NULL ) {
-            strncpy( ((struct information *)ptr)->xmms2.transport, temp, TEXT_BUFFER_SIZE - 1 );
+            strncpy(ptr->xmms2.transport, temp, TEXT_BUFFER_SIZE - 1);
         } else {
-            strncpy( ((struct information *)ptr)->xmms2.transport, "[Unknown]", TEXT_BUFFER_SIZE - 1 );
+            strncpy(ptr->xmms2.transport, "[Unknown]", TEXT_BUFFER_SIZE - 1);
         }
 
 
         xmmsc_result_get_dict_entry_string( res2, "url", &temp );
         if ( temp != NULL ) {
-            strncpy( ((struct information *)ptr)->xmms2.url, temp, TEXT_BUFFER_SIZE - 1 );
+            strncpy(ptr->xmms2.url, temp, TEXT_BUFFER_SIZE - 1);
         } else {
-            strncpy( ((struct information *)ptr)->xmms2.url, "[Unknown]", TEXT_BUFFER_SIZE - 1 );
+            strncpy(ptr->xmms2.url, "[Unknown]", TEXT_BUFFER_SIZE - 1);
         }
 
 
         xmmsc_result_get_dict_entry_string( res2, "date", &temp );
         if ( temp != NULL ) {
-            strncpy( ((struct information *)ptr)->xmms2.date, temp, TEXT_BUFFER_SIZE - 1 );
+            strncpy(ptr->xmms2.date, temp, TEXT_BUFFER_SIZE - 1);
         } else {
-            strncpy( ((struct information *)ptr)->xmms2.date, "????", TEXT_BUFFER_SIZE - 1 );
+            strncpy(ptr->xmms2.date, "????", TEXT_BUFFER_SIZE - 1);
         }
 
 
         int itemp;
         xmmsc_result_get_dict_entry_int( res2, "tracknr", &itemp );
-        ((struct information *)ptr)->xmms2.tracknr = itemp;
+        ptr->xmms2.tracknr = itemp;
 
         xmmsc_result_get_dict_entry_int( res2, "duration", &itemp );
-        ((struct information *)ptr)->xmms2.duration = itemp;
+        ptr->xmms2.duration = itemp;
 
         xmmsc_result_get_dict_entry_int( res2, "bitrate", &itemp );
-        ((struct information *)ptr)->xmms2.bitrate = itemp / 1000;
+        ptr->xmms2.bitrate = itemp / 1000;
 
         xmmsc_result_get_dict_entry_int( res2, "size", &itemp );
-        ((struct information *)ptr)->xmms2.size = (float)itemp / 1048576;
+        ptr->xmms2.size = (float)itemp / 1048576;
 
         xmmsc_result_unref( res2 );
     }
 }
 
-void handle_playtime( xmmsc_result_t *res, void *ptr ) {
+void handle_playtime(xmmsc_result_t *res, void *p) {
+	struct information *ptr = p;
     xmmsc_result_t * res2;
     uint play_time;
 
@@ -213,11 +217,12 @@ void handle_playtime( xmmsc_result_t *res, void *ptr ) {
     res2 = xmmsc_result_restart( res );
     xmmsc_result_unref( res2 );
 
-    ((struct information *)ptr)->xmms2.elapsed = play_time;
-    ((struct information *)ptr)->xmms2.progress = (float) play_time / ((struct information *)ptr)->xmms2.duration;
+    ptr->xmms2.elapsed = play_time;
+    ptr->xmms2.progress = (float) play_time / ptr->xmms2.duration;
 }
 
-void handle_playback_state_change( xmmsc_result_t *res, void *ptr ) {
+void handle_playback_state_change(xmmsc_result_t *res, void *p) {
+	struct information *ptr = p;
     uint pb_state = 0;
     if ( xmmsc_result_iserror( res ) )
         return;
@@ -225,25 +230,18 @@ void handle_playback_state_change( xmmsc_result_t *res, void *ptr ) {
     if ( !xmmsc_result_get_uint( res, &pb_state ) )
         return;
 
-    if ( ((struct information *)ptr)->xmms2.status == NULL )
-        ((struct information *)ptr)->xmms2.status = malloc( TEXT_BUFFER_SIZE );
-
     switch (pb_state) {
     case XMMS_PLAYBACK_STATUS_PLAY:
-        strncpy( ((struct information *)ptr)->xmms2.status,
-                 "Playing", TEXT_BUFFER_SIZE - 1 );
+        strncpy(ptr->xmms2.status, "Playing", TEXT_BUFFER_SIZE - 1);
         break;
     case XMMS_PLAYBACK_STATUS_PAUSE:
-        strncpy( ((struct information *)ptr)->xmms2.status,
-                 "Paused", TEXT_BUFFER_SIZE - 1 );
+        strncpy(ptr->xmms2.status, "Paused", TEXT_BUFFER_SIZE - 1);
         break;
     case XMMS_PLAYBACK_STATUS_STOP:
-        strncpy( ((struct information *)ptr)->xmms2.status,
-                 "Stopped", TEXT_BUFFER_SIZE - 1 );
+        strncpy(ptr->xmms2.status, "Stopped", TEXT_BUFFER_SIZE - 1);
         break;
     default:
-        strncpy( ((struct information *)ptr)->xmms2.status,
-                 "Unknown", TEXT_BUFFER_SIZE - 1 );
+        strncpy(ptr->xmms2.status, "Unknown", TEXT_BUFFER_SIZE - 1);
     }
 }
 
@@ -269,42 +267,7 @@ void update_xmms2() {
         current_info->xmms2_conn_state = CONN_NO;
 
         /* clear all values */
-        if ( current_info->xmms2.artist == NULL )
-            current_info->xmms2.artist = malloc( TEXT_BUFFER_SIZE );
-        strncpy( current_info->xmms2.artist, "", TEXT_BUFFER_SIZE - 1 );
-
-        if ( current_info->xmms2.album == NULL )
-            current_info->xmms2.album = malloc( TEXT_BUFFER_SIZE );
-        strncpy( current_info->xmms2.album, "", TEXT_BUFFER_SIZE - 1 );
-
-        if ( current_info->xmms2.title == NULL )
-            current_info->xmms2.title = malloc( TEXT_BUFFER_SIZE );
-        strncpy( current_info->xmms2.title, "", TEXT_BUFFER_SIZE - 1 );
-
-        if ( current_info->xmms2.genre == NULL )
-            current_info->xmms2.genre = malloc( TEXT_BUFFER_SIZE );
-        strncpy( current_info->xmms2.genre, "", TEXT_BUFFER_SIZE - 1 );
-
-        if ( current_info->xmms2.comment == NULL )
-            current_info->xmms2.comment = malloc( TEXT_BUFFER_SIZE );
-        strncpy( current_info->xmms2.comment, "", TEXT_BUFFER_SIZE - 1 );
-
-        if ( current_info->xmms2.decoder == NULL )
-            current_info->xmms2.decoder = malloc( TEXT_BUFFER_SIZE );
-        strncpy( current_info->xmms2.decoder, "", TEXT_BUFFER_SIZE - 1 );
-
-        if ( current_info->xmms2.transport == NULL )
-            current_info->xmms2.transport = malloc( TEXT_BUFFER_SIZE );
-        strncpy( current_info->xmms2.transport, "", TEXT_BUFFER_SIZE - 1 );
-
-        if ( current_info->xmms2.url == NULL )
-            current_info->xmms2.url = malloc( TEXT_BUFFER_SIZE );
-        strncpy( current_info->xmms2.url, "", TEXT_BUFFER_SIZE - 1 );
-
-        if ( current_info->xmms2.date == NULL )
-            current_info->xmms2.date = malloc( TEXT_BUFFER_SIZE );
-        strncpy( current_info->xmms2.date, "", TEXT_BUFFER_SIZE - 1 );
-
+		xmms_clear(current_info);
 
         current_info->xmms2.tracknr = 0;
         current_info->xmms2.id = 0;
@@ -342,13 +305,10 @@ void update_xmms2() {
         xmmsc_result_wait ( res );
         unsigned int pb_state;
 
-        if ( current_info->xmms2.status == NULL )
-            current_info->xmms2.status = malloc( TEXT_BUFFER_SIZE );
-
         xmmsc_result_get_uint( res, &pb_state );
         switch (pb_state) {
         case XMMS_PLAYBACK_STATUS_PLAY:
-            strncpy( current_info->xmms2.status,
+            strncpy(current_info->xmms2.status,
                      "Playing", TEXT_BUFFER_SIZE - 1 );
             break;
         case XMMS_PLAYBACK_STATUS_PAUSE:

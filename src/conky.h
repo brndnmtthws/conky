@@ -155,6 +155,7 @@ struct mpd_s {
 	int bitrate;
 	int length;
 	int elapsed;
+	int max_title_len;		/* e.g. ${mpd_title 50} */
 };
 #endif
 
@@ -462,6 +463,7 @@ extern int no_buffers;
 
 /* system dependant (in linux.c) */
 
+int check_mount(char *s);
 void update_diskio(void);
 void prepare_update(void);
 void update_uptime(void);

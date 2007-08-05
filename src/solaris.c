@@ -50,3 +50,9 @@ void update_meminfo()
 {
 	/* TODO */
 }
+
+int check_mount(char *s)
+{
+	/* stub */
+	return 0;
+}

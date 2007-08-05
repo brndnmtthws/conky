@@ -105,6 +105,12 @@ swapmode(int *used, int *total)
 	return 1;
 }
 
+int check_mount(char *s)
+{
+	/* stub */
+	return 0;
+}
+
 void
 update_uptime()
 {

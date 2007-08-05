@@ -5,7 +5,7 @@
  * $Id$
  */
 
-#include <bmp/dbus.h>
+#include <bmp/dbus.hh>
 #include <dbus/dbus-glib.h>
 
 #include <stdio.h>

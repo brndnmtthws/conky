@@ -110,6 +110,11 @@ void update_uptime()
 	}
 }
 
+int check_mount(char *s)
+{
+	/* stub */
+	return 0;
+}
 
 void update_meminfo()
 {

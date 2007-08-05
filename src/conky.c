@@ -299,7 +299,6 @@ static int draw_shades, draw_outline;
 static int border_margin, border_width;
 
 static long default_fg_color, default_bg_color, default_out_color;
-static long color0, color1, color2, color3, color4, color5, color6, color7, color8, color9;
 
 /* create own window or draw stuff to root? */
 static int set_transparent = 0;
@@ -320,6 +319,8 @@ static int maximum_width;
 #ifdef __OpenBSD__
 static int sensor_device;
 #endif
+
+static long color0, color1, color2, color3, color4, color5, color6, color7, color8, color9;
 
 /* maximum number of special things, e.g. fonts, offsets, aligns, etc. */
 static unsigned int max_specials = MAX_SPECIALS_DEFAULT;
@@ -428,42 +429,6 @@ static int total_updates;
 static int blockdepth = 0;
 static int if_jumped = 0;
 static int blockstart[MAX_IF_BLOCK_DEPTH];
-
-int check_mount(char *s)
-{
-#if defined(__linux__)
-	int ret = 0;
-	FILE *mtab = fopen("/etc/mtab", "r");
-	if (mtab) {
-		char buf1[256], buf2[128];
-		while (fgets(buf1, 256, mtab)) {
-			sscanf(buf1, "%*s %128s", buf2);
-			if (!strcmp(s, buf2)) {
-				ret = 1;
-				break;
-			}
-		}
-		fclose(mtab);
-	} else {
-		ERR("Could not open mtab");
-	}
-	return ret;
-#elif defined(__FreeBSD__)
-	struct statfs *mntbuf;
-	int i, mntsize;
-
-	mntsize = getmntinfo(&mntbuf, MNT_NOWAIT);
-	for (i = mntsize - 1; i >= 0; i--)
-		if (strcmp(mntbuf[i].f_mntonname, s) == 0)
-			return 1;
-
-	return 0;
-#elif defined(__OpenBSD__)
-	/* stub */
-	return 0;
-#endif
-}
-
 
 int check_contains(char *f, char *s)
 {
@@ -1865,7 +1830,8 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 				free(objs[i].data.tail.logfile);
 				free(objs[i].data.tail.buffer);
 				break;
-			case OBJ_text: case OBJ_font:
+			case OBJ_text:
+			case OBJ_font:
 				free(objs[i].data.s);
 				break;
 			case OBJ_image:
@@ -2366,8 +2332,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		obj->data.l = color9;
 	END OBJ(font, 0)
 		obj->data.s = scan_font(arg);
-	END
-		OBJ(downspeed, INFO_NET) 
+	END OBJ(downspeed, INFO_NET) 
 		if(arg) {
 			obj->data.net = get_net_stat(arg);
 		}
@@ -3032,8 +2997,18 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		}
 		END
 #ifdef MPD
-		OBJ(mpd_artist, INFO_MPD)
-		END OBJ(mpd_title, INFO_MPD)
+		OBJ(mpd_artist, INFO_MPD) END
+		OBJ(mpd_title, INFO_MPD)
+		{
+			if (arg)
+			{
+			    sscanf (arg, "%d", &info.mpd.max_title_len);
+			    if (info.mpd.max_title_len > 0)
+				info.mpd.max_title_len++;
+			    else
+				CRIT_ERR ("mpd_title: invalid length argument");
+			}
+		}
 		END OBJ(mpd_random, INFO_MPD)
 		END OBJ(mpd_repeat, INFO_MPD)
 		END OBJ(mpd_elapsed, INFO_MPD)
@@ -3718,11 +3693,11 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				}
 #endif /* __OpenBSD__ */
 
-#ifdef X11
 				OBJ(font) {
+#ifdef X11
 					new_font(p, obj->data.s);
-				}
 #endif /* X11 */
+				}
 				void format_diskio(unsigned int diskio_value)
 				{
 					if (!use_spacer) {
@@ -4635,7 +4610,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							trans_speed /
 							1024));
 				else
-					snprintf(p, 5, "%d     ",
+					snprintf(p, 6, "%d     ",
 						 (int) (obj->data.net->
 							trans_speed /
 							1024));
@@ -4690,7 +4665,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 
 #ifdef MPD
 			OBJ(mpd_title) {
-				snprintf(p, p_max_size, "%s", cur->mpd.title);
+			    snprintf(p, cur->mpd.max_title_len > 0 ?
+					cur->mpd.max_title_len : p_max_size, "%s", 
+				     cur->mpd.title);
 			}
 			OBJ(mpd_artist) {
 				snprintf(p, p_max_size, "%s", cur->mpd.artist);

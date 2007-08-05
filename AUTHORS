@@ -80,6 +80,9 @@ Fanat1k
 flitsch <flitsch at users dot sourceforge dot net>
   hwmon support
 
+fow <facadedewalls at yahoo dot com>
+  mpd_title max length
+
 Gwenhael LE MOINE <cycojesus at yahoo dot fr>
   Manual setting of the position
   WM_CLASS for window when drawing to own window
@@ -176,6 +179,12 @@ Philip Kovacs <pkovacs at users dot sourceforge dot net>
   Audacious, Xmms, BMP, Infopipe stuff
   Various Xlib changes, e.g. own_window hints, etc.
 
+Phil <n0-1 at users dot sourceforge dot net>
+  multiple batteries support
+
+Psychon <psychon at users dot sourceforge dot net>
+  a bunch of code cleanups
+
 roiban adi <adiroiban at users dot sourceforge dot net>
   hex colour patch
 
@@ -217,3 +226,6 @@ William DiPlacido <bimbasaari at yahoo dot com>
 
 zimba-tm <zimba-tm at users dot sourceforge dot net>
   alignment none patch
+
+zotrix <zotrix at users dot sourceforge dot net>
+  FreeBSD patch for <10 procs

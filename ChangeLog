@@ -1,5 +1,12 @@
 # $Id$
 
+2007-08-04
+	* Fixed potential issue on FreeBSD when nprocs < 10 (thanks zotrix)
+	* Added support for multiple batteries when using acpi (thanks Phil)
+	* a bunch of code cleanups (thanks Psychon)
+	* added max length paramater to mpd_title (thinks fow)
+	* a number of small bug fixes
+
 2007-07-15
 	* Fix PID display, patch #1753934.  thanks sohalt.
 	* Fix displaying 4 GB traffic after reloading network driver,

@@ -113,6 +113,19 @@ update_uptime()
 	}
 }
 
+int check_mount(char *s)
+{
+	struct statfs *mntbuf;
+	int i, mntsize;
+
+	mntsize = getmntinfo(&mntbuf, MNT_NOWAIT);
+	for (i = mntsize - 1; i >= 0; i--)
+		if (strcmp(mntbuf[i].f_mntonname, s) == 0)
+			return 1;
+
+	return 0;
+}
+
 void
 update_meminfo()
 {
@@ -753,7 +766,7 @@ proc_find_top(struct process **cpu, struct process **mem)
 	}
 
 	qsort(processes, j - 1, sizeof (struct process), comparemem);
-	for (i = 0; i < 10; i++) {
+	for (i = 0; i < 10 && i < n_processes; i++) {
 		struct process *tmp, *ttmp;
 
 		tmp = malloc(sizeof (struct process));
@@ -771,7 +784,7 @@ proc_find_top(struct process **cpu, struct process **mem)
 	}
 
 	qsort(processes, j - 1, sizeof (struct process), comparecpu);
-	for (i = 0; i < 10; i++) {
+	for (i = 0; i < 10 && i < n_processes; i++) {
 		struct process *tmp, *ttmp;
 
 		tmp = malloc(sizeof (struct process));
