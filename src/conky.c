@@ -2603,6 +2603,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		else {
 			CRIT_ERR("addr needs argument");
 		}
+#if 0
 	END OBJ(linkstatus, INFO_WIFI) 
 		if(arg) {
 			obj->data.net = get_net_stat(arg);
@@ -2610,6 +2611,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		else {
 			CRIT_ERR("linkstatus needs argument");
 		}
+#endif
 	END OBJ(tail, 0)
 		char buf[64];
 	int n1, n2;

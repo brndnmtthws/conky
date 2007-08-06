@@ -469,7 +469,9 @@ void prepare_update(void);
 void update_uptime(void);
 void update_meminfo(void);
 void update_net_stats(void);
+#if 0
 void update_wifi_stats(void);
+#endif
 void update_cpu_usage(void);
 void update_total_processes(void);
 void update_running_processes(void);

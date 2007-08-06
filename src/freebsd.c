@@ -595,6 +595,7 @@ update_top()
 	proc_find_top(info.cpu, info.memu);
 }
 
+#if 0
 void
 update_wifi_stats()
 {
@@ -651,6 +652,8 @@ cleanup:
 		close(s);
 	}
 }
+#endif
+
 void
 update_diskio()
 {
