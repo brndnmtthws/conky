@@ -345,6 +345,10 @@ CONFIGURATION SETTINGS
 	      Print text to stdout.
 
 
+       post_21_kernel
+	      Set to yes if you have Linux kernel 2.6.22 or newer
+
+
        pad_percents
 	      Pad percentages to this many decimals (0 = no padding)
 
@@ -974,7 +978,7 @@ VARIABLES
 	      Playing, stopped, et cetera.
 
 
-       mpd_title
+       mpd_title (max length)
 	      Title of current MPD song
 
 
