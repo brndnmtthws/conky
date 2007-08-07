@@ -15,6 +15,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifdef RSS
+
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <string.h>
@@ -213,3 +215,5 @@ PRSS* prss_parse_doc(xmlDocPtr doc)
 	free(result);
 	return NULL;
 }
+
+#endif

@@ -6,6 +6,8 @@
  * new rss.c written by hifi (Toni Spets)
  */
 
+#ifdef RSS
+
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -154,3 +156,5 @@ get_rss_info(char *uri, int delay)
 
 	return curdata;
 }
+
+#endif

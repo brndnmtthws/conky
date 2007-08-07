@@ -32,6 +32,10 @@
 #include <net/if.h>
 #include <math.h>
 
+#ifdef HAVE_IWLIB
+#include <iwlib.h>
+#endif
+
 #define SHORTSTAT_TEMPL "%*s %llu %llu %llu"
 #define LONGSTAT_TEMPL "%*s %llu %llu %llu "
 
@@ -154,6 +158,13 @@ inline void update_net_stats()
 	char buf[256];
 	double delta;
 
+#ifdef HAVE_IWLIB
+	// wireless info variables
+	int skfd, has_bitrate = 0, link_qual = 0, link_qual_max = 0;
+	struct wireless_info *winfo;
+	struct iwreq wrq;
+#endif
+
 	/* get delta */
 	delta = current_update_time - last_update_time;
 	if (delta <= 0.0001)
@@ -264,6 +275,57 @@ inline void update_net_stats()
 			}
 		}
 
+#ifdef HAVE_IWLIB
+		/* update wireless info */
+		winfo = malloc(sizeof(struct wireless_info));
+		memset(winfo, 0, sizeof(struct wireless_info));
+
+		skfd = iw_sockets_open();
+		if(iw_get_basic_config(skfd, s, &(winfo->b)) > -1) {
+
+			// set present winfo variables
+			if(iw_get_stats(skfd, s, &(winfo->stats), &winfo->range, winfo->has_range) >= 0)
+				winfo->has_stats = 1;
+			if(iw_get_range_info(skfd, s, &(winfo->range)) >= 0)
+				winfo->has_range = 1;
+			if(iw_get_ext(skfd, s, SIOCGIWAP, &wrq) >= 0) {
+				winfo->has_ap_addr = 1;
+				memcpy(&(winfo->ap_addr), &(wrq.u.ap_addr), sizeof (sockaddr));
+			}
+
+			// get bitrate
+			if(iw_get_ext(skfd, s, SIOCGIWRATE, &wrq) >= 0) {
+				memcpy(&(winfo->bitrate), &(wrq.u.bitrate), sizeof(iwparam));
+				iw_print_bitrate(ns->bitrate, 16, winfo->bitrate.value);
+				has_bitrate = 1;
+			}
+
+			// get link quality
+			if(winfo->has_range && winfo->has_stats && ((winfo->stats.qual.level != 0) || (winfo->stats.qual.updated & IW_QUAL_DBM))) {
+				if(!(winfo->stats.qual.updated & IW_QUAL_QUAL_INVALID)) {
+					ns->link_qual = winfo->stats.qual.qual;
+					ns->link_qual_max = winfo->range.max_qual.qual;
+				}
+			}
+
+			// get ap mac
+			if(winfo->has_ap_addr) {
+				iw_sawap_ntop(&winfo->ap_addr, ns->ap);
+			}
+
+			// get essid
+			if(winfo->b.has_essid) {
+				if(winfo->b.essid_on)
+				snprintf(ns->essid, 32, "%s", winfo->b.essid);
+				else
+				snprintf(ns->essid, 32, "off/any");
+			}
+
+			snprintf(ns->mode, 16, "%s", iw_operation_mode[winfo->b.mode]);
+		}
+		iw_sockets_close(skfd);
+		free(winfo);
+#endif
 	}
 
 	fclose(net_dev_fp);
@@ -314,7 +376,6 @@ inline void update_wifi_stats()
 		sscanf(p, "%*d   %d.  %d.  %d", &l, &m, &n);
 
 		ns->linkstatus = (int) (log(MIN(MAX(l,1),92)) / log(92) * 100);
-
 	}
 
 	/*** end wireless patch ***/

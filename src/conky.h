@@ -101,6 +101,13 @@ struct net_stat {
 	struct sockaddr addr;
 	int linkstatus;
 	double net_rec[15], net_trans[15];
+	// wireless extensions
+	char essid[32];
+	char bitrate[16];
+	char mode[16];
+	char ap[18];
+	int link_qual;
+	int link_qual_max;
 };
 
 unsigned int diskio_value;

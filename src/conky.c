@@ -1001,6 +1001,13 @@ enum text_object_type {
         OBJ_pb_battery,
 	OBJ_voltage_mv,
 	OBJ_voltage_v,
+	OBJ_wireless_essid,
+	OBJ_wireless_mode,
+	OBJ_wireless_bitrate,
+	OBJ_wireless_link_qual,
+	OBJ_wireless_link_qual_max,
+	OBJ_wireless_link_bar,
+	OBJ_wireless_ap,
 #endif /* __linux__ */
 	OBJ_if_empty,
 	OBJ_if_existing,
@@ -2165,6 +2172,46 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	    obj->data.cpu_index=atoi(&arg[0]);
 	}
 	obj->a = 1;
+
+#ifdef HAVE_IWLIB
+	END OBJ(wireless_essid, INFO_NET)
+	if(arg)
+		obj->data.net = get_net_stat(arg);
+	else
+		CRIT_ERR("wireless_essid: needs an argument");
+	END OBJ(wireless_mode, INFO_NET)
+	if(arg)
+		obj->data.net = get_net_stat(arg);
+	else
+		CRIT_ERR("wireless_mode: needs an argument");
+	END OBJ(wireless_ap, INFO_NET)
+	if(arg)
+		obj->data.net = get_net_stat(arg);
+	else
+		CRIT_ERR("wireless_ap: needs an argument");
+	END OBJ(wireless_bitrate, INFO_NET)
+	if(arg)
+		obj->data.net = get_net_stat(arg);
+	else
+		CRIT_ERR("wireless_bitrate: needs an argument");
+	END OBJ(wireless_link_qual, INFO_NET)
+	if(arg)
+		obj->data.net = get_net_stat(arg);
+	else
+		CRIT_ERR("wireless_link_qual: needs an argument");
+	END OBJ(wireless_link_qual_max, INFO_NET)
+	if(arg)
+		obj->data.net = get_net_stat(arg);
+	else
+		CRIT_ERR("wireless_link_qual_max: needs an argument");
+	END OBJ(wireless_link_bar, INFO_NET)
+	if(arg) {
+		arg = scan_bar(arg, &obj->a, &obj->b);
+		obj->data.net = get_net_stat(arg);
+	} else
+		CRIT_ERR("wireless_link_bar: needs an argument");
+#endif /* HAVE_IWLIB */
+
 #endif /* __linux__ */
 	END OBJ(freq_dyn, 0);
 	END OBJ(freq_dyn_g, 0);
@@ -3482,6 +3529,30 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						obj->a = get_voltage(p, p_max_size, "%'.3f", 1000, obj->data.cpu_index);
 					}
 				}
+#ifdef HAVE_IWLIB
+				OBJ(wireless_essid) {
+					snprintf(p, p_max_size, "%s", obj->data.net->essid);
+				}
+				OBJ(wireless_mode) {
+					snprintf(p, p_max_size, "%s", obj->data.net->mode);
+				}
+				OBJ(wireless_bitrate) {
+					snprintf(p, p_max_size, "%s", obj->data.net->bitrate);
+				}
+				OBJ(wireless_ap) {
+					snprintf(p, p_max_size, "%s", obj->data.net->ap);
+				}
+				OBJ(wireless_link_qual) {
+					snprintf(p, p_max_size, "%d", obj->data.net->link_qual);
+				}
+				OBJ(wireless_link_qual_max) {
+					snprintf(p, p_max_size, "%d", obj->data.net->link_qual_max);
+				}
+				OBJ(wireless_link_bar) {
+					new_bar(p, obj->a, obj->b, ((double)obj->data.net->link_qual/obj->data.net->link_qual_max)*255.0);
+				}
+#endif /* HAVE_IWLIB */
+
 #endif /* __linux__ */
 
 				OBJ(freq_dyn) {
