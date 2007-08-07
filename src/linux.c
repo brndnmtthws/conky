@@ -1478,7 +1478,7 @@ int get_battery_perct(const char *bat)
 					char b[256];
 					if (fgets(b, 256, fp) == NULL)
 						break;
-					if (sscanf(b, "design capacity: %d", &acpi_design_capacity[idx]) != 0) {
+					if (sscanf(b, "last full capacity: %d", &acpi_design_capacity[idx]) != 0) {
 						break;
 					}
 				}
