@@ -31,6 +31,7 @@ typedef struct PRSS_Item_ {
 
 typedef struct PRSS_ {
 	xmlDocPtr _data;
+	char* version;
 	
 	char* title;
 	char* link;
@@ -42,6 +43,8 @@ typedef struct PRSS_ {
 	char* docs;
 	char* lastbuilddate;
 	char* pubdate;
+	char* copyright;
+	char* ttl;
 
 	PRSS_Item* items;
 	int item_count;

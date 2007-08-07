@@ -52,6 +52,7 @@ void prss_free(PRSS* data)
 	if (!data)
 		return;
 	xmlFreeDoc(data->_data);
+	free(data->version);
 	free(data->items);
 	free(data);
 }
@@ -77,17 +78,17 @@ static inline void read_item(PRSS_Item* res, xmlNodePtr data)
 		if (!child)
 			continue;
 	
-		if (!strcmp((char*)data->name, "title")) {
+		if (!strcasecmp((char*)data->name, "title")) {
 			res->title = (char*)child->content;
-		} else if (!strcmp((char*)data->name, "link")) {
+		} else if (!strcasecmp((char*)data->name, "link")) {
 			res->link = (char*)child->content;
-		} else if (!strcmp((char*)data->name, "description")) {
+		} else if (!strcasecmp((char*)data->name, "description")) {
 			res->description = (char*)child->content;
-		} else if (!strcmp((char*)data->name, "category")) {
+		} else if (!strcasecmp((char*)data->name, "category")) {
 			res->category = (char*)child->content;
-		} else if (!strcmp((char*)data->name, "pubDate")) {
+		} else if (!strcasecmp((char*)data->name, "pubDate")) {
 			res->pubdate = (char*)child->content;
-		} else if (!strcmp((char*)data->name, "guid")) {
+		} else if (!strcasecmp((char*)data->name, "guid")) {
 			res->guid = (char*)child->content;
 		}
 	}
@@ -100,27 +101,31 @@ static inline void read_element(PRSS* res, xmlNodePtr n)
 	if (!child)
 		return;
 		
-	if (!strcmp((char*)n->name, "title")) {
+	if (!strcasecmp((char*)n->name, "title")) {
 		res->title = (char*)child->content;
-	} else if (!strcmp((char*)n->name, "link")) {
+	} else if (!strcasecmp((char*)n->name, "link")) {
 		res->link = (char*)child->content;
-	} else if (!strcmp((char*)n->name, "description")) {
+	} else if (!strcasecmp((char*)n->name, "description")) {
 		res->description = (char*)child->content;
-	} else if (!strcmp((char*)n->name, "language")) {
+	} else if (!strcasecmp((char*)n->name, "language")) {
 		res->language = (char*)child->content;
-	} else if (!strcmp((char*)n->name, "pubDate")) {
+	} else if (!strcasecmp((char*)n->name, "pubDate")) {
 		res->pubdate = (char*)child->content;
-	} else if (!strcmp((char*)n->name, "lastBuildDate")) {
+	} else if (!strcasecmp((char*)n->name, "lastBuildDate")) {
 		res->lastbuilddate = (char*)child->content;
-	} else if (!strcmp((char*)n->name, "generator")) {
+	} else if (!strcasecmp((char*)n->name, "generator")) {
 		res->generator = (char*)child->content;
-	} else if (!strcmp((char*)n->name, "docs")) {
+	} else if (!strcasecmp((char*)n->name, "docs")) {
 		res->docs = (char*)child->content;
-	} else if (!strcmp((char*)n->name, "managingEditor")) {
+	} else if (!strcasecmp((char*)n->name, "managingEditor")) {
 		res->managingeditor = (char*)child->content;
-	} else if (!strcmp((char*)n->name, "webMaster")) {
+	} else if (!strcasecmp((char*)n->name, "webMaster")) {
 		res->webmaster = (char*)child->content;
-	} else if (!strcmp((char*)n->name, "item")) {
+	} else if (!strcasecmp((char*)n->name, "copyright")) {
+		res->copyright = (char*)child->content;
+	} else if (!strcasecmp((char*)n->name, "ttl")) {
+		res->ttl = (char*)child->content;
+	} else if (!strcasecmp((char*)n->name, "item")) {
 		read_item(&res->items[res->item_count++], n->children);
 	}
 }
@@ -141,6 +146,7 @@ static inline int parse_rss_2_0(PRSS* res, xmlNodePtr root)
 		if (n->type==XML_ELEMENT_NODE && !strcmp((char*)n->name, "item"))
 			++items;
 	
+	res->version = strdup("2.0");
 	res->items = malloc(items*sizeof(PRSS_Item));
 	res->item_count = 0;
 
@@ -167,6 +173,7 @@ static inline int parse_rss_1_0(PRSS* res, xmlNodePtr root)
 		}
 	}
 	
+	res->version = strdup("1.0");
 	res->items = malloc(items*sizeof(PRSS_Item));
 	res->item_count = 0;
 

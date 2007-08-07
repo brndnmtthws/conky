@@ -96,6 +96,9 @@ static void print_version()
 #ifdef RSS
 	"  * rss\n"
 #endif /* RSS */
+#ifdef HAVE_IWLIB
+	"  * wireless\n"
+#endif
 	"\n");	
 
 	exit(0);
@@ -1004,10 +1007,11 @@ enum text_object_type {
 	OBJ_wireless_essid,
 	OBJ_wireless_mode,
 	OBJ_wireless_bitrate,
+	OBJ_wireless_ap,
 	OBJ_wireless_link_qual,
 	OBJ_wireless_link_qual_max,
+	OBJ_wireless_link_qual_perc,
 	OBJ_wireless_link_bar,
-	OBJ_wireless_ap,
 #endif /* __linux__ */
 	OBJ_if_empty,
 	OBJ_if_existing,
@@ -2184,16 +2188,16 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		obj->data.net = get_net_stat(arg);
 	else
 		CRIT_ERR("wireless_mode: needs an argument");
-	END OBJ(wireless_ap, INFO_NET)
-	if(arg)
-		obj->data.net = get_net_stat(arg);
-	else
-		CRIT_ERR("wireless_ap: needs an argument");
 	END OBJ(wireless_bitrate, INFO_NET)
 	if(arg)
 		obj->data.net = get_net_stat(arg);
 	else
 		CRIT_ERR("wireless_bitrate: needs an argument");
+	END OBJ(wireless_ap, INFO_NET)
+	if(arg)
+		obj->data.net = get_net_stat(arg);
+	else
+		CRIT_ERR("wireless_ap: needs an argument");
 	END OBJ(wireless_link_qual, INFO_NET)
 	if(arg)
 		obj->data.net = get_net_stat(arg);
@@ -2204,6 +2208,11 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		obj->data.net = get_net_stat(arg);
 	else
 		CRIT_ERR("wireless_link_qual_max: needs an argument");
+	END OBJ(wireless_link_qual_perc, INFO_NET)
+	if(arg)
+		obj->data.net = get_net_stat(arg);
+	else
+		CRIT_ERR("wireless_link_qual_perc: needs an argument");
 	END OBJ(wireless_link_bar, INFO_NET)
 	if(arg) {
 		arg = scan_bar(arg, &obj->a, &obj->b);
@@ -3547,6 +3556,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				}
 				OBJ(wireless_link_qual_max) {
 					snprintf(p, p_max_size, "%d", obj->data.net->link_qual_max);
+				}
+				OBJ(wireless_link_qual_perc) {
+					snprintf(p, p_max_size, "%.0f%%", (double)obj->data.net->link_qual / obj->data.net->link_qual_max * 100);
 				}
 				OBJ(wireless_link_bar) {
 					new_bar(p, obj->a, obj->b, ((double)obj->data.net->link_qual/obj->data.net->link_qual_max)*255.0);

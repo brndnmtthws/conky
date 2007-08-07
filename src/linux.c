@@ -160,7 +160,7 @@ inline void update_net_stats()
 
 #ifdef HAVE_IWLIB
 	// wireless info variables
-	int skfd, has_bitrate = 0, link_qual = 0, link_qual_max = 0;
+	int skfd, has_bitrate = 0;
 	struct wireless_info *winfo;
 	struct iwreq wrq;
 #endif
