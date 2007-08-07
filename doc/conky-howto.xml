@@ -98,11 +98,11 @@ By default, Conky will look for a configuration file in the users home directory
 </p>
 
 <pre caption="Copying the sample configuration to your home directory">
-$ <i>zcat /usr/share/conky-1.4.0/conkyrc.sample.gz >> ~/.conkyrc</i>
+$ <i>zcat /usr/share/conky-1.6.0/conkyrc.sample.gz >> ~/.conkyrc</i>
 </pre>
 
 <note>
-Make sure to replace "1.4.0" with the specific version of Conky you have installed.
+Make sure to replace "1.6.0" with the specific version of Conky you have installed.
 </note>
 
 <p>
