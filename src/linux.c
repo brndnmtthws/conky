@@ -216,13 +216,13 @@ inline void update_net_stats()
 		/* if recv or trans is less than last time, an overflow happened */
 
 		if (r < ns->last_read_recv)
-      last_recv = 0;
+			last_recv = 0;
 		else
 			ns->recv += (r - ns->last_read_recv);
 		ns->last_read_recv = r;
 
 		if (t < ns->last_read_trans)
-      last_trans = 0;
+			last_trans = 0;
 		else
 			ns->trans += (t - ns->last_read_trans);
 		ns->last_read_trans = t;
@@ -333,6 +333,8 @@ inline void update_net_stats()
   info.mask |= (1 << INFO_NET);
 }
 
+#if 0
+/* deprecated */
 inline void update_wifi_stats()
 {
 	/** wireless stats patch by Bobby Beckmann **/
@@ -380,6 +382,7 @@ inline void update_wifi_stats()
 
 	/*** end wireless patch ***/
 }
+#endif
 
 int result;
 
