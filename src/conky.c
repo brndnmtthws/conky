@@ -2198,6 +2198,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	} else {
 		strcpy(bat, "BAT0");
 	}
+	obj->data.s = strdup(bat);
 #if defined(__linux__)
 	END OBJ(i8k_version, INFO_I8K)
 		END OBJ(i8k_bios, INFO_I8K)

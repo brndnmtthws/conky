@@ -1460,7 +1460,7 @@ int get_battery_perct(const char *bat)
 
 	/* Only check for ACPI */
 
-	if (acpi_bat_fp == NULL && apm_bat_fp == NULL)
+	if (acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL)
 		acpi_bat_fp[idx] = open_file(acpi_path, &rep);
 
 	int remaining_capacity = -1;
