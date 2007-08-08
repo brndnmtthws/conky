@@ -15,15 +15,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "config.h"
-#ifdef RSS
-
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "prss.h"
+#include "config.h"
 
 #ifndef PARSE_OPTIONS
 #define PARSE_OPTIONS 0
@@ -223,5 +221,3 @@ PRSS* prss_parse_doc(xmlDocPtr doc)
 	free(result);
 	return NULL;
 }
-
-#endif

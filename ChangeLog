@@ -1,5 +1,9 @@
 # $Id$
 
+2007-08-08
+	* RSS support
+	* Wireless support for Linux
+
 2007-08-05
 	* Conky 1.4.6 released
 	* Updated to libmpdclient 0.13.0

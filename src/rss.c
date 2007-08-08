@@ -6,10 +6,6 @@
  * new rss.c written by hifi (Toni Spets)
  */
 
-#include "conky.h"
-
-#ifdef RSS
-
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -18,6 +14,7 @@
 #include <curl/curl.h>
 #include <curl/types.h>
 #include <curl/easy.h>
+#include "conky.h"
 
 #define MAX_FEEDS 16
 
@@ -156,5 +153,3 @@ get_rss_info(char *uri, int delay)
 
 	return curdata;
 }
-
-#endif
