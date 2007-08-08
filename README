@@ -651,6 +651,44 @@ VARIABLES
 	      scale is non-zero, it becomes the scale for the graph.
 
 
+       wireless_essid net
+	      Wireless access point ESSID (Linux only)
+
+
+       wireless_mode net
+	      Wireless mode (Managed/Ad-Hoc/Master) (Linux only)
+
+
+       wireless_bitrate net
+	      Wireless bitrate (ie 11 Mb/s) (Linux only)
+
+
+       wireless_ap net
+	      Wireless access point MAC address (Linux only)
+
+
+       wireless_link_qual net
+	      Wireless link quality (Linux only)
+
+
+       wireless_link_qual_max net
+	      Wireless link quality maximum value (Linux only)
+
+
+       wireless_link_qual_perc net
+	      Wireless link quality in percents (Linux only)
+
+
+       wireless_link_bar (height), (width) net
+	      Wireless link quality bar (Linux only)
+
+
+       rss url delay_in_minutes action item_num
+	      Download and parse RSS feeds. Action may be one of  the  follow-
+	      ing:  feed_title, item_title (with num par), item_desc (with num
+	      par) and item_titles.
+
+
        else   Text to show if any of the above are not true
 
 
@@ -1358,4 +1396,4 @@ AUTHORS
 
 
 
-				  2006-05-13			      conky(1)
+				  2007-08-08			      conky(1)
