@@ -946,9 +946,11 @@ enum text_object_type {
 	OBJ_acpitemp,
 	OBJ_acpitempf,
 	OBJ_battery,
+#ifndef __OpenBSD__
 	OBJ_battery_time,
 	OBJ_battery_percent,
 	OBJ_battery_bar,
+#endif /* !__OpenBSD__ */
 	OBJ_buffers,
 	OBJ_cached,
 	OBJ_color,
@@ -2053,12 +2055,14 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 				break;
 #endif
 			case OBJ_pre_exec:
+#ifndef __OpenBSD__
 			case OBJ_battery:
 				free(objs[i].data.s);
 				break;
 			case OBJ_battery_time:
 				free(objs[i].data.s);
 				break;
+#endif /* !__OpenBSD__ */
 			case OBJ_execi:
 				free(objs[i].data.execi.cmd);
 				free(objs[i].data.execi.buffer);
@@ -2244,6 +2248,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	END OBJ(freq_dyn, 0);
 	END OBJ(freq_dyn_g, 0);
 	END OBJ(acpifan, 0);
+#ifndef __OpenBSD__
 	END OBJ(battery, 0);
 	char bat[64];
 	if (arg)
@@ -2274,6 +2279,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		strcpy(bat, "BAT0");
 	}
 	obj->data.s = strdup(bat);
+#endif /* !__OpenBSD__ */
 #if defined(__linux__)
 	END OBJ(i8k_version, INFO_I8K)
 		END OBJ(i8k_bios, INFO_I8K)
@@ -3614,6 +3620,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				OBJ(acpiacadapter) {
 					get_acpi_ac_adapter(p, p_max_size); 
 				}
+#ifndef __OpenBSD__
 				OBJ(battery) {
 					get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_STATUS);
 				}
@@ -3627,6 +3634,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				OBJ(battery_bar) {
 					new_bar(p, obj->a, obj->b, get_battery_perct_bar(obj->data.s));
 				}
+#endif /* __OpenBSD__ */
 				OBJ(buffers) {
 					human_readable(cur->buffers * 1024, p, 255);
 				}

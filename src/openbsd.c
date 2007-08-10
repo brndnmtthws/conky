@@ -823,18 +823,6 @@ char
 #endif
 
 /* empty stubs so conky links */
-int
-get_battery_perct(const char *bat)
-{
-	return (0);
-}
-
-int
-get_battery_perct_bar(const char *bar)
-{
-	return (0);
-}
-
 void
 prepare_update()
 {
@@ -856,12 +844,6 @@ double
 get_acpi_temperature(int fd)
 {
 	return (0);
-}
-
-void
-get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
-{
-	return;
 }
 
 int
