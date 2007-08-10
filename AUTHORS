@@ -7,6 +7,9 @@ adi <razorbladeworks at yahoo dot com>
   Outline stuff
   ACPI fan & adapter
 
+Adi Zaimi
+  original top code
+
 Alex <godexsoft at bk dot ru>
   Iconv patch
 
@@ -42,6 +45,12 @@ cromka <cromka at users dot sourceforge dot net>
 
 dan-h <dan-h at users dot sourceforge dot net>
   adt746x fix
+
+Dan Piponi <dan at tanelorn dot demon dot co dot uk>
+  original top code
+
+Dave Clark <clarkd at skynet dot ca>
+  original top code
 
 David McCabe
   utime
@@ -224,6 +233,9 @@ Vivenzio Pagliari <vivenzio@web.de>
 
 Walt Nelson <wnelsonjr at comcast dot net>
   $freq fix
+
+Warren Dukes <warren dot dukes at gmail dot com>
+  libmpdclient
 
 William DiPlacido <bimbasaari at yahoo dot com>
   Frequency from /proc/cpuinfo
