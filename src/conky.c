@@ -2255,8 +2255,8 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 #endif /* __linux__ */
 	END OBJ(freq_dyn, 0);
 	END OBJ(freq_dyn_g, 0);
-	END OBJ(acpifan, 0);
 #ifndef __OpenBSD__
+	END OBJ(acpifan, 0);
 	END OBJ(battery, 0);
 	char bat[64];
 	if (arg)
