@@ -210,8 +210,10 @@ Thomas Cort
 Toni <bleach at users dot sourceforge dot net>
   exec*/tail/head output evalution
 
-Toni Spets hifi <at users dot sourceforge dot net>
+Toni Spets hifi <spets at users dot sourceforge dot net>
   OpenBSD support
+  Linux wifi code
+  RSS code (created with Mikko Sysikaski)
 
 tyir <tyir at users dot sourceforge dot net>
   MPD features patch 1319461

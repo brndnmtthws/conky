@@ -561,96 +561,6 @@
 
 <varlistentry>
 	<term>
-		<command><option>wireless_essid</option></command>
-		<option>net</option>
-	</term>
-	<listitem>
-		Wireless access point ESSID (Linux only)
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>wireless_mode</option></command>
-		<option>net</option>
-	</term>
-	<listitem>
-		Wireless mode (Managed/Ad-Hoc/Master) (Linux only)
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>wireless_bitrate</option></command>
-		<option>net</option>
-	</term>
-	<listitem>
-		Wireless bitrate (ie 11 Mb/s) (Linux only)
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>wireless_ap</option></command>
-		<option>net</option>
-	</term>
-	<listitem>
-		Wireless access point MAC address (Linux only)
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>wireless_link_qual</option></command>
-		<option>net</option>
-	</term>
-	<listitem>
-		Wireless link quality (Linux only)
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>wireless_link_qual_max</option></command>
-		<option>net</option>
-	</term>
-	<listitem>
-		Wireless link quality maximum value (Linux only)
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>wireless_link_qual_perc</option></command>
-		<option>net</option>
-	</term>
-	<listitem>
-		Wireless link quality in percents (Linux only)
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>wireless_link_bar</option></command>
-		<option>(height), (width) net</option>
-	</term>
-	<listitem>
-		Wireless link quality bar (Linux only)
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
-		<command><option>rss</option></command>
-		<option>url delay_in_minutes action item_num</option>
-	</term>
-	<listitem>
-		Download and parse RSS feeds. Action may be one of the following: feed_title, item_title (with num par), item_desc (with num par) and item_titles.
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
 		<command><option>else</option></command>
 	</term>
 	<listitem>
@@ -1151,16 +1061,6 @@
 
 <varlistentry>
 	<term>
-		<command><option>linkstatus</option></command>
-	<option>interface</option>
-	</term>
-	<listitem>
-		Get the link status for wireless connections
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
 		<command><option>loadavg</option></command>
 	</term>
 	<listitem>
@@ -1623,6 +1523,16 @@
 
 <varlistentry>
 	<term>
+		<command><option>rss</option></command>
+		<option>url delay_in_minutes action item_num</option>
+	</term>
+	<listitem>
+		Download and parse RSS feeds. Action may be one of the following: feed_title, item_title (with num par), item_desc (with num par) and item_titles.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>tab</option></command>
 		<option>(width, (start))</option>
 	</term>
@@ -1801,6 +1711,86 @@
 		counted from 1. If omitted, the parameter
 		defaults to 1.
 		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>wireless_essid</option></command>
+		<option>net</option>
+	</term>
+	<listitem>
+		Wireless access point ESSID (Linux only)
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>wireless_mode</option></command>
+		<option>net</option>
+	</term>
+	<listitem>
+		Wireless mode (Managed/Ad-Hoc/Master) (Linux only)
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>wireless_bitrate</option></command>
+		<option>net</option>
+	</term>
+	<listitem>
+		Wireless bitrate (ie 11 Mb/s) (Linux only)
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>wireless_ap</option></command>
+		<option>net</option>
+	</term>
+	<listitem>
+		Wireless access point MAC address (Linux only)
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>wireless_link_qual</option></command>
+		<option>net</option>
+	</term>
+	<listitem>
+		Wireless link quality (Linux only)
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>wireless_link_qual_max</option></command>
+		<option>net</option>
+	</term>
+	<listitem>
+		Wireless link quality maximum value (Linux only)
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>wireless_link_qual_perc</option></command>
+		<option>net</option>
+	</term>
+	<listitem>
+		Wireless link quality in percents (Linux only)
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>wireless_link_bar</option></command>
+		<option>(height), (width) net</option>
+	</term>
+	<listitem>
+		Wireless link quality bar (Linux only)
+	<para></para></listitem>
 </varlistentry>
 
 <varlistentry>

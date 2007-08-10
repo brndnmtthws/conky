@@ -3584,10 +3584,12 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						snprintf(p, 4, "%d    ", obj->data.net->link_qual_max);
 				}
 				OBJ(wireless_link_qual_perc) {
-					if (!use_spacer)
-						snprintf(p, p_max_size, "%.0f%%", (double)obj->data.net->link_qual / obj->data.net->link_qual_max * 100);
-					else
-						snprintf(p, 5, "%.0f%%     ", (double)obj->data.net->link_qual / obj->data.net->link_qual_max * 100);
+					if(obj->data.net->link_qual_max > 0) {
+						if (!use_spacer)
+							snprintf(p, p_max_size, "%.0f%%", (double)obj->data.net->link_qual / obj->data.net->link_qual_max * 100);
+						else
+							snprintf(p, 5, "%.0f%%     ", (double)obj->data.net->link_qual / obj->data.net->link_qual_max * 100);
+					} else	snprintf(p, p_max_size, "unk");
 				}
 				OBJ(wireless_link_bar) {
 					new_bar(p, obj->a, obj->b, ((double)obj->data.net->link_qual/obj->data.net->link_qual_max)*255.0);
