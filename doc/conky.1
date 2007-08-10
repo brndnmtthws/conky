@@ -632,42 +632,6 @@ Download speed in kilobytes with one decimal
 Download speed graph, colours defined in hex, minus the #. If scale is non-zero, it becomes the scale for the graph.
 
 .TP 
-\fB\*(T<\fBwireless_essid\fR\*(T>\fR \*(T<\fBnet\fR\*(T> 
-Wireless access point ESSID (Linux only)
-
-.TP 
-\fB\*(T<\fBwireless_mode\fR\*(T>\fR \*(T<\fBnet\fR\*(T> 
-Wireless mode (Managed/Ad-Hoc/Master) (Linux only)
-
-.TP 
-\fB\*(T<\fBwireless_bitrate\fR\*(T>\fR \*(T<\fBnet\fR\*(T> 
-Wireless bitrate (ie 11 Mb/s) (Linux only)
-
-.TP 
-\fB\*(T<\fBwireless_ap\fR\*(T>\fR \*(T<\fBnet\fR\*(T> 
-Wireless access point MAC address (Linux only)
-
-.TP 
-\fB\*(T<\fBwireless_link_qual\fR\*(T>\fR \*(T<\fBnet\fR\*(T> 
-Wireless link quality (Linux only)
-
-.TP 
-\fB\*(T<\fBwireless_link_qual_max\fR\*(T>\fR \*(T<\fBnet\fR\*(T> 
-Wireless link quality maximum value (Linux only)
-
-.TP 
-\fB\*(T<\fBwireless_link_qual_perc\fR\*(T>\fR \*(T<\fBnet\fR\*(T> 
-Wireless link quality in percents (Linux only)
-
-.TP 
-\fB\*(T<\fBwireless_link_bar\fR\*(T>\fR \*(T<\fB(height), (width) net\fR\*(T> 
-Wireless link quality bar (Linux only)
-
-.TP 
-\fB\*(T<\fBrss\fR\*(T>\fR \*(T<\fBurl delay_in_minutes action item_num\fR\*(T> 
-Download and parse RSS feeds. Action may be one of the following: feed_title, item_title (with num par), item_desc (with num par) and item_titles.
-
-.TP 
 \fB\*(T<\fBelse\fR\*(T>\fR 
 Text to show if any of the above are not true
 
@@ -875,10 +839,6 @@ Displays the number of unseen messages in your global IMAP inbox by default. You
 .TP 
 \fB\*(T<\fBkernel\fR\*(T>\fR 
 Kernel version
-
-.TP 
-\fB\*(T<\fBlinkstatus\fR\*(T>\fR \*(T<\fBinterface\fR\*(T> 
-Get the link status for wireless connections
 
 .TP 
 \fB\*(T<\fBloadavg\fR\*(T>\fR 
@@ -1114,6 +1074,10 @@ Runs a command at an interval inside a thread and displays the output. Same as $
 Move text over by N pixels. See also $voffset.
 
 .TP 
+\fB\*(T<\fBrss\fR\*(T>\fR \*(T<\fBurl delay_in_minutes action item_num\fR\*(T> 
+Download and parse RSS feeds. Action may be one of the following: feed_title, item_title (with num par), item_desc (with num par) and item_titles.
+
+.TP 
 \fB\*(T<\fBtab\fR\*(T>\fR \*(T<\fB(width, (start))\fR\*(T> 
 Puts a tab of the specified width, starting from column 'start'.
 
@@ -1188,6 +1152,38 @@ defaults to 1.
 Returns CPU #n's voltage in V. CPUs are
 counted from 1. If omitted, the parameter
 defaults to 1.
+
+.TP 
+\fB\*(T<\fBwireless_essid\fR\*(T>\fR \*(T<\fBnet\fR\*(T> 
+Wireless access point ESSID (Linux only)
+
+.TP 
+\fB\*(T<\fBwireless_mode\fR\*(T>\fR \*(T<\fBnet\fR\*(T> 
+Wireless mode (Managed/Ad-Hoc/Master) (Linux only)
+
+.TP 
+\fB\*(T<\fBwireless_bitrate\fR\*(T>\fR \*(T<\fBnet\fR\*(T> 
+Wireless bitrate (ie 11 Mb/s) (Linux only)
+
+.TP 
+\fB\*(T<\fBwireless_ap\fR\*(T>\fR \*(T<\fBnet\fR\*(T> 
+Wireless access point MAC address (Linux only)
+
+.TP 
+\fB\*(T<\fBwireless_link_qual\fR\*(T>\fR \*(T<\fBnet\fR\*(T> 
+Wireless link quality (Linux only)
+
+.TP 
+\fB\*(T<\fBwireless_link_qual_max\fR\*(T>\fR \*(T<\fBnet\fR\*(T> 
+Wireless link quality maximum value (Linux only)
+
+.TP 
+\fB\*(T<\fBwireless_link_qual_perc\fR\*(T>\fR \*(T<\fBnet\fR\*(T> 
+Wireless link quality in percents (Linux only)
+
+.TP 
+\fB\*(T<\fBwireless_link_bar\fR\*(T>\fR \*(T<\fB(height), (width) net\fR\*(T> 
+Wireless link quality bar (Linux only)
 
 .TP 
 \fB\*(T<\fBxmms2_artist\fR\*(T>\fR 
