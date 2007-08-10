@@ -1,19 +1,29 @@
 /*
- * $Id$
- * 
- * Licence: see LICENSE
- * author: mac@calmar.ws Marco Candrian
- * 
- * Modified for use in Conky by Brenden Matthews
+ * Conky, a system monitor, based on torsmo
  *
- * Description:
- * scanning from top to bottom on a mbox
- * The output as follows:
- * F: FROM_LENGHT S: SUBJECT_LENGHT
+ * Any original torsmo code is licensed under the BSD license
  *
- * Usage: ${mboxscan [-n <number of messages to print>] 
- *                   [-fw <from width>] [-sw <subject width>] 
- *                   [-t <minumum delay in sec> "mbox" }
+ * All code written since the fork of torsmo is licensed under the GPL
+ *
+ * Please see COPYING for details
+ *
+ * Copyright (c) 2006 Marco Candrian <mac@calmar.ws>
+ * Copyright (c) 2005-2007 Brenden Matthews, Philip Kovacs, et. al. (see AUTHORS)
+ * All rights reserved.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ *
+ *  $Id$
  */
 
 #include "conky.h"

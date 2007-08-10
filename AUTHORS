@@ -90,9 +90,6 @@ Gwenhael LE MOINE <cycojesus at yahoo dot fr>
 Hannu Saransaari <hipo at users dot sourceforge dot net>
   Main code
 
-hifi <anon>
-  OpenBSD support
-
 Jason Mitchell <jason.mitchell03 at saintleo dot edu>
   developer
   UTF8 fix
@@ -198,6 +195,9 @@ Roman Bogorodskiy <novel at clublife dot ru>
 Ryan Twitchell <tryan2 at rochester dot rr dot com>
   head/tail rewrite patch
 
+Mikko Sysikaski <sisu at users dot sourceforge dot net>
+  prss.c and prss.h
+
 Stepan Zastupov <redchrom at gmail dot com>
   WiFi signal level detection support on FreeBSD
 
@@ -209,6 +209,9 @@ Thomas Cort
 
 Toni <bleach at users dot sourceforge dot net>
   exec*/tail/head output evalution
+
+Toni Spets hifi <at users dot sourceforge dot net>
+  OpenBSD support
 
 tyir <tyir at users dot sourceforge dot net>
   MPD features patch 1319461
