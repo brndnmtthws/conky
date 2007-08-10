@@ -938,15 +938,15 @@ static void human_readable(long long a, char *buf, int size)
 /* text handling */
 
 enum text_object_type {
+	OBJ_addr,
+#ifndef __OpenBSD__
 	OBJ_acpiacadapter,
 	OBJ_adt746xcpu,
 	OBJ_adt746xfan,
 	OBJ_acpifan,
-	OBJ_addr,
 	OBJ_acpitemp,
 	OBJ_acpitempf,
 	OBJ_battery,
-#ifndef __OpenBSD__
 	OBJ_battery_time,
 	OBJ_battery_percent,
 	OBJ_battery_bar,
@@ -1806,6 +1806,7 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 	unsigned int i;
 	for (i = 0; i < count; i++) {
 		switch (objs[i].type) {
+#ifndef __OpenBSD__
 			case OBJ_acpitemp:
 				close(objs[i].data.i);
 				break;
@@ -1815,6 +1816,7 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 			case OBJ_i2c:
 				close(objs[i].data.i2c.fd);
 				break;
+#endif /* !__OpenBSD__ */
 			case OBJ_time:
 				free(objs[i].data.s);
 				break;
@@ -2131,9 +2133,11 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		obj->data.l = get_x11_color(s);
 	} else
 #endif /* X11 */
+#ifndef __OpenBSD__
 		OBJ(acpitemp, 0) obj->data.i = open_acpi_temperature(arg);
 	END OBJ(acpitempf, 0) obj->data.i = open_acpi_temperature(arg);
 	END OBJ(acpiacadapter, 0)
+#endif /* !__OpenBSD__ */
 	END OBJ(freq, INFO_FREQ)
 	    get_cpu_count();
 	if (!arg
@@ -2587,6 +2591,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	obj->data.pair.a = a;
 	obj->data.pair.b = b;
 
+#ifndef __OpenBSD__
 	END OBJ(i2c, INFO_I2C) char buf1[64], buf2[64];
 	int n;
 
@@ -2611,6 +2616,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 					obj->data.i2c.devtype);
 		strncpy(obj->data.i2c.type, buf2, 63);
 	}
+#endif /* !__OpenBSD__ */
 
 	END OBJ(top, INFO_TOP)
 		char buf[64];
@@ -2937,7 +2943,9 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		END OBJ(swapperc, INFO_MEM)
 		END OBJ(swapbar, INFO_MEM)
 		(void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
-	END OBJ(sysname, 0) END OBJ(temp1, INFO_I2C) obj->type = OBJ_i2c;
+	END OBJ(sysname, 0)
+#ifndef __OpenBSD__
+	END OBJ(temp1, INFO_I2C) obj->type = OBJ_i2c;
 	obj->data.i2c.fd =
 		open_i2c_sensor(0, "temp", 1, &obj->data.i2c.arg,
 				obj->data.i2c.devtype);
@@ -2945,6 +2953,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	obj->data.i2c.fd =
 		open_i2c_sensor(0, "temp", 2, &obj->data.i2c.arg,
 				obj->data.i2c.devtype);
+#endif
 	END OBJ(time, 0) obj->data.s = strdup(arg ? arg : "%F %T");
 	END OBJ(utime, 0) obj->data.s = strdup(arg ? arg : "%F %T");
 	END OBJ(tztime, 0)
@@ -3033,7 +3042,9 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		}
 	}
 	END OBJ(uptime_short, INFO_UPTIME) END OBJ(uptime, INFO_UPTIME) END
+#ifndef __OpenBSD__
 		OBJ(adt746xcpu, 0) END OBJ(adt746xfan, 0) END
+#endif /* !__OpenBSD__ */
 #if (defined(__FreeBSD__) || defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
 		OBJ(apm_adapter, 0) END
 		OBJ(apm_battery_life, 0) END
@@ -3507,6 +3518,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					ERR("not implemented obj type %d",
 							obj->type);
 				}
+#ifndef __OpenBSD__
 				OBJ(acpitemp) {
 					/* does anyone have decimals in acpi temperature? */
 					if (!use_spacer)
@@ -3533,6 +3545,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 										       data.
 										       i)+ 40) * 9.0 / 5 - 40));
 				}
+#endif /* !__OpenBSD__ */
 				OBJ(freq) {
 					if (obj->a) {
 						obj->a = get_freq(p, p_max_size, "%.0f", 1, obj->data.cpu_index); 
@@ -3608,6 +3621,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						get_freq_dynamic(p, p_max_size, "%'.2f", 1000); 
 					}
 				}
+#ifndef __OpenBSD__
 				OBJ(adt746xcpu) {
 					get_adt746x_cpu(p, p_max_size); 
 				}
@@ -3620,7 +3634,6 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				OBJ(acpiacadapter) {
 					get_acpi_ac_adapter(p, p_max_size); 
 				}
-#ifndef __OpenBSD__
 				OBJ(battery) {
 					get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_STATUS);
 				}
@@ -4450,6 +4463,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			OBJ(voffset) {
 				new_voffset(p, obj->data.i);
 			}
+#ifndef __OpenBSD__
 			OBJ(i2c) {
 				double r;
 
@@ -4463,6 +4477,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				else
 					snprintf(p, p_max_size, "%.1f", r);
 			}
+#endif /* !__OpenBSD__ */
 			OBJ(alignr) {
 				new_alignr(p, obj->data.i);
 			}
