@@ -531,6 +531,8 @@ update_top()
 	proc_find_top(info.cpu, info.memu);
 }
 
+#if 0
+/* deprecated, will rewrite this soon in update_net_stats() -hifi */
 void
 update_wifi_stats()
 {
@@ -581,6 +583,8 @@ cleanup:
 		close(s);
 	}
 }
+#endif
+
 void
 update_diskio()
 {

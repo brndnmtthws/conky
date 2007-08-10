@@ -119,7 +119,6 @@ struct net_stat {
 	long long recv, trans;
 	double recv_speed, trans_speed;
 	struct sockaddr addr;
-	int linkstatus;
 	double net_rec[15], net_trans[15];
 	// wireless extensions
 	char essid[32];
@@ -496,9 +495,6 @@ void prepare_update(void);
 void update_uptime(void);
 void update_meminfo(void);
 void update_net_stats(void);
-#if 0
-void update_wifi_stats(void);
-#endif
 void update_cpu_usage(void);
 void update_total_processes(void);
 void update_running_processes(void);

@@ -221,11 +221,6 @@ void update_stuff()
 	if (NEED(INFO_DISKIO))
 		update_diskio();
 
-#if 0
-	if (NEED(INFO_WIFI))
-		update_wifi_stats();
-#endif
-
 	if (NEED(INFO_MAIL))
 		update_mail_count();
 

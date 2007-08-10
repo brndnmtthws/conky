@@ -943,7 +943,6 @@ enum text_object_type {
 	OBJ_adt746xfan,
 	OBJ_acpifan,
 	OBJ_addr,
-	OBJ_linkstatus,
 	OBJ_acpitemp,
 	OBJ_acpitempf,
 	OBJ_battery,
@@ -2680,15 +2679,6 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		else {
 			CRIT_ERR("addr needs argument");
 		}
-#if 0
-	END OBJ(linkstatus, INFO_WIFI) 
-		if(arg) {
-			obj->data.net = get_net_stat(arg);
-		}
-		else {
-			CRIT_ERR("linkstatus needs argument");
-		}
-#endif
 	END OBJ(tail, 0)
 		char buf[64];
 	int n1, n2;
@@ -3924,16 +3914,6 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 							obj->data.net->addr.
 							sa_data[5] & 255);
 
-				}
-				OBJ(linkstatus) {
-					if (!use_spacer) {
-						snprintf(p, p_max_size, "%d",
-							obj->data.net->linkstatus);
-					} else
-					{
-						snprintf(p, 5, "%4d ",
-							obj->data.net->linkstatus);
-					}
 				}
 #if defined(IMLIB2) && defined(X11)
 				OBJ(image) {

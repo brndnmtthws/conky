@@ -166,8 +166,6 @@ void update_meminfo()
   fclose (meminfo_fp);
 }
 
-static FILE *net_wireless_fp;
-
 inline void update_net_stats()
 {
   FILE *net_dev_fp;
@@ -354,57 +352,6 @@ inline void update_net_stats()
 
   info.mask |= (1 << INFO_NET);
 }
-
-#if 0
-/* deprecated */
-inline void update_wifi_stats()
-{
-	/** wireless stats patch by Bobby Beckmann **/
-	static int rep = 0;
-	int i;
-	char buf[256];
-	/*open file and ignore first two lines       sorry, this code sucks ass right now, i'll clean it up later */
-	if (net_wireless_fp == NULL)
-		net_wireless_fp = open_file("/proc/net/wireless", &rep);
-	else
-		fseek(net_wireless_fp, 0, SEEK_SET);
-	if (net_wireless_fp == NULL)
-		return;
-
-	fgets(buf, 255, net_wireless_fp);	/* garbage */
-	fgets(buf, 255, net_wireless_fp);	/* garbage (field names) */
-
-	/* read each interface */
-	for (i = 0; i < 16; i++) {
-		struct net_stat *ns;
-		char *s, *p;
-		int l, m, n;
-
-		if (fgets(buf, 255, net_wireless_fp) == NULL)
-			break;
-		p = buf;
-		while (isspace((int) *p))
-			p++;
-
-		s = p;
-
-		while (*p && *p != ':')
-			p++;
-		if (*p == '\0')
-			continue;
-		*p = '\0';
-		p++;
-
-		ns = get_net_stat(s);
-
-		sscanf(p, "%*d   %d.  %d.  %d", &l, &m, &n);
-
-		ns->linkstatus = (int) (log(MIN(MAX(l,1),92)) / log(92) * 100);
-	}
-
-	/*** end wireless patch ***/
-}
-#endif
 
 int result;
 
