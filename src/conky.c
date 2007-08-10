@@ -2138,7 +2138,11 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	END OBJ(acpitempf, 0) obj->data.i = open_acpi_temperature(arg);
 	END OBJ(acpiacadapter, 0)
 #endif /* !__OpenBSD__ */
+#ifdef __OpenBSD__
+	OBJ(freq, INFO_FREQ)
+#else
 	END OBJ(freq, INFO_FREQ)
+#endif
 	    get_cpu_count();
 	if (!arg
 	    || !isdigit(arg[0])
