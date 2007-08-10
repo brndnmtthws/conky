@@ -213,7 +213,6 @@ update_net_stats()
 			struct ifaddrs *iftmp;
 
 			ns->up = 1;
-			ns->linkstatus = 1;
 			last_recv = ns->recv;
 			last_trans = ns->trans;
 
@@ -254,7 +253,6 @@ update_net_stats()
 			ns->trans_speed = (ns->trans - last_trans) / delta;
 		} else {
 			ns->up = 0;
-			ns->linkstatus = 0;
 		}
 	}
 
