@@ -3,7 +3,7 @@
 /* 
  * timed_thread.h: Abstraction layer for timed threads
  *
- * Copyright (C) 2006  Philip Kovacs pkovacs@users.sourceforge.net
+ * Copyright (C) 2006-2007 Philip Kovacs pkovacs@users.sourceforge.net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

@@ -3,7 +3,7 @@
 /*
  * libtcp-portmon.c:  tcp port monitoring library.               
  *
- * Copyright (C) 2005  Philip Kovacs pkovacs@users.sourceforge.net
+ * Copyright (C) 2005-2007 Philip Kovacs pkovacs@users.sourceforge.net
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
