@@ -777,6 +777,33 @@ double get_sysbus_info(int *fd, int div, char *devtype, char *type)
 	}
 }
 
+void get_hwmon_value( char * p_client_buffer, size_t client_buffer_size, char * fname, enum hwmon_sensor_type type )
+{
+	static int rep;
+	int sensor_value;
+	FILE *fp;
+
+	if ( !p_client_buffer || client_buffer_size <= 0 || !fname )
+		return;
+
+	if ((fp = open_file(fname, &rep)) == NULL) {
+		snprintf( p_client_buffer, client_buffer_size, "hwmon: file '%s' not found", fname ); 
+	} else {
+		fscanf(fp, "%d", &sensor_value);
+		fclose(fp);
+		switch (type) {
+			case HWMON_temp:
+				sensor_value /= 1000; /* temperatures are given in milli-degree (at least for my abit uguru) */
+				break;
+			case HWMON_fan: /* already in RPM on my abit uguru */
+			case HWMON_other: /* do nothing */
+			default:
+				break;
+		}
+		snprintf( p_client_buffer, client_buffer_size, "%d", sensor_value );
+	}
+}
+
 /* Prior to kernel version 2.6.12, the CPU fan speed was available
  * in ADT746X_FAN_OLD, whereas later kernel versions provide this
  * information in ADT746X_FAN.
