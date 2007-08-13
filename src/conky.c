@@ -2619,7 +2619,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		strncpy(obj->data.i2c.type, buf2, 63);
 	}
 
-  END OBJ(i2c, INFO_PLATFORM)
+  END OBJ(platform, INFO_PLATFORM)
   char buf1[64], buf2[64];
   int n;
 

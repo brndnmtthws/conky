@@ -688,7 +688,7 @@ int open_sysbus_sensor(const char *dir, const char *dev, const char *type, int n
 	/* open file */
 	fd = open(path, O_RDONLY);
 	if (fd < 0) {
-		CRIT_ERR("can't open '%s': %s\nplease fix i2c or remove it from Conky", path, strerror(errno));
+		CRIT_ERR("can't open '%s': %s\nplease check your device or remove this var from Conky", path, strerror(errno));
 	}
 
 	if (strcmp(type, "in") == 0 || strcmp(type, "temp") == 0
