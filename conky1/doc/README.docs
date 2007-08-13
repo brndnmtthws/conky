@@ -1,0 +1,41 @@
+DA DOCS. YO.
+============
+The main file that contains the bulk of our documentation is docs.xml . 
+We use the DocBook format, which is a really kickass xml-based way of 
+writing documentation, heavily oriented towards programming and computer 
+stuff. There are tags like <command> and <option> that marks up your 
+content without actually having to mark it up, which is why something 
+that's of the <command> shows up in some cool style regardless of 
+whether it's in a man page or a web page. DocBook has been around for 
+10 years, and there's TONS of resources online about the different 
+tags and the stuff that can be done. 
+
+FILE ORGANIZATION
+=================
+For the sake of making things readable and organized, 
+docs.xml "includes" three other files, as of 8/18/05. 
+These are config_settings.xml, command_options.xml, and variables.xml . 
+Their names are pretty self-explanatory, and what the "include" essentially 
+does is stick their contents into docs.xml at the appropriate locations 
+when it's time to produce a man page or html file. So if you wanted to 
+add a variable or explain a command line option better, you'd look in 
+variables.xml and command_options.xml. If you wanted to change the authors 
+or something, look in docs.xml
+
+BUILDING DA DOCS
+================
+(NOTE that the docs are now built automatically via doc/Makefile.am, but it requires that you have docbook2x and xsltproc installed)
+
+making the html is easy. xsltproc should more than likely already be on your system:
+
+xsltproc http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl docs.xml > docs.html
+==============================================================================================================
+making the man page is pretty easy, it uses a program called docbook2x, which you might or might not have.
+
+docbook2x-man docs.xml (produces a conky.1 file)
+gzip conky.1
+
+conky.1.gz can be viewed in man-form by doing "man -l conky.1.gz"
+==============================================================================================================
+making the README (text-only) file is just some simple unix:
+man -l conky.1.gz | col -b > README

@@ -1,0 +1,34 @@
+conky (1.4.0-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Brenden Matthews <brenden@rty.ca>  Wed Feb 15 04:34:46 UTC 2006
+
+conky (1.3.4-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Brenden Matthews <brenden@rty.ca>  Wed, 16 Nov 2005 17:13:53 -0700
+
+conky (1.3.3-1) unstable; urgency=low
+
+  * New upstream release
+  * Removed ml_* variables from documentation (closes: #335543)
+  * Removed i2c line from sample config (closes: #329396)
+
+ -- Jason Tan <jtan325@gmail.com>  Tue, 25 Oct 2005 07:34:54 -0700
+
+conky (1.3.1-1) unstable; urgency=low
+
+  * New upstream release
+  * Added libxt-dev to build-depends in debian/control (closes: #327306)
+  * Fixed the double BSD-license in debian/copyright (closes: #327135)
+
+ -- Jason Tan <jtan325@gmail.com>  Sat, 10 Sep 2005 22:45:51 -0700
+
+conky (1.3.0-1) unstable; urgency=low
+
+  * Initial Release. (closes: #320978)
+
+ -- Jason Tan <jtan325@gmail.com>  Wed, 24 Aug 2005 00:10:49 -0700
+

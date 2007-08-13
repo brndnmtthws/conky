@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding="UTF-8"?>
+<!DOCTYPE guide SYSTEM "http://www.gentoo.org/dtd/guide.dtd">
+
+<guide link="/doc/en/conky-howto.xml">
+<title>Gentoo Linux Conky Howto</title>
+
+<author title="Author">
+  <mail link="admin@sdesign.us">Bill Woodford</mail>
+</author>
+
+<author title="Editor">
+  <mail link="brenden@rty.ca">Brenden Matthews</mail>
+</author>
+
+<abstract>
+This document describes how to install and configure the system monitor known
+as Conky.
+</abstract>
+
+<!-- The content of this document is licensed under the CC-BY-SA license -->
+<!-- See http://creativecommons.org/licenses/by-sa/2.5 -->
+<license/>
+
+<version>1.0</version>
+<date>2006-02-22</date>
+
+<chapter>
+<title>Background</title>
+<section>
+<title>Introduction to Conky</title>
+<body>
+
+<p>
+So you have a Gentoo machine, and have already learned 30 different commands to monitor different aspects of what your computer is doing at the current moment.  What do you do from here?  Isn't there an easier way to monitor system performance and see what its doing, as well as the resources its using to perform all those tasks?  This is what a system monitor, such as Conky, provides.
+</p>
+
+</body>
+</section>
+<section>
+<title>What it does</title>
+<body>
+
+<p>
+Unlike other system monitors such as top, Conky can run as a window in an X session, or by drawing to the root window (there is also an option to have Conky display information to stdout, but we won't discuss that here).  It displays the information it has gathered through the use of both text, progress bars, and graphs.  Also unlike top, the way it is formatted is completely user-configurable.  In addition to monitoring the system itself, Conky can also give you information about several music players (such as XMMS, BMPx, Music Player Daemon, and Audacious Media Player), tell you how many new messages are in your mail spool, and plenty more.  If the functionality you require isn't in Conky yet, it is a simple matter of writing a script to get the information you would like - some examples of this, which have already been done are RSS feeds, POP3 e-mail message count, local weather, boinc status, and even the status of portage.
+</p>
+
+</body>
+</section>
+</chapter>
+<chapter>
+<title>Installing Conky</title>
+<section>
+<title>Base install</title>
+<body>
+
+<p>
+Gentoo provides an ebuild to quickly and easily install Conky.  Pay particular attention to the the USE flags.  You'll most likely want X11 support (<c>X</c>), and make sure you select the USE flags for any music players (other than MPD) which you want.  XMMS (<c>xmms</c>), Audacious (<c>audacious</c>), BMPx (<c>bmpx</c>), or XMMS support via the xmms-infopipe plugin (<c>infopipe</c>).  If you want to use the TCP port monitor, be SURE to disable the <c>ipv6</c> use flag, as the port monitor is for ipv4 systems only.
+</p>
+
+<pre caption="/etc/portage/package.use">
+<comment># Example line to append to /etc/portage/package.use if you don't want the default USE flags.</comment>
+<i>app-admin/conky xmms infopipe -ipv6</i>
+</pre>
+
+<p>
+In addition, the <c>truetype</c> USE flag compiles support for TrueType fonts with the use of Xft.  Most users will want this as well.
+</p>
+
+<p>
+Once you have your USE flags correctly set up, it's time to install Conky!
+</p>
+
+<pre caption="Installing Conky">
+<i>emerge -av conky</i>
+</pre>
+
+<p>
+You can test Conky to see how it will look by running the command <c>conky</c> in a terminal.  This will likely give you a good reference to how it will look and what you want to change, add or even remove.
+</p>
+
+<pre caption="Running Conky for the first time">
+$ <i>conky</i>
+</pre>
+
+<p>
+Once you have an idea of how Conky looks, you can now move on to configuring it!
+</p>
+
+
+</body>
+</section>
+<section>
+<title>Configuring Conky</title>
+<body>
+
+<p>
+By default, Conky will look for a configuration file in the users home directory located at <path>~/.conkyrc</path>  This file contains all the configuration options, and the static text, colors and other variables which control what data is shown to the user.  Conky also provides a great sample configuration, located at <path>/usr/share/doc/conky-version/Conkyrc.sample.gz</path>  Make sure to replace "version" with the specific version of Conky you have installed.
+</p>
+
+<pre caption="Copying the sample configuration to your home directory">
+$ <i>zcat /usr/share/conky-1.6.0/conkyrc.sample.gz >> ~/.conkyrc</i>
+</pre>
+
+<note>
+Make sure to replace "1.6.0" with the specific version of Conky you have installed.
+</note>
+
+<p>
+Now, open up the sample configuration in the text editor of your choice.  You may notice that there are two seperate sections of the configuration file.  The first section of the file, contains the programs configuration options and controls how it acts.  This includes things such as the <c>update_interval</c>, or how often Conky will update the information on the screen.  The second section contains the actual text, graphs, and variables which are rendered on the screen.  This includes things such as the system uptime (<c>$uptime</c>), cpu usage (<c>$cpu</c>) and anything else you want to be shown.  The first section of the file starts right from the beginning, the second section is comprised of everything after the line which says "<c>TEXT</c>".  Comments in the file start with <c>#</c>, but keep in mind that even if a line is commented out in the second section of the file, the text will still be rendered to the screen.
+</p>
+
+<p>
+Lists of all the available configuration options and variables are kept at <uri>http://conky.sourceforge.net/config_settings.html</uri> and <uri>http://conky.sourceforge.net/variables.html</uri>.  Also, there's a few great sample configurations and screenshots of working configurations at <uri>http://conky.sourceforge.net/screenshots.html</uri>.
+</p>
+
+</body>
+</section>
+</chapter>
+<chapter>
+<title>Extending Conky</title>
+<section>
+<title>Beyond the built-in variables</title>
+<body>
+
+<p>
+So you've gotten this far, and have scoured the Conky documentation for that extra variable which Conky just doesn't seem to have...  You're in luck!  Conky provides several variables for just this reason!  <c>$exec</c> Will run a command every time Conky updates, <c>$execi</c> will run a command at a specified interval and <c>$texeci</c> will run a command in it's own thread at a specified interval.
+</p>
+
+<pre caption="Scripting examples">
+<i>${exec grep 'sudo' /var/log/messages | tail -n 4}</i>
+<i>${execi 30 ~/scripts/emerge-status.sh</i>
+<i>${texeci 600 ~/scripts/gmail.pl}</i>
+</pre>
+
+<note>
+While any command which works in a command shell will work in any of these variables, it is important to keep in mind that the commands must exit.  This means that commands like <c>tail -f</c> which keep running will NOT work properly.
+</note>
+
+</body>
+</section>
+</chapter>
+</guide>

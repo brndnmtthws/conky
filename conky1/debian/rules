@@ -1,0 +1,5 @@
+#!/usr/bin/make -f
+
+include /usr/share/cdbs/1/class/autotools.mk
+include /usr/share/cdbs/1/rules/debhelper.mk
+DEB_CONFIGURE_EXTRA_FLAGS := --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info --enable-double-buffer --enable-own-window --enable-proc-uptime --enable-mpd --enable-xft --enable-seti --enable-portmon --enable-mldonkey

@@ -1,0 +1,2 @@
+Append the contents of conky.nanorc to your $HOME/.nanorc for nano 
+syntax coloring of your $HOME/.conkyrc file.
