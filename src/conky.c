@@ -1002,6 +1002,8 @@ enum text_object_type {
 	OBJ_alignr,
 	OBJ_alignc,
 	OBJ_i2c,
+  OBJ_platform,
+  OBJ_hwmon,
 #if defined(__linux__)
 	OBJ_i8k_version,
 	OBJ_i8k_bios,
@@ -1056,7 +1058,6 @@ enum text_object_type {
 	OBJ_mixerrbar,
 	OBJ_new_mails,
 	OBJ_nodename,
-  OBJ_platform,
 	OBJ_pre_exec,
 	OBJ_processes,
 	OBJ_running_processes,
@@ -1226,7 +1227,7 @@ struct text_object {
 			int arg;
 			char devtype[256];
 			char type[64];
-		} i2c, platform;		/* 2 */
+		} sysfs;		/* 2 */
 
 		struct {
 			int pos;
@@ -1811,10 +1812,13 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 				close(objs[i].data.i);
 				break;
 			case OBJ_i2c:
-				close(objs[i].data.i2c.fd);
+				close(objs[i].data.sysfs.fd);
 				break;
       case OBJ_platform:
-        close(objs[i].data.platform.fd);
+        close(objs[i].data.sysfs.fd);
+        break;
+      case OBJ_hwmon:
+        close(objs[i].data.sysfs.fd);
         break;
 #endif /* !__OpenBSD__ */
 			case OBJ_time:
@@ -2596,7 +2600,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	obj->data.pair.b = b;
 
 #ifndef __OpenBSD__
-	END OBJ(i2c, INFO_I2C)
+	END OBJ(i2c, INFO_SYSFS)
   char buf1[64], buf2[64];
 	int n;
 
@@ -2610,16 +2614,16 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	if (sscanf(arg, "%63s %63s %d", buf1, buf2, &n) != 3) {
 		/* if scanf couldn't read three values, read type and num and use default device */
 		sscanf(arg, "%63s %d", buf2, &n);
-		obj->data.i2c.fd =
-			open_i2c_sensor(0, buf2, n, &obj->data.i2c.arg, obj->data.i2c.devtype);
-		strncpy(obj->data.i2c.type, buf2, 63);
+		obj->data.sysfs.fd =
+			open_i2c_sensor(0, buf2, n, &obj->data.sysfs.arg, obj->data.sysfs.devtype);
+		strncpy(obj->data.sysfs.type, buf2, 63);
 	} else {
-		obj->data.i2c.fd =
-			open_i2c_sensor(buf1, buf2, n, &obj->data.i2c.arg, obj->data.i2c.devtype);
-		strncpy(obj->data.i2c.type, buf2, 63);
+		obj->data.sysfs.fd =
+			open_i2c_sensor(buf1, buf2, n, &obj->data.sysfs.arg, obj->data.sysfs.devtype);
+		strncpy(obj->data.sysfs.type, buf2, 63);
 	}
 
-  END OBJ(platform, INFO_PLATFORM)
+  END OBJ(platform, INFO_SYSFS)
   char buf1[64], buf2[64];
   int n;
 
@@ -2632,13 +2636,35 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
   if (sscanf(arg, "%63s %63s %d", buf1, buf2, &n) != 3) {
     /* if scanf couldn't read three values, read type and num and use default device */
     sscanf(arg, "%63s %d", buf2, &n);
-    obj->data.platform.fd =
-      open_platform_sensor(0, buf2, n, &obj->data.platform.arg, obj->data.platform.devtype);
-    strncpy(obj->data.platform.type, buf2, 63);
+    obj->data.sysfs.fd =
+      open_platform_sensor(0, buf2, n, &obj->data.sysfs.arg, obj->data.sysfs.devtype);
+    strncpy(obj->data.sysfs.type, buf2, 63);
   } else {
-    obj->data.platform.fd =
-      open_platform_sensor(buf1, buf2, n, &obj->data.platform.arg, obj->data.platform.devtype);
-    strncpy(obj->data.platform.type, buf2, 63);
+    obj->data.sysfs.fd =
+      open_platform_sensor(buf1, buf2, n, &obj->data.sysfs.arg, obj->data.sysfs.devtype);
+    strncpy(obj->data.sysfs.type, buf2, 63);
+  }
+
+  END OBJ(hwmon, INFO_SYSFS)
+  char buf1[64], buf2[64];
+  int n;
+
+  if (!arg) {
+    ERR("hwmon needs argumanets");
+    obj->type = OBJ_text;
+    return NULL;
+  }
+
+  if (sscanf(arg, "%63s %63s %d", buf1, buf2, &n) != 3) {
+    /* if scanf couldn't read three values, read type and num and use default device */
+    sscanf(arg, "%63s %d", buf2, &n);
+    obj->data.sysfs.fd =
+      open_hwmon_sensor(0, buf2, n, &obj->data.sysfs.arg, obj->data.sysfs.devtype);
+    strncpy(obj->data.sysfs.type, buf2, 63);
+  } else {
+    obj->data.sysfs.fd =
+      open_hwmon_sensor(buf1, buf2, n, &obj->data.sysfs.arg, obj->data.sysfs.devtype);
+    strncpy(obj->data.sysfs.type, buf2, 63);
   }
 #endif /* !__OpenBSD__ */
 
@@ -2969,14 +2995,14 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		(void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(sysname, 0)
 #ifndef __OpenBSD__
-	END OBJ(temp1, INFO_I2C) obj->type = OBJ_i2c;
-	obj->data.i2c.fd =
-		open_i2c_sensor(0, "temp", 1, &obj->data.i2c.arg,
-				obj->data.i2c.devtype);
-	END OBJ(temp2, INFO_I2C) obj->type = OBJ_i2c;
-	obj->data.i2c.fd =
-		open_i2c_sensor(0, "temp", 2, &obj->data.i2c.arg,
-				obj->data.i2c.devtype);
+	END OBJ(temp1, INFO_SYSFS) obj->type = OBJ_i2c;
+	obj->data.sysfs.fd =
+		open_i2c_sensor(0, "temp", 1, &obj->data.sysfs.arg,
+				obj->data.sysfs.devtype);
+	END OBJ(temp2, INFO_SYSFS) obj->type = OBJ_i2c;
+	obj->data.sysfs.fd =
+		open_i2c_sensor(0, "temp", 2, &obj->data.sysfs.arg,
+				obj->data.sysfs.devtype);
 #endif
 	END OBJ(time, 0) obj->data.s = strdup(arg ? arg : "%F %T");
 	END OBJ(utime, 0) obj->data.s = strdup(arg ? arg : "%F %T");
@@ -4491,10 +4517,10 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			OBJ(i2c) {
 				double r;
 
-				r = get_sysbus_info(&obj->data.i2c.fd,
-						 obj->data.i2c.arg,
-						 obj->data.i2c.devtype,
-						 obj->data.i2c.type);
+				r = get_sysfs_info(&obj->data.sysfs.fd,
+						             obj->data.sysfs.arg,
+						             obj->data.sysfs.devtype,
+						             obj->data.sysfs.type);
 
 				if (r >= 100.0 || r == 0)
 					snprintf(p, p_max_size, "%d", (int) r);
@@ -4504,13 +4530,26 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
       OBJ(platform) {
         double r;
 
-        r = get_sysbus_info(&obj->data.platform.fd,
-            obj->data.platform.arg,
-            obj->data.platform.devtype,
-            obj->data.platform.type);
+        r = get_sysfs_info(&obj->data.sysfs.fd,
+                         obj->data.sysfs.arg,
+                         obj->data.sysfs.devtype,
+                         obj->data.sysfs.type);
 
         if (r >= 100.0 || r == 0)
           snprintf(p, p_max_size, "%d", (int) r);
+        else
+          snprintf(p, p_max_size, "%.1f", r);
+      }
+      OBJ(hwmon) {
+        double r;
+
+        r = get_sysfs_info(&obj->data.sysfs.fd,
+                         obj->data.sysfs.arg,
+                         obj->data.sysfs.devtype,
+                         obj->data.sysfs.type);
+
+        if (r >= 100.0 || r == 0)
+           snprintf(p, p_max_size, "%d", (int) r);
         else
           snprintf(p, p_max_size, "%.1f", r);
       }

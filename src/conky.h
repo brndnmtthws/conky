@@ -249,7 +249,7 @@ enum {
 	INFO_UPTIME = 6,
 	INFO_BUFFERS = 7,
 	INFO_FS = 8,
-	INFO_I2C = 9,
+	INFO_SYSFS = 9,
 	INFO_MIXER = 10,
 	INFO_LOADAVG = 11,
 	INFO_UNAME = 12,
@@ -277,7 +277,6 @@ enum {
 #ifdef RSS
 	INFO_RSS = 24,
 #endif
-  INFO_PLATFORM = 25
 };
 
 
@@ -505,14 +504,17 @@ void get_freq_dynamic( char *, size_t, char *, int );
 char get_voltage(char *, size_t, char *, int, unsigned int ); /* ptarjan */
 void update_load_average();
 
-int open_sysbus_sensor(const char *dir, const char *dev, const char *type, int n, int *div, char *devtype);
+int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n, int *div, char *devtype);
 #define open_i2c_sensor(dev,type,n,div,devtype) \
-    open_sysbus_sensor("/sys/bus/i2c/devices/",dev,type,n,div,devtype)
+    open_sysfs_sensor("/sys/bus/i2c/devices/",dev,type,n,div,devtype)
 
 #define open_platform_sensor(dev,type,n,div,devtype) \
-    open_sysbus_sensor("/sys/bus/platform/devices/",dev,type,n,div,devtype)
+    open_sysfs_sensor("/sys/bus/platform/devices/",dev,type,n,div,devtype)
 
-double get_sysbus_info(int *fd, int arg, char *devtype, char *type);
+#define open_hwmon_sensor(dev,type,n,div,devtype) \
+   open_sysfs_sensor("/sys/class/hwmon/",dev,type,n,div,devtype); \
+
+double get_sysfs_info(int *fd, int arg, char *devtype, char *type);
 
 void get_adt746x_cpu( char *, size_t ); 
 void get_adt746x_fan( char *, size_t ); 

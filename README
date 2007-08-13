@@ -760,18 +760,17 @@ VARIABLES
 	      Horizontal line, height is the height in pixels
 
 
-       hwmon N sensor number input
-	      This  has the ability to display the contents of hwmon files lo-
-	      cated under "/sys/class/hwmon/hwmonX/device/N". For example, use
-	      ${hwmon  0  temp 1 input} to read the temperature of the CPU (in
-	      oC) from	"/sys/class/hwmon/hwmon0/device/temp1_input".  If  the
-	      sensor  name  equals "temp", then the value read will be divided
-	      by 1000, otherwise the number will be used unchanged. The factor
-	      1000 is just for the Abit uGuru sensor.
+       hwmon (dev) type n
+	      Hwmon  sensor from sysfs (Linux 2.6). Parameter dev may be omit-
+	      ted if you have only one hwmon device. Parameter type is	either
+	      'in'  or	'vol' meaning voltage; 'fan' meaning fan; 'temp' (Cel-
+	      sius) or 'tempf' (Fahrenheit) meaning temperature.  Parameter  n
+	      is  number  of  the  sensor. See /sys/class/hwmon/ on your local
+	      computer.
 
 
        iconv_start codeset_from codeset_to
-	      Convert  text from one codeset to another using GNU iconv. Needs
+	      Convert text from one codeset to another using GNU iconv.	 Needs
 	      to be stopped with iconv_stop.
 
 
@@ -780,11 +779,11 @@ VARIABLES
 
 
        i2c (dev) type n
-	      I2C sensor from sysfs (Linux 2.6). dev may  be  omitted  if  you
-	      have  only  one  I2C  device. type is either in (or vol) meaning
-	      voltage, fan meaning fan or temp/tempf (first in C, second in F)
-	      meaning	temperature.   n   is	number	 of  the  sensor.  See
-	      /sys/bus/i2c/devices/ on your local computer.
+	      I2C  sensor from sysfs (Linux 2.6). Parameter dev may be omitted
+	      if you have only one I2C device. Parameter type is  either  'in'
+	      or 'vol' meaning voltage; 'fan' meaning fan; 'temp' (Celsius) or
+	      'tempf' (Fahrenheit) meaning temperature. Parameter n is	number
+	      of the sensor. See /sys/bus/i2c/devices/ on your local computer.
 
 
        i8k_ac_status
@@ -1044,28 +1043,29 @@ VARIABLES
 
 
        platform (dev) type n
-	      Platform	sensor	from  sysfs (Linux 2.6). dev may be omitted if
-	      you have only one platform device. type is either	 in  (or  vol)
-	      meaning voltage, fan meaning fan or temp/tempf (first in C, sec-
-	      ond in F) meaning temperature. n is number of  the  sensor.  See
-	      /sys/bus/platform/devices/ on your local computer.
+	      Platform	sensor	from  sysfs  (Linux 2.6). Parameter dev may be
+	      omitted if you have only one platform device. Platform  type  is
+	      either  'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp'
+	      (Celsius) or 'tempf' (Fahrenheit) meaning temperature. Parameter
+	      n	 is  number  of	 the sensor. See /sys/bus/platform/devices/ on
+	      your local computer.
 
 
        pop3_unseen (args)
 	      Displays the number of unseen messages in your global POP3 inbox
 	      by default. You can define individual POP3 inboxes seperately by
 	      passing arguments to this object. Arguments are: "host user pass
-	      [-i interval] [-p port] [-e command]". Default port is 110,  de-
+	      [-i  interval] [-p port] [-e command]". Default port is 110, de-
 	      fault interval is 5 minutes. If the password is supplied as '*',
 	      you will be prompted to enter the password when Conky starts.
 
 
        pop3_used (args)
-	      Displays the amount of space (in MiB, 2^20) used in your	global
-	      POP3  inbox  by  default. You can define individual POP3 inboxes
-	      seperately by passing arguments to this object.  Arguments  are:
-	      "host  user  pass [-i interval] [-p port] [-e command]". Default
-	      port is 110, default interval is 5 minutes. If the  password  is
+	      Displays	the amount of space (in MiB, 2^20) used in your global
+	      POP3 inbox by default. You can define  individual	 POP3  inboxes
+	      seperately  by  passing arguments to this object. Arguments are:
+	      "host user pass [-i interval] [-p port] [-e  command]".  Default
+	      port  is	110, default interval is 5 minutes. If the password is
 	      supplied as '*', you will be prompted to enter the password when
 	      Conky starts.
 
@@ -1127,36 +1127,36 @@ VARIABLES
 	      The connection index provides you with access to each connection
 	      in the port monitor. The monitor will return information for in-
 	      dex values from 0 to n-1 connections. Values higher than n-1 are
-	      simply  ignored. For the "count" item, the connection index must
+	      simply ignored. For the "count" item, the connection index  must
 	      be omitted. It is required for all other items.
 
 	      Examples:
-	      ${tcp_portmon 6881 6999 count} - displays the number of  connec-
+	      ${tcp_portmon  6881 6999 count} - displays the number of connec-
 	      tions in the bittorrent port range
-	      ${tcp_portmon  22 22 rip 0} - displays the remote host ip of the
+	      ${tcp_portmon 22 22 rip 0} - displays the remote host ip of  the
 	      first sshd connection
-	      ${tcp_portmon 22 22 rip 9} - displays the remote host ip of  the
+	      ${tcp_portmon  22 22 rip 9} - displays the remote host ip of the
 	      tenth sshd connection
 	      ${tcp_portmon 1 1024 rhost 0} - displays the remote host name of
 	      the first connection on a privileged port
 	      ${tcp_portmon 1 1024 rport 4} - displays the remote host port of
 	      the fifth connection on a privileged port
-	      ${tcp_portmon  1 65535 lservice 14} - displays the local service
+	      ${tcp_portmon 1 65535 lservice 14} - displays the local  service
 	      name of the fifteenth connection in the range of all ports
 
 	      Note that port monitor variables which share the same port range
 	      actually refer to the same monitor, so many references to a sin-
 	      gle port range for different items and different indexes all use
-	      the  same monitor internally. In other words, the program avoids
+	      the same monitor internally. In other words, the program	avoids
 	      creating redundant monitors.
 
        texeci interval command
-	      Runs a command at an interval inside a thread and	 displays  the
-	      output.  Same  as	 $execi,  except  the  command is run inside a
-	      thread. Use this if you have a slow script to keep Conky	updat-
-	      ing.  You should make the interval slightly longer then the time
-	      it takes your script to execute. For  example,  if  you  have  a
-	      script  that  take 5 seconds to execute, you should make the in-
+	      Runs  a  command at an interval inside a thread and displays the
+	      output. Same as $execi, except  the  command  is	run  inside  a
+	      thread.  Use this if you have a slow script to keep Conky updat-
+	      ing. You should make the interval slightly longer then the  time
+	      it  takes	 your  script  to  execute. For example, if you have a
+	      script that take 5 seconds to execute, you should make  the  in-
 	      terval at least 6 seconds. See also $execi.
 
 
@@ -1165,8 +1165,8 @@ VARIABLES
 
 
        rss url delay_in_minutes action item_num
-	      Download and parse RSS feeds. Action may be one of  the  follow-
-	      ing:  feed_title, item_title (with num par), item_desc (with num
+	      Download	and  parse RSS feeds. Action may be one of the follow-
+	      ing: feed_title, item_title (with num par), item_desc (with  num
 	      par) and item_titles.
 
 
@@ -1181,7 +1181,7 @@ VARIABLES
 
 
        time (format)
-	      Local  time, see man strftime to get more information about for-
+	      Local time, see man strftime to get more information about  for-
 	      mat
 
 
@@ -1190,23 +1190,23 @@ VARIABLES
 
 
        tztime (timezone) (format)
-	      Local time for specified timezone, see man strftime to get  more
-	      information  about format. The timezone argument is specified in
-	      similar fashion as TZ environment variable. For hints,  look  in
+	      Local  time for specified timezone, see man strftime to get more
+	      information about format. The timezone argument is specified  in
+	      similar  fashion	as TZ environment variable. For hints, look in
 	      /usr/share/zoneinfo. e.g. US/Pacific, Europe/Zurich, etc.
 
 
        totaldown net
-	      Total  download, overflows at 4 GB on Linux with 32-bit arch and
+	      Total download, overflows at 4 GB on Linux with 32-bit arch  and
 	      there doesn't seem to be a way to know how many times it has al-
 	      ready done that before conky has started.
 
 
        top type, num
-	      This  takes arguments in the form:top (name) (number) Basically,
-	      processes are ranked from highest to lowest in terms of cpu  us-
-	      age,  which  is  what  (num)  represents. The types are: "name",
-	      "pid", "cpu", and "mem". There can be  a	max  of	 10  processes
+	      This takes arguments in the form:top (name) (number)  Basically,
+	      processes	 are ranked from highest to lowest in terms of cpu us-
+	      age, which is what (num)	represents.  The  types	 are:  "name",
+	      "pid",  "cpu",  and  "mem".  There  can be a max of 10 processes
 	      listed.
 
 
@@ -1230,9 +1230,9 @@ VARIABLES
 	      Upload speed in kilobytes with one decimal
 
 
-       upspeedgraph  net (height),(width) (gradient colour 1) (gradient colour
+       upspeedgraph net (height),(width) (gradient colour 1) (gradient	colour
        2) (scale)
-	      Upload  speed  graph,  colours  defined  in hex, minus the #. If
+	      Upload speed graph, colours defined in  hex,  minus  the	#.  If
 	      scale is non-zero, it becomes the scale for the graph.
 
 
@@ -1244,12 +1244,12 @@ VARIABLES
 
 
        voffset (pixels)
-	      Change vertical offset by N pixels. Negative values  will	 cause
+	      Change  vertical	offset by N pixels. Negative values will cause
 	      text to overlap. See also $offset.
 
 
        voltage_mv (n)
-	      Returns  CPU  #n's  voltage  in  mV. CPUs are counted from 1. If
+	      Returns CPU #n's voltage in mV. CPUs  are	 counted  from	1.  If
 	      omitted, the parameter defaults to 1.
 
 
@@ -1377,11 +1377,11 @@ FILES
 BUGS
        Drawing to root or some other desktop window directly doesn't work with
        all window managers. Especially doesn't work well with Gnome and it has
-       been  reported  that  it	 doesn't work with KDE either. Nautilus can be
-       disabled from drawing to desktop	 with  program	gconf-editor.  Uncheck
-       show_desktop  in	 /apps/nautilus/preferences/.  There  is  -w switch in
-       Conky to set some specific window id. You  might	 find  xwininfo	 -tree
-       useful  to  find	 the  window  to draw to. You can also use -o argument
+       been reported that it doesn't work with KDE  either.  Nautilus  can  be
+       disabled	 from  drawing	to  desktop with program gconf-editor. Uncheck
+       show_desktop in /apps/nautilus/preferences/.  There  is	-w  switch  in
+       Conky  to  set  some  specific window id. You might find xwininfo -tree
+       useful to find the window to draw to. You  can  also  use  -o  argument
        which makes Conky to create its own window.
 
 SEE ALSO

@@ -729,8 +729,8 @@ Displays first N lines of supplied text text file. If interval is not supplied, 
 Horizontal line, height is the height in pixels
 
 .TP 
-\fB\*(T<\fBhwmon\fR\*(T>\fR \*(T<\fBN sensor number input\fR\*(T> 
-This has the ability to display the contents of hwmon files located under "/sys/class/hwmon/hwmonX/device/N". For example, use ${hwmon 0 temp 1 input} to read the temperature of the CPU (in \(deC) from "/sys/class/hwmon/hwmon0/device/temp1_input". If the sensor name equals "temp", then the value read will be divided by 1000, otherwise the number will be used unchanged. The factor 1000 is just for the Abit uGuru sensor.
+\fB\*(T<\fBhwmon\fR\*(T>\fR \*(T<\fB(dev) type n\fR\*(T> 
+Hwmon sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you have only one hwmon device. Parameter type is either 'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp' (Celsius) or 'tempf' (Fahrenheit) meaning temperature. Parameter n is number of the sensor. See /sys/class/hwmon/ on your local computer.
 
 .TP 
 \fB\*(T<\fBiconv_start\fR\*(T>\fR \*(T<\fBcodeset_from codeset_to\fR\*(T> 
@@ -742,7 +742,7 @@ Stop iconv codeset conversion.
 
 .TP 
 \fB\*(T<\fBi2c\fR\*(T>\fR \*(T<\fB(dev) type n\fR\*(T> 
-I2C sensor from sysfs (Linux 2.6). dev may be omitted if you have only one I2C device. type is either in (or vol) meaning voltage, fan meaning fan or temp/tempf (first in C, second in F) meaning temperature. n is number of the sensor. See /sys/bus/i2c/devices/ on your local computer.
+I2C sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you have only one I2C device. Parameter type is either 'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp' (Celsius) or 'tempf' (Fahrenheit) meaning temperature. Parameter n is number of the sensor. See /sys/bus/i2c/devices/ on your local computer.
 
 .TP 
 \fB\*(T<\fBi8k_ac_status\fR\*(T>\fR 
@@ -970,9 +970,7 @@ and not discharging.
 
 .TP 
 \fB\*(T<\fBplatform\fR\*(T>\fR \*(T<\fB(dev) type n\fR\*(T> 
-Platform sensor from sysfs (Linux 2.6). dev may be omitted if you have only one platform device. type is 
-either in (or vol) meaning voltage, fan meaning fan or temp/tempf (first in C, second in F) meaning temperature. n is number
-of the sensor. See /sys/bus/platform/devices/ on your local computer.
+Platform sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you have only one platform device. Platform type is either 'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp' (Celsius) or 'tempf' (Fahrenheit) meaning temperature. Parameter n is number of the sensor. See /sys/bus/platform/devices/ on your local computer.
 
 .TP 
 \fB\*(T<\fBpop3_unseen\fR\*(T>\fR \*(T<\fB(args)\fR\*(T> 

@@ -659,20 +659,36 @@ get_first_file_in_a_directory(const char *dir, char *s, int *rep)
 	}
 }
 
-int open_sysbus_sensor(const char *dir, const char *dev, const char *type, int n, int *div, char *devtype)
+int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n, int *div, char *devtype)
 {
 	char path[256];
 	char buf[256];
 	int fd;
 	int divfd;
 
-	/* if i2c device is NULL or *, get first */
+  memset (buf, 0, sizeof(buf));
+
+	/* if device is NULL or *, get first */
 	if (dev == NULL || strcmp(dev, "*") == 0) {
 		static int rep = 0;
 		if (!get_first_file_in_a_directory(dir, buf, &rep))
 			return -1;
 		dev = buf;
 	}
+
+  if (strcmp (dir, "/sys/class/hwmon/")==0) {
+    if (*buf) {
+      /* buf holds result from get_first_file_in_a_directory() above, 
+       * e.g. "hwmon0" -- append "/device" */
+      strcat (buf,"/device");
+    }
+    else {
+      /* dev holds device number N as a string, 
+       * e.g. "0", -- convert to "hwmon0/device" */
+      sprintf (buf,"hwmon%s/device",dev);
+      dev = buf;
+    }
+  }
 
 	/* change vol to in */
 	if (strcmp(type, "vol") == 0)
@@ -688,7 +704,8 @@ int open_sysbus_sensor(const char *dir, const char *dev, const char *type, int n
 	/* open file */
 	fd = open(path, O_RDONLY);
 	if (fd < 0) {
-		CRIT_ERR("can't open '%s': %s\nplease check your device or remove this var from Conky", path, strerror(errno));
+		CRIT_ERR("can't open '%s': %s\nplease check your device or remove this var from Conky", 
+        path, strerror(errno));
 	}
 
 	if (strcmp(type, "in") == 0 || strcmp(type, "temp") == 0
@@ -725,7 +742,7 @@ int open_sysbus_sensor(const char *dir, const char *dev, const char *type, int n
 	return fd;
 }
 
-double get_sysbus_info(int *fd, int div, char *devtype, char *type)
+double get_sysfs_info(int *fd, int div, char *devtype, char *type)
 {
 	int val = 0;
 
