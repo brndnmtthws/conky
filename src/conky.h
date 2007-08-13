@@ -280,12 +280,6 @@ enum {
   INFO_PLATFORM = 25
 };
 
-enum hwmon_sensor_type {
-	HWMON_temp,
-	HWMON_fan,
-	HWMON_other
-};
-void get_hwmon_value( char * p_client_buffer, size_t client_buffer_size, char * fname, enum hwmon_sensor_type type );
 
 /* get_battery_stuff() item selector */
 enum {

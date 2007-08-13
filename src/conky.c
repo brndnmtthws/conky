@@ -1003,7 +1003,6 @@ enum text_object_type {
 	OBJ_alignc,
 	OBJ_i2c,
 #if defined(__linux__)
-	OBJ_hwmon,
 	OBJ_i8k_version,
 	OBJ_i8k_bios,
 	OBJ_i8k_serial,
@@ -1211,12 +1210,6 @@ struct text_object {
 			char *tz;    /* timezone variable */
 			char *fmt;   /* time display formatting */
 		} tztime;
-#if defined(__linux__)
-		struct {
-			enum hwmon_sensor_type type;
-			char *fname; /* filename in /sys/class/hwmon/hwmonX/device/ */
-		} hwmon;
-#endif
 
 		struct {
 			struct fs_stat *fs;
@@ -1817,11 +1810,6 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 			case OBJ_acpitempf:
 				close(objs[i].data.i);
 				break;
-#if defined(__linux__)
-			case OBJ_hwmon:
-				free(objs[i].data.hwmon.fname);
-				break;
-#endif
 			case OBJ_i2c:
 				close(objs[i].data.i2c.fd);
 				break;
@@ -2301,28 +2289,6 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	obj->data.s = strdup(bat);
 #endif /* !__OpenBSD__ */
 #if defined(__linux__)
-	END OBJ(hwmon, 0)
-		if (!arg) {
-			CRIT_ERR("hwmon: needs arguments (hwmon-number, sensor type, sensor number, sensor subtype)");
-		} else {
-			unsigned int monidx, sensidx;
-			char sensor[10], senssub[32];
-			if (sscanf(arg, "%u %9s %u %31s", &monidx, sensor, &sensidx, senssub) != 4) {
-				CRIT_ERR("hwmon: invalid (number of) arguments");
-			} else {
-				unsigned int maxlen = strlen(arg)+29+1+1; /* 29=strlen("/sys/class/hwmon/hwmon/device") */
-				char fname[maxlen];
-				snprintf(fname, maxlen, "/sys/class/hwmon/hwmon%u/device/%s%u_%s", monidx, sensor, sensidx, senssub);
-				obj->data.hwmon.fname = strdup(fname);
-				if (strncmp(sensor, "temp", 5) == 0) {
-					obj->data.hwmon.type = HWMON_temp;
-				} else if (strncmp(sensor, "fan", 4) == 0) {
-					obj->data.hwmon.type = HWMON_fan;
-				} else {
-					obj->data.hwmon.type = HWMON_other;
-				}
-			}
-		}
 	END OBJ(i8k_version, INFO_I8K)
 		END OBJ(i8k_bios, INFO_I8K)
 		END OBJ(i8k_serial, INFO_I8K)
@@ -3772,9 +3738,6 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					new_fg(p, color9);
 				}
 #if defined(__linux__)
-				OBJ(hwmon) {
-					get_hwmon_value(p, p_max_size, obj->data.hwmon.fname, obj->data.hwmon.type); 
-				}
 				OBJ(i8k_version) {
 					snprintf(p, p_max_size, "%s", i8k.version);
 				}
