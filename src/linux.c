@@ -659,14 +659,8 @@ get_first_file_in_a_directory(const char *dir, char *s, int *rep)
 	}
 }
 
-int open_i2c_sensor(const char *dev, const char *type, int n, int *div, char *devtype)
+int open_sysbus_sensor(const char *dir, const char *dev, const char *type, int n, int *div, char *devtype)
 {
-	char i2c_dir[64];
-	if (post_21_kernel) {
-		strncpy(i2c_dir, "/sys/bus/platform/devices/", 64);
-	} else {
-		strncpy(i2c_dir, "/sys/bus/i2c/devices/", 64);
-	}
 	char path[256];
 	char buf[256];
 	int fd;
@@ -675,7 +669,7 @@ int open_i2c_sensor(const char *dev, const char *type, int n, int *div, char *de
 	/* if i2c device is NULL or *, get first */
 	if (dev == NULL || strcmp(dev, "*") == 0) {
 		static int rep = 0;
-		if (!get_first_file_in_a_directory(i2c_dir, buf, &rep))
+		if (!get_first_file_in_a_directory(dir, buf, &rep))
 			return -1;
 		dev = buf;
 	}
@@ -685,9 +679,9 @@ int open_i2c_sensor(const char *dev, const char *type, int n, int *div, char *de
 		type = "in";
 
 	if (strcmp(type, "tempf") == 0) {
-		snprintf(path, 255, "%s%s/%s%d_input", i2c_dir, dev, "temp", n);
+		snprintf(path, 255, "%s%s/%s%d_input", dir, dev, "temp", n);
 	} else {
-		snprintf(path, 255, "%s%s/%s%d_input", i2c_dir, dev, type, n);
+		snprintf(path, 255, "%s%s/%s%d_input", dir, dev, type, n);
 	}
 	strncpy(devtype, path, 255);
 
@@ -708,10 +702,10 @@ int open_i2c_sensor(const char *dev, const char *type, int n, int *div, char *de
 
 	/* test if *_div file exist, open it and use it as divisor */
 	if (strcmp(type, "tempf") == 0) {
-		snprintf(path, 255, "%s%s/%s%d_div", i2c_dir, "one", "two",
+		snprintf(path, 255, "%s%s/%s%d_div", dir, "one", "two",
 			 n);
 	} else {
-		snprintf(path, 255, "%s%s/%s%d_div", i2c_dir, dev, type, n);
+		snprintf(path, 255, "%s%s/%s%d_div", dir, dev, type, n);
 	}
 
 	divfd = open(path, O_RDONLY);
@@ -731,7 +725,7 @@ int open_i2c_sensor(const char *dev, const char *type, int n, int *div, char *de
 	return fd;
 }
 
-double get_i2c_info(int *fd, int div, char *devtype, char *type)
+double get_sysbus_info(int *fd, int div, char *devtype, char *type)
 {
 	int val = 0;
 

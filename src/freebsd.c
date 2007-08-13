@@ -352,7 +352,7 @@ update_cpu_usage()
 }
 
 double
-get_i2c_info(int *fd, int arg, char *devtype, char *type)
+get_sysbus_info(int *fd, int arg, char *devtype, char *type)
 {
 	return (0);
 }
@@ -469,8 +469,7 @@ get_battery_perct_bar(const char *bar)
 }
 
 int
-open_i2c_sensor(const char *dev, const char *type, int n, int *div,
-		char *devtype)
+open_sysbus_sensor(const char *dir, const char *dev, const char *type, int n, int *div, char *devtype)
 {
 	return (0);
 }

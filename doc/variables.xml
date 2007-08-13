@@ -1340,6 +1340,18 @@
 </varlistentry>
 
 <varlistentry>
+  <term>
+    <command><option>platform</option></command>
+  <option>(dev) type n</option>
+  </term>
+  <listitem>
+    Platform sensor from sysfs (Linux 2.6). dev may be omitted if you have only one platform device. type is 
+either in (or vol) meaning voltage, fan meaning fan or temp/tempf (first in C, second in F) meaning temperature. n is number
+of the sensor. See /sys/bus/platform/devices/ on your local computer.
+  <para></para></listitem>
+</varlistentry>
+
+<varlistentry>
 	<term>
 		<command><option>pop3_unseen</option></command>
 	<option>(args)</option>

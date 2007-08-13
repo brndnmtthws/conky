@@ -345,10 +345,6 @@ CONFIGURATION SETTINGS
 	      Print text to stdout.
 
 
-       post_21_kernel
-	      Set to yes if you have Linux kernel 2.6.22 or newer
-
-
        pad_percents
 	      Pad percentages to this many decimals (0 = no padding)
 
@@ -1045,6 +1041,14 @@ VARIABLES
 	      charged  or discharged at current rate. Nothing is displayed, if
 	      battery is absent or if it's present but fully charged  and  not
 	      discharging.
+
+
+       platform (dev) type n
+	      Platform	sensor	from  sysfs (Linux 2.6). dev may be omitted if
+	      you have only one platform device. type is either	 in  (or  vol)
+	      meaning voltage, fan meaning fan or temp/tempf (first in C, sec-
+	      ond in F) meaning temperature. n is number of  the  sensor.  See
+	      /sys/bus/platform/devices/ on your local computer.
 
 
        pop3_unseen (args)

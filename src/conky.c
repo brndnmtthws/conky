@@ -124,10 +124,6 @@ static void print_version()
 	exit(0);
 }
 
-#if defined(__linux__)
-int post_21_kernel;
-#endif /* __linux__ */
-
 #ifdef X11
 
 /*
@@ -1060,6 +1056,7 @@ enum text_object_type {
 	OBJ_mixerrbar,
 	OBJ_new_mails,
 	OBJ_nodename,
+  OBJ_platform,
 	OBJ_pre_exec,
 	OBJ_processes,
 	OBJ_running_processes,
@@ -1229,7 +1226,7 @@ struct text_object {
 			int arg;
 			char devtype[256];
 			char type[64];
-		} i2c;		/* 2 */
+		} i2c, platform;		/* 2 */
 
 		struct {
 			int pos;
@@ -1816,6 +1813,9 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 			case OBJ_i2c:
 				close(objs[i].data.i2c.fd);
 				break;
+      case OBJ_platform:
+        close(objs[i].data.platform.fd);
+        break;
 #endif /* !__OpenBSD__ */
 			case OBJ_time:
 				free(objs[i].data.s);
@@ -2596,7 +2596,8 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	obj->data.pair.b = b;
 
 #ifndef __OpenBSD__
-	END OBJ(i2c, INFO_I2C) char buf1[64], buf2[64];
+	END OBJ(i2c, INFO_I2C)
+  char buf1[64], buf2[64];
 	int n;
 
 	if (!arg) {
@@ -2607,19 +2608,38 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	}
 
 	if (sscanf(arg, "%63s %63s %d", buf1, buf2, &n) != 3) {
-		/* if scanf couldn't read three values, read type and num and use
-		 * default device */
+		/* if scanf couldn't read three values, read type and num and use default device */
 		sscanf(arg, "%63s %d", buf2, &n);
 		obj->data.i2c.fd =
-			open_i2c_sensor(0, buf2, n, &obj->data.i2c.arg,
-					obj->data.i2c.devtype);
+			open_i2c_sensor(0, buf2, n, &obj->data.i2c.arg, obj->data.i2c.devtype);
 		strncpy(obj->data.i2c.type, buf2, 63);
 	} else {
 		obj->data.i2c.fd =
-			open_i2c_sensor(buf1, buf2, n, &obj->data.i2c.arg,
-					obj->data.i2c.devtype);
+			open_i2c_sensor(buf1, buf2, n, &obj->data.i2c.arg, obj->data.i2c.devtype);
 		strncpy(obj->data.i2c.type, buf2, 63);
 	}
+
+  END OBJ(i2c, INFO_PLATFORM)
+  char buf1[64], buf2[64];
+  int n;
+
+  if (!arg) {
+    ERR("platform needs arguments");
+    obj->type = OBJ_text;
+    return NULL;
+  }
+
+  if (sscanf(arg, "%63s %63s %d", buf1, buf2, &n) != 3) {
+    /* if scanf couldn't read three values, read type and num and use default device */
+    sscanf(arg, "%63s %d", buf2, &n);
+    obj->data.platform.fd =
+      open_platform_sensor(0, buf2, n, &obj->data.platform.arg, obj->data.platform.devtype);
+    strncpy(obj->data.platform.type, buf2, 63);
+  } else {
+    obj->data.platform.fd =
+      open_platform_sensor(buf1, buf2, n, &obj->data.platform.arg, obj->data.platform.devtype);
+    strncpy(obj->data.platform.type, buf2, 63);
+  }
 #endif /* !__OpenBSD__ */
 
 	END OBJ(top, INFO_TOP)
@@ -4471,7 +4491,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			OBJ(i2c) {
 				double r;
 
-				r = get_i2c_info(&obj->data.i2c.fd,
+				r = get_sysbus_info(&obj->data.i2c.fd,
 						 obj->data.i2c.arg,
 						 obj->data.i2c.devtype,
 						 obj->data.i2c.type);
@@ -4481,6 +4501,19 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				else
 					snprintf(p, p_max_size, "%.1f", r);
 			}
+      OBJ(platform) {
+        double r;
+
+        r = get_sysbus_info(&obj->data.platform.fd,
+            obj->data.platform.arg,
+            obj->data.platform.devtype,
+            obj->data.platform.type);
+
+        if (r >= 100.0 || r == 0)
+          snprintf(p, p_max_size, "%d", (int) r);
+        else
+          snprintf(p, p_max_size, "%.1f", r);
+      }
 #endif /* !__OpenBSD__ */
 			OBJ(alignr) {
 				new_alignr(p, obj->data.i);
@@ -6711,9 +6744,6 @@ static void set_default_configurations(void)
     info.xmms2.status = NULL;
 #endif
 	use_spacer = 0;
-#if defined(__linux__)
-	post_21_kernel = 0;
-#endif /* __linux__ */
 #ifdef X11
 	out_to_console = 0;
 #else
@@ -7046,11 +7076,6 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 		CONF("draw_outline") {
 			draw_outline = string_to_bool(value);
 		}
-#if defined(__linux__)
-		CONF("post_21_kernel") {
-			post_21_kernel = string_to_bool(value);
-		}
-#endif /* __linux__ */
 #endif /* X11 */
 		CONF("out_to_console") {
 			out_to_console = string_to_bool(value);

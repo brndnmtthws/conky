@@ -262,7 +262,7 @@ enum {
 	INFO_DISKIO = 17,
 	INFO_I8K = 18,
 #ifdef TCP_PORT_MONITOR
-        INFO_TCP_PORT_MONITOR = 19,
+  INFO_TCP_PORT_MONITOR = 19,
 #endif
 #ifdef AUDACIOUS
 	INFO_AUDACIOUS = 20,
@@ -277,6 +277,7 @@ enum {
 #ifdef RSS
 	INFO_RSS = 24,
 #endif
+  INFO_PLATFORM = 25
 };
 
 
@@ -503,9 +504,15 @@ char get_freq( char *, size_t, char *, int, unsigned int );
 void get_freq_dynamic( char *, size_t, char *, int ); 
 char get_voltage(char *, size_t, char *, int, unsigned int ); /* ptarjan */
 void update_load_average();
-int open_i2c_sensor(const char *dev, const char *type, int n, int *div,
-		    char *devtype);
-double get_i2c_info(int *fd, int arg, char *devtype, char *type);
+
+int open_sysbus_sensor(const char *dir, const char *dev, const char *type, int n, int *div, char *devtype);
+#define open_i2c_sensor(dev,type,n,div,devtype) \
+    open_sysbus_sensor("/sys/bus/i2c/devices/",dev,type,n,div,devtype)
+
+#define open_platform_sensor(dev,type,n,div,devtype) \
+    open_sysbus_sensor("/sys/bus/platform/devices/",dev,type,n,div,devtype)
+
+double get_sysbus_info(int *fd, int arg, char *devtype, char *type);
 
 void get_adt746x_cpu( char *, size_t ); 
 void get_adt746x_fan( char *, size_t ); 
@@ -629,10 +636,6 @@ PRSS* get_rss_info(char *uri, int delay);
 void init_rss_info();
 void free_rss_info();
 #endif /* RSS */
-
-#if defined(__linux__)
-extern int post_21_kernel;
-#endif /* __linux__ */
 
 /* in linux.c */
 

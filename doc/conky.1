@@ -337,10 +337,6 @@ of window can be useful for certain situations.
 Print text to stdout.
 
 .TP 
-\fB\*(T<\fBpost_21_kernel\fR\*(T>\fR 
-Set to yes if you have Linux kernel 2.6.22 or newer
-
-.TP 
 \fB\*(T<\fBpad_percents\fR\*(T>\fR
 Pad percentages to this many decimals (0 = no padding)
 
@@ -971,6 +967,12 @@ will be fully charged or discharged at current
 rate. Nothing is displayed, if battery is
 absent or if it's present but fully charged
 and not discharging.
+
+.TP 
+\fB\*(T<\fBplatform\fR\*(T>\fR \*(T<\fB(dev) type n\fR\*(T> 
+Platform sensor from sysfs (Linux 2.6). dev may be omitted if you have only one platform device. type is 
+either in (or vol) meaning voltage, fan meaning fan or temp/tempf (first in C, second in F) meaning temperature. n is number
+of the sensor. See /sys/bus/platform/devices/ on your local computer.
 
 .TP 
 \fB\*(T<\fBpop3_unseen\fR\*(T>\fR \*(T<\fB(args)\fR\*(T> 

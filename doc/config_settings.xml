@@ -358,13 +358,6 @@
 </varlistentry>
 
 <varlistentry>
-	<term><command><option>post_21_kernel</option></command>
-	</term>
-	<listitem>
-		Set to yes if you have Linux kernel 2.6.22 or newer
-		<para></para></listitem>
-</varlistentry>
-<varlistentry>
 	<term><command><option>pad_percents</option></command></term>
 	<listitem>
 		Pad percentages to this many decimals (0 = no padding)
