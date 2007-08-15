@@ -1,5 +1,8 @@
 # $Id$
 
+2007-08-14
+	* Updated vim/nano syntax files.
+
 2007-08-12
 	* Added $hwmon var, similar to $i2c and $platform.
 

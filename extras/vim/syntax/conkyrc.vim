@@ -22,9 +22,6 @@ syn keyword ConkyrcSetting
         \ default_color
         \ default_outline_color
         \ default_shade_color
-        \ dexter_client
-        \ dexter_config
-        \ dexter_server
         \ double_buffer
         \ draw_borders
         \ draw_graph_borders
@@ -163,6 +160,7 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
         \ hddtemp
         \ head
         \ hr 
+        \ hwmon
         \ i2c 
         \ i8k_ac_status 
         \ i8k_bios 
@@ -204,6 +202,7 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
         \ nodename 
         \ offset 
         \ outlinecolor 
+        \ platform
         \ pre_exec 
         \ processes
         \ running_processes 
