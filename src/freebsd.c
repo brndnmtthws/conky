@@ -851,8 +851,9 @@ char
 {
 	int fd;
 	struct apm_info info;
+	char *out;
 
-	(char *)out = (char *)calloc(16, sizeof (char));
+	out = (char *)calloc(16, sizeof (char));
 
 	fd = open(APMDEV, O_RDONLY);
 	if (fd < 0) {
