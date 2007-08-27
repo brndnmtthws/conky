@@ -224,5 +224,8 @@ void update_mpd()
 		return;
 	}
 	mpd_freeStatus(status);
-//	mpd_closeConnection(current_info->conn);
+	if (current_info->conn) {
+		mpd_closeConnection(current_info->conn);
+		current_info->conn = 0;
+	}
 }

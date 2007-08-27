@@ -1,5 +1,9 @@
 # $Id$
 
+2007-08-27
+	* Fixed issue with SIGPIPE and mpd
+	* Updated COPYING (with more clarifications)
+
 2007-08-14
 	* Updated vim/nano syntax files.
 
@@ -9,7 +13,7 @@
 2007-08-12
 	* Added var $platform which is similar to $i2c and accommodates the conversion
 	  of many devices from /sys/bus/i2c/devices to /sys/bus/platform/devices.
-  * Removed config item post_21_kernel since it forced all i2c device lookups
+	* Removed config item post_21_kernel since it forced all i2c device lookups
 	  to go to /sys/bus/platform/devices and some people may need a mix of both
 		i2c and platform devices.
 

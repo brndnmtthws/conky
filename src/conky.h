@@ -183,6 +183,7 @@ struct mpd_s {
 	int elapsed;
 	int max_title_len;		/* e.g. ${mpd_title 50} */
 };
+
 #endif
 
 #ifdef XMMS2

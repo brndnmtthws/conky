@@ -1002,8 +1002,8 @@ enum text_object_type {
 	OBJ_alignr,
 	OBJ_alignc,
 	OBJ_i2c,
-  OBJ_platform,
-  OBJ_hwmon,
+	OBJ_platform,
+	OBJ_hwmon,
 #if defined(__linux__)
 	OBJ_i8k_version,
 	OBJ_i8k_bios,
