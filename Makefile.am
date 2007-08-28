@@ -16,6 +16,9 @@ EXTRA_DIST = 					\
 	extras/vim/ftdetect/conkyrc.vim		\
 	extras/vim/syntax/conkyrc.vim
 
+ACLOCAL_AMFLAGS =				\
+	-I m4
+
 DISTCLEANFILES =				\
 	configure.ac
 
