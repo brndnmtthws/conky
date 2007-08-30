@@ -35,7 +35,7 @@ AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, yes, no)
 if test x"$HAVE_PKGCONFIG" = x"no"; then
   AC_MSG_ERROR([pkg-config is required!])
 fi
-PKG_PROG_PKG_CONFIG([0.20])
+PKG_PROG_PKG_CONFIG([0.19])
 
 AC_CONFIG_FILES(
   Makefile
