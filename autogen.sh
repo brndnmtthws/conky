@@ -5,11 +5,11 @@
 #
 # optional $1 = optional directory containing build tree or svn working copy
 
-export AUTOCONF=${AUTOCONF:-autoconf}
-export AUTOMAKE=${AUTOMAKE:-automake}
-export ACLOCAL=${ACLOCAL:-aclocal}
-export AUTOHEADER=${AUTOHEADER:-autoheader}
-export LIBTOOLIZE=${LIBTOOLIZE:-libtoolize}
+AUTOCONF=${AUTOCONF:-autoconf}
+AUTOMAKE=${AUTOMAKE:-automake}
+ACLOCAL=${ACLOCAL:-aclocal}
+AUTOHEADER=${AUTOHEADER:-autoheader}
+LIBTOOLIZE=${LIBTOOLIZE:-libtoolize}
 
 # identify svn revision, if an svn working copy
 if test "$1" != "" && test -d "$1/.svn"; then
