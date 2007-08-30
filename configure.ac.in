@@ -147,7 +147,12 @@ AC_ARG_ENABLE([hddtemp],
 
 AM_CONDITIONAL(BUILD_HDDTEMP, test x$want_hddtemp = xyes)
 if test x$want_hddtemp = xyes; then
-  AC_DEFINE(HDDTEMP, 1, [Define if you want hddtemp support])
+  if test x"$uname" != xLinux; then
+      AC_MSG_NOTICE([hddtemp not supported on $uname... disabling])
+      want_hddtemp=no
+  else
+      AC_DEFINE(HDDTEMP, 1, [Define if you want hddtemp support])
+  fi
 fi
 
 dnl
