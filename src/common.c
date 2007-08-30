@@ -33,6 +33,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <sys/time.h>
+#include <pthread.h>
 
 struct information info;
 
@@ -230,8 +231,11 @@ void update_stuff()
 #endif /* __linux__ */
 	
 #ifdef MPD
-	if (NEED(INFO_MPD))
-		update_mpd();
+	if (NEED(INFO_MPD)) {
+		if (!mpd_timed_thread) {
+			mpd_timed_thread = timed_thread_create((void*)update_mpd, (void*) NULL, update_interval * 1000000);
+		}
+	}
 #endif
 
 #ifdef XMMS2

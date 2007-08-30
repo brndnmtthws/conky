@@ -1,7 +1,8 @@
 # $Id$
 
-2007-08-28
-	* Check for pkg-config >=0.20
+2007-08-30
+	* Check for pkg-config >=0.19
+	* Use timed_thread for mpd
 
 2007-08-27
 	* Fixed issue with SIGPIPE and mpd

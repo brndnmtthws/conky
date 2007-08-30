@@ -619,8 +619,9 @@ char *get_apm_battery_time(void);
 
 /* in mpd.c */
 #ifdef MPD
-void update_mpd();
-#endif
+void *update_mpd(void);
+extern timed_thread *mpd_timed_thread;
+#endif /* MPD */
 
 /* in xmms2.c */
 #ifdef XMMS2
