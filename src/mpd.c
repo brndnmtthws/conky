@@ -62,6 +62,7 @@ void clear_mpd_stats(struct information *current_info)
 	*current_info->mpd.random=0;
 	*current_info->mpd.repeat=0;
 	*current_info->mpd.track=0;
+	*current_info->mpd.status=0;
 	current_info->mpd.bitrate = 0;
 	current_info->mpd.progress = 0;
 	current_info->mpd.elapsed = 0;
@@ -70,9 +71,9 @@ void clear_mpd_stats(struct information *current_info)
 
 void *update_mpd(void)
 {
+	struct information *current_info = &info;
 	while (1) {
-		struct information *current_info = &info;
-		if (current_info->conn == NULL) {
+		if (!current_info->conn) {
 			current_info->conn = mpd_newConnection(current_info->mpd.host, current_info->mpd.port, 10);
 		}
 		if (strlen(current_info->mpd.password) > 1) {
@@ -81,10 +82,7 @@ void *update_mpd(void)
 			mpd_finishCommand(current_info->conn);
 		}
 
-		// This makes sure everything we need is malloc'ed and clear
-		clear_mpd_stats(current_info); 
-
-		if (current_info->conn->error) {
+		if (current_info->conn->error || current_info->conn == NULL) {
 			//ERR("%MPD error: s\n", current_info->conn->errorStr);
 			mpd_closeConnection(current_info->conn);
 			current_info->conn = 0;
@@ -236,10 +234,10 @@ void *update_mpd(void)
 			continue;
 		}
 		mpd_freeStatus(status);
-		if (current_info->conn) {
+/*		if (current_info->conn) {
 			mpd_closeConnection(current_info->conn);
 			current_info->conn = 0;
-		}
+		}*/
 		if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
 		continue;
 	}
