@@ -619,6 +619,7 @@ char *get_apm_battery_time(void);
 
 /* in mpd.c */
 #ifdef MPD
+extern void clear_mpd_stats(struct information *current_info);
 void *update_mpd(void);
 extern timed_thread *mpd_timed_thread;
 #endif /* MPD */

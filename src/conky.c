@@ -3140,13 +3140,15 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		OBJ(mpd_artist, INFO_MPD) END
 		OBJ(mpd_title, INFO_MPD)
 		{
-			if (arg)
-			{
-			    sscanf (arg, "%d", &info.mpd.max_title_len);
-			    if (info.mpd.max_title_len > 0)
-				info.mpd.max_title_len++;
-			    else
-				CRIT_ERR ("mpd_title: invalid length argument");
+			if (arg) {
+				sscanf (arg, "%d", &info.mpd.max_title_len);
+				if (info.mpd.max_title_len > 0) {
+					info.mpd.max_title_len++;
+				} else {
+					CRIT_ERR ("mpd_title: invalid length argument");
+				}
+			} else {
+				info.mpd.max_title_len = 0;
 			}
 		}
 		END OBJ(mpd_random, INFO_MPD)
@@ -3192,13 +3194,15 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		OBJ(audacious_status, INFO_AUDACIOUS) END
 		OBJ(audacious_title, INFO_AUDACIOUS) 
 		{
-			if (arg)
-			{
-			    sscanf (arg, "%d", &info.audacious.max_title_len);
-			    if (info.audacious.max_title_len > 0)
+			if (arg) {
+				sscanf (arg, "%d", &info.audacious.max_title_len);
+				if (info.audacious.max_title_len > 0) {
+					info.audacious.max_title_len++;
+				} 		    else {
+					CRIT_ERR ("audacious_title: invalid length argument");
+				}
+			} else {
 				info.audacious.max_title_len++;
-			    else
-				CRIT_ERR ("audacious_title: invalid length argument");
 			}
 		}
 		END
@@ -4967,7 +4971,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					       255.0f));
 			}
 			OBJ(mpd_smart) {
-				if (strlen(cur->mpd.title) < 2 && strlen(cur->mpd.title) < 2) {
+				if (strlen(cur->mpd.title) < 2 && strlen(cur->mpd.artist) < 2) {
 					snprintf(p, p_max_size, "%s", cur->mpd.file);
 				} else {
 					snprintf(p, p_max_size, "%s - %s", cur->mpd.artist, cur->mpd.title);
@@ -7428,7 +7432,7 @@ int main(int argc, char **argv)
 	struct sigaction act, oact;
 
 	g_signal_pending=0;
-	memset(&info, 0, sizeof(info) );
+	memset(&info, 0, sizeof(info));
 
 #ifdef TCP_PORT_MONITOR
 	tcp_port_monitor_args.max_port_monitor_connections = MAX_PORT_MONITOR_CONNECTIONS_DEFAULT;

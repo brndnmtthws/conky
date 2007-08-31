@@ -33,7 +33,7 @@
 
 timed_thread *mpd_timed_thread = NULL;
 
-static void clear_mpd_stats(struct information *current_info)
+void clear_mpd_stats(struct information *current_info)
 {
 	if (current_info->mpd.artist == NULL)
 		current_info->mpd.artist = malloc(TEXT_BUFFER_SIZE);
@@ -90,8 +90,7 @@ void *update_mpd(void)
 			current_info->conn = 0;
 
 			strncpy(current_info->mpd.status, "MPD not responding",	TEXT_BUFFER_SIZE - 1);
-			if (timed_thread_test(mpd_timed_thread))
-				timed_thread_exit(mpd_timed_thread);
+			if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
 			continue;
 		}
 
@@ -109,8 +108,7 @@ void *update_mpd(void)
 
 			strncpy(current_info->mpd.status, "MPD not responding", TEXT_BUFFER_SIZE - 1);
 			timed_thread_unlock(mpd_timed_thread);
-			if (timed_thread_test(mpd_timed_thread))
-				timed_thread_exit(mpd_timed_thread);
+			if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
 			continue;
 		}
 
@@ -161,8 +159,7 @@ void *update_mpd(void)
 			mpd_closeConnection(current_info->conn);
 			current_info->conn = 0;
 			timed_thread_unlock(mpd_timed_thread);
-			if (timed_thread_test(mpd_timed_thread))
-				timed_thread_exit(mpd_timed_thread);
+			if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
 			continue;
 		}
 
@@ -226,8 +223,7 @@ void *update_mpd(void)
 			//fprintf(stderr, "%s\n", current_info->conn->errorStr);
 			mpd_closeConnection(current_info->conn);
 			current_info->conn = 0;
-			if (timed_thread_test(mpd_timed_thread))
-				timed_thread_exit(mpd_timed_thread);
+			if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
 			continue;
 		}
 
@@ -236,8 +232,7 @@ void *update_mpd(void)
 			//fprintf(stderr, "%s\n", current_info->conn->errorStr);
 			mpd_closeConnection(current_info->conn);
 			current_info->conn = 0;
-			if (timed_thread_test(mpd_timed_thread))
-				timed_thread_exit(mpd_timed_thread);
+			if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
 			continue;
 		}
 		mpd_freeStatus(status);
@@ -245,9 +240,8 @@ void *update_mpd(void)
 			mpd_closeConnection(current_info->conn);
 			current_info->conn = 0;
 		}
-		if (timed_thread_test(mpd_timed_thread))
-			timed_thread_exit(mpd_timed_thread);
-			continue;
+		if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
+		continue;
 	}
 	return 0;
 }
