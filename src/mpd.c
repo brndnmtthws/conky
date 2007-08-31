@@ -32,8 +32,9 @@
 #include "libmpdclient.h"
 
 timed_thread *mpd_timed_thread = NULL;
+void clear_mpd_stats(struct information *current_info);
 
-void clear_mpd_stats(struct information *current_info)
+void init_mpd_stats(struct information *current_info)
 {
 	if (current_info->mpd.artist == NULL)
 		current_info->mpd.artist = malloc(TEXT_BUFFER_SIZE);
@@ -53,7 +54,11 @@ void clear_mpd_stats(struct information *current_info)
 		current_info->mpd.name = malloc(TEXT_BUFFER_SIZE);
 	if (current_info->mpd.file == NULL)
 		current_info->mpd.file = malloc(TEXT_BUFFER_SIZE);
+	clear_mpd_stats(current_info);
+}
 
+void clear_mpd_stats(struct information *current_info)
+{
 	*current_info->mpd.name=0;
 	*current_info->mpd.file=0;
 	*current_info->mpd.artist=0;
@@ -81,6 +86,9 @@ void *update_mpd(void)
 					current_info->mpd.password);
 			mpd_finishCommand(current_info->conn);
 		}
+		
+		timed_thread_lock(mpd_timed_thread);
+		clear_mpd_stats(current_info);
 
 		if (current_info->conn->error || current_info->conn == NULL) {
 			//ERR("%MPD error: s\n", current_info->conn->errorStr);
@@ -92,7 +100,6 @@ void *update_mpd(void)
 			continue;
 		}
 
-		timed_thread_lock(mpd_timed_thread);
 		mpd_Status *status;
 		mpd_InfoEntity *entity;
 		mpd_sendStatusCommand(current_info->conn);
