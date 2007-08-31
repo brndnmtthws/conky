@@ -90,7 +90,7 @@ src_install() {
 pkg_postinst() {
 	elog 'Default configuration file is "~/.conkyrc"'
 	elog "You can find a sample configuration file in"
-	elog "/usr/share/doc/${PF}/conkyrc.sample.gz"
+	elog "/usr/share/doc/${PF}/conkyrc.sample.bz2"
 	elog
 	elog "For more info on Conky's new features,"
 	elog "please look at the README and ChangeLog:"
