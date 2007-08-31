@@ -1,6 +1,7 @@
 # $Id$
 
 2007-08-30
+	* Conky 1.4.7 released
 	* Check for pkg-config >=0.19
 	* Use timed_thread for mpd
 
