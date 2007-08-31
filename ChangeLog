@@ -1,5 +1,8 @@
 # $Id$
 
+2007-08-31
+	* _Really_ fix mpd SIGPIPE issues
+
 2007-08-30
 	* Conky 1.4.7 released
 	* Check for pkg-config >=0.19

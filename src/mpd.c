@@ -95,10 +95,7 @@ void *update_mpd(void)
 		timed_thread_lock(mpd_timed_thread);
 		mpd_Status *status;
 		mpd_InfoEntity *entity;
-		mpd_sendCommandListOkBegin(current_info->conn);
 		mpd_sendStatusCommand(current_info->conn);
-		mpd_sendCurrentSongCommand(current_info->conn);
-		mpd_sendCommandListEnd(current_info->conn);
 		if ((status = mpd_getStatus(current_info->conn)) == NULL) {
 			//ERR("MPD error: %s\n", current_info->conn->errorStr);
 			mpd_closeConnection(current_info->conn);
@@ -106,6 +103,14 @@ void *update_mpd(void)
 
 			strncpy(current_info->mpd.status, "MPD not responding", TEXT_BUFFER_SIZE - 1);
 			timed_thread_unlock(mpd_timed_thread);
+			if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
+			continue;
+		}
+		mpd_finishCommand(current_info->conn);
+		if (current_info->conn->error) {
+			//fprintf(stderr, "%s\n", current_info->conn->errorStr);
+			mpd_closeConnection(current_info->conn);
+			current_info->conn = 0;
 			if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
 			continue;
 		}
@@ -161,8 +166,7 @@ void *update_mpd(void)
 			continue;
 		}
 
-		mpd_nextListOkCommand(current_info->conn);
-
+		mpd_sendCurrentSongCommand(current_info->conn);
 		while ((entity = mpd_getNextInfoEntity(current_info->conn))) {
 			mpd_Song *song = entity->info.song;
 			if (entity->type != MPD_INFO_ENTITY_TYPE_SONG) {
@@ -215,6 +219,14 @@ void *update_mpd(void)
 			mpd_freeInfoEntity(entity);
 			entity = NULL;
 		}
+		mpd_finishCommand(current_info->conn);
+		if (current_info->conn->error) {
+			//fprintf(stderr, "%s\n", current_info->conn->errorStr);
+			mpd_closeConnection(current_info->conn);
+			current_info->conn = 0;
+			if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
+			continue;
+		}
 
 		timed_thread_unlock(mpd_timed_thread);
 		if (current_info->conn->error) {
@@ -225,14 +237,6 @@ void *update_mpd(void)
 			continue;
 		}
 
-		mpd_finishCommand(current_info->conn);
-		if (current_info->conn->error) {
-			//fprintf(stderr, "%s\n", current_info->conn->errorStr);
-			mpd_closeConnection(current_info->conn);
-			current_info->conn = 0;
-			if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
-			continue;
-		}
 		mpd_freeStatus(status);
 /*		if (current_info->conn) {
 			mpd_closeConnection(current_info->conn);
