@@ -3201,8 +3201,6 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 				} 		    else {
 					CRIT_ERR ("audacious_title: invalid length argument");
 				}
-			} else {
-				info.audacious.max_title_len++;
 			}
 		}
 		END
@@ -4172,12 +4170,12 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					if (!obj->data.texeci.p_timed_thread)
 					{
 					    obj->data.texeci.p_timed_thread=
-					    timed_thread_create ((void*)threaded_exec, (void*) obj, 
-							         obj->data.texeci.interval * 1000000);
+					      timed_thread_create ((void*)threaded_exec, (void*) obj, obj->data.texeci.interval * 1000000);
 					    if (!obj->data.texeci.p_timed_thread)
-						ERR("Error starting texeci thread");
-					    timed_thread_register (obj->data.texeci.p_timed_thread,
-							    	   &obj->data.texeci.p_timed_thread);
+						    ERR("Error creating texeci timed thread");
+					    timed_thread_register (obj->data.texeci.p_timed_thread, &obj->data.texeci.p_timed_thread);
+              if (timed_thread_run (obj->data.texeci.p_timed_thread))
+                ERR("Error running texeci timed thread");
 					}
 					timed_thread_lock (obj->data.texeci.p_timed_thread);
 					snprintf(p, p_max_size, "%s", obj->data.texeci.buffer);
@@ -4189,13 +4187,12 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						if (!info.mail->p_timed_thread)
 						{
 						    info.mail->p_timed_thread = 
-						    timed_thread_create ((void*)imap_thread, 
-								         (void*)info.mail,
-								         info.mail->interval * 1000000);
+						      timed_thread_create ((void*)imap_thread, (void*)info.mail, info.mail->interval * 1000000);
 						    if (!info.mail->p_timed_thread)
-							 ERR("Error starting imap thread");
-						    timed_thread_register (info.mail->p_timed_thread,
-								    	   &info.mail->p_timed_thread);
+							    ERR("Error creating imap timed thread");
+						    timed_thread_register (info.mail->p_timed_thread, &info.mail->p_timed_thread);
+                if (timed_thread_run (info.mail->p_timed_thread))
+                  ERR("Error running imap timed thread");
 						}
 						timed_thread_lock (info.mail->p_timed_thread);
 						snprintf(p, p_max_size, "%lu", info.mail->unseen);
@@ -4204,13 +4201,13 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						if (!obj->data.mail->p_timed_thread)
 						{
 						    obj->data.mail->p_timed_thread = 
-						    timed_thread_create ((void*)imap_thread, 
-								         (void*)obj->data.mail,
-									 obj->data.mail->interval * 1000000);
+						      timed_thread_create ((void*)imap_thread, (void*)obj->data.mail, 
+                                       obj->data.mail->interval * 1000000);
 						    if (!obj->data.mail->p_timed_thread)
-							ERR("Error starting imap thread");
-						    timed_thread_register (obj->data.mail->p_timed_thread,
-								           &obj->data.mail->p_timed_thread);
+							    ERR("Error creating imap timed thread");
+						    timed_thread_register (obj->data.mail->p_timed_thread, &obj->data.mail->p_timed_thread);
+                if (timed_thread_run (obj->data.mail->p_timed_thread))
+                  ERR("Error running imap timed thread");
 						}
 						timed_thread_lock (obj->data.mail->p_timed_thread);
 						snprintf(p, p_max_size, "%lu", obj->data.mail->unseen);
@@ -4225,29 +4222,28 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						if (!info.mail->p_timed_thread)
 						{
 						    info.mail->p_timed_thread =
-                                                    timed_thread_create ((void*)imap_thread, 
-								         (void*)info.mail,
-                                                                         info.mail->interval * 1000000);
-                                                    if (!info.mail->p_timed_thread)
-                                                         ERR("Error starting imap thread");
-                                                    timed_thread_register (info.mail->p_timed_thread,
-                                                                           &info.mail->p_timed_thread);
+                  timed_thread_create ((void*)imap_thread, (void*)info.mail, info.mail->interval * 1000000);
+                if (!info.mail->p_timed_thread)
+                  ERR("Error creating imap timed thread");
+                timed_thread_register (info.mail->p_timed_thread, &info.mail->p_timed_thread);
+                if (timed_thread_run (info.mail->p_timed_thread))
+                  ERR("Error running imap timed thread");
 						}
 						timed_thread_lock (info.mail->p_timed_thread);
 						snprintf(p, p_max_size, "%lu", info.mail->messages);
 						timed_thread_unlock (info.mail->p_timed_thread);
 					} else if (obj->data.mail) { // this means we use obj
 						if (!obj->data.mail->p_timed_thread)
-                                                {
-                                                    obj->data.mail->p_timed_thread =
-                                                    timed_thread_create ((void*)imap_thread,
-                                                                         (void*)obj->data.mail,
-                                                                         obj->data.mail->interval * 1000000);
-                                                    if (!obj->data.mail->p_timed_thread)
-                                                        ERR("Error starting imap thread");
-                                                    timed_thread_register (obj->data.mail->p_timed_thread,
-                                                                           &obj->data.mail->p_timed_thread);
-                                                }
+            {
+              obj->data.mail->p_timed_thread =
+                timed_thread_create ((void*)imap_thread, (void*)obj->data.mail, 
+                                     obj->data.mail->interval * 1000000);
+              if (!obj->data.mail->p_timed_thread)
+                ERR("Error creating imap timed thread");
+              timed_thread_register (obj->data.mail->p_timed_thread, &obj->data.mail->p_timed_thread);
+              if (timed_thread_run (obj->data.mail->p_timed_thread))
+                ERR("Error runninging imap timed thread");
+            }
 						timed_thread_lock (obj->data.mail->p_timed_thread);
 						snprintf(p, p_max_size, "%lu", obj->data.mail->messages);
 						timed_thread_lock (obj->data.mail->p_timed_thread);
@@ -4261,13 +4257,12 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						if (!info.mail->p_timed_thread)
 						{
 						    info.mail->p_timed_thread = 
-						    timed_thread_create ((void*)pop3_thread,
-								         (void*)info.mail,
-									 info.mail->interval * 1000000);
+						    timed_thread_create ((void*)pop3_thread, (void*)info.mail, info.mail->interval * 1000000);
 						    if (!info.mail->p_timed_thread)
-							ERR("Error starting pop3 thread");
-						    timed_thread_register (info.mail->p_timed_thread,
-								           &info.mail->p_timed_thread);
+							    ERR("Error creating pop3 timed thread");
+						    timed_thread_register (info.mail->p_timed_thread, &info.mail->p_timed_thread);
+                if (timed_thread_run (info.mail->p_timed_thread))
+                  ERR("Error running pop3 timed thread");
 						}
 						timed_thread_lock (info.mail->p_timed_thread);
 						snprintf(p, p_max_size, "%lu", info.mail->unseen);
@@ -4276,13 +4271,13 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						if (!obj->data.mail->p_timed_thread)
 						{
 						    obj->data.mail->p_timed_thread = 
-						    timed_thread_create ((void*)pop3_thread,
-								         (void*)obj->data.mail,
-									 obj->data.mail->interval * 1000000);
+						    timed_thread_create ((void*)pop3_thread, (void*)obj->data.mail,
+									                   obj->data.mail->interval * 1000000);
 						    if (!obj->data.mail->p_timed_thread)
-							ERR("Error starting pop3 thread");
-						    timed_thread_register (obj->data.mail->p_timed_thread,
-								    	   &obj->data.mail->p_timed_thread);
+							    ERR("Error creating pop3 timed thread");
+						    timed_thread_register (obj->data.mail->p_timed_thread, &obj->data.mail->p_timed_thread);
+                if (timed_thread_run (obj->data.mail->p_timed_thread))
+                  ERR("Error running pop3 timed thread");
 						}
 						timed_thread_lock (obj->data.mail->p_timed_thread);
 						snprintf(p, p_max_size, "%lu", obj->data.mail->unseen);
@@ -4297,13 +4292,12 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						if (!info.mail->p_timed_thread)
 						{
 						    info.mail->p_timed_thread = 
-						    timed_thread_create ((void*)pop3_thread,
-								    	 (void*)info.mail,
-								    	 info.mail->interval * 1000000);
+						      timed_thread_create ((void*)pop3_thread, (void*)info.mail, info.mail->interval * 1000000);
 						    if (!info.mail->p_timed_thread)
-							ERR("Error starting pop3 thread");
-						    timed_thread_register (info.mail->p_timed_thread,
-								    	   &info.mail->p_timed_thread);
+							    ERR("Error creating pop3 timed thread");
+						    timed_thread_register (info.mail->p_timed_thread, &info.mail->p_timed_thread);
+                if (timed_thread_run (info.mail->p_timed_thread))
+                  ERR("Error running pop3 timed thread");
 						}
 						timed_thread_lock (info.mail->p_timed_thread);
 						snprintf(p, p_max_size, "%.1f", info.mail->used/1024.0/1024.0);
@@ -4312,13 +4306,13 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						if (!obj->data.mail->p_timed_thread)
 						{
 						    obj->data.mail->p_timed_thread =
-						    timed_thread_create ((void*)pop3_thread,
-								    	 (void*)obj->data.mail,
-									 obj->data.mail->interval * 1000000);
+						      timed_thread_create ((void*)pop3_thread, (void*)obj->data.mail,
+									                     obj->data.mail->interval * 1000000);
 						    if (!obj->data.mail->p_timed_thread)
-							ERR("Error starting pop3 thread");
-						    timed_thread_register (obj->data.mail->p_timed_thread,
-								    	   &obj->data.mail->p_timed_thread);
+							    ERR("Error creating pop3 timed thread");
+						    timed_thread_register (obj->data.mail->p_timed_thread, &obj->data.mail->p_timed_thread);
+                if (timed_thread_run (obj->data.mail->p_timed_thread))
+                  ERR("Error running pop3 timed thread");
 						}
 						timed_thread_lock (obj->data.mail->p_timed_thread);
 						snprintf(p, p_max_size, "%.1f", obj->data.mail->used/1024.0/1024.0);

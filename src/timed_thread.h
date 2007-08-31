@@ -30,8 +30,11 @@
 /* opaque structure for clients */
 typedef struct _timed_thread timed_thread;
 
-/* create a timed thread */
+/* create a timed thread (object creation only) */
 timed_thread* timed_thread_create (void *(*start_routine)(void*), void *arg, unsigned int interval_usecs);
+
+/* run a timed thread (drop the thread and run it) */
+int timed_thread_run (timed_thread* p_timed_thread);
 
 /* destroy a timed thread */
 void timed_thread_destroy (timed_thread* p_timed_thread, timed_thread** addr_of_p_timed_thread);

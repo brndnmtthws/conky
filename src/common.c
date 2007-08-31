@@ -236,9 +236,11 @@ void update_stuff()
 			clear_mpd_stats(&info); 
 			mpd_timed_thread = timed_thread_create((void*)update_mpd, (void*) NULL, update_interval * 1000000);
 			if (!mpd_timed_thread) {
-				ERR("Failed to create MPD thread");
+				ERR("Failed to create MPD timed thread");
 			}
 			timed_thread_register(mpd_timed_thread, &mpd_timed_thread);
+      if (timed_thread_run (mpd_timed_thread))
+        ERR("Failed to run MPD timed thread");
 		}
 	}
 #endif

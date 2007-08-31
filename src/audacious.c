@@ -65,7 +65,7 @@ int create_audacious_thread(void)
   if (!info.audacious.p_timed_thread)
     info.audacious.p_timed_thread = timed_thread_create (audacious_thread_func, NULL, 1000000);
 
-  if (!info.audacious.p_timed_thread)
+  if (!info.audacious.p_timed_thread || timed_thread_run (info.audacious.p_timed_thread))
     return (-1);
 
   return 0;

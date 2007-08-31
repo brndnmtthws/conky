@@ -44,6 +44,8 @@ struct _timed_thread
   pthread_mutex_t runnable_mutex; /* only for the runnable_cond */
   pthread_cond_t runnable_cond;   /* signalled to stop the thread */
   unsigned int interval_usecs;    /* timed_thread_test() wait interval in microseconds */
+  void *(*start_routine)(void*);  /* thread function to run */
+  void *arg;                      /* thread function argument */
 };
 
 /* linked list of created threads */
@@ -58,7 +60,7 @@ static timed_thread_list *p_timed_thread_list_head = NULL;
 static timed_thread_list *p_timed_thread_list_tail = NULL;
 
 
-/* create a timed thread */
+/* create a timed thread (object creation only) */
 timed_thread* 
 timed_thread_create (void *(*start_routine)(void*), void *arg, unsigned int interval_usecs)
 {
@@ -79,18 +81,19 @@ timed_thread_create (void *(*start_routine)(void*), void *arg, unsigned int inte
   pthread_cond_init (&p_timed_thread->runnable_cond, NULL);
 
   p_timed_thread->interval_usecs = interval_usecs;
+  p_timed_thread->start_routine = start_routine;
+  p_timed_thread->arg = arg;
 
-  /* create thread */
-  if (pthread_create (&p_timed_thread->thread, &p_timed_thread->thread_attr, start_routine, arg))
-  {
-    timed_thread_destroy (p_timed_thread, NULL);
-    return NULL;
-  }
-
-  /*fprintf (stderr, "created timed thread 0x%08X\n", (unsigned)p_timed_thread);*/
   return p_timed_thread;
 }
 
+/* run a timed thread (drop the thread and run it) */
+int 
+timed_thread_run (timed_thread* p_timed_thread)
+{
+  return pthread_create (&p_timed_thread->thread, &p_timed_thread->thread_attr,
+                         p_timed_thread->start_routine, p_timed_thread->arg);
+}
 
 /* destroy a timed thread.
  * optional addr_of_p_timed_thread to set callers pointer to NULL as a convenience. */
@@ -114,7 +117,6 @@ timed_thread_destroy (timed_thread* p_timed_thread, timed_thread** addr_of_p_tim
   pthread_mutex_destroy (&p_timed_thread->runnable_mutex);
   pthread_cond_destroy (&p_timed_thread->runnable_cond);
 
-  /*fprintf (stderr, "Conky: destroying thread 0x%08X\n", (unsigned)p_timed_thread);*/
   free (p_timed_thread);
   if (addr_of_p_timed_thread)
     *addr_of_p_timed_thread = NULL;
