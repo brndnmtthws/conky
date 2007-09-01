@@ -35,6 +35,8 @@
 
 /* Abstraction layer for timed threads */
 
+static int now (struct timespec *);
+
 /* private */
 struct _timed_thread 
 {
@@ -43,9 +45,10 @@ struct _timed_thread
   pthread_mutex_t cs_mutex;       /* critical section mutex */
   pthread_mutex_t runnable_mutex; /* only for the runnable_cond */
   pthread_cond_t runnable_cond;   /* signalled to stop the thread */
-  unsigned int interval_usecs;    /* timed_thread_test() wait interval in microseconds */
   void *(*start_routine)(void*);  /* thread function to run */
   void *arg;                      /* thread function argument */
+  struct timespec absolute_time;  /* absolute future time next timed_thread_test will wait until */
+  struct timespec interval_time;  /* interval_usecs as a struct timespec */
 };
 
 /* linked list of created threads */
@@ -58,6 +61,25 @@ typedef struct _timed_thread_list
 
 static timed_thread_list *p_timed_thread_list_head = NULL;
 static timed_thread_list *p_timed_thread_list_tail = NULL;
+
+static int now (struct timespec *abstime)
+{
+  if (!abstime)
+    return (-1);
+
+#ifdef HAVE_CLOCK_GETTIME
+  return clock_gettime (CLOCK_REALTIME, &abstime);
+#else
+  /* fallback to gettimeofday () */
+  struct timeval tv;
+  if (gettimeofday (&tv, NULL) != 0)
+    return (-1);
+
+  abstime->tv_sec = tv.tv_sec;
+  abstime->tv_nsec = tv.tv_usec * 1000;
+  return 0;
+#endif
+}
 
 
 /* create a timed thread (object creation only) */
@@ -80,9 +102,17 @@ timed_thread_create (void *(*start_routine)(void*), void *arg, unsigned int inte
   /* init cond */
   pthread_cond_init (&p_timed_thread->runnable_cond, NULL);
 
-  p_timed_thread->interval_usecs = interval_usecs;
   p_timed_thread->start_routine = start_routine;
   p_timed_thread->arg = arg;
+
+  /* current time */
+  if (now (&p_timed_thread->absolute_time))
+    return NULL;
+
+  /* seconds portion of the microseconds interval */
+  p_timed_thread->interval_time.tv_sec = (time_t)(interval_usecs / 1000000);
+  /* remaining microseconds convert to nanoseconds */
+  p_timed_thread->interval_time.tv_nsec = (long)((interval_usecs % 1000000) * 1000);
 
   return p_timed_thread;
 }
@@ -149,7 +179,6 @@ timed_thread_unlock (timed_thread* p_timed_thread)
 int 
 timed_thread_test (timed_thread* p_timed_thread)
 {
-  struct timespec abstime, reltime;
   int rc;
 
   assert (p_timed_thread != NULL);
@@ -158,37 +187,18 @@ timed_thread_test (timed_thread* p_timed_thread)
   if (pthread_mutex_lock (&p_timed_thread->runnable_mutex))
     return (-1);  /* could not acquire runnable_cond mutex, so tell caller to exit thread */
 
-  /* get the absolute time in the future we stop waiting for condition to signal */
-#ifdef HAVE_CLOCK_GETTIME
-  clock_gettime (CLOCK_REALTIME, &abstime);
-#else
-  {
-    /* fallback to gettimeofday () */
-    struct timeval tv;
-    if (gettimeofday (&tv, NULL) != 0)
-    {
-      pthread_mutex_unlock (&p_timed_thread->runnable_mutex);
-      return (-1);
-    }
-
-    abstime.tv_sec = tv.tv_sec;
-    abstime.tv_nsec = tv.tv_usec * 1000;
-  }
-#endif
-  /* seconds portion of the microseconds interval */
-  reltime.tv_sec = (time_t)(p_timed_thread->interval_usecs / 1000000);
-  /* remaining microseconds convert to nanoseconds */
-  reltime.tv_nsec = (long)((p_timed_thread->interval_usecs % 1000000) * 1000);
-  /* absolute future time */
-  abstime.tv_sec += reltime.tv_sec;
-  abstime.tv_nsec += reltime.tv_nsec;
-
   /* release mutex and wait until future time for runnable_cond to signal */
   rc = pthread_cond_timedwait (&p_timed_thread->runnable_cond,
                                &p_timed_thread->runnable_mutex,
-                               &abstime);
+                               &p_timed_thread->absolute_time);
   /* mutex re-acquired, so release it */
   pthread_mutex_unlock (&p_timed_thread->runnable_mutex);
+
+  /* timestamp absolute future time for next pass */
+  if (now (&p_timed_thread->absolute_time))
+    return (-1);
+  p_timed_thread->absolute_time.tv_sec += p_timed_thread->interval_time.tv_sec;
+  p_timed_thread->absolute_time.tv_nsec += p_timed_thread->interval_time.tv_nsec;
 
   if (rc==0)
     return 1; /* runnable_cond was signaled, so tell caller to exit thread */
