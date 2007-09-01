@@ -96,6 +96,7 @@ void *update_mpd(void)
 			current_info->conn = 0;
 
 			strncpy(current_info->mpd.status, "MPD not responding",	TEXT_BUFFER_SIZE - 1);
+			timed_thread_unlock(mpd_timed_thread);
 			if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
 			continue;
 		}
@@ -118,6 +119,7 @@ void *update_mpd(void)
 			//fprintf(stderr, "%s\n", current_info->conn->errorStr);
 			mpd_closeConnection(current_info->conn);
 			current_info->conn = 0;
+			timed_thread_unlock(mpd_timed_thread);
 			if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
 			continue;
 		}
@@ -231,6 +233,7 @@ void *update_mpd(void)
 			//fprintf(stderr, "%s\n", current_info->conn->errorStr);
 			mpd_closeConnection(current_info->conn);
 			current_info->conn = 0;
+			timed_thread_unlock(mpd_timed_thread);
 			if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
 			continue;
 		}
