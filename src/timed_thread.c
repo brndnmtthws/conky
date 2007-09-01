@@ -179,9 +179,20 @@ timed_thread_unlock (timed_thread* p_timed_thread)
 int 
 timed_thread_test (timed_thread* p_timed_thread)
 {
+  struct timespec nowtime;
   int rc;
 
   assert (p_timed_thread != NULL);
+
+  /* adjust wait time to now if absolute_time drifted behind */
+  now (&nowtime);
+  if ( ((nowtime.tv_sec * 1000000000) + nowtime.tv_nsec) >
+       ((p_timed_thread->absolute_time.tv_sec * 1000000000) + p_timed_thread->absolute_time.tv_nsec) )
+  {
+    p_timed_thread->absolute_time.tv_sec = nowtime.tv_sec;
+    p_timed_thread->absolute_time.tv_nsec = nowtime.tv_nsec;
+  }
+
 
   /* acquire runnable_cond mutex */
   if (pthread_mutex_lock (&p_timed_thread->runnable_mutex))
@@ -194,9 +205,7 @@ timed_thread_test (timed_thread* p_timed_thread)
   /* mutex re-acquired, so release it */
   pthread_mutex_unlock (&p_timed_thread->runnable_mutex);
 
-  /* timestamp absolute future time for next pass */
-  if (now (&p_timed_thread->absolute_time))
-    return (-1);
+  /* absolute future time for next pass */
   p_timed_thread->absolute_time.tv_sec += p_timed_thread->interval_time.tv_sec;
   p_timed_thread->absolute_time.tv_nsec += p_timed_thread->interval_time.tv_nsec;
 
