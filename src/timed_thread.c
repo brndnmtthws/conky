@@ -105,9 +105,8 @@ timed_thread_create (void *(*start_routine)(void*), void *arg, unsigned int inte
   p_timed_thread->start_routine = start_routine;
   p_timed_thread->arg = arg;
 
-  /* current time */
-  if (now (&p_timed_thread->absolute_time))
-    return NULL;
+  p_timed_thread->absolute_time.tv_sec=0;
+  p_timed_thread->absolute_time.tv_nsec=0;
 
   /* seconds portion of the microseconds interval */
   p_timed_thread->interval_time.tv_sec = (time_t)(interval_usecs / 1000000);
@@ -192,7 +191,6 @@ timed_thread_test (timed_thread* p_timed_thread)
     p_timed_thread->absolute_time.tv_sec = nowtime.tv_sec;
     p_timed_thread->absolute_time.tv_nsec = nowtime.tv_nsec;
   }
-
 
   /* acquire runnable_cond mutex */
   if (pthread_mutex_lock (&p_timed_thread->runnable_mutex))
