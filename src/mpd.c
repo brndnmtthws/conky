@@ -88,12 +88,12 @@ void *update_mpd(void)
 		}
 		
 		timed_thread_lock(mpd_timed_thread);
-		clear_mpd_stats(current_info);
 
 		if (current_info->conn->error || current_info->conn == NULL) {
 			//ERR("%MPD error: s\n", current_info->conn->errorStr);
 			mpd_closeConnection(current_info->conn);
 			current_info->conn = 0;
+			clear_mpd_stats(current_info);
 
 			strncpy(current_info->mpd.status, "MPD not responding",	TEXT_BUFFER_SIZE - 1);
 			timed_thread_unlock(mpd_timed_thread);
@@ -108,6 +108,7 @@ void *update_mpd(void)
 			//ERR("MPD error: %s\n", current_info->conn->errorStr);
 			mpd_closeConnection(current_info->conn);
 			current_info->conn = 0;
+			clear_mpd_stats(current_info);
 
 			strncpy(current_info->mpd.status, "MPD not responding", TEXT_BUFFER_SIZE - 1);
 			timed_thread_unlock(mpd_timed_thread);
@@ -142,6 +143,7 @@ void *update_mpd(void)
 		}
 		if (status->state == MPD_STATUS_STATE_UNKNOWN) {
 			// current_info was already cleaned up by clear_mpd_stats()
+			*current_info->mpd.status=0;
 		}
 		if (status->state == MPD_STATUS_STATE_PLAY ||
 				status->state == MPD_STATUS_STATE_PAUSE) {
