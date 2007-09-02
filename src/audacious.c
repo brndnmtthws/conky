@@ -63,7 +63,8 @@ void update_audacious(void)
 int create_audacious_thread(void)
 {
   if (!info.audacious.p_timed_thread)
-    info.audacious.p_timed_thread = timed_thread_create (audacious_thread_func, NULL, 1000000);
+    info.audacious.p_timed_thread = 
+      timed_thread_create (audacious_thread_func, NULL, info.music_player_interval * 1000000);
 
   if (!info.audacious.p_timed_thread || timed_thread_run (info.audacious.p_timed_thread))
     return (-1);

@@ -234,7 +234,8 @@ void update_stuff()
 	if (NEED(INFO_MPD)) {
 		if (!mpd_timed_thread) {
 			init_mpd_stats(&info);
-			mpd_timed_thread = timed_thread_create((void*)update_mpd, (void*) NULL, info.mpd.interval * 1000000);
+			mpd_timed_thread = 
+        timed_thread_create((void*)update_mpd, (void*) NULL, info.music_player_interval * 1000000);
 			if (!mpd_timed_thread) {
 				ERR("Failed to create MPD timed thread");
 			}

@@ -270,9 +270,9 @@
 </varlistentry>
 
 <varlistentry>
-	<term><command><option>mpd_interval</option></command></term>
+	<term><command><option>music_player_interval</option></command></term>
 	<listitem>
-		MPD thread update interval (defaults to Conky's update interval)
+		Music player thread update interval (defaults to Conky's update interval)
 	<para></para></listitem>
 </varlistentry>
 

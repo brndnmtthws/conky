@@ -40,6 +40,7 @@ syn keyword ConkyrcSetting
         \ mpd_host
         \ mpd_password
         \ mpd_port
+        \ music_player_interval
         \ net_avg_samples
         \ no_buffers
         \ out_to_console

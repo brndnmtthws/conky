@@ -1111,7 +1111,6 @@ enum text_object_type {
 	OBJ_mpd_host,
 	OBJ_mpd_port,
 	OBJ_mpd_password,
-	OBJ_mpd_interval,
 	OBJ_mpd_bar,
 	OBJ_mpd_elapsed,
 	OBJ_mpd_length,
@@ -1121,6 +1120,7 @@ enum text_object_type {
 	OBJ_mpd_percent,
 	OBJ_mpd_smart,
 #endif
+  OBJ_music_player_interval,
 #ifdef XMMS2
     OBJ_xmms2_artist,
     OBJ_xmms2_album,
@@ -7065,13 +7065,13 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 			else
 				CONF_ERR;
 		}
-		CONF("mpd_interval") {
-			if (value)
-				info.mpd.interval = strtod(value, 0);
-			else
-				CONF_ERR;
-		}
 #endif
+    CONF("music_player_interval") {
+      if (value)
+        info.music_player_interval = strtod(value, 0);
+      else
+        CONF_ERR;
+      }
 #ifdef __OpenBSD__
 		CONF("sensor_device") {
 			if(value)
@@ -7339,12 +7339,10 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 				update_interval = strtod(value, 0);
 			else
 				CONF_ERR;
-#ifdef MPD
-			if (info.mpd.interval == 0) {
+			if (info.music_player_interval == 0) {
 				// default to update_interval
-				info.mpd.interval = update_interval;
+				info.music_player_interval = update_interval;
 			}
-#endif /* MPD */
 		}
 		CONF("total_run_times") {
 			if (value)
@@ -7431,12 +7429,10 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 	fclose(fp);
 #undef CONF_ERR
 
-#ifdef MPD
-	if (info.mpd.interval == 0) {
+	if (info.music_player_interval == 0) {
 		// default to update_interval
-		info.mpd.interval = update_interval;
+		info.music_player_interval = update_interval;
 	}
-#endif /* MPD */
 
 }
 
@@ -7641,12 +7637,10 @@ int main(int argc, char **argv)
 
 		case 'u':
 			update_interval = strtod(optarg, 0);
-#ifdef MPD
-			if (info.mpd.interval == 0) {
+			if (info.music_player_interval == 0) {
 				// default to update_interval
-				info.mpd.interval = update_interval;
+				info.music_player_interval = update_interval;
 			}
-#endif /* MPD */
 			break;
 
 		case 'i':
