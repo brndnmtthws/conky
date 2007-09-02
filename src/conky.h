@@ -177,6 +177,7 @@ struct mpd_s {
 	unsigned int port;
 	char host[128];
 	char password[128];
+	double interval;
 	float progress;
 	int bitrate;
 	int length;

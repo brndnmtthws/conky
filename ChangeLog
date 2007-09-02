@@ -1,5 +1,10 @@
 # $Id$
 
+2007-09-01
+	* Improved performance slightly
+	* Added 'mpd_interval' config option to specify an update interval for the
+	mpd thread
+
 2007-08-31
 	* _Really_ fix mpd SIGPIPE issues
 	* Fix timed thread race condition, seen esp. on new kernel scheduler (cfs).

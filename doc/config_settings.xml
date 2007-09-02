@@ -270,6 +270,13 @@
 </varlistentry>
 
 <varlistentry>
+	<term><command><option>mpd_interval</option></command></term>
+	<listitem>
+		MPD thread update interval (defaults to Conky's update interval)
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
 	<term><command><option>net_avg_samples</option></command></term>
 	<listitem>
 		The number of samples to average for net data

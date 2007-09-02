@@ -687,7 +687,6 @@ static void new_font(char *buf, char * args) {
 		struct special_t *s = new_special(buf, FONT);
 		int tmp = selected_font;
 		selected_font = s->font_added = 0;
-		load_fonts();
 		selected_font = tmp;
 	}
 }
@@ -1113,6 +1112,7 @@ enum text_object_type {
 	OBJ_mpd_host,
 	OBJ_mpd_port,
 	OBJ_mpd_password,
+	OBJ_mpd_interval,
 	OBJ_mpd_bar,
 	OBJ_mpd_elapsed,
 	OBJ_mpd_length,
@@ -3878,9 +3878,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 #endif /* __OpenBSD__ */
 
 				OBJ(font) {
-#ifdef X11
 					new_font(p, obj->data.s);
-#endif /* X11 */
 				}
 				void format_diskio(unsigned int diskio_value)
 				{
@@ -6814,9 +6812,9 @@ static void set_default_configurations(void)
 	own_window = 0;
 	window.type=TYPE_NORMAL;
 	window.hints=0;
-  strcpy(window.class_name, "Conky");	
-  update_uname();
-  sprintf(window.title,"%s - conky",info.uname_s.nodename);
+	strcpy(window.class_name, "Conky");	
+	update_uname();
+	sprintf(window.title,"%s - conky",info.uname_s.nodename);
 #endif
 	stippled_borders = 0;
 	border_margin = 3;
@@ -7047,6 +7045,12 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 		CONF("mpd_password") {
 			if (value)
 				strncpy(info.mpd.password, value, 127);
+			else
+				CONF_ERR;
+		}
+		CONF("mpd_interval") {
+			if (value)
+				info.mpd.interval = strtod(value, 0);
 			else
 				CONF_ERR;
 		}
@@ -7318,6 +7322,12 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 				update_interval = strtod(value, 0);
 			else
 				CONF_ERR;
+#ifdef MPD
+			if (info.mpd.interval == 0) {
+				// default to update_interval
+				info.mpd.interval = update_interval;
+			}
+#endif /* MPD */
 		}
 		CONF("total_run_times") {
 			if (value)
@@ -7404,6 +7414,12 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 	fclose(fp);
 #undef CONF_ERR
 
+#ifdef MPD
+	if (info.mpd.interval == 0) {
+		// default to update_interval
+		info.mpd.interval = update_interval;
+	}
+#endif /* MPD */
 
 }
 
@@ -7608,6 +7624,12 @@ int main(int argc, char **argv)
 
 		case 'u':
 			update_interval = strtod(optarg, 0);
+#ifdef MPD
+			if (info.mpd.interval == 0) {
+				// default to update_interval
+				info.mpd.interval = update_interval;
+			}
+#endif /* MPD */
 			break;
 
 		case 'i':
