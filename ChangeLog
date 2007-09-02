@@ -5,6 +5,7 @@
 	* Added 'music_player_interval' config option to specify an update interval for
 	 		music player threads (currently honored by mpd and audacious).
 	* Fixed some minor memory leaks associated with SIGUSR1
+	* Zero out imap and pop3 stuff when the connection fails
 
 2007-08-31
 	* _Really_ fix mpd SIGPIPE issues

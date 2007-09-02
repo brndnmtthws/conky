@@ -1560,6 +1560,8 @@ next_iteration:
 		if (timed_thread_test (mail->p_timed_thread))
 		    timed_thread_exit (mail->p_timed_thread);
 	}
+	mail->unseen = 0;
+	mail->messages = 0;
 	return 0;
 }
 
@@ -1763,6 +1765,8 @@ next_iteration:
 		if (timed_thread_test (mail->p_timed_thread))
 		    timed_thread_exit (mail->p_timed_thread);
 	}
+	mail->unseen = 0;
+	mail->used = 0;
 	return 0;
 }
 
