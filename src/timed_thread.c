@@ -25,6 +25,7 @@
 #include <pthread.h>
 #include <assert.h>
 #include <errno.h>
+#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -109,6 +110,10 @@ timed_thread_create (void *(*start_routine)(void*), void *arg, unsigned int inte
   /* remaining microseconds convert to nanoseconds */
   p_timed_thread->interval_time.tv_nsec = (long)((interval_usecs % 1000000) * 1000);
 
+  /*printf ("interval_time.tv_sec = %li, .tv_nsec = %li\n",
+            p_timed_thread->interval_time.tv_sec,
+            p_timed_thread->interval_time.tv_nsec);*/
+
   return p_timed_thread;
 }
 
@@ -180,9 +185,22 @@ timed_thread_test (timed_thread* p_timed_thread)
   assert (p_timed_thread != NULL);
 
   if (now (&wait_time)) return (-1);
+  /*printf ("PRE:wait_time.tv_secs = %li, .tv_nsecs = %li\n", wait_time.tv_sec, wait_time.tv_nsec);*/
   /* now add in the wait interval */
-  wait_time.tv_sec += p_timed_thread->interval_time.tv_sec;
-  wait_time.tv_nsec += p_timed_thread->interval_time.tv_nsec;
+  if (1000000000-wait_time.tv_nsec < p_timed_thread->interval_time.tv_nsec)
+  {
+    /* adjust for impending overflow of wait_time.tv_nsec */
+    wait_time.tv_sec += p_timed_thread->interval_time.tv_sec;
+    wait_time.tv_sec += (p_timed_thread->interval_time.tv_nsec / 1000000000) + 1;
+    wait_time.tv_nsec = labs (wait_time.tv_nsec - p_timed_thread->interval_time.tv_nsec);
+    /*printf ("001:wait_time.tv_secs = %li, .tv_nsecs = %li\n", wait_time.tv_sec, wait_time.tv_nsec);*/
+  }
+  else
+  {
+    wait_time.tv_sec += p_timed_thread->interval_time.tv_sec;
+    wait_time.tv_nsec += p_timed_thread->interval_time.tv_nsec;
+    /*printf ("002:wait_time.tv_secs = %li, .tv_nsecs = %li\n", wait_time.tv_sec, wait_time.tv_nsec);*/
+  }
 
   /* acquire runnable_cond mutex */
   if (pthread_mutex_lock (&p_timed_thread->runnable_mutex))
