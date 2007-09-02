@@ -191,14 +191,14 @@ timed_thread_test (timed_thread* p_timed_thread)
   /* add in the wait interval */
   if (1000000000-wait_time.tv_nsec <= p_timed_thread->interval_time.tv_nsec)
   {
-    /* adjust for impending overflow of wait_time.tv_nsec */
+    /* perform nsec->sec carry operation */
     wait_time.tv_sec += p_timed_thread->interval_time.tv_sec + 1;
-    wait_time.tv_nsec = wait_time.tv_nsec - (1000000000 - p_timed_thread->interval_time.tv_nsec);
+    wait_time.tv_nsec -= 1000000000-p_timed_thread->interval_time.tv_nsec;
     /*printf ("001:wait_time.tv_secs = %li, .tv_nsecs = %li\n", wait_time.tv_sec, wait_time.tv_nsec);*/
   }
   else
   {
-    /* no overflow will occur, just add respective components */
+    /* no carry needed, just add respective components */
     wait_time.tv_sec += p_timed_thread->interval_time.tv_sec;
     wait_time.tv_nsec += p_timed_thread->interval_time.tv_nsec;
     /*printf ("002:wait_time.tv_secs = %li, .tv_nsecs = %li\n", wait_time.tv_sec, wait_time.tv_nsec);*/
