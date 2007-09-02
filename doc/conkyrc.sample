@@ -93,11 +93,6 @@ default_color white
 default_shade_color black
 default_outline_color black
 
-dexter_client no
-dexter_server no
-# config file for libdexter (default search path: $HOME/.dexterrc; /etc/libdexter/dexter.conf)
-dexter_config
-
 # Text alignment, other possible values are commented
 #alignment top_left
 #alignment top_right
@@ -138,6 +133,9 @@ use_spacer no
 
 # Maximum size of buffer for user text, i.e. below TEXT line.
 #max_user_text 16384
+
+# Timing interval for music player thread, e.g. mpd, audacious
+#music_player_interval (update_interval is default)
 
 # variable is given either in format $variable or in ${variable}. Latter
 # allows characters right after the variable and must be used in network
