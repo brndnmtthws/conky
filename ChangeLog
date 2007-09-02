@@ -4,6 +4,7 @@
 	* Improved performance slightly
 	* Added 'mpd_interval' config option to specify an update interval for the
 	mpd thread
+	* Fixed some minor memory leaks associated with SIGUSR1
 
 2007-08-31
 	* _Really_ fix mpd SIGPIPE issues

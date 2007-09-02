@@ -228,7 +228,7 @@ void set_first_font(const char *data_in)
 void free_fonts()
 {
 	int i;
-	for (i=0;i<=font_count;i++) {
+	for (i = 0; i <= font_count; i++) {
 #ifdef XFT
 		if (use_xft) {
 			XftFontClose(display, fonts[i].xftfont);
@@ -237,12 +237,11 @@ void free_fonts()
 		{
 			XFreeFont(display, fonts[i].font);
 		}
-}
+	}
 	free(fonts);
-	fonts = NULL;
+	fonts = 0;
 	font_count = -1;
 	selected_font = 0;
-	set_first_font("6x10");
 }
 
 
@@ -1899,77 +1898,6 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 				free_iconv();
 				break;
 #endif
-#ifdef MPD
-			case OBJ_mpd_title:
-				if (info.mpd.title) {
-					free(info.mpd.title);
-					info.mpd.title = 0;
-				}
-				break;
-			case OBJ_mpd_artist:
-				if (info.mpd.artist) {
-					free(info.mpd.artist);
-					info.mpd.artist = 0;
-				}
-				break;
-			case OBJ_mpd_album:
-				if (info.mpd.album) {
-					free(info.mpd.album);
-					info.mpd.album = 0;
-				}
-				break;
-			case OBJ_mpd_random:
-				if (info.mpd.random) {
-					free(info.mpd.random);
-					info.mpd.random = 0;
-				}
-				break;
-			case OBJ_mpd_repeat:
-				if (info.mpd.repeat) {
-					free(info.mpd.repeat);
-					info.mpd.repeat = 0;
-				}
-				break;
-			case OBJ_mpd_track:
-				if (info.mpd.track) {
-					free(info.mpd.track);
-					info.mpd.track = 0;
-				}
-				break;
-			case OBJ_mpd_name:
-				if (info.mpd.name) {
-					free(info.mpd.name);
-					info.mpd.name = 0;
-				}
-				break;
-			case OBJ_mpd_file:
-				if (info.mpd.file) {
-					free(info.mpd.file);
-					info.mpd.file = 0;
-				}
-				break;
-			case OBJ_mpd_status:
-				if (info.mpd.status) {
-					free(info.mpd.status);
-					info.mpd.status = 0;
-				}
-				break;
-			case OBJ_mpd_smart:
-				if (info.mpd.artist) {
-					free(info.mpd.artist);
-					info.mpd.artist = 0;
-				}
-				if (info.mpd.title) {
-					free(info.mpd.title);
-					info.mpd.title = 0;
-				}
-				if (info.mpd.file) {
-					free(info.mpd.file);
-					info.mpd.file = 0;
-				}
-				break;
-			case OBJ_mpd_host:
-#endif
 #ifdef XMMS2
 			case OBJ_xmms2_artist:
 				if (info.xmms2.artist) {
@@ -2102,6 +2030,46 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 		}
 	}
 	free(objs);
+#ifdef MPD
+	{
+		if (info.mpd.title) {
+			free(info.mpd.title);
+			info.mpd.title = 0;
+		}
+		if (info.mpd.artist) {
+			free(info.mpd.artist);
+			info.mpd.artist = 0;
+		}
+		if (info.mpd.album) {
+			free(info.mpd.album);
+			info.mpd.album = 0;
+		}
+		if (info.mpd.random) {
+			free(info.mpd.random);
+			info.mpd.random = 0;
+		}
+		if (info.mpd.repeat) {
+			free(info.mpd.repeat);
+			info.mpd.repeat = 0;
+		}
+		if (info.mpd.track) {
+			free(info.mpd.track);
+			info.mpd.track = 0;
+		}
+		if (info.mpd.name) {
+			free(info.mpd.name);
+			info.mpd.name = 0;
+		}
+		if (info.mpd.file) {
+			free(info.mpd.file);
+			info.mpd.file = 0;
+		}
+		if (info.mpd.status) {
+			free(info.mpd.status);
+			info.mpd.status = 0;
+		}
+	}
+#endif
 	//text_objects = NULL;
 	//text_object_count = 0;
 }
@@ -6614,6 +6582,54 @@ void reload_config(void)
 		free(info.cpu_usage);
 		info.cpu_usage = NULL;
 	}
+	
+	if (info.mail) {
+		free(info.mail);
+	}
+
+#ifdef MPD
+	{
+		if (info.mpd.title) {
+			free(info.mpd.title);
+			info.mpd.title = 0;
+		}
+		if (info.mpd.artist) {
+			free(info.mpd.artist);
+			info.mpd.artist = 0;
+		}
+		if (info.mpd.album) {
+			free(info.mpd.album);
+			info.mpd.album = 0;
+		}
+		if (info.mpd.random) {
+			free(info.mpd.random);
+			info.mpd.random = 0;
+		}
+		if (info.mpd.repeat) {
+			free(info.mpd.repeat);
+			info.mpd.repeat = 0;
+		}
+		if (info.mpd.track) {
+			free(info.mpd.track);
+			info.mpd.track = 0;
+		}
+		if (info.mpd.name) {
+			free(info.mpd.name);
+			info.mpd.name = 0;
+		}
+		if (info.mpd.file) {
+			free(info.mpd.file);
+			info.mpd.file = 0;
+		}
+		if (info.mpd.status) {
+			free(info.mpd.status);
+			info.mpd.status = 0;
+		}
+	}
+#endif
+#ifdef X11
+	free_fonts();
+#endif /* X11 */
 
 #ifdef TCP_PORT_MONITOR
 	destroy_tcp_port_monitor_collection( info.p_tcp_port_monitor_collection );
@@ -6678,6 +6694,7 @@ void clean_up(void)
 	}
 
 	XFreeGC(display, window.gc);
+	free_fonts();
 #endif /* X11 */
 
 	free_text_objects(text_object_count, text_objects);
