@@ -180,8 +180,6 @@ timed_thread_test (timed_thread* p_timed_thread)
   assert (p_timed_thread != NULL);
 
   if (now (&wait_time)) return (-1);
-  /* move the clock backward 1 sec to shift sync slightly earlier than UI thread */
-  wait_time.tv_sec -= 1;
   /* now add in the wait interval */
   wait_time.tv_sec += p_timed_thread->interval_time.tv_sec;
   wait_time.tv_nsec += p_timed_thread->interval_time.tv_nsec;
