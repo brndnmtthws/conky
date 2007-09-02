@@ -47,7 +47,6 @@ struct _timed_thread
   pthread_cond_t runnable_cond;   /* signalled to stop the thread */
   void *(*start_routine)(void*);  /* thread function to run */
   void *arg;                      /* thread function argument */
-  struct timespec absolute_time;  /* absolute future time next timed_thread_test will wait until */
   struct timespec interval_time;  /* interval_usecs as a struct timespec */
 };
 
@@ -104,9 +103,6 @@ timed_thread_create (void *(*start_routine)(void*), void *arg, unsigned int inte
 
   p_timed_thread->start_routine = start_routine;
   p_timed_thread->arg = arg;
-
-  p_timed_thread->absolute_time.tv_sec=0;
-  p_timed_thread->absolute_time.tv_nsec=0;
 
   /* seconds portion of the microseconds interval */
   p_timed_thread->interval_time.tv_sec = (time_t)(interval_usecs / 1000000);
@@ -178,19 +174,17 @@ timed_thread_unlock (timed_thread* p_timed_thread)
 int 
 timed_thread_test (timed_thread* p_timed_thread)
 {
-  struct timespec nowtime;
+  struct timespec wait_time;
   int rc;
 
   assert (p_timed_thread != NULL);
 
-  /* adjust wait time to now if absolute_time drifted behind */
-  now (&nowtime);
-  if ( ((nowtime.tv_sec * 1000000000) + nowtime.tv_nsec) >
-       ((p_timed_thread->absolute_time.tv_sec * 1000000000) + p_timed_thread->absolute_time.tv_nsec) )
-  {
-    p_timed_thread->absolute_time.tv_sec = nowtime.tv_sec;
-    p_timed_thread->absolute_time.tv_nsec = nowtime.tv_nsec;
-  }
+  if (now (&wait_time)) return (-1);
+  /* move the clock backward 1 sec to shift sync slightly earlier than UI thread */
+  wait_time.tv_sec -= 1;
+  /* now add in the wait interval */
+  wait_time.tv_sec += p_timed_thread->interval_time.tv_sec;
+  wait_time.tv_nsec += p_timed_thread->interval_time.tv_nsec;
 
   /* acquire runnable_cond mutex */
   if (pthread_mutex_lock (&p_timed_thread->runnable_mutex))
@@ -199,13 +193,9 @@ timed_thread_test (timed_thread* p_timed_thread)
   /* release mutex and wait until future time for runnable_cond to signal */
   rc = pthread_cond_timedwait (&p_timed_thread->runnable_cond,
                                &p_timed_thread->runnable_mutex,
-                               &p_timed_thread->absolute_time);
+                               &wait_time);
   /* mutex re-acquired, so release it */
   pthread_mutex_unlock (&p_timed_thread->runnable_mutex);
-
-  /* absolute future time for next pass */
-  p_timed_thread->absolute_time.tv_sec += p_timed_thread->interval_time.tv_sec;
-  p_timed_thread->absolute_time.tv_nsec += p_timed_thread->interval_time.tv_nsec;
 
   if (rc==0)
     return 1; /* runnable_cond was signaled, so tell caller to exit thread */
@@ -231,7 +221,6 @@ timed_thread_register (timed_thread* p_timed_thread, timed_thread** addr_of_p_ti
 {
   timed_thread_node *p_node;
 
-  assert (p_timed_thread != NULL);
   assert ((addr_of_p_timed_thread == NULL) || (*addr_of_p_timed_thread == p_timed_thread));
 
   if ((p_node = calloc (sizeof (timed_thread_node), 1)) == 0)
