@@ -139,7 +139,8 @@ timed_thread_destroy (timed_thread* p_timed_thread, timed_thread** addr_of_p_tim
   pthread_mutex_unlock (&p_timed_thread->runnable_mutex);
 
   /* join the terminating thread */
-  pthread_join (p_timed_thread->thread, NULL);
+  if (p_timed_thread->thread)
+    pthread_join (p_timed_thread->thread, NULL);
 
   /* clean up */
   pthread_attr_destroy (&p_timed_thread->thread_attr);
