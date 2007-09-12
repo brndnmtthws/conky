@@ -19,9 +19,6 @@ EXTRA_DIST = 					\
 ACLOCAL_AMFLAGS =				\
 	-I m4
 
-DISTCLEANFILES =				\
-	configure.ac
-
 distclean-local:
 	/bin/rm -rf *.cache *~
 
