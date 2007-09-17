@@ -3577,7 +3577,13 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				}
 				OBJ(freq_g) {
 					if (obj->a) {
+#ifndef __OpenBSD__
 						obj->a = get_freq(p, p_max_size, "%'.2f", 1000, obj->data.cpu_index); 
+#else
+						/* OpenBSD has no such flag (SUSv2) */
+						obj->a = get_freq(p, p_max_size, "%.2f", 1000, obj->data.cpu_index); 
+#endif
+
 					}
 				}
 #if defined(__linux__)
@@ -3640,9 +3646,17 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				}
 				OBJ(freq_dyn_g) {
 					if (use_spacer) {
+#ifndef __OpenBSD__
 						get_freq_dynamic(p, 6, "%'.2f     ", 1000); 
+#else
+						get_freq_dynamic(p, 6, "%.2f     ", 1000); 
+#endif
 					} else {
+#ifndef __OpenBSD__
 						get_freq_dynamic(p, p_max_size, "%'.2f", 1000); 
+#else
+						get_freq_dynamic(p, p_max_size, "%.2f", 1000); 
+#endif
 					}
 				}
 #ifndef __OpenBSD__

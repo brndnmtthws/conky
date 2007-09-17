@@ -497,7 +497,7 @@ get_freq_dynamic(char *p_client_buffer, size_t client_buffer_size,
 	snprintf(p_client_buffer, client_buffer_size, p_format,
 		(float)((cycles[1] - cycles[0]) / microseconds) / divisor);
 #else
-	get_freq(p_client_buffer, client_buffer_size, p_format, divisor);
+	get_freq(p_client_buffer, client_buffer_size, p_format, divisor, 1);
 #endif
 }
 
