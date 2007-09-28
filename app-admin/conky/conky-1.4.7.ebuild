@@ -30,6 +30,7 @@ DEPEND_COMMON="
 				>=sys-apps/dbus-0.35
 			)
 	)
+	wlan? ( net-wireless/wireless-tools )
 	!ipv6? ( >=dev-libs/glib-2.0 )"
 RDEPEND="${DEPEND_COMMON}
 	hddtemp? ( app-admin/hddtemp )
@@ -68,6 +69,8 @@ src_compile() {
 		$(use_enable audacious) \
 		$(use_enable bmpx) \
 		$(use_enable hddtemp ) \
+		$(use_enable rss) \
+		$(use_enable wlan) \
 		$(use_enable mpd) \
 		$(use_enable !ipv6 portmon) || die "econf failed"
 	emake ${mymake} || die "compile failed"
