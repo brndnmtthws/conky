@@ -136,13 +136,14 @@ void *update_mpd(void)
 		if (status->state == MPD_STATUS_STATE_STOP) {
 			strncpy(current_info->mpd.status, "Stopped",
 					TEXT_BUFFER_SIZE - 1);
+			clear_mpd_stats(current_info);
 		}
 		if (status->state == MPD_STATUS_STATE_PAUSE) {
 			strncpy(current_info->mpd.status, "Paused",
 					TEXT_BUFFER_SIZE - 1);
 		}
 		if (status->state == MPD_STATUS_STATE_UNKNOWN) {
-			// current_info was already cleaned up by clear_mpd_stats()
+			clear_mpd_stats(current_info);
 			*current_info->mpd.status=0;
 		}
 		if (status->state == MPD_STATUS_STATE_PLAY ||
