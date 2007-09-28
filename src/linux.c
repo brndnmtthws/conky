@@ -1894,10 +1894,10 @@ Peter Tarjan (ptarjan@citromail.hu)
 void get_ibm_acpi_volume( char * p_client_buffer, size_t client_buffer_size )
 {
 
-/* get volume (0-14) on IBM/Lenovo laptops running the ibm acpi.
-   "Volume" here is none of the mixer volumes, but a "master of masters"
-   volume adjusted by the IBM volume keys.
-   /proc/acpi/ibm/fan looks like this (4 lines):
+	/* get volume (0-14) on IBM/Lenovo laptops running the ibm acpi.
+	   "Volume" here is none of the mixer volumes, but a "master of masters"
+	   volume adjusted by the IBM volume keys.
+	   /proc/acpi/ibm/fan looks like this (4 lines):
 level:          4
 mute:           off
 commands:       up, down, mute
@@ -1905,44 +1905,47 @@ commands:       level <level> (<level> is 0-15)
 Peter Tarjan (ptarjan@citromail.hu)
 */
 
-    if ( !p_client_buffer || client_buffer_size <= 0 )
-	return;
+	if ( !p_client_buffer || client_buffer_size <= 0 )
+		return;
 
-    FILE *fp;
+	FILE *fp;
 
-    char volume[128];
-    snprintf(volume, 127, "%s/volume",IBM_ACPI_DIR);
-    unsigned int vol=-1;
-    char mute[3]="";
+	char volume[128];
+	snprintf(volume, 127, "%s/volume",IBM_ACPI_DIR);
+	unsigned int vol=-1;
+	char mute[3]="";
 
-    fp = fopen(volume, "r");
-    if (fp != NULL)
-    {
-	while (!feof(fp))
-	{
-	    char line[256];
-	    if (fgets(line, 255, fp) == NULL) break;
-	    if (sscanf(line, "level: %d", &vol)) continue;
-	    if (sscanf(line, "mute: %s", mute)) break;
+	fp = fopen(volume, "r");
+	if (fp != NULL) {
+		while (!feof(fp)) {
+			char line[256];
+			unsigned int read_vol = -1;
+			if (fgets(line, 255, fp) == NULL) break;
+			if (sscanf(line, "level: %d", &read_vol)) {
+				vol = read_vol;
+				continue;
+			}
+			if (sscanf(line, "level: %d", &vol)) continue;
+			if (sscanf(line, "mute: %s", mute)) break;
+		}
 	}
-    }
-    else
-    {
-	CRIT_ERR("can't open '%s': %s\nYou are not using the IBM ACPI. Remove ibm* from your Conky config file.", volume, strerror(errno));
-    }
+	else
+	{
+		CRIT_ERR("can't open '%s': %s\nYou are not using the IBM ACPI. Remove ibm* from your Conky config file.", volume, strerror(errno));
+	}
 
-    fclose(fp);
+	fclose(fp);
 
-    if (strcmp(mute, "on")==0)
-    {
-	snprintf( p_client_buffer, client_buffer_size, "%s", "mute" );
-	return;
-    }
-    else
-    {
-	snprintf( p_client_buffer, client_buffer_size, "%d", vol );
-	return;
-    }
+	if (strcmp(mute, "on")==0)
+	{
+		snprintf( p_client_buffer, client_buffer_size, "%s", "mute" );
+		return;
+	}
+	else
+	{
+		snprintf( p_client_buffer, client_buffer_size, "%d", vol );
+		return;
+	}
 
 }
 

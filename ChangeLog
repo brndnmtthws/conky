@@ -1,5 +1,9 @@
 # $Id$
 
+2007-09-28
+	* Small fix for $ibm_volume (thanks Kapil Hari Paranjape)
+	* Patch so $tail can read from a fifo file descriptor (thanks Ben Kibbey)
+
 2007-09-01
 	* Improved performance slightly
 	* Added 'music_player_interval' config option to specify an update interval for

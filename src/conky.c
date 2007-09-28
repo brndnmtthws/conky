@@ -55,6 +55,7 @@
 #include <sys/stat.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <fcntl.h>
 
 #ifdef HAVE_ICONV
 #include <iconv.h>
@@ -1246,6 +1247,9 @@ struct text_object {
 			double last_update;
 			float interval;
 			char *buffer;
+			/* If not -1, a file descriptor to read from when
+			 * logfile is a FIFO. */
+			int fd;
 		} tail;
 
 		struct {
@@ -2716,6 +2720,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	END OBJ(tail, 0)
 		char buf[64];
 	int n1, n2;
+	struct stat st;
 	if (!arg) {
 		ERR("tail needs arguments");
 		obj->type = OBJ_text;
@@ -2728,15 +2733,34 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 			return NULL;
 		} else {
 			FILE *fp = NULL;
-			fp = fopen(buf, "r");
-			if (fp) {
+			int fd;
+
+			obj->data.tail.fd = -1;
+
+			if (stat(buf, &st) == 0) {
+				if (S_ISFIFO(st.st_mode)) {
+					fd = open(buf, O_RDONLY|O_NONBLOCK);
+
+					if (fd == -1)
+						CRIT_ERR("tail logfile does not exist, or you do not have correct permissions");
+
+					obj->data.tail.fd = fd;
+
+				}
+				else
+					fp = fopen(buf, "r");
+			}
+
+			if (fp || obj->data.tail.fd != -1) {
 				obj->data.tail.logfile =
 					malloc(text_buffer_size);
 				strcpy(obj->data.tail.logfile, buf);
 				obj->data.tail.wantedlines = n1;
 				obj->data.tail.interval =
 					update_interval * 2;
-				fclose(fp);
+
+				if (obj->data.tail.fd == -1)
+					fclose(fp);
 			} else {
 				//fclose (fp);
 				CRIT_ERR("tail logfile does not exist, or you do not have correct permissions");
@@ -2753,14 +2777,32 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 			return NULL;
 		} else {
 			FILE *fp;
-			fp = fopen(buf, "r");
-			if (fp != NULL) {
+			int fd;
+
+			obj->data.tail.fd = -1;
+
+			if (stat(buf, &st) == 0) {
+				if (S_ISFIFO(st.st_mode)) {
+					fd = open(buf, O_RDONLY|O_NONBLOCK);
+
+					if (fd == -1)
+						CRIT_ERR("tail logfile does not exist, or you do not have correct permissions");
+
+					obj->data.tail.fd = fd;
+				}
+				else
+					fp = fopen(buf, "r");
+			}
+
+			if (fp || obj->data.tail.fd != -1) {
 				obj->data.tail.logfile =
 					malloc(text_buffer_size);
 				strcpy(obj->data.tail.logfile, buf);
 				obj->data.tail.wantedlines = n1;
 				obj->data.tail.interval = n2;
-				fclose(fp);
+
+				if (obj->data.tail.fd == -1)
+					fclose(fp);
 			} else {
 				//fclose (fp);
 				CRIT_ERR("tail logfile does not exist, or you do not have correct permissions");
@@ -3520,6 +3562,89 @@ void parse_conky_vars(char * text, char * p, struct information *cur) {
 	struct text_object_list *object_list = extract_variable_text_internal(text);
 	generate_text_internal(p, P_MAX_SIZE, object_list->text_objects, object_list->text_object_count, cur);
 	free(object_list);
+}
+
+/*
+ * Allows reading from a FIFO (i.e., /dev/xconsole). The file descriptor is
+ * set to non-blocking which makes this possible.
+ *
+ * FIXME
+ * Since lseek cannot seek a file descriptor long lines will break.
+ */
+static void tail_pipe(struct text_object *obj, char *dst, size_t dst_size)
+{
+#define TAIL_PIPE_BUFSIZE	4096
+    int lines = 0;
+    int line_len = 0;
+    int last_line = 0;
+    int fd = obj->data.tail.fd;
+
+    while (1) {
+	char buf[TAIL_PIPE_BUFSIZE];
+	ssize_t len = read(fd, buf, sizeof(buf));
+	int i;
+
+	if (len == -1) {
+	    if (errno != EAGAIN) {
+		strcpy(obj->data.tail.buffer, "Logfile Read Error");
+		snprintf(dst, dst_size, "Logfile Read Error");
+	    }
+
+	    break;
+	}
+	else if (len == 0) {
+	    strcpy(obj->data.tail.buffer, "Logfile Empty");
+	    snprintf(dst, dst_size, "Logfile Empty");
+	    break;
+	}
+
+	for (line_len = 0, i = 0; i < len; i++) {
+	    int pos = 0;
+	    char *p;
+
+	    if (buf[i] == '\n') {
+		lines++;
+
+		if (obj->data.tail.readlines > 0) {
+		    int n;
+		    int olines = 0;
+		    int first_line = 0;
+
+		    for (n = 0; obj->data.tail.buffer[n]; n++) {
+			if (obj->data.tail.buffer[n] == '\n') {
+			    if (!first_line)
+				first_line = n+1;
+
+			    if (++olines < obj->data.tail.wantedlines) {
+				pos = n+1;
+				continue;
+			    }
+
+			    n++;
+			    p = obj->data.tail.buffer + first_line;
+			    pos = n - first_line;
+			    memmove(obj->data.tail.buffer, obj->data.tail.buffer + first_line, strlen(p));
+			    obj->data.tail.buffer[pos] = 0;
+			    break;
+			}
+		    }
+		}
+
+		p = buf + last_line;
+		line_len++;
+		memcpy(&(obj->data.tail.buffer[pos]), p, line_len);
+		obj->data.tail.buffer[pos + line_len] = 0;
+		last_line = i+1;
+		line_len = 0;
+		obj->data.tail.readlines = lines;
+		continue;
+	    }
+
+	    line_len++;
+	}
+    }
+
+    snprintf(dst, dst_size, "%s", obj->data.tail.buffer);
 }
 
 static void generate_text_internal(char *p, int p_max_size, struct text_object *objs, unsigned int object_count, struct information *cur)
@@ -5156,7 +5281,14 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					FILE *fp;
 					long nl=0, bsize;
 					int iter;
+
+					if (obj->data.tail.fd != -1) {
+					    tail_pipe(obj, p, p_max_size);
+					    goto head;
+					}
+
 					fp = fopen(obj->data.tail.logfile, "rt");
+
 					if (fp == NULL) {
 						/* Send one message, but do not consistently spam on
 						 * missing logfiles. */
@@ -5212,6 +5344,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				//parse_conky_vars(obj->data.tail.buffer, p, cur);
 
 			}
+head:
 			OBJ(head) {
 				if (current_update_time -obj->data.tail.last_update < obj->data.tail.interval) {
 					snprintf(p, p_max_size, "%s", obj->data.tail.buffer);
