@@ -21,6 +21,7 @@ akash <akash at users dot sourceforge dot net>
 
 Ben Kibbey <benkibbey at users dot sourceforge dot net>
   $tail fifo patch
+  multiple mailbox patch
 
 Blondak <blondak_nesercz at users dot sourceforge dot net>
   diskio read & write patch

@@ -849,8 +849,11 @@ Kernel version
 Machine, i686 for example
 
 .TP 
-\fB\*(T<\fBmails\fR\*(T>\fR 
-Mail count in mail spool. You can use program like fetchmail to get mails from some server using your favourite protocol. See also new_mails.
+\fB\*(T<\fBmails\fR\*(T>\fR \*(T<\fB(mailbox)\fR\*(T> \*(T<\fB(interval)\fR\*(T> 
+Mail count in the specified mailbox or your mail spool if not.
+Both mbox and maildir type mailboxes are supported. You can
+use a program like fetchmail to get mails from some server
+using your favourite protocol. See also new_mails.
 
 .TP 
 \fB\*(T<\fBmboxscan\fR\*(T>\fR \*(T<\fB(\-n number of messages to print) (\-fw from width) (\-sw subject width) mbox\fR\*(T> 
@@ -937,8 +940,9 @@ Prints the file name of the current MPD song
 Prints the song name in either the form "artist - title" or file name, depending on whats available
 
 .TP 
-\fB\*(T<\fBnew_mails\fR\*(T>\fR 
-Unread mail count in mail spool.
+\fB\*(T<\fBnew_mails\fR\*(T>\fR \*(T<\fB(mailbox)\fR\*(T> \*(T<\fB(interval)\fR\*(T> 
+Unread mail count in the specified mailbox or mail spool if
+not. Both mbox and maildir type mailboxes are supported.
 
 .TP 
 \fB\*(T<\fBnodename\fR\*(T>\fR 

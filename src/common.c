@@ -222,9 +222,6 @@ void update_stuff()
 	if (NEED(INFO_DISKIO))
 		update_diskio();
 
-	if (NEED(INFO_MAIL))
-		update_mail_count();
-
 #if defined(__linux__)
 	if (NEED(INFO_I8K))
 		update_i8k();

@@ -38,28 +38,25 @@
 
 char *current_mail_spool;
 
-static time_t last_mail_mtime;
-static double last_mail_update;
-
-void update_mail_count()
+void update_mail_count(struct local_mail_s *mail)
 {
 	struct stat buf;
 
-	if (current_mail_spool == NULL)
+	if (mail == NULL)
 		return;
 
 	/* TODO: use that fine file modification notify on Linux 2.4 */
 
 	/* don't check mail so often (9.5s is minimum interval) */
-	if (current_update_time - last_mail_update < 9.5)
+	if (current_update_time - mail->last_update < 9.5)
 		return;
 	else
-		last_mail_update = current_update_time;
+		mail->last_update = current_update_time;
 
-	if (stat(current_mail_spool, &buf)) {
+	if (stat(mail->box, &buf)) {
 		static int rep;
 		if (!rep) {
-			ERR("can't stat %s: %s", current_mail_spool,
+			ERR("can't stat %s: %s", mail->box,
 			    strerror(errno));
 			rep = 1;
 		}
@@ -71,17 +68,16 @@ void update_mail_count()
 		DIR *dir;
 		char *dirname;
 		struct dirent *dirent;
-		info.mail_count = 0;
-		info.new_mail_count = 0;
 
+		mail->mail_count = mail->new_mail_count = 0;
 		dirname =
 		    (char *) malloc(sizeof(char) *
-				    (strlen(current_mail_spool) + 5));
+				    (strlen(mail->box) + 5));
 		if (!dirname) {
 			ERR("malloc");
 			return;
 		}
-		strcpy(dirname, current_mail_spool);
+		strcpy(dirname, mail->box);
 		strcat(dirname, "/");
 		/* checking the cur subdirectory */
 		strcat(dirname, "cur");
@@ -96,7 +92,7 @@ void update_mail_count()
 		while (dirent) {
 			/* . and .. are skipped */
 			if (dirent->d_name[0] != '.') {
-				info.mail_count++;
+				mail->mail_count++;
 			}
 			dirent = readdir(dir);
 		}
@@ -115,8 +111,8 @@ void update_mail_count()
 		while (dirent) {
 			/* . and .. are skipped */
 			if (dirent->d_name[0] != '.') {
-				info.new_mail_count++;
-				info.mail_count++;
+				mail->new_mail_count++;
+				mail->mail_count++;
 			}
 			dirent = readdir(dir);
 		}
@@ -127,7 +123,7 @@ void update_mail_count()
 	}
 #endif
 	/* mbox format */
-	if (buf.st_mtime != last_mail_mtime) {
+	if (buf.st_mtime != mail->last_mtime) {
 		/* yippee, modification time has changed, let's read mail count! */
 		static int rep;
 		FILE *fp;
@@ -136,10 +132,9 @@ void update_mail_count()
 		/* could lock here but I don't think it's really worth it because
 		 * this isn't going to write mail spool */
 
-		info.new_mail_count = 0;
-		info.mail_count = 0;
+		mail->new_mail_count = mail->mail_count = 0;
 
-		fp = open_file(current_mail_spool, &rep);
+		fp = open_file(mail->box, &rep);
 		if (!fp)
 			return;
 
@@ -154,10 +149,10 @@ void update_mail_count()
 				/* ignore MAILER-DAEMON */
 				if (strncmp(buf + 5, "MAILER-DAEMON ", 14)
 				    != 0) {
-					info.mail_count++;
+					mail->mail_count++;
 
 					if (reading_status)
-						info.new_mail_count++;
+						mail->new_mail_count++;
 					else
 						reading_status = 1;
 				}
@@ -167,7 +162,7 @@ void update_mail_count()
 					       17) == 0) {
 					/* check that mail isn't already read */
 					if (strchr(buf + 21, '0'))
-						info.new_mail_count++;
+						mail->new_mail_count++;
 
 					reading_status = 0;
 					continue;
@@ -176,7 +171,7 @@ void update_mail_count()
 				    && strncmp(buf, "Status:", 7) == 0) {
 					/* check that mail isn't already read */
 					if (strchr(buf + 7, 'R') == NULL)
-						info.new_mail_count++;
+						mail->new_mail_count++;
 
 					reading_status = 0;
 					continue;
@@ -191,8 +186,8 @@ void update_mail_count()
 		fclose(fp);
 
 		if (reading_status)
-			info.new_mail_count++;
+			mail->new_mail_count++;
 
-		last_mail_mtime = buf.st_mtime;
+		mail->last_mtime = buf.st_mtime;
 	}
 }

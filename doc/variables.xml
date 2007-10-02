@@ -1080,9 +1080,14 @@
 <varlistentry>
 	<term>
 		<command><option>mails</option></command>
+	<option>(mailbox)</option>
+	<option>(interval)</option>
 	</term>
 	<listitem>
-		Mail count in mail spool. You can use program like fetchmail to get mails from some server using your favourite protocol. See also new_mails.
+		Mail count in the specified mailbox or your mail spool if not.
+		Both mbox and maildir type mailboxes are supported. You can
+		use a program like fetchmail to get mails from some server
+		using your favourite protocol. See also new_mails.
 	<para></para></listitem>
 </varlistentry>
 
@@ -1282,9 +1287,12 @@
 <varlistentry>
 	<term>
 		<command><option>new_mails</option></command>
+	<option>(mailbox)</option>
+	<option>(interval)</option>
 	</term>
 	<listitem>
-		Unread mail count in mail spool.
+		Unread mail count in the specified mailbox or mail spool if
+		not. Both mbox and maildir type mailboxes are supported.
 	<para></para></listitem>
 </varlistentry>
 

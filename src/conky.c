@@ -1294,6 +1294,7 @@ struct text_object {
 			int delay;
 		} rss;
 #endif
+		struct local_mail_s local_mail;
 	} data;
 };
 
@@ -1841,6 +1842,10 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 			case OBJ_mboxscan:
 				free(objs[i].data.mboxscan.args);
 				free(objs[i].data.mboxscan.output);
+				break;
+			case OBJ_mails:
+			case OBJ_new_mails:
+				free(objs[i].data.local_mail.box);
 				break;
 			case OBJ_imap:
 				free(info.mail);
@@ -2951,7 +2956,26 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 	blockdepth++;
 	END OBJ(kernel, 0)
 		END OBJ(machine, 0)
-		END OBJ(mails, INFO_MAIL)
+		END OBJ(mails, 0) {
+			float n1;
+			char box[256], dst[256];
+
+			if (!arg) {
+				n1 = 9.5;
+				strncpy(box, MAIL_FILE, sizeof(box));
+			}
+			else {
+				if (sscanf(arg, "%s %f", box, &n1) != 2) {
+					n1 = 9.5;
+					strncpy(box, arg, sizeof(box));
+				}
+			}
+
+			variable_substitute(box, dst, sizeof(dst));
+			obj->data.local_mail.box = strdup(dst);
+			obj->data.local_mail.interval = n1;
+		}
+
 		END OBJ(mboxscan, 0)
 		obj->data.mboxscan.args = (char*)malloc(TEXT_BUFFER_SIZE);
 		obj->data.mboxscan.output = (char*)malloc(text_buffer_size);
@@ -2978,7 +3002,26 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		scan_mixer_bar(arg, &obj->data.mixerbar.l,
 				&obj->data.mixerbar.w, &obj->data.mixerbar.h);
 	END
-		OBJ(new_mails, INFO_MAIL)
+		OBJ(new_mails, 0) {
+			float n1;
+			char box[256], dst[256];
+
+			if (!arg) {
+				n1 = 9.5;
+				strncpy(box, MAIL_FILE, sizeof(box));
+			}
+			else {
+				if (sscanf(arg, "%s %f", box, &n1) != 2) {
+					n1 = 9.5;
+					strncpy(box, arg, sizeof(box));
+				}
+			}
+
+			variable_substitute(box, dst, sizeof(dst));
+			obj->data.local_mail.box = strdup(dst);
+			obj->data.local_mail.interval = n1;
+		}
+
 		END OBJ(nodename, 0)
 		END OBJ(processes, INFO_PROCS)
 		END OBJ(running_processes, INFO_RUN_PROCS)
@@ -4793,14 +4836,16 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 
 			/* mail stuff */
 			OBJ(mails) {
-				snprintf(p, p_max_size, "%d", cur->mail_count);
+				update_mail_count(&obj->data.local_mail);
+				snprintf(p, p_max_size, "%d", obj->data.local_mail.mail_count);
 			}
 			OBJ(mboxscan) {
                 mbox_scan(obj->data.mboxscan.args, obj->data.mboxscan.output, TEXT_BUFFER_SIZE);
 				snprintf(p, p_max_size, "%s", obj->data.mboxscan.output);
 			}
 			OBJ(new_mails) {
-				snprintf(p, p_max_size, "%d", cur->new_mail_count);
+				update_mail_count(&obj->data.local_mail);
+				snprintf(p, p_max_size, "%d", obj->data.local_mail.new_mail_count);
 			}
 
 			OBJ(nodename) {
@@ -6856,7 +6901,6 @@ void clean_up(void)
 		free(text);
 
 	free(current_config);
-	free(current_mail_spool);
 
 #ifdef TCP_PORT_MONITOR
 	destroy_tcp_port_monitor_collection( info.p_tcp_port_monitor_collection );

@@ -1,5 +1,8 @@
 # $Id$
 
+2007-10-02
+	* Multiple mailbox patch (thanks Ben Kibbey)
+
 2007-09-28
 	* Small fix for $ibm_volume (thanks Kapil Hari Paranjape)
 	* Patch so $tail can read from a fifo file descriptor (thanks Ben Kibbey)

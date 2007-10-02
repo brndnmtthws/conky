@@ -321,7 +321,6 @@ struct information {
 
 	float loadavg[3];
 
-	int new_mail_count, mail_count;
 	struct mail_s* mail;
 	int mail_running;
 #ifdef MPD
@@ -578,6 +577,15 @@ struct process {
 	unsigned int counted;
 	unsigned int changed;
 	float totalmem;
+};
+
+struct local_mail_s {
+	char *box;
+	int mail_count;
+	int new_mail_count;
+	float interval;
+	time_t last_mtime;
+	double last_update;
 };
 
 void update_top();
