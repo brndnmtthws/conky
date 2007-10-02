@@ -134,9 +134,9 @@ void *update_mpd(void)
 					TEXT_BUFFER_SIZE - 1);
 		}
 		if (status->state == MPD_STATUS_STATE_STOP) {
+			clear_mpd_stats(current_info);
 			strncpy(current_info->mpd.status, "Stopped",
 					TEXT_BUFFER_SIZE - 1);
-			clear_mpd_stats(current_info);
 		}
 		if (status->state == MPD_STATUS_STATE_PAUSE) {
 			strncpy(current_info->mpd.status, "Paused",
