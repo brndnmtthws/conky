@@ -2781,7 +2781,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 				("invalid arg for tail, interval must be greater than 0 and Conky's interval");
 			return NULL;
 		} else {
-			FILE *fp;
+			FILE *fp=0;
 			int fd;
 
 			obj->data.tail.fd = -1;
