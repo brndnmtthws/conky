@@ -502,7 +502,7 @@
 
 <varlistentry>
 	<term>
-		<command><option>diskio_readgraph</option></command>
+		<command><option>diskiograph_read</option></command>
 		<option>(height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
 	</term>
 	<listitem>
@@ -521,7 +521,7 @@
 
 <varlistentry>
 	<term>
-		<command><option>diskio_writegraph</option></command>
+		<command><option>diskiograph_write</option></command>
 		<option>(height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
 	</term>
 	<listitem>
