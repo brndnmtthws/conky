@@ -529,9 +529,9 @@ struct special_t {
 	double graph_scale;
 	int graph_width;
 	int scaled;
-	short font_added;
 	unsigned long first_colour; // for graph gradient
 	unsigned long last_colour;
+	short font_added;
 };
 
 /* create specials array on heap instead of stack with introduction of max_specials */
@@ -1185,12 +1185,6 @@ enum text_object_type {
 };
 
 struct text_object {
-	int type;
-	int a, b;
-	long line;
-	unsigned int c, d, e;
-	float f;
-	char global_mode;
 	union {
 		char *s;	/* some string */
 		int i;		/* some integer */
@@ -1296,6 +1290,12 @@ struct text_object {
 #endif
 		struct local_mail_s local_mail;
 	} data;
+	int type;
+	int a, b;
+	long line;
+	unsigned int c, d, e;
+	float f;
+	char global_mode;
 };
 
 struct text_object_list {

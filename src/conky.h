@@ -124,9 +124,9 @@ struct net_stat {
 	char essid[32];
 	char bitrate[16];
 	char mode[16];
-	char ap[18];
 	int link_qual;
 	int link_qual_max;
+	char ap[18];
 };
 
 unsigned int diskio_value;
@@ -153,8 +153,8 @@ struct mail_s {			// for imap and pop3
 	char pass[128];
 	char command[1024];
 	char folder[128];
-	char secure;
 	timed_thread *p_timed_thread;
+	char secure;
 } mail;
 
 /*struct cpu_stat {
@@ -347,9 +347,10 @@ struct information {
 #ifdef TCP_PORT_MONITOR
   tcp_port_monitor_collection_t * p_tcp_port_monitor_collection;
 #endif
-	short kflags;  /* kernel settings, see enum KFLAG */
 	struct entropy_s entropy;
   double music_player_interval;
+
+	short kflags;  /* kernel settings, see enum KFLAG */
 };
 
 enum {
