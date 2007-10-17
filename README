@@ -622,7 +622,7 @@ VARIABLES
 	      Displays current disk IO for reads.
 
 
-       diskio_readgraph (height),(width) (gradient colour 1) (gradient	colour
+       diskiograph_read (height),(width) (gradient colour 1) (gradient	colour
        2) (scale)
 	      Disk IO graph for reads, colours defined in hex, minus the #. If
 	      scale is non-zero, it becomes the scale for the graph.
@@ -632,7 +632,7 @@ VARIABLES
 	      Displays current disk IO for writes.
 
 
-       diskio_writegraph (height),(width) (gradient colour 1) (gradient colour
+       diskiograph_write (height),(width) (gradient colour 1) (gradient colour
        2) (scale)
 	      Disk  IO	graph for writes, colours defined in hex, minus the #.
 	      If scale is non-zero, it becomes the scale for the graph.
@@ -1372,7 +1372,7 @@ VARIABLES
 
 
 EXAMPLES
-       conky -t '${time %D %H:%m}' -o -u 30
+       conky -t '${time %D %H:%M}' -o -u 30
 	      Start Conky in its own window with date and clock as text and 30
 	      sec update interval.
 

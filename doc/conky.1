@@ -608,7 +608,7 @@ Disk IO graph, colours defined in hex, minus the #. If scale is non-zero, it bec
 Displays current disk IO for reads.
 
 .TP 
-\fB\*(T<\fBdiskio_readgraph\fR\*(T>\fR \*(T<\fB(height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
+\fB\*(T<\fBdiskiograph_read\fR\*(T>\fR \*(T<\fB(height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
 Disk IO graph for reads, colours defined in hex, minus the #. If scale is non-zero, it becomes the scale for the graph.
 
 .TP 
@@ -616,7 +616,7 @@ Disk IO graph for reads, colours defined in hex, minus the #. If scale is non-ze
 Displays current disk IO for writes.
 
 .TP 
-\fB\*(T<\fBdiskio_writegraph\fR\*(T>\fR \*(T<\fB(height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
+\fB\*(T<\fBdiskiograph_write\fR\*(T>\fR \*(T<\fB(height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
 Disk IO graph for writes, colours defined in hex, minus the #. If scale is non-zero, it becomes the scale for the graph.
 
 .TP 
@@ -1267,7 +1267,7 @@ Prints the song name in either the form "artist - title" or file name, depending
 
 .SH EXAMPLES
 .TP 
-\*(T<conky \*(T>\*(T<\fB\-t '${time %D %H:%m}' \-o \-u 30\fR\*(T>
+\*(T<conky \*(T>\*(T<\fB\-t '${time %D %H:%M}' \-o \-u 30\fR\*(T>
 Start Conky in its own window with date and clock as text and 30 sec update interval.
 .TP 
 \*(T<conky \*(T>\*(T<\fB\-a top_left \-x 5 \-y 500 \-d\fR\*(T>

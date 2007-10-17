@@ -183,7 +183,7 @@
 		<variablelist>
 		
 			<varlistentry>
-				<term><varname>conky </varname><option>-t &apos;${time %D %H:%m}&apos; -o -u 30</option></term>
+				<term><varname>conky </varname><option>-t &apos;${time %D %H:%M}&apos; -o -u 30</option></term>
 				<listitem>Start Conky in its own window with date and clock as text and 30 sec update interval.</listitem>
 			</varlistentry>
 			
