@@ -4,7 +4,7 @@ dnl major, minor and micro version macros.
 m4_define([conky_version_major], [1])
 m4_define([conky_version_minor], [4])
 m4_define([conky_version_micro], [8])
-m4_define([conky_version_tag], [svn]) dnl [] for releases
+m4_define([conky_version_tag], []) dnl [] for releases
 m4_define([conky_version_revision],[r@REVISION@])
 m4_define([conky_version], 
     [conky_version_major().conky_version_minor().conky_version_micro()ifelse(
@@ -562,6 +562,6 @@ $PACKAGE $VERSION configured successfully:
  * general:
   hddtemp:          $want_hddtemp
   portmon:          $want_portmon  
-  RSS:		    $want_rss
+  rss:              $want_rss
   wireless:         $want_wlan
 EOF

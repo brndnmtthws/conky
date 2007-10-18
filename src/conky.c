@@ -120,7 +120,7 @@ static void print_version()
 #ifdef HAVE_IWLIB
 	"  * wireless\n"
 #endif
-	"\n");	
+  );	
 
 	exit(0);
 }
