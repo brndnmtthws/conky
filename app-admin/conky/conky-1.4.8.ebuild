@@ -30,6 +30,9 @@ DEPEND_COMMON="
 				>=sys-apps/dbus-0.35
 			)
 	)
+	rss? ( dev-libs/libxml2
+			net-misc/curl
+			)
 	wifi? ( net-wireless/wireless-tools )
 	!ipv6? ( >=dev-libs/glib-2.0 )"
 RDEPEND="${DEPEND_COMMON}
