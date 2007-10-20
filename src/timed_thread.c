@@ -87,7 +87,8 @@ timed_thread_create (void *(*start_routine)(void*), void *arg, unsigned int inte
 {
   timed_thread *p_timed_thread;
 
-  assert ((start_routine != NULL) && (interval_usecs >= MINIMUM_INTERVAL_USECS));
+  assert (start_routine != NULL);
+  assert (interval_usecs >= MINIMUM_INTERVAL_USECS);
 
   if ((p_timed_thread = calloc (sizeof(timed_thread), 1)) == 0)
     return NULL;
