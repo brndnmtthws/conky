@@ -25,7 +25,7 @@
 #ifndef _TIMED_THREAD_H_
 #define _TIMED_THREAD_H_
 
-#define MINIMUM_INTERVAL_USECS 50000  /* 50000 microseconds = 50 ms =  0.05 sec */
+#define MINIMUM_INTERVAL_USECS 10000  /* 10000 microseconds = 10 ms =  0.01 sec */
 
 /* opaque structure for clients */
 typedef struct _timed_thread timed_thread;

@@ -7044,6 +7044,7 @@ static void set_default_configurations(void)
 
 	no_buffers = 1;
 	update_interval = 10.0;
+  info.music_player_interval = 1.0;
 	stuff_in_upper_case = 0;
 
 #ifdef TCP_PORT_MONITOR
