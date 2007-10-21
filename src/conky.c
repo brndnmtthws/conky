@@ -441,7 +441,7 @@ static char original_text[] =
     " ${color lightgrey} ${top name 2} ${top pid 2} ${top cpu 2} ${top mem 2}\n"
     " ${color lightgrey} ${top name 3} ${top pid 3} ${top cpu 3} ${top mem 3}\n"
     " ${color lightgrey} ${top name 4} ${top pid 4} ${top cpu 4} ${top mem 4}\n"
-    "${tail /var/log/Xorg.0.log 3}";
+    ;
 
 static char *text = original_text;
 long text_lines;
@@ -7043,7 +7043,7 @@ static void set_default_configurations(void)
 	}
 
 	no_buffers = 1;
-	update_interval = 10.0;
+	update_interval = 3.0;
   info.music_player_interval = 1.0;
 	stuff_in_upper_case = 0;
 
