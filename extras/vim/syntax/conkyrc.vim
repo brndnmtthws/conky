@@ -134,9 +134,12 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
         \ colour 
         \ cpu 
         \ cpubar 
+        \ cpugraph
         \ diskio 
+        \ diskiograph
         \ downspeed 
         \ downspeedf
+        \ downspeedgraph
         \ else 
         \ entropy_avail
         \ entropy_bar
