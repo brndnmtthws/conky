@@ -81,6 +81,7 @@ static void print_version()
 
 	printf(
 	"\nCompiled in features:\n\n"
+  "system config file: %s\n\n"
 #ifdef X11
 	" X11:\n"
 # ifdef HAVE_XDAMAGE
@@ -120,6 +121,7 @@ static void print_version()
 #ifdef HAVE_IWLIB
 	"  * wireless\n"
 #endif
+  "",SYSTEM_CONFIG_FILE
   );	
 
 	exit(0);
