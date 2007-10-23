@@ -1,5 +1,8 @@
 # $Id$
 
+2008-10-23
+	* Externalize default config file: ${sysconfdir}/conky/conky.conf
+
 2008-10-21
 	* Initialize music_player_interval so built-in .conkyrc actual works.
 	* Lower timed_thread minimum timing interval from 50 usecs to 10 usecs.

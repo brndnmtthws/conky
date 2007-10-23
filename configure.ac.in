@@ -39,6 +39,7 @@ PKG_PROG_PKG_CONFIG([0.19])
 
 AC_CONFIG_FILES(
   Makefile
+  data/Makefile
   doc/Makefile
   src/Makefile
   src/build.h
@@ -543,6 +544,7 @@ cat << EOF
 $PACKAGE $VERSION configured successfully:
 
  Installing into:   $prefix
+ System config dir: $sysconfdir
  C compiler flags:  $CFLAGS
  Linker flags:      $LDFLAGS
  Libraries:         $LIBS

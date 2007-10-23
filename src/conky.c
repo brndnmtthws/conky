@@ -411,39 +411,7 @@ static int pad_percents = 0;
 tcp_port_monitor_args_t 	tcp_port_monitor_args;
 #endif
 
-/* Text that is shown */
-static char original_text[] =
-    "$nodename - $sysname $kernel on $machine\n"
-    "$hr\n"
-    "${color grey}Uptime:$color $uptime\n"
-    "${color grey}Frequency (in MHz):$color $freq\n"
-    "${color grey}Frequency (in GHz):$color $freq_g\n"
-    "${color grey}RAM Usage:$color $mem/$memmax - $memperc% ${membar 4}\n"
-    "${color grey}Swap Usage:$color $swap/$swapmax - $swapperc% ${swapbar 4}\n"
-    "${color grey}CPU Usage:$color $cpu% ${cpubar 4}\n"
-    "${color grey}Processes:$color $processes  ${color grey}Running:$color $running_processes\n"
-    "$hr\n"
-    "${color grey}File systems:\n"
-    " / $color${fs_free /}/${fs_size /} ${fs_bar 6 /}\n"
-    "${color grey}Networking:\n"
-    " Up:$color ${upspeed eth0} k/s${color grey} - Down:$color ${downspeed eth0} k/s\n"
-    "$hr\n"
-#ifdef MPD
-    "${color grey}MPD: $mpd_status $mpd_artist - $mpd_title from $mpd_album at $mpd_vol\n"
-    "Bitrate: $mpd_bitrate\n" "Progress: $mpd_bar\n"
-#endif
-#ifdef XMMS2
-    "${color grey}XMMS2: $xmms2_status $xmms2_artist - $xmms2_title from $xmms2_album\n"
-    "Progress: $xmms2_bar\n"
-#endif
-    "${color grey}Name		PID	CPU%	MEM%\n"
-    " ${color lightgrey} ${top name 1} ${top pid 1} ${top cpu 1} ${top mem 1}\n"
-    " ${color lightgrey} ${top name 2} ${top pid 2} ${top cpu 2} ${top mem 2}\n"
-    " ${color lightgrey} ${top name 3} ${top pid 3} ${top cpu 3} ${top mem 3}\n"
-    " ${color lightgrey} ${top name 4} ${top pid 4} ${top cpu 4} ${top mem 4}\n"
-    ;
-
-static char *text = original_text;
+static char *text = 0;
 long text_lines;
 
 static int total_updates;
@@ -6897,7 +6865,7 @@ void clean_up(void)
 	text_object_count = 0;
 	text_objects = NULL;
 
-	if (text != original_text)
+	if (!text)
 		free(text);
 
 	free(current_config);
@@ -7016,7 +6984,7 @@ static void set_default_configurations(void)
 	draw_outline = 0;
 	set_first_font("6x10");
 	gap_x = 5;
-	gap_y = 5;
+	gap_y = 60;
 	minimum_width = 5;
 	minimum_height = 5;
 	maximum_width = 0;
@@ -7026,7 +6994,7 @@ static void set_default_configurations(void)
 	window.hints=0;
 	strcpy(window.class_name, "Conky");	
 	update_uname();
-	sprintf(window.title,"%s - conky",info.uname_s.nodename);
+	sprintf(window.title,"Conky (%s)",info.uname_s.nodename);
 #endif
 	stippled_borders = 0;
 	border_margin = 3;
@@ -7568,7 +7536,7 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 				CONF_ERR;
 		}
 		CONF("text") {
-			if (text != original_text)
+			if (!text)
 				free(text);
 
 			text = (char *)
@@ -7694,8 +7662,6 @@ int main(int argc, char **argv)
 		case 'V':
 			print_version();
 		case 'c':
-			/* if current_config is set to a strdup of CONFIG_FILE, free it (even
-			 * though free() does the NULL check itself;), then load optarg value */
 			if (current_config)
 				free(current_config);
 			current_config = strdup(optarg);
@@ -7708,9 +7674,7 @@ int main(int argc, char **argv)
 					"window. Command line options will override configurations defined in config\n"
 					"file.\n"
 					"   -V            version\n"
-					"   -c FILE       config file to load instead of "
-					CONFIG_FILE
-					"\n"
+					"   -c FILE       config file to load\n"
 					"   -d            daemonize, fork to background\n"
 					"   -h            help\n"
 #ifdef X11
@@ -7745,25 +7709,32 @@ int main(int argc, char **argv)
 	init_X11();
 #endif /* X11 */
 
-	/* load current_config or CONFIG_FILE */
+	/* load current_config, CONFIG_FILE or SYSTEM_CONFIG_FILE */
 
-#ifdef CONFIG_FILE
-	if (current_config == NULL) {
+	if (!current_config) {
 		/* load default config file */
 		char buf[256];
+    FILE *fp;
 
-		variable_substitute(CONFIG_FILE, buf, 256);
+    /* Try to use personal config file first */
+		variable_substitute(CONFIG_FILE, buf, sizeof(buf));
+    if (buf[0] && (fp=fopen(buf,"r"))) {
+      current_config = strdup(buf);
+      fclose(fp);
+    }
 
-		if (buf[0] != '\0')
-			current_config = strdup(buf);
+    /* Try to use system config file if personal config not readable */
+    if (!current_config && (fp=fopen(SYSTEM_CONFIG_FILE,"r"))) {
+      current_config = strdup(SYSTEM_CONFIG_FILE);
+      fclose(fp);
+    }
+
+    /* No readable config found */
+    if (!current_config)
+      CRIT_ERR("no readable personal or system-wide config file found");
 	}
-#endif
 
-	if (current_config != NULL && fopen((const char *)current_config, (const char *)"r"))
-		load_config_file(current_config);
-	else { 
-		set_default_configurations();
-	}
+	load_config_file(current_config);
 
 	/* init specials array */
 	if ((specials = calloc (sizeof(struct special_t), max_specials)) == 0)
@@ -7825,7 +7796,7 @@ int main(int argc, char **argv)
 #endif
 #endif /* X11 */
 		case 't':
-			if (text != original_text)
+			if (!text)
 				free(text);
 			text = strdup(optarg);
 			convert_escapes(text);
@@ -7864,7 +7835,7 @@ int main(int argc, char **argv)
 
 	/* generate text and get initial size */
 	extract_variable_text(text);
-	if (text != original_text) {
+	if (!text) {
 		free(text);
 	}
 	text = NULL;
