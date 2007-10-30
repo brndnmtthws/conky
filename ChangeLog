@@ -1,16 +1,16 @@
 # $Id$
 
-2008-10-23
+2007-10-23
 	* Externalize default config file: ${sysconfdir}/conky/conky.conf
 
-2008-10-21
+2007-10-21
 	* Initialize music_player_interval so built-in .conkyrc actual works.
 	* Lower timed_thread minimum timing interval from 50 usecs to 10 usecs.
 	* Separate timed thread asserts for clarity.
 	* Remove ${tail /var/log/Xorg.0.log} from default text.
 	* Update vim/nano syntax files.
 
-2008-10-18
+2007-10-18
 	* Conky 1.4.8 released.
 
 2007-10-17
