@@ -1,5 +1,8 @@
 # $Id$
 
+2007-10-31
+	* Fix mpd_smart bug #1822773.
+
 2007-10-23
 	* Externalize default config file: ${sysconfdir}/conky/conky.conf
 

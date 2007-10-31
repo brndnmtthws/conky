@@ -5089,11 +5089,22 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					       255.0f));
 			}
 			OBJ(mpd_smart) {
-				if (strlen(cur->mpd.title) < 2 && strlen(cur->mpd.artist) < 2) {
-					snprintf(p, p_max_size, "%s", cur->mpd.file);
-				} else {
-					snprintf(p, p_max_size, "%s - %s", cur->mpd.artist, cur->mpd.title);
-				}
+        memset (p, 0, p_max_size);
+        if (cur->mpd.artist && *cur->mpd.artist && cur->mpd.title && *cur->mpd.title) {
+          snprintf(p, p_max_size, "%s - %s", cur->mpd.artist, cur->mpd.title);
+        }
+        else if (cur->mpd.title && *cur->mpd.title) {
+          snprintf(p, p_max_size, "%s", cur->mpd.title);
+        }
+        else if (cur->mpd.artist && *cur->mpd.artist) {
+          snprintf(p, p_max_size, "%s", cur->mpd.artist);
+        }
+        else if (cur->mpd.file && *cur->mpd.file) {
+          snprintf(p, p_max_size, "%s", cur->mpd.file);
+        }
+        else {
+          *p=0;
+        }
 			}
 #endif
 #ifdef XMMS2
