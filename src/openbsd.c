@@ -291,7 +291,7 @@ update_running_processes()
 /* new SMP code can be enabled by commenting the following line */
 #define OLDCPU
 
-#if OLDCPU
+#ifdef OLDCPU
 struct cpu_load_struct {
 	unsigned long load[5];
 };
@@ -299,6 +299,7 @@ struct cpu_load_struct {
 struct cpu_load_struct fresh = { {0, 0, 0, 0, 0} };
 long cpu_used, oldtotal, oldused;
 #else
+#include <assert.h>
 int64_t* fresh = NULL;
 /* XXX is 8 enough? - What's the constant for MAXCPU?*/
 /* allocate this with malloc would be better*/
@@ -312,9 +313,11 @@ get_cpu_count()
 #ifndef OLDCPU
 	int mib[2] = { CTL_HW, HW_NCPU };
 	size_t len = sizeof(cpu_count);
-	if (sysctl(mib, 2, &cpu_count, &len, NULL, 0) == 0)
-		info.cpu_count = cpu_count;
+	if(sysctl(mib, 2, &cpu_count, &len, NULL, 0) != 0)
+		ERR("error getting cpu count, defaulting to 1");
 #endif
+	info.cpu_count = cpu_count;
+
 	info.cpu_usage = malloc(info.cpu_count * sizeof (float));
 	if (info.cpu_usage == NULL)
 		CRIT_ERR("malloc");
