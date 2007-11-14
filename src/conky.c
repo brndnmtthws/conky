@@ -4001,9 +4001,11 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				}
 #endif /* __OpenBSD__ */
 
+#ifdef X11
 				OBJ(font) {
 					new_font(p, obj->data.s);
 				}
+#endif
 				void format_diskio(unsigned int diskio_value)
 				{
 					if (!use_spacer) {

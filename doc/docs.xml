@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
-               "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd" [
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+               "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd" [
                <!ENTITY testtable SYSTEM "test.xml">
                <!ENTITY command_options SYSTEM "command_options.xml">
                <!ENTITY config_settings SYSTEM "config_settings.xml">
