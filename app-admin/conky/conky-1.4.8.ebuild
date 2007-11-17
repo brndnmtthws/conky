@@ -25,7 +25,7 @@ DEPEND_COMMON="
 		x11-libs/libXdamage
 		x11-libs/libXft
 		truetype? ( >=media-libs/freetype-2 )
-		audacious? ( >=media-sound/audacious-0.1 )
+		audacious? ( <media-sound/audacious-1.4.0 )
 		bmpx? ( media-sound/bmpx
 				>=sys-apps/dbus-0.35
 			)

@@ -43,10 +43,10 @@ COMPILING
 
        ./configure	--prefix=/usr	   --mandir=/usr/share/man	 --in-
        fodir=/usr/share/info  --datadir=/usr/share  --sysconfdir=/etc --local-
-       statedir=/var/lib --disable-own-window --enable-audacious --enable-bmpx
-       --disable-hddtemp --disable-mpd --enable-xmms2 --disable-portmon --dis-
-       able-network   --enable-debug   --disable-x11   --disable-double-buffer
-       --disable-xdamage --disable-xft
+       statedir=/var/lib --disable-own-window --enable-audacious[=yes|no|lega-
+       cy] --enable-bmpx --disable-hddtemp --disable-mpd --enable-xmms2 --dis-
+       able-portmon  --disable-network	--enable-debug	--disable-x11	--dis-
+       able-double-buffer --disable-xdamage --disable-xft
 
        make
 

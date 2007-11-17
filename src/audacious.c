@@ -22,6 +22,10 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdio.h>
 #include <string.h>
 
@@ -32,16 +36,16 @@
 #include <audacious/dbus.h>
 #else
 #include <audacious/beepctrl.h>
-#define audacious_remote_is_running(x)          xmms_remote_is_running(x) 
-#define audacious_remote_is_paused(x)           xmms_remote_is_paused(x)
-#define audacious_remote_is_playing(x)          xmms_remote_is_playing(x)
-#define audacious_remote_get_playlist_pos(x)    xmms_remote_get_playlist_pos(x)
-#define audacious_remote_get_playlist_title(x)  xmms_remote_get_playlist_title(x)
-#define audacious_remote_get_playlist_time(x)   xmms_remote_get_playlist_time(x)
-#define audacious_remote_get_output_time(x)     xmms_remote_get_output_time(x)
-#define audacious_remote_get_info(x)            xmms_remote_get_info(x)
-#define audacious_remote_get_playlist_file(x)   xmms_remote_get_playlist_file(x)
-#define audacious_remote_get_playlist_length(x) xmms_remote_get_playlist_length(x)
+#define audacious_remote_is_running(x)            xmms_remote_is_running(x) 
+#define audacious_remote_is_paused(x)             xmms_remote_is_paused(x)
+#define audacious_remote_is_playing(x)            xmms_remote_is_playing(x)
+#define audacious_remote_get_playlist_pos(x)      xmms_remote_get_playlist_pos(x)
+#define audacious_remote_get_playlist_title(x,y)  xmms_remote_get_playlist_title(x,y)
+#define audacious_remote_get_playlist_time(x,y)   xmms_remote_get_playlist_time(x,y)
+#define audacious_remote_get_output_time(x)       xmms_remote_get_output_time(x)
+#define audacious_remote_get_info(w,x,y,z)        xmms_remote_get_info(w,x,y,z)
+#define audacious_remote_get_playlist_file(x,y)   xmms_remote_get_playlist_file(x,y)
+#define audacious_remote_get_playlist_length(x)   xmms_remote_get_playlist_length(x)
 #endif
 
 #include "config.h"
