@@ -1,5 +1,9 @@
 # $Id$
 
+2007-11-16
+	* Added support for Audacious 1.4.0 via --enable-audacious=yes|no|legacy:
+	*   (use 'yes' for audacious >= 1.4.0, 'legacy' for prior versions).
+
 2007-11-14
 	* Fix compilation error with --disable-x11 (bug #1830373).
 	* Bump doc stylesheet from 4.3 to 4.4.

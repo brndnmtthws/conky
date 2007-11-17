@@ -26,7 +26,23 @@
 #include <string.h>
 
 #include <glib.h>
+#ifndef AUDACIOUS_LEGACY
+#include <glib-object.h>
+#include <audacious/audctrl.h>
+#include <audacious/dbus.h>
+#else
 #include <audacious/beepctrl.h>
+#define audacious_remote_is_running(x)          xmms_remote_is_running(x) 
+#define audacious_remote_is_paused(x)           xmms_remote_is_paused(x)
+#define audacious_remote_is_playing(x)          xmms_remote_is_playing(x)
+#define audacious_remote_get_playlist_pos(x)    xmms_remote_get_playlist_pos(x)
+#define audacious_remote_get_playlist_title(x)  xmms_remote_get_playlist_title(x)
+#define audacious_remote_get_playlist_time(x)   xmms_remote_get_playlist_time(x)
+#define audacious_remote_get_output_time(x)     xmms_remote_get_output_time(x)
+#define audacious_remote_get_info(x)            xmms_remote_get_info(x)
+#define audacious_remote_get_playlist_file(x)   xmms_remote_get_playlist_file(x)
+#define audacious_remote_get_playlist_length(x) xmms_remote_get_playlist_length(x)
+#endif
 
 #include "config.h"
 #include "conky.h"
@@ -94,19 +110,42 @@ int destroy_audacious_thread(void)
 void *audacious_thread_func(void *pvoid)
 {
   static audacious_t items;
-  gint session,playpos,frames,length;
+  gint playpos,frames,length;
   gint rate,freq,chans;
   gchar *psong,*pfilename;
+
+#ifndef AUDACIOUS_LEGACY
+  DBusGProxy *session = NULL;
+  DBusGConnection *connection = NULL;
+#else
+  gint session;
+#endif
+
 
   pvoid=(void *)pvoid;  /* avoid warning */
   session=0;
   psong=NULL;
   pfilename=NULL;
 
+#ifndef AUDACIOUS_LEGACY
+  g_type_init ();
+  connection = dbus_g_bus_get (DBUS_BUS_SESSION, NULL);
+  if (!connection) {
+    CRIT_ERR ("unable to establish dbus connection");
+  }
+  session = dbus_g_proxy_new_for_name (connection, 
+                                       AUDACIOUS_DBUS_SERVICE,
+                                       AUDACIOUS_DBUS_PATH,
+                                       AUDACIOUS_DBUS_INTERFACE);
+  if (!session) {
+    CRIT_ERR ("unable to establish dbus proxy");
+  }
+#endif /* AUDACIOUS_LEGACY */
+
   /* Loop until the main thread sets the runnable signal to 0i via timed_thread_destroy. */
   while (1) {
 
-    if (!xmms_remote_is_running (session)) 
+    if (!audacious_remote_is_running (session)) 
     {
       memset(&items,0,sizeof(items));
       strcpy(items[AUDACIOUS_STATUS],"Not running");
@@ -114,16 +153,16 @@ void *audacious_thread_func(void *pvoid)
     }
 
     /* Player status */
-    if (xmms_remote_is_paused (session))
+    if (audacious_remote_is_paused (session))
       strcpy(items[AUDACIOUS_STATUS],"Paused");
-    else if (xmms_remote_is_playing (session))
+    else if (audacious_remote_is_playing (session))
       strcpy(items[AUDACIOUS_STATUS],"Playing");
     else
       strcpy(items[AUDACIOUS_STATUS],"Stopped");
 
     /* Current song title */
-    playpos = xmms_remote_get_playlist_pos (session);
-    psong = xmms_remote_get_playlist_title (session, playpos);
+    playpos = audacious_remote_get_playlist_pos (session);
+    psong = audacious_remote_get_playlist_title (session, playpos);
     if (psong) 
     {
       strncpy(items[AUDACIOUS_TITLE],psong,sizeof(items[AUDACIOUS_TITLE])-1);
@@ -132,7 +171,7 @@ void *audacious_thread_func(void *pvoid)
     }
 
     /* Current song length as MM:SS */
-    frames = xmms_remote_get_playlist_time (session,playpos);
+    frames = audacious_remote_get_playlist_time (session,playpos);
     length = frames / 1000;
     snprintf(items[AUDACIOUS_LENGTH],sizeof(items[AUDACIOUS_LENGTH])-1, "%d:%.2d", length / 60, length % 60);
 
@@ -140,7 +179,7 @@ void *audacious_thread_func(void *pvoid)
     snprintf(items[AUDACIOUS_LENGTH_SECONDS],sizeof(items[AUDACIOUS_LENGTH_SECONDS])-1, "%d", length);
 
     /* Current song position as MM:SS */
-    frames = xmms_remote_get_output_time (session);
+    frames = audacious_remote_get_output_time (session);
     length = frames / 1000;
     snprintf(items[AUDACIOUS_POSITION],sizeof(items[AUDACIOUS_POSITION])-1,
              "%d:%.2d", length / 60, length % 60);
@@ -149,7 +188,7 @@ void *audacious_thread_func(void *pvoid)
     snprintf(items[AUDACIOUS_POSITION_SECONDS],sizeof(items[AUDACIOUS_POSITION_SECONDS])-1, "%d", length);
 
     /* Current song bitrate */
-    xmms_remote_get_info (session, &rate, &freq, &chans);
+    audacious_remote_get_info (session, &rate, &freq, &chans);
     snprintf(items[AUDACIOUS_BITRATE],sizeof(items[AUDACIOUS_BITRATE])-1, "%d", rate);
 
     /* Current song frequency */
@@ -159,7 +198,7 @@ void *audacious_thread_func(void *pvoid)
     snprintf(items[AUDACIOUS_CHANNELS],sizeof(items[AUDACIOUS_CHANNELS])-1, "%d", chans);
 
     /* Current song filename */
-    pfilename = xmms_remote_get_playlist_file (session,playpos);
+    pfilename = audacious_remote_get_playlist_file (session,playpos);
     if (pfilename) 
     {
       strncpy(items[AUDACIOUS_FILENAME],pfilename,sizeof(items[AUDACIOUS_FILENAME])-1);
@@ -168,7 +207,7 @@ void *audacious_thread_func(void *pvoid)
     }
 
     /* Length of the Playlist (number of songs) */
-    length = xmms_remote_get_playlist_length (session);
+    length = audacious_remote_get_playlist_length (session);
     snprintf(items[AUDACIOUS_PLAYLIST_LENGTH],sizeof(items[AUDACIOUS_PLAYLIST_LENGTH])-1, "%d", length);
 
     /* Playlist position (index of song) */
