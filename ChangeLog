@@ -1,8 +1,14 @@
 # $Id$
 
+2007-11-22
+	* Conky 1.4.9 released.
+
+2007-11-18
+	* Added Gentoo USE flag audacious-legacy for Audacious legacy support.
+
 2007-11-16
-	* Added support for Audacious 1.4.0 via --enable-audacious=yes|no|legacy:
-	*   (use 'yes' for audacious >= 1.4.0, 'legacy' for prior versions).
+	* Added support for Audacious 1.4.0 and legacy versions via 
+			--enable-audacious=yes|no|legacy.
 
 2007-11-14
 	* Fix compilation error with --disable-x11 (bug #1830373).

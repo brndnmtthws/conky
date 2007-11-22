@@ -142,18 +142,18 @@ void *audacious_thread_func(void *pvoid)
                                        AUDACIOUS_DBUS_PATH,
                                        AUDACIOUS_DBUS_INTERFACE);
   if (!session) {
-    CRIT_ERR ("unable to establish dbus proxy");
+    CRIT_ERR ("unable to create dbus proxy");
   }
 #endif /* AUDACIOUS_LEGACY */
 
-  /* Loop until the main thread sets the runnable signal to 0i via timed_thread_destroy. */
+  /* Loop until the main thread resets the runnable signal. */
   while (1) {
 
     if (!audacious_remote_is_running (session)) 
     {
       memset(&items,0,sizeof(items));
       strcpy(items[AUDACIOUS_STATUS],"Not running");
-        goto next_iter;
+        goto bottom;
     }
 
     /* Player status */
@@ -218,14 +218,19 @@ void *audacious_thread_func(void *pvoid)
     snprintf(items[AUDACIOUS_PLAYLIST_POSITION],sizeof(items[AUDACIOUS_PLAYLIST_POSITION])-1, 
            "%d", playpos+1);
 
-next_iter:
+bottom:
 
     /* Deliver the refreshed items array to audacious_items. */
     timed_thread_lock (info.audacious.p_timed_thread);
     memcpy(&audacious_items,items,sizeof(items));
     timed_thread_unlock (info.audacious.p_timed_thread);
 
-    if (timed_thread_test (info.audacious.p_timed_thread))
+    if (timed_thread_test (info.audacious.p_timed_thread)) {
+#ifndef AUDACIOUS_LEGACY
+      /* release reference to dbus proxy */
+      g_object_unref (session);
+#endif
       timed_thread_exit (info.audacious.p_timed_thread);
+    }
   }
 }

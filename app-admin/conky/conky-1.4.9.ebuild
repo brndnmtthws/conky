@@ -11,8 +11,8 @@ SRC_URI="mirror://sourceforge/conky/${P}.tar.bz2"
 
 LICENSE="BSD"
 SLOT="0"
-KEYWORDS="~alpha amd64 ppc ppc64 sparc x86"
-IUSE="audacious bmpx hddtemp ipv6 mpd rss truetype vim-syntax wifi X"
+KEYWORDS="~alpha ~amd64 ~ppc ~ppc64 ~sparc ~x86"
+IUSE="audacious audacious-legacy bmpx hddtemp ipv6 mpd rss truetype vim-syntax wifi X"
 
 DEPEND_COMMON="
 	virtual/libc
@@ -26,6 +26,7 @@ DEPEND_COMMON="
 		x11-libs/libXft
 		truetype? ( >=media-libs/freetype-2 )
 		audacious? ( >=media-sound/audacious-1.4.0 )
+		audacious-legacy? ( <media-sound/audacious-1.4.0 )
 		bmpx? ( media-sound/bmpx
 				>=sys-apps/dbus-0.35
 			)
@@ -67,9 +68,13 @@ src_compile() {
 		myconf="${myconf} --disable-x11 --disable-double-buffer --disable-xdamage --disable-own-window"
 		myconf="${myconf} --disable-xft"
 	fi
+	if useq audacious-legacy; then
+		myconf="${myconf} --enable-audacious=legacy"
+	elif useq audacious; then
+		myconf="${myconf} --enable-audacious"
+	fi
 	econf \
 		${myconf} \
-		$(use_enable audacious) \
 		$(use_enable bmpx) \
 		$(use_enable hddtemp ) \
 		$(use_enable mpd) \
