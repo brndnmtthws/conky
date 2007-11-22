@@ -52,9 +52,8 @@ DEPEND="
 src_compile() {
 	local mymake
 	if useq ipv6 ; then
-		ewarn
-		ewarn "You have the ipv6 USE flag enabled.  Please note that using"
-		ewarn "the ipv6 USE flag with Conky disables the port monitor."
+		elog "You have the ipv6 USE flag enabled.  Please note that using"
+		elog "the ipv6 USE flag with Conky disables the port monitor."
 		epause
 	else
 		mymake="MPD_NO_IPV6=noipv6"
