@@ -1,5 +1,12 @@
 # $Id$
 
+2007-12-31
+	* Applied submitted patches: 
+		1) to suport Debian's kFreeBSD;
+		2) to use realtime clock in timed threads and 
+		3) to fix get_ibm_acpi_volume zero value bug 
+		(thanks Kapil Hari Paranjape).
+
 2007-11-22
 	* Conky 1.4.9 released.
 

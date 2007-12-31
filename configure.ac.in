@@ -2,9 +2,9 @@ dnl $Id$
 
 dnl major, minor and micro version macros.
 m4_define([conky_version_major], [1])
-m4_define([conky_version_minor], [4])
-m4_define([conky_version_micro], [9])
-m4_define([conky_version_tag], []) dnl [] for releases
+m4_define([conky_version_minor], [5])
+m4_define([conky_version_micro], [0])
+m4_define([conky_version_tag], [svn]) dnl [] for releases
 m4_define([conky_version_revision],[r@REVISION@])
 m4_define([conky_version], 
     [conky_version_major().conky_version_minor().conky_version_micro()ifelse(
@@ -51,7 +51,7 @@ case $uname in
   Linux*)
     WANT_SYSINFO=yes
     ;;
-  FreeBSD*)
+  FreeBSD*|GNU/kFreeBSD*)
     WANT_KVM=yes
     WANT_DEVSTAT=yes
     ;;
@@ -79,7 +79,7 @@ esac
 
 AM_CONDITIONAL(BUILD_LINUX, test x$uname = xLinux)
 #AM_CONDITIONAL(BUILD_SOLARIS, test x$uname = xSunOS)
-AM_CONDITIONAL(BUILD_FREEBSD, test x$uname = xFreeBSD)
+AM_CONDITIONAL(BUILD_FREEBSD, test x$uname = xFreeBSD -o x$uname = xGNU/kFreeBSD)
 #AM_CONDITIONAL(BUILD_NETBSD, test x$uname = xNetBSD)
 AM_CONDITIONAL(BUILD_OPENBSD, test x$uname = xOpenBSD)
 

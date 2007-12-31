@@ -143,8 +143,10 @@ Jørgen P. Tjernø <daxxar at mental dot mine dot nu>
   Some cleaning and commenting apparently :)
   SIGHUP config file reload
 
-Kapil Hari Paranjape
+Kapil Hari Paranjape <kapil@imsc.res.in>
   ibm_volume patch
+  kFreeBSD support patch
+  realtime clock patck
 
 killfire
   fs_used_perc and fs_bar_free patch

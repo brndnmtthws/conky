@@ -1058,7 +1058,7 @@ enum text_object_type {
 	OBJ_pop3,
 	OBJ_pop3_unseen,
 	OBJ_pop3_used,
-#if (defined(__FreeBSD__) || defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
+#if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
 	OBJ_apm_adapter,
 	OBJ_apm_battery_time,
 	OBJ_apm_battery_life,
@@ -3122,7 +3122,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 #ifndef __OpenBSD__
 		OBJ(adt746xcpu, 0) END OBJ(adt746xfan, 0) END
 #endif /* !__OpenBSD__ */
-#if (defined(__FreeBSD__) || defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
+#if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
 		OBJ(apm_adapter, 0) END
 		OBJ(apm_battery_life, 0) END
 		OBJ(apm_battery_time, 0) END
@@ -4966,7 +4966,7 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				format_seconds(p, p_max_size, (int) cur->uptime);
 			}
 
-#if (defined(__FreeBSD__) || defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
+#if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
 			OBJ(apm_adapter) {
 				char	*msg;
 				msg = get_apm_adapter();
@@ -7773,7 +7773,7 @@ int main(int argc, char **argv)
 	optind = 0;
 #endif
 
-#if defined(__FreeBSD__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 	if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null",
 			O_RDONLY, "kvm_open")) == NULL)
 		CRIT_ERR( "cannot read kvm");
@@ -7935,7 +7935,7 @@ int main(int argc, char **argv)
    */
   main_loop();
 
-#if defined(__FreeBSD__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 	kvm_close(kd);
 #endif
 	

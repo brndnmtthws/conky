@@ -1925,7 +1925,6 @@ Peter Tarjan (ptarjan@citromail.hu)
 				vol = read_vol;
 				continue;
 			}
-			if (sscanf(line, "level: %d", &vol)) continue;
 			if (sscanf(line, "mute: %s", mute)) break;
 		}
 	}

@@ -270,7 +270,7 @@ update_running_processes()
 
 	p = kvm_getprocs(kd, KERN_PROC_ALL, 0, &n_processes);
 	for (i = 0; i < n_processes; i++) {
-#if __FreeBSD__ < 5
+#if (__FreeBSD__ < 5) && (__FreeBSD_kernel__ < 5)
 		if (p[i].kp_proc.p_stat == SRUN)
 #else
 		if (p[i].ki_stat == SRUN)

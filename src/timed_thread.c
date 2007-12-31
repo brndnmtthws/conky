@@ -22,6 +22,10 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <pthread.h>
 #include <assert.h>
 #include <errno.h>
@@ -67,7 +71,7 @@ static int now (struct timespec *abstime)
     return (-1);
 
 #ifdef HAVE_CLOCK_GETTIME
-  return clock_gettime (CLOCK_REALTIME, &abstime);
+  return clock_gettime (CLOCK_REALTIME, abstime);
 #else
   /* fallback to gettimeofday () */
   struct timeval tv;

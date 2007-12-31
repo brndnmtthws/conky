@@ -41,14 +41,14 @@
 #include <langinfo.h>
 #include <wchar.h>
 #include <sys/param.h>
-#if defined(__FreeBSD__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 #include <sys/mount.h>
 #include <sys/ucred.h>
 #include <fcntl.h>
 #include <kvm.h>
 #endif /* __FreeBSD__ */
 
-#if defined(__FreeBSD__) && (defined(i386) || defined(__i386__))
+#if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__)) && (defined(i386) || defined(__i386__))
 #include <machine/apm_bios.h>
 #endif /* __FreeBSD__ */
 
@@ -613,11 +613,11 @@ extern char *current_mail_spool;
 void update_mail_count();
 
 /* in freebsd.c */
-#if defined(__FreeBSD__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 kvm_t *kd;
 #endif
 
-#if (defined(__FreeBSD__) || defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
+#if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
 #ifdef __OpenBSD__
 typedef struct apm_power_info *apm_info_t;
 #endif
