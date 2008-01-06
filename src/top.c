@@ -213,6 +213,7 @@ static int process_parse_stat(struct process *process)
 
 
 
+	process->total_cpu_time = process->user_time + process->kernel_time;
 	process->totalmem = (float)(((float) process->rss / cur->memmax) / 10);
 	if (process->previous_user_time == ULONG_MAX)
 		process->previous_user_time = process->user_time;
@@ -412,7 +413,7 @@ inline static void calc_cpu_each(unsigned long long total)
 	struct process *p = first_process;
 	while (p) {
 		p->amount =
-		    100.0 * (p->user_time + p->kernel_time) / (float)total;
+		    100.0 * (cpu_separate ? info.cpu_count : 1) * (p->user_time + p->kernel_time) / (float)total;
 
 		p = p->next;
 	}

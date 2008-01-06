@@ -1,5 +1,19 @@
 # $Id$
 
+2008-01-05
+	* Applied some more submitted patches:
+		1) Add long forms of (most of) the command-line options.
+		2) Added an option (top_cpu_separate) that emulates top's "separate
+		cpus" option.  Processor usage is shown as a percentage of a
+		single processor on your system, instead of a percentage
+		of all processors combined.
+		3) Adds a parameter (time) to top and top_mem that will show the
+		cumulative CPU time of a process.
+		4) Simplified integer rounding.
+		5) Fixed the window width when a goto is used.
+		6) Fixed the window width when an offset is used.		
+		(thanks Kevin Lyles).
+
 2007-12-31
 	* Applied submitted patches: 
 		1) to suport Debian's kFreeBSD;

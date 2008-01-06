@@ -79,9 +79,7 @@
 #define MAX_SP 10  //number of elements to sort
 
 
-/******************************************/
-/* Globals                                */
-/******************************************/
+extern int cpu_separate;
 
 /******************************************/
 /* Process class                          */

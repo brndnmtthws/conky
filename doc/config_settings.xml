@@ -105,6 +105,13 @@
 </varlistentry>
 
 <varlistentry>
+	<term><command><option>top_cpu_separate</option></command></term>
+	<listitem>
+		If true, cpu in top will show usage of one processor's power.  If false, cpu in top will show the usage of all processors' power combined.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
 	<term><command><option>default_color</option></command></term>
 	<listitem>
 		Default color and border color

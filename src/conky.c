@@ -56,6 +56,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
+#include <getopt.h>
 
 #ifdef HAVE_ICONV
 #include <iconv.h>
@@ -2637,6 +2638,8 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 			obj->data.top.type = TOP_PID;
 		} else if (strcmp(buf, "mem") == 0) {
 			obj->data.top.type = TOP_MEM;
+		} else if (strcmp(buf, "time") == 0) {
+			obj->data.top.type = TOP_TIME;
 		} else {
 			ERR("invalid arg for top");
 			return NULL;
@@ -2670,6 +2673,8 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 			obj->data.top.type = TOP_PID;
 		} else if (strcmp(buf, "mem") == 0) {
 			obj->data.top.type = TOP_MEM;
+		} else if (strcmp(buf, "time") == 0) {
+			obj->data.top.type = TOP_TIME;
 		} else {
 			ERR("invalid arg for top");
 			return NULL;
@@ -3837,18 +3842,18 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					}
 					if (!use_spacer)
 						snprintf(p, p_max_size, "%*d", pad_percents,
-								(int) round_to_int(cur->cpu_usage[obj->data.cpu_index] *
+								round_to_int(cur->cpu_usage[obj->data.cpu_index] *
 										   100.0));
 					else
 						snprintf(p, 4, "%*d    ",
 								pad_percents,
-								(int) round_to_int(cur->cpu_usage[obj->data.cpu_index] *
+								round_to_int(cur->cpu_usage[obj->data.cpu_index] *
 										   100.0));
 				}
 				OBJ(cpubar) {
 					new_bar(p, obj->a,
 							obj->b,
-							(int) round_to_int(cur->cpu_usage[obj->data.cpu_index] * 255.0));
+							round_to_int(cur->cpu_usage[obj->data.cpu_index] * 255.0));
 				}
 				OBJ(cpugraph) {
 					new_graph(p, obj->a,
@@ -5247,6 +5252,42 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				snprintf(p, p_max_size, "%i", cur->bmpx.bitrate);
 			}
 #endif
+
+			char *format_time(unsigned long time, const int width) {
+				char buf[10];
+				unsigned long nt; // narrow time, for speed on
+
+				// 32-bit
+				unsigned cc; // centiseconds
+				unsigned nn; // multi-purpose whatever
+
+				nt = time;
+				cc = nt % 100; // centiseconds past second
+				nt /= 100; // total seconds
+				nn = nt % 60; // seconds past the minute
+				nt /= 60; // total minutes
+				if (width >= snprintf(buf, sizeof buf, "%lu:%02u.%02u", nt,
+						nn, cc))
+					return strdup(buf);
+				if (width >= snprintf(buf, sizeof buf, "%lu:%02u", nt, nn))
+					return strdup(buf);
+				nn = nt % 60; // minutes past the hour
+				nt /= 60; // total hours
+				if (width >= snprintf(buf, sizeof buf, "%lu,%02u", nt, nn))
+					return strdup(buf);
+				nn = nt; // now also hours
+				if (width >= snprintf(buf, sizeof buf, "%uh", nn))
+					return strdup(buf);
+				nn /= 24; // now days
+				if (width >= snprintf(buf, sizeof buf, "%ud", nn))
+					return strdup(buf);
+				nn /= 7; // now weeks
+				if (width >= snprintf(buf, sizeof buf, "%uw", nn))
+					return strdup(buf);
+				// well shoot, this outta' fit...
+				return strdup("<inf>");
+			}
+
 			OBJ(top) {
 				if (obj->data.top.type == TOP_NAME
 				    && obj->data.top.num >= 0
@@ -5270,6 +5311,13 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					snprintf(p, 7, "%7.3f",
 						 cur->cpu[obj->data.top.
 							  num]->totalmem);
+				} else if (obj->data.top.type == TOP_TIME
+						&& obj->data.top.num >= 0
+						&& obj->data.top.num < 10) {
+					char *time = format_time(cur->cpu[obj->data.top.num]->
+							total_cpu_time, 9);
+					snprintf(p, 10, "%9s", time);
+					free(time);
 				}
 			}
 			OBJ(top_mem) {
@@ -5297,6 +5345,13 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					snprintf(p, 7, "%7.3f",
 						 cur->memu[obj->data.top.
 							   num]->totalmem);
+				} else if (obj->data.top.type == TOP_TIME
+						&& obj->data.top.num >= 0
+						&& obj->data.top.num < 10) {
+					char *time = format_time(cur->memu[obj->data.top.num]->
+							total_cpu_time, 9);
+					snprintf(p, 10, "%9s", time);
+					free(time);
 				}
 			}
 
@@ -5745,12 +5800,15 @@ static void text_size_updater(char *s)
 					last_font_height += font_ascent();
 				}
 			} else if (specials[special_index].type == OFFSET) {
-				w += specials[special_index].arg + get_string_width("a"); /* filthy, but works */
+				if (specials[special_index].arg > 0) {
+					w += specials[special_index].arg;
+				}
 			} else if (specials[special_index].type == VOFFSET) {
 				last_font_height += specials[special_index].arg;
 			} else if (specials[special_index].type == GOTO) {
-				if (specials[special_index].arg >= 0)
-					w += (int)specials[special_index].arg - cur_x;
+				if (specials[special_index].arg > cur_x) {
+					w = (int)specials[special_index].arg;
+				}
 			} else if (specials[special_index].type == TAB) { 
 			 	int start = specials[special_index].arg;
 				int step = specials[special_index].width;
@@ -6949,6 +7007,7 @@ static void set_default_configurations(void)
 	info.net_avg_samples = 2;
 	info.memmax = 0;
 	top_cpu = 0;
+	cpu_separate = 0;
 	top_mem = 0;
 #ifdef MPD
 	strcpy(info.mpd.host, "localhost");
@@ -7412,6 +7471,9 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 		CONF("no_buffers") {
 			no_buffers = string_to_bool(value);
 		}
+		CONF("top_cpu_separate") {
+			cpu_separate = string_to_bool(value);
+		}
 		CONF("pad_percents") {
 	pad_percents = atoi(value);
 		}
@@ -7626,8 +7688,29 @@ static const char *getopt_string = "vVdt:f:u:i:hc:w:x:y:a:"
     "b"
 #endif
 #endif /* X11 */
-    ;
+	;
 
+static const struct option
+		longopts[] = {
+			{ "help", 0, NULL, 'h' },
+			{ "version", 0, NULL, 'V' },
+			{ "config", 1, NULL, 'c' },
+			{ "daemonize", 0, NULL, 'd' },
+#ifdef X11
+			{ "alignment", 1, NULL, 'a'},
+			{ "font", 1, NULL, 'f'},
+#ifdef OWN_WINDOW
+			{ "own-window", 0, NULL, 'o'},
+#endif
+#ifdef HAVE_XDBE
+			{ "double-buffer", 0, NULL, 'b'},
+#endif
+			{ "window-id", 1, NULL, 'w'},
+#endif /* X11 */
+			{ "text", 1, NULL, 't' },
+			{ "interval", 0, NULL, 'u' },
+			{ 0, 0,	0, 0 }
+		};
 
 int main(int argc, char **argv)
 {
@@ -7666,11 +7749,12 @@ int main(int argc, char **argv)
 	}
 #endif /* X11 */
 	while (1) {
-		int c = getopt(argc,
-			       argv,
-			       getopt_string);
+		int c = getopt_long(argc, argv, getopt_string, longopts, NULL);
+
 		if (c == -1)
+		{
 			break;
+		}
 
 		switch (c) {
 		case 'v':
@@ -7682,33 +7766,35 @@ int main(int argc, char **argv)
 			current_config = strdup(optarg);
 			break;
 
-		case 'h':
-			printf
-					("Usage: %s [OPTION]...\n"
-					"Conky is a system monitor that renders text on desktop or to own transparent\n"
-					"window. Command line options will override configurations defined in config\n"
-					"file.\n"
-					"   -V            version\n"
-					"   -c FILE       config file to load\n"
-					"   -d            daemonize, fork to background\n"
-					"   -h            help\n"
+			case 'h':
+				printf(
+						"Usage: %s [OPTION]...\n"
+						"Conky is a system monitor that renders text on desktop or to own transparent\n"
+						"window. Command line options will override configurations defined in config\n"
+						"file.\n"
+						"   -V, --version             version\n"
+						"   -c, --config=FILE         config file to load\n"
+						"   -d, --daemonize           daemonize, fork to background\n"
+						"   -h, --help                help\n"
 #ifdef X11
-					"   -a ALIGNMENT  text alignment on screen, {top,bottom}_{left,right}\n"
-					"   -f FONT       font to use\n"
+						"   -a, --alignment=ALIGNMENT text alignment on screen, {top,bottom}_{left,right}\n"
+						"   -f, --font=FONT           font to use\n"
 #ifdef OWN_WINDOW
-					"   -o            create own window to draw\n"
+						"   -o, --own-window          create own window to draw\n"
 #endif
 #ifdef HAVE_XDBE
-					"   -b            double buffer (prevents flickering)\n"
+						"   -b, --double-buffer       double buffer (prevents flickering)\n"
 #endif
-					"   -w WIN_ID     window id to draw\n"
-					"   -x X          x position\n"
-					"   -y Y          y position\n"
+						"   -w, --window-id=WIN_ID    window id to draw\n"
+						"   -x X                      x position\n"
+						"   -y Y                      y position\n"
 #endif /* X11 */
-					"   -t TEXT       text to render, remember single quotes, like -t '$uptime'\n"
-					"   -u SECS       update interval\n"
-					"   -i NUM        number of times to update Conky\n", argv[0]);
-			return 0;
+						"   -t, --text=TEXT           text to render, remember single quotes, like -t '$uptime'\n"
+						"   -u, --interval=SECS       update interval\n"
+						"   -i NUM                    number of times to update Conky\n",
+						argv[0]
+				);
+				return 0;
 #ifdef X11
 		case 'w':
 			window.window = strtol(optarg, 0, 0);
@@ -7780,11 +7866,12 @@ int main(int argc, char **argv)
 #endif
 	
 	while (1) {
-		int c = getopt(argc,
-			       argv,
-			       getopt_string);
+		int c = getopt_long(argc, argv, getopt_string, longopts, NULL);
+
 		if (c == -1)
+		{
 			break;
+		}
 
 		switch (c) {
 		case 'd':

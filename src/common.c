@@ -289,11 +289,5 @@ void update_stuff()
 
 int round_to_int(float f)
 {
-    int intval = (int)f;
-    double delta = f - intval;
-    if (!(delta < 0.5)) {
-        ++intval;
-    }
-
-    return intval;
+    return (int) (f + 0.5);
 }

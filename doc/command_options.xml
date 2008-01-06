@@ -1,76 +1,76 @@
 <variablelist>
   <varlistentry>
-    <term><command><option>-v | -V</option></command></term>
+    <term><command><option>-v | -V | --verbose</option></command></term>
     <listitem>
     Prints version and exits
     <para></para></listitem>
   </varlistentry>
 
   <varlistentry>
-    <term><command><option>-a </option></command><option>ALIGNMENT</option></term>
+    <term><command><option>-a | --alignment=</option></command><option>ALIGNMENT</option></term>
     <listitem>
       Text alignment on screen, {top,bottom}_{left,right} or none
     <para></para></listitem>
   </varlistentry>
   
   <varlistentry>
-    <term><command><option>-b</option></command></term>
+    <term><command><option>-b | --double-buffer</option></command></term>
     <listitem>
       Use double buffering (eliminates "flicker")
     <para></para></listitem>
   </varlistentry>
         
   <varlistentry>
-    <term><command><option>-c </option></command><option>FILE</option></term> 
+    <term><command><option>-c | --config=</option></command><option>FILE</option></term>
     <listitem>
       Config file to load instead of $HOME/.conkyrc
     <para></para></listitem>
   </varlistentry>
   
   <varlistentry>
-    <term><command><option>-d</option></command></term>
+    <term><command><option>-d | --daemonize</option></command></term>
     <listitem>
       Daemonize Conky, aka fork to background
     <para></para></listitem>
   </varlistentry>
 
   <varlistentry>
-    <term><command><option>-f </option></command><option>FONT</option></term> 
+    <term><command><option>-f | --font=</option></command><option>FONT</option></term>
     <listitem>
       Font to use
     <para></para></listitem>
   </varlistentry>
   
   <varlistentry>
-    <term><command><option>-h</option></command></term>
+    <term><command><option>-h | --help</option></command></term>
     <listitem>
       Prints command line help and exits
     <para></para></listitem>
   </varlistentry>
         
   <varlistentry>
-    <term><command><option>-o</option></command></term>
+    <term><command><option>-o | --own-window</option></command></term>
     <listitem>
       Create own window to draw
     <para></para></listitem>
   </varlistentry>
 
   <varlistentry>
-    <term><command><option>-t </option></command><option>TEXT</option></term> 
+    <term><command><option>-t | --text=</option></command><option>TEXT</option></term>
     <listitem>
       Text to render, remember single quotes, like -t &apos; $uptime &apos;
     <para></para></listitem>
   </varlistentry>
   
   <varlistentry>
-    <term><command><option>-u </option></command><option>SECONDS</option></term> 
+    <term><command><option>-u | --interval=</option></command><option>SECONDS</option></term>
     <listitem>
       Update interval
     <para></para></listitem>
   </varlistentry>
 
   <varlistentry>
-    <term><command><option>-w </option></command><option>WIN_ID</option></term> 
+    <term><command><option>-w | --window-id=</option></command><option>WIN_ID</option></term>
     <listitem>
       Window id to draw
     <para></para></listitem>

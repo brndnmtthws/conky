@@ -77,6 +77,7 @@
 #define TOP_NAME 2
 #define TOP_PID 3
 #define TOP_MEM 4
+#define TOP_TIME 5
 
 #define TEXT_BUFFER_SIZE 1280
 #define P_MAX_SIZE ((TEXT_BUFFER_SIZE * 4) - 2) 
@@ -460,6 +461,8 @@ long get_x11_color(const char *);
 
 #endif /* X11 */
 
+int cpu_separate;
+
 /* in common.c */
 
 /* struct that has all info */
@@ -572,6 +575,7 @@ struct process {
 	unsigned long kernel_time;
 	unsigned long previous_user_time;
 	unsigned long previous_kernel_time;
+	unsigned long total_cpu_time;
 	unsigned int vsize;
 	unsigned int rss;
 	unsigned int time_stamp;

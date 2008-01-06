@@ -148,6 +148,14 @@ Kapil Hari Paranjape <kapil@imsc.res.in>
   kFreeBSD support patch
   realtime clock patck
 
+Kevin Lyles <kevinlyles at gmail dot com>
+  add long options patch
+  add cpu separate option patch
+  add time to top patch
+  simplify round_to_int patch
+  goto width fix patch
+  offset width fix patch
+
 killfire
   fs_used_perc and fs_bar_free patch
 
