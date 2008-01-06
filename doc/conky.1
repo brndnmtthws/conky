@@ -77,47 +77,47 @@ mdsplib was causing way too many problems. Hopefully there'll be a better soluti
 .SH OPTIONS
 Command line options override configurations defined in configuration file.
 .TP 
-\fB\*(T<\fB\-v | \-V\fR\*(T>\fR
+\fB\*(T<\fB\-v | \-V | \-\-verbose\fR\*(T>\fR
 Prints version and exits
 
 .TP 
-\fB\*(T<\fB\-a \fR\*(T>\fR\*(T<\fBALIGNMENT\fR\*(T>
+\fB\*(T<\fB\-a | \-\-alignment=\fR\*(T>\fR\*(T<\fBALIGNMENT\fR\*(T>
 Text alignment on screen, {top,bottom}_{left,right} or none
 
 .TP 
-\fB\*(T<\fB\-b\fR\*(T>\fR
+\fB\*(T<\fB\-b | \-\-double\-buffer\fR\*(T>\fR
 Use double buffering (eliminates "flicker")
 
 .TP 
-\fB\*(T<\fB\-c \fR\*(T>\fR\*(T<\fBFILE\fR\*(T>
+\fB\*(T<\fB\-c | \-\-config=\fR\*(T>\fR\*(T<\fBFILE\fR\*(T>
 Config file to load instead of $HOME/.conkyrc
 
 .TP 
-\fB\*(T<\fB\-d\fR\*(T>\fR
+\fB\*(T<\fB\-d | \-\-daemonize\fR\*(T>\fR
 Daemonize Conky, aka fork to background
 
 .TP 
-\fB\*(T<\fB\-f \fR\*(T>\fR\*(T<\fBFONT\fR\*(T>
+\fB\*(T<\fB\-f | \-\-font=\fR\*(T>\fR\*(T<\fBFONT\fR\*(T>
 Font to use
 
 .TP 
-\fB\*(T<\fB\-h\fR\*(T>\fR
+\fB\*(T<\fB\-h | \-\-help\fR\*(T>\fR
 Prints command line help and exits
 
 .TP 
-\fB\*(T<\fB\-o\fR\*(T>\fR
+\fB\*(T<\fB\-o | \-\-own\-window\fR\*(T>\fR
 Create own window to draw
 
 .TP 
-\fB\*(T<\fB\-t \fR\*(T>\fR\*(T<\fBTEXT\fR\*(T>
+\fB\*(T<\fB\-t | \-\-text=\fR\*(T>\fR\*(T<\fBTEXT\fR\*(T>
 Text to render, remember single quotes, like -t ' $uptime '
 
 .TP 
-\fB\*(T<\fB\-u \fR\*(T>\fR\*(T<\fBSECONDS\fR\*(T>
+\fB\*(T<\fB\-u | \-\-interval=\fR\*(T>\fR\*(T<\fBSECONDS\fR\*(T>
 Update interval
 
 .TP 
-\fB\*(T<\fB\-w \fR\*(T>\fR\*(T<\fBWIN_ID\fR\*(T>
+\fB\*(T<\fB\-w | \-\-window\-id=\fR\*(T>\fR\*(T<\fBWIN_ID\fR\*(T>
 Window id to draw
 
 .TP 
@@ -194,6 +194,10 @@ A color variable for use inside TEXT segments
 .TP 
 \fB\*(T<\fBcpu_avg_samples\fR\*(T>\fR
 The number of samples to average for CPU monitoring
+
+.TP 
+\fB\*(T<\fBtop_cpu_separate\fR\*(T>\fR
+If true, cpu in top will show usage of one processor's power. If false, cpu in top will show the usage of all processors' power combined.
 
 .TP 
 \fB\*(T<\fBdefault_color\fR\*(T>\fR
@@ -1111,7 +1115,7 @@ Total download, overflows at 4 GB on Linux with 32-bit arch and there doesn't se
 
 .TP 
 \fB\*(T<\fBtop\fR\*(T>\fR \*(T<\fBtype, num\fR\*(T> 
-This takes arguments in the form:top (name) (number) Basically, processes are ranked from highest to lowest in terms of cpu usage, which is what (num) represents. The types are: "name", "pid", "cpu", and "mem". There can be a max of 10 processes listed.
+This takes arguments in the form:top (name) (number) Basically, processes are ranked from highest to lowest in terms of cpu usage, which is what (num) represents. The types are: "name", "pid", "cpu", "mem", and "time". There can be a max of 10 processes listed.
 
 .TP 
 \fB\*(T<\fBtop_mem\fR\*(T>\fR \*(T<\fBtype, num\fR\*(T> 

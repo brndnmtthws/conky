@@ -85,43 +85,47 @@ OPTIONS
        Command	line  options override configurations defined in configuration
        file.
 
-       -v | -V
+       -v | -V | --verbose
 	      Prints version and exits
 
 
-       -a ALIGNMENT
+       -a | --alignment=ALIGNMENT
 	      Text alignment on screen, {top,bottom}_{left,right} or none
 
 
-       -b     Use double buffering (eliminates "flicker")
+       -b | --double-buffer
+	      Use double buffering (eliminates "flicker")
 
 
-       -c FILE
+       -c | --config=FILE
 	      Config file to load instead of $HOME/.conkyrc
 
 
-       -d     Daemonize Conky, aka fork to background
+       -d | --daemonize
+	      Daemonize Conky, aka fork to background
 
 
-       -f FONT
+       -f | --font=FONT
 	      Font to use
 
 
-       -h     Prints command line help and exits
+       -h | --help
+	      Prints command line help and exits
 
 
-       -o     Create own window to draw
+       -o | --own-window
+	      Create own window to draw
 
 
-       -t TEXT
+       -t | --text=TEXT
 	      Text to render, remember single quotes, like -t ' $uptime '
 
 
-       -u SECONDS
+       -u | --interval=SECONDS
 	      Update interval
 
 
-       -w WIN_ID
+       -w | --window-id=WIN_ID
 	      Window id to draw
 
 
@@ -192,6 +196,12 @@ CONFIGURATION SETTINGS
 
        cpu_avg_samples
 	      The number of samples to average for CPU monitoring
+
+
+       top_cpu_separate
+	      If true, cpu in top will show usage of one processor's power. If
+	      false,  cpu  in top will show the usage of all processors' power
+	      combined.
 
 
        default_color
@@ -1214,8 +1224,8 @@ VARIABLES
 	      This  takes arguments in the form:top (name) (number) Basically,
 	      processes are ranked from highest to lowest in terms of cpu  us-
 	      age,  which  is  what  (num)  represents. The types are: "name",
-	      "pid", "cpu", and "mem". There can be  a	max  of	 10  processes
-	      listed.
+	      "pid", "cpu", "mem", and "time". There can be a max of  10  pro-
+	      cesses listed.
 
 
        top_mem type, num
