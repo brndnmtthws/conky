@@ -353,6 +353,10 @@ Pad percentages to this many decimals (0 = no padding)
 Default global POP3 server. Arguments are: "host user pass [-i interval] [-p port] [-e command]". Default port is 110, default interval is 5 minutes. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
 
 .TP 
+\fB\*(T<\fBshort_units\fR\*(T>\fR
+Shortens units to a single character (kiB->k, GiB->G, etc.). Default is off.
+
+.TP 
 \fB\*(T<\fBstippled_borders\fR\*(T>\fR
 Border stippling (dashing) in pixels
 
@@ -370,7 +374,7 @@ Boolean value, if true, text is rendered in upper case
 
 .TP 
 \fB\*(T<\fBuse_spacer\fR\*(T>\fR
-Adds spaces after certain objects to stop them from moving other things around. Note that this only helps if you are using a mono font, such as Bitstream Vera Sans Mono.
+Adds spaces around certain objects to stop them from moving other things around. Arguments are left, right, and none (default). The old true/false values are deprecated and default to right/none respectively. Note that this only helps if you are using a mono font, such as Bitstream Vera Sans Mono.
 
 .TP 
 \fB\*(T<\fBuse_xft\fR\*(T>\fR
@@ -600,28 +604,28 @@ Bar that shows CPU usage, height is bar's height in pixels. See $cpu for more in
 CPU usage graph, with optional colours in hex, minus the #. See $cpu for more info on SMP.
 
 .TP 
-\fB\*(T<\fBdiskio\fR\*(T>\fR 
-Displays current disk IO.
+\fB\*(T<\fBdiskio\fR\*(T>\fR \*(T<\fB(device)\fR\*(T> 
+Displays current disk IO. Device is optional, and takes the form of sda for /dev/sda. Individual partitions are allowed.
 
 .TP 
-\fB\*(T<\fBdiskiograph\fR\*(T>\fR \*(T<\fB(height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
+\fB\*(T<\fBdiskiograph\fR\*(T>\fR \*(T<\fB(device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
 Disk IO graph, colours defined in hex, minus the #. If scale is non-zero, it becomes the scale for the graph.
 
 .TP 
-\fB\*(T<\fBdiskio_read\fR\*(T>\fR 
-Displays current disk IO for reads.
+\fB\*(T<\fBdiskio_read\fR\*(T>\fR \*(T<\fB(device)\fR\*(T> 
+Displays current disk IO for reads. Device as in diskio.
 
 .TP 
-\fB\*(T<\fBdiskiograph_read\fR\*(T>\fR \*(T<\fB(height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
-Disk IO graph for reads, colours defined in hex, minus the #. If scale is non-zero, it becomes the scale for the graph.
+\fB\*(T<\fBdiskiograph_read\fR\*(T>\fR \*(T<\fB(device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
+Disk IO graph for reads, colours defined in hex, minus the #. If scale is non-zero, it becomes the scale for the graph. Device as in diskio.
 
 .TP 
-\fB\*(T<\fBdiskio_write\fR\*(T>\fR 
-Displays current disk IO for writes.
+\fB\*(T<\fBdiskio_write\fR\*(T>\fR \*(T<\fB(device)\fR\*(T> 
+Displays current disk IO for writes. Device as in diskio.
 
 .TP 
-\fB\*(T<\fBdiskiograph_write\fR\*(T>\fR \*(T<\fB(height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
-Disk IO graph for writes, colours defined in hex, minus the #. If scale is non-zero, it becomes the scale for the graph.
+\fB\*(T<\fBdiskiograph_write\fR\*(T>\fR \*(T<\fB(device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
+Disk IO graph for writes, colours defined in hex, minus the #. If scale is non-zero, it becomes the scale for the graph. Device as in diskio.
 
 .TP 
 \fB\*(T<\fBdownspeed\fR\*(T>\fR \*(T<\fBnet\fR\*(T> 

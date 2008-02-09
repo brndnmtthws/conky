@@ -164,6 +164,8 @@ static int selected_font = 0;
 static int font_count = -1;
 struct font_list *fonts = NULL;
 
+static char *suffixes[] = { "B", "kiB", "MiB", "GiB", "TiB", "PiB", "" };
+
 #ifdef XFT
 
 #define font_height() (use_xft ? (fonts[selected_font].xftfont->ascent + fonts[selected_font].xftfont->descent) : \
@@ -741,46 +743,73 @@ static void new_graph(char *buf, int w, int h, unsigned int first_colour, unsign
 	}
 }
 
-static const char *scan_graph(const char *args, int *w, int *h, unsigned int *first_colour, unsigned int *last_colour, unsigned int *scale)
+static char *scan_graph(const char *args, int *w, int *h,
+		unsigned int *first_colour, unsigned int *last_colour,
+		unsigned int *scale)
 {
-	*w = 0;			/* zero width means all space that is available */
-	*h = 25;
-	*first_colour = 0;
-	*last_colour = 0;
+	char buf[64];
+
 	/* graph's argument is either height or height,width */
 	if (args) {
-		if (sscanf(args, "%*s %d,%d %x %x %i", h, w, first_colour, last_colour, scale) < 5) {
-			if (sscanf(args, "%*s %d,%d %x %x", h, w, first_colour, last_colour) < 4) {
-				*scale = 0;
-				if (sscanf(args, "%d,%d %x %x %i", h, w, first_colour, last_colour, scale) < 5) {
-					*scale = 0;
-					if (sscanf(args, "%d,%d %x %x", h, w, first_colour, last_colour) < 4) {
-						*w = 0;
-				*h = 25;			
-				if (sscanf(args, "%*s %x %x %i", first_colour, last_colour, scale) < 3) {
-				*w = 0;
-				*h = 25;
-				*scale = 0;
-				if (sscanf(args, "%*s %x %x", first_colour, last_colour) < 2) {
-					*w = 0;
-					*h = 25;
-					if (sscanf(args, "%x %x %i", first_colour, last_colour, scale) < 3) {
-						*first_colour = 0;
-						*last_colour = 0;
-						*scale = 0;
-						if (sscanf(args, "%x %x", first_colour, last_colour) < 2) {
-					*first_colour = 0;
-					*last_colour = 0;
-					if (sscanf(args, "%d,%d %i", h, w, scale) < 3) {
-						*first_colour = 0;
-						*last_colour = 0;
-						*scale = 0;
-						if (sscanf(args, "%d,%d", h, w) < 2) {
-							*first_colour = 0;
-							*last_colour = 0;
-							sscanf(args, "%*s %d,%d", h, w);
-	}}}}}}}}}}} // haha
-	return args;
+		if (sscanf(args, "%d,%d %x %x %i", h, w, first_colour, last_colour,
+				scale) == 5) {
+			return NULL;
+		}
+		*scale = 0;
+		if (sscanf(args, "%d,%d %x %x", h, w, first_colour, last_colour) == 4) {
+			return NULL;
+		}
+		if (sscanf(args, "%63s %d,%d %x %x %i", buf, h, w, first_colour,
+				last_colour, scale) == 6) {
+			return strdup(buf);
+		}
+		*scale = 0;
+		if (sscanf(args, "%63s %d,%d %x %x", buf, h, w, first_colour,
+				last_colour) == 5) {
+			return strdup(buf);
+		}
+		buf[0] = '\0';
+		*h = 25;
+		*w = 0;
+		if (sscanf(args, "%x %x %i", first_colour, last_colour, scale) == 3) {
+			return NULL;
+		}
+		*scale = 0;
+		if (sscanf(args, "%x %x", first_colour, last_colour) == 2) {
+			return NULL;
+		}
+		if (sscanf(args, "%63s %x %x %i", buf, first_colour, last_colour,
+				scale) == 4) {
+			return strdup(buf);
+		}
+		*scale = 0;
+		if (sscanf(args, "%63s %x %x", buf, first_colour, last_colour) == 3) {
+			return strdup(buf);
+		}
+		buf[0] = '\0';
+		*first_colour = 0;
+		*last_colour = 0;
+		if (sscanf(args, "%d,%d %i", h, w, scale) == 3) {
+			return NULL;
+		}
+		*scale = 0;
+		if (sscanf(args, "%d,%d", h, w) == 2) {
+			return NULL;
+		}
+		if (sscanf(args, "%63s %d,%d %i", buf, h, w, scale) < 4) {
+			*scale = 0;
+			//TODO: check the return value and throw an error?
+			sscanf(args, "%63s %d,%d", buf, h, w);
+		}
+
+		return strdup(buf);
+	}
+
+	if (buf[0] == '\0') {
+		return NULL;
+	} else {
+		return strdup(buf);
+	}
 }
 
 
@@ -879,26 +908,80 @@ static void convert_escapes(char *buf)
 	*p = '\0';
 }
 
+/* Prints anything normally printed with snprintf according to the current value
+ * of use_spacer.  Actually slightly more flexible than snprintf, as you can
+ * safely specify the destination buffer as one of your inputs.  */
+static int spaced_print(char *buf, int size, char *format, int width,
+		char *func_name, ...) {
+	int len;
+	va_list argp;
+	char *tempbuf = malloc(size * sizeof(char));
+
+	// Passes the varargs along to vsnprintf
+	va_start(argp, func_name);
+	vsnprintf(tempbuf, size, format, argp);
+	va_end(argp);
+
+	switch (use_spacer) {
+		case NO_SPACER:
+			len = snprintf(buf, size, "%s", tempbuf);
+			break;
+		case LEFT_SPACER:
+			len = snprintf(buf, width, "%*s", width - 1, tempbuf);
+			break;
+		case RIGHT_SPACER:
+			len = snprintf(buf, width, "%-*s", width - 1, tempbuf);
+			break;
+		default:
+			CRIT_ERR("%s encountered invalid use_spacer value (%d)", func_name,
+				use_spacer);
+	}
+
+	free(tempbuf);
+
+	return len;
+}
+
 /* converts from bytes to human readable format (k, M, G, T) */
-static void human_readable(long long a, char *buf, int size)
+static void human_readable(long long num, char *buf, int size, char *func_name)
 {
-	// Strange conditional due to possible overflows
-	if(a / 1024 / 1024 / 1024.0 > 1024.0){
-		snprintf(buf, size, "%.2fTiB", (a / 1024 / 1024 / 1024) / 1024.0);
+	char ** suffix = suffixes;
+	float fnum;
+	int precision, len;
+	static const int WIDTH = 10, SHORT_WIDTH = 8;
+
+	if (num < 1024LL) {
+		if (short_units) {
+			spaced_print(buf, size, "%lld%c", SHORT_WIDTH, func_name, num,
+				**suffix);
+		} else {
+			spaced_print(buf, size, "%lld%s", WIDTH, func_name, num, *suffix);
+		}
+		return;
 	}
-	else if (a >= 1024 * 1024 * 1024) {
-		snprintf(buf, size, "%.2fGiB", (a / 1024 / 1024) / 1024.0);
+
+	while (num / 1024 >= 1000LL && **(suffix + 2)) {
+		num /= 1024;
+		suffix++;
 	}
-	else if (a >= 1024 * 1024) {
-		double m = (a / 1024) / 1024.0;
-		if (m >= 100.0)
-			snprintf(buf, size, "%.0fMiB", m);
-		else
-			snprintf(buf, size, "%.1fMiB", m);
-	} else if (a >= 1024)
-		snprintf(buf, size, "%LdKiB", a / (long long) 1024);
-	else
-		snprintf(buf, size, "%LdB", a);
+
+	suffix++;
+	fnum = num / 1024.0;
+
+	precision = 3;
+	do {
+		precision--;
+		if (precision < 0) {
+			break;
+		}
+		if (short_units) {
+			len = spaced_print(buf, size, "%.*f%c", SHORT_WIDTH, func_name,
+				precision, fnum, **suffix);
+		} else {
+			len = spaced_print(buf, size, "%.*f%s", WIDTH, func_name, precision,
+				fnum, *suffix);
+		}
+	} while (len >= (short_units ? SHORT_WIDTH : WIDTH) || len >= size);
 }
 
 /* text handling */
@@ -1161,8 +1244,9 @@ struct text_object {
 		int i;		/* some integer */
 		long l;		/* some other integer */
 		unsigned int sensor;
-	        struct net_stat *net;
+        struct net_stat *net;
 		struct fs_stat *fs;
+		struct diskio_stat *diskio;
 		unsigned char loadavg[3];
 		unsigned int cpu_index;
 		struct mail_s *mail;
@@ -2340,22 +2424,65 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 			obj->data.cpu_index = 0;
 		}
 	END OBJ(cpugraph, INFO_CPU)
-		if (arg) {
-			if (strncmp(arg, "cpu", 3) == 0 && isdigit(arg[3])) {
-				obj->data.cpu_index = atoi(&arg[3]);
-				arg += 4;
+		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+			&obj->e);
+
+		if (buf) {
+			if (strncmp(buf, "cpu", 3) == 0 && isdigit(buf[3])) {
+				obj->data.cpu_index = atoi(&buf[3]);
+			} else {
+				obj->data.cpu_index = 0;
 			}
-			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
-		} else {
-			(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
-			obj->data.cpu_index = 0;
+			free(buf);
 		}
 	END OBJ(diskio, INFO_DISKIO)
+		if (arg) {
+			obj->data.diskio = prepare_diskio_stat(arg);
+		} else {
+			obj->data.diskio = NULL;
+		}
 	END OBJ(diskio_read, INFO_DISKIO)
+		if (arg) {
+			obj->data.diskio = prepare_diskio_stat(arg);
+		} else {
+			obj->data.diskio = NULL;
+		}
 	END OBJ(diskio_write, INFO_DISKIO)
-	END OBJ(diskiograph, INFO_DISKIO) (void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
-	END OBJ(diskiograph_read, INFO_DISKIO) (void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
-	END OBJ(diskiograph_write, INFO_DISKIO) (void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
+		if (arg) {
+			obj->data.diskio = prepare_diskio_stat(arg);
+		} else {
+			obj->data.diskio = NULL;
+		}
+	END OBJ(diskiograph, INFO_DISKIO)
+		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+			&obj->e);
+
+		if (buf) {
+			obj->data.diskio = prepare_diskio_stat(buf);
+			free(buf);
+		} else {
+			obj->data.diskio = NULL;
+		}
+	END OBJ(diskiograph_read, INFO_DISKIO)
+		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+			&obj->e);
+
+		if (buf) {
+			obj->data.diskio = prepare_diskio_stat(buf);
+			free(buf);
+		} else {
+			obj->data.diskio = NULL;
+		}
+	END OBJ(diskiograph_write, INFO_DISKIO)
+		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+			&obj->e);
+
+		if (buf) {
+			obj->data.diskio = prepare_diskio_stat(buf);
+			free(buf);
+		} else {
+			obj->data.diskio = NULL;
+		}
 	END OBJ(color, 0) 
 #ifdef X11
 		obj->data.l = arg ? get_x11_color(arg) : default_fg_color;
@@ -2397,16 +2524,13 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 			CRIT_ERR("downspeedf needs argument");
 		}
 	END OBJ(downspeedgraph, INFO_NET)
-		(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
-	char buf[64];
-	sscanf(arg, "%63s %*i,%*i %*i", buf);
-	obj->data.net = get_net_stat(buf);
-	if (sscanf(arg, "%*s %d,%d %*d", &obj->b, &obj->a) <= 1) {
-		if (sscanf(arg, "%*s %d,%d", &obj->b, &obj->a) <= 1) {
-			obj->a = 0;
-			obj->b = 25;
+		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+			&obj->e);
+
+		if (buf) {
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
-	}
 	END OBJ(else, 0)
 		if (blockdepth) {
 			(text_objects[blockstart[blockdepth - 1]]).data.ifblock.pos = object_count;
@@ -2963,7 +3087,12 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		END OBJ(membar, INFO_MEM)
 		(void) scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(memgraph, INFO_MEM)
-		(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
+		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+			&obj->e);
+
+		if (buf) {
+			free(buf);
+		}
 	END OBJ(mixer, INFO_MIXER) obj->data.l = mixer_init(arg);
 	END OBJ(mixerl, INFO_MIXER) obj->data.l = mixer_init(arg);
 	END OBJ(mixerr, INFO_MIXER) obj->data.l = mixer_init(arg);
@@ -3113,16 +3242,13 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 		}
 
 	END OBJ(upspeedgraph, INFO_NET)
-		(void) scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e);
-	char buf[64];
-	sscanf(arg, "%63s %*i,%*i %*i", buf);
-	obj->data.net = get_net_stat(buf);
-	if (sscanf(arg, "%*s %d,%d %*d", &obj->b, &obj->a) <= 1) {
-		if (sscanf(arg, "%*s %d,%d", &obj->a, &obj->a) <= 1) {
-			obj->a = 0;
-			obj->b = 25;
+		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+			&obj->e);
+
+		if (buf) {
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
-	}
 	END OBJ(uptime_short, INFO_UPTIME) END OBJ(uptime, INFO_UPTIME) END
 #ifndef __OpenBSD__
 		OBJ(adt746xcpu, 0) END OBJ(adt746xfan, 0) END
@@ -3688,29 +3814,14 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 #ifndef __OpenBSD__
 				OBJ(acpitemp) {
 					/* does anyone have decimals in acpi temperature? */
-					if (!use_spacer)
-						snprintf(p, p_max_size, "%d", (int)
-								get_acpi_temperature(obj->
-									data.
-									i));
-					else
-						snprintf(p, 5, "%d    ", (int)
-								get_acpi_temperature(obj->
-									data.
-									i));
+					spaced_print(p, p_max_size, "%d", 5, "acpitemp",
+						round_to_int(get_acpi_temperature(obj->data.i)));
 				}
 				OBJ(acpitempf) {
 					/* does anyone have decimals in acpi temperature? */
-					if (!use_spacer)
-						snprintf(p, p_max_size, "%d", (int)
-								((get_acpi_temperature(obj->
-										       data.
-										       i)+ 40) * 9.0 / 5 - 40));
-					else
-						snprintf(p, 5, "%d    ", (int)
-								((get_acpi_temperature(obj->
-										       data.
-										       i)+ 40) * 9.0 / 5 - 40));
+					spaced_print(p, p_max_size, "%d", 5, "acpitemp",
+						round_to_int((get_acpi_temperature(obj->data.i) + 40) *
+						9.0 / 5 - 40));
 				}
 #endif /* !__OpenBSD__ */
 				OBJ(freq) {
@@ -3754,24 +3865,23 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					snprintf(p, p_max_size, "%s", obj->data.net->ap);
 				}
 				OBJ(wireless_link_qual) {
-					if (!use_spacer)
-						snprintf(p, p_max_size, "%d", obj->data.net->link_qual);
-					else
-						snprintf(p, 4, "%d    ", obj->data.net->link_qual);
+					spaced_print(p, p_max_size, "%d", 4, "wireless_link_qual",
+						obj->data.net->link_qual);
 				}
 				OBJ(wireless_link_qual_max) {
-					if (!use_spacer)
-						snprintf(p, p_max_size, "%d", obj->data.net->link_qual_max);
-					else
-						snprintf(p, 4, "%d    ", obj->data.net->link_qual_max);
+					spaced_print(p, p_max_size, "%d", 4,
+						"wireless_link_qual_max", obj->data.net->link_qual_max);
 				}
 				OBJ(wireless_link_qual_perc) {
 					if(obj->data.net->link_qual_max > 0) {
-						if (!use_spacer)
-							snprintf(p, p_max_size, "%.0f%%", (double)obj->data.net->link_qual / obj->data.net->link_qual_max * 100);
-						else
-							snprintf(p, 5, "%.0f%%     ", (double)obj->data.net->link_qual / obj->data.net->link_qual_max * 100);
-					} else	snprintf(p, p_max_size, "unk");
+						spaced_print(p, p_max_size, "%.0f%%", 5,
+							"wireless_link_qual_perc",
+							(double) obj->data.net->link_qual /
+							obj->data.net->link_qual_max * 100);
+					} else {
+						spaced_print(p, p_max_size, "unk", 5,
+							"wireless_link_qual_perc");
+					}
 				}
 				OBJ(wireless_link_bar) {
 					new_bar(p, obj->a, obj->b, ((double)obj->data.net->link_qual/obj->data.net->link_qual_max)*255.0);
@@ -3781,26 +3891,16 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 #endif /* __linux__ */
 
 				OBJ(freq_dyn) {
-					if (use_spacer) {
-						get_freq_dynamic(p, 6, "%.0f     ", 1 ); 
-					} else {
-						get_freq_dynamic(p, p_max_size, "%.0f", 1 ); 
-					}
+					get_freq_dynamic(p, p_max_size, "%.0f", 1);
+					spaced_print(p, p_max_size, "%s", 6, "freq_dyn", p);
 				}
 				OBJ(freq_dyn_g) {
-					if (use_spacer) {
 #ifndef __OpenBSD__
-						get_freq_dynamic(p, 6, "%'.2f     ", 1000); 
+					get_freq_dynamic(p, p_max_size, "%'.2f", 1000);
 #else
-						get_freq_dynamic(p, 6, "%.2f     ", 1000); 
+					get_freq_dynamic(p, p_max_size, "%.2f", 1000);
 #endif
-					} else {
-#ifndef __OpenBSD__
-						get_freq_dynamic(p, p_max_size, "%'.2f", 1000); 
-#else
-						get_freq_dynamic(p, p_max_size, "%.2f", 1000); 
-#endif
-					}
+					spaced_print(p, p_max_size, "%s", 6, "freq_dyn", p);
 				}
 #ifndef __OpenBSD__
 				OBJ(adt746xcpu) {
@@ -3830,25 +3930,20 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				}
 #endif /* __OpenBSD__ */
 				OBJ(buffers) {
-					human_readable(cur->buffers * 1024, p, 255);
+					human_readable(cur->buffers * 1024, p, 255, "buffers");
 				}
 				OBJ(cached) {
-					human_readable(cur->cached * 1024, p, 255);
+					human_readable(cur->cached * 1024, p, 255, "buffers");
 				}
 				OBJ(cpu) {
 					if (obj->data.cpu_index > info.cpu_count) {
-						printf("obj->data.cpu_index %i info.cpu_count %i", obj->data.cpu_index, info.cpu_count);
+						printf("obj->data.cpu_index %i info.cpu_count %i",
+							obj->data.cpu_index, info.cpu_count);
 						CRIT_ERR("attempting to use more CPUs then you have!");
 					}
-					if (!use_spacer)
-						snprintf(p, p_max_size, "%*d", pad_percents,
-								round_to_int(cur->cpu_usage[obj->data.cpu_index] *
-										   100.0));
-					else
-						snprintf(p, 4, "%*d    ",
-								pad_percents,
-								round_to_int(cur->cpu_usage[obj->data.cpu_index] *
-										   100.0));
+					spaced_print(p, p_max_size, "%*d", 4, "cpu", pad_percents,
+						round_to_int(cur->cpu_usage[obj->data.cpu_index] *
+						100.0));
 				}
 				OBJ(cpubar) {
 					new_bar(p, obj->a,
@@ -4011,88 +4106,71 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 					new_font(p, obj->data.s);
 				}
 #endif
-				void format_diskio(unsigned int diskio_value)
-				{
-					if (!use_spacer) {
-						if (diskio_value > 1024*1024) {
-							snprintf(p, p_max_size, "%.1fGiB",
-									(double)diskio_value/1024/1024);
-						} else if (diskio_value > 1024) {
-							snprintf(p, p_max_size, "%.1fMiB",
-									(double)diskio_value/1024);
-						} else if (diskio_value > 0) {
-							snprintf(p, p_max_size, "%dKiB", diskio_value);
-						} else {
-							snprintf(p, p_max_size, "%dB", diskio_value);
-						}
+				/* TODO: move this correction from kB to kB/s elsewhere
+				 * (or get rid of it??) */
+				OBJ(diskio) {
+					if (obj->data.diskio) {
+						human_readable((obj->data.diskio->current / update_interval) * 1024LL, p, p_max_size, "diskio");
 					} else {
-						if (diskio_value > 1024*1024) {
-							snprintf(p, 12, "%.1fGiB   ",
-									(double)diskio_value/1024/1024);
-						} else if (diskio_value > 1024) {
-							snprintf(p, 12, "%.1fMiB   ",
-									(double)diskio_value/1024);
-						} else if (diskio_value > 0) {
-							snprintf(p, 12, "%dKiB ", diskio_value);
-						} else {
-							snprintf(p, 12, "%dB     ", diskio_value);
-						}
+						human_readable(diskio_value * 1024LL, p, p_max_size, "diskio");
 					}
 				}
-				OBJ(diskio) {
-					format_diskio(diskio_value);
-				}
 				OBJ(diskio_write) {
-					format_diskio(diskio_write_value);
+					if (obj->data.diskio) {
+						human_readable((obj->data.diskio->current_write / update_interval) * 1024LL, p, p_max_size,
+								"diskio_write");
+					} else {
+						human_readable(diskio_write_value * 1024LL, p, p_max_size,
+								"diskio_write");
+					}
 				}
- 				OBJ(diskio_read) {
- 					format_diskio(diskio_read_value);
-  				}
-  				OBJ(diskiograph) {
-  					new_graph(p, obj->a,
-  							obj->b, obj->c, obj->d,
-  							diskio_value, obj->e, 1);
-  				}
- 				OBJ(diskiograph_read) {
- 					new_graph(p, obj->a,
- 							obj->b, obj->c, obj->d,
- 							diskio_read_value, obj->e, 1);
- 				}
- 				OBJ(diskiograph_write) {
- 					new_graph(p, obj->a,
- 							obj->b, obj->c, obj->d,
- 							diskio_write_value, obj->e, 1);
- 				}
+				OBJ(diskio_read) {
+					if (obj->data.diskio) {
+						human_readable((obj->data.diskio->current_read / update_interval) * 1024LL, p, p_max_size,
+								"diskio_read");
+					} else {
+						human_readable(diskio_read_value * 1024LL, p, p_max_size,
+								"diskio_read");
+					}
+				}
+				OBJ(diskiograph) {
+					if (obj->data.diskio) {
+						new_graph(p, obj->a, obj->b, obj->c, obj->d,
+							obj->data.diskio->current, obj->e, 1);
+					} else {
+						new_graph(p, obj->a, obj->b, obj->c, obj->d,
+							diskio_value, obj->e, 1);
+					}
+				}
+				OBJ(diskiograph_read) {
+					if (obj->data.diskio) {
+						new_graph(p, obj->a, obj->b, obj->c, obj->d,
+							obj->data.diskio->current_read, obj->e, 1);
+					} else {
+						new_graph(p, obj->a, obj->b, obj->c, obj->d,
+							diskio_read_value, obj->e, 1);
+					}
+				}
+				OBJ(diskiograph_write) {
+					if (obj->data.diskio) {
+						new_graph(p, obj->a, obj->b, obj->c, obj->d,
+							obj->data.diskio->current_write, obj->e, 1);
+					} else {
+						new_graph(p, obj->a, obj->b, obj->c, obj->d,
+							diskio_write_value, obj->e, 1);
+					}
+				}
 				OBJ(downspeed) {
-					if (!use_spacer) {
-						snprintf(p, p_max_size, "%d",
-								(int) (obj->data.net->
-								       recv_speed /
-								       1024));
-					} else
-						snprintf(p, 6, "%d     ",
-								(int) (obj->data.net->
-								       recv_speed /
-								       1024));
+					spaced_print(p, p_max_size, "%d", 6, "downspeed",
+						round_to_int(obj->data.net->recv_speed / 1024));
 				}
 				OBJ(downspeedf) {
-					if (!use_spacer)
-						snprintf(p, p_max_size, "%.1f",
-								obj->data.net->
-								recv_speed / 1024.0);
-					else
-						snprintf(p, 8, "%.1f       ",
-								obj->data.net->
-								recv_speed / 1024.0);
+					spaced_print(p, p_max_size, "%.1f", 8, "downspeedf",
+						obj->data.net->recv_speed / 1024.0);
 				}
 				OBJ(downspeedgraph) {
-          /*
-					if (obj->data.net->recv_speed == 0)	
-						obj->data.net->recv_speed = 0.01;
-            */
 					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-							(obj->data.net->recv_speed /
-							 1024.0), obj->e, 1);
+						(obj->data.net->recv_speed / 1024.0), obj->e, 1);
 				}
 				OBJ(else) {
 					if (!if_jumped) {
@@ -4472,9 +4550,9 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				}
 			}
 			OBJ(fs_free) {
-				if (obj->data.fs != NULL)
-					human_readable(obj->data.fs->avail,
-						       p, 255);
+				if (obj->data.fs != NULL) {
+					human_readable(obj->data.fs->avail, p, 255, "fs_free");
+				}
 			}
 			OBJ(fs_free_perc) {
 				if (obj->data.fs != NULL) {
@@ -4492,15 +4570,16 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				}
 			}
 			OBJ(fs_size) {
-				if (obj->data.fs != NULL)
-					human_readable(obj->data.fs->size,
-						       p, 255);
+				if (obj->data.fs != NULL) {
+					human_readable(obj->data.fs->size, p, 255, "fs_size");
+				}
 			}
 			OBJ(fs_used) {
-				if (obj->data.fs != NULL)
+				if (obj->data.fs != NULL) {
 					human_readable(obj->data.fs->size -
-						       (obj->data.fs->free ? obj->data.fs->free :obj->data.fs->avail),
-						       p, 255);
+						(obj->data.fs->free ? obj->data.fs->free :
+						obj->data.fs->avail), p, 255, "fs_used");
+				}
 			}
 			OBJ(fs_bar_free) {
 				if (obj->data.fs != NULL) {
@@ -4747,23 +4826,15 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 
 			/* memory stuff */
 			OBJ(mem) {
-				human_readable(cur->mem * 1024, p, 255);
+				human_readable(cur->mem * 1024, p, 255, "mem");
 			}
 			OBJ(memmax) {
-				human_readable(cur->memmax * 1024, p, 255);
+				human_readable(cur->memmax * 1024, p, 255, "memmax");
 			}
 			OBJ(memperc) {
 				if (cur->memmax) {
-					if (!use_spacer)
-						snprintf(p, p_max_size, "%*Lu",
-							 pad_percents,
-							 (cur->mem * 100) /
-							 (cur->memmax));
-					else
-						snprintf(p, 4, "%*Lu   ",
-							 pad_percents,
-							 (cur->mem * 100) /
-							 (cur->memmax));
+					spaced_print(p, p_max_size, "%*Lu", 4, "memperc",
+						pad_percents, cur->mem * 100 / cur->memmax);
 				}
 			}
 			OBJ(membar) {
@@ -4833,19 +4904,11 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				new_outline(p, obj->data.l);
 			}
 			OBJ(processes) {
-				if (!use_spacer)
-					snprintf(p, p_max_size, "%hu", cur->procs);
-				else
-					snprintf(p, 5, "%hu    ",
-						 cur->procs);
+				spaced_print(p, p_max_size, "%hu", 5, "processes", cur->procs);
 			}
 			OBJ(running_processes) {
-				if (!use_spacer)
-					snprintf(p, p_max_size, "%hu",
-						 cur->run_procs);
-				else
-					snprintf(p, 3, "%hu     ",
-						 cur->run_procs);
+				spaced_print(p, p_max_size, "%hu", 3, "running_processes",
+					cur->run_procs);
 			}
 			OBJ(text) {
 				snprintf(p, p_max_size, "%s", obj->data.s);
@@ -4858,28 +4921,17 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 						obj->data.pair.b);
 			}
 			OBJ(swap) {
-				human_readable(cur->swap * 1024, p, 255);
+				human_readable(cur->swap * 1024, p, 255, "swap");
 			}
 			OBJ(swapmax) {
-				human_readable(cur->swapmax * 1024, p,
-					       255);
+				human_readable(cur->swapmax * 1024, p, 255, "swapmax");
 			}
 			OBJ(swapperc) {
 				if (cur->swapmax == 0) {
-					strncpy(p, "No swap", 255);
+					strncpy(p, "No swap", p_max_size);
 				} else {
-					if (!use_spacer)
-						snprintf(p, 255, "%*Lu",
-							 pad_percents,
-							 (cur->swap *
-							  100) /
-							 cur->swapmax);
-					else
-						snprintf(p, 4, "%*Lu   ",
-							 pad_percents,
-							 (cur->swap *
-							  100) /
-							 cur->swapmax);
+					spaced_print(p, p_max_size, "%*Lu", 4, "swapperc",
+						pad_percents, cur->swap * 100 / cur->swapmax);
 				}
 			}
 			OBJ(swapbar) {
@@ -4922,46 +4974,25 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 				// Needless to free oldTZ since getenv gives ptr to static data 
 			}
 			OBJ(totaldown) {
-				human_readable(obj->data.net->recv, p,
-					       255);
+				human_readable(obj->data.net->recv, p, 255, "totaldown");
 			}
 			OBJ(totalup) {
-				human_readable(obj->data.net->trans, p,
-					       255);
+				human_readable(obj->data.net->trans, p, 255, "totalup");
 			}
 			OBJ(updates) {
 				snprintf(p, p_max_size, "%d", total_updates);
 			}
 			OBJ(upspeed) {
-				if (!use_spacer)
-					snprintf(p, p_max_size, "%d",
-						 (int) (obj->data.net->
-							trans_speed /
-							1024));
-				else
-					snprintf(p, 6, "%d     ",
-						 (int) (obj->data.net->
-							trans_speed /
-							1024));
+				spaced_print(p, p_max_size, "%d", 6, "upspeed",
+					round_to_int(obj->data.net->trans_speed / 1024));
 			}
 			OBJ(upspeedf) {
-				if (!use_spacer)
-					snprintf(p, p_max_size, "%.1f",
-						 obj->data.net->
-						 trans_speed / 1024.0);
-				else
-					snprintf(p, 8, "%.1f       ",
-						 obj->data.net->
-						 trans_speed / 1024.0);
+				spaced_print(p, p_max_size, "%.1f", 8, "upspeedf",
+					obj->data.net->trans_speed / 1024.0);
 			}
 			OBJ(upspeedgraph) {
-        /*
-				if (obj->data.net->trans_speed == 0)
-					obj->data.net->trans_speed = 0.01;
-          */
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-					  (obj->data.net->trans_speed /
-				1024.0), obj->e, 1);
+					(obj->data.net->trans_speed / 1024.0), obj->e, 1);
 			}
 			OBJ(uptime_short) {
 				format_seconds_short(p, p_max_size,
@@ -6959,6 +6990,8 @@ void clean_up(void)
 		free (specials);
 		specials=NULL;
 	}
+
+	clear_diskio_stats();
 }
 
 static int string_to_bool(const char *s)
@@ -7008,6 +7041,7 @@ static void set_default_configurations(void)
 	info.memmax = 0;
 	top_cpu = 0;
 	cpu_separate = 0;
+	short_units = 0;
 	top_mem = 0;
 #ifdef MPD
 	strcpy(info.mpd.host, "localhost");
@@ -7032,7 +7066,7 @@ static void set_default_configurations(void)
     info.xmms2.url = NULL;
     info.xmms2.status = NULL;
 #endif
-	use_spacer = 0;
+	use_spacer = NO_SPACER;
 #ifdef X11
 	out_to_console = 0;
 #else
@@ -7377,7 +7411,30 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 			out_to_console = string_to_bool(value);
 		}
 		CONF("use_spacer") {
-			use_spacer = string_to_bool(value);
+			if (value) {
+				if (strcasecmp(value, "left") == 0) {
+					use_spacer = LEFT_SPACER;
+				} else if (strcasecmp(value, "right") == 0) {
+					use_spacer = RIGHT_SPACER;
+				} else if (strcasecmp(value, "none") == 0) {
+					use_spacer = NO_SPACER;
+				} else {
+					use_spacer = string_to_bool(value);
+					ERR("use_spacer should have an argument of left, right, or"
+						" none.  '%s' seems to be some form of '%s', so"
+						" defaulting to %s.", value,
+						use_spacer ? "true" : "false",
+						use_spacer ? "right" : "none");
+					if (use_spacer) {
+						use_spacer = RIGHT_SPACER;
+					} else {
+						use_spacer = NO_SPACER;
+					}
+				}
+			} else {
+				ERR("use_spacer should have an argument. Defaulting to right.");
+				use_spacer = RIGHT_SPACER;
+			}
 		}
 #ifdef X11
 #ifdef XFT
@@ -7473,6 +7530,9 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 		}
 		CONF("top_cpu_separate") {
 			cpu_separate = string_to_bool(value);
+		}
+		CONF("short_units") {
+			short_units = string_to_bool(value);
 		}
 		CONF("pad_percents") {
 	pad_percents = atoi(value);

@@ -370,12 +370,17 @@ CONFIGURATION SETTINGS
 	      will be prompted to enter the password when Conky starts.
 
 
+       short_units
+	      Shortens units to a single character (kiB->k, GiB->G, etc.). De-
+	      fault is off.
+
+
        stippled_borders
 	      Border stippling (dashing) in pixels
 
 
        total_run_times
-	      Total number of times for Conky to update before quitting.  Zero
+	      Total  number of times for Conky to update before quitting. Zero
 	      makes Conky run forever
 
 
@@ -388,9 +393,11 @@ CONFIGURATION SETTINGS
 
 
        use_spacer
-	      Adds spaces after certain objects to stop them from moving other
-	      things around. Note that this only helps if you are using a mono
-	      font, such as Bitstream Vera Sans Mono.
+	      Adds spaces around certain objects to stop them from moving oth-
+	      er things around. Arguments are left, right, and none (default).
+	      The  old	true/false  values  are	 deprecated  and  default   to
+	      right/none  respectively.	 Note  that this only helps if you are
+	      using a mono font, such as Bitstream Vera Sans Mono.
 
 
        use_xft
@@ -409,10 +416,10 @@ CONFIGURATION SETTINGS
 
 
 VARIABLES
-       Colors  are  parsed using XParsecolor(), there might be a list of them:
-       /usr/X11R6/lib/X11/rgb.txt. Also,  <http://sedition.com/perl/rgb.html>.
-       Color  can  be also in #rrggbb format (hex).  Note that when displaying
-       bytes, power is 1024 and not 1000 so 1M really  means  1024*1024	 bytes
+       Colors are parsed using XParsecolor(), there might be a list  of	 them:
+       /usr/X11R6/lib/X11/rgb.txt.  Also, <http://sedition.com/perl/rgb.html>.
+       Color can be also in #rrggbb format (hex).  Note that  when  displaying
+       bytes,  power  is  1024 and not 1000 so 1M really means 1024*1024 bytes
        and not 1000*1000.
 
        addr interface
@@ -460,7 +467,7 @@ VARIABLES
 
 
        apm_battery_time
-	      Display  remaining  APM battery life in hh:mm:ss or "unknown" if
+	      Display remaining APM battery life in hh:mm:ss or	 "unknown"  if
 	      AC adapterstatus is on-line or charging (FreeBSD only)
 
 
@@ -517,8 +524,8 @@ VARIABLES
 
 
        battery (num)
-	      Battery status and remaining percentage capacity of ACPI or  APM
-	      battery.	ACPI  battery number can be given as argument (default
+	      Battery  status and remaining percentage capacity of ACPI or APM
+	      battery. ACPI battery number can be given as  argument  (default
 	      is BAT0).
 
 
@@ -533,7 +540,7 @@ VARIABLES
 
 
        battery_time (num)
-	      Battery charge/discharge time remaining of  ACPI	battery.  ACPI
+	      Battery  charge/discharge	 time  remaining of ACPI battery. ACPI
 	      battery number can be given as argument (default is BAT0).
 
 
@@ -603,49 +610,53 @@ VARIABLES
 
 
        cpu (cpuN)
-	      CPU  usage  in percents. For SMP machines, the CPU number can be
-	      provided as an argument. ${cpu cpu0} is  the  total  usage,  and
+	      CPU usage in percents. For SMP machines, the CPU number  can  be
+	      provided	as  an	argument.  ${cpu cpu0} is the total usage, and
 	      ${cpu cpuX} (X >= 1) are individual CPUs.
 
 
        cpubar (cpu number) (height),(width)
-	      Bar  that shows CPU usage, height is bar's height in pixels. See
+	      Bar that shows CPU usage, height is bar's height in pixels.  See
 	      $cpu for more info on SMP.
 
 
-       cpugraph (cpu number) (height),(width) (gradient	 colour	 1)  (gradient
+       cpugraph	 (cpu  number)	(height),(width) (gradient colour 1) (gradient
        colour 2)
-	      CPU usage graph, with optional colours in hex, minus the #.  See
+	      CPU  usage graph, with optional colours in hex, minus the #. See
 	      $cpu for more info on SMP.
 
 
-       diskio Displays current disk IO.
+       diskio (device)
+	      Displays current disk IO. Device is optional, and takes the form
+	      of sda for /dev/sda. Individual partitions are allowed.
 
 
-       diskiograph  (height),(width)  (gradient	 colour 1) (gradient colour 2)
-       (scale)
+       diskiograph  (device)  (height),(width)	(gradient  colour 1) (gradient
+       colour 2) (scale)
 	      Disk  IO graph, colours defined in hex, minus the #. If scale is
 	      non-zero, it becomes the scale for the graph.
 
 
-       diskio_read
-	      Displays current disk IO for reads.
+       diskio_read (device)
+	      Displays current disk IO for reads. Device as in diskio.
 
 
-       diskiograph_read (height),(width) (gradient colour 1) (gradient	colour
-       2) (scale)
+       diskiograph_read (device) (height),(width) (gradient colour 1)  (gradi-
+       ent colour 2) (scale)
 	      Disk IO graph for reads, colours defined in hex, minus the #. If
-	      scale is non-zero, it becomes the scale for the graph.
+	      scale is non-zero, it becomes the scale for the graph. Device as
+	      in diskio.
 
 
-       diskio_write
-	      Displays current disk IO for writes.
+       diskio_write (device)
+	      Displays current disk IO for writes. Device as in diskio.
 
 
-       diskiograph_write (height),(width) (gradient colour 1) (gradient colour
-       2) (scale)
-	      Disk  IO	graph for writes, colours defined in hex, minus the #.
-	      If scale is non-zero, it becomes the scale for the graph.
+       diskiograph_write (device) (height),(width) (gradient colour 1) (gradi-
+       ent colour 2) (scale)
+	      Disk IO graph for writes, colours defined in hex, minus  the  #.
+	      If scale is non-zero, it becomes the scale for the graph. Device
+	      as in diskio.
 
 
        downspeed net

@@ -155,6 +155,8 @@ Kevin Lyles <kevinlyles at gmail dot com>
   simplify round_to_int patch
   goto width fix patch
   offset width fix patch
+  individual diskio patch
+  short_units & human_readable patch
 
 killfire
   fs_used_perc and fs_bar_free patch

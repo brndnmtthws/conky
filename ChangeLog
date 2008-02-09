@@ -1,5 +1,10 @@
 # $Id$
 
+2008-02-08
+	* Applied 2 patches:
+		1) Add diskio for individual devices
+		2) Improved output of units, added "short_units" option
+
 2008-01-05
 	* Applied some more submitted patches:
 		1) Add long forms of (most of) the command-line options.

@@ -475,16 +475,17 @@
 <varlistentry>
 	<term>
 		<command><option>diskio</option></command>
+		<option>(device)</option>
 	</term>
 	<listitem>
-		Displays current disk IO.
+		Displays current disk IO.  Device is optional, and takes the form of sda for /dev/sda.  Individual partitions are allowed.
 		<para></para></listitem>
 </varlistentry>
 
 <varlistentry>
 	<term>
 		<command><option>diskiograph</option></command>
-		<option>(height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+		<option>(device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
 	</term>
 	<listitem>
 		Disk IO graph, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.
@@ -494,38 +495,40 @@
 <varlistentry>
 	<term>
 		<command><option>diskio_read</option></command>
+		<option>(device)</option>
 	</term>
 	<listitem>
-		Displays current disk IO for reads.
+		Displays current disk IO for reads.  Device as in diskio.
 		<para></para></listitem>
 </varlistentry>
 
 <varlistentry>
 	<term>
 		<command><option>diskiograph_read</option></command>
-		<option>(height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+		<option>(device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
 	</term>
 	<listitem>
-		Disk IO graph for reads, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.
+		Disk IO graph for reads, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.  Device as in diskio.
 		<para></para></listitem>
 </varlistentry>
 
 <varlistentry>
 	<term>
 		<command><option>diskio_write</option></command>
+		<option>(device)</option>
 	</term>
 	<listitem>
-		Displays current disk IO for writes.
+		Displays current disk IO for writes.  Device as in diskio.
 		<para></para></listitem>
 </varlistentry>
 
 <varlistentry>
 	<term>
 		<command><option>diskiograph_write</option></command>
-		<option>(height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+		<option>(device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
 	</term>
 	<listitem>
-		Disk IO graph for writes, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.
+		Disk IO graph for writes, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.  Device as in diskio.
 		<para></para></listitem>
 </varlistentry>
 

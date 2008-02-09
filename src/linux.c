@@ -1699,8 +1699,8 @@ void update_diskio()
 	FILE* fp;
 	static int rep=0;
 
-	char buf[512];
-	int major, minor;
+	char buf[512], devbuf[64];
+	int major, minor, i;
 	unsigned int current = 0;
  	unsigned int current_read = 0;
  	unsigned int current_write = 0;
@@ -1717,19 +1717,49 @@ void update_diskio()
 	 */
 	while (!feof(fp)) {
 		fgets(buf, 512, fp);
-		col_count = sscanf(buf, "%u %u %*s %*u %*u %u %*u %*u %*u %u",
-				   &major, &minor, &reads, &writes);
+		col_count = sscanf(buf, "%u %u %s %*u %*u %u %*u %*u %*u %u",
+				   &major, &minor, devbuf, &reads, &writes);
 		/* ignore subdevices (they have only 3 matching entries in their line)
 		 * and virtual devices (LVM, network block devices, RAM disks, Loopback)
 		 *
 		 * XXX ignore devices which are part of a SW RAID (MD_MAJOR)
 		 */
-		if (col_count > 3 &&
-		    major != LVM_BLK_MAJOR && major != NBD_MAJOR &&
+		if (col_count == 5 && major != LVM_BLK_MAJOR && major != NBD_MAJOR &&
 		    major != RAMDISK_MAJOR && major != LOOP_MAJOR) {
 			current += reads + writes;
 			current_read += reads;
 			current_write += writes;
+		} else {
+			col_count = sscanf(buf, "%u %u %s %*u %u %*u %u",
+				&major, &minor, devbuf, &reads, &writes);
+			if (col_count != 5) {
+				continue;
+			}
+		}
+		for (i = 0; i < MAX_DISKIO_STATS; i++) {
+			if (diskio_stats[i].dev &&
+					strcmp(devbuf, diskio_stats[i].dev) == 0) {
+				diskio_stats[i].current =
+					(reads + writes - diskio_stats[i].last) / 2;
+				diskio_stats[i].current_read =
+					(reads - diskio_stats[i].last_read) / 2;
+				diskio_stats[i].current_write =
+					(writes - diskio_stats[i].last_write) / 2;
+				if (reads + writes < diskio_stats[i].last) {
+					diskio_stats[i].current = 0;
+				}
+				if (reads < diskio_stats[i].last_read) {
+					diskio_stats[i].current_read = 0;
+					diskio_stats[i].current = diskio_stats[i].current_write;
+				}
+				if (writes < diskio_stats[i].last_write) {
+					diskio_stats[i].current_write = 0;
+					diskio_stats[i].current = diskio_stats[i].current_read;
+				}
+				diskio_stats[i].last = reads + writes;
+				diskio_stats[i].last_read = reads;
+				diskio_stats[i].last_write = writes;
+			}
 		}
 	}
 

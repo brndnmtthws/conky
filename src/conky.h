@@ -141,6 +141,8 @@ struct fs_stat {
 	long long free;
 };
 
+#include "diskio.h"
+
 struct mail_s {			// for imap and pop3
 	unsigned long unseen;
 	unsigned long messages;
@@ -373,6 +375,8 @@ int top_mem;
 
 int use_spacer;
 
+enum spacer_opts { NO_SPACER = 0, LEFT_SPACER, RIGHT_SPACER };
+
 char tmpstring1[TEXT_BUFFER_SIZE];
 char tmpstring2[TEXT_BUFFER_SIZE];
 
@@ -462,6 +466,7 @@ long get_x11_color(const char *);
 #endif /* X11 */
 
 int cpu_separate;
+int short_units;
 
 /* in common.c */
 

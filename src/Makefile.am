@@ -46,7 +46,7 @@ xmms2 = xmms2.c
 endif
 
 if BUILD_LINUX
-linux = linux.c top.c
+linux = linux.c top.c diskio.c
 PTHREAD_LIBS =  -lpthread
 endif
 
@@ -127,6 +127,7 @@ EXTRA_DIST = 			\
 	openbsd.c		\
 	solaris.c 		\
 	top.h                   \
+	diskio.h                \
 	x11.c                   \
 	xmms2.c
 

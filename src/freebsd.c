@@ -674,9 +674,7 @@ cleanup:
 void
 update_diskio()
 {
-	int devs_count,
-	    num_selected,
-	    num_selections;
+	int devs_count, num_selected, num_selections, i;
 	struct device_selection *dev_select = NULL;
 	long select_generation;
 	int dn;
@@ -704,6 +702,35 @@ update_diskio()
 
 			diskio_current += dev->bytes[DEVSTAT_READ] +
 				dev->bytes[DEVSTAT_WRITE];
+
+			for (i = 0; i < MAX_DISKIO_STATS; i++) {
+				if (diskio_stats[i].dev && strcmp(dev_select[dn].device_name,
+						diskio_stats[i].dev) == 0) {
+					diskio_stats[i].current =
+						(dev->bytes[DEVSTAT_READ] + dev->bytes[DEVSTAT_WRITE] -
+						diskio_stats[i].last) / 1024;
+					diskio_stats[i].current_read = (dev->bytes[DEVSTAT_READ] -
+						diskio_stats[i].last_read) / 1024;
+					diskio_stats[i].current_write = (dev->bytes[DEVSTAT_WRITE] -
+						diskio_stats[i].last_write) / 1024;
+					if (dev->bytes[DEVSTAT_READ] +
+							dev->bytes[DEVSTAT_WRITE] < diskio_stats[i].last) {
+						diskio_stats[i].current = 0;
+					}
+					if (dev->bytes[DEVSTAT_READ] < diskio_stats[i].last_read) {
+						diskio_stats[i].current_read = 0;
+						diskio_stats[i].current = diskio_stats[i].current_write;
+					}
+					if (writes < diskio_stats[i].last_write) {
+						diskio_stats[i].current_write = 0;
+						diskio_stats[i].current = diskio_stats[i].current_read;
+					}
+					diskio_stats[i].last = dev->bytes[DEVSTAT_READ] +
+						dev->bytes[DEVSTAT_WRITE];
+					diskio_stats[i].last_read = dev->bytes[DEVSTAT_READ];
+					diskio_stats[i].last_write = dev->bytes[DEVSTAT_WRITE];
+				}
+			}
 		}
 
 		free(dev_select);
