@@ -749,6 +749,12 @@ static char *scan_graph(const char *args, int *w, int *h,
 {
 	char buf[64];
 
+	/* zero width means all space that is available */
+	*w = 0;
+	*h = 25;
+	*first_colour = 0;
+	*last_colour = 0;
+
 	/* graph's argument is either height or height,width */
 	if (args) {
 		if (sscanf(args, "%d,%d %x %x %i", h, w, first_colour, last_colour,
@@ -2293,32 +2299,32 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 #endif /* HAVE_IWLIB */
 
 #endif /* __linux__ */
-	END OBJ(freq_dyn, 0);
-	END OBJ(freq_dyn_g, 0);
+	END OBJ(freq_dyn, 0)
+	END OBJ(freq_dyn_g, 0)
 #ifndef __OpenBSD__
-	END OBJ(acpifan, 0);
-	END OBJ(battery, 0);
+	END OBJ(acpifan, 0)
+	END OBJ(battery, 0)
 	char bat[64];
 	if (arg)
 		sscanf(arg, "%63s", bat);
 	else
 		strcpy(bat, "BAT0");
 	obj->data.s = strdup(bat);
-	END OBJ(battery_time, 0);
+	END OBJ(battery_time, 0)
 	char bat[64];
 	if (arg)
 		sscanf(arg, "%63s", bat);
 	else
 		strcpy(bat, "BAT0");
 	obj->data.s = strdup(bat);
-	END OBJ(battery_percent, 0);
+	END OBJ(battery_percent, 0)
 	char bat[64];
 	if (arg)
 		sscanf(arg, "%63s", bat);
 	else
 		strcpy(bat, "BAT0");
 	obj->data.s = strdup(bat);
-	END OBJ(battery_bar, 0);
+	END OBJ(battery_bar, 0)
 	char bat[64];
 	if (arg) {
 		arg = scan_bar(arg, &obj->a, &obj->b);
@@ -2370,7 +2376,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 
 #endif /* __linux__ */
 #if defined(__OpenBSD__)
-	END OBJ(obsd_sensors_temp, 0);
+	END OBJ(obsd_sensors_temp, 0)
 		if(!arg) {
 			CRIT_ERR("obsd_sensors_temp: needs an argument");
 		}
@@ -2379,7 +2385,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 			ERR("Invalid temperature sensor number!");
 		}
 			obj->data.sensor = atoi(&arg[0]);
-	END OBJ(obsd_sensors_fan, 0);
+	END OBJ(obsd_sensors_fan, 0)
 		if(!arg) {
 			CRIT_ERR("obsd_sensors_fan: needs 2 arguments (device and sensor number)");
 		}
@@ -2388,7 +2394,7 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 			ERR("Invalid fan sensor number!");
 		}
 			obj->data.sensor = atoi(&arg[0]);
-	END OBJ(obsd_sensors_volt, 0);
+	END OBJ(obsd_sensors_volt, 0)
 		if(!arg) {
 			CRIT_ERR("obsd_sensors_volt: needs 2 arguments (device and sensor number)");
 		}
@@ -2397,8 +2403,8 @@ static struct text_object *construct_text_object(const char *s, const char *arg,
 			ERR("Invalid voltage sensor number!");
 		}
 			obj->data.sensor = atoi(&arg[0]);
-	END OBJ(obsd_vendor, 0);
-	END OBJ(obsd_product, 0);
+	END OBJ(obsd_vendor, 0)
+	END OBJ(obsd_product, 0)
 #endif /* __OpenBSD__ */
 		END OBJ(buffers, INFO_BUFFERS)
 		END OBJ(cached, INFO_BUFFERS)
@@ -7573,7 +7579,7 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 			if (value) {
 				background_colour = get_x11_color(value);
 			} else {
-				ERR("Invalid colour for own_winder_colour (try omitting the '#' for hex colours");
+				ERR("Invalid colour for own_window_colour (try omitting the '#' for hex colours");
 			}
 		}
 		CONF("own_window_hints") {
@@ -7632,7 +7638,7 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 		CONF("temp1") {
 			ERR("temp1 configuration is obsolete, use ${i2c <i2c device here> temp 1}");
 		}
-		CONF("temp1") {
+		CONF("temp2") {
 			ERR("temp2 configuration is obsolete, use ${i2c <i2c device here> temp 2}");
 		}
 		CONF("update_interval") {

@@ -986,7 +986,7 @@ static void mpd_finishDirectory(mpd_Directory * directory) {
 }
 
 mpd_Directory * mpd_newDirectory(void) {
-	mpd_Directory * directory = malloc(sizeof(mpd_Directory));;
+	mpd_Directory * directory = malloc(sizeof(mpd_Directory));
 
 	mpd_initDirectory(directory);
 
