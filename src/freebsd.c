@@ -721,7 +721,7 @@ update_diskio()
 						diskio_stats[i].current_read = 0;
 						diskio_stats[i].current = diskio_stats[i].current_write;
 					}
-					if (writes < diskio_stats[i].last_write) {
+					if (dev->bytes[DEVSTAT_WRITE] < diskio_stats[i].last_write) {
 						diskio_stats[i].current_write = 0;
 						diskio_stats[i].current = diskio_stats[i].current_read;
 					}
