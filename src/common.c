@@ -289,5 +289,9 @@ void update_stuff()
 
 int round_to_int(float f)
 {
-    return (int) (f + 0.5);
+	if (f >= 0.0) {
+		return (int) (f + 0.5);
+	} else {
+		return (int) (f - 0.5);
+	}
 }
