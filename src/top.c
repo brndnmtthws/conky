@@ -528,9 +528,6 @@ void sp_acopy(struct sorted_process *sp_head, struct process ** ar, int max_size
 	}
 }
 
-// stole from common.c
-#define NEED(a) ((need_mask & (1 << a)) && ((info.mask & (1 << a)) == 0))
-
 /* ****************************************************************** */
 /* Get a sorted list of the top cpu hogs and top mem hogs.            */
 /* Results are stored in the cpu,mem arrays in decreasing order[0-9]. */

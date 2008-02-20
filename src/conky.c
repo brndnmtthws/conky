@@ -7745,8 +7745,8 @@ else if (strcasecmp(name, a) == 0 || strcasecmp(name, b) == 0)
 
 }
 
-																							/* : means that character before that takes an argument */
-static const char *getopt_string = "vVdt:f:u:i:hc:w:x:y:a:"
+/* : means that character before that takes an argument */
+static const char *getopt_string = "vVdt:u:i:hc:"
 #ifdef X11
 		"x:y:w:a:f:"
 #ifdef OWN_WINDOW

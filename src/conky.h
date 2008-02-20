@@ -490,7 +490,6 @@ void update_stuff();
 
 int round_to_int(float f);
 
-#define SET_NEED(a) need_mask |= 1 << (a)
 extern unsigned long long need_mask;
 
 extern double current_update_time, last_update_time;
