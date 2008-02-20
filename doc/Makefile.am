@@ -8,7 +8,7 @@ clean-am: clean-generic mostlyclean-am
 	rm -f variables.html
 	rm -f config_settings.html
 
-conky.1: command_options.xml config_settings.xml docs.xml variables.xml 
+conky.1: command_options.xml config_settings.xml docs.xml variables.xml
 	${db2x_xsltproc_cmd} -s man ${srcdir}/docs.xml -o docs.mxml
 	${db2x_manxml_cmd} docs.mxml
 	${xsltproc_cmd} http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl ${srcdir}/docs.xml > docs.html

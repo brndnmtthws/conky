@@ -1,7 +1,6 @@
 /* $Id$ */
 
-/* 
- * timed_thread.h: Abstraction layer for timed threads
+/* timed_thread.h: Abstraction layer for timed threads
  *
  * Copyright (C) 2006-2007 Philip Kovacs pkovacs@users.sourceforge.net
  *
@@ -18,43 +17,48 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301
- * USA.
- *
- */
+ * USA. */
 
 #ifndef _TIMED_THREAD_H_
 #define _TIMED_THREAD_H_
 
-#define MINIMUM_INTERVAL_USECS 10000  /* 10000 microseconds = 10 ms =  0.01 sec */
+/* 10000 microseconds = 10 ms =  0.01 sec */
+#define MINIMUM_INTERVAL_USECS 10000
 
 /* opaque structure for clients */
 typedef struct _timed_thread timed_thread;
 
 /* create a timed thread (object creation only) */
-timed_thread* timed_thread_create (void *(*start_routine)(void*), void *arg, unsigned int interval_usecs);
+timed_thread *timed_thread_create(void *start_routine(void *), void *arg,
+	unsigned int interval_usecs);
 
 /* run a timed thread (drop the thread and run it) */
-int timed_thread_run (timed_thread* p_timed_thread);
+int timed_thread_run(timed_thread *p_timed_thread);
 
 /* destroy a timed thread */
-void timed_thread_destroy (timed_thread* p_timed_thread, timed_thread** addr_of_p_timed_thread);
+void timed_thread_destroy(timed_thread *p_timed_thread,
+	timed_thread **addr_of_p_timed_thread);
 
 /* lock a timed thread for critical section activity */
-int timed_thread_lock (timed_thread* p_timed_thread);
+int timed_thread_lock(timed_thread *p_timed_thread);
 
 /* unlock a timed thread after critical section activity */
-int timed_thread_unlock (timed_thread* p_timed_thread);
+int timed_thread_unlock(timed_thread *p_timed_thread);
 
-/* waits required interval for termination signal and returns 1 if got it, 0 otherwise */
-int timed_thread_test (timed_thread* p_timed_thread);
+/* waits required interval for termination signal
+ * returns 1 if received,
+ * 0 otherwise */
+int timed_thread_test(timed_thread *p_timed_thread);
 
 /* exit a timed thread */
-void timed_thread_exit (timed_thread* p_timed_thread);
+void timed_thread_exit(timed_thread *p_timed_thread);
 
-/* register a timed thread for future destruction via timed_thread_destroy_registered_threads() */
-int timed_thread_register (timed_thread* p_timed_thread, timed_thread** addr_of_p_timed_thread);
+/* register a timed thread for future destruction via
+ * timed_thread_destroy_registered_threads() */
+int timed_thread_register(timed_thread *p_timed_thread,
+	timed_thread **addr_of_p_timed_thread);
 
 /* destroy all registered timed threads */
-void timed_thread_destroy_registered_threads (void);
+void timed_thread_destroy_registered_threads(void);
 
 #endif /* #ifdef _TIMED_THREAD_H_ */

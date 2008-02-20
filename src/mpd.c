@@ -1,5 +1,4 @@
-/*
- * Conky, a system monitor, based on torsmo
+/* Conky, a system monitor, based on torsmo
  *
  * Any original torsmo code is licensed under the BSD license
  *
@@ -7,7 +6,8 @@
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2005-2007 Brenden Matthews, Philip Kovacs, et. al. (see AUTHORS)
+ * Copyright (c) 2005-2007 Brenden Matthews, Philip Kovacs, et. al.
+ *	(see AUTHORS)
  * All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,10 +20,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  $Id$
- */
+ * $Id$ */
 
 #include "conky.h"
 #include <stdio.h>
@@ -32,42 +31,52 @@
 #include "libmpdclient.h"
 
 timed_thread *mpd_timed_thread = NULL;
+
 void clear_mpd_stats(struct information *current_info);
 
 void init_mpd_stats(struct information *current_info)
 {
-	if (current_info->mpd.artist == NULL)
+	if (current_info->mpd.artist == NULL) {
 		current_info->mpd.artist = malloc(TEXT_BUFFER_SIZE);
-	if (current_info->mpd.album == NULL)
+	}
+	if (current_info->mpd.album == NULL) {
 		current_info->mpd.album = malloc(TEXT_BUFFER_SIZE);
-	if (current_info->mpd.title == NULL)
+	}
+	if (current_info->mpd.title == NULL) {
 		current_info->mpd.title = malloc(TEXT_BUFFER_SIZE);
-	if (current_info->mpd.random == NULL)
+	}
+	if (current_info->mpd.random == NULL) {
 		current_info->mpd.random = malloc(TEXT_BUFFER_SIZE);
-	if (current_info->mpd.repeat == NULL)
+	}
+	if (current_info->mpd.repeat == NULL) {
 		current_info->mpd.repeat = malloc(TEXT_BUFFER_SIZE);
-	if (current_info->mpd.track == NULL)
+	}
+	if (current_info->mpd.track == NULL) {
 		current_info->mpd.track = malloc(TEXT_BUFFER_SIZE);
-	if (current_info->mpd.status == NULL)
+	}
+	if (current_info->mpd.status == NULL) {
 		current_info->mpd.status = malloc(TEXT_BUFFER_SIZE);
-	if (current_info->mpd.name == NULL)
+	}
+	if (current_info->mpd.name == NULL) {
 		current_info->mpd.name = malloc(TEXT_BUFFER_SIZE);
-	if (current_info->mpd.file == NULL)
+	}
+	if (current_info->mpd.file == NULL) {
 		current_info->mpd.file = malloc(TEXT_BUFFER_SIZE);
+	}
 	clear_mpd_stats(current_info);
 }
 
 void clear_mpd_stats(struct information *current_info)
 {
-	*current_info->mpd.name=0;
-	*current_info->mpd.file=0;
-	*current_info->mpd.artist=0;
-	*current_info->mpd.album=0;
-	*current_info->mpd.title=0;
-	*current_info->mpd.random=0;
-	*current_info->mpd.repeat=0;
-	*current_info->mpd.track=0;
-	*current_info->mpd.status=0;
+	*current_info->mpd.name = 0;
+	*current_info->mpd.file = 0;
+	*current_info->mpd.artist = 0;
+	*current_info->mpd.album = 0;
+	*current_info->mpd.title = 0;
+	*current_info->mpd.random = 0;
+	*current_info->mpd.repeat = 0;
+	*current_info->mpd.track = 0;
+	*current_info->mpd.status = 0;
 	current_info->mpd.bitrate = 0;
 	current_info->mpd.progress = 0;
 	current_info->mpd.elapsed = 0;
@@ -77,80 +86,89 @@ void clear_mpd_stats(struct information *current_info)
 void *update_mpd(void)
 {
 	struct information *current_info = &info;
+
 	while (1) {
 		if (!current_info->conn) {
-			current_info->conn = mpd_newConnection(current_info->mpd.host, current_info->mpd.port, 10);
+			current_info->conn = mpd_newConnection(current_info->mpd.host,
+				current_info->mpd.port, 10);
 		}
 		if (strlen(current_info->mpd.password) > 1) {
 			mpd_sendPasswordCommand(current_info->conn,
-					current_info->mpd.password);
+				current_info->mpd.password);
 			mpd_finishCommand(current_info->conn);
 		}
-		
+
 		timed_thread_lock(mpd_timed_thread);
 
 		if (current_info->conn->error || current_info->conn == NULL) {
-			//ERR("%MPD error: s\n", current_info->conn->errorStr);
+			// ERR("%MPD error: s\n", current_info->conn->errorStr);
 			mpd_closeConnection(current_info->conn);
 			current_info->conn = 0;
 			clear_mpd_stats(current_info);
 
-			strncpy(current_info->mpd.status, "MPD not responding",	TEXT_BUFFER_SIZE - 1);
+			strncpy(current_info->mpd.status, "MPD not responding",
+				TEXT_BUFFER_SIZE - 1);
 			timed_thread_unlock(mpd_timed_thread);
-			if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
+			if (timed_thread_test(mpd_timed_thread)) {
+				timed_thread_exit(mpd_timed_thread);
+			}
 			continue;
 		}
 
 		mpd_Status *status;
 		mpd_InfoEntity *entity;
+
 		mpd_sendStatusCommand(current_info->conn);
 		if ((status = mpd_getStatus(current_info->conn)) == NULL) {
-			//ERR("MPD error: %s\n", current_info->conn->errorStr);
+			// ERR("MPD error: %s\n", current_info->conn->errorStr);
 			mpd_closeConnection(current_info->conn);
 			current_info->conn = 0;
 			clear_mpd_stats(current_info);
 
-			strncpy(current_info->mpd.status, "MPD not responding", TEXT_BUFFER_SIZE - 1);
+			strncpy(current_info->mpd.status, "MPD not responding",
+				TEXT_BUFFER_SIZE - 1);
 			timed_thread_unlock(mpd_timed_thread);
-			if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
+			if (timed_thread_test(mpd_timed_thread)) {
+				timed_thread_exit(mpd_timed_thread);
+			}
 			continue;
 		}
 		mpd_finishCommand(current_info->conn);
 		if (current_info->conn->error) {
-			//fprintf(stderr, "%s\n", current_info->conn->errorStr);
+			// fprintf(stderr, "%s\n", current_info->conn->errorStr);
 			mpd_closeConnection(current_info->conn);
 			current_info->conn = 0;
 			timed_thread_unlock(mpd_timed_thread);
-			if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
+			if (timed_thread_test(mpd_timed_thread)) {
+				timed_thread_exit(mpd_timed_thread);
+			}
 			continue;
 		}
 
 		current_info->mpd.volume = status->volume;
-		//if (status->error)
-		//printf("error: %s\n", status->error);
+		/* if (status->error) {
+			printf("error: %s\n", status->error);
+		} */
 
 		if (status->state == MPD_STATUS_STATE_PLAY) {
-			strncpy(current_info->mpd.status, "Playing",
-					TEXT_BUFFER_SIZE - 1);
+			strncpy(current_info->mpd.status, "Playing", TEXT_BUFFER_SIZE - 1);
 		}
 		if (status->state == MPD_STATUS_STATE_STOP) {
 			clear_mpd_stats(current_info);
-			strncpy(current_info->mpd.status, "Stopped",
-					TEXT_BUFFER_SIZE - 1);
+			strncpy(current_info->mpd.status, "Stopped", TEXT_BUFFER_SIZE - 1);
 		}
 		if (status->state == MPD_STATUS_STATE_PAUSE) {
-			strncpy(current_info->mpd.status, "Paused",
-					TEXT_BUFFER_SIZE - 1);
+			strncpy(current_info->mpd.status, "Paused", TEXT_BUFFER_SIZE - 1);
 		}
 		if (status->state == MPD_STATUS_STATE_UNKNOWN) {
 			clear_mpd_stats(current_info);
-			*current_info->mpd.status=0;
+			*current_info->mpd.status = 0;
 		}
-		if (status->state == MPD_STATUS_STATE_PLAY ||
-				status->state == MPD_STATUS_STATE_PAUSE) {
+		if (status->state == MPD_STATUS_STATE_PLAY
+				|| status->state == MPD_STATUS_STATE_PAUSE) {
 			current_info->mpd.bitrate = status->bitRate;
-			current_info->mpd.progress =
-				(float) status->elapsedTime / status->totalTime;
+			current_info->mpd.progress = (float) status->elapsedTime /
+				status->totalTime;
 			current_info->mpd.elapsed = status->elapsedTime;
 			current_info->mpd.length = status->totalTime;
 			if (status->random == 0) {
@@ -158,29 +176,32 @@ void *update_mpd(void)
 			} else if (status->random == 1) {
 				strcpy(current_info->mpd.random, "On");
 			} else {
-				*current_info->mpd.random=0;
+				*current_info->mpd.random = 0;
 			}
 			if (status->repeat == 0) {
 				strcpy(current_info->mpd.repeat, "Off");
 			} else if (status->repeat == 1) {
 				strcpy(current_info->mpd.repeat, "On");
 			} else {
-				*current_info->mpd.repeat=0;
+				*current_info->mpd.repeat = 0;
 			}
 		}
 
 		if (current_info->conn->error) {
-			//fprintf(stderr, "%s\n", current_info->conn->errorStr);
+			// fprintf(stderr, "%s\n", current_info->conn->errorStr);
 			mpd_closeConnection(current_info->conn);
 			current_info->conn = 0;
 			timed_thread_unlock(mpd_timed_thread);
-			if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
+			if (timed_thread_test(mpd_timed_thread)) {
+				timed_thread_exit(mpd_timed_thread);
+			}
 			continue;
 		}
 
 		mpd_sendCurrentSongCommand(current_info->conn);
 		while ((entity = mpd_getNextInfoEntity(current_info->conn))) {
 			mpd_Song *song = entity->info.song;
+
 			if (entity->type != MPD_INFO_ENTITY_TYPE_SONG) {
 				mpd_freeInfoEntity(entity);
 				continue;
@@ -188,39 +209,39 @@ void *update_mpd(void)
 
 			if (song->artist) {
 				strncpy(current_info->mpd.artist, song->artist,
-						TEXT_BUFFER_SIZE - 1);
+					TEXT_BUFFER_SIZE - 1);
 			} else {
-				*current_info->mpd.artist=0;
+				*current_info->mpd.artist = 0;
 			}
 			if (song->album) {
 				strncpy(current_info->mpd.album, song->album,
-						TEXT_BUFFER_SIZE - 1);
+					TEXT_BUFFER_SIZE - 1);
 			} else {
-				*current_info->mpd.album=0;
+				*current_info->mpd.album = 0;
 			}
 			if (song->title) {
 				strncpy(current_info->mpd.title, song->title,
-						TEXT_BUFFER_SIZE - 1);
+					TEXT_BUFFER_SIZE - 1);
 			} else {
-				*current_info->mpd.title=0;
+				*current_info->mpd.title = 0;
 			}
 			if (song->track) {
 				strncpy(current_info->mpd.track, song->track,
-						TEXT_BUFFER_SIZE - 1);
+					TEXT_BUFFER_SIZE - 1);
 			} else {
-				*current_info->mpd.track=0;
+				*current_info->mpd.track = 0;
 			}
 			if (song->name) {
 				strncpy(current_info->mpd.name, song->name,
-						TEXT_BUFFER_SIZE - 1);
+					TEXT_BUFFER_SIZE - 1);
 			} else {
-				*current_info->mpd.name=0;
+				*current_info->mpd.name = 0;
 			}
 			if (song->file) {
-				strncpy(current_info->mpd.file,
-						song->file, TEXT_BUFFER_SIZE - 1);
+				strncpy(current_info->mpd.file, song->file,
+					TEXT_BUFFER_SIZE - 1);
 			} else {
-				*current_info->mpd.file=0;
+				*current_info->mpd.file = 0;
 			}
 			if (entity != NULL) {
 				mpd_freeInfoEntity(entity);
@@ -233,29 +254,35 @@ void *update_mpd(void)
 		}
 		mpd_finishCommand(current_info->conn);
 		if (current_info->conn->error) {
-			//fprintf(stderr, "%s\n", current_info->conn->errorStr);
+			// fprintf(stderr, "%s\n", current_info->conn->errorStr);
 			mpd_closeConnection(current_info->conn);
 			current_info->conn = 0;
 			timed_thread_unlock(mpd_timed_thread);
-			if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
+			if (timed_thread_test(mpd_timed_thread)) {
+				timed_thread_exit(mpd_timed_thread);
+			}
 			continue;
 		}
 
 		timed_thread_unlock(mpd_timed_thread);
 		if (current_info->conn->error) {
-			//fprintf(stderr, "%s\n", current_info->conn->errorStr);
+			// fprintf(stderr, "%s\n", current_info->conn->errorStr);
 			mpd_closeConnection(current_info->conn);
 			current_info->conn = 0;
-			if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
+			if (timed_thread_test(mpd_timed_thread)) {
+				timed_thread_exit(mpd_timed_thread);
+			}
 			continue;
 		}
 
 		mpd_freeStatus(status);
-/*		if (current_info->conn) {
+		/* if (current_info->conn) {
 			mpd_closeConnection(current_info->conn);
 			current_info->conn = 0;
-		}*/
-		if (timed_thread_test(mpd_timed_thread)) timed_thread_exit(mpd_timed_thread);
+		} */
+		if (timed_thread_test(mpd_timed_thread)) {
+			timed_thread_exit(mpd_timed_thread);
+		}
 		continue;
 	}
 	return 0;

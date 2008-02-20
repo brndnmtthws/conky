@@ -16,14 +16,14 @@
 		cumulative CPU time of a process.
 		4) Simplified integer rounding.
 		5) Fixed the window width when a goto is used.
-		6) Fixed the window width when an offset is used.		
+		6) Fixed the window width when an offset is used.
 		(thanks Kevin Lyles).
 
 2007-12-31
-	* Applied submitted patches: 
+	* Applied submitted patches:
 		1) to suport Debian's kFreeBSD;
-		2) to use realtime clock in timed threads and 
-		3) to fix get_ibm_acpi_volume zero value bug 
+		2) to use realtime clock in timed threads and
+		3) to fix get_ibm_acpi_volume zero value bug
 		(thanks Kapil Hari Paranjape).
 
 2007-11-22
@@ -33,7 +33,7 @@
 	* Added Gentoo USE flag audacious-legacy for Audacious legacy support.
 
 2007-11-16
-	* Added support for Audacious 1.4.0 and legacy versions via 
+	* Added support for Audacious 1.4.0 and legacy versions via
 			--enable-audacious=yes|no|legacy.
 
 2007-11-14
@@ -70,7 +70,7 @@
 2007-09-01
 	* Improved performance slightly.
 	* Added 'music_player_interval' config option to specify an update interval for
-	 		music player threads (currently honored by mpd and audacious).
+			music player threads (currently honored by mpd and audacious).
 	* Fixed some minor memory leaks associated with SIGUSR1.
 	* Zero out imap and pop3 stuff when the connection fails.
 
@@ -184,7 +184,7 @@
 2006-12-22
 	* client/server infrastructure and prototype for linux only (so far):
 		- requires libdexter (http://sourceforge.net/projects/libdexter)
-	  	and the dxt-sysinfo plugin (svn only at the moment).
+		and the dxt-sysinfo plugin (svn only at the moment).
 	* new config items:
 		- dexter_client yes/no
 		- dexter_server yes/no
@@ -196,7 +196,7 @@
 		- wm_class_name (use own_window_class, same function)
 	* configure changes:
 	  --disable-network (default=yes) with auto-detection for libdexter.
-		- remove useless --enable-proc-uptime (PROC_UPTIME never referenced).  
+		- remove useless --enable-proc-uptime (PROC_UPTIME never referenced).
 			HAVE_SYSINFO and others determine if /proc/uptime is used.
 		- silently disable xft, double-buffer and xdamage if no x11.
 		- change enable/disable labels to reflect defaults accurately.
@@ -204,7 +204,7 @@
 		  them into AC_CHECK_FUNCS.
 	* allow decorated, own_window=yes windows to be given input focus by WM:
 		- do not pass button clicks through to desktop in this scenario as conky
-		  immediately loses focus.  
+		  immediately loses focus.
 
 2006-12-13
 	* Clarify LGPL license on timed_thread modules.
@@ -226,7 +226,7 @@
 2006-12-09
 	* Replaced hash module used by libtcp-portmon with GLib's GHashTable,
 	due to licensing issue noted by Fedora Core packagers.
-	* Eliminated config items: 
+	* Eliminated config items:
 		min_port_monitors,
 		min_port_monitor_connections
 	* Added config item:
@@ -240,7 +240,7 @@
 	feature request #1600631.
 
 2006-11-28
-	* Rearrange retry attempts in pop3 and imap code, removing sleep() 
+	* Rearrange retry attempts in pop3 and imap code, removing sleep()
 	calls which cause the whole process to sleep, not just the thread.
 
 2006-11-22
@@ -273,7 +273,7 @@
 
 2006-11-13
 	* Use pthread_cond_timedwait() instead of sleep() in audacious
-	thread.  Will convert all worker threads to this timing method.  
+	thread.  Will convert all worker threads to this timing method.
 
 2006-11-12
 	* Fix freebsd build error.
@@ -311,9 +311,9 @@
 	* Added Hellf[i]re's nano syntax coloring script to svn.
 
 2006-11-03
-	* Removed support for Xmms, BMP and Infopipe from conky.  
-	The Xmms and Bmp players are projects are dead and distros such 
-	as Gentoo are slating them for removal.  
+	* Removed support for Xmms, BMP and Infopipe from conky.
+	The Xmms and Bmp players are projects are dead and distros such
+	as Gentoo are slating them for removal.
 	* Added support for Audacious using new audacious vars.
 
 2006-10-18
@@ -331,7 +331,7 @@
 
 2006-09-28
 	* Use pkg-config instead of xft-config.
-	* Fix last line bug which had required padding text with extra blank line 
+	* Fix last line bug which had required padding text with extra blank line
 	to see text on last line.
 
 2006-09-01
@@ -420,7 +420,7 @@
 	Holub <hopet@users.sourceforge.net>)
 
 2006-03-15
-	* Removed bmp-infopipe dependency from 1.4.1 and 1.9999 ebuilds for Gentoo 
+	* Removed bmp-infopipe dependency from 1.4.1 and 1.9999 ebuilds for Gentoo
 	(Gentoo bug# 125226).
 	* Fixed subversion ebuild for conky1 (1.9999) so it pulls the new trunk
 	path for conky1.
@@ -451,7 +451,7 @@
 	* on_bottom and wm_class_name deprecated (they do nothing)
 
 2006-02-13
-	* Fixed typo bug in portmon code that caused incorrect monitor data 
+	* Fixed typo bug in portmon code that caused incorrect monitor data
 	to be displayed.
 
 2006-02-12
@@ -464,7 +464,7 @@
 	* Added freedesktop.org extended window manager hints (EWMH)
 	for window type NORMAL and state's STICKY/SKIP_PAGER/SKIP_TASKBAR.
 	Fixes stacking order issues with freedesktop-compliant wm's,
-	such as XFCE4+. 
+	such as XFCE4+.
 
 2006-01-25
 	* Fixed stupid graph code (it still sucks) sf.net bug 1372962
@@ -509,11 +509,11 @@
 	* Fixed sf.net bug 1367745
 
 2005-11-30
-	* Fixed sf.net bugs 1369607, 1367735 and gentoo bug 113921, 
+	* Fixed sf.net bugs 1369607, 1367735 and gentoo bug 113921,
 	  all variations of the same array out of bounds issue.
 	* "Fixed" code in fs.c and conky.c to make fs stats match those displayed by df (affects reporting against ext3 filesystems only)
 
-2005-11-27 
+2005-11-27
 	* new code in linux.c and top.c to calculate CPU % correctly on 2.6 kernels.
 
 2005-11-24
@@ -533,7 +533,7 @@
 2005-11-12
 	* Replaced bitwise copy of tcp_connection_t with function
 	copy_tcp_connection().
-	* Changed call interfaces for get_acpi_fan(), get_acpi_ac_adapter(),   
+	* Changed call interfaces for get_acpi_fan(), get_acpi_ac_adapter(),
 	get_freq(), get_freq_dynamic(), get_adt746x_cpu(), get_adt746x_fan(),
 	eliminating all mallocs.  pkovacs.  See bug 1355470.
 
@@ -741,7 +741,7 @@
 	options $addr and $linkstatus (please test!), as well as fixed a mem
 	leak in this patch
 	* adt746x fix, thanks to dan-h on sf.net
-	* Added mldonkey support patch, thanks Lucas Brutschy on sf.net 
+	* Added mldonkey support patch, thanks Lucas Brutschy on sf.net
 	* Added patch to allow hex colour values, thanks roiban adi on sf.net
 	* Added if constructs patch, thanks Lucas Brutschy on sf.net
 	* Fixed bug in tab code (hopefully for the last time)
@@ -753,7 +753,7 @@
 
 =========================================================================
 =========================================================================
-	
+
 2005-07-05
 	* Conky 1.1 released
 
@@ -798,7 +798,7 @@
 
 =========================================================================
 =========================================================================
-	
+
 2005-06-21
 	* Version 1.0. Conky is born from the ashes of torsmo. Main site:
 	http://conky.sf.net/

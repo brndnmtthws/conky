@@ -1,8 +1,7 @@
-/*
- * $Id$
+/* $Id$
  *
  * Copyright (c) 2007 Mikko Sysikaski <mikko.sysikaski@gmail.com>
- *                    Toni Spets <toni.spets@gmail.com>
+ *					  Toni Spets <toni.spets@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,8 +13,7 @@
  * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- */
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */
 
 #ifndef PRSS_H
 #define PRSS_H
@@ -23,45 +21,45 @@
 #include <libxml/parser.h>
 
 typedef struct PRSS_Item_ {
-	char* title;
-	char* link;
-	char* description;
-	char* category;
-	char* pubdate;
-	char* guid;
+	char *title;
+	char *link;
+	char *description;
+	char *category;
+	char *pubdate;
+	char *guid;
 } PRSS_Item;
 
 typedef struct PRSS_ {
 	xmlDocPtr _data;
-	char* version;
-	
-	char* title;
-	char* link;
-	char* description;
-	char* language;
-	char* generator;
-	char* managingeditor;
-	char* webmaster;
-	char* docs;
-	char* lastbuilddate;
-	char* pubdate;
-	char* copyright;
-	char* ttl;
+	char *version;
 
-	PRSS_Item* items;
+	char *title;
+	char *link;
+	char *description;
+	char *language;
+	char *generator;
+	char *managingeditor;
+	char *webmaster;
+	char *docs;
+	char *lastbuilddate;
+	char *pubdate;
+	char *copyright;
+	char *ttl;
+
+	PRSS_Item *items;
 	int item_count;
 } PRSS;
 
 /* Functions for parsing RSS-data */
-PRSS* prss_parse_data(const char *xml_data);
-PRSS* prss_parse_file(const char *xml_file);
+PRSS *prss_parse_data(const char *xml_data);
+PRSS *prss_parse_file(const char *xml_file);
 
-// Works wrong currently when called from application!
-//PRSS* prss_parse_doc(xmlDocPtr doc);
+/* // Works wrong currently when called from application!
+PRSS *prss_parse_doc(xmlDocPtr doc); */
 
 /* Frees the PRSS-stucture returned by prss_parse_*.
  * The memory area pointed by data becomes invalid
  * after call to this function. */
-void prss_free(PRSS* data);
+void prss_free(PRSS *data);
 
-#endif	// PRSS_H
+#endif /* PRSS_H */

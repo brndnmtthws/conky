@@ -107,7 +107,7 @@ conky_SOURCES = 		\
 	mboxscan.c		\
 	mboxscan.h		\
 	$(x11)                  \
-	$(xmms2) 
+	$(xmms2)
 
 AM_LDFLAGS = $(PTHREAD_LIBS) -lm
 

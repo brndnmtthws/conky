@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   version="1.0">
-  
-  <!--jtan325 created this-->  
+
+  <!--jtan325 created this-->
   <xsl:output method="html"/>
-  
+
   <xsl:template match="/">
     <html>
       <head>
@@ -24,9 +24,9 @@
         <th>Arguments () = optional</th>
         <th>Explanation</th>
       </tr>
-	
+
       <xsl:for-each select="varlistentry">
-	 			<xsl:variable name="row_bg">
+				<xsl:variable name="row_bg">
 					<xsl:choose>
 						<xsl:when test="position() mod 2 = 1">#fffafa</xsl:when>
 						<xsl:otherwise>#b4cdcd</xsl:otherwise>
@@ -36,7 +36,7 @@
             <td align="center">
                 <xsl:value-of select="term/command/option" />
             </td>
-            <td align="center"> 
+            <td align="center">
               <xsl:value-of select="term/option" />
 	          </td>
 	          <td>
@@ -46,5 +46,5 @@
       </xsl:for-each>
     </table>
   </xsl:template>
-  
+
 </xsl:stylesheet>

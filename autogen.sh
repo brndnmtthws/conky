@@ -38,7 +38,7 @@ LIBTOOLIZE=${LIBTOOLIZE:-libtoolize}
 if test "$1" != "" && test -d "$1/.svn"; then
     revision=`LC_ALL=C svn info $1 | awk '/^Revision: / {printf "%05d\n", $2}'`;
 elif test -d ".svn"; then
-    revision=`LC_ALL=C svn info | awk '/^Revision: / {printf "%05d\n", $2}'`; 
+    revision=`LC_ALL=C svn info | awk '/^Revision: / {printf "%05d\n", $2}'`;
 else
     revision="NONE"; fi
 

@@ -1,5 +1,4 @@
-/*
- * Conky, a system monitor, based on torsmo
+/* Conky, a system monitor, based on torsmo
  *
  * Any original torsmo code is licensed under the BSD license
  *
@@ -8,7 +7,8 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2007 Brenden Matthews, Philip Kovacs, et. al. (see AUTHORS)
+ * Copyright (c) 2005-2007 Brenden Matthews, Philip Kovacs, et. al.
+ *	(see AUTHORS)
  * All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,10 +21,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  $Id$
- */
+ * $Id$ */
 
 #include "conky.h"
 #include <unistd.h>
@@ -52,40 +51,48 @@
 static struct fs_stat fs_stats_[MAX_FS_STATS];
 struct fs_stat *fs_stats = fs_stats_;
 
-static void update_fs_stat(struct fs_stat* fs);
+static void update_fs_stat(struct fs_stat *fs);
 
 void update_fs_stats()
 {
 	unsigned i;
-	for(i=0; i<MAX_FS_STATS; ++i)
-		if(fs_stats[i].path)
+
+	for (i = 0; i < MAX_FS_STATS; ++i) {
+		if (fs_stats[i].path) {
 			update_fs_stat(&fs_stats[i]);
+		}
+	}
 }
 
 void clear_fs_stats()
 {
 	unsigned i;
-	for(i=0; i<MAX_FS_STATS; ++i)
-		if(fs_stats[i].path) {
+
+	for (i = 0; i < MAX_FS_STATS; ++i) {
+		if (fs_stats[i].path) {
 			free(fs_stats[i].path);
-			fs_stats[i].path = 0;
+			fs_stats[i].path = NULL;
 		}
+	}
 }
 
 struct fs_stat *prepare_fs_stat(const char *s)
 {
-	struct fs_stat* new = 0;
+	struct fs_stat *new = 0;
 	unsigned i;
+
 	/* lookup existing or get new */
-	for(i=0; i<MAX_FS_STATS; ++i) {
-		if(fs_stats[i].path) {
-			if(strcmp(fs_stats[i].path, s) == 0)
+	for (i = 0; i < MAX_FS_STATS; ++i) {
+		if (fs_stats[i].path) {
+			if (strcmp(fs_stats[i].path, s) == 0) {
 				return &fs_stats[i];
-		} else
+			}
+		} else {
 			new = &fs_stats[i];
+		}
 	}
 	/* new path */
-	if(!new) {
+	if (!new) {
 		ERR("too many fs stats");
 		return 0;
 	}
@@ -94,14 +101,14 @@ struct fs_stat *prepare_fs_stat(const char *s)
 	return new;
 }
 
-static
-void update_fs_stat(struct fs_stat* fs)
+static void update_fs_stat(struct fs_stat *fs)
 {
 	struct statfs s;
-	if(statfs(fs->path, &s) == 0) {
+
+	if (statfs(fs->path, &s) == 0) {
 		fs->size = (long long) s.f_blocks * s.f_bsize;
 		/* bfree (root) or bavail (non-roots) ? */
-		fs->avail = (long long) s.f_bavail* s.f_bsize;
+		fs->avail = (long long) s.f_bavail * s.f_bsize;
 		fs->free = (long long) s.f_bfree * s.f_bsize;
 	} else {
 		fs->size = 0;

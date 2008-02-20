@@ -1,5 +1,4 @@
-/*
- * Conky, a system monitor, based on torsmo
+/* Conky, a system monitor, based on torsmo
  *
  * Any original torsmo code is licensed under the BSD license
  *
@@ -8,7 +7,8 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2006 Marco Candrian <mac@calmar.ws>
- * Copyright (c) 2005-2007 Brenden Matthews, Philip Kovacs, et. al. (see AUTHORS)
+ * Copyright (c) 2005-2007 Brenden Matthews, Philip Kovacs, et. al.
+ *	(see AUTHORS)
  * All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,10 +21,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  $Id$
- */
+ * $Id$ */
 
 #include "conky.h"
 #include <sys/stat.h>
@@ -57,23 +56,20 @@ static int subject_width;
 static int print_mails;
 static int time_delay;
 
-/*
- * I don't know what to use: TEXT_BUFFER_SIZE or text_buffer_size
+/* I don't know what to use: TEXT_BUFFER_SIZE or text_buffer_size
  * text_buffer_size is the maximum output in chars
- * TEXT_BUFFER_SIZE actually something like a allowed size
- * for things in the config, below 'TEXT'. Or what is more probably
- * max_user_text. Anyway, I used TEXT_BUFFER_SIZE for not 'output' things here
+ * TEXT_BUFFER_SIZE actually something like a allowed size for things in the
+ * config, below 'TEXT'. Or what is more probably max_user_text.
+ * Anyway, I used TEXT_BUFFER_SIZE for not 'output' things here
  * -- calmar
  *
- *  To clarify, TEXT_BUFFER_SIZE is used for buffers of fixed size, and 
- *  text_buffer_size is used for buffers which can change in size.
- *  text_buffer_size is just defined as TEXT_BUFFER_SIZE to start,
- *  so its okay for most things, however if something is allocated
- *  with text_buffer_size and then text_buffer_size changes but
- *  the array doesn't, you might have some issues if you are using
- *  text_buffer_size to determine the size of the array.
- *  -- brenden
- */
+ * To clarify, TEXT_BUFFER_SIZE is used for buffers of fixed size, and
+ * text_buffer_size is used for buffers which can change in size.
+ * text_buffer_size is just defined as TEXT_BUFFER_SIZE to start, so it's okay
+ * for most things, however if something is allocated with text_buffer_size and
+ * then text_buffer_size changes but the array doesn't, you might have some
+ * issues if you are using text_buffer_size to determine the size of the array.
+ * -- brenden */
 
 static char mbox_mail_spool[TEXT_BUFFER_SIZE];
 
@@ -94,6 +90,7 @@ void mbox_scan(char *args, char *output, size_t max_len)
 	if (!args_ok || force_rescan) {
 
 		char *substr = strstr(args, "-n");
+
 		if (substr) {
 			if (sscanf(substr, "-n %i", &print_mails) != 1) {
 				print_mails = PRINT_MAILS;
@@ -101,8 +98,9 @@ void mbox_scan(char *args, char *output, size_t max_len)
 		} else {
 			print_mails = PRINT_MAILS;
 		}
-		if (print_mails < 1)
+		if (print_mails < 1) {
 			print_mails = 1;
+		}
 
 		substr = strstr(args, "-t");
 		if (substr) {
@@ -134,12 +132,14 @@ void mbox_scan(char *args, char *output, size_t max_len)
 		if (args[strlen(args) - 1] == '"') {
 			strncpy(mbox_mail_spool, args, TEXT_BUFFER_SIZE);
 			char *start = strchr(mbox_mail_spool, '"') + 1;
-			start[(long)(strrchr(mbox_mail_spool, '"') - start)] = '\0';
+
+			start[(long) (strrchr(mbox_mail_spool, '"') - start)] = '\0';
 			strncpy(mbox_mail_spool, start, TEXT_BUFFER_SIZE);
 		} else {
 			char *copy_args = strdup(args);
 			char *tmp = strtok(copy_args, " ");
 			char *start = tmp;
+
 			while (tmp) {
 				tmp = strtok(NULL, " ");
 				if (tmp) {
@@ -150,7 +150,9 @@ void mbox_scan(char *args, char *output, size_t max_len)
 			free(copy_args);
 		}
 		if (strlen(mbox_mail_spool) < 1) {
-			CRIT_ERR("Usage: ${mboxscan [-n <number of messages to print>] [-fw <from width>] [-sw <subject width>] [-t <delay in sec> mbox]}");
+			CRIT_ERR("Usage: ${mboxscan [-n <number of messages to print>] "
+				"[-fw <from width>] [-sw <subject width>] "
+				"[-t <delay in sec> mbox]}");
 		}
 
 		/* allowing $MAIL in the config */
@@ -165,8 +167,9 @@ void mbox_scan(char *args, char *output, size_t max_len)
 	}
 
 	/* if time_delay not yet reached, then return */
-	if (current_update_time - last_update < time_delay && !force_rescan)
+	if (current_update_time - last_update < time_delay && !force_rescan) {
 		return;
+	}
 
 	last_update = current_update_time;
 
@@ -178,25 +181,28 @@ void mbox_scan(char *args, char *output, size_t max_len)
 	}
 
 	/* modification time has not changed, so skip scanning the box */
-	if (statbuf.st_ctime == last_ctime && statbuf.st_mtime == last_mtime && !force_rescan) {
+	if (statbuf.st_ctime == last_ctime && statbuf.st_mtime == last_mtime
+			&& !force_rescan) {
 		return;
 	}
 
 	last_ctime = statbuf.st_ctime;
 	last_mtime = statbuf.st_mtime;
 
-	/* build up double-linked ring-list to hold data, while scanning down * the mbox */
+	/* build up double-linked ring-list to hold data, while scanning down the
+	 * mbox */
 	struct ring_list *curr = 0, *prev = 0, *startlist = 0;
 
 	for (i = 0; i < print_mails; i++) {
-		curr = (struct ring_list *)malloc(sizeof(struct ring_list));
-		curr->from = (char *)malloc(sizeof(char[from_width + 1]));
-		curr->subject = (char *)malloc(sizeof(char[subject_width + 1]));
+		curr = (struct ring_list *) malloc(sizeof(struct ring_list));
+		curr->from = (char *) malloc(sizeof(char[from_width + 1]));
+		curr->subject = (char *) malloc(sizeof(char[subject_width + 1]));
 		curr->from[0] = '\0';
 		curr->subject[0] = '\0';
 
-		if (i == 0)
+		if (i == 0) {
 			startlist = curr;
+		}
 		if (i > 0) {
 			curr->previous = prev;
 			prev->next = curr;
@@ -216,17 +222,20 @@ void mbox_scan(char *args, char *output, size_t max_len)
 		return;
 	}
 
-	flag = 1;		/* first find a "From " to set it to 0 for header-sarchings */
+	/* first find a "From " to set it to 0 for header-sarchings */
+	flag = 1;
 	while (!feof(fp)) {
-		if (fgets(buf, text_buffer_size, fp) == NULL)
+		if (fgets(buf, text_buffer_size, fp) == NULL) {
 			break;
+		}
 
 		if (strncmp(buf, "From ", 5) == 0) {
 			curr = curr->next;
 
 			/* skip until \n */
-			while (strchr(buf, '\n') == NULL && !feof(fp))
+			while (strchr(buf, '\n') == NULL && !feof(fp)) {
 				fgets(buf, text_buffer_size, fp);
+			}
 
 			flag = 0;	/* in the headers now */
 			continue;
@@ -240,23 +249,26 @@ void mbox_scan(char *args, char *output, size_t max_len)
 			/* beyond the headers now (empty line), skip until \n */
 			/* then search for new mail ("From ") */
 
-			while (strchr(buf, '\n') == NULL && !feof(fp))
+			while (strchr(buf, '\n') == NULL && !feof(fp)) {
 				fgets(buf, text_buffer_size, fp);
+			}
 			flag = 1;	/* in the body now */
 			continue;
 		}
 
 		if ((strncmp(buf, "X-Status: ", 10) == 0)
-		    || (strncmp(buf, "Status: R", 9) == 0)) {
+				|| (strncmp(buf, "Status: R", 9) == 0)) {
 
 			/* Mail was read or something, so skip that message */
 			flag = 1;	/* search for next From */
 			curr->subject[0] = '\0';
 			curr->from[0] = '\0';
-			curr = curr->previous;	/* (will get current again on new * 'From ' finding) */
+			/* (will get current again on new 'From ' finding) */
+			curr = curr->previous;
 			/* Skip until \n */
-			while (strchr(buf, '\n') == NULL && !feof(fp))
+			while (strchr(buf, '\n') == NULL && !feof(fp)) {
 				fgets(buf, text_buffer_size, fp);
+			}
 			continue;
 		}
 
@@ -272,12 +284,14 @@ void mbox_scan(char *args, char *output, size_t max_len)
 					continue;
 				}
 
-				if (buf[u] == '<' && i > 1) {	/* some are: From: * <foo@bar.com> */
+				/* some are: From: <foo@bar.com> */
+				if (buf[u] == '<' && i > 1) {
 
 					curr->from[i] = '\0';
 					/* skip until \n */
-					while (strchr(buf, '\n') == NULL && !feof(fp))
+					while (strchr(buf, '\n') == NULL && !feof(fp)) {
 						fgets(buf, text_buffer_size, fp);
+					}
 					break;
 				}
 
@@ -294,8 +308,9 @@ void mbox_scan(char *args, char *output, size_t max_len)
 				if (i >= from_width) {
 					curr->from[i] = '\0';
 					/* skip until \n */
-					while (strchr(buf, '\n') == NULL && !feof(fp))
+					while (strchr(buf, '\n') == NULL && !feof(fp)) {
 						fgets(buf, text_buffer_size, fp);
+					}
 					break;
 				}
 
@@ -323,8 +338,9 @@ void mbox_scan(char *args, char *output, size_t max_len)
 					curr->subject[i] = '\0';
 
 					/* skip until \n */
-					while (strchr(buf, '\n') == NULL && !feof(fp))
+					while (strchr(buf, '\n') == NULL && !feof(fp)) {
 						fgets(buf, text_buffer_size, fp);
+					}
 					break;
 				}
 
@@ -332,22 +348,23 @@ void mbox_scan(char *args, char *output, size_t max_len)
 				curr->subject[i++] = buf[u++];
 			}
 		}
-
 	}
 
 	fclose(fp);
 
 	output[0] = '\0';
 	struct ring_list *tmp;
+
 	i = print_mails;
 	while (i) {
 		if (curr->from[0] != '\0') {
 			if (i != print_mails) {
-				snprintf(buf, text_buffer_size, "\nF: %-*s S: %-*s", from_width, curr->from, subject_width, curr->subject);
+				snprintf(buf, text_buffer_size, "\nF: %-*s S: %-*s", from_width,
+					curr->from, subject_width, curr->subject);
 			} else {	/* first time - no \n in front */
-				snprintf(buf, text_buffer_size, "F: %-*s S: %-*s", from_width, curr->from, subject_width, curr->subject);
+				snprintf(buf, text_buffer_size, "F: %-*s S: %-*s", from_width,
+					curr->from, subject_width, curr->subject);
 			}
-
 		} else {
 			snprintf(buf, text_buffer_size, "\n");
 		}

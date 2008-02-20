@@ -270,8 +270,8 @@
 	<para></para></listitem>
 </varlistentry>
 
-<varlistentry>  
-        <term>          
+<varlistentry>
+        <term>
                 <command><option>bmpx_artist</option></command>
         </term>
         <listitem>
@@ -279,10 +279,10 @@
         <para></para></listitem>
 </varlistentry>
 
-<varlistentry>  
+<varlistentry>
         <term>
                 <command><option>bmpx_album</option></command>
-        </term>         
+        </term>
         <listitem>
                 Album in current BMPx track
 	<para></para></listitem>
@@ -692,7 +692,7 @@
 		defaults to 1.
 		<para></para></listitem>
 </varlistentry>
-	
+
 <varlistentry>
 	<term>
 		<command><option>freq_dyn</option></command>
@@ -710,7 +710,7 @@
 		Returns CPU frequency in GHz, but is calculated by counting to clock cycles to complete an instruction.  Only available for x86/amd64.
 	<para></para></listitem>
 </varlistentry>
-	
+
 <varlistentry>
 	<term>
 		<command><option>fs_bar</option></command>
@@ -1489,7 +1489,7 @@
 				</member>
 			<member><command>rip</command> - remote ip address
 				</member>
-			<member><command>rhost</command> - remote host name 
+			<member><command>rhost</command> - remote host name
 				</member>
 			<member><command>rport</command> - remote port number
 				</member>
@@ -1518,7 +1518,7 @@
 				displays the remote host port of the fifth connection on a privileged port</member>
 			<member><command>${tcp_portmon 1 65535 lservice 14}</command> -
 				displays the local service name of the fifteenth connection in the range of all ports</member>
-		</simplelist>Note that port monitor variables which share the same port range actually refer to the same monitor, so many references to a single port range for different items and different indexes all use the same monitor internally.  In other words, the program avoids creating redundant monitors. 
+		</simplelist>Note that port monitor variables which share the same port range actually refer to the same monitor, so many references to a single port range for different items and different indexes all use the same monitor internally.  In other words, the program avoids creating redundant monitors.
 	</listitem>
 </varlistentry>
 
@@ -1718,7 +1718,7 @@
 	<listitem>
 		Returns CPU #n's voltage in mV. CPUs are
 		counted from 1. If omitted, the parameter
-		defaults to 1. 
+		defaults to 1.
 		<para></para></listitem>
 </varlistentry>
 

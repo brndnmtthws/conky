@@ -1,5 +1,4 @@
-/*
- * Conky, a system monitor, based on torsmo
+/* Conky, a system monitor, based on torsmo
  *
  * Any original torsmo code is licensed under the BSD license
  *
@@ -8,7 +7,8 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2007 Brenden Matthews, Philip Kovacs, et. al. (see AUTHORS)
+ * Copyright (c) 2005-2007 Brenden Matthews, Philip Kovacs, et. al.
+ *	(see AUTHORS)
  * All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,10 +21,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  $Id$
- */
+ * $Id$ */
 
 #ifndef _conky_h_
 #define _conky_h_
@@ -32,6 +31,7 @@
 #if defined(HAS_MCHECK_H)
 #include <mcheck.h>
 #endif /* HAS_MCHECK_H */
+
 #include "config.h"
 #include <sys/utsname.h>
 #include <stdio.h>
@@ -41,15 +41,15 @@
 #include <langinfo.h>
 #include <wchar.h>
 #include <sys/param.h>
+
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 #include <sys/mount.h>
 #include <sys/ucred.h>
 #include <fcntl.h>
 #include <kvm.h>
-#endif /* __FreeBSD__ */
-
-#if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__)) && (defined(i386) || defined(__i386__))
+#if (defined(i386) || defined(__i386__))
 #include <machine/apm_bios.h>
+#endif /* i386 || __i386__ */
 #endif /* __FreeBSD__ */
 
 #if defined(__OpenBSD__)
@@ -80,7 +80,7 @@
 #define TOP_TIME 5
 
 #define TEXT_BUFFER_SIZE 1280
-#define P_MAX_SIZE ((TEXT_BUFFER_SIZE * 4) - 2) 
+#define P_MAX_SIZE ((TEXT_BUFFER_SIZE * 4) - 2)
 extern unsigned int text_buffer_size;
 
 /* maximum number of special things, e.g. fonts, offsets, aligns, etc. */
@@ -91,12 +91,11 @@ extern unsigned int text_buffer_size;
 
 #include <sys/socket.h>
 
-#define ERR(s, varargs...) \
-fprintf(stderr, "Conky: " s "\n", ##varargs)
+#define ERR(s, varargs...) fprintf(stderr, "Conky: " s "\n", ##varargs)
 
 /* critical error */
 #define CRIT_ERR(s, varargs...) \
-{ fprintf(stderr, "Conky: " s "\n", ##varargs);  exit(EXIT_FAILURE); }
+	{ fprintf(stderr, "Conky: " s "\n", ##varargs); exit(EXIT_FAILURE); }
 
 struct i8k_struct {
 	char *version;
@@ -160,10 +159,10 @@ struct mail_s {			// for imap and pop3
 	char secure;
 } mail;
 
-/*struct cpu_stat {
+/* struct cpu_stat {
 	unsigned int user, nice, system, idle, iowait, irq, softirq;
 	int cpu_avg_samples;
-};*/
+}; */
 
 #ifdef MPD
 struct mpd_s {
@@ -191,31 +190,31 @@ struct mpd_s {
 
 #ifdef XMMS2
 struct xmms2_s {
-    char* artist;
-    char* album;
-    char* title;
-    char* genre;
-    char* comment;
-    char* decoder;
-    char* transport;
-    char* url;
-    char* date;
-    int tracknr;
-    int bitrate;
-    unsigned int id;
-    int duration;
-    int elapsed;
-    float size;
+	char *artist;
+	char *album;
+	char *title;
+	char *genre;
+	char *comment;
+	char *decoder;
+	char *transport;
+	char *url;
+	char *date;
+	int tracknr;
+	int bitrate;
+	unsigned int id;
+	int duration;
+	int elapsed;
+	float size;
 
-    float progress;
-    char* status;
+	float progress;
+	char *status;
 };
 #endif
 
 #ifdef AUDACIOUS
 struct audacious_s {
-	audacious_t items;              /* e.g. items[AUDACIOUS_STATUS] */
-	int max_title_len;		/* e.g. ${audacious_title 50} */
+	audacious_t items;	/* e.g. items[AUDACIOUS_STATUS] */
+	int max_title_len;	/* e.g. ${audacious_title 50} */
 	timed_thread *p_timed_thread;
 };
 #endif
@@ -266,7 +265,7 @@ enum {
 	INFO_DISKIO = 17,
 	INFO_I8K = 18,
 #ifdef TCP_PORT_MONITOR
-  INFO_TCP_PORT_MONITOR = 19,
+	INFO_TCP_PORT_MONITOR = 19,
 #endif
 #ifdef AUDACIOUS
 	INFO_AUDACIOUS = 20,
@@ -282,7 +281,6 @@ enum {
 	INFO_RSS = 24,
 #endif
 };
-
 
 /* get_battery_stuff() item selector */
 enum {
@@ -316,7 +314,7 @@ struct information {
 	unsigned short run_procs;
 
 	float *cpu_usage;
-	/*	struct cpu_stat cpu_summed; what the hell is this? */
+	/* struct cpu_stat cpu_summed; what the hell is this? */
 	unsigned int cpu_count;
 	unsigned int cpu_avg_samples;
 
@@ -324,7 +322,7 @@ struct information {
 
 	float loadavg[3];
 
-	struct mail_s* mail;
+	struct mail_s *mail;
 	int mail_running;
 #ifdef MPD
 	struct mpd_s mpd;
@@ -333,7 +331,7 @@ struct information {
 #ifdef XMMS2
 	struct xmms2_s xmms2;
 	int xmms2_conn_state;
-	xmms_socket_t xmms2_fd; 
+	xmms_socket_t xmms2_fd;
 	fd_set xmms2_fdset;
 	xmmsc_connection_t *xmms2_conn;
 #endif
@@ -348,25 +346,28 @@ struct information {
 	struct process *first_process;
 	unsigned long looped;
 #ifdef TCP_PORT_MONITOR
-  tcp_port_monitor_collection_t * p_tcp_port_monitor_collection;
+	tcp_port_monitor_collection_t *p_tcp_port_monitor_collection;
 #endif
 	struct entropy_s entropy;
-  double music_player_interval;
+	double music_player_interval;
 
-	short kflags;  /* kernel settings, see enum KFLAG */
+	short kflags;	/* kernel settings, see enum KFLAG */
 };
 
 enum {
-	KFLAG_IS_LONGSTAT = 0x01,         /* set to true if kernel uses "long" format for /proc/stats */
-	KFLAG_PROC_IS_THREADS=0x02       /* set to true if kernel shows # of threads for the proc value in sysinfo() call */
-/* 	KFLAG_NEXT_ONE=0x04                 bits 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 available for future use */
-     };	
+	/* set to true if kernel uses "long" format for /proc/stats */
+	KFLAG_IS_LONGSTAT = 0x01,
+	/* set to true if kernel shows # of threads for the proc value
+	 * in sysinfo() call */
+	KFLAG_PROC_IS_THREADS = 0x02
+	/* bits 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 available for future use */
+	/* KFLAG_NEXT_ONE = 0x04 */
+};
 
-#define KFLAG_SETON(a) info.kflags |= a 
+#define KFLAG_SETON(a) info.kflags |= a
 #define KFLAG_SETOFF(a) info.kflags &= (~a)
 #define KFLAG_FLIP(a) info.kflags ^= a
 #define KFLAG_ISSET(a) info.kflags & a
-
 
 int out_to_console;
 
@@ -399,8 +400,8 @@ char tmpstring2[TEXT_BUFFER_SIZE];
 
 #ifdef OWN_WINDOW
 enum _window_type {
-        TYPE_NORMAL = 0,
-        TYPE_DESKTOP,
+	TYPE_NORMAL = 0,
+	TYPE_DESKTOP,
 	TYPE_OVERRIDE
 };
 
@@ -412,11 +413,13 @@ enum _window_hints {
 	HINT_SKIP_TASKBAR,
 	HINT_SKIP_PAGER
 };
-#define SET_HINT(mask,hint)	(mask |= (1<<hint))
-#define TEST_HINT(mask,hint)	(mask & (1<<hint))
+
+#define SET_HINT(mask, hint)	(mask |= (1 << hint))
+#define TEST_HINT(mask, hint)	(mask & (1 << hint))
 #endif
+
 struct conky_window {
-	Window root,window,desktop;
+	Window root, window, desktop;
 	Drawable drawable;
 	GC gc;
 #ifdef HAVE_XDBE
@@ -430,7 +433,7 @@ struct conky_window {
 	int height;
 #ifdef OWN_WINDOW
 	char class_name[256];
-  char title[256];
+	char title[256];
 	int x;
 	int y;
 	unsigned int type;
@@ -441,7 +444,6 @@ struct conky_window {
 #ifdef HAVE_XDBE
 extern int use_xdbe;
 #endif
-
 
 #ifdef XFT
 extern int use_xft;
@@ -457,8 +459,8 @@ extern int workarea[4];
 extern struct conky_window window;
 
 void init_X11();
-void init_window(int use_own_window, int width, int height, int set_trans, int back_colour, 
-                 char **argv, int argc);
+void init_window(int use_own_window, int width, int height, int set_trans,
+	int back_colour, char **argv, int argc);
 void create_gc();
 void set_transparent_background(Window win);
 long get_x11_color(const char *);
@@ -508,31 +510,31 @@ void update_cpu_usage(void);
 void update_total_processes(void);
 void update_running_processes(void);
 void update_i8k(void);
-char get_freq( char *, size_t, char *, int, unsigned int ); 
-void get_freq_dynamic( char *, size_t, char *, int ); 
-char get_voltage(char *, size_t, char *, int, unsigned int ); /* ptarjan */
+char get_freq(char *, size_t, char *, int, unsigned int);
+void get_freq_dynamic(char *, size_t, char *, int);
+char get_voltage(char *, size_t, char *, int, unsigned int);	/* ptarjan */
 void update_load_average();
 
-int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n, int *div, char *devtype);
-#define open_i2c_sensor(dev,type,n,div,devtype) \
-    open_sysfs_sensor("/sys/bus/i2c/devices/",dev,type,n,div,devtype)
+int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n,
+	int *div, char *devtype);
 
-#define open_platform_sensor(dev,type,n,div,devtype) \
-    open_sysfs_sensor("/sys/bus/platform/devices/",dev,type,n,div,devtype)
-
-#define open_hwmon_sensor(dev,type,n,div,devtype) \
-   open_sysfs_sensor("/sys/class/hwmon/",dev,type,n,div,devtype); \
+#define open_i2c_sensor(dev, type, n, div, devtype) \
+	open_sysfs_sensor("/sys/bus/i2c/devices/", dev, type, n, div, devtype)
+#define open_platform_sensor(dev, type, n, div, devtype) \
+	open_sysfs_sensor("/sys/bus/platform/devices/", dev, type, n, div, devtype)
+#define open_hwmon_sensor(dev, type, n, div, devtype) \
+	open_sysfs_sensor("/sys/class/hwmon/", dev, type, n, div, devtype)
 
 double get_sysfs_info(int *fd, int arg, char *devtype, char *type);
 
-void get_adt746x_cpu( char *, size_t ); 
-void get_adt746x_fan( char *, size_t ); 
+void get_adt746x_cpu(char *, size_t);
+void get_adt746x_fan(char *, size_t);
 unsigned int get_diskio(void);
 
 int open_acpi_temperature(const char *name);
 double get_acpi_temperature(int fd);
-void get_acpi_ac_adapter( char *, size_t ); 
-void get_acpi_fan( char *, size_t ); 
+void get_acpi_ac_adapter(char *, size_t);
+void get_acpi_fan(char *, size_t);
 void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item);
 int get_battery_perct(const char *bat);
 int get_battery_perct_bar(const char *bat);
@@ -543,7 +545,7 @@ void get_ibm_acpi_brightness(char *buf, size_t client_buffer_size);
 void get_cpu_count();
 
 struct ibm_acpi_struct {
-    unsigned int temps[8];
+	unsigned int temps[8];
 };
 
 struct ibm_acpi_struct ibm_acpi;
@@ -563,9 +565,8 @@ struct obsd_sensors_struct {
 struct obsd_sensors_struct obsd_sensors;
 #endif /* __OpenBSD__ */
 
-
-enum { PB_BATT_STATUS, PB_BATT_PERCENT, PB_BATT_TIME};
-void get_powerbook_batt_info(char*, size_t, int);
+enum { PB_BATT_STATUS, PB_BATT_PERCENT, PB_BATT_TIME };
+void get_powerbook_batt_info(char *, size_t, int);
 
 struct process {
 	struct process *next;
@@ -625,7 +626,8 @@ void update_mail_count();
 kvm_t *kd;
 #endif
 
-#if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
+#if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) \
+		|| defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
 #ifdef __OpenBSD__
 typedef struct apm_power_info *apm_info_t;
 #endif
@@ -655,7 +657,7 @@ char *get_hddtemp_info(char *dev, char *addr, int port, char *unit);
 
 /* in rss.c */
 #ifdef RSS
-PRSS* get_rss_info(char *uri, int delay);
+PRSS *get_rss_info(char *uri, int delay);
 void init_rss_info();
 void free_rss_info();
 #endif /* RSS */
@@ -663,5 +665,3 @@ void free_rss_info();
 /* in linux.c */
 
 #endif
-
-

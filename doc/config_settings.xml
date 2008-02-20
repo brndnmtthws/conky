@@ -332,7 +332,7 @@
                 <option>undecorated,below,above,sticky,skip_taskbar,skip_pager</option>
 	</term>
 	<listitem>
-		If own_window is yes, you may use these window manager hints to affect the way Conky displays.  
+		If own_window is yes, you may use these window manager hints to affect the way Conky displays.
 		Notes: Use own_window_type desktop as another way to implement many of these hints implicitly.
 		If you use own_window_type override, window manager hints have no meaning and are ignored.
 	<para></para></listitem>
@@ -356,7 +356,7 @@
 	<term><command><option>own_window_type</option></command></term>
 	<listitem>
 		if own_window is yes, you may specify type normal, desktop or override (default: normal).
-		Desktop windows are special windows that have no window decorations; are always visible 
+		Desktop windows are special windows that have no window decorations; are always visible
 		on your desktop; do not appear in your pager or taskbar; and are sticky across all workspaces.
 		Override windows are not under the control of the window manager.  Hints are ignored. This type
 		of window can be useful for certain situations.

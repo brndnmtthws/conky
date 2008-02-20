@@ -64,7 +64,7 @@ syn keyword ConkyrcSetting
         \ xftalpha
         \ xftfont
 
-syn keyword ConkyrcConstant 
+syn keyword ConkyrcConstant
         \ above
         \ below
         \ bottom_left
@@ -95,17 +95,17 @@ syn region ConkyrcVar start=/\$\w\@=/ end=/\W\@=\|$/ contained contains=ConkyrcV
 syn match ConkyrcVarStuff /{\@<=/ms=s contained nextgroup=ConkyrcVarName
 
 syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipwhite
-        \ acpiacadapter 
-        \ acpifan 
-        \ acpitemp 
-        \ acpitempf 
-        \ addr 
+        \ acpiacadapter
+        \ acpifan
+        \ acpitemp
+        \ acpitempf
+        \ addr
         \ adt746xcpu
-        \ adt746xfan 
-        \ alignc 
-        \ alignr 
-        \ apm_adapter 
-        \ apm_battery_life 
+        \ adt746xfan
+        \ alignc
+        \ alignr
+        \ apm_adapter
+        \ apm_battery_life
         \ apm_battery_time
         \ audacious_bar
         \ audacious_bitrate
@@ -120,119 +120,119 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
         \ audacious_position_seconds
         \ audacious_status
         \ audacious_title
-        \ battery 
+        \ battery
         \ battery_time
-        \ bmpx_album 
-        \ bmpx_artist 
+        \ bmpx_album
+        \ bmpx_artist
         \ bmpx_bitrate
-        \ bmpx_title 
-        \ bmpx_track 
-        \ bmpx_uri 
-        \ buffers 
-        \ cached 
-        \ color 
-        \ colour 
-        \ cpu 
-        \ cpubar 
+        \ bmpx_title
+        \ bmpx_track
+        \ bmpx_uri
+        \ buffers
+        \ cached
+        \ color
+        \ colour
+        \ cpu
+        \ cpubar
         \ cpugraph
-        \ diskio 
+        \ diskio
         \ diskiograph
-        \ downspeed 
+        \ downspeed
         \ downspeedf
         \ downspeedgraph
-        \ else 
+        \ else
         \ entropy_avail
         \ entropy_bar
         \ entropy_poolsize
-        \ exec 
-        \ execbar 
-        \ execgraph 
-        \ execi 
-        \ execibar 
-        \ execigraph 
-        \ font 
+        \ exec
+        \ execbar
+        \ execgraph
+        \ execi
+        \ execibar
+        \ execigraph
+        \ font
         \ freq
-        \ freq_dyn 
-        \ freq_dyn_g 
-        \ freq_g 
-        \ fs_bar 
-        \ fs_free 
-        \ fs_free_perc 
-        \ fs_size 
-        \ fs_used 
+        \ freq_dyn
+        \ freq_dyn_g
+        \ freq_g
+        \ fs_bar
+        \ fs_free
+        \ fs_free_perc
+        \ fs_size
+        \ fs_used
         \ goto
         \ hddtemp
         \ head
-        \ hr 
+        \ hr
         \ hwmon
-        \ i2c 
-        \ i8k_ac_status 
-        \ i8k_bios 
-        \ i8k_buttons_status 
-        \ i8k_cpu_temp 
+        \ i2c
+        \ i8k_ac_status
+        \ i8k_bios
+        \ i8k_buttons_status
+        \ i8k_cpu_temp
         \ i8k_cpu_tempf
-        \ i8k_left_fan_rpm 
-        \ i8k_left_fan_status 
-        \ i8k_right_fan_rpm 
+        \ i8k_left_fan_rpm
+        \ i8k_left_fan_status
+        \ i8k_right_fan_rpm
         \ i8k_right_fan_status
-        \ i8k_serial 
-        \ i8k_version 
-        \ if_existing 
-        \ if_mounted 
-        \ if_running 
-        \ kernel 
-        \ linkstatus 
+        \ i8k_serial
+        \ i8k_version
+        \ if_existing
+        \ if_mounted
+        \ if_running
+        \ kernel
+        \ linkstatus
         \ loadavg
-        \ machine 
-        \ mails 
-        \ mem 
-        \ membar 
-        \ memmax 
-        \ memperc 
-        \ mpd_album 
-        \ mpd_artist 
-        \ mpd_bar 
-        \ mpd_bitrate 
+        \ machine
+        \ mails
+        \ mem
+        \ membar
+        \ memmax
+        \ memperc
+        \ mpd_album
+        \ mpd_artist
+        \ mpd_bar
+        \ mpd_bitrate
         \ mpd_elapsed
         \ mpd_file
-        \ mpd_length 
+        \ mpd_length
         \ mpd_name
-        \ mpd_percent 
+        \ mpd_percent
         \ mpd_smart
-        \ mpd_status 
+        \ mpd_status
         \ mpd_title
-        \ mpd_vol 
-        \ new_mails 
-        \ nodename 
-        \ offset 
-        \ outlinecolor 
+        \ mpd_vol
+        \ new_mails
+        \ nodename
+        \ offset
+        \ outlinecolor
         \ platform
-        \ pre_exec 
+        \ pre_exec
         \ processes
-        \ running_processes 
-        \ shadecolor 
-        \ stippled_hr 
-        \ swap 
-        \ swapbar 
-        \ swapmax 
-        \ swapperc 
+        \ running_processes
+        \ shadecolor
+        \ stippled_hr
+        \ swap
+        \ swapbar
+        \ swapmax
+        \ swapperc
         \ sysname
         \ tab
-        \ tail 
-        \ tcp_portmon 
-        \ texeci 
-        \ time 
-        \ top 
-        \ top_mem 
-        \ totaldown 
-        \ totalup 
+        \ tail
+        \ tcp_portmon
+        \ texeci
+        \ time
+        \ top
+        \ top_mem
+        \ totaldown
+        \ totalup
         \ tztime
-        \ updates 
-        \ upspeed 
+        \ updates
+        \ upspeed
         \ upspeedf
-        \ upspeedgraph 
-        \ uptime 
-        \ uptime_short 
+        \ upspeedgraph
+        \ uptime
+        \ uptime_short
         \ voffset
         \ voltage_mv
         \ voltage_v

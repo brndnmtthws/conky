@@ -1,5 +1,4 @@
-/*
- * Conky, a system monitor, based on torsmo
+/* Conky, a system monitor, based on torsmo
  *
  * Any original torsmo code is licensed under the BSD license
  *
@@ -7,7 +6,8 @@
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2005-2007 Brenden Matthews, Philip Kovacs, et. al. (see AUTHORS)
+ * Copyright (c) 2005-2007 Brenden Matthews, Philip Kovacs, et. al.
+ *	(see AUTHORS)
  * All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,10 +20,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  $Id$
- */
+ * $Id$ */
 
 #include <bmp/dbus.hh>
 #include <dbus/dbus-glib.h>
@@ -33,7 +32,8 @@
 
 #include "conky.h"
 
-#define DBUS_TYPE_G_STRING_VALUE_HASHTABLE (dbus_g_type_get_map ("GHashTable", G_TYPE_STRING, G_TYPE_VALUE))
+#define DBUS_TYPE_G_STRING_VALUE_HASHTABLE \
+	(dbus_g_type_get_map("GHashTable", G_TYPE_STRING, G_TYPE_VALUE))
 
 static DBusGConnection *bus;
 static DBusGProxy *remote_object;
@@ -46,44 +46,38 @@ void update_bmpx()
 	struct information *current_info = &info;
 	gint current_track;
 	GHashTable *metadata;
-	
+
 	if (connected == 0) {
 		g_type_init();
 		dbus_g_type_specialized_init();
-		
+
 		bus = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
 		if (bus == NULL) {
 			ERR("BMPx error 1: %s\n", error->message);
 			goto fail;
 		}
-		
-		remote_object = dbus_g_proxy_new_for_name(bus,
-			BMP_DBUS_SERVICE,
-			BMP_DBUS_PATH,
-			BMP_DBUS_INTERFACE);
+
+		remote_object = dbus_g_proxy_new_for_name(bus, BMP_DBUS_SERVICE,
+			BMP_DBUS_PATH, BMP_DBUS_INTERFACE);
 		if (!remote_object) {
 			ERR("BMPx error 2: %s\n", error->message);
 			goto fail;
-		} 
+		}
 
 		connected = 1;
-	} 
-	
+	}
+
 	if (connected == 1) {
 		if (dbus_g_proxy_call(remote_object, "GetCurrentTrack", &error,
-					G_TYPE_INVALID,
-					G_TYPE_INT, &current_track, G_TYPE_INVALID)) {
+				G_TYPE_INVALID, G_TYPE_INT, &current_track, G_TYPE_INVALID)) {
 		} else {
 			ERR("BMPx error 3: %s\n", error->message);
 			goto fail;
 		}
-	
+
 		if (dbus_g_proxy_call(remote_object, "GetMetadataForListItem", &error,
-				G_TYPE_INT,
-				current_track,
-				G_TYPE_INVALID,
-				DBUS_TYPE_G_STRING_VALUE_HASHTABLE,
-				&metadata,
+				G_TYPE_INT, current_track, G_TYPE_INVALID,
+				DBUS_TYPE_G_STRING_VALUE_HASHTABLE, &metadata,
 				G_TYPE_INVALID)) {
 			if (current_info->bmpx.title) {
 				free(current_info->bmpx.title);
@@ -97,22 +91,29 @@ void update_bmpx()
 				free(current_info->bmpx.album);
 				current_info->bmpx.album = 0;
 			}
-			current_info->bmpx.title = g_value_dup_string(g_hash_table_lookup(metadata, "title"));
-			current_info->bmpx.artist = g_value_dup_string(g_hash_table_lookup(metadata, "artist"));
-			current_info->bmpx.album = g_value_dup_string(g_hash_table_lookup(metadata, "album"));
-			current_info->bmpx.bitrate = g_value_get_int(g_hash_table_lookup(metadata, "bitrate"));
-			current_info->bmpx.track = g_value_get_int(g_hash_table_lookup(metadata, "track-number"));
-			current_info->bmpx.uri = g_value_get_string(g_hash_table_lookup(metadata, "location"));
+			current_info->bmpx.title =
+				g_value_dup_string(g_hash_table_lookup(metadata, "title"));
+			current_info->bmpx.artist =
+				g_value_dup_string(g_hash_table_lookup(metadata, "artist"));
+			current_info->bmpx.album =
+				g_value_dup_string(g_hash_table_lookup(metadata, "album"));
+			current_info->bmpx.bitrate =
+				g_value_get_int(g_hash_table_lookup(metadata, "bitrate"));
+			current_info->bmpx.track =
+				g_value_get_int(g_hash_table_lookup(metadata, "track-number"));
+			current_info->bmpx.uri =
+				g_value_get_string(g_hash_table_lookup(metadata, "location"));
 		} else {
 			ERR("BMPx error 4: %s\n", error->message);
 			goto fail;
 		}
-		
+
 		g_hash_table_destroy(metadata);
 	} else {
-fail: 
-		if (error)
+fail:
+		if (error) {
 			g_error_free(error);
+		}
 		if (current_info->bmpx.title) {
 			g_free(current_info->bmpx.title);
 			current_info->bmpx.title = 0;

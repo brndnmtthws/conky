@@ -1,5 +1,4 @@
-/*
- * Conky, a system monitor, based on torsmo
+/* Conky, a system monitor, based on torsmo
  *
  * Any original torsmo code is licensed under the BSD license
  *
@@ -8,8 +7,9 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2005 Adi Zaimi, Dan Piponi <dan@tanelorn.demon.co.uk>,
- *                    Dave Clark <clarkd@skynet.ca>
- * Copyright (c) 2005-2007 Brenden Matthews, Philip Kovacs, et. al. (see AUTHORS)
+ *					  Dave Clark <clarkd@skynet.ca>
+ * Copyright (c) 2005-2007 Brenden Matthews, Philip Kovacs, et. al.
+ *	(see AUTHORS)
  * All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,23 +22,21 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  $Id$
- */
+ * $Id$ */
 
-/*
- * Ensure there's an operating system defined. There is *no* default
- * because every OS has it's own way of revealing CPU/memory usage.
+/* Ensure there's an operating system defined.
  * compile with gcc -DOS ...
- */
+ * There is *no* default because every OS has it's own way of revealing
+ * CPU/memory usage. */
 
-/******************************************/
-/* Includes                               */
-/******************************************/
+/******************************************
+ * Includes								  *
+ ******************************************/
 
 #include "conky.h"
-#define CPU_THRESHHOLD   0	/* threshhold for the cpu diff to appear */
+#define CPU_THRESHHOLD	0	/* threshhold for the cpu diff to appear */
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -62,36 +60,34 @@
 
 #include <regex.h>
 
-/******************************************/
-/* Defines                                */
-/******************************************/
+/******************************************
+ * Defines								  *
+ ******************************************/
 
-
-/*
- * XXX: I shouldn't really use this BUFFER_LEN variable but scanf is so
- * lame and it'll take me a while to write a replacement.
- */
+/* XXX: I shouldn't really use this BUFFER_LEN variable but scanf is so lame
+ * and it'll take me a while to write a replacement. */
 #define BUFFER_LEN 1024
 
 #define PROCFS_TEMPLATE "/proc/%d/stat"
 #define PROCFS_TEMPLATE_MEM "/proc/%d/statm"
 #define PROCFS_CMDLINE_TEMPLATE "/proc/%d/cmdline"
-#define MAX_SP 10  //number of elements to sort
+#define MAX_SP 10	// number of elements to sort
 
+/******************************************
+ * Globals								  *
+ ******************************************/
 
 extern int cpu_separate;
 
-/******************************************/
-/* Process class                          */
-/******************************************/
+/******************************************
+ * Process class						  *
+ ******************************************/
 
 struct sorted_process {
 	struct sorted_process *greater;
-	struct sorted_process *less;	
+	struct sorted_process *less;
 	struct process *proc;
-}; 
+};
 
-/*
- * Pointer to head of process list
- */
+/* Pointer to head of process list */
 void process_find_top(struct process **, struct process **);
