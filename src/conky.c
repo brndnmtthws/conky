@@ -2055,6 +2055,7 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 			case OBJ_bmpx_track:
 			case OBJ_bmpx_uri:
 			case OBJ_bmpx_bitrate:
+				break;
 #endif
 #ifdef RSS
 			case OBJ_rss:
@@ -2063,6 +2064,7 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 				break;
 #endif
 			case OBJ_pre_exec:
+				break;
 #ifndef __OpenBSD__
 			case OBJ_battery:
 				free(objs[i].data.s);
@@ -7919,7 +7921,8 @@ int main(int argc, char **argv)
 
 	/* handle other command line arguments */
 
-#if defined(__FreeBSD__) || defined (__OpenBSD__) || defined(__NetBSD__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__OpenBSD__)
+		|| defined(__NetBSD__)
 	optind = optreset = 1;
 #else
 	optind = 0;
