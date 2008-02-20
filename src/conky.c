@@ -754,7 +754,7 @@ static char *scan_graph(const char *args, int *w, int *h,
 	*h = 25;
 	*first_colour = 0;
 	*last_colour = 0;
-
+	*scale = 0;
 	/* graph's argument is either height or height,width */
 	if (args) {
 		if (sscanf(args, "%d,%d %x %x %i", h, w, first_colour, last_colour,
