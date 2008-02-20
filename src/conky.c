@@ -5323,69 +5323,73 @@ static void generate_text_internal(char *p, int p_max_size, struct text_object *
 			}
 
 			OBJ(top) {
-				if (obj->data.top.type == TOP_NAME
-				    && obj->data.top.num >= 0
-				    && obj->data.top.num < 10) {
-					snprintf(p, 17, "%-17s", cur->cpu[obj->data.top.num]->name);
-				} else if (obj->data.top.type == TOP_CPU
-					   && obj->data.top.num >= 0
-					   && obj->data.top.num < 10) {
-					snprintf(p, 7, "%7.3f",
-						 cur->cpu[obj->data.top.
-							  num]->amount);
-				} else if (obj->data.top.type == TOP_PID
-					   && obj->data.top.num >= 0
-					   && obj->data.top.num < 10) {
-					snprintf(p, 8, "%7i",
-						 cur->cpu[obj->data.top.
-							  num]->pid);
-				} else if (obj->data.top.type == TOP_MEM
-					   && obj->data.top.num >= 0
-					   && obj->data.top.num < 10) {
-					snprintf(p, 7, "%7.3f",
-						 cur->cpu[obj->data.top.
-							  num]->totalmem);
-				} else if (obj->data.top.type == TOP_TIME
-						&& obj->data.top.num >= 0
-						&& obj->data.top.num < 10) {
-					char *time = format_time(cur->cpu[obj->data.top.num]->
-							total_cpu_time, 9);
-					snprintf(p, 10, "%9s", time);
-					free(time);
+				if (obj->data.top.num >= 0 && obj->data.top.num < 10) {
+					char *time;
+
+					switch (obj->data.top.type) {
+						case TOP_NAME:
+							snprintf(p, 16, "%-15s",
+								cur->cpu[obj->data.top.num]->name);
+							break;
+						case TOP_CPU:
+							snprintf(p, 7, "%6.2f",
+								cur->cpu[obj->data.top.num]->amount);
+							break;
+						case TOP_PID:
+							snprintf(p, 6, "%5i",
+								cur->cpu[obj->data.top.num]->pid);
+							break;
+						case TOP_MEM:
+							snprintf(p, 7, "%6.2f",
+								cur->cpu[obj->data.top.num]->totalmem);
+							break;
+						case TOP_TIME:
+							time = format_time(
+								cur->cpu[obj->data.top.num]->total_cpu_time,
+								9);
+							snprintf(p, 10, "%9s", time);
+							free(time);
+							break;
+						default:
+							ERR("Unhandled top data type: %d\n", obj->data.top.type);
+					}
+				} else {
+					ERR("Top index < 0 or > 10: %d\n", obj->data.top.num);
 				}
 			}
 			OBJ(top_mem) {
-				if (obj->data.top.type == TOP_NAME
-				    && obj->data.top.num >= 0
-				    && obj->data.top.num < 10) {
-					snprintf(p, 17, "%-17s",
-						 cur->memu[obj->data.top.
-							   num]->name);
-				} else if (obj->data.top.type == TOP_CPU
-					   && obj->data.top.num >= 0
-					   && obj->data.top.num < 10) {
-					snprintf(p, 7, "%7.3f",
-						 cur->memu[obj->data.top.
-							   num]->amount);
-				} else if (obj->data.top.type == TOP_PID
-					   && obj->data.top.num >= 0
-					   && obj->data.top.num < 10) {
-					snprintf(p, 8, "%7i",
-						 cur->memu[obj->data.top.
-							   num]->pid);
-				} else if (obj->data.top.type == TOP_MEM
-					   && obj->data.top.num >= 0
-					   && obj->data.top.num < 10) {
-					snprintf(p, 7, "%7.3f",
-						 cur->memu[obj->data.top.
-							   num]->totalmem);
-				} else if (obj->data.top.type == TOP_TIME
-						&& obj->data.top.num >= 0
-						&& obj->data.top.num < 10) {
-					char *time = format_time(cur->memu[obj->data.top.num]->
-							total_cpu_time, 9);
+				if (obj->data.top.num >= 0 && obj->data.top.num < 10) {
+					char *time;
+
+					switch (obj->data.top.type) {
+						case TOP_NAME:
+							snprintf(p, 16, "%-15s",
+						cur->memu[obj->data.top.num]->name);
+							break;
+						case TOP_CPU:
+							snprintf(p, 7, "%6.2f",
+								cur->memu[obj->data.top.num]->cpu_perc);
+							break;
+						case TOP_PID:
+							snprintf(p, 6, "%5i",
+								cur->memu[obj->data.top.num]->pid);
+							break;
+						case TOP_MEM:
+							snprintf(p, 7, "%6.2f",
+						cur->memu[obj->data.top.num]->totalmem);
+							break;
+						case TOP_TIME:
+							time = format_time(
+								cur->memu[obj->data.top.num]->total_cpu_time,
+								9);
 					snprintf(p, 10, "%9s", time);
 					free(time);
+							break;
+						default:
+							ERR("Unhandled top data type: %d\n", obj->data.top.type);
+					}
+				} else {
+					ERR("Top index < 0 or > 10: %d\n", obj->data.top.num);
 				}
 			}
 
