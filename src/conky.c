@@ -476,7 +476,7 @@ static char text_buffer[TEXT_BUFFER_SIZE * 4];
 
 #define SPECIAL_CHAR '\x01'
 
-enum {
+enum special_types {
 	HORIZONTAL_LINE,
 	STIPPLED_HR,
 	BAR,
@@ -517,7 +517,7 @@ static unsigned int special_index;	/* used when drawing */
 
 #define MAX_GRAPH_DEPTH 256	/* why 256? cause an array of more then 256 doubles seems excessive, and who needs that kind of precision anyway? */
 
-static struct special_t *new_special(char *buf, int t)
+static struct special_t *new_special(char *buf, enum special_types t)
 {
 	if (special_count >= max_specials)
 		CRIT_ERR("too many special things in text");
@@ -560,8 +560,7 @@ long fwd_fcharfind(FILE* fp, char val, unsigned int step) {
 }
 
 #ifndef HAVE_MEMRCHR
-void *
-memrchr (const void *buffer, int c, size_t n)
+void *memrchr(const void *buffer, char c, size_t n)
 {
 	const unsigned char *p = buffer;
 
@@ -593,11 +592,7 @@ long rev_fcharfind(FILE* fp, char val, unsigned int step) {
 			file_pos = ftell(fp);
 			buf_pos = fread(buf, 1, buf_size, fp);
 		}
-		cur_found = 
-			memrchr(
-					buf,
-					(int)val,
-					(size_t)buf_pos);
+		cur_found = memrchr(buf, val, (size_t) buf_pos);
 		if(cur_found != NULL) {
 			buf_pos = cur_found-buf;
 			count++;

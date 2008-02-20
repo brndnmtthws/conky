@@ -354,7 +354,7 @@ update_cpu_usage()
 double
 get_sysfs_info(int *fd, int arg, char *devtype, char *type)
 {
-	return (0);
+	return 0.0;
 }
 
 void
@@ -363,9 +363,9 @@ update_load_average()
 	double v[3];
 	getloadavg(v, 3);
 
-	info.loadavg[0] = (float) v[0];
-	info.loadavg[1] = (float) v[1];
-	info.loadavg[2] = (float) v[2];
+	info.loadavg[0] = (double) v[0];
+	info.loadavg[1] = (double) v[1];
+	info.loadavg[2] = (double) v[2];
 }
 
 double
