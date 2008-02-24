@@ -666,8 +666,7 @@ void update_diskio()
 			di = dev_select[dn].position;
 			dev = &statinfo_cur.dinfo->devices[di];
 
-			diskio_current += dev->bytes[DEVSTAT_READ] +0
-				dev->bytes[DEVSTAT_WRITE];
+			diskio_current += dev->bytes[DEVSTAT_READ] + dev->bytes[DEVSTAT_WRITE];
 
 			for (i = 0; i < MAX_DISKIO_STATS; i++) {
 				if (diskio_stats[i].dev && strcmp(dev_select[dn].device_name,
@@ -691,7 +690,7 @@ void update_diskio()
 						diskio_stats[i].current = diskio_stats[i].current_read;
 					}
 					diskio_stats[i].last = dev->bytes[DEVSTAT_READ] +
-						de v->bytes[DEVSTAT_WRITE];
+						dev->bytes[DEVSTAT_WRITE];
 					diskio_stats[i].last_read = dev->bytes[DEVSTAT_READ];
 					diskio_stats[i].last_write = dev->bytes[DEVSTAT_WRITE];
 				}
@@ -720,9 +719,9 @@ void update_diskio()
 
 int comparecpu(const void *a, const void *b)
 {
-	if (a->amount > b->amount) {
+	if (((struct process *)a)->amount > ((struct process *)b)->amount) {
 		return -1;
-	} else if (a->amount < b->amount) {
+	} else if (((struct process *)a)->amount < ((struct process *)b)->amount) {
 		return 1;
 	} else {
 		return 0;
@@ -731,9 +730,9 @@ int comparecpu(const void *a, const void *b)
 
 int comparemem(const void *a, const void *b)
 {
-	if (a->totalmem > b->totalmem) {
+	if (((struct process *)a)->totalmem > ((struct process *)b)->totalmem) {
 		return -1;
-	} else if (a->totalmem < b->totalmem) {
+	} else if (((struct process *)a)->totalmem < ((struct process *)b)->totalmem) {
 		return 1;
 	} else {
 		return 0;

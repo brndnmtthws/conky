@@ -5553,7 +5553,7 @@ static void generate_text_internal(char *p, int p_max_size,
 							break;
 						case TOP_CPU:
 							snprintf(p, 7, "%6.2f",
-								cur->memu[obj->data.top.num]->cpu_perc);
+								cur->memu[obj->data.top.num]->amount);
 							break;
 						case TOP_PID:
 							snprintf(p, 6, "%5i",
@@ -7183,15 +7183,15 @@ void clean_up(void)
 static int string_to_bool(const char *s)
 {
 	if (!s) {
-		return TRUE;
+		return 1;
 	} else if (strcasecmp(s, "yes") == 0) {
-		return TRUE;
+		return 1;
 	} else if (strcasecmp(s, "true") == 0) {
-		return TRUE;
+		return 1;
 	} else if (strcasecmp(s, "1") == 0) {
-		return TRUE;
+		return 1;
 	}
-	return FALSE;
+	return 0;
 }
 
 #ifdef X11
@@ -8147,7 +8147,7 @@ int main(int argc, char **argv)
 
 	/* handle other command line arguments */
 
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__OpenBSD__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__OpenBSD__) \
 		|| defined(__NetBSD__)
 	optind = optreset = 1;
 #else
