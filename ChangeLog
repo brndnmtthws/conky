@@ -1,5 +1,10 @@
 # $Id$
 
+2008-03-17
+	* Applied 2 patches:
+		1) sysfs battery support (for Linux >=2.6.24) (thanks Kapil)
+		2) Improved audacious support patch (thanks Miroslav)
+
 2008-02-08
 	* Applied 2 patches:
 		1) Add diskio for individual devices

@@ -7102,13 +7102,6 @@ void reload_config(void)
 #ifdef TCP_PORT_MONITOR
 		info.p_tcp_port_monitor_collection = NULL;
 #endif
-#ifdef AUDACIOUS
-		if (create_audacious_thread() != 0) {
-			CRIT_ERR("unable to create audacious thread!");
-		}
-		timed_thread_register(info.audacious.p_timed_thread,
-			&info.audacious.p_timed_thread);
-#endif
 		extract_variable_text(text);
 		free(text);
 		text = NULL;
@@ -8304,14 +8297,6 @@ int main(int argc, char **argv)
 			|| sigaction(SIGTERM, &act, &oact) < 0) {
 		ERR("error setting signal handler: %s", strerror(errno));
 	}
-
-#ifdef AUDACIOUS
-	if (create_audacious_thread() != 0) {
-		CRIT_ERR("unable to create audacious thread!");
-	}
-	timed_thread_register(info.audacious.p_timed_thread,
-		&info.audacious.p_timed_thread);
-#endif
 
 	/* *************** *
 	 * MAIN CONKY LOOP *

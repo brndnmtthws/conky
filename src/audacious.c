@@ -73,7 +73,11 @@ void update_audacious(void)
 	 * We merely copy the audacious_items array into the main thread's info
 	 * structure when the main thread's update cycle fires. */
 	if (!info.audacious.p_timed_thread) {
-		return;
+		if (create_audacious_thread() != 0) {
+			CRIT_ERR("unable to create audacious thread!");
+		}
+		timed_thread_register(info.audacious.p_timed_thread,
+			&info.audacious.p_timed_thread);
 	}
 
 	timed_thread_lock(info.audacious.p_timed_thread);

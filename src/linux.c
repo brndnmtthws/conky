@@ -1291,10 +1291,36 @@ present voltage:         16608 mV
 2241<@jupet�kellari��> 1.16 1.2 0x03 0x00 0x00 0x01 99% -1 ? monitori p��ll� mutta ilman verkkovirtaa
 */
 
+/* Kapil Hari Paranjape <kapil@imsc.res.in>
+  Linux 2.6.24 onwards battery info is in
+  /sys/class/power_supply/BAT0/
+  On my system I get the following.
+	/sys/class/power_supply/BAT0/uevent:
+	PHYSDEVPATH=/devices/LNXSYSTM:00/device:00/PNP0A03:00/device:01/PNP0C09:00/PNP0C0A:00
+	PHYSDEVBUS=acpi
+	PHYSDEVDRIVER=battery
+	POWER_SUPPLY_NAME=BAT0
+	POWER_SUPPLY_TYPE=Battery
+	POWER_SUPPLY_STATUS=Discharging
+	POWER_SUPPLY_PRESENT=1
+	POWER_SUPPLY_TECHNOLOGY=Li-ion
+	POWER_SUPPLY_VOLTAGE_MIN_DESIGN=10800000
+	POWER_SUPPLY_VOLTAGE_NOW=10780000
+	POWER_SUPPLY_CURRENT_NOW=13970000
+	POWER_SUPPLY_ENERGY_FULL_DESIGN=47510000
+	POWER_SUPPLY_ENERGY_FULL=27370000
+	POWER_SUPPLY_ENERGY_NOW=11810000
+	POWER_SUPPLY_MODEL_NAME=IBM-92P1060
+	POWER_SUPPLY_MANUFACTURER=Panasonic
+  On some systems POWER_SUPPLY_ENERGY_* is replaced by POWER_SUPPLY_CHARGE_*
+*/
+
+#define SYSFS_BATTERY_BASE_PATH "/sys/class/power_supply"
 #define ACPI_BATTERY_BASE_PATH "/proc/acpi/battery"
 #define APM_PATH "/proc/apm"
 #define MAX_BATTERY_COUNT 4
 
+static FILE *sysfs_bat_fp[MAX_BATTERY_COUNT];
 static FILE *acpi_bat_fp[MAX_BATTERY_COUNT];
 static FILE *apm_bat_fp[MAX_BATTERY_COUNT];
 
@@ -1351,6 +1377,8 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 	char acpi_path[128];
 
 	snprintf(acpi_path, 127, ACPI_BATTERY_BASE_PATH "/%s/state", bat);
+	char sysfs_path[128];
+	snprintf(sysfs_path, 127, SYSFS_BATTERY_BASE_PATH "/%s/uevent", bat);
 
 	init_batteries();
 
@@ -1366,13 +1394,117 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 	memset(last_battery_str[idx], 0, sizeof(last_battery_str[idx]));
 	memset(last_battery_time_str[idx], 0, sizeof(last_battery_time_str[idx]));
 
-	/* first try ACPI */
-
-	if (acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL) {
-		acpi_bat_fp[idx] = open_file(acpi_path, &rep);
-	}
-
-	if (acpi_bat_fp[idx] != NULL) {
+ 	/* first try SYSFS if that fails try ACPI */
+ 
+ 	if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL)
+ 		sysfs_bat_fp[idx] = open_file(sysfs_path, &rep);
+  
+ 	if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL)
+  		acpi_bat_fp[idx] = open_file(acpi_path, &rep);
+  
+ 	if (sysfs_bat_fp[idx] != NULL) {
+ 		/* SYSFS */
+ 		int present_rate = -1;
+ 		int remaining_capacity = -1;
+ 		char charging_state[64];
+ 		char present[4];
+ 
+ 		strcpy(charging_state, "Unknown");
+ 
+ 		while (!feof(sysfs_bat_fp[idx])) {
+ 			char buf[256];
+ 			if (fgets(buf, 256, sysfs_bat_fp[idx]) == NULL)
+ 				break;
+ 
+ 			/* let's just hope units are ok */
+ 			if (strncmp (buf, "POWER_SUPPLY_PRESENT=1", 22) == 0)
+ 				strcpy(present, "Yes");
+ 			else if (strncmp (buf, "POWER_SUPPLY_PRESENT=0", 22) == 0)
+ 				strcpy(present, "No");
+ 			else if (strncmp (buf, "POWER_SUPPLY_STATUS=", 20) == 0)
+ 				sscanf(buf, "POWER_SUPPLY_STATUS=%63s", charging_state);
+ 			/* present_rate is not the same as the
+ 			current flowing now but it is the same value
+ 			which was used in the past. so we continue
+ 			the tradition! */
+ 			else if (strncmp(buf, "POWER_SUPPLY_CURRENT_NOW=", 25) == 0)
+ 				sscanf(buf, "POWER_SUPPLY_CURRENT_NOW=%d", &present_rate);
+ 			else if (strncmp(buf, "POWER_SUPPLY_ENERGY_NOW=", 24) == 0)
+ 				sscanf(buf, "POWER_SUPPLY_ENERGY_NOW=%d", &remaining_capacity);
+ 			else if (strncmp(buf, "POWER_SUPPLY_ENERGY_FULL=", 25) == 0)
+ 				sscanf(buf, "POWER_SUPPLY_ENERGY_FULL=%d", &acpi_last_full[idx]);
+ 			else if (strncmp(buf, "POWER_SUPPLY_CHARGE_NOW=", 24) == 0)
+ 				sscanf(buf, "POWER_SUPPLY_CHARGE_NOW=%d", &remaining_capacity);
+ 			else if (strncmp(buf, "POWER_SUPPLY_CHARGE_FULL=", 25) == 0)
+ 				sscanf(buf, "POWER_SUPPLY_CHARGE_FULL=%d", &acpi_last_full[idx]);
+ 		}
+ 
+ 		fclose(sysfs_bat_fp[idx]);
+ 		sysfs_bat_fp[idx] = NULL;
+ 
+ 		/* Hellf[i]re notes that remaining capacity can exceed acpi_last_full */
+ 		if (remaining_capacity > acpi_last_full[idx])
+ 			acpi_last_full[idx] = remaining_capacity;  /* normalize to 100% */
+ 
+ 		/* not present */
+ 		if (strcmp(present, "No") == 0) {
+ 			strncpy(last_battery_str[idx], "not present", 64);
+ 		}
+ 		/* charging */
+ 		else if (strcmp(charging_state, "Charging") == 0) {
+ 			if (acpi_last_full[idx] != 0 && present_rate > 0) {
+ 				/* e.g. charging 75% */
+ 				snprintf(last_battery_str[idx], sizeof(last_battery_str[idx])-1, "Charging %i%%",
+ 					(int) (((float) remaining_capacity / acpi_last_full[idx]) * 100 ));
+ 				/* e.g. 2h 37m */
+ 				format_seconds(last_battery_time_str[idx], sizeof(last_battery_time_str[idx])-1,
+ 					      (long) (((float)(acpi_last_full[idx] - remaining_capacity) / present_rate) * 3600));
+ 			} else if (acpi_last_full[idx] != 0 && present_rate <= 0) {
+ 				snprintf(last_battery_str[idx], sizeof(last_battery_str[idx])-1, "Charging %d%%",
+ 					(int) (((float)remaining_capacity / acpi_last_full[idx]) * 100));
+ 			} else {
+ 				strncpy(last_battery_str[idx], "Charging", sizeof(last_battery_str[idx])-1);
+ 			}
+ 		}
+ 		/* discharging */
+ 		else if (strncmp(charging_state, "Discharging", 64) == 0) {
+ 			if (present_rate > 0) {
+ 				/* e.g. discharging 35% */
+ 				snprintf(last_battery_str[idx], sizeof(last_battery_str[idx])-1, "Discharging %i%%",
+ 					(int) (((float) remaining_capacity / acpi_last_full[idx]) * 100 ));
+ 				/* e.g. 1h 12m */
+ 				format_seconds(last_battery_time_str[idx], sizeof(last_battery_time_str[idx])-1,
+ 					      (long) (((float)(acpi_last_full[idx] - remaining_capacity) / present_rate) * 3600));
+ 			} else if (present_rate == 0) { /* Thanks to Nexox for this one */
+ 				snprintf(last_battery_str[idx], sizeof(last_battery_str[idx])-1, "Full");
+ 			} else {
+ 				snprintf(last_battery_str[idx], sizeof(last_battery_str[idx])-1,
+ 					"Discharging %d%%",
+ 					(int) (((float)remaining_capacity / acpi_last_full[idx]) * 100));
+ 			}
+ 		}
+ 		/* charged */
+ 		/* thanks to Lukas Zapletal <lzap@seznam.cz> */
+ 		else if (strncmp(charging_state, "Charged", 64) == 0) {
+ 				/* Below happens with the second battery on my X40,
+ 				 * when the second one is empty and the first one
+ 				 * being charged. */
+ 				if (remaining_capacity == 0)
+ 					strcpy(last_battery_str[idx], "Empty");
+ 				else
+ 					strcpy(last_battery_str[idx], "Charged");
+ 		}
+ 		/* unknown, probably full / AC */
+ 		else {
+ 			if (acpi_last_full[idx] != 0
+ 			    && remaining_capacity != acpi_last_full[idx])
+ 				snprintf(last_battery_str[idx], 64, "Unknown %d%%",
+ 					(int) (((float)remaining_capacity / acpi_last_full[idx]) * 100));
+ 			else
+ 				strncpy(last_battery_str[idx], "AC", 64);
+ 		}
+ 	} else if (acpi_bat_fp[idx] != NULL) {
+ 		/* ACPI */
 		int present_rate = -1;
 		int remaining_capacity = -1;
 		char charging_state[64];
@@ -1543,6 +1675,8 @@ int get_battery_perct(const char *bat)
 	char acpi_path[128];
 
 	snprintf(acpi_path, 127, ACPI_BATTERY_BASE_PATH "/%s/state", bat);
+	char sysfs_path[128];
+	snprintf(sysfs_path, 127, SYSFS_BATTERY_BASE_PATH "/%s/uevent", bat);
 
 	init_batteries();
 
@@ -1554,15 +1688,38 @@ int get_battery_perct(const char *bat)
 	}
 	last_battery_perct_time[idx] = current_update_time;
 
-	/* Only check for ACPI */
+	/* Only check for SYSFS or ACPI */
 
-	if (acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL) {
+	if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL)
+		sysfs_bat_fp[idx] = open_file(sysfs_path, &rep);
+
+	if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL)
 		acpi_bat_fp[idx] = open_file(acpi_path, &rep);
-	}
 
 	int remaining_capacity = -1;
 
-	if (acpi_bat_fp[idx] != NULL) {
+	if (sysfs_bat_fp[idx] != NULL) {
+		/* SYSFS */
+		while (!feof(sysfs_bat_fp[idx])) {
+			char buf[256];
+			if (fgets(buf, 256, sysfs_bat_fp[idx]) == NULL)
+				break;
+
+			if (strncmp(buf, "POWER_SUPPLY_CHARGE_NOW=", 24) == 0)
+				sscanf(buf, "POWER_SUPPLY_CHARGE_NOW=%d", &remaining_capacity);
+			else if (strncmp(buf, "POWER_SUPPLY_CHARGE_FULL=",25) != 0)
+				sscanf(buf, "POWER_SUPPLY_CHARGE_FULL=%d", &acpi_last_full[idx]);
+			else if (strncmp(buf, "POWER_SUPPLY_ENERGY_NOW=", 24) == 0)
+				sscanf(buf, "POWER_SUPPLY_ENERGY_NOW=%d", &remaining_capacity);
+			else if (strncmp(buf, "POWER_SUPPLY_ENERGY_FULL=",25) != 0)
+				sscanf(buf, "POWER_SUPPLY_ENERGY_FULL=%d", &acpi_last_full[idx]);
+		}
+
+		fclose(sysfs_bat_fp[idx]);
+		sysfs_bat_fp[idx] = NULL;
+
+	} else if (acpi_bat_fp[idx] != NULL) {
+		/* ACPI */
 		/* read last full capacity if it's zero */
 		if (acpi_design_capacity[idx] == 0) {
 			static int rep;
@@ -1579,7 +1736,7 @@ int get_battery_perct(const char *bat)
 						break;
 					}
 					if (sscanf(b, "last full capacity: %d",
-							&acpi_design_capacity[idx]) != 0) {
+								&acpi_design_capacity[idx]) != 0) {
 						break;
 					}
 				}
