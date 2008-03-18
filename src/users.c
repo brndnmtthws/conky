@@ -23,7 +23,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: conky.h 1007 2008-02-20 20:30:45Z IQgryn $
+ * $Id$
  *
  */
 
