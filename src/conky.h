@@ -23,7 +23,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$ */
+ * $Id$
+ *
+ */
 
 #ifndef _conky_h_
 #define _conky_h_
@@ -68,6 +70,10 @@
 
 #ifdef RSS
 #include "prss.h"
+#endif
+
+#ifdef SMAPI
+#include "smapi.h"
 #endif
 
 #include "mboxscan.h"
@@ -119,6 +125,7 @@ struct net_stat {
 	long long recv, trans;
 	double recv_speed, trans_speed;
 	struct sockaddr addr;
+    char* addrs;
 	double net_rec[15], net_trans[15];
 	// wireless extensions
 	char essid[32];
@@ -135,6 +142,7 @@ unsigned int diskio_write_value;
 
 struct fs_stat {
 	char *path;
+	char *type;
 	long long size;
 	long long avail;
 	long long free;
@@ -195,15 +203,15 @@ struct xmms2_s {
 	char *title;
 	char *genre;
 	char *comment;
-	char *decoder;
-	char *transport;
 	char *url;
 	char *date;
+	char* playlist;
 	int tracknr;
 	int bitrate;
 	unsigned int id;
 	int duration;
 	int elapsed;
+	int timesplayed;
 	float size;
 
 	float progress;
@@ -235,6 +243,13 @@ void update_entropy();
 struct entropy_s {
 	unsigned int entropy_avail;
 	unsigned int poolsize;
+};
+
+struct usr_info {
+	char *names;
+	char *times;
+	char *terms;
+	int number;
 };
 
 #ifdef TCP_PORT_MONITOR
@@ -280,6 +295,10 @@ enum {
 #ifdef RSS
 	INFO_RSS = 24,
 #endif
+#ifdef SMAPI
+	INFO_SMAPI = 25,
+#endif
+	INFO_USERS = 26,
 };
 
 /* get_battery_stuff() item selector */
@@ -341,6 +360,7 @@ struct information {
 #ifdef BMPX
 	struct bmpx_s bmpx;
 #endif
+	struct usr_info users;
 	struct process *cpu[10];
 	struct process *memu[10];
 	struct process *first_process;
@@ -487,6 +507,7 @@ void format_seconds(char *buf, unsigned int n, long t);
 void format_seconds_short(char *buf, unsigned int n, long t);
 struct net_stat *get_net_stat(const char *dev);
 void clear_net_stats(void);
+void update_users();
 
 void update_stuff();
 

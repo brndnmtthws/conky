@@ -117,8 +117,11 @@ static void print_version()
 #endif /* RSS */
 #ifdef HAVE_IWLIB
 		   "  * wireless\n"
-#endif
-		   "", SYSTEM_CONFIG_FILE
+#endif /* HAVE_IWLIB */
+#ifdef SMAPI
+	"  * smapi\n"
+#endif /* SMAPI */
+	"", SYSTEM_CONFIG_FILE
 	);
 
 	exit(0);
@@ -135,8 +138,12 @@ static int text_width, text_height;
 enum alignment {
 	TOP_LEFT = 1,
 	TOP_RIGHT,
+	TOP_MIDDLE,
 	BOTTOM_LEFT,
 	BOTTOM_RIGHT,
+	BOTTOM_MIDDLE,
+	MIDDLE_LEFT,
+	MIDDLE_RIGHT,
 	NONE
 };
 
@@ -1031,6 +1038,9 @@ static void human_readable(long long num, char *buf, int size, char *func_name)
 
 enum text_object_type {
 	OBJ_addr,
+#if defined(__linux__)
+    OBJ_addrs,
+#endif /* __linux__ */
 #ifndef __OpenBSD__
 	OBJ_acpiacadapter,
 	OBJ_adt746xcpu,
@@ -1056,6 +1066,9 @@ enum text_object_type {
 	OBJ_color7,
 	OBJ_color8,
 	OBJ_color9,
+	OBJ_conky_version,
+	OBJ_conky_build_date,
+	OBJ_conky_build_arch,
 	OBJ_font,
 	OBJ_cpu,
 	OBJ_cpubar,
@@ -1088,6 +1101,7 @@ enum text_object_type {
 	OBJ_fs_free,
 	OBJ_fs_free_perc,
 	OBJ_fs_size,
+	OBJ_fs_type,
 	OBJ_fs_used,
 	OBJ_fs_used_perc,
 	OBJ_goto,
@@ -1116,6 +1130,7 @@ enum text_object_type {
 	OBJ_ibm_temps,
 	OBJ_ibm_volume,
 	OBJ_ibm_brightness,
+	OBJ_if_up,
 	OBJ_pb_battery,
 	OBJ_voltage_mv,
 	OBJ_voltage_v,
@@ -1179,6 +1194,10 @@ enum text_object_type {
 	OBJ_upspeedgraph,
 	OBJ_uptime,
 	OBJ_uptime_short,
+	OBJ_user_names,
+	OBJ_user_terms,
+	OBJ_user_times,
+	OBJ_user_number,
 	OBJ_imap,
 	OBJ_imap_messages,
 	OBJ_imap_unseen,
@@ -1226,8 +1245,6 @@ enum text_object_type {
 	OBJ_xmms2_title,
 	OBJ_xmms2_genre,
 	OBJ_xmms2_comment,
-	OBJ_xmms2_decoder,
-	OBJ_xmms2_transport,
 	OBJ_xmms2_url,
 	OBJ_xmms2_date,
 	OBJ_xmms2_tracknr,
@@ -1240,6 +1257,8 @@ enum text_object_type {
 	OBJ_xmms2_status,
 	OBJ_xmms2_bar,
 	OBJ_xmms2_smart,
+	OBJ_xmms2_playlist,
+	OBJ_xmms2_timesplayed,
 #endif
 #ifdef AUDACIOUS
 	OBJ_audacious_status,
@@ -1276,6 +1295,12 @@ enum text_object_type {
 #endif
 #ifdef HDDTEMP
 	OBJ_hddtemp,
+#endif
+#ifdef SMAPI
+	OBJ_smapi,
+	OBJ_smapi_bat_bar,
+	OBJ_smapi_bat_perc,
+	OBJ_if_smapi_bat_installed,
 #endif
 	OBJ_entropy_avail,
 	OBJ_entropy_poolsize,
@@ -2017,6 +2042,12 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 				free_iconv();
 				break;
 #endif
+#ifdef __LINUX__
+			case OBJ_if_up:
+				free(objs[i].data.ifblock.s);
+				free(objs[i].data.ifblock.str);
+				break;
+#endif
 #ifdef XMMS2
 			case OBJ_xmms2_artist:
 				if (info.xmms2.artist) {
@@ -2048,18 +2079,6 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 					info.xmms2.comment = 0;
 				}
 				break;
-			case OBJ_xmms2_decoder:
-				if (info.xmms2.decoder) {
-					free(info.xmms2.decoder);
-					info.xmms2.url = 0;
-				}
-				break;
-			case OBJ_xmms2_transport:
-				if (info.xmms2.transport) {
-					free(info.xmms2.transport);
-					info.xmms2.url = 0;
-				}
-				break;
 			case OBJ_xmms2_url:
 				if (info.xmms2.url) {
 					free(info.xmms2.url);
@@ -2076,6 +2095,12 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 				if (info.xmms2.status) {
 					free(info.xmms2.status);
 					info.xmms2.status = 0;
+				}
+				break;
+			case OBJ_xmms2_playlist:
+				if (info.xmms2.playlist) {
+					free(info.xmms2.playlist);
+					info.xmms2.playlist = 0;
 				}
 				break;
 			case OBJ_xmms2_smart:
@@ -2148,6 +2173,24 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 			case OBJ_entropy_poolsize:
 			case OBJ_entropy_bar:
 				break;
+			case OBJ_user_names:
+				if (info.users.names) {
+					free(info.users.names);
+					info.users.names = 0;
+				}
+				break;
+			case OBJ_user_terms:
+				if (info.users.terms) {
+					free(info.users.terms);
+					info.users.terms = 0;
+				}
+				break;
+			case OBJ_user_times:
+				if (info.users.times) {
+					free(info.users.times);
+					info.users.times = 0;
+				}
+				break;
 		}
 	}
 	free(objs);
@@ -2190,7 +2233,7 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 	}
 #endif
 	/* text_objects = NULL;
-	text_object_count = 0; */
+	   text_object_count = 0; */
 }
 
 void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
@@ -2404,6 +2447,18 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.sensor = atoi(&arg[0]);
 	END OBJ(ibm_volume, 0)
 	END OBJ(ibm_brightness, 0)
+	END OBJ(if_up, 0)
+		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
+			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
+		}
+		if (!arg) {
+			ERR("if_up needs an argument");
+			obj->data.ifblock.s = 0;
+		} else
+			obj->data.ifblock.s = strdup(arg);
+		blockstart[blockdepth] = object_count;
+		obj->data.ifblock.pos = object_count + 2;
+		blockdepth++;
 	END OBJ(pb_battery, 0)
 		if (arg && strcmp(arg, "status") == 0) {
 			obj->data.i = PB_BATT_STATUS;
@@ -2566,6 +2621,9 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.l = color9;
 	END OBJ(font, 0)
 		obj->data.s = scan_font(arg);
+	END OBJ(conky_version, 0)
+	END OBJ(conky_build_date, 0)
+	END OBJ(conky_build_arch, 0)
 	END OBJ(downspeed, INFO_NET)
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
@@ -2730,6 +2788,11 @@ static struct text_object *construct_text_object(const char *s,
 		}
 		obj->data.fs = prepare_fs_stat(arg);
 	END OBJ(fs_size, INFO_FS)
+		if (!arg) {
+			arg = "/";
+		}
+		obj->data.fs = prepare_fs_stat(arg);
+	END OBJ(fs_type, INFO_FS)
 		if (!arg) {
 			arg = "/";
 		}
@@ -2920,6 +2983,14 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			CRIT_ERR("addr needs argument");
 		}
+#if defined(__linux__)
+     END OBJ(addrs, INFO_NET)
+        if (arg) {
+            obj->data.net = get_net_stat(arg);
+        } else {
+             CRIT_ERR("addrs needs argument");
+        }
+#endif /* __linux__ */
 	END OBJ(tail, 0)
 		char buf[64];
 		int n1, n2;
@@ -3371,6 +3442,10 @@ static struct text_object *construct_text_object(const char *s,
 		}
 	END OBJ(uptime_short, INFO_UPTIME)
 	END OBJ(uptime, INFO_UPTIME)
+	END OBJ(user_names, INFO_USERS)
+	END OBJ(user_times, INFO_USERS)
+	END OBJ(user_terms, INFO_USERS)
+	END OBJ(user_number, INFO_USERS)
 #ifndef __OpenBSD__
 	END OBJ(adt746xcpu, 0)
 	END OBJ(adt746xfan, 0)
@@ -3413,16 +3488,52 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->global_mode = 1;
 		}
-#ifdef MPD
-	END OBJ(mpd_artist, INFO_MPD)
-	END OBJ(mpd_title, INFO_MPD)
-		if (arg) {
-			sscanf(arg, "%d", &info.mpd.max_title_len);
-			if (info.mpd.max_title_len > 0) {
-				info.mpd.max_title_len++;
+#ifdef SMAPI
+	END OBJ(smapi, 0)
+		if (arg)
+			obj->data.s = strdup(arg);
+		else
+			ERR("smapi needs an argument");
+	END OBJ(if_smapi_bat_installed, 0)
+		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
+			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
+		}
+	if (!arg) {
+		ERR("if_smapi_bat_installed needs an argument");
+		obj->data.ifblock.s = 0;
+	} else
+		obj->data.ifblock.s = strdup(arg);
+	blockstart[blockdepth] = object_count;
+	obj->data.ifblock.pos = object_count + 2;
+	blockdepth++;
+	END OBJ(smapi_bat_perc, 0)
+		if (arg)
+			obj->data.s = strdup(arg);
+		else
+			ERR("smapi_bat_perc needs an argument");
+	END OBJ(smapi_bat_bar, 0)
+		if(arg) {
+			int cnt;
+			if(sscanf(arg, "%i %n", &obj->data.i, &cnt) <= 0) {
+				ERR("first argument to smapi_bat_bar must be an integer value");
+				obj->data.i = -1;
 			} else {
-				CRIT_ERR("mpd_title: invalid length argument");
+				obj->b = 4;
+				arg = scan_bar(arg + cnt, &obj->a, &obj->b);
 			}
+		} else
+			ERR("if_smapi_bat_bar needs an argument");
+#endif /* SMAPI */
+#ifdef MPD
+			END OBJ(mpd_artist, INFO_MPD)
+			END OBJ(mpd_title, INFO_MPD)
+			if (arg) {
+				sscanf(arg, "%d", &info.mpd.max_title_len);
+				if (info.mpd.max_title_len > 0) {
+					info.mpd.max_title_len++;
+				} else {
+					CRIT_ERR("mpd_title: invalid length argument");
+				}
 		} else {
 			info.mpd.max_title_len = 0;
 		}
@@ -3448,8 +3559,6 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(xmms2_title, INFO_XMMS2)
 	END OBJ(xmms2_genre, INFO_XMMS2)
 	END OBJ(xmms2_comment, INFO_XMMS2)
-	END OBJ(xmms2_decoder, INFO_XMMS2)
-	END OBJ(xmms2_transport, INFO_XMMS2)
 	END OBJ(xmms2_url, INFO_XMMS2)
 	END OBJ(xmms2_tracknr, INFO_XMMS2)
 	END OBJ(xmms2_bitrate, INFO_XMMS2)
@@ -3463,6 +3572,8 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(xmms2_bar, INFO_XMMS2)
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(xmms2_smart, INFO_XMMS2)
+	END OBJ(xmms2_playlist, INFO_XMMS2)
+	END OBJ(xmms2_timesplayed, INFO_XMMS2)
 #endif
 #ifdef AUDACIOUS
 	END OBJ(audacious_status, INFO_AUDACIOUS)
@@ -3994,7 +4105,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(wireless_link_qual_perc) {
 				if (obj->data.net->link_qual_max > 0) {
-					spaced_print(p, p_max_size, "%.0f%%", 5,
+					spaced_print(p, p_max_size, "%.0f", 5,
 						"wireless_link_qual_perc",
 						(double) obj->data.net->link_qual /
 						obj->data.net->link_qual_max * 100);
@@ -4044,7 +4155,8 @@ static void generate_text_internal(char *p, int p_max_size,
 				get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_TIME);
 			}
 			OBJ(battery_percent) {
-				snprintf(p, p_max_size, "%d", get_battery_perct(obj->data.s));
+				spaced_print(p, p_max_size, "%*d", pad_percents,
+						"battery_percent", get_battery_perct(obj->data.s));
 			}
 			OBJ(battery_bar) {
 				new_bar(p, obj->a, obj->b, get_battery_perct_bar(obj->data.s));
@@ -4107,6 +4219,15 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(color9) {
 				new_fg(p, color9);
+			}
+			OBJ(conky_version) {
+				snprintf(p, p_max_size, "%s", VERSION);
+			}
+			OBJ(conky_build_date) {
+				snprintf(p, p_max_size, "%s", BUILD_DATE);
+			}
+			OBJ(conky_build_arch) {
+				snprintf(p, p_max_size, "%s", BUILD_ARCH);
 			}
 #if defined(__linux__)
 			OBJ(i8k_version) {
@@ -4190,6 +4311,15 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(ibm_brightness) {
 				get_ibm_acpi_brightness(p, p_max_size);
+			}
+			OBJ(if_up) {
+				if ((obj->data.ifblock.s)
+						&& (!interface_up(obj->data.ifblock.s))) {
+					i = obj->data.ifblock.pos;
+					if_jumped = 1;
+				} else {
+					if_jumped = 0;
+				}
 			}
 			OBJ(pb_battery) {
 				get_powerbook_batt_info(p, p_max_size, obj->data.i);
@@ -4315,6 +4445,18 @@ static void generate_text_internal(char *p, int p_max_size,
 					obj->data.net->addr.sa_data[4] & 255,
 					obj->data.net->addr.sa_data[5] & 255);
 			}
+
+#if defined(__linux__)
+           OBJ(addrs) {
+                                    if(NULL != obj->data.net->addrs && strlen(obj->data.net->addrs) > 2)
+                                    {
+                                        obj->data.net->addrs[strlen(obj->data.net->addrs) - 2] = 0; /* remove ", " from end of string */
+                                        strcpy(p, obj->data.net->addrs);
+                                    }
+                                    else
+                                        strcpy(p, "0.0.0.0");
+           }
+#endif /* __linux__ */
 
 #if defined(IMLIB2) && defined(X11)
 			OBJ(image) {
@@ -4747,8 +4889,8 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(fs_free_perc) {
 				if (obj->data.fs != NULL) {
 					if (obj->data.fs->size) {
-						snprintf(p, p_max_size, "%*d", pad_percents,
-							(int) ((obj->data.fs->avail * 100) /
+						spaced_print(p, p_max_size, "%*d", pad_percents,
+							"fs_free_perc", (int) ((obj->data.fs->avail * 100) /
 							obj->data.fs->size));
 					} else {
 						snprintf(p, p_max_size, "0");
@@ -4759,6 +4901,10 @@ static void generate_text_internal(char *p, int p_max_size,
 				if (obj->data.fs != NULL) {
 					human_readable(obj->data.fs->size, p, 255, "fs_size");
 				}
+			}
+			OBJ(fs_type) {
+				if (obj->data.fs != NULL)
+					snprintf(p, p_max_size, "%s", obj->data.fs->type);
 			}
 			OBJ(fs_used) {
 				if (obj->data.fs != NULL) {
@@ -4781,8 +4927,8 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(fs_used_perc) {
 				if (obj->data.fs != NULL) {
 					if (obj->data.fs->size) {
-						snprintf(p, 4, "%d",
-							100 - ((int) ((obj->data.fs->avail * 100) /
+						spaced_print(p, 4, "%*d", pad_percents,
+							"fs_used_perc", 100 - ((int) ((obj->data.fs->avail * 100) /
 							obj->data.fs->size)));
 					} else {
 						snprintf(p, p_max_size, "0");
@@ -5174,7 +5320,18 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(uptime) {
 				format_seconds(p, p_max_size, (int) cur->uptime);
 			}
-
+			OBJ(user_names) {
+				snprintf(p, p_max_size, "%s", cur->users.names);
+			}
+			OBJ(user_terms) {
+				snprintf(p, p_max_size, "%s", cur->users.terms);
+			}
+			OBJ(user_times) {
+				snprintf(p, p_max_size, "%s", cur->users.times);
+			}
+			OBJ(user_number) {
+				snprintf(p, p_max_size, "%d", cur->users.number);
+			}
 #if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) \
 		|| defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
 			OBJ(apm_adapter) {
@@ -5291,7 +5448,8 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 			OBJ(mpd_percent) {
-				snprintf(p, p_max_size, "%2.0f", cur->mpd.progress * 100);
+				spaced_print(p, p_max_size, "%*d", pad_percents,
+						"mpd_percent", (int) (cur->mpd.progress * 100));
 			}
 			OBJ(mpd_bar) {
 				new_bar(p, obj->data.pair.a, obj->data.pair.b,
@@ -5331,12 +5489,6 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(xmms2_comment) {
 				snprintf(p, p_max_size, "%s", cur->xmms2.comment);
 			}
-			OBJ(xmms2_decoder) {
-				snprintf(p, p_max_size, "%s", cur->xmms2.decoder);
-			}
-			OBJ(xmms2_transport) {
-				snprintf(p, p_max_size, "%s", cur->xmms2.transport);
-			}
 			OBJ(xmms2_url) {
 				snprintf(p, p_max_size, "%s", cur->xmms2.url);
 			}
@@ -5375,6 +5527,12 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(xmms2_bar) {
 				new_bar(p, obj->data.pair.a, obj->data.pair.b,
 					(int) (cur->xmms2.progress * 255.0f));
+			}
+			OBJ(xmms2_playlist) {
+				snprintf(p, p_max_size, "%s", cur->xmms2.playlist);
+			}
+			OBJ(xmms2_timesplayed) {
+				snprintf(p, p_max_size, "%i", cur->xmms2.timesplayed);
 			}
 			OBJ(xmms2_smart) {
 				if (strlen(cur->xmms2.title) < 2
@@ -5758,6 +5916,43 @@ head:
 					(double) cur->entropy.poolsize;
 				new_bar(p, obj->a, obj->b, (int) (entropy_perc * 255.0f));
 			}
+#ifdef SMAPI
+			OBJ(smapi) {
+				char *s;
+				if(obj->data.s) {
+					s = smapi_get_val(obj->data.s);
+					snprintf(p, p_max_size, "%s", s);
+					free(s);
+				}
+			}
+			OBJ(if_smapi_bat_installed) {
+				int idx;
+				if(obj->data.ifblock.s && sscanf(obj->data.ifblock.s, "%i", &idx) == 1) {
+					if(!smapi_bat_installed(idx)) {
+						i = obj->data.ifblock.pos;
+						if_jumped = 1;
+					} else
+						if_jumped = 0;
+				} else
+					ERR("argument to if_smapi_bat_installed must be an integer");
+			}
+			OBJ(smapi_bat_perc) {
+				int idx, val;
+				if(obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
+					val = smapi_bat_installed(idx) ?
+						smapi_get_bat_int(idx, "remaining_percent") : 0;
+					spaced_print(p, p_max_size, "%*d", pad_percents, "smapi_bat_perc", val);
+				} else
+					ERR("argument to smapi_bat_perc must be an integer");
+			}
+			OBJ(smapi_bat_bar) {
+				if(obj->data.i >= 0 && smapi_bat_installed(obj->data.i))
+					new_bar(p, obj->a, obj->b, (int)
+							(255 * smapi_get_bat_int(obj->data.i, "remaining_percent") / 100));
+				else
+					new_bar(p, obj->a, obj->b, 0);
+			}
+#endif /* SMAPI */
 
 			break;
 		}
@@ -5780,7 +5975,7 @@ head:
 				iconv(*iconv_cd[iconv_selected - 1], NULL, NULL, NULL, NULL);
 				while (dummy1 > 0) {
 					bytes = iconv(*iconv_cd[iconv_selected - 1], &ptr, &dummy1,
-						&outptr, &dummy2);
+							&outptr, &dummy2);
 					if (bytes == -1) {
 						ERR("Iconv codeset conversion failed");
 						break;
@@ -5947,6 +6142,11 @@ static void update_text_area()
 			y = gap_y;
 			break;
 
+		case TOP_MIDDLE:
+			x = workarea[2] / 2 - text_width / 2 - gap_x;
+			y = gap_y;
+			break;
+
 		default:
 		case BOTTOM_LEFT:
 			x = gap_x;
@@ -5956,6 +6156,21 @@ static void update_text_area()
 		case BOTTOM_RIGHT:
 			x = workarea[2] - text_width - gap_x;
 			y = workarea[3] - text_height - gap_y;
+			break;
+
+		case BOTTOM_MIDDLE:
+			x = workarea[2] / 2 - text_width / 2 - gap_x;
+			y = workarea[3] - text_height - gap_y;
+			break;
+
+		case MIDDLE_LEFT:
+			x = gap_x;
+			y = workarea[3] / 2 - text_height / 2 - gap_y;
+			break;
+
+		case MIDDLE_RIGHT:
+			x = workarea[2] - text_width - gap_x;
+			y = workarea[3] / 2 - text_height / 2 - gap_y;
 			break;
 
 #ifdef OWN_WINDOW
@@ -6981,8 +7196,9 @@ static void main_loop()
 #endif
 
 		switch (g_signal_pending) {
+			case SIGHUP:
 			case SIGUSR1:
-				ERR("received SIGUSR1. reloading the config file.");
+				ERR("received SIGHUP or SIGUSR1. reloading the config file.");
 				reload_config();
 				break;
 			case SIGINT:
@@ -7194,18 +7410,34 @@ static enum alignment string_to_alignment(const char *s)
 		return TOP_LEFT;
 	} else if (strcasecmp(s, "top_right") == 0) {
 		return TOP_RIGHT;
+	} else if (strcasecmp(s, "top_middle") == 0) {
+		return TOP_MIDDLE;
 	} else if (strcasecmp(s, "bottom_left") == 0) {
 		return BOTTOM_LEFT;
 	} else if (strcasecmp(s, "bottom_right") == 0) {
 		return BOTTOM_RIGHT;
+	} else if (strcasecmp(s, "bottom_middle") == 0) {
+		return BOTTOM_MIDDLE;
+	} else if (strcasecmp(s, "middle_left") == 0) {
+		return MIDDLE_LEFT;
+	} else if (strcasecmp(s, "middle_right") == 0) {
+		return MIDDLE_RIGHT;
 	} else if (strcasecmp(s, "tl") == 0) {
 		return TOP_LEFT;
 	} else if (strcasecmp(s, "tr") == 0) {
 		return TOP_RIGHT;
+	} else if (strcasecmp(s, "tm") == 0) {
+		return TOP_MIDDLE;
 	} else if (strcasecmp(s, "bl") == 0) {
 		return BOTTOM_LEFT;
 	} else if (strcasecmp(s, "br") == 0) {
 		return BOTTOM_RIGHT;
+	} else if (strcasecmp(s, "bm") == 0) {
+		return BOTTOM_MIDDLE;
+	} else if (strcasecmp(s, "ml") == 0) {
+		return MIDDLE_LEFT;
+	} else if (strcasecmp(s, "mr") == 0) {
+		return MIDDLE_RIGHT;
 	} else if (strcasecmp(s, "none") == 0) {
 		return NONE;
 	}
@@ -7242,10 +7474,9 @@ static void set_default_configurations(void)
 	info.xmms2.title = NULL;
 	info.xmms2.genre = NULL;
 	info.xmms2.comment = NULL;
-	info.xmms2.decoder = NULL;
-	info.xmms2.transport = NULL;
 	info.xmms2.url = NULL;
 	info.xmms2.status = NULL;
+	info.xmms2.playlist = NULL;
 #endif
 	use_spacer = NO_SPACER;
 #ifdef X11
@@ -7305,6 +7536,7 @@ static void set_default_configurations(void)
 	update_interval = 3.0;
 	info.music_player_interval = 1.0;
 	stuff_in_upper_case = 0;
+	info.users.number = 1;
 
 #ifdef TCP_PORT_MONITOR
 	tcp_port_monitor_args.max_port_monitor_connections =
@@ -8260,9 +8492,15 @@ int main(int argc, char **argv)
 	selected_font = 0;
 	update_text_area();	/* to get initial size of the window */
 
+#ifdef OWN_WINDOW
 	init_window(own_window, text_width + border_margin * 2 + 1,
 		text_height + border_margin * 2 + 1, set_transparent, background_colour,
 		argv, argc);
+#else /* OWN_WINDOW */
+	init_window(0, text_width + border_margin * 2 + 1,
+		text_height + border_margin * 2 + 1, set_transparent, 0,
+		argv, argc);
+#endif /* OWN_WINDOW */
 
 	selected_font = 0;
 	update_text_area();	/* to position text/window on screen */
@@ -8294,6 +8532,7 @@ int main(int argc, char **argv)
 
 	if (sigaction(SIGINT, &act, &oact) < 0
 			|| sigaction(SIGUSR1, &act, &oact) < 0
+			|| sigaction(SIGHUP,&act,&oact) < 0
 			|| sigaction(SIGTERM, &act, &oact) < 0) {
 		ERR("error setting signal handler: %s", strerror(errno));
 	}

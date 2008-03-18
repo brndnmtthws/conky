@@ -308,6 +308,9 @@ void update_stuff()
 	if (NEED(INFO_ENTROPY)) {
 		update_entropy();
 	}
+	if (NEED(INFO_USERS)) {
+		update_users();
+	}
 }
 
 int round_to_int(float f)

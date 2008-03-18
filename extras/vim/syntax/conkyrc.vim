@@ -236,6 +236,25 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
         \ voffset
         \ voltage_mv
         \ voltage_v
+        \ xmms2_artist
+        \ xmms2_album
+        \ xmms2_title
+        \ xmms2_genre
+        \ xmms2_comment
+        \ xmms2_url
+        \ xmms2_tracknr
+        \ xmms2_bitrate
+        \ xmms2_id
+        \ xmms2_duration
+        \ xmms2_elapsed
+        \ xmms2_date
+        \ xmms2_size
+        \ xmms2_percent
+        \ xmms2_status
+        \ xmms2_bar
+        \ xmms2_timesplayed
+        \ xmms2_playlist
+        \ xmms2_smart
 
 hi def link ConkyrcComment   Comment
 hi def link ConkyrcSetting   Keyword

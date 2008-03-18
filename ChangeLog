@@ -1,9 +1,21 @@
 # $Id$
 
 2008-03-17
-	* Applied 2 patches:
+	* Applied 12 patches:
 		1) sysfs battery support (for Linux >=2.6.24) (thanks Kapil)
 		2) Improved audacious support patch (thanks Miroslav)
+		3) tp_smapi support patch for IBM laptops (thanks Phil)
+		4) user info patch (thanks Roland)
+		5) added conky build info patch (thanks Roland)
+		6) added if_up patch (thanks Phil)
+		7) added reload on SIGHUP patch (thanks Jonas)
+		8) added pad percentages patch (thanks Jonas)
+		9) added fs_type patch (thanks Ryan)
+		10) added xmms2 fixes patch (thanks Lassi)
+		11) fix sysfs crash patch (thanks Phil)
+		12) multiple ip patch ($addrs)
+	* Added more alignment support (top_middle, bottom_middle, middle_left,
+	and middle_right).
 
 2008-02-08
 	* Applied 2 patches:

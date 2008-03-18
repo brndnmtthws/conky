@@ -10,6 +10,17 @@
 </varlistentry>
 
 <varlistentry>
+        <term>
+                <command><option>addrs</option></command>
+        <option>interface</option>
+        </term>
+        <listitem>
+                IP addresses for an interface (if one - works like addr). Linux only.
+        <para></para></listitem>
+</varlistentry>
+
+
+<varlistentry>
 	<term>
 		<command><option>acpiacadapter</option></command>
 	</term>
@@ -444,6 +455,33 @@
 
 <varlistentry>
 	<term>
+		<command><option>conky_version</option></command>
+	</term>
+	<listitem>
+		Conky version
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>conky_build_date</option></command>
+	</term>
+	<listitem>
+		Date Conky was built
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>conky_bulid_arch</option></command>
+	</term>
+	<listitem>
+		CPU architecture Conky was built for
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>cpu</option></command>
 		<option>(cpuN)</option>
 	</term>
@@ -753,6 +791,16 @@
 
 <varlistentry>
 	<term>
+		<command><option>fs_type</option></command>
+	<option>(fs)</option>
+	</term>
+	<listitem>
+		File system type
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>fs_used</option></command>
 	<option>(fs)</option>
 	</term>
@@ -1030,6 +1078,26 @@
 	</term>
 	<listitem>
 		if MOUNTPOINT is mounted, display everything between $if_mounted and the matching $endif
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>if_smapi_bat_installed</option></command>
+	<option>(INDEX)</option>
+	</term>
+	<listitem>
+		when using smapi, if the battery with index INDEX is installed, display everything between $if_smapi_bat_installed and the matching $endif
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>if_up</option></command>
+	<option>(interface)</option>
+	</term>
+	<listitem>
+		if INTERFACE exists and is up, display everything between $if_up and the matching $endif
 	<para></para></listitem>
 </varlistentry>
 
@@ -1422,6 +1490,36 @@
 
 <varlistentry>
 	<term>
+		<command><option>smapi</option></command>
+	<option>(ARGS)</option>
+	</term>
+	<listitem>
+		when using smapi, display contents of the /sys/devices/platform/smapi directory. ARGS are either '(FILENAME)' or 'bat (INDEX) (FILENAME)' to display the corresponding files' content. This is a very raw method of accessing the smapi values. When available, better use one of the smapi_* variables instead.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>smapi_bat_perc</option></command>
+	<option>(INDEX)</option>
+	</term>
+	<listitem>
+		when using smapi, display the remaining capacity in percent of the battery with index INDEX. This is a separate variable because it supports the 'use_spacer' configuration option.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>smapi_bat_bar</option></command>
+	<option>(INDEX),(height),(width)</option>
+	</term>
+	<listitem>
+		when using smapi, display the remaining capacity of the battery with index INDEX as a bar.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>stippled_hr</option></command>
 	<option>(space)</option>
 	</term>
@@ -1702,6 +1800,42 @@
 
 <varlistentry>
 	<term>
+		<command><option>user_number</option></command>
+	</term>
+	<listitem>
+		Number of users logged in
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>user_names</option></command>
+	</term>
+	<listitem>
+		Lists the names of the users logged in
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>user_terms</option></command>
+	</term>
+	<listitem>
+		Lists the consoles in use
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>user_times</option></command>
+	</term>
+	<listitem>
+		Lists how long users have been logged in for
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>voffset</option></command>
 		<option>(pixels)</option>
 	</term>
@@ -1741,7 +1875,7 @@
 	</term>
 	<listitem>
 		Wireless access point ESSID (Linux only)
-	<para></para></listitem>
+		<para></para></listitem>
 </varlistentry>
 
 <varlistentry>
@@ -1751,7 +1885,7 @@
 	</term>
 	<listitem>
 		Wireless mode (Managed/Ad-Hoc/Master) (Linux only)
-	<para></para></listitem>
+		<para></para></listitem>
 </varlistentry>
 
 <varlistentry>
@@ -1761,7 +1895,7 @@
 	</term>
 	<listitem>
 		Wireless bitrate (ie 11 Mb/s) (Linux only)
-	<para></para></listitem>
+		<para></para></listitem>
 </varlistentry>
 
 <varlistentry>

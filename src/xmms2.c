@@ -68,16 +68,6 @@ static void xmms_alloc(struct information *ptr)
 		ptr->xmms2.comment[0] = '\0';
 	}
 
-	if (ptr->xmms2.decoder == NULL) {
-		ptr->xmms2.decoder = malloc(TEXT_BUFFER_SIZE);
-		ptr->xmms2.decoder[0] = '\0';
-	}
-
-	if (ptr->xmms2.transport == NULL) {
-		ptr->xmms2.transport = malloc(TEXT_BUFFER_SIZE);
-		ptr->xmms2.transport[0] = '\0';
-	}
-
 	if (ptr->xmms2.url == NULL) {
 		ptr->xmms2.url = malloc(TEXT_BUFFER_SIZE);
 		ptr->xmms2.url[0] = '\0';
@@ -92,25 +82,14 @@ static void xmms_alloc(struct information *ptr)
 static void xmms_clear(struct information *ptr)
 {
 	xmms_alloc(ptr);
-	ptr->xmms2.status[0] = '\0';
 	ptr->xmms2.artist[0] = '\0';
 	ptr->xmms2.album[0] = '\0';
 	ptr->xmms2.title[0] = '\0';
 	ptr->xmms2.genre[0] = '\0';
 	ptr->xmms2.comment[0] = '\0';
-	ptr->xmms2.decoder[0] = '\0';
-	ptr->xmms2.transport[0] = '\0';
 	ptr->xmms2.url[0] = '\0';
 	ptr->xmms2.date[0] = '\0';
-}
 
-void connection_lost(void *p)
-{
-	struct information *ptr = p;
-
-	ptr->xmms2_conn_state = CONN_NO;
-
-	xmms_clear(ptr);
 	ptr->xmms2.tracknr = 0;
 	ptr->xmms2.id = 0;
 	ptr->xmms2.bitrate = 0;
@@ -118,6 +97,19 @@ void connection_lost(void *p)
 	ptr->xmms2.elapsed = 0;
 	ptr->xmms2.size = 0;
 	ptr->xmms2.progress = 0;
+	ptr->xmms2.timesplayed = -1;
+}
+
+void connection_lost(void *p)
+{
+	struct information *ptr = p;
+	ptr->xmms2_conn_state = CONN_NO;
+
+	fprintf(stderr,"Conky: xmms2 connection failed. %s\n",
+                    xmmsc_get_last_error ( ptr->xmms2_conn ));
+        fflush(stderr);
+
+	xmms_clear(ptr);
 }
 
 void handle_curent_id(xmmsc_result_t *res, void *p)
@@ -174,20 +166,6 @@ void handle_curent_id(xmmsc_result_t *res, void *p)
 			strncpy(ptr->xmms2.comment, "", TEXT_BUFFER_SIZE - 1);
 		}
 
-		xmmsc_result_get_dict_entry_string(res2, "decoder", &temp);
-		if (temp != NULL) {
-			strncpy(ptr->xmms2.decoder, temp, TEXT_BUFFER_SIZE - 1);
-		} else {
-			strncpy(ptr->xmms2.decoder, "[Unknown]", TEXT_BUFFER_SIZE - 1);
-		}
-
-		xmmsc_result_get_dict_entry_string(res2, "transport", &temp);
-		if (temp != NULL) {
-			strncpy(ptr->xmms2.transport, temp, TEXT_BUFFER_SIZE - 1);
-		} else {
-			strncpy(ptr->xmms2.transport, "[Unknown]", TEXT_BUFFER_SIZE - 1);
-		}
-
 		xmmsc_result_get_dict_entry_string(res2, "url", &temp);
 		if (temp != NULL) {
 			strncpy(ptr->xmms2.url, temp, TEXT_BUFFER_SIZE - 1);
@@ -215,6 +193,9 @@ void handle_curent_id(xmmsc_result_t *res, void *p)
 
 		xmmsc_result_get_dict_entry_int(res2, "size", &itemp);
 		ptr->xmms2.size = (float) itemp / 1048576;
+
+		xmmsc_result_get_dict_entry_int( res2, "timesplayed", &itemp );
+		ptr->xmms2.timesplayed = itemp;
 
 		xmmsc_result_unref(res2);
 	}
@@ -269,6 +250,20 @@ void handle_playback_state_change(xmmsc_result_t *res, void *p)
 	}
 }
 
+void handle_playlist_loaded(xmmsc_result_t *res, void *p) {
+	struct information *ptr = p; 
+
+	if (ptr->xmms2.playlist == NULL) {
+		ptr->xmms2.playlist = malloc(TEXT_BUFFER_SIZE);
+		ptr->xmms2.playlist[0] = '\0';
+	}
+
+	if (!xmmsc_result_get_string(res, &ptr->xmms2.playlist))  {
+		ptr->xmms2.playlist[0] = '\0';
+	}
+
+}
+
 void update_xmms2()
 {
 	struct information *current_info = &info;
@@ -283,7 +278,7 @@ void update_xmms2()
 		/* did init fail? */
 		if (current_info->xmms2_conn == NULL) {
 			fprintf(stderr, "Conky: xmms2 init failed. %s\n",
-				xmmsc_get_last_error(current_info->xmms2_conn));
+					xmmsc_get_last_error(current_info->xmms2_conn));
 			fflush(stderr);
 			return;
 		}
@@ -293,14 +288,6 @@ void update_xmms2()
 
 		/* clear all values */
 		xmms_clear(current_info);
-
-		current_info->xmms2.tracknr = 0;
-		current_info->xmms2.id = 0;
-		current_info->xmms2.bitrate = 0;
-		current_info->xmms2.duration = 0;
-		current_info->xmms2.elapsed = 0;
-		current_info->xmms2.size = 0;
-		current_info->xmms2.progress = 0;
 
 		/* fprintf(stderr, "Conky: xmms2 init ok.\n");
 		fflush(stderr); */
@@ -322,8 +309,6 @@ void update_xmms2()
 		/* set callbacks */
 		xmmsc_disconnect_callback_set(current_info->xmms2_conn, connection_lost,
 			current_info);
-		XMMS_CALLBACK_SET(current_info->xmms2_conn, xmmsc_playback_current_id,
-			handle_curent_id, current_info);
 		XMMS_CALLBACK_SET(current_info->xmms2_conn,
 			xmmsc_broadcast_playback_current_id, handle_curent_id,
 			current_info);
@@ -332,32 +317,17 @@ void update_xmms2()
 		XMMS_CALLBACK_SET(current_info->xmms2_conn,
 			xmmsc_broadcast_playback_status, handle_playback_state_change,
 			current_info);
+		XMMS_CALLBACK_SET(current_info->xmms2_conn,
+				xmmsc_broadcast_playlist_loaded, handle_playlist_loaded,
+				current_info);
 
-		/* get playback status, it wont be broadcasted untill it chages */
-		xmmsc_result_t *res = xmmsc_playback_status(current_info->xmms2_conn);
-
-		xmmsc_result_wait(res);
-		unsigned int pb_state;
-
-		xmmsc_result_get_uint(res, &pb_state);
-		switch (pb_state) {
-			case XMMS_PLAYBACK_STATUS_PLAY:
-				strncpy(current_info->xmms2.status, "Playing",
-					TEXT_BUFFER_SIZE - 1);
-				break;
-			case XMMS_PLAYBACK_STATUS_PAUSE:
-				strncpy(current_info->xmms2.status, "Paused",
-					TEXT_BUFFER_SIZE - 1);
-				break;
-			case XMMS_PLAYBACK_STATUS_STOP:
-				strncpy(current_info->xmms2.status, "Stopped",
-					TEXT_BUFFER_SIZE - 1);
-				break;
-			default:
-				strncpy(current_info->xmms2.status, "Unknown",
-					TEXT_BUFFER_SIZE - 1);
-		}
-		xmmsc_result_unref(res);
+		/* get playback status, current id and active playlist */
+		XMMS_CALLBACK_SET(current_info->xmms2_conn,
+				xmmsc_playback_current_id, handle_curent_id, current_info);
+		XMMS_CALLBACK_SET(current_info->xmms2_conn,
+				xmmsc_playback_status, handle_playback_state_change, current_info);
+		XMMS_CALLBACK_SET(current_info->xmms2_conn,
+				xmmsc_playlist_current_active, handle_playlist_loaded, current_info);
 
 		/* everything seems to be ok */
 		current_info->xmms2_conn_state = CONN_OK;

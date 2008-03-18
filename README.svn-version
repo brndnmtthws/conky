@@ -1,9 +1,9 @@
 THESE INSTRUCTIONS ARE ONLY IF "sh autogen.sh" DOESN'T WORK!!!
 
 First, read the README. This contains instructions specific to building conky
-fresh from a CVS checkout:
+Fresh from a SVN checkout:
 
-* As the README says, you need to have the X	development libraries installed.
+* As the README says, you need to have the X development libraries installed.
 	This should be a package along the lines of libx11-dev or xorg-x11-dev .
 * Conky requires three "auto-tools", with at least the specific version numbers.
 	Make sure these are installed:
@@ -12,7 +12,7 @@ fresh from a CVS checkout:
 	automake-1.9
 	autoconf-2.59
 
-* In the directory where you checked out conky from CVS,
+* In the directory where you checked out conky from SVN,
 	run "aclocal", "automake", and then "autoconf".
 	Make sure you run those commands with the latest versions...
 	it is very possible that older versions are installed, and

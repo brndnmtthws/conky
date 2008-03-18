@@ -74,7 +74,7 @@
 		<variablelist>
 			<varlistentry>
 				<term>
-					<command><option>sh autogen.sh</option></command> <option># Only required if building from Svn</option>
+					<command><option>sh autogen.sh</option></command> <option># Only required if building from SVN</option>
 				</term>
 			</varlistentry>
 			<varlistentry>
@@ -129,7 +129,7 @@
 		</para>
 		<para>
 		An easy way to force Conky to reload your ~/.conkyrc: "killall -SIGUSR1 conky".
-		Saves you the trouble of having to kill and then restart.
+		Saves you the trouble of having to kill and then restart.  You can now also do the same with SIGHUP.
 		</para>
 		<para>
 		IMPORTANT: For previous Conky users, Conky 1.3 no longer supports the metar stuff.

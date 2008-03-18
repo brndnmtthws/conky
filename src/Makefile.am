@@ -84,6 +84,10 @@ if BUILD_RSS
 rss = rss.c prss.c prss.h
 endif
 
+if BUILD_SMAPI
+smapi = smapi.c smapi.h
+endif
+
 conky_SOURCES = 		\
 	$(audacious)            \
 	$(bmpx)                 \
@@ -107,7 +111,9 @@ conky_SOURCES = 		\
 	mboxscan.c		\
 	mboxscan.h		\
 	$(x11)                  \
-	$(xmms2)
+	$(xmms2)		\
+	$(smapi)		\
+	users.c
 
 AM_LDFLAGS = $(PTHREAD_LIBS) -lm
 
@@ -129,6 +135,8 @@ EXTRA_DIST = 			\
 	top.h                   \
 	diskio.h                \
 	x11.c                   \
-	xmms2.c
+	xmms2.c                 \
+	smapi.c			\
+	users.c
 
 # vi:set ts=8 sw=8 noet ai nocindent syntax=automake:

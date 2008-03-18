@@ -2,7 +2,7 @@
 <varlistentry>
 	<term><command><option>alignment</option></command></term>
 	<listitem>
-		Aligned position on screen, may be top_left, top_right, bottom_left, bottom_right, or none
+		Aligned position on screen, may be top_left, top_right, top_middle, bottom_left, bottom_right, bottom_middle, middle_left, middle_right, or none (also can be abreviated as tl, tr, tm, bl, br, bm, ml, mr)
 	<para></para></listitem>
 </varlistentry>
 

@@ -135,6 +135,10 @@ Johannes Winkelmann <jw at tks6 dot net>
 jolapache <jolapache at free dot fr>
   maildir format
 
+Jonas Koelker <jonaskoelker at users dot sourceforge dot net>
+  reload on SIGHUP patch
+  pad percantages fix patch
+
 Joshua Gerrish <jgerrish at users dot sourceforge dot net>
   mpd password patch
 
@@ -164,6 +168,7 @@ killfire
 
 Lassi Selander <sleipner at users dot sourceforge dot net>
   XMMS2 patch
+  XMMS2 fixes patch
 
 Lauri Hakkarainen <b10nik at users dot sourceforge dot net>
   Some translating, web and other stuff
@@ -211,6 +216,9 @@ Philip Kovacs <pkovacs at users dot sourceforge dot net>
 
 Phil <n0-1 at users dot sourceforge dot net>
   multiple batteries support
+  tp_smapi support
+  if_up patch
+  fix sysfs crashing patch
 
 Psychon <psychon at users dot sourceforge dot net>
   a bunch of code cleanups
@@ -218,8 +226,15 @@ Psychon <psychon at users dot sourceforge dot net>
 roiban adi <adiroiban at users dot sourceforge dot net>
   hex colour patch
 
+Ryan Tandy <tarpman at users dot sourceforge dot net>
+  fs_type patch
+
 Rui Paulo <rpaulo at netbsd-pt dot org>
   NetBSD support
+
+Roland Shoemaker <rolandshoemaker at users dot sourceforge dot net>
+  user info patch
+  conky version info patch
 
 Roman Bogorodskiy <novel at clublife dot ru>
   FreeBSD support

@@ -46,12 +46,18 @@
 #include <sys/mount.h>
 #endif
 
+#ifndef HAVE_STRUCT_STATFS_F_FSTYPENAME
+#include <mntent.h>
+#endif
+
 #define MAX_FS_STATS 64
 
 static struct fs_stat fs_stats_[MAX_FS_STATS];
 struct fs_stat *fs_stats = fs_stats_;
 
 static void update_fs_stat(struct fs_stat *fs);
+
+static char* get_fs_type(const char* path);
 
 void update_fs_stats()
 {
@@ -71,6 +77,7 @@ void clear_fs_stats()
 	for (i = 0; i < MAX_FS_STATS; ++i) {
 		if (fs_stats[i].path) {
 			free(fs_stats[i].path);
+			free(fs_stats[i].type);
 			fs_stats[i].path = NULL;
 		}
 	}
@@ -110,10 +117,51 @@ static void update_fs_stat(struct fs_stat *fs)
 		/* bfree (root) or bavail (non-roots) ? */
 		fs->avail = (long long) s.f_bavail * s.f_bsize;
 		fs->free = (long long) s.f_bfree * s.f_bsize;
+		fs->type = get_fs_type(fs->path);
 	} else {
 		fs->size = 0;
 		fs->avail = 0;
 		fs->free = 0;
+		fs->type = "unknown";
 		ERR("statfs '%s': %s", fs->path, strerror(errno));
 	}
+}
+
+static char* get_fs_type(const char* path)
+{
+
+#ifdef HAVE_STRUCT_STATFS_F_FSTYPENAME
+
+	struct statfs s;
+	if(statfs(path, &s) == 0)
+		return s.f_fstypename;
+	else
+		ERR("statfs '%s': %s", path, strerror(errno));
+
+#else
+
+	/* TODO: walk up the directory tree so it works on
+	 * on paths that are not actually mount points. */
+
+	FILE* mtab = setmntent( "/etc/mtab", "r" );
+
+	if(mtab == NULL) {
+		ERR("setmntent /etc/mtab: %s", strerror(errno));
+		return "unknown";
+	}
+
+	struct mntent* me = getmntent(mtab);
+
+	// find our path in the mtab
+	while(getmntent(mtab) && strcmp(path,me->mnt_dir));
+
+	endmntent(mtab);
+
+	if(me)
+		return strdup(me->mnt_type);
+
+#endif // HAVE_STRUCT_STATFS_F_FSTYPENAME
+
+	return "unknown";
+
 }
