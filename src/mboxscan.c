@@ -56,28 +56,13 @@ static int subject_width;
 static int print_mails;
 static int time_delay;
 
-/* I don't know what to use: TEXT_BUFFER_SIZE or text_buffer_size
- * text_buffer_size is the maximum output in chars
- * TEXT_BUFFER_SIZE actually something like a allowed size for things in the
- * config, below 'TEXT'. Or what is more probably max_user_text.
- * Anyway, I used TEXT_BUFFER_SIZE for not 'output' things here
- * -- calmar
- *
- * To clarify, TEXT_BUFFER_SIZE is used for buffers of fixed size, and
- * text_buffer_size is used for buffers which can change in size.
- * text_buffer_size is just defined as TEXT_BUFFER_SIZE to start, so it's okay
- * for most things, however if something is allocated with text_buffer_size and
- * then text_buffer_size changes but the array doesn't, you might have some
- * issues if you are using text_buffer_size to determine the size of the array.
- * -- brenden */
-
-static char mbox_mail_spool[TEXT_BUFFER_SIZE];
+static char mbox_mail_spool[DEFAULT_TEXT_BUFFER_SIZE];
 
 void mbox_scan(char *args, char *output, size_t max_len)
 {
 	int i, u, flag;
 	int force_rescan = 0;
-	char buf[text_buffer_size];
+	char buf[small_text_buffer_size];
 	struct stat statbuf;
 
 	/* output was set to 1 after malloc'ing in conky.c */
@@ -130,11 +115,11 @@ void mbox_scan(char *args, char *output, size_t max_len)
 		}
 		/* encapsulated with "'s find first occurrence of " */
 		if (args[strlen(args) - 1] == '"') {
-			strncpy(mbox_mail_spool, args, TEXT_BUFFER_SIZE);
+			strncpy(mbox_mail_spool, args, DEFAULT_TEXT_BUFFER_SIZE);
 			char *start = strchr(mbox_mail_spool, '"') + 1;
 
 			start[(long) (strrchr(mbox_mail_spool, '"') - start)] = '\0';
-			strncpy(mbox_mail_spool, start, TEXT_BUFFER_SIZE);
+			strncpy(mbox_mail_spool, start, DEFAULT_TEXT_BUFFER_SIZE);
 		} else {
 			char *copy_args = strdup(args);
 			char *tmp = strtok(copy_args, " ");
@@ -146,7 +131,7 @@ void mbox_scan(char *args, char *output, size_t max_len)
 					start = tmp;
 				}
 			}
-			strncpy(mbox_mail_spool, start, TEXT_BUFFER_SIZE);
+			strncpy(mbox_mail_spool, start, DEFAULT_TEXT_BUFFER_SIZE);
 			free(copy_args);
 		}
 		if (strlen(mbox_mail_spool) < 1) {
@@ -225,7 +210,7 @@ void mbox_scan(char *args, char *output, size_t max_len)
 	/* first find a "From " to set it to 0 for header-sarchings */
 	flag = 1;
 	while (!feof(fp)) {
-		if (fgets(buf, text_buffer_size, fp) == NULL) {
+		if (fgets(buf, small_text_buffer_size, fp) == NULL) {
 			break;
 		}
 
@@ -234,7 +219,7 @@ void mbox_scan(char *args, char *output, size_t max_len)
 
 			/* skip until \n */
 			while (strchr(buf, '\n') == NULL && !feof(fp)) {
-				fgets(buf, text_buffer_size, fp);
+				fgets(buf, small_text_buffer_size, fp);
 			}
 
 			flag = 0;	/* in the headers now */
@@ -250,7 +235,7 @@ void mbox_scan(char *args, char *output, size_t max_len)
 			/* then search for new mail ("From ") */
 
 			while (strchr(buf, '\n') == NULL && !feof(fp)) {
-				fgets(buf, text_buffer_size, fp);
+				fgets(buf, small_text_buffer_size, fp);
 			}
 			flag = 1;	/* in the body now */
 			continue;
@@ -267,7 +252,7 @@ void mbox_scan(char *args, char *output, size_t max_len)
 			curr = curr->previous;
 			/* Skip until \n */
 			while (strchr(buf, '\n') == NULL && !feof(fp)) {
-				fgets(buf, text_buffer_size, fp);
+				fgets(buf, small_text_buffer_size, fp);
 			}
 			continue;
 		}
@@ -290,7 +275,7 @@ void mbox_scan(char *args, char *output, size_t max_len)
 					curr->from[i] = '\0';
 					/* skip until \n */
 					while (strchr(buf, '\n') == NULL && !feof(fp)) {
-						fgets(buf, text_buffer_size, fp);
+						fgets(buf, small_text_buffer_size, fp);
 					}
 					break;
 				}
@@ -309,7 +294,7 @@ void mbox_scan(char *args, char *output, size_t max_len)
 					curr->from[i] = '\0';
 					/* skip until \n */
 					while (strchr(buf, '\n') == NULL && !feof(fp)) {
-						fgets(buf, text_buffer_size, fp);
+						fgets(buf, small_text_buffer_size, fp);
 					}
 					break;
 				}
@@ -339,7 +324,7 @@ void mbox_scan(char *args, char *output, size_t max_len)
 
 					/* skip until \n */
 					while (strchr(buf, '\n') == NULL && !feof(fp)) {
-						fgets(buf, text_buffer_size, fp);
+						fgets(buf, small_text_buffer_size, fp);
 					}
 					break;
 				}
@@ -359,14 +344,14 @@ void mbox_scan(char *args, char *output, size_t max_len)
 	while (i) {
 		if (curr->from[0] != '\0') {
 			if (i != print_mails) {
-				snprintf(buf, text_buffer_size, "\nF: %-*s S: %-*s", from_width,
+				snprintf(buf, small_text_buffer_size, "\nF: %-*s S: %-*s", from_width,
 					curr->from, subject_width, curr->subject);
 			} else {	/* first time - no \n in front */
-				snprintf(buf, text_buffer_size, "F: %-*s S: %-*s", from_width,
+				snprintf(buf, small_text_buffer_size, "F: %-*s S: %-*s", from_width,
 					curr->from, subject_width, curr->subject);
 			}
 		} else {
-			snprintf(buf, text_buffer_size, "\n");
+			snprintf(buf, small_text_buffer_size, "\n");
 		}
 		strncat(output, buf, max_len - strlen(output));
 

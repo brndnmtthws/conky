@@ -85,9 +85,10 @@
 #define TOP_MEM 4
 #define TOP_TIME 5
 
-#define TEXT_BUFFER_SIZE 1280
-#define P_MAX_SIZE ((TEXT_BUFFER_SIZE * 4) - 2)
-extern unsigned int text_buffer_size;
+#define DEFAULT_TEXT_BUFFER_SIZE 128
+extern unsigned int large_text_buffer_size;
+extern unsigned int small_text_buffer_size;
+extern unsigned int p_max_size;
 
 /* maximum number of special things, e.g. fonts, offsets, aligns, etc. */
 #define MAX_SPECIALS_DEFAULT 512
@@ -141,11 +142,12 @@ unsigned int diskio_read_value;
 unsigned int diskio_write_value;
 
 struct fs_stat {
-	char *path;
-	char *type;
+	char path[DEFAULT_TEXT_BUFFER_SIZE];
+	char type[DEFAULT_TEXT_BUFFER_SIZE];
 	long long size;
 	long long avail;
 	long long free;
+	char set;
 };
 
 #include "diskio.h"
@@ -398,8 +400,8 @@ int use_spacer;
 
 enum spacer_opts { NO_SPACER = 0, LEFT_SPACER, RIGHT_SPACER };
 
-char tmpstring1[TEXT_BUFFER_SIZE];
-char tmpstring2[TEXT_BUFFER_SIZE];
+char *tmpstring1;
+char *tmpstring2;
 
 #ifdef X11
 /* in x11.c */
@@ -535,6 +537,7 @@ char get_freq(char *, size_t, char *, int, unsigned int);
 void get_freq_dynamic(char *, size_t, char *, int);
 char get_voltage(char *, size_t, char *, int, unsigned int);	/* ptarjan */
 void update_load_average();
+int interface_up(const char *dev);
 
 int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n,
 	int *div, char *devtype);
@@ -663,6 +666,7 @@ char *get_apm_battery_time(void);
 extern void init_mpd_stats(struct information *current_info);
 void *update_mpd(void);
 extern timed_thread *mpd_timed_thread;
+void free_mpd_vars(struct information *current_info);
 #endif /* MPD */
 
 /* in xmms2.c */

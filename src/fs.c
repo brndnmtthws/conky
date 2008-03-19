@@ -57,14 +57,14 @@ struct fs_stat *fs_stats = fs_stats_;
 
 static void update_fs_stat(struct fs_stat *fs);
 
-static char* get_fs_type(const char* path);
+void get_fs_type(const char *path, char *result);
 
 void update_fs_stats()
 {
 	unsigned i;
 
 	for (i = 0; i < MAX_FS_STATS; ++i) {
-		if (fs_stats[i].path) {
+		if (fs_stats[i].set) {
 			update_fs_stat(&fs_stats[i]);
 		}
 	}
@@ -73,13 +73,8 @@ void update_fs_stats()
 void clear_fs_stats()
 {
 	unsigned i;
-
 	for (i = 0; i < MAX_FS_STATS; ++i) {
-		if (fs_stats[i].path) {
-			free(fs_stats[i].path);
-			free(fs_stats[i].type);
-			fs_stats[i].path = NULL;
-		}
+		memset(&fs_stats[i], 0, sizeof(struct fs_stat));
 	}
 }
 
@@ -90,8 +85,8 @@ struct fs_stat *prepare_fs_stat(const char *s)
 
 	/* lookup existing or get new */
 	for (i = 0; i < MAX_FS_STATS; ++i) {
-		if (fs_stats[i].path) {
-			if (strcmp(fs_stats[i].path, s) == 0) {
+		if (fs_stats[i].set) {
+			if (strncmp(fs_stats[i].path, s, DEFAULT_TEXT_BUFFER_SIZE) == 0) {
 				return &fs_stats[i];
 			}
 		} else {
@@ -103,7 +98,8 @@ struct fs_stat *prepare_fs_stat(const char *s)
 		ERR("too many fs stats");
 		return 0;
 	}
-	new->path = strdup(s);
+	strncpy(new->path, s, DEFAULT_TEXT_BUFFER_SIZE);
+	new->set = 1;
 	update_fs_stat(new);
 	return new;
 }
@@ -113,55 +109,58 @@ static void update_fs_stat(struct fs_stat *fs)
 	struct statfs s;
 
 	if (statfs(fs->path, &s) == 0) {
-		fs->size = (long long) s.f_blocks * s.f_bsize;
+		fs->size = (long long)s.f_blocks * s.f_bsize;
 		/* bfree (root) or bavail (non-roots) ? */
-		fs->avail = (long long) s.f_bavail * s.f_bsize;
-		fs->free = (long long) s.f_bfree * s.f_bsize;
-		fs->type = get_fs_type(fs->path);
+		fs->avail = (long long)s.f_bavail * s.f_bsize;
+		fs->free = (long long)s.f_bfree * s.f_bsize;
+		get_fs_type(fs->path, fs->type);
 	} else {
 		fs->size = 0;
 		fs->avail = 0;
 		fs->free = 0;
-		fs->type = "unknown";
+		strncpy(fs->type, "unknown", DEFAULT_TEXT_BUFFER_SIZE);
 		ERR("statfs '%s': %s", fs->path, strerror(errno));
 	}
 }
 
-static char* get_fs_type(const char* path)
+void get_fs_type(const char *path, char *result)
 {
 
 #ifdef HAVE_STRUCT_STATFS_F_FSTYPENAME
 
 	struct statfs s;
-	if(statfs(path, &s) == 0)
-		return s.f_fstypename;
-	else
+	if (statfs(path, &s) == 0) {
+		strncpy(result, s.f_fstypename, DEFAULT_TEXT_BUFFER_SIZE);
+	} else {
 		ERR("statfs '%s': %s", path, strerror(errno));
+	}
+	return;
 
-#else
+#else				/* HAVE_STRUCT_STATFS_F_FSTYPENAME */
 
-	/* TODO: walk up the directory tree so it works on
-	 * on paths that are not actually mount points. */
+	/* TODO: walk up the directory tree so it works on on paths that are not actually mount points. */
 
-	FILE* mtab = setmntent( "/etc/mtab", "r" );
+	FILE *mtab = setmntent("/etc/mtab", "r");
 
-	if(mtab == NULL) {
+	if (mtab == NULL) {
 		ERR("setmntent /etc/mtab: %s", strerror(errno));
-		return "unknown";
+		strncpy(result, "unknown", DEFAULT_TEXT_BUFFER_SIZE);
+		return;
 	}
 
-	struct mntent* me = getmntent(mtab);
+	struct mntent *me = getmntent(mtab);
 
 	// find our path in the mtab
-	while(getmntent(mtab) && strcmp(path,me->mnt_dir));
+	while (strcmp(path, me->mnt_dir) && getmntent(mtab));
 
 	endmntent(mtab);
 
-	if(me)
-		return strdup(me->mnt_type);
+	if (me && !strcmp(path, me->mnt_dir)) {
+		strncpy(result, me->mnt_type, DEFAULT_TEXT_BUFFER_SIZE);
+		return;
+	}
+#endif				/* HAVE_STRUCT_STATFS_F_FSTYPENAME */
 
-#endif // HAVE_STRUCT_STATFS_F_FSTYPENAME
-
-	return "unknown";
+	strncpy(result, "unknown", DEFAULT_TEXT_BUFFER_SIZE);
 
 }

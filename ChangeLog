@@ -1,5 +1,12 @@
 # $Id$
 
+2008-03-19
+	* Fixed a number of small memory leaks.
+	* Performed some minor profiling on Conky; introduced
+	small_text_buffer_size and large_text_buffer_size config options instead
+	of just text_buffer_size.
+	* Fixed some minor bugs introduced by new patches.
+
 2008-03-17
 	* Applied 12 patches:
 		1) sysfs battery support (for Linux >=2.6.24) (thanks Kapil)

@@ -150,7 +150,7 @@ enum alignment {
 /* for fonts */
 struct font_list {
 
-	char name[TEXT_BUFFER_SIZE];
+	char name[DEFAULT_TEXT_BUFFER_SIZE];
 	int num;
 	XFontStruct *font;
 
@@ -210,8 +210,8 @@ int addfont(const char *data_in)
 		CRIT_ERR("realloc in addfont");
 	}
 	// must account for null terminator
-	if (strlen(data_in) < TEXT_BUFFER_SIZE) {
-		strncpy(fonts[font_count].name, data_in, TEXT_BUFFER_SIZE);
+	if (strlen(data_in) < DEFAULT_TEXT_BUFFER_SIZE) {
+		strncpy(fonts[font_count].name, data_in, DEFAULT_TEXT_BUFFER_SIZE);
 #ifdef XFT
 		fonts[font_count].font_alpha = 0xffff;
 #endif
@@ -228,10 +228,11 @@ void set_first_font(const char *data_in)
 				== NULL) {
 			CRIT_ERR("malloc");
 		}
+		memset(fonts, 0, sizeof(struct font_list));
 		font_count++;
 	}
 	if (strlen(data_in) > 1) {
-		strncpy(fonts[0].name, data_in, TEXT_BUFFER_SIZE - 1);
+		strncpy(fonts[0].name, data_in, DEFAULT_TEXT_BUFFER_SIZE - 1);
 #ifdef XFT
 		fonts[0].font_alpha = 0xffff;
 #endif
@@ -269,8 +270,9 @@ static void load_fonts()
 			/* if (fonts[i].xftfont != NULL && selected_font == 0) {
 				XftFontClose(display, fonts[i].xftfont);
 			} */
-			if ((fonts[i].xftfont = XftFontOpenName(display, screen,
-					fonts[i].name)) != NULL) {
+			fonts[i].xftfont = XftFontOpenName(display, screen,
+					fonts[i].name);
+			if (fonts[i].xftfont != NULL) {
 				continue;
 			}
 
@@ -368,7 +370,9 @@ static unsigned int max_specials = MAX_SPECIALS_DEFAULT;
 static unsigned int max_user_text = MAX_USER_TEXT_DEFAULT;
 
 /* maximum size of individual text buffers, ie $exec buffer size */
-unsigned int text_buffer_size = TEXT_BUFFER_SIZE;
+unsigned int small_text_buffer_size = DEFAULT_TEXT_BUFFER_SIZE;
+unsigned int large_text_buffer_size = DEFAULT_TEXT_BUFFER_SIZE * 8;
+unsigned int p_p_max_size = DEFAULT_TEXT_BUFFER_SIZE * 8; // sorry I couldn't come up with a better var name
 
 #ifdef HAVE_ICONV
 #define CODEPAGE_LENGTH 20
@@ -485,7 +489,7 @@ static inline int calc_text_width(const char *s, int l)
 /* formatted text to render on screen, generated in generate_text(),
  * drawn in draw_stuff() */
 
-static char text_buffer[TEXT_BUFFER_SIZE * 4];
+static char *text_buffer;
 
 /* special stuff in text_buffer */
 
@@ -680,7 +684,7 @@ static void new_font(char *buf, char *args)
 	if (args) {
 		struct special_t *s = new_special(buf, FONT);
 
-		if (!s->font_added || strcmp(args, fonts[s->font_added].name)) {
+		if (s->font_added > font_count || !s->font_added || strncmp(args, fonts[s->font_added].name, DEFAULT_TEXT_BUFFER_SIZE)) {
 			int tmp = selected_font;
 
 			selected_font = s->font_added = addfont(args);
@@ -1909,7 +1913,7 @@ void *threaded_exec(struct text_object *obj)
 		FILE *fp = popen(obj->data.texeci.cmd, "r");
 
 		timed_thread_lock(obj->data.texeci.p_timed_thread);
-		int n2 = fread(p2, 1, text_buffer_size, fp);
+		int n2 = fread(p2, 1, small_text_buffer_size, fp);
 
 		pclose(fp);
 		p2[n2] = '\0';
@@ -2195,45 +2199,22 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 	}
 	free(objs);
 #ifdef MPD
-	if (info.mpd.title) {
-		free(info.mpd.title);
-		info.mpd.title = NULL;
-	}
-	if (info.mpd.artist) {
-		free(info.mpd.artist);
-		info.mpd.artist = NULL;
-	}
-	if (info.mpd.album) {
-		free(info.mpd.album);
-		info.mpd.album = NULL;
-	}
-	if (info.mpd.random) {
-		free(info.mpd.random);
-		info.mpd.random = NULL;
-	}
-	if (info.mpd.repeat) {
-		free(info.mpd.repeat);
-		info.mpd.repeat = NULL;
-	}
-	if (info.mpd.track) {
-		free(info.mpd.track);
-		info.mpd.track = NULL;
-	}
-	if (info.mpd.name) {
-		free(info.mpd.name);
-		info.mpd.name = NULL;
-	}
-	if (info.mpd.file) {
-		free(info.mpd.file);
-		info.mpd.file = NULL;
-	}
-	if (info.mpd.status) {
-		free(info.mpd.status);
-		info.mpd.status = NULL;
-	}
+	free_mpd_vars(&info);
 #endif
 	/* text_objects = NULL;
 	   text_object_count = 0; */
+/*	if (tmpstring1) {
+		free(tmpstring1);
+		tmpstring1 = 0;
+	}
+	if (tmpstring2) {
+		free(tmpstring2);
+		tmpstring2 = 0;
+	}
+	if (text_buffer) {
+		free(text_buffer);
+		text_buffer = 0;
+	}*/
 }
 
 void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
@@ -2708,7 +2689,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.s = strdup(buf);
 		} else {
 			obj->data.execi.cmd = strdup(arg + n);
-			obj->data.execi.buffer = (char *) calloc(1, text_buffer_size);
+			obj->data.execi.buffer = (char *) calloc(1, small_text_buffer_size);
 		}
 	END OBJ(texeci, 0)
 		unsigned int n;
@@ -2722,7 +2703,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.s = strdup(buf);
 		} else {
 			obj->data.texeci.cmd = strdup(arg + n);
-			obj->data.texeci.buffer = (char *) calloc(1, text_buffer_size);
+			obj->data.texeci.buffer = (char *) calloc(1, small_text_buffer_size);
 		}
 		obj->data.texeci.p_timed_thread = NULL;
 	END OBJ(pre_exec, 0)
@@ -3029,7 +3010,7 @@ static struct text_object *construct_text_object(const char *s,
 				}
 
 				if (fp || obj->data.tail.fd != -1) {
-					obj->data.tail.logfile = malloc(text_buffer_size);
+					obj->data.tail.logfile = malloc(small_text_buffer_size);
 					strcpy(obj->data.tail.logfile, buf);
 					obj->data.tail.wantedlines = n1;
 					obj->data.tail.interval = update_interval * 2;
@@ -3074,7 +3055,7 @@ static struct text_object *construct_text_object(const char *s,
 				}
 
 				if (fp || obj->data.tail.fd != -1) {
-					obj->data.tail.logfile = malloc(text_buffer_size);
+					obj->data.tail.logfile = malloc(small_text_buffer_size);
 					strcpy(obj->data.tail.logfile, buf);
 					obj->data.tail.wantedlines = n1;
 					obj->data.tail.interval = n2;
@@ -3093,7 +3074,7 @@ static struct text_object *construct_text_object(const char *s,
 			return NULL;
 		}
 		/* asumming all else worked */
-		obj->data.tail.buffer = malloc(text_buffer_size * 20);
+		obj->data.tail.buffer = malloc(small_text_buffer_size * 20);
 	END OBJ(head, 0)
 		char buf[64];
 		int n1, n2;
@@ -3114,7 +3095,7 @@ static struct text_object *construct_text_object(const char *s,
 
 				fp = fopen(buf, "r");
 				if (fp != NULL) {
-					obj->data.tail.logfile = malloc(text_buffer_size);
+					obj->data.tail.logfile = malloc(small_text_buffer_size);
 					strcpy(obj->data.tail.logfile, buf);
 					obj->data.tail.wantedlines = n1;
 					obj->data.tail.interval = update_interval * 2;
@@ -3139,7 +3120,7 @@ static struct text_object *construct_text_object(const char *s,
 
 				fp = fopen(buf, "r");
 				if (fp != NULL) {
-					obj->data.tail.logfile = malloc(text_buffer_size);
+					obj->data.tail.logfile = malloc(small_text_buffer_size);
 					strcpy(obj->data.tail.logfile, buf);
 					obj->data.tail.wantedlines = n1;
 					obj->data.tail.interval = n2;
@@ -3155,7 +3136,7 @@ static struct text_object *construct_text_object(const char *s,
 			return NULL;
 		}
 		/* asumming all else worked */
-		obj->data.tail.buffer = malloc(text_buffer_size * 20);
+		obj->data.tail.buffer = malloc(small_text_buffer_size * 20);
 	END OBJ(loadavg, INFO_LOADAVG)
 		int a = 1, b = 2, c = 3, r = 3;
 
@@ -3259,11 +3240,11 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.local_mail.box = strdup(dst);
 		obj->data.local_mail.interval = n1;
 	END OBJ(mboxscan, 0)
-		obj->data.mboxscan.args = (char *) malloc(TEXT_BUFFER_SIZE);
-		obj->data.mboxscan.output = (char *) malloc(text_buffer_size);
+		obj->data.mboxscan.args = (char *) malloc(small_text_buffer_size);
+		obj->data.mboxscan.output = (char *) malloc(small_text_buffer_size);
 		/* if '1' (in mboxscan.c) then there was SIGUSR1, hmm */
 		obj->data.mboxscan.output[0] = 1;
-		strncpy(obj->data.mboxscan.args, arg, TEXT_BUFFER_SIZE);
+		strncpy(obj->data.mboxscan.args, arg, small_text_buffer_size);
 	END OBJ(mem, INFO_MEM)
 	END OBJ(memmax, INFO_MEM)
 	END OBJ(memperc, INFO_MEM)
@@ -3932,7 +3913,7 @@ void parse_conky_vars(char *text, char *p, struct information *cur)
 	struct text_object_list *object_list =
 		extract_variable_text_internal(text);
 
-	generate_text_internal(p, P_MAX_SIZE, object_list->text_objects,
+	generate_text_internal(p, p_p_max_size, object_list->text_objects,
 		object_list->text_object_count, cur);
 	free(object_list);
 }
@@ -4018,6 +3999,46 @@ static void tail_pipe(struct text_object *obj, char *dst, size_t dst_size)
 	snprintf(dst, dst_size, "%s", obj->data.tail.buffer);
 }
 
+char *format_time(unsigned long time, const int width)
+{
+	char buf[10];
+	unsigned long nt;	// narrow time, for speed on 32-bit
+	unsigned cc;		// centiseconds
+	unsigned nn;		// multi-purpose whatever
+
+	nt = time;
+	cc = nt % 100;		// centiseconds past second
+	nt /= 100;			// total seconds
+	nn = nt % 60;		// seconds past the minute
+	nt /= 60;			// total minutes
+	if (width >= snprintf(buf, sizeof buf, "%lu:%02u.%02u",
+				nt, nn, cc)) {
+		return strdup(buf);
+	}
+	if (width >= snprintf(buf, sizeof buf, "%lu:%02u", nt, nn)) {
+		return strdup(buf);
+	}
+	nn = nt % 60;		// minutes past the hour
+	nt /= 60;			// total hours
+	if (width >= snprintf(buf, sizeof buf, "%lu,%02u", nt, nn)) {
+		return strdup(buf);
+	}
+	nn = nt;			// now also hours
+	if (width >= snprintf(buf, sizeof buf, "%uh", nn)) {
+		return strdup(buf);
+	}
+	nn /= 24;			// now days
+	if (width >= snprintf(buf, sizeof buf, "%ud", nn)) {
+		return strdup(buf);
+	}
+	nn /= 7;			// now weeks
+	if (width >= snprintf(buf, sizeof buf, "%uw", nn)) {
+		return strdup(buf);
+	}
+	// well shoot, this outta' fit...
+	return strdup("<inf>");
+}
+
 static void generate_text_internal(char *p, int p_max_size,
 		struct text_object *objs, unsigned int object_count,
 		struct information *cur)
@@ -4025,7 +4046,8 @@ static void generate_text_internal(char *p, int p_max_size,
 	unsigned int i;
 
 #ifdef HAVE_ICONV
-	char buff_in[P_MAX_SIZE] = { 0 };
+	char buff_in[p_max_size];
+	buff_in[0] = 0;
 	iconv_converting = 0;
 #endif
 
@@ -4652,8 +4674,8 @@ static void generate_text_internal(char *p, int p_max_size,
 					char *output = obj->data.execi.buffer;
 					FILE *fp = popen(obj->data.execi.cmd, "r");
 
-					// int length = fread(output, 1, text_buffer_size, fp);
-					int length = fread(output, 1, text_buffer_size, fp);
+					// int length = fread(output, 1, small_text_buffer_size, fp);
+					int length = fread(output, 1, small_text_buffer_size, fp);
 
 					pclose(fp);
 					output[length] = '\0';
@@ -5209,7 +5231,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(mboxscan) {
 				mbox_scan(obj->data.mboxscan.args, obj->data.mboxscan.output,
-					TEXT_BUFFER_SIZE);
+					small_text_buffer_size);
 				snprintf(p, p_max_size, "%s", obj->data.mboxscan.output);
 			}
 			OBJ(new_mails) {
@@ -5624,47 +5646,6 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%i", cur->bmpx.bitrate);
 			}
 #endif
-
-			char *format_time(unsigned long time, const int width)
-			{
-				char buf[10];
-				unsigned long nt;	// narrow time, for speed on 32-bit
-				unsigned cc;		// centiseconds
-				unsigned nn;		// multi-purpose whatever
-
-				nt = time;
-				cc = nt % 100;		// centiseconds past second
-				nt /= 100;			// total seconds
-				nn = nt % 60;		// seconds past the minute
-				nt /= 60;			// total minutes
-				if (width >= snprintf(buf, sizeof buf, "%lu:%02u.%02u",
-						nt, nn, cc)) {
-					return strdup(buf);
-				}
-				if (width >= snprintf(buf, sizeof buf, "%lu:%02u", nt, nn)) {
-					return strdup(buf);
-				}
-				nn = nt % 60;		// minutes past the hour
-				nt /= 60;			// total hours
-				if (width >= snprintf(buf, sizeof buf, "%lu,%02u", nt, nn)) {
-					return strdup(buf);
-				}
-				nn = nt;			// now also hours
-				if (width >= snprintf(buf, sizeof buf, "%uh", nn)) {
-					return strdup(buf);
-				}
-				nn /= 24;			// now days
-				if (width >= snprintf(buf, sizeof buf, "%ud", nn)) {
-					return strdup(buf);
-				}
-				nn /= 7;			// now weeks
-				if (width >= snprintf(buf, sizeof buf, "%uw", nn)) {
-					return strdup(buf);
-				}
-				// well shoot, this outta' fit...
-				return strdup("<inf>");
-			}
-
 			OBJ(top) {
 				if (obj->data.top.num >= 0 && obj->data.top.num < 10) {
 					char *time;
@@ -5785,10 +5766,10 @@ static void generate_text_internal(char *p, int p_max_size,
 						}
 						/* Make sure bsize is at least 1 byte smaller than the
 						 * buffer max size. */
-						if (bsize > (long) ((text_buffer_size * 20) - 1)) {
-							fseek(fp, bsize - text_buffer_size * 20 - 1,
+						if (bsize > (long) ((small_text_buffer_size * 20) - 1)) {
+							fseek(fp, bsize - small_text_buffer_size * 20 - 1,
 								SEEK_CUR);
-							bsize = text_buffer_size * 20 - 1;
+							bsize = small_text_buffer_size * 20 - 1;
 						}
 						bsize = fread(obj->data.tail.buffer, 1, bsize, fp);
 						fclose(fp);
@@ -5844,8 +5825,8 @@ head:
 						obj->data.tail.readlines = iter;
 						/* Make sure nl is at least 1 byte smaller than the
 						 * buffer max size. */
-						if (nl > (long) ((text_buffer_size * 20) - 1)) {
-							nl = text_buffer_size * 20 - 1;
+						if (nl > (long) ((small_text_buffer_size * 20) - 1)) {
+							nl = small_text_buffer_size * 20 - 1;
 						}
 						nl = fread(obj->data.tail.buffer, 1, nl, fp);
 						fclose(fp);
@@ -5970,7 +5951,7 @@ head:
 
 				dummy1 = dummy2 = a;
 
-				strncpy(buff_in, p, P_MAX_SIZE);
+				strncpy(buff_in, p, p_max_size);
 
 				iconv(*iconv_cd[iconv_selected - 1], NULL, NULL, NULL, NULL);
 				while (dummy1 > 0) {
@@ -5986,7 +5967,7 @@ head:
 				 * singlebyte codepage */
 				a = outptr - p;
 			}
-#endif
+#endif /* HAVE_ICONV */
 			p += a;
 			p_max_size -= a;
 		}
@@ -6018,7 +5999,7 @@ static void generate_text()
 
 	p = text_buffer;
 
-	generate_text_internal(p, P_MAX_SIZE, text_objects, text_object_count, cur);
+	generate_text_internal(p, p_p_max_size, text_objects, text_object_count, cur);
 
 	if (stuff_in_upper_case) {
 		char *p;
@@ -6299,9 +6280,9 @@ static void draw_string(const char *s)
 		printf("%s\n", s);
 		fflush(stdout);	/* output immediately, don't buffer */
 	}
-	memset(tmpstring1, 0, TEXT_BUFFER_SIZE);
-	memset(tmpstring2, 0, TEXT_BUFFER_SIZE);
-	strncpy(tmpstring1, s, TEXT_BUFFER_SIZE - 1);
+	memset(tmpstring1, 0, small_text_buffer_size);
+	memset(tmpstring2, 0, small_text_buffer_size);
+	strncpy(tmpstring1, s, small_text_buffer_size - 1);
 	pos = 0;
 	added = 0;
 	char space[2];
@@ -6313,25 +6294,19 @@ static void draw_string(const char *s)
 	/* This code looks for tabs in the text and coverts them to spaces.
 	 * The trick is getting the correct number of spaces, and not going
 	 * over the window's size without forcing the window larger. */
-	for (i = 0; i < TEXT_BUFFER_SIZE; i++) {
+	for (i = 0; i < (int)small_text_buffer_size; i++) {
 		if (tmpstring1[i] == '\t') {	// 9 is ascii tab
 			i2 = 0;
 			for (i2 = 0; i2 < (8 - (1 + pos) % 8) && added <= max; i2++) {
-				/* if (pos + i2 > TEXT_BUFFER_SIZE - 1) {
-					fprintf(stderr, "buffer overrun detected\n");
-				} */
 				/* guard against overrun */
-				tmpstring2[MIN(pos + i2, TEXT_BUFFER_SIZE - 1)] = ' ';
+				tmpstring2[MIN(pos + i2, (int)small_text_buffer_size - 1)] = ' ';
 				added++;
 			}
 			pos += i2;
 		} else {
 			if (tmpstring1[i] != 9) {
-				/* if (pos > TEXT_BUFFER_SIZE - 1) {
-					fprintf(stderr, "buffer overrun detected\n");
-				} */
 				/* guard against overrun */
-				tmpstring2[MIN(pos, TEXT_BUFFER_SIZE - 1)] = tmpstring1[i];
+				tmpstring2[MIN(pos, (int)small_text_buffer_size - 1)] = tmpstring1[i];
 				pos++;
 			}
 		}
@@ -6376,7 +6351,7 @@ static void draw_string(const char *s)
 	}
 	cur_x += width_of_s;
 #endif /* X11 */
-	memcpy(tmpstring1, s, TEXT_BUFFER_SIZE);
+	memcpy(tmpstring1, s, small_text_buffer_size);
 }
 
 long redmask, greenmask, bluemask;
@@ -7291,6 +7266,8 @@ void reload_config(void)
 
 #ifdef X11
 	free_fonts();
+	load_fonts();
+	set_font();
 #endif /* X11 */
 
 #ifdef TCP_PORT_MONITOR
@@ -7308,9 +7285,6 @@ void reload_config(void)
 		}
 
 #ifdef X11
-		load_fonts();
-		set_font();
-
 		// clear the window first
 		XClearWindow(display, RootWindow(display, screen));
 
@@ -7360,8 +7334,9 @@ void clean_up(void)
 	text_object_count = 0;
 	text_objects = NULL;
 
-	if (!text) {
+	if (text) {
 		free(text);
+		text = 0;
 	}
 
 	free(current_config);
@@ -8124,15 +8099,30 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("text_buffer_size") {
+			ERR("text_buffer_size is deprecated in favour of small_text_buffer size and large_text_buffer_size");
+		}
+		CONF("small_text_buffer_size") {
 			if (value) {
-				text_buffer_size = atoi(value);
+				small_text_buffer_size = atoi(value);
+				if (small_text_buffer_size < DEFAULT_TEXT_BUFFER_SIZE) {
+					small_text_buffer_size = DEFAULT_TEXT_BUFFER_SIZE;
+				}
+			} else {
+				CONF_ERR;
+			}
+		}
+		CONF("large_text_buffer_size") {
+			if (value) {
+				large_text_buffer_size = atoi(value);
+				p_p_max_size = large_text_buffer_size; 
 			} else {
 				CONF_ERR;
 			}
 		}
 		CONF("text") {
-			if (!text) {
+			if (text) {
 				free(text);
+				text = 0;
 			}
 
 			text = (char *) malloc(1);
@@ -8189,6 +8179,24 @@ static void load_config_file(const char *f)
 	if (info.music_player_interval == 0) {
 		// default to update_interval
 		info.music_player_interval = update_interval;
+	}
+	if (tmpstring1) {
+		free(tmpstring1);
+		tmpstring1 = 0;
+		tmpstring1 = malloc(small_text_buffer_size);
+		memset(tmpstring1, 0, small_text_buffer_size);
+	}
+	if (tmpstring2) {
+		free(tmpstring2);
+		tmpstring2 = 0;
+		tmpstring2 = malloc(small_text_buffer_size);
+		memset(tmpstring2, 0, small_text_buffer_size);
+	}
+	if (text_buffer) {
+		free(text_buffer);
+		text_buffer = 0;
+		text_buffer = malloc(large_text_buffer_size);
+		memset(text_buffer, 0, large_text_buffer_size);
 	}
 }
 
@@ -8418,8 +8426,9 @@ int main(int argc, char **argv)
 #endif
 #endif /* X11 */
 			case 't':
-				if (!text) {
+				if (text) {
 					free(text);
+					text = 0;
 				}
 				text = strdup(optarg);
 				convert_escapes(text);
@@ -8458,8 +8467,9 @@ int main(int argc, char **argv)
 
 	/* generate text and get initial size */
 	extract_variable_text(text);
-	if (!text) {
+	if (text) {
 		free(text);
+		text = 0;
 	}
 	text = NULL;
 	/* fork */
@@ -8487,6 +8497,13 @@ int main(int argc, char **argv)
 				return 0;
 		}
 	}
+
+	text_buffer = malloc(large_text_buffer_size);
+	memset(text_buffer, 0, large_text_buffer_size);
+	tmpstring1 = malloc(small_text_buffer_size);
+	memset(tmpstring1, 0, small_text_buffer_size);
+	tmpstring2 = malloc(small_text_buffer_size);
+	memset(tmpstring2, 0, small_text_buffer_size);
 
 #ifdef X11
 	selected_font = 0;
