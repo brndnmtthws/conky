@@ -5,12 +5,12 @@
 	some servers now).
 	* Added preliminary support for parsing the output of external commands
 	(via $execp)
+	* Applied FreeBSD total memory patch (thanks Nikos)
 
 2008-03-19
 	* Fixed a number of small memory leaks.
-	* Performed some minor profiling on Conky; introduced
-	small_text_buffer_size and large_text_buffer_size config options instead
-	of just text_buffer_size.
+	* Performed some minor profiling on Conky; reduced text_buffer_size
+	default to 128 bytes to improve performance.
 	* Fixed some minor bugs introduced by new patches.
 
 2008-03-17
