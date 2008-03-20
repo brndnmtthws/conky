@@ -1,10 +1,13 @@
-THESE INSTRUCTIONS ARE ONLY IF "sh autogen.sh" DOESN'T WORK!!!
+QUICK & EASY:
+	$ sh autogen.sh
+	$ ./configure
+	$ make
+	$ ./src/conky # to run Conky
+	% make install # to install Conky
 
 First, read the README. This contains instructions specific to building conky
 Fresh from a SVN checkout:
 
-* As the README says, you need to have the X development libraries installed.
-	This should be a package along the lines of libx11-dev or xorg-x11-dev .
 * Conky requires three "auto-tools", with at least the specific version numbers.
 	Make sure these are installed:
 
@@ -20,10 +23,15 @@ Fresh from a SVN checkout:
 	but "automake-1.9" instead.
 	Use the "--version" option to check the program version, i.e.
 	"autoconf --version".
+
+	You can also try using the autogen.sh script, like so:
+
+	$ sh autogen.sh
+	
 * After that, it's the familiar
 
-	./configure
-	make
-	make install
+	$ ./configure
+	$ make
+	# make install
 
 	You might have to do the last step as root.
