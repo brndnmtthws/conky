@@ -207,14 +207,13 @@ int addfont(const char *data_in)
 		memset(fonts, 0, sizeof(struct font_list));
 	}
 	fonts = realloc(fonts, (sizeof(struct font_list) * (font_count + 1)));
-	memset(fonts + (sizeof(struct font_list) * font_count), 0, sizeof(struct font_list));
+	memset(&fonts[font_count], 0, sizeof(struct font_list));
 	if (fonts == NULL) {
 		CRIT_ERR("realloc in addfont");
 	}
 	// must account for null terminator
 	if (strlen(data_in) < DEFAULT_TEXT_BUFFER_SIZE) {
 		strncpy(fonts[font_count].name, data_in, DEFAULT_TEXT_BUFFER_SIZE);
-		printf("adding font %s\n", fonts[font_count].name);
 #ifdef XFT
 		fonts[font_count].font_alpha = 0xffff;
 #endif
@@ -271,19 +270,15 @@ static void load_fonts()
 	for (i = 0; i <= font_count; i++) {
 #ifdef XFT
 		/* load Xft font */
-/*		if (use_xft && fonts[i].xftfont) {
+		if (use_xft && fonts[i].xftfont) {
 			continue;
-		} else*/ if (use_xft) {
+		} else if (use_xft) {
 			/* if (fonts[i].xftfont != NULL && selected_font == 0) {
 				XftFontClose(display, fonts[i].xftfont);
 			} */
-			if (fonts[i].xftfont) {
-				printf("lol, %i\n", fonts[i].xftfont);
-			}
 			fonts[i].xftfont = XftFontOpenName(display, screen,
 					fonts[i].name);
 			if (fonts[i].xftfont != NULL) {
-				printf("loaded %s, %i\n", fonts[i].name, font_count);
 				continue;
 			}
 
@@ -308,7 +303,7 @@ static void load_fonts()
 			XFreeFont(display, fonts[i].font);
 		} */
 
-		if ((fonts[i].font = XLoadQueryFont(display, fonts[i].name)) == NULL) {
+		if (!fonts[i].font || (fonts[i].font = XLoadQueryFont(display, fonts[i].name)) == NULL) {
 			ERR("can't load font '%s'", fonts[i].name);
 			if ((fonts[i].font = XLoadQueryFont(display, "fixed")) == NULL) {
 				CRIT_ERR("can't load font '%s'", "fixed");
