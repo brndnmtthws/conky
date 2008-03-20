@@ -37,31 +37,31 @@ void clear_mpd_stats(struct information *current_info);
 void init_mpd_stats(struct information *current_info)
 {
 	if (current_info->mpd.artist == NULL) {
-		current_info->mpd.artist = malloc(small_text_buffer_size);
+		current_info->mpd.artist = malloc(text_buffer_size);
 	}
 	if (current_info->mpd.album == NULL) {
-		current_info->mpd.album = malloc(small_text_buffer_size);
+		current_info->mpd.album = malloc(text_buffer_size);
 	}
 	if (current_info->mpd.title == NULL) {
-		current_info->mpd.title = malloc(small_text_buffer_size);
+		current_info->mpd.title = malloc(text_buffer_size);
 	}
 	if (current_info->mpd.random == NULL) {
-		current_info->mpd.random = malloc(small_text_buffer_size);
+		current_info->mpd.random = malloc(text_buffer_size);
 	}
 	if (current_info->mpd.repeat == NULL) {
-		current_info->mpd.repeat = malloc(small_text_buffer_size);
+		current_info->mpd.repeat = malloc(text_buffer_size);
 	}
 	if (current_info->mpd.track == NULL) {
-		current_info->mpd.track = malloc(small_text_buffer_size);
+		current_info->mpd.track = malloc(text_buffer_size);
 	}
 	if (current_info->mpd.status == NULL) {
-		current_info->mpd.status = malloc(small_text_buffer_size);
+		current_info->mpd.status = malloc(text_buffer_size);
 	}
 	if (current_info->mpd.name == NULL) {
-		current_info->mpd.name = malloc(small_text_buffer_size);
+		current_info->mpd.name = malloc(text_buffer_size);
 	}
 	if (current_info->mpd.file == NULL) {
-		current_info->mpd.file = malloc(small_text_buffer_size);
+		current_info->mpd.file = malloc(text_buffer_size);
 	}
 	clear_mpd_stats(current_info);
 }
@@ -151,7 +151,7 @@ void *update_mpd(void)
 			clear_mpd_stats(current_info);
 
 			strncpy(current_info->mpd.status, "MPD not responding",
-				small_text_buffer_size - 1);
+				text_buffer_size - 1);
 			timed_thread_unlock(mpd_timed_thread);
 			if (timed_thread_test(mpd_timed_thread)) {
 				timed_thread_exit(mpd_timed_thread);
@@ -170,7 +170,7 @@ void *update_mpd(void)
 			clear_mpd_stats(current_info);
 
 			strncpy(current_info->mpd.status, "MPD not responding",
-				small_text_buffer_size - 1);
+				text_buffer_size - 1);
 			timed_thread_unlock(mpd_timed_thread);
 			if (timed_thread_test(mpd_timed_thread)) {
 				timed_thread_exit(mpd_timed_thread);
@@ -195,14 +195,14 @@ void *update_mpd(void)
 		} */
 
 		if (status->state == MPD_STATUS_STATE_PLAY) {
-			strncpy(current_info->mpd.status, "Playing", small_text_buffer_size - 1);
+			strncpy(current_info->mpd.status, "Playing", text_buffer_size - 1);
 		}
 		if (status->state == MPD_STATUS_STATE_STOP) {
 			clear_mpd_stats(current_info);
-			strncpy(current_info->mpd.status, "Stopped", small_text_buffer_size - 1);
+			strncpy(current_info->mpd.status, "Stopped", text_buffer_size - 1);
 		}
 		if (status->state == MPD_STATUS_STATE_PAUSE) {
-			strncpy(current_info->mpd.status, "Paused", small_text_buffer_size - 1);
+			strncpy(current_info->mpd.status, "Paused", text_buffer_size - 1);
 		}
 		if (status->state == MPD_STATUS_STATE_UNKNOWN) {
 			clear_mpd_stats(current_info);
@@ -253,37 +253,37 @@ void *update_mpd(void)
 
 			if (song->artist) {
 				strncpy(current_info->mpd.artist, song->artist,
-					small_text_buffer_size - 1);
+					text_buffer_size - 1);
 			} else {
 				*current_info->mpd.artist = 0;
 			}
 			if (song->album) {
 				strncpy(current_info->mpd.album, song->album,
-					small_text_buffer_size - 1);
+					text_buffer_size - 1);
 			} else {
 				*current_info->mpd.album = 0;
 			}
 			if (song->title) {
 				strncpy(current_info->mpd.title, song->title,
-					small_text_buffer_size - 1);
+					text_buffer_size - 1);
 			} else {
 				*current_info->mpd.title = 0;
 			}
 			if (song->track) {
 				strncpy(current_info->mpd.track, song->track,
-					small_text_buffer_size - 1);
+					text_buffer_size - 1);
 			} else {
 				*current_info->mpd.track = 0;
 			}
 			if (song->name) {
 				strncpy(current_info->mpd.name, song->name,
-					small_text_buffer_size - 1);
+					text_buffer_size - 1);
 			} else {
 				*current_info->mpd.name = 0;
 			}
 			if (song->file) {
 				strncpy(current_info->mpd.file, song->file,
-					small_text_buffer_size - 1);
+					text_buffer_size - 1);
 			} else {
 				*current_info->mpd.file = 0;
 			}

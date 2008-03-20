@@ -105,14 +105,14 @@ static void user_time(char *ptr)
 static void users_alloc(struct information *ptr)
 {
 	if (ptr->users.names == NULL) {
-		ptr->users.names = malloc(small_text_buffer_size);
+		ptr->users.names = malloc(text_buffer_size);
 
 	}
 	if (ptr->users.terms == NULL) {
-		ptr->users.terms = malloc(small_text_buffer_size);
+		ptr->users.terms = malloc(text_buffer_size);
 	}
 	if (ptr->users.times == NULL) {
-		ptr->users.times = malloc(small_text_buffer_size);
+		ptr->users.times = malloc(text_buffer_size);
 	}
 }
 
@@ -128,15 +128,15 @@ void update_users()
 			free(current_info->users.names);
 			current_info->users.names = 0;
 		}
-		current_info->users.names = malloc(small_text_buffer_size);
-		strncpy(current_info->users.names, temp, small_text_buffer_size);
+		current_info->users.names = malloc(text_buffer_size);
+		strncpy(current_info->users.names, temp, text_buffer_size);
 	} else {
 		if (current_info->users.names) {
 			free(current_info->users.names);
 			current_info->users.names = 0;
 		}
-		current_info->users.names = malloc(small_text_buffer_size);
-		strncpy(current_info->users.names, "broken", small_text_buffer_size);
+		current_info->users.names = malloc(text_buffer_size);
+		strncpy(current_info->users.names, "broken", text_buffer_size);
 	}
 	user_num(&t);
 	if (t != 0) {
@@ -154,15 +154,15 @@ void update_users()
 			free(current_info->users.terms);
 			current_info->users.terms = 0;
 		}
-		current_info->users.terms = malloc(small_text_buffer_size);
-		strncpy(current_info->users.terms, temp, small_text_buffer_size);
+		current_info->users.terms = malloc(text_buffer_size);
+		strncpy(current_info->users.terms, temp, text_buffer_size);
 	} else {
 		if (current_info->users.terms) {
 			free(current_info->users.terms);
 			current_info->users.terms = 0;
 		}
-		current_info->users.terms = malloc(small_text_buffer_size);
-		strncpy(current_info->users.terms, "broken", small_text_buffer_size);
+		current_info->users.terms = malloc(text_buffer_size);
+		strncpy(current_info->users.terms, "broken", text_buffer_size);
 	}
 	user_time(temp);
 	if (temp != NULL) {
@@ -170,14 +170,14 @@ void update_users()
 			free(current_info->users.times);
 			current_info->users.times = 0;
 		}
-		current_info->users.times = malloc(small_text_buffer_size);
-		strncpy(current_info->users.times, temp, small_text_buffer_size);
+		current_info->users.times = malloc(text_buffer_size);
+		strncpy(current_info->users.times, temp, text_buffer_size);
 	} else {
 		if (current_info->users.times) {
 			free(current_info->users.times);
 			current_info->users.times = 0;
 		}
-		current_info->users.times = malloc(small_text_buffer_size);
-		strncpy(current_info->users.times, "broken", small_text_buffer_size);
+		current_info->users.times = malloc(text_buffer_size);
+		strncpy(current_info->users.times, "broken", text_buffer_size);
 	}
 }

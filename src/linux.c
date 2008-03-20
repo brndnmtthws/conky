@@ -790,8 +790,12 @@ int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n,
 		divn = read(divfd, divbuf, 63);
 		/* should read until n == 0 but I doubt that kernel will give these
 		 * in multiple pieces. :) */
-		divbuf[divn] = '\0';
-		*div = atoi(divbuf);
+		if (divn < 0) {
+			ERR("open_sysfs_sensor(): can't read from sysfs");
+		} else {
+			divbuf[divn] = '\0';
+			*div = atoi(divbuf);
+		}
 	}
 
 	close(divfd);
@@ -817,7 +821,7 @@ double get_sysfs_info(int *fd, int div, char *devtype, char *type)
 		/* should read until n == 0 but I doubt that kernel will give these
 		 * in multiple pieces. :) */
 		if (n < 0) {
-			printf("get_sysfs_info(): read from %s failed\n", devtype);
+			ERR("get_sysfs_info(): read from %s failed\n", devtype);
 		} else {
 			buf[n] = '\0';
 			val = atoi(buf);

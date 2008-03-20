@@ -86,8 +86,7 @@
 #define TOP_TIME 5
 
 #define DEFAULT_TEXT_BUFFER_SIZE 128
-extern unsigned int large_text_buffer_size;
-extern unsigned int small_text_buffer_size;
+extern unsigned int text_buffer_size;
 extern unsigned int p_max_size;
 
 /* maximum number of special things, e.g. fonts, offsets, aligns, etc. */
