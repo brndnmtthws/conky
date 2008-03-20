@@ -278,22 +278,14 @@ CONFIGURATION SETTINGS
 	      config file (default is 16384 bytes)
 
 
-       large_text_buffer_size bytes
-	      Size of the standard large text buffer (default is 1024  bytes).
-	      This buffer is used for the entirety of Conky's text. Increasing
-	      the buffer's size will decrease  performance  and	 increase  the
-	      memory footprint of Conky, but it will allow for more text to be
-	      displayed in Conky.
-
-
-       small_text_buffer_size bytes
-	      Size of the standard small text buffer (default is  128  bytes).
-	      This  buffer  is	used for intermediary text, such as individual
-	      lines, output from $exec vars, and various other variables.  In-
-	      creasing	the size of this buffer can drastically reduce Conky's
-	      performance, but will allow for more text display per  variable.
-	      The size of this buffer cannot be smaller than the default value
-	      of 128 bytes.
+       text_buffer_size bytes
+	      Size of the standard text buffer (default is  128	 bytes).  This
+	      buffer  is used for intermediary text, such as individual lines,
+	      output from $exec vars, and various other variables.  Increasing
+	      the  size	 of this buffer can drastically reduce Conky's perfor-
+	      mance, but will allow for more text display  per	variable.  The
+	      size  of this buffer cannot be smaller than the default value of
+	      128 bytes.
 
 
        maximum_width pixels
