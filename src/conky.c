@@ -204,14 +204,17 @@ int addfont(const char *data_in)
 				== NULL) {
 			CRIT_ERR("malloc");
 		}
+		memset(fonts, 0, sizeof(struct font_list));
 	}
 	fonts = realloc(fonts, (sizeof(struct font_list) * (font_count + 1)));
+	memset(fonts + (sizeof(struct font_list) * font_count), 0, sizeof(struct font_list));
 	if (fonts == NULL) {
 		CRIT_ERR("realloc in addfont");
 	}
 	// must account for null terminator
 	if (strlen(data_in) < DEFAULT_TEXT_BUFFER_SIZE) {
 		strncpy(fonts[font_count].name, data_in, DEFAULT_TEXT_BUFFER_SIZE);
+		printf("adding font %s\n", fonts[font_count].name);
 #ifdef XFT
 		fonts[font_count].font_alpha = 0xffff;
 #endif
@@ -247,10 +250,12 @@ void free_fonts()
 #ifdef XFT
 		if (use_xft) {
 			XftFontClose(display, fonts[i].xftfont);
+			fonts[i].xftfont = 0;
 		} else
 #endif
 		{
 			XFreeFont(display, fonts[i].font);
+			fonts[i].font = 0;
 		}
 	}
 	free(fonts);
@@ -266,13 +271,19 @@ static void load_fonts()
 	for (i = 0; i <= font_count; i++) {
 #ifdef XFT
 		/* load Xft font */
-		if (use_xft) {
+/*		if (use_xft && fonts[i].xftfont) {
+			continue;
+		} else*/ if (use_xft) {
 			/* if (fonts[i].xftfont != NULL && selected_font == 0) {
 				XftFontClose(display, fonts[i].xftfont);
 			} */
+			if (fonts[i].xftfont) {
+				printf("lol, %i\n", fonts[i].xftfont);
+			}
 			fonts[i].xftfont = XftFontOpenName(display, screen,
 					fonts[i].name);
 			if (fonts[i].xftfont != NULL) {
+				printf("loaded %s, %i\n", fonts[i].name, font_count);
 				continue;
 			}
 
@@ -2203,7 +2214,7 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 #endif
 	/* text_objects = NULL;
 	   text_object_count = 0; */
-/*	if (tmpstring1) {
+	if (tmpstring1) {
 		free(tmpstring1);
 		tmpstring1 = 0;
 	}
@@ -2214,7 +2225,7 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 	if (text_buffer) {
 		free(text_buffer);
 		text_buffer = 0;
-	}*/
+	}
 }
 
 void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
@@ -7183,6 +7194,11 @@ static void main_loop()
 #ifdef X11
 				XDestroyRegion(region);
 				region = NULL;
+#ifdef HAVE_XDAMAGE
+	XDamageDestroy(display, damage);
+	XFixesDestroyRegion(display, region2);
+	XFixesDestroyRegion(display, part);
+#endif /* HAVE_XDAMAGE */
 #endif /* X11 */
 				return;	/* return from main_loop */
 				/* break; */
@@ -7295,6 +7311,21 @@ void reload_config(void)
 		extract_variable_text(text);
 		free(text);
 		text = NULL;
+		if (tmpstring1) {
+			free(tmpstring1);
+		}
+		tmpstring1 = malloc(small_text_buffer_size);
+		memset(tmpstring1, 0, small_text_buffer_size);
+		if (tmpstring2) {
+			free(tmpstring2);
+		}
+		tmpstring2 = malloc(small_text_buffer_size);
+		memset(tmpstring2, 0, small_text_buffer_size);
+		if (text_buffer) {
+			free(text_buffer);
+		}
+		text_buffer = malloc(large_text_buffer_size);
+		memset(text_buffer, 0, large_text_buffer_size);
 		update_text();
 	}
 }
@@ -8179,24 +8210,6 @@ static void load_config_file(const char *f)
 	if (info.music_player_interval == 0) {
 		// default to update_interval
 		info.music_player_interval = update_interval;
-	}
-	if (tmpstring1) {
-		free(tmpstring1);
-		tmpstring1 = 0;
-		tmpstring1 = malloc(small_text_buffer_size);
-		memset(tmpstring1, 0, small_text_buffer_size);
-	}
-	if (tmpstring2) {
-		free(tmpstring2);
-		tmpstring2 = 0;
-		tmpstring2 = malloc(small_text_buffer_size);
-		memset(tmpstring2, 0, small_text_buffer_size);
-	}
-	if (text_buffer) {
-		free(text_buffer);
-		text_buffer = 0;
-		text_buffer = malloc(large_text_buffer_size);
-		memset(text_buffer, 0, large_text_buffer_size);
 	}
 }
 
