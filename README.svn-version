@@ -3,7 +3,7 @@ QUICK & EASY:
 	$ ./configure
 	$ make
 	$ ./src/conky # to run Conky
-	% make install # to install Conky
+	# make install
 
 First, read the README. This contains instructions specific to building conky
 Fresh from a SVN checkout:
