@@ -86,16 +86,16 @@ static int getsysctl(char *name, void *ptr, size_t len)
 struct ifmibdata *data = NULL;
 size_t len = 0;
 
-static int swapmode(int *retavail, int *retfree)
+static int swapmode(unsigned long *retavail, unsigned long *retfree)
 {
 	int n;
-	int pagesize = getpagesize();
+	unsigned long pagesize = getpagesize();
 	struct kvm_swap swapary[1];
 
 	*retavail = 0;
 	*retfree = 0;
 
-#define	CONVERT(v)	((quad_t) (v) * pagesize / 1024)
+#define	CONVERT(v)	((quad_t)(v) * (pagesize / 1024))
 
 	n = kvm_getswapinfo(kd, swapary, 1, 0);
 	if (n < 0 || swapary[0].ksw_total == 0) {
@@ -149,8 +149,8 @@ int check_mount(char *s)
 
 void update_meminfo()
 {
-	int total_pages, inactive_pages, free_pages;
-	int swap_avail, swap_free;
+	unsigned long total_pages, inactive_pages, free_pages;
+	unsigned long swap_avail, swap_free;
 
 	int pagesize = getpagesize();
 
@@ -166,8 +166,8 @@ void update_meminfo()
 		fprintf(stderr, "Cannot read sysctl \"vm.stats.vm.v_inactive_count\"");
 	}
 
-	info.memmax = (total_pages * pagesize) >> 10;
-	info.mem = ((total_pages - free_pages - inactive_pages) * pagesize) >> 10;
+	info.memmax = total_pages * (pagesize >> 10);
+	info.mem = (total_pages - free_pages - inactive_pages) * (pagesize >> 10);
 
 	if ((swapmode(&swap_avail, &swap_free)) >= 0) {
 		info.swapmax = swap_avail;

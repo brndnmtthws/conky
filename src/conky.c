@@ -975,6 +975,9 @@ static int spaced_print(char *buf, int size, char *format, int width,
 		char *func_name, ...) {
 	int len;
 	va_list argp;
+	if (size < 1) {
+		return 0;
+	}
 	char *tempbuf = malloc(size * sizeof(char));
 
 	// Passes the varargs along to vsnprintf
@@ -4075,6 +4078,10 @@ static void generate_text_internal(char *p, int p_max_size,
 
 	for (i = 0; i < object_count; i++) {
 		struct text_object *obj = &objs[i];
+
+		if (p_max_size < 1) {
+			break;
+		};
 
 #define OBJ(a) break; case OBJ_##a:
 
