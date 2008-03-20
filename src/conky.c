@@ -1096,6 +1096,7 @@ enum text_object_type {
 	OBJ_endif,
 	OBJ_image,
 	OBJ_exec,
+	OBJ_execp,
 	OBJ_execi,
 	OBJ_texeci,
 	OBJ_execbar,
@@ -1599,7 +1600,7 @@ void *imap_thread(struct mail_s *mail)
 		strncat(sendbuf, mail->user, MAXDATASIZE - strlen(sendbuf) - 1);
 		strncat(sendbuf, " ", MAXDATASIZE - strlen(sendbuf) - 1);
 		strncat(sendbuf, mail->pass, MAXDATASIZE - strlen(sendbuf) - 1);
-		strncat(sendbuf, "\n", MAXDATASIZE - strlen(sendbuf) - 1);
+		strncat(sendbuf, "\r\n", MAXDATASIZE - strlen(sendbuf) - 1);
 		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
 			perror("send a1");
 			fail++;
@@ -1625,7 +1626,7 @@ void *imap_thread(struct mail_s *mail)
 		}
 		strncpy(sendbuf, "a2 STATUS ", MAXDATASIZE);
 		strncat(sendbuf, mail->folder, MAXDATASIZE - strlen(sendbuf) - 1);
-		strncat(sendbuf, " (MESSAGES UNSEEN)\n",
+		strncat(sendbuf, " (MESSAGES UNSEEN)\r\n",
 			MAXDATASIZE - strlen(sendbuf) - 1);
 		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
 			perror("send a2");
@@ -1664,7 +1665,7 @@ void *imap_thread(struct mail_s *mail)
 				&mail->unseen);
 			timed_thread_unlock(mail->p_timed_thread);
 		}
-		strncpy(sendbuf, "a3 logout\n", MAXDATASIZE);
+		strncpy(sendbuf, "a3 logout\r\n", MAXDATASIZE);
 		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
 			perror("send a3");
 			fail++;
@@ -1781,7 +1782,7 @@ void *pop3_thread(struct mail_s *mail)
 		}
 		strncpy(sendbuf, "USER ", MAXDATASIZE);
 		strncat(sendbuf, mail->user, MAXDATASIZE - strlen(sendbuf) - 1);
-		strncat(sendbuf, "\n", MAXDATASIZE - strlen(sendbuf) - 1);
+		strncat(sendbuf, "\r\n", MAXDATASIZE - strlen(sendbuf) - 1);
 		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
 			perror("send USER");
 			fail++;
@@ -1807,7 +1808,7 @@ void *pop3_thread(struct mail_s *mail)
 		}
 		strncpy(sendbuf, "PASS ", MAXDATASIZE);
 		strncat(sendbuf, mail->pass, MAXDATASIZE - strlen(sendbuf) - 1);
-		strncat(sendbuf, "\n", MAXDATASIZE - strlen(sendbuf) - 1);
+		strncat(sendbuf, "\r\n", MAXDATASIZE - strlen(sendbuf) - 1);
 		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
 			perror("send PASS");
 			fail++;
@@ -1831,7 +1832,7 @@ void *pop3_thread(struct mail_s *mail)
 			fail++;
 			goto next_iteration;
 		}
-		strncpy(sendbuf, "STAT\n", MAXDATASIZE);
+		strncpy(sendbuf, "STAT\r\n", MAXDATASIZE);
 		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
 			perror("send STAT");
 			fail++;
@@ -1866,7 +1867,7 @@ void *pop3_thread(struct mail_s *mail)
 			sscanf(reply, "%lu %lu", &mail->unseen, &mail->used);
 			timed_thread_unlock(mail->p_timed_thread);
 		}
-		strncpy(sendbuf, "QUIT\n", MAXDATASIZE);
+		strncpy(sendbuf, "QUIT\r\n", MAXDATASIZE);
 		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
 			perror("send QUIT");
 			fail++;
@@ -2027,17 +2028,10 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 				break;
 			case OBJ_text:
 			case OBJ_font:
-				free(objs[i].data.s);
-				break;
 			case OBJ_image:
-				free(objs[i].data.s);
-				break;
 			case OBJ_exec:
-				free(objs[i].data.s);
-				break;
+			case OBJ_execp:
 			case OBJ_execbar:
-				free(objs[i].data.s);
-				break;
 			case OBJ_execgraph:
 				free(objs[i].data.s);
 				break;
@@ -2201,26 +2195,34 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 					info.users.times = 0;
 				}
 				break;
+#ifdef MPD
+			case OBJ_mpd_title:
+			case OBJ_mpd_artist:
+			case OBJ_mpd_album:
+			case OBJ_mpd_random:
+			case OBJ_mpd_repeat:
+			case OBJ_mpd_vol:
+			case OBJ_mpd_bitrate:
+			case OBJ_mpd_status:
+			case OBJ_mpd_host:
+			case OBJ_mpd_port:
+			case OBJ_mpd_password:
+			case OBJ_mpd_bar:
+			case OBJ_mpd_elapsed:
+			case OBJ_mpd_length:
+			case OBJ_mpd_track:
+			case OBJ_mpd_name:
+			case OBJ_mpd_file:
+			case OBJ_mpd_percent:
+			case OBJ_mpd_smart:
+				free_mpd_vars(&info);
+				break;
+#endif
 		}
 	}
 	free(objs);
-#ifdef MPD
-	free_mpd_vars(&info);
-#endif
 	/* text_objects = NULL;
 	   text_object_count = 0; */
-	if (tmpstring1) {
-		free(tmpstring1);
-		tmpstring1 = 0;
-	}
-	if (tmpstring2) {
-		free(tmpstring2);
-		tmpstring2 = 0;
-	}
-	if (text_buffer) {
-		free(text_buffer);
-		text_buffer = 0;
-	}
 }
 
 void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
@@ -2652,6 +2654,8 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.s = strdup(arg ? arg : "");
 #ifdef HAVE_POPEN
 	END OBJ(exec, 0)
+		obj->data.s = strdup(arg ? arg : "");
+	END OBJ(execp, 0)
 		obj->data.s = strdup(arg ? arg : "");
 	END OBJ(execbar, 0)
 		obj->data.s = strdup(arg ? arg : "");
@@ -3904,6 +3908,18 @@ static void extract_variable_text(const char *p)
 	struct text_object_list *list;
 
 	free_text_objects(text_object_count, text_objects);
+	if (tmpstring1) {
+		free(tmpstring1);
+		tmpstring1 = 0;
+	}
+	if (tmpstring2) {
+		free(tmpstring2);
+		tmpstring2 = 0;
+	}
+	if (text_buffer) {
+		free(text_buffer);
+		text_buffer = 0;
+	}
 	text_object_count = 0;
 	text_objects = NULL;
 
@@ -3914,14 +3930,14 @@ static void extract_variable_text(const char *p)
 	free(list);
 }
 
-void parse_conky_vars(char *text, char *p, struct information *cur)
+struct text_object_list *parse_conky_vars(char *text, char *p, struct information *cur)
 {
 	struct text_object_list *object_list =
 		extract_variable_text_internal(text);
 
 	generate_text_internal(p, p_p_max_size, object_list->text_objects,
 		object_list->text_object_count, cur);
-	free(object_list);
+	return object_list;
 }
 
 /* Allows reading from a FIFO (i.e., /dev/xconsole).
@@ -4525,15 +4541,33 @@ static void generate_text_internal(char *p, int p_max_size,
 				int length = fread(p, 1, p_max_size, fp);
 
 				pclose(fp);
-				/* output[length] = '\0';
-				if (length > 0 && output[length - 1] == '\n') {
-					output[length - 1] = '\0';
-				} */
+				
 				p[length] = '\0';
 				if (length > 0 && p[length - 1] == '\n') {
 					p[length - 1] = '\0';
 				}
-				// parse_conky_vars(output, p, cur);
+			}
+			OBJ(execp) {
+				FILE *fp = popen(obj->data.s, "r");
+				fread(p, 1, p_max_size, fp);
+
+				pclose(fp);
+				
+				struct information *my_info =
+					malloc(sizeof(struct information));
+				memcpy(my_info, cur, sizeof(struct information));
+				struct text_object_list *text_objects = parse_conky_vars(p, p, my_info);
+
+				int length = strlen(p);
+				
+				p[length] = '\0';
+				if (length > 0 && p[length - 1] == '\n') {
+					p[length - 1] = '\0';
+				}
+				
+				free_text_objects(text_objects->text_object_count, text_objects->text_objects);
+				free(text_objects);
+				free(my_info);
 			}
 			OBJ(execbar) {
 				char *p2 = p;
@@ -5129,7 +5163,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					malloc(sizeof(struct information));
 
 				memcpy(my_info, cur, sizeof(struct information));
-				parse_conky_vars(obj->data.ifblock.s, p, my_info);
+				struct text_object_list *text_objects = parse_conky_vars(obj->data.ifblock.s, p, my_info);
 				if (strlen(p) != 0) {
 					i = obj->data.ifblock.pos;
 					if_jumped = 1;
@@ -5137,6 +5171,8 @@ static void generate_text_internal(char *p, int p_max_size,
 					if_jumped = 0;
 				}
 				p[0] = '\0';
+				free_text_objects(text_objects->text_object_count, text_objects->text_objects);
+				free(text_objects);
 				free(my_info);
 			}
 			OBJ(if_existing) {
@@ -7357,6 +7393,18 @@ void clean_up(void)
 #endif /* X11 */
 
 	free_text_objects(text_object_count, text_objects);
+	if (tmpstring1) {
+		free(tmpstring1);
+		tmpstring1 = 0;
+	}
+	if (tmpstring2) {
+		free(tmpstring2);
+		tmpstring2 = 0;
+	}
+	if (text_buffer) {
+		free(text_buffer);
+		text_buffer = 0;
+	}
 	text_object_count = 0;
 	text_objects = NULL;
 

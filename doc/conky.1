@@ -267,8 +267,12 @@ Maximum size of user text buffer, i.e. layout below TEXT line in config file
 (default is 16384 bytes)
 
 .TP 
-\fB\*(T<\fBtext_buffer_size\fR\*(T>\fR \*(T<\fBbytes\fR\*(T> 
-Size of the standard text buffer (default is 1280 bytes).
+\fB\*(T<\fBlarge_text_buffer_size\fR\*(T>\fR \*(T<\fBbytes\fR\*(T> 
+Size of the standard large text buffer (default is 1024 bytes). This buffer is used for the entirety of Conky's text. Increasing the buffer's size will decrease performance and increase the memory footprint of Conky, but it will allow for more text to be displayed in Conky.
+
+.TP 
+\fB\*(T<\fBsmall_text_buffer_size\fR\*(T>\fR \*(T<\fBbytes\fR\*(T> 
+Size of the standard small text buffer (default is 128 bytes). This buffer is used for intermediary text, such as individual lines, output from $exec vars, and various other variables. Increasing the size of this buffer can drastically reduce Conky's performance, but will allow for more text display per variable. The size of this buffer cannot be smaller than the default value of 128 bytes.
 
 .TP 
 \fB\*(T<\fBmaximum_width\fR\*(T>\fR \*(T<\fBpixels\fR\*(T> 
@@ -674,6 +678,10 @@ Total size of system entropy pool for crypto freaks
 .TP 
 \fB\*(T<\fBexec\fR\*(T>\fR \*(T<\fBcommand\fR\*(T> 
 Executes a shell command and displays the output in conky. warning: this takes a lot more resources than other variables. I'd recommend coding wanted behaviour in C and posting a patch.
+
+.TP 
+\fB\*(T<\fBexecp\fR\*(T>\fR \*(T<\fBcommand\fR\*(T> 
+Executes a shell command and displays the output in conky. warning: this takes a lot more resources than other variables. I'd recommend coding wanted behaviour in C and posting a patch. This differs from $exec in that it parses the output of the command, so you can insert things like ${color red}hi!${color} in your script and have it correctly parsed by Conky.
 
 .TP 
 \fB\*(T<\fBexecbar\fR\*(T>\fR \*(T<\fBcommand\fR\*(T> 

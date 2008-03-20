@@ -637,7 +637,6 @@
 	<para></para></listitem>
 </varlistentry>
 
-
 <varlistentry>
 	<term>
 		<command><option>exec</option></command>
@@ -645,6 +644,16 @@
 	</term>
 	<listitem>
 		Executes a shell command and displays the output in conky. warning: this takes a lot more resources than other variables. I'd recommend coding wanted behaviour in C and posting a patch.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>execp</option></command>
+	<option>command</option>
+	</term>
+	<listitem>
+		Executes a shell command and displays the output in conky. warning: this takes a lot more resources than other variables. I'd recommend coding wanted behaviour in C and posting a patch.  This differs from $exec in that it parses the output of the command, so you can insert things like ${color red}hi!${color} in your script and have it correctly parsed by Conky.
 	<para></para></listitem>
 </varlistentry>
 

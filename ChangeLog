@@ -1,5 +1,11 @@
 # $Id$
 
+2008-03-20
+	* Added CRLF characters to POP3 and IMAP stuff (should play nicer with
+	some servers now).
+	* Added preliminary support for parsing the output of external commands
+	(via $execp)
+
 2008-03-19
 	* Fixed a number of small memory leaks.
 	* Performed some minor profiling on Conky; introduced
