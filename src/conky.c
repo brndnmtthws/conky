@@ -303,7 +303,7 @@ static void load_fonts()
 			XFreeFont(display, fonts[i].font);
 		} */
 
-		if (!fonts[i].font || (fonts[i].font = XLoadQueryFont(display, fonts[i].name)) == NULL) {
+		if (fonts[i].font || (fonts[i].font = XLoadQueryFont(display, fonts[i].name)) == NULL) {
 			ERR("can't load font '%s'", fonts[i].name);
 			if ((fonts[i].font = XLoadQueryFont(display, "fixed")) == NULL) {
 				CRIT_ERR("can't load font '%s'", "fixed");
