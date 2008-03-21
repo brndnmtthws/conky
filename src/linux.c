@@ -785,7 +785,7 @@ int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n,
 	if (divfd > 0) {
 		/* read integer */
 		char divbuf[64];
-		unsigned int divn;
+		int divn;
 
 		divn = read(divfd, divbuf, 63);
 		/* should read until n == 0 but I doubt that kernel will give these
