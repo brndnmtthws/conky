@@ -90,11 +90,11 @@ int smapi_get_bat_int(int idx, char *fname)
 
 char *smapi_get_bat_val(char *args)
 {
-	char *fname;
+	char fname[128];
 	int idx, cnt;
 
 	if(sscanf(args, "%i %n", &idx, &cnt) <= 0 ||
-	   !(fname = strdup(args + cnt))) {
+	   snprintf(fname, 127, "%s", (args + cnt)) < 0) {
 		ERR("smapi: wrong arguments, should be 'bat,<int>,<str>'");
 		return NULL;
 	}
