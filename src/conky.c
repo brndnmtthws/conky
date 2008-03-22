@@ -2189,6 +2189,16 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 					info.users.times = 0;
 				}
 				break;
+#ifdef SMAPI
+			case OBJ_smapi:
+			case OBJ_smapi_bat_perc:
+				free(objs[i].data.s);
+				break;
+			case OBJ_if_smapi_bat_installed:
+				free(objs[i].data.ifblock.s);
+				free(objs[i].data.ifblock.str);
+				break;
+#endif
 #ifdef MPD
 			case OBJ_mpd_title:
 			case OBJ_mpd_artist:
@@ -3497,14 +3507,14 @@ static struct text_object *construct_text_object(const char *s,
 		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
 			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
 		}
-	if (!arg) {
-		ERR("if_smapi_bat_installed needs an argument");
-		obj->data.ifblock.s = 0;
-	} else
-		obj->data.ifblock.s = strdup(arg);
-	blockstart[blockdepth] = object_count;
-	obj->data.ifblock.pos = object_count + 2;
-	blockdepth++;
+		if (!arg) {
+			ERR("if_smapi_bat_installed needs an argument");
+			obj->data.ifblock.s = 0;
+		} else
+			obj->data.ifblock.s = strdup(arg);
+		blockstart[blockdepth] = object_count;
+		obj->data.ifblock.pos = object_count + 2;
+		blockdepth++;
 	END OBJ(smapi_bat_perc, 0)
 		if (arg)
 			obj->data.s = strdup(arg);
@@ -6004,7 +6014,7 @@ head:
 				if(obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
 					val = smapi_bat_installed(idx) ?
 						smapi_get_bat_int(idx, "remaining_percent") : 0;
-					spaced_print(p, p_max_size, "%*d", pad_percents, "smapi_bat_perc", val);
+					spaced_print(p, p_max_size, "%*d", 4, "smapi_bat_perc", pad_percents, val);
 				} else
 					ERR("argument to smapi_bat_perc must be an integer");
 			}

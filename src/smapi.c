@@ -30,44 +30,36 @@ int smapi_bat_installed(int idx)
 {
 	char path[128];
 	struct stat sb;
-	char *str;
+	int ret = 0;
 
 	snprintf(path, 127, SYS_SMAPI_PATH "/BAT%i", idx);
 	if (!stat(path, &sb) && (sb.st_mode & S_IFMT) == S_IFDIR) {
 		snprintf(path, 127, SYS_SMAPI_PATH "/BAT%i/installed", idx);
-		str = smapi_read_str(path);
-		if(str && ! strcmp(str, "1"))
-			return 1;
+		ret = (smapi_read_int(path) == 1) ? 1 : 0;
 	}
-	return 0;
+	return ret;
 
 }
 
 char *smapi_read_str(char *path)
 {
 	FILE *fp;
-	char *str;
-	if ((fp = fopen(path, "r")) == NULL)
-		return NULL;
-	if (fscanf(fp, "%as\n", &str) != 1) {
+	char *str = NULL;
+	if ((fp = fopen(path, "r")) != NULL) {
+		fscanf(fp, "%as\n", &str);
 		fclose(fp);
-		return NULL;
 	}
-	fclose(fp);
 	return str;
 }
 
 int smapi_read_int(char *path)
 {
 	FILE *fp;
-	int i;
-	if ((fp = fopen(path, "r")) == NULL)
-		return 0;
-	if (fscanf(fp, "%i\n", &i) != 1) {
+	int i = 0;
+	if ((fp = fopen(path, "r")) != NULL) {
+		fscanf(fp, "%i\n", &i);
 		fclose(fp);
-		return 0;
 	}
-	fclose(fp);
 	return i;
 }
 
@@ -115,9 +107,9 @@ char *smapi_get_bat_val(char *args)
 
 char *smapi_get_val(char *args)
 {
-	char *str;
+	char str[128];
 
-	if(!args || sscanf(args, "%as", &str) <= 0)
+	if(!args || sscanf(args, "%127s", str) <= 0)
 		return NULL;
 
 	if(!strcmp(str, "bat"))
