@@ -988,10 +988,10 @@ static int spaced_print(char *buf, int size, char *format, int width,
 			len = snprintf(buf, size, "%s", tempbuf);
 			break;
 		case LEFT_SPACER:
-			len = snprintf(buf, width, "%*s", width - 1, tempbuf);
+			len = snprintf(buf, size, "%*s", width - 1, tempbuf);
 			break;
 		case RIGHT_SPACER:
-			len = snprintf(buf, width, "%-*s", width - 1, tempbuf);
+			len = snprintf(buf, size, "%-*s", width - 1, tempbuf);
 			break;
 		default:
 			CRIT_ERR("%s encountered invalid use_spacer value (%d)", func_name,
