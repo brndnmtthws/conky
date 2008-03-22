@@ -1147,6 +1147,7 @@ enum text_object_type {
 	OBJ_if_gw,
 	OBJ_gw_iface,
 	OBJ_gw_ip,
+	OBJ_laptop_mode,
 	OBJ_pb_battery,
 	OBJ_voltage_mv,
 	OBJ_voltage_v,
@@ -2476,6 +2477,7 @@ static struct text_object *construct_text_object(const char *s,
 		blockstart[blockdepth] = object_count;
 		obj->data.ifblock.pos = object_count + 2;
 		blockdepth++;
+	END OBJ(laptop_mode, 0)
 	END OBJ(pb_battery, 0)
 		if (arg && strcmp(arg, "status") == 0) {
 			obj->data.i = PB_BATT_STATUS;
@@ -4427,6 +4429,9 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(gw_ip) {
 				snprintf(p, p_max_size, "%s", cur->gw_info.ip);
+			}
+			OBJ(laptop_mode) {
+				snprintf(p, p_max_size, "%d", get_laptop_mode());
 			}
 			OBJ(pb_battery) {
 				get_powerbook_batt_info(p, p_max_size, obj->data.i);

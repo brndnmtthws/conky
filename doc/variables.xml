@@ -1179,6 +1179,15 @@
 
 <varlistentry>
 	<term>
+		<command><option>laptop_mode</option></command>
+	</term>
+	<listitem>
+		value of /proc/sys/vm/laptop_mode
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>loadavg</option></command>
 	</term>
 	<listitem>

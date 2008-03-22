@@ -544,7 +544,7 @@ void get_freq_dynamic(char *, size_t, char *, int);
 char get_voltage(char *, size_t, char *, int, unsigned int);	/* ptarjan */
 void update_load_average();
 int interface_up(const char *dev);
-
+int get_laptop_mode(void);
 void update_gateway_info(void);
 
 int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n,

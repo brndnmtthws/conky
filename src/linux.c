@@ -168,6 +168,16 @@ void update_meminfo()
 	fclose(meminfo_fp);
 }
 
+int get_laptop_mode()
+{
+	FILE *fp;
+	int val = -1;
+
+	if ((fp = fopen("/proc/sys/vm/laptop_mode", "r")) != NULL)
+		fscanf(fp, "%d\n", &val);
+	return val;
+}
+
 int interface_up(const char *dev)
 {
 	int fd;
