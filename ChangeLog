@@ -1,5 +1,15 @@
 # $Id$
 
+2008-03-22
+	* Smapi review: improved code, fixed memleaks and smapi_bat_perc when
+	using pad_percents.
+	* Fixed spaced_print, so pad_percents should now work as expected.
+	* Removed a line of dead code.
+	* Added support for displaying the default gateway.
+	* Support displaying current laptop_mode.
+	* Per-disk IO scheduler information now available.
+	* Support printing current nameservers.
+
 2008-03-20
 	* Added CRLF characters to POP3 and IMAP stuff (should play nicer with
 	some servers now).
