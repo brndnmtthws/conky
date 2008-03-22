@@ -1170,6 +1170,16 @@
 
 <varlistentry>
 	<term>
+		<command><option>ioscheduler</option></command>
+	</term>
+	<option>(disk)</option>
+	<listitem>
+		Prints the current ioscheduler used for the given disk name (i.e. e.g. "hda" or "sdb")
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>kernel</option></command>
 	</term>
 	<listitem>
@@ -1182,7 +1192,7 @@
 		<command><option>laptop_mode</option></command>
 	</term>
 	<listitem>
-		value of /proc/sys/vm/laptop_mode
+		The value of /proc/sys/vm/laptop_mode
 	<para></para></listitem>
 </varlistentry>
 

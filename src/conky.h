@@ -544,6 +544,7 @@ void get_freq_dynamic(char *, size_t, char *, int);
 char get_voltage(char *, size_t, char *, int, unsigned int);	/* ptarjan */
 void update_load_average();
 int interface_up(const char *dev);
+char *get_ioscheduler(char *);
 int get_laptop_mode(void);
 void update_gateway_info(void);
 

@@ -894,12 +894,16 @@ Displays the number of messages in your global IMAP inbox by default. You can de
 Displays the number of unseen messages in your global IMAP inbox by default. You can define individual IMAP inboxes seperately by passing arguments to this object. Arguments are: "host user pass [-i interval] [-p port] [-e command]". Default port is 143, default interval is 5 minutes. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
 
 .TP 
+\fB\*(T<\fBioscheduler\fR\*(T>\fR \*(T<\fB(disk)\fR\*(T> 
+Prints the current ioscheduler used for the given disk name (i.e. e.g. "hda" or "sdb")
+
+.TP 
 \fB\*(T<\fBkernel\fR\*(T>\fR 
 Kernel version
 
 .TP 
 \fB\*(T<\fBlaptop_mode\fR\*(T>\fR 
-value of /proc/sys/vm/laptop_mode
+The value of /proc/sys/vm/laptop_mode
 
 .TP 
 \fB\*(T<\fBloadavg\fR\*(T>\fR 

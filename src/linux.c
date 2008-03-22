@@ -178,6 +178,34 @@ int get_laptop_mode()
 	return val;
 }
 
+/* my system says:
+ * # cat /sys/block/sda/queue/scheduler
+ * noop [anticipatory] cfq
+ */
+char *get_ioscheduler(char *disk)
+{
+	FILE *fp;
+	char buf[128];
+
+	if (!disk)
+		return "n/a";
+
+	snprintf(buf, 127, "/sys/block/%s/queue/scheduler", disk);
+	if ((fp = fopen(buf, "r")) == NULL) {
+		return strdup("n/a");
+	}
+	while (!feof(fp)) {
+		fscanf(fp, "%127s", buf);
+		if (buf[0] == '[') {
+			buf[strlen(buf) - 1] = '\0';
+			fclose(fp);
+			return strdup(buf + 1);
+		}
+	}
+	fclose(fp);
+	return strdup("n/a");
+}
+
 int interface_up(const char *dev)
 {
 	int fd;

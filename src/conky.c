@@ -1145,6 +1145,7 @@ enum text_object_type {
 	OBJ_ibm_brightness,
 	OBJ_if_up,
 	OBJ_if_gw,
+	OBJ_ioscheduler,
 	OBJ_gw_iface,
 	OBJ_gw_ip,
 	OBJ_laptop_mode,
@@ -2065,6 +2066,10 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 					info.gw_info.ip = 0;
 				}
 				break;
+			case OBJ_ioscheduler:
+				if(objs[i].data.s)
+					free(objs[i].data.s);
+				break;
 #endif
 #ifdef XMMS2
 			case OBJ_xmms2_artist:
@@ -2477,6 +2482,12 @@ static struct text_object *construct_text_object(const char *s,
 		blockstart[blockdepth] = object_count;
 		obj->data.ifblock.pos = object_count + 2;
 		blockdepth++;
+	END OBJ(ioscheduler, 0)
+		if (!arg) {
+			CRIT_ERR("get_ioscheduler needs an argument (e.g. hda)");
+			obj->data.s = 0;
+		} else
+			obj->data.s = strdup(arg);
 	END OBJ(laptop_mode, 0)
 	END OBJ(pb_battery, 0)
 		if (arg && strcmp(arg, "status") == 0) {
@@ -5308,6 +5319,9 @@ static void generate_text_internal(char *p, int p_max_size,
 				} else {
 					if_jumped = 0;
 				}
+			}
+			OBJ(ioscheduler) {
+				snprintf(p, p_max_size, "%s", get_ioscheduler(obj->data.s));
 			}
 			OBJ(kernel) {
 				snprintf(p, p_max_size, "%s", cur->uname_s.release);
