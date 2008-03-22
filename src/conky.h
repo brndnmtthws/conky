@@ -135,6 +135,11 @@ struct net_stat {
 	char ap[18];
 };
 
+struct dns_data {
+	int nscount;
+	char **ns_list;
+};
+
 unsigned int diskio_value;
 unsigned int diskio_read_value;
 unsigned int diskio_write_value;
@@ -305,7 +310,8 @@ enum {
 	INFO_SMAPI = 25,
 #endif
 	INFO_USERS = 26,
-	INFO_GW = 27
+	INFO_GW = 27,
+	INFO_DNS = 28
 };
 
 /* get_battery_stuff() item selector */
@@ -369,6 +375,7 @@ struct information {
 #endif
 	struct usr_info users;
 	struct gateway_info gw_info;
+	struct dns_data nameserver_info;
 	struct process *cpu[10];
 	struct process *memu[10];
 	struct process *first_process;
@@ -515,6 +522,8 @@ void format_seconds(char *buf, unsigned int n, long t);
 void format_seconds_short(char *buf, unsigned int n, long t);
 struct net_stat *get_net_stat(const char *dev);
 void clear_net_stats(void);
+void free_dns_data(void);
+void update_dns_data(void);
 void update_users();
 
 void update_stuff();

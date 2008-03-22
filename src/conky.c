@@ -1185,6 +1185,7 @@ enum text_object_type {
 	OBJ_mixerbar,
 	OBJ_mixerlbar,
 	OBJ_mixerrbar,
+	OBJ_nameserver,
 	OBJ_new_mails,
 	OBJ_nodename,
 	OBJ_pre_exec,
@@ -2177,6 +2178,9 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 				free(objs[i].data.texeci.cmd);
 				free(objs[i].data.texeci.buffer);
 				break;
+			case OBJ_nameserver:
+				free_dns_data();
+				break;
 			case OBJ_top:
 			case OBJ_top_mem:
 				if (info.first_process) {
@@ -2850,6 +2854,8 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.fs = prepare_fs_stat(arg);
 	END OBJ(hr, 0)
 		obj->data.i = arg ? atoi(arg) : 1;
+	END OBJ(nameserver, INFO_DNS)
+		obj->data.i = arg ? atoi(arg) : 0;
 	END OBJ(offset, 0)
 		obj->data.i = arg ? atoi(arg) : 1;
 	END OBJ(voffset, 0)
@@ -4620,7 +4626,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				int length = fread(p, 1, p_max_size, fp);
 
 				pclose(fp);
-				
+
 				p[length] = '\0';
 				if (length > 0 && p[length - 1] == '\n') {
 					p[length - 1] = '\0';
@@ -4631,19 +4637,19 @@ static void generate_text_internal(char *p, int p_max_size,
 				fread(p, 1, p_max_size, fp);
 
 				pclose(fp);
-				
+
 				struct information *my_info =
 					malloc(sizeof(struct information));
 				memcpy(my_info, cur, sizeof(struct information));
 				struct text_object_list *text_objects = parse_conky_vars(p, p, my_info);
 
 				int length = strlen(p);
-				
+
 				p[length] = '\0';
 				if (length > 0 && p[length - 1] == '\n') {
 					p[length - 1] = '\0';
 				}
-				
+
 				free_text_objects(text_objects->text_object_count, text_objects->text_objects);
 				free(text_objects);
 				free(my_info);
@@ -5129,6 +5135,11 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(hr) {
 				new_hr(p, obj->data.i);
+			}
+			OBJ(nameserver) {
+				if (cur->nameserver_info.nscount > obj->data.i)
+					snprintf(p, p_max_size, "%s",
+							cur->nameserver_info.ns_list[obj->data.i]);
 			}
 #ifdef RSS
 			OBJ(rss) {

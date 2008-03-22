@@ -160,6 +160,50 @@ void clear_net_stats(void)
 	memset(netstats, 0, sizeof(netstats));
 }
 
+void free_dns_data(void)
+{
+	int i;
+	struct dns_data *data = &info.nameserver_info;
+	for (i = 0; i < data->nscount; i++)
+		free(data->ns_list[i]);
+	if (data->ns_list)
+		free(data->ns_list);
+	memset(data, 0, sizeof(struct dns_data));
+}
+
+//static double last_dns_update;
+
+void update_dns_data(void)
+{
+	FILE *fp;
+	char line[256];
+	struct dns_data *data = &info.nameserver_info;
+
+	/* maybe updating too often causes higher load because of /etc lying on a real FS
+	if (current_update_time - last_dns_update < 10.0)
+		return;
+	else
+		last_dns_update = current_update_time;
+	*/
+
+	free_dns_data();
+
+	if ((fp = fopen("/etc/resolv.conf", "r")) == NULL)
+		return;
+	while(!feof(fp)) {
+		if (fgets(line, 255, fp) == NULL)
+			goto OUT;
+		if (!strncmp(line, "nameserver ", 11)) {
+			line[strlen(line) - 1] = '\0';	// remove trailing newline
+			data->nscount++;
+			data->ns_list = realloc(data->ns_list, data->nscount * sizeof(char *));
+			data->ns_list[data->nscount - 1] = strdup(line + 11);
+		}
+	}
+OUT:
+	fclose(fp);
+}
+
 void format_seconds(char *buf, unsigned int n, long t)
 {
 	if (t >= 24 * 60 * 60) {	/* hours necessary when there are days? */
@@ -313,6 +357,9 @@ void update_stuff()
 	}
 	if (NEED(INFO_GW)) {
 		update_gateway_info();
+	}
+	if (NEED(INFO_DNS)) {
+		update_dns_data();
 	}
 }
 

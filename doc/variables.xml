@@ -1423,6 +1423,16 @@
 
 <varlistentry>
 	<term>
+		<command><option>nameserver</option></command>
+	<option>(index)</option>
+	</term>
+	<listitem>
+		Print a nameserver from /etc/resolv.conf. Index starts at and defaults to 0.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>new_mails</option></command>
 	<option>(mailbox)</option>
 	<option>(interval)</option>
