@@ -1144,6 +1144,9 @@ enum text_object_type {
 	OBJ_ibm_volume,
 	OBJ_ibm_brightness,
 	OBJ_if_up,
+	OBJ_if_gw,
+	OBJ_gw_iface,
+	OBJ_gw_ip,
 	OBJ_pb_battery,
 	OBJ_voltage_mv,
 	OBJ_voltage_v,
@@ -2047,6 +2050,20 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 				free(objs[i].data.ifblock.s);
 				free(objs[i].data.ifblock.str);
 				break;
+			case OBJ_if_gw:
+				free(objs[i].data.ifblock.s);
+				free(objs[i].data.ifblock.str);
+			case OBJ_gw_iface:
+			case OBJ_gw_ip:
+				if (info.gw_info.iface) {
+					free(info.gw_info.iface);
+					info.gw_info.iface = 0;
+				}
+				if (info.gw_info.ip) {
+					free(info.gw_info.ip);
+					info.gw_info.ip = 0;
+				}
+				break;
 #endif
 #ifdef XMMS2
 			case OBJ_xmms2_artist:
@@ -2449,6 +2466,13 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.ifblock.s = 0;
 		} else
 			obj->data.ifblock.s = strdup(arg);
+		blockstart[blockdepth] = object_count;
+		obj->data.ifblock.pos = object_count + 2;
+		blockdepth++;
+	END OBJ(if_gw, 0)
+		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
+			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
+		}
 		blockstart[blockdepth] = object_count;
 		obj->data.ifblock.pos = object_count + 2;
 		blockdepth++;
@@ -3455,6 +3479,9 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(user_times, INFO_USERS)
 	END OBJ(user_terms, INFO_USERS)
 	END OBJ(user_number, INFO_USERS)
+	END OBJ(gw_iface, INFO_GW)
+	END OBJ(gw_ip, INFO_GW)
+	END OBJ(if_gw, INFO_GW)
 #ifndef __OpenBSD__
 	END OBJ(adt746xcpu, 0)
 	END OBJ(adt746xfan, 0)
@@ -4386,6 +4413,20 @@ static void generate_text_internal(char *p, int p_max_size,
 				} else {
 					if_jumped = 0;
 				}
+			}
+			OBJ(if_gw) {
+				if (!cur->gw_info.count) {
+					i = obj->data.ifblock.pos;
+					if_jumped = 1;
+				} else {
+					if_jumped = 0;
+				}
+			}
+			OBJ(gw_iface) {
+				snprintf(p, p_max_size, "%s", cur->gw_info.iface);
+			}
+			OBJ(gw_ip) {
+				snprintf(p, p_max_size, "%s", cur->gw_info.ip);
 			}
 			OBJ(pb_battery) {
 				get_powerbook_batt_info(p, p_max_size, obj->data.i);

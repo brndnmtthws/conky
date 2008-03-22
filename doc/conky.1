@@ -757,6 +757,14 @@ File system used space
 The next element will be printed at position 'x'.
 
 .TP 
+\fB\*(T<\fBgw_iface\fR\*(T>\fR 
+Displays the default route's interface or "multiple"/"none" accordingly.
+
+.TP 
+\fB\*(T<\fBgw_ip\fR\*(T>\fR 
+Displays the default gateway's IP or "multiple"/"none" accordingly.
+
+.TP 
 \fB\*(T<\fBhddtemp\fR\*(T>\fR \*(T<\fBdev, (host,(port))\fR\*(T> 
 Displays temperature of a selected hard disk drive as reported by the hddtemp daemon running on host:port.
 Default host is 127.0.0.1, default port is 7634.
@@ -860,6 +868,10 @@ if PROCESS is running, display everything $if_running and the matching $endif
 .TP 
 \fB\*(T<\fBif_existing\fR\*(T>\fR \*(T<\fBfile (string)\fR\*(T> 
 if FILE exists, display everything between if_existing and the matching $endif. The optional second paramater checks for FILE containing the specified string and prints everything between $if_existing and the matching $endif.
+
+.TP 
+\fB\*(T<\fBif_gw\fR\*(T>\fR 
+if at least one default gateway exists, display everything between $if_gw and the matching $endif
 
 .TP 
 \fB\*(T<\fBif_mounted\fR\*(T>\fR \*(T<\fB(mountpoint)\fR\*(T> 

@@ -252,6 +252,12 @@ struct usr_info {
 	int number;
 };
 
+struct gateway_info {
+	char *iface;
+	char *ip;
+	int count;
+};
+
 #ifdef TCP_PORT_MONITOR
 #include "libtcp-portmon.h"
 #define MAX_PORT_MONITOR_CONNECTIONS_DEFAULT 256
@@ -299,6 +305,7 @@ enum {
 	INFO_SMAPI = 25,
 #endif
 	INFO_USERS = 26,
+	INFO_GW = 27
 };
 
 /* get_battery_stuff() item selector */
@@ -361,6 +368,7 @@ struct information {
 	struct bmpx_s bmpx;
 #endif
 	struct usr_info users;
+	struct gateway_info gw_info;
 	struct process *cpu[10];
 	struct process *memu[10];
 	struct process *first_process;
@@ -536,6 +544,8 @@ void get_freq_dynamic(char *, size_t, char *, int);
 char get_voltage(char *, size_t, char *, int, unsigned int);	/* ptarjan */
 void update_load_average();
 int interface_up(const char *dev);
+
+void update_gateway_info(void);
 
 int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n,
 	int *div, char *devtype);

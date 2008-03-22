@@ -841,6 +841,24 @@
 
 <varlistentry>
 	<term>
+		<command><option>gw_iface</option></command>
+	</term>
+	<listitem>
+		Displays the default route's interface or "multiple"/"none" accordingly.
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>gw_ip</option></command>
+	</term>
+	<listitem>
+		Displays the default gateway's IP or "multiple"/"none" accordingly.
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
 		<command><option>hddtemp</option></command>
 		<option>dev, (host,(port))</option>
 	</term>
@@ -1068,6 +1086,15 @@
 	</term>
 	<listitem>
 		if conky variable VAR is empty, display everything between $if_empty and the matching $endif
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>if_gw</option></command>
+	</term>
+	<listitem>
+		if there is at least one default gateway, display everything between $if_gw and the matching $endif
 	<para></para></listitem>
 </varlistentry>
 

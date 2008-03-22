@@ -51,6 +51,8 @@
 #include <netinet/in.h>
 #include <linux/sockios.h>
 #include <net/if.h>
+#include <arpa/inet.h>
+#include <linux/route.h>
 #include <math.h>
 
 #ifdef HAVE_IWLIB
@@ -186,6 +188,62 @@ int interface_up(const char *dev)
 	}
 	close(fd);
 	return 0;
+}
+
+#define COND_FREE(x) if(x) free(x); x = 0
+#define SAVE_SET_STRING(x, y) \
+	if (x && strcmp((char *)x, (char *)y)) { \
+		free(x); \
+		x = strdup("multiple"); \
+	} else if (!x) { \
+		x = strdup(y); \
+	}
+
+void update_gateway_info()
+{
+	FILE *fp;
+	struct in_addr ina;
+	char iface[64];
+	unsigned long dest, gate, mask;
+	unsigned int flags;
+	short ref, use, metric, mtu, win, irtt;
+
+	struct gateway_info *gw_info = &info.gw_info;
+
+	COND_FREE(gw_info->iface);
+	COND_FREE(gw_info->ip);
+	gw_info->count = 0;
+
+	if ((fp = fopen("/proc/net/route", "r")) == NULL) {
+		perror("fopen()");
+		goto FAIL;
+	}
+	if (fscanf(fp, "%*[^\n]\n") == EOF) {
+		perror("fscanf()");
+		goto CLOSE_FAIL;
+	}
+	while (!feof(fp)) {
+		// Iface Destination Gateway Flags RefCnt Use Metric Mask MTU Window IRTT
+		if(fscanf(fp, "%63s %lx %lx %x %hd %hd %hd %lx %hd %hd %hd\n",
+				iface, &dest, &gate, &flags, &ref, &use,
+				&metric, &mask, &mtu, &win, &irtt) != 11) {
+			perror("fscanf()");
+			goto CLOSE_FAIL;
+		}
+		if (flags & RTF_GATEWAY && dest == 0 && mask == 0) {
+			gw_info->count++;
+			SAVE_SET_STRING(gw_info->iface, iface)
+			ina.s_addr = gate;
+			SAVE_SET_STRING(gw_info->ip, inet_ntoa(ina))
+		}
+	}
+	fclose(fp);
+	return;
+CLOSE_FAIL:
+	fclose(fp);
+FAIL:
+	info.gw_info.iface = info.gw_info.ip = strdup("failed");
+	return;
 }
 
 inline void update_net_stats()
