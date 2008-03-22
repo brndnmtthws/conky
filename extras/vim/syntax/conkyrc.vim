@@ -69,6 +69,7 @@ syn keyword ConkyrcConstant
         \ below
         \ bottom_left
         \ bottom_right
+        \ bottom_middle
         \ desktop
         \ no
         \ none
@@ -79,6 +80,9 @@ syn keyword ConkyrcConstant
         \ sticky
         \ top_left
         \ top_right
+        \ top_middle
+        \ middle_left
+        \ middle_right
         \ undecorated
         \ yes
 
@@ -150,6 +154,7 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
         \ execi
         \ execibar
         \ execigraph
+        \ execp
         \ font
         \ freq
         \ freq_dyn

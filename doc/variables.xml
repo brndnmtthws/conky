@@ -649,17 +649,6 @@
 
 <varlistentry>
 	<term>
-		<command><option>execp</option></command>
-	<option>command</option>
-	</term>
-	<listitem>
-		Executes a shell command and displays the output in conky. warning: this takes a lot more resources than other variables. I'd recommend coding wanted behaviour in C and posting a patch.  This differs from $exec in that it parses the output of the command, so you can insert things like ${color red}hi!${color} in your script and have it correctly parsed by Conky.
-		Caveats: Conky parses and evaluates the output of $execp every time Conky loops, and then destroys all the objects.  If you try to use anything like $execi within an $execp statement, it will functionally run at the same interval that the $execp statement runs, as it is created and destroyed at every interval.
-	<para></para></listitem>
-</varlistentry>
-
-<varlistentry>
-	<term>
 		<command><option>execbar</option></command>
 	<option>command</option>
 	</term>
@@ -705,6 +694,27 @@
 	</term>
 	<listitem>
 		Same as execigraph, but takes an interval arg graphs values
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>execp</option></command>
+	<option>command</option>
+	</term>
+	<listitem>
+		Executes a shell command and displays the output in conky. warning: this takes a lot more resources than other variables. I'd recommend coding wanted behaviour in C and posting a patch.  This differs from $exec in that it parses the output of the command, so you can insert things like ${color red}hi!${color} in your script and have it correctly parsed by Conky.
+		Caveats: Conky parses and evaluates the output of $execp every time Conky loops, and then destroys all the objects.  If you try to use anything like $execi within an $execp statement, it will functionally run at the same interval that the $execp statement runs, as it is created and destroyed at every interval.
+	<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+	<term>
+		<command><option>execpi</option></command>
+		<option>interval command</option>
+	</term>
+	<listitem>
+		Same as execp but with specific interval. Interval can't be less than update_interval in configuration.  Note that the output from the $execpi command is still parsed and evaluated at every interval.
 		<para></para></listitem>
 </varlistentry>
 

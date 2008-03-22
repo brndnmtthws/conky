@@ -79,7 +79,7 @@ static void print_version()
 	printf("Conky %s compiled %s for %s\n", VERSION, BUILD_DATE, BUILD_ARCH);
 
 	printf("\nCompiled in features:\n\n"
-		   "system config file: %s\n\n"
+		   "System config file: %s\n\n"
 #ifdef X11
 		   " X11:\n"
 # ifdef HAVE_XDAMAGE
@@ -1097,13 +1097,14 @@ enum text_object_type {
 	OBJ_endif,
 	OBJ_image,
 	OBJ_exec,
-	OBJ_execp,
 	OBJ_execi,
 	OBJ_texeci,
 	OBJ_execbar,
 	OBJ_execgraph,
 	OBJ_execibar,
 	OBJ_execigraph,
+	OBJ_execp,
+	OBJ_execpi,
 	OBJ_freq,
 	OBJ_freq_g,
 	OBJ_freq_dyn,
@@ -2031,17 +2032,11 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 			case OBJ_font:
 			case OBJ_image:
 			case OBJ_exec:
-			case OBJ_execp:
 			case OBJ_execbar:
 			case OBJ_execgraph:
+			case OBJ_execp:
 				free(objs[i].data.s);
 				break;
-			/* case OBJ_execibar:
-				free(objs[i].data.s);
-				break;
-			case OBJ_execigraph:
-				free(objs[i].data.s);
-				break; */
 #ifdef HAVE_ICONV
 			case OBJ_iconv_start:
 				free_iconv();
@@ -2148,7 +2143,10 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 				free(objs[i].data.s);
 				break;
 #endif /* !__OpenBSD__ */
+			case OBJ_execpi:
 			case OBJ_execi:
+			case OBJ_execibar:
+			case OBJ_execigraph:
 				free(objs[i].data.execi.cmd);
 				free(objs[i].data.execi.buffer);
 				break;
@@ -2157,11 +2155,6 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 				free(objs[i].data.texeci.buffer);
 				break;
 			case OBJ_top:
-				if (info.first_process) {
-					free_all_processes();
-					info.first_process = NULL;
-				}
-				break;
 			case OBJ_top_mem:
 				if (info.first_process) {
 					free_all_processes();
@@ -2700,7 +2693,21 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.s = strdup(buf);
 		} else {
 			obj->data.execi.cmd = strdup(arg + n);
-			obj->data.execi.buffer = (char *) calloc(1, text_buffer_size);
+			obj->data.execi.buffer = malloc(text_buffer_size);
+		}
+	END OBJ(execpi, 0)
+		unsigned int n;
+
+		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
+			char buf[256];
+
+			ERR("${execi <interval> command}");
+			obj->type = OBJ_text;
+			snprintf(buf, 256, "${%s}", s);
+			obj->data.s = strdup(buf);
+		} else {
+			obj->data.execi.cmd = strdup(arg + n);
+			obj->data.execi.buffer = malloc(text_buffer_size);
 		}
 	END OBJ(texeci, 0)
 		unsigned int n;
@@ -2714,7 +2721,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.s = strdup(buf);
 		} else {
 			obj->data.texeci.cmd = strdup(arg + n);
-			obj->data.texeci.buffer = (char *) calloc(1, text_buffer_size);
+			obj->data.texeci.buffer = malloc(text_buffer_size);
 		}
 		obj->data.texeci.p_timed_thread = NULL;
 	END OBJ(pre_exec, 0)
@@ -4719,7 +4726,6 @@ static void generate_text_internal(char *p, int p_max_size,
 					char *output = obj->data.execi.buffer;
 					FILE *fp = popen(obj->data.execi.cmd, "r");
 
-					// int length = fread(output, 1, text_buffer_size, fp);
 					int length = fread(output, 1, text_buffer_size, fp);
 
 					pclose(fp);
@@ -4731,6 +4737,35 @@ static void generate_text_internal(char *p, int p_max_size,
 					snprintf(p, p_max_size, "%s", output);
 				}
 				// parse_conky_vars(output, p, cur);
+			}
+			OBJ(execpi) {
+				struct information *my_info =
+					malloc(sizeof(struct information));
+				memcpy(my_info, cur, sizeof(struct information));
+				struct text_object_list *text_objects = 0;
+
+				if (current_update_time - obj->data.execi.last_update
+						< obj->data.execi.interval
+						|| obj->data.execi.interval == 0) {
+					text_objects = parse_conky_vars(obj->data.execi.buffer, p, my_info);
+				} else {
+					char *output = obj->data.execi.buffer;
+					FILE *fp = popen(obj->data.execi.cmd, "r");
+					int length = fread(output, 1, text_buffer_size, fp);
+
+					pclose(fp);
+
+					output[length] = '\0';
+					if (length > 0 && output[length - 1] == '\n') {
+						output[length - 1] = '\0';
+					}
+					
+					text_objects = parse_conky_vars(obj->data.execi.buffer, p, my_info);
+					obj->data.execi.last_update = current_update_time;
+				}
+				free_text_objects(text_objects->text_object_count, text_objects->text_objects);
+				free(text_objects);
+				free(my_info);
 			}
 			OBJ(texeci) {
 				if (!obj->data.texeci.p_timed_thread) {

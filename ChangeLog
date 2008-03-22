@@ -4,7 +4,7 @@
 	* Added CRLF characters to POP3 and IMAP stuff (should play nicer with
 	some servers now).
 	* Added preliminary support for parsing the output of external commands
-	(via $execp)
+	(via $execp and $execpi)
 	* Applied FreeBSD total memory patch (thanks Nikos)
 
 2008-03-19

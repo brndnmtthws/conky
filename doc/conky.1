@@ -676,11 +676,6 @@ Total size of system entropy pool for crypto freaks
 Executes a shell command and displays the output in conky. warning: this takes a lot more resources than other variables. I'd recommend coding wanted behaviour in C and posting a patch.
 
 .TP 
-\fB\*(T<\fBexecp\fR\*(T>\fR \*(T<\fBcommand\fR\*(T> 
-Executes a shell command and displays the output in conky. warning: this takes a lot more resources than other variables. I'd recommend coding wanted behaviour in C and posting a patch. This differs from $exec in that it parses the output of the command, so you can insert things like ${color red}hi!${color} in your script and have it correctly parsed by Conky.
-Caveats: Conky parses and evaluates the output of $execp every time Conky loops, and then destroys all the objects. If you try to use anything like $execi within an $execp statement, it will functionally run at the same interval that the $execp statement runs, as it is created and destroyed at every interval.
-
-.TP 
 \fB\*(T<\fBexecbar\fR\*(T>\fR \*(T<\fBcommand\fR\*(T> 
 Same as exec, except if the first value return is a value between 0-100, it will use that number for a bar. The size for the bar is currently fixed, but that may change in the future.
 
@@ -699,6 +694,15 @@ Same as execbar, except with an interval
 .TP 
 \fB\*(T<\fBexecigraph\fR\*(T>\fR \*(T<\fBinterval command\fR\*(T> 
 Same as execigraph, but takes an interval arg graphs values
+
+.TP 
+\fB\*(T<\fBexecp\fR\*(T>\fR \*(T<\fBcommand\fR\*(T> 
+Executes a shell command and displays the output in conky. warning: this takes a lot more resources than other variables. I'd recommend coding wanted behaviour in C and posting a patch. This differs from $exec in that it parses the output of the command, so you can insert things like ${color red}hi!${color} in your script and have it correctly parsed by Conky.
+Caveats: Conky parses and evaluates the output of $execp every time Conky loops, and then destroys all the objects. If you try to use anything like $execi within an $execp statement, it will functionally run at the same interval that the $execp statement runs, as it is created and destroyed at every interval.
+
+.TP 
+\fB\*(T<\fBexecpi\fR\*(T>\fR \*(T<\fBinterval command\fR\*(T> 
+Same as execp but with specific interval. Interval can't be less than update_interval in configuration. Note that the output from the $execpi command is still parsed and evaluated at every interval.
 
 .TP 
 \fB\*(T<\fBfont\fR\*(T>\fR \*(T<\fB(font)\fR\*(T> 
