@@ -821,6 +821,15 @@ VARIABLES
        goto x The next element will be printed at position 'x'.
 
 
+       gw_iface
+	      Displays	the default route's interface or "multiple"/"none" ac-
+	      cordingly.
+
+
+       gw_ip  Displays the default gateway's IP or  "multiple"/"none"  accord-
+	      ingly.
+
+
        hddtemp dev, (host,(port))
 	      Displays	temperature  of a selected hard disk drive as reported
 	      by the hddtemp daemon running on	host:port.   Default  host  is
@@ -953,15 +962,19 @@ VARIABLES
 	      $if_empty and the matching $endif
 
 
+       if_gw  if there is at least one default gateway, display everything be-
+	      tween $if_gw and the matching $endif
+
+
        if_running (process)
-	      if PROCESS is running, display everything	 $if_running  and  the
+	      if  PROCESS  is  running, display everything $if_running and the
 	      matching $endif
 
 
        if_existing file (string)
-	      if  FILE	exists, display everything between if_existing and the
-	      matching $endif. The optional second paramater checks  for  FILE
-	      containing  the  specified  string and prints everything between
+	      if FILE exists, display everything between if_existing  and  the
+	      matching	$endif.	 The optional second paramater checks for FILE
+	      containing the specified string and  prints  everything  between
 	      $if_existing and the matching $endif.
 
 
@@ -971,8 +984,8 @@ VARIABLES
 
 
        if_smapi_bat_installed (INDEX)
-	      when  using smapi, if the battery with index INDEX is installed,
-	      display  everything  between  $if_smapi_bat_installed  and   the
+	      when using smapi, if the battery with index INDEX is  installed,
+	      display	everything  between  $if_smapi_bat_installed  and  the
 	      matching $endif
 
 
@@ -983,9 +996,9 @@ VARIABLES
 
        imap_messages (args)
 	      Displays the number of messages in your global IMAP inbox by de-
-	      fault.  You  can	define	individual  IMAP inboxes seperately by
+	      fault. You can define  individual	 IMAP  inboxes	seperately  by
 	      passing arguments to this object. Arguments are: "host user pass
-	      [-i  interval] [-p port] [-e command]". Default port is 143, de-
+	      [-i interval] [-p port] [-e command]". Default port is 143,  de-
 	      fault interval is 5 minutes. If the password is supplied as '*',
 	      you will be prompted to enter the password when Conky starts.
 
@@ -994,12 +1007,21 @@ VARIABLES
 	      Displays the number of unseen messages in your global IMAP inbox
 	      by default. You can define individual IMAP inboxes seperately by
 	      passing arguments to this object. Arguments are: "host user pass
-	      [-i interval] [-p port] [-e command]". Default port is 143,  de-
+	      [-i  interval] [-p port] [-e command]". Default port is 143, de-
 	      fault interval is 5 minutes. If the password is supplied as '*',
 	      you will be prompted to enter the password when Conky starts.
 
 
+       ioscheduler
+	      Prints  the  current  ioscheduler	 used  for the given disk name
+	      (i.e. e.g. "hda" or "sdb")
+
+
        kernel Kernel version
+
+
+       laptop_mode
+	      The value of /proc/sys/vm/laptop_mode
 
 
        loadavg
@@ -1104,6 +1126,11 @@ VARIABLES
 	      name, depending on whats available
 
 
+       nameserver (index)
+	      Print  a	nameserver  from /etc/resolv.conf. Index starts at and
+	      defaults to 0.
+
+
        new_mails (mailbox) (interval)
 	      Unread mail count in the specified mailbox or mail spool if not.
 	      Both mbox and maildir type mailboxes are supported.
@@ -1119,26 +1146,26 @@ VARIABLES
 
        pb_battery item
 	      If running on Apple powerbook/ibook, display information on bat-
-	      tery  status.  The item parameter specifies, what information to
+	      tery status. The item parameter specifies, what  information  to
 	      display. Exactly one item must be specified. Valid items are:
 
 	      status: Display if battery is fully charged, charging, discharg-
 	      ing or absent (running on AC)
-	      percent:	Display	 charge	 of battery in percent, if charging or
-	      discharging. Nothing will be  displayed,	if  battery  is	 fully
+	      percent: Display charge of battery in percent,  if  charging  or
+	      discharging.  Nothing  will  be  displayed,  if battery is fully
 	      charged or absent.
 	      time: Display the time remaining until the battery will be fully
-	      charged or discharged at current rate. Nothing is displayed,  if
-	      battery  is  absent or if it's present but fully charged and not
+	      charged  or discharged at current rate. Nothing is displayed, if
+	      battery is absent or if it's present but fully charged  and  not
 	      discharging.
 
 
        platform (dev) type n
-	      Platform sensor from sysfs (Linux 2.6).  Parameter  dev  may  be
-	      omitted  if  you have only one platform device. Platform type is
-	      either 'in' or 'vol' meaning voltage; 'fan' meaning fan;	'temp'
+	      Platform	sensor	from  sysfs  (Linux 2.6). Parameter dev may be
+	      omitted if you have only one platform device. Platform  type  is
+	      either  'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp'
 	      (Celsius) or 'tempf' (Fahrenheit) meaning temperature. Parameter
-	      n is number of the  sensor.  See	/sys/bus/platform/devices/  on
+	      n	 is  number  of	 the sensor. See /sys/bus/platform/devices/ on
 	      your local computer.
 
 
@@ -1146,17 +1173,17 @@ VARIABLES
 	      Displays the number of unseen messages in your global POP3 inbox
 	      by default. You can define individual POP3 inboxes seperately by
 	      passing arguments to this object. Arguments are: "host user pass
-	      [-i interval] [-p port] [-e command]". Default port is 110,  de-
+	      [-i  interval] [-p port] [-e command]". Default port is 110, de-
 	      fault interval is 5 minutes. If the password is supplied as '*',
 	      you will be prompted to enter the password when Conky starts.
 
 
        pop3_used (args)
-	      Displays the amount of space (in MiB, 2^20) used in your	global
-	      POP3  inbox  by  default. You can define individual POP3 inboxes
-	      seperately by passing arguments to this object.  Arguments  are:
-	      "host  user  pass [-i interval] [-p port] [-e command]". Default
-	      port is 110, default interval is 5 minutes. If the  password  is
+	      Displays	the amount of space (in MiB, 2^20) used in your global
+	      POP3 inbox by default. You can define  individual	 POP3  inboxes
+	      seperately  by  passing arguments to this object. Arguments are:
+	      "host user pass [-i interval] [-p port] [-e  command]".  Default
+	      port  is	110, default interval is 5 minutes. If the password is
 	      supplied as '*', you will be prompted to enter the password when
 	      Conky starts.
 
@@ -1179,21 +1206,21 @@ VARIABLES
 
 
        smapi (ARGS)
-	      when  using  smapi,  display  contents of the /sys/devices/plat-
-	      form/smapi directory. ARGS are either '(FILENAME)' or 'bat  (IN-
-	      DEX)  (FILENAME)'	 to  display the corresponding files' content.
-	      This is a very raw method of accessing the  smapi	 values.  When
+	      when using smapi, display	 contents  of  the  /sys/devices/plat-
+	      form/smapi  directory. ARGS are either '(FILENAME)' or 'bat (IN-
+	      DEX) (FILENAME)' to display the  corresponding  files'  content.
+	      This  is	a  very raw method of accessing the smapi values. When
 	      available, better use one of the smapi_* variables instead.
 
 
        smapi_bat_perc (INDEX)
-	      when  using  smapi, display the remaining capacity in percent of
-	      the battery with index INDEX. This is a  separate	 variable  be-
+	      when using smapi, display the remaining capacity in  percent  of
+	      the  battery  with  index INDEX. This is a separate variable be-
 	      cause it supports the 'use_spacer' configuration option.
 
 
        smapi_bat_bar (INDEX),(height),(width)
-	      when  using smapi, display the remaining capacity of the battery
+	      when using smapi, display the remaining capacity of the  battery
 	      with index INDEX as a bar.
 
 
@@ -1237,36 +1264,36 @@ VARIABLES
 	      The connection index provides you with access to each connection
 	      in the port monitor. The monitor will return information for in-
 	      dex values from 0 to n-1 connections. Values higher than n-1 are
-	      simply ignored. For the "count" item, the connection index  must
+	      simply  ignored. For the "count" item, the connection index must
 	      be omitted. It is required for all other items.
 
 	      Examples:
-	      ${tcp_portmon  6881 6999 count} - displays the number of connec-
+	      ${tcp_portmon 6881 6999 count} - displays the number of  connec-
 	      tions in the bittorrent port range
-	      ${tcp_portmon 22 22 rip 0} - displays the remote host ip of  the
+	      ${tcp_portmon  22 22 rip 0} - displays the remote host ip of the
 	      first sshd connection
-	      ${tcp_portmon  22 22 rip 9} - displays the remote host ip of the
+	      ${tcp_portmon 22 22 rip 9} - displays the remote host ip of  the
 	      tenth sshd connection
 	      ${tcp_portmon 1 1024 rhost 0} - displays the remote host name of
 	      the first connection on a privileged port
 	      ${tcp_portmon 1 1024 rport 4} - displays the remote host port of
 	      the fifth connection on a privileged port
-	      ${tcp_portmon 1 65535 lservice 14} - displays the local  service
+	      ${tcp_portmon  1 65535 lservice 14} - displays the local service
 	      name of the fifteenth connection in the range of all ports
 
 	      Note that port monitor variables which share the same port range
 	      actually refer to the same monitor, so many references to a sin-
 	      gle port range for different items and different indexes all use
-	      the same monitor internally. In other words, the program	avoids
+	      the  same monitor internally. In other words, the program avoids
 	      creating redundant monitors.
 
        texeci interval command
-	      Runs  a  command at an interval inside a thread and displays the
-	      output. Same as $execi, except  the  command  is	run  inside  a
-	      thread.  Use this if you have a slow script to keep Conky updat-
-	      ing. You should make the interval slightly longer then the  time
-	      it  takes	 your  script  to  execute. For example, if you have a
-	      script that take 5 seconds to execute, you should make  the  in-
+	      Runs a command at an interval inside a thread and	 displays  the
+	      output.  Same  as	 $execi,  except  the  command is run inside a
+	      thread. Use this if you have a slow script to keep Conky	updat-
+	      ing.  You should make the interval slightly longer then the time
+	      it takes your script to execute. For  example,  if  you  have  a
+	      script  that  take 5 seconds to execute, you should make the in-
 	      terval at least 6 seconds. See also $execi.
 
 
@@ -1275,8 +1302,8 @@ VARIABLES
 
 
        rss url delay_in_minutes action item_num
-	      Download	and  parse RSS feeds. Action may be one of the follow-
-	      ing: feed_title, item_title (with num par), item_desc (with  num
+	      Download and parse RSS feeds. Action may be one of  the  follow-
+	      ing:  feed_title, item_title (with num par), item_desc (with num
 	      par) and item_titles.
 
 
@@ -1291,7 +1318,7 @@ VARIABLES
 
 
        time (format)
-	      Local time, see man strftime to get more information about  for-
+	      Local  time, see man strftime to get more information about for-
 	      mat
 
 
@@ -1300,23 +1327,23 @@ VARIABLES
 
 
        tztime (timezone) (format)
-	      Local  time for specified timezone, see man strftime to get more
-	      information about format. The timezone argument is specified  in
-	      similar  fashion	as TZ environment variable. For hints, look in
+	      Local time for specified timezone, see man strftime to get  more
+	      information  about format. The timezone argument is specified in
+	      similar fashion as TZ environment variable. For hints,  look  in
 	      /usr/share/zoneinfo. e.g. US/Pacific, Europe/Zurich, etc.
 
 
        totaldown net
-	      Total download, overflows at 4 GB on Linux with 32-bit arch  and
+	      Total  download, overflows at 4 GB on Linux with 32-bit arch and
 	      there doesn't seem to be a way to know how many times it has al-
 	      ready done that before conky has started.
 
 
        top type, num
-	      This takes arguments in the form:top (name) (number)  Basically,
-	      processes	 are ranked from highest to lowest in terms of cpu us-
-	      age, which is what (num)	represents.  The  types	 are:  "name",
-	      "pid",  "cpu",  "mem", and "time". There can be a max of 10 pro-
+	      This  takes arguments in the form:top (name) (number) Basically,
+	      processes are ranked from highest to lowest in terms of cpu  us-
+	      age,  which  is  what  (num)  represents. The types are: "name",
+	      "pid", "cpu", "mem", and "time". There can be a max of  10  pro-
 	      cesses listed.
 
 
@@ -1340,9 +1367,9 @@ VARIABLES
 	      Upload speed in kilobytes with one decimal
 
 
-       upspeedgraph net (height),(width) (gradient colour 1) (gradient	colour
+       upspeedgraph  net (height),(width) (gradient colour 1) (gradient colour
        2) (scale)
-	      Upload speed graph, colours defined in  hex,  minus  the	#.  If
+	      Upload  speed  graph,  colours  defined  in hex, minus the #. If
 	      scale is non-zero, it becomes the scale for the graph.
 
 
@@ -1370,12 +1397,12 @@ VARIABLES
 
 
        voffset (pixels)
-	      Change  vertical	offset by N pixels. Negative values will cause
+	      Change vertical offset by N pixels. Negative values  will	 cause
 	      text to overlap. See also $offset.
 
 
        voltage_mv (n)
-	      Returns CPU #n's voltage in mV. CPUs  are	 counted  from	1.  If
+	      Returns  CPU  #n's  voltage  in  mV. CPUs are counted from 1. If
 	      omitted, the parameter defaults to 1.
 
 
@@ -1503,11 +1530,11 @@ FILES
 BUGS
        Drawing to root or some other desktop window directly doesn't work with
        all window managers. Especially doesn't work well with Gnome and it has
-       been reported that it doesn't work with KDE  either.  Nautilus  can  be
-       disabled	 from  drawing	to  desktop with program gconf-editor. Uncheck
-       show_desktop in /apps/nautilus/preferences/.  There  is	-w  switch  in
-       Conky  to  set  some  specific window id. You might find xwininfo -tree
-       useful to find the window to draw to. You  can  also  use  -o  argument
+       been  reported  that  it	 doesn't work with KDE either. Nautilus can be
+       disabled from drawing to desktop	 with  program	gconf-editor.  Uncheck
+       show_desktop  in	 /apps/nautilus/preferences/.  There  is  -w switch in
+       Conky to set some specific window id. You  might	 find  xwininfo	 -tree
+       useful  to  find	 the  window  to draw to. You can also use -o argument
        which makes Conky to create its own window.
 
 SEE ALSO

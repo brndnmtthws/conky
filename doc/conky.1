@@ -862,16 +862,16 @@ laptops's LCD (0-7).
 if conky variable VAR is empty, display everything between $if_empty and the matching $endif
 
 .TP 
+\fB\*(T<\fBif_gw\fR\*(T>\fR 
+if there is at least one default gateway, display everything between $if_gw and the matching $endif
+
+.TP 
 \fB\*(T<\fBif_running\fR\*(T>\fR \*(T<\fB(process)\fR\*(T> 
 if PROCESS is running, display everything $if_running and the matching $endif
 
 .TP 
 \fB\*(T<\fBif_existing\fR\*(T>\fR \*(T<\fBfile (string)\fR\*(T> 
 if FILE exists, display everything between if_existing and the matching $endif. The optional second paramater checks for FILE containing the specified string and prints everything between $if_existing and the matching $endif.
-
-.TP 
-\fB\*(T<\fBif_gw\fR\*(T>\fR 
-if at least one default gateway exists, display everything between $if_gw and the matching $endif
 
 .TP 
 \fB\*(T<\fBif_mounted\fR\*(T>\fR \*(T<\fB(mountpoint)\fR\*(T> 
@@ -894,7 +894,7 @@ Displays the number of messages in your global IMAP inbox by default. You can de
 Displays the number of unseen messages in your global IMAP inbox by default. You can define individual IMAP inboxes seperately by passing arguments to this object. Arguments are: "host user pass [-i interval] [-p port] [-e command]". Default port is 143, default interval is 5 minutes. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
 
 .TP 
-\fB\*(T<\fBioscheduler\fR\*(T>\fR \*(T<\fB(disk)\fR\*(T> 
+\fB\*(T<\fBioscheduler\fR\*(T>\fR 
 Prints the current ioscheduler used for the given disk name (i.e. e.g. "hda" or "sdb")
 
 .TP 

@@ -1,6 +1,7 @@
 # $Id$
 
 2008-03-22
+	* Conky 1.5.0 released
 	* Smapi review: improved code, fixed memleaks and smapi_bat_perc when
 	using pad_percents.
 	* Fixed spaced_print, so pad_percents should now work as expected.
