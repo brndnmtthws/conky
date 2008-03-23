@@ -127,6 +127,8 @@ static void print_version()
 	exit(0);
 }
 
+static char *suffixes[] = { "B", "kiB", "MiB", "GiB", "TiB", "PiB", "" };
+
 #ifdef X11
 
 /* text size */
@@ -163,8 +165,6 @@ struct font_list {
 static int selected_font = 0;
 static int font_count = -1;
 struct font_list *fonts = NULL;
-
-static char *suffixes[] = { "B", "kiB", "MiB", "GiB", "TiB", "PiB", "" };
 
 #ifdef XFT
 
