@@ -52,6 +52,9 @@
 #include <linux/sockios.h>
 #include <net/if.h>
 #include <arpa/inet.h>
+#ifdef _NET_IF_H
+#define _LINUX_IF_H
+#endif
 #include <linux/route.h>
 #include <math.h>
 

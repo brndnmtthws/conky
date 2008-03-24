@@ -61,6 +61,12 @@ pkg_setup() {
 	fi
 }
 
+src_unpack() {
+	unpack ${A}
+	cd ${S}
+	epatch ${FILESDIR}/conky-1.5.0-disable-x11.patch
+}
+
 src_compile() {
 	local mymake
 	if useq ipv6 ; then

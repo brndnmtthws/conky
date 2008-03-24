@@ -2,6 +2,8 @@
 
 2008-03-23
 	* Fixed compilation with --disable-x11
+	* Fixed linux.c compilation problem due to (suspected) broken linux
+	headers
 
 2008-03-22
 	* Conky 1.5.0 released
