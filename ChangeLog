@@ -1,5 +1,8 @@
 # $Id$
 
+2008-03-24
+	* Fixed battery_bar default size
+
 2008-03-23
 	* Fixed compilation with --disable-x11
 	* Fixed linux.c compilation problem due to (suspected) broken linux

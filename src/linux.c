@@ -1468,9 +1468,9 @@ present voltage:         16608 mV
 #define APM_PATH "/proc/apm"
 #define MAX_BATTERY_COUNT 4
 
-static FILE *sysfs_bat_fp[MAX_BATTERY_COUNT];
-static FILE *acpi_bat_fp[MAX_BATTERY_COUNT];
-static FILE *apm_bat_fp[MAX_BATTERY_COUNT];
+static FILE *sysfs_bat_fp[MAX_BATTERY_COUNT] = { NULL, NULL, NULL, NULL };
+static FILE *acpi_bat_fp[MAX_BATTERY_COUNT] = { NULL, NULL, NULL, NULL };
+static FILE *apm_bat_fp[MAX_BATTERY_COUNT] = { NULL, NULL, NULL, NULL };
 
 static int batteries_initialized = 0;
 static char batteries[MAX_BATTERY_COUNT][32];
@@ -1544,11 +1544,14 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 
  	/* first try SYSFS if that fails try ACPI */
  
- 	if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL)
+ 	if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL) {
  		sysfs_bat_fp[idx] = open_file(sysfs_path, &rep);
+		rep = 0;
+	}
   
- 	if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL)
+ 	if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL) {
   		acpi_bat_fp[idx] = open_file(acpi_path, &rep);
+	}
   
  	if (sysfs_bat_fp[idx] != NULL) {
  		/* SYSFS */
@@ -1818,7 +1821,7 @@ set_return_value:
 
 int get_battery_perct(const char *bat)
 {
-	static int rep;
+	static int rep = 0;
 	int idx;
 	char acpi_path[128];
 
@@ -1838,11 +1841,14 @@ int get_battery_perct(const char *bat)
 
 	/* Only check for SYSFS or ACPI */
 
-	if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL)
+	if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL) {
 		sysfs_bat_fp[idx] = open_file(sysfs_path, &rep);
+		rep = 0;
+	}
 
-	if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL)
+	if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL) {
 		acpi_bat_fp[idx] = open_file(acpi_path, &rep);
+	}
 
 	int remaining_capacity = -1;
 

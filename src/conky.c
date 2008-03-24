@@ -2436,7 +2436,7 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.s = strdup(bat);
 	END OBJ(battery_bar, 0)
 		char bat[64];
-
+		obj->b = 6;
 		if (arg) {
 			arg = scan_bar(arg, &obj->a, &obj->b);
 			sscanf(arg, "%63s", bat);
@@ -2806,7 +2806,6 @@ static struct text_object *construct_text_object(const char *s,
 		}
 #endif
 	END OBJ(fs_bar, INFO_FS)
-		obj->data.fsbar.h = 4;
 		arg = scan_bar(arg, &obj->data.fsbar.w, &obj->data.fsbar.h);
 		if (arg) {
 			while (isspace(*arg)) {
@@ -2820,16 +2819,18 @@ static struct text_object *construct_text_object(const char *s,
 		}
 		obj->data.fsbar.fs = prepare_fs_stat(arg);
 	END OBJ(fs_bar_free, INFO_FS)
-		obj->data.fsbar.h = 4;
+		arg = scan_bar(arg, &obj->data.fsbar.w, &obj->data.fsbar.h);
 		if (arg) {
-			unsigned int n;
-
-			if (sscanf(arg, "%d %n", &obj->data.fsbar.h, &n) >= 1) {
-				arg += n;
+			while (isspace(*arg)) {
+				arg++;
+			}
+			if (*arg == '\0') {
+				arg = "/";
 			}
 		} else {
 			arg = "/";
 		}
+
 		obj->data.fsbar.fs = prepare_fs_stat(arg);
 	END OBJ(fs_free, INFO_FS)
 		if (!arg) {
@@ -7360,9 +7361,9 @@ static void main_loop()
 				XDestroyRegion(region);
 				region = NULL;
 #ifdef HAVE_XDAMAGE
-	XDamageDestroy(display, damage);
-	XFixesDestroyRegion(display, region2);
-	XFixesDestroyRegion(display, part);
+				XDamageDestroy(display, damage);
+				XFixesDestroyRegion(display, region2);
+				XFixesDestroyRegion(display, part);
 #endif /* HAVE_XDAMAGE */
 #endif /* X11 */
 				return;	/* return from main_loop */
