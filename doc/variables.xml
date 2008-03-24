@@ -581,8 +581,7 @@
 </varlistentry>
 
 <varlistentry>
-  <term>
-
+	<term>
 		<command><option>downspeed</option></command>
 	<option>net</option>
 	</term>
