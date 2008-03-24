@@ -4,6 +4,7 @@
 	* Fixed compilation with --disable-x11
 	* Fixed linux.c compilation problem due to (suspected) broken linux
 	headers
+	* $battery_bar sysfs fix (thanks Marcus)
 
 2008-03-22
 	* Conky 1.5.0 released

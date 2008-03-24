@@ -1850,14 +1850,15 @@ int get_battery_perct(const char *bat)
 			if (fgets(buf, 256, sysfs_bat_fp[idx]) == NULL)
 				break;
 
-			if (strncmp(buf, "POWER_SUPPLY_CHARGE_NOW=", 24) == 0)
+			if (strncmp(buf, "POWER_SUPPLY_CHARGE_NOW=", 24) == 0) {
 				sscanf(buf, "POWER_SUPPLY_CHARGE_NOW=%d", &remaining_capacity);
-			else if (strncmp(buf, "POWER_SUPPLY_CHARGE_FULL=",25) != 0)
-				sscanf(buf, "POWER_SUPPLY_CHARGE_FULL=%d", &acpi_last_full[idx]);
-			else if (strncmp(buf, "POWER_SUPPLY_ENERGY_NOW=", 24) == 0)
+			} else if (strncmp(buf, "POWER_SUPPLY_CHARGE_FULL=",25) == 0) {
+				sscanf(buf, "POWER_SUPPLY_CHARGE_FULL=%d", &acpi_design_capacity[idx]);
+			} else if (strncmp(buf, "POWER_SUPPLY_ENERGY_NOW=", 24) == 0) {
 				sscanf(buf, "POWER_SUPPLY_ENERGY_NOW=%d", &remaining_capacity);
-			else if (strncmp(buf, "POWER_SUPPLY_ENERGY_FULL=",25) != 0)
-				sscanf(buf, "POWER_SUPPLY_ENERGY_FULL=%d", &acpi_last_full[idx]);
+			} else if (strncmp(buf, "POWER_SUPPLY_ENERGY_FULL=",25) == 0) {
+				sscanf(buf, "POWER_SUPPLY_ENERGY_FULL=%d", &acpi_design_capacity[idx]);
+			}
 		}
 
 		fclose(sysfs_bat_fp[idx]);
