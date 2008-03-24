@@ -327,7 +327,7 @@ inline void update_net_stats()
 	for (i2 = 0; i2 < 16; i2++) {
 		struct net_stat *ns;
 		char *s, *p;
-        char temp_addr[17];
+		char temp_addr[17];
 		long long r, t, last_recv, last_trans;
 
 		if (fgets(buf, 255, net_dev_fp) == NULL) {
@@ -352,12 +352,12 @@ inline void update_net_stats()
 		ns = get_net_stat(s);
 		ns->up = 1;
 		memset(&(ns->addr.sa_data), 0, 14);
- 
-        if(NULL == ns->addrs)
-            ns->addrs = (char*) malloc(17 * 16);
-        if(NULL != ns->addrs)
-             memset(ns->addrs, 0, 17 * 16); /* Up to 17 chars per ip, max 16 interfaces. Nasty memory usage... */
- 
+
+		if(NULL == ns->addrs)
+			ns->addrs = (char*) malloc(17 * 16);
+		if(NULL != ns->addrs)
+			memset(ns->addrs, 0, 17 * 16); /* Up to 17 chars per ip, max 16 interfaces. Nasty memory usage... */
+
 		last_recv = ns->recv;
 		last_trans = ns->trans;
 
@@ -398,16 +398,15 @@ inline void update_net_stats()
 			ns = get_net_stat(
 				((struct ifreq *) conf.ifc_buf)[k].ifr_ifrn.ifrn_name);
 			ns->addr = ((struct ifreq *) conf.ifc_buf)[k].ifr_ifru.ifru_addr;
-           if(NULL != ns->addrs)
-           {
-               sprintf(temp_addr, "%u.%u.%u.%u, ",
-                   ns->addr.sa_data[2] & 255,
-                   ns->addr.sa_data[3] & 255,
-                   ns->addr.sa_data[4] & 255,
-                   ns->addr.sa_data[5] & 255);
-               if(NULL == strstr(ns->addrs, temp_addr))
-                   strncpy(ns->addrs + strlen(ns->addrs), temp_addr, 17);
-            }
+			if(NULL != ns->addrs) {
+				sprintf(temp_addr, "%u.%u.%u.%u, ",
+					ns->addr.sa_data[2] & 255,
+					ns->addr.sa_data[3] & 255,
+					ns->addr.sa_data[4] & 255,
+					ns->addr.sa_data[5] & 255);
+				if(NULL == strstr(ns->addrs, temp_addr))
+					strncpy(ns->addrs + strlen(ns->addrs), temp_addr, 17);
+			}
 		}
 
 		close((long) i);
@@ -2423,18 +2422,18 @@ void update_entropy(void)
 
 char *get_disk_protect_queue(char *disk)
 {
-  FILE *fp;
-  char path[128];
-  int state;
+	FILE *fp;
+	char path[128];
+	int state;
 
-  snprintf(path, 127, "/sys/block/%s/queue/protect", disk);
-  if ((fp = fopen(path, "r")) == NULL)
-     return "n/a   ";
-  if (fscanf(fp, "%d\n", &state) != 1) {
-     fclose(fp);
-     return "failed";
-  }
-  fclose(fp);
-  return state ? "frozen" : "free  ";
+	snprintf(path, 127, "/sys/block/%s/queue/protect", disk);
+	if ((fp = fopen(path, "r")) == NULL)
+		return "n/a   ";
+	if (fscanf(fp, "%d\n", &state) != 1) {
+		fclose(fp);
+		return "failed";
+	}
+	fclose(fp);
+	return state ? "frozen" : "free  ";
 }
 
