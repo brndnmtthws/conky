@@ -644,6 +644,10 @@ Displays current disk IO for writes. Device as in diskio.
 Disk IO graph for writes, colours defined in hex, minus the #. If scale is non-zero, it becomes the scale for the graph. Device as in diskio.
 
 .TP 
+\fB\*(T<\fBdisk_protect\fR\*(T>\fR \*(T<\fBdevice\fR\*(T> 
+Disk protection status, if supported (needs kernel-patch). Prints either "frozen" or "free  " (note the padding).
+
+.TP 
 \fB\*(T<\fBdownspeed\fR\*(T>\fR \*(T<\fBnet\fR\*(T> 
 Download speed in kilobytes
 

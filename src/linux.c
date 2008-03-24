@@ -2416,3 +2416,21 @@ void update_entropy(void)
 
 	info.mask |= (1 << INFO_ENTROPY);
 }
+
+char *get_disk_protect_queue(char *disk)
+{
+  FILE *fp;
+  char path[128];
+  int state;
+
+  snprintf(path, 127, "/sys/block/%s/queue/protect", disk);
+  if ((fp = fopen(path, "r")) == NULL)
+     return "n/a   ";
+  if (fscanf(fp, "%d\n", &state) != 1) {
+     fclose(fp);
+     return "failed";
+  }
+  fclose(fp);
+  return state ? "frozen" : "free  ";
+}
+

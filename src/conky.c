@@ -1128,6 +1128,7 @@ enum text_object_type {
 	OBJ_platform,
 	OBJ_hwmon,
 #if defined(__linux__)
+	OBJ_disk_protect,
 	OBJ_i8k_version,
 	OBJ_i8k_bios,
 	OBJ_i8k_serial,
@@ -2049,6 +2050,9 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 				break;
 #endif
 #ifdef __LINUX__
+			case OBJ_disk_protect:
+				free(objs[i].data.s);
+				break;
 			case OBJ_if_up:
 				free(objs[i].data.ifblock.s);
 				free(objs[i].data.ifblock.str);
@@ -2443,6 +2447,11 @@ static struct text_object *construct_text_object(const char *s,
 #endif /* !__OpenBSD__ */
 
 #if defined(__linux__)
+	END OBJ(disk_protect, 0)
+		if (arg)
+			obj->data.s = strdup(arg);
+		else
+			CRIT_ERR("disk_protect needs an argument");
 	END OBJ(i8k_version, INFO_I8K)
 	END OBJ(i8k_bios, INFO_I8K)
 	END OBJ(i8k_serial, INFO_I8K)
@@ -4342,6 +4351,10 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%s", BUILD_ARCH);
 			}
 #if defined(__linux__)
+			OBJ(disk_protect) {
+				snprintf(p, p_max_size, "%s",
+					get_disk_protect_queue(obj->data.s));
+			}
 			OBJ(i8k_version) {
 				snprintf(p, p_max_size, "%s", i8k.version);
 			}

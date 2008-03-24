@@ -572,6 +572,17 @@
 
 <varlistentry>
 	<term>
+		<command><option>disk_protect</option></command>
+		<option>device</option>
+	</term>
+	<listitem>
+		Disk protection status, if supported (needs kernel-patch). Prints either "frozen" or "free  " (note the padding).
+		<para></para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+
 		<command><option>downspeed</option></command>
 	<option>net</option>
 	</term>

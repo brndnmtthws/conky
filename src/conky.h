@@ -584,6 +584,7 @@ void get_ibm_acpi_fan(char *buf, size_t client_buffer_size);
 void get_ibm_acpi_temps(void);
 void get_ibm_acpi_volume(char *buf, size_t client_buffer_size);
 void get_ibm_acpi_brightness(char *buf, size_t client_buffer_size);
+char *get_disk_protect_queue(char *disk);
 void get_cpu_count();
 
 struct ibm_acpi_struct {
