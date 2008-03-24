@@ -178,6 +178,7 @@ int get_laptop_mode()
 
 	if ((fp = fopen("/proc/sys/vm/laptop_mode", "r")) != NULL)
 		fscanf(fp, "%d\n", &val);
+	fclose(fp);
 	return val;
 }
 
@@ -383,13 +384,16 @@ inline void update_net_stats()
 		i = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
 
 		conf.ifc_buf = malloc(sizeof(struct ifreq) * 16);
-
 		conf.ifc_len = sizeof(struct ifreq) * 16;
+		memset(conf.ifc_buf, 0, conf.ifc_len);
 
 		ioctl((long) i, SIOCGIFCONF, &conf);
 
 		for (k = 0; k < conf.ifc_len / sizeof(struct ifreq); k++) {
 			struct net_stat *ns;
+
+			if (!(((struct ifreq *) conf.ifc_buf) + k))
+				break;
 
 			ns = get_net_stat(
 				((struct ifreq *) conf.ifc_buf)[k].ifr_ifrn.ifrn_name);
