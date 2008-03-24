@@ -8500,6 +8500,17 @@ int main(int argc, char **argv)
 	init_X11();
 #endif /* X11 */
 
+	/* check if specified config file is valid */
+	if (current_config) {
+		struct stat sb;
+		if (stat(current_config, &sb) ||
+				(!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
+			ERR("invalid configuration file '%s'\n", current_config);
+			free(current_config);
+			current_config = 0;
+		}
+	}
+
 	/* load current_config, CONFIG_FILE or SYSTEM_CONFIG_FILE */
 
 	if (!current_config) {
