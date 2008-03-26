@@ -1,6 +1,10 @@
 # $Id$
 
 2008-03-24
+	* Fixed for specifying a non-existent configuration file.
+	* Added disk_protect.
+	* Fixed too many open files bug in laptop_mode.
+	* Fixed reading interface adresses.
 	* Fixed battery_bar default size
 
 2008-03-23
