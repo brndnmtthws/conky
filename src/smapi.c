@@ -23,6 +23,7 @@
 #include "conky.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 
 #define SYS_SMAPI_PATH "/sys/devices/platform/smapi"
 
