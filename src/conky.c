@@ -1965,24 +1965,16 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 		switch (objs[i].type) {
 #ifndef __OpenBSD__
 			case OBJ_acpitemp:
-				close(objs[i].data.i);
-				break;
 			case OBJ_acpitempf:
 				close(objs[i].data.i);
 				break;
 			case OBJ_i2c:
-				close(objs[i].data.sysfs.fd);
-				break;
 			case OBJ_platform:
-				close(objs[i].data.sysfs.fd);
-				break;
 			case OBJ_hwmon:
 				close(objs[i].data.sysfs.fd);
 				break;
 #endif /* !__OpenBSD__ */
 			case OBJ_time:
-				free(objs[i].data.s);
-				break;
 			case OBJ_utime:
 				free(objs[i].data.s);
 				break;
