@@ -1,5 +1,8 @@
 # $Id$
 
+2008-03-28
+	* Fixed messed up percentages (fs_free_perc, fs_used_perc, mpd_percent).
+
 2008-03-24
 	* Fixed for specifying a non-existent configuration file.
 	* Added disk_protect.

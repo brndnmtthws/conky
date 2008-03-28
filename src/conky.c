@@ -5070,9 +5070,9 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(fs_free_perc) {
 				if (obj->data.fs != NULL) {
 					if (obj->data.fs->size) {
-						spaced_print(p, p_max_size, "%*d", pad_percents,
-							"fs_free_perc", (int) ((obj->data.fs->avail * 100) /
-							obj->data.fs->size));
+						spaced_print(p, p_max_size, "%*d", 4, "fs_free_perc",
+								pad_percents, (int) ((obj->data.fs->avail * 100) /
+									obj->data.fs->size));
 					} else {
 						snprintf(p, p_max_size, "0");
 					}
@@ -5108,9 +5108,9 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(fs_used_perc) {
 				if (obj->data.fs != NULL) {
 					if (obj->data.fs->size) {
-						spaced_print(p, 4, "%*d", pad_percents,
-							"fs_used_perc", 100 - ((int) ((obj->data.fs->avail * 100) /
-							obj->data.fs->size)));
+						spaced_print(p, 4, "%*d", 4, "fs_used_perc",
+								pad_percents, 100 - ((int) ((obj->data.fs->avail * 100) /
+										obj->data.fs->size)));
 					} else {
 						snprintf(p, p_max_size, "0");
 					}
@@ -5639,8 +5639,8 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 			OBJ(mpd_percent) {
-				spaced_print(p, p_max_size, "%*d", pad_percents,
-						"mpd_percent", (int) (cur->mpd.progress * 100));
+				spaced_print(p, p_max_size, "%*d", 4, "mpd_percent",
+						pad_percents, (int) (cur->mpd.progress * 100));
 			}
 			OBJ(mpd_bar) {
 				new_bar(p, obj->data.pair.a, obj->data.pair.b,
