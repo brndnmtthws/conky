@@ -4269,8 +4269,8 @@ static void generate_text_internal(char *p, int p_max_size,
 				get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_TIME);
 			}
 			OBJ(battery_percent) {
-				spaced_print(p, p_max_size, "%*d", pad_percents,
-						"battery_percent", get_battery_perct(obj->data.s));
+				spaced_print(p, p_max_size, "%*d", 4, "battery_percent",
+						pad_percents, get_battery_perct(obj->data.s));
 			}
 			OBJ(battery_bar) {
 				new_bar(p, obj->a, obj->b, get_battery_perct_bar(obj->data.s));

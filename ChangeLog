@@ -1,7 +1,8 @@
 # $Id$
 
 2008-03-28
-	* Fixed messed up percentages (fs_free_perc, fs_used_perc, mpd_percent).
+	* Fixed messed up percentages (fs_free_perc, fs_used_perc, mpd_percent,
+	battery_percent).
 
 2008-03-24
 	* Fixed for specifying a non-existent configuration file.
