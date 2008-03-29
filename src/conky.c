@@ -387,11 +387,7 @@ static iconv_t **iconv_cd = 0;
 
 int register_iconv(iconv_t *new_iconv)
 {
-	if (iconv_cd) {
-		iconv_cd = realloc(iconv, sizeof(iconv_t *) * (iconv_count + 1));
-	} else {
-		iconv_cd = malloc(sizeof(iconv_t *));
-	}
+	iconv_cd = realloc(iconv_cd, sizeof(iconv_t *) * (iconv_count + 1));
 	if (!iconv_cd) {
 		CRIT_ERR("Out of memory");
 	}
