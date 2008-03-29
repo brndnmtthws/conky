@@ -47,7 +47,7 @@ char *smapi_read_str(const char *path)
 	FILE *fp;
 	char str[256] = "failed";
 	if ((fp = fopen(path, "r")) != NULL) {
-		fscanf(fp, "%255s\n", &str);
+		fscanf(fp, "%255s\n", str);
 		fclose(fp);
 	}
 	return strdup(str);
