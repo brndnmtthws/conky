@@ -147,17 +147,17 @@ void update_meminfo(void)
 		}
 
 		if (strncmp(buf, "MemTotal:", 9) == 0) {
-			sscanf(buf, "%*s %Lu", &info.memmax);
+			sscanf(buf, "%*s %llu", &info.memmax);
 		} else if (strncmp(buf, "MemFree:", 8) == 0) {
-			sscanf(buf, "%*s %Lu", &info.mem);
+			sscanf(buf, "%*s %llu", &info.mem);
 		} else if (strncmp(buf, "SwapTotal:", 10) == 0) {
-			sscanf(buf, "%*s %Lu", &info.swapmax);
+			sscanf(buf, "%*s %llu", &info.swapmax);
 		} else if (strncmp(buf, "SwapFree:", 9) == 0) {
-			sscanf(buf, "%*s %Lu", &info.swap);
+			sscanf(buf, "%*s %llu", &info.swap);
 		} else if (strncmp(buf, "Buffers:", 8) == 0) {
-			sscanf(buf, "%*s %Lu", &info.buffers);
+			sscanf(buf, "%*s %llu", &info.buffers);
 		} else if (strncmp(buf, "Cached:", 7) == 0) {
-			sscanf(buf, "%*s %Lu", &info.cached);
+			sscanf(buf, "%*s %llu", &info.cached);
 		}
 	}
 
@@ -362,7 +362,7 @@ inline void update_net_stats(void)
 		last_trans = ns->trans;
 
 		/* bytes packets errs drop fifo frame compressed multicast|bytes ... */
-		sscanf(p, "%Ld  %*d     %*d  %*d  %*d  %*d   %*d        %*d       %Ld",
+		sscanf(p, "%lld  %*d     %*d  %*d  %*d  %*d   %*d        %*d       %lld",
 			&r, &t);
 
 		/* if recv or trans is less than last time, an overflow happened */
