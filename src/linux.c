@@ -390,22 +390,22 @@ inline void update_net_stats(void)
 		ioctl((long) i, SIOCGIFCONF, &conf);
 
 		for (k = 0; k < conf.ifc_len / sizeof(struct ifreq); k++) {
-			struct net_stat *ns;
+			struct net_stat *ns2;
 
 			if (!(((struct ifreq *) conf.ifc_buf) + k))
 				break;
 
-			ns = get_net_stat(
+			ns2 = get_net_stat(
 				((struct ifreq *) conf.ifc_buf)[k].ifr_ifrn.ifrn_name);
-			ns->addr = ((struct ifreq *) conf.ifc_buf)[k].ifr_ifru.ifru_addr;
-			if(NULL != ns->addrs) {
+			ns2->addr = ((struct ifreq *) conf.ifc_buf)[k].ifr_ifru.ifru_addr;
+			if(NULL != ns2->addrs) {
 				sprintf(temp_addr, "%u.%u.%u.%u, ",
-					ns->addr.sa_data[2] & 255,
-					ns->addr.sa_data[3] & 255,
-					ns->addr.sa_data[4] & 255,
-					ns->addr.sa_data[5] & 255);
-				if(NULL == strstr(ns->addrs, temp_addr))
-					strncpy(ns->addrs + strlen(ns->addrs), temp_addr, 17);
+					ns2->addr.sa_data[2] & 255,
+					ns2->addr.sa_data[3] & 255,
+					ns2->addr.sa_data[4] & 255,
+					ns2->addr.sa_data[5] & 255);
+				if(NULL == strstr(ns2->addrs, temp_addr))
+					strncpy(ns2->addrs + strlen(ns2->addrs), temp_addr, 17);
 			}
 		}
 
@@ -608,7 +608,7 @@ inline static void update_stat(void)
 	static struct cpu_info *cpu = NULL;
 	char buf[256];
 	unsigned int i;
-	unsigned int index;
+	unsigned int idx;
 	double curtmp;
 	const char *stat_template = NULL;
 	unsigned int malloc_cpu_size = 0;
@@ -638,7 +638,7 @@ inline static void update_stat(void)
 		return;
 	}
 
-	index = 0;
+	idx = 0;
 	while (!feof(stat_fp)) {
 		if (fgets(buf, 255, stat_fp) == NULL) {
 			break;
@@ -649,20 +649,20 @@ inline static void update_stat(void)
 			info.mask |= (1 << INFO_RUN_PROCS);
 		} else if (strncmp(buf, "cpu", 3) == 0) {
 			double delta;
-			index = isdigit(buf[3]) ? ((int) buf[3]) - 0x2F : 0;
-			sscanf(buf, stat_template, &(cpu[index].cpu_user),
-				&(cpu[index].cpu_nice), &(cpu[index].cpu_system),
-				&(cpu[index].cpu_idle), &(cpu[index].cpu_iowait),
-				&(cpu[index].cpu_irq), &(cpu[index].cpu_softirq),
-				&(cpu[index].cpu_steal));
+			idx = isdigit(buf[3]) ? ((int) buf[3]) - 0x2F : 0;
+			sscanf(buf, stat_template, &(cpu[idx].cpu_user),
+				&(cpu[idx].cpu_nice), &(cpu[idx].cpu_system),
+				&(cpu[idx].cpu_idle), &(cpu[idx].cpu_iowait),
+				&(cpu[idx].cpu_irq), &(cpu[idx].cpu_softirq),
+				&(cpu[idx].cpu_steal));
 
-			cpu[index].cpu_total = cpu[index].cpu_user + cpu[index].cpu_nice +
-				cpu[index].cpu_system + cpu[index].cpu_idle +
-				cpu[index].cpu_iowait + cpu[index].cpu_irq +
-				cpu[index].cpu_softirq + cpu[index].cpu_steal;
+			cpu[idx].cpu_total = cpu[idx].cpu_user + cpu[idx].cpu_nice +
+				cpu[idx].cpu_system + cpu[idx].cpu_idle +
+				cpu[idx].cpu_iowait + cpu[idx].cpu_irq +
+				cpu[idx].cpu_softirq + cpu[idx].cpu_steal;
 
-			cpu[index].cpu_active_total = cpu[index].cpu_total -
-				(cpu[index].cpu_idle + cpu[index].cpu_iowait);
+			cpu[idx].cpu_active_total = cpu[idx].cpu_total -
+				(cpu[idx].cpu_idle + cpu[idx].cpu_iowait);
 			info.mask |= (1 << INFO_CPU);
 
 			delta = current_update_time - last_update_time;
@@ -671,29 +671,29 @@ inline static void update_stat(void)
 				break;
 			}
 
-			cpu[index].cpu_val[0] = (cpu[index].cpu_active_total -
-				cpu[index].cpu_last_active_total) /
-				(float) (cpu[index].cpu_total - cpu[index].cpu_last_total);
+			cpu[idx].cpu_val[0] = (cpu[idx].cpu_active_total -
+				cpu[idx].cpu_last_active_total) /
+				(float) (cpu[idx].cpu_total - cpu[idx].cpu_last_total);
 			curtmp = 0;
 			for (i = 0; i < info.cpu_avg_samples; i++) {
-				curtmp += cpu[index].cpu_val[i];
+				curtmp += cpu[idx].cpu_val[i];
 			}
 			/* TESTING -- I've removed this, because I don't think it is right.
 			 * You shouldn't divide by the cpu count here ...
 			 * removing for testing */
-			/* if (index == 0) {
-				info.cpu_usage[index] = curtmp / info.cpu_avg_samples /
+			/* if (idx == 0) {
+				info.cpu_usage[idx] = curtmp / info.cpu_avg_samples /
 					info.cpu_count;
 			} else {
-				info.cpu_usage[index] = curtmp / info.cpu_avg_samples;
+				info.cpu_usage[idx] = curtmp / info.cpu_avg_samples;
 			} */
 			/* TESTING -- this line replaces the prev. "suspect" if/else */
-			info.cpu_usage[index] = curtmp / info.cpu_avg_samples;
+			info.cpu_usage[idx] = curtmp / info.cpu_avg_samples;
 
-			cpu[index].cpu_last_total = cpu[index].cpu_total;
-			cpu[index].cpu_last_active_total = cpu[index].cpu_active_total;
+			cpu[idx].cpu_last_total = cpu[idx].cpu_total;
+			cpu[idx].cpu_last_active_total = cpu[idx].cpu_active_total;
 			for (i = info.cpu_avg_samples - 1; i > 0; i--) {
-				cpu[index].cpu_val[i] = cpu[index].cpu_val[i - 1];
+				cpu[idx].cpu_val[i] = cpu[idx].cpu_val[i - 1];
 			}
 		}
 	}
@@ -815,7 +815,7 @@ static int get_first_file_in_a_directory(const char *dir, char *s, int *rep)
 }
 
 int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n,
-		int *div, char *devtype)
+		int *divisor, char *devtype)
 {
 	char path[256];
 	char buf[256];
@@ -868,9 +868,9 @@ int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n,
 
 	if (strcmp(type, "in") == 0 || strcmp(type, "temp") == 0
 			|| strcmp(type, "tempf") == 0) {
-		*div = 1;
+		*divisor = 1;
 	} else {
-		*div = 0;
+		*divisor = 0;
 	}
 	/* fan does not use *_div as a read divisor */
 	if (strcmp("fan", type) == 0) {
@@ -897,7 +897,7 @@ int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n,
 			ERR("open_sysfs_sensor(): can't read from sysfs");
 		} else {
 			divbuf[divn] = '\0';
-			*div = atoi(divbuf);
+			*divisor = atoi(divbuf);
 		}
 	}
 
@@ -906,7 +906,7 @@ int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n,
 	return fd;
 }
 
-double get_sysfs_info(int *fd, int div, char *devtype, char *type)
+double get_sysfs_info(int *fd, int divisor, char *devtype, char *type)
 {
 	int val = 0;
 
@@ -947,17 +947,17 @@ double get_sysfs_info(int *fd, int div, char *devtype, char *type)
 	/* divide voltage and temperature by 1000 */
 	/* or if any other divisor is given, use that */
 	if (strcmp(type, "tempf") == 0) {
-		if (div > 1) {
-			return ((val / div + 40) * 9.0 / 5) - 40;
-		} else if (div) {
+		if (divisor > 1) {
+			return ((val / divisor + 40) * 9.0 / 5) - 40;
+		} else if (divisor) {
 			return ((val / 1000.0 + 40) * 9.0 / 5) - 40;
 		} else {
 			return ((val + 40) * 9.0 / 5) - 40;
 		}
 	} else {
-		if (div > 1) {
-			return val / div;
-		} else if (div) {
+		if (divisor > 1) {
+			return val / divisor;
+		} else if (divisor) {
 			return val / 1000.0;
 		} else {
 			return val;
@@ -1520,7 +1520,7 @@ int get_battery_idx(const char *bat)
 	return idx;
 }
 
-void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
+void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 {
 	static int idx, rep = 0, rep2 = 0;
 	char acpi_path[128];
@@ -1664,12 +1664,12 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 
 		/* read last full capacity if it's zero */
 		if (acpi_last_full[idx] == 0) {
-			static int rep = 0;
+			static int rep3 = 0;
 			char path[128];
 			FILE *fp;
 
 			snprintf(path, 127, ACPI_BATTERY_BASE_PATH "/%s/info", bat);
-			fp = open_file(path, &rep);
+			fp = open_file(path, &rep3);
 			if (fp != NULL) {
 				while (!feof(fp)) {
 					char b[256];
@@ -1811,10 +1811,10 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 set_return_value:
 	switch (item) {
 		case BATTERY_STATUS:
-			snprintf(buf, n, "%s", last_battery_str[idx]);
+			snprintf(buffer, n, "%s", last_battery_str[idx]);
 			break;
 		case BATTERY_TIME:
-			snprintf(buf, n, "%s", last_battery_time_str[idx]);
+			snprintf(buffer, n, "%s", last_battery_time_str[idx]);
 			break;
 		default:
 			break;
@@ -1878,12 +1878,12 @@ int get_battery_perct(const char *bat)
 		/* ACPI */
 		/* read last full capacity if it's zero */
 		if (acpi_design_capacity[idx] == 0) {
-			static int rep;
+			static int rep2;
 			char path[128];
 			FILE *fp;
 
 			snprintf(path, 127, ACPI_BATTERY_BASE_PATH "/%s/info", bat);
-			fp = open_file(path, &rep);
+			fp = open_file(path, &rep2);
 			if (fp != NULL) {
 				while (!feof(fp)) {
 					char b[256];
@@ -1957,18 +1957,18 @@ static char pb_battery_info[3][32];
 static double pb_battery_info_update;
 
 #define PMU_PATH "/proc/pmu"
-void get_powerbook_batt_info(char *buf, size_t n, int i)
+void get_powerbook_batt_info(char *buffer, size_t n, int i)
 {
 	static int rep = 0;
 	const char *batt_path = PMU_PATH "/battery_0";
 	const char *info_path = PMU_PATH "/info";
 	unsigned int flags;
 	int charge, max_charge, ac = -1;
-	long time = -1;
+	long timeval = -1;
 
 	/* don't update battery too often */
 	if (current_update_time - pb_battery_info_update < 29.5) {
-		snprintf(buf, n, "%s", pb_battery_info[i]);
+		snprintf(buffer, n, "%s", pb_battery_info[i]);
 		return;
 	}
 	pb_battery_info_update = current_update_time;
@@ -1993,7 +1993,7 @@ void get_powerbook_batt_info(char *buf, size_t n, int i)
 			} else if (buf[0] == 'm') {
 				sscanf(buf, "max_charge : %d", &max_charge);
 			} else if (buf[0] == 't') {
-				sscanf(buf, "time rem.  : %ld", &time);
+				sscanf(buf, "time rem.  : %ld", &timeval);
 			}
 		}
 	}
@@ -2027,7 +2027,7 @@ void get_powerbook_batt_info(char *buf, size_t n, int i)
 	}
 
 	/* update percentage string */
-	if (time == 0) {
+	if (timeval == 0) {
 		pb_battery_info[PB_BATT_PERCENT][0] = 0;
 	} else {
 		snprintf(pb_battery_info[PB_BATT_PERCENT],
@@ -2036,17 +2036,17 @@ void get_powerbook_batt_info(char *buf, size_t n, int i)
 	}
 
 	/* update time string */
-	if (time == 0) {			/* fully charged or battery not present */
+	if (timeval == 0) {			/* fully charged or battery not present */
 		pb_battery_info[PB_BATT_TIME][0] = 0;
-	} else if (time < 60 * 60) {	/* don't show secs */
+	} else if (timeval < 60 * 60) {	/* don't show secs */
 		format_seconds_short(pb_battery_info[PB_BATT_TIME],
-			sizeof(pb_battery_info[PB_BATT_TIME]), time);
+			sizeof(pb_battery_info[PB_BATT_TIME]), timeval);
 	} else {
 		format_seconds(pb_battery_info[PB_BATT_TIME],
-			sizeof(pb_battery_info[PB_BATT_TIME]), time);
+			sizeof(pb_battery_info[PB_BATT_TIME]), timeval);
 	}
 
-	snprintf(buf, n, "%s", pb_battery_info[i]);
+	snprintf(buffer, n, "%s", pb_battery_info[i]);
 }
 
 void update_top(void)

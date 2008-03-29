@@ -72,16 +72,16 @@ static void user_term(char *ptr)
 static void user_time(char *ptr)
 {
 	const struct utmp *usr;
-	time_t login, real, diff;
+	time_t log_in, real, diff;
 	struct tm *dtime;
 	char buf[512] = "";
 
 	setutent();
 	while ((usr = getutent()) != NULL) {
 		if (usr->ut_type == USER_PROCESS) {
-			login = usr->ut_time;
+			log_in = usr->ut_time;
 			time(&real);
-			diff = difftime(real, login);
+			diff = difftime(real, log_in);
 			dtime = localtime(&diff);
 			dtime->tm_year = dtime->tm_year - 70;
 			dtime->tm_mon = dtime->tm_mon - 1;

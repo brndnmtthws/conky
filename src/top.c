@@ -352,8 +352,8 @@ static unsigned long long calc_cpu_total(void)
 	int ps;
 	char line[BUFFER_LEN] = { 0 };
 	unsigned long long cpu = 0;
-	unsigned long long nice = 0;
-	unsigned long long system = 0;
+	unsigned long long niceval = 0;
+	unsigned long long systemval = 0;
 	unsigned long long idle = 0;
 	unsigned long long iowait = 0;
 	unsigned long long irq = 0;
@@ -369,9 +369,9 @@ static unsigned long long calc_cpu_total(void)
 		return 0;
 	}
 
-	sscanf(line, template, &cpu, &nice, &system, &idle, &iowait, &irq,
+	sscanf(line, template, &cpu, &niceval, &systemval, &idle, &iowait, &irq,
 		&softirq, &steal);
-	total = cpu + nice + system + idle + iowait + irq + softirq + steal;
+	total = cpu + niceval + systemval + idle + iowait + irq + softirq + steal;
 
 	t = total - previous_total;
 	previous_total = total;

@@ -4009,10 +4009,10 @@ static void extract_variable_text(const char *p)
 	free(list);
 }
 
-struct text_object_list *parse_conky_vars(char *text, char *p, struct information *cur)
+struct text_object_list *parse_conky_vars(char *txt, char *p, struct information *cur)
 {
 	struct text_object_list *object_list =
-		extract_variable_text_internal(text);
+		extract_variable_text_internal(txt);
 
 	generate_text_internal(p, max_user_text, object_list->text_objects,
 		object_list->text_object_count, cur);
@@ -4100,14 +4100,14 @@ static void tail_pipe(struct text_object *obj, char *dst, size_t dst_size)
 	snprintf(dst, dst_size, "%s", obj->data.tail.buffer);
 }
 
-char *format_time(unsigned long time, const int width)
+char *format_time(unsigned long timeval, const int width)
 {
 	char buf[10];
 	unsigned long nt;	// narrow time, for speed on 32-bit
 	unsigned cc;		// centiseconds
 	unsigned nn;		// multi-purpose whatever
 
-	nt = time;
+	nt = timeval;
 	cc = nt % 100;		// centiseconds past second
 	nt /= 100;			// total seconds
 	nn = nt % 60;		// seconds past the minute
@@ -5836,7 +5836,7 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 			OBJ(top) {
 				if (obj->data.top.num >= 0 && obj->data.top.num < 10) {
-					char *time;
+					char *timeval;
 
 					switch (obj->data.top.type) {
 						case TOP_NAME:
@@ -5856,10 +5856,10 @@ static void generate_text_internal(char *p, int p_max_size,
 								cur->cpu[obj->data.top.num]->totalmem);
 							break;
 						case TOP_TIME:
-							time = format_time(
+							timeval = format_time(
 								cur->cpu[obj->data.top.num]->total_cpu_time, 9);
-							snprintf(p, 10, "%9s", time);
-							free(time);
+							snprintf(p, 10, "%9s", timeval);
+							free(timeval);
 							break;
 						default:
 							ERR("Unhandled top data type: %d\n",
@@ -5871,7 +5871,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(top_mem) {
 				if (obj->data.top.num >= 0 && obj->data.top.num < 10) {
-					char *time;
+					char *timeval;
 
 					switch (obj->data.top.type) {
 						case TOP_NAME:
@@ -5891,11 +5891,11 @@ static void generate_text_internal(char *p, int p_max_size,
 								cur->memu[obj->data.top.num]->totalmem);
 							break;
 						case TOP_TIME:
-							time = format_time(
+							timeval = format_time(
 								cur->memu[obj->data.top.num]->total_cpu_time,
 								9);
-							snprintf(p, 10, "%9s", time);
-							free(time);
+							snprintf(p, 10, "%9s", timeval);
+							free(timeval);
 							break;
 						default:
 							ERR("Unhandled top data type: %d\n",
@@ -6193,12 +6193,12 @@ static void generate_text(void)
 			global_text_object_count, cur);
 
 	if (stuff_in_upper_case) {
-		char *p;
+		char *tmp_p;
 
-		p = text_buffer;
-		while (*p) {
-			*p = toupper(*p);
-			p++;
+		tmp_p = text_buffer;
+		while (*tmp_p) {
+			*tmp_p = toupper(*tmp_p);
+			tmp_p++;
 		}
 	}
 
@@ -6239,7 +6239,7 @@ static inline int get_string_width_special(char *s)
 {
 #ifdef X11
 	char *p, *final;
-	int index = 1;
+	int idx = 1;
 	int width = 0;
 	unsigned int i;
 
@@ -6257,11 +6257,11 @@ static inline int get_string_width_special(char *s)
 			for (i = 0; i < strlen(p); i++) {
 				*(p + i) = *(p + i + 1);
 			}
-			if (specials[special_index + index].type == GRAPH
-					|| specials[special_index + index].type == BAR) {
-				width += specials[special_index + index].width;
+			if (specials[special_index + idx].type == GRAPH
+					|| specials[special_index + idx].type == BAR) {
+				width += specials[special_index + idx].width;
 			}
-			index++;
+			idx++;
 		} else {
 			p++;
 		}
@@ -6715,9 +6715,9 @@ static void draw_line(char *s)
 				case STIPPLED_HR:
 				{
 					int h = specials[special_index].height;
-					int s = specials[special_index].arg;
+					int tmp_s = specials[special_index].arg;
 					int mid = font_ascent() / 2;
-					char ss[2] = { s, s };
+					char ss[2] = { tmp_s, tmp_s };
 
 					w = text_start_x + text_width - cur_x - 1;
 					XSetLineAttributes(display, window.gc, h, LineOnOffDash,
@@ -8138,15 +8138,15 @@ static void load_config_file(const char *f)
 #endif /* X11 */
 		CONF("mail_spool") {
 			if (value) {
-				char buf[256];
+				char buffer[256];
 
-				variable_substitute(value, buf, 256);
+				variable_substitute(value, buffer, 256);
 
-				if (buf[0] != '\0') {
+				if (buffer[0] != '\0') {
 					if (current_mail_spool) {
 						free(current_mail_spool);
 					}
-					current_mail_spool = strdup(buf);
+					current_mail_spool = strdup(buffer);
 				}
 			} else {
 				CONF_ERR;

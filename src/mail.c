@@ -39,7 +39,7 @@ char *current_mail_spool;
 
 void update_mail_count(struct local_mail_s *mail)
 {
-	struct stat buf;
+	struct stat st;
 
 	if (mail == NULL) {
 		return;
@@ -54,7 +54,7 @@ void update_mail_count(struct local_mail_s *mail)
 		mail->last_update = current_update_time;
 	}
 
-	if (stat(mail->box, &buf)) {
+	if (stat(mail->box, &st)) {
 		static int rep;
 
 		if (!rep) {
@@ -65,7 +65,7 @@ void update_mail_count(struct local_mail_s *mail)
 	}
 #if HAVE_DIRENT_H
 	/* maildir format */
-	if (S_ISDIR(buf.st_mode)) {
+	if (S_ISDIR(st.st_mode)) {
 		DIR *dir;
 		char *dirname;
 		struct dirent *dirent;
@@ -122,7 +122,7 @@ void update_mail_count(struct local_mail_s *mail)
 	}
 #endif
 	/* mbox format */
-	if (buf.st_mtime != mail->last_mtime) {
+	if (st.st_mtime != mail->last_mtime) {
 		/* yippee, modification time has changed, let's read mail count! */
 		static int rep;
 		FILE *fp;
@@ -192,6 +192,6 @@ void update_mail_count(struct local_mail_s *mail)
 			mail->new_mail_count++;
 		}
 
-		mail->last_mtime = buf.st_mtime;
+		mail->last_mtime = st.st_mtime;
 	}
 }
