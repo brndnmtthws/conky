@@ -1451,8 +1451,8 @@ struct text_object_list {
 	struct text_object *text_objects;
 };
 
-static unsigned int text_object_count;
-static struct text_object *text_objects;
+static unsigned int global_text_object_count;
+static struct text_object *global_text_objects;
 static void generate_text_internal(char *p, int p_max_size,
 	struct text_object *objs, unsigned int object_count,
 	struct information *cur);
@@ -3980,7 +3980,7 @@ static void extract_variable_text(const char *p)
 {
 	struct text_object_list *list;
 
-	free_text_objects(text_object_count, text_objects);
+	free_text_objects(global_text_object_count, global_text_objects);
 	if (tmpstring1) {
 		free(tmpstring1);
 		tmpstring1 = 0;
@@ -3993,12 +3993,12 @@ static void extract_variable_text(const char *p)
 		free(text_buffer);
 		text_buffer = 0;
 	}
-	text_object_count = 0;
-	text_objects = NULL;
+	global_text_object_count = 0;
+	global_text_objects = NULL;
 
 	list = extract_variable_text_internal(p);
-	text_objects = list->text_objects;
-	text_object_count = list->text_object_count;
+	global_text_objects = list->text_objects;
+	global_text_object_count = list->text_object_count;
 
 	free(list);
 }
@@ -6175,7 +6175,8 @@ static void generate_text(void)
 
 	p = text_buffer;
 
-	generate_text_internal(p, max_user_text, text_objects, text_object_count, cur);
+	generate_text_internal(p, max_user_text, global_text_objects,
+			global_text_object_count, cur);
 
 	if (stuff_in_upper_case) {
 		char *p;
@@ -7526,7 +7527,7 @@ void clean_up(void)
 	free_fonts();
 #endif /* X11 */
 
-	free_text_objects(text_object_count, text_objects);
+	free_text_objects(global_text_object_count, global_text_objects);
 	if (tmpstring1) {
 		free(tmpstring1);
 		tmpstring1 = 0;
@@ -7539,8 +7540,8 @@ void clean_up(void)
 		free(text_buffer);
 		text_buffer = 0;
 	}
-	text_object_count = 0;
-	text_objects = NULL;
+	global_text_object_count = 0;
+	global_text_objects = NULL;
 
 	if (text) {
 		free(text);
