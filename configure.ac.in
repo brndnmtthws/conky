@@ -114,21 +114,21 @@ AC_ARG_ENABLE([audacious],
 
 AM_CONDITIONAL(BUILD_AUDACIOUS, test x$want_audacious = xyes -o x$want_audacious = xlegacy)
 if test x$want_audacious = xyes; then
-      PKG_CHECK_MODULES([AUDACIOUS], [audacious >= 1.4.0 dbus-glib-1 glib-2.0 gobject-2.0])
-      CFLAGS="$CFLAGS $AUDACIOUS_CFLAGS"
-      LIBS="$LIBS $AUDACIOUS_LIBS"
+      PKG_CHECK_MODULES([Audacious], [audacious >= 1.4.0 dbus-glib-1 glib-2.0 gobject-2.0])
+      CFLAGS="$CFLAGS $Audacious_CFLAGS"
+      LIBS="$LIBS $Audacious_LIBS"
       save_CPPFLAGS="$CPPFLAGS"
-      CPPFLAGS="$AUDACIOUS_CFLAGS -I`pkg-config --variable=audacious_include_dir audacious`/audacious"
+      CPPFLAGS="$Audacious_CFLAGS -I`pkg-config --variable=audacious_include_dir audacious`/audacious"
       AC_CHECK_HEADERS([audacious/audctrl.h audacious/dbus.h glib.h glib-object.h],
                        [], AC_MSG_ERROR([required header(s) not found]))
       CPPFLAGS="$save_CPPFLAGS"
       AC_DEFINE(AUDACIOUS, 1, [Define for Audacious support])
 else if test x$want_audacious = xlegacy; then
-      PKG_CHECK_MODULES([AUDACIOUS], [audacious < 1.4.0 glib-2.0])
-      CFLAGS="$CFLAGS $AUDACIOUS_CFLAGS"
-      LIBS="$LIBS $AUDACIOUS_LIBS"
+      PKG_CHECK_MODULES([Audacious], [audacious < 1.4.0 glib-2.0])
+      CFLAGS="$CFLAGS $Audacious_CFLAGS"
+      LIBS="$LIBS $Audacious_LIBS"
       save_CPPFLAGS="$CPPFLAGS"
-      CPPFLAGS="$AUDACIOUS_CFLAGS -I`pkg-config --variable=audacious_include_dir audacious`/audacious"
+      CPPFLAGS="$Audacious_CFLAGS -I`pkg-config --variable=audacious_include_dir audacious`/audacious"
       AC_CHECK_HEADERS([audacious/beepctrl.h glib.h], [], AC_MSG_ERROR([required  header(s) not found]))
       CPPFLAGS="$save_CPPFLAGS"
       AC_DEFINE(AUDACIOUS, 1, [Define for Audacious support])
@@ -147,9 +147,9 @@ AC_ARG_ENABLE([bmpx],
 
 AM_CONDITIONAL(BUILD_BMPX, test x$want_bmpx = xyes)
 if test x$want_bmpx = xyes; then
-  PKG_CHECK_MODULES([BMPX], [bmp-2.0 >= 0.14.0])
-  CFLAGS="$CFLAGS $BMPX_CFLAGS"
-  LIBS="$LIBS $BMPX_LIBS"
+  PKG_CHECK_MODULES([BMPx], [bmp-2.0 >= 0.14.0])
+  CFLAGS="$CFLAGS $BMPx_CFLAGS"
+  LIBS="$LIBS $BMPx_LIBS"
   AC_DEFINE(BMPX, 1, [Define if you want BMPx support])
 fi
 
@@ -213,9 +213,10 @@ AC_ARG_ENABLE([rss],
 AM_CONDITIONAL(BUILD_RSS, test x$want_rss = xyes)
 if test x$want_rss = xyes; then
 	WANT_GLIB=yes
-	PKG_CHECK_MODULES(RSS, libxml-2.0 libcurl,,exit)
-	CFLAGS="$CFLAGS $RSS_CFLAGS"
-	LIBS="$LIBS $RSS_LIBS"
+	PKG_CHECK_MODULES([libxml2], libxml-2.0)
+	PKG_CHECK_MODULES([libcurl], libcurl)
+	CFLAGS="$CFLAGS $libxml2_CFLAGS $libcurl_CFLAGS"
+	LIBS="$LIBS $libxml2_LIBS $libcurl_LIBS"
 	AC_DEFINE(RSS, 1, [Define if you want rss support])
 fi
 
@@ -360,9 +361,9 @@ if test "x$want_double_buffer" = "xyes"; then
       want_double_buffer=no
     else
       if $PKG_CONFIG --exists xext; then
-        PKG_CHECK_MODULES([XEXT],[xext])
-        CFLAGS="$CFLAGS $XEXT_CFLAGS"
-        LIBS="$LIBS $XEXT_LIBS"
+        PKG_CHECK_MODULES([Xext],[xext])
+        CFLAGS="$CFLAGS $Xext_CFLAGS"
+        LIBS="$LIBS $Xext_LIBS"
       else
         dnl non-modular X11 installation
         AC_CHECK_LIB([Xext], [XdbeQueryExtension], [LIBS="$LIBS -lXext"],
@@ -388,9 +389,9 @@ if test "x$want_xdamage" = "xyes"; then
       want_xdamage=no
     else
       if $PKG_CONFIG --exists xdamage; then
-        PKG_CHECK_MODULES([XDAMAGE],[xdamage])
-        CFLAGS="$CFLAGS $XDAMAGE_CFLAGS"
-        LIBS="$LIBS $XDAMAGE_LIBS"
+        PKG_CHECK_MODULES([XDamage],[xdamage])
+        CFLAGS="$CFLAGS $XDamage_CFLAGS"
+        LIBS="$LIBS $XDamage_LIBS"
       else
         dnl non-modular X11 installation
         AC_CHECK_LIB([Xdamage], [XDamageQueryExtension], [LIBS="$LIBS -lXdamage"],
@@ -414,9 +415,9 @@ if test x$want_xft = "xyes"; then
       dnl silently disable if no x11
       want_xft=no
     else
-      PKG_CHECK_MODULES(XFT, [xft])
-      CFLAGS="$CFLAGS $XFT_CFLAGS"
-      LIBS="$LIBS $XFT_LIBS"
+      PKG_CHECK_MODULES([Xft], [xft])
+      CFLAGS="$CFLAGS $Xft_CFLAGS"
+      LIBS="$LIBS $Xft_LIBS"
       AC_DEFINE(XFT, 1, [Define for Xft support])
     fi
 fi
@@ -426,9 +427,9 @@ dnl GLIB
 dnl
 
 if test x$WANT_GLIB = xyes; then
-	PKG_CHECK_MODULES([GLIB], [glib-2.0])
-        CFLAGS="$CFLAGS $GLIB_CFLAGS"
-	LIBS="$LIBS $GLIB_LIBS"
+	PKG_CHECK_MODULES([GLib2], [glib-2.0])
+        CFLAGS="$CFLAGS $GLib2_CFLAGS"
+	LIBS="$LIBS $GLib2_LIBS"
 fi
 
 dnl
