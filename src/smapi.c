@@ -45,12 +45,12 @@ int smapi_bat_installed(int idx)
 char *smapi_read_str(const char *path)
 {
 	FILE *fp;
-	char *str = NULL;
+	char str[256] = "failed";
 	if ((fp = fopen(path, "r")) != NULL) {
-		fscanf(fp, "%as\n", &str);
+		fscanf(fp, "%255s\n", &str);
 		fclose(fp);
 	}
-	return str;
+	return strdup(str);
 }
 
 int smapi_read_int(const char *path)
