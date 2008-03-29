@@ -44,6 +44,10 @@
 #include <wchar.h>
 #include <sys/param.h>
 
+#if !defined(__GNUC__)
+#  define __attribute__(x) /* nothing */
+#endif
+
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 #include <sys/mount.h>
 #include <sys/ucred.h>
@@ -687,7 +691,7 @@ char *get_apm_battery_time(void);
 /* in mpd.c */
 #ifdef MPD
 extern void init_mpd_stats(struct information *current_info);
-void *update_mpd(void *);
+void *update_mpd(void *) __attribute__((noreturn));
 extern timed_thread *mpd_timed_thread;
 void free_mpd_vars(struct information *current_info);
 #endif /* MPD */

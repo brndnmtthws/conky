@@ -74,6 +74,8 @@
 /* #define SIGNAL_BLOCKING */
 #undef SIGNAL_BLOCKING
 
+static void print_version(void) __attribute__((noreturn));
+
 static void print_version(void)
 {
 	printf("Conky %s compiled %s for %s\n", VERSION, BUILD_DATE, BUILD_ARCH);
@@ -966,6 +968,9 @@ static void convert_escapes(char *buf)
 /* Prints anything normally printed with snprintf according to the current value
  * of use_spacer.  Actually slightly more flexible than snprintf, as you can
  * safely specify the destination buffer as one of your inputs.  */
+static int spaced_print(char *, int, const char *, int, const char *, ...)
+		__attribute__((format(printf, 3, 6)));
+
 static int spaced_print(char *buf, int size, const char *format, int width,
 		const char *func_name, ...) {
 	int len;
@@ -1926,6 +1931,8 @@ next_iteration:
 	return 0;
 }
 
+void *threaded_exec(void *) __attribute__((noreturn));
+
 void *threaded_exec(void *arg)
 {
 	FILE *fp;
@@ -1955,7 +1962,7 @@ void *threaded_exec(void *arg)
 			timed_thread_exit(obj->data.texeci.p_timed_thread);
 		}
 	}
-	return 0;
+	/* never reached */
 }
 
 static struct text_object *new_text_object_internal(void)

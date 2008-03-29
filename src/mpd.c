@@ -333,5 +333,5 @@ void *update_mpd(void *arg)
 		}
 		continue;
 	}
-	return 0;
+	/* never reached */
 }

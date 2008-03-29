@@ -51,7 +51,7 @@ int timed_thread_unlock(timed_thread *p_timed_thread);
 int timed_thread_test(timed_thread *p_timed_thread);
 
 /* exit a timed thread */
-void timed_thread_exit(timed_thread *p_timed_thread);
+void timed_thread_exit(timed_thread *p_timed_thread) __attribute__((noreturn));
 
 /* register a timed thread for future destruction via
  * timed_thread_destroy_registered_threads() */
