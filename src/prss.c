@@ -15,13 +15,13 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */
 
+#include "config.h"
+#include "prss.h"
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "prss.h"
-#include "config.h"
 
 #ifndef PARSE_OPTIONS
 #define PARSE_OPTIONS 0

@@ -25,15 +25,15 @@
  *
  * $Id$ */
 
+#include "conky.h"
+#include "prss.h"
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <assert.h>
-#include "prss.h"
 #include <curl/curl.h>
 #include <curl/types.h>
 #include <curl/easy.h>
-#include "conky.h"
 
 #define MAX_FEEDS 16
 

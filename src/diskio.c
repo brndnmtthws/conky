@@ -27,8 +27,8 @@
  *  $Id$
  */
 
-#include <limits.h>
 #include "conky.h"
+#include <limits.h>
 
 static struct diskio_stat diskio_stats_[MAX_DISKIO_STATS];
 struct diskio_stat *diskio_stats = diskio_stats_;

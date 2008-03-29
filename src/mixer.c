@@ -25,14 +25,13 @@
  *
  * $Id$ */
 
+#include "conky.h"
 #include <sys/ioctl.h>
-
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
 
-#include "conky.h"
 
 #ifdef HAVE_LINUX_SOUNDCARD_H
 #include <linux/soundcard.h>
