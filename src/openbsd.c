@@ -545,7 +545,7 @@ __inline__ unsigned long long int rdtsc()
 
 /* return system frequency in MHz (use divisor=1) or GHz (use divisor=1000) */
 void get_freq_dynamic(char *p_client_buffer, size_t client_buffer_size,
-		char *p_format, int divisor)
+		const char *p_format, int divisor)
 {
 #if  defined(__i386) || defined(__x86_64)
 	struct timezone tz;
@@ -575,8 +575,8 @@ void get_freq_dynamic(char *p_client_buffer, size_t client_buffer_size,
 }
 
 /* void */
-char get_freq(char *p_client_buffer, size_t client_buffer_size, char *p_format,
-		int divisor, unsigned int cpu)
+char get_freq(char *p_client_buffer, size_t client_buffer_size,
+		const char *p_format, int divisor, unsigned int cpu)
 {
 	int freq = cpu;
 	int mib[2] = { CTL_HW, HW_CPUSPEED };

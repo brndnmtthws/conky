@@ -23,12 +23,12 @@
 
 int smapi_bat_installed(int);
 
-char *smapi_read_str(char *);
-int smapi_read_int(char *);
+char *smapi_read_str(const char *);
+int smapi_read_int(const char *);
 
-char *smapi_get_str(char *);
-char *smapi_get_val(char *);
+char *smapi_get_str(const char *);
+char *smapi_get_val(const char *);
 
-char *smapi_get_bat_str(int, char *);
-int smapi_get_bat_int(int, char *);
-char *smapi_get_bat_val(char *);
+char *smapi_get_bat_str(int, const char *);
+int smapi_get_bat_int(int, const char *);
+char *smapi_get_bat_val(const char *);

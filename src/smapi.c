@@ -42,7 +42,7 @@ int smapi_bat_installed(int idx)
 
 }
 
-char *smapi_read_str(char *path)
+char *smapi_read_str(const char *path)
 {
 	FILE *fp;
 	char *str = NULL;
@@ -53,7 +53,7 @@ char *smapi_read_str(char *path)
 	return str;
 }
 
-int smapi_read_int(char *path)
+int smapi_read_int(const char *path)
 {
 	FILE *fp;
 	int i = 0;
@@ -64,7 +64,7 @@ int smapi_read_int(char *path)
 	return i;
 }
 
-char *smapi_get_str(char *fname)
+char *smapi_get_str(const char *fname)
 {
 	char path[128];
 	if(snprintf(path, 127, SYS_SMAPI_PATH "/%s", fname) < 0)
@@ -73,7 +73,7 @@ char *smapi_get_str(char *fname)
 	return smapi_read_str(path);
 }
 
-char *smapi_get_bat_str(int idx, char *fname)
+char *smapi_get_bat_str(int idx, const char *fname)
 {
 	char path[128];
 	if(snprintf(path, 127, SYS_SMAPI_PATH "/BAT%i/%s", idx, fname) < 0)
@@ -81,7 +81,7 @@ char *smapi_get_bat_str(int idx, char *fname)
 	return smapi_read_str(path);
 }
 
-int smapi_get_bat_int(int idx, char *fname)
+int smapi_get_bat_int(int idx, const char *fname)
 {
 	char path[128];
 	if(snprintf(path, 127, SYS_SMAPI_PATH "/BAT%i/%s", idx, fname) < 0)
@@ -89,7 +89,7 @@ int smapi_get_bat_int(int idx, char *fname)
 	return smapi_read_int(path);
 }
 
-char *smapi_get_bat_val(char *args)
+char *smapi_get_bat_val(const char *args)
 {
 	char fname[128];
 	int idx, cnt;
@@ -106,7 +106,7 @@ char *smapi_get_bat_val(char *args)
 	return smapi_get_bat_str(idx, fname);
 }
 
-char *smapi_get_val(char *args)
+char *smapi_get_val(const char *args)
 {
 	char str[128];
 

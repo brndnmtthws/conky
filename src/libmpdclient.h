@@ -87,7 +87,7 @@ typedef enum mpd_TagItems {
 	MPD_TAG_NUM_OF_ITEM_TYPES
 } mpd_TagItems;
 
-extern char *mpdTagItemKeys[MPD_TAG_NUM_OF_ITEM_TYPES];
+extern const char *mpdTagItemKeys[MPD_TAG_NUM_OF_ITEM_TYPES];
 
 /* internal stuff don't touch this struct */
 typedef struct _mpd_ReturnElement {

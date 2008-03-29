@@ -238,7 +238,7 @@ static int mpd_connect(mpd_Connection *connection, const char *host, int port,
 }
 #endif /* !MPD_HAVE_GAI */
 
-char *mpdTagItemKeys[MPD_TAG_NUM_OF_ITEM_TYPES] = {
+const char *mpdTagItemKeys[MPD_TAG_NUM_OF_ITEM_TYPES] = {
 	"Artist",
 	"Album",
 	"Title",
@@ -435,12 +435,12 @@ void mpd_closeConnection(mpd_Connection *connection)
 	WSACleanup();
 }
 
-static void mpd_executeCommand(mpd_Connection *connection, char *command)
+static void mpd_executeCommand(mpd_Connection *connection, const char *command)
 {
 	int ret;
 	struct timeval tv;
 	fd_set fds;
-	char *commandPtr = command;
+	const char *commandPtr = command;
 	int commandLen = strlen(command);
 
 	if (!connection->doneProcessing && !connection->commandList) {
@@ -1945,7 +1945,7 @@ void mpd_startPlaylistSearch(mpd_Connection *connection, int exact)
 
 void mpd_startFieldSearch(mpd_Connection *connection, int type)
 {
-	char *strtype;
+	const char *strtype;
 	int len;
 
 	if (connection->request) {
@@ -1972,7 +1972,7 @@ void mpd_startFieldSearch(mpd_Connection *connection, int type)
 void mpd_addConstraintSearch(mpd_Connection *connection, int type,
 		const char *name)
 {
-	char *strtype;
+	const char *strtype;
 	char *arg;
 	int len;
 	char *string;

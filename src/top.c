@@ -361,7 +361,7 @@ static unsigned long long calc_cpu_total(void)
 	unsigned long long irq = 0;
 	unsigned long long softirq = 0;
 	unsigned long long steal = 0;
-	char *template =
+	const char *template =
 		KFLAG_ISSET(KFLAG_IS_LONGSTAT) ? TMPL_LONGPROC : TMPL_SHORTPROC;
 
 	ps = open("/proc/stat", O_RDONLY);

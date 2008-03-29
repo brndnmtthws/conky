@@ -610,7 +610,7 @@ inline static void update_stat(void)
 	unsigned int i;
 	unsigned int index;
 	double curtmp;
-	char *stat_template = NULL;
+	const char *stat_template = NULL;
 	unsigned int malloc_cpu_size = 0;
 
 	/* add check for !info.cpu_usage since that mem is freed on a SIGUSR1 */
@@ -1042,7 +1042,7 @@ __inline__ unsigned long long int rdtsc(void)
 
 /* return system frequency in MHz (use divisor=1) or GHz (use divisor=1000) */
 void get_freq_dynamic(char *p_client_buffer, size_t client_buffer_size,
-		char *p_format, int divisor)
+		const char *p_format, int divisor)
 {
 #if  defined(__i386) || defined(__x86_64)
 	struct timezone tz;
@@ -1086,8 +1086,8 @@ void get_freq_dynamic(char *p_client_buffer, size_t client_buffer_size,
 #define CPUFREQ_POSTFIX "cpufreq/scaling_cur_freq"
 
 /* return system frequency in MHz (use divisor=1) or GHz (use divisor=1000) */
-char get_freq(char *p_client_buffer, size_t client_buffer_size, char *p_format,
-		int divisor, unsigned int cpu)
+char get_freq(char *p_client_buffer, size_t client_buffer_size,
+		const char *p_format, int divisor, unsigned int cpu)
 {
 	FILE *f;
 	static int rep = 0;
@@ -1185,7 +1185,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size, char *p_format,
 
 /* return cpu voltage in mV (use divisor=1) or V (use divisor=1000) */
 char get_voltage(char *p_client_buffer, size_t client_buffer_size,
-		char *p_format, int divisor, unsigned int cpu)
+		const char *p_format, int divisor, unsigned int cpu)
 {
 	FILE *f;
 	char s[256];
@@ -2429,7 +2429,7 @@ void update_entropy(void)
 	info.mask |= (1 << INFO_ENTROPY);
 }
 
-char *get_disk_protect_queue(char *disk)
+const char *get_disk_protect_queue(const char *disk)
 {
 	FILE *fp;
 	char path[128];

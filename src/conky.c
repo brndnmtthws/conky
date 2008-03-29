@@ -127,7 +127,7 @@ static void print_version(void)
 	exit(0);
 }
 
-static char *suffixes[] = { "B", "kiB", "MiB", "GiB", "TiB", "PiB", "" };
+static const char *suffixes[] = { "B", "kiB", "MiB", "GiB", "TiB", "PiB", "" };
 
 #ifdef X11
 
@@ -476,10 +476,10 @@ static inline int calc_text_width(const char *s, int l)
 
 		if (utf8_mode) {
 			XftTextExtentsUtf8(display, fonts[selected_font].xftfont,
-				(FcChar8 *) s, l, &gi);
+				(const FcChar8 *) s, l, &gi);
 		} else {
 			XftTextExtents8(display, fonts[selected_font].xftfont,
-				(FcChar8 *) s, l, &gi);
+				(const FcChar8 *) s, l, &gi);
 		}
 		return gi.xOff;
 	} else
@@ -969,8 +969,8 @@ static void convert_escapes(char *buf)
 /* Prints anything normally printed with snprintf according to the current value
  * of use_spacer.  Actually slightly more flexible than snprintf, as you can
  * safely specify the destination buffer as one of your inputs.  */
-static int spaced_print(char *buf, int size, char *format, int width,
-		char *func_name, ...) {
+static int spaced_print(char *buf, int size, const char *format, int width,
+		const char *func_name, ...) {
 	int len;
 	va_list argp;
 	if (size < 1) {
@@ -1004,9 +1004,9 @@ static int spaced_print(char *buf, int size, char *format, int width,
 }
 
 /* converts from bytes to human readable format (k, M, G, T) */
-static void human_readable(long long num, char *buf, int size, char *func_name)
+static void human_readable(long long num, char *buf, int size, const char *func_name)
 {
-	char **suffix = suffixes;
+	const char **suffix = suffixes;
 	float fnum;
 	int precision, len;
 	static const int WIDTH = 10, SHORT_WIDTH = 8;
@@ -3818,11 +3818,14 @@ static struct text_object *create_plain_text(const char *s)
 	return obj;
 }
 
-static struct text_object_list *extract_variable_text_internal(const char *p)
+static struct text_object_list *extract_variable_text_internal(const char *const_p)
 {
 	struct text_object_list *retval;
 	struct text_object *obj;
-	const char *s = p;
+	char *p, *s;
+
+	p = strdup(const_p);
+	s = p;
 
 	retval = malloc(sizeof(struct text_object_list));
 	memset(retval, 0, sizeof(struct text_object_list));
@@ -3835,7 +3838,7 @@ static struct text_object_list *extract_variable_text_internal(const char *p)
 			line++;
 		}
 		if (*p == '$') {
-			*(char *) p = '\0';
+			*p = '\0';
 			obj = create_plain_text(s);
 			if (obj != NULL) {
 				// allocate memory for the object
@@ -3847,7 +3850,7 @@ static struct text_object_list *extract_variable_text_internal(const char *p)
 					sizeof(struct text_object));
 				free(obj);
 			}
-			*(char *) p = '$';
+			*p = '$';
 			p++;
 			s = p;
 
@@ -3896,7 +3899,7 @@ static struct text_object_list *extract_variable_text_internal(const char *p)
 
 				/* if variable wasn't found in environment, use some special */
 				if (!var) {
-					char *p;
+					char *tmp_p;
 					char *arg = 0;
 
 					/* split arg */
@@ -3913,10 +3916,10 @@ static struct text_object_list *extract_variable_text_internal(const char *p)
 					}
 
 					/* lowercase variable name */
-					p = buf;
-					while (*p) {
-						*p = tolower(*p);
-						p++;
+					tmp_p = buf;
+					while (*tmp_p) {
+						*tmp_p = tolower(*tmp_p);
+						tmp_p++;
 					}
 
 					// create new object
@@ -3966,6 +3969,7 @@ static struct text_object_list *extract_variable_text_internal(const char *p)
 		ERR("one or more $endif's are missing");
 	}
 
+	free(p);
 	return retval;
 }
 
@@ -6507,10 +6511,10 @@ static void draw_string(const char *s)
 		c2.color.alpha = fonts[selected_font].font_alpha;
 		if (utf8_mode) {
 			XftDrawStringUtf8(window.xftdraw, &c2, fonts[selected_font].xftfont,
-				cur_x, cur_y, (XftChar8 *) s, strlen(s));
+				cur_x, cur_y, (const XftChar8 *) s, strlen(s));
 		} else {
 			XftDrawString8(window.xftdraw, &c2, fonts[selected_font].xftfont,
-				cur_x, cur_y, (XftChar8 *) s, strlen(s));
+				cur_x, cur_y, (const XftChar8 *) s, strlen(s));
 		}
 	} else
 #endif

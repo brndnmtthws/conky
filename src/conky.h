@@ -548,9 +548,9 @@ void update_cpu_usage(void);
 void update_total_processes(void);
 void update_running_processes(void);
 void update_i8k(void);
-char get_freq(char *, size_t, char *, int, unsigned int);
-void get_freq_dynamic(char *, size_t, char *, int);
-char get_voltage(char *, size_t, char *, int, unsigned int);	/* ptarjan */
+char get_freq(char *, size_t, const char *, int, unsigned int);
+void get_freq_dynamic(char *, size_t, const char *, int);
+char get_voltage(char *, size_t, const char *, int, unsigned int);	/* ptarjan */
 void update_load_average(void);
 int interface_up(const char *dev);
 char *get_ioscheduler(char *);
@@ -584,7 +584,7 @@ void get_ibm_acpi_fan(char *buf, size_t client_buffer_size);
 void get_ibm_acpi_temps(void);
 void get_ibm_acpi_volume(char *buf, size_t client_buffer_size);
 void get_ibm_acpi_brightness(char *buf, size_t client_buffer_size);
-char *get_disk_protect_queue(char *disk);
+const char *get_disk_protect_queue(const char *);
 void get_cpu_count(void);
 
 struct ibm_acpi_struct {
