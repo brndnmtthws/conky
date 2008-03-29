@@ -233,7 +233,7 @@ struct audacious_s {
 #endif
 
 #ifdef BMPX
-void update_bmpx();
+void update_bmpx(void);
 struct bmpx_s {
 	char *title;
 	char *artist;
@@ -244,7 +244,7 @@ struct bmpx_s {
 };
 #endif
 
-void update_entropy();
+void update_entropy(void);
 struct entropy_s {
 	unsigned int entropy_avail;
 	unsigned int poolsize;
@@ -493,10 +493,10 @@ extern int workarea[4];
 
 extern struct conky_window window;
 
-void init_X11();
+void init_X11(void);
 void init_window(int use_own_window, int width, int height, int set_trans,
 	int back_colour, char **argv, int argc);
-void create_gc();
+void create_gc(void);
 void set_transparent_background(Window win);
 long get_x11_color(const char *);
 
@@ -514,7 +514,7 @@ void signal_handler(int);
 void reload_config(void);
 void clean_up(void);
 
-void update_uname();
+void update_uname(void);
 double get_time(void);
 FILE *open_file(const char *file, int *reported);
 void variable_substitute(const char *s, char *dest, unsigned int n);
@@ -524,9 +524,9 @@ struct net_stat *get_net_stat(const char *dev);
 void clear_net_stats(void);
 void free_dns_data(void);
 void update_dns_data(void);
-void update_users();
+void update_users(void);
 
-void update_stuff();
+void update_stuff(void);
 
 int round_to_int(float f);
 
@@ -551,7 +551,7 @@ void update_i8k(void);
 char get_freq(char *, size_t, char *, int, unsigned int);
 void get_freq_dynamic(char *, size_t, char *, int);
 char get_voltage(char *, size_t, char *, int, unsigned int);	/* ptarjan */
-void update_load_average();
+void update_load_average(void);
 int interface_up(const char *dev);
 char *get_ioscheduler(char *);
 int get_laptop_mode(void);
@@ -585,7 +585,7 @@ void get_ibm_acpi_temps(void);
 void get_ibm_acpi_volume(char *buf, size_t client_buffer_size);
 void get_ibm_acpi_brightness(char *buf, size_t client_buffer_size);
 char *get_disk_protect_queue(char *disk);
-void get_cpu_count();
+void get_cpu_count(void);
 
 struct ibm_acpi_struct {
 	unsigned int temps[8];
@@ -641,9 +641,9 @@ struct local_mail_s {
 	double last_update;
 };
 
-void update_top();
-void free_all_processes();
-struct process *get_first_process();
+void update_top(void);
+void free_all_processes(void);
+struct process *get_first_process(void);
 
 /* fs-stuff is possibly system dependant (in fs.c) */
 
@@ -662,7 +662,7 @@ int mixer_get_right(int);
 
 extern char *current_mail_spool;
 
-void update_mail_count();
+void update_mail_count(struct local_mail_s *);
 
 /* in freebsd.c */
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
@@ -690,7 +690,7 @@ void free_mpd_vars(struct information *current_info);
 
 /* in xmms2.c */
 #ifdef XMMS2
-void update_xmms2();
+void update_xmms2(void);
 #endif
 
 /* in hddtemp.c */
@@ -702,8 +702,8 @@ char *get_hddtemp_info(char *dev, char *addr, int port, char *unit);
 /* in rss.c */
 #ifdef RSS
 PRSS *get_rss_info(char *uri, int delay);
-void init_rss_info();
-void free_rss_info();
+void init_rss_info(void);
+void free_rss_info(void);
 #endif /* RSS */
 
 /* in linux.c */

@@ -116,7 +116,7 @@ static void users_alloc(struct information *ptr)
 	}
 }
 
-void update_users()
+void update_users(void)
 {
 	struct information *current_info = &info;
 	char temp[512] = "";

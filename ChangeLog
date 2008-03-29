@@ -1,5 +1,8 @@
 # $Id$
 
+2008-03-29
+	* Increased C99 compliance.
+
 2008-03-28
 	* Fixed messed up percentages (fs_free_perc, fs_used_perc, mpd_percent,
 	battery_percent).

@@ -33,7 +33,7 @@
 static struct diskio_stat diskio_stats_[MAX_DISKIO_STATS];
 struct diskio_stat *diskio_stats = diskio_stats_;
 
-void clear_diskio_stats()
+void clear_diskio_stats(void)
 {
 	unsigned i;
 	for(i = 0; i < MAX_DISKIO_STATS; i++) {

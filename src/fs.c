@@ -59,7 +59,7 @@ static void update_fs_stat(struct fs_stat *fs);
 
 void get_fs_type(const char *path, char *result);
 
-void update_fs_stats()
+void update_fs_stats(void)
 {
 	unsigned i;
 
@@ -70,7 +70,7 @@ void update_fs_stats()
 	}
 }
 
-void clear_fs_stats()
+void clear_fs_stats(void)
 {
 	unsigned i;
 	for (i = 0; i < MAX_FS_STATS; ++i) {

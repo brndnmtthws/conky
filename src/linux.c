@@ -73,11 +73,11 @@ static int show_nice_processes;
  * using a flag in this manner creates less confusing code. */
 static int prefer_proc = 0;
 
-void prepare_update()
+void prepare_update(void)
 {
 }
 
-void update_uptime()
+void update_uptime(void)
 {
 #ifdef HAVE_SYSINFO
 	if (!prefer_proc) {
@@ -126,7 +126,7 @@ int check_mount(char *s)
 /* these things are also in sysinfo except Buffers:
  * (that's why I'm reading them from proc) */
 
-void update_meminfo()
+void update_meminfo(void)
 {
 	FILE *meminfo_fp;
 	static int rep = 0;
@@ -171,7 +171,7 @@ void update_meminfo()
 	fclose(meminfo_fp);
 }
 
-int get_laptop_mode()
+int get_laptop_mode(void)
 {
 	FILE *fp;
 	int val = -1;
@@ -241,7 +241,7 @@ int interface_up(const char *dev)
 		x = strdup(y); \
 	}
 
-void update_gateway_info()
+void update_gateway_info(void)
 {
 	FILE *fp;
 	struct in_addr ina;
@@ -288,7 +288,7 @@ FAIL:
 	return;
 }
 
-inline void update_net_stats()
+inline void update_net_stats(void)
 {
 	FILE *net_dev_fp;
 	static int rep = 0;
@@ -506,7 +506,7 @@ inline void update_net_stats()
 
 int result;
 
-void update_total_processes()
+void update_total_processes(void)
 {
 #ifdef HAVE_SYSINFO
 	if (!prefer_proc) {
@@ -565,7 +565,7 @@ void determine_longstat(char *buf)
 	}
 }
 
-void get_cpu_count()
+void get_cpu_count(void)
 {
 	FILE *stat_fp;
 	static int rep = 0;
@@ -601,7 +601,7 @@ void get_cpu_count()
 #define TMPL_LONGSTAT "%*s %llu %llu %llu %llu %llu %llu %llu %llu"
 #define TMPL_SHORTSTAT "%*s %llu %llu %llu %llu"
 
-inline static void update_stat()
+inline static void update_stat(void)
 {
 	FILE *stat_fp;
 	static int rep = 0;
@@ -699,17 +699,17 @@ inline static void update_stat()
 	fclose(stat_fp);
 }
 
-void update_running_processes()
+void update_running_processes(void)
 {
 	update_stat();
 }
 
-void update_cpu_usage()
+void update_cpu_usage(void)
 {
 	update_stat();
 }
 
-void update_load_average()
+void update_load_average(void)
 {
 #ifdef HAVE_GETLOADAVG
 	if (!prefer_proc) {
@@ -739,7 +739,7 @@ void update_load_average()
 #define PROC_I8K "/proc/i8k"
 #define I8K_DELIM " "
 static char *i8k_procbuf = NULL;
-void update_i8k()
+void update_i8k(void)
 {
 	FILE *fp;
 
@@ -1031,7 +1031,7 @@ void get_adt746x_cpu(char *p_client_buffer, size_t client_buffer_size)
  * Small changes by David Sterba <sterd9am@ss1000.ms.mff.cuni.cz> */
 
 #if  defined(__i386) || defined(__x86_64)
-__inline__ unsigned long long int rdtsc()
+__inline__ unsigned long long int rdtsc(void)
 {
 	unsigned long long int x;
 
@@ -2047,7 +2047,7 @@ void get_powerbook_batt_info(char *buf, size_t n, int i)
 	snprintf(buf, n, "%s", pb_battery_info[i]);
 }
 
-void update_top()
+void update_top(void)
 {
 	show_nice_processes = 1;
 	process_find_top(info.cpu, info.memu);
@@ -2069,7 +2069,7 @@ void update_top()
 #define NBD_MAJOR 43
 #endif
 
-void update_diskio()
+void update_diskio(void)
 {
 	static unsigned int last = UINT_MAX;
 	static unsigned int last_read = UINT_MAX;
@@ -2256,7 +2256,7 @@ temperatures:   41 43 31 46 33 -128 29 -128
  * Peter Tarjan (ptarjan@citromail.hu) */
 
 static double last_ibm_acpi_temp_time;
-void get_ibm_acpi_temps()
+void get_ibm_acpi_temps(void)
 {
 
 	/* don't update too often */

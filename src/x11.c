@@ -59,12 +59,12 @@ int workarea[4];
 struct conky_window window;
 
 /* local prototypes */
-static void update_workarea();
+static void update_workarea(void);
 static Window find_desktop_window(Window *p_root, Window *p_desktop);
 static Window find_subwindow(Window win, int w, int h);
 
 /* X11 initializer */
-void init_X11()
+void init_X11(void)
 {
 	if ((display = XOpenDisplay(0)) == NULL) {
 		CRIT_ERR("can't open display: %s", XDisplayName(0));
@@ -77,7 +77,7 @@ void init_X11()
 	update_workarea();
 }
 
-static void update_workarea()
+static void update_workarea(void)
 {
 	Window root = RootWindow(display, screen);
 	unsigned long nitems, bytes;
@@ -535,7 +535,7 @@ long get_x11_color(const char *name)
 	return (long) color.pixel;
 }
 
-void create_gc()
+void create_gc(void)
 {
 	XGCValues values;
 

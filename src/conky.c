@@ -74,7 +74,7 @@
 /* #define SIGNAL_BLOCKING */
 #undef SIGNAL_BLOCKING
 
-static void print_version()
+static void print_version(void)
 {
 	printf("Conky %s compiled %s for %s\n", VERSION, BUILD_DATE, BUILD_ARCH);
 
@@ -188,7 +188,7 @@ struct font_list *fonts = NULL;
 
 #define MAX_FONTS 64 // hmm, no particular reason, just makes sense.
 
-static void set_font();
+static void set_font(void);
 
 int addfont(const char *data_in)
 {
@@ -241,7 +241,7 @@ void set_first_font(const char *data_in)
 	}
 }
 
-void free_fonts()
+void free_fonts(void)
 {
 	int i;
 
@@ -263,7 +263,7 @@ void free_fonts()
 	selected_font = 0;
 }
 
-static void load_fonts()
+static void load_fonts(void)
 {
 	int i;
 
@@ -727,7 +727,7 @@ inline void graph_append(struct special_t *graph, double f)
 }
 
 short colour_depth = 0;
-void set_up_gradient();
+void set_up_gradient(void);
 
 /* precalculated: 31/255, and 63/255 */
 #define CONST_8_TO_5_BITS 0.12156862745098
@@ -1950,7 +1950,7 @@ void *threaded_exec(struct text_object *obj)
 	return 0;
 }
 
-static struct text_object *new_text_object_internal()
+static struct text_object *new_text_object_internal(void)
 {
 	struct text_object *obj = malloc(sizeof(struct text_object));
 	memset(obj, 0, sizeof(struct text_object));
@@ -6145,7 +6145,7 @@ head:
 
 double current_update_time, last_update_time;
 
-static void generate_text()
+static void generate_text(void)
 {
 	struct information *cur = &info;
 	char *p;
@@ -6156,7 +6156,7 @@ static void generate_text()
 
 	current_update_time = get_time();
 
-	update_stuff(cur);
+	update_stuff();
 	/* fix diskio rates to b/s (use update_interval */
 	diskio_read_value = diskio_read_value / update_interval;
 	diskio_write_value = diskio_write_value / update_interval;
@@ -6186,7 +6186,7 @@ static void generate_text()
 }
 
 #ifdef X11
-static void set_font()
+static void set_font(void)
 {
 #ifdef XFT
 	if (use_xft) {
@@ -6257,7 +6257,7 @@ static inline int get_string_width_special(char *s)
 static void text_size_updater(char *s);
 
 int last_font_height;
-static void update_text_area()
+static void update_text_area(void)
 {
 	int x, y;
 
@@ -6525,7 +6525,7 @@ static void draw_string(const char *s)
 
 long redmask, greenmask, bluemask;
 
-void set_up_gradient()
+void set_up_gradient(void)
 {
 #ifdef X11
 	colour_depth = DisplayPlanes(display, screen);
@@ -6934,7 +6934,7 @@ static void draw_line(char *s)
 #endif /* X11 */
 }
 
-static void draw_text()
+static void draw_text(void)
 {
 #ifdef X11
 	cur_y = text_start_y;
@@ -6965,7 +6965,7 @@ static void draw_text()
 	for_each_line(text_buffer, draw_line);
 }
 
-static void draw_stuff()
+static void draw_stuff(void)
 {
 #ifdef X11
 	selected_font = 0;
@@ -7038,7 +7038,7 @@ static void clear_text(int exposures)
 static int need_to_update;
 
 /* update_text() generates new text and clears old text area */
-static void update_text()
+static void update_text(void)
 {
 	generate_text();
 #ifdef X11
@@ -7047,7 +7047,7 @@ static void update_text()
 	need_to_update = 1;
 }
 
-static void main_loop()
+static void main_loop(void)
 {
 #ifdef SIGNAL_BLOCKING
 	sigset_t newmask, oldmask;

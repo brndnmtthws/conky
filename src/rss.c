@@ -88,7 +88,7 @@ int rss_delay(int *wait, int delay)
 	return 0;
 }
 
-void init_rss_info()
+void init_rss_info(void)
 {
 	int i;
 
@@ -99,7 +99,7 @@ void init_rss_info()
 	}
 }
 
-void free_rss_info()
+void free_rss_info(void)
 {
 	int i;
 

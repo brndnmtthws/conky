@@ -32,12 +32,12 @@ static unsigned long g_time = 0;
 static unsigned long long previous_total = 0;
 static struct process *first_process = 0;
 
-struct process *get_first_process()
+struct process *get_first_process(void)
 {
 	return first_process;
 }
 
-void free_all_processes()
+void free_all_processes(void)
 {
 	struct process *next = NULL, *pr = first_process;
 
@@ -246,7 +246,7 @@ static int calculate_cpu(struct process *process)
  * Update process table					  *
  ******************************************/
 
-static int update_process_table()
+static int update_process_table(void)
 {
 	DIR *dir;
 	struct dirent *entry;
@@ -320,7 +320,7 @@ static void delete_process(struct process *p)
  * Strip dead process entries			  *
  ******************************************/
 
-static void process_cleanup()
+static void process_cleanup(void)
 {
 
 	struct process *p = first_process;
@@ -346,7 +346,7 @@ static void process_cleanup()
 #define TMPL_SHORTPROC "%*s %llu %llu %llu %llu"
 #define TMPL_LONGPROC "%*s %llu %llu %llu %llu %llu %llu %llu %llu"
 
-static unsigned long long calc_cpu_total()
+static unsigned long long calc_cpu_total(void)
 {
 	unsigned long long total = 0;
 	unsigned long long t = 0;

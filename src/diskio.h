@@ -41,6 +41,6 @@ struct diskio_stat {
 struct diskio_stat *diskio_stats;
 
 struct diskio_stat *prepare_diskio_stat(const char *s);
-void clear_diskio_stats();
+void clear_diskio_stats(void);
 
 #endif /* DISKIO_H_ */

@@ -36,12 +36,12 @@
 
 struct information info;
 
-void update_uname()
+void update_uname(void)
 {
 	uname(&info.uname_s);
 }
 
-double get_time()
+double get_time(void)
 {
 	struct timeval tv;
 
@@ -234,7 +234,7 @@ unsigned long long need_mask;
 
 #define NEED(a) ((need_mask & (1 << a)) && ((info.mask & (1 << a)) == 0))
 
-void update_stuff()
+void update_stuff(void)
 {
 	unsigned int i;
 
