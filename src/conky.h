@@ -96,11 +96,15 @@ extern unsigned int text_buffer_size;
 
 #include <sys/socket.h>
 
-#define ERR(s, varargs...) fprintf(stderr, "Conky: " s "\n", ##varargs)
+#define ERR(...) { \
+	fprintf(stderr, "Conky: "); \
+	fprintf(stderr, __VA_ARGS__); \
+	fprintf(stderr, "\n"); \
+}
 
 /* critical error */
-#define CRIT_ERR(s, varargs...) \
-	{ fprintf(stderr, "Conky: " s "\n", ##varargs); exit(EXIT_FAILURE); }
+#define CRIT_ERR(...) \
+	{ ERR(__VA_ARGS__); exit(EXIT_FAILURE); }
 
 struct i8k_struct {
 	char *version;
@@ -124,7 +128,7 @@ struct net_stat {
 	long long recv, trans;
 	double recv_speed, trans_speed;
 	struct sockaddr addr;
-    char* addrs;
+	char* addrs;
 	double net_rec[15], net_trans[15];
 	// wireless extensions
 	char essid[32];
