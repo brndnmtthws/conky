@@ -192,7 +192,7 @@ char *get_ioscheduler(char *disk)
 	char buf[128];
 
 	if (!disk)
-		return "n/a";
+		return strdup("n/a");
 
 	snprintf(buf, 127, "/sys/block/%s/queue/scheduler", disk);
 	if ((fp = fopen(buf, "r")) == NULL) {
