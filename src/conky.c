@@ -1537,7 +1537,7 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 	return mail;
 }
 
-void *imap_thread(struct mail_s *mail)
+void *imap_thread(void *arg)
 {
 	int sockfd, numbytes;
 	char recvbuf[MAXDATASIZE];
@@ -1549,6 +1549,7 @@ void *imap_thread(struct mail_s *mail)
 	struct stat stat_buf;
 	struct hostent *he;
 	struct sockaddr_in their_addr;	// connector's address information
+	struct mail_s *mail = (struct mail_s *)arg;
 
 	if ((he = gethostbyname(mail->host)) == NULL) {	// get the host info
 		herror("gethostbyname");
@@ -1722,7 +1723,7 @@ next_iteration:
 	return 0;
 }
 
-void *pop3_thread(struct mail_s *mail)
+void *pop3_thread(void *arg)
 {
 	int sockfd, numbytes;
 	char recvbuf[MAXDATASIZE];
@@ -1733,6 +1734,7 @@ void *pop3_thread(struct mail_s *mail)
 	struct stat stat_buf;
 	struct hostent *he;
 	struct sockaddr_in their_addr;	// connector's address information
+	struct mail_s *mail = (struct mail_s *)arg;
 
 	if ((he = gethostbyname(mail->host)) == NULL) {	// get the host info
 		herror("gethostbyname");
@@ -1922,9 +1924,10 @@ next_iteration:
 	return 0;
 }
 
-void *threaded_exec(struct text_object *obj)
+void *threaded_exec(void *arg)
 {
 	while (1) {
+		struct text_object *obj = (struct text_object *)arg;
 		char *p2 = obj->data.texeci.buffer;
 		FILE *fp = popen(obj->data.texeci.cmd, "r");
 
@@ -4853,7 +4856,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(texeci) {
 				if (!obj->data.texeci.p_timed_thread) {
 					obj->data.texeci.p_timed_thread =
-						timed_thread_create((void *) threaded_exec,
+						timed_thread_create(&threaded_exec,
 						(void *) obj, obj->data.texeci.interval * 1000000);
 					if (!obj->data.texeci.p_timed_thread) {
 						ERR("Error creating texeci timed thread");
@@ -4874,7 +4877,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					// this means we use info
 					if (!info.mail->p_timed_thread) {
 						info.mail->p_timed_thread =
-							timed_thread_create((void *) imap_thread,
+							timed_thread_create(&imap_thread,
 							(void *) info.mail, info.mail->interval * 1000000);
 						if (!info.mail->p_timed_thread) {
 							ERR("Error creating imap timed thread");
@@ -4892,7 +4895,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					// this means we use obj
 					if (!obj->data.mail->p_timed_thread) {
 						obj->data.mail->p_timed_thread =
-							timed_thread_create((void *) imap_thread,
+							timed_thread_create(&imap_thread,
 							(void *) obj->data.mail,
 							obj->data.mail->interval * 1000000);
 						if (!obj->data.mail->p_timed_thread) {
@@ -4920,7 +4923,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					// this means we use info
 					if (!info.mail->p_timed_thread) {
 						info.mail->p_timed_thread =
-							timed_thread_create((void *) imap_thread,
+							timed_thread_create(&imap_thread,
 							(void *) info.mail, info.mail->interval * 1000000);
 						if (!info.mail->p_timed_thread) {
 							ERR("Error creating imap timed thread");
@@ -4938,7 +4941,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					// this means we use obj
 					if (!obj->data.mail->p_timed_thread) {
 						obj->data.mail->p_timed_thread =
-							timed_thread_create((void *) imap_thread,
+							timed_thread_create(&imap_thread,
 							(void *) obj->data.mail,
 							obj->data.mail->interval * 1000000);
 						if (!obj->data.mail->p_timed_thread) {
@@ -4966,7 +4969,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					// this means we use info
 					if (!info.mail->p_timed_thread) {
 						info.mail->p_timed_thread =
-							timed_thread_create((void *) pop3_thread,
+							timed_thread_create(&pop3_thread,
 							(void *) info.mail, info.mail->interval * 1000000);
 						if (!info.mail->p_timed_thread) {
 							ERR("Error creating pop3 timed thread");
@@ -4984,7 +4987,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					// this means we use obj
 					if (!obj->data.mail->p_timed_thread) {
 						obj->data.mail->p_timed_thread =
-							timed_thread_create((void *) pop3_thread,
+							timed_thread_create(&pop3_thread,
 							(void *) obj->data.mail,
 							obj->data.mail->interval * 1000000);
 						if (!obj->data.mail->p_timed_thread) {
@@ -5012,7 +5015,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					// this means we use info
 					if (!info.mail->p_timed_thread) {
 						info.mail->p_timed_thread =
-							timed_thread_create((void *) pop3_thread,
+							timed_thread_create(&pop3_thread,
 							(void *) info.mail, info.mail->interval * 1000000);
 						if (!info.mail->p_timed_thread) {
 							ERR("Error creating pop3 timed thread");
@@ -5031,7 +5034,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					// this means we use obj
 					if (!obj->data.mail->p_timed_thread) {
 						obj->data.mail->p_timed_thread =
-							timed_thread_create((void *) pop3_thread,
+							timed_thread_create(&pop3_thread,
 							(void *) obj->data.mail,
 							obj->data.mail->interval * 1000000);
 						if (!obj->data.mail->p_timed_thread) {

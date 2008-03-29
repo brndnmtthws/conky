@@ -127,9 +127,13 @@ void clear_mpd_stats(struct information *current_info)
 	current_info->mpd.length = 0;
 }
 
-void *update_mpd(void)
+void *update_mpd(void *arg)
 {
 	struct information *current_info = &info;
+
+	if (arg) {
+		/* make gcc happy (unused argument) */
+	}
 
 	while (1) {
 		if (!current_info->conn) {
