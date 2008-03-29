@@ -174,7 +174,7 @@ struct mail_s {			// for imap and pop3
 	char folder[128];
 	timed_thread *p_timed_thread;
 	char secure;
-} mail;
+};
 
 /* struct cpu_stat {
 	unsigned int user, nice, system, idle, iowait, irq, softirq;
