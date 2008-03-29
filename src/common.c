@@ -34,8 +34,6 @@
 #include <sys/time.h>
 #include <pthread.h>
 
-struct information info;
-
 void update_uname(void)
 {
 	uname(&info.uname_s);
