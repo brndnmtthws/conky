@@ -106,9 +106,7 @@ static struct process *new_process(int p)
  * Anyone hoping to port wmtop should look here first. */
 static int process_parse_stat(struct process *process)
 {
-	struct information *cur;
-
-	cur = &info;
+	struct information *cur = &info;
 	char line[BUFFER_LEN] = { 0 }, filename[BUFFER_LEN], procname[BUFFER_LEN];
 	int ps;
 	unsigned long user_time = 0;

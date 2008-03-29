@@ -64,6 +64,8 @@ void mbox_scan(char *args, char *output, size_t max_len)
 	int force_rescan = 0;
 	char buf[text_buffer_size];
 	struct stat statbuf;
+	struct ring_list *curr = 0, *prev = 0, *startlist = 0;
+	FILE *fp;
 
 	/* output was set to 1 after malloc'ing in conky.c */
 	/* -> beeing able to test it here for catching SIGUSR1 */
@@ -115,8 +117,9 @@ void mbox_scan(char *args, char *output, size_t max_len)
 		}
 		/* encapsulated with "'s find first occurrence of " */
 		if (args[strlen(args) - 1] == '"') {
+			char *start;
 			strncpy(mbox_mail_spool, args, DEFAULT_TEXT_BUFFER_SIZE);
-			char *start = strchr(mbox_mail_spool, '"') + 1;
+			start = strchr(mbox_mail_spool, '"') + 1;
 
 			start[(long) (strrchr(mbox_mail_spool, '"') - start)] = '\0';
 			strncpy(mbox_mail_spool, start, DEFAULT_TEXT_BUFFER_SIZE);
@@ -176,8 +179,6 @@ void mbox_scan(char *args, char *output, size_t max_len)
 
 	/* build up double-linked ring-list to hold data, while scanning down the
 	 * mbox */
-	struct ring_list *curr = 0, *prev = 0, *startlist = 0;
-
 	for (i = 0; i < print_mails; i++) {
 		curr = (struct ring_list *) malloc(sizeof(struct ring_list));
 		curr->from = (char *) malloc(sizeof(char[from_width + 1]));
@@ -200,8 +201,6 @@ void mbox_scan(char *args, char *output, size_t max_len)
 	curr->next = startlist;
 
 	/* mbox */
-	FILE *fp;
-
 	fp = fopen(mbox_mail_spool, "r");
 	if (!fp) {
 		return;
@@ -338,10 +337,10 @@ void mbox_scan(char *args, char *output, size_t max_len)
 	fclose(fp);
 
 	output[0] = '\0';
-	struct ring_list *tmp;
 
 	i = print_mails;
 	while (i) {
+		struct ring_list *tmp;
 		if (curr->from[0] != '\0') {
 			if (i != print_mails) {
 				snprintf(buf, text_buffer_size, "\nF: %-*s S: %-*s", from_width,

@@ -569,11 +569,11 @@ void get_cpu_count(void)
 {
 	FILE *stat_fp;
 	static int rep = 0;
+	char buf[256];
 
 	if (info.cpu_usage) {
 		return;
 	}
-	char buf[256];
 
 	if (!(stat_fp = open_file("/proc/stat", &rep))) {
 		return;
@@ -648,6 +648,7 @@ inline static void update_stat(void)
 			sscanf(buf, "%*s %hu", &info.run_procs);
 			info.mask |= (1 << INFO_RUN_PROCS);
 		} else if (strncmp(buf, "cpu", 3) == 0) {
+			double delta;
 			index = isdigit(buf[3]) ? ((int) buf[3]) - 0x2F : 0;
 			sscanf(buf, stat_template, &(cpu[index].cpu_user),
 				&(cpu[index].cpu_nice), &(cpu[index].cpu_system),
@@ -664,7 +665,7 @@ inline static void update_stat(void)
 				(cpu[index].cpu_idle + cpu[index].cpu_iowait);
 			info.mask |= (1 << INFO_CPU);
 
-			double delta = current_update_time - last_update_time;
+			delta = current_update_time - last_update_time;
 
 			if (delta <= 0.001) {
 				break;
@@ -1523,9 +1524,9 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 {
 	static int idx, rep = 0, rep2 = 0;
 	char acpi_path[128];
+	char sysfs_path[128];
 
 	snprintf(acpi_path, 127, ACPI_BATTERY_BASE_PATH "/%s/state", bat);
-	char sysfs_path[128];
 	snprintf(sysfs_path, 127, SYSFS_BATTERY_BASE_PATH "/%s/uevent", bat);
 
 	init_batteries();
@@ -1825,9 +1826,10 @@ int get_battery_perct(const char *bat)
 	static int rep = 0;
 	int idx;
 	char acpi_path[128];
+	char sysfs_path[128];
+	int remaining_capacity = -1;
 
 	snprintf(acpi_path, 127, ACPI_BATTERY_BASE_PATH "/%s/state", bat);
-	char sysfs_path[128];
 	snprintf(sysfs_path, 127, SYSFS_BATTERY_BASE_PATH "/%s/uevent", bat);
 
 	init_batteries();
@@ -1850,8 +1852,6 @@ int get_battery_perct(const char *bat)
 	if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL) {
 		acpi_bat_fp[idx] = open_file(acpi_path, &rep);
 	}
-
-	int remaining_capacity = -1;
 
 	if (sysfs_bat_fp[idx] != NULL) {
 		/* SYSFS */
@@ -2087,6 +2087,7 @@ void update_diskio(void)
 	unsigned int current_write = 0;
 	unsigned int reads, writes = 0;
 	int col_count = 0;
+	int tot, tot_read, tot_write;
 
 	if (!(fp = open_file("/proc/diskstats", &rep))) {
 		diskio_value = 0;
@@ -2145,9 +2146,9 @@ void update_diskio(void)
 	/* since the values in /proc/diststats are absolute, we have to substract
 	 * our last reading. The numbers stand for "sectors read", and we therefore
 	 * have to divide by two to get KB */
-	int tot = ((double) (current - last) / 2);
-	int tot_read = ((double) (current_read - last_read) / 2);
-	int tot_write = ((double) (current_write - last_write) / 2);
+	tot = ((double) (current - last) / 2);
+	tot_read = ((double) (current_read - last_read) / 2);
+	tot_write = ((double) (current_write - last_write) / 2);
 
 	if (last_read > current_read) {
 		tot_read = 0;
@@ -2206,13 +2207,13 @@ commands:       enable, disable
 
 void get_ibm_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
 {
-	if (!p_client_buffer || client_buffer_size <= 0) {
-		return;
-	}
-
 	FILE *fp;
 	unsigned int speed = 0;
 	char fan[128];
+
+	if (!p_client_buffer || client_buffer_size <= 0) {
+		return;
+	}
 
 	snprintf(fan, 127, "%s/fan", IBM_ACPI_DIR);
 
@@ -2262,6 +2263,9 @@ static double last_ibm_acpi_temp_time;
 void get_ibm_acpi_temps(void)
 {
 
+	FILE *fp;
+	char thermal[128];
+
 	/* don't update too often */
 	if (current_update_time - last_ibm_acpi_temp_time < 10.00) {
 		return;
@@ -2271,10 +2275,6 @@ void get_ibm_acpi_temps(void)
 	/* if (!p_client_buffer || client_buffer_size <= 0) {
 		return;
 	} */
-
-	FILE *fp;
-
-	char thermal[128];
 
 	snprintf(thermal, 127, "%s/thermal", IBM_ACPI_DIR);
 	fp = fopen(thermal, "r");
@@ -2313,17 +2313,16 @@ commands:       level <level> (<level> is 0-15)
 
 void get_ibm_acpi_volume(char *p_client_buffer, size_t client_buffer_size)
 {
+	FILE *fp;
+	char volume[128];
+	unsigned int vol = -1;
+	char mute[3] = "";
+
 	if (!p_client_buffer || client_buffer_size <= 0) {
 		return;
 	}
 
-	FILE *fp;
-
-	char volume[128];
-
 	snprintf(volume, 127, "%s/volume", IBM_ACPI_DIR);
-	unsigned int vol = -1;
-	char mute[3] = "";
 
 	fp = fopen(volume, "r");
 	if (fp != NULL) {
@@ -2369,13 +2368,13 @@ commands:       level <level> (<level> is 0-7)
 
 void get_ibm_acpi_brightness(char *p_client_buffer, size_t client_buffer_size)
 {
-	if (!p_client_buffer || client_buffer_size <= 0) {
-		return;
-	}
-
 	FILE *fp;
 	unsigned int brightness = 0;
 	char filename[128];
+
+	if (!p_client_buffer || client_buffer_size <= 0) {
+		return;
+	}
 
 	snprintf(filename, 127, "%s/brightness", IBM_ACPI_DIR);
 

@@ -78,12 +78,13 @@ static inline void read_item(PRSS_Item *res, xmlNodePtr data)
 
 	res->title = res->link = res->description = NULL;
 	for (; data; data = data->next) {
+		xmlNodePtr child;
 		const char *name;
 
 		if (data->type != XML_ELEMENT_NODE) {
 			continue;
 		}
-		xmlNodePtr child = data->children;
+		child = data->children;
 
 		if (!child) {
 			continue;
@@ -107,12 +108,13 @@ static inline void read_item(PRSS_Item *res, xmlNodePtr data)
 }
 static inline void read_element(PRSS *res, xmlNodePtr n)
 {
+	xmlNodePtr child;
 	const char *name;
 
 	if (n->type != XML_ELEMENT_NODE) {
 		return;
 	}
-	xmlNodePtr child = n->children;
+	child = n->children;
 
 	if (!child) {
 		return;
@@ -151,6 +153,8 @@ static inline void read_element(PRSS *res, xmlNodePtr n)
 static inline int parse_rss_2_0(PRSS *res, xmlNodePtr root)
 {
 	xmlNodePtr channel = root->children;
+	xmlNodePtr n;
+	int items = 0;
 
 	while (channel && (channel->type != XML_ELEMENT_NODE
 			|| strcmp((const char *) channel->name, "channel"))) {
@@ -159,9 +163,6 @@ static inline int parse_rss_2_0(PRSS *res, xmlNodePtr root)
 	if (!channel) {
 		return 0;
 	}
-
-	int items = 0;
-	xmlNodePtr n;
 
 	for (n = channel->children; n; n = n->next) {
 		if (n->type == XML_ELEMENT_NODE &&

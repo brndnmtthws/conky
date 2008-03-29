@@ -115,18 +115,18 @@ PRSS *get_rss_info(char *uri, int delay)
 	CURL *curl = NULL;
 	CURLcode res;
 
-	// curl temps
-	struct MemoryStruct chunk;
-
-	chunk.memory = NULL;
-	chunk.size = 0;
-
 	// pointers to struct
 	feed *curfeed = NULL;
 	PRSS *curdata = NULL;
 	int *last_update = 0;
 
 	int i;
+
+	// curl temps
+	struct MemoryStruct chunk;
+
+	chunk.memory = NULL;
+	chunk.size = 0;
 
 	// first seek for the uri in list
 	for (i = 0; i < num_feeds; i++) {

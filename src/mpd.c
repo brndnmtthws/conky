@@ -136,6 +136,9 @@ void *update_mpd(void *arg)
 	}
 
 	while (1) {
+		mpd_Status *status;
+		mpd_InfoEntity *entity;
+
 		if (!current_info->conn) {
 			current_info->conn = mpd_newConnection(current_info->mpd.host,
 				current_info->mpd.port, 10);
@@ -162,9 +165,6 @@ void *update_mpd(void *arg)
 			}
 			continue;
 		}
-
-		mpd_Status *status;
-		mpd_InfoEntity *entity;
 
 		mpd_sendStatusCommand(current_info->conn);
 		if ((status = mpd_getStatus(current_info->conn)) == NULL) {

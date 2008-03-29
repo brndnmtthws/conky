@@ -140,6 +140,7 @@ void get_fs_type(const char *path, char *result)
 
 	/* TODO: walk up the directory tree so it works on on paths that are not actually mount points. */
 
+	struct mntent *me;
 	FILE *mtab = setmntent("/etc/mtab", "r");
 
 	if (mtab == NULL) {
@@ -148,7 +149,7 @@ void get_fs_type(const char *path, char *result)
 		return;
 	}
 
-	struct mntent *me = getmntent(mtab);
+	me = getmntent(mtab);
 
 	// find our path in the mtab
 	while (strcmp(path, me->mnt_dir) && getmntent(mtab));

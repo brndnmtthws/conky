@@ -707,10 +707,11 @@ static void new_font(char *buf, char *args)
 
 inline void graph_append(struct special_t *graph, double f)
 {
+	int i;
+
 	if (!graph->scaled && f > graph->graph_scale) {
 		f = graph->graph_scale;
 	}
-	int i;
 
 	if (graph->scaled) {
 		graph->graph_scale = 1;
@@ -973,10 +974,12 @@ static int spaced_print(char *buf, int size, const char *format, int width,
 		const char *func_name, ...) {
 	int len;
 	va_list argp;
+	char *tempbuf;
+
 	if (size < 1) {
 		return 0;
 	}
-	char *tempbuf = malloc(size * sizeof(char));
+	tempbuf = malloc(size * sizeof(char));
 
 	// Passes the varargs along to vsnprintf
 	va_start(argp, func_name);
@@ -1464,9 +1467,10 @@ static void generate_text_internal(char *p, int p_max_size,
 struct mail_s *parse_mail_args(char type, const char *arg)
 {
 	struct mail_s *mail;
+	char *tmp;
+
 	mail = malloc(sizeof(struct mail_s));
 	memset(mail, 0, sizeof(struct mail_s));
-	char *tmp;
 
 	if (sscanf(arg, "%128s %128s %128s", mail->host, mail->user, mail->pass)
 			!= 3) {
@@ -1520,8 +1524,8 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 	}
 	tmp = strstr(arg, "-e ");
 	if (tmp) {
-		tmp += 3;
 		int len = 1024;
+		tmp += 3;
 
 		if (tmp[0] == '\'') {
 			len = strstr(tmp + 1, "'") - tmp - 1;
@@ -1556,6 +1560,10 @@ void *imap_thread(void *arg)
 		exit(1);
 	}
 	while (fail < 5) {
+		struct timeval timeout;
+		int res;
+		fd_set fdset;
+
 		if (fail > 0) {
 			ERR("Trying IMAP connection again for %s@%s (try %i/5)",
 				mail->user, mail->host, fail + 1);
@@ -1580,9 +1588,6 @@ void *imap_thread(void *arg)
 			fail++;
 			goto next_iteration;
 		}
-		struct timeval timeout;
-		int res;
-		fd_set fdset;
 
 		timeout.tv_sec = 60;	// 60 second timeout i guess
 		timeout.tv_usec = 0;
@@ -1741,6 +1746,10 @@ void *pop3_thread(void *arg)
 		exit(1);
 	}
 	while (fail < 5) {
+		struct timeval timeout;
+		int res;
+		fd_set fdset;
+
 		if (fail > 0) {
 			ERR("Trying POP3 connection again for %s@%s (try %i/5)",
 				mail->user, mail->host, fail + 1);
@@ -1765,9 +1774,6 @@ void *pop3_thread(void *arg)
 			fail++;
 			goto next_iteration;
 		}
-		struct timeval timeout;
-		int res;
-		fd_set fdset;
 
 		timeout.tv_sec = 60;	// 60 second timeout i guess
 		timeout.tv_usec = 0;
@@ -1926,13 +1932,16 @@ next_iteration:
 
 void *threaded_exec(void *arg)
 {
+	FILE *fp;
+	char *p2;
+	int n2;
+	struct text_object *obj = (struct text_object *)arg;
 	while (1) {
-		struct text_object *obj = (struct text_object *)arg;
-		char *p2 = obj->data.texeci.buffer;
-		FILE *fp = popen(obj->data.texeci.cmd, "r");
+		p2 = obj->data.texeci.buffer;
+		fp = popen(obj->data.texeci.cmd, "r");
 
 		timed_thread_lock(obj->data.texeci.p_timed_thread);
-		int n2 = fread(p2, 1, text_buffer_size, fp);
+		n2 = fread(p2, 1, text_buffer_size, fp);
 
 		pclose(fp);
 		p2[n2] = '\0';
@@ -3826,6 +3835,7 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 	struct text_object_list *retval;
 	struct text_object *obj;
 	char *p, *s, *orig_p;
+	long line;
 
 	p = strdup(const_p);
 	s = orig_p = p;
@@ -3834,7 +3844,7 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 	memset(retval, 0, sizeof(struct text_object_list));
 	retval->text_object_count = 0;
 
-	long line = text_lines;
+	line = text_lines;
 
 	while (*p) {
 		if (*p == '\n') {
@@ -4646,17 +4656,20 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 			OBJ(execp) {
-				FILE *fp = popen(obj->data.s, "r");
-				fread(p, 1, p_max_size, fp);
+				FILE *fp;
+				struct information *my_info;
+				struct text_object_list *text_objects;
+				int length;
 
+				fp = popen(obj->data.s, "r");
+				fread(p, 1, p_max_size, fp);
 				pclose(fp);
 
-				struct information *my_info =
-					malloc(sizeof(struct information));
+				my_info = malloc(sizeof(struct information));
 				memcpy(my_info, cur, sizeof(struct information));
-				struct text_object_list *text_objects = parse_conky_vars(p, p, my_info);
+				text_objects = parse_conky_vars(p, p, my_info);
 
-				int length = strlen(p);
+				length = strlen(p);
 
 				p[length] = '\0';
 				if (length > 0 && p[length - 1] == '\n') {
@@ -4671,6 +4684,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				char *p2 = p;
 				FILE *fp = popen(obj->data.s, "r");
 				int n2 = fread(p, 1, p_max_size, fp);
+				double barnum;
 
 				pclose(fp);
 				p[n2] = '\0';
@@ -4684,7 +4698,6 @@ static void generate_text_internal(char *p, int p_max_size,
 					}
 					p2++;
 				}
-				double barnum;
 
 				if (sscanf(p, "%lf", &barnum) == 0) {
 					ERR("reading execbar value failed (perhaps it's not the "
@@ -4702,6 +4715,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				char *p2 = p;
 				FILE *fp = popen(obj->data.s, "r");
 				int n2 = fread(p, 1, p_max_size, fp);
+				double barnum;
 
 				pclose(fp);
 				p[n2] = '\0';
@@ -4714,7 +4728,6 @@ static void generate_text_internal(char *p, int p_max_size,
 					}
 					p2++;
 				}
-				double barnum;
 
 				if (sscanf(p, "%lf", &barnum) == 0) {
 					ERR("reading execgraph value failed (perhaps it's not the "
@@ -4736,6 +4749,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					char *p2 = p;
 					FILE *fp = popen(obj->data.execi.cmd, "r");
 					int n2 = fread(p, 1, p_max_size, fp);
+					float barnum;
 
 					pclose(fp);
 					p[n2] = '\0';
@@ -4749,7 +4763,6 @@ static void generate_text_internal(char *p, int p_max_size,
 						}
 						p2++;
 					}
-					float barnum;
 
 					if (sscanf(p, "%f", &barnum) == 0) {
 						ERR("reading execibar value failed (perhaps it's not "
@@ -4773,6 +4786,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					char *p2 = p;
 					FILE *fp = popen(obj->data.execi.cmd, "r");
 					int n2 = fread(p, 1, p_max_size, fp);
+					float barnum;
 
 					pclose(fp);
 					p[n2] = '\0';
@@ -4786,7 +4800,6 @@ static void generate_text_internal(char *p, int p_max_size,
 						}
 						p2++;
 					}
-					float barnum;
 
 					if (sscanf(p, "%f", &barnum) == 0) {
 						ERR("reading execigraph value failed (perhaps it's not "
@@ -4825,10 +4838,10 @@ static void generate_text_internal(char *p, int p_max_size,
 				// parse_conky_vars(output, p, cur);
 			}
 			OBJ(execpi) {
+				struct text_object_list *text_objects = 0;
 				struct information *my_info =
 					malloc(sizeof(struct information));
 				memcpy(my_info, cur, sizeof(struct information));
-				struct text_object_list *text_objects = 0;
 
 				if (current_update_time - obj->data.execi.last_update
 						< obj->data.execi.interval
@@ -5192,9 +5205,9 @@ static void generate_text_internal(char *p, int p_max_size,
 					} else if (!strcmp(obj->data.rss.action, "item_titles")) {
 						if (data->item_count > 0) {
 							int itmp;
+							int show;
 
 							p[0] = 0;
-							int show;
 
 							if (obj->data.rss.act_par > data->item_count) {
 								show = data->item_count;
@@ -5290,11 +5303,12 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_alignc(p, obj->data.i);
 			}
 			OBJ(if_empty) {
+				struct text_object_list *text_objects;
 				struct information *my_info =
 					malloc(sizeof(struct information));
-
 				memcpy(my_info, cur, sizeof(struct information));
-				struct text_object_list *text_objects = parse_conky_vars(obj->data.ifblock.s, p, my_info);
+				text_objects = parse_conky_vars(obj->data.ifblock.s, p, my_info);
+
 				if (strlen(p) != 0) {
 					i = obj->data.ifblock.pos;
 					if_jumped = 1;
@@ -5472,14 +5486,16 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(tztime) {
 				char *oldTZ = NULL;
+				time_t t;
+				struct tm *tm;
 
 				if (obj->data.tztime.tz) {
 					oldTZ = getenv("TZ");
 					setenv("TZ", obj->data.tztime.tz, 1);
 					tzset();
 				}
-				time_t t = time(NULL);
-				struct tm *tm = localtime(&t);
+				t = time(NULL);
+				tm = localtime(&t);
 
 				setlocale(LC_TIME, "");
 				strftime(p, p_max_size, obj->data.tztime.fmt, tm);
@@ -5898,10 +5914,11 @@ static void generate_text_internal(char *p, int p_max_size,
 						< obj->data.tail.interval) {
 					snprintf(p, p_max_size, "%s", obj->data.tail.buffer);
 				} else {
-					obj->data.tail.last_update = current_update_time;
 					FILE *fp;
 					long nl = 0, bsize;
 					int iter;
+
+					obj->data.tail.last_update = current_update_time;
 
 					if (obj->data.tail.fd != -1) {
 						tail_pipe(obj, p, p_max_size);
@@ -5974,10 +5991,11 @@ head:
 						< obj->data.tail.interval) {
 					snprintf(p, p_max_size, "%s", obj->data.tail.buffer);
 				} else {
-					obj->data.tail.last_update = current_update_time;
 					FILE *fp;
 					long nl = 0;
 					int iter;
+
+					obj->data.tail.last_update = current_update_time;
 
 					fp = fopen(obj->data.tail.logfile, "rt");
 					if (fp == NULL) {
@@ -6223,17 +6241,18 @@ static inline int get_string_width(const char *s)
 
 static inline int get_string_width_special(char *s)
 {
-	if (!s) {
-		return 0;
-	}
 #ifdef X11
 	char *p, *final;
-
-	p = strdup(s);
-	final = p;
 	int index = 1;
 	int width = 0;
 	unsigned int i;
+
+	if (!s) {
+		return 0;
+	}
+
+	p = strdup(s);
+	final = p;
 
 	while (*p) {
 		if (*p == SPECIAL_CHAR) {
@@ -6257,7 +6276,7 @@ static inline int get_string_width_special(char *s)
 	free(final);
 	return width;
 #else
-	return strlen(s);
+	return (s) ? strlen(s) : 0;
 #endif /* X11 */
 }
 
@@ -6445,12 +6464,14 @@ static inline void set_foreground_color(long c)
 
 static void draw_string(const char *s)
 {
-	if (s[0] == '\0') {
-		return;
-	}
 	int i, i2, pos, width_of_s;
 	int max = 0;
 	int added;
+	char space[2];
+
+	if (s[0] == '\0') {
+		return;
+	}
 
 	width_of_s = get_string_width(s);
 	if (out_to_console) {
@@ -6462,7 +6483,6 @@ static void draw_string(const char *s)
 	strncpy(tmpstring1, s, text_buffer_size - 1);
 	pos = 0;
 	added = 0;
-	char space[2];
 
 	snprintf(space, 2, " ");
 #ifdef X11
@@ -6535,6 +6555,7 @@ long redmask, greenmask, bluemask;
 
 void set_up_gradient(void)
 {
+	int i;
 #ifdef X11
 	colour_depth = DisplayPlanes(display, screen);
 #else
@@ -6544,7 +6565,6 @@ void set_up_gradient(void)
 		ERR("using non-standard colour depth, gradients may look like a "
 			"lolly-pop");
 	}
-	int i;
 
 	redmask = 0;
 	greenmask = 0;
@@ -6625,14 +6645,17 @@ inline unsigned long do_gradient(unsigned long first_colour,
 inline unsigned long gradient_max(unsigned long first_colour,
 		unsigned long last_colour)
 {
+	int red1, green1, blue1;				// first colour
+	int red2, green2, blue2;				// second colour
+	int red3 = 0, green3 = 0, blue3 = 0;			// difference
+	long redshift, greenshift;
+	int max;
+
 	if (colour_depth == 0) {
 		set_up_gradient();
 	}
-	int red1, green1, blue1;				// first colour
-	int red2, green2, blue2;				// second colour
-	long redshift = (2 * colour_depth / 3 + colour_depth % 3);
-	long greenshift = (colour_depth / 3);
-	int red3 = 0, green3 = 0, blue3 = 0;	// difference
+	redshift = (2 * colour_depth / 3 + colour_depth % 3);
+	greenshift = (colour_depth / 3);
 
 	red1 = (first_colour & redmask) >> redshift;
 	green1 = (first_colour & greenmask) >> greenshift;
@@ -6643,7 +6666,7 @@ inline unsigned long gradient_max(unsigned long first_colour,
 	red3 = abs(red1 - red2);
 	green3 = abs(green1 - green2);
 	blue3 = abs(blue1 - blue2);
-	int max = red3;
+	max = red3;
 
 	if (green3 > max) {
 		max = green3;
@@ -6658,11 +6681,12 @@ static void draw_line(char *s)
 {
 #ifdef X11
 	char *p;
+	int cur_y_add = 0;
+	short font_h;
 
 	cur_x = text_start_x;
 	cur_y += font_ascent();
-	int cur_y_add = 0;
-	short font_h = font_height();
+	font_h = font_height();
 
 	/* find specials and draw stuff */
 	p = s;
@@ -6710,13 +6734,14 @@ static void draw_line(char *s)
 
 				case BAR:
 				{
+					int h, bar_usage, by;
 					if (cur_x - text_start_x > maximum_width
 							&& maximum_width > 0) {
 						break;
 					}
-					int h = specials[special_index].height;
-					int bar_usage = specials[special_index].arg;
-					int by = cur_y - (font_ascent() / 2) - 1;
+					h = specials[special_index].height;
+					bar_usage = specials[special_index].arg;
+					by = cur_y - (font_ascent() / 2) - 1;
 
 					if (h < font_height()) {
 						by -= h / 2 - 1;
@@ -6745,13 +6770,18 @@ static void draw_line(char *s)
 
 				case GRAPH:
 				{
+					int h, by, i, j = 0;
+					int gradient_size = 0;
+					float gradient_factor = 0;
+					float gradient_update = 0;
+					unsigned long last_colour = current_color;
+					unsigned long tmpcolour = current_color;
 					if (cur_x - text_start_x > maximum_width
 							&& maximum_width > 0) {
 						break;
 					}
-					int h = specials[special_index].height;
-					unsigned long last_colour = current_color;
-					int by = cur_y - (font_ascent() / 2) - 1;
+					h = specials[special_index].height;
+					by = cur_y - (font_ascent() / 2) - 1;
 
 					if (h < font_height()) {
 						by -= h / 2 - 1;
@@ -6771,12 +6801,6 @@ static void draw_line(char *s)
 					}
 					XSetLineAttributes(display, window.gc, 1, LineSolid,
 						CapButt, JoinMiter);
-					int i;
-					int j = 0;
-					int gradient_size = 0;
-					float gradient_factor = 0;
-					float gradient_update = 0;
-					unsigned long tmpcolour = current_color;
 
 					if (specials[special_index].last_colour != 0
 							|| specials[special_index].first_colour != 0) {
@@ -6988,8 +7012,8 @@ static void draw_stuff(void)
 	}
 
 	if (draw_outline) {
-		selected_font = 0;
 		int i, j;
+		selected_font = 0;
 
 		for (i = -1; i < 2; i++) {
 			for (j = -1; j < 2; j++) {
@@ -7059,30 +7083,30 @@ static void main_loop(void)
 {
 #ifdef SIGNAL_BLOCKING
 	sigset_t newmask, oldmask;
-
-	sigemptyset(&newmask);
-	sigaddset(&newmask, SIGINT);
-	sigaddset(&newmask, SIGTERM);
-	sigaddset(&newmask, SIGUSR1);
 #endif
-
 #ifdef X11
 	Region region = XCreateRegion();
 
 #ifdef HAVE_XDAMAGE
+	Damage damage;
+	XserverRegion region2, part;
 	int event_base, error_base;
 
 	if (!XDamageQueryExtension(display, &event_base, &error_base)) {
 		ERR("Xdamage extension unavailable");
 	}
-	Damage damage = XDamageCreate(display, window.window,
-		XDamageReportNonEmpty);
-	XserverRegion region2 = XFixesCreateRegionFromWindow(display,
-		window.window, 0);
-	XserverRegion part = XFixesCreateRegionFromWindow(display,
-		window.window, 0);
+	damage = XDamageCreate(display, window.window, XDamageReportNonEmpty);
+	region2 = XFixesCreateRegionFromWindow(display, window.window, 0);
+	part = XFixesCreateRegionFromWindow(display, window.window, 0);
 #endif /* HAVE_XDAMAGE */
 #endif /* X11 */
+
+#ifdef SIGNAL_BLOCKING
+	sigemptyset(&newmask);
+	sigaddset(&newmask, SIGINT);
+	sigaddset(&newmask, SIGTERM);
+	sigaddset(&newmask, SIGUSR1);
+#endif
 
 	info.looped = 0;
 	while (total_run_times == 0 || info.looped < total_run_times) {
@@ -8417,6 +8441,10 @@ static const struct option longopts[] = {
 
 int main(int argc, char **argv)
 {
+#ifdef X11
+	char *s, *temp;
+	unsigned int x;
+#endif
 	struct sigaction act, oact;
 
 	g_signal_pending = 0;
@@ -8429,9 +8457,6 @@ int main(int argc, char **argv)
 
 	/* handle command line parameters that don't change configs */
 #ifdef X11
-	char *s, *temp;
-	unsigned int x;
-
 	if (((s = getenv("LC_ALL")) && *s) || ((s = getenv("LC_CTYPE")) && *s)
 			|| ((s = getenv("LANG")) && *s)) {
 		temp = (char *) malloc((strlen(s) + 1) * sizeof(char));
