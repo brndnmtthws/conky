@@ -5363,7 +5363,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(memperc) {
 				if (cur->memmax) {
-					spaced_print(p, p_max_size, "%*Lu", 4, "memperc",
+					spaced_print(p, p_max_size, "%*llu", 4, "memperc",
 						pad_percents, cur->mem * 100 / cur->memmax);
 				}
 			}
@@ -5446,7 +5446,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				if (cur->swapmax == 0) {
 					strncpy(p, "No swap", p_max_size);
 				} else {
-					spaced_print(p, p_max_size, "%*Lu", 4, "swapperc",
+					spaced_print(p, p_max_size, "%*llu", 4, "swapperc",
 						pad_percents, cur->swap * 100 / cur->swapmax);
 				}
 			}
