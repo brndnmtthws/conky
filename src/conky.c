@@ -3822,10 +3822,10 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 {
 	struct text_object_list *retval;
 	struct text_object *obj;
-	char *p, *s;
+	char *p, *s, *orig_p;
 
 	p = strdup(const_p);
-	s = p;
+	s = orig_p = p;
 
 	retval = malloc(sizeof(struct text_object_list));
 	memset(retval, 0, sizeof(struct text_object_list));
@@ -3969,7 +3969,7 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 		ERR("one or more $endif's are missing");
 	}
 
-	free(p);
+	free(orig_p);
 	return retval;
 }
 
