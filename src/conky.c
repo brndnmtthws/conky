@@ -804,7 +804,7 @@ static char *scan_graph(const char *args, int *w, int *h,
 	*scale = 0;
 	/* graph's argument is either height or height,width */
 	if (args) {
-		if (sscanf(args, "%d,%d %x %x %i", h, w, first_colour, last_colour,
+		if (sscanf(args, "%d,%d %x %x %u", h, w, first_colour, last_colour,
 				scale) == 5) {
 			return NULL;
 		}
@@ -812,7 +812,7 @@ static char *scan_graph(const char *args, int *w, int *h,
 		if (sscanf(args, "%d,%d %x %x", h, w, first_colour, last_colour) == 4) {
 			return NULL;
 		}
-		if (sscanf(args, "%63s %d,%d %x %x %i", buf, h, w, first_colour,
+		if (sscanf(args, "%63s %d,%d %x %x %u", buf, h, w, first_colour,
 				last_colour, scale) == 6) {
 			return strdup(buf);
 		}
@@ -824,14 +824,14 @@ static char *scan_graph(const char *args, int *w, int *h,
 		buf[0] = '\0';
 		*h = 25;
 		*w = 0;
-		if (sscanf(args, "%x %x %i", first_colour, last_colour, scale) == 3) {
+		if (sscanf(args, "%x %x %u", first_colour, last_colour, scale) == 3) {
 			return NULL;
 		}
 		*scale = 0;
 		if (sscanf(args, "%x %x", first_colour, last_colour) == 2) {
 			return NULL;
 		}
-		if (sscanf(args, "%63s %x %x %i", buf, first_colour, last_colour,
+		if (sscanf(args, "%63s %x %x %u", buf, first_colour, last_colour,
 				scale) == 4) {
 			return strdup(buf);
 		}
@@ -842,14 +842,14 @@ static char *scan_graph(const char *args, int *w, int *h,
 		buf[0] = '\0';
 		*first_colour = 0;
 		*last_colour = 0;
-		if (sscanf(args, "%d,%d %i", h, w, scale) == 3) {
+		if (sscanf(args, "%d,%d %u", h, w, scale) == 3) {
 			return NULL;
 		}
 		*scale = 0;
 		if (sscanf(args, "%d,%d", h, w) == 2) {
 			return NULL;
 		}
-		if (sscanf(args, "%63s %d,%d %i", buf, h, w, scale) < 4) {
+		if (sscanf(args, "%63s %d,%d %u", buf, h, w, scale) < 4) {
 			*scale = 0;
 			//TODO: check the return value and throw an error?
 			sscanf(args, "%63s %d,%d", buf, h, w);
@@ -2708,7 +2708,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(execgraph, 0)
 		obj->data.s = strdup(arg ? arg : "");
 	END OBJ(execibar, 0)
-		unsigned int n;
+		int n;
 
 		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
 			char buf[256];
@@ -2721,7 +2721,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.execi.cmd = strdup(arg + n);
 		}
 	END OBJ(execigraph, 0)
-		unsigned int n;
+		int n;
 
 		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
 			char buf[256];
@@ -2734,7 +2734,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.execi.cmd = strdup(arg + n);
 		}
 	END OBJ(execi, 0)
-		unsigned int n;
+		int n;
 
 		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
 			char buf[256];
@@ -2748,7 +2748,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.execi.buffer = malloc(text_buffer_size);
 		}
 	END OBJ(execpi, 0)
-		unsigned int n;
+		int n;
 
 		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
 			char buf[256];
@@ -2762,7 +2762,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.execi.buffer = malloc(text_buffer_size);
 		}
 	END OBJ(texeci, 0)
-		unsigned int n;
+		int n;
 
 		if (!arg || sscanf(arg, "%f %n", &obj->data.texeci.interval, &n) <= 0) {
 			char buf[256];

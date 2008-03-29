@@ -524,7 +524,7 @@ void update_total_processes(void)
 			info.procs = 0;
 			return;
 		}
-		fscanf(fp, "%*f %*f %*f %*d/%hd", &info.procs);
+		fscanf(fp, "%*f %*f %*f %*d/%hu", &info.procs);
 		fclose(fp);
 	}
 	info.mask |= (1 << INFO_PROCS);
@@ -1783,7 +1783,8 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 		}
 
 		if (apm_bat_fp[idx] != NULL) {
-			int ac, status, flag, life;
+			unsigned int ac, status, flag;
+			int life;
 
 			fscanf(apm_bat_fp[idx], "%*s %*s %*x %x   %x       %x     %d%%",
 				&ac, &status, &flag, &life);
@@ -1961,7 +1962,8 @@ void get_powerbook_batt_info(char *buf, size_t n, int i)
 	static int rep = 0;
 	const char *batt_path = PMU_PATH "/battery_0";
 	const char *info_path = PMU_PATH "/info";
-	int flags, charge, max_charge, ac = -1;
+	unsigned int flags;
+	int charge, max_charge, ac = -1;
 	long time = -1;
 
 	/* don't update battery too often */
@@ -2078,7 +2080,8 @@ void update_diskio(void)
 	static int rep = 0;
 
 	char buf[512], devbuf[64];
-	int major, minor, i;
+	int i;
+	unsigned int major, minor;
 	unsigned int current = 0;
 	unsigned int current_read = 0;
 	unsigned int current_write = 0;
@@ -2221,7 +2224,7 @@ void get_ibm_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
 			if (fgets(line, 255, fp) == NULL) {
 				break;
 			}
-			if (sscanf(line, "speed: %d", &speed)) {
+			if (sscanf(line, "speed: %u", &speed)) {
 				break;
 			}
 		}
@@ -2331,7 +2334,7 @@ void get_ibm_acpi_volume(char *p_client_buffer, size_t client_buffer_size)
 			if (fgets(line, 255, fp) == NULL) {
 				break;
 			}
-			if (sscanf(line, "level: %d", &read_vol)) {
+			if (sscanf(line, "level: %u", &read_vol)) {
 				vol = read_vol;
 				continue;
 			}
@@ -2384,7 +2387,7 @@ void get_ibm_acpi_brightness(char *p_client_buffer, size_t client_buffer_size)
 			if (fgets(line, 255, fp) == NULL) {
 				break;
 			}
-			if (sscanf(line, "level: %d", &brightness)) {
+			if (sscanf(line, "level: %u", &brightness)) {
 				break;
 			}
 		}

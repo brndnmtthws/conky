@@ -588,7 +588,7 @@ char *get_disk_protect_queue(char *disk);
 void get_cpu_count(void);
 
 struct ibm_acpi_struct {
-	unsigned int temps[8];
+	int temps[8];
 };
 
 struct ibm_acpi_struct ibm_acpi;

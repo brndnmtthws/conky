@@ -138,7 +138,7 @@ static int process_parse_stat(struct process *process)
 
 	/* Extract cpu times from data in /proc filesystem */
 	rc = sscanf(line, "%*s %s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %lu "
-		"%lu %*s %*s %*s %d %*s %*s %*s %d %d", procname, &process->user_time,
+		"%lu %*s %*s %*s %d %*s %*s %*s %u %u", procname, &process->user_time,
 		&process->kernel_time, &nice_val, &process->vsize, &process->rss);
 	if (rc < 5) {
 		return 1;
