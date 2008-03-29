@@ -138,10 +138,11 @@ void get_fs_type(const char *path, char *result)
 
 #else				/* HAVE_STRUCT_STATFS_F_FSTYPENAME */
 
-	/* TODO: walk up the directory tree so it works on on paths that are not actually mount points. */
-
 	struct mntent *me;
 	FILE *mtab = setmntent("/etc/mtab", "r");
+	char *search_path;
+	int match;
+	char *slash;
 
 	if (mtab == NULL) {
 		ERR("setmntent /etc/mtab: %s", strerror(errno));
@@ -152,11 +153,28 @@ void get_fs_type(const char *path, char *result)
 	me = getmntent(mtab);
 
 	// find our path in the mtab
-	while (strcmp(path, me->mnt_dir) && getmntent(mtab));
+	search_path = strdup(path);
+	do {
+		while ((match = strcmp(search_path, me->mnt_dir))
+				&& getmntent(mtab));
+		if (!match)
+			break;
+		fseek(mtab, 0, SEEK_SET);
+		slash = strrchr(search_path, '/');
+		if (slash == NULL)
+			CRIT_ERR("invalid path '%s'", path);
+		if (strlen(slash) == 1)		/* trailing slash */
+			*(slash) = '\0';
+		else if (strlen(slash) > 1)
+			*(slash + 1) = '\0';
+		else
+			CRIT_ERR("found a crack in the matrix!");
+	} while (strlen(search_path) > 0);
+	free(search_path);
 
 	endmntent(mtab);
 
-	if (me && !strcmp(path, me->mnt_dir)) {
+	if (me && !match) {
 		strncpy(result, me->mnt_type, DEFAULT_TEXT_BUFFER_SIZE);
 		return;
 	}
