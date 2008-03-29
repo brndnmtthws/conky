@@ -21,6 +21,9 @@
  *
  */
 
+#ifndef SMAPI_H
+#define SMAPI_H
+
 int smapi_bat_installed(int);
 
 char *smapi_read_str(const char *);
@@ -32,3 +35,5 @@ char *smapi_get_val(const char *);
 char *smapi_get_bat_str(int, const char *);
 int smapi_get_bat_int(int, const char *);
 char *smapi_get_bat_val(const char *);
+
+#endif /* SMAPI_H */
