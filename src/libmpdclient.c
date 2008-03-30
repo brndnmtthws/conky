@@ -226,6 +226,9 @@ static int mpd_connect(mpd_Connection *connection, const char *host, int port,
 			break;
 	}
 
+	if (connection->sock > -1) {
+		closesocket(connection->sock);
+	}
 	if ((connection->sock = socket(dest->sa_family, SOCK_STREAM, 0)) < 0) {
 		strcpy(connection->errorStr, "problems creating socket");
 		connection->error = MPD_ERROR_SYSTEM;
@@ -362,6 +365,7 @@ mpd_Connection *mpd_newConnection(const char *host, int port, float timeout)
 	connection->commandList = 0;
 	connection->listOks = 0;
 	connection->doneListOk = 0;
+	connection->sock = -1;
 	connection->returnElement = NULL;
 	connection->request = NULL;
 
