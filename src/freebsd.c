@@ -645,6 +645,7 @@ void update_diskio()
 	int dn;
 	static struct statinfo statinfo_cur;
 	u_int64_t diskio_current = 0;
+	u_int64_t writes = 0;
 
 	bzero(&statinfo_cur, sizeof(statinfo_cur));
 	statinfo_cur.dinfo = (struct devinfo *) malloc(sizeof(struct devinfo));
@@ -763,6 +764,8 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 			processes[j].amount = 100.0 * p[i].ki_pctcpu / FSCALE;
 			processes[j].totalmem = (float) (p[i].ki_rssize /
 				(float) total_pages) * 100.0;
+			processes[j].vsize = p[i].ki_size;
+			processes[j].rss = (p[i].ki_rssize * getpagesize());
 			j++;
 		}
 	}
@@ -776,6 +779,8 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 		tmp->amount = processes[i].amount;
 		tmp->totalmem = processes[i].totalmem;
 		tmp->name = strdup(processes[i].name);
+		tmp->rss = processes[i].rss;
+		tmp->vsize = processes[i].vsize;
 
 		ttmp = mem[i];
 		mem[i] = tmp;
@@ -794,6 +799,8 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 		tmp->amount = processes[i].amount;
 		tmp->totalmem = processes[i].totalmem;
 		tmp->name = strdup(processes[i].name);
+		tmp->rss = processes[i].rss;
+		tmp->vsize = processes[i].vsize;
 
 		ttmp = cpu[i];
 		cpu[i] = tmp;
@@ -806,8 +813,8 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 #if defined(FREEBSD_DEBUG)
 	printf("=====\nmem\n");
 	for (i = 0; i < 10; i++) {
-		printf("%d: %s(%d) %.2f\n", i, mem[i]->name, mem[i]->pid,
-			mem[i]->totalmem);
+		printf("%d: %s(%d) %.2f %ld %ld\n", i, mem[i]->name,
+				mem[i]->pid, mem[i]->totalmem, mem[i]->vsize, mem[i]->rss);
 	}
 #endif
 

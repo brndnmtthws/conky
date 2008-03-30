@@ -83,11 +83,15 @@
 #include "mboxscan.h"
 #include "timed_thread.h"
 
-#define TOP_CPU 1
-#define TOP_NAME 2
-#define TOP_PID 3
-#define TOP_MEM 4
-#define TOP_TIME 5
+enum {
+	TOP_CPU,
+	TOP_NAME,
+	TOP_PID,
+	TOP_MEM,
+	TOP_TIME,
+	TOP_MEM_RES,
+	TOP_MEM_VSIZE,
+};
 
 #define DEFAULT_TEXT_BUFFER_SIZE 128
 extern unsigned int text_buffer_size;

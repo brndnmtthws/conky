@@ -1,5 +1,8 @@
 # $Id$
 
+2008-03-30
+	* Added mem_res and mem_vsize to $top.
+
 2008-03-29
 	* Increased C99 compliance.
 	* Fixed potential segfault in get_ioscheduler().

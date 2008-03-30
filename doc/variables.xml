@@ -1802,7 +1802,7 @@
 	<option>type, num</option>
 	</term>
 	<listitem>
-		This takes arguments in the form:top (name) (number) Basically, processes are ranked from highest to lowest in terms of cpu usage, which is what (num) represents. The types are: "name", "pid", "cpu", "mem", and "time". There can be a max of 10 processes listed.
+		This takes arguments in the form:top (name) (number) Basically, processes are ranked from highest to lowest in terms of cpu usage, which is what (num) represents. The types are: "name", "pid", "cpu", "mem", "mem_res", "mem_vsize", and "time". There can be a max of 10 processes listed.
 	<para></para></listitem>
 </varlistentry>
 

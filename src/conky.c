@@ -70,6 +70,7 @@
 #define CONFIG_FILE "$HOME/.conkyrc"
 #define MAIL_FILE "$MAIL"
 #define MAX_IF_BLOCK_DEPTH 5
+#define MAX_TAIL_LINES 100
 
 /* #define SIGNAL_BLOCKING */
 #undef SIGNAL_BLOCKING
@@ -1032,7 +1033,7 @@ static void human_readable(long long num, char *buf, int size, const char *func_
 
 	suffix++;
 	fnum = num / 1024.0;
-
+	
 	precision = 3;
 	do {
 		precision--;
@@ -1184,6 +1185,8 @@ enum text_object_type {
 	OBJ_memgraph,
 	OBJ_memmax,
 	OBJ_memperc,
+	OBJ_mem_res,
+	OBJ_mem_vsize,
 	OBJ_mixer,
 	OBJ_mixerl,
 	OBJ_mixerr,
@@ -2995,6 +2998,10 @@ static struct text_object *construct_text_object(const char *s,
 				obj->data.top.type = TOP_MEM;
 			} else if (strcmp(buf, "time") == 0) {
 				obj->data.top.type = TOP_TIME;
+			} else if (strcmp(buf, "mem_res") == 0) {
+				obj->data.top.type = TOP_MEM_RES;
+			} else if (strcmp(buf, "mem_vsize") == 0) {
+				obj->data.top.type = TOP_MEM_VSIZE;
 			} else {
 				ERR("invalid arg for top");
 				return NULL;
@@ -3010,8 +3017,8 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("invalid args given for top");
 			return NULL;
 		}
-	END OBJ(top_mem, INFO_TOP)
-		char buf[64];
+		END OBJ(top_mem, INFO_TOP)
+			char buf[64];
 		int n;
 
 		if (!arg) {
@@ -3031,12 +3038,16 @@ static struct text_object *construct_text_object(const char *s,
 				obj->data.top.type = TOP_MEM;
 			} else if (strcmp(buf, "time") == 0) {
 				obj->data.top.type = TOP_TIME;
+			} else if (strcmp(buf, "mem_res") == 0) {
+				obj->data.top.type = TOP_MEM_RES;
+			} else if (strcmp(buf, "mem_vsize") == 0) {
+				obj->data.top.type = TOP_MEM_VSIZE;
 			} else {
 				ERR("invalid arg for top");
 				return NULL;
 			}
 			if (n < 1 || n > 10) {
-				CRIT_ERR("invalid arg for top");
+					CRIT_ERR("invalid arg for top");
 				return NULL;
 			} else {
 				obj->data.top.num = n - 1;
@@ -3046,22 +3057,22 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("invalid args given for top");
 			return NULL;
 		}
-	END OBJ(addr, INFO_NET)
-		if (arg) {
-			obj->data.net = get_net_stat(arg);
-		} else {
-			CRIT_ERR("addr needs argument");
-		}
+		END OBJ(addr, INFO_NET)
+			if (arg) {
+				obj->data.net = get_net_stat(arg);
+			} else {
+				CRIT_ERR("addr needs argument");
+			}
 #if defined(__linux__)
-     END OBJ(addrs, INFO_NET)
-        if (arg) {
-            obj->data.net = get_net_stat(arg);
-        } else {
-             CRIT_ERR("addrs needs argument");
-        }
+		END OBJ(addrs, INFO_NET)
+			if (arg) {
+				obj->data.net = get_net_stat(arg);
+			} else {
+				CRIT_ERR("addrs needs argument");
+			}
 #endif /* __linux__ */
-	END OBJ(tail, 0)
-		char buf[64];
+		END OBJ(tail, 0)
+			char buf[64];
 		int n1, n2;
 		struct stat st;
 
@@ -3072,9 +3083,9 @@ static struct text_object *construct_text_object(const char *s,
 			return NULL;
 		}
 		if (sscanf(arg, "%63s %i %i", buf, &n1, &n2) == 2) {
-			if (n1 < 1 || n1 > 30) {
+			if (n1 < 1 || n1 > MAX_TAIL_LINES) {
 				CRIT_ERR("invalid arg for tail, number of lines must be "
-					"between 1 and 30");
+						"between 1 and %i", MAX_TAIL_LINES);
 				return NULL;
 			} else {
 				FILE *fp = NULL;
@@ -3113,9 +3124,9 @@ static struct text_object *construct_text_object(const char *s,
 				}
 			}
 		} else if (sscanf(arg, "%63s %i %i", buf, &n1, &n2) == 3) {
-			if (n1 < 1 || n1 > 30) {
+			if (n1 < 1 || n1 > MAX_TAIL_LINES) {
 				CRIT_ERR("invalid arg for tail, number of lines must be "
-					"between 1 and 30");
+					"between 1 and %i", MAX_TAIL_LINES);
 				return NULL;
 			} else if (n2 < 1 || n2 < update_interval) {
 				CRIT_ERR("invalid arg for tail, interval must be greater than "
@@ -3174,9 +3185,9 @@ static struct text_object *construct_text_object(const char *s,
 			return NULL;
 		}
 		if (sscanf(arg, "%63s %i %i", buf, &n1, &n2) == 2) {
-			if (n1 < 1 || n1 > 30) {
+			if (n1 < 1 || n1 > MAX_TAIL_LINES) {
 				CRIT_ERR("invalid arg for head, number of lines must be "
-					"between 1 and 30");
+					"between 1 and %i", MAX_TAIL_LINES);
 				return NULL;
 			} else {
 				FILE *fp;
@@ -3195,9 +3206,9 @@ static struct text_object *construct_text_object(const char *s,
 				}
 			}
 		} else if (sscanf(arg, "%63s %i %i", buf, &n1, &n2) == 3) {
-			if (n1 < 1 || n1 > 30) {
+			if (n1 < 1 || n1 > MAX_TAIL_LINES) {
 				CRIT_ERR("invalid arg for head, number of lines must be "
-					"between 1 and 30");
+					"between 1 and %i", MAX_TAIL_LINES);
 				return NULL;
 			} else if (n2 < 1 || n2 < update_interval) {
 				CRIT_ERR("invalid arg for head, interval must be greater than "
@@ -5868,6 +5879,14 @@ static void generate_text_internal(char *p, int p_max_size,
 							snprintf(p, 10, "%9s", timeval);
 							free(timeval);
 							break;
+						case TOP_MEM_RES:
+							human_readable(cur->cpu[obj->data.top.num]->rss,
+									p, 255, "top_rss");
+							break;
+						case TOP_MEM_VSIZE:
+							human_readable(cur->cpu[obj->data.top.num]->vsize,
+									p, 255, "top_rss");
+							break;
 						default:
 							ERR("Unhandled top data type: %d\n",
 								obj->data.top.type);
@@ -5903,6 +5922,14 @@ static void generate_text_internal(char *p, int p_max_size,
 								9);
 							snprintf(p, 10, "%9s", timeval);
 							free(timeval);
+							break;
+						case TOP_MEM_RES:
+							human_readable(cur->cpu[obj->data.top.num]->rss,
+									p, 255, "top_rss");
+							break;
+						case TOP_MEM_VSIZE:
+							human_readable(cur->cpu[obj->data.top.num]->vsize,
+									p, 255, "top_rss");
 							break;
 						default:
 							ERR("Unhandled top data type: %d\n",
