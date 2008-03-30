@@ -1614,8 +1614,12 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
  			} else if (acpi_last_full[idx] != 0 && present_rate <= 0) {
  				snprintf(last_battery_str[idx], sizeof(last_battery_str[idx])-1, "charging %d%%",
  					(int) (((float)remaining_capacity / acpi_last_full[idx]) * 100));
+				snprintf(last_battery_time_str[idx],
+					sizeof(last_battery_time_str[idx]) - 1, "unknown");
  			} else {
  				strncpy(last_battery_str[idx], "Charging", sizeof(last_battery_str[idx])-1);
+				snprintf(last_battery_time_str[idx],
+					sizeof(last_battery_time_str[idx]) - 1, "unknown");
  			}
  		}
  		/* discharging */
@@ -1629,10 +1633,14 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
  					      (long) (((float)(acpi_last_full[idx] - remaining_capacity) / present_rate) * 3600));
  			} else if (present_rate == 0) { /* Thanks to Nexox for this one */
  				snprintf(last_battery_str[idx], sizeof(last_battery_str[idx])-1, "full");
+				snprintf(last_battery_time_str[idx],
+					sizeof(last_battery_time_str[idx]) - 1, "unknown");
  			} else {
  				snprintf(last_battery_str[idx], sizeof(last_battery_str[idx])-1,
  					"discharging %d%%",
  					(int) (((float)remaining_capacity / acpi_last_full[idx]) * 100));
+				snprintf(last_battery_time_str[idx],
+					sizeof(last_battery_time_str[idx]) - 1, "unknown");
  			}
  		}
  		/* charged */
@@ -1734,9 +1742,13 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 				snprintf(last_battery_str[idx],
 					sizeof(last_battery_str[idx]) - 1, "charging %d%%",
 					(int) ((remaining_capacity * 100) / acpi_last_full[idx]));
+				snprintf(last_battery_time_str[idx],
+					sizeof(last_battery_time_str[idx]) - 1, "unknown");
 			} else {
 				strncpy(last_battery_str[idx], "charging",
 					sizeof(last_battery_str[idx]) - 1);
+				snprintf(last_battery_time_str[idx],
+					sizeof(last_battery_time_str[idx]) - 1, "unknown");
 			}
 		/* discharging */
 		} else if (strncmp(charging_state, "discharging", 64) == 0) {
@@ -1752,10 +1764,14 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 			} else if (present_rate == 0) {	/* Thanks to Nexox for this one */
 				snprintf(last_battery_str[idx],
 					sizeof(last_battery_str[idx]) - 1, "full");
+				snprintf(last_battery_time_str[idx],
+					sizeof(last_battery_time_str[idx]) - 1, "unknown");
 			} else {
 				snprintf(last_battery_str[idx],
 					sizeof(last_battery_str[idx]) - 1, "discharging %d%%",
 					(int) ((remaining_capacity * 100) / acpi_last_full[idx]));
+				snprintf(last_battery_time_str[idx],
+					sizeof(last_battery_time_str[idx]) - 1, "unknown");
 			}
 		/* charged */
 		} else if (strncmp(charging_state, "charged", 64) == 0) {

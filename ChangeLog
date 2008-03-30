@@ -5,6 +5,7 @@
 	* Fixed potential segfault in get_ioscheduler().
 	* Implemented upwards path traversal for fs_type.
 	* Fixed bug in libmpdclient that caused file descriptors to be left open.
+	* Cleaned up output of battery_* vars.
 
 2008-03-28
 	* Fixed messed up percentages (fs_free_perc, fs_used_perc, mpd_percent,
