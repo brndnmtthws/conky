@@ -152,7 +152,7 @@ void *update_mpd(void *arg)
 		timed_thread_lock(mpd_timed_thread);
 
 		if (current_info->conn->error || current_info->conn == NULL) {
-			// ERR("%MPD error: s\n", current_info->conn->errorStr);
+			ERR("MPD error: %s\n", current_info->conn->errorStr);
 			mpd_closeConnection(current_info->conn);
 			current_info->conn = 0;
 			clear_mpd_stats(current_info);
@@ -168,7 +168,7 @@ void *update_mpd(void *arg)
 
 		mpd_sendStatusCommand(current_info->conn);
 		if ((status = mpd_getStatus(current_info->conn)) == NULL) {
-			// ERR("MPD error: %s\n", current_info->conn->errorStr);
+			ERR("MPD error: %s\n", current_info->conn->errorStr);
 			mpd_closeConnection(current_info->conn);
 			current_info->conn = 0;
 			clear_mpd_stats(current_info);

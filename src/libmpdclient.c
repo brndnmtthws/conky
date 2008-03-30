@@ -27,7 +27,11 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * $Id$
+ *
+ * */
 
 #include "conky.h"
 #include "libmpdclient.h"
@@ -113,7 +117,7 @@ static int do_connect_fail(mpd_Connection *connection,
 
 	fcntl(connection->sock, F_SETFL, flags | O_NONBLOCK);
 	return (connect(connection->sock, serv_addr, addrlen) < 0
-		&& errno != EINPROGRESS);
+		|| errno != EINPROGRESS);
 }
 #endif /* !WIN32 */
 
