@@ -117,7 +117,7 @@ static int do_connect_fail(mpd_Connection *connection,
 
 	fcntl(connection->sock, F_SETFL, flags | O_NONBLOCK);
 	return (connect(connection->sock, serv_addr, addrlen) < 0
-		|| errno != EINPROGRESS);
+		&& errno != EINPROGRESS);
 }
 #endif /* !WIN32 */
 
@@ -154,6 +154,9 @@ static int mpd_connect(mpd_Connection *connection, const char *host, int port,
 
 	for (res = addrinfo; res; res = res->ai_next) {
 		/* create socket */
+		if (connection->sock > -1) {
+			closesocket(connection->sock);
+		}
 		connection->sock = socket(res->ai_family, SOCK_STREAM,
 			res->ai_protocol);
 		if (connection->sock < 0) {
