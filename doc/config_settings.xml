@@ -1,458 +1,458 @@
 <variablelist>
-<varlistentry>
-	<term><command><option>alignment</option></command></term>
-	<listitem>
-		Aligned position on screen, may be top_left, top_right, top_middle, bottom_left, bottom_right, bottom_middle, middle_left, middle_right, or none (also can be abreviated as tl, tr, tm, bl, br, bm, ml, mr)
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>alignment</option></command></term>
+		<listitem>
+			Aligned position on screen, may be top_left, top_right, top_middle, bottom_left, bottom_right, bottom_middle, middle_left, middle_right, or none (also can be abreviated as tl, tr, tm, bl, br, bm, ml, mr)
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>background</option></command></term>
-	<listitem>
-		Boolean value, if true, Conky will be forked to background when started
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>background</option></command></term>
+		<listitem>
+			Boolean value, if true, Conky will be forked to background when started
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>border_margin</option></command></term>
-	<listitem>
-		Border margin in pixels
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>border_margin</option></command></term>
+		<listitem>
+			Border margin in pixels
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>border_width</option></command></term>
-	<listitem>
-		Border width in pixels
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>border_width</option></command></term>
+		<listitem>
+			Border width in pixels
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>color0</option></command></term>
-	<listitem>
-		A color variable for use inside TEXT segments
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>color0</option></command></term>
+		<listitem>
+			A color variable for use inside TEXT segments
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>color1</option></command></term>
-	<listitem>
-		A color variable for use inside TEXT segments
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>color1</option></command></term>
+		<listitem>
+			A color variable for use inside TEXT segments
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>color2</option></command></term>
-	<listitem>
-		A color variable for use inside TEXT segments
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>color2</option></command></term>
+		<listitem>
+			A color variable for use inside TEXT segments
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>color3</option></command></term>
-	<listitem>
-		A color variable for use inside TEXT segments
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>color3</option></command></term>
+		<listitem>
+			A color variable for use inside TEXT segments
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>color4</option></command></term>
-	<listitem>
-		A color variable for use inside TEXT segments
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>color4</option></command></term>
+		<listitem>
+			A color variable for use inside TEXT segments
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>color5</option></command></term>
-	<listitem>
-		A color variable for use inside TEXT segments
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>color5</option></command></term>
+		<listitem>
+			A color variable for use inside TEXT segments
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>color6</option></command></term>
-	<listitem>
-		A color variable for use inside TEXT segments
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>color6</option></command></term>
+		<listitem>
+			A color variable for use inside TEXT segments
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>color7</option></command></term>
-	<listitem>
-		A color variable for use inside TEXT segments
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>color7</option></command></term>
+		<listitem>
+			A color variable for use inside TEXT segments
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>color8</option></command></term>
-	<listitem>
-		A color variable for use inside TEXT segments
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>color8</option></command></term>
+		<listitem>
+			A color variable for use inside TEXT segments
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>color9</option></command></term>
-	<listitem>
-		A color variable for use inside TEXT segments
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>color9</option></command></term>
+		<listitem>
+			A color variable for use inside TEXT segments
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>cpu_avg_samples</option></command></term>
-	<listitem>
-		The number of samples to average for CPU monitoring
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>cpu_avg_samples</option></command></term>
+		<listitem>
+			The number of samples to average for CPU monitoring
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>top_cpu_separate</option></command></term>
-	<listitem>
-		If true, cpu in top will show usage of one processor's power.  If false, cpu in top will show the usage of all processors' power combined.
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>top_cpu_separate</option></command></term>
+		<listitem>
+			If true, cpu in top will show usage of one processor's power.  If false, cpu in top will show the usage of all processors' power combined.
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>default_color</option></command></term>
-	<listitem>
-		Default color and border color
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>default_color</option></command></term>
+		<listitem>
+			Default color and border color
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>default_outline_color</option></command></term>
-	<listitem>
-		Default outline color
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>default_outline_color</option></command></term>
+		<listitem>
+			Default outline color
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>default_shade_color</option></command></term>
-	<listitem>
-		Default shading color and border's shading color
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>default_shade_color</option></command></term>
+		<listitem>
+			Default shading color and border's shading color
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>double_buffer</option></command></term>
-	<listitem>
-		Use the Xdbe extension? (eliminates flicker) It is highly recommended to use own window with this one so double buffer won't be so big.
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>double_buffer</option></command></term>
+		<listitem>
+			Use the Xdbe extension? (eliminates flicker) It is highly recommended to use own window with this one so double buffer won't be so big.
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>draw_borders</option></command></term>
-	<listitem>
-		Draw borders around text?
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>draw_borders</option></command></term>
+		<listitem>
+			Draw borders around text?
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>draw_graph_borders</option></command></term>
-	<listitem>
-		Draw borders around graphs?
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>draw_graph_borders</option></command></term>
+		<listitem>
+			Draw borders around graphs?
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>draw_outline</option></command></term>
-	<listitem>
-		Draw outlines?
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>draw_outline</option></command></term>
+		<listitem>
+			Draw outlines?
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>draw_shades</option></command></term>
-	<listitem>
-		Draw shades?
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>draw_shades</option></command></term>
+		<listitem>
+			Draw shades?
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>font</option></command></term>
-	<listitem>
-		Font name in X, xfontsel can be used to get a nice font
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>font</option></command></term>
+		<listitem>
+			Font name in X, xfontsel can be used to get a nice font
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>gap_x</option></command></term>
-	<listitem>
-		Gap, in pixels, between right or left border of screen, same as passing -x at command line,
-		e.g. gap_x 10
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>gap_x</option></command></term>
+		<listitem>
+			Gap, in pixels, between right or left border of screen, same as passing -x at command line,
+			e.g. gap_x 10
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>gap_y</option></command></term>
-	<listitem>
-		Gap, in pixels, between top or bottom border of screen, same as passing -y at command line,
-		e.g. gap_y 10.
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>gap_y</option></command></term>
+		<listitem>
+			Gap, in pixels, between top or bottom border of screen, same as passing -y at command line,
+			e.g. gap_y 10.
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>imap</option></command></term>
-	<listitem>
-		Default global IMAP server.  Arguments are: "host user pass [-i interval] [-f folder] [-p port] [-e command]".  Default port is 143, default folder is 'INBOX', default interval is 5 minutes.  If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>imap</option></command></term>
+		<listitem>
+			Default global IMAP server.  Arguments are: "host user pass [-i interval] [-f folder] [-p port] [-e command]".  Default port is 143, default folder is 'INBOX', default interval is 5 minutes.  If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>mail_spool</option></command></term>
-	<listitem>
-		Mail spool for mail checking
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>mail_spool</option></command></term>
+		<listitem>
+			Mail spool for mail checking
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-        <term><command><option>max_port_monitor_connections</option></command></term>
-        <listitem>
-                Allow each port monitor to track at most this many connections (if 0 or not set, default is 256)
-        <para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>max_port_monitor_connections</option></command></term>
+		<listitem>
+			Allow each port monitor to track at most this many connections (if 0 or not set, default is 256)
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>max_specials</option></command></term>
-	<listitem>
-		Maximum number of special things, e.g. fonts, offsets, aligns, etc. (default is 512)
-		<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>max_specials</option></command></term>
+		<listitem>
+			Maximum number of special things, e.g. fonts, offsets, aligns, etc. (default is 512)
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>max_user_text</option></command>
-		<option>bytes</option>
-	</term>
-	<listitem>
-		Maximum size of user text buffer, i.e. layout below TEXT line in config file
-		(default is 16384 bytes)
-		<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>max_user_text</option></command>
+			<option>bytes</option>
+		</term>
+		<listitem>
+			Maximum size of user text buffer, i.e. layout below TEXT line in config file
+			(default is 16384 bytes)
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>text_buffer_size</option></command>
-		<option>bytes</option>
-	</term>
-	<listitem>
-		Size of the standard text buffer (default is 128 bytes).  This buffer is used for intermediary text, such as individual lines, output from $exec vars, and various other variables.  Increasing the size of this buffer can drastically reduce Conky's performance, but will allow for more text display per variable.  The size of this buffer cannot be smaller than the default value of 128 bytes.
-		<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>text_buffer_size</option></command>
+			<option>bytes</option>
+		</term>
+		<listitem>
+			Size of the standard text buffer (default is 128 bytes).  This buffer is used for intermediary text, such as individual lines, output from $exec vars, and various other variables.  Increasing the size of this buffer can drastically reduce Conky's performance, but will allow for more text display per variable.  The size of this buffer cannot be smaller than the default value of 128 bytes.
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>maximum_width</option></command>
-		<option>pixels</option>
-	</term>
-	<listitem>
-		Maximum width of window
-		<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>maximum_width</option></command>
+			<option>pixels</option>
+		</term>
+		<listitem>
+			Maximum width of window
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>minimum_size</option></command>
-	<option>width (height)</option>
-	</term>
-	<listitem>
-		Minimum size of window
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>minimum_size</option></command>
+			<option>width (height)</option>
+		</term>
+		<listitem>
+			Minimum size of window
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>mpd_host</option></command></term>
-	<listitem>
-		Host of MPD server
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>mpd_host</option></command></term>
+		<listitem>
+			Host of MPD server
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>mpd_port</option></command></term>
-	<listitem>
-		Port of MPD server
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>mpd_port</option></command></term>
+		<listitem>
+			Port of MPD server
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>mpd_password</option></command></term>
-	<listitem>
-		MPD server password
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>mpd_password</option></command></term>
+		<listitem>
+			MPD server password
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>music_player_interval</option></command></term>
-	<listitem>
-		Music player thread update interval (defaults to Conky's update interval)
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>music_player_interval</option></command></term>
+		<listitem>
+			Music player thread update interval (defaults to Conky's update interval)
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>net_avg_samples</option></command></term>
-	<listitem>
-		The number of samples to average for net data
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>net_avg_samples</option></command></term>
+		<listitem>
+			The number of samples to average for net data
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>no_buffers</option></command></term>
-	<listitem>
-		Substract (file system) buffers from used memory?
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>no_buffers</option></command></term>
+		<listitem>
+			Substract (file system) buffers from used memory?
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>override_utf8_locale</option></command></term>
-	<listitem>
-		Force UTF8? requires XFT
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>override_utf8_locale</option></command></term>
+		<listitem>
+			Force UTF8? requires XFT
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>own_window</option></command></term>
-	<listitem>
-		Boolean, create own window to draw?
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>own_window</option></command></term>
+		<listitem>
+			Boolean, create own window to draw?
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-        <term><command><option>own_window_class</option></command></term>
-        <listitem>
-                Manually set the WM_CLASS name.  Defaults to "Conky".
-        <para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>own_window_class</option></command></term>
+		<listitem>
+			Manually set the WM_CLASS name.  Defaults to "Conky".
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>own_window_colour</option></command>
-		<option>colour</option>
-	</term>
-	<listitem>
-		If own_window_transparent no, set a specified background colour (defaults to black).  Takes either a hex value (#ffffff) or a valid RGB name (see /usr/lib/X11/rgb.txt)
-		<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>own_window_colour</option></command>
+			<option>colour</option>
+		</term>
+		<listitem>
+			If own_window_transparent no, set a specified background colour (defaults to black).  Takes either a hex value (#ffffff) or a valid RGB name (see /usr/lib/X11/rgb.txt)
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-        <term><command><option>own_window_hints</option></command>
-                <option>undecorated,below,above,sticky,skip_taskbar,skip_pager</option>
-	</term>
-	<listitem>
-		If own_window is yes, you may use these window manager hints to affect the way Conky displays.
-		Notes: Use own_window_type desktop as another way to implement many of these hints implicitly.
-		If you use own_window_type override, window manager hints have no meaning and are ignored.
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>own_window_hints</option></command>
+			<option>undecorated,below,above,sticky,skip_taskbar,skip_pager</option>
+		</term>
+		<listitem>
+			If own_window is yes, you may use these window manager hints to affect the way Conky displays.
+			Notes: Use own_window_type desktop as another way to implement many of these hints implicitly.
+			If you use own_window_type override, window manager hints have no meaning and are ignored.
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-        <term><command><option>own_window_title</option></command></term>
-        <listitem>
-                Manually set the window name.  Defaults to "&lt;hostname&gt; - conky".
-        <para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>own_window_title</option></command></term>
+		<listitem>
+			Manually set the window name.  Defaults to "&lt;hostname&gt; - conky".
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>own_window_transparent</option></command></term>
-	<listitem>
-		Boolean, set pseudo-transparency?
-		<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>own_window_transparent</option></command></term>
+		<listitem>
+			Boolean, set pseudo-transparency?
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>own_window_type</option></command></term>
-	<listitem>
-		if own_window is yes, you may specify type normal, desktop or override (default: normal).
-		Desktop windows are special windows that have no window decorations; are always visible
-		on your desktop; do not appear in your pager or taskbar; and are sticky across all workspaces.
-		Override windows are not under the control of the window manager.  Hints are ignored. This type
-		of window can be useful for certain situations.
-		<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>own_window_type</option></command></term>
+		<listitem>
+			if own_window is yes, you may specify type normal, desktop or override (default: normal).
+			Desktop windows are special windows that have no window decorations; are always visible
+			on your desktop; do not appear in your pager or taskbar; and are sticky across all workspaces.
+			Override windows are not under the control of the window manager.  Hints are ignored. This type
+			of window can be useful for certain situations.
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>out_to_console</option></command>
-	</term>
-	<listitem>
-		Print text to stdout.
-		<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>out_to_console</option></command>
+		</term>
+		<listitem>
+			Print text to stdout.
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>pad_percents</option></command></term>
-	<listitem>
-		Pad percentages to this many decimals (0 = no padding)
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>pad_percents</option></command></term>
+		<listitem>
+			Pad percentages to this many decimals (0 = no padding)
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>pop3</option></command></term>
-	<listitem>
-		Default global POP3 server.  Arguments are: "host user pass [-i interval] [-p port] [-e command]".  Default port is 110, default interval is 5 minutes.  If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>pop3</option></command></term>
+		<listitem>
+			Default global POP3 server.  Arguments are: "host user pass [-i interval] [-p port] [-e command]".  Default port is 110, default interval is 5 minutes.  If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>short_units</option></command></term>
-	<listitem>
-		Shortens units to a single character (kiB->k, GiB->G, etc.).  Default is off.
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>short_units</option></command></term>
+		<listitem>
+			Shortens units to a single character (kiB->k, GiB->G, etc.).  Default is off.
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>stippled_borders</option></command></term>
-	<listitem>
-		Border stippling (dashing) in pixels
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>stippled_borders</option></command></term>
+		<listitem>
+			Border stippling (dashing) in pixels
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>total_run_times</option></command></term>
-	<listitem>
-		Total number of times for Conky to update before quitting. Zero makes Conky run forever
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>total_run_times</option></command></term>
+		<listitem>
+			Total number of times for Conky to update before quitting. Zero makes Conky run forever
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>update_interval</option></command></term>
-	<listitem>
-		Update interval in seconds
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>update_interval</option></command></term>
+		<listitem>
+			Update interval in seconds
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>uppercase</option></command></term>
-	<listitem>
-		Boolean value, if true, text is rendered in upper case
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>uppercase</option></command></term>
+		<listitem>
+			Boolean value, if true, text is rendered in upper case
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>use_spacer</option></command></term>
-	<listitem>
-		Adds spaces around certain objects to stop them from moving other things around. Arguments are left, right, and none (default).  The old true/false values are deprecated and default to right/none respectively. Note that this only helps if you are using a mono font, such as Bitstream Vera Sans Mono.
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>use_spacer</option></command></term>
+		<listitem>
+			Adds spaces around certain objects to stop them from moving other things around. Arguments are left, right, and none (default).  The old true/false values are deprecated and default to right/none respectively. Note that this only helps if you are using a mono font, such as Bitstream Vera Sans Mono.
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>use_xft</option></command></term>
-	<listitem>
-		Use Xft (anti-aliased font and stuff)
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>use_xft</option></command></term>
+		<listitem>
+			Use Xft (anti-aliased font and stuff)
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>xftalpha</option></command></term>
-	<listitem>
-		Alpha of Xft font.  Must be a value at or between 1 and 0.
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>xftalpha</option></command></term>
+		<listitem>
+			Alpha of Xft font.  Must be a value at or between 1 and 0.
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>xftfont</option></command></term>
-	<listitem>
-		Xft font to use.
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>xftfont</option></command></term>
+		<listitem>
+			Xft font to use.
+			<para></para></listitem>
+	</varlistentry>
 
-<varlistentry>
-	<term><command><option>TEXT</option></command></term>
-	<listitem>
-		After this begins text to be formatted on screen
-	<para></para></listitem>
-</varlistentry>
+	<varlistentry>
+		<term><command><option>TEXT</option></command></term>
+		<listitem>
+			After this begins text to be formatted on screen
+			<para></para></listitem>
+	</varlistentry>
 
 </variablelist>

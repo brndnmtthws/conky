@@ -20,8 +20,8 @@ conky \- A system monitor for X originally based on the torsmo code, but more ki
 .ad b
 'hy
 .SH DESCRIPTION
-Conky is a system monitor for X originally based on the torsmo code.
-Since it's original conception, Conky has changed a fair bit from it's predecessor.
+Conky is a system monitor for X originally based on torsmo.
+Since it's conception, Conky has changed significantly from it's predecessor.
 Conky can display just about anything, either on your root desktop or in it's own window.
 Conky has many built-in objects, as well as the ability to execute programs and scripts,
 then display the output from stdout.
@@ -31,14 +31,19 @@ Please use the facilities at SourceForge to make bug reports, feature requests, 
 .PP
 Thanks for your interest in Conky.
 .SH COMPILING
-For users compiling from source, make sure you have the X development libraries installed.
-This should be a package along the lines of "libx11-dev or xorg-x11-dev".
+For users compiling from source on a binary distro, make sure you have the X development
+libraries installed. This should be a package along the lines of "libx11-dev" or 
+"xorg-x11-dev" for X11 libs, and similar "-dev" format for the other libs required (depending
+on your configure options).
+.PP
+Conky has (for some time) been available in the repositories of most popular distributions. 
+Here are some installation instructions for a few:
 .PP
 Gentoo users -- Conky is in Gentoo's Portage... simply use "emerge app-admin/conky" for installation.
-There is also usually an up-to-date ebuild within Conky's package or in Svn.
+There is also usually an up-to-date ebuild within Conky's package or in SVN.
 .PP
-Debian,etc. users -- Conky will be in Debian's repositories soon (by mid-September, hopefully), and then
-Ubuntu shortly thereafter. Until then, "dpkg -i" the .deb package to install.
+Debian, etc. users -- Conky should be in your repositories, and can be installed by doing
+"aptitude install conky".
 .PP
 Example to compile and run Conky with all optional components (note that some configure options may differ for your system):
 .TP 
@@ -52,28 +57,15 @@ Example to compile and run Conky with all optional components (note that some co
 .TP 
 \fB\*(T<\fBsrc/conky\fR\*(T>\fR 
 .PP
-Conky probably doesn't compile with compilers other than gcc and icc.
-It doesn't compile with C89 compiler and not even with pure C99.
-It uses a few things that might not exist: strdup(), strcasecmp(), strncasecmp(),
-optarg variable with getopt() and long long (not in C89). Crashes in file system
-statistics stuff when compiled with icc, I don't know exactly why.
-.PP
-You can disable 'drawing to own window' feature in case you don't need it by passing
---disable-own-window to configure -script.
+Conky has been tested to be compatible with C99 C, however it has not been tested
+with anything other than gcc, and is not guaranteed to work with other compilers.
 .PP
 .SH "YOU SHOULD KNOW"
-Conky is generally very good on resources. However, certain objects in
-Conky are harder on resources then others. In particular, the $tail,
-$top, $font, and $graph objects are quite costly in comparison to the rest of Conky.
-.PP
-If you do use them, please do not complain about memory or CPU usage,
-unless you think something's seriously wrong (mem leak, etc.).
+Conky is generally very good on resources. That said, the more you try to make Conky
+do, the more resources it is going to consume.
 .PP
 An easy way to force Conky to reload your ~/.conkyrc: "killall -SIGUSR1 conky".
 Saves you the trouble of having to kill and then restart. You can now also do the same with SIGHUP.
-.PP
-IMPORTANT: For previous Conky users, Conky 1.3 no longer supports the metar stuff.
-mdsplib was causing way too many problems. Hopefully there'll be a better solution in Conky 2.x...
 .SH OPTIONS
 Command line options override configurations defined in configuration file.
 .TP 
@@ -129,12 +121,12 @@ X position
 Y position
 
 .SH "CONFIGURATION SETTINGS"
-Default configuration file is $HOME/.conkyrc (can be changed from
-conky.c among other things). See conkyrc.sample. If installing from Debian package,
-this should be in /usr/share/doc/conky/examples ("gunzip conkyrc.sample.gz" to get conkyrc.sample).
+Default configuration file location is $HOME/.conkyrc or 
+${sysconfdir}/conky/conky.conf. On most systems, sysconfdir is /etc,
+and you can find the sample config file there (/etc/conky/conky.conf).
 .PP
 You might want to copy it to $HOME/.conkyrc and then start modifying it.
-Other configs can be found at http://conky.sf.net
+Other configs can be found at http://conky.sf.net/
 .TP 
 \fB\*(T<\fBalignment\fR\*(T>\fR
 Aligned position on screen, may be top_left, top_right, top_middle, bottom_left, bottom_right, bottom_middle, middle_left, middle_right, or none (also can be abreviated as tl, tr, tm, bl, br, bm, ml, mr)
@@ -394,10 +386,8 @@ After this begins text to be formatted on screen
 
 .SH VARIABLES
 Colors are parsed using XParsecolor(), there might be a list of them:
-/usr/X11R6/lib/X11/rgb.txt. Also, \(lahttp://sedition.com/perl/rgb.html\(ra.
+/usr/share/X11/rgb.txt. Also, \(lahttp://sedition.com/perl/rgb.html\(ra.
 Color can be also in #rrggbb format (hex).
-Note that when displaying bytes, power is 1024 and not 1000 so 1M really
-means 1024*1024 bytes and not 1000*1000.
 .TP 
 \fB\*(T<\fBaddr\fR\*(T>\fR \*(T<\fBinterface\fR\*(T> 
 IP address for an interface
@@ -1383,12 +1373,17 @@ disabled from drawing to desktop with program gconf-editor. Uncheck
 show_desktop in /apps/nautilus/preferences/. There is -w switch in Conky
 to set some specific window id. You might find xwininfo -tree useful to
 find the window to draw to. You can also use -o argument which makes
-Conky to create its own window.
+Conky to create its own window. If you do try running Conky in its own
+window, be sure to read up on the own_window_type settings and experiment.
 .SH "SEE ALSO"
-\(lahttp://conky.sourceforge.net\(ra
+\(lahttp://conky.sourceforge.net/\(ra
 .PP
 \(lahttp://www.sourceforge.net/projects/conky\(ra
 .PP
 #conky on irc.freenode.net
+.SH COPYING
+Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et. al.
+Any original torsmo code is licensed under the BSD license (see LICENSE.BSD for a copy).
+All code written since the fork of torsmo is licensed under the GPL (see LICENSE.GPL for a copy), except where noted differently (such as in portmon code, timed thread code, and audacious code which are LGPL, and prss which is an MIT-style license).
 .SH AUTHORS
-The Conky dev team. What's up now!
+The Conky dev team (see AUTHORS for a full list of contributors).

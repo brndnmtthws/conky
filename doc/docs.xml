@@ -1,75 +1,81 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
-               "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd" [
-               <!ENTITY testtable SYSTEM "test.xml">
-               <!ENTITY command_options SYSTEM "command_options.xml">
-               <!ENTITY config_settings SYSTEM "config_settings.xml">
-               <!ENTITY variables SYSTEM "variables.xml">
-               ]>
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd" [
+<!ENTITY testtable SYSTEM "test.xml">
+<!ENTITY command_options SYSTEM "command_options.xml">
+<!ENTITY config_settings SYSTEM "config_settings.xml">
+<!ENTITY variables SYSTEM "variables.xml">
+]>
 
 <refentry>
-  <refentryinfo>
-    <address>
-      <email>brenden1@users.sourceforge.net</email>
-    </address>
-    <author>
-      <firstname>Brenden</firstname>
-      <surname>Matthews</surname>
-    </author>
-    <date>2007-08-08</date>
-  </refentryinfo>
+	<refentryinfo>
+		<address>
+			<email>brenden1@users.sourceforge.net</email>
+		</address>
+		<author>
+			<firstname>Brenden</firstname>
+			<surname>Matthews</surname>
+		</author>
+		<date>2007-08-08</date>
+	</refentryinfo>
 
-  <refmeta>
-    <refentrytitle>conky</refentrytitle>
-    <manvolnum>1</manvolnum>
-  </refmeta>
+	<refmeta>
+		<refentrytitle>conky</refentrytitle>
+		<manvolnum>1</manvolnum>
+	</refmeta>
 
-  <refnamediv>
-    <refname>conky</refname>
-    <refpurpose>A system monitor for X originally based on the torsmo code, but more kickass.  It just keeps on given'er. Yeah.</refpurpose>
-  </refnamediv>
+	<refnamediv>
+		<refname>conky</refname>
+		<refpurpose>A system monitor for X originally based on the torsmo code, but more kickass.  It just keeps on given'er. Yeah.</refpurpose>
+	</refnamediv>
 
-  <refsynopsisdiv>
-    <cmdsynopsis>
-      <command>conky</command>
-      <arg><replaceable>options</replaceable></arg>
-    </cmdsynopsis>
-  </refsynopsisdiv>
+	<refsynopsisdiv>
+		<cmdsynopsis>
+			<command>conky</command>
+			<arg><replaceable>options</replaceable></arg>
+		</cmdsynopsis>
+	</refsynopsisdiv>
 
-  <refsect1>
-    <title>Description</title>
-    <para>
-    Conky is a system monitor for X originally based on the torsmo code.
-    Since it's original conception, Conky has changed a fair bit from it's predecessor.
-    Conky can display just about anything, either on your root desktop or in it's own window.
-    Conky has many built-in objects, as well as the ability to execute programs and scripts,
-    then display the output from stdout.
+	<refsect1>
+		<title>Description</title>
+		<para>
+			Conky is a system monitor for X originally based on torsmo.
+			Since it's conception, Conky has changed significantly from it's predecessor.
+			Conky can display just about anything, either on your root desktop or in it's own window.
+			Conky has many built-in objects, as well as the ability to execute programs and scripts,
+			then display the output from stdout.
 		</para>
 		<para>
-		We are always looking for help, and anyone interested in becoming a developer is welcome.
-		Please use the facilities at SourceForge to make bug reports, feature requests, and submit patches.
+			We are always looking for help, and anyone interested in becoming a developer is welcome.
+			Please use the facilities at SourceForge to make bug reports, feature requests, and submit patches.
 		</para>
 		<para>
-		Thanks for your interest in Conky.
+			Thanks for your interest in Conky.
 		</para>
-  </refsect1>
+	</refsect1>
 
 	<refsect1>
 		<title>Compiling</title>
 		<para>
-		For users compiling from source, make sure you have the X development libraries installed.
-		This should be a package along the lines of "libx11-dev or xorg-x11-dev".
+			For users compiling from source on a binary distro, make sure you have the X development
+			libraries installed.  This should be a package along the lines of "libx11-dev" or 
+			"xorg-x11-dev" for X11 libs, and similar "-dev" format for the other libs required (depending
+			on your configure options).
 		</para>
 		<para>
-		Gentoo users -- Conky is in Gentoo's Portage... simply use "emerge app-admin/conky" for installation.
-		There is also usually an up-to-date ebuild within Conky's package or in	Svn.
+			Conky has (for some time) been available in the repositories of most popular distributions.  
+			Here are some installation instructions for a few:
 		</para>
 		<para>
-		Debian,etc. users -- Conky will be in Debian's repositories soon (by mid-September, hopefully), and then
-		Ubuntu shortly thereafter. Until then, "dpkg -i" the .deb package to install.
+			Gentoo users -- Conky is in Gentoo's Portage... simply use "emerge app-admin/conky" for installation.
+			There is also usually an up-to-date ebuild within Conky's package or in	SVN.
 		</para>
 		<para>
-		Example to compile and run Conky with all optional components (note that some configure options may differ for your system):
+			Debian, etc. users -- Conky should be in your repositories, and can be installed by doing
+			"aptitude install conky".
+		</para>
+		<para>
+			Example to compile and run Conky with all optional components (note that some configure options may differ for your system):
 		</para>
 		<variablelist>
 			<varlistentry>
@@ -99,15 +105,8 @@
 			</varlistentry>
 		</variablelist>
 		<para>
-			Conky probably doesn't compile with compilers other than gcc and icc.
-			It doesn't compile with C89 compiler and not even with pure C99.
-			It uses a few	things that might not exist: strdup(), strcasecmp(), strncasecmp(),
-			optarg variable with getopt() and long long (not in C89). Crashes in file system
-			statistics stuff when compiled with icc, I don't know exactly why.
-		</para>
-		<para>
-			You can disable 'drawing to own window' feature in case you don't need it	by passing
-			--disable-own-window to configure -script.
+			Conky has been tested to be compatible with C99 C, however it has not been tested
+			with anything other than gcc, and is not guaranteed to work with other compilers.
 		</para>
 		<para>
 
@@ -116,47 +115,38 @@
 
 
 
-  <refsect1>
-    <title>You Should Know</title>
-    <para>
-		Conky is generally very good on resources.  However, certain objects in
-		Conky are harder on resources then others.  In particular, the $tail,
-		$top, $font, and $graph objects are quite costly in comparison to the rest of Conky.
+	<refsect1>
+		<title>You Should Know</title>
+		<para>
+			Conky is generally very good on resources.  That said, the more you try to make Conky
+			do, the more resources it is going to consume.
 		</para>
 		<para>
-		If you do use them, please do not complain about memory or CPU usage,
-		unless you think something's seriously wrong (mem leak, etc.).
+			An easy way to force Conky to reload your ~/.conkyrc: "killall -SIGUSR1 conky".
+			Saves you the trouble of having to kill and then restart.  You can now also do the same with SIGHUP.
 		</para>
-		<para>
-		An easy way to force Conky to reload your ~/.conkyrc: "killall -SIGUSR1 conky".
-		Saves you the trouble of having to kill and then restart.  You can now also do the same with SIGHUP.
-		</para>
-		<para>
-		IMPORTANT: For previous Conky users, Conky 1.3 no longer supports the metar stuff.
-		mdsplib was causing way too many problems. Hopefully there'll be a better solution in Conky 2.x...
-		</para>
-  </refsect1>
+	</refsect1>
 
-  <refsect1>
-    <title>Options</title>
+	<refsect1>
+		<title>Options</title>
 
-    <para>Command line options override configurations defined in configuration file.</para>
+		<para>Command line options override configurations defined in configuration file.</para>
 
 		&command_options;
 
-  </refsect1>
+	</refsect1>
 
 	<refsect1>
 		<title>Configuration Settings</title>
 
 		<para>
-		Default configuration file is $HOME/.conkyrc (can be changed from
-		conky.c among other things). See conkyrc.sample. If installing from Debian package,
-		this should be in /usr/share/doc/conky/examples ("gunzip conkyrc.sample.gz" to get conkyrc.sample).
+			Default configuration file location is $HOME/.conkyrc or 
+			${sysconfdir}/conky/conky.conf.  On most systems, sysconfdir is /etc,
+			and you can find the sample config file there (/etc/conky/conky.conf).
 		</para>
 		<para>
-		You might want to copy it to $HOME/.conkyrc and then start modifying it.
-		Other configs can be found at http://conky.sf.net
+			You might want to copy it to $HOME/.conkyrc and then start modifying it.
+			Other configs can be found at http://conky.sf.net/
 		</para>
 
 		&config_settings;
@@ -166,13 +156,10 @@
 		<title>Variables</title>
 
 		<para>
-		Colors are parsed using XParsecolor(), there might be a list of them:
-		/usr/X11R6/lib/X11/rgb.txt. Also, <ulink url="http://sedition.com/perl/rgb.html">
-																			 http://sedition.com/perl/rgb.html</ulink>.
-		Color can be also in #rrggbb format (hex).
-
-		Note that when displaying bytes, power is 1024 and not 1000 so 1M really
-		means 1024*1024 bytes and not 1000*1000.
+			Colors are parsed using XParsecolor(), there might be a list of them:
+			/usr/share/X11/rgb.txt. Also, <ulink url="http://sedition.com/perl/rgb.html">
+				http://sedition.com/perl/rgb.html</ulink>.
+			Color can be also in #rrggbb format (hex).
 		</para>
 
 		&variables;
@@ -203,33 +190,41 @@
 	<refsect1>
 		<title>Bugs</title>
 		<para>
-		Drawing to root or some other desktop window directly doesn't work with
-		all window managers. Especially doesn't work well with Gnome and it has
-		been reported that it doesn't work with KDE either. Nautilus can be
-		disabled from drawing to desktop with program gconf-editor. Uncheck
-		show_desktop in /apps/nautilus/preferences/. There is -w switch in Conky
-		to set some specific window id. You might find xwininfo -tree useful to
-		find the window to draw to. You can also use -o argument which makes
-		Conky to create its own window.
+			Drawing to root or some other desktop window directly doesn't work with
+			all window managers. Especially doesn't work well with Gnome and it has
+			been reported that it doesn't work with KDE either. Nautilus can be
+			disabled from drawing to desktop with program gconf-editor. Uncheck
+			show_desktop in /apps/nautilus/preferences/. There is -w switch in Conky
+			to set some specific window id. You might find xwininfo -tree useful to
+			find the window to draw to. You can also use -o argument which makes
+			Conky to create its own window.  If you do try running Conky in its own
+			window, be sure to read up on the own_window_type settings and experiment.
 		</para>
 	</refsect1>
 
-  <refsect1>
-    <title>See Also</title>
-    <para><ulink url="http://conky.sourceforge.net">
-    http://conky.sourceforge.net</ulink></para>
-    <para><ulink url="http://www.sourceforge.net/projects/conky">
-    http://www.sourceforge.net/projects/conky</ulink></para>
+	<refsect1>
+		<title>See Also</title>
+		<para><ulink url="http://conky.sourceforge.net/">
+				http://conky.sourceforge.net/</ulink></para>
+		<para><ulink url="http://www.sourceforge.net/projects/conky">
+				http://www.sourceforge.net/projects/conky</ulink></para>
 		<para>
 			#conky on irc.freenode.net
 		</para>
-  </refsect1>
+	</refsect1>
 
+	<refsect1>
+		<title>Copying</title>
+		<para>
+			Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et. al.
+			Any original torsmo code is licensed under the BSD license (see LICENSE.BSD for a copy).
+			All code written since the fork of torsmo is licensed under the GPL (see LICENSE.GPL for a copy), except where noted differently (such as in portmon code, timed thread code, and audacious code which are LGPL, and prss which is an MIT-style license).
+		</para>
+	</refsect1>
 	<refsect1>
 		<title>Authors</title>
 		<para>
-			The Conky dev team. What's up now!
+			The Conky dev team (see AUTHORS for a full list of contributors).
 		</para>
 	</refsect1>
-
 </refentry>

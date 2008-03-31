@@ -5,5 +5,5 @@ All code written since the fork of torsmo is licensed under the GPL (see
 LICENSE.GPL for a copy), except where noted differently (such as in portmon code, timed thread code, and audacious code which are LGPL, and prss which is an MIT-style license).
 
 Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
-Copyright (c) 2005-2007 Brenden Matthews, Philip Kovacs, et. al. (see AUTHORS)
+Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et. al. (see AUTHORS)
 All rights reserved.
