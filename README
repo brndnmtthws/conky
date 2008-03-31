@@ -745,7 +745,7 @@ VARIABLES
 
 
        execigraph interval command
-	      Same as execigraph, but takes an interval arg graphs values
+	      Same as execgraph, but takes an interval arg graphs values
 
 
        execp command
@@ -1017,7 +1017,7 @@ VARIABLES
 	      you will be prompted to enter the password when Conky starts.
 
 
-       ioscheduler
+       ioscheduler disk
 	      Prints the current ioscheduler used  for	the  given  disk  name
 	      (i.e. e.g. "hda" or "sdb")
 

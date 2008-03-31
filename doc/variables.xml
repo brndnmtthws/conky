@@ -703,7 +703,7 @@
 		<option>interval command</option>
 	</term>
 	<listitem>
-		Same as execigraph, but takes an interval arg graphs values
+		Same as execgraph, but takes an interval arg graphs values
 		<para></para></listitem>
 </varlistentry>
 
@@ -1181,8 +1181,8 @@
 <varlistentry>
 	<term>
 		<command><option>ioscheduler</option></command>
+	<option>disk</option>
 	</term>
-	<option>(disk)</option>
 	<listitem>
 		Prints the current ioscheduler used for the given disk name (i.e. e.g. "hda" or "sdb")
 	<para></para></listitem>
