@@ -29,6 +29,7 @@
 
 #include "conky.h"
 #include <limits.h>
+#include <stdio.h>
 
 static struct diskio_stat diskio_stats_[MAX_DISKIO_STATS];
 struct diskio_stat *diskio_stats = diskio_stats_;
@@ -48,6 +49,10 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 {
 	struct diskio_stat *new = 0;
 	unsigned i;
+	FILE *fp;
+	int found = 0;
+	char device[text_buffer_size], fbuf[text_buffer_size];
+	static int rep = 0;
 	/* lookup existing or get new */
 	for (i = 0; i < MAX_DISKIO_STATS; i++) {
 		if (diskio_stats[i].dev) {
@@ -64,7 +69,36 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 		ERR("too many diskio stats");
 		return 0;
 	}
-	new->dev = strdup(s);
+	if (strncmp(s, "/dev/", 5) == 0) {
+		// supplied a /dev/device arg, so cut off the /dev part
+		new->dev = strndup(s + 5, text_buffer_size);
+	} else {
+		new->dev = strndup(s, text_buffer_size);
+	}
+	/*
+	 * check that device actually exists
+	 */
+	
+	if (!(fp = open_file("/proc/diskstats", &rep))) {
+		ERR("cannot read from /proc/diskstats");
+		return 0;
+	}
+
+	while (!feof(fp)) {
+		fgets(fbuf, text_buffer_size, fp);
+		if (sscanf(fbuf, "%*u %*u %255s %*u %*u %*u %*u %*u %*u %*u", device)) {
+			// check for device match
+			if (strncmp(new->dev, device, 256) == 0) {
+				found = 1;
+				break;
+			}
+		}
+	}
+	fclose(fp);
+	fp = 0;
+	if (!found) {
+		ERR("diskio device '%s' does not exist", s);
+	}
 	new->current = 0;
 	new->current_read = 0;
 	new ->current_write = 0;

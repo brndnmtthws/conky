@@ -1348,8 +1348,8 @@ VARIABLES
 	      This takes arguments in the form:top (name) (number)  Basically,
 	      processes	 are ranked from highest to lowest in terms of cpu us-
 	      age, which is what (num)	represents.  The  types	 are:  "name",
-	      "pid",  "cpu",  "mem", and "time". There can be a max of 10 pro-
-	      cesses listed.
+	      "pid",  "cpu",  "mem", "mem_res", "mem_vsize", and "time". There
+	      can be a max of 10 processes listed.
 
 
        top_mem type, num

@@ -2134,7 +2134,7 @@ void update_diskio(void)
 		}
 		for (i = 0; i < MAX_DISKIO_STATS; i++) {
 			if (diskio_stats[i].dev &&
-					strcmp(devbuf, diskio_stats[i].dev) == 0) {
+					strncmp(devbuf, diskio_stats[i].dev, text_buffer_size) == 0) {
 				diskio_stats[i].current =
 					(reads + writes - diskio_stats[i].last) / 2;
 				diskio_stats[i].current_read =

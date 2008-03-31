@@ -472,9 +472,9 @@ void mpd_sendSwapCommand(mpd_Connection *connection, int song1, int song2);
 
 void mpd_sendSwapIdCommand(mpd_Connection *connection, int song1, int song2);
 
-void mpd_sendSeekCommand(mpd_Connection *connection, int song, int time);
+void mpd_sendSeekCommand(mpd_Connection *connection, int song, int seek_time);
 
-void mpd_sendSeekIdCommand(mpd_Connection *connection, int song, int time);
+void mpd_sendSeekIdCommand(mpd_Connection *connection, int song, int seek_time);
 
 void mpd_sendRepeatCommand(mpd_Connection *connection, int repeatMode);
 
