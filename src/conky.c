@@ -2284,6 +2284,9 @@ void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
 	}
 }
 
+/* strip a leading /dev/ if any */
+#define DEV_NAME(x)	strncmp(x, "/dev/", 5) ? x : x + 5
+
 /* construct_text_object() creates a new text_object */
 static struct text_object *construct_text_object(const char *s,
 		const char *arg, unsigned int object_count,
@@ -2459,7 +2462,7 @@ static struct text_object *construct_text_object(const char *s,
 #if defined(__linux__)
 	END OBJ(disk_protect, 0)
 		if (arg)
-			obj->data.s = strdup(arg);
+			obj->data.s = strdup(DEV_NAME(arg));
 		else
 			CRIT_ERR("disk_protect needs an argument");
 	END OBJ(i8k_version, INFO_I8K)
@@ -2510,7 +2513,7 @@ static struct text_object *construct_text_object(const char *s,
 			CRIT_ERR("get_ioscheduler needs an argument (e.g. hda)");
 			obj->data.s = 0;
 		} else
-			obj->data.s = strdup(arg);
+			obj->data.s = strdup(DEV_NAME(arg));
 	END OBJ(laptop_mode, 0)
 	END OBJ(pb_battery, 0)
 		if (arg && strcmp(arg, "status") == 0) {
@@ -2602,24 +2605,24 @@ static struct text_object *construct_text_object(const char *s,
 		}
 	END OBJ(diskio, INFO_DISKIO)
 		if (arg) {
-			obj->data.diskio = prepare_diskio_stat(arg);
+			obj->data.diskio = prepare_diskio_stat(DEV_NAME(arg));
 		} else {
 			obj->data.diskio = NULL;
 		}
 	END OBJ(diskio_read, INFO_DISKIO)
 		if (arg) {
-			obj->data.diskio = prepare_diskio_stat(arg);
+			obj->data.diskio = prepare_diskio_stat(DEV_NAME(arg));
 		} else {
 			obj->data.diskio = NULL;
 		}
 	END OBJ(diskio_write, INFO_DISKIO)
 		if (arg) {
-			obj->data.diskio = prepare_diskio_stat(arg);
+			obj->data.diskio = prepare_diskio_stat(DEV_NAME(arg));
 		} else {
 			obj->data.diskio = NULL;
 		}
 	END OBJ(diskiograph, INFO_DISKIO)
-		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+		char *buf = scan_graph(DEV_NAME(arg), &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e);
 
 		if (buf) {
@@ -2629,7 +2632,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.diskio = NULL;
 		}
 	END OBJ(diskiograph_read, INFO_DISKIO)
-		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+		char *buf = scan_graph(DEV_NAME(arg), &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e);
 
 		if (buf) {
@@ -2639,7 +2642,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.diskio = NULL;
 		}
 	END OBJ(diskiograph_write, INFO_DISKIO)
-		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+		char *buf = scan_graph(DEV_NAME(arg), &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e);
 
 		if (buf) {
@@ -5262,7 +5265,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				} else if (unit == '*') {
 					snprintf(p, p_max_size, "%s", temp);
 				} else {
-					snprintf(p, p_max_size, "%s°%c", temp, unit);
+					snprintf(p, p_max_size, "%s%c", temp, unit);
 				}
 			}
 #endif

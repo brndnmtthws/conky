@@ -53,7 +53,12 @@ int scan_hddtemp(const char *arg, char **dev, char **addr, int *port)
 		return -1;
 	}
 
+	if (strncmp(buf1, "/dev/", 5)) {
+		strncpy(buf1 + 5, buf1, 32 - 5);
+		strncpy(buf1, "/dev/", 5);
+	}
 	*dev = strdup(buf1);
+
 	if (ret >= 2) {
 		*addr = strdup(buf2);
 	} else {
