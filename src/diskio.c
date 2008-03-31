@@ -69,6 +69,10 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 		ERR("too many diskio stats");
 		return 0;
 	}
+	if (new->dev) {
+		free(new->dev);
+		new->dev = 0;
+	}
 	if (strncmp(s, "/dev/", 5) == 0) {
 		// supplied a /dev/device arg, so cut off the /dev part
 		new->dev = strndup(s + 5, text_buffer_size);
@@ -98,6 +102,7 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 	fp = 0;
 	if (!found) {
 		ERR("diskio device '%s' does not exist", s);
+		return 0;
 	}
 	new->current = 0;
 	new->current_read = 0;

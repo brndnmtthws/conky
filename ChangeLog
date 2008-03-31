@@ -2,6 +2,7 @@
 
 2008-03-30
 	* Added mem_res and mem_vsize to $top.
+	* Improved parsing of diskio args
 
 2008-03-29
 	* Increased C99 compliance.
