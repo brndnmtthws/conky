@@ -40,14 +40,25 @@
 		<title>Description</title>
 		<para>
 			Conky is a system monitor for X originally based on torsmo.
-			Since it's conception, Conky has changed significantly from it's predecessor.
-			Conky can display just about anything, either on your root desktop or in it's own window.
-			Conky has many built-in objects, as well as the ability to execute programs and scripts,
-			then display the output from stdout.
+			Since its inception, Conky has changed significantly from its predecessor, while maintaining
+			simplicity and configurability.  Conky can display just about anything, either
+			on your root desktop or in its own window.  Not only does Conky have many
+			built-in objects, it can also display just about any piece of information by
+			using scripts and other external programs.
 		</para>
 		<para>
-			We are always looking for help, and anyone interested in becoming a developer is welcome.
-			Please use the facilities at SourceForge to make bug reports, feature requests, and submit patches.
+			Conky has more than 250 built in objects, including support for
+			a plethora of OS stats (uname, uptime, CPU usage, mem usage, disk
+			usage, "top" like process stats, and network monitoring, just to name a few),
+			built in IMAP and POP3 support, built in support for many popular 
+			music players (MPD, XMMS2, BMPx, Audacious), and much much more.
+			Conky can display this info either as text,	or using simple progress
+			bars and graph widgets, with different fonts and colours.
+		</para>
+		<para>
+			We are always looking for help, whether its reporting bugs, writing patches, or writing docs.
+			Please use the facilities at SourceForge to make bug reports, feature requests, and submit patches,
+			or stop by #conky on irc.freenode.net if you have questions or want to contribute.
 		</para>
 		<para>
 			Thanks for your interest in Conky.

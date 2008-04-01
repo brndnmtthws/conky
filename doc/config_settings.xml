@@ -233,7 +233,7 @@
 			<option>bytes</option>
 		</term>
 		<listitem>
-			Size of the standard text buffer (default is 128 bytes).  This buffer is used for intermediary text, such as individual lines, output from $exec vars, and various other variables.  Increasing the size of this buffer can drastically reduce Conky's performance, but will allow for more text display per variable.  The size of this buffer cannot be smaller than the default value of 128 bytes.
+			Size of the standard text buffer (default is 256 bytes).  This buffer is used for intermediary text, such as individual lines, output from $exec vars, and various other variables.  Increasing the size of this buffer can drastically reduce Conky's performance, but will allow for more text display per variable.  The size of this buffer cannot be smaller than the default value of 256 bytes.
 			<para></para></listitem>
 	</varlistentry>
 

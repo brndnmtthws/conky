@@ -93,7 +93,7 @@ enum {
 	TOP_MEM_VSIZE,
 };
 
-#define DEFAULT_TEXT_BUFFER_SIZE 128
+#define DEFAULT_TEXT_BUFFER_SIZE 256
 extern unsigned int text_buffer_size;
 
 /* maximum number of special things, e.g. fonts, offsets, aligns, etc. */

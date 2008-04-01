@@ -10,6 +10,8 @@ f = sys.argv[1]
 
 blah = 0
 
+print '<html><body>'
+
 for i in open(f).read().splitlines():
   # ignore empty lines
 
@@ -18,13 +20,15 @@ for i in open(f).read().splitlines():
       print '      ' + i.strip()
     else:
       s = i.split('*', 1)[1].strip()
-      print '  <LI>' + s.replace('<', '&lt;').replace('>', '&gt;')
+      print '  <li>' + s.replace('<', '&lt;').replace('>', '&gt;')
   else:
     if blah:
-      print '</UL>'
-    print '<H3>%s</H3>' % i.strip()
-    print '<UL>'
+      print '</ul>'
+    print '<h3>%s</h3>' % i.strip()
+    print '<ul>'
     blah = 1
 
 if blah:
-  print '</UL>'
+  print '</ul>'
+
+print '</html></body>'
