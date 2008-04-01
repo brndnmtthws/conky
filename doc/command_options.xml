@@ -1,93 +1,100 @@
 <variablelist>
-  <varlistentry>
-    <term><command><option>-v | -V | --verbose</option></command></term>
-    <listitem>
-    Prints version and exits
-    <para></para></listitem>
-  </varlistentry>
+	<varlistentry>
+		<term><command><option>-v | -V | --version</option></command></term>
+		<listitem>
+			Prints version and exits
+			<para></para></listitem>
+	</varlistentry>
 
-  <varlistentry>
-    <term><command><option>-a | --alignment=</option></command><option>ALIGNMENT</option></term>
-    <listitem>
-      Text alignment on screen, {top,bottom}_{left,right} or none
-    <para></para></listitem>
-  </varlistentry>
+	<varlistentry>
+		<term><command><option>-a | --alignment=</option></command><option>ALIGNMENT</option></term>
+		<listitem>
+			Text alignment on screen, {top,bottom,middle}_{left,right,middle} or none
+			<para></para></listitem>
+	</varlistentry>
 
-  <varlistentry>
-    <term><command><option>-b | --double-buffer</option></command></term>
-    <listitem>
-      Use double buffering (eliminates "flicker")
-    <para></para></listitem>
-  </varlistentry>
+	<varlistentry>
+		<term><command><option>-b | --double-buffer</option></command></term>
+		<listitem>
+			Use double buffering (eliminates "flicker")
+			<para></para></listitem>
+	</varlistentry>
 
-  <varlistentry>
-    <term><command><option>-c | --config=</option></command><option>FILE</option></term>
-    <listitem>
-      Config file to load instead of $HOME/.conkyrc
-    <para></para></listitem>
-  </varlistentry>
+	<varlistentry>
+		<term><command><option>-c | --config=</option></command><option>FILE</option></term>
+		<listitem>
+			Config file to load instead of $HOME/.conkyrc
+			<para></para></listitem>
+	</varlistentry>
 
-  <varlistentry>
-    <term><command><option>-d | --daemonize</option></command></term>
-    <listitem>
-      Daemonize Conky, aka fork to background
-    <para></para></listitem>
-  </varlistentry>
+	<varlistentry>
+		<term><command><option>-d | --daemonize</option></command></term>
+		<listitem>
+			Daemonize Conky, aka fork to background
+			<para></para></listitem>
+	</varlistentry>
 
-  <varlistentry>
-    <term><command><option>-f | --font=</option></command><option>FONT</option></term>
-    <listitem>
-      Font to use
-    <para></para></listitem>
-  </varlistentry>
+	<varlistentry>
+		<term><command><option>-f | --font=</option></command><option>FONT</option></term>
+		<listitem>
+			Font to use
+			<para></para></listitem>
+	</varlistentry>
 
-  <varlistentry>
-    <term><command><option>-h | --help</option></command></term>
-    <listitem>
-      Prints command line help and exits
-    <para></para></listitem>
-  </varlistentry>
+	<varlistentry>
+		<term><command><option>-h | --help</option></command></term>
+		<listitem>
+			Prints command line help and exits
+			<para></para></listitem>
+	</varlistentry>
 
-  <varlistentry>
-    <term><command><option>-o | --own-window</option></command></term>
-    <listitem>
-      Create own window to draw
-    <para></para></listitem>
-  </varlistentry>
+	<varlistentry>
+		<term><command><option>-o | --own-window</option></command></term>
+		<listitem>
+			Create own window to draw
+			<para></para></listitem>
+	</varlistentry>
 
-  <varlistentry>
-    <term><command><option>-t | --text=</option></command><option>TEXT</option></term>
-    <listitem>
-      Text to render, remember single quotes, like -t &apos; $uptime &apos;
-    <para></para></listitem>
-  </varlistentry>
+	<varlistentry>
+		<term><command><option>-t | --text=</option></command><option>TEXT</option></term>
+		<listitem>
+			Text to render, remember single quotes, like -t &apos; $uptime &apos;
+			<para></para></listitem>
+	</varlistentry>
 
-  <varlistentry>
-    <term><command><option>-u | --interval=</option></command><option>SECONDS</option></term>
-    <listitem>
-      Update interval
-    <para></para></listitem>
-  </varlistentry>
+	<varlistentry>
+		<term><command><option>-u | --interval=</option></command><option>SECONDS</option></term>
+		<listitem>
+			Update interval
+			<para></para></listitem>
+	</varlistentry>
 
-  <varlistentry>
-    <term><command><option>-w | --window-id=</option></command><option>WIN_ID</option></term>
-    <listitem>
-      Window id to draw
-    <para></para></listitem>
-  </varlistentry>
+	<varlistentry>
+		<term><command><option>-w | --window-id=</option></command><option>WIN_ID</option></term>
+		<listitem>
+			Window id to draw
+			<para></para></listitem>
+	</varlistentry>
 
-  <varlistentry>
-    <term><command><option>-x </option></command><option>X_COORDINATE</option></term>
-    <listitem>
-      X position
-    <para></para></listitem>
-  </varlistentry>
+	<varlistentry>
+		<term><command><option>-x </option></command><option>X_COORDINATE</option></term>
+		<listitem>
+			X position
+			<para></para></listitem>
+	</varlistentry>
 
-  <varlistentry>
-    <term><command><option>-y </option></command><option>Y_COORDINATE</option></term>
-    <listitem>
-      Y position
-    <para></para></listitem>
-  </varlistentry>
+	<varlistentry>
+		<term><command><option>-y </option></command><option>Y_COORDINATE</option></term>
+		<listitem>
+			Y position
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term><command><option>-i </option></command><option>COUNT</option></term>
+		<listitem>
+			Number of times to update Conky (and quit)
+			<para></para></listitem>
+	</varlistentry>
 
 </variablelist>

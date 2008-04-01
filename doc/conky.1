@@ -69,12 +69,12 @@ Saves you the trouble of having to kill and then restart. You can now also do th
 .SH OPTIONS
 Command line options override configurations defined in configuration file.
 .TP 
-\fB\*(T<\fB\-v | \-V | \-\-verbose\fR\*(T>\fR
+\fB\*(T<\fB\-v | \-V | \-\-version\fR\*(T>\fR
 Prints version and exits
 
 .TP 
 \fB\*(T<\fB\-a | \-\-alignment=\fR\*(T>\fR\*(T<\fBALIGNMENT\fR\*(T>
-Text alignment on screen, {top,bottom}_{left,right} or none
+Text alignment on screen, {top,bottom,middle}_{left,right,middle} or none
 
 .TP 
 \fB\*(T<\fB\-b | \-\-double\-buffer\fR\*(T>\fR
@@ -119,6 +119,10 @@ X position
 .TP 
 \fB\*(T<\fB\-y \fR\*(T>\fR\*(T<\fBY_COORDINATE\fR\*(T>
 Y position
+
+.TP 
+\fB\*(T<\fB\-i \fR\*(T>\fR\*(T<\fBCOUNT\fR\*(T>
+Number of times to update Conky (and quit)
 
 .SH "CONFIGURATION SETTINGS"
 Default configuration file location is $HOME/.conkyrc or 

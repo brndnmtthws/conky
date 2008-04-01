@@ -8533,12 +8533,12 @@ int main(int argc, char **argv)
 					   "Conky is a system monitor that renders text on desktop or to own transparent\n"
 					   "window. Command line options will override configurations defined in config\n"
 					   "file.\n"
-					   "   -V, --version             version\n"
+					   "   -v, --version             version\n"
 					   "   -c, --config=FILE         config file to load\n"
 					   "   -d, --daemonize           daemonize, fork to background\n"
 					   "   -h, --help                help\n"
 #ifdef X11
-					   "   -a, --alignment=ALIGNMENT text alignment on screen, {top,bottom}_{left,right}\n"
+					   "   -a, --alignment=ALIGNMENT text alignment on screen, {top,bottom,middle}_{left,right,middle}\n"
 					   "   -f, --font=FONT           font to use\n"
 #ifdef OWN_WINDOW
 					   "   -o, --own-window          create own window to draw\n"
@@ -8552,7 +8552,7 @@ int main(int argc, char **argv)
 #endif /* X11 */
 					   "   -t, --text=TEXT           text to render, remember single quotes, like -t '$uptime'\n"
 					   "   -u, --interval=SECS       update interval\n"
-					   "   -i NUM                    number of times to update Conky\n",
+					   "   -i COUNT                  number of times to update Conky (and quit)\n",
 					   argv[0]
 				);
 				return 0;
