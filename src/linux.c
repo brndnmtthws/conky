@@ -1561,7 +1561,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
  		char charging_state[64];
  		char present[4];
  
- 		strcpy(charging_state, "Unknown");
+ 		strcpy(charging_state, "unknown");
  
  		while (!feof(sysfs_bat_fp[idx])) {
  			char buf[256];
@@ -1570,9 +1570,9 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
  
  			/* let's just hope units are ok */
  			if (strncmp (buf, "POWER_SUPPLY_PRESENT=1", 22) == 0)
- 				strcpy(present, "Yes");
+ 				strcpy(present, "yes");
  			else if (strncmp (buf, "POWER_SUPPLY_PRESENT=0", 22) == 0)
- 				strcpy(present, "No");
+ 				strcpy(present, "no");
  			else if (strncmp (buf, "POWER_SUPPLY_STATUS=", 20) == 0)
  				sscanf(buf, "POWER_SUPPLY_STATUS=%63s", charging_state);
  			/* present_rate is not the same as the
@@ -1617,7 +1617,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 				snprintf(last_battery_time_str[idx],
 					sizeof(last_battery_time_str[idx]) - 1, "unknown");
  			} else {
- 				strncpy(last_battery_str[idx], "Charging", sizeof(last_battery_str[idx])-1);
+ 				strncpy(last_battery_str[idx], "charging", sizeof(last_battery_str[idx])-1);
 				snprintf(last_battery_time_str[idx],
 					sizeof(last_battery_time_str[idx]) - 1, "unknown");
  			}
