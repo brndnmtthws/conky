@@ -1,8 +1,12 @@
 # $Id$
 
+2008-03-31
+	* Conky 1.5.1 released.
+	* Added --enable-testing configure option to use insane compiler flags.
+
 2008-03-30
 	* Added mem_res and mem_vsize to $top.
-	* Improved parsing of diskio args
+	* Improved parsing of $diskio*, $disk_protect and $ioscheduler args.
 
 2008-03-29
 	* Increased C99 compliance.
@@ -20,16 +24,16 @@
 	* Added disk_protect.
 	* Fixed too many open files bug in laptop_mode.
 	* Fixed reading interface adresses.
-	* Fixed battery_bar default size
+	* Fixed battery_bar default size.
 
 2008-03-23
-	* Fixed compilation with --disable-x11
+	* Fixed compilation with --disable-x11.
 	* Fixed linux.c compilation problem due to (suspected) broken linux
-	headers
-	* $battery_bar sysfs fix (thanks Marcus)
+	headers.
+	* $battery_bar sysfs fix (thanks Marcus).
 
 2008-03-22
-	* Conky 1.5.0 released
+	* Conky 1.5.0 released.
 	* Smapi review: improved code, fixed memleaks and smapi_bat_perc when
 	using pad_percents.
 	* Fixed spaced_print, so pad_percents should now work as expected.
@@ -43,8 +47,8 @@
 	* Added CRLF characters to POP3 and IMAP stuff (should play nicer with
 	some servers now).
 	* Added preliminary support for parsing the output of external commands
-	(via $execp and $execpi)
-	* Applied FreeBSD total memory patch (thanks Nikos)
+	(via $execp and $execpi).
+	* Applied FreeBSD total memory patch (thanks Nikos).
 
 2008-03-19
 	* Fixed a number of small memory leaks.
@@ -65,14 +69,14 @@
 		9) added fs_type patch (thanks Ryan)
 		10) added xmms2 fixes patch (thanks Lassi)
 		11) fix sysfs crash patch (thanks Phil)
-		12) multiple ip patch ($addrs)
+		12) multiple ip patch ($addrs).
 	* Added more alignment support (top_middle, bottom_middle, middle_left,
 	and middle_right).
 
 2008-02-08
 	* Applied 2 patches:
-		1) Add diskio for individual devices
-		2) Improved output of units, added "short_units" option
+		1) Add diskio for individual devices.
+		2) Improved output of units, added "short_units" option.
 
 2008-01-05
 	* Applied some more submitted patches:

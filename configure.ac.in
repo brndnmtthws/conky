@@ -4,7 +4,7 @@ dnl major, minor and micro version macros.
 m4_define([conky_version_major], [1])
 m4_define([conky_version_minor], [5])
 m4_define([conky_version_micro], [1])
-m4_define([conky_version_tag], [pre]) dnl [] for releases
+m4_define([conky_version_tag])dnl, [pre]) dnl [] for releases
 m4_define([conky_version_revision],[_pre@REVISION@])
 m4_define([conky_version],
     [conky_version_major().conky_version_minor().conky_version_micro()ifelse(
@@ -567,9 +567,25 @@ AC_ARG_ENABLE([debug],
 
 if test "x$want_debug" = "xyes" -a $ac_cv_c_compiler_gnu != no; then
   CFLAGS="$CFLAGS -g3 -Werror"
-dnl for more 'extreme' testing
-dnl  CFLAGS="$CFLAGS -g3 -Werror -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -std=c99 -pedantic -g"
   AC_DEFINE([DEBUG], [], [Define for debugging])
+fi
+
+dnl
+dnl testing
+dnl
+
+AC_ARG_ENABLE([testing],
+              AC_HELP_STRING([--enable-testing], [use strict compiler flags for testing @<:@default=no@:>@]),
+              [want_testing="$enableval"], [want_testing=no])
+
+if test "x$want_testing" = "xyes" -a $ac_cv_c_compiler_gnu != no; then
+  if test "x$want_debug" = "xyes"; then
+    CFLAGS="$CFLAGS -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -std=c99 -pedantic"
+    AC_DEFINE([TESTING], [], [Define for testing (enables strict compiler flags)])
+  else
+    CFLAGS="$CFLAGS -g3 -Werror -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -std=c99 -pedantic"
+    AC_DEFINE([TESTING], [], [Define for testing (enables strict compiler flags)])
+  fi
 fi
 
 AC_SUBST(CFLAGS)
