@@ -606,22 +606,22 @@ $PACKAGE $VERSION configured successfully:
  Linker flags:      $LDFLAGS
  Libraries:         $LIBS
 
- * x11:
-  x11 support:      $want_x11
-  xdamage support:  $want_xdamage
-  xdbe support:     $want_double_buffer
-  xft support:      $want_xft
+ * X11:
+  X11 support:      $want_x11
+  XDamage support:  $want_xdamage
+  XDBE support:     $want_double_buffer
+  Xft support:      $want_xft
 
- * music detection:
-  audacious:        $want_audacious
-  bmpx:             $want_bmpx
-  mpd:              $want_mpd
-  xmms2:            $want_xmms2
+ * Music detection:
+  Audacious:        $want_audacious
+  BMPx:             $want_bmpx
+  MPD:              $want_mpd
+  XMMS2:            $want_xmms2
 
- * general:
+ * General:
   hddtemp:          $want_hddtemp
   portmon:          $want_portmon
-  rss:              $want_rss
+  RSS:              $want_rss
   wireless:         $want_wlan
-  smapi:            $want_smapi
+  SMAPI:            $want_smapi
 EOF
