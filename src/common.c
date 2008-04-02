@@ -34,6 +34,20 @@
 #include <sys/time.h>
 #include <pthread.h>
 
+#ifndef HAVE_STRNDUP
+// use our own strndup() if it's not available
+char *strndup(const char *s, size_t n)
+{
+	if (strlen(s) + 1 > n) {
+		char *ret = malloc(n);
+		strncpy(ret, s, n);
+		return ret;
+	} else {
+		return strdup(s);
+	}
+}
+#endif /* HAVE_STRNDUP */
+
 void update_uname(void)
 {
 	uname(&info.uname_s);

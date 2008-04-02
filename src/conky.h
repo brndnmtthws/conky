@@ -64,6 +64,11 @@
 #include <machine/apmvar.h>
 #endif /* __OpenBSD__ */
 
+#ifndef HAVE_STRNDUP
+// use our own strndup() if it's not available
+char *strndup(const char *s, size_t n);
+#endif /* HAVE_STRNDUP */
+
 #ifdef AUDACIOUS
 #include "audacious.h"
 #endif
