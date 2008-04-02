@@ -1,5 +1,8 @@
 # $Id$
 
+2008-04-02
+	* Added patch to use mail_spool correctly (thanks Kapil)
+
 2008-04-01
 	* Fixed segfault when configuration doesn't contain TEXT block (thanks
 	Pippijn).

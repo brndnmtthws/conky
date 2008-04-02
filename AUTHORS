@@ -152,6 +152,7 @@ Kapil Hari Paranjape <kapil@imsc.res.in>
   kFreeBSD support patch
   realtime clock patch
   sysfs battery patch
+  mail_spool patch
 
 Kevin Lyles <kevinlyles at gmail dot com>
   add long options patch

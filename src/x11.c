@@ -403,7 +403,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 			}
 		} /* else { window.type != TYPE_OVERRIDE */
 
-		fprintf(stderr, "Conky: drawing to created window (%lx)\n",
+		fprintf(stderr, "Conky: drawing to created window (0x%lx)\n",
 			window.window);
 		fflush(stderr);
 

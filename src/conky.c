@@ -3330,7 +3330,12 @@ static struct text_object *construct_text_object(const char *s,
 
 		if (!arg) {
 			n1 = 9.5;
-			strncpy(box, MAIL_FILE, sizeof(box));
+			/* Kapil: Changed from MAIL_FILE to
+			   current_mail_spool since the latter
+			   is a copy of the former if undefined
+			   but the latter should take precedence
+			   if defined */
+			strncpy(box, current_mail_spool, sizeof(box));
 		} else {
 			if (sscanf(arg, "%s %f", box, &n1) != 2) {
 				n1 = 9.5;
@@ -3380,7 +3385,12 @@ static struct text_object *construct_text_object(const char *s,
 
 		if (!arg) {
 			n1 = 9.5;
-			strncpy(box, MAIL_FILE, sizeof(box));
+			/* Kapil: Changed from MAIL_FILE to
+			   current_mail_spool since the latter
+			   is a copy of the former if undefined
+			   but the latter should take precedence
+			   if defined */
+			strncpy(box, current_mail_spool, sizeof(box));
 		} else {
 			if (sscanf(arg, "%s %f", box, &n1) != 2) {
 				n1 = 9.5;
