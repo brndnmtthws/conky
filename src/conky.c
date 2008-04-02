@@ -8398,6 +8398,9 @@ static void load_config_file(const char *f)
 				}
 			}
 			fclose(fp);
+			if (strlen(text) < 1) {
+				CRIT_ERR("no text supplied in configuration; exiting");
+			}
 			text_lines = line + 1;
 			return;
 		}
@@ -8435,6 +8438,9 @@ static void load_config_file(const char *f)
 	if (info.music_player_interval == 0) {
 		// default to update_interval
 		info.music_player_interval = update_interval;
+	}
+	if (!text) { // didn't supply any text
+		CRIT_ERR("missing text block in configuration; exiting");
 	}
 }
 

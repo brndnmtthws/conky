@@ -1,5 +1,9 @@
 # $Id$
 
+2008-04-01
+	* Fixed segfault when configuration doesn't contain TEXT block (thanks
+	Pippijn).
+
 2008-03-31
 	* Conky 1.5.1 released.
 	* Added --enable-testing configure option to use insane compiler flags.
