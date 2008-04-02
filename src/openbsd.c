@@ -716,7 +716,7 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 	for (i = 0; i < n_processes; i++) {
 		if (!((p[i].p_flag & P_SYSTEM)) && p[i].p_comm != NULL) {
 			processes[j].pid = p[i].p_pid;
-			processes[j].name = strdup(p[i].p_comm);
+			processes[j].name = strndup(p[i].p_comm, text_buffer_size);
 			processes[j].amount = 100.0 * p[i].p_pctcpu / FSCALE;
 			processes[j].totalmem = (float) (p[i].p_vm_rssize * pagesize /
 				(float) total_pages) * 100.0;
@@ -732,7 +732,7 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 		tmp->pid = processes[i].pid;
 		tmp->amount = processes[i].amount;
 		tmp->totalmem = processes[i].totalmem;
-		tmp->name = strdup(processes[i].name);
+		tmp->name = strndup(processes[i].name, text_buffer_size);
 
 		ttmp = mem[i];
 		mem[i] = tmp;
@@ -750,7 +750,7 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 		tmp->pid = processes[i].pid;
 		tmp->amount = processes[i].amount;
 		tmp->totalmem = processes[i].totalmem;
-		tmp->name = strdup(processes[i].name);
+		tmp->name = strndup(processes[i].name, text_buffer_size);
 
 		ttmp = cpu[i];
 		cpu[i] = tmp;

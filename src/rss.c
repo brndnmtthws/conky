@@ -143,7 +143,7 @@ PRSS *get_rss_info(char *uri, int delay)
 			return NULL;
 		}
 		curfeed = &feeds[num_feeds];
-		curfeed->uri = strdup(uri);
+		curfeed->uri = strndup(uri, text_buffer_size);
 		num_feeds++;
 	}
 

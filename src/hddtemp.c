@@ -57,12 +57,12 @@ int scan_hddtemp(const char *arg, char **dev, char **addr, int *port)
 		strncpy(buf1 + 5, buf1, 32 - 5);
 		strncpy(buf1, "/dev/", 5);
 	}
-	*dev = strdup(buf1);
+	*dev = strndup(buf1, text_buffer_size);
 
 	if (ret >= 2) {
-		*addr = strdup(buf2);
+		*addr = strndup(buf2, text_buffer_size);
 	} else {
-		*addr = strdup("127.0.0.1");
+		*addr = strndup("127.0.0.1", text_buffer_size);
 	}
 
 	if (ret == 3) {

@@ -216,7 +216,7 @@ int addfont(const char *data_in)
 	}
 	// must account for null terminator
 	if (strlen(data_in) < DEFAULT_TEXT_BUFFER_SIZE) {
-		strncpy(fonts[font_count].name, data_in, DEFAULT_TEXT_BUFFER_SIZE);
+		strncpy(fonts[font_count].name, data_in, text_buffer_size);
 #ifdef XFT
 		fonts[font_count].font_alpha = 0xffff;
 #endif
@@ -237,7 +237,7 @@ void set_first_font(const char *data_in)
 		font_count++;
 	}
 	if (strlen(data_in) > 1) {
-		strncpy(fonts[0].name, data_in, DEFAULT_TEXT_BUFFER_SIZE - 1);
+		strncpy(fonts[0].name, data_in, text_buffer_size);
 #ifdef XFT
 		fonts[0].font_alpha = 0xffff;
 #endif
@@ -675,7 +675,7 @@ static const char *scan_bar(const char *args, int *w, int *h)
 static char *scan_font(const char *args)
 {
 	if (args && *args) {
-		return strdup(args);
+		return strndup(args, text_buffer_size);
 	}
 
 	return NULL;
@@ -814,12 +814,12 @@ static char *scan_graph(const char *args, int *w, int *h,
 		}
 		if (sscanf(args, "%63s %d,%d %x %x %u", buf, h, w, first_colour,
 				last_colour, scale) == 6) {
-			return strdup(buf);
+			return strndup(buf, text_buffer_size);
 		}
 		*scale = 0;
 		if (sscanf(args, "%63s %d,%d %x %x", buf, h, w, first_colour,
 				last_colour) == 5) {
-			return strdup(buf);
+			return strndup(buf, text_buffer_size);
 		}
 		buf[0] = '\0';
 		*h = 25;
@@ -833,11 +833,11 @@ static char *scan_graph(const char *args, int *w, int *h,
 		}
 		if (sscanf(args, "%63s %x %x %u", buf, first_colour, last_colour,
 				scale) == 4) {
-			return strdup(buf);
+			return strndup(buf, text_buffer_size);
 		}
 		*scale = 0;
 		if (sscanf(args, "%63s %x %x", buf, first_colour, last_colour) == 3) {
-			return strdup(buf);
+			return strndup(buf, text_buffer_size);
 		}
 		buf[0] = '\0';
 		*first_colour = 0;
@@ -855,13 +855,13 @@ static char *scan_graph(const char *args, int *w, int *h,
 			sscanf(args, "%63s %d,%d", buf, h, w);
 		}
 
-		return strdup(buf);
+		return strndup(buf, text_buffer_size);
 	}
 
 	if (buf[0] == '\0') {
 		return NULL;
 	} else {
-		return strdup(buf);
+		return strndup(buf, text_buffer_size);
 	}
 }
 
@@ -2428,7 +2428,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			strcpy(bat, "BAT0");
 		}
-		obj->data.s = strdup(bat);
+		obj->data.s = strndup(bat, text_buffer_size);
 	END OBJ(battery_time, 0)
 		char bat[64];
 
@@ -2437,7 +2437,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			strcpy(bat, "BAT0");
 		}
-		obj->data.s = strdup(bat);
+		obj->data.s = strndup(bat, text_buffer_size);
 	END OBJ(battery_percent, 0)
 		char bat[64];
 
@@ -2446,7 +2446,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			strcpy(bat, "BAT0");
 		}
-		obj->data.s = strdup(bat);
+		obj->data.s = strndup(bat, text_buffer_size);
 	END OBJ(battery_bar, 0)
 		char bat[64];
 		obj->b = 6;
@@ -2456,13 +2456,13 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			strcpy(bat, "BAT0");
 		}
-		obj->data.s = strdup(bat);
+		obj->data.s = strndup(bat, text_buffer_size);
 #endif /* !__OpenBSD__ */
 
 #if defined(__linux__)
 	END OBJ(disk_protect, 0)
 		if (arg)
-			obj->data.s = strdup(DEV_NAME(arg));
+			obj->data.s = strndup(DEV_NAME(arg), text_buffer_size);
 		else
 			CRIT_ERR("disk_protect needs an argument");
 	END OBJ(i8k_version, INFO_I8K)
@@ -2497,7 +2497,7 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("if_up needs an argument");
 			obj->data.ifblock.s = 0;
 		} else
-			obj->data.ifblock.s = strdup(arg);
+			obj->data.ifblock.s = strndup(arg, text_buffer_size);
 		blockstart[blockdepth] = object_count;
 		obj->data.ifblock.pos = object_count + 2;
 		blockdepth++;
@@ -2513,7 +2513,7 @@ static struct text_object *construct_text_object(const char *s,
 			CRIT_ERR("get_ioscheduler needs an argument (e.g. hda)");
 			obj->data.s = 0;
 		} else
-			obj->data.s = strdup(DEV_NAME(arg));
+			obj->data.s = strndup(DEV_NAME(arg), text_buffer_size);
 	END OBJ(laptop_mode, 0)
 	END OBJ(pb_battery, 0)
 		if (arg && strcmp(arg, "status") == 0) {
@@ -2718,16 +2718,16 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("$endif: no matching $if_*");
 		}
 	END OBJ(image, 0)
-		obj->data.s = strdup(arg ? arg : "");
+		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 #ifdef HAVE_POPEN
 	END OBJ(exec, 0)
-		obj->data.s = strdup(arg ? arg : "");
+		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(execp, 0)
-		obj->data.s = strdup(arg ? arg : "");
+		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(execbar, 0)
-		obj->data.s = strdup(arg ? arg : "");
+		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(execgraph, 0)
-		obj->data.s = strdup(arg ? arg : "");
+		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(execibar, 0)
 		int n;
 
@@ -2737,9 +2737,9 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("${execibar <interval> command}");
 			obj->type = OBJ_text;
 			snprintf(buf, 256, "${%s}", s);
-			obj->data.s = strdup(buf);
+			obj->data.s = strndup(buf, text_buffer_size);
 		} else {
-			obj->data.execi.cmd = strdup(arg + n);
+			obj->data.execi.cmd = strndup(arg + n, text_buffer_size);
 		}
 	END OBJ(execigraph, 0)
 		int n;
@@ -2750,9 +2750,9 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("${execigraph <interval> command}");
 			obj->type = OBJ_text;
 			snprintf(buf, 256, "${%s}", s);
-			obj->data.s = strdup(buf);
+			obj->data.s = strndup(buf, text_buffer_size);
 		} else {
-			obj->data.execi.cmd = strdup(arg + n);
+			obj->data.execi.cmd = strndup(arg + n, text_buffer_size);
 		}
 	END OBJ(execi, 0)
 		int n;
@@ -2763,9 +2763,9 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("${execi <interval> command}");
 			obj->type = OBJ_text;
 			snprintf(buf, 256, "${%s}", s);
-			obj->data.s = strdup(buf);
+			obj->data.s = strndup(buf, text_buffer_size);
 		} else {
-			obj->data.execi.cmd = strdup(arg + n);
+			obj->data.execi.cmd = strndup(arg + n, text_buffer_size);
 			obj->data.execi.buffer = malloc(text_buffer_size);
 		}
 	END OBJ(execpi, 0)
@@ -2777,9 +2777,9 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("${execi <interval> command}");
 			obj->type = OBJ_text;
 			snprintf(buf, 256, "${%s}", s);
-			obj->data.s = strdup(buf);
+			obj->data.s = strndup(buf, text_buffer_size);
 		} else {
-			obj->data.execi.cmd = strdup(arg + n);
+			obj->data.execi.cmd = strndup(arg + n, text_buffer_size);
 			obj->data.execi.buffer = malloc(text_buffer_size);
 		}
 	END OBJ(texeci, 0)
@@ -2791,9 +2791,9 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("${texeci <interval> command}");
 			obj->type = OBJ_text;
 			snprintf(buf, 256, "${%s}", s);
-			obj->data.s = strdup(buf);
+			obj->data.s = strndup(buf, text_buffer_size);
 		} else {
-			obj->data.texeci.cmd = strdup(arg + n);
+			obj->data.texeci.cmd = strndup(arg + n, text_buffer_size);
 			obj->data.texeci.buffer = malloc(text_buffer_size);
 		}
 		obj->data.texeci.p_timed_thread = NULL;
@@ -2813,9 +2813,9 @@ static struct text_object *construct_text_object(const char *s,
 
 			pclose(fp);
 
-			obj->data.s = strdup(buf);
+			obj->data.s = strndup(buf, text_buffer_size);
 		} else {
-			obj->data.s = strdup("");
+			obj->data.s = strndup("", text_buffer_size);
 		}
 #endif
 	END OBJ(fs_bar, INFO_FS)
@@ -2888,7 +2888,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (!arg) {
 			ERR("goto needs arguments");
 			obj->type = OBJ_text;
-			obj->data.s = strdup("${goto}");
+			obj->data.s = strndup("${goto}", text_buffer_size);
 			return NULL;
 		}
 
@@ -2916,7 +2916,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (!arg) {
 			ERR("i2c needs arguments");
 			obj->type = OBJ_text;
-			// obj->data.s = strdup("${i2c}");
+			// obj->data.s = strndup("${i2c}", text_buffer_size);
 			return NULL;
 		}
 
@@ -2987,7 +2987,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (!arg) {
 			ERR("top needs arguments");
 			obj->type = OBJ_text;
-			// obj->data.s = strdup("${top}");
+			// obj->data.s = strndup("${top}", text_buffer_size);
 			return NULL;
 		}
 		if (sscanf(arg, "%63s %i", buf, &n) == 2) {
@@ -3027,7 +3027,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (!arg) {
 			ERR("top_mem needs arguments");
 			obj->type = OBJ_text;
-			obj->data.s = strdup("${top_mem}");
+			obj->data.s = strndup("${top_mem}", text_buffer_size);
 			return NULL;
 		}
 		if (sscanf(arg, "%63s %i", buf, &n) == 2) {
@@ -3082,7 +3082,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (!arg) {
 			ERR("tail needs arguments");
 			obj->type = OBJ_text;
-			obj->data.s = strdup("${tail}");
+			obj->data.s = strndup("${tail}", text_buffer_size);
 			return NULL;
 		}
 		if (sscanf(arg, "%63s %i %i", buf, &n1, &n2) == 2) {
@@ -3184,7 +3184,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (!arg) {
 			ERR("head needs arguments");
 			obj->type = OBJ_text;
-			obj->data.s = strdup("${head}");
+			obj->data.s = strndup("${head}", text_buffer_size);
 			return NULL;
 		}
 		if (sscanf(arg, "%63s %i %i", buf, &n1, &n2) == 2) {
@@ -3265,7 +3265,7 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("if_empty needs an argument");
 			obj->data.ifblock.s = 0;
 		} else {
-			obj->data.ifblock.s = strdup(arg);
+			obj->data.ifblock.s = strndup(arg, text_buffer_size);
 		}
 		blockstart[blockdepth] = object_count;
 		obj->data.ifblock.pos = object_count + 2;
@@ -3283,11 +3283,11 @@ static struct text_object *construct_text_object(const char *s,
 			int r = sscanf(arg, "%255s %255[^\n]", buf1, buf2);
 
 			if (r == 1) {
-				obj->data.ifblock.s = strdup(buf1);
+				obj->data.ifblock.s = strndup(buf1, text_buffer_size);
 				obj->data.ifblock.str = NULL;
 			} else {
-				obj->data.ifblock.s = strdup(buf1);
-				obj->data.ifblock.str = strdup(buf2);
+				obj->data.ifblock.s = strndup(buf1, text_buffer_size);
+				obj->data.ifblock.str = strndup(buf2, text_buffer_size);
 			}
 		}
 		blockstart[blockdepth] = object_count;
@@ -3301,7 +3301,7 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("if_mounted needs an argument");
 			obj->data.ifblock.s = 0;
 		} else {
-			obj->data.ifblock.s = strdup(arg);
+			obj->data.ifblock.s = strndup(arg, text_buffer_size);
 		}
 		blockstart[blockdepth] = object_count;
 		obj->data.ifblock.pos = object_count + 2;
@@ -3314,7 +3314,7 @@ static struct text_object *construct_text_object(const char *s,
 			char buf[256];
 
 			snprintf(buf, 256, "pidof %s >/dev/null", arg);
-			obj->data.ifblock.s = strdup(buf);
+			obj->data.ifblock.s = strndup(buf, text_buffer_size);
 		} else {
 			ERR("if_running needs an argument");
 			obj->data.ifblock.s = 0;
@@ -3344,7 +3344,7 @@ static struct text_object *construct_text_object(const char *s,
 		}
 
 		variable_substitute(box, dst, sizeof(dst));
-		obj->data.local_mail.box = strdup(dst);
+		obj->data.local_mail.box = strndup(dst, text_buffer_size);
 		obj->data.local_mail.interval = n1;
 	END OBJ(mboxscan, 0)
 		obj->data.mboxscan.args = (char *) malloc(text_buffer_size);
@@ -3399,7 +3399,7 @@ static struct text_object *construct_text_object(const char *s,
 		}
 
 		variable_substitute(box, dst, sizeof(dst));
-		obj->data.local_mail.box = strdup(dst);
+		obj->data.local_mail.box = strndup(dst, text_buffer_size);
 		obj->data.local_mail.interval = n1;
 	END OBJ(nodename, 0)
 	END OBJ(processes, INFO_PROCS)
@@ -3444,9 +3444,9 @@ static struct text_object *construct_text_object(const char *s,
 			&obj->data.sysfs.arg, obj->data.sysfs.devtype);
 #endif
 	END OBJ(time, 0)
-		obj->data.s = strdup(arg ? arg : "%F %T");
+		obj->data.s = strndup(arg ? arg : "%F %T", text_buffer_size);
 	END OBJ(utime, 0)
-		obj->data.s = strdup(arg ? arg : "%F %T");
+		obj->data.s = strndup(arg ? arg : "%F %T", text_buffer_size);
 	END OBJ(tztime, 0)
 		char buf1[256], buf2[256], *fmt, *tz;
 
@@ -3462,8 +3462,8 @@ static struct text_object *construct_text_object(const char *s,
 			}
 		}
 
-		obj->data.tztime.fmt = strdup(fmt ? fmt : "%F %T");
-		obj->data.tztime.tz = tz ? strdup(tz) : NULL;
+		obj->data.tztime.fmt = strndup(fmt ? fmt : "%F %T", text_buffer_size);
+		obj->data.tztime.tz = tz ? strndup(tz, text_buffer_size) : NULL;
 #ifdef HAVE_ICONV
 	END OBJ(iconv_start, 0)
 		if (iconv_converting) {
@@ -3587,7 +3587,7 @@ static struct text_object *construct_text_object(const char *s,
 #ifdef SMAPI
 	END OBJ(smapi, 0)
 		if (arg)
-			obj->data.s = strdup(arg);
+			obj->data.s = strndup(arg, text_buffer_size);
 		else
 			ERR("smapi needs an argument");
 	END OBJ(if_smapi_bat_installed, 0)
@@ -3598,13 +3598,13 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("if_smapi_bat_installed needs an argument");
 			obj->data.ifblock.s = 0;
 		} else
-			obj->data.ifblock.s = strdup(arg);
+			obj->data.ifblock.s = strndup(arg, text_buffer_size);
 		blockstart[blockdepth] = object_count;
 		obj->data.ifblock.pos = object_count + 2;
 		blockdepth++;
 	END OBJ(smapi_bat_perc, 0)
 		if (arg)
-			obj->data.s = strdup(arg);
+			obj->data.s = strndup(arg, text_buffer_size);
 		else
 			ERR("smapi_bat_perc needs an argument");
 	END OBJ(smapi_bat_bar, 0)
@@ -3735,7 +3735,7 @@ static struct text_object *construct_text_object(const char *s,
 				&obj->data.hddtemp.addr, &obj->data.hddtemp.port)) {
 			ERR("hddtemp needs arguments");
 			obj->type = OBJ_text;
-			obj->data.s = strdup("${hddtemp}");
+			obj->data.s = strndup("${hddtemp}", text_buffer_size);
 			return NULL;
 		}
 #endif
@@ -3835,7 +3835,7 @@ static struct text_object *construct_text_object(const char *s,
 		ERR("unknown variable %s", s);
 		obj->type = OBJ_text;
 		snprintf(buf, 256, "${%s}", s);
-		obj->data.s = strdup(buf);
+		obj->data.s = strndup(buf, text_buffer_size);
 	}
 #undef OBJ
 
@@ -3853,7 +3853,7 @@ static struct text_object *create_plain_text(const char *s)
 	obj = new_text_object_internal();
 
 	obj->type = OBJ_text;
-	obj->data.s = strdup(s);
+	obj->data.s = strndup(s, text_buffer_size);
 	return obj;
 }
 
@@ -3864,7 +3864,7 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 	char *p, *s, *orig_p;
 	long line;
 
-	p = strdup(const_p);
+	p = strndup(const_p, max_user_text);
 	s = orig_p = p;
 
 	retval = malloc(sizeof(struct text_object_list));
@@ -4145,30 +4145,30 @@ char *format_time(unsigned long timeval, const int width)
 	nt /= 60;			// total minutes
 	if (width >= snprintf(buf, sizeof buf, "%lu:%02u.%02u",
 				nt, nn, cc)) {
-		return strdup(buf);
+		return strndup(buf, text_buffer_size);
 	}
 	if (width >= snprintf(buf, sizeof buf, "%lu:%02u", nt, nn)) {
-		return strdup(buf);
+		return strndup(buf, text_buffer_size);
 	}
 	nn = nt % 60;		// minutes past the hour
 	nt /= 60;			// total hours
 	if (width >= snprintf(buf, sizeof buf, "%lu,%02u", nt, nn)) {
-		return strdup(buf);
+		return strndup(buf, text_buffer_size);
 	}
 	nn = nt;			// now also hours
 	if (width >= snprintf(buf, sizeof buf, "%uh", nn)) {
-		return strdup(buf);
+		return strndup(buf, text_buffer_size);
 	}
 	nn /= 24;			// now days
 	if (width >= snprintf(buf, sizeof buf, "%ud", nn)) {
-		return strdup(buf);
+		return strndup(buf, text_buffer_size);
 	}
 	nn /= 7;			// now weeks
 	if (width >= snprintf(buf, sizeof buf, "%uw", nn)) {
-		return strdup(buf);
+		return strndup(buf, text_buffer_size);
 	}
 	// well shoot, this outta' fit...
-	return strdup("<inf>");
+	return strndup("<inf>", text_buffer_size);
 }
 
 static void generate_text_internal(char *p, int p_max_size,
@@ -6294,7 +6294,7 @@ static inline int get_string_width_special(char *s)
 		return 0;
 	}
 
-	p = strdup(s);
+	p = strndup(s, text_buffer_size);
 	final = p;
 
 	while (*p) {
@@ -7779,7 +7779,7 @@ static void set_default_configurations(void)
 
 		variable_substitute(MAIL_FILE, buf, 256);
 		if (buf[0] != '\0') {
-			current_mail_spool = strdup(buf);
+			current_mail_spool = strndup(buf, text_buffer_size);
 		}
 	}
 
@@ -8193,7 +8193,7 @@ static void load_config_file(const char *f)
 					if (current_mail_spool) {
 						free(current_mail_spool);
 					}
-					current_mail_spool = strdup(buffer);
+					current_mail_spool = strndup(buffer, text_buffer_size);
 				}
 			} else {
 				CONF_ERR;
@@ -8541,7 +8541,7 @@ int main(int argc, char **argv)
 				if (current_config) {
 					free(current_config);
 				}
-				current_config = strdup(optarg);
+				current_config = strndup(optarg, max_user_text);
 				break;
 
 			case 'h':
@@ -8609,13 +8609,13 @@ int main(int argc, char **argv)
 		/* Try to use personal config file first */
 		variable_substitute(CONFIG_FILE, buf, sizeof(buf));
 		if (buf[0] && (fp = fopen(buf, "r"))) {
-			current_config = strdup(buf);
+			current_config = strndup(buf, max_user_text);
 			fclose(fp);
 		}
 
 		/* Try to use system config file if personal config not readable */
 		if (!current_config && (fp = fopen(SYSTEM_CONFIG_FILE, "r"))) {
-			current_config = strdup(SYSTEM_CONFIG_FILE);
+			current_config = strndup(SYSTEM_CONFIG_FILE, max_user_text);
 			fclose(fp);
 		}
 
@@ -8639,7 +8639,7 @@ int main(int argc, char **argv)
 		variable_substitute(MAIL_FILE, buf, 256);
 
 		if (buf[0] != '\0') {
-			current_mail_spool = strdup(buf);
+			current_mail_spool = strndup(buf, text_buffer_size);
 		}
 	}
 #endif
@@ -8696,7 +8696,7 @@ int main(int argc, char **argv)
 					free(text);
 					text = 0;
 				}
-				text = strdup(optarg);
+				text = strndup(optarg, max_user_text);
 				convert_escapes(text);
 				break;
 

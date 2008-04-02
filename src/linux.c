@@ -192,22 +192,22 @@ char *get_ioscheduler(char *disk)
 	char buf[128];
 
 	if (!disk)
-		return strdup("n/a");
+		return strndup("n/a", text_buffer_size);
 
 	snprintf(buf, 127, "/sys/block/%s/queue/scheduler", disk);
 	if ((fp = fopen(buf, "r")) == NULL) {
-		return strdup("n/a");
+		return strndup("n/a", text_buffer_size);
 	}
 	while (!feof(fp)) {
 		fscanf(fp, "%127s", buf);
 		if (buf[0] == '[') {
 			buf[strlen(buf) - 1] = '\0';
 			fclose(fp);
-			return strdup(buf + 1);
+			return strndup(buf + 1, text_buffer_size);
 		}
 	}
 	fclose(fp);
-	return strdup("n/a");
+	return strndup("n/a", text_buffer_size);
 }
 
 int interface_up(const char *dev)
@@ -236,9 +236,9 @@ int interface_up(const char *dev)
 #define SAVE_SET_STRING(x, y) \
 	if (x && strcmp((char *)x, (char *)y)) { \
 		free(x); \
-		x = strdup("multiple"); \
+		x = strndup("multiple", text_buffer_size); \
 	} else if (!x) { \
-		x = strdup(y); \
+		x = strndup(y, text_buffer_size); \
 	}
 
 void update_gateway_info(void)
@@ -284,7 +284,7 @@ void update_gateway_info(void)
 CLOSE_FAIL:
 	fclose(fp);
 FAIL:
-	info.gw_info.iface = info.gw_info.ip = strdup("failed");
+	info.gw_info.iface = info.gw_info.ip = strndup("failed", text_buffer_size);
 	return;
 }
 

@@ -760,7 +760,7 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 	for (i = 0; i < n_processes; i++) {
 		if (!((p[i].ki_flag & P_SYSTEM)) && p[i].ki_comm != NULL) {
 			processes[j].pid = p[i].ki_pid;
-			processes[j].name = strdup(p[i].ki_comm);
+			processes[j].name = strndup(p[i].ki_comm, text_buffer_size);
 			processes[j].amount = 100.0 * p[i].ki_pctcpu / FSCALE;
 			processes[j].totalmem = (float) (p[i].ki_rssize /
 				(float) total_pages) * 100.0;
@@ -778,7 +778,7 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 		tmp->pid = processes[i].pid;
 		tmp->amount = processes[i].amount;
 		tmp->totalmem = processes[i].totalmem;
-		tmp->name = strdup(processes[i].name);
+		tmp->name = strndup(processes[i].name, text_buffer_size);
 		tmp->rss = processes[i].rss;
 		tmp->vsize = processes[i].vsize;
 
@@ -798,7 +798,7 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 		tmp->pid = processes[i].pid;
 		tmp->amount = processes[i].amount;
 		tmp->totalmem = processes[i].totalmem;
-		tmp->name = strdup(processes[i].name);
+		tmp->name = strndup(processes[i].name, text_buffer_size);
 		tmp->rss = processes[i].rss;
 		tmp->vsize = processes[i].vsize;
 

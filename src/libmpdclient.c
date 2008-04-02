@@ -293,8 +293,8 @@ static mpd_ReturnElement *mpd_newReturnElement(const char *name,
 {
 	mpd_ReturnElement *ret = malloc(sizeof(mpd_ReturnElement));
 
-	ret->name = strdup(name);
-	ret->value = strdup(value);
+	ret->name = strndup(name, text_buffer_size);
+	ret->value = strndup(value, text_buffer_size);
 
 	return ret;
 }
@@ -415,7 +415,7 @@ mpd_Connection *mpd_newConnection(const char *host, int port, float timeout)
 	}
 
 	*rt = '\0';
-	output = strdup(connection->buffer);
+	output = strndup(connection->buffer, text_buffer_size);
 	strcpy(connection->buffer, rt + 1);
 	connection->buflen = strlen(connection->buffer);
 
@@ -768,7 +768,7 @@ mpd_Status *mpd_getStatus(mpd_Connection *connection)
 				status->totalTime = atoi(tok + 1);
 			}
 		} else if (strcmp(re->name, "error") == 0) {
-			status->error = strdup(re->value);
+			status->error = strndup(re->value, text_buffer_size);
 		} else if (strcmp(re->name, "xfade") == 0) {
 			status->crossfade = atoi(re->value);
 		} else if (strcmp(re->name, "updating_db") == 0) {
@@ -1018,37 +1018,37 @@ mpd_Song *mpd_songDup(mpd_Song *song)
 	mpd_Song *ret = mpd_newSong();
 
 	if (song->file) {
-		ret->file = strdup(song->file);
+		ret->file = strndup(song->file, text_buffer_size);
 	}
 	if (song->artist) {
-		ret->artist = strdup(song->artist);
+		ret->artist = strndup(song->artist, text_buffer_size);
 	}
 	if (song->album) {
-		ret->album = strdup(song->album);
+		ret->album = strndup(song->album, text_buffer_size);
 	}
 	if (song->title) {
-		ret->title = strdup(song->title);
+		ret->title = strndup(song->title, text_buffer_size);
 	}
 	if (song->track) {
-		ret->track = strdup(song->track);
+		ret->track = strndup(song->track, text_buffer_size);
 	}
 	if (song->name) {
-		ret->name = strdup(song->name);
+		ret->name = strndup(song->name, text_buffer_size);
 	}
 	if (song->date) {
-		ret->date = strdup(song->date);
+		ret->date = strndup(song->date, text_buffer_size);
 	}
 	if (song->genre) {
-		ret->genre = strdup(song->genre);
+		ret->genre = strndup(song->genre, text_buffer_size);
 	}
 	if (song->composer) {
-		ret->composer = strdup(song->composer);
+		ret->composer = strndup(song->composer, text_buffer_size);
 	}
 	if (song->disc) {
-		ret->disc = strdup(song->disc);
+		ret->disc = strndup(song->disc, text_buffer_size);
 	}
 	if (song->comment) {
-		ret->comment = strdup(song->comment);
+		ret->comment = strndup(song->comment, text_buffer_size);
 	}
 	ret->time = song->time;
 	ret->pos = song->pos;
@@ -1090,7 +1090,7 @@ mpd_Directory *mpd_directoryDup(mpd_Directory *directory)
 	mpd_Directory *ret = mpd_newDirectory();
 
 	if (directory->path) {
-		ret->path = strdup(directory->path);
+		ret->path = strndup(directory->path, text_buffer_size);
 	}
 
 	return ret;
@@ -1128,7 +1128,7 @@ mpd_PlaylistFile *mpd_playlistFileDup(mpd_PlaylistFile *playlist)
 	mpd_PlaylistFile *ret = mpd_newPlaylistFile();
 
 	if (playlist->path) {
-		ret->path = strdup(playlist->path);
+		ret->path = strndup(playlist->path, text_buffer_size);
 	}
 
 	return ret;
@@ -1190,19 +1190,19 @@ mpd_InfoEntity *mpd_getNextInfoEntity(mpd_Connection *connection)
 			entity = mpd_newInfoEntity();
 			entity->type = MPD_INFO_ENTITY_TYPE_SONG;
 			entity->info.song = mpd_newSong();
-			entity->info.song->file = strdup(connection->returnElement->value);
+			entity->info.song->file = strndup(connection->returnElement->value, text_buffer_size);
 		} else if (strcmp(connection->returnElement->name, "directory") == 0) {
 			entity = mpd_newInfoEntity();
 			entity->type = MPD_INFO_ENTITY_TYPE_DIRECTORY;
 			entity->info.directory = mpd_newDirectory();
 			entity->info.directory->path =
-				strdup(connection->returnElement->value);
+				strndup(connection->returnElement->value, text_buffer_size);
 		} else if (strcmp(connection->returnElement->name, "playlist") == 0) {
 			entity = mpd_newInfoEntity();
 			entity->type = MPD_INFO_ENTITY_TYPE_PLAYLISTFILE;
 			entity->info.playlistFile = mpd_newPlaylistFile();
 			entity->info.playlistFile->path =
-				strdup(connection->returnElement->value);
+				strndup(connection->returnElement->value, text_buffer_size);
 		} else if (strcmp(connection->returnElement->name, "cpos") == 0) {
 			entity = mpd_newInfoEntity();
 			entity->type = MPD_INFO_ENTITY_TYPE_SONG;
@@ -1234,19 +1234,19 @@ mpd_InfoEntity *mpd_getNextInfoEntity(mpd_Connection *connection)
 		if (entity->type == MPD_INFO_ENTITY_TYPE_SONG && strlen(re->value)) {
 			if (!entity->info.song->artist
 					&& strcmp(re->name, "Artist") == 0) {
-				entity->info.song->artist = strdup(re->value);
+				entity->info.song->artist = strndup(re->value, text_buffer_size);
 			} else if (!entity->info.song->album
 					&& strcmp(re->name, "Album") == 0) {
-				entity->info.song->album = strdup(re->value);
+				entity->info.song->album = strndup(re->value, text_buffer_size);
 			} else if (!entity->info.song->title
 					&& strcmp(re->name, "Title") == 0) {
-				entity->info.song->title = strdup(re->value);
+				entity->info.song->title = strndup(re->value, text_buffer_size);
 			} else if (!entity->info.song->track
 					&& strcmp(re->name, "Track") == 0) {
-				entity->info.song->track = strdup(re->value);
+				entity->info.song->track = strndup(re->value, text_buffer_size);
 			} else if (!entity->info.song->name
 					&& strcmp(re->name, "Name") == 0) {
-				entity->info.song->name = strdup(re->value);
+				entity->info.song->name = strndup(re->value, text_buffer_size);
 			} else if (entity->info.song->time == MPD_SONG_NO_TIME
 					&& strcmp(re->name, "Time") == 0) {
 				entity->info.song->time = atoi(re->value);
@@ -1258,22 +1258,22 @@ mpd_InfoEntity *mpd_getNextInfoEntity(mpd_Connection *connection)
 				entity->info.song->id = atoi(re->value);
 			} else if (!entity->info.song->date
 					&& strcmp(re->name, "Date") == 0) {
-				entity->info.song->date = strdup(re->value);
+				entity->info.song->date = strndup(re->value, text_buffer_size);
 			} else if (!entity->info.song->genre
 					&& strcmp(re->name, "Genre") == 0) {
-				entity->info.song->genre = strdup(re->value);
+				entity->info.song->genre = strndup(re->value, text_buffer_size);
 			} else if (!entity->info.song->composer
 					&& strcmp(re->name, "Composer") == 0) {
-				entity->info.song->composer = strdup(re->value);
+				entity->info.song->composer = strndup(re->value, text_buffer_size);
 			} else if (!entity->info.song->performer
 					&& strcmp(re->name, "Performer") == 0) {
-				entity->info.song->performer = strdup(re->value);
+				entity->info.song->performer = strndup(re->value, text_buffer_size);
 			} else if (!entity->info.song->disc
 					&& strcmp(re->name, "Disc") == 0) {
-				entity->info.song->disc = strdup(re->value);
+				entity->info.song->disc = strndup(re->value, text_buffer_size);
 			} else if (!entity->info.song->comment
 					&& strcmp(re->name, "Comment") == 0) {
-				entity->info.song->comment = strdup(re->value);
+				entity->info.song->comment = strndup(re->value, text_buffer_size);
 			}
 		} else if (entity->type == MPD_INFO_ENTITY_TYPE_DIRECTORY) {
 		} else if (entity->type == MPD_INFO_ENTITY_TYPE_PLAYLISTFILE) {
@@ -1298,7 +1298,7 @@ static char *mpd_getNextReturnElementNamed(mpd_Connection *connection,
 		mpd_ReturnElement *re = connection->returnElement;
 
 		if (strcmp(re->name, name) == 0) {
-			return strdup(re->value);
+			return strndup(re->value, text_buffer_size);
 		}
 		mpd_getNextReturnElement(connection);
 	}
@@ -1835,7 +1835,7 @@ mpd_OutputEntity *mpd_getNextOutput(mpd_Connection *connection)
 			}
 			output->id = atoi(re->value);
 		} else if (strcmp(re->name, "outputname") == 0) {
-			output->name = strdup(re->value);
+			output->name = strndup(re->value, text_buffer_size);
 		} else if (strcmp(re->name, "outputenabled") == 0) {
 			output->enabled = atoi(re->value);
 		}
@@ -1923,9 +1923,9 @@ void mpd_startSearch(mpd_Connection *connection, int exact)
 	}
 
 	if (exact) {
-		connection->request = strdup("find");
+		connection->request = strndup("find", text_buffer_size);
 	} else {
-		connection->request = strdup("search");
+		connection->request = strndup("search", text_buffer_size);
 	}
 }
 
@@ -1937,7 +1937,7 @@ void mpd_startStatsSearch(mpd_Connection *connection)
 		return;
 	}
 
-	connection->request = strdup("count");
+	connection->request = strndup("count", text_buffer_size);
 }
 
 void mpd_startPlaylistSearch(mpd_Connection *connection, int exact)
@@ -1949,9 +1949,9 @@ void mpd_startPlaylistSearch(mpd_Connection *connection, int exact)
 	}
 
 	if (exact) {
-		connection->request = strdup("playlistfind");
+		connection->request = strndup("playlistfind", text_buffer_size);
 	} else {
-		connection->request = strdup("playlistsearch");
+		connection->request = strndup("playlistsearch", text_buffer_size);
 	}
 }
 
@@ -2007,7 +2007,7 @@ void mpd_addConstraintSearch(mpd_Connection *connection, int type,
 		return;
 	}
 
-	string = strdup(connection->request);
+	string = strndup(connection->request, text_buffer_size);
 	strtype = mpdTagItemKeys[type];
 	arg = mpd_sanitizeArg(name);
 

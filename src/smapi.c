@@ -50,7 +50,7 @@ char *smapi_read_str(const char *path)
 		fscanf(fp, "%255s\n", str);
 		fclose(fp);
 	}
-	return strdup(str);
+	return strndup(str, text_buffer_size);
 }
 
 int smapi_read_int(const char *path)

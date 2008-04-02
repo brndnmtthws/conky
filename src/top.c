@@ -183,7 +183,7 @@ static int process_parse_stat(struct process *process)
 	if (process->name) {
 		free(process->name);
 	}
-	process->name = strdup(deparenthesised_name);
+	process->name = strndup(deparenthesised_name, text_buffer_size);
 	process->rss *= getpagesize();
 
 	if (!cur->memmax) {

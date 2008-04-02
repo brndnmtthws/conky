@@ -143,7 +143,7 @@ struct net_stat *get_net_stat(const char *dev)
 	if (i == 16) {
 		for (i = 0; i < 16; i++) {
 			if (netstats[i].dev == 0) {
-				netstats[i].dev = strdup(dev);
+				netstats[i].dev = strndup(dev, text_buffer_size);
 				return &netstats[i];
 			}
 		}
@@ -195,7 +195,7 @@ void update_dns_data(void)
 			line[strlen(line) - 1] = '\0';	// remove trailing newline
 			data->nscount++;
 			data->ns_list = realloc(data->ns_list, data->nscount * sizeof(char *));
-			data->ns_list[data->nscount - 1] = strdup(line + 11);
+			data->ns_list[data->nscount - 1] = strndup(line + 11, text_buffer_size);
 		}
 	}
 OUT:

@@ -124,7 +124,7 @@ void mbox_scan(char *args, char *output, size_t max_len)
 			start[(long) (strrchr(mbox_mail_spool, '"') - start)] = '\0';
 			strncpy(mbox_mail_spool, start, DEFAULT_TEXT_BUFFER_SIZE);
 		} else {
-			char *copy_args = strdup(args);
+			char *copy_args = strndup(args, text_buffer_size);
 			char *tmp = strtok(copy_args, " ");
 			char *start = tmp;
 

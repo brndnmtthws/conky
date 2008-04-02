@@ -171,7 +171,7 @@ static inline int parse_rss_2_0(PRSS *res, xmlNodePtr root)
 		}
 	}
 
-	res->version = strdup("2.0");
+	res->version = strndup("2.0", text_buffer_size);
 	res->items = malloc(items * sizeof(PRSS_Item));
 	res->item_count = 0;
 
@@ -200,7 +200,7 @@ static inline int parse_rss_1_0(PRSS *res, xmlNodePtr root)
 		}
 	}
 
-	res->version = strdup("1.0");
+	res->version = strndup("1.0", text_buffer_size);
 	res->items = malloc(items * sizeof(PRSS_Item));
 	res->item_count = 0;
 
