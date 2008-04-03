@@ -3,7 +3,7 @@
 ##
 ## $Id$
 ##
-syntax "conky" "\.*conkyrc.*$"
+syntax "conky" "(\.*conkyrc.*$|conky.conf)"
 
 ## Configuration items
 color green "\<(alignment|background|border_margin|border_width|cpu_avg_samples|default_color|default_shade_color|default_outline_color|double_buffer|draw_borders|draw_graph_borders|draw_shades|draw_outline|font|gap_x|gap_y|imap|mail_spool|max_port_monitor_connections|max_specials|max_user_text|maximum_width|minimum_size|mpd_host|mpd_port|mpd_password|music_player_interval|net_avg_samples|no_buffers|out_to_console|override_utf8_locale|own_window|own_window_class|own_window_colour|own_window_hints|own_window_title|own_window_transparent|own_window_type|pad_percents|pop3|stippled_borders|total_run_times|update_interval|uppercase|use_spacer|use_xft|xftalpha|xftfont)\>"
