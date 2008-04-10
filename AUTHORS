@@ -19,6 +19,9 @@ affinity <affy at users dot sourceforge dot net>
 akash <akash at users dot sourceforge dot net>
   battery_percent and battery_bar
 
+Aseem Mohanty <amohanty at myrealbox dot com>
+  if_up patch
+
 Ben Kibbey <benkibbey at users dot sourceforge dot net>
   $tail fifo patch
   multiple mailbox patch
@@ -169,7 +172,7 @@ killfire
 
 Lassi Selander <sleipner at users dot sourceforge dot net>
   XMMS2 patch
-  XMMS2 fixes patch
+  XMMS2 fixes
 
 Lauri Hakkarainen <b10nik at users dot sourceforge dot net>
   Some translating, web and other stuff
@@ -202,6 +205,9 @@ nathanj439 <nathanj439 at users dot sourceforge dot net>
 
 Nikos Ntarmos <ntarmos at users dot sourceforge dot net>
   FreeBSD total memory patch
+
+norsetto <norsetto at ubuntu dot com>
+  fix SIGUSR1/SIGHUP segfault
 
 Pascal Eberhard <pascal dor eberhard at gmail dot com>
   graph and bar fix for right alignment
@@ -285,6 +291,9 @@ Warren Dukes <warren dot dukes at gmail dot com>
 
 warudemaru <warudemaru at users dot sourceforge dot net>
   rss and vsize for top
+
+wedge <wedgeant at users dot sourceforge dot net>
+  battery time fix for 2.6.24
 
 William DiPlacido <bimbasaari at yahoo dot com>
   Frequency from /proc/cpuinfo

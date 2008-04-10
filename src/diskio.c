@@ -30,6 +30,20 @@
 #include "conky.h"
 #include <limits.h>
 #include <stdio.h>
+/* The following ifdefs were adapted from gkrellm */
+#include <linux/major.h>
+
+#if !defined(MD_MAJOR)
+#define MD_MAJOR 9
+#endif
+
+#if !defined(LVM_BLK_MAJOR)
+#define LVM_BLK_MAJOR 58
+#endif
+
+#if !defined(NBD_MAJOR)
+#define NBD_MAJOR 43
+#endif
 
 static struct diskio_stat diskio_stats_[MAX_DISKIO_STATS];
 struct diskio_stat *diskio_stats = diskio_stats_;
@@ -112,3 +126,107 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 	new->last_write = UINT_MAX;
 	return new;
 }
+
+void update_diskio(void)
+{
+	static unsigned int last = UINT_MAX;
+	static unsigned int last_read = UINT_MAX;
+	static unsigned int last_write = UINT_MAX;
+	FILE *fp;
+	static int rep = 0;
+
+	char buf[512], devbuf[64];
+	int i;
+	unsigned int major, minor;
+	unsigned int current = 0;
+	unsigned int current_read = 0;
+	unsigned int current_write = 0;
+	unsigned int reads, writes = 0;
+	int col_count = 0;
+	int tot, tot_read, tot_write;
+
+	if (!(fp = open_file("/proc/diskstats", &rep))) {
+		diskio_value = 0;
+		return;
+	}
+
+	/* read reads and writes from all disks (minor = 0), including cd-roms
+	 * and floppies, and sum them up */
+	while (!feof(fp)) {
+		fgets(buf, 512, fp);
+		col_count = sscanf(buf, "%u %u %s %*u %*u %u %*u %*u %*u %u", &major,
+			&minor, devbuf, &reads, &writes);
+		/* ignore subdevices (they have only 3 matching entries in their line)
+		 * and virtual devices (LVM, network block devices, RAM disks, Loopback)
+		 *
+		 * XXX: ignore devices which are part of a SW RAID (MD_MAJOR) */
+		if (col_count == 5 && major != LVM_BLK_MAJOR && major != NBD_MAJOR
+				&& major != RAMDISK_MAJOR && major != LOOP_MAJOR) {
+			current += reads + writes;
+			current_read += reads;
+			current_write += writes;
+		} else {
+			col_count = sscanf(buf, "%u %u %s %*u %u %*u %u",
+				&major, &minor, devbuf, &reads, &writes);
+			if (col_count != 5) {
+				continue;
+			}
+		}
+		for (i = 0; i < MAX_DISKIO_STATS; i++) {
+			if (diskio_stats[i].dev &&
+					strncmp(devbuf, diskio_stats[i].dev, text_buffer_size) == 0) {
+				diskio_stats[i].current =
+					(reads + writes - diskio_stats[i].last) / 2;
+				diskio_stats[i].current_read =
+					(reads - diskio_stats[i].last_read) / 2;
+				diskio_stats[i].current_write =
+					(writes - diskio_stats[i].last_write) / 2;
+				if (reads + writes < diskio_stats[i].last) {
+					diskio_stats[i].current = 0;
+				}
+				if (reads < diskio_stats[i].last_read) {
+					diskio_stats[i].current_read = 0;
+					diskio_stats[i].current = diskio_stats[i].current_write;
+				}
+				if (writes < diskio_stats[i].last_write) {
+					diskio_stats[i].current_write = 0;
+					diskio_stats[i].current = diskio_stats[i].current_read;
+				}
+				diskio_stats[i].last = reads + writes;
+				diskio_stats[i].last_read = reads;
+				diskio_stats[i].last_write = writes;
+			}
+		}
+	}
+
+	/* since the values in /proc/diststats are absolute, we have to substract
+	 * our last reading. The numbers stand for "sectors read", and we therefore
+	 * have to divide by two to get KB */
+	tot = ((double) (current - last) / 2);
+	tot_read = ((double) (current_read - last_read) / 2);
+	tot_write = ((double) (current_write - last_write) / 2);
+
+	if (last_read > current_read) {
+		tot_read = 0;
+	}
+	if (last_write > current_write) {
+		tot_write = 0;
+	}
+
+	if (last > current) {
+		/* we hit this either if it's the very first time we run this, or
+		 * when /proc/diskstats overflows; while 0 is not correct, it's at
+		 * least not way off */
+		tot = 0;
+	}
+	last = current;
+	last_read = current_read;
+	last_write = current_write;
+
+	diskio_value = tot;
+	diskio_read_value = tot_read;
+	diskio_write_value = tot_write;
+
+	fclose(fp);
+}
+

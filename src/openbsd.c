@@ -628,7 +628,8 @@ void update_wifi_stats()
 		bzero(&ifmr, sizeof(ifmr));
 		strlcpy(ifmr.ifm_name, ifa->ifa_name, IFNAMSIZ);
 		if (ioctl(s, SIOCGIFMEDIA, (caddr_t) &ifmr) < 0) {
-			goto cleanup;
+			close(s);
+			return;
 		}
 
 		/* We can monitor only wireless interfaces

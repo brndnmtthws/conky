@@ -1555,14 +1555,23 @@ void *imap_thread(void *arg)
 	unsigned int old_unseen = UINT_MAX;
 	unsigned int old_messages = UINT_MAX;
 	struct stat stat_buf;
-	struct hostent *he;
+	struct hostent he, *he_res = 0;
+	int he_errno;
+	char hostbuff[2048];
 	struct sockaddr_in their_addr;	// connector's address information
 	struct mail_s *mail = (struct mail_s *)arg;
 
-	if ((he = gethostbyname(mail->host)) == NULL) {	// get the host info
+#ifdef HAVE_GETHOSTBYNAME_R
+	if (gethostbyname_r(mail->host, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
+		ERR("IMAP gethostbyname_r: %s", hstrerror(h_errno));
+		exit(1);
+	}
+#else /* HAVE_GETHOSTBYNAME_R */
+	if ((he_res = gethostbyname(mail->host)) == NULL) {	// get the host info
 		herror("gethostbyname");
 		exit(1);
 	}
+#endif /* HAVE_GETHOSTBYNAME_R */
 	while (fail < 5) {
 		struct timeval timeout;
 		int res;
@@ -1570,155 +1579,156 @@ void *imap_thread(void *arg)
 
 		if (fail > 0) {
 			ERR("Trying IMAP connection again for %s@%s (try %i/5)",
-				mail->user, mail->host, fail + 1);
+					mail->user, mail->host, fail + 1);
 		}
-		if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-			perror("socket");
-			fail++;
-			goto next_iteration;
-		}
+		do {
+			if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
+				perror("socket");
+				fail++;
+				break;
+			}
 
-		// host byte order
-		their_addr.sin_family = AF_INET;
-		// short, network byte order
-		their_addr.sin_port = htons(mail->port);
-		their_addr.sin_addr = *((struct in_addr *) he->h_addr);
-		// zero the rest of the struct
-		memset(&(their_addr.sin_zero), '\0', 8);
+			// host byte order
+			their_addr.sin_family = AF_INET;
+			// short, network byte order
+			their_addr.sin_port = htons(mail->port);
+			their_addr.sin_addr = *((struct in_addr *) he_res->h_addr);
+			// zero the rest of the struct
+			memset(&(their_addr.sin_zero), '\0', 8);
 
-		if (connect(sockfd, (struct sockaddr *) &their_addr,
-				sizeof(struct sockaddr)) == -1) {
-			perror("connect");
-			fail++;
-			goto next_iteration;
-		}
+			if (connect(sockfd, (struct sockaddr *) &their_addr,
+						sizeof(struct sockaddr)) == -1) {
+				perror("connect");
+				fail++;
+				break;
+			}
 
-		timeout.tv_sec = 60;	// 60 second timeout i guess
-		timeout.tv_usec = 0;
-		FD_ZERO(&fdset);
-		FD_SET(sockfd, &fdset);
-		res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
-		if (res > 0) {
-			if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
-				perror("recv");
+			timeout.tv_sec = 60;	// 60 second timeout i guess
+			timeout.tv_usec = 0;
+			FD_ZERO(&fdset);
+			FD_SET(sockfd, &fdset);
+			res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+			if (res > 0) {
+				if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
+					perror("recv");
+					fail++;
+					break;
+				}
+			} else {
+				ERR("IMAP connection failed: timeout");
 				fail++;
-				goto next_iteration;
+				break;
 			}
-		} else {
-			ERR("IMAP connection failed: timeout");
-			fail++;
-			goto next_iteration;
-		}
-		recvbuf[numbytes] = '\0';
-		if (strstr(recvbuf, "* OK") != recvbuf) {
-			ERR("IMAP connection failed, probably not an IMAP server");
-			fail++;
-			goto next_iteration;
-		}
-		strncpy(sendbuf, "a1 login ", MAXDATASIZE);
-		strncat(sendbuf, mail->user, MAXDATASIZE - strlen(sendbuf) - 1);
-		strncat(sendbuf, " ", MAXDATASIZE - strlen(sendbuf) - 1);
-		strncat(sendbuf, mail->pass, MAXDATASIZE - strlen(sendbuf) - 1);
-		strncat(sendbuf, "\r\n", MAXDATASIZE - strlen(sendbuf) - 1);
-		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
-			perror("send a1");
-			fail++;
-			goto next_iteration;
-		}
-		timeout.tv_sec = 60;	// 60 second timeout i guess
-		timeout.tv_usec = 0;
-		FD_ZERO(&fdset);
-		FD_SET(sockfd, &fdset);
-		res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
-		if (res > 0) {
-			if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
-				perror("recv a1");
+			recvbuf[numbytes] = '\0';
+			if (strstr(recvbuf, "* OK") != recvbuf) {
+				ERR("IMAP connection failed, probably not an IMAP server");
 				fail++;
-				goto next_iteration;
+				break;
 			}
-		}
-		recvbuf[numbytes] = '\0';
-		if (strstr(recvbuf, "a1 OK") == NULL) {
-			ERR("IMAP server login failed: %s", recvbuf);
-			fail++;
-			goto next_iteration;
-		}
-		strncpy(sendbuf, "a2 STATUS ", MAXDATASIZE);
-		strncat(sendbuf, mail->folder, MAXDATASIZE - strlen(sendbuf) - 1);
-		strncat(sendbuf, " (MESSAGES UNSEEN)\r\n",
-			MAXDATASIZE - strlen(sendbuf) - 1);
-		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
-			perror("send a2");
-			fail++;
-			goto next_iteration;
-		}
-		timeout.tv_sec = 60;	// 60 second timeout i guess
-		timeout.tv_usec = 0;
-		FD_ZERO(&fdset);
-		FD_SET(sockfd, &fdset);
-		res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
-		if (res > 0) {
-			if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
-				perror("recv a2");
+			strncpy(sendbuf, "a1 login ", MAXDATASIZE);
+			strncat(sendbuf, mail->user, MAXDATASIZE - strlen(sendbuf) - 1);
+			strncat(sendbuf, " ", MAXDATASIZE - strlen(sendbuf) - 1);
+			strncat(sendbuf, mail->pass, MAXDATASIZE - strlen(sendbuf) - 1);
+			strncat(sendbuf, "\r\n", MAXDATASIZE - strlen(sendbuf) - 1);
+			if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
+				perror("send a1");
 				fail++;
-				goto next_iteration;
+				break;
 			}
-		}
-		recvbuf[numbytes] = '\0';
-		if (strstr(recvbuf, "a2 OK") == NULL) {
-			ERR("IMAP status failed: %s", recvbuf);
-			fail++;
-			goto next_iteration;
-		}
-		// now we get the data
-		reply = strstr(recvbuf, " (MESSAGES ");
-		reply += 2;
-		*strchr(reply, ')') = '\0';
-		if (reply == NULL) {
-			ERR("Error parsing IMAP response: %s", recvbuf);
-			fail++;
-			goto next_iteration;
-		} else {
-			timed_thread_lock(mail->p_timed_thread);
-			sscanf(reply, "MESSAGES %lu UNSEEN %lu", &mail->messages,
-				&mail->unseen);
-			timed_thread_unlock(mail->p_timed_thread);
-		}
-		strncpy(sendbuf, "a3 logout\r\n", MAXDATASIZE);
-		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
-			perror("send a3");
-			fail++;
-			goto next_iteration;
-		}
-		timeout.tv_sec = 60;	// 60 second timeout i guess
-		timeout.tv_usec = 0;
-		FD_ZERO(&fdset);
-		FD_SET(sockfd, &fdset);
-		res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
-		if (res > 0) {
-			if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
-				perror("recv a3");
+			timeout.tv_sec = 60;	// 60 second timeout i guess
+			timeout.tv_usec = 0;
+			FD_ZERO(&fdset);
+			FD_SET(sockfd, &fdset);
+			res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+			if (res > 0) {
+				if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
+					perror("recv a1");
+					fail++;
+					break;
+				}
+			}
+			recvbuf[numbytes] = '\0';
+			if (strstr(recvbuf, "a1 OK") == NULL) {
+				ERR("IMAP server login failed: %s", recvbuf);
 				fail++;
-				goto next_iteration;
+				break;
 			}
-		}
-		recvbuf[numbytes] = '\0';
-		if (strstr(recvbuf, "a3 OK") == NULL) {
-			ERR("IMAP logout failed: %s", recvbuf);
-			fail++;
-			goto next_iteration;
-		}
-		if (strlen(mail->command) > 1 && (mail->unseen > old_unseen
-				|| (mail->messages > old_messages && mail->unseen > 0))) {
-			// new mail goodie
-			if (system(mail->command) == -1) {
-				perror("system()");
+			strncpy(sendbuf, "a2 STATUS ", MAXDATASIZE);
+			strncat(sendbuf, mail->folder, MAXDATASIZE - strlen(sendbuf) - 1);
+			strncat(sendbuf, " (MESSAGES UNSEEN)\r\n",
+					MAXDATASIZE - strlen(sendbuf) - 1);
+			if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
+				perror("send a2");
+				fail++;
+				break;
 			}
-		}
-		fail = 0;
-		old_unseen = mail->unseen;
-		old_messages = mail->messages;
-next_iteration:
+			timeout.tv_sec = 60;	// 60 second timeout i guess
+			timeout.tv_usec = 0;
+			FD_ZERO(&fdset);
+			FD_SET(sockfd, &fdset);
+			res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+			if (res > 0) {
+				if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
+					perror("recv a2");
+					fail++;
+					break;
+				}
+			}
+			recvbuf[numbytes] = '\0';
+			if (strstr(recvbuf, "a2 OK") == NULL) {
+				ERR("IMAP status failed: %s", recvbuf);
+				fail++;
+				break;
+			}
+			// now we get the data
+			reply = strstr(recvbuf, " (MESSAGES ");
+			reply += 2;
+			*strchr(reply, ')') = '\0';
+			if (reply == NULL) {
+				ERR("Error parsing IMAP response: %s", recvbuf);
+				fail++;
+				break;
+			} else {
+				timed_thread_lock(mail->p_timed_thread);
+				sscanf(reply, "MESSAGES %lu UNSEEN %lu", &mail->messages,
+						&mail->unseen);
+				timed_thread_unlock(mail->p_timed_thread);
+			}
+			strncpy(sendbuf, "a3 logout\r\n", MAXDATASIZE);
+			if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
+				perror("send a3");
+				fail++;
+				break;
+			}
+			timeout.tv_sec = 60;	// 60 second timeout i guess
+			timeout.tv_usec = 0;
+			FD_ZERO(&fdset);
+			FD_SET(sockfd, &fdset);
+			res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+			if (res > 0) {
+				if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
+					perror("recv a3");
+					fail++;
+					break;
+				}
+			}
+			recvbuf[numbytes] = '\0';
+			if (strstr(recvbuf, "a3 OK") == NULL) {
+				ERR("IMAP logout failed: %s", recvbuf);
+				fail++;
+				break;
+			}
+			if (strlen(mail->command) > 1 && (mail->unseen > old_unseen
+						|| (mail->messages > old_messages && mail->unseen > 0))) {
+				// new mail goodie
+				if (system(mail->command) == -1) {
+					perror("system()");
+				}
+			}
+			fail = 0;
+			old_unseen = mail->unseen;
+			old_messages = mail->messages;
+		} while (0);
 		if ((fstat(sockfd, &stat_buf) == 0) && S_ISSOCK(stat_buf.st_mode)) {
 			/* if a valid socket, close it */
 			close(sockfd);
@@ -1741,14 +1751,23 @@ void *pop3_thread(void *arg)
 	int fail = 0;
 	unsigned int old_unseen = UINT_MAX;
 	struct stat stat_buf;
-	struct hostent *he;
+	struct hostent he, *he_res = 0;
+	int he_errno;
+	char hostbuff[2048];
 	struct sockaddr_in their_addr;	// connector's address information
 	struct mail_s *mail = (struct mail_s *)arg;
 
-	if ((he = gethostbyname(mail->host)) == NULL) {	// get the host info
+#ifdef HAVE_GETHOSTBYNAME_R
+	if (gethostbyname_r(mail->host, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
+		ERR("POP3 gethostbyname_r: %s", hstrerror(h_errno));
+		exit(1);
+	}
+#else /* HAVE_GETHOSTBYNAME_R */
+	if ((he_res = gethostbyname(mail->host)) == NULL) {	// get the host info
 		herror("gethostbyname");
 		exit(1);
 	}
+#endif /* HAVE_GETHOSTBYNAME_R */
 	while (fail < 5) {
 		struct timeval timeout;
 		int res;
@@ -1756,171 +1775,172 @@ void *pop3_thread(void *arg)
 
 		if (fail > 0) {
 			ERR("Trying POP3 connection again for %s@%s (try %i/5)",
-				mail->user, mail->host, fail + 1);
+					mail->user, mail->host, fail + 1);
 		}
-		if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-			perror("socket");
-			fail++;
-			goto next_iteration;
-		}
+		do {
+			if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
+				perror("socket");
+				fail++;
+				break;
+			}
 
-		// host byte order
-		their_addr.sin_family = AF_INET;
-		// short, network byte order
-		their_addr.sin_port = htons(mail->port);
-		their_addr.sin_addr = *((struct in_addr *) he->h_addr);
-		// zero the rest of the struct
-		memset(&(their_addr.sin_zero), '\0', 8);
+			// host byte order
+			their_addr.sin_family = AF_INET;
+			// short, network byte order
+			their_addr.sin_port = htons(mail->port);
+			their_addr.sin_addr = *((struct in_addr *) he_res->h_addr);
+			// zero the rest of the struct
+			memset(&(their_addr.sin_zero), '\0', 8);
 
-		if (connect(sockfd, (struct sockaddr *) &their_addr,
-				sizeof(struct sockaddr)) == -1) {
-			perror("connect");
-			fail++;
-			goto next_iteration;
-		}
+			if (connect(sockfd, (struct sockaddr *) &their_addr,
+						sizeof(struct sockaddr)) == -1) {
+				perror("connect");
+				fail++;
+				break;
+			}
 
-		timeout.tv_sec = 60;	// 60 second timeout i guess
-		timeout.tv_usec = 0;
-		FD_ZERO(&fdset);
-		FD_SET(sockfd, &fdset);
-		res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
-		if (res > 0) {
-			if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
-				perror("recv");
+			timeout.tv_sec = 60;	// 60 second timeout i guess
+			timeout.tv_usec = 0;
+			FD_ZERO(&fdset);
+			FD_SET(sockfd, &fdset);
+			res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+			if (res > 0) {
+				if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
+					perror("recv");
+					fail++;
+					break;
+				}
+			} else {
+				ERR("POP3 connection failed: timeout\n");
 				fail++;
-				goto next_iteration;
+				break;
 			}
-		} else {
-			ERR("POP3 connection failed: timeout\n");
-			fail++;
-			goto next_iteration;
-		}
-		recvbuf[numbytes] = '\0';
-		if (strstr(recvbuf, "+OK ") != recvbuf) {
-			ERR("POP3 connection failed, probably not a POP3 server");
-			fail++;
-			goto next_iteration;
-		}
-		strncpy(sendbuf, "USER ", MAXDATASIZE);
-		strncat(sendbuf, mail->user, MAXDATASIZE - strlen(sendbuf) - 1);
-		strncat(sendbuf, "\r\n", MAXDATASIZE - strlen(sendbuf) - 1);
-		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
-			perror("send USER");
-			fail++;
-			goto next_iteration;
-		}
-		timeout.tv_sec = 60;	// 60 second timeout i guess
-		timeout.tv_usec = 0;
-		FD_ZERO(&fdset);
-		FD_SET(sockfd, &fdset);
-		res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
-		if (res > 0) {
-			if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
-				perror("recv USER");
+			recvbuf[numbytes] = '\0';
+			if (strstr(recvbuf, "+OK ") != recvbuf) {
+				ERR("POP3 connection failed, probably not a POP3 server");
 				fail++;
-				goto next_iteration;
+				break;
 			}
-		}
-		recvbuf[numbytes] = '\0';
-		if (strstr(recvbuf, "+OK ") == NULL) {
-			ERR("POP3 server login failed: %s", recvbuf);
-			fail++;
-			goto next_iteration;
-		}
-		strncpy(sendbuf, "PASS ", MAXDATASIZE);
-		strncat(sendbuf, mail->pass, MAXDATASIZE - strlen(sendbuf) - 1);
-		strncat(sendbuf, "\r\n", MAXDATASIZE - strlen(sendbuf) - 1);
-		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
-			perror("send PASS");
-			fail++;
-			goto next_iteration;
-		}
-		timeout.tv_sec = 60;	// 60 second timeout i guess
-		timeout.tv_usec = 0;
-		FD_ZERO(&fdset);
-		FD_SET(sockfd, &fdset);
-		res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
-		if (res > 0) {
-			if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
-				perror("recv PASS");
+			strncpy(sendbuf, "USER ", MAXDATASIZE);
+			strncat(sendbuf, mail->user, MAXDATASIZE - strlen(sendbuf) - 1);
+			strncat(sendbuf, "\r\n", MAXDATASIZE - strlen(sendbuf) - 1);
+			if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
+				perror("send USER");
 				fail++;
-				goto next_iteration;
+				break;
 			}
-		}
-		recvbuf[numbytes] = '\0';
-		if (strstr(recvbuf, "+OK ") == NULL) {
-			ERR("POP3 server login failed: %s", recvbuf);
-			fail++;
-			goto next_iteration;
-		}
-		strncpy(sendbuf, "STAT\r\n", MAXDATASIZE);
-		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
-			perror("send STAT");
-			fail++;
-			goto next_iteration;
-		}
-		timeout.tv_sec = 60;	// 60 second timeout i guess
-		timeout.tv_usec = 0;
-		FD_ZERO(&fdset);
-		FD_SET(sockfd, &fdset);
-		res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
-		if (res > 0) {
-			if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
-				perror("recv STAT");
+			timeout.tv_sec = 60;	// 60 second timeout i guess
+			timeout.tv_usec = 0;
+			FD_ZERO(&fdset);
+			FD_SET(sockfd, &fdset);
+			res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+			if (res > 0) {
+				if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
+					perror("recv USER");
+					fail++;
+					break;
+				}
+			}
+			recvbuf[numbytes] = '\0';
+			if (strstr(recvbuf, "+OK ") == NULL) {
+				ERR("POP3 server login failed: %s", recvbuf);
 				fail++;
-				goto next_iteration;
+				break;
 			}
-		}
-		recvbuf[numbytes] = '\0';
-		if (strstr(recvbuf, "+OK ") == NULL) {
-			ERR("POP3 status failed: %s", recvbuf);
-			fail++;
-			goto next_iteration;
-		}
-		// now we get the data
-		reply = recvbuf + 4;
-		if (reply == NULL) {
-			ERR("Error parsing POP3 response: %s", recvbuf);
-			fail++;
-			goto next_iteration;
-		} else {
-			timed_thread_lock(mail->p_timed_thread);
-			sscanf(reply, "%lu %lu", &mail->unseen, &mail->used);
-			timed_thread_unlock(mail->p_timed_thread);
-		}
-		strncpy(sendbuf, "QUIT\r\n", MAXDATASIZE);
-		if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
-			perror("send QUIT");
-			fail++;
-			goto next_iteration;
-		}
-		timeout.tv_sec = 60;	// 60 second timeout i guess
-		timeout.tv_usec = 0;
-		FD_ZERO(&fdset);
-		FD_SET(sockfd, &fdset);
-		res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
-		if (res > 0) {
-			if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
-				perror("recv QUIT");
+			strncpy(sendbuf, "PASS ", MAXDATASIZE);
+			strncat(sendbuf, mail->pass, MAXDATASIZE - strlen(sendbuf) - 1);
+			strncat(sendbuf, "\r\n", MAXDATASIZE - strlen(sendbuf) - 1);
+			if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
+				perror("send PASS");
 				fail++;
-				goto next_iteration;
+				break;
 			}
-		}
-		recvbuf[numbytes] = '\0';
-		if (strstr(recvbuf, "+OK") == NULL) {
-			ERR("POP3 logout failed: %s", recvbuf);
-			fail++;
-			goto next_iteration;
-		}
-		if (strlen(mail->command) > 1 && mail->unseen > old_unseen) {
-			// new mail goodie
-			if (system(mail->command) == -1) {
-				perror("system()");
+			timeout.tv_sec = 60;	// 60 second timeout i guess
+			timeout.tv_usec = 0;
+			FD_ZERO(&fdset);
+			FD_SET(sockfd, &fdset);
+			res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+			if (res > 0) {
+				if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
+					perror("recv PASS");
+					fail++;
+					break;
+				}
 			}
-		}
-		fail = 0;
-		old_unseen = mail->unseen;
-next_iteration:
+			recvbuf[numbytes] = '\0';
+			if (strstr(recvbuf, "+OK ") == NULL) {
+				ERR("POP3 server login failed: %s", recvbuf);
+				fail++;
+				break;
+			}
+			strncpy(sendbuf, "STAT\r\n", MAXDATASIZE);
+			if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
+				perror("send STAT");
+				fail++;
+				break;
+			}
+			timeout.tv_sec = 60;	// 60 second timeout i guess
+			timeout.tv_usec = 0;
+			FD_ZERO(&fdset);
+			FD_SET(sockfd, &fdset);
+			res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+			if (res > 0) {
+				if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
+					perror("recv STAT");
+					fail++;
+					break;
+				}
+			}
+			recvbuf[numbytes] = '\0';
+			if (strstr(recvbuf, "+OK ") == NULL) {
+				ERR("POP3 status failed: %s", recvbuf);
+				fail++;
+				break;
+			}
+			// now we get the data
+			reply = recvbuf + 4;
+			if (reply == NULL) {
+				ERR("Error parsing POP3 response: %s", recvbuf);
+				fail++;
+				break;
+			} else {
+				timed_thread_lock(mail->p_timed_thread);
+				sscanf(reply, "%lu %lu", &mail->unseen, &mail->used);
+				timed_thread_unlock(mail->p_timed_thread);
+			}
+			strncpy(sendbuf, "QUIT\r\n", MAXDATASIZE);
+			if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
+				perror("send QUIT");
+				fail++;
+				break;
+			}
+			timeout.tv_sec = 60;	// 60 second timeout i guess
+			timeout.tv_usec = 0;
+			FD_ZERO(&fdset);
+			FD_SET(sockfd, &fdset);
+			res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+			if (res > 0) {
+				if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
+					perror("recv QUIT");
+					fail++;
+					break;
+				}
+			}
+			recvbuf[numbytes] = '\0';
+			if (strstr(recvbuf, "+OK") == NULL) {
+				ERR("POP3 logout failed: %s", recvbuf);
+				fail++;
+				break;
+			}
+			if (strlen(mail->command) > 1 && mail->unseen > old_unseen) {
+				// new mail goodie
+				if (system(mail->command) == -1) {
+					perror("system()");
+				}
+			}
+			fail = 0;
+			old_unseen = mail->unseen;
+		} while (0);
 		if ((fstat(sockfd, &stat_buf) == 0) && S_ISSOCK(stat_buf.st_mode)) {
 			/* if a valid socket, close it */
 			close(sockfd);
@@ -6027,7 +6047,6 @@ static void generate_text_internal(char *p, int p_max_size,
 				}			/* if cur_upd_time >= */
 				// parse_conky_vars(obj->data.tail.buffer, p, cur);
 			}
-
 head:
 			OBJ(head) {
 				if (current_update_time - obj->data.tail.last_update
@@ -7515,8 +7534,6 @@ void reload_config(void)
 
 #ifdef X11
 	free_fonts();
-	load_fonts();
-	set_font();
 #endif /* X11 */
 
 #ifdef TCP_PORT_MONITOR
@@ -7534,6 +7551,8 @@ void reload_config(void)
 		}
 
 #ifdef X11
+		load_fonts();
+		set_font();
 		// clear the window first
 		XClearWindow(display, RootWindow(display, screen));
 

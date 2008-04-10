@@ -195,27 +195,38 @@ static int mpd_connect(mpd_Connection *connection, const char *host, int port,
 static int mpd_connect(mpd_Connection *connection, const char *host, int port,
 		float timeout)
 {
-	struct hostent *he;
+	struct hostent he, *he_res = 0;
+	int he_errno;
+	char hostbuff[2048];
 	struct sockaddr *dest;
 	int destlen;
 	struct sockaddr_in sin;
 
-	if (!(he = gethostbyname(host))) {
+#ifdef HAVE_GETHOSTBYNAME_R
+		if (gethostbyname_r(rhost, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
+		snprintf(connection->errorStr, MPD_ERRORSTR_MAX_LENGTH,
+			"%s ('%s')", hstrerror(h_errno), host);
+		connection->error = MPD_ERROR_UNKHOST;
+		return -1;
+	}
+#else /* HAVE_GETHOSTBYNAME_R */
+	if (!(he_res = gethostbyname(host))) {
 		snprintf(connection->errorStr, MPD_ERRORSTR_MAX_LENGTH,
 			"host \"%s\" not found", host);
 		connection->error = MPD_ERROR_UNKHOST;
 		return -1;
 	}
+#endif /* HAVE_GETHOSTBYNAME_R */
 
 	memset(&sin, 0, sizeof(struct sockaddr_in));
-	/* dest.sin_family = he->h_addrtype; */
+	/* dest.sin_family = he_res->h_addrtype; */
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(port);
 
-	switch (he->h_addrtype) {
+	switch (he_res->h_addrtype) {
 		case AF_INET:
-			memcpy((char *) &sin.sin_addr.s_addr, (char *) he->h_addr,
-				he->h_length);
+			memcpy((char *) &sin.sin_addr.s_addr, (char *) he_res->h_addr,
+				he_res->h_length);
 			dest = (struct sockaddr *) &sin;
 			destlen = sizeof(struct sockaddr_in);
 			break;

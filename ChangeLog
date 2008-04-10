@@ -1,5 +1,14 @@
 # $Id$
 
+2008-04-10
+	* Getting rid of goto usage throughout code.
+	* Fix bug due to usage of gethostbyname() in threads (which is not
+	reentrant) by using gethostbyname_r() when available.
+	* Added patch for battery_time problem on 2.6.24 (thanks wedge).
+	* Added patch to fix broken xmms2 stuff (thanks sleipner).
+	* Added patch to fix SIGHUP/SIGUSR1 segfault (thanks norsetto).
+	* Added patch to improve $if_up (thanks Aseem).
+
 2008-04-02
 	* Added patch to use mail_spool correctly (thanks Kapil)
 	* Replacing strdup() with strndup() throughout

@@ -153,7 +153,7 @@ void *audacious_thread_func(void *pvoid)
 		CRIT_ERR("unable to establish dbus connection");
 	}
 	session = dbus_g_proxy_new_for_name(connection, AUDACIOUS_DBUS_SERVICE,
-		AUDACIOUS_DBUS_PATH, AUDACIOUS_DBUS_INTERFACE);
+			AUDACIOUS_DBUS_PATH, AUDACIOUS_DBUS_INTERFACE);
 	if (!session) {
 		CRIT_ERR("unable to create dbus proxy");
 	}
@@ -162,85 +162,84 @@ void *audacious_thread_func(void *pvoid)
 	/* Loop until the main thread resets the runnable signal. */
 	while (1) {
 
-		if (!audacious_remote_is_running(session)) {
-			memset(&items, 0, sizeof(items));
-			strcpy(items[AUDACIOUS_STATUS], "Not running");
-			goto bottom;
-		}
+		do {
+			if (!audacious_remote_is_running(session)) {
+				memset(&items, 0, sizeof(items));
+				strcpy(items[AUDACIOUS_STATUS], "Not running");
+				break;
+			}
 
-		/* Player status */
-		if (audacious_remote_is_paused(session)) {
-			strcpy(items[AUDACIOUS_STATUS], "Paused");
-		} else if (audacious_remote_is_playing(session)) {
-			strcpy(items[AUDACIOUS_STATUS], "Playing");
-		} else {
-			strcpy(items[AUDACIOUS_STATUS], "Stopped");
-		}
+			/* Player status */
+			if (audacious_remote_is_paused(session)) {
+				strcpy(items[AUDACIOUS_STATUS], "Paused");
+			} else if (audacious_remote_is_playing(session)) {
+				strcpy(items[AUDACIOUS_STATUS], "Playing");
+			} else {
+				strcpy(items[AUDACIOUS_STATUS], "Stopped");
+			}
 
-		/* Current song title */
-		playpos = audacious_remote_get_playlist_pos(session);
-		psong = audacious_remote_get_playlist_title(session, playpos);
-		if (psong) {
-			strncpy(items[AUDACIOUS_TITLE], psong,
-				sizeof(items[AUDACIOUS_TITLE]) - 1);
-			g_free(psong);
-			psong = NULL;
-		}
+			/* Current song title */
+			playpos = audacious_remote_get_playlist_pos(session);
+			psong = audacious_remote_get_playlist_title(session, playpos);
+			if (psong) {
+				strncpy(items[AUDACIOUS_TITLE], psong,
+						sizeof(items[AUDACIOUS_TITLE]) - 1);
+				g_free(psong);
+				psong = NULL;
+			}
 
-		/* Current song length as MM:SS */
-		frames = audacious_remote_get_playlist_time(session, playpos);
-		length = frames / 1000;
-		snprintf(items[AUDACIOUS_LENGTH], sizeof(items[AUDACIOUS_LENGTH]) - 1,
-			"%d:%.2d", length / 60, length % 60);
+			/* Current song length as MM:SS */
+			frames = audacious_remote_get_playlist_time(session, playpos);
+			length = frames / 1000;
+			snprintf(items[AUDACIOUS_LENGTH], sizeof(items[AUDACIOUS_LENGTH]) - 1,
+					"%d:%.2d", length / 60, length % 60);
 
-		/* Current song length in seconds */
-		snprintf(items[AUDACIOUS_LENGTH_SECONDS],
-			sizeof(items[AUDACIOUS_LENGTH_SECONDS]) - 1, "%d", length);
+			/* Current song length in seconds */
+			snprintf(items[AUDACIOUS_LENGTH_SECONDS],
+					sizeof(items[AUDACIOUS_LENGTH_SECONDS]) - 1, "%d", length);
 
-		/* Current song position as MM:SS */
-		frames = audacious_remote_get_output_time(session);
-		length = frames / 1000;
-		snprintf(items[AUDACIOUS_POSITION],
-			sizeof(items[AUDACIOUS_POSITION]) - 1, "%d:%.2d", length / 60,
-			length % 60);
+			/* Current song position as MM:SS */
+			frames = audacious_remote_get_output_time(session);
+			length = frames / 1000;
+			snprintf(items[AUDACIOUS_POSITION],
+					sizeof(items[AUDACIOUS_POSITION]) - 1, "%d:%.2d", length / 60,
+					length % 60);
 
-		/* Current song position in seconds */
-		snprintf(items[AUDACIOUS_POSITION_SECONDS],
-			sizeof(items[AUDACIOUS_POSITION_SECONDS]) - 1, "%d", length);
+			/* Current song position in seconds */
+			snprintf(items[AUDACIOUS_POSITION_SECONDS],
+					sizeof(items[AUDACIOUS_POSITION_SECONDS]) - 1, "%d", length);
 
-		/* Current song bitrate */
-		audacious_remote_get_info(session, &rate, &freq, &chans);
-		snprintf(items[AUDACIOUS_BITRATE], sizeof(items[AUDACIOUS_BITRATE]) - 1,
-			"%d", rate);
+			/* Current song bitrate */
+			audacious_remote_get_info(session, &rate, &freq, &chans);
+			snprintf(items[AUDACIOUS_BITRATE], sizeof(items[AUDACIOUS_BITRATE]) - 1,
+					"%d", rate);
 
-		/* Current song frequency */
-		snprintf(items[AUDACIOUS_FREQUENCY],
-			sizeof(items[AUDACIOUS_FREQUENCY]) - 1, "%d", freq);
+			/* Current song frequency */
+			snprintf(items[AUDACIOUS_FREQUENCY],
+					sizeof(items[AUDACIOUS_FREQUENCY]) - 1, "%d", freq);
 
-		/* Current song channels */
-		snprintf(items[AUDACIOUS_CHANNELS],
-			sizeof(items[AUDACIOUS_CHANNELS]) - 1, "%d", chans);
+			/* Current song channels */
+			snprintf(items[AUDACIOUS_CHANNELS],
+					sizeof(items[AUDACIOUS_CHANNELS]) - 1, "%d", chans);
 
-		/* Current song filename */
-		pfilename = audacious_remote_get_playlist_file(session, playpos);
-		if (pfilename) {
-			strncpy(items[AUDACIOUS_FILENAME], pfilename,
-				sizeof(items[AUDACIOUS_FILENAME]) - 1);
-			g_free(pfilename);
-			pfilename = NULL;
-		}
+			/* Current song filename */
+			pfilename = audacious_remote_get_playlist_file(session, playpos);
+			if (pfilename) {
+				strncpy(items[AUDACIOUS_FILENAME], pfilename,
+						sizeof(items[AUDACIOUS_FILENAME]) - 1);
+				g_free(pfilename);
+				pfilename = NULL;
+			}
 
-		/* Length of the Playlist (number of songs) */
-		length = audacious_remote_get_playlist_length(session);
-		snprintf(items[AUDACIOUS_PLAYLIST_LENGTH],
-			sizeof(items[AUDACIOUS_PLAYLIST_LENGTH]) - 1, "%d", length);
+			/* Length of the Playlist (number of songs) */
+			length = audacious_remote_get_playlist_length(session);
+			snprintf(items[AUDACIOUS_PLAYLIST_LENGTH],
+					sizeof(items[AUDACIOUS_PLAYLIST_LENGTH]) - 1, "%d", length);
 
-		/* Playlist position (index of song) */
-		snprintf(items[AUDACIOUS_PLAYLIST_POSITION],
-			sizeof(items[AUDACIOUS_PLAYLIST_POSITION]) - 1, "%d", playpos + 1);
-
-bottom:
-
+			/* Playlist position (index of song) */
+			snprintf(items[AUDACIOUS_PLAYLIST_POSITION],
+					sizeof(items[AUDACIOUS_PLAYLIST_POSITION]) - 1, "%d", playpos + 1);
+		} while (0);
 		/* Deliver the refreshed items array to audacious_items. */
 		timed_thread_lock(info.audacious.p_timed_thread);
 		memcpy(&audacious_items, items, sizeof(items));

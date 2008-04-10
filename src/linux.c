@@ -212,23 +212,61 @@ char *get_ioscheduler(char *disk)
 
 int interface_up(const char *dev)
 {
-	int fd;
-	struct ifreq ifr;
+	int fd, dnl, ifnl, nl;
+	unsigned int k;
+	struct ifconf conf;
+	struct sockaddr addr;
+	char   *ifdev;
 
-	if((fd = socket(PF_INET, SOCK_DGRAM, 0)) < 0) {
+	dnl = strlen(dev);
+	if((fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP)) < 0) {
 		CRIT_ERR("could not create sockfd");
 		return 0;
 	}
-	strncpy(ifr.ifr_name, dev, IFNAMSIZ);
-	if(ioctl(fd, SIOCGIFFLAGS, &ifr)) {
-		/* if device does not exist, treat like not up */
+
+	/* allocate memory for interface request */
+	if((conf.ifc_buf = calloc(16, sizeof(struct ifreq))) == NULL) {
+		CRIT_ERR("could not allocate memory for interface query");
+		return 0;
+	}
+	conf.ifc_len = sizeof(struct ifreq) * 16;
+
+	/* send a conf query ioctl to device to enumerate all interfaces */
+	if(ioctl(fd, SIOCGIFCONF, &conf)) {
+		/* if device does not exist, treat like not up - fail fast */
 		if (errno != ENODEV)
 			perror("SIOCGIFFLAGS");
 	} else {
-		close(fd);
-		return (ifr.ifr_flags & IFF_UP);
+		/* for all enumerated interface devices ... */
+		for (k = 0; k < conf.ifc_len / sizeof(struct ifreq); k++) {
+			/* end of buffer - break out */
+			if (!(((struct ifreq *) conf.ifc_buf) + k))
+				break;
+			/* get interface device name */
+			ifdev =  ((struct ifreq *) conf.ifc_buf)[k].ifr_ifrn.ifrn_name;
+			ifnl = strlen(ifdev);
+			nl = dnl > ifnl ? ifnl : dnl;
+			/* if it does not match our specified device - move on */
+			if (strncmp(dev, ifdev, nl) != 0) {
+				continue;
+			}
+			/* get associated address on device */
+			addr = ((struct ifreq *) conf.ifc_buf)[k].ifr_ifru.ifru_addr;
+			/* if ip is 0.0.0.0 it is not up */
+			if((addr.sa_data[2] & 255) == 0 &&
+					(addr.sa_data[3] & 255) == 0 &&
+					(addr.sa_data[4] & 255) == 0 &&
+					(addr.sa_data[5] & 255) == 0) {
+				break;
+			}
+			/* otherwise we are good */
+			close(fd);
+			return 1;
+		}
 	}
+	/* cleanup */
 	close(fd);
+	free(conf.ifc_buf);
 	return 0;
 }
 
@@ -258,33 +296,33 @@ void update_gateway_info(void)
 
 	if ((fp = fopen("/proc/net/route", "r")) == NULL) {
 		perror("fopen()");
-		goto FAIL;
+		info.gw_info.iface = info.gw_info.ip = strndup("failed", text_buffer_size);
+		return;
 	}
 	if (fscanf(fp, "%*[^\n]\n") == EOF) {
 		perror("fscanf()");
-		goto CLOSE_FAIL;
+		fclose(fp);
+		info.gw_info.iface = info.gw_info.ip = strndup("failed", text_buffer_size);
+		return;
 	}
 	while (!feof(fp)) {
 		// Iface Destination Gateway Flags RefCnt Use Metric Mask MTU Window IRTT
 		if(fscanf(fp, "%63s %lx %lx %x %hd %hd %hd %lx %hd %hd %hd\n",
-				iface, &dest, &gate, &flags, &ref, &use,
-				&metric, &mask, &mtu, &win, &irtt) != 11) {
+					iface, &dest, &gate, &flags, &ref, &use,
+					&metric, &mask, &mtu, &win, &irtt) != 11) {
 			perror("fscanf()");
-			goto CLOSE_FAIL;
+			fclose(fp);
+			info.gw_info.iface = info.gw_info.ip = strndup("failed", text_buffer_size);
+			return;
 		}
 		if (flags & RTF_GATEWAY && dest == 0 && mask == 0) {
 			gw_info->count++;
 			SAVE_SET_STRING(gw_info->iface, iface)
-			ina.s_addr = gate;
+				ina.s_addr = gate;
 			SAVE_SET_STRING(gw_info->ip, inet_ntoa(ina))
 		}
 	}
 	fclose(fp);
-	return;
-CLOSE_FAIL:
-	fclose(fp);
-FAIL:
-	info.gw_info.iface = info.gw_info.ip = strndup("failed", text_buffer_size);
 	return;
 }
 
@@ -1520,6 +1558,8 @@ int get_battery_idx(const char *bat)
 	return idx;
 }
 
+void set_return_value(char *buffer, unsigned int n, int item, int idx);
+
 void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 {
 	static int idx, rep = 0, rep2 = 0;
@@ -1535,7 +1575,8 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 
 	/* don't update battery too often */
 	if (current_update_time - last_battery_time[idx] < 29.5) {
-		goto set_return_value;
+		set_return_value(buffer, n, item, idx);
+		return;
 	}
 
 	last_battery_time[idx] = current_update_time;
@@ -1630,7 +1671,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
  					(int) (((float) remaining_capacity / acpi_last_full[idx]) * 100 ));
  				/* e.g. 1h 12m */
  				format_seconds(last_battery_time_str[idx], sizeof(last_battery_time_str[idx])-1,
- 					      (long) (((float)(acpi_last_full[idx] - remaining_capacity) / present_rate) * 3600));
+ 					      (long) (((float) remaining_capacity / present_rate) * 3600));
  			} else if (present_rate == 0) { /* Thanks to Nexox for this one */
  				snprintf(last_battery_str[idx], sizeof(last_battery_str[idx])-1, "full");
 				snprintf(last_battery_time_str[idx],
@@ -1823,8 +1864,11 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 			apm_bat_fp[idx] = NULL;
 		}
 	}
+	set_return_value(buffer, n, item, idx);
+}
 
-set_return_value:
+void set_return_value(char *buffer, unsigned int n, int item, int idx)
+{
 	switch (item) {
 		case BATTERY_STATUS:
 			snprintf(buffer, n, "%s", last_battery_str[idx]);
@@ -2070,124 +2114,6 @@ void update_top(void)
 	show_nice_processes = 1;
 	process_find_top(info.cpu, info.memu);
 	info.first_process = get_first_process();
-}
-
-/* The following ifdefs were adapted from gkrellm */
-#include <linux/major.h>
-
-#if !defined(MD_MAJOR)
-#define MD_MAJOR 9
-#endif
-
-#if !defined(LVM_BLK_MAJOR)
-#define LVM_BLK_MAJOR 58
-#endif
-
-#if !defined(NBD_MAJOR)
-#define NBD_MAJOR 43
-#endif
-
-void update_diskio(void)
-{
-	static unsigned int last = UINT_MAX;
-	static unsigned int last_read = UINT_MAX;
-	static unsigned int last_write = UINT_MAX;
-	FILE *fp;
-	static int rep = 0;
-
-	char buf[512], devbuf[64];
-	int i;
-	unsigned int major, minor;
-	unsigned int current = 0;
-	unsigned int current_read = 0;
-	unsigned int current_write = 0;
-	unsigned int reads, writes = 0;
-	int col_count = 0;
-	int tot, tot_read, tot_write;
-
-	if (!(fp = open_file("/proc/diskstats", &rep))) {
-		diskio_value = 0;
-		return;
-	}
-
-	/* read reads and writes from all disks (minor = 0), including cd-roms
-	 * and floppies, and sum them up */
-	while (!feof(fp)) {
-		fgets(buf, 512, fp);
-		col_count = sscanf(buf, "%u %u %s %*u %*u %u %*u %*u %*u %u", &major,
-			&minor, devbuf, &reads, &writes);
-		/* ignore subdevices (they have only 3 matching entries in their line)
-		 * and virtual devices (LVM, network block devices, RAM disks, Loopback)
-		 *
-		 * XXX: ignore devices which are part of a SW RAID (MD_MAJOR) */
-		if (col_count == 5 && major != LVM_BLK_MAJOR && major != NBD_MAJOR
-				&& major != RAMDISK_MAJOR && major != LOOP_MAJOR) {
-			current += reads + writes;
-			current_read += reads;
-			current_write += writes;
-		} else {
-			col_count = sscanf(buf, "%u %u %s %*u %u %*u %u",
-				&major, &minor, devbuf, &reads, &writes);
-			if (col_count != 5) {
-				continue;
-			}
-		}
-		for (i = 0; i < MAX_DISKIO_STATS; i++) {
-			if (diskio_stats[i].dev &&
-					strncmp(devbuf, diskio_stats[i].dev, text_buffer_size) == 0) {
-				diskio_stats[i].current =
-					(reads + writes - diskio_stats[i].last) / 2;
-				diskio_stats[i].current_read =
-					(reads - diskio_stats[i].last_read) / 2;
-				diskio_stats[i].current_write =
-					(writes - diskio_stats[i].last_write) / 2;
-				if (reads + writes < diskio_stats[i].last) {
-					diskio_stats[i].current = 0;
-				}
-				if (reads < diskio_stats[i].last_read) {
-					diskio_stats[i].current_read = 0;
-					diskio_stats[i].current = diskio_stats[i].current_write;
-				}
-				if (writes < diskio_stats[i].last_write) {
-					diskio_stats[i].current_write = 0;
-					diskio_stats[i].current = diskio_stats[i].current_read;
-				}
-				diskio_stats[i].last = reads + writes;
-				diskio_stats[i].last_read = reads;
-				diskio_stats[i].last_write = writes;
-			}
-		}
-	}
-
-	/* since the values in /proc/diststats are absolute, we have to substract
-	 * our last reading. The numbers stand for "sectors read", and we therefore
-	 * have to divide by two to get KB */
-	tot = ((double) (current - last) / 2);
-	tot_read = ((double) (current_read - last_read) / 2);
-	tot_write = ((double) (current_write - last_write) / 2);
-
-	if (last_read > current_read) {
-		tot_read = 0;
-	}
-	if (last_write > current_write) {
-		tot_write = 0;
-	}
-
-	if (last > current) {
-		/* we hit this either if it's the very first time we run this, or
-		 * when /proc/diskstats overflows; while 0 is not correct, it's at
-		 * least not way off */
-		tot = 0;
-	}
-	last = current;
-	last_read = current_read;
-	last_write = current_write;
-
-	diskio_value = tot;
-	diskio_read_value = tot_read;
-	diskio_write_value = tot_write;
-
-	fclose(fp);
 }
 
 /* Here come the IBM ACPI-specific things. For reference, see

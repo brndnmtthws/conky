@@ -203,8 +203,9 @@ void update_dns_data(void)
 	if ((fp = fopen("/etc/resolv.conf", "r")) == NULL)
 		return;
 	while(!feof(fp)) {
-		if (fgets(line, 255, fp) == NULL)
-			goto OUT;
+		if (fgets(line, 255, fp) == NULL) {
+			break;
+		}
 		if (!strncmp(line, "nameserver ", 11)) {
 			line[strlen(line) - 1] = '\0';	// remove trailing newline
 			data->nscount++;
@@ -212,7 +213,6 @@ void update_dns_data(void)
 			data->ns_list[data->nscount - 1] = strndup(line + 11, text_buffer_size);
 		}
 	}
-OUT:
 	fclose(fp);
 }
 
