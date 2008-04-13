@@ -1217,6 +1217,16 @@
 
 	<varlistentry>
 		<term>
+			<command><option>loadgraph</option></command>
+			<option>(height),(width) (gradient colour 1) (gradient colour 2)</option>
+		</term>
+		<listitem>
+			Load1 average graph, similar to xload, with optional colours in hex, minus the #.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
 			<command><option>machine</option></command>
 		</term>
 		<listitem>

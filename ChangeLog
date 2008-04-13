@@ -1,5 +1,13 @@
 # $Id$
 
+2008-04-12
+	* Added patch for the following (thanks larsko):
+		* New $loadgraph to show a graph of load averages,
+		* add "show_graph_scale" option to turn off/on the showing of the
+		current max value for the graph,
+		* minor code fixes,
+		* update nano and vim syntax highlighting stuff.
+
 2008-04-10
 	* Getting rid of goto usage throughout code.
 	* Fix bug due to usage of gethostbyname() in threads (which is not

@@ -393,6 +393,13 @@
 	</varlistentry>
 
 	<varlistentry>
+		<term><command><option>show_graph_scale</option></command></term>
+		<listitem>
+		        Shows the maximum value in scaled graphs.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
 		<term><command><option>stippled_borders</option></command></term>
 		<listitem>
 			Border stippling (dashing) in pixels

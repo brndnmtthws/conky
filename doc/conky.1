@@ -363,6 +363,10 @@ Default global POP3 server. Arguments are: "host user pass [-i interval] [-p por
 Shortens units to a single character (kiB->k, GiB->G, etc.). Default is off.
 
 .TP 
+\fB\*(T<\fBshow_graph_scale\fR\*(T>\fR
+Shows the maximum value in scaled graphs.
+
+.TP 
 \fB\*(T<\fBstippled_borders\fR\*(T>\fR
 Border stippling (dashing) in pixels
 
@@ -916,6 +920,10 @@ The value of /proc/sys/vm/laptop_mode
 .TP 
 \fB\*(T<\fBloadavg\fR\*(T>\fR 
 (1,2,3)> System load average, 1 is for past 1 minute, 2 for past 5 minutes and 3 for past 15 minutes.
+
+.TP 
+\fB\*(T<\fBloadgraph\fR\*(T>\fR \*(T<\fB(height),(width) (gradient colour 1) (gradient colour 2)\fR\*(T> 
+Load1 average graph, similar to xload, with optional colours in hex, minus the #.
 
 .TP 
 \fB\*(T<\fBmachine\fR\*(T>\fR 

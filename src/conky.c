@@ -334,6 +334,8 @@ static int cpu_avg_samples, net_avg_samples;
 
 #ifdef X11
 
+static int show_graph_scale;
+
 /* Position on the screen */
 static int text_alignment;
 static int gap_x, gap_y;
@@ -522,6 +524,7 @@ struct special_t {
 	long arg;
 	double *graph;
 	double graph_scale;
+	short show_scale;
 	int graph_width;
 	int scaled;
 	unsigned long first_colour;	// for graph gradient
@@ -782,8 +785,10 @@ static void new_graph(char *buf, int w, int h, unsigned int first_colour,
 	} */
 	if (s->scaled) {
 		s->graph_scale = 1;
+		s->show_scale = 1;
 	} else {
 		s->graph_scale = scale;
+		s->show_scale = 0;
 	}
 	if (append) {
 		graph_append(s, i);
@@ -1089,6 +1094,7 @@ enum text_object_type {
 	OBJ_cpu,
 	OBJ_cpubar,
 	OBJ_cpugraph,
+	OBJ_loadgraph,
 	OBJ_diskio,
 	OBJ_diskio_read,
 	OBJ_diskio_write,
@@ -1433,6 +1439,9 @@ struct text_object {
 			char *addr;
 			int port;
 			char *dev;
+			double update_time;
+			char *temp;
+			char unit;
 		} hddtemp;		/* 2 */
 #endif
 #ifdef RSS
@@ -2623,6 +2632,17 @@ static struct text_object *construct_text_object(const char *s,
 			}
 			free(buf);
 		}
+	END OBJ(loadgraph, INFO_LOADAVG)
+		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+				&obj->e);
+		if (buf) {
+			int a = 1, r = 3;
+			if (arg) {
+				r = sscanf(arg, "%d", &a);
+			}
+			obj->data.loadavg[0] = (r >= 1) ? (unsigned char) a : 0;
+			free(buf);
+		}
 	END OBJ(diskio, INFO_DISKIO)
 		if (arg) {
 			obj->data.diskio = prepare_diskio_stat(DEV_NAME(arg));
@@ -3756,6 +3776,7 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("hddtemp needs arguments");
 			obj->type = OBJ_text;
 			obj->data.s = strndup("${hddtemp}", text_buffer_size);
+			obj->data.hddtemp.update_time = 0;
 			return NULL;
 		}
 #endif
@@ -4351,7 +4372,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				if (obj->data.cpu_index > info.cpu_count) {
 					printf("obj->data.cpu_index %i info.cpu_count %i",
 						obj->data.cpu_index, info.cpu_count);
-					CRIT_ERR("attempting to use more CPUs then you have!");
+					CRIT_ERR("attempting to use more CPUs than you have!");
 				}
 				spaced_print(p, p_max_size, "%*d", 4, "cpu", pad_percents,
 					round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100.0));
@@ -4364,6 +4385,10 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_graph(p, obj->a, obj->b, obj->c, obj->d, (unsigned int)
 					round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100),
 					100, 1);
+			}
+			OBJ(loadgraph) {
+				new_graph(p, obj->a, obj->b, obj->c, obj->d, cur->loadavg[0],
+					obj->e, 1);
 			}
 			OBJ(color) {
 				new_fg(p, obj->data.l);
@@ -5285,17 +5310,17 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 #ifdef HDDTEMP
 			OBJ(hddtemp) {
-				char *temp;
-				char unit;
-
-				temp = get_hddtemp_info(obj->data.hddtemp.dev,
-					obj->data.hddtemp.addr, obj->data.hddtemp.port, &unit);
-				if (!temp) {
+				if (obj->data.hddtemp.update_time < current_update_time - 30) {
+					obj->data.hddtemp.temp = get_hddtemp_info(obj->data.hddtemp.dev,
+							obj->data.hddtemp.addr, obj->data.hddtemp.port, &obj->data.hddtemp.unit);
+					obj->data.hddtemp.update_time = current_update_time;
+				}
+				if (!obj->data.hddtemp.temp) {
 					snprintf(p, p_max_size, "N/A");
-				} else if (unit == '*') {
-					snprintf(p, p_max_size, "%s", temp);
+				} else if (obj->data.hddtemp.unit == '*') {
+					snprintf(p, p_max_size, "%s", obj->data.hddtemp.temp);
 				} else {
-					snprintf(p, p_max_size, "%s%c", temp, unit);
+					snprintf(p, p_max_size, "%s%c", obj->data.hddtemp.temp, obj->data.hddtemp.unit);
 				}
 			}
 #endif
@@ -5435,7 +5460,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(memgraph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 					cur->memmax ? (cur->mem * 100.0) / (cur->memmax) : 0.0,
-					100, 1);
+					100, 0);
 			}
 
 			/* mixer stuff */
@@ -6745,6 +6770,7 @@ static void draw_line(char *s)
 	char *p;
 	int cur_y_add = 0;
 	short font_h;
+	char *tmp_str;
 
 	cur_x = text_start_x;
 	cur_y += font_ascent();
@@ -6838,6 +6864,8 @@ static void draw_line(char *s)
 					float gradient_update = 0;
 					unsigned long last_colour = current_color;
 					unsigned long tmpcolour = current_color;
+					int show_scale_x = cur_x + font_ascent() / 2;
+					int show_scale_y = cur_y + font_height() / 2;
 					if (cur_x - text_start_x > maximum_width
 							&& maximum_width > 0) {
 						break;
@@ -6905,6 +6933,20 @@ static void draw_line(char *s)
 					} else {
 						set_foreground_color(default_fg_color);
 					} */
+					if (show_graph_scale && (specials[special_index].show_scale == 1)) {
+						int tmp_x = cur_x;
+						int tmp_y = cur_y;
+						cur_x = show_scale_x;
+						cur_y = show_scale_y;
+						tmp_str = (char *)
+							calloc(log10(floor(specials[special_index].graph_scale)) + 4,
+									sizeof(char));
+						sprintf(tmp_str, "%.1f", specials[special_index].graph_scale);
+						draw_string(tmp_str);
+						free(tmp_str);
+						cur_x = tmp_x;
+						cur_y = tmp_y;
+					}
 					set_foreground_color(last_colour);
 					break;
 				}
@@ -7755,6 +7797,7 @@ static void set_default_configurations(void)
 	out_to_console = 1;
 #endif
 #ifdef X11
+	show_graph_scale = 0;
 	default_fg_color = WhitePixel(display, screen);
 	default_bg_color = BlackPixel(display, screen);
 	default_out_color = BlackPixel(display, screen);
@@ -7907,6 +7950,9 @@ static void load_config_file(const char *f)
 		}
 #endif /* X11 */
 #ifdef X11
+		CONF("show_graph_scale") {
+			show_graph_scale = string_to_bool(value);
+		}
 		CONF("border_margin") {
 			if (value) {
 				border_margin = strtol(value, 0, 0);

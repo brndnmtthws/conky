@@ -54,6 +54,7 @@ syn keyword ConkyrcSetting
         \ own_window_type
         \ pad_percents
         \ pop3
+        \ show_graph_scale
         \ stippled_borders
         \ total_run_times
         \ update_interval
@@ -188,6 +189,7 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
         \ kernel
         \ linkstatus
         \ loadavg
+        \ loadgraph
         \ machine
         \ mails
         \ mem
@@ -241,6 +243,14 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
         \ voffset
         \ voltage_mv
         \ voltage_v
+	\ wireless_essid
+	\ wireless_mode
+	\ wireless_bitrate
+	\ wireless_ap
+	\ wireless_link_qual
+	\ wireless_link_qual_max
+	\ wireless_link_qual_perc
+	\ wireless_link_bar
         \ xmms2_artist
         \ xmms2_album
         \ xmms2_title
