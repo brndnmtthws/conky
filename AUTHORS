@@ -170,6 +170,9 @@ Kevin Lyles <kevinlyles at gmail dot com>
 killfire
   fs_used_perc and fs_bar_free patch
 
+Lars Kotthoff <larsko at users dot sourceforge dot net>
+  $loadgraph, show_graph_scale patch
+
 Lassi Selander <sleipner at users dot sourceforge dot net>
   XMMS2 patch
   XMMS2 fixes
