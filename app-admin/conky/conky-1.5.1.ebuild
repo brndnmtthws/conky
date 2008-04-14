@@ -1,15 +1,13 @@
-# Subversion repository ebuild for conky by drphibes
+# Copyright 1999-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
 inherit eutils
 # used for epause
 
-ESVN_REPO_URI="https://conky.svn.sourceforge.net/svnroot/conky/trunk/conky1"
-ESVN_PROJECT="conky1"
-inherit subversion
-
 DESCRIPTION="An advanced, highly configurable system monitor for X"
 HOMEPAGE="http://conky.sourceforge.net/"
+SRC_URI="mirror://sourceforge/conky/${P}.tar.bz2"
 
 LICENSE="GPL-3"
 SLOT="0"
@@ -54,8 +52,6 @@ DEPEND="
 		x11-proto/xproto
 	)"
 
-S=${WORKDIR}/conky
-
 pkg_setup() {
 	if use audacious; then
 		if has_version <media-sound/audacious-1.5.0 && ! built_with_use media-sound/audacious dbus; then
@@ -66,9 +62,13 @@ pkg_setup() {
 	fi
 }
 
-src_compile() {
-	./autogen.sh ${ESVN_STORE_DIR}/${ESVN_PROJECT}/conky1
+src_unpack() {
+	unpack ${A}
+	cd ${S}
+	epatch ${FILESDIR}/conky-1.5.0-disable-x11.patch
+}
 
+src_compile() {
 	local mymake
 	if useq ipv6 ; then
 		ewarn "You have the ipv6 USE flag enabled.  Please note that using"
