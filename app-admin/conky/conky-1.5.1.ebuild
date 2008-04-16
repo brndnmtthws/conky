@@ -9,7 +9,7 @@ DESCRIPTION="An advanced, highly configurable system monitor for X"
 HOMEPAGE="http://conky.sourceforge.net/"
 SRC_URI="mirror://sourceforge/conky/${P}.tar.bz2"
 
-LICENSE="GPL-3"
+LICENSE="GPL-3 BSD LGPL-2.1 MIT"
 SLOT="0"
 KEYWORDS="~alpha ~amd64 ~ppc ~ppc64 ~sparc ~x86"
 IUSE="audacious audacious-legacy bmpx debug hddtemp ipv6 mpd nano-syntax rss truetype vim-syntax
