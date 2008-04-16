@@ -17,6 +17,7 @@
 
 #include "config.h"
 #include "prss.h"
+#include "conky.h"
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <string.h>
