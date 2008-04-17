@@ -28,6 +28,7 @@
 #include "conky.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <ctype.h>
 #include <time.h>
 #include <locale.h>
