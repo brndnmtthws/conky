@@ -218,7 +218,7 @@ int addfont(const char *data_in)
 	}
 	// must account for null terminator
 	if (strlen(data_in) < DEFAULT_TEXT_BUFFER_SIZE) {
-		strncpy(fonts[font_count].name, data_in, text_buffer_size);
+		strncpy(fonts[font_count].name, data_in, DEFAULT_TEXT_BUFFER_SIZE);
 #ifdef XFT
 		fonts[font_count].font_alpha = 0xffff;
 #endif
