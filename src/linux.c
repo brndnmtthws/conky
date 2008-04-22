@@ -253,10 +253,13 @@ int interface_up(const char *dev)
 			/* get associated address on device */
 			addr = ((struct ifreq *) conf.ifc_buf)[k].ifr_ifru.ifru_addr;
 			/* if ip is 0.0.0.0 it is not up */
-			if((addr.sa_data[2] & 255) == 0 &&
-					(addr.sa_data[3] & 255) == 0 &&
-					(addr.sa_data[4] & 255) == 0 &&
-					(addr.sa_data[5] & 255) == 0) {
+			if(((addr.sa_data[2] & 255) == 0 && (addr.sa_data[3] & 255) == 0 &&
+			    (addr.sa_data[4] & 255) == 0 && (addr.sa_data[5] & 255) == 0) || 
+                           /* oh yeah also include IANA link local RFC3330
+			    * http://www.faqs.org/rfcs/rfc3330.html
+                            * http://www.iana.org/assignments/ipv4-address-space Notes [6]
+                            * exclude 169.254.*.*  how about 223.255 and 240.0??? */
+			   ((addr.sa_data[2] & 255) == 169 && (addr.sa_data[3] & 255) == 254)) {
 				break;
 			}
 			/* otherwise we are good */
