@@ -239,7 +239,7 @@ void set_first_font(const char *data_in)
 		font_count++;
 	}
 	if (strlen(data_in) > 1) {
-		strncpy(fonts[0].name, data_in, text_buffer_size);
+		strncpy(fonts[0].name, data_in, DEFAULT_TEXT_BUFFER_SIZE);
 #ifdef XFT
 		fonts[0].font_alpha = 0xffff;
 #endif
@@ -680,7 +680,7 @@ static const char *scan_bar(const char *args, int *w, int *h)
 static char *scan_font(const char *args)
 {
 	if (args && *args) {
-		return strndup(args, text_buffer_size);
+		return strndup(args, DEFAULT_TEXT_BUFFER_SIZE);
 	}
 
 	return NULL;
@@ -802,6 +802,7 @@ static char *scan_graph(const char *args, int *w, int *h,
 		unsigned int *scale)
 {
 	char buf[64];
+	buf[0] = 0;
 
 	/* zero width means all space that is available */
 	*w = 0;
@@ -2237,6 +2238,7 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 			case OBJ_hddtemp:
 				free(objs[i].data.hddtemp.dev);
 				free(objs[i].data.hddtemp.addr);
+				free(objs[i].data.hddtemp.temp);
 				break;
 #endif
 			case OBJ_entropy_avail:
@@ -3774,7 +3776,7 @@ static struct text_object *construct_text_object(const char *s,
 #ifdef HDDTEMP
 	END OBJ(hddtemp, 0)
 		if (!arg || scan_hddtemp(arg, &obj->data.hddtemp.dev,
-				&obj->data.hddtemp.addr, &obj->data.hddtemp.port)) {
+				&obj->data.hddtemp.addr, &obj->data.hddtemp.port, &obj->data.hddtemp.temp)) {
 			ERR("hddtemp needs arguments");
 			obj->type = OBJ_text;
 			obj->data.s = strndup("${hddtemp}", text_buffer_size);
@@ -5313,8 +5315,13 @@ static void generate_text_internal(char *p, int p_max_size,
 #ifdef HDDTEMP
 			OBJ(hddtemp) {
 				if (obj->data.hddtemp.update_time < current_update_time - 30) {
-					obj->data.hddtemp.temp = get_hddtemp_info(obj->data.hddtemp.dev,
+					char *str = get_hddtemp_info(obj->data.hddtemp.dev,
 							obj->data.hddtemp.addr, obj->data.hddtemp.port, &obj->data.hddtemp.unit);
+					if (str) {
+						strncpy(obj->data.hddtemp.temp, str, text_buffer_size);
+					} else {
+						obj->data.hddtemp.temp[0] = 0;
+					}
 					obj->data.hddtemp.update_time = current_update_time;
 				}
 				if (!obj->data.hddtemp.temp) {

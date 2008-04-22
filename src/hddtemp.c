@@ -42,7 +42,7 @@
 
 char buf[BUFLEN];
 
-int scan_hddtemp(const char *arg, char **dev, char **addr, int *port)
+int scan_hddtemp(const char *arg, char **dev, char **addr, int *port, char** temp)
 {
 	char buf1[32], buf2[64];
 	int n, ret;
@@ -70,6 +70,9 @@ int scan_hddtemp(const char *arg, char **dev, char **addr, int *port)
 	} else {
 		*port = PORT;
 	}
+
+	*temp = malloc(text_buffer_size);
+	memset(*temp, 0, text_buffer_size);
 
 	return 0;
 }
@@ -179,7 +182,7 @@ char *get_hddtemp_info(char *dev, char *hostaddr, int port, char *unit)
 				p++;
 				*unit = *p;
 				if (!strncmp(out, "NA", 2)) {
-					strcpy(buf, "N/A");
+					strncpy(buf, "N/A", BUFLEN);
 					r = buf;
 				} else {
 					r = out;
@@ -192,6 +195,9 @@ char *get_hddtemp_info(char *dev, char *hostaddr, int port, char *unit)
 						break;
 					}
 					p++;
+				}
+				if (!p && i < 5) {
+					break;
 				}
 			}
 		}

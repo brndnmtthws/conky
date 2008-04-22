@@ -517,10 +517,10 @@ long get_x11_color(const char *name)
 	if (!XParseColor(display, DefaultColormap(display, screen), name, &color)) {
 		/* lets check if it's a hex colour with the # missing in front
 		 * if yes, then do something about it */
-		char newname[64];
+		char newname[DEFAULT_TEXT_BUFFER_SIZE];
 
 		newname[0] = '#';
-		strncpy(&newname[1], name, 62);
+		strncpy(&newname[1], name, DEFAULT_TEXT_BUFFER_SIZE - 1);
 		/* now lets try again */
 		if (!XParseColor(display, DefaultColormap(display, screen), &newname[0],
 				&color)) {

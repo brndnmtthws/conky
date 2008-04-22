@@ -712,7 +712,7 @@ void update_xmms2(void);
 
 /* in hddtemp.c */
 #ifdef HDDTEMP
-int scan_hddtemp(const char *arg, char **dev, char **addr, int *port);
+int scan_hddtemp(const char *arg, char **dev, char **addr, int *port, char **temp);
 char *get_hddtemp_info(char *dev, char *addr, int port, char *unit);
 #endif /* HDDTEMP */
 
