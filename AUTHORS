@@ -194,6 +194,9 @@ Marcus Huesgen <marcus dot huesgen at googlemail dot com>
 Michal Januszewski <spock at gentoo dot org>
   hddtemp support
 
+Michal Ziabkowski <mziab at o2 dot pl>
+  $if_up memleak fix
+
 Miroslav Lichvar <lichvarm at gmail dot com>
   move audacious thread init to update_audacious() patch
 

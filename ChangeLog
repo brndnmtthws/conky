@@ -2,6 +2,7 @@
 
 2008-04-29
 	* own_window_type dock patch (thanks Morgan).
+	* Fix for $if_up memleak (thanks Micha¿).
 
 2008-04-12
 	* Added patch for the following (thanks larsko):
