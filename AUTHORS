@@ -200,6 +200,9 @@ Miroslav Lichvar <lichvarm at gmail dot com>
 Moncelier Camille <pixdamix at users dot sourceforge dot net>
   METAR patch
 
+Morgan Veyret <patzy at appart dot kicks-ass dot net>
+  own_window_type dock patch
+
 Nattfodd <Nattfodd@gmail.com>
   Fixed top_mem dupes
 

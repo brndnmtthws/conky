@@ -263,6 +263,7 @@ int interface_up(const char *dev)
 				break;
 			}
 			/* otherwise we are good */
+			free(conf.ifc_buf);
 			close(fd);
 			return 1;
 		}

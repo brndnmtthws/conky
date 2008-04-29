@@ -453,6 +453,7 @@ char *tmpstring2;
 #ifdef OWN_WINDOW
 enum _window_type {
 	TYPE_NORMAL = 0,
+	TYPE_DOCK,
 	TYPE_DESKTOP,
 	TYPE_OVERRIDE
 };

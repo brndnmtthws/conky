@@ -355,7 +355,7 @@
 	<varlistentry>
 		<term><command><option>own_window_type</option></command></term>
 		<listitem>
-			if own_window is yes, you may specify type normal, desktop or override (default: normal).
+			if own_window is yes, you may specify type normal, desktop, dock or override (default: normal).
 			Desktop windows are special windows that have no window decorations; are always visible
 			on your desktop; do not appear in your pager or taskbar; and are sticky across all workspaces.
 			Override windows are not under the control of the window manager.  Hints are ignored. This type

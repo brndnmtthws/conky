@@ -8387,6 +8387,8 @@ static void load_config_file(const char *f)
 					window.type = TYPE_NORMAL;
 				} else if (strncmp(value, "desktop", 7) == 0) {
 					window.type = TYPE_DESKTOP;
+				} else if (strncmp(value, "dock", 7) == 0) {
+					window.type = TYPE_DOCK;
 				} else if (strncmp(value, "override", 8) == 0) {
 					window.type = TYPE_OVERRIDE;
 				} else {

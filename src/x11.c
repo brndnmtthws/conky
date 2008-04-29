@@ -282,6 +282,11 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 						fprintf(stderr, "Conky: window type - desktop\n");
 						fflush(stderr);
 						break;
+					case TYPE_DOCK:
+						prop = ATOM(_NET_WM_WINDOW_TYPE_DOCK);
+						fprintf(stderr, "Conky: window type - dock\n");
+						fflush(stderr);
+						break;
 					case TYPE_NORMAL:
 					default:
 						prop = ATOM(_NET_WM_WINDOW_TYPE_NORMAL);

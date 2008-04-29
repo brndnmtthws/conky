@@ -1,5 +1,8 @@
 # $Id$
 
+2008-04-29
+	* own_window_type dock patch (thanks Morgan).
+
 2008-04-12
 	* Added patch for the following (thanks larsko):
 		* New $loadgraph to show a graph of load averages,
