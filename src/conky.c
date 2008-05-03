@@ -3583,9 +3583,11 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(user_times, INFO_USERS)
 	END OBJ(user_terms, INFO_USERS)
 	END OBJ(user_number, INFO_USERS)
+#if defined(__linux__)
 	END OBJ(gw_iface, INFO_GW)
 	END OBJ(gw_ip, INFO_GW)
 	END OBJ(if_gw, INFO_GW)
+#endif /* !__linux__ */
 #ifndef __OpenBSD__
 	END OBJ(adt746xcpu, 0)
 	END OBJ(adt746xfan, 0)
@@ -5439,9 +5441,11 @@ static void generate_text_internal(char *p, int p_max_size,
 					if_jumped = 0;
 				}
 			}
+#if defined(__linux__)
 			OBJ(ioscheduler) {
 				snprintf(p, p_max_size, "%s", get_ioscheduler(obj->data.s));
 			}
+#endif
 			OBJ(kernel) {
 				snprintf(p, p_max_size, "%s", cur->uname_s.release);
 			}
