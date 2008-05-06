@@ -4675,15 +4675,14 @@ static void generate_text_internal(char *p, int p_max_size,
 					obj->data.net->addr.sa_data[4] & 255,
 					obj->data.net->addr.sa_data[5] & 255);
 			}
-
 #if defined(__linux__)
-           OBJ(addrs) {
-                                    if(NULL != obj->data.net->addrs && strlen(obj->data.net->addrs) > 2)
-                                    {
-                                        obj->data.net->addrs[strlen(obj->data.net->addrs) - 2] = 0; /* remove ", " from end of string */
-                                        strcpy(p, obj->data.net->addrs);
-                                    }
-                                    else
+			OBJ(addrs) {
+				if(NULL != obj->data.net->addrs && strlen(obj->data.net->addrs) > 2)
+				{
+					obj->data.net->addrs[strlen(obj->data.net->addrs) - 2] = 0; /* remove ", " from end of string */
+					strcpy(p, obj->data.net->addrs);
+				}
+				else
                                         strcpy(p, "0.0.0.0");
            }
 #endif /* __linux__ */

@@ -586,7 +586,7 @@
 			<option>net</option>
 		</term>
 		<listitem>
-			Download speed in kilobytes
+			Download speed in KiB
 			<para></para></listitem>
 	</varlistentry>
 
@@ -596,7 +596,7 @@
 			<option>net</option>
 		</term>
 		<listitem>
-			Download speed in kilobytes with one decimal
+			Download speed in KiB with one decimal
 			<para></para></listitem>
 	</varlistentry>
 
@@ -1852,7 +1852,7 @@
 			<option>net</option>
 		</term>
 		<listitem>
-			Upload speed in kilobytes
+			Upload speed in KiB
 			<para></para></listitem>
 	</varlistentry>
 
@@ -1862,7 +1862,7 @@
 			<option>net</option>
 		</term>
 		<listitem>
-			Upload speed in kilobytes with one decimal
+			Upload speed in KiB with one decimal
 			<para></para></listitem>
 	</varlistentry>
 
