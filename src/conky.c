@@ -6566,7 +6566,6 @@ static void draw_string(const char *s)
 	int i, i2, pos, width_of_s;
 	int max = 0;
 	int added;
-	char space[2];
 
 	if (s[0] == '\0') {
 		return;
@@ -6583,9 +6582,8 @@ static void draw_string(const char *s)
 	pos = 0;
 	added = 0;
 
-	snprintf(space, 2, " ");
 #ifdef X11
-	max = ((text_width - width_of_s) / get_string_width(space));
+	max = ((text_width - width_of_s) / get_string_width(" "));
 #endif /* X11 */
 	/* This code looks for tabs in the text and coverts them to spaces.
 	 * The trick is getting the correct number of spaces, and not going

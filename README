@@ -697,11 +697,11 @@ VARIABLES
 
 
        downspeed net
-	      Download speed in kilobytes
+	      Download speed in KiB
 
 
        downspeedf net
-	      Download speed in kilobytes with one decimal
+	      Download speed in KiB with one decimal
 
 
        downspeedgraph  net  (height),(width)  (gradient	 colour	 1)  (gradient
@@ -1376,11 +1376,11 @@ VARIABLES
 
 
        upspeed net
-	      Upload speed in kilobytes
+	      Upload speed in KiB
 
 
        upspeedf net
-	      Upload speed in kilobytes with one decimal
+	      Upload speed in KiB with one decimal
 
 
        upspeedgraph  net (height),(width) (gradient colour 1) (gradient colour
@@ -1575,4 +1575,4 @@ AUTHORS
 
 
 
-				  2008-03-31			      conky(1)
+				  2008-05-06			      conky(1)
