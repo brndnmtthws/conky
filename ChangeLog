@@ -1,5 +1,8 @@
 # $Id$
 
+2008-05-30
+	* Simplified docs for color0-9 config settings and variables.
+
 2008-04-29
 	* own_window_type dock patch (thanks Morgan).
 	* Fix for $if_up memleak (thanks Micha¿).

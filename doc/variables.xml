@@ -364,92 +364,9 @@
 	</varlistentry>
 
 	<varlistentry>
-		<term>
-			<command><option>color0</option></command>
-		</term>
+		<term><command><option>colorN</option></command></term>
 		<listitem>
-			Change drawing color to color0 configuration option
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term>
-			<command><option>color1</option></command>
-		</term>
-		<listitem>
-			Change drawing color to color1 configuration option
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term>
-			<command><option>color2</option></command>
-		</term>
-		<listitem>
-			Change drawing color to color2 configuration option
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term>
-			<command><option>color3</option></command>
-		</term>
-		<listitem>
-			Change drawing color to color3 configuration option
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term>
-			<command><option>color4</option></command>
-		</term>
-		<listitem>
-			Change drawing color to color4 configuration option
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term>
-			<command><option>color5</option></command>
-		</term>
-		<listitem>
-			Change drawing color to color5 configuration option
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term>
-			<command><option>color6</option></command>
-		</term>
-		<listitem>
-			Change drawing color to color6 configuration option
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term>
-			<command><option>color7</option></command>
-		</term>
-		<listitem>
-			Change drawing color to color7 configuration option
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term>
-			<command><option>color8</option></command>
-		</term>
-		<listitem>
-			Change drawing color to color8 configuration option
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term>
-			<command><option>color9</option></command>
-		</term>
-		<listitem>
-			Change drawing color to color9 configuration option
+			Change drawing color to colorN configuration option, where N is a digit between 0 and 9, inclusively.
 			<para></para></listitem>
 	</varlistentry>
 

@@ -28,72 +28,9 @@
 	</varlistentry>
 
 	<varlistentry>
-		<term><command><option>color0</option></command></term>
+		<term><command><option>colorN</option></command></term>
 		<listitem>
-			A color variable for use inside TEXT segments
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term><command><option>color1</option></command></term>
-		<listitem>
-			A color variable for use inside TEXT segments
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term><command><option>color2</option></command></term>
-		<listitem>
-			A color variable for use inside TEXT segments
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term><command><option>color3</option></command></term>
-		<listitem>
-			A color variable for use inside TEXT segments
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term><command><option>color4</option></command></term>
-		<listitem>
-			A color variable for use inside TEXT segments
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term><command><option>color5</option></command></term>
-		<listitem>
-			A color variable for use inside TEXT segments
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term><command><option>color6</option></command></term>
-		<listitem>
-			A color variable for use inside TEXT segments
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term><command><option>color7</option></command></term>
-		<listitem>
-			A color variable for use inside TEXT segments
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term><command><option>color8</option></command></term>
-		<listitem>
-			A color variable for use inside TEXT segments
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term><command><option>color9</option></command></term>
-		<listitem>
-			A color variable for use inside TEXT segments
+			Predefine a color for use inside TEXT segments. Substitute N by a digit between 0 and 9, inclusively. When specifying the color value in hex, omit the leading hash (#).
 			<para></para></listitem>
 	</varlistentry>
 
