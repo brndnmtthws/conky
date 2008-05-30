@@ -128,6 +128,13 @@
 	</varlistentry>
 
 	<varlistentry>
+		<term><command><option>if_up_strictness</option></command></term>
+		<listitem>
+			How strict should if_up be when testing an interface for being up? The value is one of up, link or address, to check for the interface being solely up, being up and having link or being up, having link and an assigned IP address.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
 		<term><command><option>imap</option></command></term>
 		<listitem>
 			Default global IMAP server.  Arguments are: "host user pass [-i interval] [-f folder] [-p port] [-e command]".  Default port is 143, default folder is 'INBOX', default interval is 5 minutes.  If the password is supplied as '*', you will be prompted to enter the password when Conky starts.

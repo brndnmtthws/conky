@@ -2,6 +2,7 @@
 
 2008-05-30
 	* Simplified docs for color0-9 config settings and variables.
+	* Improved $if_up for configurable behaviour.
 
 2008-04-29
 	* own_window_type dock patch (thanks Morgan).

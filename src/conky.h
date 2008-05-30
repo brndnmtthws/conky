@@ -337,6 +337,13 @@ enum {
 	BATTERY_TIME
 };
 
+/* if_up strictness selector */
+enum {
+	IFUP_UP,
+	IFUP_LINK,
+	IFUP_ADDR
+} ifup_strictness;
+
 #ifdef MPD
 #include "libmpdclient.h"
 #endif

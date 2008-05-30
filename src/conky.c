@@ -8510,6 +8510,21 @@ static void load_config_file(const char *f)
 			 * as per config */
 		}
 #endif
+		CONF("if_up_strictness") {
+			if (!value) {
+				ERR("incorrect if_up_strictness value, defaulting to 'up'");
+				ifup_strictness = IFUP_UP;
+			} else if (!strcmp(value, "up")) {
+				ifup_strictness = IFUP_UP;
+			} else if (!strcmp(value, "link")) {
+				ifup_strictness = IFUP_LINK;
+			} else if (!strcmp(value, "address")) {
+				ifup_strictness = IFUP_ADDR;
+			} else {
+				ERR("incorrect if_up_strictness value, defaulting to 'up'");
+				ifup_strictness = IFUP_UP;
+			}
+		}
 		else {
 			ERR("%s: %d: no such configuration: '%s'", f, line, name);
 		}

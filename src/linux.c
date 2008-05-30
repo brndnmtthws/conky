@@ -212,66 +212,44 @@ char *get_ioscheduler(char *disk)
 
 int interface_up(const char *dev)
 {
-	int fd, dnl, ifnl, nl;
-	unsigned int k;
-	struct ifconf conf;
-	struct sockaddr addr;
-	char   *ifdev;
+	int fd;
+	struct ifreq ifr;
 
-	dnl = strlen(dev);
-	if((fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP)) < 0) {
+	if ((fd = socket(PF_INET, SOCK_DGRAM, 0)) < 0) {
 		CRIT_ERR("could not create sockfd");
 		return 0;
 	}
-
-	/* allocate memory for interface request */
-	if((conf.ifc_buf = calloc(16, sizeof(struct ifreq))) == NULL) {
-		CRIT_ERR("could not allocate memory for interface query");
-		return 0;
-	}
-	conf.ifc_len = sizeof(struct ifreq) * 16;
-
-	/* send a conf query ioctl to device to enumerate all interfaces */
-	if(ioctl(fd, SIOCGIFCONF, &conf)) {
-		/* if device does not exist, treat like not up - fail fast */
+	strncpy(ifr.ifr_name, dev, IFNAMSIZ);
+	if (ioctl(fd, SIOCGIFFLAGS, &ifr)) {
+		/* if device does not exist, treat like not up */
 		if (errno != ENODEV)
 			perror("SIOCGIFFLAGS");
-	} else {
-		/* for all enumerated interface devices ... */
-		for (k = 0; k < conf.ifc_len / sizeof(struct ifreq); k++) {
-			/* end of buffer - break out */
-			if (!(((struct ifreq *) conf.ifc_buf) + k))
-				break;
-			/* get interface device name */
-			ifdev =  ((struct ifreq *) conf.ifc_buf)[k].ifr_ifrn.ifrn_name;
-			ifnl = strlen(ifdev);
-			nl = dnl > ifnl ? ifnl : dnl;
-			/* if it does not match our specified device - move on */
-			if (strncmp(dev, ifdev, nl) != 0) {
-				continue;
-			}
-			/* get associated address on device */
-			addr = ((struct ifreq *) conf.ifc_buf)[k].ifr_ifru.ifru_addr;
-			/* if ip is 0.0.0.0 it is not up */
-			if(((addr.sa_data[2] & 255) == 0 && (addr.sa_data[3] & 255) == 0 &&
-			    (addr.sa_data[4] & 255) == 0 && (addr.sa_data[5] & 255) == 0) || 
-                           /* oh yeah also include IANA link local RFC3330
-			    * http://www.faqs.org/rfcs/rfc3330.html
-                            * http://www.iana.org/assignments/ipv4-address-space Notes [6]
-                            * exclude 169.254.*.*  how about 223.255 and 240.0??? */
-			   ((addr.sa_data[2] & 255) == 169 && (addr.sa_data[3] & 255) == 254)) {
-				break;
-			}
-			/* otherwise we are good */
-			free(conf.ifc_buf);
-			close(fd);
-			return 1;
-		}
+		goto END_FALSE;
 	}
-	/* cleanup */
+
+	if (!(ifr.ifr_flags & IFF_UP)) /* iface is not up */
+		goto END_FALSE;
+	if (ifup_strictness == IFUP_UP)
+		goto END_TRUE;
+
+	if (!(ifr.ifr_flags & IFF_RUNNING))
+		goto END_FALSE;
+	if (ifup_strictness == IFUP_LINK)
+		goto END_TRUE;
+
+	if (ioctl(fd, SIOCGIFADDR, &ifr)) {
+		perror("SIOCGIFADDR");
+		goto END_FALSE;
+	}
+	if (((struct sockaddr_in *)&(ifr.ifr_ifru.ifru_addr))->sin_addr.s_addr)
+		goto END_TRUE;
+
+END_FALSE:
 	close(fd);
-	free(conf.ifc_buf);
 	return 0;
+END_TRUE:
+	close(fd);
+	return 1;
 }
 
 #define COND_FREE(x) if(x) free(x); x = 0
