@@ -271,6 +271,9 @@ Ryan Twitchell <tryan2 at rochester dot rr dot com>
 Mikko Sysikaski <sisu at users dot sourceforge dot net>
   prss.c and prss.h
 
+Sceptik <sceptik at users dot sourceforge dot net>
+  --quiet patch
+
 Stepan Zastupov <redchrom at gmail dot com>
   WiFi signal level detection support on FreeBSD
 

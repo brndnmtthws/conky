@@ -7,6 +7,13 @@
 	</varlistentry>
 
 	<varlistentry>
+		<term><command><option>-q | --quiet</option></command></term>
+		<listitem>
+			Run Conky in 'quiet mode' (ie. no output)
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
 		<term><command><option>-a | --alignment=</option></command><option>ALIGNMENT</option></term>
 		<listitem>
 			Text alignment on screen, {top,bottom,middle}_{left,right,middle} or none

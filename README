@@ -90,6 +90,10 @@ OPTIONS
 	      Prints version and exits
 
 
+       -q | --quiet
+	      Run Conky in 'quiet mode' (ie. no output)
+
+
        -a | --alignment=ALIGNMENT
 	      Text alignment on	 screen,  {top,bottom,middle}_{left,right,mid-
 	      dle} or none

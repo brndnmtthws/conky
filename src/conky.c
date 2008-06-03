@@ -8591,7 +8591,7 @@ static void load_config_file(const char *f)
 }
 
 /* : means that character before that takes an argument */
-static const char *getopt_string = "vVdt:u:i:hc:"
+static const char *getopt_string = "vVqdt:u:i:hc:"
 #ifdef X11
 	"x:y:w:a:f:"
 #ifdef OWN_WINDOW
@@ -8679,13 +8679,16 @@ int main(int argc, char **argv)
 				}
 				current_config = strndup(optarg, max_user_text);
 				break;
-
+			case 'q':
+				freopen("/dev/null", "w", stderr);
+				break;
 			case 'h':
 				printf("Usage: %s [OPTION]...\n"
-					   "Conky is a system monitor that renders text on desktop or to own transparent\n"
-					   "window. Command line options will override configurations defined in config\n"
+						"Conky is a system monitor that renders text on desktop or to own transparent\n"
+						"window. Command line options will override configurations defined in config\n"
 					   "file.\n"
 					   "   -v, --version             version\n"
+					   "   -q, --quiet               quiet mode\n"
 					   "   -c, --config=FILE         config file to load\n"
 					   "   -d, --daemonize           daemonize, fork to background\n"
 					   "   -h, --help                help\n"
