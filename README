@@ -171,34 +171,9 @@ CONFIGURATION SETTINGS
 	      Border width in pixels
 
 
-       color0 A color variable for use inside TEXT segments
-
-
-       color1 A color variable for use inside TEXT segments
-
-
-       color2 A color variable for use inside TEXT segments
-
-
-       color3 A color variable for use inside TEXT segments
-
-
-       color4 A color variable for use inside TEXT segments
-
-
-       color5 A color variable for use inside TEXT segments
-
-
-       color6 A color variable for use inside TEXT segments
-
-
-       color7 A color variable for use inside TEXT segments
-
-
-       color8 A color variable for use inside TEXT segments
-
-
-       color9 A color variable for use inside TEXT segments
+       colorN Predefine	 a color for use inside TEXT segments. Substitute N by
+	      a digit between 0 and 9, inclusively. When specifying the	 color
+	      value in hex, omit the leading hash (#).
 
 
        cpu_avg_samples
@@ -256,10 +231,17 @@ CONFIGURATION SETTINGS
 	      passing -y at command line, e.g. gap_y 10.
 
 
-       imap   Default  global  IMAP server. Arguments are: "host user pass [-i
-	      interval] [-f folder] [-p port] [-e command]". Default  port  is
-	      143,  default  folder is 'INBOX', default interval is 5 minutes.
-	      If the password is supplied as '*', you will be prompted to  en-
+       if_up_strictness
+	      How  strict  should if_up be when testing an interface for being
+	      up? The value is one of up, link or address, to  check  for  the
+	      interface being solely up, being up and having link or being up,
+	      having link and an assigned IP address.
+
+
+       imap   Default global IMAP server. Arguments are: "host user  pass  [-i
+	      interval]	 [-f  folder] [-p port] [-e command]". Default port is
+	      143, default folder is 'INBOX', default interval is  5  minutes.
+	      If  the password is supplied as '*', you will be prompted to en-
 	      ter the password when Conky starts.
 
 
@@ -268,12 +250,12 @@ CONFIGURATION SETTINGS
 
 
        max_port_monitor_connections
-	      Allow  each  port monitor to track at most this many connections
+	      Allow each port monitor to track at most this  many  connections
 	      (if 0 or not set, default is 256)
 
 
        max_specials
-	      Maximum number of special things, e.g. fonts,  offsets,  aligns,
+	      Maximum  number  of special things, e.g. fonts, offsets, aligns,
 	      etc. (default is 512)
 
 
@@ -283,12 +265,12 @@ CONFIGURATION SETTINGS
 
 
        text_buffer_size bytes
-	      Size of the standard text buffer (default is  256	 bytes).  This
-	      buffer  is used for intermediary text, such as individual lines,
-	      output from $exec vars, and various other variables.  Increasing
-	      the  size	 of this buffer can drastically reduce Conky's perfor-
-	      mance, but will allow for more text display  per	variable.  The
-	      size  of this buffer cannot be smaller than the default value of
+	      Size  of	the  standard text buffer (default is 256 bytes). This
+	      buffer is used for intermediary text, such as individual	lines,
+	      output  from $exec vars, and various other variables. Increasing
+	      the size of this buffer can drastically reduce  Conky's  perfor-
+	      mance,  but  will	 allow for more text display per variable. The
+	      size of this buffer cannot be smaller than the default value  of
 	      256 bytes.
 
 
@@ -313,7 +295,7 @@ CONFIGURATION SETTINGS
 
 
        music_player_interval
-	      Music player thread update interval (defaults to Conky's	update
+	      Music  player thread update interval (defaults to Conky's update
 	      interval)
 
 
@@ -338,21 +320,21 @@ CONFIGURATION SETTINGS
 
 
        own_window_colour colour
-	      If  own_window_transparent no, set a specified background colour
-	      (defaults to black). Takes either a hex  value  (#ffffff)	 or  a
+	      If own_window_transparent no, set a specified background	colour
+	      (defaults	 to  black).  Takes  either a hex value (#ffffff) or a
 	      valid RGB name (see /usr/lib/X11/rgb.txt)
 
 
        own_window_hints undecorated,below,above,sticky,skip_taskbar,skip_pager
-	      If  own_window is yes, you may use these window manager hints to
+	      If own_window is yes, you may use these window manager hints  to
 	      affect the way Conky displays.  Notes: Use own_window_type desk-
-	      top  as another way to implement many of these hints implicitly.
-	      If you use own_window_type override, window manager  hints  have
+	      top as another way to implement many of these hints  implicitly.
+	      If  you  use own_window_type override, window manager hints have
 	      no meaning and are ignored.
 
 
        own_window_title
-	      Manually	set the window name. Defaults to "<hostname> - conky".
+	      Manually set the window name. Defaults to "<hostname> -  conky".
 
 
        own_window_transparent
@@ -363,8 +345,8 @@ CONFIGURATION SETTINGS
 	      if own_window is yes, you may specify type normal, desktop, dock
 	      or override (default: normal).  Desktop windows are special win-
 	      dows that have no window decorations; are always visible on your
-	      desktop;	do not appear in your pager or taskbar; and are sticky
-	      across all workspaces.  Override windows are not under the  con-
+	      desktop; do not appear in your pager or taskbar; and are	sticky
+	      across  all workspaces.  Override windows are not under the con-
 	      trol of the window manager. Hints are ignored. This type of win-
 	      dow can be useful for certain situations.
 
@@ -377,9 +359,9 @@ CONFIGURATION SETTINGS
 	      Pad percentages to this many decimals (0 = no padding)
 
 
-       pop3   Default global POP3 server. Arguments are: "host user  pass  [-i
-	      interval]	 [-p port] [-e command]". Default port is 110, default
-	      interval is 5 minutes. If the password is supplied as  '*',  you
+       pop3   Default  global  POP3 server. Arguments are: "host user pass [-i
+	      interval] [-p port] [-e command]". Default port is 110,  default
+	      interval	is  5 minutes. If the password is supplied as '*', you
 	      will be prompted to enter the password when Conky starts.
 
 
@@ -397,7 +379,7 @@ CONFIGURATION SETTINGS
 
 
        total_run_times
-	      Total number of times for Conky to update before quitting.  Zero
+	      Total  number of times for Conky to update before quitting. Zero
 	      makes Conky run forever
 
 
@@ -412,8 +394,8 @@ CONFIGURATION SETTINGS
        use_spacer
 	      Adds spaces around certain objects to stop them from moving oth-
 	      er things around. Arguments are left, right, and none (default).
-	      The   old	 true/false  values  are  deprecated  and  default  to
-	      right/none respectively. Note that this only helps  if  you  are
+	      The  old	true/false  values  are	 deprecated  and  default   to
+	      right/none  respectively.	 Note  that this only helps if you are
 	      using a mono font, such as Bitstream Vera Sans Mono.
 
 
@@ -433,8 +415,8 @@ CONFIGURATION SETTINGS
 
 
 VARIABLES
-       Colors  are  parsed using XParsecolor(), there might be a list of them:
-       /usr/share/X11/rgb.txt.	 Also,	  <http://sedition.com/perl/rgb.html>.
+       Colors are parsed using XParsecolor(), there might be a list  of	 them:
+       /usr/share/X11/rgb.txt.	  Also,	  <http://sedition.com/perl/rgb.html>.
        Color can be also in #rrggbb format (hex).
 
        addr interface
@@ -442,7 +424,7 @@ VARIABLES
 
 
        addrs interface
-	      IP  addresses for an interface (if one - works like addr). Linux
+	      IP addresses for an interface (if one - works like addr).	 Linux
 	      only.
 
 
@@ -487,7 +469,7 @@ VARIABLES
 
 
        apm_battery_time
-	      Display remaining APM battery life in hh:mm:ss or	 "unknown"  if
+	      Display  remaining  APM battery life in hh:mm:ss or "unknown" if
 	      AC adapterstatus is on-line or charging (FreeBSD only)
 
 
@@ -544,8 +526,8 @@ VARIABLES
 
 
        battery (num)
-	      Battery  status and remaining percentage capacity of ACPI or APM
-	      battery. ACPI battery number can be given as  argument  (default
+	      Battery status and remaining percentage capacity of ACPI or  APM
+	      battery.	ACPI  battery number can be given as argument (default
 	      is BAT0).
 
 
@@ -560,7 +542,7 @@ VARIABLES
 
 
        battery_time (num)
-	      Battery  charge/discharge	 time  remaining of ACPI battery. ACPI
+	      Battery charge/discharge time remaining of  ACPI	battery.  ACPI
 	      battery number can be given as argument (default is BAT0).
 
 
@@ -599,34 +581,8 @@ VARIABLES
 	      Change drawing color to color
 
 
-       color0 Change drawing color to color0 configuration option
-
-
-       color1 Change drawing color to color1 configuration option
-
-
-       color2 Change drawing color to color2 configuration option
-
-
-       color3 Change drawing color to color3 configuration option
-
-
-       color4 Change drawing color to color4 configuration option
-
-
-       color5 Change drawing color to color5 configuration option
-
-
-       color6 Change drawing color to color6 configuration option
-
-
-       color7 Change drawing color to color7 configuration option
-
-
-       color8 Change drawing color to color8 configuration option
-
-
-       color9 Change drawing color to color9 configuration option
+       colorN Change  drawing color to colorN configuration option, where N is
+	      a digit between 0 and 9, inclusively.
 
 
        conky_version
@@ -1156,32 +1112,41 @@ VARIABLES
 	      Hostname
 
 
+       nvidia threshold temp gpufreq memfreq imagequality
+	      Nvidia  graficcard support for the XNVCtrl library.  Each option
+	      gives back one integer value: (threshold): the thresholdtempera-
+	      ture  at	which the gpu slows down (temp): gives the gpu current
+	      temperature (gpufreq): gives the	current	 gpu  frequency	 (mem-
+	      freq): gives the current mem frequency (imagequality): which im-
+	      agequality should be choosen by OpenGL applications
+
+
        outlinecolor (color)
 	      Change outline color
 
 
        pb_battery item
 	      If running on Apple powerbook/ibook, display information on bat-
-	      tery status. The item parameter specifies, what  information  to
+	      tery  status.  The item parameter specifies, what information to
 	      display. Exactly one item must be specified. Valid items are:
 
 	      status: Display if battery is fully charged, charging, discharg-
 	      ing or absent (running on AC)
-	      percent: Display charge of battery in percent,  if  charging  or
-	      discharging.  Nothing  will  be  displayed,  if battery is fully
+	      percent:	Display	 charge	 of battery in percent, if charging or
+	      discharging. Nothing will be  displayed,	if  battery  is	 fully
 	      charged or absent.
 	      time: Display the time remaining until the battery will be fully
-	      charged  or discharged at current rate. Nothing is displayed, if
-	      battery is absent or if it's present but fully charged  and  not
+	      charged or discharged at current rate. Nothing is displayed,  if
+	      battery  is  absent or if it's present but fully charged and not
 	      discharging.
 
 
        platform (dev) type n
-	      Platform	sensor	from  sysfs  (Linux 2.6). Parameter dev may be
-	      omitted if you have only one platform device. Platform  type  is
-	      either  'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp'
+	      Platform sensor from sysfs (Linux 2.6).  Parameter  dev  may  be
+	      omitted  if  you have only one platform device. Platform type is
+	      either 'in' or 'vol' meaning voltage; 'fan' meaning fan;	'temp'
 	      (Celsius) or 'tempf' (Fahrenheit) meaning temperature. Parameter
-	      n	 is  number  of	 the sensor. See /sys/bus/platform/devices/ on
+	      n is number of the  sensor.  See	/sys/bus/platform/devices/  on
 	      your local computer.
 
 
@@ -1189,17 +1154,17 @@ VARIABLES
 	      Displays the number of unseen messages in your global POP3 inbox
 	      by default. You can define individual POP3 inboxes seperately by
 	      passing arguments to this object. Arguments are: "host user pass
-	      [-i  interval] [-p port] [-e command]". Default port is 110, de-
+	      [-i interval] [-p port] [-e command]". Default port is 110,  de-
 	      fault interval is 5 minutes. If the password is supplied as '*',
 	      you will be prompted to enter the password when Conky starts.
 
 
        pop3_used (args)
-	      Displays	the amount of space (in MiB, 2^20) used in your global
-	      POP3 inbox by default. You can define  individual	 POP3  inboxes
-	      seperately  by  passing arguments to this object. Arguments are:
-	      "host user pass [-i interval] [-p port] [-e  command]".  Default
-	      port  is	110, default interval is 5 minutes. If the password is
+	      Displays the amount of space (in MiB, 2^20) used in your	global
+	      POP3  inbox  by  default. You can define individual POP3 inboxes
+	      seperately by passing arguments to this object.  Arguments  are:
+	      "host  user  pass [-i interval] [-p port] [-e command]". Default
+	      port is 110, default interval is 5 minutes. If the  password  is
 	      supplied as '*', you will be prompted to enter the password when
 	      Conky starts.
 
@@ -1222,21 +1187,21 @@ VARIABLES
 
 
        smapi (ARGS)
-	      when using smapi, display	 contents  of  the  /sys/devices/plat-
-	      form/smapi  directory. ARGS are either '(FILENAME)' or 'bat (IN-
-	      DEX) (FILENAME)' to display the  corresponding  files'  content.
-	      This  is	a  very raw method of accessing the smapi values. When
+	      when  using  smapi,  display  contents of the /sys/devices/plat-
+	      form/smapi directory. ARGS are either '(FILENAME)' or 'bat  (IN-
+	      DEX)  (FILENAME)'	 to  display the corresponding files' content.
+	      This is a very raw method of accessing the  smapi	 values.  When
 	      available, better use one of the smapi_* variables instead.
 
 
        smapi_bat_perc (INDEX)
-	      when using smapi, display the remaining capacity in  percent  of
-	      the  battery  with  index INDEX. This is a separate variable be-
+	      when  using  smapi, display the remaining capacity in percent of
+	      the battery with index INDEX. This is a  separate	 variable  be-
 	      cause it supports the 'use_spacer' configuration option.
 
 
        smapi_bat_bar (INDEX),(height),(width)
-	      when using smapi, display the remaining capacity of the  battery
+	      when  using smapi, display the remaining capacity of the battery
 	      with index INDEX as a bar.
 
 
@@ -1280,36 +1245,36 @@ VARIABLES
 	      The connection index provides you with access to each connection
 	      in the port monitor. The monitor will return information for in-
 	      dex values from 0 to n-1 connections. Values higher than n-1 are
-	      simply  ignored. For the "count" item, the connection index must
+	      simply ignored. For the "count" item, the connection index  must
 	      be omitted. It is required for all other items.
 
 	      Examples:
-	      ${tcp_portmon 6881 6999 count} - displays the number of  connec-
+	      ${tcp_portmon  6881 6999 count} - displays the number of connec-
 	      tions in the bittorrent port range
-	      ${tcp_portmon  22 22 rip 0} - displays the remote host ip of the
+	      ${tcp_portmon 22 22 rip 0} - displays the remote host ip of  the
 	      first sshd connection
-	      ${tcp_portmon 22 22 rip 9} - displays the remote host ip of  the
+	      ${tcp_portmon  22 22 rip 9} - displays the remote host ip of the
 	      tenth sshd connection
 	      ${tcp_portmon 1 1024 rhost 0} - displays the remote host name of
 	      the first connection on a privileged port
 	      ${tcp_portmon 1 1024 rport 4} - displays the remote host port of
 	      the fifth connection on a privileged port
-	      ${tcp_portmon  1 65535 lservice 14} - displays the local service
+	      ${tcp_portmon 1 65535 lservice 14} - displays the local  service
 	      name of the fifteenth connection in the range of all ports
 
 	      Note that port monitor variables which share the same port range
 	      actually refer to the same monitor, so many references to a sin-
 	      gle port range for different items and different indexes all use
-	      the  same monitor internally. In other words, the program avoids
+	      the same monitor internally. In other words, the program	avoids
 	      creating redundant monitors.
 
        texeci interval command
-	      Runs a command at an interval inside a thread and	 displays  the
-	      output.  Same  as	 $execi,  except  the  command is run inside a
-	      thread. Use this if you have a slow script to keep Conky	updat-
-	      ing.  You should make the interval slightly longer then the time
-	      it takes your script to execute. For  example,  if  you  have  a
-	      script  that  take 5 seconds to execute, you should make the in-
+	      Runs  a  command at an interval inside a thread and displays the
+	      output. Same as $execi, except  the  command  is	run  inside  a
+	      thread.  Use this if you have a slow script to keep Conky updat-
+	      ing. You should make the interval slightly longer then the  time
+	      it  takes	 your  script  to  execute. For example, if you have a
+	      script that take 5 seconds to execute, you should make  the  in-
 	      terval at least 6 seconds. See also $execi.
 
 
@@ -1318,8 +1283,8 @@ VARIABLES
 
 
        rss url delay_in_minutes action item_num
-	      Download and parse RSS feeds. Action may be one of  the  follow-
-	      ing:  feed_title, item_title (with num par), item_desc (with num
+	      Download	and  parse RSS feeds. Action may be one of the follow-
+	      ing: feed_title, item_title (with num par), item_desc (with  num
 	      par) and item_titles.
 
 
@@ -1334,7 +1299,7 @@ VARIABLES
 
 
        time (format)
-	      Local  time, see man strftime to get more information about for-
+	      Local time, see man strftime to get more information about  for-
 	      mat
 
 
@@ -1343,23 +1308,23 @@ VARIABLES
 
 
        tztime (timezone) (format)
-	      Local time for specified timezone, see man strftime to get  more
-	      information  about format. The timezone argument is specified in
-	      similar fashion as TZ environment variable. For hints,  look  in
+	      Local  time for specified timezone, see man strftime to get more
+	      information about format. The timezone argument is specified  in
+	      similar  fashion	as TZ environment variable. For hints, look in
 	      /usr/share/zoneinfo. e.g. US/Pacific, Europe/Zurich, etc.
 
 
        totaldown net
-	      Total  download, overflows at 4 GB on Linux with 32-bit arch and
+	      Total download, overflows at 4 GB on Linux with 32-bit arch  and
 	      there doesn't seem to be a way to know how many times it has al-
 	      ready done that before conky has started.
 
 
        top type, num
-	      This  takes arguments in the form:top (name) (number) Basically,
-	      processes are ranked from highest to lowest in terms of cpu  us-
-	      age,  which  is  what  (num)  represents. The types are: "name",
-	      "pid", "cpu", "mem", "mem_res", "mem_vsize", and	"time".	 There
+	      This takes arguments in the form:top (name) (number)  Basically,
+	      processes	 are ranked from highest to lowest in terms of cpu us-
+	      age, which is what (num)	represents.  The  types	 are:  "name",
+	      "pid",  "cpu",  "mem", "mem_res", "mem_vsize", and "time". There
 	      can be a max of 10 processes listed.
 
 
@@ -1383,9 +1348,9 @@ VARIABLES
 	      Upload speed in KiB with one decimal
 
 
-       upspeedgraph  net (height),(width) (gradient colour 1) (gradient colour
+       upspeedgraph net (height),(width) (gradient colour 1) (gradient	colour
        2) (scale)
-	      Upload  speed  graph,  colours  defined  in hex, minus the #. If
+	      Upload speed graph, colours defined in  hex,  minus  the	#.  If
 	      scale is non-zero, it becomes the scale for the graph.
 
 
@@ -1413,12 +1378,12 @@ VARIABLES
 
 
        voffset (pixels)
-	      Change vertical offset by N pixels. Negative values  will	 cause
+	      Change  vertical	offset by N pixels. Negative values will cause
 	      text to overlap. See also $offset.
 
 
        voltage_mv (n)
-	      Returns  CPU  #n's  voltage  in  mV. CPUs are counted from 1. If
+	      Returns CPU #n's voltage in mV. CPUs  are	 counted  from	1.  If
 	      omitted, the parameter defaults to 1.
 
 
@@ -1546,13 +1511,13 @@ FILES
 BUGS
        Drawing to root or some other desktop window directly doesn't work with
        all window managers. Especially doesn't work well with Gnome and it has
-       been  reported  that  it	 doesn't work with KDE either. Nautilus can be
-       disabled from drawing to desktop	 with  program	gconf-editor.  Uncheck
-       show_desktop  in	 /apps/nautilus/preferences/.  There  is  -w switch in
-       Conky to set some specific window id. You  might	 find  xwininfo	 -tree
-       useful  to  find	 the  window  to draw to. You can also use -o argument
+       been reported that it doesn't work with KDE  either.  Nautilus  can  be
+       disabled	 from  drawing	to  desktop with program gconf-editor. Uncheck
+       show_desktop in /apps/nautilus/preferences/.  There  is	-w  switch  in
+       Conky  to  set  some  specific window id. You might find xwininfo -tree
+       useful to find the window to draw to. You  can  also  use  -o  argument
        which makes Conky to create its own window. If you do try running Conky
-       in  its	own window, be sure to read up on the own_window_type settings
+       in its own window, be sure to read up on the  own_window_type  settings
        and experiment.
 
 SEE ALSO
@@ -1563,11 +1528,11 @@ SEE ALSO
        #conky on irc.freenode.net
 
 COPYING
-       Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et.  al.   Any
+       Copyright  (c)  2005-2008 Brenden Matthews, Philip Kovacs, et. al.  Any
        original torsmo code is licensed under the BSD license (see LICENSE.BSD
        for a copy).  All code written since the fork of torsmo is licensed un-
        der the GPL (see LICENSE.GPL for a copy), except where noted different-
-       ly (such as in portmon code, timed  thread  code,  and  audacious  code
+       ly  (such  as  in  portmon  code, timed thread code, and audacious code
        which are LGPL, and prss which is an MIT-style license).
 
 AUTHORS

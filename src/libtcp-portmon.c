@@ -560,8 +560,9 @@ void update_tcp_port_monitor_collection(
 				(unsigned long *) &inode) != 7) {
 			fprintf(stderr, "/proc/net/tcp: bad file format\n");
 		}
-
-		if ((inode == 0) || (state != TCP_ESTABLISHED)) {
+		/** TCP_ESTABLISHED equals 1, but is not (always??) included **/
+		//if ((inode == 0) || (state != TCP_ESTABLISHED)) {
+		if((inode == 0) || (state != 1)) {
 			continue;
 		}
 

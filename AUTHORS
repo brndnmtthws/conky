@@ -191,6 +191,9 @@ Lucas Brutschy <lbrutschy at users dot sourceforge dot net>
 Marcus Huesgen <marcus dot huesgen at googlemail dot com>
   battery_bar fix
 
+Markus Meissner <meissna at users dot sourceforge dot net>
+  NVIDIA Graficcard support with libXNVCtrl patch
+
 Michal Januszewski <spock at gentoo dot org>
   hddtemp support
 

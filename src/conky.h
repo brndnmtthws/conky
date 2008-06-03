@@ -85,6 +85,10 @@ char *strndup(const char *s, size_t n);
 #include "smapi.h"
 #endif
 
+#ifdef NVIDIA
+#include "nvidia.h"
+#endif
+ 
 #include "mboxscan.h"
 #include "timed_thread.h"
 
@@ -329,6 +333,10 @@ enum {
 	INFO_USERS = 26,
 	INFO_GW = 27,
 	INFO_DNS = 28
+#ifdef NVIDIA
+,	INFO_NVIDIA = 29
+#endif
+
 };
 
 /* get_battery_stuff() item selector */
@@ -732,5 +740,12 @@ void free_rss_info(void);
 #endif /* RSS */
 
 /* in linux.c */
+
+/* in nvidia.c */
+#ifdef NVIDIA
+
+int get_nvidia_value(QUERY_ID qid, Display *dpy, int highorlow);
+
+#endif /* NVIDIA */
 
 #endif

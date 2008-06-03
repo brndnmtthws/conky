@@ -158,44 +158,8 @@ Border margin in pixels
 Border width in pixels
 
 .TP 
-\fB\*(T<\fBcolor0\fR\*(T>\fR
-A color variable for use inside TEXT segments
-
-.TP 
-\fB\*(T<\fBcolor1\fR\*(T>\fR
-A color variable for use inside TEXT segments
-
-.TP 
-\fB\*(T<\fBcolor2\fR\*(T>\fR
-A color variable for use inside TEXT segments
-
-.TP 
-\fB\*(T<\fBcolor3\fR\*(T>\fR
-A color variable for use inside TEXT segments
-
-.TP 
-\fB\*(T<\fBcolor4\fR\*(T>\fR
-A color variable for use inside TEXT segments
-
-.TP 
-\fB\*(T<\fBcolor5\fR\*(T>\fR
-A color variable for use inside TEXT segments
-
-.TP 
-\fB\*(T<\fBcolor6\fR\*(T>\fR
-A color variable for use inside TEXT segments
-
-.TP 
-\fB\*(T<\fBcolor7\fR\*(T>\fR
-A color variable for use inside TEXT segments
-
-.TP 
-\fB\*(T<\fBcolor8\fR\*(T>\fR
-A color variable for use inside TEXT segments
-
-.TP 
-\fB\*(T<\fBcolor9\fR\*(T>\fR
-A color variable for use inside TEXT segments
+\fB\*(T<\fBcolorN\fR\*(T>\fR
+Predefine a color for use inside TEXT segments. Substitute N by a digit between 0 and 9, inclusively. When specifying the color value in hex, omit the leading hash (#).
 
 .TP 
 \fB\*(T<\fBcpu_avg_samples\fR\*(T>\fR
@@ -250,6 +214,10 @@ e.g. gap_x 10
 \fB\*(T<\fBgap_y\fR\*(T>\fR
 Gap, in pixels, between top or bottom border of screen, same as passing -y at command line,
 e.g. gap_y 10.
+
+.TP 
+\fB\*(T<\fBif_up_strictness\fR\*(T>\fR
+How strict should if_up be when testing an interface for being up? The value is one of up, link or address, to check for the interface being solely up, being up and having link or being up, having link and an assigned IP address.
 
 .TP 
 \fB\*(T<\fBimap\fR\*(T>\fR
@@ -564,44 +532,8 @@ Amount of memory cached
 Change drawing color to color
 
 .TP 
-\fB\*(T<\fBcolor0\fR\*(T>\fR 
-Change drawing color to color0 configuration option
-
-.TP 
-\fB\*(T<\fBcolor1\fR\*(T>\fR 
-Change drawing color to color1 configuration option
-
-.TP 
-\fB\*(T<\fBcolor2\fR\*(T>\fR 
-Change drawing color to color2 configuration option
-
-.TP 
-\fB\*(T<\fBcolor3\fR\*(T>\fR 
-Change drawing color to color3 configuration option
-
-.TP 
-\fB\*(T<\fBcolor4\fR\*(T>\fR 
-Change drawing color to color4 configuration option
-
-.TP 
-\fB\*(T<\fBcolor5\fR\*(T>\fR 
-Change drawing color to color5 configuration option
-
-.TP 
-\fB\*(T<\fBcolor6\fR\*(T>\fR 
-Change drawing color to color6 configuration option
-
-.TP 
-\fB\*(T<\fBcolor7\fR\*(T>\fR 
-Change drawing color to color7 configuration option
-
-.TP 
-\fB\*(T<\fBcolor8\fR\*(T>\fR 
-Change drawing color to color8 configuration option
-
-.TP 
-\fB\*(T<\fBcolor9\fR\*(T>\fR 
-Change drawing color to color9 configuration option
+\fB\*(T<\fBcolorN\fR\*(T>\fR
+Change drawing color to colorN configuration option, where N is a digit between 0 and 9, inclusively.
 
 .TP 
 \fB\*(T<\fBconky_version\fR\*(T>\fR 
@@ -1032,6 +964,16 @@ not. Both mbox and maildir type mailboxes are supported.
 .TP 
 \fB\*(T<\fBnodename\fR\*(T>\fR 
 Hostname
+
+.TP 
+\fB\*(T<\fBnvidia\fR\*(T>\fR \*(T<\fBthreshold\fR\*(T> \*(T<\fBtemp\fR\*(T> \*(T<\fBgpufreq\fR\*(T> \*(T<\fBmemfreq\fR\*(T> \*(T<\fBimagequality\fR\*(T> 
+Nvidia graficcard support for the XNVCtrl library.
+Each option gives back one integer value:
+(threshold): the thresholdtemperature at which the gpu slows down
+(temp): gives the gpu current temperature
+(gpufreq): gives the current gpu frequency
+(memfreq): gives the current mem frequency
+(imagequality): which imagequality should be choosen by OpenGL applications
 
 .TP 
 \fB\*(T<\fBoutlinecolor\fR\*(T>\fR \*(T<\fB(color)\fR\*(T> 

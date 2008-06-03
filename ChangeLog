@@ -1,5 +1,8 @@
 # $Id$
 
+2008-06-03
+	* Added NVIDIA Graficcard support patch (thanks meissna)
+
 2008-05-30
 	* Simplified docs for color0-9 config settings and variables.
 	* Improved $if_up for configurable behaviour.

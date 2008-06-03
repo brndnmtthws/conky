@@ -240,12 +240,30 @@ dnl
 AC_ARG_ENABLE([wlan],
 	      AC_HELP_STRING([--enable-wlan], [enable if you want wireless support @<:@default=no@:>@]),
 	      [want_wlan="$enableval"], [want_wlan=no])
-#
+
 AM_CONDITIONAL(BUILD_WLAN, test x$want_wlan = xyes)
 if test x$want_wlan = xyes; then
   AC_CHECK_HEADERS([iwlib.h], [], AC_MSG_ERROR([iwlib.h header not found]))
   AC_CHECK_LIB([iw], [iw_sockets_open], [LIBS="$LIBS -liw"], AC_MSG_ERROR([iw_sockets_open not found]))
 	AC_DEFINE(HAVE_IWLIB, 1, [Define if you want wireless support])
+fi
+
+dnl
+dnl NVIDIA libXNVCtrl support
+dnl
+
+AC_ARG_ENABLE([nvidia],
+		AC_HELP_STRING([--enable-nvidia], [enable if you want nvidia support @<:@default=no@:>@]),
+		[want_nvidia="$enableval"], [want_nvidia=no])
+AM_CONDITIONAL(BUILD_NVIDIA, test x$want_nvidia = xyes)
+if test x$want_nvidia = xyes; then
+	AC_CHECK_HEADERS([NVCtrl/NVCtrl.h], [], AC_MSG_ERROR([NVCtrl/NVCtrl.h header not found]))
+dnl AC_CHECK_LIB([XNVCtrl], [XNVCTRLQueryVersion], [] ,[AC_MSG_ERROR([grrr])] )
+dnl AC_CHECK_LIB([XNVCtrl], [XNVCTRLCheckTargetData], [], [AC_MSG_ERROR([grr])])
+dnl ## am I Stupid ??
+dnl ## it won't find the lib for some reason!?
+	LIBS="$LIBS -lXNVCtrl"
+		AC_DEFINE(NVIDIA, 1, [Define if you want nvidia support])
 fi
 
 dnl
@@ -624,4 +642,5 @@ $PACKAGE $VERSION configured successfully:
   RSS:              $want_rss
   wireless:         $want_wlan
   SMAPI:            $want_smapi
+  nvidia:           $want_nvidia
 EOF

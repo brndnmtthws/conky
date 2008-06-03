@@ -126,6 +126,9 @@ static void print_version(void)
 #ifdef SMAPI
 	"  * smapi\n"
 #endif /* SMAPI */
+#ifdef NVIDIA
+	"  * nvidia\n"
+#endif
 	"", SYSTEM_CONFIG_FILE
 	);
 
@@ -708,7 +711,6 @@ static void new_font(char *buf, char *args)
 	}
 }
 #endif
-
 inline void graph_append(struct special_t *graph, double f)
 {
 	int i;
@@ -1205,6 +1207,7 @@ enum text_object_type {
 	OBJ_nameserver,
 	OBJ_new_mails,
 	OBJ_nodename,
+	OBJ_nvidia,
 	OBJ_pre_exec,
 	OBJ_processes,
 	OBJ_running_processes,
@@ -1456,6 +1459,10 @@ struct text_object {
 		} rss;
 #endif
 		struct local_mail_s local_mail;
+#ifdef NVIDIA
+		struct nvidia_s nvidia;
+#endif /* NVIDIA */
+
 	} data;
 	int type;
 	int a, b;
@@ -2272,6 +2279,10 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 				free(objs[i].data.ifblock.s);
 				free(objs[i].data.ifblock.str);
 				break;
+#endif
+#ifdef NVIDIA
+			case OBJ_nvidia:
+				break;	
 #endif
 #ifdef MPD
 			case OBJ_mpd_title:
@@ -3876,6 +3887,28 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(entropy_poolsize, INFO_ENTROPY)
 	END OBJ(entropy_bar, INFO_ENTROPY)
 		scan_bar(arg, &obj->a, &obj->b);
+#ifdef NVIDIA	
+	END OBJ(nvidia, 0)
+		if (!arg){
+			CRIT_ERR("nvidia needs one argument "
+				 "[temp,threshold,gpufreq,memfreq,imagequality]");
+		} else {
+			if (strcmp(arg, "temp") == 0)
+				obj->data.nvidia.type = NV_TEMP;
+			else if (strcmp(arg, "threshold") == 0)
+				obj->data.nvidia.type = NV_TEMP_THRESHOLD;
+			else if (strcmp(arg, "gpufreq") == 0)
+				obj->data.nvidia.type = NV_GPU_FREQ;
+			else if (strcmp(arg, "memfreq") == 0)
+				obj->data.nvidia.type = NV_MEM_FREQ;
+			else if (strcmp(arg, "imagequality") == 0)
+				obj->data.nvidia.type = NV_IMAGE_QUALITY;
+			else
+				CRIT_ERR("you have to give one of these arguments "
+					 "[temp,threshold,gpufreq,memfreq,imagequality");
+			strncpy((char*)&obj->data.nvidia.arg, arg, 20);
+		}
+#endif /* NVIDIA */
 	END {
 		char buf[256];
 
@@ -6227,6 +6260,17 @@ head:
 					new_bar(p, obj->a, obj->b, 0);
 			}
 #endif /* SMAPI */
+#ifdef NVIDIA
+			OBJ(nvidia) {
+				int hol = (strcmp((char*)&obj->data.nvidia.arg, "gpufreq")) ? 1 : 0;
+				if(!(obj->data.nvidia.value = get_nvidia_value(obj->data.nvidia.type, display, hol)))
+					snprintf(p, p_max_size, "value unavailible");
+				else 
+					spaced_print(p, p_max_size, "%*d", 4, "nvidia",
+							     4, obj->data.nvidia.value);
+				
+			}
+#endif /* NVIDIA */
 
 			break;
 		}

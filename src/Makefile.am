@@ -88,6 +88,10 @@ if BUILD_SMAPI
 smapi = smapi.c smapi.h
 endif
 
+if BUILD_NVIDIA
+nvidia = nvidia.c nvidia.h
+endif
+
 conky_SOURCES = 		\
 	$(audacious)            \
 	$(bmpx)                 \
@@ -98,6 +102,7 @@ conky_SOURCES = 		\
 	fs.c 			\
 	$(hddtemp)		\
 	$(linux) 		\
+	$(nvidia)		\
 	mail.c 			\
 	mixer.c 		\
 	$(mpd)                  \
@@ -115,7 +120,7 @@ conky_SOURCES = 		\
 	$(smapi)		\
 	users.c
 
-AM_LDFLAGS = $(PTHREAD_LIBS) -lm
+AM_LDFLAGS = $(PTHREAD_LIBS) -lm 
 
 EXTRA_DIST = 			\
 	audacious.c		\
@@ -130,6 +135,8 @@ EXTRA_DIST = 			\
 	libtcp-portmon.h	\
 	mpd.c			\
 	netbsd.c		\
+	nvidia.c		\
+	nvidia.h		\
 	openbsd.c		\
 	solaris.c 		\
 	top.h                   \
@@ -137,6 +144,7 @@ EXTRA_DIST = 			\
 	x11.c                   \
 	xmms2.c                 \
 	smapi.c			\
-	users.c
+	users.c		
+	
 
 # vi:set ts=8 sw=8 noet ai nocindent syntax=automake:

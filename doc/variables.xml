@@ -1391,6 +1391,27 @@
 
 	<varlistentry>
 		<term>
+			<command><option>nvidia</option></command>
+			<option>threshold</option>
+			<option>temp</option>
+			<option>gpufreq</option>
+			<option>memfreq</option>
+			<option>imagequality</option>
+		</term>
+		<listitem>
+			Nvidia graficcard support for the XNVCtrl library.
+			Each option gives back one integer value:
+			(threshold): the thresholdtemperature at which the gpu slows down
+			(temp): gives the gpu current temperature
+			(gpufreq): gives the current gpu frequency
+			(memfreq): gives the current mem frequency
+			(imagequality): which imagequality should be choosen by OpenGL applications
+			<para></para>
+		</listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
 			<command><option>outlinecolor</option></command>
 			<option>(color)</option>
 		</term>
