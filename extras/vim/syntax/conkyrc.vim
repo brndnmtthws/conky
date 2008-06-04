@@ -16,7 +16,6 @@ syn region ConkyrcComment start=/^\s*#/ end=/$/
 syn keyword ConkyrcSetting
 			\ alignment
 			\ background
-			\ background
 			\ show_graph_scale
 			\ border_margin
 			\ border_width
