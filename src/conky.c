@@ -6547,7 +6547,10 @@ static void update_text_area(void)
 /* drawing stuff */
 
 static int cur_x, cur_y;	/* current x and y for drawing */
+#endif
+//draw_mode also without X11 because we only need to print to stdout with FG
 static int draw_mode;		/* FG, BG or OUTLINE */
+#ifdef X11
 static long current_color;
 
 #ifdef X11
@@ -6632,7 +6635,7 @@ static void draw_string(const char *s)
 	}
 
 	width_of_s = get_string_width(s);
-	if (out_to_console) {
+	if (out_to_console && draw_mode == FG) {
 		printf("%s\n", s);
 		fflush(stdout);	/* output immediately, don't buffer */
 	}
@@ -7206,8 +7209,8 @@ static void draw_stuff(void)
 	}
 
 	set_foreground_color(default_fg_color);
-	draw_mode = FG;
 #endif /* X11 */
+	draw_mode = FG;
 	draw_text();
 #ifdef X11
 #ifdef HAVE_XDBE
