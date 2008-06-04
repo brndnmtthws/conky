@@ -1,5 +1,9 @@
 # $Id$
 
+2008-06-05
+	* Fix bug where conky prints everything twice to STDOUT when
+	out_to_console is enabled
+
 2008-06-04
 	* Fix bug where conky tries to free a already freed pointer when you
 	use gw_iface with a empty routingtable in linux
