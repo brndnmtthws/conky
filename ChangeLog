@@ -3,6 +3,8 @@
 2008-06-04
 	* Fix bug where conky tries to free a already freed pointer when you
 	use gw_iface with a empty routingtable in linux
+	* Fix bug where conky tries to tries to display deleted chars in a
+	string (chars followed by a backspace-char) causing strange output.
 
 2008-06-03
 	* Added NVIDIA Graficcard support patch (thanks meissna)

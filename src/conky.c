@@ -4251,6 +4251,21 @@ char *format_time(unsigned long timeval, const int width)
 	return strndup("<inf>", text_buffer_size);
 }
 
+//remove backspaced chars, example: "dog^H^H^Hcat" becomes "cat"
+//string has to end with \0 and it's length should fit in a int
+#define BACKSPACE 8
+void remove_deleted_chars(char *string){
+	int i = 0;
+	while(string[i] != 0){
+		if(string[i] == BACKSPACE){
+			if(i != 0){
+				strcpy( &(string[i-1]), &(string[i+1]) );
+				i--;
+			}else strcpy( &(string[i]), &(string[i+1]) ); //necessary for ^H's at the start of a string
+		}else i++;
+	}
+}
+
 static void generate_text_internal(char *p, int p_max_size,
 		struct text_object *objs, unsigned int object_count,
 		struct information *cur)
@@ -4761,6 +4776,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				pclose(fp);
 
 				p[length] = '\0';
+				remove_deleted_chars(p);
 				if (length > 0 && p[length - 1] == '\n') {
 					p[length - 1] = '\0';
 				}
