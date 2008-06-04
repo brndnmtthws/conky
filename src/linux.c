@@ -261,6 +261,16 @@ END_TRUE:
 		x = strndup(y, text_buffer_size); \
 	}
 
+void update_gateway_info_failure(char *reason)
+{
+	if(reason != NULL) {
+		perror(reason);
+	}
+	//2 pointers to 1 location causes a crash when we try to free them both
+	info.gw_info.iface = strndup("failed", text_buffer_size);
+	info.gw_info.ip = strndup("failed", text_buffer_size);
+}
+
 void update_gateway_info(void)
 {
 	FILE *fp;
@@ -277,14 +287,13 @@ void update_gateway_info(void)
 	gw_info->count = 0;
 
 	if ((fp = fopen("/proc/net/route", "r")) == NULL) {
-		perror("fopen()");
-		info.gw_info.iface = info.gw_info.ip = strndup("failed", text_buffer_size);
-		return;
+		update_gateway_info_failure("fopen()");
+ 		return;
 	}
 	if (fscanf(fp, "%*[^\n]\n") == EOF) {
-		perror("fscanf()");
+		//NULL because a empty table is not a error
+		update_gateway_info_failure(NULL);
 		fclose(fp);
-		info.gw_info.iface = info.gw_info.ip = strndup("failed", text_buffer_size);
 		return;
 	}
 	while (!feof(fp)) {
@@ -292,9 +301,8 @@ void update_gateway_info(void)
 		if(fscanf(fp, "%63s %lx %lx %x %hd %hd %hd %lx %hd %hd %hd\n",
 					iface, &dest, &gate, &flags, &ref, &use,
 					&metric, &mask, &mtu, &win, &irtt) != 11) {
-			perror("fscanf()");
+			update_gateway_info_failure("fscanf()");
 			fclose(fp);
-			info.gw_info.iface = info.gw_info.ip = strndup("failed", text_buffer_size);
 			return;
 		}
 		if (flags & RTF_GATEWAY && dest == 0 && mask == 0) {

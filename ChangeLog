@@ -1,5 +1,9 @@
 # $Id$
 
+2008-06-04
+	* Fix bug where conky tries to free a already freed pointer when you
+	use gw_iface with a empty routingtable in linux
+
 2008-06-03
 	* Added NVIDIA Graficcard support patch (thanks meissna)
 	* Added --quiet patch (thanks sceptik)
