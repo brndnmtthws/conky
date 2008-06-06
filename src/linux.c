@@ -261,7 +261,7 @@ END_TRUE:
 		x = strndup(y, text_buffer_size); \
 	}
 
-void update_gateway_info_failure(char *reason)
+void update_gateway_info_failure(const char *reason)
 {
 	if(reason != NULL) {
 		perror(reason);
