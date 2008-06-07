@@ -2329,7 +2329,8 @@ void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
 }
 
 /* strip a leading /dev/ if any */
-#define DEV_NAME(x)	strncmp(x, "/dev/", 5) ? x : x + 5
+#define DEV_NAME(x) x != NULL && strlen(x) > 5 && strncmp(x, "/dev/", 5) == 0 \
+	? x + 5 : x
 
 /* construct_text_object() creates a new text_object */
 static struct text_object *construct_text_object(const char *s,
