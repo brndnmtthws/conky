@@ -4279,6 +4279,7 @@ static void generate_text_internal(char *p, int p_max_size,
 	iconv_converting = 0;
 #endif
 
+	p[0] = 0;
 	for (i = 0; i < object_count; i++) {
 		struct text_object *obj = &objs[i];
 
