@@ -5523,7 +5523,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(memgraph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 					cur->memmax ? (cur->mem * 100.0) / (cur->memmax) : 0.0,
-					100, 0);
+					100, 1);
 			}
 
 			/* mixer stuff */
