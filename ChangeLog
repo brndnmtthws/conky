@@ -1,7 +1,7 @@
 # $Id$
 
 2008-06-08
-	* Bugfix, $memgraph wasn't working
+	* Bugfix, $memgraph wasn't working and needed docs
 
 2008-06-07
 	* Fix bug where DEV_NAME can read uninitialised memory

@@ -1193,6 +1193,16 @@
 			Bar that shows amount of memory in use
 			<para></para></listitem>
 	</varlistentry>
+	
+	<varlistentry>
+		<term>
+			<command><option>memgraph</option></command>
+			<option>(height),(width) (gradient colour 1) (gradient colour 2)</option>
+		</term>
+		<listitem>
+			Memory usage graph
+			<para></para></listitem>
+	</varlistentry>
 
 	<varlistentry>
 		<term>

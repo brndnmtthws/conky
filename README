@@ -1030,6 +1030,10 @@ VARIABLES
 	      Bar that shows amount of memory in use
 
 
+       memgraph	 (height),(width) (gradient colour 1) (gradient colour 2)
+	      Memory usage graph, with optional colours in hex, minus the #
+
+
        memmax Total amount of memory
 
 
