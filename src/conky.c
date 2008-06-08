@@ -4865,8 +4865,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					ERR("your execgraph value is not between 0 and 100, "
 						"therefore it will be ignored");
 				} else {
-					new_graph(p, 0, 25, obj->c, obj->d, (int) (barnum),
-						obj->e, 1);
+					new_graph(p, 0, 25, obj->c, obj->d, (int) (barnum), 100, 1);
 				}
 			}
 			OBJ(execibar) {

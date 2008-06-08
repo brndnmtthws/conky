@@ -2,6 +2,7 @@
 
 2008-06-08
 	* Bugfix, $memgraph wasn't working and needed docs
+	* Bugfix, $execgraph showed 0-0 instead of 0-100 values
 
 2008-06-07
 	* Fix bug where DEV_NAME can read uninitialised memory
