@@ -26,8 +26,6 @@
 #include <pthread.h>
 #include <assert.h>
 #include <errno.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <time.h>
 #ifndef HAVE_CLOCK_GETTIME
 #include <sys/time.h>

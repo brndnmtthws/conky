@@ -20,10 +20,8 @@
  * $Id$
  *
  */
-#include "conky.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/stat.h>
+
+#include "smapi.h"
 
 #define SYS_SMAPI_PATH "/sys/devices/platform/smapi"
 

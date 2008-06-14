@@ -29,7 +29,6 @@
 
 #include "conky.h"
 #include <limits.h>
-#include <stdio.h>
 /* The following ifdefs were adapted from gkrellm */
 #include <linux/major.h>
 

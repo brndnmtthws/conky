@@ -22,6 +22,12 @@
 #ifndef AUDACIOUS_H
 #define AUDACIOUS_H
 
+struct audacious_s {
+	audacious_t items;	/* e.g. items[AUDACIOUS_STATUS] */
+	int max_title_len;	/* e.g. ${audacious_title 50} */
+	timed_thread *p_timed_thread;
+};
+
 enum _audacious_items {
 	AUDACIOUS_STATUS = 0,
 	AUDACIOUS_TITLE,

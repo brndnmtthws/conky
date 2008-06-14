@@ -27,9 +27,6 @@
 #include <bmp/dbus.hh>
 #include <dbus/dbus-glib.h>
 
-#include <stdio.h>
-#include <string.h>
-
 #include "conky.h"
 
 #define DBUS_TYPE_G_STRING_VALUE_HASHTABLE \

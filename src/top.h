@@ -40,8 +40,6 @@
 
 #include "conky.h"
 #define CPU_THRESHHOLD	0	/* threshhold for the cpu diff to appear */
-#include <stdlib.h>
-#include <stdio.h>
 #include <time.h>
 #include <dirent.h>
 #include <string.h>
@@ -56,7 +54,6 @@
 
 #include <sys/wait.h>
 #include <sys/stat.h>
-#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
@@ -75,6 +72,16 @@
 #define PROCFS_TEMPLATE_MEM "/proc/%d/statm"
 #define PROCFS_CMDLINE_TEMPLATE "/proc/%d/cmdline"
 #define MAX_SP 10	// number of elements to sort
+
+enum top_field {
+	TOP_CPU,
+	TOP_NAME,
+	TOP_PID,
+	TOP_MEM,
+	TOP_TIME,
+	TOP_MEM_RES,
+	TOP_MEM_VSIZE
+};
 
 /******************************************
  * Process class						  *

@@ -26,8 +26,6 @@
  * $Id$ */
 
 #include "conky.h"
-#include <stdio.h>
-#include <stdlib.h>
 #include <stdarg.h>
 #include <math.h>
 #include <ctype.h>
@@ -37,7 +35,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <termios.h>
-#include <string.h>
 #include <limits.h>
 #if HAVE_DIRENT_H
 #include <dirent.h>
@@ -2304,7 +2301,7 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 			case OBJ_mpd_file:
 			case OBJ_mpd_percent:
 			case OBJ_mpd_smart:
-				free_mpd_vars(&info);
+				free_mpd_vars(&info.mpd);
 				break;
 #endif
 		}

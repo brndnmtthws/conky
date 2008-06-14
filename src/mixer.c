@@ -29,8 +29,6 @@
 #include <sys/ioctl.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <string.h>
-#include <stdlib.h>
 
 
 #ifdef HAVE_LINUX_SOUNDCARD_H

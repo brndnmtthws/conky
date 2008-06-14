@@ -27,9 +27,6 @@
  * $Id$ */
 
 #include "conky.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <dirent.h>
 #include <ctype.h>
 #include <errno.h>

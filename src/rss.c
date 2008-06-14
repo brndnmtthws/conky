@@ -27,8 +27,6 @@
 
 #include "conky.h"
 #include "prss.h"
-#include <stdio.h>
-#include <string.h>
 #include <time.h>
 #include <assert.h>
 #include <curl/curl.h>

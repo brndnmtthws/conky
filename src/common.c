@@ -26,9 +26,6 @@
  * $Id$ */
 
 #include "conky.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <ctype.h>
 #include <errno.h>
 #include <sys/time.h>
@@ -301,15 +298,15 @@ void update_stuff(void)
 
 #ifdef MPD
 	if (NEED(INFO_MPD)) {
-		if (!mpd_timed_thread) {
-			init_mpd_stats(&info);
-			mpd_timed_thread = timed_thread_create(&update_mpd,
-				(void *) NULL, info.music_player_interval * 1000000);
-			if (!mpd_timed_thread) {
+		if (!info.mpd.timed_thread) {
+			init_mpd_stats(&info.mpd);
+			info.mpd.timed_thread = timed_thread_create(&update_mpd,
+				(void *) &info.mpd, info.music_player_interval * 1000000);
+			if (!info.mpd.timed_thread) {
 				ERR("Failed to create MPD timed thread");
 			}
-			timed_thread_register(mpd_timed_thread, &mpd_timed_thread);
-			if (timed_thread_run(mpd_timed_thread)) {
+			timed_thread_register(info.mpd.timed_thread, &info.mpd.timed_thread);
+			if (timed_thread_run(info.mpd.timed_thread)) {
 				ERR("Failed to run MPD timed thread");
 			}
 		}

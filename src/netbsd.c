@@ -25,36 +25,7 @@
  *
  * $Id$ */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <fcntl.h>
-#include <time.h>
-#include <unistd.h>
-#include <err.h>
-#include <limits.h>
-#include <paths.h>
-
-#include <kvm.h>
-#include <nlist.h>
-
-#include <sys/time.h>
-#include <sys/param.h>
-#include <sys/sysctl.h>
-#include <sys/types.h>
-#include <sys/user.h>
-#include <sys/socket.h>
-#include <sys/swap.h>
-#include <sys/sched.h>
-#include <sys/envsys.h>
-
-#include <net/if.h>
-
-#include <uvm/uvm_extern.h>
-
-#include <machine/param.h>
-
-#include "conky.h"
+#include "netbsd.h"
 
 static kvm_t *kd = NULL;
 int kd_init = 0, nkd_init = 0;

@@ -25,9 +25,6 @@
  * $Id$ */
 
 #include "conky.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <xmmsclient/xmmsclient.h>
 
 #define CONN_INIT	0

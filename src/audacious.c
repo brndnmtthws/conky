@@ -23,9 +23,6 @@
 #include <config.h>
 #endif
 
-#include <stdio.h>
-#include <string.h>
-
 #include <glib.h>
 #ifndef AUDACIOUS_LEGACY
 #include <glib-object.h>
@@ -55,7 +52,6 @@
 	xmms_remote_get_playlist_length(x)
 #endif
 
-#include "config.h"
 #include "conky.h"
 #include "audacious.h"
 #include "timed_thread.h"

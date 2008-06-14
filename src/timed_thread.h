@@ -22,6 +22,8 @@
 #ifndef _TIMED_THREAD_H_
 #define _TIMED_THREAD_H_
 
+#include <stdlib.h>
+
 /* 10000 microseconds = 10 ms =  0.01 sec */
 #define MINIMUM_INTERVAL_USECS 10000
 

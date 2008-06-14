@@ -41,6 +41,7 @@
 #define TCP_CONNECTION_STARTING_AGE 1
 #define TCP_CONNECTION_HASH_KEY_SIZE 28
 #define TCP_PORT_MONITOR_HASH_KEY_SIZE 12
+#define MAX_PORT_MONITOR_CONNECTIONS_DEFAULT 256
 
 /* -------------------------------------------------------------------
  * IMPLEMENTATION INTERFACE
