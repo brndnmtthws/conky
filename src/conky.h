@@ -35,6 +35,7 @@
 #endif /* HAS_MCHECK_H */
 
 #include "config.h"
+#include "top.h"
 #include <sys/utsname.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -643,27 +644,6 @@ struct obsd_sensors_struct obsd_sensors;
 
 enum { PB_BATT_STATUS, PB_BATT_PERCENT, PB_BATT_TIME };
 void get_powerbook_batt_info(char *, size_t, int);
-
-struct process {
-	struct process *next;
-	struct process *previous;
-
-	pid_t pid;
-	char *name;
-	float amount;
-	unsigned long user_time;
-	unsigned long total;
-	unsigned long kernel_time;
-	unsigned long previous_user_time;
-	unsigned long previous_kernel_time;
-	unsigned long total_cpu_time;
-	unsigned int vsize;
-	unsigned int rss;
-	unsigned int time_stamp;
-	unsigned int counted;
-	unsigned int changed;
-	float totalmem;
-};
 
 struct local_mail_s {
 	char *box;

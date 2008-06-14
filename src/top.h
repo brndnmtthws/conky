@@ -26,6 +26,9 @@
  *
  * $Id$ */
 
+#ifndef _top_h_
+#define _top_h_
+
 /* Ensure there's an operating system defined.
  * compile with gcc -DOS ...
  * There is *no* default because every OS has it's own way of revealing
@@ -77,6 +80,28 @@
  * Process class						  *
  ******************************************/
 
+struct process {
+	struct process *next;
+	struct process *previous;
+
+	pid_t pid;
+	char *name;
+	float amount;
+	// User and kernel times are in hundredths of seconds
+	unsigned long user_time;
+	unsigned long total;
+	unsigned long kernel_time;
+	unsigned long previous_user_time;
+	unsigned long previous_kernel_time;
+	unsigned long total_cpu_time;
+	unsigned int vsize;
+	unsigned int rss;
+	unsigned int time_stamp;
+	unsigned int counted;
+	unsigned int changed;
+	float totalmem;
+};
+
 struct sorted_process {
 	struct sorted_process *greater;
 	struct sorted_process *less;
@@ -85,3 +110,5 @@ struct sorted_process {
 
 /* Pointer to head of process list */
 void process_find_top(struct process **, struct process **);
+
+#endif /* _top_h_ */
