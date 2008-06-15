@@ -361,12 +361,14 @@ void update_stuff(void)
 	if (NEED(INFO_ENTROPY)) {
 		update_entropy();
 	}
+#if defined(__linux__)
 	if (NEED(INFO_USERS)) {
 		update_users();
 	}
 	if (NEED(INFO_GW)) {
 		update_gateway_info();
 	}
+#endif /* __linux__ */
 	if (NEED(INFO_DNS)) {
 		update_dns_data();
 	}

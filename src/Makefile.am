@@ -46,7 +46,7 @@ xmms2 = xmms2.c
 endif
 
 if BUILD_LINUX
-linux = linux.c top.c diskio.c
+linux = linux.c top.c diskio.c users.c
 PTHREAD_LIBS =  -lpthread
 endif
 
@@ -117,8 +117,7 @@ conky_SOURCES = 		\
 	mboxscan.h		\
 	$(x11)                  \
 	$(xmms2)		\
-	$(smapi)		\
-	users.c
+	$(smapi)		
 
 AM_LDFLAGS = $(PTHREAD_LIBS) -lm 
 

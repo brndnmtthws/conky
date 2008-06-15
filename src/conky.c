@@ -2656,6 +2656,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.loadavg[0] = (r >= 1) ? (unsigned char) a : 0;
 			free(buf);
 		}
+#if defined(__linux__)
 	END OBJ(diskio, INFO_DISKIO)
 		if (arg) {
 			obj->data.diskio = prepare_diskio_stat(DEV_NAME(arg));
@@ -2704,6 +2705,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->data.diskio = NULL;
 		}
+#endif
 	END OBJ(color, 0)
 #ifdef X11
 		obj->data.l = arg ? get_x11_color(arg) : default_fg_color;

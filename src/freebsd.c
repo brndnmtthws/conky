@@ -152,15 +152,15 @@ void update_meminfo()
 	int pagesize = getpagesize();
 
 	if (GETSYSCTL("vm.stats.vm.v_page_count", total_pages)) {
-		fprintf(stderr, "Cannot read sysctl \"vm.stats.vm.v_page_count\"");
+		fprintf(stderr, "Cannot read sysctl \"vm.stats.vm.v_page_count\"\n");
 	}
 
 	if (GETSYSCTL("vm.stats.vm.v_free_count", free_pages)) {
-		fprintf(stderr, "Cannot read sysctl \"vm.stats.vm.v_free_count\"");
+		fprintf(stderr, "Cannot read sysctl \"vm.stats.vm.v_free_count\"\n");
 	}
 
 	if (GETSYSCTL("vm.stats.vm.v_inactive_count", inactive_pages)) {
-		fprintf(stderr, "Cannot read sysctl \"vm.stats.vm.v_inactive_count\"");
+		fprintf(stderr, "Cannot read sysctl \"vm.stats.vm.v_inactive_count\"\n");
 	}
 
 	info.memmax = total_pages * (pagesize >> 10);
@@ -712,6 +712,10 @@ void update_diskio()
 	diskio_prev = diskio_current;
 
 	free(statinfo_cur.dinfo);
+}
+
+void clear_diskio_stats()
+{
 }
 
 /* While topless is obviously better, top is also not bad. */
