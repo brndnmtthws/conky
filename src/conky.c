@@ -1040,7 +1040,7 @@ static void human_readable(long long num, char *buf, int size, const char *func_
 
 	suffix++;
 	fnum = num / 1024.0;
-	
+
 	precision = 3;
 	do {
 		precision--;
@@ -2279,7 +2279,7 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 #endif
 #ifdef NVIDIA
 			case OBJ_nvidia:
-				break;	
+				break;
 #endif
 #ifdef MPD
 			case OBJ_mpd_title:
@@ -3887,7 +3887,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(entropy_poolsize, INFO_ENTROPY)
 	END OBJ(entropy_bar, INFO_ENTROPY)
 		scan_bar(arg, &obj->a, &obj->b);
-#ifdef NVIDIA	
+#ifdef NVIDIA
 	END OBJ(nvidia, 0)
 		if (!arg){
 			CRIT_ERR("nvidia needs one argument "
@@ -4984,7 +4984,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					if (length > 0 && output[length - 1] == '\n') {
 						output[length - 1] = '\0';
 					}
-					
+
 					text_objects = parse_conky_vars(obj->data.execi.buffer, p, my_info);
 					obj->data.execi.last_update = current_update_time;
 				}
@@ -6281,10 +6281,10 @@ head:
 				int hol = (strcmp((char*)&obj->data.nvidia.arg, "gpufreq")) ? 1 : 0;
 				if(!(obj->data.nvidia.value = get_nvidia_value(obj->data.nvidia.type, display, hol)))
 					snprintf(p, p_max_size, "value unavailible");
-				else 
+				else
 					spaced_print(p, p_max_size, "%*d", 4, "nvidia",
 							     4, obj->data.nvidia.value);
-				
+
 			}
 #endif /* NVIDIA */
 

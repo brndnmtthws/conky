@@ -80,7 +80,7 @@ char *strndup(const char *s, size_t n);
 #ifdef NVIDIA
 #include "nvidia.h"
 #endif
- 
+
 #include "mboxscan.h"
 #include "timed_thread.h"
 #include "top.h"

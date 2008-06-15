@@ -27,7 +27,7 @@ Fresh from a SVN checkout:
 	You can also try using the autogen.sh script, like so:
 
 	$ sh autogen.sh
-	
+
 * After that, it's the familiar
 
 	$ ./configure

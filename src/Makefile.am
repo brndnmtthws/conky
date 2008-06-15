@@ -117,9 +117,9 @@ conky_SOURCES = 		\
 	mboxscan.h		\
 	$(x11)                  \
 	$(xmms2)		\
-	$(smapi)		
+	$(smapi)
 
-AM_LDFLAGS = $(PTHREAD_LIBS) -lm 
+AM_LDFLAGS = $(PTHREAD_LIBS) -lm
 
 EXTRA_DIST = 			\
 	audacious.c		\
@@ -143,7 +143,7 @@ EXTRA_DIST = 			\
 	x11.c                   \
 	xmms2.c                 \
 	smapi.c			\
-	users.c		
-	
+	users.c
+
 
 # vi:set ts=8 sw=8 noet ai nocindent syntax=automake:

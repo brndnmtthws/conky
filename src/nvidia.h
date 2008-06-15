@@ -46,6 +46,6 @@ struct nvidia_s {
 	int value;
 	char arg[20];
 	QUERY_ID type;
-};	
+};
 
 #endif

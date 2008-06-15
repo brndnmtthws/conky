@@ -248,7 +248,7 @@ void handle_playback_state_change(xmmsc_result_t *res, void *p)
 }
 
 void handle_playlist_loaded(xmmsc_result_t *res, void *p) {
-	struct information *ptr = p; 
+	struct information *ptr = p;
 
 	if (ptr->xmms2.playlist == NULL) {
 		ptr->xmms2.playlist = malloc(text_buffer_size);

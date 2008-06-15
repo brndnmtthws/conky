@@ -1572,30 +1572,30 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 	memset(last_battery_time_str[idx], 0, sizeof(last_battery_time_str[idx]));
 
  	/* first try SYSFS if that fails try ACPI */
- 
+
  	if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL) {
  		sysfs_bat_fp[idx] = open_file(sysfs_path, &rep);
 		rep = 0;
 	}
-  
+
  	if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL) {
   		acpi_bat_fp[idx] = open_file(acpi_path, &rep);
 	}
-  
+
  	if (sysfs_bat_fp[idx] != NULL) {
  		/* SYSFS */
  		int present_rate = -1;
  		int remaining_capacity = -1;
  		char charging_state[64];
  		char present[4];
- 
+
  		strcpy(charging_state, "unknown");
- 
+
  		while (!feof(sysfs_bat_fp[idx])) {
  			char buf[256];
  			if (fgets(buf, 256, sysfs_bat_fp[idx]) == NULL)
  				break;
- 
+
  			/* let's just hope units are ok */
  			if (strncmp (buf, "POWER_SUPPLY_PRESENT=1", 22) == 0)
  				strcpy(present, "yes");
@@ -1618,14 +1618,14 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
  			else if (strncmp(buf, "POWER_SUPPLY_CHARGE_FULL=", 25) == 0)
  				sscanf(buf, "POWER_SUPPLY_CHARGE_FULL=%d", &acpi_last_full[idx]);
  		}
- 
+
  		fclose(sysfs_bat_fp[idx]);
  		sysfs_bat_fp[idx] = NULL;
- 
+
  		/* Hellf[i]re notes that remaining capacity can exceed acpi_last_full */
  		if (remaining_capacity > acpi_last_full[idx])
  			acpi_last_full[idx] = remaining_capacity;  /* normalize to 100% */
- 
+
  		/* not present */
  		if (strcmp(present, "No") == 0) {
  			strncpy(last_battery_str[idx], "not present", 64);

@@ -95,7 +95,7 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 	/*
 	 * check that device actually exists
 	 */
-	
+
 	if (!(fp = open_file("/proc/diskstats", &rep))) {
 		ERR("cannot read from /proc/diskstats");
 		return 0;

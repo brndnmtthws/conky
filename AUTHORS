@@ -238,7 +238,7 @@ Petr Holub <hopet@users.sourceforge.net>
 
 Philip Kovacs <pkovacs at users dot sourceforge dot net>
   tcp port monitor with hashing functionality
-  
+
   Audacious, Xmms, BMP, Infopipe stuff
   Various Xlib changes, e.g. own_window hints, etc.
 
