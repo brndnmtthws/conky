@@ -31,6 +31,8 @@
 #include <utmp.h>
 #include <time.h>
 
+#define BUFLEN 512
+
 static void user_name(char *ptr)
 {
 	const struct utmp *usr = 0;
@@ -38,7 +40,10 @@ static void user_name(char *ptr)
 	setutent();
 	while ((usr = getutent()) != NULL) {
 		if (usr->ut_type == USER_PROCESS) {
-			strncat(ptr, usr->ut_name, 9);
+			//TODO change the magic number 9 into a constant, does anybody know where it comes from ?
+			if (strlen(ptr) + (strlen(usr->ut_name) > 9 ? 9 : strlen(usr->ut_name) ) + 1 <= BUFLEN) {
+				strncat(ptr, usr->ut_name, 9);
+			}
 		}
 	}
 }
@@ -62,7 +67,10 @@ static void user_term(char *ptr)
 	setutent();
 	while ((usr = getutent()) != NULL) {
 		if (usr->ut_type == USER_PROCESS) {
-			strncat(ptr, usr->ut_line, 13);
+			//TODO change the magic number 13 into a constant, does anybody know where it comes from ?
+			if (strlen(ptr) + (strlen(usr->ut_line) > 13 ? 13 : strlen(usr->ut_line) ) + 1 <= BUFLEN) {
+				strncat(ptr, usr->ut_line, 13);
+			}
 		}
 	}
 }
@@ -71,7 +79,7 @@ static void user_time(char *ptr)
 	const struct utmp *usr;
 	time_t log_in, real, diff;
 	struct tm *dtime;
-	char buf[512] = "";
+	char buf[BUFLEN] = "";
 
 	setutent();
 	while ((usr = getutent()) != NULL) {
@@ -84,17 +92,19 @@ static void user_time(char *ptr)
 			dtime->tm_mon = dtime->tm_mon - 1;
 			dtime->tm_mday = dtime->tm_mday - 1;
 			if (dtime->tm_year > 0) {
-				strftime(buf, 512, "%yy %mm %dd %Hh %Mm", dtime);
+				strftime(buf, BUFLEN, "%yy %mm %dd %Hh %Mm", dtime);
 			} else if (dtime->tm_mon > 0) {
-				strftime(buf, 512, "%mm %dd %Hh %Mm", dtime);
+				strftime(buf, BUFLEN, "%mm %dd %Hh %Mm", dtime);
 			} else if (dtime->tm_mday > 0) {
-				strftime(buf, 512, "%dd %Hh %Mm", dtime);
+				strftime(buf, BUFLEN, "%dd %Hh %Mm", dtime);
 			} else if (dtime->tm_hour > 0) {
-				strftime(buf, 512, "%Hh %Mm", dtime);
+				strftime(buf, BUFLEN, "%Hh %Mm", dtime);
 			} else if (dtime->tm_min > 0) {
-				strftime(buf, 512, "%Mm", dtime);
+				strftime(buf, BUFLEN, "%Mm", dtime);
 			}
-			strncat(ptr, buf, 512);
+			if (strlen(ptr) + strlen(buf) + 1 <= BUFLEN) {
+				strncat(ptr, buf, BUFLEN);
+			}
 		}
 	}
 }
@@ -116,7 +126,7 @@ static void users_alloc(struct information *ptr)
 void update_users(void)
 {
 	struct information *current_info = &info;
-	char temp[512] = "";
+	char temp[BUFLEN] = "";
 	int t;
 	users_alloc(current_info);
 	user_name(temp);
