@@ -22,6 +22,8 @@
 #ifndef AUDACIOUS_H
 #define AUDACIOUS_H
 
+#include "timed_thread.h"
+
 enum _audacious_items {
 	AUDACIOUS_STATUS = 0,
 	AUDACIOUS_TITLE,
@@ -39,6 +41,13 @@ enum _audacious_items {
 
 /* 12 slots for the audacious values */
 typedef char audacious_t[12][128];
+
+/* type for data exchange with main thread */
+typedef struct audacious_s {
+  audacious_t items;  /* e.g. items[AUDACIOUS_STATUS] */
+  int max_title_len;  /* e.g. ${audacious_title 50} */
+  timed_thread *p_timed_thread;
+} AUDACIOUS_S;
 
 /* create a worker thread for audacious media player status */
 int create_audacious_thread(void);

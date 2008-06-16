@@ -175,12 +175,7 @@ struct mail_s {			// for imap and pop3
 #endif
 
 #ifdef AUDACIOUS
-struct audacious_s {
-  audacious_t items;  /* e.g. items[AUDACIOUS_STATUS] */
-  int max_title_len;  /* e.g. ${audacious_title 50} */
-  timed_thread *p_timed_thread;
-};
-
+#include "audacious.h"
 #endif
 
 #ifdef BMPX
@@ -316,7 +311,7 @@ struct information {
 	xmmsc_connection_t *xmms2_conn;
 #endif
 #ifdef AUDACIOUS
-	struct audacious_s audacious;
+	AUDACIOUS_S audacious;
 #endif
 #ifdef BMPX
 	struct bmpx_s bmpx;

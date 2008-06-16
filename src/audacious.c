@@ -54,7 +54,6 @@
 
 #include "conky.h"
 #include "audacious.h"
-#include "timed_thread.h"
 
 /* access to this item array is synchronized */
 static audacious_t audacious_items;
