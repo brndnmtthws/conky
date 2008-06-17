@@ -1,5 +1,8 @@
 # $Id$
 
+2008-06-16
+	* Fixed 3 bufferoverflows in a struct utmp in users.c
+
 2008-06-08
 	* Bugfix, $memgraph wasn't working and needed docs
 	* Bugfix, $execgraph showed 0-0 instead of 0-100 values

@@ -40,9 +40,8 @@ static void user_name(char *ptr)
 	setutent();
 	while ((usr = getutent()) != NULL) {
 		if (usr->ut_type == USER_PROCESS) {
-			//TODO change the magic number 9 into a constant, does anybody know where it comes from ?
-			if (strlen(ptr) + (strlen(usr->ut_name) > 9 ? 9 : strlen(usr->ut_name) ) + 1 <= BUFLEN) {
-				strncat(ptr, usr->ut_name, 9);
+			if (strlen(ptr) + strlen(usr->ut_name) + 1 <= BUFLEN) {
+				strncat(ptr, usr->ut_name, UT_NAMESIZE);
 			}
 		}
 	}
@@ -67,9 +66,8 @@ static void user_term(char *ptr)
 	setutent();
 	while ((usr = getutent()) != NULL) {
 		if (usr->ut_type == USER_PROCESS) {
-			//TODO change the magic number 13 into a constant, does anybody know where it comes from ?
-			if (strlen(ptr) + (strlen(usr->ut_line) > 13 ? 13 : strlen(usr->ut_line) ) + 1 <= BUFLEN) {
-				strncat(ptr, usr->ut_line, 13);
+			if (strlen(ptr) + strlen(usr->ut_line) + 1 <= BUFLEN) {
+				strncat(ptr, usr->ut_line, UT_LINESIZE);
 			}
 		}
 	}
