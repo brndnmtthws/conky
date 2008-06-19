@@ -8589,6 +8589,36 @@ static void load_config_file(const char *f)
 	}
 }
 
+static void print_help(const char *prog_name) {
+	printf("Usage: %s [OPTION]...\n"
+			"Conky is a system monitor that renders text on desktop or to own transparent\n"
+			"window. Command line options will override configurations defined in config\n"
+			"file.\n"
+			"   -v, --version             version\n"
+			"   -q, --quiet               quiet mode\n"
+			"   -c, --config=FILE         config file to load\n"
+			"   -d, --daemonize           daemonize, fork to background\n"
+			"   -h, --help                help\n"
+#ifdef X11
+			"   -a, --alignment=ALIGNMENT text alignment on screen, {top,bottom,middle}_{left,right,middle}\n"
+			"   -f, --font=FONT           font to use\n"
+#ifdef OWN_WINDOW
+			"   -o, --own-window          create own window to draw\n"
+#endif
+#ifdef HAVE_XDBE
+			"   -b, --double-buffer       double buffer (prevents flickering)\n"
+#endif
+			"   -w, --window-id=WIN_ID    window id to draw\n"
+			"   -x X                      x position\n"
+			"   -y Y                      y position\n"
+#endif /* X11 */
+			"   -t, --text=TEXT           text to render, remember single quotes, like -t '$uptime'\n"
+			"   -u, --interval=SECS       update interval\n"
+			"   -i COUNT                  number of times to update Conky (and quit)\n",
+			prog_name
+	);
+}
+
 /* : means that character before that takes an argument */
 static const char *getopt_string = "vVqdt:u:i:hc:"
 #ifdef X11
@@ -8682,33 +8712,7 @@ int main(int argc, char **argv)
 				freopen("/dev/null", "w", stderr);
 				break;
 			case 'h':
-				printf("Usage: %s [OPTION]...\n"
-						"Conky is a system monitor that renders text on desktop or to own transparent\n"
-						"window. Command line options will override configurations defined in config\n"
-					   "file.\n"
-					   "   -v, --version             version\n"
-					   "   -q, --quiet               quiet mode\n"
-					   "   -c, --config=FILE         config file to load\n"
-					   "   -d, --daemonize           daemonize, fork to background\n"
-					   "   -h, --help                help\n"
-#ifdef X11
-					   "   -a, --alignment=ALIGNMENT text alignment on screen, {top,bottom,middle}_{left,right,middle}\n"
-					   "   -f, --font=FONT           font to use\n"
-#ifdef OWN_WINDOW
-					   "   -o, --own-window          create own window to draw\n"
-#endif
-#ifdef HAVE_XDBE
-					   "   -b, --double-buffer       double buffer (prevents flickering)\n"
-#endif
-					   "   -w, --window-id=WIN_ID    window id to draw\n"
-					   "   -x X                      x position\n"
-					   "   -y Y                      y position\n"
-#endif /* X11 */
-					   "   -t, --text=TEXT           text to render, remember single quotes, like -t '$uptime'\n"
-					   "   -u, --interval=SECS       update interval\n"
-					   "   -i COUNT                  number of times to update Conky (and quit)\n",
-					   argv[0]
-				);
+				print_help(argv[0]);
 				return 0;
 #ifdef X11
 			case 'w':
