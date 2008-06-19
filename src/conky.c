@@ -4266,6 +4266,29 @@ void remove_deleted_chars(char *string){
 	}
 }
 
+static inline void format_media_player_time(char *buf, const int size,
+		int seconds)
+{
+	int days, hours, minutes;
+
+	days = seconds / (24 * 60 * 60);
+	seconds %= (24 * 60 * 60);
+	hours = seconds / (60 * 60);
+	seconds %= (60 * 60);
+	minutes = seconds / 60;
+	seconds %= 60;
+
+	if (days > 0) {
+		snprintf(buf, size, "%i days %i:%02i:%02i", days,
+			hours, minutes, seconds);
+	} else if (hours > 0) {
+		snprintf(buf, size, "%i:%02i:%02i", hours, minutes,
+			seconds);
+	} else {
+		snprintf(buf, size, "%i:%02i", minutes, seconds);
+	}
+}
+
 static void generate_text_internal(char *p, int p_max_size,
 		struct text_object *objs, unsigned int object_count,
 		struct information *cur)
@@ -5748,58 +5771,10 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%s", cur->mpd.status);
 			}
 			OBJ(mpd_elapsed) {
-				int days = 0, hours = 0, minutes = 0, seconds = 0;
-				int tmp = cur->mpd.elapsed;
-
-				while (tmp >= 86400) {
-					tmp -= 86400;
-					days++;
-				}
-				while (tmp >= 3600) {
-					tmp -= 3600;
-					hours++;
-				}
-				while (tmp >= 60) {
-					tmp -= 60;
-					minutes++;
-				}
-				seconds = tmp;
-				if (days > 0) {
-					snprintf(p, p_max_size, "%i days %i:%02i:%02i", days,
-						hours, minutes, seconds);
-				} else if (hours > 0) {
-					snprintf(p, p_max_size, "%i:%02i:%02i", hours, minutes,
-						seconds);
-				} else {
-					snprintf(p, p_max_size, "%i:%02i", minutes, seconds);
-				}
+				format_media_player_time(p, p_max_size, cur->mpd.elapsed);
 			}
 			OBJ(mpd_length) {
-				int days = 0, hours = 0, minutes = 0, seconds = 0;
-				int tmp = cur->mpd.length;
-
-				while (tmp >= 86400) {
-					tmp -= 86400;
-					days++;
-				}
-				while (tmp >= 3600) {
-					tmp -= 3600;
-					hours++;
-				}
-				while (tmp >= 60) {
-					tmp -= 60;
-					minutes++;
-				}
-				seconds = tmp;
-				if (days > 0) {
-					snprintf(p, p_max_size, "%i days %i:%02i:%02i", days,
-						hours, minutes, seconds);
-				} else if (hours > 0) {
-					snprintf(p, p_max_size, "%i:%02i:%02i", hours, minutes,
-						seconds);
-				} else {
-					snprintf(p, p_max_size, "%i:%02i", minutes, seconds);
-				}
+				format_media_player_time(p, p_max_size, cur->mpd.length);
 			}
 			OBJ(mpd_percent) {
 				spaced_print(p, p_max_size, "%*d", 4, "mpd_percent",
