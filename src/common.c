@@ -213,26 +213,43 @@ void update_dns_data(void)
 	fclose(fp);
 }
 
-void format_seconds(char *buf, unsigned int n, long t)
+void format_seconds(char *buf, unsigned int n, long seconds)
 {
-	if (t >= 24 * 60 * 60) {	/* hours necessary when there are days? */
-		snprintf(buf, n, "%ldd %ldh %ldm", t / 60 / 60 / 24, (t / 60 / 60) % 24,
-			(t / 60) % 60);
-	} else if (t >= 60 * 60) {
-		snprintf(buf, n, "%ldh %ldm", (t / 60 / 60) % 24, (t / 60) % 60);
+	long days;
+	int hours, minutes;
+
+	days = seconds / 86400;
+	seconds %= 86400;
+	hours = seconds / 3600;
+	seconds %= 3600;
+	minutes = seconds / 60;
+	seconds %= 60;
+
+	if (days > 0) {
+		snprintf(buf, n, "%ldd %dh %dm", days, hours, minutes);
 	} else {
-		snprintf(buf, n, "%ldm %lds", t / 60, t % 60);
+		snprintf(buf, n, "%dh %dm %lds", hours, minutes, seconds);
 	}
 }
 
-void format_seconds_short(char *buf, unsigned int n, long t)
+void format_seconds_short(char *buf, unsigned int n, long seconds)
 {
-	if (t >= 24 * 60 * 60) {
-		snprintf(buf, n, "%ldd %ldh", t / 60 / 60 / 24, (t / 60 / 60) % 24);
-	} else if (t >= 60 * 60) {
-		snprintf(buf, n, "%ldh %ldm", (t / 60 / 60) % 24, (t / 60) % 60);
+	long days;
+	int hours, minutes;
+
+	days = seconds / 86400;
+	seconds %= 86400;
+	hours = seconds / 3600;
+	seconds %= 3600;
+	minutes = seconds / 60;
+	seconds %= 60;
+
+	if (days > 0) {
+		snprintf(buf, n, "%ldd %dh", days, hours);
+	} else if (hours > 0) {
+		snprintf(buf, n, "%dh %dm", hours, minutes);
 	} else {
-		snprintf(buf, n, "%ldm", t / 60);
+		snprintf(buf, n, "%dm %lds", minutes, seconds);
 	}
 }
 
