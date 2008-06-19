@@ -5,7 +5,7 @@
 			<option>interface</option>
 		</term>
 		<listitem>
-			IP address for an interface
+			IP address for an interface, or "No Address" if no address is assigned.
 			<para></para></listitem>
 	</varlistentry>
 

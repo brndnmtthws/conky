@@ -4718,11 +4718,18 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 #ifdef HAVE_POPEN
 			OBJ(addr) {
-				snprintf(p, p_max_size, "%u.%u.%u.%u",
-					obj->data.net->addr.sa_data[2] & 255,
-					obj->data.net->addr.sa_data[3] & 255,
-					obj->data.net->addr.sa_data[4] & 255,
-					obj->data.net->addr.sa_data[5] & 255);
+				if ((obj->data.net->addr.sa_data[2] & 255) == 0
+						&& (obj->data.net->addr.sa_data[3] & 255) == 0
+						&& (obj->data.net->addr.sa_data[4] & 255) == 0
+						&& (obj->data.net->addr.sa_data[5] & 255) == 0) {
+					snprintf(p, p_max_size, "No Address");
+				} else {
+					snprintf(p, p_max_size, "%u.%u.%u.%u",
+						obj->data.net->addr.sa_data[2] & 255,
+						obj->data.net->addr.sa_data[3] & 255,
+						obj->data.net->addr.sa_data[4] & 255,
+						obj->data.net->addr.sa_data[5] & 255);
+				}
 			}
 #if defined(__linux__)
 			OBJ(addrs) {
