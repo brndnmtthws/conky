@@ -122,6 +122,7 @@ int destroy_audacious_thread(void)
 /* ---------------------------------------------------
  * Worker thread function for audacious data sampling.
  * --------------------------------------------------- */
+__attribute((noreturn))
 void *audacious_thread_func(void *pvoid)
 {
 	static audacious_t items;

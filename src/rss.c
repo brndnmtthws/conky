@@ -63,7 +63,7 @@ size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void *data)
 	return realsize;
 }
 
-int rss_delay(int *wait, int delay)
+int rss_delay(int *wait_time, int delay)
 {
 	time_t now = time(NULL);
 
@@ -73,13 +73,13 @@ int rss_delay(int *wait, int delay)
 	}
 	delay *= 60;
 
-	if (!*wait) {
-		*wait = now + delay;
+	if (!*wait_time) {
+		*wait_time = now + delay;
 		return 1;
 	}
 
-	if (now >= *wait + delay) {
-		*wait = now + delay;
+	if (now >= *wait_time + delay) {
+		*wait_time = now + delay;
 		return 1;
 	}
 

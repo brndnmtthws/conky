@@ -121,11 +121,13 @@ void clear_mpd_stats(struct mpd_s *mpd)
 
 void *update_mpd(void *arg)
 {
+	struct mpd_s *mpd;
+
 	if (arg == NULL) {
 		CRIT_ERR("update_mpd called with a null argument!");
 	}
 
-	struct mpd_s *mpd = (struct mpd_s *) arg;
+	mpd = (struct mpd_s *) arg;
 
 	while (1) {
 		mpd_Status *status;

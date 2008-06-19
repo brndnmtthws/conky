@@ -60,6 +60,10 @@ static timed_thread_list *p_timed_thread_list_tail = NULL;
 
 static int now(struct timespec *abstime)
 {
+#ifndef HAVE_CLOCK_GETTIME
+	struct timeval tv;
+#endif
+
 	if (!abstime) {
 		return -1;
 	}
@@ -68,8 +72,6 @@ static int now(struct timespec *abstime)
 	return clock_gettime(CLOCK_REALTIME, abstime);
 #else
 	/* fallback to gettimeofday () */
-	struct timeval tv;
-
 	if (gettimeofday(&tv, NULL) != 0) {
 		return -1;
 	}
