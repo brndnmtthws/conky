@@ -705,9 +705,9 @@ void update_diskio()
 	 *  That's why it is better to return 0 first time; */
 	if (diskio_setup == 0) {
 		diskio_setup = 1;
-		diskio_value = 0;
+		info.diskio_value = 0;
 	} else {
-		diskio_value = (unsigned int) ((diskio_current - diskio_prev) / 1024);
+		info.diskio_value = (unsigned int) ((diskio_current - diskio_prev) / 1024);
 	}
 	diskio_prev = diskio_current;
 

@@ -145,7 +145,7 @@ void update_diskio(void)
 	int tot, tot_read, tot_write;
 
 	if (!(fp = open_file("/proc/diskstats", &rep))) {
-		diskio_value = 0;
+		info.diskio_value = 0;
 		return;
 	}
 
@@ -222,9 +222,9 @@ void update_diskio(void)
 	last_read = current_read;
 	last_write = current_write;
 
-	diskio_value = tot;
-	diskio_read_value = tot_read;
-	diskio_write_value = tot_write;
+	info.diskio_value = tot;
+	info.diskio_read_value = tot_read;
+	info.diskio_write_value = tot_write;
 
 	fclose(fp);
 }

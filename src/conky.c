@@ -4668,7 +4668,7 @@ static void generate_text_internal(char *p, int p_max_size,
 						(obj->data.diskio->current / update_interval) * 1024LL,
 						p, p_max_size, "diskio");
 				} else {
-					human_readable(diskio_value * 1024LL, p, p_max_size,
+					human_readable(info.diskio_value * 1024LL, p, p_max_size,
 						"diskio");
 				}
 			}
@@ -4677,7 +4677,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					human_readable((obj->data.diskio->current_write / update_interval) * 1024LL, p, p_max_size,
 						"diskio_write");
 				} else {
-					human_readable(diskio_write_value * 1024LL, p, p_max_size,
+					human_readable(info.diskio_write_value * 1024LL, p, p_max_size,
 						"diskio_write");
 				}
 			}
@@ -4686,7 +4686,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					human_readable((obj->data.diskio->current_read / update_interval) * 1024LL, p, p_max_size,
 						"diskio_read");
 				} else {
-					human_readable(diskio_read_value * 1024LL, p, p_max_size,
+					human_readable(info.diskio_read_value * 1024LL, p, p_max_size,
 						"diskio_read");
 				}
 			}
@@ -4695,7 +4695,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					new_graph(p, obj->a, obj->b, obj->c, obj->d,
 						obj->data.diskio->current, obj->e, 1);
 				} else {
-					new_graph(p, obj->a, obj->b, obj->c, obj->d, diskio_value,
+					new_graph(p, obj->a, obj->b, obj->c, obj->d, info.diskio_value,
 						obj->e, 1);
 				}
 			}
@@ -4705,7 +4705,7 @@ static void generate_text_internal(char *p, int p_max_size,
 						obj->data.diskio->current_read, obj->e, 1);
 				} else {
 					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-						diskio_read_value, obj->e, 1);
+						info.diskio_read_value, obj->e, 1);
 				}
 			}
 			OBJ(diskiograph_write) {
@@ -4714,7 +4714,7 @@ static void generate_text_internal(char *p, int p_max_size,
 						obj->data.diskio->current_write, obj->e, 1);
 				} else {
 					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-						diskio_write_value, obj->e, 1);
+						info.diskio_write_value, obj->e, 1);
 				}
 			}
 			OBJ(downspeed) {
@@ -6324,9 +6324,9 @@ static void generate_text(void)
 
 	update_stuff();
 	/* fix diskio rates to b/s (use update_interval */
-	diskio_read_value = diskio_read_value / update_interval;
-	diskio_write_value = diskio_write_value / update_interval;
-	diskio_value = diskio_value / update_interval;
+	info.diskio_read_value /= update_interval;
+	info.diskio_write_value /= update_interval;
+	info.diskio_value /= update_interval;
 
 	/* add things to the buffer */
 

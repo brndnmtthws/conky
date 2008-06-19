@@ -129,10 +129,6 @@ struct dns_data {
 	char **ns_list;
 };
 
-unsigned int diskio_value;
-unsigned int diskio_read_value;
-unsigned int diskio_write_value;
-
 struct fs_stat {
 	char path[DEFAULT_TEXT_BUFFER_SIZE];
 	char type[DEFAULT_TEXT_BUFFER_SIZE];
@@ -330,6 +326,10 @@ struct information {
 	double music_player_interval;
 
 	short kflags;	/* kernel settings, see enum KFLAG */
+
+	unsigned int diskio_value;
+	unsigned int diskio_read_value;
+	unsigned int diskio_write_value;
 };
 
 enum {
