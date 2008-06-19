@@ -6633,8 +6633,8 @@ static void draw_string(const char *s)
 	/* This code looks for tabs in the text and coverts them to spaces.
 	 * The trick is getting the correct number of spaces, and not going
 	 * over the window's size without forcing the window larger. */
-	for (i = 0; i < (int)text_buffer_size; i++) {
-		if (tmpstring1[i] == '\t') {	// 9 is ascii tab
+	for (i = 0; i < (int) text_buffer_size; i++) {
+		if (tmpstring1[i] == '\t') {
 			i2 = 0;
 			for (i2 = 0; i2 < (8 - (1 + pos) % 8) && added <= max; i2++) {
 				/* guard against overrun */
@@ -6643,11 +6643,9 @@ static void draw_string(const char *s)
 			}
 			pos += i2;
 		} else {
-			if (tmpstring1[i] != 9) {
-				/* guard against overrun */
-				tmpstring2[MIN(pos, (int)text_buffer_size - 1)] = tmpstring1[i];
-				pos++;
-			}
+			/* guard against overrun */
+			tmpstring2[MIN(pos, (int) text_buffer_size - 1)] = tmpstring1[i];
+			pos++;
 		}
 	}
 #ifdef X11
