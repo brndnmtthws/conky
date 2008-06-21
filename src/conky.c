@@ -4328,6 +4328,31 @@ static inline void format_media_player_time(char *buf, const int size,
 	}
 }
 
+static inline double get_barnum(char *buf)
+{
+	char *c = buf;
+	double barnum;
+
+	while (*c) {
+		if (*c == '\001') {
+			*c = ' ';
+		}
+		c++;
+	}
+
+	if (sscanf(buf, "%lf", &barnum) == 0) {
+		ERR("reading execbar value failed (perhaps it's not the "
+			"correct format?)");
+		return -1;
+	}
+	if (barnum > 100.0 || barnum < 0.0) {
+		ERR("your execbar value is not between 0 and 100, "
+			"therefore it will be ignored");
+		return -1;
+	}
+	return barnum;
+}
+
 static void generate_text_internal(char *p, int p_max_size,
 		struct text_object_list *text_object_list,
 		struct information *cur)
@@ -4861,33 +4886,21 @@ static void generate_text_internal(char *p, int p_max_size,
 				double barnum;
 
 				read_exec(obj->data.s, p, p_max_size);
+				barnum = get_barnum(p);
 
-				if (sscanf(p, "%lf", &barnum) == 0) {
-					ERR("reading execbar value failed (perhaps it's not the "
-						"correct format?)");
-				}
-				if (barnum > 100 || barnum < 0) {
-					ERR("your execbar value is not between 0 and 100, "
-						"therefore it will be ignored");
-				} else {
-					barnum = barnum / 100.0;
-					new_bar(p, 0, 4, (int) (barnum * 255.0));
+				if (barnum >= 0.0) {
+					new_bar(p, 0, 4, round_to_int(barnum * 255.0));
 				}
 			}
 			OBJ(execgraph) {
 				double barnum;
 
 				read_exec(obj->data.s, p, p_max_size);
+				barnum = get_barnum(p);
 
-				if (sscanf(p, "%lf", &barnum) == 0) {
-					ERR("reading execgraph value failed (perhaps it's not the "
-						"correct format?)");
-				}
-				if (barnum > 100 || barnum < 0) {
-					ERR("your execgraph value is not between 0 and 100, "
-						"therefore it will be ignored");
-				} else {
-					new_graph(p, 0, 25, obj->c, obj->d, (int) (barnum), 100, 1);
+				if (barnum >= 0.0) {
+					new_graph(p, 0, 25, obj->c, obj->d, round_to_int(barnum),
+						100, 1);
 				}
 			}
 			OBJ(execibar) {
@@ -4895,20 +4908,14 @@ static void generate_text_internal(char *p, int p_max_size,
 						< obj->data.execi.interval) {
 					new_bar(p, 0, 4, (int) obj->f);
 				} else {
-					float barnum;
+					double barnum;
 
 					read_exec(obj->data.execi.cmd, p, p_max_size);
+					barnum = get_barnum(p);
 
-					if (sscanf(p, "%f", &barnum) == 0) {
-						ERR("reading execibar value failed (perhaps it's not "
-							"the correct format?)");
-					}
-					if (barnum > 100 || barnum < 0) {
-						ERR("your execibar value is not between 0 and 100, "
-							"therefore it will be ignored");
-					} else {
+					if (barnum >= 0.0) {
 						obj->f = 255 * barnum / 100.0;
-						new_bar(p, 0, 4, (int) obj->f);
+						new_bar(p, 0, 4, round_to_int(obj->f));
 					}
 					obj->data.execi.last_update = current_update_time;
 				}
@@ -4918,18 +4925,12 @@ static void generate_text_internal(char *p, int p_max_size,
 						< obj->data.execi.interval) {
 					new_graph(p, 0, 25, obj->c, obj->d, (int) (obj->f), 100, 0);
 				} else {
-					float barnum;
+					double barnum;
 
 					read_exec(obj->data.execi.cmd, p, p_max_size);
+					barnum = get_barnum(p);
 
-					if (sscanf(p, "%f", &barnum) == 0) {
-						ERR("reading execigraph value failed (perhaps it's not "
-							"the correct format?)");
-					}
-					if (barnum > 100 || barnum < 0) {
-						ERR("your execigraph value is not between 0 and 100, "
-							"therefore it will be ignored");
-					} else {
+					if (barnum >= 0.0) {
 						obj->f = barnum;
 						new_graph(p, 0, 25, obj->c, obj->d, (int) (obj->f),
 							100, 1);
