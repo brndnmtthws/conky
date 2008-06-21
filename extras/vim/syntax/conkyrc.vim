@@ -17,6 +17,7 @@ syn keyword ConkyrcSetting
 			\ alignment
 			\ background
 			\ show_graph_scale
+			\ show_graph_range
 			\ border_margin
 			\ border_width
 			\ color0
@@ -248,6 +249,8 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 			\ kernel
 			\ machine
 			\ mem
+			\ memeasyfree
+			\ memfree
 			\ memmax
 			\ memperc
 			\ membar
@@ -265,6 +268,9 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 			\ outlinecolor
 			\ processes
 			\ running_processes
+			\ scroll
+			\ lines
+			\ words
 			\ shadecolor
 			\ stippled_hr
 			\ swap
@@ -290,6 +296,8 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 			\ apm_adapter
 			\ apm_battery_life
 			\ apm_battery_time
+			\ monitor
+			\ monitor_number
 			\ mpd_title
 			\ mpd_artist
 			\ mpd_album

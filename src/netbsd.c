@@ -119,9 +119,6 @@ void update_meminfo()
 	struct uvmexp_sysctl uvmexp;
 	size_t size = sizeof(uvmexp);
 
-	info.memmax = info.mem = 0;
-	info.swapmax = info.swap = 0;
-
 	if (sysctl(mib, 2, &uvmexp, &size, NULL, 0) < 0) {
 		warn("could not get memory info");
 		return;
@@ -133,6 +130,7 @@ void update_meminfo()
 
 	info.memmax = (total_pages * pagesize) >> 10;
 	info.mem = ((total_pages - free_pages - inactive_pages) * pagesize) >> 10;
+	info.memeasyfree = info.memfree = info.memmax - info.mem;
 
 	if (swapmode(&swap_avail, &swap_free) >= 0) {
 		info.swapmax = swap_avail;

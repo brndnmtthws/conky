@@ -165,6 +165,7 @@ void update_meminfo()
 
 	info.memmax = total_pages * (pagesize >> 10);
 	info.mem = (total_pages - free_pages - inactive_pages) * (pagesize >> 10);
+	info.memeasyfree = info.memfree = info.memmax - info.mem;
 
 	if ((swapmode(&swap_avail, &swap_free)) >= 0) {
 		info.swapmax = swap_avail;

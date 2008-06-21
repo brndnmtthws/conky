@@ -1,4 +1,4 @@
-'\" -*- coding: us-ascii -*-
+.\" -*- coding: us-ascii -*-
 .if \n(.g .ds T< \\FC
 .if \n(.g .ds T> \\F[\n[.fam]]
 .de URL
@@ -30,7 +30,7 @@ using scripts and other external programs.
 Conky has more than 250 built in objects, including support for
 a plethora of OS stats (uname, uptime, CPU usage, mem usage, disk
 usage, "top" like process stats, and network monitoring, just to name a few),
-built in IMAP and POP3 support, built in support for many popular
+built in IMAP and POP3 support, built in support for many popular 
 music players (MPD, XMMS2, BMPx, Audacious), and much much more.
 Conky can display this info either as text, or using simple progress
 bars and graph widgets, with different fonts and colours.
@@ -42,11 +42,11 @@ or stop by #conky on irc.freenode.net if you have questions or want to contribut
 Thanks for your interest in Conky.
 .SH COMPILING
 For users compiling from source on a binary distro, make sure you have the X development
-libraries installed. This should be a package along the lines of "libx11-dev" or
+libraries installed. This should be a package along the lines of "libx11-dev" or 
 "xorg-x11-dev" for X11 libs, and similar "-dev" format for the other libs required (depending
 on your configure options).
 .PP
-Conky has (for some time) been available in the repositories of most popular distributions.
+Conky has (for some time) been available in the repositories of most popular distributions. 
 Here are some installation instructions for a few:
 .PP
 Gentoo users -- Conky is in Gentoo's Portage... simply use "emerge app-admin/conky" for installation.
@@ -139,7 +139,7 @@ Y position
 Number of times to update Conky (and quit)
 
 .SH "CONFIGURATION SETTINGS"
-Default configuration file location is $HOME/.conkyrc or
+Default configuration file location is $HOME/.conkyrc or 
 ${sysconfdir}/conky/conky.conf. On most systems, sysconfdir is /etc,
 and you can find the sample config file there (/etc/conky/conky.conf).
 .PP
@@ -337,6 +337,10 @@ Shortens units to a single character (kiB->k, GiB->G, etc.). Default is off.
 .TP 
 \fB\*(T<\fBshow_graph_scale\fR\*(T>\fR
 Shows the maximum value in scaled graphs.
+
+.TP 
+\fB\*(T<\fBshow_graph_range\fR\*(T>\fR
+Shows the time range covered by a graph.
 
 .TP 
 \fB\*(T<\fBstippled_borders\fR\*(T>\fR
@@ -560,32 +564,32 @@ CPU usage in percents. For SMP machines, the CPU number can be provided as an ar
 Bar that shows CPU usage, height is bar's height in pixels. See $cpu for more info on SMP.
 
 .TP 
-\fB\*(T<\fBcpugraph\fR\*(T>\fR \*(T<\fB(cpu number) (height),(width) (gradient colour 1) (gradient colour 2)\fR\*(T> 
-CPU usage graph, with optional colours in hex, minus the #. See $cpu for more info on SMP.
+\fB\*(T<\fBcpugraph\fR\*(T>\fR \*(T<\fBnormal|log (cpu number) (height),(width) (gradient colour 1) (gradient colour 2)\fR\*(T> 
+CPU usage graph, with optional colours in hex, minus the #. See $cpu for more info on SMP. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
 
 .TP 
 \fB\*(T<\fBdiskio\fR\*(T>\fR \*(T<\fB(device)\fR\*(T> 
 Displays current disk IO. Device is optional, and takes the form of sda for /dev/sda. Individual partitions are allowed.
 
 .TP 
-\fB\*(T<\fBdiskiograph\fR\*(T>\fR \*(T<\fB(device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
-Disk IO graph, colours defined in hex, minus the #. If scale is non-zero, it becomes the scale for the graph.
+\fB\*(T<\fBdiskiograph\fR\*(T>\fR \*(T<\fBnormal|log (device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
+Disk IO graph, colours defined in hex, minus the #. If scale is non-zero, it becomes the scale for the graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
 
 .TP 
 \fB\*(T<\fBdiskio_read\fR\*(T>\fR \*(T<\fB(device)\fR\*(T> 
 Displays current disk IO for reads. Device as in diskio.
 
 .TP 
-\fB\*(T<\fBdiskiograph_read\fR\*(T>\fR \*(T<\fB(device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
-Disk IO graph for reads, colours defined in hex, minus the #. If scale is non-zero, it becomes the scale for the graph. Device as in diskio.
+\fB\*(T<\fBdiskiograph_read\fR\*(T>\fR \*(T<\fBnormal|log (device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
+Disk IO graph for reads, colours defined in hex, minus the #. If scale is non-zero, it becomes the scale for the graph. Device as in diskio. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
 
 .TP 
 \fB\*(T<\fBdiskio_write\fR\*(T>\fR \*(T<\fB(device)\fR\*(T> 
 Displays current disk IO for writes. Device as in diskio.
 
 .TP 
-\fB\*(T<\fBdiskiograph_write\fR\*(T>\fR \*(T<\fB(device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
-Disk IO graph for writes, colours defined in hex, minus the #. If scale is non-zero, it becomes the scale for the graph. Device as in diskio.
+\fB\*(T<\fBdiskiograph_write\fR\*(T>\fR \*(T<\fBnormal|log (device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
+Disk IO graph for writes, colours defined in hex, minus the #. If scale is non-zero, it becomes the scale for the graph. Device as in diskio. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
 
 .TP 
 \fB\*(T<\fBdisk_protect\fR\*(T>\fR \*(T<\fBdevice\fR\*(T> 
@@ -600,8 +604,8 @@ Download speed in KiB
 Download speed in KiB with one decimal
 
 .TP 
-\fB\*(T<\fBdownspeedgraph\fR\*(T>\fR \*(T<\fBnet (height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
-Download speed graph, colours defined in hex, minus the #. If scale is non-zero, it becomes the scale for the graph.
+\fB\*(T<\fBdownspeedgraph\fR\*(T>\fR \*(T<\fBnormal|log net (height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
+Download speed graph, colours defined in hex, minus the #. If scale is non-zero, it becomes the scale for the graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
 
 .TP 
 \fB\*(T<\fBelse\fR\*(T>\fR 
@@ -628,8 +632,8 @@ Executes a shell command and displays the output in conky. warning: this takes a
 Same as exec, except if the first value return is a value between 0-100, it will use that number for a bar. The size for the bar is currently fixed, but that may change in the future.
 
 .TP 
-\fB\*(T<\fBexecgraph\fR\*(T>\fR \*(T<\fBcommand\fR\*(T> 
-Same as execbar, but graphs values.
+\fB\*(T<\fBexecgraph\fR\*(T>\fR \*(T<\fB(normal|log) command\fR\*(T> 
+Same as execbar, but graphs values. Uses a logaritmic scale when the log option is given (to see small numbers). Values still have to be between 0 and 100.
 
 .TP 
 \fB\*(T<\fBexeci\fR\*(T>\fR \*(T<\fBinterval command\fR\*(T> 
@@ -854,12 +858,16 @@ Kernel version
 The value of /proc/sys/vm/laptop_mode
 
 .TP 
+\fB\*(T<\fBlines\fR\*(T>\fR \*(T<\fBtextfile\fR\*(T> 
+Displays the number of lines in the given file
+
+.TP 
 \fB\*(T<\fBloadavg\fR\*(T>\fR 
 (1,2,3)> System load average, 1 is for past 1 minute, 2 for past 5 minutes and 3 for past 15 minutes.
 
 .TP 
-\fB\*(T<\fBloadgraph\fR\*(T>\fR \*(T<\fB(height),(width) (gradient colour 1) (gradient colour 2)\fR\*(T> 
-Load1 average graph, similar to xload, with optional colours in hex, minus the #.
+\fB\*(T<\fBloadgraph\fR\*(T>\fR \*(T<\fBnormal|log (height),(width) (gradient colour 1) (gradient colour 2)\fR\*(T> 
+Load1 average graph, similar to xload, with optional colours in hex, minus the #. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
 
 .TP 
 \fB\*(T<\fBmachine\fR\*(T>\fR 
@@ -885,8 +893,16 @@ Amount of memory in use
 Bar that shows amount of memory in use
 
 .TP 
-\fB\*(T<\fBmemgraph\fR\*(T>\fR \*(T<\fB(height),(width) (gradient colour 1) (gradient colour 2)\fR\*(T> 
-Memory usage graph
+\fB\*(T<\fBmemeasyfree\fR\*(T>\fR 
+Amount of free memory including the memory that is very easily freed (buffers/cache)
+
+.TP 
+\fB\*(T<\fBmemfree\fR\*(T>\fR 
+Amount of free memory
+
+.TP 
+\fB\*(T<\fBmemgraph\fR\*(T>\fR \*(T<\fBnormal|log (height),(width) (gradient colour 1) (gradient colour 2)\fR\*(T> 
+Memory usage graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
 
 .TP 
 \fB\*(T<\fBmemmax\fR\*(T>\fR 
@@ -895,6 +911,14 @@ Total amount of memory
 .TP 
 \fB\*(T<\fBmemperc\fR\*(T>\fR 
 Percentage of memory in use
+
+.TP 
+\fB\*(T<\fBmonitor\fR\*(T>\fR 
+Number of the monitor on which conky is running
+
+.TP 
+\fB\*(T<\fBmonitor_number\fR\*(T>\fR 
+Number of monitors
 
 .TP 
 \fB\*(T<\fBmpd_artist\fR\*(T>\fR 
@@ -1133,6 +1157,10 @@ Move text over by N pixels. See also $voffset.
 Download and parse RSS feeds. Action may be one of the following: feed_title, item_title (with num par), item_desc (with num par) and item_titles.
 
 .TP 
+\fB\*(T<\fBscroll\fR\*(T>\fR \*(T<\fBlength text\fR\*(T> 
+Scroll 'text' showing 'length' number of characters at the same time. The text may also contain variables. If a var creates output on multiple lines then the lines are placed behind each other separated with a '|'-sign. Do NOT use vars that change colors or otherwise affect the design inside a scrolling text. If you want spaces between the start and the end of 'text', place them at the end of 'text' not at the front ("foobar" and "    foobar" can both generate "barfoo" but "foobar    " will keep the spaces like this "bar    foo").
+
+.TP 
 \fB\*(T<\fBtab\fR\*(T>\fR \*(T<\fB(width, (start))\fR\*(T> 
 Puts a tab of the specified width, starting from column 'start'.
 
@@ -1181,8 +1209,8 @@ Upload speed in KiB
 Upload speed in KiB with one decimal
 
 .TP 
-\fB\*(T<\fBupspeedgraph\fR\*(T>\fR \*(T<\fBnet (height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
-Upload speed graph, colours defined in hex, minus the #. If scale is non-zero, it becomes the scale for the graph.
+\fB\*(T<\fBupspeedgraph\fR\*(T>\fR \*(T<\fBnormal|log net (height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
+Upload speed graph, colours defined in hex, minus the #. If scale is non-zero, it becomes the scale for the graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
 
 .TP 
 \fB\*(T<\fBuptime\fR\*(T>\fR 
@@ -1255,6 +1283,10 @@ Wireless link quality in percents (Linux only)
 .TP 
 \fB\*(T<\fBwireless_link_bar\fR\*(T>\fR \*(T<\fB(height), (width) net\fR\*(T> 
 Wireless link quality bar (Linux only)
+
+.TP 
+\fB\*(T<\fBwords\fR\*(T>\fR \*(T<\fBtextfile\fR\*(T> 
+Displays the number of words in the given file
 
 .TP 
 \fB\*(T<\fBxmms2_artist\fR\*(T>\fR 

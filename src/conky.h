@@ -34,6 +34,8 @@
 #include <mcheck.h>
 #endif /* HAS_MCHECK_H */
 
+#define EQUAL 0	//returnvalue of strcmp-variants when strings are equal
+
 #include "config.h"
 #include <sys/utsname.h>
 #include <stdio.h>
@@ -197,6 +199,17 @@ struct gateway_info {
 	int count;
 };
 
+#ifdef X11
+struct monitor_info {
+	int number;
+	int current;
+};
+
+struct x11_info {
+	struct monitor_info monitor;
+};
+#endif
+
 #ifdef TCP_PORT_MONITOR
 #include "libtcp-portmon.h"
 #endif
@@ -244,10 +257,13 @@ enum {
 #endif
 	INFO_USERS = 26,
 	INFO_GW = 27,
-	INFO_DNS = 28
 #ifdef NVIDIA
-,	INFO_NVIDIA = 29
+	INFO_NVIDIA = 28,
 #endif
+#ifdef X11
+	INFO_X11 = 29,
+#endif
+	INFO_DNS = 30
 
 };
 
@@ -279,7 +295,7 @@ struct information {
 	double uptime;
 
 	/* memory information in kilobytes */
-	unsigned long long mem, memmax, swap, swapmax;
+	unsigned long long mem, memeasyfree, memfree, memmax, swap, swapmax;
 	unsigned long long bufmem, buffers, cached;
 
 	unsigned short procs;
@@ -325,6 +341,10 @@ struct information {
 	struct entropy_s entropy;
 	double music_player_interval;
 
+#ifdef X11
+	struct x11_info x11;
+#endif
+
 	short kflags;	/* kernel settings, see enum KFLAG */
 
 	unsigned int diskio_value;
@@ -347,7 +367,9 @@ enum {
 #define KFLAG_FLIP(a) info.kflags ^= a
 #define KFLAG_ISSET(a) info.kflags & a
 
-int out_to_console;
+#define TO_X 1
+#define TO_STDOUT 2
+int output_methods;
 
 int top_cpu;
 int top_mem;
@@ -384,6 +406,10 @@ void clear_net_stats(void);
 void free_dns_data(void);
 void update_dns_data(void);
 void update_users(void);
+
+#ifdef X11
+void update_x11info(void);
+#endif
 
 void update_stuff(void);
 

@@ -357,9 +357,16 @@ void update_stuff(void)
 		update_meminfo();
 		if (no_buffers) {
 			info.mem -= info.bufmem;
+			info.memeasyfree += info.bufmem;
 		}
 		last_meminfo_update = current_update_time;
 	}
+	
+#ifdef X11
+	if (NEED(INFO_X11)) {
+		update_x11info();
+	}
+#endif
 
 	if (NEED(INFO_TOP)) {
 		update_top();

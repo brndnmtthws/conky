@@ -420,10 +420,10 @@
 	<varlistentry>
 		<term>
 			<command><option>cpugraph</option></command>
-			<option>(cpu number) (height),(width) (gradient colour 1) (gradient colour 2)</option>
+			<option>normal|log (cpu number) (height),(width) (gradient colour 1) (gradient colour 2)</option>
 		</term>
 		<listitem>
-			CPU usage graph, with optional colours in hex, minus the #.  See $cpu for more info on SMP.
+			CPU usage graph, with optional colours in hex, minus the #.  See $cpu for more info on SMP. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
 			<para></para></listitem>
 	</varlistentry>
 
@@ -440,10 +440,10 @@
 	<varlistentry>
 		<term>
 			<command><option>diskiograph</option></command>
-			<option>(device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+			<option>normal|log (device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
 		</term>
 		<listitem>
-			Disk IO graph, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.
+			Disk IO graph, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
 			<para></para></listitem>
 	</varlistentry>
 
@@ -460,10 +460,10 @@
 	<varlistentry>
 		<term>
 			<command><option>diskiograph_read</option></command>
-			<option>(device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+			<option>normal|log (device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
 		</term>
 		<listitem>
-			Disk IO graph for reads, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.  Device as in diskio.
+			Disk IO graph for reads, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.  Device as in diskio. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
 			<para></para></listitem>
 	</varlistentry>
 
@@ -480,10 +480,10 @@
 	<varlistentry>
 		<term>
 			<command><option>diskiograph_write</option></command>
-			<option>(device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+			<option>normal|log (device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
 		</term>
 		<listitem>
-			Disk IO graph for writes, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.  Device as in diskio.
+			Disk IO graph for writes, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.  Device as in diskio. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
 			<para></para></listitem>
 	</varlistentry>
 
@@ -520,10 +520,10 @@
 	<varlistentry>
 		<term>
 			<command><option>downspeedgraph</option></command>
-			<option>net (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+			<option>normal|log net (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
 		</term>
 		<listitem>
-			Download speed graph, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.
+			Download speed graph, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
 			<para></para></listitem>
 	</varlistentry>
 
@@ -587,10 +587,10 @@
 	<varlistentry>
 		<term>
 			<command><option>execgraph</option></command>
-			<option>command</option>
+			<option>(normal|log) command</option>
 		</term>
 		<listitem>
-			Same as execbar, but graphs values.
+			Same as execbar, but graphs values. Uses a logaritmic scale when the log option is given (to see small numbers). Values still have to be between 0 and 100.
 			<para></para></listitem>
 	</varlistentry>
 
@@ -1135,10 +1135,20 @@
 	<varlistentry>
 		<term>
 			<command><option>loadgraph</option></command>
-			<option>(height),(width) (gradient colour 1) (gradient colour 2)</option>
+			<option>normal|log (height),(width) (gradient colour 1) (gradient colour 2)</option>
 		</term>
 		<listitem>
-			Load1 average graph, similar to xload, with optional colours in hex, minus the #.
+			Load1 average graph, similar to xload, with optional colours in hex, minus the #. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>lines</option></command>
+			<option>textfile</option>
+		</term>
+		<listitem>
+			Displays the number of lines in the given file
 			<para></para></listitem>
 	</varlistentry>
 
@@ -1197,10 +1207,28 @@
 	<varlistentry>
 		<term>
 			<command><option>memgraph</option></command>
-			<option>(height),(width) (gradient colour 1) (gradient colour 2)</option>
+			<option>normal|log (height),(width) (gradient colour 1) (gradient colour 2)</option>
 		</term>
 		<listitem>
-			Memory usage graph
+			Memory usage graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>memeasyfree</option></command>
+		</term>
+		<listitem>
+			Amount of free memory including the memory that is very easily freed (buffers/cache)
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>memfree</option></command>
+		</term>
+		<listitem>
+			Amount of free memory
 			<para></para></listitem>
 	</varlistentry>
 
@@ -1219,6 +1247,24 @@
 		</term>
 		<listitem>
 			Percentage of memory in use
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>monitor</option></command>
+		</term>
+		<listitem>
+			Number of the monitor on which conky is running
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>monitor_number</option></command>
+		</term>
+		<listitem>
+			Number of monitors
 			<para></para></listitem>
 	</varlistentry>
 
@@ -1524,6 +1570,16 @@
 
 	<varlistentry>
 		<term>
+			<command><option>scroll</option></command>
+			<option>length text</option>
+		</term>
+		<listitem>
+			Scroll 'text' showing 'length' number of characters at the same time. The text may also contain variables. If a var creates output on multiple lines then the lines are placed behind each other separated with a '|'-sign. Do NOT use vars that change colors or otherwise affect the design inside a scrolling text. If you want spaces between the start and the end of 'text', place them at the end of 'text' not at the front ("foobar" and "    foobar" can both generate "barfoo" but "foobar    " will keep the spaces like this "bar    foo").
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
 			<command><option>shadecolor</option></command>
 			<option>(color)</option>
 		</term>
@@ -1817,10 +1873,10 @@
 	<varlistentry>
 		<term>
 			<command><option>upspeedgraph</option></command>
-			<option>net (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+			<option>normal|log net (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
 		</term>
 		<listitem>
-			Upload speed graph, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.
+			Upload speed graph, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
 			<para></para></listitem>
 	</varlistentry>
 
@@ -1989,6 +2045,16 @@
 		</term>
 		<listitem>
 			Wireless link quality bar (Linux only)
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>words</option></command>
+			<option>textfile</option>
+		</term>
+		<listitem>
+			Displays the number of words in the given file
 			<para></para></listitem>
 	</varlistentry>
 

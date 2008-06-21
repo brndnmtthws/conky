@@ -550,4 +550,10 @@ void create_gc(void)
 		GCFunction | GCGraphicsExposures, &values);
 }
 
+void update_x11info(void)
+{
+	struct information *current_info = &info;
+	current_info->x11.monitor.number = XScreenCount(display);
+	current_info->x11.monitor.current = XDefaultScreen(display);
+}
 #endif /* X11 */

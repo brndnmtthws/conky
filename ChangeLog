@@ -7,6 +7,7 @@
 	* Removed redundancy in various parts
 
 2008-06-20
+	* Use output_methods instead of out_to_console
 	* Made some functions non-inline to compile with gcc 4.2 and higher
 
 2008-06-19
@@ -23,18 +24,29 @@
 	* Moved audacious defs into header
 	* Fixed 3 bufferoverflows in a struct utmp in users.c
 
+2008-06-09
+	* Graphs can now be logarithmic (except execigraph)
+
 2008-06-08
 	* Bugfix, $memgraph wasn't working and needed docs
+	* Code for $lines and $words
 	* Bugfix, $execgraph showed 0-0 instead of 0-100 values
 
 2008-06-07
+	* Case-insensitive values for if_up_strictness 
 	* Fix bug where DEV_NAME can read uninitialised memory
 	* Fix bug where ${if_mounted /}foo$endif prints foo on 1 line for
 	each update instead of just 1 line
 
+2008-06-06
+	* Code for $scroll
+	* Code for $memfree and $memeasyfree
+
 2008-06-05
 	* Fix bug where conky prints everything twice to STDOUT when
 	out_to_console is enabled
+	* Code for show_graph_range
+	* Code for $monitor and $monitor_number
 
 2008-06-04
 	* Fix bug where conky tries to free a already freed pointer when you

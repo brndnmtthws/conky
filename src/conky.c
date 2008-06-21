@@ -337,6 +337,7 @@ static int cpu_avg_samples, net_avg_samples;
 #ifdef X11
 
 static int show_graph_scale;
+static int show_graph_range;
 
 /* Position on the screen */
 static int text_alignment;
@@ -591,7 +592,6 @@ long fwd_fcharfind(FILE *fp, char val, unsigned int step)
 	}
 	fseek(fp, orig_pos, SEEK_SET);
 	return ret;
-#undef BUFSZ
 }
 
 #ifndef HAVE_MEMRCHR
@@ -647,7 +647,6 @@ long rev_fcharfind(FILE *fp, char val, unsigned int step)
 		ret = file_pos + buf_pos;
 	}
 	return ret;
-#undef BUFSZ
 }
 
 static void new_bar(char *buf, int w, int h, int usage)
@@ -692,7 +691,7 @@ static void new_font(char *buf, char *args)
 	if (args) {
 		struct special_t *s = new_special(buf, FONT);
 
-		if (s->font_added > font_count || !s->font_added || strncmp(args, fonts[s->font_added].name, DEFAULT_TEXT_BUFFER_SIZE)) {
+		if (s->font_added > font_count || !s->font_added || (strncmp(args, fonts[s->font_added].name, DEFAULT_TEXT_BUFFER_SIZE) != EQUAL) ) {
 			int tmp = selected_font;
 
 			selected_font = s->font_added = addfont(args);
@@ -708,17 +707,23 @@ static void new_font(char *buf, char *args)
 	}
 }
 #endif
-void graph_append(struct special_t *graph, double f)
+void graph_append(struct special_t *graph, double f, char showaslog)
 {
 	int i;
 
+	if (showaslog) {
+		f = log10(f + 1);
+	}
+	
 	if (!graph->scaled && f > graph->graph_scale) {
 		f = graph->graph_scale;
 	}
 
+/* Already happens in new_graph
 	if (graph->scaled) {
 		graph->graph_scale = 1;
 	}
+*/
 	graph->graph[0] = f;	/* add new data */
 	/* shift all the data by 1 */
 	for (i = graph->graph_width - 1; i > 0; i--) {
@@ -757,7 +762,7 @@ static unsigned int adjust_colors(unsigned int color)
 }
 
 static void new_graph(char *buf, int w, int h, unsigned int first_colour,
-		unsigned int second_colour, double i, int scale, int append)
+		unsigned int second_colour, double i, int scale, int append, char showaslog)
 {
 	struct special_t *s = new_special(buf, GRAPH);
 
@@ -788,18 +793,26 @@ static void new_graph(char *buf, int w, int h, unsigned int first_colour,
 	/* if (s->width) {
 		s->graph_width = s->width - 2;	// subtract 2 for rectangle around
 	} */
+	if (showaslog) {
+		s->graph_scale = log10(s->graph_scale + 1);
+	}
 	if (append) {
-		graph_append(s, i);
+		graph_append(s, i, showaslog);
 	}
 }
 
+#define LOGGRAPH "log"
+#define NORMGRAPH "normal"
+
 static char *scan_graph(const char *args, int *w, int *h,
 		unsigned int *first_colour, unsigned int *last_colour,
-		unsigned int *scale)
+		unsigned int *scale, char *showaslog)
 {
 	char buf[64];
+	char showaslogbuf[strlen(NORMGRAPH)+1];
 	buf[0] = 0;
 
+	*showaslog = FALSE;
 	/* zero width means all space that is available */
 	*w = 0;
 	*h = 25;
@@ -808,57 +821,69 @@ static char *scan_graph(const char *args, int *w, int *h,
 	*scale = 0;
 	/* graph's argument is either height or height,width */
 	if (args) {
-		if (sscanf(args, "%d,%d %x %x %u", h, w, first_colour, last_colour,
-				scale) == 5) {
+		if (sscanf(args, "%6s %d,%d %x %x %u", showaslogbuf, h, w, first_colour, last_colour,
+				scale) == 6) {
+			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
 			return NULL;
 		}
 		*scale = 0;
-		if (sscanf(args, "%d,%d %x %x", h, w, first_colour, last_colour) == 4) {
+		if (sscanf(args, "%6s %d,%d %x %x", showaslogbuf, h, w, first_colour, last_colour) == 5) {
+			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
 			return NULL;
 		}
-		if (sscanf(args, "%63s %d,%d %x %x %u", buf, h, w, first_colour,
-				last_colour, scale) == 6) {
+		if (sscanf(args, "%6s %63s %d,%d %x %x %u", showaslogbuf, buf, h, w, first_colour,
+				last_colour, scale) == 7) {
+			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
 			return strndup(buf, text_buffer_size);
 		}
 		*scale = 0;
-		if (sscanf(args, "%63s %d,%d %x %x", buf, h, w, first_colour,
-				last_colour) == 5) {
+		if (sscanf(args, "%6s %63s %d,%d %x %x", showaslogbuf, buf, h, w, first_colour,
+				last_colour) == 6) {
+			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
 			return strndup(buf, text_buffer_size);
 		}
 		buf[0] = '\0';
 		*h = 25;
 		*w = 0;
-		if (sscanf(args, "%x %x %u", first_colour, last_colour, scale) == 3) {
+		if (sscanf(args, "%6s %x %x %u", showaslogbuf, first_colour, last_colour, scale) == 4) {
+			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
 			return NULL;
 		}
 		*scale = 0;
-		if (sscanf(args, "%x %x", first_colour, last_colour) == 2) {
+		if (sscanf(args, "%6s %x %x", showaslogbuf, first_colour, last_colour) == 3) {
+			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
 			return NULL;
 		}
-		if (sscanf(args, "%63s %x %x %u", buf, first_colour, last_colour,
-				scale) == 4) {
+		if (sscanf(args, "%6s %63s %x %x %u", showaslogbuf, buf, first_colour, last_colour,
+				scale) == 5) {
+			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
 			return strndup(buf, text_buffer_size);
 		}
 		*scale = 0;
-		if (sscanf(args, "%63s %x %x", buf, first_colour, last_colour) == 3) {
+		if (sscanf(args, "%6s %63s %x %x", showaslogbuf, buf, first_colour, last_colour) == 4) {
+			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
 			return strndup(buf, text_buffer_size);
 		}
 		buf[0] = '\0';
 		*first_colour = 0;
 		*last_colour = 0;
-		if (sscanf(args, "%d,%d %u", h, w, scale) == 3) {
+		if (sscanf(args, "%6s %d,%d %u", showaslogbuf, h, w, scale) == 4) {
+			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
 			return NULL;
 		}
 		*scale = 0;
-		if (sscanf(args, "%d,%d", h, w) == 2) {
+		if (sscanf(args, "%6s %d,%d", showaslogbuf, h, w) == 3) {
+			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
 			return NULL;
 		}
-		if (sscanf(args, "%63s %d,%d %u", buf, h, w, scale) < 4) {
+		if (sscanf(args, "%6s %63s %d,%d %u", showaslogbuf, buf, h, w, scale) < 5) {
 			*scale = 0;
 			//TODO: check the return value and throw an error?
-			sscanf(args, "%63s %d,%d", buf, h, w);
+			sscanf(args, "%6s %63s %d,%d", showaslogbuf, buf, h, w);
+			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
 		}
 
+		*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
 		return strndup(buf, text_buffer_size);
 	}
 
@@ -1181,12 +1206,16 @@ enum text_object_type {
 	OBJ_top_mem,
 	OBJ_tail,
 	OBJ_head,
+	OBJ_lines,
+	OBJ_words,
 	OBJ_kernel,
 	OBJ_loadavg,
 	OBJ_machine,
 	OBJ_mails,
 	OBJ_mboxscan,
 	OBJ_mem,
+	OBJ_memeasyfree,
+	OBJ_memfree,
 	OBJ_membar,
 	OBJ_memgraph,
 	OBJ_memmax,
@@ -1199,6 +1228,10 @@ enum text_object_type {
 	OBJ_mixerbar,
 	OBJ_mixerlbar,
 	OBJ_mixerrbar,
+#ifdef X11
+	OBJ_monitor,
+	OBJ_monitor_number,
+#endif
 	OBJ_nameserver,
 	OBJ_new_mails,
 	OBJ_nodename,
@@ -1336,6 +1369,7 @@ enum text_object_type {
 	OBJ_smapi_bat_perc,
 	OBJ_if_smapi_bat_installed,
 #endif
+	OBJ_scroll,
 	OBJ_entropy_avail,
 	OBJ_entropy_poolsize,
 	OBJ_entropy_bar
@@ -1453,6 +1487,12 @@ struct text_object {
 			int delay;
 		} rss;
 #endif
+		struct {
+			char *text;
+			unsigned int show;
+			unsigned int start;
+		} scroll;
+		
 		struct local_mail_s local_mail;
 #ifdef NVIDIA
 		struct nvidia_s nvidia;
@@ -1464,6 +1504,7 @@ struct text_object {
 	long line;
 	unsigned int c, d, e;
 	float f;
+	char showaslog;
 	char global_mode;
 };
 
@@ -2312,6 +2353,9 @@ static void free_text_objects(struct text_object_list *text_object_list)
 				free_mpd_vars(&info.mpd);
 				break;
 #endif
+			case OBJ_scroll:
+				free(obj->data.scroll.text);
+				break;
 		}
 	}
 	free(text_object_list->text_objects);
@@ -2566,11 +2610,11 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.s = strndup(DEV_NAME(arg), text_buffer_size);
 	END OBJ(laptop_mode, 0)
 	END OBJ(pb_battery, 0)
-		if (arg && strcmp(arg, "status") == 0) {
+		if (arg && strcmp(arg, "status") == EQUAL) {
 			obj->data.i = PB_BATT_STATUS;
-		} else if (arg && strcmp(arg, "percent") == 0) {
+		} else if (arg && strcmp(arg, "percent") == EQUAL) {
 			obj->data.i = PB_BATT_PERCENT;
-		} else if (arg && strcmp(arg, "time") == 0) {
+		} else if (arg && strcmp(arg, "time") == EQUAL) {
 			obj->data.i = PB_BATT_TIME;
 		} else {
 			ERR("pb_battery: needs one argument: status, percent or time");
@@ -2619,7 +2663,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(cached, INFO_BUFFERS)
 	END OBJ(cpu, INFO_CPU)
 		if (arg) {
-			if (strncmp(arg, "cpu", 3) == 0 && isdigit(arg[3])) {
+			if (strncmp(arg, "cpu", 3) == EQUAL && isdigit(arg[3])) {
 				obj->data.cpu_index = atoi(&arg[3]);
 				arg += 4;
 			} else {
@@ -2630,7 +2674,7 @@ static struct text_object *construct_text_object(const char *s,
 		}
 	END OBJ(cpubar, INFO_CPU)
 		if (arg) {
-			if (strncmp(arg, "cpu", 3) == 0 && isdigit(arg[3])) {
+			if (strncmp(arg, "cpu", 3) == EQUAL && isdigit(arg[3])) {
 				obj->data.cpu_index = atoi(&arg[3]);
 				arg += 4;
 			} else {
@@ -2643,10 +2687,10 @@ static struct text_object *construct_text_object(const char *s,
 		}
 	END OBJ(cpugraph, INFO_CPU)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-			&obj->e);
+			&obj->e, &obj->showaslog);
 
 		if (buf) {
-			if (strncmp(buf, "cpu", 3) == 0 && isdigit(buf[3])) {
+			if (strncmp(buf, "cpu", 3) == EQUAL && isdigit(buf[3])) {
 				obj->data.cpu_index = atoi(&buf[3]);
 			} else {
 				obj->data.cpu_index = 0;
@@ -2655,7 +2699,7 @@ static struct text_object *construct_text_object(const char *s,
 		}
 	END OBJ(loadgraph, INFO_LOADAVG)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-				&obj->e);
+				&obj->e, &obj->showaslog);
 		if (buf) {
 			int a = 1, r = 3;
 			if (arg) {
@@ -2685,7 +2729,7 @@ static struct text_object *construct_text_object(const char *s,
 		}
 	END OBJ(diskiograph, INFO_DISKIO)
 		char *buf = scan_graph(DEV_NAME(arg), &obj->a, &obj->b, &obj->c, &obj->d,
-			&obj->e);
+			&obj->e, &obj->showaslog);
 
 		if (buf) {
 			obj->data.diskio = prepare_diskio_stat(buf);
@@ -2695,7 +2739,7 @@ static struct text_object *construct_text_object(const char *s,
 		}
 	END OBJ(diskiograph_read, INFO_DISKIO)
 		char *buf = scan_graph(DEV_NAME(arg), &obj->a, &obj->b, &obj->c, &obj->d,
-			&obj->e);
+			&obj->e, &obj->showaslog);
 
 		if (buf) {
 			obj->data.diskio = prepare_diskio_stat(buf);
@@ -2705,7 +2749,7 @@ static struct text_object *construct_text_object(const char *s,
 		}
 	END OBJ(diskiograph_write, INFO_DISKIO)
 		char *buf = scan_graph(DEV_NAME(arg), &obj->a, &obj->b, &obj->c, &obj->d,
-			&obj->e);
+			&obj->e, &obj->showaslog);
 
 		if (buf) {
 			obj->data.diskio = prepare_diskio_stat(buf);
@@ -2757,7 +2801,7 @@ static struct text_object *construct_text_object(const char *s,
 		}
 	END OBJ(downspeedgraph, INFO_NET)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-			&obj->e);
+			&obj->e, &obj->showaslog);
 
 		if (buf) {
 			obj->data.net = get_net_stat(buf);
@@ -3044,19 +3088,19 @@ static struct text_object *construct_text_object(const char *s,
 			return NULL;
 		}
 		if (sscanf(arg, "%63s %i", buf, &n) == 2) {
-			if (strcmp(buf, "name") == 0) {
+			if (strcmp(buf, "name") == EQUAL) {
 				obj->data.top.type = TOP_NAME;
-			} else if (strcmp(buf, "cpu") == 0) {
+			} else if (strcmp(buf, "cpu") == EQUAL) {
 				obj->data.top.type = TOP_CPU;
-			} else if (strcmp(buf, "pid") == 0) {
+			} else if (strcmp(buf, "pid") == EQUAL) {
 				obj->data.top.type = TOP_PID;
-			} else if (strcmp(buf, "mem") == 0) {
+			} else if (strcmp(buf, "mem") == EQUAL) {
 				obj->data.top.type = TOP_MEM;
-			} else if (strcmp(buf, "time") == 0) {
+			} else if (strcmp(buf, "time") == EQUAL) {
 				obj->data.top.type = TOP_TIME;
-			} else if (strcmp(buf, "mem_res") == 0) {
+			} else if (strcmp(buf, "mem_res") == EQUAL) {
 				obj->data.top.type = TOP_MEM_RES;
-			} else if (strcmp(buf, "mem_vsize") == 0) {
+			} else if (strcmp(buf, "mem_vsize") == EQUAL) {
 				obj->data.top.type = TOP_MEM_VSIZE;
 			} else {
 				ERR("invalid arg for top");
@@ -3084,19 +3128,19 @@ static struct text_object *construct_text_object(const char *s,
 			return NULL;
 		}
 		if (sscanf(arg, "%63s %i", buf, &n) == 2) {
-			if (strcmp(buf, "name") == 0) {
+			if (strcmp(buf, "name") == EQUAL) {
 				obj->data.top.type = TOP_NAME;
-			} else if (strcmp(buf, "cpu") == 0) {
+			} else if (strcmp(buf, "cpu") == EQUAL) {
 				obj->data.top.type = TOP_CPU;
-			} else if (strcmp(buf, "pid") == 0) {
+			} else if (strcmp(buf, "pid") == EQUAL) {
 				obj->data.top.type = TOP_PID;
-			} else if (strcmp(buf, "mem") == 0) {
+			} else if (strcmp(buf, "mem") == EQUAL) {
 				obj->data.top.type = TOP_MEM;
-			} else if (strcmp(buf, "time") == 0) {
+			} else if (strcmp(buf, "time") == EQUAL) {
 				obj->data.top.type = TOP_TIME;
-			} else if (strcmp(buf, "mem_res") == 0) {
+			} else if (strcmp(buf, "mem_res") == EQUAL) {
 				obj->data.top.type = TOP_MEM_RES;
-			} else if (strcmp(buf, "mem_vsize") == 0) {
+			} else if (strcmp(buf, "mem_vsize") == EQUAL) {
 				obj->data.top.type = TOP_MEM_VSIZE;
 			} else {
 				ERR("invalid arg for top");
@@ -3292,6 +3336,18 @@ static struct text_object *construct_text_object(const char *s,
 		}
 		/* asumming all else worked */
 		obj->data.tail.buffer = malloc(text_buffer_size * 20);
+	END OBJ(lines, 0)
+		if (arg) {
+			obj->data.s = strdup(arg);
+		}else{
+			CRIT_ERR("lines needs a argument");
+		}
+	END OBJ(words, 0)
+		if (arg) {
+			obj->data.s = strdup(arg);
+		}else{
+			CRIT_ERR("words needs a argument");
+		}
 	END OBJ(loadavg, INFO_LOADAVG)
 		int a = 1, b = 2, c = 3, r = 3;
 
@@ -3406,13 +3462,15 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.mboxscan.output[0] = 1;
 		strncpy(obj->data.mboxscan.args, arg, text_buffer_size);
 	END OBJ(mem, INFO_MEM)
+	END OBJ(memeasyfree, INFO_MEM)
+	END OBJ(memfree, INFO_MEM)
 	END OBJ(memmax, INFO_MEM)
 	END OBJ(memperc, INFO_MEM)
 	END OBJ(membar, INFO_MEM)
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(memgraph, INFO_MEM)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-			&obj->e);
+			&obj->e, &obj->showaslog);
 
 		if (buf) {
 			free(buf);
@@ -3432,6 +3490,10 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(mixerrbar, INFO_MIXER)
 		scan_mixer_bar(arg, &obj->data.mixerbar.l, &obj->data.mixerbar.w,
 			&obj->data.mixerbar.h);
+#ifdef X11
+	END OBJ(monitor, INFO_X11)
+	END OBJ(monitor_number, INFO_X11)
+#endif
 	END OBJ(new_mails, 0)
 		float n1;
 		char box[256], dst[256];
@@ -3580,7 +3642,7 @@ static struct text_object *construct_text_object(const char *s,
 
 	END OBJ(upspeedgraph, INFO_NET)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-			&obj->e);
+			&obj->e, &obj->showaslog);
 
 		if (buf) {
 			obj->data.net = get_net_stat(buf);
@@ -3818,23 +3880,23 @@ static struct text_object *construct_text_object(const char *s,
 		if (port_begin > port_end) {
 			CRIT_ERR("tcp_portmon: starting port must be <= ending port");
 		}
-		if (strncmp(itembuf, "count", 31) == 0) {
+		if (strncmp(itembuf, "count", 31) == EQUAL) {
 			item = COUNT;
-		} else if (strncmp(itembuf, "rip", 31) == 0) {
+		} else if (strncmp(itembuf, "rip", 31) == EQUAL) {
 			item = REMOTEIP;
-		} else if (strncmp(itembuf, "rhost", 31) == 0) {
+		} else if (strncmp(itembuf, "rhost", 31) == EQUAL) {
 			item = REMOTEHOST;
-		} else if (strncmp(itembuf, "rport", 31) == 0) {
+		} else if (strncmp(itembuf, "rport", 31) == EQUAL) {
 			item = REMOTEPORT;
-		} else if (strncmp(itembuf, "rservice", 31) == 0) {
+		} else if (strncmp(itembuf, "rservice", 31) == EQUAL) {
 			item = REMOTESERVICE;
-		} else if (strncmp(itembuf, "lip", 31) == 0) {
+		} else if (strncmp(itembuf, "lip", 31) == EQUAL) {
 			item = LOCALIP;
-		} else if (strncmp(itembuf, "lhost", 31) == 0) {
+		} else if (strncmp(itembuf, "lhost", 31) == EQUAL) {
 			item = LOCALHOST;
-		} else if (strncmp(itembuf, "lport", 31) == 0) {
+		} else if (strncmp(itembuf, "lport", 31) == EQUAL) {
 			item = LOCALPORT;
-		} else if (strncmp(itembuf, "lservice", 31) == 0) {
+		} else if (strncmp(itembuf, "lservice", 31) == EQUAL) {
 			item = LOCALSERVICE;
 		} else {
 			CRIT_ERR("tcp_portmon: invalid item specified");
@@ -3885,6 +3947,14 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(entropy_poolsize, INFO_ENTROPY)
 	END OBJ(entropy_bar, INFO_ENTROPY)
 		scan_bar(arg, &obj->a, &obj->b);
+	END OBJ(scroll, 0)
+		int n;
+		if (arg && sscanf(arg, "%u %n", &obj->data.scroll.show, &n) > 0) {
+			obj->data.scroll.text = strndup(arg + n, text_buffer_size);
+			obj->data.scroll.start = 0;
+		} else {
+			CRIT_ERR("scroll needs arguments: <length> <text>");
+		}
 #ifdef NVIDIA
 	END OBJ(nvidia, 0)
 		if (!arg){
@@ -4523,11 +4593,11 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(cpugraph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d, (unsigned int)
 					round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100),
-					100, 1);
+					100, 1, obj->showaslog);
 			}
 			OBJ(loadgraph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d, cur->loadavg[0],
-					obj->e, 1);
+					obj->e, 1, obj->showaslog);
 			}
 			OBJ(color) {
 				new_fg(p, obj->data.l);
@@ -4754,28 +4824,28 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(diskiograph) {
 				if (obj->data.diskio) {
 					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-						obj->data.diskio->current, obj->e, 1);
+						obj->data.diskio->current, obj->e, 1, obj->showaslog);
 				} else {
 					new_graph(p, obj->a, obj->b, obj->c, obj->d, info.diskio_value,
-						obj->e, 1);
+						obj->e, 1, obj->showaslog);
 				}
 			}
 			OBJ(diskiograph_read) {
 				if (obj->data.diskio) {
 					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-						obj->data.diskio->current_read, obj->e, 1);
+						obj->data.diskio->current_read, obj->e, 1, obj->showaslog);
 				} else {
 					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-						info.diskio_read_value, obj->e, 1);
+						info.diskio_read_value, obj->e, 1, obj->showaslog);
 				}
 			}
 			OBJ(diskiograph_write) {
 				if (obj->data.diskio) {
 					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-						obj->data.diskio->current_write, obj->e, 1);
+						obj->data.diskio->current_write, obj->e, 1, obj->showaslog);
 				} else {
 					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-						info.diskio_write_value, obj->e, 1);
+						info.diskio_write_value, obj->e, 1, obj->showaslog);
 				}
 			}
 			OBJ(downspeed) {
@@ -4788,7 +4858,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(downspeedgraph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-					obj->data.net->recv_speed / 1024.0, obj->e, 1);
+					obj->data.net->recv_speed / 1024.0, obj->e, 1, obj->showaslog);
 			}
 			OBJ(else) {
 				if (!if_jumped) {
@@ -4890,14 +4960,22 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 			OBJ(execgraph) {
+				char showaslog = FALSE;
 				double barnum;
 
-				read_exec(obj->data.s, p, p_max_size);
+				if(strncasecmp(obj->data.s, LOGGRAPH" ", strlen(LOGGRAPH" ")) == EQUAL) {
+					showaslog = TRUE;
+					read_exec(obj->data.s + strlen(LOGGRAPH" ") * sizeof(char), p, p_max_size);
+				} else if(strncasecmp(obj->data.s, NORMGRAPH" ", strlen(NORMGRAPH" ")) == EQUAL) {
+					read_exec(obj->data.s + strlen(NORMGRAPH" ") * sizeof(char), p, p_max_size);
+				} else {
+					read_exec(obj->data.s, p, p_max_size);
+				}
 				barnum = get_barnum(p);
 
 				if (barnum >= 0.0) {
 					new_graph(p, 0, 25, obj->c, obj->d, round_to_int(barnum),
-						100, 1);
+						100, 1, showaslog);
 				}
 			}
 			OBJ(execibar) {
@@ -4928,7 +5006,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					}
 					obj->data.execi.last_update = current_update_time;
 				}
-				new_graph(p, 0, 25, obj->c, obj->d, round_to_int(obj->f), 100, 0);
+				new_graph(p, 0, 25, obj->c, obj->d, (int) (obj->f), 100, 1, FALSE);
 			}
 			OBJ(execi) {
 				if (current_update_time - obj->data.execi.last_update
@@ -5130,14 +5208,14 @@ static void generate_text_internal(char *p, int p_max_size,
 				if (data == NULL) {
 					snprintf(p, p_max_size, "prss: Error reading RSS data\n");
 				} else {
-					if (!strcmp(obj->data.rss.action, "feed_title")) {
+					if (strcmp(obj->data.rss.action, "feed_title") == EQUAL) {
 						str = data->title;
 						// remove trailing new line if one exists
 						if (str[strlen(str) - 1] == '\n') {
 							str[strlen(str) - 1] = 0;
 						}
 						snprintf(p, p_max_size, "%s", str);
-					} else if (!strcmp(obj->data.rss.action, "item_title")) {
+					} else if (strcmp(obj->data.rss.action, "item_title") == EQUAL) {
 						if (obj->data.rss.act_par < data->item_count) {
 							str = data->items[obj->data.rss.act_par].title;
 							// remove trailing new line if one exists
@@ -5146,7 +5224,7 @@ static void generate_text_internal(char *p, int p_max_size,
 							}
 							snprintf(p, p_max_size, "%s", str);
 						}
-					} else if (!strcmp(obj->data.rss.action, "item_desc")) {
+					} else if (strcmp(obj->data.rss.action, "item_desc") == EQUAL) {
 						if (obj->data.rss.act_par < data->item_count) {
 							str =
 								data->items[obj->data.rss.act_par].description;
@@ -5156,7 +5234,7 @@ static void generate_text_internal(char *p, int p_max_size,
 							}
 							snprintf(p, p_max_size, "%s", str);
 						}
-					} else if (!strcmp(obj->data.rss.action, "item_titles")) {
+					} else if (strcmp(obj->data.rss.action, "item_titles") == EQUAL) {
 						if (data->item_count > 0) {
 							int itmp;
 							int show;
@@ -5333,6 +5411,12 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(mem) {
 				human_readable(cur->mem * 1024, p, 255, "mem");
 			}
+			OBJ(memeasyfree) {
+				human_readable(cur->memeasyfree * 1024, p, 255, "memeasyfree");
+			}
+			OBJ(memfree) {
+				human_readable(cur->memfree * 1024, p, 255, "memfree");
+			}
 			OBJ(memmax) {
 				human_readable(cur->memmax * 1024, p, 255, "memmax");
 			}
@@ -5349,7 +5433,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(memgraph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 					cur->memmax ? (cur->mem * 100.0) / (cur->memmax) : 0.0,
-					100, 1);
+					100, 1, obj->showaslog);
 			}
 
 			/* mixer stuff */
@@ -5374,6 +5458,14 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_bar(p, obj->data.mixerbar.w, obj->data.mixerbar.h,
 					mixer_get_right(obj->data.mixerbar.l) * 255 / 100);
 			}
+#ifdef X11
+			OBJ(monitor) {
+				snprintf(p, p_max_size, "%d", cur->x11.monitor.current);
+			}
+			OBJ(monitor_number) {
+				snprintf(p, p_max_size, "%d", cur->x11.monitor.number);
+			}
+#endif
 
 			/* mail stuff */
 			OBJ(mails) {
@@ -5487,7 +5579,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(upspeedgraph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-					obj->data.net->trans_speed / 1024.0, obj->e, 1);
+					obj->data.net->trans_speed / 1024.0, obj->e, 1, obj->showaslog);
 			}
 			OBJ(uptime_short) {
 				format_seconds_short(p, p_max_size, (int) cur->uptime);
@@ -5971,6 +6063,55 @@ head:
 				// parse_conky_vars(obj->data.tail.buffer, p, cur);
 			}
 
+			OBJ(lines) {
+				FILE *fp = fopen(obj->data.s,"r");
+			
+				if(fp != NULL) {
+					char buf[BUFSZ];
+					int j, lines;
+				
+					lines = 0;
+					while(fgets(buf, BUFSZ, fp) != NULL){
+						for(j = 0; buf[j] != 0; j++) {
+							if(buf[j] == '\n') {
+								lines++;
+							}
+						}
+					}
+					sprintf(p, "%d", lines);
+					fclose(fp);
+				} else {
+					sprintf(p, "File Unreadable");
+				}
+			}
+
+			OBJ(words) {
+				FILE *fp = fopen(obj->data.s,"r");
+			
+				if(fp != NULL) {
+					char buf[BUFSZ];
+					int j, words;
+					char inword = FALSE;
+				
+					words = 0;
+					while(fgets(buf, BUFSZ, fp) != NULL){
+						for(j = 0; buf[j] != 0; j++) {
+							if(!isspace(buf[j])) {
+								if(inword == FALSE) {
+									words++;
+									inword = TRUE;
+								}
+							} else {
+								inword = FALSE;
+							}
+						}
+					}
+					sprintf(p, "%d", words);
+					fclose(fp);
+				} else {
+					sprintf(p, "File Unreadable");
+				}
+			}
 #ifdef TCP_PORT_MONITOR
 			OBJ(tcp_portmon) {
 				/* grab a pointer to this port monitor */
@@ -6056,6 +6197,37 @@ head:
 					new_bar(p, obj->a, obj->b, 0);
 			}
 #endif /* SMAPI */
+			OBJ(scroll) {
+				unsigned int j;
+				char *tmp;
+				parse_conky_vars(obj->data.scroll.text, p, cur);
+#define LINESEPARATOR '|'
+				//place all the lines behind each other with LINESEPARATOR between them
+				for(j = 0; p[j] != 0; j++) {
+					if(p[j]=='\n') {
+						p[j]=LINESEPARATOR;
+					}
+				}
+				//scroll the output obj->data.scroll.start places by copying that many chars from
+				//the front of the string to tmp, scrolling the rest to the front and placing tmp
+				//at the back of the string
+				tmp = calloc(obj->data.scroll.start + 1, sizeof(char));
+				strncpy(tmp, p, obj->data.scroll.start); tmp[obj->data.scroll.start] = 0;
+				for(j = obj->data.scroll.start; p[j] != 0; j++){
+					p[j - obj->data.scroll.start] = p[j];
+				}
+				strcpy(&p[j - obj->data.scroll.start], tmp);
+				free(tmp);
+				//only show the requested number of chars
+				if(obj->data.scroll.show < j) {
+					p[obj->data.scroll.show] = 0;
+				}
+				//next time, scroll a place more or reset scrolling if we are at the end
+				obj->data.scroll.start++;
+				if(obj->data.scroll.start == j){
+					 obj->data.scroll.start = 0;
+				}
+			}
 #ifdef NVIDIA
 			OBJ(nvidia) {
 				int hol = (strcmp((char*)&obj->data.nvidia.arg, "gpufreq")) ? 1 : 0;
@@ -6414,7 +6586,7 @@ static void draw_string(const char *s)
 	}
 
 	width_of_s = get_string_width(s);
-	if (out_to_console && draw_mode == FG) {
+	if ((output_methods & TO_STDOUT) && draw_mode == FG) {
 		printf("%s\n", s);
 		fflush(stdout);	/* output immediately, don't buffer */
 	}
@@ -6714,8 +6886,6 @@ static void draw_line(char *s)
 					float gradient_update = 0;
 					unsigned long last_colour = current_color;
 					unsigned long tmpcolour = current_color;
-					int show_scale_x = cur_x + font_ascent() / 2;
-					int show_scale_y = cur_y + font_height() / 2;
 					if (cur_x - text_start_x > maximum_width
 							&& maximum_width > 0) {
 						break;
@@ -6783,11 +6953,56 @@ static void draw_line(char *s)
 					} else {
 						set_foreground_color(default_fg_color);
 					} */
+					if (show_graph_range) {
+						int tmp_x = cur_x;
+						int tmp_y = cur_y;
+						unsigned short int seconds = update_interval * w;
+						char *tmp_day_str;
+						char *tmp_hour_str;
+						char *tmp_min_str;
+						char *tmp_sec_str;
+						unsigned short int timeunits;
+						if(seconds!=0){
+							timeunits = seconds / 86400; seconds %= 86400;
+							if( timeunits > 0 ) {
+								asprintf(&tmp_day_str, "%dd", timeunits);
+							}else{
+								tmp_day_str = strdup("");
+							}
+							timeunits = seconds / 3600; seconds %= 3600;
+							if( timeunits > 0 ) {
+								asprintf(&tmp_hour_str, "%dh", timeunits);
+							}else{
+								tmp_hour_str = strdup("");
+							}
+							timeunits = seconds / 60; seconds %= 60;
+							if(timeunits > 0) {
+								asprintf(&tmp_min_str, "%dm", timeunits);
+							}else{
+								tmp_min_str = strdup("");
+							}
+							if(seconds > 0) {
+								asprintf(&tmp_sec_str, "%ds", seconds);
+							}else{
+								tmp_sec_str = strdup("");
+							}
+							asprintf(&tmp_str, "%s%s%s%s", tmp_day_str, tmp_hour_str, tmp_min_str, tmp_sec_str);
+							free(tmp_day_str); free(tmp_hour_str); free(tmp_min_str); free(tmp_sec_str);
+						}else{
+							asprintf(&tmp_str, "Range not possible"); //should never happen, but better safe then sorry
+						}
+						cur_x += (w / 2) - (font_ascent() * (strlen(tmp_str) / 2));
+						cur_y += font_height() / 2;
+						draw_string(tmp_str);
+						free(tmp_str);
+						cur_x = tmp_x;
+						cur_y = tmp_y;
+					}
 					if (show_graph_scale && (specials[special_index].show_scale == 1)) {
 						int tmp_x = cur_x;
 						int tmp_y = cur_y;
-						cur_x = show_scale_x;
-						cur_y = show_scale_y;
+						cur_x += font_ascent() / 2;
+						cur_y += font_height() / 2;
 						tmp_str = (char *)
 							calloc(log10(floor(specials[special_index].graph_scale)) + 4,
 									sizeof(char));
@@ -7556,11 +7771,11 @@ static int string_to_bool(const char *s)
 	if (!s) {
 		// Assumes an option without a true/false means true
 		return 1;
-	} else if (strcasecmp(s, "yes") == 0) {
+	} else if (strcasecmp(s, "yes") == EQUAL) {
 		return 1;
-	} else if (strcasecmp(s, "true") == 0) {
+	} else if (strcasecmp(s, "true") == EQUAL) {
 		return 1;
-	} else if (strcasecmp(s, "1") == 0) {
+	} else if (strcasecmp(s, "1") == EQUAL) {
 		return 1;
 	}
 	return 0;
@@ -7569,39 +7784,39 @@ static int string_to_bool(const char *s)
 #ifdef X11
 static enum alignment string_to_alignment(const char *s)
 {
-	if (strcasecmp(s, "top_left") == 0) {
+	if (strcasecmp(s, "top_left") == EQUAL) {
 		return TOP_LEFT;
-	} else if (strcasecmp(s, "top_right") == 0) {
+	} else if (strcasecmp(s, "top_right") == EQUAL) {
 		return TOP_RIGHT;
-	} else if (strcasecmp(s, "top_middle") == 0) {
+	} else if (strcasecmp(s, "top_middle") == EQUAL) {
 		return TOP_MIDDLE;
-	} else if (strcasecmp(s, "bottom_left") == 0) {
+	} else if (strcasecmp(s, "bottom_left") == EQUAL) {
 		return BOTTOM_LEFT;
-	} else if (strcasecmp(s, "bottom_right") == 0) {
+	} else if (strcasecmp(s, "bottom_right") == EQUAL) {
 		return BOTTOM_RIGHT;
-	} else if (strcasecmp(s, "bottom_middle") == 0) {
+	} else if (strcasecmp(s, "bottom_middle") == EQUAL) {
 		return BOTTOM_MIDDLE;
-	} else if (strcasecmp(s, "middle_left") == 0) {
+	} else if (strcasecmp(s, "middle_left") == EQUAL) {
 		return MIDDLE_LEFT;
-	} else if (strcasecmp(s, "middle_right") == 0) {
+	} else if (strcasecmp(s, "middle_right") == EQUAL) {
 		return MIDDLE_RIGHT;
-	} else if (strcasecmp(s, "tl") == 0) {
+	} else if (strcasecmp(s, "tl") == EQUAL) {
 		return TOP_LEFT;
-	} else if (strcasecmp(s, "tr") == 0) {
+	} else if (strcasecmp(s, "tr") == EQUAL) {
 		return TOP_RIGHT;
-	} else if (strcasecmp(s, "tm") == 0) {
+	} else if (strcasecmp(s, "tm") == EQUAL) {
 		return TOP_MIDDLE;
-	} else if (strcasecmp(s, "bl") == 0) {
+	} else if (strcasecmp(s, "bl") == EQUAL) {
 		return BOTTOM_LEFT;
-	} else if (strcasecmp(s, "br") == 0) {
+	} else if (strcasecmp(s, "br") == EQUAL) {
 		return BOTTOM_RIGHT;
-	} else if (strcasecmp(s, "bm") == 0) {
+	} else if (strcasecmp(s, "bm") == EQUAL) {
 		return BOTTOM_MIDDLE;
-	} else if (strcasecmp(s, "ml") == 0) {
+	} else if (strcasecmp(s, "ml") == EQUAL) {
 		return MIDDLE_LEFT;
-	} else if (strcasecmp(s, "mr") == 0) {
+	} else if (strcasecmp(s, "mr") == EQUAL) {
 		return MIDDLE_RIGHT;
-	} else if (strcasecmp(s, "none") == 0) {
+	} else if (strcasecmp(s, "none") == EQUAL) {
 		return NONE;
 	}
 	return TOP_LEFT;
@@ -7643,12 +7858,13 @@ static void set_default_configurations(void)
 #endif
 	use_spacer = NO_SPACER;
 #ifdef X11
-	out_to_console = 0;
+	output_methods = TO_X;
 #else
-	out_to_console = 1;
+	output_methods = TO_STDOUT;
 #endif
 #ifdef X11
 	show_graph_scale = 0;
+	show_graph_range = 0;
 	default_fg_color = WhitePixel(display, screen);
 	default_bg_color = BlackPixel(display, screen);
 	default_out_color = BlackPixel(display, screen);
@@ -7684,6 +7900,8 @@ static void set_default_configurations(void)
 	border_margin = 3;
 	border_width = 1;
 	text_alignment = BOTTOM_LEFT;
+	info.x11.monitor.number = 1;
+	info.x11.monitor.current = 0;
 #endif /* X11 */
 
 	free(current_mail_spool);
@@ -7803,6 +8021,9 @@ static void load_config_file(const char *f)
 #ifdef X11
 		CONF("show_graph_scale") {
 			show_graph_scale = string_to_bool(value);
+		}
+		CONF("show_graph_range") {
+			show_graph_range = string_to_bool(value);
 		}
 		CONF("border_margin") {
 			if (value) {
@@ -8012,15 +8233,15 @@ static void load_config_file(const char *f)
 		}
 #endif /* X11 */
 		CONF("out_to_console") {
-			out_to_console = string_to_bool(value);
+			if(string_to_bool(value)) output_methods |= TO_STDOUT;
 		}
 		CONF("use_spacer") {
 			if (value) {
-				if (strcasecmp(value, "left") == 0) {
+				if (strcasecmp(value, "left") == EQUAL) {
 					use_spacer = LEFT_SPACER;
-				} else if (strcasecmp(value, "right") == 0) {
+				} else if (strcasecmp(value, "right") == EQUAL) {
 					use_spacer = RIGHT_SPACER;
-				} else if (strcasecmp(value, "none") == 0) {
+				} else if (strcasecmp(value, "none") == EQUAL) {
 					use_spacer = NO_SPACER;
 				} else {
 					use_spacer = string_to_bool(value);
@@ -8200,17 +8421,17 @@ static void load_config_file(const char *f)
 				if ((p_hint = strtok_r(value, delim, &p_save)) != NULL) {
 					do {
 						/* fprintf(stderr, "hint [%s] parsed\n", p_hint); */
-						if (strncmp(p_hint, "undecorate", 10) == 0) {
+						if (strncmp(p_hint, "undecorate", 10) == EQUAL) {
 							SET_HINT(window.hints, HINT_UNDECORATED);
-						} else if (strncmp(p_hint, "below", 5) == 0) {
+						} else if (strncmp(p_hint, "below", 5) == EQUAL) {
 							SET_HINT(window.hints, HINT_BELOW);
-						} else if (strncmp(p_hint, "above", 5) == 0) {
+						} else if (strncmp(p_hint, "above", 5) == EQUAL) {
 							SET_HINT(window.hints, HINT_ABOVE);
-						} else if (strncmp(p_hint, "sticky", 6) == 0) {
+						} else if (strncmp(p_hint, "sticky", 6) == EQUAL) {
 							SET_HINT(window.hints, HINT_STICKY);
-						} else if (strncmp(p_hint, "skip_taskbar", 12) == 0) {
+						} else if (strncmp(p_hint, "skip_taskbar", 12) == EQUAL) {
 							SET_HINT(window.hints, HINT_SKIP_TASKBAR);
-						} else if (strncmp(p_hint, "skip_pager", 10) == 0) {
+						} else if (strncmp(p_hint, "skip_pager", 10) == EQUAL) {
 							SET_HINT(window.hints, HINT_SKIP_PAGER);
 						} else {
 							CONF_ERR;
@@ -8225,13 +8446,13 @@ static void load_config_file(const char *f)
 		}
 		CONF("own_window_type") {
 			if (value) {
-				if (strncmp(value, "normal", 6) == 0) {
+				if (strncmp(value, "normal", 6) == EQUAL) {
 					window.type = TYPE_NORMAL;
-				} else if (strncmp(value, "desktop", 7) == 0) {
+				} else if (strncmp(value, "desktop", 7) == EQUAL) {
 					window.type = TYPE_DESKTOP;
-				} else if (strncmp(value, "dock", 7) == 0) {
+				} else if (strncmp(value, "dock", 7) == EQUAL) {
 					window.type = TYPE_DOCK;
-				} else if (strncmp(value, "override", 8) == 0) {
+				} else if (strncmp(value, "override", 8) == EQUAL) {
 					window.type = TYPE_OVERRIDE;
 				} else {
 					CONF_ERR;
@@ -8355,11 +8576,11 @@ static void load_config_file(const char *f)
 			if (!value) {
 				ERR("incorrect if_up_strictness value, defaulting to 'up'");
 				ifup_strictness = IFUP_UP;
-			} else if (!strcmp(value, "up")) {
+			} else if (strcasecmp(value, "up") == EQUAL) {
 				ifup_strictness = IFUP_UP;
-			} else if (!strcmp(value, "link")) {
+			} else if (strcasecmp(value, "link") == EQUAL) {
 				ifup_strictness = IFUP_LINK;
-			} else if (!strcmp(value, "address")) {
+			} else if (strcasecmp(value, "address") == EQUAL) {
 				ifup_strictness = IFUP_ADDR;
 			} else {
 				ERR("incorrect if_up_strictness value, defaulting to 'up'");
@@ -8727,9 +8948,7 @@ int main(int argc, char **argv)
 
 	selected_font = 0;
 	update_text_area();	/* to position text/window on screen */
-#endif /* X11 */
 
-#ifdef X11
 #ifdef OWN_WINDOW
 	if (own_window && !fixed_pos) {
 		XMoveWindow(display, window.window, window.x, window.y);

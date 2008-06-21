@@ -175,6 +175,7 @@ void update_meminfo()
 
 	info.memmax = pagetok(vmtotal.t_rm) + pagetok(vmtotal.t_free);
 	info.mem = pagetok(vmtotal.t_rm);
+	info.memeasyfree = info.memfree = info.memmax - info.mem;
 
 	if ((swapmode(&swap_used, &swap_avail)) >= 0) {
 		info.swapmax = swap_avail;

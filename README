@@ -286,6 +286,14 @@ CONFIGURATION SETTINGS
 	      Minimum size of window
 
 
+       monitor
+	      Number of the monitor on which conky is running
+
+
+       monitor_number
+	      Number of monitors
+
+
        mpd_host
 	      Host of MPD server
 
@@ -612,10 +620,11 @@ VARIABLES
 	      $cpu for more info on SMP.
 
 
-       cpugraph	 (cpu  number)	(height),(width) (gradient colour 1) (gradient
-       colour 2)
+       cpugraph  normal|log (cpu number) (height),(width) (gradient colour 1)
+       (gradient colour 2)
 	      CPU  usage graph, with optional colours in hex, minus the #. See
-	      $cpu for more info on SMP.
+	      $cpu for more info on SMP. Uses a logarithmic scale (to see small
+	      numbers) when you use "log" instead of "normal".
 
 
        diskio (device)
@@ -623,32 +632,35 @@ VARIABLES
 	      of sda for /dev/sda. Individual partitions are allowed.
 
 
-       diskiograph  (device)  (height),(width)	(gradient  colour 1) (gradient
-       colour 2) (scale)
+       diskiograph  normal|log (device) (height),(width) (gradient colour 1)
+       (gradient colour 2) (scale)
 	      Disk  IO graph, colours defined in hex, minus the #. If scale is
-	      non-zero, it becomes the scale for the graph.
+	      non-zero, it becomes the scale for the graph. Uses a logarithmic
+	      scale (to see small numbers) when you use "log".
 
 
        diskio_read (device)
 	      Displays current disk IO for reads. Device as in diskio.
 
 
-       diskiograph_read (device) (height),(width) (gradient colour 1)  (gradi-
-       ent colour 2) (scale)
+       diskiograph_read  normal|log (device) (height),(width) (gradient colour
+       1) (gradient colour 2) (scale)
 	      Disk IO graph for reads, colours defined in hex, minus the #. If
 	      scale is non-zero, it becomes the scale for the graph. Device as
-	      in diskio.
+	      in diskio. Uses a logarithmic scale (to see small numbers) when
+	      you use "log" instead of "normal".
 
 
        diskio_write (device)
 	      Displays current disk IO for writes. Device as in diskio.
 
 
-       diskiograph_write (device) (height),(width) (gradient colour 1) (gradi-
-       ent colour 2) (scale)
+       diskiograph_write  normal|log (device) (height),(width) (gradient colour
+       1) (gradient colour 2) (scale)
 	      Disk IO graph for writes, colours defined in hex, minus  the  #.
 	      If scale is non-zero, it becomes the scale for the graph. Device
-	      as in diskio.
+	      as in diskio. Uses a logarithmic scale (to see small numbers)
+	      when you use "log" instead of "normal".
 
 
        disk_protect device
@@ -664,10 +676,11 @@ VARIABLES
 	      Download speed in KiB with one decimal
 
 
-       downspeedgraph  net  (height),(width)  (gradient	 colour	 1)  (gradient
-       colour 2) (scale)
+       downspeedgraph  normal|log net (height),(width) (gradient colour	1)
+       (gradient colour 2) (scale)
 	      Download	speed  graph,  colours defined in hex, minus the #. If
-	      scale is non-zero, it becomes the scale for the graph.
+	      scale is non-zero, it becomes the scale for the graph. Uses a
+	      logarithmic scale (to see small numbers) when you use "log".
 
 
        else   Text to show if any of the above are not true
@@ -697,8 +710,10 @@ VARIABLES
 	      bar is currently fixed, but that may change in the future.
 
 
-       execgraph command
-	      Same as execbar, but graphs values.
+       execgraph (normal|log) command
+	      Same as execbar, but graphs values. Uses a logaritmic scale when
+	      the log option is given (to see small numbers). Values still have
+	      to be between 0 and 100.
 
 
        execi interval command
@@ -995,14 +1010,20 @@ VARIABLES
 	      The value of /proc/sys/vm/laptop_mode
 
 
+       lines textfile
+	      Displays the number of lines in the given file
+
+
        loadavg
 	      (1,2,3)> System load average, 1 is for past 1 minute, 2 for past
 	      5 minutes and 3 for past 15 minutes.
 
 
-       loadgraph (height),(width) (gradient colour 1) (gradient colour 2)
+       loadgraph  normal|log (height),(width) (gradient colour 1) (gradient
+       colour 2)
 	      Load1 average graph, similar to xload, with optional colours  in
-	      hex, minus the #.
+	      hex, minus the #. Uses a logarithmic scale (to see small numbers)
+	      when you use "log" instead of "normal".
 
 
        machine
@@ -1030,8 +1051,19 @@ VARIABLES
 	      Bar that shows amount of memory in use
 
 
-       memgraph	 (height),(width) (gradient colour 1) (gradient colour 2)
+       memeasyfree
+              Amount of free memory including the memory that is very easily freed (buffers/cache)
+
+
+       memfree
+              Amount of free memory
+
+
+       memgraph  normal|log (height),(width) (gradient colour 1) (gradient
+       colour 2)
 	      Memory usage graph, with optional colours in hex, minus the #
+	      Uses a logarithmic scale (to see small numbers) when you use
+	      "log" instead of "normal".
 
 
        memmax Total amount of memory
@@ -1188,6 +1220,18 @@ VARIABLES
 
        running_processes
 	      Running processes (not sleeping), requires Linux 2.6
+
+
+       scroll length text
+	      Scroll  'text' showing 'length' number of characters at the same 
+	      time. The text may also contain variables. If a var creates out-
+	      put on multiple lines then the lines are placed behind each oth-
+	      er separated with a '|'-sign. Do NOT use vars that change colors
+	      or otherwise affect the design inside a scrolling text.   If you
+	      want spaces between the start and the end of 'text',  place them
+	      at the end of 'text' not at the front ("foobar" and "    foobar"
+	      can both generate "barfoo" but "foobar    " will keep the spaces
+	      like this "bar    foo").
 
 
        shadecolor (color)
@@ -1356,10 +1400,11 @@ VARIABLES
 	      Upload speed in KiB with one decimal
 
 
-       upspeedgraph net (height),(width) (gradient colour 1) (gradient	colour
-       2) (scale)
+       upspeedgraph  normal|log net (height),(width) (gradient colour 1)
+       (gradient colour 2) (scale)
 	      Upload speed graph, colours defined in  hex,  minus  the	#.  If
-	      scale is non-zero, it becomes the scale for the graph.
+	      scale is non-zero, it becomes the scale for the graph. Uses a
+	      logarithmic scale (to see small numbers) when you use "log".
 
 
        uptime Uptime
@@ -1430,6 +1475,10 @@ VARIABLES
 
        wireless_link_bar (height), (width) net
 	      Wireless link quality bar (Linux only)
+
+
+       words textfile
+	      Displays the number of words in the given file
 
 
        xmms2_artist
