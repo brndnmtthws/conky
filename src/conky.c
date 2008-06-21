@@ -915,6 +915,7 @@ static inline void new_alignr(char *buf, long c)
 	new_special(buf, ALIGNR)->arg = c;
 }
 
+// A postive offset pushes the text further left
 static inline void new_alignc(char *buf, long c)
 {
 	new_special(buf, ALIGNC)->arg = c;
@@ -7757,6 +7758,7 @@ void clean_up(void)
 static int string_to_bool(const char *s)
 {
 	if (!s) {
+		// Assumes an option without a true/false means true
 		return 1;
 	} else if (strcasecmp(s, "yes") == 0) {
 		return 1;
