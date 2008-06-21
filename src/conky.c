@@ -4210,6 +4210,52 @@ static void tail_pipe(struct text_object *obj, char *dst, size_t dst_size)
 	snprintf(dst, dst_size, "%s", obj->data.tail.buffer);
 }
 
+static inline struct mail_s *ensure_mail_thread(struct text_object *obj,
+		void *thread(void *), const char *text)
+{
+	if (obj->global_mode && info.mail) {
+		// this means we use info
+		if (!info.mail->p_timed_thread) {
+			info.mail->p_timed_thread =
+				timed_thread_create(thread,
+				(void *) info.mail, info.mail->interval * 1000000);
+			if (!info.mail->p_timed_thread) {
+				ERR("Error creating %s timed thread", text);
+			}
+			timed_thread_register(info.mail->p_timed_thread,
+				&info.mail->p_timed_thread);
+			if (timed_thread_run(info.mail->p_timed_thread)) {
+				ERR("Error running %s timed thread", text);
+			}
+		}
+		return info.mail;
+	} else if (obj->data.mail) {
+		// this means we use obj
+		if (!obj->data.mail->p_timed_thread) {
+			obj->data.mail->p_timed_thread =
+				timed_thread_create(thread,
+				(void *) obj->data.mail,
+				obj->data.mail->interval * 1000000);
+			if (!obj->data.mail->p_timed_thread) {
+				ERR("Error creating %s timed thread", text);
+			}
+			timed_thread_register(obj->data.mail->p_timed_thread,
+				&obj->data.mail->p_timed_thread);
+			if (timed_thread_run(obj->data.mail->p_timed_thread)) {
+				ERR("Error running %s timed thread", text);
+			}
+		}
+		return obj->data.mail;
+	} else if (!obj->a) {
+		// something is wrong, warn once then stop
+		ERR("Theres a problem with your %s_unseen settings.  "
+			"Check that the global %s settings are defined "
+			"properly (line %li).", global_text, global_text, obj->line);
+		obj->a++;
+	}
+	return NULL;
+}
+
 char *format_time(unsigned long timeval, const int width)
 {
 	char buf[10];
@@ -5041,189 +5087,40 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* HAVE_POPEN */
 			OBJ(imap_unseen) {
-				if (obj->global_mode && info.mail) {
-					// this means we use info
-					if (!info.mail->p_timed_thread) {
-						info.mail->p_timed_thread =
-							timed_thread_create(&imap_thread,
-							(void *) info.mail, info.mail->interval * 1000000);
-						if (!info.mail->p_timed_thread) {
-							ERR("Error creating imap timed thread");
-						}
-						timed_thread_register(info.mail->p_timed_thread,
-							&info.mail->p_timed_thread);
-						if (timed_thread_run(info.mail->p_timed_thread)) {
-							ERR("Error running imap timed thread");
-						}
-					}
-					timed_thread_lock(info.mail->p_timed_thread);
-					snprintf(p, p_max_size, "%lu", info.mail->unseen);
-					timed_thread_unlock(info.mail->p_timed_thread);
-				} else if (obj->data.mail) {
-					// this means we use obj
-					if (!obj->data.mail->p_timed_thread) {
-						obj->data.mail->p_timed_thread =
-							timed_thread_create(&imap_thread,
-							(void *) obj->data.mail,
-							obj->data.mail->interval * 1000000);
-						if (!obj->data.mail->p_timed_thread) {
-							ERR("Error creating imap timed thread");
-						}
-						timed_thread_register(obj->data.mail->p_timed_thread,
-							&obj->data.mail->p_timed_thread);
-						if (timed_thread_run(obj->data.mail->p_timed_thread)) {
-							ERR("Error running imap timed thread");
-						}
-					}
-					timed_thread_lock(obj->data.mail->p_timed_thread);
-					snprintf(p, p_max_size, "%lu", obj->data.mail->unseen);
-					timed_thread_unlock(obj->data.mail->p_timed_thread);
-				} else if (!obj->a) {
-					// something is wrong, warn once then stop
-					ERR("Theres a problem with your imap_unseen settings.  "
-						"Check that the global IMAP settings are defined "
-						"properly (line %li).", obj->line);
-					obj->a++;
+				struct mail_s *mail = ensure_mail_thread(obj, imap_thread, "imap");
+
+				if (mail && mail->p_timed_thread) {
+					timed_thread_lock(mail->p_timed_thread);
+					snprintf(p, p_max_size, "%lu", mail->unseen);
+					timed_thread_unlock(mail->p_timed_thread);
 				}
 			}
 			OBJ(imap_messages) {
-				if (obj->global_mode && info.mail) {
-					// this means we use info
-					if (!info.mail->p_timed_thread) {
-						info.mail->p_timed_thread =
-							timed_thread_create(&imap_thread,
-							(void *) info.mail, info.mail->interval * 1000000);
-						if (!info.mail->p_timed_thread) {
-							ERR("Error creating imap timed thread");
-						}
-						timed_thread_register(info.mail->p_timed_thread,
-							&info.mail->p_timed_thread);
-						if (timed_thread_run(info.mail->p_timed_thread)) {
-							ERR("Error running imap timed thread");
-						}
-					}
-					timed_thread_lock(info.mail->p_timed_thread);
-					snprintf(p, p_max_size, "%lu", info.mail->messages);
-					timed_thread_unlock(info.mail->p_timed_thread);
-				} else if (obj->data.mail) {
-					// this means we use obj
-					if (!obj->data.mail->p_timed_thread) {
-						obj->data.mail->p_timed_thread =
-							timed_thread_create(&imap_thread,
-							(void *) obj->data.mail,
-							obj->data.mail->interval * 1000000);
-						if (!obj->data.mail->p_timed_thread) {
-							ERR("Error creating imap timed thread");
-						}
-						timed_thread_register(obj->data.mail->p_timed_thread,
-							&obj->data.mail->p_timed_thread);
-						if (timed_thread_run(obj->data.mail->p_timed_thread)) {
-							ERR("Error runninging imap timed thread");
-						}
-					}
-					timed_thread_lock(obj->data.mail->p_timed_thread);
-					snprintf(p, p_max_size, "%lu", obj->data.mail->messages);
-					timed_thread_lock(obj->data.mail->p_timed_thread);
-				} else if (!obj->a) {
-					// something is wrong, warn once then stop
-					ERR("Theres a problem with your imap_messages settings.  "
-						"Check that the global IMAP settings are defined "
-						"properly (line %li).", obj->line);
-					obj->a++;
+				struct mail_s *mail = ensure_mail_thread(obj, imap_thread, "imap");
+
+				if (mail && mail->p_timed_thread) {
+					timed_thread_lock(mail->p_timed_thread);
+					snprintf(p, p_max_size, "%lu", mail->messages);
+					timed_thread_unlock(mail->p_timed_thread);
 				}
 			}
 			OBJ(pop3_unseen) {
-				if (obj->global_mode && info.mail) {
-					// this means we use info
-					if (!info.mail->p_timed_thread) {
-						info.mail->p_timed_thread =
-							timed_thread_create(&pop3_thread,
-							(void *) info.mail, info.mail->interval * 1000000);
-						if (!info.mail->p_timed_thread) {
-							ERR("Error creating pop3 timed thread");
-						}
-						timed_thread_register(info.mail->p_timed_thread,
-							&info.mail->p_timed_thread);
-						if (timed_thread_run(info.mail->p_timed_thread)) {
-							ERR("Error running pop3 timed thread");
-						}
-					}
-					timed_thread_lock(info.mail->p_timed_thread);
-					snprintf(p, p_max_size, "%lu", info.mail->unseen);
-					timed_thread_unlock(info.mail->p_timed_thread);
-				} else if (obj->data.mail) {
-					// this means we use obj
-					if (!obj->data.mail->p_timed_thread) {
-						obj->data.mail->p_timed_thread =
-							timed_thread_create(&pop3_thread,
-							(void *) obj->data.mail,
-							obj->data.mail->interval * 1000000);
-						if (!obj->data.mail->p_timed_thread) {
-							ERR("Error creating pop3 timed thread");
-						}
-						timed_thread_register(obj->data.mail->p_timed_thread,
-							&obj->data.mail->p_timed_thread);
-						if (timed_thread_run(obj->data.mail->p_timed_thread)) {
-							ERR("Error running pop3 timed thread");
-						}
-					}
-					timed_thread_lock(obj->data.mail->p_timed_thread);
-					snprintf(p, p_max_size, "%lu", obj->data.mail->unseen);
-					timed_thread_unlock(obj->data.mail->p_timed_thread);
-				} else if (!obj->a) {
-					// something is wrong, warn once then stop
-					ERR("Theres a problem with your pop3_unseen settings.  "
-						"Check that the global POP3 settings are defined "
-						"properly (line %li).", obj->line);
-					obj->a++;
+				struct mail_s *mail = ensure_mail_thread(obj, pop3_thread, "pop3");
+
+				if (mail && mail->p_timed_thread) {
+					timed_thread_lock(mail->p_timed_thread);
+					snprintf(p, p_max_size, "%lu", mail->unseen);
+					timed_thread_unlock(mail->p_timed_thread);
 				}
 			}
 			OBJ(pop3_used) {
-				if (obj->global_mode && info.mail) {
-					// this means we use info
-					if (!info.mail->p_timed_thread) {
-						info.mail->p_timed_thread =
-							timed_thread_create(&pop3_thread,
-							(void *) info.mail, info.mail->interval * 1000000);
-						if (!info.mail->p_timed_thread) {
-							ERR("Error creating pop3 timed thread");
-						}
-						timed_thread_register(info.mail->p_timed_thread,
-							&info.mail->p_timed_thread);
-						if (timed_thread_run(info.mail->p_timed_thread)) {
-							ERR("Error running pop3 timed thread");
-						}
-					}
-					timed_thread_lock(info.mail->p_timed_thread);
+				struct mail_s *mail = ensure_mail_thread(obj, pop3_thread, "pop3");
+
+				if (mail && mail->p_timed_thread) {
+					timed_thread_lock(mail->p_timed_thread);
 					snprintf(p, p_max_size, "%.1f",
-						info.mail->used / 1024.0 / 1024.0);
-					timed_thread_unlock(info.mail->p_timed_thread);
-				} else if (obj->data.mail) {
-					// this means we use obj
-					if (!obj->data.mail->p_timed_thread) {
-						obj->data.mail->p_timed_thread =
-							timed_thread_create(&pop3_thread,
-							(void *) obj->data.mail,
-							obj->data.mail->interval * 1000000);
-						if (!obj->data.mail->p_timed_thread) {
-							ERR("Error creating pop3 timed thread");
-						}
-						timed_thread_register(obj->data.mail->p_timed_thread,
-							&obj->data.mail->p_timed_thread);
-						if (timed_thread_run(obj->data.mail->p_timed_thread)) {
-							ERR("Error running pop3 timed thread");
-						}
-					}
-					timed_thread_lock(obj->data.mail->p_timed_thread);
-					snprintf(p, p_max_size, "%.1f",
-						obj->data.mail->used / 1024.0 / 1024.0);
-					timed_thread_unlock(obj->data.mail->p_timed_thread);
-				} else if (!obj->a) {
-					// something is wrong, warn once then stop
-					ERR("Theres a problem with your pop3_used settings.  "
-						"Check that the global POP3 settings are defined "
-						"properly (line %li).", obj->line);
-					obj->a++;
+						mail->used / 1024.0 / 1024.0);
+					timed_thread_unlock(mail->p_timed_thread);
 				}
 			}
 			OBJ(fs_bar) {
