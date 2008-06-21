@@ -1,6 +1,26 @@
 # $Id$
 
+2008-06-21
+	* Replaced the global text_object array and count with a
+	text_object_list
+	* Renamed various vars
+	* Removed redundancy in various parts
+
+2008-06-20
+	* Made some functions non-inline to compile with gcc 4.2 and higher
+
+2008-06-19
+	* Fixed compilation issues with --enable-testing
+	* Refactored format_seconds and format_seconds_short
+	* Changed addr to print "No Address" when there is no address
+	* Removed redundancy in various parts
+	* Split help output into a separate function
+
+2008-06-17
+	* Made defines of magic numbers
+
 2008-06-16
+	* Moved audacious defs into header
 	* Fixed 3 bufferoverflows in a struct utmp in users.c
 
 2008-06-08
