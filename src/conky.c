@@ -1971,26 +1971,30 @@ void *pop3_thread(void *arg)
 	return 0;
 }
 
+static inline void read_exec(const char *data, char *buf, const int size)
+{
+	FILE *fp = popen(data, "r");
+	int length = fread(buf, 1, size, fp);
+
+	pclose(fp);
+	buf[length] = '\0';
+	if (length > 0 && buf[length - 1] == '\n') {
+		buf[length - 1] = '\0';
+	}
+}
+
 void *threaded_exec(void *) __attribute__((noreturn));
 
 void *threaded_exec(void *arg)
 {
-	FILE *fp;
 	char *p2;
-	int n2;
 	struct text_object *obj = (struct text_object *)arg;
+
 	while (1) {
 		p2 = obj->data.texeci.buffer;
-		fp = popen(obj->data.texeci.cmd, "r");
-
 		timed_thread_lock(obj->data.texeci.p_timed_thread);
-		n2 = fread(p2, 1, text_buffer_size, fp);
-
-		pclose(fp);
-		p2[n2] = '\0';
-		if (n2 && p2[n2 - 1] == '\n') {
-			p2[n2 - 1] = '\0';
-		}
+		read_exec(obj->data.texeci.cmd, obj->data.texeci.buffer,
+			text_buffer_size);
 		while (*p2) {
 			if (*p2 == '\001') {
 				*p2 = ' ';
@@ -2862,19 +2866,9 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(pre_exec, 0)
 		obj->type = OBJ_text;
 		if (arg) {
-			FILE *fp = popen(arg, "r");
-			unsigned int n;
 			char buf[2048];
 
-			n = fread(buf, 1, 2048, fp);
-			buf[n] = '\0';
-
-			if (n && buf[n - 1] == '\n') {
-				buf[n - 1] = '\0';
-			}
-
-			pclose(fp);
-
+			read_exec(arg, buf, sizeof(buf));
 			obj->data.s = strndup(buf, text_buffer_size);
 		} else {
 			obj->data.s = strndup("", text_buffer_size);
@@ -4846,60 +4840,27 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif /* IMLIB2 */
 
 			OBJ(exec) {
-				FILE *fp = popen(obj->data.s, "r");
-				int length = fread(p, 1, p_max_size, fp);
-
-				pclose(fp);
-
-				p[length] = '\0';
+				read_exec(obj->data.s, p, p_max_size);
 				remove_deleted_chars(p);
-				if (length > 0 && p[length - 1] == '\n') {
-					p[length - 1] = '\0';
-				}
 			}
 			OBJ(execp) {
-				FILE *fp;
 				struct information *tmp_info;
 				struct text_object_list *text_objects;
-				int length;
 
-				fp = popen(obj->data.s, "r");
-				fread(p, 1, p_max_size, fp);
-				pclose(fp);
+				read_exec(obj->data.s, p, p_max_size);
 
 				tmp_info = malloc(sizeof(struct information));
 				memcpy(tmp_info, cur, sizeof(struct information));
 				text_objects = parse_conky_vars(p, p, tmp_info);
-
-				length = strlen(p);
-
-				p[length] = '\0';
-				if (length > 0 && p[length - 1] == '\n') {
-					p[length - 1] = '\0';
-				}
 
 				free_text_objects(text_objects);
 				free(text_objects);
 				free(tmp_info);
 			}
 			OBJ(execbar) {
-				char *p2 = p;
-				FILE *fp = popen(obj->data.s, "r");
-				int n2 = fread(p, 1, p_max_size, fp);
 				double barnum;
 
-				pclose(fp);
-				p[n2] = '\0';
-				if (n2 && p[n2 - 1] == '\n') {
-					p[n2 - 1] = '\0';
-				}
-
-				while (*p2) {
-					if (*p2 == '\001') {
-						*p2 = ' ';
-					}
-					p2++;
-				}
+				read_exec(obj->data.s, p, p_max_size);
 
 				if (sscanf(p, "%lf", &barnum) == 0) {
 					ERR("reading execbar value failed (perhaps it's not the "
@@ -4914,22 +4875,9 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 			OBJ(execgraph) {
-				char *p2 = p;
-				FILE *fp = popen(obj->data.s, "r");
-				int n2 = fread(p, 1, p_max_size, fp);
 				double barnum;
 
-				pclose(fp);
-				p[n2] = '\0';
-				if (n2 && p[n2 - 1] == '\n') {
-					p[n2 - 1] = '\0';
-				}
-				while (*p2) {
-					if (*p2 == '\001') {
-						*p2 = ' ';
-					}
-					p2++;
-				}
+				read_exec(obj->data.s, p, p_max_size);
 
 				if (sscanf(p, "%lf", &barnum) == 0) {
 					ERR("reading execgraph value failed (perhaps it's not the "
@@ -4947,23 +4895,9 @@ static void generate_text_internal(char *p, int p_max_size,
 						< obj->data.execi.interval) {
 					new_bar(p, 0, 4, (int) obj->f);
 				} else {
-					char *p2 = p;
-					FILE *fp = popen(obj->data.execi.cmd, "r");
-					int n2 = fread(p, 1, p_max_size, fp);
 					float barnum;
 
-					pclose(fp);
-					p[n2] = '\0';
-					if (n2 && p[n2 - 1] == '\n') {
-						p[n2 - 1] = '\0';
-					}
-
-					while (*p2) {
-						if (*p2 == '\001') {
-							*p2 = ' ';
-						}
-						p2++;
-					}
+					read_exec(obj->data.execi.cmd, p, p_max_size);
 
 					if (sscanf(p, "%f", &barnum) == 0) {
 						ERR("reading execibar value failed (perhaps it's not "
@@ -4984,23 +4918,9 @@ static void generate_text_internal(char *p, int p_max_size,
 						< obj->data.execi.interval) {
 					new_graph(p, 0, 25, obj->c, obj->d, (int) (obj->f), 100, 0);
 				} else {
-					char *p2 = p;
-					FILE *fp = popen(obj->data.execi.cmd, "r");
-					int n2 = fread(p, 1, p_max_size, fp);
 					float barnum;
 
-					pclose(fp);
-					p[n2] = '\0';
-					if (n2 && p[n2 - 1] == '\n') {
-						p[n2 - 1] = '\0';
-					}
-
-					while (*p2) {
-						if (*p2 == '\001') {
-							*p2 = ' ';
-						}
-						p2++;
-					}
+					read_exec(obj->data.execi.cmd, p, p_max_size);
 
 					if (sscanf(p, "%f", &barnum) == 0) {
 						ERR("reading execigraph value failed (perhaps it's not "
@@ -5023,18 +4943,10 @@ static void generate_text_internal(char *p, int p_max_size,
 						|| obj->data.execi.interval == 0) {
 					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
 				} else {
-					char *output = obj->data.execi.buffer;
-					FILE *fp = popen(obj->data.execi.cmd, "r");
-
-					int length = fread(output, 1, text_buffer_size, fp);
-
-					pclose(fp);
-					output[length] = '\0';
-					if (length > 0 && output[length - 1] == '\n') {
-						output[length - 1] = '\0';
-					}
+					read_exec(obj->data.execi.cmd, obj->data.execi.buffer,
+						p_max_size);
 					obj->data.execi.last_update = current_update_time;
-					snprintf(p, p_max_size, "%s", output);
+					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
 				}
 				// parse_conky_vars(output, p, cur);
 			}
