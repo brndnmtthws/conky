@@ -778,19 +778,16 @@ static void new_graph(char *buf, int w, int h, unsigned int first_colour,
 	s->last_colour = adjust_colors(second_colour);
 	if (scale != 0) {
 		s->scaled = 0;
+		s->graph_scale = scale;
+		s->show_scale = 0;
 	} else {
 		s->scaled = 1;
+		s->graph_scale = 1;
+		s->show_scale = 1;
 	}
 	/* if (s->width) {
 		s->graph_width = s->width - 2;	// subtract 2 for rectangle around
 	} */
-	if (s->scaled) {
-		s->graph_scale = 1;
-		s->show_scale = 1;
-	} else {
-		s->graph_scale = scale;
-		s->show_scale = 0;
-	}
 	if (append) {
 		graph_append(s, i);
 	}
@@ -4905,9 +4902,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(execibar) {
 				if (current_update_time - obj->data.execi.last_update
-						< obj->data.execi.interval) {
-					new_bar(p, 0, 4, (int) obj->f);
-				} else {
+						>= obj->data.execi.interval) {
 					double barnum;
 
 					read_exec(obj->data.execi.cmd, p, p_max_size);
@@ -4915,16 +4910,14 @@ static void generate_text_internal(char *p, int p_max_size,
 
 					if (barnum >= 0.0) {
 						obj->f = 255 * barnum / 100.0;
-						new_bar(p, 0, 4, round_to_int(obj->f));
 					}
 					obj->data.execi.last_update = current_update_time;
 				}
+				new_bar(p, 0, 4, round_to_int(obj->f));
 			}
 			OBJ(execigraph) {
 				if (current_update_time - obj->data.execi.last_update
-						< obj->data.execi.interval) {
-					new_graph(p, 0, 25, obj->c, obj->d, (int) (obj->f), 100, 0);
-				} else {
+						>= obj->data.execi.interval) {
 					double barnum;
 
 					read_exec(obj->data.execi.cmd, p, p_max_size);
@@ -4932,24 +4925,20 @@ static void generate_text_internal(char *p, int p_max_size,
 
 					if (barnum >= 0.0) {
 						obj->f = barnum;
-						new_graph(p, 0, 25, obj->c, obj->d, (int) (obj->f),
-							100, 1);
 					}
 					obj->data.execi.last_update = current_update_time;
 				}
+				new_graph(p, 0, 25, obj->c, obj->d, round_to_int(obj->f), 100, 0);
 			}
 			OBJ(execi) {
 				if (current_update_time - obj->data.execi.last_update
-						< obj->data.execi.interval
-						|| obj->data.execi.interval == 0) {
-					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
-				} else {
+						>= obj->data.execi.interval
+						&& obj->data.execi.interval != 0) {
 					read_exec(obj->data.execi.cmd, obj->data.execi.buffer,
 						p_max_size);
 					obj->data.execi.last_update = current_update_time;
-					snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
 				}
-				// parse_conky_vars(output, p, cur);
+				snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
 			}
 			OBJ(execpi) {
 				struct text_object_list *text_objects = 0;

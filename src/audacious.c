@@ -109,12 +109,10 @@ int create_audacious_thread(void)
 int destroy_audacious_thread(void)
 {
 	/* Is a worker is thread running? If not, no error. */
-	if (!info.audacious.p_timed_thread) {
-		return 0;
+	if (info.audacious.p_timed_thread) {
+		timed_thread_destroy(info.audacious.p_timed_thread,
+			&info.audacious.p_timed_thread);
 	}
-
-	timed_thread_destroy(info.audacious.p_timed_thread,
-		&info.audacious.p_timed_thread);
 
 	return 0;
 }
