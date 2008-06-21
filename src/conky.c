@@ -4813,7 +4813,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(execp) {
 				FILE *fp;
-				struct information *my_info;
+				struct information *tmp_info;
 				struct text_object_list *text_objects;
 				int length;
 
@@ -4821,9 +4821,9 @@ static void generate_text_internal(char *p, int p_max_size,
 				fread(p, 1, p_max_size, fp);
 				pclose(fp);
 
-				my_info = malloc(sizeof(struct information));
-				memcpy(my_info, cur, sizeof(struct information));
-				text_objects = parse_conky_vars(p, p, my_info);
+				tmp_info = malloc(sizeof(struct information));
+				memcpy(tmp_info, cur, sizeof(struct information));
+				text_objects = parse_conky_vars(p, p, tmp_info);
 
 				length = strlen(p);
 
@@ -4834,7 +4834,7 @@ static void generate_text_internal(char *p, int p_max_size,
 
 				free_text_objects(text_objects);
 				free(text_objects);
-				free(my_info);
+				free(tmp_info);
 			}
 			OBJ(execbar) {
 				char *p2 = p;
@@ -4994,14 +4994,14 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(execpi) {
 				struct text_object_list *text_objects = 0;
-				struct information *my_info =
+				struct information *tmp_info =
 					malloc(sizeof(struct information));
-				memcpy(my_info, cur, sizeof(struct information));
+				memcpy(tmp_info, cur, sizeof(struct information));
 
 				if (current_update_time - obj->data.execi.last_update
 						< obj->data.execi.interval
 						|| obj->data.execi.interval == 0) {
-					text_objects = parse_conky_vars(obj->data.execi.buffer, p, my_info);
+					text_objects = parse_conky_vars(obj->data.execi.buffer, p, tmp_info);
 				} else {
 					char *output = obj->data.execi.buffer;
 					FILE *fp = popen(obj->data.execi.cmd, "r");
@@ -5014,12 +5014,12 @@ static void generate_text_internal(char *p, int p_max_size,
 						output[length - 1] = '\0';
 					}
 
-					text_objects = parse_conky_vars(obj->data.execi.buffer, p, my_info);
+					text_objects = parse_conky_vars(obj->data.execi.buffer, p, tmp_info);
 					obj->data.execi.last_update = current_update_time;
 				}
 				free_text_objects(text_objects);
 				free(text_objects);
-				free(my_info);
+				free(tmp_info);
 			}
 			OBJ(texeci) {
 				if (!obj->data.texeci.p_timed_thread) {
@@ -5464,10 +5464,10 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(if_empty) {
 				struct text_object_list *text_objects;
-				struct information *my_info =
+				struct information *tmp_info =
 					malloc(sizeof(struct information));
-				memcpy(my_info, cur, sizeof(struct information));
-				text_objects = parse_conky_vars(obj->data.ifblock.s, p, my_info);
+				memcpy(tmp_info, cur, sizeof(struct information));
+				text_objects = parse_conky_vars(obj->data.ifblock.s, p, tmp_info);
 
 				if (strlen(p) != 0) {
 					i = obj->data.ifblock.pos;
@@ -5478,7 +5478,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				p[0] = '\0';
 				free_text_objects(text_objects);
 				free(text_objects);
-				free(my_info);
+				free(tmp_info);
 			}
 			OBJ(if_existing) {
 				struct stat tmp;
