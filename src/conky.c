@@ -438,8 +438,8 @@ static int pad_percents = 0;
 tcp_port_monitor_args_t tcp_port_monitor_args;
 #endif
 
-static char *text = 0;
-long text_lines;
+static char *global_text = 0;
+long global_text_lines;
 
 static int total_updates;
 
@@ -3958,7 +3958,7 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 	memset(retval, 0, sizeof(struct text_object_list));
 	retval->text_object_count = 0;
 
-	line = text_lines;
+	line = global_text_lines;
 
 	while (*p) {
 		if (*p == '\n') {
@@ -7653,9 +7653,9 @@ void reload_config(void)
 #ifdef TCP_PORT_MONITOR
 		info.p_tcp_port_monitor_collection = NULL;
 #endif
-		extract_variable_text(text);
-		free(text);
-		text = NULL;
+		extract_variable_text(global_text);
+		free(global_text);
+		global_text = NULL;
 		if (tmpstring1) {
 			free(tmpstring1);
 		}
@@ -7722,9 +7722,9 @@ void clean_up(void)
 		text_buffer = 0;
 	}
 
-	if (text) {
-		free(text);
-		text = 0;
+	if (global_text) {
+		free(global_text);
+		global_text = 0;
 	}
 
 	free(current_config);
@@ -8505,32 +8505,32 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("text") {
-			if (text) {
-				free(text);
-				text = 0;
+			if (global_text) {
+				free(global_text);
+				global_text = 0;
 			}
 
-			text = (char *) malloc(1);
-			text[0] = '\0';
+			global_text = (char *) malloc(1);
+			global_text[0] = '\0';
 
 			while (!feof(fp)) {
-				unsigned int l = strlen(text);
+				unsigned int l = strlen(global_text);
 
 				if (fgets(buf, 256, fp) == NULL) {
 					break;
 				}
-				text = (char *) realloc(text, l + strlen(buf) + 1);
-				strcat(text, buf);
+				global_text = (char *) realloc(global_text, l + strlen(buf) + 1);
+				strcat(global_text, buf);
 
-				if (strlen(text) > max_user_text) {
+				if (strlen(global_text) > max_user_text) {
 					break;
 				}
 			}
 			fclose(fp);
-			if (strlen(text) < 1) {
+			if (strlen(global_text) < 1) {
 				CRIT_ERR("no text supplied in configuration; exiting");
 			}
-			text_lines = line + 1;
+			global_text_lines = line + 1;
 			return;
 		}
 #ifdef TCP_PORT_MONITOR
@@ -8583,7 +8583,7 @@ static void load_config_file(const char *f)
 		// default to update_interval
 		info.music_player_interval = update_interval;
 	}
-	if (!text) { // didn't supply any text
+	if (!global_text) { // didn't supply any text
 		CRIT_ERR("missing text block in configuration; exiting");
 	}
 }
@@ -8833,12 +8833,12 @@ int main(int argc, char **argv)
 #endif
 #endif /* X11 */
 			case 't':
-				if (text) {
-					free(text);
-					text = 0;
+				if (global_text) {
+					free(global_text);
+					global_text = 0;
 				}
-				text = strndup(optarg, max_user_text);
-				convert_escapes(text);
+				global_text = strndup(optarg, max_user_text);
+				convert_escapes(global_text);
 				break;
 
 			case 'u':
@@ -8873,12 +8873,12 @@ int main(int argc, char **argv)
 #endif /* X11 */
 
 	/* generate text and get initial size */
-	extract_variable_text(text);
-	if (text) {
-		free(text);
-		text = 0;
+	extract_variable_text(global_text);
+	if (global_text) {
+		free(global_text);
+		global_text = 0;
 	}
-	text = NULL;
+	global_text = NULL;
 	/* fork */
 	if (fork_to_background) {
 		int pid = fork();
