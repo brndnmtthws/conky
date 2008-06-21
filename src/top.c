@@ -517,7 +517,7 @@ void sp_acopy(struct sorted_process *sp_head, struct process **ar, int max_size)
  * Results are stored in the cpu,mem arrays in decreasing order[0-9]. *
  * ****************************************************************** */
 
-inline void process_find_top(struct process **cpu, struct process **mem)
+void process_find_top(struct process **cpu, struct process **mem)
 {
 	struct sorted_process *spc_head = NULL, *spc_tail = NULL, *spc_cur = NULL;
 	struct sorted_process *spm_head = NULL, *spm_tail = NULL, *spm_cur = NULL;

@@ -313,7 +313,7 @@ void update_gateway_info(void)
 	return;
 }
 
-inline void update_net_stats(void)
+void update_net_stats(void)
 {
 	FILE *net_dev_fp;
 	static int rep = 0;
@@ -1057,7 +1057,7 @@ void get_adt746x_cpu(char *p_client_buffer, size_t client_buffer_size)
  * Small changes by David Sterba <sterd9am@ss1000.ms.mff.cuni.cz> */
 
 #if  defined(__i386) || defined(__x86_64)
-__inline__ unsigned long long int rdtsc(void)
+unsigned long long int rdtsc(void)
 {
 	unsigned long long int x;
 

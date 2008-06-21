@@ -708,7 +708,7 @@ static void new_font(char *buf, char *args)
 	}
 }
 #endif
-inline void graph_append(struct special_t *graph, double f)
+void graph_append(struct special_t *graph, double f)
 {
 	int i;
 
@@ -6519,7 +6519,7 @@ void set_up_gradient(void)
 }
 
 /* this function returns the next colour between two colours for a gradient */
-inline unsigned long do_gradient(unsigned long first_colour,
+unsigned long do_gradient(unsigned long first_colour,
 		unsigned long last_colour)
 {
 	int tmp_color = 0;
@@ -6579,7 +6579,7 @@ inline unsigned long do_gradient(unsigned long first_colour,
 }
 
 /* this function returns the max diff for a gradient */
-inline unsigned long gradient_max(unsigned long first_colour,
+unsigned long gradient_max(unsigned long first_colour,
 		unsigned long last_colour)
 {
 	int red1, green1, blue1;				// first colour

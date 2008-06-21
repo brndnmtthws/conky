@@ -183,7 +183,7 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop)
 }
 
 /* sets background to ParentRelative for the Window and all parents */
-inline void set_transparent_background(Window win)
+void set_transparent_background(Window win)
 {
 	static int colour_set = -1;
 
