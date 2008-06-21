@@ -1475,10 +1475,10 @@ struct text_object_list {
 	struct text_object *text_objects;
 };
 
-static unsigned int global_text_object_count;
-static struct text_object *global_text_objects;
+static struct text_object_list *global_text_object_list;
+
 static void generate_text_internal(char *p, int p_max_size,
-	struct text_object *objs, unsigned int object_count,
+	struct text_object_list *text_object_list,
 	struct information *cur);
 
 #define MAXDATASIZE 1000
@@ -2012,75 +2012,81 @@ static struct text_object *new_text_object_internal(void)
 	return obj;
 }
 
-static void free_text_objects(unsigned int count, struct text_object *objs)
+static void free_text_objects(struct text_object_list *text_object_list)
 {
 	unsigned int i;
+	struct text_object *obj;
 
-	for (i = 0; i < count; i++) {
-		switch (objs[i].type) {
+	if (text_object_list == NULL) {
+		return;
+	}
+
+	for (i = 0; i < text_object_list->text_object_count; i++) {
+		obj = &text_object_list->text_objects[i];
+		switch (obj->type) {
 #ifndef __OpenBSD__
 			case OBJ_acpitemp:
 			case OBJ_acpitempf:
-				close(objs[i].data.i);
+				close(obj->data.i);
 				break;
 			case OBJ_i2c:
 			case OBJ_platform:
 			case OBJ_hwmon:
-				close(objs[i].data.sysfs.fd);
+				close(obj->data.sysfs.fd);
 				break;
 #endif /* !__OpenBSD__ */
 			case OBJ_time:
 			case OBJ_utime:
-				free(objs[i].data.s);
+				free(obj->data.s);
 				break;
 			case OBJ_tztime:
-				free(objs[i].data.tztime.tz);
-				free(objs[i].data.tztime.fmt);
+				free(obj->data.tztime.tz);
+				free(obj->data.tztime.fmt);
 				break;
 			case OBJ_mboxscan:
-				free(objs[i].data.mboxscan.args);
-				free(objs[i].data.mboxscan.output);
+				free(obj->data.mboxscan.args);
+				free(obj->data.mboxscan.output);
 				break;
 			case OBJ_mails:
 			case OBJ_new_mails:
-				free(objs[i].data.local_mail.box);
+				free(obj->data.local_mail.box);
 				break;
 			case OBJ_imap:
 				free(info.mail);
 				break;
 			case OBJ_imap_unseen:
-				if (!objs[i].global_mode) {
-					free(objs[i].data.mail);
+				if (!obj->global_mode) {
+					free(obj->data.mail);
 				}
 				break;
 			case OBJ_imap_messages:
-				if (!objs[i].global_mode) {
-					free(objs[i].data.mail);
+				if (!obj->global_mode) {
+					free(obj->data.mail);
 				}
 				break;
 			case OBJ_pop3:
 				free(info.mail);
 				break;
 			case OBJ_pop3_unseen:
-				if (!objs[i].global_mode) {
-					free(objs[i].data.mail);
+				if (!obj->global_mode) {
+					free(obj->data.mail);
 				}
 				break;
 			case OBJ_pop3_used:
-				if (!objs[i].global_mode) {
-					free(objs[i].data.mail);
+				if (!obj->global_mode) {
+					free(obj->data.mail);
 				}
 				break;
 			case OBJ_if_empty:
 			case OBJ_if_existing:
 			case OBJ_if_mounted:
 			case OBJ_if_running:
-				free(objs[i].data.ifblock.s);
-				free(objs[i].data.ifblock.str);
+				free(obj->data.ifblock.s);
+				free(obj->data.ifblock.str);
 				break;
 			case OBJ_tail:
-				free(objs[i].data.tail.logfile);
-				free(objs[i].data.tail.buffer);
+				free(obj->data.tail.logfile);
+				free(obj->data.tail.buffer);
 				break;
 			case OBJ_text:
 			case OBJ_font:
@@ -2089,7 +2095,7 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 			case OBJ_execbar:
 			case OBJ_execgraph:
 			case OBJ_execp:
-				free(objs[i].data.s);
+				free(obj->data.s);
 				break;
 #ifdef HAVE_ICONV
 			case OBJ_iconv_start:
@@ -2204,30 +2210,30 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 #endif
 #ifdef RSS
 			case OBJ_rss:
-				free(objs[i].data.rss.uri);
-				free(objs[i].data.rss.action);
+				free(obj->data.rss.uri);
+				free(obj->data.rss.action);
 				break;
 #endif
 			case OBJ_pre_exec:
 				break;
 #ifndef __OpenBSD__
 			case OBJ_battery:
-				free(objs[i].data.s);
+				free(obj->data.s);
 				break;
 			case OBJ_battery_time:
-				free(objs[i].data.s);
+				free(obj->data.s);
 				break;
 #endif /* !__OpenBSD__ */
 			case OBJ_execpi:
 			case OBJ_execi:
 			case OBJ_execibar:
 			case OBJ_execigraph:
-				free(objs[i].data.execi.cmd);
-				free(objs[i].data.execi.buffer);
+				free(obj->data.execi.cmd);
+				free(obj->data.execi.buffer);
 				break;
 			case OBJ_texeci:
-				free(objs[i].data.texeci.cmd);
-				free(objs[i].data.texeci.buffer);
+				free(obj->data.texeci.cmd);
+				free(obj->data.texeci.buffer);
 				break;
 			case OBJ_nameserver:
 				free_dns_data();
@@ -2241,9 +2247,9 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 				break;
 #ifdef HDDTEMP
 			case OBJ_hddtemp:
-				free(objs[i].data.hddtemp.dev);
-				free(objs[i].data.hddtemp.addr);
-				free(objs[i].data.hddtemp.temp);
+				free(obj->data.hddtemp.dev);
+				free(obj->data.hddtemp.addr);
+				free(obj->data.hddtemp.temp);
 				break;
 #endif
 			case OBJ_entropy_avail:
@@ -2271,11 +2277,11 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 #ifdef SMAPI
 			case OBJ_smapi:
 			case OBJ_smapi_bat_perc:
-				free(objs[i].data.s);
+				free(obj->data.s);
 				break;
 			case OBJ_if_smapi_bat_installed:
-				free(objs[i].data.ifblock.s);
-				free(objs[i].data.ifblock.str);
+				free(obj->data.ifblock.s);
+				free(obj->data.ifblock.str);
 				break;
 #endif
 #ifdef NVIDIA
@@ -2307,9 +2313,9 @@ static void free_text_objects(unsigned int count, struct text_object *objs)
 #endif
 		}
 	}
-	free(objs);
-	/* text_objects = NULL;
-	   text_object_count = 0; */
+	free(text_object_list->text_objects);
+	text_object_list->text_objects = NULL;
+	text_object_list->text_object_count = 0;
 }
 
 void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
@@ -4096,9 +4102,8 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 
 static void extract_variable_text(const char *p)
 {
-	struct text_object_list *list;
-
-	free_text_objects(global_text_object_count, global_text_objects);
+	free_text_objects(global_text_object_list);
+	free(global_text_object_list);
 	if (tmpstring1) {
 		free(tmpstring1);
 		tmpstring1 = 0;
@@ -4111,14 +4116,8 @@ static void extract_variable_text(const char *p)
 		free(text_buffer);
 		text_buffer = 0;
 	}
-	global_text_object_count = 0;
-	global_text_objects = NULL;
 
-	list = extract_variable_text_internal(p);
-	global_text_objects = list->text_objects;
-	global_text_object_count = list->text_object_count;
-
-	free(list);
+	global_text_object_list = extract_variable_text_internal(p);
 }
 
 struct text_object_list *parse_conky_vars(char *txt, char *p, struct information *cur)
@@ -4126,8 +4125,7 @@ struct text_object_list *parse_conky_vars(char *txt, char *p, struct information
 	struct text_object_list *object_list =
 		extract_variable_text_internal(txt);
 
-	generate_text_internal(p, max_user_text, object_list->text_objects,
-		object_list->text_object_count, cur);
+	generate_text_internal(p, max_user_text, object_list, cur);
 	return object_list;
 }
 
@@ -4291,7 +4289,7 @@ static inline void format_media_player_time(char *buf, const int size,
 }
 
 static void generate_text_internal(char *p, int p_max_size,
-		struct text_object *objs, unsigned int object_count,
+		struct text_object_list *text_object_list,
 		struct information *cur)
 {
 	unsigned int i;
@@ -4303,8 +4301,8 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 
 	p[0] = 0;
-	for (i = 0; i < object_count; i++) {
-		struct text_object *obj = &objs[i];
+	for (i = 0; i < text_object_list->text_object_count; i++) {
+		struct text_object *obj = &(text_object_list->text_objects[i]);
 
 		if (p_max_size < 1) {
 			break;
@@ -4834,7 +4832,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					p[length - 1] = '\0';
 				}
 
-				free_text_objects(text_objects->text_object_count, text_objects->text_objects);
+				free_text_objects(text_objects);
 				free(text_objects);
 				free(my_info);
 			}
@@ -5019,7 +5017,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					text_objects = parse_conky_vars(obj->data.execi.buffer, p, my_info);
 					obj->data.execi.last_update = current_update_time;
 				}
-				free_text_objects(text_objects->text_object_count, text_objects->text_objects);
+				free_text_objects(text_objects);
 				free(text_objects);
 				free(my_info);
 			}
@@ -5478,7 +5476,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					if_jumped = 0;
 				}
 				p[0] = '\0';
-				free_text_objects(text_objects->text_object_count, text_objects->text_objects);
+				free_text_objects(text_objects);
 				free(text_objects);
 				free(my_info);
 			}
@@ -6335,8 +6333,7 @@ static void generate_text(void)
 
 	p = text_buffer;
 
-	generate_text_internal(p, max_user_text, global_text_objects,
-			global_text_object_count, cur);
+	generate_text_internal(p, max_user_text, global_text_object_list, cur);
 
 	if (stuff_in_upper_case) {
 		char *tmp_p;
@@ -7709,7 +7706,9 @@ void clean_up(void)
 	free_fonts();
 #endif /* X11 */
 
-	free_text_objects(global_text_object_count, global_text_objects);
+	free_text_objects(global_text_object_list);
+	free(global_text_object_list);
+	global_text_object_list = NULL;
 	if (tmpstring1) {
 		free(tmpstring1);
 		tmpstring1 = 0;
@@ -7722,8 +7721,6 @@ void clean_up(void)
 		free(text_buffer);
 		text_buffer = 0;
 	}
-	global_text_object_count = 0;
-	global_text_objects = NULL;
 
 	if (text) {
 		free(text);
