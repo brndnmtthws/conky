@@ -1,5 +1,9 @@
 # $Id$
 
+2008-06-25
+	* new variables smapi_bat_temp and smapi_bat_power
+	* improved docs for freq_dyn* variables
+
 2008-06-21
 	* Replaced the global text_object array and count with a
 	text_object_list

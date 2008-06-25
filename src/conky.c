@@ -1367,6 +1367,8 @@ enum text_object_type {
 	OBJ_smapi,
 	OBJ_smapi_bat_bar,
 	OBJ_smapi_bat_perc,
+	OBJ_smapi_bat_temp,
+	OBJ_smapi_bat_power,
 	OBJ_if_smapi_bat_installed,
 #endif
 	OBJ_scroll,
@@ -2319,6 +2321,8 @@ static void free_text_objects(struct text_object_list *text_object_list)
 #ifdef SMAPI
 			case OBJ_smapi:
 			case OBJ_smapi_bat_perc:
+			case OBJ_smapi_bat_temp:
+			case OBJ_smapi_bat_power:
 				free(obj->data.s);
 				break;
 			case OBJ_if_smapi_bat_installed:
@@ -3724,6 +3728,16 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.s = strndup(arg, text_buffer_size);
 		else
 			ERR("smapi_bat_perc needs an argument");
+	END OBJ(smapi_bat_temp, 0)
+		if (arg)
+			obj->data.s = strndup(arg, text_buffer_size);
+		else
+			ERR("smapi_bat_temp needs an argument");
+	END OBJ(smapi_bat_power, 0)
+		if (arg)
+			obj->data.s = strndup(arg, text_buffer_size);
+		else
+			ERR("smapi_bat_power needs an argument");
 	END OBJ(smapi_bat_bar, 0)
 		if(arg) {
 			int cnt;
@@ -6188,6 +6202,26 @@ head:
 					spaced_print(p, p_max_size, "%*d", 4, "smapi_bat_perc", pad_percents, val);
 				} else
 					ERR("argument to smapi_bat_perc must be an integer");
+			}
+			OBJ(smapi_bat_temp) {
+				int idx, val;
+				if(obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
+					val = smapi_bat_installed(idx) ?
+						smapi_get_bat_int(idx, "temperature") : 0;
+					/* temperature is in milli degree celsius, round to degree celsius */
+					snprintf(p, p_max_size, "%d", (int)((val / 1000) + 0.5));
+				} else
+					ERR("argument to smapi_bat_temp must be an integer");
+			}
+			OBJ(smapi_bat_power) {
+				int idx, val;
+				if(obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
+					val = smapi_bat_installed(idx) ?
+						smapi_get_bat_int(idx, "power_now") : 0;
+					/* power_now is in mW, set to W with one digit precision */
+					snprintf(p, p_max_size, "%.1f", ((double)val / 1000));
+				} else
+					ERR("argument to smapi_bat_power must be an integer");
 			}
 			OBJ(smapi_bat_bar) {
 				if(obj->data.i >= 0 && smapi_bat_installed(obj->data.i))

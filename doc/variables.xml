@@ -661,9 +661,7 @@
 			<option>(n)</option>
 		</term>
 		<listitem>
-			Returns CPU #n's frequency in MHz. CPUs are
-			counted from 1. If omitted, the parameter
-			defaults to 1.
+			Returns CPU #n's frequency in MHz. CPUs are counted from 1. If omitted, the parameter defaults to 1.
 			<para></para></listitem>
 	</varlistentry>
 	<varlistentry>
@@ -672,27 +670,27 @@
 			<option>(n)</option>
 		</term>
 		<listitem>
-			Returns CPU #n's frequency in GHz. CPUs are
-			counted from 1. If omitted, the parameter
-			defaults to 1.
+			Returns CPU #n's frequency in GHz. CPUs are counted from 1. If omitted, the parameter defaults to 1.
 			<para></para></listitem>
 	</varlistentry>
 
 	<varlistentry>
 		<term>
 			<command><option>freq_dyn</option></command>
+			<option>(n)</option>
 		</term>
 		<listitem>
-			Returns CPU frequency in MHz, but is calculated by counting to clock cycles to complete an instruction.  Only available for x86/amd64.
+			Returns CPU #n's frequency in MHz (defaults to 1), but is calculated by counting to clock cycles to complete an instruction.  Only available for x86/amd64.
 			<para></para></listitem>
 	</varlistentry>
 
 	<varlistentry>
 		<term>
 			<command><option>freq_dyn_g</option></command>
+			<option>(n)</option>
 		</term>
 		<listitem>
-			Returns CPU frequency in GHz, but is calculated by counting to clock cycles to complete an instruction.  Only available for x86/amd64.
+			Returns CPU #n's frequency in GHz (defaults to 1), but is calculated by counting to clock cycles to complete an instruction.  Only available for x86/amd64.
 			<para></para></listitem>
 	</varlistentry>
 
@@ -1600,6 +1598,16 @@
 
 	<varlistentry>
 		<term>
+			<command><option>smapi_bat_bar</option></command>
+			<option>(INDEX),(height),(width)</option>
+		</term>
+		<listitem>
+			when using smapi, display the remaining capacity of the battery with index INDEX as a bar.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
 			<command><option>smapi_bat_perc</option></command>
 			<option>(INDEX)</option>
 		</term>
@@ -1610,11 +1618,21 @@
 
 	<varlistentry>
 		<term>
-			<command><option>smapi_bat_bar</option></command>
-			<option>(INDEX),(height),(width)</option>
+			<command><option>smapi_bat_power</option></command>
+			<option>INDEX</option>
 		</term>
 		<listitem>
-			when using smapi, display the remaining capacity of the battery with index INDEX as a bar.
+			when using smapi, display the current power of the battery with index INDEX in watt. This is a separate variable because the original read out value is being converted from mW. The sign of the output reflects charging (positive) or discharging (negative) state.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>smapi_bat_temp</option></command>
+			<option>INDEX</option>
+		</term>
+		<listitem>
+			when using smapi, display the current temperature of the battery with index INDEX in degree Celsius. This is a separate variable because the original read out value is being converted from milli degree Celsius.
 			<para></para></listitem>
 	</varlistentry>
 
