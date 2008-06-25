@@ -34,7 +34,12 @@
 #include <mcheck.h>
 #endif /* HAS_MCHECK_H */
 
+#undef EQUAL
+#undef FALSE
+#undef TRUE
 #define EQUAL 0	//returnvalue of strcmp-variants when strings are equal
+#define FALSE 0
+#define TRUE 1
 
 #include "config.h"
 #include <sys/utsname.h>
