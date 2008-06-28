@@ -80,6 +80,10 @@ char *strndup(const char *s, size_t n);
 #include "rss.h"
 #endif
 
+#ifdef EVE
+#include "eve.h"
+#endif
+
 #ifdef SMAPI
 #include "smapi.h"
 #endif

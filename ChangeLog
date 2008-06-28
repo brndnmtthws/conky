@@ -2,6 +2,7 @@
 
 2008-06-28
 	* Added sysfs AC adapter support patch (thanks Byron)
+	* Added support for EVE-Online skill monitoring (thanks Asbjørn)
 
 2008-06-25
 	* new variables smapi_bat_temp and smapi_bat_power

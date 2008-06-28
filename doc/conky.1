@@ -30,7 +30,7 @@ using scripts and other external programs.
 Conky has more than 250 built in objects, including support for
 a plethora of OS stats (uname, uptime, CPU usage, mem usage, disk
 usage, "top" like process stats, and network monitoring, just to name a few),
-built in IMAP and POP3 support, built in support for many popular 
+built in IMAP and POP3 support, built in support for many popular
 music players (MPD, XMMS2, BMPx, Audacious), and much much more.
 Conky can display this info either as text, or using simple progress
 bars and graph widgets, with different fonts and colours.
@@ -42,11 +42,11 @@ or stop by #conky on irc.freenode.net if you have questions or want to contribut
 Thanks for your interest in Conky.
 .SH COMPILING
 For users compiling from source on a binary distro, make sure you have the X development
-libraries installed. This should be a package along the lines of "libx11-dev" or 
+libraries installed. This should be a package along the lines of "libx11-dev" or
 "xorg-x11-dev" for X11 libs, and similar "-dev" format for the other libs required (depending
 on your configure options).
 .PP
-Conky has (for some time) been available in the repositories of most popular distributions. 
+Conky has (for some time) been available in the repositories of most popular distributions.
 Here are some installation instructions for a few:
 .PP
 Gentoo users -- Conky is in Gentoo's Portage... simply use "emerge app-admin/conky" for installation.
@@ -139,7 +139,7 @@ Y position
 Number of times to update Conky (and quit)
 
 .SH "CONFIGURATION SETTINGS"
-Default configuration file location is $HOME/.conkyrc or 
+Default configuration file location is $HOME/.conkyrc or
 ${sysconfdir}/conky/conky.conf. On most systems, sysconfdir is /etc,
 and you can find the sample config file there (/etc/conky/conky.conf).
 .PP
@@ -384,7 +384,7 @@ Colors are parsed using XParsecolor(), there might be a list of them:
 Color can be also in #rrggbb format (hex).
 .TP 
 \fB\*(T<\fBaddr\fR\*(T>\fR \*(T<\fBinterface\fR\*(T> 
-IP address for an interface
+IP address for an interface, or "No Address" if no address is assigned.
 
 .TP 
 \fB\*(T<\fBaddrs\fR\*(T>\fR \*(T<\fBinterface\fR\*(T> 
@@ -662,23 +662,19 @@ Specify a different font. This new font will apply to the current line and every
 
 .TP 
 \fB\*(T<\fBfreq\fR\*(T>\fR \*(T<\fB(n)\fR\*(T> 
-Returns CPU #n's frequency in MHz. CPUs are
-counted from 1. If omitted, the parameter
-defaults to 1.
+Returns CPU #n's frequency in MHz. CPUs are counted from 1. If omitted, the parameter defaults to 1.
 
 .TP 
 \fB\*(T<\fBfreq_g\fR\*(T>\fR \*(T<\fB(n)\fR\*(T> 
-Returns CPU #n's frequency in GHz. CPUs are
-counted from 1. If omitted, the parameter
-defaults to 1.
+Returns CPU #n's frequency in GHz. CPUs are counted from 1. If omitted, the parameter defaults to 1.
 
 .TP 
-\fB\*(T<\fBfreq_dyn\fR\*(T>\fR 
-Returns CPU frequency in MHz, but is calculated by counting to clock cycles to complete an instruction. Only available for x86/amd64.
+\fB\*(T<\fBfreq_dyn\fR\*(T>\fR \*(T<\fB(n)\fR\*(T> 
+Returns CPU #n's frequency in MHz (defaults to 1), but is calculated by counting to clock cycles to complete an instruction. Only available for x86/amd64.
 
 .TP 
-\fB\*(T<\fBfreq_dyn_g\fR\*(T>\fR 
-Returns CPU frequency in GHz, but is calculated by counting to clock cycles to complete an instruction. Only available for x86/amd64.
+\fB\*(T<\fBfreq_dyn_g\fR\*(T>\fR \*(T<\fB(n)\fR\*(T> 
+Returns CPU #n's frequency in GHz (defaults to 1), but is calculated by counting to clock cycles to complete an instruction. Only available for x86/amd64.
 
 .TP 
 \fB\*(T<\fBfs_bar\fR\*(T>\fR \*(T<\fB(height),(width) fs\fR\*(T> 
@@ -858,16 +854,16 @@ Kernel version
 The value of /proc/sys/vm/laptop_mode
 
 .TP 
-\fB\*(T<\fBlines\fR\*(T>\fR \*(T<\fBtextfile\fR\*(T> 
-Displays the number of lines in the given file
-
-.TP 
 \fB\*(T<\fBloadavg\fR\*(T>\fR 
 (1,2,3)> System load average, 1 is for past 1 minute, 2 for past 5 minutes and 3 for past 15 minutes.
 
 .TP 
 \fB\*(T<\fBloadgraph\fR\*(T>\fR \*(T<\fBnormal|log (height),(width) (gradient colour 1) (gradient colour 2)\fR\*(T> 
 Load1 average graph, similar to xload, with optional colours in hex, minus the #. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
+
+.TP 
+\fB\*(T<\fBlines\fR\*(T>\fR \*(T<\fBtextfile\fR\*(T> 
+Displays the number of lines in the given file
 
 .TP 
 \fB\*(T<\fBmachine\fR\*(T>\fR 
@@ -893,16 +889,16 @@ Amount of memory in use
 Bar that shows amount of memory in use
 
 .TP 
+\fB\*(T<\fBmemgraph\fR\*(T>\fR \*(T<\fBnormal|log (height),(width) (gradient colour 1) (gradient colour 2)\fR\*(T> 
+Memory usage graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
+
+.TP 
 \fB\*(T<\fBmemeasyfree\fR\*(T>\fR 
 Amount of free memory including the memory that is very easily freed (buffers/cache)
 
 .TP 
 \fB\*(T<\fBmemfree\fR\*(T>\fR 
 Amount of free memory
-
-.TP 
-\fB\*(T<\fBmemgraph\fR\*(T>\fR \*(T<\fBnormal|log (height),(width) (gradient colour 1) (gradient colour 2)\fR\*(T> 
-Memory usage graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
 
 .TP 
 \fB\*(T<\fBmemmax\fR\*(T>\fR 
@@ -1060,6 +1056,10 @@ Total processes (sleeping and running)
 Running processes (not sleeping), requires Linux 2.6
 
 .TP 
+\fB\*(T<\fBscroll\fR\*(T>\fR \*(T<\fBlength text\fR\*(T> 
+Scroll 'text' showing 'length' number of characters at the same time. The text may also contain variables. If a var creates output on multiple lines then the lines are placed behind each other separated with a '|'-sign. Do NOT use vars that change colors or otherwise affect the design inside a scrolling text. If you want spaces between the start and the end of 'text', place them at the end of 'text' not at the front ("foobar" and " foobar" can both generate "barfoo" but "foobar " will keep the spaces like this "bar foo").
+
+.TP 
 \fB\*(T<\fBshadecolor\fR\*(T>\fR \*(T<\fB(color)\fR\*(T> 
 Change shading color
 
@@ -1068,12 +1068,20 @@ Change shading color
 when using smapi, display contents of the /sys/devices/platform/smapi directory. ARGS are either '(FILENAME)' or 'bat (INDEX) (FILENAME)' to display the corresponding files' content. This is a very raw method of accessing the smapi values. When available, better use one of the smapi_* variables instead.
 
 .TP 
+\fB\*(T<\fBsmapi_bat_bar\fR\*(T>\fR \*(T<\fB(INDEX),(height),(width)\fR\*(T> 
+when using smapi, display the remaining capacity of the battery with index INDEX as a bar.
+
+.TP 
 \fB\*(T<\fBsmapi_bat_perc\fR\*(T>\fR \*(T<\fB(INDEX)\fR\*(T> 
 when using smapi, display the remaining capacity in percent of the battery with index INDEX. This is a separate variable because it supports the 'use_spacer' configuration option.
 
 .TP 
-\fB\*(T<\fBsmapi_bat_bar\fR\*(T>\fR \*(T<\fB(INDEX),(height),(width)\fR\*(T> 
-when using smapi, display the remaining capacity of the battery with index INDEX as a bar.
+\fB\*(T<\fBsmapi_bat_power\fR\*(T>\fR \*(T<\fBINDEX\fR\*(T> 
+when using smapi, display the current power of the battery with index INDEX in watt. This is a separate variable because the original read out value is being converted from mW. The sign of the output reflects charging (positive) or discharging (negative) state.
+
+.TP 
+\fB\*(T<\fBsmapi_bat_temp\fR\*(T>\fR \*(T<\fBINDEX\fR\*(T> 
+when using smapi, display the current temperature of the battery with index INDEX in degree Celsius. This is a separate variable because the original read out value is being converted from milli degree Celsius.
 
 .TP 
 \fB\*(T<\fBstippled_hr\fR\*(T>\fR \*(T<\fB(space)\fR\*(T> 
@@ -1155,10 +1163,6 @@ Move text over by N pixels. See also $voffset.
 .TP 
 \fB\*(T<\fBrss\fR\*(T>\fR \*(T<\fBurl delay_in_minutes action item_num\fR\*(T> 
 Download and parse RSS feeds. Action may be one of the following: feed_title, item_title (with num par), item_desc (with num par) and item_titles.
-
-.TP 
-\fB\*(T<\fBscroll\fR\*(T>\fR \*(T<\fBlength text\fR\*(T> 
-Scroll 'text' showing 'length' number of characters at the same time. The text may also contain variables. If a var creates output on multiple lines then the lines are placed behind each other separated with a '|'-sign. Do NOT use vars that change colors or otherwise affect the design inside a scrolling text. If you want spaces between the start and the end of 'text', place them at the end of 'text' not at the front ("foobar" and "    foobar" can both generate "barfoo" but "foobar    " will keep the spaces like this "bar    foo").
 
 .TP 
 \fB\*(T<\fBtab\fR\*(T>\fR \*(T<\fB(width, (start))\fR\*(T> 
@@ -1359,6 +1363,10 @@ Bar of XMMS2's progress
 .TP 
 \fB\*(T<\fBxmms2_smart\fR\*(T>\fR 
 Prints the song name in either the form "artist - title" or file name, depending on whats available
+
+.TP 
+\fB\*(T<\fBeve\fR\*(T>\fR \*(T<\fBapi_userid api_key character_id\fR\*(T> 
+Fetches your currently training skill from the Eve Online API servers (http://www.eve-online.com/) and displays the skill along with the remaining training time.
 
 .SH EXAMPLES
 .TP 

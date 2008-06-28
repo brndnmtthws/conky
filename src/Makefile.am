@@ -80,6 +80,10 @@ if BUILD_HDDTEMP
 hddtemp = hddtemp.c
 endif
 
+if BUILD_EVE
+eve = eve.c eve.h
+endif
+
 if BUILD_RSS
 rss = rss.c prss.c prss.h
 endif
@@ -109,6 +113,7 @@ conky_SOURCES = 		\
 	$(netbsd)               \
 	$(openbsd)              \
 	$(port_monitors)        \
+	$(eve)			\
 	$(rss)			\
 	$(solaris) 		\
 	timed_thread.c		\

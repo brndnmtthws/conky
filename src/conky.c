@@ -117,6 +117,9 @@ static void print_version(void)
 #ifdef RSS
 		   "  * rss\n"
 #endif /* RSS */
+#ifdef EVE
+         "  * eve\n"
+#endif /* EVE */
 #ifdef HAVE_IWLIB
 		   "  * wireless\n"
 #endif /* HAVE_IWLIB */
@@ -822,7 +825,7 @@ static char *scan_graph(const char *args, int *w, int *h,
 	/* graph's argument is either height or height,width */
 	if (args) {
 		if (sscanf(args, "%6s %d,%d %x %x %u", showaslogbuf, h, w, first_colour, last_colour,
-				scale) == 6) {
+					scale) == 6) {
 			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
 			return NULL;
 		}
@@ -832,13 +835,13 @@ static char *scan_graph(const char *args, int *w, int *h,
 			return NULL;
 		}
 		if (sscanf(args, "%6s %63s %d,%d %x %x %u", showaslogbuf, buf, h, w, first_colour,
-				last_colour, scale) == 7) {
+					last_colour, scale) == 7) {
 			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
 			return strndup(buf, text_buffer_size);
 		}
 		*scale = 0;
 		if (sscanf(args, "%6s %63s %d,%d %x %x", showaslogbuf, buf, h, w, first_colour,
-				last_colour) == 6) {
+					last_colour) == 6) {
 			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
 			return strndup(buf, text_buffer_size);
 		}
@@ -855,7 +858,7 @@ static char *scan_graph(const char *args, int *w, int *h,
 			return NULL;
 		}
 		if (sscanf(args, "%6s %63s %x %x %u", showaslogbuf, buf, first_colour, last_colour,
-				scale) == 5) {
+					scale) == 5) {
 			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
 			return strndup(buf, text_buffer_size);
 		}
@@ -1350,6 +1353,9 @@ enum text_object_type {
 	OBJ_bmpx_uri,
 	OBJ_bmpx_bitrate,
 #endif
+#ifdef EVE
+   OBJ_eve,
+#endif
 #ifdef RSS
 	OBJ_rss,
 #endif
@@ -1480,6 +1486,13 @@ struct text_object {
 			char *temp;
 			char unit;
 		} hddtemp;		/* 2 */
+#endif
+#ifdef EVE
+      struct {
+         char *apikey;
+         char *charid;
+         char *userid;
+      } eve;
 #endif
 #ifdef RSS
 		struct {
@@ -2252,6 +2265,10 @@ static void free_text_objects(struct text_object_list *text_object_list)
 			case OBJ_bmpx_bitrate:
 				break;
 #endif
+#ifdef EVE
+         case OBJ_eve:
+            break;
+#endif
 #ifdef RSS
 			case OBJ_rss:
 				free(obj->data.rss.uri);
@@ -2807,10 +2824,10 @@ static struct text_object *construct_text_object(const char *s,
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
 
-		if (buf) {
-			obj->data.net = get_net_stat(buf);
-			free(buf);
-		}
+		// default to eth0
+		buf = strndup(buf ? buf : "eth0", text_buffer_size);
+		obj->data.net = get_net_stat(buf);
+		free(buf);
 	END OBJ(else, 0)
 		if (blockdepth) {
 			(text_objects[blockstart[blockdepth - 1]]).data.ifblock.pos =
@@ -3648,32 +3665,32 @@ static struct text_object *construct_text_object(const char *s,
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
 
-		if (buf) {
-			obj->data.net = get_net_stat(buf);
-			free(buf);
-		}
+	// default to eth0
+	buf = strndup(buf ? buf : "eth0", text_buffer_size);
+	obj->data.net = get_net_stat(buf);
+	free(buf);
 	END OBJ(uptime_short, INFO_UPTIME)
-	END OBJ(uptime, INFO_UPTIME)
-	END OBJ(user_names, INFO_USERS)
-	END OBJ(user_times, INFO_USERS)
-	END OBJ(user_terms, INFO_USERS)
-	END OBJ(user_number, INFO_USERS)
+		END OBJ(uptime, INFO_UPTIME)
+		END OBJ(user_names, INFO_USERS)
+		END OBJ(user_times, INFO_USERS)
+		END OBJ(user_terms, INFO_USERS)
+		END OBJ(user_number, INFO_USERS)
 #if defined(__linux__)
-	END OBJ(gw_iface, INFO_GW)
-	END OBJ(gw_ip, INFO_GW)
-	END OBJ(if_gw, INFO_GW)
+		END OBJ(gw_iface, INFO_GW)
+		END OBJ(gw_ip, INFO_GW)
+		END OBJ(if_gw, INFO_GW)
 #endif /* !__linux__ */
 #ifndef __OpenBSD__
-	END OBJ(adt746xcpu, 0)
-	END OBJ(adt746xfan, 0)
+		END OBJ(adt746xcpu, 0)
+		END OBJ(adt746xfan, 0)
 #endif /* !__OpenBSD__ */
 #if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) \
 		|| defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
-	END OBJ(apm_adapter, 0)
-	END OBJ(apm_battery_life, 0)
-	END OBJ(apm_battery_time, 0)
+		END OBJ(apm_adapter, 0)
+		END OBJ(apm_battery_life, 0)
+		END OBJ(apm_battery_time, 0)
 #endif /* __FreeBSD__ */
-	END OBJ(imap_unseen, 0)
+		END OBJ(imap_unseen, 0)
 		if (arg) {
 			// proccss
 			obj->data.mail = parse_mail_args(IMAP, arg);
@@ -3715,14 +3732,14 @@ static struct text_object *construct_text_object(const char *s,
 		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
 			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
 		}
-		if (!arg) {
-			ERR("if_smapi_bat_installed needs an argument");
-			obj->data.ifblock.s = 0;
-		} else
-			obj->data.ifblock.s = strndup(arg, text_buffer_size);
-		blockstart[blockdepth] = object_count;
-		obj->data.ifblock.pos = object_count + 2;
-		blockdepth++;
+	if (!arg) {
+		ERR("if_smapi_bat_installed needs an argument");
+		obj->data.ifblock.s = 0;
+	} else
+		obj->data.ifblock.s = strndup(arg, text_buffer_size);
+	blockstart[blockdepth] = object_count;
+	obj->data.ifblock.pos = object_count + 2;
+	blockdepth++;
 	END OBJ(smapi_bat_perc, 0)
 		if (arg)
 			obj->data.s = strndup(arg, text_buffer_size);
@@ -3752,7 +3769,7 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("if_smapi_bat_bar needs an argument");
 #endif /* SMAPI */
 #ifdef MPD
-			END OBJ(mpd_artist, INFO_MPD)
+		END OBJ(mpd_artist, INFO_MPD)
 			END OBJ(mpd_title, INFO_MPD)
 			if (arg) {
 				sscanf(arg, "%d", &info.mpd.max_title_len);
@@ -3761,247 +3778,264 @@ static struct text_object *construct_text_object(const char *s,
 				} else {
 					CRIT_ERR("mpd_title: invalid length argument");
 				}
-		} else {
-			info.mpd.max_title_len = 0;
-		}
-	END OBJ(mpd_random, INFO_MPD)
-	END OBJ(mpd_repeat, INFO_MPD)
-	END OBJ(mpd_elapsed, INFO_MPD)
-	END OBJ(mpd_length, INFO_MPD)
-	END OBJ(mpd_track, INFO_MPD)
-	END OBJ(mpd_name, INFO_MPD)
-	END OBJ(mpd_file, INFO_MPD)
-	END OBJ(mpd_percent, INFO_MPD)
-	END OBJ(mpd_album, INFO_MPD)
-	END OBJ(mpd_vol, INFO_MPD)
-	END OBJ(mpd_bitrate, INFO_MPD)
-	END OBJ(mpd_status, INFO_MPD)
-	END OBJ(mpd_bar, INFO_MPD)
-		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
-	END OBJ(mpd_smart, INFO_MPD)
+			} else {
+				info.mpd.max_title_len = 0;
+			}
+		END OBJ(mpd_random, INFO_MPD)
+			END OBJ(mpd_repeat, INFO_MPD)
+			END OBJ(mpd_elapsed, INFO_MPD)
+			END OBJ(mpd_length, INFO_MPD)
+			END OBJ(mpd_track, INFO_MPD)
+			END OBJ(mpd_name, INFO_MPD)
+			END OBJ(mpd_file, INFO_MPD)
+			END OBJ(mpd_percent, INFO_MPD)
+			END OBJ(mpd_album, INFO_MPD)
+			END OBJ(mpd_vol, INFO_MPD)
+			END OBJ(mpd_bitrate, INFO_MPD)
+			END OBJ(mpd_status, INFO_MPD)
+			END OBJ(mpd_bar, INFO_MPD)
+			scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+		END OBJ(mpd_smart, INFO_MPD)
 #endif
 #ifdef XMMS2
-	END OBJ(xmms2_artist, INFO_XMMS2)
-	END OBJ(xmms2_album, INFO_XMMS2)
-	END OBJ(xmms2_title, INFO_XMMS2)
-	END OBJ(xmms2_genre, INFO_XMMS2)
-	END OBJ(xmms2_comment, INFO_XMMS2)
-	END OBJ(xmms2_url, INFO_XMMS2)
-	END OBJ(xmms2_tracknr, INFO_XMMS2)
-	END OBJ(xmms2_bitrate, INFO_XMMS2)
-	END OBJ(xmms2_date, INFO_XMMS2)
-	END OBJ(xmms2_id, INFO_XMMS2)
-	END OBJ(xmms2_duration, INFO_XMMS2)
-	END OBJ(xmms2_elapsed, INFO_XMMS2)
-	END OBJ(xmms2_size, INFO_XMMS2)
-	END OBJ(xmms2_status, INFO_XMMS2)
-	END OBJ(xmms2_percent, INFO_XMMS2)
-	END OBJ(xmms2_bar, INFO_XMMS2)
-		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
-	END OBJ(xmms2_smart, INFO_XMMS2)
-	END OBJ(xmms2_playlist, INFO_XMMS2)
-	END OBJ(xmms2_timesplayed, INFO_XMMS2)
+			END OBJ(xmms2_artist, INFO_XMMS2)
+			END OBJ(xmms2_album, INFO_XMMS2)
+			END OBJ(xmms2_title, INFO_XMMS2)
+			END OBJ(xmms2_genre, INFO_XMMS2)
+			END OBJ(xmms2_comment, INFO_XMMS2)
+			END OBJ(xmms2_url, INFO_XMMS2)
+			END OBJ(xmms2_tracknr, INFO_XMMS2)
+			END OBJ(xmms2_bitrate, INFO_XMMS2)
+			END OBJ(xmms2_date, INFO_XMMS2)
+			END OBJ(xmms2_id, INFO_XMMS2)
+			END OBJ(xmms2_duration, INFO_XMMS2)
+			END OBJ(xmms2_elapsed, INFO_XMMS2)
+			END OBJ(xmms2_size, INFO_XMMS2)
+			END OBJ(xmms2_status, INFO_XMMS2)
+			END OBJ(xmms2_percent, INFO_XMMS2)
+			END OBJ(xmms2_bar, INFO_XMMS2)
+			scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+		END OBJ(xmms2_smart, INFO_XMMS2)
+			END OBJ(xmms2_playlist, INFO_XMMS2)
+			END OBJ(xmms2_timesplayed, INFO_XMMS2)
 #endif
 #ifdef AUDACIOUS
-	END OBJ(audacious_status, INFO_AUDACIOUS)
-	END OBJ(audacious_title, INFO_AUDACIOUS)
-		if (arg) {
-			sscanf(arg, "%d", &info.audacious.max_title_len);
-			if (info.audacious.max_title_len > 0) {
-				info.audacious.max_title_len++;
-			} else {
-				CRIT_ERR("audacious_title: invalid length argument");
+			END OBJ(audacious_status, INFO_AUDACIOUS)
+			END OBJ(audacious_title, INFO_AUDACIOUS)
+			if (arg) {
+				sscanf(arg, "%d", &info.audacious.max_title_len);
+				if (info.audacious.max_title_len > 0) {
+					info.audacious.max_title_len++;
+				} else {
+					CRIT_ERR("audacious_title: invalid length argument");
+				}
 			}
-		}
-	END OBJ(audacious_length, INFO_AUDACIOUS)
-	END OBJ(audacious_length_seconds, INFO_AUDACIOUS)
-	END OBJ(audacious_position, INFO_AUDACIOUS)
-	END OBJ(audacious_position_seconds, INFO_AUDACIOUS)
-	END OBJ(audacious_bitrate, INFO_AUDACIOUS)
-	END OBJ(audacious_frequency, INFO_AUDACIOUS)
-	END OBJ(audacious_channels, INFO_AUDACIOUS)
-	END OBJ(audacious_filename, INFO_AUDACIOUS)
-	END OBJ(audacious_playlist_length, INFO_AUDACIOUS)
-	END OBJ(audacious_playlist_position, INFO_AUDACIOUS)
-	END OBJ(audacious_bar, INFO_AUDACIOUS)
-		scan_bar(arg, &obj->a, &obj->b);
+		END OBJ(audacious_length, INFO_AUDACIOUS)
+			END OBJ(audacious_length_seconds, INFO_AUDACIOUS)
+			END OBJ(audacious_position, INFO_AUDACIOUS)
+			END OBJ(audacious_position_seconds, INFO_AUDACIOUS)
+			END OBJ(audacious_bitrate, INFO_AUDACIOUS)
+			END OBJ(audacious_frequency, INFO_AUDACIOUS)
+			END OBJ(audacious_channels, INFO_AUDACIOUS)
+			END OBJ(audacious_filename, INFO_AUDACIOUS)
+			END OBJ(audacious_playlist_length, INFO_AUDACIOUS)
+			END OBJ(audacious_playlist_position, INFO_AUDACIOUS)
+			END OBJ(audacious_bar, INFO_AUDACIOUS)
+			scan_bar(arg, &obj->a, &obj->b);
 #endif
 #ifdef BMPX
-	END OBJ(bmpx_title, INFO_BMPX)
-		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
-	END OBJ(bmpx_artist, INFO_BMPX)
-		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
-	END OBJ(bmpx_album, INFO_BMPX)
-		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
-	END OBJ(bmpx_track, INFO_BMPX)
-		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
-	END OBJ(bmpx_uri, INFO_BMPX)
-		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
-	END OBJ(bmpx_bitrate, INFO_BMPX)
-		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+		END OBJ(bmpx_title, INFO_BMPX)
+			memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+		END OBJ(bmpx_artist, INFO_BMPX)
+			memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+		END OBJ(bmpx_album, INFO_BMPX)
+			memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+		END OBJ(bmpx_track, INFO_BMPX)
+			memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+		END OBJ(bmpx_uri, INFO_BMPX)
+			memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+		END OBJ(bmpx_bitrate, INFO_BMPX)
+			memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+#endif
+#ifdef EVE
+		END OBJ(eve, 0)
+			if(arg) {
+				int argc;
+				char *userid = (char *) malloc(20 * sizeof(char));
+				char *apikey = (char *) malloc(64 * sizeof(char));
+				char *charid = (char *) malloc(20 * sizeof(char));
+
+				argc = sscanf(arg, "%20s %64s %20s", userid, apikey, charid);
+				obj->data.eve.charid = charid;
+				obj->data.eve.userid = userid;
+				obj->data.eve.apikey = apikey;
+
+				init_eve();
+			} else
+				CRIT_ERR("eve needs arguments: <userid> <apikey> <characterid>");
 #endif
 #ifdef RSS
-	END OBJ(rss, 0)
-		if (arg) {
-			int argc, delay, act_par;
-			char *uri = (char *) malloc(128 * sizeof(char));
-			char *action = (char *) malloc(64 * sizeof(char));
+			END OBJ(rss, 0)
+				if (arg) {
+					int argc, delay, act_par;
+					char *uri = (char *) malloc(128 * sizeof(char));
+					char *action = (char *) malloc(64 * sizeof(char));
 
-			argc = sscanf(arg, "%127s %d %63s %d", uri, &delay, action,
-				&act_par);
-			obj->data.rss.uri = uri;
-			obj->data.rss.delay = delay;
-			obj->data.rss.action = action;
-			obj->data.rss.act_par = act_par;
+					argc = sscanf(arg, "%127s %d %63s %d", uri, &delay, action,
+							&act_par);
+					obj->data.rss.uri = uri;
+					obj->data.rss.delay = delay;
+					obj->data.rss.action = action;
+					obj->data.rss.act_par = act_par;
 
-			init_rss_info();
-		} else {
-			CRIT_ERR("rss needs arguments: <uri> <delay in minutes> <action> "
-				"[act_par]");
-		}
+					init_rss_info();
+				} else {
+					CRIT_ERR("rss needs arguments: <uri> <delay in minutes> <action> "
+							"[act_par]");
+				}
 #endif
 #ifdef HDDTEMP
-	END OBJ(hddtemp, 0)
-		if (!arg || scan_hddtemp(arg, &obj->data.hddtemp.dev,
-				&obj->data.hddtemp.addr, &obj->data.hddtemp.port, &obj->data.hddtemp.temp)) {
-			ERR("hddtemp needs arguments");
-			obj->type = OBJ_text;
-			obj->data.s = strndup("${hddtemp}", text_buffer_size);
-			obj->data.hddtemp.update_time = 0;
-			return NULL;
-		}
+			END OBJ(hddtemp, 0)
+				if (!arg || scan_hddtemp(arg, &obj->data.hddtemp.dev,
+							&obj->data.hddtemp.addr, &obj->data.hddtemp.port, &obj->data.hddtemp.temp)) {
+					ERR("hddtemp needs arguments");
+					obj->type = OBJ_text;
+					obj->data.s = strndup("${hddtemp}", text_buffer_size);
+					obj->data.hddtemp.update_time = 0;
+					return NULL;
+				}
 #endif
 #ifdef TCP_PORT_MONITOR
-	END OBJ(tcp_portmon, INFO_TCP_PORT_MONITOR)
-		int argc, port_begin, port_end, item, connection_index;
-		char itembuf[32];
+			END OBJ(tcp_portmon, INFO_TCP_PORT_MONITOR)
+				int argc, port_begin, port_end, item, connection_index;
+			char itembuf[32];
 
-		memset(itembuf, 0, sizeof(itembuf));
-		connection_index = 0;
-		/* massive argument checking */
-		if (!arg) {
-			CRIT_ERR("tcp_portmon: needs arguments");
-		}
-		argc = sscanf(arg, "%d %d %31s %d", &port_begin, &port_end, itembuf,
-			&connection_index);
-		if ((argc != 3) && (argc != 4)) {
-			CRIT_ERR("tcp_portmon: requires 3 or 4 arguments");
-		}
-		if ((port_begin < 1) || (port_begin > 65535) || (port_end < 1)
-				|| (port_end > 65535)) {
-			CRIT_ERR("tcp_portmon: port values must be from 1 to 65535");
-		}
-		if (port_begin > port_end) {
-			CRIT_ERR("tcp_portmon: starting port must be <= ending port");
-		}
-		if (strncmp(itembuf, "count", 31) == EQUAL) {
-			item = COUNT;
-		} else if (strncmp(itembuf, "rip", 31) == EQUAL) {
-			item = REMOTEIP;
-		} else if (strncmp(itembuf, "rhost", 31) == EQUAL) {
-			item = REMOTEHOST;
-		} else if (strncmp(itembuf, "rport", 31) == EQUAL) {
-			item = REMOTEPORT;
-		} else if (strncmp(itembuf, "rservice", 31) == EQUAL) {
-			item = REMOTESERVICE;
-		} else if (strncmp(itembuf, "lip", 31) == EQUAL) {
-			item = LOCALIP;
-		} else if (strncmp(itembuf, "lhost", 31) == EQUAL) {
-			item = LOCALHOST;
-		} else if (strncmp(itembuf, "lport", 31) == EQUAL) {
-			item = LOCALPORT;
-		} else if (strncmp(itembuf, "lservice", 31) == EQUAL) {
-			item = LOCALSERVICE;
-		} else {
-			CRIT_ERR("tcp_portmon: invalid item specified");
-		}
-		if ((argc == 3) && (item != COUNT)) {
-			CRIT_ERR("tcp_portmon: 3 argument form valid only for \"count\" "
-				"item");
-		}
-		if ((argc == 4) && (connection_index < 0)) {
-			CRIT_ERR("tcp_portmon: connection index must be non-negative");
-		}
-		/* ok, args looks good. save the text object data */
-		obj->data.tcp_port_monitor.port_range_begin = (in_port_t) port_begin;
-		obj->data.tcp_port_monitor.port_range_end = (in_port_t) port_end;
-		obj->data.tcp_port_monitor.item = item;
-		obj->data.tcp_port_monitor.connection_index = connection_index;
+			memset(itembuf, 0, sizeof(itembuf));
+			connection_index = 0;
+			/* massive argument checking */
+			if (!arg) {
+				CRIT_ERR("tcp_portmon: needs arguments");
+			}
+			argc = sscanf(arg, "%d %d %31s %d", &port_begin, &port_end, itembuf,
+					&connection_index);
+			if ((argc != 3) && (argc != 4)) {
+				CRIT_ERR("tcp_portmon: requires 3 or 4 arguments");
+			}
+			if ((port_begin < 1) || (port_begin > 65535) || (port_end < 1)
+					|| (port_end > 65535)) {
+				CRIT_ERR("tcp_portmon: port values must be from 1 to 65535");
+			}
+			if (port_begin > port_end) {
+				CRIT_ERR("tcp_portmon: starting port must be <= ending port");
+			}
+			if (strncmp(itembuf, "count", 31) == EQUAL) {
+				item = COUNT;
+			} else if (strncmp(itembuf, "rip", 31) == EQUAL) {
+				item = REMOTEIP;
+			} else if (strncmp(itembuf, "rhost", 31) == EQUAL) {
+				item = REMOTEHOST;
+			} else if (strncmp(itembuf, "rport", 31) == EQUAL) {
+				item = REMOTEPORT;
+			} else if (strncmp(itembuf, "rservice", 31) == EQUAL) {
+				item = REMOTESERVICE;
+			} else if (strncmp(itembuf, "lip", 31) == EQUAL) {
+				item = LOCALIP;
+			} else if (strncmp(itembuf, "lhost", 31) == EQUAL) {
+				item = LOCALHOST;
+			} else if (strncmp(itembuf, "lport", 31) == EQUAL) {
+				item = LOCALPORT;
+			} else if (strncmp(itembuf, "lservice", 31) == EQUAL) {
+				item = LOCALSERVICE;
+			} else {
+				CRIT_ERR("tcp_portmon: invalid item specified");
+			}
+			if ((argc == 3) && (item != COUNT)) {
+				CRIT_ERR("tcp_portmon: 3 argument form valid only for \"count\" "
+						"item");
+			}
+			if ((argc == 4) && (connection_index < 0)) {
+				CRIT_ERR("tcp_portmon: connection index must be non-negative");
+			}
+			/* ok, args looks good. save the text object data */
+			obj->data.tcp_port_monitor.port_range_begin = (in_port_t) port_begin;
+			obj->data.tcp_port_monitor.port_range_end = (in_port_t) port_end;
+			obj->data.tcp_port_monitor.item = item;
+			obj->data.tcp_port_monitor.connection_index = connection_index;
 
-		/* if the port monitor collection hasn't been created,
-		 * we must create it */
-		if (!info.p_tcp_port_monitor_collection) {
-			info.p_tcp_port_monitor_collection =
-				create_tcp_port_monitor_collection();
+			/* if the port monitor collection hasn't been created,
+			 * we must create it */
 			if (!info.p_tcp_port_monitor_collection) {
-				CRIT_ERR("tcp_portmon: unable to create port monitor "
-					"collection");
+				info.p_tcp_port_monitor_collection =
+					create_tcp_port_monitor_collection();
+				if (!info.p_tcp_port_monitor_collection) {
+					CRIT_ERR("tcp_portmon: unable to create port monitor "
+							"collection");
+				}
 			}
-		}
 
-		/* if a port monitor for this port does not exist,
-		 * create one and add it to the collection */
-		if (find_tcp_port_monitor(info.p_tcp_port_monitor_collection,
-				port_begin, port_end) == NULL) {
-			tcp_port_monitor_t *p_monitor = create_tcp_port_monitor(port_begin,
-				port_end, &tcp_port_monitor_args);
+			/* if a port monitor for this port does not exist,
+			 * create one and add it to the collection */
+			if (find_tcp_port_monitor(info.p_tcp_port_monitor_collection,
+						port_begin, port_end) == NULL) {
+				tcp_port_monitor_t *p_monitor = create_tcp_port_monitor(port_begin,
+						port_end, &tcp_port_monitor_args);
 
-			if (!p_monitor) {
-				CRIT_ERR("tcp_portmon: unable to create port monitor");
+				if (!p_monitor) {
+					CRIT_ERR("tcp_portmon: unable to create port monitor");
+				}
+				/* add the newly created monitor to the collection */
+				if (insert_tcp_port_monitor_into_collection(
+							info.p_tcp_port_monitor_collection, p_monitor) != 0) {
+					CRIT_ERR("tcp_portmon: unable to add port monitor to "
+							"collection");
+				}
 			}
-			/* add the newly created monitor to the collection */
-			if (insert_tcp_port_monitor_into_collection(
-					info.p_tcp_port_monitor_collection, p_monitor) != 0) {
-				CRIT_ERR("tcp_portmon: unable to add port monitor to "
-					"collection");
-			}
-		}
 #endif
-	END OBJ(entropy_avail, INFO_ENTROPY)
-	END OBJ(entropy_poolsize, INFO_ENTROPY)
-	END OBJ(entropy_bar, INFO_ENTROPY)
-		scan_bar(arg, &obj->a, &obj->b);
-	END OBJ(scroll, 0)
-		int n;
-		if (arg && sscanf(arg, "%u %n", &obj->data.scroll.show, &n) > 0) {
-			obj->data.scroll.text = strndup(arg + n, text_buffer_size);
-			obj->data.scroll.start = 0;
-		} else {
-			CRIT_ERR("scroll needs arguments: <length> <text>");
-		}
+			END OBJ(entropy_avail, INFO_ENTROPY)
+				END OBJ(entropy_poolsize, INFO_ENTROPY)
+				END OBJ(entropy_bar, INFO_ENTROPY)
+				scan_bar(arg, &obj->a, &obj->b);
+			END OBJ(scroll, 0)
+				int n;
+			if (arg && sscanf(arg, "%u %n", &obj->data.scroll.show, &n) > 0) {
+				obj->data.scroll.text = strndup(arg + n, text_buffer_size);
+				obj->data.scroll.start = 0;
+			} else {
+				CRIT_ERR("scroll needs arguments: <length> <text>");
+			}
 #ifdef NVIDIA
-	END OBJ(nvidia, 0)
-		if (!arg){
-			CRIT_ERR("nvidia needs one argument "
-				 "[temp,threshold,gpufreq,memfreq,imagequality]");
-		} else {
-			if (strcmp(arg, "temp") == 0)
-				obj->data.nvidia.type = NV_TEMP;
-			else if (strcmp(arg, "threshold") == 0)
-				obj->data.nvidia.type = NV_TEMP_THRESHOLD;
-			else if (strcmp(arg, "gpufreq") == 0)
-				obj->data.nvidia.type = NV_GPU_FREQ;
-			else if (strcmp(arg, "memfreq") == 0)
-				obj->data.nvidia.type = NV_MEM_FREQ;
-			else if (strcmp(arg, "imagequality") == 0)
-				obj->data.nvidia.type = NV_IMAGE_QUALITY;
-			else
-				CRIT_ERR("you have to give one of these arguments "
-					 "[temp,threshold,gpufreq,memfreq,imagequality");
-			strncpy((char*)&obj->data.nvidia.arg, arg, 20);
-		}
+			END OBJ(nvidia, 0)
+				if (!arg){
+					CRIT_ERR("nvidia needs one argument "
+							"[temp,threshold,gpufreq,memfreq,imagequality]");
+				} else {
+					if (strcmp(arg, "temp") == 0)
+						obj->data.nvidia.type = NV_TEMP;
+					else if (strcmp(arg, "threshold") == 0)
+						obj->data.nvidia.type = NV_TEMP_THRESHOLD;
+					else if (strcmp(arg, "gpufreq") == 0)
+						obj->data.nvidia.type = NV_GPU_FREQ;
+					else if (strcmp(arg, "memfreq") == 0)
+						obj->data.nvidia.type = NV_MEM_FREQ;
+					else if (strcmp(arg, "imagequality") == 0)
+						obj->data.nvidia.type = NV_IMAGE_QUALITY;
+					else
+						CRIT_ERR("you have to give one of these arguments "
+								"[temp,threshold,gpufreq,memfreq,imagequality");
+					strncpy((char*)&obj->data.nvidia.arg, arg, 20);
+				}
 #endif /* NVIDIA */
-	END {
-		char buf[256];
+			END {
+				char buf[256];
 
-		ERR("unknown variable %s", s);
-		obj->type = OBJ_text;
-		snprintf(buf, 256, "${%s}", s);
-		obj->data.s = strndup(buf, text_buffer_size);
-	}
+				ERR("unknown variable %s", s);
+				obj->type = OBJ_text;
+				snprintf(buf, 256, "${%s}", s);
+				obj->data.s = strndup(buf, text_buffer_size);
+			}
 #undef OBJ
 
-	return obj;
+			return obj;
 }
 
 static struct text_object *create_plain_text(const char *s)
@@ -4045,11 +4079,11 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 			if (obj != NULL) {
 				// allocate memory for the object
 				retval->text_objects = realloc(retval->text_objects,
-					sizeof(struct text_object) *
-					(retval->text_object_count + 1));
+						sizeof(struct text_object) *
+						(retval->text_object_count + 1));
 				// assign the new object to the end of the list.
 				memcpy(&retval->text_objects[retval->text_object_count++], obj,
-					sizeof(struct text_object));
+						sizeof(struct text_object));
 				free(obj);
 			}
 			*p = '$';
@@ -4126,16 +4160,16 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 
 					// create new object
 					obj = construct_text_object(buf, arg,
-						retval->text_object_count, retval->text_objects, line);
+							retval->text_object_count, retval->text_objects, line);
 					if (obj != NULL) {
 						// allocate memory for the object
 						retval->text_objects = realloc(retval->text_objects,
-							sizeof(struct text_object) *
-							(retval->text_object_count + 1));
+								sizeof(struct text_object) *
+								(retval->text_object_count + 1));
 						// assign the new object to the end of the list.
 						memcpy(
-							&retval->text_objects[retval->text_object_count++],
-							obj, sizeof(struct text_object));
+								&retval->text_objects[retval->text_object_count++],
+								obj, sizeof(struct text_object));
 						free(obj);
 					}
 				}
@@ -4145,11 +4179,11 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 				if (obj != NULL) {
 					// allocate memory for the object
 					retval->text_objects = realloc(retval->text_objects,
-						sizeof(struct text_object) *
-						(retval->text_object_count + 1));
+							sizeof(struct text_object) *
+							(retval->text_object_count + 1));
 					// assign the new object to the end of the list.
 					memcpy(&retval->text_objects[retval->text_object_count++],
-						obj, sizeof(struct text_object));
+							obj, sizeof(struct text_object));
 					free(obj);
 				}
 			}
@@ -4160,10 +4194,10 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 	if (obj != NULL) {
 		// allocate memory for the object
 		retval->text_objects = realloc(retval->text_objects,
-			sizeof(struct text_object) * (retval->text_object_count + 1));
+				sizeof(struct text_object) * (retval->text_object_count + 1));
 		// assign the new object to the end of the list.
 		memcpy(&retval->text_objects[retval->text_object_count++], obj,
-			sizeof(struct text_object));
+				sizeof(struct text_object));
 		free(obj);
 	}
 
@@ -4261,7 +4295,7 @@ static void tail_pipe(struct text_object *obj, char *dst, size_t dst_size)
 							p = obj->data.tail.buffer + first_line;
 							pos = n - first_line;
 							memmove(obj->data.tail.buffer,
-								obj->data.tail.buffer + first_line, strlen(p));
+									obj->data.tail.buffer + first_line, strlen(p));
 							obj->data.tail.buffer[pos] = 0;
 							break;
 						}
@@ -4293,12 +4327,12 @@ static inline struct mail_s *ensure_mail_thread(struct text_object *obj,
 		if (!info.mail->p_timed_thread) {
 			info.mail->p_timed_thread =
 				timed_thread_create(thread,
-				(void *) info.mail, info.mail->interval * 1000000);
+						(void *) info.mail, info.mail->interval * 1000000);
 			if (!info.mail->p_timed_thread) {
 				ERR("Error creating %s timed thread", text);
 			}
 			timed_thread_register(info.mail->p_timed_thread,
-				&info.mail->p_timed_thread);
+					&info.mail->p_timed_thread);
 			if (timed_thread_run(info.mail->p_timed_thread)) {
 				ERR("Error running %s timed thread", text);
 			}
@@ -4309,13 +4343,13 @@ static inline struct mail_s *ensure_mail_thread(struct text_object *obj,
 		if (!obj->data.mail->p_timed_thread) {
 			obj->data.mail->p_timed_thread =
 				timed_thread_create(thread,
-				(void *) obj->data.mail,
-				obj->data.mail->interval * 1000000);
+						(void *) obj->data.mail,
+						obj->data.mail->interval * 1000000);
 			if (!obj->data.mail->p_timed_thread) {
 				ERR("Error creating %s timed thread", text);
 			}
 			timed_thread_register(obj->data.mail->p_timed_thread,
-				&obj->data.mail->p_timed_thread);
+					&obj->data.mail->p_timed_thread);
 			if (timed_thread_run(obj->data.mail->p_timed_thread)) {
 				ERR("Error running %s timed thread", text);
 			}
@@ -4324,8 +4358,8 @@ static inline struct mail_s *ensure_mail_thread(struct text_object *obj,
 	} else if (!obj->a) {
 		// something is wrong, warn once then stop
 		ERR("Theres a problem with your %s_unseen settings.  "
-			"Check that the global %s settings are defined "
-			"properly (line %li).", global_text, global_text, obj->line);
+				"Check that the global %s settings are defined "
+				"properly (line %li).", global_text, global_text, obj->line);
 		obj->a++;
 	}
 	return NULL;
@@ -4400,10 +4434,10 @@ static inline void format_media_player_time(char *buf, const int size,
 
 	if (days > 0) {
 		snprintf(buf, size, "%i days %i:%02i:%02i", days,
-			hours, minutes, seconds);
+				hours, minutes, seconds);
 	} else if (hours > 0) {
 		snprintf(buf, size, "%i:%02i:%02i", hours, minutes,
-			seconds);
+				seconds);
 	} else {
 		snprintf(buf, size, "%i:%02i", minutes, seconds);
 	}
@@ -4423,12 +4457,12 @@ static inline double get_barnum(char *buf)
 
 	if (sscanf(buf, "%lf", &barnum) == 0) {
 		ERR("reading execbar value failed (perhaps it's not the "
-			"correct format?)");
+				"correct format?)");
 		return -1;
 	}
 	if (barnum > 100.0 || barnum < 0.0) {
 		ERR("your execbar value is not between 0 and 100, "
-			"therefore it will be ignored");
+				"therefore it will be ignored");
 		return -1;
 	}
 	return barnum;
@@ -4460,417 +4494,417 @@ static void generate_text_internal(char *p, int p_max_size,
 			default:
 				ERR("not implemented obj type %d", obj->type);
 #ifndef __OpenBSD__
-			OBJ(acpitemp) {
-				/* does anyone have decimals in acpi temperature? */
-				spaced_print(p, p_max_size, "%d", 5, "acpitemp",
-					round_to_int(get_acpi_temperature(obj->data.i)));
-			}
-			OBJ(acpitempf) {
-				/* does anyone have decimals in acpi temperature? */
-				spaced_print(p, p_max_size, "%d", 5, "acpitemp",
-					round_to_int((get_acpi_temperature(obj->data.i) + 40) *
-					9.0 / 5 - 40));
-			}
+				OBJ(acpitemp) {
+					/* does anyone have decimals in acpi temperature? */
+					spaced_print(p, p_max_size, "%d", 5, "acpitemp",
+							round_to_int(get_acpi_temperature(obj->data.i)));
+				}
+				OBJ(acpitempf) {
+					/* does anyone have decimals in acpi temperature? */
+					spaced_print(p, p_max_size, "%d", 5, "acpitemp",
+							round_to_int((get_acpi_temperature(obj->data.i) + 40) *
+								9.0 / 5 - 40));
+				}
 #endif /* !__OpenBSD__ */
-			OBJ(freq) {
-				if (obj->a) {
-					obj->a = get_freq(p, p_max_size, "%.0f", 1,
-						obj->data.cpu_index);
+				OBJ(freq) {
+					if (obj->a) {
+						obj->a = get_freq(p, p_max_size, "%.0f", 1,
+								obj->data.cpu_index);
+					}
 				}
-			}
-			OBJ(freq_g) {
-				if (obj->a) {
+				OBJ(freq_g) {
+					if (obj->a) {
 #ifndef __OpenBSD__
-					obj->a = get_freq(p, p_max_size, "%'.2f", 1000,
-						obj->data.cpu_index);
+						obj->a = get_freq(p, p_max_size, "%'.2f", 1000,
+								obj->data.cpu_index);
 #else
-					/* OpenBSD has no such flag (SUSv2) */
-					obj->a = get_freq(p, p_max_size, "%.2f", 1000,
-						obj->data.cpu_index);
+						/* OpenBSD has no such flag (SUSv2) */
+						obj->a = get_freq(p, p_max_size, "%.2f", 1000,
+								obj->data.cpu_index);
 #endif
+					}
 				}
-			}
 #if defined(__linux__)
-			OBJ(voltage_mv) {
-				if (obj->a) {
-					obj->a = get_voltage(p, p_max_size, "%.0f", 1,
-						obj->data.cpu_index);
+				OBJ(voltage_mv) {
+					if (obj->a) {
+						obj->a = get_voltage(p, p_max_size, "%.0f", 1,
+								obj->data.cpu_index);
+					}
 				}
-			}
-			OBJ(voltage_v) {
-				if (obj->a) {
-					obj->a = get_voltage(p, p_max_size, "%'.3f", 1000,
-						obj->data.cpu_index);
+				OBJ(voltage_v) {
+					if (obj->a) {
+						obj->a = get_voltage(p, p_max_size, "%'.3f", 1000,
+								obj->data.cpu_index);
+					}
 				}
-			}
 
 #ifdef HAVE_IWLIB
-			OBJ(wireless_essid) {
-				snprintf(p, p_max_size, "%s", obj->data.net->essid);
-			}
-			OBJ(wireless_mode) {
-				snprintf(p, p_max_size, "%s", obj->data.net->mode);
-			}
-			OBJ(wireless_bitrate) {
-				snprintf(p, p_max_size, "%s", obj->data.net->bitrate);
-			}
-			OBJ(wireless_ap) {
-				snprintf(p, p_max_size, "%s", obj->data.net->ap);
-			}
-			OBJ(wireless_link_qual) {
-				spaced_print(p, p_max_size, "%d", 4, "wireless_link_qual",
-					obj->data.net->link_qual);
-			}
-			OBJ(wireless_link_qual_max) {
-				spaced_print(p, p_max_size, "%d", 4,
-					"wireless_link_qual_max", obj->data.net->link_qual_max);
-			}
-			OBJ(wireless_link_qual_perc) {
-				if (obj->data.net->link_qual_max > 0) {
-					spaced_print(p, p_max_size, "%.0f", 5,
-						"wireless_link_qual_perc",
-						(double) obj->data.net->link_qual /
-						obj->data.net->link_qual_max * 100);
-				} else {
-					spaced_print(p, p_max_size, "unk", 5,
-						"wireless_link_qual_perc");
+				OBJ(wireless_essid) {
+					snprintf(p, p_max_size, "%s", obj->data.net->essid);
 				}
-			}
-			OBJ(wireless_link_bar) {
-				new_bar(p, obj->a, obj->b, ((double) obj->data.net->link_qual /
-					obj->data.net->link_qual_max) * 255.0);
-			}
+				OBJ(wireless_mode) {
+					snprintf(p, p_max_size, "%s", obj->data.net->mode);
+				}
+				OBJ(wireless_bitrate) {
+					snprintf(p, p_max_size, "%s", obj->data.net->bitrate);
+				}
+				OBJ(wireless_ap) {
+					snprintf(p, p_max_size, "%s", obj->data.net->ap);
+				}
+				OBJ(wireless_link_qual) {
+					spaced_print(p, p_max_size, "%d", 4, "wireless_link_qual",
+							obj->data.net->link_qual);
+				}
+				OBJ(wireless_link_qual_max) {
+					spaced_print(p, p_max_size, "%d", 4,
+							"wireless_link_qual_max", obj->data.net->link_qual_max);
+				}
+				OBJ(wireless_link_qual_perc) {
+					if (obj->data.net->link_qual_max > 0) {
+						spaced_print(p, p_max_size, "%.0f", 5,
+								"wireless_link_qual_perc",
+								(double) obj->data.net->link_qual /
+								obj->data.net->link_qual_max * 100);
+					} else {
+						spaced_print(p, p_max_size, "unk", 5,
+								"wireless_link_qual_perc");
+					}
+				}
+				OBJ(wireless_link_bar) {
+					new_bar(p, obj->a, obj->b, ((double) obj->data.net->link_qual /
+								obj->data.net->link_qual_max) * 255.0);
+				}
 #endif /* HAVE_IWLIB */
 
 #endif /* __linux__ */
 
-			OBJ(freq_dyn) {
-				get_freq_dynamic(p, p_max_size, "%.0f", 1);
-				spaced_print(p, p_max_size, "%s", 6, "freq_dyn", p);
-			}
-			OBJ(freq_dyn_g) {
+				OBJ(freq_dyn) {
+					get_freq_dynamic(p, p_max_size, "%.0f", 1);
+					spaced_print(p, p_max_size, "%s", 6, "freq_dyn", p);
+				}
+				OBJ(freq_dyn_g) {
 #ifndef __OpenBSD__
-				get_freq_dynamic(p, p_max_size, "%'.2f", 1000);
+					get_freq_dynamic(p, p_max_size, "%'.2f", 1000);
 #else
-				get_freq_dynamic(p, p_max_size, "%.2f", 1000);
+					get_freq_dynamic(p, p_max_size, "%.2f", 1000);
 #endif
-				spaced_print(p, p_max_size, "%s", 6, "freq_dyn", p);
-			}
+					spaced_print(p, p_max_size, "%s", 6, "freq_dyn", p);
+				}
 
 #ifndef __OpenBSD__
-			OBJ(adt746xcpu) {
-				get_adt746x_cpu(p, p_max_size);
-			}
-			OBJ(adt746xfan) {
-				get_adt746x_fan(p, p_max_size);
-			}
-			OBJ(acpifan) {
-				get_acpi_fan(p, p_max_size);
-			}
-			OBJ(acpiacadapter) {
-				get_acpi_ac_adapter(p, p_max_size);
-			}
-			OBJ(battery) {
-				get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_STATUS);
-			}
-			OBJ(battery_time) {
-				get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_TIME);
-			}
-			OBJ(battery_percent) {
-				spaced_print(p, p_max_size, "%*d", 4, "battery_percent",
-						pad_percents, get_battery_perct(obj->data.s));
-			}
-			OBJ(battery_bar) {
-				new_bar(p, obj->a, obj->b, get_battery_perct_bar(obj->data.s));
-			}
+				OBJ(adt746xcpu) {
+					get_adt746x_cpu(p, p_max_size);
+				}
+				OBJ(adt746xfan) {
+					get_adt746x_fan(p, p_max_size);
+				}
+				OBJ(acpifan) {
+					get_acpi_fan(p, p_max_size);
+				}
+				OBJ(acpiacadapter) {
+					get_acpi_ac_adapter(p, p_max_size);
+				}
+				OBJ(battery) {
+					get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_STATUS);
+				}
+				OBJ(battery_time) {
+					get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_TIME);
+				}
+				OBJ(battery_percent) {
+					spaced_print(p, p_max_size, "%*d", 4, "battery_percent",
+							pad_percents, get_battery_perct(obj->data.s));
+				}
+				OBJ(battery_bar) {
+					new_bar(p, obj->a, obj->b, get_battery_perct_bar(obj->data.s));
+				}
 #endif /* __OpenBSD__ */
 
-			OBJ(buffers) {
-				human_readable(cur->buffers * 1024, p, 255, "buffers");
-			}
-			OBJ(cached) {
-				human_readable(cur->cached * 1024, p, 255, "buffers");
-			}
-			OBJ(cpu) {
-				if (obj->data.cpu_index > info.cpu_count) {
-					printf("obj->data.cpu_index %i info.cpu_count %i",
-						obj->data.cpu_index, info.cpu_count);
-					CRIT_ERR("attempting to use more CPUs than you have!");
+				OBJ(buffers) {
+					human_readable(cur->buffers * 1024, p, 255, "buffers");
 				}
-				spaced_print(p, p_max_size, "%*d", 4, "cpu", pad_percents,
-					round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100.0));
-			}
-			OBJ(cpubar) {
-				new_bar(p, obj->a, obj->b,
-					round_to_int(cur->cpu_usage[obj->data.cpu_index] * 255.0));
-			}
-			OBJ(cpugraph) {
-				new_graph(p, obj->a, obj->b, obj->c, obj->d, (unsigned int)
-					round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100),
-					100, 1, obj->showaslog);
-			}
-			OBJ(loadgraph) {
-				new_graph(p, obj->a, obj->b, obj->c, obj->d, cur->loadavg[0],
-					obj->e, 1, obj->showaslog);
-			}
-			OBJ(color) {
-				new_fg(p, obj->data.l);
-			}
-			OBJ(color0) {
-				new_fg(p, color0);
-			}
-			OBJ(color1) {
-				new_fg(p, color1);
-			}
-			OBJ(color2) {
-				new_fg(p, color2);
-			}
-			OBJ(color3) {
-				new_fg(p, color3);
-			}
-			OBJ(color4) {
-				new_fg(p, color4);
-			}
-			OBJ(color5) {
-				new_fg(p, color5);
-			}
-			OBJ(color6) {
-				new_fg(p, color6);
-			}
-			OBJ(color7) {
-				new_fg(p, color7);
-			}
-			OBJ(color8) {
-				new_fg(p, color8);
-			}
-			OBJ(color9) {
-				new_fg(p, color9);
-			}
-			OBJ(conky_version) {
-				snprintf(p, p_max_size, "%s", VERSION);
-			}
-			OBJ(conky_build_date) {
-				snprintf(p, p_max_size, "%s", BUILD_DATE);
-			}
-			OBJ(conky_build_arch) {
-				snprintf(p, p_max_size, "%s", BUILD_ARCH);
-			}
+				OBJ(cached) {
+					human_readable(cur->cached * 1024, p, 255, "buffers");
+				}
+				OBJ(cpu) {
+					if (obj->data.cpu_index > info.cpu_count) {
+						printf("obj->data.cpu_index %i info.cpu_count %i",
+								obj->data.cpu_index, info.cpu_count);
+						CRIT_ERR("attempting to use more CPUs than you have!");
+					}
+					spaced_print(p, p_max_size, "%*d", 4, "cpu", pad_percents,
+							round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100.0));
+				}
+				OBJ(cpubar) {
+					new_bar(p, obj->a, obj->b,
+							round_to_int(cur->cpu_usage[obj->data.cpu_index] * 255.0));
+				}
+				OBJ(cpugraph) {
+					new_graph(p, obj->a, obj->b, obj->c, obj->d, (unsigned int)
+							round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100),
+							100, 1, obj->showaslog);
+				}
+				OBJ(loadgraph) {
+					new_graph(p, obj->a, obj->b, obj->c, obj->d, cur->loadavg[0],
+							obj->e, 1, obj->showaslog);
+				}
+				OBJ(color) {
+					new_fg(p, obj->data.l);
+				}
+				OBJ(color0) {
+					new_fg(p, color0);
+				}
+				OBJ(color1) {
+					new_fg(p, color1);
+				}
+				OBJ(color2) {
+					new_fg(p, color2);
+				}
+				OBJ(color3) {
+					new_fg(p, color3);
+				}
+				OBJ(color4) {
+					new_fg(p, color4);
+				}
+				OBJ(color5) {
+					new_fg(p, color5);
+				}
+				OBJ(color6) {
+					new_fg(p, color6);
+				}
+				OBJ(color7) {
+					new_fg(p, color7);
+				}
+				OBJ(color8) {
+					new_fg(p, color8);
+				}
+				OBJ(color9) {
+					new_fg(p, color9);
+				}
+				OBJ(conky_version) {
+					snprintf(p, p_max_size, "%s", VERSION);
+				}
+				OBJ(conky_build_date) {
+					snprintf(p, p_max_size, "%s", BUILD_DATE);
+				}
+				OBJ(conky_build_arch) {
+					snprintf(p, p_max_size, "%s", BUILD_ARCH);
+				}
 #if defined(__linux__)
-			OBJ(disk_protect) {
-				snprintf(p, p_max_size, "%s",
-					get_disk_protect_queue(obj->data.s));
-			}
-			OBJ(i8k_version) {
-				snprintf(p, p_max_size, "%s", i8k.version);
-			}
-			OBJ(i8k_bios) {
-				snprintf(p, p_max_size, "%s", i8k.bios);
-			}
-			OBJ(i8k_serial) {
-				snprintf(p, p_max_size, "%s", i8k.serial);
-			}
-			OBJ(i8k_cpu_temp) {
-				snprintf(p, p_max_size, "%s", i8k.cpu_temp);
-			}
-			OBJ(i8k_cpu_tempf) {
-				int cpu_temp;
+				OBJ(disk_protect) {
+					snprintf(p, p_max_size, "%s",
+							get_disk_protect_queue(obj->data.s));
+				}
+				OBJ(i8k_version) {
+					snprintf(p, p_max_size, "%s", i8k.version);
+				}
+				OBJ(i8k_bios) {
+					snprintf(p, p_max_size, "%s", i8k.bios);
+				}
+				OBJ(i8k_serial) {
+					snprintf(p, p_max_size, "%s", i8k.serial);
+				}
+				OBJ(i8k_cpu_temp) {
+					snprintf(p, p_max_size, "%s", i8k.cpu_temp);
+				}
+				OBJ(i8k_cpu_tempf) {
+					int cpu_temp;
 
-				sscanf(i8k.cpu_temp, "%d", &cpu_temp);
-				snprintf(p, p_max_size, "%.1f", cpu_temp * (9.0 / 5.0) + 32.0);
-			}
-			OBJ(i8k_left_fan_status) {
-				int left_fan_status;
+					sscanf(i8k.cpu_temp, "%d", &cpu_temp);
+					snprintf(p, p_max_size, "%.1f", cpu_temp * (9.0 / 5.0) + 32.0);
+				}
+				OBJ(i8k_left_fan_status) {
+					int left_fan_status;
 
-				sscanf(i8k.left_fan_status, "%d", &left_fan_status);
-				if (left_fan_status == 0) {
-					snprintf(p, p_max_size, "off");
+					sscanf(i8k.left_fan_status, "%d", &left_fan_status);
+					if (left_fan_status == 0) {
+						snprintf(p, p_max_size, "off");
+					}
+					if (left_fan_status == 1) {
+						snprintf(p, p_max_size, "low");
+					}
+					if (left_fan_status == 2) {
+						snprintf(p, p_max_size, "high");
+					}
 				}
-				if (left_fan_status == 1) {
-					snprintf(p, p_max_size, "low");
-				}
-				if (left_fan_status == 2) {
-					snprintf(p, p_max_size, "high");
-				}
-			}
-			OBJ(i8k_right_fan_status) {
-				int right_fan_status;
+				OBJ(i8k_right_fan_status) {
+					int right_fan_status;
 
-				sscanf(i8k.right_fan_status, "%d", &right_fan_status);
-				if (right_fan_status == 0) {
-					snprintf(p, p_max_size, "off");
+					sscanf(i8k.right_fan_status, "%d", &right_fan_status);
+					if (right_fan_status == 0) {
+						snprintf(p, p_max_size, "off");
+					}
+					if (right_fan_status == 1) {
+						snprintf(p, p_max_size, "low");
+					}
+					if (right_fan_status == 2) {
+						snprintf(p, p_max_size, "high");
+					}
 				}
-				if (right_fan_status == 1) {
-					snprintf(p, p_max_size, "low");
+				OBJ(i8k_left_fan_rpm) {
+					snprintf(p, p_max_size, "%s", i8k.left_fan_rpm);
 				}
-				if (right_fan_status == 2) {
-					snprintf(p, p_max_size, "high");
+				OBJ(i8k_right_fan_rpm) {
+					snprintf(p, p_max_size, "%s", i8k.right_fan_rpm);
 				}
-			}
-			OBJ(i8k_left_fan_rpm) {
-				snprintf(p, p_max_size, "%s", i8k.left_fan_rpm);
-			}
-			OBJ(i8k_right_fan_rpm) {
-				snprintf(p, p_max_size, "%s", i8k.right_fan_rpm);
-			}
-			OBJ(i8k_ac_status) {
-				int ac_status;
+				OBJ(i8k_ac_status) {
+					int ac_status;
 
-				sscanf(i8k.ac_status, "%d", &ac_status);
-				if (ac_status == -1) {
-					snprintf(p, p_max_size, "disabled (read i8k docs)");
+					sscanf(i8k.ac_status, "%d", &ac_status);
+					if (ac_status == -1) {
+						snprintf(p, p_max_size, "disabled (read i8k docs)");
+					}
+					if (ac_status == 0) {
+						snprintf(p, p_max_size, "off");
+					}
+					if (ac_status == 1) {
+						snprintf(p, p_max_size, "on");
+					}
 				}
-				if (ac_status == 0) {
-					snprintf(p, p_max_size, "off");
+				OBJ(i8k_buttons_status) {
+					snprintf(p, p_max_size, "%s", i8k.buttons_status);
 				}
-				if (ac_status == 1) {
-					snprintf(p, p_max_size, "on");
+				OBJ(ibm_fan) {
+					get_ibm_acpi_fan(p, p_max_size);
 				}
-			}
-			OBJ(i8k_buttons_status) {
-				snprintf(p, p_max_size, "%s", i8k.buttons_status);
-			}
-			OBJ(ibm_fan) {
-				get_ibm_acpi_fan(p, p_max_size);
-			}
-			OBJ(ibm_temps) {
-				get_ibm_acpi_temps();
-				snprintf(p, p_max_size, "%d", ibm_acpi.temps[obj->data.sensor]);
-			}
-			OBJ(ibm_volume) {
-				get_ibm_acpi_volume(p, p_max_size);
-			}
-			OBJ(ibm_brightness) {
-				get_ibm_acpi_brightness(p, p_max_size);
-			}
-			OBJ(if_up) {
-				if ((obj->data.ifblock.s)
-						&& (!interface_up(obj->data.ifblock.s))) {
-					i = obj->data.ifblock.pos;
-					if_jumped = 1;
-				} else {
-					if_jumped = 0;
+				OBJ(ibm_temps) {
+					get_ibm_acpi_temps();
+					snprintf(p, p_max_size, "%d", ibm_acpi.temps[obj->data.sensor]);
 				}
-			}
-			OBJ(if_gw) {
-				if (!cur->gw_info.count) {
-					i = obj->data.ifblock.pos;
-					if_jumped = 1;
-				} else {
-					if_jumped = 0;
+				OBJ(ibm_volume) {
+					get_ibm_acpi_volume(p, p_max_size);
 				}
-			}
-			OBJ(gw_iface) {
-				snprintf(p, p_max_size, "%s", cur->gw_info.iface);
-			}
-			OBJ(gw_ip) {
-				snprintf(p, p_max_size, "%s", cur->gw_info.ip);
-			}
-			OBJ(laptop_mode) {
-				snprintf(p, p_max_size, "%d", get_laptop_mode());
-			}
-			OBJ(pb_battery) {
-				get_powerbook_batt_info(p, p_max_size, obj->data.i);
-			}
+				OBJ(ibm_brightness) {
+					get_ibm_acpi_brightness(p, p_max_size);
+				}
+				OBJ(if_up) {
+					if ((obj->data.ifblock.s)
+							&& (!interface_up(obj->data.ifblock.s))) {
+						i = obj->data.ifblock.pos;
+						if_jumped = 1;
+					} else {
+						if_jumped = 0;
+					}
+				}
+				OBJ(if_gw) {
+					if (!cur->gw_info.count) {
+						i = obj->data.ifblock.pos;
+						if_jumped = 1;
+					} else {
+						if_jumped = 0;
+					}
+				}
+				OBJ(gw_iface) {
+					snprintf(p, p_max_size, "%s", cur->gw_info.iface);
+				}
+				OBJ(gw_ip) {
+					snprintf(p, p_max_size, "%s", cur->gw_info.ip);
+				}
+				OBJ(laptop_mode) {
+					snprintf(p, p_max_size, "%d", get_laptop_mode());
+				}
+				OBJ(pb_battery) {
+					get_powerbook_batt_info(p, p_max_size, obj->data.i);
+				}
 #endif /* __linux__ */
 
 #ifdef __OpenBSD__
-			OBJ(obsd_sensors_temp) {
-				obsd_sensors.device = sensor_device;
-				update_obsd_sensors();
-				snprintf(p, p_max_size, "%.1f",
-					obsd_sensors.temp[obsd_sensors.device][obj->data.sensor]);
-			}
-			OBJ(obsd_sensors_fan) {
-				obsd_sensors.device = sensor_device;
-				update_obsd_sensors();
-				snprintf(p, p_max_size, "%d",
-					obsd_sensors.fan[obsd_sensors.device][obj->data.sensor]);
-			}
-			OBJ(obsd_sensors_volt) {
-				obsd_sensors.device = sensor_device;
-				update_obsd_sensors();
-				snprintf(p, p_max_size, "%.2f",
-					obsd_sensors.volt[obsd_sensors.device][obj->data.sensor]);
-			}
-			OBJ(obsd_vendor) {
-				get_obsd_vendor(p, p_max_size);
-			}
-			OBJ(obsd_product) {
-				get_obsd_product(p, p_max_size);
-			}
+				OBJ(obsd_sensors_temp) {
+					obsd_sensors.device = sensor_device;
+					update_obsd_sensors();
+					snprintf(p, p_max_size, "%.1f",
+							obsd_sensors.temp[obsd_sensors.device][obj->data.sensor]);
+				}
+				OBJ(obsd_sensors_fan) {
+					obsd_sensors.device = sensor_device;
+					update_obsd_sensors();
+					snprintf(p, p_max_size, "%d",
+							obsd_sensors.fan[obsd_sensors.device][obj->data.sensor]);
+				}
+				OBJ(obsd_sensors_volt) {
+					obsd_sensors.device = sensor_device;
+					update_obsd_sensors();
+					snprintf(p, p_max_size, "%.2f",
+							obsd_sensors.volt[obsd_sensors.device][obj->data.sensor]);
+				}
+				OBJ(obsd_vendor) {
+					get_obsd_vendor(p, p_max_size);
+				}
+				OBJ(obsd_product) {
+					get_obsd_product(p, p_max_size);
+				}
 #endif /* __OpenBSD__ */
 
 #ifdef X11
-			OBJ(font) {
-				new_font(p, obj->data.s);
-			}
+				OBJ(font) {
+					new_font(p, obj->data.s);
+				}
 #endif
-			/* TODO: move this correction from kB to kB/s elsewhere
-			 * (or get rid of it??) */
-			OBJ(diskio) {
-				if (obj->data.diskio) {
-					human_readable(
-						(obj->data.diskio->current / update_interval) * 1024LL,
-						p, p_max_size, "diskio");
-				} else {
-					human_readable(info.diskio_value * 1024LL, p, p_max_size,
-						"diskio");
+				/* TODO: move this correction from kB to kB/s elsewhere
+				 * (or get rid of it??) */
+				OBJ(diskio) {
+					if (obj->data.diskio) {
+						human_readable(
+								(obj->data.diskio->current / update_interval) * 1024LL,
+								p, p_max_size, "diskio");
+					} else {
+						human_readable(info.diskio_value * 1024LL, p, p_max_size,
+								"diskio");
+					}
 				}
-			}
-			OBJ(diskio_write) {
-				if (obj->data.diskio) {
-					human_readable((obj->data.diskio->current_write / update_interval) * 1024LL, p, p_max_size,
-						"diskio_write");
-				} else {
-					human_readable(info.diskio_write_value * 1024LL, p, p_max_size,
-						"diskio_write");
+				OBJ(diskio_write) {
+					if (obj->data.diskio) {
+						human_readable((obj->data.diskio->current_write / update_interval) * 1024LL, p, p_max_size,
+								"diskio_write");
+					} else {
+						human_readable(info.diskio_write_value * 1024LL, p, p_max_size,
+								"diskio_write");
+					}
 				}
-			}
-			OBJ(diskio_read) {
-				if (obj->data.diskio) {
-					human_readable((obj->data.diskio->current_read / update_interval) * 1024LL, p, p_max_size,
-						"diskio_read");
-				} else {
-					human_readable(info.diskio_read_value * 1024LL, p, p_max_size,
-						"diskio_read");
+				OBJ(diskio_read) {
+					if (obj->data.diskio) {
+						human_readable((obj->data.diskio->current_read / update_interval) * 1024LL, p, p_max_size,
+								"diskio_read");
+					} else {
+						human_readable(info.diskio_read_value * 1024LL, p, p_max_size,
+								"diskio_read");
+					}
 				}
-			}
-			OBJ(diskiograph) {
-				if (obj->data.diskio) {
-					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-						obj->data.diskio->current, obj->e, 1, obj->showaslog);
-				} else {
-					new_graph(p, obj->a, obj->b, obj->c, obj->d, info.diskio_value,
-						obj->e, 1, obj->showaslog);
+				OBJ(diskiograph) {
+					if (obj->data.diskio) {
+						new_graph(p, obj->a, obj->b, obj->c, obj->d,
+								obj->data.diskio->current, obj->e, 1, obj->showaslog);
+					} else {
+						new_graph(p, obj->a, obj->b, obj->c, obj->d, info.diskio_value,
+								obj->e, 1, obj->showaslog);
+					}
 				}
-			}
-			OBJ(diskiograph_read) {
-				if (obj->data.diskio) {
-					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-						obj->data.diskio->current_read, obj->e, 1, obj->showaslog);
-				} else {
-					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-						info.diskio_read_value, obj->e, 1, obj->showaslog);
+				OBJ(diskiograph_read) {
+					if (obj->data.diskio) {
+						new_graph(p, obj->a, obj->b, obj->c, obj->d,
+								obj->data.diskio->current_read, obj->e, 1, obj->showaslog);
+					} else {
+						new_graph(p, obj->a, obj->b, obj->c, obj->d,
+								info.diskio_read_value, obj->e, 1, obj->showaslog);
+					}
 				}
-			}
-			OBJ(diskiograph_write) {
-				if (obj->data.diskio) {
-					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-						obj->data.diskio->current_write, obj->e, 1, obj->showaslog);
-				} else {
-					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-						info.diskio_write_value, obj->e, 1, obj->showaslog);
+				OBJ(diskiograph_write) {
+					if (obj->data.diskio) {
+						new_graph(p, obj->a, obj->b, obj->c, obj->d,
+								obj->data.diskio->current_write, obj->e, 1, obj->showaslog);
+					} else {
+						new_graph(p, obj->a, obj->b, obj->c, obj->d,
+								info.diskio_write_value, obj->e, 1, obj->showaslog);
+					}
 				}
-			}
-			OBJ(downspeed) {
-				spaced_print(p, p_max_size, "%d", 6, "downspeed",
-					round_to_int(obj->data.net->recv_speed / 1024));
-			}
-			OBJ(downspeedf) {
-				spaced_print(p, p_max_size, "%.1f", 8, "downspeedf",
-					obj->data.net->recv_speed / 1024.0);
-			}
-			OBJ(downspeedgraph) {
+				OBJ(downspeed) {
+					spaced_print(p, p_max_size, "%d", 6, "downspeed",
+							round_to_int(obj->data.net->recv_speed / 1024));
+				}
+				OBJ(downspeedf) {
+					spaced_print(p, p_max_size, "%.1f", 8, "downspeedf",
+							obj->data.net->recv_speed / 1024.0);
+				}
+				OBJ(downspeedgraph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 					obj->data.net->recv_speed / 1024.0, obj->e, 1, obj->showaslog);
 			}
@@ -5213,6 +5247,12 @@ static void generate_text_internal(char *p, int p_max_size,
 					snprintf(p, p_max_size, "%s",
 							cur->nameserver_info.ns_list[obj->data.i]);
 			}
+#ifdef EVE
+         OBJ(eve) {
+            char *skill = eve(obj->data.eve.userid, obj->data.eve.apikey, obj->data.eve.charid);
+            snprintf(p, p_max_size, "%s", skill);
+         }
+#endif
 #ifdef RSS
 			OBJ(rss) {
 				PRSS *data = get_rss_info(obj->data.rss.uri,

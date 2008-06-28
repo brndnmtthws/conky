@@ -2239,4 +2239,14 @@
 			<para></para></listitem>
 	</varlistentry>
 
+	<varlistentry>
+		<term>
+			<command><option>eve</option></command>
+			<option>api_userid api_key character_id</option>
+		</term>
+		<listitem>
+         Fetches your currently training skill from the Eve Online API servers (http://www.eve-online.com/) and displays the skill along with the remaining training time.
+			<para></para></listitem>
+	</varlistentry>
+
 </variablelist>

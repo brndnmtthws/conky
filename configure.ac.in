@@ -203,6 +203,23 @@ if test x$want_xmms2 = xyes; then
 fi
 
 dnl
+dnl EVE Skill Monitor
+dnl
+
+AC_ARG_ENABLE([eve],
+              EC_HELP_STRING([--enable-eve], [Eve-Online skill monitor @<:@default=no@:>@]),
+              [want_eve="$enableval"], [want_eve=no])
+
+AM_CONDITIONAL(BUILD_EVE, test x$want_eve = xyes)
+if test x$want_eve = xyes; then
+	PKG_CHECK_MODULES([libxml2], libxml-2.0)
+	PKG_CHECK_MODULES([libcurl], libcurl)
+	CFLAGS="$CFLAGS $libxml2_CFLAGS $libcurl_CFLAGS"
+	LIBS="$LIBS $libxml2_LIBS $libcurl_LIBS"
+   AC_DEFINE(EVE, 1, [Define if you want Eve-Online Skill monitor support])
+fi
+
+dnl
 dnl RSS
 dnl
 
@@ -643,4 +660,5 @@ $PACKAGE $VERSION configured successfully:
   wireless:         $want_wlan
   SMAPI:            $want_smapi
   nvidia:           $want_nvidia
+  eve-online:       $want_eve
 EOF
