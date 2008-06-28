@@ -1314,11 +1314,24 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
 	snprintf(p_client_buffer, client_buffer_size, "%s", buf);
 }
 
+#define SYSFS_AC_ADAPTER_DIR "/sys/class/power_supply/AC"
 #define ACPI_AC_ADAPTER_DIR "/proc/acpi/ac_adapter/"
+/* Linux 2.6.25 onwards ac adapter info is in
+   /sys/class/power_supply/AC/
+   On my system I get the following.
+     /sys/class/power_supply/AC/uevent:
+     PHYSDEVPATH=/devices/LNXSYSTM:00/device:00/PNP0A08:00/device:01/PNP0C09:00/ACPI0003:00
+     PHYSDEVBUS=acpi
+     PHYSDEVDRIVER=ac
+     POWER_SUPPLY_NAME=AC
+     POWER_SUPPLY_TYPE=Mains
+     POWER_SUPPLY_ONLINE=1
+*/
 
 void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size)
 {
 	static int rep = 0;
+
 	char buf[256];
 	char buf2[256];
 	FILE *fp;
@@ -1327,25 +1340,44 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size)
 		return;
 	}
 
-	/* yeah, slow... :/ */
-	if (!get_first_file_in_a_directory(ACPI_AC_ADAPTER_DIR, buf, &rep)) {
-		snprintf(p_client_buffer, client_buffer_size, "no ac_adapters?");
-		return;
-	}
-
-	snprintf(buf2, sizeof(buf2), "%s%s/state", ACPI_AC_ADAPTER_DIR, buf);
-
+	snprintf(buf2, sizeof(buf2), "%s/uevent", SYSFS_AC_ADAPTER_DIR);
 	fp = open_file(buf2, &rep);
-	if (!fp) {
-		snprintf(p_client_buffer, client_buffer_size,
-			"No ac adapter found.... where is it?");
-		return;
-	}
-	memset(buf, 0, sizeof(buf));
-	fscanf(fp, "%*s %99s", buf);
-	fclose(fp);
+	if (fp) {
+		/* sysfs processing */
+		while (!feof(fp)) {
+			if (fgets(buf, sizeof(buf), fp) == NULL)
+				break;
 
-	snprintf(p_client_buffer, client_buffer_size, "%s", buf);
+			if (strncmp(buf, "POWER_SUPPLY_ONLINE=", 20) == 0) {
+				int online = 0;
+				sscanf(buf, "POWER_SUPPLY_ONLINE=%d", &online);
+				snprintf(p_client_buffer, client_buffer_size,
+					 "%s-line", (online ? "on" : "off"));
+				break;
+			}
+		}
+		fclose(fp);
+	} else {
+		/* yeah, slow... :/ */
+		if (!get_first_file_in_a_directory(ACPI_AC_ADAPTER_DIR, buf, &rep)) {
+			snprintf(p_client_buffer, client_buffer_size, "no ac_adapters?");
+			return;
+		}
+
+		snprintf(buf2, sizeof(buf2), "%s%s/state", ACPI_AC_ADAPTER_DIR, buf);
+
+		fp = open_file(buf2, &rep);
+		if (!fp) {
+			snprintf(p_client_buffer, client_buffer_size,
+				 "No ac adapter found.... where is it?");
+			return;
+		}
+		memset(buf, 0, sizeof(buf));
+		fscanf(fp, "%*s %99s", buf);
+		fclose(fp);
+
+		snprintf(p_client_buffer, client_buffer_size, "%s", buf);
+	}
 }
 
 /*

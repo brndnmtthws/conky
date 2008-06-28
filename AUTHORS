@@ -32,6 +32,9 @@ Blondak <blondak_nesercz at users dot sourceforge dot net>
 Bobby Beckmann <bbeckmann at users dot sourceforge dot net>
   Interface IP and Wireless Quality patch
 
+Byron Clark <byron_clark at users dot sourceforge dot net>
+  sysfs AC adapter support patch
+
 David Carter <boojit at pundo dot com>
   CPU usage being reported incorrectly by top
 
