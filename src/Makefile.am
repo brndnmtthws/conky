@@ -130,14 +130,22 @@ EXTRA_DIST = 			\
 	audacious.c		\
 	audacious.h		\
 	bmpx.c			\
+	common.h		\
 	freebsd.c		\
+	fs.h			\
 	hddtemp.c		\
+	hddtemp.h		\
 	linux.c			\
+	linux.h			\
 	libmpdclient.c          \
 	libmpdclient.h          \
 	libtcp-portmon.c	\
 	libtcp-portmon.h	\
+	rss.h			\
+	mail.h			\
+	mixer.h			\
 	mpd.c			\
+	mpd.h			\
 	netbsd.c		\
 	nvidia.c		\
 	nvidia.h		\
@@ -145,7 +153,8 @@ EXTRA_DIST = 			\
 	solaris.c 		\
 	top.h                   \
 	diskio.h                \
-	x11.c                   \
+	x11.c			\
+	x11.h			\
 	xmms2.c                 \
 	smapi.c			\
 	users.c
