@@ -19,6 +19,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301
  * USA. */
 
+#define _POSIX_C_SOURCE 200112L
+
+#include <netdb.h>
+#include <sys/socket.h>
 #include <glib/gprintf.h>
 #include "libtcp-portmon.h"
 
@@ -350,10 +354,11 @@ tcp_port_monitor_t *create_tcp_port_monitor(in_port_t port_range_begin,
 int peek_tcp_port_monitor(const tcp_port_monitor_t *p_monitor, int item,
 		int connection_index, char *p_buffer, size_t buffer_size)
 {
-	struct hostent *p_hostent;
-	struct servent *p_servent;
 	struct in_addr net;
+	struct sockaddr_in sa;
 
+	sa.sin_family = AF_INET;
+	
 	if (!p_monitor || !p_buffer || connection_index < 0) {
 		return -1;
 	}
@@ -384,16 +389,8 @@ int peek_tcp_port_monitor(const tcp_port_monitor_t *p_monitor, int item,
 
 		case REMOTEHOST:
 
-			p_hostent = gethostbyaddr((const void *)
-				&p_monitor->p_peek[connection_index]->remote_addr,
-				sizeof(in_addr_t), AF_INET);
-			/* if no host name found, just use ip address. */
-			if (!p_hostent || !p_hostent->h_name) {
-				net.s_addr = p_monitor->p_peek[connection_index]->remote_addr;
-				snprintf(p_buffer, buffer_size, "%s", inet_ntoa(net));
-				break;
-			}
-			snprintf(p_buffer, buffer_size, "%s", p_hostent->h_name);
+			memcpy(&sa.sin_addr.s_addr, &p_monitor->p_peek[connection_index]->remote_addr, sizeof(sa.sin_addr.s_addr));
+			getnameinfo((struct sockaddr *) &sa, sizeof(struct sockaddr_in), p_buffer, buffer_size, NULL, 0, 0);
 			break;
 
 		case REMOTEPORT:
@@ -404,16 +401,8 @@ int peek_tcp_port_monitor(const tcp_port_monitor_t *p_monitor, int item,
 
 		case REMOTESERVICE:
 
-			p_servent = getservbyport(
-				htons(p_monitor->p_peek[connection_index]->remote_port), "tcp");
-			/* if no service name found for the port,
-			 * just use the port number. */
-			if (!p_servent || !p_servent->s_name) {
-				snprintf(p_buffer, buffer_size, "%d",
-					p_monitor->p_peek[connection_index]->remote_port);
-			} else {
-				snprintf(p_buffer, buffer_size, "%s", p_servent->s_name);
-			}
+			sa.sin_port=htons(p_monitor->p_peek[connection_index]->remote_port);
+			getnameinfo((struct sockaddr *) &sa, sizeof(struct sockaddr_in), NULL, 0, p_buffer, buffer_size, NI_NUMERICHOST);
 			break;
 
 		case LOCALIP:
@@ -424,16 +413,8 @@ int peek_tcp_port_monitor(const tcp_port_monitor_t *p_monitor, int item,
 
 		case LOCALHOST:
 
-			p_hostent = gethostbyaddr((const void *)
-				&p_monitor->p_peek[connection_index]->local_addr,
-				sizeof(in_addr_t), AF_INET);
-			/* if no host name found, just use ip address. */
-			if (!p_hostent || !p_hostent->h_name) {
-				net.s_addr = p_monitor->p_peek[connection_index]->local_addr;
-				snprintf(p_buffer, buffer_size, "%s", inet_ntoa(net));
-				break;
-			}
-			snprintf(p_buffer, buffer_size, "%s", p_hostent->h_name);
+			memcpy(&sa.sin_addr.s_addr, &p_monitor->p_peek[connection_index]->local_addr, sizeof(sa.sin_addr.s_addr));
+			getnameinfo((struct sockaddr *) &sa, sizeof(struct sockaddr_in), p_buffer, buffer_size, NULL, 0, 0);
 			break;
 
 		case LOCALPORT:
@@ -444,16 +425,8 @@ int peek_tcp_port_monitor(const tcp_port_monitor_t *p_monitor, int item,
 
 		case LOCALSERVICE:
 
-			p_servent = getservbyport(
-				htons(p_monitor->p_peek[connection_index]->local_port), "tcp");
-			/* if no service name found for the port,
-			 * just use the port number. */
-			if (!p_servent || !p_servent->s_name) {
-				snprintf(p_buffer, buffer_size, "%d",
-					p_monitor->p_peek[connection_index]->local_port);
-				break;
-			}
-			snprintf(p_buffer, buffer_size, "%s", p_servent->s_name);
+			sa.sin_port=htons(p_monitor->p_peek[connection_index]->local_port);
+			getnameinfo((struct sockaddr *) &sa, sizeof(struct sockaddr_in), NULL, 0, p_buffer, buffer_size, NI_NUMERICHOST);
 			break;
 
 		default:
