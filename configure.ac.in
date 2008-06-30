@@ -321,6 +321,7 @@ if test x"$want_portmon" = xyes; then
               AC_MSG_ERROR([missing a needed network header for port monitoring])
         fi
 	WANT_GLIB=yes
+	WANT_POSIX_SOURCE=yes
 	AC_DEFINE(TCP_PORT_MONITOR, 1, [Define if you want tcp port monitoring support])
   fi
 fi
@@ -452,6 +453,14 @@ if test x$WANT_GLIB = xyes; then
 	PKG_CHECK_MODULES([GLib2], [glib-2.0])
         CFLAGS="$CFLAGS $GLib2_CFLAGS"
 	LIBS="$LIBS $GLib2_LIBS"
+fi
+
+dnl
+dnl _POSIX_SOURCE
+dnl
+
+if test x$WANT_POSIX_SOURCE = xyes; then
+        CFLAGS="$CFLAGS -D _POSIX_SOURCE"
 fi
 
 dnl
