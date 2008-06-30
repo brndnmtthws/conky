@@ -19,8 +19,6 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301
  * USA. */
 
-#define _POSIX_C_SOURCE 200112L
-
 #include <netdb.h>
 #include <sys/socket.h>
 #include <glib/gprintf.h>
