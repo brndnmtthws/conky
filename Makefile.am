@@ -25,6 +25,7 @@
 # $Id$
 
 SUBDIRS = 					\
+	libgnu					\
 	src 					\
 	doc					\
 	data

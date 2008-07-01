@@ -45,7 +45,7 @@ else
 # generate configure.ac with substituted svn revision
 sed -e "s/@REVISION@/${revision}/g" < "configure.ac.in" > "configure.ac"
 
-echo Running $ACLOCAL -I m4 ... && $ACLOCAL -I m4
+echo Running $ACLOCAL -I m4 -I libgnu/m4 ... && $ACLOCAL -I m4 -I libgnu/m4
 echo Running $LIBTOOLIZE --force --copy ... && $LIBTOOLIZE --force --copy
 echo Running $AUTOHEADER ... && $AUTOHEADER
 echo Running $AUTOMAKE --add-missing --copy --gnu ... && $AUTOMAKE --add-missing --copy --gnu

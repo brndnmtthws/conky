@@ -19,9 +19,16 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301
  * USA. */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <netdb.h>
 #include <sys/socket.h>
 #include <glib/gprintf.h>
+
+#include "getaddrinfo.h"
+
 #include "libtcp-portmon.h"
 
 /* -------------------------------------------------------------------

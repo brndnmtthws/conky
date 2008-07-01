@@ -23,10 +23,13 @@ if test x"$CFLAGS" = x""; then
   AC_SUBST(CFLAGS, [ ])
 fi
 
+AC_DEFINE([_GNU_SOURCE], [], [Define for GNU source and extensions])
+
 dnl
 dnl Tools
 dnl
 AC_PROG_CC
+gl_EARLY
 AC_PROG_LD
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
@@ -37,10 +40,17 @@ if test x"$HAVE_PKGCONFIG" = x"no"; then
 fi
 PKG_PROG_PKG_CONFIG([0.19])
 
+
+dnl **************************************
+dnl * Initialize GnuLib modules (libgnu) *
+dnl **************************************
+gl_INIT
+
 AC_CONFIG_FILES(
   Makefile
   data/Makefile
   doc/Makefile
+  libgnu/Makefile
   src/Makefile
   src/build.h
   )
@@ -498,8 +508,6 @@ AC_CHECK_HEADERS([sys/mount.h], [], [],
       #include <sys/param.h>
       #endif
       ])
-
-AC_DEFINE([_GNU_SOURCE], [], [Define for GNU source and extensions])
 
 dnl
 dnl Some functions
