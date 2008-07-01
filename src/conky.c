@@ -108,6 +108,9 @@ static void print_version(void)
 		   "  * xmms2\n"
 #endif /* XMMS2 */
 		   "\n General features:\n"
+#ifdef MATH
+		   "  * math\n"
+#endif /* Math */
 #ifdef HDDTEMP
 		   "  * hddtemp\n"
 #endif /* HDDTEMP */
@@ -715,7 +718,9 @@ void graph_append(struct special_t *graph, double f, char showaslog)
 	int i;
 
 	if (showaslog) {
+#ifdef MATH
 		f = log10(f + 1);
+#endif
 	}
 	
 	if (!graph->scaled && f > graph->graph_scale) {
@@ -797,7 +802,9 @@ static void new_graph(char *buf, int w, int h, unsigned int first_colour,
 		s->graph_width = s->width - 2;	// subtract 2 for rectangle around
 	} */
 	if (showaslog) {
+#ifdef MATH
 		s->graph_scale = log10(s->graph_scale + 1);
+#endif
 	}
 	if (append) {
 		graph_append(s, i, showaslog);
@@ -7072,6 +7079,7 @@ static void draw_line(char *s)
 						cur_x = tmp_x;
 						cur_y = tmp_y;
 					}
+#ifdef MATH
 					if (show_graph_scale && (specials[special_index].show_scale == 1)) {
 						int tmp_x = cur_x;
 						int tmp_y = cur_y;
@@ -7086,6 +7094,7 @@ static void draw_line(char *s)
 						cur_x = tmp_x;
 						cur_y = tmp_y;
 					}
+#endif
 					set_foreground_color(last_colour);
 					break;
 				}

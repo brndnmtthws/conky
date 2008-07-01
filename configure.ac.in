@@ -184,6 +184,20 @@ if test x$want_hddtemp = xyes; then
 fi
 
 dnl
+dnl Math
+dnl
+
+AC_ARG_ENABLE([math],
+              AC_HELP_STRING([--disable-math], [disable if you do not want math support @<:@default=yes@:>@]),
+              [want_math="$enableval"], [want_math=yes])
+
+AM_CONDITIONAL(BUILD_MATH, test x$want_math = xyes)
+if test x$want_math = xyes; then
+  LIBS="$LIBS -lm"
+  AC_DEFINE(MATH, 1, [Define if you want math support])
+fi
+
+dnl
 dnl MPD
 dnl
 
@@ -662,6 +676,7 @@ $PACKAGE $VERSION configured successfully:
   XMMS2:            $want_xmms2
 
  * General:
+  math:             $want_math
   hddtemp:          $want_hddtemp
   portmon:          $want_portmon
   RSS:              $want_rss
