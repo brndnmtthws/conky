@@ -23,13 +23,9 @@
 #include <config.h>
 #endif
 
-#include <netdb.h>
-#include <sys/socket.h>
-#include <glib/gprintf.h>
-
 #include "getaddrinfo.h"
-
 #include "libtcp-portmon.h"
+#include <glib/gprintf.h>
 
 /* -------------------------------------------------------------------
  * IMPLEMENTATION INTERFACE
