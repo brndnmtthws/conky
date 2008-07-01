@@ -126,9 +126,9 @@ conky_SOURCES = 		\
 	$(xmms2)		\
 	$(smapi)
 
-conky_LDFLAGS = 		\
-	$(PTHREAD_LIBS)		\
-	$(top_builddir)/libgnu/libgnu.la
+conky_LDFLAGS = 			\
+	$(PTHREAD_LIBS)			\
+	$(top_builddir)/libgnu/libgnu.a	\
 	-lm
 
 EXTRA_DIST = 			\
