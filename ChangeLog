@@ -1,5 +1,16 @@
 # $Id$
 
+2008-07-03
+	* Solve linking on problems on some systems (like Debian's Lenny)
+
+2008-07-01
+	* Add libgnu convenience lib, modules stdio and getaddrinfo.
+	* Configure option for mathfunctions
+
+2008-06-29
+	* Fixed missing entries in Makefile.am
+	* Get rid of obsolete gethostbyaddr and getservbyport
+
 2008-06-28
 	* Added sysfs AC adapter support patch (thanks Byron)
 	* Added support for EVE-Online skill monitoring (thanks Asbjørn)
