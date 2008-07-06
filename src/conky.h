@@ -56,7 +56,7 @@
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 #include "freebsd.h"
-#endif /* __FreeBSD__ */
+#endif /* __FreeBSD__ || __FreeBSD_kernel__ */
 
 #if defined(__OpenBSD__)
 #include "openbsd.h"
