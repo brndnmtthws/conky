@@ -830,18 +830,23 @@ static char *scan_graph(const char *args, int *w, int *h,
 	*first_colour = 0;
 	*last_colour = 0;
 	*scale = 0;
-	/* graph's argument is either height or height,width */
 	if (args) {
-		//set graph type and set args without NORMGRAPH/LOGGRAPH
-		if(strncasecmp( args, LOGGRAPH" ", strlen(LOGGRAPH) + 1 ) == EQUAL) {
-			nographtype = &args[strlen(LOGGRAPH) + 1];
+		//set showaslog and place the rest of the args in nographtype
+		if(strcasecmp(args, LOGGRAPH) == EQUAL) {
 			*showaslog = TRUE;
-		}else if(strncasecmp( args, NORMGRAPH" ", strlen(NORMGRAPH) + 1 ) == EQUAL) {
+			return NULL;
+		}else if(strcasecmp(args, NORMGRAPH) == EQUAL) {
+			*showaslog = FALSE;
+			return NULL;
+		}else if(strncasecmp(args, LOGGRAPH" ", strlen(LOGGRAPH) + 1 ) == EQUAL) {
+			*showaslog = TRUE;
+			nographtype = &args[strlen(LOGGRAPH) + 1];
+		}else if(strncasecmp(args, NORMGRAPH" ", strlen(NORMGRAPH) + 1 ) == EQUAL) {
+			*showaslog = FALSE;
 			nographtype = &args[strlen(NORMGRAPH) + 1];
-			*showaslog = FALSE;
 		}else{
-			nographtype = args;
 			*showaslog = FALSE;
+			nographtype = args;
 		}
 		//check the rest of the args
 		if (sscanf(nographtype, "%d,%d %x %x %u", h, w, first_colour, last_colour, scale) == 5) {
