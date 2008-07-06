@@ -811,6 +811,7 @@ static void new_graph(char *buf, int w, int h, unsigned int first_colour,
 	}
 }
 
+//don't use spaces in LOGGRAPH or NORMGRAPH if you change them
 #define LOGGRAPH "log"
 #define NORMGRAPH "normal"
 
@@ -818,11 +819,11 @@ static char *scan_graph(const char *args, int *w, int *h,
 		unsigned int *first_colour, unsigned int *last_colour,
 		unsigned int *scale, char *showaslog)
 {
+	char *nographtype;
 	char buf[64];
 	char showaslogbuf[strlen(NORMGRAPH)+1];
 	buf[0] = 0;
 
-	*showaslog = FALSE;
 	/* zero width means all space that is available */
 	*w = 0;
 	*h = 25;
@@ -831,69 +832,65 @@ static char *scan_graph(const char *args, int *w, int *h,
 	*scale = 0;
 	/* graph's argument is either height or height,width */
 	if (args) {
-		if (sscanf(args, "%6s %d,%d %x %x %u", showaslogbuf, h, w, first_colour, last_colour,
-					scale) == 6) {
-			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
+		//set graph type and set args without NORMGRAPH/LOGGRAPH
+		if(strncasecmp( args, LOGGRAPH" ", strlen(LOGGRAPH) + 1 ) == EQUAL) {
+			nographtype = &args[strlen(LOGGRAPH) + 1];
+			*showaslog = TRUE;
+		}else if(strncasecmp( args, NORMGRAPH" ", strlen(NORMGRAPH) + 1 ) == EQUAL) {
+			nographtype = &args[strlen(NORMGRAPH) + 1];
+			*showaslog = FALSE;
+		}else{
+			nographtype = args;
+			*showaslog = FALSE;
+		}
+		//check the rest of the args
+		if (sscanf(nographtype, "%d,%d %x %x %u", h, w, first_colour, last_colour, scale) == 5) {
 			return NULL;
 		}
 		*scale = 0;
-		if (sscanf(args, "%6s %d,%d %x %x", showaslogbuf, h, w, first_colour, last_colour) == 5) {
-			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
+		if (sscanf(nographtype, "%d,%d %x %x", h, w, first_colour, last_colour) == 4) {
 			return NULL;
 		}
-		if (sscanf(args, "%6s %63s %d,%d %x %x %u", showaslogbuf, buf, h, w, first_colour,
-					last_colour, scale) == 7) {
-			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
+		if (sscanf(nographtype, "%63s %d,%d %x %x %u", buf, h, w, first_colour, last_colour, scale) == 6) {
 			return strndup(buf, text_buffer_size);
 		}
 		*scale = 0;
-		if (sscanf(args, "%6s %63s %d,%d %x %x", showaslogbuf, buf, h, w, first_colour,
-					last_colour) == 6) {
-			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
+		if (sscanf(nographtype, "%63s %d,%d %x %x", buf, h, w, first_colour, last_colour) == 5) {
 			return strndup(buf, text_buffer_size);
 		}
 		buf[0] = '\0';
 		*h = 25;
 		*w = 0;
-		if (sscanf(args, "%6s %x %x %u", showaslogbuf, first_colour, last_colour, scale) == 4) {
-			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
+		if (sscanf(nographtype, "%x %x %u", first_colour, last_colour, scale) == 3) {
 			return NULL;
 		}
 		*scale = 0;
-		if (sscanf(args, "%6s %x %x", showaslogbuf, first_colour, last_colour) == 3) {
-			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
+		if (sscanf(nographtype, "%x %x", first_colour, last_colour) == 2) {
 			return NULL;
 		}
-		if (sscanf(args, "%6s %63s %x %x %u", showaslogbuf, buf, first_colour, last_colour,
-					scale) == 5) {
-			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
+		if (sscanf(nographtype, "%63s %x %x %u", buf, first_colour, last_colour, scale) == 4) {
 			return strndup(buf, text_buffer_size);
 		}
 		*scale = 0;
-		if (sscanf(args, "%6s %63s %x %x", showaslogbuf, buf, first_colour, last_colour) == 4) {
-			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
+		if (sscanf(nographtype, "%63s %x %x", buf, first_colour, last_colour) == 3) {
 			return strndup(buf, text_buffer_size);
 		}
 		buf[0] = '\0';
 		*first_colour = 0;
 		*last_colour = 0;
-		if (sscanf(args, "%6s %d,%d %u", showaslogbuf, h, w, scale) == 4) {
-			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
+		if (sscanf(nographtype, "%d,%d %u", h, w, scale) == 3) {
 			return NULL;
 		}
 		*scale = 0;
-		if (sscanf(args, "%6s %d,%d", showaslogbuf, h, w) == 3) {
-			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
+		if (sscanf(nographtype, "%d,%d", h, w) == 2) {
 			return NULL;
 		}
-		if (sscanf(args, "%6s %63s %d,%d %u", showaslogbuf, buf, h, w, scale) < 5) {
+		if (sscanf(nographtype, "%63s %d,%d %u", buf, h, w, scale) < 4) {
 			*scale = 0;
 			//TODO: check the return value and throw an error?
-			sscanf(args, "%6s %63s %d,%d", showaslogbuf, buf, h, w);
-			*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
+			sscanf(nographtype, "%63s %d,%d", buf, h, w);
 		}
 
-		*showaslog = ( strncasecmp(showaslogbuf, LOGGRAPH, strlen(showaslogbuf)) == EQUAL ) ? TRUE : FALSE ;
 		return strndup(buf, text_buffer_size);
 	}
 

@@ -1,5 +1,8 @@
 # $Id$
 
+2008-07-06
+	* Made log/normal argument for graphs optional
+
 2008-07-03
 	* Solve linking on problems on some systems (like Debian's Lenny)
 
