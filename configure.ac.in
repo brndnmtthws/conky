@@ -16,6 +16,7 @@ AC_INIT([Conky], [conky_version()], [brenden1@users.sourceforge.net])
 
 AM_INIT_AUTOMAKE(conky, conky_version())
 AM_CONFIG_HEADER(src/config.h)
+AC_CONFIG_MACRO_DIR([m4])
 
 dnl prevent libtool setting LTCFLAGS to default of -g -O2 when CFLAGS unset.
 dnl libtool must be deleted with make distclean to see this fix.
@@ -29,7 +30,6 @@ dnl
 dnl Tools
 dnl
 AC_PROG_CC
-gl_EARLY
 AC_PROG_LD
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
@@ -40,17 +40,10 @@ if test x"$HAVE_PKGCONFIG" = x"no"; then
 fi
 PKG_PROG_PKG_CONFIG([0.19])
 
-
-dnl **************************************
-dnl * Initialize GnuLib modules (libgnu) *
-dnl **************************************
-gl_INIT
-
 AC_CONFIG_FILES(
   Makefile
   data/Makefile
   doc/Makefile
-  libgnu/Makefile
   src/Makefile
   src/build.h
   )
@@ -339,6 +332,7 @@ if test x"$want_portmon" = xyes; then
       AC_MSG_NOTICE([port monitors not supported on $uname... disabling])
       want_portmon=no
   else
+        AC_CHECK_FUNCS([getnameinfo], [], AC_MSG_ERROR([getnameinfo function not found]))
         AC_CHECK_HEADERS([netdb.h netinet/in.h netinet/tcp.h sys/socket.h arpa/inet.h], [],
            [PORT_MONITORS_MISSING=yes])
         if test x"$PORT_MONITORS_MISSING" = xyes; then

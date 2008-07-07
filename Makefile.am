@@ -25,7 +25,6 @@
 # $Id$
 
 SUBDIRS = 					\
-	libgnu					\
 	src 					\
 	doc					\
 	data
@@ -44,8 +43,7 @@ EXTRA_DIST = 					\
 	extras/vim/ftdetect/conkyrc.vim		\
 	extras/vim/syntax/conkyrc.vim
 
-ACLOCAL_AMFLAGS =				\
-	-I m4
+ACLOCAL_AMFLAGS = -I m4
 
 distclean-local:
 	/bin/rm -rf *.cache *~

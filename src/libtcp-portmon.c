@@ -23,7 +23,6 @@
 #include <config.h>
 #endif
 
-#include "getaddrinfo.h"
 #include "libtcp-portmon.h"
 #include <glib/gprintf.h>
 

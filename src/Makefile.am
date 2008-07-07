@@ -24,10 +24,7 @@
 #
 # $Id$
 
-INCLUDES =				\
-	-I$(top_builddir)/libgnu	\
-	-I$(top_srcdir)/libgnu 		\
-	-DSYSTEM_CONFIG_FILE=\"$(sysconfdir)/conky/conky.conf\"
+INCLUDES = -DSYSTEM_CONFIG_FILE=\"$(sysconfdir)/conky/conky.conf\"
 
 bin_PROGRAMS = conky
 
@@ -128,7 +125,6 @@ conky_SOURCES = 		\
 
 conky_LDFLAGS = 				\
 	$(PTHREAD_LIBS)				\
-	$(top_builddir)/libgnu/libgnu.la	\
 	-lm
 
 EXTRA_DIST = 			\
