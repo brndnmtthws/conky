@@ -601,8 +601,8 @@ case `$LD -O1 -v 2>&1 </dev/null` in
   ;;
 esac
 
-dnl Solve multiple definitions
-LDFLAGS="$LDFLAGS -Xlinker -zmuldefs"
+dnl Solve multiple definitions (only necessary when gnulib is used)
+dnl LDFLAGS="$LDFLAGS -Xlinker -zmuldefs"
 
 dnl
 dnl Da.
