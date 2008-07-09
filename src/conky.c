@@ -819,9 +819,8 @@ static char *scan_graph(const char *args, int *w, int *h,
 		unsigned int *first_colour, unsigned int *last_colour,
 		unsigned int *scale, char *showaslog)
 {
-	char *nographtype;
+	const char *nographtype;
 	char buf[64];
-	char showaslogbuf[strlen(NORMGRAPH)+1];
 	buf[0] = 0;
 
 	/* zero width means all space that is available */
