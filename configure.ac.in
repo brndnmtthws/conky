@@ -525,7 +525,8 @@ dnl
 dnl Some defines
 dnl
 
-AC_DEFINE(DEFAULTNETDEV, "eth0", [Set to the default networkdevice])
+AC_DEFINE(DEFAULTNETDEV, "eth0", [Default networkdevice])
+AC_DEFINE(CONFIG_FILE, "$HOME/.conkyrc", [Configfile of the user])
 
 dnl
 dnl Some functions

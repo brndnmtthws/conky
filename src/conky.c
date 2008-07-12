@@ -66,7 +66,6 @@
 #define S_ISSOCK(x)   ((x & S_IFMT) == S_IFSOCK)
 #endif
 
-#define CONFIG_FILE "$HOME/.conkyrc"
 #define MAIL_FILE "$MAIL"
 #define MAX_IF_BLOCK_DEPTH 5
 #define MAX_TAIL_LINES 100
@@ -78,10 +77,10 @@ static void print_version(void) __attribute__((noreturn));
 
 static void print_version(void)
 {
-	printf("Conky %s compiled %s for %s\n", VERSION, BUILD_DATE, BUILD_ARCH);
+	printf(PACKAGE_NAME" "VERSION" compiled "BUILD_DATE" for "BUILD_ARCH"\n");
 
 	printf("\nCompiled in features:\n\n"
-		   "System config file: %s\n\n"
+		   "System config file: "SYSTEM_CONFIG_FILE"\n\n"
 #ifdef X11
 		   " X11:\n"
 # ifdef HAVE_XDAMAGE
@@ -132,7 +131,6 @@ static void print_version(void)
 #ifdef NVIDIA
 	"  * nvidia\n"
 #endif
-	"", SYSTEM_CONFIG_FILE
 	);
 
 	exit(0);
@@ -3259,7 +3257,7 @@ static struct text_object *construct_text_object(const char *s,
 				return NULL;
 			} else if (n2 < 1 || n2 < update_interval) {
 				CRIT_ERR("invalid arg for tail, interval must be greater than "
-					"0 and Conky's interval");
+					"0 and "PACKAGE_NAME"'s interval");
 				return NULL;
 			} else {
 				FILE *fp = 0;
@@ -3341,7 +3339,7 @@ static struct text_object *construct_text_object(const char *s,
 				return NULL;
 			} else if (n2 < 1 || n2 < update_interval) {
 				CRIT_ERR("invalid arg for head, interval must be greater than "
-					"0 and Conky's interval");
+					"0 and "PACKAGE_NAME"'s interval");
 				return NULL;
 			} else {
 				FILE *fp;
@@ -7978,9 +7976,9 @@ static void set_default_configurations(void)
 	own_window = 0;
 	window.type = TYPE_NORMAL;
 	window.hints = 0;
-	strcpy(window.class_name, "Conky");
+	strcpy(window.class_name, PACKAGE_NAME);
 	update_uname();
-	sprintf(window.title, "Conky (%s)", info.uname_s.nodename);
+	sprintf(window.title, PACKAGE_NAME" (%s)", info.uname_s.nodename);
 #endif
 	stippled_borders = 0;
 	border_margin = 3;
@@ -8696,7 +8694,7 @@ static void load_config_file(const char *f)
 
 static void print_help(const char *prog_name) {
 	printf("Usage: %s [OPTION]...\n"
-			"Conky is a system monitor that renders text on desktop or to own transparent\n"
+			PACKAGE_NAME" is a system monitor that renders text on desktop or to own transparent\n"
 			"window. Command line options will override configurations defined in config\n"
 			"file.\n"
 			"   -v, --version             version\n"
@@ -8719,7 +8717,7 @@ static void print_help(const char *prog_name) {
 #endif /* X11 */
 			"   -t, --text=TEXT           text to render, remember single quotes, like -t '$uptime'\n"
 			"   -u, --interval=SECS       update interval\n"
-			"   -i COUNT                  number of times to update Conky (and quit)\n",
+			"   -i COUNT                  number of times to update "PACKAGE_NAME" (and quit)\n",
 			prog_name
 	);
 }
@@ -8991,7 +8989,7 @@ int main(int argc, char **argv)
 
 		switch (pid) {
 			case -1:
-				ERR("Conky: couldn't fork() to background: %s",
+				ERR(PACKAGE_NAME": couldn't fork() to background: %s",
 					strerror(errno));
 				break;
 
@@ -9004,7 +9002,7 @@ int main(int argc, char **argv)
 
 			default:
 				/* parent process */
-				fprintf(stderr, "Conky: forked to background, pid is %d\n",
+				fprintf(stderr, PACKAGE_NAME": forked to background, pid is %d\n",
 					pid);
 				fflush(stderr);
 				return 0;

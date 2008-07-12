@@ -107,7 +107,7 @@ extern unsigned int text_buffer_size;
 #include <sys/socket.h>
 
 #define ERR(...) { \
-	fprintf(stderr, "Conky: "); \
+	fprintf(stderr, PACKAGE_NAME": "); \
 	fprintf(stderr, __VA_ARGS__); \
 	fprintf(stderr, "\n"); \
 }

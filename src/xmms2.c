@@ -102,7 +102,7 @@ void connection_lost(void *p)
 	struct information *ptr = p;
 	ptr->xmms2_conn_state = CONN_NO;
 
-	fprintf(stderr,"Conky: xmms2 connection failed. %s\n",
+	fprintf(stderr,PACKAGE_NAME": xmms2 connection failed. %s\n",
                     xmmsc_get_last_error ( ptr->xmms2_conn ));
         fflush(stderr);
 
@@ -269,12 +269,12 @@ void update_xmms2()
 	if (current_info->xmms2_conn_state == CONN_INIT) {
 
 		if (current_info->xmms2_conn == NULL) {
-			current_info->xmms2_conn = xmmsc_init("conky");
+			current_info->xmms2_conn = xmmsc_init(PACKAGE);
 		}
 
 		/* did init fail? */
 		if (current_info->xmms2_conn == NULL) {
-			fprintf(stderr, "Conky: xmms2 init failed. %s\n",
+			fprintf(stderr, PACKAGE_NAME": xmms2 init failed. %s\n",
 					xmmsc_get_last_error(current_info->xmms2_conn));
 			fflush(stderr);
 			return;
@@ -286,7 +286,7 @@ void update_xmms2()
 		/* clear all values */
 		xmms_clear(current_info);
 
-		/* fprintf(stderr, "Conky: xmms2 init ok.\n");
+		/* fprintf(stderr, PACKAGE_NAME": xmms2 init ok.\n");
 		fflush(stderr); */
 	}
 
@@ -296,7 +296,7 @@ void update_xmms2()
 		char *path = getenv("XMMS_PATH");
 
 		if (!xmmsc_connect(current_info->xmms2_conn, path)) {
-			fprintf(stderr, "Conky: xmms2 connection failed. %s\n",
+			fprintf(stderr, PACKAGE_NAME": xmms2 connection failed. %s\n",
 				xmmsc_get_last_error(current_info->xmms2_conn));
 			fflush(stderr);
 			current_info->xmms2_conn_state = CONN_NO;
@@ -329,7 +329,7 @@ void update_xmms2()
 		/* everything seems to be ok */
 		current_info->xmms2_conn_state = CONN_OK;
 
-		/* fprintf(stderr, "Conky: xmms2 connected.\n");
+		/* fprintf(stderr, PACKAGE_NAME": xmms2 connected.\n");
 		fflush(stderr); */
 	}
 

@@ -889,7 +889,7 @@ int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n,
 	fd = open(path, O_RDONLY);
 	if (fd < 0) {
 		CRIT_ERR("can't open '%s': %s\nplease check your device or remove this "
-			"var from Conky", path, strerror(errno));
+			"var from "PACKAGE_NAME, path, strerror(errno));
 	}
 
 	if (strcmp(type, "in") == 0 || strcmp(type, "temp") == 0
@@ -1150,7 +1150,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
 	// open the CPU information file
 	f = open_file("/proc/cpuinfo", &rep);
 	if (!f) {
-		perror("Conky: Failed to access '/proc/cpuinfo' at get_freq()");
+		perror(PACKAGE_NAME": Failed to access '/proc/cpuinfo' at get_freq()");
 		return 0;
 	}
 
@@ -1240,7 +1240,7 @@ char get_voltage(char *p_client_buffer, size_t client_buffer_size,
 		}
 		fclose(f);
 	} else {
-		fprintf(stderr, "Conky: Failed to access '%s' at ", current_freq_file);
+		fprintf(stderr, PACKAGE_NAME": Failed to access '%s' at ", current_freq_file);
 		perror("get_voltage()");
 		if (f) {
 			fclose(f);
@@ -1268,7 +1268,7 @@ char get_voltage(char *p_client_buffer, size_t client_buffer_size,
 		}
 		fclose(f);
 	} else {
-		fprintf(stderr, "Conky: Failed to access '%s' at ", current_freq_file);
+		fprintf(stderr, PACKAGE_NAME": Failed to access '%s' at ", current_freq_file);
 		perror("get_voltage()");
 		if (f) {
 			fclose(f);
@@ -2193,7 +2193,7 @@ void get_ibm_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
 		}
 	} else {
 		CRIT_ERR("can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
-			"ibm* from your Conky config file.", fan, strerror(errno));
+			"ibm* from your "PACKAGE_NAME" config file.", fan, strerror(errno));
 	}
 
 	fclose(fp);
@@ -2257,7 +2257,7 @@ void get_ibm_acpi_temps(void)
 		}
 	} else {
 		CRIT_ERR("can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
-			"ibm* from your Conky config file.", thermal, strerror(errno));
+			"ibm* from your "PACKAGE_NAME" config file.", thermal, strerror(errno));
 	}
 
 	fclose(fp);
@@ -2305,7 +2305,7 @@ void get_ibm_acpi_volume(char *p_client_buffer, size_t client_buffer_size)
 		}
 	} else {
 		CRIT_ERR("can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
-			"ibm* from your Conky config file.", volume, strerror(errno));
+			"ibm* from your "PACKAGE_NAME" config file.", volume, strerror(errno));
 	}
 
 	fclose(fp);
@@ -2354,7 +2354,7 @@ void get_ibm_acpi_brightness(char *p_client_buffer, size_t client_buffer_size)
 		}
 	} else {
 		CRIT_ERR("can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
-			"ibm* from your Conky config file.", filename, strerror(errno));
+			"ibm* from your "PACKAGE_NAME" config file.", filename, strerror(errno));
 	}
 
 	fclose(fp);
