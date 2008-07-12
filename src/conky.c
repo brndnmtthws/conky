@@ -121,7 +121,7 @@ static void print_version(void)
 		   "  * rss\n"
 #endif /* RSS */
 #ifdef EVE
-         "  * eve\n"
+		   "  * eve\n"
 #endif /* EVE */
 #ifdef HAVE_IWLIB
 		   "  * wireless\n"
@@ -1362,7 +1362,7 @@ enum text_object_type {
 	OBJ_bmpx_bitrate,
 #endif
 #ifdef EVE
-   OBJ_eve,
+	OBJ_eve,
 #endif
 #ifdef RSS
 	OBJ_rss,
@@ -1496,11 +1496,11 @@ struct text_object {
 		} hddtemp;		/* 2 */
 #endif
 #ifdef EVE
-      struct {
-         char *apikey;
-         char *charid;
-         char *userid;
-      } eve;
+		struct {
+			char *apikey;
+			char *charid;
+			char *userid;
+		} eve;
 #endif
 #ifdef RSS
 		struct {
@@ -2274,8 +2274,8 @@ static void free_text_objects(struct text_object_list *text_object_list)
 				break;
 #endif
 #ifdef EVE
-         case OBJ_eve:
-            break;
+			case OBJ_eve:
+				break;
 #endif
 #ifdef RSS
 			case OBJ_rss:
@@ -2832,8 +2832,8 @@ static struct text_object *construct_text_object(const char *s,
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
 
-		// default to eth0
-		buf = strndup(buf ? buf : "eth0", text_buffer_size);
+		// default to DEFAULTNETDEV
+		buf = strndup(buf ? buf : "DEFAULTNETDEV", text_buffer_size);
 		obj->data.net = get_net_stat(buf);
 		free(buf);
 	END OBJ(else, 0)
@@ -3673,8 +3673,8 @@ static struct text_object *construct_text_object(const char *s,
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
 
-	// default to eth0
-	buf = strndup(buf ? buf : "eth0", text_buffer_size);
+	// default to DEFAULTNETDEV
+	buf = strndup(buf ? buf : "DEFAULTNETDEV", text_buffer_size);
 	obj->data.net = get_net_stat(buf);
 	free(buf);
 	END OBJ(uptime_short, INFO_UPTIME)
@@ -3879,43 +3879,44 @@ static struct text_object *construct_text_object(const char *s,
 				obj->data.eve.apikey = apikey;
 
 				init_eve();
-			} else
+			} else {
 				CRIT_ERR("eve needs arguments: <userid> <apikey> <characterid>");
+			}
 #endif
 #ifdef RSS
-			END OBJ(rss, 0)
-				if (arg) {
-					int argc, delay, act_par;
-					char *uri = (char *) malloc(128 * sizeof(char));
-					char *action = (char *) malloc(64 * sizeof(char));
+		END OBJ(rss, 0)
+			if (arg) {
+				int argc, delay, act_par;
+				char *uri = (char *) malloc(128 * sizeof(char));
+				char *action = (char *) malloc(64 * sizeof(char));
 
-					argc = sscanf(arg, "%127s %d %63s %d", uri, &delay, action,
-							&act_par);
-					obj->data.rss.uri = uri;
-					obj->data.rss.delay = delay;
-					obj->data.rss.action = action;
-					obj->data.rss.act_par = act_par;
+				argc = sscanf(arg, "%127s %d %63s %d", uri, &delay, action,
+						&act_par);
+				obj->data.rss.uri = uri;
+				obj->data.rss.delay = delay;
+				obj->data.rss.action = action;
+				obj->data.rss.act_par = act_par;
 
-					init_rss_info();
-				} else {
-					CRIT_ERR("rss needs arguments: <uri> <delay in minutes> <action> "
-							"[act_par]");
-				}
+				init_rss_info();
+			} else {
+				CRIT_ERR("rss needs arguments: <uri> <delay in minutes> <action> "
+						"[act_par]");
+			}
 #endif
 #ifdef HDDTEMP
-			END OBJ(hddtemp, 0)
-				if (!arg || scan_hddtemp(arg, &obj->data.hddtemp.dev,
-							&obj->data.hddtemp.addr, &obj->data.hddtemp.port, &obj->data.hddtemp.temp)) {
-					ERR("hddtemp needs arguments");
-					obj->type = OBJ_text;
-					obj->data.s = strndup("${hddtemp}", text_buffer_size);
-					obj->data.hddtemp.update_time = 0;
-					return NULL;
-				}
+		END OBJ(hddtemp, 0)
+			if (!arg || scan_hddtemp(arg, &obj->data.hddtemp.dev,
+						&obj->data.hddtemp.addr, &obj->data.hddtemp.port, &obj->data.hddtemp.temp)) {
+				ERR("hddtemp needs arguments");
+				obj->type = OBJ_text;
+				obj->data.s = strndup("${hddtemp}", text_buffer_size);
+				obj->data.hddtemp.update_time = 0;
+				return NULL;
+			}
 #endif
 #ifdef TCP_PORT_MONITOR
-			END OBJ(tcp_portmon, INFO_TCP_PORT_MONITOR)
-				int argc, port_begin, port_end, item, connection_index;
+		END OBJ(tcp_portmon, INFO_TCP_PORT_MONITOR)
+			int argc, port_begin, port_end, item, connection_index;
 			char itembuf[32];
 
 			memset(itembuf, 0, sizeof(itembuf));
@@ -3999,12 +4000,13 @@ static struct text_object *construct_text_object(const char *s,
 				}
 			}
 #endif
-			END OBJ(entropy_avail, INFO_ENTROPY)
-				END OBJ(entropy_poolsize, INFO_ENTROPY)
-				END OBJ(entropy_bar, INFO_ENTROPY)
-				scan_bar(arg, &obj->a, &obj->b);
-			END OBJ(scroll, 0)
-				int n;
+		END OBJ(entropy_avail, INFO_ENTROPY)
+			END OBJ(entropy_poolsize, INFO_ENTROPY)
+			END OBJ(entropy_bar, INFO_ENTROPY)
+			scan_bar(arg, &obj->a, &obj->b);
+		END OBJ(scroll, 0)
+			int n;
+
 			if (arg && sscanf(arg, "%u %n", &obj->data.scroll.show, &n) > 0) {
 				obj->data.scroll.text = strndup(arg + n, text_buffer_size);
 				obj->data.scroll.start = 0;
@@ -4012,35 +4014,35 @@ static struct text_object *construct_text_object(const char *s,
 				CRIT_ERR("scroll needs arguments: <length> <text>");
 			}
 #ifdef NVIDIA
-			END OBJ(nvidia, 0)
-				if (!arg){
-					CRIT_ERR("nvidia needs one argument "
-							"[temp,threshold,gpufreq,memfreq,imagequality]");
-				} else {
-					if (strcmp(arg, "temp") == 0)
-						obj->data.nvidia.type = NV_TEMP;
-					else if (strcmp(arg, "threshold") == 0)
-						obj->data.nvidia.type = NV_TEMP_THRESHOLD;
-					else if (strcmp(arg, "gpufreq") == 0)
-						obj->data.nvidia.type = NV_GPU_FREQ;
-					else if (strcmp(arg, "memfreq") == 0)
-						obj->data.nvidia.type = NV_MEM_FREQ;
-					else if (strcmp(arg, "imagequality") == 0)
-						obj->data.nvidia.type = NV_IMAGE_QUALITY;
-					else
-						CRIT_ERR("you have to give one of these arguments "
-								"[temp,threshold,gpufreq,memfreq,imagequality");
-					strncpy((char*)&obj->data.nvidia.arg, arg, 20);
-				}
-#endif /* NVIDIA */
-			END {
-				char buf[256];
-
-				ERR("unknown variable %s", s);
-				obj->type = OBJ_text;
-				snprintf(buf, 256, "${%s}", s);
-				obj->data.s = strndup(buf, text_buffer_size);
+		END OBJ(nvidia, 0)
+			if (!arg){
+				CRIT_ERR("nvidia needs one argument "
+						"[temp,threshold,gpufreq,memfreq,imagequality]");
+			} else {
+				if (strcmp(arg, "temp") == 0)
+					obj->data.nvidia.type = NV_TEMP;
+				else if (strcmp(arg, "threshold") == 0)
+					obj->data.nvidia.type = NV_TEMP_THRESHOLD;
+				else if (strcmp(arg, "gpufreq") == 0)
+					obj->data.nvidia.type = NV_GPU_FREQ;
+				else if (strcmp(arg, "memfreq") == 0)
+					obj->data.nvidia.type = NV_MEM_FREQ;
+				else if (strcmp(arg, "imagequality") == 0)
+					obj->data.nvidia.type = NV_IMAGE_QUALITY;
+				else
+					CRIT_ERR("you have to give one of these arguments "
+							"[temp,threshold,gpufreq,memfreq,imagequality");
+				strncpy((char*)&obj->data.nvidia.arg, arg, 20);
 			}
+#endif /* NVIDIA */
+		END {
+			char buf[256];
+
+			ERR("unknown variable %s", s);
+			obj->type = OBJ_text;
+			snprintf(buf, 256, "${%s}", s);
+			obj->data.s = strndup(buf, text_buffer_size);
+		}
 #undef OBJ
 
 			return obj;
@@ -5256,10 +5258,10 @@ static void generate_text_internal(char *p, int p_max_size,
 							cur->nameserver_info.ns_list[obj->data.i]);
 			}
 #ifdef EVE
-         OBJ(eve) {
-            char *skill = eve(obj->data.eve.userid, obj->data.eve.apikey, obj->data.eve.charid);
-            snprintf(p, p_max_size, "%s", skill);
-         }
+			OBJ(eve) {
+				char *skill = eve(obj->data.eve.userid, obj->data.eve.apikey, obj->data.eve.charid);
+				snprintf(p, p_max_size, "%s", skill);
+			}
 #endif
 #ifdef RSS
 			OBJ(rss) {

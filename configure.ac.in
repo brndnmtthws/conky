@@ -233,7 +233,11 @@ if test x$want_eve = xyes; then
 	PKG_CHECK_MODULES([libcurl], libcurl)
 	CFLAGS="$CFLAGS $libxml2_CFLAGS $libcurl_CFLAGS"
 	LIBS="$LIBS $libxml2_LIBS $libcurl_LIBS"
-   AC_DEFINE(EVE, 1, [Define if you want Eve-Online Skill monitor support])
+	AC_DEFINE(EVE, 1, [Define if you want Eve-Online Skill monitor support])
+	AC_DEFINE(EVEURL_TRAINING, "http://api.eve-online.com/char/SkillInTraining.xml.aspx", [Eve training URL])
+	AC_DEFINE(EVEURL_SKILLTREE, "http://api.eve-online.com/eve/Skilltree.xml.aspx", [Eve skilltree URL])
+	AC_DEFINE(MY_ENCODING, "ISO-8859-1", [Textencoding to use])
+	AC_DEFINE(EVE_OUTPUT_FORMAT, "%s %d in %s", [Eve output format])
 fi
 
 dnl
@@ -516,6 +520,12 @@ AC_CHECK_HEADERS([sys/mount.h], [], [],
       #include <sys/param.h>
       #endif
       ])
+
+dnl
+dnl Some defines
+dnl
+
+AC_DEFINE(DEFAULTNETDEV, "eth0", [Set to the default networkdevice])
 
 dnl
 dnl Some functions

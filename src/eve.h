@@ -22,10 +22,6 @@
 #define _GNU_SOURCE
 #define MAXCHARS 4
 #define EVE_UPDATE_DELAY 60
-#define MY_ENCODING "ISO-8859-1"
-#define EVEURL_TRAINING "http://api.eve-online.com/char/SkillInTraining.xml.aspx"
-#define EVEURL_SKILLTREE "http://api.eve-online.com/eve/Skilltree.xml.aspx"
-#define EVE_OUTPUT_FORMAT "%s %d in %s"
 
 #include <stdio.h>
 #include <stdlib.h>
