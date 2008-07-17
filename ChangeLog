@@ -1,5 +1,8 @@
 # $Id$
 
+2008-07-16
+	* Fixed bug with $if_empty and $mpd_* vars (sf.net #2008752)
+
 2008-07-06
 	* Made log/normal argument for graphs optional
 

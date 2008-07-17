@@ -2075,7 +2075,10 @@ static struct text_object *new_text_object_internal(void)
 	return obj;
 }
 
-static void free_text_objects(struct text_object_list *text_object_list)
+/*
+ * call with full == 0 when freeing after 'internal' evaluation of objects
+ */
+static void free_text_objects(struct text_object_list *text_object_list, char full)
 {
 	unsigned int i;
 	struct text_object *obj;
@@ -2377,7 +2380,9 @@ static void free_text_objects(struct text_object_list *text_object_list)
 			case OBJ_mpd_file:
 			case OBJ_mpd_percent:
 			case OBJ_mpd_smart:
-				free_mpd_vars(&info.mpd);
+				if (full) {
+					free_mpd_vars(&info.mpd);
+				}
 				break;
 #endif
 			case OBJ_scroll:
@@ -4219,7 +4224,7 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 
 static void extract_variable_text(const char *p)
 {
-	free_text_objects(global_text_object_list);
+	free_text_objects(global_text_object_list, 1);
 	free(global_text_object_list);
 	if (tmpstring1) {
 		free(tmpstring1);
@@ -5001,7 +5006,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				memcpy(tmp_info, cur, sizeof(struct information));
 				text_objects = parse_conky_vars(p, p, tmp_info);
 
-				free_text_objects(text_objects);
+				free_text_objects(text_objects, 0);
 				free(text_objects);
 				free(tmp_info);
 			}
@@ -5099,7 +5104,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					text_objects = parse_conky_vars(obj->data.execi.buffer, p, tmp_info);
 					obj->data.execi.last_update = current_update_time;
 				}
-				free_text_objects(text_objects);
+				free_text_objects(text_objects, 0);
 				free(text_objects);
 				free(tmp_info);
 			}
@@ -5415,7 +5420,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					if_jumped = 0;
 				}
 				p[0] = '\0';
-				free_text_objects(text_objects);
+				free_text_objects(text_objects, 0);
 				free(text_objects);
 				free(tmp_info);
 			}
@@ -7804,7 +7809,7 @@ void clean_up(void)
 	free_fonts();
 #endif /* X11 */
 
-	free_text_objects(global_text_object_list);
+	free_text_objects(global_text_object_list, 1);
 	free(global_text_object_list);
 	global_text_object_list = NULL;
 	if (tmpstring1) {
