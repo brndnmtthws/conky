@@ -2416,7 +2416,7 @@ void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
 /* construct_text_object() creates a new text_object */
 static struct text_object *construct_text_object(const char *s,
 		const char *arg, unsigned int object_count,
-		struct text_object *text_objects, long line)
+		struct text_object *text_objects, long line, char allow_threaded)
 {
 	// struct text_object *obj = new_text_object();
 	struct text_object *obj = new_text_object_internal();
@@ -2424,6 +2424,8 @@ static struct text_object *construct_text_object(const char *s,
 	obj->line = line;
 
 #define OBJ(a, n) if (strcmp(s, #a) == 0) { \
+	obj->type = OBJ_##a; need_mask |= (1 << n); {
+#define OBJ_THREAD(a, n) if (strcmp(s, #a) == 0 && allow_threaded) { \
 	obj->type = OBJ_##a; need_mask |= (1 << n); {
 #define END } } else
 
@@ -2921,35 +2923,35 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.execi.cmd = strndup(arg + n, text_buffer_size);
 			obj->data.execi.buffer = malloc(text_buffer_size);
 		}
-	END OBJ(texeci, 0)
-		int n;
+	END OBJ_THREAD(texeci, 0)
+			int n;
 
-		if (!arg || sscanf(arg, "%f %n", &obj->data.texeci.interval, &n) <= 0) {
-			char buf[256];
+			if (!arg || sscanf(arg, "%f %n", &obj->data.texeci.interval, &n) <= 0) {
+				char buf[256];
 
-			ERR("${texeci <interval> command}");
-			obj->type = OBJ_text;
-			snprintf(buf, 256, "${%s}", s);
-			obj->data.s = strndup(buf, text_buffer_size);
-		} else {
-			obj->data.texeci.cmd = strndup(arg + n, text_buffer_size);
-			obj->data.texeci.buffer = malloc(text_buffer_size);
-		}
-		obj->data.texeci.p_timed_thread = NULL;
-	END OBJ(pre_exec, 0)
+				ERR("${texeci <interval> command}");
+				obj->type = OBJ_text;
+				snprintf(buf, 256, "${%s}", s);
+				obj->data.s = strndup(buf, text_buffer_size);
+			} else {
+				obj->data.texeci.cmd = strndup(arg + n, text_buffer_size);
+				obj->data.texeci.buffer = malloc(text_buffer_size);
+			}
+			obj->data.texeci.p_timed_thread = NULL;
+	END	OBJ(pre_exec, 0)
 		obj->type = OBJ_text;
-		if (arg) {
-			char buf[2048];
+	if (arg) {
+		char buf[2048];
 
-			read_exec(arg, buf, sizeof(buf));
-			obj->data.s = strndup(buf, text_buffer_size);
-		} else {
-			obj->data.s = strndup("", text_buffer_size);
-		}
+		read_exec(arg, buf, sizeof(buf));
+		obj->data.s = strndup(buf, text_buffer_size);
+	} else {
+		obj->data.s = strndup("", text_buffer_size);
+	}
 #endif
 	END OBJ(fs_bar, INFO_FS)
 		arg = scan_bar(arg, &obj->data.fsbar.w, &obj->data.fsbar.h);
-		if (arg) {
+	if (arg) {
 			while (isspace(*arg)) {
 				arg++;
 			}
@@ -3701,7 +3703,7 @@ static struct text_object *construct_text_object(const char *s,
 		END OBJ(apm_battery_life, 0)
 		END OBJ(apm_battery_time, 0)
 #endif /* __FreeBSD__ */
-		END OBJ(imap_unseen, 0)
+		END OBJ_THREAD(imap_unseen, 0)
 		if (arg) {
 			// proccss
 			obj->data.mail = parse_mail_args(IMAP, arg);
@@ -3709,7 +3711,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->global_mode = 1;
 		}
-	END OBJ(imap_messages, 0)
+	END OBJ_THREAD(imap_messages, 0)
 		if (arg) {
 			// proccss
 			obj->data.mail = parse_mail_args(IMAP, arg);
@@ -3717,7 +3719,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->global_mode = 1;
 		}
-	END OBJ(pop3_unseen, 0)
+	END OBJ_THREAD(pop3_unseen, 0)
 		if (arg) {
 			// proccss
 			obj->data.mail = parse_mail_args(POP3, arg);
@@ -3725,7 +3727,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->global_mode = 1;
 		}
-	END OBJ(pop3_used, 0)
+	END OBJ_THREAD(pop3_used, 0)
 		if (arg) {
 			// proccss
 			obj->data.mail = parse_mail_args(POP3, arg);
@@ -3733,8 +3735,9 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->global_mode = 1;
 		}
+	END
 #ifdef SMAPI
-	END OBJ(smapi, 0)
+	OBJ(smapi, 0)
 		if (arg)
 			obj->data.s = strndup(arg, text_buffer_size);
 		else
@@ -3778,10 +3781,11 @@ static struct text_object *construct_text_object(const char *s,
 			}
 		} else
 			ERR("if_smapi_bat_bar needs an argument");
+		END
 #endif /* SMAPI */
 #ifdef MPD
-		END OBJ(mpd_artist, INFO_MPD)
-			END OBJ(mpd_title, INFO_MPD)
+			OBJ_THREAD(mpd_artist, INFO_MPD)
+			END OBJ_THREAD(mpd_title, INFO_MPD)
 			if (arg) {
 				sscanf(arg, "%d", &info.mpd.max_title_len);
 				if (info.mpd.max_title_len > 0) {
@@ -3792,24 +3796,24 @@ static struct text_object *construct_text_object(const char *s,
 			} else {
 				info.mpd.max_title_len = 0;
 			}
-		END OBJ(mpd_random, INFO_MPD)
-			END OBJ(mpd_repeat, INFO_MPD)
-			END OBJ(mpd_elapsed, INFO_MPD)
-			END OBJ(mpd_length, INFO_MPD)
-			END OBJ(mpd_track, INFO_MPD)
-			END OBJ(mpd_name, INFO_MPD)
-			END OBJ(mpd_file, INFO_MPD)
-			END OBJ(mpd_percent, INFO_MPD)
-			END OBJ(mpd_album, INFO_MPD)
-			END OBJ(mpd_vol, INFO_MPD)
-			END OBJ(mpd_bitrate, INFO_MPD)
-			END OBJ(mpd_status, INFO_MPD)
-			END OBJ(mpd_bar, INFO_MPD)
+		END OBJ_THREAD(mpd_random, INFO_MPD)
+			END OBJ_THREAD(mpd_repeat, INFO_MPD)
+			END OBJ_THREAD(mpd_elapsed, INFO_MPD)
+			END OBJ_THREAD(mpd_length, INFO_MPD)
+			END OBJ_THREAD(mpd_track, INFO_MPD)
+			END OBJ_THREAD(mpd_name, INFO_MPD)
+			END OBJ_THREAD(mpd_file, INFO_MPD)
+			END OBJ_THREAD(mpd_percent, INFO_MPD)
+			END OBJ_THREAD(mpd_album, INFO_MPD)
+			END OBJ_THREAD(mpd_vol, INFO_MPD)
+			END OBJ_THREAD(mpd_bitrate, INFO_MPD)
+			END OBJ_THREAD(mpd_status, INFO_MPD)
+			END OBJ_THREAD(mpd_bar, INFO_MPD)
 			scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
-		END OBJ(mpd_smart, INFO_MPD)
+		END OBJ_THREAD(mpd_smart, INFO_MPD)
 #endif
 #ifdef XMMS2
-			END OBJ(xmms2_artist, INFO_XMMS2)
+			OBJ(xmms2_artist, INFO_XMMS2)
 			END OBJ(xmms2_album, INFO_XMMS2)
 			END OBJ(xmms2_title, INFO_XMMS2)
 			END OBJ(xmms2_genre, INFO_XMMS2)
@@ -4066,7 +4070,7 @@ static struct text_object *create_plain_text(const char *s)
 	return obj;
 }
 
-static struct text_object_list *extract_variable_text_internal(const char *const_p)
+static struct text_object_list *extract_variable_text_internal(const char *const_p, char allow_threaded)
 {
 	struct text_object_list *retval;
 	struct text_object *obj;
@@ -4173,7 +4177,7 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 
 					// create new object
 					obj = construct_text_object(buf, arg,
-							retval->text_object_count, retval->text_objects, line);
+							retval->text_object_count, retval->text_objects, line, allow_threaded);
 					if (obj != NULL) {
 						// allocate memory for the object
 						retval->text_objects = realloc(retval->text_objects,
@@ -4239,13 +4243,13 @@ static void extract_variable_text(const char *p)
 		text_buffer = 0;
 	}
 
-	global_text_object_list = extract_variable_text_internal(p);
+	global_text_object_list = extract_variable_text_internal(p, 1);
 }
 
 struct text_object_list *parse_conky_vars(char *txt, char *p, struct information *cur)
 {
 	struct text_object_list *object_list =
-		extract_variable_text_internal(txt);
+		extract_variable_text_internal(txt, 0);
 
 	generate_text_internal(p, max_user_text, object_list, cur);
 	return object_list;
