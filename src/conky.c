@@ -136,7 +136,7 @@ static void print_version(void)
 	exit(0);
 }
 
-static const char *suffixes[] = { "B", "kiB", "MiB", "GiB", "TiB", "PiB", "" };
+static const char *suffixes[] = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "" };
 
 #ifdef X11
 
