@@ -157,6 +157,7 @@ EXTRA_DIST = 			\
 	x11.c			\
 	x11.h			\
 	xmms2.c                 \
+	xmms2.h                 \
 	smapi.c			\
 	users.c
 
