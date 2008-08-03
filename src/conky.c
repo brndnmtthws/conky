@@ -4022,24 +4022,11 @@ static struct text_object *construct_text_object(const char *s,
 			}
 #ifdef NVIDIA
 		END OBJ(nvidia, 0)
-			if (!arg){
-				CRIT_ERR("nvidia needs one argument "
-						"[temp,threshold,gpufreq,memfreq,imagequality]");
-			} else {
-				if (strcmp(arg, "temp") == 0)
-					obj->data.nvidia.type = NV_TEMP;
-				else if (strcmp(arg, "threshold") == 0)
-					obj->data.nvidia.type = NV_TEMP_THRESHOLD;
-				else if (strcmp(arg, "gpufreq") == 0)
-					obj->data.nvidia.type = NV_GPU_FREQ;
-				else if (strcmp(arg, "memfreq") == 0)
-					obj->data.nvidia.type = NV_MEM_FREQ;
-				else if (strcmp(arg, "imagequality") == 0)
-					obj->data.nvidia.type = NV_IMAGE_QUALITY;
-				else
-					CRIT_ERR("you have to give one of these arguments "
-							"[temp,threshold,gpufreq,memfreq,imagequality");
-				strncpy((char*)&obj->data.nvidia.arg, arg, 20);
+			if (!arg) {
+				CRIT_ERR("nvidia needs an argument\n");
+			} else if (set_nvidia_type(&obj->data.nvidia, arg)) {
+				CRIT_ERR("nvidia: invalid argument"
+				         " specified: '%s'\n", arg);
 			}
 #endif /* NVIDIA */
 		END {
@@ -6321,13 +6308,14 @@ head:
 			}
 #ifdef NVIDIA
 			OBJ(nvidia) {
-				int hol = (strcmp((char*)&obj->data.nvidia.arg, "gpufreq")) ? 1 : 0;
-				if(!(obj->data.nvidia.value = get_nvidia_value(obj->data.nvidia.type, display, hol)))
-					snprintf(p, p_max_size, "value unavailible");
+				int value = get_nvidia_value(obj->data.nvidia.type, display);
+				if(value == -1)
+					snprintf(p, p_max_size, "N/A");
+				else if (obj->data.nvidia.print_as_float &&
+						value > 0 && value < 100)
+					snprintf(p, p_max_size, "%.1f", (float)value);
 				else
-					spaced_print(p, p_max_size, "%*d", 4, "nvidia",
-							     4, obj->data.nvidia.value);
-
+					snprintf(p, p_max_size, "%d", value);
 			}
 #endif /* NVIDIA */
 

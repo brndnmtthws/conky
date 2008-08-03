@@ -1454,12 +1454,25 @@
 		</term>
 		<listitem>
 			Nvidia graficcard support for the XNVCtrl library.
-			Each option gives back one integer value:
-			(threshold): the thresholdtemperature at which the gpu slows down
-			(temp): gives the gpu current temperature
-			(gpufreq): gives the current gpu frequency
-			(memfreq): gives the current mem frequency
-			(imagequality): which imagequality should be choosen by OpenGL applications
+			Each option can be shortened to the least significant part.
+			Temperatures are printed as float, all other values as integer.
+			<simplelist>
+				<member><command>threshold</command>:
+					the thresholdtemperature at which the gpu slows down
+				</member>
+				<member><command>temp</command>:
+					gives the gpu current temperature
+				</member>
+				<member><command>gpufreq</command>:
+					gives the current gpu frequency
+				</member>
+				<member><command>memfreq</command>:
+					gives the current mem frequency
+				</member>
+				<member><command>imagequality</command>:
+					which imagequality should be choosen by OpenGL applications
+				</member>
+			</simplelist>
 			<para></para>
 		</listitem>
 	</varlistentry>

@@ -28,16 +28,44 @@
 
 #include "nvidia.h"
 
-int get_nvidia_value(QUERY_ID qid, Display *dpy, int highorlow){
+int get_nvidia_value(QUERY_ID qid, Display *dpy){
 	int tmp;
 	if(!XNVCTRLQueryAttribute(dpy, 0, 0, qid, &tmp)){
-		return 0;
-	} else if (qid == NV_GPU_FREQ){
-		if (highorlow == 1)
-			return tmp >> 16;
-		else
-			return tmp & 0x0000FFFF;
-	} else
-		return tmp;
+		return -1;
+	}
+	/* FIXME: when are the low 2 bytes of NV_GPU_FREQ needed? */
+	if (qid == NV_GPU_FREQ)
+		return tmp >> 16;
+	return tmp;
 }
 
+int set_nvidia_type(struct nvidia_s *nvidia, const char *arg)
+{
+	if (!arg || !arg[0] || !arg[1])
+		return 1;
+
+	nvidia->print_as_float = 0;
+	switch(arg[0]) {
+		case 't':                              // temp or threshold
+			nvidia->print_as_float = 1;
+			if (arg[1] == 'e')
+				nvidia->type = NV_TEMP;
+			else if (arg[1] == 'h')
+				nvidia->type = NV_TEMP_THRESHOLD;
+			else
+				return 1;
+			break;
+		case 'g':                              // gpufreq
+			nvidia->type = NV_GPU_FREQ;
+			break;
+		case 'm':                              // memfreq
+			nvidia->type = NV_MEM_FREQ;
+			break;
+		case 'i':                              // imagequality
+			nvidia->type = NV_IMAGE_QUALITY;
+			break;
+		default:
+			return 1;
+	}
+	return 0;
+}

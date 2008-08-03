@@ -449,11 +449,4 @@ char *get_apm_battery_time(void);
 #include "hddtemp.h"
 #endif /* HDDTEMP */
 
-/* in nvidia.c */
-#ifdef NVIDIA
-
-int get_nvidia_value(QUERY_ID qid, Display *dpy, int highorlow);
-
-#endif /* NVIDIA */
-
 #endif
