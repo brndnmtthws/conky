@@ -1634,7 +1634,7 @@ void *imap_thread(void *arg)
 	char recvbuf[MAXDATASIZE];
 	char sendbuf[MAXDATASIZE];
 	char *reply;
-	int fail = 0;
+	unsigned int fail = 0;
 	unsigned int old_unseen = UINT_MAX;
 	unsigned int old_messages = UINT_MAX;
 	struct stat stat_buf;
@@ -1661,8 +1661,8 @@ void *imap_thread(void *arg)
 		fd_set fdset;
 
 		if (fail > 0) {
-			ERR("Trying IMAP connection again for %s@%s (try %i/5)",
-					mail->user, mail->host, fail + 1);
+			ERR("Trying IMAP connection again for %s@%s (try %u/%u)",
+					mail->user, mail->host, fail + 1, mail->retries);
 		}
 		do {
 			if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
@@ -1831,7 +1831,7 @@ void *pop3_thread(void *arg)
 	char recvbuf[MAXDATASIZE];
 	char sendbuf[MAXDATASIZE];
 	char *reply;
-	int fail = 0;
+	unsigned int fail = 0;
 	unsigned int old_unseen = UINT_MAX;
 	struct stat stat_buf;
 	struct hostent he, *he_res = 0;
@@ -1857,8 +1857,8 @@ void *pop3_thread(void *arg)
 		fd_set fdset;
 
 		if (fail > 0) {
-			ERR("Trying POP3 connection again for %s@%s (try %i/5)",
-					mail->user, mail->host, fail + 1);
+			ERR("Trying POP3 connection again for %s@%s (try %u/%u)",
+					mail->user, mail->host, fail + 1, mail->retries);
 		}
 		do {
 			if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {

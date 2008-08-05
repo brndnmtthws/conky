@@ -644,10 +644,10 @@ AC_ARG_ENABLE([testing],
 
 if test "x$want_testing" = "xyes" -a $ac_cv_c_compiler_gnu != no; then
   if test "x$want_debug" = "xyes"; then
-    CFLAGS="$CFLAGS -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -std=c99 -pedantic"
+    CFLAGS="$CFLAGS -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -std=c99 -pedantic -Werror"
     AC_DEFINE([TESTING], [], [Define for testing (enables strict compiler flags)])
   else
-    CFLAGS="$CFLAGS -g3 -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -std=c99 -pedantic"
+    CFLAGS="$CFLAGS -g3 -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -std=c99 -pedantic -Werror"
     AC_DEFINE([TESTING], [], [Define for testing (enables strict compiler flags)])
   fi
 fi
