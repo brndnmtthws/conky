@@ -1575,6 +1575,13 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 		tcsetattr(fp, TCSANOW, &term);
 	}
 	// now we check for optional args
+	tmp = strstr(arg, "-r ");
+	if (tmp) {
+		tmp += 3;
+		sscanf(tmp, "%u", &mail->retries);
+	} else {
+		mail->retries = 5;	// 5 retries after failure
+	}
 	tmp = strstr(arg, "-i ");
 	if (tmp) {
 		tmp += 3;
@@ -1648,7 +1655,7 @@ void *imap_thread(void *arg)
 		exit(1);
 	}
 #endif /* HAVE_GETHOSTBYNAME_R */
-	while (fail < 5) {
+	while (fail < mail->retries) {
 		struct timeval timeout;
 		int res;
 		fd_set fdset;
@@ -1844,7 +1851,7 @@ void *pop3_thread(void *arg)
 		exit(1);
 	}
 #endif /* HAVE_GETHOSTBYNAME_R */
-	while (fail < 5) {
+	while (fail < mail->retries) {
 		struct timeval timeout;
 		int res;
 		fd_set fdset;

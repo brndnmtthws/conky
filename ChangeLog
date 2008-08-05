@@ -1,7 +1,10 @@
 # $Id$
 
+2008-08-05
+	* Add option to specify number of retries for IMAP/POP3 stuff (via -r)
+
 2008-08-03
-	* smaller $nvidia improvements
+	* Smaller $nvidia improvements
 
 2008-07-29
 	* Added missing header to package dist

@@ -1,4 +1,4 @@
-'\" -*- coding: us-ascii -*-
+.\" -*- coding: us-ascii -*-
 .if \n(.g .ds T< \\FC
 .if \n(.g .ds T> \\F[\n[.fam]]
 .de URL
@@ -225,7 +225,7 @@ How strict should if_up be when testing an interface for being up? The value is 
 
 .TP 
 \fB\*(T<\fBimap\fR\*(T>\fR
-Default global IMAP server. Arguments are: "host user pass [-i interval] [-f folder] [-p port] [-e command]". Default port is 143, default folder is 'INBOX', default interval is 5 minutes. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
+Default global IMAP server. Arguments are: "host user pass [-i interval] [-f folder] [-p port] [-e command] [-r retries]". Default port is 143, default folder is 'INBOX', default interval is 5 minutes, and default number of retries before giving up is 5. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
 
 .TP 
 \fB\*(T<\fBmail_spool\fR\*(T>\fR
@@ -328,7 +328,7 @@ Pad percentages to this many decimals (0 = no padding)
 
 .TP 
 \fB\*(T<\fBpop3\fR\*(T>\fR
-Default global POP3 server. Arguments are: "host user pass [-i interval] [-p port] [-e command]". Default port is 110, default interval is 5 minutes. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
+Default global POP3 server. Arguments are: "host user pass [-i interval] [-p port] [-e command] [-r retries]". Default port is 110, default interval is 5 minutes, and default number of retries before giving up is 5. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
 
 .TP 
 \fB\*(T<\fBshort_units\fR\*(T>\fR
@@ -835,11 +835,11 @@ if INTERFACE exists and is up, display everything between $if_up and the matchin
 
 .TP 
 \fB\*(T<\fBimap_messages\fR\*(T>\fR \*(T<\fB(args)\fR\*(T> 
-Displays the number of messages in your global IMAP inbox by default. You can define individual IMAP inboxes seperately by passing arguments to this object. Arguments are: "host user pass [-i interval] [-p port] [-e command]". Default port is 143, default interval is 5 minutes. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
+Displays the number of messages in your global IMAP inbox by default. You can define individual IMAP inboxes seperately by passing arguments to this object. Arguments are: "host user pass [-i interval] [-p port] [-e command] [-r retries]". Default port is 143, default interval is 5 minutes, and default number of retries before giving up is 5. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
 
 .TP 
 \fB\*(T<\fBimap_unseen\fR\*(T>\fR \*(T<\fB(args)\fR\*(T> 
-Displays the number of unseen messages in your global IMAP inbox by default. You can define individual IMAP inboxes seperately by passing arguments to this object. Arguments are: "host user pass [-i interval] [-p port] [-e command]". Default port is 143, default interval is 5 minutes. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
+Displays the number of unseen messages in your global IMAP inbox by default. You can define individual IMAP inboxes seperately by passing arguments to this object. Arguments are: "host user pass [-i interval] [-p port] [-e command] [-r retries]". Default port is 143, default interval is 5 minutes, and default number of retries before giving up is 5. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
 
 .TP 
 \fB\*(T<\fBioscheduler\fR\*(T>\fR \*(T<\fBdisk\fR\*(T> 
@@ -996,12 +996,23 @@ Hostname
 .TP 
 \fB\*(T<\fBnvidia\fR\*(T>\fR \*(T<\fBthreshold\fR\*(T> \*(T<\fBtemp\fR\*(T> \*(T<\fBgpufreq\fR\*(T> \*(T<\fBmemfreq\fR\*(T> \*(T<\fBimagequality\fR\*(T> 
 Nvidia graficcard support for the XNVCtrl library.
-Each option gives back one integer value:
-(threshold): the thresholdtemperature at which the gpu slows down
-(temp): gives the gpu current temperature
-(gpufreq): gives the current gpu frequency
-(memfreq): gives the current mem frequency
-(imagequality): which imagequality should be choosen by OpenGL applications
+Each option can be shortened to the least significant part.
+Temperatures are printed as float, all other values as integer.
+
+\fBthreshold\fR:
+the thresholdtemperature at which the gpu slows down
+.br
+\fBtemp\fR:
+gives the gpu current temperature
+.br
+\fBgpufreq\fR:
+gives the current gpu frequency
+.br
+\fBmemfreq\fR:
+gives the current mem frequency
+.br
+\fBimagequality\fR:
+which imagequality should be choosen by OpenGL applications
 
 .TP 
 \fB\*(T<\fBoutlinecolor\fR\*(T>\fR \*(T<\fB(color)\fR\*(T> 
@@ -1037,11 +1048,11 @@ Platform sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you have
 
 .TP 
 \fB\*(T<\fBpop3_unseen\fR\*(T>\fR \*(T<\fB(args)\fR\*(T> 
-Displays the number of unseen messages in your global POP3 inbox by default. You can define individual POP3 inboxes seperately by passing arguments to this object. Arguments are: "host user pass [-i interval] [-p port] [-e command]". Default port is 110, default interval is 5 minutes. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
+Displays the number of unseen messages in your global POP3 inbox by default. You can define individual POP3 inboxes seperately by passing arguments to this object. Arguments are: "host user pass [-i interval] [-p port] [-e command] [-r retries]". Default port is 110, default interval is 5 minutes, and default number of retries before giving up is 5. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
 
 .TP 
 \fB\*(T<\fBpop3_used\fR\*(T>\fR \*(T<\fB(args)\fR\*(T> 
-Displays the amount of space (in MiB, 2^20) used in your global POP3 inbox by default. You can define individual POP3 inboxes seperately by passing arguments to this object. Arguments are: "host user pass [-i interval] [-p port] [-e command]". Default port is 110, default interval is 5 minutes. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
+Displays the amount of space (in MiB, 2^20) used in your global POP3 inbox by default. You can define individual POP3 inboxes seperately by passing arguments to this object. Arguments are: "host user pass [-i interval] [-p port] [-e command] [-r retries]". Default port is 110, default interval is 5 minutes, and default number of retries before giving up is 5. If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
 
 .TP 
 \fB\*(T<\fBpre_exec\fR\*(T>\fR \*(T<\fBshell command\fR\*(T> 

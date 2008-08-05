@@ -137,7 +137,7 @@
 	<varlistentry>
 		<term><command><option>imap</option></command></term>
 		<listitem>
-			Default global IMAP server.  Arguments are: "host user pass [-i interval] [-f folder] [-p port] [-e command]".  Default port is 143, default folder is 'INBOX', default interval is 5 minutes.  If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
+			Default global IMAP server.  Arguments are: "host user pass [-i interval] [-f folder] [-p port] [-e command] [-r retries]".  Default port is 143, default folder is 'INBOX', default interval is 5 minutes, and default number of retries before giving up is 5.  If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
 			<para></para></listitem>
 	</varlistentry>
 
@@ -325,7 +325,7 @@
 	<varlistentry>
 		<term><command><option>pop3</option></command></term>
 		<listitem>
-			Default global POP3 server.  Arguments are: "host user pass [-i interval] [-p port] [-e command]".  Default port is 110, default interval is 5 minutes.  If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
+			Default global POP3 server.  Arguments are: "host user pass [-i interval] [-p port] [-e command] [-r retries]".  Default port is 110, default interval is 5 minutes, and default number of retries before giving up is 5.  If the password is supplied as '*', you will be prompted to enter the password when Conky starts.
 			<para></para></listitem>
 	</varlistentry>
 

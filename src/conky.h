@@ -156,6 +156,7 @@ struct mail_s {			// for imap and pop3
 	unsigned long used;
 	unsigned long quota;
 	unsigned long port;
+	unsigned long retries;
 	float interval;
 	double last_update;
 	char host[128];
