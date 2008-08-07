@@ -133,6 +133,7 @@ EXTRA_DIST = 			\
 	bmpx.c			\
 	common.h		\
 	freebsd.c		\
+	freebsd.h		\
 	fs.h			\
 	hddtemp.c		\
 	hddtemp.h		\
