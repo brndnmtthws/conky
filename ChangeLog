@@ -1,6 +1,7 @@
 # $Id$
 
 2008-08-14
+	* Conky 1.6.1 released
 	* Fix compile error when MPD support not enabled
 
 2008-08-05
