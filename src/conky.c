@@ -2397,6 +2397,7 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 				break;
 		}
 	}
+	if (full) {} // disable warning when MPD !defined
 	free(text_object_list->text_objects);
 	text_object_list->text_objects = NULL;
 	text_object_list->text_object_count = 0;
@@ -3742,9 +3743,8 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->global_mode = 1;
 		}
-	END
 #ifdef SMAPI
-	OBJ(smapi, 0)
+	END OBJ(smapi, 0)
 		if (arg)
 			obj->data.s = strndup(arg, text_buffer_size);
 		else
@@ -3788,10 +3788,9 @@ static struct text_object *construct_text_object(const char *s,
 			}
 		} else
 			ERR("if_smapi_bat_bar needs an argument");
-		END
 #endif /* SMAPI */
 #ifdef MPD
-			OBJ_THREAD(mpd_artist, INFO_MPD)
+			END OBJ_THREAD(mpd_artist, INFO_MPD)
 			END OBJ_THREAD(mpd_title, INFO_MPD)
 			if (arg) {
 				sscanf(arg, "%d", &info.mpd.max_title_len);
@@ -3818,9 +3817,9 @@ static struct text_object *construct_text_object(const char *s,
 			END OBJ_THREAD(mpd_bar, INFO_MPD)
 			scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 		END OBJ_THREAD(mpd_smart, INFO_MPD)
-#endif
+#endif /* MPD */
 #ifdef XMMS2
-			OBJ(xmms2_artist, INFO_XMMS2)
+			END OBJ(xmms2_artist, INFO_XMMS2)
 			END OBJ(xmms2_album, INFO_XMMS2)
 			END OBJ(xmms2_title, INFO_XMMS2)
 			END OBJ(xmms2_genre, INFO_XMMS2)
