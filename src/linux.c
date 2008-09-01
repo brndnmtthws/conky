@@ -1582,7 +1582,7 @@ void set_return_value(char *buffer, unsigned int n, int item, int idx);
 
 void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 {
-	static int idx, rep = 0, rep2 = 0;
+	static int idx, rep = 0, rep1 = 0, rep2 = 0;
 	char acpi_path[128];
 	char sysfs_path[128];
 
@@ -1608,11 +1608,10 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 
  	if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL) {
  		sysfs_bat_fp[idx] = open_file(sysfs_path, &rep);
-		rep = 0;
 	}
 
  	if (sysfs_bat_fp[idx] == NULL && acpi_bat_fp[idx] == NULL && apm_bat_fp[idx] == NULL) {
-  		acpi_bat_fp[idx] = open_file(acpi_path, &rep);
+  		acpi_bat_fp[idx] = open_file(acpi_path, &rep1);
 	}
 
  	if (sysfs_bat_fp[idx] != NULL) {
