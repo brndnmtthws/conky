@@ -4514,419 +4514,419 @@ static void generate_text_internal(char *p, int p_max_size,
 			default:
 				ERR("not implemented obj type %d", obj->type);
 #ifndef __OpenBSD__
-				OBJ(acpitemp) {
-					/* does anyone have decimals in acpi temperature? */
-					spaced_print(p, p_max_size, "%d", 5, "acpitemp",
-							round_to_int(get_acpi_temperature(obj->data.i)));
-				}
-				OBJ(acpitempf) {
-					/* does anyone have decimals in acpi temperature? */
-					spaced_print(p, p_max_size, "%d", 5, "acpitemp",
-							round_to_int((get_acpi_temperature(obj->data.i) + 40) *
-								9.0 / 5 - 40));
-				}
+			OBJ(acpitemp) {
+				/* does anyone have decimals in acpi temperature? */
+				spaced_print(p, p_max_size, "%d", 5, "acpitemp",
+						round_to_int(get_acpi_temperature(obj->data.i)));
+			}
+			OBJ(acpitempf) {
+				/* does anyone have decimals in acpi temperature? */
+				spaced_print(p, p_max_size, "%d", 5, "acpitemp",
+						round_to_int((get_acpi_temperature(obj->data.i) + 40) *
+							9.0 / 5 - 40));
+			}
 #endif /* !__OpenBSD__ */
-				OBJ(freq) {
-					if (obj->a) {
-						obj->a = get_freq(p, p_max_size, "%.0f", 1,
-								obj->data.cpu_index);
-					}
+			OBJ(freq) {
+				if (obj->a) {
+					obj->a = get_freq(p, p_max_size, "%.0f", 1,
+							obj->data.cpu_index);
 				}
-				OBJ(freq_g) {
-					if (obj->a) {
+			}
+			OBJ(freq_g) {
+				if (obj->a) {
 #ifndef __OpenBSD__
-						obj->a = get_freq(p, p_max_size, "%'.2f", 1000,
-								obj->data.cpu_index);
+					obj->a = get_freq(p, p_max_size, "%'.2f", 1000,
+							obj->data.cpu_index);
 #else
-						/* OpenBSD has no such flag (SUSv2) */
-						obj->a = get_freq(p, p_max_size, "%.2f", 1000,
-								obj->data.cpu_index);
+					/* OpenBSD has no such flag (SUSv2) */
+					obj->a = get_freq(p, p_max_size, "%.2f", 1000,
+							obj->data.cpu_index);
 #endif
-					}
 				}
+			}
 #if defined(__linux__)
-				OBJ(voltage_mv) {
-					if (obj->a) {
-						obj->a = get_voltage(p, p_max_size, "%.0f", 1,
-								obj->data.cpu_index);
-					}
+			OBJ(voltage_mv) {
+				if (obj->a) {
+					obj->a = get_voltage(p, p_max_size, "%.0f", 1,
+							obj->data.cpu_index);
 				}
-				OBJ(voltage_v) {
-					if (obj->a) {
-						obj->a = get_voltage(p, p_max_size, "%'.3f", 1000,
-								obj->data.cpu_index);
-					}
+			}
+			OBJ(voltage_v) {
+				if (obj->a) {
+					obj->a = get_voltage(p, p_max_size, "%'.3f", 1000,
+							obj->data.cpu_index);
 				}
+			}
 
 #ifdef HAVE_IWLIB
-				OBJ(wireless_essid) {
-					snprintf(p, p_max_size, "%s", obj->data.net->essid);
+			OBJ(wireless_essid) {
+				snprintf(p, p_max_size, "%s", obj->data.net->essid);
+			}
+			OBJ(wireless_mode) {
+				snprintf(p, p_max_size, "%s", obj->data.net->mode);
+			}
+			OBJ(wireless_bitrate) {
+				snprintf(p, p_max_size, "%s", obj->data.net->bitrate);
+			}
+			OBJ(wireless_ap) {
+				snprintf(p, p_max_size, "%s", obj->data.net->ap);
+			}
+			OBJ(wireless_link_qual) {
+				spaced_print(p, p_max_size, "%d", 4, "wireless_link_qual",
+						obj->data.net->link_qual);
+			}
+			OBJ(wireless_link_qual_max) {
+				spaced_print(p, p_max_size, "%d", 4,
+						"wireless_link_qual_max", obj->data.net->link_qual_max);
+			}
+			OBJ(wireless_link_qual_perc) {
+				if (obj->data.net->link_qual_max > 0) {
+					spaced_print(p, p_max_size, "%.0f", 5,
+							"wireless_link_qual_perc",
+							(double) obj->data.net->link_qual /
+							obj->data.net->link_qual_max * 100);
+				} else {
+					spaced_print(p, p_max_size, "unk", 5,
+							"wireless_link_qual_perc");
 				}
-				OBJ(wireless_mode) {
-					snprintf(p, p_max_size, "%s", obj->data.net->mode);
-				}
-				OBJ(wireless_bitrate) {
-					snprintf(p, p_max_size, "%s", obj->data.net->bitrate);
-				}
-				OBJ(wireless_ap) {
-					snprintf(p, p_max_size, "%s", obj->data.net->ap);
-				}
-				OBJ(wireless_link_qual) {
-					spaced_print(p, p_max_size, "%d", 4, "wireless_link_qual",
-							obj->data.net->link_qual);
-				}
-				OBJ(wireless_link_qual_max) {
-					spaced_print(p, p_max_size, "%d", 4,
-							"wireless_link_qual_max", obj->data.net->link_qual_max);
-				}
-				OBJ(wireless_link_qual_perc) {
-					if (obj->data.net->link_qual_max > 0) {
-						spaced_print(p, p_max_size, "%.0f", 5,
-								"wireless_link_qual_perc",
-								(double) obj->data.net->link_qual /
-								obj->data.net->link_qual_max * 100);
-					} else {
-						spaced_print(p, p_max_size, "unk", 5,
-								"wireless_link_qual_perc");
-					}
-				}
-				OBJ(wireless_link_bar) {
-					new_bar(p, obj->a, obj->b, ((double) obj->data.net->link_qual /
-								obj->data.net->link_qual_max) * 255.0);
-				}
+			}
+			OBJ(wireless_link_bar) {
+				new_bar(p, obj->a, obj->b, ((double) obj->data.net->link_qual /
+							obj->data.net->link_qual_max) * 255.0);
+			}
 #endif /* HAVE_IWLIB */
 
 #endif /* __linux__ */
 
-				OBJ(freq_dyn) {
-					get_freq_dynamic(p, p_max_size, "%.0f", 1);
-					spaced_print(p, p_max_size, "%s", 6, "freq_dyn", p);
-				}
-				OBJ(freq_dyn_g) {
+			OBJ(freq_dyn) {
+				get_freq_dynamic(p, p_max_size, "%.0f", 1);
+				spaced_print(p, p_max_size, "%s", 6, "freq_dyn", p);
+			}
+			OBJ(freq_dyn_g) {
 #ifndef __OpenBSD__
-					get_freq_dynamic(p, p_max_size, "%'.2f", 1000);
+				get_freq_dynamic(p, p_max_size, "%'.2f", 1000);
 #else
-					get_freq_dynamic(p, p_max_size, "%.2f", 1000);
+				get_freq_dynamic(p, p_max_size, "%.2f", 1000);
 #endif
-					spaced_print(p, p_max_size, "%s", 6, "freq_dyn", p);
-				}
+				spaced_print(p, p_max_size, "%s", 6, "freq_dyn", p);
+			}
 
 #ifndef __OpenBSD__
-				OBJ(adt746xcpu) {
-					get_adt746x_cpu(p, p_max_size);
-				}
-				OBJ(adt746xfan) {
-					get_adt746x_fan(p, p_max_size);
-				}
-				OBJ(acpifan) {
-					get_acpi_fan(p, p_max_size);
-				}
-				OBJ(acpiacadapter) {
-					get_acpi_ac_adapter(p, p_max_size);
-				}
-				OBJ(battery) {
-					get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_STATUS);
-				}
-				OBJ(battery_time) {
-					get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_TIME);
-				}
-				OBJ(battery_percent) {
-					spaced_print(p, p_max_size, "%*d", 4, "battery_percent",
-							pad_percents, get_battery_perct(obj->data.s));
-				}
-				OBJ(battery_bar) {
-					new_bar(p, obj->a, obj->b, get_battery_perct_bar(obj->data.s));
-				}
+			OBJ(adt746xcpu) {
+				get_adt746x_cpu(p, p_max_size);
+			}
+			OBJ(adt746xfan) {
+				get_adt746x_fan(p, p_max_size);
+			}
+			OBJ(acpifan) {
+				get_acpi_fan(p, p_max_size);
+			}
+			OBJ(acpiacadapter) {
+				get_acpi_ac_adapter(p, p_max_size);
+			}
+			OBJ(battery) {
+				get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_STATUS);
+			}
+			OBJ(battery_time) {
+				get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_TIME);
+			}
+			OBJ(battery_percent) {
+				spaced_print(p, p_max_size, "%*d", 4, "battery_percent",
+						pad_percents, get_battery_perct(obj->data.s));
+			}
+			OBJ(battery_bar) {
+				new_bar(p, obj->a, obj->b, get_battery_perct_bar(obj->data.s));
+			}
 #endif /* __OpenBSD__ */
 
-				OBJ(buffers) {
-					human_readable(cur->buffers * 1024, p, 255, "buffers");
+			OBJ(buffers) {
+				human_readable(cur->buffers * 1024, p, 255, "buffers");
+			}
+			OBJ(cached) {
+				human_readable(cur->cached * 1024, p, 255, "buffers");
+			}
+			OBJ(cpu) {
+				if (obj->data.cpu_index > info.cpu_count) {
+					printf("obj->data.cpu_index %i info.cpu_count %i",
+							obj->data.cpu_index, info.cpu_count);
+					CRIT_ERR("attempting to use more CPUs than you have!");
 				}
-				OBJ(cached) {
-					human_readable(cur->cached * 1024, p, 255, "buffers");
-				}
-				OBJ(cpu) {
-					if (obj->data.cpu_index > info.cpu_count) {
-						printf("obj->data.cpu_index %i info.cpu_count %i",
-								obj->data.cpu_index, info.cpu_count);
-						CRIT_ERR("attempting to use more CPUs than you have!");
-					}
-					spaced_print(p, p_max_size, "%*d", 4, "cpu", pad_percents,
-							round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100.0));
-				}
-				OBJ(cpubar) {
-					new_bar(p, obj->a, obj->b,
-							round_to_int(cur->cpu_usage[obj->data.cpu_index] * 255.0));
-				}
-				OBJ(cpugraph) {
-					new_graph(p, obj->a, obj->b, obj->c, obj->d, (unsigned int)
-							round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100),
-							100, 1, obj->showaslog);
-				}
-				OBJ(loadgraph) {
-					new_graph(p, obj->a, obj->b, obj->c, obj->d, cur->loadavg[0],
-							obj->e, 1, obj->showaslog);
-				}
-				OBJ(color) {
-					new_fg(p, obj->data.l);
-				}
-				OBJ(color0) {
-					new_fg(p, color0);
-				}
-				OBJ(color1) {
-					new_fg(p, color1);
-				}
-				OBJ(color2) {
-					new_fg(p, color2);
-				}
-				OBJ(color3) {
-					new_fg(p, color3);
-				}
-				OBJ(color4) {
-					new_fg(p, color4);
-				}
-				OBJ(color5) {
-					new_fg(p, color5);
-				}
-				OBJ(color6) {
-					new_fg(p, color6);
-				}
-				OBJ(color7) {
-					new_fg(p, color7);
-				}
-				OBJ(color8) {
-					new_fg(p, color8);
-				}
-				OBJ(color9) {
-					new_fg(p, color9);
-				}
-				OBJ(conky_version) {
-					snprintf(p, p_max_size, "%s", VERSION);
-				}
-				OBJ(conky_build_date) {
-					snprintf(p, p_max_size, "%s", BUILD_DATE);
-				}
-				OBJ(conky_build_arch) {
-					snprintf(p, p_max_size, "%s", BUILD_ARCH);
-				}
+				spaced_print(p, p_max_size, "%*d", 4, "cpu", pad_percents,
+						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100.0));
+			}
+			OBJ(cpubar) {
+				new_bar(p, obj->a, obj->b,
+						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 255.0));
+			}
+			OBJ(cpugraph) {
+				new_graph(p, obj->a, obj->b, obj->c, obj->d, (unsigned int)
+						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100),
+						100, 1, obj->showaslog);
+			}
+			OBJ(loadgraph) {
+				new_graph(p, obj->a, obj->b, obj->c, obj->d, cur->loadavg[0],
+						obj->e, 1, obj->showaslog);
+			}
+			OBJ(color) {
+				new_fg(p, obj->data.l);
+			}
+			OBJ(color0) {
+				new_fg(p, color0);
+			}
+			OBJ(color1) {
+				new_fg(p, color1);
+			}
+			OBJ(color2) {
+				new_fg(p, color2);
+			}
+			OBJ(color3) {
+				new_fg(p, color3);
+			}
+			OBJ(color4) {
+				new_fg(p, color4);
+			}
+			OBJ(color5) {
+				new_fg(p, color5);
+			}
+			OBJ(color6) {
+				new_fg(p, color6);
+			}
+			OBJ(color7) {
+				new_fg(p, color7);
+			}
+			OBJ(color8) {
+				new_fg(p, color8);
+			}
+			OBJ(color9) {
+				new_fg(p, color9);
+			}
+			OBJ(conky_version) {
+				snprintf(p, p_max_size, "%s", VERSION);
+			}
+			OBJ(conky_build_date) {
+				snprintf(p, p_max_size, "%s", BUILD_DATE);
+			}
+			OBJ(conky_build_arch) {
+				snprintf(p, p_max_size, "%s", BUILD_ARCH);
+			}
 #if defined(__linux__)
-				OBJ(disk_protect) {
-					snprintf(p, p_max_size, "%s",
-							get_disk_protect_queue(obj->data.s));
-				}
-				OBJ(i8k_version) {
-					snprintf(p, p_max_size, "%s", i8k.version);
-				}
-				OBJ(i8k_bios) {
-					snprintf(p, p_max_size, "%s", i8k.bios);
-				}
-				OBJ(i8k_serial) {
-					snprintf(p, p_max_size, "%s", i8k.serial);
-				}
-				OBJ(i8k_cpu_temp) {
-					snprintf(p, p_max_size, "%s", i8k.cpu_temp);
-				}
-				OBJ(i8k_cpu_tempf) {
-					int cpu_temp;
+			OBJ(disk_protect) {
+				snprintf(p, p_max_size, "%s",
+						get_disk_protect_queue(obj->data.s));
+			}
+			OBJ(i8k_version) {
+				snprintf(p, p_max_size, "%s", i8k.version);
+			}
+			OBJ(i8k_bios) {
+				snprintf(p, p_max_size, "%s", i8k.bios);
+			}
+			OBJ(i8k_serial) {
+				snprintf(p, p_max_size, "%s", i8k.serial);
+			}
+			OBJ(i8k_cpu_temp) {
+				snprintf(p, p_max_size, "%s", i8k.cpu_temp);
+			}
+			OBJ(i8k_cpu_tempf) {
+				int cpu_temp;
 
-					sscanf(i8k.cpu_temp, "%d", &cpu_temp);
-					snprintf(p, p_max_size, "%.1f", cpu_temp * (9.0 / 5.0) + 32.0);
-				}
-				OBJ(i8k_left_fan_status) {
-					int left_fan_status;
+				sscanf(i8k.cpu_temp, "%d", &cpu_temp);
+				snprintf(p, p_max_size, "%.1f", cpu_temp * (9.0 / 5.0) + 32.0);
+			}
+			OBJ(i8k_left_fan_status) {
+				int left_fan_status;
 
-					sscanf(i8k.left_fan_status, "%d", &left_fan_status);
-					if (left_fan_status == 0) {
-						snprintf(p, p_max_size, "off");
-					}
-					if (left_fan_status == 1) {
-						snprintf(p, p_max_size, "low");
-					}
-					if (left_fan_status == 2) {
-						snprintf(p, p_max_size, "high");
-					}
+				sscanf(i8k.left_fan_status, "%d", &left_fan_status);
+				if (left_fan_status == 0) {
+					snprintf(p, p_max_size, "off");
 				}
-				OBJ(i8k_right_fan_status) {
-					int right_fan_status;
+				if (left_fan_status == 1) {
+					snprintf(p, p_max_size, "low");
+				}
+				if (left_fan_status == 2) {
+					snprintf(p, p_max_size, "high");
+				}
+			}
+			OBJ(i8k_right_fan_status) {
+				int right_fan_status;
 
-					sscanf(i8k.right_fan_status, "%d", &right_fan_status);
-					if (right_fan_status == 0) {
-						snprintf(p, p_max_size, "off");
-					}
-					if (right_fan_status == 1) {
-						snprintf(p, p_max_size, "low");
-					}
-					if (right_fan_status == 2) {
-						snprintf(p, p_max_size, "high");
-					}
+				sscanf(i8k.right_fan_status, "%d", &right_fan_status);
+				if (right_fan_status == 0) {
+					snprintf(p, p_max_size, "off");
 				}
-				OBJ(i8k_left_fan_rpm) {
-					snprintf(p, p_max_size, "%s", i8k.left_fan_rpm);
+				if (right_fan_status == 1) {
+					snprintf(p, p_max_size, "low");
 				}
-				OBJ(i8k_right_fan_rpm) {
-					snprintf(p, p_max_size, "%s", i8k.right_fan_rpm);
+				if (right_fan_status == 2) {
+					snprintf(p, p_max_size, "high");
 				}
-				OBJ(i8k_ac_status) {
-					int ac_status;
+			}
+			OBJ(i8k_left_fan_rpm) {
+				snprintf(p, p_max_size, "%s", i8k.left_fan_rpm);
+			}
+			OBJ(i8k_right_fan_rpm) {
+				snprintf(p, p_max_size, "%s", i8k.right_fan_rpm);
+			}
+			OBJ(i8k_ac_status) {
+				int ac_status;
 
-					sscanf(i8k.ac_status, "%d", &ac_status);
-					if (ac_status == -1) {
-						snprintf(p, p_max_size, "disabled (read i8k docs)");
-					}
-					if (ac_status == 0) {
-						snprintf(p, p_max_size, "off");
-					}
-					if (ac_status == 1) {
-						snprintf(p, p_max_size, "on");
-					}
+				sscanf(i8k.ac_status, "%d", &ac_status);
+				if (ac_status == -1) {
+					snprintf(p, p_max_size, "disabled (read i8k docs)");
 				}
-				OBJ(i8k_buttons_status) {
-					snprintf(p, p_max_size, "%s", i8k.buttons_status);
+				if (ac_status == 0) {
+					snprintf(p, p_max_size, "off");
 				}
-				OBJ(ibm_fan) {
-					get_ibm_acpi_fan(p, p_max_size);
+				if (ac_status == 1) {
+					snprintf(p, p_max_size, "on");
 				}
-				OBJ(ibm_temps) {
-					get_ibm_acpi_temps();
-					snprintf(p, p_max_size, "%d", ibm_acpi.temps[obj->data.sensor]);
+			}
+			OBJ(i8k_buttons_status) {
+				snprintf(p, p_max_size, "%s", i8k.buttons_status);
+			}
+			OBJ(ibm_fan) {
+				get_ibm_acpi_fan(p, p_max_size);
+			}
+			OBJ(ibm_temps) {
+				get_ibm_acpi_temps();
+				snprintf(p, p_max_size, "%d", ibm_acpi.temps[obj->data.sensor]);
+			}
+			OBJ(ibm_volume) {
+				get_ibm_acpi_volume(p, p_max_size);
+			}
+			OBJ(ibm_brightness) {
+				get_ibm_acpi_brightness(p, p_max_size);
+			}
+			OBJ(if_up) {
+				if ((obj->data.ifblock.s)
+						&& (!interface_up(obj->data.ifblock.s))) {
+					i = obj->data.ifblock.pos;
+					if_jumped = 1;
+				} else {
+					if_jumped = 0;
 				}
-				OBJ(ibm_volume) {
-					get_ibm_acpi_volume(p, p_max_size);
+			}
+			OBJ(if_gw) {
+				if (!cur->gw_info.count) {
+					i = obj->data.ifblock.pos;
+					if_jumped = 1;
+				} else {
+					if_jumped = 0;
 				}
-				OBJ(ibm_brightness) {
-					get_ibm_acpi_brightness(p, p_max_size);
-				}
-				OBJ(if_up) {
-					if ((obj->data.ifblock.s)
-							&& (!interface_up(obj->data.ifblock.s))) {
-						i = obj->data.ifblock.pos;
-						if_jumped = 1;
-					} else {
-						if_jumped = 0;
-					}
-				}
-				OBJ(if_gw) {
-					if (!cur->gw_info.count) {
-						i = obj->data.ifblock.pos;
-						if_jumped = 1;
-					} else {
-						if_jumped = 0;
-					}
-				}
-				OBJ(gw_iface) {
-					snprintf(p, p_max_size, "%s", cur->gw_info.iface);
-				}
-				OBJ(gw_ip) {
-					snprintf(p, p_max_size, "%s", cur->gw_info.ip);
-				}
-				OBJ(laptop_mode) {
-					snprintf(p, p_max_size, "%d", get_laptop_mode());
-				}
-				OBJ(pb_battery) {
-					get_powerbook_batt_info(p, p_max_size, obj->data.i);
-				}
+			}
+			OBJ(gw_iface) {
+				snprintf(p, p_max_size, "%s", cur->gw_info.iface);
+			}
+			OBJ(gw_ip) {
+				snprintf(p, p_max_size, "%s", cur->gw_info.ip);
+			}
+			OBJ(laptop_mode) {
+				snprintf(p, p_max_size, "%d", get_laptop_mode());
+			}
+			OBJ(pb_battery) {
+				get_powerbook_batt_info(p, p_max_size, obj->data.i);
+			}
 #endif /* __linux__ */
 
 #ifdef __OpenBSD__
-				OBJ(obsd_sensors_temp) {
-					obsd_sensors.device = sensor_device;
-					update_obsd_sensors();
-					snprintf(p, p_max_size, "%.1f",
-							obsd_sensors.temp[obsd_sensors.device][obj->data.sensor]);
-				}
-				OBJ(obsd_sensors_fan) {
-					obsd_sensors.device = sensor_device;
-					update_obsd_sensors();
-					snprintf(p, p_max_size, "%d",
-							obsd_sensors.fan[obsd_sensors.device][obj->data.sensor]);
-				}
-				OBJ(obsd_sensors_volt) {
-					obsd_sensors.device = sensor_device;
-					update_obsd_sensors();
-					snprintf(p, p_max_size, "%.2f",
-							obsd_sensors.volt[obsd_sensors.device][obj->data.sensor]);
-				}
-				OBJ(obsd_vendor) {
-					get_obsd_vendor(p, p_max_size);
-				}
-				OBJ(obsd_product) {
-					get_obsd_product(p, p_max_size);
-				}
+			OBJ(obsd_sensors_temp) {
+				obsd_sensors.device = sensor_device;
+				update_obsd_sensors();
+				snprintf(p, p_max_size, "%.1f",
+						obsd_sensors.temp[obsd_sensors.device][obj->data.sensor]);
+			}
+			OBJ(obsd_sensors_fan) {
+				obsd_sensors.device = sensor_device;
+				update_obsd_sensors();
+				snprintf(p, p_max_size, "%d",
+						obsd_sensors.fan[obsd_sensors.device][obj->data.sensor]);
+			}
+			OBJ(obsd_sensors_volt) {
+				obsd_sensors.device = sensor_device;
+				update_obsd_sensors();
+				snprintf(p, p_max_size, "%.2f",
+						obsd_sensors.volt[obsd_sensors.device][obj->data.sensor]);
+			}
+			OBJ(obsd_vendor) {
+				get_obsd_vendor(p, p_max_size);
+			}
+			OBJ(obsd_product) {
+				get_obsd_product(p, p_max_size);
+			}
 #endif /* __OpenBSD__ */
 
 #ifdef X11
-				OBJ(font) {
-					new_font(p, obj->data.s);
-				}
+			OBJ(font) {
+				new_font(p, obj->data.s);
+			}
 #endif
-				/* TODO: move this correction from kB to kB/s elsewhere
-				 * (or get rid of it??) */
-				OBJ(diskio) {
-					if (obj->data.diskio) {
-						human_readable(
-								(obj->data.diskio->current / update_interval) * 1024LL,
-								p, p_max_size, "diskio");
-					} else {
-						human_readable(info.diskio_value * 1024LL, p, p_max_size,
-								"diskio");
-					}
+			/* TODO: move this correction from kB to kB/s elsewhere
+			 * (or get rid of it??) */
+			OBJ(diskio) {
+				if (obj->data.diskio) {
+					human_readable(
+							(obj->data.diskio->current / update_interval) * 1024LL,
+							p, p_max_size, "diskio");
+				} else {
+					human_readable(info.diskio_value * 1024LL, p, p_max_size,
+							"diskio");
 				}
-				OBJ(diskio_write) {
-					if (obj->data.diskio) {
-						human_readable((obj->data.diskio->current_write / update_interval) * 1024LL, p, p_max_size,
-								"diskio_write");
-					} else {
-						human_readable(info.diskio_write_value * 1024LL, p, p_max_size,
-								"diskio_write");
-					}
+			}
+			OBJ(diskio_write) {
+				if (obj->data.diskio) {
+					human_readable((obj->data.diskio->current_write / update_interval) * 1024LL, p, p_max_size,
+							"diskio_write");
+				} else {
+					human_readable(info.diskio_write_value * 1024LL, p, p_max_size,
+							"diskio_write");
 				}
-				OBJ(diskio_read) {
-					if (obj->data.diskio) {
-						human_readable((obj->data.diskio->current_read / update_interval) * 1024LL, p, p_max_size,
-								"diskio_read");
-					} else {
-						human_readable(info.diskio_read_value * 1024LL, p, p_max_size,
-								"diskio_read");
-					}
+			}
+			OBJ(diskio_read) {
+				if (obj->data.diskio) {
+					human_readable((obj->data.diskio->current_read / update_interval) * 1024LL, p, p_max_size,
+							"diskio_read");
+				} else {
+					human_readable(info.diskio_read_value * 1024LL, p, p_max_size,
+							"diskio_read");
 				}
-				OBJ(diskiograph) {
-					if (obj->data.diskio) {
-						new_graph(p, obj->a, obj->b, obj->c, obj->d,
-								obj->data.diskio->current, obj->e, 1, obj->showaslog);
-					} else {
-						new_graph(p, obj->a, obj->b, obj->c, obj->d, info.diskio_value,
-								obj->e, 1, obj->showaslog);
-					}
+			}
+			OBJ(diskiograph) {
+				if (obj->data.diskio) {
+					new_graph(p, obj->a, obj->b, obj->c, obj->d,
+							obj->data.diskio->current, obj->e, 1, obj->showaslog);
+				} else {
+					new_graph(p, obj->a, obj->b, obj->c, obj->d, info.diskio_value,
+							obj->e, 1, obj->showaslog);
 				}
-				OBJ(diskiograph_read) {
-					if (obj->data.diskio) {
-						new_graph(p, obj->a, obj->b, obj->c, obj->d,
-								obj->data.diskio->current_read, obj->e, 1, obj->showaslog);
-					} else {
-						new_graph(p, obj->a, obj->b, obj->c, obj->d,
-								info.diskio_read_value, obj->e, 1, obj->showaslog);
-					}
+			}
+			OBJ(diskiograph_read) {
+				if (obj->data.diskio) {
+					new_graph(p, obj->a, obj->b, obj->c, obj->d,
+							obj->data.diskio->current_read, obj->e, 1, obj->showaslog);
+				} else {
+					new_graph(p, obj->a, obj->b, obj->c, obj->d,
+							info.diskio_read_value, obj->e, 1, obj->showaslog);
 				}
-				OBJ(diskiograph_write) {
-					if (obj->data.diskio) {
-						new_graph(p, obj->a, obj->b, obj->c, obj->d,
-								obj->data.diskio->current_write, obj->e, 1, obj->showaslog);
-					} else {
-						new_graph(p, obj->a, obj->b, obj->c, obj->d,
-								info.diskio_write_value, obj->e, 1, obj->showaslog);
-					}
+			}
+			OBJ(diskiograph_write) {
+				if (obj->data.diskio) {
+					new_graph(p, obj->a, obj->b, obj->c, obj->d,
+							obj->data.diskio->current_write, obj->e, 1, obj->showaslog);
+				} else {
+					new_graph(p, obj->a, obj->b, obj->c, obj->d,
+							info.diskio_write_value, obj->e, 1, obj->showaslog);
 				}
-				OBJ(downspeed) {
-					spaced_print(p, p_max_size, "%d", 6, "downspeed",
-							round_to_int(obj->data.net->recv_speed / 1024));
-				}
-				OBJ(downspeedf) {
-					spaced_print(p, p_max_size, "%.1f", 8, "downspeedf",
-							obj->data.net->recv_speed / 1024.0);
-				}
-				OBJ(downspeedgraph) {
-				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-					obj->data.net->recv_speed / 1024.0, obj->e, 1, obj->showaslog);
+			}
+			OBJ(downspeed) {
+				spaced_print(p, p_max_size, "%d", 6, "downspeed",
+						round_to_int(obj->data.net->recv_speed / 1024));
+			}
+			OBJ(downspeedf) {
+				spaced_print(p, p_max_size, "%.1f", 8, "downspeedf",
+						obj->data.net->recv_speed / 1024.0);
+			}
+			OBJ(downspeedgraph) {
+			new_graph(p, obj->a, obj->b, obj->c, obj->d,
+				obj->data.net->recv_speed / 1024.0, obj->e, 1, obj->showaslog);
 			}
 			OBJ(else) {
 				if (!if_jumped) {
@@ -6144,11 +6144,11 @@ head:
 
 			OBJ(lines) {
 				FILE *fp = fopen(obj->data.s,"r");
-			
+
 				if(fp != NULL) {
 					char buf[BUFSZ];
 					int j, lines;
-				
+
 					lines = 0;
 					while(fgets(buf, BUFSZ, fp) != NULL){
 						for(j = 0; buf[j] != 0; j++) {
@@ -6166,12 +6166,12 @@ head:
 
 			OBJ(words) {
 				FILE *fp = fopen(obj->data.s,"r");
-			
+
 				if(fp != NULL) {
 					char buf[BUFSZ];
 					int j, words;
 					char inword = FALSE;
-				
+
 					words = 0;
 					while(fgets(buf, BUFSZ, fp) != NULL){
 						for(j = 0; buf[j] != 0; j++) {
