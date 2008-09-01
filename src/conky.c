@@ -3159,8 +3159,8 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("invalid args given for top");
 			return NULL;
 		}
-		END OBJ(top_mem, INFO_TOP)
-			char buf[64];
+	END OBJ(top_mem, INFO_TOP)
+		char buf[64];
 		int n;
 
 		if (!arg) {
@@ -3199,22 +3199,22 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("invalid args given for top");
 			return NULL;
 		}
-		END OBJ(addr, INFO_NET)
-			if (arg) {
-				obj->data.net = get_net_stat(arg);
-			} else {
-				CRIT_ERR("addr needs argument");
-			}
+	END OBJ(addr, INFO_NET)
+		if (arg) {
+			obj->data.net = get_net_stat(arg);
+		} else {
+			CRIT_ERR("addr needs argument");
+		}
 #if defined(__linux__)
-		END OBJ(addrs, INFO_NET)
-			if (arg) {
-				obj->data.net = get_net_stat(arg);
-			} else {
-				CRIT_ERR("addrs needs argument");
-			}
+	END OBJ(addrs, INFO_NET)
+		if (arg) {
+			obj->data.net = get_net_stat(arg);
+		} else {
+			CRIT_ERR("addrs needs argument");
+		}
 #endif /* __linux__ */
-		END OBJ(tail, 0)
-			char buf[64];
+	END OBJ(tail, 0)
+		char buf[64];
 		int n1, n2;
 		struct stat st;
 
@@ -3686,32 +3686,32 @@ static struct text_object *construct_text_object(const char *s,
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
 
-	// default to DEFAULTNETDEV
-	buf = strndup(buf ? buf : "DEFAULTNETDEV", text_buffer_size);
-	obj->data.net = get_net_stat(buf);
-	free(buf);
+		// default to DEFAULTNETDEV
+		buf = strndup(buf ? buf : "DEFAULTNETDEV", text_buffer_size);
+		obj->data.net = get_net_stat(buf);
+		free(buf);
 	END OBJ(uptime_short, INFO_UPTIME)
-		END OBJ(uptime, INFO_UPTIME)
-		END OBJ(user_names, INFO_USERS)
-		END OBJ(user_times, INFO_USERS)
-		END OBJ(user_terms, INFO_USERS)
-		END OBJ(user_number, INFO_USERS)
+	END OBJ(uptime, INFO_UPTIME)
+	END OBJ(user_names, INFO_USERS)
+	END OBJ(user_times, INFO_USERS)
+	END OBJ(user_terms, INFO_USERS)
+	END OBJ(user_number, INFO_USERS)
 #if defined(__linux__)
-		END OBJ(gw_iface, INFO_GW)
-		END OBJ(gw_ip, INFO_GW)
-		END OBJ(if_gw, INFO_GW)
+	END OBJ(gw_iface, INFO_GW)
+	END OBJ(gw_ip, INFO_GW)
+	END OBJ(if_gw, INFO_GW)
 #endif /* !__linux__ */
 #ifndef __OpenBSD__
-		END OBJ(adt746xcpu, 0)
-		END OBJ(adt746xfan, 0)
+	END OBJ(adt746xcpu, 0)
+	END OBJ(adt746xfan, 0)
 #endif /* !__OpenBSD__ */
 #if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) \
 		|| defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
-		END OBJ(apm_adapter, 0)
-		END OBJ(apm_battery_life, 0)
-		END OBJ(apm_battery_time, 0)
+	END OBJ(apm_adapter, 0)
+	END OBJ(apm_battery_life, 0)
+	END OBJ(apm_battery_time, 0)
 #endif /* __FreeBSD__ */
-		END OBJ_THREAD(imap_unseen, 0)
+	END OBJ_THREAD(imap_unseen, 0)
 		if (arg) {
 			// proccss
 			obj->data.mail = parse_mail_args(IMAP, arg);
@@ -3753,14 +3753,14 @@ static struct text_object *construct_text_object(const char *s,
 		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
 			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
 		}
-	if (!arg) {
-		ERR("if_smapi_bat_installed needs an argument");
-		obj->data.ifblock.s = 0;
-	} else
-		obj->data.ifblock.s = strndup(arg, text_buffer_size);
-	blockstart[blockdepth] = object_count;
-	obj->data.ifblock.pos = object_count + 2;
-	blockdepth++;
+		if (!arg) {
+			ERR("if_smapi_bat_installed needs an argument");
+			obj->data.ifblock.s = 0;
+		} else
+			obj->data.ifblock.s = strndup(arg, text_buffer_size);
+		blockstart[blockdepth] = object_count;
+		obj->data.ifblock.pos = object_count + 2;
+		blockdepth++;
 	END OBJ(smapi_bat_perc, 0)
 		if (arg)
 			obj->data.s = strndup(arg, text_buffer_size);
@@ -3790,262 +3790,262 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("if_smapi_bat_bar needs an argument");
 #endif /* SMAPI */
 #ifdef MPD
-			END OBJ_THREAD(mpd_artist, INFO_MPD)
-			END OBJ_THREAD(mpd_title, INFO_MPD)
-			if (arg) {
-				sscanf(arg, "%d", &info.mpd.max_title_len);
-				if (info.mpd.max_title_len > 0) {
-					info.mpd.max_title_len++;
-				} else {
-					CRIT_ERR("mpd_title: invalid length argument");
-				}
+	END OBJ_THREAD(mpd_artist, INFO_MPD)
+	END OBJ_THREAD(mpd_title, INFO_MPD)
+		if (arg) {
+			sscanf(arg, "%d", &info.mpd.max_title_len);
+			if (info.mpd.max_title_len > 0) {
+				info.mpd.max_title_len++;
 			} else {
-				info.mpd.max_title_len = 0;
+				CRIT_ERR("mpd_title: invalid length argument");
 			}
-		END OBJ_THREAD(mpd_random, INFO_MPD)
-			END OBJ_THREAD(mpd_repeat, INFO_MPD)
-			END OBJ_THREAD(mpd_elapsed, INFO_MPD)
-			END OBJ_THREAD(mpd_length, INFO_MPD)
-			END OBJ_THREAD(mpd_track, INFO_MPD)
-			END OBJ_THREAD(mpd_name, INFO_MPD)
-			END OBJ_THREAD(mpd_file, INFO_MPD)
-			END OBJ_THREAD(mpd_percent, INFO_MPD)
-			END OBJ_THREAD(mpd_album, INFO_MPD)
-			END OBJ_THREAD(mpd_vol, INFO_MPD)
-			END OBJ_THREAD(mpd_bitrate, INFO_MPD)
-			END OBJ_THREAD(mpd_status, INFO_MPD)
-			END OBJ_THREAD(mpd_bar, INFO_MPD)
-			scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
-		END OBJ_THREAD(mpd_smart, INFO_MPD)
+		} else {
+			info.mpd.max_title_len = 0;
+		}
+	END OBJ_THREAD(mpd_random, INFO_MPD)
+	END OBJ_THREAD(mpd_repeat, INFO_MPD)
+	END OBJ_THREAD(mpd_elapsed, INFO_MPD)
+	END OBJ_THREAD(mpd_length, INFO_MPD)
+	END OBJ_THREAD(mpd_track, INFO_MPD)
+	END OBJ_THREAD(mpd_name, INFO_MPD)
+	END OBJ_THREAD(mpd_file, INFO_MPD)
+	END OBJ_THREAD(mpd_percent, INFO_MPD)
+	END OBJ_THREAD(mpd_album, INFO_MPD)
+	END OBJ_THREAD(mpd_vol, INFO_MPD)
+	END OBJ_THREAD(mpd_bitrate, INFO_MPD)
+	END OBJ_THREAD(mpd_status, INFO_MPD)
+	END OBJ_THREAD(mpd_bar, INFO_MPD)
+		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+	END OBJ_THREAD(mpd_smart, INFO_MPD)
 #endif /* MPD */
 #ifdef XMMS2
-			END OBJ(xmms2_artist, INFO_XMMS2)
-			END OBJ(xmms2_album, INFO_XMMS2)
-			END OBJ(xmms2_title, INFO_XMMS2)
-			END OBJ(xmms2_genre, INFO_XMMS2)
-			END OBJ(xmms2_comment, INFO_XMMS2)
-			END OBJ(xmms2_url, INFO_XMMS2)
-			END OBJ(xmms2_tracknr, INFO_XMMS2)
-			END OBJ(xmms2_bitrate, INFO_XMMS2)
-			END OBJ(xmms2_date, INFO_XMMS2)
-			END OBJ(xmms2_id, INFO_XMMS2)
-			END OBJ(xmms2_duration, INFO_XMMS2)
-			END OBJ(xmms2_elapsed, INFO_XMMS2)
-			END OBJ(xmms2_size, INFO_XMMS2)
-			END OBJ(xmms2_status, INFO_XMMS2)
-			END OBJ(xmms2_percent, INFO_XMMS2)
-			END OBJ(xmms2_bar, INFO_XMMS2)
-			scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
-		END OBJ(xmms2_smart, INFO_XMMS2)
-			END OBJ(xmms2_playlist, INFO_XMMS2)
-			END OBJ(xmms2_timesplayed, INFO_XMMS2)
+	END OBJ(xmms2_artist, INFO_XMMS2)
+	END OBJ(xmms2_album, INFO_XMMS2)
+	END OBJ(xmms2_title, INFO_XMMS2)
+	END OBJ(xmms2_genre, INFO_XMMS2)
+	END OBJ(xmms2_comment, INFO_XMMS2)
+	END OBJ(xmms2_url, INFO_XMMS2)
+	END OBJ(xmms2_tracknr, INFO_XMMS2)
+	END OBJ(xmms2_bitrate, INFO_XMMS2)
+	END OBJ(xmms2_date, INFO_XMMS2)
+	END OBJ(xmms2_id, INFO_XMMS2)
+	END OBJ(xmms2_duration, INFO_XMMS2)
+	END OBJ(xmms2_elapsed, INFO_XMMS2)
+	END OBJ(xmms2_size, INFO_XMMS2)
+	END OBJ(xmms2_status, INFO_XMMS2)
+	END OBJ(xmms2_percent, INFO_XMMS2)
+	END OBJ(xmms2_bar, INFO_XMMS2)
+		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+	END OBJ(xmms2_smart, INFO_XMMS2)
+	END OBJ(xmms2_playlist, INFO_XMMS2)
+	END OBJ(xmms2_timesplayed, INFO_XMMS2)
 #endif
 #ifdef AUDACIOUS
-			END OBJ(audacious_status, INFO_AUDACIOUS)
-			END OBJ(audacious_title, INFO_AUDACIOUS)
-			if (arg) {
-				sscanf(arg, "%d", &info.audacious.max_title_len);
-				if (info.audacious.max_title_len > 0) {
-					info.audacious.max_title_len++;
-				} else {
-					CRIT_ERR("audacious_title: invalid length argument");
-				}
+	END OBJ(audacious_status, INFO_AUDACIOUS)
+	END OBJ(audacious_title, INFO_AUDACIOUS)
+		if (arg) {
+			sscanf(arg, "%d", &info.audacious.max_title_len);
+			if (info.audacious.max_title_len > 0) {
+				info.audacious.max_title_len++;
+			} else {
+				CRIT_ERR("audacious_title: invalid length argument");
 			}
-		END OBJ(audacious_length, INFO_AUDACIOUS)
-			END OBJ(audacious_length_seconds, INFO_AUDACIOUS)
-			END OBJ(audacious_position, INFO_AUDACIOUS)
-			END OBJ(audacious_position_seconds, INFO_AUDACIOUS)
-			END OBJ(audacious_bitrate, INFO_AUDACIOUS)
-			END OBJ(audacious_frequency, INFO_AUDACIOUS)
-			END OBJ(audacious_channels, INFO_AUDACIOUS)
-			END OBJ(audacious_filename, INFO_AUDACIOUS)
-			END OBJ(audacious_playlist_length, INFO_AUDACIOUS)
-			END OBJ(audacious_playlist_position, INFO_AUDACIOUS)
-			END OBJ(audacious_bar, INFO_AUDACIOUS)
-			scan_bar(arg, &obj->a, &obj->b);
+		}
+	END OBJ(audacious_length, INFO_AUDACIOUS)
+	END OBJ(audacious_length_seconds, INFO_AUDACIOUS)
+	END OBJ(audacious_position, INFO_AUDACIOUS)
+	END OBJ(audacious_position_seconds, INFO_AUDACIOUS)
+	END OBJ(audacious_bitrate, INFO_AUDACIOUS)
+	END OBJ(audacious_frequency, INFO_AUDACIOUS)
+	END OBJ(audacious_channels, INFO_AUDACIOUS)
+	END OBJ(audacious_filename, INFO_AUDACIOUS)
+	END OBJ(audacious_playlist_length, INFO_AUDACIOUS)
+	END OBJ(audacious_playlist_position, INFO_AUDACIOUS)
+	END OBJ(audacious_bar, INFO_AUDACIOUS)
+		scan_bar(arg, &obj->a, &obj->b);
 #endif
 #ifdef BMPX
-		END OBJ(bmpx_title, INFO_BMPX)
-			memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
-		END OBJ(bmpx_artist, INFO_BMPX)
-			memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
-		END OBJ(bmpx_album, INFO_BMPX)
-			memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
-		END OBJ(bmpx_track, INFO_BMPX)
-			memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
-		END OBJ(bmpx_uri, INFO_BMPX)
-			memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
-		END OBJ(bmpx_bitrate, INFO_BMPX)
-			memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+	END OBJ(bmpx_title, INFO_BMPX)
+		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+	END OBJ(bmpx_artist, INFO_BMPX)
+		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+	END OBJ(bmpx_album, INFO_BMPX)
+		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+	END OBJ(bmpx_track, INFO_BMPX)
+		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+	END OBJ(bmpx_uri, INFO_BMPX)
+		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+	END OBJ(bmpx_bitrate, INFO_BMPX)
+		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
 #endif
 #ifdef EVE
-		END OBJ(eve, 0)
-			if(arg) {
-				int argc;
-				char *userid = (char *) malloc(20 * sizeof(char));
-				char *apikey = (char *) malloc(64 * sizeof(char));
-				char *charid = (char *) malloc(20 * sizeof(char));
+	END OBJ(eve, 0)
+		if(arg) {
+			int argc;
+			char *userid = (char *) malloc(20 * sizeof(char));
+			char *apikey = (char *) malloc(64 * sizeof(char));
+			char *charid = (char *) malloc(20 * sizeof(char));
 
-				argc = sscanf(arg, "%20s %64s %20s", userid, apikey, charid);
-				obj->data.eve.charid = charid;
-				obj->data.eve.userid = userid;
-				obj->data.eve.apikey = apikey;
+			argc = sscanf(arg, "%20s %64s %20s", userid, apikey, charid);
+			obj->data.eve.charid = charid;
+			obj->data.eve.userid = userid;
+			obj->data.eve.apikey = apikey;
 
-				init_eve();
-			} else {
-				CRIT_ERR("eve needs arguments: <userid> <apikey> <characterid>");
-			}
+			init_eve();
+		} else {
+			CRIT_ERR("eve needs arguments: <userid> <apikey> <characterid>");
+		}
 #endif
 #ifdef RSS
-		END OBJ(rss, 0)
-			if (arg) {
-				int argc, delay, act_par;
-				char *uri = (char *) malloc(128 * sizeof(char));
-				char *action = (char *) malloc(64 * sizeof(char));
+	END OBJ(rss, 0)
+		if (arg) {
+			int argc, delay, act_par;
+			char *uri = (char *) malloc(128 * sizeof(char));
+			char *action = (char *) malloc(64 * sizeof(char));
 
-				argc = sscanf(arg, "%127s %d %63s %d", uri, &delay, action,
-						&act_par);
-				obj->data.rss.uri = uri;
-				obj->data.rss.delay = delay;
-				obj->data.rss.action = action;
-				obj->data.rss.act_par = act_par;
+			argc = sscanf(arg, "%127s %d %63s %d", uri, &delay, action,
+					&act_par);
+			obj->data.rss.uri = uri;
+			obj->data.rss.delay = delay;
+			obj->data.rss.action = action;
+			obj->data.rss.act_par = act_par;
 
-				init_rss_info();
-			} else {
-				CRIT_ERR("rss needs arguments: <uri> <delay in minutes> <action> "
-						"[act_par]");
-			}
+			init_rss_info();
+		} else {
+			CRIT_ERR("rss needs arguments: <uri> <delay in minutes> <action> "
+					"[act_par]");
+		}
 #endif
 #ifdef HDDTEMP
-		END OBJ(hddtemp, 0)
-			if (!arg || scan_hddtemp(arg, &obj->data.hddtemp.dev,
-						&obj->data.hddtemp.addr, &obj->data.hddtemp.port, &obj->data.hddtemp.temp)) {
-				ERR("hddtemp needs arguments");
-				obj->type = OBJ_text;
-				obj->data.s = strndup("${hddtemp}", text_buffer_size);
-				obj->data.hddtemp.update_time = 0;
-				return NULL;
-			}
+	END OBJ(hddtemp, 0)
+		if (!arg || scan_hddtemp(arg, &obj->data.hddtemp.dev,
+					&obj->data.hddtemp.addr, &obj->data.hddtemp.port, &obj->data.hddtemp.temp)) {
+			ERR("hddtemp needs arguments");
+			obj->type = OBJ_text;
+			obj->data.s = strndup("${hddtemp}", text_buffer_size);
+			obj->data.hddtemp.update_time = 0;
+			return NULL;
+		}
 #endif
 #ifdef TCP_PORT_MONITOR
-		END OBJ(tcp_portmon, INFO_TCP_PORT_MONITOR)
-			int argc, port_begin, port_end, item, connection_index;
-			char itembuf[32];
+	END OBJ(tcp_portmon, INFO_TCP_PORT_MONITOR)
+		int argc, port_begin, port_end, item, connection_index;
+		char itembuf[32];
 
-			memset(itembuf, 0, sizeof(itembuf));
-			connection_index = 0;
-			/* massive argument checking */
-			if (!arg) {
-				CRIT_ERR("tcp_portmon: needs arguments");
-			}
-			argc = sscanf(arg, "%d %d %31s %d", &port_begin, &port_end, itembuf,
-					&connection_index);
-			if ((argc != 3) && (argc != 4)) {
-				CRIT_ERR("tcp_portmon: requires 3 or 4 arguments");
-			}
-			if ((port_begin < 1) || (port_begin > 65535) || (port_end < 1)
-					|| (port_end > 65535)) {
-				CRIT_ERR("tcp_portmon: port values must be from 1 to 65535");
-			}
-			if (port_begin > port_end) {
-				CRIT_ERR("tcp_portmon: starting port must be <= ending port");
-			}
-			if (strncmp(itembuf, "count", 31) == EQUAL) {
-				item = COUNT;
-			} else if (strncmp(itembuf, "rip", 31) == EQUAL) {
-				item = REMOTEIP;
-			} else if (strncmp(itembuf, "rhost", 31) == EQUAL) {
-				item = REMOTEHOST;
-			} else if (strncmp(itembuf, "rport", 31) == EQUAL) {
-				item = REMOTEPORT;
-			} else if (strncmp(itembuf, "rservice", 31) == EQUAL) {
-				item = REMOTESERVICE;
-			} else if (strncmp(itembuf, "lip", 31) == EQUAL) {
-				item = LOCALIP;
-			} else if (strncmp(itembuf, "lhost", 31) == EQUAL) {
-				item = LOCALHOST;
-			} else if (strncmp(itembuf, "lport", 31) == EQUAL) {
-				item = LOCALPORT;
-			} else if (strncmp(itembuf, "lservice", 31) == EQUAL) {
-				item = LOCALSERVICE;
-			} else {
-				CRIT_ERR("tcp_portmon: invalid item specified");
-			}
-			if ((argc == 3) && (item != COUNT)) {
-				CRIT_ERR("tcp_portmon: 3 argument form valid only for \"count\" "
-						"item");
-			}
-			if ((argc == 4) && (connection_index < 0)) {
-				CRIT_ERR("tcp_portmon: connection index must be non-negative");
-			}
-			/* ok, args looks good. save the text object data */
-			obj->data.tcp_port_monitor.port_range_begin = (in_port_t) port_begin;
-			obj->data.tcp_port_monitor.port_range_end = (in_port_t) port_end;
-			obj->data.tcp_port_monitor.item = item;
-			obj->data.tcp_port_monitor.connection_index = connection_index;
-
-			/* if the port monitor collection hasn't been created,
-			 * we must create it */
-			if (!info.p_tcp_port_monitor_collection) {
-				info.p_tcp_port_monitor_collection =
-					create_tcp_port_monitor_collection();
-				if (!info.p_tcp_port_monitor_collection) {
-					CRIT_ERR("tcp_portmon: unable to create port monitor "
-							"collection");
-				}
-			}
-
-			/* if a port monitor for this port does not exist,
-			 * create one and add it to the collection */
-			if (find_tcp_port_monitor(info.p_tcp_port_monitor_collection,
-						port_begin, port_end) == NULL) {
-				tcp_port_monitor_t *p_monitor = create_tcp_port_monitor(port_begin,
-						port_end, &tcp_port_monitor_args);
-
-				if (!p_monitor) {
-					CRIT_ERR("tcp_portmon: unable to create port monitor");
-				}
-				/* add the newly created monitor to the collection */
-				if (insert_tcp_port_monitor_into_collection(
-							info.p_tcp_port_monitor_collection, p_monitor) != 0) {
-					CRIT_ERR("tcp_portmon: unable to add port monitor to "
-							"collection");
-				}
-			}
-#endif
-		END OBJ(entropy_avail, INFO_ENTROPY)
-			END OBJ(entropy_poolsize, INFO_ENTROPY)
-			END OBJ(entropy_bar, INFO_ENTROPY)
-			scan_bar(arg, &obj->a, &obj->b);
-		END OBJ(scroll, 0)
-			int n;
-
-			if (arg && sscanf(arg, "%u %n", &obj->data.scroll.show, &n) > 0) {
-				obj->data.scroll.text = strndup(arg + n, text_buffer_size);
-				obj->data.scroll.start = 0;
-			} else {
-				CRIT_ERR("scroll needs arguments: <length> <text>");
-			}
-#ifdef NVIDIA
-		END OBJ(nvidia, 0)
-			if (!arg) {
-				CRIT_ERR("nvidia needs an argument\n");
-			} else if (set_nvidia_type(&obj->data.nvidia, arg)) {
-				CRIT_ERR("nvidia: invalid argument"
-				         " specified: '%s'\n", arg);
-			}
-#endif /* NVIDIA */
-		END {
-			char buf[256];
-
-			ERR("unknown variable %s", s);
-			obj->type = OBJ_text;
-			snprintf(buf, 256, "${%s}", s);
-			obj->data.s = strndup(buf, text_buffer_size);
+		memset(itembuf, 0, sizeof(itembuf));
+		connection_index = 0;
+		/* massive argument checking */
+		if (!arg) {
+			CRIT_ERR("tcp_portmon: needs arguments");
 		}
+		argc = sscanf(arg, "%d %d %31s %d", &port_begin, &port_end, itembuf,
+				&connection_index);
+		if ((argc != 3) && (argc != 4)) {
+			CRIT_ERR("tcp_portmon: requires 3 or 4 arguments");
+		}
+		if ((port_begin < 1) || (port_begin > 65535) || (port_end < 1)
+				|| (port_end > 65535)) {
+			CRIT_ERR("tcp_portmon: port values must be from 1 to 65535");
+		}
+		if (port_begin > port_end) {
+			CRIT_ERR("tcp_portmon: starting port must be <= ending port");
+		}
+		if (strncmp(itembuf, "count", 31) == EQUAL) {
+			item = COUNT;
+		} else if (strncmp(itembuf, "rip", 31) == EQUAL) {
+			item = REMOTEIP;
+		} else if (strncmp(itembuf, "rhost", 31) == EQUAL) {
+			item = REMOTEHOST;
+		} else if (strncmp(itembuf, "rport", 31) == EQUAL) {
+			item = REMOTEPORT;
+		} else if (strncmp(itembuf, "rservice", 31) == EQUAL) {
+			item = REMOTESERVICE;
+		} else if (strncmp(itembuf, "lip", 31) == EQUAL) {
+			item = LOCALIP;
+		} else if (strncmp(itembuf, "lhost", 31) == EQUAL) {
+			item = LOCALHOST;
+		} else if (strncmp(itembuf, "lport", 31) == EQUAL) {
+			item = LOCALPORT;
+		} else if (strncmp(itembuf, "lservice", 31) == EQUAL) {
+			item = LOCALSERVICE;
+		} else {
+			CRIT_ERR("tcp_portmon: invalid item specified");
+		}
+		if ((argc == 3) && (item != COUNT)) {
+			CRIT_ERR("tcp_portmon: 3 argument form valid only for \"count\" "
+					"item");
+		}
+		if ((argc == 4) && (connection_index < 0)) {
+			CRIT_ERR("tcp_portmon: connection index must be non-negative");
+		}
+		/* ok, args looks good. save the text object data */
+		obj->data.tcp_port_monitor.port_range_begin = (in_port_t) port_begin;
+		obj->data.tcp_port_monitor.port_range_end = (in_port_t) port_end;
+		obj->data.tcp_port_monitor.item = item;
+		obj->data.tcp_port_monitor.connection_index = connection_index;
+
+		/* if the port monitor collection hasn't been created,
+		 * we must create it */
+		if (!info.p_tcp_port_monitor_collection) {
+			info.p_tcp_port_monitor_collection =
+				create_tcp_port_monitor_collection();
+			if (!info.p_tcp_port_monitor_collection) {
+				CRIT_ERR("tcp_portmon: unable to create port monitor "
+						"collection");
+			}
+		}
+
+		/* if a port monitor for this port does not exist,
+		 * create one and add it to the collection */
+		if (find_tcp_port_monitor(info.p_tcp_port_monitor_collection,
+					port_begin, port_end) == NULL) {
+			tcp_port_monitor_t *p_monitor = create_tcp_port_monitor(port_begin,
+					port_end, &tcp_port_monitor_args);
+
+			if (!p_monitor) {
+				CRIT_ERR("tcp_portmon: unable to create port monitor");
+			}
+			/* add the newly created monitor to the collection */
+			if (insert_tcp_port_monitor_into_collection(
+						info.p_tcp_port_monitor_collection, p_monitor) != 0) {
+				CRIT_ERR("tcp_portmon: unable to add port monitor to "
+						"collection");
+			}
+		}
+#endif
+	END OBJ(entropy_avail, INFO_ENTROPY)
+		END OBJ(entropy_poolsize, INFO_ENTROPY)
+		END OBJ(entropy_bar, INFO_ENTROPY)
+		scan_bar(arg, &obj->a, &obj->b);
+	END OBJ(scroll, 0)
+		int n;
+
+		if (arg && sscanf(arg, "%u %n", &obj->data.scroll.show, &n) > 0) {
+			obj->data.scroll.text = strndup(arg + n, text_buffer_size);
+			obj->data.scroll.start = 0;
+		} else {
+			CRIT_ERR("scroll needs arguments: <length> <text>");
+		}
+#ifdef NVIDIA
+	END OBJ(nvidia, 0)
+		if (!arg) {
+			CRIT_ERR("nvidia needs an argument\n");
+		} else if (set_nvidia_type(&obj->data.nvidia, arg)) {
+			CRIT_ERR("nvidia: invalid argument"
+				 " specified: '%s'\n", arg);
+		}
+#endif /* NVIDIA */
+	END {
+		char buf[256];
+
+		ERR("unknown variable %s", s);
+		obj->type = OBJ_text;
+		snprintf(buf, 256, "${%s}", s);
+		obj->data.s = strndup(buf, text_buffer_size);
+	}
 #undef OBJ
 
-			return obj;
+	return obj;
 }
 
 static struct text_object *create_plain_text(const char *s)
