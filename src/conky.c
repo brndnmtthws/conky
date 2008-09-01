@@ -3793,14 +3793,14 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ_THREAD(mpd_artist, INFO_MPD)
 	END OBJ_THREAD(mpd_title, INFO_MPD)
 		if (arg) {
-			sscanf(arg, "%d", &info.mpd.max_title_len);
-			if (info.mpd.max_title_len > 0) {
-				info.mpd.max_title_len++;
+			sscanf(arg, "%d", &obj->data.i);
+			if (obj->data.i > 0) {
+				obj->data.i++;
 			} else {
 				CRIT_ERR("mpd_title: invalid length argument");
 			}
 		} else {
-			info.mpd.max_title_len = 0;
+			obj->data.i = 0;
 		}
 	END OBJ_THREAD(mpd_random, INFO_MPD)
 	END OBJ_THREAD(mpd_repeat, INFO_MPD)
@@ -3817,6 +3817,16 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ_THREAD(mpd_bar, INFO_MPD)
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ_THREAD(mpd_smart, INFO_MPD)
+		if (arg) {
+			sscanf(arg, "%d", &obj->data.i);
+			if (obj->data.i > 0) {
+				obj->data.i++;
+			} else {
+				CRIT_ERR("mpd_smart: invalid length argument");
+			}
+		} else {
+			obj->data.i = 0;
+		}
 #endif /* MPD */
 #ifdef XMMS2
 	END OBJ(xmms2_artist, INFO_XMMS2)
@@ -5690,9 +5700,10 @@ static void generate_text_internal(char *p, int p_max_size,
 
 #ifdef MPD
 			OBJ(mpd_title) {
-				snprintf(p, cur->mpd.max_title_len > 0
-					? cur->mpd.max_title_len : p_max_size, "%s",
-					cur->mpd.title);
+				int len = obj->data.i;
+				if (len == 0 || len > p_max_size)
+					len = p_max_size;
+				snprintf(p, len, "%s", cur->mpd.title);
 			}
 			OBJ(mpd_artist) {
 				snprintf(p, p_max_size, "%s", cur->mpd.artist);
@@ -5739,17 +5750,21 @@ static void generate_text_internal(char *p, int p_max_size,
 					(int) (cur->mpd.progress * 255.0f));
 			}
 			OBJ(mpd_smart) {
+				int len = obj->data.i;
+				if (len == 0 || len > p_max_size)
+					len = p_max_size;
+
 				memset(p, 0, p_max_size);
 				if (cur->mpd.artist && *cur->mpd.artist && cur->mpd.title
 						&& *cur->mpd.title) {
-					snprintf(p, p_max_size, "%s - %s", cur->mpd.artist,
+					snprintf(p, len, "%s - %s", cur->mpd.artist,
 						cur->mpd.title);
 				} else if (cur->mpd.title && *cur->mpd.title) {
-					snprintf(p, p_max_size, "%s", cur->mpd.title);
+					snprintf(p, len, "%s", cur->mpd.title);
 				} else if (cur->mpd.artist && *cur->mpd.artist) {
-					snprintf(p, p_max_size, "%s", cur->mpd.artist);
+					snprintf(p, len, "%s", cur->mpd.artist);
 				} else if (cur->mpd.file && *cur->mpd.file) {
-					snprintf(p, p_max_size, "%s", cur->mpd.file);
+					snprintf(p, len, "%s", cur->mpd.file);
 				} else {
 					*p = 0;
 				}

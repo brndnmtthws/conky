@@ -26,7 +26,6 @@ struct mpd_s {
 	int bitrate;
 	int length;
 	int elapsed;
-	int max_title_len;		/* e.g. ${mpd_title 50} */
 	mpd_Connection *conn;
 	timed_thread *timed_thread;
 };

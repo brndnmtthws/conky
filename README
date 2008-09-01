@@ -1144,7 +1144,7 @@ conky(1)							      conky(1)
 	      Prints the file name of the current MPD song
 
 
-       1mmpd_smart0m
+       1mmpd_smart (max length)0m
 	      Prints the song name in either the form "artist - title" or file
 	      name, depending on whats available
 
