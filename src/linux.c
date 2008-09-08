@@ -353,7 +353,7 @@ void update_net_stats(void)
 	for (i2 = 0; i2 < 16; i2++) {
 		struct net_stat *ns;
 		char *s, *p;
-		char temp_addr[17];
+		char temp_addr[18];
 		long long r, t, last_recv, last_trans;
 
 		if (fgets(buf, 255, net_dev_fp) == NULL) {
@@ -380,9 +380,9 @@ void update_net_stats(void)
 		memset(&(ns->addr.sa_data), 0, 14);
 
 		if(NULL == ns->addrs)
-			ns->addrs = (char*) malloc(17 * 16);
+			ns->addrs = (char*) malloc(17 * 16 + 1);
 		if(NULL != ns->addrs)
-			memset(ns->addrs, 0, 17 * 16); /* Up to 17 chars per ip, max 16 interfaces. Nasty memory usage... */
+			memset(ns->addrs, 0, 17 * 16 + 1); /* Up to 17 chars per ip, max 16 interfaces. Nasty memory usage... */
 
 		last_recv = ns->recv;
 		last_trans = ns->trans;
@@ -1061,9 +1061,11 @@ void get_adt746x_cpu(char *p_client_buffer, size_t client_buffer_size)
 unsigned long long int rdtsc(void)
 {
 	unsigned long long int x;
+	unsigned int a, d;
 
-	__asm__ volatile(".byte 0x0f, 0x31":"=A" (x));
-	return x;
+	__asm__ volatile(".byte 0x0f, 0x31":"=a" (a),"=d" (d));
+	x = d;
+	return x << 32 | a;
 }
 #endif
 

@@ -36,6 +36,8 @@ int get_nvidia_value(QUERY_ID qid, Display *dpy){
 	/* FIXME: when are the low 2 bytes of NV_GPU_FREQ needed? */
 	if (qid == NV_GPU_FREQ)
 		return tmp >> 16;
+	if (qid == NV_MEM_FREQ)
+		return tmp & 0xFFFF;
 	return tmp;
 }
 

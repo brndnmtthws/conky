@@ -1,5 +1,10 @@
 # $Id$
 
+2008-09-07
+	* Fixed bug with freq_dyn on x86_64 (thanks Miroslav)
+	* Fixed buffer overflow in update_net_stats() (thanks Miroslav)
+	* Small fix for nvidia mem freq (thanks Cezary)
+
 2008-08-14
 	* Conky 1.6.1 released
 	* Fix compile error when MPD support not enabled

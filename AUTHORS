@@ -211,6 +211,8 @@ Michal Ziabkowski <mziab at o2 dot pl>
 
 Miroslav Lichvar <lichvarm at gmail dot com>
   move audacious thread init to update_audacious() patch
+  x86_64 freq_dyn patch
+  buffer overflow in update_net_stats() patch
 
 Moncelier Camille <pixdamix at users dot sourceforge dot net>
   METAR patch
