@@ -46,6 +46,7 @@ struct _timed_thread {
 	void *(*start_routine)(void *);	/* thread function to run */
 	void *arg;						/* thread function argument */
 	struct timespec interval_time;	/* interval_usecs as a struct timespec */
+	struct timespec wait_time;  /* absolute future time next timed_thread_test will wait until */
 };
 
 /* linked list of created threads */
@@ -98,7 +99,7 @@ timed_thread *timed_thread_create(void *start_routine(void *), void *arg,
 	/* init attributes, e.g. joinable thread */
 	pthread_attr_init(&p_timed_thread->thread_attr);
 	pthread_attr_setdetachstate(&p_timed_thread->thread_attr,
-		PTHREAD_CREATE_JOINABLE);
+			PTHREAD_CREATE_JOINABLE);
 	/* init mutexes */
 	pthread_mutex_init(&p_timed_thread->cs_mutex, NULL);
 	pthread_mutex_init(&p_timed_thread->runnable_mutex, NULL);
@@ -108,6 +109,11 @@ timed_thread *timed_thread_create(void *start_routine(void *), void *arg,
 	p_timed_thread->start_routine = start_routine;
 	p_timed_thread->arg = arg;
 
+	/* set wait time to current time */
+	if (now(&p_timed_thread->wait_time)) {
+		return NULL;
+	}
+
 	/* seconds portion of the microseconds interval */
 	p_timed_thread->interval_time.tv_sec = (time_t) (interval_usecs / 1000000);
 	/* remaining microseconds convert to nanoseconds */
@@ -115,8 +121,8 @@ timed_thread *timed_thread_create(void *start_routine(void *), void *arg,
 		(long) ((interval_usecs % 1000000) * 1000);
 
 	/* printf("interval_time.tv_sec = %li, .tv_nsec = %li\n",
-		p_timed_thread->interval_time.tv_sec,
-		p_timed_thread->interval_time.tv_nsec); */
+	   p_timed_thread->interval_time.tv_sec,
+	   p_timed_thread->interval_time.tv_nsec); */
 	return p_timed_thread;
 }
 
@@ -124,7 +130,7 @@ timed_thread *timed_thread_create(void *start_routine(void *), void *arg,
 int timed_thread_run(timed_thread *p_timed_thread)
 {
 	return pthread_create(&p_timed_thread->thread, &p_timed_thread->thread_attr,
-		p_timed_thread->start_routine, p_timed_thread->arg);
+			p_timed_thread->start_routine, p_timed_thread->arg);
 }
 
 /* destroy a timed thread.
@@ -135,7 +141,7 @@ void timed_thread_destroy(timed_thread *p_timed_thread,
 {
 	assert(p_timed_thread != NULL);
 	assert((addr_of_p_timed_thread == NULL)
-		|| (*addr_of_p_timed_thread == p_timed_thread));
+			|| (*addr_of_p_timed_thread == p_timed_thread));
 
 	/* signal thread to stop */
 	pthread_mutex_lock(&p_timed_thread->runnable_mutex);
@@ -180,32 +186,10 @@ int timed_thread_unlock(timed_thread *p_timed_thread)
  * caller should call timed_thread_exit() on any non-zero return value. */
 int timed_thread_test(timed_thread *p_timed_thread)
 {
-	struct timespec wait_time;
+	struct timespec now_time;
 	int rc;
 
 	assert(p_timed_thread != NULL);
-
-	if (now(&wait_time)) {
-		return -1;
-	}
-	/* printf("PRE:wait_time.tv_secs = %li, .tv_nsecs = %li\n",
-		wait_time.tv_sec, wait_time.tv_nsec); */
-
-	/* add in the wait interval */
-	if (1000000000 - wait_time.tv_nsec
-			<= p_timed_thread->interval_time.tv_nsec) {
-		/* perform nsec->sec carry operation */
-		wait_time.tv_sec += p_timed_thread->interval_time.tv_sec + 1;
-		wait_time.tv_nsec -= 1000000000 - p_timed_thread->interval_time.tv_nsec;
-		/* printf("001:wait_time.tv_secs = %li, .tv_nsecs = %li\n",
-			wait_time.tv_sec, wait_time.tv_nsec); */
-	} else {
-		/* no carry needed, just add respective components */
-		wait_time.tv_sec += p_timed_thread->interval_time.tv_sec;
-		wait_time.tv_nsec += p_timed_thread->interval_time.tv_nsec;
-		/* printf("002:wait_time.tv_secs = %li, .tv_nsecs = %li\n",
-			wait_time.tv_sec, wait_time.tv_nsec); */
-	}
 
 	/* acquire runnable_cond mutex */
 	if (pthread_mutex_lock(&p_timed_thread->runnable_mutex)) {
@@ -216,9 +200,27 @@ int timed_thread_test(timed_thread *p_timed_thread)
 
 	/* release mutex and wait until future time for runnable_cond to signal */
 	rc = pthread_cond_timedwait(&p_timed_thread->runnable_cond,
-		&p_timed_thread->runnable_mutex, &wait_time);
+			&p_timed_thread->runnable_mutex, &p_timed_thread->wait_time);
 	/* mutex re-acquired, so release it */
 	pthread_mutex_unlock(&p_timed_thread->runnable_mutex);
+	
+	if (now(&now_time)) {
+		return -1;
+	}
+
+	/* absolute future time for next pass */
+	p_timed_thread->wait_time.tv_sec += p_timed_thread->interval_time.tv_sec;
+	p_timed_thread->wait_time.tv_nsec += p_timed_thread->interval_time.tv_nsec;
+	p_timed_thread->wait_time.tv_sec += p_timed_thread->wait_time.tv_nsec / 1000000000;
+	p_timed_thread->wait_time.tv_nsec = p_timed_thread->wait_time.tv_nsec % 1000000000;
+
+	/* ensure our future wait time is sane */
+	if (p_timed_thread->wait_time.tv_sec > (now_time.tv_sec + p_timed_thread->interval_time.tv_sec) || p_timed_thread->wait_time.tv_sec < now_time.tv_sec) {
+		p_timed_thread->wait_time.tv_sec = now_time.tv_sec + p_timed_thread->interval_time.tv_sec;
+		p_timed_thread->wait_time.tv_nsec = now_time.tv_nsec + p_timed_thread->interval_time.tv_nsec;
+		p_timed_thread->wait_time.tv_sec += p_timed_thread->wait_time.tv_nsec / 1000000000;
+		p_timed_thread->wait_time.tv_nsec = p_timed_thread->wait_time.tv_nsec % 1000000000;
+	}
 
 	if (rc == 0) {
 		/* runnable_cond was signaled, so tell caller to exit thread */
@@ -245,7 +247,7 @@ int timed_thread_register(timed_thread *p_timed_thread,
 	timed_thread_node *p_node;
 
 	assert((addr_of_p_timed_thread == NULL)
-		|| (*addr_of_p_timed_thread == p_timed_thread));
+			|| (*addr_of_p_timed_thread == p_timed_thread));
 
 	if ((p_node = calloc(sizeof(timed_thread_node), 1)) == 0) {
 		return 0;
@@ -276,7 +278,7 @@ void timed_thread_destroy_registered_threads(void)
 	for (p_node = p_timed_thread_list_head; p_node; p_node = p_next) {
 		p_next = p_node->next;
 		timed_thread_destroy(p_node->p_timed_thread,
-			p_node->addr_of_p_timed_thread);
+				p_node->addr_of_p_timed_thread);
 		free(p_node);
 		p_node = NULL;
 	}
