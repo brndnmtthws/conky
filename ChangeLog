@@ -1,5 +1,9 @@
 # $Id$
 
+2008-09-11
+	* Maybe fix missing include bug
+	(http://bugs.gentoo.org/show_bug.cgi?id=235233)'
+
 2008-09-10
 	* Improved hddtemp support
 
