@@ -5344,7 +5344,7 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 #ifdef HDDTEMP
 			OBJ(hddtemp) {
-				if (obj->data.hddtemp.update_time < current_update_time - 30) {
+//				if (obj->data.hddtemp.update_time < current_update_time - 30) {
 					char *str = get_hddtemp_info(obj->data.hddtemp.dev,
 							obj->data.hddtemp.addr, obj->data.hddtemp.port, &obj->data.hddtemp.unit);
 					if (str) {
@@ -5353,7 +5353,7 @@ static void generate_text_internal(char *p, int p_max_size,
 						obj->data.hddtemp.temp[0] = 0;
 					}
 					obj->data.hddtemp.update_time = current_update_time;
-				}
+//				}
 				if (!obj->data.hddtemp.temp) {
 					snprintf(p, p_max_size, "N/A");
 				} else if (obj->data.hddtemp.unit == '*') {

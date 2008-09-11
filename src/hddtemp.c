@@ -120,11 +120,12 @@ char *get_hddtemp_info(char *dev, char *hostaddr, int port, char *unit)
 		FD_ZERO(&rfds);
 		FD_SET(sockfd, &rfds);
 
-		/* We're going to wait up to a quarter a second to see whether there's
-		 * any data available. Polling with timeout set to 0 doesn't seem to work
-		 * with hddtemp. */
+		/* We're going to wait up to a half second to see whether there's any
+		 * data available. Polling with timeout set to 0 doesn't seem to work
+		 * with hddtemp.
+		 */
 		tv.tv_sec = 0;
-		tv.tv_usec = 250000;
+		tv.tv_usec = 500000;
 
 		i = select(sockfd + 1, &rfds, NULL, NULL, &tv);
 		if (i == -1) {
@@ -137,6 +138,7 @@ char *get_hddtemp_info(char *dev, char *hostaddr, int port, char *unit)
 
 		/* No data available */
 		if (i <= 0) {
+			ERR("hddtemp had nothing for us");
 			break;
 		}
 
@@ -153,10 +155,12 @@ char *get_hddtemp_info(char *dev, char *hostaddr, int port, char *unit)
 		} while (i > 0 && p < buf + BUFLEN - 1);
 
 		if (len < 2) {
+			ERR("hddtemp returned nada");
 			break;
 		}
 
 		buf[len] = 0;
+//		printf("read: '%s'\n", buf);
 
 		/* The first character read is the separator. */
 		sep = buf[0];
@@ -200,5 +204,6 @@ char *get_hddtemp_info(char *dev, char *hostaddr, int port, char *unit)
 		}
 	} while (0);
 	close(sockfd);
+//	printf("got: '%s'\n", r);
 	return r;
 }

@@ -1,5 +1,8 @@
 # $Id$
 
+2008-09-10
+	* Improved hddtemp support
+
 2008-09-07
 	* Fixed bug with freq_dyn on x86_64 (thanks Miroslav)
 	* Fixed buffer overflow in update_net_stats() (thanks Miroslav)
