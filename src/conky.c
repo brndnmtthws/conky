@@ -6379,7 +6379,7 @@ head:
 	}
 }
 
-double current_update_time, last_update_time;
+double current_update_time, next_update_time, last_update_time;
 
 static void generate_text(void)
 {
@@ -6416,6 +6416,12 @@ static void generate_text(void)
 		}
 	}
 
+	next_update_time += update_interval;
+	if (next_update_time < get_time()) {
+		next_update_time = get_time() + update_interval;
+	} else if (next_update_time > get_time() + update_interval) {
+		next_update_time = get_time() + update_interval;
+	}
 	last_update_time = current_update_time;
 	total_updates++;
 	// free(p);
@@ -7355,6 +7361,7 @@ static void main_loop(void)
 #ifdef SIGNAL_BLOCKING
 	sigset_t newmask, oldmask;
 #endif
+	double t;
 #ifdef X11
 	Region region = XCreateRegion();
 
@@ -7379,6 +7386,7 @@ static void main_loop(void)
 	sigaddset(&newmask, SIGUSR1);
 #endif
 
+	next_update_time = last_update_time = get_time();
 	info.looped = 0;
 	while (total_run_times == 0 || info.looped < total_run_times) {
 		info.looped++;
@@ -7399,10 +7407,12 @@ static void main_loop(void)
 			fd_set fdsr;
 			struct timeval tv;
 			int s;
-			double t = update_interval - (get_time() - last_update_time);
+			t = next_update_time - get_time();
 
 			if (t < 0) {
 				t = 0;
+			} else if (t > update_interval) {
+				t = update_interval;
 			}
 
 			tv.tv_sec = (long) t;
@@ -7419,8 +7429,8 @@ static void main_loop(void)
 				/* timeout */
 				if (s == 0) {
 #else
-		/* FIXME just sleep for the interval time if no X11 */
-		usleep(update_interval * 1000000);
+		t = (next_update_time - get_time()) * 1000000;
+		usleep((useconds_t)t);
 #endif /* X11 */
 					update_text();
 #ifdef X11

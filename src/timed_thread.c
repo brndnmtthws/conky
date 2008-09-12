@@ -208,6 +208,11 @@ int timed_thread_test(timed_thread *p_timed_thread)
 		return -1;
 	}
 
+	if (rc == 0) {
+		/* runnable_cond was signaled, so tell caller to exit thread */
+		return 1;
+	}
+
 	/* absolute future time for next pass */
 	p_timed_thread->wait_time.tv_sec += p_timed_thread->interval_time.tv_sec;
 	p_timed_thread->wait_time.tv_nsec += p_timed_thread->interval_time.tv_nsec;
@@ -220,11 +225,6 @@ int timed_thread_test(timed_thread *p_timed_thread)
 		p_timed_thread->wait_time.tv_nsec = now_time.tv_nsec + p_timed_thread->interval_time.tv_nsec;
 		p_timed_thread->wait_time.tv_sec += p_timed_thread->wait_time.tv_nsec / 1000000000;
 		p_timed_thread->wait_time.tv_nsec = p_timed_thread->wait_time.tv_nsec % 1000000000;
-	}
-
-	if (rc == 0) {
-		/* runnable_cond was signaled, so tell caller to exit thread */
-		return 1;
 	}
 
 	/* tell caller not to exit yet */
