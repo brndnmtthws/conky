@@ -5,6 +5,8 @@
 	(http://bugs.gentoo.org/show_bug.cgi?id=235233)
 	* Improve timed_thread interval timing
 	* Improve Conky's overall interval timing
+	* Added small patch to support negative values (such as negative disk
+	capacity) (thanks hinokind)
 
 2008-09-10
 	* Improved hddtemp support

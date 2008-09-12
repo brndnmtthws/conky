@@ -1055,7 +1055,7 @@ static void human_readable(long long num, char *buf, int size, const char *func_
 	int precision, len;
 	static const int WIDTH = 10, SHORT_WIDTH = 8;
 
-	if (num < 1024LL) {
+	if (num < 1024LL && num > -1024LL) {
 		if (short_units) {
 			spaced_print(buf, size, "%lld%c", SHORT_WIDTH, func_name, num,
 				**suffix);
@@ -1065,7 +1065,7 @@ static void human_readable(long long num, char *buf, int size, const char *func_
 		return;
 	}
 
-	while (num / 1024 >= 1000LL && **(suffix + 2)) {
+	while ((num / 1024 >= 1000LL || num / 1024 <= -1024LL) && **(suffix + 2)) {
 		num /= 1024;
 		suffix++;
 	}
