@@ -1902,6 +1902,7 @@ void *imap_thread(void *arg)
 								timed_thread_unlock(mail->p_timed_thread);
 							}
 						}
+						buf = recvbuf;
 						buf = strstr(buf, "RECENT");
 						if (buf) {
 							// back up until we reach '*'
