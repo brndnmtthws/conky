@@ -115,6 +115,9 @@ Gwenhael LE MOINE <cycojesus at yahoo dot fr>
 Hannu Saransaari <hipo at users dot sourceforge dot net>
   Main code
 
+Henri Häkkinen <henux at users dot sourceforge dot net>
+  MOC support
+
 hinokind <hinokind at users dot sourceforge dot net>
   support negative values in human_readable()
 
@@ -304,6 +307,9 @@ Toni Spets hifi <spets at users dot sourceforge dot net>
   OpenBSD support
   Linux wifi code
   RSS code (created with Mikko Sysikaski)
+
+Tris <asto at users dot sourceforge dot net>
+  Scroll step patch
 
 tyir <tyir at users dot sourceforge dot net>
   MPD features patch 1319461

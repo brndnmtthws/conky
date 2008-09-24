@@ -40,6 +40,10 @@ if BUILD_MPD
 mpd = mpd.c libmpdclient.c
 endif
 
+if BUILD_MOC
+moc = moc.c
+endif
+
 if BUILD_XMMS2
 xmms2 = xmms2.c
 endif
@@ -109,6 +113,7 @@ conky_SOURCES = 		\
 	mail.c 			\
 	mixer.c 		\
 	$(mpd)                  \
+  $(moc) \
 	$(netbsd)               \
 	$(openbsd)              \
 	$(port_monitors)        \
@@ -146,6 +151,8 @@ EXTRA_DIST = 			\
 	rss.h			\
 	mail.h			\
 	mixer.h			\
+	moc.h			\
+	moc.c			\
 	mpd.c			\
 	mpd.h			\
 	netbsd.c		\

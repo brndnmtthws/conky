@@ -70,8 +70,9 @@
 #define MAX_IF_BLOCK_DEPTH 5
 #define MAX_TAIL_LINES 100
 
-/* #define SIGNAL_BLOCKING */
-#undef SIGNAL_BLOCKING
+#define SIGNAL_BLOCKING
+//#undef SIGNAL_BLOCKING
+sigset_t oldmask;
 
 static void print_version(void) __attribute__((noreturn));
 
@@ -103,6 +104,9 @@ static void print_version(void)
 #ifdef MPD
 		   "  * mpd\n"
 #endif /* MPD */
+#ifdef MOC
+       "  * moc\n"
+#endif /* MOC */
 #ifdef XMMS2
 		   "  * xmms2\n"
 #endif /* XMMS2 */
@@ -137,6 +141,7 @@ static void print_version(void)
 }
 
 static const char *suffixes[] = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "" };
+
 
 #ifdef X11
 
@@ -1314,6 +1319,19 @@ enum text_object_type {
 	OBJ_mpd_percent,
 	OBJ_mpd_smart,
 #endif
+#ifdef MOC
+  OBJ_moc_state,
+  OBJ_moc_file,
+  OBJ_moc_title,
+  OBJ_moc_artist,
+  OBJ_moc_song,
+  OBJ_moc_album,
+  OBJ_moc_totaltime,
+  OBJ_moc_timeleft,
+  OBJ_moc_curtime,
+  OBJ_moc_bitrate,
+  OBJ_moc_rate,
+#endif
 	OBJ_music_player_interval,
 #ifdef XMMS2
 	OBJ_xmms2_artist,
@@ -1511,6 +1529,7 @@ struct text_object {
 		struct {
 			char *text;
 			unsigned int show;
+			unsigned int step;
 			unsigned int start;
 		} scroll;
 		
@@ -1635,14 +1654,15 @@ void *imap_thread(void *arg)
 	char sendbuf[MAXDATASIZE];
 	char *reply;
 	unsigned int fail = 0;
-	unsigned int old_unseen = UINT_MAX;
-	unsigned int old_messages = UINT_MAX;
+	unsigned long old_unseen = ULONG_MAX;
+	unsigned long old_messages = ULONG_MAX;
 	struct stat stat_buf;
 	struct hostent he, *he_res = 0;
 	int he_errno;
 	char hostbuff[2048];
 	struct sockaddr_in their_addr;	// connector's address information
 	struct mail_s *mail = (struct mail_s *)arg;
+	int has_idle = 0;
 
 #ifdef HAVE_GETHOSTBYNAME_R
 	if (gethostbyname_r(mail->host, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
@@ -1736,6 +1756,10 @@ void *imap_thread(void *arg)
 				fail++;
 				break;
 			}
+			if (strstr(recvbuf, " IDLE ") != NULL) {
+				has_idle = 1;
+			}
+
 			strncpy(sendbuf, "a2 STATUS ", MAXDATASIZE);
 			strncat(sendbuf, mail->folder, MAXDATASIZE - strlen(sendbuf) - 1);
 			strncat(sendbuf, " (MESSAGES UNSEEN)\r\n",
@@ -1763,6 +1787,7 @@ void *imap_thread(void *arg)
 				fail++;
 				break;
 			}
+
 			// now we get the data
 			reply = strstr(recvbuf, " (MESSAGES ");
 			reply += 2;
@@ -1777,30 +1802,6 @@ void *imap_thread(void *arg)
 						&mail->unseen);
 				timed_thread_unlock(mail->p_timed_thread);
 			}
-			strncpy(sendbuf, "a3 logout\r\n", MAXDATASIZE);
-			if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
-				perror("send a3");
-				fail++;
-				break;
-			}
-			timeout.tv_sec = 60;	// 60 second timeout i guess
-			timeout.tv_usec = 0;
-			FD_ZERO(&fdset);
-			FD_SET(sockfd, &fdset);
-			res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
-			if (res > 0) {
-				if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
-					perror("recv a3");
-					fail++;
-					break;
-				}
-			}
-			recvbuf[numbytes] = '\0';
-			if (strstr(recvbuf, "a3 OK") == NULL) {
-				ERR("IMAP logout failed: %s", recvbuf);
-				fail++;
-				break;
-			}
 			if (strlen(mail->command) > 1 && (mail->unseen > old_unseen
 						|| (mail->messages > old_messages && mail->unseen > 0))) {
 				// new mail goodie
@@ -1811,6 +1812,147 @@ void *imap_thread(void *arg)
 			fail = 0;
 			old_unseen = mail->unseen;
 			old_messages = mail->messages;
+
+			if (has_idle) {
+				strncpy(sendbuf, "a4 SELECT ", MAXDATASIZE);
+				strncat(sendbuf, mail->folder, MAXDATASIZE - strlen(sendbuf) - 1);
+				strncat(sendbuf, "\r\n", MAXDATASIZE - strlen(sendbuf) - 1);
+				if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
+					perror("send a4");
+					fail++;
+					break;
+				}
+				timeout.tv_sec = 60;	// 60 second timeout i guess
+				timeout.tv_usec = 0;
+				FD_ZERO(&fdset);
+				FD_SET(sockfd, &fdset);
+				res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+				if (res > 0) {
+					if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
+						perror("recv a4");
+						fail++;
+						break;
+					}
+				}
+				recvbuf[numbytes] = '\0';
+				if (strstr(recvbuf, "a4 OK") == NULL) {
+					ERR("IMAP status failed: %s", recvbuf);
+					fail++;
+					break;
+				}
+
+				strncpy(sendbuf, "a5 IDLE\r\n", MAXDATASIZE);
+				if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
+					perror("send a5");
+					fail++;
+					break;
+				}
+				timeout.tv_sec = 60;	// 60 second timeout i guess
+				timeout.tv_usec = 0;
+				FD_ZERO(&fdset);
+				FD_SET(sockfd, &fdset);
+				res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+				if (res > 0) {
+					if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
+						perror("recv a5");
+						fail++;
+						break;
+					}
+				}
+				recvbuf[numbytes] = '\0';
+				if (strstr(recvbuf, "+ idling") == NULL) {
+					ERR("IMAP status failed: %s", recvbuf);
+					fail++;
+					break;
+				}
+				recvbuf[0] = '\0';
+
+				while (1) {
+					FD_ZERO(&fdset);
+					FD_SET(sockfd, &fdset);
+					if (timed_thread_test(mail->p_timed_thread)) {
+						break;
+					}
+					res = pselect(sockfd + 1, &fdset, NULL, NULL, NULL, &oldmask);
+					if (res == -1 && errno == EINTR) {
+						timed_thread_exit(mail->p_timed_thread);
+					} else if (res > 0) {
+						if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
+							perror("recv idling");
+							fail++;
+							printf("fail\n");
+							break;
+						}
+					} else {
+						break;
+					}
+					recvbuf[numbytes] = '\0';
+					if (strlen(recvbuf) > 2) {
+						unsigned long messages, unseen;
+						char *buf = recvbuf;
+						buf = strstr(buf, "EXISTS");
+						if (buf) {
+							// back up until we reach '*'
+							while (buf >= recvbuf && buf[0] != '*') {
+								buf--;
+							}
+							if (sscanf(buf, "* %lu EXISTS\r\n", &messages) == 1) {
+								timed_thread_lock(mail->p_timed_thread);
+								mail->messages = messages;
+								timed_thread_unlock(mail->p_timed_thread);
+							}
+						}
+						buf = strstr(buf, "RECENT");
+						if (buf) {
+							// back up until we reach '*'
+							while (buf >= recvbuf && buf[0] != '*') {
+								buf--;
+							}
+							if (sscanf(buf, "* %lu RECENT\r\n", &unseen) == 1) {
+								timed_thread_lock(mail->p_timed_thread);
+								mail->unseen = unseen;
+								timed_thread_unlock(mail->p_timed_thread);
+							}
+						}
+					}
+					if (strlen(mail->command) > 1 && (mail->unseen > old_unseen
+								|| (mail->messages > old_messages && mail->unseen > 0))) {
+						// new mail goodie
+						if (system(mail->command) == -1) {
+							perror("system()");
+						}
+					}
+					fail = 0;
+					old_unseen = mail->unseen;
+					old_messages = mail->messages;
+
+				}
+			} else {
+				strncpy(sendbuf, "a3 logout\r\n", MAXDATASIZE);
+				if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
+					perror("send a3");
+					fail++;
+					break;
+				}
+				timeout.tv_sec = 60;	// 60 second timeout i guess
+				timeout.tv_usec = 0;
+				FD_ZERO(&fdset);
+				FD_SET(sockfd, &fdset);
+				res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+				if (res > 0) {
+					if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
+						perror("recv a3");
+						fail++;
+						break;
+					}
+				}
+				recvbuf[numbytes] = '\0';
+				if (strstr(recvbuf, "a3 OK") == NULL) {
+					ERR("IMAP logout failed: %s", recvbuf);
+					fail++;
+					break;
+				}
+			}
 		} while (0);
 		if ((fstat(sockfd, &stat_buf) == 0) && S_ISSOCK(stat_buf.st_mode)) {
 			/* if a valid socket, close it */
@@ -1832,7 +1974,7 @@ void *pop3_thread(void *arg)
 	char sendbuf[MAXDATASIZE];
 	char *reply;
 	unsigned int fail = 0;
-	unsigned int old_unseen = UINT_MAX;
+	unsigned long old_unseen = ULONG_MAX;
 	struct stat stat_buf;
 	struct hostent he, *he_res = 0;
 	int he_errno;
@@ -2391,6 +2533,21 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 					free_mpd_vars(&info.mpd);
 				}
 				break;
+#endif
+#ifdef MOC
+    case OBJ_moc_state:
+    case OBJ_moc_file:
+    case OBJ_moc_title:
+    case OBJ_moc_artist: 
+    case OBJ_moc_song: 
+    case OBJ_moc_album:
+    case OBJ_moc_totaltime:
+    case OBJ_moc_timeleft:
+    case OBJ_moc_curtime:
+    case OBJ_moc_bitrate:
+    case OBJ_moc_rate:
+      free_moc(&info.moc);
+      break;
 #endif
 			case OBJ_scroll:
 				free(obj->data.scroll.text);
@@ -3828,6 +3985,19 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.i = 0;
 		}
 #endif /* MPD */
+#ifdef MOC
+  END OBJ_THREAD(moc_state, INFO_MOC)
+  END OBJ_THREAD(moc_file, INFO_MOC)
+  END OBJ_THREAD(moc_title, INFO_MOC)
+  END OBJ_THREAD(moc_artist, INFO_MOC)
+  END OBJ_THREAD(moc_song, INFO_MOC)
+  END OBJ_THREAD(moc_album, INFO_MOC)
+  END OBJ_THREAD(moc_totaltime, INFO_MOC)
+  END OBJ_THREAD(moc_timeleft, INFO_MOC)
+  END OBJ_THREAD(moc_curtime, INFO_MOC)
+  END OBJ_THREAD(moc_bitrate, INFO_MOC)
+  END OBJ_THREAD(moc_rate, INFO_MOC)
+#endif /* MOC */
 #ifdef XMMS2
 	END OBJ(xmms2_artist, INFO_XMMS2)
 	END OBJ(xmms2_album, INFO_XMMS2)
@@ -4030,11 +4200,12 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(scroll, 0)
 		int n;
 
-		if (arg && sscanf(arg, "%u %n", &obj->data.scroll.show, &n) > 0) {
+		obj->data.scroll.step = 1;
+		if (arg && sscanf(arg, "%u %u %n", &obj->data.scroll.show, &obj->data.scroll.step, &n) > 0) {
 			obj->data.scroll.text = strndup(arg + n, text_buffer_size);
 			obj->data.scroll.start = 0;
 		} else {
-			CRIT_ERR("scroll needs arguments: <length> <text>");
+			CRIT_ERR("scroll needs arguments: <length> [<step>] <text>");
 		}
 #ifdef NVIDIA
 	END OBJ(nvidia, 0)
@@ -5771,6 +5942,41 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 #endif
 
+#ifdef MOC
+			OBJ(moc_state) {
+				snprintf(p, p_max_size, "%s", (cur->moc.state ? cur->moc.state : "??"));
+			}
+			OBJ(moc_file) {
+				snprintf(p, p_max_size, "%s", (cur->moc.file ? cur->moc.file : "no file"));
+			}
+			OBJ(moc_title) {
+				snprintf(p, p_max_size, "%s", (cur->moc.title ? cur->moc.title : "no title"));
+			}
+			OBJ(moc_artist) {
+				snprintf(p, p_max_size, "%s", (cur->moc.artist ? cur->moc.artist : "no artist"));
+			}
+			OBJ(moc_song) {
+				snprintf(p, p_max_size, "%s", (cur->moc.song ? cur->moc.song : "no song"));
+			}
+			OBJ(moc_album) {
+				snprintf(p, p_max_size, "%s", (cur->moc.album ? cur->moc.album : "no album"));
+			}
+			OBJ(moc_totaltime) {
+				snprintf(p, p_max_size, "%s", (cur->moc.totaltime ? cur->moc.totaltime : "0:00"));
+			}
+			OBJ(moc_timeleft) {
+				snprintf(p, p_max_size, "%s", (cur->moc.timeleft ? cur->moc.timeleft : "0:00"));
+			}
+			OBJ(moc_curtime) {
+				snprintf(p, p_max_size, "%s", (cur->moc.curtime ? cur->moc.curtime : "0:00"));
+			}
+			OBJ(moc_bitrate) {
+				snprintf(p, p_max_size, "%s", (cur->moc.bitrate ? cur->moc.bitrate : "0Kbps"));
+			}
+			OBJ(moc_rate) {
+        snprintf(p, p_max_size, "%s", (cur->moc.rate ? cur->moc.rate : "0KHz"));
+			}
+#endif /* MOC */
 #ifdef XMMS2
 			OBJ(xmms2_artist) {
 				snprintf(p, p_max_size, "%s", cur->xmms2.artist);
@@ -6300,6 +6506,10 @@ head:
 				unsigned int j;
 				char *tmp;
 				parse_conky_vars(obj->data.scroll.text, p, cur);
+				
+				if (strlen(p) <= obj->data.scroll.show) {
+					break;
+				}
 #define LINESEPARATOR '|'
 				//place all the lines behind each other with LINESEPARATOR between them
 				for(j = 0; p[j] != 0; j++) {
@@ -6322,8 +6532,8 @@ head:
 					p[obj->data.scroll.show] = 0;
 				}
 				//next time, scroll a place more or reset scrolling if we are at the end
-				obj->data.scroll.start++;
-				if(obj->data.scroll.start == j){
+				obj->data.scroll.start += obj->data.scroll.step;
+				if(obj->data.scroll.start >= j){
 					 obj->data.scroll.start = 0;
 				}
 			}
@@ -7359,7 +7569,7 @@ static void update_text(void)
 static void main_loop(void)
 {
 #ifdef SIGNAL_BLOCKING
-	sigset_t newmask, oldmask;
+	sigset_t newmask;
 #endif
 	double t;
 #ifdef X11
@@ -7751,6 +7961,10 @@ void reload_config(void)
 	}
 #endif
 
+#ifdef MOC
+  free_moc(&info.moc);
+#endif
+  
 #ifdef X11
 	free_fonts();
 #endif /* X11 */
@@ -7799,6 +8013,7 @@ void reload_config(void)
 		memset(text_buffer, 0, max_user_text);
 		update_text();
 	}
+	sigemptyset(&oldmask);
 }
 
 void clean_up(void)
@@ -7957,6 +8172,9 @@ static void set_default_configurations(void)
 	info.mpd.track = NULL;
 	info.mpd.name = NULL;
 	info.mpd.file = NULL;
+#endif
+#ifdef MOC
+  init_moc(&info.moc);
 #endif
 #ifdef XMMS2
 	info.xmms2.artist = NULL;
@@ -8794,6 +9012,7 @@ int main(int argc, char **argv)
 
 	g_signal_pending = 0;
 	memset(&info, 0, sizeof(info));
+	clear_net_stats();
 
 #ifdef TCP_PORT_MONITOR
 	tcp_port_monitor_args.max_port_monitor_connections =
@@ -9084,16 +9303,13 @@ int main(int argc, char **argv)
 	act.sa_flags |= SA_RESTART;
 #endif
 
-	if (sigaction(SIGINT, &act, &oact) < 0
-			|| sigaction(SIGUSR1, &act, &oact) < 0
-			|| sigaction(SIGHUP,&act,&oact) < 0
-			|| sigaction(SIGTERM, &act, &oact) < 0) {
+	if (		sigaction(SIGINT,  &act, &oact) < 0
+			||	sigaction(SIGUSR1, &act, &oact) < 0
+			||	sigaction(SIGHUP,  &act, &oact) < 0
+			||	sigaction(SIGTERM, &act, &oact) < 0) {
 		ERR("error setting signal handler: %s", strerror(errno));
 	}
 
-	/* *************** *
-	 * MAIN CONKY LOOP *
-	 * *************** */
 	main_loop();
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)

@@ -1250,6 +1250,105 @@
 
 	<varlistentry>
 		<term>
+			<command><option>moc_state</option></command>
+		</term>
+		<listitem>
+			Current state of MOC; playing, stopped etc.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>moc_file</option></command>
+		</term>
+		<listitem>
+			File name of the current MOC song
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>moc_title</option></command>
+		</term>
+		<listitem>
+			Title of the current MOC song
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>moc_artist</option></command>
+		</term>
+		<listitem>
+			Artist of the current MOC song
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>moc_song</option></command>
+		</term>
+		<listitem>
+			The current song name being played in MOC.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>moc_album</option></command>
+		</term>
+		<listitem>
+			Album of the current MOC song
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>moc_totaltime</option></command>
+		</term>
+		<listitem>
+			Total length of the current MOC song
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>moc_timeleft</option></command>
+		</term>
+		<listitem>
+			Time left in the current MOC song
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>moc_curtime</option></command>
+		</term>
+		<listitem>
+			Current time of the current MOC song
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>moc_bitrate</option></command>
+		</term>
+		<listitem>
+			Bitrate in the current MOC song
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>moc_rate</option></command>
+		</term>
+		<listitem>
+			Rate of the current MOC song
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
 			<command><option>monitor</option></command>
 		</term>
 		<listitem>
@@ -1583,10 +1682,10 @@
 	<varlistentry>
 		<term>
 			<command><option>scroll</option></command>
-			<option>length text</option>
+			<option>length (step) text</option>
 		</term>
 		<listitem>
-			Scroll 'text' showing 'length' number of characters at the same time. The text may also contain variables. If a var creates output on multiple lines then the lines are placed behind each other separated with a '|'-sign. Do NOT use vars that change colors or otherwise affect the design inside a scrolling text. If you want spaces between the start and the end of 'text', place them at the end of 'text' not at the front ("foobar" and "    foobar" can both generate "barfoo" but "foobar    " will keep the spaces like this "bar    foo").
+			Scroll 'text' by 'step' characters showing 'length' number of characters at the same time. The text may also contain variables. 'step' is optional and defaults to 1 if not set. If a var creates output on multiple lines then the lines are placed behind each other separated with a '|'-sign. Do NOT use vars that change colors or otherwise affect the design inside a scrolling text. If you want spaces between the start and the end of 'text', place them at the end of 'text' not at the front ("foobar" and "    foobar" can both generate "barfoo" but "foobar    " will keep the spaces like this "bar    foo").
 			<para></para></listitem>
 	</varlistentry>
 

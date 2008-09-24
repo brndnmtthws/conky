@@ -909,6 +909,50 @@ Total amount of memory
 Percentage of memory in use
 
 .TP 
+\fB\*(T<\fBmoc_state\fR\*(T>\fR 
+Current state of MOC; playing, stopped etc.
+
+.TP 
+\fB\*(T<\fBmoc_file\fR\*(T>\fR 
+File name of the current MOC song
+
+.TP 
+\fB\*(T<\fBmoc_title\fR\*(T>\fR 
+Title of the current MOC song
+
+.TP 
+\fB\*(T<\fBmoc_artist\fR\*(T>\fR 
+Artist of the current MOC song
+
+.TP 
+\fB\*(T<\fBmoc_song\fR\*(T>\fR 
+The current song name being played in MOC.
+
+.TP 
+\fB\*(T<\fBmoc_album\fR\*(T>\fR 
+Album of the current MOC song
+
+.TP 
+\fB\*(T<\fBmoc_totaltime\fR\*(T>\fR 
+Total length of the current MOC song
+
+.TP 
+\fB\*(T<\fBmoc_timeleft\fR\*(T>\fR 
+Time left in the current MOC song
+
+.TP 
+\fB\*(T<\fBmoc_curtime\fR\*(T>\fR 
+Current time of the current MOC song
+
+.TP 
+\fB\*(T<\fBmoc_bitrate\fR\*(T>\fR 
+Bitrate in the current MOC song
+
+.TP 
+\fB\*(T<\fBmoc_rate\fR\*(T>\fR 
+Rate of the current MOC song
+
+.TP 
 \fB\*(T<\fBmonitor\fR\*(T>\fR 
 Number of the monitor on which conky is running
 
@@ -1067,8 +1111,8 @@ Total processes (sleeping and running)
 Running processes (not sleeping), requires Linux 2.6
 
 .TP 
-\fB\*(T<\fBscroll\fR\*(T>\fR \*(T<\fBlength text\fR\*(T> 
-Scroll 'text' showing 'length' number of characters at the same time. The text may also contain variables. If a var creates output on multiple lines then the lines are placed behind each other separated with a '|'-sign. Do NOT use vars that change colors or otherwise affect the design inside a scrolling text. If you want spaces between the start and the end of 'text', place them at the end of 'text' not at the front ("foobar" and " foobar" can both generate "barfoo" but "foobar " will keep the spaces like this "bar foo").
+\fB\*(T<\fBscroll\fR\*(T>\fR \*(T<\fBlength (step) text\fR\*(T> 
+Scroll 'text' by 'step' characters showing 'length' number of characters at the same time. The text may also contain variables. 'step' is optional and defaults to 1 if not set. If a var creates output on multiple lines then the lines are placed behind each other separated with a '|'-sign. Do NOT use vars that change colors or otherwise affect the design inside a scrolling text. If you want spaces between the start and the end of 'text', place them at the end of 'text' not at the front ("foobar" and " foobar" can both generate "barfoo" but "foobar " will keep the spaces like this "bar foo").
 
 .TP 
 \fB\*(T<\fBshadecolor\fR\*(T>\fR \*(T<\fB(color)\fR\*(T> 

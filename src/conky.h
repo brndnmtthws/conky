@@ -178,6 +178,10 @@ struct mail_s {			// for imap and pop3
 #include "mpd.h"
 #endif
 
+#ifdef MOC
+#include "moc.h"
+#endif
+
 #ifdef XMMS2
 #include "xmms2.h"
 #endif
@@ -273,8 +277,10 @@ enum {
 #ifdef X11
 	INFO_X11 = 29,
 #endif
-	INFO_DNS = 30
-
+	INFO_DNS = 30,
+#ifdef MOC
+  INFO_MOC = 31
+#endif
 };
 
 /* get_battery_stuff() item selector */
@@ -324,6 +330,9 @@ struct information {
 	int mail_running;
 #ifdef MPD
 	struct mpd_s mpd;
+#endif
+#ifdef MOC
+  struct moc_s moc;
 #endif
 #ifdef XMMS2
 	struct xmms2_s xmms2;

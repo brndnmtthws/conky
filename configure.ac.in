@@ -204,6 +204,19 @@ if test x$want_mpd = xyes; then
 fi
 
 dnl
+dnl MOC
+dnl
+
+AC_ARG_ENABLE([moc],
+              AC_HELP_STRING([--disable-moc], [disable if you do not want MOC support @<:@default=yes@:>@]),
+              [want_moc="$enableval"], [want_moc=yes])
+
+AM_CONDITIONAL(BUILD_MOC, test x$want_moc = xyes)
+if test x$want_moc = xyes; then
+  AC_DEFINE(MOC, 1, [Define if you want MOC support])
+fi
+
+dnl
 dnl XMMS2
 dnl
 
@@ -680,6 +693,7 @@ $PACKAGE $VERSION configured successfully:
   Audacious:        $want_audacious
   BMPx:             $want_bmpx
   MPD:              $want_mpd
+  MOC:              $want_moc
   XMMS2:            $want_xmms2
 
  * General:

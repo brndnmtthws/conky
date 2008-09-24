@@ -1,5 +1,10 @@
 # $Id$
 
+2008-09-24
+	* Introduced (buggy) support for IMAP IDLE
+	* Added support for MOC (the console audio player) (thanks henux)
+	* Added scroll step patch (thanks asto)
+
 2008-09-11
 	* Maybe fix missing include bug
 	(http://bugs.gentoo.org/show_bug.cgi?id=235233)

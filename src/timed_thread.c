@@ -46,7 +46,7 @@ struct _timed_thread {
 	void *(*start_routine)(void *);	/* thread function to run */
 	void *arg;						/* thread function argument */
 	struct timespec interval_time;	/* interval_usecs as a struct timespec */
-	struct timespec wait_time;  /* absolute future time next timed_thread_test will wait until */
+	struct timespec wait_time;		/* absolute future time next timed_thread_test will wait until */
 };
 
 /* linked list of created threads */
