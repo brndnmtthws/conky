@@ -1647,11 +1647,11 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 	return mail;
 }
 
-int imap_command(int sockfd, char *command, char *response, const char *verify)
+int imap_command(int sockfd, const char *command, char *response, const char *verify)
 {
 	struct timeval timeout;
 	fd_set fdset;
-	int res, numbytes;
+	int res, numbytes = 0;
 	if (send(sockfd, command, strlen(command), 0) == -1) {
 		perror("send");
 		return -1;
@@ -1674,12 +1674,43 @@ int imap_command(int sockfd, char *command, char *response, const char *verify)
 	return 0;
 }
 
+int imap_check_status(char *recvbuf, struct mail_s *mail)
+{
+	char *reply;
+	reply = strstr(recvbuf, " (MESSAGES ");
+	if (!reply || strlen(reply) < 2) {
+		return -1;
+	}
+	reply += 2;
+	*strchr(reply, ')') = '\0';
+	if (reply == NULL) {
+		ERR("Error parsing IMAP response: %s", recvbuf);
+		return -1;
+	} else {
+		timed_thread_lock(mail->p_timed_thread);
+		sscanf(reply, "MESSAGES %lu UNSEEN %lu", &mail->messages,
+				&mail->unseen);
+		timed_thread_unlock(mail->p_timed_thread);
+	}
+	return 0;
+}
+
+void imap_unseen_command(struct mail_s *mail, unsigned long old_unseen, unsigned long old_messages)
+{
+	if (strlen(mail->command) > 1 && (mail->unseen > old_unseen
+				|| (mail->messages > old_messages && mail->unseen > 0))) {
+		// new mail goodie
+		if (system(mail->command) == -1) {
+			perror("system()");
+		}
+	}
+}
+
 void *imap_thread(void *arg)
 {
 	int sockfd, numbytes;
 	char recvbuf[MAXDATASIZE];
 	char sendbuf[MAXDATASIZE];
-	char *reply;
 	unsigned int fail = 0;
 	unsigned long old_unseen = ULONG_MAX;
 	unsigned long old_messages = ULONG_MAX;
@@ -1778,27 +1809,11 @@ void *imap_thread(void *arg)
 				break;
 			}
 
-			// now we get the data
-			reply = strstr(recvbuf, " (MESSAGES ");
-			reply += 2;
-			*strchr(reply, ')') = '\0';
-			if (reply == NULL) {
-				ERR("Error parsing IMAP response: %s", recvbuf);
+			if (imap_check_status(recvbuf, mail)) {
 				fail++;
 				break;
-			} else {
-				timed_thread_lock(mail->p_timed_thread);
-				sscanf(reply, "MESSAGES %lu UNSEEN %lu", &mail->messages,
-						&mail->unseen);
-				timed_thread_unlock(mail->p_timed_thread);
 			}
-			if (strlen(mail->command) > 1 && (mail->unseen > old_unseen
-						|| (mail->messages > old_messages && mail->unseen > 0))) {
-				// new mail goodie
-				if (system(mail->command) == -1) {
-					perror("system()");
-				}
-			}
+			imap_unseen_command(mail, old_unseen, old_messages);
 			fail = 0;
 			old_unseen = mail->unseen;
 			old_messages = mail->messages;
@@ -1867,27 +1882,41 @@ void *imap_thread(void *arg)
 							while (buf >= recvbuf && buf[0] != '*') {
 								buf--;
 							}
-							if (sscanf(buf, "* %lu RECENT\r\n", &recent) == 1) {
-								/*
-								 * if we have > 0 recent, re-check the unseen count
-								 */
-								timed_thread_lock(mail->p_timed_thread);
-								mail->unseen = recent;
-								timed_thread_unlock(mail->p_timed_thread);
+							if (sscanf(buf, "* %lu RECENT\r\n", &recent) != 1) {
+								recent = 0;
+							}
+						}
+						// check if we got a FETCH from server
+						buf = recvbuf;
+						if (recent > 0 || (buf && strstr(buf, " FETCH "))) {
+							// re-check messages and unseen
+							if (imap_command(sockfd, "DONE\r\n", recvbuf, "a5 OK")) {
+								fail++;
+								break;
+							}
+							strncpy(sendbuf, "a2 STATUS ", MAXDATASIZE);
+							strncat(sendbuf, mail->folder, MAXDATASIZE - strlen(sendbuf) - 1);
+							strncat(sendbuf, " (MESSAGES UNSEEN)\r\n",
+									MAXDATASIZE - strlen(sendbuf) - 1);
+							if (imap_command(sockfd, sendbuf, recvbuf, "a2 OK")) {
+								fail++;
+								break;
+							}
+							if (imap_check_status(recvbuf, mail)) {
+								fail++;
+								break;
+							}
+							strncpy(sendbuf, "a5 IDLE\r\n", MAXDATASIZE);
+							if (imap_command(sockfd, sendbuf, recvbuf, "+ idling")) {
+								fail++;
+								break;
 							}
 						}
 					}
-					if (strlen(mail->command) > 1 && (mail->unseen > old_unseen
-								|| (mail->messages > old_messages && mail->unseen > 0))) {
-						// new mail goodie
-						if (system(mail->command) == -1) {
-							perror("system()");
-						}
-					}
+					imap_unseen_command(mail, old_unseen, old_messages);
 					fail = 0;
 					old_unseen = mail->unseen;
 					old_messages = mail->messages;
-
 				}
 			} else {
 				strncpy(sendbuf, "a3 logout\r\n", MAXDATASIZE);
