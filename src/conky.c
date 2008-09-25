@@ -1839,10 +1839,11 @@ void *imap_thread(void *arg)
 					FD_SET(sockfd, &fdset);
 					FD_SET(threadfd, &fdset);
 					res = pselect(MAX(sockfd + 1, threadfd + 1), &fdset, NULL, NULL, NULL, &oldmask);
-					if (timed_thread_test(mail->p_timed_thread)) {
-						timed_thread_exit(mail->p_timed_thread);
-					}
-					if ((res == -1 && errno == EINTR) || FD_ISSET(threadfd, &fdset)) {
+					if (timed_thread_test(mail->p_timed_thread) || (res == -1 && errno == EINTR) || FD_ISSET(threadfd, &fdset)) {
+						if ((fstat(sockfd, &stat_buf) == 0) && S_ISSOCK(stat_buf.st_mode)) {
+							/* if a valid socket, close it */
+							close(sockfd);
+						}
 						timed_thread_exit(mail->p_timed_thread);
 					} else if (res > 0) {
 						if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
