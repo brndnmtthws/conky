@@ -63,4 +63,7 @@ int timed_thread_register(timed_thread *p_timed_thread,
 /* destroy all registered timed threads */
 void timed_thread_destroy_registered_threads(void);
 
+/* returns read file descriptor for thread pipe */
+int timed_thread_readfd(timed_thread *p_timed_thread);
+
 #endif /* #ifdef _TIMED_THREAD_H_ */

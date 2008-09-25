@@ -1647,6 +1647,33 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 	return mail;
 }
 
+int imap_command(int sockfd, char *command, char *response, const char *verify)
+{
+	struct timeval timeout;
+	fd_set fdset;
+	int res, numbytes;
+	if (send(sockfd, command, strlen(command), 0) == -1) {
+		perror("send");
+		return -1;
+	}
+	timeout.tv_sec = 60;	// 60 second timeout i guess
+	timeout.tv_usec = 0;
+	FD_ZERO(&fdset);
+	FD_SET(sockfd, &fdset);
+	res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
+	if (res > 0) {
+		if ((numbytes = recv(sockfd, response, MAXDATASIZE - 1, 0)) == -1) {
+			perror("recv");
+			return -1;
+		}
+	}
+	response[numbytes] = '\0';
+	if (strstr(response, verify) == NULL) {
+		return -1;
+	}
+	return 0;
+}
+
 void *imap_thread(void *arg)
 {
 	int sockfd, numbytes;
@@ -1663,6 +1690,7 @@ void *imap_thread(void *arg)
 	struct sockaddr_in their_addr;	// connector's address information
 	struct mail_s *mail = (struct mail_s *)arg;
 	int has_idle = 0;
+	int threadfd = timed_thread_readfd(mail->p_timed_thread);
 
 #ifdef HAVE_GETHOSTBYNAME_R
 	if (gethostbyname_r(mail->host, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
@@ -1733,26 +1761,7 @@ void *imap_thread(void *arg)
 			strncat(sendbuf, " ", MAXDATASIZE - strlen(sendbuf) - 1);
 			strncat(sendbuf, mail->pass, MAXDATASIZE - strlen(sendbuf) - 1);
 			strncat(sendbuf, "\r\n", MAXDATASIZE - strlen(sendbuf) - 1);
-			if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
-				perror("send a1");
-				fail++;
-				break;
-			}
-			timeout.tv_sec = 60;	// 60 second timeout i guess
-			timeout.tv_usec = 0;
-			FD_ZERO(&fdset);
-			FD_SET(sockfd, &fdset);
-			res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
-			if (res > 0) {
-				if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
-					perror("recv a1");
-					fail++;
-					break;
-				}
-			}
-			recvbuf[numbytes] = '\0';
-			if (strstr(recvbuf, "a1 OK") == NULL) {
-				ERR("IMAP server login failed: %s", recvbuf);
+			if (imap_command(sockfd, sendbuf, recvbuf, "a1 OK")) {
 				fail++;
 				break;
 			}
@@ -1764,26 +1773,7 @@ void *imap_thread(void *arg)
 			strncat(sendbuf, mail->folder, MAXDATASIZE - strlen(sendbuf) - 1);
 			strncat(sendbuf, " (MESSAGES UNSEEN)\r\n",
 					MAXDATASIZE - strlen(sendbuf) - 1);
-			if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
-				perror("send a2");
-				fail++;
-				break;
-			}
-			timeout.tv_sec = 60;	// 60 second timeout i guess
-			timeout.tv_usec = 0;
-			FD_ZERO(&fdset);
-			FD_SET(sockfd, &fdset);
-			res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
-			if (res > 0) {
-				if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
-					perror("recv a2");
-					fail++;
-					break;
-				}
-			}
-			recvbuf[numbytes] = '\0';
-			if (strstr(recvbuf, "a2 OK") == NULL) {
-				ERR("IMAP status failed: %s", recvbuf);
+			if (imap_command(sockfd, sendbuf, recvbuf, "a2 OK")) {
 				fail++;
 				break;
 			}
@@ -1817,51 +1807,13 @@ void *imap_thread(void *arg)
 				strncpy(sendbuf, "a4 SELECT ", MAXDATASIZE);
 				strncat(sendbuf, mail->folder, MAXDATASIZE - strlen(sendbuf) - 1);
 				strncat(sendbuf, "\r\n", MAXDATASIZE - strlen(sendbuf) - 1);
-				if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
-					perror("send a4");
-					fail++;
-					break;
-				}
-				timeout.tv_sec = 60;	// 60 second timeout i guess
-				timeout.tv_usec = 0;
-				FD_ZERO(&fdset);
-				FD_SET(sockfd, &fdset);
-				res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
-				if (res > 0) {
-					if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
-						perror("recv a4");
-						fail++;
-						break;
-					}
-				}
-				recvbuf[numbytes] = '\0';
-				if (strstr(recvbuf, "a4 OK") == NULL) {
-					ERR("IMAP status failed: %s", recvbuf);
+				if (imap_command(sockfd, sendbuf, recvbuf, "a4 OK")) {
 					fail++;
 					break;
 				}
 
 				strncpy(sendbuf, "a5 IDLE\r\n", MAXDATASIZE);
-				if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
-					perror("send a5");
-					fail++;
-					break;
-				}
-				timeout.tv_sec = 60;	// 60 second timeout i guess
-				timeout.tv_usec = 0;
-				FD_ZERO(&fdset);
-				FD_SET(sockfd, &fdset);
-				res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
-				if (res > 0) {
-					if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
-						perror("recv a5");
-						fail++;
-						break;
-					}
-				}
-				recvbuf[numbytes] = '\0';
-				if (strstr(recvbuf, "+ idling") == NULL) {
-					ERR("IMAP status failed: %s", recvbuf);
+				if (imap_command(sockfd, sendbuf, recvbuf, "+ idling")) {
 					fail++;
 					break;
 				}
@@ -1870,17 +1822,17 @@ void *imap_thread(void *arg)
 				while (1) {
 					FD_ZERO(&fdset);
 					FD_SET(sockfd, &fdset);
+					FD_SET(threadfd, &fdset);
+					res = pselect(MAX(sockfd + 1, threadfd + 1), &fdset, NULL, NULL, NULL, &oldmask);
 					if (timed_thread_test(mail->p_timed_thread)) {
-						break;
+						timed_thread_exit(mail->p_timed_thread);
 					}
-					res = pselect(sockfd + 1, &fdset, NULL, NULL, NULL, &oldmask);
-					if (res == -1 && errno == EINTR) {
+					if ((res == -1 && errno == EINTR) || FD_ISSET(threadfd, &fdset)) {
 						timed_thread_exit(mail->p_timed_thread);
 					} else if (res > 0) {
 						if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
 							perror("recv idling");
 							fail++;
-							printf("fail\n");
 							break;
 						}
 					} else {
@@ -1888,9 +1840,12 @@ void *imap_thread(void *arg)
 					}
 					recvbuf[numbytes] = '\0';
 					if (strlen(recvbuf) > 2) {
-						unsigned long messages, unseen;
+						unsigned long messages, recent;
 						char *buf = recvbuf;
 						buf = strstr(buf, "EXISTS");
+						while (buf && strlen(buf) > 1 && strstr(buf + 1, "EXISTS")) {
+							buf = strstr(buf + 1, "EXISTS");
+						}
 						if (buf) {
 							// back up until we reach '*'
 							while (buf >= recvbuf && buf[0] != '*') {
@@ -1904,14 +1859,20 @@ void *imap_thread(void *arg)
 						}
 						buf = recvbuf;
 						buf = strstr(buf, "RECENT");
+						while (buf && strlen(buf) > 1 && strstr(buf + 1, "RECENT")) {
+							buf = strstr(buf + 1, "RECENT");
+						}
 						if (buf) {
 							// back up until we reach '*'
 							while (buf >= recvbuf && buf[0] != '*') {
 								buf--;
 							}
-							if (sscanf(buf, "* %lu RECENT\r\n", &unseen) == 1) {
+							if (sscanf(buf, "* %lu RECENT\r\n", &recent) == 1) {
+								/*
+								 * if we have > 0 recent, re-check the unseen count
+								 */
 								timed_thread_lock(mail->p_timed_thread);
-								mail->unseen = unseen;
+								mail->unseen = recent;
 								timed_thread_unlock(mail->p_timed_thread);
 							}
 						}

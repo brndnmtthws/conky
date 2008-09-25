@@ -27,6 +27,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <time.h>
+#include <unistd.h>
 #ifndef HAVE_CLOCK_GETTIME
 #include <sys/time.h>
 #endif
@@ -47,6 +48,7 @@ struct _timed_thread {
 	void *arg;						/* thread function argument */
 	struct timespec interval_time;	/* interval_usecs as a struct timespec */
 	struct timespec wait_time;		/* absolute future time next timed_thread_test will wait until */
+	int pipefd[2];
 };
 
 /* linked list of created threads */
@@ -58,6 +60,11 @@ typedef struct _timed_thread_list {
 
 static timed_thread_list *p_timed_thread_list_head = NULL;
 static timed_thread_list *p_timed_thread_list_tail = NULL;
+
+int timed_thread_readfd(timed_thread *p_timed_thread)
+{
+	return p_timed_thread->pipefd[0];
+}
 
 static int now(struct timespec *abstime)
 {
@@ -93,6 +100,11 @@ timed_thread *timed_thread_create(void *start_routine(void *), void *arg,
 	assert(interval_usecs >= MINIMUM_INTERVAL_USECS);
 
 	if ((p_timed_thread = calloc(sizeof(timed_thread), 1)) == 0) {
+		return NULL;
+	}
+
+	/* create thread pipe (used to tell threads to die) */
+	if (pipe(p_timed_thread->pipefd)) {
 		return NULL;
 	}
 
@@ -147,6 +159,7 @@ void timed_thread_destroy(timed_thread *p_timed_thread,
 	pthread_mutex_lock(&p_timed_thread->runnable_mutex);
 	pthread_cond_signal(&p_timed_thread->runnable_cond);
 	pthread_mutex_unlock(&p_timed_thread->runnable_mutex);
+	write(p_timed_thread->pipefd[1], "die", 3);
 
 	/* join the terminating thread */
 	if (p_timed_thread->thread) {
@@ -235,6 +248,9 @@ int timed_thread_test(timed_thread *p_timed_thread)
 void timed_thread_exit(timed_thread *p_timed_thread)
 {
 	assert(p_timed_thread != NULL);
+
+	close(p_timed_thread->pipefd[0]);
+	close(p_timed_thread->pipefd[1]);
 
 	pthread_exit(NULL);
 }
