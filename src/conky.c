@@ -1921,6 +1921,14 @@ void *imap_thread(void *arg)
 								break;
 							}
 						}
+						/*
+						 * check if we got a BYE from server
+						 */
+						buf = recvbuf;
+						if (buf && strstr(buf, "* BYE")) {
+							// need to re-connect
+							break;
+						}
 					}
 					imap_unseen_command(mail, old_unseen, old_messages);
 					fail = 0;
