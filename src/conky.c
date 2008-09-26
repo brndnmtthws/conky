@@ -70,9 +70,8 @@
 #define MAX_IF_BLOCK_DEPTH 5
 #define MAX_TAIL_LINES 100
 
-#define SIGNAL_BLOCKING
-//#undef SIGNAL_BLOCKING
-sigset_t oldmask;
+//#define SIGNAL_BLOCKING
+#undef SIGNAL_BLOCKING
 
 static void print_version(void) __attribute__((noreturn));
 
@@ -1835,10 +1834,16 @@ void *imap_thread(void *arg)
 				recvbuf[0] = '\0';
 
 				while (1) {
+					/*
+					 * RFC 2177 says we have to re-idle every 29 minutes.
+					 * We'll do it every 20 minutes to be safe.
+					 */
+					timeout.tv_sec = 1200;
+					timeout.tv_usec = 0;
 					FD_ZERO(&fdset);
 					FD_SET(sockfd, &fdset);
 					FD_SET(threadfd, &fdset);
-					res = pselect(MAX(sockfd + 1, threadfd + 1), &fdset, NULL, NULL, NULL, &oldmask);
+					res = select(MAX(sockfd + 1, threadfd + 1), &fdset, NULL, NULL, NULL);
 					if (timed_thread_test(mail->p_timed_thread) || (res == -1 && errno == EINTR) || FD_ISSET(threadfd, &fdset)) {
 						if ((fstat(sockfd, &stat_buf) == 0) && S_ISSOCK(stat_buf.st_mode)) {
 							/* if a valid socket, close it */
@@ -1887,9 +1892,12 @@ void *imap_thread(void *arg)
 								recent = 0;
 							}
 						}
-						// check if we got a FETCH from server
+						/*
+						 * check if we got a FETCH from server, recent was
+						 * something other than 0, or we had a timeout
+						 */
 						buf = recvbuf;
-						if (recent > 0 || (buf && strstr(buf, " FETCH "))) {
+						if (recent > 0 || (buf && strstr(buf, " FETCH ")) || timeout.tv_sec == 0) {
 							// re-check messages and unseen
 							if (imap_command(sockfd, "DONE\r\n", recvbuf, "a5 OK")) {
 								fail++;
@@ -7561,7 +7569,7 @@ static void update_text(void)
 static void main_loop(void)
 {
 #ifdef SIGNAL_BLOCKING
-	sigset_t newmask;
+	sigset_t newmask, oldmask;
 #endif
 	double t;
 #ifdef X11
@@ -8005,7 +8013,6 @@ void reload_config(void)
 		memset(text_buffer, 0, max_user_text);
 		update_text();
 	}
-	sigemptyset(&oldmask);
 }
 
 void clean_up(void)
