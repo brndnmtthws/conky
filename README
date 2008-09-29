@@ -1076,6 +1076,43 @@ conky(1)							      conky(1)
 	      Percentage of memory in use
 
 
+       1mmixer (device)0m
+	      Prints  the  mixer value as reported by the OS. Default mixer is
+	      "vol", but you can specify one of the following  optional	 argu‐
+	      ments:  "vol",  "bass",  "treble",  "synth",  "pcm",  "speaker",
+	      "line", "mic", "cd", "mix",  "pcm2",  "rec",  "igain",  "ogain",
+	      "line1",	"line2",  "line3",  "dig1",  "dig2",  "dig3",  "phin",
+	      "phout", "video", "radio", "monitor". Refer to the definition of
+	      SOUND_DEVICE_NAMES  in  <linux/soundcard.h>  (on Linux), <sound‐
+	      card.h> (on OpenBSD), or <sys/soundcard.h> to find the exact op‐
+	      tions available on your system.
+
+
+       1mmixerbar (device)0m
+	      Displays	mixer  value  in a bar as reported by the OS. See docs
+	      for $mixer for details on arguments.
+
+
+       1mmixerr (device)0m
+	      Prints the right channel mixer value as reported by the OS.  See
+	      docs for $mixer for details on arguments.
+
+
+       1mmixerrbar (device)0m
+	      Displays	the  right channel mixer value in a bar as reported by
+	      the OS. See docs for $mixer for details on arguments.
+
+
+       1mmixerl (device)0m
+	      Prints the left channel mixer value as reported by the  OS.  See
+	      docs for $mixer for details on arguments.
+
+
+       1mmixerlbar (device)0m
+	      Displays	the  left  channel mixer value in a bar as reported by
+	      the OS. See docs for $mixer for details on arguments.
+
+
        1mmoc_state0m
 	      Current state of MOC; playing, stopped etc.
 
@@ -1194,7 +1231,7 @@ conky(1)							      conky(1)
 
 
        1mnameserver (index)0m
-	      Print a nameserver from /etc/resolv.conf. Index  starts  at  and
+	      Print  a	nameserver  from /etc/resolv.conf. Index starts at and
 	      defaults to 0.
 
 
@@ -1208,8 +1245,8 @@ conky(1)							      conky(1)
 
 
        1mnvidia threshold temp gpufreq memfreq imagequality0m
-	      Nvidia graficcard support for the XNVCtrl library.  Each	option
-	      can  be  shortened  to the least significant part.  Temperatures
+	      Nvidia  graficcard support for the XNVCtrl library.  Each option
+	      can be shortened to the least  significant  part.	  Temperatures
 	      are printed as float, all other values as integer.
 
 	      1mthreshold22m: the thresholdtemperature at which the gpu slows down
@@ -1226,26 +1263,26 @@ conky(1)							      conky(1)
 
        1mpb_battery item0m
 	      If running on Apple powerbook/ibook, display information on bat‐
-	      tery status. The item parameter specifies, what  information  to
+	      tery  status.  The item parameter specifies, what information to
 	      display. Exactly one item must be specified. Valid items are:
 
 	      1mstatus22m: Display if battery is fully charged, charging, discharg‐
 	      ing or absent (running on AC)
-	      1mpercent22m: Display charge of battery in percent,  if  charging	 or
-	      discharging.  Nothing  will  be  displayed,  if battery is fully
+	      1mpercent22m:  Display  charge  of battery in percent, if charging or
+	      discharging. Nothing will be  displayed,	if  battery  is	 fully
 	      charged or absent.
 	      1mtime22m: Display the time remaining until the battery will be fully
-	      charged  or discharged at current rate. Nothing is displayed, if
-	      battery is absent or if it’s present but fully charged  and  not
+	      charged or discharged at current rate. Nothing is displayed,  if
+	      battery  is  absent or if it’s present but fully charged and not
 	      discharging.
 
 
        1mplatform (dev) type n0m
-	      Platform	sensor	from  sysfs  (Linux 2.6). Parameter dev may be
-	      omitted if you have only one platform device. Platform  type  is
-	      either  ’in’ or ’vol’ meaning voltage; ’fan’ meaning fan; ’temp’
+	      Platform sensor from sysfs (Linux 2.6).  Parameter  dev  may  be
+	      omitted  if  you have only one platform device. Platform type is
+	      either ’in’ or ’vol’ meaning voltage; ’fan’ meaning fan;	’temp’
 	      (Celsius) or ’tempf’ (Fahrenheit) meaning temperature. Parameter
-	      n	 is  number  of	 the sensor. See /sys/bus/platform/devices/ on
+	      n is number of the  sensor.  See	/sys/bus/platform/devices/  on
 	      your local computer.
 
 
@@ -1260,13 +1297,13 @@ conky(1)							      conky(1)
 
 
        1mpop3_used (args)0m
-	      Displays the amount of space (in MiB, 2^20) used in your	global
-	      POP3  inbox  by  default. You can define individual POP3 inboxes
-	      seperately by passing arguments to this object.  Arguments  are:
-	      "host  user  pass	 [-i  interval] [-p port] [-e command] [-r re‐
+	      Displays	the amount of space (in MiB, 2^20) used in your global
+	      POP3 inbox by default. You can define  individual	 POP3  inboxes
+	      seperately  by  passing arguments to this object. Arguments are:
+	      "host user pass [-i interval] [-p port]  [-e  command]  [-r  re‐
 	      tries]". Default port is 110, default interval is 5 minutes, and
 	      default number of retries before giving up is 5. If the password
-	      is supplied as ’*’, you will be prompted to enter	 the  password
+	      is  supplied  as ’*’, you will be prompted to enter the password
 	      when Conky starts.
 
 
@@ -1284,14 +1321,14 @@ conky(1)							      conky(1)
 
 
        1mscroll length (step) text0m
-	      Scroll ’text’ by ’step’ characters showing  ’length’  number  of
-	      characters  at  the  same	 time. The text may also contain vari‐
+	      Scroll  ’text’  by  ’step’ characters showing ’length’ number of
+	      characters at the same time. The text  may  also	contain	 vari‐
 	      ables. ’step’ is optional and defaults to 1 if not set. If a var
-	      creates  output  on multiple lines then the lines are placed be‐
-	      hind each other separated with a ’|’-sign. Do NOT use vars  that
-	      change  colors or otherwise affect the design inside a scrolling
-	      text. If you want spaces	between	 the  start  and  the  end  of
-	      ’text’,  place them at the end of ’text’ not at the front ("foo‐
+	      creates output on multiple lines then the lines are  placed  be‐
+	      hind  each other separated with a ’|’-sign. Do NOT use vars that
+	      change colors or otherwise affect the design inside a  scrolling
+	      text.  If	 you  want  spaces  between  the  start and the end of
+	      ’text’, place them at the end of ’text’ not at the front	("foo‐
 	      bar" and " foobar" can both generate "barfoo" but "foobar " will
 	      keep the spaces like this "bar foo").
 
@@ -1301,35 +1338,35 @@ conky(1)							      conky(1)
 
 
        1msmapi (ARGS)0m
-	      when  using  smapi,  display  contents of the /sys/devices/plat‐
-	      form/smapi directory. ARGS are either ’(FILENAME)’ or ’bat  (IN‐
-	      DEX)  (FILENAME)’	 to  display the corresponding files’ content.
-	      This is a very raw method of accessing the  smapi	 values.  When
+	      when using smapi, display	 contents  of  the  /sys/devices/plat‐
+	      form/smapi  directory. ARGS are either ’(FILENAME)’ or ’bat (IN‐
+	      DEX) (FILENAME)’ to display the  corresponding  files’  content.
+	      This  is	a  very raw method of accessing the smapi values. When
 	      available, better use one of the smapi_* variables instead.
 
 
        1msmapi_bat_bar (INDEX),(height),(width)0m
-	      when  using smapi, display the remaining capacity of the battery
+	      when using smapi, display the remaining capacity of the  battery
 	      with index INDEX as a bar.
 
 
        1msmapi_bat_perc (INDEX)0m
-	      when using smapi, display the remaining capacity in  percent  of
-	      the  battery  with  index INDEX. This is a separate variable be‐
+	      when  using  smapi, display the remaining capacity in percent of
+	      the battery with index INDEX. This is a  separate	 variable  be‐
 	      cause it supports the ’use_spacer’ configuration option.
 
 
        1msmapi_bat_power INDEX0m
-	      when using smapi, display the current power of the battery  with
-	      index  INDEX  in	watt.  This is a separate variable because the
-	      original read out value is being converted from mW. The sign  of
-	      the  output  reflects  charging (positive) or discharging (nega‐
+	      when  using smapi, display the current power of the battery with
+	      index INDEX in watt. This is a  separate	variable  because  the
+	      original	read out value is being converted from mW. The sign of
+	      the output reflects charging (positive)  or  discharging	(nega‐
 	      tive) state.
 
 
        1msmapi_bat_temp INDEX0m
 	      when using smapi, display the current temperature of the battery
-	      with  index INDEX in degree Celsius. This is a separate variable
+	      with index INDEX in degree Celsius. This is a separate  variable
 	      because the original read out value is being converted from mil‐
 	      li degree Celsius.
 
@@ -1374,36 +1411,36 @@ conky(1)							      conky(1)
 	      The connection index provides you with access to each connection
 	      in the port monitor. The monitor will return information for in‐
 	      dex values from 0 to n-1 connections. Values higher than n-1 are
-	      simply  ignored. For the "count" item, the connection index must
+	      simply ignored. For the "count" item, the connection index  must
 	      be omitted. It is required for all other items.
 
 	      Examples:
-	      1m${tcp_portmon 6881 6999 count} 22m- displays the number of  connec‐
+	      1m${tcp_portmon  6881 6999 count} 22m- displays the number of connec‐
 	      tions in the bittorrent port range
-	      1m${tcp_portmon  22 22 rip 0} 22m- displays the remote host ip of the
+	      1m${tcp_portmon 22 22 rip 0} 22m- displays the remote host ip of	the
 	      first sshd connection
-	      1m${tcp_portmon 22 22 rip 9} 22m- displays the remote host ip of	the
+	      1m${tcp_portmon  22 22 rip 9} 22m- displays the remote host ip of the
 	      tenth sshd connection
 	      1m${tcp_portmon 1 1024 rhost 0} 22m- displays the remote host name of
 	      the first connection on a privileged port
 	      1m${tcp_portmon 1 1024 rport 4} 22m- displays the remote host port of
 	      the fifth connection on a privileged port
-	      1m${tcp_portmon  1 65535 lservice 14} 22m- displays the local service
+	      1m${tcp_portmon 1 65535 lservice 14} 22m- displays the local  service
 	      name of the fifteenth connection in the range of all ports
 
 	      Note that port monitor variables which share the same port range
 	      actually refer to the same monitor, so many references to a sin‐
 	      gle port range for different items and different indexes all use
-	      the  same monitor internally. In other words, the program avoids
+	      the same monitor internally. In other words, the program	avoids
 	      creating redundant monitors.
 
        1mtexeci interval command0m
-	      Runs a command at an interval inside a thread and	 displays  the
-	      output.  Same  as	 $execi,  except  the  command is run inside a
-	      thread. Use this if you have a slow script to keep Conky	updat‐
-	      ing.  You should make the interval slightly longer then the time
-	      it takes your script to execute. For  example,  if  you  have  a
-	      script  that  take 5 seconds to execute, you should make the in‐
+	      Runs  a  command at an interval inside a thread and displays the
+	      output. Same as $execi, except  the  command  is	run  inside  a
+	      thread.  Use this if you have a slow script to keep Conky updat‐
+	      ing. You should make the interval slightly longer then the  time
+	      it  takes	 your  script  to  execute. For example, if you have a
+	      script that take 5 seconds to execute, you should make  the  in‐
 	      terval at least 6 seconds. See also $execi.
 
 
@@ -1412,8 +1449,8 @@ conky(1)							      conky(1)
 
 
        1mrss url delay_in_minutes action item_num0m
-	      Download and parse RSS feeds. Action may be one of  the  follow‐
-	      ing:  feed_title, item_title (with num par), item_desc (with num
+	      Download	and  parse RSS feeds. Action may be one of the follow‐
+	      ing: feed_title, item_title (with num par), item_desc (with  num
 	      par) and item_titles.
 
 
@@ -1428,7 +1465,7 @@ conky(1)							      conky(1)
 
 
        1mtime (format)0m
-	      Local  time, see man strftime to get more information about for‐
+	      Local time, see man strftime to get more information about  for‐
 	      mat
 
 
@@ -1437,23 +1474,23 @@ conky(1)							      conky(1)
 
 
        1mtztime (timezone) (format)0m
-	      Local time for specified timezone, see man strftime to get  more
-	      information  about format. The timezone argument is specified in
-	      similar fashion as TZ environment variable. For hints,  look  in
+	      Local  time for specified timezone, see man strftime to get more
+	      information about format. The timezone argument is specified  in
+	      similar  fashion	as TZ environment variable. For hints, look in
 	      /usr/share/zoneinfo. e.g. US/Pacific, Europe/Zurich, etc.
 
 
        1mtotaldown net0m
-	      Total  download, overflows at 4 GB on Linux with 32-bit arch and
+	      Total download, overflows at 4 GB on Linux with 32-bit arch  and
 	      there doesn’t seem to be a way to know how many times it has al‐
 	      ready done that before conky has started.
 
 
        1mtop type, num0m
-	      This  takes arguments in the form:top (name) (number) Basically,
-	      processes are ranked from highest to lowest in terms of cpu  us‐
-	      age,  which  is  what  (num)  represents. The types are: "name",
-	      "pid", "cpu", "mem", "mem_res", "mem_vsize", and	"time".	 There
+	      This takes arguments in the form:top (name) (number)  Basically,
+	      processes	 are ranked from highest to lowest in terms of cpu us‐
+	      age, which is what (num)	represents.  The  types	 are:  "name",
+	      "pid",  "cpu",  "mem", "mem_res", "mem_vsize", and "time". There
 	      can be a max of 10 processes listed.
 
 
@@ -1477,11 +1514,11 @@ conky(1)							      conky(1)
 	      Upload speed in KiB with one decimal
 
 
-       1mupspeedgraph  normal|log net (height),(width) (gradient colour 1) (gra‐0m
+       1mupspeedgraph normal|log net (height),(width) (gradient colour 1)  (gra‐0m
        1mdient colour 2) (scale)0m
-	      Upload  speed  graph,  colours  defined  in hex, minus the #. If
-	      scale is non-zero, it becomes the scale for the  graph.  Uses  a
-	      logarithmic  scale (to see small numbers) when you use "log" in‐
+	      Upload speed graph, colours defined in  hex,  minus  the	#.  If
+	      scale  is	 non-zero,  it becomes the scale for the graph. Uses a
+	      logarithmic scale (to see small numbers) when you use "log"  in‐
 	      stead of "normal".
 
 
@@ -1509,12 +1546,12 @@ conky(1)							      conky(1)
 
 
        1mvoffset (pixels)0m
-	      Change vertical offset by N pixels. Negative values  will	 cause
+	      Change  vertical	offset by N pixels. Negative values will cause
 	      text to overlap. See also $offset.
 
 
        1mvoltage_mv (n)0m
-	      Returns  CPU  #n’s  voltage  in  mV. CPUs are counted from 1. If
+	      Returns CPU #n’s voltage in mV. CPUs  are	 counted  from	1.  If
 	      omitted, the parameter defaults to 1.
 
 
@@ -1633,7 +1670,7 @@ conky(1)							      conky(1)
 
 
        1meve api_userid api_key character_id0m
-	      Fetches your currently training skill from the  Eve  Online  API
+	      Fetches  your  currently	training skill from the Eve Online API
 	      servers  (http://www.eve-online.com/)  and  displays  the	 skill
 	      along with the remaining training time.
 
@@ -1652,13 +1689,13 @@ conky(1)							      conky(1)
 1mBUGS0m
        Drawing to root or some other desktop window directly doesn’t work with
        all window managers. Especially doesn’t work well with Gnome and it has
-       been  reported  that  it	 doesn’t work with KDE either. Nautilus can be
-       disabled from drawing to desktop	 with  program	gconf-editor.  Uncheck
-       show_desktop  in	 /apps/nautilus/preferences/.  There  is  -w switch in
-       Conky to set some specific window id. You  might	 find  xwininfo	 -tree
-       useful  to  find	 the  window  to draw to. You can also use -o argument
+       been reported that it doesn’t work with KDE  either.  Nautilus  can  be
+       disabled	 from  drawing	to  desktop with program gconf-editor. Uncheck
+       show_desktop in /apps/nautilus/preferences/.  There  is	-w  switch  in
+       Conky  to  set  some  specific window id. You might find xwininfo -tree
+       useful to find the window to draw to. You  can  also  use  -o  argument
        which makes Conky to create its own window. If you do try running Conky
-       in  its	own window, be sure to read up on the own_window_type settings
+       in its own window, be sure to read up on the  own_window_type  settings
        and experiment.
 
 1mSEE ALSO0m
@@ -1669,11 +1706,11 @@ conky(1)							      conky(1)
        #conky on irc.freenode.net
 
 1mCOPYING0m
-       Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et.  al.   Any
+       Copyright  (c)  2005-2008 Brenden Matthews, Philip Kovacs, et. al.  Any
        original torsmo code is licensed under the BSD license (see LICENSE.BSD
        for a copy).  All code written since the fork of torsmo is licensed un‐
        der the GPL (see LICENSE.GPL for a copy), except where noted different‐
-       ly (such as in portmon code, timed  thread  code,  and  audacious  code
+       ly  (such  as  in  portmon  code, timed thread code, and audacious code
        which are LGPL, and prss which is an MIT-style license).
 
 1mAUTHORS0m
@@ -1681,4 +1718,4 @@ conky(1)							      conky(1)
 
 
 
-				  2008-09-11			      conky(1)
+				  2008-09-28			      conky(1)

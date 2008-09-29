@@ -5,7 +5,7 @@
 \\$2 \(la\\$1\(ra\\$3
 ..
 .if \n(.g .mso www.tmac
-.TH conky 1 2008-09-11 "" ""
+.TH conky 1 2008-09-28 "" ""
 .SH NAME
 conky \- A system monitor for X originally based on the torsmo code, but more kickass. It just keeps on given'er. Yeah.
 .SH SYNOPSIS
@@ -907,6 +907,30 @@ Total amount of memory
 .TP 
 \fB\*(T<\fBmemperc\fR\*(T>\fR 
 Percentage of memory in use
+
+.TP 
+\fB\*(T<\fBmixer\fR\*(T>\fR \*(T<\fB(device)\fR\*(T> 
+Prints the mixer value as reported by the OS. Default mixer is "vol", but you can specify one of the following optional arguments: "vol", "bass", "treble", "synth", "pcm", "speaker", "line", "mic", "cd", "mix", "pcm2", "rec", "igain", "ogain", "line1", "line2", "line3", "dig1", "dig2", "dig3", "phin", "phout", "video", "radio", "monitor". Refer to the definition of SOUND_DEVICE_NAMES in <linux/soundcard.h> (on Linux), <soundcard.h> (on OpenBSD), or <sys/soundcard.h> to find the exact options available on your system.
+
+.TP 
+\fB\*(T<\fBmixerbar\fR\*(T>\fR \*(T<\fB(device)\fR\*(T> 
+Displays mixer value in a bar as reported by the OS. See docs for $mixer for details on arguments.
+
+.TP 
+\fB\*(T<\fBmixerr\fR\*(T>\fR \*(T<\fB(device)\fR\*(T> 
+Prints the right channel mixer value as reported by the OS. See docs for $mixer for details on arguments.
+
+.TP 
+\fB\*(T<\fBmixerrbar\fR\*(T>\fR \*(T<\fB(device)\fR\*(T> 
+Displays the right channel mixer value in a bar as reported by the OS. See docs for $mixer for details on arguments.
+
+.TP 
+\fB\*(T<\fBmixerl\fR\*(T>\fR \*(T<\fB(device)\fR\*(T> 
+Prints the left channel mixer value as reported by the OS. See docs for $mixer for details on arguments.
+
+.TP 
+\fB\*(T<\fBmixerlbar\fR\*(T>\fR \*(T<\fB(device)\fR\*(T> 
+Displays the left channel mixer value in a bar as reported by the OS. See docs for $mixer for details on arguments.
 
 .TP 
 \fB\*(T<\fBmoc_state\fR\*(T>\fR 
