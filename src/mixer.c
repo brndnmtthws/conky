@@ -65,7 +65,6 @@ int mixer_init(const char *name)
 
 	for (i = 0; i < sizeof(devs) / sizeof(const char *); i++) {
 		if (strcasecmp(devs[i], name) == 0) {
-			printf("dicks @ %i\n", i);
 			return i;
 		}
 	}
