@@ -390,7 +390,7 @@
 
 	<varlistentry>
 		<term>
-			<command><option>conky_bulid_arch</option></command>
+			<command><option>conky_build_arch</option></command>
 		</term>
 		<listitem>
 			CPU architecture Conky was built for
