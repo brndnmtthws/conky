@@ -159,6 +159,7 @@ EXTRA_DIST = 			\
 	nvidia.c		\
 	nvidia.h		\
 	openbsd.c		\
+	openbsd.h		\
 	solaris.c 		\
 	top.h                   \
 	diskio.h                \
