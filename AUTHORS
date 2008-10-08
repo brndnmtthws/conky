@@ -270,6 +270,7 @@ roiban adi <adiroiban at users dot sourceforge dot net>
 
 Ryan Tandy <tarpman at users dot sourceforge dot net>
   fs_type patch
+  if_mpd_playing patch
 
 Rui Paulo <rpaulo at netbsd-pt dot org>
   NetBSD support

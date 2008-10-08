@@ -113,6 +113,7 @@ void clear_mpd_stats(struct mpd_s *mpd)
 	*mpd->repeat = 0;
 	*mpd->track = 0;
 	*mpd->status = 0;
+	mpd->is_playing = 0;
 	mpd->bitrate = 0;
 	mpd->progress = 0;
 	mpd->elapsed = 0;
@@ -208,6 +209,7 @@ void *update_mpd(void *arg)
 		}
 		if (status->state == MPD_STATUS_STATE_PLAY
 				|| status->state == MPD_STATUS_STATE_PAUSE) {
+			mpd->is_playing = 1;
 			mpd->bitrate = status->bitRate;
 			mpd->progress = (float) status->elapsedTime /
 				status->totalTime;

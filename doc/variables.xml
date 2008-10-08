@@ -1574,6 +1574,15 @@
 
 	<varlistentry>
 		<term>
+			<command><option>if_mpd_playing</option></command>
+		</term>
+		<listitem>
+			if mpd is playing or paused, display everything between $if_mpd_playing and the matching $endif
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
 			<command><option>nameserver</option></command>
 			<option>(index)</option>
 		</term>

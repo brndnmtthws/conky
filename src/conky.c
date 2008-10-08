@@ -1317,6 +1317,7 @@ enum text_object_type {
 	OBJ_mpd_file,
 	OBJ_mpd_percent,
 	OBJ_mpd_smart,
+	OBJ_if_mpd_playing,
 #endif
 #ifdef MOC
   OBJ_moc_state,
@@ -2537,6 +2538,7 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 			case OBJ_mpd_file:
 			case OBJ_mpd_percent:
 			case OBJ_mpd_smart:
+			case OBJ_if_mpd_playing:
 				if (full) {
 					free_mpd_vars(&info.mpd);
 				}
@@ -3992,6 +3994,13 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->data.i = 0;
 		}
+	END OBJ_THREAD(if_mpd_playing, INFO_MPD)
+		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
+			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
+		}
+		blockstart[blockdepth] = object_count;
+		obj->data.ifblock.pos = object_count + 2;
+		blockdepth++;
 #endif /* MPD */
 #ifdef MOC
   END OBJ_THREAD(moc_state, INFO_MOC)
@@ -5946,6 +5955,14 @@ static void generate_text_internal(char *p, int p_max_size,
 					snprintf(p, len, "%s", cur->mpd.file);
 				} else {
 					*p = 0;
+				}
+			}
+			OBJ(if_mpd_playing) {
+				if (cur->mpd.is_playing) {
+					if_jumped = 0;
+				} else {
+					i = obj->data.ifblock.pos;
+					if_jumped = 1;
 				}
 			}
 #endif

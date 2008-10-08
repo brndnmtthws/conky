@@ -14,6 +14,7 @@ struct mpd_s {
 	char *track;
 	char *name;
 	char *file;
+	int is_playing;
 	int volume;
 	unsigned int port;
 	char host[128];

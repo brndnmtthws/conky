@@ -2,6 +2,7 @@
 
 2008-10-08
 	* Applied OpenBSD patches
+	* Added $if_mpd_playing patch (thanks tarpman)
 
 2008-09-24
 	* Introduced (buggy) support for IMAP IDLE
