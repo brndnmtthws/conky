@@ -1,5 +1,8 @@
 # $Id$
 
+2008-10-08
+	* Applied OpenBSD patches
+
 2008-09-24
 	* Introduced (buggy) support for IMAP IDLE
 	* Added support for MOC (the console audio player) (thanks henux)

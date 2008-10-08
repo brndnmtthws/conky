@@ -598,6 +598,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
 
 void update_top()
 {
+	kvm_init();
 	proc_find_top(info.cpu, info.memu);
 }
 
@@ -654,6 +655,10 @@ cleanup:
 }
 #endif
 
+void clear_diskio_stats()
+{
+}
+
 void update_diskio()
 {
 	return;	/* XXX: implement? hifi: not sure how */
@@ -695,17 +700,21 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 	struct process *processes;
 	int mib[2];
 
-	int total_pages;
+	u_int total_pages;
+	int64_t usermem;
 	int pagesize = getpagesize();
 
 	/* we get total pages count again to be sure it is up to date */
 	mib[0] = CTL_HW;
-	mib[1] = HW_USERMEM;
-	size_t size = sizeof(total_pages);
+	mib[1] = HW_USERMEM64;
+	size_t size = sizeof(usermem);
 
-	if (sysctl(mib, 2, &total_pages, &size, NULL, 0) == -1) {
-		ERR("error reading nmempages");
+	if (sysctl(mib, 2, &usermem, &size, NULL, 0) == -1) {
+		ERR("error reading usermem");
 	}
+
+	/* translate bytes into page count */
+	total_pages = usermem / pagesize;
 
 	int max_size = sizeof(struct kinfo_proc2);
 
@@ -717,8 +726,8 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 			processes[j].pid = p[i].p_pid;
 			processes[j].name = strndup(p[i].p_comm, text_buffer_size);
 			processes[j].amount = 100.0 * p[i].p_pctcpu / FSCALE;
-			processes[j].totalmem = (float) (p[i].p_vm_rssize * pagesize /
-				(float) total_pages) * 100.0;
+			processes[j].totalmem = (float) (p[i].p_vm_rssize /
+					(float) total_pages) * 100.0;
 			j++;
 		}
 	}
