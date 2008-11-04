@@ -4218,7 +4218,7 @@ static struct text_object *construct_text_object(const char *s,
 		int n;
 
 		obj->data.scroll.step = 1;
-		if (arg && sscanf(arg, "%u %u %n", &obj->data.scroll.show, &obj->data.scroll.step, &n) > 0) {
+		if (arg && sscanf(arg, "%u %u %n", &obj->data.scroll.show, &obj->data.scroll.step, &n) >= 2) {
 			obj->data.scroll.text = strndup(arg + n, text_buffer_size);
 			obj->data.scroll.start = 0;
 		} else {
