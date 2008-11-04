@@ -4215,11 +4215,13 @@ static struct text_object *construct_text_object(const char *s,
 		END OBJ(entropy_bar, INFO_ENTROPY)
 		scan_bar(arg, &obj->a, &obj->b);
 	END OBJ(scroll, 0)
-		int n;
+		int n1, n2;
 
 		obj->data.scroll.step = 1;
-		if (arg && sscanf(arg, "%u %u %n", &obj->data.scroll.show, &obj->data.scroll.step, &n) >= 2) {
-			obj->data.scroll.text = strndup(arg + n, text_buffer_size);
+		if (arg && sscanf(arg, "%u %n", &obj->data.scroll.show, &n1) > 0) {
+			if (sscanf(arg + n1, "%u %n", &obj->data.scroll.step, &n2) > 0)
+				n1 += n2;
+			obj->data.scroll.text = strndup(arg + n1, text_buffer_size);
 			obj->data.scroll.start = 0;
 		} else {
 			CRIT_ERR("scroll needs arguments: <length> [<step>] <text>");
