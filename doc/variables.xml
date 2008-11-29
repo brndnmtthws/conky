@@ -1978,7 +1978,36 @@
 			<option>(arg3 ...)</option>
 		</term>
 		<listitem>
-			Evaluate the content of the templateN configuration variable (where N is a value between 0 and 9, inclusively), applying substitutions as described in the documentation of the corresponding configuration variable. The number of arguments is optional, but must match the highest referred index in the template.
+			Evaluate the content of the templateN configuration variable (where N is a value between 0 and 9, inclusively),
+			applying substitutions as described in the documentation of the corresponding configuration variable.
+			The number of arguments is optional, but must match the highest referred index in the template. You can use the
+			same special sequences in each argument as the ones valid for a template definition, e.g. to allow an argument
+			to contain a whitespace. Also simple nesting of templates is possible this way.
+			<para></para></listitem>
+		<listitem>
+			Here are some examples of template definitions:
+			<simplelist>
+				<member>template0 $\1\2</member>
+				<member>template1 \1: ${fs_used \2} / ${fs_size \2}</member>
+				<member>template2 \1 \2</member>
+			</simplelist>
+			The following list shows sample usage of the templates defined above,
+			with the equivalent syntax when not using any template at all:
+			<table>
+			<tgroup cols="2">
+				<thead>
+					<row rowsep="1"><entry>using template</entry><entry>same without template</entry></row>
+				</thead>
+				<tbody>
+				<row><entry>${template0 node name}</entry><entry>$nodename</entry></row>
+				<row><entry>${template1 root /}</entry><entry>root: ${fs_free /} / ${fs_size /}</entry></row>
+				<row>
+					<entry><programlisting>${template1 ${template2\ disk\ root} /}</programlisting></entry>
+					<entry><programlisting>disk root: ${fs_free /} / ${fs_size /}</programlisting></entry>
+				</row>
+				</tbody>
+			</tgroup>
+			</table>
 			<para></para></listitem>
 	</varlistentry>
 

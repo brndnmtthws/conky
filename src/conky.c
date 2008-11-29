@@ -4265,6 +4265,61 @@ static struct text_object *create_plain_text(const char *s)
 	return obj;
 }
 
+/* backslash_escape - do the actual substitution task for template objects
+ *
+ * The field templates is used for substituting the \N occurences. Set it to
+ * NULL to leave them as they are.
+ */
+static char *backslash_escape(const char *src, char **templates, unsigned int template_count)
+{
+	char *src_dup;
+	const char *p;
+	int dup_idx = 0, dup_len;
+
+	dup_len = strlen(src);
+	if (templates) {
+		unsigned int i;
+		for (i = 0; i < template_count; i++)
+			dup_len += strlen(templates[i]);
+	}
+
+	src_dup = malloc(dup_len * sizeof(char));
+	p = src;
+	while (*p) {
+		switch (*p) {
+		case '\\':
+			if (!*(p + 1))
+				break;
+			if (*(p + 1) == '\\') {
+				src_dup[dup_idx++] = '\\';
+				p++;
+			} else if (*(p + 1) == ' ') {
+				src_dup[dup_idx++] = ' ';
+				p++;
+			} else if (*(p + 1) == 'n') {
+				src_dup[dup_idx++] = '\n';
+				p++;
+			} else if (templates) {
+				unsigned int tmpl_num;
+				int digits;
+				if ((sscanf(p + 1, "%u%n", &tmpl_num, &digits) <= 0) ||
+				    (tmpl_num > template_count))
+					break;
+				sprintf(src_dup + dup_idx, "%s", templates[tmpl_num - 1]);
+				dup_idx += strlen(templates[tmpl_num - 1]);
+				p += digits;
+			}
+			break;
+		default:
+			src_dup[dup_idx++] = *p;
+			break;
+		}
+		p++;
+	}
+	src_dup[dup_idx] = '\0';
+	src_dup = realloc(src_dup, (strlen(src_dup) + 1) * sizeof(char));
+	return src_dup;
+}
 static struct text_object_list *extract_variable_text_internal(const char *, char);
 
 /* handle_template_object - core logic of the template object
@@ -4283,8 +4338,7 @@ static int handle_template_object(struct text_object_list **list,
 {
 	char *args_dup, *template_dup, *p, *p_old;
 	char **argsp = NULL;
-	int text_idx;
-	unsigned int tmpl_num, argcnt = 0, template_idx;
+	unsigned int argcnt = 0, template_idx, i;
 	char *eval_text;
 	struct text_object_list *eval_list;
 
@@ -4295,10 +4349,12 @@ static int handle_template_object(struct text_object_list **list,
 	args_dup = strdup(args);
 	p = args_dup;
 	while (*p) {
-		while (*p && *p == ' ')
+		while (*p && (*p == ' ' && *(p - 1) != '\\'))
 			p++;
+		if (*(p - 1) == '\\')
+			p--;
 		p_old = p;
-		while (*p && *p != ' ')
+		while (*p && (*p != ' ' || *(p - 1) == '\\'))
 			p++;
 		if (*p) {
 			(*p) = '\0';
@@ -4307,51 +4363,22 @@ static int handle_template_object(struct text_object_list **list,
 		argsp = realloc(argsp, ++argcnt * sizeof(char *));
 		argsp[argcnt - 1] = p_old;
 	}
+	for (i = 0; i < argcnt; i++) {
+		char *tmp;
+		tmp = backslash_escape(argsp[i], NULL, 0);
+#if 0
+		printf("%s: substituted arg '%s' to '%s'\n", tmpl, argsp[i], tmp);
+#endif
+		sprintf(argsp[i], "%s", tmp);
+		free(tmp);
+	}
 
 	p = template_dup = strdup(template[template_idx]);
 
-	/* not exact text len, but always enough so don't care. */
-	eval_text = calloc(strlen(template_dup) + strlen(args), sizeof(char *));
-	memset(eval_text, 0, strlen(template_dup) + strlen(args));
-
-	text_idx = 0;
-	while (*p) {
-		switch (*p) {
-		case '\\':
-			if (*(p + 1) == '\\') {
-				eval_text[text_idx++] = '\\';
-				p++;
-				break;
-			}
-			if (*(p + 1) == 'n') {
-				eval_text[text_idx++] = '\n';
-				p++;
-				break;
-			}
-			if ((sscanf(p, "\\%u", &tmpl_num) != 1) ||
-			    (tmpl_num > argcnt))
-				return 1;
-			tmpl_num--;	/* convert number to array idx */
-			memcpy(eval_text + text_idx,
-			       argsp[tmpl_num], strlen(argsp[tmpl_num]));
-			text_idx += strlen(argsp[tmpl_num]);
-			/* following is tricky:
-			 * jump over all decimal digits of tmpl_num,
-			 * but beware of the fact that it could be 0
-			 * at the beginning. */
-			p++;
-			while (tmpl_num > 9) {
-				tmpl_num /= 10;
-				p++;
-			}
-			break;
-		default:
-			eval_text[text_idx++] = *p;
-			break;
-		}
-		p++;
-	}
-
+	eval_text = backslash_escape(template[template_idx], argsp, argcnt);
+#if 0
+	printf("substituted %s, output is '%s'\n", tmpl, eval_text);
+#endif
 	eval_list = extract_variable_text_internal(eval_text, allow_threaded);
 	if (eval_list) {
 		(*list)->text_objects = realloc((*list)->text_objects,

@@ -360,7 +360,15 @@
 	<varlistentry>
 		<term><command><option>templateN</option></command></term>
 		<listitem>
-			Define a template for later use inside TEXT segments. Substitute N by a digit between 0 and 9, inclusively. The value of the variable is being inserted into the stuff below TEXT at the corresponding position, but before some substitutions are applied: any occuring '\N' (where N is a positive integer) will be substituted by the Nth param specified, any occuring '\n' will be translated into a real newline and '\\' is being substituted by a single backslash ('\').
+			Define a template for later use inside TEXT segments. Substitute N by a digit between 0 and 9, inclusively.
+			The value of the variable is being inserted into the stuff below TEXT at the corresponding position,
+			but before some substitutions are applied:
+			<simplelist>
+				<member>'\n' -> newline</member>
+				<member>'\\' -> backslash</member>
+				<member>'\ ' -> space</member>
+				<member>'\N' -> template argument N</member>
+			</simplelist>
 			<para></para></listitem>
 	</varlistentry>
 
