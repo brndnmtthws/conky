@@ -1972,6 +1972,18 @@
 
 	<varlistentry>
 		<term>
+			<command><option>templateN</option></command>
+			<option>(arg1)</option>
+			<option>(arg2)</option>
+			<option>(arg3 ...)</option>
+		</term>
+		<listitem>
+			Evaluate the content of the templateN configuration variable (where N is a value between 0 and 9, inclusively), applying substitutions as described in the documentation of the corresponding configuration variable. The number of arguments is optional, but must match the highest referred index in the template.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
 			<command><option>time</option></command>
 			<option>(format)</option>
 		</term>

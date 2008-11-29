@@ -358,6 +358,13 @@
 	</varlistentry>
 
 	<varlistentry>
+		<term><command><option>templateN</option></command></term>
+		<listitem>
+			Define a template for later use inside TEXT segments. Substitute N by a digit between 0 and 9, inclusively. The value of the variable is being inserted into the stuff below TEXT at the corresponding position, but before some substitutions are applied: any occuring '\N' (where N is a positive integer) will be substituted by the Nth param specified, any occuring '\n' will be translated into a real newline and '\\' is being substituted by a single backslash ('\').
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
 		<term><command><option>total_run_times</option></command></term>
 		<listitem>
 			Total number of times for Conky to update before quitting. Zero makes Conky run forever

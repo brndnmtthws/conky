@@ -1,5 +1,8 @@
 # $Id$
 
+2008-11-29
+	* Added template support
+
 2008-10-08
 	* Applied OpenBSD patches
 	* Added $if_mpd_playing patch (thanks tarpman)

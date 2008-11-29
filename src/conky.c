@@ -385,6 +385,8 @@ static int sensor_device;
 static long color0, color1, color2, color3, color4, color5, color6, color7,
 	color8, color9;
 
+static char *template[10];
+
 /* maximum number of special things, e.g. fonts, offsets, aligns, etc. */
 static unsigned int max_specials = MAX_SPECIALS_DEFAULT;
 
@@ -4263,6 +4265,114 @@ static struct text_object *create_plain_text(const char *s)
 	return obj;
 }
 
+static struct text_object_list *extract_variable_text_internal(const char *, char);
+
+/* handle_template_object - core logic of the template object
+ *
+ * use config variables like this:
+ * template1 = "$\1\2"
+ * template2 = "\1: ${fs_bar 4,100 \2} ${fs_used \2} / ${fs_size \2}"
+ *
+ * and use them like this:
+ * ${template1 node name}
+ * ${template2 root /}
+ * ${template2 cdrom /mnt/cdrom}
+ */
+static int handle_template_object(struct text_object_list **list,
+		char allow_threaded, const char *tmpl, const char *args)
+{
+	char *args_dup, *template_dup, *p, *p_old;
+	char **argsp = NULL;
+	int text_idx;
+	unsigned int tmpl_num, argcnt = 0, template_idx;
+	char *eval_text;
+	struct text_object_list *eval_list;
+
+	if ((sscanf(tmpl, "template%u", &template_idx) != 1) ||
+	    (template_idx > 9))
+		return 1;
+
+	args_dup = strdup(args);
+	p = args_dup;
+	while (*p) {
+		while (*p && *p == ' ')
+			p++;
+		p_old = p;
+		while (*p && *p != ' ')
+			p++;
+		if (*p) {
+			(*p) = '\0';
+			p++;
+		}
+		argsp = realloc(argsp, ++argcnt * sizeof(char *));
+		argsp[argcnt - 1] = p_old;
+	}
+
+	p = template_dup = strdup(template[template_idx]);
+
+	/* not exact text len, but always enough so don't care. */
+	eval_text = calloc(strlen(template_dup) + strlen(args), sizeof(char *));
+	memset(eval_text, 0, strlen(template_dup) + strlen(args));
+
+	text_idx = 0;
+	while (*p) {
+		switch (*p) {
+		case '\\':
+			if (*(p + 1) == '\\') {
+				eval_text[text_idx++] = '\\';
+				p++;
+				break;
+			}
+			if (*(p + 1) == 'n') {
+				eval_text[text_idx++] = '\n';
+				p++;
+				break;
+			}
+			if ((sscanf(p, "\\%u", &tmpl_num) != 1) ||
+			    (tmpl_num > argcnt))
+				return 1;
+			tmpl_num--;	/* convert number to array idx */
+			memcpy(eval_text + text_idx,
+			       argsp[tmpl_num], strlen(argsp[tmpl_num]));
+			text_idx += strlen(argsp[tmpl_num]);
+			/* following is tricky:
+			 * jump over all decimal digits of tmpl_num,
+			 * but beware of the fact that it could be 0
+			 * at the beginning. */
+			p++;
+			while (tmpl_num > 9) {
+				tmpl_num /= 10;
+				p++;
+			}
+			break;
+		default:
+			eval_text[text_idx++] = *p;
+			break;
+		}
+		p++;
+	}
+
+	eval_list = extract_variable_text_internal(eval_text, allow_threaded);
+	if (eval_list) {
+		(*list)->text_objects = realloc((*list)->text_objects,
+				sizeof(struct text_object) *
+				((*list)->text_object_count +
+				 eval_list->text_object_count));
+		memcpy((*list)->text_objects + (*list)->text_object_count,
+				eval_list->text_objects,
+				sizeof(struct text_object) *
+				eval_list->text_object_count);
+		(*list)->text_object_count += eval_list->text_object_count;
+		free(eval_list->text_objects);
+		free(eval_list);
+	}
+	free(args_dup);
+	free(template_dup);
+	free(eval_text);
+	free(argsp);
+	return 0;
+}
+
 static struct text_object_list *extract_variable_text_internal(const char *const_p, char allow_threaded)
 {
 	struct text_object_list *retval;
@@ -4368,19 +4478,24 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 						tmp_p++;
 					}
 
-					// create new object
-					obj = construct_text_object(buf, arg,
-							retval->text_object_count, retval->text_objects, line, allow_threaded);
-					if (obj != NULL) {
-						// allocate memory for the object
-						retval->text_objects = realloc(retval->text_objects,
-								sizeof(struct text_object) *
-								(retval->text_object_count + 1));
-						// assign the new object to the end of the list.
-						memcpy(
-								&retval->text_objects[retval->text_object_count++],
-								obj, sizeof(struct text_object));
-						free(obj);
+					if (!strncmp(buf, "template", 8)) {
+						if (handle_template_object(&retval, allow_threaded, buf, arg))
+							printf("Error: handling template '%s' failed for args '%s'\n", buf, arg);
+					} else {
+						// create new object
+						obj = construct_text_object(buf, arg,
+								retval->text_object_count, retval->text_objects, line, allow_threaded);
+						if (obj != NULL) {
+							// allocate memory for the object
+							retval->text_objects = realloc(retval->text_objects,
+									sizeof(struct text_object) *
+									(retval->text_object_count + 1));
+							// assign the new object to the end of the list.
+							memcpy(
+									&retval->text_objects[retval->text_object_count++],
+									obj, sizeof(struct text_object));
+							free(obj);
+						}
 					}
 				}
 				continue;
@@ -8234,6 +8349,16 @@ static void set_default_configurations(void)
 	color7 = default_fg_color;
 	color8 = default_fg_color;
 	color9 = default_fg_color;
+	template[0] = strdup("");
+	template[1] = strdup("");
+	template[2] = strdup("");
+	template[3] = strdup("");
+	template[4] = strdup("");
+	template[5] = strdup("");
+	template[6] = strdup("");
+	template[7] = strdup("");
+	template[8] = strdup("");
+	template[9] = strdup("");
 	draw_shades = 1;
 	draw_borders = 0;
 	draw_graph_borders = 1;
@@ -8465,6 +8590,25 @@ static void load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
+#define TEMPLATE_CONF(n) \
+		CONF("template"#n) { \
+			if (value) { \
+				free(template[n]); \
+				template[n] = strdup(value); \
+			} else { \
+				CONF_ERR; \
+			} \
+		}
+		TEMPLATE_CONF(0)
+		TEMPLATE_CONF(1)
+		TEMPLATE_CONF(2)
+		TEMPLATE_CONF(3)
+		TEMPLATE_CONF(4)
+		TEMPLATE_CONF(5)
+		TEMPLATE_CONF(6)
+		TEMPLATE_CONF(7)
+		TEMPLATE_CONF(8)
+		TEMPLATE_CONF(9)
 		CONF("default_color") {
 			if (value) {
 				default_fg_color = get_x11_color(value);
