@@ -1,4 +1,4 @@
-'\" -*- coding: us-ascii -*-
+'\" t -*- coding: us-ascii -*-
 .if \n(.g .ds T< \\FC
 .if \n(.g .ds T> \\F[\n[.fam]]
 .de URL
@@ -345,6 +345,20 @@ Shows the time range covered by a graph.
 .TP 
 \fB\*(T<\fBstippled_borders\fR\*(T>\fR
 Border stippling (dashing) in pixels
+
+.TP 
+\fB\*(T<\fBtemplateN\fR\*(T>\fR
+Define a template for later use inside TEXT segments. Substitute N by a digit between 0 and 9, inclusively.
+The value of the variable is being inserted into the stuff below TEXT at the corresponding position,
+but before some substitutions are applied:
+
+\&'\en' -> newline
+.br
+\&'\e\e' -> backslash
+.br
+\&'\e ' -> space
+.br
+\&'\eN' -> template argument N
 
 .TP 
 \fB\*(T<\fBtotal_run_times\fR\*(T>\fR
@@ -1254,6 +1268,57 @@ Puts a tab of the specified width, starting from column 'start'.
 .TP 
 \fB\*(T<\fBtail\fR\*(T>\fR \*(T<\fBlogfile lines (interval)\fR\*(T> 
 Displays last N lines of supplied text text file. If interval is not supplied, Conky assumes 2x Conky's interval. Max of 30 lines can be displayed, or until the text buffer is filled.
+
+.TP 
+\fB\*(T<\fBtemplateN\fR\*(T>\fR \*(T<\fB(arg1)\fR\*(T> \*(T<\fB(arg2)\fR\*(T> \*(T<\fB(arg3 ...)\fR\*(T> 
+Evaluate the content of the templateN configuration variable (where N is a value between 0 and 9, inclusively),
+applying substitutions as described in the documentation of the corresponding configuration variable.
+The number of arguments is optional, but must match the highest referred index in the template. You can use the
+same special sequences in each argument as the ones valid for a template definition, e.g. to allow an argument
+to contain a whitespace. Also simple nesting of templates is possible this way.
+
+Here are some examples of template definitions:
+
+template0 $\e1\e2
+.br
+template1 \e1: ${fs_used \e2} / ${fs_size \e2}
+.br
+template2 \e1 \e2
+
+The following list shows sample usage of the templates defined above,
+with the equivalent syntax when not using any template at all:
+.TS
+l l.
+T{
+using template
+T}	T{
+same without template
+T}
+.T&
+_ _
+l l
+l l
+l l.
+T{
+${template0 node name}
+T}	T{
+$nodename
+T}
+T{
+${template1 root /}
+T}	T{
+root: ${fs_free /} / ${fs_size /}
+T}
+T{
+.nf
+\*(T<${template1 ${template2\e disk\e root} /}\*(T>
+.fi
+T}	T{
+.nf
+\*(T<disk root: ${fs_free /} / ${fs_size /}\*(T>
+.fi
+T}
+.TE
 
 .TP 
 \fB\*(T<\fBtime\fR\*(T>\fR \*(T<\fB(format)\fR\*(T> 
