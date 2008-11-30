@@ -117,6 +117,17 @@ extern unsigned int text_buffer_size;
 #define CRIT_ERR(...) \
 	{ ERR(__VA_ARGS__); exit(EXIT_FAILURE); }
 
+/* debugging output */
+extern int global_debug_level;
+#define __DBG(level, ...) \
+	if (global_debug_level > level) { \
+		fprintf(stderr, "DEBUG(%d): ", level); \
+		fprintf(stderr, __VA_ARGS__); \
+		fprintf(stderr, "\n"); \
+	}
+#define DEBUG(...) __DBG(0, __VA_ARGS__)
+#define DEBUG2(...) __DBG(1, __VA_ARGS__)
+
 struct net_stat {
 	const char *dev;
 	int up;

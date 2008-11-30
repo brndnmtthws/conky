@@ -73,6 +73,9 @@
 //#define SIGNAL_BLOCKING
 #undef SIGNAL_BLOCKING
 
+/* debugging level */
+int global_debug_level = 0;
+
 static void print_version(void) __attribute__((noreturn));
 
 static void print_version(void)
@@ -4366,9 +4369,7 @@ static int handle_template_object(struct text_object_list **list,
 	for (i = 0; i < argcnt; i++) {
 		char *tmp;
 		tmp = backslash_escape(argsp[i], NULL, 0);
-#if 0
-		printf("%s: substituted arg '%s' to '%s'\n", tmpl, argsp[i], tmp);
-#endif
+		DEBUG2("%s: substituted arg '%s' to '%s'", tmpl, argsp[i], tmp);
 		sprintf(argsp[i], "%s", tmp);
 		free(tmp);
 	}
@@ -4376,9 +4377,8 @@ static int handle_template_object(struct text_object_list **list,
 	p = template_dup = strdup(template[template_idx]);
 
 	eval_text = backslash_escape(template[template_idx], argsp, argcnt);
-#if 0
-	printf("substituted %s, output is '%s'\n", tmpl, eval_text);
-#endif
+	DEBUG("substituted %s, output is '%s'", tmpl, eval_text);
+
 	eval_list = extract_variable_text_internal(eval_text, allow_threaded);
 	if (eval_list) {
 		(*list)->text_objects = realloc((*list)->text_objects,
@@ -9142,6 +9142,7 @@ static void print_help(const char *prog_name) {
 			"file.\n"
 			"   -v, --version             version\n"
 			"   -q, --quiet               quiet mode\n"
+			"   -D, --debug               increase debugging output\n"
 			"   -c, --config=FILE         config file to load\n"
 			"   -d, --daemonize           daemonize, fork to background\n"
 			"   -h, --help                help\n"
@@ -9166,7 +9167,7 @@ static void print_help(const char *prog_name) {
 }
 
 /* : means that character before that takes an argument */
-static const char *getopt_string = "vVqdt:u:i:hc:"
+static const char *getopt_string = "vVqdDt:u:i:hc:"
 #ifdef X11
 	"x:y:w:a:f:"
 #ifdef OWN_WINDOW
@@ -9181,6 +9182,7 @@ static const char *getopt_string = "vVqdt:u:i:hc:"
 static const struct option longopts[] = {
 	{ "help", 0, NULL, 'h' },
 	{ "version", 0, NULL, 'V' },
+	{ "debug", 0, NULL, 'D' },
 	{ "config", 1, NULL, 'c' },
 	{ "daemonize", 0, NULL, 'd' },
 #ifdef X11
@@ -9360,7 +9362,9 @@ int main(int argc, char **argv)
 			case 'd':
 				fork_to_background = 1;
 				break;
-
+			case 'D':
+				global_debug_level++;
+				break;
 #ifdef X11
 			case 'f':
 				set_first_font(optarg);
