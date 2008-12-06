@@ -86,12 +86,8 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 		free(new->dev);
 		new->dev = 0;
 	}
-	if (strncmp(s, "/dev/", 5) == 0) {
-		// supplied a /dev/device arg, so cut off the /dev part
-		new->dev = strndup(s + 5, text_buffer_size);
-	} else {
-		new->dev = strndup(s, text_buffer_size);
-	}
+	new->dev = strndup(s, text_buffer_size);
+
 	/*
 	 * check that device actually exists
 	 */
