@@ -1,3 +1,7 @@
+2008-12-07
+	* Removing $freq_dyn and $freq_dyn_g due to license issues (see sf.net
+	tracker bug #2166612)
+
 2008-12-06
 	* Switching from svn to git repository.  The repo can be viewed from
 	http://git.omp.am/?p=conky.git;a=summary and you can clone the repo with:

@@ -1161,8 +1161,6 @@ enum text_object_type {
 	OBJ_execpi,
 	OBJ_freq,
 	OBJ_freq_g,
-	OBJ_freq_dyn,
-	OBJ_freq_dyn_g,
 	OBJ_fs_bar,
 	OBJ_fs_bar_free,
 	OBJ_fs_free,
@@ -2690,8 +2688,6 @@ static struct text_object *construct_text_object(const char *s,
 #endif /* HAVE_IWLIB */
 
 #endif /* __linux__ */
-	END OBJ(freq_dyn, 0)
-	END OBJ(freq_dyn_g, 0)
 
 #ifndef __OpenBSD__
 	END OBJ(acpifan, 0)
@@ -4904,19 +4900,6 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif /* HAVE_IWLIB */
 
 #endif /* __linux__ */
-
-			OBJ(freq_dyn) {
-				get_freq_dynamic(p, p_max_size, "%.0f", 1);
-				spaced_print(p, p_max_size, "%s", 6, "freq_dyn", p);
-			}
-			OBJ(freq_dyn_g) {
-#ifndef __OpenBSD__
-				get_freq_dynamic(p, p_max_size, "%'.2f", 1000);
-#else
-				get_freq_dynamic(p, p_max_size, "%.2f", 1000);
-#endif
-				spaced_print(p, p_max_size, "%s", 6, "freq_dyn", p);
-			}
 
 #ifndef __OpenBSD__
 			OBJ(adt746xcpu) {
