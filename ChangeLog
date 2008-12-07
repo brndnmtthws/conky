@@ -2,6 +2,7 @@
 	* Removing $freq_dyn and $freq_dyn_g due to license issues (see sf.net
 	tracker bug #2166612)
 	* Allow more than 9 CPUs for CPU stats (bug 2155500)
+	* Fix broken $execbar (bug 2133709)
 
 2008-12-06
 	* Switching from svn to git repository.  The repo can be viewed from

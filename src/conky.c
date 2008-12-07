@@ -5317,6 +5317,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				barnum = get_barnum(p);
 
 				if (barnum >= 0.0) {
+					barnum /= 100;
 					new_bar(p, 0, 4, round_to_int(barnum * 255.0));
 				}
 			}
