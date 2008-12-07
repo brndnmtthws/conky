@@ -1,3 +1,6 @@
+*.orig
+*~
+.*.swp
 Makefile
 Makefile.in
 aclocal.m4
@@ -25,4 +28,3 @@ doc/*.html
 doc/*.mxml
 doc/conky.1
 patches/
-*.orig

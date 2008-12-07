@@ -121,7 +121,7 @@ extern unsigned int text_buffer_size;
 extern int global_debug_level;
 #define __DBG(level, ...) \
 	if (global_debug_level > level) { \
-		fprintf(stderr, "DEBUG(%d): ", level); \
+		fprintf(stderr, "DEBUG(%d) [" __FILE__ ":%d]: ", level, __LINE__); \
 		fprintf(stderr, __VA_ARGS__); \
 		fprintf(stderr, "\n"); \
 	}
