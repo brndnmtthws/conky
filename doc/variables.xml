@@ -240,6 +240,15 @@
 			Title of current tune with optional maximum length specifier
 			<para></para></listitem>
 	</varlistentry>
+	
+	<varlistentry>
+		<term>
+			<command><option>audacious_main_volume</option></command>
+		</term>
+		<listitem>
+			The current volume fetched from Audacious
+			<para></para></listitem>
+	</varlistentry>
 
 	<varlistentry>
 		<term>

@@ -6,6 +6,7 @@
 	* Adds a variable if_xmms2_connected to hide objects when xmms2d is not
 	running (thanks Lassi)
 	* Fix for buffer overflow with $execi (thanks Cesare)
+	* Fetch volume through Audacious API (thanks Erik)
 
 2008-12-06
 	* Removed duplicate sanity check for diskio

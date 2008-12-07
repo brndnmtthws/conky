@@ -125,7 +125,7 @@ void *audacious_thread_func(void *pvoid)
 {
 	static audacious_t items;
 	gint playpos, frames, length;
-	gint rate, freq, chans;
+	gint rate, freq, chans, vol;
 	gchar *psong, *pfilename;
 
 #ifndef AUDACIOUS_LEGACY
@@ -233,6 +233,11 @@ void *audacious_thread_func(void *pvoid)
 			/* Playlist position (index of song) */
 			snprintf(items[AUDACIOUS_PLAYLIST_POSITION],
 					sizeof(items[AUDACIOUS_PLAYLIST_POSITION]) - 1, "%d", playpos + 1);
+			/* Main volume */
+			vol = audacious_remote_get_main_volume(session);
+			snprintf(items[AUDACIOUS_MAIN_VOLUME],
+					sizeof(items[AUDACIOUS_MAIN_VOLUME]) - 1, "%d", vol); 
+
 		} while (0);
 		/* Deliver the refreshed items array to audacious_items. */
 		timed_thread_lock(info.audacious.p_timed_thread);

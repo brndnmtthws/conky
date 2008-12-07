@@ -37,10 +37,11 @@ enum _audacious_items {
 	AUDACIOUS_FILENAME,
 	AUDACIOUS_PLAYLIST_LENGTH,
 	AUDACIOUS_PLAYLIST_POSITION,
+	AUDACIOUS_MAIN_VOLUME,
 };
 
 /* 12 slots for the audacious values */
-typedef char audacious_t[12][128];
+typedef char audacious_t[13][128];
 
 /* type for data exchange with main thread */
 typedef struct audacious_s {

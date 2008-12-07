@@ -1373,6 +1373,7 @@ enum text_object_type {
 	OBJ_audacious_filename,
 	OBJ_audacious_playlist_length,
 	OBJ_audacious_playlist_position,
+	OBJ_audacious_main_volume,
 	OBJ_audacious_bar,
 #endif
 #ifdef BMPX
@@ -4071,6 +4072,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(audacious_filename, INFO_AUDACIOUS)
 	END OBJ(audacious_playlist_length, INFO_AUDACIOUS)
 	END OBJ(audacious_playlist_position, INFO_AUDACIOUS)
+	END OBJ(audacious_main_volume, INFO_AUDACIOUS)
 	END OBJ(audacious_bar, INFO_AUDACIOUS)
 		scan_bar(arg, &obj->a, &obj->b);
 #endif
@@ -6282,6 +6284,10 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(audacious_playlist_position) {
 				snprintf(p, p_max_size, "%s",
 					cur->audacious.items[AUDACIOUS_PLAYLIST_POSITION]);
+			}
+			OBJ(audacious_main_volume) {
+				snprintf(p, p_max_size, "%s",
+					cur->audacious.items[AUDACIOUS_MAIN_VOLUME]);
 			}
 			OBJ(audacious_bar) {
 				double progress;
