@@ -101,7 +101,7 @@ static void user_time(char *ptr)
 				strftime(buf, BUFLEN, "%Mm", dtime);
 			}
 			if (strlen(ptr) + strlen(buf) + 1 <= BUFLEN) {
-				strncat(ptr, buf, BUFLEN);
+				strncat(ptr, buf, BUFLEN-strlen(ptr)-1);
 			}
 		}
 	}
