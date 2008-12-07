@@ -1672,7 +1672,7 @@ int imap_command(int sockfd, const char *command, char *response, const char *ve
 			return -1;
 		}
 	}
-	DEBUG2("imap_command() received: %s", response);
+	DBGP2("imap_command() received: %s", response);
 	response[numbytes] = '\0';
 	if (strstr(response, verify) == NULL) {
 		return -1;
@@ -1788,7 +1788,7 @@ void *imap_thread(void *arg)
 				break;
 			}
 			recvbuf[numbytes] = '\0';
-			DEBUG2("imap_thread() received: %s", recvbuf);
+			DBGP2("imap_thread() received: %s", recvbuf);
 			if (strstr(recvbuf, "* OK") != recvbuf) {
 				ERR("IMAP connection failed, probably not an IMAP server");
 				fail++;
@@ -1868,7 +1868,7 @@ void *imap_thread(void *arg)
 						break;
 					}
 					recvbuf[numbytes] = '\0';
-					DEBUG2("imap_thread() received: %s", recvbuf);
+					DBGP2("imap_thread() received: %s", recvbuf);
 					if (strlen(recvbuf) > 2) {
 						unsigned long messages, recent;
 						char *buf = recvbuf;
@@ -1964,7 +1964,7 @@ void *imap_thread(void *arg)
 					}
 				}
 				recvbuf[numbytes] = '\0';
-				DEBUG2("imap_thread() received: %s", recvbuf);
+				DBGP2("imap_thread() received: %s", recvbuf);
 				if (strstr(recvbuf, "a3 OK") == NULL) {
 					ERR("IMAP logout failed: %s", recvbuf);
 					fail++;
@@ -2005,7 +2005,7 @@ int pop3_command(int sockfd, const char *command, char *response, const char *ve
 			return -1;
 		}
 	}
-	DEBUG2("pop3_command() received: %s", response);
+	DBGP2("pop3_command() received: %s", response);
 	response[numbytes] = '\0';
 	if (strstr(response, verify) == NULL) {
 		return -1;
@@ -2086,7 +2086,7 @@ void *pop3_thread(void *arg)
 				fail++;
 				break;
 			}
-			DEBUG2("pop3_thread received: %s", recvbuf);
+			DBGP2("pop3_thread received: %s", recvbuf);
 			recvbuf[numbytes] = '\0';
 			if (strstr(recvbuf, "+OK ") != recvbuf) {
 				ERR("POP3 connection failed, probably not a POP3 server");
@@ -4343,7 +4343,7 @@ static int handle_template_object(struct text_object_list **list,
 	for (i = 0; i < argcnt; i++) {
 		char *tmp;
 		tmp = backslash_escape(argsp[i], NULL, 0);
-		DEBUG2("%s: substituted arg '%s' to '%s'", tmpl, argsp[i], tmp);
+		DBGP2("%s: substituted arg '%s' to '%s'", tmpl, argsp[i], tmp);
 		sprintf(argsp[i], "%s", tmp);
 		free(tmp);
 	}
@@ -4351,7 +4351,7 @@ static int handle_template_object(struct text_object_list **list,
 	p = template_dup = strdup(template[template_idx]);
 
 	eval_text = backslash_escape(template[template_idx], argsp, argcnt);
-	DEBUG("substituted %s, output is '%s'", tmpl, eval_text);
+	DBGP("substituted %s, output is '%s'", tmpl, eval_text);
 
 	eval_list = extract_variable_text_internal(eval_text, allow_threaded);
 	if (eval_list) {

@@ -119,14 +119,14 @@ extern unsigned int text_buffer_size;
 
 /* debugging output */
 extern int global_debug_level;
-#define __DBG(level, ...) \
+#define __DBGP(level, ...) \
 	if (global_debug_level > level) { \
 		fprintf(stderr, "DEBUG(%d) [" __FILE__ ":%d]: ", level, __LINE__); \
 		fprintf(stderr, __VA_ARGS__); \
 		fprintf(stderr, "\n"); \
 	}
-#define DEBUG(...) __DBG(0, __VA_ARGS__)
-#define DEBUG2(...) __DBG(1, __VA_ARGS__)
+#define DBGP(...) __DBGP(0, __VA_ARGS__)
+#define DBGP2(...) __DBGP(1, __VA_ARGS__)
 
 struct net_stat {
 	const char *dev;
