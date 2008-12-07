@@ -5640,7 +5640,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(hddtemp) {
 				if (obj->data.hddtemp.update_time < current_update_time - 30) {
 					char *str = get_hddtemp_info(obj->data.hddtemp.dev,
-							obj->data.hddtemp.addr, obj->data.hddtemp.port, &obj->data.hddtemp.unit);
+							obj->data.hddtemp.addr, obj->data.hddtemp.port/*, &obj->data.hddtemp.unit*/);
 					if (str) {
 						strncpy(obj->data.hddtemp.temp, str, text_buffer_size);
 					} else {
@@ -5650,10 +5650,10 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 				if (!obj->data.hddtemp.temp) {
 					snprintf(p, p_max_size, "N/A");
-				} else if (obj->data.hddtemp.unit == '*') {
+				} else/* if (obj->data.hddtemp.unit == '*')*/ {
 					snprintf(p, p_max_size, "%s", obj->data.hddtemp.temp);
-				} else {
-					snprintf(p, p_max_size, "%s%c", obj->data.hddtemp.temp, obj->data.hddtemp.unit);
+/*				} else {
+					snprintf(p, p_max_size, "%s%c", obj->data.hddtemp.temp, obj->data.hddtemp.unit);*/
 				}
 			}
 #endif

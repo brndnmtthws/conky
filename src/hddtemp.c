@@ -74,7 +74,7 @@ int scan_hddtemp(const char *arg, char **dev, char **addr, int *port, char** tem
 	return 0;
 }
 
-char *get_hddtemp_info(char *dev, char *hostaddr, int port, char *unit)
+char *get_hddtemp_info(char *dev, char *hostaddr, int port/*, char *unit*/)
 {
 	int sockfd = 0;
 	struct hostent he, *he_res = 0;
@@ -181,7 +181,7 @@ char *get_hddtemp_info(char *dev, char *hostaddr, int port, char *unit)
 				}
 				*p = '\0';
 				p++;
-				*unit = *p;
+//				*unit = *p;
 				if (!strncmp(out, "NA", 2)) {
 					strncpy(buf, "N/A", BUFLEN);
 					r = buf;
