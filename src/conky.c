@@ -8481,7 +8481,9 @@ static void load_config_file(const char *f)
 
 #ifdef X11
 		CONF2("alignment") {
-			if (value) {
+			if (window.type == TYPE_DOCK)
+				;
+			else if (value) {
 				int a = string_to_alignment(value);
 
 				if (a <= 0) {
@@ -8954,6 +8956,7 @@ static void load_config_file(const char *f)
 					window.type = TYPE_DESKTOP;
 				} else if (strncmp(value, "dock", 7) == EQUAL) {
 					window.type = TYPE_DOCK;
+					text_alignment = TOP_LEFT;
 				} else if (strncmp(value, "override", 8) == EQUAL) {
 					window.type = TYPE_OVERRIDE;
 				} else {

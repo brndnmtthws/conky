@@ -252,6 +252,9 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 			XWMHints wmHint;
 			Atom xa;
 
+			if (window.type == TYPE_DOCK) {
+				window.x = window.y = 0;
+			}
 			/* Parent is root window so WM can take control */
 			window.window = XCreateWindow(display, window.root, window.x,
 				window.y, w, h, 0, CopyFromParent, InputOutput, CopyFromParent,
@@ -264,7 +267,8 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 			/* allow decorated windows to be given input focus by WM */
 			wmHint.input =
 				TEST_HINT(window.hints, HINT_UNDECORATED) ? False : True;
-			wmHint.initial_state = NormalState;
+			wmHint.initial_state = ((window.type == TYPE_DOCK) ?
+			                        WithdrawnState : NormalState);
 
 			XmbSetWMProperties(display, window.window, window.title, NULL, argv,
 				argc, NULL, &wmHint, &classHint);
