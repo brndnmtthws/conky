@@ -5340,14 +5340,14 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif /* IMLIB2 */
 
 			OBJ(exec) {
-				read_exec(obj->data.s, p, p_max_size);
+				read_exec(obj->data.s, p, text_buffer_size);
 				remove_deleted_chars(p);
 			}
 			OBJ(execp) {
 				struct information *tmp_info;
 				struct text_object_list *text_objects;
 
-				read_exec(obj->data.s, p, p_max_size);
+				read_exec(obj->data.s, p, text_buffer_size);
 
 				tmp_info = malloc(sizeof(struct information));
 				memcpy(tmp_info, cur, sizeof(struct information));
@@ -5360,7 +5360,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(execbar) {
 				double barnum;
 
-				read_exec(obj->data.s, p, p_max_size);
+				read_exec(obj->data.s, p, text_buffer_size);
 				barnum = get_barnum(p);
 
 				if (barnum >= 0.0) {
@@ -5373,11 +5373,11 @@ static void generate_text_internal(char *p, int p_max_size,
 
 				if(strncasecmp(obj->data.s, LOGGRAPH" ", strlen(LOGGRAPH" ")) == EQUAL) {
 					showaslog = TRUE;
-					read_exec(obj->data.s + strlen(LOGGRAPH" ") * sizeof(char), p, p_max_size);
+					read_exec(obj->data.s + strlen(LOGGRAPH" ") * sizeof(char), p, text_buffer_size);
 				} else if(strncasecmp(obj->data.s, NORMGRAPH" ", strlen(NORMGRAPH" ")) == EQUAL) {
-					read_exec(obj->data.s + strlen(NORMGRAPH" ") * sizeof(char), p, p_max_size);
+					read_exec(obj->data.s + strlen(NORMGRAPH" ") * sizeof(char), p, text_buffer_size);
 				} else {
-					read_exec(obj->data.s, p, p_max_size);
+					read_exec(obj->data.s, p, text_buffer_size);
 				}
 				barnum = get_barnum(p);
 
@@ -5391,7 +5391,7 @@ static void generate_text_internal(char *p, int p_max_size,
 						>= obj->data.execi.interval) {
 					double barnum;
 
-					read_exec(obj->data.execi.cmd, p, p_max_size);
+					read_exec(obj->data.execi.cmd, p, text_buffer_size);
 					barnum = get_barnum(p);
 
 					if (barnum >= 0.0) {
@@ -5406,7 +5406,7 @@ static void generate_text_internal(char *p, int p_max_size,
 						>= obj->data.execi.interval) {
 					double barnum;
 
-					read_exec(obj->data.execi.cmd, p, p_max_size);
+					read_exec(obj->data.execi.cmd, p, text_buffer_size);
 					barnum = get_barnum(p);
 
 					if (barnum >= 0.0) {
@@ -5421,10 +5421,10 @@ static void generate_text_internal(char *p, int p_max_size,
 						>= obj->data.execi.interval
 						&& obj->data.execi.interval != 0) {
 					read_exec(obj->data.execi.cmd, obj->data.execi.buffer,
-						p_max_size);
+						text_buffer_size);
 					obj->data.execi.last_update = current_update_time;
 				}
-				snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
+				snprintf(p, text_buffer_size, "%s", obj->data.execi.buffer);
 			}
 			OBJ(execpi) {
 				struct text_object_list *text_objects = 0;
@@ -5470,7 +5470,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					}
 				}
 				timed_thread_lock(obj->data.texeci.p_timed_thread);
-				snprintf(p, p_max_size, "%s", obj->data.texeci.buffer);
+				snprintf(p, text_buffer_size, "%s", obj->data.texeci.buffer);
 				timed_thread_unlock(obj->data.texeci.p_timed_thread);
 			}
 #endif /* HAVE_POPEN */
