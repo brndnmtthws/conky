@@ -1,4 +1,7 @@
-# $Id$
+2008-12-06
+	* Switching from svn to git repository.  The repo can be viewed from
+	http://git.omp.am/?p=conky.git;a=summary and you can clone the repo with:
+	git clone git://git.omp.am/conky.git
 
 2008-12-06
 	* Removed duplicate sanity check for diskio
