@@ -25,3 +25,4 @@ doc/*.html
 doc/*.mxml
 doc/conky.1
 patches/
+*.orig
