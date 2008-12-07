@@ -4,6 +4,7 @@
 	* Allow more than 9 CPUs for CPU stats (bug 2155500)
 	* Fix broken $execbar (bug 2133709)
 	* Don't put unit with hddtemp values for consistency (bug 2133107)
+	* Limit $battery_percent to 100 (bug 2145006)
 
 2008-12-06
 	* Switching from svn to git repository.  The repo can be viewed from

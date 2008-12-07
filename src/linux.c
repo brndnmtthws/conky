@@ -1940,6 +1940,7 @@ int get_battery_perct(const char *bat)
 	/* compute the battery percentage */
 	last_battery_perct[idx] =
 		(int) (((float) remaining_capacity / acpi_design_capacity[idx]) * 100);
+	if (last_battery_perct[idx] > 100) last_battery_perct[idx] = 100;
 	return last_battery_perct[idx];
 }
 
