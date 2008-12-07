@@ -2840,12 +2840,17 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(cached, INFO_BUFFERS)
 	END OBJ(cpu, INFO_CPU)
 		if (arg) {
-			if (strncmp(arg, "cpu", 3) == EQUAL && isdigit(arg[3])) {
+			if (strncmp(arg, "cpu", 4) == EQUAL && isdigit(arg[3]) && isdigit(arg[4])) {
+				obj->data.cpu_index = atoi(&arg[3]) * 10;
+				obj->data.cpu_index += atoi(&arg[4]);
+				arg += 5;
+			} else if (strncmp(arg, "cpu", 3) == EQUAL && isdigit(arg[3])) {
 				obj->data.cpu_index = atoi(&arg[3]);
 				arg += 4;
 			} else {
 				obj->data.cpu_index = 0;
 			}
+			DEBUG2("Adding info for CPU %d", obj->data.cpu_index);
 		} else {
 			obj->data.cpu_index = 0;
 		}
@@ -2862,6 +2867,7 @@ static struct text_object *construct_text_object(const char *s,
 			scan_bar(arg, &obj->a, &obj->b);
 			obj->data.cpu_index = 0;
 		}
+		DEBUG2("Adding info for CPU %d", obj->data.cpu_index);
 	END OBJ(cpugraph, INFO_CPU)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
@@ -2874,6 +2880,7 @@ static struct text_object *construct_text_object(const char *s,
 			}
 			free(buf);
 		}
+		DEBUG2("Adding info for CPU %d", obj->data.cpu_index);
 	END OBJ(loadgraph, INFO_LOADAVG)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 				&obj->e, &obj->showaslog);
