@@ -126,7 +126,9 @@ conky_SOURCES = 		\
 	mboxscan.h		\
 	$(x11)                  \
 	$(xmms2)		\
-	$(smapi)
+	$(smapi)                \
+	temphelper.c            \
+	temphelper.h
 
 conky_LDFLAGS = 				\
 	$(PTHREAD_LIBS)				\

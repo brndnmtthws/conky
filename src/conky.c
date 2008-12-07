@@ -62,6 +62,8 @@
 
 #include "build.h"
 
+#include "temphelper.h"
+
 #ifndef S_ISSOCK
 #define S_ISSOCK(x)   ((x & S_IFMT) == S_IFSOCK)
 #endif
@@ -1111,7 +1113,6 @@ enum text_object_type {
 	OBJ_adt746xfan,
 	OBJ_acpifan,
 	OBJ_acpitemp,
-	OBJ_acpitempf,
 	OBJ_battery,
 	OBJ_battery_time,
 	OBJ_battery_percent,
@@ -1185,7 +1186,6 @@ enum text_object_type {
 	OBJ_i8k_bios,
 	OBJ_i8k_serial,
 	OBJ_i8k_cpu_temp,
-	OBJ_i8k_cpu_tempf,
 	OBJ_i8k_left_fan_status,
 	OBJ_i8k_right_fan_status,
 	OBJ_i8k_left_fan_rpm,
@@ -2220,7 +2220,6 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 		switch (obj->type) {
 #ifndef __OpenBSD__
 			case OBJ_acpitemp:
-			case OBJ_acpitempf:
 				close(obj->data.i);
 				break;
 			case OBJ_i2c:
@@ -2585,8 +2584,6 @@ static struct text_object *construct_text_object(const char *s,
 #else
 	OBJ(acpitemp, 0)
 		obj->data.i = open_acpi_temperature(arg);
-	END OBJ(acpitempf, 0)
-		obj->data.i = open_acpi_temperature(arg);
 	END OBJ(acpiacadapter, 0)
 	END OBJ(freq, INFO_FREQ)
 #endif /* !__OpenBSD__ */
@@ -2740,7 +2737,6 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(i8k_bios, INFO_I8K)
 	END OBJ(i8k_serial, INFO_I8K)
 	END OBJ(i8k_cpu_temp, INFO_I8K)
-	END OBJ(i8k_cpu_tempf, INFO_I8K)
 	END OBJ(i8k_left_fan_status, INFO_I8K)
 	END OBJ(i8k_right_fan_status, INFO_I8K)
 	END OBJ(i8k_left_fan_rpm, INFO_I8K)
@@ -4821,15 +4817,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				ERR("not implemented obj type %d", obj->type);
 #ifndef __OpenBSD__
 			OBJ(acpitemp) {
-				/* does anyone have decimals in acpi temperature? */
-				spaced_print(p, p_max_size, "%d", 5, "acpitemp",
-						round_to_int(get_acpi_temperature(obj->data.i)));
-			}
-			OBJ(acpitempf) {
-				/* does anyone have decimals in acpi temperature? */
-				spaced_print(p, p_max_size, "%d", 5, "acpitemp",
-						round_to_int((get_acpi_temperature(obj->data.i) + 40) *
-							9.0 / 5 - 40));
+				temp_print(p, p_max_size, get_acpi_temperature(obj->data.i), TEMP_CELSIUS);
 			}
 #endif /* !__OpenBSD__ */
 			OBJ(freq) {
@@ -5017,13 +5005,10 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%s", i8k.serial);
 			}
 			OBJ(i8k_cpu_temp) {
-				snprintf(p, p_max_size, "%s", i8k.cpu_temp);
-			}
-			OBJ(i8k_cpu_tempf) {
 				int cpu_temp;
 
 				sscanf(i8k.cpu_temp, "%d", &cpu_temp);
-				snprintf(p, p_max_size, "%.1f", cpu_temp * (9.0 / 5.0) + 32.0);
+				temp_print(p, p_max_size, (double)cpu_temp, TEMP_CELSIUS);
 			}
 			OBJ(i8k_left_fan_status) {
 				int left_fan_status;
@@ -5081,7 +5066,8 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(ibm_temps) {
 				get_ibm_acpi_temps();
-				snprintf(p, p_max_size, "%d", ibm_acpi.temps[obj->data.sensor]);
+				temp_print(p, p_max_size,
+				           ibm_acpi.temps[obj->data.sensor], TEMP_CELSIUS);
 			}
 			OBJ(ibm_volume) {
 				get_ibm_acpi_volume(p, p_max_size);
@@ -5124,8 +5110,9 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(obsd_sensors_temp) {
 				obsd_sensors.device = sensor_device;
 				update_obsd_sensors();
-				snprintf(p, p_max_size, "%.1f",
-						obsd_sensors.temp[obsd_sensors.device][obj->data.sensor]);
+				temp_print(p, p_max_size,
+				           obsd_sensors.temp[obsd_sensors.device][obj->data.sensor],
+					   TEMP_CELSIUS);
 			}
 			OBJ(obsd_sensors_fan) {
 				obsd_sensors.device = sensor_device;
@@ -5650,10 +5637,16 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 				if (!obj->data.hddtemp.temp) {
 					snprintf(p, p_max_size, "N/A");
-				} else/* if (obj->data.hddtemp.unit == '*')*/ {
-					snprintf(p, p_max_size, "%s", obj->data.hddtemp.temp);
-/*				} else {
-					snprintf(p, p_max_size, "%s%c", obj->data.hddtemp.temp, obj->data.hddtemp.unit);*/
+				} else {
+					char *endptr;
+					int val = (int)strtol(obj->data.hddtemp.temp, &endptr, 10);
+					/* FIXME: review this, it looks broken */
+					if (*endptr != '\0' || obj->data.hddtemp.unit == '*')
+						snprintf(p, p_max_size, "%s", obj->data.hddtemp.temp);
+					else
+						temp_print(p, p_max_size, (double)val,
+						           ((obj->data.hddtemp.unit == 'C') ?
+						            TEMP_CELSIUS : TEMP_FAHRENHEIT));
 				}
 			}
 #endif
@@ -5670,7 +5663,9 @@ static void generate_text_internal(char *p, int p_max_size,
 				r = get_sysfs_info(&obj->data.sysfs.fd, obj->data.sysfs.arg,
 					obj->data.sysfs.devtype, obj->data.sysfs.type);
 
-				if (r >= 100.0 || r == 0) {
+				if (!strncmp(obj->data.sysfs.type, "temp", 4)) {
+					temp_print(p, p_max_size, r, TEMP_CELSIUS);
+				} else if (r >= 100.0 || r == 0) {
 					snprintf(p, p_max_size, "%d", (int) r);
 				} else {
 					snprintf(p, p_max_size, "%.1f", r);
@@ -5682,7 +5677,9 @@ static void generate_text_internal(char *p, int p_max_size,
 				r = get_sysfs_info(&obj->data.sysfs.fd, obj->data.sysfs.arg,
 					obj->data.sysfs.devtype, obj->data.sysfs.type);
 
-				if (r >= 100.0 || r == 0) {
+				if (!strncmp(obj->data.sysfs.type, "temp", 4)) {
+					temp_print(p, p_max_size, r, TEMP_CELSIUS);
+				} else if (r >= 100.0 || r == 0) {
 					snprintf(p, p_max_size, "%d", (int) r);
 				} else {
 					snprintf(p, p_max_size, "%.1f", r);
@@ -5694,7 +5691,9 @@ static void generate_text_internal(char *p, int p_max_size,
 				r = get_sysfs_info(&obj->data.sysfs.fd, obj->data.sysfs.arg,
 					obj->data.sysfs.devtype, obj->data.sysfs.type);
 
-				if (r >= 100.0 || r == 0) {
+				if (!strncmp(obj->data.sysfs.type, "temp", 4)) {
+					temp_print(p, p_max_size, r, TEMP_CELSIUS);
+				} else if (r >= 100.0 || r == 0) {
 					snprintf(p, p_max_size, "%d", (int) r);
 				} else {
 					snprintf(p, p_max_size, "%.1f", r);
@@ -6622,8 +6621,8 @@ head:
 				if(obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
 					val = smapi_bat_installed(idx) ?
 						smapi_get_bat_int(idx, "temperature") : 0;
-					/* temperature is in milli degree celsius, round to degree celsius */
-					snprintf(p, p_max_size, "%d", (int)((val / 1000) + 0.5));
+					/* temperature is in milli degree celsius */
+					temp_print(p, p_max_size, val / 1000, TEMP_CELSIUS);
 				} else
 					ERR("argument to smapi_bat_temp must be an integer");
 			}
@@ -6685,6 +6684,8 @@ head:
 				int value = get_nvidia_value(obj->data.nvidia.type, display);
 				if(value == -1)
 					snprintf(p, p_max_size, "N/A");
+				else if (obj->data.nvidia.type == NV_TEMP)
+					temp_print(p, p_max_size, (double)value, TEMP_CELSIUS);
 				else if (obj->data.nvidia.print_as_float &&
 						value > 0 && value < 100)
 					snprintf(p, p_max_size, "%.1f", (float)value);
@@ -9088,6 +9089,15 @@ static void load_config_file(const char *f)
 				ifup_strictness = IFUP_UP;
 			}
 		}
+
+		CONF("temperature_unit") {
+			if (!value) {
+				ERR("config option 'temperature_unit' needs an argument");
+			} else if (set_temp_output_unit(value)) {
+				ERR("temperature_unit: incorrect argument");
+			}
+		}
+
 		else {
 			ERR("%s: %d: no such configuration: '%s'", f, line, name);
 		}

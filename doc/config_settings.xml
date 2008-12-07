@@ -358,6 +358,15 @@
 	</varlistentry>
 
 	<varlistentry>
+		<term><command><option>temperature_unit</option></command></term>
+		<listitem>
+			Desired output unit of all objects displaying a temperature.
+			Parameters are either "fahrenheit" or "celsius". The default
+			unit is degree Celsius.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
 		<term><command><option>templateN</option></command></term>
 		<listitem>
 			Define a template for later use inside TEXT segments. Substitute N by a digit between 0 and 9, inclusively.
