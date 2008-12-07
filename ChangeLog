@@ -3,6 +3,8 @@
 	http://git.omp.am/?p=conky.git;a=summary and you can clone the repo with:
 	git clone git://git.omp.am/conky.git
 	* Fix for wrong usage of strncat (thanks Pavol)
+	* Adds a variable if_xmms2_connected to hide objects when xmms2d is not
+	running (thanks Lassi)
 
 2008-12-06
 	* Removed duplicate sanity check for diskio

@@ -1358,6 +1358,7 @@ enum text_object_type {
 	OBJ_xmms2_smart,
 	OBJ_xmms2_playlist,
 	OBJ_xmms2_timesplayed,
+	OBJ_if_xmms2_connected,
 #endif
 #ifdef AUDACIOUS
 	OBJ_audacious_status,
@@ -4041,6 +4042,13 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(xmms2_smart, INFO_XMMS2)
 	END OBJ(xmms2_playlist, INFO_XMMS2)
 	END OBJ(xmms2_timesplayed, INFO_XMMS2)
+	END OBJ(if_xmms2_connected, INFO_XMMS2)
+		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
+			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
+		}
+		blockstart[blockdepth] = object_count;
+		obj->data.ifblock.pos = object_count + 2;
+		blockdepth++;
 #endif
 #ifdef AUDACIOUS
 	END OBJ(audacious_status, INFO_AUDACIOUS)
@@ -6214,6 +6222,14 @@ static void generate_text_internal(char *p, int p_max_size,
 				} else {
 					snprintf(p, p_max_size, "%s - %s", cur->xmms2.artist,
 						cur->xmms2.title);
+				}
+			}
+			OBJ(if_xmms2_connected) {
+				if (cur->xmms2_conn_state == 1) {
+					if_jumped = 0;
+				} else {
+					i = obj->data.ifblock.pos;
+					if_jumped = 1;
 				}
 			}
 #endif
