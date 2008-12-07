@@ -675,7 +675,11 @@ inline static void update_stat(void)
 			info.mask |= (1 << INFO_RUN_PROCS);
 		} else if (strncmp(buf, "cpu", 3) == 0) {
 			double delta;
-			idx = isdigit(buf[3]) ? ((int) buf[3]) - 0x2F : 0;
+			if (isdigit(buf[3])) {
+				idx = atoi(&buf[3]);
+			} else {
+				idx = 0;
+			}
 			sscanf(buf, stat_template, &(cpu[idx].cpu_user),
 				&(cpu[idx].cpu_nice), &(cpu[idx].cpu_system),
 				&(cpu[idx].cpu_idle), &(cpu[idx].cpu_iowait),

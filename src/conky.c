@@ -2840,11 +2840,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(cached, INFO_BUFFERS)
 	END OBJ(cpu, INFO_CPU)
 		if (arg) {
-			if (strncmp(arg, "cpu", 4) == EQUAL && isdigit(arg[3]) && isdigit(arg[4])) {
-				obj->data.cpu_index = atoi(&arg[3]) * 10;
-				obj->data.cpu_index += atoi(&arg[4]);
-				arg += 5;
-			} else if (strncmp(arg, "cpu", 3) == EQUAL && isdigit(arg[3])) {
+			if (strncmp(arg, "cpu", 3) == EQUAL && isdigit(arg[3])) {
 				obj->data.cpu_index = atoi(&arg[3]);
 				arg += 4;
 			} else {
