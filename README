@@ -1715,8 +1715,13 @@ conky(1)							      conky(1)
 	      name, depending on whats available
 
 
+       1mif_xmms2_connected0m
+	      Display everything between $if_xmms2_connected and the  matching
+	      $endif if xmms2 is running.
+
+
        1meve api_userid api_key character_id0m
-	      Fetches your currently training skill from the  Eve  Online  API
+	      Fetches  your  currently	training skill from the Eve Online API
 	      servers  (http://www.eve-online.com/)  and  displays  the	 skill
 	      along with the remaining training time.
 
@@ -1735,13 +1740,13 @@ conky(1)							      conky(1)
 1mBUGS0m
        Drawing to root or some other desktop window directly doesn’t work with
        all window managers. Especially doesn’t work well with Gnome and it has
-       been  reported  that  it	 doesn’t work with KDE either. Nautilus can be
-       disabled from drawing to desktop	 with  program	gconf-editor.  Uncheck
-       show_desktop  in	 /apps/nautilus/preferences/.  There  is  -w switch in
-       Conky to set some specific window id. You  might	 find  xwininfo	 -tree
-       useful  to  find	 the  window  to draw to. You can also use -o argument
+       been reported that it doesn’t work with KDE  either.  Nautilus  can  be
+       disabled	 from  drawing	to  desktop with program gconf-editor. Uncheck
+       show_desktop in /apps/nautilus/preferences/.  There  is	-w  switch  in
+       Conky  to  set  some  specific window id. You might find xwininfo -tree
+       useful to find the window to draw to. You  can  also  use  -o  argument
        which makes Conky to create its own window. If you do try running Conky
-       in  its	own window, be sure to read up on the own_window_type settings
+       in its own window, be sure to read up on the  own_window_type  settings
        and experiment.
 
 1mSEE ALSO0m
@@ -1752,11 +1757,11 @@ conky(1)							      conky(1)
        #conky on irc.freenode.net
 
 1mCOPYING0m
-       Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et.  al.   Any
+       Copyright  (c)  2005-2008 Brenden Matthews, Philip Kovacs, et. al.  Any
        original torsmo code is licensed under the BSD license (see LICENSE.BSD
        for a copy).  All code written since the fork of torsmo is licensed un‐
        der the GPL (see LICENSE.GPL for a copy), except where noted different‐
-       ly (such as in portmon code, timed  thread  code,  and  audacious  code
+       ly  (such  as  in  portmon  code, timed thread code, and audacious code
        which are LGPL, and prss which is an MIT-style license).
 
 1mAUTHORS0m
