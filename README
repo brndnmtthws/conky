@@ -548,6 +548,10 @@ conky(1)							      conky(1)
 	      Title of current tune with optional maximum length specifier
 
 
+       1maudacious_main_volume0m
+	      The current volume fetched from Audacious
+
+
        1mbattery (num)0m
 	      Battery status and remaining percentage capacity of ACPI or  APM
 	      battery.	ACPI  battery number can be given as argument (default
