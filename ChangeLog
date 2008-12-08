@@ -1,3 +1,9 @@
+2008-12-08
+	* Fix runtime debugging macros again
+	* Big hddtemp rewrite
+	* Remove README from git and ignore it
+	* Remove obsolete documentation
+
 2008-12-07
 	* Removing $freq_dyn and $freq_dyn_g due to license issues (see sf.net
 	tracker bug #2166612)
@@ -5,6 +11,9 @@
 	* Fix broken $execbar (bug 2133709)
 	* Don't put unit with hddtemp values for consistency (bug 2133107)
 	* Limit $battery_percent to 100 (bug 2145006)
+	* Fix runtime debugging macros
+	* Make unit of all temperature objects selectable
+	* Make Conky in dock mode a withdrawn window
 
 2008-12-06
 	* Switching from svn to git repository.  The repo can be viewed from
