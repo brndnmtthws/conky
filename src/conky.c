@@ -1513,7 +1513,6 @@ struct text_object {
 			char *dev;
 			double update_time;
 			char *temp;
-			char unit;
 		} hddtemp;		/* 2 */
 #endif
 #ifdef EVE
@@ -2446,7 +2445,8 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 			case OBJ_hddtemp:
 				free(obj->data.hddtemp.dev);
 				free(obj->data.hddtemp.addr);
-				free(obj->data.hddtemp.temp);
+				if (obj->data.hddtemp.temp)
+					free(obj->data.hddtemp.temp);
 				break;
 #endif
 			case OBJ_entropy_avail:
@@ -4090,14 +4090,14 @@ static struct text_object *construct_text_object(const char *s,
 #endif
 #ifdef HDDTEMP
 	END OBJ(hddtemp, 0)
-		if (!arg || scan_hddtemp(arg, &obj->data.hddtemp.dev,
-					&obj->data.hddtemp.addr, &obj->data.hddtemp.port, &obj->data.hddtemp.temp)) {
+		if (scan_hddtemp(arg, &obj->data.hddtemp.dev,
+		                 &obj->data.hddtemp.addr, &obj->data.hddtemp.port)) {
 			ERR("hddtemp needs arguments");
 			obj->type = OBJ_text;
 			obj->data.s = strndup("${hddtemp}", text_buffer_size);
 			obj->data.hddtemp.update_time = 0;
-			return NULL;
-		}
+		} else
+			obj->data.hddtemp.temp = NULL;
 #endif
 #ifdef TCP_PORT_MONITOR
 	END OBJ(tcp_portmon, INFO_TCP_PORT_MONITOR)
@@ -5625,28 +5625,29 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 #ifdef HDDTEMP
 			OBJ(hddtemp) {
+				char *endptr, unit;
+				long val;
 				if (obj->data.hddtemp.update_time < current_update_time - 30) {
-					char *str = get_hddtemp_info(obj->data.hddtemp.dev,
-							obj->data.hddtemp.addr, obj->data.hddtemp.port/*, &obj->data.hddtemp.unit*/);
-					if (str) {
-						strncpy(obj->data.hddtemp.temp, str, text_buffer_size);
-					} else {
-						obj->data.hddtemp.temp[0] = 0;
-					}
+					if (obj->data.hddtemp.temp)
+						free(obj->data.hddtemp.temp);
+					obj->data.hddtemp.temp = get_hddtemp_info(obj->data.hddtemp.dev,
+							obj->data.hddtemp.addr, obj->data.hddtemp.port);
 					obj->data.hddtemp.update_time = current_update_time;
 				}
 				if (!obj->data.hddtemp.temp) {
 					snprintf(p, p_max_size, "N/A");
 				} else {
-					char *endptr;
-					int val = (int)strtol(obj->data.hddtemp.temp, &endptr, 10);
-					/* FIXME: review this, it looks broken */
-					if (*endptr != '\0' || obj->data.hddtemp.unit == '*')
-						snprintf(p, p_max_size, "%s", obj->data.hddtemp.temp);
+					val = strtol(obj->data.hddtemp.temp + 1, &endptr, 10);
+					unit = obj->data.hddtemp.temp[0];
+
+					if (*endptr != '\0')
+						snprintf(p, p_max_size, "N/A");
+					else if (unit == 'C')
+						temp_print(p, p_max_size, (double)val, TEMP_CELSIUS);
+					else if (unit == 'F')
+						temp_print(p, p_max_size, (double)val, TEMP_FAHRENHEIT);
 					else
-						temp_print(p, p_max_size, (double)val,
-						           ((obj->data.hddtemp.unit == 'C') ?
-						            TEMP_CELSIUS : TEMP_FAHRENHEIT));
+						snprintf(p, p_max_size, "N/A");
 				}
 			}
 #endif

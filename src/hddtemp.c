@@ -39,16 +39,16 @@
 
 char buf[BUFLEN];
 
-int scan_hddtemp(const char *arg, char **dev, char **addr, int *port, char** temp)
+int scan_hddtemp(const char *arg, char **dev, char **addr, int *port)
 {
 	char buf1[32], buf2[64];
 	int n, ret;
 
-	ret = sscanf(arg, "%31s %63s %d", buf1, buf2, &n);
+	if (!arg)
+		return 1;
 
-	if (ret < 1) {
-		return -1;
-	}
+	if ((ret = sscanf(arg, "%31s %63s %d", buf1, buf2, &n)) < 1)
+		return 1;
 
 	if (strncmp(buf1, "/dev/", 5)) {
 		strncpy(buf1 + 5, buf1, 32 - 5);
@@ -68,13 +68,51 @@ int scan_hddtemp(const char *arg, char **dev, char **addr, int *port, char** tem
 		*port = PORT;
 	}
 
-	*temp = malloc(text_buffer_size);
-	memset(*temp, 0, text_buffer_size);
-
 	return 0;
 }
 
-char *get_hddtemp_info(char *dev, char *hostaddr, int port/*, char *unit*/)
+/* this is an iterator:
+ * set line to NULL in consecutive calls to get the next field
+ * returns "<dev><unit><val>" or NULL on error
+ */
+static char *read_hdd_val(const char *line)
+{
+	static char line_s[512] = "\0";
+	static char *p = 0;
+	char *dev, *val, unit;
+	char *ret = NULL;
+
+	if (line) {
+		snprintf(line_s, 512, "%s", line);
+		p = line_s;
+	}
+	if (!(*line_s))
+		return ret;
+	/* read the device */
+	dev = ++p;
+	if (!(p = strchr(p, line_s[0])))
+		return ret;
+	*(p++) = '\0';
+	/* jump over the devname */
+	if (!(p = strchr(p, line_s[0])))
+		return ret;
+	/* read the value */
+	val = ++p;
+	if (!(p = strchr(p, line_s[0])))
+		return ret;
+	*(p++) = '\0';
+	unit = *(p++);
+	/* preset p for next call */
+	p = strchr(p + 1, line_s[0]);
+
+	if (dev && *dev && val && *val) {
+		asprintf(&ret, "%s%c%s", dev, unit, val);
+	}
+	return ret;
+}
+
+/* returns <unit><val> or NULL on error or N/A */
+char *get_hddtemp_info(char *dev, char *hostaddr, int port)
 {
 	int sockfd = 0;
 	struct hostent he, *he_res = 0;
@@ -83,127 +121,87 @@ char *get_hddtemp_info(char *dev, char *hostaddr, int port/*, char *unit*/)
 	struct sockaddr_in addr;
 	struct timeval tv;
 	fd_set rfds;
-	int len, i, devlen = strlen(dev);
-	char sep;
-	char *p, *out, *r = NULL;
+	int len, i;
+	char *p, *r = NULL;
 
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		perror("socket");
-		return NULL;
+		goto GET_OUT;
 	}
 
-	do {
 #ifdef HAVE_GETHOSTBYNAME_R
-		if (gethostbyname_r(hostaddr, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
-			ERR("hddtemp gethostbyname_r: %s", hstrerror(h_errno));
-			break;
-		}
+	if (gethostbyname_r(hostaddr, &he, hostbuff,
+	                    sizeof(hostbuff), &he_res, &he_errno)) {
+		ERR("hddtemp gethostbyname_r: %s", hstrerror(h_errno));
 #else /* HAVE_GETHOSTBYNAME_R */
-		he_res = gethostbyname(hostaddr);
-		if (!he_res) {
-			perror("gethostbyname");
-			break;
-		}
+	if (!(he_res = gethostbyname(hostaddr))) {
+		perror("gethostbyname()");
 #endif /* HAVE_GETHOSTBYNAME_R */
+		goto GET_OUT;
+	}
 
-		addr.sin_family = AF_INET;
-		addr.sin_port = htons(port);
-		addr.sin_addr = *((struct in_addr *) he_res->h_addr);
-		memset(&(addr.sin_zero), 0, 8);
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons(port);
+	addr.sin_addr = *((struct in_addr *) he_res->h_addr);
+	memset(&(addr.sin_zero), 0, 8);
 
-		if (connect(sockfd, (struct sockaddr *) &addr,
-					sizeof(struct sockaddr)) == -1) {
-			perror("connect");
+	if (connect(sockfd, (struct sockaddr *) &addr,
+				sizeof(struct sockaddr)) == -1) {
+		perror("connect");
+		goto GET_OUT;
+	}
+
+	FD_ZERO(&rfds);
+	FD_SET(sockfd, &rfds);
+
+	/* We're going to wait up to a half second to see whether there's any
+	 * data available. Polling with timeout set to 0 doesn't seem to work
+	 * with hddtemp.
+	 */
+	tv.tv_sec = 0;
+	tv.tv_usec = 500000;
+
+	i = select(sockfd + 1, &rfds, NULL, NULL, &tv);
+	if (i == -1) { /* select() failed */
+		if (errno == EINTR) {
+			/* silently ignore interrupted system call */
+			goto GET_OUT;
+		} else {
+			perror("select");
+		}
+	} else if (i == 0) { /* select() timeouted */
+		ERR("hddtemp had nothing for us");
+		goto GET_OUT;
+	}
+
+	p = buf;
+	len = 0;
+	do {
+		i = recv(sockfd, p, BUFLEN - (p - buf), 0);
+		if (i < 0) {
+			perror("recv");
 			break;
 		}
+		len += i;
+		p += i;
+	} while (i > 0 && p < buf + BUFLEN - 1);
 
-		FD_ZERO(&rfds);
-		FD_SET(sockfd, &rfds);
+	if (len < 2) {
+		ERR("hddtemp returned nada");
+		goto GET_OUT;
+	}
 
-		/* We're going to wait up to a half second to see whether there's any
-		 * data available. Polling with timeout set to 0 doesn't seem to work
-		 * with hddtemp.
-		 */
-		tv.tv_sec = 0;
-		tv.tv_usec = 500000;
+	buf[len] = 0;
 
-		i = select(sockfd + 1, &rfds, NULL, NULL, &tv);
-		if (i == -1) {
-			if (errno == EINTR) {	/* silently ignore interrupted system call */
-				break;
-			} else {
-				perror("select");
-			}
-		}
+	if ((p = read_hdd_val(buf)) == NULL)
+		goto GET_OUT;
+	do {
+		if (!strncmp(dev, p, strlen(dev)))
+			asprintf(&r, "%s", p + strlen(dev));
+		free(p);
+	} while(!r && (p = read_hdd_val(NULL)) != NULL);
 
-		/* No data available */
-		if (i <= 0) {
-			ERR("hddtemp had nothing for us");
-			break;
-		}
-
-		p = buf;
-		len = 0;
-		do {
-			i = recv(sockfd, p, BUFLEN - (p - buf), 0);
-			if (i < 0) {
-				perror("recv");
-				break;
-			}
-			len += i;
-			p += i;
-		} while (i > 0 && p < buf + BUFLEN - 1);
-
-		if (len < 2) {
-			ERR("hddtemp returned nada");
-			break;
-		}
-
-		buf[len] = 0;
-//		printf("read: '%s'\n", buf);
-
-		/* The first character read is the separator. */
-		sep = buf[0];
-		p = buf + 1;
-
-		while (*p) {
-			if (!strncmp(p, dev, devlen)) {
-				p += devlen + 1;
-				p = strchr(p, sep);
-				if (!p) {
-					break;
-				}
-				p++;
-				out = p;
-				p = strchr(p, sep);
-				if (!p) {
-					break;
-				}
-				*p = '\0';
-				p++;
-//				*unit = *p;
-				if (!strncmp(out, "NA", 2)) {
-					strncpy(buf, "N/A", BUFLEN);
-					r = buf;
-				} else {
-					r = out;
-				}
-				break;
-			} else {
-				for (i = 0; i < 5; i++) {
-					p = strchr(p, sep);
-					if (!p) {
-						break;
-					}
-					p++;
-				}
-				if (!p && i < 5) {
-					break;
-				}
-			}
-		}
-	} while (0);
+GET_OUT:
 	close(sockfd);
-//	printf("got: '%s'\n", r);
 	return r;
 }
