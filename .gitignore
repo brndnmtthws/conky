@@ -16,6 +16,7 @@ install-sh
 libtool
 ltmain.sh
 missing
+README
 src/config.h.in
 src/conky
 src/stamp-h1
