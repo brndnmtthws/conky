@@ -4247,16 +4247,11 @@ static char *backslash_escape(const char *src, char **templates, unsigned int te
 {
 	char *src_dup;
 	const char *p;
-	int dup_idx = 0, dup_len;
+	unsigned int dup_idx = 0, dup_len;
 
 	dup_len = strlen(src);
-	if (templates) {
-		unsigned int i;
-		for (i = 0; i < template_count; i++)
-			dup_len += strlen(templates[i]);
-	}
-
 	src_dup = malloc(dup_len * sizeof(char));
+
 	p = src;
 	while (*p) {
 		switch (*p) {
@@ -4278,6 +4273,8 @@ static char *backslash_escape(const char *src, char **templates, unsigned int te
 				if ((sscanf(p + 1, "%u%n", &tmpl_num, &digits) <= 0) ||
 				    (tmpl_num > template_count))
 					break;
+				dup_len += strlen(templates[tmpl_num - 1]);
+				src_dup = realloc(src_dup, dup_len * sizeof(char));
 				sprintf(src_dup + dup_idx, "%s", templates[tmpl_num - 1]);
 				dup_idx += strlen(templates[tmpl_num - 1]);
 				p += digits;
@@ -4293,7 +4290,6 @@ static char *backslash_escape(const char *src, char **templates, unsigned int te
 	src_dup = realloc(src_dup, (strlen(src_dup) + 1) * sizeof(char));
 	return src_dup;
 }
-static struct text_object_list *extract_variable_text_internal(const char *, char);
 
 /* handle_template_object - core logic of the template object
  *
@@ -4306,18 +4302,16 @@ static struct text_object_list *extract_variable_text_internal(const char *, cha
  * ${template2 root /}
  * ${template2 cdrom /mnt/cdrom}
  */
-static int handle_template_object(struct text_object_list **list,
-		char allow_threaded, const char *tmpl, const char *args)
+static char *handle_template(const char *tmpl, const char *args)
 {
-	char *args_dup, *template_dup, *p, *p_old;
+	char *args_dup, *p, *p_old;
 	char **argsp = NULL;
 	unsigned int argcnt = 0, template_idx, i;
 	char *eval_text;
-	struct text_object_list *eval_list;
 
 	if ((sscanf(tmpl, "template%u", &template_idx) != 1) ||
 	    (template_idx > 9))
-		return 1;
+		return NULL;
 
 	args_dup = strdup(args);
 	p = args_dup;
@@ -4340,33 +4334,85 @@ static int handle_template_object(struct text_object_list **list,
 		char *tmp;
 		tmp = backslash_escape(argsp[i], NULL, 0);
 		DBGP2("%s: substituted arg '%s' to '%s'", tmpl, argsp[i], tmp);
-		sprintf(argsp[i], "%s", tmp);
-		free(tmp);
+		argsp[i] = tmp;
 	}
-
-	p = template_dup = strdup(template[template_idx]);
 
 	eval_text = backslash_escape(template[template_idx], argsp, argcnt);
 	DBGP("substituted %s, output is '%s'", tmpl, eval_text);
-
-	eval_list = extract_variable_text_internal(eval_text, allow_threaded);
-	if (eval_list) {
-		(*list)->text_objects = realloc((*list)->text_objects,
-				sizeof(struct text_object) *
-				((*list)->text_object_count +
-				 eval_list->text_object_count));
-		memcpy((*list)->text_objects + (*list)->text_object_count,
-				eval_list->text_objects,
-				sizeof(struct text_object) *
-				eval_list->text_object_count);
-		(*list)->text_object_count += eval_list->text_object_count;
-		free(eval_list->text_objects);
-		free(eval_list);
-	}
 	free(args_dup);
-	free(template_dup);
-	free(eval_text);
+	for (i = 0; i < argcnt; i++)
+		free(argsp[i]);
 	free(argsp);
+	return eval_text;
+}
+
+static char *find_and_replace_templates(const char *inbuf)
+{
+	char *outbuf, *indup, *p, *o, *templ, *args, *tmpl_out;
+	int stack, outlen;
+
+	outlen = strlen(inbuf) + 1;
+	o = outbuf = calloc(outlen, sizeof(char));
+	memset(outbuf, 0, outlen * sizeof(char));
+
+	p = indup = strdup(inbuf);
+	while (*p) {
+		while (*p && *p != '$')
+			*(o++) = *(p++);
+
+		if (!(*p))
+			break;
+
+		if (strncmp(p, "$template", 9) && strncmp(p, "${template", 10)) {
+			*(o++) = *(p++);
+			continue;
+		}
+
+		if (*(p + 1) == '{') {
+			templ = p + 2;
+			while (*p != ' ')
+				p++;
+			*(p++) = '\0';
+			args = p;
+			stack = 1;
+			while (stack > 0) {
+				p++;
+				if (*p == '{')
+					stack++;
+				else if (*p == '}')
+					stack--;
+			}
+			*(p++) = '\0';
+		} else {
+			templ = p + 1;
+			while (*p != ' ')
+				p++;
+			*(p++) = '\0';
+			args = NULL;
+		}
+		tmpl_out = handle_template(templ, args);
+		if (tmpl_out) {
+			outlen += strlen(tmpl_out);
+			outbuf = realloc(outbuf, outlen * sizeof(char));
+			strcat (outbuf, tmpl_out);
+			free(tmpl_out);
+			o = outbuf + strlen(outbuf);
+		} else {
+			ERR("failed to handle template '%s' with args '%s'", templ, args);
+		}
+	}
+	*o = '\0';
+	outbuf = realloc(outbuf, (strlen(outbuf) + 1) * sizeof(char));
+	free(indup);
+	return outbuf;
+}
+
+static int text_contains_templates(const char *text)
+{
+	if (strcasestr(text, "${template") != NULL)
+		return 1;
+	if (strcasestr(text, "$template") != NULL)
+		return 1;
 	return 0;
 }
 
@@ -4377,8 +4423,20 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 	char *p, *s, *orig_p;
 	long line;
 
-	p = strndup(const_p, max_user_text);
+	p = strndup(const_p, max_user_text - 1);
+	while (text_contains_templates(p)) {
+		char *tmp;
+		tmp = find_and_replace_templates(p);
+		free(p);
+		p = tmp;
+	}
 	s = orig_p = p;
+
+	if (strcmp(p, const_p)) {
+		DBGP("replaced all templates in text: input is\n'%s'\noutput is\n'%s'", const_p, p);
+	} else {
+		DBGP("no templates to replace");
+	}
 
 	retval = malloc(sizeof(struct text_object_list));
 	memset(retval, 0, sizeof(struct text_object_list));
@@ -4475,24 +4533,18 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 						tmp_p++;
 					}
 
-					if (!strncmp(buf, "template", 8)) {
-						if (handle_template_object(&retval, allow_threaded, buf, arg))
-							printf("Error: handling template '%s' failed for args '%s'\n", buf, arg);
-					} else {
-						// create new object
-						obj = construct_text_object(buf, arg,
-								retval->text_object_count, retval->text_objects, line, allow_threaded);
-						if (obj != NULL) {
-							// allocate memory for the object
-							retval->text_objects = realloc(retval->text_objects,
-									sizeof(struct text_object) *
-									(retval->text_object_count + 1));
-							// assign the new object to the end of the list.
-							memcpy(
-									&retval->text_objects[retval->text_object_count++],
-									obj, sizeof(struct text_object));
-							free(obj);
-						}
+					obj = construct_text_object(buf, arg,
+							retval->text_object_count, retval->text_objects, line, allow_threaded);
+					if (obj != NULL) {
+						// allocate memory for the object
+						retval->text_objects = realloc(retval->text_objects,
+								sizeof(struct text_object) *
+								(retval->text_object_count + 1));
+						// assign the new object to the end of the list.
+						memcpy(
+								&retval->text_objects[retval->text_object_count++],
+								obj, sizeof(struct text_object));
+						free(obj);
 					}
 				}
 				continue;
