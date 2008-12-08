@@ -49,15 +49,6 @@
 
 	<varlistentry>
 		<term>
-			<command><option>acpitempf</option></command>
-		</term>
-		<listitem>
-			ACPI temperature in F.
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term>
 			<command><option>adt746xcpu</option></command>
 		</term>
 		<listitem>
@@ -828,7 +819,7 @@
 			<option>(dev) type n</option>
 		</term>
 		<listitem>
-			Hwmon sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you have only one hwmon device. Parameter type is either 'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp' (Celsius) or 'tempf' (Fahrenheit) meaning temperature. Parameter n is number of the sensor. See /sys/class/hwmon/ on your local computer.
+			Hwmon sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you have only one hwmon device. Parameter type is either 'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp' meaning temperature. Parameter n is number of the sensor. See /sys/class/hwmon/ on your local computer.
 			<para></para></listitem>
 	</varlistentry>
 
@@ -858,7 +849,7 @@
 			<option>(dev) type n</option>
 		</term>
 		<listitem>
-			I2C sensor from sysfs (Linux 2.6).  Parameter dev may be omitted if you have only one I2C device.  Parameter type is either 'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp' (Celsius) or 'tempf' (Fahrenheit) meaning temperature.  Parameter n is number of the sensor. See /sys/bus/i2c/devices/ on your local computer.
+			I2C sensor from sysfs (Linux 2.6).  Parameter dev may be omitted if you have only one I2C device.  Parameter type is either 'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp' meaning temperature.  Parameter n is number of the sensor. See /sys/bus/i2c/devices/ on your local computer.
 			<para></para></listitem>
 	</varlistentry>
 
@@ -899,16 +890,6 @@
 		</term>
 		<listitem>
 			If running the i8k kernel driver for Inspiron laptops, displays the cpu temperature in Celsius, as reported by /proc/i8k.
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term>
-			<command><option>i8k_cpu_tempf</option></command>
-			<option></option>
-		</term>
-		<listitem>
-			If running the i8k kernel driver for Inspiron laptops, displays the cpu temperature in Fahrenheit, as reported by /proc/i8k.
 			<para></para></listitem>
 	</varlistentry>
 
@@ -1703,7 +1684,7 @@
 			<option>(dev) type n</option>
 		</term>
 		<listitem>
-			Platform sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you have only one platform device. Platform type is either 'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp' (Celsius) or 'tempf' (Fahrenheit) meaning temperature. Parameter n is number of the sensor. See /sys/bus/platform/devices/ on your local computer.
+			Platform sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you have only one platform device. Platform type is either 'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp' meaning temperature. Parameter n is number of the sensor. See /sys/bus/platform/devices/ on your local computer.
 			<para></para></listitem>
 	</varlistentry>
 
