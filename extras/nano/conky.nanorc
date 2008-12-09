@@ -1,7 +1,6 @@
 ##
 ## Syntax highlighting for conkyrc files.
 ##
-## $Id$
 ##
 syntax "conky" "(\.*conkyrc.*$|conky.conf)"
 

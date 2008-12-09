@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id$
 
 xsltproc http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl docs.xml > docs.html
 

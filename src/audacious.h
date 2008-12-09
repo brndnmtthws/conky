@@ -1,5 +1,3 @@
-/* $Id$ */
-
 /* audacious.h:  conky support for audacious music player
  *
  * Copyright (C) 2005-2007 Philip Kovacs pkovacs@users.sourceforge.net

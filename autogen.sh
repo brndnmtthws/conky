@@ -24,8 +24,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# $Id$
-#
 # optional $1 = optional directory containing build tree or git working copy
 
 AUTOCONF=${AUTOCONF:-autoconf}

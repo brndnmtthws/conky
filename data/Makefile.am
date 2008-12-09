@@ -22,7 +22,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# $Id$
 
 configdir = ${sysconfdir}/conky
 dist_config_DATA = conky.conf

@@ -5,7 +5,6 @@
 " Copyright:  Copyright (c) 2005 Ciaran McCreesh
 " Licence:    You may redistribute this under the same terms as Vim itself
 "
-" $Id$
 
 if exists("b:current_syntax")
 	finish

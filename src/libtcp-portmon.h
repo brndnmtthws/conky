@@ -1,5 +1,3 @@
-/* $Id$ */
-
 /* libtcp-portmon.h:  tcp port monitoring library.
  *
  * Copyright (C) 2005-2007 Philip Kovacs pkovacs@users.sourceforge.net
