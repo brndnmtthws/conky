@@ -6,7 +6,7 @@ QUICK & EASY:
 	# make install
 
 First, read the README. This contains instructions specific to building conky
-Fresh from a SVN checkout:
+fresh from the git repo:
 
 * Conky requires three "auto-tools", with at least the specific version numbers.
 	Make sure these are installed:
@@ -15,7 +15,7 @@ Fresh from a SVN checkout:
 	automake-1.9
 	autoconf-2.59
 
-* In the directory where you checked out conky from SVN,
+* In the directory where you cloned conky from git,
 	run "aclocal", "automake", and then "autoconf".
 	Make sure you run those commands with the latest versions...
 	it is very possible that older versions are installed, and

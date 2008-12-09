@@ -46,7 +46,7 @@ conky(1)							      conky(1)
 
        Gentoo users -- Conky is in Gentoo’s Portage... simply use "emerge app-
        admin/conky"  for  installation.	  There	 is also usually an up-to-date
-       ebuild within Conky’s package or in SVN.
+       ebuild within Conky’s package or in the git repo.
 
        Debian, etc. users -- Conky should be in your repositories, and can  be
        installed by doing "aptitude install conky".
@@ -54,7 +54,7 @@ conky(1)							      conky(1)
        Example	to  compile  and  run Conky with all optional components (note
        that some configure options may differ for your system):
 
-       1msh autogen.sh # Only required if building from SVN0m
+       1msh autogen.sh # Only required if building from the git repo0m
 
        1m./configure	  --prefix=/usr	     --mandir=/usr/share/man	   --in‐0m
        1mfodir=/usr/share/info	--datadir=/usr/share  --sysconfdir=/etc --local‐0m
