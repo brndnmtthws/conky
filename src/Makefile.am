@@ -71,7 +71,8 @@ PTHREAD_LIBS =  -pthread
 endif
 
 if BUILD_PORT_MONITORS
-port_monitors = libtcp-portmon.h libtcp-portmon.c
+port_monitors = libtcp-portmon.h libtcp-portmon.c \
+		tcp-portmon.h tcp-portmon.c
 endif
 
 if BUILD_X11

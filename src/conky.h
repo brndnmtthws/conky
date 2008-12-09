@@ -234,7 +234,7 @@ struct x11_info {
 #endif
 
 #ifdef TCP_PORT_MONITOR
-#include "libtcp-portmon.h"
+#include "tcp-portmon.h"
 #endif
 
 enum {
@@ -363,9 +363,6 @@ struct information {
 	struct process *memu[10];
 	struct process *first_process;
 	unsigned long looped;
-#ifdef TCP_PORT_MONITOR
-	tcp_port_monitor_collection_t *p_tcp_port_monitor_collection;
-#endif
 	struct entropy_s entropy;
 	double music_player_interval;
 

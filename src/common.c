@@ -397,7 +397,7 @@ void update_stuff(void)
 	}
 #ifdef TCP_PORT_MONITOR
 	if (NEED(INFO_TCP_PORT_MONITOR)) {
-		update_tcp_port_monitor_collection(info.p_tcp_port_monitor_collection);
+		tcp_portmon_update();
 	}
 #endif
 	if (NEED(INFO_ENTROPY)) {

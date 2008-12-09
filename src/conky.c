@@ -450,10 +450,6 @@ int no_buffers;
 /* pad percentages to decimals? */
 static int pad_percents = 0;
 
-#ifdef TCP_PORT_MONITOR
-tcp_port_monitor_args_t tcp_port_monitor_args;
-#endif
-
 static char *global_text = 0;
 long global_text_lines;
 
@@ -1495,16 +1491,7 @@ struct text_object {
 			int a, b;
 		} pair;			/* 2 */
 #ifdef TCP_PORT_MONITOR
-		struct {
-			/* starting port to monitor */
-			in_port_t port_range_begin;
-			/* ending port to monitor */
-			in_port_t port_range_end;
-			/* enum from libtcp-portmon.h, e.g. COUNT, etc. */
-			int item;
-			/* 0 to n-1 connections. */
-			int connection_index;
-		} tcp_port_monitor;
+		struct tcp_port_monitor_data tcp_port_monitor;
 #endif
 #ifdef HDDTEMP
 		struct {
@@ -4101,89 +4088,7 @@ static struct text_object *construct_text_object(const char *s,
 #endif
 #ifdef TCP_PORT_MONITOR
 	END OBJ(tcp_portmon, INFO_TCP_PORT_MONITOR)
-		int argc, port_begin, port_end, item, connection_index;
-		char itembuf[32];
-
-		memset(itembuf, 0, sizeof(itembuf));
-		connection_index = 0;
-		/* massive argument checking */
-		if (!arg) {
-			CRIT_ERR("tcp_portmon: needs arguments");
-		}
-		argc = sscanf(arg, "%d %d %31s %d", &port_begin, &port_end, itembuf,
-				&connection_index);
-		if ((argc != 3) && (argc != 4)) {
-			CRIT_ERR("tcp_portmon: requires 3 or 4 arguments");
-		}
-		if ((port_begin < 1) || (port_begin > 65535) || (port_end < 1)
-				|| (port_end > 65535)) {
-			CRIT_ERR("tcp_portmon: port values must be from 1 to 65535");
-		}
-		if (port_begin > port_end) {
-			CRIT_ERR("tcp_portmon: starting port must be <= ending port");
-		}
-		if (strncmp(itembuf, "count", 31) == EQUAL) {
-			item = COUNT;
-		} else if (strncmp(itembuf, "rip", 31) == EQUAL) {
-			item = REMOTEIP;
-		} else if (strncmp(itembuf, "rhost", 31) == EQUAL) {
-			item = REMOTEHOST;
-		} else if (strncmp(itembuf, "rport", 31) == EQUAL) {
-			item = REMOTEPORT;
-		} else if (strncmp(itembuf, "rservice", 31) == EQUAL) {
-			item = REMOTESERVICE;
-		} else if (strncmp(itembuf, "lip", 31) == EQUAL) {
-			item = LOCALIP;
-		} else if (strncmp(itembuf, "lhost", 31) == EQUAL) {
-			item = LOCALHOST;
-		} else if (strncmp(itembuf, "lport", 31) == EQUAL) {
-			item = LOCALPORT;
-		} else if (strncmp(itembuf, "lservice", 31) == EQUAL) {
-			item = LOCALSERVICE;
-		} else {
-			CRIT_ERR("tcp_portmon: invalid item specified");
-		}
-		if ((argc == 3) && (item != COUNT)) {
-			CRIT_ERR("tcp_portmon: 3 argument form valid only for \"count\" "
-					"item");
-		}
-		if ((argc == 4) && (connection_index < 0)) {
-			CRIT_ERR("tcp_portmon: connection index must be non-negative");
-		}
-		/* ok, args looks good. save the text object data */
-		obj->data.tcp_port_monitor.port_range_begin = (in_port_t) port_begin;
-		obj->data.tcp_port_monitor.port_range_end = (in_port_t) port_end;
-		obj->data.tcp_port_monitor.item = item;
-		obj->data.tcp_port_monitor.connection_index = connection_index;
-
-		/* if the port monitor collection hasn't been created,
-		 * we must create it */
-		if (!info.p_tcp_port_monitor_collection) {
-			info.p_tcp_port_monitor_collection =
-				create_tcp_port_monitor_collection();
-			if (!info.p_tcp_port_monitor_collection) {
-				CRIT_ERR("tcp_portmon: unable to create port monitor "
-						"collection");
-			}
-		}
-
-		/* if a port monitor for this port does not exist,
-		 * create one and add it to the collection */
-		if (find_tcp_port_monitor(info.p_tcp_port_monitor_collection,
-					port_begin, port_end) == NULL) {
-			tcp_port_monitor_t *p_monitor = create_tcp_port_monitor(port_begin,
-					port_end, &tcp_port_monitor_args);
-
-			if (!p_monitor) {
-				CRIT_ERR("tcp_portmon: unable to create port monitor");
-			}
-			/* add the newly created monitor to the collection */
-			if (insert_tcp_port_monitor_into_collection(
-						info.p_tcp_port_monitor_collection, p_monitor) != 0) {
-				CRIT_ERR("tcp_portmon: unable to add port monitor to "
-						"collection");
-			}
-		}
+		tcp_portmon_init(arg, &obj->data.tcp_port_monitor);
 #endif
 	END OBJ(entropy_avail, INFO_ENTROPY)
 		END OBJ(entropy_poolsize, INFO_ENTROPY)
@@ -6594,25 +6499,8 @@ head:
 			}
 #ifdef TCP_PORT_MONITOR
 			OBJ(tcp_portmon) {
-				/* grab a pointer to this port monitor */
-				tcp_port_monitor_t *p_monitor =
-					find_tcp_port_monitor(info.p_tcp_port_monitor_collection,
-					obj->data.tcp_port_monitor.port_range_begin,
-					obj->data.tcp_port_monitor.port_range_end);
-
-				if (!p_monitor) {
-					snprintf(p, p_max_size, "monitor not found");
-					break;
-				}
-
-				/* now grab the text of interest */
-				if (peek_tcp_port_monitor(p_monitor,
-						obj->data.tcp_port_monitor.item,
-						obj->data.tcp_port_monitor.connection_index, p,
-						p_max_size) != 0) {
-					snprintf(p, p_max_size, "monitor peek error");
-					break;
-				}
+				tcp_portmon_action(p, p_max_size,
+				                   &obj->data.tcp_port_monitor);
 			}
 #endif
 
@@ -8167,7 +8055,7 @@ void reload_config(void)
 #endif /* X11 */
 
 #ifdef TCP_PORT_MONITOR
-	destroy_tcp_port_monitor_collection(info.p_tcp_port_monitor_collection);
+	tcp_portmon_clear();
 #endif
 
 	if (current_config) {
@@ -8187,9 +8075,6 @@ void reload_config(void)
 		XClearWindow(display, RootWindow(display, screen));
 
 #endif /* X11 */
-#ifdef TCP_PORT_MONITOR
-		info.p_tcp_port_monitor_collection = NULL;
-#endif
 		extract_variable_text(global_text);
 		free(global_text);
 		global_text = NULL;
@@ -8267,8 +8152,7 @@ void clean_up(void)
 	free(current_config);
 
 #ifdef TCP_PORT_MONITOR
-	destroy_tcp_port_monitor_collection(info.p_tcp_port_monitor_collection);
-	info.p_tcp_port_monitor_collection = NULL;
+	tcp_portmon_clear();
 #endif
 #ifdef RSS
 	free_rss_info();
@@ -8457,8 +8341,8 @@ static void set_default_configurations(void)
 	info.users.number = 1;
 
 #ifdef TCP_PORT_MONITOR
-	tcp_port_monitor_args.max_port_monitor_connections =
-		MAX_PORT_MONITOR_CONNECTIONS_DEFAULT;
+	/* set default connection limit */
+	tcp_portmon_set_max_connections(0);
 #endif
 }
 
@@ -9113,21 +8997,15 @@ static void load_config_file(const char *f)
 		}
 #ifdef TCP_PORT_MONITOR
 		CONF("max_port_monitor_connections") {
-			if (!value || (sscanf(value, "%d",
-					&tcp_port_monitor_args.max_port_monitor_connections) != 1)
-					|| tcp_port_monitor_args.max_port_monitor_connections < 0) {
+			int max;
+			if (!value || (sscanf(value, "%d", &max) != 1)) {
 				/* an error. use default, warn and continue. */
-				tcp_port_monitor_args.max_port_monitor_connections =
-					MAX_PORT_MONITOR_CONNECTIONS_DEFAULT;
+				tcp_portmon_set_max_connections(0);
 				CONF_ERR;
-			} else if (tcp_port_monitor_args.max_port_monitor_connections
-					== 0) {
-				/* no error, just use default */
-				tcp_port_monitor_args.max_port_monitor_connections =
-					MAX_PORT_MONITOR_CONNECTIONS_DEFAULT;
+			} else if (tcp_portmon_set_max_connections(max)) {
+				/* max is < 0, default has been set*/
+				CONF_ERR;
 			}
-			/* else tcp_port_monitor_args.max_port_monitor_connections > 0
-			 * as per config */
 		}
 #endif
 		CONF("if_up_strictness") {
@@ -9254,8 +9132,8 @@ int main(int argc, char **argv)
 	clear_net_stats();
 
 #ifdef TCP_PORT_MONITOR
-	tcp_port_monitor_args.max_port_monitor_connections =
-		MAX_PORT_MONITOR_CONNECTIONS_DEFAULT;
+	/* set default connection limit */
+	tcp_portmon_set_max_connections(0);
 #endif
 
 	/* handle command line parameters that don't change configs */
