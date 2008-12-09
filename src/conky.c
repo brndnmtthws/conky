@@ -2842,7 +2842,7 @@ static struct text_object *construct_text_object(const char *s,
 			} else {
 				obj->data.cpu_index = 0;
 			}
-			DBGP2("Adding info for CPU %d", obj->data.cpu_index);
+			DBGP2("Adding $cpu for CPU %d", obj->data.cpu_index);
 		} else {
 			obj->data.cpu_index = 0;
 		}
@@ -2859,7 +2859,7 @@ static struct text_object *construct_text_object(const char *s,
 			scan_bar(arg, &obj->a, &obj->b);
 			obj->data.cpu_index = 0;
 		}
-		DBGP2("Adding info for CPU %d", obj->data.cpu_index);
+		DBGP2("Adding $cpubar for CPU %d", obj->data.cpu_index);
 	END OBJ(cpugraph, INFO_CPU)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
@@ -2872,7 +2872,7 @@ static struct text_object *construct_text_object(const char *s,
 			}
 			free(buf);
 		}
-		DBGP2("Adding info for CPU %d", obj->data.cpu_index);
+		DBGP2("Adding $cpugraph for CPU %d", obj->data.cpu_index);
 	END OBJ(loadgraph, INFO_LOADAVG)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 				&obj->e, &obj->showaslog);

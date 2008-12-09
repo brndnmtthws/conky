@@ -676,7 +676,7 @@ inline static void update_stat(void)
 		} else if (strncmp(buf, "cpu", 3) == 0) {
 			double delta;
 			if (isdigit(buf[3])) {
-				idx = atoi(&buf[3]);
+				idx = atoi(&buf[3]) + 1;
 			} else {
 				idx = 0;
 			}
