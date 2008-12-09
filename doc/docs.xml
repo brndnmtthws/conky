@@ -79,7 +79,7 @@
 		</para>
 		<para>
 			Gentoo users -- Conky is in Gentoo's Portage... simply use "emerge app-admin/conky" for installation.
-			There is also usually an up-to-date ebuild within Conky's package or in	SVN.
+			There is also usually an up-to-date ebuild within Conky's package or in	the git repo.
 		</para>
 		<para>
 			Debian, etc. users -- Conky should be in your repositories, and can be installed by doing
@@ -91,7 +91,7 @@
 		<variablelist>
 			<varlistentry>
 				<term>
-					<command><option>sh autogen.sh</option></command> <option># Only required if building from SVN</option>
+					<command><option>sh autogen.sh</option></command> <option># Only required if building from the git repo</option>
 				</term>
 			</varlistentry>
 			<varlistentry>
