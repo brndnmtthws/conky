@@ -103,7 +103,7 @@ void *update_moc(void *arg)
 		timed_thread_lock(moc->timed_thread);
 		update_infos(moc);
 		timed_thread_unlock(moc->timed_thread);
-		if (timed_thread_test(moc->timed_thread)) {
+		if (timed_thread_test(moc->timed_thread, 0)) {
 			timed_thread_exit(moc->timed_thread);
 		}
 	}

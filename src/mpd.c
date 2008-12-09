@@ -155,7 +155,7 @@ void *update_mpd(void *arg)
 			strncpy(mpd->status, "MPD not responding",
 				text_buffer_size - 1);
 			timed_thread_unlock(mpd->timed_thread);
-			if (timed_thread_test(mpd->timed_thread)) {
+			if (timed_thread_test(mpd->timed_thread, 0)) {
 				timed_thread_exit(mpd->timed_thread);
 			}
 			continue;
@@ -171,7 +171,7 @@ void *update_mpd(void *arg)
 			strncpy(mpd->status, "MPD not responding",
 				text_buffer_size - 1);
 			timed_thread_unlock(mpd->timed_thread);
-			if (timed_thread_test(mpd->timed_thread)) {
+			if (timed_thread_test(mpd->timed_thread, 0)) {
 				timed_thread_exit(mpd->timed_thread);
 			}
 			continue;
@@ -182,7 +182,7 @@ void *update_mpd(void *arg)
 			mpd_closeConnection(mpd->conn);
 			mpd->conn = 0;
 			timed_thread_unlock(mpd->timed_thread);
-			if (timed_thread_test(mpd->timed_thread)) {
+			if (timed_thread_test(mpd->timed_thread, 0)) {
 				timed_thread_exit(mpd->timed_thread);
 			}
 			continue;
@@ -236,7 +236,7 @@ void *update_mpd(void *arg)
 			mpd_closeConnection(mpd->conn);
 			mpd->conn = 0;
 			timed_thread_unlock(mpd->timed_thread);
-			if (timed_thread_test(mpd->timed_thread)) {
+			if (timed_thread_test(mpd->timed_thread, 0)) {
 				timed_thread_exit(mpd->timed_thread);
 			}
 			continue;
@@ -302,7 +302,7 @@ void *update_mpd(void *arg)
 			mpd_closeConnection(mpd->conn);
 			mpd->conn = 0;
 			timed_thread_unlock(mpd->timed_thread);
-			if (timed_thread_test(mpd->timed_thread)) {
+			if (timed_thread_test(mpd->timed_thread, 0)) {
 				timed_thread_exit(mpd->timed_thread);
 			}
 			continue;
@@ -313,7 +313,7 @@ void *update_mpd(void *arg)
 			// fprintf(stderr, "%s\n", mpd->conn->errorStr);
 			mpd_closeConnection(mpd->conn);
 			mpd->conn = 0;
-			if (timed_thread_test(mpd->timed_thread)) {
+			if (timed_thread_test(mpd->timed_thread, 0)) {
 				timed_thread_exit(mpd->timed_thread);
 			}
 			continue;
@@ -324,7 +324,7 @@ void *update_mpd(void *arg)
 			mpd_closeConnection(mpd->conn);
 			mpd->conn = 0;
 		} */
-		if (timed_thread_test(mpd->timed_thread)) {
+		if (timed_thread_test(mpd->timed_thread, 0)) {
 			timed_thread_exit(mpd->timed_thread);
 		}
 		continue;

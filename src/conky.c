@@ -1851,7 +1851,7 @@ void *imap_thread(void *arg)
 					FD_SET(sockfd, &fdset);
 					FD_SET(threadfd, &fdset);
 					res = select(MAX(sockfd + 1, threadfd + 1), &fdset, NULL, NULL, NULL);
-					if (timed_thread_test(mail->p_timed_thread) || (res == -1 && errno == EINTR) || FD_ISSET(threadfd, &fdset)) {
+					if (timed_thread_test(mail->p_timed_thread, 1) || (res == -1 && errno == EINTR) || FD_ISSET(threadfd, &fdset)) {
 						if ((fstat(sockfd, &stat_buf) == 0) && S_ISSOCK(stat_buf.st_mode)) {
 							/* if a valid socket, close it */
 							close(sockfd);
@@ -1975,7 +1975,7 @@ void *imap_thread(void *arg)
 			/* if a valid socket, close it */
 			close(sockfd);
 		}
-		if (timed_thread_test(mail->p_timed_thread)) {
+		if (timed_thread_test(mail->p_timed_thread, 0)) {
 			timed_thread_exit(mail->p_timed_thread);
 		}
 	}
@@ -2148,7 +2148,7 @@ void *pop3_thread(void *arg)
 			/* if a valid socket, close it */
 			close(sockfd);
 		}
-		if (timed_thread_test(mail->p_timed_thread)) {
+		if (timed_thread_test(mail->p_timed_thread, 0)) {
 			timed_thread_exit(mail->p_timed_thread);
 		}
 	}
@@ -2188,7 +2188,7 @@ void *threaded_exec(void *arg)
 			p2++;
 		}
 		timed_thread_unlock(obj->data.texeci.p_timed_thread);
-		if (timed_thread_test(obj->data.texeci.p_timed_thread)) {
+		if (timed_thread_test(obj->data.texeci.p_timed_thread, 0)) {
 			timed_thread_exit(obj->data.texeci.p_timed_thread);
 		}
 	}

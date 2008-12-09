@@ -47,10 +47,9 @@ int timed_thread_lock(timed_thread *p_timed_thread);
 /* unlock a timed thread after critical section activity */
 int timed_thread_unlock(timed_thread *p_timed_thread);
 
-/* waits required interval for termination signal
- * returns 1 if received,
- * 0 otherwise */
-int timed_thread_test(timed_thread *p_timed_thread);
+/* waits required interval (unless override_wait_time is non-zero) for
+ * termination signal returns 1 if received, 0 otherwise. */
+int timed_thread_test(timed_thread *p_timed_thread, int override_wait_time);
 
 /* exit a timed thread */
 void timed_thread_exit(timed_thread *p_timed_thread) __attribute__((noreturn));

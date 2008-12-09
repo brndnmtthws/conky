@@ -1,3 +1,7 @@
+2008-12-09
+	* Add an option to timed_thread_test() to not wait for the interval period
+	(so that IMAP IDLE works better)
+
 2008-12-08
 	* Fix runtime debugging macros again
 	* Big hddtemp rewrite

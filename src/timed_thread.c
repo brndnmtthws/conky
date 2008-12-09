@@ -197,7 +197,7 @@ int timed_thread_unlock(timed_thread *p_timed_thread)
 /* thread waits interval_usecs for runnable_cond to be signaled.
  * returns 1 if signaled, -1 on error, and 0 otherwise.
  * caller should call timed_thread_exit() on any non-zero return value. */
-int timed_thread_test(timed_thread *p_timed_thread)
+int timed_thread_test(timed_thread *p_timed_thread, int override_wait_time)
 {
 	struct timespec now_time;
 	int rc;
@@ -208,6 +208,10 @@ int timed_thread_test(timed_thread *p_timed_thread)
 	if (pthread_mutex_lock(&p_timed_thread->runnable_mutex)) {
 		/* could not acquire runnable_cond mutex,
 		 * so tell caller to exit thread */
+		return -1;
+	}
+
+	if (override_wait_time && now(&p_timed_thread->wait_time)) {
 		return -1;
 	}
 
