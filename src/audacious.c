@@ -242,7 +242,7 @@ void *audacious_thread_func(void *pvoid)
 		memcpy(&audacious_items, items, sizeof(items));
 		timed_thread_unlock(info.audacious.p_timed_thread);
 
-		if (timed_thread_test(info.audacious.p_timed_thread)) {
+		if (timed_thread_test(info.audacious.p_timed_thread, 0)) {
 #ifndef AUDACIOUS_LEGACY
 			/* release reference to dbus proxy */
 			g_object_unref(session);
