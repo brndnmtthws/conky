@@ -91,6 +91,20 @@ AC_SUBST(BUILD_ARCH)
 
 
 dnl
+dnl CONFIG_OUTPUT option
+dnl
+
+AC_ARG_ENABLE([config_output],
+	      AC_HELP_STRING([--enable-config-output],
+			     [enable printing a default config if requested @<:@default=no@:>@]),
+	      [want_config_output="$enableval"], [want_config_output=no])
+
+AM_CONDITIONAL(BUILD_CONFIG_OUTPUT, test x$want_config_output = xyes)
+if test x$want_config_output = xyes; then
+	AC_DEFINE(CONFIG_OUTPUT, 1, [Define if you want default config printing support])
+fi
+
+dnl
 dnl OWN_WINDOW option
 dnl
 

@@ -60,6 +60,10 @@
 #include <iconv.h>
 #endif
 
+#ifdef CONFIG_OUTPUT
+#include "defconfig.h"
+#endif
+
 #include "build.h"
 
 #include "temphelper.h"
@@ -9094,6 +9098,9 @@ static const char *getopt_string = "vVqdDt:u:i:hc:"
 #ifdef HAVE_XDBE
 	"b"
 #endif
+#ifdef CONFIG_OUTPUT
+	"C"
+#endif
 #endif /* X11 */
 	;
 
@@ -9102,6 +9109,9 @@ static const struct option longopts[] = {
 	{ "version", 0, NULL, 'V' },
 	{ "debug", 0, NULL, 'D' },
 	{ "config", 1, NULL, 'c' },
+#ifdef CONFIG_OUTPUT
+	{ "print-config", 0, NULL, 'C' },
+#endif
 	{ "daemonize", 0, NULL, 'd' },
 #ifdef X11
 	{ "alignment", 1, NULL, 'a' },
@@ -9181,6 +9191,11 @@ int main(int argc, char **argv)
 			case 'h':
 				print_help(argv[0]);
 				return 0;
+#ifdef CONFIG_OUTPUT
+			case 'C':
+				print_defconfig();
+				return 0;
+#endif
 #ifdef X11
 			case 'w':
 				window.window = strtol(optarg, 0, 0);

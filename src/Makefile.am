@@ -27,6 +27,15 @@ INCLUDES = -DSYSTEM_CONFIG_FILE=\"$(sysconfdir)/conky/conky.conf\"
 
 bin_PROGRAMS = conky
 
+if BUILD_CONFIG_OUTPUT
+config_output = defconfig.h
+conky_DEPENDENCIES = $(config_output)
+BUILT_SOURCES = $(config_output)
+CLEANFILES = $(config_output)
+$(config_output): ../doc/conky.conf
+	sh ../text2c.sh $< $@ defconfig
+endif
+
 if BUILD_AUDACIOUS
 audacious = audacious.c audacious.h
 endif
@@ -100,6 +109,7 @@ nvidia = nvidia.c nvidia.h
 endif
 
 conky_SOURCES = 		\
+	$(config_output)        \
 	$(audacious)            \
 	$(bmpx)                 \
 	common.c 		\
@@ -135,6 +145,7 @@ conky_LDFLAGS = 				\
 	-lm
 
 EXTRA_DIST = 			\
+	$(config_output)        \
 	audacious.c		\
 	audacious.h		\
 	bmpx.c			\

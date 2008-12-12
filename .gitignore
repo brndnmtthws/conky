@@ -27,6 +27,7 @@ src/stamp-h1
 src/.deps/
 src/build.h
 src/config.h
+src/defconfig.h
 src/*.o
 conky-*.tar.*
 doc/*.html
