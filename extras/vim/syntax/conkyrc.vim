@@ -76,6 +76,16 @@ syn keyword ConkyrcSetting
 			\ temp1
 			\ temp2
 			\ update_interval
+			\ template0
+			\ template1
+			\ template2
+			\ template3
+			\ template4
+			\ template5
+			\ template6
+			\ template7
+			\ template8
+			\ template9
 			\ total_run_times
 			\ uppercase
 			\ max_specials
@@ -91,6 +101,7 @@ syn keyword ConkyrcConstant
 			\ bottom_right
 			\ bottom_middle
 			\ desktop
+			\ dock
 			\ no
 			\ none
 			\ normal
@@ -277,6 +288,16 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 			\ swapperc
 			\ swapbar
 			\ sysname
+			\ template0
+			\ template1
+			\ template2
+			\ template3
+			\ template4
+			\ template5
+			\ template6
+			\ template7
+			\ template8
+			\ template9
 			\ time
 			\ utime
 			\ tztime
