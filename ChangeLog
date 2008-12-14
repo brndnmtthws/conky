@@ -1,5 +1,6 @@
 2008-12-14
 	* Fix disk_protect for linux-2.6.27 (and hopefully above)
+	* Improve behaviour of $pb_battery
 
 2008-12-09
 	* Add an option to timed_thread_test() to not wait for the interval period

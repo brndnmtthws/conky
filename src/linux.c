@@ -1996,6 +1996,9 @@ void get_powerbook_batt_info(char *buffer, size_t n, int i)
 
 	if (pmu_battery_fp == NULL) {
 		pmu_battery_fp = open_file(batt_path, &rep);
+		if (pmu_battery_fp == NULL) {
+			return;
+		}
 	}
 
 	if (pmu_battery_fp != NULL) {
@@ -2020,6 +2023,9 @@ void get_powerbook_batt_info(char *buffer, size_t n, int i)
 	}
 	if (pmu_info_fp == NULL) {
 		pmu_info_fp = open_file(info_path, &rep);
+		if (pmu_info_fp == NULL) {
+			return;
+		}
 	}
 
 	if (pmu_info_fp != NULL) {
@@ -2037,19 +2043,24 @@ void get_powerbook_batt_info(char *buffer, size_t n, int i)
 	}
 	/* update status string */
 	if ((ac && !(flags & PMU_BATT_PRESENT))) {
-		strcpy(pb_battery_info[PB_BATT_STATUS], "AC");
+		strncpy(pb_battery_info[PB_BATT_STATUS], "AC", sizeof(pb_battery_info[PB_BATT_STATUS]));
 	} else if (ac && (flags & PMU_BATT_PRESENT)
 			&& !(flags & PMU_BATT_CHARGING)) {
-		strcpy(pb_battery_info[PB_BATT_STATUS], "charged");
+		strncpy(pb_battery_info[PB_BATT_STATUS], "charged", sizeof(pb_battery_info[PB_BATT_STATUS]));
 	} else if ((flags & PMU_BATT_PRESENT) && (flags & PMU_BATT_CHARGING)) {
-		strcpy(pb_battery_info[PB_BATT_STATUS], "charging");
+		strncpy(pb_battery_info[PB_BATT_STATUS], "charging", sizeof(pb_battery_info[PB_BATT_STATUS]));
 	} else {
-		strcpy(pb_battery_info[PB_BATT_STATUS], "discharging");
+		strncpy(pb_battery_info[PB_BATT_STATUS], "discharging", sizeof(pb_battery_info[PB_BATT_STATUS]));
 	}
 
 	/* update percentage string */
-	if (timeval == 0) {
-		pb_battery_info[PB_BATT_PERCENT][0] = 0;
+	if (timeval == 0 && ac && (flags & PMU_BATT_PRESENT)
+			&& !(flags & PMU_BATT_CHARGING)) {
+		snprintf(pb_battery_info[PB_BATT_PERCENT],
+			sizeof(pb_battery_info[PB_BATT_PERCENT]), "100%%");
+	} else if (timeval == 0) {
+		snprintf(pb_battery_info[PB_BATT_PERCENT],
+			sizeof(pb_battery_info[PB_BATT_PERCENT]), "unknown");
 	} else {
 		snprintf(pb_battery_info[PB_BATT_PERCENT],
 			sizeof(pb_battery_info[PB_BATT_PERCENT]), "%d%%",
@@ -2058,7 +2069,8 @@ void get_powerbook_batt_info(char *buffer, size_t n, int i)
 
 	/* update time string */
 	if (timeval == 0) {			/* fully charged or battery not present */
-		pb_battery_info[PB_BATT_TIME][0] = 0;
+		snprintf(pb_battery_info[PB_BATT_TIME],
+			sizeof(pb_battery_info[PB_BATT_TIME]), "unknown");
 	} else if (timeval < 60 * 60) {	/* don't show secs */
 		format_seconds_short(pb_battery_info[PB_BATT_TIME],
 			sizeof(pb_battery_info[PB_BATT_TIME]), timeval);
