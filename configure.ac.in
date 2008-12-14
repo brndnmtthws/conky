@@ -716,4 +716,5 @@ $PACKAGE $VERSION configured successfully:
   SMAPI:            $want_smapi
   nvidia:           $want_nvidia
   eve-online:       $want_eve
+  config-output:    $want_config_output
 EOF
