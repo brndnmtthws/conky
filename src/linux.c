@@ -2337,7 +2337,10 @@ const char *get_disk_protect_queue(const char *disk)
 	char path[128];
 	int state;
 
-	snprintf(path, 127, "/sys/block/%s/queue/protect", disk);
+	snprintf(path, 127, "/sys/block/%s/device/unload_heads", disk);
+	if (access(path, F_OK)) {
+		snprintf(path, 127, "/sys/block/%s/queue/protect", disk);
+	}
 	if ((fp = fopen(path, "r")) == NULL)
 		return "n/a   ";
 	if (fscanf(fp, "%d\n", &state) != 1) {
@@ -2345,6 +2348,6 @@ const char *get_disk_protect_queue(const char *disk)
 		return "failed";
 	}
 	fclose(fp);
-	return state ? "frozen" : "free  ";
+	return (state > 0) ? "frozen" : "free  ";
 }
 
