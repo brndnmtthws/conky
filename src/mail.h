@@ -1,5 +1,5 @@
-#ifndef MAIL_H_
-#define MAIL_H_
+#ifndef _MAIL_H_
+#define _MAIL_H_
 
 extern char *current_mail_spool;
 
@@ -14,4 +14,11 @@ struct local_mail_s {
 
 void update_mail_count(struct local_mail_s *);
 
-#endif /*MAIL_H_*/
+#define POP3_TYPE 1
+#define IMAP_TYPE 2
+
+struct mail_s *parse_mail_args(char type, const char *arg);
+void *imap_thread(void *arg);
+void *pop3_thread(void *arg);
+
+#endif /* _MAIL_H_ */
