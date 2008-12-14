@@ -40,7 +40,8 @@ EXTRA_DIST = 					\
 	extras/nano/conky.nanorc		\
 	extras/vim/README			\
 	extras/vim/ftdetect/conkyrc.vim		\
-	extras/vim/syntax/conkyrc.vim
+	extras/vim/syntax/conkyrc.vim		\
+	text2c.sh
 
 ACLOCAL_AMFLAGS = -I m4
 
