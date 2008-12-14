@@ -60,6 +60,9 @@
 
 #ifdef CONFIG_OUTPUT
 #include "defconfig.h"
+#ifdef HAVE_FOPENCOOKIE
+#include "conf_cookie.h"
+#endif
 #endif
 
 #include "build.h"
@@ -7761,10 +7764,19 @@ static void load_config_file(const char *f)
 	FILE *fp;
 
 	set_default_configurations();
-	fp = fopen(f, "r");
+#ifdef CONFIG_OUTPUT
+	if (!strcmp(f, "==builtin==")) {
+#ifdef HAVE_FOPENCOOKIE
+		fp = fopencookie(NULL, "r", conf_cookie);
+#endif
+	} else
+#endif /* CONFIG_OUTPUT */
+		fp = fopen(f, "r");
+
 	if (!fp) {
 		return;
 	}
+	DBGP("reading contents from config file '%s'", f);
 
 	while (!feof(fp)) {
 		char buf[256], *p, *p2, *name, *value;
@@ -8649,7 +8661,13 @@ int main(int argc, char **argv)
 
 		/* No readable config found */
 		if (!current_config) {
+#ifdef CONFIG_OUTPUT
+			current_config = strdup("==builtin==");
+			ERR("no readable personal or system-wide config file found,"
+					" using builtin default");
+#else
 			CRIT_ERR("no readable personal or system-wide config file found");
+#endif /* ! CONF_OUTPUT */
 		}
 	}
 
