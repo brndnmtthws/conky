@@ -3341,13 +3341,25 @@ static struct text_object *construct_text_object(const char *s,
 #endif /* SMAPI */
 #ifdef MPD
 	END OBJ_THREAD(mpd_artist, INFO_MPD)
+		if (arg) {
+			sscanf(arg, "%d", &obj->data.i);
+			if (obj->data.i > 0) {
+				obj->data.i++;
+			} else {
+				ERR("mpd_artist: invalid length argument");
+				obj->data.i = 0;
+			}
+		} else {
+			obj->data.i = 0;
+		}
 	END OBJ_THREAD(mpd_title, INFO_MPD)
 		if (arg) {
 			sscanf(arg, "%d", &obj->data.i);
 			if (obj->data.i > 0) {
 				obj->data.i++;
 			} else {
-				CRIT_ERR("mpd_title: invalid length argument");
+				ERR("mpd_title: invalid length argument");
+				obj->data.i = 0;
 			}
 		} else {
 			obj->data.i = 0;
@@ -3357,10 +3369,54 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ_THREAD(mpd_elapsed, INFO_MPD)
 	END OBJ_THREAD(mpd_length, INFO_MPD)
 	END OBJ_THREAD(mpd_track, INFO_MPD)
+		if (arg) {
+			sscanf(arg, "%d", &obj->data.i);
+			if (obj->data.i > 0) {
+				obj->data.i++;
+			} else {
+				ERR("mpd_track: invalid length argument");
+				obj->data.i = 0;
+			}
+		} else {
+			obj->data.i = 0;
+		}
 	END OBJ_THREAD(mpd_name, INFO_MPD)
+		if (arg) {
+			sscanf(arg, "%d", &obj->data.i);
+			if (obj->data.i > 0) {
+				obj->data.i++;
+			} else {
+				ERR("mpd_name: invalid length argument");
+				obj->data.i = 0;
+			}
+		} else {
+			obj->data.i = 0;
+		}
 	END OBJ_THREAD(mpd_file, INFO_MPD)
+		if (arg) {
+			sscanf(arg, "%d", &obj->data.i);
+			if (obj->data.i > 0) {
+				obj->data.i++;
+			} else {
+				ERR("mpd_file: invalid length argument");
+				obj->data.i = 0;
+			}
+		} else {
+			obj->data.i = 0;
+		}
 	END OBJ_THREAD(mpd_percent, INFO_MPD)
 	END OBJ_THREAD(mpd_album, INFO_MPD)
+		if (arg) {
+			sscanf(arg, "%d", &obj->data.i);
+			if (obj->data.i > 0) {
+				obj->data.i++;
+			} else {
+				ERR("mpd_album: invalid length argument");
+				obj->data.i = 0;
+			}
+		} else {
+			obj->data.i = 0;
+		}
 	END OBJ_THREAD(mpd_vol, INFO_MPD)
 	END OBJ_THREAD(mpd_bitrate, INFO_MPD)
 	END OBJ_THREAD(mpd_status, INFO_MPD)
@@ -3372,7 +3428,8 @@ static struct text_object *construct_text_object(const char *s,
 			if (obj->data.i > 0) {
 				obj->data.i++;
 			} else {
-				CRIT_ERR("mpd_smart: invalid length argument");
+				ERR("mpd_smart: invalid length argument");
+				obj->data.i = 0;
 			}
 		} else {
 			obj->data.i = 0;
@@ -5378,10 +5435,16 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, len, "%s", cur->mpd.title);
 			}
 			OBJ(mpd_artist) {
-				snprintf(p, p_max_size, "%s", cur->mpd.artist);
+				int len = obj->data.i;
+				if (len == 0 || len > p_max_size)
+					len = p_max_size;
+				snprintf(p, len, "%s", cur->mpd.artist);
 			}
 			OBJ(mpd_album) {
-				snprintf(p, p_max_size, "%s", cur->mpd.album);
+				int len = obj->data.i;
+				if (len == 0 || len > p_max_size)
+					len = p_max_size;
+				snprintf(p, len, "%s", cur->mpd.album);
 			}
 			OBJ(mpd_random) {
 				snprintf(p, p_max_size, "%s", cur->mpd.random);
@@ -5390,13 +5453,22 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%s", cur->mpd.repeat);
 			}
 			OBJ(mpd_track) {
-				snprintf(p, p_max_size, "%s", cur->mpd.track);
+				int len = obj->data.i;
+				if (len == 0 || len > p_max_size)
+					len = p_max_size;
+				snprintf(p, len, "%s", cur->mpd.track);
 			}
 			OBJ(mpd_name) {
-				snprintf(p, p_max_size, "%s", cur->mpd.name);
+				int len = obj->data.i;
+				if (len == 0 || len > p_max_size)
+					len = p_max_size;
+				snprintf(p, len, "%s", cur->mpd.name);
 			}
 			OBJ(mpd_file) {
-				snprintf(p, p_max_size, "%s", cur->mpd.file);
+				int len = obj->data.i;
+				if (len == 0 || len > p_max_size)
+					len = p_max_size;
+				snprintf(p, len, "%s", cur->mpd.file);
 			}
 			OBJ(mpd_vol) {
 				snprintf(p, p_max_size, "%i", cur->mpd.volume);

@@ -1,3 +1,6 @@
+2008-12-15
+	* Have a maximum width for all variable length mpd vars
+
 2008-12-14
 	* Fix disk_protect for linux-2.6.27 (and hopefully above)
 
