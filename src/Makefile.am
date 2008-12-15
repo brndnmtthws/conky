@@ -29,6 +29,9 @@ bin_PROGRAMS = conky
 
 if BUILD_CONFIG_OUTPUT
 config_output = defconfig.h
+if BUILD_FOR_FOPENCOOKIE
+config_cookie = conf_cookie.c conf_cookie.h
+endif
 conky_DEPENDENCIES = $(config_output)
 BUILT_SOURCES = $(config_output)
 CLEANFILES = $(config_output)
@@ -110,6 +113,7 @@ endif
 
 conky_SOURCES = 		\
 	$(config_output)        \
+	$(config_cookie)        \
 	$(audacious)            \
 	$(bmpx)                 \
 	common.c 		\
@@ -146,6 +150,7 @@ conky_LDFLAGS = 				\
 
 EXTRA_DIST = 			\
 	$(config_output)        \
+	$(config_cookie)        \
 	audacious.c		\
 	audacious.h		\
 	bmpx.c			\

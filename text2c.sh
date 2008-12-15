@@ -23,9 +23,9 @@
 # $2: output file
 # $3: name of variable
 #
-# The output will be a char **, with each field containing a single line of $1
-# additionally, a macro with the name print_$3 will be defined, with acts as
-# a parameter-less function, printing the text to stdout
+# The output will be a char **, with each field containing a single line of $1.
+# Additionally, a macro with the name print_$3 will be defined, with acts as
+# a parameter-less function, printing the text to stdout.
 
 [ $# -eq 3 ] || {
 	echo "Usage: `basename $0` <inputfile> <outputfile> <variablename>"
@@ -37,14 +37,14 @@ outupper="`basename "$2" | tr '[a-z-.]' '[A-Z__]'`"
 (
 	printf "#ifndef __%s\n" "$outupper"
 	printf "#define __%s\n" "$outupper"
-	printf "const char *%s[] = {\n" "$3"
-	sed -e 's/"/\\"/g' -e 's/^/"/' -e 's/$/",/' $1
-	printf "NULL };\n"
-	printf "#define print_%s() { \\" $3
-	printf "\n\tconst char **__s = %s; \\" $3
-	printf "\n\tfor (; *__s; __s++) \\"
-	printf "\n\t\tputs(*__s); \\"
-	printf "\n}\n"
+	printf "\n#define %s { \\" $3
+	printf "\n"
+	sed -e 's/"/\\"/g' -e 's/^/"/' -e 's/$/\\n", \\/' $1
+	printf "NULL }\n"
+	printf "\n#define print_%s() { \\" $3
+	printf "\n\tconst char **__sp, *__s[] = %s; \\" $3
+	printf "\n\tfor (__sp = __s; *__sp; __sp++) \\"
+	printf "\n\t\tprintf(\"%s\", *__sp); \\" "%s"
+	printf "\n}\n\n"
 	printf "#endif /* __%s */\n" "$outupper"
 ) > $2
-
