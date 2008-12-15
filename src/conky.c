@@ -5110,24 +5110,16 @@ static void generate_text_internal(char *p, int p_max_size,
 				free(tmp_info);
 			}
 			OBJ(if_existing) {
-				struct stat tmp;
-
-				if ((obj->data.ifblock.s)
-						&& (stat(obj->data.ifblock.s, &tmp) == -1)) {
+				if_jumped = 0;
+				if (obj->data.ifblock.str
+				    && !check_contains(obj->data.ifblock.s,
+				                       obj->data.ifblock.str)) {
 					i = obj->data.ifblock.pos;
 					if_jumped = 1;
-				} else {
-					if (obj->data.ifblock.str) {
-						if (!check_contains(obj->data.ifblock.s,
-								obj->data.ifblock.str)) {
-							i = obj->data.ifblock.pos;
-							if_jumped = 1;
-						} else {
-							if_jumped = 0;
-						}
-					} else {
-						if_jumped = 0;
-					}
+				} else if (obj->data.ifblock.s
+				           && access(obj->data.ifblock.s, F_OK)) {
+					i = obj->data.ifblock.pos;
+					if_jumped = 1;
 				}
 			}
 			OBJ(if_mounted) {
