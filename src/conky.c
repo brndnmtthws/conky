@@ -1097,97 +1097,8 @@ static void human_readable(long long num, char *buf, int size, const char *func_
 	} while (len >= (short_units ? SHORT_WIDTH : WIDTH) || len >= size);
 }
 
-/* text_object_list
- *
- * this list is special. it looks like this:
- *  NULL <-- obj1 <--> obj2 <--> ... <--> objN --> NULL
- *            ^-------root_object----------^
- *             directions are reversed here
- *
- * why this is cool:
- * - root_object points both to the start and end of the list
- * - while traversing, the end of the list is always a NULL pointer
- *   (this works in BOTH directions)
- */
+/* global object list root element */
 static struct text_object global_root_object;
-
-static int append_object(struct text_object *root, struct text_object *obj)
-{
-	struct text_object *end;
-
-	end = root->prev;
-	obj->prev = end;
-	obj->next = NULL;
-
-	if (end) {
-		if (end->next)
-			CRIT_ERR("huston, we have a lift-off");
-		end->next = obj;
-	} else {
-		root->next = obj;
-	}
-	root->prev = obj;
-	return 0;
-}
-
-/* ifblock handlers for the object list
- *
- * - each if points to it's else or endif
- * - each else points to it's endif
- */
-enum ifblock_type {
-	IFBLOCK_IF = 1,
-	IFBLOCK_ELSE,
-	IFBLOCK_ENDIF,
-};
-struct ifblock_stack_obj {
-	enum ifblock_type type;
-	struct text_object *obj;
-	struct ifblock_stack_obj *next;
-};
-static struct ifblock_stack_obj *ifblock_stack_top = NULL;
-
-static int push_ifblock(struct text_object *obj, enum ifblock_type type)
-{
-	struct ifblock_stack_obj *stackobj;
-
-	switch (type) {
-		case IFBLOCK_ENDIF:
-			if (!ifblock_stack_top)
-				CRIT_ERR("got an endif without matching if");
-			ifblock_stack_top->obj->data.ifblock.next = obj;
-			/* if there's some else in between, remove and free it */
-			if (ifblock_stack_top->type == IFBLOCK_ELSE) {
-				stackobj = ifblock_stack_top;
-				ifblock_stack_top = stackobj->next;
-				free(stackobj);
-			}
-			/* finally remove and free the if object */
-			stackobj = ifblock_stack_top;
-			ifblock_stack_top = stackobj->next;
-			free(stackobj);
-			break;
-		case IFBLOCK_ELSE:
-			if (!ifblock_stack_top)
-				CRIT_ERR("got an else without matching if");
-			ifblock_stack_top->obj->data.ifblock.next = obj;
-			/* fall through */
-		case IFBLOCK_IF:
-			stackobj = malloc(sizeof(struct ifblock_stack_obj));
-			stackobj->type = type;
-			stackobj->obj = obj;
-			stackobj->next = ifblock_stack_top;
-			ifblock_stack_top = stackobj;
-			break;
-		default:
-			CRIT_ERR("push_ifblock() missuse detected!");
-	}
-	return 0;
-}
-static int obj_be_ifblock_if(struct text_object *obj)
-{
-	return push_ifblock(obj, IFBLOCK_IF);
-}
 
 static void generate_text_internal(char *p, int p_max_size,
 	struct text_object text_object, struct information *cur);
@@ -2024,9 +1935,9 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.net = get_net_stat(buf);
 		free(buf);
 	END OBJ(else, 0)
-		push_ifblock(obj, IFBLOCK_ELSE);
+		obj_be_ifblock_else(obj);
 	END OBJ(endif, 0)
-		push_ifblock(obj, IFBLOCK_ENDIF);
+		obj_be_ifblock_endif(obj);
 	END OBJ(image, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 #ifdef HAVE_POPEN
@@ -3511,7 +3422,7 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 		append_object(retval, obj);
 	}
 
-	if (ifblock_stack_top) {
+	if (!ifblock_stack_empty()) {
 		ERR("one or more $endif's are missing");
 	}
 

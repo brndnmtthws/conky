@@ -482,4 +482,13 @@ struct text_object {
 	char global_mode;
 };
 
+/* text object list helpers */
+int append_object(struct text_object *root, struct text_object *obj);
+
+/* ifblock helpers */
+int obj_be_ifblock_if(struct text_object *);
+int obj_be_ifblock_else(struct text_object *);
+int obj_be_ifblock_endif(struct text_object *);
+int ifblock_stack_empty(void);
+
 #endif /* _TEXT_OBJECT_H */

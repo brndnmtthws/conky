@@ -143,7 +143,8 @@ conky_SOURCES = 		\
 	$(smapi)                \
 	temphelper.c            \
 	temphelper.h            \
-	text_object.h
+	text_object.h           \
+	text_object.c
 
 conky_LDFLAGS = 				\
 	$(PTHREAD_LIBS)				\
