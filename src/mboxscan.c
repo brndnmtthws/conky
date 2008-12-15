@@ -26,6 +26,8 @@
  */
 
 #include "conky.h"
+#include "logging.h"
+#include "mail.h"
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <errno.h>

@@ -25,8 +25,10 @@
  *
  */
 
+#include "config.h"
 #include "text_object.h"
 #include "conky.h"
+#include "common.h"
 #include <stdarg.h>
 #include <math.h>
 #include <ctype.h>
@@ -40,6 +42,7 @@
 #endif
 #include <sys/time.h>
 #ifdef X11
+#include "x11.h"
 #include <X11/Xutil.h>
 #ifdef HAVE_XDAMAGE
 #include <X11/extensions/Xdamage.h>
@@ -55,6 +58,35 @@
 #include <fcntl.h>
 #include <getopt.h>
 
+/* local headers */
+#include "build.h"
+#include "diskio.h"
+#include "fs.h"
+#include "logging.h"
+#include "mixer.h"
+#include "mail.h"
+#include "mboxscan.h"
+#include "temphelper.h"
+#include "top.h"
+
+/* check for OS and include appropriate headers */
+#if defined(__linux__)
+#include "linux.h"
+#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#include "freebsd.h"
+#elif defined(__OpenBSD__)
+#include "openbsd.h"
+#endif
+
+/* FIXME: apm_getinfo is unused here. maybe it's meant for common.c */
+#if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) \
+		|| defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
+int apm_getinfo(int fd, apm_info_t aip);
+char *get_apm_adapter(void);
+char *get_apm_battery_life(void);
+char *get_apm_battery_time(void);
+#endif
+
 #ifdef HAVE_ICONV
 #include <iconv.h>
 #endif
@@ -65,10 +97,6 @@
 #include "conf_cookie.h"
 #endif
 #endif
-
-#include "build.h"
-
-#include "temphelper.h"
 
 #ifndef S_ISSOCK
 #define S_ISSOCK(x)   ((x & S_IFMT) == S_IFSOCK)
@@ -81,10 +109,30 @@
 //#define SIGNAL_BLOCKING
 #undef SIGNAL_BLOCKING
 
-/* debugging level */
+/* debugging level, used by logging.h */
 int global_debug_level = 0;
 
+/* two strings for internal use */
+static char *tmpstring1, *tmpstring2;
+
+/* variables holding various config settings */
+int short_units;
+int cpu_separate;
+static int use_spacer;
+int top_cpu, top_mem;
+#define TO_X 1
+#define TO_STDOUT 2
+static int output_methods;
+static volatile int g_signal_pending;
+/* Update interval */
+static double update_interval;
+
+
+/* prototypes for internally used functions */
+static void signal_handler(int);
 static void print_version(void) __attribute__((noreturn));
+static void reload_config(void);
+static void clean_up(void);
 
 static void print_version(void)
 {
@@ -338,6 +386,10 @@ static void load_fonts(void)
 }
 
 #endif /* X11 */
+
+/* struct that has all info to be shared between
+ * instances of the same text object */
+struct information info;
 
 /* default config file */
 static char *current_config;
@@ -6931,7 +6983,7 @@ static void main_loop(void)
 static void load_config_file(const char *);
 
 /* reload the config file */
-void reload_config(void)
+static void reload_config(void)
 {
 	timed_thread_destroy_registered_threads();
 
@@ -7034,7 +7086,7 @@ void reload_config(void)
 	}
 }
 
-void clean_up(void)
+static void clean_up(void)
 {
 	timed_thread_destroy_registered_threads();
 
@@ -8399,7 +8451,7 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-void signal_handler(int sig)
+static void signal_handler(int sig)
 {
 	/* signal handler is light as a feather, as it should be.
 	 * we will poll g_signal_pending with each loop of conky

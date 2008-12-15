@@ -25,7 +25,7 @@
  *
  */
 #include "text_object.h"
-#include "conky.h"	/* not as worse: only for the printing macros */
+#include "logging.h"
 
 /* text_object_list
  *

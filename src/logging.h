@@ -6,6 +6,7 @@
  *
  * Please see COPYING for details
  *
+ * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
  * Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
@@ -23,61 +24,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+#ifndef _LOGGING_H
+#define _LOGGING_H
 
-/* doesn't work, feel free to finish this */
-#include "conky.h"
-#include "common.h"
-#include <kstat.h>
+#define ERR(...) { \
+	fprintf(stderr, PACKAGE_NAME": "); \
+	fprintf(stderr, __VA_ARGS__); \
+	fprintf(stderr, "\n"); \
+}
 
-static kstat_ctl_t *kstat;
-static int kstat_updated;
+/* critical error */
+#define CRIT_ERR(...) \
+	{ ERR(__VA_ARGS__); exit(EXIT_FAILURE); }
 
-static void update_kstat()
-{
-	if (kstat == NULL) {
-		kstat = kstat_open();
-		if (kstat == NULL) {
-			ERR("can't open kstat: %s", strerror(errno));
-		}
+/* debugging output */
+extern int global_debug_level;
+#define __DBGP(level, ...) \
+	if (global_debug_level > level) { \
+		fprintf(stderr, "DEBUG(%d) [" __FILE__ ":%d]: ", level, __LINE__); \
+		fprintf(stderr, __VA_ARGS__); \
+		fprintf(stderr, "\n"); \
 	}
+#define DBGP(...) __DBGP(0, __VA_ARGS__)
+#define DBGP2(...) __DBGP(1, __VA_ARGS__)
 
-	if (kstat_chain_update(kstat) == -1) {
-		perror("kstat_chain_update");
-		return;
-	}
-}
-
-void prepare_update()
-{
-	kstat_updated = 0;
-}
-
-double get_uptime()
-{
-	kstat_t *ksp;
-
-	update_kstat();
-
-	ksp = kstat_lookup(kstat, "unix", -1, "system_misc");
-	if (ksp != NULL) {
-		if (kstat_read(kstat, ksp, NULL) >= 0) {
-			kstat_named_t *knp;
-
-			knp = (kstat_named_t *) kstat_data_lookup(ksp, "boot_time");
-			if (knp != NULL) {
-				return get_time() - (double) knp->value.ui32;
-			}
-		}
-	}
-}
-
-void update_meminfo()
-{
-	/* TODO */
-}
-
-int check_mount(char *s)
-{
-	/* stub */
-	return 0;
-}
+#endif /* _LOGGING_H */

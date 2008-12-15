@@ -26,6 +26,7 @@
  */
 
 #include "conky.h"
+#include "logging.h"
 #include "prss.h"
 #include <time.h>
 #include <assert.h>

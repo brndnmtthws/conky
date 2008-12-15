@@ -123,6 +123,7 @@ conky_SOURCES = 		\
 	fs.c 			\
 	$(hddtemp)		\
 	$(linux) 		\
+	logging.h               \
 	$(nvidia)		\
 	mail.c 			\
 	mixer.c 		\

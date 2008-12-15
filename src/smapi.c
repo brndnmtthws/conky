@@ -18,8 +18,15 @@
  * USA.
  *
  */
-
+#define _GNU_SOURCE
+#include "conky.h"	/* text_buffer_size, PACKAGE_NAME, maybe more */
 #include "smapi.h"
+#include "logging.h"
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #define SYS_SMAPI_PATH "/sys/devices/platform/smapi"
 

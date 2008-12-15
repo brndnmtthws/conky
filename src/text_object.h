@@ -35,6 +35,7 @@
 #endif
 
 #include "mail.h"		/* local_mail_s */
+#include "fs.h"			/* struct fs_stat */
 
 #ifdef NVIDIA
 #include "nvidia.h"		/* nvidia_s */

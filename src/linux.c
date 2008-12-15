@@ -27,6 +27,9 @@
  */
 
 #include "conky.h"
+#include "logging.h"
+#include "common.h"
+#include "linux.h"
 #include <dirent.h>
 #include <ctype.h>
 #include <errno.h>

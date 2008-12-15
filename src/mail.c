@@ -25,14 +25,31 @@
  *
  */
 
+#include "config.h"
 #include "conky.h"
+#include "common.h"
+#include "logging.h"
+#include "mail.h"
 
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <netdb.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 
 #include <dirent.h>
 #include <errno.h>
 #include <termios.h>
+
+/* MAX() is defined by a header included from conky.h
+ * maybe once this is not true anymore, so have an alternative
+ * waiting to drop in.
+ *
+ * #define MAX(a, b)  ((a > b) ? a : b)
+ */
 
 char *current_mail_spool;
 

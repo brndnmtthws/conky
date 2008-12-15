@@ -26,6 +26,7 @@
  */
 
 #include "conky.h"
+#include "logging.h"
 #include <sys/ioctl.h>
 #include <errno.h>
 #include <fcntl.h>

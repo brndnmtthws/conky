@@ -19,6 +19,7 @@
  */
 
 #include "conky.h"
+#include "logging.h"
 #include "moc.h"
 
 #include <stdio.h>
