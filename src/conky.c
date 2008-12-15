@@ -1612,46 +1612,47 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 		return;
 	}
 
+#define data obj->data
 	for (i = 0; i < text_object_list->text_object_count; i++) {
 		obj = &text_object_list->text_objects[i];
 		switch (obj->type) {
 #ifndef __OpenBSD__
 			case OBJ_acpitemp:
-				close(obj->data.i);
+				close(data.i);
 				break;
 			case OBJ_i2c:
 			case OBJ_platform:
 			case OBJ_hwmon:
-				close(obj->data.sysfs.fd);
+				close(data.sysfs.fd);
 				break;
 #endif /* !__OpenBSD__ */
 			case OBJ_time:
 			case OBJ_utime:
-				free(obj->data.s);
+				free(data.s);
 				break;
 			case OBJ_tztime:
-				free(obj->data.tztime.tz);
-				free(obj->data.tztime.fmt);
+				free(data.tztime.tz);
+				free(data.tztime.fmt);
 				break;
 			case OBJ_mboxscan:
-				free(obj->data.mboxscan.args);
-				free(obj->data.mboxscan.output);
+				free(data.mboxscan.args);
+				free(data.mboxscan.output);
 				break;
 			case OBJ_mails:
 			case OBJ_new_mails:
-				free(obj->data.local_mail.box);
+				free(data.local_mail.box);
 				break;
 			case OBJ_imap:
 				free(info.mail);
 				break;
 			case OBJ_imap_unseen:
 				if (!obj->global_mode) {
-					free(obj->data.mail);
+					free(data.mail);
 				}
 				break;
 			case OBJ_imap_messages:
 				if (!obj->global_mode) {
-					free(obj->data.mail);
+					free(data.mail);
 				}
 				break;
 			case OBJ_pop3:
@@ -1659,24 +1660,24 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 				break;
 			case OBJ_pop3_unseen:
 				if (!obj->global_mode) {
-					free(obj->data.mail);
+					free(data.mail);
 				}
 				break;
 			case OBJ_pop3_used:
 				if (!obj->global_mode) {
-					free(obj->data.mail);
+					free(data.mail);
 				}
 				break;
 			case OBJ_if_empty:
 			case OBJ_if_existing:
 			case OBJ_if_mounted:
 			case OBJ_if_running:
-				free(obj->data.ifblock.s);
-				free(obj->data.ifblock.str);
+				free(data.ifblock.s);
+				free(data.ifblock.str);
 				break;
 			case OBJ_tail:
-				free(obj->data.tail.logfile);
-				free(obj->data.tail.buffer);
+				free(data.tail.logfile);
+				free(data.tail.buffer);
 				break;
 			case OBJ_text:
 			case OBJ_font:
@@ -1685,7 +1686,7 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 			case OBJ_execbar:
 			case OBJ_execgraph:
 			case OBJ_execp:
-				free(obj->data.s);
+				free(data.s);
 				break;
 #ifdef HAVE_ICONV
 			case OBJ_iconv_start:
@@ -1804,30 +1805,30 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 #endif
 #ifdef RSS
 			case OBJ_rss:
-				free(obj->data.rss.uri);
-				free(obj->data.rss.action);
+				free(data.rss.uri);
+				free(data.rss.action);
 				break;
 #endif
 			case OBJ_pre_exec:
 				break;
 #ifndef __OpenBSD__
 			case OBJ_battery:
-				free(obj->data.s);
+				free(data.s);
 				break;
 			case OBJ_battery_time:
-				free(obj->data.s);
+				free(data.s);
 				break;
 #endif /* !__OpenBSD__ */
 			case OBJ_execpi:
 			case OBJ_execi:
 			case OBJ_execibar:
 			case OBJ_execigraph:
-				free(obj->data.execi.cmd);
-				free(obj->data.execi.buffer);
+				free(data.execi.cmd);
+				free(data.execi.buffer);
 				break;
 			case OBJ_texeci:
-				free(obj->data.texeci.cmd);
-				free(obj->data.texeci.buffer);
+				free(data.texeci.cmd);
+				free(data.texeci.buffer);
 				break;
 			case OBJ_nameserver:
 				free_dns_data();
@@ -1841,10 +1842,10 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 				break;
 #ifdef HDDTEMP
 			case OBJ_hddtemp:
-				free(obj->data.hddtemp.dev);
-				free(obj->data.hddtemp.addr);
-				if (obj->data.hddtemp.temp)
-					free(obj->data.hddtemp.temp);
+				free(data.hddtemp.dev);
+				free(data.hddtemp.addr);
+				if (data.hddtemp.temp)
+					free(data.hddtemp.temp);
 				break;
 #endif
 			case OBJ_entropy_avail:
@@ -1874,11 +1875,11 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 			case OBJ_smapi_bat_perc:
 			case OBJ_smapi_bat_temp:
 			case OBJ_smapi_bat_power:
-				free(obj->data.s);
+				free(data.s);
 				break;
 			case OBJ_if_smapi_bat_installed:
-				free(obj->data.ifblock.s);
-				free(obj->data.ifblock.str);
+				free(data.ifblock.s);
+				free(data.ifblock.str);
 				break;
 #endif
 #ifdef NVIDIA
@@ -1927,10 +1928,11 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
       break;
 #endif
 			case OBJ_scroll:
-				free(obj->data.scroll.text);
+				free(data.scroll.text);
 				break;
 		}
 	}
+#undef data
 	if (full) {} // disable warning when MPD !defined
 	free(text_object_list->text_objects);
 	text_object_list->text_objects = NULL;
