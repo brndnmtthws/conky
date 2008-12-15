@@ -460,11 +460,6 @@ long global_text_lines;
 
 static int total_updates;
 
-/* if-blocks */
-static int blockdepth = 0;
-static int if_jumped = 0;
-static int blockstart[MAX_IF_BLOCK_DEPTH];
-
 int check_contains(char *f, char *s)
 {
 	int ret = 0;
@@ -1414,6 +1409,7 @@ enum text_object_type {
 };
 
 struct text_object {
+	struct text_object *next, *prev;	/* doubly linked list of text objects */
 	union {
 		char *s;		/* some string */
 		int i;			/* some integer */
@@ -1454,7 +1450,7 @@ struct text_object {
 		} sysfs;		/* 2 */
 
 		struct {
-			int pos;
+			struct text_object *next;
 			char *s;
 			char *str;
 		} ifblock;
@@ -1544,16 +1540,100 @@ struct text_object {
 	char global_mode;
 };
 
-struct text_object_list {
-	unsigned int text_object_count;
-	struct text_object *text_objects;
-};
+/* text_object_list
+ *
+ * this list is special. it looks like this:
+ *  NULL <-- obj1 <--> obj2 <--> ... <--> objN --> NULL
+ *            ^-------root_object----------^
+ *             directions are reversed here
+ *
+ * why this is cool:
+ * - root_object points both to the start and end of the list
+ * - while traversing, the end of the list is always a NULL pointer
+ *   (this works in BOTH directions)
+ */
+static struct text_object global_root_object;
 
-static struct text_object_list *global_text_object_list;
+static int append_object(struct text_object *root, struct text_object *obj)
+{
+	struct text_object *end;
+
+	end = root->prev;
+	obj->prev = end;
+	obj->next = NULL;
+
+	if (end) {
+		if (end->next)
+			CRIT_ERR("huston, we have a lift-off");
+		end->next = obj;
+	} else {
+		root->next = obj;
+	}
+	root->prev = obj;
+	return 0;
+}
+
+/* ifblock handlers for the object list
+ *
+ * - each if points to it's else or endif
+ * - each else points to it's endif
+ */
+enum ifblock_type {
+	IFBLOCK_IF = 1,
+	IFBLOCK_ELSE,
+	IFBLOCK_ENDIF,
+};
+struct ifblock_stack_obj {
+	enum ifblock_type type;
+	struct text_object *obj;
+	struct ifblock_stack_obj *next;
+};
+static struct ifblock_stack_obj *ifblock_stack_top = NULL;
+
+static int push_ifblock(struct text_object *obj, enum ifblock_type type)
+{
+	struct ifblock_stack_obj *stackobj;
+
+	switch (type) {
+		case IFBLOCK_ENDIF:
+			if (!ifblock_stack_top)
+				CRIT_ERR("got an endif without matching if");
+			ifblock_stack_top->obj->data.ifblock.next = obj;
+			/* if there's some else in between, remove and free it */
+			if (ifblock_stack_top->type == IFBLOCK_ELSE) {
+				stackobj = ifblock_stack_top;
+				ifblock_stack_top = stackobj->next;
+				free(stackobj);
+			}
+			/* finally remove and free the if object */
+			stackobj = ifblock_stack_top;
+			ifblock_stack_top = stackobj->next;
+			free(stackobj);
+			break;
+		case IFBLOCK_ELSE:
+			if (!ifblock_stack_top)
+				CRIT_ERR("got an else without matching if");
+			ifblock_stack_top->obj->data.ifblock.next = obj;
+			/* fall through */
+		case IFBLOCK_IF:
+			stackobj = malloc(sizeof(struct ifblock_stack_obj));
+			stackobj->type = type;
+			stackobj->obj = obj;
+			stackobj->next = ifblock_stack_top;
+			ifblock_stack_top = stackobj;
+			break;
+		default:
+			CRIT_ERR("push_ifblock() missuse detected!");
+	}
+	return 0;
+}
+static int obj_be_ifblock_if(struct text_object *obj)
+{
+	return push_ifblock(obj, IFBLOCK_IF);
+}
 
 static void generate_text_internal(char *p, int p_max_size,
-	struct text_object_list *text_object_list,
-	struct information *cur);
+	struct text_object text_object, struct information *cur);
 
 static inline void read_exec(const char *data, char *buf, const int size)
 {
@@ -1603,18 +1683,17 @@ static struct text_object *new_text_object_internal(void)
 /*
  * call with full == 0 when freeing after 'internal' evaluation of objects
  */
-static void free_text_objects(struct text_object_list *text_object_list, char full)
+static void free_text_objects(struct text_object *root, char full)
 {
-	unsigned int i;
 	struct text_object *obj;
 
-	if (text_object_list == NULL) {
+	if (!root->prev) {
 		return;
 	}
 
 #define data obj->data
-	for (i = 0; i < text_object_list->text_object_count; i++) {
-		obj = &text_object_list->text_objects[i];
+	for (obj = root->prev; obj; obj = root->prev) {
+		root->prev = obj->prev;
 		switch (obj->type) {
 #ifndef __OpenBSD__
 			case OBJ_acpitemp:
@@ -1695,15 +1774,15 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 #endif
 #ifdef __LINUX__
 			case OBJ_disk_protect:
-				free(objs[i].data.s);
+				free(obj->data.s);
 				break;
 			case OBJ_if_up:
-				free(objs[i].data.ifblock.s);
-				free(objs[i].data.ifblock.str);
+				free(obj->data.ifblock.s);
+				free(obj->data.ifblock.str);
 				break;
 			case OBJ_if_gw:
-				free(objs[i].data.ifblock.s);
-				free(objs[i].data.ifblock.str);
+				free(obj->data.ifblock.s);
+				free(obj->data.ifblock.str);
 			case OBJ_gw_iface:
 			case OBJ_gw_ip:
 				if (info.gw_info.iface) {
@@ -1716,8 +1795,8 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 				}
 				break;
 			case OBJ_ioscheduler:
-				if(objs[i].data.s)
-					free(objs[i].data.s);
+				if(obj->data.s)
+					free(obj->data.s);
 				break;
 #endif
 #ifdef XMMS2
@@ -1931,12 +2010,11 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 				free(data.scroll.text);
 				break;
 		}
+		free(obj);
 	}
 #undef data
+	/* FIXME: below is surely useless */
 	if (full) {} // disable warning when MPD !defined
-	free(text_object_list->text_objects);
-	text_object_list->text_objects = NULL;
-	text_object_list->text_object_count = 0;
 }
 
 void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
@@ -1975,8 +2053,7 @@ const char *dev_name(const char *path)
 
 /* construct_text_object() creates a new text_object */
 static struct text_object *construct_text_object(const char *s,
-		const char *arg, unsigned int object_count,
-		struct text_object *text_objects, long line, char allow_threaded)
+		const char *arg, long line, char allow_threaded)
 {
 	// struct text_object *obj = new_text_object();
 	struct text_object *obj = new_text_object_internal();
@@ -2173,24 +2250,14 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(ibm_volume, 0)
 	END OBJ(ibm_brightness, 0)
 	END OBJ(if_up, 0)
-		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-		}
 		if (!arg) {
 			ERR("if_up needs an argument");
 			obj->data.ifblock.s = 0;
 		} else
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
-		blockstart[blockdepth] = object_count;
-		obj->data.ifblock.pos = object_count + 2;
-		blockdepth++;
+		obj_be_ifblock_if(obj);
 	END OBJ(if_gw, 0)
-		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-		}
-		blockstart[blockdepth] = object_count;
-		obj->data.ifblock.pos = object_count + 2;
-		blockdepth++;
+		obj_be_ifblock_if(obj);
 	END OBJ(ioscheduler, 0)
 		if (!arg) {
 			CRIT_ERR("get_ioscheduler needs an argument (e.g. hda)");
@@ -2400,22 +2467,9 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.net = get_net_stat(buf);
 		free(buf);
 	END OBJ(else, 0)
-		if (blockdepth) {
-			(text_objects[blockstart[blockdepth - 1]]).data.ifblock.pos =
-				object_count;
-			blockstart[blockdepth - 1] = object_count;
-			obj->data.ifblock.pos = object_count + 2;
-		} else {
-			ERR("$else: no matching $if_*");
-		}
+		push_ifblock(obj, IFBLOCK_ELSE);
 	END OBJ(endif, 0)
-		if (blockdepth) {
-			blockdepth--;
-			text_objects[blockstart[blockdepth]].data.ifblock.pos =
-				object_count;
-		} else {
-			ERR("$endif: no matching $if_*");
-		}
+		push_ifblock(obj, IFBLOCK_ENDIF);
 	END OBJ(image, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 #ifdef HAVE_POPEN
@@ -2959,22 +3013,14 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.loadavg[1] = (r >= 2) ? (unsigned char) b : 0;
 		obj->data.loadavg[2] = (r >= 3) ? (unsigned char) c : 0;
 	END OBJ(if_empty, 0)
-		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-		}
 		if (!arg) {
 			ERR("if_empty needs an argument");
 			obj->data.ifblock.s = 0;
 		} else {
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
 		}
-		blockstart[blockdepth] = object_count;
-		obj->data.ifblock.pos = object_count + 2;
-		blockdepth++;
+		obj_be_ifblock_if(obj);
 	END OBJ(if_existing, 0)
-		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-		}
 		if (!arg) {
 			ERR("if_existing needs an argument or two");
 			obj->data.ifblock.s = NULL;
@@ -2991,26 +3037,17 @@ static struct text_object *construct_text_object(const char *s,
 				obj->data.ifblock.str = strndup(buf2, text_buffer_size);
 			}
 		}
-		blockstart[blockdepth] = object_count;
-		obj->data.ifblock.pos = object_count + 2;
-		blockdepth++;
+		DBGP("if_existing: '%s' '%s'", obj->data.ifblock.s, obj->data.ifblock.str);
+		obj_be_ifblock_if(obj);
 	END OBJ(if_mounted, 0)
-		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-		}
 		if (!arg) {
 			ERR("if_mounted needs an argument");
 			obj->data.ifblock.s = 0;
 		} else {
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
 		}
-		blockstart[blockdepth] = object_count;
-		obj->data.ifblock.pos = object_count + 2;
-		blockdepth++;
+		obj_be_ifblock_if(obj);
 	END OBJ(if_running, 0)
-		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-		}
 		if (arg) {
 			char buf[256];
 
@@ -3020,9 +3057,7 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("if_running needs an argument");
 			obj->data.ifblock.s = 0;
 		}
-		blockstart[blockdepth] = object_count;
-		obj->data.ifblock.pos = object_count + 2;
-		blockdepth++;
+		obj_be_ifblock_if(obj);
 	END OBJ(kernel, 0)
 	END OBJ(machine, 0)
 	END OBJ(mails, 0)
@@ -3300,17 +3335,12 @@ static struct text_object *construct_text_object(const char *s,
 		else
 			ERR("smapi needs an argument");
 	END OBJ(if_smapi_bat_installed, 0)
-		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-		}
 		if (!arg) {
 			ERR("if_smapi_bat_installed needs an argument");
 			obj->data.ifblock.s = 0;
 		} else
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
-		blockstart[blockdepth] = object_count;
-		obj->data.ifblock.pos = object_count + 2;
-		blockdepth++;
+		obj_be_ifblock_if(obj);
 	END OBJ(smapi_bat_perc, 0)
 		if (arg)
 			obj->data.s = strndup(arg, text_buffer_size);
@@ -3337,7 +3367,7 @@ static struct text_object *construct_text_object(const char *s,
 				arg = scan_bar(arg + cnt, &obj->a, &obj->b);
 			}
 		} else
-			ERR("if_smapi_bat_bar needs an argument");
+			ERR("smapi_bat_bar needs an argument");
 #endif /* SMAPI */
 #ifdef MPD
 	END OBJ_THREAD(mpd_artist, INFO_MPD)
@@ -3435,12 +3465,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.i = 0;
 		}
 	END OBJ_THREAD(if_mpd_playing, INFO_MPD)
-		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-		}
-		blockstart[blockdepth] = object_count;
-		obj->data.ifblock.pos = object_count + 2;
-		blockdepth++;
+		obj_be_ifblock_if(obj);
 #endif /* MPD */
 #ifdef MOC
   END OBJ_THREAD(moc_state, INFO_MOC)
@@ -3477,12 +3502,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(xmms2_playlist, INFO_XMMS2)
 	END OBJ(xmms2_timesplayed, INFO_XMMS2)
 	END OBJ(if_xmms2_connected, INFO_XMMS2)
-		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-		}
-		blockstart[blockdepth] = object_count;
-		obj->data.ifblock.pos = object_count + 2;
-		blockdepth++;
+		obj_be_ifblock_if(obj);
 #endif
 #ifdef AUDACIOUS
 	END OBJ(audacious_status, INFO_AUDACIOUS)
@@ -3807,9 +3827,8 @@ static int text_contains_templates(const char *text)
 	return 0;
 }
 
-static struct text_object_list *extract_variable_text_internal(const char *const_p, char allow_threaded)
+static int extract_variable_text_internal(struct text_object *retval, const char *const_p, char allow_threaded)
 {
-	struct text_object_list *retval;
 	struct text_object *obj;
 	char *p, *s, *orig_p;
 	long line;
@@ -3829,9 +3848,7 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 		DBGP("no templates to replace");
 	}
 
-	retval = malloc(sizeof(struct text_object_list));
-	memset(retval, 0, sizeof(struct text_object_list));
-	retval->text_object_count = 0;
+	memset(retval, 0, sizeof(struct text_object));
 
 	line = global_text_lines;
 
@@ -3843,14 +3860,7 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 			*p = '\0';
 			obj = create_plain_text(s);
 			if (obj != NULL) {
-				// allocate memory for the object
-				retval->text_objects = realloc(retval->text_objects,
-						sizeof(struct text_object) *
-						(retval->text_object_count + 1));
-				// assign the new object to the end of the list.
-				memcpy(&retval->text_objects[retval->text_object_count++], obj,
-						sizeof(struct text_object));
-				free(obj);
+				append_object(retval, obj);
 			}
 			*p = '$';
 			p++;
@@ -3924,32 +3934,16 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 						tmp_p++;
 					}
 
-					obj = construct_text_object(buf, arg,
-							retval->text_object_count, retval->text_objects, line, allow_threaded);
+					obj = construct_text_object(buf, arg, line, allow_threaded);
 					if (obj != NULL) {
-						// allocate memory for the object
-						retval->text_objects = realloc(retval->text_objects,
-								sizeof(struct text_object) *
-								(retval->text_object_count + 1));
-						// assign the new object to the end of the list.
-						memcpy(
-								&retval->text_objects[retval->text_object_count++],
-								obj, sizeof(struct text_object));
-						free(obj);
+						append_object(retval, obj);
 					}
 				}
 				continue;
 			} else {
 				obj = create_plain_text("$");
 				if (obj != NULL) {
-					// allocate memory for the object
-					retval->text_objects = realloc(retval->text_objects,
-							sizeof(struct text_object) *
-							(retval->text_object_count + 1));
-					// assign the new object to the end of the list.
-					memcpy(&retval->text_objects[retval->text_object_count++],
-							obj, sizeof(struct text_object));
-					free(obj);
+					append_object(retval, obj);
 				}
 			}
 		}
@@ -3957,27 +3951,20 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 	}
 	obj = create_plain_text(s);
 	if (obj != NULL) {
-		// allocate memory for the object
-		retval->text_objects = realloc(retval->text_objects,
-				sizeof(struct text_object) * (retval->text_object_count + 1));
-		// assign the new object to the end of the list.
-		memcpy(&retval->text_objects[retval->text_object_count++], obj,
-				sizeof(struct text_object));
-		free(obj);
+		append_object(retval, obj);
 	}
 
-	if (blockdepth) {
+	if (ifblock_stack_top) {
 		ERR("one or more $endif's are missing");
 	}
 
 	free(orig_p);
-	return retval;
+	return 0;
 }
 
 static void extract_variable_text(const char *p)
 {
-	free_text_objects(global_text_object_list, 1);
-	free(global_text_object_list);
+	free_text_objects(&global_root_object, 1);
 	if (tmpstring1) {
 		free(tmpstring1);
 		tmpstring1 = 0;
@@ -3991,16 +3978,14 @@ static void extract_variable_text(const char *p)
 		text_buffer = 0;
 	}
 
-	global_text_object_list = extract_variable_text_internal(p, 1);
+	extract_variable_text_internal(&global_root_object, p, 1);
 }
 
-struct text_object_list *parse_conky_vars(char *txt, char *p, struct information *cur)
+int parse_conky_vars(struct text_object *root, char *txt, char *p, struct information *cur)
 {
-	struct text_object_list *object_list =
-		extract_variable_text_internal(txt, 0);
-
-	generate_text_internal(p, max_user_text, object_list, cur);
-	return object_list;
+	extract_variable_text_internal(root, txt, 0);
+	generate_text_internal(p, max_user_text, *root, cur);
+	return 0;
 }
 
 /* Allows reading from a FIFO (i.e., /dev/xconsole).
@@ -4234,10 +4219,9 @@ static inline double get_barnum(char *buf)
 }
 
 static void generate_text_internal(char *p, int p_max_size,
-		struct text_object_list *text_object_list,
-		struct information *cur)
+		struct text_object root, struct information *cur)
 {
-	unsigned int i;
+	struct text_object *obj;
 
 #ifdef HAVE_ICONV
 	char buff_in[p_max_size];
@@ -4246,12 +4230,31 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 
 	p[0] = 0;
-	for (i = 0; i < text_object_list->text_object_count; i++) {
-		struct text_object *obj = &(text_object_list->text_objects[i]);
+	for (obj = root.next; obj && p_max_size > 0; obj = obj->next) {
 
-		if (p_max_size < 1) {
-			break;
-		};
+/* IFBLOCK jumping algorithm
+ *
+ * This is easier as it looks like:
+ * - each IF checks it's condition
+ *   - on FALSE: call DO_JUMP
+ *   - on TRUE: don't care
+ * - each ELSE calls DO_JUMP unconditionally
+ * - each ENDIF is silently being ignored
+ *
+ * Why this works:
+ * DO_JUMP overwrites the "obj" variable of the loop and sets it to the target
+ * (i.e. the corresponding ELSE or ENDIF). After that, processing for the given
+ * object can continue, free()ing stuff e.g., then the for-loop does the rest: as
+ * regularly, "obj" is being updated to point to obj->next, so object parsing
+ * continues right after the corresponding ELSE or ENDIF. This means that if we
+ * find an ELSE, it's corresponding IF must not have jumped, so we need to jump
+ * always. If we encounter an ENDIF, it's corresponding IF or ELSE has not
+ * jumped, and there is nothing to do.
+ */
+#define DO_JUMP { \
+	DBGP2("jumping"); \
+	obj = obj->data.ifblock.next; \
+}
 
 #define OBJ(a) break; case OBJ_##a:
 
@@ -4521,18 +4524,12 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(if_up) {
 				if ((obj->data.ifblock.s)
 						&& (!interface_up(obj->data.ifblock.s))) {
-					i = obj->data.ifblock.pos;
-					if_jumped = 1;
-				} else {
-					if_jumped = 0;
+					DO_JUMP;
 				}
 			}
 			OBJ(if_gw) {
 				if (!cur->gw_info.count) {
-					i = obj->data.ifblock.pos;
-					if_jumped = 1;
-				} else {
-					if_jumped = 0;
+					DO_JUMP;
 				}
 			}
 			OBJ(gw_iface) {
@@ -4652,14 +4649,15 @@ static void generate_text_internal(char *p, int p_max_size,
 				obj->data.net->recv_speed / 1024.0, obj->e, 1, obj->showaslog);
 			}
 			OBJ(else) {
-				if (!if_jumped) {
-					i = obj->data.ifblock.pos - 1;
-				} else {
-					if_jumped = 0;
-				}
+				/* Since we see you, you're if has not jumped.
+				 * Do Ninja jump here: without leaving traces.
+				 * This is to prevent us from stale jumped flags.
+				 */
+				obj = obj->data.ifblock.next;
+				continue;
 			}
 			OBJ(endif) {
-				if_jumped = 0;
+				/* harmless object, just ignore */
 			}
 #ifdef HAVE_POPEN
 			OBJ(addr) {
@@ -4728,16 +4726,15 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(execp) {
 				struct information *tmp_info;
-				struct text_object_list *text_objects;
+				struct text_object subroot;
 
 				read_exec(obj->data.s, p, text_buffer_size);
 
 				tmp_info = malloc(sizeof(struct information));
 				memcpy(tmp_info, cur, sizeof(struct information));
-				text_objects = parse_conky_vars(p, p, tmp_info);
+				parse_conky_vars(&subroot, p, p, tmp_info);
 
-				free_text_objects(text_objects, 0);
-				free(text_objects);
+				free_text_objects(&subroot, 0);
 				free(tmp_info);
 			}
 			OBJ(execbar) {
@@ -4811,7 +4808,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, text_buffer_size, "%s", obj->data.execi.buffer);
 			}
 			OBJ(execpi) {
-				struct text_object_list *text_objects = 0;
+				struct text_object subroot;
 				struct information *tmp_info =
 					malloc(sizeof(struct information));
 				memcpy(tmp_info, cur, sizeof(struct information));
@@ -4819,7 +4816,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				if (current_update_time - obj->data.execi.last_update
 						< obj->data.execi.interval
 						|| obj->data.execi.interval == 0) {
-					text_objects = parse_conky_vars(obj->data.execi.buffer, p, tmp_info);
+					parse_conky_vars(&subroot, obj->data.execi.buffer, p, tmp_info);
 				} else {
 					char *output = obj->data.execi.buffer;
 					FILE *fp = popen(obj->data.execi.cmd, "r");
@@ -4832,11 +4829,10 @@ static void generate_text_internal(char *p, int p_max_size,
 						output[length - 1] = '\0';
 					}
 
-					text_objects = parse_conky_vars(obj->data.execi.buffer, p, tmp_info);
+					parse_conky_vars(&subroot, obj->data.execi.buffer, p, tmp_info);
 					obj->data.execi.last_update = current_update_time;
 				}
-				free_text_objects(text_objects, 0);
-				free(text_objects);
+				free_text_objects(&subroot, 0);
 				free(tmp_info);
 			}
 			OBJ(texeci) {
@@ -5151,51 +5147,38 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_alignc(p, obj->data.i);
 			}
 			OBJ(if_empty) {
-				struct text_object_list *text_objects;
+				struct text_object subroot;
 				struct information *tmp_info =
 					malloc(sizeof(struct information));
 				memcpy(tmp_info, cur, sizeof(struct information));
-				text_objects = parse_conky_vars(obj->data.ifblock.s, p, tmp_info);
+				parse_conky_vars(&subroot, obj->data.ifblock.s, p, tmp_info);
 
 				if (strlen(p) != 0) {
-					i = obj->data.ifblock.pos;
-					if_jumped = 1;
-				} else {
-					if_jumped = 0;
+					DO_JUMP;
 				}
 				p[0] = '\0';
-				free_text_objects(text_objects, 0);
-				free(text_objects);
+				free_text_objects(&subroot, 0);
 				free(tmp_info);
 			}
 			OBJ(if_existing) {
-				if_jumped = 0;
 				if (obj->data.ifblock.str
 				    && !check_contains(obj->data.ifblock.s,
 				                       obj->data.ifblock.str)) {
-					i = obj->data.ifblock.pos;
-					if_jumped = 1;
+					DO_JUMP;
 				} else if (obj->data.ifblock.s
 				           && access(obj->data.ifblock.s, F_OK)) {
-					i = obj->data.ifblock.pos;
-					if_jumped = 1;
+					DO_JUMP;
 				}
 			}
 			OBJ(if_mounted) {
 				if ((obj->data.ifblock.s)
 						&& (!check_mount(obj->data.ifblock.s))) {
-					i = obj->data.ifblock.pos;
-					if_jumped = 1;
-				} else {
-					if_jumped = 0;
+					DO_JUMP;
 				}
 			}
 			OBJ(if_running) {
 				if ((obj->data.ifblock.s) && system(obj->data.ifblock.s)) {
-					i = obj->data.ifblock.pos;
-					if_jumped = 1;
-				} else {
-					if_jumped = 0;
+					DO_JUMP;
 				}
 			}
 #if defined(__linux__)
@@ -5514,11 +5497,8 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 			OBJ(if_mpd_playing) {
-				if (cur->mpd.is_playing) {
-					if_jumped = 0;
-				} else {
-					i = obj->data.ifblock.pos;
-					if_jumped = 1;
+				if (!cur->mpd.is_playing) {
+					DO_JUMP;
 				}
 			}
 #endif
@@ -5629,11 +5609,8 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 			OBJ(if_xmms2_connected) {
-				if (cur->xmms2_conn_state == 1) {
-					if_jumped = 0;
-				} else {
-					i = obj->data.ifblock.pos;
-					if_jumped = 1;
+				if (cur->xmms2_conn_state != 1) {
+					DO_JUMP;
 				}
 			}
 #endif
@@ -5881,7 +5858,6 @@ static void generate_text_internal(char *p, int p_max_size,
 						}	/* bsize > 0 */
 					}		/* fp == NULL */
 				}			/* if cur_upd_time >= */
-				// parse_conky_vars(obj->data.tail.buffer, p, cur);
 			}
 head:
 			OBJ(head) {
@@ -5938,7 +5914,6 @@ head:
 						}	/* nl > 0 */
 					}		/* if fp == null */
 				}			/* cur_upd_time >= */
-				// parse_conky_vars(obj->data.tail.buffer, p, cur);
 			}
 
 			OBJ(lines) {
@@ -6034,10 +6009,8 @@ head:
 				int idx;
 				if(obj->data.ifblock.s && sscanf(obj->data.ifblock.s, "%i", &idx) == 1) {
 					if(!smapi_bat_installed(idx)) {
-						i = obj->data.ifblock.pos;
-						if_jumped = 1;
-					} else
-						if_jumped = 0;
+						DO_JUMP;
+					}
 				} else
 					ERR("argument to if_smapi_bat_installed must be an integer");
 			}
@@ -6081,8 +6054,9 @@ head:
 			OBJ(scroll) {
 				unsigned int j;
 				char *tmp;
-				parse_conky_vars(obj->data.scroll.text, p, cur);
-				
+				struct text_object subroot;
+				parse_conky_vars(&subroot, obj->data.scroll.text, p, cur);
+
 				if (strlen(p) <= obj->data.scroll.show) {
 					break;
 				}
@@ -6130,6 +6104,8 @@ head:
 
 			break;
 		}
+#undef DO_JUMP
+
 
 		{
 			unsigned int a = strlen(p);
@@ -6192,7 +6168,7 @@ static void generate_text(void)
 
 	p = text_buffer;
 
-	generate_text_internal(p, max_user_text, global_text_object_list, cur);
+	generate_text_internal(p, max_user_text, global_root_object, cur);
 
 	if (stuff_in_upper_case) {
 		char *tmp_p;
@@ -7621,9 +7597,7 @@ void clean_up(void)
 	free_fonts();
 #endif /* X11 */
 
-	free_text_objects(global_text_object_list, 1);
-	free(global_text_object_list);
-	global_text_object_list = NULL;
+	free_text_objects(&global_root_object, 1);
 	if (tmpstring1) {
 		free(tmpstring1);
 		tmpstring1 = 0;
