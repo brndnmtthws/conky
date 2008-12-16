@@ -7917,11 +7917,29 @@ static void load_config_file(const char *f)
 
 			while (!feof(fp)) {
 				unsigned int l = strlen(global_text);
+				unsigned int bl;
 
 				if (fgets(buf, 256, fp) == NULL) {
 					break;
 				}
-				global_text = (char *) realloc(global_text, l + strlen(buf) + 1);
+
+				/* Remove \\-\n. */
+				bl = strlen(buf);
+				if (bl >= 2 && buf[bl-2] == '\\' && buf[bl-1] == '\n') {
+					buf[bl-2] = '\0';
+					bl -= 2;
+					if (bl == 0) {
+						continue;
+					}
+				}
+
+				/* Check for continuation of \\-\n. */
+				if (l > 0 && buf[0] == '\n' && global_text[l-1] == '\\') {
+					global_text[l-1] = '\0';
+					continue;
+				}
+
+				global_text = (char *) realloc(global_text, l + bl + 1);
 				strcat(global_text, buf);
 
 				if (strlen(global_text) > max_user_text) {
