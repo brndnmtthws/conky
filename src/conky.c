@@ -1112,17 +1112,25 @@ static void human_readable(long long num, char *buf, int size)
 	float fnum;
 	int precision, len;
 	static const int WIDTH = 10, SHORT_WIDTH = 8;
+	int width;
+	const char *format, *format2;
 
-	if (num < 1024LL && num > -1024LL) {
-		if (short_units) {
-			spaced_print(buf, size, "%lld%c", SHORT_WIDTH, num, **suffix);
-		} else {
-			spaced_print(buf, size, "%lld%s", WIDTH, num, *suffix);
-		}
+	if (short_units) {
+		width = SHORT_WIDTH;
+		format = "%lld%1s";
+		format2 = "%.*f%1s";
+	} else {
+		width = WIDTH;
+		format = "%lld%s";
+		format2 = "%.*f%s";
+	}
+
+	if (llabs(num) < 1024LL) {
+		spaced_print(buf, size, format, width, num, *suffix);
 		return;
 	}
 
-	while ((num / 1024 >= 1000LL || num / 1024 <= -1024LL) && **(suffix + 2)) {
+	while (llabs(num / 1024) >= 1024LL && **(suffix + 2)) {
 		num /= 1024;
 		suffix++;
 	}
@@ -1136,14 +1144,9 @@ static void human_readable(long long num, char *buf, int size)
 		if (precision < 0) {
 			break;
 		}
-		if (short_units) {
-			len = spaced_print(buf, size, "%.*f%c", SHORT_WIDTH,
-				precision, fnum, **suffix);
-		} else {
-			len = spaced_print(buf, size, "%.*f%s", WIDTH, precision,
-				fnum, *suffix);
-		}
-	} while (len >= (short_units ? SHORT_WIDTH : WIDTH) || len >= size);
+		len = spaced_print(buf, size, format2, width,
+		                   precision, fnum, *suffix);
+	} while (len >= MAX(width, size));
 }
 
 /* global object list root element */
