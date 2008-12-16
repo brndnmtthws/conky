@@ -118,7 +118,11 @@ static char *tmpstring1, *tmpstring2;
 /* variables holding various config settings */
 int short_units;
 int cpu_separate;
-static int use_spacer;
+enum {
+	NO_SPACER = 0,
+	LEFT_SPACER,
+	RIGHT_SPACER
+} use_spacer;
 int top_cpu, top_mem;
 #define TO_X 1
 #define TO_STDOUT 2
@@ -1068,11 +1072,10 @@ static void convert_escapes(char *buf)
 /* Prints anything normally printed with snprintf according to the current value
  * of use_spacer.  Actually slightly more flexible than snprintf, as you can
  * safely specify the destination buffer as one of your inputs.  */
-static int spaced_print(char *, int, const char *, int, const char *, ...)
-		__attribute__((format(printf, 3, 6)));
+static int spaced_print(char *, int, const char *, int, ...)
+		__attribute__((format(printf, 3, 5)));
 
-static int spaced_print(char *buf, int size, const char *format, int width,
-		const char *func_name, ...) {
+static int spaced_print(char *buf, int size, const char *format, int width, ...) {
 	int len;
 	va_list argp;
 	char *tempbuf;
@@ -1083,7 +1086,7 @@ static int spaced_print(char *buf, int size, const char *format, int width,
 	tempbuf = malloc(size * sizeof(char));
 
 	// Passes the varargs along to vsnprintf
-	va_start(argp, func_name);
+	va_start(argp, width);
 	vsnprintf(tempbuf, size, format, argp);
 	va_end(argp);
 
@@ -1097,18 +1100,13 @@ static int spaced_print(char *buf, int size, const char *format, int width,
 		case RIGHT_SPACER:
 			len = snprintf(buf, size, "%-*s", width - 1, tempbuf);
 			break;
-		default:
-			CRIT_ERR("%s encountered invalid use_spacer value (%d)", func_name,
-				use_spacer);
 	}
-
 	free(tempbuf);
-
 	return len;
 }
 
 /* converts from bytes to human readable format (k, M, G, T) */
-static void human_readable(long long num, char *buf, int size, const char *func_name)
+static void human_readable(long long num, char *buf, int size)
 {
 	const char **suffix = suffixes;
 	float fnum;
@@ -1117,10 +1115,9 @@ static void human_readable(long long num, char *buf, int size, const char *func_
 
 	if (num < 1024LL && num > -1024LL) {
 		if (short_units) {
-			spaced_print(buf, size, "%lld%c", SHORT_WIDTH, func_name, num,
-				**suffix);
+			spaced_print(buf, size, "%lld%c", SHORT_WIDTH, num, **suffix);
 		} else {
-			spaced_print(buf, size, "%lld%s", WIDTH, func_name, num, *suffix);
+			spaced_print(buf, size, "%lld%s", WIDTH, num, *suffix);
 		}
 		return;
 	}
@@ -1140,10 +1137,10 @@ static void human_readable(long long num, char *buf, int size, const char *func_
 			break;
 		}
 		if (short_units) {
-			len = spaced_print(buf, size, "%.*f%c", SHORT_WIDTH, func_name,
+			len = spaced_print(buf, size, "%.*f%c", SHORT_WIDTH,
 				precision, fnum, **suffix);
 		} else {
-			len = spaced_print(buf, size, "%.*f%s", WIDTH, func_name, precision,
+			len = spaced_print(buf, size, "%.*f%s", WIDTH, precision,
 				fnum, *suffix);
 		}
 	} while (len >= (short_units ? SHORT_WIDTH : WIDTH) || len >= size);
@@ -3814,22 +3811,20 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%s", obj->data.net->ap);
 			}
 			OBJ(wireless_link_qual) {
-				spaced_print(p, p_max_size, "%d", 4, "wireless_link_qual",
+				spaced_print(p, p_max_size, "%d", 4,
 						obj->data.net->link_qual);
 			}
 			OBJ(wireless_link_qual_max) {
 				spaced_print(p, p_max_size, "%d", 4,
-						"wireless_link_qual_max", obj->data.net->link_qual_max);
+						obj->data.net->link_qual_max);
 			}
 			OBJ(wireless_link_qual_perc) {
 				if (obj->data.net->link_qual_max > 0) {
 					spaced_print(p, p_max_size, "%.0f", 5,
-							"wireless_link_qual_perc",
 							(double) obj->data.net->link_qual /
 							obj->data.net->link_qual_max * 100);
 				} else {
-					spaced_print(p, p_max_size, "unk", 5,
-							"wireless_link_qual_perc");
+					spaced_print(p, p_max_size, "unk", 5);
 				}
 			}
 			OBJ(wireless_link_bar) {
@@ -3860,7 +3855,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_TIME);
 			}
 			OBJ(battery_percent) {
-				spaced_print(p, p_max_size, "%*d", 4, "battery_percent",
+				spaced_print(p, p_max_size, "%*d", 4,
 						pad_percents, get_battery_perct(obj->data.s));
 			}
 			OBJ(battery_bar) {
@@ -3869,10 +3864,10 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif /* __OpenBSD__ */
 
 			OBJ(buffers) {
-				human_readable(cur->buffers * 1024, p, 255, "buffers");
+				human_readable(cur->buffers * 1024, p, 255);
 			}
 			OBJ(cached) {
-				human_readable(cur->cached * 1024, p, 255, "buffers");
+				human_readable(cur->cached * 1024, p, 255);
 			}
 			OBJ(cpu) {
 				if (obj->data.cpu_index > info.cpu_count) {
@@ -3880,7 +3875,7 @@ static void generate_text_internal(char *p, int p_max_size,
 							obj->data.cpu_index, info.cpu_count);
 					CRIT_ERR("attempting to use more CPUs than you have!");
 				}
-				spaced_print(p, p_max_size, "%*d", 4, "cpu", pad_percents,
+				spaced_print(p, p_max_size, "%*d", 4, pad_percents,
 						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100.0));
 			}
 			OBJ(cpubar) {
@@ -4085,15 +4080,15 @@ static void generate_text_internal(char *p, int p_max_size,
 			 * (or get rid of it??) */
 			OBJ(diskio) {
 				human_readable((obj->data.diskio->current / update_interval) * 1024LL,
-						p, p_max_size, "diskio");
+						p, p_max_size);
 			}
 			OBJ(diskio_write) {
 				human_readable((obj->data.diskio->current / update_interval) * 1024LL,
-						p, p_max_size, "diskio_write");
+						p, p_max_size);
 			}
 			OBJ(diskio_read) {
 				human_readable((obj->data.diskio->current / update_interval) * 1024LL,
-						p, p_max_size, "diskio_read");
+						p, p_max_size);
 			}
 			OBJ(diskiograph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
@@ -4108,11 +4103,11 @@ static void generate_text_internal(char *p, int p_max_size,
 				          obj->data.diskio->current_write, obj->e, 1, obj->showaslog);
 			}
 			OBJ(downspeed) {
-				spaced_print(p, p_max_size, "%d", 6, "downspeed",
+				spaced_print(p, p_max_size, "%d", 6,
 						round_to_int(obj->data.net->recv_speed / 1024));
 			}
 			OBJ(downspeedf) {
-				spaced_print(p, p_max_size, "%.1f", 8, "downspeedf",
+				spaced_print(p, p_max_size, "%.1f", 8,
 						obj->data.net->recv_speed / 1024.0);
 			}
 			OBJ(downspeedgraph) {
@@ -4375,13 +4370,13 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(fs_free) {
 				if (obj->data.fs != NULL) {
-					human_readable(obj->data.fs->avail, p, 255, "fs_free");
+					human_readable(obj->data.fs->avail, p, 255);
 				}
 			}
 			OBJ(fs_free_perc) {
 				if (obj->data.fs != NULL) {
 					if (obj->data.fs->size) {
-						spaced_print(p, p_max_size, "%*d", 4, "fs_free_perc",
+						spaced_print(p, p_max_size, "%*d", 4,
 								pad_percents, (int) ((obj->data.fs->avail * 100) /
 									obj->data.fs->size));
 					} else {
@@ -4391,7 +4386,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(fs_size) {
 				if (obj->data.fs != NULL) {
-					human_readable(obj->data.fs->size, p, 255, "fs_size");
+					human_readable(obj->data.fs->size, p, 255);
 				}
 			}
 			OBJ(fs_type) {
@@ -4401,8 +4396,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(fs_used) {
 				if (obj->data.fs != NULL) {
 					human_readable(obj->data.fs->size - (obj->data.fs->free
-						? obj->data.fs->free : obj->data.fs->avail), p, 255,
-						"fs_used");
+						? obj->data.fs->free : obj->data.fs->avail), p, 255);
 				}
 			}
 			OBJ(fs_bar_free) {
@@ -4419,7 +4413,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(fs_used_perc) {
 				if (obj->data.fs != NULL) {
 					if (obj->data.fs->size) {
-						spaced_print(p, 4, "%*d", 4, "fs_used_perc",
+						spaced_print(p, 4, "%*d", 4,
 								pad_percents, 100 - ((int) ((obj->data.fs->avail * 100) /
 										obj->data.fs->size)));
 					} else {
@@ -4666,20 +4660,20 @@ static void generate_text_internal(char *p, int p_max_size,
 
 			/* memory stuff */
 			OBJ(mem) {
-				human_readable(cur->mem * 1024, p, 255, "mem");
+				human_readable(cur->mem * 1024, p, 255);
 			}
 			OBJ(memeasyfree) {
-				human_readable(cur->memeasyfree * 1024, p, 255, "memeasyfree");
+				human_readable(cur->memeasyfree * 1024, p, 255);
 			}
 			OBJ(memfree) {
-				human_readable(cur->memfree * 1024, p, 255, "memfree");
+				human_readable(cur->memfree * 1024, p, 255);
 			}
 			OBJ(memmax) {
-				human_readable(cur->memmax * 1024, p, 255, "memmax");
+				human_readable(cur->memmax * 1024, p, 255);
 			}
 			OBJ(memperc) {
 				if (cur->memmax) {
-					spaced_print(p, p_max_size, "%*llu", 4, "memperc",
+					spaced_print(p, p_max_size, "%*llu", 4,
 						pad_percents, cur->mem * 100 / cur->memmax);
 				}
 			}
@@ -4746,10 +4740,10 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_outline(p, obj->data.l);
 			}
 			OBJ(processes) {
-				spaced_print(p, p_max_size, "%hu", 5, "processes", cur->procs);
+				spaced_print(p, p_max_size, "%hu", 5, cur->procs);
 			}
 			OBJ(running_processes) {
-				spaced_print(p, p_max_size, "%hu", 3, "running_processes", cur->run_procs);
+				spaced_print(p, p_max_size, "%hu", 3, cur->run_procs);
 			}
 			OBJ(text) {
 				snprintf(p, p_max_size, "%s", obj->data.s);
@@ -4761,16 +4755,16 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_stippled_hr(p, obj->data.pair.a, obj->data.pair.b);
 			}
 			OBJ(swap) {
-				human_readable(cur->swap * 1024, p, 255, "swap");
+				human_readable(cur->swap * 1024, p, 255);
 			}
 			OBJ(swapmax) {
-				human_readable(cur->swapmax * 1024, p, 255, "swapmax");
+				human_readable(cur->swapmax * 1024, p, 255);
 			}
 			OBJ(swapperc) {
 				if (cur->swapmax == 0) {
 					strncpy(p, "No swap", p_max_size);
 				} else {
-					spaced_print(p, p_max_size, "%*llu", 4, "swapperc",
+					spaced_print(p, p_max_size, "%*llu", 4,
 						pad_percents, cur->swap * 100 / cur->swapmax);
 				}
 			}
@@ -4818,20 +4812,20 @@ static void generate_text_internal(char *p, int p_max_size,
 				// Needless to free oldTZ since getenv gives ptr to static data
 			}
 			OBJ(totaldown) {
-				human_readable(obj->data.net->recv, p, 255, "totaldown");
+				human_readable(obj->data.net->recv, p, 255);
 			}
 			OBJ(totalup) {
-				human_readable(obj->data.net->trans, p, 255, "totalup");
+				human_readable(obj->data.net->trans, p, 255);
 			}
 			OBJ(updates) {
 				snprintf(p, p_max_size, "%d", total_updates);
 			}
 			OBJ(upspeed) {
-				spaced_print(p, p_max_size, "%d", 6, "upspeed",
+				spaced_print(p, p_max_size, "%d", 6,
 					round_to_int(obj->data.net->trans_speed / 1024));
 			}
 			OBJ(upspeedf) {
-				spaced_print(p, p_max_size, "%.1f", 8, "upspeedf",
+				spaced_print(p, p_max_size, "%.1f", 8,
 					obj->data.net->trans_speed / 1024.0);
 			}
 			OBJ(upspeedgraph) {
@@ -4940,7 +4934,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				format_media_player_time(p, p_max_size, cur->mpd.length);
 			}
 			OBJ(mpd_percent) {
-				spaced_print(p, p_max_size, "%*d", 4, "mpd_percent",
+				spaced_print(p, p_max_size, "%*d", 4,
 						pad_percents, (int) (cur->mpd.progress * 100));
 			}
 			OBJ(mpd_bar) {
@@ -5198,11 +5192,11 @@ static void generate_text_internal(char *p, int p_max_size,
 							break;
 						case TOP_MEM_RES:
 							human_readable(cur->cpu[obj->data.top.num]->rss,
-									p, 255, "top_rss");
+									p, 255);
 							break;
 						case TOP_MEM_VSIZE:
 							human_readable(cur->cpu[obj->data.top.num]->vsize,
-									p, 255, "top_rss");
+									p, 255);
 							break;
 						default:
 							ERR("Unhandled top data type: %d\n",
@@ -5242,11 +5236,11 @@ static void generate_text_internal(char *p, int p_max_size,
 							break;
 						case TOP_MEM_RES:
 							human_readable(cur->cpu[obj->data.top.num]->rss,
-									p, 255, "top_rss");
+									p, 255);
 							break;
 						case TOP_MEM_VSIZE:
 							human_readable(cur->cpu[obj->data.top.num]->vsize,
-									p, 255, "top_rss");
+									p, 255);
 							break;
 						default:
 							ERR("Unhandled top data type: %d\n",
@@ -5490,7 +5484,7 @@ head:
 				if(obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
 					val = smapi_bat_installed(idx) ?
 						smapi_get_bat_int(idx, "remaining_percent") : 0;
-					spaced_print(p, p_max_size, "%*d", 4, "smapi_bat_perc", pad_percents, val);
+					spaced_print(p, p_max_size, "%*d", 4, pad_percents, val);
 				} else
 					ERR("argument to smapi_bat_perc must be an integer");
 			}

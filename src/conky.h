@@ -286,8 +286,6 @@ enum {
 /* defined in conky.c, needed by top.c */
 extern int top_cpu, top_mem;
 
-enum spacer_opts { NO_SPACER = 0, LEFT_SPACER, RIGHT_SPACER };
-
 /* defined in conky.c, needed by top.c */
 extern int cpu_separate;
 
