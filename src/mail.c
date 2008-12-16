@@ -318,6 +318,7 @@ int imap_command(int sockfd, const char *command, char *response, const char *ve
 			return -1;
 		}
 	}
+	DBGP2("imap_command()  command: %s", command);
 	DBGP2("imap_command() received: %s", response);
 	response[numbytes] = '\0';
 	if (strstr(response, verify) == NULL) {
@@ -494,6 +495,7 @@ void *imap_thread(void *arg)
 					 */
 					timeout.tv_sec = 1200;
 					timeout.tv_usec = 0;
+					DBGP2("idling...");
 					FD_ZERO(&fdset);
 					FD_SET(sockfd, &fdset);
 					FD_SET(threadfd, &fdset);
@@ -518,6 +520,7 @@ void *imap_thread(void *arg)
 					if (strlen(recvbuf) > 2) {
 						unsigned long messages, recent;
 						char *buf = recvbuf;
+						char force_check = 0;
 						buf = strstr(buf, "EXISTS");
 						while (buf && strlen(buf) > 1 && strstr(buf + 1, "EXISTS")) {
 							buf = strstr(buf + 1, "EXISTS");
@@ -529,7 +532,10 @@ void *imap_thread(void *arg)
 							}
 							if (sscanf(buf, "* %lu EXISTS\r\n", &messages) == 1) {
 								timed_thread_lock(mail->p_timed_thread);
-								mail->messages = messages;
+								if (mail->messages != messages) {
+									force_check = 1;
+									mail->messages = messages;
+								}
 								timed_thread_unlock(mail->p_timed_thread);
 							}
 						}
@@ -552,7 +558,7 @@ void *imap_thread(void *arg)
 						 * something other than 0, or we had a timeout
 						 */
 						buf = recvbuf;
-						if (recent > 0 || (buf && strstr(buf, " FETCH ")) || timeout.tv_sec == 0) {
+						if (recent > 0 || (buf && strstr(buf, " FETCH ")) || timeout.tv_sec == 0 || force_check) {
 							// re-check messages and unseen
 							if (imap_command(sockfd, "DONE\r\n", recvbuf, "a5 OK")) {
 								fail++;
