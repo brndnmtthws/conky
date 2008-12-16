@@ -54,7 +54,7 @@ struct diskio_stat *diskio_stats = diskio_stats_;
 void clear_diskio_stats(void)
 {
 	unsigned i;
-	for(i = 0; i < MAX_DISKIO_STATS; i++) {
+	for(i = 1; i < MAX_DISKIO_STATS; i++) {
 		if (diskio_stats[i].dev) {
 			free(diskio_stats[i].dev);
 			diskio_stats[i].dev = 0;
@@ -70,8 +70,12 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 	int found = 0;
 	char device[text_buffer_size], fbuf[text_buffer_size];
 	static int rep = 0;
+
+	if (!s)
+		return &diskio_stats[0];
+
 	/* lookup existing or get new */
-	for (i = 0; i < MAX_DISKIO_STATS; i++) {
+	for (i = 1; i < MAX_DISKIO_STATS; i++) {
 		if (diskio_stats[i].dev) {
 			if (strcmp(diskio_stats[i].dev, s) == 0) {
 				return &diskio_stats[i];
@@ -145,7 +149,8 @@ void update_diskio(void)
 	int tot, tot_read, tot_write;
 
 	if (!(fp = open_file("/proc/diskstats", &rep))) {
-		info.diskio_value = 0;
+
+		diskio_stats[0].current = 0;
 		return;
 	}
 
@@ -171,7 +176,7 @@ void update_diskio(void)
 				continue;
 			}
 		}
-		for (i = 0; i < MAX_DISKIO_STATS; i++) {
+		for (i = 1; i < MAX_DISKIO_STATS; i++) {
 			if (diskio_stats[i].dev &&
 					strncmp(devbuf, diskio_stats[i].dev, text_buffer_size) == 0) {
 				diskio_stats[i].current =
@@ -222,9 +227,9 @@ void update_diskio(void)
 	last_read = current_read;
 	last_write = current_write;
 
-	info.diskio_value = tot;
-	info.diskio_read_value = tot_read;
-	info.diskio_write_value = tot_write;
+	diskio_stats[0].current = tot;
+	diskio_stats[0].current_read = tot_read;
+	diskio_stats[0].current_write = tot_write;
 
 	fclose(fp);
 }

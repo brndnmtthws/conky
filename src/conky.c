@@ -1557,10 +1557,13 @@ void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
  *         which gets overwritten in consecutive calls. I.e.:
  *         this function is NOT reentrant.
  */
-const char *dev_name(const char *path)
+static const char *dev_name(const char *path)
 {
 	static char buf[255];	/* should be enough for pathnames */
 	ssize_t buflen;
+
+	if (!path)
+		return NULL;
 
 #define DEV_NAME(x) \
   x != NULL && strlen(x) > 5 && strncmp(x, "/dev/", 5) == 0 ? x + 5 : x
@@ -1889,53 +1892,32 @@ static struct text_object *construct_text_object(const char *s,
 		}
 #if defined(__linux__)
 	END OBJ(diskio, INFO_DISKIO)
-		if (arg) {
-			obj->data.diskio = prepare_diskio_stat(dev_name(arg));
-		} else {
-			obj->data.diskio = NULL;
-		}
+		obj->data.diskio = prepare_diskio_stat(dev_name(arg));
 	END OBJ(diskio_read, INFO_DISKIO)
-		if (arg) {
-			obj->data.diskio = prepare_diskio_stat(dev_name(arg));
-		} else {
-			obj->data.diskio = NULL;
-		}
+		obj->data.diskio = prepare_diskio_stat(dev_name(arg));
 	END OBJ(diskio_write, INFO_DISKIO)
-		if (arg) {
-			obj->data.diskio = prepare_diskio_stat(dev_name(arg));
-		} else {
-			obj->data.diskio = NULL;
-		}
+		obj->data.diskio = prepare_diskio_stat(dev_name(arg));
 	END OBJ(diskiograph, INFO_DISKIO)
 		char *buf = scan_graph(dev_name(arg), &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
 
-		if (buf) {
-			obj->data.diskio = prepare_diskio_stat(buf);
+		obj->data.diskio = prepare_diskio_stat(buf);
+		if (buf)
 			free(buf);
-		} else {
-			obj->data.diskio = NULL;
-		}
 	END OBJ(diskiograph_read, INFO_DISKIO)
 		char *buf = scan_graph(dev_name(arg), &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
 
-		if (buf) {
-			obj->data.diskio = prepare_diskio_stat(buf);
+		obj->data.diskio = prepare_diskio_stat(buf);
+		if (buf)
 			free(buf);
-		} else {
-			obj->data.diskio = NULL;
-		}
 	END OBJ(diskiograph_write, INFO_DISKIO)
 		char *buf = scan_graph(dev_name(arg), &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
 
-		if (buf) {
-			obj->data.diskio = prepare_diskio_stat(buf);
+		obj->data.diskio = prepare_diskio_stat(buf);
+		if (buf)
 			free(buf);
-		} else {
-			obj->data.diskio = NULL;
-		}
 #endif
 	END OBJ(color, 0)
 #ifdef X11
@@ -4102,59 +4084,28 @@ static void generate_text_internal(char *p, int p_max_size,
 			/* TODO: move this correction from kB to kB/s elsewhere
 			 * (or get rid of it??) */
 			OBJ(diskio) {
-				if (obj->data.diskio) {
-					human_readable(
-							(obj->data.diskio->current / update_interval) * 1024LL,
-							p, p_max_size, "diskio");
-				} else {
-					human_readable(info.diskio_value * 1024LL, p, p_max_size,
-							"diskio");
-				}
+				human_readable((obj->data.diskio->current / update_interval) * 1024LL,
+						p, p_max_size, "diskio");
 			}
 			OBJ(diskio_write) {
-				if (obj->data.diskio) {
-					human_readable((obj->data.diskio->current_write / update_interval) * 1024LL, p, p_max_size,
-							"diskio_write");
-				} else {
-					human_readable(info.diskio_write_value * 1024LL, p, p_max_size,
-							"diskio_write");
-				}
+				human_readable((obj->data.diskio->current / update_interval) * 1024LL,
+						p, p_max_size, "diskio_write");
 			}
 			OBJ(diskio_read) {
-				if (obj->data.diskio) {
-					human_readable((obj->data.diskio->current_read / update_interval) * 1024LL, p, p_max_size,
-							"diskio_read");
-				} else {
-					human_readable(info.diskio_read_value * 1024LL, p, p_max_size,
-							"diskio_read");
-				}
+				human_readable((obj->data.diskio->current / update_interval) * 1024LL,
+						p, p_max_size, "diskio_read");
 			}
 			OBJ(diskiograph) {
-				if (obj->data.diskio) {
-					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-							obj->data.diskio->current, obj->e, 1, obj->showaslog);
-				} else {
-					new_graph(p, obj->a, obj->b, obj->c, obj->d, info.diskio_value,
-							obj->e, 1, obj->showaslog);
-				}
+				new_graph(p, obj->a, obj->b, obj->c, obj->d,
+				          obj->data.diskio->current, obj->e, 1, obj->showaslog);
 			}
 			OBJ(diskiograph_read) {
-				if (obj->data.diskio) {
-					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-							obj->data.diskio->current_read, obj->e, 1, obj->showaslog);
-				} else {
-					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-							info.diskio_read_value, obj->e, 1, obj->showaslog);
-				}
+				new_graph(p, obj->a, obj->b, obj->c, obj->d,
+				          obj->data.diskio->current_read, obj->e, 1, obj->showaslog);
 			}
 			OBJ(diskiograph_write) {
-				if (obj->data.diskio) {
-					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-							obj->data.diskio->current_write, obj->e, 1, obj->showaslog);
-				} else {
-					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-							info.diskio_write_value, obj->e, 1, obj->showaslog);
-				}
+				new_graph(p, obj->a, obj->b, obj->c, obj->d,
+				          obj->data.diskio->current_write, obj->e, 1, obj->showaslog);
 			}
 			OBJ(downspeed) {
 				spaced_print(p, p_max_size, "%d", 6, "downspeed",
@@ -5677,10 +5628,6 @@ static void generate_text(void)
 	current_update_time = get_time();
 
 	update_stuff();
-	/* fix diskio rates to b/s (use update_interval */
-	info.diskio_read_value /= update_interval;
-	info.diskio_write_value /= update_interval;
-	info.diskio_value /= update_interval;
 
 	/* add things to the buffer */
 
