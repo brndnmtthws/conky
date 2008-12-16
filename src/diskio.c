@@ -26,7 +26,12 @@
  *
  */
 
-#include "conky.h"
+#include "config.h"
+#include "conky.h"	/* text_buffer_size */
+#include "logging.h"
+#include "diskio.h"
+#include "common.h"
+#include <stdlib.h>
 #include <limits.h>
 /* The following ifdefs were adapted from gkrellm */
 #include <linux/major.h>

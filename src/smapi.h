@@ -19,11 +19,8 @@
  *
  */
 
-#ifndef SMAPI_H
-#define SMAPI_H
-
-#include "conky.h"
-#include <sys/stat.h>
+#ifndef _SMAPI_H
+#define _SMAPI_H
 
 int smapi_bat_installed(int);
 
@@ -37,4 +34,4 @@ char *smapi_get_bat_str(int, const char *);
 int smapi_get_bat_int(int, const char *);
 char *smapi_get_bat_val(const char *);
 
-#endif /* SMAPI_H */
+#endif /* _SMAPI_H */

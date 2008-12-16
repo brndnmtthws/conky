@@ -25,6 +25,7 @@
  */
 
 #include "conky.h"
+#include "logging.h"
 
 void init_mpd_stats(struct mpd_s *mpd)
 {

@@ -25,23 +25,24 @@
  *
  */
 
+#include "config.h"
 #include "conky.h"
+#include "logging.h"
+#include "common.h"
 
-#ifdef X11
+#include "x11.h"
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xmd.h>
 #include <X11/Xutil.h>
+
 #ifdef XFT
 #include <X11/Xft/Xft.h>
+int use_xft = 0;
 #endif
 
 #ifdef HAVE_XDBE
 int use_xdbe;
-#endif
-
-#ifdef XFT
-int use_xft = 0;
 #endif
 
 /* some basic X11 stuff */
@@ -560,4 +561,3 @@ void update_x11info(void)
 	current_info->x11.monitor.number = XScreenCount(display);
 	current_info->x11.monitor.current = XDefaultScreen(display);
 }
-#endif /* X11 */

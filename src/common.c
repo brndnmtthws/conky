@@ -25,11 +25,26 @@
  *
  */
 
+#include "config.h"
 #include "conky.h"
+#include "fs.h"
+#include "logging.h"
 #include <ctype.h>
 #include <errno.h>
 #include <sys/time.h>
 #include <pthread.h>
+
+/* check for OS and include appropriate headers */
+#if defined(__linux__)
+#include "linux.h"
+#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#include "freebsd.h"
+#elif defined(__OpenBSD__)
+#include "openbsd.h"
+#endif
+
+/* OS specific prototypes to be implemented by linux.c & Co. */
+void update_entropy(void);
 
 #ifndef HAVE_STRNDUP
 // use our own strndup() if it's not available
@@ -183,7 +198,7 @@ void free_dns_data(void)
 
 //static double last_dns_update;
 
-void update_dns_data(void)
+static void update_dns_data(void)
 {
 	FILE *fp;
 	char line[256];
@@ -258,6 +273,7 @@ static double last_meminfo_update;
 static double last_fs_update;
 
 unsigned long long need_mask;
+int no_buffers;
 
 #define NEED(a) ((need_mask & (1 << a)) && ((info.mask & (1 << a)) == 0))
 

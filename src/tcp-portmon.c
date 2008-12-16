@@ -18,6 +18,7 @@
  *
  */
 #include "conky.h"
+#include "logging.h"
 #include "tcp-portmon.h"
 #include "libtcp-portmon.h"
 

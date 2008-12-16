@@ -123,6 +123,7 @@ conky_SOURCES = 		\
 	fs.c 			\
 	$(hddtemp)		\
 	$(linux) 		\
+	logging.h               \
 	$(nvidia)		\
 	mail.c 			\
 	mixer.c 		\
@@ -142,7 +143,9 @@ conky_SOURCES = 		\
 	$(xmms2)		\
 	$(smapi)                \
 	temphelper.c            \
-	temphelper.h
+	temphelper.h            \
+	text_object.h           \
+	text_object.c
 
 conky_LDFLAGS = 				\
 	$(PTHREAD_LIBS)				\

@@ -24,10 +24,12 @@
  *
  */
 
+#include "config.h"
+#include "conky.h"
+#include "logging.h"
+
 #include <bmp/dbus.hh>
 #include <dbus/dbus-glib.h>
-
-#include "conky.h"
 
 #define DBUS_TYPE_G_STRING_VALUE_HASHTABLE \
 	(dbus_g_type_get_map("GHashTable", G_TYPE_STRING, G_TYPE_VALUE))

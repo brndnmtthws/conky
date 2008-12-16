@@ -25,7 +25,10 @@
  *
  */
 
+#include "config.h"
+#include "text_object.h"
 #include "conky.h"
+#include "common.h"
 #include <stdarg.h>
 #include <math.h>
 #include <ctype.h>
@@ -39,6 +42,7 @@
 #endif
 #include <sys/time.h>
 #ifdef X11
+#include "x11.h"
 #include <X11/Xutil.h>
 #ifdef HAVE_XDAMAGE
 #include <X11/extensions/Xdamage.h>
@@ -54,6 +58,35 @@
 #include <fcntl.h>
 #include <getopt.h>
 
+/* local headers */
+#include "build.h"
+#include "diskio.h"
+#include "fs.h"
+#include "logging.h"
+#include "mixer.h"
+#include "mail.h"
+#include "mboxscan.h"
+#include "temphelper.h"
+#include "top.h"
+
+/* check for OS and include appropriate headers */
+#if defined(__linux__)
+#include "linux.h"
+#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+#include "freebsd.h"
+#elif defined(__OpenBSD__)
+#include "openbsd.h"
+#endif
+
+/* FIXME: apm_getinfo is unused here. maybe it's meant for common.c */
+#if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) \
+		|| defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
+int apm_getinfo(int fd, apm_info_t aip);
+char *get_apm_adapter(void);
+char *get_apm_battery_life(void);
+char *get_apm_battery_time(void);
+#endif
+
 #ifdef HAVE_ICONV
 #include <iconv.h>
 #endif
@@ -64,10 +97,6 @@
 #include "conf_cookie.h"
 #endif
 #endif
-
-#include "build.h"
-
-#include "temphelper.h"
 
 #ifndef S_ISSOCK
 #define S_ISSOCK(x)   ((x & S_IFMT) == S_IFSOCK)
@@ -80,10 +109,30 @@
 //#define SIGNAL_BLOCKING
 #undef SIGNAL_BLOCKING
 
-/* debugging level */
+/* debugging level, used by logging.h */
 int global_debug_level = 0;
 
+/* two strings for internal use */
+static char *tmpstring1, *tmpstring2;
+
+/* variables holding various config settings */
+int short_units;
+int cpu_separate;
+static int use_spacer;
+int top_cpu, top_mem;
+#define TO_X 1
+#define TO_STDOUT 2
+static int output_methods;
+static volatile int g_signal_pending;
+/* Update interval */
+static double update_interval;
+
+
+/* prototypes for internally used functions */
+static void signal_handler(int);
 static void print_version(void) __attribute__((noreturn));
+static void reload_config(void);
+static void clean_up(void);
 
 static void print_version(void)
 {
@@ -338,6 +387,10 @@ static void load_fonts(void)
 
 #endif /* X11 */
 
+/* struct that has all info to be shared between
+ * instances of the same text object */
+struct information info;
+
 /* default config file */
 static char *current_config;
 
@@ -459,11 +512,6 @@ static char *global_text = 0;
 long global_text_lines;
 
 static int total_updates;
-
-/* if-blocks */
-static int blockdepth = 0;
-static int if_jumped = 0;
-static int blockstart[MAX_IF_BLOCK_DEPTH];
 
 int check_contains(char *f, char *s)
 {
@@ -1101,459 +1149,11 @@ static void human_readable(long long num, char *buf, int size, const char *func_
 	} while (len >= (short_units ? SHORT_WIDTH : WIDTH) || len >= size);
 }
 
-/* text handling */
-
-enum text_object_type {
-	OBJ_addr,
-#if defined(__linux__)
-    OBJ_addrs,
-#endif /* __linux__ */
-#ifndef __OpenBSD__
-	OBJ_acpiacadapter,
-	OBJ_adt746xcpu,
-	OBJ_adt746xfan,
-	OBJ_acpifan,
-	OBJ_acpitemp,
-	OBJ_battery,
-	OBJ_battery_time,
-	OBJ_battery_percent,
-	OBJ_battery_bar,
-#endif /* !__OpenBSD__ */
-	OBJ_buffers,
-	OBJ_cached,
-	OBJ_color,
-	OBJ_color0,
-	OBJ_color1,
-	OBJ_color2,
-	OBJ_color3,
-	OBJ_color4,
-	OBJ_color5,
-	OBJ_color6,
-	OBJ_color7,
-	OBJ_color8,
-	OBJ_color9,
-	OBJ_conky_version,
-	OBJ_conky_build_date,
-	OBJ_conky_build_arch,
-	OBJ_font,
-	OBJ_cpu,
-	OBJ_cpubar,
-	OBJ_cpugraph,
-	OBJ_loadgraph,
-	OBJ_diskio,
-	OBJ_diskio_read,
-	OBJ_diskio_write,
-	OBJ_diskiograph,
-	OBJ_diskiograph_read,
-	OBJ_diskiograph_write,
-	OBJ_downspeed,
-	OBJ_downspeedf,
-	OBJ_downspeedgraph,
-	OBJ_else,
-	OBJ_endif,
-	OBJ_image,
-	OBJ_exec,
-	OBJ_execi,
-	OBJ_texeci,
-	OBJ_execbar,
-	OBJ_execgraph,
-	OBJ_execibar,
-	OBJ_execigraph,
-	OBJ_execp,
-	OBJ_execpi,
-	OBJ_freq,
-	OBJ_freq_g,
-	OBJ_fs_bar,
-	OBJ_fs_bar_free,
-	OBJ_fs_free,
-	OBJ_fs_free_perc,
-	OBJ_fs_size,
-	OBJ_fs_type,
-	OBJ_fs_used,
-	OBJ_fs_used_perc,
-	OBJ_goto,
-	OBJ_tab,
-	OBJ_hr,
-	OBJ_offset,
-	OBJ_voffset,
-	OBJ_alignr,
-	OBJ_alignc,
-	OBJ_i2c,
-	OBJ_platform,
-	OBJ_hwmon,
-#if defined(__linux__)
-	OBJ_disk_protect,
-	OBJ_i8k_version,
-	OBJ_i8k_bios,
-	OBJ_i8k_serial,
-	OBJ_i8k_cpu_temp,
-	OBJ_i8k_left_fan_status,
-	OBJ_i8k_right_fan_status,
-	OBJ_i8k_left_fan_rpm,
-	OBJ_i8k_right_fan_rpm,
-	OBJ_i8k_ac_status,
-	OBJ_i8k_buttons_status,
-	OBJ_ibm_fan,
-	OBJ_ibm_temps,
-	OBJ_ibm_volume,
-	OBJ_ibm_brightness,
-	OBJ_if_up,
-	OBJ_if_gw,
-	OBJ_ioscheduler,
-	OBJ_gw_iface,
-	OBJ_gw_ip,
-	OBJ_laptop_mode,
-	OBJ_pb_battery,
-	OBJ_voltage_mv,
-	OBJ_voltage_v,
-	OBJ_wireless_essid,
-	OBJ_wireless_mode,
-	OBJ_wireless_bitrate,
-	OBJ_wireless_ap,
-	OBJ_wireless_link_qual,
-	OBJ_wireless_link_qual_max,
-	OBJ_wireless_link_qual_perc,
-	OBJ_wireless_link_bar,
-#endif /* __linux__ */
-	OBJ_if_empty,
-	OBJ_if_existing,
-	OBJ_if_mounted,
-	OBJ_if_running,
-	OBJ_top,
-	OBJ_top_mem,
-	OBJ_tail,
-	OBJ_head,
-	OBJ_lines,
-	OBJ_words,
-	OBJ_kernel,
-	OBJ_loadavg,
-	OBJ_machine,
-	OBJ_mails,
-	OBJ_mboxscan,
-	OBJ_mem,
-	OBJ_memeasyfree,
-	OBJ_memfree,
-	OBJ_membar,
-	OBJ_memgraph,
-	OBJ_memmax,
-	OBJ_memperc,
-	OBJ_mem_res,
-	OBJ_mem_vsize,
-	OBJ_mixer,
-	OBJ_mixerl,
-	OBJ_mixerr,
-	OBJ_mixerbar,
-	OBJ_mixerlbar,
-	OBJ_mixerrbar,
-#ifdef X11
-	OBJ_monitor,
-	OBJ_monitor_number,
-#endif
-	OBJ_nameserver,
-	OBJ_new_mails,
-	OBJ_nodename,
-	OBJ_nvidia,
-	OBJ_pre_exec,
-	OBJ_processes,
-	OBJ_running_processes,
-	OBJ_shadecolor,
-	OBJ_outlinecolor,
-	OBJ_stippled_hr,
-	OBJ_swap,
-	OBJ_swapbar,
-	OBJ_swapmax,
-	OBJ_swapperc,
-	OBJ_sysname,
-	OBJ_temp1,	/* i2c is used instead in these */
-	OBJ_temp2,
-	OBJ_text,
-	OBJ_time,
-	OBJ_utime,
-	OBJ_tztime,
-	OBJ_totaldown,
-	OBJ_totalup,
-	OBJ_updates,
-	OBJ_upspeed,
-	OBJ_upspeedf,
-	OBJ_upspeedgraph,
-	OBJ_uptime,
-	OBJ_uptime_short,
-	OBJ_user_names,
-	OBJ_user_terms,
-	OBJ_user_times,
-	OBJ_user_number,
-	OBJ_imap,
-	OBJ_imap_messages,
-	OBJ_imap_unseen,
-	OBJ_pop3,
-	OBJ_pop3_unseen,
-	OBJ_pop3_used,
-#if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) \
-		|| defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
-	OBJ_apm_adapter,
-	OBJ_apm_battery_time,
-	OBJ_apm_battery_life,
-#endif /* __FreeBSD__ __OpenBSD__ */
-#ifdef __OpenBSD__
-	OBJ_obsd_sensors_temp,
-	OBJ_obsd_sensors_fan,
-	OBJ_obsd_sensors_volt,
-	OBJ_obsd_vendor,
-	OBJ_obsd_product,
-#endif /* __OpenBSD__ */
-#ifdef MPD
-	OBJ_mpd_title,
-	OBJ_mpd_artist,
-	OBJ_mpd_album,
-	OBJ_mpd_random,
-	OBJ_mpd_repeat,
-	OBJ_mpd_vol,
-	OBJ_mpd_bitrate,
-	OBJ_mpd_status,
-	OBJ_mpd_host,
-	OBJ_mpd_port,
-	OBJ_mpd_password,
-	OBJ_mpd_bar,
-	OBJ_mpd_elapsed,
-	OBJ_mpd_length,
-	OBJ_mpd_track,
-	OBJ_mpd_name,
-	OBJ_mpd_file,
-	OBJ_mpd_percent,
-	OBJ_mpd_smart,
-	OBJ_if_mpd_playing,
-#endif
-#ifdef MOC
-  OBJ_moc_state,
-  OBJ_moc_file,
-  OBJ_moc_title,
-  OBJ_moc_artist,
-  OBJ_moc_song,
-  OBJ_moc_album,
-  OBJ_moc_totaltime,
-  OBJ_moc_timeleft,
-  OBJ_moc_curtime,
-  OBJ_moc_bitrate,
-  OBJ_moc_rate,
-#endif
-	OBJ_music_player_interval,
-#ifdef XMMS2
-	OBJ_xmms2_artist,
-	OBJ_xmms2_album,
-	OBJ_xmms2_title,
-	OBJ_xmms2_genre,
-	OBJ_xmms2_comment,
-	OBJ_xmms2_url,
-	OBJ_xmms2_date,
-	OBJ_xmms2_tracknr,
-	OBJ_xmms2_bitrate,
-	OBJ_xmms2_id,
-	OBJ_xmms2_duration,
-	OBJ_xmms2_elapsed,
-	OBJ_xmms2_size,
-	OBJ_xmms2_percent,
-	OBJ_xmms2_status,
-	OBJ_xmms2_bar,
-	OBJ_xmms2_smart,
-	OBJ_xmms2_playlist,
-	OBJ_xmms2_timesplayed,
-	OBJ_if_xmms2_connected,
-#endif
-#ifdef AUDACIOUS
-	OBJ_audacious_status,
-	OBJ_audacious_title,
-	OBJ_audacious_length,
-	OBJ_audacious_length_seconds,
-	OBJ_audacious_position,
-	OBJ_audacious_position_seconds,
-	OBJ_audacious_bitrate,
-	OBJ_audacious_frequency,
-	OBJ_audacious_channels,
-	OBJ_audacious_filename,
-	OBJ_audacious_playlist_length,
-	OBJ_audacious_playlist_position,
-	OBJ_audacious_main_volume,
-	OBJ_audacious_bar,
-#endif
-#ifdef BMPX
-	OBJ_bmpx_title,
-	OBJ_bmpx_artist,
-	OBJ_bmpx_album,
-	OBJ_bmpx_track,
-	OBJ_bmpx_uri,
-	OBJ_bmpx_bitrate,
-#endif
-#ifdef EVE
-	OBJ_eve,
-#endif
-#ifdef RSS
-	OBJ_rss,
-#endif
-#ifdef TCP_PORT_MONITOR
-	OBJ_tcp_portmon,
-#endif
-#ifdef HAVE_ICONV
-	OBJ_iconv_start,
-	OBJ_iconv_stop,
-#endif
-#ifdef HDDTEMP
-	OBJ_hddtemp,
-#endif
-#ifdef SMAPI
-	OBJ_smapi,
-	OBJ_smapi_bat_bar,
-	OBJ_smapi_bat_perc,
-	OBJ_smapi_bat_temp,
-	OBJ_smapi_bat_power,
-	OBJ_if_smapi_bat_installed,
-#endif
-	OBJ_scroll,
-	OBJ_entropy_avail,
-	OBJ_entropy_poolsize,
-	OBJ_entropy_bar
-};
-
-struct text_object {
-	union {
-		char *s;		/* some string */
-		int i;			/* some integer */
-		long l;			/* some other integer */
-		unsigned int sensor;
-		struct net_stat *net;
-		struct fs_stat *fs;
-		struct diskio_stat *diskio;
-		unsigned char loadavg[3];
-		unsigned int cpu_index;
-		struct mail_s *mail;
-
-		struct {
-			char *args;
-			char *output;
-		} mboxscan;
-
-		struct {
-			char *tz;	/* timezone variable */
-			char *fmt;	/* time display formatting */
-		} tztime;
-
-		struct {
-			struct fs_stat *fs;
-			int w, h;
-		} fsbar;		/* 3 */
-
-		struct {
-			int l;
-			int w, h;
-		} mixerbar;		/* 3 */
-
-		struct {
-			int fd;
-			int arg;
-			char devtype[256];
-			char type[64];
-		} sysfs;		/* 2 */
-
-		struct {
-			int pos;
-			char *s;
-			char *str;
-		} ifblock;
-
-		struct {
-			int num;
-			int type;
-		} top;
-
-		struct {
-			int wantedlines;
-			int readlines;
-			char *logfile;
-			double last_update;
-			float interval;
-			char *buffer;
-			/* If not -1, a file descriptor to read from when
-			 * logfile is a FIFO. */
-			int fd;
-		} tail;
-
-		struct {
-			double last_update;
-			float interval;
-			char *cmd;
-			char *buffer;
-			double data;
-		} execi;		/* 5 */
-
-		struct {
-			float interval;
-			char *cmd;
-			char *buffer;
-			double data;
-			timed_thread *p_timed_thread;
-		} texeci;
-
-		struct {
-			int a, b;
-		} pair;			/* 2 */
-#ifdef TCP_PORT_MONITOR
-		struct tcp_port_monitor_data tcp_port_monitor;
-#endif
-#ifdef HDDTEMP
-		struct {
-			char *addr;
-			int port;
-			char *dev;
-			double update_time;
-			char *temp;
-		} hddtemp;		/* 2 */
-#endif
-#ifdef EVE
-		struct {
-			char *apikey;
-			char *charid;
-			char *userid;
-		} eve;
-#endif
-#ifdef RSS
-		struct {
-			char *uri;
-			char *action;
-			int act_par;
-			int delay;
-		} rss;
-#endif
-		struct {
-			char *text;
-			unsigned int show;
-			unsigned int step;
-			unsigned int start;
-		} scroll;
-		
-		struct local_mail_s local_mail;
-#ifdef NVIDIA
-		struct nvidia_s nvidia;
-#endif /* NVIDIA */
-
-	} data;
-	int type;
-	int a, b;
-	long line;
-	unsigned int c, d, e;
-	float f;
-	char showaslog;
-	char global_mode;
-};
-
-struct text_object_list {
-	unsigned int text_object_count;
-	struct text_object *text_objects;
-};
-
-static struct text_object_list *global_text_object_list;
+/* global object list root element */
+static struct text_object global_root_object;
 
 static void generate_text_internal(char *p, int p_max_size,
-	struct text_object_list *text_object_list,
-	struct information *cur);
+	struct text_object text_object, struct information *cur);
 
 static inline void read_exec(const char *data, char *buf, const int size)
 {
@@ -1603,55 +1203,55 @@ static struct text_object *new_text_object_internal(void)
 /*
  * call with full == 0 when freeing after 'internal' evaluation of objects
  */
-static void free_text_objects(struct text_object_list *text_object_list, char full)
+static void free_text_objects(struct text_object *root, char full)
 {
-	unsigned int i;
 	struct text_object *obj;
 
-	if (text_object_list == NULL) {
+	if (!root->prev) {
 		return;
 	}
 
-	for (i = 0; i < text_object_list->text_object_count; i++) {
-		obj = &text_object_list->text_objects[i];
+#define data obj->data
+	for (obj = root->prev; obj; obj = root->prev) {
+		root->prev = obj->prev;
 		switch (obj->type) {
 #ifndef __OpenBSD__
 			case OBJ_acpitemp:
-				close(obj->data.i);
+				close(data.i);
 				break;
 			case OBJ_i2c:
 			case OBJ_platform:
 			case OBJ_hwmon:
-				close(obj->data.sysfs.fd);
+				close(data.sysfs.fd);
 				break;
 #endif /* !__OpenBSD__ */
 			case OBJ_time:
 			case OBJ_utime:
-				free(obj->data.s);
+				free(data.s);
 				break;
 			case OBJ_tztime:
-				free(obj->data.tztime.tz);
-				free(obj->data.tztime.fmt);
+				free(data.tztime.tz);
+				free(data.tztime.fmt);
 				break;
 			case OBJ_mboxscan:
-				free(obj->data.mboxscan.args);
-				free(obj->data.mboxscan.output);
+				free(data.mboxscan.args);
+				free(data.mboxscan.output);
 				break;
 			case OBJ_mails:
 			case OBJ_new_mails:
-				free(obj->data.local_mail.box);
+				free(data.local_mail.box);
 				break;
 			case OBJ_imap:
 				free(info.mail);
 				break;
 			case OBJ_imap_unseen:
 				if (!obj->global_mode) {
-					free(obj->data.mail);
+					free(data.mail);
 				}
 				break;
 			case OBJ_imap_messages:
 				if (!obj->global_mode) {
-					free(obj->data.mail);
+					free(data.mail);
 				}
 				break;
 			case OBJ_pop3:
@@ -1659,24 +1259,24 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 				break;
 			case OBJ_pop3_unseen:
 				if (!obj->global_mode) {
-					free(obj->data.mail);
+					free(data.mail);
 				}
 				break;
 			case OBJ_pop3_used:
 				if (!obj->global_mode) {
-					free(obj->data.mail);
+					free(data.mail);
 				}
 				break;
 			case OBJ_if_empty:
 			case OBJ_if_existing:
 			case OBJ_if_mounted:
 			case OBJ_if_running:
-				free(obj->data.ifblock.s);
-				free(obj->data.ifblock.str);
+				free(data.ifblock.s);
+				free(data.ifblock.str);
 				break;
 			case OBJ_tail:
-				free(obj->data.tail.logfile);
-				free(obj->data.tail.buffer);
+				free(data.tail.logfile);
+				free(data.tail.buffer);
 				break;
 			case OBJ_text:
 			case OBJ_font:
@@ -1685,7 +1285,7 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 			case OBJ_execbar:
 			case OBJ_execgraph:
 			case OBJ_execp:
-				free(obj->data.s);
+				free(data.s);
 				break;
 #ifdef HAVE_ICONV
 			case OBJ_iconv_start:
@@ -1694,15 +1294,15 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 #endif
 #ifdef __LINUX__
 			case OBJ_disk_protect:
-				free(objs[i].data.s);
+				free(obj->data.s);
 				break;
 			case OBJ_if_up:
-				free(objs[i].data.ifblock.s);
-				free(objs[i].data.ifblock.str);
+				free(obj->data.ifblock.s);
+				free(obj->data.ifblock.str);
 				break;
 			case OBJ_if_gw:
-				free(objs[i].data.ifblock.s);
-				free(objs[i].data.ifblock.str);
+				free(obj->data.ifblock.s);
+				free(obj->data.ifblock.str);
 			case OBJ_gw_iface:
 			case OBJ_gw_ip:
 				if (info.gw_info.iface) {
@@ -1715,8 +1315,8 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 				}
 				break;
 			case OBJ_ioscheduler:
-				if(objs[i].data.s)
-					free(objs[i].data.s);
+				if(obj->data.s)
+					free(obj->data.s);
 				break;
 #endif
 #ifdef XMMS2
@@ -1804,30 +1404,30 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 #endif
 #ifdef RSS
 			case OBJ_rss:
-				free(obj->data.rss.uri);
-				free(obj->data.rss.action);
+				free(data.rss.uri);
+				free(data.rss.action);
 				break;
 #endif
 			case OBJ_pre_exec:
 				break;
 #ifndef __OpenBSD__
 			case OBJ_battery:
-				free(obj->data.s);
+				free(data.s);
 				break;
 			case OBJ_battery_time:
-				free(obj->data.s);
+				free(data.s);
 				break;
 #endif /* !__OpenBSD__ */
 			case OBJ_execpi:
 			case OBJ_execi:
 			case OBJ_execibar:
 			case OBJ_execigraph:
-				free(obj->data.execi.cmd);
-				free(obj->data.execi.buffer);
+				free(data.execi.cmd);
+				free(data.execi.buffer);
 				break;
 			case OBJ_texeci:
-				free(obj->data.texeci.cmd);
-				free(obj->data.texeci.buffer);
+				free(data.texeci.cmd);
+				free(data.texeci.buffer);
 				break;
 			case OBJ_nameserver:
 				free_dns_data();
@@ -1841,10 +1441,10 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 				break;
 #ifdef HDDTEMP
 			case OBJ_hddtemp:
-				free(obj->data.hddtemp.dev);
-				free(obj->data.hddtemp.addr);
-				if (obj->data.hddtemp.temp)
-					free(obj->data.hddtemp.temp);
+				free(data.hddtemp.dev);
+				free(data.hddtemp.addr);
+				if (data.hddtemp.temp)
+					free(data.hddtemp.temp);
 				break;
 #endif
 			case OBJ_entropy_avail:
@@ -1874,11 +1474,11 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
 			case OBJ_smapi_bat_perc:
 			case OBJ_smapi_bat_temp:
 			case OBJ_smapi_bat_power:
-				free(obj->data.s);
+				free(data.s);
 				break;
 			case OBJ_if_smapi_bat_installed:
-				free(obj->data.ifblock.s);
-				free(obj->data.ifblock.str);
+				free(data.ifblock.s);
+				free(data.ifblock.str);
 				break;
 #endif
 #ifdef NVIDIA
@@ -1927,14 +1527,14 @@ static void free_text_objects(struct text_object_list *text_object_list, char fu
       break;
 #endif
 			case OBJ_scroll:
-				free(obj->data.scroll.text);
+				free(data.scroll.text);
 				break;
 		}
+		free(obj);
 	}
+#undef data
+	/* FIXME: below is surely useless */
 	if (full) {} // disable warning when MPD !defined
-	free(text_object_list->text_objects);
-	text_object_list->text_objects = NULL;
-	text_object_list->text_object_count = 0;
 }
 
 void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
@@ -1973,8 +1573,7 @@ const char *dev_name(const char *path)
 
 /* construct_text_object() creates a new text_object */
 static struct text_object *construct_text_object(const char *s,
-		const char *arg, unsigned int object_count,
-		struct text_object *text_objects, long line, char allow_threaded)
+		const char *arg, long line, char allow_threaded)
 {
 	// struct text_object *obj = new_text_object();
 	struct text_object *obj = new_text_object_internal();
@@ -2171,24 +1770,14 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(ibm_volume, 0)
 	END OBJ(ibm_brightness, 0)
 	END OBJ(if_up, 0)
-		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-		}
 		if (!arg) {
 			ERR("if_up needs an argument");
 			obj->data.ifblock.s = 0;
 		} else
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
-		blockstart[blockdepth] = object_count;
-		obj->data.ifblock.pos = object_count + 2;
-		blockdepth++;
+		obj_be_ifblock_if(obj);
 	END OBJ(if_gw, 0)
-		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-		}
-		blockstart[blockdepth] = object_count;
-		obj->data.ifblock.pos = object_count + 2;
-		blockdepth++;
+		obj_be_ifblock_if(obj);
 	END OBJ(ioscheduler, 0)
 		if (!arg) {
 			CRIT_ERR("get_ioscheduler needs an argument (e.g. hda)");
@@ -2398,22 +1987,9 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.net = get_net_stat(buf);
 		free(buf);
 	END OBJ(else, 0)
-		if (blockdepth) {
-			(text_objects[blockstart[blockdepth - 1]]).data.ifblock.pos =
-				object_count;
-			blockstart[blockdepth - 1] = object_count;
-			obj->data.ifblock.pos = object_count + 2;
-		} else {
-			ERR("$else: no matching $if_*");
-		}
+		obj_be_ifblock_else(obj);
 	END OBJ(endif, 0)
-		if (blockdepth) {
-			blockdepth--;
-			text_objects[blockstart[blockdepth]].data.ifblock.pos =
-				object_count;
-		} else {
-			ERR("$endif: no matching $if_*");
-		}
+		obj_be_ifblock_endif(obj);
 	END OBJ(image, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 #ifdef HAVE_POPEN
@@ -2957,22 +2533,14 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.loadavg[1] = (r >= 2) ? (unsigned char) b : 0;
 		obj->data.loadavg[2] = (r >= 3) ? (unsigned char) c : 0;
 	END OBJ(if_empty, 0)
-		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-		}
 		if (!arg) {
 			ERR("if_empty needs an argument");
 			obj->data.ifblock.s = 0;
 		} else {
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
 		}
-		blockstart[blockdepth] = object_count;
-		obj->data.ifblock.pos = object_count + 2;
-		blockdepth++;
+		obj_be_ifblock_if(obj);
 	END OBJ(if_existing, 0)
-		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-		}
 		if (!arg) {
 			ERR("if_existing needs an argument or two");
 			obj->data.ifblock.s = NULL;
@@ -2989,26 +2557,17 @@ static struct text_object *construct_text_object(const char *s,
 				obj->data.ifblock.str = strndup(buf2, text_buffer_size);
 			}
 		}
-		blockstart[blockdepth] = object_count;
-		obj->data.ifblock.pos = object_count + 2;
-		blockdepth++;
+		DBGP("if_existing: '%s' '%s'", obj->data.ifblock.s, obj->data.ifblock.str);
+		obj_be_ifblock_if(obj);
 	END OBJ(if_mounted, 0)
-		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-		}
 		if (!arg) {
 			ERR("if_mounted needs an argument");
 			obj->data.ifblock.s = 0;
 		} else {
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
 		}
-		blockstart[blockdepth] = object_count;
-		obj->data.ifblock.pos = object_count + 2;
-		blockdepth++;
+		obj_be_ifblock_if(obj);
 	END OBJ(if_running, 0)
-		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-		}
 		if (arg) {
 			char buf[256];
 
@@ -3018,9 +2577,7 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("if_running needs an argument");
 			obj->data.ifblock.s = 0;
 		}
-		blockstart[blockdepth] = object_count;
-		obj->data.ifblock.pos = object_count + 2;
-		blockdepth++;
+		obj_be_ifblock_if(obj);
 	END OBJ(kernel, 0)
 	END OBJ(machine, 0)
 	END OBJ(mails, 0)
@@ -3298,17 +2855,12 @@ static struct text_object *construct_text_object(const char *s,
 		else
 			ERR("smapi needs an argument");
 	END OBJ(if_smapi_bat_installed, 0)
-		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-		}
 		if (!arg) {
 			ERR("if_smapi_bat_installed needs an argument");
 			obj->data.ifblock.s = 0;
 		} else
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
-		blockstart[blockdepth] = object_count;
-		obj->data.ifblock.pos = object_count + 2;
-		blockdepth++;
+		obj_be_ifblock_if(obj);
 	END OBJ(smapi_bat_perc, 0)
 		if (arg)
 			obj->data.s = strndup(arg, text_buffer_size);
@@ -3335,17 +2887,29 @@ static struct text_object *construct_text_object(const char *s,
 				arg = scan_bar(arg + cnt, &obj->a, &obj->b);
 			}
 		} else
-			ERR("if_smapi_bat_bar needs an argument");
+			ERR("smapi_bat_bar needs an argument");
 #endif /* SMAPI */
 #ifdef MPD
 	END OBJ_THREAD(mpd_artist, INFO_MPD)
+		if (arg) {
+			sscanf(arg, "%d", &obj->data.i);
+			if (obj->data.i > 0) {
+				obj->data.i++;
+			} else {
+				ERR("mpd_artist: invalid length argument");
+				obj->data.i = 0;
+			}
+		} else {
+			obj->data.i = 0;
+		}
 	END OBJ_THREAD(mpd_title, INFO_MPD)
 		if (arg) {
 			sscanf(arg, "%d", &obj->data.i);
 			if (obj->data.i > 0) {
 				obj->data.i++;
 			} else {
-				CRIT_ERR("mpd_title: invalid length argument");
+				ERR("mpd_title: invalid length argument");
+				obj->data.i = 0;
 			}
 		} else {
 			obj->data.i = 0;
@@ -3355,10 +2919,54 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ_THREAD(mpd_elapsed, INFO_MPD)
 	END OBJ_THREAD(mpd_length, INFO_MPD)
 	END OBJ_THREAD(mpd_track, INFO_MPD)
+		if (arg) {
+			sscanf(arg, "%d", &obj->data.i);
+			if (obj->data.i > 0) {
+				obj->data.i++;
+			} else {
+				ERR("mpd_track: invalid length argument");
+				obj->data.i = 0;
+			}
+		} else {
+			obj->data.i = 0;
+		}
 	END OBJ_THREAD(mpd_name, INFO_MPD)
+		if (arg) {
+			sscanf(arg, "%d", &obj->data.i);
+			if (obj->data.i > 0) {
+				obj->data.i++;
+			} else {
+				ERR("mpd_name: invalid length argument");
+				obj->data.i = 0;
+			}
+		} else {
+			obj->data.i = 0;
+		}
 	END OBJ_THREAD(mpd_file, INFO_MPD)
+		if (arg) {
+			sscanf(arg, "%d", &obj->data.i);
+			if (obj->data.i > 0) {
+				obj->data.i++;
+			} else {
+				ERR("mpd_file: invalid length argument");
+				obj->data.i = 0;
+			}
+		} else {
+			obj->data.i = 0;
+		}
 	END OBJ_THREAD(mpd_percent, INFO_MPD)
 	END OBJ_THREAD(mpd_album, INFO_MPD)
+		if (arg) {
+			sscanf(arg, "%d", &obj->data.i);
+			if (obj->data.i > 0) {
+				obj->data.i++;
+			} else {
+				ERR("mpd_album: invalid length argument");
+				obj->data.i = 0;
+			}
+		} else {
+			obj->data.i = 0;
+		}
 	END OBJ_THREAD(mpd_vol, INFO_MPD)
 	END OBJ_THREAD(mpd_bitrate, INFO_MPD)
 	END OBJ_THREAD(mpd_status, INFO_MPD)
@@ -3370,18 +2978,14 @@ static struct text_object *construct_text_object(const char *s,
 			if (obj->data.i > 0) {
 				obj->data.i++;
 			} else {
-				CRIT_ERR("mpd_smart: invalid length argument");
+				ERR("mpd_smart: invalid length argument");
+				obj->data.i = 0;
 			}
 		} else {
 			obj->data.i = 0;
 		}
 	END OBJ_THREAD(if_mpd_playing, INFO_MPD)
-		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-		}
-		blockstart[blockdepth] = object_count;
-		obj->data.ifblock.pos = object_count + 2;
-		blockdepth++;
+		obj_be_ifblock_if(obj);
 #endif /* MPD */
 #ifdef MOC
   END OBJ_THREAD(moc_state, INFO_MOC)
@@ -3418,12 +3022,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(xmms2_playlist, INFO_XMMS2)
 	END OBJ(xmms2_timesplayed, INFO_XMMS2)
 	END OBJ(if_xmms2_connected, INFO_XMMS2)
-		if (blockdepth >= MAX_IF_BLOCK_DEPTH) {
-			CRIT_ERR("MAX_IF_BLOCK_DEPTH exceeded");
-		}
-		blockstart[blockdepth] = object_count;
-		obj->data.ifblock.pos = object_count + 2;
-		blockdepth++;
+		obj_be_ifblock_if(obj);
 #endif
 #ifdef AUDACIOUS
 	END OBJ(audacious_status, INFO_AUDACIOUS)
@@ -3748,9 +3347,8 @@ static int text_contains_templates(const char *text)
 	return 0;
 }
 
-static struct text_object_list *extract_variable_text_internal(const char *const_p, char allow_threaded)
+static int extract_variable_text_internal(struct text_object *retval, const char *const_p, char allow_threaded)
 {
-	struct text_object_list *retval;
 	struct text_object *obj;
 	char *p, *s, *orig_p;
 	long line;
@@ -3770,9 +3368,7 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 		DBGP("no templates to replace");
 	}
 
-	retval = malloc(sizeof(struct text_object_list));
-	memset(retval, 0, sizeof(struct text_object_list));
-	retval->text_object_count = 0;
+	memset(retval, 0, sizeof(struct text_object));
 
 	line = global_text_lines;
 
@@ -3784,14 +3380,7 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 			*p = '\0';
 			obj = create_plain_text(s);
 			if (obj != NULL) {
-				// allocate memory for the object
-				retval->text_objects = realloc(retval->text_objects,
-						sizeof(struct text_object) *
-						(retval->text_object_count + 1));
-				// assign the new object to the end of the list.
-				memcpy(&retval->text_objects[retval->text_object_count++], obj,
-						sizeof(struct text_object));
-				free(obj);
+				append_object(retval, obj);
 			}
 			*p = '$';
 			p++;
@@ -3865,32 +3454,16 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 						tmp_p++;
 					}
 
-					obj = construct_text_object(buf, arg,
-							retval->text_object_count, retval->text_objects, line, allow_threaded);
+					obj = construct_text_object(buf, arg, line, allow_threaded);
 					if (obj != NULL) {
-						// allocate memory for the object
-						retval->text_objects = realloc(retval->text_objects,
-								sizeof(struct text_object) *
-								(retval->text_object_count + 1));
-						// assign the new object to the end of the list.
-						memcpy(
-								&retval->text_objects[retval->text_object_count++],
-								obj, sizeof(struct text_object));
-						free(obj);
+						append_object(retval, obj);
 					}
 				}
 				continue;
 			} else {
 				obj = create_plain_text("$");
 				if (obj != NULL) {
-					// allocate memory for the object
-					retval->text_objects = realloc(retval->text_objects,
-							sizeof(struct text_object) *
-							(retval->text_object_count + 1));
-					// assign the new object to the end of the list.
-					memcpy(&retval->text_objects[retval->text_object_count++],
-							obj, sizeof(struct text_object));
-					free(obj);
+					append_object(retval, obj);
 				}
 			}
 		}
@@ -3898,27 +3471,20 @@ static struct text_object_list *extract_variable_text_internal(const char *const
 	}
 	obj = create_plain_text(s);
 	if (obj != NULL) {
-		// allocate memory for the object
-		retval->text_objects = realloc(retval->text_objects,
-				sizeof(struct text_object) * (retval->text_object_count + 1));
-		// assign the new object to the end of the list.
-		memcpy(&retval->text_objects[retval->text_object_count++], obj,
-				sizeof(struct text_object));
-		free(obj);
+		append_object(retval, obj);
 	}
 
-	if (blockdepth) {
+	if (!ifblock_stack_empty()) {
 		ERR("one or more $endif's are missing");
 	}
 
 	free(orig_p);
-	return retval;
+	return 0;
 }
 
 static void extract_variable_text(const char *p)
 {
-	free_text_objects(global_text_object_list, 1);
-	free(global_text_object_list);
+	free_text_objects(&global_root_object, 1);
 	if (tmpstring1) {
 		free(tmpstring1);
 		tmpstring1 = 0;
@@ -3932,16 +3498,14 @@ static void extract_variable_text(const char *p)
 		text_buffer = 0;
 	}
 
-	global_text_object_list = extract_variable_text_internal(p, 1);
+	extract_variable_text_internal(&global_root_object, p, 1);
 }
 
-struct text_object_list *parse_conky_vars(char *txt, char *p, struct information *cur)
+int parse_conky_vars(struct text_object *root, char *txt, char *p, struct information *cur)
 {
-	struct text_object_list *object_list =
-		extract_variable_text_internal(txt, 0);
-
-	generate_text_internal(p, max_user_text, object_list, cur);
-	return object_list;
+	extract_variable_text_internal(root, txt, 0);
+	generate_text_internal(p, max_user_text, *root, cur);
+	return 0;
 }
 
 /* Allows reading from a FIFO (i.e., /dev/xconsole).
@@ -4175,10 +3739,9 @@ static inline double get_barnum(char *buf)
 }
 
 static void generate_text_internal(char *p, int p_max_size,
-		struct text_object_list *text_object_list,
-		struct information *cur)
+		struct text_object root, struct information *cur)
 {
-	unsigned int i;
+	struct text_object *obj;
 
 #ifdef HAVE_ICONV
 	char buff_in[p_max_size];
@@ -4187,12 +3750,31 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 
 	p[0] = 0;
-	for (i = 0; i < text_object_list->text_object_count; i++) {
-		struct text_object *obj = &(text_object_list->text_objects[i]);
+	for (obj = root.next; obj && p_max_size > 0; obj = obj->next) {
 
-		if (p_max_size < 1) {
-			break;
-		};
+/* IFBLOCK jumping algorithm
+ *
+ * This is easier as it looks like:
+ * - each IF checks it's condition
+ *   - on FALSE: call DO_JUMP
+ *   - on TRUE: don't care
+ * - each ELSE calls DO_JUMP unconditionally
+ * - each ENDIF is silently being ignored
+ *
+ * Why this works:
+ * DO_JUMP overwrites the "obj" variable of the loop and sets it to the target
+ * (i.e. the corresponding ELSE or ENDIF). After that, processing for the given
+ * object can continue, free()ing stuff e.g., then the for-loop does the rest: as
+ * regularly, "obj" is being updated to point to obj->next, so object parsing
+ * continues right after the corresponding ELSE or ENDIF. This means that if we
+ * find an ELSE, it's corresponding IF must not have jumped, so we need to jump
+ * always. If we encounter an ENDIF, it's corresponding IF or ELSE has not
+ * jumped, and there is nothing to do.
+ */
+#define DO_JUMP { \
+	DBGP2("jumping"); \
+	obj = obj->data.ifblock.next; \
+}
 
 #define OBJ(a) break; case OBJ_##a:
 
@@ -4462,18 +4044,12 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(if_up) {
 				if ((obj->data.ifblock.s)
 						&& (!interface_up(obj->data.ifblock.s))) {
-					i = obj->data.ifblock.pos;
-					if_jumped = 1;
-				} else {
-					if_jumped = 0;
+					DO_JUMP;
 				}
 			}
 			OBJ(if_gw) {
 				if (!cur->gw_info.count) {
-					i = obj->data.ifblock.pos;
-					if_jumped = 1;
-				} else {
-					if_jumped = 0;
+					DO_JUMP;
 				}
 			}
 			OBJ(gw_iface) {
@@ -4593,14 +4169,15 @@ static void generate_text_internal(char *p, int p_max_size,
 				obj->data.net->recv_speed / 1024.0, obj->e, 1, obj->showaslog);
 			}
 			OBJ(else) {
-				if (!if_jumped) {
-					i = obj->data.ifblock.pos - 1;
-				} else {
-					if_jumped = 0;
-				}
+				/* Since we see you, you're if has not jumped.
+				 * Do Ninja jump here: without leaving traces.
+				 * This is to prevent us from stale jumped flags.
+				 */
+				obj = obj->data.ifblock.next;
+				continue;
 			}
 			OBJ(endif) {
-				if_jumped = 0;
+				/* harmless object, just ignore */
 			}
 #ifdef HAVE_POPEN
 			OBJ(addr) {
@@ -4669,16 +4246,15 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(execp) {
 				struct information *tmp_info;
-				struct text_object_list *text_objects;
+				struct text_object subroot;
 
 				read_exec(obj->data.s, p, text_buffer_size);
 
 				tmp_info = malloc(sizeof(struct information));
 				memcpy(tmp_info, cur, sizeof(struct information));
-				text_objects = parse_conky_vars(p, p, tmp_info);
+				parse_conky_vars(&subroot, p, p, tmp_info);
 
-				free_text_objects(text_objects, 0);
-				free(text_objects);
+				free_text_objects(&subroot, 0);
 				free(tmp_info);
 			}
 			OBJ(execbar) {
@@ -4752,7 +4328,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, text_buffer_size, "%s", obj->data.execi.buffer);
 			}
 			OBJ(execpi) {
-				struct text_object_list *text_objects = 0;
+				struct text_object subroot;
 				struct information *tmp_info =
 					malloc(sizeof(struct information));
 				memcpy(tmp_info, cur, sizeof(struct information));
@@ -4760,7 +4336,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				if (current_update_time - obj->data.execi.last_update
 						< obj->data.execi.interval
 						|| obj->data.execi.interval == 0) {
-					text_objects = parse_conky_vars(obj->data.execi.buffer, p, tmp_info);
+					parse_conky_vars(&subroot, obj->data.execi.buffer, p, tmp_info);
 				} else {
 					char *output = obj->data.execi.buffer;
 					FILE *fp = popen(obj->data.execi.cmd, "r");
@@ -4773,11 +4349,10 @@ static void generate_text_internal(char *p, int p_max_size,
 						output[length - 1] = '\0';
 					}
 
-					text_objects = parse_conky_vars(obj->data.execi.buffer, p, tmp_info);
+					parse_conky_vars(&subroot, obj->data.execi.buffer, p, tmp_info);
 					obj->data.execi.last_update = current_update_time;
 				}
-				free_text_objects(text_objects, 0);
-				free(text_objects);
+				free_text_objects(&subroot, 0);
 				free(tmp_info);
 			}
 			OBJ(texeci) {
@@ -5092,59 +4667,38 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_alignc(p, obj->data.i);
 			}
 			OBJ(if_empty) {
-				struct text_object_list *text_objects;
+				struct text_object subroot;
 				struct information *tmp_info =
 					malloc(sizeof(struct information));
 				memcpy(tmp_info, cur, sizeof(struct information));
-				text_objects = parse_conky_vars(obj->data.ifblock.s, p, tmp_info);
+				parse_conky_vars(&subroot, obj->data.ifblock.s, p, tmp_info);
 
 				if (strlen(p) != 0) {
-					i = obj->data.ifblock.pos;
-					if_jumped = 1;
-				} else {
-					if_jumped = 0;
+					DO_JUMP;
 				}
 				p[0] = '\0';
-				free_text_objects(text_objects, 0);
-				free(text_objects);
+				free_text_objects(&subroot, 0);
 				free(tmp_info);
 			}
 			OBJ(if_existing) {
-				struct stat tmp;
-
-				if ((obj->data.ifblock.s)
-						&& (stat(obj->data.ifblock.s, &tmp) == -1)) {
-					i = obj->data.ifblock.pos;
-					if_jumped = 1;
-				} else {
-					if (obj->data.ifblock.str) {
-						if (!check_contains(obj->data.ifblock.s,
-								obj->data.ifblock.str)) {
-							i = obj->data.ifblock.pos;
-							if_jumped = 1;
-						} else {
-							if_jumped = 0;
-						}
-					} else {
-						if_jumped = 0;
-					}
+				if (obj->data.ifblock.str
+				    && !check_contains(obj->data.ifblock.s,
+				                       obj->data.ifblock.str)) {
+					DO_JUMP;
+				} else if (obj->data.ifblock.s
+				           && access(obj->data.ifblock.s, F_OK)) {
+					DO_JUMP;
 				}
 			}
 			OBJ(if_mounted) {
 				if ((obj->data.ifblock.s)
 						&& (!check_mount(obj->data.ifblock.s))) {
-					i = obj->data.ifblock.pos;
-					if_jumped = 1;
-				} else {
-					if_jumped = 0;
+					DO_JUMP;
 				}
 			}
 			OBJ(if_running) {
 				if ((obj->data.ifblock.s) && system(obj->data.ifblock.s)) {
-					i = obj->data.ifblock.pos;
-					if_jumped = 1;
-				} else {
-					if_jumped = 0;
+					DO_JUMP;
 				}
 			}
 #if defined(__linux__)
@@ -5384,10 +4938,16 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, len, "%s", cur->mpd.title);
 			}
 			OBJ(mpd_artist) {
-				snprintf(p, p_max_size, "%s", cur->mpd.artist);
+				int len = obj->data.i;
+				if (len == 0 || len > p_max_size)
+					len = p_max_size;
+				snprintf(p, len, "%s", cur->mpd.artist);
 			}
 			OBJ(mpd_album) {
-				snprintf(p, p_max_size, "%s", cur->mpd.album);
+				int len = obj->data.i;
+				if (len == 0 || len > p_max_size)
+					len = p_max_size;
+				snprintf(p, len, "%s", cur->mpd.album);
 			}
 			OBJ(mpd_random) {
 				snprintf(p, p_max_size, "%s", cur->mpd.random);
@@ -5396,13 +4956,22 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%s", cur->mpd.repeat);
 			}
 			OBJ(mpd_track) {
-				snprintf(p, p_max_size, "%s", cur->mpd.track);
+				int len = obj->data.i;
+				if (len == 0 || len > p_max_size)
+					len = p_max_size;
+				snprintf(p, len, "%s", cur->mpd.track);
 			}
 			OBJ(mpd_name) {
-				snprintf(p, p_max_size, "%s", cur->mpd.name);
+				int len = obj->data.i;
+				if (len == 0 || len > p_max_size)
+					len = p_max_size;
+				snprintf(p, len, "%s", cur->mpd.name);
 			}
 			OBJ(mpd_file) {
-				snprintf(p, p_max_size, "%s", cur->mpd.file);
+				int len = obj->data.i;
+				if (len == 0 || len > p_max_size)
+					len = p_max_size;
+				snprintf(p, len, "%s", cur->mpd.file);
 			}
 			OBJ(mpd_vol) {
 				snprintf(p, p_max_size, "%i", cur->mpd.volume);
@@ -5448,11 +5017,8 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 			OBJ(if_mpd_playing) {
-				if (cur->mpd.is_playing) {
-					if_jumped = 0;
-				} else {
-					i = obj->data.ifblock.pos;
-					if_jumped = 1;
+				if (!cur->mpd.is_playing) {
+					DO_JUMP;
 				}
 			}
 #endif
@@ -5563,11 +5129,8 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 			OBJ(if_xmms2_connected) {
-				if (cur->xmms2_conn_state == 1) {
-					if_jumped = 0;
-				} else {
-					i = obj->data.ifblock.pos;
-					if_jumped = 1;
+				if (cur->xmms2_conn_state != 1) {
+					DO_JUMP;
 				}
 			}
 #endif
@@ -5815,7 +5378,6 @@ static void generate_text_internal(char *p, int p_max_size,
 						}	/* bsize > 0 */
 					}		/* fp == NULL */
 				}			/* if cur_upd_time >= */
-				// parse_conky_vars(obj->data.tail.buffer, p, cur);
 			}
 head:
 			OBJ(head) {
@@ -5872,7 +5434,6 @@ head:
 						}	/* nl > 0 */
 					}		/* if fp == null */
 				}			/* cur_upd_time >= */
-				// parse_conky_vars(obj->data.tail.buffer, p, cur);
 			}
 
 			OBJ(lines) {
@@ -5968,10 +5529,8 @@ head:
 				int idx;
 				if(obj->data.ifblock.s && sscanf(obj->data.ifblock.s, "%i", &idx) == 1) {
 					if(!smapi_bat_installed(idx)) {
-						i = obj->data.ifblock.pos;
-						if_jumped = 1;
-					} else
-						if_jumped = 0;
+						DO_JUMP;
+					}
 				} else
 					ERR("argument to if_smapi_bat_installed must be an integer");
 			}
@@ -6015,8 +5574,9 @@ head:
 			OBJ(scroll) {
 				unsigned int j;
 				char *tmp;
-				parse_conky_vars(obj->data.scroll.text, p, cur);
-				
+				struct text_object subroot;
+				parse_conky_vars(&subroot, obj->data.scroll.text, p, cur);
+
 				if (strlen(p) <= obj->data.scroll.show) {
 					break;
 				}
@@ -6064,6 +5624,8 @@ head:
 
 			break;
 		}
+#undef DO_JUMP
+
 
 		{
 			unsigned int a = strlen(p);
@@ -6126,7 +5688,7 @@ static void generate_text(void)
 
 	p = text_buffer;
 
-	generate_text_internal(p, max_user_text, global_text_object_list, cur);
+	generate_text_internal(p, max_user_text, global_root_object, cur);
 
 	if (stuff_in_upper_case) {
 		char *tmp_p;
@@ -7421,7 +6983,7 @@ static void main_loop(void)
 static void load_config_file(const char *);
 
 /* reload the config file */
-void reload_config(void)
+static void reload_config(void)
 {
 	timed_thread_destroy_registered_threads();
 
@@ -7524,7 +7086,7 @@ void reload_config(void)
 	}
 }
 
-void clean_up(void)
+static void clean_up(void)
 {
 	timed_thread_destroy_registered_threads();
 
@@ -7555,9 +7117,7 @@ void clean_up(void)
 	free_fonts();
 #endif /* X11 */
 
-	free_text_objects(global_text_object_list, 1);
-	free(global_text_object_list);
-	global_text_object_list = NULL;
+	free_text_objects(&global_root_object, 1);
 	if (tmpstring1) {
 		free(tmpstring1);
 		tmpstring1 = 0;
@@ -8891,7 +8451,7 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-void signal_handler(int sig)
+static void signal_handler(int sig)
 {
 	/* signal handler is light as a feather, as it should be.
 	 * we will poll g_signal_pending with each loop of conky

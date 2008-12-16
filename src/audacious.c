@@ -17,9 +17,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301
  * USA. */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include "config.h"
+#include "conky.h"
+#include "logging.h"
+#include "audacious.h"
 
 #include <glib.h>
 #ifndef AUDACIOUS_LEGACY
@@ -49,9 +50,6 @@
 #define audacious_remote_get_playlist_length(x)		\
 	xmms_remote_get_playlist_length(x)
 #endif
-
-#include "conky.h"
-#include "audacious.h"
 
 /* access to this item array is synchronized */
 static audacious_t audacious_items;

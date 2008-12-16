@@ -1,5 +1,5 @@
-#ifndef LINUX_H_
-#define LINUX_H_
+#ifndef _LINUX_H
+#define _LINUX_H
 
 #include "common.h"
 
@@ -38,4 +38,4 @@ void update_gateway_info(void);
 enum { PB_BATT_STATUS, PB_BATT_PERCENT, PB_BATT_TIME };
 void get_powerbook_batt_info(char *, size_t, int);
 
-#endif /*LINUX_H_*/
+#endif /* _LINUX_H */
