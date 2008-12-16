@@ -266,10 +266,6 @@ struct information {
 #endif
 
 	short kflags;	/* kernel settings, see enum KFLAG */
-
-	unsigned int diskio_value;
-	unsigned int diskio_read_value;
-	unsigned int diskio_write_value;
 };
 
 /* needed by linux.c and top.c -> outsource somewhere */
@@ -289,8 +285,6 @@ enum {
 
 /* defined in conky.c, needed by top.c */
 extern int top_cpu, top_mem;
-
-enum spacer_opts { NO_SPACER = 0, LEFT_SPACER, RIGHT_SPACER };
 
 /* defined in conky.c, needed by top.c */
 extern int cpu_separate;
