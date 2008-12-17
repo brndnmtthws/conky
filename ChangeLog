@@ -1,3 +1,6 @@
+2008-12-17
+	* Make gateway objects also detect routes with missing RTF_GATEWAY flag
+
 2008-12-15
 	* Have a maximum width for all variable length mpd vars
 

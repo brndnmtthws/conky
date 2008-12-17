@@ -272,6 +272,10 @@ void update_gateway_info_failure(const char *reason)
 	info.gw_info.ip = strndup("failed", text_buffer_size);
 }
 
+
+/* Iface Destination Gateway Flags RefCnt Use Metric Mask MTU Window IRTT */
+#define RT_ENTRY_FORMAT "%63s %lx %lx %x %*d %*d %*d %lx %*d %*d %*d\n"
+
 void update_gateway_info(void)
 {
 	FILE *fp;
@@ -279,7 +283,6 @@ void update_gateway_info(void)
 	char iface[64];
 	unsigned long dest, gate, mask;
 	unsigned int flags;
-	short ref, use, metric, mtu, win, irtt;
 
 	struct gateway_info *gw_info = &info.gw_info;
 
@@ -289,27 +292,22 @@ void update_gateway_info(void)
 
 	if ((fp = fopen("/proc/net/route", "r")) == NULL) {
 		update_gateway_info_failure("fopen()");
- 		return;
-	}
-	if (fscanf(fp, "%*[^\n]\n") == EOF) {
-		//NULL because a empty table is not a error
-		update_gateway_info_failure(NULL);
-		fclose(fp);
 		return;
 	}
+
+	/* skip over the table header line, which is always present */
+	fscanf(fp, "%*[^\n]\n");
+
 	while (!feof(fp)) {
-		// Iface Destination Gateway Flags RefCnt Use Metric Mask MTU Window IRTT
-		if(fscanf(fp, "%63s %lx %lx %x %hd %hd %hd %lx %hd %hd %hd\n",
-					iface, &dest, &gate, &flags, &ref, &use,
-					&metric, &mask, &mtu, &win, &irtt) != 11) {
+		if(fscanf(fp, RT_ENTRY_FORMAT,
+			  iface, &dest, &gate, &flags, &mask) != 5) {
 			update_gateway_info_failure("fscanf()");
-			fclose(fp);
-			return;
+			break;
 		}
-		if (flags & RTF_GATEWAY && dest == 0 && mask == 0) {
+		if (!(dest || mask) && ((flags & RTF_GATEWAY) || !gate) ) {
 			gw_info->count++;
 			SAVE_SET_STRING(gw_info->iface, iface)
-				ina.s_addr = gate;
+			ina.s_addr = gate;
 			SAVE_SET_STRING(gw_info->ip, inet_ntoa(ina))
 		}
 	}
