@@ -640,8 +640,8 @@ conky(1)							      conky(1)
 	      $cpu for more info on SMP.
 
 
-       1mcpugraph normal|log (cpu number) (height),(width) (gradient  colour  1)0m
-       1m(gradient colour 2)0m
+       1mcpugraph ("normal"|"log") (height),(width) (gradient colour 1)	 (gradi‐0m
+       1ment colour 2) (scale) (cpu number)0m
 	      CPU usage graph, with optional colours in hex, minus the #.  See
 	      $cpu  for	 more  info  on	 SMP. Uses a logarithmic scale (to see
 	      small numbers) when you use "log" instead of "normal".
@@ -652,8 +652,8 @@ conky(1)							      conky(1)
 	      of sda for /dev/sda. Individual partitions are allowed.
 
 
-       1mdiskiograph  normal|log  (device)  (height),(width) (gradient colour 1)0m
-       1m(gradient colour 2) (scale)0m
+       1mdiskiograph ("normal"|"log") (height),(width) (gradient colour 1) (gra‐0m
+       1mdient colour 2) (scale) (device)0m
 	      Disk  IO graph, colours defined in hex, minus the #. If scale is
 	      non-zero, it becomes the scale for the graph. Uses a logarithmic
 	      scale (to see small numbers) when you use "log" instead of "nor‐
@@ -664,8 +664,8 @@ conky(1)							      conky(1)
 	      Displays current disk IO for reads. Device as in diskio.
 
 
-       1mdiskiograph_read normal|log (device) (height),(width) (gradient  colour0m
-       1m1) (gradient colour 2) (scale)0m
+       1mdiskiograph_read ("normal"|"log") (height),(width) (gradient colour  1)0m
+       1m(gradient colour 2) (scale) (device)0m
 	      Disk IO graph for reads, colours defined in hex, minus the #. If
 	      scale is non-zero, it becomes the scale for the graph. Device as
 	      in diskio. Uses a logarithmic scale (to see small numbers)  when
@@ -676,8 +676,8 @@ conky(1)							      conky(1)
 	      Displays current disk IO for writes. Device as in diskio.
 
 
-       1mdiskiograph_write normal|log (device) (height),(width) (gradient colour0m
-       1m1) (gradient colour 2) (scale)0m
+       1mdiskiograph_write ("normal"|"log") (height),(width) (gradient colour 1)0m
+       1m(gradient colour 2) (scale) (device)0m
 	      Disk  IO	graph for writes, colours defined in hex, minus the #.
 	      If scale is non-zero, it becomes the scale for the graph. Device
 	      as  in  diskio.  Uses a logarithmic scale (to see small numbers)
@@ -697,8 +697,8 @@ conky(1)							      conky(1)
 	      Download speed in KiB with one decimal
 
 
-       1mdownspeedgraph	 normal|log  net  (height),(width)  (gradient  colour 1)0m
-       1m(gradient colour 2) (scale)0m
+       1mdownspeedgraph	 ("normal"|"log")  (height),(width)  (gradient colour 1)0m
+       1m(gradient colour 2) (scale) (net)0m
 	      Download	speed  graph,  colours defined in hex, minus the #. If
 	      scale is non-zero, it becomes the scale for the  graph.  Uses  a
 	      logarithmic  scale (to see small numbers) when you use "log" in‐
@@ -732,7 +732,8 @@ conky(1)							      conky(1)
 	      bar is currently fixed, but that may change in the future.
 
 
-       1mexecgraph (normal|log) command0m
+       1mexecgraph ("normal"|"log") (height),(width) (gradient colour 1) (gradi‐0m
+       1ment colour 2) (scale) command0m
 	      Same as execbar, but graphs values. Uses a logaritmic scale when
 	      the  log	option	is  given (to see small numbers). Values still
 	      have to be between 0 and 100.
@@ -1033,8 +1034,8 @@ conky(1)							      conky(1)
 	      5 minutes and 3 for past 15 minutes.
 
 
-       1mloadgraph  normal|log	(height),(width)  (gradient  colour 1) (gradient0m
-       1mcolour 2)0m
+       1mloadgraph ("normal"|"log") (height),(width) (gradient colour 1) (gradi‐0m
+       1ment colour 2) (scale)0m
 	      Load1  average graph, similar to xload, with optional colours in
 	      hex, minus the #. Uses a logarithmic scale (to  see  small  num‐
 	      bers) when you use "log" instead of "normal".
@@ -1069,8 +1070,8 @@ conky(1)							      conky(1)
 	      Bar that shows amount of memory in use
 
 
-       1mmemgraph normal|log  (height),(width)	(gradient  colour  1)  (gradient0m
-       1mcolour 2)0m
+       1mmemgraph ("normal"|"log") (height),(width) (gradient colour 1)	 (gradi‐0m
+       1ment colour 2) (scale)0m
 	      Memory usage graph. Uses a logarithmic scale (to see small  num‐
 	      bers) when you use "log" instead of "normal".
 
@@ -1562,8 +1563,8 @@ conky(1)							      conky(1)
 	      Upload speed in KiB with one decimal
 
 
-       1mupspeedgraph normal|log net (height),(width) (gradient colour 1)  (gra‐0m
-       1mdient colour 2) (scale)0m
+       1mupspeedgraph  ("normal"|"log")	 (height),(width)  (gradient  colour  1)0m
+       1m(gradient colour 2) (scale) (net)0m
 	      Upload speed graph, colours defined in  hex,  minus  the	#.  If
 	      scale  is	 non-zero,  it becomes the scale for the graph. Uses a
 	      logarithmic scale (to see small numbers) when you use "log"  in‐

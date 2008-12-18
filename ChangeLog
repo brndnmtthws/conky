@@ -1,3 +1,7 @@
+2008-12-18
+	* Fix segfault for diskiograph*, note the changed order of arguments
+	* Fix documentation for all graph objects
+
 2008-12-17
 	* Make gateway objects also detect routes with missing RTF_GATEWAY flag
 

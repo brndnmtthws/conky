@@ -909,6 +909,7 @@ static char *scan_graph(const char *args, int *w, int *h,
 			*showaslog = FALSE;
 			nographtype = args;
 		}
+		DBGP("printing graph as %s, other args are: %s", (*showaslog ? "log" : "normal"), nographtype);
 		//check the rest of the args
 		if (sscanf(nographtype, "%d,%d %x %x %u", h, w, first_colour, last_colour, scale) == 5) {
 			return NULL;
@@ -1892,24 +1893,24 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(diskio_write, INFO_DISKIO)
 		obj->data.diskio = prepare_diskio_stat(dev_name(arg));
 	END OBJ(diskiograph, INFO_DISKIO)
-		char *buf = scan_graph(dev_name(arg), &obj->a, &obj->b, &obj->c, &obj->d,
+		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
 
-		obj->data.diskio = prepare_diskio_stat(buf);
+		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
 		if (buf)
 			free(buf);
 	END OBJ(diskiograph_read, INFO_DISKIO)
-		char *buf = scan_graph(dev_name(arg), &obj->a, &obj->b, &obj->c, &obj->d,
+		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
 
-		obj->data.diskio = prepare_diskio_stat(buf);
+		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
 		if (buf)
 			free(buf);
 	END OBJ(diskiograph_write, INFO_DISKIO)
-		char *buf = scan_graph(dev_name(arg), &obj->a, &obj->b, &obj->c, &obj->d,
+		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
 
-		obj->data.diskio = prepare_diskio_stat(buf);
+		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
 		if (buf)
 			free(buf);
 #endif

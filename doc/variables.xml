@@ -420,7 +420,7 @@
 	<varlistentry>
 		<term>
 			<command><option>cpugraph</option></command>
-			<option>normal|log (cpu number) (height),(width) (gradient colour 1) (gradient colour 2)</option>
+			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (cpu number)</option>
 		</term>
 		<listitem>
 			CPU usage graph, with optional colours in hex, minus the #.  See $cpu for more info on SMP. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
@@ -440,7 +440,7 @@
 	<varlistentry>
 		<term>
 			<command><option>diskiograph</option></command>
-			<option>normal|log (device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (device)</option>
 		</term>
 		<listitem>
 			Disk IO graph, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
@@ -460,7 +460,7 @@
 	<varlistentry>
 		<term>
 			<command><option>diskiograph_read</option></command>
-			<option>normal|log (device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (device)</option>
 		</term>
 		<listitem>
 			Disk IO graph for reads, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.  Device as in diskio. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
@@ -480,7 +480,7 @@
 	<varlistentry>
 		<term>
 			<command><option>diskiograph_write</option></command>
-			<option>normal|log (device) (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (device)</option>
 		</term>
 		<listitem>
 			Disk IO graph for writes, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.  Device as in diskio. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
@@ -520,7 +520,7 @@
 	<varlistentry>
 		<term>
 			<command><option>downspeedgraph</option></command>
-			<option>normal|log net (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (net)</option>
 		</term>
 		<listitem>
 			Download speed graph, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
@@ -587,7 +587,7 @@
 	<varlistentry>
 		<term>
 			<command><option>execgraph</option></command>
-			<option>(normal|log) command</option>
+			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) command</option>
 		</term>
 		<listitem>
 			Same as execbar, but graphs values. Uses a logaritmic scale when the log option is given (to see small numbers). Values still have to be between 0 and 100.
@@ -1123,7 +1123,7 @@
 	<varlistentry>
 		<term>
 			<command><option>loadgraph</option></command>
-			<option>normal|log (height),(width) (gradient colour 1) (gradient colour 2)</option>
+			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
 		</term>
 		<listitem>
 			Load1 average graph, similar to xload, with optional colours in hex, minus the #. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
@@ -1195,7 +1195,7 @@
 	<varlistentry>
 		<term>
 			<command><option>memgraph</option></command>
-			<option>normal|log (height),(width) (gradient colour 1) (gradient colour 2)</option>
+			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
 		</term>
 		<listitem>
 			Memory usage graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
@@ -2104,7 +2104,7 @@
 	<varlistentry>
 		<term>
 			<command><option>upspeedgraph</option></command>
-			<option>normal|log net (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (net)</option>
 		</term>
 		<listitem>
 			Upload speed graph, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
