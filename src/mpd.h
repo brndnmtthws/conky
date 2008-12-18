@@ -1,37 +1,36 @@
 #ifndef MPD_H_
 #define MPD_H_
 
-#include "libmpdclient.h"
-#include "timed_thread.h"
+//#include "conky.h"
 
 struct mpd_s {
 	char *title;
 	char *artist;
 	char *album;
-	char *status;
-	char *random;
-	char *repeat;
+	const char *status;
+	const char *random;
+	const char *repeat;
 	char *track;
 	char *name;
 	char *file;
 	int is_playing;
 	int volume;
-	unsigned int port;
-	char host[128];
-	char password[128];
 	float progress;
 	int bitrate;
 	int length;
 	int elapsed;
-	mpd_Connection *conn;
-	timed_thread *timed_thread;
 };
 
-#include "conky.h"
+/* functions for setting the configuration values */
+void mpd_set_host(const char *);
+void mpd_set_password(const char *);
+void mpd_clear_password(void);
+int mpd_set_port(const char *);
 
-extern void init_mpd_stats(struct mpd_s *mpd);
-void clear_mpd_stats(struct mpd_s *mpd);
-void *update_mpd(void *) __attribute__((noreturn));
-void free_mpd_vars(struct mpd_s *mpd);
+/* text object functions */
+void init_mpd(void);
+struct mpd_s *mpd_get_info(void);
+void free_mpd(void);
+void update_mpd(void);
 
 #endif /*MPD_H_*/

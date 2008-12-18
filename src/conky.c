@@ -1200,10 +1200,8 @@ static struct text_object *new_text_object_internal(void)
 	return obj;
 }
 
-/*
- * call with full == 0 when freeing after 'internal' evaluation of objects
- */
-static void free_text_objects(struct text_object *root, char full)
+/* free the list of text objects root points to */
+static void free_text_objects(struct text_object *root)
 {
 	struct text_object *obj;
 
@@ -1506,9 +1504,7 @@ static void free_text_objects(struct text_object *root, char full)
 			case OBJ_mpd_percent:
 			case OBJ_mpd_smart:
 			case OBJ_if_mpd_playing:
-				if (full) {
-					free_mpd_vars(&info.mpd);
-				}
+				free_mpd();
 				break;
 #endif
 #ifdef MOC
@@ -1533,8 +1529,6 @@ static void free_text_objects(struct text_object *root, char full)
 		free(obj);
 	}
 #undef data
-	/* FIXME: below is surely useless */
-	if (full) {} // disable warning when MPD !defined
 }
 
 void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
@@ -2872,102 +2866,51 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("smapi_bat_bar needs an argument");
 #endif /* SMAPI */
 #ifdef MPD
+#define mpd_set_maxlen(name) \
+		if (arg) { \
+			int i; \
+			sscanf(arg, "%d", &i); \
+			if (i > 0) \
+				obj->data.i = i + 1; \
+			else \
+				ERR(#name ": invalid length argument"); \
+		}
 	END OBJ_THREAD(mpd_artist, INFO_MPD)
-		if (arg) {
-			sscanf(arg, "%d", &obj->data.i);
-			if (obj->data.i > 0) {
-				obj->data.i++;
-			} else {
-				ERR("mpd_artist: invalid length argument");
-				obj->data.i = 0;
-			}
-		} else {
-			obj->data.i = 0;
-		}
+		mpd_set_maxlen(mpd_artist);
+		init_mpd();
 	END OBJ_THREAD(mpd_title, INFO_MPD)
-		if (arg) {
-			sscanf(arg, "%d", &obj->data.i);
-			if (obj->data.i > 0) {
-				obj->data.i++;
-			} else {
-				ERR("mpd_title: invalid length argument");
-				obj->data.i = 0;
-			}
-		} else {
-			obj->data.i = 0;
-		}
-	END OBJ_THREAD(mpd_random, INFO_MPD)
-	END OBJ_THREAD(mpd_repeat, INFO_MPD)
-	END OBJ_THREAD(mpd_elapsed, INFO_MPD)
-	END OBJ_THREAD(mpd_length, INFO_MPD)
+		mpd_set_maxlen(mpd_title);
+		init_mpd();
+	END OBJ_THREAD(mpd_random, INFO_MPD) init_mpd();
+	END OBJ_THREAD(mpd_repeat, INFO_MPD) init_mpd();
+	END OBJ_THREAD(mpd_elapsed, INFO_MPD) init_mpd();
+	END OBJ_THREAD(mpd_length, INFO_MPD) init_mpd();
 	END OBJ_THREAD(mpd_track, INFO_MPD)
-		if (arg) {
-			sscanf(arg, "%d", &obj->data.i);
-			if (obj->data.i > 0) {
-				obj->data.i++;
-			} else {
-				ERR("mpd_track: invalid length argument");
-				obj->data.i = 0;
-			}
-		} else {
-			obj->data.i = 0;
-		}
+		mpd_set_maxlen(mpd_track);
+		init_mpd();
 	END OBJ_THREAD(mpd_name, INFO_MPD)
-		if (arg) {
-			sscanf(arg, "%d", &obj->data.i);
-			if (obj->data.i > 0) {
-				obj->data.i++;
-			} else {
-				ERR("mpd_name: invalid length argument");
-				obj->data.i = 0;
-			}
-		} else {
-			obj->data.i = 0;
-		}
+		mpd_set_maxlen(mpd_name);
+		init_mpd();
 	END OBJ_THREAD(mpd_file, INFO_MPD)
-		if (arg) {
-			sscanf(arg, "%d", &obj->data.i);
-			if (obj->data.i > 0) {
-				obj->data.i++;
-			} else {
-				ERR("mpd_file: invalid length argument");
-				obj->data.i = 0;
-			}
-		} else {
-			obj->data.i = 0;
-		}
-	END OBJ_THREAD(mpd_percent, INFO_MPD)
+		mpd_set_maxlen(mpd_file);
+		init_mpd();
+	END OBJ_THREAD(mpd_percent, INFO_MPD) init_mpd();
 	END OBJ_THREAD(mpd_album, INFO_MPD)
-		if (arg) {
-			sscanf(arg, "%d", &obj->data.i);
-			if (obj->data.i > 0) {
-				obj->data.i++;
-			} else {
-				ERR("mpd_album: invalid length argument");
-				obj->data.i = 0;
-			}
-		} else {
-			obj->data.i = 0;
-		}
-	END OBJ_THREAD(mpd_vol, INFO_MPD)
-	END OBJ_THREAD(mpd_bitrate, INFO_MPD)
-	END OBJ_THREAD(mpd_status, INFO_MPD)
+		mpd_set_maxlen(mpd_album);
+		init_mpd();
+	END OBJ_THREAD(mpd_vol, INFO_MPD) init_mpd();
+	END OBJ_THREAD(mpd_bitrate, INFO_MPD) init_mpd();
+	END OBJ_THREAD(mpd_status, INFO_MPD) init_mpd();
 	END OBJ_THREAD(mpd_bar, INFO_MPD)
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+		init_mpd();
 	END OBJ_THREAD(mpd_smart, INFO_MPD)
-		if (arg) {
-			sscanf(arg, "%d", &obj->data.i);
-			if (obj->data.i > 0) {
-				obj->data.i++;
-			} else {
-				ERR("mpd_smart: invalid length argument");
-				obj->data.i = 0;
-			}
-		} else {
-			obj->data.i = 0;
-		}
+		mpd_set_maxlen(mpd_smart);
+		init_mpd();
 	END OBJ_THREAD(if_mpd_playing, INFO_MPD)
 		obj_be_ifblock_if(obj);
+		init_mpd();
+#undef mpd_set_maxlen
 #endif /* MPD */
 #ifdef MOC
   END OBJ_THREAD(moc_state, INFO_MOC)
@@ -3466,7 +3409,7 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 
 static void extract_variable_text(const char *p)
 {
-	free_text_objects(&global_root_object, 1);
+	free_text_objects(&global_root_object);
 	if (tmpstring1) {
 		free(tmpstring1);
 		tmpstring1 = 0;
@@ -4203,7 +4146,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				memcpy(tmp_info, cur, sizeof(struct information));
 				parse_conky_vars(&subroot, p, p, tmp_info);
 
-				free_text_objects(&subroot, 0);
+				free_text_objects(&subroot);
 				free(tmp_info);
 			}
 			OBJ(execbar) {
@@ -4301,7 +4244,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					parse_conky_vars(&subroot, obj->data.execi.buffer, p, tmp_info);
 					obj->data.execi.last_update = current_update_time;
 				}
-				free_text_objects(&subroot, 0);
+				free_text_objects(&subroot);
 				free(tmp_info);
 			}
 			OBJ(texeci) {
@@ -4625,7 +4568,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					DO_JUMP;
 				}
 				p[0] = '\0';
-				free_text_objects(&subroot, 0);
+				free_text_objects(&subroot);
 				free(tmp_info);
 			}
 			OBJ(if_existing) {
@@ -4879,96 +4822,78 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif /* __FreeBSD__ __OpenBSD__ */
 
 #ifdef MPD
-			OBJ(mpd_title) {
-				int len = obj->data.i;
-				if (len == 0 || len > p_max_size)
-					len = p_max_size;
-				snprintf(p, len, "%s", cur->mpd.title);
-			}
-			OBJ(mpd_artist) {
-				int len = obj->data.i;
-				if (len == 0 || len > p_max_size)
-					len = p_max_size;
-				snprintf(p, len, "%s", cur->mpd.artist);
-			}
-			OBJ(mpd_album) {
-				int len = obj->data.i;
-				if (len == 0 || len > p_max_size)
-					len = p_max_size;
-				snprintf(p, len, "%s", cur->mpd.album);
-			}
-			OBJ(mpd_random) {
-				snprintf(p, p_max_size, "%s", cur->mpd.random);
-			}
-			OBJ(mpd_repeat) {
-				snprintf(p, p_max_size, "%s", cur->mpd.repeat);
-			}
-			OBJ(mpd_track) {
-				int len = obj->data.i;
-				if (len == 0 || len > p_max_size)
-					len = p_max_size;
-				snprintf(p, len, "%s", cur->mpd.track);
-			}
-			OBJ(mpd_name) {
-				int len = obj->data.i;
-				if (len == 0 || len > p_max_size)
-					len = p_max_size;
-				snprintf(p, len, "%s", cur->mpd.name);
-			}
-			OBJ(mpd_file) {
-				int len = obj->data.i;
-				if (len == 0 || len > p_max_size)
-					len = p_max_size;
-				snprintf(p, len, "%s", cur->mpd.file);
-			}
-			OBJ(mpd_vol) {
-				snprintf(p, p_max_size, "%i", cur->mpd.volume);
-			}
-			OBJ(mpd_bitrate) {
-				snprintf(p, p_max_size, "%i", cur->mpd.bitrate);
-			}
-			OBJ(mpd_status) {
-				snprintf(p, p_max_size, "%s", cur->mpd.status);
-			}
+#define mpd_printf(fmt, val) \
+	snprintf(p, p_max_size, fmt, mpd_get_info()->val)
+#define mpd_sprintf(val) { \
+	if (!obj->data.i || obj->data.i > p_max_size) \
+		mpd_printf("%s", val); \
+	else \
+		snprintf(p, obj->data.i, "%s", mpd_get_info()->val); \
+}
+			OBJ(mpd_title)
+				mpd_sprintf(title);
+			OBJ(mpd_artist)
+				mpd_sprintf(artist);
+			OBJ(mpd_album)
+				mpd_sprintf(album);
+			OBJ(mpd_random)
+				mpd_printf("%s", random);
+			OBJ(mpd_repeat)
+				mpd_printf("%s", repeat);
+			OBJ(mpd_track)
+				mpd_sprintf(track);
+			OBJ(mpd_name)
+				mpd_sprintf(name);
+			OBJ(mpd_file)
+				mpd_sprintf(file);
+			OBJ(mpd_vol)
+				mpd_printf("%d", volume);
+			OBJ(mpd_bitrate)
+				mpd_printf("%d", bitrate);
+			OBJ(mpd_status)
+				mpd_printf("%s", status);
 			OBJ(mpd_elapsed) {
-				format_media_player_time(p, p_max_size, cur->mpd.elapsed);
+				format_media_player_time(p, p_max_size, mpd_get_info()->elapsed);
 			}
 			OBJ(mpd_length) {
-				format_media_player_time(p, p_max_size, cur->mpd.length);
+				format_media_player_time(p, p_max_size, mpd_get_info()->length);
 			}
 			OBJ(mpd_percent) {
 				spaced_print(p, p_max_size, "%*d", 4,
-						pad_percents, (int) (cur->mpd.progress * 100));
+						pad_percents, (int) (mpd_get_info()->progress * 100));
 			}
 			OBJ(mpd_bar) {
 				new_bar(p, obj->data.pair.a, obj->data.pair.b,
-					(int) (cur->mpd.progress * 255.0f));
+					(int) (mpd_get_info()->progress * 255.0f));
 			}
 			OBJ(mpd_smart) {
+				struct mpd_s *mpd = mpd_get_info();
 				int len = obj->data.i;
 				if (len == 0 || len > p_max_size)
 					len = p_max_size;
 
 				memset(p, 0, p_max_size);
-				if (cur->mpd.artist && *cur->mpd.artist && cur->mpd.title
-						&& *cur->mpd.title) {
-					snprintf(p, len, "%s - %s", cur->mpd.artist,
-						cur->mpd.title);
-				} else if (cur->mpd.title && *cur->mpd.title) {
-					snprintf(p, len, "%s", cur->mpd.title);
-				} else if (cur->mpd.artist && *cur->mpd.artist) {
-					snprintf(p, len, "%s", cur->mpd.artist);
-				} else if (cur->mpd.file && *cur->mpd.file) {
-					snprintf(p, len, "%s", cur->mpd.file);
+				if (mpd->artist && *mpd->artist &&
+				    mpd->title && *mpd->title) {
+					snprintf(p, len, "%s - %s", mpd->artist,
+						mpd->title);
+				} else if (mpd->title && *mpd->title) {
+					snprintf(p, len, "%s", mpd->title);
+				} else if (mpd->artist && *mpd->artist) {
+					snprintf(p, len, "%s", mpd->artist);
+				} else if (mpd->file && *mpd->file) {
+					snprintf(p, len, "%s", mpd->file);
 				} else {
 					*p = 0;
 				}
 			}
 			OBJ(if_mpd_playing) {
-				if (!cur->mpd.is_playing) {
+				if (!mpd_get_info()->is_playing) {
 					DO_JUMP;
 				}
 			}
+#undef mpd_sprintf
+#undef mpd_printf
 #endif
 
 #ifdef MOC
@@ -6940,49 +6865,10 @@ static void reload_config(void)
 		free(info.mail);
 	}
 
-#ifdef MPD
-	if (info.mpd.title) {
-		free(info.mpd.title);
-		info.mpd.title = NULL;
-	}
-	if (info.mpd.artist) {
-		free(info.mpd.artist);
-		info.mpd.artist = NULL;
-	}
-	if (info.mpd.album) {
-		free(info.mpd.album);
-		info.mpd.album = NULL;
-	}
-	if (info.mpd.random) {
-		free(info.mpd.random);
-		info.mpd.random = NULL;
-	}
-	if (info.mpd.repeat) {
-		free(info.mpd.repeat);
-		info.mpd.repeat = NULL;
-	}
-	if (info.mpd.track) {
-		free(info.mpd.track);
-		info.mpd.track = NULL;
-	}
-	if (info.mpd.name) {
-		free(info.mpd.name);
-		info.mpd.name = NULL;
-	}
-	if (info.mpd.file) {
-		free(info.mpd.file);
-		info.mpd.file = NULL;
-	}
-	if (info.mpd.status) {
-		free(info.mpd.status);
-		info.mpd.status = NULL;
-	}
-#endif
-
 #ifdef MOC
   free_moc(&info.moc);
 #endif
-  
+
 #ifdef X11
 	free_fonts();
 #endif /* X11 */
@@ -7061,7 +6947,7 @@ static void clean_up(void)
 	free_fonts();
 #endif /* X11 */
 
-	free_text_objects(&global_root_object, 1);
+	free_text_objects(&global_root_object);
 	if (tmpstring1) {
 		free(tmpstring1);
 		tmpstring1 = 0;
@@ -7173,16 +7059,8 @@ static void set_default_configurations(void)
 	short_units = 0;
 	top_mem = 0;
 #ifdef MPD
-	strcpy(info.mpd.host, "localhost");
-	info.mpd.port = 6600;
-	info.mpd.status = NULL;
-	info.mpd.artist = NULL;
-	info.mpd.album = NULL;
-	info.mpd.title = NULL;
-	info.mpd.random = NULL;
-	info.mpd.track = NULL;
-	info.mpd.name = NULL;
-	info.mpd.file = NULL;
+	mpd_set_host("localhost");
+	mpd_set_port("6600");
 #endif
 #ifdef MOC
   init_moc(&info.moc);
@@ -7529,22 +7407,19 @@ static void load_config_file(const char *f)
 #ifdef MPD
 		CONF("mpd_host") {
 			if (value) {
-				strncpy(info.mpd.host, value, 127);
+				mpd_set_host(value);
 			} else {
 				CONF_ERR;
 			}
 		}
 		CONF("mpd_port") {
-			if (value) {
-				info.mpd.port = strtol(value, 0, 0);
-				if (info.mpd.port < 1 || info.mpd.port > 0xffff) {
-					CONF_ERR;
-				}
+			if (value && mpd_set_port(value)) {
+				CONF_ERR;
 			}
 		}
 		CONF("mpd_password") {
 			if (value) {
-				strncpy(info.mpd.password, value, 127);
+				mpd_set_password(value);
 			} else {
 				CONF_ERR;
 			}

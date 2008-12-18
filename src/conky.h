@@ -232,9 +232,6 @@ struct information {
 
 	struct mail_s *mail;
 	int mail_running;
-#ifdef MPD
-	struct mpd_s mpd;
-#endif
 #ifdef MOC
   struct moc_s moc;
 #endif
