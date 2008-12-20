@@ -2886,39 +2886,39 @@ static struct text_object *construct_text_object(const char *s,
 			else \
 				ERR(#name ": invalid length argument"); \
 		}
-	END OBJ_THREAD(mpd_artist, INFO_MPD)
+	END OBJ(mpd_artist, INFO_MPD)
 		mpd_set_maxlen(mpd_artist);
 		init_mpd();
-	END OBJ_THREAD(mpd_title, INFO_MPD)
+	END OBJ(mpd_title, INFO_MPD)
 		mpd_set_maxlen(mpd_title);
 		init_mpd();
-	END OBJ_THREAD(mpd_random, INFO_MPD) init_mpd();
-	END OBJ_THREAD(mpd_repeat, INFO_MPD) init_mpd();
-	END OBJ_THREAD(mpd_elapsed, INFO_MPD) init_mpd();
-	END OBJ_THREAD(mpd_length, INFO_MPD) init_mpd();
-	END OBJ_THREAD(mpd_track, INFO_MPD)
+	END OBJ(mpd_random, INFO_MPD) init_mpd();
+	END OBJ(mpd_repeat, INFO_MPD) init_mpd();
+	END OBJ(mpd_elapsed, INFO_MPD) init_mpd();
+	END OBJ(mpd_length, INFO_MPD) init_mpd();
+	END OBJ(mpd_track, INFO_MPD)
 		mpd_set_maxlen(mpd_track);
 		init_mpd();
-	END OBJ_THREAD(mpd_name, INFO_MPD)
+	END OBJ(mpd_name, INFO_MPD)
 		mpd_set_maxlen(mpd_name);
 		init_mpd();
-	END OBJ_THREAD(mpd_file, INFO_MPD)
+	END OBJ(mpd_file, INFO_MPD)
 		mpd_set_maxlen(mpd_file);
 		init_mpd();
-	END OBJ_THREAD(mpd_percent, INFO_MPD) init_mpd();
-	END OBJ_THREAD(mpd_album, INFO_MPD)
+	END OBJ(mpd_percent, INFO_MPD) init_mpd();
+	END OBJ(mpd_album, INFO_MPD)
 		mpd_set_maxlen(mpd_album);
 		init_mpd();
-	END OBJ_THREAD(mpd_vol, INFO_MPD) init_mpd();
-	END OBJ_THREAD(mpd_bitrate, INFO_MPD) init_mpd();
-	END OBJ_THREAD(mpd_status, INFO_MPD) init_mpd();
-	END OBJ_THREAD(mpd_bar, INFO_MPD)
+	END OBJ(mpd_vol, INFO_MPD) init_mpd();
+	END OBJ(mpd_bitrate, INFO_MPD) init_mpd();
+	END OBJ(mpd_status, INFO_MPD) init_mpd();
+	END OBJ(mpd_bar, INFO_MPD)
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 		init_mpd();
-	END OBJ_THREAD(mpd_smart, INFO_MPD)
+	END OBJ(mpd_smart, INFO_MPD)
 		mpd_set_maxlen(mpd_smart);
 		init_mpd();
-	END OBJ_THREAD(if_mpd_playing, INFO_MPD)
+	END OBJ(if_mpd_playing, INFO_MPD)
 		obj_be_ifblock_if(obj);
 		init_mpd();
 #undef mpd_set_maxlen
