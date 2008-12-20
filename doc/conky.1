@@ -823,27 +823,62 @@ laptops's LCD (0-7).
 
 .TP 
 \fB\*(T<\fBif_empty\fR\*(T>\fR \*(T<\fB(var)\fR\*(T> 
-if conky variable VAR is empty, display everything between $if_empty and the matching $endif
-
-.TP 
-\fB\*(T<\fBif_gw\fR\*(T>\fR 
-if there is at least one default gateway, display everything between $if_gw and the matching $endif
-
-.TP 
-\fB\*(T<\fBif_running\fR\*(T>\fR \*(T<\fB(process)\fR\*(T> 
-if PROCESS is running, display everything $if_running and the matching $endif
+if conky variable VAR is empty, display everything
+between $if_empty and the matching $endif
 
 .TP 
 \fB\*(T<\fBif_existing\fR\*(T>\fR \*(T<\fBfile (string)\fR\*(T> 
-if FILE exists, display everything between if_existing and the matching $endif. The optional second paramater checks for FILE containing the specified string and prints everything between $if_existing and the matching $endif.
+if FILE exists, display everything between if_existing
+and the matching $endif. The optional second paramater
+checks for FILE containing the specified string and
+prints everything between $if_existing and the matching
+$endif.
+
+.TP 
+\fB\*(T<\fBif_gw\fR\*(T>\fR 
+if there is at least one default gateway, display
+everything between $if_gw and the matching $endif
+
+.TP 
+\fB\*(T<\fBif_match\fR\*(T>\fR \*(T<\fBexpression\fR\*(T> 
+Evaluates the given boolean expression, printing
+everything between $if_match and the matching $endif
+depending on whether the evaluation returns true or not.
+Valid expressions consist of a left side, an operator
+and a right side. Left and right sides are being parsed
+for contained text objects before evaluation. Recognised
+left and right side types are:
+
+\fBdouble\fR:
+argument consists of only digits and a
+single dot.
+.br
+\fBlong\fR:
+argument consists of only digits.
+.br
+\fBstring\fR:
+argument is enclosed in quotation mark
+or the checks for double and long failed
+before.
+
+Valid operands are:
+\&'>', '<', '>=', '<=', '==', '!='.
+
+.TP 
+\fB\*(T<\fBif_running\fR\*(T>\fR \*(T<\fB(process)\fR\*(T> 
+if PROCESS is running, display everything $if_running
+and the matching $endif
 
 .TP 
 \fB\*(T<\fBif_mounted\fR\*(T>\fR \*(T<\fB(mountpoint)\fR\*(T> 
-if MOUNTPOINT is mounted, display everything between $if_mounted and the matching $endif
+if MOUNTPOINT is mounted, display everything between
+$if_mounted and the matching $endif
 
 .TP 
 \fB\*(T<\fBif_smapi_bat_installed\fR\*(T>\fR \*(T<\fB(INDEX)\fR\*(T> 
-when using smapi, if the battery with index INDEX is installed, display everything between $if_smapi_bat_installed and the matching $endif
+when using smapi, if the battery with index INDEX is
+installed, display everything between
+$if_smapi_bat_installed and the matching $endif
 
 .TP 
 \fB\*(T<\fBif_up\fR\*(T>\fR \*(T<\fB(interface)\fR\*(T> 

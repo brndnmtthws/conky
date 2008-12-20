@@ -965,20 +965,36 @@ conky(1)							      conky(1)
 	      $if_empty and the matching $endif
 
 
-       1mif_gw	22mif there is at least one default gateway, display everything be‐
-	      tween $if_gw and the matching $endif
-
-
-       1mif_running (process)0m
-	      if  PROCESS  is  running, display everything $if_running and the
-	      matching $endif
-
-
        1mif_existing file (string)0m
 	      if FILE exists, display everything between if_existing  and  the
 	      matching	$endif.	 The optional second paramater checks for FILE
 	      containing the specified string and  prints  everything  between
 	      $if_existing and the matching $endif.
+
+
+       1mif_gw	22mif there is at least one default gateway, display everything be‐
+	      tween $if_gw and the matching $endif
+
+
+       1mif_match expression0m
+	      Evaluates the given boolean expression, printing everything  be‐
+	      tween $if_match and the matching $endif depending on whether the
+	      evaluation returns true or not.  Valid expressions consist of  a
+	      left  side,  an  operator and a right side. Left and right sides
+	      are being parsed for contained text objects  before  evaluation.
+	      Recognised left and right side types are:
+
+	      1mdouble22m: argument consists of only digits and a single dot.
+	      1mlong22m: argument consists of only digits.
+	      1mstring22m: argument is enclosed in quotation mark or the checks for
+	      double and long failed before.
+
+	      Valid operands are: ’>’, ’<’, ’>=’, ’<=’, ’==’, ’!=’.
+
+
+       1mif_running (process)0m
+	      if PROCESS is running, display everything	 $if_running  and  the
+	      matching $endif
 
 
        1mif_mounted (mountpoint)0m

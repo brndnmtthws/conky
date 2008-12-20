@@ -154,6 +154,7 @@ enum text_object_type {
 	OBJ_wireless_link_bar,
 #endif /* __linux__ */
 	OBJ_if_empty,
+	OBJ_if_match,
 	OBJ_if_existing,
 	OBJ_if_mounted,
 	OBJ_if_running,

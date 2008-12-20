@@ -59,6 +59,7 @@
 #include <getopt.h>
 
 /* local headers */
+#include "algebra.h"
 #include "build.h"
 #include "diskio.h"
 #include "fs.h"
@@ -1267,6 +1268,7 @@ static void free_text_objects(struct text_object *root)
 				}
 				break;
 			case OBJ_if_empty:
+			case OBJ_if_match:
 			case OBJ_if_existing:
 			case OBJ_if_mounted:
 			case OBJ_if_running:
@@ -2512,6 +2514,14 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(if_empty, 0)
 		if (!arg) {
 			ERR("if_empty needs an argument");
+			obj->data.ifblock.s = 0;
+		} else {
+			obj->data.ifblock.s = strndup(arg, text_buffer_size);
+		}
+		obj_be_ifblock_if(obj);
+	END OBJ(if_match, 0)
+		if (!arg) {
+			ERR("if_match needs arguments");
 			obj->data.ifblock.s = 0;
 		} else {
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
@@ -4569,6 +4579,28 @@ static void generate_text_internal(char *p, int p_max_size,
 					DO_JUMP;
 				}
 				p[0] = '\0';
+				free_text_objects(&subroot);
+				free(tmp_info);
+			}
+			OBJ(if_match) {
+				char expression[max_user_text];
+				int val;
+				struct text_object subroot;
+				struct information *tmp_info;
+
+				tmp_info = malloc(sizeof(struct information));
+				memcpy(tmp_info, cur, sizeof(struct information));
+				parse_conky_vars(&subroot, obj->data.ifblock.s,
+						expression, tmp_info);
+				DBGP("parsed arg into '%s'", expression);
+
+				val = compare(expression);
+				if (val == -2) {
+					ERR("compare failed for expression '%s'",
+							expression);
+				} else if (!val) {
+					DO_JUMP;
+				}
 				free_text_objects(&subroot);
 				free(tmp_info);
 			}

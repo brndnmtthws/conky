@@ -1,3 +1,6 @@
+2008-12-20
+	* Add if_match object comparing strings, floats and ints
+
 2008-12-18
 	* Fix segfault for diskiograph*, note the changed order of arguments
 	* Fix documentation for all graph objects

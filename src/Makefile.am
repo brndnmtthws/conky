@@ -145,7 +145,9 @@ conky_SOURCES = 		\
 	temphelper.c            \
 	temphelper.h            \
 	text_object.h           \
-	text_object.c
+	text_object.c           \
+	algebra.h               \
+	algebra.c
 
 conky_LDFLAGS = 				\
 	$(PTHREAD_LIBS)				\

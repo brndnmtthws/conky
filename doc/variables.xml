@@ -231,7 +231,7 @@
 			Title of current tune with optional maximum length specifier
 			<para></para></listitem>
 	</varlistentry>
-	
+
 	<varlistentry>
 		<term>
 			<command><option>audacious_main_volume</option></command>
@@ -1000,26 +1000,8 @@
 			<option>(var)</option>
 		</term>
 		<listitem>
-			if conky variable VAR is empty, display everything between $if_empty and the matching $endif
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term>
-			<command><option>if_gw</option></command>
-		</term>
-		<listitem>
-			if there is at least one default gateway, display everything between $if_gw and the matching $endif
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term>
-			<command><option>if_running</option></command>
-			<option>(process)</option>
-		</term>
-		<listitem>
-			if PROCESS is running, display everything $if_running and the matching $endif
+			if conky variable VAR is empty, display everything
+			between $if_empty and the matching $endif
 			<para></para></listitem>
 	</varlistentry>
 
@@ -1029,7 +1011,64 @@
 			<option>file (string)</option>
 		</term>
 		<listitem>
-			if FILE exists, display everything between if_existing and the matching $endif.  The optional second paramater checks for FILE containing the specified string and prints everything between $if_existing and the matching $endif.
+			if FILE exists, display everything between if_existing
+			and the matching $endif.  The optional second paramater
+			checks for FILE containing the specified string and
+			prints everything between $if_existing and the matching
+			$endif.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>if_gw</option></command>
+		</term>
+		<listitem>
+			if there is at least one default gateway, display
+			everything between $if_gw and the matching $endif
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>if_match</option></command>
+			<option>expression</option>
+		</term>
+		<listitem>
+			Evaluates the given boolean expression, printing
+			everything between $if_match and the matching $endif
+			depending on whether the evaluation returns true or not.
+			Valid expressions consist of a left side, an operator
+			and a right side. Left and right sides are being parsed
+			for contained text objects before evaluation. Recognised
+			left and right side types are:
+			<simplelist>
+				<member><command>double</command>:
+					argument consists of only digits and a
+					single dot.
+				</member>
+				<member><command>long</command>:
+					argument consists of only digits.
+				</member>
+				<member><command>string</command>:
+					argument is enclosed in quotation mark
+					or the checks for double and long failed
+					before.
+				</member>
+			</simplelist>
+			Valid operands are:
+			'&gt;', '&lt;', '&gt;=', '&lt;=', '==', '!='.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>if_running</option></command>
+			<option>(process)</option>
+		</term>
+		<listitem>
+			if PROCESS is running, display everything $if_running
+			and the matching $endif
 			<para></para></listitem>
 	</varlistentry>
 
@@ -1039,7 +1078,8 @@
 			<option>(mountpoint)</option>
 		</term>
 		<listitem>
-			if MOUNTPOINT is mounted, display everything between $if_mounted and the matching $endif
+			if MOUNTPOINT is mounted, display everything between
+			$if_mounted and the matching $endif
 			<para></para></listitem>
 	</varlistentry>
 
@@ -1049,7 +1089,9 @@
 			<option>(INDEX)</option>
 		</term>
 		<listitem>
-			when using smapi, if the battery with index INDEX is installed, display everything between $if_smapi_bat_installed and the matching $endif
+			when using smapi, if the battery with index INDEX is
+			installed, display everything between
+			$if_smapi_bat_installed and the matching $endif
 			<para></para></listitem>
 	</varlistentry>
 
