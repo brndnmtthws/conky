@@ -138,6 +138,10 @@ static void signal_handler(int);
 static void print_version(void) __attribute__((noreturn));
 static void reload_config(void);
 static void clean_up(void);
+static void generate_text_internal(char *, int, struct text_object,
+                                   struct information *);
+static int extract_variable_text_internal(struct text_object *,
+                                          const char *, char);
 
 static void print_version(void)
 {
@@ -1153,9 +1157,6 @@ static void human_readable(long long num, char *buf, int size)
 
 /* global object list root element */
 static struct text_object global_root_object;
-
-static void generate_text_internal(char *p, int p_max_size,
-	struct text_object text_object, struct information *cur);
 
 static inline void read_exec(const char *data, char *buf, const int size)
 {
