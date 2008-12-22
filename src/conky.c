@@ -1573,7 +1573,7 @@ static const char *dev_name(const char *path)
 
 /* construct_text_object() creates a new text_object */
 static struct text_object *construct_text_object(const char *s,
-		const char *arg, long line, char allow_threaded)
+		const char *arg, long line, char allow_threaded, void **ifblock_opaque)
 {
 	// struct text_object *obj = new_text_object();
 	struct text_object *obj = new_text_object_internal();
@@ -1775,9 +1775,9 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.ifblock.s = 0;
 		} else
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
-		obj_be_ifblock_if(obj);
+		obj_be_ifblock_if(ifblock_opaque, obj);
 	END OBJ(if_gw, 0)
-		obj_be_ifblock_if(obj);
+		obj_be_ifblock_if(ifblock_opaque, obj);
 	END OBJ(ioscheduler, 0)
 		if (!arg) {
 			CRIT_ERR("get_ioscheduler needs an argument (e.g. hda)");
@@ -1966,9 +1966,9 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.net = get_net_stat(buf);
 		free(buf);
 	END OBJ(else, 0)
-		obj_be_ifblock_else(obj);
+		obj_be_ifblock_else(ifblock_opaque, obj);
 	END OBJ(endif, 0)
-		obj_be_ifblock_endif(obj);
+		obj_be_ifblock_endif(ifblock_opaque, obj);
 	END OBJ(image, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 #ifdef HAVE_POPEN
@@ -2518,7 +2518,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
 		}
-		obj_be_ifblock_if(obj);
+		obj_be_ifblock_if(ifblock_opaque, obj);
 	END OBJ(if_match, 0)
 		if (!arg) {
 			ERR("if_match needs arguments");
@@ -2526,7 +2526,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
 		}
-		obj_be_ifblock_if(obj);
+		obj_be_ifblock_if(ifblock_opaque, obj);
 	END OBJ(if_existing, 0)
 		if (!arg) {
 			ERR("if_existing needs an argument or two");
@@ -2545,7 +2545,7 @@ static struct text_object *construct_text_object(const char *s,
 			}
 		}
 		DBGP("if_existing: '%s' '%s'", obj->data.ifblock.s, obj->data.ifblock.str);
-		obj_be_ifblock_if(obj);
+		obj_be_ifblock_if(ifblock_opaque, obj);
 	END OBJ(if_mounted, 0)
 		if (!arg) {
 			ERR("if_mounted needs an argument");
@@ -2553,7 +2553,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
 		}
-		obj_be_ifblock_if(obj);
+		obj_be_ifblock_if(ifblock_opaque, obj);
 	END OBJ(if_running, 0)
 		if (arg) {
 			char buf[256];
@@ -2564,7 +2564,7 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("if_running needs an argument");
 			obj->data.ifblock.s = 0;
 		}
-		obj_be_ifblock_if(obj);
+		obj_be_ifblock_if(ifblock_opaque, obj);
 	END OBJ(kernel, 0)
 	END OBJ(machine, 0)
 	END OBJ(mails, 0)
@@ -2847,7 +2847,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.ifblock.s = 0;
 		} else
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
-		obj_be_ifblock_if(obj);
+		obj_be_ifblock_if(ifblock_opaque, obj);
 	END OBJ(smapi_bat_perc, 0)
 		if (arg)
 			obj->data.s = strndup(arg, text_buffer_size);
@@ -2919,7 +2919,7 @@ static struct text_object *construct_text_object(const char *s,
 		mpd_set_maxlen(mpd_smart);
 		init_mpd();
 	END OBJ(if_mpd_playing, INFO_MPD)
-		obj_be_ifblock_if(obj);
+		obj_be_ifblock_if(ifblock_opaque, obj);
 		init_mpd();
 #undef mpd_set_maxlen
 #endif /* MPD */
@@ -2958,7 +2958,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(xmms2_playlist, INFO_XMMS2)
 	END OBJ(xmms2_timesplayed, INFO_XMMS2)
 	END OBJ(if_xmms2_connected, INFO_XMMS2)
-		obj_be_ifblock_if(obj);
+		obj_be_ifblock_if(ifblock_opaque, obj);
 #endif
 #ifdef AUDACIOUS
 	END OBJ(audacious_status, INFO_AUDACIOUS)
@@ -3288,6 +3288,7 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 	struct text_object *obj;
 	char *p, *s, *orig_p;
 	long line;
+	void *ifblock_opaque = NULL;
 
 	p = strndup(const_p, max_user_text - 1);
 	while (text_contains_templates(p)) {
@@ -3390,7 +3391,9 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 						tmp_p++;
 					}
 
-					obj = construct_text_object(buf, arg, line, allow_threaded);
+					obj = construct_text_object(buf, arg,
+							line, allow_threaded,
+							&ifblock_opaque);
 					if (obj != NULL) {
 						append_object(retval, obj);
 					}
@@ -3410,7 +3413,7 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 		append_object(retval, obj);
 	}
 
-	if (!ifblock_stack_empty()) {
+	if (!ifblock_stack_empty(&ifblock_opaque)) {
 		ERR("one or more $endif's are missing");
 	}
 

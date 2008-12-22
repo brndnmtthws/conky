@@ -85,12 +85,6 @@ struct ifblock_stack_obj {
 	struct ifblock_stack_obj *next;
 };
 
-/* top of the internal ifblock stack
- * initially contains only one "object", i.e. a NULL pointer
- * indicating the end of the stack.
- */
-static struct ifblock_stack_obj *ifblock_stack_top = NULL;
-
 /* push an ifblock object onto the stack
  * in fact, this does a lot more:
  * - IFBLOCK_IF is just pushed onto the stack
@@ -100,37 +94,38 @@ static struct ifblock_stack_obj *ifblock_stack_top = NULL;
  *   object in the stack and then triggers stack popping of
  *   any optional IFBLOCK_ELSE along with it's IFBLOCK_IF
  */
-static int push_ifblock(struct text_object *obj, enum ifblock_type type)
+static int push_ifblock(struct ifblock_stack_obj **ifblock_stack_top,
+                        struct text_object *obj, enum ifblock_type type)
 {
 	struct ifblock_stack_obj *stackobj;
 
 	switch (type) {
 		case IFBLOCK_ENDIF:
-			if (!ifblock_stack_top)
+			if (!(*ifblock_stack_top))
 				CRIT_ERR("got an endif without matching if");
-			ifblock_stack_top->obj->data.ifblock.next = obj;
+			(*ifblock_stack_top)->obj->data.ifblock.next = obj;
 			/* if there's some else in between, remove and free it */
-			if (ifblock_stack_top->type == IFBLOCK_ELSE) {
-				stackobj = ifblock_stack_top;
-				ifblock_stack_top = stackobj->next;
+			if ((*ifblock_stack_top)->type == IFBLOCK_ELSE) {
+				stackobj = *ifblock_stack_top;
+				*ifblock_stack_top = stackobj->next;
 				free(stackobj);
 			}
 			/* finally remove and free the if object */
-			stackobj = ifblock_stack_top;
-			ifblock_stack_top = stackobj->next;
+			stackobj = *ifblock_stack_top;
+			*ifblock_stack_top = stackobj->next;
 			free(stackobj);
 			break;
 		case IFBLOCK_ELSE:
-			if (!ifblock_stack_top)
+			if (!(*ifblock_stack_top))
 				CRIT_ERR("got an else without matching if");
-			ifblock_stack_top->obj->data.ifblock.next = obj;
+			(*ifblock_stack_top)->obj->data.ifblock.next = obj;
 			/* fall through */
 		case IFBLOCK_IF:
 			stackobj = malloc(sizeof(struct ifblock_stack_obj));
 			stackobj->type = type;
 			stackobj->obj = obj;
-			stackobj->next = ifblock_stack_top;
-			ifblock_stack_top = stackobj;
+			stackobj->next = *ifblock_stack_top;
+			*ifblock_stack_top = stackobj;
 			break;
 		default:
 			CRIT_ERR("push_ifblock() missuse detected!");
@@ -140,23 +135,23 @@ static int push_ifblock(struct text_object *obj, enum ifblock_type type)
 
 /* public functions for client use */
 
-int obj_be_ifblock_if(struct text_object *obj)
+int obj_be_ifblock_if(void **opaque, struct text_object *obj)
 {
-	return push_ifblock(obj, IFBLOCK_IF);
+	return push_ifblock((struct ifblock_stack_obj **)opaque, obj, IFBLOCK_IF);
 }
-int obj_be_ifblock_else(struct text_object *obj)
+int obj_be_ifblock_else(void **opaque, struct text_object *obj)
 {
-	return push_ifblock(obj, IFBLOCK_ELSE);
+	return push_ifblock((struct ifblock_stack_obj **)opaque, obj, IFBLOCK_ELSE);
 }
-int obj_be_ifblock_endif(struct text_object *obj)
+int obj_be_ifblock_endif(void **opaque, struct text_object *obj)
 {
-	return push_ifblock(obj, IFBLOCK_ENDIF);
+	return push_ifblock((struct ifblock_stack_obj **)opaque, obj, IFBLOCK_ENDIF);
 }
 
 /* check if ifblock stack is empty
  * if so, return true (!= 0)
  */
-int ifblock_stack_empty(void)
+int ifblock_stack_empty(void **opaque)
 {
-	return ifblock_stack_top == NULL;
+	return *opaque == NULL;
 }
