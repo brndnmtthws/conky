@@ -1270,6 +1270,9 @@ static void free_text_objects(struct text_object *root)
 				break;
 			case OBJ_if_empty:
 			case OBJ_if_match:
+				free_text_objects(obj->sub);
+				free(obj->sub);
+				/* fall through */
 			case OBJ_if_existing:
 			case OBJ_if_mounted:
 			case OBJ_if_running:
@@ -1528,6 +1531,8 @@ static void free_text_objects(struct text_object *root)
 #endif
 			case OBJ_scroll:
 				free(data.scroll.text);
+				free_text_objects(obj->sub);
+				free(obj->sub);
 				break;
 		}
 		free(obj);
@@ -2518,6 +2523,9 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.ifblock.s = 0;
 		} else {
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
+			obj->sub = malloc(sizeof(struct text_object));
+			extract_variable_text_internal(obj->sub,
+			                               obj->data.ifblock.s, 0);
 		}
 		obj_be_ifblock_if(ifblock_opaque, obj);
 	END OBJ(if_match, 0)
@@ -2526,6 +2534,9 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.ifblock.s = 0;
 		} else {
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
+			obj->sub = malloc(sizeof(struct text_object));
+			extract_variable_text_internal(obj->sub,
+			                               obj->data.ifblock.s, 0);
 		}
 		obj_be_ifblock_if(ifblock_opaque, obj);
 	END OBJ(if_existing, 0)
@@ -3066,6 +3077,9 @@ static struct text_object *construct_text_object(const char *s,
 				n1 += n2;
 			obj->data.scroll.text = strndup(arg + n1, text_buffer_size);
 			obj->data.scroll.start = 0;
+			obj->sub = malloc(sizeof(struct text_object));
+			extract_variable_text_internal(obj->sub,
+					obj->data.scroll.text, 0);
 		} else {
 			CRIT_ERR("scroll needs arguments: <length> [<step>] <text>");
 		}
@@ -4573,29 +4587,27 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_alignc(p, obj->data.i);
 			}
 			OBJ(if_empty) {
-				struct text_object subroot;
+				char buf[max_user_text];
 				struct information *tmp_info =
 					malloc(sizeof(struct information));
 				memcpy(tmp_info, cur, sizeof(struct information));
-				parse_conky_vars(&subroot, obj->data.ifblock.s, p, tmp_info);
+				generate_text_internal(buf, max_user_text,
+				                       *obj->sub, tmp_info);
 
-				if (strlen(p) != 0) {
+				if (strlen(buf) != 0) {
 					DO_JUMP;
 				}
-				p[0] = '\0';
-				free_text_objects(&subroot);
 				free(tmp_info);
 			}
 			OBJ(if_match) {
 				char expression[max_user_text];
 				int val;
-				struct text_object subroot;
 				struct information *tmp_info;
 
 				tmp_info = malloc(sizeof(struct information));
 				memcpy(tmp_info, cur, sizeof(struct information));
-				parse_conky_vars(&subroot, obj->data.ifblock.s,
-						expression, tmp_info);
+				generate_text_internal(expression, max_user_text,
+				                       *obj->sub, tmp_info);
 				DBGP("parsed arg into '%s'", expression);
 
 				val = compare(expression);
@@ -4605,7 +4617,6 @@ static void generate_text_internal(char *p, int p_max_size,
 				} else if (!val) {
 					DO_JUMP;
 				}
-				free_text_objects(&subroot);
 				free(tmp_info);
 			}
 			OBJ(if_existing) {
@@ -5483,39 +5494,41 @@ head:
 #endif /* SMAPI */
 			OBJ(scroll) {
 				unsigned int j;
-				char *tmp;
-				struct text_object subroot;
-				parse_conky_vars(&subroot, obj->data.scroll.text, p, cur);
+				char *tmp, buf[max_user_text];
+				generate_text_internal(buf, max_user_text,
+				                       *obj->sub, cur);
 
-				if (strlen(p) <= obj->data.scroll.show) {
+				if (strlen(buf) <= obj->data.scroll.show) {
+					snprintf(p, p_max_size, "%s", buf);
 					break;
 				}
 #define LINESEPARATOR '|'
 				//place all the lines behind each other with LINESEPARATOR between them
-				for(j = 0; p[j] != 0; j++) {
-					if(p[j]=='\n') {
-						p[j]=LINESEPARATOR;
+				for(j = 0; buf[j] != 0; j++) {
+					if(buf[j]=='\n') {
+						buf[j]=LINESEPARATOR;
 					}
 				}
 				//scroll the output obj->data.scroll.start places by copying that many chars from
 				//the front of the string to tmp, scrolling the rest to the front and placing tmp
 				//at the back of the string
 				tmp = calloc(obj->data.scroll.start + 1, sizeof(char));
-				strncpy(tmp, p, obj->data.scroll.start); tmp[obj->data.scroll.start] = 0;
-				for(j = obj->data.scroll.start; p[j] != 0; j++){
-					p[j - obj->data.scroll.start] = p[j];
+				strncpy(tmp, buf, obj->data.scroll.start); tmp[obj->data.scroll.start] = 0;
+				for(j = obj->data.scroll.start; buf[j] != 0; j++){
+					buf[j - obj->data.scroll.start] = buf[j];
 				}
-				strcpy(&p[j - obj->data.scroll.start], tmp);
+				strcpy(&buf[j - obj->data.scroll.start], tmp);
 				free(tmp);
 				//only show the requested number of chars
 				if(obj->data.scroll.show < j) {
-					p[obj->data.scroll.show] = 0;
+					buf[obj->data.scroll.show] = 0;
 				}
 				//next time, scroll a place more or reset scrolling if we are at the end
 				obj->data.scroll.start += obj->data.scroll.step;
 				if(obj->data.scroll.start >= j){
 					 obj->data.scroll.start = 0;
 				}
+				snprintf(p, p_max_size, "%s", buf);
 			}
 #ifdef NVIDIA
 			OBJ(nvidia) {

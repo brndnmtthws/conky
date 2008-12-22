@@ -354,6 +354,7 @@ enum text_object_type {
 
 struct text_object {
 	struct text_object *next, *prev;	/* doubly linked list of text objects */
+	struct text_object *sub;		/* for objects parsing text into objects */
 	union {
 		char *s;		/* some string */
 		int i;			/* some integer */
