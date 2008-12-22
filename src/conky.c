@@ -1588,6 +1588,9 @@ static struct text_object *construct_text_object(const char *s,
 
 #define OBJ(a, n) if (strcmp(s, #a) == 0) { \
 	obj->type = OBJ_##a; need_mask |= (1 << n); {
+#define OBJ_IF(a, n) if (strcmp(s, #a) == 0) { \
+	obj->type = OBJ_##a; need_mask |= (1 << n); \
+	obj_be_ifblock_if(ifblock_opaque, obj); {
 #define OBJ_THREAD(a, n) if (strcmp(s, #a) == 0 && allow_threaded) { \
 	obj->type = OBJ_##a; need_mask |= (1 << n); {
 #define END } } else
@@ -1775,15 +1778,13 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.sensor = atoi(&arg[0]);
 	END OBJ(ibm_volume, 0)
 	END OBJ(ibm_brightness, 0)
-	END OBJ(if_up, 0)
+	END OBJ_IF(if_up, 0)
 		if (!arg) {
 			ERR("if_up needs an argument");
 			obj->data.ifblock.s = 0;
 		} else
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
-		obj_be_ifblock_if(ifblock_opaque, obj);
-	END OBJ(if_gw, 0)
-		obj_be_ifblock_if(ifblock_opaque, obj);
+	END OBJ_IF(if_gw, 0)
 	END OBJ(ioscheduler, 0)
 		if (!arg) {
 			CRIT_ERR("get_ioscheduler needs an argument (e.g. hda)");
@@ -2517,7 +2518,7 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.loadavg[0] = (r >= 1) ? (unsigned char) a : 0;
 		obj->data.loadavg[1] = (r >= 2) ? (unsigned char) b : 0;
 		obj->data.loadavg[2] = (r >= 3) ? (unsigned char) c : 0;
-	END OBJ(if_empty, 0)
+	END OBJ_IF(if_empty, 0)
 		if (!arg) {
 			ERR("if_empty needs an argument");
 			obj->data.ifblock.s = 0;
@@ -2527,8 +2528,7 @@ static struct text_object *construct_text_object(const char *s,
 			extract_variable_text_internal(obj->sub,
 			                               obj->data.ifblock.s, 0);
 		}
-		obj_be_ifblock_if(ifblock_opaque, obj);
-	END OBJ(if_match, 0)
+	END OBJ_IF(if_match, 0)
 		if (!arg) {
 			ERR("if_match needs arguments");
 			obj->data.ifblock.s = 0;
@@ -2538,8 +2538,7 @@ static struct text_object *construct_text_object(const char *s,
 			extract_variable_text_internal(obj->sub,
 			                               obj->data.ifblock.s, 0);
 		}
-		obj_be_ifblock_if(ifblock_opaque, obj);
-	END OBJ(if_existing, 0)
+	END OBJ_IF(if_existing, 0)
 		if (!arg) {
 			ERR("if_existing needs an argument or two");
 			obj->data.ifblock.s = NULL;
@@ -2557,16 +2556,14 @@ static struct text_object *construct_text_object(const char *s,
 			}
 		}
 		DBGP("if_existing: '%s' '%s'", obj->data.ifblock.s, obj->data.ifblock.str);
-		obj_be_ifblock_if(ifblock_opaque, obj);
-	END OBJ(if_mounted, 0)
+	END OBJ_IF(if_mounted, 0)
 		if (!arg) {
 			ERR("if_mounted needs an argument");
 			obj->data.ifblock.s = 0;
 		} else {
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
 		}
-		obj_be_ifblock_if(ifblock_opaque, obj);
-	END OBJ(if_running, 0)
+	END OBJ_IF(if_running, 0)
 		if (arg) {
 			char buf[256];
 
@@ -2576,7 +2573,6 @@ static struct text_object *construct_text_object(const char *s,
 			ERR("if_running needs an argument");
 			obj->data.ifblock.s = 0;
 		}
-		obj_be_ifblock_if(ifblock_opaque, obj);
 	END OBJ(kernel, 0)
 	END OBJ(machine, 0)
 	END OBJ(mails, 0)
@@ -2853,13 +2849,12 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.s = strndup(arg, text_buffer_size);
 		else
 			ERR("smapi needs an argument");
-	END OBJ(if_smapi_bat_installed, 0)
+	END OBJ_IF(if_smapi_bat_installed, 0)
 		if (!arg) {
 			ERR("if_smapi_bat_installed needs an argument");
 			obj->data.ifblock.s = 0;
 		} else
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
-		obj_be_ifblock_if(ifblock_opaque, obj);
 	END OBJ(smapi_bat_perc, 0)
 		if (arg)
 			obj->data.s = strndup(arg, text_buffer_size);
@@ -2930,8 +2925,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(mpd_smart, INFO_MPD)
 		mpd_set_maxlen(mpd_smart);
 		init_mpd();
-	END OBJ(if_mpd_playing, INFO_MPD)
-		obj_be_ifblock_if(ifblock_opaque, obj);
+	END OBJ_IF(if_mpd_playing, INFO_MPD)
 		init_mpd();
 #undef mpd_set_maxlen
 #endif /* MPD */
@@ -2969,8 +2963,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(xmms2_smart, INFO_XMMS2)
 	END OBJ(xmms2_playlist, INFO_XMMS2)
 	END OBJ(xmms2_timesplayed, INFO_XMMS2)
-	END OBJ(if_xmms2_connected, INFO_XMMS2)
-		obj_be_ifblock_if(ifblock_opaque, obj);
+	END OBJ_IF(if_xmms2_connected, INFO_XMMS2)
 #endif
 #ifdef AUDACIOUS
 	END OBJ(audacious_status, INFO_AUDACIOUS)
