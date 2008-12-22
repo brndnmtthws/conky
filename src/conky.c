@@ -172,7 +172,7 @@ static void print_version(void)
 		   "  * mpd\n"
 #endif /* MPD */
 #ifdef MOC
-       "  * moc\n"
+		   "  * moc\n"
 #endif /* MOC */
 #ifdef XMMS2
 		   "  * xmms2\n"
@@ -1515,19 +1515,19 @@ static void free_text_objects(struct text_object *root)
 				break;
 #endif
 #ifdef MOC
-    case OBJ_moc_state:
-    case OBJ_moc_file:
-    case OBJ_moc_title:
-    case OBJ_moc_artist: 
-    case OBJ_moc_song: 
-    case OBJ_moc_album:
-    case OBJ_moc_totaltime:
-    case OBJ_moc_timeleft:
-    case OBJ_moc_curtime:
-    case OBJ_moc_bitrate:
-    case OBJ_moc_rate:
-      free_moc(&info.moc);
-      break;
+			case OBJ_moc_state:
+			case OBJ_moc_file:
+			case OBJ_moc_title:
+			case OBJ_moc_artist:
+			case OBJ_moc_song:
+			case OBJ_moc_album:
+			case OBJ_moc_totaltime:
+			case OBJ_moc_timeleft:
+			case OBJ_moc_curtime:
+			case OBJ_moc_bitrate:
+			case OBJ_moc_rate:
+				free_moc();
+				break;
 #endif
 			case OBJ_scroll:
 				free(data.scroll.text);
@@ -2936,17 +2936,17 @@ static struct text_object *construct_text_object(const char *s,
 #undef mpd_set_maxlen
 #endif /* MPD */
 #ifdef MOC
-  END OBJ_THREAD(moc_state, INFO_MOC)
-  END OBJ_THREAD(moc_file, INFO_MOC)
-  END OBJ_THREAD(moc_title, INFO_MOC)
-  END OBJ_THREAD(moc_artist, INFO_MOC)
-  END OBJ_THREAD(moc_song, INFO_MOC)
-  END OBJ_THREAD(moc_album, INFO_MOC)
-  END OBJ_THREAD(moc_totaltime, INFO_MOC)
-  END OBJ_THREAD(moc_timeleft, INFO_MOC)
-  END OBJ_THREAD(moc_curtime, INFO_MOC)
-  END OBJ_THREAD(moc_bitrate, INFO_MOC)
-  END OBJ_THREAD(moc_rate, INFO_MOC)
+	END OBJ(moc_state, INFO_MOC)
+	END OBJ(moc_file, INFO_MOC)
+	END OBJ(moc_title, INFO_MOC)
+	END OBJ(moc_artist, INFO_MOC)
+	END OBJ(moc_song, INFO_MOC)
+	END OBJ(moc_album, INFO_MOC)
+	END OBJ(moc_totaltime, INFO_MOC)
+	END OBJ(moc_timeleft, INFO_MOC)
+	END OBJ(moc_curtime, INFO_MOC)
+	END OBJ(moc_bitrate, INFO_MOC)
+	END OBJ(moc_rate, INFO_MOC)
 #endif /* MOC */
 #ifdef XMMS2
 	END OBJ(xmms2_artist, INFO_XMMS2)
@@ -4945,39 +4945,42 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 
 #ifdef MOC
+#define MOC_PRINT(t, a) \
+	snprintf(p, p_max_size, "%s", (moc.t ? moc.t : a))
 			OBJ(moc_state) {
-				snprintf(p, p_max_size, "%s", (cur->moc.state ? cur->moc.state : "??"));
+				MOC_PRINT(state, "??");
 			}
 			OBJ(moc_file) {
-				snprintf(p, p_max_size, "%s", (cur->moc.file ? cur->moc.file : "no file"));
+				MOC_PRINT(file, "no file");
 			}
 			OBJ(moc_title) {
-				snprintf(p, p_max_size, "%s", (cur->moc.title ? cur->moc.title : "no title"));
+				MOC_PRINT(title, "no title");
 			}
 			OBJ(moc_artist) {
-				snprintf(p, p_max_size, "%s", (cur->moc.artist ? cur->moc.artist : "no artist"));
+				MOC_PRINT(artist, "no artist");
 			}
 			OBJ(moc_song) {
-				snprintf(p, p_max_size, "%s", (cur->moc.song ? cur->moc.song : "no song"));
+				MOC_PRINT(song, "no song");
 			}
 			OBJ(moc_album) {
-				snprintf(p, p_max_size, "%s", (cur->moc.album ? cur->moc.album : "no album"));
+				MOC_PRINT(album, "no album");
 			}
 			OBJ(moc_totaltime) {
-				snprintf(p, p_max_size, "%s", (cur->moc.totaltime ? cur->moc.totaltime : "0:00"));
+				MOC_PRINT(totaltime, "0:00");
 			}
 			OBJ(moc_timeleft) {
-				snprintf(p, p_max_size, "%s", (cur->moc.timeleft ? cur->moc.timeleft : "0:00"));
+				MOC_PRINT(timeleft, "0:00");
 			}
 			OBJ(moc_curtime) {
-				snprintf(p, p_max_size, "%s", (cur->moc.curtime ? cur->moc.curtime : "0:00"));
+				MOC_PRINT(curtime, "0:00");
 			}
 			OBJ(moc_bitrate) {
-				snprintf(p, p_max_size, "%s", (cur->moc.bitrate ? cur->moc.bitrate : "0Kbps"));
+				MOC_PRINT(bitrate, "0Kbps");
 			}
 			OBJ(moc_rate) {
-        snprintf(p, p_max_size, "%s", (cur->moc.rate ? cur->moc.rate : "0KHz"));
+				MOC_PRINT(rate, "0KHz");
 			}
+#undef MOC_PRINT
 #endif /* MOC */
 #ifdef XMMS2
 			OBJ(xmms2_artist) {
@@ -6915,10 +6918,6 @@ static void reload_config(void)
 		free(info.mail);
 	}
 
-#ifdef MOC
-  free_moc(&info.moc);
-#endif
-
 #ifdef X11
 	free_fonts();
 #endif /* X11 */
@@ -7111,9 +7110,6 @@ static void set_default_configurations(void)
 #ifdef MPD
 	mpd_set_host("localhost");
 	mpd_set_port("6600");
-#endif
-#ifdef MOC
-  init_moc(&info.moc);
 #endif
 #ifdef XMMS2
 	info.xmms2.artist = NULL;

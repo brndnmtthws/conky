@@ -35,12 +35,11 @@ struct moc_s {
 	char *curtime;
 	char *bitrate;
 	char *rate;
-	timed_thread *timed_thread;
 };
+extern struct moc_s moc;
 
-void init_moc(struct moc_s *moc);
-void *update_moc(void *) __attribute__((noreturn));
-void free_moc(struct moc_s *moc);
+int run_moc_thread(double interval);
+void free_moc(void);
 
 #endif /* MOC_H_ */
 

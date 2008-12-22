@@ -26,29 +26,34 @@
 #include <stdlib.h>
 #include <string.h>
 
-void init_moc(struct moc_s *moc)
+#define xfree(x) if (x) free(x); x = 0
+
+struct moc_s moc;
+static timed_thread *moc_thread = NULL;
+
+void free_moc(void)
 {
-	moc->state = NULL;
-	moc->file = NULL;
-	moc->title = NULL;
-	moc->artist = NULL;
-	moc->song = NULL;
-	moc->album = NULL;
-	moc->totaltime = NULL;
-	moc->timeleft = NULL;
-	moc->curtime = NULL;
-	moc->bitrate = NULL;
-	moc->rate = NULL;
+	xfree(moc.state);
+	xfree(moc.file);
+	xfree(moc.title);
+	xfree(moc.artist);
+	xfree(moc.song);
+	xfree(moc.album);
+	xfree(moc.totaltime);
+	xfree(moc.timeleft);
+	xfree(moc.curtime);
+	xfree(moc.bitrate);
+	xfree(moc.rate);
 }
 
-static void update_infos(struct moc_s *moc)
+static void update_infos(void)
 {
 	FILE *fp;
 
-	free_moc(moc);
+	free_moc();
 	fp = popen("mocp -i", "r");
 	if (!fp) {
-		moc->state = strndup("Can't run 'mocp -i'", text_buffer_size);
+		moc.state = strndup("Can't run 'mocp -i'", text_buffer_size);
 		return;
 	}
 
@@ -64,67 +69,64 @@ static void update_infos(struct moc_s *moc)
 
 		/* Parse infos. */
 		if (strncmp(line, "State:", 6) == 0)
-			moc->state = strndup(line + 7, text_buffer_size);
+			moc.state = strndup(line + 7, text_buffer_size);
 		else if (strncmp(line, "File:", 5) == 0)
-			moc->file = strndup(line + 6, text_buffer_size);
+			moc.file = strndup(line + 6, text_buffer_size);
 		else if (strncmp(line, "Title:", 6) == 0)
-			moc->title = strndup(line + 7, text_buffer_size);
+			moc.title = strndup(line + 7, text_buffer_size);
 		else if (strncmp(line, "Artist:", 7) == 0)
-			moc->artist = strndup(line + 8, text_buffer_size);
+			moc.artist = strndup(line + 8, text_buffer_size);
 		else if (strncmp(line, "SongTitle:", 10) == 0)
-			moc->song = strndup(line + 11, text_buffer_size);
+			moc.song = strndup(line + 11, text_buffer_size);
 		else if (strncmp(line, "Album:", 6) == 0)
-			moc->album = strndup(line + 7, text_buffer_size);
+			moc.album = strndup(line + 7, text_buffer_size);
 		else if (strncmp(line, "TotalTime:", 10) == 0)
-			moc->totaltime = strndup(line + 11, text_buffer_size);
+			moc.totaltime = strndup(line + 11, text_buffer_size);
 		else if (strncmp(line, "TimeLeft:", 9) == 0)
-			moc->timeleft = strndup(line + 10, text_buffer_size);
+			moc.timeleft = strndup(line + 10, text_buffer_size);
 		else if (strncmp(line, "CurrentTime:", 12) == 0)
-			moc->curtime = strndup(line + 13, text_buffer_size);
+			moc.curtime = strndup(line + 13, text_buffer_size);
 		else if (strncmp(line, "Bitrate:", 8) == 0)
-			moc->bitrate = strndup(line + 9, text_buffer_size);
+			moc.bitrate = strndup(line + 9, text_buffer_size);
 		else if (strncmp(line, "Rate:", 5) == 0)
-			moc->rate = strndup(line + 6, text_buffer_size);
+			moc.rate = strndup(line + 6, text_buffer_size);
 	}
 
 	pclose(fp);
 }
 
+void *update_moc(void *) __attribute__((noreturn));
+
 void *update_moc(void *arg)
 {
-	struct moc_s *moc;
-
-	if (arg == NULL) {
-		CRIT_ERR("update_moc called with a null argument!");
-	}
-
-	moc = (struct moc_s *) arg;
+	(void)arg;
 
 	while (1) {
-		timed_thread_lock(moc->timed_thread);
-		update_infos(moc);
-		timed_thread_unlock(moc->timed_thread);
-		if (timed_thread_test(moc->timed_thread, 0)) {
-			timed_thread_exit(moc->timed_thread);
+		timed_thread_lock(moc_thread);
+		update_infos();
+		timed_thread_unlock(moc_thread);
+		if (timed_thread_test(moc_thread, 0)) {
+			timed_thread_exit(moc_thread);
 		}
 	}
 	/* never reached */
 }
 
-void free_moc(struct moc_s *moc)
+int run_moc_thread(double interval)
 {
-	free(moc->state);
-	free(moc->file);
-	free(moc->title);
-	free(moc->artist);
-	free(moc->song);
-	free(moc->album);
-	free(moc->totaltime);
-	free(moc->timeleft);
-	free(moc->curtime);
-	free(moc->bitrate);
-	free(moc->rate);
+	if (moc_thread)
+		return 0;
 
-	init_moc(moc);
+	moc_thread = timed_thread_create(&update_moc, NULL, interval);
+	if (!moc_thread) {
+		ERR("Failed to create MOC timed thread");
+		return 1;
+	}
+	timed_thread_register(moc_thread, &moc_thread);
+	if (timed_thread_run(moc_thread)) {
+		ERR("Failed to run MOC timed thread");
+		return 2;
+	}
+	return 0;
 }
 

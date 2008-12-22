@@ -337,22 +337,11 @@ void update_stuff(void)
 #endif
 
 #ifdef MOC
-  if (NEED(INFO_MOC)) {
-    if (!info.moc.timed_thread) {
-      init_moc(&info.moc);
-      info.moc.timed_thread = timed_thread_create(&update_moc,
-        (void *) &info.moc, info.music_player_interval * 100000);
-      if (!info.moc.timed_thread) {
-        ERR("Failed to create MOC timed thread");
-      }
-      timed_thread_register(info.moc.timed_thread, &info.moc.timed_thread);
-      if (timed_thread_run(info.moc.timed_thread)) {
-        ERR("Failed to run MOC timed thread");
-      }
-    }
-  }
+	if (NEED(INFO_MOC)) {
+		run_moc_thread(info.music_player_interval * 100000);
+	}
 #endif
-  
+
 #ifdef XMMS2
 	if (NEED(INFO_XMMS2)) {
 		update_xmms2();

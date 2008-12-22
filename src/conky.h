@@ -232,9 +232,6 @@ struct information {
 
 	struct mail_s *mail;
 	int mail_running;
-#ifdef MOC
-  struct moc_s moc;
-#endif
 #ifdef XMMS2
 	struct xmms2_s xmms2;
 	int xmms2_conn_state;
