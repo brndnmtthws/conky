@@ -41,6 +41,7 @@
 #include <dirent.h>
 #endif
 #include <sys/time.h>
+#include <sys/param.h>
 #ifdef X11
 #include "x11.h"
 #include <X11/Xutil.h>
