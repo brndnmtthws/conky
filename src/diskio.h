@@ -30,16 +30,18 @@
 #define DISKIO_H_
 
 struct diskio_stat {
+	struct diskio_stat *next;
 	char *dev;
-	unsigned int current, current_read, current_write, last, last_read,
-		last_write;
+	unsigned int current;
+	unsigned int current_read;
+	unsigned int current_write;
+	unsigned int last;
+	unsigned int last_read;
+	unsigned int last_write;
 };
 
-#define MAX_DISKIO_STATS 64
-
-struct diskio_stat *diskio_stats;
-
 struct diskio_stat *prepare_diskio_stat(const char *s);
+void update_diskio(void);
 void clear_diskio_stats(void);
 
 #endif /* DISKIO_H_ */

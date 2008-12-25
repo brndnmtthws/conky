@@ -33,6 +33,7 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <pthread.h>
+#include "diskio.h"
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
