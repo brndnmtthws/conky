@@ -66,10 +66,6 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 {
 	struct diskio_stat *new = 0;
 	unsigned i;
-	FILE *fp;
-	int found = 0;
-	char device[text_buffer_size], fbuf[text_buffer_size];
-	static int rep = 0;
 
 	if (!s)
 		return &diskio_stats[0];
@@ -95,32 +91,6 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 		new->dev = 0;
 	}
 	new->dev = strndup(s, text_buffer_size);
-
-	/*
-	 * check that device actually exists
-	 */
-
-	if (!(fp = open_file("/proc/diskstats", &rep))) {
-		ERR("cannot read from /proc/diskstats");
-		return 0;
-	}
-
-	while (!feof(fp)) {
-		fgets(fbuf, text_buffer_size, fp);
-		if (sscanf(fbuf, "%*u %*u %255s %*u %*u %*u %*u %*u %*u %*u", device)) {
-			// check for device match
-			if (strncmp(new->dev, device, 256) == 0) {
-				found = 1;
-				break;
-			}
-		}
-	}
-	fclose(fp);
-	fp = 0;
-	if (!found) {
-		ERR("diskio device '%s' does not exist", s);
-		return 0;
-	}
 	new->current = 0;
 	new->current_read = 0;
 	new ->current_write = 0;
@@ -156,8 +126,7 @@ void update_diskio(void)
 
 	/* read reads and writes from all disks (minor = 0), including cd-roms
 	 * and floppies, and sum them up */
-	while (!feof(fp)) {
-		fgets(buf, 512, fp);
+	while (fgets(buf, 512, fp)) {
 		col_count = sscanf(buf, "%u %u %s %*u %*u %u %*u %*u %*u %u", &major,
 			&minor, devbuf, &reads, &writes);
 		/* ignore subdevices (they have only 3 matching entries in their line)
@@ -177,8 +146,7 @@ void update_diskio(void)
 			}
 		}
 		for (i = 1; i < MAX_DISKIO_STATS; i++) {
-			if (diskio_stats[i].dev &&
-					strncmp(devbuf, diskio_stats[i].dev, text_buffer_size) == 0) {
+			if (diskio_stats[i].dev && !strcmp(devbuf, diskio_stats[i].dev)) {
 				diskio_stats[i].current =
 					(reads + writes - diskio_stats[i].last) / 2;
 				diskio_stats[i].current_read =
