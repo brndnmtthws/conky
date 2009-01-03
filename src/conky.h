@@ -102,6 +102,10 @@ char *strndup(const char *s, size_t n);
 #include "xmms2.h"
 #endif
 
+#ifdef IBM
+#include "ibm.h"
+#endif
+
 /* A size for temporary, static buffers to use when
  * one doesn't know what to choose. Defaults to 256.  */
 extern unsigned int text_buffer_size;

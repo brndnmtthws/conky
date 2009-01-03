@@ -47,6 +47,10 @@ if BUILD_BMPX
 bmpx = bmpx.c
 endif
 
+if BUILD_IBM
+ibm = ibm.c ibm.h
+endif
+
 if BUILD_MPD
 mpd = mpd.c libmpdclient.c
 endif
@@ -142,6 +146,7 @@ conky_SOURCES = 		\
 	$(x11)                  \
 	$(xmms2)		\
 	$(smapi)                \
+	$(ibm)                  \
 	temphelper.c            \
 	temphelper.h            \
 	text_object.h           \
@@ -191,6 +196,9 @@ EXTRA_DIST = 			\
 	xmms2.c                 \
 	xmms2.h                 \
 	smapi.c			\
+	smapi.h                 \
+	ibm.c                   \
+	ibm.h                   \
 	users.c
 
 

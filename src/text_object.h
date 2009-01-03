@@ -132,10 +132,12 @@ enum text_object_type {
 	OBJ_i8k_right_fan_rpm,
 	OBJ_i8k_ac_status,
 	OBJ_i8k_buttons_status,
+#if defined(IBM)
 	OBJ_ibm_fan,
 	OBJ_ibm_temps,
 	OBJ_ibm_volume,
 	OBJ_ibm_brightness,
+#endif /* IBM */
 	OBJ_if_up,
 	OBJ_if_gw,
 	OBJ_ioscheduler,

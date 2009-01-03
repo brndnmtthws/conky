@@ -170,6 +170,25 @@ fi
 
 
 dnl
+dnl Support for IBM/Lenovo notebooks
+dnl
+
+AC_ARG_ENABLE([ibm],
+	      AC_HELP_STRING([--enable-ibm], [enable if you want support for IBM/Lenovo notebooks @<:default=no@:>@]),
+	      [want_ibm="$enableval"], [want_ibm=no])
+
+AM_CONDITIONAL(BUILD_IBM, test x$want_ibm = xyes)
+if test x$want_ibm = xyes; then
+	if test x"$uname" != xLinux; then
+		AC_MSG_NOTICE([support for IBM/Lenovo notebooks not supported on $uname... disabling])
+		want_ibm=no
+	else
+		AC_DEFINE(IBM, 1, [Define if you want support for IBM/Lenovo notebooks])
+	fi
+fi
+
+
+dnl
 dnl Hddtemp
 dnl
 
@@ -723,6 +742,7 @@ $PACKAGE $VERSION configured successfully:
   RSS:              $want_rss
   wireless:         $want_wlan
   SMAPI:            $want_smapi
+  IBM:              $want_ibm
   nvidia:           $want_nvidia
   eve-online:       $want_eve
   config-output:    $want_config_output

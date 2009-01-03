@@ -34,6 +34,9 @@
 	* Refactor top code, add top_time to sort by process cpu time (thanks
 	sohalt).
 
+2009-01-04
+	* Make ibm-acpi objects optional (--enable-ibm)
+
 2008-12-20
 	* Add if_match object comparing strings, floats and ints
 
