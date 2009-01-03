@@ -205,9 +205,9 @@ static void print_version(void)
 #ifdef HAVE_IWLIB
 		   "  * wireless\n"
 #endif /* HAVE_IWLIB */
-#ifdef SMAPI
-	"  * smapi\n"
-#endif /* SMAPI */
+#ifdef IBM
+	"  * support for IBM/Lenovo notebooks\n"
+#endif /* IBM */
 #ifdef NVIDIA
 	"  * nvidia\n"
 #endif
@@ -1506,7 +1506,7 @@ static void free_text_objects(struct text_object *root)
 					info.users.times = 0;
 				}
 				break;
-#ifdef SMAPI
+#ifdef IBM
 			case OBJ_smapi:
 			case OBJ_smapi_bat_perc:
 			case OBJ_smapi_bat_temp:
@@ -3032,7 +3032,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->global_mode = 1;
 		}
-#ifdef SMAPI
+#ifdef IBM
 	END OBJ(smapi, 0)
 		if (arg)
 			obj->data.s = strndup(arg, text_buffer_size);
@@ -3071,7 +3071,7 @@ static struct text_object *construct_text_object(const char *s,
 			}
 		} else
 			ERR("smapi_bat_bar needs an argument");
-#endif /* SMAPI */
+#endif /* IBM */
 #ifdef MPD
 #define mpd_set_maxlen(name) \
 		if (arg) { \
@@ -5642,7 +5642,7 @@ head:
 					(double) cur->entropy.poolsize;
 				new_bar(p, obj->a, obj->b, (int) (entropy_perc * 255.0f));
 			}
-#ifdef SMAPI
+#ifdef IBM
 			OBJ(smapi) {
 				char *s;
 				if(obj->data.s) {
@@ -5696,7 +5696,7 @@ head:
 				else
 					new_bar(p, obj->a, obj->b, 0);
 			}
-#endif /* SMAPI */
+#endif /* IBM */
 			OBJ(scroll) {
 				unsigned int j;
 				char *tmp, buf[max_user_text];

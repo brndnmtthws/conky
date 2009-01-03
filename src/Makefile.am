@@ -48,7 +48,7 @@ bmpx = bmpx.c
 endif
 
 if BUILD_IBM
-ibm = ibm.c ibm.h
+ibm = ibm.c ibm.h smapi.c smapi.h
 endif
 
 if BUILD_MPD
@@ -107,10 +107,6 @@ if BUILD_RSS
 rss = rss.c prss.c prss.h
 endif
 
-if BUILD_SMAPI
-smapi = smapi.c smapi.h
-endif
-
 if BUILD_NVIDIA
 nvidia = nvidia.c nvidia.h
 endif
@@ -145,7 +141,6 @@ conky_SOURCES = 		\
 	mboxscan.h		\
 	$(x11)                  \
 	$(xmms2)		\
-	$(smapi)                \
 	$(ibm)                  \
 	temphelper.c            \
 	temphelper.h            \

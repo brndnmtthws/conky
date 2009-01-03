@@ -90,10 +90,6 @@ char *strndup(const char *s, size_t n);
 #include "rss.h"
 #endif
 
-#ifdef SMAPI
-#include "smapi.h"
-#endif
-
 #ifdef TCP_PORT_MONITOR
 #include "tcp-portmon.h"
 #endif
@@ -104,6 +100,7 @@ char *strndup(const char *s, size_t n);
 
 #ifdef IBM
 #include "ibm.h"
+#include "smapi.h"
 #endif
 
 /* A size for temporary, static buffers to use when
@@ -177,7 +174,7 @@ enum {
 #ifdef RSS
 	INFO_RSS = 24,
 #endif
-#ifdef SMAPI
+#ifdef IBM
 	INFO_SMAPI = 25,
 #endif
 	INFO_USERS = 26,

@@ -303,19 +303,6 @@ if test x$want_rss = xyes; then
 fi
 
 dnl
-dnl SMAPI
-dnl
-
-AC_ARG_ENABLE([smapi],
-	      AC_HELP_STRING([--enable-smapi], [enable if you want smapi support @<:@default=no@:>@]),
-	      [want_smapi="$enableval"], [want_smapi=no])
-
-AM_CONDITIONAL(BUILD_SMAPI, test x$want_smapi = xyes)
-if test x$want_smapi = xyes; then
-	AC_DEFINE(SMAPI, 1, [Define if you want smapi support])
-fi
-
-dnl
 dnl Wireless extensions
 dnl
 
@@ -741,7 +728,6 @@ $PACKAGE $VERSION configured successfully:
   portmon:          $want_portmon
   RSS:              $want_rss
   wireless:         $want_wlan
-  SMAPI:            $want_smapi
   IBM:              $want_ibm
   nvidia:           $want_nvidia
   eve-online:       $want_eve

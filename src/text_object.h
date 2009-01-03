@@ -137,6 +137,12 @@ enum text_object_type {
 	OBJ_ibm_temps,
 	OBJ_ibm_volume,
 	OBJ_ibm_brightness,
+	OBJ_smapi,
+	OBJ_smapi_bat_bar,
+	OBJ_smapi_bat_perc,
+	OBJ_smapi_bat_temp,
+	OBJ_smapi_bat_power,
+	OBJ_if_smapi_bat_installed,
 #endif /* IBM */
 	OBJ_if_up,
 	OBJ_if_gw,
@@ -351,14 +357,6 @@ enum text_object_type {
 #endif
 #ifdef HDDTEMP
 	OBJ_hddtemp,
-#endif
-#ifdef SMAPI
-	OBJ_smapi,
-	OBJ_smapi_bat_bar,
-	OBJ_smapi_bat_perc,
-	OBJ_smapi_bat_temp,
-	OBJ_smapi_bat_power,
-	OBJ_if_smapi_bat_installed,
 #endif
 	OBJ_scroll,
 	OBJ_entropy_avail,

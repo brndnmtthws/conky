@@ -35,6 +35,7 @@
 	sohalt).
 
 2009-01-04
+	* Drop --enable-smapi and use --enable-ibm instead
 	* Make ibm-acpi objects optional (--enable-ibm)
 
 2008-12-20
