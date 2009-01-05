@@ -64,13 +64,12 @@
 #include "build.h"
 #include "diskio.h"
 #include "fs.h"
-#include "head.h"
 #include "logging.h"
 #include "mixer.h"
 #include "mail.h"
 #include "mboxscan.h"
 #include "temphelper.h"
-#include "tail.h"
+#include "tailhead.h"
 #include "top.h"
 
 /* check for OS and include appropriate headers */

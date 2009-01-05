@@ -1,17 +1,43 @@
+/* Conky, a system monitor, based on torsmo
+ *
+ * Any original torsmo code is licensed under the BSD license
+ *
+ * All code written since the fork of torsmo is licensed under the GPL
+ *
+ * Please see COPYING for details
+ *
+ * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
+ * Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et. al.
+ *	(see AUTHORS)
+ * All rights reserved.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 #include "config.h"
 #include "conky.h"
 #include "logging.h"
-#include "tail.h"
+#include "tailhead.h"
 #include "text_object.h"
 
 #include <errno.h>
 #include <fcntl.h>
-//#include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
-int init_tail_object(struct text_object *obj, const char *arg)
+int init_tailhead_object(enum tailhead_type type,
+		struct text_object *obj, const char *arg)
 {
 	char buf[64];
 	int n1, n2;
@@ -19,39 +45,47 @@ int init_tail_object(struct text_object *obj, const char *arg)
 	FILE *fp = NULL;
 	int fd;
 	int numargs;
+	const char *me;
+
+	/* FIXME: use #define for that */
+	me = (type == TAIL) ? "tail" : "head";
 
 	if (!arg) {
-		ERR("tail needs arguments");
+		ERR("%s needs arguments", me);
 		return 1;
 	}
 
 	numargs = sscanf(arg, "%63s %i %i", buf, &n1, &n2);
 
 	if (numargs < 2 || numargs > 3) {
-		ERR("incorrect number of arguments given to tail object");
+		ERR("incorrect number of arguments given to %s object", me);
 		return 1;
 	}
 
 	if (n1 < 1 || n1 > MAX_TAIL_LINES) {
-		ERR("invalid arg for tail, number of lines must be "
-				"between 1 and %i", MAX_TAIL_LINES);
+		ERR("invalid arg for %s, number of lines must be "
+				"between 1 and %i", me, MAX_TAIL_LINES);
 		return 1;
 	}
 
 	obj->data.tail.fd = -1;
 
+	if (type == HEAD) {
+		goto NO_FIFO;
+	}
 	if (stat(buf, &st) == 0) {
 		if (S_ISFIFO(st.st_mode)) {
 			fd = open(buf, O_RDONLY | O_NONBLOCK);
 
 			if (fd == -1) {
-				ERR("tail logfile does not exist, or you do "
-						"not have correct permissions");
+				ERR("%s logfile does not exist, or you do "
+				    "not have correct permissions", me);
 				return 1;
 			}
 
 			obj->data.tail.fd = fd;
 		} else {
+NO_FIFO:
 			fp = fopen(buf, "r");
 		}
 	}
@@ -67,14 +101,14 @@ int init_tail_object(struct text_object *obj, const char *arg)
 		}
 	} else {
 		// fclose(fp);
-		ERR("tail logfile does not exist, or you do not have "
-				"correct permissions");
+		ERR("%s logfile does not exist, or you do not have "
+				"correct permissions", me);
 		return 1;
 	}
 	/* XXX: the following implies update_interval >= 1 ?! */
 	if (numargs == 3 && (n2 < 1 || n2 < update_interval)) {
-		ERR("tail interval must be greater than "
-		    "0 and "PACKAGE_NAME"'s interval, ignoring");
+		ERR("%s interval must be greater than "
+		    "0 and "PACKAGE_NAME"'s interval, ignoring", me);
 	} else if (numargs == 3) {
 			obj->data.tail.interval = n2;
 	}
@@ -278,5 +312,96 @@ int print_tail_object(struct text_object *obj, char *p, size_t p_max_size)
 			snprintf(p, p_max_size, "Logfile Empty");
 		}	/* bsize > 0 */
 	}		/* fp == NULL */
+	return 0;
+}
+
+long fwd_fcharfind(FILE *fp, char val, unsigned int step)
+{
+#define BUFSZ 0x1000
+       long ret = -1;
+       unsigned int count = 0;
+       static char buf[BUFSZ];
+       long orig_pos = ftell(fp);
+       long buf_pos = -1;
+       long buf_size = BUFSZ;
+       char *cur_found = NULL;
+
+       while (count < step) {
+               if (cur_found == NULL) {
+                       buf_size = fread(buf, 1, buf_size, fp);
+                       buf_pos = 0;
+               }
+               cur_found = memchr(buf + buf_pos, val, buf_size - buf_pos);
+               if (cur_found != NULL) {
+                       buf_pos = cur_found - buf + 1;
+                       count++;
+               } else {
+                       if (feof(fp)) {
+                               break;
+                       }
+               }
+       }
+       if (count == step) {
+               ret = ftell(fp) - buf_size + buf_pos - 1;
+       }
+       fseek(fp, orig_pos, SEEK_SET);
+       return ret;
+}
+
+int print_head_object(struct text_object *obj, char *p, size_t p_max_size)
+{
+	FILE *fp;
+	long nl = 0;
+	int iter;
+
+	if (current_update_time - obj->data.tail.last_update < obj->data.tail.interval) {
+		snprintf(p, p_max_size, "%s", obj->data.tail.buffer);
+		return 0;
+	}
+
+	obj->data.tail.last_update = current_update_time;
+
+	fp = fopen(obj->data.tail.logfile, "rt");
+	if (fp == NULL) {
+		/* Send one message, but do not consistently spam
+		 * on missing logfiles. */
+		if (obj->data.tail.readlines != 0) {
+			ERR("head logfile failed to open");
+			strcpy(obj->data.tail.buffer, "Logfile Missing");
+		}
+		obj->data.tail.readlines = 0;
+		snprintf(p, p_max_size, "Logfile Missing");
+	} else {
+		obj->data.tail.readlines = 0;
+		for (iter = obj->data.tail.wantedlines; iter > 0;
+				iter--) {
+			nl = fwd_fcharfind(fp, '\n', iter);
+			if (nl >= 0) {
+				break;
+			}
+		}
+		obj->data.tail.readlines = iter;
+		/* Make sure nl is at least 1 byte smaller than the
+		 * buffer max size. */
+		if (nl > (long) ((text_buffer_size * 20) - 1)) {
+			nl = text_buffer_size * 20 - 1;
+		}
+		nl = fread(obj->data.tail.buffer, 1, nl, fp);
+		fclose(fp);
+		if (nl > 0) {
+			/* Clean up trailing newline, make sure the buffer
+			 * is null terminated. */
+			if (obj->data.tail.buffer[nl - 1] == '\n') {
+				obj->data.tail.buffer[nl - 1] = '\0';
+			} else {
+				obj->data.tail.buffer[nl] = '\0';
+			}
+			snprintf(p, p_max_size, "%s",
+					obj->data.tail.buffer);
+		} else {
+			strcpy(obj->data.tail.buffer, "Logfile Empty");
+			snprintf(p, p_max_size, "Logfile Empty");
+		}	/* nl > 0 */
+	}		/* if fp == null */
 	return 0;
 }
