@@ -291,7 +291,7 @@ extern struct information info;
 void update_users(void);
 
 /* defined in conky.c */
-extern double current_update_time, last_update_time;
+extern double current_update_time, last_update_time, update_interval;
 
 /* defined in conky.c */
 int spaced_print(char *, int, const char *, int, ...)

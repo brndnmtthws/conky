@@ -121,6 +121,8 @@ conky_SOURCES = 		\
 	conky.h                 \
 	$(freebsd)              \
 	fs.c 			\
+	head.c                  \
+	head.h                  \
 	$(hddtemp)		\
 	$(linux) 		\
 	logging.h               \
@@ -142,6 +144,8 @@ conky_SOURCES = 		\
 	$(x11)                  \
 	$(xmms2)		\
 	$(ibm)                  \
+	tail.c                  \
+	tail.h                  \
 	temphelper.c            \
 	temphelper.h            \
 	text_object.h           \
@@ -163,6 +167,8 @@ EXTRA_DIST = 			\
 	freebsd.c		\
 	freebsd.h		\
 	fs.h			\
+	head.c                  \
+	head.h                  \
 	hddtemp.c		\
 	hddtemp.h		\
 	linux.c			\
@@ -184,6 +190,8 @@ EXTRA_DIST = 			\
 	openbsd.c		\
 	openbsd.h		\
 	solaris.c 		\
+	tail.c                  \
+	tail.h                  \
 	top.h                   \
 	diskio.h                \
 	x11.c			\
