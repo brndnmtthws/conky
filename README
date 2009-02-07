@@ -1563,6 +1563,11 @@ conky(1)							      conky(1)
 	      Same as top, except sorted by mem usage instead of cpu
 
 
+       1mtop_time type, num0m
+	      Same as top, except sorted by total CPU time instead of  current
+	      CPU usage
+
+
        1mtotalup net0m
 	      Total upload, this one too, may overflow
 
