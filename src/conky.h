@@ -250,6 +250,7 @@ struct information {
 	struct dns_data nameserver_info;
 	struct process *cpu[10];
 	struct process *memu[10];
+	struct process *time[10];
 	struct process *first_process;
 	unsigned long looped;
 	struct entropy_s entropy;
@@ -278,7 +279,7 @@ enum {
 #define KFLAG_ISSET(a) info.kflags & a
 
 /* defined in conky.c, needed by top.c */
-extern int top_cpu, top_mem;
+extern int top_cpu, top_mem, top_time;
 
 /* defined in conky.c, needed by top.c */
 extern int cpu_separate;

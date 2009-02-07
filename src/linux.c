@@ -2086,7 +2086,7 @@ void get_powerbook_batt_info(char *buffer, size_t n, int i)
 void update_top(void)
 {
 	show_nice_processes = 1;
-	process_find_top(info.cpu, info.memu);
+	process_find_top(info.cpu, info.memu, info.time);
 	info.first_process = get_first_process();
 }
 

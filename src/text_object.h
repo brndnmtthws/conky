@@ -160,6 +160,7 @@ enum text_object_type {
 	OBJ_if_running,
 	OBJ_top,
 	OBJ_top_mem,
+	OBJ_top_time,
 	OBJ_tail,
 	OBJ_head,
 	OBJ_lines,

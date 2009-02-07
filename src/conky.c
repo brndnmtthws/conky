@@ -125,7 +125,7 @@ enum {
 	LEFT_SPACER,
 	RIGHT_SPACER
 } use_spacer;
-int top_cpu, top_mem;
+int top_cpu, top_mem, top_time;
 #define TO_X 1
 #define TO_STDOUT 2
 static int output_methods;
@@ -2305,6 +2305,46 @@ static struct text_object *construct_text_object(const char *s,
 			} else {
 				obj->data.top.num = n - 1;
 				top_mem = 1;
+			}
+		} else {
+			ERR("invalid args given for top");
+			return NULL;
+		}
+	END OBJ(top_time, INFO_TOP)
+		char buf[64];
+		int n;
+
+		if (!arg) {
+			ERR("top_time needs arguments");
+			obj->type = OBJ_text;
+			obj->data.s = strndup("${top_time}", text_buffer_size);
+			return NULL;
+		}
+		if (sscanf(arg, "%63s %i", buf, &n) == 2) {
+			if (strcmp(buf, "name") == EQUAL) {
+				obj->data.top.type = TOP_NAME;
+			} else if (strcmp(buf, "cpu") == EQUAL) {
+				obj->data.top.type = TOP_CPU;
+			} else if (strcmp(buf, "pid") == EQUAL) {
+				obj->data.top.type = TOP_PID;
+			} else if (strcmp(buf, "mem") == EQUAL) {
+				obj->data.top.type = TOP_MEM;
+			} else if (strcmp(buf, "time") == EQUAL) {
+				obj->data.top.type = TOP_TIME;
+			} else if (strcmp(buf, "mem_res") == EQUAL) {
+				obj->data.top.type = TOP_MEM_RES;
+			} else if (strcmp(buf, "mem_vsize") == EQUAL) {
+				obj->data.top.type = TOP_MEM_VSIZE;
+			} else {
+				ERR("invalid arg for top");
+				return NULL;
+			}
+			if (n < 1 || n > 10) {
+					CRIT_ERR("invalid arg for top");
+				return NULL;
+			} else {
+				obj->data.top.num = n - 1;
+				top_time = 1;
 			}
 		} else {
 			ERR("invalid args given for top");
@@ -5223,6 +5263,50 @@ static void generate_text_internal(char *p, int p_max_size,
 					ERR("Top index < 0 or > 10: %d\n", obj->data.top.num);
 				}
 			}
+			OBJ(top_time) {
+				if (obj->data.top.num >= 0 && obj->data.top.num < 10) {
+					char *timeval;
+
+					switch (obj->data.top.type) {
+						case TOP_NAME:
+							snprintf(p, 16, "%-15s",
+								cur->time[obj->data.top.num]->name);
+							break;
+						case TOP_CPU:
+							snprintf(p, 7, "%6.2f",
+								cur->time[obj->data.top.num]->amount);
+							break;
+						case TOP_PID:
+							snprintf(p, 6, "%5i",
+								cur->time[obj->data.top.num]->pid);
+							break;
+						case TOP_MEM:
+							snprintf(p, 7, "%6.2f",
+								cur->time[obj->data.top.num]->totalmem);
+							break;
+						case TOP_TIME:
+							timeval = format_time(
+								cur->time[obj->data.top.num]->total_cpu_time,
+								9);
+							snprintf(p, 10, "%9s", timeval);
+							free(timeval);
+							break;
+						case TOP_MEM_RES:
+							human_readable(cur->cpu[obj->data.top.num]->rss,
+									p, 255);
+							break;
+						case TOP_MEM_VSIZE:
+							human_readable(cur->cpu[obj->data.top.num]->vsize,
+									p, 255);
+							break;
+						default:
+							ERR("Unhandled top data type: %d\n",
+								obj->data.top.type);
+					}
+				} else {
+					ERR("Top index < 0 or > 10: %d\n", obj->data.top.num);
+				}
+			}
 			OBJ(tail) {
 				if (current_update_time - obj->data.tail.last_update
 						< obj->data.tail.interval) {
@@ -7101,6 +7185,7 @@ static void set_default_configurations(void)
 	cpu_separate = 0;
 	short_units = 0;
 	top_mem = 0;
+	top_time = 0;
 #ifdef MPD
 	mpd_set_host("localhost");
 	mpd_set_port("6600");

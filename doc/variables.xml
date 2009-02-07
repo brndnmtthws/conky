@@ -2105,6 +2105,16 @@
 
 	<varlistentry>
 		<term>
+			<command><option>top_time</option></command>
+			<option>type, num</option>
+		</term>
+		<listitem>
+			Same as top, except sorted by total CPU time instead of current CPU usage
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
 			<command><option>totalup</option></command>
 			<option>net</option>
 		</term>

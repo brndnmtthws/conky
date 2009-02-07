@@ -116,6 +116,6 @@ struct sorted_process {
 };
 
 /* Pointer to head of process list */
-void process_find_top(struct process **, struct process **);
+void process_find_top(struct process **, struct process **, struct process **);
 
 #endif /* _top_h_ */
