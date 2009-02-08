@@ -524,7 +524,7 @@ static void sp_acopy(struct sorted_process *sp_head, struct process **ar, int ma
  * ****************************************************************** */
 
 void process_find_top(struct process **cpu, struct process **mem,
-		struct process **time)
+		struct process **ptime)
 {
 	struct sorted_process *spc_head = NULL, *spc_tail = NULL, *spc_cur = NULL;
 	struct sorted_process *spm_head = NULL, *spm_tail = NULL, *spm_cur = NULL;
@@ -567,5 +567,5 @@ void process_find_top(struct process **cpu, struct process **mem,
 	if (top_mem)
 		sp_acopy(spm_head, mem, MAX_SP);
 	if (top_time)
-		sp_acopy(spt_head, time, MAX_SP);
+		sp_acopy(spt_head, ptime, MAX_SP);
 }

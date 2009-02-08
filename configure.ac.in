@@ -318,16 +318,21 @@ dnl
 AC_ARG_ENABLE([nvidia],
 		AC_HELP_STRING([--enable-nvidia], [enable if you want nvidia support @<:@default=no@:>@]),
 		[want_nvidia="$enableval"], [want_nvidia=no])
-AM_CONDITIONAL(BUILD_NVIDIA, test x$want_nvidia = xyes)
 if test x$want_nvidia = xyes; then
-	AC_CHECK_HEADERS([NVCtrl/NVCtrl.h], [], AC_MSG_ERROR([NVCtrl/NVCtrl.h header not found]))
+    if test "x$want_x11" != "xyes"; then
+		# do nada
+		want_nvidia=no
+	else
+		AC_CHECK_HEADERS([NVCtrl/NVCtrl.h], [], AC_MSG_ERROR([NVCtrl/NVCtrl.h header not found]))
 dnl AC_CHECK_LIB([XNVCtrl], [XNVCTRLQueryVersion], [] ,[AC_MSG_ERROR([grrr])] )
 dnl AC_CHECK_LIB([XNVCtrl], [XNVCTRLCheckTargetData], [], [AC_MSG_ERROR([grr])])
 dnl ## am I Stupid ??
 dnl ## it won't find the lib for some reason!?
-	LIBS="$LIBS -lXNVCtrl"
-		AC_DEFINE(NVIDIA, 1, [Define if you want nvidia support])
+		LIBS="$LIBS -lXNVCtrl"
+			AC_DEFINE(NVIDIA, 1, [Define if you want nvidia support])
+	fi
 fi
+AM_CONDITIONAL(BUILD_NVIDIA, test x$want_nvidia = xyes)
 
 dnl
 dnl IMLIB2

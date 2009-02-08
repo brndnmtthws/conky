@@ -3671,14 +3671,14 @@ static void generate_text_internal(char *p, int p_max_size,
 {
 	struct text_object *obj;
 
+	/* for the OBJ_top* handler */
+	struct process **needed = 0;
+
 #ifdef HAVE_ICONV
 	char buff_in[p_max_size];
 	buff_in[0] = 0;
 	iconv_converting = 0;
 #endif
-
-	/* for the OBJ_top* handler */
-	struct process **needed;
 
 	p[0] = 0;
 	for (obj = root.next; obj && p_max_size > 0; obj = obj->next) {
@@ -5124,11 +5124,11 @@ static void generate_text_internal(char *p, int p_max_size,
 			 * times, we have this special handler. */
 			break;
 			case OBJ_top:
-				needed = cur->cpu;
+				if (!needed) needed = cur->cpu;
 			case OBJ_top_mem:
-				needed = cur->memu;
+				if (!needed) needed = cur->memu;
 			case OBJ_top_time:
-				needed = cur->time;
+				if (!needed) needed = cur->time;
 
 				{
 					char *timeval;

@@ -1,3 +1,7 @@
+2009-02-08
+	* Refactor top code, add top_time to sort by process cpu time (thanks
+	sohalt).
+
 2008-12-20
 	* Add if_match object comparing strings, floats and ints
 
