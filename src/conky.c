@@ -1440,6 +1440,7 @@ static void free_text_objects(struct text_object *root)
 				break;
 			case OBJ_top:
 			case OBJ_top_mem:
+			case OBJ_top_time:
 				if (info.first_process) {
 					free_all_processes();
 					info.first_process = NULL;
