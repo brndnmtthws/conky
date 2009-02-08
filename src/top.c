@@ -561,7 +561,11 @@ void process_find_top(struct process **cpu, struct process **mem,
 		}
 		cur_proc = cur_proc->next;
 	}
-	sp_acopy(spc_head, cpu, MAX_SP);
-	sp_acopy(spm_head, mem, MAX_SP);
-	sp_acopy(spt_head, time, MAX_SP);
+
+	if (top_cpu)
+		sp_acopy(spc_head, cpu, MAX_SP);
+	if (top_mem)
+		sp_acopy(spm_head, mem, MAX_SP);
+	if (top_time)
+		sp_acopy(spt_head, time, MAX_SP);
 }
