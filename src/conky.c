@@ -2231,56 +2231,35 @@ static struct text_object *construct_text_object(const char *s,
 		}
 #endif /* !__OpenBSD__ */
 
-	END OBJ(top, INFO_TOP)
+	END
+	/* we have three different types of top (top, top_mem and top_time). To
+	 * avoid having almost-same code three times, we have this special
+	 * handler. */
+	if (strncmp(s, "top", 3) == EQUAL) {
 		char buf[64];
 		int n;
+
+		need_mask |= (1 << INFO_TOP);
+
+		if (s[3] == 0) {
+			obj->type = OBJ_top;
+			top_cpu = 1;
+		} else if (strcmp(&s[3], "_mem") == EQUAL) {
+			obj->type = OBJ_top_mem;
+			top_mem = 1;
+		} else if (strcmp(&s[3], "_time") == EQUAL) {
+			obj->type = OBJ_top_time;
+			top_time = 1;
+		} else {
+			ERR("Must be top, top_mem or top_time");
+			return NULL;
+		}
 
 		if (!arg) {
 			ERR("top needs arguments");
-			obj->type = OBJ_text;
-			// obj->data.s = strndup("${top}", text_buffer_size);
 			return NULL;
 		}
-		if (sscanf(arg, "%63s %i", buf, &n) == 2) {
-			if (strcmp(buf, "name") == EQUAL) {
-				obj->data.top.type = TOP_NAME;
-			} else if (strcmp(buf, "cpu") == EQUAL) {
-				obj->data.top.type = TOP_CPU;
-			} else if (strcmp(buf, "pid") == EQUAL) {
-				obj->data.top.type = TOP_PID;
-			} else if (strcmp(buf, "mem") == EQUAL) {
-				obj->data.top.type = TOP_MEM;
-			} else if (strcmp(buf, "time") == EQUAL) {
-				obj->data.top.type = TOP_TIME;
-			} else if (strcmp(buf, "mem_res") == EQUAL) {
-				obj->data.top.type = TOP_MEM_RES;
-			} else if (strcmp(buf, "mem_vsize") == EQUAL) {
-				obj->data.top.type = TOP_MEM_VSIZE;
-			} else {
-				ERR("invalid arg for top");
-				return NULL;
-			}
-			if (n < 1 || n > 10) {
-				CRIT_ERR("invalid arg for top");
-				return NULL;
-			} else {
-				obj->data.top.num = n - 1;
-				top_cpu = 1;
-			}
-		} else {
-			ERR("invalid args given for top");
-			return NULL;
-		}
-	END OBJ(top_mem, INFO_TOP)
-		char buf[64];
-		int n;
 
-		if (!arg) {
-			ERR("top_mem needs arguments");
-			obj->type = OBJ_text;
-			obj->data.s = strndup("${top_mem}", text_buffer_size);
-			return NULL;
-		}
 		if (sscanf(arg, "%63s %i", buf, &n) == 2) {
 			if (strcmp(buf, "name") == EQUAL) {
 				obj->data.top.type = TOP_NAME;
@@ -2297,61 +2276,21 @@ static struct text_object *construct_text_object(const char *s,
 			} else if (strcmp(buf, "mem_vsize") == EQUAL) {
 				obj->data.top.type = TOP_MEM_VSIZE;
 			} else {
-				ERR("invalid arg for top");
+				ERR("invalid type arg for top");
+				ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize");
 				return NULL;
 			}
 			if (n < 1 || n > 10) {
-					CRIT_ERR("invalid arg for top");
+				ERR("invalid num arg for top. Must be between 1 and 10.");
 				return NULL;
 			} else {
 				obj->data.top.num = n - 1;
-				top_mem = 1;
 			}
 		} else {
-			ERR("invalid args given for top");
+			ERR("invalid argument count for top");
 			return NULL;
 		}
-	END OBJ(top_time, INFO_TOP)
-		char buf[64];
-		int n;
-
-		if (!arg) {
-			ERR("top_time needs arguments");
-			obj->type = OBJ_text;
-			obj->data.s = strndup("${top_time}", text_buffer_size);
-			return NULL;
-		}
-		if (sscanf(arg, "%63s %i", buf, &n) == 2) {
-			if (strcmp(buf, "name") == EQUAL) {
-				obj->data.top.type = TOP_NAME;
-			} else if (strcmp(buf, "cpu") == EQUAL) {
-				obj->data.top.type = TOP_CPU;
-			} else if (strcmp(buf, "pid") == EQUAL) {
-				obj->data.top.type = TOP_PID;
-			} else if (strcmp(buf, "mem") == EQUAL) {
-				obj->data.top.type = TOP_MEM;
-			} else if (strcmp(buf, "time") == EQUAL) {
-				obj->data.top.type = TOP_TIME;
-			} else if (strcmp(buf, "mem_res") == EQUAL) {
-				obj->data.top.type = TOP_MEM_RES;
-			} else if (strcmp(buf, "mem_vsize") == EQUAL) {
-				obj->data.top.type = TOP_MEM_VSIZE;
-			} else {
-				ERR("invalid arg for top");
-				return NULL;
-			}
-			if (n < 1 || n > 10) {
-					CRIT_ERR("invalid arg for top");
-				return NULL;
-			} else {
-				obj->data.top.num = n - 1;
-				top_time = 1;
-			}
-		} else {
-			ERR("invalid args given for top");
-			return NULL;
-		}
-	END OBJ(addr, INFO_NET)
+	} else OBJ(addr, INFO_NET)
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
@@ -3737,6 +3676,9 @@ static void generate_text_internal(char *p, int p_max_size,
 	buff_in[0] = 0;
 	iconv_converting = 0;
 #endif
+
+	/* for the OBJ_top* handler */
+	struct process **needed;
 
 	p[0] = 0;
 	for (obj = root.next; obj && p_max_size > 0; obj = obj->next) {
@@ -5177,137 +5119,53 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%i", cur->bmpx.bitrate);
 			}
 #endif
-			OBJ(top) {
-				if (obj->data.top.num >= 0 && obj->data.top.num < 10) {
+			/* we have three different types of top (top, top_mem
+			 * and top_time). To avoid having almost-same code three
+			 * times, we have this special handler. */
+			break;
+			case OBJ_top:
+				needed = cur->cpu;
+			case OBJ_top_mem:
+				needed = cur->memu;
+			case OBJ_top_time:
+				needed = cur->time;
+
+				{
 					char *timeval;
 
 					switch (obj->data.top.type) {
 						case TOP_NAME:
 							snprintf(p, 16, "%-15s",
-								cur->cpu[obj->data.top.num]->name);
+								needed[obj->data.top.num]->name);
 							break;
 						case TOP_CPU:
 							snprintf(p, 7, "%6.2f",
-								cur->cpu[obj->data.top.num]->amount);
+								needed[obj->data.top.num]->amount);
 							break;
 						case TOP_PID:
 							snprintf(p, 6, "%5i",
-								cur->cpu[obj->data.top.num]->pid);
+								needed[obj->data.top.num]->pid);
 							break;
 						case TOP_MEM:
 							snprintf(p, 7, "%6.2f",
-								cur->cpu[obj->data.top.num]->totalmem);
+								needed[obj->data.top.num]->totalmem);
 							break;
 						case TOP_TIME:
 							timeval = format_time(
-								cur->cpu[obj->data.top.num]->total_cpu_time, 9);
+								needed[obj->data.top.num]->total_cpu_time, 9);
 							snprintf(p, 10, "%9s", timeval);
 							free(timeval);
 							break;
 						case TOP_MEM_RES:
-							human_readable(cur->cpu[obj->data.top.num]->rss,
+							human_readable(needed[obj->data.top.num]->rss,
 									p, 255);
 							break;
 						case TOP_MEM_VSIZE:
-							human_readable(cur->cpu[obj->data.top.num]->vsize,
+							human_readable(needed[obj->data.top.num]->vsize,
 									p, 255);
 							break;
-						default:
-							ERR("Unhandled top data type: %d\n",
-								obj->data.top.type);
 					}
-				} else {
-					ERR("Top index < 0 or > 10: %d\n", obj->data.top.num);
 				}
-			}
-			OBJ(top_mem) {
-				if (obj->data.top.num >= 0 && obj->data.top.num < 10) {
-					char *timeval;
-
-					switch (obj->data.top.type) {
-						case TOP_NAME:
-							snprintf(p, 16, "%-15s",
-								cur->memu[obj->data.top.num]->name);
-							break;
-						case TOP_CPU:
-							snprintf(p, 7, "%6.2f",
-								cur->memu[obj->data.top.num]->amount);
-							break;
-						case TOP_PID:
-							snprintf(p, 6, "%5i",
-								cur->memu[obj->data.top.num]->pid);
-							break;
-						case TOP_MEM:
-							snprintf(p, 7, "%6.2f",
-								cur->memu[obj->data.top.num]->totalmem);
-							break;
-						case TOP_TIME:
-							timeval = format_time(
-								cur->memu[obj->data.top.num]->total_cpu_time,
-								9);
-							snprintf(p, 10, "%9s", timeval);
-							free(timeval);
-							break;
-						case TOP_MEM_RES:
-							human_readable(cur->cpu[obj->data.top.num]->rss,
-									p, 255);
-							break;
-						case TOP_MEM_VSIZE:
-							human_readable(cur->cpu[obj->data.top.num]->vsize,
-									p, 255);
-							break;
-						default:
-							ERR("Unhandled top data type: %d\n",
-								obj->data.top.type);
-					}
-				} else {
-					ERR("Top index < 0 or > 10: %d\n", obj->data.top.num);
-				}
-			}
-			OBJ(top_time) {
-				if (obj->data.top.num >= 0 && obj->data.top.num < 10) {
-					char *timeval;
-
-					switch (obj->data.top.type) {
-						case TOP_NAME:
-							snprintf(p, 16, "%-15s",
-								cur->time[obj->data.top.num]->name);
-							break;
-						case TOP_CPU:
-							snprintf(p, 7, "%6.2f",
-								cur->time[obj->data.top.num]->amount);
-							break;
-						case TOP_PID:
-							snprintf(p, 6, "%5i",
-								cur->time[obj->data.top.num]->pid);
-							break;
-						case TOP_MEM:
-							snprintf(p, 7, "%6.2f",
-								cur->time[obj->data.top.num]->totalmem);
-							break;
-						case TOP_TIME:
-							timeval = format_time(
-								cur->time[obj->data.top.num]->total_cpu_time,
-								9);
-							snprintf(p, 10, "%9s", timeval);
-							free(timeval);
-							break;
-						case TOP_MEM_RES:
-							human_readable(cur->cpu[obj->data.top.num]->rss,
-									p, 255);
-							break;
-						case TOP_MEM_VSIZE:
-							human_readable(cur->cpu[obj->data.top.num]->vsize,
-									p, 255);
-							break;
-						default:
-							ERR("Unhandled top data type: %d\n",
-								obj->data.top.type);
-					}
-				} else {
-					ERR("Top index < 0 or > 10: %d\n", obj->data.top.num);
-				}
-			}
 			OBJ(tail) {
 				if (current_update_time - obj->data.tail.last_update
 						< obj->data.tail.interval) {
