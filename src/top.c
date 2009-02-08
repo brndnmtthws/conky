@@ -400,13 +400,13 @@ inline static void calc_cpu_each(unsigned long long total)
  ******************************************/
 
 /* free a sp_process structure */
-void free_sp(struct sorted_process *sp)
+static void free_sp(struct sorted_process *sp)
 {
 	free(sp);
 }
 
 /* create a new sp_process structure */
-struct sorted_process *malloc_sp(struct process *proc)
+static struct sorted_process *malloc_sp(struct process *proc)
 {
 	struct sorted_process *sp;
 	sp = malloc(sizeof(struct sorted_process));
@@ -417,7 +417,7 @@ struct sorted_process *malloc_sp(struct process *proc)
 }
 
 /* cpu comparison function for insert_sp_element */
-int compare_cpu(struct process *a, struct process *b)
+static int compare_cpu(struct process *a, struct process *b)
 {
 	if (a->amount < b->amount) {
 		return 1;
@@ -429,7 +429,7 @@ int compare_cpu(struct process *a, struct process *b)
 }
 
 /* mem comparison function for insert_sp_element */
-int compare_mem(struct process *a, struct process *b)
+static int compare_mem(struct process *a, struct process *b)
 {
 	if (a->totalmem < b->totalmem) {
 		return 1;
@@ -441,14 +441,14 @@ int compare_mem(struct process *a, struct process *b)
 }
 
 /* CPU time comparision function for insert_sp_element */
-int compare_time(struct process *a, struct process *b)
+static int compare_time(struct process *a, struct process *b)
 {
 	return b->total_cpu_time - a->total_cpu_time;
 }
 
 /* insert this process into the list in a sorted fashion,
  * or destroy it if it doesn't fit on the list */
-int insert_sp_element(struct sorted_process *sp_cur,
+static int insert_sp_element(struct sorted_process *sp_cur,
 		struct sorted_process **p_sp_head, struct sorted_process **p_sp_tail,
 		int max_elements, int compare_funct(struct process *, struct process *))
 {
@@ -504,7 +504,7 @@ int insert_sp_element(struct sorted_process *sp_cur,
 }
 
 /* copy the procs in the sorted list to the array, and destroy the list */
-void sp_acopy(struct sorted_process *sp_head, struct process **ar, int max_size)
+static void sp_acopy(struct sorted_process *sp_head, struct process **ar, int max_size)
 {
 	struct sorted_process *sp_cur, *sp_tmp;
 	int x;
