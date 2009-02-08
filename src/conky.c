@@ -1083,7 +1083,7 @@ static int spaced_print(char *, int, const char *, int, ...)
 		__attribute__((format(printf, 3, 5)));
 
 static int spaced_print(char *buf, int size, const char *format, int width, ...) {
-	int len;
+	int len = 0;
 	va_list argp;
 	char *tempbuf;
 
