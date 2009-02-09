@@ -3682,6 +3682,7 @@ static void generate_text_internal(char *p, int p_max_size,
 
 	p[0] = 0;
 	for (obj = root.next; obj && p_max_size > 0; obj = obj->next) {
+		needed = 0; // reset for top stuff
 
 /* IFBLOCK jumping algorithm
  *
