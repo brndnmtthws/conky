@@ -50,6 +50,7 @@ syn keyword ConkyrcSetting
 			\ draw_shades
 			\ draw_outline
 			\ out_to_console
+			\ out_to_stderr
 			\ use_spacer
 			\ use_xft
 			\ font

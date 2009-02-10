@@ -316,6 +316,14 @@
 	</varlistentry>
 
 	<varlistentry>
+		<term><command><option>out_to_stderr</option></command>
+		</term>
+		<listitem>
+			Print text to stderr.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
 		<term><command><option>pad_percents</option></command></term>
 		<listitem>
 			Pad percentages to this many decimals (0 = no padding)

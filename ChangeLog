@@ -1,3 +1,6 @@
+2009-02-10
+	* Added output_to_stderr
+
 2009-02-08
 	* Refactor top code, add top_time to sort by process cpu time (thanks
 	sohalt).

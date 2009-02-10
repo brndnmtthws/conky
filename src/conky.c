@@ -128,6 +128,7 @@ enum {
 int top_cpu, top_mem, top_time;
 #define TO_X 1
 #define TO_STDOUT 2
+#define TO_STDERR 4
 static int output_methods;
 static volatile int g_signal_pending;
 /* Update interval */
@@ -5840,6 +5841,10 @@ static void draw_string(const char *s)
 		printf("%s\n", s);
 		fflush(stdout);	/* output immediately, don't buffer */
 	}
+	if ((output_methods & TO_STDERR) && draw_mode == FG) {
+		fprintf(stderr, "%s\n", s);
+		fflush(stderr);	/* output immediately, don't buffer */
+	}
 	memset(tmpstring1, 0, text_buffer_size);
 	memset(tmpstring2, 0, text_buffer_size);
 	strncpy(tmpstring1, s, text_buffer_size - 1);
@@ -7475,6 +7480,9 @@ static void load_config_file(const char *f)
 #endif /* X11 */
 		CONF("out_to_console") {
 			if(string_to_bool(value)) output_methods |= TO_STDOUT;
+		}
+		CONF("out_to_stderr") {
+			if(string_to_bool(value)) output_methods |= TO_STDERR;
 		}
 		CONF("use_spacer") {
 			if (value) {
