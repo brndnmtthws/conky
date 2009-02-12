@@ -324,6 +324,22 @@
 	</varlistentry>
 
 	<varlistentry>
+		<term><command><option>overwrite_file</option></command>
+		</term>
+		<listitem>
+			Overwrite the file given as argument.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term><command><option>append_file</option></command>
+		</term>
+		<listitem>
+			Append the file given as argument.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
 		<term><command><option>pad_percents</option></command></term>
 		<listitem>
 			Pad percentages to this many decimals (0 = no padding)

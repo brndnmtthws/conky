@@ -1,3 +1,6 @@
+2009-02-12
+	* Added overwrite_file and append_file
+
 2009-02-10
 	* Added output_to_stderr
 

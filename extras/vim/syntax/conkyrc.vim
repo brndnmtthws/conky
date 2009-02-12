@@ -51,6 +51,8 @@ syn keyword ConkyrcSetting
 			\ draw_outline
 			\ out_to_console
 			\ out_to_stderr
+			\ overwrite_file
+			\ append_file
 			\ use_spacer
 			\ use_xft
 			\ font
