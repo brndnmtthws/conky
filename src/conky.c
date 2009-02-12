@@ -129,6 +129,7 @@ int top_cpu, top_mem, top_time;
 #define TO_X 1
 #define TO_STDOUT 2
 #define TO_STDERR 4
+#define OVERWRITE_FILE 8
 static int output_methods;
 static volatile int g_signal_pending;
 /* Update interval */
@@ -415,6 +416,9 @@ static unsigned long total_run_times;
 static int fork_to_background;
 
 static int cpu_avg_samples, net_avg_samples;
+
+/* filenames for output */
+char *overwrite_file = NULL; FILE *overwrite_fpointer = NULL;
 
 #ifdef X11
 
@@ -5845,6 +5849,9 @@ static void draw_string(const char *s)
 		fprintf(stderr, "%s\n", s);
 		fflush(stderr);	/* output immediately, don't buffer */
 	}
+	if ((output_methods & OVERWRITE_FILE) && draw_mode == FG && overwrite_fpointer != NULL) {
+		fprintf(overwrite_fpointer, "%s\n", s);
+	}
 	memset(tmpstring1, 0, text_buffer_size);
 	memset(tmpstring2, 0, text_buffer_size);
 	strncpy(tmpstring1, s, text_buffer_size - 1);
@@ -6425,6 +6432,10 @@ static void draw_text(void)
 
 static void draw_stuff(void)
 {
+	if(overwrite_file != NULL) {
+		overwrite_fpointer = fopen(overwrite_file, "w");
+		if(overwrite_fpointer == NULL) ERR("Can't overwrite '%s' anymore", overwrite_file);
+	}
 #ifdef X11
 	selected_font = 0;
 	if (draw_shades && !draw_outline) {
@@ -6472,6 +6483,7 @@ static void draw_stuff(void)
 	}
 #endif
 #endif /* X11 */
+	if(overwrite_fpointer != NULL) fclose(overwrite_fpointer);
 }
 
 #ifdef X11
@@ -6820,6 +6832,7 @@ static void main_loop(void)
 				XFixesDestroyRegion(display, part);
 #endif /* HAVE_XDAMAGE */
 #endif /* X11 */
+				if(overwrite_file != NULL) free(overwrite_file);
 				return;	/* return from main_loop */
 				/* break; */
 			default:
@@ -7143,6 +7156,15 @@ static void set_default_configurations(void)
 	/* set default connection limit */
 	tcp_portmon_set_max_connections(0);
 #endif
+}
+
+//returns 1 if you can overwrite or create the file at 'path'
+static _Bool overwrite_works(const char *path)
+{
+	FILE *filepointer = fopen(path, "w");
+	if(filepointer == NULL) return 0;
+	fclose(filepointer);
+	return 1;
 }
 
 static void load_config_file(const char *f)
@@ -7483,6 +7505,13 @@ static void load_config_file(const char *f)
 		}
 		CONF("out_to_stderr") {
 			if(string_to_bool(value)) output_methods |= TO_STDERR;
+		}
+		CONF("overwrite_file") {
+			if(overwrite_file != NULL) free(overwrite_file);
+			if(overwrite_works(value) == 1) {
+				overwrite_file = strdup(value);
+				output_methods |= OVERWRITE_FILE;
+			}else ERR("overwrite_file won't be able to create/overwrite '%s'", value);
 		}
 		CONF("use_spacer") {
 			if (value) {
