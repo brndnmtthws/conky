@@ -324,6 +324,16 @@
 	</varlistentry>
 
 	<varlistentry>
+		<term><command><option>out_to_x</option></command>
+		</term>
+		<listitem>
+			When set to no, there will be no output in X (useful when you also use things like out_to_console).
+			If you set it to no, make sure that it's placed before all other X-related setting (take the first
+			line of your configfile to be sure). Default value is yes
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
 		<term><command><option>overwrite_file</option></command>
 		</term>
 		<listitem>

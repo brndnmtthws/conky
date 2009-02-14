@@ -132,6 +132,11 @@ int top_cpu, top_mem, top_time;
 #define OVERWRITE_FILE 8
 #define APPEND_FILE 16
 static int output_methods;
+enum {
+	NO = 0,
+	YES = 1,
+	NEVER = 2
+} x_initialised = NO;
 static volatile int g_signal_pending;
 /* Update interval */
 static double update_interval;
@@ -277,6 +282,7 @@ static void set_font(void);
 
 int addfont(const char *data_in)
 {
+	if ( (output_methods & TO_X) == 0 ) return 0;
 	if (font_count > MAX_FONTS) {
 		CRIT_ERR("you don't need that many fonts, sorry.");
 	}
@@ -310,6 +316,7 @@ int addfont(const char *data_in)
 
 void set_first_font(const char *data_in)
 {
+	if ( (output_methods & TO_X) == 0 ) return;
 	if (font_count < 0) {
 		if ((fonts = (struct font_list *) malloc(sizeof(struct font_list)))
 				== NULL) {
@@ -330,6 +337,7 @@ void free_fonts(void)
 {
 	int i;
 
+	if ( (output_methods & TO_X) == 0  ) return;
 	for (i = 0; i <= font_count; i++) {
 #ifdef XFT
 		if (use_xft) {
@@ -352,6 +360,7 @@ static void load_fonts(void)
 {
 	int i;
 
+	if ( (output_methods & TO_X) == 0 ) return;
 	for (i = 0; i <= font_count; i++) {
 #ifdef XFT
 		/* load Xft font */
@@ -555,6 +564,7 @@ int check_contains(char *f, char *s)
 #ifdef X11
 static inline int calc_text_width(const char *s, int l)
 {
+	if ( (output_methods & TO_X) == 0 ) return 0;
 #ifdef XFT
 	if (use_xft) {
 		XGlyphInfo gi;
@@ -769,6 +779,7 @@ static char *scan_font(const char *args)
 #ifdef X11
 static void new_font(char *buf, char *args)
 {
+	if ( (output_methods & TO_X) == 0 ) return;
 	if (args) {
 		struct special_t *s = new_special(buf, FONT);
 
@@ -1934,7 +1945,9 @@ static struct text_object *construct_text_object(const char *s,
 #endif
 	END OBJ(color, 0)
 #ifdef X11
-		obj->data.l = arg ? get_x11_color(arg) : default_fg_color;
+		if ( output_methods & TO_X ) {
+			obj->data.l = arg ? get_x11_color(arg) : default_fg_color;
+		}
 #endif /* X11 */
 	END OBJ(color0, 0)
 		obj->data.l = color0;
@@ -5581,6 +5594,7 @@ static void generate_text(void)
 #ifdef X11
 static void set_font(void)
 {
+	if ( (output_methods & TO_X) == 0 ) return;
 #ifdef XFT
 	if (use_xft) {
 		if (window.xftdraw != NULL) {
@@ -5600,15 +5614,21 @@ static void set_font(void)
 static inline int get_string_width(const char *s)
 {
 #ifdef X11
-	return *s ? calc_text_width(s, strlen(s)) : 0;
-#else
-	return strlen(s);
+	if ( output_methods & TO_X ) {
+		return *s ? calc_text_width(s, strlen(s)) : 0;
+	}
 #endif /* X11 */
+	return strlen(s);
 }
 
 static inline int get_string_width_special(char *s)
 {
 #ifdef X11
+	if ( (output_methods & TO_X) == 0  ) {
+#endif
+		return (s) ? strlen(s) : 0;
+#ifdef X11
+	}
 	char *p, *final;
 	int idx = 1;
 	int width = 0;
@@ -5642,8 +5662,6 @@ static inline int get_string_width_special(char *s)
 	}
 	free(final);
 	return width;
-#else
-	return (s) ? strlen(s) : 0;
 #endif /* X11 */
 }
 
@@ -5653,6 +5671,7 @@ static void text_size_updater(char *s);
 int last_font_height;
 static void update_text_area(void)
 {
+	if ( (output_methods & TO_X) == 0 ) return;
 	int x, y;
 
 	/* update text size if it isn't fixed */
@@ -5761,9 +5780,9 @@ static int draw_mode;		/* FG, BG or OUTLINE */
 #ifdef X11
 static long current_color;
 
-#ifdef X11
 static void text_size_updater(char *s)
 {
+	if ( (output_methods & TO_X) == 0  ) return;
 	int w = 0;
 	char *p;
 
@@ -5823,10 +5842,10 @@ static void text_size_updater(char *s)
 	text_height += last_font_height;
 	last_font_height = font_height();
 }
-#endif /* X11 */
 
 static inline void set_foreground_color(long c)
 {
+	if ( (output_methods & TO_X) == 0  ) return;
 	current_color = c;
 	XSetForeground(display, window.gc, c);
 }
@@ -5864,7 +5883,9 @@ static void draw_string(const char *s)
 	added = 0;
 
 #ifdef X11
-	max = ((text_width - width_of_s) / get_string_width(" "));
+	if ( output_methods & TO_X ) {
+		max = ((text_width - width_of_s) / get_string_width(" "));
+	}
 #endif /* X11 */
 	/* This code looks for tabs in the text and coverts them to spaces.
 	 * The trick is getting the correct number of spaces, and not going
@@ -5885,44 +5906,48 @@ static void draw_string(const char *s)
 		}
 	}
 #ifdef X11
-	if (text_width == maximum_width) {
-		/* this means the text is probably pushing the limit,
-		 * so we'll chop it */
-		while (cur_x + get_string_width(tmpstring2) - text_start_x
-				> maximum_width && strlen(tmpstring2) > 0) {
-			tmpstring2[strlen(tmpstring2) - 1] = '\0';
+	if ( output_methods & TO_X ) {
+		if (text_width == maximum_width) {
+			/* this means the text is probably pushing the limit,
+			 * so we'll chop it */
+			while (cur_x + get_string_width(tmpstring2) - text_start_x
+					> maximum_width && strlen(tmpstring2) > 0) {
+				tmpstring2[strlen(tmpstring2) - 1] = '\0';
+			}
 		}
 	}
 #endif /* X11 */
 	s = tmpstring2;
 #ifdef X11
+	if ( output_methods & TO_X ) {
 #ifdef XFT
-	if (use_xft) {
-		XColor c;
-		XftColor c2;
+		if (use_xft) {
+			XColor c;
+			XftColor c2;
 
-		c.pixel = current_color;
-		XQueryColor(display, DefaultColormap(display, screen), &c);
+			c.pixel = current_color;
+			XQueryColor(display, DefaultColormap(display, screen), &c);
 
-		c2.pixel = c.pixel;
-		c2.color.red = c.red;
-		c2.color.green = c.green;
-		c2.color.blue = c.blue;
-		c2.color.alpha = fonts[selected_font].font_alpha;
-		if (utf8_mode) {
-			XftDrawStringUtf8(window.xftdraw, &c2, fonts[selected_font].xftfont,
-				cur_x, cur_y, (const XftChar8 *) s, strlen(s));
-		} else {
-			XftDrawString8(window.xftdraw, &c2, fonts[selected_font].xftfont,
-				cur_x, cur_y, (const XftChar8 *) s, strlen(s));
-		}
-	} else
+			c2.pixel = c.pixel;
+			c2.color.red = c.red;
+			c2.color.green = c.green;
+			c2.color.blue = c.blue;
+			c2.color.alpha = fonts[selected_font].font_alpha;
+			if (utf8_mode) {
+				XftDrawStringUtf8(window.xftdraw, &c2, fonts[selected_font].xftfont,
+					cur_x, cur_y, (const XftChar8 *) s, strlen(s));
+			} else {
+				XftDrawString8(window.xftdraw, &c2, fonts[selected_font].xftfont,
+					cur_x, cur_y, (const XftChar8 *) s, strlen(s));
+			}
+		} else
 #endif
-	{
-		XDrawString(display, window.drawable, window.gc, cur_x, cur_y, s,
-			strlen(s));
+		{
+			XDrawString(display, window.drawable, window.gc, cur_x, cur_y, s,
+				strlen(s));
+		}
+		cur_x += width_of_s;
 	}
-	cur_x += width_of_s;
 #endif /* X11 */
 	memcpy(tmpstring1, s, text_buffer_size);
 }
@@ -5933,9 +5958,13 @@ void set_up_gradient(void)
 {
 	int i;
 #ifdef X11
-	colour_depth = DisplayPlanes(display, screen);
-#else
-	colour_depth = 16;
+	if ( output_methods & TO_X ) {
+		colour_depth = DisplayPlanes(display, screen);
+	}else{
+#endif /* X11 */
+		colour_depth = 16;
+#ifdef X11
+	}
 #endif /* X11 */
 	if (colour_depth != 24 && colour_depth != 16) {
 		ERR("using non-standard colour depth, gradients may look like a "
@@ -6055,6 +6084,10 @@ unsigned long gradient_max(unsigned long first_colour,
 
 static void draw_line(char *s)
 {
+	if ( (output_methods & TO_X) == 0 ) {
+		draw_string(s);
+		return;
+	}
 #ifdef X11
 	char *p;
 	int cur_y_add = 0;
@@ -6274,7 +6307,7 @@ static void draw_line(char *s)
 						tmp_str = (char *)
 							calloc(log10(floor(specials[special_index].graph_scale)) + 4,
 									sizeof(char));
-						sprintf(tmp_str, "%.1f", specials[special_index].graph_scale);
+							sprintf(tmp_str, "%.1f", specials[special_index].graph_scale);
 						draw_string(tmp_str);
 						free(tmp_str);
 						cur_x = tmp_x;
@@ -6373,8 +6406,8 @@ static void draw_line(char *s)
 					/* printf("pos_x %i text_start_x %i text_width %i cur_x %i "
 						"get_string_width(p) %i gap_x %i "
 						"specials[special_index].arg %i\n", pos_x, text_start_x,
-						text_width, cur_x, get_string_width(s), gap_x,
-						specials[special_index].arg); */
+					text_width, cur_x, get_string_width(s), gap_x,
+					specials[special_index].arg); */
 					if (pos_x > specials[special_index].arg) {
 						w = pos_x - specials[special_index].arg;
 					}
@@ -6389,10 +6422,6 @@ static void draw_line(char *s)
 
 		p++;
 	}
-#else
-	draw_string(s);
-#endif
-#ifdef X11
 	if (cur_y_add > 0) {
 		cur_y += cur_y_add;
 		cur_y -= font_descent();
@@ -6407,30 +6436,32 @@ static void draw_line(char *s)
 static void draw_text(void)
 {
 #ifdef X11
-	cur_y = text_start_y;
+	if ( output_methods & TO_X ) {
+		cur_y = text_start_y;
 
-	/* draw borders */
-	if (draw_borders && border_width > 0) {
-		unsigned int b = (border_width + 1) / 2;
+		/* draw borders */
+		if (draw_borders && border_width > 0) {
+			unsigned int b = (border_width + 1) / 2;
 
-		if (stippled_borders) {
-			char ss[2] = { stippled_borders, stippled_borders };
-			XSetLineAttributes(display, window.gc, border_width, LineOnOffDash,
-				CapButt, JoinMiter);
-			XSetDashes(display, window.gc, 0, ss, 2);
-		} else {
-			XSetLineAttributes(display, window.gc, border_width, LineSolid,
-				CapButt, JoinMiter);
+			if (stippled_borders) {
+				char ss[2] = { stippled_borders, stippled_borders };
+				XSetLineAttributes(display, window.gc, border_width, LineOnOffDash,
+					CapButt, JoinMiter);
+				XSetDashes(display, window.gc, 0, ss, 2);
+			} else {
+				XSetLineAttributes(display, window.gc, border_width, LineSolid,
+					CapButt, JoinMiter);
+			}
+
+			XDrawRectangle(display, window.drawable, window.gc,
+				text_start_x - border_margin + b, text_start_y - border_margin + b,
+				text_width + border_margin * 2 - 1 - b * 2,
+				text_height + border_margin * 2 - 1 - b * 2);
 		}
 
-		XDrawRectangle(display, window.drawable, window.gc,
-			text_start_x - border_margin + b, text_start_y - border_margin + b,
-			text_width + border_margin * 2 - 1 - b * 2,
-			text_height + border_margin * 2 - 1 - b * 2);
+		/* draw text */
+		special_index = 0;
 	}
-
-	/* draw text */
-	special_index = 0;
 #endif /* X11 */
 	for_each_line(text_buffer, draw_line);
 }
@@ -6446,51 +6477,55 @@ static void draw_stuff(void)
 		if(append_fpointer == NULL) ERR("Can't append '%s' anymore", append_file);
 	}
 #ifdef X11
-	selected_font = 0;
-	if (draw_shades && !draw_outline) {
-		text_start_x++;
-		text_start_y++;
-		set_foreground_color(default_bg_color);
-		draw_mode = BG;
-		draw_text();
-		text_start_x--;
-		text_start_y--;
-	}
-
-	if (draw_outline) {
-		int i, j;
+	if ( output_methods & TO_X ) {
 		selected_font = 0;
+		if (draw_shades && !draw_outline) {
+			text_start_x++;
+			text_start_y++;
+			set_foreground_color(default_bg_color);
+			draw_mode = BG;
+			draw_text();
+			text_start_x--;
+			text_start_y--;
+		}
 
-		for (i = -1; i < 2; i++) {
-			for (j = -1; j < 2; j++) {
-				if (i == 0 && j == 0) {
-					continue;
+		if (draw_outline) {
+			int i, j;
+			selected_font = 0;
+
+			for (i = -1; i < 2; i++) {
+				for (j = -1; j < 2; j++) {
+					if (i == 0 && j == 0) {
+						continue;
+					}
+					text_start_x += i;
+					text_start_y += j;
+					set_foreground_color(default_out_color);
+					draw_mode = OUTLINE;
+					draw_text();
+					text_start_x -= i;
+					text_start_y -= j;
 				}
-				text_start_x += i;
-				text_start_y += j;
-				set_foreground_color(default_out_color);
-				draw_mode = OUTLINE;
-				draw_text();
-				text_start_x -= i;
-				text_start_y -= j;
 			}
 		}
-	}
 
-	set_foreground_color(default_fg_color);
+		set_foreground_color(default_fg_color);
+	}
 #endif /* X11 */
 	draw_mode = FG;
 	draw_text();
 #ifdef X11
+	if ( output_methods & TO_X ) {
 #ifdef HAVE_XDBE
-	if (use_xdbe) {
-		XdbeSwapInfo swap;
+		if (use_xdbe) {
+			XdbeSwapInfo swap;
 
-		swap.swap_window = window.window;
-		swap.swap_action = XdbeBackground;
-		XdbeSwapBuffers(display, &swap, 1);
-	}
+			swap.swap_window = window.window;
+			swap.swap_action = XdbeBackground;
+			XdbeSwapBuffers(display, &swap, 1);
+		}
 #endif
+	}
 #endif /* X11 */
 	if(overwrite_fpointer != NULL) fclose(overwrite_fpointer);
 	if(append_fpointer != NULL) fclose(append_fpointer);
@@ -6522,7 +6557,7 @@ static void update_text(void)
 {
 	generate_text();
 #ifdef X11
-	clear_text(1);
+	if ( output_methods & TO_X ) clear_text(1);
 #endif /* X11 */
 	need_to_update = 1;
 }
@@ -6534,20 +6569,23 @@ static void main_loop(void)
 #endif
 	double t;
 #ifdef X11
-	Region region = XCreateRegion();
-
+	Region region;
 #ifdef HAVE_XDAMAGE
 	Damage damage;
 	XserverRegion region2, part;
 	int event_base, error_base;
-
-	if (!XDamageQueryExtension(display, &event_base, &error_base)) {
-		ERR("Xdamage extension unavailable");
-	}
-	damage = XDamageCreate(display, window.window, XDamageReportNonEmpty);
-	region2 = XFixesCreateRegionFromWindow(display, window.window, 0);
-	part = XFixesCreateRegionFromWindow(display, window.window, 0);
+#endif
+	if ( output_methods & TO_X ) {
+		region = XCreateRegion();
+#ifdef HAVE_XDAMAGE
+		if (!XDamageQueryExtension(display, &event_base, &error_base)) {
+			ERR("Xdamage extension unavailable");
+		}
+		damage = XDamageCreate(display, window.window, XDamageReportNonEmpty);
+		region2 = XFixesCreateRegionFromWindow(display, window.window, 0);
+		part = XFixesCreateRegionFromWindow(display, window.window, 0);
 #endif /* HAVE_XDAMAGE */
+	}
 #endif /* X11 */
 
 #ifdef SIGNAL_BLOCKING
@@ -6570,249 +6608,251 @@ static void main_loop(void)
 #endif
 
 #ifdef X11
-		XFlush(display);
+		if ( output_methods & TO_X ) {
+			XFlush(display);
 
-		/* wait for X event or timeout */
+			/* wait for X event or timeout */
 
-		if (!XPending(display)) {
-			fd_set fdsr;
-			struct timeval tv;
-			int s;
-			t = next_update_time - get_time();
+			if (!XPending(display)) {
+				fd_set fdsr;
+				struct timeval tv;
+				int s;
+				t = next_update_time - get_time();
 
-			if (t < 0) {
-				t = 0;
-			} else if (t > update_interval) {
-				t = update_interval;
-			}
-
-			tv.tv_sec = (long) t;
-			tv.tv_usec = (long) (t * 1000000) % 1000000;
-			FD_ZERO(&fdsr);
-			FD_SET(ConnectionNumber(display), &fdsr);
-
-			s = select(ConnectionNumber(display) + 1, &fdsr, 0, 0, &tv);
-			if (s == -1) {
-				if (errno != EINTR) {
-					ERR("can't select(): %s", strerror(errno));
+				if (t < 0) {
+					t = 0;
+				} else if (t > update_interval) {
+					t = update_interval;
 				}
-			} else {
-				/* timeout */
-				if (s == 0) {
-#else
-		t = (next_update_time - get_time()) * 1000000;
-		usleep((useconds_t)t);
-#endif /* X11 */
-					update_text();
-#ifdef X11
+
+				tv.tv_sec = (long) t;
+				tv.tv_usec = (long) (t * 1000000) % 1000000;
+				FD_ZERO(&fdsr);
+				FD_SET(ConnectionNumber(display), &fdsr);
+
+				s = select(ConnectionNumber(display) + 1, &fdsr, 0, 0, &tv);
+				if (s == -1) {
+					if (errno != EINTR) {
+						ERR("can't select(): %s", strerror(errno));
+					}
+				} else {
+					/* timeout */
+					if (s == 0) {
+						update_text();
+					}
 				}
 			}
-		}
 
-		if (need_to_update) {
+			if (need_to_update) {
 #ifdef OWN_WINDOW
-			int wx = window.x, wy = window.y;
+				int wx = window.x, wy = window.y;
 #endif
 
-			need_to_update = 0;
-			selected_font = 0;
-			update_text_area();
+				need_to_update = 0;
+				selected_font = 0;
+				update_text_area();
 #ifdef OWN_WINDOW
-			if (own_window) {
-				/* resize window if it isn't right size */
-				if (!fixed_size
+				if (own_window) {
+					/* resize window if it isn't right size */
+					if (!fixed_size
 						&& (text_width + border_margin * 2 + 1 != window.width
 						|| text_height + border_margin * 2 + 1 != window.height)) {
-					window.width = text_width + border_margin * 2 + 1;
-					window.height = text_height + border_margin * 2 + 1;
-					XResizeWindow(display, window.window, window.width,
-						window.height);
-					if (own_window) {
-						set_transparent_background(window.window);
+							window.width = text_width + border_margin * 2 + 1;
+							window.height = text_height + border_margin * 2 + 1;
+							XResizeWindow(display, window.window, window.width,
+								window.height);
+							if (own_window) {
+								set_transparent_background(window.window);
+							}
+					}
+
+					/* move window if it isn't in right position */
+					if (!fixed_pos && (window.x != wx || window.y != wy)) {
+						XMoveWindow(display, window.window, window.x, window.y);
 					}
 				}
-
-				/* move window if it isn't in right position */
-				if (!fixed_pos && (window.x != wx || window.y != wy)) {
-					XMoveWindow(display, window.window, window.x, window.y);
-				}
-			}
 #endif
 
-			clear_text(1);
+				clear_text(1);
 
 #ifdef HAVE_XDBE
-			if (use_xdbe) {
-				XRectangle r;
-
-				r.x = text_start_x - border_margin;
-				r.y = text_start_y - border_margin;
-				r.width = text_width + border_margin * 2;
-				r.height = text_height + border_margin * 2;
-				XUnionRectWithRegion(&r, region, region);
-			}
-#endif
-		}
-
-		/* handle X events */
-		while (XPending(display)) {
-			XEvent ev;
-
-			XNextEvent(display, &ev);
-			switch (ev.type) {
-				case Expose:
-				{
+				if (use_xdbe) {
 					XRectangle r;
 
-					r.x = ev.xexpose.x;
-					r.y = ev.xexpose.y;
-					r.width = ev.xexpose.width;
-					r.height = ev.xexpose.height;
+					r.x = text_start_x - border_margin;
+					r.y = text_start_y - border_margin;
+					r.width = text_width + border_margin * 2;
+					r.height = text_height + border_margin * 2;
 					XUnionRectWithRegion(&r, region, region);
-					break;
 				}
+#endif
+			}
+
+			/* handle X events */
+			while (XPending(display)) {
+				XEvent ev;
+
+				XNextEvent(display, &ev);
+				switch (ev.type) {
+					case Expose:
+					{
+						XRectangle r;
+
+						r.x = ev.xexpose.x;
+						r.y = ev.xexpose.y;
+						r.width = ev.xexpose.width;
+						r.height = ev.xexpose.height;
+						XUnionRectWithRegion(&r, region, region);
+						break;
+					}
 
 #ifdef OWN_WINDOW
-				case ReparentNotify:
-					/* set background to ParentRelative for all parents */
-					if (own_window) {
-						set_transparent_background(window.window);
-					}
-					break;
+					case ReparentNotify:
+						/* set background to ParentRelative for all parents */
+						if (own_window) {
+							set_transparent_background(window.window);
+						}
+						break;
 
-				case ConfigureNotify:
-					if (own_window) {
-						/* if window size isn't what expected, set fixed size */
-						if (ev.xconfigure.width != window.width
-								|| ev.xconfigure.height != window.height) {
-							if (window.width != 0 && window.height != 0) {
-								fixed_size = 1;
-							}
+					case ConfigureNotify:
+						if (own_window) {
+							/* if window size isn't what expected, set fixed size */
+							if (ev.xconfigure.width != window.width
+									|| ev.xconfigure.height != window.height) {
+								if (window.width != 0 && window.height != 0) {
+									fixed_size = 1;
+								}
 
-							/* clear old stuff before screwing up
-							 * size and pos */
-							clear_text(1);
+								/* clear old stuff before screwing up
+								 * size and pos */
+								clear_text(1);
 
-							{
-								XWindowAttributes attrs;
+								{
+									XWindowAttributes attrs;
 
-								if (XGetWindowAttributes(display,
-										window.window, &attrs)) {
-									window.width = attrs.width;
-									window.height = attrs.height;
+									if (XGetWindowAttributes(display,
+											window.window, &attrs)) {
+										window.width = attrs.width;
+										window.height = attrs.height;
+									}
+								}
+
+								text_width = window.width - border_margin * 2 - 1;
+								text_height = window.height - border_margin * 2 - 1;
+								if (text_width > maximum_width
+										&& maximum_width > 0) {
+									text_width = maximum_width;
 								}
 							}
 
-							text_width = window.width - border_margin * 2 - 1;
-							text_height = window.height - border_margin * 2 - 1;
-							if (text_width > maximum_width
-									&& maximum_width > 0) {
-								text_width = maximum_width;
+							/* if position isn't what expected, set fixed pos
+							 * total_updates avoids setting fixed_pos when window
+							 * is set to weird locations when started */
+							/* // this is broken
+							if (total_updates >= 2 && !fixed_pos
+									&& (window.x != ev.xconfigure.x
+									|| window.y != ev.xconfigure.y)
+									&& (ev.xconfigure.x != 0
+									|| ev.xconfigure.y != 0)) {
+								fixed_pos = 1;
+							} */
+							set_font();
+						}
+						break;
+
+					case ButtonPress:
+						if (own_window) {
+							/* if an ordinary window with decorations */
+							if ((window.type == TYPE_NORMAL)
+								&& (!TEST_HINT(window.hints,
+								HINT_UNDECORATED))) {
+								/* allow conky to hold input focus. */
+								break;
+							} else {
+								/* forward the click to the desktop window */
+								XUngrabPointer(display, ev.xbutton.time);
+								ev.xbutton.window = window.desktop;
+								XSendEvent(display, ev.xbutton.window, False,
+									ButtonPressMask, &ev);
+								XSetInputFocus(display, ev.xbutton.window,
+									RevertToParent, ev.xbutton.time);
 							}
 						}
+						break;
 
-						/* if position isn't what expected, set fixed pos
-						 * total_updates avoids setting fixed_pos when window
-						 * is set to weird locations when started */
-						/* // this is broken
-						if (total_updates >= 2 && !fixed_pos
-								&& (window.x != ev.xconfigure.x
-								|| window.y != ev.xconfigure.y)
-								&& (ev.xconfigure.x != 0
-								|| ev.xconfigure.y != 0)) {
-							fixed_pos = 1;
-						} */
-						set_font();
-					}
-					break;
-
-				case ButtonPress:
-					if (own_window) {
-						/* if an ordinary window with decorations */
-						if ((window.type == TYPE_NORMAL)
-								&& (!TEST_HINT(window.hints,
-								HINT_UNDECORATED))) {
-							/* allow conky to hold input focus. */
-							break;
-						} else {
-							/* forward the click to the desktop window */
-							XUngrabPointer(display, ev.xbutton.time);
-							ev.xbutton.window = window.desktop;
-							XSendEvent(display, ev.xbutton.window, False,
-								ButtonPressMask, &ev);
-							XSetInputFocus(display, ev.xbutton.window,
-								RevertToParent, ev.xbutton.time);
+					case ButtonRelease:
+						if (own_window) {
+							/* if an ordinary window with decorations */
+							if ((window.type == TYPE_NORMAL)
+									&& (!TEST_HINT(window.hints,
+									HINT_UNDECORATED))) {
+								/* allow conky to hold input focus. */
+								break;
+							} else {
+								/* forward the release to the desktop window */
+								ev.xbutton.window = window.desktop;
+								XSendEvent(display, ev.xbutton.window, False,
+									ButtonReleaseMask, &ev);
+							}
 						}
-					}
-					break;
-
-				case ButtonRelease:
-					if (own_window) {
-						/* if an ordinary window with decorations */
-						if ((window.type == TYPE_NORMAL)
-								&& (!TEST_HINT(window.hints,
-								HINT_UNDECORATED))) {
-							/* allow conky to hold input focus. */
-							break;
-						} else {
-							/* forward the release to the desktop window */
-							ev.xbutton.window = window.desktop;
-							XSendEvent(display, ev.xbutton.window, False,
-								ButtonReleaseMask, &ev);
-						}
-					}
-					break;
+						break;
 
 #endif
 
-				default:
+					default:
 #ifdef HAVE_XDAMAGE
-					if (ev.type == event_base + XDamageNotify) {
-						XDamageNotifyEvent *dev = (XDamageNotifyEvent *) &ev;
+						if (ev.type == event_base + XDamageNotify) {
+							XDamageNotifyEvent *dev = (XDamageNotifyEvent *) &ev;
 
-						XFixesSetRegion(display, part, &dev->area, 1);
-						XFixesUnionRegion(display, region2, region2, part);
-					}
+							XFixesSetRegion(display, part, &dev->area, 1);
+							XFixesUnionRegion(display, region2, region2, part);
+						}
 #endif /* HAVE_XDAMAGE */
-					break;
+						break;
+				}
 			}
-		}
 
 #ifdef HAVE_XDAMAGE
-		XDamageSubtract(display, damage, region2, None);
-		XFixesSetRegion(display, region2, 0, 0);
+			XDamageSubtract(display, damage, region2, None);
+			XFixesSetRegion(display, region2, 0, 0);
 #endif /* HAVE_XDAMAGE */
 
-		/* XDBE doesn't seem to provide a way to clear the back buffer without
-		 * interfering with the front buffer, other than passing XdbeBackground
-		 * to XdbeSwapBuffers. That means that if we're using XDBE, we need to
-		 * redraw the text even if it wasn't part of the exposed area. OTOH,
-		 * if we're not going to call draw_stuff at all, then no swap happens
-		 * and we can safely do nothing. */
+			/* XDBE doesn't seem to provide a way to clear the back buffer without
+			 * interfering with the front buffer, other than passing XdbeBackground
+			 * to XdbeSwapBuffers. That means that if we're using XDBE, we need to
+			 * redraw the text even if it wasn't part of the exposed area. OTOH,
+			 * if we're not going to call draw_stuff at all, then no swap happens
+			 * and we can safely do nothing. */
 
-		if (!XEmptyRegion(region)) {
+			if (!XEmptyRegion(region)) {
 #ifdef HAVE_XDBE
-			if (use_xdbe) {
-				XRectangle r;
+				if (use_xdbe) {
+					XRectangle r;
 
-				r.x = text_start_x - border_margin;
-				r.y = text_start_y - border_margin;
-				r.width = text_width + border_margin * 2;
-				r.height = text_height + border_margin * 2;
-				XUnionRectWithRegion(&r, region, region);
-			}
+					r.x = text_start_x - border_margin;
+					r.y = text_start_y - border_margin;
+					r.width = text_width + border_margin * 2;
+					r.height = text_height + border_margin * 2;
+					XUnionRectWithRegion(&r, region, region);
+				}
 #endif
-			XSetRegion(display, window.gc, region);
+				XSetRegion(display, window.gc, region);
 #ifdef XFT
-			if (use_xft) {
-				XftDrawSetClip(window.xftdraw, region);
-			}
+				if (use_xft) {
+					XftDrawSetClip(window.xftdraw, region);
+				}
 #endif
+				draw_stuff();
+				XDestroyRegion(region);
+				region = XCreateRegion();
+			}
+		}else{
 #endif /* X11 */
+			t = (next_update_time - get_time()) * 1000000;
+			if(t > 0) usleep((useconds_t)t);
+			update_text();
 			draw_stuff();
 #ifdef X11
-			XDestroyRegion(region);
-			region = XCreateRegion();
 		}
 #endif /* X11 */
 
@@ -6834,13 +6874,15 @@ static void main_loop(void)
 				ERR("received SIGINT or SIGTERM to terminate. bye!");
 				clean_up();
 #ifdef X11
-				XDestroyRegion(region);
-				region = NULL;
+				if ( output_methods & TO_X ) {
+					XDestroyRegion(region);
+					region = NULL;
 #ifdef HAVE_XDAMAGE
-				XDamageDestroy(display, damage);
-				XFixesDestroyRegion(display, region2);
-				XFixesDestroyRegion(display, part);
+					XDamageDestroy(display, damage);
+					XFixesDestroyRegion(display, region2);
+					XFixesDestroyRegion(display, part);
 #endif /* HAVE_XDAMAGE */
+				}
 #endif /* X11 */
 				if(overwrite_file != NULL) free(overwrite_file);
 				if(append_file != NULL) free(append_file);
@@ -6861,11 +6903,13 @@ static void main_loop(void)
 	}
 
 #if defined(X11) && defined(HAVE_XDAMAGE)
-	XDamageDestroy(display, damage);
-	XFixesDestroyRegion(display, region2);
-	XFixesDestroyRegion(display, part);
-	XDestroyRegion(region);
-	region = NULL;
+	if ( output_methods & TO_X ) {
+		XDamageDestroy(display, damage);
+		XFixesDestroyRegion(display, region2);
+		XFixesDestroyRegion(display, part);
+		XDestroyRegion(region);
+		region = NULL;
+	}
 #endif /* X11 && HAVE_XDAMAGE */
 }
 
@@ -6941,26 +6985,28 @@ static void clean_up(void)
 		info.cpu_usage = NULL;
 	}
 #ifdef X11
+	if ( output_methods & TO_X ) {
 #ifdef HAVE_XDBE
-	if (use_xdbe) {
-		XdbeDeallocateBackBufferName(display, window.back_buffer);
-	}
+		if (use_xdbe) {
+			XdbeDeallocateBackBufferName(display, window.back_buffer);
+		}
 #endif
 #ifdef OWN_WINDOW
-	if (own_window) {
-		XDestroyWindow(display, window.window);
-		XClearWindow(display, RootWindow(display, screen));
-		XFlush(display);
-	} else
+		if (own_window) {
+			XDestroyWindow(display, window.window);
+			XClearWindow(display, RootWindow(display, screen));
+			XFlush(display);
+		} else
 #endif
-	{
-		XClearWindow(display, RootWindow(display, screen));
-		clear_text(1);
-		XFlush(display);
-	}
+		{
+			XClearWindow(display, RootWindow(display, screen));
+			clear_text(1);
+			XFlush(display);
+		}
 
-	XFreeGC(display, window.gc);
-	free_fonts();
+		XFreeGC(display, window.gc);
+		free_fonts();
+	}
 #endif /* X11 */
 
 	free_text_objects(&global_root_object);
@@ -7063,6 +7109,25 @@ static enum alignment string_to_alignment(const char *s)
 }
 #endif /* X11 */
 
+#ifdef X11
+static void set_default_configurations_for_x(void)
+{
+	default_fg_color = WhitePixel(display, screen);
+	default_bg_color = BlackPixel(display, screen);
+	default_out_color = BlackPixel(display, screen);
+	color0 = default_fg_color;
+	color1 = default_fg_color;
+	color2 = default_fg_color;
+	color3 = default_fg_color;
+	color4 = default_fg_color;
+	color5 = default_fg_color;
+	color6 = default_fg_color;
+	color7 = default_fg_color;
+	color8 = default_fg_color;
+	color9 = default_fg_color;
+}
+#endif /* X11 */
+
 static void set_default_configurations(void)
 {
 	fork_to_background = 0;
@@ -7098,19 +7163,6 @@ static void set_default_configurations(void)
 #ifdef X11
 	show_graph_scale = 0;
 	show_graph_range = 0;
-	default_fg_color = WhitePixel(display, screen);
-	default_bg_color = BlackPixel(display, screen);
-	default_out_color = BlackPixel(display, screen);
-	color0 = default_fg_color;
-	color1 = default_fg_color;
-	color2 = default_fg_color;
-	color3 = default_fg_color;
-	color4 = default_fg_color;
-	color5 = default_fg_color;
-	color6 = default_fg_color;
-	color7 = default_fg_color;
-	color8 = default_fg_color;
-	color9 = default_fg_color;
 	template[0] = strdup("");
 	template[1] = strdup("");
 	template[2] = strdup("");
@@ -7185,6 +7237,13 @@ static _Bool append_works(const char *path)
 	if(filepointer == NULL) return 0;
 	fclose(filepointer);
 	return 1;
+}
+
+static void X11_initialisation() {
+	output_methods |= TO_X;
+	init_X11();
+	set_default_configurations_for_x();
+	x_initialised = YES;
 }
 
 static void load_config_file(const char *f)
@@ -7267,7 +7326,17 @@ static void load_config_file(const char *f)
 		|| strcasecmp(name, b) == 0)
 
 #ifdef X11
-		CONF2("alignment") {
+		CONF2("out_to_x") {
+			if(x_initialised == NO) {	//don't listen if X is already initialised or if we already know we don't want it
+				if ( string_to_bool(value) ) {
+					X11_initialisation();
+				}else {
+					if(output_methods & TO_X) output_methods -= TO_X;
+					x_initialised = NEVER;
+				}
+			}
+		}
+		CONF("alignment") {
 			if (window.type == TYPE_DOCK)
 				;
 			else if (value) {
@@ -7312,73 +7381,103 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color0") {
-			if (value) {
-				color0 = get_x11_color(value);
-			} else {
-				CONF_ERR;
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					color0 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
 			}
 		}
 		CONF("color1") {
-			if (value) {
-				color1 = get_x11_color(value);
-			} else {
-				CONF_ERR;
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					color1 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
 			}
 		}
 		CONF("color2") {
-			if (value) {
-				color2 = get_x11_color(value);
-			} else {
-				CONF_ERR;
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					color2 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
 			}
 		}
 		CONF("color3") {
-			if (value) {
-				color3 = get_x11_color(value);
-			} else {
-				CONF_ERR;
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					color3 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
 			}
 		}
 		CONF("color4") {
-			if (value) {
-				color4 = get_x11_color(value);
-			} else {
-				CONF_ERR;
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					color4 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
 			}
 		}
 		CONF("color5") {
-			if (value) {
-				color5 = get_x11_color(value);
-			} else {
-				CONF_ERR;
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					color5 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
 			}
 		}
 		CONF("color6") {
-			if (value) {
-				color6 = get_x11_color(value);
-			} else {
-				CONF_ERR;
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					color6 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
 			}
 		}
 		CONF("color7") {
-			if (value) {
-				color7 = get_x11_color(value);
-			} else {
-				CONF_ERR;
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					color7 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
 			}
 		}
 		CONF("color8") {
-			if (value) {
-				color8 = get_x11_color(value);
-			} else {
-				CONF_ERR;
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					color8 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
 			}
 		}
 		CONF("color9") {
-			if (value) {
-				color9 = get_x11_color(value);
-			} else {
-				CONF_ERR;
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					color9 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
 			}
 		}
 #define TEMPLATE_CONF(n) \
@@ -7401,24 +7500,33 @@ static void load_config_file(const char *f)
 		TEMPLATE_CONF(8)
 		TEMPLATE_CONF(9)
 		CONF("default_color") {
-			if (value) {
-				default_fg_color = get_x11_color(value);
-			} else {
-				CONF_ERR;
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					default_fg_color = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
 			}
 		}
 		CONF3("default_shade_color", "default_shadecolor") {
-			if (value) {
-				default_bg_color = get_x11_color(value);
-			} else {
-				CONF_ERR;
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					default_bg_color = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
 			}
 		}
 		CONF3("default_outline_color", "default_outlinecolor") {
-			if (value) {
-				default_out_color = get_x11_color(value);
-			} else {
-				CONF_ERR;
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					default_out_color = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
 			}
 		}
 #endif /* X11 */
@@ -7572,20 +7680,27 @@ static void load_config_file(const char *f)
 			use_xft = string_to_bool(value);
 		}
 		CONF("font") {
-			if (value) {
-				set_first_font(value);
-			} else {
-				CONF_ERR;
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					set_first_font(value);
+				} else {
+					CONF_ERR;
+				}
 			}
 		}
 		CONF("xftalpha") {
-			if (value && font_count >= 0) {
-				fonts[0].font_alpha = atof(value) * 65535.0;
-			} else {
-				CONF_ERR;
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value && font_count >= 0) {
+					fonts[0].font_alpha = atof(value) * 65535.0;
+				} else {
+					CONF_ERR;
+				}
 			}
 		}
 		CONF("xftfont") {
+			if(x_initialised == NO) X11_initialisation();
 			if (use_xft) {
 #else
 		CONF("use_xft") {
@@ -7601,10 +7716,12 @@ static void load_config_file(const char *f)
 		}
 		CONF("font") {
 #endif
-				if (value) {
-					set_first_font(value);
-				} else {
-					CONF_ERR;
+				if(x_initialised == YES) {
+					if (value) {
+						set_first_font(value);
+					} else {
+						CONF_ERR;
+					}
 				}
 #ifdef XFT
 			}
@@ -7679,92 +7796,113 @@ static void load_config_file(const char *f)
 #ifdef X11
 #ifdef OWN_WINDOW
 		CONF("own_window") {
-			if (value) {
-				own_window = string_to_bool(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("own_window_class") {
-			if (value) {
-				memset(window.class_name, 0, sizeof(window.class_name));
-				strncpy(window.class_name, value,
-					sizeof(window.class_name) - 1);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("own_window_title") {
-			if (value) {
-				memset(window.title, 0, sizeof(window.title));
-				strncpy(window.title, value, sizeof(window.title) - 1);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("own_window_transparent") {
-			if (value) {
-				set_transparent = string_to_bool(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("own_window_colour") {
-			if (value) {
-				background_colour = get_x11_color(value);
-			} else {
-				ERR("Invalid colour for own_window_colour (try omitting the "
-					"'#' for hex colours");
-			}
-		}
-		CONF("own_window_hints") {
-			if (value) {
-				char *p_hint, *p_save;
-				char delim[] = ", ";
-
-				/* tokenize the value into individual hints */
-				if ((p_hint = strtok_r(value, delim, &p_save)) != NULL) {
-					do {
-						/* fprintf(stderr, "hint [%s] parsed\n", p_hint); */
-						if (strncmp(p_hint, "undecorate", 10) == EQUAL) {
-							SET_HINT(window.hints, HINT_UNDECORATED);
-						} else if (strncmp(p_hint, "below", 5) == EQUAL) {
-							SET_HINT(window.hints, HINT_BELOW);
-						} else if (strncmp(p_hint, "above", 5) == EQUAL) {
-							SET_HINT(window.hints, HINT_ABOVE);
-						} else if (strncmp(p_hint, "sticky", 6) == EQUAL) {
-							SET_HINT(window.hints, HINT_STICKY);
-						} else if (strncmp(p_hint, "skip_taskbar", 12) == EQUAL) {
-							SET_HINT(window.hints, HINT_SKIP_TASKBAR);
-						} else if (strncmp(p_hint, "skip_pager", 10) == EQUAL) {
-							SET_HINT(window.hints, HINT_SKIP_PAGER);
-						} else {
-							CONF_ERR;
-						}
-
-						p_hint = strtok_r(NULL, delim, &p_save);
-					} while (p_hint != NULL);
-				}
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("own_window_type") {
-			if (value) {
-				if (strncmp(value, "normal", 6) == EQUAL) {
-					window.type = TYPE_NORMAL;
-				} else if (strncmp(value, "desktop", 7) == EQUAL) {
-					window.type = TYPE_DESKTOP;
-				} else if (strncmp(value, "dock", 7) == EQUAL) {
-					window.type = TYPE_DOCK;
-					text_alignment = TOP_LEFT;
-				} else if (strncmp(value, "override", 8) == EQUAL) {
-					window.type = TYPE_OVERRIDE;
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					own_window = string_to_bool(value);
 				} else {
 					CONF_ERR;
 				}
-			} else {
-				CONF_ERR;
+			}
+		}
+		CONF("own_window_class") {
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					memset(window.class_name, 0, sizeof(window.class_name));
+					strncpy(window.class_name, value,
+						sizeof(window.class_name) - 1);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("own_window_title") {
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					memset(window.title, 0, sizeof(window.title));
+					strncpy(window.title, value, sizeof(window.title) - 1);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("own_window_transparent") {
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					set_transparent = string_to_bool(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("own_window_colour") {
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					background_colour = get_x11_color(value);
+				} else {
+					ERR("Invalid colour for own_window_colour (try omitting the "
+						"'#' for hex colours");
+				}
+			}
+		}
+		CONF("own_window_hints") {
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					char *p_hint, *p_save;
+					char delim[] = ", ";
+
+					/* tokenize the value into individual hints */
+					if ((p_hint = strtok_r(value, delim, &p_save)) != NULL) {
+						do {
+							/* fprintf(stderr, "hint [%s] parsed\n", p_hint); */
+							if (strncmp(p_hint, "undecorate", 10) == EQUAL) {
+								SET_HINT(window.hints, HINT_UNDECORATED);
+							} else if (strncmp(p_hint, "below", 5) == EQUAL) {
+								SET_HINT(window.hints, HINT_BELOW);
+							} else if (strncmp(p_hint, "above", 5) == EQUAL) {
+								SET_HINT(window.hints, HINT_ABOVE);
+							} else if (strncmp(p_hint, "sticky", 6) == EQUAL) {
+								SET_HINT(window.hints, HINT_STICKY);
+							} else if (strncmp(p_hint, "skip_taskbar", 12) == EQUAL) {
+								SET_HINT(window.hints, HINT_SKIP_TASKBAR);
+							} else if (strncmp(p_hint, "skip_pager", 10) == EQUAL) {
+								SET_HINT(window.hints, HINT_SKIP_PAGER);
+							} else {
+								CONF_ERR;
+							}
+	
+							p_hint = strtok_r(NULL, delim, &p_save);
+						} while (p_hint != NULL);
+					}
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("own_window_type") {
+			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == YES) {
+				if (value) {
+					if (strncmp(value, "normal", 6) == EQUAL) {
+						window.type = TYPE_NORMAL;
+					} else if (strncmp(value, "desktop", 7) == EQUAL) {
+						window.type = TYPE_DESKTOP;
+					} else if (strncmp(value, "dock", 7) == EQUAL) {
+						window.type = TYPE_DOCK;
+						text_alignment = TOP_LEFT;
+					} else if (strncmp(value, "override", 8) == EQUAL) {
+						window.type = TYPE_OVERRIDE;
+					} else {
+						CONF_ERR;
+					}
+				} else {
+					CONF_ERR;
+				}
 			}
 		}
 #endif
@@ -8084,11 +8222,6 @@ int main(int argc, char **argv)
 				exit(EXIT_FAILURE);
 		}
 	}
-#ifdef X11
-	/* initalize X BEFORE we load config.
-	 * (we need to so that 'screen' is set) */
-	init_X11();
-#endif /* X11 */
 
 	/* check if specified config file is valid */
 	if (current_config) {
@@ -8238,7 +8371,7 @@ int main(int argc, char **argv)
 
 #ifdef X11
 	/* load font */
-	load_fonts();
+	if ( output_methods & TO_X ) load_fonts();
 #endif /* X11 */
 
 	/* generate text and get initial size */
@@ -8282,35 +8415,37 @@ int main(int argc, char **argv)
 	memset(tmpstring2, 0, text_buffer_size);
 
 #ifdef X11
-	selected_font = 0;
-	update_text_area();	/* to get initial size of the window */
+	if ( output_methods & TO_X ) {
+		selected_font = 0;
+		update_text_area();	/* to get initial size of the window */
 
 #ifdef OWN_WINDOW
-	init_window(own_window, text_width + border_margin * 2 + 1,
-		text_height + border_margin * 2 + 1, set_transparent, background_colour,
-		argv, argc);
+		init_window(own_window, text_width + border_margin * 2 + 1,
+			text_height + border_margin * 2 + 1, set_transparent, background_colour,
+			argv, argc);
 #else /* OWN_WINDOW */
-	init_window(0, text_width + border_margin * 2 + 1,
-		text_height + border_margin * 2 + 1, set_transparent, 0,
-		argv, argc);
+		init_window(0, text_width + border_margin * 2 + 1,
+			text_height + border_margin * 2 + 1, set_transparent, 0,
+			argv, argc);
 #endif /* OWN_WINDOW */
 
-	selected_font = 0;
-	update_text_area();	/* to position text/window on screen */
+		selected_font = 0;
+		update_text_area();	/* to position text/window on screen */
 
 #ifdef OWN_WINDOW
-	if (own_window && !fixed_pos) {
-		XMoveWindow(display, window.window, window.x, window.y);
-	}
-	if (own_window) {
-		set_transparent_background(window.window);
-	}
+		if (own_window && !fixed_pos) {
+			XMoveWindow(display, window.window, window.x, window.y);
+		}
+		if (own_window) {
+			set_transparent_background(window.window);
+		}
 #endif
 
-	create_gc();
+		create_gc();
 
-	set_font();
-	draw_stuff();
+		set_font();
+		draw_stuff();
+	}
 #endif /* X11 */
 
 	/* Set signal handlers */
