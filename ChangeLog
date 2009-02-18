@@ -8,7 +8,6 @@
 		* change temp_print() from snprintf() to spaced_print()
 		* remove decimals from temp_print() as none of the current sources can
 		supply values smaller than 1 degree (C or F, doesn't matter)
-		* add a space between number and the unit in human_readable()
 		* fix number printing in human_readable()
 		* network $upspeed and $downspeed now use human_readable()
 	* Fix diskio_read/write patch sf.net id #2493084 (thanks Alexander)

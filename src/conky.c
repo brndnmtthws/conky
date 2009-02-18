@@ -1139,12 +1139,12 @@ static void human_readable(long long num, char *buf, int size)
 
 	if (short_units) {
 		width = 7;
-		format = "%lld %.1s";
-		format2 = "%.*f %.1s";
+		format = "%lld%.1s";
+		format2 = "%.*f%.1s";
 	} else {
 		width = 9;
-		format = "%lld %s";
-		format2 = "%.*f %s";
+		format = "%lld%s";
+		format2 = "%.*f%s";
 	}
 
 	if (llabs(num) < 1024LL) {
