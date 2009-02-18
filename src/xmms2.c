@@ -315,8 +315,11 @@ void update_xmms2()
 			xmmsc_broadcast_playback_status, handle_playback_state_change,
 			current_info);
 		XMMS_CALLBACK_SET(current_info->xmms2_conn,
-				xmmsc_broadcast_playlist_loaded, handle_playlist_loaded,
-				current_info);
+			xmmsc_broadcast_playlist_loaded, handle_playlist_loaded,
+			current_info);
+		XMMS_CALLBACK_SET(current_info->xmms2_conn,
+			xmmsc_broadcast_medialib_entry_changed, handle_curent_id,
+			current_info);
 
 		/* get playback status, current id and active playlist */
 		XMMS_CALLBACK_SET(current_info->xmms2_conn,
@@ -335,14 +338,7 @@ void update_xmms2()
 
 	/* handle callbacks */
 	if (current_info->xmms2_conn_state == CONN_OK) {
-		struct timeval tmout;
-
-		tmout.tv_sec = 0;
-		tmout.tv_usec = 100;
-
-		select(current_info->xmms2_fd + 1, &current_info->xmms2_fdset, NULL,
-			NULL, &tmout);
-
+		
 		xmmsc_io_in_handle(current_info->xmms2_conn);
 		if (xmmsc_io_want_out(current_info->xmms2_conn)) {
 			xmmsc_io_out_handle(current_info->xmms2_conn);

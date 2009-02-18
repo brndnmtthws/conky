@@ -235,8 +235,6 @@ struct information {
 #ifdef XMMS2
 	struct xmms2_s xmms2;
 	int xmms2_conn_state;
-	xmms_socket_t xmms2_fd;
-	fd_set xmms2_fdset;
 	xmmsc_connection_t *xmms2_conn;
 #endif
 #ifdef AUDACIOUS

@@ -19,6 +19,7 @@
 	is not full charged patch sf.net id #2556056 (thanks Martin)
 	* Extended support for local Maildir patch sf.net id #2561323 (thanks
 	Nicolas)
+	* XMMS2 fix and refactoring patch sf.net id #2579357 (thanks Tamim)
 
 2009-02-15
 	* Added out_to_x
