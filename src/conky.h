@@ -294,4 +294,8 @@ void update_users(void);
 /* defined in conky.c */
 extern double current_update_time, last_update_time;
 
+/* defined in conky.c */
+int spaced_print(char *, int, const char *, int, ...)
+	__attribute__((format(printf, 3, 5)));
+
 #endif

@@ -1097,10 +1097,8 @@ static void convert_escapes(char *buf)
 /* Prints anything normally printed with snprintf according to the current value
  * of use_spacer.  Actually slightly more flexible than snprintf, as you can
  * safely specify the destination buffer as one of your inputs.  */
-static int spaced_print(char *, int, const char *, int, ...)
-		__attribute__((format(printf, 3, 5)));
-
-static int spaced_print(char *buf, int size, const char *format, int width, ...) {
+int spaced_print(char *buf, int size, const char *format, int width, ...)
+{
 	int len = 0;
 	va_list argp;
 	char *tempbuf;
@@ -1130,24 +1128,23 @@ static int spaced_print(char *buf, int size, const char *format, int width, ...)
 	return len;
 }
 
-/* converts from bytes to human readable format (k, M, G, T) */
+/* converts from bytes to human readable format (K, M, G, T) */
 static void human_readable(long long num, char *buf, int size)
 {
 	const char **suffix = suffixes;
 	float fnum;
 	int precision, len;
-	static const int WIDTH = 10, SHORT_WIDTH = 8;
 	int width;
 	const char *format, *format2;
 
 	if (short_units) {
-		width = SHORT_WIDTH;
-		format = "%lld%1s";
-		format2 = "%.*f%1s";
+		width = 7;
+		format = "%lld %.1s";
+		format2 = "%.*f %.1s";
 	} else {
-		width = WIDTH;
-		format = "%lld%s";
-		format2 = "%.*f%s";
+		width = 9;
+		format = "%lld %s";
+		format2 = "%.*f %s";
 	}
 
 	if (llabs(num) < 1024LL) {
@@ -1163,15 +1160,11 @@ static void human_readable(long long num, char *buf, int size)
 	suffix++;
 	fnum = num / 1024.0;
 
-	precision = 3;
-	do {
-		precision--;
-		if (precision < 0) {
-			break;
-		}
-		len = spaced_print(buf, size, format2, width,
-		                   precision, fnum, *suffix);
-	} while (len >= MAX(width, size));
+	if (fnum < 10) precision = 1;
+	else precision = 0;
+
+	len = spaced_print(buf, size, format2, width,
+	                   precision, fnum, *suffix);
 }
 
 /* global object list root element */
@@ -4091,8 +4084,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				          obj->data.diskio->current_write, obj->e, 1, obj->showaslog);
 			}
 			OBJ(downspeed) {
-				spaced_print(p, p_max_size, "%d", 6,
-						round_to_int(obj->data.net->recv_speed / 1024));
+				human_readable(obj->data.net->recv_speed, p, 255);
 			}
 			OBJ(downspeedf) {
 				spaced_print(p, p_max_size, "%.1f", 8,
@@ -4199,7 +4191,7 @@ static void generate_text_internal(char *p, int p_max_size,
 
 				if (barnum >= 0.0) {
 					barnum /= 100;
-					new_bar(p, 0, 4, round_to_int(barnum * 255.0));
+					new_bar(p, 0, 6, round_to_int(barnum * 255.0));
 				}
 			}
 			OBJ(execgraph) {
@@ -4234,7 +4226,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					}
 					obj->data.execi.last_update = current_update_time;
 				}
-				new_bar(p, 0, 4, round_to_int(obj->f));
+				new_bar(p, 0, 6, round_to_int(obj->f));
 			}
 			OBJ(execigraph) {
 				if (current_update_time - obj->data.execi.last_update
@@ -4696,13 +4688,16 @@ static void generate_text_internal(char *p, int p_max_size,
 
 			/* mixer stuff */
 			OBJ(mixer) {
-				snprintf(p, p_max_size, "%d", mixer_get_avg(obj->data.l));
+				spaced_print(p, p_max_size, "%*d", 4, 
+					pad_percents, mixer_get_avg(obj->data.l));
 			}
 			OBJ(mixerl) {
-				snprintf(p, p_max_size, "%d", mixer_get_left(obj->data.l));
+				spaced_print(p, p_max_size, "%*d", 4,
+					pad_percents, mixer_get_left(obj->data.l));
 			}
 			OBJ(mixerr) {
-				snprintf(p, p_max_size, "%d", mixer_get_right(obj->data.l));
+				spaced_print(p, p_max_size, "%*d", 4,
+					pad_percents, mixer_get_right(obj->data.l));
 			}
 			OBJ(mixerbar) {
 				new_bar(p, obj->data.mixerbar.w, obj->data.mixerbar.h,
@@ -4828,8 +4823,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%d", total_updates);
 			}
 			OBJ(upspeed) {
-				spaced_print(p, p_max_size, "%d", 6,
-					round_to_int(obj->data.net->trans_speed / 1024));
+				human_readable(obj->data.net->trans_speed, p, 255);
 			}
 			OBJ(upspeedf) {
 				spaced_print(p, p_max_size, "%.1f", 8,

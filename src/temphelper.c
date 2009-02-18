@@ -25,6 +25,7 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include "temphelper.h"
+#include "conky.h"
 
 /* default to output in celsius */
 static enum TEMP_UNIT output_unit = TEMP_CELSIUS;
@@ -86,11 +87,7 @@ int temp_print(char *p, size_t p_max_size, double n, enum TEMP_UNIT input_unit)
 	double out, plen;
 
 	out = convert_temp_output(n, input_unit);
+	plen = spaced_print(p, p_max_size, "%.lf", 5, out);
 
-	/* Skip decimal for big values but keep padding sane
-	 * (i.e. use 4 chars for them)
-	 */
-	plen = snprintf(p, p_max_size, ((out > 100.0) ?
-	                                "%4.0lf" : "%2.1lf") , out);
 	return !(plen >= p_max_size);
 }
