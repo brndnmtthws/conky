@@ -27,9 +27,16 @@
 
 #include "nvidia.h"
 
+const int nvidia_query_to_attr[] = {NV_CTRL_GPU_CORE_TEMPERATURE,
+				    NV_CTRL_GPU_CORE_THRESHOLD,
+				    NV_CTRL_AMBIENT_TEMPERATURE,
+				    NV_CTRL_GPU_CURRENT_CLOCK_FREQS,
+				    NV_CTRL_GPU_CURRENT_CLOCK_FREQS,
+				    NV_CTRL_IMAGE_SETTINGS};
+
 int get_nvidia_value(QUERY_ID qid, Display *dpy){
 	int tmp;
-	if(!XNVCTRLQueryAttribute(dpy, 0, 0, qid, &tmp)){
+	if(!XNVCTRLQueryAttribute(dpy, 0, 0, nvidia_query_to_attr[qid], &tmp)){
 		return -1;
 	}
 	/* FIXME: when are the low 2 bytes of NV_GPU_FREQ needed? */
@@ -55,6 +62,10 @@ int set_nvidia_type(struct nvidia_s *nvidia, const char *arg)
 				nvidia->type = NV_TEMP_THRESHOLD;
 			else
 				return 1;
+			break;
+		case 'a':                              // ambient temp
+			nvidia->print_as_float = 1;
+			nvidia->type = NV_TEMP_AMBIENT;
 			break;
 		case 'g':                              // gpufreq
 			nvidia->type = NV_GPU_FREQ;

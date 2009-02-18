@@ -1140,7 +1140,7 @@ not. Both mbox and maildir type mailboxes are supported.
 Hostname
 
 .TP 
-\fB\*(T<\fBnvidia\fR\*(T>\fR \*(T<\fBthreshold\fR\*(T> \*(T<\fBtemp\fR\*(T> \*(T<\fBgpufreq\fR\*(T> \*(T<\fBmemfreq\fR\*(T> \*(T<\fBimagequality\fR\*(T> 
+\fB\*(T<\fBnvidia\fR\*(T>\fR \*(T<\fBthreshold\fR\*(T> \*(T<\fBtemp\fR\*(T> \*(T<\fBambient\fR\*(T> \*(T<\fBgpufreq\fR\*(T> \*(T<\fBmemfreq\fR\*(T> \*(T<\fBimagequality\fR\*(T> 
 Nvidia graficcard support for the XNVCtrl library.
 Each option can be shortened to the least significant part.
 Temperatures are printed as float, all other values as integer.
@@ -1150,6 +1150,9 @@ the thresholdtemperature at which the gpu slows down
 .br
 \fBtemp\fR:
 gives the gpu current temperature
+.br
+\fBambient\fR:
+gives current air temperature near GPU case
 .br
 \fBgpufreq\fR:
 gives the current gpu frequency

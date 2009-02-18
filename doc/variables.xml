@@ -1660,6 +1660,7 @@
 			<command><option>nvidia</option></command>
 			<option>threshold</option>
 			<option>temp</option>
+			<option>ambient</option>
 			<option>gpufreq</option>
 			<option>memfreq</option>
 			<option>imagequality</option>
@@ -1674,6 +1675,9 @@
 				</member>
 				<member><command>temp</command>:
 					gives the gpu current temperature
+				</member>
+				<member><command>ambient</command>:
+					gives current air temperature near GPU case
 				</member>
 				<member><command>gpufreq</command>:
 					gives the current gpu frequency

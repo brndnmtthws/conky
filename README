@@ -1309,13 +1309,14 @@ conky(1)							      conky(1)
 	      Hostname
 
 
-       1mnvidia threshold temp gpufreq memfreq imagequality0m
+       1mnvidia threshold temp ambient gpufreq memfreq imagequality0m
 	      Nvidia  graficcard support for the XNVCtrl library.  Each option
 	      can be shortened to the least  significant  part.	  Temperatures
 	      are printed as float, all other values as integer.
 
 	      1mthreshold22m: the thresholdtemperature at which the gpu slows down
 	      1mtemp22m: gives the gpu current temperature
+	      1mambient22m: gives current air temperature near GPU case
 	      1mgpufreq22m: gives the current gpu frequency
 	      1mmemfreq22m: gives the current mem frequency
 	      1mimagequality22m: which imagequality should be choosen by OpenGL ap‐
