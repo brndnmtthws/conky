@@ -951,6 +951,61 @@ use a program like fetchmail to get mails from some server
 using your favourite protocol. See also new_mails.
 
 .TP 
+\fB\*(T<\fBnew_mails\fR\*(T>\fR \*(T<\fB(mailbox)\fR\*(T> \*(T<\fB(interval)\fR\*(T> 
+Unread mail count in the specified mailbox or mail spool if
+not. Both mbox and maildir type mailboxes are supported.
+
+.TP 
+\fB\*(T<\fBseen_mails\fR\*(T>\fR \*(T<\fB(maildir)\fR\*(T> \*(T<\fB(interval)\fR\*(T> 
+Number of mails marked as seen in the specified mailbox or mail spool if
+not. Only maildir type mailboxes are supported, mbox type will return -1.
+
+.TP 
+\fB\*(T<\fBunseen_mails\fR\*(T>\fR \*(T<\fB(maildir)\fR\*(T> \*(T<\fB(interval)\fR\*(T> 
+Number of new or unseen mails in the specified mailbox or mail spool if
+not. Only maildir type mailboxes are supported, mbox type will return -1.
+
+.TP 
+\fB\*(T<\fBflagged_mails\fR\*(T>\fR \*(T<\fB(maildir)\fR\*(T> \*(T<\fB(interval)\fR\*(T> 
+Number of mails marked as flagged in the specified mailbox or mail spool if
+not. Only maildir type mailboxes are supported, mbox type will return -1.
+
+.TP 
+\fB\*(T<\fBunflagged_mails\fR\*(T>\fR \*(T<\fB(maildir)\fR\*(T> \*(T<\fB(interval)\fR\*(T> 
+Number of mails not marked as flagged in the specified mailbox or mail spool if
+not. Only maildir type mailboxes are supported, mbox type will return -1.
+
+.TP 
+\fB\*(T<\fBforwarded_mails\fR\*(T>\fR \*(T<\fB(maildir)\fR\*(T> \*(T<\fB(interval)\fR\*(T> 
+Number of mails marked as forwarded in the specified mailbox or mail spool if
+not. Only maildir type mailboxes are supported, mbox type will return -1.
+
+.TP 
+\fB\*(T<\fBunforwarded_mails\fR\*(T>\fR \*(T<\fB(maildir)\fR\*(T> \*(T<\fB(interval)\fR\*(T> 
+Number of mails not marked as forwarded in the specified mailbox or mail spool if
+not. Only maildir type mailboxes are supported, mbox type will return -1.
+
+.TP 
+\fB\*(T<\fBreplied_mails\fR\*(T>\fR \*(T<\fB(maildir)\fR\*(T> \*(T<\fB(interval)\fR\*(T> 
+Number of mails marked as replied in the specified mailbox or mail spool if
+not. Only maildir type mailboxes are supported, mbox type will return -1.
+
+.TP 
+\fB\*(T<\fBunreplied_mails\fR\*(T>\fR \*(T<\fB(maildir)\fR\*(T> \*(T<\fB(interval)\fR\*(T> 
+Number of mails not marked as replied in the specified mailbox or mail spool if
+not. Only maildir type mailboxes are supported, mbox type will return -1.
+
+.TP 
+\fB\*(T<\fBdraft_mails\fR\*(T>\fR \*(T<\fB(maildir)\fR\*(T> \*(T<\fB(interval)\fR\*(T> 
+Number of mails marked as draft in the specified mailbox or mail spool if
+not. Only maildir type mailboxes are supported, mbox type will return -1.
+
+.TP 
+\fB\*(T<\fBtrashed_mails\fR\*(T>\fR \*(T<\fB(maildir)\fR\*(T> \*(T<\fB(interval)\fR\*(T> 
+Number of mails marked as trashed in the specified mailbox or mail spool if
+not. Only maildir type mailboxes are supported, mbox type will return -1.
+
+.TP 
 \fB\*(T<\fBmboxscan\fR\*(T>\fR \*(T<\fB(\-n number of messages to print) (\-fw from width) (\-sw subject width) mbox\fR\*(T> 
 Print a summary of recent messages in an mbox format mailbox. mbox parameter is the filename of the mailbox (can be encapsulated using '"', ie. ${mboxscan -n 10 "/home/brenden/some box"}
 
@@ -1129,11 +1184,6 @@ if mpd is playing or paused, display everything between $if_mpd_playing and the 
 .TP 
 \fB\*(T<\fBnameserver\fR\*(T>\fR \*(T<\fB(index)\fR\*(T> 
 Print a nameserver from /etc/resolv.conf. Index starts at and defaults to 0.
-
-.TP 
-\fB\*(T<\fBnew_mails\fR\*(T>\fR \*(T<\fB(mailbox)\fR\*(T> \*(T<\fB(interval)\fR\*(T> 
-Unread mail count in the specified mailbox or mail spool if
-not. Both mbox and maildir type mailboxes are supported.
 
 .TP 
 \fB\*(T<\fBnodename\fR\*(T>\fR 

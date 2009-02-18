@@ -1252,6 +1252,16 @@ static void free_text_objects(struct text_object *root)
 				break;
 			case OBJ_mails:
 			case OBJ_new_mails:
+			case OBJ_seen_mails:
+			case OBJ_unseen_mails:
+			case OBJ_flagged_mails:
+			case OBJ_unflagged_mails:
+			case OBJ_forwarded_mails:
+			case OBJ_unforwarded_mails:
+			case OBJ_replied_mails:
+			case OBJ_unreplied_mails:
+			case OBJ_draft_mails:
+			case OBJ_trashed_mails:
 				free(data.local_mail.box);
 				break;
 			case OBJ_imap:
@@ -2603,6 +2613,193 @@ static struct text_object *construct_text_object(const char *s,
 		variable_substitute(box, dst, sizeof(dst));
 		obj->data.local_mail.box = strndup(dst, text_buffer_size);
 		obj->data.local_mail.interval = n1;
+	END OBJ(new_mails, 0)
+		float n1;
+		char box[256], dst[256];
+
+		if (!arg) {
+			n1 = 9.5;
+			strncpy(box, current_mail_spool, sizeof(box));
+		} else {
+			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+				n1 = 9.5;
+				strncpy(box, arg, sizeof(box));
+			}
+		}
+
+		variable_substitute(box, dst, sizeof(dst));
+		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		obj->data.local_mail.interval = n1;
+	END OBJ(seen_mails, 0)
+		float n1;
+		char box[256], dst[256];
+
+		if (!arg) {
+			n1 = 9.5;
+			strncpy(box, current_mail_spool, sizeof(box));
+		} else {
+			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+				n1 = 9.5;
+				strncpy(box, arg, sizeof(box));
+			}
+		}
+
+		variable_substitute(box, dst, sizeof(dst));
+		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		obj->data.local_mail.interval = n1;
+	END OBJ(unseen_mails, 0)
+		float n1;
+		char box[256], dst[256];
+
+		if (!arg) {
+			n1 = 9.5;
+			strncpy(box, current_mail_spool, sizeof(box));
+		} else {
+			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+				n1 = 9.5;
+				strncpy(box, arg, sizeof(box));
+			}
+		}
+
+		variable_substitute(box, dst, sizeof(dst));
+		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		obj->data.local_mail.interval = n1;
+	END OBJ(flagged_mails, 0)
+		float n1;
+		char box[256], dst[256];
+
+		if (!arg) {
+			n1 = 9.5;
+			strncpy(box, current_mail_spool, sizeof(box));
+		} else {
+			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+				n1 = 9.5;
+				strncpy(box, arg, sizeof(box));
+			}
+		}
+
+		variable_substitute(box, dst, sizeof(dst));
+		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		obj->data.local_mail.interval = n1;
+	END OBJ(unflagged_mails, 0)
+		float n1;
+		char box[256], dst[256];
+
+		if (!arg) {
+			n1 = 9.5;
+			strncpy(box, current_mail_spool, sizeof(box));
+		} else {
+			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+				n1 = 9.5;
+				strncpy(box, arg, sizeof(box));
+			}
+		}
+
+		variable_substitute(box, dst, sizeof(dst));
+		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		obj->data.local_mail.interval = n1;
+	END OBJ(forwarded_mails, 0)
+		float n1;
+		char box[256], dst[256];
+
+		if (!arg) {
+			n1 = 9.5;
+			strncpy(box, current_mail_spool, sizeof(box));
+		} else {
+			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+				n1 = 9.5;
+				strncpy(box, arg, sizeof(box));
+			}
+		}
+
+		variable_substitute(box, dst, sizeof(dst));
+		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		obj->data.local_mail.interval = n1;
+	END OBJ(unforwarded_mails, 0)
+		float n1;
+		char box[256], dst[256];
+
+		if (!arg) {
+			n1 = 9.5;
+			strncpy(box, current_mail_spool, sizeof(box));
+		} else {
+			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+				n1 = 9.5;
+				strncpy(box, arg, sizeof(box));
+			}
+		}
+
+		variable_substitute(box, dst, sizeof(dst));
+		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		obj->data.local_mail.interval = n1;
+	END OBJ(replied_mails, 0)
+		float n1;
+		char box[256], dst[256];
+
+		if (!arg) {
+			n1 = 9.5;
+			strncpy(box, current_mail_spool, sizeof(box));
+		} else {
+			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+				n1 = 9.5;
+				strncpy(box, arg, sizeof(box));
+			}
+		}
+
+		variable_substitute(box, dst, sizeof(dst));
+		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		obj->data.local_mail.interval = n1;
+	END OBJ(unreplied_mails, 0)
+		float n1;
+		char box[256], dst[256];
+
+		if (!arg) {
+			n1 = 9.5;
+			strncpy(box, current_mail_spool, sizeof(box));
+		} else {
+			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+				n1 = 9.5;
+				strncpy(box, arg, sizeof(box));
+			}
+		}
+
+		variable_substitute(box, dst, sizeof(dst));
+		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		obj->data.local_mail.interval = n1;
+	END OBJ(draft_mails, 0)
+		float n1;
+		char box[256], dst[256];
+
+		if (!arg) {
+			n1 = 9.5;
+			strncpy(box, current_mail_spool, sizeof(box));
+		} else {
+			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+				n1 = 9.5;
+				strncpy(box, arg, sizeof(box));
+			}
+		}
+
+		variable_substitute(box, dst, sizeof(dst));
+		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		obj->data.local_mail.interval = n1;
+	END OBJ(trashed_mails, 0)
+		float n1;
+		char box[256], dst[256];
+
+		if (!arg) {
+			n1 = 9.5;
+			strncpy(box, current_mail_spool, sizeof(box));
+		} else {
+			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+				n1 = 9.5;
+				strncpy(box, arg, sizeof(box));
+			}
+		}
+
+		variable_substitute(box, dst, sizeof(dst));
+		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		obj->data.local_mail.interval = n1;
 	END OBJ(mboxscan, 0)
 		obj->data.mboxscan.args = (char *) malloc(text_buffer_size);
 		obj->data.mboxscan.output = (char *) malloc(text_buffer_size);
@@ -2642,28 +2839,6 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(monitor, INFO_X11)
 	END OBJ(monitor_number, INFO_X11)
 #endif
-	END OBJ(new_mails, 0)
-		float n1;
-		char box[256], dst[256];
-
-		if (!arg) {
-			n1 = 9.5;
-			/* Kapil: Changed from MAIL_FILE to
-			   current_mail_spool since the latter
-			   is a copy of the former if undefined
-			   but the latter should take precedence
-			   if defined */
-			strncpy(box, current_mail_spool, sizeof(box));
-		} else {
-			if (sscanf(arg, "%s %f", box, &n1) != 2) {
-				n1 = 9.5;
-				strncpy(box, arg, sizeof(box));
-			}
-		}
-
-		variable_substitute(box, dst, sizeof(dst));
-		obj->data.local_mail.box = strndup(dst, text_buffer_size);
-		obj->data.local_mail.interval = n1;
 	END OBJ(nodename, 0)
 	END OBJ(processes, INFO_PROCS)
 	END OBJ(running_processes, INFO_RUN_PROCS)
@@ -4725,15 +4900,65 @@ static void generate_text_internal(char *p, int p_max_size,
 				update_mail_count(&obj->data.local_mail);
 				snprintf(p, p_max_size, "%d", obj->data.local_mail.mail_count);
 			}
-			OBJ(mboxscan) {
-				mbox_scan(obj->data.mboxscan.args, obj->data.mboxscan.output,
-					text_buffer_size);
-				snprintf(p, p_max_size, "%s", obj->data.mboxscan.output);
-			}
 			OBJ(new_mails) {
 				update_mail_count(&obj->data.local_mail);
 				snprintf(p, p_max_size, "%d",
 					obj->data.local_mail.new_mail_count);
+			}
+			OBJ(seen_mails) {
+				update_mail_count(&obj->data.local_mail);
+				snprintf(p, p_max_size, "%d",
+					obj->data.local_mail.seen_mail_count);
+			}
+			OBJ(unseen_mails) {
+				update_mail_count(&obj->data.local_mail);
+				snprintf(p, p_max_size, "%d",
+					obj->data.local_mail.unseen_mail_count);
+			}
+			OBJ(flagged_mails) {
+				update_mail_count(&obj->data.local_mail);
+				snprintf(p, p_max_size, "%d",
+					obj->data.local_mail.flagged_mail_count);
+			}
+			OBJ(unflagged_mails) {
+				update_mail_count(&obj->data.local_mail);
+				snprintf(p, p_max_size, "%d",
+					obj->data.local_mail.unflagged_mail_count);
+			}
+			OBJ(forwarded_mails) {
+				update_mail_count(&obj->data.local_mail);
+				snprintf(p, p_max_size, "%d",
+					obj->data.local_mail.forwarded_mail_count);
+			}
+			OBJ(unforwarded_mails) {
+				update_mail_count(&obj->data.local_mail);
+				snprintf(p, p_max_size, "%d",
+					obj->data.local_mail.unforwarded_mail_count);
+			}
+			OBJ(replied_mails) {
+				update_mail_count(&obj->data.local_mail);
+				snprintf(p, p_max_size, "%d",
+					obj->data.local_mail.replied_mail_count);
+			}
+			OBJ(unreplied_mails) {
+				update_mail_count(&obj->data.local_mail);
+				snprintf(p, p_max_size, "%d",
+					obj->data.local_mail.unreplied_mail_count);
+			}
+			OBJ(draft_mails) {
+				update_mail_count(&obj->data.local_mail);
+				snprintf(p, p_max_size, "%d",
+					obj->data.local_mail.draft_mail_count);
+			}
+			OBJ(trashed_mails) {
+				update_mail_count(&obj->data.local_mail);
+				snprintf(p, p_max_size, "%d",
+					obj->data.local_mail.trashed_mail_count);
+			}
+			OBJ(mboxscan) {
+				mbox_scan(obj->data.mboxscan.args, obj->data.mboxscan.output,
+					text_buffer_size);
+				snprintf(p, p_max_size, "%s", obj->data.mboxscan.output);
 			}
 			OBJ(nodename) {
 				snprintf(p, p_max_size, "%s", cur->uname_s.nodename);

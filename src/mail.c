@@ -87,8 +87,14 @@ void update_mail_count(struct local_mail_s *mail)
 		DIR *dir;
 		char *dirname;
 		struct dirent *dirent;
+		char *mailflags;
 
 		mail->mail_count = mail->new_mail_count = 0;
+		mail->seen_mail_count = mail->unseen_mail_count = 0;
+		mail->flagged_mail_count = mail->unflagged_mail_count = 0;
+		mail->forwarded_mail_count = mail->unforwarded_mail_count = 0;
+		mail->replied_mail_count = mail->unreplied_mail_count = 0;
+		mail->draft_mail_count = mail->trashed_mail_count = 0;
 		dirname = (char *) malloc(sizeof(char) * (strlen(mail->box) + 5));
 		if (!dirname) {
 			ERR("malloc");
@@ -110,6 +116,41 @@ void update_mail_count(struct local_mail_s *mail)
 			/* . and .. are skipped */
 			if (dirent->d_name[0] != '.') {
 				mail->mail_count++;
+				mailflags = (char *) malloc(sizeof(char) * strlen(strrchr(dirent->d_name, ',')));
+				if (!mailflags) {
+					ERR("malloc");
+					free(dirname);
+					return;
+				}
+				strcpy(mailflags, strrchr(dirent->d_name, ','));
+				if (!strchr(mailflags, 'T')) { /* The message is not in the trash */
+					if (strchr(mailflags, 'S')) { /*The message has been seen */
+						mail->seen_mail_count++;
+					} else {
+						mail->unseen_mail_count++;
+					}
+					if (strchr(mailflags, 'F')) { /*The message was flagged */
+						mail->flagged_mail_count++;
+					} else {
+						mail->unflagged_mail_count++;
+					}
+					if (strchr(mailflags, 'P')) { /*The message was forwarded */
+						mail->forwarded_mail_count++;
+					} else {
+						mail->unforwarded_mail_count++;
+					}
+					if (strchr(mailflags, 'R')) { /*The message was replied */
+						mail->replied_mail_count++;
+					} else {
+						mail->unreplied_mail_count++;
+					}
+					if (strchr(mailflags, 'D')) { /*The message is a draft */
+						mail->draft_mail_count++;
+					}
+				} else {
+					mail->trashed_mail_count++;
+				}
+				free(mailflags);
 			}
 			dirent = readdir(dir);
 		}
@@ -130,6 +171,7 @@ void update_mail_count(struct local_mail_s *mail)
 			if (dirent->d_name[0] != '.') {
 				mail->new_mail_count++;
 				mail->mail_count++;
+				mail->unseen_mail_count++;  /* new messages cannot have been seen */
 			}
 			dirent = readdir(dir);
 		}
@@ -150,6 +192,13 @@ void update_mail_count(struct local_mail_s *mail)
 		 * this isn't going to write mail spool */
 
 		mail->new_mail_count = mail->mail_count = 0;
+
+		/* these flags are not supported for mbox */
+		mail->seen_mail_count = mail->unseen_mail_count = -1;
+		mail->flagged_mail_count = mail->unflagged_mail_count = -1;
+		mail->forwarded_mail_count = mail->unforwarded_mail_count = -1;
+		mail->replied_mail_count = mail->unreplied_mail_count = -1;
+		mail->draft_mail_count = mail->trashed_mail_count = -1;
 
 		fp = open_file(mail->box, &rep);
 		if (!fp) {

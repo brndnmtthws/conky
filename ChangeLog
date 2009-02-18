@@ -17,6 +17,8 @@
 	Carpathia).
 	* Fix shown battery status when the battery is not charging any more but
 	is not full charged patch sf.net id #2556056 (thanks Martin)
+	* Extended support for local Maildir patch sf.net id #2561323 (thanks
+	Nicolas)
 
 2009-02-15
 	* Added out_to_x

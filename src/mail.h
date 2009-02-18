@@ -27,6 +27,16 @@ struct local_mail_s {
 	char *box;
 	int mail_count;
 	int new_mail_count;
+	int seen_mail_count;
+	int unseen_mail_count;
+	int flagged_mail_count;
+	int unflagged_mail_count;
+	int forwarded_mail_count;
+	int unforwarded_mail_count;
+	int replied_mail_count;
+	int unreplied_mail_count;
+	int draft_mail_count;
+	int trashed_mail_count;
 	float interval;
 	time_t last_mtime;
 	double last_update;

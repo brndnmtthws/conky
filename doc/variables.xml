@@ -1218,6 +1218,138 @@
 
 	<varlistentry>
 		<term>
+			<command><option>new_mails</option></command>
+			<option>(mailbox)</option>
+			<option>(interval)</option>
+		</term>
+		<listitem>
+			Unread mail count in the specified mailbox or mail spool if
+			not. Both mbox and maildir type mailboxes are supported.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>seen_mails</option></command>
+			<option>(maildir)</option>
+			<option>(interval)</option>
+		</term>
+		<listitem>
+			Number of mails marked as seen in the specified mailbox or mail spool if
+			not. Only maildir type mailboxes are supported, mbox type will return -1.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>unseen_mails</option></command>
+			<option>(maildir)</option>
+			<option>(interval)</option>
+		</term>
+		<listitem>
+			Number of new or unseen mails in the specified mailbox or mail spool if
+			not. Only maildir type mailboxes are supported, mbox type will return -1.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>flagged_mails</option></command>
+			<option>(maildir)</option>
+			<option>(interval)</option>
+		</term>
+		<listitem>
+			Number of mails marked as flagged in the specified mailbox or mail spool if
+			not. Only maildir type mailboxes are supported, mbox type will return -1.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>unflagged_mails</option></command>
+			<option>(maildir)</option>
+			<option>(interval)</option>
+		</term>
+		<listitem>
+			Number of mails not marked as flagged in the specified mailbox or mail spool if
+			not. Only maildir type mailboxes are supported, mbox type will return -1.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>forwarded_mails</option></command>
+			<option>(maildir)</option>
+			<option>(interval)</option>
+		</term>
+		<listitem>
+			Number of mails marked as forwarded in the specified mailbox or mail spool if
+			not. Only maildir type mailboxes are supported, mbox type will return -1.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>unforwarded_mails</option></command>
+			<option>(maildir)</option>
+			<option>(interval)</option>
+		</term>
+		<listitem>
+			Number of mails not marked as forwarded in the specified mailbox or mail spool if
+			not. Only maildir type mailboxes are supported, mbox type will return -1.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>replied_mails</option></command>
+			<option>(maildir)</option>
+			<option>(interval)</option>
+		</term>
+		<listitem>
+			Number of mails marked as replied in the specified mailbox or mail spool if
+			not. Only maildir type mailboxes are supported, mbox type will return -1.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>unreplied_mails</option></command>
+			<option>(maildir)</option>
+			<option>(interval)</option>
+		</term>
+		<listitem>
+			Number of mails not marked as replied in the specified mailbox or mail spool if
+			not. Only maildir type mailboxes are supported, mbox type will return -1.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>draft_mails</option></command>
+			<option>(maildir)</option>
+			<option>(interval)</option>
+		</term>
+		<listitem>
+			Number of mails marked as draft in the specified mailbox or mail spool if
+			not. Only maildir type mailboxes are supported, mbox type will return -1.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>trashed_mails</option></command>
+			<option>(maildir)</option>
+			<option>(interval)</option>
+		</term>
+		<listitem>
+			Number of mails marked as trashed in the specified mailbox or mail spool if
+			not. Only maildir type mailboxes are supported, mbox type will return -1.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
 			<command><option>mboxscan</option></command>
 			<option>(-n number of messages to print) (-fw from width) (-sw subject width) mbox</option>
 		</term>
@@ -1631,18 +1763,6 @@
 		</term>
 		<listitem>
 			Print a nameserver from /etc/resolv.conf. Index starts at and defaults to 0.
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term>
-			<command><option>new_mails</option></command>
-			<option>(mailbox)</option>
-			<option>(interval)</option>
-		</term>
-		<listitem>
-			Unread mail count in the specified mailbox or mail spool if
-			not. Both mbox and maildir type mailboxes are supported.
 			<para></para></listitem>
 	</varlistentry>
 

@@ -1100,10 +1100,75 @@ conky(1)							      conky(1)
 	      your favourite protocol. See also new_mails.
 
 
+       1mnew_mails (mailbox) (interval)0m
+	      Unread mail count in the specified mailbox or mail spool if not.
+	      Both mbox and maildir type mailboxes are supported.
+
+
+       1mseen_mails (maildir) (interval)0m
+	      Number  of mails marked as seen in the specified mailbox or mail
+	      spool if not. Only maildir type mailboxes	 are  supported,  mbox
+	      type will return -1.
+
+
+       1munseen_mails (maildir) (interval)0m
+	      Number  of  new or unseen mails in the specified mailbox or mail
+	      spool if not. Only maildir type mailboxes	 are  supported,  mbox
+	      type will return -1.
+
+
+       1mflagged_mails (maildir) (interval)0m
+	      Number  of  mails	 marked as flagged in the specified mailbox or
+	      mail spool if not. Only maildir type  mailboxes  are  supported,
+	      mbox type will return -1.
+
+
+       1munflagged_mails (maildir) (interval)0m
+	      Number  of  mails not marked as flagged in the specified mailbox
+	      or mail spool if not. Only maildir type mailboxes are supported,
+	      mbox type will return -1.
+
+
+       1mforwarded_mails (maildir) (interval)0m
+	      Number  of mails marked as forwarded in the specified mailbox or
+	      mail spool if not. Only maildir type  mailboxes  are  supported,
+	      mbox type will return -1.
+
+
+       1munforwarded_mails (maildir) (interval)0m
+	      Number of mails not marked as forwarded in the specified mailbox
+	      or mail spool if not. Only maildir type mailboxes are supported,
+	      mbox type will return -1.
+
+
+       1mreplied_mails (maildir) (interval)0m
+	      Number  of  mails	 marked as replied in the specified mailbox or
+	      mail spool if not. Only maildir type  mailboxes  are  supported,
+	      mbox type will return -1.
+
+
+       1munreplied_mails (maildir) (interval)0m
+	      Number  of  mails not marked as replied in the specified mailbox
+	      or mail spool if not. Only maildir type mailboxes are supported,
+	      mbox type will return -1.
+
+
+       1mdraft_mails (maildir) (interval)0m
+	      Number of mails marked as draft in the specified mailbox or mail
+	      spool if not. Only maildir type mailboxes	 are  supported,  mbox
+	      type will return -1.
+
+
+       1mtrashed_mails (maildir) (interval)0m
+	      Number  of  mails	 marked as trashed in the specified mailbox or
+	      mail spool if not. Only maildir type  mailboxes  are  supported,
+	      mbox type will return -1.
+
+
        1mmboxscan (-n number of messages to print) (-fw from width) (-sw subject0m
        1mwidth) mbox0m
-	      Print a summary of recent messages in an	mbox  format  mailbox.
-	      mbox  parameter  is the filename of the mailbox (can be encapsu‐
+	      Print  a	summary	 of recent messages in an mbox format mailbox.
+	      mbox parameter is the filename of the mailbox (can  be  encapsu‐
 	      lated using ’"’, ie. ${mboxscan -n 10 "/home/brenden/some box"}
 
 
@@ -1114,14 +1179,14 @@ conky(1)							      conky(1)
 	      Bar that shows amount of memory in use
 
 
-       1mmemgraph ("normal"|"log") (height),(width) (gradient colour 1)	 (gradi‐0m
+       1mmemgraph  ("normal"|"log") (height),(width) (gradient colour 1) (gradi‐0m
        1ment colour 2) (scale)0m
-	      Memory usage graph. Uses a logarithmic scale (to see small  num‐
+	      Memory  usage graph. Uses a logarithmic scale (to see small num‐
 	      bers) when you use "log" instead of "normal".
 
 
        1mmemeasyfree0m
-	      Amount  of  free memory including the memory that is very easily
+	      Amount of free memory including the memory that is  very	easily
 	      freed (buffers/cache)
 
 
@@ -1137,39 +1202,39 @@ conky(1)							      conky(1)
 
 
        1mmixer (device)0m
-	      Prints the mixer value as reported by the OS. Default  mixer  is
-	      "vol",  but  you can specify one of the following optional argu‐
+	      Prints  the  mixer value as reported by the OS. Default mixer is
+	      "vol", but you can specify one of the following  optional	 argu‐
 	      ments:  "vol",  "bass",  "treble",  "synth",  "pcm",  "speaker",
-	      "line",  "mic",  "cd",  "mix",  "pcm2", "rec", "igain", "ogain",
+	      "line", "mic", "cd", "mix",  "pcm2",  "rec",  "igain",  "ogain",
 	      "line1",	"line2",  "line3",  "dig1",  "dig2",  "dig3",  "phin",
 	      "phout", "video", "radio", "monitor". Refer to the definition of
-	      SOUND_DEVICE_NAMES in <linux/soundcard.h>	 (on  Linux),  <sound‐
+	      SOUND_DEVICE_NAMES  in  <linux/soundcard.h>  (on Linux), <sound‐
 	      card.h> (on OpenBSD), or <sys/soundcard.h> to find the exact op‐
 	      tions available on your system.
 
 
        1mmixerbar (device)0m
-	      Displays mixer value in a bar as reported by the	OS.  See  docs
+	      Displays	mixer  value  in a bar as reported by the OS. See docs
 	      for $mixer for details on arguments.
 
 
        1mmixerr (device)0m
-	      Prints  the right channel mixer value as reported by the OS. See
+	      Prints the right channel mixer value as reported by the OS.  See
 	      docs for $mixer for details on arguments.
 
 
        1mmixerrbar (device)0m
-	      Displays the right channel mixer value in a bar as  reported  by
+	      Displays	the  right channel mixer value in a bar as reported by
 	      the OS. See docs for $mixer for details on arguments.
 
 
        1mmixerl (device)0m
-	      Prints  the  left channel mixer value as reported by the OS. See
+	      Prints the left channel mixer value as reported by the  OS.  See
 	      docs for $mixer for details on arguments.
 
 
        1mmixerlbar (device)0m
-	      Displays the left channel mixer value in a bar  as  reported  by
+	      Displays	the  left  channel mixer value in a bar as reported by
 	      the OS. See docs for $mixer for details on arguments.
 
 
@@ -1291,18 +1356,13 @@ conky(1)							      conky(1)
 
 
        1mif_mpd_playing0m
-	      if  mpd  is  playing  or	paused,	 display  everything   between
+	      if   mpd	is  playing  or	 paused,  display  everything  between
 	      $if_mpd_playing and the matching $endif
 
 
        1mnameserver (index)0m
-	      Print  a	nameserver  from /etc/resolv.conf. Index starts at and
+	      Print a nameserver from /etc/resolv.conf. Index  starts  at  and
 	      defaults to 0.
-
-
-       1mnew_mails (mailbox) (interval)0m
-	      Unread mail count in the specified mailbox or mail spool if not.
-	      Both mbox and maildir type mailboxes are supported.
 
 
        1mnodename0m
