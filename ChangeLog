@@ -11,7 +11,7 @@
 		* add a space between number and the unit in human_readable()
 		* fix number printing in human_readable()
 		* network $upspeed and $downspeed now use human_readable()
-
+	* Fix diskio_read/write patch sf.net id #2493084 (thanks Alexander)
 
 2009-02-15
 	* Added out_to_x
