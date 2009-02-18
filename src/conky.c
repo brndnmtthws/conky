@@ -5623,16 +5623,16 @@ static inline int get_string_width(const char *s)
 
 static inline int get_string_width_special(char *s)
 {
+	char *p, *final;
+	int idx = 1;
+	int width = 0;
+	unsigned int i;
 #ifdef X11
 	if ( (output_methods & TO_X) == 0  ) {
 #endif
 		return (s) ? strlen(s) : 0;
 #ifdef X11
 	}
-	char *p, *final;
-	int idx = 1;
-	int width = 0;
-	unsigned int i;
 
 	if (!s) {
 		return 0;
@@ -5671,8 +5671,9 @@ static void text_size_updater(char *s);
 int last_font_height;
 static void update_text_area(void)
 {
-	if ( (output_methods & TO_X) == 0 ) return;
 	int x, y;
+
+	if ( (output_methods & TO_X) == 0 ) return;
 
 	/* update text size if it isn't fixed */
 #ifdef OWN_WINDOW
@@ -5782,9 +5783,10 @@ static long current_color;
 
 static void text_size_updater(char *s)
 {
-	if ( (output_methods & TO_X) == 0  ) return;
 	int w = 0;
 	char *p;
+
+	if ( (output_methods & TO_X) == 0  ) return;
 
 	/* get string widths and skip specials */
 	p = s;
@@ -6084,16 +6086,17 @@ unsigned long gradient_max(unsigned long first_colour,
 
 static void draw_line(char *s)
 {
-	if ( (output_methods & TO_X) == 0 ) {
-		draw_string(s);
-		return;
-	}
 #ifdef X11
 	char *p;
 	int cur_y_add = 0;
 	short font_h;
 	char *tmp_str;
-
+#endif /* X11 */
+	if ( (output_methods & TO_X) == 0 ) {
+		draw_string(s);
+		return;
+	}
+#ifdef X11
 	cur_x = text_start_x;
 	cur_y += font_ascent();
 	font_h = font_height();
@@ -7239,7 +7242,8 @@ static _Bool append_works(const char *path)
 	return 1;
 }
 
-static void X11_initialisation() {
+static void X11_initialisation(void)
+{
 	output_methods |= TO_X;
 	init_X11();
 	set_default_configurations_for_x();
