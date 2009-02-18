@@ -1438,6 +1438,9 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_battery:
 				free(data.s);
 				break;
+            case OBJ_battery_short:
+				free(data.s);
+				break;
 			case OBJ_battery_time:
 				free(data.s);
 				break;
@@ -1731,6 +1734,15 @@ static struct text_object *construct_text_object(const char *s,
 #ifndef __OpenBSD__
 	END OBJ(acpifan, 0)
 	END OBJ(battery, 0)
+		char bat[64];
+
+		if (arg) {
+			sscanf(arg, "%63s", bat);
+		} else {
+			strcpy(bat, "BAT0");
+		}
+		obj->data.s = strndup(bat, text_buffer_size);
+	END OBJ(battery_short, 0)
 		char bat[64];
 
 		if (arg) {
@@ -3833,6 +3845,9 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(battery_bar) {
 				new_bar(p, obj->a, obj->b, get_battery_perct_bar(obj->data.s));
+			}
+			OBJ(battery_short) {
+				get_battery_short_status(p, p_max_size, obj->data.s);
 			}
 #endif /* __OpenBSD__ */
 

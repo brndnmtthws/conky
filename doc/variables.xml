@@ -253,6 +253,17 @@
 
 	<varlistentry>
 		<term>
+			<command><option>battery_short</option></command>
+			<option>(num)</option>
+		</term>
+		<listitem>
+			Battery status and remaining percentage capacity of ACPI or APM battery. ACPI battery number can be given as argument (default is BAT0).
+			This mode display a short status, which means that C is displayed instead of charging and D is displayed instead of discharging.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
 			<command><option>battery_bar</option></command>
 			<option>(height),(width) (num)</option>
 		</term>
@@ -2026,19 +2037,19 @@
 			The following list shows sample usage of the templates defined above,
 			with the equivalent syntax when not using any template at all:
 			<table>
-			<tgroup cols="2">
-				<thead>
-					<row rowsep="1"><entry>using template</entry><entry>same without template</entry></row>
-				</thead>
-				<tbody>
-				<row><entry>${template0 node name}</entry><entry>$nodename</entry></row>
-				<row><entry>${template1 root /}</entry><entry>root: ${fs_free /} / ${fs_size /}</entry></row>
-				<row>
-					<entry><programlisting>${template1 ${template2\ disk\ root} /}</programlisting></entry>
-					<entry><programlisting>disk root: ${fs_free /} / ${fs_size /}</programlisting></entry>
-				</row>
-				</tbody>
-			</tgroup>
+				<tgroup cols="2">
+					<thead>
+						<row rowsep="1"><entry>using template</entry><entry>same without template</entry></row>
+					</thead>
+					<tbody>
+						<row><entry>${template0 node name}</entry><entry>$nodename</entry></row>
+						<row><entry>${template1 root /}</entry><entry>root: ${fs_free /} / ${fs_size /}</entry></row>
+						<row>
+							<entry><programlisting>${template1 ${template2\ disk\ root} /}</programlisting></entry>
+							<entry><programlisting>disk root: ${fs_free /} / ${fs_size /}</programlisting></entry>
+						</row>
+					</tbody>
+				</tgroup>
 			</table>
 			<para></para></listitem>
 	</varlistentry>
@@ -2503,8 +2514,8 @@
 			Prints the song name in either the form "artist - title" or file name, depending on whats available
 			<para></para></listitem>
 	</varlistentry>
- 	<varlistentry>
- 		<term>
+	<varlistentry>
+		<term>
 			<command><option>if_xmms2_connected</option></command>
 		</term>
 		<listitem>
@@ -2518,7 +2529,7 @@
 			<option>api_userid api_key character_id</option>
 		</term>
 		<listitem>
-         Fetches your currently training skill from the Eve Online API servers (http://www.eve-online.com/) and displays the skill along with the remaining training time.
+			Fetches your currently training skill from the Eve Online API servers (http://www.eve-online.com/) and displays the skill along with the remaining training time.
 			<para></para></listitem>
 	</varlistentry>
 

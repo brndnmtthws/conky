@@ -1842,6 +1842,18 @@ void set_return_value(char *buffer, unsigned int n, int item, int idx)
 	}
 }
 
+void get_battery_short_status(char *buffer, unsigned int n, const char *bat)
+{
+	get_battery_stuff(buffer, n, bat, BATTERY_STATUS);
+	if (0 == strncmp("charging", buffer, 8)) {
+		buffer[0] = 'C';
+		memmove(buffer + 1, buffer + 8, n - 8);
+	} else if (0 == strncmp("discharging", buffer, 11)) {
+		buffer[0] = 'D';
+		memmove(buffer + 1, buffer + 11, n - 11);
+	}
+}
+
 int get_battery_perct(const char *bat)
 {
 	static int rep = 0;
