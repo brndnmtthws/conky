@@ -15,6 +15,8 @@
 	* Fix nvidia memory frequency reading patch sf.net id #2493134
 	* Patch to clarify things in conky.conf sf.net id #2548805 (thanks
 	Carpathia).
+	* Fix shown battery status when the battery is not charging any more but
+	is not full charged patch sf.net id #2556056 (thanks Martin)
 
 2009-02-15
 	* Added out_to_x
