@@ -129,6 +129,7 @@ static void *update_mpd_thread(void *arg)
 	mpd_Status *status;
 	mpd_InfoEntity *entity;
 	timed_thread *me = *(timed_thread **)arg;
+	const char *emptystr = "";
 
 	while (1) {
 		clear_mpd();
@@ -247,7 +248,7 @@ static void *update_mpd_thread(void *arg)
 				mpd_freeInfoEntity(entity);
 				continue;
 			}
-#define SONGSET(x) if(song->x) mpd_info.x = strmdup(song->x)
+#define SONGSET(x) if(song->x) mpd_info.x = strmdup(song->x); else mpd_info.x = strmdup(emptystr)
 			SONGSET(artist);
 			SONGSET(album);
 			SONGSET(title);
