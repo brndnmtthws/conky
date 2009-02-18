@@ -13,6 +13,8 @@
 		* network $upspeed and $downspeed now use human_readable()
 	* Fix diskio_read/write patch sf.net id #2493084 (thanks Alexander)
 	* Fix nvidia memory frequency reading patch sf.net id #2493134
+	* Patch to clarify things in conky.conf sf.net id #2548805 (thanks
+	Carpathia).
 
 2009-02-15
 	* Added out_to_x
