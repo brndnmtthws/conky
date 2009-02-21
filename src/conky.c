@@ -282,7 +282,8 @@ static void set_font(void);
 
 int addfont(const char *data_in)
 {
-	if ( (output_methods & TO_X) == 0 ) return 0;
+	if ((output_methods & TO_X) == 0)
+		return 0;
 	if (font_count > MAX_FONTS) {
 		CRIT_ERR("you don't need that many fonts, sorry.");
 	}
@@ -316,7 +317,8 @@ int addfont(const char *data_in)
 
 void set_first_font(const char *data_in)
 {
-	if ( (output_methods & TO_X) == 0 ) return;
+	if ((output_methods & TO_X) == 0)
+		return;
 	if (font_count < 0) {
 		if ((fonts = (struct font_list *) malloc(sizeof(struct font_list)))
 				== NULL) {
@@ -337,7 +339,8 @@ void free_fonts(void)
 {
 	int i;
 
-	if ( (output_methods & TO_X) == 0  ) return;
+	if ((output_methods & TO_X) == 0)
+		return;
 	for (i = 0; i <= font_count; i++) {
 #ifdef XFT
 		if (use_xft) {
@@ -360,7 +363,8 @@ static void load_fonts(void)
 {
 	int i;
 
-	if ( (output_methods & TO_X) == 0 ) return;
+	if ((output_methods & TO_X) == 0)
+		return;
 	for (i = 0; i <= font_count; i++) {
 #ifdef XFT
 		/* load Xft font */
@@ -564,7 +568,8 @@ int check_contains(char *f, char *s)
 #ifdef X11
 static inline int calc_text_width(const char *s, int l)
 {
-	if ( (output_methods & TO_X) == 0 ) return 0;
+	if ((output_methods & TO_X) == 0)
+		return 0;
 #ifdef XFT
 	if (use_xft) {
 		XGlyphInfo gi;
@@ -779,7 +784,8 @@ static char *scan_font(const char *args)
 #ifdef X11
 static void new_font(char *buf, char *args)
 {
-	if ( (output_methods & TO_X) == 0 ) return;
+	if ((output_methods & TO_X) == 0)
+		return;
 	if (args) {
 		struct special_t *s = new_special(buf, FONT);
 
@@ -1960,7 +1966,7 @@ static struct text_object *construct_text_object(const char *s,
 #endif
 	END OBJ(color, 0)
 #ifdef X11
-		if ( output_methods & TO_X ) {
+		if (output_methods & TO_X) {
 			obj->data.l = arg ? get_x11_color(arg) : default_fg_color;
 		}
 #endif /* X11 */
@@ -5828,7 +5834,8 @@ static void generate_text(void)
 #ifdef X11
 static void set_font(void)
 {
-	if ( (output_methods & TO_X) == 0 ) return;
+	if ((output_methods & TO_X) == 0)
+		return;
 #ifdef XFT
 	if (use_xft) {
 		if (window.xftdraw != NULL) {
@@ -5848,7 +5855,7 @@ static void set_font(void)
 static inline int get_string_width(const char *s)
 {
 #ifdef X11
-	if ( output_methods & TO_X ) {
+	if (output_methods & TO_X) {
 		return *s ? calc_text_width(s, strlen(s)) : 0;
 	}
 #endif /* X11 */
@@ -5857,12 +5864,13 @@ static inline int get_string_width(const char *s)
 
 static inline int get_string_width_special(char *s)
 {
+#ifdef X11
 	char *p, *final;
 	int idx = 1;
 	int width = 0;
 	unsigned int i;
-#ifdef X11
-	if ( (output_methods & TO_X) == 0  ) {
+
+	if ((output_methods & TO_X) == 0) {
 #endif
 		return (s) ? strlen(s) : 0;
 #ifdef X11
@@ -5907,8 +5915,8 @@ static void update_text_area(void)
 {
 	int x, y;
 
-	if ( (output_methods & TO_X) == 0 ) return;
-
+	if ((output_methods & TO_X) == 0)
+		return;
 	/* update text size if it isn't fixed */
 #ifdef OWN_WINDOW
 	if (!fixed_size)
@@ -6020,8 +6028,8 @@ static void text_size_updater(char *s)
 	int w = 0;
 	char *p;
 
-	if ( (output_methods & TO_X) == 0  ) return;
-
+	if ((output_methods & TO_X) == 0)
+		return;
 	/* get string widths and skip specials */
 	p = s;
 	while (*p) {
@@ -6081,7 +6089,8 @@ static void text_size_updater(char *s)
 
 static inline void set_foreground_color(long c)
 {
-	if ( (output_methods & TO_X) == 0  ) return;
+	if ((output_methods & TO_X) == 0)
+		return;
 	current_color = c;
 	XSetForeground(display, window.gc, c);
 }
@@ -6106,10 +6115,10 @@ static void draw_string(const char *s)
 		fprintf(stderr, "%s\n", s);
 		fflush(stderr);	/* output immediately, don't buffer */
 	}
-	if ((output_methods & OVERWRITE_FILE) && draw_mode == FG && overwrite_fpointer != NULL) {
+	if ((output_methods & OVERWRITE_FILE) && draw_mode == FG && overwrite_fpointer) {
 		fprintf(overwrite_fpointer, "%s\n", s);
 	}
-	if ((output_methods & APPEND_FILE) && draw_mode == FG && append_fpointer != NULL) {
+	if ((output_methods & APPEND_FILE) && draw_mode == FG && append_fpointer) {
 		fprintf(append_fpointer, "%s\n", s);
 	}
 	memset(tmpstring1, 0, text_buffer_size);
@@ -6119,7 +6128,7 @@ static void draw_string(const char *s)
 	added = 0;
 
 #ifdef X11
-	if ( output_methods & TO_X ) {
+	if (output_methods & TO_X) {
 		max = ((text_width - width_of_s) / get_string_width(" "));
 	}
 #endif /* X11 */
@@ -6142,7 +6151,7 @@ static void draw_string(const char *s)
 		}
 	}
 #ifdef X11
-	if ( output_methods & TO_X ) {
+	if (output_methods & TO_X) {
 		if (text_width == maximum_width) {
 			/* this means the text is probably pushing the limit,
 			 * so we'll chop it */
@@ -6155,7 +6164,7 @@ static void draw_string(const char *s)
 #endif /* X11 */
 	s = tmpstring2;
 #ifdef X11
-	if ( output_methods & TO_X ) {
+	if (output_methods & TO_X) {
 #ifdef XFT
 		if (use_xft) {
 			XColor c;
@@ -6194,14 +6203,13 @@ void set_up_gradient(void)
 {
 	int i;
 #ifdef X11
-	if ( output_methods & TO_X ) {
+	if (output_methods & TO_X) {
 		colour_depth = DisplayPlanes(display, screen);
-	}else{
+	} else
 #endif /* X11 */
+	{
 		colour_depth = 16;
-#ifdef X11
 	}
-#endif /* X11 */
 	if (colour_depth != 24 && colour_depth != 16) {
 		ERR("using non-standard colour depth, gradients may look like a "
 			"lolly-pop");
@@ -6326,7 +6334,8 @@ static void draw_line(char *s)
 	short font_h;
 	char *tmp_str;
 #endif /* X11 */
-	if ( (output_methods & TO_X) == 0 ) {
+
+	if ((output_methods & TO_X) == 0) {
 		draw_string(s);
 		return;
 	}
@@ -6544,7 +6553,7 @@ static void draw_line(char *s)
 						tmp_str = (char *)
 							calloc(log10(floor(specials[special_index].graph_scale)) + 4,
 									sizeof(char));
-							sprintf(tmp_str, "%.1f", specials[special_index].graph_scale);
+						sprintf(tmp_str, "%.1f", specials[special_index].graph_scale);
 						draw_string(tmp_str);
 						free(tmp_str);
 						cur_x = tmp_x;
@@ -6643,8 +6652,8 @@ static void draw_line(char *s)
 					/* printf("pos_x %i text_start_x %i text_width %i cur_x %i "
 						"get_string_width(p) %i gap_x %i "
 						"specials[special_index].arg %i\n", pos_x, text_start_x,
-					text_width, cur_x, get_string_width(s), gap_x,
-					specials[special_index].arg); */
+						text_width, cur_x, get_string_width(s), gap_x,
+						specials[special_index].arg); */
 					if (pos_x > specials[special_index].arg) {
 						w = pos_x - specials[special_index].arg;
 					}
@@ -6673,7 +6682,7 @@ static void draw_line(char *s)
 static void draw_text(void)
 {
 #ifdef X11
-	if ( output_methods & TO_X ) {
+	if (output_methods & TO_X) {
 		cur_y = text_start_y;
 
 		/* draw borders */
@@ -6705,16 +6714,18 @@ static void draw_text(void)
 
 static void draw_stuff(void)
 {
-	if(overwrite_file != NULL) {
+	if(overwrite_file) {
 		overwrite_fpointer = fopen(overwrite_file, "w");
-		if(overwrite_fpointer == NULL) ERR("Can't overwrite '%s' anymore", overwrite_file);
+		if(!overwrite_fpointer)
+			ERR("Can't overwrite '%s' anymore", overwrite_file);
 	}
-	if(append_file != NULL) {
+	if(append_file) {
 		append_fpointer = fopen(append_file, "a");
-		if(append_fpointer == NULL) ERR("Can't append '%s' anymore", append_file);
+		if(!append_fpointer)
+			ERR("Can't append '%s' anymore", append_file);
 	}
 #ifdef X11
-	if ( output_methods & TO_X ) {
+	if (output_methods & TO_X) {
 		selected_font = 0;
 		if (draw_shades && !draw_outline) {
 			text_start_x++;
@@ -6752,7 +6763,7 @@ static void draw_stuff(void)
 	draw_mode = FG;
 	draw_text();
 #ifdef X11
-	if ( output_methods & TO_X ) {
+	if (output_methods & TO_X) {
 #ifdef HAVE_XDBE
 		if (use_xdbe) {
 			XdbeSwapInfo swap;
@@ -6764,8 +6775,14 @@ static void draw_stuff(void)
 #endif
 	}
 #endif /* X11 */
-	if(overwrite_fpointer != NULL) fclose(overwrite_fpointer);
-	if(append_fpointer != NULL) fclose(append_fpointer);
+	if(overwrite_fpointer) {
+		fclose(overwrite_fpointer);
+		overwrite_fpointer = 0;
+	}
+	if(append_fpointer) {
+		fclose(append_fpointer);
+		append_fpointer = 0;
+	}
 }
 
 #ifdef X11
@@ -6794,7 +6811,8 @@ static void update_text(void)
 {
 	generate_text();
 #ifdef X11
-	if ( output_methods & TO_X ) clear_text(1);
+	if (output_methods & TO_X)
+		clear_text(1);
 #endif /* X11 */
 	need_to_update = 1;
 }
@@ -6812,7 +6830,7 @@ static void main_loop(void)
 	XserverRegion region2, part;
 	int event_base, error_base;
 #endif
-	if ( output_methods & TO_X ) {
+	if (output_methods & TO_X) {
 		region = XCreateRegion();
 #ifdef HAVE_XDAMAGE
 		if (!XDamageQueryExtension(display, &event_base, &error_base)) {
@@ -6845,7 +6863,7 @@ static void main_loop(void)
 #endif
 
 #ifdef X11
-		if ( output_methods & TO_X ) {
+		if (output_methods & TO_X) {
 			XFlush(display);
 
 			/* wait for X event or timeout */
@@ -7083,7 +7101,7 @@ static void main_loop(void)
 				XDestroyRegion(region);
 				region = XCreateRegion();
 			}
-		}else{
+		} else {
 #endif /* X11 */
 			t = (next_update_time - get_time()) * 1000000;
 			if(t > 0) usleep((useconds_t)t);
@@ -7111,7 +7129,7 @@ static void main_loop(void)
 				ERR("received SIGINT or SIGTERM to terminate. bye!");
 				clean_up();
 #ifdef X11
-				if ( output_methods & TO_X ) {
+				if (output_methods & TO_X) {
 					XDestroyRegion(region);
 					region = NULL;
 #ifdef HAVE_XDAMAGE
@@ -7121,8 +7139,14 @@ static void main_loop(void)
 #endif /* HAVE_XDAMAGE */
 				}
 #endif /* X11 */
-				if(overwrite_file != NULL) free(overwrite_file);
-				if(append_file != NULL) free(append_file);
+				if(overwrite_file) {
+					free(overwrite_file);
+					overwrite_file = 0;
+				}
+				if(append_file) {
+					free(append_file);
+					append_file = 0;
+				}
 				return;	/* return from main_loop */
 				/* break; */
 			default:
@@ -7140,7 +7164,7 @@ static void main_loop(void)
 	}
 
 #if defined(X11) && defined(HAVE_XDAMAGE)
-	if ( output_methods & TO_X ) {
+	if (output_methods & TO_X) {
 		XDamageDestroy(display, damage);
 		XFixesDestroyRegion(display, region2);
 		XFixesDestroyRegion(display, part);
@@ -7222,7 +7246,7 @@ static void clean_up(void)
 		info.cpu_usage = NULL;
 	}
 #ifdef X11
-	if ( output_methods & TO_X ) {
+	if (output_methods & TO_X) {
 #ifdef HAVE_XDBE
 		if (use_xdbe) {
 			XdbeDeallocateBackBufferName(display, window.back_buffer);
@@ -7458,20 +7482,24 @@ static void set_default_configurations(void)
 #endif
 }
 
-//returns 1 if you can overwrite or create the file at 'path'
+/* returns 1 if you can overwrite or create the file at 'path' */
 static _Bool overwrite_works(const char *path)
 {
-	FILE *filepointer = fopen(path, "w");
-	if(filepointer == NULL) return 0;
+	FILE *filepointer;
+
+	if (!(filepointer = fopen(path, "w")))
+		return 0;
 	fclose(filepointer);
 	return 1;
 }
 
-//returns 1 if you can append or create the file at 'path'
+/* returns 1 if you can append or create the file at 'path' */
 static _Bool append_works(const char *path)
 {
-	FILE *filepointer = fopen(path, "a");
-	if(filepointer == NULL) return 0;
+	FILE *filepointer;
+
+	if (!(filepointer = fopen(path, "a")))
+		return 0;
 	fclose(filepointer);
 	return 1;
 }
@@ -7565,11 +7593,14 @@ static void load_config_file(const char *f)
 
 #ifdef X11
 		CONF2("out_to_x") {
-			if(x_initialised == NO) {	//don't listen if X is already initialised or if we already know we don't want it
-				if ( string_to_bool(value) ) {
+			/* don't listen if X is already initialised or
+			 * if we already know we don't want it */
+			if(x_initialised == NO) {
+				if (string_to_bool(value)) {
 					X11_initialisation();
-				}else {
-					if(output_methods & TO_X) output_methods -= TO_X;
+				} else {
+					if(output_methods & TO_X)
+						output_methods &= ~TO_X;
 					x_initialised = NEVER;
 				}
 			}
@@ -7619,7 +7650,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color0") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					color0 = get_x11_color(value);
@@ -7629,7 +7661,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color1") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					color1 = get_x11_color(value);
@@ -7639,7 +7672,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color2") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					color2 = get_x11_color(value);
@@ -7649,7 +7683,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color3") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					color3 = get_x11_color(value);
@@ -7659,7 +7694,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color4") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					color4 = get_x11_color(value);
@@ -7669,7 +7705,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color5") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					color5 = get_x11_color(value);
@@ -7679,7 +7716,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color6") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					color6 = get_x11_color(value);
@@ -7689,7 +7727,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color7") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					color7 = get_x11_color(value);
@@ -7699,7 +7738,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color8") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					color8 = get_x11_color(value);
@@ -7709,7 +7749,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color9") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					color9 = get_x11_color(value);
@@ -7738,7 +7779,8 @@ static void load_config_file(const char *f)
 		TEMPLATE_CONF(8)
 		TEMPLATE_CONF(9)
 		CONF("default_color") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					default_fg_color = get_x11_color(value);
@@ -7748,7 +7790,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF3("default_shade_color", "default_shadecolor") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					default_bg_color = get_x11_color(value);
@@ -7758,7 +7801,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF3("default_outline_color", "default_outlinecolor") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					default_out_color = get_x11_color(value);
@@ -7867,24 +7911,34 @@ static void load_config_file(const char *f)
 		}
 #endif /* X11 */
 		CONF("out_to_console") {
-			if(string_to_bool(value)) output_methods |= TO_STDOUT;
+			if(string_to_bool(value))
+				output_methods |= TO_STDOUT;
 		}
 		CONF("out_to_stderr") {
-			if(string_to_bool(value)) output_methods |= TO_STDERR;
+			if(string_to_bool(value))
+				output_methods |= TO_STDERR;
 		}
 		CONF("overwrite_file") {
-			if(overwrite_file != NULL) free(overwrite_file);
-			if(overwrite_works(value) == 1) {
+			if(overwrite_file) {
+				free(overwrite_file);
+				overwrite_file = 0;
+			}
+			if(overwrite_works(value)) {
 				overwrite_file = strdup(value);
 				output_methods |= OVERWRITE_FILE;
-			}else ERR("overwrite_file won't be able to create/overwrite '%s'", value);
+			} else
+				ERR("overwrite_file won't be able to create/overwrite '%s'", value);
 		}
 		CONF("append_file") {
-			if(append_file != NULL) free(append_file);
-			if(append_works(value) == 1) {
+			if(append_file) {
+				free(append_file);
+				append_file = 0;
+			}
+			if(append_works(value)) {
 				append_file = strdup(value);
 				output_methods |= APPEND_FILE;
-			}else ERR("append_file won't be able to create/append '%s'", value);
+			} else
+				ERR("append_file won't be able to create/append '%s'", value);
 		}
 		CONF("use_spacer") {
 			if (value) {
@@ -7918,7 +7972,8 @@ static void load_config_file(const char *f)
 			use_xft = string_to_bool(value);
 		}
 		CONF("font") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					set_first_font(value);
@@ -7928,7 +7983,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("xftalpha") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value && font_count >= 0) {
 					fonts[0].font_alpha = atof(value) * 65535.0;
@@ -7938,7 +7994,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("xftfont") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if (use_xft) {
 #else
 		CONF("use_xft") {
@@ -8034,7 +8091,8 @@ static void load_config_file(const char *f)
 #ifdef X11
 #ifdef OWN_WINDOW
 		CONF("own_window") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					own_window = string_to_bool(value);
@@ -8044,7 +8102,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("own_window_class") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					memset(window.class_name, 0, sizeof(window.class_name));
@@ -8056,7 +8115,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("own_window_title") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					memset(window.title, 0, sizeof(window.title));
@@ -8067,7 +8127,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("own_window_transparent") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					set_transparent = string_to_bool(value);
@@ -8077,7 +8138,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("own_window_colour") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					background_colour = get_x11_color(value);
@@ -8088,7 +8150,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("own_window_hints") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					char *p_hint, *p_save;
@@ -8123,7 +8186,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("own_window_type") {
-			if(x_initialised == NO) X11_initialisation();
+			if(x_initialised == NO)
+				X11_initialisation();
 			if(x_initialised == YES) {
 				if (value) {
 					if (strncmp(value, "normal", 6) == EQUAL) {
@@ -8609,7 +8673,8 @@ int main(int argc, char **argv)
 
 #ifdef X11
 	/* load font */
-	if ( output_methods & TO_X ) load_fonts();
+	if (output_methods & TO_X)
+		load_fonts();
 #endif /* X11 */
 
 	/* generate text and get initial size */
@@ -8653,7 +8718,7 @@ int main(int argc, char **argv)
 	memset(tmpstring2, 0, text_buffer_size);
 
 #ifdef X11
-	if ( output_methods & TO_X ) {
+	if (output_methods & TO_X) {
 		selected_font = 0;
 		update_text_area();	/* to get initial size of the window */
 
