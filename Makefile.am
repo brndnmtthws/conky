@@ -48,4 +48,24 @@ ACLOCAL_AMFLAGS = -I m4
 distclean-local:
 	/bin/rm -rf *.cache *~
 
+Doxyfile:
+	doxygen -g
+	sed -e 's/^\(PROJECT_NAME *=\).*$$/\1 conky/' \
+	    -e 's/^\(PROJECT_NUMBER *=\).*$$/\1 1.6/' \
+	    -e 's/^\(OPTIMIZE_OUTPUT_FOR_C *=\).*$$/\1 YES/' \
+	    -e 's/^\(EXTRACT_ALL *=\).*$$/\1 YES/' \
+	    -e 's/^\(EXTRACT_PRIVATE *=\).*$$/\1 YES/' \
+	    -e 's/^\(EXTRACT_STATIC *=\).*$$/\1 YES/' \
+	    -e 's/^\(INPUT *=\).*$$/\1 "src"/' \
+	    -e 's/^\(SOURCE_BROWSER *=\).*$$/\1 YES/' \
+	    -e 's/^\(MACRO_EXPANSION *=\).*$$/\1 YES/' \
+	    -e 's/^\(HAVE_DOT *=\).*$$/\1 YES/' \
+	    -e 's/^\(CALL_GRAPH *=\).*$$/\1 YES/' \
+	    -e 's/^\(CALLER_GRAPH *=\).*$$/\1 YES/' -i Doxyfile
+
+doxy: Doxyfile
+	doxygen $<
+
+.PHONY: distclean-local doxy
+
 # vi:set ts=8 sw=8 noet ai nocindent syntax=automake:

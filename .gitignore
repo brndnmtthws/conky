@@ -1,6 +1,7 @@
 *.orig
 *~
 .*.swp
+Doxyfile
 Makefile
 Makefile.in
 aclocal.m4
