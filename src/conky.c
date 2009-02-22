@@ -7249,6 +7249,10 @@ static void print_help(const char *prog_name) {
 			"   -q, --quiet               quiet mode\n"
 			"   -D, --debug               increase debugging output\n"
 			"   -c, --config=FILE         config file to load\n"
+#ifdef CONFIG_OUTPUT
+			"   -C, --print-config        print the builtin default config to stdout\n"
+			"                             e.g. 'conky -C > ~/.conkyrc' will create a new default config\n"
+#endif
 			"   -d, --daemonize           daemonize, fork to background\n"
 			"   -h, --help                help\n"
 #ifdef X11
@@ -7281,10 +7285,10 @@ static const char *getopt_string = "vVqdDt:u:i:hc:"
 #ifdef HAVE_XDBE
 	"b"
 #endif
+#endif /* X11 */
 #ifdef CONFIG_OUTPUT
 	"C"
 #endif
-#endif /* X11 */
 	;
 
 static const struct option longopts[] = {
