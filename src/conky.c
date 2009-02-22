@@ -7073,6 +7073,7 @@ static _Bool append_works(const char *path)
 	return 1;
 }
 
+#ifdef X11
 static void X11_initialisation(void)
 {
 	output_methods |= TO_X;
@@ -7080,6 +7081,7 @@ static void X11_initialisation(void)
 	set_default_configurations_for_x();
 	x_initialised = YES;
 }
+#endif /* X11 */
 
 static void load_config_file(const char *f)
 {
