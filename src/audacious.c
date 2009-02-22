@@ -232,7 +232,7 @@ void *audacious_thread_func(void *pvoid)
 			/* Main volume */
 			vol = audacious_remote_get_main_volume(session);
 			snprintf(items[AUDACIOUS_MAIN_VOLUME],
-					sizeof(items[AUDACIOUS_MAIN_VOLUME]) - 1, "%d", vol); 
+					sizeof(items[AUDACIOUS_MAIN_VOLUME]) - 1, "%d", vol);
 
 		} while (0);
 		/* Deliver the refreshed items array to audacious_items. */

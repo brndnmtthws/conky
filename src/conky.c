@@ -819,7 +819,7 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_battery:
 				free(data.s);
 				break;
-            case OBJ_battery_short:
+			case OBJ_battery_short:
 				free(data.s);
 				break;
 			case OBJ_battery_time:
@@ -4007,7 +4007,7 @@ static void generate_text_internal(char *p, int p_max_size,
 
 			/* mixer stuff */
 			OBJ(mixer) {
-				spaced_print(p, p_max_size, "%*d", 4, 
+				spaced_print(p, p_max_size, "%*d", 4,
 					pad_percents, mixer_get_avg(obj->data.l));
 			}
 			OBJ(mixerl) {

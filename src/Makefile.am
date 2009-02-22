@@ -111,38 +111,38 @@ if BUILD_NVIDIA
 nvidia = nvidia.c nvidia.h
 endif
 
-conky_SOURCES = 		\
+conky_SOURCES = \
 	$(config_output)        \
 	$(config_cookie)        \
 	$(audacious)            \
 	$(bmpx)                 \
 	colours.c               \
 	colours.h               \
-	common.c 		\
+	common.c                \
 	conky.c                 \
 	conky.h                 \
 	$(freebsd)              \
-	fs.c 			\
-	$(hddtemp)		\
-	$(linux) 		\
+	fs.c                    \
+	$(hddtemp)              \
+	$(linux)                \
 	logging.h               \
-	$(nvidia)		\
-	mail.c 			\
-	mixer.c 		\
+	$(nvidia)               \
+	mail.c                  \
+	mixer.c                 \
 	$(mpd)                  \
-  $(moc) \
+	$(moc)                  \
 	$(netbsd)               \
 	$(openbsd)              \
 	$(port_monitors)        \
-	$(eve)			\
-	$(rss)			\
-	$(solaris) 		\
-	timed_thread.c		\
-	timed_thread.h		\
-	mboxscan.c		\
-	mboxscan.h		\
+	$(eve)                  \
+	$(rss)                  \
+	$(solaris)              \
+	timed_thread.c          \
+	timed_thread.h          \
+	mboxscan.c              \
+	mboxscan.h              \
 	$(x11)                  \
-	$(xmms2)		\
+	$(xmms2)                \
 	$(ibm)                  \
 	specials.c              \
 	specials.h              \
@@ -155,56 +155,56 @@ conky_SOURCES = 		\
 	algebra.h               \
 	algebra.c
 
-conky_LDFLAGS = 				\
-	$(PTHREAD_LIBS)				\
+conky_LDFLAGS = \
+	$(PTHREAD_LIBS) \
 	-lm
 
-EXTRA_DIST = 			\
+EXTRA_DIST = \
 	$(config_output)        \
 	$(config_cookie)        \
-	audacious.c		\
-	audacious.h		\
-	bmpx.c			\
+	audacious.c             \
+	audacious.h             \
+	bmpx.c                  \
 	colours.c               \
 	colours.h               \
-	common.h		\
+	common.h                \
 	fonts.c                 \
 	fonts.h                 \
-	freebsd.c		\
-	freebsd.h		\
-	fs.h			\
-	hddtemp.c		\
-	hddtemp.h		\
-	linux.c			\
-	linux.h			\
+	freebsd.c               \
+	freebsd.h               \
+	fs.h                    \
+	hddtemp.c               \
+	hddtemp.h               \
+	linux.c                 \
+	linux.h                 \
 	libmpdclient.c          \
 	libmpdclient.h          \
-	libtcp-portmon.c	\
-	libtcp-portmon.h	\
-	rss.h			\
-	mail.h			\
-	mixer.h			\
-	moc.h			\
-	moc.c			\
-	mpd.c			\
-	mpd.h			\
-	netbsd.c		\
-	nvidia.c		\
-	nvidia.h		\
-	openbsd.c		\
-	openbsd.h		\
-	solaris.c 		\
+	libtcp-portmon.c        \
+	libtcp-portmon.h        \
+	rss.h                   \
+	mail.h                  \
+	mixer.h                 \
+	moc.h                   \
+	moc.c                   \
+	mpd.c                   \
+	mpd.h                   \
+	netbsd.c                \
+	nvidia.c                \
+	nvidia.h                \
+	openbsd.c               \
+	openbsd.h               \
+	solaris.c               \
 	specials.c              \
 	specials.h              \
 	tailhead.c              \
 	tailhead.h              \
 	top.h                   \
 	diskio.h                \
-	x11.c			\
-	x11.h			\
+	x11.c                   \
+	x11.h                   \
 	xmms2.c                 \
 	xmms2.h                 \
-	smapi.c			\
+	smapi.c                 \
 	smapi.h                 \
 	ibm.c                   \
 	ibm.h                   \
