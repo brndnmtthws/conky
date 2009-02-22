@@ -3373,11 +3373,9 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* __OpenBSD__ */
 
-#ifdef X11
 			OBJ(font) {
 				new_font(p, obj->data.s);
 			}
-#endif
 			/* TODO: move this correction from kB to kB/s elsewhere
 			 * (or get rid of it??) */
 			OBJ(diskio) {

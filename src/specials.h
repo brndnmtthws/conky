@@ -86,9 +86,7 @@ char *scan_graph(const char *, int *, int *, unsigned int *,
 
 /* printing specials */
 void new_bar(char *, int, int, int);
-#ifdef X11
 void new_font(char *, char *);
-#endif
 void new_graph(char *, int, int, unsigned int,
                unsigned int, double, int, int, char);
 void new_hr(char *, int);

@@ -186,11 +186,11 @@ void new_bar(char *buf, int w, int h, int usage)
 	s->height = h;
 }
 
-#ifdef X11
 void new_font(char *buf, char *args)
 {
 	if ((output_methods & TO_X) == 0)
 		return;
+#ifdef X11
 	if (args) {
 		struct special_t *s = new_special(buf, FONT);
 
@@ -208,8 +208,12 @@ void new_font(char *buf, char *args)
 		selected_font = s->font_added = 0;
 		selected_font = tmp;
 	}
-}
+#else
+	(void)buf;
+	(void)args;
+	return;
 #endif
+}
 
 static void graph_append(struct special_t *graph, double f, char showaslog)
 {
