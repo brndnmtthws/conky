@@ -297,4 +297,17 @@ extern double current_update_time, last_update_time, update_interval;
 int spaced_print(char *, int, const char *, int, ...)
 	__attribute__((format(printf, 3, 5)));
 
-#endif
+#define TO_X 1
+#define TO_STDOUT 2
+#define TO_STDERR 4
+#define OVERWRITE_FILE 8
+#define APPEND_FILE 16
+enum x_initialiser_state {
+	NO = 0,
+	YES = 1,
+	NEVER = 2
+};
+extern int output_methods;
+extern enum x_initialiser_state x_initialised;
+
+#endif /* _conky_h_ */

@@ -92,7 +92,7 @@ port_monitors = libtcp-portmon.h libtcp-portmon.c \
 endif
 
 if BUILD_X11
-x11 = x11.c
+x11 = x11.c fonts.c
 endif
 
 if BUILD_HDDTEMP
@@ -116,6 +116,8 @@ conky_SOURCES = 		\
 	$(config_cookie)        \
 	$(audacious)            \
 	$(bmpx)                 \
+	colours.c               \
+	colours.h               \
 	common.c 		\
 	conky.c                 \
 	conky.h                 \
@@ -142,6 +144,8 @@ conky_SOURCES = 		\
 	$(x11)                  \
 	$(xmms2)		\
 	$(ibm)                  \
+	specials.c              \
+	specials.h              \
 	tailhead.c              \
 	tailhead.h              \
 	temphelper.c            \
@@ -161,7 +165,11 @@ EXTRA_DIST = 			\
 	audacious.c		\
 	audacious.h		\
 	bmpx.c			\
+	colours.c               \
+	colours.h               \
 	common.h		\
+	fonts.c                 \
+	fonts.h                 \
 	freebsd.c		\
 	freebsd.h		\
 	fs.h			\
@@ -186,6 +194,8 @@ EXTRA_DIST = 			\
 	openbsd.c		\
 	openbsd.h		\
 	solaris.c 		\
+	specials.c              \
+	specials.h              \
 	tailhead.c              \
 	tailhead.h              \
 	top.h                   \
