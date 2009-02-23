@@ -3383,11 +3383,11 @@ static void generate_text_internal(char *p, int p_max_size,
 						p, p_max_size);
 			}
 			OBJ(diskio_write) {
-				human_readable((obj->data.diskio->current_read / update_interval) * 1024LL,
+				human_readable((obj->data.diskio->current_write / update_interval) * 1024LL,
 						p, p_max_size);
 			}
 			OBJ(diskio_read) {
-				human_readable((obj->data.diskio->current_write / update_interval) * 1024LL,
+				human_readable((obj->data.diskio->current_read / update_interval) * 1024LL,
 						p, p_max_size);
 			}
 			OBJ(diskiograph) {
