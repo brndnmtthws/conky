@@ -418,20 +418,6 @@ static char *text_buffer;
 static unsigned int special_index;	/* used when drawing */
 #endif /* X11 */
 
-#ifndef HAVE_MEMRCHR
-void *memrchr(const void *buffer, char c, size_t n)
-{
-	const unsigned char *p = buffer;
-
-	for (p += n; n; n--) {
-		if (*--p == c) {
-			return (void *) p;
-		}
-	}
-	return NULL;
-}
-#endif
-
 /* quite boring functions */
 
 static inline void for_each_line(char *b, void f(char *))

@@ -36,6 +36,20 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifndef HAVE_MEMRCHR
+static void *memrchr(const void *buffer, char c, size_t n)
+{
+	const unsigned char *p = buffer;
+
+	for (p += n; n; n--) {
+		if (*--p == c) {
+			return (void *) p;
+		}
+	}
+	return NULL;
+}
+#endif
+
 int init_tailhead_object(enum tailhead_type type,
 		struct text_object *obj, const char *arg)
 {
