@@ -909,7 +909,11 @@ if INTERFACE exists and is up, display everything between $if_up and the matchin
 
 .TP 
 \fB\*(T<\fBif_updatenr\fR\*(T>\fR \*(T<\fB(updatenr)\fR\*(T> 
-If it's the UPDATENR-th time that conky updates, display everything between $if_updatenr and the matching $endif. The counter resets when the highest UPDATENR is reached. Example : "{$if_updatenr 1}foo$endif{$if_updatenr 2}bar$endif{$if_updatenr 4}$endif" shows foo 25% of the time followed by bar 25% of the time followed by nothing the other half of the time.
+If it's the UPDATENR-th time that conky updates, 
+display everything between $if_updatenr and the matching $endif.
+The counter resets when the highest UPDATENR is reached.
+Example : "{$if_updatenr 1}foo$endif{$if_updatenr 2}bar$endif{$if_updatenr 4}$endif"
+shows foo 25% of the time followed by bar 25% of the time followed by nothing the other half of the time.
 
 .TP 
 \fB\*(T<\fBimap_messages\fR\*(T>\fR \*(T<\fB(args)\fR\*(T> 
