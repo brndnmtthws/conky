@@ -1,6 +1,7 @@
 2009-03-01
 	* Added if_updatenr
 	* Rewrite human_readable() to minimise amount of padding
+	* Fix padding in temp_print()
 
 2009-02-17
 	* Added $battery_short patch, sf.net id #2300911 (thanks Swoog)

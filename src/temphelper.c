@@ -84,10 +84,11 @@ convert_temp_output(double n, enum TEMP_UNIT input_unit)
 
 int temp_print(char *p, size_t p_max_size, double n, enum TEMP_UNIT input_unit)
 {
-	double out, plen;
+	int out;
+	size_t plen;
 
-	out = convert_temp_output(n, input_unit);
-	plen = spaced_print(p, p_max_size, "%.lf", 5, out);
+	out = round_to_int(convert_temp_output(n, input_unit));
+	plen = spaced_print(p, p_max_size, "%d", 3, out);
 
 	return !(plen >= p_max_size);
 }
