@@ -4119,10 +4119,10 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_outline(p, obj->data.l);
 			}
 			OBJ(processes) {
-				spaced_print(p, p_max_size, "%hu", 5, cur->procs);
+				spaced_print(p, p_max_size, "%hu", 4, cur->procs);
 			}
 			OBJ(running_processes) {
-				spaced_print(p, p_max_size, "%hu", 3, cur->run_procs);
+				spaced_print(p, p_max_size, "%hu", 4, cur->run_procs);
 			}
 			OBJ(text) {
 				snprintf(p, p_max_size, "%s", obj->data.s);

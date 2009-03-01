@@ -2,6 +2,7 @@
 	* Added if_updatenr
 	* Rewrite human_readable() to minimise amount of padding
 	* Fix padding in temp_print()
+	* Fix padding of $processes and $running_processes
 
 2009-02-17
 	* Added $battery_short patch, sf.net id #2300911 (thanks Swoog)
