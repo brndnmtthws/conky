@@ -493,6 +493,15 @@ int spaced_print(char *buf, int size, const char *format, int width, ...)
 	return len;
 }
 
+/* print percentage values
+ *
+ * - i.e., unsigned values between 0 and 100
+ * - respect the value of pad_percents */
+static int percent_print(char *buf, int size, unsigned value)
+{
+	return spaced_print(buf, size, "%u", pad_percents, value);
+}
+
 /* converts from bytes to human readable format (K, M, G, T)
  *
  * The algorithm always divides by 1024, as unit-conversion of byte
@@ -3159,8 +3168,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_TIME);
 			}
 			OBJ(battery_percent) {
-				spaced_print(p, p_max_size, "%*d", 4,
-						pad_percents, get_battery_perct(obj->data.s));
+				percent_print(p, p_max_size, get_battery_perct(obj->data.s));
 			}
 			OBJ(battery_bar) {
 				new_bar(p, obj->a, obj->b, get_battery_perct_bar(obj->data.s));
@@ -3182,8 +3190,8 @@ static void generate_text_internal(char *p, int p_max_size,
 							obj->data.cpu_index, info.cpu_count);
 					CRIT_ERR("attempting to use more CPUs than you have!");
 				}
-				spaced_print(p, p_max_size, "%*d", 4, pad_percents,
-						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100.0));
+				percent_print(p, p_max_size,
+				              round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100.0));
 			}
 			OBJ(cpubar) {
 				new_bar(p, obj->a, obj->b,
@@ -3681,13 +3689,12 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(fs_free_perc) {
 				if (obj->data.fs != NULL) {
-					if (obj->data.fs->size) {
-						spaced_print(p, p_max_size, "%*d", 4,
-								pad_percents, (int) ((obj->data.fs->avail * 100) /
-									obj->data.fs->size));
-					} else {
-						snprintf(p, p_max_size, "0");
-					}
+					int val = 0;
+
+					if (obj->data.fs->size)
+						val = obj->data.fs->avail * 100 / obj->data.fs->size;
+
+					percent_print(p, p_max_size, val);
 				}
 			}
 			OBJ(fs_size) {
@@ -3718,13 +3725,12 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(fs_used_perc) {
 				if (obj->data.fs != NULL) {
-					if (obj->data.fs->size) {
-						spaced_print(p, 4, "%*d", 4,
-								pad_percents, 100 - ((int) ((obj->data.fs->avail * 100) /
-										obj->data.fs->size)));
-					} else {
-						snprintf(p, p_max_size, "0");
-					}
+					int val = 0;
+
+					if (obj->data.fs->size)
+						val = obj->data.fs->avail * 100 / obj->data.fs->size;
+
+					percent_print(p, p_max_size, 100 - val);
 				}
 			}
 			OBJ(loadavg) {
@@ -3997,10 +4003,8 @@ static void generate_text_internal(char *p, int p_max_size,
 				human_readable(cur->memmax * 1024, p, 255);
 			}
 			OBJ(memperc) {
-				if (cur->memmax) {
-					spaced_print(p, p_max_size, "%*llu", 4,
-						pad_percents, cur->mem * 100 / cur->memmax);
-				}
+				if (cur->memmax)
+					percent_print(p, p_max_size, cur->mem * 100 / cur->memmax);
 			}
 			OBJ(membar) {
 				new_bar(p, obj->data.pair.a, obj->data.pair.b,
@@ -4014,16 +4018,13 @@ static void generate_text_internal(char *p, int p_max_size,
 
 			/* mixer stuff */
 			OBJ(mixer) {
-				spaced_print(p, p_max_size, "%*d", 4,
-					pad_percents, mixer_get_avg(obj->data.l));
+				percent_print(p, p_max_size, mixer_get_avg(obj->data.l));
 			}
 			OBJ(mixerl) {
-				spaced_print(p, p_max_size, "%*d", 4,
-					pad_percents, mixer_get_left(obj->data.l));
+				percent_print(p, p_max_size, mixer_get_left(obj->data.l));
 			}
 			OBJ(mixerr) {
-				spaced_print(p, p_max_size, "%*d", 4,
-					pad_percents, mixer_get_right(obj->data.l));
+				percent_print(p, p_max_size, mixer_get_right(obj->data.l));
 			}
 			OBJ(mixerbar) {
 				new_bar(p, obj->data.mixerbar.w, obj->data.mixerbar.h,
@@ -4142,8 +4143,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				if (cur->swapmax == 0) {
 					strncpy(p, "No swap", p_max_size);
 				} else {
-					spaced_print(p, p_max_size, "%*llu", 4,
-						pad_percents, cur->swap * 100 / cur->swapmax);
+					percent_print(p, p_max_size, cur->swap * 100 / cur->swapmax);
 				}
 			}
 			OBJ(swapbar) {
@@ -4295,8 +4295,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				format_media_player_time(p, p_max_size, mpd_get_info()->length);
 			}
 			OBJ(mpd_percent) {
-				spaced_print(p, p_max_size, "%*d", 4,
-						pad_percents, (int) (mpd_get_info()->progress * 100));
+				percent_print(p, p_max_size, (int)(mpd_get_info()->progress * 100));
 			}
 			OBJ(mpd_bar) {
 				new_bar(p, obj->data.pair.a, obj->data.pair.b,
@@ -4686,7 +4685,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				if(obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
 					val = smapi_bat_installed(idx) ?
 						smapi_get_bat_int(idx, "remaining_percent") : 0;
-					spaced_print(p, p_max_size, "%*d", 4, pad_percents, val);
+					percent_print(p, p_max_size, val);
 				} else
 					ERR("argument to smapi_bat_perc must be an integer");
 			}
