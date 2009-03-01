@@ -167,6 +167,7 @@ enum text_object_type {
 	OBJ_if_existing,
 	OBJ_if_mounted,
 	OBJ_if_running,
+	OBJ_if_updatenr,
 	OBJ_top,
 	OBJ_top_mem,
 	OBJ_top_time,
@@ -409,6 +410,7 @@ struct text_object {
 		struct {
 			struct text_object *next;
 			char *s;
+			int i;
 			char *str;
 		} ifblock;
 

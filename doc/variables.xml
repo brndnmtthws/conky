@@ -1118,6 +1118,20 @@
 
 	<varlistentry>
 		<term>
+			<command><option>if_updatenr</option></command>
+			<option>(updatenr)</option>
+		</term>
+		<listitem>
+			If it's the UPDATENR-th time that conky updates, 
+			display everything between $if_updatenr and the matching $endif.
+			The counter resets when the highest UPDATENR is reached.
+			Example : "{$if_updatenr 1}foo$endif{$if_updatenr 2}bar$endif{$if_updatenr 4}$endif"
+			shows foo 25% of the time followed by bar 25% of the time followed by nothing the other half of the time.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
 			<command><option>imap_messages</option></command>
 			<option>(args)</option>
 		</term>

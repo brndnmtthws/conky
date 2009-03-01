@@ -1041,6 +1041,16 @@ conky(1)							      conky(1)
 	      and the matching $endif
 
 
+       1mif_updatenr (updatenr)0m
+	      If it's the UPDATENR-th time that conky updates, display every-
+	      thing between $if_updatenr and the matching $endif. The counter
+	      resets when the highest UPDATENR is reached.
+	      Example : "{$if_updatenr 1}foo$endif{$if_updatenr 2}bar$endif
+	      {$if_updatenr 4}$endif" shows foo 25% of the time followed by 
+	      bar 25% of the time followed by nothing the other half of the 
+	      time.
+
+
        1mimap_messages (args)0m
 	      Displays the number of messages in your global IMAP inbox by de‐
 	      fault. You can define  individual	 IMAP  inboxes	seperately  by

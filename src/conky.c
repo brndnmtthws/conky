@@ -361,6 +361,7 @@ static char *global_text = 0;
 long global_text_lines;
 
 static int total_updates;
+static int updatereset;
 
 int check_contains(char *f, char *s)
 {
@@ -2157,6 +2158,10 @@ static struct text_object *construct_text_object(const char *s,
 			CRIT_ERR("totalup needs argument");
 		}
 	END OBJ(updates, 0)
+	END OBJ_IF(if_updatenr, 0)
+		obj->data.ifblock.i = arg ? atoi(arg) : 0;
+		if(obj->data.ifblock.i == 0) CRIT_ERR("if_updatenr needs a number above 0 as argument");
+		updatereset = obj->data.ifblock.i > updatereset ? obj->data.ifblock.i : updatereset;
 	END OBJ(alignr, 0)
 		obj->data.i = arg ? atoi(arg) : 0;
 	END OBJ(alignc, 0)
@@ -4176,6 +4181,11 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(updates) {
 				snprintf(p, p_max_size, "%d", total_updates);
+			}
+			OBJ(if_updatenr) {
+				if(total_updates % updatereset != obj->data.ifblock.i - 1) {
+					DO_JUMP;
+				}
 			}
 			OBJ(upspeed) {
 				human_readable(obj->data.net->trans_speed, p, 255);

@@ -1,3 +1,6 @@
+2009-03-01
+	* Added if_updatenr
+
 2009-02-17
 	* Added $battery_short patch, sf.net id #2300911 (thanks Swoog)
 	* Patch by Kim Holviala sf.net id #2484548:

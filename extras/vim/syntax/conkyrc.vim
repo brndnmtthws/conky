@@ -195,6 +195,7 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 			\ ibm_volume
 			\ ibm_brightness
 			\ if_up
+			\ if_updatenr
 			\ if_gw
 			\ gw_iface
 			\ gw_ip
