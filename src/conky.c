@@ -483,41 +483,43 @@ int spaced_print(char *buf, int size, const char *format, int width, ...)
 			len = snprintf(buf, size, "%s", tempbuf);
 			break;
 		case LEFT_SPACER:
-			len = snprintf(buf, size, "%*s", width - 1, tempbuf);
+			len = snprintf(buf, size, "%*s", width, tempbuf);
 			break;
 		case RIGHT_SPACER:
-			len = snprintf(buf, size, "%-*s", width - 1, tempbuf);
+			len = snprintf(buf, size, "%-*s", width, tempbuf);
 			break;
 	}
 	free(tempbuf);
 	return len;
 }
 
-/* converts from bytes to human readable format (K, M, G, T) */
+/* converts from bytes to human readable format (K, M, G, T)
+ *
+ * The algorithm always divides by 1024, as unit-conversion of byte
+ * counts suggests. But for output length determination we need to
+ * compare with 1000 here, as we print in decimal form. */
 static void human_readable(long long num, char *buf, int size)
 {
 	const char **suffix = suffixes;
 	float fnum;
-	int precision, len;
+	int precision;
 	int width;
-	const char *format, *format2;
+	const char *format;
 
 	if (short_units) {
-		width = 7;
-		format = "%lld%.1s";
-		format2 = "%.*f%.1s";
+		width = 5;
+		format = "%.*f%.1s";
 	} else {
-		width = 9;
-		format = "%lld%s";
-		format2 = "%.*f%s";
+		width = 7;
+		format = "%.*f%-3s";
 	}
 
-	if (llabs(num) < 1024LL) {
-		spaced_print(buf, size, format, width, num, *suffix);
+	if (llabs(num) < 1000LL) {
+		spaced_print(buf, size, format, width, 0, (float)num, *suffix);
 		return;
 	}
 
-	while (llabs(num / 1024) >= 1024LL && **(suffix + 2)) {
+	while (llabs(num / 1024) >= 1000LL && **(suffix + 2)) {
 		num /= 1024;
 		suffix++;
 	}
@@ -525,11 +527,25 @@ static void human_readable(long long num, char *buf, int size)
 	suffix++;
 	fnum = num / 1024.0;
 
-	if (fnum < 10) precision = 1;
-	else precision = 0;
+	/* fnum should now be < 1000, so looks like 'AAA.BBBBB'
+	 *
+	 * The goal is to always have a significance of 3, by
+	 * adjusting the decimal part of the number. Sample output:
+	 *  123MiB
+	 * 23.4GiB
+	 * 5.12B   
+	 * so the point of alignment resides between number and unit. The
+	 * upside of this is that there is minimal padding necessary, though
+	 * there should be a way to make alignment take place at the decimal
+	 * dot (then with fixed width decimal part). * */
 
-	len = spaced_print(buf, size, format2, width,
-	                   precision, fnum, *suffix);
+	precision = 0;		/* print 100-999 without decimal part */
+	if (fnum < 100)
+		precision = 1;	/* print 10-99 with one decimal place */
+	if (fnum < 10)
+		precision = 2;	/* print 0-9 with two decimal place */
+
+	spaced_print(buf, size, format, width, precision, fnum, *suffix);
 }
 
 /* global object list root element */
