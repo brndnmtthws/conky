@@ -155,6 +155,16 @@ conky(1)							      conky(1)
        You might want to copy it to $HOME/.conkyrc and	then  start  modifying
        it.  Other configs can be found at http://conky.sf.net/
 
+       1malias0m
+	      Use this to create aliases of variables. The first argument is
+	      the new name, the second the old name, and the other arguments
+	      are passed on to the variable. Example: If you want to use $alpha
+	      instead of ${beta gamma delta} then you have to write the following:
+	      alias alpha beta gamma delta . PS: Instead of creating an alias
+	      in the config you can also use environment variables. Example:
+	      Start conky like this: alpha="beta gamma delta" conky
+
+
        1malignment0m
 	      Aligned position on screen, may be top_left, top_right, top_mid‐
 	      dle, bottom_left, bottom_right, bottom_middle, middle_left, mid‐

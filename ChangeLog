@@ -1,3 +1,7 @@
+2009-03-07
+	* Added alias patch ( sf.net id #2663691 ) changed it to prevent it from
+	overwriting existing environment variables and updated docs, syntaxfiles, ...
+
 2009-03-01
 	* Added if_updatenr
 	* Rewrite human_readable() to minimise amount of padding

@@ -146,6 +146,10 @@ and you can find the sample config file there (/etc/conky/conky.conf).
 You might want to copy it to $HOME/.conkyrc and then start modifying it.
 Other configs can be found at http://conky.sf.net/
 .TP 
+\fB\*(T<\fBalias\fR\*(T>\fR
+Use this to create aliases of variables. The first argument is the new name, the second the old name, and the other arguments are passed on to the variable. Example: If you want to use $alpha instead of ${beta gamma delta} then you have to write the following: alias alpha beta gamma delta . PS: Instead of creating an alias in the config you can also use environment variables. Example: Start conky like this: alpha="beta gamma delta" conky
+
+.TP 
 \fB\*(T<\fBalignment\fR\*(T>\fR
 Aligned position on screen, may be top_left, top_right, top_middle, bottom_left, bottom_right, bottom_middle, middle_left, middle_right, or none (also can be abreviated as tl, tr, tm, bl, br, bm, ml, mr)
 

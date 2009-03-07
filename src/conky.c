@@ -2795,39 +2795,40 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 				s = p;
 
 				var = getenv(buf);
+				if (var) {
+					strncpy(buf, var, 255);
+				}
 
-				/* if variable wasn't found in environment, use some special */
-				if (!var) {
-					char *tmp_p;
-					char *arg = 0;
+				char *tmp_p;
+				char *arg = 0;
 
-					/* split arg */
-					if (strchr(buf, ' ')) {
-						arg = strchr(buf, ' ');
-						*arg = '\0';
+				/* split arg */
+				if (strchr(buf, ' ')) {
+					arg = strchr(buf, ' ');
+					*arg = '\0';
+					arg++;
+					while (isspace((int) *arg)) {
 						arg++;
-						while (isspace((int) *arg)) {
-							arg++;
-						}
-						if (!*arg) {
-							arg = 0;
-						}
 					}
-
-					/* lowercase variable name */
-					tmp_p = buf;
-					while (*tmp_p) {
-						*tmp_p = tolower(*tmp_p);
-						tmp_p++;
-					}
-
-					obj = construct_text_object(buf, arg,
-							line, allow_threaded,
-							&ifblock_opaque);
-					if (obj != NULL) {
-						append_object(retval, obj);
+					if (!*arg) {
+						arg = 0;
 					}
 				}
+
+				/* lowercase variable name */
+				tmp_p = buf;
+				while (*tmp_p) {
+					*tmp_p = tolower(*tmp_p);
+					tmp_p++;
+				}
+
+				obj = construct_text_object(buf, arg,
+						line, allow_threaded,
+						&ifblock_opaque);
+				if (obj != NULL) {
+					append_object(retval, obj);
+				}
+
 				continue;
 			} else {
 				obj = create_plain_text("$");
@@ -7227,6 +7228,25 @@ static void load_config_file(const char *f)
 				ERR("config option 'temperature_unit' needs an argument");
 			} else if (set_temp_output_unit(value)) {
 				ERR("temperature_unit: incorrect argument");
+			}
+		}
+
+		CONF("alias") {
+			if (value) {
+				char *skey, *svalue, *oldvalue;
+				if (sscanf(value, "%a[0-9a-zA-Z_] %a[^\n]", &skey, &svalue) == 2) {
+					oldvalue = getenv(skey);
+					if(oldvalue == NULL) {
+						setenv(skey, svalue, 0);
+						free(skey);
+						free(svalue);
+					}
+					//PS: Don't free oldvalue, it's the real envvar, not a copy
+				} else {
+					CONF_ERR;
+				}
+			} else {
+				CONF_ERR;
 			}
 		}
 

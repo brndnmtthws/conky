@@ -13,6 +13,7 @@ endif
 syn region ConkyrcComment start=/^\s*#/ end=/$/
 
 syn keyword ConkyrcSetting
+			\ alias
 			\ alignment
 			\ background
 			\ show_graph_scale
