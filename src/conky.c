@@ -699,6 +699,7 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_font:
 			case OBJ_image:
 			case OBJ_exec:
+			case OBJ_execgauge:
 			case OBJ_execbar:
 			case OBJ_execgraph:
 			case OBJ_execp:
@@ -1283,6 +1284,9 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->data.cpu_index = 0;
 		}
+	END OBJ(cpugauge, INFO_CPU)
+		scan_gauge(arg, &obj->a, &obj->b);
+		DBGP2("Adding $cpugauge for CPU %d", obj->data.cpu_index);
 	END OBJ(cpubar, INFO_CPU)
 		if (arg) {
 			if (strncmp(arg, "cpu", 3) == EQUAL && isdigit(arg[3])) {
@@ -1409,6 +1413,8 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(exec, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(execp, 0)
+		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
+	END OBJ(execgauge, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(execbar, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
@@ -2046,6 +2052,8 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(memfree, INFO_MEM)
 	END OBJ(memmax, INFO_MEM)
 	END OBJ(memperc, INFO_MEM)
+	END OBJ(memgauge, INFO_MEM)
+		scan_gauge(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(membar, INFO_MEM)
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(memgraph, INFO_MEM)
@@ -2795,39 +2803,38 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 				s = p;
 
 				var = getenv(buf);
-				if (var) {
-					strncpy(buf, var, 255);
-				}
 
-				arg = 0;
+				/* if variable wasn't found in environment, use some special */
+				if (!var) {
+					arg = 0;
 
-				/* split arg */
-				if (strchr(buf, ' ')) {
-					arg = strchr(buf, ' ');
-					*arg = '\0';
-					arg++;
-					while (isspace((int) *arg)) {
+					/* split arg */
+					if (strchr(buf, ' ')) {
+						arg = strchr(buf, ' ');
+						*arg = '\0';
 						arg++;
+						while (isspace((int) *arg)) {
+							arg++;
+						}
+						if (!*arg) {
+							arg = 0;
+						}
 					}
-					if (!*arg) {
-						arg = 0;
+
+					/* lowercase variable name */
+					tmp_p = buf;
+					while (*tmp_p) {
+						*tmp_p = tolower(*tmp_p);
+						tmp_p++;
+					}
+
+					obj = construct_text_object(buf, arg,
+							line, allow_threaded,
+							&ifblock_opaque);
+					if (obj != NULL) {
+						append_object(retval, obj);
 					}
 				}
-
-				/* lowercase variable name */
-				tmp_p = buf;
-				while (*tmp_p) {
-					*tmp_p = tolower(*tmp_p);
-					tmp_p++;
-				}
-
-				obj = construct_text_object(buf, arg,
-						line, allow_threaded,
-						&ifblock_opaque);
-				if (obj != NULL) {
-					append_object(retval, obj);
-				}
-
 				continue;
 			} else {
 				obj = create_plain_text("$");
@@ -3193,6 +3200,9 @@ static void generate_text_internal(char *p, int p_max_size,
 				percent_print(p, p_max_size,
 				              round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100.0));
 			}
+			OBJ(cpugauge)
+				new_gauge(p, obj->a, obj->b,
+						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 255.0));
 			OBJ(cpubar) {
 				new_bar(p, obj->a, obj->b,
 						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 255.0));
@@ -3516,6 +3526,17 @@ static void generate_text_internal(char *p, int p_max_size,
 
 				free_text_objects(&subroot);
 				free(tmp_info);
+			}
+			OBJ(execgauge) {
+				double barnum;
+
+				read_exec(obj->data.s, p, text_buffer_size);
+				barnum = get_barnum(p); /*using the same function*/
+
+				if (barnum >= 0.0) {
+					barnum /= 100;
+					new_bar(p, 0, 6, round_to_int(barnum * 255.0));
+				}
 			}
 			OBJ(execbar) {
 				double barnum;
@@ -4005,6 +4026,10 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(memperc) {
 				if (cur->memmax)
 					percent_print(p, p_max_size, cur->mem * 100 / cur->memmax);
+			}
+			OBJ(memgauge){
+				new_gauge(p, obj->data.pair.a, obj->data.pair.b,
+					cur->memmax ? (cur->mem * 255) / (cur->memmax) : 0);
 			}
 			OBJ(membar) {
 				new_bar(p, obj->data.pair.a, obj->data.pair.b,
@@ -5296,6 +5321,59 @@ static void draw_line(char *s)
 						cur_y_add = specials[special_index].height;
 					}
 					break;
+				}
+
+				case GAUGE: /* new GAUGE  */
+				{
+					int h, by  = 0;
+					unsigned long last_colour = current_color;
+					float angle, px,py;
+					int usage;
+
+					if (cur_x - text_start_x > maximum_width
+							&& maximum_width > 0) {
+						break;
+					}
+
+					h = specials[special_index].height;
+					by = cur_y - (font_ascent() / 2) - 1;
+
+					if (h < font_height()) {
+						by -= h / 2 - 1;
+					}
+					w = specials[special_index].width;
+					if (w == 0) {
+						w = text_start_x + text_width - cur_x - 1;
+					}
+					if (w < 0) {
+						w = 0;
+					}
+
+					XSetLineAttributes(display, window.gc, 1, LineSolid,
+						CapButt, JoinMiter);
+
+					XDrawArc(display, window.drawable, window.gc,
+							cur_x, by, w, h*2, 0, 180*64);
+
+#ifdef MATH
+					usage =specials[special_index].arg;
+					angle = (3.14)*(float)(usage)/255.;
+					px = (float)(cur_x+w/2.)-(float)(w)/2.*0.9*cos(angle);
+					py = (float)(by+h)-(float)(h)*0.9*sin(angle);
+
+					XDrawLine(display, window.drawable, window.gc,
+							cur_x+ w/2, by+h, (int)(px), (int)(py));
+#endif
+
+					if (specials[special_index].height > cur_y_add
+							&& specials[special_index].height > font_h) {
+						cur_y_add = specials[special_index].height;
+					}
+
+					set_foreground_color(last_colour);
+
+					break;
+
 				}
 
 				case GRAPH:
