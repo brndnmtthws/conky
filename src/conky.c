@@ -6474,10 +6474,9 @@ static void load_config_file(const char *f)
 			 * if we already know we don't want it */
 			if(x_initialised == NO) {
 				if (string_to_bool(value)) {
-					X11_initialisation();
+					output_methods &= TO_X;
 				} else {
-					if(output_methods & TO_X)
-						output_methods &= ~TO_X;
+					output_methods &= ~TO_X;
 					x_initialised = NEVER;
 				}
 			}
@@ -7148,6 +7147,10 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("text") {
+			//initialize X11 if nothing X11-related is mentioned before TEXT (and if X11 is the default outputmethod)
+			if(output_methods & TO_X)
+				X11_initialisation();
+
 			if (global_text) {
 				free(global_text);
 				global_text = 0;
