@@ -134,6 +134,8 @@ enum arg_type get_arg_type(const char *arg)
 	if (*p == '"' && *e == '"')
 		return ARG_STRING;
 
+	if (*p == '-')	//allow negative values
+		p++;
 	while (p != e) {
 		if (!isdigit(*p))
 			break;
