@@ -2805,35 +2805,36 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 				var = getenv(buf);
 
 				/* if variable wasn't found in environment, use some special */
-				if (!var) {
-					arg = 0;
+				if (var) {
+					strncpy(buf, var, 255);
+				}
+				arg = 0;
 
-					/* split arg */
-					if (strchr(buf, ' ')) {
-						arg = strchr(buf, ' ');
-						*arg = '\0';
+				/* split arg */
+				if (strchr(buf, ' ')) {
+					arg = strchr(buf, ' ');
+					*arg = '\0';
+					arg++;
+					while (isspace((int) *arg)) {
 						arg++;
-						while (isspace((int) *arg)) {
-							arg++;
-						}
-						if (!*arg) {
-							arg = 0;
-						}
 					}
+					if (!*arg) {
+						arg = 0;
+					}
+				}
 
-					/* lowercase variable name */
-					tmp_p = buf;
-					while (*tmp_p) {
-						*tmp_p = tolower(*tmp_p);
-						tmp_p++;
-					}
+				/* lowercase variable name */
+				tmp_p = buf;
+				while (*tmp_p) {
+					*tmp_p = tolower(*tmp_p);
+					tmp_p++;
+				}
 
-					obj = construct_text_object(buf, arg,
-							line, allow_threaded,
-							&ifblock_opaque);
-					if (obj != NULL) {
-						append_object(retval, obj);
-					}
+				obj = construct_text_object(buf, arg,
+						line, allow_threaded,
+						&ifblock_opaque);
+				if (obj != NULL) {
+					append_object(retval, obj);
 				}
 				continue;
 			} else {
@@ -7313,9 +7314,9 @@ static void load_config_file(const char *f)
 
 		CONF("alias") {
 			if (value) {
-				char skey[256], svalue[256]; 
+				char skey[1024], svalue[1024];
 				char *oldvalue;
-				if (sscanf(value, "%255[0-9a-zA-Z_] %255[^\n]", skey, svalue) == 2) {
+				if (sscanf(value, "%1023[0-9a-zA-Z_] %1023[^\n]", skey, svalue) == 2) {
 					oldvalue = getenv(skey);
 					if (oldvalue == NULL) {
 						setenv(skey, svalue, 0);
