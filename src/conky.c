@@ -2719,6 +2719,8 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 	char *p, *s, *orig_p;
 	long line;
 	void *ifblock_opaque = NULL;
+	char *tmp_p;
+	char *arg = 0;
 
 	p = strndup(const_p, max_user_text - 1);
 	while (text_contains_templates(p)) {
@@ -2799,8 +2801,7 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 					strncpy(buf, var, 255);
 				}
 
-				char *tmp_p;
-				char *arg = 0;
+				arg = 0;
 
 				/* split arg */
 				if (strchr(buf, ' ')) {
@@ -7228,7 +7229,7 @@ static void load_config_file(const char *f)
 
 		CONF("temperature_unit") {
 			if (!value) {
-				ERR("config option 'temperature_unit' needs an argument");
+				ERR("config option 'temperature_unit' needs an argument, either 'celsius' or 'fahrenheit'");
 			} else if (set_temp_output_unit(value)) {
 				ERR("temperature_unit: incorrect argument");
 			}
@@ -7236,13 +7237,12 @@ static void load_config_file(const char *f)
 
 		CONF("alias") {
 			if (value) {
-				char *skey, *svalue, *oldvalue;
-				if (sscanf(value, "%a[0-9a-zA-Z_] %a[^\n]", &skey, &svalue) == 2) {
+				char skey[256], svalue[256]; 
+				char *oldvalue;
+				if (sscanf(value, "%255[0-9a-zA-Z_] %255[^\n]", skey, svalue) == 2) {
 					oldvalue = getenv(skey);
-					if(oldvalue == NULL) {
+					if (oldvalue == NULL) {
 						setenv(skey, svalue, 0);
-						free(skey);
-						free(svalue);
 					}
 					//PS: Don't free oldvalue, it's the real envvar, not a copy
 				} else {
