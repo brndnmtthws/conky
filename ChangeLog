@@ -1,3 +1,6 @@
+2009-03-16
+	* Fix bug with wacky netstat values on startup
+
 2009-03-15
 	* Added extra newline patch, sf.net id #2638601 (thanks Ali)
 	* Disk i/o support on FreeBSD patch, sf.net id #2657227 (thanks Nikos)
