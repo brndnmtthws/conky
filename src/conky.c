@@ -7314,9 +7314,11 @@ static void load_config_file(const char *f)
 
 		CONF("alias") {
 			if (value) {
-				char skey[1024], svalue[1024];
+				size_t maxlength = strlen(value);	//+1 for terminating 0 not needed, 'cause of the space in the middle of value
+				char *skey = malloc(maxlength);
+				char *svalue = malloc(maxlength);
 				char *oldvalue;
-				if (sscanf(value, "%1023[0-9a-zA-Z_] %1023[^\n]", skey, svalue) == 2) {
+				if (sscanf(value, "%[0-9a-zA-Z_] %[^\n]", skey, svalue) == 2) {
 					oldvalue = getenv(skey);
 					if (oldvalue == NULL) {
 						setenv(skey, svalue, 0);
@@ -7325,6 +7327,8 @@ static void load_config_file(const char *f)
 				} else {
 					CONF_ERR;
 				}
+				free(skey);
+				free(svalue);
 			} else {
 				CONF_ERR;
 			}
