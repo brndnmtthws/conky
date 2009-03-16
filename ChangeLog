@@ -1,5 +1,6 @@
 2009-03-15
 	* Added extra newline patch, sf.net id #2638601 (thanks Ali)
+	* Disk i/o support on FreeBSD patch, sf.net id #2657227 (thanks Nikos)
 
 2009-03-07
 	* Added alias patch ( sf.net id #2663691 ) changed it to prevent it from

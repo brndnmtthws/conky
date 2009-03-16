@@ -1321,7 +1321,6 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.loadavg[0] = (r >= 1) ? (unsigned char) a : 0;
 			free(buf);
 		}
-#if defined(__linux__)
 	END OBJ(diskio, INFO_DISKIO)
 		obj->data.diskio = prepare_diskio_stat(dev_name(arg));
 	END OBJ(diskio_read, INFO_DISKIO)
@@ -1349,7 +1348,6 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
 		if (buf)
 			free(buf);
-#endif
 	END OBJ(color, 0)
 #ifdef X11
 		if (output_methods & TO_X) {

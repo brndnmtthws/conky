@@ -64,6 +64,8 @@ inline void proc_find_top(struct process **cpu, struct process **mem);
 u_int64_t diskio_prev = 0;
 static short cpu_setup = 0;
 static short diskio_setup = 0;
+static struct diskio_stat diskio_stats_[MAX_DISKIO_STATS];
+struct diskio_stat *diskio_stats = diskio_stats_;
 
 static int getsysctl(char *name, void *ptr, size_t len)
 {
@@ -717,6 +719,66 @@ void update_diskio()
 
 void clear_diskio_stats()
 {
+	unsigned i;
+	for(i = 0; i < MAX_DISKIO_STATS; i++) {
+		if (diskio_stats[i].dev) {
+			free(diskio_stats[i].dev);
+			diskio_stats[i].dev = 0;
+		}
+	}
+}
+
+struct diskio_stat *prepare_diskio_stat(const char *s)
+{
+	struct diskio_stat *new = 0;
+	struct stat sb;
+	unsigned i;
+	FILE *fp;
+	int found = 0;
+	char device[text_buffer_size], fbuf[text_buffer_size];
+	static int rep = 0;
+	/* lookup existing or get new */
+	for (i = 0; i < MAX_DISKIO_STATS; i++) {
+		if (diskio_stats[i].dev) {
+			if (strcmp(diskio_stats[i].dev, s) == 0) {
+				return &diskio_stats[i];
+			}
+		} else {
+			new = &diskio_stats[i];
+			break;
+		}
+	}
+	/* new dev */
+	if (!new) {
+		ERR("too many diskio stats");
+		return 0;
+	}
+	if (new->dev) {
+		free(new->dev);
+		new->dev = 0;
+	}
+	if (strncmp(s, "/dev/", 5) == 0) {
+		// supplied a /dev/device arg, so cut off the /dev part
+		new->dev = strndup(s + 5, text_buffer_size);
+	} else {
+		new->dev = strndup(s, text_buffer_size);
+	}
+	/*
+	 * check that device actually exists
+	 */
+	snprintf(device, text_buffer_size, "/dev/%s", new->dev);
+
+	if (stat(device, &sb)) {
+		ERR("diskio device '%s' does not exist", s);
+		return 0;
+	}
+	new->current = 0;
+	new->current_read = 0;
+	new ->current_write = 0;
+	new->last = UINT_MAX;
+	new->last_read = UINT_MAX;
+	new->last_write = UINT_MAX;
+	return new;
 }
 
 /* While topless is obviously better, top is also not bad. */
