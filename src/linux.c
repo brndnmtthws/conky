@@ -319,6 +319,7 @@ void update_net_stats(void)
 {
 	FILE *net_dev_fp;
 	static int rep = 0;
+	static char first = 1;
 
 	// FIXME: arbitrary size chosen to keep code simple.
 	int i, i2;
@@ -442,9 +443,12 @@ void update_net_stats(void)
 
 		/*** end ip addr patch ***/
 
-		/* calculate speeds */
-		ns->net_rec[0] = (ns->recv - last_recv) / delta;
-		ns->net_trans[0] = (ns->trans - last_trans) / delta;
+		if (!first) {
+			/* calculate speeds */
+			ns->net_rec[0] = (ns->recv - last_recv) / delta;
+			ns->net_trans[0] = (ns->trans - last_trans) / delta;
+		}
+
 		curtmp1 = 0;
 		curtmp2 = 0;
 		// get an average
@@ -525,6 +529,7 @@ void update_net_stats(void)
 		free(winfo);
 #endif
 	}
+	first = 0;
 
 	fclose(net_dev_fp);
 
