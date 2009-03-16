@@ -381,10 +381,7 @@ void update_net_stats(void)
 		ns->up = 1;
 		memset(&(ns->addr.sa_data), 0, 14);
 
-		if(NULL == ns->addrs)
-			ns->addrs = (char*) malloc(17 * 16 + 1);
-		if(NULL != ns->addrs)
-			memset(ns->addrs, 0, 17 * 16 + 1); /* Up to 17 chars per ip, max 16 interfaces. Nasty memory usage... */
+		memset(ns->addrs, 0, 17 * 16 + 1); /* Up to 17 chars per ip, max 16 interfaces. Nasty memory usage... */
 
 		last_recv = ns->recv;
 		last_trans = ns->trans;
@@ -424,17 +421,15 @@ void update_net_stats(void)
 				break;
 
 			ns2 = get_net_stat(
-				((struct ifreq *) conf.ifc_buf)[k].ifr_ifrn.ifrn_name);
+					((struct ifreq *) conf.ifc_buf)[k].ifr_ifrn.ifrn_name);
 			ns2->addr = ((struct ifreq *) conf.ifc_buf)[k].ifr_ifru.ifru_addr;
-			if(NULL != ns2->addrs) {
-				sprintf(temp_addr, "%u.%u.%u.%u, ",
+			sprintf(temp_addr, "%u.%u.%u.%u, ",
 					ns2->addr.sa_data[2] & 255,
 					ns2->addr.sa_data[3] & 255,
 					ns2->addr.sa_data[4] & 255,
 					ns2->addr.sa_data[5] & 255);
-				if(NULL == strstr(ns2->addrs, temp_addr))
-					strncpy(ns2->addrs + strlen(ns2->addrs), temp_addr, 17);
-			}
+			if(NULL == strstr(ns2->addrs, temp_addr))
+				strncpy(ns2->addrs + strlen(ns2->addrs), temp_addr, 17);
 		}
 
 		close((long) i);
