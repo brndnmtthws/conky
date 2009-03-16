@@ -1,3 +1,6 @@
+2009-03-15
+	* Added extra newline patch, sf.net id #2638601 (thanks Ali)
+
 2009-03-07
 	* Added alias patch ( sf.net id #2663691 ) changed it to prevent it from
 	overwriting existing environment variables and updated docs, syntaxfiles, ...
