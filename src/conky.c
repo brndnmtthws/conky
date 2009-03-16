@@ -5354,16 +5354,16 @@ static void draw_line(char *s)
 						CapButt, JoinMiter);
 
 					XDrawArc(display, window.drawable, window.gc,
-							cur_x, by, w, h*2, 0, 180*64);
+							cur_x, by, w * 2.0, h * 2.0, 0, 180*64);
 
 #ifdef MATH
 					usage =specials[special_index].arg;
 					angle = (3.14)*(float)(usage)/255.;
-					px = (float)(cur_x+w/2.)-(float)(w)/2.*0.9*cos(angle);
-					py = (float)(by+h)-(float)(h)*0.9*sin(angle);
+					px = (float)(cur_x+w)-(float)(w)*cos(angle);
+					py = (float)(by+h)-(float)(h)*sin(angle);
 
 					XDrawLine(display, window.drawable, window.gc,
-							cur_x+ w/2, by+h, (int)(px), (int)(py));
+							cur_x + w, by+h, (int)(px), (int)(py));
 #endif
 
 					if (specials[special_index].height > cur_y_add
