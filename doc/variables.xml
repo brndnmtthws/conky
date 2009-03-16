@@ -1079,7 +1079,8 @@
 		</term>
 		<listitem>
 			if PROCESS is running, display everything $if_running
-			and the matching $endif
+			and the matching $endif.  This uses the ``pidof'' command, so the
+			-x switch is also supported.
 			<para></para></listitem>
 	</varlistentry>
 

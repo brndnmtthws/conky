@@ -4,7 +4,7 @@ conky(1)							      conky(1)
 
 1mNAME0m
        conky - A system monitor for X originally based on the torsmo code, but
-       more kickass. It just keeps on given’er. Yeah.
+       more kickass. It just keeps on given'er. Yeah.
 
 1mSYNOPSIS0m
        1mconky 22m[4moptions24m]
@@ -34,33 +34,33 @@ conky(1)							      conky(1)
        Thanks for your interest in Conky.
 
 1mCOMPILING0m
-       For users compiling from source on a binary distro, make sure you  have
-       the  X  development libraries installed. This should be a package along
-       the lines of "libx11-dev" or "xorg-x11-dev" for X11 libs,  and  similar
-       "-dev"  format for the other libs required (depending on your configure
+       For  users compiling from source on a binary distro, make sure you have
+       the X development libraries installed. This should be a	package	 along
+       the  lines  of "libx11-dev" or "xorg-x11-dev" for X11 libs, and similar
+       "-dev" format for the other libs required (depending on your  configure
        options).
 
-       Conky has (for some time) been available in the	repositories  of  most
-       popular	distributions.	 Here are some installation instructions for a
+       Conky  has  (for	 some time) been available in the repositories of most
+       popular distributions.  Here are some installation instructions	for  a
        few:
 
-       Gentoo users -- Conky is in Gentoo’s Portage... simply use "emerge app-
-       admin/conky"  for  installation.	  There	 is also usually an up-to-date
-       ebuild within Conky’s package or in the git repo.
+       Gentoo users -- Conky is in Gentoo's Portage... simply use "emerge app-
+       admin/conky" for installation.  There is	 also  usually	an  up-to-date
+       ebuild within Conky's package or in the git repo.
 
-       Debian, etc. users -- Conky should be in your repositories, and can  be
+       Debian,	etc. users -- Conky should be in your repositories, and can be
        installed by doing "aptitude install conky".
 
-       Example	to  compile  and  run Conky with all optional components (note
+       Example to compile and run Conky with  all  optional  components	 (note
        that some configure options may differ for your system):
 
        1msh autogen.sh # Only required if building from the git repo0m
 
-       1m./configure	  --prefix=/usr	     --mandir=/usr/share/man	   --in‐0m
-       1mfodir=/usr/share/info	--datadir=/usr/share  --sysconfdir=/etc --local‐0m
+       1m./configure	   --prefix=/usr      --mandir=/usr/share/man	   --in‐0m
+       1mfodir=/usr/share/info --datadir=/usr/share  --sysconfdir=/etc	--local‐0m
        1mstatedir=/var/lib --disable-own-window --enable-audacious[=yes|no|lega‐0m
        1mcy] --enable-bmpx --disable-hddtemp --disable-mpd --enable-xmms2 --dis‐0m
-       1mable-portmon  --disable-network  --enable-debug  --disable-x11	  --dis‐0m
+       1mable-portmon	--disable-network  --enable-debug  --disable-x11  --dis‐0m
        1mable-double-buffer --disable-xdamage --disable-xft0m
 
        1mmake0m
@@ -72,7 +72,6 @@ conky(1)							      conky(1)
        Conky has been tested to be compatible with C99 C, however it  has  not
        been tested with anything other than gcc, and is not guaranteed to work
        with other compilers.
-
 
 1mYOU SHOULD KNOW0m
        Conky is generally very good on resources. That said, the more you  try
@@ -91,7 +90,7 @@ conky(1)							      conky(1)
 
 
        1m-q | --quiet0m
-	      Run Conky in ’quiet mode’ (ie. no output)
+	      Run Conky in 'quiet mode' (ie. no output)
 
 
        1m-a | --alignment=ALIGNMENT0m
@@ -124,7 +123,7 @@ conky(1)							      conky(1)
 
 
        1m-t | --text=TEXT0m
-	      Text to render, remember single quotes, like -t ’ $uptime ’
+	      Text to render, remember single quotes, like -t ' $uptime '
 
 
        1m-u | --interval=SECONDS0m
@@ -150,19 +149,19 @@ conky(1)							      conky(1)
 1mCONFIGURATION SETTINGS0m
        Default	  configuration	   file	   location   is   $HOME/.conkyrc   or
        ${sysconfdir}/conky/conky.conf. On most systems,	 sysconfdir  is	 /etc,
-       and  you can find the sample config file there (/etc/conky/conky.conf).
+       and you can find the sample config file there (/etc/conky/conky.conf).
 
-       You might want to copy it to $HOME/.conkyrc and	then  start  modifying
+       You  might  want	 to copy it to $HOME/.conkyrc and then start modifying
        it.  Other configs can be found at http://conky.sf.net/
 
-       1malias0m
-	      Use this to create aliases of variables. The first argument is
-	      the new name, the second the old name, and the other arguments
-	      are passed on to the variable. Example: If you want to use $alpha
-	      instead of ${beta gamma delta} then you have to write the following:
-	      alias alpha beta gamma delta . PS: Instead of creating an alias
-	      in the config you can also use environment variables. Example:
-	      Start conky like this: alpha="beta gamma delta" conky
+       1malias	22mUse this to create aliases of variables. The first  argument	 is
+	      the  new	name, the second the old name, and the other arguments
+	      are passed on to the variable. Example: If you want to use  $al‐
+	      pha  instead  of	${beta gamma delta} then you have to write the
+	      following: alias alpha beta gamma delta . PS: Instead of	creat‐
+	      ing  an  alias  in the config you can also use environment vari‐
+	      ables. Example: Start conky like this: alpha="beta gamma	delta"
+	      conky
 
 
        1malignment0m
@@ -195,8 +194,8 @@ conky(1)							      conky(1)
 
 
        1mtop_cpu_separate0m
-	      If true, cpu in top will show usage of one processor’s power. If
-	      false, cpu in top will show the usage of all  processors’	 power
+	      If true, cpu in top will show usage of one processor's power. If
+	      false, cpu in top will show the usage of all  processors'	 power
 	      combined.
 
 
@@ -209,12 +208,12 @@ conky(1)							      conky(1)
 
 
        1mdefault_shade_color0m
-	      Default shading color and border’s shading color
+	      Default shading color and border's shading color
 
 
        1mdouble_buffer0m
 	      Use the Xdbe extension? (eliminates flicker) It is highly recom‐
-	      mended to use own window with this one so double buffer won’t be
+	      mended to use own window with this one so double buffer won't be
 	      so big.
 
 
@@ -254,9 +253,9 @@ conky(1)							      conky(1)
 
        1mimap	22mDefault global IMAP server. Arguments are: "host user  pass	[-i
 	      interval]	 [-f folder] [-p port] [-e command] [-r retries]". De‐
-	      fault port is 143, default folder is ’INBOX’,  default  interval
+	      fault port is 143, default folder is 'INBOX',  default  interval
 	      is  5 minutes, and default number of retries before giving up is
-	      5. If the password is supplied as ’*’, you will be  prompted  to
+	      5. If the password is supplied as '*', you will be  prompted  to
 	      enter the password when Conky starts.
 
 
@@ -283,7 +282,7 @@ conky(1)							      conky(1)
 	      Size of the standard text buffer (default is  256	 bytes).  This
 	      buffer  is used for intermediary text, such as individual lines,
 	      output from $exec vars, and various other variables.  Increasing
-	      the  size	 of this buffer can drastically reduce Conky’s perfor‐
+	      the  size	 of this buffer can drastically reduce Conky's perfor‐
 	      mance, but will allow for more text display  per	variable.  The
 	      size  of this buffer cannot be smaller than the default value of
 	      256 bytes.
@@ -310,7 +309,7 @@ conky(1)							      conky(1)
 
 
        1mmusic_player_interval0m
-	      Music player thread update interval (defaults to Conky’s	update
+	      Music player thread update interval (defaults to Conky's	update
 	      interval)
 
 
@@ -349,7 +348,7 @@ conky(1)							      conky(1)
 
 
        1mown_window_title0m
-	      Manually	set the window name. Defaults to "<hostname> - conky".
+	      Manually set the window name. Defaults to "<hostname> - conky".
 
 
        1mown_window_transparent0m
@@ -360,8 +359,8 @@ conky(1)							      conky(1)
 	      if own_window is yes, you may specify type normal, desktop, dock
 	      or override (default: normal).  Desktop windows are special win‐
 	      dows that have no window decorations; are always visible on your
-	      desktop;	do not appear in your pager or taskbar; and are sticky
-	      across all workspaces.  Override windows are not under the  con‐
+	      desktop; do not appear in your pager or taskbar; and are	sticky
+	      across  all workspaces.  Override windows are not under the con‐
 	      trol of the window manager. Hints are ignored. This type of win‐
 	      dow can be useful for certain situations.
 
@@ -375,10 +374,10 @@ conky(1)							      conky(1)
 
 
        1mout_to_x0m
-	      When set to no, there will be no output in X  (useful  when  you
+	      When  set	 to  no, there will be no output in X (useful when you
 	      also use things like out_to_console).  If you set it to no, make
-	      sure that it’s placed before all other X-related	setting	 (take
-	      the  first line of your configfile to be sure). Default value is
+	      sure  that  it's placed before all other X-related setting (take
+	      the first line of your configfile to be sure). Default value  is
 	      yes
 
 
@@ -394,10 +393,10 @@ conky(1)							      conky(1)
 	      Pad percentages to this many decimals (0 = no padding)
 
 
-       1mpop3	22mDefault global POP3 server. Arguments are: "host user  pass	[-i
-	      interval]	 [-p port] [-e command] [-r retries]". Default port is
-	      110, default interval is 5 minutes, and default  number  of  re‐
-	      tries before giving up is 5. If the password is supplied as ’*’,
+       1mpop3	22mDefault  global  POP3 server. Arguments are: "host user pass [-i
+	      interval] [-p port] [-e command] [-r retries]". Default port  is
+	      110,  default  interval  is 5 minutes, and default number of re‐
+	      tries before giving up is 5. If the password is supplied as '*',
 	      you will be prompted to enter the password when Conky starts.
 
 
@@ -419,25 +418,25 @@ conky(1)							      conky(1)
 
 
        1mtemperature_unit0m
-	      Desired  output  unit  of	 all objects displaying a temperature.
-	      Parameters are either "fahrenheit"  or  "celsius".  The  default
+	      Desired output unit of all  objects  displaying  a  temperature.
+	      Parameters  are  either  "fahrenheit"  or "celsius". The default
 	      unit is degree Celsius.
 
 
        1mtemplateN0m
 	      Define a template for later use inside TEXT segments. Substitute
-	      N by a digit between 0 and 9, inclusively.   The	value  of  the
+	      N	 by  a	digit  between 0 and 9, inclusively.  The value of the
 	      variable is being inserted into the stuff below TEXT at the cor‐
 	      responding position, but before some substitutions are applied:
 
-	      ’\n’ -> newline
-	      ’\\’ -> backslash
-	      ’\ ’ -> space
-	      ’\N’ -> template argument N
+	      '\n' -> newline
+	      '\\' -> backslash
+	      '\ ' -> space
+	      '\N' -> template argument N
 
 
        1mtotal_run_times0m
-	      Total number of times for Conky to update before quitting.  Zero
+	      Total  number of times for Conky to update before quitting. Zero
 	      makes Conky run forever
 
 
@@ -452,8 +451,8 @@ conky(1)							      conky(1)
        1muse_spacer0m
 	      Adds spaces around certain objects to stop them from moving oth‐
 	      er things around. Arguments are left, right, and none (default).
-	      The   old	 true/false  values  are  deprecated  and  default  to
-	      right/none respectively. Note that this only helps  if  you  are
+	      The  old	true/false  values  are	 deprecated  and  default   to
+	      right/none  respectively.	 Note  that this only helps if you are
 	      using a mono font, such as Bitstream Vera Sans Mono.
 
 
@@ -469,24 +468,24 @@ conky(1)							      conky(1)
 	      Xft font to use.
 
 
-       1mTEXT	22mAfter  this begins text to be formatted on screen. Backslash (\)
-	      escapes newlines in the text section. This  can  be  useful  for
-	      cleaning	up  config  files where conky is used to pipe input to
+       1mTEXT	22mAfter this begins text to be formatted on screen. Backslash	(\)
+	      escapes  newlines	 in  the  text section. This can be useful for
+	      cleaning up config files where conky is used to  pipe  input  to
 	      dzen2.
 
 
 1mVARIABLES0m
-       Colors are parsed using XParsecolor(), there might be a list  of	 them:
-       /usr/share/X11/rgb.txt.	  Also,	  ⟨http://sedition.com/perl/rgb.html⟩.
+       Colors  are  parsed using XParsecolor(), there might be a list of them:
+       /usr/share/X11/rgb.txt.	 Also,	  ⟨http://sedition.com/perl/rgb.html⟩.
        Color can be also in #rrggbb format (hex).
 
        1maddr interface0m
-	      IP address for an interface, or "No Address" if  no  address  is
+	      IP  address  for	an interface, or "No Address" if no address is
 	      assigned.
 
 
        1maddrs interface0m
-	      IP  addresses for an interface (if one - works like addr). Linux
+	      IP addresses for an interface (if one - works like addr).	 Linux
 	      only.
 
 
@@ -527,7 +526,7 @@ conky(1)							      conky(1)
 
 
        1mapm_battery_time0m
-	      Display remaining APM battery life in hh:mm:ss or	 "unknown"  if
+	      Display  remaining  APM battery life in hh:mm:ss or "unknown" if
 	      AC adapterstatus is on-line or charging (FreeBSD only)
 
 
@@ -588,16 +587,16 @@ conky(1)							      conky(1)
 
 
        1mbattery (num)0m
-	      Battery  status and remaining percentage capacity of ACPI or APM
-	      battery. ACPI battery number can be given as  argument  (default
+	      Battery status and remaining percentage capacity of ACPI or  APM
+	      battery.	ACPI  battery number can be given as argument (default
 	      is BAT0).
 
 
        1mbattery_short (num)0m
-	      Battery  status and remaining percentage capacity of ACPI or APM
-	      battery. ACPI battery number can be given as  argument  (default
-	      is  BAT0).  This mode display a short status, which means that C
-	      is displayed instead of charging and D is displayed  instead  of
+	      Battery status and remaining percentage capacity of ACPI or  APM
+	      battery.	ACPI  battery number can be given as argument (default
+	      is BAT0).	 This mode display a short status, which means that  C
+	      is  displayed  instead of charging and D is displayed instead of
 	      discharging.
 
 
@@ -612,7 +611,7 @@ conky(1)							      conky(1)
 
 
        1mbattery_time (num)0m
-	      Battery  charge/discharge	 time  remaining of ACPI battery. ACPI
+	      Battery charge/discharge time remaining of  ACPI	battery.  ACPI
 	      battery number can be given as argument (default is BAT0).
 
 
@@ -651,7 +650,7 @@ conky(1)							      conky(1)
 	      Change drawing color to color
 
 
-       1mcolorN 22mChange drawing color to colorN configuration option, where N	 is
+       1mcolorN 22mChange  drawing color to colorN configuration option, where N is
 	      a digit between 0 and 9, inclusively.
 
 
@@ -668,17 +667,17 @@ conky(1)							      conky(1)
 
 
        1mcpu (cpuN)0m
-	      CPU  usage  in percents. For SMP machines, the CPU number can be
-	      provided as an argument. ${cpu cpu0} is  the  total  usage,  and
+	      CPU usage in percents. For SMP machines, the CPU number  can  be
+	      provided	as  an	argument.  ${cpu cpu0} is the total usage, and
 	      ${cpu cpuX} (X >= 1) are individual CPUs.
 
 
        1mcpubar (cpu number) (height),(width)0m
-	      Bar  that shows CPU usage, height is bar’s height in pixels. See
+	      Bar that shows CPU usage, height is bar's height in pixels.  See
 	      $cpu for more info on SMP.
 
 
-       1mcpugraph ("normal"|"log") (height),(width) (gradient colour 1)	 (gradi‐0m
+       1mcpugraph  ("normal"|"log") (height),(width) (gradient colour 1) (gradi‐0m
        1ment colour 2) (scale) (cpu number)0m
 	      CPU usage graph, with optional colours in hex, minus the #.  See
 	      $cpu  for	 more  info  on	 SMP. Uses a logarithmic scale (to see
@@ -692,7 +691,7 @@ conky(1)							      conky(1)
 
        1mdiskiograph ("normal"|"log") (height),(width) (gradient colour 1) (gra‐0m
        1mdient colour 2) (scale) (device)0m
-	      Disk  IO graph, colours defined in hex, minus the #. If scale is
+	      Disk IO graph, colours defined in hex, minus the #. If scale  is
 	      non-zero, it becomes the scale for the graph. Uses a logarithmic
 	      scale (to see small numbers) when you use "log" instead of "nor‐
 	      mal".
@@ -702,7 +701,7 @@ conky(1)							      conky(1)
 	      Displays current disk IO for reads. Device as in diskio.
 
 
-       1mdiskiograph_read ("normal"|"log") (height),(width) (gradient colour  1)0m
+       1mdiskiograph_read  ("normal"|"log") (height),(width) (gradient colour 1)0m
        1m(gradient colour 2) (scale) (device)0m
 	      Disk IO graph for reads, colours defined in hex, minus the #. If
 	      scale is non-zero, it becomes the scale for the graph. Device as
@@ -716,9 +715,9 @@ conky(1)							      conky(1)
 
        1mdiskiograph_write ("normal"|"log") (height),(width) (gradient colour 1)0m
        1m(gradient colour 2) (scale) (device)0m
-	      Disk  IO	graph for writes, colours defined in hex, minus the #.
+	      Disk IO graph for writes, colours defined in hex, minus  the  #.
 	      If scale is non-zero, it becomes the scale for the graph. Device
-	      as  in  diskio.  Uses a logarithmic scale (to see small numbers)
+	      as in diskio. Uses a logarithmic scale (to  see  small  numbers)
 	      when you use "log" instead of "normal".
 
 
@@ -735,7 +734,7 @@ conky(1)							      conky(1)
 	      Download speed in KiB with one decimal
 
 
-       1mdownspeedgraph	 ("normal"|"log")  (height),(width)  (gradient colour 1)0m
+       1mdownspeedgraph ("normal"|"log") (height),(width)  (gradient  colour  1)0m
        1m(gradient colour 2) (scale) (net)0m
 	      Download	speed  graph,  colours defined in hex, minus the #. If
 	      scale is non-zero, it becomes the scale for the  graph.  Uses  a
@@ -760,7 +759,7 @@ conky(1)							      conky(1)
 
        1mexec command0m
 	      Executes a shell command and displays the output in conky. warn‐
-	      ing:  this  takes a lot more resources than other variables. I’d
+	      ing:  this  takes a lot more resources than other variables. I'd
 	      recommend coding wanted behaviour in C and posting a patch.
 
 
@@ -773,12 +772,12 @@ conky(1)							      conky(1)
        1mexecgraph ("normal"|"log") (height),(width) (gradient colour 1) (gradi‐0m
        1ment colour 2) (scale) command0m
 	      Same as execbar, but graphs values. Uses a logaritmic scale when
-	      the  log	option	is  given (to see small numbers). Values still
+	      the log option is given (to see  small  numbers).	 Values	 still
 	      have to be between 0 and 100.
 
 
        1mexeci interval command0m
-	      Same as exec but with specific interval. Interval can’t be  less
+	      Same  as exec but with specific interval. Interval can't be less
 	      than update_interval in configuration. See also $texeci
 
 
@@ -792,56 +791,56 @@ conky(1)							      conky(1)
 
        1mexecp command0m
 	      Executes a shell command and displays the output in conky. warn‐
-	      ing: this takes a lot more resources than other  variables.  I’d
+	      ing:  this  takes a lot more resources than other variables. I'd
 	      recommend coding wanted behaviour in C and posting a patch. This
-	      differs from $exec in that it parses the output of the  command,
-	      so  you  can  insert things like ${color red}hi!${color} in your
-	      script and have it correctly parsed by  Conky.   Caveats:	 Conky
-	      parses  and  evaluates  the  output  of  $execp every time Conky
+	      differs  from $exec in that it parses the output of the command,
+	      so you can insert things like ${color  red}hi!${color}  in  your
+	      script  and  have	 it correctly parsed by Conky.	Caveats: Conky
+	      parses and evaluates the	output	of  $execp  every  time	 Conky
 	      loops, and then destroys all the objects. If you try to use any‐
-	      thing  like $execi within an $execp statement, it will function‐
+	      thing like $execi within an $execp statement, it will  function‐
 	      ally run at the same interval that the $execp statement runs, as
 	      it is created and destroyed at every interval.
 
 
        1mexecpi interval command0m
-	      Same as execp but with specific interval. Interval can’t be less
+	      Same as execp but with specific interval. Interval can't be less
 	      than update_interval in configuration. Note that the output from
-	      the  $execpi  command is still parsed and evaluated at every in‐
+	      the $execpi command is still parsed and evaluated at  every  in‐
 	      terval.
 
 
        1mfont (font)0m
-	      Specify a different font. This new font will apply to  the  cur‐
-	      rent  line and everything following. You can use a $font with no
-	      arguments to change back to the default  font  (much  like  with
+	      Specify  a  different font. This new font will apply to the cur‐
+	      rent line and everything following. You can use a $font with  no
+	      arguments	 to  change  back  to the default font (much like with
 	      $color)
 
 
        1mfreq (n)0m
-	      Returns  CPU  #n’s frequency in MHz. CPUs are counted from 1. If
+	      Returns CPU #n's frequency in MHz. CPUs are counted from	1.  If
 	      omitted, the parameter defaults to 1.
 
 
        1mfreq_g (n)0m
-	      Returns CPU #n’s frequency in GHz. CPUs are counted from	1.  If
+	      Returns  CPU  #n's frequency in GHz. CPUs are counted from 1. If
 	      omitted, the parameter defaults to 1.
 
 
        1mfreq_dyn (n)0m
-	      Returns CPU #n’s frequency in MHz (defaults to 1), but is calcu‐
-	      lated by counting to clock cycles to  complete  an  instruction.
+	      Returns CPU #n's frequency in MHz (defaults to 1), but is calcu‐
+	      lated  by	 counting  to clock cycles to complete an instruction.
 	      Only available for x86/amd64.
 
 
        1mfreq_dyn_g (n)0m
-	      Returns CPU #n’s frequency in GHz (defaults to 1), but is calcu‐
-	      lated by counting to clock cycles to  complete  an  instruction.
+	      Returns CPU #n's frequency in GHz (defaults to 1), but is calcu‐
+	      lated  by	 counting  to clock cycles to complete an instruction.
 	      Only available for x86/amd64.
 
 
        1mfs_bar (height),(width) fs0m
-	      Bar  that	 shows how much space is used on a file system. height
+	      Bar that shows how much space is used on a file  system.	height
 	      is the height in pixels. fs is any file on that file system.
 
 
@@ -865,27 +864,27 @@ conky(1)							      conky(1)
 	      File system used space
 
 
-       1mgoto x 22mThe next element will be printed at position ’x’.
+       1mgoto x 22mThe next element will be printed at position 'x'.
 
 
        1mgw_iface0m
-	      Displays the default route’s interface or "multiple"/"none"  ac‐
+	      Displays	the default route's interface or "multiple"/"none" ac‐
 	      cordingly.
 
 
-       1mgw_ip	22mDisplays  the  default gateway’s IP or "multiple"/"none" accord‐
+       1mgw_ip	22mDisplays the default gateway's IP or	 "multiple"/"none"  accord‐
 	      ingly.
 
 
        1mhddtemp dev, (host,(port))0m
-	      Displays temperature of a selected hard disk drive  as  reported
-	      by  the  hddtemp	daemon	running on host:port.  Default host is
+	      Displays	temperature  of a selected hard disk drive as reported
+	      by the hddtemp daemon running on	host:port.   Default  host  is
 	      127.0.0.1, default port is 7634.
 
 
        1mhead logfile lines (interval)0m
-	      Displays first N lines of supplied text text file.  If  interval
-	      is  not  supplied,  Conky assumes 2x Conky’s interval. Max of 30
+	      Displays	first  N lines of supplied text text file. If interval
+	      is not supplied, Conky assumes 2x Conky's interval.  Max	of  30
 	      lines can be displayed, or until the text buffer is filled.
 
 
@@ -894,15 +893,15 @@ conky(1)							      conky(1)
 
 
        1mhwmon (dev) type n0m
-	      Hwmon sensor from sysfs (Linux 2.6). Parameter dev may be	 omit‐
-	      ted  if you have only one hwmon device. Parameter type is either
-	      ’in’ or ’vol’ meaning voltage; ’fan’ meaning fan; ’temp’ meaning
-	      temperature.   Parameter	 n   is	 number	 of  the  sensor.  See
+	      Hwmon  sensor from sysfs (Linux 2.6). Parameter dev may be omit‐
+	      ted if you have only one hwmon device. Parameter type is	either
+	      'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp' meaning
+	      temperature.  Parameter  n  is  number  of   the	 sensor.   See
 	      /sys/class/hwmon/ on your local computer.
 
 
        1miconv_start codeset_from codeset_to0m
-	      Convert text from one codeset to another using GNU iconv.	 Needs
+	      Convert  text from one codeset to another using GNU iconv. Needs
 	      to be stopped with iconv_stop.
 
 
@@ -911,70 +910,70 @@ conky(1)							      conky(1)
 
 
        1mi2c (dev) type n0m
-	      I2C  sensor from sysfs (Linux 2.6). Parameter dev may be omitted
-	      if you have only one I2C device. Parameter type is  either  ’in’
-	      or ’vol’ meaning voltage; ’fan’ meaning fan; ’temp’ meaning tem‐
-	      perature.	 Parameter  n	is   number   of   the	 sensor.   See
+	      I2C sensor from sysfs (Linux 2.6). Parameter dev may be  omitted
+	      if  you  have only one I2C device. Parameter type is either 'in'
+	      or 'vol' meaning voltage; 'fan' meaning fan; 'temp' meaning tem‐
+	      perature.	  Parameter   n	  is   number	of   the  sensor.  See
 	      /sys/bus/i2c/devices/ on your local computer.
 
 
        1mi8k_ac_status0m
-	      If  running the i8k kernel driver for Inspiron laptops, displays
-	      whether ac power is on, as listed in  /proc/i8k  (translated  to
-	      human-readable).	Beware	that this is by default not enabled by
+	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      whether  ac  power  is on, as listed in /proc/i8k (translated to
+	      human-readable). Beware that this is by default not  enabled  by
 	      i8k itself.
 
 
        1mi8k_bios0m
-	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      If  running the i8k kernel driver for Inspiron laptops, displays
 	      the bios version as listed in /proc/i8k.
 
 
        1mi8k_buttons_status0m
-	      If  running the i8k kernel driver for Inspiron laptops, displays
+	      If running the i8k kernel driver for Inspiron laptops,  displays
 	      the volume buttons status as listed in /proc/i8k.
 
 
        1mi8k_cpu_temp0m
-	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      If  running the i8k kernel driver for Inspiron laptops, displays
 	      the cpu temperature in Celsius, as reported by /proc/i8k.
 
 
        1mi8k_left_fan_rpm0m
-	      If  running the i8k kernel driver for Inspiron laptops, displays
-	      the left fan’s rate of rotation, in revolutions  per  minute  as
+	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      the  left	 fan's	rate of rotation, in revolutions per minute as
 	      listed in /proc/i8k. Beware, some laptops i8k reports these fans
 	      in reverse order.
 
 
        1mi8k_left_fan_status0m
-	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      If  running the i8k kernel driver for Inspiron laptops, displays
 	      the left fan status as listed in /proc/i8k (translated to human-
-	      readable). Beware, some laptops i8k reports these	 fans  in  re‐
+	      readable).  Beware,  some	 laptops i8k reports these fans in re‐
 	      verse order.
 
 
        1mi8k_right_fan_rpm0m
-	      If  running the i8k kernel driver for Inspiron laptops, displays
-	      the right fan’s rate of rotation, in revolutions per  minute  as
+	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      the  right  fan's rate of rotation, in revolutions per minute as
 	      listed in /proc/i8k. Beware, some laptops i8k reports these fans
 	      in reverse order.
 
 
        1mi8k_right_fan_status0m
-	      If running the i8k kernel driver for Inspiron laptops,  displays
-	      the  right  fan status as listed in /proc/i8k (translated to hu‐
-	      man-readable). Beware, some laptops i8k reports  these  fans  in
+	      If  running the i8k kernel driver for Inspiron laptops, displays
+	      the right fan status as listed in /proc/i8k (translated  to  hu‐
+	      man-readable).  Beware,  some  laptops i8k reports these fans in
 	      reverse order.
 
 
        1mi8k_serial0m
-	      If  running the i8k kernel driver for Inspiron laptops, displays
+	      If running the i8k kernel driver for Inspiron laptops,  displays
 	      your laptop serial number as listed in /proc/i8k.
 
 
        1mi8k_version0m
-	      If running the i8k kernel driver for Inspiron laptops,  displays
+	      If  running the i8k kernel driver for Inspiron laptops, displays
 	      the version formatting of /proc/i8k.
 
 
@@ -983,30 +982,30 @@ conky(1)							      conky(1)
 
 
        1mibm_temps N0m
-	      If  running the IBM ACPI, displays the temperatures from the IBM
+	      If running the IBM ACPI, displays the temperatures from the  IBM
 	      temperature sensors (N=0..7) Sensor 0 is on the CPU, 3 is on the
 	      GPU.
 
 
        1mibm_volume0m
-	      If  running  the	IBM  ACPI,  displays the "master" volume, con‐
+	      If running the IBM ACPI,	displays  the  "master"	 volume,  con‐
 	      trolled by the volume keys (0-14).
 
 
        1mibm_brightness0m
-	      If running the IBM ACPI, displays the brigtness of the laptops’s
+	      If running the IBM ACPI, displays the brigtness of the laptops's
 	      LCD (0-7).
 
 
        1mif_empty (var)0m
-	      if  conky	 variable  VAR	is  empty,  display everything between
+	      if conky variable	 VAR  is  empty,  display  everything  between
 	      $if_empty and the matching $endif
 
 
        1mif_existing file (string)0m
-	      if FILE exists, display everything between if_existing  and  the
-	      matching	$endif.	 The optional second paramater checks for FILE
-	      containing the specified string and  prints  everything  between
+	      if  FILE	exists, display everything between if_existing and the
+	      matching $endif. The optional second paramater checks  for  FILE
+	      containing  the  specified  string and prints everything between
 	      $if_existing and the matching $endif.
 
 
@@ -1015,11 +1014,11 @@ conky(1)							      conky(1)
 
 
        1mif_match expression0m
-	      Evaluates the given boolean expression, printing everything  be‐
+	      Evaluates	 the given boolean expression, printing everything be‐
 	      tween $if_match and the matching $endif depending on whether the
-	      evaluation returns true or not.  Valid expressions consist of  a
-	      left  side,  an  operator and a right side. Left and right sides
-	      are being parsed for contained text objects  before  evaluation.
+	      evaluation  returns true or not.	Valid expressions consist of a
+	      left side, an operator and a right side. Left  and  right	 sides
+	      are  being  parsed for contained text objects before evaluation.
 	      Recognised left and right side types are:
 
 	      1mdouble22m: argument consists of only digits and a single dot.
@@ -1027,12 +1026,13 @@ conky(1)							      conky(1)
 	      1mstring22m: argument is enclosed in quotation mark or the checks for
 	      double and long failed before.
 
-	      Valid operands are: ’>’, ’<’, ’>=’, ’<=’, ’==’, ’!=’.
+	      Valid operands are: '>', '<', '>=', '<=', '==', '!='.
 
 
        1mif_running (process)0m
-	      if PROCESS is running, display everything	 $if_running  and  the
-	      matching $endif
+	      if  PROCESS  is  running, display everything $if_running and the
+	      matching $endif. This uses the  ``pidof''	 command,  so  the  -x
+	      switch is also supported.
 
 
        1mif_mounted (mountpoint)0m
@@ -1052,7 +1052,7 @@ conky(1)							      conky(1)
 
 
        1mif_updatenr (updatenr)0m
-	      If  it’s the UPDATENR-th time that conky updates, display every‐
+	      If  it's the UPDATENR-th time that conky updates, display every‐
 	      thing between $if_updatenr and the matching $endif.  The counter
 	      resets   when  the  highest  UPDATENR  is	 reached.   Example  :
 	      "{$if_updatenr 1}foo$endif{$if_updatenr 2}bar$endif{$if_updatenr
@@ -1066,7 +1066,7 @@ conky(1)							      conky(1)
 	      passing arguments to this object. Arguments are: "host user pass
 	      [-i interval] [-p port] [-e command] [-r retries]". Default port
 	      is 143, default interval is 5 minutes, and default number of re‐
-	      tries before giving up is 5. If the password is supplied as ’*’,
+	      tries before giving up is 5. If the password is supplied as '*',
 	      you will be prompted to enter the password when Conky starts.
 
 
@@ -1076,7 +1076,7 @@ conky(1)							      conky(1)
 	      passing arguments to this object. Arguments are: "host user pass
 	      [-i interval] [-p port] [-e command] [-r retries]". Default port
 	      is 143, default interval is 5 minutes, and default number of re‐
-	      tries before giving up is 5. If the password is supplied as ’*’,
+	      tries before giving up is 5. If the password is supplied as '*',
 	      you will be prompted to enter the password when Conky starts.
 
 
@@ -1099,8 +1099,8 @@ conky(1)							      conky(1)
 
        1mloadgraph ("normal"|"log") (height),(width) (gradient colour 1) (gradi‐0m
        1ment colour 2) (scale)0m
-	      Load1 average graph, similar to xload, with optional colours  in
-	      hex,  minus  the	#. Uses a logarithmic scale (to see small num‐
+	      Load1  average graph, similar to xload, with optional colours in
+	      hex, minus the #. Uses a logarithmic scale (to  see  small  num‐
 	      bers) when you use "log" instead of "normal".
 
 
@@ -1113,9 +1113,9 @@ conky(1)							      conky(1)
 
 
        1mmails (mailbox) (interval)0m
-	      Mail count in the specified mailbox or your mail spool  if  not.
-	      Both  mbox and maildir type mailboxes are supported. You can use
-	      a program like fetchmail to get mails  from  some	 server	 using
+	      Mail  count  in the specified mailbox or your mail spool if not.
+	      Both mbox and maildir type mailboxes are supported. You can  use
+	      a	 program  like	fetchmail  to get mails from some server using
 	      your favourite protocol. See also new_mails.
 
 
@@ -1125,32 +1125,32 @@ conky(1)							      conky(1)
 
 
        1mseen_mails (maildir) (interval)0m
-	      Number of mails marked as seen in the specified mailbox or  mail
-	      spool  if	 not.  Only maildir type mailboxes are supported, mbox
+	      Number  of mails marked as seen in the specified mailbox or mail
+	      spool if not. Only maildir type mailboxes	 are  supported,  mbox
 	      type will return -1.
 
 
        1munseen_mails (maildir) (interval)0m
-	      Number of new or unseen mails in the specified mailbox  or  mail
-	      spool  if	 not.  Only maildir type mailboxes are supported, mbox
+	      Number  of  new or unseen mails in the specified mailbox or mail
+	      spool if not. Only maildir type mailboxes	 are  supported,  mbox
 	      type will return -1.
 
 
        1mflagged_mails (maildir) (interval)0m
-	      Number of mails marked as flagged in the	specified  mailbox  or
-	      mail  spool  if  not. Only maildir type mailboxes are supported,
+	      Number  of  mails	 marked as flagged in the specified mailbox or
+	      mail spool if not. Only maildir type  mailboxes  are  supported,
 	      mbox type will return -1.
 
 
        1munflagged_mails (maildir) (interval)0m
-	      Number of mails not marked as flagged in the  specified  mailbox
+	      Number  of  mails not marked as flagged in the specified mailbox
 	      or mail spool if not. Only maildir type mailboxes are supported,
 	      mbox type will return -1.
 
 
        1mforwarded_mails (maildir) (interval)0m
-	      Number of mails marked as forwarded in the specified mailbox  or
-	      mail  spool  if  not. Only maildir type mailboxes are supported,
+	      Number  of mails marked as forwarded in the specified mailbox or
+	      mail spool if not. Only maildir type  mailboxes  are  supported,
 	      mbox type will return -1.
 
 
@@ -1161,26 +1161,26 @@ conky(1)							      conky(1)
 
 
        1mreplied_mails (maildir) (interval)0m
-	      Number of mails marked as replied in the	specified  mailbox  or
-	      mail  spool  if  not. Only maildir type mailboxes are supported,
+	      Number  of  mails	 marked as replied in the specified mailbox or
+	      mail spool if not. Only maildir type  mailboxes  are  supported,
 	      mbox type will return -1.
 
 
        1munreplied_mails (maildir) (interval)0m
-	      Number of mails not marked as replied in the  specified  mailbox
+	      Number  of  mails not marked as replied in the specified mailbox
 	      or mail spool if not. Only maildir type mailboxes are supported,
 	      mbox type will return -1.
 
 
        1mdraft_mails (maildir) (interval)0m
 	      Number of mails marked as draft in the specified mailbox or mail
-	      spool  if	 not.  Only maildir type mailboxes are supported, mbox
+	      spool if not. Only maildir type mailboxes	 are  supported,  mbox
 	      type will return -1.
 
 
        1mtrashed_mails (maildir) (interval)0m
-	      Number of mails marked as trashed in the	specified  mailbox  or
-	      mail  spool  if  not. Only maildir type mailboxes are supported,
+	      Number  of  mails	 marked as trashed in the specified mailbox or
+	      mail spool if not. Only maildir type  mailboxes  are  supported,
 	      mbox type will return -1.
 
 
@@ -1188,7 +1188,7 @@ conky(1)							      conky(1)
        1mwidth) mbox0m
 	      Print a summary of recent messages in an	mbox  format  mailbox.
 	      mbox  parameter  is the filename of the mailbox (can be encapsu‐
-	      lated using ’"’, ie. ${mboxscan -n 10 "/home/brenden/some box"}
+	      lated using '"', ie. ${mboxscan -n 10 "/home/brenden/some box"}
 
 
        1mmem	22mAmount of memory in use
@@ -1200,12 +1200,12 @@ conky(1)							      conky(1)
 
        1mmemgraph ("normal"|"log") (height),(width) (gradient colour 1)	 (gradi‐0m
        1ment colour 2) (scale)0m
-	      Memory usage graph. Uses a logarithmic scale (to see small  num‐
+	      Memory  usage graph. Uses a logarithmic scale (to see small num‐
 	      bers) when you use "log" instead of "normal".
 
 
        1mmemeasyfree0m
-	      Amount  of  free memory including the memory that is very easily
+	      Amount of free memory including the memory that is  very	easily
 	      freed (buffers/cache)
 
 
@@ -1221,39 +1221,39 @@ conky(1)							      conky(1)
 
 
        1mmixer (device)0m
-	      Prints the mixer value as reported by the OS. Default  mixer  is
-	      "vol",  but  you can specify one of the following optional argu‐
+	      Prints  the  mixer value as reported by the OS. Default mixer is
+	      "vol", but you can specify one of the following  optional	 argu‐
 	      ments:  "vol",  "bass",  "treble",  "synth",  "pcm",  "speaker",
-	      "line",  "mic",  "cd",  "mix",  "pcm2", "rec", "igain", "ogain",
+	      "line", "mic", "cd", "mix",  "pcm2",  "rec",  "igain",  "ogain",
 	      "line1",	"line2",  "line3",  "dig1",  "dig2",  "dig3",  "phin",
 	      "phout", "video", "radio", "monitor". Refer to the definition of
-	      SOUND_DEVICE_NAMES in <linux/soundcard.h>	 (on  Linux),  <sound‐
+	      SOUND_DEVICE_NAMES  in  <linux/soundcard.h>  (on Linux), <sound‐
 	      card.h> (on OpenBSD), or <sys/soundcard.h> to find the exact op‐
 	      tions available on your system.
 
 
        1mmixerbar (device)0m
-	      Displays mixer value in a bar as reported by the	OS.  See  docs
+	      Displays	mixer  value  in a bar as reported by the OS. See docs
 	      for $mixer for details on arguments.
 
 
        1mmixerr (device)0m
-	      Prints  the right channel mixer value as reported by the OS. See
+	      Prints the right channel mixer value as reported by the OS.  See
 	      docs for $mixer for details on arguments.
 
 
        1mmixerrbar (device)0m
-	      Displays the right channel mixer value in a bar as  reported  by
+	      Displays	the  right channel mixer value in a bar as reported by
 	      the OS. See docs for $mixer for details on arguments.
 
 
        1mmixerl (device)0m
-	      Prints  the  left channel mixer value as reported by the OS. See
+	      Prints the left channel mixer value as reported by the  OS.  See
 	      docs for $mixer for details on arguments.
 
 
        1mmixerlbar (device)0m
-	      Displays the left channel mixer value in a bar  as  reported  by
+	      Displays	the  left  channel mixer value in a bar as reported by
 	      the OS. See docs for $mixer for details on arguments.
 
 
@@ -1318,7 +1318,7 @@ conky(1)							      conky(1)
 
 
        1mmpd_bar (height),(width)0m
-	      Bar of mpd’s progress
+	      Bar of mpd's progress
 
 
        1mmpd_bitrate0m
@@ -1334,19 +1334,19 @@ conky(1)							      conky(1)
 
 
        1mmpd_vol0m
-	      MPD’s volume
+	      MPD's volume
 
 
        1mmpd_elapsed0m
-	      Song’s elapsed time
+	      Song's elapsed time
 
 
        1mmpd_length0m
-	      Song’s length
+	      Song's length
 
 
        1mmpd_percent0m
-	      Percent of song’s progress
+	      Percent of song's progress
 
 
        1mmpd_random0m
@@ -1375,12 +1375,12 @@ conky(1)							      conky(1)
 
 
        1mif_mpd_playing0m
-	      if  mpd  is  playing  or	paused,	 display  everything   between
+	      if   mpd	is  playing  or	 paused,  display  everything  between
 	      $if_mpd_playing and the matching $endif
 
 
        1mnameserver (index)0m
-	      Print  a	nameserver  from /etc/resolv.conf. Index starts at and
+	      Print a nameserver from /etc/resolv.conf. Index  starts  at  and
 	      defaults to 0.
 
 
@@ -1389,8 +1389,8 @@ conky(1)							      conky(1)
 
 
        1mnvidia threshold temp ambient gpufreq memfreq imagequality0m
-	      Nvidia graficcard support for the XNVCtrl library.  Each	option
-	      can  be  shortened  to the least significant part.  Temperatures
+	      Nvidia  graficcard support for the XNVCtrl library.  Each option
+	      can be shortened to the least  significant  part.	  Temperatures
 	      are printed as float, all other values as integer.
 
 	      1mthreshold22m: the thresholdtemperature at which the gpu slows down
@@ -1408,25 +1408,25 @@ conky(1)							      conky(1)
 
        1mpb_battery item0m
 	      If running on Apple powerbook/ibook, display information on bat‐
-	      tery status. The item parameter specifies, what  information  to
+	      tery  status.  The item parameter specifies, what information to
 	      display. Exactly one item must be specified. Valid items are:
 
 	      1mstatus22m: Display if battery is fully charged, charging, discharg‐
 	      ing or absent (running on AC)
-	      1mpercent22m: Display charge of battery in percent,  if  charging	 or
-	      discharging.  Nothing  will  be  displayed,  if battery is fully
+	      1mpercent22m:  Display  charge  of battery in percent, if charging or
+	      discharging. Nothing will be  displayed,	if  battery  is	 fully
 	      charged or absent.
 	      1mtime22m: Display the time remaining until the battery will be fully
-	      charged  or discharged at current rate. Nothing is displayed, if
-	      battery is absent or if it’s present but fully charged  and  not
+	      charged or discharged at current rate. Nothing is displayed,  if
+	      battery  is  absent or if it's present but fully charged and not
 	      discharging.
 
 
        1mplatform (dev) type n0m
-	      Platform	sensor	from  sysfs  (Linux 2.6). Parameter dev may be
-	      omitted if you have only one platform device. Platform  type  is
-	      either  ’in’ or ’vol’ meaning voltage; ’fan’ meaning fan; ’temp’
-	      meaning temperature. Parameter n is number of  the  sensor.  See
+	      Platform sensor from sysfs (Linux 2.6).  Parameter  dev  may  be
+	      omitted  if  you have only one platform device. Platform type is
+	      either 'in' or 'vol' meaning voltage; 'fan' meaning fan;	'temp'
+	      meaning  temperature.  Parameter	n is number of the sensor. See
 	      /sys/bus/platform/devices/ on your local computer.
 
 
@@ -1436,18 +1436,18 @@ conky(1)							      conky(1)
 	      passing arguments to this object. Arguments are: "host user pass
 	      [-i interval] [-p port] [-e command] [-r retries]". Default port
 	      is 110, default interval is 5 minutes, and default number of re‐
-	      tries before giving up is 5. If the password is supplied as ’*’,
+	      tries before giving up is 5. If the password is supplied as '*',
 	      you will be prompted to enter the password when Conky starts.
 
 
        1mpop3_used (args)0m
-	      Displays	the amount of space (in MiB, 2^20) used in your global
-	      POP3 inbox by default. You can define  individual	 POP3  inboxes
-	      seperately  by  passing arguments to this object. Arguments are:
-	      "host user pass [-i interval] [-p port]  [-e  command]  [-r  re‐
+	      Displays the amount of space (in MiB, 2^20) used in your	global
+	      POP3  inbox  by  default. You can define individual POP3 inboxes
+	      seperately by passing arguments to this object.  Arguments  are:
+	      "host  user  pass	 [-i  interval] [-p port] [-e command] [-r re‐
 	      tries]". Default port is 110, default interval is 5 minutes, and
 	      default number of retries before giving up is 5. If the password
-	      is  supplied  as ’*’, you will be prompted to enter the password
+	      is supplied as '*', you will be prompted to enter	 the  password
 	      when Conky starts.
 
 
@@ -1465,14 +1465,14 @@ conky(1)							      conky(1)
 
 
        1mscroll length (step) text0m
-	      Scroll  ’text’  by  ’step’ characters showing ’length’ number of
-	      characters at the same time. The text  may  also	contain	 vari‐
-	      ables. ’step’ is optional and defaults to 1 if not set. If a var
-	      creates output on multiple lines then the lines are  placed  be‐
-	      hind  each other separated with a ’|’-sign. Do NOT use vars that
-	      change colors or otherwise affect the design inside a  scrolling
-	      text.  If	 you  want  spaces  between  the  start and the end of
-	      ’text’, place them at the end of ’text’ not at the front	("foo‐
+	      Scroll 'text' by 'step' characters showing  'length'  number  of
+	      characters  at  the  same	 time. The text may also contain vari‐
+	      ables. 'step' is optional and defaults to 1 if not set. If a var
+	      creates  output  on multiple lines then the lines are placed be‐
+	      hind each other separated with a '|'-sign. Do NOT use vars  that
+	      change  colors or otherwise affect the design inside a scrolling
+	      text. If you want spaces	between	 the  start  and  the  end  of
+	      'text',  place them at the end of 'text' not at the front ("foo‐
 	      bar" and " foobar" can both generate "barfoo" but "foobar " will
 	      keep the spaces like this "bar foo").
 
@@ -1482,35 +1482,35 @@ conky(1)							      conky(1)
 
 
        1msmapi (ARGS)0m
-	      when using smapi, display	 contents  of  the  /sys/devices/plat‐
-	      form/smapi  directory. ARGS are either ’(FILENAME)’ or ’bat (IN‐
-	      DEX) (FILENAME)’ to display the  corresponding  files’  content.
-	      This  is	a  very raw method of accessing the smapi values. When
+	      when  using  smapi,  display  contents of the /sys/devices/plat‐
+	      form/smapi directory. ARGS are either '(FILENAME)' or 'bat  (IN‐
+	      DEX)  (FILENAME)'	 to  display the corresponding files' content.
+	      This is a very raw method of accessing the  smapi	 values.  When
 	      available, better use one of the smapi_* variables instead.
 
 
        1msmapi_bat_bar (INDEX),(height),(width)0m
-	      when using smapi, display the remaining capacity of the  battery
+	      when  using smapi, display the remaining capacity of the battery
 	      with index INDEX as a bar.
 
 
        1msmapi_bat_perc (INDEX)0m
-	      when  using  smapi, display the remaining capacity in percent of
-	      the battery with index INDEX. This is a  separate	 variable  be‐
-	      cause it supports the ’use_spacer’ configuration option.
+	      when using smapi, display the remaining capacity in  percent  of
+	      the  battery  with  index INDEX. This is a separate variable be‐
+	      cause it supports the 'use_spacer' configuration option.
 
 
        1msmapi_bat_power INDEX0m
-	      when  using smapi, display the current power of the battery with
-	      index INDEX in watt. This is a  separate	variable  because  the
-	      original	read out value is being converted from mW. The sign of
-	      the output reflects charging (positive)  or  discharging	(nega‐
+	      when using smapi, display the current power of the battery  with
+	      index  INDEX  in	watt.  This is a separate variable because the
+	      original read out value is being converted from mW. The sign  of
+	      the  output  reflects  charging (positive) or discharging (nega‐
 	      tive) state.
 
 
        1msmapi_bat_temp INDEX0m
 	      when using smapi, display the current temperature of the battery
-	      with index INDEX in degree Celsius. This is a separate  variable
+	      with  index INDEX in degree Celsius. This is a separate variable
 	      because the original read out value is being converted from mil‐
 	      li degree Celsius.
 
@@ -1555,36 +1555,36 @@ conky(1)							      conky(1)
 	      The connection index provides you with access to each connection
 	      in the port monitor. The monitor will return information for in‐
 	      dex values from 0 to n-1 connections. Values higher than n-1 are
-	      simply ignored. For the "count" item, the connection index  must
+	      simply  ignored. For the "count" item, the connection index must
 	      be omitted. It is required for all other items.
 
 	      Examples:
-	      1m${tcp_portmon  6881 6999 count} 22m- displays the number of connec‐
+	      1m${tcp_portmon 6881 6999 count} 22m- displays the number of  connec‐
 	      tions in the bittorrent port range
-	      1m${tcp_portmon 22 22 rip 0} 22m- displays the remote host ip of	the
+	      1m${tcp_portmon  22 22 rip 0} 22m- displays the remote host ip of the
 	      first sshd connection
-	      1m${tcp_portmon  22 22 rip 9} 22m- displays the remote host ip of the
+	      1m${tcp_portmon 22 22 rip 9} 22m- displays the remote host ip of	the
 	      tenth sshd connection
 	      1m${tcp_portmon 1 1024 rhost 0} 22m- displays the remote host name of
 	      the first connection on a privileged port
 	      1m${tcp_portmon 1 1024 rport 4} 22m- displays the remote host port of
 	      the fifth connection on a privileged port
-	      1m${tcp_portmon 1 65535 lservice 14} 22m- displays the local  service
+	      1m${tcp_portmon  1 65535 lservice 14} 22m- displays the local service
 	      name of the fifteenth connection in the range of all ports
 
 	      Note that port monitor variables which share the same port range
 	      actually refer to the same monitor, so many references to a sin‐
 	      gle port range for different items and different indexes all use
-	      the same monitor internally. In other words, the program	avoids
+	      the  same monitor internally. In other words, the program avoids
 	      creating redundant monitors.
 
        1mtexeci interval command0m
-	      Runs  a  command at an interval inside a thread and displays the
-	      output. Same as $execi, except  the  command  is	run  inside  a
-	      thread.  Use this if you have a slow script to keep Conky updat‐
-	      ing. You should make the interval slightly longer then the  time
-	      it  takes	 your  script  to  execute. For example, if you have a
-	      script that take 5 seconds to execute, you should make  the  in‐
+	      Runs a command at an interval inside a thread and	 displays  the
+	      output.  Same  as	 $execi,  except  the  command is run inside a
+	      thread. Use this if you have a slow script to keep Conky	updat‐
+	      ing.  You should make the interval slightly longer then the time
+	      it takes your script to execute. For  example,  if  you  have  a
+	      script  that  take 5 seconds to execute, you should make the in‐
 	      terval at least 6 seconds. See also $execi.
 
 
@@ -1593,18 +1593,18 @@ conky(1)							      conky(1)
 
 
        1mrss url delay_in_minutes action item_num0m
-	      Download	and  parse RSS feeds. Action may be one of the follow‐
-	      ing: feed_title, item_title (with num par), item_desc (with  num
+	      Download and parse RSS feeds. Action may be one of  the  follow‐
+	      ing:  feed_title, item_title (with num par), item_desc (with num
 	      par) and item_titles.
 
 
        1mtab (width, (start))0m
-	      Puts a tab of the specified width, starting from column ’start’.
+	      Puts a tab of the specified width, starting from column 'start'.
 
 
        1mtail logfile lines (interval)0m
 	      Displays last N lines of supplied text text file. If interval is
-	      not supplied, Conky assumes 2x Conky’s interval. Max of 30 lines
+	      not supplied, Conky assumes 2x Conky's interval. Max of 30 lines
 	      can be displayed, or until the text buffer is filled.
 
 
@@ -1655,7 +1655,7 @@ conky(1)							      conky(1)
 
        1mtotaldown net0m
 	      Total  download, overflows at 4 GB on Linux with 32-bit arch and
-	      there doesn’t seem to be a way to know how many times it has al‐
+	      there doesn't seem to be a way to know how many times it has al‐
 	      ready done that before conky has started.
 
 
@@ -1694,9 +1694,9 @@ conky(1)							      conky(1)
 
        1mupspeedgraph  ("normal"|"log")	 (height),(width)  (gradient  colour  1)0m
        1m(gradient colour 2) (scale) (net)0m
-	      Upload speed graph, colours defined in  hex,  minus  the	#.  If
-	      scale  is	 non-zero,  it becomes the scale for the graph. Uses a
-	      logarithmic scale (to see small numbers) when you use "log"  in‐
+	      Upload  speed  graph,  colours  defined  in hex, minus the #. If
+	      scale is non-zero, it becomes the scale for the  graph.  Uses  a
+	      logarithmic  scale (to see small numbers) when you use "log" in‐
 	      stead of "normal".
 
 
@@ -1724,17 +1724,17 @@ conky(1)							      conky(1)
 
 
        1mvoffset (pixels)0m
-	      Change  vertical	offset by N pixels. Negative values will cause
+	      Change vertical offset by N pixels. Negative values  will	 cause
 	      text to overlap. See also $offset.
 
 
        1mvoltage_mv (n)0m
-	      Returns CPU #n’s voltage in mV. CPUs  are	 counted  from	1.  If
+	      Returns  CPU  #n's  voltage  in  mV. CPUs are counted from 1. If
 	      omitted, the parameter defaults to 1.
 
 
        1mvoltage_v (n)0m
-	      Returns CPU #n’s voltage in V. CPUs are counted from 1. If omit‐
+	      Returns CPU #n's voltage in V. CPUs are counted from 1. If omit‐
 	      ted, the parameter defaults to 1.
 
 
@@ -1823,7 +1823,7 @@ conky(1)							      conky(1)
 
 
        1mxmms2_elapsed0m
-	      Song’s elapsed time
+	      Song's elapsed time
 
 
        1mxmms2_size0m
@@ -1831,7 +1831,7 @@ conky(1)							      conky(1)
 
 
        1mxmms2_percent0m
-	      Percent of song’s progress
+	      Percent of song's progress
 
 
        1mxmms2_status0m
@@ -1839,7 +1839,7 @@ conky(1)							      conky(1)
 
 
        1mxmms2_bar (height),(width)0m
-	      Bar of XMMS2’s progress
+	      Bar of XMMS2's progress
 
 
        1mxmms2_smart0m
@@ -1848,18 +1848,18 @@ conky(1)							      conky(1)
 
 
        1mif_xmms2_connected0m
-	      Display  everything between $if_xmms2_connected and the matching
+	      Display everything between $if_xmms2_connected and the  matching
 	      $endif if xmms2 is running.
 
 
        1meve api_userid api_key character_id0m
-	      Fetches your currently training skill from the  Eve  Online  API
+	      Fetches  your  currently	training skill from the Eve Online API
 	      servers  (http://www.eve-online.com/)  and  displays  the	 skill
 	      along with the remaining training time.
 
 
 1mEXAMPLES0m
-       conky 1m-t ’${time %D %H:%M}’ -o -u 300m
+       conky 1m-t '${time %D %H:%M}' -o -u 300m
 	      Start Conky in its own window with date and clock as text and 30
 	      sec update interval.
 
@@ -1870,15 +1870,15 @@ conky(1)							      conky(1)
        4m~/.conkyrc24m default configuration file
 
 1mBUGS0m
-       Drawing to root or some other desktop window directly doesn’t work with
-       all window managers. Especially doesn’t work well with Gnome and it has
-       been  reported  that  it	 doesn’t work with KDE either. Nautilus can be
-       disabled from drawing to desktop	 with  program	gconf-editor.  Uncheck
-       show_desktop  in	 /apps/nautilus/preferences/.  There  is  -w switch in
-       Conky to set some specific window id. You  might	 find  xwininfo	 -tree
-       useful  to  find	 the  window  to draw to. You can also use -o argument
+       Drawing to root or some other desktop window directly doesn't work with
+       all window managers. Especially doesn't work well with Gnome and it has
+       been reported that it doesn't work with KDE  either.  Nautilus  can  be
+       disabled	 from  drawing	to  desktop with program gconf-editor. Uncheck
+       show_desktop in /apps/nautilus/preferences/.  There  is	-w  switch  in
+       Conky  to  set  some  specific window id. You might find xwininfo -tree
+       useful to find the window to draw to. You  can  also  use  -o  argument
        which makes Conky to create its own window. If you do try running Conky
-       in  its	own window, be sure to read up on the own_window_type settings
+       in its own window, be sure to read up on the  own_window_type  settings
        and experiment.
 
 1mSEE ALSO0m
@@ -1889,11 +1889,11 @@ conky(1)							      conky(1)
        #conky on irc.freenode.net
 
 1mCOPYING0m
-       Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et.  al.   Any
+       Copyright  (c)  2005-2008 Brenden Matthews, Philip Kovacs, et. al.  Any
        original torsmo code is licensed under the BSD license (see LICENSE.BSD
        for a copy).  All code written since the fork of torsmo is licensed un‐
        der the GPL (see LICENSE.GPL for a copy), except where noted different‐
-       ly (such as in portmon code, timed  thread  code,  and  audacious  code
+       ly  (such  as  in  portmon  code, timed thread code, and audacious code
        which are LGPL, and prss which is an MIT-style license).
 
 1mAUTHORS0m
