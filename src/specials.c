@@ -26,7 +26,9 @@
  */
 #include "conky.h"
 #include "colours.h"
+#ifdef X11
 #include "fonts.h"
+#endif
 #include "logging.h"
 #include "specials.h"
 #include <math.h>
