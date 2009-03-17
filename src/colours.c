@@ -26,7 +26,9 @@
  */
 #include "conky.h"
 #include "logging.h"
+#ifdef X11
 #include "x11.h"
+#endif
 
 /* precalculated: 31/255, and 63/255 */
 #define CONST_8_TO_5_BITS 0.12156862745098

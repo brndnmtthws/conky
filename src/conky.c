@@ -64,7 +64,9 @@
 #include "build.h"
 #include "colours.h"
 #include "diskio.h"
+#ifdef X11
 #include "fonts.h"
+#endif
 #include "fs.h"
 #include "logging.h"
 #include "mixer.h"
@@ -7225,10 +7227,11 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("text") {
+#ifdef X11
 			//initialize X11 if nothing X11-related is mentioned before TEXT (and if X11 is the default outputmethod)
 			if(output_methods & TO_X)
 				X11_initialisation();
-
+#endif
 			if (global_text) {
 				free(global_text);
 				global_text = 0;
