@@ -160,29 +160,29 @@ static void print_version(void)
 		   "  * Xdamage extension\n"
 # endif /* HAVE_XDAMAGE */
 # ifdef HAVE_XDBE
-		   "  * Xdbe extension (double buffer)\n"
+		   "  * XDBE (double buffer extension)\n"
 # endif /* HAVE_XDBE */
 # ifdef XFT
-		   "  * xft\n"
+		   "  * Xft\n"
 # endif /* XFT */
 #endif /* X11 */
 		   "\n Music detection:\n"
 #ifdef AUDACIOUS
-		   "  * audacious\n"
+		   "  * Audacious\n"
 #endif /* AUDACIOUS */
 #ifdef BMPX
-		   "  * bmpx\n"
+		   "  * BMPx\n"
 #endif /* BMPX */
 #ifdef MPD
-		   "  * mpd\n"
+		   "  * MPD\n"
 #endif /* MPD */
 #ifdef MOC
-		   "  * moc\n"
+		   "  * MOC\n"
 #endif /* MOC */
 #ifdef XMMS2
-		   "  * xmms2\n"
+		   "  * XMMS2\n"
 #endif /* XMMS2 */
-		   "\n General features:\n"
+		   "\n General:\n"
 #ifdef MATH
 		   "  * math\n"
 #endif /* Math */
@@ -193,20 +193,23 @@ static void print_version(void)
 		   "  * portmon\n"
 #endif /* TCP_PORT_MONITOR */
 #ifdef RSS
-		   "  * rss\n"
+		   "  * RSS\n"
 #endif /* RSS */
-#ifdef EVE
-		   "  * eve\n"
-#endif /* EVE */
 #ifdef HAVE_IWLIB
 		   "  * wireless\n"
 #endif /* HAVE_IWLIB */
 #ifdef IBM
-	"  * support for IBM/Lenovo notebooks\n"
+		   "  * support for IBM/Lenovo notebooks\n"
 #endif /* IBM */
 #ifdef NVIDIA
-	"  * nvidia\n"
+		   "  * nvidia\n"
 #endif
+#ifdef EVE
+		   "  * eve-online\n"
+#endif /* EVE */
+#ifdef CONFIG_OUTPUT
+		   "  * config-output\n"
+#endif /* CONFIG_OUTPUT */
 	);
 
 	exit(0);
