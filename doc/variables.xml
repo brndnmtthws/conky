@@ -430,6 +430,16 @@
 
 	<varlistentry>
 		<term>
+			<command><option>cpugauge</option></command>
+			<option>(cpu number) (height),(width)</option>
+		</term>
+		<listitem>
+			Elliptical gauge that shows CPU usage, height and width are gauge's vertical and horizontal axis respectively.  See $cpu for more info on SMP.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
 			<command><option>cpugraph</option></command>
 			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (cpu number)</option>
 		</term>
@@ -592,6 +602,16 @@
 		</term>
 		<listitem>
 			Same as exec, except if the first value return is a value between 0-100, it will use that number for a bar. The size for the bar is currently fixed, but that may change in the future.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>execgauge</option></command>
+			<option>command</option>
+		</term>
+		<listitem>
+			Same as exec, except if the first value return is a value between 0-100, it will use that number for a gauge. The size for the gauge is currently fixed, but you may change that for the future conky release.
 			<para></para></listitem>
 	</varlistentry>
 
@@ -1389,6 +1409,16 @@
 		</term>
 		<listitem>
 			Bar that shows amount of memory in use
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>memgauge</option></command>
+			<option>(height),(width)</option>
+		</term>
+		<listitem>
+			Gauge that shows amount of memory in use (see cpugauge)
 			<para></para></listitem>
 	</varlistentry>
 
