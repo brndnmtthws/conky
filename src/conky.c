@@ -6171,6 +6171,7 @@ static void reload_config(void)
 		set_font();
 		// clear the window first
 		XClearWindow(display, RootWindow(display, screen));
+		x_initialised = NO;
 
 #endif /* X11 */
 		extract_variable_text(global_text);
@@ -6465,6 +6466,7 @@ static _Bool append_works(const char *path)
 #ifdef X11
 static void X11_initialisation(void)
 {
+	if (x_initialised == YES) return;
 	output_methods |= TO_X;
 	init_X11();
 	set_default_configurations_for_x();
@@ -6609,9 +6611,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color0") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					color0 = get_x11_color(value);
 				} else {
@@ -6620,9 +6621,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color1") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					color1 = get_x11_color(value);
 				} else {
@@ -6631,9 +6631,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color2") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					color2 = get_x11_color(value);
 				} else {
@@ -6642,9 +6641,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color3") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					color3 = get_x11_color(value);
 				} else {
@@ -6653,9 +6651,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color4") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					color4 = get_x11_color(value);
 				} else {
@@ -6664,9 +6661,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color5") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					color5 = get_x11_color(value);
 				} else {
@@ -6675,9 +6671,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color6") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					color6 = get_x11_color(value);
 				} else {
@@ -6686,9 +6681,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color7") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					color7 = get_x11_color(value);
 				} else {
@@ -6697,9 +6691,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color8") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					color8 = get_x11_color(value);
 				} else {
@@ -6708,9 +6701,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("color9") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					color9 = get_x11_color(value);
 				} else {
@@ -6738,9 +6730,8 @@ static void load_config_file(const char *f)
 		TEMPLATE_CONF(8)
 		TEMPLATE_CONF(9)
 		CONF("default_color") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					default_fg_color = get_x11_color(value);
 				} else {
@@ -6749,9 +6740,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF3("default_shade_color", "default_shadecolor") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					default_bg_color = get_x11_color(value);
 				} else {
@@ -6760,9 +6750,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF3("default_outline_color", "default_outlinecolor") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					default_out_color = get_x11_color(value);
 				} else {
@@ -6931,9 +6920,8 @@ static void load_config_file(const char *f)
 			use_xft = string_to_bool(value);
 		}
 		CONF("font") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					set_first_font(value);
 				} else {
@@ -6942,9 +6930,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("xftalpha") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value && font_count >= 0) {
 					fonts[0].font_alpha = atof(value) * 65535.0;
 				} else {
@@ -6953,8 +6940,7 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("xftfont") {
-			if(x_initialised == NO)
-				X11_initialisation();
+			X11_initialisation();
 			if (use_xft) {
 #else
 		CONF("use_xft") {
@@ -7050,9 +7036,8 @@ static void load_config_file(const char *f)
 #ifdef X11
 #ifdef OWN_WINDOW
 		CONF("own_window") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					own_window = string_to_bool(value);
 				} else {
@@ -7061,9 +7046,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("own_window_class") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					memset(window.class_name, 0, sizeof(window.class_name));
 					strncpy(window.class_name, value,
@@ -7074,9 +7058,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("own_window_title") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					memset(window.title, 0, sizeof(window.title));
 					strncpy(window.title, value, sizeof(window.title) - 1);
@@ -7086,9 +7069,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("own_window_transparent") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					set_transparent = string_to_bool(value);
 				} else {
@@ -7097,9 +7079,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("own_window_colour") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					background_colour = get_x11_color(value);
 				} else {
@@ -7109,9 +7090,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("own_window_hints") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					char *p_hint, *p_save;
 					char delim[] = ", ";
@@ -7145,9 +7125,8 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("own_window_type") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
+			X11_initialisation();
+			if (x_initialised == YES) {
 				if (value) {
 					if (strncmp(value, "normal", 6) == EQUAL) {
 						window.type = TYPE_NORMAL;
@@ -7232,8 +7211,9 @@ static void load_config_file(const char *f)
 		CONF("text") {
 #ifdef X11
 			//initialize X11 if nothing X11-related is mentioned before TEXT (and if X11 is the default outputmethod)
-			if(output_methods & TO_X)
+			if(output_methods & TO_X) {
 				X11_initialisation();
+			}
 #endif
 			if (global_text) {
 				free(global_text);

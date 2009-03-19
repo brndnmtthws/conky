@@ -183,7 +183,7 @@ if test x$want_ibm = xyes; then
 		AC_MSG_NOTICE([support for IBM/Lenovo notebooks not supported on $uname... disabling])
 		want_ibm=no
 	else
-		AC_DEFINE(IBM, 1, [Define if you want support for IBM/Lenovo notebooks])
+		AC_DEFINE(IBM, 1, [Define if you want support for IBM/Lenovo notebooks (SMAPI)])
 	fi
 fi
 
