@@ -203,13 +203,16 @@ static void print_version(void)
 #endif /* IBM */
 #ifdef NVIDIA
 		   "  * nvidia\n"
-#endif
+#endif /* NVIDIA */
 #ifdef EVE
 		   "  * eve-online\n"
 #endif /* EVE */
 #ifdef CONFIG_OUTPUT
 		   "  * config-output\n"
 #endif /* CONFIG_OUTPUT */
+#ifdef IMLIB2
+		   "  * IMLIB2\n"
+#endif /* IMLIB2 */
 	);
 
 	exit(0);
@@ -3490,26 +3493,18 @@ static void generate_text_internal(char *p, int p_max_size,
 					Imlib_Image image, buffer;
 
 					image = imlib_load_image(obj->data.s);
-					imlib_context_set_image(image);
 					if (image) {
 						int w, h;
+						imlib_context_set_image(image);
 
 						w = imlib_image_get_width();
 						h = imlib_image_get_height();
 						buffer = imlib_create_image(w, h);
-						imlib_context_set_display(display);
-						imlib_context_set_drawable(window.drawable);
-						imlib_context_set_colormap(DefaultColormap(display,
-							screen));
-						imlib_context_set_visual(DefaultVisual(display,
-							screen));
 						imlib_context_set_image(buffer);
 						imlib_blend_image_onto_image(image, 0, 0, 0, w, h,
 							text_start_x, text_start_y, w, h);
 						imlib_render_image_on_drawable(text_start_x,
 							text_start_y);
-						imlib_free_image();
-						imlib_context_set_image(image);
 						imlib_free_image();
 					}
 				}
