@@ -703,6 +703,7 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_text:
 			case OBJ_font:
 			case OBJ_image:
+			case OBJ_eval:
 			case OBJ_exec:
 			case OBJ_execgauge:
 			case OBJ_execbar:
@@ -1412,6 +1413,8 @@ static struct text_object *construct_text_object(const char *s,
 		obj_be_ifblock_else(ifblock_opaque, obj);
 	END OBJ(endif, 0)
 		obj_be_ifblock_endif(ifblock_opaque, obj);
+	END OBJ(eval, 0)
+		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(image, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 #ifdef HAVE_POPEN
@@ -3517,6 +3520,20 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* IMLIB2 */
 
+			OBJ(eval) {
+				struct information *tmp_info;
+				struct text_object subroot, subroot2;
+
+				tmp_info = malloc(sizeof(struct information));
+				memcpy(tmp_info, cur, sizeof(struct information));
+				parse_conky_vars(&subroot, obj->data.s, p, tmp_info);
+				DBGP("evaluated '%s' to '%s'", obj->data.s, p);
+				parse_conky_vars(&subroot2, p, p, tmp_info);
+
+				free_text_objects(&subroot);
+				free_text_objects(&subroot2);
+				free(tmp_info);
+			}
 			OBJ(exec) {
 				read_exec(obj->data.s, p, text_buffer_size);
 				remove_deleted_chars(p);

@@ -91,6 +91,7 @@ enum text_object_type {
 	OBJ_downspeedgraph,
 	OBJ_else,
 	OBJ_endif,
+	OBJ_eval,
 	OBJ_image,
 	OBJ_exec,
 	OBJ_execi,
