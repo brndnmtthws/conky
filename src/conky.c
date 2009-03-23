@@ -2844,6 +2844,7 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 				continue;
 			} else {
 				obj = create_plain_text("$");
+				s = p + 1;
 				if (obj != NULL) {
 					append_object(retval, obj);
 				}
