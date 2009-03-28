@@ -345,11 +345,6 @@ void update_cpu_usage()
 	oldtotal = total;
 }
 
-double get_sysfs_info(int *fd, int arg, char *devtype, char *type)
-{
-	return 0.0;
-}
-
 void update_load_average()
 {
 	double v[3];
@@ -447,12 +442,6 @@ int get_battery_perct(const char *bat)
 int get_battery_perct_bar(const char *bar)
 {
 	/* not implemented */
-	return 0;
-}
-
-int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
-		int n, int *div, char *devtype)
-{
 	return 0;
 }
 

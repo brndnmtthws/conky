@@ -302,11 +302,6 @@ void update_cpu_usage()
 	oldtotal = total;
 }
 
-double get_sysfs_info(int *fd, int div, char *devtype)
-{
-	return -1;
-}
-
 void update_load_average()
 {
 	double v[3];
@@ -325,12 +320,6 @@ double get_acpi_temperature(int fd)
 
 void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 {
-}
-
-int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n,
-		int *div, char *devtype)
-{
-	return -1;
 }
 
 int open_acpi_temperature(const char *name)
