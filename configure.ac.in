@@ -99,9 +99,10 @@ AC_ARG_ENABLE([config_output],
               [want_config_output="$enableval"], [want_config_output=yes])
 
 AM_CONDITIONAL(BUILD_CONFIG_OUTPUT, test x$want_config_output = xyes)
+AM_CONDITIONAL(BUILD_FOR_FOPENCOOKIE, test x$want_config_output = xyes)
 if test x$want_config_output = xyes; then
   AC_DEFINE(CONFIG_OUTPUT, 1, [Define if you want conky to output a default config (with -C)])
-  AC_CHECK_FUNCS(fopencookie, AM_CONDITIONAL(BUILD_FOR_FOPENCOOKIE, true))
+  AC_CHECK_FUNCS(fopencookie)
 fi
 
 dnl
