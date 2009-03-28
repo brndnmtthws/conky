@@ -2,6 +2,7 @@
 #define _MAIL_H
 
 #include "timed_thread.h"
+#include <time.h>
 
 extern char *current_mail_spool;
 
