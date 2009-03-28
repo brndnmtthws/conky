@@ -627,12 +627,14 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_acpitemp:
 				close(data.i);
 				break;
+#endif /* !__OpenBSD__ */
+#ifdef __linux__
 			case OBJ_i2c:
 			case OBJ_platform:
 			case OBJ_hwmon:
 				close(data.sysfs.fd);
 				break;
-#endif /* !__OpenBSD__ */
+#endif /* __linux__ */
 			case OBJ_time:
 			case OBJ_utime:
 				free(data.s);
@@ -1595,7 +1597,7 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.pair.a = a;
 		obj->data.pair.b = b;
 
-#ifndef __OpenBSD__
+#ifdef __linux__
 	END OBJ(i2c, INFO_SYSFS)
 		char buf1[64], buf2[64];
 		int n;
@@ -2119,7 +2121,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(swapbar, INFO_MEM)
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(sysname, 0)
-#ifndef __OpenBSD__
+#ifdef __linux__
 	END OBJ(temp1, INFO_SYSFS)
 		obj->type = OBJ_i2c;
 		obj->data.sysfs.fd = open_i2c_sensor(0, "temp", 1,
@@ -3901,7 +3903,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(voffset) {
 				new_voffset(p, obj->data.i);
 			}
-#ifndef __OpenBSD__
+#ifdef __linux__
 			OBJ(i2c) {
 				double r;
 
@@ -3944,7 +3946,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					snprintf(p, p_max_size, "%.1f", r);
 				}
 			}
-#endif /* !__OpenBSD__ */
+#endif /* __linux__ */
 			OBJ(alignr) {
 				new_alignr(p, obj->data.i);
 			}
