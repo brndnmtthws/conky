@@ -211,48 +211,6 @@ char *get_ioscheduler(char *disk)
 	return strndup("n/a", text_buffer_size);
 }
 
-int interface_up(const char *dev)
-{
-	int fd;
-	struct ifreq ifr;
-
-	if ((fd = socket(PF_INET, SOCK_DGRAM, 0)) < 0) {
-		CRIT_ERR("could not create sockfd");
-		return 0;
-	}
-	strncpy(ifr.ifr_name, dev, IFNAMSIZ);
-	if (ioctl(fd, SIOCGIFFLAGS, &ifr)) {
-		/* if device does not exist, treat like not up */
-		if (errno != ENODEV)
-			perror("SIOCGIFFLAGS");
-		goto END_FALSE;
-	}
-
-	if (!(ifr.ifr_flags & IFF_UP)) /* iface is not up */
-		goto END_FALSE;
-	if (ifup_strictness == IFUP_UP)
-		goto END_TRUE;
-
-	if (!(ifr.ifr_flags & IFF_RUNNING))
-		goto END_FALSE;
-	if (ifup_strictness == IFUP_LINK)
-		goto END_TRUE;
-
-	if (ioctl(fd, SIOCGIFADDR, &ifr)) {
-		perror("SIOCGIFADDR");
-		goto END_FALSE;
-	}
-	if (((struct sockaddr_in *)&(ifr.ifr_ifru.ifru_addr))->sin_addr.s_addr)
-		goto END_TRUE;
-
-END_FALSE:
-	close(fd);
-	return 0;
-END_TRUE:
-	close(fd);
-	return 1;
-}
-
 #define COND_FREE(x) if(x) free(x); x = 0
 #define SAVE_SET_STRING(x, y) \
 	if (x && strcmp((char *)x, (char *)y)) { \

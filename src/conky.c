@@ -722,10 +722,6 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_disk_protect:
 				free(data.s);
 				break;
-			case OBJ_if_up:
-				free(data.ifblock.s);
-				free(data.ifblock.str);
-				break;
 			case OBJ_if_gw:
 				free(data.ifblock.s);
 				free(data.ifblock.str);
@@ -744,6 +740,11 @@ static void free_text_objects(struct text_object *root)
 				if(data.s)
 					free(data.s);
 				break;
+#endif
+#if (defined(__FreeBSD__) || defined(__linux__))
+			case OBJ_if_up:
+				free(data.ifblock.s);
+				free(data.ifblock.str);
 #endif
 #ifdef XMMS2
 			case OBJ_xmms2_artist:
@@ -1214,12 +1215,6 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(ibm_volume, 0)
 	END OBJ(ibm_brightness, 0)
 #endif
-	END OBJ_IF(if_up, 0)
-		if (!arg) {
-			ERR("if_up needs an argument");
-			obj->data.ifblock.s = 0;
-		} else
-			obj->data.ifblock.s = strndup(arg, text_buffer_size);
 	END OBJ_IF(if_gw, 0)
 	END OBJ(ioscheduler, 0)
 		if (!arg) {
@@ -1242,6 +1237,14 @@ static struct text_object *construct_text_object(const char *s,
 		}
 
 #endif /* __linux__ */
+#if (defined(__FreeBSD__) || defined(__linux__))
+	END OBJ_IF(if_up, 0)
+		if (!arg) {
+			ERR("if_up needs an argument");
+			obj->data.ifblock.s = 0;
+		} else
+			obj->data.ifblock.s = strndup(arg, text_buffer_size);
+#endif
 #if defined(__OpenBSD__)
 	END OBJ(obsd_sensors_temp, 0)
 		if (!arg) {
@@ -3357,12 +3360,6 @@ static void generate_text_internal(char *p, int p_max_size,
 				get_ibm_acpi_brightness(p, p_max_size);
 			}
 #endif /* IBM */
-			OBJ(if_up) {
-				if ((obj->data.ifblock.s)
-						&& (!interface_up(obj->data.ifblock.s))) {
-					DO_JUMP;
-				}
-			}
 			OBJ(if_gw) {
 				if (!cur->gw_info.count) {
 					DO_JUMP;
@@ -3381,7 +3378,14 @@ static void generate_text_internal(char *p, int p_max_size,
 				get_powerbook_batt_info(p, p_max_size, obj->data.i);
 			}
 #endif /* __linux__ */
-
+#if (defined(__FreeBSD__) || defined(__linux__))
+			OBJ(if_up) {
+				if ((obj->data.ifblock.s)
+						&& (!interface_up(obj->data.ifblock.s))) {
+					DO_JUMP;
+				}
+			}
+#endif
 #ifdef __OpenBSD__
 			OBJ(obsd_sensors_temp) {
 				obsd_sensors.device = sensor_device;

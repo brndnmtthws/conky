@@ -20,7 +20,6 @@ struct i8k_struct {
 
 struct i8k_struct i8k;
 
-int interface_up(const char *dev);
 char *get_ioscheduler(char *);
 int get_laptop_mode(void);
 void update_gateway_info(void);

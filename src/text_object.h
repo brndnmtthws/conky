@@ -147,7 +147,6 @@ enum text_object_type {
 	OBJ_smapi_bat_power,
 	OBJ_if_smapi_bat_installed,
 #endif /* IBM */
-	OBJ_if_up,
 	OBJ_if_gw,
 	OBJ_ioscheduler,
 	OBJ_gw_iface,
@@ -165,6 +164,9 @@ enum text_object_type {
 	OBJ_wireless_link_qual_perc,
 	OBJ_wireless_link_bar,
 #endif /* __linux__ */
+#if defined(__FreeBSD__) || defined(__linux__)
+	OBJ_if_up,
+#endif
 	OBJ_if_empty,
 	OBJ_if_match,
 	OBJ_if_existing,

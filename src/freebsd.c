@@ -34,16 +34,13 @@
 #include <sys/types.h>
 #include <sys/vmmeter.h>
 #include <sys/user.h>
-#include <sys/ioctl.h>
 
 #include <net/if.h>
 #include <net/if_mib.h>
 #include <net/if_media.h>
 #include <net/if_var.h>
-#include <netinet/in.h>
 
 #include <devstat.h>
-#include <fcntl.h>
 #include <ifaddrs.h>
 #include <limits.h>
 #include <unistd.h>

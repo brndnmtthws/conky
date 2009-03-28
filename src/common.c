@@ -32,6 +32,9 @@
 #include <ctype.h>
 #include <errno.h>
 #include <sys/time.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <netinet/in.h>
 #include <pthread.h>
 #include "diskio.h"
 
@@ -184,6 +187,49 @@ struct net_stat *get_net_stat(const char *dev)
 void clear_net_stats(void)
 {
 	memset(netstats, 0, sizeof(netstats));
+}
+
+/* We should check if this is ok with OpenBSD and NetBSD as well. */
+int interface_up(const char *dev)
+{
+	int fd;
+	struct ifreq ifr;
+
+	if ((fd = socket(PF_INET, SOCK_DGRAM, 0)) < 0) {
+		CRIT_ERR("could not create sockfd");
+		return 0;
+	}
+	strncpy(ifr.ifr_name, dev, IFNAMSIZ);
+	if (ioctl(fd, SIOCGIFFLAGS, &ifr)) {
+		/* if device does not exist, treat like not up */
+		if (errno != ENODEV && errno != ENXIO)
+			perror("SIOCGIFFLAGS");
+		goto END_FALSE;
+	}
+
+	if (!(ifr.ifr_flags & IFF_UP)) /* iface is not up */
+		goto END_FALSE;
+	if (ifup_strictness == IFUP_UP)
+		goto END_TRUE;
+
+	if (!(ifr.ifr_flags & IFF_RUNNING))
+		goto END_FALSE;
+	if (ifup_strictness == IFUP_LINK)
+		goto END_TRUE;
+
+	if (ioctl(fd, SIOCGIFADDR, &ifr)) {
+		perror("SIOCGIFADDR");
+		goto END_FALSE;
+	}
+	if (((struct sockaddr_in *)&(ifr.ifr_ifru.ifru_addr))->sin_addr.s_addr)
+		goto END_TRUE;
+
+END_FALSE:
+	close(fd);
+	return 0;
+END_TRUE:
+	close(fd);
+	return 1;
 }
 
 void free_dns_data(void)

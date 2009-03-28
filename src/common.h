@@ -69,6 +69,7 @@ struct net_stat {
 };
 void clear_net_stats(void);
 struct net_stat *get_net_stat(const char *);
+int interface_up(const char *dev);
 
 void get_adt746x_cpu(char *, size_t);
 void get_adt746x_fan(char *, size_t);
