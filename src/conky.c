@@ -715,17 +715,17 @@ static void free_text_objects(struct text_object *root)
 				free_iconv();
 				break;
 #endif
-#ifdef __LINUX__
+#ifdef __linux__
 			case OBJ_disk_protect:
-				free(obj->data.s);
+				free(data.s);
 				break;
 			case OBJ_if_up:
-				free(obj->data.ifblock.s);
-				free(obj->data.ifblock.str);
+				free(data.ifblock.s);
+				free(data.ifblock.str);
 				break;
 			case OBJ_if_gw:
-				free(obj->data.ifblock.s);
-				free(obj->data.ifblock.str);
+				free(data.ifblock.s);
+				free(data.ifblock.str);
 			case OBJ_gw_iface:
 			case OBJ_gw_ip:
 				if (info.gw_info.iface) {
@@ -738,8 +738,8 @@ static void free_text_objects(struct text_object *root)
 				}
 				break;
 			case OBJ_ioscheduler:
-				if(obj->data.s)
-					free(obj->data.s);
+				if(data.s)
+					free(data.s);
 				break;
 #endif
 #ifdef XMMS2
