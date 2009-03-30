@@ -10,7 +10,7 @@ f = sys.argv[1]
 
 blah = 0
 
-print '<html><body>'
+print '<html><head><meta http-equiv="content-type" content="text/html;charset=utf-8" /></head><body>'
 
 for i in open(f).read().splitlines():
   # ignore empty lines

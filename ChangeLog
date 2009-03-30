@@ -177,7 +177,7 @@
 
 2008-06-28
 	* Added sysfs AC adapter support patch (thanks Byron)
-	* Added support for EVE-Online skill monitoring (thanks Asbjørn)
+	* Added support for EVE-Online skill monitoring (thanks AsbjÃ¸rn)
 
 2008-06-25
 	* new variables smapi_bat_temp and smapi_bat_power
@@ -247,7 +247,7 @@
 
 2008-04-29
 	* own_window_type dock patch (thanks Morgan).
-	* Fix for $if_up memleak (thanks Micha¿).
+	* Fix for $if_up memleak (thanks MichaÂ¿).
 
 2008-04-12
 	* Added patch for the following (thanks larsko):
@@ -1215,10 +1215,10 @@
 	* Version 0.17 released
 
 2004-05-23
-	* battery number for ACPI battery (thanks Leszek Krupiñski)
+	* battery number for ACPI battery (thanks Leszek KrupiÃ±ski)
 	* default battery is now BAT0 instead of BAT1, set ${battery 1} if
 	  the old battery thing worked
-	* bug fix on load average reporting (thanks Leszek Krupiñski)
+	* bug fix on load average reporting (thanks Leszek KrupiÃ±ski)
 	* outlines to text, draw_outline and default_outline_color
 	  configurations and $outlinecolor (thanks adi)
 	* $acpifan, $acpiacadapter, $uptime_short (thanks adi)
@@ -1274,5 +1274,5 @@
 	* Version 0.15 released
 
 2004-05-06
-	* SIGHUP reloads config file (thanks Jørgen P. Tjernø)
+	* SIGHUP reloads config file (thanks JÃ¸rgen P. TjernÃ¸)
 	* Some other stuff
