@@ -1,3 +1,6 @@
+2009-03-28
+	* Applied FreeBSD patches (thanks Nikos)
+
 2009-03-24
 	* Added eval text object to realise double parsing
 
