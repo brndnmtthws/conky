@@ -2565,7 +2565,7 @@ static char *backslash_escape(const char *src, char **templates, unsigned int te
 	const char *p;
 	unsigned int dup_idx = 0, dup_len;
 
-	dup_len = strlen(src);
+	dup_len = strlen(src) + 1;
 	src_dup = malloc(dup_len * sizeof(char));
 
 	p = src;
