@@ -36,6 +36,7 @@
 #include <net/if.h>
 #include <netinet/in.h>
 #include <pthread.h>
+#include <unistd.h>
 #include "diskio.h"
 
 /* check for OS and include appropriate headers */
