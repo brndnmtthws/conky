@@ -247,6 +247,9 @@ struct information info;
 /* default config file */
 static char *current_config;
 
+/* display to connect to */
+static char *disp = NULL;
+
 /* set to 1 if you want all text to be in uppercase */
 static unsigned int stuff_in_upper_case;
 
@@ -6157,6 +6160,7 @@ static void main_loop(void)
 }
 
 static void load_config_file(const char *);
+static void load_config_file_x11(const char *);
 
 /* reload the config file */
 static void reload_config(void)
@@ -6183,6 +6187,7 @@ static void reload_config(void)
 	if (current_config) {
 		clear_fs_stats();
 		load_config_file(current_config);
+		load_config_file_x11(current_config);
 
 		/* re-init specials array */
 		if ((specials = realloc((void *) specials,
@@ -6492,7 +6497,7 @@ static void X11_initialisation(void)
 {
 	if (x_initialised == YES) return;
 	output_methods |= TO_X;
-	init_X11();
+	init_X11(disp);
 	set_default_configurations_for_x();
 	x_initialised = YES;
 }
@@ -6590,6 +6595,15 @@ static void load_config_file(const char *f)
 				}
 			}
 		}
+		CONF("display") {
+			if (!value || x_initialised == YES) {
+				CONF_ERR;
+			} else {
+				if (disp)
+					free(disp);
+				disp = strdup(value);
+			}
+		}
 		CONF("alignment") {
 			if (window.type == TYPE_DOCK)
 				;
@@ -6634,106 +6648,6 @@ static void load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-		CONF("color0") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color0 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color1") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color1 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color2") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color2 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color3") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color3 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color4") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color4 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color5") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color5 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color6") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color6 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color7") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color7 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color8") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color8 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color9") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color9 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
 #define TEMPLATE_CONF(n) \
 		CONF("template"#n) { \
 			if (value) { \
@@ -6753,36 +6667,6 @@ static void load_config_file(const char *f)
 		TEMPLATE_CONF(7)
 		TEMPLATE_CONF(8)
 		TEMPLATE_CONF(9)
-		CONF("default_color") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					default_fg_color = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF3("default_shade_color", "default_shadecolor") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					default_bg_color = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF3("default_outline_color", "default_outlinecolor") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					default_out_color = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
 #endif /* X11 */
 		CONF("imap") {
 			if (value) {
@@ -6944,27 +6828,16 @@ static void load_config_file(const char *f)
 			use_xft = string_to_bool(value);
 		}
 		CONF("font") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					set_first_font(value);
-				} else {
-					CONF_ERR;
-				}
+			if (value) {
+				set_first_font(value);
 			}
 		}
 		CONF("xftalpha") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value && font_count >= 0) {
-					fonts[0].font_alpha = atof(value) * 65535.0;
-				} else {
-					CONF_ERR;
-				}
+			if (value && font_count >= 0) {
+				fonts[0].font_alpha = atof(value) * 65535.0;
 			}
 		}
 		CONF("xftfont") {
-			X11_initialisation();
 			if (use_xft) {
 #else
 		CONF("use_xft") {
@@ -6980,13 +6853,9 @@ static void load_config_file(const char *f)
 		}
 		CONF("font") {
 #endif
-				if(x_initialised == YES) {
-					if (value) {
-						set_first_font(value);
-					} else {
-						CONF_ERR;
-					}
-				}
+			if (value) {
+				set_first_font(value);
+			}
 #ifdef XFT
 			}
 #endif
@@ -7060,113 +6929,76 @@ static void load_config_file(const char *f)
 #ifdef X11
 #ifdef OWN_WINDOW
 		CONF("own_window") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					own_window = string_to_bool(value);
-				} else {
-					CONF_ERR;
-				}
+			if (value) {
+				own_window = string_to_bool(value);
 			}
 		}
 		CONF("own_window_class") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					memset(window.class_name, 0, sizeof(window.class_name));
-					strncpy(window.class_name, value,
+			if (value) {
+				memset(window.class_name, 0, sizeof(window.class_name));
+				strncpy(window.class_name, value,
 						sizeof(window.class_name) - 1);
-				} else {
-					CONF_ERR;
-				}
 			}
 		}
 		CONF("own_window_title") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					memset(window.title, 0, sizeof(window.title));
-					strncpy(window.title, value, sizeof(window.title) - 1);
-				} else {
-					CONF_ERR;
-				}
+			if (value) {
+				memset(window.title, 0, sizeof(window.title));
+				strncpy(window.title, value, sizeof(window.title) - 1);
 			}
 		}
 		CONF("own_window_transparent") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					set_transparent = string_to_bool(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("own_window_colour") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					background_colour = get_x11_color(value);
-				} else {
-					ERR("Invalid colour for own_window_colour (try omitting the "
-						"'#' for hex colours");
-				}
+			if (value) {
+				set_transparent = string_to_bool(value);
 			}
 		}
 		CONF("own_window_hints") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					char *p_hint, *p_save;
-					char delim[] = ", ";
+			if (value) {
+				char *p_hint, *p_save;
+				char delim[] = ", ";
 
-					/* tokenize the value into individual hints */
-					if ((p_hint = strtok_r(value, delim, &p_save)) != NULL) {
-						do {
-							/* fprintf(stderr, "hint [%s] parsed\n", p_hint); */
-							if (strncmp(p_hint, "undecorate", 10) == EQUAL) {
-								SET_HINT(window.hints, HINT_UNDECORATED);
-							} else if (strncmp(p_hint, "below", 5) == EQUAL) {
-								SET_HINT(window.hints, HINT_BELOW);
-							} else if (strncmp(p_hint, "above", 5) == EQUAL) {
-								SET_HINT(window.hints, HINT_ABOVE);
-							} else if (strncmp(p_hint, "sticky", 6) == EQUAL) {
-								SET_HINT(window.hints, HINT_STICKY);
-							} else if (strncmp(p_hint, "skip_taskbar", 12) == EQUAL) {
-								SET_HINT(window.hints, HINT_SKIP_TASKBAR);
-							} else if (strncmp(p_hint, "skip_pager", 10) == EQUAL) {
-								SET_HINT(window.hints, HINT_SKIP_PAGER);
-							} else {
-								CONF_ERR;
-							}
-	
-							p_hint = strtok_r(NULL, delim, &p_save);
-						} while (p_hint != NULL);
-					}
-				} else {
-					CONF_ERR;
+				/* tokenize the value into individual hints */
+				if ((p_hint = strtok_r(value, delim, &p_save)) != NULL) {
+					do {
+						/* fprintf(stderr, "hint [%s] parsed\n", p_hint); */
+						if (strncmp(p_hint, "undecorate", 10) == EQUAL) {
+							SET_HINT(window.hints, HINT_UNDECORATED);
+						} else if (strncmp(p_hint, "below", 5) == EQUAL) {
+							SET_HINT(window.hints, HINT_BELOW);
+						} else if (strncmp(p_hint, "above", 5) == EQUAL) {
+							SET_HINT(window.hints, HINT_ABOVE);
+						} else if (strncmp(p_hint, "sticky", 6) == EQUAL) {
+							SET_HINT(window.hints, HINT_STICKY);
+						} else if (strncmp(p_hint, "skip_taskbar", 12) == EQUAL) {
+							SET_HINT(window.hints, HINT_SKIP_TASKBAR);
+						} else if (strncmp(p_hint, "skip_pager", 10) == EQUAL) {
+							SET_HINT(window.hints, HINT_SKIP_PAGER);
+						} else {
+							CONF_ERR;
+						}
+
+						p_hint = strtok_r(NULL, delim, &p_save);
+					} while (p_hint != NULL);
 				}
+			} else {
+				CONF_ERR;
 			}
 		}
 		CONF("own_window_type") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					if (strncmp(value, "normal", 6) == EQUAL) {
-						window.type = TYPE_NORMAL;
-					} else if (strncmp(value, "desktop", 7) == EQUAL) {
-						window.type = TYPE_DESKTOP;
-					} else if (strncmp(value, "dock", 7) == EQUAL) {
-						window.type = TYPE_DOCK;
-						text_alignment = TOP_LEFT;
-					} else if (strncmp(value, "override", 8) == EQUAL) {
-						window.type = TYPE_OVERRIDE;
-					} else {
-						CONF_ERR;
-					}
+			if (value) {
+				if (strncmp(value, "normal", 6) == EQUAL) {
+					window.type = TYPE_NORMAL;
+				} else if (strncmp(value, "desktop", 7) == EQUAL) {
+					window.type = TYPE_DESKTOP;
+				} else if (strncmp(value, "dock", 7) == EQUAL) {
+					window.type = TYPE_DOCK;
+					text_alignment = TOP_LEFT;
+				} else if (strncmp(value, "override", 8) == EQUAL) {
+					window.type = TYPE_OVERRIDE;
 				} else {
 					CONF_ERR;
 				}
+			} else {
+				CONF_ERR;
 			}
 		}
 #endif
@@ -7233,12 +7065,6 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("text") {
-#ifdef X11
-			//initialize X11 if nothing X11-related is mentioned before TEXT (and if X11 is the default outputmethod)
-			if(output_methods & TO_X) {
-				X11_initialisation();
-			}
-#endif
 			if (global_text) {
 				free(global_text);
 				global_text = 0;
@@ -7344,17 +7170,27 @@ static void load_config_file(const char *f)
 			}
 		}
 
+		CONF("color0"){}
+		CONF("color1"){}
+		CONF("color2"){}
+		CONF("color3"){}
+		CONF("color4"){}
+		CONF("color5"){}
+		CONF("color6"){}
+		CONF("color7"){}
+		CONF("color8"){}
+		CONF("color9"){}
+		CONF("default_color"){}
+		CONF3("default_shade_color", "default_shadecolor"){}
+		CONF3("default_outline_color", "default_outlinecolor") {}
+		CONF("own_window_colour") {}
+
 		else {
 			ERR("%s: %d: no such configuration: '%s'", f, line, name);
 		}
-
-#undef CONF
-#undef CONF2
 	}
 
 	fclose(fp);
-
-#undef CONF_ERR
 
 	if (info.music_player_interval == 0) {
 		// default to update_interval
@@ -7363,6 +7199,240 @@ static void load_config_file(const char *f)
 	if (!global_text) { // didn't supply any text
 		CRIT_ERR("missing text block in configuration; exiting");
 	}
+}
+
+static void load_config_file_x11(const char *f)
+{
+	int line = 0;
+	FILE *fp;
+
+#ifdef CONFIG_OUTPUT
+	if (!strcmp(f, "==builtin==")) {
+#ifdef HAVE_FOPENCOOKIE
+		fp = fopencookie(NULL, "r", conf_cookie);
+#endif
+	} else
+#endif /* CONFIG_OUTPUT */
+		fp = fopen(f, "r");
+
+	if (!fp) {
+		return;
+	}
+	DBGP("reading contents from config file '%s'", f);
+
+	while (!feof(fp)) {
+		char buf[256], *p, *p2, *name, *value;
+
+		line++;
+		if (fgets(buf, 256, fp) == NULL) {
+			break;
+		}
+
+		p = buf;
+
+		/* break at comment */
+		p2 = strchr(p, '#');
+		if (p2) {
+			*p2 = '\0';
+		}
+
+		/* skip spaces */
+		while (*p && isspace((int) *p)) {
+			p++;
+		}
+		if (*p == '\0') {
+			continue;	/* empty line */
+		}
+
+		name = p;
+
+		/* skip name */
+		p2 = p;
+		while (*p2 && !isspace((int) *p2)) {
+			p2++;
+		}
+		if (*p2 != '\0') {
+			*p2 = '\0';	/* break at name's end */
+			p2++;
+		}
+
+		/* get value */
+		if (*p2) {
+			p = p2;
+			while (*p && isspace((int) *p)) {
+				p++;
+			}
+
+			value = p;
+
+			p2 = value + strlen(value);
+			while (isspace((int) *(p2 - 1))) {
+				*--p2 = '\0';
+			}
+		} else {
+			value = 0;
+		}
+
+#ifdef X11
+		CONF2("color0") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					color0 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("color1") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					color1 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("color2") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					color2 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("color3") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					color3 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("color4") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					color4 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("color5") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					color5 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("color6") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					color6 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("color7") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					color7 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("color8") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					color8 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("color9") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					color9 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("default_color") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					default_fg_color = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF3("default_shade_color", "default_shadecolor") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					default_bg_color = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF3("default_outline_color", "default_outlinecolor") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					default_out_color = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+#ifdef OWN_WINDOW
+		CONF("own_window_colour") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					background_colour = get_x11_color(value);
+				} else {
+					ERR("Invalid colour for own_window_colour (try omitting the "
+						"'#' for hex colours");
+				}
+			}
+		}
+#endif
+#endif /* X11 */
+		CONF("text") {
+#ifdef X11
+			//initialize X11 if nothing X11-related is mentioned before TEXT (and if X11 is the default outputmethod)
+			if(output_methods & TO_X) {
+				X11_initialisation();
+			}
+#endif
+		}
+#undef CONF
+#undef CONF2
+	}
+
+	fclose(fp);
+
+#undef CONF_ERR
 }
 
 static void print_help(const char *prog_name) {
@@ -7403,7 +7473,7 @@ static void print_help(const char *prog_name) {
 /* : means that character before that takes an argument */
 static const char *getopt_string = "vVqdDt:u:i:hc:"
 #ifdef X11
-	"x:y:w:a:f:"
+	"x:y:w:a:f:X:"
 #ifdef OWN_WINDOW
 	"o"
 #endif
@@ -7428,6 +7498,7 @@ static const struct option longopts[] = {
 #ifdef X11
 	{ "alignment", 1, NULL, 'a' },
 	{ "font", 1, NULL, 'f' },
+	{ "display", 1, NULL, 'X' },
 #ifdef OWN_WINDOW
 	{ "own-window", 0, NULL, 'o' },
 #endif
@@ -7618,6 +7689,11 @@ int main(int argc, char **argv)
 			case 'a':
 				text_alignment = string_to_alignment(optarg);
 				break;
+			case 'X':
+				if (disp)
+					free(disp);
+				disp = strdup(optarg);
+				break;
 
 #ifdef OWN_WINDOW
 			case 'o':
@@ -7667,8 +7743,10 @@ int main(int argc, char **argv)
 
 #ifdef X11
 	/* load font */
-	if (output_methods & TO_X)
+	if (output_methods & TO_X) {
+		load_config_file_x11(current_config);
 		load_fonts();
+	}
 #endif /* X11 */
 
 	/* generate text and get initial size */
