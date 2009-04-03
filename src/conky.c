@@ -1279,47 +1279,28 @@ static struct text_object *construct_text_object(const char *s,
 #endif /* __OpenBSD__ */
 	END OBJ(buffers, INFO_BUFFERS)
 	END OBJ(cached, INFO_BUFFERS)
+#define SCAN_CPU(__arg, __var) { \
+	int __offset; \
+	if (__arg && sscanf(__arg, " cpu%u %n", &__var, &__offset)) \
+		__arg += __offset; \
+	else \
+		__var = 0; \
+}
 	END OBJ(cpu, INFO_CPU)
-		if (arg) {
-			if (strncmp(arg, "cpu", 3) == EQUAL && isdigit(arg[3])) {
-				obj->data.cpu_index = atoi(&arg[3]);
-				arg += 4;
-			} else {
-				obj->data.cpu_index = 0;
-			}
-			DBGP2("Adding $cpu for CPU %d", obj->data.cpu_index);
-		} else {
-			obj->data.cpu_index = 0;
-		}
+		SCAN_CPU(arg, obj->data.cpu_index);
+		DBGP2("Adding $cpu for CPU %d", obj->data.cpu_index);
 	END OBJ(cpugauge, INFO_CPU)
+		SCAN_CPU(arg, obj->data.cpu_index);
 		scan_gauge(arg, &obj->a, &obj->b);
 		DBGP2("Adding $cpugauge for CPU %d", obj->data.cpu_index);
 	END OBJ(cpubar, INFO_CPU)
-		if (arg) {
-			if (strncmp(arg, "cpu", 3) == EQUAL && isdigit(arg[3])) {
-				obj->data.cpu_index = atoi(&arg[3]);
-				arg += 4;
-			} else {
-				obj->data.cpu_index = 0;
-			}
-			scan_bar(arg, &obj->a, &obj->b);
-		} else {
-			scan_bar(arg, &obj->a, &obj->b);
-			obj->data.cpu_index = 0;
-		}
+		SCAN_CPU(arg, obj->data.cpu_index);
+		scan_bar(arg, &obj->a, &obj->b);
 		DBGP2("Adding $cpubar for CPU %d", obj->data.cpu_index);
 	END OBJ(cpugraph, INFO_CPU)
-		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+		SCAN_CPU(arg, obj->data.cpu_index);
+		scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
-
-		if (buf) {
-			if (strncmp(buf, "cpu", 3) == EQUAL && isdigit(buf[3])) {
-				obj->data.cpu_index = atoi(&buf[3]);
-			} else {
-				obj->data.cpu_index = 0;
-			}
-			free(buf);
-		}
 		DBGP2("Adding $cpugraph for CPU %d", obj->data.cpu_index);
 	END OBJ(loadgraph, INFO_LOADAVG)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
