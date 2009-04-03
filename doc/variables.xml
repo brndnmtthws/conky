@@ -421,7 +421,7 @@
 	<varlistentry>
 		<term>
 			<command><option>cpubar</option></command>
-			<option>(cpu number) (height),(width)</option>
+			<option>(cpuN) (height),(width)</option>
 		</term>
 		<listitem>
 			Bar that shows CPU usage, height is bar's height in pixels.  See $cpu for more info on SMP.
@@ -431,7 +431,7 @@
 	<varlistentry>
 		<term>
 			<command><option>cpugauge</option></command>
-			<option>(cpu number) (height),(width)</option>
+			<option>(cpuN) (height),(width)</option>
 		</term>
 		<listitem>
 			Elliptical gauge that shows CPU usage, height and width are gauge's vertical and horizontal axis respectively.  See $cpu for more info on SMP.
@@ -441,7 +441,7 @@
 	<varlistentry>
 		<term>
 			<command><option>cpugraph</option></command>
-			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (cpu number)</option>
+			<option>(cpuN) ("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
 		</term>
 		<listitem>
 			CPU usage graph, with optional colours in hex, minus the #.  See $cpu for more info on SMP. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
