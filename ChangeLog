@@ -1,3 +1,8 @@
+2009-04-09
+	* Fix broken xmms2 compilation (thanks fusetak)
+	* Minor fix for fs_used_perc, fs_free and fs_free_perc (thanks
+	lightpriest)
+
 2009-03-28
 	* Applied FreeBSD patches (thanks Nikos)
 
