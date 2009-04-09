@@ -25,7 +25,6 @@
  */
 
 #include "conky.h"
-#include <xmmsclient/xmmsclient.h>
 
 #define CONN_INIT	0
 #define CONN_OK		1
