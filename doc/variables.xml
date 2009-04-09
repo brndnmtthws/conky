@@ -2168,7 +2168,7 @@
 			<option>(width, (start))</option>
 		</term>
 		<listitem>
-			Puts a tab of the specified width, starting from column 'start'.
+			Puts a tab of the specified width, starting from column 'start'.  The unit is pixels for both arguments.
 			<para></para></listitem>
 	</varlistentry>
 
