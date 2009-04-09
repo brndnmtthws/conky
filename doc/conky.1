@@ -607,15 +607,15 @@ CPU architecture Conky was built for
 CPU usage in percents. For SMP machines, the CPU number can be provided as an argument. ${cpu cpu0} is the total usage, and ${cpu cpuX} (X >= 1) are individual CPUs.
 
 .TP 
-\fB\*(T<\fBcpubar\fR\*(T>\fR \*(T<\fB(cpu number) (height),(width)\fR\*(T> 
+\fB\*(T<\fBcpubar\fR\*(T>\fR \*(T<\fB(cpuN) (height),(width)\fR\*(T> 
 Bar that shows CPU usage, height is bar's height in pixels. See $cpu for more info on SMP.
 
 .TP 
-\fB\*(T<\fBcpugauge\fR\*(T>\fR \*(T<\fB(cpu number) (height),(width)\fR\*(T> 
+\fB\*(T<\fBcpugauge\fR\*(T>\fR \*(T<\fB(cpuN) (height),(width)\fR\*(T> 
 Elliptical gauge that shows CPU usage, height and width are gauge's vertical and horizontal axis respectively. See $cpu for more info on SMP.
 
 .TP 
-\fB\*(T<\fBcpugraph\fR\*(T>\fR \*(T<\fB("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (cpu number)\fR\*(T> 
+\fB\*(T<\fBcpugraph\fR\*(T>\fR \*(T<\fB(cpuN) ("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
 CPU usage graph, with optional colours in hex, minus the #. See $cpu for more info on SMP. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
 
 .TP 
@@ -1692,7 +1692,7 @@ window, be sure to read up on the own_window_type settings and experiment.
 .PP
 #conky on irc.freenode.net
 .SH COPYING
-Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et. al.
+Copyright (c) 2005-2009 Brenden Matthews, Philip Kovacs, et. al.
 Any original torsmo code is licensed under the BSD license (see LICENSE.BSD for a copy).
 All code written since the fork of torsmo is licensed under the GPL (see LICENSE.GPL for a copy), except where noted differently (such as in portmon code, timed thread code, and audacious code which are LGPL, and prss which is an MIT-style license).
 .SH AUTHORS
