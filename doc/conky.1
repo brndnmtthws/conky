@@ -178,6 +178,18 @@ The number of samples to average for CPU monitoring
 If true, cpu in top will show usage of one processor's power. If false, cpu in top will show the usage of all processors' power combined.
 
 .TP 
+\fB\*(T<\fBdefault_bar_size\fR\*(T>\fR
+Specify a default width and height for bars. Example: 'default_bar_size 0 6'. This is particularly useful for execbar and execibar as they do not take size arguments
+
+.TP 
+\fB\*(T<\fBdefault_graph_size\fR\*(T>\fR
+Specify a default width and height for graphs. Example: 'default_graph_size 0 25'. This is particularly useful for execgraph and execigraph as they do not take size arguments
+
+.TP 
+\fB\*(T<\fBdefault_gauge_size\fR\*(T>\fR
+Specify a default width and height for gauges. Example: 'default_gauge_size 25 25'. This is particularly useful for execgauge and execigauge as they do not take size arguments
+
+.TP 
 \fB\*(T<\fBdefault_color\fR\*(T>\fR
 Default color and border color
 

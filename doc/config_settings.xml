@@ -56,6 +56,27 @@
 	</varlistentry>
 
 	<varlistentry>
+		<term><command><option>default_bar_size</option></command></term>
+		<listitem>
+			Specify a default width and height for bars.  Example: 'default_bar_size 0 6'.  This is particularly useful for execbar and execibar as they do not take size arguments
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term><command><option>default_graph_size</option></command></term>
+		<listitem>
+			Specify a default width and height for graphs.  Example: 'default_graph_size 0 25'.  This is particularly useful for execgraph and execigraph as they do not take size arguments
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term><command><option>default_gauge_size</option></command></term>
+		<listitem>
+			Specify a default width and height for gauges.  Example: 'default_gauge_size 25 25'.  This is particularly useful for execgauge and execigauge as they do not take size arguments
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
 		<term><command><option>default_color</option></command></term>
 		<listitem>
 			Default color and border color

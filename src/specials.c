@@ -42,6 +42,10 @@ struct special_t *specials = NULL;
 
 unsigned int special_count;
 
+int default_bar_width = 0, default_bar_height = 6;
+int default_graph_width = 25, default_graph_height = 25;
+int default_gauge_width = 0, default_gauge_height = 25;
+
 /*
  * Scanning arguments to various special text objects
  */
@@ -49,8 +53,8 @@ unsigned int special_count;
 const char *scan_gauge(const char *args, int *w, int *h)
 {
 	/*width and height*/
-	*w = 25;
-	*h = 25;
+	*w = default_gauge_width;
+	*h = default_gauge_height;
 
 	/* gauge's argument is either height or height,width */
 	if (args) {
@@ -69,8 +73,8 @@ const char *scan_gauge(const char *args, int *w, int *h)
 const char *scan_bar(const char *args, int *w, int *h)
 {
 	/* zero width means all space that is available */
-	*w = 0;
-	*h = 6;
+	*w = default_bar_width;
+	*h = default_bar_height;
 	/* bar's argument is either height or height,width */
 	if (args) {
 		int n = 0;
@@ -102,8 +106,8 @@ char *scan_graph(const char *args, int *w, int *h,
 	buf[0] = 0;
 
 	/* zero width means all space that is available */
-	*w = 0;
-	*h = 25;
+	*w = default_graph_width;
+	*h = default_graph_height;
 	*first_colour = 0;
 	*last_colour = 0;
 	*scale = 0;

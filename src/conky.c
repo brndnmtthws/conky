@@ -6494,6 +6494,7 @@ static void X11_initialisation(void)
 static void load_config_file(const char *f)
 {
 #define CONF_ERR ERR("%s: %d: config file error", f, line)
+#define CONF_ERR2(a) ERR("%s: %d: config file error: %s", f, line, a)
 	int line = 0;
 	FILE *fp;
 
@@ -6668,6 +6669,45 @@ static void load_config_file(const char *f)
 				info.mail = parse_mail_args(POP3_TYPE, value);
 			} else {
 				CONF_ERR;
+			}
+		}
+		CONF("default_bar_size") {
+			char err = 0;
+			if (value) {
+				if (sscanf(value, "%d %d", &default_bar_width, &default_bar_height) != 2) {
+					err = 1;
+				}
+			} else {
+				err = 1;
+			}
+			if (err) {
+				CONF_ERR2("default_bar_size takes 2 integer arguments (ie. 'default_bar_size 0 6')")
+			}
+		}
+		CONF("default_graph_size") {
+			char err = 0;
+			if (value) {
+				if (sscanf(value, "%d %d", &default_graph_width, &default_graph_height) != 2) {
+					err = 1;
+				}
+			} else {
+				err = 1;
+			}
+			if (err) {
+				CONF_ERR2("default_graph_size takes 2 integer arguments (ie. 'default_graph_size 0 6')")
+			}
+		}
+		CONF("default_gauge_size") {
+			char err = 0;
+			if (value) {
+				if (sscanf(value, "%d %d", &default_gauge_width, &default_gauge_height) != 2) {
+					err = 1;
+				}
+			} else {
+				err = 1;
+			}
+			if (err) {
+				CONF_ERR2("default_gauge_size takes 2 integer arguments (ie. 'default_gauge_size 0 6')")
 			}
 		}
 #ifdef MPD

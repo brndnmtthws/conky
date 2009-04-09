@@ -76,6 +76,13 @@ struct special_t {
 extern struct special_t *specials;
 extern unsigned int special_count;
 
+extern int default_bar_width;
+extern int default_bar_height;
+extern int default_graph_width;
+extern int default_graph_height;
+extern int default_gauge_width;
+extern int default_gauge_height;
+
 /* max number of specials allowed (TODO: use linked list instead) */
 extern unsigned int max_specials;
 

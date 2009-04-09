@@ -30,6 +30,9 @@ syn keyword ConkyrcSetting
 			\ color7
 			\ color8
 			\ color9
+			\ default_bar_size
+			\ default_gauge_size
+			\ default_graph_size
 			\ default_color
 			\ default_shade_color
 			\ default_shadecolor

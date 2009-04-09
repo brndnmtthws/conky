@@ -2,6 +2,8 @@
 	* Fix broken xmms2 compilation (thanks fusetak)
 	* Minor fix for fs_used_perc, fs_free and fs_free_perc (thanks
 	lightpriest)
+	* Added default_bar/graph/gauge_size config options (thanks wire64 for the
+	idea)
 
 2009-03-28
 	* Applied FreeBSD patches (thanks Nikos)

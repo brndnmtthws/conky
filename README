@@ -199,6 +199,24 @@ conky(1)                                                              conky(1)
               combined.
 
 
+       [1mdefault_bar_size[0m
+              Specify  a  default  width  and  height  for bars. Example: 'de‐
+              fault_bar_size 0 6'. This is particularly useful for execbar and
+              execibar as they do not take size arguments
+
+
+       [1mdefault_graph_size[0m
+              Specify  a  default  width  and height for graphs. Example: 'de‐
+              fault_graph_size 0 25'. This is particularly  useful  for  exec‐
+              graph and execigraph as they do not take size arguments
+
+
+       [1mdefault_gauge_size[0m
+              Specify  a  default  width  and height for gauges. Example: 'de‐
+              fault_gauge_size 25 25'. This is particularly useful  for  exec‐
+              gauge and execigauge as they do not take size arguments
+
+
        [1mdefault_color[0m
               Default color and border color
 
