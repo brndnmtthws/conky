@@ -611,10 +611,6 @@ CPU usage in percents. For SMP machines, the CPU number can be provided as an ar
 Bar that shows CPU usage, height is bar's height in pixels. See $cpu for more info on SMP.
 
 .TP 
-\fB\*(T<\fBcpugauge\fR\*(T>\fR \*(T<\fB(cpuN) (height),(width)\fR\*(T> 
-Elliptical gauge that shows CPU usage, height and width are gauge's vertical and horizontal axis respectively. See $cpu for more info on SMP.
-
-.TP 
 \fB\*(T<\fBcpugraph\fR\*(T>\fR \*(T<\fB(cpuN) ("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
 CPU usage graph, with optional colours in hex, minus the #. See $cpu for more info on SMP. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
 
@@ -681,10 +677,6 @@ Executes a shell command and displays the output in conky. warning: this takes a
 .TP 
 \fB\*(T<\fBexecbar\fR\*(T>\fR \*(T<\fBcommand\fR\*(T> 
 Same as exec, except if the first value return is a value between 0-100, it will use that number for a bar. The size for the bar is currently fixed, but that may change in the future.
-
-.TP 
-\fB\*(T<\fBexecgauge\fR\*(T>\fR \*(T<\fBcommand\fR\*(T> 
-Same as exec, except if the first value return is a value between 0-100, it will use that number for a gauge. The size for the gauge is currently fixed, but you may change that for the future conky release.
 
 .TP 
 \fB\*(T<\fBexecgraph\fR\*(T>\fR \*(T<\fB("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) command\fR\*(T> 
@@ -1037,10 +1029,6 @@ Amount of memory in use
 .TP 
 \fB\*(T<\fBmembar\fR\*(T>\fR \*(T<\fB(height),(width)\fR\*(T> 
 Bar that shows amount of memory in use
-
-.TP 
-\fB\*(T<\fBmemgauge\fR\*(T>\fR \*(T<\fB(height),(width)\fR\*(T> 
-Gauge that shows amount of memory in use (see cpugauge)
 
 .TP 
 \fB\*(T<\fBmemgraph\fR\*(T>\fR \*(T<\fB("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
@@ -1401,7 +1389,7 @@ Download and parse RSS feeds. Action may be one of the following: feed_title, it
 
 .TP 
 \fB\*(T<\fBtab\fR\*(T>\fR \*(T<\fB(width, (start))\fR\*(T> 
-Puts a tab of the specified width, starting from column 'start'.
+Puts a tab of the specified width, starting from column 'start'. The unit is pixels for both arguments.
 
 .TP 
 \fB\*(T<\fBtail\fR\*(T>\fR \*(T<\fBlogfile lines (interval)\fR\*(T> 

@@ -48,7 +48,6 @@ enum special_types {
 	OUTLINE,
 	ALIGNR,
 	ALIGNC,
-	GAUGE,
 	GRAPH,
 	OFFSET,
 	VOFFSET,
@@ -80,14 +79,12 @@ extern unsigned int special_count;
 extern unsigned int max_specials;
 
 /* scanning special arguments */
-const char *scan_gauge(const char *, int *, int *);
 const char *scan_bar(const char *, int *, int *);
 char *scan_font(const char *);
 char *scan_graph(const char *, int *, int *, unsigned int *,
                  unsigned int *, unsigned int *, char *);
 
 /* printing specials */
-void new_gauge(char *, int, int, int);
 void new_bar(char *, int, int, int);
 void new_font(char *, char *);
 void new_graph(char *, int, int, unsigned int,

@@ -46,26 +46,6 @@ unsigned int special_count;
  * Scanning arguments to various special text objects
  */
 
-const char *scan_gauge(const char *args, int *w, int *h)
-{
-	/*width and height*/
-	*w = 25;
-	*h = 25;
-
-	/* gauge's argument is either height or height,width */
-	if (args) {
-		int n = 0;
-
-		if (sscanf(args, "%d,%d %n", h, w, &n) <= 1) {
-			sscanf(args, "%d %n", h, &n);
-			*w = *h; /*square gauge*/
-		}
-		args += n;
-	}
-
-	return args;
-}
-
 const char *scan_bar(const char *args, int *w, int *h)
 {
 	/* zero width means all space that is available */
@@ -198,15 +178,6 @@ static struct special_t *new_special(char *buf, enum special_types t)
 	buf[1] = '\0';
 	specials[special_count].type = t;
 	return &specials[special_count++];
-}
-
-void new_gauge(char *buf, int w, int h, int usage)
-{
-	struct special_t *s = new_special(buf, GAUGE);
-
-	s->arg = (usage > 255) ? 255 : ((usage < 0) ? 0 : usage);
-	s->width = w;
-	s->height = h;
 }
 
 void new_bar(char *buf, int w, int h, int usage)
