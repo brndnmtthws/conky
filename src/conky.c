@@ -855,6 +855,7 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_execi:
 			case OBJ_execibar:
 			case OBJ_execigraph:
+			case OBJ_execigauge:
 				free(data.execi.cmd);
 				free(data.execi.buffer);
 				break;
@@ -1411,14 +1412,22 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(execp, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
+#define SIZE_DEFAULTS(arg) { \
+	obj->a = default_##arg##_width; \
+	obj->b = default_##arg##_height; \
+}
 	END OBJ(execgauge, 0)
+		SIZE_DEFAULTS(gauge);
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(execbar, 0)
+		SIZE_DEFAULTS(bar);
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(execgraph, 0)
+		SIZE_DEFAULTS(graph);
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(execibar, 0)
 		int n;
+		SIZE_DEFAULTS(bar);
 
 		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
 			char buf[256];
@@ -1432,11 +1441,26 @@ static struct text_object *construct_text_object(const char *s,
 		}
 	END OBJ(execigraph, 0)
 		int n;
+		SIZE_DEFAULTS(graph);
 
 		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
 			char buf[256];
 
 			ERR("${execigraph <interval> command}");
+			obj->type = OBJ_text;
+			snprintf(buf, 256, "${%s}", s);
+			obj->data.s = strndup(buf, text_buffer_size);
+		} else {
+			obj->data.execi.cmd = strndup(arg + n, text_buffer_size);
+		}
+	END OBJ(execigauge, 0)
+		int n;
+		SIZE_DEFAULTS(gauge);
+
+		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
+			char buf[256];
+
+			ERR("${execigauge <interval> command}");
 			obj->type = OBJ_text;
 			snprintf(buf, 256, "${%s}", s);
 			obj->data.s = strndup(buf, text_buffer_size);
@@ -3020,12 +3044,12 @@ static inline double get_barnum(char *buf)
 	}
 
 	if (sscanf(buf, "%lf", &barnum) == 0) {
-		ERR("reading execbar value failed (perhaps it's not the "
+		ERR("reading exec value failed (perhaps it's not the "
 				"correct format?)");
 		return -1;
 	}
 	if (barnum > 100.0 || barnum < 0.0) {
-		ERR("your execbar value is not between 0 and 100, "
+		ERR("your exec value is not between 0 and 100, "
 				"therefore it will be ignored");
 		return -1;
 	}
@@ -3192,7 +3216,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(cpu) {
 				if (obj->data.cpu_index > info.cpu_count) {
-					printf("obj->data.cpu_index %i info.cpu_count %i",
+					ERR("obj->data.cpu_index %i info.cpu_count %i",
 							obj->data.cpu_index, info.cpu_count);
 					CRIT_ERR("attempting to use more CPUs than you have!");
 				}
@@ -3549,7 +3573,7 @@ static void generate_text_internal(char *p, int p_max_size,
 
 				if (barnum >= 0.0) {
 					barnum /= 100;
-					new_bar(p, 0, 6, round_to_int(barnum * 255.0));
+					new_gauge(p, obj->a, obj->b, round_to_int(barnum * 255.0));
 				}
 			}
 			OBJ(execbar) {
@@ -3560,7 +3584,7 @@ static void generate_text_internal(char *p, int p_max_size,
 
 				if (barnum >= 0.0) {
 					barnum /= 100;
-					new_bar(p, 0, 6, round_to_int(barnum * 255.0));
+					new_bar(p, obj->a, obj->b, round_to_int(barnum * 255.0));
 				}
 			}
 			OBJ(execgraph) {
@@ -3578,7 +3602,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				barnum = get_barnum(p);
 
 				if (barnum >= 0.0) {
-					new_graph(p, 0, 25, obj->c, obj->d, round_to_int(barnum),
+					new_graph(p, obj->a, obj->b, obj->c, obj->d, round_to_int(barnum),
 						100, 1, showaslog);
 				}
 			}
@@ -3595,7 +3619,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					}
 					obj->data.execi.last_update = current_update_time;
 				}
-				new_bar(p, 0, 6, round_to_int(obj->f));
+				new_bar(p, obj->a, obj->b, round_to_int(obj->f));
 			}
 			OBJ(execigraph) {
 				if (current_update_time - obj->data.execi.last_update
@@ -3610,7 +3634,22 @@ static void generate_text_internal(char *p, int p_max_size,
 					}
 					obj->data.execi.last_update = current_update_time;
 				}
-				new_graph(p, 0, 25, obj->c, obj->d, (int) (obj->f), 100, 1, FALSE);
+				new_graph(p, obj->a, obj->b, obj->c, obj->d, (int) (obj->f), 100, 1, FALSE);
+			}
+			OBJ(execigauge) {
+				if (current_update_time - obj->data.execi.last_update
+						>= obj->data.execi.interval) {
+					double barnum;
+
+					read_exec(obj->data.execi.cmd, p, text_buffer_size);
+					barnum = get_barnum(p);
+
+					if (barnum >= 0.0) {
+						obj->f = 255 * barnum / 100.0;
+					}
+					obj->data.execi.last_update = current_update_time;
+				}
+				new_gauge(p, obj->a, obj->b, round_to_int(obj->f));
 			}
 			OBJ(execi) {
 				if (current_update_time - obj->data.execi.last_update
@@ -4940,6 +4979,7 @@ static inline int get_string_width_special(char *s)
 				*(p + i) = *(p + i + 1);
 			}
 			if (specials[special_index + idx].type == GRAPH
+					|| specials[special_index + idx].type == GAUGE
 					|| specials[special_index + idx].type == BAR) {
 				width += specials[special_index + idx].width;
 			}
@@ -5088,11 +5128,12 @@ static void text_size_updater(char *s)
 			*p = SPECIAL_CHAR;
 
 			if (specials[special_index].type == BAR
+					|| specials[special_index].type == GAUGE
 					|| specials[special_index].type == GRAPH) {
 				w += specials[special_index].width;
 				if (specials[special_index].height > last_font_height) {
 					last_font_height = specials[special_index].height;
-					last_font_height += font_ascent();
+					last_font_height += font_height();
 				}
 			} else if (specials[special_index].type == OFFSET) {
 				if (specials[special_index].arg > 0) {
@@ -5251,7 +5292,7 @@ static void draw_line(char *s)
 #ifdef X11
 	char *p;
 	int cur_y_add = 0;
-	short font_h;
+	int font_h;
 	char *tmp_str;
 #endif /* X11 */
 
@@ -5319,7 +5360,7 @@ static void draw_line(char *s)
 					bar_usage = specials[special_index].arg;
 					by = cur_y - (font_ascent() / 2) - 1;
 
-					if (h < font_height()) {
+					if (h < font_h) {
 						by -= h / 2 - 1;
 					}
 					w = specials[special_index].width;
@@ -5337,18 +5378,18 @@ static void draw_line(char *s)
 						by, w, h);
 					XFillRectangle(display, window.drawable, window.gc, cur_x,
 						by, w * bar_usage / 255, h);
-					if (specials[special_index].height > cur_y_add
-							&& specials[special_index].height > font_h) {
-						cur_y_add = specials[special_index].height;
+					if (h > cur_y_add
+							&& h > font_h) {
+						cur_y_add = h;
 					}
 					break;
 				}
 
 				case GAUGE: /* new GAUGE  */
 				{
-					int h, by  = 0;
+					int h, by = 0;
 					unsigned long last_colour = current_color;
-					float angle, px,py;
+					float angle, px, py;
 					int usage;
 
 					if (cur_x - text_start_x > maximum_width
@@ -5359,7 +5400,7 @@ static void draw_line(char *s)
 					h = specials[special_index].height;
 					by = cur_y - (font_ascent() / 2) - 1;
 
-					if (h < font_height()) {
+					if (h < font_h) {
 						by -= h / 2 - 1;
 					}
 					w = specials[special_index].width;
@@ -5371,24 +5412,24 @@ static void draw_line(char *s)
 					}
 
 					XSetLineAttributes(display, window.gc, 1, LineSolid,
-						CapButt, JoinMiter);
+							CapButt, JoinMiter);
 
 					XDrawArc(display, window.drawable, window.gc,
-							cur_x, by, w * 2.0, h * 2.0, 0, 180*64);
+							cur_x, by, w, h * 2, 0, 180*64);
 
 #ifdef MATH
-					usage =specials[special_index].arg;
-					angle = (3.14)*(float)(usage)/255.;
-					px = (float)(cur_x+w)-(float)(w)*cos(angle);
-					py = (float)(by+h)-(float)(h)*sin(angle);
+					usage = specials[special_index].arg;
+					angle = (M_PI)*(float)(usage)/255.;
+					px = (float)(cur_x+(w/2.))-(float)(w/2.)*cos(angle);
+					py = (float)(by+(h))-(float)(h)*sin(angle);
 
 					XDrawLine(display, window.drawable, window.gc,
-							cur_x + w, by+h, (int)(px), (int)(py));
+							cur_x + (w/2.), by+(h), (int)(px), (int)(py));
 #endif
 
-					if (specials[special_index].height > cur_y_add
-							&& specials[special_index].height > font_h) {
-						cur_y_add = specials[special_index].height;
+					if (h > cur_y_add
+							&& h > font_h) {
+						cur_y_add = h;
 					}
 
 					set_foreground_color(last_colour);
@@ -5412,7 +5453,7 @@ static void draw_line(char *s)
 					h = specials[special_index].height;
 					by = cur_y - (font_ascent() / 2) - 1;
 
-					if (h < font_height()) {
+					if (h < font_h) {
 						by -= h / 2 - 1;
 					}
 					w = specials[special_index].width;
@@ -5461,9 +5502,9 @@ static void draw_line(char *s)
 							by + h - specials[special_index].graph[j] *
 							(h - 1) / specials[special_index].graph_scale);
 					}
-					if (specials[special_index].height > cur_y_add
-							&& specials[special_index].height > font_h) {
-						cur_y_add = specials[special_index].height;
+					if (h > cur_y_add
+							&& h > font_h) {
+						cur_y_add = h;
 					}
 					/* if (draw_mode == BG) {
 						set_foreground_color(default_bg_color);
@@ -5481,37 +5522,37 @@ static void draw_line(char *s)
 						char *tmp_min_str;
 						char *tmp_sec_str;
 						unsigned short int timeunits;
-						if(seconds!=0){
+						if (seconds != 0) {
 							timeunits = seconds / 86400; seconds %= 86400;
-							if( timeunits > 0 ) {
+							if (timeunits > 0) {
 								asprintf(&tmp_day_str, "%dd", timeunits);
-							}else{
+							} else {
 								tmp_day_str = strdup("");
 							}
 							timeunits = seconds / 3600; seconds %= 3600;
-							if( timeunits > 0 ) {
+							if (timeunits > 0) {
 								asprintf(&tmp_hour_str, "%dh", timeunits);
-							}else{
+							} else {
 								tmp_hour_str = strdup("");
 							}
 							timeunits = seconds / 60; seconds %= 60;
-							if(timeunits > 0) {
+							if (timeunits > 0) {
 								asprintf(&tmp_min_str, "%dm", timeunits);
-							}else{
+							} else {
 								tmp_min_str = strdup("");
 							}
-							if(seconds > 0) {
+							if (seconds > 0) {
 								asprintf(&tmp_sec_str, "%ds", seconds);
-							}else{
+							} else {
 								tmp_sec_str = strdup("");
 							}
 							asprintf(&tmp_str, "%s%s%s%s", tmp_day_str, tmp_hour_str, tmp_min_str, tmp_sec_str);
 							free(tmp_day_str); free(tmp_hour_str); free(tmp_min_str); free(tmp_sec_str);
-						}else{
-							asprintf(&tmp_str, "Range not possible"); //should never happen, but better safe then sorry
+						} else {
+							asprintf(&tmp_str, "Range not possible"); // should never happen, but better safe then sorry
 						}
 						cur_x += (w / 2) - (font_ascent() * (strlen(tmp_str) / 2));
-						cur_y += font_height() / 2;
+						cur_y += font_h / 2;
 						draw_string(tmp_str);
 						free(tmp_str);
 						cur_x = tmp_x;
@@ -5522,7 +5563,7 @@ static void draw_line(char *s)
 						int tmp_x = cur_x;
 						int tmp_y = cur_y;
 						cur_x += font_ascent() / 2;
-						cur_y += font_height() / 2;
+						cur_y += font_h / 2;
 						tmp_str = (char *)
 							calloc(log10(floor(specials[special_index].graph_scale)) + 4,
 									sizeof(char));
@@ -5549,6 +5590,7 @@ static void draw_line(char *s)
 						cur_y += font_ascent();
 					}
 					set_font();
+					font_h = font_height();
 					break;
 				}
 				case FG:
@@ -5641,14 +5683,13 @@ static void draw_line(char *s)
 
 		p++;
 	}
+
 	if (cur_y_add > 0) {
 		cur_y += cur_y_add;
-		cur_y -= font_descent();
 	}
-
 	draw_string(s);
-
 	cur_y += font_descent();
+
 #endif /* X11 */
 }
 

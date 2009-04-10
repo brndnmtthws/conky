@@ -1642,6 +1642,7 @@ conky(1)                                                              conky(1)
 
        [1mtab (width, (start))[0m
               Puts a tab of the specified width, starting from column 'start'.
+              The unit is pixels for both arguments.
 
 
        [1mtail logfile lines (interval)[0m
@@ -1651,14 +1652,14 @@ conky(1)                                                              conky(1)
 
 
        [1mtemplateN (arg1) (arg2) (arg3 ...)[0m
-              Evaluate the content of  the  templateN  configuration  variable
+              Evaluate  the  content  of  the templateN configuration variable
               (where N is a value between 0 and 9, inclusively), applying sub‐
-              stitutions as described in the documentation of the  correspond‐
-              ing  configuration variable.  The number of arguments is option‐
-              al, but must match the highest referred index in  the  template.
-              You  can  use the same special sequences in each argument as the
-              ones valid for a template definition, e.g. to allow an  argument
-              to  contain  a  whitespace.  Also simple nesting of templates is
+              stitutions  as described in the documentation of the correspond‐
+              ing configuration variable.  The number of arguments is  option‐
+              al,  but  must match the highest referred index in the template.
+              You can use the same special sequences in each argument  as  the
+              ones  valid for a template definition, e.g. to allow an argument
+              to contain a whitespace. Also simple  nesting  of  templates  is
               possible this way.
 
               Here are some examples of template definitions:
@@ -1667,7 +1668,7 @@ conky(1)                                                              conky(1)
               template1 \1: ${fs_used \2} / ${fs_size \2}
               template2 \1 \2
 
-              The following list shows sample usage of the  templates  defined
+              The  following  list shows sample usage of the templates defined
               above, with the equivalent syntax when not using any template at
               all:
 
@@ -1680,7 +1681,7 @@ conky(1)                                                              conky(1)
 
 
        [1mtime (format)[0m
-              Local  time, see man strftime to get more information about for‐
+              Local time, see man strftime to get more information about  for‐
               mat
 
 
@@ -1689,23 +1690,23 @@ conky(1)                                                              conky(1)
 
 
        [1mtztime (timezone) (format)[0m
-              Local time for specified timezone, see man strftime to get  more
-              information  about format. The timezone argument is specified in
-              similar fashion as TZ environment variable. For hints,  look  in
+              Local  time for specified timezone, see man strftime to get more
+              information about format. The timezone argument is specified  in
+              similar  fashion  as TZ environment variable. For hints, look in
               /usr/share/zoneinfo. e.g. US/Pacific, Europe/Zurich, etc.
 
 
        [1mtotaldown net[0m
-              Total  download, overflows at 4 GB on Linux with 32-bit arch and
+              Total download, overflows at 4 GB on Linux with 32-bit arch  and
               there doesn't seem to be a way to know how many times it has al‐
               ready done that before conky has started.
 
 
        [1mtop type, num[0m
-              This  takes arguments in the form:top (name) (number) Basically,
-              processes are ranked from highest to lowest in terms of cpu  us‐
-              age,  which  is  what  (num)  represents. The types are: "name",
-              "pid", "cpu", "mem", "mem_res", "mem_vsize", and  "time".  There
+              This takes arguments in the form:top (name) (number)  Basically,
+              processes  are ranked from highest to lowest in terms of cpu us‐
+              age, which is what (num)  represents.  The  types  are:  "name",
+              "pid",  "cpu",  "mem", "mem_res", "mem_vsize", and "time". There
               can be a max of 10 processes listed.
 
 
@@ -1714,7 +1715,7 @@ conky(1)                                                              conky(1)
 
 
        [1mtop_time type, num[0m
-              Same  as top, except sorted by total CPU time instead of current
+              Same as top, except sorted by total CPU time instead of  current
               CPU usage
 
 
@@ -1736,9 +1737,9 @@ conky(1)                                                              conky(1)
 
        [1mupspeedgraph  ("normal"|"log")  (height),(width)  (gradient  colour  1)[0m
        [1m(gradient colour 2) (scale) (net)[0m
-              Upload  speed  graph,  colours  defined  in hex, minus the #. If
-              scale is non-zero, it becomes the scale for the  graph.  Uses  a
-              logarithmic  scale (to see small numbers) when you use "log" in‐
+              Upload speed graph, colours defined in  hex,  minus  the  #.  If
+              scale  is  non-zero,  it becomes the scale for the graph. Uses a
+              logarithmic scale (to see small numbers) when you use "log"  in‐
               stead of "normal".
 
 
@@ -1766,12 +1767,12 @@ conky(1)                                                              conky(1)
 
 
        [1mvoffset (pixels)[0m
-              Change vertical offset by N pixels. Negative values  will  cause
+              Change  vertical  offset by N pixels. Negative values will cause
               text to overlap. See also $offset.
 
 
        [1mvoltage_mv (n)[0m
-              Returns  CPU  #n's  voltage  in  mV. CPUs are counted from 1. If
+              Returns CPU #n's voltage in mV. CPUs  are  counted  from  1.  If
               omitted, the parameter defaults to 1.
 
 
@@ -1890,12 +1891,12 @@ conky(1)                                                              conky(1)
 
 
        [1mif_xmms2_connected[0m
-              Display everything between $if_xmms2_connected and the  matching
+              Display  everything between $if_xmms2_connected and the matching
               $endif if xmms2 is running.
 
 
        [1meve api_userid api_key character_id[0m
-              Fetches  your  currently  training skill from the Eve Online API
+              Fetches your currently training skill from the  Eve  Online  API
               servers  (http://www.eve-online.com/)  and  displays  the  skill
               along with the remaining training time.
 
@@ -1914,13 +1915,13 @@ conky(1)                                                              conky(1)
 [1mBUGS[0m
        Drawing to root or some other desktop window directly doesn't work with
        all window managers. Especially doesn't work well with Gnome and it has
-       been reported that it doesn't work with KDE  either.  Nautilus  can  be
-       disabled  from  drawing  to  desktop with program gconf-editor. Uncheck
-       show_desktop in /apps/nautilus/preferences/.  There  is  -w  switch  in
-       Conky  to  set  some  specific window id. You might find xwininfo -tree
-       useful to find the window to draw to. You  can  also  use  -o  argument
+       been  reported  that  it  doesn't work with KDE either. Nautilus can be
+       disabled from drawing to desktop  with  program  gconf-editor.  Uncheck
+       show_desktop  in  /apps/nautilus/preferences/.  There  is  -w switch in
+       Conky to set some specific window id. You  might  find  xwininfo  -tree
+       useful  to  find  the  window  to draw to. You can also use -o argument
        which makes Conky to create its own window. If you do try running Conky
-       in its own window, be sure to read up on the  own_window_type  settings
+       in  its  own window, be sure to read up on the own_window_type settings
        and experiment.
 
 [1mSEE ALSO[0m
@@ -1931,11 +1932,11 @@ conky(1)                                                              conky(1)
        #conky on irc.freenode.net
 
 [1mCOPYING[0m
-       Copyright  (c)  2005-2009 Brenden Matthews, Philip Kovacs, et. al.  Any
+       Copyright (c) 2005-2009 Brenden Matthews, Philip Kovacs, et.  al.   Any
        original torsmo code is licensed under the BSD license (see LICENSE.BSD
        for a copy).  All code written since the fork of torsmo is licensed un‐
        der the GPL (see LICENSE.GPL for a copy), except where noted different‐
-       ly  (such  as  in  portmon  code, timed thread code, and audacious code
+       ly (such as in portmon code, timed  thread  code,  and  audacious  code
        which are LGPL, and prss which is an MIT-style license).
 
 [1mAUTHORS[0m

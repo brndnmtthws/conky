@@ -101,6 +101,7 @@ enum text_object_type {
 	OBJ_execgraph,
 	OBJ_execibar,
 	OBJ_execigraph,
+	OBJ_execigauge,
 	OBJ_execp,
 	OBJ_execpi,
 	OBJ_freq,
