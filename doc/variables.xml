@@ -611,7 +611,7 @@
 			<option>command</option>
 		</term>
 		<listitem>
-			Same as exec, except if the first value return is a value between 0-100, it will use that number for a bar. The size for the bar is currently fixed, but that may change in the future.
+			Same as exec, except if the first value return is a value between 0-100, it will use that number for a bar. The size for bars can be controlled via the default_bar_size config setting.
 			<para></para></listitem>
 	</varlistentry>
 
@@ -621,7 +621,7 @@
 			<option>command</option>
 		</term>
 		<listitem>
-			Same as exec, except if the first value return is a value between 0-100, it will use that number for a gauge. The size for the gauge is currently fixed, but you may change that for the future conky release.
+			Same as exec, except if the first value returned is a value between 0-100, it will use that number for a gauge. The size for gauges can be controlled via the default_gauge_size config setting.
 			<para></para></listitem>
 	</varlistentry>
 
@@ -631,7 +631,7 @@
 			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) command</option>
 		</term>
 		<listitem>
-			Same as execbar, but graphs values. Uses a logaritmic scale when the log option is given (to see small numbers). Values still have to be between 0 and 100.
+			Same as execbar, but graphs values. Uses a logaritmic scale when the log option is given (to see small numbers). Values still have to be between 0 and 100.  The size for graphs can be controlled via the default_graph_size config setting.
 			<para></para></listitem>
 	</varlistentry>
 
@@ -661,7 +661,17 @@
 			<option>interval command</option>
 		</term>
 		<listitem>
-			Same as execgraph, but takes an interval arg graphs values
+			Same as execgraph, but takes an interval arg and graphs values.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>execigauge</option></command>
+			<option>interval command</option>
+		</term>
+		<listitem>
+			Same as execgauge, but takes an interval arg and gauges values.
 			<para></para></listitem>
 	</varlistentry>
 
