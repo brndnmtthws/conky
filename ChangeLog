@@ -1,3 +1,6 @@
+2009-04-13
+	* Fix broken compilation without X11
+
 2009-04-09
 	* Fix broken xmms2 compilation (thanks fusetak)
 	* Minor fix for fs_used_perc, fs_free and fs_free_perc (thanks

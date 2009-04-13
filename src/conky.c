@@ -7486,15 +7486,13 @@ static void load_config_file_x11(const char *f)
 			}
 		}
 #endif
-#endif /* X11 */
 		CONF("text") {
-#ifdef X11
 			//initialize X11 if nothing X11-related is mentioned before TEXT (and if X11 is the default outputmethod)
 			if(output_methods & TO_X) {
 				X11_initialisation();
 			}
-#endif
 		}
+#endif /* X11 */
 #undef CONF
 #undef CONF2
 	}
