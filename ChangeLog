@@ -1,3 +1,9 @@
+2009-04-19
+	* Make it possible to place spaces in front of RSS-items as a workaround
+	for the problem that $goto only moves the first RSS-item. This is only a
+	workaround and should be replaced by a permanent fix that makes $goto move
+	all RSS-items !
+
 2009-04-13
 	* Fix broken compilation without X11
 

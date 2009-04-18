@@ -2175,10 +2175,10 @@
 	<varlistentry>
 		<term>
 			<command><option>rss</option></command>
-			<option>url delay_in_minutes action item_num</option>
+			<option>url delay_in_minutes action (num_par (spaces_in_front))</option>
 		</term>
 		<listitem>
-			Download and parse RSS feeds. Action may be one of the following: feed_title, item_title (with num par), item_desc (with num par) and item_titles.
+			Download and parse RSS feeds. Action may be one of the following: feed_title, item_title (with num par), item_desc (with num par) and item_titles (when using this action and spaces_in_front is given conky places that many spaces in front of each item).
 			<para></para></listitem>
 	</varlistentry>
 

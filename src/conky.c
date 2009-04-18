@@ -2475,20 +2475,22 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(rss, 0)
 		if (arg) {
 			int argc, delay, act_par;
+			unsigned int nrspaces = 0;
 			char *uri = (char *) malloc(128 * sizeof(char));
 			char *action = (char *) malloc(64 * sizeof(char));
 
-			argc = sscanf(arg, "%127s %d %63s %d", uri, &delay, action,
-					&act_par);
+			argc = sscanf(arg, "%127s %d %63s %d %u", uri, &delay, action,
+					&act_par, &nrspaces);
 			obj->data.rss.uri = uri;
 			obj->data.rss.delay = delay;
 			obj->data.rss.action = action;
 			obj->data.rss.act_par = act_par;
+			obj->data.rss.nrspaces = nrspaces;
 
 			init_rss_info();
 		} else {
 			CRIT_ERR("rss needs arguments: <uri> <delay in minutes> <action> "
-					"[act_par]");
+					"[act_par] [spaces in front]");
 		}
 #endif
 #ifdef HDDTEMP
@@ -3890,6 +3892,10 @@ static void generate_text_internal(char *p, int p_max_size,
 						if (data->item_count > 0) {
 							int itmp;
 							int show;
+							//'tmpspaces' is a string with spaces too be placed in front of each title
+							char *tmpspaces = malloc(obj->data.rss.nrspaces + 1);
+							memset(tmpspaces, ' ', obj->data.rss.nrspaces);
+							tmpspaces[obj->data.rss.nrspaces]=0;
 
 							p[0] = 0;
 
@@ -3912,9 +3918,11 @@ static void generate_text_internal(char *p, int p_max_size,
 									if (str[strlen(str) - 1] == '\n') {
 										str[strlen(str) - 1] = 0;
 									}
+									strncat(p, tmpspaces, p_max_size);
 									strncat(p, str, p_max_size);
 								}
 							}
+							free(tmpspaces);
 						}
 					}
 				}

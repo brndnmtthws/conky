@@ -482,6 +482,7 @@ struct text_object {
 			char *action;
 			int act_par;
 			int delay;
+			unsigned int nrspaces;
 		} rss;
 #endif
 		struct {
