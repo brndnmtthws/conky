@@ -2781,13 +2781,17 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 				}
 				s = p;
 
+				/* search for variable in environment */
+
 				var = getenv(buf);
+				if (var) {
+					obj = create_plain_text(var);
+					if (obj)
+						append_object(retval, obj);
+					continue;
+				}
 
 				/* if variable wasn't found in environment, use some special */
-				if (var) {
-					strncpy(buf, var, 255);
-				}
-				arg = 0;
 
 				/* split arg */
 				if (strchr(buf, ' ')) {
