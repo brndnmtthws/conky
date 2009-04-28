@@ -2951,9 +2951,9 @@ static inline struct mail_s *ensure_mail_thread(struct text_object *obj,
 		return obj->data.mail;
 	} else if (!obj->a) {
 		// something is wrong, warn once then stop
-		ERR("Theres a problem with your %s_unseen settings.  "
-				"Check that the global %s settings are defined "
-				"properly (line %li).", global_text, global_text, obj->line);
+		ERR("There's a problem with your mail settings.  "
+				"Check that the global mail settings are properly defined"
+				"(line %li).", obj->line);
 		obj->a++;
 	}
 	return NULL;

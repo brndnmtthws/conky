@@ -281,6 +281,7 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 		} else if (type == IMAP_TYPE) {
 			ERR("Scanning POP3 args failed");
 		}
+		return 0;
 	}
 	// see if password needs prompting
 	if (mail->pass[0] == '*' && mail->pass[1] == '\0') {
