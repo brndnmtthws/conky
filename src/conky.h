@@ -235,8 +235,6 @@ struct information {
 	int mail_running;
 #ifdef XMMS2
 	struct xmms2_s xmms2;
-	int xmms2_conn_state;
-	xmmsc_connection_t *xmms2_conn;
 #endif
 #ifdef AUDACIOUS
 	AUDACIOUS_S audacious;

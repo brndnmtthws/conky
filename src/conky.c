@@ -4428,6 +4428,10 @@ static void generate_text_internal(char *p, int p_max_size,
 #undef mpd_printf
 #endif
 
+#ifdef XMMS2
+    free_xmms2();
+#endif
+
 #ifdef MOC
 #define MOC_PRINT(t, a) \
 	snprintf(p, p_max_size, "%s", (moc.t ? moc.t : a))
@@ -4537,7 +4541,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 			OBJ(if_xmms2_connected) {
-				if (cur->xmms2_conn_state != 1) {
+				if (cur->xmms2.conn_state != 1) {
 					DO_JUMP;
 				}
 			}
