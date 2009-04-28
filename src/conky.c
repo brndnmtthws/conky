@@ -2830,12 +2830,15 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 				var = getenv(buf);
 				if (var) {
 					obj = create_plain_text(var);
-					if (obj)
+					if (obj) {
 						append_object(retval, obj);
+					}
 					continue;
 				}
 
 				/* if variable wasn't found in environment, use some special */
+
+				arg = 0;
 
 				/* split arg */
 				if (strchr(buf, ' ')) {
@@ -2953,7 +2956,7 @@ static inline struct mail_s *ensure_mail_thread(struct text_object *obj,
 		// something is wrong, warn once then stop
 		ERR("There's a problem with your mail settings.  "
 				"Check that the global mail settings are properly defined"
-				"(line %li).", obj->line);
+				" (line %li).", obj->line);
 		obj->a++;
 	}
 	return NULL;
