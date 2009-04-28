@@ -37,7 +37,7 @@ struct xmms2_s {
 	char *comment;
 	char *url;
 	char *date;
-	char* playlist;
+	char *playlist;
 	int tracknr;
 	int bitrate;
 	unsigned int id;
@@ -48,8 +48,10 @@ struct xmms2_s {
 
 	float progress;
 	char *status;
+	int conn_state;
 };
 
 void update_xmms2(void);
+void free_xmms2(void);
 
 #endif /*XMMS2_H_*/

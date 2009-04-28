@@ -1,3 +1,6 @@
+2009-04-28
+	* Various XMMS2 updates (thanks Lassi)
+
 2009-04-09
 	* Fix broken xmms2 compilation (thanks fusetak)
 	* Minor fix for fs_used_perc, fs_free and fs_free_perc (thanks
