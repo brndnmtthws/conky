@@ -210,6 +210,9 @@ static void print_version(void)
 #ifdef CONFIG_OUTPUT
 		   "  * config-output\n"
 #endif /* CONFIG_OUTPUT */
+#ifdef MIXER_IS_ALSA
+		   "  * ALSA mixer support\n"
+#endif /* MIXER_IS_ALSA */
 	);
 
 	exit(0);
@@ -2099,6 +2102,8 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(mixerrbar, INFO_MIXER)
 		scan_mixer_bar(arg, &obj->data.mixerbar.l, &obj->data.mixerbar.w,
 			&obj->data.mixerbar.h);
+	END OBJ_IF(if_mixer_mute, INFO_MIXER)
+		obj->data.ifblock.i = mixer_init(arg);
 #ifdef X11
 	END OBJ(monitor, INFO_X11)
 	END OBJ(monitor_number, INFO_X11)
@@ -4128,15 +4133,20 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(mixerbar) {
 				new_bar(p, obj->data.mixerbar.w, obj->data.mixerbar.h,
-					mixer_get_avg(obj->data.mixerbar.l) * 255 / 100);
+					mixer_to_255(obj->data.mixerbar.l,mixer_get_avg(obj->data.mixerbar.l)));
 			}
 			OBJ(mixerlbar) {
 				new_bar(p, obj->data.mixerbar.w, obj->data.mixerbar.h,
-					mixer_get_left(obj->data.mixerbar.l) * 255 / 100);
+					mixer_to_255(obj->data.mixerbar.l,mixer_get_left(obj->data.mixerbar.l)));
 			}
 			OBJ(mixerrbar) {
 				new_bar(p, obj->data.mixerbar.w, obj->data.mixerbar.h,
-					mixer_get_right(obj->data.mixerbar.l) * 255 / 100);
+					mixer_to_255(obj->data.mixerbar.l,mixer_get_right(obj->data.mixerbar.l)));
+			}
+			OBJ(if_mixer_mute) {
+				if (!mixer_is_mute(obj->data.ifblock.i)) {
+					DO_JUMP;
+				}
 			}
 #ifdef X11
 			OBJ(monitor) {

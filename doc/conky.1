@@ -920,6 +920,11 @@ Valid operands are:
 \&'>', '<', '>=', '<=', '==', '!='.
 
 .TP 
+\fB\*(T<\fBif_mixer_mute\fR\*(T>\fR \*(T<\fB(mixer)\fR\*(T> 
+If mixer exists, display everything between $if_mixer_mute and the
+matching $endif. If no mixer is specified, "Master" is used.
+
+.TP 
 \fB\*(T<\fBif_running\fR\*(T>\fR \*(T<\fB(process)\fR\*(T> 
 if PROCESS is running, display everything $if_running
 and the matching $endif. This uses the ``pidof'' command, so the

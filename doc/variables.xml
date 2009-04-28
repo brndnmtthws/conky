@@ -1114,6 +1114,17 @@
 
 	<varlistentry>
 		<term>
+			<command><option>if_mixer_mute</option></command>
+			<option>(mixer)</option>
+		</term>
+		<listitem>
+			If mixer exists, display everything between $if_mixer_mute and the
+			matching $endif.  If no mixer is specified, "Master" is used.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
 			<command><option>if_running</option></command>
 			<option>(process)</option>
 		</term>

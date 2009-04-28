@@ -1,5 +1,7 @@
 2009-04-28
 	* Various XMMS2 updates (thanks Lassi)
+	* Make ALSA mixers available on Linux, and added $if_mixer_mute (thanks
+	Jérôme)
 
 2009-04-19
 	* Make it possible to place spaces in front of RSS-items as a workaround

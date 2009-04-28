@@ -213,6 +213,7 @@ enum text_object_type {
 	OBJ_mixerbar,
 	OBJ_mixerlbar,
 	OBJ_mixerrbar,
+	OBJ_if_mixer_mute,
 #ifdef X11
 	OBJ_monitor,
 	OBJ_monitor_number,
