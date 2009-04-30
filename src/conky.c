@@ -967,6 +967,13 @@ static void free_text_objects(struct text_object *root)
 				free_text_objects(obj->sub);
 				free(obj->sub);
 				break;
+			case OBJ_combine:
+				free(data.combine.left);
+				free(data.combine.seperation);
+				free(data.combine.right);
+				free_text_objects(obj->sub);
+				free(obj->sub);
+				break;
 		}
 		free(obj);
 	}
@@ -2531,6 +2538,48 @@ static struct text_object *construct_text_object(const char *s,
 					obj->data.scroll.text, 0);
 		} else {
 			CRIT_ERR("scroll needs arguments: <length> [<step>] <text>");
+		}
+	END OBJ(combine, 0)
+		if(arg) {
+			unsigned int i,j;
+			unsigned int indenting = 0;	//vars can be used as args for other vars
+			int startvar[2];
+			int endvar[2];
+			startvar[0] = endvar[0] = startvar[1] = endvar[1] = -1;
+			j=0;
+			for(i=0; arg[i] != 0 && j < 2; i++) {
+				if(startvar[j] == -1) {
+					if(arg[i] == '$') {
+						startvar[j] = i;
+					}
+				}else if(endvar[j] == -1) {
+					if(arg[i] == '{') {
+						indenting++;
+					}else if(arg[i] == '}') {
+						indenting--;
+					}
+					if(indenting == 0 && (arg[i+1] == ' ' || arg[i+1] == '$' || arg[i+1] == 0)) {
+						endvar[j]=i+1;
+						j++;
+					}
+				}
+			}
+			if(startvar[0] >= 0 && endvar[0] >= 0 && startvar[1] >= 0 && endvar[1] >= 0) {
+				obj->data.combine.left=malloc(endvar[0]-startvar[0]+1);
+				obj->data.combine.seperation=malloc(startvar[1]-endvar[0]+1);
+				obj->data.combine.right=malloc(endvar[1]-startvar[1]+1);
+				strncpy(obj->data.combine.left, arg+startvar[0], endvar[0]-startvar[0]); obj->data.combine.left[endvar[0]-startvar[0]]=0;
+				strncpy(obj->data.combine.seperation, arg+endvar[0], startvar[1]-endvar[0]); obj->data.combine.seperation[startvar[1]-endvar[0]]=0;
+				strncpy(obj->data.combine.right, arg+startvar[1], endvar[1]-startvar[1]); obj->data.combine.right[endvar[1]-startvar[1]]=0;
+				obj->sub = malloc(sizeof(struct text_object));
+				extract_variable_text_internal(obj->sub, obj->data.combine.left, 0);
+				obj->sub->sub = malloc(sizeof(struct text_object));
+				extract_variable_text_internal(obj->sub->sub, obj->data.combine.right, 0);
+			} else {
+				CRIT_ERR("combine needs arguments: <text1> <text2>");
+			}
+		} else {
+			CRIT_ERR("combine needs arguments: <text1> <text2>");
 		}
 #ifdef NVIDIA
 	END OBJ(nvidia, 0)
@@ -4868,6 +4917,69 @@ static void generate_text_internal(char *p, int p_max_size,
 					 obj->data.scroll.start = 0;
 				}
 				snprintf(p, p_max_size, "%s", buf);
+			}
+			OBJ(combine) {
+				char buf[2][max_user_text];
+				unsigned int i, j;
+				unsigned int longest=0;
+				unsigned int nextstart;
+				unsigned int nr_rows[2];
+				struct llrows {
+					char* row;
+					struct llrows* next;
+				};
+				struct llrows *ll_rows[2], *current[2];
+				struct text_object * objsub = obj->sub;
+
+				p[0]=0;
+				for(i=0; i<2; i++) {
+					nr_rows[i] = 1;
+					nextstart = 0;
+					ll_rows[i] = malloc(sizeof(struct llrows));
+					current[i] = ll_rows[i];
+					for(j=0; j<i; j++) objsub = objsub->sub;
+					generate_text_internal(buf[i], max_user_text, *objsub, cur);
+					for(j=0; buf[i][j] != 0; j++) {
+						if(buf[i][j] == '\t') buf[i][j] = ' ';
+						if(buf[i][j] == '\n') {
+							buf[i][j] = 0;
+							current[i]->row = strdup(buf[i]+nextstart);
+							if(i==0 && strlen(current[i]->row) > longest) longest = strlen(current[i]->row);
+							current[i]->next = malloc(sizeof(struct llrows));
+							current[i] = current[i]->next;
+							nextstart = j + 1;
+							nr_rows[i]++;
+						}
+					}
+					current[i]->row = strdup(buf[i]+nextstart);
+					if(i==0 && strlen(current[i]->row) > longest) longest = strlen(current[i]->row);
+					current[i]->next = NULL;
+					current[i] = ll_rows[i];
+				}
+				for(j=0; j < (nr_rows[0] > nr_rows[1] ? nr_rows[0] : nr_rows[1] ); j++) {
+					if(current[0]) {
+						strcat(p, current[0]->row);
+						i=strlen(current[0]->row);
+					}else i = 0;
+					while(i < longest) {
+						strcat(p, " ");
+						i++;
+					}
+					if(current[1]) {
+						strcat(p, obj->data.combine.seperation);
+						strcat(p, current[1]->row);
+					}
+					strcat(p, "\n");
+					for(i=0; i<2; i++) if(current[i]) current[i]=current[i]->next;
+				}
+				for(i=0; i<2; i++) {
+					while(ll_rows[i] != NULL) {
+						current[i]=ll_rows[i];
+						free(current[i]->row);
+						ll_rows[i]=current[i]->next;
+						free(current[i]);
+					}
+				}
 			}
 #ifdef NVIDIA
 			OBJ(nvidia) {

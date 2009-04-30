@@ -676,6 +676,10 @@ conky(1)                                                              conky(1)
               Conky version
 
 
+       [1mcombine var1 var2[0m
+              Places the lines of var2 to the right of the lines of var1 seperated by the chars that are put between var1 and var2. For example: ${combine ${head /proc/cpuinfo 2} - ${head /proc/meminfo 1}} gives as output "cpuinfo_line1 - meminfo_line1" on line 1 and "cpuinfo_line2 -" on line 2. $combine vars can also be nested to place more vars next to each other.
+
+
        [1mconky_build_date[0m
               Date Conky was built
 

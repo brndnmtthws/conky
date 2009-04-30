@@ -179,6 +179,7 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 			\ color7
 			\ color8
 			\ color9
+			\ combine
 			\ conky_version
 			\ conky_build_date
 			\ conky_build_arch

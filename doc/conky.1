@@ -603,6 +603,10 @@ Change drawing color to color
 Change drawing color to colorN configuration option, where N is a digit between 0 and 9, inclusively.
 
 .TP 
+\fB\*(T<\fBcombine\fR\*(T>\fR \*(T<\fBvar1 var2\fR\*(T>
+Places the lines of var2 to the right of the lines of var1 seperated by the chars that are put between var1 and var2. For example: ${combine ${head /proc/cpuinfo 2} - ${head /proc/meminfo 1}} gives as output "cpuinfo_line1 - meminfo_line1" on line 1 and "cpuinfo_line2 -" on line 2. $combine vars can also be nested to place more vars next to each other.
+
+.TP
 \fB\*(T<\fBconky_version\fR\*(T>\fR 
 Conky version
 

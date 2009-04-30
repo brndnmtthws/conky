@@ -368,6 +368,7 @@ enum text_object_type {
 	OBJ_hddtemp,
 #endif
 	OBJ_scroll,
+	OBJ_combine,
 	OBJ_entropy_avail,
 	OBJ_entropy_poolsize,
 	OBJ_entropy_bar
@@ -492,6 +493,12 @@ struct text_object {
 			unsigned int step;
 			unsigned int start;
 		} scroll;
+
+		struct {
+			char *left;
+			char *seperation;
+			char *right;
+		} combine;
 
 		struct local_mail_s local_mail;
 #ifdef NVIDIA
