@@ -16,21 +16,21 @@
 	<varlistentry>
 		<term><command><option>background</option></command></term>
 		<listitem>
-			Boolean value, if true, Conky will be forked to background when started
+			Boolean value, if true, Conky will be forked to background when started.
 			<para></para></listitem>
 	</varlistentry>
 
 	<varlistentry>
 		<term><command><option>border_margin</option></command></term>
 		<listitem>
-			Border margin in pixels
+			Border margin in pixels.
 			<para></para></listitem>
 	</varlistentry>
 
 	<varlistentry>
 		<term><command><option>border_width</option></command></term>
 		<listitem>
-			Border width in pixels
+			Border width in pixels.
 			<para></para></listitem>
 	</varlistentry>
 
@@ -44,7 +44,14 @@
 	<varlistentry>
 		<term><command><option>cpu_avg_samples</option></command></term>
 		<listitem>
-			The number of samples to average for CPU monitoring
+			The number of samples to average for CPU monitoring.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term><command><option>diskio_avg_samples</option></command></term>
+		<listitem>
+			The number of samples to average for disk I/O monitoring.
 			<para></para></listitem>
 	</varlistentry>
 
@@ -58,7 +65,7 @@
 	<varlistentry>
 		<term><command><option>default_bar_size</option></command></term>
 		<listitem>
-			Specify a default width and height for bars.  Example: 'default_bar_size 0 6'.  This is particularly useful for execbar and execibar as they do not take size arguments
+			Specify a default width and height for bars.  Example: 'default_bar_size 0 6'.  This is particularly useful for execbar and execibar as they do not take size arguments.
 			<para></para></listitem>
 	</varlistentry>
 

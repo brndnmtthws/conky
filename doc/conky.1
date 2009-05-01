@@ -155,15 +155,15 @@ Aligned position on screen, may be top_left, top_right, top_middle, bottom_left,
 
 .TP 
 \fB\*(T<\fBbackground\fR\*(T>\fR
-Boolean value, if true, Conky will be forked to background when started
+Boolean value, if true, Conky will be forked to background when started.
 
 .TP 
 \fB\*(T<\fBborder_margin\fR\*(T>\fR
-Border margin in pixels
+Border margin in pixels.
 
 .TP 
 \fB\*(T<\fBborder_width\fR\*(T>\fR
-Border width in pixels
+Border width in pixels.
 
 .TP 
 \fB\*(T<\fBcolorN\fR\*(T>\fR
@@ -171,7 +171,11 @@ Predefine a color for use inside TEXT segments. Substitute N by a digit between 
 
 .TP 
 \fB\*(T<\fBcpu_avg_samples\fR\*(T>\fR
-The number of samples to average for CPU monitoring
+The number of samples to average for CPU monitoring.
+
+.TP 
+\fB\*(T<\fBdiskio_avg_samples\fR\*(T>\fR
+The number of samples to average for disk I/O monitoring.
 
 .TP 
 \fB\*(T<\fBtop_cpu_separate\fR\*(T>\fR
@@ -179,7 +183,7 @@ If true, cpu in top will show usage of one processor's power. If false, cpu in t
 
 .TP 
 \fB\*(T<\fBdefault_bar_size\fR\*(T>\fR
-Specify a default width and height for bars. Example: 'default_bar_size 0 6'. This is particularly useful for execbar and execibar as they do not take size arguments
+Specify a default width and height for bars. Example: 'default_bar_size 0 6'. This is particularly useful for execbar and execibar as they do not take size arguments.
 
 .TP 
 \fB\*(T<\fBdefault_graph_size\fR\*(T>\fR
@@ -603,10 +607,10 @@ Change drawing color to color
 Change drawing color to colorN configuration option, where N is a digit between 0 and 9, inclusively.
 
 .TP 
-\fB\*(T<\fBcombine\fR\*(T>\fR \*(T<\fBvar1 var2\fR\*(T>
+\fB\*(T<\fBcombine\fR\*(T>\fR \*(T<\fBvar1 var2\fR\*(T> 
 Places the lines of var2 to the right of the lines of var1 seperated by the chars that are put between var1 and var2. For example: ${combine ${head /proc/cpuinfo 2} - ${head /proc/meminfo 1}} gives as output "cpuinfo_line1 - meminfo_line1" on line 1 and "cpuinfo_line2 -" on line 2. $combine vars can also be nested to place more vars next to each other.
 
-.TP
+.TP 
 \fB\*(T<\fBconky_version\fR\*(T>\fR 
 Conky version
 

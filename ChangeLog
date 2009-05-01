@@ -1,4 +1,7 @@
 2009-05-01
+	* Added diskio_avg_samples patch (thanks Yeon-Hyeong)
+
+2009-05-01
 	* Conky 1.7.0 "Hungry Hobo" released!
 
 2009-04-30

@@ -229,6 +229,8 @@ struct information {
 
 	unsigned int net_avg_samples;
 
+	unsigned int diskio_avg_samples;
+
 	float loadavg[3];
 
 	struct mail_s *mail;

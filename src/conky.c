@@ -262,7 +262,7 @@ static unsigned long total_run_times;
 /* fork? */
 static int fork_to_background;
 
-static int cpu_avg_samples, net_avg_samples;
+static int cpu_avg_samples, net_avg_samples, diskio_avg_samples;
 
 /* filenames for output */
 char *overwrite_file = NULL; FILE *overwrite_fpointer = NULL;
@@ -6534,6 +6534,7 @@ static void set_default_configurations(void)
 	total_run_times = 0;
 	info.cpu_avg_samples = 2;
 	info.net_avg_samples = 2;
+	info.diskio_avg_samples = 2;
 	info.memmax = 0;
 	top_cpu = 0;
 	cpu_separate = 0;
@@ -6929,6 +6930,18 @@ static void load_config_file(const char *f)
 					CONF_ERR;
 				} else {
 					info.net_avg_samples = net_avg_samples;
+				}
+			} else {
+				CONF_ERR;
+			}
+		}
+		CONF("diskio_avg_samples") {
+			if (value) {
+				diskio_avg_samples = strtol(value, 0, 0);
+				if (diskio_avg_samples < 1 || diskio_avg_samples > 14) {
+					CONF_ERR;
+				} else {
+					info.diskio_avg_samples = diskio_avg_samples;
 				}
 			} else {
 				CONF_ERR;
