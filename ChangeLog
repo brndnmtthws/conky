@@ -1,9 +1,6 @@
 2009-05-01
 	* Added diskio_avg_samples patch (thanks Yeon-Hyeong)
 
-2009-05-01
-	* Conky 1.7.0 "Hungry Hobo" released!
-
 2009-04-30
 	* Added $combine, a var that places 2 other vars next to each other, even if they
 	have a output of multiple lines. This also makes the moving of RSS-itemes with
@@ -12,7 +9,6 @@
 2009-04-28
 	* Various XMMS2 updates (thanks Lassi)
 	* Make ALSA mixers available on Linux, and added $if_mixer_mute (thanks
-	Jérôme)
 
 2009-04-19
 	* Make it possible to place spaces in front of RSS-items as a workaround
@@ -24,17 +20,28 @@
 	* Fix broken compilation without X11
 
 2009-04-09
-	* Fix broken xmms2 compilation (thanks fusetak)
-	* Minor fix for fs_used_perc, fs_free and fs_free_perc (thanks
-	lightpriest)
 	* Added default_bar/graph/gauge_size config options (thanks wire64 for the
 	idea)
 
-2009-03-28
-	* Applied FreeBSD patches (thanks Nikos)
-
 2009-03-24
 	* Added eval text object to realise double parsing
+
+2009-03-15
+	* Added gauge widget patch, sf.net id #2676128 (thanks Aner)
+
+2009-05-01
+	* Conky 1.7.0 "Hungry Hobo" released!
+
+2009-04-28
+	* Various XMMS2 updates (thanks Lassi)
+
+2009-04-09
+	* Fix broken xmms2 compilation (thanks fusetak)
+	* Minor fix for fs_used_perc, fs_free and fs_free_perc (thanks
+	lightpriest)
+
+2009-03-28
+	* Applied FreeBSD patches (thanks Nikos)
 
 2009-03-16
 	* Fix bug with wacky netstat values on startup
