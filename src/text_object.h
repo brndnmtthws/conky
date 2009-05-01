@@ -205,8 +205,6 @@ enum text_object_type {
 	OBJ_memgraph,
 	OBJ_memmax,
 	OBJ_memperc,
-	OBJ_mem_res,
-	OBJ_mem_vsize,
 	OBJ_mixer,
 	OBJ_mixerl,
 	OBJ_mixerr,
@@ -232,8 +230,6 @@ enum text_object_type {
 	OBJ_swapmax,
 	OBJ_swapperc,
 	OBJ_sysname,
-	OBJ_temp1,	/* i2c is used instead in these */
-	OBJ_temp2,
 	OBJ_text,
 	OBJ_time,
 	OBJ_utime,
@@ -250,10 +246,8 @@ enum text_object_type {
 	OBJ_user_terms,
 	OBJ_user_times,
 	OBJ_user_number,
-	OBJ_imap,
 	OBJ_imap_messages,
 	OBJ_imap_unseen,
-	OBJ_pop3,
 	OBJ_pop3_unseen,
 	OBJ_pop3_used,
 #if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) \
@@ -278,9 +272,6 @@ enum text_object_type {
 	OBJ_mpd_vol,
 	OBJ_mpd_bitrate,
 	OBJ_mpd_status,
-	OBJ_mpd_host,
-	OBJ_mpd_port,
-	OBJ_mpd_password,
 	OBJ_mpd_bar,
 	OBJ_mpd_elapsed,
 	OBJ_mpd_length,
@@ -304,7 +295,6 @@ enum text_object_type {
 	OBJ_moc_bitrate,
 	OBJ_moc_rate,
 #endif
-	OBJ_music_player_interval,
 #ifdef XMMS2
 	OBJ_xmms2_artist,
 	OBJ_xmms2_album,

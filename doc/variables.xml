@@ -737,31 +737,21 @@
 
 	<varlistentry>
 		<term>
-			<command><option>freq_dyn</option></command>
-			<option>(n)</option>
-		</term>
-		<listitem>
-			Returns CPU #n's frequency in MHz (defaults to 1), but is calculated by counting to clock cycles to complete an instruction.  Only available for x86/amd64.
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term>
-			<command><option>freq_dyn_g</option></command>
-			<option>(n)</option>
-		</term>
-		<listitem>
-			Returns CPU #n's frequency in GHz (defaults to 1), but is calculated by counting to clock cycles to complete an instruction.  Only available for x86/amd64.
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term>
 			<command><option>fs_bar</option></command>
 			<option>(height),(width) fs</option>
 		</term>
 		<listitem>
 			Bar that shows how much space is used on a file system. height is the height in pixels. fs is any file on that file system.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>fs_bar_free</option></command>
+			<option>(height),(width) fs</option>
+		</term>
+		<listitem>
+			Bar that shows how much space is free on a file system. height is the height in pixels. fs is any file on that file system.
 			<para></para></listitem>
 	</varlistentry>
 
@@ -791,7 +781,7 @@
 			<option>(fs)</option>
 		</term>
 		<listitem>
-			File system size
+			File system size.
 			<para></para></listitem>
 	</varlistentry>
 
@@ -801,7 +791,7 @@
 			<option>(fs)</option>
 		</term>
 		<listitem>
-			File system type
+			File system type.
 			<para></para></listitem>
 	</varlistentry>
 
@@ -811,7 +801,17 @@
 			<option>(fs)</option>
 		</term>
 		<listitem>
-			File system used space
+			File system used space.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>fs_used_perc</option></command>
+			<option>(fs)</option>
+		</term>
+		<listitem>
+			Percent of file system used space.
 			<para></para></listitem>
 	</varlistentry>
 
@@ -2609,24 +2609,6 @@
 
 	<varlistentry>
 		<term>
-			<command><option>xmms2_decoder</option></command>
-		</term>
-		<listitem>
-			Decoder plugin used
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term>
-			<command><option>xmms2_transport</option></command>
-		</term>
-		<listitem>
-			Transport plugin used
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term>
 			<command><option>xmms2_url</option></command>
 		</term>
 		<listitem>
@@ -2699,6 +2681,33 @@
 
 	<varlistentry>
 		<term>
+			<command><option>xmms2_date</option></command>
+		</term>
+		<listitem>
+			Returns song's date.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>xmms2_playlist</option></command>
+		</term>
+		<listitem>
+			Returns the XMMS2 playlist.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>xmms2_timesplayed</option></command>
+		</term>
+		<listitem>
+			Number of times a song was played (presumably).
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
 			<command><option>xmms2_status</option></command>
 		</term>
 		<listitem>
@@ -2740,6 +2749,16 @@
 		</term>
 		<listitem>
 			Fetches your currently training skill from the Eve Online API servers (http://www.eve-online.com/) and displays the skill along with the remaining training time.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>endif</option></command>
+			<option></option>
+		</term>
+		<listitem>
+			Ends an $if block.
 			<para></para></listitem>
 	</varlistentry>
 

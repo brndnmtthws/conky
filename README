@@ -874,6 +874,7 @@ conky(1)                                                              conky(1)
               omitted, the parameter defaults to 1.
 
 
+<<<<<<< HEAD:README
        [1mfreq_dyn (n)[0m
               Returns CPU #n's frequency in MHz (defaults to 1), but is calcu‐
               lated by counting to clock cycles to  complete  an  instruction.
@@ -886,8 +887,15 @@ conky(1)                                                              conky(1)
               Only available for x86/amd64.
 
 
+=======
+>>>>>>> cb4b914... Few misc doc related things.:README
        [1mfs_bar (height),(width) fs[0m
               Bar  that  shows how much space is used on a file system. height
+              is the height in pixels. fs is any file on that file system.
+
+
+       [1mfs_bar_free (height),(width) fs[0m
+              Bar  that  shows how much space is free on a file system. height
               is the height in pixels. fs is any file on that file system.
 
 
@@ -900,15 +908,19 @@ conky(1)                                                              conky(1)
 
 
        [1mfs_size (fs)[0m
-              File system size
+              File system size.
 
 
        [1mfs_type (fs)[0m
-              File system type
+              File system type.
 
 
        [1mfs_used (fs)[0m
-              File system used space
+              File system used space.
+
+
+       [1mfs_used_perc (fs)[0m
+              Percent of file system used space.
 
 
        [1mgoto x [22mThe next element will be printed at position 'x'.
@@ -1082,8 +1094,8 @@ conky(1)                                                              conky(1)
 
 
        [1mif_running (process)[0m
-              if  PROCESS  is  running, display everything $if_running and the
-              matching $endif. This uses the  ``pidof''  command,  so  the  -x
+              if PROCESS is running, display everything  $if_running  and  the
+              matching  $endif.  This  uses  the  ``pidof'' command, so the -x
               switch is also supported.
 
 
@@ -1093,8 +1105,8 @@ conky(1)                                                              conky(1)
 
 
        [1mif_smapi_bat_installed (INDEX)[0m
-              when using smapi, if the battery with index INDEX is  installed,
-              display   everything  between  $if_smapi_bat_installed  and  the
+              when  using smapi, if the battery with index INDEX is installed,
+              display  everything  between  $if_smapi_bat_installed  and   the
               matching $endif
 
 
@@ -1104,17 +1116,17 @@ conky(1)                                                              conky(1)
 
 
        [1mif_updatenr (updatenr)[0m
-              If  it's the UPDATENR-th time that conky updates, display every‐
+              If it's the UPDATENR-th time that conky updates, display  every‐
               thing between $if_updatenr and the matching $endif.  The counter
-              resets   when  the  highest  UPDATENR  is  reached.   Example  :
+              resets  when  the  highest  UPDATENR  is  reached.   Example   :
               "{$if_updatenr 1}foo$endif{$if_updatenr 2}bar$endif{$if_updatenr
-              4}$endif"  shows  foo 25% of the time followed by bar 25% of the
+              4}$endif" shows foo 25% of the time followed by bar 25%  of  the
               time followed by nothing the other half of the time.
 
 
        [1mimap_messages (args)[0m
               Displays the number of messages in your global IMAP inbox by de‐
-              fault.  You  can  define  individual  IMAP inboxes seperately by
+              fault. You can define  individual  IMAP  inboxes  seperately  by
               passing arguments to this object. Arguments are: "host user pass
               [-i interval] [-p port] [-e command] [-r retries]". Default port
               is 143, default interval is 5 minutes, and default number of re‐
@@ -1133,7 +1145,7 @@ conky(1)                                                              conky(1)
 
 
        [1mioscheduler disk[0m
-              Prints the current ioscheduler used  for  the  given  disk  name
+              Prints  the  current  ioscheduler  used  for the given disk name
               (i.e. e.g. "hda" or "sdb")
 
 
@@ -1151,8 +1163,8 @@ conky(1)                                                              conky(1)
 
        [1mloadgraph ("normal"|"log") (height),(width) (gradient colour 1) (gradi‐[0m
        [1ment colour 2) (scale)[0m
-              Load1  average graph, similar to xload, with optional colours in
-              hex, minus the #. Uses a logarithmic scale (to  see  small  num‐
+              Load1 average graph, similar to xload, with optional colours  in
+              hex,  minus  the  #. Uses a logarithmic scale (to see small num‐
               bers) when you use "log" instead of "normal".
 
 
@@ -1165,9 +1177,9 @@ conky(1)                                                              conky(1)
 
 
        [1mmails (mailbox) (interval)[0m
-              Mail  count  in the specified mailbox or your mail spool if not.
-              Both mbox and maildir type mailboxes are supported. You can  use
-              a  program  like  fetchmail  to get mails from some server using
+              Mail count in the specified mailbox or your mail spool  if  not.
+              Both  mbox and maildir type mailboxes are supported. You can use
+              a program like fetchmail to get mails  from  some  server  using
               your favourite protocol. See also new_mails.
 
 
@@ -1177,32 +1189,32 @@ conky(1)                                                              conky(1)
 
 
        [1mseen_mails (maildir) (interval)[0m
-              Number  of mails marked as seen in the specified mailbox or mail
-              spool if not. Only maildir type mailboxes  are  supported,  mbox
+              Number of mails marked as seen in the specified mailbox or  mail
+              spool  if  not.  Only maildir type mailboxes are supported, mbox
               type will return -1.
 
 
        [1munseen_mails (maildir) (interval)[0m
-              Number  of  new or unseen mails in the specified mailbox or mail
-              spool if not. Only maildir type mailboxes  are  supported,  mbox
+              Number of new or unseen mails in the specified mailbox  or  mail
+              spool  if  not.  Only maildir type mailboxes are supported, mbox
               type will return -1.
 
 
        [1mflagged_mails (maildir) (interval)[0m
-              Number  of  mails  marked as flagged in the specified mailbox or
-              mail spool if not. Only maildir type  mailboxes  are  supported,
+              Number of mails marked as flagged in the  specified  mailbox  or
+              mail  spool  if  not. Only maildir type mailboxes are supported,
               mbox type will return -1.
 
 
        [1munflagged_mails (maildir) (interval)[0m
-              Number  of  mails not marked as flagged in the specified mailbox
+              Number of mails not marked as flagged in the  specified  mailbox
               or mail spool if not. Only maildir type mailboxes are supported,
               mbox type will return -1.
 
 
        [1mforwarded_mails (maildir) (interval)[0m
-              Number  of mails marked as forwarded in the specified mailbox or
-              mail spool if not. Only maildir type  mailboxes  are  supported,
+              Number of mails marked as forwarded in the specified mailbox  or
+              mail  spool  if  not. Only maildir type mailboxes are supported,
               mbox type will return -1.
 
 
@@ -1213,33 +1225,33 @@ conky(1)                                                              conky(1)
 
 
        [1mreplied_mails (maildir) (interval)[0m
-              Number  of  mails  marked as replied in the specified mailbox or
-              mail spool if not. Only maildir type  mailboxes  are  supported,
+              Number of mails marked as replied in the  specified  mailbox  or
+              mail  spool  if  not. Only maildir type mailboxes are supported,
               mbox type will return -1.
 
 
        [1munreplied_mails (maildir) (interval)[0m
-              Number  of  mails not marked as replied in the specified mailbox
+              Number of mails not marked as replied in the  specified  mailbox
               or mail spool if not. Only maildir type mailboxes are supported,
               mbox type will return -1.
 
 
        [1mdraft_mails (maildir) (interval)[0m
               Number of mails marked as draft in the specified mailbox or mail
-              spool if not. Only maildir type mailboxes  are  supported,  mbox
+              spool  if  not.  Only maildir type mailboxes are supported, mbox
               type will return -1.
 
 
        [1mtrashed_mails (maildir) (interval)[0m
-              Number  of  mails  marked as trashed in the specified mailbox or
-              mail spool if not. Only maildir type  mailboxes  are  supported,
+              Number of mails marked as trashed in the  specified  mailbox  or
+              mail  spool  if  not. Only maildir type mailboxes are supported,
               mbox type will return -1.
 
 
        [1mmboxscan (-n number of messages to print) (-fw from width) (-sw subject[0m
        [1mwidth) mbox[0m
-              Print a summary of recent messages in an  mbox  format  mailbox.
-              mbox  parameter  is the filename of the mailbox (can be encapsu‐
+              Print  a  summary  of recent messages in an mbox format mailbox.
+              mbox parameter is the filename of the mailbox (can  be  encapsu‐
               lated using '"', ie. ${mboxscan -n 10 "/home/brenden/some box"}
 
 
@@ -1250,18 +1262,22 @@ conky(1)                                                              conky(1)
               Bar that shows amount of memory in use
 
 
+<<<<<<< HEAD:README
        [1mmemgauge (height),(width)[0m
               Gauge that shows amount of memory in use (see cpugauge)
 
 
        [1mmemgraph ("normal"|"log") (height),(width) (gradient colour 1)  (gradi‐[0m
+=======
+       [1mmemgraph  ("normal"|"log") (height),(width) (gradient colour 1) (gradi‐[0m
+>>>>>>> cb4b914... Few misc doc related things.:README
        [1ment colour 2) (scale)[0m
-              Memory  usage graph. Uses a logarithmic scale (to see small num‐
+              Memory usage graph. Uses a logarithmic scale (to see small  num‐
               bers) when you use "log" instead of "normal".
 
 
        [1mmemeasyfree[0m
-              Amount of free memory including the memory that is  very  easily
+              Amount  of  free memory including the memory that is very easily
               freed (buffers/cache)
 
 
@@ -1277,39 +1293,39 @@ conky(1)                                                              conky(1)
 
 
        [1mmixer (device)[0m
-              Prints  the  mixer value as reported by the OS. Default mixer is
-              "vol", but you can specify one of the following  optional  argu‐
+              Prints the mixer value as reported by the OS. Default  mixer  is
+              "vol",  but  you can specify one of the following optional argu‐
               ments:  "vol",  "bass",  "treble",  "synth",  "pcm",  "speaker",
-              "line", "mic", "cd", "mix",  "pcm2",  "rec",  "igain",  "ogain",
+              "line",  "mic",  "cd",  "mix",  "pcm2", "rec", "igain", "ogain",
               "line1",  "line2",  "line3",  "dig1",  "dig2",  "dig3",  "phin",
               "phout", "video", "radio", "monitor". Refer to the definition of
-              SOUND_DEVICE_NAMES  in  <linux/soundcard.h>  (on Linux), <sound‐
+              SOUND_DEVICE_NAMES in <linux/soundcard.h>  (on  Linux),  <sound‐
               card.h> (on OpenBSD), or <sys/soundcard.h> to find the exact op‐
               tions available on your system.
 
 
        [1mmixerbar (device)[0m
-              Displays  mixer  value  in a bar as reported by the OS. See docs
+              Displays mixer value in a bar as reported by the  OS.  See  docs
               for $mixer for details on arguments.
 
 
        [1mmixerr (device)[0m
-              Prints the right channel mixer value as reported by the OS.  See
+              Prints  the right channel mixer value as reported by the OS. See
               docs for $mixer for details on arguments.
 
 
        [1mmixerrbar (device)[0m
-              Displays  the  right channel mixer value in a bar as reported by
+              Displays the right channel mixer value in a bar as  reported  by
               the OS. See docs for $mixer for details on arguments.
 
 
        [1mmixerl (device)[0m
-              Prints the left channel mixer value as reported by the  OS.  See
+              Prints  the  left channel mixer value as reported by the OS. See
               docs for $mixer for details on arguments.
 
 
        [1mmixerlbar (device)[0m
-              Displays  the  left  channel mixer value in a bar as reported by
+              Displays the left channel mixer value in a bar  as  reported  by
               the OS. See docs for $mixer for details on arguments.
 
 
@@ -1431,12 +1447,12 @@ conky(1)                                                              conky(1)
 
 
        [1mif_mpd_playing[0m
-              if   mpd  is  playing  or  paused,  display  everything  between
+              if  mpd  is  playing  or  paused,  display  everything   between
               $if_mpd_playing and the matching $endif
 
 
        [1mnameserver (index)[0m
-              Print a nameserver from /etc/resolv.conf. Index  starts  at  and
+              Print  a  nameserver  from /etc/resolv.conf. Index starts at and
               defaults to 0.
 
 
@@ -1445,8 +1461,8 @@ conky(1)                                                              conky(1)
 
 
        [1mnvidia threshold temp ambient gpufreq memfreq imagequality[0m
-              Nvidia  graficcard support for the XNVCtrl library.  Each option
-              can be shortened to the least  significant  part.   Temperatures
+              Nvidia graficcard support for the XNVCtrl library.  Each  option
+              can  be  shortened  to the least significant part.  Temperatures
               are printed as float, all other values as integer.
 
               [1mthreshold[22m: the thresholdtemperature at which the gpu slows down
@@ -1464,25 +1480,25 @@ conky(1)                                                              conky(1)
 
        [1mpb_battery item[0m
               If running on Apple powerbook/ibook, display information on bat‐
-              tery  status.  The item parameter specifies, what information to
+              tery status. The item parameter specifies, what  information  to
               display. Exactly one item must be specified. Valid items are:
 
               [1mstatus[22m: Display if battery is fully charged, charging, discharg‐
               ing or absent (running on AC)
-              [1mpercent[22m:  Display  charge  of battery in percent, if charging or
-              discharging. Nothing will be  displayed,  if  battery  is  fully
+              [1mpercent[22m: Display charge of battery in percent,  if  charging  or
+              discharging.  Nothing  will  be  displayed,  if battery is fully
               charged or absent.
               [1mtime[22m: Display the time remaining until the battery will be fully
-              charged or discharged at current rate. Nothing is displayed,  if
-              battery  is  absent or if it's present but fully charged and not
+              charged  or discharged at current rate. Nothing is displayed, if
+              battery is absent or if it's present but fully charged  and  not
               discharging.
 
 
        [1mplatform (dev) type n[0m
-              Platform sensor from sysfs (Linux 2.6).  Parameter  dev  may  be
-              omitted  if  you have only one platform device. Platform type is
-              either 'in' or 'vol' meaning voltage; 'fan' meaning fan;  'temp'
-              meaning  temperature.  Parameter  n is number of the sensor. See
+              Platform  sensor  from  sysfs  (Linux 2.6). Parameter dev may be
+              omitted if you have only one platform device. Platform  type  is
+              either  'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp'
+              meaning temperature. Parameter n is number of  the  sensor.  See
               /sys/bus/platform/devices/ on your local computer.
 
 
@@ -1497,13 +1513,13 @@ conky(1)                                                              conky(1)
 
 
        [1mpop3_used (args)[0m
-              Displays the amount of space (in MiB, 2^20) used in your  global
-              POP3  inbox  by  default. You can define individual POP3 inboxes
-              seperately by passing arguments to this object.  Arguments  are:
-              "host  user  pass  [-i  interval] [-p port] [-e command] [-r re‐
+              Displays  the amount of space (in MiB, 2^20) used in your global
+              POP3 inbox by default. You can define  individual  POP3  inboxes
+              seperately  by  passing arguments to this object. Arguments are:
+              "host user pass [-i interval] [-p port]  [-e  command]  [-r  re‐
               tries]". Default port is 110, default interval is 5 minutes, and
               default number of retries before giving up is 5. If the password
-              is supplied as '*', you will be prompted to enter  the  password
+              is  supplied  as '*', you will be prompted to enter the password
               when Conky starts.
 
 
@@ -1521,14 +1537,14 @@ conky(1)                                                              conky(1)
 
 
        [1mscroll length (step) text[0m
-              Scroll 'text' by 'step' characters showing  'length'  number  of
-              characters  at  the  same  time. The text may also contain vari‐
+              Scroll  'text'  by  'step' characters showing 'length' number of
+              characters at the same time. The text  may  also  contain  vari‐
               ables. 'step' is optional and defaults to 1 if not set. If a var
-              creates  output  on multiple lines then the lines are placed be‐
-              hind each other separated with a '|'-sign. Do NOT use vars  that
-              change  colors or otherwise affect the design inside a scrolling
-              text. If you want spaces  between  the  start  and  the  end  of
-              'text',  place them at the end of 'text' not at the front ("foo‐
+              creates output on multiple lines then the lines are  placed  be‐
+              hind  each other separated with a '|'-sign. Do NOT use vars that
+              change colors or otherwise affect the design inside a  scrolling
+              text.  If  you  want  spaces  between  the  start and the end of
+              'text', place them at the end of 'text' not at the front  ("foo‐
               bar" and " foobar" can both generate "barfoo" but "foobar " will
               keep the spaces like this "bar foo").
 
@@ -1538,35 +1554,35 @@ conky(1)                                                              conky(1)
 
 
        [1msmapi (ARGS)[0m
-              when  using  smapi,  display  contents of the /sys/devices/plat‐
-              form/smapi directory. ARGS are either '(FILENAME)' or 'bat  (IN‐
-              DEX)  (FILENAME)'  to  display the corresponding files' content.
-              This is a very raw method of accessing the  smapi  values.  When
+              when using smapi, display  contents  of  the  /sys/devices/plat‐
+              form/smapi  directory. ARGS are either '(FILENAME)' or 'bat (IN‐
+              DEX) (FILENAME)' to display the  corresponding  files'  content.
+              This  is  a  very raw method of accessing the smapi values. When
               available, better use one of the smapi_* variables instead.
 
 
        [1msmapi_bat_bar (INDEX),(height),(width)[0m
-              when  using smapi, display the remaining capacity of the battery
+              when using smapi, display the remaining capacity of the  battery
               with index INDEX as a bar.
 
 
        [1msmapi_bat_perc (INDEX)[0m
-              when using smapi, display the remaining capacity in  percent  of
-              the  battery  with  index INDEX. This is a separate variable be‐
+              when  using  smapi, display the remaining capacity in percent of
+              the battery with index INDEX. This is a  separate  variable  be‐
               cause it supports the 'use_spacer' configuration option.
 
 
        [1msmapi_bat_power INDEX[0m
-              when using smapi, display the current power of the battery  with
-              index  INDEX  in  watt.  This is a separate variable because the
-              original read out value is being converted from mW. The sign  of
-              the  output  reflects  charging (positive) or discharging (nega‐
+              when  using smapi, display the current power of the battery with
+              index INDEX in watt. This is a  separate  variable  because  the
+              original  read out value is being converted from mW. The sign of
+              the output reflects charging (positive)  or  discharging  (nega‐
               tive) state.
 
 
        [1msmapi_bat_temp INDEX[0m
               when using smapi, display the current temperature of the battery
-              with  index INDEX in degree Celsius. This is a separate variable
+              with index INDEX in degree Celsius. This is a separate  variable
               because the original read out value is being converted from mil‐
               li degree Celsius.
 
@@ -1611,36 +1627,36 @@ conky(1)                                                              conky(1)
               The connection index provides you with access to each connection
               in the port monitor. The monitor will return information for in‐
               dex values from 0 to n-1 connections. Values higher than n-1 are
-              simply  ignored. For the "count" item, the connection index must
+              simply ignored. For the "count" item, the connection index  must
               be omitted. It is required for all other items.
 
               Examples:
-              [1m${tcp_portmon 6881 6999 count} [22m- displays the number of  connec‐
+              [1m${tcp_portmon  6881 6999 count} [22m- displays the number of connec‐
               tions in the bittorrent port range
-              [1m${tcp_portmon  22 22 rip 0} [22m- displays the remote host ip of the
+              [1m${tcp_portmon 22 22 rip 0} [22m- displays the remote host ip of  the
               first sshd connection
-              [1m${tcp_portmon 22 22 rip 9} [22m- displays the remote host ip of  the
+              [1m${tcp_portmon  22 22 rip 9} [22m- displays the remote host ip of the
               tenth sshd connection
               [1m${tcp_portmon 1 1024 rhost 0} [22m- displays the remote host name of
               the first connection on a privileged port
               [1m${tcp_portmon 1 1024 rport 4} [22m- displays the remote host port of
               the fifth connection on a privileged port
-              [1m${tcp_portmon  1 65535 lservice 14} [22m- displays the local service
+              [1m${tcp_portmon 1 65535 lservice 14} [22m- displays the local  service
               name of the fifteenth connection in the range of all ports
 
               Note that port monitor variables which share the same port range
               actually refer to the same monitor, so many references to a sin‐
               gle port range for different items and different indexes all use
-              the  same monitor internally. In other words, the program avoids
+              the same monitor internally. In other words, the program  avoids
               creating redundant monitors.
 
        [1mtexeci interval command[0m
-              Runs a command at an interval inside a thread and  displays  the
-              output.  Same  as  $execi,  except  the  command is run inside a
-              thread. Use this if you have a slow script to keep Conky  updat‐
-              ing.  You should make the interval slightly longer then the time
-              it takes your script to execute. For  example,  if  you  have  a
-              script  that  take 5 seconds to execute, you should make the in‐
+              Runs  a  command at an interval inside a thread and displays the
+              output. Same as $execi, except  the  command  is  run  inside  a
+              thread.  Use this if you have a slow script to keep Conky updat‐
+              ing. You should make the interval slightly longer then the  time
+              it  takes  your  script  to  execute. For example, if you have a
+              script that take 5 seconds to execute, you should make  the  in‐
               terval at least 6 seconds. See also $execi.
 
 
@@ -1648,11 +1664,18 @@ conky(1)                                                              conky(1)
               Move text over by N pixels. See also $voffset.
 
 
+<<<<<<< HEAD:README
        [1mrss url delay_in_minutes action (num_par (spaces_in_front))[0m
               Download and parse RSS feeds. Action may be one of  the  follow‐
               ing:  feed_title, item_title (with num par), item_desc (with num
               par) and item_titles (when using this action and spaces_in_front
               is given conky places that many spaces in front of each item).
+=======
+       [1mrss url delay_in_minutes action item_num[0m
+              Download  and  parse RSS feeds. Action may be one of the follow‐
+              ing: feed_title, item_title (with num par), item_desc (with  num
+              par) and item_titles.
+>>>>>>> cb4b914... Few misc doc related things.:README
 
 
        [1mtab (width, (start))[0m
@@ -1852,14 +1875,6 @@ conky(1)                                                              conky(1)
               Comment in current XMMS2 song
 
 
-       [1mxmms2_decoder[0m
-              Decoder plugin used
-
-
-       [1mxmms2_transport[0m
-              Transport plugin used
-
-
        [1mxmms2_url[0m
               Full path to current song
 
@@ -1892,6 +1907,18 @@ conky(1)                                                              conky(1)
               Percent of song's progress
 
 
+       [1mxmms2_date[0m
+              Returns song's date.
+
+
+       [1mxmms2_playlist[0m
+              Returns the XMMS2 playlist.
+
+
+       [1mxmms2_timesplayed[0m
+              Number of times a song was played (presumably).
+
+
        [1mxmms2_status[0m
               XMMS2 status (Playing, Paused, Stopped, or Disconnected)
 
@@ -1914,6 +1941,9 @@ conky(1)                                                              conky(1)
               Fetches  your  currently  training skill from the Eve Online API
               servers  (http://www.eve-online.com/)  and  displays  the  skill
               along with the remaining training time.
+
+
+       [1mendif  [22mEnds an $if block.
 
 
 [1mEXAMPLES[0m

@@ -748,16 +748,12 @@ Returns CPU #n's frequency in MHz. CPUs are counted from 1. If omitted, the para
 Returns CPU #n's frequency in GHz. CPUs are counted from 1. If omitted, the parameter defaults to 1.
 
 .TP 
-\fB\*(T<\fBfreq_dyn\fR\*(T>\fR \*(T<\fB(n)\fR\*(T> 
-Returns CPU #n's frequency in MHz (defaults to 1), but is calculated by counting to clock cycles to complete an instruction. Only available for x86/amd64.
-
-.TP 
-\fB\*(T<\fBfreq_dyn_g\fR\*(T>\fR \*(T<\fB(n)\fR\*(T> 
-Returns CPU #n's frequency in GHz (defaults to 1), but is calculated by counting to clock cycles to complete an instruction. Only available for x86/amd64.
-
-.TP 
 \fB\*(T<\fBfs_bar\fR\*(T>\fR \*(T<\fB(height),(width) fs\fR\*(T> 
 Bar that shows how much space is used on a file system. height is the height in pixels. fs is any file on that file system.
+
+.TP 
+\fB\*(T<\fBfs_bar_free\fR\*(T>\fR \*(T<\fB(height),(width) fs\fR\*(T> 
+Bar that shows how much space is free on a file system. height is the height in pixels. fs is any file on that file system.
 
 .TP 
 \fB\*(T<\fBfs_free\fR\*(T>\fR \*(T<\fB(fs)\fR\*(T> 
@@ -769,15 +765,19 @@ Free percentage of space on a file system available for users.
 
 .TP 
 \fB\*(T<\fBfs_size\fR\*(T>\fR \*(T<\fB(fs)\fR\*(T> 
-File system size
+File system size.
 
 .TP 
 \fB\*(T<\fBfs_type\fR\*(T>\fR \*(T<\fB(fs)\fR\*(T> 
-File system type
+File system type.
 
 .TP 
 \fB\*(T<\fBfs_used\fR\*(T>\fR \*(T<\fB(fs)\fR\*(T> 
-File system used space
+File system used space.
+
+.TP 
+\fB\*(T<\fBfs_used_perc\fR\*(T>\fR \*(T<\fB(fs)\fR\*(T> 
+Percent of file system used space.
 
 .TP 
 \fB\*(T<\fBgoto\fR\*(T>\fR \*(T<\fBx\fR\*(T> 
@@ -1632,14 +1632,6 @@ Genre in current XMMS2 song
 Comment in current XMMS2 song
 
 .TP 
-\fB\*(T<\fBxmms2_decoder\fR\*(T>\fR 
-Decoder plugin used
-
-.TP 
-\fB\*(T<\fBxmms2_transport\fR\*(T>\fR 
-Transport plugin used
-
-.TP 
 \fB\*(T<\fBxmms2_url\fR\*(T>\fR 
 Full path to current song
 
@@ -1672,6 +1664,18 @@ Size of current song
 Percent of song's progress
 
 .TP 
+\fB\*(T<\fBxmms2_date\fR\*(T>\fR 
+Returns song's date.
+
+.TP 
+\fB\*(T<\fBxmms2_playlist\fR\*(T>\fR 
+Returns the XMMS2 playlist.
+
+.TP 
+\fB\*(T<\fBxmms2_timesplayed\fR\*(T>\fR 
+Number of times a song was played (presumably).
+
+.TP 
 \fB\*(T<\fBxmms2_status\fR\*(T>\fR 
 XMMS2 status (Playing, Paused, Stopped, or Disconnected)
 
@@ -1690,6 +1694,10 @@ Display everything between $if_xmms2_connected and the matching $endif if xmms2 
 .TP 
 \fB\*(T<\fBeve\fR\*(T>\fR \*(T<\fBapi_userid api_key character_id\fR\*(T> 
 Fetches your currently training skill from the Eve Online API servers (http://www.eve-online.com/) and displays the skill along with the remaining training time.
+
+.TP 
+\fB\*(T<\fBendif\fR\*(T>\fR 
+Ends an $if block.
 
 .SH EXAMPLES
 .TP 

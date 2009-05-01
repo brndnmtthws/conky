@@ -667,9 +667,6 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_trashed_mails:
 				free(data.local_mail.box);
 				break;
-			case OBJ_imap:
-				free(info.mail);
-				break;
 			case OBJ_imap_unseen:
 				if (!obj->global_mode) {
 					free(data.mail);
@@ -679,9 +676,6 @@ static void free_text_objects(struct text_object *root)
 				if (!obj->global_mode) {
 					free(data.mail);
 				}
-				break;
-			case OBJ_pop3:
-				free(info.mail);
 				break;
 			case OBJ_pop3_unseen:
 				if (!obj->global_mode) {
@@ -932,9 +926,6 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_mpd_vol:
 			case OBJ_mpd_bitrate:
 			case OBJ_mpd_status:
-			case OBJ_mpd_host:
-			case OBJ_mpd_port:
-			case OBJ_mpd_password:
 			case OBJ_mpd_bar:
 			case OBJ_mpd_elapsed:
 			case OBJ_mpd_length:
@@ -2147,16 +2138,6 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(swapbar, INFO_MEM)
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(sysname, 0)
-#ifdef __linux__
-	END OBJ(temp1, INFO_SYSFS)
-		obj->type = OBJ_i2c;
-		obj->data.sysfs.fd = open_i2c_sensor(0, "temp", 1,
-			&obj->data.sysfs.arg, obj->data.sysfs.devtype);
-	END OBJ(temp2, INFO_SYSFS)
-		obj->type = OBJ_i2c;
-		obj->data.sysfs.fd = open_i2c_sensor(0, "temp", 2,
-			&obj->data.sysfs.arg, obj->data.sysfs.devtype);
-#endif
 	END OBJ(time, 0)
 		obj->data.s = strndup(arg ? arg : "%F %T", text_buffer_size);
 	END OBJ(utime, 0)
