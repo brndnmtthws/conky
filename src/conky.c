@@ -587,21 +587,24 @@ void *threaded_exec(void *) __attribute__((noreturn));
 
 void *threaded_exec(void *arg)
 {
-	char *p2;
+	char *buff, *p2;
 	struct text_object *obj = (struct text_object *)arg;
 
 	while (1) {
-		p2 = obj->data.texeci.buffer;
-		timed_thread_lock(obj->data.texeci.p_timed_thread);
-		read_exec(obj->data.texeci.cmd, obj->data.texeci.buffer,
+		buff = malloc(text_buffer_size);
+		read_exec(obj->data.texeci.cmd, buff,
 			text_buffer_size);
+		p2 = buff;
 		while (*p2) {
 			if (*p2 == '\001') {
 				*p2 = ' ';
 			}
 			p2++;
 		}
+		timed_thread_lock(obj->data.texeci.p_timed_thread);
+		strncpy(obj->data.texeci.buffer, buff, text_buffer_size);
 		timed_thread_unlock(obj->data.texeci.p_timed_thread);
+		free(buff);
 		if (timed_thread_test(obj->data.texeci.p_timed_thread, 0)) {
 			timed_thread_exit(obj->data.texeci.p_timed_thread);
 		}
@@ -3746,10 +3749,11 @@ static void generate_text_internal(char *p, int p_max_size,
 					if (timed_thread_run(obj->data.texeci.p_timed_thread)) {
 						ERR("Error running texeci timed thread");
 					}
+				} else {
+					timed_thread_lock(obj->data.texeci.p_timed_thread);
+					snprintf(p, text_buffer_size, "%s", obj->data.texeci.buffer);
+					timed_thread_unlock(obj->data.texeci.p_timed_thread);
 				}
-				timed_thread_lock(obj->data.texeci.p_timed_thread);
-				snprintf(p, text_buffer_size, "%s", obj->data.texeci.buffer);
-				timed_thread_unlock(obj->data.texeci.p_timed_thread);
 			}
 #endif /* HAVE_POPEN */
 			OBJ(imap_unseen) {
