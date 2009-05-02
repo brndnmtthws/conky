@@ -1,3 +1,49 @@
+2009-05-01
+	* Added diskio_avg_samples patch (thanks Yeon-Hyeong)
+	* Fixed $texeci regression
+
+2009-04-30
+	* Added $combine, a var that places 2 other vars next to each other, even if they
+	have a output of multiple lines. This also makes the moving of RSS-itemes with
+	$goto (see change from 2009-04-19) no longer necessary.
+
+2009-04-28
+	* Various XMMS2 updates (thanks Lassi)
+	* Make ALSA mixers available on Linux, and added $if_mixer_mute (thanks
+
+2009-04-19
+	* Make it possible to place spaces in front of RSS-items as a workaround
+	for the problem that $goto only moves the first RSS-item. This is only a
+	workaround and should be replaced by a permanent fix that makes $goto move
+	all RSS-items !
+
+2009-04-13
+	* Fix broken compilation without X11
+
+2009-04-09
+	* Added default_bar/graph/gauge_size config options (thanks wire64 for the
+	idea)
+
+2009-03-24
+	* Added eval text object to realise double parsing
+
+2009-03-15
+	* Added gauge widget patch, sf.net id #2676128 (thanks Aner)
+
+2009-05-01
+	* Conky 1.7.0 "Hungry Hobo" released!
+
+2009-04-28
+	* Various XMMS2 updates (thanks Lassi)
+
+2009-04-09
+	* Fix broken xmms2 compilation (thanks fusetak)
+	* Minor fix for fs_used_perc, fs_free and fs_free_perc (thanks
+	lightpriest)
+
+2009-03-28
+	* Applied FreeBSD patches (thanks Nikos)
+
 2009-03-16
 	* Fix bug with wacky netstat values on startup
 
@@ -174,7 +220,7 @@
 
 2008-06-28
 	* Added sysfs AC adapter support patch (thanks Byron)
-	* Added support for EVE-Online skill monitoring (thanks Asbjørn)
+	* Added support for EVE-Online skill monitoring (thanks AsbjÃ¸rn)
 
 2008-06-25
 	* new variables smapi_bat_temp and smapi_bat_power
@@ -244,7 +290,7 @@
 
 2008-04-29
 	* own_window_type dock patch (thanks Morgan).
-	* Fix for $if_up memleak (thanks Micha¿).
+	* Fix for $if_up memleak (thanks MichaÂ¿).
 
 2008-04-12
 	* Added patch for the following (thanks larsko):
@@ -1212,10 +1258,10 @@
 	* Version 0.17 released
 
 2004-05-23
-	* battery number for ACPI battery (thanks Leszek Krupiñski)
+	* battery number for ACPI battery (thanks Leszek KrupiÃ±ski)
 	* default battery is now BAT0 instead of BAT1, set ${battery 1} if
 	  the old battery thing worked
-	* bug fix on load average reporting (thanks Leszek Krupiñski)
+	* bug fix on load average reporting (thanks Leszek KrupiÃ±ski)
 	* outlines to text, draw_outline and default_outline_color
 	  configurations and $outlinecolor (thanks adi)
 	* $acpifan, $acpiacadapter, $uptime_short (thanks adi)
@@ -1271,5 +1317,5 @@
 	* Version 0.15 released
 
 2004-05-06
-	* SIGHUP reloads config file (thanks Jørgen P. Tjernø)
+	* SIGHUP reloads config file (thanks JÃ¸rgen P. TjernÃ¸)
 	* Some other stuff

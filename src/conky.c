@@ -7,7 +7,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2009 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -213,6 +213,9 @@ static void print_version(void)
 #ifdef IMLIB2
 		   "  * IMLIB2\n"
 #endif /* IMLIB2 */
+#ifdef MIXER_IS_ALSA
+		   "  * ALSA mixer support\n"
+#endif /* MIXER_IS_ALSA */
 	);
 
 	exit(0);
@@ -250,6 +253,9 @@ struct information info;
 /* default config file */
 static char *current_config;
 
+/* display to connect to */
+static char *disp = NULL;
+
 /* set to 1 if you want all text to be in uppercase */
 static unsigned int stuff_in_upper_case;
 
@@ -259,7 +265,7 @@ static unsigned long total_run_times;
 /* fork? */
 static int fork_to_background;
 
-static int cpu_avg_samples, net_avg_samples;
+static int cpu_avg_samples, net_avg_samples, diskio_avg_samples;
 
 /* filenames for output */
 char *overwrite_file = NULL; FILE *overwrite_fpointer = NULL;
@@ -584,21 +590,24 @@ void *threaded_exec(void *) __attribute__((noreturn));
 
 void *threaded_exec(void *arg)
 {
-	char *p2;
+	char *buff, *p2;
 	struct text_object *obj = (struct text_object *)arg;
 
 	while (1) {
-		p2 = obj->data.texeci.buffer;
-		timed_thread_lock(obj->data.texeci.p_timed_thread);
-		read_exec(obj->data.texeci.cmd, obj->data.texeci.buffer,
+		buff = malloc(text_buffer_size);
+		read_exec(obj->data.texeci.cmd, buff,
 			text_buffer_size);
+		p2 = buff;
 		while (*p2) {
 			if (*p2 == '\001') {
 				*p2 = ' ';
 			}
 			p2++;
 		}
+		timed_thread_lock(obj->data.texeci.p_timed_thread);
+		strncpy(obj->data.texeci.buffer, buff, text_buffer_size);
 		timed_thread_unlock(obj->data.texeci.p_timed_thread);
+		free(buff);
 		if (timed_thread_test(obj->data.texeci.p_timed_thread, 0)) {
 			timed_thread_exit(obj->data.texeci.p_timed_thread);
 		}
@@ -630,12 +639,14 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_acpitemp:
 				close(data.i);
 				break;
+#endif /* !__OpenBSD__ */
+#ifdef __linux__
 			case OBJ_i2c:
 			case OBJ_platform:
 			case OBJ_hwmon:
 				close(data.sysfs.fd);
 				break;
-#endif /* !__OpenBSD__ */
+#endif /* __linux__ */
 			case OBJ_time:
 			case OBJ_utime:
 				free(data.s);
@@ -662,9 +673,6 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_trashed_mails:
 				free(data.local_mail.box);
 				break;
-			case OBJ_imap:
-				free(info.mail);
-				break;
 			case OBJ_imap_unseen:
 				if (!obj->global_mode) {
 					free(data.mail);
@@ -674,9 +682,6 @@ static void free_text_objects(struct text_object *root)
 				if (!obj->global_mode) {
 					free(data.mail);
 				}
-				break;
-			case OBJ_pop3:
-				free(info.mail);
 				break;
 			case OBJ_pop3_unseen:
 				if (!obj->global_mode) {
@@ -706,6 +711,7 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_text:
 			case OBJ_font:
 			case OBJ_image:
+			case OBJ_eval:
 			case OBJ_exec:
 			case OBJ_execgauge:
 			case OBJ_execbar:
@@ -718,17 +724,13 @@ static void free_text_objects(struct text_object *root)
 				free_iconv();
 				break;
 #endif
-#ifdef __LINUX__
+#ifdef __linux__
 			case OBJ_disk_protect:
-				free(obj->data.s);
-				break;
-			case OBJ_if_up:
-				free(obj->data.ifblock.s);
-				free(obj->data.ifblock.str);
+				free(data.s);
 				break;
 			case OBJ_if_gw:
-				free(obj->data.ifblock.s);
-				free(obj->data.ifblock.str);
+				free(data.ifblock.s);
+				free(data.ifblock.str);
 			case OBJ_gw_iface:
 			case OBJ_gw_ip:
 				if (info.gw_info.iface) {
@@ -741,9 +743,14 @@ static void free_text_objects(struct text_object *root)
 				}
 				break;
 			case OBJ_ioscheduler:
-				if(obj->data.s)
-					free(obj->data.s);
+				if(data.s)
+					free(data.s);
 				break;
+#endif
+#if (defined(__FreeBSD__) || defined(__linux__))
+			case OBJ_if_up:
+				free(data.ifblock.s);
+				free(data.ifblock.str);
 #endif
 #ifdef XMMS2
 			case OBJ_xmms2_artist:
@@ -851,6 +858,7 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_execi:
 			case OBJ_execibar:
 			case OBJ_execigraph:
+			case OBJ_execigauge:
 				free(data.execi.cmd);
 				free(data.execi.buffer);
 				break;
@@ -924,9 +932,6 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_mpd_vol:
 			case OBJ_mpd_bitrate:
 			case OBJ_mpd_status:
-			case OBJ_mpd_host:
-			case OBJ_mpd_port:
-			case OBJ_mpd_password:
 			case OBJ_mpd_bar:
 			case OBJ_mpd_elapsed:
 			case OBJ_mpd_length:
@@ -956,6 +961,13 @@ static void free_text_objects(struct text_object *root)
 #endif
 			case OBJ_scroll:
 				free(data.scroll.text);
+				free_text_objects(obj->sub);
+				free(obj->sub);
+				break;
+			case OBJ_combine:
+				free(data.combine.left);
+				free(data.combine.seperation);
+				free(data.combine.right);
 				free_text_objects(obj->sub);
 				free(obj->sub);
 				break;
@@ -1214,12 +1226,6 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(ibm_volume, 0)
 	END OBJ(ibm_brightness, 0)
 #endif
-	END OBJ_IF(if_up, 0)
-		if (!arg) {
-			ERR("if_up needs an argument");
-			obj->data.ifblock.s = 0;
-		} else
-			obj->data.ifblock.s = strndup(arg, text_buffer_size);
 	END OBJ_IF(if_gw, 0)
 	END OBJ(ioscheduler, 0)
 		if (!arg) {
@@ -1242,6 +1248,14 @@ static struct text_object *construct_text_object(const char *s,
 		}
 
 #endif /* __linux__ */
+#if (defined(__FreeBSD__) || defined(__linux__))
+	END OBJ_IF(if_up, 0)
+		if (!arg) {
+			ERR("if_up needs an argument");
+			obj->data.ifblock.s = 0;
+		} else
+			obj->data.ifblock.s = strndup(arg, text_buffer_size);
+#endif
 #if defined(__OpenBSD__)
 	END OBJ(obsd_sensors_temp, 0)
 		if (!arg) {
@@ -1280,47 +1294,28 @@ static struct text_object *construct_text_object(const char *s,
 #endif /* __OpenBSD__ */
 	END OBJ(buffers, INFO_BUFFERS)
 	END OBJ(cached, INFO_BUFFERS)
+#define SCAN_CPU(__arg, __var) { \
+	int __offset; \
+	if (__arg && sscanf(__arg, " cpu%u %n", &__var, &__offset)) \
+		__arg += __offset; \
+	else \
+		__var = 0; \
+}
 	END OBJ(cpu, INFO_CPU)
-		if (arg) {
-			if (strncmp(arg, "cpu", 3) == EQUAL && isdigit(arg[3])) {
-				obj->data.cpu_index = atoi(&arg[3]);
-				arg += 4;
-			} else {
-				obj->data.cpu_index = 0;
-			}
-			DBGP2("Adding $cpu for CPU %d", obj->data.cpu_index);
-		} else {
-			obj->data.cpu_index = 0;
-		}
+		SCAN_CPU(arg, obj->data.cpu_index);
+		DBGP2("Adding $cpu for CPU %d", obj->data.cpu_index);
 	END OBJ(cpugauge, INFO_CPU)
+		SCAN_CPU(arg, obj->data.cpu_index);
 		scan_gauge(arg, &obj->a, &obj->b);
 		DBGP2("Adding $cpugauge for CPU %d", obj->data.cpu_index);
 	END OBJ(cpubar, INFO_CPU)
-		if (arg) {
-			if (strncmp(arg, "cpu", 3) == EQUAL && isdigit(arg[3])) {
-				obj->data.cpu_index = atoi(&arg[3]);
-				arg += 4;
-			} else {
-				obj->data.cpu_index = 0;
-			}
-			scan_bar(arg, &obj->a, &obj->b);
-		} else {
-			scan_bar(arg, &obj->a, &obj->b);
-			obj->data.cpu_index = 0;
-		}
+		SCAN_CPU(arg, obj->data.cpu_index);
+		scan_bar(arg, &obj->a, &obj->b);
 		DBGP2("Adding $cpubar for CPU %d", obj->data.cpu_index);
 	END OBJ(cpugraph, INFO_CPU)
-		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+		SCAN_CPU(arg, obj->data.cpu_index);
+		scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
-
-		if (buf) {
-			if (strncmp(buf, "cpu", 3) == EQUAL && isdigit(buf[3])) {
-				obj->data.cpu_index = atoi(&buf[3]);
-			} else {
-				obj->data.cpu_index = 0;
-			}
-			free(buf);
-		}
 		DBGP2("Adding $cpugraph for CPU %d", obj->data.cpu_index);
 	END OBJ(loadgraph, INFO_LOADAVG)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
@@ -1415,6 +1410,8 @@ static struct text_object *construct_text_object(const char *s,
 		obj_be_ifblock_else(ifblock_opaque, obj);
 	END OBJ(endif, 0)
 		obj_be_ifblock_endif(ifblock_opaque, obj);
+	END OBJ(eval, 0)
+		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(image, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 #ifdef HAVE_POPEN
@@ -1422,14 +1419,22 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(execp, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
+#define SIZE_DEFAULTS(arg) { \
+	obj->a = default_##arg##_width; \
+	obj->b = default_##arg##_height; \
+}
 	END OBJ(execgauge, 0)
+		SIZE_DEFAULTS(gauge);
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(execbar, 0)
+		SIZE_DEFAULTS(bar);
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(execgraph, 0)
+		SIZE_DEFAULTS(graph);
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(execibar, 0)
 		int n;
+		SIZE_DEFAULTS(bar);
 
 		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
 			char buf[256];
@@ -1443,11 +1448,26 @@ static struct text_object *construct_text_object(const char *s,
 		}
 	END OBJ(execigraph, 0)
 		int n;
+		SIZE_DEFAULTS(graph);
 
 		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
 			char buf[256];
 
 			ERR("${execigraph <interval> command}");
+			obj->type = OBJ_text;
+			snprintf(buf, 256, "${%s}", s);
+			obj->data.s = strndup(buf, text_buffer_size);
+		} else {
+			obj->data.execi.cmd = strndup(arg + n, text_buffer_size);
+		}
+	END OBJ(execigauge, 0)
+		int n;
+		SIZE_DEFAULTS(gauge);
+
+		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
+			char buf[256];
+
+			ERR("${execigauge <interval> command}");
 			obj->type = OBJ_text;
 			snprintf(buf, 256, "${%s}", s);
 			obj->data.s = strndup(buf, text_buffer_size);
@@ -1598,7 +1618,7 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.pair.a = a;
 		obj->data.pair.b = b;
 
-#ifndef __OpenBSD__
+#ifdef __linux__
 	END OBJ(i2c, INFO_SYSFS)
 		char buf1[64], buf2[64];
 		int n;
@@ -2086,6 +2106,8 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(mixerrbar, INFO_MIXER)
 		scan_mixer_bar(arg, &obj->data.mixerbar.l, &obj->data.mixerbar.w,
 			&obj->data.mixerbar.h);
+	END OBJ_IF(if_mixer_mute, INFO_MIXER)
+		obj->data.ifblock.i = mixer_init(arg);
 #ifdef X11
 	END OBJ(monitor, INFO_X11)
 	END OBJ(monitor_number, INFO_X11)
@@ -2122,16 +2144,6 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(swapbar, INFO_MEM)
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(sysname, 0)
-#ifndef __OpenBSD__
-	END OBJ(temp1, INFO_SYSFS)
-		obj->type = OBJ_i2c;
-		obj->data.sysfs.fd = open_i2c_sensor(0, "temp", 1,
-			&obj->data.sysfs.arg, obj->data.sysfs.devtype);
-	END OBJ(temp2, INFO_SYSFS)
-		obj->type = OBJ_i2c;
-		obj->data.sysfs.fd = open_i2c_sensor(0, "temp", 2,
-			&obj->data.sysfs.arg, obj->data.sysfs.devtype);
-#endif
 	END OBJ(time, 0)
 		obj->data.s = strndup(arg ? arg : "%F %T", text_buffer_size);
 	END OBJ(utime, 0)
@@ -2462,20 +2474,22 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(rss, 0)
 		if (arg) {
 			int argc, delay, act_par;
+			unsigned int nrspaces = 0;
 			char *uri = (char *) malloc(128 * sizeof(char));
 			char *action = (char *) malloc(64 * sizeof(char));
 
-			argc = sscanf(arg, "%127s %d %63s %d", uri, &delay, action,
-					&act_par);
+			argc = sscanf(arg, "%127s %d %63s %d %u", uri, &delay, action,
+					&act_par, &nrspaces);
 			obj->data.rss.uri = uri;
 			obj->data.rss.delay = delay;
 			obj->data.rss.action = action;
 			obj->data.rss.act_par = act_par;
+			obj->data.rss.nrspaces = nrspaces;
 
 			init_rss_info();
 		} else {
 			CRIT_ERR("rss needs arguments: <uri> <delay in minutes> <action> "
-					"[act_par]");
+					"[act_par] [spaces in front]");
 		}
 #endif
 #ifdef HDDTEMP
@@ -2511,6 +2525,48 @@ static struct text_object *construct_text_object(const char *s,
 					obj->data.scroll.text, 0);
 		} else {
 			CRIT_ERR("scroll needs arguments: <length> [<step>] <text>");
+		}
+	END OBJ(combine, 0)
+		if(arg) {
+			unsigned int i,j;
+			unsigned int indenting = 0;	//vars can be used as args for other vars
+			int startvar[2];
+			int endvar[2];
+			startvar[0] = endvar[0] = startvar[1] = endvar[1] = -1;
+			j=0;
+			for(i=0; arg[i] != 0 && j < 2; i++) {
+				if(startvar[j] == -1) {
+					if(arg[i] == '$') {
+						startvar[j] = i;
+					}
+				}else if(endvar[j] == -1) {
+					if(arg[i] == '{') {
+						indenting++;
+					}else if(arg[i] == '}') {
+						indenting--;
+					}
+					if(indenting == 0 && (arg[i+1] == ' ' || arg[i+1] == '$' || arg[i+1] == 0)) {
+						endvar[j]=i+1;
+						j++;
+					}
+				}
+			}
+			if(startvar[0] >= 0 && endvar[0] >= 0 && startvar[1] >= 0 && endvar[1] >= 0) {
+				obj->data.combine.left=malloc(endvar[0]-startvar[0]+1);
+				obj->data.combine.seperation=malloc(startvar[1]-endvar[0]+1);
+				obj->data.combine.right=malloc(endvar[1]-startvar[1]+1);
+				strncpy(obj->data.combine.left, arg+startvar[0], endvar[0]-startvar[0]); obj->data.combine.left[endvar[0]-startvar[0]]=0;
+				strncpy(obj->data.combine.seperation, arg+endvar[0], startvar[1]-endvar[0]); obj->data.combine.seperation[startvar[1]-endvar[0]]=0;
+				strncpy(obj->data.combine.right, arg+startvar[1], endvar[1]-startvar[1]); obj->data.combine.right[endvar[1]-startvar[1]]=0;
+				obj->sub = malloc(sizeof(struct text_object));
+				extract_variable_text_internal(obj->sub, obj->data.combine.left, 0);
+				obj->sub->sub = malloc(sizeof(struct text_object));
+				extract_variable_text_internal(obj->sub->sub, obj->data.combine.right, 0);
+			} else {
+				CRIT_ERR("combine needs arguments: <text1> <text2>");
+			}
+		} else {
+			CRIT_ERR("combine needs arguments: <text1> <text2>");
 		}
 #ifdef NVIDIA
 	END OBJ(nvidia, 0)
@@ -2560,7 +2616,7 @@ static char *backslash_escape(const char *src, char **templates, unsigned int te
 	const char *p;
 	unsigned int dup_idx = 0, dup_len;
 
-	dup_len = strlen(src);
+	dup_len = strlen(src) + 1;
 	src_dup = malloc(dup_len * sizeof(char));
 
 	p = src;
@@ -2810,12 +2866,19 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 				}
 				s = p;
 
+				/* search for variable in environment */
+
 				var = getenv(buf);
+				if (var) {
+					obj = create_plain_text(var);
+					if (obj) {
+						append_object(retval, obj);
+					}
+					continue;
+				}
 
 				/* if variable wasn't found in environment, use some special */
-				if (var) {
-					strncpy(buf, var, 255);
-				}
+
 				arg = 0;
 
 				/* split arg */
@@ -2847,6 +2910,7 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 				continue;
 			} else {
 				obj = create_plain_text("$");
+				s = p + 1;
 				if (obj != NULL) {
 					append_object(retval, obj);
 				}
@@ -2931,9 +2995,9 @@ static inline struct mail_s *ensure_mail_thread(struct text_object *obj,
 		return obj->data.mail;
 	} else if (!obj->a) {
 		// something is wrong, warn once then stop
-		ERR("Theres a problem with your %s_unseen settings.  "
-				"Check that the global %s settings are defined "
-				"properly (line %li).", global_text, global_text, obj->line);
+		ERR("There's a problem with your mail settings.  "
+				"Check that the global mail settings are properly defined"
+				" (line %li).", obj->line);
 		obj->a++;
 	}
 	return NULL;
@@ -3030,12 +3094,12 @@ static inline double get_barnum(char *buf)
 	}
 
 	if (sscanf(buf, "%lf", &barnum) == 0) {
-		ERR("reading execbar value failed (perhaps it's not the "
+		ERR("reading exec value failed (perhaps it's not the "
 				"correct format?)");
 		return -1;
 	}
 	if (barnum > 100.0 || barnum < 0.0) {
-		ERR("your execbar value is not between 0 and 100, "
+		ERR("your exec value is not between 0 and 100, "
 				"therefore it will be ignored");
 		return -1;
 	}
@@ -3202,7 +3266,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(cpu) {
 				if (obj->data.cpu_index > info.cpu_count) {
-					printf("obj->data.cpu_index %i info.cpu_count %i",
+					ERR("obj->data.cpu_index %i info.cpu_count %i",
 							obj->data.cpu_index, info.cpu_count);
 					CRIT_ERR("attempting to use more CPUs than you have!");
 				}
@@ -3354,12 +3418,6 @@ static void generate_text_internal(char *p, int p_max_size,
 				get_ibm_acpi_brightness(p, p_max_size);
 			}
 #endif /* IBM */
-			OBJ(if_up) {
-				if ((obj->data.ifblock.s)
-						&& (!interface_up(obj->data.ifblock.s))) {
-					DO_JUMP;
-				}
-			}
 			OBJ(if_gw) {
 				if (!cur->gw_info.count) {
 					DO_JUMP;
@@ -3378,7 +3436,14 @@ static void generate_text_internal(char *p, int p_max_size,
 				get_powerbook_batt_info(p, p_max_size, obj->data.i);
 			}
 #endif /* __linux__ */
-
+#if (defined(__FreeBSD__) || defined(__linux__))
+			OBJ(if_up) {
+				if ((obj->data.ifblock.s)
+						&& (!interface_up(obj->data.ifblock.s))) {
+					DO_JUMP;
+				}
+			}
+#endif
 #ifdef __OpenBSD__
 			OBJ(obsd_sensors_temp) {
 				obsd_sensors.device = sensor_device;
@@ -3511,6 +3576,20 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* IMLIB2 */
 
+			OBJ(eval) {
+				struct information *tmp_info;
+				struct text_object subroot, subroot2;
+
+				tmp_info = malloc(sizeof(struct information));
+				memcpy(tmp_info, cur, sizeof(struct information));
+				parse_conky_vars(&subroot, obj->data.s, p, tmp_info);
+				DBGP("evaluated '%s' to '%s'", obj->data.s, p);
+				parse_conky_vars(&subroot2, p, p, tmp_info);
+
+				free_text_objects(&subroot);
+				free_text_objects(&subroot2);
+				free(tmp_info);
+			}
 			OBJ(exec) {
 				read_exec(obj->data.s, p, text_buffer_size);
 				remove_deleted_chars(p);
@@ -3536,7 +3615,7 @@ static void generate_text_internal(char *p, int p_max_size,
 
 				if (barnum >= 0.0) {
 					barnum /= 100;
-					new_bar(p, 0, 6, round_to_int(barnum * 255.0));
+					new_gauge(p, obj->a, obj->b, round_to_int(barnum * 255.0));
 				}
 			}
 			OBJ(execbar) {
@@ -3547,7 +3626,7 @@ static void generate_text_internal(char *p, int p_max_size,
 
 				if (barnum >= 0.0) {
 					barnum /= 100;
-					new_bar(p, 0, 6, round_to_int(barnum * 255.0));
+					new_bar(p, obj->a, obj->b, round_to_int(barnum * 255.0));
 				}
 			}
 			OBJ(execgraph) {
@@ -3565,7 +3644,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				barnum = get_barnum(p);
 
 				if (barnum >= 0.0) {
-					new_graph(p, 0, 25, obj->c, obj->d, round_to_int(barnum),
+					new_graph(p, obj->a, obj->b, obj->c, obj->d, round_to_int(barnum),
 						100, 1, showaslog);
 				}
 			}
@@ -3582,7 +3661,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					}
 					obj->data.execi.last_update = current_update_time;
 				}
-				new_bar(p, 0, 6, round_to_int(obj->f));
+				new_bar(p, obj->a, obj->b, round_to_int(obj->f));
 			}
 			OBJ(execigraph) {
 				if (current_update_time - obj->data.execi.last_update
@@ -3597,7 +3676,22 @@ static void generate_text_internal(char *p, int p_max_size,
 					}
 					obj->data.execi.last_update = current_update_time;
 				}
-				new_graph(p, 0, 25, obj->c, obj->d, (int) (obj->f), 100, 1, FALSE);
+				new_graph(p, obj->a, obj->b, obj->c, obj->d, (int) (obj->f), 100, 1, FALSE);
+			}
+			OBJ(execigauge) {
+				if (current_update_time - obj->data.execi.last_update
+						>= obj->data.execi.interval) {
+					double barnum;
+
+					read_exec(obj->data.execi.cmd, p, text_buffer_size);
+					barnum = get_barnum(p);
+
+					if (barnum >= 0.0) {
+						obj->f = 255 * barnum / 100.0;
+					}
+					obj->data.execi.last_update = current_update_time;
+				}
+				new_gauge(p, obj->a, obj->b, round_to_int(obj->f));
 			}
 			OBJ(execi) {
 				if (current_update_time - obj->data.execi.last_update
@@ -3650,10 +3744,11 @@ static void generate_text_internal(char *p, int p_max_size,
 					if (timed_thread_run(obj->data.texeci.p_timed_thread)) {
 						ERR("Error running texeci timed thread");
 					}
+				} else {
+					timed_thread_lock(obj->data.texeci.p_timed_thread);
+					snprintf(p, text_buffer_size, "%s", obj->data.texeci.buffer);
+					timed_thread_unlock(obj->data.texeci.p_timed_thread);
 				}
-				timed_thread_lock(obj->data.texeci.p_timed_thread);
-				snprintf(p, text_buffer_size, "%s", obj->data.texeci.buffer);
-				timed_thread_unlock(obj->data.texeci.p_timed_thread);
 			}
 #endif /* HAVE_POPEN */
 			OBJ(imap_unseen) {
@@ -3706,15 +3801,19 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(fs_free) {
 				if (obj->data.fs != NULL) {
-					human_readable(obj->data.fs->avail, p, 255);
+					human_readable( (obj->data.fs->free ? obj->data.fs->free :
+								obj->data.fs->avail), p, 255);
 				}
 			}
 			OBJ(fs_free_perc) {
 				if (obj->data.fs != NULL) {
 					int val = 0;
 
-					if (obj->data.fs->size)
-						val = obj->data.fs->avail * 100 / obj->data.fs->size;
+					if (obj->data.fs->size) {
+						val = (obj->data.fs->free ? obj->data.fs->free :
+								obj->data.fs->avail) * 100 /
+							obj->data.fs->size;
+					}
 
 					percent_print(p, p_max_size, val);
 				}
@@ -3749,8 +3848,11 @@ static void generate_text_internal(char *p, int p_max_size,
 				if (obj->data.fs != NULL) {
 					int val = 0;
 
-					if (obj->data.fs->size)
-						val = obj->data.fs->avail * 100 / obj->data.fs->size;
+					if (obj->data.fs->size) {
+						val = (obj->data.fs->free ? obj->data.fs->free :
+								obj->data.fs->avail) * 100 /
+							obj->data.fs->size;
+					}
 
 					percent_print(p, p_max_size, 100 - val);
 				}
@@ -3831,6 +3933,10 @@ static void generate_text_internal(char *p, int p_max_size,
 						if (data->item_count > 0) {
 							int itmp;
 							int show;
+							//'tmpspaces' is a string with spaces too be placed in front of each title
+							char *tmpspaces = malloc(obj->data.rss.nrspaces + 1);
+							memset(tmpspaces, ' ', obj->data.rss.nrspaces);
+							tmpspaces[obj->data.rss.nrspaces]=0;
 
 							p[0] = 0;
 
@@ -3853,9 +3959,11 @@ static void generate_text_internal(char *p, int p_max_size,
 									if (str[strlen(str) - 1] == '\n') {
 										str[strlen(str) - 1] = 0;
 									}
+									strncat(p, tmpspaces, p_max_size);
 									strncat(p, str, p_max_size);
 								}
 							}
+							free(tmpspaces);
 						}
 					}
 				}
@@ -3895,7 +4003,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(voffset) {
 				new_voffset(p, obj->data.i);
 			}
-#ifndef __OpenBSD__
+#ifdef __linux__
 			OBJ(i2c) {
 				double r;
 
@@ -3938,7 +4046,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					snprintf(p, p_max_size, "%.1f", r);
 				}
 			}
-#endif /* !__OpenBSD__ */
+#endif /* __linux__ */
 			OBJ(alignr) {
 				new_alignr(p, obj->data.i);
 			}
@@ -4054,15 +4162,20 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(mixerbar) {
 				new_bar(p, obj->data.mixerbar.w, obj->data.mixerbar.h,
-					mixer_get_avg(obj->data.mixerbar.l) * 255 / 100);
+					mixer_to_255(obj->data.mixerbar.l,mixer_get_avg(obj->data.mixerbar.l)));
 			}
 			OBJ(mixerlbar) {
 				new_bar(p, obj->data.mixerbar.w, obj->data.mixerbar.h,
-					mixer_get_left(obj->data.mixerbar.l) * 255 / 100);
+					mixer_to_255(obj->data.mixerbar.l,mixer_get_left(obj->data.mixerbar.l)));
 			}
 			OBJ(mixerrbar) {
 				new_bar(p, obj->data.mixerbar.w, obj->data.mixerbar.h,
-					mixer_get_right(obj->data.mixerbar.l) * 255 / 100);
+					mixer_to_255(obj->data.mixerbar.l,mixer_get_right(obj->data.mixerbar.l)));
+			}
+			OBJ(if_mixer_mute) {
+				if (!mixer_is_mute(obj->data.ifblock.i)) {
+					DO_JUMP;
+				}
 			}
 #ifdef X11
 			OBJ(monitor) {
@@ -4357,6 +4470,10 @@ static void generate_text_internal(char *p, int p_max_size,
 #undef mpd_printf
 #endif
 
+#ifdef XMMS2
+    free_xmms2();
+#endif
+
 #ifdef MOC
 #define MOC_PRINT(t, a) \
 	snprintf(p, p_max_size, "%s", (moc.t ? moc.t : a))
@@ -4466,7 +4583,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 			OBJ(if_xmms2_connected) {
-				if (cur->xmms2_conn_state != 1) {
+				if (cur->xmms2.conn_state != 1) {
 					DO_JUMP;
 				}
 			}
@@ -4781,6 +4898,69 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 				snprintf(p, p_max_size, "%s", buf);
 			}
+			OBJ(combine) {
+				char buf[2][max_user_text];
+				unsigned int i, j;
+				unsigned int longest=0;
+				unsigned int nextstart;
+				unsigned int nr_rows[2];
+				struct llrows {
+					char* row;
+					struct llrows* next;
+				};
+				struct llrows *ll_rows[2], *current[2];
+				struct text_object * objsub = obj->sub;
+
+				p[0]=0;
+				for(i=0; i<2; i++) {
+					nr_rows[i] = 1;
+					nextstart = 0;
+					ll_rows[i] = malloc(sizeof(struct llrows));
+					current[i] = ll_rows[i];
+					for(j=0; j<i; j++) objsub = objsub->sub;
+					generate_text_internal(buf[i], max_user_text, *objsub, cur);
+					for(j=0; buf[i][j] != 0; j++) {
+						if(buf[i][j] == '\t') buf[i][j] = ' ';
+						if(buf[i][j] == '\n') {
+							buf[i][j] = 0;
+							current[i]->row = strdup(buf[i]+nextstart);
+							if(i==0 && strlen(current[i]->row) > longest) longest = strlen(current[i]->row);
+							current[i]->next = malloc(sizeof(struct llrows));
+							current[i] = current[i]->next;
+							nextstart = j + 1;
+							nr_rows[i]++;
+						}
+					}
+					current[i]->row = strdup(buf[i]+nextstart);
+					if(i==0 && strlen(current[i]->row) > longest) longest = strlen(current[i]->row);
+					current[i]->next = NULL;
+					current[i] = ll_rows[i];
+				}
+				for(j=0; j < (nr_rows[0] > nr_rows[1] ? nr_rows[0] : nr_rows[1] ); j++) {
+					if(current[0]) {
+						strcat(p, current[0]->row);
+						i=strlen(current[0]->row);
+					}else i = 0;
+					while(i < longest) {
+						strcat(p, " ");
+						i++;
+					}
+					if(current[1]) {
+						strcat(p, obj->data.combine.seperation);
+						strcat(p, current[1]->row);
+					}
+					strcat(p, "\n");
+					for(i=0; i<2; i++) if(current[i]) current[i]=current[i]->next;
+				}
+				for(i=0; i<2; i++) {
+					while(ll_rows[i] != NULL) {
+						current[i]=ll_rows[i];
+						free(current[i]->row);
+						ll_rows[i]=current[i]->next;
+						free(current[i]);
+					}
+				}
+			}
 #ifdef NVIDIA
 			OBJ(nvidia) {
 				int value = get_nvidia_value(obj->data.nvidia.type, display);
@@ -4920,6 +5100,7 @@ static inline int get_string_width_special(char *s)
 				*(p + i) = *(p + i + 1);
 			}
 			if (specials[special_index + idx].type == GRAPH
+					|| specials[special_index + idx].type == GAUGE
 					|| specials[special_index + idx].type == BAR) {
 				width += specials[special_index + idx].width;
 			}
@@ -5068,11 +5249,12 @@ static void text_size_updater(char *s)
 			*p = SPECIAL_CHAR;
 
 			if (specials[special_index].type == BAR
+					|| specials[special_index].type == GAUGE
 					|| specials[special_index].type == GRAPH) {
 				w += specials[special_index].width;
 				if (specials[special_index].height > last_font_height) {
 					last_font_height = specials[special_index].height;
-					last_font_height += font_ascent();
+					last_font_height += font_height();
 				}
 			} else if (specials[special_index].type == OFFSET) {
 				if (specials[special_index].arg > 0) {
@@ -5231,7 +5413,7 @@ static void draw_line(char *s)
 #ifdef X11
 	char *p;
 	int cur_y_add = 0;
-	short font_h;
+	int font_h;
 	char *tmp_str;
 #endif /* X11 */
 
@@ -5299,7 +5481,7 @@ static void draw_line(char *s)
 					bar_usage = specials[special_index].arg;
 					by = cur_y - (font_ascent() / 2) - 1;
 
-					if (h < font_height()) {
+					if (h < font_h) {
 						by -= h / 2 - 1;
 					}
 					w = specials[special_index].width;
@@ -5317,18 +5499,18 @@ static void draw_line(char *s)
 						by, w, h);
 					XFillRectangle(display, window.drawable, window.gc, cur_x,
 						by, w * bar_usage / 255, h);
-					if (specials[special_index].height > cur_y_add
-							&& specials[special_index].height > font_h) {
-						cur_y_add = specials[special_index].height;
+					if (h > cur_y_add
+							&& h > font_h) {
+						cur_y_add = h;
 					}
 					break;
 				}
 
 				case GAUGE: /* new GAUGE  */
 				{
-					int h, by  = 0;
+					int h, by = 0;
 					unsigned long last_colour = current_color;
-					float angle, px,py;
+					float angle, px, py;
 					int usage;
 
 					if (cur_x - text_start_x > maximum_width
@@ -5339,7 +5521,7 @@ static void draw_line(char *s)
 					h = specials[special_index].height;
 					by = cur_y - (font_ascent() / 2) - 1;
 
-					if (h < font_height()) {
+					if (h < font_h) {
 						by -= h / 2 - 1;
 					}
 					w = specials[special_index].width;
@@ -5351,24 +5533,24 @@ static void draw_line(char *s)
 					}
 
 					XSetLineAttributes(display, window.gc, 1, LineSolid,
-						CapButt, JoinMiter);
+							CapButt, JoinMiter);
 
 					XDrawArc(display, window.drawable, window.gc,
-							cur_x, by, w * 2.0, h * 2.0, 0, 180*64);
+							cur_x, by, w, h * 2, 0, 180*64);
 
 #ifdef MATH
-					usage =specials[special_index].arg;
-					angle = (3.14)*(float)(usage)/255.;
-					px = (float)(cur_x+w)-(float)(w)*cos(angle);
-					py = (float)(by+h)-(float)(h)*sin(angle);
+					usage = specials[special_index].arg;
+					angle = (M_PI)*(float)(usage)/255.;
+					px = (float)(cur_x+(w/2.))-(float)(w/2.)*cos(angle);
+					py = (float)(by+(h))-(float)(h)*sin(angle);
 
 					XDrawLine(display, window.drawable, window.gc,
-							cur_x + w, by+h, (int)(px), (int)(py));
+							cur_x + (w/2.), by+(h), (int)(px), (int)(py));
 #endif
 
-					if (specials[special_index].height > cur_y_add
-							&& specials[special_index].height > font_h) {
-						cur_y_add = specials[special_index].height;
+					if (h > cur_y_add
+							&& h > font_h) {
+						cur_y_add = h;
 					}
 
 					set_foreground_color(last_colour);
@@ -5392,7 +5574,7 @@ static void draw_line(char *s)
 					h = specials[special_index].height;
 					by = cur_y - (font_ascent() / 2) - 1;
 
-					if (h < font_height()) {
+					if (h < font_h) {
 						by -= h / 2 - 1;
 					}
 					w = specials[special_index].width;
@@ -5441,9 +5623,9 @@ static void draw_line(char *s)
 							by + h - specials[special_index].graph[j] *
 							(h - 1) / specials[special_index].graph_scale);
 					}
-					if (specials[special_index].height > cur_y_add
-							&& specials[special_index].height > font_h) {
-						cur_y_add = specials[special_index].height;
+					if (h > cur_y_add
+							&& h > font_h) {
+						cur_y_add = h;
 					}
 					/* if (draw_mode == BG) {
 						set_foreground_color(default_bg_color);
@@ -5461,37 +5643,37 @@ static void draw_line(char *s)
 						char *tmp_min_str;
 						char *tmp_sec_str;
 						unsigned short int timeunits;
-						if(seconds!=0){
+						if (seconds != 0) {
 							timeunits = seconds / 86400; seconds %= 86400;
-							if( timeunits > 0 ) {
+							if (timeunits > 0) {
 								asprintf(&tmp_day_str, "%dd", timeunits);
-							}else{
+							} else {
 								tmp_day_str = strdup("");
 							}
 							timeunits = seconds / 3600; seconds %= 3600;
-							if( timeunits > 0 ) {
+							if (timeunits > 0) {
 								asprintf(&tmp_hour_str, "%dh", timeunits);
-							}else{
+							} else {
 								tmp_hour_str = strdup("");
 							}
 							timeunits = seconds / 60; seconds %= 60;
-							if(timeunits > 0) {
+							if (timeunits > 0) {
 								asprintf(&tmp_min_str, "%dm", timeunits);
-							}else{
+							} else {
 								tmp_min_str = strdup("");
 							}
-							if(seconds > 0) {
+							if (seconds > 0) {
 								asprintf(&tmp_sec_str, "%ds", seconds);
-							}else{
+							} else {
 								tmp_sec_str = strdup("");
 							}
 							asprintf(&tmp_str, "%s%s%s%s", tmp_day_str, tmp_hour_str, tmp_min_str, tmp_sec_str);
 							free(tmp_day_str); free(tmp_hour_str); free(tmp_min_str); free(tmp_sec_str);
-						}else{
-							asprintf(&tmp_str, "Range not possible"); //should never happen, but better safe then sorry
+						} else {
+							asprintf(&tmp_str, "Range not possible"); // should never happen, but better safe then sorry
 						}
 						cur_x += (w / 2) - (font_ascent() * (strlen(tmp_str) / 2));
-						cur_y += font_height() / 2;
+						cur_y += font_h / 2;
 						draw_string(tmp_str);
 						free(tmp_str);
 						cur_x = tmp_x;
@@ -5502,7 +5684,7 @@ static void draw_line(char *s)
 						int tmp_x = cur_x;
 						int tmp_y = cur_y;
 						cur_x += font_ascent() / 2;
-						cur_y += font_height() / 2;
+						cur_y += font_h / 2;
 						tmp_str = (char *)
 							calloc(log10(floor(specials[special_index].graph_scale)) + 4,
 									sizeof(char));
@@ -5529,6 +5711,7 @@ static void draw_line(char *s)
 						cur_y += font_ascent();
 					}
 					set_font();
+					font_h = font_height();
 					break;
 				}
 				case FG:
@@ -5621,14 +5804,13 @@ static void draw_line(char *s)
 
 		p++;
 	}
+
 	if (cur_y_add > 0) {
 		cur_y += cur_y_add;
-		cur_y -= font_descent();
 	}
-
 	draw_string(s);
-
 	cur_y += font_descent();
+
 #endif /* X11 */
 }
 
@@ -6128,6 +6310,7 @@ static void main_loop(void)
 }
 
 static void load_config_file(const char *);
+static void load_config_file_x11(const char *);
 
 /* reload the config file */
 static void reload_config(void)
@@ -6154,6 +6337,7 @@ static void reload_config(void)
 	if (current_config) {
 		clear_fs_stats();
 		load_config_file(current_config);
+		load_config_file_x11(current_config);
 
 		/* re-init specials array */
 		if ((specials = realloc((void *) specials,
@@ -6166,6 +6350,7 @@ static void reload_config(void)
 		set_font();
 		// clear the window first
 		XClearWindow(display, RootWindow(display, screen));
+		x_initialised = NO;
 
 #endif /* X11 */
 		extract_variable_text(global_text);
@@ -6348,6 +6533,7 @@ static void set_default_configurations(void)
 	total_run_times = 0;
 	info.cpu_avg_samples = 2;
 	info.net_avg_samples = 2;
+	info.diskio_avg_samples = 2;
 	info.memmax = 0;
 	top_cpu = 0;
 	cpu_separate = 0;
@@ -6460,8 +6646,9 @@ static _Bool append_works(const char *path)
 #ifdef X11
 static void X11_initialisation(void)
 {
+	if (x_initialised == YES) return;
 	output_methods |= TO_X;
-	init_X11();
+	init_X11(disp);
 	set_default_configurations_for_x();
 	x_initialised = YES;
 }
@@ -6470,6 +6657,7 @@ static void X11_initialisation(void)
 static void load_config_file(const char *f)
 {
 #define CONF_ERR ERR("%s: %d: config file error", f, line)
+#define CONF_ERR2(a) ERR("%s: %d: config file error: %s", f, line, a)
 	int line = 0;
 	FILE *fp;
 
@@ -6559,6 +6747,15 @@ static void load_config_file(const char *f)
 				}
 			}
 		}
+		CONF("display") {
+			if (!value || x_initialised == YES) {
+				CONF_ERR;
+			} else {
+				if (disp)
+					free(disp);
+				disp = strdup(value);
+			}
+		}
 		CONF("alignment") {
 			if (window.type == TYPE_DOCK)
 				;
@@ -6603,116 +6800,6 @@ static void load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-		CONF("color0") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					color0 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color1") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					color1 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color2") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					color2 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color3") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					color3 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color4") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					color4 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color5") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					color5 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color6") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					color6 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color7") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					color7 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color8") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					color8 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color9") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					color9 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
 #define TEMPLATE_CONF(n) \
 		CONF("template"#n) { \
 			if (value) { \
@@ -6732,39 +6819,6 @@ static void load_config_file(const char *f)
 		TEMPLATE_CONF(7)
 		TEMPLATE_CONF(8)
 		TEMPLATE_CONF(9)
-		CONF("default_color") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					default_fg_color = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF3("default_shade_color", "default_shadecolor") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					default_bg_color = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF3("default_outline_color", "default_outlinecolor") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					default_out_color = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
 #endif /* X11 */
 		CONF("imap") {
 			if (value) {
@@ -6778,6 +6832,45 @@ static void load_config_file(const char *f)
 				info.mail = parse_mail_args(POP3_TYPE, value);
 			} else {
 				CONF_ERR;
+			}
+		}
+		CONF("default_bar_size") {
+			char err = 0;
+			if (value) {
+				if (sscanf(value, "%d %d", &default_bar_width, &default_bar_height) != 2) {
+					err = 1;
+				}
+			} else {
+				err = 1;
+			}
+			if (err) {
+				CONF_ERR2("default_bar_size takes 2 integer arguments (ie. 'default_bar_size 0 6')")
+			}
+		}
+		CONF("default_graph_size") {
+			char err = 0;
+			if (value) {
+				if (sscanf(value, "%d %d", &default_graph_width, &default_graph_height) != 2) {
+					err = 1;
+				}
+			} else {
+				err = 1;
+			}
+			if (err) {
+				CONF_ERR2("default_graph_size takes 2 integer arguments (ie. 'default_graph_size 0 6')")
+			}
+		}
+		CONF("default_gauge_size") {
+			char err = 0;
+			if (value) {
+				if (sscanf(value, "%d %d", &default_gauge_width, &default_gauge_height) != 2) {
+					err = 1;
+				}
+			} else {
+				err = 1;
+			}
+			if (err) {
+				CONF_ERR2("default_gauge_size takes 2 integer arguments (ie. 'default_gauge_size 0 6')")
 			}
 		}
 #ifdef MPD
@@ -6836,6 +6929,18 @@ static void load_config_file(const char *f)
 					CONF_ERR;
 				} else {
 					info.net_avg_samples = net_avg_samples;
+				}
+			} else {
+				CONF_ERR;
+			}
+		}
+		CONF("diskio_avg_samples") {
+			if (value) {
+				diskio_avg_samples = strtol(value, 0, 0);
+				if (diskio_avg_samples < 1 || diskio_avg_samples > 14) {
+					CONF_ERR;
+				} else {
+					info.diskio_avg_samples = diskio_avg_samples;
 				}
 			} else {
 				CONF_ERR;
@@ -6926,30 +7031,16 @@ static void load_config_file(const char *f)
 			use_xft = string_to_bool(value);
 		}
 		CONF("font") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					set_first_font(value);
-				} else {
-					CONF_ERR;
-				}
+			if (value) {
+				set_first_font(value);
 			}
 		}
 		CONF("xftalpha") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value && font_count >= 0) {
-					fonts[0].font_alpha = atof(value) * 65535.0;
-				} else {
-					CONF_ERR;
-				}
+			if (value && font_count >= 0) {
+				fonts[0].font_alpha = atof(value) * 65535.0;
 			}
 		}
 		CONF("xftfont") {
-			if(x_initialised == NO)
-				X11_initialisation();
 			if (use_xft) {
 #else
 		CONF("use_xft") {
@@ -6965,13 +7056,9 @@ static void load_config_file(const char *f)
 		}
 		CONF("font") {
 #endif
-				if(x_initialised == YES) {
-					if (value) {
-						set_first_font(value);
-					} else {
-						CONF_ERR;
-					}
-				}
+			if (value) {
+				set_first_font(value);
+			}
 #ifdef XFT
 			}
 #endif
@@ -7045,120 +7132,76 @@ static void load_config_file(const char *f)
 #ifdef X11
 #ifdef OWN_WINDOW
 		CONF("own_window") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					own_window = string_to_bool(value);
-				} else {
-					CONF_ERR;
-				}
+			if (value) {
+				own_window = string_to_bool(value);
 			}
 		}
 		CONF("own_window_class") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					memset(window.class_name, 0, sizeof(window.class_name));
-					strncpy(window.class_name, value,
+			if (value) {
+				memset(window.class_name, 0, sizeof(window.class_name));
+				strncpy(window.class_name, value,
 						sizeof(window.class_name) - 1);
-				} else {
-					CONF_ERR;
-				}
 			}
 		}
 		CONF("own_window_title") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					memset(window.title, 0, sizeof(window.title));
-					strncpy(window.title, value, sizeof(window.title) - 1);
-				} else {
-					CONF_ERR;
-				}
+			if (value) {
+				memset(window.title, 0, sizeof(window.title));
+				strncpy(window.title, value, sizeof(window.title) - 1);
 			}
 		}
 		CONF("own_window_transparent") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					set_transparent = string_to_bool(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("own_window_colour") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					background_colour = get_x11_color(value);
-				} else {
-					ERR("Invalid colour for own_window_colour (try omitting the "
-						"'#' for hex colours");
-				}
+			if (value) {
+				set_transparent = string_to_bool(value);
 			}
 		}
 		CONF("own_window_hints") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					char *p_hint, *p_save;
-					char delim[] = ", ";
+			if (value) {
+				char *p_hint, *p_save;
+				char delim[] = ", ";
 
-					/* tokenize the value into individual hints */
-					if ((p_hint = strtok_r(value, delim, &p_save)) != NULL) {
-						do {
-							/* fprintf(stderr, "hint [%s] parsed\n", p_hint); */
-							if (strncmp(p_hint, "undecorate", 10) == EQUAL) {
-								SET_HINT(window.hints, HINT_UNDECORATED);
-							} else if (strncmp(p_hint, "below", 5) == EQUAL) {
-								SET_HINT(window.hints, HINT_BELOW);
-							} else if (strncmp(p_hint, "above", 5) == EQUAL) {
-								SET_HINT(window.hints, HINT_ABOVE);
-							} else if (strncmp(p_hint, "sticky", 6) == EQUAL) {
-								SET_HINT(window.hints, HINT_STICKY);
-							} else if (strncmp(p_hint, "skip_taskbar", 12) == EQUAL) {
-								SET_HINT(window.hints, HINT_SKIP_TASKBAR);
-							} else if (strncmp(p_hint, "skip_pager", 10) == EQUAL) {
-								SET_HINT(window.hints, HINT_SKIP_PAGER);
-							} else {
-								CONF_ERR;
-							}
-	
-							p_hint = strtok_r(NULL, delim, &p_save);
-						} while (p_hint != NULL);
-					}
-				} else {
-					CONF_ERR;
+				/* tokenize the value into individual hints */
+				if ((p_hint = strtok_r(value, delim, &p_save)) != NULL) {
+					do {
+						/* fprintf(stderr, "hint [%s] parsed\n", p_hint); */
+						if (strncmp(p_hint, "undecorate", 10) == EQUAL) {
+							SET_HINT(window.hints, HINT_UNDECORATED);
+						} else if (strncmp(p_hint, "below", 5) == EQUAL) {
+							SET_HINT(window.hints, HINT_BELOW);
+						} else if (strncmp(p_hint, "above", 5) == EQUAL) {
+							SET_HINT(window.hints, HINT_ABOVE);
+						} else if (strncmp(p_hint, "sticky", 6) == EQUAL) {
+							SET_HINT(window.hints, HINT_STICKY);
+						} else if (strncmp(p_hint, "skip_taskbar", 12) == EQUAL) {
+							SET_HINT(window.hints, HINT_SKIP_TASKBAR);
+						} else if (strncmp(p_hint, "skip_pager", 10) == EQUAL) {
+							SET_HINT(window.hints, HINT_SKIP_PAGER);
+						} else {
+							CONF_ERR;
+						}
+
+						p_hint = strtok_r(NULL, delim, &p_save);
+					} while (p_hint != NULL);
 				}
+			} else {
+				CONF_ERR;
 			}
 		}
 		CONF("own_window_type") {
-			if(x_initialised == NO)
-				X11_initialisation();
-			if(x_initialised == YES) {
-				if (value) {
-					if (strncmp(value, "normal", 6) == EQUAL) {
-						window.type = TYPE_NORMAL;
-					} else if (strncmp(value, "desktop", 7) == EQUAL) {
-						window.type = TYPE_DESKTOP;
-					} else if (strncmp(value, "dock", 7) == EQUAL) {
-						window.type = TYPE_DOCK;
-						text_alignment = TOP_LEFT;
-					} else if (strncmp(value, "override", 8) == EQUAL) {
-						window.type = TYPE_OVERRIDE;
-					} else {
-						CONF_ERR;
-					}
+			if (value) {
+				if (strncmp(value, "normal", 6) == EQUAL) {
+					window.type = TYPE_NORMAL;
+				} else if (strncmp(value, "desktop", 7) == EQUAL) {
+					window.type = TYPE_DESKTOP;
+				} else if (strncmp(value, "dock", 7) == EQUAL) {
+					window.type = TYPE_DOCK;
+					text_alignment = TOP_LEFT;
+				} else if (strncmp(value, "override", 8) == EQUAL) {
+					window.type = TYPE_OVERRIDE;
 				} else {
 					CONF_ERR;
 				}
+			} else {
+				CONF_ERR;
 			}
 		}
 #endif
@@ -7225,11 +7268,6 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("text") {
-#ifdef X11
-			//initialize X11 if nothing X11-related is mentioned before TEXT (and if X11 is the default outputmethod)
-			if(output_methods & TO_X)
-				X11_initialisation();
-#endif
 			if (global_text) {
 				free(global_text);
 				global_text = 0;
@@ -7335,17 +7373,27 @@ static void load_config_file(const char *f)
 			}
 		}
 
+		CONF("color0"){}
+		CONF("color1"){}
+		CONF("color2"){}
+		CONF("color3"){}
+		CONF("color4"){}
+		CONF("color5"){}
+		CONF("color6"){}
+		CONF("color7"){}
+		CONF("color8"){}
+		CONF("color9"){}
+		CONF("default_color"){}
+		CONF3("default_shade_color", "default_shadecolor"){}
+		CONF3("default_outline_color", "default_outlinecolor") {}
+		CONF("own_window_colour") {}
+
 		else {
 			ERR("%s: %d: no such configuration: '%s'", f, line, name);
 		}
-
-#undef CONF
-#undef CONF2
 	}
 
 	fclose(fp);
-
-#undef CONF_ERR
 
 	if (info.music_player_interval == 0) {
 		// default to update_interval
@@ -7354,6 +7402,238 @@ static void load_config_file(const char *f)
 	if (!global_text) { // didn't supply any text
 		CRIT_ERR("missing text block in configuration; exiting");
 	}
+}
+
+static void load_config_file_x11(const char *f)
+{
+	int line = 0;
+	FILE *fp;
+
+#ifdef CONFIG_OUTPUT
+	if (!strcmp(f, "==builtin==")) {
+#ifdef HAVE_FOPENCOOKIE
+		fp = fopencookie(NULL, "r", conf_cookie);
+#endif
+	} else
+#endif /* CONFIG_OUTPUT */
+		fp = fopen(f, "r");
+
+	if (!fp) {
+		return;
+	}
+	DBGP("reading contents from config file '%s'", f);
+
+	while (!feof(fp)) {
+		char buf[256], *p, *p2, *name, *value;
+
+		line++;
+		if (fgets(buf, 256, fp) == NULL) {
+			break;
+		}
+
+		p = buf;
+
+		/* break at comment */
+		p2 = strchr(p, '#');
+		if (p2) {
+			*p2 = '\0';
+		}
+
+		/* skip spaces */
+		while (*p && isspace((int) *p)) {
+			p++;
+		}
+		if (*p == '\0') {
+			continue;	/* empty line */
+		}
+
+		name = p;
+
+		/* skip name */
+		p2 = p;
+		while (*p2 && !isspace((int) *p2)) {
+			p2++;
+		}
+		if (*p2 != '\0') {
+			*p2 = '\0';	/* break at name's end */
+			p2++;
+		}
+
+		/* get value */
+		if (*p2) {
+			p = p2;
+			while (*p && isspace((int) *p)) {
+				p++;
+			}
+
+			value = p;
+
+			p2 = value + strlen(value);
+			while (isspace((int) *(p2 - 1))) {
+				*--p2 = '\0';
+			}
+		} else {
+			value = 0;
+		}
+
+#ifdef X11
+		CONF2("color0") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					color0 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("color1") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					color1 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("color2") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					color2 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("color3") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					color3 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("color4") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					color4 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("color5") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					color5 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("color6") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					color6 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("color7") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					color7 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("color8") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					color8 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("color9") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					color9 = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF("default_color") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					default_fg_color = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF3("default_shade_color", "default_shadecolor") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					default_bg_color = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+		CONF3("default_outline_color", "default_outlinecolor") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					default_out_color = get_x11_color(value);
+				} else {
+					CONF_ERR;
+				}
+			}
+		}
+#ifdef OWN_WINDOW
+		CONF("own_window_colour") {
+			X11_initialisation();
+			if (x_initialised == YES) {
+				if (value) {
+					background_colour = get_x11_color(value);
+				} else {
+					ERR("Invalid colour for own_window_colour (try omitting the "
+						"'#' for hex colours");
+				}
+			}
+		}
+#endif
+		CONF("text") {
+			//initialize X11 if nothing X11-related is mentioned before TEXT (and if X11 is the default outputmethod)
+			if(output_methods & TO_X) {
+				X11_initialisation();
+			}
+		}
+#endif /* X11 */
+#undef CONF
+#undef CONF2
+	}
+
+	fclose(fp);
+
+#undef CONF_ERR
 }
 
 static void print_help(const char *prog_name) {
@@ -7394,7 +7674,7 @@ static void print_help(const char *prog_name) {
 /* : means that character before that takes an argument */
 static const char *getopt_string = "vVqdDt:u:i:hc:"
 #ifdef X11
-	"x:y:w:a:f:"
+	"x:y:w:a:f:X:"
 #ifdef OWN_WINDOW
 	"o"
 #endif
@@ -7419,6 +7699,7 @@ static const struct option longopts[] = {
 #ifdef X11
 	{ "alignment", 1, NULL, 'a' },
 	{ "font", 1, NULL, 'f' },
+	{ "display", 1, NULL, 'X' },
 #ifdef OWN_WINDOW
 	{ "own-window", 0, NULL, 'o' },
 #endif
@@ -7609,6 +7890,11 @@ int main(int argc, char **argv)
 			case 'a':
 				text_alignment = string_to_alignment(optarg);
 				break;
+			case 'X':
+				if (disp)
+					free(disp);
+				disp = strdup(optarg);
+				break;
 
 #ifdef OWN_WINDOW
 			case 'o':
@@ -7658,8 +7944,10 @@ int main(int argc, char **argv)
 
 #ifdef X11
 	/* load font */
-	if (output_methods & TO_X)
+	if (output_methods & TO_X) {
+		load_config_file_x11(current_config);
 		load_fonts();
+	}
 #endif /* X11 */
 
 	/* generate text and get initial size */

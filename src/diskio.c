@@ -8,7 +8,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2009 Brenden Matthews, Philip Kovacs, et. al.
  * (see AUTHORS)
  * All rights reserved.
  *
@@ -52,6 +52,9 @@
  * also containing the totals. */
 static struct diskio_stat stats = {
 	.next = NULL,
+	.sample = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	.sample_read = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+	.sample_write = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	.current = 0,
 	.current_read = 0,
 	.current_write = 0,
@@ -98,19 +101,40 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 static void update_diskio_values(struct diskio_stat *ds,
 		unsigned int reads, unsigned int writes)
 {
+	int i;
+	double sum=0, sum_r=0, sum_w=0;
+
 	if (reads < ds->last_read || writes < ds->last_write) {
 		/* counter overflow or reset - rebase to sane values */
-		ds->last = 0;
-		ds->last_read = 0;
-		ds->last_write = 0;
+		ds->last = reads+writes;
+		ds->last_read = reads;
+		ds->last_write = writes;
 	}
 	/* since the values in /proc/diskstats are absolute, we have to substract
 	 * our last reading. The numbers stand for "sectors read", and we therefore
 	 * have to divide by two to get KB */
-	ds->current_read = (reads - ds->last_read) / 2;
-	ds->current_write = (writes - ds->last_write) / 2;
-	ds->current = ds->current_read + ds->current_write;
+	ds->sample_read[0] = (reads - ds->last_read) / 2;
+	ds->sample_write[0] = (writes - ds->last_write) / 2;
+	ds->sample[0] = ds->sample_read[0] + ds->sample_write[0];
 
+	/* compute averages */
+	for (i = 0; i < (signed) info.diskio_avg_samples; i++) {
+		sum += ds->sample[i];
+		sum_r += ds->sample_read[i];
+		sum_w += ds->sample_write[i];
+	}
+	ds->current = sum / (double) info.diskio_avg_samples;
+	ds->current_read = sum_r / (double) info.diskio_avg_samples;
+	ds->current_write = sum_w / (double) info.diskio_avg_samples;
+
+	/* shift sample history */
+	for (i = info.diskio_avg_samples-1; i > 0; i--) {
+		ds->sample[i] = ds->sample[i-1];
+		ds->sample_read[i] = ds->sample_read[i-1];
+		ds->sample_write[i] = ds->sample_write[i-1];
+	}
+
+	/* save last */
 	ds->last_read = reads;
 	ds->last_write = writes;
 	ds->last = ds->last_read + ds->last_write;
@@ -125,7 +149,7 @@ void update_diskio(void)
 	char buf[512], devbuf[64];
 	unsigned int major, minor;
 	unsigned int reads, writes;
-	unsigned int total_reads, total_writes;
+	unsigned int total_reads=0, total_writes=0;
 	int col_count = 0;
 
 	stats.current = 0;
@@ -146,7 +170,7 @@ void update_diskio(void)
 		 *
 		 * XXX: ignore devices which are part of a SW RAID (MD_MAJOR) */
 		if (col_count == 5 && major != LVM_BLK_MAJOR && major != NBD_MAJOR
-				&& major != RAMDISK_MAJOR && major != LOOP_MAJOR) {
+				&& major != RAMDISK_MAJOR && major != LOOP_MAJOR && minor==0) {
 			total_reads += reads;
 			total_writes += writes;
 		} else {

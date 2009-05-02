@@ -7,7 +7,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2009 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -91,6 +91,7 @@ enum text_object_type {
 	OBJ_downspeedgraph,
 	OBJ_else,
 	OBJ_endif,
+	OBJ_eval,
 	OBJ_image,
 	OBJ_exec,
 	OBJ_execi,
@@ -100,6 +101,7 @@ enum text_object_type {
 	OBJ_execgraph,
 	OBJ_execibar,
 	OBJ_execigraph,
+	OBJ_execigauge,
 	OBJ_execp,
 	OBJ_execpi,
 	OBJ_freq,
@@ -146,7 +148,6 @@ enum text_object_type {
 	OBJ_smapi_bat_power,
 	OBJ_if_smapi_bat_installed,
 #endif /* IBM */
-	OBJ_if_up,
 	OBJ_if_gw,
 	OBJ_ioscheduler,
 	OBJ_gw_iface,
@@ -164,6 +165,9 @@ enum text_object_type {
 	OBJ_wireless_link_qual_perc,
 	OBJ_wireless_link_bar,
 #endif /* __linux__ */
+#if defined(__FreeBSD__) || defined(__linux__)
+	OBJ_if_up,
+#endif
 	OBJ_if_empty,
 	OBJ_if_match,
 	OBJ_if_existing,
@@ -201,14 +205,13 @@ enum text_object_type {
 	OBJ_memgraph,
 	OBJ_memmax,
 	OBJ_memperc,
-	OBJ_mem_res,
-	OBJ_mem_vsize,
 	OBJ_mixer,
 	OBJ_mixerl,
 	OBJ_mixerr,
 	OBJ_mixerbar,
 	OBJ_mixerlbar,
 	OBJ_mixerrbar,
+	OBJ_if_mixer_mute,
 #ifdef X11
 	OBJ_monitor,
 	OBJ_monitor_number,
@@ -227,8 +230,6 @@ enum text_object_type {
 	OBJ_swapmax,
 	OBJ_swapperc,
 	OBJ_sysname,
-	OBJ_temp1,	/* i2c is used instead in these */
-	OBJ_temp2,
 	OBJ_text,
 	OBJ_time,
 	OBJ_utime,
@@ -245,10 +246,8 @@ enum text_object_type {
 	OBJ_user_terms,
 	OBJ_user_times,
 	OBJ_user_number,
-	OBJ_imap,
 	OBJ_imap_messages,
 	OBJ_imap_unseen,
-	OBJ_pop3,
 	OBJ_pop3_unseen,
 	OBJ_pop3_used,
 #if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) \
@@ -273,9 +272,6 @@ enum text_object_type {
 	OBJ_mpd_vol,
 	OBJ_mpd_bitrate,
 	OBJ_mpd_status,
-	OBJ_mpd_host,
-	OBJ_mpd_port,
-	OBJ_mpd_password,
 	OBJ_mpd_bar,
 	OBJ_mpd_elapsed,
 	OBJ_mpd_length,
@@ -299,7 +295,6 @@ enum text_object_type {
 	OBJ_moc_bitrate,
 	OBJ_moc_rate,
 #endif
-	OBJ_music_player_interval,
 #ifdef XMMS2
 	OBJ_xmms2_artist,
 	OBJ_xmms2_album,
@@ -363,6 +358,7 @@ enum text_object_type {
 	OBJ_hddtemp,
 #endif
 	OBJ_scroll,
+	OBJ_combine,
 	OBJ_entropy_avail,
 	OBJ_entropy_poolsize,
 	OBJ_entropy_bar
@@ -478,6 +474,7 @@ struct text_object {
 			char *action;
 			int act_par;
 			int delay;
+			unsigned int nrspaces;
 		} rss;
 #endif
 		struct {
@@ -486,6 +483,12 @@ struct text_object {
 			unsigned int step;
 			unsigned int start;
 		} scroll;
+
+		struct {
+			char *left;
+			char *seperation;
+			char *right;
+		} combine;
 
 		struct local_mail_s local_mail;
 #ifdef NVIDIA

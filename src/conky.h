@@ -7,7 +7,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2009 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -229,14 +229,14 @@ struct information {
 
 	unsigned int net_avg_samples;
 
+	unsigned int diskio_avg_samples;
+
 	float loadavg[3];
 
 	struct mail_s *mail;
 	int mail_running;
 #ifdef XMMS2
 	struct xmms2_s xmms2;
-	int xmms2_conn_state;
-	xmmsc_connection_t *xmms2_conn;
 #endif
 #ifdef AUDACIOUS
 	AUDACIOUS_S audacious;

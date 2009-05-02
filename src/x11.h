@@ -76,7 +76,7 @@ extern int workarea[4];
 
 extern struct conky_window window;
 
-void init_X11(void);
+void init_X11(const char*);
 void init_window(int use_own_window, int width, int height, int set_trans,
 	int back_colour, char **argv, int argc);
 void create_gc(void);

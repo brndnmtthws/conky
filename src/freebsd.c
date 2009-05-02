@@ -6,7 +6,7 @@
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2009 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -28,28 +28,31 @@
 #include <sys/param.h>
 #include <sys/resource.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/sysctl.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/vmmeter.h>
 #include <sys/user.h>
-#include <sys/ioctl.h>
 
 #include <net/if.h>
 #include <net/if_mib.h>
 #include <net/if_media.h>
 #include <net/if_var.h>
-#include <netinet/in.h>
 
 #include <devstat.h>
-#include <fcntl.h>
 #include <ifaddrs.h>
 #include <limits.h>
 #include <unistd.h>
 
 #include <dev/wi/if_wavelan_ieee.h>
+#include <dev/acpica/acpiio.h>
 
 #include "conky.h"
+#include "freebsd.h"
+#include "logging.h"
+#include "top.h"
+#include "diskio.h"
 
 #define	GETSYSCTL(name, var)	getsysctl(name, &(var), sizeof(var))
 #define	KELVTOC(x)				((x - 2732) / 10.0)
@@ -61,11 +64,16 @@
 
 inline void proc_find_top(struct process **cpu, struct process **mem);
 
-u_int64_t diskio_prev = 0;
 static short cpu_setup = 0;
-static short diskio_setup = 0;
-static struct diskio_stat diskio_stats_[MAX_DISKIO_STATS];
-struct diskio_stat *diskio_stats = diskio_stats_;
+static struct diskio_stat stats = {
+	.next = NULL,
+	.current = 0,
+	.current_read = 0,
+	.current_write = 0,
+	.last = UINT_MAX,
+	.last_read = UINT_MAX,
+	.last_write = UINT_MAX,
+};
 
 static int getsysctl(char *name, void *ptr, size_t len)
 {
@@ -75,7 +83,7 @@ static int getsysctl(char *name, void *ptr, size_t len)
 		return -1;
 	}
 
-	if (nlen != len) {
+	if (nlen != len && errno == ENOMEM) {
 		return -1;
 	}
 
@@ -345,11 +353,6 @@ void update_cpu_usage()
 	oldtotal = total;
 }
 
-double get_sysfs_info(int *fd, int arg, char *devtype, char *type)
-{
-	return 0.0;
-}
-
 void update_load_average()
 {
 	double v[3];
@@ -374,90 +377,107 @@ double get_acpi_temperature(int fd)
 	return KELVTOC(temp);
 }
 
+static void get_battery_stats(int *battime, int *batcapacity, int *batstate, int *ac) {
+	if (battime && GETSYSCTL("hw.acpi.battery.time", *battime)) {
+		fprintf(stderr, "Cannot read sysctl \"hw.acpi.battery.time\"\n");
+	}
+	if (batcapacity && GETSYSCTL("hw.acpi.battery.life", *batcapacity)) {
+		fprintf(stderr, "Cannot read sysctl \"hw.acpi.battery.life\"\n");
+	}
+	if (batstate && GETSYSCTL("hw.acpi.battery.state", *batstate)) {
+		fprintf(stderr, "Cannot read sysctl \"hw.acpi.battery.state\"\n");
+	}
+	if (ac && GETSYSCTL("hw.acpi.acline", *ac)) {
+		fprintf(stderr, "Cannot read sysctl \"hw.acpi.acline\"\n");
+	}
+}
+
 void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 {
 	int battime, batcapacity, batstate, ac;
 	char battery_status[64];
 	char battery_time[64];
 
-	if (GETSYSCTL("hw.acpi.battery.time", battime)) {
-		fprintf(stderr, "Cannot read sysctl \"hw.acpi.battery.time\"\n");
-	}
-	if (GETSYSCTL("hw.acpi.battery.life", batcapacity)) {
-		fprintf(stderr, "Cannot read sysctl \"hw.acpi.battery.life\"\n");
-	}
+	get_battery_stats(&battime, &batcapacity, &batstate, &ac);
 
-	if (GETSYSCTL("hw.acpi.battery.state", batstate)) {
-		fprintf(stderr, "Cannot read sysctl \"hw.acpi.battery.state\"\n");
-	}
-
-	if (GETSYSCTL("hw.acpi.acline", ac)) {
-		fprintf(stderr, "Cannot read sysctl \"hw.acpi.acline\"\n");
-	}
-
-	if (batstate == 1) {
-		if (battime != -1) {
-			snprintf(battery_status, sizeof(battery_status) - 1,
-				"remaining %d%%", batcapacity);
-			snprintf(battery_time, sizeof(battery_time) - 1, "%d:%2.2d",
-				battime / 60, battime % 60);
-			/* snprintf(buf, n, "remaining %d%% (%d:%2.2d)", batcapacity,
-				battime / 60, battime % 60); */
-		} else {
-			/* no time estimate available yet */
-			snprintf(battery_status, sizeof(battery_status) - 1,
-				"remaining %d%%", batcapacity);
-		}
-		/* snprintf(buf, n, "remaining %d%%", batcapacity); */
-		if (ac == 1) {
-			fprintf(stderr, "Discharging while on AC!\n");
-		}
-	} else {
-		snprintf(battery_status, sizeof(battery_status) - 1,
-			batstate == 2 ? "charging (%d%%)" : "charged (%d%%)", batcapacity);
-		/* snprintf(buf, n,
-			batstate == 2 ? "charging (%d%%)" : "charged (%d%%)",
-			batcapacity); */
-		if (batstate != 2 && batstate != 0) {
-			fprintf(stderr, "Unknown battery state %d!\n", batstate);
-		}
-		if (ac == 0) {
-			fprintf(stderr, "Charging while not on AC!\n");
-		}
-	}
+	if (batstate != 1 && batstate != 2 && batstate != 0 && batstate != 7)
+		fprintf(stderr, "Unknown battery state %d!\n", batstate);
+	else if (batstate != 1 && ac == 0)
+		fprintf(stderr, "Battery charging while not on AC!\n");
+	else if (batstate == 1 && ac == 1)
+		fprintf(stderr, "Battery discharing while on AC!\n");
 
 	switch (item) {
-		case BATTERY_STATUS:
-			snprintf(buf, n, "%s", battery_status);
-			break;
 		case BATTERY_TIME:
-			snprintf(buf, n, "%s", battery_time);
+			if (batstate == 1 && battime != -1)
+				snprintf(buf, n, "%d:%2.2d", battime / 60, battime % 60);
+			break;
+		case BATTERY_STATUS:
+			if (batstate == 1) // Discharging
+				snprintf(buf, n, "remaining %d%%", batcapacity);
+			else
+				snprintf(buf, n, batstate == 2 ? "charging (%d%%)" :
+						(batstate == 7 ? "absent/on AC" : "charged (%d%%)"),
+						batcapacity);
 			break;
 		default:
-			break;
+			fprintf(stderr, "Unknown requested battery stat %d\n", item);
 	}
+}
+
+static int check_bat(const char *bat)
+{
+	int batnum, numbatts;
+	char *endptr;
+	if (GETSYSCTL("hw.acpi.battery.units", numbatts)) {
+		fprintf(stderr, "Cannot read sysctl \"hw.acpi.battery.units\"\n");
+		return -1;
+	}
+	if (numbatts <= 0) {
+		fprintf(stderr, "No battery unit detected\n");
+		return -1;
+	}
+	if (!bat || (batnum = strtol(bat, &endptr, 10)) < 0 ||
+			bat == endptr || batnum > numbatts) {
+		fprintf(stderr, "Wrong battery unit requested\n", bat);
+		return -1;
+	}
+	return batnum;
 }
 
 int get_battery_perct(const char *bat)
 {
-	/* not implemented */
-	return 0;
+	union acpi_battery_ioctl_arg battio;
+	int batnum, numbatts, acpifd;
+	int designcap, lastfulcap, batperct;
+
+	if ((battio.unit = batnum = check_bat(bat)) < 0)
+		return 0;
+	if ((acpifd = open("/dev/acpi", O_RDONLY)) < 0) {
+		fprintf(stderr, "Can't open ACPI device\n");
+		return 0;
+	}
+	if (ioctl(acpifd, ACPIIO_BATT_GET_BIF, &battio) == -1) {
+		fprintf(stderr, "Unable to get info for battery unit %d\n", batnum);
+		return 0;
+	}
+	close(acpifd);
+	designcap = battio.bif.dcap;
+	lastfulcap = battio.bif.lfcap;
+	batperct = (designcap > 0 && lastfulcap > 0) ?
+		(int) (((float) lastfulcap / designcap) * 100) : 0;
+	return batperct > 100 ? 100 : batperct;
 }
 
 int get_battery_perct_bar(const char *bar)
 {
-	/* not implemented */
-	return 0;
-}
-
-int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
-		int n, int *div, char *devtype)
-{
-	return 0;
+	int batperct = get_battery_perct(bar);
+	return (int)(batperct * 2.56 - 1);
 }
 
 int open_acpi_temperature(const char *name)
 {
+	/* Not applicable for FreeBSD. */
 	return 0;
 }
 
@@ -640,21 +660,19 @@ cleanup:
 
 void update_diskio()
 {
-	int devs_count, num_selected, num_selections, i;
+	int devs_count, num_selected, num_selections;
 	struct device_selection *dev_select = NULL;
 	long select_generation;
 	int dn;
 	static struct statinfo statinfo_cur;
-	u_int64_t diskio_current = 0;
-	u_int64_t writes = 0;
+	struct diskio_stat *cur;
 
 	bzero(&statinfo_cur, sizeof(statinfo_cur));
-	statinfo_cur.dinfo = (struct devinfo *) malloc(sizeof(struct devinfo));
-	bzero(statinfo_cur.dinfo, sizeof(struct devinfo));
+	statinfo_cur.dinfo = (struct devinfo *)calloc(1, sizeof(struct devinfo));
+	stats.current = stats.current_read = stats.current_write = 0;
 
-	if (devstat_getdevs(NULL, &statinfo_cur) < 0) {
+	if (devstat_getdevs(NULL, &statinfo_cur) < 0)
 		return;
-	}
 
 	devs_count = statinfo_cur.dinfo->numdevs;
 	if (devstat_selectdevs(&dev_select, &num_selected, &num_selections,
@@ -668,33 +686,30 @@ void update_diskio()
 			di = dev_select[dn].position;
 			dev = &statinfo_cur.dinfo->devices[di];
 
-			diskio_current += dev->bytes[DEVSTAT_READ] + dev->bytes[DEVSTAT_WRITE];
-
-			for (i = 0; i < MAX_DISKIO_STATS; i++) {
-				if (diskio_stats[i].dev && strcmp(dev_select[dn].device_name,
-						diskio_stats[i].dev) == 0) {
-					diskio_stats[i].current = (dev->bytes[DEVSTAT_READ] +
-						dev->bytes[DEVSTAT_WRITE] - diskio_stats[i].last) / 1024;
-					diskio_stats[i].current_read = (dev->bytes[DEVSTAT_READ] -
-						diskio_stats[i].last_read) / 1024;
-					diskio_stats[i].current_write = (dev->bytes[DEVSTAT_WRITE] -
-						diskio_stats[i].last_write) / 1024;
-					if (dev->bytes[DEVSTAT_READ] + dev->bytes[DEVSTAT_WRITE]
-							< diskio_stats[i].last) {
-						diskio_stats[i].current = 0;
+			for (cur = stats.next; cur; cur = cur->next) {
+				if (cur->dev && !strcmp(dev_select[dn].device_name, cur->dev)) {
+					cur->current = (dev->bytes[DEVSTAT_READ] +
+							dev->bytes[DEVSTAT_WRITE] - cur->last) / 1024;
+					cur->current_read = (dev->bytes[DEVSTAT_READ] -
+							cur->last_read) / 1024;
+					cur->current_write = (dev->bytes[DEVSTAT_WRITE] -
+							cur->last_write) / 1024;
+					if (dev->bytes[DEVSTAT_READ] + dev->bytes[DEVSTAT_WRITE] <
+							cur->last) {
+						cur->current = 0;
 					}
-					if (dev->bytes[DEVSTAT_READ] < diskio_stats[i].last_read) {
-						diskio_stats[i].current_read = 0;
-						diskio_stats[i].current = diskio_stats[i].current_write;
+					if (dev->bytes[DEVSTAT_READ] < cur->last_read) {
+						cur->current_read = 0;
+						cur->current = cur->current_write;
 					}
-					if (dev->bytes[DEVSTAT_WRITE] < diskio_stats[i].last_write) {
-						diskio_stats[i].current_write = 0;
-						diskio_stats[i].current = diskio_stats[i].current_read;
+					if (dev->bytes[DEVSTAT_WRITE] < cur->last_write) {
+						cur->current_write = 0;
+						cur->current = cur->current_read;
 					}
-					diskio_stats[i].last = dev->bytes[DEVSTAT_READ] +
+					cur->last = dev->bytes[DEVSTAT_READ] +
 						dev->bytes[DEVSTAT_WRITE];
-					diskio_stats[i].last_read = dev->bytes[DEVSTAT_READ];
-					diskio_stats[i].last_write = dev->bytes[DEVSTAT_WRITE];
+					cur->last_read = dev->bytes[DEVSTAT_READ];
+					cur->last_write = dev->bytes[DEVSTAT_WRITE];
 				}
 			}
 		}
@@ -702,29 +717,16 @@ void update_diskio()
 		free(dev_select);
 	}
 
-	/* Since we return (diskio_total_current - diskio_total_old),
-	 * the first frame will be way too high
-	 * (it will be equal to diskio_total_current, i.e. all disk I/O since boot).
-	 *  That's why it is better to return 0 first time; */
-	if (diskio_setup == 0) {
-		diskio_setup = 1;
-		info.diskio_value = 0;
-	} else {
-		info.diskio_value = (unsigned int) ((diskio_current - diskio_prev) / 1024);
-	}
-	diskio_prev = diskio_current;
-
 	free(statinfo_cur.dinfo);
 }
 
 void clear_diskio_stats()
 {
-	unsigned i;
-	for(i = 0; i < MAX_DISKIO_STATS; i++) {
-		if (diskio_stats[i].dev) {
-			free(diskio_stats[i].dev);
-			diskio_stats[i].dev = 0;
-		}
+	struct diskio_stat *cur;
+	while (stats.next) {
+		cur = stats.next;
+		stats.next = stats.next->next;
+		free(cur);
 	}
 }
 
@@ -732,36 +734,33 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 {
 	struct diskio_stat *new = 0;
 	struct stat sb;
-	unsigned i;
-	FILE *fp;
 	int found = 0;
 	char device[text_buffer_size], fbuf[text_buffer_size];
 	static int rep = 0;
 	/* lookup existing or get new */
-	for (i = 0; i < MAX_DISKIO_STATS; i++) {
-		if (diskio_stats[i].dev) {
-			if (strcmp(diskio_stats[i].dev, s) == 0) {
-				return &diskio_stats[i];
-			}
-		} else {
-			new = &diskio_stats[i];
-			break;
-		}
+	struct diskio_stat *cur = &stats;
+
+	if (!s)
+		return cur;
+
+	while (cur->next) {
+		cur = cur->next;
+		if (!strcmp(cur->dev, s))
+			return cur;
 	}
+
 	/* new dev */
-	if (!new) {
-		ERR("too many diskio stats");
-		return 0;
+	if (!(cur->next = calloc(1, sizeof(struct diskio_stat)))) {
+		ERR("out of memory allocating new disk stats struct");
+		return NULL;
 	}
-	if (new->dev) {
-		free(new->dev);
-		new->dev = 0;
-	}
+	cur = cur->next;
+	cur->last = cur->last_read = cur->last_write = UINT_MAX;
 	if (strncmp(s, "/dev/", 5) == 0) {
 		// supplied a /dev/device arg, so cut off the /dev part
-		new->dev = strndup(s + 5, text_buffer_size);
+		cur->dev = strndup(s + 5, text_buffer_size);
 	} else {
-		new->dev = strndup(s, text_buffer_size);
+		cur->dev = strndup(s, text_buffer_size);
 	}
 	/*
 	 * check that device actually exists
@@ -772,13 +771,7 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 		ERR("diskio device '%s' does not exist", s);
 		return 0;
 	}
-	new->current = 0;
-	new->current_read = 0;
-	new ->current_write = 0;
-	new->last = UINT_MAX;
-	new->last_read = UINT_MAX;
-	new->last_write = UINT_MAX;
-	return new;
+	return cur;
 }
 
 /* While topless is obviously better, top is also not bad. */
@@ -1020,9 +1013,24 @@ char *get_apm_battery_time()
 
 #endif
 
+void get_battery_short_status(char *buffer, unsigned int n, const char *bat)
+{
+	get_battery_stuff(buffer, n, bat, BATTERY_STATUS);
+	if (0 == strncmp("charging", buffer, 8)) {
+		buffer[0] = 'C';
+		memmove(buffer + 1, buffer + 8, n - 8);
+	} else if (0 == strncmp("discharging", buffer, 11)) {
+		buffer[0] = 'D';
+		memmove(buffer + 1, buffer + 11, n - 11);
+	} else if (0 == strncmp("absent/on AC", buffer, 12)) {
+		buffer[0] = 'A';
+		memmove(buffer + 1, buffer + 12, n - 12);
+	}
+}
+
 void update_entropy(void)
 {
-	/* mirrorbox: can you do anything equivalent in freebsd? -drphibes. */
+	/* Not applicable for FreeBSD as it uses the yarrow prng. */
 }
 
 /* empty stub so conky links */

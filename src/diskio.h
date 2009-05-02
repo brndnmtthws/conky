@@ -8,7 +8,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2009 Brenden Matthews, Philip Kovacs, et. al.
  * (see AUTHORS)
  * All rights reserved.
  *
@@ -32,12 +32,15 @@
 struct diskio_stat {
 	struct diskio_stat *next;
 	char *dev;
-	unsigned int current;
-	unsigned int current_read;
-	unsigned int current_write;
-	unsigned int last;
-	unsigned int last_read;
-	unsigned int last_write;
+	double sample[15];
+	double sample_read[15];
+	double sample_write[15];
+	double current;
+	double current_read;
+	double current_write;
+	double last;
+	double last_read;
+	double last_write;
 };
 
 struct diskio_stat *prepare_diskio_stat(const char *s);

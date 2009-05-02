@@ -30,6 +30,9 @@ syn keyword ConkyrcSetting
 			\ color7
 			\ color8
 			\ color9
+			\ default_bar_size
+			\ default_gauge_size
+			\ default_graph_size
 			\ default_color
 			\ default_shade_color
 			\ default_shadecolor
@@ -176,6 +179,7 @@ syn keyword ConkyrcVarName contained nextgroup=ConkyrcNumber,ConkyrcColour skipw
 			\ color7
 			\ color8
 			\ color9
+			\ combine
 			\ conky_version
 			\ conky_build_date
 			\ conky_build_arch

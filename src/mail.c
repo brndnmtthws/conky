@@ -7,7 +7,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2009 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -36,6 +36,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <limits.h>
+#include <netinet/in.h>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -280,6 +281,7 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 		} else if (type == IMAP_TYPE) {
 			ERR("Scanning POP3 args failed");
 		}
+		return 0;
 	}
 	// see if password needs prompting
 	if (mail->pass[0] == '*' && mail->pass[1] == '\0') {

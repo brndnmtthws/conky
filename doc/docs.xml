@@ -16,7 +16,7 @@
 			<firstname>Brenden</firstname>
 			<surname>Matthews</surname>
 		</author>
-		<date>2009-03-15</date>
+		<date>2009-05-01</date>
 	</refentryinfo>
 
 	<refmeta>
@@ -227,7 +227,7 @@
 	<refsect1>
 		<title>Copying</title>
 		<para>
-			Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et. al.
+			Copyright (c) 2005-2009 Brenden Matthews, Philip Kovacs, et. al.
 			Any original torsmo code is licensed under the BSD license (see LICENSE.BSD for a copy).
 			All code written since the fork of torsmo is licensed under the GPL (see LICENSE.GPL for a copy), except where noted differently (such as in portmon code, timed thread code, and audacious code which are LGPL, and prss which is an MIT-style license).
 		</para>

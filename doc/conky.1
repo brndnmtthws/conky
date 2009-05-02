@@ -5,7 +5,7 @@
 \\$2 \(la\\$1\(ra\\$3
 ..
 .if \n(.g .mso www.tmac
-.TH conky 1 2009-03-15 "" ""
+.TH conky 1 2009-05-01 "" ""
 .SH NAME
 conky \- A system monitor for X originally based on the torsmo code, but more kickass. It just keeps on given'er. Yeah.
 .SH SYNOPSIS
@@ -155,15 +155,15 @@ Aligned position on screen, may be top_left, top_right, top_middle, bottom_left,
 
 .TP 
 \fB\*(T<\fBbackground\fR\*(T>\fR
-Boolean value, if true, Conky will be forked to background when started
+Boolean value, if true, Conky will be forked to background when started.
 
 .TP 
 \fB\*(T<\fBborder_margin\fR\*(T>\fR
-Border margin in pixels
+Border margin in pixels.
 
 .TP 
 \fB\*(T<\fBborder_width\fR\*(T>\fR
-Border width in pixels
+Border width in pixels.
 
 .TP 
 \fB\*(T<\fBcolorN\fR\*(T>\fR
@@ -171,11 +171,27 @@ Predefine a color for use inside TEXT segments. Substitute N by a digit between 
 
 .TP 
 \fB\*(T<\fBcpu_avg_samples\fR\*(T>\fR
-The number of samples to average for CPU monitoring
+The number of samples to average for CPU monitoring.
+
+.TP 
+\fB\*(T<\fBdiskio_avg_samples\fR\*(T>\fR
+The number of samples to average for disk I/O monitoring.
 
 .TP 
 \fB\*(T<\fBtop_cpu_separate\fR\*(T>\fR
 If true, cpu in top will show usage of one processor's power. If false, cpu in top will show the usage of all processors' power combined.
+
+.TP 
+\fB\*(T<\fBdefault_bar_size\fR\*(T>\fR
+Specify a default width and height for bars. Example: 'default_bar_size 0 6'. This is particularly useful for execbar and execibar as they do not take size arguments.
+
+.TP 
+\fB\*(T<\fBdefault_graph_size\fR\*(T>\fR
+Specify a default width and height for graphs. Example: 'default_graph_size 0 25'. This is particularly useful for execgraph and execigraph as they do not take size arguments
+
+.TP 
+\fB\*(T<\fBdefault_gauge_size\fR\*(T>\fR
+Specify a default width and height for gauges. Example: 'default_gauge_size 25 25'. This is particularly useful for execgauge and execigauge as they do not take size arguments
 
 .TP 
 \fB\*(T<\fBdefault_color\fR\*(T>\fR
@@ -591,6 +607,10 @@ Change drawing color to color
 Change drawing color to colorN configuration option, where N is a digit between 0 and 9, inclusively.
 
 .TP 
+\fB\*(T<\fBcombine\fR\*(T>\fR \*(T<\fBvar1 var2\fR\*(T> 
+Places the lines of var2 to the right of the lines of var1 seperated by the chars that are put between var1 and var2. For example: ${combine ${head /proc/cpuinfo 2} - ${head /proc/meminfo 1}} gives as output "cpuinfo_line1 - meminfo_line1" on line 1 and "cpuinfo_line2 -" on line 2. $combine vars can also be nested to place more vars next to each other.
+
+.TP 
 \fB\*(T<\fBconky_version\fR\*(T>\fR 
 Conky version
 
@@ -607,15 +627,15 @@ CPU architecture Conky was built for
 CPU usage in percents. For SMP machines, the CPU number can be provided as an argument. ${cpu cpu0} is the total usage, and ${cpu cpuX} (X >= 1) are individual CPUs.
 
 .TP 
-\fB\*(T<\fBcpubar\fR\*(T>\fR \*(T<\fB(cpu number) (height),(width)\fR\*(T> 
+\fB\*(T<\fBcpubar\fR\*(T>\fR \*(T<\fB(cpuN) (height),(width)\fR\*(T> 
 Bar that shows CPU usage, height is bar's height in pixels. See $cpu for more info on SMP.
 
 .TP 
-\fB\*(T<\fBcpugauge\fR\*(T>\fR \*(T<\fB(cpu number) (height),(width)\fR\*(T> 
+\fB\*(T<\fBcpugauge\fR\*(T>\fR \*(T<\fB(cpuN) (height),(width)\fR\*(T> 
 Elliptical gauge that shows CPU usage, height and width are gauge's vertical and horizontal axis respectively. See $cpu for more info on SMP.
 
 .TP 
-\fB\*(T<\fBcpugraph\fR\*(T>\fR \*(T<\fB("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (cpu number)\fR\*(T> 
+\fB\*(T<\fBcpugraph\fR\*(T>\fR \*(T<\fB(cpuN) ("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale)\fR\*(T> 
 CPU usage graph, with optional colours in hex, minus the #. See $cpu for more info on SMP. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
 
 .TP 
@@ -675,20 +695,24 @@ Normalized bar of available entropy for crypto freaks
 Total size of system entropy pool for crypto freaks
 
 .TP 
+\fB\*(T<\fBeval\fR\*(T>\fR \*(T<\fBstring\fR\*(T> 
+Evalutates given string according to the rules of TEXT interpretation, i.e. parsing any contained text object specifications into their output, any occuring '$$' into a single '$' and so on. The output is then being parsed again.
+
+.TP 
 \fB\*(T<\fBexec\fR\*(T>\fR \*(T<\fBcommand\fR\*(T> 
 Executes a shell command and displays the output in conky. warning: this takes a lot more resources than other variables. I'd recommend coding wanted behaviour in C and posting a patch.
 
 .TP 
 \fB\*(T<\fBexecbar\fR\*(T>\fR \*(T<\fBcommand\fR\*(T> 
-Same as exec, except if the first value return is a value between 0-100, it will use that number for a bar. The size for the bar is currently fixed, but that may change in the future.
+Same as exec, except if the first value return is a value between 0-100, it will use that number for a bar. The size for bars can be controlled via the default_bar_size config setting.
 
 .TP 
 \fB\*(T<\fBexecgauge\fR\*(T>\fR \*(T<\fBcommand\fR\*(T> 
-Same as exec, except if the first value return is a value between 0-100, it will use that number for a gauge. The size for the gauge is currently fixed, but you may change that for the future conky release.
+Same as exec, except if the first value returned is a value between 0-100, it will use that number for a gauge. The size for gauges can be controlled via the default_gauge_size config setting.
 
 .TP 
 \fB\*(T<\fBexecgraph\fR\*(T>\fR \*(T<\fB("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) command\fR\*(T> 
-Same as execbar, but graphs values. Uses a logaritmic scale when the log option is given (to see small numbers). Values still have to be between 0 and 100.
+Same as execbar, but graphs values. Uses a logaritmic scale when the log option is given (to see small numbers). Values still have to be between 0 and 100. The size for graphs can be controlled via the default_graph_size config setting.
 
 .TP 
 \fB\*(T<\fBexeci\fR\*(T>\fR \*(T<\fBinterval command\fR\*(T> 
@@ -700,7 +724,11 @@ Same as execbar, except with an interval
 
 .TP 
 \fB\*(T<\fBexecigraph\fR\*(T>\fR \*(T<\fBinterval command\fR\*(T> 
-Same as execgraph, but takes an interval arg graphs values
+Same as execgraph, but takes an interval arg and graphs values.
+
+.TP 
+\fB\*(T<\fBexecigauge\fR\*(T>\fR \*(T<\fBinterval command\fR\*(T> 
+Same as execgauge, but takes an interval arg and gauges values.
 
 .TP 
 \fB\*(T<\fBexecp\fR\*(T>\fR \*(T<\fBcommand\fR\*(T> 
@@ -724,16 +752,12 @@ Returns CPU #n's frequency in MHz. CPUs are counted from 1. If omitted, the para
 Returns CPU #n's frequency in GHz. CPUs are counted from 1. If omitted, the parameter defaults to 1.
 
 .TP 
-\fB\*(T<\fBfreq_dyn\fR\*(T>\fR \*(T<\fB(n)\fR\*(T> 
-Returns CPU #n's frequency in MHz (defaults to 1), but is calculated by counting to clock cycles to complete an instruction. Only available for x86/amd64.
-
-.TP 
-\fB\*(T<\fBfreq_dyn_g\fR\*(T>\fR \*(T<\fB(n)\fR\*(T> 
-Returns CPU #n's frequency in GHz (defaults to 1), but is calculated by counting to clock cycles to complete an instruction. Only available for x86/amd64.
-
-.TP 
 \fB\*(T<\fBfs_bar\fR\*(T>\fR \*(T<\fB(height),(width) fs\fR\*(T> 
 Bar that shows how much space is used on a file system. height is the height in pixels. fs is any file on that file system.
+
+.TP 
+\fB\*(T<\fBfs_bar_free\fR\*(T>\fR \*(T<\fB(height),(width) fs\fR\*(T> 
+Bar that shows how much space is free on a file system. height is the height in pixels. fs is any file on that file system.
 
 .TP 
 \fB\*(T<\fBfs_free\fR\*(T>\fR \*(T<\fB(fs)\fR\*(T> 
@@ -745,15 +769,19 @@ Free percentage of space on a file system available for users.
 
 .TP 
 \fB\*(T<\fBfs_size\fR\*(T>\fR \*(T<\fB(fs)\fR\*(T> 
-File system size
+File system size.
 
 .TP 
 \fB\*(T<\fBfs_type\fR\*(T>\fR \*(T<\fB(fs)\fR\*(T> 
-File system type
+File system type.
 
 .TP 
 \fB\*(T<\fBfs_used\fR\*(T>\fR \*(T<\fB(fs)\fR\*(T> 
-File system used space
+File system used space.
+
+.TP 
+\fB\*(T<\fBfs_used_perc\fR\*(T>\fR \*(T<\fB(fs)\fR\*(T> 
+Percent of file system used space.
 
 .TP 
 \fB\*(T<\fBgoto\fR\*(T>\fR \*(T<\fBx\fR\*(T> 
@@ -898,6 +926,11 @@ before.
 
 Valid operands are:
 \&'>', '<', '>=', '<=', '==', '!='.
+
+.TP 
+\fB\*(T<\fBif_mixer_mute\fR\*(T>\fR \*(T<\fB(mixer)\fR\*(T> 
+If mixer exists, display everything between $if_mixer_mute and the
+matching $endif. If no mixer is specified, "Master" is used.
 
 .TP 
 \fB\*(T<\fBif_running\fR\*(T>\fR \*(T<\fB(process)\fR\*(T> 
@@ -1396,12 +1429,12 @@ Runs a command at an interval inside a thread and displays the output. Same as $
 Move text over by N pixels. See also $voffset.
 
 .TP 
-\fB\*(T<\fBrss\fR\*(T>\fR \*(T<\fBurl delay_in_minutes action item_num\fR\*(T> 
-Download and parse RSS feeds. Action may be one of the following: feed_title, item_title (with num par), item_desc (with num par) and item_titles.
+\fB\*(T<\fBrss\fR\*(T>\fR \*(T<\fBurl delay_in_minutes action (num_par (spaces_in_front))\fR\*(T> 
+Download and parse RSS feeds. Action may be one of the following: feed_title, item_title (with num par), item_desc (with num par) and item_titles (when using this action and spaces_in_front is given conky places that many spaces in front of each item).
 
 .TP 
 \fB\*(T<\fBtab\fR\*(T>\fR \*(T<\fB(width, (start))\fR\*(T> 
-Puts a tab of the specified width, starting from column 'start'.
+Puts a tab of the specified width, starting from column 'start'. The unit is pixels for both arguments.
 
 .TP 
 \fB\*(T<\fBtail\fR\*(T>\fR \*(T<\fBlogfile lines (interval)\fR\*(T> 
@@ -1603,14 +1636,6 @@ Genre in current XMMS2 song
 Comment in current XMMS2 song
 
 .TP 
-\fB\*(T<\fBxmms2_decoder\fR\*(T>\fR 
-Decoder plugin used
-
-.TP 
-\fB\*(T<\fBxmms2_transport\fR\*(T>\fR 
-Transport plugin used
-
-.TP 
 \fB\*(T<\fBxmms2_url\fR\*(T>\fR 
 Full path to current song
 
@@ -1643,6 +1668,18 @@ Size of current song
 Percent of song's progress
 
 .TP 
+\fB\*(T<\fBxmms2_date\fR\*(T>\fR 
+Returns song's date.
+
+.TP 
+\fB\*(T<\fBxmms2_playlist\fR\*(T>\fR 
+Returns the XMMS2 playlist.
+
+.TP 
+\fB\*(T<\fBxmms2_timesplayed\fR\*(T>\fR 
+Number of times a song was played (presumably).
+
+.TP 
 \fB\*(T<\fBxmms2_status\fR\*(T>\fR 
 XMMS2 status (Playing, Paused, Stopped, or Disconnected)
 
@@ -1661,6 +1698,10 @@ Display everything between $if_xmms2_connected and the matching $endif if xmms2 
 .TP 
 \fB\*(T<\fBeve\fR\*(T>\fR \*(T<\fBapi_userid api_key character_id\fR\*(T> 
 Fetches your currently training skill from the Eve Online API servers (http://www.eve-online.com/) and displays the skill along with the remaining training time.
+
+.TP 
+\fB\*(T<\fBendif\fR\*(T>\fR 
+Ends an $if block.
 
 .SH EXAMPLES
 .TP 
@@ -1688,7 +1729,7 @@ window, be sure to read up on the own_window_type settings and experiment.
 .PP
 #conky on irc.freenode.net
 .SH COPYING
-Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et. al.
+Copyright (c) 2005-2009 Brenden Matthews, Philip Kovacs, et. al.
 Any original torsmo code is licensed under the BSD license (see LICENSE.BSD for a copy).
 All code written since the fork of torsmo is licensed under the GPL (see LICENSE.GPL for a copy), except where noted differently (such as in portmon code, timed thread code, and audacious code which are LGPL, and prss which is an MIT-style license).
 .SH AUTHORS

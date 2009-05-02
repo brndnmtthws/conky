@@ -7,7 +7,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2009 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -73,9 +73,9 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop);
 static Window find_subwindow(Window win, int w, int h);
 
 /* X11 initializer */
-void init_X11(void)
+void init_X11(const char *disp)
 {
-	if ((display = XOpenDisplay(0)) == NULL) {
+	if ((display = XOpenDisplay(disp)) == NULL) {
 		CRIT_ERR("can't open display: %s", XDisplayName(0));
 	}
 

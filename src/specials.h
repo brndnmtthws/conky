@@ -7,7 +7,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2009 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -75,6 +75,13 @@ struct special_t {
 /* direct access to the registered specials (FIXME: bad encapsulation) */
 extern struct special_t *specials;
 extern unsigned int special_count;
+
+extern int default_bar_width;
+extern int default_bar_height;
+extern int default_graph_width;
+extern int default_graph_height;
+extern int default_gauge_width;
+extern int default_gauge_height;
 
 /* max number of specials allowed (TODO: use linked list instead) */
 extern unsigned int max_specials;

@@ -6,7 +6,7 @@
  *
  * Please see COPYING for details
  *
- * Copyright (c) 2005-2008 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2009 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
@@ -25,60 +25,46 @@
  */
 
 #include "conky.h"
-#include <xmmsclient/xmmsclient.h>
+
+xmms_socket_t xmms2_fd;
+fd_set xmms2_fdset;
+xmmsc_connection_t *xmms2_conn;
 
 #define CONN_INIT	0
 #define CONN_OK		1
 #define CONN_NO		2
 
-/* callbacks */
-
 static void xmms_alloc(struct information *ptr)
 {
-	if (ptr->xmms2.status == NULL) {
-		ptr->xmms2.status = malloc(text_buffer_size);
-		ptr->xmms2.status[0] = '\0';
-	}
 
 	if (ptr->xmms2.artist == NULL) {
 		ptr->xmms2.artist = malloc(text_buffer_size);
-		ptr->xmms2.artist[0] = '\0';
 	}
 
 	if (ptr->xmms2.album == NULL) {
 		ptr->xmms2.album = malloc(text_buffer_size);
-		ptr->xmms2.album[0] = '\0';
 	}
 
 	if (ptr->xmms2.title == NULL) {
 		ptr->xmms2.title = malloc(text_buffer_size);
-		ptr->xmms2.title[0] = '\0';
 	}
 
 	if (ptr->xmms2.genre == NULL) {
 		ptr->xmms2.genre = malloc(text_buffer_size);
-		ptr->xmms2.genre[0] = '\0';
 	}
 
 	if (ptr->xmms2.comment == NULL) {
 		ptr->xmms2.comment = malloc(text_buffer_size);
-		ptr->xmms2.comment[0] = '\0';
 	}
 
 	if (ptr->xmms2.url == NULL) {
 		ptr->xmms2.url = malloc(text_buffer_size);
-		ptr->xmms2.url[0] = '\0';
 	}
 
 	if (ptr->xmms2.date == NULL) {
 		ptr->xmms2.date = malloc(text_buffer_size);
-		ptr->xmms2.date[0] = '\0';
 	}
-}
 
-static void xmms_clear(struct information *ptr)
-{
-	xmms_alloc(ptr);
 	ptr->xmms2.artist[0] = '\0';
 	ptr->xmms2.album[0] = '\0';
 	ptr->xmms2.title[0] = '\0';
@@ -100,138 +86,133 @@ static void xmms_clear(struct information *ptr)
 void connection_lost(void *p)
 {
 	struct information *ptr = p;
-	ptr->xmms2_conn_state = CONN_NO;
+	 ptr->xmms2.conn_state = CONN_NO;
 
-	fprintf(stderr,PACKAGE_NAME": xmms2 connection failed. %s\n",
-                    xmmsc_get_last_error ( ptr->xmms2_conn ));
-        fflush(stderr);
+	 fprintf(stderr,"XMMS2 connection failed. %s\n", xmmsc_get_last_error(xmms2_conn));
 
-	xmms_clear(ptr);
+	 xmms_alloc(ptr);
+	 strncpy(ptr->xmms2.status, "Disocnnected", text_buffer_size - 1);
+	 ptr->xmms2.playlist[0] = '\0';
+	 ptr->xmms2.id = 0;
 }
 
-void handle_curent_id(xmmsc_result_t *res, void *p)
+
+int handle_curent_id(xmmsv_t *value, void *p)
 {
-	uint current_id;
 	struct information *ptr = p;
+	xmmsv_t *val, *infos, *dict_entry;
+	xmmsc_result_t *res;
+	const char *errbuf;
+	int current_id;
 
-	if (xmmsc_result_get_uint(res, &current_id)) {
+	const char *charval;
+	int intval;
 
-		xmmsc_result_t *res2;
 
-		res2 = xmmsc_medialib_get_info(ptr->xmms2_conn, current_id);
-		xmmsc_result_wait(res2);
+	if (xmmsv_get_error(value, &errbuf)) {
+		fprintf(stderr,"XMMS2 server error. %s\n", errbuf);
+		return TRUE;
+		}
 
-		xmms_clear(ptr);
+	if (xmmsv_get_int(value, &current_id) && current_id > 0) {
+
+		res = xmmsc_medialib_get_info(xmms2_conn, current_id);
+		xmmsc_result_wait(res);
+		val = xmmsc_result_get_value(res);
+
+		if (xmmsv_get_error(val, &errbuf)) {
+			fprintf(stderr,"XMMS2 server error. %s\n", errbuf);
+			return TRUE;
+		}
+
+		xmms_alloc(ptr);
+
 
 		ptr->xmms2.id = current_id;
 
-		char *temp;
+		infos = xmmsv_propdict_to_dict(val, NULL);
 
-		xmmsc_result_get_dict_entry_string(res2, "artist", &temp);
-		if (temp != NULL) {
-			strncpy(ptr->xmms2.artist, temp, text_buffer_size - 1);
-		} else {
-			strncpy(ptr->xmms2.artist, "[Unknown]", text_buffer_size - 1);
-		}
+		if (xmmsv_dict_get(infos, "artist", &dict_entry) && xmmsv_get_string(dict_entry, &charval))
+			strncpy(ptr->xmms2.artist, charval, text_buffer_size - 1);
 
-		xmmsc_result_get_dict_entry_string(res2, "title", &temp);
-		if (temp != NULL) {
-			strncpy(ptr->xmms2.title, temp, text_buffer_size - 1);
-		} else {
-			strncpy(ptr->xmms2.title, "[Unknown]", text_buffer_size - 1);
-		}
+		if (xmmsv_dict_get(infos, "title", &dict_entry) && xmmsv_get_string(dict_entry, &charval)) 
+			strncpy(ptr->xmms2.title, charval, text_buffer_size - 1);
+	
+		if (xmmsv_dict_get(infos, "album", &dict_entry) && xmmsv_get_string(dict_entry, &charval)) 
+			strncpy(ptr->xmms2.album, charval, text_buffer_size - 1);
+		
+		if (xmmsv_dict_get(infos, "genre", &dict_entry) && xmmsv_get_string(dict_entry, &charval))
+			strncpy(ptr->xmms2.genre, charval, text_buffer_size - 1);
 
-		xmmsc_result_get_dict_entry_string(res2, "album", &temp);
-		if (temp != NULL) {
-			strncpy(ptr->xmms2.album, temp, text_buffer_size - 1);
-		} else {
-			strncpy(ptr->xmms2.album, "[Unknown]", text_buffer_size - 1);
-		}
+		if (xmmsv_dict_get(infos, "comment", &dict_entry) && xmmsv_get_string(dict_entry, &charval))
+			strncpy(ptr->xmms2.comment, charval, text_buffer_size - 1);
 
-		xmmsc_result_get_dict_entry_string(res2, "genre", &temp);
-		if (temp != NULL) {
+		if (xmmsv_dict_get(infos, "url", &dict_entry) && xmmsv_get_string(dict_entry, &charval))
+			strncpy(ptr->xmms2.url, charval, text_buffer_size - 1);
 
-			strncpy(ptr->xmms2.genre, temp, text_buffer_size - 1);
-		} else {
-			strncpy(ptr->xmms2.genre, "[Unknown]", text_buffer_size - 1);
-		}
+		if (xmmsv_dict_get(infos, "date", &dict_entry) && xmmsv_get_string(dict_entry, &charval))
+			strncpy(ptr->xmms2.date, charval, text_buffer_size - 1);
+		
 
-		xmmsc_result_get_dict_entry_string(res2, "comment", &temp);
-		if (temp != NULL) {
-			strncpy(ptr->xmms2.comment, temp, text_buffer_size - 1);
-		} else {
-			strncpy(ptr->xmms2.comment, "", text_buffer_size - 1);
-		}
 
-		xmmsc_result_get_dict_entry_string(res2, "url", &temp);
-		if (temp != NULL) {
-			strncpy(ptr->xmms2.url, temp, text_buffer_size - 1);
-		} else {
-			strncpy(ptr->xmms2.url, "[Unknown]", text_buffer_size - 1);
-		}
+		if (xmmsv_dict_get(infos, "tracknr", &dict_entry) && xmmsv_get_int(dict_entry, &intval))
+			ptr->xmms2.tracknr = intval;
 
-		xmmsc_result_get_dict_entry_string(res2, "date", &temp);
-		if (temp != NULL) {
-			strncpy(ptr->xmms2.date, temp, text_buffer_size - 1);
-		} else {
-			strncpy(ptr->xmms2.date, "????", text_buffer_size - 1);
-		}
+		if (xmmsv_dict_get(infos, "duration", &dict_entry) && xmmsv_get_int(dict_entry, &intval))
+			ptr->xmms2.duration = intval;
 
-		int itemp;
+		if (xmmsv_dict_get(infos, "bitrate", &dict_entry) && xmmsv_get_int(dict_entry, &intval))
+			ptr->xmms2.bitrate = intval / 1000;
 
-		xmmsc_result_get_dict_entry_int(res2, "tracknr", &itemp);
-		ptr->xmms2.tracknr = itemp;
+		if (xmmsv_dict_get(infos, "size", &dict_entry) && xmmsv_get_int(dict_entry, &intval))
+			ptr->xmms2.size = (float) intval / 1048576;
 
-		xmmsc_result_get_dict_entry_int(res2, "duration", &itemp);
-		ptr->xmms2.duration = itemp;
+		if (xmmsv_dict_get(infos, "timesplayed", &dict_entry) && xmmsv_get_int(dict_entry, &intval))
+			ptr->xmms2.timesplayed = intval;
 
-		xmmsc_result_get_dict_entry_int(res2, "bitrate", &itemp);
-		ptr->xmms2.bitrate = itemp / 1000;
 
-		xmmsc_result_get_dict_entry_int(res2, "size", &itemp);
-		ptr->xmms2.size = (float) itemp / 1048576;
-
-		xmmsc_result_get_dict_entry_int( res2, "timesplayed", &itemp );
-		ptr->xmms2.timesplayed = itemp;
-
-		xmmsc_result_unref(res2);
+		xmmsv_unref(infos);
+		xmmsc_result_unref(res);
 	}
+	return TRUE;
 }
 
-void handle_playtime(xmmsc_result_t *res, void *p)
+int handle_playtime(xmmsv_t *value, void *p)
 {
 	struct information *ptr = p;
-	xmmsc_result_t *res2;
-	uint play_time;
+	int play_time;
+	const char *errbuf;
 
-	if (xmmsc_result_iserror(res)) {
-		return;
+	if (xmmsv_get_error(value, &errbuf)) {
+		fprintf(stderr,"XMMS2 server error. %s\n", errbuf);
+		return TRUE;
 	}
 
-	if (!xmmsc_result_get_uint(res, &play_time)) {
-		return;
+	if (xmmsv_get_int(value, &play_time)) {
+		ptr->xmms2.elapsed = play_time;
+		ptr->xmms2.progress = (float) play_time / ptr->xmms2.duration;
 	}
 
-	res2 = xmmsc_result_restart(res);
-	xmmsc_result_unref(res2);
-
-	ptr->xmms2.elapsed = play_time;
-	ptr->xmms2.progress = (float) play_time / ptr->xmms2.duration;
+	return TRUE;
 }
 
-void handle_playback_state_change(xmmsc_result_t *res, void *p)
+int handle_playback_state_change(xmmsv_t *value, void *p)
 {
 	struct information *ptr = p;
-	uint pb_state = 0;
+	int pb_state = 0;
+	const char *errbuf;
 
-	if (xmmsc_result_iserror(res)) {
-		return;
+	if (xmmsv_get_error(value, &errbuf)) {
+		fprintf(stderr,"XMMS2 server error. %s\n", errbuf);
+		return TRUE;
 	}
 
-	if (!xmmsc_result_get_uint(res, &pb_state)) {
-		return;
+	if (ptr->xmms2.status == NULL) {
+		ptr->xmms2.status = malloc(text_buffer_size);
+		ptr->xmms2.status[0] = '\0';
 	}
 
+	if (xmmsv_get_int(value, &pb_state)) {
 	switch (pb_state) {
 		case XMMS_PLAYBACK_STATUS_PLAY:
 			strncpy(ptr->xmms2.status, "Playing", text_buffer_size - 1);
@@ -245,20 +226,29 @@ void handle_playback_state_change(xmmsc_result_t *res, void *p)
 		default:
 			strncpy(ptr->xmms2.status, "Unknown", text_buffer_size - 1);
 	}
+	}
+	return TRUE;
 }
 
-void handle_playlist_loaded(xmmsc_result_t *res, void *p) {
+int handle_playlist_loaded(xmmsv_t *value, void *p) 
+{
 	struct information *ptr = p;
+	const char *c, *errbuf;
+
+	if (xmmsv_get_error(value, &errbuf)) {
+		fprintf(stderr,"XMMS2 server error. %s\n", errbuf);
+		return TRUE;
+	}
 
 	if (ptr->xmms2.playlist == NULL) {
 		ptr->xmms2.playlist = malloc(text_buffer_size);
 		ptr->xmms2.playlist[0] = '\0';
 	}
 
-	if (!xmmsc_result_get_string(res, &ptr->xmms2.playlist))  {
-		ptr->xmms2.playlist[0] = '\0';
+	if (xmmsv_get_string(value, &c))  {
+		strncpy(ptr->xmms2.playlist, c, text_buffer_size - 1);
 	}
-
+	return TRUE;
 }
 
 void update_xmms2()
@@ -266,82 +256,91 @@ void update_xmms2()
 	struct information *current_info = &info;
 
 	/* initialize connection */
-	if (current_info->xmms2_conn_state == CONN_INIT) {
+	if (current_info->xmms2.conn_state == CONN_INIT) {
 
-		if (current_info->xmms2_conn == NULL) {
-			current_info->xmms2_conn = xmmsc_init(PACKAGE);
+		if (xmms2_conn == NULL) {
+			xmms2_conn = xmmsc_init(PACKAGE);
 		}
 
 		/* did init fail? */
-		if (current_info->xmms2_conn == NULL) {
-			fprintf(stderr, PACKAGE_NAME": xmms2 init failed. %s\n",
-					xmmsc_get_last_error(current_info->xmms2_conn));
-			fflush(stderr);
+		if (xmms2_conn == NULL) {
+			fprintf(stderr,"XMMS2 init failed. %s\n", xmmsc_get_last_error(xmms2_conn));
 			return;
 		}
 
 		/* init ok but not connected yet.. */
-		current_info->xmms2_conn_state = CONN_NO;
+		current_info->xmms2.conn_state = CONN_NO;
 
 		/* clear all values */
-		xmms_clear(current_info);
-
-		/* fprintf(stderr, PACKAGE_NAME": xmms2 init ok.\n");
-		fflush(stderr); */
+		xmms_alloc(current_info);
 	}
 
 	/* connect */
-	if (current_info->xmms2_conn_state == CONN_NO) {
+	if (current_info->xmms2.conn_state == CONN_NO) {
 
 		char *path = getenv("XMMS_PATH");
 
-		if (!xmmsc_connect(current_info->xmms2_conn, path)) {
-			fprintf(stderr, PACKAGE_NAME": xmms2 connection failed. %s\n",
-				xmmsc_get_last_error(current_info->xmms2_conn));
-			fflush(stderr);
-			current_info->xmms2_conn_state = CONN_NO;
+		if (!xmmsc_connect(xmms2_conn, path)) {
+			fprintf(stderr,"XMMS2 connection failed. %s\n", xmmsc_get_last_error(xmms2_conn));
+			current_info->xmms2.conn_state = CONN_NO;
 			return;
 		}
 
 		/* set callbacks */
-		xmmsc_disconnect_callback_set(current_info->xmms2_conn, connection_lost,
-			current_info);
-		XMMS_CALLBACK_SET(current_info->xmms2_conn,
-			xmmsc_broadcast_playback_current_id, handle_curent_id,
-			current_info);
-		XMMS_CALLBACK_SET(current_info->xmms2_conn,
-			xmmsc_signal_playback_playtime, handle_playtime, current_info);
-		XMMS_CALLBACK_SET(current_info->xmms2_conn,
-			xmmsc_broadcast_playback_status, handle_playback_state_change,
-			current_info);
-		XMMS_CALLBACK_SET(current_info->xmms2_conn,
-			xmmsc_broadcast_playlist_loaded, handle_playlist_loaded,
-			current_info);
-		XMMS_CALLBACK_SET(current_info->xmms2_conn,
-			xmmsc_broadcast_medialib_entry_changed, handle_curent_id,
-			current_info);
+		xmmsc_disconnect_callback_set(xmms2_conn, connection_lost, current_info);
+		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_broadcast_playback_current_id, 
+				handle_curent_id, current_info);
+		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_signal_playback_playtime, 
+				handle_playtime, current_info);
+		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_broadcast_playback_status, 
+				handle_playback_state_change, current_info);
+		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_broadcast_playlist_loaded, 
+				handle_playlist_loaded, current_info);
 
 		/* get playback status, current id and active playlist */
-		XMMS_CALLBACK_SET(current_info->xmms2_conn,
-				xmmsc_playback_current_id, handle_curent_id, current_info);
-		XMMS_CALLBACK_SET(current_info->xmms2_conn,
-				xmmsc_playback_status, handle_playback_state_change, current_info);
-		XMMS_CALLBACK_SET(current_info->xmms2_conn,
-				xmmsc_playlist_current_active, handle_playlist_loaded, current_info);
+		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_playback_current_id, 
+				handle_curent_id, current_info);
+		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_playback_status, 
+				handle_playback_state_change, current_info);
+		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_playlist_current_active, 
+				handle_playlist_loaded, current_info);
 
 		/* everything seems to be ok */
-		current_info->xmms2_conn_state = CONN_OK;
-
-		/* fprintf(stderr, PACKAGE_NAME": xmms2 connected.\n");
-		fflush(stderr); */
+		current_info->xmms2.conn_state = CONN_OK;
 	}
 
 	/* handle callbacks */
-	if (current_info->xmms2_conn_state == CONN_OK) {
+	if (current_info->xmms2.conn_state == CONN_OK) {
+		struct timeval tmout;
+
+		tmout.tv_sec = 0;
+		tmout.tv_usec = 100;
 		
-		xmmsc_io_in_handle(current_info->xmms2_conn);
-		if (xmmsc_io_want_out(current_info->xmms2_conn)) {
-			xmmsc_io_out_handle(current_info->xmms2_conn);
+		select(xmms2_fd + 1, &xmms2_fdset, NULL, NULL, &tmout);
+
+		xmmsc_io_in_handle(xmms2_conn);
+		if (xmmsc_io_want_out(xmms2_conn)) {
+			xmmsc_io_out_handle(xmms2_conn);
+		}
 		}
 	}
+
+
+void free_xmms2()
+{
+	struct information *current_info = &info;
+
+	current_info->xmms2.conn_state = -1;
+
+	free(current_info->xmms2.artist);
+	free(current_info->xmms2.album);
+	free(current_info->xmms2.title);
+	free(current_info->xmms2.genre);
+	free(current_info->xmms2.comment);
+	free(current_info->xmms2.url);
+	free(current_info->xmms2.date);
+	free(current_info->xmms2.playlist);
+	free(current_info->xmms2.status);
 }
+
+
