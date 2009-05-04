@@ -2545,7 +2545,7 @@ static struct text_object *construct_text_object(const char *s,
 					}else if(arg[i] == '}') {
 						indenting--;
 					}
-					if(indenting == 0 && (arg[i+1] == ' ' || arg[i+1] == '$' || arg[i+1] == 0)) {
+					if (indenting == 0 && arg[i+1] < 48) {	//<48 has 0, $, and the most used chars not used in varnames but not { or }
 						endvar[j]=i+1;
 						j++;
 					}
