@@ -2733,22 +2733,12 @@
 			Prints the song name in either the form "artist - title" or file name, depending on whats available
 			<para></para></listitem>
 	</varlistentry>
-
 	<varlistentry>
 		<term>
 			<command><option>if_xmms2_connected</option></command>
 		</term>
 		<listitem>
 			Display everything between $if_xmms2_connected and the matching $endif if xmms2 is running.
-			<para></para></listitem>
-	</varlistentry>
-
-	<varlistentry>
-		<term>
-			<command><option>sony_fanspeed</option></command>
-		</term>
-		<listitem>
-			Displays the Sony VAIO fanspeed information if sony-laptop kernel support is enabled.  Linux only.
 			<para></para></listitem>
 	</varlistentry>
 

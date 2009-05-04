@@ -64,7 +64,7 @@ xmms2 = xmms2.c
 endif
 
 if BUILD_LINUX
-linux = linux.c top.c diskio.c users.c sony.c
+linux = linux.c top.c diskio.c users.c
 PTHREAD_LIBS =  -lpthread
 endif
 
@@ -208,7 +208,6 @@ EXTRA_DIST = \
 	smapi.h                 \
 	ibm.c                   \
 	ibm.h                   \
-	sony.h                  \
 	users.c
 
 

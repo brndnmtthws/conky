@@ -148,9 +148,6 @@ enum text_object_type {
 	OBJ_smapi_bat_power,
 	OBJ_if_smapi_bat_installed,
 #endif /* IBM */
-	/* information from sony_laptop kernel module
-	 * /sys/devices/platform/sony-laptop */
-	OBJ_sony_fanspeed,
 	OBJ_if_gw,
 	OBJ_ioscheduler,
 	OBJ_gw_iface,

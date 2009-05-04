@@ -103,9 +103,6 @@ char *strndup(const char *s, size_t n);
 #include "smapi.h"
 #endif
 
-/* sony support */
-#include "sony.h"
-
 /* A size for temporary, static buffers to use when
  * one doesn't know what to choose. Defaults to 256.  */
 extern unsigned int text_buffer_size;
