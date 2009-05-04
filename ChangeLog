@@ -1,3 +1,6 @@
+2009-05-03
+	* Added Sony VAIO fanspeed info (thanks Yeon-Hyeong)
+
 2009-05-01
 	* Added diskio_avg_samples patch (thanks Yeon-Hyeong)
 	* Fixed $texeci regression

@@ -34,3 +34,5 @@ conky-*.tar.*
 doc/*.html
 doc/*.mxml
 patches/
+README
+doc/conky.1
