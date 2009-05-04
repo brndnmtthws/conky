@@ -1226,6 +1226,9 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(ibm_volume, 0)
 	END OBJ(ibm_brightness, 0)
 #endif
+	/* information from sony_laptop kernel module
+	 * /sys/devices/platform/sony-laptop */
+	END OBJ(sony_fanspeed, 0)
 	END OBJ_IF(if_gw, 0)
 	END OBJ(ioscheduler, 0)
 		if (!arg) {
@@ -2545,7 +2548,7 @@ static struct text_object *construct_text_object(const char *s,
 					}else if(arg[i] == '}') {
 						indenting--;
 					}
-					if(indenting == 0 && (arg[i+1] == ' ' || arg[i+1] == '$' || arg[i+1] == 0)) {
+					if (indenting == 0 && arg[i+1] < 48) {	//<48 has 0, $, and the most used chars not used in varnames but not { or }
 						endvar[j]=i+1;
 						j++;
 					}
@@ -3418,6 +3421,11 @@ static void generate_text_internal(char *p, int p_max_size,
 				get_ibm_acpi_brightness(p, p_max_size);
 			}
 #endif /* IBM */
+			/* information from sony_laptop kernel module
+			 * /sys/devices/platform/sony-laptop */
+			OBJ(sony_fanspeed) {
+				get_sony_fanspeed(p, p_max_size);
+			}
 			OBJ(if_gw) {
 				if (!cur->gw_info.count) {
 					DO_JUMP;
