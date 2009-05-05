@@ -5085,7 +5085,7 @@ static inline int get_string_width_special(char *s)
 	char *p, *final;
 	int idx = 1;
 	int width = 0;
-	unsigned int i;
+	long i;
 
 	if ((output_methods & TO_X) == 0) {
 #endif
@@ -5104,7 +5104,7 @@ static inline int get_string_width_special(char *s)
 		if (*p == SPECIAL_CHAR) {
 			/* shift everything over by 1 so that the special char
 			 * doesn't mess up the size calculation */
-			for (i = 0; i < strlen(p); i++) {
+			for (i = 0; i < (long)strlen(p); i++) {
 				*(p + i) = *(p + i + 1);
 			}
 			if (specials[special_index + idx].type == GRAPH
