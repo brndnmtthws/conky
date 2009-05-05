@@ -614,6 +614,15 @@ AC_CHECK_HEADER(zlib.h,
 
 
 dnl
+dnl Check for OpenMP support
+dnl
+
+AX_OPENMP([
+  AC_DEFINE(HAVE_OPENMP,1,[Define if OpenMP is enabled])
+  CFLAGS="$CFLAGS $OPENMP_CFLAGS"
+])
+
+dnl
 dnl Check doc stuff
 dnl
 
@@ -625,7 +634,6 @@ if test x$db2x_xsltproc_cmd = "x" -o x$xsltproc_cmd = "x"; then
 else
   AM_CONDITIONAL(HAVE_DOCSTUFF, true)
 fi
-
 
 dnl
 dnl kstat in Solaris

@@ -405,9 +405,12 @@ void update_net_stats(void)
 		curtmp1 = 0;
 		curtmp2 = 0;
 		// get an average
-		for (i = 0; (unsigned) i < info.net_avg_samples; i++) {
-			curtmp1 += ns->net_rec[i];
-			curtmp2 += ns->net_trans[i];
+#ifdef HAVE_OPENMP
+#pragma omp parallel for
+#endif /* HAVE_OPENMP */
+		for (i = 0; i < info.net_avg_samples; i++) {
+			curtmp1 = curtmp1 + ns->net_rec[i];
+			curtmp2 = curtmp2 + ns->net_trans[i];
 		}
 		if (curtmp1 == 0) {
 			curtmp1 = 1;
@@ -418,6 +421,9 @@ void update_net_stats(void)
 		ns->recv_speed = curtmp1 / (double) info.net_avg_samples;
 		ns->trans_speed = curtmp2 / (double) info.net_avg_samples;
 		if (info.net_avg_samples > 1) {
+#ifdef HAVE_OPENMP
+#pragma omp parallel for
+#endif /* HAVE_OPENMP */
 			for (i = info.net_avg_samples; i > 1; i--) {
 				ns->net_rec[i - 1] = ns->net_rec[i - 2];
 				ns->net_trans[i - 1] = ns->net_trans[i - 2];
@@ -592,7 +598,7 @@ inline static void update_stat(void)
 	static int rep = 0;
 	static struct cpu_info *cpu = NULL;
 	char buf[256];
-	unsigned int i;
+	int i;
 	unsigned int idx;
 	double curtmp;
 	const char *stat_template = NULL;
@@ -664,8 +670,11 @@ inline static void update_stat(void)
 				cpu[idx].cpu_last_active_total) /
 				(float) (cpu[idx].cpu_total - cpu[idx].cpu_last_total);
 			curtmp = 0;
+#ifdef HAVE_OPENMP
+#pragma omp parallel for reduction(+:curtmp)
+#endif /* HAVE_OPENMP */
 			for (i = 0; i < info.cpu_avg_samples; i++) {
-				curtmp += cpu[idx].cpu_val[i];
+				curtmp = curtmp + cpu[idx].cpu_val[i];
 			}
 			/* TESTING -- I've removed this, because I don't think it is right.
 			 * You shouldn't divide by the cpu count here ...
@@ -681,6 +690,9 @@ inline static void update_stat(void)
 
 			cpu[idx].cpu_last_total = cpu[idx].cpu_total;
 			cpu[idx].cpu_last_active_total = cpu[idx].cpu_active_total;
+#ifdef HAVE_OPENMP
+#pragma omp parallel for
+#endif /* HAVE_OPENMP */
 			for (i = info.cpu_avg_samples - 1; i > 0; i--) {
 				cpu[idx].cpu_val[i] = cpu[idx].cpu_val[i - 1];
 			}
@@ -794,6 +806,9 @@ static int get_first_file_in_a_directory(const char *dir, char *s, int *rep)
 		strncpy(s, namelist[0]->d_name, 255);
 		s[255] = '\0';
 
+#ifdef HAVE_OPENMP
+#pragma omp parallel for
+#endif /* HAVE_OPENMP */
 		for (i = 0; i < n; i++) {
 			free(namelist[i]);
 		}
@@ -1454,6 +1469,9 @@ void init_batteries(void)
 	if (batteries_initialized) {
 		return;
 	}
+#ifdef HAVE_OPENMP
+#pragma omp parallel for
+#endif /* HAVE_OPENMP */
 	for (idx = 0; idx < MAX_BATTERY_COUNT; idx++) {
 		batteries[idx][0] = '\0';
 	}
