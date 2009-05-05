@@ -406,7 +406,7 @@ void update_net_stats(void)
 		curtmp2 = 0;
 		// get an average
 #ifdef HAVE_OPENMP
-#pragma omp parallel for
+#pragma omp parallel for reduction(+:curtmp1, curtmp2)
 #endif /* HAVE_OPENMP */
 		for (i = 0; i < info.net_avg_samples; i++) {
 			curtmp1 = curtmp1 + ns->net_rec[i];
