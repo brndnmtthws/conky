@@ -36,7 +36,7 @@
 #include <X11/Xmd.h>
 #include <X11/Xutil.h>
 #ifdef IMLIB2
-#include <Imlib2.h>
+#include "imlib2.h"
 #endif /* IMLIB2 */
 
 #ifdef XFT
@@ -50,11 +50,6 @@ int use_xdbe;
 
 /* some basic X11 stuff */
 Display *display;
-#ifdef IMLIB2
-Visual  *visual;
-Colormap colourmap;
-int depth;
-#endif /* IMLIB2 */
 int display_width;
 int display_height;
 int screen;
@@ -473,23 +468,13 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 	}
 #endif
 #ifdef IMLIB2
-	visual = DefaultVisual(display, DefaultScreen(display));
-	depth = DefaultDepth(display, DefaultScreen(display));
-	colourmap = DefaultColormap(display, DefaultScreen(display));
-	/* set our cache to 4MiB so it doesn't have to go hit the disk as long as */
-	/* the images we use use less than 4MiB of RAM (that is uncompressed) */
-	imlib_set_cache_size(4092 * 1024);
-	/* set the font cache to 512KiB - again to avoid re-loading */
-	imlib_set_font_cache_size(512 * 1024);
-	/* set the maximum number of colors to allocate for 8bpp and less to 128 */
-	imlib_set_color_usage(128);
-	/* dither for depths < 24bpp */
-	imlib_context_set_dither(1);
-	/* set the display , visual, colormap and drawable we are using */
-	imlib_context_set_display(display);
-	imlib_context_set_visual(visual);
-	imlib_context_set_colormap(colourmap);
-	imlib_context_set_drawable(window.drawable);
+	{
+		Visual *visual;
+		Colormap colourmap;
+		visual = DefaultVisual(display, DefaultScreen(display));
+		colourmap = DefaultColormap(display, DefaultScreen(display));
+		cimlib_init(display, window.drawable, visual, colourmap);
+	}
 #endif /* IMLIB2 */
 	XFlush(display);
 

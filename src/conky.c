@@ -49,7 +49,7 @@
 #include <X11/extensions/Xdamage.h>
 #endif
 #ifdef IMLIB2
-#include <Imlib2.h>
+#include "imlib2.h"
 #endif /* IMLIB2 */
 #endif /* X11 */
 #include <sys/types.h>
@@ -3557,33 +3557,13 @@ static void generate_text_internal(char *p, int p_max_size,
                                         strcpy(p, "0.0.0.0");
            }
 #endif /* __linux__ */
-
 #if defined(IMLIB2) && defined(X11)
 			OBJ(image) {
-				if (obj->a < 1) {
-					obj->a++;
-				} else {
-					Imlib_Image image, buffer;
-
-					image = imlib_load_image(obj->data.s);
-					if (image) {
-						int w, h;
-						imlib_context_set_image(image);
-
-						w = imlib_image_get_width();
-						h = imlib_image_get_height();
-						buffer = imlib_create_image(w, h);
-						imlib_context_set_image(buffer);
-						imlib_blend_image_onto_image(image, 0, 0, 0, w, h,
-							text_start_x, text_start_y, w, h);
-						imlib_render_image_on_drawable(text_start_x,
-							text_start_y);
-						imlib_free_image();
-					}
-				}
+				/* doesn't actually draw anything, just queues it omp.  the
+				 * image will get drawn after the X event loop */
+				cimlib_add_image(obj->data.s); 
 			}
 #endif /* IMLIB2 */
-
 			OBJ(eval) {
 				struct information *tmp_info;
 				struct text_object subroot, subroot2;
@@ -5952,6 +5932,9 @@ static int need_to_update;
 /* update_text() generates new text and clears old text area */
 static void update_text(void)
 {
+#ifdef IMLIB2
+	cimlib_cleanup();
+#endif /* IMLIB2 */
 	generate_text();
 #ifdef X11
 	if (output_methods & TO_X)
@@ -6008,6 +5991,10 @@ static void main_loop(void)
 #ifdef X11
 		if (output_methods & TO_X) {
 			XFlush(display);
+
+#ifdef IMLIB2
+			cimlib_event_start();
+#endif /* IMLIB2 */
 
 			/* wait for X event or timeout */
 
@@ -6101,6 +6088,9 @@ static void main_loop(void)
 						r.width = ev.xexpose.width;
 						r.height = ev.xexpose.height;
 						XUnionRectWithRegion(&r, region, region);
+#ifdef IMLIB2
+						cimlib_event_expose(&ev);
+#endif /* IMLIB2 */
 						break;
 					}
 
@@ -6241,6 +6231,9 @@ static void main_loop(void)
 				}
 #endif
 				draw_stuff();
+#ifdef IMLIB2
+				cimlib_event_end(/*window.x, window.y, */0, 0, window.width, window.height);
+#endif /* IMLIB2 */
 				XDestroyRegion(region);
 				region = XCreateRegion();
 			}
@@ -6414,6 +6407,7 @@ static void clean_up(void)
 		XFreeGC(display, window.gc);
 		free_fonts();
 	}
+
 #endif /* X11 */
 
 	free_text_objects(&global_root_object);
@@ -7218,6 +7212,11 @@ static void load_config_file(const char *f)
 				stippled_borders = strtol(value, 0, 0);
 			} else {
 				stippled_borders = 4;
+			}
+		}
+		CONF("imlib_cache_size") {
+			if (value) {
+				cimlib_set_cache_size(atoi(value));
 			}
 		}
 #endif /* X11 */

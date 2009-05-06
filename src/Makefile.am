@@ -111,6 +111,10 @@ if BUILD_NVIDIA
 nvidia = nvidia.c nvidia.h
 endif
 
+if BUILD_IMLIB2
+imlib2 = imlib2.c imlib2.h
+endif
+
 conky_SOURCES = \
 	$(config_output)        \
 	$(config_cookie)        \
@@ -153,7 +157,8 @@ conky_SOURCES = \
 	text_object.h           \
 	text_object.c           \
 	algebra.h               \
-	algebra.c
+	algebra.c		\
+	$(imlib2)
 
 conky_LDFLAGS = \
 	$(PTHREAD_LIBS) \
@@ -209,7 +214,9 @@ EXTRA_DIST = \
 	ibm.c                   \
 	ibm.h                   \
 	sony.h                  \
-	users.c
+	users.c			\
+	imlib2.c		\
+	imlib2.h
 
 
 # vi:set ts=8 sw=8 noet ai nocindent syntax=automake:
