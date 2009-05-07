@@ -1,3 +1,6 @@
+2009-05-07
+	* Fix occasional cpubar segfaults
+
 2009-05-05
 	* Added some completely pointless OpenMP optimizations(?)
 
