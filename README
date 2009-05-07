@@ -1122,20 +1122,22 @@ conky(1)                                                              conky(1)
               Displays the number of messages in your global IMAP inbox by de‐
               fault.  You  can  define  individual  IMAP inboxes seperately by
               passing arguments to this object. Arguments are: "host user pass
-              [-i interval] [-p port] [-e command] [-r retries]". Default port
-              is 143, default interval is 5 minutes, and default number of re‐
-              tries before giving up is 5. If the password is supplied as '*',
-              you will be prompted to enter the password when Conky starts.
+              [-i  interval] [-f folder] [-p port] [-e command] [-r retries]".
+              Default port is 143, default folder is 'INBOX', default interval
+              is  5 minutes, and default number of retries before giving up is
+              5. If the password is supplied as '*', you will be  prompted  to
+              enter the password when Conky starts.
 
 
        [1mimap_unseen (args)[0m
               Displays the number of unseen messages in your global IMAP inbox
               by default. You can define individual IMAP inboxes seperately by
               passing arguments to this object. Arguments are: "host user pass
-              [-i interval] [-p port] [-e command] [-r retries]". Default port
-              is 143, default interval is 5 minutes, and default number of re‐
-              tries before giving up is 5. If the password is supplied as '*',
-              you will be prompted to enter the password when Conky starts.
+              [-i interval] [-f folder] [-p port] [-e command] [-r  retries]".
+              Default port is 143, default folder is 'INBOX', default interval
+              is 5 minutes, and default number of retries before giving up  is
+              5.  If  the password is supplied as '*', you will be prompted to
+              enter the password when Conky starts.
 
 
        [1mioscheduler disk[0m
