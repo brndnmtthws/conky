@@ -1299,7 +1299,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(cached, INFO_BUFFERS)
 #define SCAN_CPU(__arg, __var) { \
 	int __offset; \
-	if (__arg && sscanf(__arg, " cpu%u %n", &__var, &__offset)) \
+	if (__arg && sscanf(__arg, " cpu%u %n", &__var, &__offset) == 2) \
 		__arg += __offset; \
 	else \
 		__var = 0; \
