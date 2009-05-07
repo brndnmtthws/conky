@@ -56,6 +56,13 @@
 	</varlistentry>
 
 	<varlistentry>
+		<term><command><option>top_name_width</option></command></term>
+		<listitem>
+			Width for $top name value (defaults to 15 characters).
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
 		<term><command><option>top_cpu_separate</option></command></term>
 		<listitem>
 			If true, cpu in top will show usage of one processor's power.  If false, cpu in top will show the usage of all processors' power combined.

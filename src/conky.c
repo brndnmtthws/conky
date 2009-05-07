@@ -131,6 +131,7 @@ enum {
 	RIGHT_SPACER
 } use_spacer;
 int top_cpu, top_mem, top_time;
+static unsigned int top_name_width = 15;
 int output_methods;
 enum x_initialiser_state x_initialised = NO;
 static volatile int g_signal_pending;
@@ -4701,7 +4702,7 @@ static void generate_text_internal(char *p, int p_max_size,
 
 					switch (obj->data.top.type) {
 						case TOP_NAME:
-							snprintf(p, 16, "%-15s",
+							snprintf(p, top_name_width + 1, "%-*s", top_name_width,
 								needed[obj->data.top.num]->name);
 							break;
 						case TOP_CPU:
@@ -7132,6 +7133,18 @@ static void load_config_file(const char *f)
 #endif /* X11 */
 		CONF("no_buffers") {
 			no_buffers = string_to_bool(value);
+		}
+		CONF("top_name_width") {
+			if (value) {
+				if (sscanf(value, "%u", &top_name_width) != 1) {
+					CONF_ERR;
+				}
+			} else {
+				CONF_ERR;
+			}
+			if (top_name_width >= max_user_text) {
+				top_name_width = max_user_text - 1;
+			}
 		}
 		CONF("top_cpu_separate") {
 			cpu_separate = string_to_bool(value);

@@ -70,6 +70,7 @@ syn keyword ConkyrcSetting
 			\ minimum_size
 			\ maximum_width
 			\ no_buffers
+			\ top_name_width
 			\ top_cpu_separate
 			\ short_units
 			\ pad_percents

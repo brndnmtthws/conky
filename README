@@ -197,6 +197,10 @@ conky(1)                                                              conky(1)
               The number of samples to average for disk I/O monitoring.
 
 
+       [1mtop_name_width[0m
+              Width for $top name value (defaults to 15 characters).
+
+
        [1mtop_cpu_separate[0m
               If true, cpu in top will show usage of one processor's power. If
               false, cpu in top will show the usage of all  processors'  power

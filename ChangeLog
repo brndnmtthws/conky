@@ -1,5 +1,6 @@
 2009-05-07
 	* Fix occasional cpubar segfaults
+	* Added top_name_width config option
 
 2009-05-05
 	* Added some completely pointless OpenMP optimizations(?)
