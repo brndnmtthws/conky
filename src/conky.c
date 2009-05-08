@@ -6543,6 +6543,7 @@ static void set_default_configurations_for_x(void)
 
 static void set_default_configurations(void)
 {
+	update_uname();
 	fork_to_background = 0;
 	total_run_times = 0;
 	info.cpu_avg_samples = 2;
@@ -6602,7 +6603,6 @@ static void set_default_configurations(void)
 	window.type = TYPE_NORMAL;
 	window.hints = 0;
 	strcpy(window.class_name, PACKAGE_NAME);
-	update_uname();
 	sprintf(window.title, PACKAGE_NAME" (%s)", info.uname_s.nodename);
 #endif
 	stippled_borders = 0;
