@@ -242,6 +242,9 @@ enum alignment {
 	NONE
 };
 
+/* display to connect to */
+static char *disp = NULL;
+
 #endif /* X11 */
 
 /* struct that has all info to be shared between
@@ -250,9 +253,6 @@ struct information info;
 
 /* default config file */
 static char *current_config;
-
-/* display to connect to */
-static char *disp = NULL;
 
 /* set to 1 if you want all text to be in uppercase */
 static unsigned int stuff_in_upper_case;
