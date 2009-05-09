@@ -207,10 +207,11 @@ static struct special_t *new_special(char *buf, enum special_types t)
 void new_gauge(char *buf, int w, int h, int usage)
 {
 #ifdef X11
+	struct special_t *s = 0;
 	if ((output_methods & TO_X) == 0)
 		return;
 
-	struct special_t *s = new_special(buf, GAUGE);
+	s = new_special(buf, GAUGE);
 
 	s->arg = (usage > 255) ? 255 : ((usage < 0) ? 0 : usage);
 	s->width = w;
@@ -221,10 +222,12 @@ void new_gauge(char *buf, int w, int h, int usage)
 void new_bar(char *buf, int w, int h, int usage)
 {
 #ifdef X11
+	struct special_t *s = 0;
+
 	if ((output_methods & TO_X) == 0)
 		return;
 
-	struct special_t *s = new_special(buf, BAR);
+	s = new_special(buf, BAR);
 
 	s->arg = (usage > 255) ? 255 : ((usage < 0) ? 0 : usage);
 	s->width = w;
@@ -296,10 +299,12 @@ void new_graph(char *buf, int w, int h, unsigned int first_colour,
 		unsigned int second_colour, double i, int scale, int append, char showaslog)
 {
 #ifdef X11
+	struct special_t *s = 0;
+
 	if ((output_methods & TO_X) == 0)
 		return;
 
-	struct special_t *s = new_special(buf, GRAPH);
+	s = new_special(buf, GRAPH);
 
 	s->width = w;
 	if (s->graph == NULL) {
@@ -352,10 +357,12 @@ void new_hr(char *buf, int a)
 void new_stippled_hr(char *buf, int a, int b)
 {
 #ifdef X11
+	struct special_t *s = 0;
+
 	if ((output_methods & TO_X) == 0)
 		return;
 
-	struct special_t *s = new_special(buf, STIPPLED_HR);
+	s = new_special(buf, STIPPLED_HR);
 
 	s->height = b;
 	s->arg = a;
