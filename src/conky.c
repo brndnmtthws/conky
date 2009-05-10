@@ -7269,14 +7269,6 @@ static void load_config_file(const char *f)
 			}
 		}
 #endif /* X11 */
-		CONF("temp1") {
-			ERR("temp1 configuration is obsolete, use ${i2c <i2c device here> "
-				"temp 1}");
-		}
-		CONF("temp2") {
-			ERR("temp2 configuration is obsolete, use ${i2c <i2c device here> "
-				"temp 2}");
-		}
 		CONF("update_interval") {
 			if (value) {
 				update_interval = strtod(value, 0);
@@ -7664,6 +7656,7 @@ static void print_help(const char *prog_name) {
 #ifdef X11
 			"   -a, --alignment=ALIGNMENT text alignment on screen, {top,bottom,middle}_{left,right,middle}\n"
 			"   -f, --font=FONT           font to use\n"
+			"   -X, --display=DISPLAY     X11 display to use\n"
 #ifdef OWN_WINDOW
 			"   -o, --own-window          create own window to draw\n"
 #endif

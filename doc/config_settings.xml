@@ -147,6 +147,13 @@
 	</varlistentry>
 
 	<varlistentry>
+		<term><command><option>display</option></command></term>
+		<listitem>
+			Specify an X display to connect to.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
 		<term><command><option>font</option></command></term>
 		<listitem>
 			Font name in X, xfontsel can be used to get a nice font
