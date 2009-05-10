@@ -2595,12 +2595,6 @@ static struct text_object *create_plain_text(const char *s)
 {
 	struct text_object *obj;
 
-	char *esc = strstr(s, "\\#");
-	if (esc) {
-		/* remove extra '\' */
-		strcpy(esc, esc + 1);
-	}
-
 	if (s == NULL || *s == '\0') {
 		return NULL;
 	}
@@ -2820,12 +2814,6 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 
 	while (*p) {
 		if (*p == '\n') {
-			line++;
-		}
-		/* handle comments within the TEXT area */
-		if (*p == '#' && (p == orig_p || *(p - 1) != '\\')) {
-			while (*p && *p != '\n') p++;
-			s = p;
 			line++;
 		}
 		if (*p == '$') {
@@ -6702,6 +6690,25 @@ static FILE *open_config_file(const char *f)
 		return fopen(f, "r");
 }
 
+void remove_comments(char *string) {
+	char *curplace;
+	char *newend = NULL;
+
+	for(curplace = string; *curplace != 0; curplace++) {
+		if(*curplace == '\\' && *(curplace + 1) == '#') {
+			strcpy(curplace, curplace + 1);
+		} else if(*curplace == '#' && !newend) {
+			newend = curplace;
+		} else if(*curplace == '\n' && newend) {
+			*newend = '\n';
+			newend++;
+		}
+	}
+	if(newend) {
+		*newend = 0;
+	}
+}
+
 static int do_config_step(int *line, FILE *fp, char *buf, char **name, char **value)
 {
 	char *p, *p2;
@@ -6709,14 +6716,9 @@ static int do_config_step(int *line, FILE *fp, char *buf, char **name, char **va
 	if (fgets(buf, CONF_BUFF_SIZE, fp) == NULL) {
 		return CONF_BREAK;
 	}
+	remove_comments(buf);
 
 	p = buf;
-
-	/* break at comment, unless preceeded by \ */
-	p2 = strchr(p, '#');
-	if (p2 && (p2 == p || *(p2 - 1) != '\\')) {
-		*p2 = '\0';
-	}
 
 	/* skip spaces */
 	while (*p && isspace((int) *p)) {
@@ -7332,6 +7334,7 @@ static void load_config_file(const char *f)
 				if (fgets(buf, CONF_BUFF_SIZE, fp) == NULL) {
 					break;
 				}
+				remove_comments(buf);
 
 				/* Remove \\-\n. */
 				bl = strlen(buf);
