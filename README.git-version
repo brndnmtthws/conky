@@ -15,6 +15,14 @@ fresh from the git repo:
 	automake-1.9
 	autoconf-2.59
 
+* NOTE: You may also need to install docbook2X for generating the
+	documentation.  Conky will check for the following programs in PATH during
+	configuration:
+
+	db2x_xsltproc
+	db2x_manxml
+	xsltproc
+
 * In the directory where you cloned conky from git,
 	run "aclocal", "automake", and then "autoconf".
 	Make sure you run those commands with the latest versions...
