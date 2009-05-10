@@ -3251,9 +3251,11 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(battery_percent) {
 				percent_print(p, p_max_size, get_battery_perct(obj->data.s));
 			}
+#ifdef X11
 			OBJ(battery_bar) {
 				new_bar(p, obj->a, obj->b, get_battery_perct_bar(obj->data.s));
 			}
+#endif
 			OBJ(battery_short) {
 				get_battery_short_status(p, p_max_size, obj->data.s);
 			}
@@ -3274,6 +3276,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				percent_print(p, p_max_size,
 				              round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100.0));
 			}
+#ifdef X11
 			OBJ(cpugauge)
 				new_gauge(p, obj->a, obj->b,
 						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 255.0));
@@ -3323,6 +3326,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(color9) {
 				new_fg(p, color9);
 			}
+#endif
 			OBJ(conky_version) {
 				snprintf(p, p_max_size, "%s", VERSION);
 			}
@@ -3477,10 +3481,11 @@ static void generate_text_internal(char *p, int p_max_size,
 				get_obsd_product(p, p_max_size);
 			}
 #endif /* __OpenBSD__ */
-
+#ifdef X11
 			OBJ(font) {
 				new_font(p, obj->data.s);
 			}
+#endif
 			/* TODO: move this correction from kB to kB/s elsewhere
 			 * (or get rid of it??) */
 			OBJ(diskio) {
@@ -3495,6 +3500,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				human_readable((obj->data.diskio->current_read / update_interval) * 1024LL,
 						p, p_max_size);
 			}
+#ifdef X11
 			OBJ(diskiograph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 				          obj->data.diskio->current, obj->e, 1, obj->showaslog);
@@ -3507,6 +3513,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 				          obj->data.diskio->current_write, obj->e, 1, obj->showaslog);
 			}
+#endif
 			OBJ(downspeed) {
 				human_readable(obj->data.net->recv_speed, p, 255);
 			}
@@ -3514,10 +3521,12 @@ static void generate_text_internal(char *p, int p_max_size,
 				spaced_print(p, p_max_size, "%.1f", 8,
 						obj->data.net->recv_speed / 1024.0);
 			}
+#ifdef X11
 			OBJ(downspeedgraph) {
-			new_graph(p, obj->a, obj->b, obj->c, obj->d,
-				obj->data.net->recv_speed / 1024.0, obj->e, 1, obj->showaslog);
+				new_graph(p, obj->a, obj->b, obj->c, obj->d,
+					obj->data.net->recv_speed / 1024.0, obj->e, 1, obj->showaslog);
 			}
+#endif
 			OBJ(else) {
 				/* Since we see you, you're if has not jumped.
 				 * Do Ninja jump here: without leaving traces.
@@ -3621,6 +3630,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				free_text_objects(&subroot);
 				free(tmp_info);
 			}
+#ifdef X11
 			OBJ(execgauge) {
 				double barnum;
 
@@ -3707,6 +3717,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 				new_gauge(p, obj->a, obj->b, round_to_int(obj->f));
 			}
+#endif
 			OBJ(execi) {
 				if (current_update_time - obj->data.execi.last_update
 						>= obj->data.execi.interval
@@ -3802,6 +3813,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					timed_thread_unlock(mail->p_timed_thread);
 				}
 			}
+#ifdef X11
 			OBJ(fs_bar) {
 				if (obj->data.fs != NULL) {
 					if (obj->data.fs->size == 0) {
@@ -3813,6 +3825,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					}
 				}
 			}
+#endif
 			OBJ(fs_free) {
 				if (obj->data.fs != NULL) {
 					human_readable( (obj->data.fs->free ? obj->data.fs->free :
@@ -3847,6 +3860,7 @@ static void generate_text_internal(char *p, int p_max_size,
 						? obj->data.fs->free : obj->data.fs->avail), p, 255);
 				}
 			}
+#ifdef X11
 			OBJ(fs_bar_free) {
 				if (obj->data.fs != NULL) {
 					if (obj->data.fs->size == 0) {
@@ -3858,6 +3872,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					}
 				}
 			}
+#endif
 			OBJ(fs_used_perc) {
 				if (obj->data.fs != NULL) {
 					int val = 0;
@@ -3894,9 +3909,11 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(tab) {
 				new_tab(p, obj->data.pair.a, obj->data.pair.b);
 			}
+#ifdef X11
 			OBJ(hr) {
 				new_hr(p, obj->data.i);
 			}
+#endif
 			OBJ(nameserver) {
 				if (cur->nameserver_info.nscount > obj->data.i)
 					snprintf(p, p_max_size, "%s",
@@ -4150,6 +4167,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				if (cur->memmax)
 					percent_print(p, p_max_size, cur->mem * 100 / cur->memmax);
 			}
+#ifdef X11
 			OBJ(memgauge){
 				new_gauge(p, obj->data.pair.a, obj->data.pair.b,
 					cur->memmax ? (cur->mem * 255) / (cur->memmax) : 0);
@@ -4163,7 +4181,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					cur->memmax ? (cur->mem * 100.0) / (cur->memmax) : 0.0,
 					100, 1, obj->showaslog);
 			}
-
+#endif
 			/* mixer stuff */
 			OBJ(mixer) {
 				percent_print(p, p_max_size, mixer_get_avg(obj->data.l));
@@ -4174,6 +4192,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(mixerr) {
 				percent_print(p, p_max_size, mixer_get_right(obj->data.l));
 			}
+#ifdef X11
 			OBJ(mixerbar) {
 				new_bar(p, obj->data.mixerbar.w, obj->data.mixerbar.h,
 					mixer_to_255(obj->data.mixerbar.l,mixer_get_avg(obj->data.mixerbar.l)));
@@ -4186,6 +4205,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_bar(p, obj->data.mixerbar.w, obj->data.mixerbar.h,
 					mixer_to_255(obj->data.mixerbar.l,mixer_get_right(obj->data.mixerbar.l)));
 			}
+#endif
 			OBJ(if_mixer_mute) {
 				if (!mixer_is_mute(obj->data.ifblock.i)) {
 					DO_JUMP;
@@ -4280,12 +4300,14 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(text) {
 				snprintf(p, p_max_size, "%s", obj->data.s);
 			}
+#ifdef X11
 			OBJ(shadecolor) {
 				new_bg(p, obj->data.l);
 			}
 			OBJ(stippled_hr) {
 				new_stippled_hr(p, obj->data.pair.a, obj->data.pair.b);
 			}
+#endif
 			OBJ(swap) {
 				human_readable(cur->swap * 1024, p, 255);
 			}
@@ -4299,10 +4321,12 @@ static void generate_text_internal(char *p, int p_max_size,
 					percent_print(p, p_max_size, cur->swap * 100 / cur->swapmax);
 				}
 			}
+#ifdef X11
 			OBJ(swapbar) {
 				new_bar(p, obj->data.pair.a, obj->data.pair.b,
 					cur->swapmax ? (cur->swap * 255) / (cur->swapmax) : 0);
 			}
+#endif
 			OBJ(sysname) {
 				snprintf(p, p_max_size, "%s", cur->uname_s.sysname);
 			}
@@ -4363,10 +4387,12 @@ static void generate_text_internal(char *p, int p_max_size,
 				spaced_print(p, p_max_size, "%.1f", 8,
 					obj->data.net->trans_speed / 1024.0);
 			}
+#ifdef X11
 			OBJ(upspeedgraph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 					obj->data.net->trans_speed / 1024.0, obj->e, 1, obj->showaslog);
 			}
+#endif
 			OBJ(uptime_short) {
 				format_seconds_short(p, p_max_size, (int) cur->uptime);
 			}
@@ -4450,10 +4476,12 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(mpd_percent) {
 				percent_print(p, p_max_size, (int)(mpd_get_info()->progress * 100));
 			}
+#ifdef X11
 			OBJ(mpd_bar) {
 				new_bar(p, obj->data.pair.a, obj->data.pair.b,
 					(int) (mpd_get_info()->progress * 255.0f));
 			}
+#endif
 			OBJ(mpd_smart) {
 				struct mpd_s *mpd = mpd_get_info();
 				int len = obj->data.i;
@@ -4812,6 +4840,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(entropy_poolsize) {
 				snprintf(p, p_max_size, "%d", cur->entropy.poolsize);
 			}
+#ifdef X11
 			OBJ(entropy_bar) {
 				double entropy_perc;
 
@@ -4819,6 +4848,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					(double) cur->entropy.poolsize;
 				new_bar(p, obj->a, obj->b, (int) (entropy_perc * 255.0f));
 			}
+#endif
 #ifdef IBM
 			OBJ(smapi) {
 				char *s;
