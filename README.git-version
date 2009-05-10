@@ -1,0 +1,37 @@
+QUICK & EASY:
+	$ sh autogen.sh
+	$ ./configure
+	$ make
+	$ ./src/conky # to run Conky
+	# make install
+
+First, read the README. This contains instructions specific to building conky
+fresh from the git repo:
+
+* Conky requires three "auto-tools", with at least the specific version numbers.
+	Make sure these are installed:
+
+	aclocal-1.9
+	automake-1.9
+	autoconf-2.59
+
+* In the directory where you cloned conky from git,
+	run "aclocal", "automake", and then "autoconf".
+	Make sure you run those commands with the latest versions...
+	it is very possible that older versions are installed, and
+	plain "automake" really means automake-1.4, not what we want,
+	but "automake-1.9" instead.
+	Use the "--version" option to check the program version, i.e.
+	"autoconf --version".
+
+	You can also try using the autogen.sh script, like so:
+
+	$ sh autogen.sh
+
+* After that, it's the familiar
+
+	$ ./configure
+	$ make
+	# make install
+
+	You might have to do the last step as root.
