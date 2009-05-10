@@ -9,7 +9,7 @@
 	<varlistentry>
 		<term><command><option>alignment</option></command></term>
 		<listitem>
-			Aligned position on screen, may be top_left, top_right, top_middle, bottom_left, bottom_right, bottom_middle, middle_left, middle_right, or none (also can be abreviated as tl, tr, tm, bl, br, bm, ml, mr)
+			Aligned position on screen, may be top_left, top_right, top_middle, bottom_left, bottom_right, bottom_middle, middle_left, middle_right, or none (also can be abreviated as tl, tr, tm, bl, br, bm, ml, mr).  See also gap_x and gap_y.
 			<para></para></listitem>
 	</varlistentry>
 
@@ -157,7 +157,7 @@
 		<term><command><option>gap_x</option></command></term>
 		<listitem>
 			Gap, in pixels, between right or left border of screen, same as passing -x at command line,
-			e.g. gap_x 10
+			e.g. gap_x 10.  For other position related stuff, see 'alignment'.
 			<para></para></listitem>
 	</varlistentry>
 
@@ -165,7 +165,7 @@
 		<term><command><option>gap_y</option></command></term>
 		<listitem>
 			Gap, in pixels, between top or bottom border of screen, same as passing -y at command line,
-			e.g. gap_y 10.
+			e.g. gap_y 10.  For other position related stuff, see 'alignment'.
 			<para></para></listitem>
 	</varlistentry>
 

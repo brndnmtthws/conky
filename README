@@ -168,7 +168,7 @@ conky(1)                                                              conky(1)
               Aligned position on screen, may be top_left, top_right, top_mid‐
               dle, bottom_left, bottom_right, bottom_middle, middle_left, mid‐
               dle_right,  or  none  (also can be abreviated as tl, tr, tm, bl,
-              br, bm, ml, mr)
+              br, bm, ml, mr). See also gap_x and gap_y.
 
 
        [1mbackground[0m
@@ -263,11 +263,13 @@ conky(1)                                                              conky(1)
 
 
        [1mgap_x  [22mGap,  in pixels, between right or left border of screen, same as
-              passing -x at command line, e.g. gap_x 10
+              passing -x at command line, e.g. gap_x 10.  For  other  position
+              related stuff, see 'alignment'.
 
 
-       [1mgap_y  [22mGap, in pixels, between top or bottom border of screen, same  as
-              passing -y at command line, e.g. gap_y 10.
+       [1mgap_y  [22mGap,  in pixels, between top or bottom border of screen, same as
+              passing -y at command line, e.g. gap_y 10.  For  other  position
+              related stuff, see 'alignment'.
 
 
        [1mif_up_strictness[0m
