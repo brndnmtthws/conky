@@ -245,6 +245,9 @@ enum alignment {
 	NONE
 };
 
+/* display to connect to */
+static char *disp = NULL;
+
 #endif /* X11 */
 
 /* struct that has all info to be shared between
@@ -253,9 +256,6 @@ struct information info;
 
 /* default config file */
 static char *current_config;
-
-/* display to connect to */
-static char *disp = NULL;
 
 /* set to 1 if you want all text to be in uppercase */
 static unsigned int stuff_in_upper_case;
@@ -2598,6 +2598,12 @@ static struct text_object *create_plain_text(const char *s)
 {
 	struct text_object *obj;
 
+	char *esc = strstr(s, "\\#");
+	if (esc) {
+		/* remove extra '\' */
+		strcpy(esc, esc + 1);
+	}
+
 	if (s == NULL || *s == '\0') {
 		return NULL;
 	}
@@ -2817,6 +2823,12 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 
 	while (*p) {
 		if (*p == '\n') {
+			line++;
+		}
+		/* handle comments within the TEXT area */
+		if (*p == '#' && (p == orig_p || *(p - 1) != '\\')) {
+			while (*p && *p != '\n') p++;
+			s = p;
 			line++;
 		}
 		if (*p == '$') {
@@ -6532,6 +6544,7 @@ static void set_default_configurations_for_x(void)
 
 static void set_default_configurations(void)
 {
+	update_uname();
 	fork_to_background = 0;
 	total_run_times = 0;
 	info.cpu_avg_samples = 2;
@@ -6591,7 +6604,6 @@ static void set_default_configurations(void)
 	window.type = TYPE_NORMAL;
 	window.hints = 0;
 	strcpy(window.class_name, PACKAGE_NAME);
-	update_uname();
 	sprintf(window.title, PACKAGE_NAME" (%s)", info.uname_s.nodename);
 #endif
 	stippled_borders = 0;
@@ -6657,85 +6669,103 @@ static void X11_initialisation(void)
 }
 #endif /* X11 */
 
-static void load_config_file(const char *f)
-{
 #define CONF_ERR ERR("%s: %d: config file error", f, line)
 #define CONF_ERR2(a) ERR("%s: %d: config file error: %s", f, line, a)
+#define CONF2(a) if (strcasecmp(name, a) == 0)
+#define CONF(a) else CONF2(a)
+#define CONF3(a, b) else if (strcasecmp(name, a) == 0 \
+		|| strcasecmp(name, b) == 0)
+#define CONF_CONTINUE 1
+#define CONF_BREAK 2
+#define CONF_BUFF_SIZE 512
+
+static FILE *open_config_file(const char *f)
+{
+#ifdef CONFIG_OUTPUT
+	if (!strcmp(f, "==builtin==")) {
+#ifdef HAVE_FOPENCOOKIE
+		return fopencookie(NULL, "r", conf_cookie);
+#endif /* HAVE_FOPENCOOKIE */
+	} else
+#endif /* CONFIG_OUTPUT */
+		return fopen(f, "r");
+}
+
+static int do_config_step(int *line, FILE *fp, char *buf, char **name, char **value)
+{
+	char *p, *p2;
+	(*line)++;
+	if (fgets(buf, CONF_BUFF_SIZE, fp) == NULL) {
+		return CONF_BREAK;
+	}
+
+	p = buf;
+
+	/* break at comment, unless preceeded by \ */
+	p2 = strchr(p, '#');
+	if (p2 && (p2 == p || *(p2 - 1) != '\\')) {
+		*p2 = '\0';
+	}
+
+	/* skip spaces */
+	while (*p && isspace((int) *p)) {
+		p++;
+	}
+	if (*p == '\0') {
+		return CONF_CONTINUE;	/* empty line */
+	}
+
+	*name = p;
+
+	/* skip name */
+	p2 = p;
+	while (*p2 && !isspace((int) *p2)) {
+		p2++;
+	}
+	if (*p2 != '\0') {
+		*p2 = '\0';	/* break at name's end */
+		p2++;
+	}
+
+	/* get value */
+	if (*p2) {
+		p = p2;
+		while (*p && isspace((int) *p)) {
+			p++;
+		}
+
+		*value = p;
+
+		p2 = *value + strlen(*value);
+		while (isspace((int) *(p2 - 1))) {
+			*--p2 = '\0';
+		}
+	} else {
+		*value = 0;
+	}
+	return 0;
+}
+
+static void load_config_file(const char *f)
+{
 	int line = 0;
 	FILE *fp;
 
 	set_default_configurations();
-#ifdef CONFIG_OUTPUT
-	if (!strcmp(f, "==builtin==")) {
-#ifdef HAVE_FOPENCOOKIE
-		fp = fopencookie(NULL, "r", conf_cookie);
-#endif
-	} else
-#endif /* CONFIG_OUTPUT */
-		fp = fopen(f, "r");
-
+	fp = open_config_file(f);
 	if (!fp) {
 		return;
 	}
 	DBGP("reading contents from config file '%s'", f);
 
 	while (!feof(fp)) {
-		char buf[256], *p, *p2, *name, *value;
-
-		line++;
-		if (fgets(buf, 256, fp) == NULL) {
+		char buff[CONF_BUFF_SIZE], *name, *value;
+		int ret = do_config_step(&line, fp, buff, &name, &value);
+		if (ret == CONF_BREAK) {
 			break;
+		} else if (ret == CONF_CONTINUE) {
+			continue;
 		}
-
-		p = buf;
-
-		/* break at comment */
-		p2 = strchr(p, '#');
-		if (p2) {
-			*p2 = '\0';
-		}
-
-		/* skip spaces */
-		while (*p && isspace((int) *p)) {
-			p++;
-		}
-		if (*p == '\0') {
-			continue;	/* empty line */
-		}
-
-		name = p;
-
-		/* skip name */
-		p2 = p;
-		while (*p2 && !isspace((int) *p2)) {
-			p2++;
-		}
-		if (*p2 != '\0') {
-			*p2 = '\0';	/* break at name's end */
-			p2++;
-		}
-
-		/* get value */
-		if (*p2) {
-			p = p2;
-			while (*p && isspace((int) *p)) {
-				p++;
-			}
-
-			value = p;
-
-			p2 = value + strlen(value);
-			while (isspace((int) *(p2 - 1))) {
-				*--p2 = '\0';
-			}
-		} else {
-			value = 0;
-		}
-
-#define CONF2(a) if (strcasecmp(name, a) == 0)
-#define CONF(a) else CONF2(a)
-#define CONF3(a, b) else if (strcasecmp(name, a) == 0 \
-		|| strcasecmp(name, b) == 0)
 
 #ifdef X11
 		CONF2("out_to_x") {
@@ -7299,8 +7329,9 @@ static void load_config_file(const char *f)
 			while (!feof(fp)) {
 				unsigned int l = strlen(global_text);
 				unsigned int bl;
+				char buf[CONF_BUFF_SIZE];
 
-				if (fgets(buf, 256, fp) == NULL) {
+				if (fgets(buf, CONF_BUFF_SIZE, fp) == NULL) {
 					break;
 				}
 
@@ -7429,71 +7460,19 @@ static void load_config_file_x11(const char *f)
 	int line = 0;
 	FILE *fp;
 
-#ifdef CONFIG_OUTPUT
-	if (!strcmp(f, "==builtin==")) {
-#ifdef HAVE_FOPENCOOKIE
-		fp = fopencookie(NULL, "r", conf_cookie);
-#endif
-	} else
-#endif /* CONFIG_OUTPUT */
-		fp = fopen(f, "r");
-
+	fp = open_config_file(f);
 	if (!fp) {
 		return;
 	}
 	DBGP("reading contents from config file '%s'", f);
 
 	while (!feof(fp)) {
-		char buf[256], *p, *p2, *name, *value;
-
-		line++;
-		if (fgets(buf, 256, fp) == NULL) {
+		char buff[CONF_BUFF_SIZE], *name, *value;
+		int ret = do_config_step(&line, fp, buff, &name, &value);
+		if (ret == CONF_BREAK) {
 			break;
-		}
-
-		p = buf;
-
-		/* break at comment */
-		p2 = strchr(p, '#');
-		if (p2) {
-			*p2 = '\0';
-		}
-
-		/* skip spaces */
-		while (*p && isspace((int) *p)) {
-			p++;
-		}
-		if (*p == '\0') {
-			continue;	/* empty line */
-		}
-
-		name = p;
-
-		/* skip name */
-		p2 = p;
-		while (*p2 && !isspace((int) *p2)) {
-			p2++;
-		}
-		if (*p2 != '\0') {
-			*p2 = '\0';	/* break at name's end */
-			p2++;
-		}
-
-		/* get value */
-		if (*p2) {
-			p = p2;
-			while (*p && isspace((int) *p)) {
-				p++;
-			}
-
-			value = p;
-
-			p2 = value + strlen(value);
-			while (isspace((int) *(p2 - 1))) {
-				*--p2 = '\0';
-			}
-		} else {
-			value = 0;
+		} else if (ret == CONF_CONTINUE) {
+			continue;
 		}
 
 #ifdef X11
@@ -7649,11 +7628,16 @@ static void load_config_file_x11(const char *f)
 #endif /* X11 */
 #undef CONF
 #undef CONF2
+#undef CONF3
+#undef CONF_ERR
+#undef CONF_ERR2
+#undef CONF_BREAK
+#undef CONF_CONTINUE
+#undef CONF_BUFF_SIZE
 	}
 
 	fclose(fp);
 
-#undef CONF_ERR
 }
 
 static void print_help(const char *prog_name) {

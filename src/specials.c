@@ -206,27 +206,41 @@ static struct special_t *new_special(char *buf, enum special_types t)
 
 void new_gauge(char *buf, int w, int h, int usage)
 {
-	struct special_t *s = new_special(buf, GAUGE);
+#ifdef X11
+	struct special_t *s = 0;
+	if ((output_methods & TO_X) == 0)
+		return;
+
+	s = new_special(buf, GAUGE);
 
 	s->arg = (usage > 255) ? 255 : ((usage < 0) ? 0 : usage);
 	s->width = w;
 	s->height = h;
+#endif
 }
 
 void new_bar(char *buf, int w, int h, int usage)
 {
-	struct special_t *s = new_special(buf, BAR);
+#ifdef X11
+	struct special_t *s = 0;
+
+	if ((output_methods & TO_X) == 0)
+		return;
+
+	s = new_special(buf, BAR);
 
 	s->arg = (usage > 255) ? 255 : ((usage < 0) ? 0 : usage);
 	s->width = w;
 	s->height = h;
+#endif
 }
 
 void new_font(char *buf, char *args)
 {
+#ifdef X11
 	if ((output_methods & TO_X) == 0)
 		return;
-#ifdef X11
+
 	if (args) {
 		struct special_t *s = new_special(buf, FONT);
 
@@ -284,7 +298,13 @@ static void graph_append(struct special_t *graph, double f, char showaslog)
 void new_graph(char *buf, int w, int h, unsigned int first_colour,
 		unsigned int second_colour, double i, int scale, int append, char showaslog)
 {
-	struct special_t *s = new_special(buf, GRAPH);
+#ifdef X11
+	struct special_t *s = 0;
+
+	if ((output_methods & TO_X) == 0)
+		return;
+
+	s = new_special(buf, GRAPH);
 
 	s->width = w;
 	if (s->graph == NULL) {
@@ -321,29 +341,52 @@ void new_graph(char *buf, int w, int h, unsigned int first_colour,
 	if (append) {
 		graph_append(s, i, showaslog);
 	}
+#endif
 }
 
 void new_hr(char *buf, int a)
 {
+#ifdef X11
+	if ((output_methods & TO_X) == 0)
+		return;
+
 	new_special(buf, HORIZONTAL_LINE)->height = a;
+#endif
 }
 
 void new_stippled_hr(char *buf, int a, int b)
 {
-	struct special_t *s = new_special(buf, STIPPLED_HR);
+#ifdef X11
+	struct special_t *s = 0;
+
+	if ((output_methods & TO_X) == 0)
+		return;
+
+	s = new_special(buf, STIPPLED_HR);
 
 	s->height = b;
 	s->arg = a;
+#endif
 }
 
 void new_fg(char *buf, long c)
 {
+#ifdef X11
+	if ((output_methods & TO_X) == 0)
+		return;
+
 	new_special(buf, FG)->arg = c;
+#endif
 }
 
 void new_bg(char *buf, long c)
 {
+#ifdef X11
+	if ((output_methods & TO_X) == 0)
+		return;
+
 	new_special(buf, BG)->arg = c;
+#endif
 }
 
 void new_outline(char *buf, long c)
