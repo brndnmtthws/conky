@@ -376,6 +376,7 @@ enum text_object_type {
 	OBJ_apcupsd_load,
 	OBJ_apcupsd_loadbar,
 	OBJ_apcupsd_loadgraph,
+	OBJ_apcupsd_loadgauge,
 	OBJ_apcupsd_charge,
 	OBJ_apcupsd_timeleft,
 	OBJ_apcupsd_temp,

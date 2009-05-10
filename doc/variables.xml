@@ -179,6 +179,16 @@
 
 	<varlistentry>
 		<term>
+			<command><option>apcupsd_loadgauge</option></command>
+			<option>(height),(width)</option>
+		</term>
+		<listitem>
+			Gauge that shows current load.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
 			<command><option>apcupsd_charge</option></command>
 		</term>
 		<listitem>

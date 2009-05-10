@@ -983,6 +983,7 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_apcupsd_load:
 			case OBJ_apcupsd_loadbar:
 			case OBJ_apcupsd_loadgraph:
+			case OBJ_apcupsd_loadgauge:
 			case OBJ_apcupsd_charge:
 			case OBJ_apcupsd_timeleft:
 			case OBJ_apcupsd_temp:
@@ -2625,6 +2626,8 @@ static struct text_object *construct_text_object(const char *s,
 			END OBJ(apcupsd_loadgraph, INFO_APCUPSD)
 				char* buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e, &obj->showaslog);
 				if (buf) free(buf);
+			END OBJ(apcupsd_loadgauge, INFO_APCUPSD)
+				scan_gauge(arg, &obj->a, &obj->b);
 			END OBJ(apcupsd_charge, INFO_APCUPSD)
 			END OBJ(apcupsd_timeleft, INFO_APCUPSD)
 			END OBJ(apcupsd_temp, INFO_APCUPSD)
@@ -5113,6 +5116,12 @@ static void generate_text_internal(char *p, int p_max_size,
 				progress =	atof(cur->apcupsd.items[APCUPSD_LOAD]);
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 						  (int)progress, 100, 1, obj->showaslog);
+			}
+			OBJ(apcupsd_loadgauge) {
+				double progress;
+				progress =	atof(cur->apcupsd.items[APCUPSD_LOAD]);
+				new_gauge(p, obj->a, obj->b,
+						  (int)progress);
 			}
 			OBJ(apcupsd_charge) {
 				snprintf(p, p_max_size, "%s",
