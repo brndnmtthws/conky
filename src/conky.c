@@ -6693,10 +6693,13 @@ static FILE *open_config_file(const char *f)
 void remove_comments(char *string) {
 	char *curplace;
 	char *newend = NULL;
+	char *tmpstring;	//strcpy can't be used for overlapping strings
 
 	for(curplace = string; *curplace != 0; curplace++) {
 		if(*curplace == '\\' && *(curplace + 1) == '#') {
-			strcpy(curplace, curplace + 1);
+			tmpstring = strdup(curplace);
+			strcpy(curplace, tmpstring + 1);
+			free(tmpstring);
 		} else if(*curplace == '#' && !newend) {
 			newend = curplace;
 		} else if(*curplace == '\n' && newend) {
