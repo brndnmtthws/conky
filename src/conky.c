@@ -5106,6 +5106,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%s",
 						 cur->apcupsd.items[APCUPSD_LOAD]);
 			}
+#ifdef X11
 			OBJ(apcupsd_loadbar) {
 				double progress;
 				progress =	atof(cur->apcupsd.items[APCUPSD_LOAD]) / 100.0 * 255.0;
@@ -5123,6 +5124,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_gauge(p, obj->a, obj->b,
 						  (int)progress);
 			}
+#endif
 			OBJ(apcupsd_charge) {
 				snprintf(p, p_max_size, "%s",
 						 cur->apcupsd.items[APCUPSD_CHARGE]);
