@@ -1716,7 +1716,8 @@ static struct text_object *construct_text_object(const char *s,
 
 	END OBJ(hwmon, INFO_SYSFS)
 		char buf1[64], buf2[64];
-		int n;
+		float factor, offset;
+		int n, found = 0;
 
 		if (!arg) {
 			ERR("hwmon needs argumanets");
@@ -1724,18 +1725,31 @@ static struct text_object *construct_text_object(const char *s,
 			return NULL;
 		}
 
-		if (sscanf(arg, "%63s %63s %d", buf1, buf2, &n) != 3) {
-			/* if scanf couldn't read three values, read type and num and use
-			 * default device */
-			sscanf(arg, "%63s %d", buf2, &n);
-			obj->data.sysfs.fd = open_hwmon_sensor(0, buf2, n,
-				&obj->data.sysfs.arg, obj->data.sysfs.devtype);
-			strncpy(obj->data.sysfs.type, buf2, 63);
-		} else {
-			obj->data.sysfs.fd = open_hwmon_sensor(buf1, buf2, n,
-				&obj->data.sysfs.arg, obj->data.sysfs.devtype);
-			strncpy(obj->data.sysfs.type, buf2, 63);
+		buf1[0] = 0;
+		factor = 1.0;
+		offset = 0.0;
+
+		if (sscanf(arg, "%63s %63s %d %f %f", buf1, buf2, &n, &factor, &offset) == 5)
+			found = 1;
+		if (!found && (sscanf(arg, "%63s %d %f %f", buf2, &n, &factor, &offset) == 3))
+			found = 1;
+		if (!found && (sscanf(arg, "%63s %63s %d", buf1, buf2, &n) == 3))
+			found = 1;
+		if (!found && (sscanf(arg, "%63s %d", buf2, &n) == 2))
+			found = 1;
+
+		if (!found) {
+			ERR("hwmon failed to parse arguments");
+			obj->type = OBJ_text;
+			return NULL;
 		}
+		DBGP("parsed hwmon args: %s %s %d %f %f\n", buf1, buf2, n, factor, offset);
+		obj->data.sysfs.fd = open_hwmon_sensor((*buf1) ? buf1 : 0, buf2, n,
+				&obj->data.sysfs.arg, obj->data.sysfs.devtype);
+		strncpy(obj->data.sysfs.type, buf2, 63);
+		obj->data.sysfs.factor = factor;
+		obj->data.sysfs.offset = offset;
+
 #endif /* !__OpenBSD__ */
 
 	END
@@ -4135,6 +4149,8 @@ static void generate_text_internal(char *p, int p_max_size,
 
 				r = get_sysfs_info(&obj->data.sysfs.fd, obj->data.sysfs.arg,
 					obj->data.sysfs.devtype, obj->data.sysfs.type);
+
+				r = r * obj->data.sysfs.factor + obj->data.sysfs.offset;
 
 				if (!strncmp(obj->data.sysfs.type, "temp", 4)) {
 					temp_print(p, p_max_size, r, TEMP_CELSIUS);

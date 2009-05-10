@@ -1015,10 +1015,10 @@
 	<varlistentry>
 		<term>
 			<command><option>hwmon</option></command>
-			<option>(dev) type n</option>
+			<option>(dev) type n (factor offset)</option>
 		</term>
 		<listitem>
-			Hwmon sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you have only one hwmon device. Parameter type is either 'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp' meaning temperature. Parameter n is number of the sensor. See /sys/class/hwmon/ on your local computer.
+			Hwmon sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you have only one hwmon device. Parameter type is either 'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp' meaning temperature. Parameter n is number of the sensor. See /sys/class/hwmon/ on your local computer. The optional arguments 'factor' and 'offset' allow precalculation of the raw input, which is being modified as follows: 'input = input * factor + offset'. Note that they have to be given as decimal values (i.e. contain at least one decimal place).
 			<para></para></listitem>
 	</varlistentry>
 

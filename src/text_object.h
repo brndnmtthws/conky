@@ -460,7 +460,8 @@ struct text_object {
 			int arg;
 			char devtype[256];
 			char type[64];
-		} sysfs;		/* 2 */
+			float factor, offset;
+		} sysfs;
 
 		struct {
 			struct text_object *next;
