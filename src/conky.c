@@ -5120,7 +5120,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(apcupsd_loadgauge) {
 				double progress;
-				progress =	atof(cur->apcupsd.items[APCUPSD_LOAD]);
+				progress =	atof(cur->apcupsd.items[APCUPSD_LOAD]) / 100.0 * 255.0;
 				new_gauge(p, obj->a, obj->b,
 						  (int)progress);
 			}

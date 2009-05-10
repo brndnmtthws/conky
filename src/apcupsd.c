@@ -19,6 +19,7 @@
 
 #include "conky.h"
 #include "apcupsd.h"
+#include "logging.h"
 
 #include <errno.h>
 #include <sys/time.h>
@@ -159,6 +160,11 @@ void update_apcupsd(void) {
 		struct hostent* he = 0;
 		struct sockaddr_in addr;
 		short sz = 0;
+#ifdef HAVE_GETHOSTBYNAME_R
+		struct hostent he_mem;
+		int he_errno;
+		char hostbuff[2048];
+#endif
 		//
 		// connect to apcupsd daemon
 		//
@@ -167,11 +173,19 @@ void update_apcupsd(void) {
 			perror("socket");
 			break;
 		}
+#ifdef HAVE_GETHOSTBYNAME_R
+		if (gethostbyname_r(info.apcupsd.host, &he_mem, hostbuff, sizeof(hostbuff), &he, &he_errno)) {
+			ERR("APCUPSD gethostbyname_r: %s", hstrerror(h_errno));
+			break;
+		}
+#else /* HAVE_GETHOSTBYNAME_R */
 		he = gethostbyname(info.apcupsd.host);
 		if (!he) {
 			herror("gethostbyname");
 			break;
 		}
+#endif /* HAVE_GETHOSTBYNAME_R */
+		
 		memset(&addr, 0, sizeof(addr));
 		addr.sin_family = AF_INET;
 		addr.sin_port = info.apcupsd.port;
