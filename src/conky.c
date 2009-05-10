@@ -6691,15 +6691,16 @@ static FILE *open_config_file(const char *f)
 }
 
 void remove_comments(char *string) {
-	char *curplace;
+	char *curplace, *curplace2;
 	char *newend = NULL;
-	char *tmpstring;	//strcpy can't be used for overlapping strings
 
 	for(curplace = string; *curplace != 0; curplace++) {
 		if(*curplace == '\\' && *(curplace + 1) == '#') {
-			tmpstring = strdup(curplace);
-			strcpy(curplace, tmpstring + 1);
-			free(tmpstring);
+			//strcpy can't be used for overlapping strings
+			for (curplace2 = curplace+1; *curplace2 != 0; curplace2++) {
+				*(curplace2 - 1) = *curplace2;
+			}
+			*(curplace2 - 1) = 0;
 		} else if(*curplace == '#' && !newend) {
 			newend = curplace;
 		} else if(*curplace == '\n' && newend) {
