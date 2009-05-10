@@ -277,9 +277,9 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 	if (sscanf(arg, "%128s %128s %128s", mail->host, mail->user, mail->pass)
 			!= 3) {
 		if (type == POP3_TYPE) {
-			ERR("Scanning IMAP args failed");
-		} else if (type == IMAP_TYPE) {
 			ERR("Scanning POP3 args failed");
+		} else if (type == IMAP_TYPE) {
+			ERR("Scanning IMAP args failed");
 		}
 		return 0;
 	}
