@@ -561,13 +561,18 @@ static void human_readable(long long num, char *buf, int size)
 	 * so the point of alignment resides between number and unit. The
 	 * upside of this is that there is minimal padding necessary, though
 	 * there should be a way to make alignment take place at the decimal
-	 * dot (then with fixed width decimal part). * */
+	 * dot (then with fixed width decimal part). 
+	 *
+	 * Note the repdigits below: when given a precision value, printf()
+	 * rounds the float to it, not just cuts off the remaining digits. So
+	 * e.g. 99.95 with a precision of 1 gets 100.0, which again should be
+	 * printed with a precision of 0. Yay. */
 
 	precision = 0;		/* print 100-999 without decimal part */
-	if (fnum < 100)
+	if (fnum < 99.95)
 		precision = 1;	/* print 10-99 with one decimal place */
-	if (fnum < 10)
-		precision = 2;	/* print 0-9 with two decimal place */
+	if (fnum < 9.995)
+		precision = 2;	/* print 0-9 with two decimal places */
 
 	spaced_print(buf, size, format, width, precision, fnum, *suffix);
 }
