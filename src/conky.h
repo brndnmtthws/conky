@@ -103,6 +103,10 @@ char *strndup(const char *s, size_t n);
 #include "smapi.h"
 #endif
 
+#ifdef APCUPSD
+#include "apcupsd.h"
+#endif
+
 /* sony support */
 #include "sony.h"
 
@@ -190,7 +194,10 @@ enum {
 #endif
 	INFO_DNS = 30,
 #ifdef MOC
-  INFO_MOC = 31
+	INFO_MOC = 31,
+#endif
+#ifdef APCUPSD
+ 	INFO_APCUPSD = 32,
 #endif
 };
 
@@ -260,6 +267,10 @@ struct information {
 
 #ifdef X11
 	struct x11_info x11;
+#endif
+
+#ifdef APCUPSD
+	APCUPSD_S apcupsd;
 #endif
 
 	short kflags;	/* kernel settings, see enum KFLAG */

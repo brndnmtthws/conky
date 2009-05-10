@@ -111,6 +111,10 @@ if BUILD_NVIDIA
 nvidia = nvidia.c nvidia.h
 endif
 
+if BUILD_APCUPSD
+apcupsd = apcupsd.c apcupsd.h
+endif
+
 conky_SOURCES = \
 	$(config_output)        \
 	$(config_cookie)        \
@@ -124,6 +128,7 @@ conky_SOURCES = \
 	$(freebsd)              \
 	fs.c                    \
 	$(hddtemp)              \
+	$(apcupsd)              \
 	$(linux)                \
 	logging.h               \
 	$(nvidia)               \
@@ -175,6 +180,8 @@ EXTRA_DIST = \
 	fs.h                    \
 	hddtemp.c               \
 	hddtemp.h               \
+	apcupsd.c               \
+	apcupsd.h               \
 	linux.c                 \
 	linux.h                 \
 	libmpdclient.c          \

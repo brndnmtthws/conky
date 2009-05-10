@@ -364,7 +364,23 @@ enum text_object_type {
 	OBJ_combine,
 	OBJ_entropy_avail,
 	OBJ_entropy_poolsize,
-	OBJ_entropy_bar
+	OBJ_entropy_bar,
+#ifdef APCUPSD
+	OBJ_apcupsd,
+	OBJ_apcupsd_name,
+	OBJ_apcupsd_model,
+	OBJ_apcupsd_upsmode,
+	OBJ_apcupsd_cable,
+	OBJ_apcupsd_status,
+	OBJ_apcupsd_linev,
+	OBJ_apcupsd_load,
+	OBJ_apcupsd_loadbar,
+	OBJ_apcupsd_loadgraph,
+	OBJ_apcupsd_charge,
+	OBJ_apcupsd_timeleft,
+	OBJ_apcupsd_temp,
+	OBJ_apcupsd_lastxfer,
+#endif
 };
 
 struct text_object {

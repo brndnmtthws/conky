@@ -214,6 +214,9 @@ static void print_version(void)
 #ifdef MIXER_IS_ALSA
 		   "  * ALSA mixer support\n"
 #endif /* MIXER_IS_ALSA */
+#ifdef APCUPSD
+			"  * apcupsd\n"
+#endif /* APCUPSD */
 	);
 
 	exit(0);
@@ -969,6 +972,23 @@ static void free_text_objects(struct text_object *root)
 				free_text_objects(obj->sub);
 				free(obj->sub);
 				break;
+#ifdef APCUPSD
+			case OBJ_apcupsd:
+			case OBJ_apcupsd_name:
+			case OBJ_apcupsd_model:
+			case OBJ_apcupsd_upsmode:
+			case OBJ_apcupsd_cable:
+			case OBJ_apcupsd_status:
+			case OBJ_apcupsd_linev:
+			case OBJ_apcupsd_load:
+			case OBJ_apcupsd_loadbar:
+			case OBJ_apcupsd_loadgraph:
+			case OBJ_apcupsd_charge:
+			case OBJ_apcupsd_timeleft:
+			case OBJ_apcupsd_temp:
+			case OBJ_apcupsd_lastxfer:
+				break;
+#endif /* APCUPSD */
 		}
 		free(obj);
 	}
@@ -1022,12 +1042,12 @@ static struct text_object *construct_text_object(const char *s,
 	obj->line = line;
 
 #define OBJ(a, n) if (strcmp(s, #a) == 0) { \
-	obj->type = OBJ_##a; need_mask |= (1 << n); {
+	obj->type = OBJ_##a; need_mask |= (1ULL << n); {
 #define OBJ_IF(a, n) if (strcmp(s, #a) == 0) { \
-	obj->type = OBJ_##a; need_mask |= (1 << n); \
+	obj->type = OBJ_##a; need_mask |= (1ULL << n); \
 	obj_be_ifblock_if(ifblock_opaque, obj); {
 #define OBJ_THREAD(a, n) if (strcmp(s, #a) == 0 && allow_threaded) { \
-	obj->type = OBJ_##a; need_mask |= (1 << n); {
+	obj->type = OBJ_##a; need_mask |= (1ULL << n); {
 #define END } } else
 
 #ifdef X11
@@ -2578,6 +2598,38 @@ static struct text_object *construct_text_object(const char *s,
 				 " specified: '%s'\n", arg);
 		}
 #endif /* NVIDIA */
+#ifdef APCUPSD
+		init_apcupsd();
+		END OBJ(apcupsd, INFO_APCUPSD)
+			if (arg) {
+				char host[64];
+				int port;
+				if (sscanf(arg, "%63s %d", host, &port) != 2) {
+					CRIT_ERR("apcupsd needs arguments: <host> <port>");
+				} else {
+					info.apcupsd.port = htons(port);
+					strncpy(info.apcupsd.host, host, sizeof(info.apcupsd.host));
+				}
+			} else {
+				CRIT_ERR("apcupsd needs arguments: <host> <port>");
+			}
+			END OBJ(apcupsd_name, INFO_APCUPSD)
+			END OBJ(apcupsd_model, INFO_APCUPSD)
+			END OBJ(apcupsd_upsmode, INFO_APCUPSD)
+			END OBJ(apcupsd_cable, INFO_APCUPSD)
+			END OBJ(apcupsd_status, INFO_APCUPSD)
+			END OBJ(apcupsd_linev, INFO_APCUPSD)
+			END OBJ(apcupsd_load, INFO_APCUPSD)
+			END OBJ(apcupsd_loadbar, INFO_APCUPSD)
+				scan_bar(arg, &obj->a, &obj->b);
+			END OBJ(apcupsd_loadgraph, INFO_APCUPSD)
+				char* buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e, &obj->showaslog);
+				if (buf) free(buf);
+			END OBJ(apcupsd_charge, INFO_APCUPSD)
+			END OBJ(apcupsd_timeleft, INFO_APCUPSD)
+			END OBJ(apcupsd_temp, INFO_APCUPSD)
+			END OBJ(apcupsd_lastxfer, INFO_APCUPSD)
+#endif /* APCUPSD */
 	END {
 		char buf[256];
 
@@ -5019,7 +5071,66 @@ static void generate_text_internal(char *p, int p_max_size,
 					snprintf(p, p_max_size, "%d", value);
 			}
 #endif /* NVIDIA */
-
+#ifdef APCUPSD
+			OBJ(apcupsd) {
+				/* This is just a meta-object to set host:port */
+			}
+			OBJ(apcupsd_name) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_NAME]);
+			}
+			OBJ(apcupsd_model) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_MODEL]);
+			}
+			OBJ(apcupsd_upsmode) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_UPSMODE]);
+			}
+			OBJ(apcupsd_cable) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_CABLE]);
+			}
+			OBJ(apcupsd_status) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_STATUS]);
+			}
+			OBJ(apcupsd_linev) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_LINEV]);
+			}
+			OBJ(apcupsd_load) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_LOAD]);
+			}
+			OBJ(apcupsd_loadbar) {
+				double progress;
+				progress =	atof(cur->apcupsd.items[APCUPSD_LOAD]) / 100.0 * 255.0;
+				new_bar(p, obj->a, obj->b, (int)progress);
+			}
+			OBJ(apcupsd_loadgraph) {
+				double progress;
+				progress =	atof(cur->apcupsd.items[APCUPSD_LOAD]);
+				new_graph(p, obj->a, obj->b, obj->c, obj->d,
+						  (int)progress, 100, 1, obj->showaslog);
+			}
+			OBJ(apcupsd_charge) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_CHARGE]);
+			}
+			OBJ(apcupsd_timeleft) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_TIMELEFT]);
+			}
+			OBJ(apcupsd_temp) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_TEMP]);
+			}
+			OBJ(apcupsd_lastxfer) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_LASTXFER]);
+			}
+#endif /* APCUPSD */
 			break;
 		}
 #undef DO_JUMP
