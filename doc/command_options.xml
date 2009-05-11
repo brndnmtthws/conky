@@ -35,6 +35,13 @@
 	</varlistentry>
 
 	<varlistentry>
+		<term><command><option>-C | --print-config</option></command></term>
+		<listitem>
+			Print builtin default config to stdout. See also the section EXAMPLES for more information.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
 		<term><command><option>-d | --daemonize</option></command></term>
 		<listitem>
 			Daemonize Conky, aka fork to background

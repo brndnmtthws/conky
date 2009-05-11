@@ -190,6 +190,11 @@
 				<listitem>Start Conky to background at coordinates (5, 500).</listitem>
 			</varlistentry>
 
+			<varlistentry>
+				<term><varname>conky </varname><option>-C > ~/.conkyrc</option></term>
+				<listitem>Do not start Conky, but have it output the builtin default config file to ~/.conkyrc for later customising.</listitem>
+			</varlistentry>
+
 		</variablelist>
 	</refsect1>
 
