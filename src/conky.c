@@ -1262,7 +1262,7 @@ static struct text_object *construct_text_object(const char *s,
 	/* information from sony_laptop kernel module
 	 * /sys/devices/platform/sony-laptop */
 	END OBJ(sony_fanspeed, 0)
-	END OBJ_IF(if_gw, 0)
+	END OBJ_IF(if_gw, INFO_GW)
 	END OBJ(ioscheduler, 0)
 		if (!arg) {
 			CRIT_ERR("get_ioscheduler needs an argument (e.g. hda)");
