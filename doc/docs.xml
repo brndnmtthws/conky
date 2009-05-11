@@ -195,7 +195,16 @@
 
 	<refsect1>
 		<title>Files</title>
-		<filename>~/.conkyrc</filename> default configuration file
+		<variablelist>
+			<varlistentry>
+				<term><filename>${sysconfdir}/conky/conky.conf</filename></term>
+				<listitem>Default system-wide configuration file. The value of ${sysconfdir} depends on the compile-time options (most likely /etc).</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><filename>~/.conkyrc</filename></term>
+				<listitem>Default personal configuration file.</listitem>
+			</varlistentry>
+		</variablelist>
 	</refsect1>
 
 	<refsect1>
