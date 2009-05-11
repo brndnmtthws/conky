@@ -714,9 +714,11 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_image:
 			case OBJ_eval:
 			case OBJ_exec:
+#ifdef X11
 			case OBJ_execgauge:
 			case OBJ_execbar:
 			case OBJ_execgraph:
+#endif
 			case OBJ_execp:
 				free(data.s);
 				break;
@@ -857,9 +859,11 @@ static void free_text_objects(struct text_object *root)
 #endif /* !__OpenBSD__ */
 			case OBJ_execpi:
 			case OBJ_execi:
+#ifdef X11
 			case OBJ_execibar:
 			case OBJ_execigraph:
 			case OBJ_execigauge:
+#endif
 				free(data.execi.cmd);
 				free(data.execi.buffer);
 				break;
@@ -888,7 +892,9 @@ static void free_text_objects(struct text_object *root)
 #endif
 			case OBJ_entropy_avail:
 			case OBJ_entropy_poolsize:
+#ifdef X11
 			case OBJ_entropy_bar:
+#endif
 				break;
 			case OBJ_user_names:
 				if (info.users.names) {
@@ -933,7 +939,9 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_mpd_vol:
 			case OBJ_mpd_bitrate:
 			case OBJ_mpd_status:
+#ifdef X11
 			case OBJ_mpd_bar:
+#endif
 			case OBJ_mpd_elapsed:
 			case OBJ_mpd_length:
 			case OBJ_mpd_track:
@@ -981,9 +989,11 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_apcupsd_status:
 			case OBJ_apcupsd_linev:
 			case OBJ_apcupsd_load:
+#ifdef X11
 			case OBJ_apcupsd_loadbar:
 			case OBJ_apcupsd_loadgraph:
 			case OBJ_apcupsd_loadgauge:
+#endif
 			case OBJ_apcupsd_charge:
 			case OBJ_apcupsd_timeleft:
 			case OBJ_apcupsd_temp:
@@ -996,6 +1006,7 @@ static void free_text_objects(struct text_object *root)
 #undef data
 }
 
+#ifdef X11
 void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
 {
 	char buf1[64];
@@ -1009,6 +1020,7 @@ void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
 		scan_bar(arg, w, h);
 	}
 }
+#endif
 
 /* strip a leading /dev/ if any, following symlinks first
  *
@@ -1202,6 +1214,7 @@ static struct text_object *construct_text_object(const char *s,
 			strcpy(bat, "BAT0");
 		}
 		obj->data.s = strndup(bat, text_buffer_size);
+#ifdef X11
 	END OBJ(battery_bar, 0)
 		char bat[64];
 		obj->b = 6;
@@ -1212,6 +1225,7 @@ static struct text_object *construct_text_object(const char *s,
 			strcpy(bat, "BAT0");
 		}
 		obj->data.s = strndup(bat, text_buffer_size);
+#endif
 #endif /* !__OpenBSD__ */
 
 #if defined(__linux__)
@@ -1326,6 +1340,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(cpu, INFO_CPU)
 		SCAN_CPU(arg, obj->data.cpu_index);
 		DBGP2("Adding $cpu for CPU %d", obj->data.cpu_index);
+#ifdef X11
 	END OBJ(cpugauge, INFO_CPU)
 		SCAN_CPU(arg, obj->data.cpu_index);
 		scan_gauge(arg, &obj->a, &obj->b);
@@ -1350,12 +1365,14 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.loadavg[0] = (r >= 1) ? (unsigned char) a : 0;
 			free(buf);
 		}
+#endif
 	END OBJ(diskio, INFO_DISKIO)
 		obj->data.diskio = prepare_diskio_stat(dev_name(arg));
 	END OBJ(diskio_read, INFO_DISKIO)
 		obj->data.diskio = prepare_diskio_stat(dev_name(arg));
 	END OBJ(diskio_write, INFO_DISKIO)
 		obj->data.diskio = prepare_diskio_stat(dev_name(arg));
+#ifdef X11
 	END OBJ(diskiograph, INFO_DISKIO)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
@@ -1377,6 +1394,7 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
 		if (buf)
 			free(buf);
+#endif
 	END OBJ(color, 0)
 #ifdef X11
 		if (output_methods & TO_X) {
@@ -1403,8 +1421,10 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.l = color8;
 	END OBJ(color9, 0)
 		obj->data.l = color9;
+#ifdef X11
 	END OBJ(font, 0)
 		obj->data.s = scan_font(arg);
+#endif
 	END OBJ(conky_version, 0)
 	END OBJ(conky_build_date, 0)
 	END OBJ(conky_build_arch, 0)
@@ -1420,6 +1440,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			CRIT_ERR("downspeedf needs argument");
 		}
+#ifdef X11
 	END OBJ(downspeedgraph, INFO_NET)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
@@ -1428,6 +1449,7 @@ static struct text_object *construct_text_object(const char *s,
 		buf = strndup(buf ? buf : "DEFAULTNETDEV", text_buffer_size);
 		obj->data.net = get_net_stat(buf);
 		free(buf);
+#endif
 	END OBJ(else, 0)
 		obj_be_ifblock_else(ifblock_opaque, obj);
 	END OBJ(endif, 0)
@@ -1445,6 +1467,7 @@ static struct text_object *construct_text_object(const char *s,
 	obj->a = default_##arg##_width; \
 	obj->b = default_##arg##_height; \
 }
+#ifdef X11
 	END OBJ(execgauge, 0)
 		SIZE_DEFAULTS(gauge);
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
@@ -1496,6 +1519,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->data.execi.cmd = strndup(arg + n, text_buffer_size);
 		}
+#endif
 	END OBJ(execi, 0)
 		int n;
 
@@ -1550,6 +1574,7 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.s = strndup("", text_buffer_size);
 	}
 #endif
+#ifdef X11
 	END OBJ(fs_bar, INFO_FS)
 		arg = scan_bar(arg, &obj->data.fsbar.w, &obj->data.fsbar.h);
 	if (arg) {
@@ -1577,6 +1602,7 @@ static struct text_object *construct_text_object(const char *s,
 		}
 
 		obj->data.fsbar.fs = prepare_fs_stat(arg);
+#endif
 	END OBJ(fs_free, INFO_FS)
 		if (!arg) {
 			arg = "/";
@@ -2102,6 +2128,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(memfree, INFO_MEM)
 	END OBJ(memmax, INFO_MEM)
 	END OBJ(memperc, INFO_MEM)
+#ifdef X11
 	END OBJ(memgauge, INFO_MEM)
 		scan_gauge(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(membar, INFO_MEM)
@@ -2113,12 +2140,14 @@ static struct text_object *construct_text_object(const char *s,
 		if (buf) {
 			free(buf);
 		}
+#endif
 	END OBJ(mixer, INFO_MIXER)
 		obj->data.l = mixer_init(arg);
 	END OBJ(mixerl, INFO_MIXER)
 		obj->data.l = mixer_init(arg);
 	END OBJ(mixerr, INFO_MIXER)
 		obj->data.l = mixer_init(arg);
+#ifdef X11
 	END OBJ(mixerbar, INFO_MIXER)
 		scan_mixer_bar(arg, &obj->data.mixerbar.l, &obj->data.mixerbar.w,
 			&obj->data.mixerbar.h);
@@ -2128,6 +2157,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(mixerrbar, INFO_MIXER)
 		scan_mixer_bar(arg, &obj->data.mixerbar.l, &obj->data.mixerbar.w,
 			&obj->data.mixerbar.h);
+#endif
 	END OBJ_IF(if_mixer_mute, INFO_MIXER)
 		obj->data.ifblock.i = mixer_init(arg);
 #ifdef X11
@@ -2163,8 +2193,10 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(swap, INFO_MEM)
 	END OBJ(swapmax, INFO_MEM)
 	END OBJ(swapperc, INFO_MEM)
+#ifdef X11
 	END OBJ(swapbar, INFO_MEM)
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+#endif
 	END OBJ(sysname, 0)
 	END OBJ(time, 0)
 		obj->data.s = strndup(arg ? arg : "%F %T", text_buffer_size);
@@ -2252,6 +2284,7 @@ static struct text_object *construct_text_object(const char *s,
 			CRIT_ERR("upspeedf needs argument");
 		}
 
+#ifdef X11
 	END OBJ(upspeedgraph, INFO_NET)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
@@ -2260,6 +2293,7 @@ static struct text_object *construct_text_object(const char *s,
 		buf = strndup(buf ? buf : "DEFAULTNETDEV", text_buffer_size);
 		obj->data.net = get_net_stat(buf);
 		free(buf);
+#endif
 	END OBJ(uptime_short, INFO_UPTIME)
 	END OBJ(uptime, INFO_UPTIME)
 	END OBJ(user_names, INFO_USERS)
@@ -2389,9 +2423,11 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(mpd_vol, INFO_MPD) init_mpd();
 	END OBJ(mpd_bitrate, INFO_MPD) init_mpd();
 	END OBJ(mpd_status, INFO_MPD) init_mpd();
+#ifdef X11
 	END OBJ(mpd_bar, INFO_MPD)
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 		init_mpd();
+#endif
 	END OBJ(mpd_smart, INFO_MPD)
 		mpd_set_maxlen(mpd_smart);
 		init_mpd();
@@ -2530,9 +2566,11 @@ static struct text_object *construct_text_object(const char *s,
 		tcp_portmon_init(arg, &obj->data.tcp_port_monitor);
 #endif
 	END OBJ(entropy_avail, INFO_ENTROPY)
-		END OBJ(entropy_poolsize, INFO_ENTROPY)
-		END OBJ(entropy_bar, INFO_ENTROPY)
+	END OBJ(entropy_poolsize, INFO_ENTROPY)
+#ifdef X11
+	END OBJ(entropy_bar, INFO_ENTROPY)
 		scan_bar(arg, &obj->a, &obj->b);
+#endif
 	END OBJ(scroll, 0)
 		int n1, n2;
 
@@ -2621,6 +2659,7 @@ static struct text_object *construct_text_object(const char *s,
 			END OBJ(apcupsd_status, INFO_APCUPSD)
 			END OBJ(apcupsd_linev, INFO_APCUPSD)
 			END OBJ(apcupsd_load, INFO_APCUPSD)
+#ifdef X11
 			END OBJ(apcupsd_loadbar, INFO_APCUPSD)
 				scan_bar(arg, &obj->a, &obj->b);
 			END OBJ(apcupsd_loadgraph, INFO_APCUPSD)
@@ -2628,6 +2667,7 @@ static struct text_object *construct_text_object(const char *s,
 				if (buf) free(buf);
 			END OBJ(apcupsd_loadgauge, INFO_APCUPSD)
 				scan_gauge(arg, &obj->a, &obj->b);
+#endif
 			END OBJ(apcupsd_charge, INFO_APCUPSD)
 			END OBJ(apcupsd_timeleft, INFO_APCUPSD)
 			END OBJ(apcupsd_temp, INFO_APCUPSD)
@@ -7036,6 +7076,7 @@ static void load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
+#ifdef X11
 		CONF("default_bar_size") {
 			char err = 0;
 			if (value) {
@@ -7075,6 +7116,7 @@ static void load_config_file(const char *f)
 				CONF_ERR2("default_gauge_size takes 2 integer arguments (ie. 'default_gauge_size 0 6')")
 			}
 		}
+#endif
 #ifdef MPD
 		CONF("mpd_host") {
 			if (value) {
