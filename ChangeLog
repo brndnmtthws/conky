@@ -1,5 +1,9 @@
+2009-05-11
+	* Added arguments to hwmon for value precalculation
+
 2009-05-10
 	* Added support for APC UPS daemon monitoring
+	* Fixed hwmon for kernel 2.6.29
 
 2009-05-09
 	* Allow the use of '#' for comments within text area (can be escaped with
