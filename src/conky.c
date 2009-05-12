@@ -2322,7 +2322,6 @@ static struct text_object *construct_text_object(const char *s,
 #if defined(__linux__)
 	END OBJ(gw_iface, INFO_GW)
 	END OBJ(gw_ip, INFO_GW)
-	END OBJ(if_gw, INFO_GW)
 #endif /* !__linux__ */
 #ifndef __OpenBSD__
 	END OBJ(adt746xcpu, 0)
