@@ -1,4 +1,6 @@
-NOTE: Since moving to Git, I am no longer going to continue to update this file (in favour of Git's log stuff).
+NOTE: Since moving to Git, I am no longer going to continue to update this file
+(in favour of Git's log stuff).  If you want to add yourself here when you
+submit a patch, feel free.
 
 Authors of conky in alphapetical order (please, send mail if I forgot
 somebody or email address / name is wrong):
@@ -120,6 +122,9 @@ Henri Häkkinen <henux at users dot sourceforge dot net>
 
 hinokind <hinokind at users dot sourceforge dot net>
   support negative values in human_readable()
+
+Jaromir Smrcek <jaromir dot smrcek at zoner dot com>
+  APC UPS daemon support
 
 Jason Mitchell <jason.mitchell03 at saintleo dot edu>
   developer

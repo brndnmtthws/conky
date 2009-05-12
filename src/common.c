@@ -323,7 +323,7 @@ static double last_fs_update;
 unsigned long long need_mask;
 int no_buffers;
 
-#define NEED(a) ((need_mask & (1 << a)) && ((info.mask & (1 << a)) == 0))
+#define NEED(a) ((need_mask & (1ULL << a)) && ((info.mask & (1ULL << a)) == 0))
 
 void update_stuff(void)
 {
@@ -456,6 +456,11 @@ void update_stuff(void)
 	if (NEED(INFO_DNS)) {
 		update_dns_data();
 	}
+#ifdef APCUPSD
+	if (NEED(INFO_APCUPSD)) {
+		update_apcupsd();
+	}
+#endif
 }
 
 int round_to_int(float f)

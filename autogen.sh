@@ -44,6 +44,7 @@ else
 # generate configure.ac with substituted git revision
 sed -e "s/@REVISION@/${revision}/g" < "configure.ac.in" > "configure.ac"
 
+touch README # in case it doesn't exist
 echo Running $ACLOCAL -I m4 ... && $ACLOCAL -I m4
 echo Running $LIBTOOLIZE --force --copy ... && $LIBTOOLIZE --force --copy
 echo Running $AUTOHEADER ... && $AUTOHEADER

@@ -217,6 +217,9 @@ static void print_version(void)
 #ifdef MIXER_IS_ALSA
 		   "  * ALSA mixer support\n"
 #endif /* MIXER_IS_ALSA */
+#ifdef APCUPSD
+			"  * apcupsd\n"
+#endif /* APCUPSD */
 	);
 
 	exit(0);
@@ -561,13 +564,18 @@ static void human_readable(long long num, char *buf, int size)
 	 * so the point of alignment resides between number and unit. The
 	 * upside of this is that there is minimal padding necessary, though
 	 * there should be a way to make alignment take place at the decimal
-	 * dot (then with fixed width decimal part). * */
+	 * dot (then with fixed width decimal part). 
+	 *
+	 * Note the repdigits below: when given a precision value, printf()
+	 * rounds the float to it, not just cuts off the remaining digits. So
+	 * e.g. 99.95 with a precision of 1 gets 100.0, which again should be
+	 * printed with a precision of 0. Yay. */
 
 	precision = 0;		/* print 100-999 without decimal part */
-	if (fnum < 100)
+	if (fnum < 99.95)
 		precision = 1;	/* print 10-99 with one decimal place */
-	if (fnum < 10)
-		precision = 2;	/* print 0-9 with two decimal place */
+	if (fnum < 9.995)
+		precision = 2;	/* print 0-9 with two decimal places */
 
 	spaced_print(buf, size, format, width, precision, fnum, *suffix);
 }
@@ -714,9 +722,11 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_image:
 			case OBJ_eval:
 			case OBJ_exec:
+#ifdef X11
 			case OBJ_execgauge:
 			case OBJ_execbar:
 			case OBJ_execgraph:
+#endif
 			case OBJ_execp:
 				free(data.s);
 				break;
@@ -857,9 +867,11 @@ static void free_text_objects(struct text_object *root)
 #endif /* !__OpenBSD__ */
 			case OBJ_execpi:
 			case OBJ_execi:
+#ifdef X11
 			case OBJ_execibar:
 			case OBJ_execigraph:
 			case OBJ_execigauge:
+#endif
 				free(data.execi.cmd);
 				free(data.execi.buffer);
 				break;
@@ -888,7 +900,9 @@ static void free_text_objects(struct text_object *root)
 #endif
 			case OBJ_entropy_avail:
 			case OBJ_entropy_poolsize:
+#ifdef X11
 			case OBJ_entropy_bar:
+#endif
 				break;
 			case OBJ_user_names:
 				if (info.users.names) {
@@ -933,7 +947,9 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_mpd_vol:
 			case OBJ_mpd_bitrate:
 			case OBJ_mpd_status:
+#ifdef X11
 			case OBJ_mpd_bar:
+#endif
 			case OBJ_mpd_elapsed:
 			case OBJ_mpd_length:
 			case OBJ_mpd_track:
@@ -972,12 +988,33 @@ static void free_text_objects(struct text_object *root)
 				free_text_objects(obj->sub);
 				free(obj->sub);
 				break;
+#ifdef APCUPSD
+			case OBJ_apcupsd:
+			case OBJ_apcupsd_name:
+			case OBJ_apcupsd_model:
+			case OBJ_apcupsd_upsmode:
+			case OBJ_apcupsd_cable:
+			case OBJ_apcupsd_status:
+			case OBJ_apcupsd_linev:
+			case OBJ_apcupsd_load:
+#ifdef X11
+			case OBJ_apcupsd_loadbar:
+			case OBJ_apcupsd_loadgraph:
+			case OBJ_apcupsd_loadgauge:
+#endif
+			case OBJ_apcupsd_charge:
+			case OBJ_apcupsd_timeleft:
+			case OBJ_apcupsd_temp:
+			case OBJ_apcupsd_lastxfer:
+				break;
+#endif /* APCUPSD */
 		}
 		free(obj);
 	}
 #undef data
 }
 
+#ifdef X11
 void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
 {
 	char buf1[64];
@@ -991,6 +1028,7 @@ void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
 		scan_bar(arg, w, h);
 	}
 }
+#endif
 
 /* strip a leading /dev/ if any, following symlinks first
  *
@@ -1025,12 +1063,12 @@ static struct text_object *construct_text_object(const char *s,
 	obj->line = line;
 
 #define OBJ(a, n) if (strcmp(s, #a) == 0) { \
-	obj->type = OBJ_##a; need_mask |= (1 << n); {
+	obj->type = OBJ_##a; need_mask |= (1ULL << n); {
 #define OBJ_IF(a, n) if (strcmp(s, #a) == 0) { \
-	obj->type = OBJ_##a; need_mask |= (1 << n); \
+	obj->type = OBJ_##a; need_mask |= (1ULL << n); \
 	obj_be_ifblock_if(ifblock_opaque, obj); {
 #define OBJ_THREAD(a, n) if (strcmp(s, #a) == 0 && allow_threaded) { \
-	obj->type = OBJ_##a; need_mask |= (1 << n); {
+	obj->type = OBJ_##a; need_mask |= (1ULL << n); {
 #define END } } else
 
 #ifdef X11
@@ -1184,6 +1222,7 @@ static struct text_object *construct_text_object(const char *s,
 			strcpy(bat, "BAT0");
 		}
 		obj->data.s = strndup(bat, text_buffer_size);
+#ifdef X11
 	END OBJ(battery_bar, 0)
 		char bat[64];
 		obj->b = 6;
@@ -1194,6 +1233,7 @@ static struct text_object *construct_text_object(const char *s,
 			strcpy(bat, "BAT0");
 		}
 		obj->data.s = strndup(bat, text_buffer_size);
+#endif
 #endif /* !__OpenBSD__ */
 
 #if defined(__linux__)
@@ -1230,7 +1270,7 @@ static struct text_object *construct_text_object(const char *s,
 	/* information from sony_laptop kernel module
 	 * /sys/devices/platform/sony-laptop */
 	END OBJ(sony_fanspeed, 0)
-	END OBJ_IF(if_gw, 0)
+	END OBJ_IF(if_gw, INFO_GW)
 	END OBJ(ioscheduler, 0)
 		if (!arg) {
 			CRIT_ERR("get_ioscheduler needs an argument (e.g. hda)");
@@ -1299,8 +1339,8 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(buffers, INFO_BUFFERS)
 	END OBJ(cached, INFO_BUFFERS)
 #define SCAN_CPU(__arg, __var) { \
-	int __offset; \
-	if (__arg && sscanf(__arg, " cpu%u %n", &__var, &__offset) == 2) \
+	int __offset = 0; \
+	if (__arg && sscanf(__arg, " cpu%u %n", &__var, &__offset) > 0) \
 		__arg += __offset; \
 	else \
 		__var = 0; \
@@ -1308,6 +1348,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(cpu, INFO_CPU)
 		SCAN_CPU(arg, obj->data.cpu_index);
 		DBGP2("Adding $cpu for CPU %d", obj->data.cpu_index);
+#ifdef X11
 	END OBJ(cpugauge, INFO_CPU)
 		SCAN_CPU(arg, obj->data.cpu_index);
 		scan_gauge(arg, &obj->a, &obj->b);
@@ -1332,12 +1373,14 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.loadavg[0] = (r >= 1) ? (unsigned char) a : 0;
 			free(buf);
 		}
+#endif
 	END OBJ(diskio, INFO_DISKIO)
 		obj->data.diskio = prepare_diskio_stat(dev_name(arg));
 	END OBJ(diskio_read, INFO_DISKIO)
 		obj->data.diskio = prepare_diskio_stat(dev_name(arg));
 	END OBJ(diskio_write, INFO_DISKIO)
 		obj->data.diskio = prepare_diskio_stat(dev_name(arg));
+#ifdef X11
 	END OBJ(diskiograph, INFO_DISKIO)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
@@ -1359,6 +1402,7 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
 		if (buf)
 			free(buf);
+#endif
 	END OBJ(color, 0)
 #ifdef X11
 		if (output_methods & TO_X) {
@@ -1385,8 +1429,10 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.l = color8;
 	END OBJ(color9, 0)
 		obj->data.l = color9;
+#ifdef X11
 	END OBJ(font, 0)
 		obj->data.s = scan_font(arg);
+#endif
 	END OBJ(conky_version, 0)
 	END OBJ(conky_build_date, 0)
 	END OBJ(conky_build_arch, 0)
@@ -1402,6 +1448,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			CRIT_ERR("downspeedf needs argument");
 		}
+#ifdef X11
 	END OBJ(downspeedgraph, INFO_NET)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
@@ -1410,6 +1457,7 @@ static struct text_object *construct_text_object(const char *s,
 		buf = strndup(buf ? buf : "DEFAULTNETDEV", text_buffer_size);
 		obj->data.net = get_net_stat(buf);
 		free(buf);
+#endif
 	END OBJ(else, 0)
 		obj_be_ifblock_else(ifblock_opaque, obj);
 	END OBJ(endif, 0)
@@ -1427,6 +1475,7 @@ static struct text_object *construct_text_object(const char *s,
 	obj->a = default_##arg##_width; \
 	obj->b = default_##arg##_height; \
 }
+#ifdef X11
 	END OBJ(execgauge, 0)
 		SIZE_DEFAULTS(gauge);
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
@@ -1478,6 +1527,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->data.execi.cmd = strndup(arg + n, text_buffer_size);
 		}
+#endif
 	END OBJ(execi, 0)
 		int n;
 
@@ -1532,6 +1582,7 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.s = strndup("", text_buffer_size);
 	}
 #endif
+#ifdef X11
 	END OBJ(fs_bar, INFO_FS)
 		arg = scan_bar(arg, &obj->data.fsbar.w, &obj->data.fsbar.h);
 	if (arg) {
@@ -1559,6 +1610,7 @@ static struct text_object *construct_text_object(const char *s,
 		}
 
 		obj->data.fsbar.fs = prepare_fs_stat(arg);
+#endif
 	END OBJ(fs_free, INFO_FS)
 		if (!arg) {
 			arg = "/";
@@ -1672,7 +1724,8 @@ static struct text_object *construct_text_object(const char *s,
 
 	END OBJ(hwmon, INFO_SYSFS)
 		char buf1[64], buf2[64];
-		int n;
+		float factor, offset;
+		int n, found = 0;
 
 		if (!arg) {
 			ERR("hwmon needs argumanets");
@@ -1680,18 +1733,31 @@ static struct text_object *construct_text_object(const char *s,
 			return NULL;
 		}
 
-		if (sscanf(arg, "%63s %63s %d", buf1, buf2, &n) != 3) {
-			/* if scanf couldn't read three values, read type and num and use
-			 * default device */
-			sscanf(arg, "%63s %d", buf2, &n);
-			obj->data.sysfs.fd = open_hwmon_sensor(0, buf2, n,
-				&obj->data.sysfs.arg, obj->data.sysfs.devtype);
-			strncpy(obj->data.sysfs.type, buf2, 63);
-		} else {
-			obj->data.sysfs.fd = open_hwmon_sensor(buf1, buf2, n,
-				&obj->data.sysfs.arg, obj->data.sysfs.devtype);
-			strncpy(obj->data.sysfs.type, buf2, 63);
+		buf1[0] = 0;
+		factor = 1.0;
+		offset = 0.0;
+
+		if (sscanf(arg, "%63s %63s %d %f %f", buf1, buf2, &n, &factor, &offset) == 5)
+			found = 1;
+		if (!found && (sscanf(arg, "%63s %d %f %f", buf2, &n, &factor, &offset) == 3))
+			found = 1;
+		if (!found && (sscanf(arg, "%63s %63s %d", buf1, buf2, &n) == 3))
+			found = 1;
+		if (!found && (sscanf(arg, "%63s %d", buf2, &n) == 2))
+			found = 1;
+
+		if (!found) {
+			ERR("hwmon failed to parse arguments");
+			obj->type = OBJ_text;
+			return NULL;
 		}
+		DBGP("parsed hwmon args: %s %s %d %f %f\n", buf1, buf2, n, factor, offset);
+		obj->data.sysfs.fd = open_hwmon_sensor((*buf1) ? buf1 : 0, buf2, n,
+				&obj->data.sysfs.arg, obj->data.sysfs.devtype);
+		strncpy(obj->data.sysfs.type, buf2, 63);
+		obj->data.sysfs.factor = factor;
+		obj->data.sysfs.offset = offset;
+
 #endif /* !__OpenBSD__ */
 
 	END
@@ -2084,6 +2150,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(memfree, INFO_MEM)
 	END OBJ(memmax, INFO_MEM)
 	END OBJ(memperc, INFO_MEM)
+#ifdef X11
 	END OBJ(memgauge, INFO_MEM)
 		scan_gauge(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(membar, INFO_MEM)
@@ -2095,12 +2162,14 @@ static struct text_object *construct_text_object(const char *s,
 		if (buf) {
 			free(buf);
 		}
+#endif
 	END OBJ(mixer, INFO_MIXER)
 		obj->data.l = mixer_init(arg);
 	END OBJ(mixerl, INFO_MIXER)
 		obj->data.l = mixer_init(arg);
 	END OBJ(mixerr, INFO_MIXER)
 		obj->data.l = mixer_init(arg);
+#ifdef X11
 	END OBJ(mixerbar, INFO_MIXER)
 		scan_mixer_bar(arg, &obj->data.mixerbar.l, &obj->data.mixerbar.w,
 			&obj->data.mixerbar.h);
@@ -2110,6 +2179,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(mixerrbar, INFO_MIXER)
 		scan_mixer_bar(arg, &obj->data.mixerbar.l, &obj->data.mixerbar.w,
 			&obj->data.mixerbar.h);
+#endif
 	END OBJ_IF(if_mixer_mute, INFO_MIXER)
 		obj->data.ifblock.i = mixer_init(arg);
 #ifdef X11
@@ -2145,8 +2215,10 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(swap, INFO_MEM)
 	END OBJ(swapmax, INFO_MEM)
 	END OBJ(swapperc, INFO_MEM)
+#ifdef X11
 	END OBJ(swapbar, INFO_MEM)
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+#endif
 	END OBJ(sysname, 0)
 	END OBJ(time, 0)
 		obj->data.s = strndup(arg ? arg : "%F %T", text_buffer_size);
@@ -2234,6 +2306,7 @@ static struct text_object *construct_text_object(const char *s,
 			CRIT_ERR("upspeedf needs argument");
 		}
 
+#ifdef X11
 	END OBJ(upspeedgraph, INFO_NET)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->showaslog);
@@ -2242,6 +2315,7 @@ static struct text_object *construct_text_object(const char *s,
 		buf = strndup(buf ? buf : "DEFAULTNETDEV", text_buffer_size);
 		obj->data.net = get_net_stat(buf);
 		free(buf);
+#endif
 	END OBJ(uptime_short, INFO_UPTIME)
 	END OBJ(uptime, INFO_UPTIME)
 	END OBJ(user_names, INFO_USERS)
@@ -2251,7 +2325,6 @@ static struct text_object *construct_text_object(const char *s,
 #if defined(__linux__)
 	END OBJ(gw_iface, INFO_GW)
 	END OBJ(gw_ip, INFO_GW)
-	END OBJ(if_gw, INFO_GW)
 #endif /* !__linux__ */
 #ifndef __OpenBSD__
 	END OBJ(adt746xcpu, 0)
@@ -2371,9 +2444,11 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(mpd_vol, INFO_MPD) init_mpd();
 	END OBJ(mpd_bitrate, INFO_MPD) init_mpd();
 	END OBJ(mpd_status, INFO_MPD) init_mpd();
+#ifdef X11
 	END OBJ(mpd_bar, INFO_MPD)
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 		init_mpd();
+#endif
 	END OBJ(mpd_smart, INFO_MPD)
 		mpd_set_maxlen(mpd_smart);
 		init_mpd();
@@ -2512,9 +2587,11 @@ static struct text_object *construct_text_object(const char *s,
 		tcp_portmon_init(arg, &obj->data.tcp_port_monitor);
 #endif
 	END OBJ(entropy_avail, INFO_ENTROPY)
-		END OBJ(entropy_poolsize, INFO_ENTROPY)
-		END OBJ(entropy_bar, INFO_ENTROPY)
+	END OBJ(entropy_poolsize, INFO_ENTROPY)
+#ifdef X11
+	END OBJ(entropy_bar, INFO_ENTROPY)
 		scan_bar(arg, &obj->a, &obj->b);
+#endif
 	END OBJ(scroll, 0)
 		int n1, n2;
 
@@ -2581,6 +2658,42 @@ static struct text_object *construct_text_object(const char *s,
 				 " specified: '%s'\n", arg);
 		}
 #endif /* NVIDIA */
+#ifdef APCUPSD
+		init_apcupsd();
+		END OBJ(apcupsd, INFO_APCUPSD)
+			if (arg) {
+				char host[64];
+				int port;
+				if (sscanf(arg, "%63s %d", host, &port) != 2) {
+					CRIT_ERR("apcupsd needs arguments: <host> <port>");
+				} else {
+					info.apcupsd.port = htons(port);
+					strncpy(info.apcupsd.host, host, sizeof(info.apcupsd.host));
+				}
+			} else {
+				CRIT_ERR("apcupsd needs arguments: <host> <port>");
+			}
+			END OBJ(apcupsd_name, INFO_APCUPSD)
+			END OBJ(apcupsd_model, INFO_APCUPSD)
+			END OBJ(apcupsd_upsmode, INFO_APCUPSD)
+			END OBJ(apcupsd_cable, INFO_APCUPSD)
+			END OBJ(apcupsd_status, INFO_APCUPSD)
+			END OBJ(apcupsd_linev, INFO_APCUPSD)
+			END OBJ(apcupsd_load, INFO_APCUPSD)
+#ifdef X11
+			END OBJ(apcupsd_loadbar, INFO_APCUPSD)
+				scan_bar(arg, &obj->a, &obj->b);
+			END OBJ(apcupsd_loadgraph, INFO_APCUPSD)
+				char* buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e, &obj->showaslog);
+				if (buf) free(buf);
+			END OBJ(apcupsd_loadgauge, INFO_APCUPSD)
+				scan_gauge(arg, &obj->a, &obj->b);
+#endif
+			END OBJ(apcupsd_charge, INFO_APCUPSD)
+			END OBJ(apcupsd_timeleft, INFO_APCUPSD)
+			END OBJ(apcupsd_temp, INFO_APCUPSD)
+			END OBJ(apcupsd_lastxfer, INFO_APCUPSD)
+#endif /* APCUPSD */
 	END {
 		char buf[256];
 
@@ -2597,12 +2710,6 @@ static struct text_object *construct_text_object(const char *s,
 static struct text_object *create_plain_text(const char *s)
 {
 	struct text_object *obj;
-
-	char *esc = strstr(s, "\\#");
-	if (esc) {
-		/* remove extra '\' */
-		strcpy(esc, esc + 1);
-	}
 
 	if (s == NULL || *s == '\0') {
 		return NULL;
@@ -2823,12 +2930,6 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 
 	while (*p) {
 		if (*p == '\n') {
-			line++;
-		}
-		/* handle comments within the TEXT area */
-		if (*p == '#' && (p == orig_p || *(p - 1) != '\\')) {
-			while (*p && *p != '\n') p++;
-			s = p;
 			line++;
 		}
 		if (*p == '$') {
@@ -3266,9 +3367,11 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(battery_percent) {
 				percent_print(p, p_max_size, get_battery_perct(obj->data.s));
 			}
+#ifdef X11
 			OBJ(battery_bar) {
 				new_bar(p, obj->a, obj->b, get_battery_perct_bar(obj->data.s));
 			}
+#endif
 			OBJ(battery_short) {
 				get_battery_short_status(p, p_max_size, obj->data.s);
 			}
@@ -3289,6 +3392,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				percent_print(p, p_max_size,
 				              round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100.0));
 			}
+#ifdef X11
 			OBJ(cpugauge)
 				new_gauge(p, obj->a, obj->b,
 						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 255.0));
@@ -3338,6 +3442,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(color9) {
 				new_fg(p, color9);
 			}
+#endif
 			OBJ(conky_version) {
 				snprintf(p, p_max_size, "%s", VERSION);
 			}
@@ -3492,10 +3597,11 @@ static void generate_text_internal(char *p, int p_max_size,
 				get_obsd_product(p, p_max_size);
 			}
 #endif /* __OpenBSD__ */
-
+#ifdef X11
 			OBJ(font) {
 				new_font(p, obj->data.s);
 			}
+#endif
 			/* TODO: move this correction from kB to kB/s elsewhere
 			 * (or get rid of it??) */
 			OBJ(diskio) {
@@ -3510,6 +3616,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				human_readable((obj->data.diskio->current_read / update_interval) * 1024LL,
 						p, p_max_size);
 			}
+#ifdef X11
 			OBJ(diskiograph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 				          obj->data.diskio->current, obj->e, 1, obj->showaslog);
@@ -3522,6 +3629,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 				          obj->data.diskio->current_write, obj->e, 1, obj->showaslog);
 			}
+#endif
 			OBJ(downspeed) {
 				human_readable(obj->data.net->recv_speed, p, 255);
 			}
@@ -3529,10 +3637,12 @@ static void generate_text_internal(char *p, int p_max_size,
 				spaced_print(p, p_max_size, "%.1f", 8,
 						obj->data.net->recv_speed / 1024.0);
 			}
+#ifdef X11
 			OBJ(downspeedgraph) {
-			new_graph(p, obj->a, obj->b, obj->c, obj->d,
-				obj->data.net->recv_speed / 1024.0, obj->e, 1, obj->showaslog);
+				new_graph(p, obj->a, obj->b, obj->c, obj->d,
+					obj->data.net->recv_speed / 1024.0, obj->e, 1, obj->showaslog);
 			}
+#endif
 			OBJ(else) {
 				/* Since we see you, you're if has not jumped.
 				 * Do Ninja jump here: without leaving traces.
@@ -3608,6 +3718,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				free_text_objects(&subroot);
 				free(tmp_info);
 			}
+#ifdef X11
 			OBJ(execgauge) {
 				double barnum;
 
@@ -3694,6 +3805,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 				new_gauge(p, obj->a, obj->b, round_to_int(obj->f));
 			}
+#endif
 			OBJ(execi) {
 				if (current_update_time - obj->data.execi.last_update
 						>= obj->data.execi.interval
@@ -3789,6 +3901,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					timed_thread_unlock(mail->p_timed_thread);
 				}
 			}
+#ifdef X11
 			OBJ(fs_bar) {
 				if (obj->data.fs != NULL) {
 					if (obj->data.fs->size == 0) {
@@ -3800,6 +3913,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					}
 				}
 			}
+#endif
 			OBJ(fs_free) {
 				if (obj->data.fs != NULL) {
 					human_readable( (obj->data.fs->free ? obj->data.fs->free :
@@ -3834,6 +3948,7 @@ static void generate_text_internal(char *p, int p_max_size,
 						? obj->data.fs->free : obj->data.fs->avail), p, 255);
 				}
 			}
+#ifdef X11
 			OBJ(fs_bar_free) {
 				if (obj->data.fs != NULL) {
 					if (obj->data.fs->size == 0) {
@@ -3845,6 +3960,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					}
 				}
 			}
+#endif
 			OBJ(fs_used_perc) {
 				if (obj->data.fs != NULL) {
 					int val = 0;
@@ -3881,9 +3997,11 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(tab) {
 				new_tab(p, obj->data.pair.a, obj->data.pair.b);
 			}
+#ifdef X11
 			OBJ(hr) {
 				new_hr(p, obj->data.i);
 			}
+#endif
 			OBJ(nameserver) {
 				if (cur->nameserver_info.nscount > obj->data.i)
 					snprintf(p, p_max_size, "%s",
@@ -4011,6 +4129,8 @@ static void generate_text_internal(char *p, int p_max_size,
 				r = get_sysfs_info(&obj->data.sysfs.fd, obj->data.sysfs.arg,
 					obj->data.sysfs.devtype, obj->data.sysfs.type);
 
+				r = r * obj->data.sysfs.factor + obj->data.sysfs.offset;
+
 				if (!strncmp(obj->data.sysfs.type, "temp", 4)) {
 					temp_print(p, p_max_size, r, TEMP_CELSIUS);
 				} else if (r >= 100.0 || r == 0) {
@@ -4137,6 +4257,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				if (cur->memmax)
 					percent_print(p, p_max_size, cur->mem * 100 / cur->memmax);
 			}
+#ifdef X11
 			OBJ(memgauge){
 				new_gauge(p, obj->data.pair.a, obj->data.pair.b,
 					cur->memmax ? (cur->mem * 255) / (cur->memmax) : 0);
@@ -4150,7 +4271,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					cur->memmax ? (cur->mem * 100.0) / (cur->memmax) : 0.0,
 					100, 1, obj->showaslog);
 			}
-
+#endif
 			/* mixer stuff */
 			OBJ(mixer) {
 				percent_print(p, p_max_size, mixer_get_avg(obj->data.l));
@@ -4161,6 +4282,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(mixerr) {
 				percent_print(p, p_max_size, mixer_get_right(obj->data.l));
 			}
+#ifdef X11
 			OBJ(mixerbar) {
 				new_bar(p, obj->data.mixerbar.w, obj->data.mixerbar.h,
 					mixer_to_255(obj->data.mixerbar.l,mixer_get_avg(obj->data.mixerbar.l)));
@@ -4173,6 +4295,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_bar(p, obj->data.mixerbar.w, obj->data.mixerbar.h,
 					mixer_to_255(obj->data.mixerbar.l,mixer_get_right(obj->data.mixerbar.l)));
 			}
+#endif
 			OBJ(if_mixer_mute) {
 				if (!mixer_is_mute(obj->data.ifblock.i)) {
 					DO_JUMP;
@@ -4267,12 +4390,14 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(text) {
 				snprintf(p, p_max_size, "%s", obj->data.s);
 			}
+#ifdef X11
 			OBJ(shadecolor) {
 				new_bg(p, obj->data.l);
 			}
 			OBJ(stippled_hr) {
 				new_stippled_hr(p, obj->data.pair.a, obj->data.pair.b);
 			}
+#endif
 			OBJ(swap) {
 				human_readable(cur->swap * 1024, p, 255);
 			}
@@ -4286,10 +4411,12 @@ static void generate_text_internal(char *p, int p_max_size,
 					percent_print(p, p_max_size, cur->swap * 100 / cur->swapmax);
 				}
 			}
+#ifdef X11
 			OBJ(swapbar) {
 				new_bar(p, obj->data.pair.a, obj->data.pair.b,
 					cur->swapmax ? (cur->swap * 255) / (cur->swapmax) : 0);
 			}
+#endif
 			OBJ(sysname) {
 				snprintf(p, p_max_size, "%s", cur->uname_s.sysname);
 			}
@@ -4350,10 +4477,12 @@ static void generate_text_internal(char *p, int p_max_size,
 				spaced_print(p, p_max_size, "%.1f", 8,
 					obj->data.net->trans_speed / 1024.0);
 			}
+#ifdef X11
 			OBJ(upspeedgraph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 					obj->data.net->trans_speed / 1024.0, obj->e, 1, obj->showaslog);
 			}
+#endif
 			OBJ(uptime_short) {
 				format_seconds_short(p, p_max_size, (int) cur->uptime);
 			}
@@ -4437,10 +4566,12 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(mpd_percent) {
 				percent_print(p, p_max_size, (int)(mpd_get_info()->progress * 100));
 			}
+#ifdef X11
 			OBJ(mpd_bar) {
 				new_bar(p, obj->data.pair.a, obj->data.pair.b,
 					(int) (mpd_get_info()->progress * 255.0f));
 			}
+#endif
 			OBJ(mpd_smart) {
 				struct mpd_s *mpd = mpd_get_info();
 				int len = obj->data.i;
@@ -4799,6 +4930,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(entropy_poolsize) {
 				snprintf(p, p_max_size, "%d", cur->entropy.poolsize);
 			}
+#ifdef X11
 			OBJ(entropy_bar) {
 				double entropy_perc;
 
@@ -4806,6 +4938,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					(double) cur->entropy.poolsize;
 				new_bar(p, obj->a, obj->b, (int) (entropy_perc * 255.0f));
 			}
+#endif
 #ifdef IBM
 			OBJ(smapi) {
 				char *s;
@@ -4976,7 +5109,74 @@ static void generate_text_internal(char *p, int p_max_size,
 					snprintf(p, p_max_size, "%d", value);
 			}
 #endif /* NVIDIA */
-
+#ifdef APCUPSD
+			OBJ(apcupsd) {
+				/* This is just a meta-object to set host:port */
+			}
+			OBJ(apcupsd_name) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_NAME]);
+			}
+			OBJ(apcupsd_model) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_MODEL]);
+			}
+			OBJ(apcupsd_upsmode) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_UPSMODE]);
+			}
+			OBJ(apcupsd_cable) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_CABLE]);
+			}
+			OBJ(apcupsd_status) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_STATUS]);
+			}
+			OBJ(apcupsd_linev) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_LINEV]);
+			}
+			OBJ(apcupsd_load) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_LOAD]);
+			}
+#ifdef X11
+			OBJ(apcupsd_loadbar) {
+				double progress;
+				progress =	atof(cur->apcupsd.items[APCUPSD_LOAD]) / 100.0 * 255.0;
+				new_bar(p, obj->a, obj->b, (int)progress);
+			}
+			OBJ(apcupsd_loadgraph) {
+				double progress;
+				progress =	atof(cur->apcupsd.items[APCUPSD_LOAD]);
+				new_graph(p, obj->a, obj->b, obj->c, obj->d,
+						  (int)progress, 100, 1, obj->showaslog);
+			}
+			OBJ(apcupsd_loadgauge) {
+				double progress;
+				progress =	atof(cur->apcupsd.items[APCUPSD_LOAD]) / 100.0 * 255.0;
+				new_gauge(p, obj->a, obj->b,
+						  (int)progress);
+			}
+#endif
+			OBJ(apcupsd_charge) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_CHARGE]);
+			}
+			OBJ(apcupsd_timeleft) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_TIMELEFT]);
+			}
+			OBJ(apcupsd_temp) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_TEMP]);
+			}
+			OBJ(apcupsd_lastxfer) {
+				snprintf(p, p_max_size, "%s",
+						 cur->apcupsd.items[APCUPSD_LASTXFER]);
+			}
+#endif /* APCUPSD */
 			break;
 		}
 #undef DO_JUMP
@@ -6691,6 +6891,29 @@ static FILE *open_config_file(const char *f)
 		return fopen(f, "r");
 }
 
+void remove_comments(char *string) {
+	char *curplace, *curplace2;
+	char *newend = NULL;
+
+	for(curplace = string; *curplace != 0; curplace++) {
+		if(*curplace == '\\' && *(curplace + 1) == '#') {
+			//strcpy can't be used for overlapping strings
+			for (curplace2 = curplace+1; *curplace2 != 0; curplace2++) {
+				*(curplace2 - 1) = *curplace2;
+			}
+			*(curplace2 - 1) = 0;
+		} else if(*curplace == '#' && !newend) {
+			newend = curplace;
+		} else if(*curplace == '\n' && newend) {
+			*newend = '\n';
+			newend++;
+		}
+	}
+	if(newend) {
+		*newend = 0;
+	}
+}
+
 static int do_config_step(int *line, FILE *fp, char *buf, char **name, char **value)
 {
 	char *p, *p2;
@@ -6698,14 +6921,9 @@ static int do_config_step(int *line, FILE *fp, char *buf, char **name, char **va
 	if (fgets(buf, CONF_BUFF_SIZE, fp) == NULL) {
 		return CONF_BREAK;
 	}
+	remove_comments(buf);
 
 	p = buf;
-
-	/* break at comment, unless preceeded by \ */
-	p2 = strchr(p, '#');
-	if (p2 && (p2 == p || *(p2 - 1) != '\\')) {
-		*p2 = '\0';
-	}
 
 	/* skip spaces */
 	while (*p && isspace((int) *p)) {
@@ -6867,6 +7085,7 @@ static void load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
+#ifdef X11
 		CONF("default_bar_size") {
 			char err = 0;
 			if (value) {
@@ -6906,6 +7125,7 @@ static void load_config_file(const char *f)
 				CONF_ERR2("default_gauge_size takes 2 integer arguments (ie. 'default_gauge_size 0 6')")
 			}
 		}
+#endif
 #ifdef MPD
 		CONF("mpd_host") {
 			if (value) {
@@ -7263,14 +7483,6 @@ static void load_config_file(const char *f)
 			}
 		}
 #endif /* X11 */
-		CONF("temp1") {
-			ERR("temp1 configuration is obsolete, use ${i2c <i2c device here> "
-				"temp 1}");
-		}
-		CONF("temp2") {
-			ERR("temp2 configuration is obsolete, use ${i2c <i2c device here> "
-				"temp 2}");
-		}
 		CONF("update_interval") {
 			if (value) {
 				update_interval = strtod(value, 0);
@@ -7334,6 +7546,7 @@ static void load_config_file(const char *f)
 				if (fgets(buf, CONF_BUFF_SIZE, fp) == NULL) {
 					break;
 				}
+				remove_comments(buf);
 
 				/* Remove \\-\n. */
 				bl = strlen(buf);
@@ -7658,6 +7871,7 @@ static void print_help(const char *prog_name) {
 #ifdef X11
 			"   -a, --alignment=ALIGNMENT text alignment on screen, {top,bottom,middle}_{left,right,middle}\n"
 			"   -f, --font=FONT           font to use\n"
+			"   -X, --display=DISPLAY     X11 display to use\n"
 #ifdef OWN_WINDOW
 			"   -o, --own-window          create own window to draw\n"
 #endif

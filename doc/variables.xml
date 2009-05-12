@@ -87,6 +87,144 @@
 
 	<varlistentry>
 		<term>
+			<command><option>apcupsd</option></command>
+			<option>host</option>
+			<option>port</option>
+		</term>
+		<listitem>
+			Sets up the connection to apcupsd daemon. Prints nothing, defaults to localhost:3551
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>apcupsd_name</option></command>
+		</term>
+		<listitem>
+			Prints the UPS user-defined name.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>apcupsd_model</option></command>
+		</term>
+		<listitem>
+			Prints the model of the UPS.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>apcupsd_upsmode</option></command>
+		</term>
+		<listitem>
+			Prints the UPS mode (e.g. standalone).
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>apcupsd_cable</option></command>
+		</term>
+		<listitem>
+			Prints the UPS connection type.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>apcupsd_status</option></command>
+		</term>
+		<listitem>
+			Prints current status (on-line, on-battery).
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>apcupsd_linev</option></command>
+		</term>
+		<listitem>
+			Nominal input voltage.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>apcupsd_load</option></command>
+		</term>
+		<listitem>
+			Current load in percent.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>apcupsd_loadbar</option></command>
+		</term>
+		<listitem>
+			Bar showing current load.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>apcupsd_loadgraph</option></command>
+		</term>
+		<listitem>
+			History graph of current load.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>apcupsd_loadgauge</option></command>
+			<option>(height),(width)</option>
+		</term>
+		<listitem>
+			Gauge that shows current load.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>apcupsd_charge</option></command>
+		</term>
+		<listitem>
+			Current battery capacity in percent.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>apcupsd_timeleft</option></command>
+		</term>
+		<listitem>
+			Time left to run on battery.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>apcupsd_temp</option></command>
+		</term>
+		<listitem>
+			Current internal temperature.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>apcupsd_lastxfer</option></command>
+		</term>
+		<listitem>
+			Reason for last transfer from line to battery.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
 			<command><option>apm_adapter</option></command>
 		</term>
 		<listitem>
@@ -877,10 +1015,10 @@
 	<varlistentry>
 		<term>
 			<command><option>hwmon</option></command>
-			<option>(dev) type n</option>
+			<option>(dev) type n (factor offset)</option>
 		</term>
 		<listitem>
-			Hwmon sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you have only one hwmon device. Parameter type is either 'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp' meaning temperature. Parameter n is number of the sensor. See /sys/class/hwmon/ on your local computer.
+			Hwmon sensor from sysfs (Linux 2.6). Parameter dev may be omitted if you have only one hwmon device. Parameter type is either 'in' or 'vol' meaning voltage; 'fan' meaning fan; 'temp' meaning temperature. Parameter n is number of the sensor. See /sys/class/hwmon/ on your local computer. The optional arguments 'factor' and 'offset' allow precalculation of the raw input, which is being modified as follows: 'input = input * factor + offset'. Note that they have to be given as decimal values (i.e. contain at least one decimal place).
 			<para></para></listitem>
 	</varlistentry>
 

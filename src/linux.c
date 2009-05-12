@@ -825,6 +825,7 @@ int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n,
 	char buf[256];
 	int fd;
 	int divfd;
+	struct stat st;
 
 	memset(buf, 0, sizeof(buf));
 
@@ -851,16 +852,21 @@ int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n,
 		}
 	}
 
-	/* change vol to in */
-	if (strcmp(type, "vol") == 0) {
-		type = "in";
+	/* At least the acpitz hwmon doesn't have a 'device' subdir,
+	 * so check it's existence and strip it from buf otherwise. */
+	snprintf(path, 255, "%s%s", dir, dev);
+	if (stat(path, &st)) {
+		buf[strlen(buf) - 7] = 0;
 	}
 
-	if (strcmp(type, "tempf") == 0) {
-		snprintf(path, 255, "%s%s/%s%d_input", dir, dev, "temp", n);
-	} else {
-		snprintf(path, 255, "%s%s/%s%d_input", dir, dev, type, n);
+	/* change vol to in, tempf to temp */
+	if (strcmp(type, "vol") == 0) {
+		type = "in";
+	} else if (strcmp(type, "tempf") == 0) {
+		type = "temp";
 	}
+
+	snprintf(path, 255, "%s%s/%s%d_input", dir, dev, type, n);
 	strncpy(devtype, path, 255);
 
 	/* open file */

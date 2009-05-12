@@ -26,8 +26,6 @@
 
 #include "conky.h"
 
-xmms_socket_t xmms2_fd;
-fd_set xmms2_fdset;
 xmmsc_connection_t *xmms2_conn;
 
 #define CONN_INIT	0
@@ -311,17 +309,11 @@ void update_xmms2()
 
 	/* handle callbacks */
 	if (current_info->xmms2.conn_state == CONN_OK) {
-		struct timeval tmout;
-
-		tmout.tv_sec = 0;
-		tmout.tv_usec = 100;
-		
-		select(xmms2_fd + 1, &xmms2_fdset, NULL, NULL, &tmout);
 
 		xmmsc_io_in_handle(xmms2_conn);
-		if (xmmsc_io_want_out(xmms2_conn)) {
+		if (xmmsc_io_want_out(xmms2_conn))
 			xmmsc_io_out_handle(xmms2_conn);
-		}
+
 		}
 	}
 
