@@ -2897,6 +2897,30 @@ static int text_contains_templates(const char *text)
 	return 0;
 }
 
+static void remove_comments(char *string)
+{
+	char *curplace, *curplace2;
+	char *newend = NULL;
+
+	for(curplace = string; *curplace != 0; curplace++) {
+		if(*curplace == '\\' && *(curplace + 1) == '#') {
+			//strcpy can't be used for overlapping strings
+			for (curplace2 = curplace+1; *curplace2 != 0; curplace2++) {
+				*(curplace2 - 1) = *curplace2;
+			}
+			*(curplace2 - 1) = 0;
+		} else if(*curplace == '#' && !newend) {
+			newend = curplace;
+		} else if(*curplace == '\n' && newend) {
+			*newend = '\n';
+			newend++;
+		}
+	}
+	if(newend) {
+		*newend = 0;
+	}
+}
+
 static int extract_variable_text_internal(struct text_object *retval, const char *const_p, char allow_threaded)
 {
 	struct text_object *obj;
@@ -3032,6 +3056,7 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 		}
 		p++;
 	}
+	remove_comments(s);
 	obj = create_plain_text(s);
 	if (obj != NULL) {
 		append_object(retval, obj);
@@ -6902,29 +6927,6 @@ static FILE *open_config_file(const char *f)
 		return fopen(f, "r");
 }
 
-void remove_comments(char *string) {
-	char *curplace, *curplace2;
-	char *newend = NULL;
-
-	for(curplace = string; *curplace != 0; curplace++) {
-		if(*curplace == '\\' && *(curplace + 1) == '#') {
-			//strcpy can't be used for overlapping strings
-			for (curplace2 = curplace+1; *curplace2 != 0; curplace2++) {
-				*(curplace2 - 1) = *curplace2;
-			}
-			*(curplace2 - 1) = 0;
-		} else if(*curplace == '#' && !newend) {
-			newend = curplace;
-		} else if(*curplace == '\n' && newend) {
-			*newend = '\n';
-			newend++;
-		}
-	}
-	if(newend) {
-		*newend = 0;
-	}
-}
-
 static int do_config_step(int *line, FILE *fp, char *buf, char **name, char **value)
 {
 	char *p, *p2;
@@ -7552,7 +7554,6 @@ static void load_config_file(const char *f)
 				if (fgets(buf, CONF_BUFF_SIZE, fp) == NULL) {
 					break;
 				}
-				remove_comments(buf);
 
 				/* Remove \\-\n. */
 				bl = strlen(buf);
