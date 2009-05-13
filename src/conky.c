@@ -2897,27 +2897,35 @@ static int text_contains_templates(const char *text)
 	return 0;
 }
 
+static void strfold(char *start, int count)
+{
+	char *curplace;
+	for (curplace = start + count; *curplace != 0; curplace++) {
+		*(curplace - count) = *curplace;
+	}
+	*(curplace - count) = 0;
+}
+
 static void remove_comments(char *string)
 {
 	char *curplace, *curplace2;
-	char *newend = NULL;
 
-	for(curplace = string; *curplace != 0; curplace++) {
-		if(*curplace == '\\' && *(curplace + 1) == '#') {
-			//strcpy can't be used for overlapping strings
-			for (curplace2 = curplace+1; *curplace2 != 0; curplace2++) {
-				*(curplace2 - 1) = *curplace2;
+	for (curplace = string; *curplace != 0; curplace++) {
+		if (*curplace == '\\' && *(curplace + 1) == '#') {
+			// strcpy can't be used for overlapping strings
+			strfold(curplace, 1);
+		} else if (*curplace == '#') {
+			// remove everything until we hit a '\n'
+			curplace2 = curplace;
+			while (*curplace2 && *curplace2 != '\n') {
+				curplace2++;
 			}
-			*(curplace2 - 1) = 0;
-		} else if(*curplace == '#' && !newend) {
-			newend = curplace;
-		} else if(*curplace == '\n' && newend) {
-			*newend = '\n';
-			newend++;
+			if (*curplace2) {
+				strfold(curplace, curplace2 - curplace);
+			} else {
+				*curplace = 0;
+			}
 		}
-	}
-	if(newend) {
-		*newend = 0;
 	}
 }
 
