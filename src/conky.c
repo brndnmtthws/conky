@@ -3268,7 +3268,8 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 
 	p[0] = 0;
-	for (obj = root.next; obj && p_max_size > 0; obj = obj->next) {
+	obj = root.next;
+	while (obj && p_max_size > 0) {
 		needed = 0; // reset for top stuff
 
 /* IFBLOCK jumping algorithm
@@ -5273,6 +5274,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			p += a;
 			p_max_size -= a;
 		}
+		obj = obj->next;
 	}
 }
 
