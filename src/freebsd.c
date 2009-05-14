@@ -24,6 +24,7 @@
  *
  */
 
+#include <sys/ioctl.h>
 #include <sys/dkstat.h>
 #include <sys/param.h>
 #include <sys/resource.h>
@@ -32,7 +33,6 @@
 #include <sys/sysctl.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <sys/vmmeter.h>
 #include <sys/user.h>
 
 #include <net/if.h>
@@ -395,8 +395,6 @@ static void get_battery_stats(int *battime, int *batcapacity, int *batstate, int
 void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 {
 	int battime, batcapacity, batstate, ac;
-	char battery_status[64];
-	char battery_time[64];
 
 	get_battery_stats(&battime, &batcapacity, &batstate, &ac);
 
@@ -439,7 +437,7 @@ static int check_bat(const char *bat)
 	}
 	if (!bat || (batnum = strtol(bat, &endptr, 10)) < 0 ||
 			bat == endptr || batnum > numbatts) {
-		fprintf(stderr, "Wrong battery unit requested\n", bat);
+		fprintf(stderr, "Wrong battery unit %s requested\n", bat ? bat : "");
 		return -1;
 	}
 	return batnum;
@@ -448,7 +446,7 @@ static int check_bat(const char *bat)
 int get_battery_perct(const char *bat)
 {
 	union acpi_battery_ioctl_arg battio;
-	int batnum, numbatts, acpifd;
+	int batnum, acpifd;
 	int designcap, lastfulcap, batperct;
 
 	if ((battio.unit = batnum = check_bat(bat)) < 0)
