@@ -55,8 +55,7 @@ case $uname in
   FreeBSD*|GNU/kFreeBSD*)
     WANT_KVM=yes
     WANT_DEVSTAT=yes
-	want_config_output=no
-	;;
+    ;;
 #  NetBSD*)
 #    WANT_KVM=yes
 #    WANT_OSSLIB=yes
@@ -96,7 +95,7 @@ dnl BUILD_CONFIG_OUTPUT option
 dnl
 
 AC_ARG_ENABLE([config_output],
-              AC_HELP_STRING([--disable-config-output], [disable if you do not want conky to output a default config (with -C) Note: not available on FreeBSD @<:@default=yes@:>@]),
+              AC_HELP_STRING([--disable-config-output], [disable if you do not want conky to output a default config (with -C) @<:@default=yes@:>@]),
               [want_config_output="$enableval"], [want_config_output=yes])
 
 AM_CONDITIONAL(BUILD_CONFIG_OUTPUT, test x$want_config_output = xyes)
