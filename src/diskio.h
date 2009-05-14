@@ -43,8 +43,11 @@ struct diskio_stat {
 	double last_write;
 };
 
-struct diskio_stat *prepare_diskio_stat(const char *s);
+extern struct diskio_stat stats;
+
+struct diskio_stat *prepare_diskio_stat(const char *);
 void update_diskio(void);
 void clear_diskio_stats(void);
+void update_diskio_values(struct diskio_stat *, unsigned int, unsigned int);
 
 #endif /* DISKIO_H_ */

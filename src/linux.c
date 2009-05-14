@@ -30,6 +30,7 @@
 #include "logging.h"
 #include "common.h"
 #include "linux.h"
+#include "diskio.h"
 #include <dirent.h>
 #include <ctype.h>
 #include <errno.h>
@@ -57,6 +58,21 @@
 #endif
 #include <linux/route.h>
 #include <math.h>
+
+/* The following ifdefs were adapted from gkrellm */
+#include <linux/major.h>
+
+#if !defined(MD_MAJOR)
+#define MD_MAJOR 9
+#endif
+
+#if !defined(LVM_BLK_MAJOR)
+#define LVM_BLK_MAJOR 58
+#endif
+
+#if !defined(NBD_MAJOR)
+#define NBD_MAJOR 43
+#endif
 
 #ifdef HAVE_IWLIB
 #include <iwlib.h>
@@ -2131,3 +2147,52 @@ const char *get_disk_protect_queue(const char *disk)
 	return (state > 0) ? "frozen" : "free  ";
 }
 
+void update_diskio(void)
+{
+	FILE *fp;
+	static int rep = 0;
+	char buf[512], devbuf[64];
+	unsigned int major, minor;
+	int col_count = 0;
+	struct diskio_stat *cur;
+	unsigned int reads, writes;
+	unsigned int total_reads = 0, total_writes = 0;
+
+	stats.current = 0;
+	stats.current_read = 0;
+	stats.current_write = 0;
+
+	if (!(fp = open_file("/proc/diskstats", &rep))) {
+		return;
+	}
+
+	/* read reads and writes from all disks (minor = 0), including cd-roms
+	 * and floppies, and sum them up */
+	while (fgets(buf, 512, fp)) {
+		col_count = sscanf(buf, "%u %u %s %*u %*u %u %*u %*u %*u %u", &major,
+			&minor, devbuf, &reads, &writes);
+		/* ignore subdevices (they have only 3 matching entries in their line)
+		 * and virtual devices (LVM, network block devices, RAM disks, Loopback)
+		 *
+		 * XXX: ignore devices which are part of a SW RAID (MD_MAJOR) */
+		if (col_count == 5 && major != LVM_BLK_MAJOR && major != NBD_MAJOR
+				&& major != RAMDISK_MAJOR && major != LOOP_MAJOR) {
+			total_reads += reads;
+			total_writes += writes;
+		} else {
+			col_count = sscanf(buf, "%u %u %s %*u %u %*u %u",
+				&major, &minor, devbuf, &reads, &writes);
+			if (col_count != 5) {
+				continue;
+			}
+		}
+		cur = stats.next;
+		while (cur && strcmp(devbuf, cur->dev))
+			cur = cur->next;
+
+		if (cur)
+			update_diskio_values(cur, reads, writes);
+	}
+	update_diskio_values(&stats, total_reads, total_writes);
+	fclose(fp);
+}

@@ -77,7 +77,7 @@ endif
 #endif
 
 if BUILD_FREEBSD
-freebsd = freebsd.c
+freebsd = freebsd.c diskio.c
 PTHREAD_LIBS =  -pthread
 endif
 
