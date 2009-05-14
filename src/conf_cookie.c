@@ -24,10 +24,11 @@ ssize_t conf_read(void *cookie, char *buf, size_t size)
 	return i;
 }
 
+#if defined(__linux__)
 cookie_io_functions_t conf_cookie = {
 	.read = &conf_read,
 	.write = NULL,
 	.seek = NULL,
 	.close = NULL,
 };
-
+#endif
