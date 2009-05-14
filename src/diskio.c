@@ -33,24 +33,11 @@
 #include "common.h"
 #include <stdlib.h>
 #include <limits.h>
-/* The following ifdefs were adapted from gkrellm */
-#include <linux/major.h>
-
-#if !defined(MD_MAJOR)
-#define MD_MAJOR 9
-#endif
-
-#if !defined(LVM_BLK_MAJOR)
-#define LVM_BLK_MAJOR 58
-#endif
-
-#if !defined(NBD_MAJOR)
-#define NBD_MAJOR 43
-#endif
+#include <sys/stat.h>
 
 /* this is the root of all per disk stats,
  * also containing the totals. */
-static struct diskio_stat stats = {
+struct diskio_stat stats = {
 	.next = NULL,
 	.sample = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	.sample_read = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -75,30 +62,48 @@ void clear_diskio_stats(void)
 
 struct diskio_stat *prepare_diskio_stat(const char *s)
 {
+	struct stat sb;
+	char stat_name[text_buffer_size], device_name[text_buffer_size];
 	struct diskio_stat *cur = &stats;
 
 	if (!s)
 		return &stats;
 
+#if defined(__FreeBSD__)
+	if (strncmp(s, "/dev/", 5) == 0) {
+		// supplied a /dev/device arg, so cut off the /dev part
+		strncpy(device_name, s + 5, text_buffer_size);
+	} else
+#endif
+	strncpy(device_name, s, text_buffer_size);
+
+	snprintf(stat_name, text_buffer_size, "/dev/%s", device_name);
+
+	if (stat(stat_name, &sb)) {
+		ERR("diskio device '%s' does not exist", s);
+		return 0;
+	}
+
 	/* lookup existing */
 	while (cur->next) {
 		cur = cur->next;
-		if (!strcmp(cur->dev, s))
+		if (!strcmp(cur->dev, device_name)) {
 			return cur;
+		}
 	}
 
 	/* no existing found, make a new one */
-	cur->next = malloc(sizeof(struct diskio_stat));
+	cur->next = calloc(1, sizeof(struct diskio_stat));
 	cur = cur->next;
-	memset(cur, 0, sizeof(struct diskio_stat));
-	cur->dev = strndup(s, text_buffer_size);
+	cur->dev = strndup(device_name, text_buffer_size);
 	cur->last = UINT_MAX;
 	cur->last_read = UINT_MAX;
 	cur->last_write = UINT_MAX;
+
 	return cur;
 }
 
-static void update_diskio_values(struct diskio_stat *ds,
+void update_diskio_values(struct diskio_stat *ds,
 		unsigned int reads, unsigned int writes)
 {
 	int i;
@@ -138,56 +143,5 @@ static void update_diskio_values(struct diskio_stat *ds,
 	ds->last_read = reads;
 	ds->last_write = writes;
 	ds->last = ds->last_read + ds->last_write;
-}
-
-void update_diskio(void)
-{
-	FILE *fp;
-	static int rep = 0;
-
-	struct diskio_stat *cur;
-	char buf[512], devbuf[64];
-	unsigned int major, minor;
-	unsigned int reads, writes;
-	unsigned int total_reads=0, total_writes=0;
-	int col_count = 0;
-
-	stats.current = 0;
-	stats.current_read = 0;
-	stats.current_write = 0;
-
-	if (!(fp = open_file("/proc/diskstats", &rep))) {
-		return;
-	}
-
-	/* read reads and writes from all disks (minor = 0), including cd-roms
-	 * and floppies, and sum them up */
-	while (fgets(buf, 512, fp)) {
-		col_count = sscanf(buf, "%u %u %s %*u %*u %u %*u %*u %*u %u", &major,
-			&minor, devbuf, &reads, &writes);
-		/* ignore subdevices (they have only 3 matching entries in their line)
-		 * and virtual devices (LVM, network block devices, RAM disks, Loopback)
-		 *
-		 * XXX: ignore devices which are part of a SW RAID (MD_MAJOR) */
-		if (col_count == 5 && major != LVM_BLK_MAJOR && major != NBD_MAJOR
-				&& major != RAMDISK_MAJOR && major != LOOP_MAJOR && minor==0) {
-			total_reads += reads;
-			total_writes += writes;
-		} else {
-			col_count = sscanf(buf, "%u %u %s %*u %u %*u %u",
-				&major, &minor, devbuf, &reads, &writes);
-			if (col_count != 5) {
-				continue;
-			}
-		}
-		cur = stats.next;
-		while (cur && strcmp(devbuf, cur->dev))
-			cur = cur->next;
-
-		if (cur)
-			update_diskio_values(cur, reads, writes);
-	}
-	update_diskio_values(&stats, total_reads, total_writes);
-	fclose(fp);
 }
 

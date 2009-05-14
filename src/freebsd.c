@@ -65,15 +65,6 @@
 inline void proc_find_top(struct process **cpu, struct process **mem);
 
 static short cpu_setup = 0;
-static struct diskio_stat stats = {
-	.next = NULL,
-	.current = 0,
-	.current_read = 0,
-	.current_write = 0,
-	.last = UINT_MAX,
-	.last_read = UINT_MAX,
-	.last_write = UINT_MAX,
-};
 
 static int getsysctl(char *name, void *ptr, size_t len)
 {
@@ -658,118 +649,54 @@ cleanup:
 
 void update_diskio()
 {
-	int devs_count, num_selected, num_selections;
+	int devs_count, num_selected, num_selections, dn;
 	struct device_selection *dev_select = NULL;
 	long select_generation;
-	int dn;
 	static struct statinfo statinfo_cur;
+	char device_name[text_buffer_size];
 	struct diskio_stat *cur;
+	unsigned int reads, writes;
+	unsigned int total_reads = 0, total_writes = 0;
 
-	bzero(&statinfo_cur, sizeof(statinfo_cur));
+
+	memset(&statinfo_cur, 0, sizeof(statinfo_cur));
 	statinfo_cur.dinfo = (struct devinfo *)calloc(1, sizeof(struct devinfo));
 	stats.current = stats.current_read = stats.current_write = 0;
 
-	if (devstat_getdevs(NULL, &statinfo_cur) < 0)
+	if (devstat_getdevs(NULL, &statinfo_cur) < 0) {
+		free(statinfo_cur.dinfo);
 		return;
+	}
 
 	devs_count = statinfo_cur.dinfo->numdevs;
 	if (devstat_selectdevs(&dev_select, &num_selected, &num_selections,
 			&select_generation, statinfo_cur.dinfo->generation,
 			statinfo_cur.dinfo->devices, devs_count, NULL, 0, NULL, 0,
 			DS_SELECT_ONLY, MAXSHOWDEVS, 1) >= 0) {
-		for (dn = 0; dn < devs_count; ++dn) {
+		for (dn = 0; dn < devs_count; dn++) {
 			int di;
 			struct devstat *dev;
 
 			di = dev_select[dn].position;
 			dev = &statinfo_cur.dinfo->devices[di];
+			snprintf(device_name, text_buffer_size, "%s%d",
+					dev_select[dn].device_name, dev_select[dn].unit_number);
 
+			total_reads += (reads = dev->bytes[DEVSTAT_READ] / 512);
+			total_writes += (writes = dev->bytes[DEVSTAT_WRITE] / 512);
 			for (cur = stats.next; cur; cur = cur->next) {
-				if (cur->dev && !strcmp(dev_select[dn].device_name, cur->dev)) {
-					cur->current = (dev->bytes[DEVSTAT_READ] +
-							dev->bytes[DEVSTAT_WRITE] - cur->last) / 1024;
-					cur->current_read = (dev->bytes[DEVSTAT_READ] -
-							cur->last_read) / 1024;
-					cur->current_write = (dev->bytes[DEVSTAT_WRITE] -
-							cur->last_write) / 1024;
-					if (dev->bytes[DEVSTAT_READ] + dev->bytes[DEVSTAT_WRITE] <
-							cur->last) {
-						cur->current = 0;
-					}
-					if (dev->bytes[DEVSTAT_READ] < cur->last_read) {
-						cur->current_read = 0;
-						cur->current = cur->current_write;
-					}
-					if (dev->bytes[DEVSTAT_WRITE] < cur->last_write) {
-						cur->current_write = 0;
-						cur->current = cur->current_read;
-					}
-					cur->last = dev->bytes[DEVSTAT_READ] +
-						dev->bytes[DEVSTAT_WRITE];
-					cur->last_read = dev->bytes[DEVSTAT_READ];
-					cur->last_write = dev->bytes[DEVSTAT_WRITE];
+				if (cur->dev && !strcmp(device_name, cur->dev)) {
+					update_diskio_values(cur, reads, writes);
+					break;
 				}
 			}
 		}
+		update_diskio_values(&stats, total_reads, total_writes);
 
 		free(dev_select);
 	}
 
 	free(statinfo_cur.dinfo);
-}
-
-void clear_diskio_stats()
-{
-	struct diskio_stat *cur;
-	while (stats.next) {
-		cur = stats.next;
-		stats.next = stats.next->next;
-		free(cur);
-	}
-}
-
-struct diskio_stat *prepare_diskio_stat(const char *s)
-{
-	struct diskio_stat *new = 0;
-	struct stat sb;
-	int found = 0;
-	char device[text_buffer_size], fbuf[text_buffer_size];
-	static int rep = 0;
-	/* lookup existing or get new */
-	struct diskio_stat *cur = &stats;
-
-	if (!s)
-		return cur;
-
-	while (cur->next) {
-		cur = cur->next;
-		if (!strcmp(cur->dev, s))
-			return cur;
-	}
-
-	/* new dev */
-	if (!(cur->next = calloc(1, sizeof(struct diskio_stat)))) {
-		ERR("out of memory allocating new disk stats struct");
-		return NULL;
-	}
-	cur = cur->next;
-	cur->last = cur->last_read = cur->last_write = UINT_MAX;
-	if (strncmp(s, "/dev/", 5) == 0) {
-		// supplied a /dev/device arg, so cut off the /dev part
-		cur->dev = strndup(s + 5, text_buffer_size);
-	} else {
-		cur->dev = strndup(s, text_buffer_size);
-	}
-	/*
-	 * check that device actually exists
-	 */
-	snprintf(device, text_buffer_size, "/dev/%s", new->dev);
-
-	if (stat(device, &sb)) {
-		ERR("diskio device '%s' does not exist", s);
-		return 0;
-	}
-	return cur;
 }
 
 /* While topless is obviously better, top is also not bad. */
