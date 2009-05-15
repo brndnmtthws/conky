@@ -42,7 +42,7 @@ void llua_load(const char *script)
 	int error;
 	error = luaL_loadfile(lua_L, script);
 	if(error) {
-		ERR("llua_load: %s\n", lua_tostring(lua_L, -1));
+		ERR("llua_load: %s", lua_tostring(lua_L, -1));
 		lua_pop(lua_L, 1);
 	} else {
 		lua_pcall(lua_L, 0, 0, 0);
@@ -72,11 +72,11 @@ char *llua_getstring(const char *args)
 	}
 
 	if(lua_pcall(lua_L, parcount, 1, 0) != 0) {
-		ERR("llua_getstring: function %s execution failed: %s\n", func, lua_tostring(lua_L, -1));
+		ERR("llua_getstring: function %s execution failed: %s", func, lua_tostring(lua_L, -1));
 		lua_pop(lua_L, -1);
 	} else {
 		if(!lua_isstring(lua_L, -1)) {
-			ERR("llua_getstring: function %s didn't return a string, result discarded\n", func);
+			ERR("llua_getstring: function %s didn't return a string, result discarded", func);
 		} else {
 			ret = strdup((char *)lua_tostring(lua_L, -1));
 			lua_pop(lua_L, 1);
@@ -111,11 +111,11 @@ int llua_getpercent(const char *args, int *per)
 	free(tmp);
 
 	if(lua_pcall(lua_L, parcount, 1, 0) != 0) {
-		ERR("llua_getpercent: function %s execution failed: %s\n", func, lua_tostring(lua_L, -1));
+		ERR("llua_getpercent: function %s execution failed: %s", func, lua_tostring(lua_L, -1));
 		lua_pop(lua_L, -1);
 	} else {
 		if(!lua_isnumber(lua_L, -1)) {
-			ERR("llua_getpercent: function %s didn't return a number (percent), result discarded\n", func);
+			ERR("llua_getpercent: function %s didn't return a number (percent), result discarded", func);
 		} else {
 			*per = lua_tonumber(lua_L, -1);
 			lua_pop(lua_L, 1);
