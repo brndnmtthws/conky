@@ -380,6 +380,10 @@ enum text_object_type {
 #ifdef RSS
 	OBJ_rss,
 #endif
+#ifdef HAVE_LUA
+	OBJ_lua,
+	OBJ_lua_bar,
+#endif
 #ifdef TCP_PORT_MONITOR
 	OBJ_tcp_portmon,
 #endif

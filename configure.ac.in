@@ -325,6 +325,24 @@ if test x$want_rss = xyes; then
 fi
 
 dnl
+dnl Lua
+dnl
+
+AC_ARG_ENABLE([lua],
+	      AC_HELP_STRING([--enable-lua], [enable if you want Lua scripting support @<:@default=no@:>@]),
+	      [want_lua="$enableval"], [want_lua=no])
+#
+AM_CONDITIONAL(BUILD_LUA, test x$want_lua = xyes)
+if test x$want_lua = xyes; then
+	PKG_CHECK_MODULES(LUA, lua >= 5.1, [ ],[
+		PKG_CHECK_MODULES(LUA51, lua5.1 >= 5.1, [ ])
+	])
+	CFLAGS="$CFLAGS $LUA_CFLAGS $LUA51_CFLAGS"
+	LIBS="$LIBS $LUA_LIBS $LUA51_LIBS"
+	AC_DEFINE(HAVE_LUA, 1, [Define if you want Lua scripting support])
+fi
+
+dnl
 dnl Wireless extensions
 dnl
 
@@ -781,6 +799,7 @@ $PACKAGE $VERSION configured successfully:
   hddtemp:          $want_hddtemp
   portmon:          $want_portmon
   RSS:              $want_rss
+  Lua:              $want_lua
   wireless:         $want_wlan
   IBM:              $want_ibm
   nvidia:           $want_nvidia

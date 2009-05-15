@@ -514,6 +514,13 @@
 	</varlistentry>
 
 	<varlistentry>
+		<term><command><option>lua_load</option></command></term>
+		<listitem>
+			Loads the Lua scripts separated by spaces.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
 		<term><command><option>TEXT</option></command></term>
 		<listitem>
 			After this begins text to be formatted on screen.  Backslash (\) escapes newlines in the text section.  This can be useful for cleaning up config files where conky is used to pipe input to dzen2.

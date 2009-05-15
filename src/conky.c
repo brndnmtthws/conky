@@ -196,6 +196,9 @@ static void print_version(void)
 #ifdef RSS
 		   "  * RSS\n"
 #endif /* RSS */
+#ifdef HAVE_LUA
+		   "  * Lua\n"
+#endif /* HAVE_LUA */
 #ifdef HAVE_IWLIB
 		   "  * wireless\n"
 #endif /* HAVE_IWLIB */
@@ -847,6 +850,14 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_rss:
 				free(data.rss.uri);
 				free(data.rss.action);
+				break;
+#endif
+#ifdef HAVE_LUA
+			case OBJ_lua:
+				llua_close();
+				break;
+			case OBJ_lua_bar:
+				llua_close();
 				break;
 #endif
 			case OBJ_pre_exec:
@@ -2568,6 +2579,28 @@ static struct text_object *construct_text_object(const char *s,
 					"[act_par] [spaces in front]");
 		}
 #endif
+#ifdef HAVE_LUA
+	END OBJ(lua, 0)
+		if(arg) {
+			obj->data.s = strndup(arg, text_buffer_size);
+		} else {
+			CRIT_ERR("lua needs arguments: <function name> [function parameters]");
+		}
+
+#ifdef X11
+	END OBJ(lua_bar, 0)
+		if(arg) {
+			arg = scan_bar(arg, &obj->a, &obj->b);
+			if(arg) {
+				obj->data.s = strndup(arg, text_buffer_size);
+			} else {
+				CRIT_ERR("lua_bar needs arguments: <height>,<width> <function name> [function parameters]");
+			}
+		} else {
+			CRIT_ERR("lua_bar needs arguments: <height>,<width> <function name> [function parameters]");
+		}
+#endif
+#endif
 #ifdef HDDTEMP
 	END OBJ(hddtemp, 0)
 		if (scan_hddtemp(arg, &obj->data.hddtemp.dev,
@@ -4146,6 +4179,24 @@ static void generate_text_internal(char *p, int p_max_size,
 					}
 				}
 			}
+#endif
+#ifdef HAVE_LUA
+			OBJ(lua) {
+				char *str = llua_getstring(obj->data.s);
+				if(str) {
+					snprintf(p, p_max_size, "%s", str);
+					free(str);
+				}
+			}
+
+#ifdef X11
+			OBJ(lua_bar) {
+				int per;
+				if(llua_getpercent(strdup(obj->data.s), &per)) {
+					new_bar(p, obj->a, obj->b, (per/100.0 * 255));
+				}
+			}
+#endif
 #endif
 #ifdef HDDTEMP
 			OBJ(hddtemp) {
@@ -7653,6 +7704,20 @@ static void load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
+#ifdef HAVE_LUA
+		CONF("lua_load") {
+			llua_init();
+			if(value) {
+				char *ptr = strtok(value, " ");
+				while(ptr) {
+					llua_load(ptr);
+					ptr = strtok(NULL, " ");
+				}
+			} else {
+				CONF_ERR;
+			}
+		}
+#endif
 
 		CONF("color0"){}
 		CONF("color1"){}

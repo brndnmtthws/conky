@@ -2343,6 +2343,26 @@
 
 	<varlistentry>
 		<term>
+			<command><option>lua</option></command>
+			<option>function_name (function parameters)</option>
+		</term>
+		<listitem>
+			Executes a Lua function with given parameters and prints the result value.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>lua_bar</option></command>
+			<option>(height, width) function_name (function parameters)</option>
+		</term>
+		<listitem>
+			Executes a Lua function with given parameters and prints a bar. Expects result value to be an integer between 0 and 100.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
 			<command><option>tab</option></command>
 			<option>(width, (start))</option>
 		</term>
