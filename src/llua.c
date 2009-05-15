@@ -40,6 +40,7 @@ void llua_init()
 void llua_load(const char *script)
 {
 	int error;
+	if(!lua_L) return;
 	error = luaL_loadfile(lua_L, script);
 	if(error) {
 		ERR("llua_load: %s", lua_tostring(lua_L, -1));

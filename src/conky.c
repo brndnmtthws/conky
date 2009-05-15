@@ -854,10 +854,10 @@ static void free_text_objects(struct text_object *root)
 #endif
 #ifdef HAVE_LUA
 			case OBJ_lua:
-				llua_close();
+				free(data.s);
 				break;
 			case OBJ_lua_bar:
-				llua_close();
+				free(data.s);
 				break;
 #endif
 			case OBJ_pre_exec:
@@ -4192,7 +4192,7 @@ static void generate_text_internal(char *p, int p_max_size,
 #ifdef X11
 			OBJ(lua_bar) {
 				int per;
-				if(llua_getpercent(strdup(obj->data.s), &per)) {
+				if(llua_getpercent(obj->data.s, &per)) {
 					new_bar(p, obj->a, obj->b, (per/100.0 * 255));
 				}
 			}
@@ -6646,6 +6646,10 @@ static void reload_config(void)
 	tcp_portmon_clear();
 #endif
 
+#ifdef HAVE_LUA
+	llua_close();
+#endif
+
 	if (current_config) {
 		clear_fs_stats();
 		load_config_file(current_config);
@@ -6746,6 +6750,9 @@ static void clean_up(void)
 #endif
 #ifdef RSS
 	free_rss_info();
+#endif
+#ifdef HAVE_LUA
+	llua_close();
 #endif
 
 	if (specials) {
