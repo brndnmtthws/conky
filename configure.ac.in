@@ -637,17 +637,25 @@ dnl
 dnl Check for OpenMP support
 dnl
 
-AX_OPENMP([
-  gcc_version=`$CC -dumpversion`
-  gcc_major=`echo $gcc_version | sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
-  gcc_minor=`echo $gcc_version | sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
-  dnl check that the gcc version is >=4.3, if we're using gcc
-  if test ! "x$GCC" = "xyes" -o $gcc_major -ge 4 -a $gcc_minor -ge 3; then
-    AC_DEFINE(HAVE_OPENMP,1,[Define if OpenMP is enabled])
-    CFLAGS="$CFLAGS $OPENMP_CFLAGS"
-  fi
+AC_ARG_ENABLE([openmp],
+	      AC_HELP_STRING([--enable-openmp], [enable if you want OpenMP support @<:@default=no@:>@]),
+	      [want_openmp="$enableval"], [want_openmp=no])
 
-])
+if test x$want_openmp = xyes; then
+	AX_OPENMP([
+	  gcc_version=`$CC -dumpversion`
+	  gcc_major=`echo $gcc_version | sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
+	  gcc_minor=`echo $gcc_version | sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
+	  dnl check that the gcc version is >=4.3, if we're using gcc
+	  if test ! "x$GCC" = "xyes" -o $gcc_major -ge 4 -a $gcc_minor -ge 3; then
+	    AC_DEFINE(HAVE_OPENMP,1,[Define if OpenMP is enabled])
+	    CFLAGS="$CFLAGS $OPENMP_CFLAGS"
+	  else
+	    want_openmp=no
+	  fi
+
+	])
+fi
 
 dnl
 dnl Check doc stuff
@@ -777,6 +785,7 @@ $PACKAGE $VERSION configured successfully:
   XMMS2:            $want_xmms2
 
  * General:
+  OpenMP:           $want_openmp
   math:             $want_math
   hddtemp:          $want_hddtemp
   portmon:          $want_portmon
