@@ -4209,7 +4209,15 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(lua) {
 				char *str = llua_getstring(obj->data.s);
 				if (str) {
-					snprintf(p, p_max_size, "%s", str);
+					struct information *tmp_info;
+					struct text_object subroot;
+
+					tmp_info = malloc(sizeof(struct information));
+					memcpy(tmp_info, cur, sizeof(struct information));
+					parse_conky_vars(&subroot, str, p, tmp_info);
+
+					free_text_objects(&subroot);
+					free(tmp_info);
 					free(str);
 				}
 			}
