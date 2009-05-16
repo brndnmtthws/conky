@@ -8,7 +8,7 @@
 void llua_init();
 void llua_load(const char *script);
 char *llua_getstring(const char *args);
-int llua_getpercent(const char *args, int *per);
+int llua_getinteger(const char *args, int *per);
 void llua_close();
 
 #endif /* LUA_H_*/

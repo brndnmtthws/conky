@@ -45,7 +45,7 @@ unsigned int special_count;
 #ifdef X11
 int default_bar_width = 0, default_bar_height = 6;
 int default_graph_width = 0, default_graph_height = 25;
-int default_gauge_width = 50, default_gauge_height = 25;
+int default_gauge_width = 40, default_gauge_height = 25;
 
 /*
  * Scanning arguments to various special text objects
@@ -62,8 +62,9 @@ const char *scan_gauge(const char *args, int *w, int *h)
 		int n = 0;
 
 		if (sscanf(args, "%d,%d %n", h, w, &n) <= 1) {
-			sscanf(args, "%d %n", h, &n);
-			*w = *h; /*square gauge*/
+			if (sscanf(args, "%d %n", h, &n) == 2) {
+				*w = *h; /*square gauge*/
+			}
 		}
 		args += n;
 	}

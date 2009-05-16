@@ -2347,7 +2347,7 @@
 			<option>function_name (function parameters)</option>
 		</term>
 		<listitem>
-			Executes a Lua function with given parameters and prints the result value.
+			Executes a Lua function with given parameters and prints the result value.  See also 'lua_load' on how to load scripts.
 			<para></para></listitem>
 	</varlistentry>
 
@@ -2357,7 +2357,27 @@
 			<option>(height, width) function_name (function parameters)</option>
 		</term>
 		<listitem>
-			Executes a Lua function with given parameters and prints a bar. Expects result value to be an integer between 0 and 100.
+			Executes a Lua function with given parameters and draws a bar. Expects result value to be an integer between 0 and 100.  See also 'lua_load' on how to load scripts.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>lua_graph</option></command>
+			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) function_name (function parameters)</option>
+		</term>
+		<listitem>
+			Executes a Lua function with given parameters and draws a graph. Expects result value to be an integer between 0 and 100.  See also 'lua_load' on how to load scripts.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
+			<command><option>lua_gauge</option></command>
+			<option>(height, width) function_name (function parameters)</option>
+		</term>
+		<listitem>
+			Executes a Lua function with given parameters and draws a gauge. Expects result value to be an integer between 0 and 100.  See also 'lua_load' on how to load scripts.
 			<para></para></listitem>
 	</varlistentry>
 

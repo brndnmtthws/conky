@@ -382,8 +382,12 @@ enum text_object_type {
 #endif
 #ifdef HAVE_LUA
 	OBJ_lua,
+#ifdef X11
 	OBJ_lua_bar,
-#endif
+	OBJ_lua_graph,
+	OBJ_lua_gauge,
+#endif /* X11 */
+#endif /* HAVE_LUA */
 #ifdef TCP_PORT_MONITOR
 	OBJ_tcp_portmon,
 #endif

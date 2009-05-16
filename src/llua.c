@@ -41,12 +41,10 @@ void llua_load(const char *script)
 {
 	int error;
 	if(!lua_L) return;
-	error = luaL_loadfile(lua_L, script);
-	if(error) {
+	error = luaL_dofile(lua_L, script);
+	if (error) {
 		ERR("llua_load: %s", lua_tostring(lua_L, -1));
 		lua_pop(lua_L, 1);
-	} else {
-		lua_pcall(lua_L, 0, 0, 0);
 	}
 }
 
@@ -114,7 +112,7 @@ char *llua_getstring(const char *args)
 	return ret;
 }
 
-int llua_getpercent(const char *args, int *per)
+int llua_getinteger(const char *args, int *per)
 {
 	char *func;
 
@@ -123,7 +121,7 @@ int llua_getpercent(const char *args, int *per)
 	func = llua_do_call(args, 1);
 	if(func) {
 		if(!lua_isnumber(lua_L, -1)) {
-			ERR("llua_getpercent: function %s didn't return a number (percent), result discarded", func);
+			ERR("llua_getinteger: function %s didn't return an integer, result discarded", func);
 		} else {
 			*per = lua_tointeger(lua_L, -1);
 			lua_pop(lua_L, 1);

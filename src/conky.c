@@ -854,12 +854,14 @@ static void free_text_objects(struct text_object *root)
 #endif
 #ifdef HAVE_LUA
 			case OBJ_lua:
-				free(data.s);
-				break;
+#ifdef X11
 			case OBJ_lua_bar:
+			case OBJ_lua_graph:
+			case OBJ_lua_gauge:
+#endif /* X11 */
 				free(data.s);
 				break;
-#endif
+#endif /* HAVE_LUA */
 			case OBJ_pre_exec:
 				break;
 #ifndef __OpenBSD__
@@ -2581,7 +2583,7 @@ static struct text_object *construct_text_object(const char *s,
 #endif
 #ifdef HAVE_LUA
 	END OBJ(lua, 0)
-		if(arg) {
+		if (arg) {
 			obj->data.s = strndup(arg, text_buffer_size);
 		} else {
 			CRIT_ERR("lua needs arguments: <function name> [function parameters]");
@@ -2589,7 +2591,7 @@ static struct text_object *construct_text_object(const char *s,
 
 #ifdef X11
 	END OBJ(lua_bar, 0)
-		if(arg) {
+		if (arg) {
 			arg = scan_bar(arg, &obj->a, &obj->b);
 			if(arg) {
 				obj->data.s = strndup(arg, text_buffer_size);
@@ -2599,8 +2601,31 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			CRIT_ERR("lua_bar needs arguments: <height>,<width> <function name> [function parameters]");
 		}
-#endif
-#endif
+	END OBJ(lua_graph, 0)
+		if (arg) {
+			arg = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+					&obj->e, &obj->showaslog);
+			if (arg) {
+				obj->data.s = strndup(arg, text_buffer_size);
+			} else {
+				CRIT_ERR("lua_graph needs arguments: <\"normal\"|\"log\"> <height>,<width> <gradient colour 1> <gradient colour 2> <scale> <function name> [function parameters]");
+			}
+		} else {
+			CRIT_ERR("lua_graph needs arguments: <\"normal\"|\"log\"> <height>,<width> <gradient colour 1> <gradient colour 2> <scale> <function name> [function parameters]");
+	}
+	END OBJ(lua_gauge, 0)
+		if (arg) {
+			arg = scan_gauge(arg, &obj->a, &obj->b);
+			if (arg) {
+				obj->data.s = strndup(arg, text_buffer_size);
+			} else {
+				CRIT_ERR("lua_gauge needs arguments: <height>,<width> <function name> [function parameters]");
+			}
+		} else {
+			CRIT_ERR("lua_gauge needs arguments: <height>,<width> <function name> [function parameters]");
+		}
+#endif /* X11 */
+#endif /* HAVE_LUA */
 #ifdef HDDTEMP
 	END OBJ(hddtemp, 0)
 		if (scan_hddtemp(arg, &obj->data.hddtemp.dev,
@@ -4183,7 +4208,7 @@ static void generate_text_internal(char *p, int p_max_size,
 #ifdef HAVE_LUA
 			OBJ(lua) {
 				char *str = llua_getstring(obj->data.s);
-				if(str) {
+				if (str) {
 					snprintf(p, p_max_size, "%s", str);
 					free(str);
 				}
@@ -4192,12 +4217,25 @@ static void generate_text_internal(char *p, int p_max_size,
 #ifdef X11
 			OBJ(lua_bar) {
 				int per;
-				if(llua_getpercent(obj->data.s, &per)) {
+				if (llua_getinteger(obj->data.s, &per)) {
 					new_bar(p, obj->a, obj->b, (per/100.0 * 255));
 				}
 			}
-#endif
-#endif
+			OBJ(lua_graph) {
+				int per;
+				if (llua_getinteger(obj->data.s, &per)) {
+					new_graph(p, obj->a, obj->b, obj->c, obj->d,
+							(per/100.0 * 255), 100, 1, obj->showaslog);
+				}
+			}
+			OBJ(lua_gauge) {
+				int per;
+				if (llua_getinteger(obj->data.s, &per)) {
+					new_gauge(p, obj->a, obj->b, (per/100.0 * 255));
+				}
+			}
+#endif /* X11 */
+#endif /* HAVE_LUA */
 #ifdef HDDTEMP
 			OBJ(hddtemp) {
 				char *endptr, unit;
@@ -5858,7 +5896,7 @@ static void draw_line(char *s)
 
 					XDrawLine(display, window.drawable, window.gc,
 							cur_x + (w/2.), by+(h), (int)(px), (int)(py));
-#endif
+#endif /* MATH */
 
 					if (h > cur_y_add
 							&& h > font_h) {
@@ -6648,7 +6686,7 @@ static void reload_config(void)
 
 #ifdef HAVE_LUA
 	llua_close();
-#endif
+#endif /* HAVE_LUA */
 
 	if (current_config) {
 		clear_fs_stats();
@@ -6753,7 +6791,7 @@ static void clean_up(void)
 #endif
 #ifdef HAVE_LUA
 	llua_close();
-#endif
+#endif /* HAVE_LUA */
 
 	if (specials) {
 		unsigned int i;
@@ -7724,7 +7762,7 @@ static void load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-#endif
+#endif /* HAVE_LUA */
 
 		CONF("color0"){}
 		CONF("color1"){}
