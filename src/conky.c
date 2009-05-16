@@ -719,9 +719,9 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_image:
 			case OBJ_eval:
 			case OBJ_exec:
+			case OBJ_execbar:
 #ifdef X11
 			case OBJ_execgauge:
-			case OBJ_execbar:
 			case OBJ_execgraph:
 #endif
 			case OBJ_execp:
@@ -1472,12 +1472,12 @@ static struct text_object *construct_text_object(const char *s,
 	obj->a = default_##arg##_width; \
 	obj->b = default_##arg##_height; \
 }
+	END OBJ(execbar, 0)
+		SIZE_DEFAULTS(bar);
+		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 #ifdef X11
 	END OBJ(execgauge, 0)
 		SIZE_DEFAULTS(gauge);
-		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
-	END OBJ(execbar, 0)
-		SIZE_DEFAULTS(bar);
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(execgraph, 0)
 		SIZE_DEFAULTS(graph);
@@ -3789,17 +3789,31 @@ static void generate_text_internal(char *p, int p_max_size,
 					new_gauge(p, obj->a, obj->b, round_to_int(barnum * 255.0));
 				}
 			}
+#endif
 			OBJ(execbar) {
 				double barnum;
+				int i;
 
 				read_exec(obj->data.s, p, text_buffer_size);
 				barnum = get_barnum(p);
 
 				if (barnum >= 0.0) {
+#ifdef X11
 					barnum /= 100;
 					new_bar(p, obj->a, obj->b, round_to_int(barnum * 255.0));
+#else
+					barnum = round_to_int( ( barnum * obj->a ) / 100);
+					for(i=0; i<barnum; i++) {
+						*(p+i)='#';
+					}
+					for(; i < obj->a; i++) {
+						*(p+i)='_';
+					}
+					*(p+i)=0;
+#endif
 				}
 			}
+#ifdef X11
 			OBJ(execgraph) {
 				char showaslog = FALSE;
 				double barnum;
@@ -7108,7 +7122,6 @@ static void load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-#ifdef X11
 		CONF("default_bar_size") {
 			char err = 0;
 			if (value) {
@@ -7122,6 +7135,7 @@ static void load_config_file(const char *f)
 				CONF_ERR2("default_bar_size takes 2 integer arguments (ie. 'default_bar_size 0 6')")
 			}
 		}
+#ifdef X11
 		CONF("default_graph_size") {
 			char err = 0;
 			if (value) {
