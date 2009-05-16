@@ -2363,7 +2363,7 @@
 
 	<varlistentry>
 		<term>
-			<command><option>lua_read</option></command>
+			<command><option>lua_read_parse</option></command>
 			<option>function_name (conky text)</option>
 		</term>
 		<listitem>
