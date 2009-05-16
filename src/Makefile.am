@@ -35,7 +35,11 @@ endif
 conky_DEPENDENCIES = $(config_output)
 BUILT_SOURCES = $(config_output)
 CLEANFILES = $(config_output)
+if BUILD_X11
 $(config_output): ../data/conky.conf
+else
+$(config_output): ../data/conky_no_x11.conf
+endif
 	sh ../text2c.sh $< $@ defconfig
 endif
 
