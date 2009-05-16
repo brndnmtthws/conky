@@ -7548,6 +7548,10 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("text") {
+			if(output_methods & TO_X) {
+				X11_initialisation();
+			}
+
 			if (global_text) {
 				free(global_text);
 				global_text = 0;
