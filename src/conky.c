@@ -3884,7 +3884,6 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 			OBJ(execbar) {
 				double barnum;
-				int i;
 
 				read_exec(obj->data.s, p, text_buffer_size);
 				barnum = get_barnum(p);
