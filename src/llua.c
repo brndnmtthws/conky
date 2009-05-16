@@ -50,32 +50,59 @@ void llua_load(const char *script)
 	}
 }
 
-char *llua_getstring(const char *args)
+/*
+	llua_do_call does a flexible call to any Lua function
+	string: <function> [par1] [par2...]
+	retc: the number of return values expected
+*/
+char *llua_do_call(const char *string, int retc)
 {
-	char *ret = NULL;
-	char *tmp = strdup(args);
-	char func[64];
-	int parcount = 0;
+	static char func[64];
+	int argc = 0;
 
-	if(!lua_L) return NULL;
-
+	char *tmp = strdup(string);
 	char *ptr = strtok(tmp, " ");
-	if(!ptr) return NULL; /* function name missing */
+
+	/* proceed only if the function name is present */
+	if(!ptr) {
+		free(tmp);
+		return NULL;
+	}
+
+	/* call only conky_ prefixed functions */
 	snprintf(func, 64, "conky_%s", ptr);
 
+	/* push the function name to stack */
 	lua_getglobal(lua_L, func);
 
+	/* parse all function parameters from args and push them to the stack */
 	ptr = strtok(NULL, " ");
 	while(ptr) {
 		lua_pushstring(lua_L, ptr);
 		ptr = strtok(NULL, " ");
-		parcount++;
+		argc++;
 	}
 
-	if(lua_pcall(lua_L, parcount, 1, 0) != 0) {
-		ERR("llua_getstring: function %s execution failed: %s", func, lua_tostring(lua_L, -1));
+	free(tmp);
+
+	if(lua_pcall(lua_L, argc, retc, 0) != 0) {
+		ERR("llua_do_call: function %s execution failed: %s", func, lua_tostring(lua_L, -1));
 		lua_pop(lua_L, -1);
-	} else {
+		return NULL;
+	}
+
+	return func;
+}
+
+char *llua_getstring(const char *args)
+{
+	char *func;
+	char *ret = NULL;
+
+	if(!lua_L) return NULL;
+
+	func = llua_do_call(args, 1);
+	if(func) {
 		if(!lua_isstring(lua_L, -1)) {
 			ERR("llua_getstring: function %s didn't return a string, result discarded", func);
 		} else {
@@ -84,37 +111,17 @@ char *llua_getstring(const char *args)
 		}
 	}
 
-	free(tmp);
-
 	return ret;
 }
 
 int llua_getpercent(const char *args, int *per)
 {
-	char func[64];
-	char *tmp = strdup(args);
-	int parcount = 0;
+	char *func;
 
 	if(!lua_L) return 0;
 
-	char *ptr = strtok(tmp, " ");
-	if(!ptr) return 0; /* function name missing */
-	snprintf(func, 64, "conky_%s", ptr);
-
-	lua_getglobal(lua_L, func);
-
-	ptr = strtok(NULL, " ");
-	while(ptr) {
-		lua_pushstring(lua_L, ptr);
-		ptr = strtok(NULL, " ");
-		parcount++;
-	}
-	free(tmp);
-
-	if(lua_pcall(lua_L, parcount, 1, 0) != 0) {
-		ERR("llua_getpercent: function %s execution failed: %s", func, lua_tostring(lua_L, -1));
-		lua_pop(lua_L, -1);
-	} else {
+	func = llua_do_call(args, 1);
+	if(func) {
 		if(!lua_isnumber(lua_L, -1)) {
 			ERR("llua_getpercent: function %s didn't return a number (percent), result discarded", func);
 		} else {
