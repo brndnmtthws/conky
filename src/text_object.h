@@ -104,9 +104,9 @@ enum text_object_type {
 	OBJ_exec,
 	OBJ_execi,
 	OBJ_texeci,
+	OBJ_execbar,
 #ifdef X11
 	OBJ_execgauge,
-	OBJ_execbar,
 	OBJ_execgraph,
 	OBJ_execibar,
 	OBJ_execigraph,

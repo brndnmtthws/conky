@@ -76,9 +76,9 @@ struct special_t {
 extern struct special_t *specials;
 extern unsigned int special_count;
 
-#ifdef X11
 extern int default_bar_width;
 extern int default_bar_height;
+#ifdef X11
 extern int default_graph_width;
 extern int default_graph_height;
 extern int default_gauge_width;
