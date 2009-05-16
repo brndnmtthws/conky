@@ -118,7 +118,7 @@ int llua_getpercent(const char *args, int *per)
 		if(!lua_isnumber(lua_L, -1)) {
 			ERR("llua_getpercent: function %s didn't return a number (percent), result discarded", func);
 		} else {
-			*per = lua_tonumber(lua_L, -1);
+			*per = lua_tointeger(lua_L, -1);
 			lua_pop(lua_L, 1);
 			return 1;
 		}
