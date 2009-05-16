@@ -382,6 +382,8 @@ enum text_object_type {
 #endif
 #ifdef HAVE_LUA
 	OBJ_lua,
+	OBJ_lua_parse,
+	OBJ_lua_read_parse,
 #ifdef X11
 	OBJ_lua_bar,
 	OBJ_lua_graph,
@@ -481,6 +483,8 @@ struct text_object {
 		struct {
 			int num;
 			int type;
+			int was_parsed;
+			char *s;
 		} top;
 
 		struct {

@@ -30,7 +30,7 @@
 
 lua_State *lua_L = NULL;
 
-void llua_init()
+void llua_init(void)
 {
 	if(lua_L) return;
 	lua_L = lua_open();
@@ -92,6 +92,29 @@ char *llua_do_call(const char *string, int retc)
 	return func;
 }
 
+/*
+ * same as llua_do_call() except passes everything after func as one arg.
+ */
+char *llua_do_read_call(const char *function, const char *arg, int retc)
+{
+	static char func[64];
+	snprintf(func, 64, "conky_%s", function);
+	
+	/* push the function name to stack */
+	lua_getglobal(lua_L, func);
+
+	/* push function parameter to the stack */
+	lua_pushstring(lua_L, arg);
+
+	if (lua_pcall(lua_L, 1, retc, 0) != 0) {
+		ERR("llua_do_call: function %s execution failed: %s", func, lua_tostring(lua_L, -1));
+		lua_pop(lua_L, -1);
+		return NULL;
+	}
+
+	return func;
+}
+
 char *llua_getstring(const char *args)
 {
 	char *func;
@@ -104,7 +127,27 @@ char *llua_getstring(const char *args)
 		if(!lua_isstring(lua_L, -1)) {
 			ERR("llua_getstring: function %s didn't return a string, result discarded", func);
 		} else {
-			ret = strdup((char *)lua_tostring(lua_L, -1));
+			ret = strdup(lua_tostring(lua_L, -1));
+			lua_pop(lua_L, 1);
+		}
+	}
+
+	return ret;
+}
+
+char *llua_getstring_read(const char *function, const char *arg)
+{
+	char *func;
+	char *ret = NULL;
+
+	if(!lua_L) return NULL;
+
+	func = llua_do_read_call(function, arg, 1);
+	if (func) {
+		if(!lua_isstring(lua_L, -1)) {
+			ERR("llua_getstring_read: function %s didn't return a string, result discarded", func);
+		} else {
+			ret = strdup(lua_tostring(lua_L, -1));
 			lua_pop(lua_L, 1);
 		}
 	}
@@ -131,7 +174,7 @@ int llua_getinteger(const char *args, int *per)
 	return 0;
 }
 
-void llua_close()
+void llua_close(void)
 {
 	if(!lua_L) return;
 	lua_close(lua_L);
