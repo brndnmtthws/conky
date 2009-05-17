@@ -2903,30 +2903,35 @@ static void strfold(char *start, int count)
 	for (curplace = start + count; *curplace != 0; curplace++) {
 		*(curplace - count) = *curplace;
 	}
-	*(curplace - count) = 0;
+	*(curplace - count - 1) = 0;
 }
 
-static void remove_comments(char *string)
+static size_t remove_comments(char *string)
 {
 	char *curplace, *curplace2;
-
+	size_t folded = 0;
 	for (curplace = string; *curplace != 0; curplace++) {
 		if (*curplace == '\\' && *(curplace + 1) == '#') {
 			// strcpy can't be used for overlapping strings
 			strfold(curplace, 1);
+			folded += 1;
 		} else if (*curplace == '#') {
 			// remove everything until we hit a '\n'
 			curplace2 = curplace;
-			while (*curplace2 && *curplace2 != '\n') {
+			while (*curplace2) {
 				curplace2++;
+				if (*curplace2 == '\n' &&
+						*(curplace2 + 1) != '#') break;
 			}
 			if (*curplace2) {
 				strfold(curplace, curplace2 - curplace);
+				folded += curplace2 - curplace;
 			} else {
 				*curplace = 0;
 			}
 		}
 	}
+	return folded;
 }
 
 static int extract_variable_text_internal(struct text_object *retval, const char *const_p, char allow_threaded)
@@ -2937,6 +2942,7 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 	void *ifblock_opaque = NULL;
 	char *tmp_p;
 	char *arg = 0;
+	size_t len = 0;
 
 	p = strndup(const_p, max_user_text - 1);
 	while (text_contains_templates(p)) {
@@ -2974,7 +2980,6 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 			if (*p != '$') {
 				char buf[256];
 				const char *var;
-				unsigned int len;
 
 				/* variable is either $foo or ${foo} */
 				if (*p == '{') {
@@ -3061,10 +3066,13 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 					append_object(retval, obj);
 				}
 			}
+		} else if (*p == '#') {
+			remove_comments(p);
 		}
 		p++;
 	}
 	remove_comments(s);
+	printf("'%s'\n", s);
 	obj = create_plain_text(s);
 	if (obj != NULL) {
 		append_object(retval, obj);
