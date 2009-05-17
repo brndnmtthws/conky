@@ -3800,6 +3800,9 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 			OBJ(execbar) {
 				double barnum;
+#ifndef X11
+				int i;
+#endif
 
 				read_exec(obj->data.s, p, text_buffer_size);
 				barnum = get_barnum(p);
