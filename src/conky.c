@@ -3072,7 +3072,6 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 		p++;
 	}
 	remove_comments(s);
-	printf("'%s'\n", s);
 	obj = create_plain_text(s);
 	if (obj != NULL) {
 		append_object(retval, obj);
