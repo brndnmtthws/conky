@@ -42,12 +42,10 @@ struct special_t *specials = NULL;
 
 unsigned int special_count;
 
-#ifdef X11
 int default_bar_width = 0, default_bar_height = 6;
+#ifdef X11
 int default_graph_width = 0, default_graph_height = 25;
 int default_gauge_width = 50, default_gauge_height = 25;
-#else
-int default_bar_width = 10, default_bar_height = 1;
 #endif
 
 /*

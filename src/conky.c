@@ -3799,26 +3799,29 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 			OBJ(execbar) {
 				double barnum;
-#ifndef X11
 				int i;
-#endif
 
 				read_exec(obj->data.s, p, text_buffer_size);
 				barnum = get_barnum(p);
 
 				if (barnum >= 0.0) {
 #ifdef X11
-					barnum /= 100;
-					new_bar(p, obj->a, obj->b, round_to_int(barnum * 255.0));
-#else
-					barnum = round_to_int( ( barnum * obj->a ) / 100);
-					for(i=0; i<barnum; i++) {
-						*(p+i)='#';
+					if(output_methods & TO_X) {
+						barnum /= 100;
+						new_bar(p, obj->a, obj->b, round_to_int(barnum * 255.0));
+					}else{
+#endif
+						if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
+						barnum = round_to_int( ( barnum * obj->a ) / 100);
+						for(i=0; i<barnum; i++) {
+							*(p+i)='#';
+						}
+						for(; i < obj->a; i++) {
+							*(p+i)='_';
+						}
+						*(p+i)=0;
+#ifdef X11
 					}
-					for(; i < obj->a; i++) {
-						*(p+i)='_';
-					}
-					*(p+i)=0;
 #endif
 				}
 			}

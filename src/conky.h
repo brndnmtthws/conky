@@ -43,6 +43,7 @@
 #define FALSE 0
 #define TRUE 1
 
+#define DEFAULT_BAR_WIDTH_NO_X 10
 
 #if !defined(__GNUC__)
 #  define __attribute__(x) /* nothing */
