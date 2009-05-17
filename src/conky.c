@@ -722,9 +722,9 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_image:
 			case OBJ_eval:
 			case OBJ_exec:
+			case OBJ_execbar:
 #ifdef X11
 			case OBJ_execgauge:
-			case OBJ_execbar:
 			case OBJ_execgraph:
 #endif
 			case OBJ_execp:
@@ -1475,12 +1475,12 @@ static struct text_object *construct_text_object(const char *s,
 	obj->a = default_##arg##_width; \
 	obj->b = default_##arg##_height; \
 }
+	END OBJ(execbar, 0)
+		SIZE_DEFAULTS(bar);
+		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 #ifdef X11
 	END OBJ(execgauge, 0)
 		SIZE_DEFAULTS(gauge);
-		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
-	END OBJ(execbar, 0)
-		SIZE_DEFAULTS(bar);
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(execgraph, 0)
 		SIZE_DEFAULTS(graph);
@@ -2900,28 +2900,41 @@ static int text_contains_templates(const char *text)
 	return 0;
 }
 
-static void remove_comments(char *string)
+static void strfold(char *start, int count)
+{
+	char *curplace;
+	for (curplace = start + count; *curplace != 0; curplace++) {
+		*(curplace - count) = *curplace;
+	}
+	*(curplace - count - 1) = 0;
+}
+
+static size_t remove_comments(char *string)
 {
 	char *curplace, *curplace2;
-	char *newend = NULL;
-
-	for(curplace = string; *curplace != 0; curplace++) {
-		if(*curplace == '\\' && *(curplace + 1) == '#') {
-			//strcpy can't be used for overlapping strings
-			for (curplace2 = curplace+1; *curplace2 != 0; curplace2++) {
-				*(curplace2 - 1) = *curplace2;
+	size_t folded = 0;
+	for (curplace = string; *curplace != 0; curplace++) {
+		if (*curplace == '\\' && *(curplace + 1) == '#') {
+			// strcpy can't be used for overlapping strings
+			strfold(curplace, 1);
+			folded += 1;
+		} else if (*curplace == '#') {
+			// remove everything until we hit a '\n'
+			curplace2 = curplace;
+			while (*curplace2) {
+				curplace2++;
+				if (*curplace2 == '\n' &&
+						*(curplace2 + 1) != '#') break;
 			}
-			*(curplace2 - 1) = 0;
-		} else if(*curplace == '#' && !newend) {
-			newend = curplace;
-		} else if(*curplace == '\n' && newend) {
-			*newend = '\n';
-			newend++;
+			if (*curplace2) {
+				strfold(curplace, curplace2 - curplace);
+				folded += curplace2 - curplace;
+			} else {
+				*curplace = 0;
+			}
 		}
 	}
-	if(newend) {
-		*newend = 0;
-	}
+	return folded;
 }
 
 static int extract_variable_text_internal(struct text_object *retval, const char *const_p, char allow_threaded)
@@ -2932,6 +2945,7 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 	void *ifblock_opaque = NULL;
 	char *tmp_p;
 	char *arg = 0;
+	size_t len = 0;
 
 	p = strndup(const_p, max_user_text - 1);
 	while (text_contains_templates(p)) {
@@ -2969,7 +2983,6 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 			if (*p != '$') {
 				char buf[256];
 				const char *var;
-				unsigned int len;
 
 				/* variable is either $foo or ${foo} */
 				if (*p == '{') {
@@ -3056,10 +3069,13 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 					append_object(retval, obj);
 				}
 			}
+		} else if (*p == '#') {
+			remove_comments(p);
 		}
 		p++;
 	}
 	remove_comments(s);
+	printf("'%s'\n", s);
 	obj = create_plain_text(s);
 	if (obj != NULL) {
 		append_object(retval, obj);
@@ -3263,7 +3279,8 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 
 	p[0] = 0;
-	for (obj = root.next; obj && p_max_size > 0; obj = obj->next) {
+	obj = root.next;
+	while (obj && p_max_size > 0) {
 		needed = 0; // reset for top stuff
 
 /* IFBLOCK jumping algorithm
@@ -3755,17 +3772,33 @@ static void generate_text_internal(char *p, int p_max_size,
 					new_gauge(p, obj->a, obj->b, round_to_int(barnum * 255.0));
 				}
 			}
+#endif
 			OBJ(execbar) {
 				double barnum;
+#ifndef X11
+				int i;
+#endif
 
 				read_exec(obj->data.s, p, text_buffer_size);
 				barnum = get_barnum(p);
 
 				if (barnum >= 0.0) {
+#ifdef X11
 					barnum /= 100;
 					new_bar(p, obj->a, obj->b, round_to_int(barnum * 255.0));
+#else
+					barnum = round_to_int( ( barnum * obj->a ) / 100);
+					for(i=0; i<barnum; i++) {
+						*(p+i)='#';
+					}
+					for(; i < obj->a; i++) {
+						*(p+i)='_';
+					}
+					*(p+i)=0;
+#endif
 				}
 			}
+#ifdef X11
 			OBJ(execgraph) {
 				char showaslog = FALSE;
 				double barnum;
@@ -5240,6 +5273,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			p += a;
 			p_max_size -= a;
 		}
+		obj = obj->next;
 	}
 }
 
@@ -7087,7 +7121,6 @@ static void load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-#ifdef X11
 		CONF("default_bar_size") {
 			char err = 0;
 			if (value) {
@@ -7101,6 +7134,7 @@ static void load_config_file(const char *f)
 				CONF_ERR2("default_bar_size takes 2 integer arguments (ie. 'default_bar_size 0 6')")
 			}
 		}
+#ifdef X11
 		CONF("default_graph_size") {
 			char err = 0;
 			if (value) {
@@ -7532,6 +7566,12 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("text") {
+#ifdef X11
+			if(output_methods & TO_X) {
+				X11_initialisation();
+			}
+#endif
+
 			if (global_text) {
 				free(global_text);
 				global_text = 0;
