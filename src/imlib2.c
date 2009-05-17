@@ -28,9 +28,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define NAME_SIZE 1024
+
 struct image_list_s {
-	const char *name;
+	char name[NAME_SIZE];
 	Imlib_Image image;
+	int x, y, w, h;
+	int wh_set;
 	struct image_list_s *prev;
 	struct image_list_s *next;
 };
@@ -46,9 +50,7 @@ Imlib_Image buffer, image;
 
 void cimlib_set_cache_size(long size)
 {
-	if (size > 0) {
-		imlib_set_cache_size(size);
-	}
+	imlib_set_cache_size(size);
 }
 
 void cimlib_cleanup(void)
@@ -62,7 +64,7 @@ void cimlib_cleanup(void)
 	image_list_start = image_list_end = NULL;
 }
 
-void cimlib_init(Display *display, Window window, Visual *visual, Colormap colourmap)
+void cimlib_init(Display *display, Window drawable, Visual *visual, Colormap colourmap)
 {
 	image_list_start = image_list_end = NULL;
 	cimlib_set_cache_size(DEFAULT_CACHE_SIZE);
@@ -74,15 +76,34 @@ void cimlib_init(Display *display, Window window, Visual *visual, Colormap colou
 	imlib_context_set_display(display);
 	imlib_context_set_visual(visual);
 	imlib_context_set_colormap(colourmap);
-	imlib_context_set_drawable(window);
+	imlib_context_set_drawable(drawable);
 }
 
-void cimlib_add_image(const char *name)
+void cimlib_add_image(const char *args)
 {
 	struct image_list_s *cur = NULL;
+	char *tmp;
+
 	cur = malloc(sizeof(struct image_list_s));
 	memset(cur, 0, sizeof(struct image_list_s));
-	cur->name = name;
+
+	if (!sscanf(args, "%1024s", cur->name)) {
+		ERR("Invalid args for $image.  Format is: '<path to image> (-p x,y) (-s WxH)' (got '%s')", args);
+	}
+	// now we check for optional args
+	tmp = strstr(args, "-p ");
+	if (tmp) {
+		tmp += 3;
+		sscanf(tmp, "%i,%i", &cur->x, &cur->y);
+	}
+	tmp = strstr(args, "-s ");
+	if (tmp) {
+		tmp += 3;
+		if (sscanf(tmp, "%ix%i", &cur->w, &cur->h)) {
+			cur->wh_set = 1;
+		}
+	}
+
 	if (image_list_end) {
 		image_list_end->next = cur;
 		cur->prev = image_list_end;
@@ -102,20 +123,13 @@ static void cimlib_draw_image(struct image_list_s *cur)
 		w = imlib_image_get_width();
 		h = imlib_image_get_height();
 		imlib_context_set_image(buffer);
-		imlib_blend_image_onto_image(image, 0, 0, 0, w, h,
-				0, 0, w, h);
+		imlib_blend_image_onto_image(image, 1, 0, 0, h, w,
+				cur->x, cur->y, cur->w, cur->h);
 		imlib_context_set_image(image);
 		imlib_free_image();
 	} else {
 		ERR("Unable to load image '%s'", cur->name);
 	}
-}
-
-void cimlib_event_start(void)
-{
-	if (!image_list_start) return; /* are we actually drawing anything? */
-	/* init our updates to empty */
-	updates = imlib_updates_init();
 }
 
 static void cimlib_draw_all(void)
@@ -132,57 +146,17 @@ void cimlib_event_end(int x, int y, int width, int height)
 	if (!image_list_start) return; /* are we actually drawing anything? */
 	/* take all the little rectangles to redraw and merge them into
 	 * something sane for rendering */
-	updates = imlib_updates_merge_for_rendering(updates, width, height);
-	for (current_update = updates; current_update; current_update = imlib_updates_get_next(current_update)) {
-		int up_x, up_y, up_w, up_h;
+	buffer = imlib_create_image(width, height);
+	/* we can blend stuff now */
+	imlib_context_set_blend(1);
 
-		/* find out where the first update is */
-		imlib_updates_get_coordinates(current_update, 
-				&up_x, &up_y, &up_w, &up_h);
+	cimlib_draw_all();
 
-		/* create our buffer image for rendering this update */
-		buffer = imlib_create_image(up_w, up_h);
-
-		/* we can blend stuff now */
-		imlib_context_set_blend(1);
-
-		cimlib_draw_all();
-
-		/* set the buffer image as our current image */
-		imlib_context_set_image(buffer);
-		/* render the image at 0, 0 */
-		imlib_render_image_on_drawable(up_x, up_y);
-		/* don't need that temporary buffer image anymore */
-		imlib_free_image();
-	}
-	/* if we had updates - free them */
-	if (updates) {
-		imlib_updates_free(updates);
-	} else {
-		/* was likely a timeout, redraw everything */
-
-		/* create our buffer image for rendering this update */
-		buffer = imlib_create_image(width, height);
-
-		/* we can blend stuff now */
-		imlib_context_set_blend(1);
-
-		cimlib_draw_all();
-
-		/* set the buffer image as our current image */
-		imlib_context_set_image(buffer);
-		/* render the image at 0, 0 */
-		imlib_render_image_on_drawable(x, y);
-		/* don't need that temporary buffer image anymore */
-		imlib_free_image();
-	}
-}
-
-void cimlib_event_expose(XEvent *event)
-{
-	if (!image_list_start) return; /* are we actually drawing anything? */
-	updates = imlib_update_append_rect(updates,
-			event->xexpose.x, event->xexpose.y,
-			event->xexpose.width, event->xexpose.height);
+	/* set the buffer image as our current image */
+	imlib_context_set_image(buffer);
+	/* render the image at 0, 0 */
+	imlib_render_image_on_drawable(x, y);
+	/* don't need that temporary buffer image anymore */
+	imlib_free_image();
 }
 

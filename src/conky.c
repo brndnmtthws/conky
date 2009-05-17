@@ -3725,7 +3725,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(image) {
 				/* doesn't actually draw anything, just queues it omp.  the
 				 * image will get drawn after the X event loop */
-				cimlib_add_image(obj->data.s); 
+				cimlib_add_image(obj->data.s);
 			}
 #endif /* IMLIB2 */
 			OBJ(eval) {
@@ -6263,10 +6263,6 @@ static void main_loop(void)
 		if (output_methods & TO_X) {
 			XFlush(display);
 
-#ifdef IMLIB2
-			cimlib_event_start();
-#endif /* IMLIB2 */
-
 			/* wait for X event or timeout */
 
 			if (!XPending(display)) {
@@ -6353,15 +6349,11 @@ static void main_loop(void)
 					case Expose:
 					{
 						XRectangle r;
-
 						r.x = ev.xexpose.x;
 						r.y = ev.xexpose.y;
 						r.width = ev.xexpose.width;
 						r.height = ev.xexpose.height;
 						XUnionRectWithRegion(&r, region, region);
-#ifdef IMLIB2
-						cimlib_event_expose(&ev);
-#endif /* IMLIB2 */
 						break;
 					}
 
@@ -6502,11 +6494,11 @@ static void main_loop(void)
 				}
 #endif
 				draw_stuff();
-#ifdef IMLIB2
-				cimlib_event_end(/*window.x, window.y, */0, 0, window.width, window.height);
-#endif /* IMLIB2 */
 				XDestroyRegion(region);
 				region = XCreateRegion();
+#ifdef IMLIB2
+				cimlib_event_end(text_start_x + border_margin, text_start_y + border_margin, window.width, window.height);
+#endif /* IMLIB2 */
 			}
 		} else {
 #endif /* X11 */
@@ -7512,11 +7504,13 @@ static void load_config_file(const char *f)
 				stippled_borders = 4;
 			}
 		}
+#ifdef IMLIB2
 		CONF("imlib_cache_size") {
 			if (value) {
 				cimlib_set_cache_size(atoi(value));
 			}
 		}
+#endif /* IMLIB2 */
 #endif /* X11 */
 		CONF("update_interval") {
 			if (value) {

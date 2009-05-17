@@ -1044,6 +1044,16 @@
 
 	<varlistentry>
 		<term>
+			<command><option>image</option></command>
+			<option>&lt;path to image&gt; (-p x,y) (-s WxH)</option>
+		</term>
+		<listitem>
+			Renders an image from the path specified using IMLIB2.  Takes 2 optional arguments, one being a position, the other an size.  Changing the x,y position will move the position of the image, and changing the WxH will scale the image.  Example: ${image /home/brenden/cheeseburger.jpg -p 20,20 -s 200x200} will render 'cheeseburger.jpg' at (20,20) scaled to 200x200 pixels.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
 			<command><option>i2c</option></command>
 			<option>(dev) type n</option>
 		</term>

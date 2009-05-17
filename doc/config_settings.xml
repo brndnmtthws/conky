@@ -177,6 +177,13 @@
 	</varlistentry>
 
 	<varlistentry>
+		<term><command><option>imlib_cache_size</option></command></term>
+		<listitem>
+			IMLIB2 image cache size, in bytes.  Defaults to 4MiB.  Increase this value if you use $image lots.  Set to 0 to disable the image cache.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
 		<term><command><option>if_up_strictness</option></command></term>
 		<listitem>
 			How strict should if_up be when testing an interface for being up? The value is one of up, link or address, to check for the interface being solely up, being up and having link or being up, having link and an assigned IP address.
