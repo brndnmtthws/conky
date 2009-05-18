@@ -27,7 +27,7 @@
 void cimlib_add_image(const char *name);
 void cimlib_set_cache_size(long size);
 void cimlib_init(Display *display, Window drawable, Visual *visual, Colormap colourmap);
-void cimlib_event_end(int x, int y, int width, int height);
+void cimlib_render(int x, int y, int width, int height);
 void cimlib_cleanup(void);
 
 #endif /* _CONKY_IMBLI2_H_ */

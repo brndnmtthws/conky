@@ -1,5 +1,6 @@
 2009-05-17
 	* Added support for the Lua programming language
+	* Added support for rending images by way of IMLIB2
 
 2009-05-11
 	* Added arguments to hwmon for value precalculation

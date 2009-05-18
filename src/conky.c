@@ -6660,12 +6660,12 @@ static void main_loop(void)
 					XftDrawSetClip(window.xftdraw, region);
 				}
 #endif
+#ifdef IMLIB2
+				cimlib_render(text_start_x + border_margin, text_start_y + border_margin, window.width, window.height);
+#endif /* IMLIB2 */
 				draw_stuff();
 				XDestroyRegion(region);
 				region = XCreateRegion();
-#ifdef IMLIB2
-				cimlib_event_end(text_start_x + border_margin, text_start_y + border_margin, window.width, window.height);
-#endif /* IMLIB2 */
 			}
 		} else {
 #endif /* X11 */

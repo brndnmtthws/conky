@@ -118,7 +118,7 @@ static void cimlib_draw_image(struct image_list_s *cur)
 	image = imlib_load_image(cur->name);
 	if (image) {
 		int w, h;
-		DBGP("Drawing image '%s'", cur->name);
+		DBGP("Drawing image '%s' at (%i,%i) scaled to %ix%i", cur->name, cur->x, cur->y, cur->w, cur->h);
 		imlib_context_set_image(image);
 		w = imlib_image_get_width();
 		h = imlib_image_get_height();
@@ -141,12 +141,15 @@ static void cimlib_draw_all(void)
 	}
 }
 
-void cimlib_event_end(int x, int y, int width, int height)
+void cimlib_render(int x, int y, int width, int height)
 {
 	if (!image_list_start) return; /* are we actually drawing anything? */
 	/* take all the little rectangles to redraw and merge them into
 	 * something sane for rendering */
 	buffer = imlib_create_image(width, height);
+	/* clear our buffer */
+	imlib_context_set_image(buffer);
+	imlib_image_clear();
 	/* we can blend stuff now */
 	imlib_context_set_blend(1);
 
