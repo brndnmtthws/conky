@@ -309,10 +309,11 @@ Thomas Cort
 Toni <bleach at users dot sourceforge dot net>
   exec*/tail/head output evalution
 
-Toni Spets hifi <spets at users dot sourceforge dot net>
+Toni Spets hifi <toni.spets at iki dot fi>
   OpenBSD support
   Linux wifi code
-  RSS code (created with Mikko Sysikaski)
+  RSS code (created together with Mikko Sysikaski)
+  Lua scripting
 
 Tris <asto at users dot sourceforge dot net>
   Scroll step patch

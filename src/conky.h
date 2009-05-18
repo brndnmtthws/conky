@@ -91,6 +91,10 @@ char *strndup(const char *s, size_t n);
 #include "rss.h"
 #endif
 
+#ifdef HAVE_LUA
+#include "llua.h"
+#endif
+
 #ifdef TCP_PORT_MONITOR
 #include "tcp-portmon.h"
 #endif

@@ -380,6 +380,16 @@ enum text_object_type {
 #ifdef RSS
 	OBJ_rss,
 #endif
+#ifdef HAVE_LUA
+	OBJ_lua,
+	OBJ_lua_parse,
+	OBJ_lua_read_parse,
+#ifdef X11
+	OBJ_lua_bar,
+	OBJ_lua_graph,
+	OBJ_lua_gauge,
+#endif /* X11 */
+#endif /* HAVE_LUA */
 #ifdef TCP_PORT_MONITOR
 	OBJ_tcp_portmon,
 #endif
@@ -473,6 +483,8 @@ struct text_object {
 		struct {
 			int num;
 			int type;
+			int was_parsed;
+			char *s;
 		} top;
 
 		struct {

@@ -196,6 +196,9 @@ static void print_version(void)
 #ifdef RSS
 		   "  * RSS\n"
 #endif /* RSS */
+#ifdef HAVE_LUA
+		   "  * Lua\n"
+#endif /* HAVE_LUA */
 #ifdef HAVE_IWLIB
 		   "  * wireless\n"
 #endif /* HAVE_IWLIB */
@@ -628,8 +631,11 @@ static struct text_object *new_text_object_internal(void)
 	return obj;
 }
 
-/* free the list of text objects root points to */
-static void free_text_objects(struct text_object *root)
+/*
+ * Frees the list of text objects root points to.  When internal = 1, it won't
+ * free global objects.
+ */
+static void free_text_objects(struct text_object *root, int internal)
 {
 	struct text_object *obj;
 
@@ -701,7 +707,7 @@ static void free_text_objects(struct text_object *root)
 				break;
 			case OBJ_if_empty:
 			case OBJ_if_match:
-				free_text_objects(obj->sub);
+				free_text_objects(obj->sub, 1);
 				free(obj->sub);
 				/* fall through */
 			case OBJ_if_existing:
@@ -849,6 +855,18 @@ static void free_text_objects(struct text_object *root)
 				free(data.rss.action);
 				break;
 #endif
+#ifdef HAVE_LUA
+			case OBJ_lua:
+			case OBJ_lua_parse:
+			case OBJ_lua_read_parse:
+#ifdef X11
+			case OBJ_lua_bar:
+			case OBJ_lua_graph:
+			case OBJ_lua_gauge:
+#endif /* X11 */
+				free(data.s);
+				break;
+#endif /* HAVE_LUA */
 			case OBJ_pre_exec:
 				break;
 #ifndef __OpenBSD__
@@ -882,10 +900,11 @@ static void free_text_objects(struct text_object *root)
 			case OBJ_top:
 			case OBJ_top_mem:
 			case OBJ_top_time:
-				if (info.first_process) {
+				if (info.first_process && !internal) {
 					free_all_processes();
 					info.first_process = NULL;
 				}
+				if (data.top.s) free(data.top.s);
 				break;
 #ifdef HDDTEMP
 			case OBJ_hddtemp:
@@ -975,14 +994,14 @@ static void free_text_objects(struct text_object *root)
 #endif
 			case OBJ_scroll:
 				free(data.scroll.text);
-				free_text_objects(obj->sub);
+				free_text_objects(obj->sub, 1);
 				free(obj->sub);
 				break;
 			case OBJ_combine:
 				free(data.combine.left);
 				free(data.combine.seperation);
 				free(data.combine.right);
-				free_text_objects(obj->sub);
+				free_text_objects(obj->sub, 1);
 				free(obj->sub);
 				break;
 #ifdef APCUPSD
@@ -1048,6 +1067,74 @@ static const char *dev_name(const char *path)
 	buf[buflen] = '\0';
 	return DEV_NAME(buf);
 #undef DEV_NAME
+}
+
+static int parse_top_args(const char *s, const char *arg, struct text_object *obj)
+{
+	char buf[64];
+	int n;
+
+	if (obj->data.top.was_parsed) {
+		return 1;
+	}
+	obj->data.top.was_parsed = 1;
+
+	if (arg && !obj->data.top.s) {
+		obj->data.top.s = strndup(arg, text_buffer_size);
+	}
+
+	need_mask |= (1 << INFO_TOP);
+
+	if (s[3] == 0) {
+		obj->type = OBJ_top;
+		top_cpu = 1;
+	} else if (strcmp(&s[3], "_mem") == EQUAL) {
+		obj->type = OBJ_top_mem;
+		top_mem = 1;
+	} else if (strcmp(&s[3], "_time") == EQUAL) {
+		obj->type = OBJ_top_time;
+		top_time = 1;
+	} else {
+		ERR("Must be top, top_mem or top_time");
+		return 0;
+	}
+
+	if (!arg) {
+		ERR("top needs arguments");
+		return 0;
+	}
+
+	if (sscanf(arg, "%63s %i", buf, &n) == 2) {
+		if (strcmp(buf, "name") == EQUAL) {
+			obj->data.top.type = TOP_NAME;
+		} else if (strcmp(buf, "cpu") == EQUAL) {
+			obj->data.top.type = TOP_CPU;
+		} else if (strcmp(buf, "pid") == EQUAL) {
+			obj->data.top.type = TOP_PID;
+		} else if (strcmp(buf, "mem") == EQUAL) {
+			obj->data.top.type = TOP_MEM;
+		} else if (strcmp(buf, "time") == EQUAL) {
+			obj->data.top.type = TOP_TIME;
+		} else if (strcmp(buf, "mem_res") == EQUAL) {
+			obj->data.top.type = TOP_MEM_RES;
+		} else if (strcmp(buf, "mem_vsize") == EQUAL) {
+			obj->data.top.type = TOP_MEM_VSIZE;
+		} else {
+			ERR("invalid type arg for top");
+			ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize");
+			return 0;
+		}
+		if (n < 1 || n > 10) {
+			ERR("invalid num arg for top. Must be between 1 and 10.");
+			return 0;
+		} else {
+			obj->data.top.num = n - 1;
+		}
+	} else {
+		ERR("invalid argument count for top");
+		return 0;
+	}
+	return 1;
 }
 
 /* construct_text_object() creates a new text_object */
@@ -1762,58 +1849,7 @@ static struct text_object *construct_text_object(const char *s,
 	 * avoid having almost-same code three times, we have this special
 	 * handler. */
 	if (strncmp(s, "top", 3) == EQUAL) {
-		char buf[64];
-		int n;
-
-		need_mask |= (1 << INFO_TOP);
-
-		if (s[3] == 0) {
-			obj->type = OBJ_top;
-			top_cpu = 1;
-		} else if (strcmp(&s[3], "_mem") == EQUAL) {
-			obj->type = OBJ_top_mem;
-			top_mem = 1;
-		} else if (strcmp(&s[3], "_time") == EQUAL) {
-			obj->type = OBJ_top_time;
-			top_time = 1;
-		} else {
-			ERR("Must be top, top_mem or top_time");
-			return NULL;
-		}
-
-		if (!arg) {
-			ERR("top needs arguments");
-			return NULL;
-		}
-
-		if (sscanf(arg, "%63s %i", buf, &n) == 2) {
-			if (strcmp(buf, "name") == EQUAL) {
-				obj->data.top.type = TOP_NAME;
-			} else if (strcmp(buf, "cpu") == EQUAL) {
-				obj->data.top.type = TOP_CPU;
-			} else if (strcmp(buf, "pid") == EQUAL) {
-				obj->data.top.type = TOP_PID;
-			} else if (strcmp(buf, "mem") == EQUAL) {
-				obj->data.top.type = TOP_MEM;
-			} else if (strcmp(buf, "time") == EQUAL) {
-				obj->data.top.type = TOP_TIME;
-			} else if (strcmp(buf, "mem_res") == EQUAL) {
-				obj->data.top.type = TOP_MEM_RES;
-			} else if (strcmp(buf, "mem_vsize") == EQUAL) {
-				obj->data.top.type = TOP_MEM_VSIZE;
-			} else {
-				ERR("invalid type arg for top");
-				ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize");
-				return NULL;
-			}
-			if (n < 1 || n > 10) {
-				ERR("invalid num arg for top. Must be between 1 and 10.");
-				return NULL;
-			} else {
-				obj->data.top.num = n - 1;
-			}
-		} else {
-			ERR("invalid argument count for top");
+		if (!parse_top_args(s, arg, obj)) {
 			return NULL;
 		}
 	} else OBJ(addr, INFO_NET)
@@ -1842,13 +1878,13 @@ static struct text_object *construct_text_object(const char *s,
 		}
 	END OBJ(lines, 0)
 		if (arg) {
-			obj->data.s = strdup(arg);
+			obj->data.s = strndup(arg, text_buffer_size);
 		}else{
 			CRIT_ERR("lines needs a argument");
 		}
 	END OBJ(words, 0)
 		if (arg) {
-			obj->data.s = strdup(arg);
+			obj->data.s = strndup(arg, text_buffer_size);
 		}else{
 			CRIT_ERR("words needs a argument");
 		}
@@ -2568,6 +2604,62 @@ static struct text_object *construct_text_object(const char *s,
 					"[act_par] [spaces in front]");
 		}
 #endif
+#ifdef HAVE_LUA
+	END OBJ(lua, 0)
+		if (arg) {
+			obj->data.s = strndup(arg, text_buffer_size);
+		} else {
+			CRIT_ERR("lua needs arguments: <function name> [function parameters]");
+		}
+	END OBJ(lua_parse, 0)
+		if (arg) {
+			obj->data.s = strndup(arg, text_buffer_size);
+		} else {
+			CRIT_ERR("lua_parse needs arguments: <function name> [function parameters]");
+		}
+	END OBJ(lua_read_parse, 0)
+		if (arg) {
+			obj->data.s = strndup(arg, text_buffer_size);
+		} else {
+			CRIT_ERR("lua_read_parse needs arguments: <function name> <string to pass>");
+		}
+#ifdef X11
+	END OBJ(lua_bar, 0)
+		if (arg) {
+			arg = scan_bar(arg, &obj->a, &obj->b);
+			if(arg) {
+				obj->data.s = strndup(arg, text_buffer_size);
+			} else {
+				CRIT_ERR("lua_bar needs arguments: <height>,<width> <function name> [function parameters]");
+			}
+		} else {
+			CRIT_ERR("lua_bar needs arguments: <height>,<width> <function name> [function parameters]");
+		}
+	END OBJ(lua_graph, 0)
+		if (arg) {
+			arg = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+					&obj->e, &obj->showaslog);
+			if (arg) {
+				obj->data.s = strndup(arg, text_buffer_size);
+			} else {
+				CRIT_ERR("lua_graph needs arguments: <\"normal\"|\"log\"> <height>,<width> <gradient colour 1> <gradient colour 2> <scale> <function name> [function parameters]");
+			}
+		} else {
+			CRIT_ERR("lua_graph needs arguments: <\"normal\"|\"log\"> <height>,<width> <gradient colour 1> <gradient colour 2> <scale> <function name> [function parameters]");
+	}
+	END OBJ(lua_gauge, 0)
+		if (arg) {
+			arg = scan_gauge(arg, &obj->a, &obj->b);
+			if (arg) {
+				obj->data.s = strndup(arg, text_buffer_size);
+			} else {
+				CRIT_ERR("lua_gauge needs arguments: <height>,<width> <function name> [function parameters]");
+			}
+		} else {
+			CRIT_ERR("lua_gauge needs arguments: <height>,<width> <function name> [function parameters]");
+		}
+#endif /* X11 */
+#endif /* HAVE_LUA */
 #ifdef HDDTEMP
 	END OBJ(hddtemp, 0)
 		if (scan_hddtemp(arg, &obj->data.hddtemp.dev,
@@ -3087,7 +3179,7 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 
 static void extract_variable_text(const char *p)
 {
-	free_text_objects(&global_root_object);
+	free_text_objects(&global_root_object, 0);
 	if (tmpstring1) {
 		free(tmpstring1);
 		tmpstring1 = 0;
@@ -3763,8 +3855,8 @@ static void generate_text_internal(char *p, int p_max_size,
 				DBGP("evaluated '%s' to '%s'", obj->data.s, p);
 				parse_conky_vars(&subroot2, p, p, tmp_info);
 
-				free_text_objects(&subroot);
-				free_text_objects(&subroot2);
+				free_text_objects(&subroot, 1);
+				free_text_objects(&subroot2, 1);
 				free(tmp_info);
 			}
 			OBJ(exec) {
@@ -3781,7 +3873,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				memcpy(tmp_info, cur, sizeof(struct information));
 				parse_conky_vars(&subroot, p, p, tmp_info);
 
-				free_text_objects(&subroot);
+				free_text_objects(&subroot, 1);
 				free(tmp_info);
 			}
 #ifdef X11
@@ -3926,7 +4018,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					parse_conky_vars(&subroot, obj->data.execi.buffer, p, tmp_info);
 					obj->data.execi.last_update = current_update_time;
 				}
-				free_text_objects(&subroot);
+				free_text_objects(&subroot, 1);
 				free(tmp_info);
 			}
 			OBJ(texeci) {
@@ -4173,6 +4265,75 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 #endif
+#ifdef HAVE_LUA
+			OBJ(lua) {
+				char *str = llua_getstring(obj->data.s);
+				if (str) {
+					snprintf(p, p_max_size, "%s", str);
+					free(str);
+				}
+			}
+			OBJ(lua_parse) {
+				char *str = llua_getstring(obj->data.s);
+				if (str) {
+					struct information *tmp_info;
+					struct text_object subroot;
+
+					tmp_info = malloc(sizeof(struct information));
+					memcpy(tmp_info, cur, sizeof(struct information));
+					parse_conky_vars(&subroot, str, p, tmp_info);
+
+					free_text_objects(&subroot, 1);
+					free(tmp_info);
+					free(str);
+				}
+			}
+			OBJ(lua_read_parse) {
+				struct information *tmp_info;
+				struct text_object subroot, subroot2;
+				char func[64];
+				char *text, *str;
+				sscanf(obj->data.s, "%64s", func);
+				text = obj->data.s + strlen(func) + 1;
+
+				tmp_info = malloc(sizeof(struct information));
+				memcpy(tmp_info, cur, sizeof(struct information));
+				parse_conky_vars(&subroot, text, p, tmp_info);
+				DBGP("evaluated '%s' to '%s'", text, p);
+
+				str = llua_getstring_read(func, p);
+				if (str) {
+					parse_conky_vars(&subroot2, str, p, tmp_info);
+					DBGP("evaluated '%s' to '%s'", str, p);
+
+					free(str);
+					free_text_objects(&subroot2, 1);
+				}
+				free_text_objects(&subroot, 1);
+				free(tmp_info);
+			}
+#ifdef X11
+			OBJ(lua_bar) {
+				int per;
+				if (llua_getinteger(obj->data.s, &per)) {
+					new_bar(p, obj->a, obj->b, (per/100.0 * 255));
+				}
+			}
+			OBJ(lua_graph) {
+				int per;
+				if (llua_getinteger(obj->data.s, &per)) {
+					new_graph(p, obj->a, obj->b, obj->c, obj->d,
+							(per/100.0 * 255), 100, 1, obj->showaslog);
+				}
+			}
+			OBJ(lua_gauge) {
+				int per;
+				if (llua_getinteger(obj->data.s, &per)) {
+					new_gauge(p, obj->a, obj->b, (per/100.0 * 255));
+				}
+			}
+#endif /* X11 */
+#endif /* HAVE_LUA */
 #ifdef HDDTEMP
 			OBJ(hddtemp) {
 				char *endptr, unit;
@@ -4894,35 +5055,38 @@ static void generate_text_internal(char *p, int p_max_size,
 			 * times, we have this special handler. */
 			break;
 			case OBJ_top:
+				parse_top_args("top", obj->data.top.s, obj);
 				if (!needed) needed = cur->cpu;
 			case OBJ_top_mem:
+				parse_top_args("top_mem", obj->data.top.s, obj);
 				if (!needed) needed = cur->memu;
 			case OBJ_top_time:
+				parse_top_args("top_time", obj->data.top.s, obj);
 				if (!needed) needed = cur->time;
 
-				{
+				if (needed[obj->data.top.num]) {
 					char *timeval;
 
 					switch (obj->data.top.type) {
 						case TOP_NAME:
 							snprintf(p, top_name_width + 1, "%-*s", top_name_width,
-								needed[obj->data.top.num]->name);
+									needed[obj->data.top.num]->name);
 							break;
 						case TOP_CPU:
 							snprintf(p, 7, "%6.2f",
-								needed[obj->data.top.num]->amount);
+									needed[obj->data.top.num]->amount);
 							break;
 						case TOP_PID:
 							snprintf(p, 6, "%5i",
-								needed[obj->data.top.num]->pid);
+									needed[obj->data.top.num]->pid);
 							break;
 						case TOP_MEM:
 							snprintf(p, 7, "%6.2f",
-								needed[obj->data.top.num]->totalmem);
+									needed[obj->data.top.num]->totalmem);
 							break;
 						case TOP_TIME:
 							timeval = format_time(
-								needed[obj->data.top.num]->total_cpu_time, 9);
+									needed[obj->data.top.num]->total_cpu_time, 9);
 							snprintf(p, 10, "%9s", timeval);
 							free(timeval);
 							break;
@@ -5833,7 +5997,7 @@ static void draw_line(char *s)
 
 					XDrawLine(display, window.drawable, window.gc,
 							cur_x + (w/2.), by+(h), (int)(px), (int)(py));
-#endif
+#endif /* MATH */
 
 					if (h > cur_y_add
 							&& h > font_h) {
@@ -6621,6 +6785,10 @@ static void reload_config(void)
 	tcp_portmon_clear();
 #endif
 
+#ifdef HAVE_LUA
+	llua_close();
+#endif /* HAVE_LUA */
+
 	if (current_config) {
 		clear_fs_stats();
 		load_config_file(current_config);
@@ -6695,7 +6863,7 @@ static void clean_up(void)
 	}
 #endif /* X11 */
 
-	free_text_objects(&global_root_object);
+	free_text_objects(&global_root_object, 0);
 	if (tmpstring1) {
 		free(tmpstring1);
 		tmpstring1 = 0;
@@ -6722,6 +6890,9 @@ static void clean_up(void)
 #ifdef RSS
 	free_rss_info();
 #endif
+#ifdef HAVE_LUA
+	llua_close();
+#endif /* HAVE_LUA */
 
 	if (specials) {
 		unsigned int i;
@@ -7685,6 +7856,20 @@ static void load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
+#ifdef HAVE_LUA
+		CONF("lua_load") {
+			llua_init();
+			if(value) {
+				char *ptr = strtok(value, " ");
+				while(ptr) {
+					llua_load(ptr);
+					ptr = strtok(NULL, " ");
+				}
+			} else {
+				CONF_ERR;
+			}
+		}
+#endif /* HAVE_LUA */
 
 		CONF("color0"){}
 		CONF("color1"){}

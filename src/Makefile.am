@@ -111,6 +111,10 @@ if BUILD_RSS
 rss = rss.c prss.c prss.h
 endif
 
+if BUILD_LUA
+lua = llua.c llua.h
+endif
+
 if BUILD_NVIDIA
 nvidia = nvidia.c nvidia.h
 endif
@@ -145,6 +149,7 @@ conky_SOURCES = \
 	$(port_monitors)        \
 	$(eve)                  \
 	$(rss)                  \
+	$(lua)			\
 	$(solaris)              \
 	timed_thread.c          \
 	timed_thread.h          \
@@ -193,6 +198,7 @@ EXTRA_DIST = \
 	libtcp-portmon.c        \
 	libtcp-portmon.h        \
 	rss.h                   \
+	llua.h			\
 	mail.h                  \
 	mixer.h                 \
 	moc.h                   \
