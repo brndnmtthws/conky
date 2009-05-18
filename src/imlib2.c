@@ -35,7 +35,6 @@ struct image_list_s {
 	Imlib_Image image;
 	int x, y, w, h;
 	int wh_set;
-	struct image_list_s *prev;
 	struct image_list_s *next;
 };
 
@@ -106,7 +105,6 @@ void cimlib_add_image(const char *args)
 
 	if (image_list_end) {
 		image_list_end->next = cur;
-		cur->prev = image_list_end;
 		image_list_end = cur;
 	} else {
 		image_list_start = image_list_end = cur;
