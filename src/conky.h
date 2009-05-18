@@ -43,6 +43,7 @@
 #define FALSE 0
 #define TRUE 1
 
+#define DEFAULT_BAR_WIDTH_NO_X 10
 
 #if !defined(__GNUC__)
 #  define __attribute__(x) /* nothing */
@@ -88,6 +89,10 @@ char *strndup(const char *s, size_t n);
 
 #ifdef RSS
 #include "rss.h"
+#endif
+
+#ifdef HAVE_LUA
+#include "llua.h"
 #endif
 
 #ifdef TCP_PORT_MONITOR
