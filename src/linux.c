@@ -65,8 +65,6 @@
 #define SHORTSTAT_TEMPL "%*s %llu %llu %llu"
 #define LONGSTAT_TEMPL "%*s %llu %llu %llu "
 
-static int show_nice_processes;
-
 /* This flag tells the linux routines to use the /proc system where possible,
  * even if other api's are available, e.g. sysinfo() or getloadavg().
  * the reason for this is to allow for /proc-based distributed monitoring.
@@ -2081,7 +2079,6 @@ void get_powerbook_batt_info(char *buffer, size_t n, int i)
 
 void update_top(void)
 {
-	show_nice_processes = 1;
 	process_find_top(info.cpu, info.memu, info.time);
 	info.first_process = get_first_process();
 }

@@ -4291,7 +4291,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				char func[64];
 				char *text, *str;
 				sscanf(obj->data.s, "%64s", func);
-				text = obj->data.s + strlen(func);
+				text = obj->data.s + strlen(func) + 1;
 
 				tmp_info = malloc(sizeof(struct information));
 				memcpy(tmp_info, cur, sizeof(struct information));
@@ -4300,8 +4300,6 @@ static void generate_text_internal(char *p, int p_max_size,
 
 				str = llua_getstring_read(func, p);
 				if (str) {
-					free_text_objects(&subroot, 1);
-//					memcpy(tmp_info, cur, sizeof(struct information));
 					parse_conky_vars(&subroot2, str, p, tmp_info);
 					DBGP("evaluated '%s' to '%s'", str, p);
 
@@ -5062,29 +5060,30 @@ static void generate_text_internal(char *p, int p_max_size,
 			case OBJ_top_time:
 				parse_top_args("top_time", obj->data.top.s, obj);
 				if (!needed) needed = cur->time;
-				{
+
+				if (needed[obj->data.top.num]) {
 					char *timeval;
 
 					switch (obj->data.top.type) {
 						case TOP_NAME:
 							snprintf(p, top_name_width + 1, "%-*s", top_name_width,
-								needed[obj->data.top.num]->name);
+									needed[obj->data.top.num]->name);
 							break;
 						case TOP_CPU:
 							snprintf(p, 7, "%6.2f",
-								needed[obj->data.top.num]->amount);
+									needed[obj->data.top.num]->amount);
 							break;
 						case TOP_PID:
 							snprintf(p, 6, "%5i",
-								needed[obj->data.top.num]->pid);
+									needed[obj->data.top.num]->pid);
 							break;
 						case TOP_MEM:
 							snprintf(p, 7, "%6.2f",
-								needed[obj->data.top.num]->totalmem);
+									needed[obj->data.top.num]->totalmem);
 							break;
 						case TOP_TIME:
 							timeval = format_time(
-								needed[obj->data.top.num]->total_cpu_time, 9);
+									needed[obj->data.top.num]->total_cpu_time, 9);
 							snprintf(p, 10, "%9s", timeval);
 							free(timeval);
 							break;
