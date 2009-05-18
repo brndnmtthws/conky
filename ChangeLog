@@ -1,3 +1,6 @@
+2009-05-17
+	* Added support for the Lua programming language
+
 2009-05-11
 	* Added arguments to hwmon for value precalculation
 
