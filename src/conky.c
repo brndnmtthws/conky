@@ -3534,7 +3534,7 @@ static void generate_text_internal(char *p, int p_max_size,
 						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 255.0));
 			}
 			OBJ(cpugraph) {
-				new_graph(p, obj->a, obj->b, obj->c, obj->d, (unsigned int)
+				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100),
 						100, 1, obj->showaslog);
 			}

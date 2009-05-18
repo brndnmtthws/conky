@@ -87,7 +87,7 @@ int temp_print(char *p, size_t p_max_size, double n, enum TEMP_UNIT input_unit)
 	int out;
 	size_t plen;
 
-	out = round_to_int(convert_temp_output(n, input_unit));
+	out = round_to_int_temp(convert_temp_output(n, input_unit));
 	plen = spaced_print(p, p_max_size, "%d", 3, out);
 
 	return !(plen >= p_max_size);

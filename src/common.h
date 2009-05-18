@@ -37,7 +37,9 @@ void format_seconds_short(char *buf, unsigned int n, long t);
 void update_x11info(void);
 #endif
 
-int round_to_int(float);
+int round_to_int_temp(float);
+
+unsigned int round_to_int(float);
 
 extern unsigned long long need_mask;
 extern int no_buffers;

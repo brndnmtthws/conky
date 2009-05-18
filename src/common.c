@@ -463,11 +463,22 @@ void update_stuff(void)
 #endif
 }
 
-int round_to_int(float f)
+/* Ohkie to return negative values for temperatures */
+int round_to_int_temp(float f)
 {
 	if (f >= 0.0) {
 		return (int) (f + 0.5);
 	} else {
 		return (int) (f - 0.5);
+	}
+}
+/* Don't return negative values for cpugraph, bar, gauge, percentage.
+ * Causes unreasonable numbers to show */
+unsigned int round_to_int(float f)
+{
+	if (f >= 0.0) {
+		return (int) (f + 0.5);
+	} else {
+		return 0;
 	}
 }
