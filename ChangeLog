@@ -1,3 +1,7 @@
+2009-05-19
+	* Added inotify support to reload the config when modified automatically
+	on systems that support it
+
 2009-05-17
 	* Added support for the Lua programming language
 	* Added support for rending images by way of IMLIB2

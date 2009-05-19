@@ -42,6 +42,9 @@
 #endif
 #include <sys/time.h>
 #include <sys/param.h>
+#ifdef HAVE_SYS_INOTIFY_H
+#include <sys/inotify.h>
+#endif /* HAVE_SYS_INOTIFY_H */
 #ifdef X11
 #include "x11.h"
 #include <X11/Xutil.h>
@@ -6386,6 +6389,13 @@ static void main_loop(void)
 #ifdef SIGNAL_BLOCKING
 	sigset_t newmask, oldmask;
 #endif
+#ifdef HAVE_SYS_INOTIFY_H
+	int inotify_fd = 0, inotify_config_wd = 0;
+#define INOTIFY_EVENT_SIZE  (sizeof(struct inotify_event))
+#define INOTIFY_BUF_LEN     (20 * (INOTIFY_EVENT_SIZE + 16))
+	char inotify_buff[INOTIFY_BUF_LEN];
+#endif /* HAVE_SYS_INOTIFY_H */
+
 	double t;
 #ifdef X11
 	Region region;
@@ -6726,8 +6736,50 @@ static void main_loop(void)
 				}
 				break;
 		}
+#ifdef HAVE_SYS_INOTIFY_H
+		if (!inotify_fd) {
+			printf("'%s'\n", current_config);
+			inotify_fd = inotify_init();
+			inotify_config_wd = inotify_add_watch(inotify_fd,
+					current_config,
+					IN_MODIFY);
+		} else if (inotify_fd && inotify_config_wd) {
+			int len = 0, idx = 0;
+			fd_set descriptors;
+			struct timeval time_to_wait;
+
+			FD_ZERO (&descriptors);
+			FD_SET(inotify_fd, &descriptors);
+
+			time_to_wait.tv_sec = time_to_wait.tv_usec = 0;
+
+			select(inotify_fd + 1, &descriptors, NULL, NULL, &time_to_wait);
+			if (FD_ISSET(inotify_fd, &descriptors)) {
+				/* process inotify events */
+				len = read(inotify_fd, inotify_buff, INOTIFY_BUF_LEN);
+				while (len > 0 && idx < len) {
+					struct inotify_event *ev = (struct inotify_event *) &inotify_buff[idx];
+					if (ev->wd == inotify_config_wd) {
+						/* current_config should be reloaded */
+						ERR("'%s' modified, reloading...", current_config);
+						reload_config();
+					}
+					idx += INOTIFY_EVENT_SIZE + ev->len;
+				}
+			}
+		}
+#endif /* HAVE_SYS_INOTIFY_H */
+
 		g_signal_pending = 0;
 	}
+
+#ifdef HAVE_SYS_INOTIFY_H
+		if (inotify_fd) {
+			inotify_rm_watch(inotify_fd, inotify_config_wd);
+			close(inotify_fd);
+			inotify_fd = inotify_config_wd = 0;
+		}
+#endif /* HAVE_SYS_INOTIFY_H */
 
 #if defined(X11) && defined(HAVE_XDAMAGE)
 	if (output_methods & TO_X) {
