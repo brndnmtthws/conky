@@ -236,6 +236,18 @@ static const char *suffixes[] = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "" };
 
 #ifdef X11
 
+static void X11_destroy_window(void);
+static void X11_create_window(void);
+
+struct _x11_stuff_s {
+	Region region;
+#ifdef HAVE_XDAMAGE
+	Damage damage;
+	XserverRegion region2, part;
+	int event_base, error_base;
+#endif
+} x11_stuff;
+
 /* text size */
 
 static int text_start_x, text_start_y;	/* text start position in window */
@@ -5552,7 +5564,7 @@ static void text_size_updater(char *s);
 int last_font_height;
 static void update_text_area(void)
 {
-	int x, y;
+	int x = 0, y = 0;
 
 	if ((output_methods & TO_X) == 0)
 		return;
@@ -6397,25 +6409,6 @@ static void main_loop(void)
 #endif /* HAVE_SYS_INOTIFY_H */
 
 	double t;
-#ifdef X11
-	Region region;
-#ifdef HAVE_XDAMAGE
-	Damage damage;
-	XserverRegion region2, part;
-	int event_base, error_base;
-#endif
-	if (output_methods & TO_X) {
-		region = XCreateRegion();
-#ifdef HAVE_XDAMAGE
-		if (!XDamageQueryExtension(display, &event_base, &error_base)) {
-			ERR("Xdamage extension unavailable");
-		}
-		damage = XDamageCreate(display, window.window, XDamageReportNonEmpty);
-		region2 = XFixesCreateRegionFromWindow(display, window.window, 0);
-		part = XFixesCreateRegionFromWindow(display, window.window, 0);
-#endif /* HAVE_XDAMAGE */
-	}
-#endif /* X11 */
 
 #ifdef SIGNAL_BLOCKING
 	sigemptyset(&newmask);
@@ -6512,7 +6505,7 @@ static void main_loop(void)
 					r.y = text_start_y - border_margin;
 					r.width = text_width + border_margin * 2;
 					r.height = text_height + border_margin * 2;
-					XUnionRectWithRegion(&r, region, region);
+					XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
 				}
 #endif
 			}
@@ -6530,7 +6523,7 @@ static void main_loop(void)
 						r.y = ev.xexpose.y;
 						r.width = ev.xexpose.width;
 						r.height = ev.xexpose.height;
-						XUnionRectWithRegion(&r, region, region);
+						XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
 						break;
 					}
 
@@ -6557,7 +6550,6 @@ static void main_loop(void)
 
 								{
 									XWindowAttributes attrs;
-
 									if (XGetWindowAttributes(display,
 											window.window, &attrs)) {
 										window.width = attrs.width;
@@ -6629,11 +6621,11 @@ static void main_loop(void)
 
 					default:
 #ifdef HAVE_XDAMAGE
-						if (ev.type == event_base + XDamageNotify) {
+						if (ev.type == x11_stuff.event_base + XDamageNotify) {
 							XDamageNotifyEvent *dev = (XDamageNotifyEvent *) &ev;
 
-							XFixesSetRegion(display, part, &dev->area, 1);
-							XFixesUnionRegion(display, region2, region2, part);
+							XFixesSetRegion(display, x11_stuff.part, &dev->area, 1);
+							XFixesUnionRegion(display, x11_stuff.region2, x11_stuff.region2, x11_stuff.part);
 						}
 #endif /* HAVE_XDAMAGE */
 						break;
@@ -6641,8 +6633,8 @@ static void main_loop(void)
 			}
 
 #ifdef HAVE_XDAMAGE
-			XDamageSubtract(display, damage, region2, None);
-			XFixesSetRegion(display, region2, 0, 0);
+			XDamageSubtract(display, x11_stuff.damage, x11_stuff.region2, None);
+			XFixesSetRegion(display, x11_stuff.region2, 0, 0);
 #endif /* HAVE_XDAMAGE */
 
 			/* XDBE doesn't seem to provide a way to clear the back buffer without
@@ -6652,7 +6644,7 @@ static void main_loop(void)
 			 * if we're not going to call draw_stuff at all, then no swap happens
 			 * and we can safely do nothing. */
 
-			if (!XEmptyRegion(region)) {
+			if (!XEmptyRegion(x11_stuff.region)) {
 #ifdef HAVE_XDBE
 				if (use_xdbe) {
 					XRectangle r;
@@ -6661,21 +6653,21 @@ static void main_loop(void)
 					r.y = text_start_y - border_margin;
 					r.width = text_width + border_margin * 2;
 					r.height = text_height + border_margin * 2;
-					XUnionRectWithRegion(&r, region, region);
+					XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
 				}
 #endif
-				XSetRegion(display, window.gc, region);
+				XSetRegion(display, window.gc, x11_stuff.region);
 #ifdef XFT
 				if (use_xft) {
-					XftDrawSetClip(window.xftdraw, region);
+					XftDrawSetClip(window.xftdraw, x11_stuff.region);
 				}
 #endif
 #ifdef IMLIB2
 				cimlib_render(text_start_x + border_margin, text_start_y + border_margin, window.width, window.height);
 #endif /* IMLIB2 */
 				draw_stuff();
-				XDestroyRegion(region);
-				region = XCreateRegion();
+				XDestroyRegion(x11_stuff.region);
+				x11_stuff.region = XCreateRegion();
 			}
 		} else {
 #endif /* X11 */
@@ -6706,12 +6698,12 @@ static void main_loop(void)
 				clean_up();
 #ifdef X11
 				if (output_methods & TO_X) {
-					XDestroyRegion(region);
-					region = NULL;
+					XDestroyRegion(x11_stuff.region);
+					x11_stuff.region = NULL;
 #ifdef HAVE_XDAMAGE
-					XDamageDestroy(display, damage);
-					XFixesDestroyRegion(display, region2);
-					XFixesDestroyRegion(display, part);
+					XDamageDestroy(display, x11_stuff.damage);
+					XFixesDestroyRegion(display, x11_stuff.region2);
+					XFixesDestroyRegion(display, x11_stuff.part);
 #endif /* HAVE_XDAMAGE */
 				}
 #endif /* X11 */
@@ -6761,7 +6753,7 @@ static void main_loop(void)
 					if (ev->wd == inotify_config_wd && (ev->mask & IN_MODIFY || ev->mask & IN_IGNORED)) {
 						/* current_config should be reloaded */
 						ERR("'%s' modified, reloading...", current_config);
-						//reload_config();
+						reload_config();
 						if (ev->mask & IN_IGNORED) {
 							/* for some reason we get IN_IGNORED here
 							 * sometimes, so we need to re-add the watch */
@@ -6780,21 +6772,15 @@ static void main_loop(void)
 	}
 
 #ifdef HAVE_SYS_INOTIFY_H
-		if (inotify_fd) {
-			inotify_rm_watch(inotify_fd, inotify_config_wd);
-			close(inotify_fd);
-			inotify_fd = inotify_config_wd = 0;
-		}
+	if (inotify_fd) {
+		inotify_rm_watch(inotify_fd, inotify_config_wd);
+		close(inotify_fd);
+		inotify_fd = inotify_config_wd = 0;
+	}
 #endif /* HAVE_SYS_INOTIFY_H */
 
 #if defined(X11) && defined(HAVE_XDAMAGE)
-	if (output_methods & TO_X) {
-		XDamageDestroy(display, damage);
-		XFixesDestroyRegion(display, region2);
-		XFixesDestroyRegion(display, part);
-		XDestroyRegion(region);
-		region = NULL;
-	}
+	X11_destroy_window();
 #endif /* X11 && HAVE_XDAMAGE */
 }
 
@@ -6839,12 +6825,8 @@ static void reload_config(void)
 		}
 
 #ifdef X11
-		load_fonts();
-		set_font();
-		// clear the window first
-		XClearWindow(display, RootWindow(display, screen));
+		X11_destroy_window();
 		x_initialised = NO;
-
 #endif /* X11 */
 		extract_variable_text(global_text);
 		free(global_text);
@@ -6865,6 +6847,9 @@ static void reload_config(void)
 		text_buffer = malloc(max_user_text);
 		memset(text_buffer, 0, max_user_text);
 		update_text();
+#ifdef X11
+		X11_create_window();
+#endif /* X11 */
 	}
 }
 
@@ -7148,6 +7133,69 @@ static void X11_initialisation(void)
 	init_X11(disp);
 	set_default_configurations_for_x();
 	x_initialised = YES;
+}
+
+static void X11_destroy_window(void)
+{
+	/* this function only exists for the sake of consistency */
+	if (output_methods & TO_X) {
+#ifdef HAVE_XDAMAGE
+		XDamageDestroy(display, x11_stuff.damage);
+		XFixesDestroyRegion(display, x11_stuff.region2);
+		XFixesDestroyRegion(display, x11_stuff.part);
+		XDestroyRegion(x11_stuff.region);
+		x11_stuff.region = NULL;
+#endif /* HAVE_XDAMAGE */
+		destroy_window();
+	}
+}
+
+static char **xargv = 0;
+static int xargc = 0;
+
+static void X11_create_window(void)
+{
+	if (output_methods & TO_X) {
+#ifdef OWN_WINDOW
+		init_window(own_window, text_width + border_margin * 2 + 1,
+				text_height + border_margin * 2 + 1, set_transparent, background_colour,
+				xargv, xargc);
+#else /* OWN_WINDOW */
+		init_window(0, text_width + border_margin * 2 + 1,
+				text_height + border_margin * 2 + 1, set_transparent, 0,
+				xargv, xargc);
+#endif /* OWN_WINDOW */
+
+		selected_font = 0;
+		update_text_area();	/* to position text/window on screen */
+
+#ifdef OWN_WINDOW
+		if (own_window && !fixed_pos) {
+			XMoveWindow(display, window.window, window.x, window.y);
+		}
+		if (own_window) {
+			set_transparent_background(window.window);
+		}
+#endif
+
+		create_gc();
+
+		set_font();
+		draw_stuff();
+
+		x11_stuff.region = XCreateRegion();
+#ifdef HAVE_XDAMAGE
+		if (!XDamageQueryExtension(display, &x11_stuff.event_base, &x11_stuff.error_base)) {
+			ERR("Xdamage extension unavailable");
+		}
+		x11_stuff.damage = XDamageCreate(display, window.window, XDamageReportNonEmpty);
+		x11_stuff.region2 = XFixesCreateRegionFromWindow(display, window.window, 0);
+		x11_stuff.part = XFixesCreateRegionFromWindow(display, window.window, 0);
+#endif /* HAVE_XDAMAGE */
+
+		selected_font = 0;
+		update_text_area();	/* to get initial size of the window */
+	}
 }
 #endif /* X11 */
 
@@ -8489,37 +8537,9 @@ int main(int argc, char **argv)
 	memset(tmpstring2, 0, text_buffer_size);
 
 #ifdef X11
-	if (output_methods & TO_X) {
-		selected_font = 0;
-		update_text_area();	/* to get initial size of the window */
-
-#ifdef OWN_WINDOW
-		init_window(own_window, text_width + border_margin * 2 + 1,
-			text_height + border_margin * 2 + 1, set_transparent, background_colour,
-			argv, argc);
-#else /* OWN_WINDOW */
-		init_window(0, text_width + border_margin * 2 + 1,
-			text_height + border_margin * 2 + 1, set_transparent, 0,
-			argv, argc);
-#endif /* OWN_WINDOW */
-
-		selected_font = 0;
-		update_text_area();	/* to position text/window on screen */
-
-#ifdef OWN_WINDOW
-		if (own_window && !fixed_pos) {
-			XMoveWindow(display, window.window, window.x, window.y);
-		}
-		if (own_window) {
-			set_transparent_background(window.window);
-		}
-#endif
-
-		create_gc();
-
-		set_font();
-		draw_stuff();
-	}
+	xargc = argc;
+	xargv = argv;
+	X11_create_window();
 #endif /* X11 */
 
 	/* Set signal handlers */

@@ -211,6 +211,12 @@ void set_transparent_background(Window win)
 	// XClearWindow(display, win); not sure why this was here
 }
 
+void destroy_window(void)
+{
+	XDestroyWindow(display, window.window);
+	memset(&window, 0, sizeof(struct conky_window));
+}
+
 void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 		char **argv, int argc)
 {
