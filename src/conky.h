@@ -315,6 +315,7 @@ extern double current_update_time, last_update_time, update_interval;
 /* defined in conky.c */
 int spaced_print(char *, int, const char *, int, ...)
 	__attribute__((format(printf, 3, 5)));
+extern int inotify_fd;
 
 #define TO_X 1
 #define TO_STDOUT 2

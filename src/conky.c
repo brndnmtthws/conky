@@ -6396,19 +6396,23 @@ static void update_text(void)
 	need_to_update = 1;
 }
 
+#ifdef HAVE_SYS_INOTIFY_H
+int inotify_fd;
+#endif
+
 static void main_loop(void)
 {
 #ifdef SIGNAL_BLOCKING
 	sigset_t newmask, oldmask;
 #endif
+	double t;
 #ifdef HAVE_SYS_INOTIFY_H
-	int inotify_fd = 0, inotify_config_wd = 0;
+	int inotify_config_wd = 0;
 #define INOTIFY_EVENT_SIZE  (sizeof(struct inotify_event))
 #define INOTIFY_BUF_LEN     (20 * (INOTIFY_EVENT_SIZE + 16))
 	char inotify_buff[INOTIFY_BUF_LEN];
 #endif /* HAVE_SYS_INOTIFY_H */
 
-	double t;
 
 #ifdef SIGNAL_BLOCKING
 	sigemptyset(&newmask);
@@ -6729,12 +6733,12 @@ static void main_loop(void)
 				break;
 		}
 #ifdef HAVE_SYS_INOTIFY_H
-		if (!inotify_fd) {
-			inotify_fd = inotify_init();
+		if (!inotify_config_wd) {
 			inotify_config_wd = inotify_add_watch(inotify_fd,
 					current_config,
 					IN_MODIFY);
-		} else if (inotify_fd && inotify_config_wd) {
+		}
+		if (inotify_fd && inotify_config_wd) {
 			int len = 0, idx = 0;
 			fd_set descriptors;
 			struct timeval time_to_wait;
@@ -6762,6 +6766,11 @@ static void main_loop(void)
 									IN_MODIFY);
 						}
 					}
+#ifdef HAVE_LUA
+					else {
+						llua_inotify_query(ev->wd, ev->mask);
+					}
+#endif /* HAVE_LUA */
 					idx += INOTIFY_EVENT_SIZE + ev->len;
 				}
 			}
@@ -8379,6 +8388,9 @@ int main(int argc, char **argv)
 #endif /* ! CONF_OUTPUT */
 		}
 	}
+#ifdef HAVE_SYS_INOTIFY_H
+	inotify_fd = inotify_init();
+#endif /* HAVE_SYS_INOTIFY_H */
 
 	load_config_file(current_config);
 

@@ -38,5 +38,8 @@ char *llua_getstring(const char *args);
 char *llua_getstring_read(const char *function, const char *arg);
 int llua_getinteger(const char *args, int *per);
 void llua_close(void);
+#ifdef HAVE_SYS_INOTIFY_H
+void llua_inotify_query(int wd, int mask);
+#endif /* HAVE_SYS_INOTIFY_H */
 
 #endif /* LUA_H_*/

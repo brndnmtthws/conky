@@ -28,6 +28,14 @@
 #include "conky.h"
 #include "logging.h"
 
+#ifdef HAVE_SYS_INOTIFY_H
+#include <sys/inotify.h>
+
+void llua_append_notify(const char *name);
+void llua_rm_notifies(void);
+static int llua_block_notify = 0;
+#endif /* HAVE_SYS_INOTIFY_H */
+
 lua_State *lua_L = NULL;
 
 void llua_init(void)
@@ -45,6 +53,8 @@ void llua_load(const char *script)
 	if (error) {
 		ERR("llua_load: %s", lua_tostring(lua_L, -1));
 		lua_pop(lua_L, 1);
+	} else if (!llua_block_notify) {
+		llua_append_notify(script);
 	}
 }
 
@@ -176,7 +186,89 @@ int llua_getinteger(const char *args, int *per)
 
 void llua_close(void)
 {
+	llua_rm_notifies();
 	if(!lua_L) return;
 	lua_close(lua_L);
 	lua_L = NULL;
 }
+
+#ifdef HAVE_SYS_INOTIFY_H
+struct _lua_notify_s {
+	int wd;
+	char name[DEFAULT_TEXT_BUFFER_SIZE];
+	struct _lua_notify_s *next;
+};
+static struct _lua_notify_s *lua_notifies = 0;
+
+static struct _lua_notify_s *llua_notify_list_do_alloc(const char *name)
+{
+	struct _lua_notify_s *ret = malloc(sizeof(struct _lua_notify_s));
+	memset(ret, 0, sizeof(struct _lua_notify_s));
+	strncpy(ret->name, name, DEFAULT_TEXT_BUFFER_SIZE);
+	return ret;
+}
+
+void llua_append_notify(const char *name)
+{
+	/* do it */
+	struct _lua_notify_s *new_tail = 0;
+	if (!lua_notifies) {
+		/* empty, fresh new digs */
+		new_tail = lua_notifies = llua_notify_list_do_alloc(name);
+	} else {
+		struct _lua_notify_s *tail = lua_notifies;
+		while (tail->next) {
+			tail = tail->next;
+		}
+		// should be @ the end now
+		new_tail = llua_notify_list_do_alloc(name);
+		tail->next = new_tail;
+	}
+	new_tail->wd = inotify_add_watch(inotify_fd,
+			new_tail->name,
+			IN_MODIFY);
+}
+
+void llua_rm_notifies(void)
+{
+	/* git 'er done */
+	struct _lua_notify_s *head = lua_notifies;
+	struct _lua_notify_s *next = head->next;
+	if (!lua_notifies) return;
+	inotify_rm_watch(inotify_fd, head->wd);
+	free(head);
+	while (next) {
+		head = next;
+		next = head->next;
+		inotify_rm_watch(inotify_fd, head->wd);
+		free(head);
+	}
+	lua_notifies = 0;
+}
+
+void llua_inotify_query(int wd, int mask)
+{
+	struct _lua_notify_s *head = lua_notifies;
+	if (mask & IN_MODIFY || mask & IN_IGNORED) {
+		/* for whatever reason, i keep getting IN_IGNORED when the file is
+		 * modified */
+		while (head) {
+			if (head->wd == wd) {
+				llua_block_notify = 1;
+				llua_load(head->name);
+				llua_block_notify = 0;
+				if (mask & IN_IGNORED) {
+					/* for some reason we get IN_IGNORED here
+					 * sometimes, so we need to re-add the watch */
+					head->wd = inotify_add_watch(inotify_fd,
+							head->name,
+							IN_MODIFY);
+				}
+				return;
+			}
+			head = head->next;
+		}
+	}
+}
+#endif /* HAVE_SYS_INOTIFY_H */
+

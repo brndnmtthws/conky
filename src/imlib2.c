@@ -28,10 +28,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NAME_SIZE 1024
-
 struct image_list_s {
-	char name[NAME_SIZE];
+	char name[DEFAULT_TEXT_BUFFER_SIZE];
 	Imlib_Image image;
 	int x, y, w, h;
 	int wh_set;
