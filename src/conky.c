@@ -6758,10 +6758,17 @@ static void main_loop(void)
 				len = read(inotify_fd, inotify_buff, INOTIFY_BUF_LEN);
 				while (len > 0 && idx < len) {
 					struct inotify_event *ev = (struct inotify_event *) &inotify_buff[idx];
-					if (ev->wd == inotify_config_wd) {
+					if (ev->wd == inotify_config_wd && (ev->mask & IN_MODIFY || ev->mask & IN_IGNORED)) {
 						/* current_config should be reloaded */
 						ERR("'%s' modified, reloading...", current_config);
-						reload_config();
+						//reload_config();
+						if (ev->mask & IN_IGNORED) {
+							/* for some reason we get IN_IGNORED here
+							 * sometimes, so we need to re-add the watch */
+							inotify_config_wd = inotify_add_watch(inotify_fd,
+									current_config,
+									IN_MODIFY);
+						}
 					}
 					idx += INOTIFY_EVENT_SIZE + ev->len;
 				}
