@@ -1,11 +1,5 @@
 /* Conky, a system monitor, based on torsmo
  *
- * Any original torsmo code is licensed under the BSD license
- *
- * All code written since the fork of torsmo is licensed under the GPL
- *
- * Please see COPYING for details
- *
  * Copyright (c) 2009 Toni Spets
  * Copyright (c) 2005-2009 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
@@ -53,8 +47,10 @@ void llua_load(const char *script)
 	if (error) {
 		ERR("llua_load: %s", lua_tostring(lua_L, -1));
 		lua_pop(lua_L, 1);
+#ifdef HAVE_SYS_INOTIFY_H
 	} else if (!llua_block_notify) {
 		llua_append_notify(script);
+#endif /* HAVE_SYS_INOTIFY_H */
 	}
 }
 
@@ -186,7 +182,9 @@ int llua_getinteger(const char *args, int *per)
 
 void llua_close(void)
 {
+#ifdef HAVE_SYS_INOTIFY_H
 	llua_rm_notifies();
+#endif /* HAVE_SYS_INOTIFY_H */
 	if(!lua_L) return;
 	lua_close(lua_L);
 	lua_L = NULL;
