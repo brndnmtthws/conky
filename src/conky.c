@@ -6738,7 +6738,6 @@ static void main_loop(void)
 		}
 #ifdef HAVE_SYS_INOTIFY_H
 		if (!inotify_fd) {
-			printf("'%s'\n", current_config);
 			inotify_fd = inotify_init();
 			inotify_config_wd = inotify_add_watch(inotify_fd,
 					current_config,
