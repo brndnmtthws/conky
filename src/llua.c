@@ -257,6 +257,7 @@ void llua_inotify_query(int wd, int mask)
 				llua_block_notify = 1;
 				llua_load(head->name);
 				llua_block_notify = 0;
+				ERR("Lua script '%s' reloaded", head->name);
 				if (mask & IN_IGNORED) {
 					/* for some reason we get IN_IGNORED here
 					 * sometimes, so we need to re-add the watch */
