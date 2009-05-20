@@ -231,9 +231,10 @@ void llua_rm_notifies(void)
 {
 	/* git 'er done */
 	struct _lua_notify_s *head = lua_notifies;
-	struct _lua_notify_s *next = head->next;
+	struct _lua_notify_s *next = 0;
 	if (!lua_notifies) return;
 	inotify_rm_watch(inotify_fd, head->wd);
+	if (head->next) next = head->next;
 	free(head);
 	while (next) {
 		head = next;
