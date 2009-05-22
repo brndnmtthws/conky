@@ -1835,18 +1835,18 @@ static struct text_object *construct_text_object(const char *s,
 			return NULL;
 		}
 
-		buf1[0] = 0;
-		factor = 1.0;
-		offset = 0.0;
+#define HWMON_RESET() {\
+		buf1[0] = 0; \
+		factor = 1.0; \
+		offset = 0.0; }
 
-		if (sscanf(arg, "%63s %63s %d %f %f", buf1, buf2, &n, &factor, &offset) == 5)
-			found = 1;
-		if (!found && (sscanf(arg, "%63s %d %f %f", buf2, &n, &factor, &offset) == 3))
-			found = 1;
-		if (!found && (sscanf(arg, "%63s %63s %d", buf1, buf2, &n) == 3))
-			found = 1;
-		if (!found && (sscanf(arg, "%63s %d", buf2, &n) == 2))
-			found = 1;
+		if (sscanf(arg, "%63s %63s %d %f %f", buf1, buf2, &n, &factor, &offset) == 5) found = 1; else HWMON_RESET();
+		if (!found && (sscanf(arg, "%63s %d %f %f", buf2, &n, &factor, &offset) == 3)) found = 1; else HWMON_RESET();
+		if (!found && (sscanf(arg, "%63s %63s %d", buf1, buf2, &n) == 3)) found = 1; else HWMON_RESET();
+		if (!found && (sscanf(arg, "%63s %d", buf2, &n) == 2)) found = 1; else HWMON_RESET();
+
+
+#undef HWMON_RESET
 
 		if (!found) {
 			ERR("hwmon failed to parse arguments");
