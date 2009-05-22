@@ -1841,7 +1841,7 @@ static struct text_object *construct_text_object(const char *s,
 		offset = 0.0; }
 
 		if (sscanf(arg, "%63s %63s %d %f %f", buf1, buf2, &n, &factor, &offset) == 5) found = 1; else HWMON_RESET();
-		if (!found && (sscanf(arg, "%63s %d %f %f", buf2, &n, &factor, &offset) == 3)) found = 1; else HWMON_RESET();
+		if (!found && (sscanf(arg, "%63s %d %f %f", buf2, &n, &factor, &offset) == 4)) found = 1; else HWMON_RESET();
 		if (!found && (sscanf(arg, "%63s %63s %d", buf1, buf2, &n) == 3)) found = 1; else HWMON_RESET();
 		if (!found && (sscanf(arg, "%63s %d", buf2, &n) == 2)) found = 1; else HWMON_RESET();
 
