@@ -123,7 +123,7 @@ static void cimlib_draw_image(struct image_list_s *cur)
 			cur->h = h;
 		}
 		imlib_context_set_image(buffer);
-		imlib_blend_image_onto_image(image, 1, 0, 0, h, w,
+		imlib_blend_image_onto_image(image, 1, 0, 0, w, h,
 				cur->x, cur->y, cur->w, cur->h);
 		imlib_context_set_image(image);
 		imlib_free_image();
