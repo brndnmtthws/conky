@@ -43,11 +43,14 @@ Imlib_Updates updates, current_update;
 /* our virtual framebuffer image we draw into */
 Imlib_Image buffer, image;
 
+static int cache_size_set = 0;
+
 #define DEFAULT_CACHE_SIZE 4096 * 1024 /* default cache size for loaded images */
 
 void cimlib_set_cache_size(long size)
 {
 	imlib_set_cache_size(size);
+	cache_size_set = 1;
 }
 
 void cimlib_cleanup(void)
@@ -64,7 +67,7 @@ void cimlib_cleanup(void)
 void cimlib_init(Display *display, Window drawable, Visual *visual, Colormap colourmap)
 {
 	image_list_start = image_list_end = NULL;
-	cimlib_set_cache_size(DEFAULT_CACHE_SIZE);
+	if (!cache_size_set) cimlib_set_cache_size(DEFAULT_CACHE_SIZE);
 	/* set the maximum number of colors to allocate for 8bpp and less to 256 */
 	imlib_set_color_usage(256);
 	/* dither for depths < 24bpp */
