@@ -187,6 +187,9 @@ static void print_version(void)
 		   "  * XMMS2\n"
 #endif /* XMMS2 */
 		   "\n General:\n"
+#ifdef HAVE_OPENMP
+		   "  * OpenMP\n"
+#endif /* HAVE_OPENMP */
 #ifdef MATH
 		   "  * math\n"
 #endif /* Math */
