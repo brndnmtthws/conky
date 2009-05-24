@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 struct image_list_s {
 	char name[DEFAULT_TEXT_BUFFER_SIZE];
@@ -112,7 +113,7 @@ void cimlib_add_image(const char *args)
 	}
 }
 
-static void cimlib_draw_image(struct image_list_s *cur)
+static void cimlib_draw_image(struct image_list_s *cur, int *clip_x, int *clip_y, int *clip_w, int *clip_h)
 {
 	image = imlib_load_image(cur->name);
 	if (image) {
@@ -130,22 +131,29 @@ static void cimlib_draw_image(struct image_list_s *cur)
 				cur->x, cur->y, cur->w, cur->h);
 		imlib_context_set_image(image);
 		imlib_free_image();
+		if (cur->x < *clip_x) *clip_x = cur->x;
+		if (cur->y < *clip_y) *clip_y = cur->y;
+		if (cur->w > *clip_w) *clip_w = cur->w;
+		if (cur->h > *clip_h) *clip_h = cur->h;
 	} else {
 		ERR("Unable to load image '%s'", cur->name);
 	}
 }
 
-static void cimlib_draw_all(void)
+static void cimlib_draw_all(int *clip_x, int *clip_y, int *clip_w, int *clip_h)
 {
 	struct image_list_s *cur = image_list_start;
 	while (cur) {
-		cimlib_draw_image(cur);
+		cimlib_draw_image(cur, clip_x, clip_y, clip_w, clip_h);
 		cur = cur->next;
 	}
 }
 
 void cimlib_render(int x, int y, int width, int height)
 {
+	int clip_x = INT_MAX, clip_y = INT_MAX;
+	int clip_w = 0, clip_h = 0;
+
 	if (!image_list_start) return; /* are we actually drawing anything? */
 	/* take all the little rectangles to redraw and merge them into
 	 * something sane for rendering */
@@ -156,12 +164,17 @@ void cimlib_render(int x, int y, int width, int height)
 	/* we can blend stuff now */
 	imlib_context_set_blend(1);
 
-	cimlib_draw_all();
+	cimlib_draw_all(&clip_x, &clip_y, &clip_w, &clip_h);
 
 	/* set the buffer image as our current image */
 	imlib_context_set_image(buffer);
+
+	/* setup our clip rect */
+	if (clip_x == INT_MAX) clip_x = 0;
+	if (clip_y == INT_MAX) clip_y = 0;
+
 	/* render the image at 0, 0 */
-	imlib_render_image_on_drawable(x, y);
+	imlib_render_image_part_on_drawable_at_size(clip_x, clip_y, clip_w, clip_h, x, y, clip_w, clip_h);
 	/* don't need that temporary buffer image anymore */
 	imlib_free_image();
 }
