@@ -113,13 +113,15 @@ void cimlib_add_image(const char *args)
 	}
 }
 
-static void cimlib_draw_image(struct image_list_s *cur, int *clip_x, int *clip_y, int *clip_w, int *clip_h)
+static void cimlib_draw_image(struct image_list_s *cur, int *clip_x, int *clip_y, int *clip_x2, int *clip_y2)
 {
 	image = imlib_load_image(cur->name);
 	if (image) {
 		int w, h;
 		DBGP("Drawing image '%s' at (%i,%i) scaled to %ix%i", cur->name, cur->x, cur->y, cur->w, cur->h);
 		imlib_context_set_image(image);
+		/* turn alpha channel on */
+		imlib_image_set_has_alpha(1);
 		w = imlib_image_get_width();
 		h = imlib_image_get_height();
 		if (!cur->wh_set) {
@@ -133,18 +135,18 @@ static void cimlib_draw_image(struct image_list_s *cur, int *clip_x, int *clip_y
 		imlib_free_image();
 		if (cur->x < *clip_x) *clip_x = cur->x;
 		if (cur->y < *clip_y) *clip_y = cur->y;
-		if (cur->w > *clip_w) *clip_w = cur->w;
-		if (cur->h > *clip_h) *clip_h = cur->h;
+		if (cur->x + cur->w > *clip_x2) *clip_x2 = cur->x + cur->w;
+		if (cur->y + cur->h > *clip_y2) *clip_y2 = cur->y + cur->h;
 	} else {
 		ERR("Unable to load image '%s'", cur->name);
 	}
 }
 
-static void cimlib_draw_all(int *clip_x, int *clip_y, int *clip_w, int *clip_h)
+static void cimlib_draw_all(int *clip_x, int *clip_y, int *clip_x2, int *clip_y2)
 {
 	struct image_list_s *cur = image_list_start;
 	while (cur) {
-		cimlib_draw_image(cur, clip_x, clip_y, clip_w, clip_h);
+		cimlib_draw_image(cur, clip_x, clip_y, clip_x2, clip_y2);
 		cur = cur->next;
 	}
 }
@@ -152,7 +154,7 @@ static void cimlib_draw_all(int *clip_x, int *clip_y, int *clip_w, int *clip_h)
 void cimlib_render(int x, int y, int width, int height)
 {
 	int clip_x = INT_MAX, clip_y = INT_MAX;
-	int clip_w = 0, clip_h = 0;
+	int clip_x2 = 0, clip_y2 = 0;
 
 	if (!image_list_start) return; /* are we actually drawing anything? */
 	/* take all the little rectangles to redraw and merge them into
@@ -163,8 +165,10 @@ void cimlib_render(int x, int y, int width, int height)
 	imlib_image_clear();
 	/* we can blend stuff now */
 	imlib_context_set_blend(1);
+	/* turn alpha channel on */
+	imlib_image_set_has_alpha(1);
 
-	cimlib_draw_all(&clip_x, &clip_y, &clip_w, &clip_h);
+	cimlib_draw_all(&clip_x, &clip_y, &clip_x2, &clip_y2);
 
 	/* set the buffer image as our current image */
 	imlib_context_set_image(buffer);
@@ -174,7 +178,9 @@ void cimlib_render(int x, int y, int width, int height)
 	if (clip_y == INT_MAX) clip_y = 0;
 
 	/* render the image at 0, 0 */
-	imlib_render_image_part_on_drawable_at_size(clip_x, clip_y, clip_w, clip_h, x, y, clip_w, clip_h);
+	imlib_render_image_part_on_drawable_at_size(clip_x, clip_y, clip_x2 - clip_x,
+			clip_y2 - clip_y, x + clip_x, y + clip_y, clip_x2 - clip_x,
+			clip_y2 - clip_y);
 	/* don't need that temporary buffer image anymore */
 	imlib_free_image();
 }

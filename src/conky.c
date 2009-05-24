@@ -6738,7 +6738,7 @@ static void main_loop(void)
 				}
 #endif
 #ifdef IMLIB2
-				cimlib_render(text_start_x + border_margin, text_start_y + border_margin, window.width, window.height);
+				cimlib_render(text_start_x, text_start_y, window.width, window.height);
 #endif /* IMLIB2 */
 				draw_stuff();
 				XDestroyRegion(x11_stuff.region);
