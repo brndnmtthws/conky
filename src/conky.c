@@ -6893,6 +6893,10 @@ static void reload_config(void)
 	llua_close();
 #endif /* HAVE_LUA */
 
+#ifdef X11
+	X11_destroy_window();
+#endif /* X11 */
+
 	if (current_config) {
 		clear_fs_stats();
 		load_config_file(current_config);
@@ -6905,7 +6909,6 @@ static void reload_config(void)
 		}
 
 #ifdef X11
-		X11_destroy_window();
 		x_initialised = NO;
 #endif /* X11 */
 		extract_variable_text(global_text);
@@ -7247,6 +7250,7 @@ static void X11_create_window(void)
 #endif /* OWN_WINDOW */
 
 		selected_font = 0;
+		load_fonts();
 		update_text_area();	/* to position text/window on screen */
 
 #ifdef OWN_WINDOW

@@ -34,8 +34,9 @@ struct font_list *fonts = NULL;
 
 void set_font(void)
 {
-	if ((output_methods & TO_X) == 0)
+	if ((output_methods & TO_X) == 0) {
 		return;
+	}
 #ifdef XFT
 	if (use_xft) {
 		if (window.xftdraw != NULL) {
@@ -52,8 +53,9 @@ void set_font(void)
 
 int addfont(const char *data_in)
 {
-	if ((output_methods & TO_X) == 0)
+	if ((output_methods & TO_X) == 0) {
 		return 0;
+	}
 	if (font_count > MAX_FONTS) {
 		CRIT_ERR("you don't need that many fonts, sorry.");
 	}
@@ -87,8 +89,9 @@ int addfont(const char *data_in)
 
 void set_first_font(const char *data_in)
 {
-	if ((output_methods & TO_X) == 0)
+	if ((output_methods & TO_X) == 0) {
 		return;
+	}
 	if (font_count < 0) {
 		if ((fonts = (struct font_list *) malloc(sizeof(struct font_list)))
 				== NULL) {
@@ -109,8 +112,9 @@ void free_fonts(void)
 {
 	int i;
 
-	if ((output_methods & TO_X) == 0)
+	if ((output_methods & TO_X) == 0) {
 		return;
+	}
 	for (i = 0; i <= font_count; i++) {
 #ifdef XFT
 		if (use_xft) {
@@ -175,7 +179,6 @@ void load_fonts(void)
 			ERR("can't load font '%s'", fonts[i].name);
 			if ((fonts[i].font = XLoadQueryFont(display, "fixed")) == NULL) {
 				CRIT_ERR("can't load font '%s'", "fixed");
-				printf("loaded fixed?\n");
 			}
 		}
 	}
