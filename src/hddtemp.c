@@ -91,6 +91,7 @@ static char *read_hdd_val(const char *line)
 		return ret;
 	/* read the device */
 	dev = ++p;
+	if (!p) return ret;
 	if (!(p = strchr(p, line_s[0])))
 		return ret;
 	*(p++) = '\0';
@@ -197,6 +198,7 @@ char *get_hddtemp_info(char *dev, char *hostaddr, int port)
 	if ((p = read_hdd_val(buf)) == NULL)
 		goto GET_OUT;
 	do {
+		if (p >= buf + BUFLEN) break;
 		if (!strncmp(dev, p, strlen(dev)))
 			asprintf(&r, "%s", p + strlen(dev));
 		free(p);
