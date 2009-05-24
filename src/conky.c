@@ -1782,59 +1782,13 @@ static struct text_object *construct_text_object(const char *s,
 #ifdef __linux__
 	END OBJ(i2c, INFO_SYSFS)
 		char buf1[64], buf2[64];
-		int n;
+		float factor, offset;
+		int n, found = 0;
 
 		if (!arg) {
 			ERR("i2c needs arguments");
 			obj->type = OBJ_text;
 			// obj->data.s = strndup("${i2c}", text_buffer_size);
-			return NULL;
-		}
-
-		if (sscanf(arg, "%63s %63s %d", buf1, buf2, &n) != 3) {
-			/* if scanf couldn't read three values, read type and num and use
-			 * default device */
-			sscanf(arg, "%63s %d", buf2, &n);
-			obj->data.sysfs.fd = open_i2c_sensor(0, buf2, n,
-				&obj->data.sysfs.arg, obj->data.sysfs.devtype);
-			strncpy(obj->data.sysfs.type, buf2, 63);
-		} else {
-			obj->data.sysfs.fd = open_i2c_sensor(buf1, buf2, n,
-				&obj->data.sysfs.arg, obj->data.sysfs.devtype);
-			strncpy(obj->data.sysfs.type, buf2, 63);
-		}
-
-	END OBJ(platform, INFO_SYSFS)
-		char buf1[64], buf2[64];
-		int n;
-
-		if (!arg) {
-			ERR("platform needs arguments");
-			obj->type = OBJ_text;
-			return NULL;
-		}
-
-		if (sscanf(arg, "%63s %63s %d", buf1, buf2, &n) != 3) {
-			/* if scanf couldn't read three values, read type and num and use
-			 * default device */
-			sscanf(arg, "%63s %d", buf2, &n);
-			obj->data.sysfs.fd = open_platform_sensor(0, buf2, n,
-				&obj->data.sysfs.arg, obj->data.sysfs.devtype);
-			strncpy(obj->data.sysfs.type, buf2, 63);
-		} else {
-			obj->data.sysfs.fd = open_platform_sensor(buf1, buf2, n,
-				&obj->data.sysfs.arg, obj->data.sysfs.devtype);
-			strncpy(obj->data.sysfs.type, buf2, 63);
-		}
-
-	END OBJ(hwmon, INFO_SYSFS)
-		char buf1[64], buf2[64];
-		float factor, offset;
-		int n, found = 0;
-
-		if (!arg) {
-			ERR("hwmon needs argumanets");
-			obj->type = OBJ_text;
 			return NULL;
 		}
 
@@ -1848,6 +1802,61 @@ static struct text_object *construct_text_object(const char *s,
 		if (!found && sscanf(arg, "%63s %63s %d", buf1, buf2, &n) == 3) found = 1; else if (!found) HWMON_RESET();
 		if (!found && sscanf(arg, "%63s %d", buf2, &n) == 2) found = 1; else if (!found) HWMON_RESET();
 
+		if (!found) {
+			ERR("i2c failed to parse arguments");
+			obj->type = OBJ_text;
+			return NULL;
+		}
+		DBGP("parsed i2c args: '%s' '%s' %d %f %f\n", buf1, buf2, n, factor, offset);
+		obj->data.sysfs.fd = open_i2c_sensor((*buf1) ? buf1 : 0, buf2, n,
+				&obj->data.sysfs.arg, obj->data.sysfs.devtype);
+		strncpy(obj->data.sysfs.type, buf2, 63);
+		obj->data.sysfs.factor = factor;
+		obj->data.sysfs.offset = offset;
+
+	END OBJ(platform, INFO_SYSFS)
+		char buf1[64], buf2[64];
+		float factor, offset;
+		int n, found = 0;
+
+		if (!arg) {
+			ERR("platform needs arguments");
+			obj->type = OBJ_text;
+			return NULL;
+		}
+
+		if (sscanf(arg, "%63s %d %f %f", buf2, &n, &factor, &offset) == 4) found = 1; else HWMON_RESET();
+		if (!found && sscanf(arg, "%63s %63s %d %f %f", buf1, buf2, &n, &factor, &offset) == 5) found = 1; else if (!found) HWMON_RESET();
+		if (!found && sscanf(arg, "%63s %63s %d", buf1, buf2, &n) == 3) found = 1; else if (!found) HWMON_RESET();
+		if (!found && sscanf(arg, "%63s %d", buf2, &n) == 2) found = 1; else if (!found) HWMON_RESET();
+
+		if (!found) {
+			ERR("platform failed to parse arguments");
+			obj->type = OBJ_text;
+			return NULL;
+		}
+		DBGP("parsed platform args: '%s' '%s' %d %f %f\n", buf1, buf2, n, factor, offset);
+		obj->data.sysfs.fd = open_platform_sensor((*buf1) ? buf1 : 0, buf2, n,
+				&obj->data.sysfs.arg, obj->data.sysfs.devtype);
+		strncpy(obj->data.sysfs.type, buf2, 63);
+		obj->data.sysfs.factor = factor;
+		obj->data.sysfs.offset = offset;
+
+	END OBJ(hwmon, INFO_SYSFS)
+		char buf1[64], buf2[64];
+		float factor, offset;
+		int n, found = 0;
+
+		if (!arg) {
+			ERR("hwmon needs argumanets");
+			obj->type = OBJ_text;
+			return NULL;
+		}
+
+		if (sscanf(arg, "%63s %d %f %f", buf2, &n, &factor, &offset) == 4) found = 1; else HWMON_RESET();
+		if (!found && sscanf(arg, "%63s %63s %d %f %f", buf1, buf2, &n, &factor, &offset) == 5) found = 1; else if (!found) HWMON_RESET();
+		if (!found && sscanf(arg, "%63s %63s %d", buf1, buf2, &n) == 3) found = 1; else if (!found) HWMON_RESET();
+		if (!found && sscanf(arg, "%63s %d", buf2, &n) == 2) found = 1; else if (!found) HWMON_RESET();
 
 #undef HWMON_RESET
 
@@ -4384,6 +4393,8 @@ static void generate_text_internal(char *p, int p_max_size,
 				r = get_sysfs_info(&obj->data.sysfs.fd, obj->data.sysfs.arg,
 					obj->data.sysfs.devtype, obj->data.sysfs.type);
 
+				r = r * obj->data.sysfs.factor + obj->data.sysfs.offset;
+
 				if (!strncmp(obj->data.sysfs.type, "temp", 4)) {
 					temp_print(p, p_max_size, r, TEMP_CELSIUS);
 				} else if (r >= 100.0 || r == 0) {
@@ -4397,6 +4408,8 @@ static void generate_text_internal(char *p, int p_max_size,
 
 				r = get_sysfs_info(&obj->data.sysfs.fd, obj->data.sysfs.arg,
 					obj->data.sysfs.devtype, obj->data.sysfs.type);
+
+				r = r * obj->data.sysfs.factor + obj->data.sysfs.offset;
 
 				if (!strncmp(obj->data.sysfs.type, "temp", 4)) {
 					temp_print(p, p_max_size, r, TEMP_CELSIUS);
