@@ -338,6 +338,9 @@ void update_stuff(void)
 	/* clear speeds and up status in case device was removed and doesn't get
 	 * updated */
 
+	#ifdef HAVE_OPENMP
+	#pragma omp parallel for
+	#endif /* HAVE_OPENMP */
 	for (i = 0; i < 16; i++) {
 		if (netstats[i].dev) {
 			netstats[i].up = 0;
