@@ -1840,10 +1840,10 @@ static struct text_object *construct_text_object(const char *s,
 		factor = 1.0; \
 		offset = 0.0; }
 
-		if (sscanf(arg, "%63s %63s %d %f %f", buf1, buf2, &n, &factor, &offset) == 5) found = 1; else HWMON_RESET();
-		if (!found && (sscanf(arg, "%63s %d %f %f", buf2, &n, &factor, &offset) == 4)) found = 1; else HWMON_RESET();
-		if (!found && (sscanf(arg, "%63s %63s %d", buf1, buf2, &n) == 3)) found = 1; else HWMON_RESET();
-		if (!found && (sscanf(arg, "%63s %d", buf2, &n) == 2)) found = 1; else HWMON_RESET();
+		if (sscanf(arg, "%63s %d %f %f", buf2, &n, &factor, &offset) == 4) found = 1; else HWMON_RESET();
+		if (!found && sscanf(arg, "%63s %63s %d %f %f", buf1, buf2, &n, &factor, &offset) == 5) found = 1; else if (!found) HWMON_RESET();
+		if (!found && sscanf(arg, "%63s %63s %d", buf1, buf2, &n) == 3) found = 1; else if (!found) HWMON_RESET();
+		if (!found && sscanf(arg, "%63s %d", buf2, &n) == 2) found = 1; else if (!found) HWMON_RESET();
 
 
 #undef HWMON_RESET
@@ -1853,7 +1853,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->type = OBJ_text;
 			return NULL;
 		}
-		DBGP("parsed hwmon args: %s %s %d %f %f\n", buf1, buf2, n, factor, offset);
+		DBGP("parsed hwmon args: '%s' '%s' %d %f %f\n", buf1, buf2, n, factor, offset);
 		obj->data.sysfs.fd = open_hwmon_sensor((*buf1) ? buf1 : 0, buf2, n,
 				&obj->data.sysfs.arg, obj->data.sysfs.devtype);
 		strncpy(obj->data.sysfs.type, buf2, 63);
