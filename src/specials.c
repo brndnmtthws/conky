@@ -103,7 +103,7 @@ char *scan_font(const char *args)
 
 char *scan_graph(const char *args, int *w, int *h,
                  unsigned int *first_colour, unsigned int *last_colour,
-                 unsigned int *scale, char *showaslog)
+                 unsigned int *scale, char *showaslog, char *tempgrad)
 {
 	const char *nographtype;
 	char buf[64];
@@ -115,23 +115,27 @@ char *scan_graph(const char *args, int *w, int *h,
 	*first_colour = 0;
 	*last_colour = 0;
 	*scale = 0;
+	*tempgrad = FALSE;
 	if (args) {
-		//set showaslog and place the rest of the args in nographtype
-		if(strcasecmp(args, LOGGRAPH) == EQUAL) {
+		// set showaslog and place the rest of the args in nographtype
+		if (strcasecmp(args, LOGGRAPH) == EQUAL) {
 			*showaslog = TRUE;
 			return NULL;
-		}else if(strcasecmp(args, NORMGRAPH) == EQUAL) {
+		} else if (strcasecmp(args, NORMGRAPH) == EQUAL) {
 			*showaslog = FALSE;
 			return NULL;
-		}else if(strncasecmp(args, LOGGRAPH" ", strlen(LOGGRAPH) + 1 ) == EQUAL) {
+		} else if (strncasecmp(args, LOGGRAPH" ", strlen(LOGGRAPH) + 1 ) == EQUAL) {
 			*showaslog = TRUE;
 			nographtype = &args[strlen(LOGGRAPH) + 1];
-		}else if(strncasecmp(args, NORMGRAPH" ", strlen(NORMGRAPH) + 1 ) == EQUAL) {
+		} else if (strncasecmp(args, NORMGRAPH" ", strlen(NORMGRAPH) + 1 ) == EQUAL) {
 			*showaslog = FALSE;
 			nographtype = &args[strlen(NORMGRAPH) + 1];
-		}else{
+		} else {
 			*showaslog = FALSE;
 			nographtype = args;
+		}
+		if (strstr(args, " "TEMPGRAD)) {
+			*tempgrad = TRUE;
 		}
 		DBGP("printing graph as %s, other args are: %s", (*showaslog ? "log" : "normal"), nographtype);
 		//check the rest of the args
@@ -292,7 +296,7 @@ static void graph_append(struct special_t *graph, double f, char showaslog)
 }
 
 void new_graph(char *buf, int w, int h, unsigned int first_colour,
-		unsigned int second_colour, double i, int scale, int append, char showaslog)
+		unsigned int second_colour, double i, int scale, int append, char showaslog, char tempgrad)
 {
 	struct special_t *s = 0;
 
@@ -325,6 +329,7 @@ void new_graph(char *buf, int w, int h, unsigned int first_colour,
 		s->graph_scale = 1;
 		s->show_scale = 1;
 	}
+	s->tempgrad = tempgrad;
 	/* if (s->width) {
 		s->graph_width = s->width - 2;	// subtract 2 for rectangle around
 	} */

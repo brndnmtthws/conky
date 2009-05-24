@@ -171,6 +171,7 @@
 	<varlistentry>
 		<term>
 			<command><option>apcupsd_loadgraph</option></command>
+			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (-t)</option>
 		</term>
 		<listitem>
 			History graph of current load.
@@ -589,10 +590,10 @@
 	<varlistentry>
 		<term>
 			<command><option>cpugraph</option></command>
-			<option>(cpuN) ("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+			<option>(cpuN) ("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (-t)</option>
 		</term>
 		<listitem>
-			CPU usage graph, with optional colours in hex, minus the #.  See $cpu for more info on SMP. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
+			CPU usage graph, with optional colours in hex, minus the #.  See $cpu for more info on SMP. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".  Takes the switch '-t' to use a temperature gradient, which makes the gradient values change depending on the amplitude of a particular graph value (try it and see).
 			<para></para></listitem>
 	</varlistentry>
 
@@ -609,10 +610,10 @@
 	<varlistentry>
 		<term>
 			<command><option>diskiograph</option></command>
-			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (device)</option>
+			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (-t) (device)</option>
 		</term>
 		<listitem>
-			Disk IO graph, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
+			Disk IO graph, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".  Takes the switch '-t' to use a temperature gradient, which makes the gradient values change depending on the amplitude of a particular graph value (try it and see).
 			<para></para></listitem>
 	</varlistentry>
 
@@ -629,10 +630,10 @@
 	<varlistentry>
 		<term>
 			<command><option>diskiograph_read</option></command>
-			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (device)</option>
+			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (-t) (device)</option>
 		</term>
 		<listitem>
-			Disk IO graph for reads, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.  Device as in diskio. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
+			Disk IO graph for reads, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.  Device as in diskio. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".  Takes the switch '-t' to use a temperature gradient, which makes the gradient values change depending on the amplitude of a particular graph value (try it and see).
 			<para></para></listitem>
 	</varlistentry>
 
@@ -649,10 +650,10 @@
 	<varlistentry>
 		<term>
 			<command><option>diskiograph_write</option></command>
-			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (device)</option>
+			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (-t) (device)</option>
 		</term>
 		<listitem>
-			Disk IO graph for writes, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.  Device as in diskio. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
+			Disk IO graph for writes, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph.  Device as in diskio. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".  Takes the switch '-t' to use a temperature gradient, which makes the gradient values change depending on the amplitude of a particular graph value (try it and see).
 			<para></para></listitem>
 	</varlistentry>
 
@@ -689,10 +690,10 @@
 	<varlistentry>
 		<term>
 			<command><option>downspeedgraph</option></command>
-			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (net)</option>
+			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (-t) (net)</option>
 		</term>
 		<listitem>
-			Download speed graph, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
+			Download speed graph, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".  Takes the switch '-t' to use a temperature gradient, which makes the gradient values change depending on the amplitude of a particular graph value (try it and see).
 			<para></para></listitem>
 	</varlistentry>
 
@@ -776,10 +777,10 @@
 	<varlistentry>
 		<term>
 			<command><option>execgraph</option></command>
-			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) command</option>
+			<option>("normal"|"log") (-t) command</option>
 		</term>
 		<listitem>
-			Same as execbar, but graphs values. Uses a logaritmic scale when the log option is given (to see small numbers). Values still have to be between 0 and 100.  The size for graphs can be controlled via the default_graph_size config setting.
+			Same as execbar, but graphs values. Uses a logaritmic scale when the log option is given (to see small numbers). Values still have to be between 0 and 100.  The size for graphs can be controlled via the default_graph_size config setting.  Takes the switch '-t' to use a temperature gradient, which makes the gradient values change depending on the amplitude of a particular graph value (try it and see).
 			<para></para></listitem>
 	</varlistentry>
 
@@ -806,7 +807,7 @@
 	<varlistentry>
 		<term>
 			<command><option>execigraph</option></command>
-			<option>interval command</option>
+			<option>interval ("normal"|"log") (-t) command</option>
 		</term>
 		<listitem>
 			Same as execgraph, but takes an interval arg and graphs values.
@@ -1400,10 +1401,10 @@
 	<varlistentry>
 		<term>
 			<command><option>loadgraph</option></command>
-			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (-t)</option>
 		</term>
 		<listitem>
-			Load1 average graph, similar to xload, with optional colours in hex, minus the #. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
+			Load1 average graph, similar to xload, with optional colours in hex, minus the #. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".  Takes the switch '-t' to use a temperature gradient, which makes the gradient values change depending on the amplitude of a particular graph value (try it and see).
 			<para></para></listitem>
 	</varlistentry>
 
@@ -1614,10 +1615,10 @@
 	<varlistentry>
 		<term>
 			<command><option>memgraph</option></command>
-			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale)</option>
+			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (-t)</option>
 		</term>
 		<listitem>
-			Memory usage graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
+			Memory usage graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".  Takes the switch '-t' to use a temperature gradient, which makes the gradient values change depending on the amplitude of a particular graph value (try it and see).
 			<para></para></listitem>
 	</varlistentry>
 
@@ -2394,10 +2395,10 @@
 	<varlistentry>
 		<term>
 			<command><option>lua_graph</option></command>
-			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) function_name (function parameters)</option>
+			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (-t) function_name (function parameters)</option>
 		</term>
 		<listitem>
-			Executes a Lua function with given parameters and draws a graph. Expects result value to be an integer between 0 and 100.  See also 'lua_load' on how to load scripts.
+			Executes a Lua function with given parameters and draws a graph. Expects result value to be an integer between 0 and 100.  See also 'lua_load' on how to load scripts.  Takes the switch '-t' to use a temperature gradient, which makes the gradient values change depending on the amplitude of a particular graph value (try it and see).
 			<para></para></listitem>
 	</varlistentry>
 
@@ -2585,10 +2586,10 @@
 	<varlistentry>
 		<term>
 			<command><option>upspeedgraph</option></command>
-			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (net)</option>
+			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) (-t) (net)</option>
 		</term>
 		<listitem>
-			Upload speed graph, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".
+			Upload speed graph, colours defined in hex, minus the #.  If scale is non-zero, it becomes the scale for the graph. Uses a logarithmic scale (to see small numbers) when you use "log" instead of "normal".  Takes the switch '-t' to use a temperature gradient, which makes the gradient values change depending on the amplitude of a particular graph value (try it and see).
 			<para></para></listitem>
 	</varlistentry>
 

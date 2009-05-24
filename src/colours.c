@@ -88,8 +88,8 @@ unsigned int adjust_colors(unsigned int color)
 }
 
 /* this function returns the next colour between two colours for a gradient */
-unsigned long do_gradient(unsigned long first_colour,
-		unsigned long last_colour)
+unsigned long do_gradient(const unsigned long first_colour,
+		const unsigned long last_colour)
 {
 	int tmp_color = 0;
 	int red1, green1, blue1;				// first colour

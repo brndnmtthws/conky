@@ -570,8 +570,7 @@ struct text_object {
 	long line;
 	unsigned int c, d, e;
 	float f;
-	char showaslog;
-	char global_mode;
+	char char_a, char_b;
 };
 
 /* text object list helpers */

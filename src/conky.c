@@ -707,22 +707,22 @@ static void free_text_objects(struct text_object *root, int internal)
 				free(data.local_mail.box);
 				break;
 			case OBJ_imap_unseen:
-				if (!obj->global_mode) {
+				if (!obj->char_b) {
 					free(data.mail);
 				}
 				break;
 			case OBJ_imap_messages:
-				if (!obj->global_mode) {
+				if (!obj->char_b) {
 					free(data.mail);
 				}
 				break;
 			case OBJ_pop3_unseen:
-				if (!obj->global_mode) {
+				if (!obj->char_b) {
 					free(data.mail);
 				}
 				break;
 			case OBJ_pop3_used:
-				if (!obj->global_mode) {
+				if (!obj->char_b) {
 					free(data.mail);
 				}
 				break;
@@ -1465,11 +1465,11 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(cpugraph, INFO_CPU)
 		SCAN_CPU(arg, obj->data.cpu_index);
 		scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-			&obj->e, &obj->showaslog);
+			&obj->e, &obj->char_a, &obj->char_b);
 		DBGP2("Adding $cpugraph for CPU %d", obj->data.cpu_index);
 	END OBJ(loadgraph, INFO_LOADAVG)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-				&obj->e, &obj->showaslog);
+				&obj->e, &obj->char_a, &obj->char_b);
 		if (buf) {
 			int a = 1, r = 3;
 			if (arg) {
@@ -1488,21 +1488,21 @@ static struct text_object *construct_text_object(const char *s,
 #ifdef X11
 	END OBJ(diskiograph, INFO_DISKIO)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-			&obj->e, &obj->showaslog);
+				&obj->e, &obj->char_a, &obj->char_b);
 
 		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
 		if (buf)
 			free(buf);
 	END OBJ(diskiograph_read, INFO_DISKIO)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-			&obj->e, &obj->showaslog);
+				&obj->e, &obj->char_a, &obj->char_b);
 
 		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
 		if (buf)
 			free(buf);
 	END OBJ(diskiograph_write, INFO_DISKIO)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-			&obj->e, &obj->showaslog);
+				&obj->e, &obj->char_a, &obj->char_b);
 
 		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
 		if (buf)
@@ -1556,7 +1556,7 @@ static struct text_object *construct_text_object(const char *s,
 #ifdef X11
 	END OBJ(downspeedgraph, INFO_NET)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-			&obj->e, &obj->showaslog);
+				&obj->e, &obj->char_a, &obj->char_b);
 
 		// default to DEFAULTNETDEV
 		buf = strndup(buf ? buf : "DEFAULTNETDEV", text_buffer_size);
@@ -2220,7 +2220,7 @@ static struct text_object *construct_text_object(const char *s,
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(memgraph, INFO_MEM)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-			&obj->e, &obj->showaslog);
+				&obj->e, &obj->char_a, &obj->char_b);
 
 		if (buf) {
 			free(buf);
@@ -2372,7 +2372,7 @@ static struct text_object *construct_text_object(const char *s,
 #ifdef X11
 	END OBJ(upspeedgraph, INFO_NET)
 		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-			&obj->e, &obj->showaslog);
+				&obj->e, &obj->char_a, &obj->char_b);
 
 		// default to DEFAULTNETDEV
 		buf = strndup(buf ? buf : "DEFAULTNETDEV", text_buffer_size);
@@ -2403,33 +2403,33 @@ static struct text_object *construct_text_object(const char *s,
 		if (arg) {
 			// proccss
 			obj->data.mail = parse_mail_args(IMAP_TYPE, arg);
-			obj->global_mode = 0;
+			obj->char_b = 0;
 		} else {
-			obj->global_mode = 1;
+			obj->char_b = 1;
 		}
 	END OBJ_THREAD(imap_messages, 0)
 		if (arg) {
 			// proccss
 			obj->data.mail = parse_mail_args(IMAP_TYPE, arg);
-			obj->global_mode = 0;
+			obj->char_b = 0;
 		} else {
-			obj->global_mode = 1;
+			obj->char_b = 1;
 		}
 	END OBJ_THREAD(pop3_unseen, 0)
 		if (arg) {
 			// proccss
 			obj->data.mail = parse_mail_args(POP3_TYPE, arg);
-			obj->global_mode = 0;
+			obj->char_b = 0;
 		} else {
-			obj->global_mode = 1;
+			obj->char_b = 1;
 		}
 	END OBJ_THREAD(pop3_used, 0)
 		if (arg) {
 			// proccss
 			obj->data.mail = parse_mail_args(POP3_TYPE, arg);
-			obj->global_mode = 0;
+			obj->char_b = 0;
 		} else {
-			obj->global_mode = 1;
+			obj->char_b = 1;
 		}
 #ifdef IBM
 	END OBJ(smapi, 0)
@@ -2668,7 +2668,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(lua_graph, 0)
 		if (arg) {
 			arg = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-					&obj->e, &obj->showaslog);
+					&obj->e, &obj->char_a, &obj->char_b);
 			if (arg) {
 				obj->data.s = strndup(arg, text_buffer_size);
 			} else {
@@ -2803,7 +2803,8 @@ static struct text_object *construct_text_object(const char *s,
 			END OBJ(apcupsd_loadbar, INFO_APCUPSD)
 				scan_bar(arg, &obj->a, &obj->b);
 			END OBJ(apcupsd_loadgraph, INFO_APCUPSD)
-				char* buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d, &obj->e, &obj->showaslog);
+				char* buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+						&obj->e, &obj->char_a, &obj->char_b);
 				if (buf) free(buf);
 			END OBJ(apcupsd_loadgauge, INFO_APCUPSD)
 				scan_gauge(arg, &obj->a, &obj->b);
@@ -3236,7 +3237,7 @@ int parse_conky_vars(struct text_object *root, char *txt, char *p, struct inform
 static inline struct mail_s *ensure_mail_thread(struct text_object *obj,
 		void *thread(void *), const char *text)
 {
-	if (obj->global_mode && info.mail) {
+	if (obj->char_b && info.mail) {
 		// this means we use info
 		if (!info.mail->p_timed_thread) {
 			info.mail->p_timed_thread =
@@ -3563,11 +3564,11 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(cpugraph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100),
-						100, 1, obj->showaslog);
+						100, 1, obj->char_a, obj->char_b);
 			}
 			OBJ(loadgraph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d, cur->loadavg[0],
-						obj->e, 1, obj->showaslog);
+						obj->e, 1, obj->char_a, obj->char_b);
 			}
 			OBJ(color) {
 				new_fg(p, obj->data.l);
@@ -3779,15 +3780,15 @@ static void generate_text_internal(char *p, int p_max_size,
 #ifdef X11
 			OBJ(diskiograph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-				          obj->data.diskio->current, obj->e, 1, obj->showaslog);
+				          obj->data.diskio->current, obj->e, 1, obj->char_a, obj->char_b);
 			}
 			OBJ(diskiograph_read) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-				          obj->data.diskio->current_read, obj->e, 1, obj->showaslog);
+				          obj->data.diskio->current_read, obj->e, 1, obj->char_a, obj->char_b);
 			}
 			OBJ(diskiograph_write) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-				          obj->data.diskio->current_write, obj->e, 1, obj->showaslog);
+				          obj->data.diskio->current_write, obj->e, 1, obj->char_a, obj->char_b);
 			}
 #endif
 			OBJ(downspeed) {
@@ -3800,7 +3801,7 @@ static void generate_text_internal(char *p, int p_max_size,
 #ifdef X11
 			OBJ(downspeedgraph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-					obj->data.net->recv_speed / 1024.0, obj->e, 1, obj->showaslog);
+					obj->data.net->recv_speed / 1024.0, obj->e, 1, obj->char_a, obj->char_b);
 			}
 #endif
 			OBJ(else) {
@@ -3928,21 +3929,26 @@ static void generate_text_internal(char *p, int p_max_size,
 #ifdef X11
 			OBJ(execgraph) {
 				char showaslog = FALSE;
+				char tempgrad = FALSE;
 				double barnum;
+				char *cmd = obj->data.s;
 
-				if(strncasecmp(obj->data.s, LOGGRAPH" ", strlen(LOGGRAPH" ")) == EQUAL) {
+				if (strncasecmp(obj->data.execi.cmd, LOGGRAPH" ", strlen(LOGGRAPH" ")) == EQUAL) {
 					showaslog = TRUE;
-					read_exec(obj->data.s + strlen(LOGGRAPH" ") * sizeof(char), p, text_buffer_size);
+					cmd = cmd + strlen(LOGGRAPH" ") * sizeof(char);
 				} else if(strncasecmp(obj->data.s, NORMGRAPH" ", strlen(NORMGRAPH" ")) == EQUAL) {
-					read_exec(obj->data.s + strlen(NORMGRAPH" ") * sizeof(char), p, text_buffer_size);
-				} else {
-					read_exec(obj->data.s, p, text_buffer_size);
+					cmd = cmd + strlen(NORMGRAPH" ") * sizeof(char);
 				}
+				if (strstr(cmd, " "TEMPGRAD) && strlen(cmd) > strlen(" "TEMPGRAD)) {
+					tempgrad = TRUE;
+					cmd += strlen(" "TEMPGRAD);
+				}
+				read_exec(cmd, p, text_buffer_size);
 				barnum = get_barnum(p);
 
 				if (barnum >= 0.0) {
 					new_graph(p, obj->a, obj->b, obj->c, obj->d, round_to_int(barnum),
-						100, 1, showaslog);
+							100, 1, showaslog, tempgrad);
 				}
 			}
 			OBJ(execibar) {
@@ -3964,8 +3970,23 @@ static void generate_text_internal(char *p, int p_max_size,
 				if (current_update_time - obj->data.execi.last_update
 						>= obj->data.execi.interval) {
 					double barnum;
+					char showaslog = FALSE;
+					char tempgrad = FALSE;
+					char *cmd = obj->data.execi.cmd;
 
-					read_exec(obj->data.execi.cmd, p, text_buffer_size);
+					if (strncasecmp(obj->data.execi.cmd, LOGGRAPH" ", strlen(LOGGRAPH" ")) == EQUAL) {
+						showaslog = TRUE;
+						cmd = cmd + strlen(LOGGRAPH" ") * sizeof(char);
+					} else if(strncasecmp(obj->data.s, NORMGRAPH" ", strlen(NORMGRAPH" ")) == EQUAL) {
+						cmd = cmd + strlen(NORMGRAPH" ") * sizeof(char);
+					}
+					if (strstr(cmd, " "TEMPGRAD) && strlen(cmd) > strlen(" "TEMPGRAD)) {
+						tempgrad = TRUE;
+						cmd += strlen(" "TEMPGRAD);
+					}
+					obj->char_a = showaslog;
+					obj->char_b = tempgrad;
+					read_exec(cmd, p, text_buffer_size);
 					barnum = get_barnum(p);
 
 					if (barnum >= 0.0) {
@@ -3973,7 +3994,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					}
 					obj->data.execi.last_update = current_update_time;
 				}
-				new_graph(p, obj->a, obj->b, obj->c, obj->d, (int) (obj->f), 100, 1, FALSE);
+				new_graph(p, obj->a, obj->b, obj->c, obj->d, (int) (obj->f), 100, 1, obj->char_a, obj->char_b);
 			}
 			OBJ(execigauge) {
 				if (current_update_time - obj->data.execi.last_update
@@ -4331,7 +4352,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				int per;
 				if (llua_getinteger(obj->data.s, &per)) {
 					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-							(per/100.0 * 255), 100, 1, obj->showaslog);
+							(per/100.0 * 255), 100, 1, obj->char_a, obj->char_b);
 				}
 			}
 			OBJ(lua_gauge) {
@@ -4527,7 +4548,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(memgraph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 					cur->memmax ? (cur->mem * 100.0) / (cur->memmax) : 0.0,
-					100, 1, obj->showaslog);
+					100, 1, obj->char_a, obj->char_b);
 			}
 #endif
 			/* mixer stuff */
@@ -4738,7 +4759,7 @@ static void generate_text_internal(char *p, int p_max_size,
 #ifdef X11
 			OBJ(upspeedgraph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-					obj->data.net->trans_speed / 1024.0, obj->e, 1, obj->showaslog);
+					obj->data.net->trans_speed / 1024.0, obj->e, 1, obj->char_a, obj->char_b);
 			}
 #endif
 			OBJ(uptime_short) {
@@ -5428,7 +5449,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				double progress;
 				progress =	atof(cur->apcupsd.items[APCUPSD_LOAD]);
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-						  (int)progress, 100, 1, obj->showaslog);
+						  (int)progress, 100, 1, obj->char_a, obj->char_b);
 			}
 			OBJ(apcupsd_loadgauge) {
 				double progress;
@@ -6041,11 +6062,9 @@ static void draw_line(char *s)
 				case GRAPH:
 				{
 					int h, by, i, j = 0;
-					int gradient_size = 0;
-					float gradient_factor = 0;
-					float gradient_update = 0;
+					int colour_idx = 0;
 					unsigned long last_colour = current_color;
-					unsigned long tmpcolour = current_color;
+					unsigned long *tmpcolour = 0;
 					if (cur_x - text_start_x > maximum_width
 							&& maximum_width > 0) {
 						break;
@@ -6074,21 +6093,34 @@ static void draw_line(char *s)
 
 					if (specials[special_index].last_colour != 0
 							|| specials[special_index].first_colour != 0) {
-						tmpcolour = specials[special_index].last_colour;
-						gradient_size =
+						float gradient_factor, gradient_update = 0;
+						int gradient_size =
 							gradient_max(specials[special_index].last_colour,
-							specials[special_index].first_colour);
-						gradient_factor = (float) gradient_size / (w - 2);
+									specials[special_index].first_colour);
+						gradient_factor = (float) gradient_size / (w - 1);
+						tmpcolour = malloc((w - 1) * sizeof(unsigned long));
+						tmpcolour[0] = specials[special_index].last_colour;
+						gradient_update += gradient_factor;
+						for (colour_idx = 1; colour_idx < w - 1; colour_idx++) {
+							tmpcolour[colour_idx] = tmpcolour[colour_idx - 1];
+							gradient_update += gradient_factor;
+							while (gradient_update > 0) {
+								tmpcolour[colour_idx] = do_gradient(tmpcolour[colour_idx],
+										specials[special_index].first_colour);
+								gradient_update--;
+							}
+						}
 					}
+					colour_idx = 0;
 					for (i = w - 2; i > -1; i--) {
 						if (specials[special_index].last_colour != 0
 								|| specials[special_index].first_colour != 0) {
-							XSetForeground(display, window.gc, tmpcolour);
-							gradient_update += gradient_factor;
-							while (gradient_update > 0) {
-								tmpcolour = do_gradient(tmpcolour,
-									specials[special_index].first_colour);
-								gradient_update--;
+							if (specials[special_index].tempgrad) {
+								XSetForeground(display, window.gc, tmpcolour[
+										(int)((float)(w - 1) - specials[special_index].graph[j] *
+										 (w - 2) / (float)specials[special_index].graph_scale) - 1]);
+							} else {
+								XSetForeground(display, window.gc, tmpcolour[colour_idx++]);
 							}
 						}
 						if ((w - i) / ((float) (w - 2) /
@@ -6102,6 +6134,7 @@ static void draw_line(char *s)
 							by + h - specials[special_index].graph[j] *
 							(h - 1) / specials[special_index].graph_scale);
 					}
+					if (tmpcolour) free(tmpcolour);
 					if (h > cur_y_add
 							&& h > font_h) {
 						cur_y_add = h;

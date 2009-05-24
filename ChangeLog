@@ -1,3 +1,7 @@
+2009-05-24
+	* Added fancy new 'temperature gradients' feature for graphs, via the -t
+	switch at the end of graph arguments.
+
 2009-05-19
 	* Added inotify support to reload the config when modified automatically
 	on systems that support it

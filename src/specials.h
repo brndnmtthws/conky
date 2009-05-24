@@ -35,9 +35,10 @@
  * and who needs that kind of precision anyway? */
 #define MAX_GRAPH_DEPTH 256
 
-//don't use spaces in LOGGRAPH or NORMGRAPH if you change them
+// don't use spaces in LOGGRAPH or NORMGRAPH if you change them
 #define LOGGRAPH "log"
 #define NORMGRAPH "normal"
+#define TEMPGRAD "-t"
 
 enum special_types {
 	HORIZONTAL_LINE,
@@ -70,6 +71,7 @@ struct special_t {
 	unsigned long first_colour;	// for graph gradient
 	unsigned long last_colour;
 	short font_added;
+	char tempgrad;
 };
 
 /* direct access to the registered specials (FIXME: bad encapsulation) */
@@ -94,14 +96,14 @@ const char *scan_gauge(const char *, int *, int *);
 const char *scan_bar(const char *, int *, int *);
 char *scan_font(const char *);
 char *scan_graph(const char *, int *, int *, unsigned int *,
-                 unsigned int *, unsigned int *, char *);
+                 unsigned int *, unsigned int *, char *, char *);
 
 /* printing specials */
 void new_gauge(char *, int, int, int);
 void new_bar(char *, int, int, int);
 void new_font(char *, char *);
 void new_graph(char *, int, int, unsigned int,
-               unsigned int, double, int, int, char);
+               unsigned int, double, int, int, char, char);
 void new_hr(char *, int);
 void new_stippled_hr(char *, int, int);
 #endif
