@@ -45,7 +45,7 @@ celsius_to_fahrenheit(double n)
 int
 set_temp_output_unit(const char *name)
 {
-	size_t i;
+	long i;
 	int rc = 0;
 	char *buf;
 
@@ -56,7 +56,7 @@ set_temp_output_unit(const char *name)
 	#ifdef HAVE_OPENMP
 	#pragma omp parallel for
 	#endif /* HAVE_OPENMP */
-	for (i = 0; i < strlen(name); i++)
+	for (i = 0; i < (long)strlen(name); i++)
 		buf[i] = tolower(name[i]);
 
 	if (!strcmp(buf, "celsius"))

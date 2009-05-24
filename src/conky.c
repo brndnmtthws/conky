@@ -3910,13 +3910,13 @@ static void generate_text_internal(char *p, int p_max_size,
 						#ifdef HAVE_OPENMP
 						#pragma omp parallel for
 						#endif /* HAVE_OPENMP */
-						for(i=0; i<barnum; i++) {
+						for(i=0; i<(int)barnum; i++) {
 							*(p+i)='#';
 						}
 						#ifdef HAVE_OPENMP
 						#pragma omp parallel for
 						#endif /* HAVE_OPENMP */
-						for(; i < obj->a; i++) {
+						for(i=i /* cheats */; i < obj->a; i++) {
 							*(p+i)='_';
 						}
 						*(p+i)=0;
@@ -5295,10 +5295,10 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(combine) {
 				char buf[2][max_user_text];
-				unsigned int i, j;
-				unsigned int longest=0;
-				unsigned int nextstart;
-				unsigned int nr_rows[2];
+				int i, j;
+				long longest=0;
+				int nextstart;
+				int nr_rows[2];
 				struct llrows {
 					char* row;
 					struct llrows* next;
@@ -5320,15 +5320,16 @@ static void generate_text_internal(char *p, int p_max_size,
 					#endif /* HAVE_OPENMP */
 					for(j=0; j<i; j++) objsub = objsub->sub;
 					generate_text_internal(buf[i], max_user_text, *objsub, cur);
-					#ifdef HAVE_OPENMP
-					#pragma omp parallel for reduction (+:nr_rows[i])
-					#endif /* HAVE_OPENMP */
+					/* doesnut work
+					 * #ifdef HAVE_OPENMP
+					 * #pragma omp parallel for reduction (+:nr_rows[i])
+					 * #endif  HAVE_OPENMP */
 					for(j=0; buf[i][j] != 0; j++) {
 						if(buf[i][j] == '\t') buf[i][j] = ' ';
 						if(buf[i][j] == '\n') {
 							buf[i][j] = 0;
 							current[i]->row = strdup(buf[i]+nextstart);
-							if(i==0 && strlen(current[i]->row) > longest) longest = strlen(current[i]->row);
+							if(i==0 && (long)strlen(current[i]->row) > longest) longest = (long)strlen(current[i]->row);
 							current[i]->next = malloc(sizeof(struct llrows));
 							current[i] = current[i]->next;
 							nextstart = j + 1;
@@ -5336,7 +5337,7 @@ static void generate_text_internal(char *p, int p_max_size,
 						}
 					}
 					current[i]->row = strdup(buf[i]+nextstart);
-					if(i==0 && strlen(current[i]->row) > longest) longest = strlen(current[i]->row);
+					if(i==0 && (long)strlen(current[i]->row) > longest) longest = (long)strlen(current[i]->row);
 					current[i]->next = NULL;
 					current[i] = ll_rows[i];
 				}

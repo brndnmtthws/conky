@@ -327,7 +327,7 @@ int no_buffers;
 
 void update_stuff(void)
 {
-	unsigned int i;
+	int i;
 
 	info.mask = 0;
 
