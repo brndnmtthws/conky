@@ -3907,9 +3907,15 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 						if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
 						barnum = round_to_int( ( barnum * obj->a ) / 100);
+						#ifdef HAVE_OPENMP
+						#pragma omp parallel for
+						#endif /* HAVE_OPENMP */
 						for(i=0; i<barnum; i++) {
 							*(p+i)='#';
 						}
+						#ifdef HAVE_OPENMP
+						#pragma omp parallel for
+						#endif /* HAVE_OPENMP */
 						for(; i < obj->a; i++) {
 							*(p+i)='_';
 						}
@@ -5301,13 +5307,22 @@ static void generate_text_internal(char *p, int p_max_size,
 				struct text_object * objsub = obj->sub;
 
 				p[0]=0;
+				#ifdef HAVE_OPENMP
+				#pragma omp parallel for
+				#endif /* HAVE_OPENMP */
 				for(i=0; i<2; i++) {
 					nr_rows[i] = 1;
 					nextstart = 0;
 					ll_rows[i] = malloc(sizeof(struct llrows));
 					current[i] = ll_rows[i];
+					#ifdef HAVE_OPENMP
+					#pragma omp parallel for
+					#endif /* HAVE_OPENMP */
 					for(j=0; j<i; j++) objsub = objsub->sub;
 					generate_text_internal(buf[i], max_user_text, *objsub, cur);
+					#ifdef HAVE_OPENMP
+					#pragma omp parallel for reduction (+:nr_rows[i])
+					#endif /* HAVE_OPENMP */
 					for(j=0; buf[i][j] != 0; j++) {
 						if(buf[i][j] == '\t') buf[i][j] = ' ';
 						if(buf[i][j] == '\n') {
@@ -5339,8 +5354,14 @@ static void generate_text_internal(char *p, int p_max_size,
 						strcat(p, current[1]->row);
 					}
 					strcat(p, "\n");
+					#ifdef HAVE_OPENMP
+					#pragma omp parallel for
+					#endif /* HAVE_OPENMP */
 					for(i=0; i<2; i++) if(current[i]) current[i]=current[i]->next;
 				}
+				#ifdef HAVE_OPENMP
+				#pragma omp parallel for
+				#endif /* HAVE_OPENMP */
 				for(i=0; i<2; i++) {
 					while(ll_rows[i] != NULL) {
 						current[i]=ll_rows[i];
