@@ -6116,23 +6116,43 @@ static void draw_line(char *s)
 						if (specials[special_index].last_colour != 0
 								|| specials[special_index].first_colour != 0) {
 							if (specials[special_index].tempgrad) {
+#ifdef DEBUG_lol
+								assert(
+										(int)((float)(w - 2) - specials[special_index].graph[j] *
+											(w - 2) / (float)specials[special_index].graph_scale)
+										< w - 1
+									  );
+								assert(
+										(int)((float)(w - 2) - specials[special_index].graph[j] *
+											(w - 2) / (float)specials[special_index].graph_scale)
+										> -1
+									  );
+								if (specials[special_index].graph[j] == specials[special_index].graph_scale) {
+									assert(
+											(int)((float)(w - 2) - specials[special_index].graph[j] *
+												(w - 2) / (float)specials[special_index].graph_scale)
+											== 0
+										  );
+								}
+#endif /* DEBUG_lol */
 								XSetForeground(display, window.gc, tmpcolour[
-										(int)((float)(w - 1) - specials[special_index].graph[j] *
-										 (w - 2) / (float)specials[special_index].graph_scale) - 1]);
+										(int)((float)(w - 2) - specials[special_index].graph[j] *
+											(w - 2) / (float)specials[special_index].graph_scale)
+										]);
 							} else {
 								XSetForeground(display, window.gc, tmpcolour[colour_idx++]);
 							}
 						}
+						/* this is mugfugly, but it works */
+						XDrawLine(display, window.drawable, window.gc,
+								cur_x + i + 1, by + h, cur_x + i + 1,
+								by + h - specials[special_index].graph[j] *
+								(h - 1) / specials[special_index].graph_scale);
 						if ((w - i) / ((float) (w - 2) /
-								(specials[special_index].graph_width)) > j
+									(specials[special_index].graph_width)) > j
 								&& j < MAX_GRAPH_DEPTH - 3) {
 							j++;
 						}
-						/* this is mugfugly, but it works */
-						XDrawLine(display, window.drawable, window.gc,
-							cur_x + i + 1, by + h, cur_x + i + 1,
-							by + h - specials[special_index].graph[j] *
-							(h - 1) / specials[special_index].graph_scale);
 					}
 					if (tmpcolour) free(tmpcolour);
 					if (h > cur_y_add
