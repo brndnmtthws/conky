@@ -79,9 +79,32 @@ double get_time(void)
 	return tv.tv_sec + (tv.tv_usec / 1000000.0);
 }
 
+/* Converts '~/...' paths to '/home/blah/...' assumes that 'dest' is at least
+ * DEFAULT_TEXT_BUFFER_SIZE.  It's similar to variable_substitute, except only
+ * cheques for $HOME and ~/ in path */
+void to_real_path(char *dest, const char *source)
+{
+	char tmp[DEFAULT_TEXT_BUFFER_SIZE];
+	if (sscanf(source, "~/%s", tmp) || sscanf(source, "$HOME/%s", tmp)) {
+		char *homedir = getenv("HOME");
+		if (homedir) {
+			snprintf(dest, DEFAULT_TEXT_BUFFER_SIZE, "%s/%s", homedir, tmp);
+		} else {
+			ERR("$HOME environment variable doesn't exist");
+			strncpy(dest, source, DEFAULT_TEXT_BUFFER_SIZE);
+		}
+	} else {
+		strncpy(dest, source, DEFAULT_TEXT_BUFFER_SIZE);
+	}
+}
+
 FILE *open_file(const char *file, int *reported)
 {
-	FILE *fp = fopen(file, "r");
+	char path[DEFAULT_TEXT_BUFFER_SIZE];
+	FILE *fp = 0;
+
+	to_real_path(path, file);
+	fp = fopen(file, "r");
 
 	if (!fp) {
 		if (!reported || *reported == 0) {

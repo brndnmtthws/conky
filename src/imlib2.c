@@ -22,6 +22,7 @@
 #include "imlib2.h"
 #include "config.h"
 #include "logging.h"
+#include "common.h"
 
 #include <Imlib2.h>
 #include <stdio.h>
@@ -91,6 +92,7 @@ void cimlib_add_image(const char *args)
 	if (!sscanf(args, "%1024s", cur->name)) {
 		ERR("Invalid args for $image.  Format is: '<path to image> (-p x,y) (-s WxH)' (got '%s')", args);
 	}
+	to_real_path(cur->name, cur->name);
 	// now we check for optional args
 	tmp = strstr(args, "-p ");
 	if (tmp) {

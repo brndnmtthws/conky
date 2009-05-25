@@ -405,7 +405,7 @@ static int updatereset;
 int check_contains(char *f, char *s)
 {
 	int ret = 0;
-	FILE *where = fopen(f, "r");
+	FILE *where = open_file(f, 0);
 
 	if (where) {
 		char buf1[256], buf2[256];
@@ -5138,7 +5138,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(head)
 				print_head_object(obj, p, p_max_size);
 			OBJ(lines) {
-				FILE *fp = fopen(obj->data.s,"r");
+				FILE *fp = open_file(obj->data.s, &obj->a);
 
 				if(fp != NULL) {
 /* FIXME: use something more general (see also tail.c, head.c */
@@ -5162,7 +5162,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 
 			OBJ(words) {
-				FILE *fp = fopen(obj->data.s,"r");
+				FILE *fp = open_file(obj->data.s, &obj->a);
 
 				if(fp != NULL) {
 					char buf[BUFSZ];
@@ -6361,12 +6361,12 @@ static void draw_text(void)
 
 static void draw_stuff(void)
 {
-	if(overwrite_file) {
+	if (overwrite_file) {
 		overwrite_fpointer = fopen(overwrite_file, "w");
 		if(!overwrite_fpointer)
 			ERR("Can't overwrite '%s' anymore", overwrite_file);
 	}
-	if(append_file) {
+	if (append_file) {
 		append_fpointer = fopen(append_file, "a");
 		if(!append_fpointer)
 			ERR("Can't append '%s' anymore", append_file);
@@ -8436,11 +8436,11 @@ int main(int argc, char **argv)
 
 	if (!current_config) {
 		/* load default config file */
-		char buf[256];
+		char buf[DEFAULT_TEXT_BUFFER_SIZE];
 		FILE *fp;
 
 		/* Try to use personal config file first */
-		variable_substitute(CONFIG_FILE, buf, sizeof(buf));
+		to_real_path(buf, CONFIG_FILE);
 		if (buf[0] && (fp = fopen(buf, "r"))) {
 			current_config = strndup(buf, max_user_text);
 			fclose(fp);

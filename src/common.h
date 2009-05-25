@@ -27,6 +27,10 @@ struct process *get_first_process(void);
 void get_cpu_count(void);
 double get_time(void);
 
+/* Converts '~/...' paths to '/home/blah/...' assumes that 'dest' is at least
+ * DEFAULT_TEXT_BUFFER_SIZE.  It's similar to variable_substitute, except only
+ * cheques for $HOME and ~/ in path */
+void to_real_path(char *dest, const char *source);
 FILE *open_file(const char *, int *);
 void variable_substitute(const char *s, char *dest, unsigned int n);
 

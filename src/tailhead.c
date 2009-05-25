@@ -53,7 +53,7 @@ static void *memrchr(const void *buffer, char c, size_t n)
 int init_tailhead_object(enum tailhead_type type,
 		struct text_object *obj, const char *arg)
 {
-	char buf[64];
+	char buf[128];
 	int n1, n2;
 	struct stat st;
 	FILE *fp = NULL;
@@ -69,7 +69,7 @@ int init_tailhead_object(enum tailhead_type type,
 		return 1;
 	}
 
-	numargs = sscanf(arg, "%63s %i %i", buf, &n1, &n2);
+	numargs = sscanf(arg, "%127s %i %i", buf, &n1, &n2);
 
 	if (numargs < 2 || numargs > 3) {
 		ERR("incorrect number of arguments given to %s object", me);
@@ -87,6 +87,7 @@ int init_tailhead_object(enum tailhead_type type,
 	if (type == HEAD) {
 		goto NO_FIFO;
 	}
+	to_real_path(buf, buf);
 	if (stat(buf, &st) == 0) {
 		if (S_ISFIFO(st.st_mode)) {
 			fd = open(buf, O_RDONLY | O_NONBLOCK);

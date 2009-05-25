@@ -42,8 +42,12 @@ void llua_init(void)
 void llua_load(const char *script)
 {
 	int error;
+	char path[DEFAULT_TEXT_BUFFER_SIZE];
+
 	if(!lua_L) return;
-	error = luaL_dofile(lua_L, script);
+
+	to_real_path(path, script);
+	error = luaL_dofile(lua_L, path);
 	if (error) {
 		ERR("llua_load: %s", lua_tostring(lua_L, -1));
 		lua_pop(lua_L, 1);
