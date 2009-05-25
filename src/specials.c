@@ -279,11 +279,6 @@ static void graph_append(struct special_t *graph, double f, char showaslog)
 		f = graph->graph_scale;
 	}
 
-/* Already happens in new_graph
-	if (graph->scaled) {
-		graph->graph_scale = 1;
-	}
-*/
 	graph->graph[0] = f;	/* add new data */
 	/* shift all the data by 1 */
 	for (i = graph->graph_width - 1; i > 0; i--) {

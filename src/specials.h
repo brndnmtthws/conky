@@ -31,9 +31,7 @@
 
 #define SPECIAL_CHAR '\x01'
 
-/* why 256? cause an array of more then 256 doubles seems excessive,
- * and who needs that kind of precision anyway? */
-#define MAX_GRAPH_DEPTH 256
+#define MAX_GRAPH_DEPTH 512
 
 // don't use spaces in LOGGRAPH or NORMGRAPH if you change them
 #define LOGGRAPH "log"
