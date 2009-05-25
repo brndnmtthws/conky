@@ -84,10 +84,10 @@ static char *read_hdd_val(const char *line)
 	char *ret = NULL;
 
 	if (line) {
-		snprintf(line_s, 512, "%s", line);
+		if (!snprintf(line_s, 512, "%s", line)) return ret;
 		p = line_s;
 	}
-	if (!(*line_s))
+	if (!(*line_s) || !p)
 		return ret;
 	/* read the device */
 	dev = ++p;
