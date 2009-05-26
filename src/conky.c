@@ -3894,7 +3894,7 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 			OBJ(execbar) {
 				double barnum;
-				int i;
+				int i = 0, j = 0;
 
 				read_exec(obj->data.s, p, text_buffer_size);
 				barnum = get_barnum(p);
@@ -3914,10 +3914,12 @@ static void generate_text_internal(char *p, int p_max_size,
 						for(i=0; i<(int)barnum; i++) {
 							*(p+i)='#';
 						}
+						/* gcc seems to think i is not initialized properly :/ */
+						j = i;
 						#ifdef HAVE_OPENMP
 						#pragma omp parallel for
 						#endif /* HAVE_OPENMP */
-						for(i=i /* cheats */; i < obj->a; i++) {
+						for(i = j/* cheats */; i < obj->a; i++) {
 							*(p+i)='_';
 						}
 						*(p+i)=0;
@@ -6061,7 +6063,7 @@ static void draw_line(char *s)
 
 				case GRAPH:
 				{
-					int h, by, i, j = 0;
+					int h, by, i = 0, j = 0;
 					int colour_idx = 0;
 					unsigned long last_colour = current_color;
 					unsigned long *tmpcolour = 0;
@@ -6093,23 +6095,10 @@ static void draw_line(char *s)
 
 					if (specials[special_index].last_colour != 0
 							|| specials[special_index].first_colour != 0) {
-						float gradient_factor, gradient_update = 0;
 						int gradient_size =
 							gradient_max(specials[special_index].last_colour,
 									specials[special_index].first_colour);
-						gradient_factor = (float) gradient_size / (w - 1);
-						tmpcolour = malloc((w - 1) * sizeof(unsigned long));
-						tmpcolour[0] = specials[special_index].last_colour;
-						gradient_update += gradient_factor;
-						for (colour_idx = 1; colour_idx < w - 1; colour_idx++) {
-							tmpcolour[colour_idx] = tmpcolour[colour_idx - 1];
-							gradient_update += gradient_factor;
-							while (gradient_update > 0) {
-								tmpcolour[colour_idx] = do_gradient(tmpcolour[colour_idx],
-										specials[special_index].first_colour);
-								gradient_update--;
-							}
-						}
+						tmpcolour = do_gradient(gradient_size, w - 1, specials[special_index].first_colour, specials[special_index].last_colour);
 					}
 					colour_idx = 0;
 					for (i = w - 2; i > -1; i--) {
@@ -6146,8 +6135,8 @@ static void draw_line(char *s)
 						/* this is mugfugly, but it works */
 						XDrawLine(display, window.drawable, window.gc,
 								cur_x + i + 1, by + h, cur_x + i + 1,
-								by + h - specials[special_index].graph[j] *
-								(h - 1) / specials[special_index].graph_scale);
+								round_to_int((double)by + h - specials[special_index].graph[j] *
+									(h - 1) / specials[special_index].graph_scale));
 						if ((w - i) / ((float) (w - 2) /
 									(specials[special_index].graph_width)) > j
 								&& j < MAX_GRAPH_DEPTH - 3) {

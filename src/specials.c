@@ -317,8 +317,8 @@ void new_graph(char *buf, int w, int h, unsigned int first_colour,
 		s->graph_scale = 100;
 	}
 	s->height = h;
-	s->first_colour = adjust_colors(first_colour);
-	s->last_colour = adjust_colors(second_colour);
+	s->first_colour = adjust_colours(first_colour);
+	s->last_colour = adjust_colours(second_colour);
 	if (scale != 0) {
 		s->scaled = 0;
 		s->graph_scale = scale;

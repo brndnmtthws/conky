@@ -68,8 +68,8 @@ static void set_up_gradient(void)
 	greenmask = greenmask << (colour_depth / 3);
 }
 
-/* adjust color values depending on color depth */
-unsigned int adjust_colors(unsigned int color)
+/* adjust colour values depending on colour depth */
+unsigned int adjust_colours(unsigned int colour)
 {
 	double r, g, b;
 
@@ -77,26 +77,25 @@ unsigned int adjust_colors(unsigned int color)
 		set_up_gradient();
 	}
 	if (colour_depth == 16) {
-		r = (color & 0xff0000) >> 16;
-		g = (color & 0xff00) >> 8;
-		b =  color & 0xff;
-		color  = (int) (r * CONST_8_TO_5_BITS) << 11;
-		color |= (int) (g * CONST_8_TO_6_BITS) << 5;
-		color |= (int) (b * CONST_8_TO_5_BITS);
+		r = (colour & 0xff0000) >> 16;
+		g = (colour & 0xff00) >> 8;
+		b =  colour & 0xff;
+		colour  = (int) (r * CONST_8_TO_5_BITS) << 11;
+		colour |= (int) (g * CONST_8_TO_6_BITS) << 5;
+		colour |= (int) (b * CONST_8_TO_5_BITS);
 	}
-	return color;
+	return colour;
 }
 
 /* this function returns the next colour between two colours for a gradient */
-unsigned long do_gradient(const unsigned long first_colour,
-		const unsigned long last_colour)
+unsigned long *do_gradient(float diff, int width, unsigned long first_colour, unsigned long last_colour)
 {
-	int tmp_color = 0;
 	int red1, green1, blue1;				// first colour
-	int red2, green2, blue2;				// second colour
-	int red3 = 0, green3 = 0, blue3 = 0;	// difference
+	int red2, green2, blue2;				// last colour
 	short redshift = (2 * colour_depth / 3 + colour_depth % 3);
 	short greenshift = (colour_depth / 3);
+	unsigned long *colours = malloc(width * sizeof(unsigned long));
+	int i;
 
 	red1 = (first_colour & redmask) >> redshift;
 	green1 = (first_colour & greenmask) >> greenshift;
@@ -104,47 +103,53 @@ unsigned long do_gradient(const unsigned long first_colour,
 	red2 = (last_colour & redmask) >> redshift;
 	green2 = (last_colour & greenmask) >> greenshift;
 	blue2 = last_colour & bluemask;
-	if (red1 > red2) {
-		red3 = -1;
+#ifdef HAVE_OPENMP
+#pragma omp parallel for
+#endif /* HAVE_OPENMP */
+	for (i = 0; i < width; i++) {
+		int red3 = 0, green3 = 0, blue3 = 0;	// colour components
+
+		int factor = round_to_int(diff * ((float)i / width));
+
+		if (red1 > red2) {
+			red3 = -factor;
+		} else if (red1 < red2) {
+			red3 = factor;
+		}
+		if (green1 > green2) {
+			green3 = -factor;
+		} else if (green1 < green2) {
+			green3 = factor;
+		}
+		if (blue1 > blue2) {
+			blue3 = -factor;
+		} else if (blue1 < blue2) {
+			blue3 = factor;
+		}
+		red3 += red1;
+		green3 += green1;
+		blue3 += blue1;
+		if (red3 < 0) {
+			red3 = 0;
+		}
+		if (green3 < 0) {
+			green3 = 0;
+		}
+		if (blue3 < 0) {
+			blue3 = 0;
+		}
+		if (red3 > bluemask) {
+			red3 = bluemask;
+		}
+		if (green3 > bluemask) {
+			green3 = bluemask;
+		}
+		if (blue1 > bluemask) {
+			blue1 = bluemask;
+		}
+		colours[i] = (red3 << redshift) | (green3 << greenshift) | blue3;
 	}
-	if (red1 < red2) {
-		red3 = 1;
-	}
-	if (green1 > green2) {
-		green3 = -1;
-	}
-	if (green1 < green2) {
-		green3 = 1;
-	}
-	if (blue1 > blue2) {
-		blue3 = -1;
-	}
-	if (blue1 < blue2) {
-		blue3 = 1;
-	}
-	red1 += red3;
-	green1 += green3;
-	blue1 += blue3;
-	if (red1 < 0) {
-		red1 = 0;
-	}
-	if (green1 < 0) {
-		green1 = 0;
-	}
-	if (blue1 < 0) {
-		blue1 = 0;
-	}
-	if (red1 > bluemask) {
-		red1 = bluemask;
-	}
-	if (green1 > bluemask) {
-		green1 = bluemask;
-	}
-	if (blue1 > bluemask) {
-		blue1 = bluemask;
-	}
-	tmp_color = (red1 << redshift) | (green1 << greenshift) | blue1;
-	return tmp_color;
+	return colours;
 }
 
 /* this function returns the max diff for a gradient */
