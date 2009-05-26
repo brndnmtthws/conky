@@ -17,7 +17,7 @@
 
 2009-05-09
 	* Allow the use of '#' for comments within text area (can be escaped with
-	'\#'
+	'\#')
 
 2009-05-07
 	* Fix occasional cpubar segfaults
