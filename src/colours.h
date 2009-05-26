@@ -28,7 +28,6 @@
 #define _COLOURS_H
 
 unsigned int adjust_colours(unsigned int);
-unsigned long *do_gradient(float, int, unsigned long, unsigned long);
-unsigned long gradient_max(unsigned long, unsigned long);
+unsigned long *do_gradient(int, unsigned long, unsigned long);
 
 #endif /* _COLOURS_H */

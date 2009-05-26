@@ -6095,10 +6095,7 @@ static void draw_line(char *s)
 
 					if (specials[special_index].last_colour != 0
 							|| specials[special_index].first_colour != 0) {
-						int gradient_size =
-							gradient_max(specials[special_index].last_colour,
-									specials[special_index].first_colour);
-						tmpcolour = do_gradient(gradient_size, w - 1, specials[special_index].first_colour, specials[special_index].last_colour);
+						tmpcolour = do_gradient(w - 1, specials[special_index].last_colour, specials[special_index].first_colour);
 					}
 					colour_idx = 0;
 					for (i = w - 2; i > -1; i--) {

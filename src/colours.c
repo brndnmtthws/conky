@@ -88,43 +88,51 @@ unsigned int adjust_colours(unsigned int colour)
 }
 
 /* this function returns the next colour between two colours for a gradient */
-unsigned long *do_gradient(float diff, int width, unsigned long first_colour, unsigned long last_colour)
+unsigned long *do_gradient(int width, unsigned long first_colour, unsigned long last_colour)
 {
 	int red1, green1, blue1;				// first colour
 	int red2, green2, blue2;				// last colour
+	int reddiff, greendiff, bluediff;		// difference
 	short redshift = (2 * colour_depth / 3 + colour_depth % 3);
 	short greenshift = (colour_depth / 3);
 	unsigned long *colours = malloc(width * sizeof(unsigned long));
 	int i;
 
+	if (colour_depth == 0) {
+		set_up_gradient();
+	}
 	red1 = (first_colour & redmask) >> redshift;
 	green1 = (first_colour & greenmask) >> greenshift;
 	blue1 = first_colour & bluemask;
 	red2 = (last_colour & redmask) >> redshift;
 	green2 = (last_colour & greenmask) >> greenshift;
 	blue2 = last_colour & bluemask;
+	reddiff = abs(red1 - red2);
+	greendiff = abs(green1 - green2);
+	bluediff = abs(blue1 - blue2);
 #ifdef HAVE_OPENMP
 #pragma omp parallel for
 #endif /* HAVE_OPENMP */
 	for (i = 0; i < width; i++) {
 		int red3 = 0, green3 = 0, blue3 = 0;	// colour components
 
-		int factor = round_to_int(diff * ((float)i / width));
+		float factor = ((float)(i + 1) / width);
 
-		if (red1 > red2) {
-			red3 = -factor;
+		/* the '+ 0.5' bit rounds our floats to ints properly */
+		if (red1 >= red2) {
+			red3 = -(factor * reddiff) - 0.5;
 		} else if (red1 < red2) {
-			red3 = factor;
+			red3 = factor * reddiff + 0.5;
 		}
-		if (green1 > green2) {
-			green3 = -factor;
+		if (green1 >= green2) {
+			green3 = -(factor * greendiff) - 0.5;
 		} else if (green1 < green2) {
-			green3 = factor;
+			green3 = factor * greendiff + 0.5;
 		}
-		if (blue1 > blue2) {
-			blue3 = -factor;
+		if (blue1 >= blue2) {
+			blue3 = -(factor * bluediff) - 0.5;
 		} else if (blue1 < blue2) {
-			blue3 = factor;
+			blue3 = factor * bluediff + 0.5;
 		}
 		red3 += red1;
 		green3 += green1;
@@ -144,47 +152,11 @@ unsigned long *do_gradient(float diff, int width, unsigned long first_colour, un
 		if (green3 > bluemask) {
 			green3 = bluemask;
 		}
-		if (blue1 > bluemask) {
-			blue1 = bluemask;
+		if (blue3 > bluemask) {
+			blue3 = bluemask;
 		}
 		colours[i] = (red3 << redshift) | (green3 << greenshift) | blue3;
 	}
 	return colours;
-}
-
-/* this function returns the max diff for a gradient */
-unsigned long gradient_max(unsigned long first_colour,
-		unsigned long last_colour)
-{
-	int red1, green1, blue1;				// first colour
-	int red2, green2, blue2;				// second colour
-	int red3 = 0, green3 = 0, blue3 = 0;			// difference
-	long redshift, greenshift;
-	int max;
-
-	if (colour_depth == 0) {
-		set_up_gradient();
-	}
-	redshift = (2 * colour_depth / 3 + colour_depth % 3);
-	greenshift = (colour_depth / 3);
-
-	red1 = (first_colour & redmask) >> redshift;
-	green1 = (first_colour & greenmask) >> greenshift;
-	blue1 = first_colour & bluemask;
-	red2 = (last_colour & redmask) >> redshift;
-	green2 = (last_colour & greenmask) >> greenshift;
-	blue2 = last_colour & bluemask;
-	red3 = abs(red1 - red2);
-	green3 = abs(green1 - green2);
-	blue3 = abs(blue1 - blue2);
-	max = red3;
-
-	if (green3 > max) {
-		max = green3;
-	}
-	if (blue3 > max) {
-		max = blue3;
-	}
-	return max;
 }
 
