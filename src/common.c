@@ -172,12 +172,10 @@ struct net_stat *get_net_stat(const char *dev)
 	}
 
 	/* wasn't found? add it */
-	if (i == 16) {
-		for (i = 0; i < 16; i++) {
-			if (netstats[i].dev == 0) {
-				netstats[i].dev = strndup(dev, text_buffer_size);
-				return &netstats[i];
-			}
+	for (i = 0; i < 16; i++) {
+		if (netstats[i].dev == 0) {
+			netstats[i].dev = strndup(dev, text_buffer_size);
+			return &netstats[i];
 		}
 	}
 
