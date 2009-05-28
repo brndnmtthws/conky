@@ -6418,6 +6418,7 @@ int inotify_fd;
 
 static void main_loop(void)
 {
+	int terminate = 0;
 #ifdef SIGNAL_BLOCKING
 	sigset_t newmask, oldmask;
 #endif
@@ -6439,7 +6440,7 @@ static void main_loop(void)
 
 	next_update_time = last_update_time = get_time();
 	info.looped = 0;
-	while (total_run_times == 0 || info.looped < total_run_times) {
+	while (terminate == 0 && (total_run_times == 0 || info.looped < total_run_times)) {
 		info.looped++;
 
 #ifdef SIGNAL_BLOCKING
@@ -6715,6 +6716,7 @@ static void main_loop(void)
 			case SIGINT:
 			case SIGTERM:
 				ERR("received SIGINT or SIGTERM to terminate. bye!");
+				terminate = 1;
 				clean_up();
 #ifdef X11
 				if (output_methods & TO_X) {
@@ -6737,8 +6739,7 @@ static void main_loop(void)
 					free(append_file);
 					append_file = 0;
 				}
-				return;	/* return from main_loop */
-				/* break; */
+				break;
 			default:
 				/* Reaching here means someone set a signal
 				 * (SIGXXXX, signal_handler), but didn't write any code
