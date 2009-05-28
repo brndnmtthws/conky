@@ -7178,7 +7178,8 @@ static void X11_destroy_window(void)
 		XDamageDestroy(display, x11_stuff.damage);
 		XFixesDestroyRegion(display, x11_stuff.region2);
 		XFixesDestroyRegion(display, x11_stuff.part);
-		XDestroyRegion(x11_stuff.region);
+		if (x11_stuff.region)
+			XDestroyRegion(x11_stuff.region);
 		x11_stuff.region = NULL;
 #endif /* HAVE_XDAMAGE */
 		destroy_window();
