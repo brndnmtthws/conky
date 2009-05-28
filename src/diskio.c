@@ -56,6 +56,8 @@ void clear_diskio_stats(void)
 	while (stats.next) {
 		cur = stats.next;
 		stats.next = stats.next->next;
+		if (cur->dev)
+			free(cur->dev);
 		free(cur);
 	}
 }
