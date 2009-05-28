@@ -6725,6 +6725,8 @@ static void main_loop(void)
 					XFixesDestroyRegion(display, x11_stuff.region2);
 					XFixesDestroyRegion(display, x11_stuff.part);
 #endif /* HAVE_XDAMAGE */
+					if (disp)
+						free(disp);
 				}
 #endif /* X11 */
 				if(overwrite_file) {
