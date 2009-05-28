@@ -6883,6 +6883,7 @@ static void reload_config(void)
 
 static void clean_up(void)
 {
+	int i;
 	timed_thread_destroy_registered_threads();
 
 	if (info.cpu_usage) {
@@ -6911,6 +6912,12 @@ static void clean_up(void)
 
 		XFreeGC(display, window.gc);
 		free_fonts();
+		for (i = 0; i < 10; i ++) {
+			if (template[i]) {
+				free(template[i]);
+				template[i] = NULL;
+			}
+		}
 	}
 
 #endif /* X11 */
