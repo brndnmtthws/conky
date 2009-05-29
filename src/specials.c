@@ -34,13 +34,13 @@
 #include <math.h>
 
 /* maximum number of special things, e.g. fonts, offsets, aligns, etc. */
-unsigned int max_specials = MAX_SPECIALS_DEFAULT;
+int max_specials = MAX_SPECIALS_DEFAULT;
 
 /* create specials array on heap instead of stack with introduction of
  * max_specials */
 struct special_t *specials = NULL;
 
-unsigned int special_count;
+int special_count;
 
 int default_bar_width = 0, default_bar_height = 6;
 #ifdef X11

@@ -51,7 +51,7 @@ struct dns_data {
 void free_dns_data(void);
 
 struct net_stat {
-        const char *dev;
+        char *dev;
         int up;
         long long last_read_recv, last_read_trans;
         long long recv, trans;
