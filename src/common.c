@@ -209,9 +209,11 @@ struct net_stat *get_net_stat(const char *dev)
 void clear_net_stats(void)
 {
 	int i;
-	for (i = 0; i < 16; i++)
-		if (netstats[i].dev)
+	for (i = 0; i < 16; i++) {
+		if (netstats[i].dev) {
 			free(netstats[i].dev);
+		}
+	}
 	memset(netstats, 0, sizeof(netstats));
 }
 

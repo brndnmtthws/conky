@@ -74,7 +74,7 @@ struct special_t {
 
 /* direct access to the registered specials (FIXME: bad encapsulation) */
 extern struct special_t *specials;
-extern unsigned int special_count;
+extern int special_count;
 
 extern int default_bar_width;
 extern int default_bar_height;
@@ -86,7 +86,7 @@ extern int default_gauge_height;
 #endif
 
 /* max number of specials allowed (TODO: use linked list instead) */
-extern unsigned int max_specials;
+extern int max_specials;
 
 #ifdef X11
 /* scanning special arguments */

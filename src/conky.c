@@ -786,6 +786,7 @@ static void free_text_objects(struct text_object *root, int internal)
 			case OBJ_if_up:
 				free(data.ifblock.s);
 				free(data.ifblock.str);
+				break;
 #endif
 #ifdef XMMS2
 			case OBJ_xmms2_artist:
@@ -1402,8 +1403,9 @@ static struct text_object *construct_text_object(const char *s,
 		if (!arg) {
 			ERR("if_up needs an argument");
 			obj->data.ifblock.s = 0;
-		} else
+		} else {
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
+		}
 #endif
 #if defined(__OpenBSD__)
 	END OBJ(obsd_sensors_temp, 0)
@@ -7018,8 +7020,6 @@ static void clean_up(void)
 #endif /* HAVE_LUA */
 
 	if (specials) {
-		unsigned int i;
-
 		for (i = 0; i < special_count; i++) {
 			if (specials[i].type == GRAPH) {
 				free(specials[i].graph);
