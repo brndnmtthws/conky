@@ -1181,6 +1181,11 @@ static struct text_object *construct_text_object(const char *s,
 	obj->type = OBJ_##a; need_mask |= (1ULL << n); {
 #define END } } else
 
+#define SIZE_DEFAULTS(arg) { \
+	obj->a = default_##arg##_width; \
+	obj->b = default_##arg##_height; \
+}
+
 #ifdef X11
 	if (s[0] == '#') {
 		obj->type = OBJ_color;
@@ -1284,6 +1289,7 @@ static struct text_object *construct_text_object(const char *s,
 			CRIT_ERR("wireless_link_qual_perc: needs an argument");
 		}
 	END OBJ(wireless_link_bar, INFO_NET)
+		SIZE_DEFAULTS(bar);
 		if (arg) {
 			arg = scan_bar(arg, &obj->a, &obj->b);
 			obj->data.net = get_net_stat(arg);
@@ -1335,6 +1341,7 @@ static struct text_object *construct_text_object(const char *s,
 #ifdef X11
 	END OBJ(battery_bar, 0)
 		char bat[64];
+		SIZE_DEFAULTS(bar);
 		obj->b = 6;
 		if (arg) {
 			arg = scan_bar(arg, &obj->a, &obj->b);
@@ -1461,20 +1468,25 @@ static struct text_object *construct_text_object(const char *s,
 		DBGP2("Adding $cpu for CPU %d", obj->data.cpu_index);
 #ifdef X11
 	END OBJ(cpugauge, INFO_CPU)
+		SIZE_DEFAULTS(gauge);
 		SCAN_CPU(arg, obj->data.cpu_index);
 		scan_gauge(arg, &obj->a, &obj->b);
 		DBGP2("Adding $cpugauge for CPU %d", obj->data.cpu_index);
 	END OBJ(cpubar, INFO_CPU)
+		SIZE_DEFAULTS(bar);
 		SCAN_CPU(arg, obj->data.cpu_index);
 		scan_bar(arg, &obj->a, &obj->b);
 		DBGP2("Adding $cpubar for CPU %d", obj->data.cpu_index);
 	END OBJ(cpugraph, INFO_CPU)
+		SIZE_DEFAULTS(graph);
 		SCAN_CPU(arg, obj->data.cpu_index);
 		scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->char_a, &obj->char_b);
 		DBGP2("Adding $cpugraph for CPU %d", obj->data.cpu_index);
 	END OBJ(loadgraph, INFO_LOADAVG)
-		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+		char *buf = 0;
+		SIZE_DEFAULTS(graph);
+		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 				&obj->e, &obj->char_a, &obj->char_b);
 		if (buf) {
 			int a = 1, r = 3;
@@ -1493,21 +1505,27 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.diskio = prepare_diskio_stat(dev_name(arg));
 #ifdef X11
 	END OBJ(diskiograph, INFO_DISKIO)
-		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+		char *buf = 0;
+		SIZE_DEFAULTS(graph);
+		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 				&obj->e, &obj->char_a, &obj->char_b);
 
 		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
 		if (buf)
 			free(buf);
 	END OBJ(diskiograph_read, INFO_DISKIO)
-		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+		char *buf = 0;
+		SIZE_DEFAULTS(graph);
+		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 				&obj->e, &obj->char_a, &obj->char_b);
 
 		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
 		if (buf)
 			free(buf);
 	END OBJ(diskiograph_write, INFO_DISKIO)
-		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+		char *buf = 0;
+		SIZE_DEFAULTS(graph);
+		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 				&obj->e, &obj->char_a, &obj->char_b);
 
 		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
@@ -1561,7 +1579,9 @@ static struct text_object *construct_text_object(const char *s,
 		}
 #ifdef X11
 	END OBJ(downspeedgraph, INFO_NET)
-		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+		char *buf = 0;
+		SIZE_DEFAULTS(graph);
+		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 				&obj->e, &obj->char_a, &obj->char_b);
 
 		// default to DEFAULTNETDEV
@@ -1582,10 +1602,6 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(execp, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
-#define SIZE_DEFAULTS(arg) { \
-	obj->a = default_##arg##_width; \
-	obj->b = default_##arg##_height; \
-}
 	END OBJ(execbar, 0)
 		SIZE_DEFAULTS(bar);
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
@@ -1695,6 +1711,7 @@ static struct text_object *construct_text_object(const char *s,
 #endif
 #ifdef X11
 	END OBJ(fs_bar, INFO_FS)
+		SIZE_DEFAULTS(bar);
 		arg = scan_bar(arg, &obj->data.fsbar.w, &obj->data.fsbar.h);
 	if (arg) {
 			while (isspace(*arg)) {
@@ -1708,6 +1725,7 @@ static struct text_object *construct_text_object(const char *s,
 		}
 		obj->data.fsbar.fs = prepare_fs_stat(arg);
 	END OBJ(fs_bar_free, INFO_FS)
+		SIZE_DEFAULTS(bar);
 		arg = scan_bar(arg, &obj->data.fsbar.w, &obj->data.fsbar.h);
 		if (arg) {
 			while (isspace(*arg)) {
@@ -2221,11 +2239,15 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(memperc, INFO_MEM)
 #ifdef X11
 	END OBJ(memgauge, INFO_MEM)
+		SIZE_DEFAULTS(gauge);
 		scan_gauge(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(membar, INFO_MEM)
+		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(memgraph, INFO_MEM)
-		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+		char *buf = 0;
+		SIZE_DEFAULTS(graph);
+		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 				&obj->e, &obj->char_a, &obj->char_b);
 
 		if (buf) {
@@ -2240,12 +2262,15 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.l = mixer_init(arg);
 #ifdef X11
 	END OBJ(mixerbar, INFO_MIXER)
+		SIZE_DEFAULTS(bar);
 		scan_mixer_bar(arg, &obj->data.mixerbar.l, &obj->data.mixerbar.w,
 			&obj->data.mixerbar.h);
 	END OBJ(mixerlbar, INFO_MIXER)
+		SIZE_DEFAULTS(bar);
 		scan_mixer_bar(arg, &obj->data.mixerbar.l, &obj->data.mixerbar.w,
 			&obj->data.mixerbar.h);
 	END OBJ(mixerrbar, INFO_MIXER)
+		SIZE_DEFAULTS(bar);
 		scan_mixer_bar(arg, &obj->data.mixerbar.l, &obj->data.mixerbar.w,
 			&obj->data.mixerbar.h);
 #endif
@@ -2286,6 +2311,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(swapperc, INFO_MEM)
 #ifdef X11
 	END OBJ(swapbar, INFO_MEM)
+		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 #endif
 	END OBJ(sysname, 0)
@@ -2377,7 +2403,9 @@ static struct text_object *construct_text_object(const char *s,
 
 #ifdef X11
 	END OBJ(upspeedgraph, INFO_NET)
-		char *buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+		char *buf = 0;
+		SIZE_DEFAULTS(graph);
+		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 				&obj->e, &obj->char_a, &obj->char_b);
 
 		// default to DEFAULTNETDEV
@@ -2465,6 +2493,7 @@ static struct text_object *construct_text_object(const char *s,
 		else
 			ERR("smapi_bat_power needs an argument");
 	END OBJ(smapi_bat_bar, 0)
+		SIZE_DEFAULTS(bar);
 		if(arg) {
 			int cnt;
 			if(sscanf(arg, "%i %n", &obj->data.i, &cnt) <= 0) {
@@ -2515,6 +2544,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(mpd_status, INFO_MPD) init_mpd();
 #ifdef X11
 	END OBJ(mpd_bar, INFO_MPD)
+		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 		init_mpd();
 #endif
@@ -2555,6 +2585,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(xmms2_status, INFO_XMMS2)
 	END OBJ(xmms2_percent, INFO_XMMS2)
 	END OBJ(xmms2_bar, INFO_XMMS2)
+		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(xmms2_smart, INFO_XMMS2)
 	END OBJ(xmms2_playlist, INFO_XMMS2)
@@ -2584,6 +2615,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(audacious_playlist_position, INFO_AUDACIOUS)
 	END OBJ(audacious_main_volume, INFO_AUDACIOUS)
 	END OBJ(audacious_bar, INFO_AUDACIOUS)
+		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->a, &obj->b);
 #endif
 #ifdef BMPX
@@ -2661,6 +2693,7 @@ static struct text_object *construct_text_object(const char *s,
 		}
 #ifdef X11
 	END OBJ(lua_bar, 0)
+		SIZE_DEFAULTS(bar);
 		if (arg) {
 			arg = scan_bar(arg, &obj->a, &obj->b);
 			if(arg) {
@@ -2672,6 +2705,7 @@ static struct text_object *construct_text_object(const char *s,
 			CRIT_ERR("lua_bar needs arguments: <height>,<width> <function name> [function parameters]");
 		}
 	END OBJ(lua_graph, 0)
+		SIZE_DEFAULTS(graph);
 		if (arg) {
 			arg = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 					&obj->e, &obj->char_a, &obj->char_b);
@@ -2684,6 +2718,7 @@ static struct text_object *construct_text_object(const char *s,
 			CRIT_ERR("lua_graph needs arguments: <\"normal\"|\"log\"> <height>,<width> <gradient colour 1> <gradient colour 2> <scale> <function name> [function parameters]");
 	}
 	END OBJ(lua_gauge, 0)
+		SIZE_DEFAULTS(gauge);
 		if (arg) {
 			arg = scan_gauge(arg, &obj->a, &obj->b);
 			if (arg) {
@@ -2715,6 +2750,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(entropy_poolsize, INFO_ENTROPY)
 #ifdef X11
 	END OBJ(entropy_bar, INFO_ENTROPY)
+		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->a, &obj->b);
 #endif
 	END OBJ(scroll, 0)
@@ -2807,12 +2843,16 @@ static struct text_object *construct_text_object(const char *s,
 			END OBJ(apcupsd_load, INFO_APCUPSD)
 #ifdef X11
 			END OBJ(apcupsd_loadbar, INFO_APCUPSD)
+				SIZE_DEFAULTS(bar);
 				scan_bar(arg, &obj->a, &obj->b);
 			END OBJ(apcupsd_loadgraph, INFO_APCUPSD)
-				char* buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+				char* buf = 0;
+				SIZE_DEFAULTS(graph);
+				buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 						&obj->e, &obj->char_a, &obj->char_b);
 				if (buf) free(buf);
 			END OBJ(apcupsd_loadgauge, INFO_APCUPSD)
+				SIZE_DEFAULTS(gauge);
 				scan_gauge(arg, &obj->a, &obj->b);
 #endif
 			END OBJ(apcupsd_charge, INFO_APCUPSD)
