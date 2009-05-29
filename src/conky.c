@@ -89,6 +89,10 @@
 #include "openbsd.h"
 #endif
 
+#if defined(__FreeBSD_kernel__)
+#include <bsd/bsd.h>
+#endif
+
 /* FIXME: apm_getinfo is unused here. maybe it's meant for common.c */
 #if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) \
 		|| defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
