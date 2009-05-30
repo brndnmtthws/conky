@@ -566,6 +566,7 @@ void *imap_thread(void *arg)
 							break;
 						}
 					} else {
+						fail++;
 						break;
 					}
 					recvbuf[numbytes] = '\0';
@@ -643,12 +644,16 @@ void *imap_thread(void *arg)
 							// need to re-connect
 							break;
 						}
+					} else {
+						fail++;
+						break;
 					}
 					imap_unseen_command(mail, old_unseen, old_messages);
 					fail = 0;
 					old_unseen = mail->unseen;
 					old_messages = mail->messages;
 				}
+				if (fail) break;
 			} else {
 				strncpy(sendbuf, "a3 logout\r\n", MAXDATASIZE);
 				if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
