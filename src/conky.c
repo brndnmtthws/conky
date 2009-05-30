@@ -412,11 +412,10 @@ int check_contains(char *f, char *s)
 	FILE *where = fopen(f, "r");
 
 	if (where) {
-		char buf1[256], buf2[256];
+		char buf1[256];
 
 		while (fgets(buf1, 256, where)) {
-			sscanf(buf1, "%255s", buf2);
-			if (strstr(buf2, s)) {
+			if (strstr(buf1, s)) {
 				ret = 1;
 				break;
 			}
