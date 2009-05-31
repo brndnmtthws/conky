@@ -1,3 +1,6 @@
+2009-05-31
+	* Fix hostname resolution for mpd_host
+
 2009-05-19
 	* Added inotify support to reload the config when modified automatically
 	on systems that support it

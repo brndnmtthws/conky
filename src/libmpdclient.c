@@ -126,9 +126,13 @@ static int mpd_connect(mpd_Connection *connection, const char *host, int port,
 	struct addrinfo *res = NULL;
 	struct addrinfo *addrinfo = NULL;
 
-	/* Setup hints */
+	/* Setup hints
+	 *
+	 * XXX: limit address family to PF_INET here.
+	 * MPD does not support IPv6 yet, so if GAI returns
+	 * an IPv6 address, the later connect() will fail. */
 	hints.ai_flags		= AI_ADDRCONFIG;
-	hints.ai_family		= PF_UNSPEC;
+	hints.ai_family		= PF_INET;
 	hints.ai_socktype	= SOCK_STREAM;
 	hints.ai_protocol	= IPPROTO_TCP;
 	hints.ai_addrlen	= 0;
