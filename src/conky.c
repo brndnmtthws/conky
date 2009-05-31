@@ -6704,6 +6704,8 @@ static void main_loop(void)
 								/* forward the click to the desktop window */
 								XUngrabPointer(display, ev.xbutton.time);
 								ev.xbutton.window = window.desktop;
+								ev.xbutton.x = ev.xbutton.x_root;
+								ev.xbutton.y = ev.xbutton.y_root;
 								XSendEvent(display, ev.xbutton.window, False,
 									ButtonPressMask, &ev);
 								XSetInputFocus(display, ev.xbutton.window,
@@ -6723,6 +6725,8 @@ static void main_loop(void)
 							} else {
 								/* forward the release to the desktop window */
 								ev.xbutton.window = window.desktop;
+								ev.xbutton.x = ev.xbutton.x_root;
+								ev.xbutton.y = ev.xbutton.y_root;
 								XSendEvent(display, ev.xbutton.window, False,
 									ButtonReleaseMask, &ev);
 							}
