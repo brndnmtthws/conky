@@ -496,13 +496,12 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 	} */
 #endif
 
+	XSelectInput(display, window.window, ExposureMask
 #ifdef OWN_WINDOW
-	XSelectInput(display, window.window, ExposureMask |
-		(own_window ? (StructureNotifyMask | PropertyChangeMask |
-		ButtonPressMask | ButtonReleaseMask) : 0));
-#else
-	XSelectInput(display, window.window, ExposureMask);
+		| (own_window ? (StructureNotifyMask | PropertyChangeMask |
+		ButtonPressMask | ButtonReleaseMask) : 0)
 #endif
+		);
 }
 
 static Window find_subwindow(Window win, int w, int h)
