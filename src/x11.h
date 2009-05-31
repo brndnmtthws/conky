@@ -1,3 +1,4 @@
+#ifdef X11
 #ifndef X11_H_
 #define X11_H_
 
@@ -85,3 +86,4 @@ void set_transparent_background(Window win);
 long get_x11_color(const char *);
 
 #endif /*X11_H_*/
+#endif /* X11 */

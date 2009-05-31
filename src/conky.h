@@ -317,7 +317,9 @@ int spaced_print(char *, int, const char *, int, ...)
 	__attribute__((format(printf, 3, 5)));
 extern int inotify_fd;
 
+#ifdef X11
 #define TO_X 1
+#endif
 #define TO_STDOUT 2
 #define TO_STDERR 4
 #define OVERWRITE_FILE 8
