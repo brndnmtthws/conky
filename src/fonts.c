@@ -183,4 +183,3 @@ void load_fonts(void)
 		}
 	}
 }
-

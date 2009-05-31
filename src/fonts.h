@@ -24,6 +24,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+#ifdef X11
 #ifndef _FONTS_H
 #define _FONTS_H
 
@@ -76,3 +77,4 @@ void free_fonts(void);
 void load_fonts(void);
 
 #endif /* _FONTS_H */
+#endif /* X11 */
