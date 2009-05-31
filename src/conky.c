@@ -5918,13 +5918,13 @@ static void draw_line(char *s)
 	int cur_y_add = 0;
 	int font_h;
 	char *tmp_str;
-#endif /* X11 */
 
 	if ((output_methods & TO_X) == 0) {
+#endif /* X11 */
 		draw_string(s);
 		return;
-	}
 #ifdef X11
+	}
 	cur_x = text_start_x;
 	cur_y += font_ascent();
 	font_h = font_height();
