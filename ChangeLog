@@ -1,3 +1,6 @@
+2009-05-31
+	* Fix hostname resolution for mpd_host
+
 2009-05-24
 	* Added fancy new 'temperature gradients' feature for graphs, via the -t
 	switch at the end of graph arguments.
