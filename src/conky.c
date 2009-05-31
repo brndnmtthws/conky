@@ -245,6 +245,7 @@ static const char *suffixes[] = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "" };
 
 static void X11_destroy_window(void);
 static void X11_create_window(void);
+static void X11_initialisation(void);
 
 struct _x11_stuff_s {
 	Region region;
@@ -6492,7 +6493,7 @@ static void clear_text(int exposures)
 		return;
 	} else
 #endif
-	{
+	if (display && window.window) { // make sure these are !null
 		/* there is some extra space for borders and outlines */
 		XClearArea(display, window.window, text_start_x - border_margin - 1,
 			text_start_y - border_margin - 1,
@@ -6833,8 +6834,9 @@ static void main_loop(void)
 					XFixesDestroyRegion(display, x11_stuff.region2);
 					XFixesDestroyRegion(display, x11_stuff.part);
 #endif /* HAVE_XDAMAGE */
-					if (disp)
+					if (disp) {
 						free(disp);
+					}
 				}
 #endif /* X11 */
 				if(overwrite_file) {
@@ -6913,15 +6915,15 @@ static void main_loop(void)
 	}
 #endif /* HAVE_SYS_INOTIFY_H */
 
-#if defined(X11) && defined(HAVE_XDAMAGE)
+#ifdef X11
 	X11_destroy_window();
-#endif /* X11 && HAVE_XDAMAGE */
+#endif /* X11 */
 }
 
 static void load_config_file(const char *);
 static void load_config_file_x11(const char *);
 
-/* reload the config file */
+	/* reload the config file */
 static void reload_config(void)
 {
 	timed_thread_destroy_registered_threads();
@@ -6964,6 +6966,9 @@ static void reload_config(void)
 
 #ifdef X11
 		x_initialised = NO;
+		if (output_methods & TO_X) {
+			X11_initialisation();
+		}
 #endif /* X11 */
 		extract_variable_text(global_text);
 		free(global_text);
@@ -7285,8 +7290,9 @@ static void X11_destroy_window(void)
 		XDamageDestroy(display, x11_stuff.damage);
 		XFixesDestroyRegion(display, x11_stuff.region2);
 		XFixesDestroyRegion(display, x11_stuff.part);
-		if (x11_stuff.region)
+		if (x11_stuff.region) {
 			XDestroyRegion(x11_stuff.region);
+		}
 		x11_stuff.region = NULL;
 #endif /* HAVE_XDAMAGE */
 		destroy_window();
@@ -7984,7 +7990,7 @@ static void load_config_file(const char *f)
 		}
 		CONF("text") {
 #ifdef X11
-			if(output_methods & TO_X) {
+			if (output_methods & TO_X) {
 				X11_initialisation();
 			}
 #endif
@@ -8639,7 +8645,6 @@ int main(int argc, char **argv)
 	/* load font */
 	if (output_methods & TO_X) {
 		load_config_file_x11(current_config);
-		load_fonts();
 	}
 #endif /* X11 */
 

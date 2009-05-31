@@ -70,8 +70,9 @@ static Window find_subwindow(Window win, int w, int h);
 /* X11 initializer */
 void init_X11(const char *disp)
 {
-	if (display)
+	if (display) {
 		XCloseDisplay(display);
+	}
 	if ((display = XOpenDisplay(disp)) == NULL) {
 		CRIT_ERR("can't open display: %s", XDisplayName(0));
 	}
