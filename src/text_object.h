@@ -249,9 +249,7 @@ enum text_object_type {
 	OBJ_outlinecolor,
 	OBJ_stippled_hr,
 	OBJ_swap,
-#ifdef X11
 	OBJ_swapbar,
-#endif /* X11 */
 	OBJ_swapmax,
 	OBJ_swapperc,
 	OBJ_sysname,

@@ -2311,11 +2311,9 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(swap, INFO_MEM)
 	END OBJ(swapmax, INFO_MEM)
 	END OBJ(swapperc, INFO_MEM)
-#ifdef X11
 	END OBJ(swapbar, INFO_MEM)
 		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
-#endif
 	END OBJ(sysname, 0)
 	END OBJ(time, 0)
 		obj->data.s = strndup(arg ? arg : "%F %T", text_buffer_size);
@@ -4619,7 +4617,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_bar(p, obj->data.mixerbar.w, obj->data.mixerbar.h,
 					mixer_to_255(obj->data.mixerbar.l,mixer_get_right(obj->data.mixerbar.l)));
 			}
-#endif
+#endif /* X11 */
 			OBJ(if_mixer_mute) {
 				if (!mixer_is_mute(obj->data.ifblock.i)) {
 					DO_JUMP;
@@ -4632,7 +4630,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(monitor_number) {
 				snprintf(p, p_max_size, "%d", cur->x11.monitor.number);
 			}
-#endif
+#endif /* X11 */
 
 			/* mail stuff */
 			OBJ(mails) {
@@ -4721,7 +4719,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(stippled_hr) {
 				new_stippled_hr(p, obj->data.pair.a, obj->data.pair.b);
 			}
-#endif
+#endif /* X11 */
 			OBJ(swap) {
 				human_readable(cur->swap * 1024, p, 255);
 			}
@@ -4735,12 +4733,19 @@ static void generate_text_internal(char *p, int p_max_size,
 					percent_print(p, p_max_size, cur->swap * 100 / cur->swapmax);
 				}
 			}
-#ifdef X11
 			OBJ(swapbar) {
-				new_bar(p, obj->data.pair.a, obj->data.pair.b,
-					cur->swapmax ? (cur->swap * 255) / (cur->swapmax) : 0);
+#ifdef X11
+				if(output_methods & TO_X) {
+					new_bar(p, obj->data.pair.a, obj->data.pair.b,
+						cur->swapmax ? (cur->swap * 255) / (cur->swapmax) : 0);
+				}else{
+#endif /* X11 */
+					if(!obj->data.pair.a) obj->data.pair.a = DEFAULT_BAR_WIDTH_NO_X;
+					new_bar_in_shell(p, p_max_size, cur->swapmax ? (cur->swap * 100) / (cur->swapmax) : 0, obj->data.pair.a);
+#ifdef X11
+				}
+#endif /* X11 */
 			}
-#endif
 			OBJ(sysname) {
 				snprintf(p, p_max_size, "%s", cur->uname_s.sysname);
 			}
@@ -4806,7 +4811,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 					obj->data.net->trans_speed / 1024.0, obj->e, 1, obj->char_a, obj->char_b);
 			}
-#endif
+#endif /* X11 */
 			OBJ(uptime_short) {
 				format_seconds_short(p, p_max_size, (int) cur->uptime);
 			}
@@ -4895,7 +4900,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_bar(p, obj->data.pair.a, obj->data.pair.b,
 					(int) (mpd_get_info()->progress * 255.0f));
 			}
-#endif
+#endif /* X11 */
 			OBJ(mpd_smart) {
 				struct mpd_s *mpd = mpd_get_info();
 				int len = obj->data.i;
