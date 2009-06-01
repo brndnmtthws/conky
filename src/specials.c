@@ -380,6 +380,29 @@ void new_bg(char *buf, long c)
 }
 #endif
 
+void new_bar_in_shell(char* buffer, int buf_max_size, double usage, int width)
+{
+	if(width<=buf_max_size){
+		int i = 0, j = 0, scaledusage = round_to_int( usage * width / 100);
+
+		#ifdef HAVE_OPENMP
+		#pragma omp parallel for
+		#endif /* HAVE_OPENMP */
+		for(i=0; i<(int)scaledusage; i++) {
+			*(buffer+i)='#';
+		}
+		/* gcc seems to think i is not initialized properly :/ */
+		j = i;
+		#ifdef HAVE_OPENMP
+		#pragma omp parallel for
+		#endif /* HAVE_OPENMP */
+		for(i = j/* cheats */; i < width; i++) {
+			*(buffer+i)='_';
+		}
+		*(buffer+i)=0;
+	}
+}
+
 void new_outline(char *buf, long c)
 {
 	new_special(buf, OUTLINE)->arg = c;

@@ -105,6 +105,7 @@ void new_graph(char *, int, int, unsigned int,
 void new_hr(char *, int);
 void new_stippled_hr(char *, int, int);
 #endif
+void new_bar_in_shell(char *, int, double, int);
 void new_fg(char *, long);
 void new_bg(char *, long);
 void new_outline(char *, long);

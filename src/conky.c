@@ -3940,7 +3940,6 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 			OBJ(execbar) {
 				double barnum;
-				int i = 0, j = 0;
 
 				read_exec(obj->data.s, p, text_buffer_size);
 				barnum = get_barnum(p);
@@ -3953,22 +3952,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					}else{
 #endif
 						if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-						barnum = round_to_int( ( barnum * obj->a ) / 100);
-						#ifdef HAVE_OPENMP
-						#pragma omp parallel for
-						#endif /* HAVE_OPENMP */
-						for(i=0; i<(int)barnum; i++) {
-							*(p+i)='#';
-						}
-						/* gcc seems to think i is not initialized properly :/ */
-						j = i;
-						#ifdef HAVE_OPENMP
-						#pragma omp parallel for
-						#endif /* HAVE_OPENMP */
-						for(i = j/* cheats */; i < obj->a; i++) {
-							*(p+i)='_';
-						}
-						*(p+i)=0;
+						new_bar_in_shell(p, p_max_size, barnum, obj->a);
 #ifdef X11
 					}
 #endif
