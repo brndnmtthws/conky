@@ -1472,11 +1472,13 @@ static struct text_object *construct_text_object(const char *s,
 		SCAN_CPU(arg, obj->data.cpu_index);
 		scan_gauge(arg, &obj->a, &obj->b);
 		DBGP2("Adding $cpugauge for CPU %d", obj->data.cpu_index);
+#endif /* X11 */
 	END OBJ(cpubar, INFO_CPU)
 		SIZE_DEFAULTS(bar);
 		SCAN_CPU(arg, obj->data.cpu_index);
 		scan_bar(arg, &obj->a, &obj->b);
 		DBGP2("Adding $cpubar for CPU %d", obj->data.cpu_index);
+#ifdef X11
 	END OBJ(cpugraph, INFO_CPU)
 		SIZE_DEFAULTS(graph);
 		SCAN_CPU(arg, obj->data.cpu_index);
@@ -3578,7 +3580,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(battery_bar) {
 				new_bar(p, obj->a, obj->b, get_battery_perct_bar(obj->data.s));
 			}
-#endif
+#endif /* X11 */
 			OBJ(battery_short) {
 				get_battery_short_status(p, p_max_size, obj->data.s);
 			}
@@ -3603,10 +3605,21 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(cpugauge)
 				new_gauge(p, obj->a, obj->b,
 						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 255.0));
+#endif /* X11 */
 			OBJ(cpubar) {
-				new_bar(p, obj->a, obj->b,
+#ifdef X11
+				if(output_methods & TO_X) {
+					new_bar(p, obj->a, obj->b,
 						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 255.0));
+				}else{
+#endif /* X11 */
+					if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
+					new_bar_in_shell(p, p_max_size, round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100), obj->a);
+#ifdef X11
+				}
+#endif /* X11 */
 			}
+#ifdef X11
 			OBJ(cpugraph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100),
@@ -3649,7 +3662,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(color9) {
 				new_fg(p, color9);
 			}
-#endif
+#endif /* X11 */
 			OBJ(conky_version) {
 				snprintf(p, p_max_size, "%s", VERSION);
 			}
@@ -3808,7 +3821,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(font) {
 				new_font(p, obj->data.s);
 			}
-#endif
+#endif /* X11 */
 			/* TODO: move this correction from kB to kB/s elsewhere
 			 * (or get rid of it??) */
 			OBJ(diskio) {
@@ -3836,7 +3849,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 				          obj->data.diskio->current_write, obj->e, 1, obj->char_a, obj->char_b);
 			}
-#endif
+#endif /* X11 */
 			OBJ(downspeed) {
 				human_readable(obj->data.net->recv_speed, p, 255);
 			}
@@ -3849,7 +3862,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 					obj->data.net->recv_speed / 1024.0, obj->e, 1, obj->char_a, obj->char_b);
 			}
-#endif
+#endif /* X11 */
 			OBJ(else) {
 				/* Since we see you, you're if has not jumped.
 				 * Do Ninja jump here: without leaving traces.

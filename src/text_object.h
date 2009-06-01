@@ -78,9 +78,9 @@ enum text_object_type {
 	OBJ_conky_build_arch,
 	OBJ_font,
 	OBJ_cpu,
+	OBJ_cpubar,
 #ifdef X11
 	OBJ_cpugauge,
-	OBJ_cpubar,
 	OBJ_cpugraph,
 	OBJ_loadgraph,
 #endif
