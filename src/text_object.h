@@ -156,7 +156,7 @@ enum text_object_type {
 	OBJ_smapi,
 #ifdef X11
 	OBJ_smapi_bat_bar,
-#endif
+#endif /* X11 */
 	OBJ_smapi_bat_perc,
 	OBJ_smapi_bat_temp,
 	OBJ_smapi_bat_power,
@@ -182,7 +182,7 @@ enum text_object_type {
 	OBJ_wireless_link_qual_perc,
 #ifdef X11
 	OBJ_wireless_link_bar,
-#endif
+#endif /* X11 */
 #endif /* __linux__ */
 #if defined(__FreeBSD__) || defined(__linux__)
 	OBJ_if_up,
@@ -221,9 +221,9 @@ enum text_object_type {
 	OBJ_memfree,
 #ifdef X11
 	OBJ_memgauge,
-	OBJ_membar,
 	OBJ_memgraph,
-#endif
+#endif /* X11 */
+	OBJ_membar,
 	OBJ_memmax,
 	OBJ_memperc,
 	OBJ_mixer,
@@ -233,12 +233,12 @@ enum text_object_type {
 	OBJ_mixerbar,
 	OBJ_mixerlbar,
 	OBJ_mixerrbar,
-#endif
+#endif /* X11 */
 	OBJ_if_mixer_mute,
 #ifdef X11
 	OBJ_monitor,
 	OBJ_monitor_number,
-#endif
+#endif /* X11 */
 	OBJ_nameserver,
 	OBJ_nodename,
 	OBJ_nvidia,
@@ -251,7 +251,7 @@ enum text_object_type {
 	OBJ_swap,
 #ifdef X11
 	OBJ_swapbar,
-#endif
+#endif /* X11 */
 	OBJ_swapmax,
 	OBJ_swapperc,
 	OBJ_sysname,
@@ -266,7 +266,7 @@ enum text_object_type {
 	OBJ_upspeedf,
 #ifdef X11
 	OBJ_upspeedgraph,
-#endif
+#endif /* X11 */
 	OBJ_uptime,
 	OBJ_uptime_short,
 	OBJ_user_names,

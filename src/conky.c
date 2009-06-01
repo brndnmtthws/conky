@@ -2241,9 +2241,11 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(memgauge, INFO_MEM)
 		SIZE_DEFAULTS(gauge);
 		scan_gauge(arg, &obj->data.pair.a, &obj->data.pair.b);
+#endif /* X11*/
 	END OBJ(membar, INFO_MEM)
 		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+#ifdef X11
 	END OBJ(memgraph, INFO_MEM)
 		char *buf = 0;
 		SIZE_DEFAULTS(graph);
@@ -2253,7 +2255,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (buf) {
 			free(buf);
 		}
-#endif
+#endif /* X11*/
 	END OBJ(mixer, INFO_MIXER)
 		obj->data.l = mixer_init(arg);
 	END OBJ(mixerl, INFO_MIXER)
@@ -3937,7 +3939,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					new_gauge(p, obj->a, obj->b, round_to_int(barnum * 255.0));
 				}
 			}
-#endif
+#endif /* X11 */
 			OBJ(execbar) {
 				double barnum;
 
@@ -3950,12 +3952,12 @@ static void generate_text_internal(char *p, int p_max_size,
 						barnum /= 100;
 						new_bar(p, obj->a, obj->b, round_to_int(barnum * 255.0));
 					}else{
-#endif
+#endif /* X11 */
 						if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
 						new_bar_in_shell(p, p_max_size, barnum, obj->a);
 #ifdef X11
 					}
-#endif
+#endif /* X11 */
 				}
 			}
 #ifdef X11
@@ -4043,7 +4045,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 				new_gauge(p, obj->a, obj->b, round_to_int(obj->f));
 			}
-#endif
+#endif /* X11 */
 			OBJ(execi) {
 				if (current_update_time - obj->data.execi.last_update
 						>= obj->data.execi.interval
@@ -4573,16 +4575,27 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_gauge(p, obj->data.pair.a, obj->data.pair.b,
 					cur->memmax ? (cur->mem * 255) / (cur->memmax) : 0);
 			}
+#endif /* X11 */
 			OBJ(membar) {
-				new_bar(p, obj->data.pair.a, obj->data.pair.b,
-					cur->memmax ? (cur->mem * 255) / (cur->memmax) : 0);
+#ifdef X11
+				if(output_methods & TO_X) {
+					new_bar(p, obj->data.pair.a, obj->data.pair.b,
+						cur->memmax ? (cur->mem * 255) / (cur->memmax) : 0);
+				}else{
+#endif /* X11 */
+					if(!obj->data.pair.a) obj->data.pair.a = DEFAULT_BAR_WIDTH_NO_X;
+					new_bar_in_shell(p, p_max_size, cur->memmax ? (cur->mem * 100) / (cur->memmax) : 0, obj->data.pair.a);
+#ifdef X11
+				}
+#endif /* X11 */
 			}
+#ifdef X11
 			OBJ(memgraph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
 					cur->memmax ? (cur->mem * 100.0) / (cur->memmax) : 0.0,
 					100, 1, obj->char_a, obj->char_b);
 			}
-#endif
+#endif /* X11 */
 			/* mixer stuff */
 			OBJ(mixer) {
 				percent_print(p, p_max_size, mixer_get_avg(obj->data.l));

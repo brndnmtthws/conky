@@ -88,10 +88,10 @@ extern int default_gauge_height;
 /* max number of specials allowed (TODO: use linked list instead) */
 extern int max_specials;
 
-#ifdef X11
 /* scanning special arguments */
-const char *scan_gauge(const char *, int *, int *);
 const char *scan_bar(const char *, int *, int *);
+#ifdef X11
+const char *scan_gauge(const char *, int *, int *);
 char *scan_font(const char *);
 char *scan_graph(const char *, int *, int *, unsigned int *,
                  unsigned int *, unsigned int *, char *, char *);

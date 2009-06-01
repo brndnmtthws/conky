@@ -28,7 +28,7 @@
 #include "colours.h"
 #ifdef X11
 #include "fonts.h"
-#endif
+#endif /* X11 */
 #include "logging.h"
 #include "specials.h"
 #include <math.h>
@@ -46,7 +46,7 @@ int default_bar_width = 0, default_bar_height = 6;
 #ifdef X11
 int default_graph_width = 0, default_graph_height = 25;
 int default_gauge_width = 40, default_gauge_height = 25;
-#endif
+#endif /* X11 */
 
 /*
  * Scanning arguments to various special text objects
@@ -73,6 +73,7 @@ const char *scan_gauge(const char *args, int *w, int *h)
 
 	return args;
 }
+#endif /* X11 */
 
 const char *scan_bar(const char *args, int *w, int *h)
 {
@@ -92,6 +93,7 @@ const char *scan_bar(const char *args, int *w, int *h)
 	return args;
 }
 
+#ifdef X11
 char *scan_font(const char *args)
 {
 	if (args && *args) {
@@ -195,7 +197,7 @@ char *scan_graph(const char *args, int *w, int *h,
 		return strndup(buf, text_buffer_size);
 	}
 }
-#endif
+#endif /* X11 */
 
 /*
  * Printing various special text objects
@@ -378,7 +380,7 @@ void new_bg(char *buf, long c)
 
 	new_special(buf, BG)->arg = c;
 }
-#endif
+#endif /* X11 */
 
 void new_bar_in_shell(char* buffer, int buf_max_size, double usage, int width)
 {
