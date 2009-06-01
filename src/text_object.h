@@ -57,7 +57,7 @@ enum text_object_type {
 	OBJ_battery_percent,
 #ifdef X11
 	OBJ_battery_bar,
-#endif
+#endif /* X11 */
 	OBJ_battery_short,
 #endif /* !__OpenBSD__ */
 	OBJ_buffers,
@@ -83,7 +83,7 @@ enum text_object_type {
 	OBJ_cpugauge,
 	OBJ_cpugraph,
 	OBJ_loadgraph,
-#endif
+#endif /* X11 */
 	OBJ_diskio,
 	OBJ_diskio_read,
 	OBJ_diskio_write,
@@ -91,12 +91,12 @@ enum text_object_type {
 	OBJ_diskiograph,
 	OBJ_diskiograph_read,
 	OBJ_diskiograph_write,
-#endif
+#endif /* X11 */
 	OBJ_downspeed,
 	OBJ_downspeedf,
 #ifdef X11
 	OBJ_downspeedgraph,
-#endif
+#endif /* X11 */
 	OBJ_else,
 	OBJ_endif,
 	OBJ_eval,
@@ -111,15 +111,13 @@ enum text_object_type {
 	OBJ_execibar,
 	OBJ_execigraph,
 	OBJ_execigauge,
-#endif
+#endif /* X11 */
 	OBJ_execp,
 	OBJ_execpi,
 	OBJ_freq,
 	OBJ_freq_g,
-#ifdef X11
 	OBJ_fs_bar,
 	OBJ_fs_bar_free,
-#endif
 	OBJ_fs_free,
 	OBJ_fs_free_perc,
 	OBJ_fs_size,
@@ -451,12 +449,12 @@ struct text_object {
 			char *fmt;	/* time display formatting */
 		} tztime;
 
-#ifdef X11
 		struct {
 			struct fs_stat *fs;
 			int w, h;
 		} fsbar;		/* 3 */
 
+#ifdef X11
 		struct {
 			int l;
 			int w, h;

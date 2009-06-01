@@ -1498,7 +1498,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.loadavg[0] = (r >= 1) ? (unsigned char) a : 0;
 			free(buf);
 		}
-#endif
+#endif /* X11 */
 	END OBJ(diskio, INFO_DISKIO)
 		obj->data.diskio = prepare_diskio_stat(dev_name(arg));
 	END OBJ(diskio_read, INFO_DISKIO)
@@ -1533,7 +1533,7 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
 		if (buf)
 			free(buf);
-#endif
+#endif /* X11 */
 	END OBJ(color, 0)
 #ifdef X11
 		if (output_methods & TO_X) {
@@ -1563,7 +1563,7 @@ static struct text_object *construct_text_object(const char *s,
 #ifdef X11
 	END OBJ(font, 0)
 		obj->data.s = scan_font(arg);
-#endif
+#endif /* X11 */
 	END OBJ(conky_version, 0)
 	END OBJ(conky_build_date, 0)
 	END OBJ(conky_build_arch, 0)
@@ -1590,7 +1590,7 @@ static struct text_object *construct_text_object(const char *s,
 		buf = strndup(buf ? buf : "DEFAULTNETDEV", text_buffer_size);
 		obj->data.net = get_net_stat(buf);
 		free(buf);
-#endif
+#endif /* X11 */
 	END OBJ(else, 0)
 		obj_be_ifblock_else(ifblock_opaque, obj);
 	END OBJ(endif, 0)
@@ -1656,7 +1656,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->data.execi.cmd = strndup(arg + n, text_buffer_size);
 		}
-#endif
+#endif /* X11 */
 	END OBJ(execi, 0)
 		int n;
 
@@ -1711,11 +1711,10 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.s = strndup("", text_buffer_size);
 	}
 #endif
-#ifdef X11
 	END OBJ(fs_bar, INFO_FS)
 		SIZE_DEFAULTS(bar);
 		arg = scan_bar(arg, &obj->data.fsbar.w, &obj->data.fsbar.h);
-	if (arg) {
+		if (arg) {
 			while (isspace(*arg)) {
 				arg++;
 			}
@@ -1741,7 +1740,6 @@ static struct text_object *construct_text_object(const char *s,
 		}
 
 		obj->data.fsbar.fs = prepare_fs_stat(arg);
-#endif
 	END OBJ(fs_free, INFO_FS)
 		if (!arg) {
 			arg = "/";
@@ -4152,19 +4150,36 @@ static void generate_text_internal(char *p, int p_max_size,
 					timed_thread_unlock(mail->p_timed_thread);
 				}
 			}
-#ifdef X11
 			OBJ(fs_bar) {
 				if (obj->data.fs != NULL) {
 					if (obj->data.fs->size == 0) {
-						new_bar(p, obj->data.fsbar.w, obj->data.fsbar.h, 255);
+#ifdef X11
+						if(output_methods & TO_X) {
+							new_bar(p, obj->data.fsbar.w, obj->data.fsbar.h, 255);
+						}else{
+#endif /* X11 */
+							if(!obj->data.fsbar.w) obj->data.fsbar.w = DEFAULT_BAR_WIDTH_NO_X;
+							new_bar_in_shell(p, p_max_size, 100, obj->data.fsbar.w);
+#ifdef X11
+						}
+#endif /* X11 */
 					} else {
-						new_bar(p, obj->data.fsbar.w, obj->data.fsbar.h,
-							(int) (255 - obj->data.fsbar.fs->avail * 255 /
-							obj->data.fs->size));
+#ifdef X11
+						if(output_methods & TO_X) {
+							new_bar(p, obj->data.fsbar.w, obj->data.fsbar.h,
+								(int) (255 - obj->data.fsbar.fs->avail * 255 /
+								obj->data.fs->size));
+						}else{
+#endif /* X11 */
+							if(!obj->data.fsbar.w) obj->data.fsbar.w = DEFAULT_BAR_WIDTH_NO_X;
+							new_bar_in_shell(p, p_max_size,
+								(int) (100 - obj->data.fsbar.fs->avail * 100 / obj->data.fs->size), obj->data.fsbar.w);
+#ifdef X11
+						}
+#endif /* X11 */
 					}
 				}
 			}
-#endif
 			OBJ(fs_free) {
 				if (obj->data.fs != NULL) {
 					human_readable( (obj->data.fs->free ? obj->data.fs->free :
@@ -4199,19 +4214,36 @@ static void generate_text_internal(char *p, int p_max_size,
 						? obj->data.fs->free : obj->data.fs->avail), p, 255);
 				}
 			}
-#ifdef X11
 			OBJ(fs_bar_free) {
 				if (obj->data.fs != NULL) {
 					if (obj->data.fs->size == 0) {
-						new_bar(p, obj->data.fsbar.w, obj->data.fsbar.h, 255);
+#ifdef X11
+						if(output_methods & TO_X) {
+							new_bar(p, obj->data.fsbar.w, obj->data.fsbar.h, 255);
+						}else{
+#endif /* X11 */
+							if(!obj->data.fsbar.w) obj->data.fsbar.w = DEFAULT_BAR_WIDTH_NO_X;
+							new_bar_in_shell(p, p_max_size, 100, obj->data.fsbar.w);
+#ifdef X11
+						}
+#endif /* X11 */
 					} else {
-						new_bar(p, obj->data.fsbar.w, obj->data.fsbar.h,
-							(int) (obj->data.fsbar.fs->avail * 255 /
-							obj->data.fs->size));
+#ifdef X11
+						if(output_methods & TO_X) {
+							new_bar(p, obj->data.fsbar.w, obj->data.fsbar.h,
+								(int) (obj->data.fsbar.fs->avail * 255 /
+								obj->data.fs->size));
+						}else{
+#endif /* X11 */
+							if(!obj->data.fsbar.w) obj->data.fsbar.w = DEFAULT_BAR_WIDTH_NO_X;
+							new_bar_in_shell(p, p_max_size,
+								(int) (obj->data.fsbar.fs->avail * 100 / obj->data.fs->size), obj->data.fsbar.w);
+#ifdef X11
+						}
+#endif /* X11 */
 					}
 				}
 			}
-#endif
 			OBJ(fs_used_perc) {
 				if (obj->data.fs != NULL) {
 					int val = 0;
