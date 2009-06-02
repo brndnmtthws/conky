@@ -3023,7 +3023,7 @@ static char *find_and_replace_templates(const char *inbuf)
 		if (*(p + 1) == '{') {
 			p += 2;
 			templ = p;
-			while (*p && *p != ' ' && *p != '{' && *p != '}')
+			while (*p && !isspace(*p) && *p != '{' && *p != '}')
 				p++;
 			if (*p == '}')
 				args = NULL;
@@ -3047,10 +3047,8 @@ static char *find_and_replace_templates(const char *inbuf)
 			}
 		} else {
 			templ = p + 1;
-			while (*p && *p != ' ')
+			while (*p && !isspace(*p))
 				p++;
-			if(*p)
-				*(p++) = '\0';
 			args = NULL;
 		}
 		tmpl_out = handle_template(templ, args);
@@ -6983,15 +6981,16 @@ static void clean_up(void)
 
 		XFreeGC(display, window.gc);
 		free_fonts();
-		for (i = 0; i < 10; i ++) {
-			if (template[i]) {
-				free(template[i]);
-				template[i] = NULL;
-			}
-		}
 	}
 
 #endif /* X11 */
+
+	for (i = 0; i < 10; i ++) {
+		if (template[i]) {
+			free(template[i]);
+			template[i] = NULL;
+		}
+	}
 
 	free_text_objects(&global_root_object, 0);
 	if (tmpstring1) {
@@ -7150,16 +7149,6 @@ static void set_default_configurations(void)
 #ifdef X11
 	show_graph_scale = 0;
 	show_graph_range = 0;
-	template[0] = strdup("");
-	template[1] = strdup("");
-	template[2] = strdup("");
-	template[3] = strdup("");
-	template[4] = strdup("");
-	template[5] = strdup("");
-	template[6] = strdup("");
-	template[7] = strdup("");
-	template[8] = strdup("");
-	template[9] = strdup("");
 	draw_shades = 1;
 	draw_borders = 0;
 	draw_graph_borders = 1;
@@ -7184,6 +7173,17 @@ static void set_default_configurations(void)
 	info.x11.monitor.number = 1;
 	info.x11.monitor.current = 0;
 #endif /* X11 */
+
+	template[0] = strdup("");
+	template[1] = strdup("");
+	template[2] = strdup("");
+	template[3] = strdup("");
+	template[4] = strdup("");
+	template[5] = strdup("");
+	template[6] = strdup("");
+	template[7] = strdup("");
+	template[8] = strdup("");
+	template[9] = strdup("");
 
 	free(current_mail_spool);
 	{
@@ -7465,6 +7465,7 @@ static void load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
+#endif /* X11 */
 #define TEMPLATE_CONF(n) \
 		CONF("template"#n) { \
 			if (value) { \
@@ -7484,7 +7485,6 @@ static void load_config_file(const char *f)
 		TEMPLATE_CONF(7)
 		TEMPLATE_CONF(8)
 		TEMPLATE_CONF(9)
-#endif /* X11 */
 		CONF("imap") {
 			if (value) {
 				info.mail = parse_mail_args(IMAP_TYPE, value);
