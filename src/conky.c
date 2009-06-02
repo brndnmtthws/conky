@@ -1338,7 +1338,6 @@ static struct text_object *construct_text_object(const char *s,
 			strcpy(bat, "BAT0");
 		}
 		obj->data.s = strndup(bat, text_buffer_size);
-#ifdef X11
 	END OBJ(battery_bar, 0)
 		char bat[64];
 		SIZE_DEFAULTS(bar);
@@ -1350,7 +1349,6 @@ static struct text_object *construct_text_object(const char *s,
 			strcpy(bat, "BAT0");
 		}
 		obj->data.s = strndup(bat, text_buffer_size);
-#endif
 #endif /* !__OpenBSD__ */
 
 #if defined(__linux__)
@@ -3574,11 +3572,18 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(battery_percent) {
 				percent_print(p, p_max_size, get_battery_perct(obj->data.s));
 			}
-#ifdef X11
 			OBJ(battery_bar) {
-				new_bar(p, obj->a, obj->b, get_battery_perct_bar(obj->data.s));
-			}
+#ifdef X11
+				if(output_methods & TO_X) {
+					new_bar(p, obj->a, obj->b, get_battery_perct_bar(obj->data.s));
+				}else{
 #endif /* X11 */
+					if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
+					new_bar_in_shell(p, p_max_size, get_battery_perct_bar(obj->data.s) / 2.55, obj->a);
+#ifdef X11
+				}
+#endif /* X11 */
+			}
 			OBJ(battery_short) {
 				get_battery_short_status(p, p_max_size, obj->data.s);
 			}

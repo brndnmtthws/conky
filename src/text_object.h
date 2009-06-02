@@ -55,9 +55,7 @@ enum text_object_type {
 	OBJ_battery,
 	OBJ_battery_time,
 	OBJ_battery_percent,
-#ifdef X11
 	OBJ_battery_bar,
-#endif /* X11 */
 	OBJ_battery_short,
 #endif /* !__OpenBSD__ */
 	OBJ_buffers,
