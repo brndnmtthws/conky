@@ -344,7 +344,8 @@ static int sensor_device;
 static long color0, color1, color2, color3, color4, color5, color6, color7,
 	color8, color9;
 
-static char *template[10];
+#define MAX_TEMPLATES 10
+static char *template[MAX_TEMPLATES];
 
 /* maximum size of config TEXT buffer, i.e. below TEXT line. */
 static unsigned int max_user_text = MAX_USER_TEXT_DEFAULT;
@@ -2961,7 +2962,7 @@ static char *handle_template(const char *tmpl, const char *args)
 	char *eval_text;
 
 	if ((sscanf(tmpl, "template%u", &template_idx) != 1) ||
-	    (template_idx > 9))
+	    (template_idx >= MAX_TEMPLATES))
 		return NULL;
 
 	if(args) {
@@ -7111,7 +7112,10 @@ static void clean_up(void)
 
 #endif /* X11 */
 
-	for (i = 0; i < 10; i ++) {
+#ifdef HAVE_OPENMP
+#pragma omp parallel for
+#endif /* HAVE_OPENMP */
+	for (i = 0; i < MAX_TEMPLATES; i++) {
 		if (template[i]) {
 			free(template[i]);
 			template[i] = NULL;
@@ -7300,16 +7304,12 @@ static void set_default_configurations(void)
 	info.x11.monitor.current = 0;
 #endif /* X11 */
 
-	template[0] = strdup("");
-	template[1] = strdup("");
-	template[2] = strdup("");
-	template[3] = strdup("");
-	template[4] = strdup("");
-	template[5] = strdup("");
-	template[6] = strdup("");
-	template[7] = strdup("");
-	template[8] = strdup("");
-	template[9] = strdup("");
+#ifdef HAVE_OPENMP
+#pragma omp parallel for
+#endif /* HAVE_OPENMP */
+	for (int i = 0; i < MAX_TEMPLATES; i++) {
+		template[i] = strdup("");
+	}
 
 	free(current_mail_spool);
 	{
