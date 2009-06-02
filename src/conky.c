@@ -2953,7 +2953,8 @@ static char *backslash_escape(const char *src, char **templates, unsigned int te
  */
 static char *handle_template(const char *tmpl, const char *args)
 {
-	char *args_dup, *p, *p_old;
+	char *args_dup = NULL;
+	char *p, *p_old;
 	char **argsp = NULL;
 	unsigned int argcnt = 0, template_idx, i;
 	char *eval_text;
@@ -2962,28 +2963,30 @@ static char *handle_template(const char *tmpl, const char *args)
 	    (template_idx > 9))
 		return NULL;
 
-	args_dup = strdup(args);
-	p = args_dup;
-	while (*p) {
-		while (*p && (*p == ' ' && *(p - 1) != '\\'))
-			p++;
-		if (*(p - 1) == '\\')
-			p--;
-		p_old = p;
-		while (*p && (*p != ' ' || *(p - 1) == '\\'))
-			p++;
-		if (*p) {
-			(*p) = '\0';
-			p++;
+	if(args) {
+		args_dup = strdup(args);
+		p = args_dup;
+		while (*p) {
+			while (*p && (*p == ' ' && *(p - 1) != '\\'))
+				p++;
+			if (*(p - 1) == '\\')
+				p--;
+			p_old = p;
+			while (*p && (*p != ' ' || *(p - 1) == '\\'))
+				p++;
+			if (*p) {
+				(*p) = '\0';
+				p++;
+			}
+			argsp = realloc(argsp, ++argcnt * sizeof(char *));
+			argsp[argcnt - 1] = p_old;
 		}
-		argsp = realloc(argsp, ++argcnt * sizeof(char *));
-		argsp[argcnt - 1] = p_old;
-	}
-	for (i = 0; i < argcnt; i++) {
-		char *tmp;
-		tmp = backslash_escape(argsp[i], NULL, 0);
-		DBGP2("%s: substituted arg '%s' to '%s'", tmpl, argsp[i], tmp);
-		argsp[i] = tmp;
+		for (i = 0; i < argcnt; i++) {
+			char *tmp;
+			tmp = backslash_escape(argsp[i], NULL, 0);
+			DBGP2("%s: substituted arg '%s' to '%s'", tmpl, argsp[i], tmp);
+			argsp[i] = tmp;
+		}
 	}
 
 	eval_text = backslash_escape(template[template_idx], argsp, argcnt);
@@ -3018,25 +3021,36 @@ static char *find_and_replace_templates(const char *inbuf)
 		}
 
 		if (*(p + 1) == '{') {
-			templ = p + 2;
-			while (*p != ' ')
+			p += 2;
+			templ = p;
+			while (*p && *p != ' ' && *p != '{' && *p != '}')
 				p++;
-			*(p++) = '\0';
-			args = p;
+			if (*p == '}')
+				args = NULL;
+			else
+				args = p;
+
 			stack = 1;
-			while (stack > 0) {
-				p++;
+			while (*p && stack > 0) {
 				if (*p == '{')
 					stack++;
 				else if (*p == '}')
 					stack--;
+				p++;
 			}
-			*(p++) = '\0';
+			if (stack == 0) {
+				// stack is empty. that means the previous char was }, so we zero it
+				*(p - 1) = '\0';
+			} else {
+				// we ran into the end of string without finding a closing }, bark
+				CRIT_ERR("cannot find a closing '}' in template expansion");
+			}
 		} else {
 			templ = p + 1;
-			while (*p != ' ')
+			while (*p && *p != ' ')
 				p++;
-			*(p++) = '\0';
+			if(*p)
+				*(p++) = '\0';
 			args = NULL;
 		}
 		tmpl_out = handle_template(templ, args);
