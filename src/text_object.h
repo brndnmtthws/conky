@@ -103,10 +103,10 @@ enum text_object_type {
 	OBJ_execi,
 	OBJ_texeci,
 	OBJ_execbar,
+	OBJ_execibar,
 #ifdef X11
 	OBJ_execgauge,
 	OBJ_execgraph,
-	OBJ_execibar,
 	OBJ_execigraph,
 	OBJ_execigauge,
 #endif /* X11 */

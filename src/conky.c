@@ -908,8 +908,8 @@ static void free_text_objects(struct text_object *root, int internal)
 #endif /* !__OpenBSD__ */
 			case OBJ_execpi:
 			case OBJ_execi:
-#ifdef X11
 			case OBJ_execibar:
+#ifdef X11
 			case OBJ_execigraph:
 			case OBJ_execigauge:
 #endif
@@ -1043,7 +1043,7 @@ static void free_text_objects(struct text_object *root, int internal)
 			case OBJ_apcupsd_loadbar:
 			case OBJ_apcupsd_loadgraph:
 			case OBJ_apcupsd_loadgauge:
-#endif
+#endif /* X11 */
 			case OBJ_apcupsd_charge:
 			case OBJ_apcupsd_timeleft:
 			case OBJ_apcupsd_temp:
@@ -1070,7 +1070,7 @@ void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
 		scan_bar(arg, w, h);
 	}
 }
-#endif
+#endif /* X11 */
 
 /* strip a leading /dev/ if any, following symlinks first
  *
@@ -1612,6 +1612,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(execgraph, 0)
 		SIZE_DEFAULTS(graph);
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
+#endif /* X11 */
 	END OBJ(execibar, 0)
 		int n;
 		SIZE_DEFAULTS(bar);
@@ -1626,6 +1627,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->data.execi.cmd = strndup(arg + n, text_buffer_size);
 		}
+#ifdef X11
 	END OBJ(execigraph, 0)
 		int n;
 		SIZE_DEFAULTS(graph);
@@ -3999,6 +4001,7 @@ static void generate_text_internal(char *p, int p_max_size,
 							100, 1, showaslog, tempgrad);
 				}
 			}
+#endif /* X11 */
 			OBJ(execibar) {
 				if (current_update_time - obj->data.execi.last_update
 						>= obj->data.execi.interval) {
@@ -4008,12 +4011,22 @@ static void generate_text_internal(char *p, int p_max_size,
 					barnum = get_barnum(p);
 
 					if (barnum >= 0.0) {
-						obj->f = 255 * barnum / 100.0;
+						obj->f = barnum;
 					}
 					obj->data.execi.last_update = current_update_time;
 				}
-				new_bar(p, obj->a, obj->b, round_to_int(obj->f));
+#ifdef X11
+				if(output_methods & TO_X) {
+					new_bar(p, obj->a, obj->b, round_to_int(obj->f * 2.55));
+				} else {
+#endif /* X11 */
+					if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
+					new_bar_in_shell(p, p_max_size, round_to_int(obj->f), obj->a);
+#ifdef X11
+				}
+#endif /* X11 */
 			}
+#ifdef X11
 			OBJ(execigraph) {
 				if (current_update_time - obj->data.execi.last_update
 						>= obj->data.execi.interval) {
