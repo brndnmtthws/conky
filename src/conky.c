@@ -7253,6 +7253,7 @@ static void set_default_configurations_for_x(void)
 
 static void set_default_configurations(void)
 {
+	int i;
 	update_uname();
 	fork_to_background = 0;
 	total_run_times = 0;
@@ -7316,7 +7317,6 @@ static void set_default_configurations(void)
 #ifdef HAVE_OPENMP
 #pragma omp parallel for
 #endif /* HAVE_OPENMP */
-	int i;
 	for (i = 0; i < MAX_TEMPLATES; i++) {
 		template[i] = strdup("");
 	}
