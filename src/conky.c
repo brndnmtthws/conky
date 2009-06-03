@@ -7316,7 +7316,8 @@ static void set_default_configurations(void)
 #ifdef HAVE_OPENMP
 #pragma omp parallel for
 #endif /* HAVE_OPENMP */
-	for (int i = 0; i < MAX_TEMPLATES; i++) {
+	int i;
+	for (i = 0; i < MAX_TEMPLATES; i++) {
 		template[i] = strdup("");
 	}
 
