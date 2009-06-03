@@ -8033,6 +8033,11 @@ static void load_config_file(const char *f)
 				cimlib_set_cache_size(atoi(value));
 			}
 		}
+		CONF("imlib_cache_flush_interval") {
+			if (value) {
+				cimlib_set_cache_size(atoi(value));
+			}
+		}
 #endif /* IMLIB2 */
 #endif /* X11 */
 		CONF("update_interval") {

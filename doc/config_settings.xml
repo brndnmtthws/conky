@@ -179,7 +179,14 @@
 	<varlistentry>
 		<term><command><option>imlib_cache_size</option></command></term>
 		<listitem>
-			IMLIB2 image cache size, in bytes.  Defaults to 4MiB.  Increase this value if you use $image lots.  Set to 0 to disable the image cache.
+			Imlib2 image cache size, in bytes.  Defaults to 4MiB.  Increase this value if you use $image lots.  Set to 0 to disable the image cache.
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term><command><option>imlib_cache_flush_interval</option></command></term>
+		<listitem>
+			Interval (in seconds) to flush Imlib2 cache.
 			<para></para></listitem>
 	</varlistentry>
 

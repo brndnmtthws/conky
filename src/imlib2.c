@@ -29,12 +29,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <time.h>
 
 struct image_list_s {
 	char name[DEFAULT_TEXT_BUFFER_SIZE];
 	Imlib_Image image;
 	int x, y, w, h;
 	int wh_set;
+	char no_cache;
+	int flush_interval;
+	int flush_last;
 	struct image_list_s *next;
 };
 
@@ -47,12 +51,21 @@ Imlib_Image buffer, image;
 
 static int cache_size_set = 0;
 
+/* flush the image cache ever X seconds */
+static int cimlib_cache_flush_interval = 0;
+static int cimlib_cache_flush_last = 0;
+
 #define DEFAULT_CACHE_SIZE 4096 * 1024 /* default cache size for loaded images */
 
 void cimlib_set_cache_size(long size)
 {
 	imlib_set_cache_size(size);
 	cache_size_set = 1;
+}
+
+void cimlib_set_cache_flush_interval(long interval)
+{
+	cimlib_cache_flush_interval = interval;
 }
 
 void cimlib_cleanup(void)
@@ -90,7 +103,7 @@ void cimlib_add_image(const char *args)
 	memset(cur, 0, sizeof(struct image_list_s));
 
 	if (!sscanf(args, "%1024s", cur->name)) {
-		ERR("Invalid args for $image.  Format is: '<path to image> (-p x,y) (-s WxH)' (got '%s')", args);
+		ERR("Invalid args for $image.  Format is: '<path to image> (-p x,y) (-s WxH) (-n) (-f interval)' (got '%s')", args);
 	}
 	to_real_path(cur->name, cur->name);
 	// now we check for optional args
@@ -107,6 +120,19 @@ void cimlib_add_image(const char *args)
 		}
 	}
 
+	tmp = strstr(args, "-n");
+	if (tmp) {
+		cur->no_cache = 1;
+	}
+
+	tmp = strstr(args, "-f ");
+	if (tmp) {
+		tmp += 3;
+		if (sscanf(tmp, "%d", &cur->flush_interval)) {
+			cur->no_cache = 0;
+		}
+	}
+
 	if (image_list_end) {
 		image_list_end->next = cur;
 		image_list_end = cur;
@@ -120,7 +146,8 @@ static void cimlib_draw_image(struct image_list_s *cur, int *clip_x, int *clip_y
 	image = imlib_load_image(cur->name);
 	if (image) {
 		int w, h;
-		DBGP("Drawing image '%s' at (%i,%i) scaled to %ix%i", cur->name, cur->x, cur->y, cur->w, cur->h);
+		time_t now = time(NULL);
+		DBGP("Drawing image '%s' at (%i,%i) scaled to %ix%i, caching interval set to %i (with -n opt %i)", cur->name, cur->x, cur->y, cur->w, cur->h, cur->flush_interval, cur->no_cache);
 		imlib_context_set_image(image);
 		/* turn alpha channel on */
 		imlib_image_set_has_alpha(1);
@@ -134,7 +161,12 @@ static void cimlib_draw_image(struct image_list_s *cur, int *clip_x, int *clip_y
 		imlib_blend_image_onto_image(image, 1, 0, 0, w, h,
 				cur->x, cur->y, cur->w, cur->h);
 		imlib_context_set_image(image);
-		imlib_free_image();
+		if (cur->no_cache || (cur->flush_interval && now - cur->flush_interval > cur->flush_last)) {
+			imlib_free_image_and_decache();
+			cur->flush_last = now;
+		} else {
+			imlib_free_image();
+		}
 		if (cur->x < *clip_x) *clip_x = cur->x;
 		if (cur->y < *clip_y) *clip_y = cur->y;
 		if (cur->x + cur->w > *clip_x2) *clip_x2 = cur->x + cur->w;
@@ -157,8 +189,18 @@ void cimlib_render(int x, int y, int width, int height)
 {
 	int clip_x = INT_MAX, clip_y = INT_MAX;
 	int clip_x2 = 0, clip_y2 = 0;
+	time_t now;
 
 	if (!image_list_start) return; /* are we actually drawing anything? */
+
+	/* cheque if it's time to flush our cache */
+	now = time(NULL);
+	if (cimlib_cache_flush_interval && now - cimlib_cache_flush_interval > cimlib_cache_flush_last) {
+		imlib_flush_loaders();
+		cimlib_cache_flush_last = now;
+		DBGP("Flushing Imlib2 cache (%li)\n", now);
+	}
+
 	/* take all the little rectangles to redraw and merge them into
 	 * something sane for rendering */
 	buffer = imlib_create_image(width, height);
