@@ -886,8 +886,8 @@ static void free_text_objects(struct text_object *root, int internal)
 			case OBJ_lua:
 			case OBJ_lua_parse:
 			case OBJ_lua_read_parse:
-#ifdef X11
 			case OBJ_lua_bar:
+#ifdef X11
 			case OBJ_lua_graph:
 			case OBJ_lua_gauge:
 #endif /* X11 */
@@ -913,7 +913,7 @@ static void free_text_objects(struct text_object *root, int internal)
 #ifdef X11
 			case OBJ_execigraph:
 			case OBJ_execigauge:
-#endif
+#endif /* X11 */
 				free(data.execi.cmd);
 				free(data.execi.buffer);
 				break;
@@ -940,12 +940,12 @@ static void free_text_objects(struct text_object *root, int internal)
 				if (data.hddtemp.temp)
 					free(data.hddtemp.temp);
 				break;
-#endif
+#endif /* HDDTEMP */
 			case OBJ_entropy_avail:
 			case OBJ_entropy_poolsize:
 #ifdef X11
 			case OBJ_entropy_bar:
-#endif
+#endif /* X11 */
 				break;
 			case OBJ_user_names:
 				if (info.users.names) {
@@ -976,11 +976,11 @@ static void free_text_objects(struct text_object *root, int internal)
 				free(data.ifblock.s);
 				free(data.ifblock.str);
 				break;
-#endif
+#endif /* IBM */
 #ifdef NVIDIA
 			case OBJ_nvidia:
 				break;
-#endif
+#endif /* NVIDIA */
 #ifdef MPD
 			case OBJ_mpd_title:
 			case OBJ_mpd_artist:
@@ -992,7 +992,7 @@ static void free_text_objects(struct text_object *root, int internal)
 			case OBJ_mpd_status:
 #ifdef X11
 			case OBJ_mpd_bar:
-#endif
+#endif /* X11 */
 			case OBJ_mpd_elapsed:
 			case OBJ_mpd_length:
 			case OBJ_mpd_track:
@@ -1003,7 +1003,7 @@ static void free_text_objects(struct text_object *root, int internal)
 			case OBJ_if_mpd_playing:
 				free_mpd();
 				break;
-#endif
+#endif /* MPD */
 #ifdef MOC
 			case OBJ_moc_state:
 			case OBJ_moc_file:
@@ -1018,7 +1018,7 @@ static void free_text_objects(struct text_object *root, int internal)
 			case OBJ_moc_rate:
 				free_moc();
 				break;
-#endif
+#endif /* MOC */
 			case OBJ_scroll:
 				free(data.scroll.text);
 				free_text_objects(obj->sub, 1);
@@ -2692,7 +2692,6 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			CRIT_ERR("lua_read_parse needs arguments: <function name> <string to pass>");
 		}
-#ifdef X11
 	END OBJ(lua_bar, 0)
 		SIZE_DEFAULTS(bar);
 		if (arg) {
@@ -2705,6 +2704,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			CRIT_ERR("lua_bar needs arguments: <height>,<width> <function name> [function parameters]");
 		}
+#ifdef X11
 	END OBJ(lua_graph, 0)
 		SIZE_DEFAULTS(graph);
 		if (arg) {
@@ -4449,13 +4449,22 @@ static void generate_text_internal(char *p, int p_max_size,
 				free_text_objects(&subroot, 1);
 				free(tmp_info);
 			}
-#ifdef X11
 			OBJ(lua_bar) {
 				int per;
 				if (llua_getinteger(obj->data.s, &per)) {
-					new_bar(p, obj->a, obj->b, (per/100.0 * 255));
+#ifdef X11
+					if(output_methods & TO_X) {
+						new_bar(p, obj->a, obj->b, (per/100.0 * 255));
+					} else {
+#endif /* X11 */
+						if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
+						new_bar_in_shell(p, p_max_size, per, obj->a);
+#ifdef X11
+					}
+#endif /* X11 */
 				}
 			}
+#ifdef X11
 			OBJ(lua_graph) {
 				int per;
 				if (llua_getinteger(obj->data.s, &per)) {

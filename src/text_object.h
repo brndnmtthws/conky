@@ -378,8 +378,8 @@ enum text_object_type {
 	OBJ_lua,
 	OBJ_lua_parse,
 	OBJ_lua_read_parse,
-#ifdef X11
 	OBJ_lua_bar,
+#ifdef X11
 	OBJ_lua_graph,
 	OBJ_lua_gauge,
 #endif /* X11 */
