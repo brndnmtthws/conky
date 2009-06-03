@@ -8035,7 +8035,7 @@ static void load_config_file(const char *f)
 		}
 		CONF("imlib_cache_flush_interval") {
 			if (value) {
-				cimlib_set_cache_size(atoi(value));
+				cimlib_set_cache_flush_interval(atoi(value));
 			}
 		}
 #endif /* IMLIB2 */

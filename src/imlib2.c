@@ -196,7 +196,9 @@ void cimlib_render(int x, int y, int width, int height)
 	/* cheque if it's time to flush our cache */
 	now = time(NULL);
 	if (cimlib_cache_flush_interval && now - cimlib_cache_flush_interval > cimlib_cache_flush_last) {
-		imlib_flush_loaders();
+		int size = imlib_get_cache_size();
+		imlib_set_cache_size(0);
+		imlib_set_cache_size(size);
 		cimlib_cache_flush_last = now;
 		DBGP("Flushing Imlib2 cache (%li)\n", now);
 	}
