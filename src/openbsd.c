@@ -56,6 +56,10 @@
 #include <net80211/ieee80211_ioctl.h>
 
 #include "conky.h"
+#include "diskio.h"
+#include "logging.h"
+#include "openbsd.h"
+#include "top.h"
 
 #define	MAXSHOWDEVS		16
 
@@ -656,6 +660,10 @@ cleanup:
 #endif
 
 void clear_diskio_stats()
+{
+}
+
+struct diskio_stat *prepare_diskio_stat(const char *s)
 {
 }
 

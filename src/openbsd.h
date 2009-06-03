@@ -2,6 +2,7 @@
 #define OPENBSD_H_
 
 #include "common.h"
+#include <sys/param.h>
 #include <sys/sysctl.h>
 #include <sys/sensors.h>
 #include <machine/apmvar.h>
