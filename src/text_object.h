@@ -293,9 +293,7 @@ enum text_object_type {
 	OBJ_mpd_vol,
 	OBJ_mpd_bitrate,
 	OBJ_mpd_status,
-#ifdef X11
 	OBJ_mpd_bar,
-#endif
 	OBJ_mpd_elapsed,
 	OBJ_mpd_length,
 	OBJ_mpd_track,
@@ -304,7 +302,7 @@ enum text_object_type {
 	OBJ_mpd_percent,
 	OBJ_mpd_smart,
 	OBJ_if_mpd_playing,
-#endif
+#endif /* MPD */
 #ifdef MOC
 	OBJ_moc_state,
 	OBJ_moc_file,
@@ -317,7 +315,7 @@ enum text_object_type {
 	OBJ_moc_curtime,
 	OBJ_moc_bitrate,
 	OBJ_moc_rate,
-#endif
+#endif /* MOC */
 #ifdef XMMS2
 	OBJ_xmms2_artist,
 	OBJ_xmms2_album,
@@ -336,12 +334,12 @@ enum text_object_type {
 	OBJ_xmms2_status,
 #ifdef X11
 	OBJ_xmms2_bar,
-#endif
+#endif /* X11 */
 	OBJ_xmms2_smart,
 	OBJ_xmms2_playlist,
 	OBJ_xmms2_timesplayed,
 	OBJ_if_xmms2_connected,
-#endif
+#endif /* XMMS2 */
 #ifdef AUDACIOUS
 	OBJ_audacious_status,
 	OBJ_audacious_title,
@@ -358,8 +356,8 @@ enum text_object_type {
 	OBJ_audacious_main_volume,
 #ifdef X11
 	OBJ_audacious_bar,
-#endif
-#endif
+#endif /* X11 */
+#endif /* AUDACIOUS */
 #ifdef BMPX
 	OBJ_bmpx_title,
 	OBJ_bmpx_artist,
@@ -367,13 +365,13 @@ enum text_object_type {
 	OBJ_bmpx_track,
 	OBJ_bmpx_uri,
 	OBJ_bmpx_bitrate,
-#endif
+#endif /* BMPX */
 #ifdef EVE
 	OBJ_eve,
-#endif
+#endif /* EVE */
 #ifdef RSS
 	OBJ_rss,
-#endif
+#endif /* RSS */
 #ifdef HAVE_LUA
 	OBJ_lua,
 	OBJ_lua_parse,
@@ -386,21 +384,19 @@ enum text_object_type {
 #endif /* HAVE_LUA */
 #ifdef TCP_PORT_MONITOR
 	OBJ_tcp_portmon,
-#endif
+#endif /* TCP_PORT_MONITOR */
 #ifdef HAVE_ICONV
 	OBJ_iconv_start,
 	OBJ_iconv_stop,
-#endif
+#endif /* HAVE_ICONV */
 #ifdef HDDTEMP
 	OBJ_hddtemp,
-#endif
+#endif /* HDDTEMP */
 	OBJ_scroll,
 	OBJ_combine,
 	OBJ_entropy_avail,
 	OBJ_entropy_poolsize,
-#ifdef X11
 	OBJ_entropy_bar,
-#endif
 #ifdef APCUPSD
 	OBJ_apcupsd,
 	OBJ_apcupsd_name,
@@ -410,16 +406,16 @@ enum text_object_type {
 	OBJ_apcupsd_status,
 	OBJ_apcupsd_linev,
 	OBJ_apcupsd_load,
-#ifdef X11
 	OBJ_apcupsd_loadbar,
+#ifdef X11
 	OBJ_apcupsd_loadgraph,
 	OBJ_apcupsd_loadgauge,
-#endif
+#endif /* X11 */
 	OBJ_apcupsd_charge,
 	OBJ_apcupsd_timeleft,
 	OBJ_apcupsd_temp,
 	OBJ_apcupsd_lastxfer,
-#endif
+#endif /* APCUPSD */
 };
 
 struct text_object {

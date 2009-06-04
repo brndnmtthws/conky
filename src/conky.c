@@ -943,9 +943,7 @@ static void free_text_objects(struct text_object *root, int internal)
 #endif /* HDDTEMP */
 			case OBJ_entropy_avail:
 			case OBJ_entropy_poolsize:
-#ifdef X11
 			case OBJ_entropy_bar:
-#endif /* X11 */
 				break;
 			case OBJ_user_names:
 				if (info.users.names) {
@@ -990,9 +988,7 @@ static void free_text_objects(struct text_object *root, int internal)
 			case OBJ_mpd_vol:
 			case OBJ_mpd_bitrate:
 			case OBJ_mpd_status:
-#ifdef X11
 			case OBJ_mpd_bar:
-#endif /* X11 */
 			case OBJ_mpd_elapsed:
 			case OBJ_mpd_length:
 			case OBJ_mpd_track:
@@ -1040,8 +1036,8 @@ static void free_text_objects(struct text_object *root, int internal)
 			case OBJ_apcupsd_status:
 			case OBJ_apcupsd_linev:
 			case OBJ_apcupsd_load:
-#ifdef X11
 			case OBJ_apcupsd_loadbar:
+#ifdef X11
 			case OBJ_apcupsd_loadgraph:
 			case OBJ_apcupsd_loadgauge:
 #endif /* X11 */
@@ -2543,12 +2539,10 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(mpd_vol, INFO_MPD) init_mpd();
 	END OBJ(mpd_bitrate, INFO_MPD) init_mpd();
 	END OBJ(mpd_status, INFO_MPD) init_mpd();
-#ifdef X11
 	END OBJ(mpd_bar, INFO_MPD)
 		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 		init_mpd();
-#endif
 	END OBJ(mpd_smart, INFO_MPD)
 		mpd_set_maxlen(mpd_smart);
 		init_mpd();
@@ -2742,18 +2736,16 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.hddtemp.update_time = 0;
 		} else
 			obj->data.hddtemp.temp = NULL;
-#endif
+#endif /* HDDTEMP */
 #ifdef TCP_PORT_MONITOR
 	END OBJ(tcp_portmon, INFO_TCP_PORT_MONITOR)
 		tcp_portmon_init(arg, &obj->data.tcp_port_monitor);
-#endif
+#endif /* TCP_PORT_MONITOR */
 	END OBJ(entropy_avail, INFO_ENTROPY)
 	END OBJ(entropy_poolsize, INFO_ENTROPY)
-#ifdef X11
 	END OBJ(entropy_bar, INFO_ENTROPY)
 		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->a, &obj->b);
-#endif
 	END OBJ(scroll, 0)
 		int n1, n2;
 
@@ -2842,10 +2834,10 @@ static struct text_object *construct_text_object(const char *s,
 			END OBJ(apcupsd_status, INFO_APCUPSD)
 			END OBJ(apcupsd_linev, INFO_APCUPSD)
 			END OBJ(apcupsd_load, INFO_APCUPSD)
-#ifdef X11
 			END OBJ(apcupsd_loadbar, INFO_APCUPSD)
 				SIZE_DEFAULTS(bar);
 				scan_bar(arg, &obj->a, &obj->b);
+#ifdef X11
 			END OBJ(apcupsd_loadgraph, INFO_APCUPSD)
 				char* buf = 0;
 				SIZE_DEFAULTS(graph);
@@ -2855,7 +2847,7 @@ static struct text_object *construct_text_object(const char *s,
 			END OBJ(apcupsd_loadgauge, INFO_APCUPSD)
 				SIZE_DEFAULTS(gauge);
 				scan_gauge(arg, &obj->a, &obj->b);
-#endif
+#endif /* X11 */
 			END OBJ(apcupsd_charge, INFO_APCUPSD)
 			END OBJ(apcupsd_timeleft, INFO_APCUPSD)
 			END OBJ(apcupsd_temp, INFO_APCUPSD)
@@ -4980,12 +4972,19 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(mpd_percent) {
 				percent_print(p, p_max_size, (int)(mpd_get_info()->progress * 100));
 			}
-#ifdef X11
 			OBJ(mpd_bar) {
-				new_bar(p, obj->data.pair.a, obj->data.pair.b,
-					(int) (mpd_get_info()->progress * 255.0f));
-			}
+#ifdef X11
+				if(output_methods & TO_X) {
+					new_bar(p, obj->data.pair.a, obj->data.pair.b,
+						(int) (mpd_get_info()->progress * 255.0f));
+				} else {
 #endif /* X11 */
+					if(!obj->data.pair.a) obj->data.pair.a = DEFAULT_BAR_WIDTH_NO_X;
+					new_bar_in_shell(p, p_max_size, (int) (mpd_get_info()->progress * 100.0f), obj->data.pair.a);
+#ifdef X11
+				}
+#endif /* X11 */
+			}
 			OBJ(mpd_smart) {
 				struct mpd_s *mpd = mpd_get_info();
 				int len = obj->data.i;
@@ -5133,7 +5132,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					DO_JUMP;
 				}
 			}
-#endif
+#endif /* XMMS */
 #ifdef AUDACIOUS
 			OBJ(audacious_status) {
 				snprintf(p, p_max_size, "%s",
@@ -5196,7 +5195,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					atof(cur->audacious.items[AUDACIOUS_LENGTH_SECONDS]);
 				new_bar(p, obj->a, obj->b, (int) (progress * 255.0f));
 			}
-#endif
+#endif /* AUDACIOUS */
 
 #ifdef BMPX
 			OBJ(bmpx_title) {
@@ -5217,7 +5216,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(bmpx_bitrate) {
 				snprintf(p, p_max_size, "%i", cur->bmpx.bitrate);
 			}
-#endif
+#endif /* BMPX */
 			/* we have three different types of top (top, top_mem
 			 * and top_time). To avoid having almost-same code three
 			 * times, we have this special handler. */
@@ -5328,7 +5327,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				tcp_portmon_action(p, p_max_size,
 				                   &obj->data.tcp_port_monitor);
 			}
-#endif
+#endif /* TCP_PORT_MONITOR */
 
 #ifdef HAVE_ICONV
 			OBJ(iconv_start) {
@@ -5339,7 +5338,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				iconv_converting = 0;
 				iconv_selected = 0;
 			}
-#endif
+#endif /* HAVE_ICONV */
 
 			OBJ(entropy_avail) {
 				snprintf(p, p_max_size, "%d", cur->entropy.entropy_avail);
@@ -5347,15 +5346,22 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(entropy_poolsize) {
 				snprintf(p, p_max_size, "%d", cur->entropy.poolsize);
 			}
-#ifdef X11
 			OBJ(entropy_bar) {
 				double entropy_perc;
 
 				entropy_perc = (double) cur->entropy.entropy_avail /
 					(double) cur->entropy.poolsize;
-				new_bar(p, obj->a, obj->b, (int) (entropy_perc * 255.0f));
+#ifdef X11
+				if(output_methods & TO_X) {
+					new_bar(p, obj->a, obj->b, (int) (entropy_perc * 255.0f));
+				} else {
+#endif /* X11 */
+					if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
+					new_bar_in_shell(p, p_max_size, (int) (entropy_perc * 100.0f), obj->a);
+#ifdef X11
+				}
+#endif /* X11 */
 			}
-#endif
 #ifdef IBM
 			OBJ(smapi) {
 				char *s;
@@ -5574,12 +5580,22 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%s",
 						 cur->apcupsd.items[APCUPSD_LOAD]);
 			}
-#ifdef X11
 			OBJ(apcupsd_loadbar) {
 				double progress;
-				progress =	atof(cur->apcupsd.items[APCUPSD_LOAD]) / 100.0 * 255.0;
-				new_bar(p, obj->a, obj->b, (int)progress);
+#ifdef X11
+				if(output_methods & TO_X) {
+					progress = atof(cur->apcupsd.items[APCUPSD_LOAD]) / 100.0 * 255.0;
+					new_bar(p, obj->a, obj->b, (int) progress);
+				} else {
+#endif /* X11 */
+					progress = atof(cur->apcupsd.items[APCUPSD_LOAD]);
+					if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
+					new_bar_in_shell(p, p_max_size, (int) progress, obj->a);
+#ifdef X11
+				}
+#endif /* X11 */
 			}
+#ifdef X11
 			OBJ(apcupsd_loadgraph) {
 				double progress;
 				progress =	atof(cur->apcupsd.items[APCUPSD_LOAD]);
@@ -5592,7 +5608,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_gauge(p, obj->a, obj->b,
 						  (int)progress);
 			}
-#endif
+#endif /* X11 */
 			OBJ(apcupsd_charge) {
 				snprintf(p, p_max_size, "%s",
 						 cur->apcupsd.items[APCUPSD_CHARGE]);
