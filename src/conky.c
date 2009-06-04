@@ -2967,12 +2967,12 @@ static char *handle_template(const char *tmpl, const char *args)
 		args_dup = strdup(args);
 		p = args_dup;
 		while (*p) {
-			while (*p && (*p == ' ' && *(p - 1) != '\\'))
+			while (*p && (*p == ' ' && p > args_dup && *(p - 1) != '\\'))
 				p++;
-			if (*(p - 1) == '\\')
+			if (p > args_dup && *(p - 1) == '\\')
 				p--;
 			p_old = p;
-			while (*p && (*p != ' ' || *(p - 1) == '\\'))
+			while (*p && (*p != ' ' || p == args_dup || *(p - 1) == '\\'))
 				p++;
 			if (*p) {
 				(*p) = '\0';
@@ -3054,6 +3054,7 @@ static char *find_and_replace_templates(const char *inbuf)
 		tmpl_out = handle_template(templ, args);
 		if (tmpl_out) {
 			outlen += strlen(tmpl_out);
+			*o = '\0';
 			outbuf = realloc(outbuf, outlen * sizeof(char));
 			strcat (outbuf, tmpl_out);
 			free(tmpl_out);
