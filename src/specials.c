@@ -271,11 +271,11 @@ static void graph_append(struct special_t *graph, double f, char showaslog)
 {
 	int i;
 
-	if (showaslog) {
 #ifdef MATH
+	if (showaslog) {
 		f = log10(f + 1);
-#endif
 	}
+#endif
 	
 	if (!graph->scaled && f > graph->graph_scale) {
 		f = graph->graph_scale;
@@ -334,11 +334,11 @@ void new_graph(char *buf, int w, int h, unsigned int first_colour,
 	/* if (s->width) {
 		s->graph_width = s->width - 2;	// subtract 2 for rectangle around
 	} */
-	if (showaslog) {
 #ifdef MATH
+	if (showaslog) {
 		s->graph_scale = log10(s->graph_scale + 1);
-#endif
 	}
+#endif
 	if (append) {
 		graph_append(s, i, showaslog);
 	}
