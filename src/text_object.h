@@ -42,6 +42,7 @@
 #endif
 
 enum text_object_type {
+	OBJ_read_tcp,
 	OBJ_addr,
 #if defined(__linux__)
 	OBJ_addrs,
@@ -548,6 +549,11 @@ struct text_object {
 			char *seperation;
 			char *right;
 		} combine;
+
+		struct {
+			char *host;
+			unsigned int port;
+		} read_tcp;
 
 		struct local_mail_s local_mail;
 #ifdef NVIDIA

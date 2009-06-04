@@ -685,6 +685,9 @@ static void free_text_objects(struct text_object *root, int internal)
 				close(data.sysfs.fd);
 				break;
 #endif /* __linux__ */
+			case OBJ_read_tcp:
+				free(data.read_tcp.host);
+				break;
 			case OBJ_time:
 			case OBJ_utime:
 				free(data.s);
@@ -1218,6 +1221,22 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.cpu_index = atoi(&arg[0]);
 		}
 		obj->a = 1;
+	END OBJ(read_tcp, 0)
+		if (arg) {
+			obj->data.read_tcp.host = malloc(text_buffer_size);
+			sscanf(arg, "%s", obj->data.read_tcp.host);
+			sscanf(arg+strlen(obj->data.read_tcp.host), "%u", &(obj->data.read_tcp.port));
+			if(obj->data.read_tcp.port == 0) {
+				obj->data.read_tcp.port = atoi(obj->data.read_tcp.host);
+				strcpy(obj->data.read_tcp.host,"localhost");
+			}
+			obj->data.read_tcp.port = htons(obj->data.read_tcp.port);
+			if(obj->data.read_tcp.port < 1 || obj->data.read_tcp.port > 65535) {
+				CRIT_ERR("read_tcp: Needs \"(host) port\" as argument(s)");
+			}
+		}else{
+			CRIT_ERR("read_tcp: Needs \"(host) port\" as argument(s)");
+		}
 #if defined(__linux__)
 	END OBJ(voltage_mv, 0)
 		get_cpu_count();
@@ -3482,6 +3501,39 @@ static void generate_text_internal(char *p, int p_max_size,
 		switch (obj->type) {
 			default:
 				ERR("not implemented obj type %d", obj->type);
+			OBJ(read_tcp) {
+				int sock, received;
+				struct sockaddr_in addr;
+				struct hostent* he = gethostbyname(obj->data.read_tcp.host);
+				if(he != NULL) {
+					sock = socket(he->h_addrtype, SOCK_STREAM, 0);
+					if(sock != -1) {
+						memset(&addr, 0, sizeof(addr));
+						addr.sin_family = AF_INET;
+						addr.sin_port = obj->data.read_tcp.port;
+						memcpy(&addr.sin_addr, he->h_addr, he->h_length);
+						if (connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr)) == 0) {
+							fd_set readfds;
+							struct timeval tv;
+							FD_ZERO(&readfds);
+							FD_SET(sock, &readfds);
+							tv.tv_sec = 1;
+							tv.tv_usec = 0;
+							if(select(sock + 1, &readfds, NULL, NULL, &tv) > 0){
+								received = recv(sock, p, p_max_size, 0);
+								p[received] = 0;
+							}
+							close(sock);
+						} else {
+							ERR("read_tcp: Couldn't create a connection");
+						}
+					}else{
+						ERR("read_tcp: Couldn't create a socket");
+					}
+				}else{
+					ERR("read_tcp: Problem with resolving the hostname");
+				}
+			}
 #ifndef __OpenBSD__
 			OBJ(acpitemp) {
 				temp_print(p, p_max_size, get_acpi_temperature(obj->data.i), TEMP_CELSIUS);
