@@ -208,10 +208,6 @@ if test x$want_hddtemp = xyes; then
   fi
 fi
 
-dnl
-dnl Math
-dnl
-
 
 dnl
 dnl Apcupsd
@@ -231,6 +227,11 @@ if test x$want_apcupsd = xyes; then
   fi
 fi
 AM_CONDITIONAL(BUILD_APCUPSD, test x$want_apcupsd = xyes)
+
+
+dnl
+dnl Math
+dnl
 
 AC_ARG_ENABLE([math],
               AC_HELP_STRING([--disable-math], [disable if you do not want math support @<:@default=yes@:>@]),
