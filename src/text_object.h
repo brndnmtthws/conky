@@ -396,6 +396,7 @@ enum text_object_type {
 	OBJ_scroll,
 	OBJ_combine,
 	OBJ_entropy_avail,
+	OBJ_entropy_perc,
 	OBJ_entropy_poolsize,
 	OBJ_entropy_bar,
 #ifdef APCUPSD

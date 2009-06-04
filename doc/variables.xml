@@ -727,6 +727,15 @@
 
 	<varlistentry>
 		<term>
+			<command><option>entropy_perc</option></command>
+		</term>
+		<listitem>
+			Percentage of entropy available in comparison to the poolsize
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term>
 			<command><option>entropy_poolsize</option></command>
 		</term>
 		<listitem>

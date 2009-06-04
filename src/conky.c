@@ -945,6 +945,7 @@ static void free_text_objects(struct text_object *root, int internal)
 				break;
 #endif /* HDDTEMP */
 			case OBJ_entropy_avail:
+			case OBJ_entropy_perc:
 			case OBJ_entropy_poolsize:
 			case OBJ_entropy_bar:
 				break;
@@ -2761,6 +2762,7 @@ static struct text_object *construct_text_object(const char *s,
 		tcp_portmon_init(arg, &obj->data.tcp_port_monitor);
 #endif /* TCP_PORT_MONITOR */
 	END OBJ(entropy_avail, INFO_ENTROPY)
+	END OBJ(entropy_perc, INFO_ENTROPY)
 	END OBJ(entropy_poolsize, INFO_ENTROPY)
 	END OBJ(entropy_bar, INFO_ENTROPY)
 		SIZE_DEFAULTS(bar);
@@ -5394,6 +5396,11 @@ static void generate_text_internal(char *p, int p_max_size,
 
 			OBJ(entropy_avail) {
 				snprintf(p, p_max_size, "%d", cur->entropy.entropy_avail);
+			}
+			OBJ(entropy_perc) {
+				percent_print(p, p_max_size,
+				              cur->entropy.entropy_avail *
+					      100 / cur->entropy.poolsize);
 			}
 			OBJ(entropy_poolsize) {
 				snprintf(p, p_max_size, "%d", cur->entropy.poolsize);
