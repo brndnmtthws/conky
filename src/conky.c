@@ -225,7 +225,7 @@ static void print_version(void)
 		   "  * config-output\n"
 #endif /* CONFIG_OUTPUT */
 #ifdef IMLIB2
-		   "  * IMLIB2\n"
+		   "  * Imlib2\n"
 #endif /* IMLIB2 */
 #ifdef MIXER_IS_ALSA
 		   "  * ALSA mixer support\n"
