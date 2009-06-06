@@ -3612,8 +3612,18 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 			OBJ(wireless_link_bar) {
-				new_bar(p, obj->a, obj->b, ((double) obj->data.net->link_qual /
-							obj->data.net->link_qual_max) * 255.0);
+#ifdef X11
+				if(output_methods & TO_X) {
+					new_bar(p, obj->a, obj->b, ((double) obj->data.net->link_qual /
+						obj->data.net->link_qual_max) * 255.0);
+				}else{
+#endif /* X11 */
+					if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
+					new_bar_in_shell(p, p_max_size, ((double) obj->data.net->link_qual /
+						obj->data.net->link_qual_max) * 100.0, obj->a);
+#ifdef X11
+				}
+#endif /* X11 */
 			}
 #endif /* HAVE_IWLIB */
 
