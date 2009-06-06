@@ -177,9 +177,7 @@ enum text_object_type {
 	OBJ_wireless_link_qual,
 	OBJ_wireless_link_qual_max,
 	OBJ_wireless_link_qual_perc,
-#ifdef X11
 	OBJ_wireless_link_bar,
-#endif /* X11 */
 #endif /* __linux__ */
 #if defined(__FreeBSD__) || defined(__linux__)
 	OBJ_if_up,
