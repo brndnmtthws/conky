@@ -6504,7 +6504,8 @@ static void main_loop(void)
 	sigaddset(&newmask, SIGUSR1);
 #endif
 
-	next_update_time = last_update_time = get_time();
+	last_update_time = 0.0;
+	next_update_time = get_time();
 	info.looped = 0;
 	while (terminate == 0 && (total_run_times == 0 || info.looped < total_run_times)) {
 		info.looped++;
