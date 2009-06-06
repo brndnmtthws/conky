@@ -4514,7 +4514,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				free(tmp_info);
 			}
 			OBJ(lua_bar) {
-				int per;
+				double per;
 				if (llua_getnumber(obj->data.s, &per)) {
 #ifdef X11
 					if(output_methods & TO_X) {
@@ -4530,14 +4530,14 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 #ifdef X11
 			OBJ(lua_graph) {
-				int per;
+				double per;
 				if (llua_getnumber(obj->data.s, &per)) {
 					new_graph(p, obj->a, obj->b, obj->c, obj->d,
 							per, obj->e, 1, obj->char_a, obj->char_b);
 				}
 			}
 			OBJ(lua_gauge) {
-				int per;
+				double per;
 				if (llua_getnumber(obj->data.s, &per)) {
 					new_gauge(p, obj->a, obj->b, (per/100.0 * 255));
 				}
