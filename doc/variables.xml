@@ -1782,8 +1782,7 @@
             function_name (function parameters)</option>
         </term>
         <listitem>Executes a Lua function with given parameters and
-        draws a graph. Expects result value to be an integer
-        between 0 and 100. See also 'lua_load' on how to load
+        draws a graph. Expects result value to be any number, and by default will scale to show the full range. See also 'lua_load' on how to load
         scripts. Takes the switch '-t' to use a temperature
         gradient, which makes the gradient values change depending
         on the amplitude of a particular graph value (try it and

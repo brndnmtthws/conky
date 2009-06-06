@@ -165,7 +165,7 @@ char *llua_getstring_read(const char *function, const char *arg)
 	return ret;
 }
 
-int llua_getinteger(const char *args, int *per)
+double llua_getnumber(const char *args, int *per)
 {
 	char *func;
 
@@ -174,9 +174,9 @@ int llua_getinteger(const char *args, int *per)
 	func = llua_do_call(args, 1);
 	if(func) {
 		if(!lua_isnumber(lua_L, -1)) {
-			ERR("llua_getinteger: function %s didn't return an integer, result discarded", func);
+			ERR("llua_getnumber: function %s didn't return a number, result discarded", func);
 		} else {
-			*per = lua_tointeger(lua_L, -1);
+			*per = lua_tonumber(lua_L, -1);
 			lua_pop(lua_L, 1);
 			return 1;
 		}
