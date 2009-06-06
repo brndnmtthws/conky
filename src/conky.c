@@ -2989,12 +2989,12 @@ static char *handle_template(const char *tmpl, const char *args)
 		args_dup = strdup(args);
 		p = args_dup;
 		while (*p) {
-			while (*p && (*p == ' ' && p > args_dup && *(p - 1) != '\\'))
+			while (*p && (*p == ' ' && (p == args_dup || *(p - 1) != '\\')))
 				p++;
 			if (p > args_dup && *(p - 1) == '\\')
 				p--;
 			p_old = p;
-			while (*p && (*p != ' ' || p == args_dup || *(p - 1) == '\\'))
+			while (*p && (*p != ' ' || (p > args_dup && *(p - 1) == '\\')))
 				p++;
 			if (*p) {
 				(*p) = '\0';
