@@ -7194,9 +7194,6 @@ static void clean_up(void)
 
 #endif /* X11 */
 
-#ifdef HAVE_OPENMP
-#pragma omp parallel for
-#endif /* HAVE_OPENMP */
 	for (i = 0; i < MAX_TEMPLATES; i++) {
 		if (template[i]) {
 			free(template[i]);
@@ -7387,9 +7384,6 @@ static void set_default_configurations(void)
 	info.x11.monitor.current = 0;
 #endif /* X11 */
 
-#ifdef HAVE_OPENMP
-#pragma omp parallel for
-#endif /* HAVE_OPENMP */
 	for (i = 0; i < MAX_TEMPLATES; i++) {
 		template[i] = strdup("");
 	}
