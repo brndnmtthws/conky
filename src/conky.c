@@ -405,7 +405,6 @@ static int pad_percents = 0;
 static char *global_text = 0;
 long global_text_lines;
 
-static int total_updates;
 static int updatereset;
 
 int check_contains(char *f, char *s)

@@ -173,7 +173,7 @@ void update_net_stats()
 
 	/* get delta */
 	delta = current_update_time - last_update_time;
-	if (delta <= 0.0001) {
+	if (delta <= 0.0001 && total_updates != 0) {
 		return;
 	}
 

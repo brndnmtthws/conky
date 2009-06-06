@@ -332,6 +332,8 @@ enum x_initialiser_state {
 extern int output_methods;
 extern enum x_initialiser_state x_initialised;
 
+int total_updates;
+
 #define DEFAULT_TEXT_BUFFER_SIZE_S "##DEFAULT_TEXT_BUFFER_SIZE"
 
 #endif /* _conky_h_ */
