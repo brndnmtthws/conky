@@ -817,7 +817,7 @@ $PACKAGE $VERSION configured successfully:
   nvidia:           $want_nvidia
   eve-online:       $want_eve
   config-output:    $want_config_output
-  IMLIB2:           $want_imlib2
+  Imlib2:           $want_imlib2
   ALSA mixer:       $want_alsa
   apcupsd:          $want_apcupsd
 EOF
