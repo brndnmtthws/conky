@@ -63,7 +63,7 @@ struct font_list {
 
 #endif
 
-#define MAX_FONTS 64 // hmm, no particular reason, just makes sense.
+#define MAX_FONTS 256
 
 /* direct access to registered fonts (FIXME: bad encapsulation) */
 extern struct font_list *fonts;
