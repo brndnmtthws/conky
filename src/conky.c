@@ -4000,7 +4000,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 				barnum = get_barnum(p);
 
-				if (barnum >= 0.0) {
+				if (barnum >= 0) {
 					new_graph(p, obj->a, obj->b, obj->c, obj->d, round_to_int(barnum),
 						100, 1, showaslog);
 				}
@@ -4382,21 +4382,21 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 #ifdef X11
 			OBJ(lua_bar) {
-				int per;
-				if (llua_getinteger(obj->data.s, &per)) {
+				double per;
+				if (llua_getnumber(obj->data.s, &per)) {
 					new_bar(p, obj->a, obj->b, (per/100.0 * 255));
 				}
 			}
 			OBJ(lua_graph) {
-				int per;
-				if (llua_getinteger(obj->data.s, &per)) {
+				double per;
+				if (llua_getnumber(obj->data.s, &per)) {
 					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-							(per/100.0 * 255), 100, 1, obj->showaslog);
+							per, obj->e, 1, obj->showaslog);
 				}
 			}
 			OBJ(lua_gauge) {
-				int per;
-				if (llua_getinteger(obj->data.s, &per)) {
+				double per;
+				if (llua_getnumber(obj->data.s, &per)) {
 					new_gauge(p, obj->a, obj->b, (per/100.0 * 255));
 				}
 			}

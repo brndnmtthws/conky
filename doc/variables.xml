@@ -2397,7 +2397,9 @@
 			<option>("normal"|"log") (height),(width) (gradient colour 1) (gradient colour 2) (scale) function_name (function parameters)</option>
 		</term>
 		<listitem>
-			Executes a Lua function with given parameters and draws a graph. Expects result value to be an integer between 0 and 100.  See also 'lua_load' on how to load scripts.
+			Executes a Lua function with given parameters and
+			draws a graph. Expects result value to be any number, and by default will scale to show the full range. See also 'lua_load' on how to load
+		 scripts.
 			<para></para></listitem>
 	</varlistentry>
 

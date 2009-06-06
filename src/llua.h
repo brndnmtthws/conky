@@ -30,7 +30,7 @@ void llua_init(void);
 void llua_load(const char *script);
 char *llua_getstring(const char *args);
 char *llua_getstring_read(const char *function, const char *arg);
-int llua_getinteger(const char *args, int *per);
+int llua_getnumber(const char *args, double *per);
 void llua_close(void);
 #ifdef HAVE_SYS_INOTIFY_H
 void llua_inotify_query(int wd, int mask);
