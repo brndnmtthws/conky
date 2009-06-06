@@ -2790,7 +2790,7 @@ static struct text_object *construct_text_object(const char *s,
 			int endvar[2];
 			startvar[0] = endvar[0] = startvar[1] = endvar[1] = -1;
 			j=0;
-			for(i=0; arg[i] != 0 && j < 2; i++) {
+			for (i=0; arg[i] != 0 && j < 2; i++) {
 				if(startvar[j] == -1) {
 					if(arg[i] == '$') {
 						startvar[j] = i;
@@ -2808,12 +2808,19 @@ static struct text_object *construct_text_object(const char *s,
 				}
 			}
 			if(startvar[0] >= 0 && endvar[0] >= 0 && startvar[1] >= 0 && endvar[1] >= 0) {
-				obj->data.combine.left=malloc(endvar[0]-startvar[0]+1);
-				obj->data.combine.seperation=malloc(startvar[1]-endvar[0]+1);
-				obj->data.combine.right=malloc(endvar[1]-startvar[1]+1);
-				strncpy(obj->data.combine.left, arg+startvar[0], endvar[0]-startvar[0]); obj->data.combine.left[endvar[0]-startvar[0]]=0;
-				strncpy(obj->data.combine.seperation, arg+endvar[0], startvar[1]-endvar[0]); obj->data.combine.seperation[startvar[1]-endvar[0]]=0;
-				strncpy(obj->data.combine.right, arg+startvar[1], endvar[1]-startvar[1]); obj->data.combine.right[endvar[1]-startvar[1]]=0;
+				obj->data.combine.left = malloc(endvar[0]-startvar[0] + 1);
+				obj->data.combine.seperation = malloc(startvar[1] - endvar[0] + 1);
+				obj->data.combine.right= malloc(endvar[1]-startvar[1] + 1);
+				
+				strncpy(obj->data.combine.left, arg + startvar[0], endvar[0] - startvar[0]);
+				obj->data.combine.left[endvar[0] - startvar[0]] = 0;
+				
+				strncpy(obj->data.combine.seperation, arg + endvar[0], startvar[1] - endvar[0]);
+				obj->data.combine.seperation[startvar[1] - endvar[0]] = 0;
+				
+				strncpy(obj->data.combine.right, arg + startvar[1], endvar[1] - startvar[1]);
+				obj->data.combine.right[endvar[1] - startvar[1]] = 0;
+
 				obj->sub = malloc(sizeof(struct text_object));
 				extract_variable_text_internal(obj->sub, obj->data.combine.left, 0);
 				obj->sub->sub = malloc(sizeof(struct text_object));
@@ -5529,23 +5536,13 @@ static void generate_text_internal(char *p, int p_max_size,
 				struct text_object * objsub = obj->sub;
 
 				p[0]=0;
-				#ifdef HAVE_OPENMP
-				#pragma omp parallel for
-				#endif /* HAVE_OPENMP */
 				for(i=0; i<2; i++) {
 					nr_rows[i] = 1;
 					nextstart = 0;
 					ll_rows[i] = malloc(sizeof(struct llrows));
 					current[i] = ll_rows[i];
-					#ifdef HAVE_OPENMP
-					#pragma omp parallel for
-					#endif /* HAVE_OPENMP */
 					for(j=0; j<i; j++) objsub = objsub->sub;
 					generate_text_internal(buf[i], max_user_text, *objsub, cur);
-					/* doesnut work
-					 * #ifdef HAVE_OPENMP
-					 * #pragma omp parallel for reduction (+:nr_rows[i])
-					 * #endif  HAVE_OPENMP */
 					for(j=0; buf[i][j] != 0; j++) {
 						if(buf[i][j] == '\t') buf[i][j] = ' ';
 						if(buf[i][j] == '\n') {
