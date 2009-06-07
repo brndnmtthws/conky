@@ -2557,6 +2557,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.s = strndup(arg, text_buffer_size);
 		else
 			ERR("smapi_bat_power needs an argument");
+#ifdef X11
 	END OBJ(smapi_bat_bar, 0)
 		SIZE_DEFAULTS(bar);
 		if(arg) {
@@ -2570,6 +2571,7 @@ static struct text_object *construct_text_object(const char *s,
 			}
 		} else
 			ERR("smapi_bat_bar needs an argument");
+#endif /* X11 */
 #endif /* IBM */
 #ifdef MPD
 #define mpd_set_maxlen(name) \
@@ -2647,9 +2649,11 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(xmms2_size, INFO_XMMS2)
 	END OBJ(xmms2_status, INFO_XMMS2)
 	END OBJ(xmms2_percent, INFO_XMMS2)
+#ifdef X11
 	END OBJ(xmms2_bar, INFO_XMMS2)
 		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+#endif /* X11 */
 	END OBJ(xmms2_smart, INFO_XMMS2)
 	END OBJ(xmms2_playlist, INFO_XMMS2)
 	END OBJ(xmms2_timesplayed, INFO_XMMS2)
@@ -2677,9 +2681,11 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(audacious_playlist_length, INFO_AUDACIOUS)
 	END OBJ(audacious_playlist_position, INFO_AUDACIOUS)
 	END OBJ(audacious_main_volume, INFO_AUDACIOUS)
+#ifdef X11
 	END OBJ(audacious_bar, INFO_AUDACIOUS)
 		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->a, &obj->b);
+#endif /* X11 */
 #endif
 #ifdef BMPX
 	END OBJ(bmpx_title, INFO_BMPX)
@@ -5232,10 +5238,12 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(xmms2_percent) {
 				snprintf(p, p_max_size, "%2.0f", cur->xmms2.progress * 100);
 			}
+#ifdef X11
 			OBJ(xmms2_bar) {
 				new_bar(p, obj->data.pair.a, obj->data.pair.b,
 					(int) (cur->xmms2.progress * 255.0f));
 			}
+#endif /* X11 */
 			OBJ(xmms2_playlist) {
 				snprintf(p, p_max_size, "%s", cur->xmms2.playlist);
 			}
@@ -5311,6 +5319,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%s",
 					cur->audacious.items[AUDACIOUS_MAIN_VOLUME]);
 			}
+#ifdef X11
 			OBJ(audacious_bar) {
 				double progress;
 
@@ -5319,6 +5328,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					atof(cur->audacious.items[AUDACIOUS_LENGTH_SECONDS]);
 				new_bar(p, obj->a, obj->b, (int) (progress * 255.0f));
 			}
+#endif /* X11 */
 #endif /* AUDACIOUS */
 
 #ifdef BMPX
@@ -5538,6 +5548,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				} else
 					ERR("argument to smapi_bat_power must be an integer");
 			}
+#ifdef X11
 			OBJ(smapi_bat_bar) {
 				if(obj->data.i >= 0 && smapi_bat_installed(obj->data.i))
 					new_bar(p, obj->a, obj->b, (int)
@@ -5545,6 +5556,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				else
 					new_bar(p, obj->a, obj->b, 0);
 			}
+#endif /* X11 */
 #endif /* IBM */
 			OBJ(scroll) {
 				unsigned int j;
