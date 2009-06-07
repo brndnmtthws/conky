@@ -1267,43 +1267,64 @@ static struct text_object *construct_text_object(const char *s,
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("wireless_essid: needs an argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(wireless_mode, INFO_NET)
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("wireless_mode: needs an argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(wireless_bitrate, INFO_NET)
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("wireless_bitrate: needs an argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(wireless_ap, INFO_NET)
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("wireless_ap: needs an argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(wireless_link_qual, INFO_NET)
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("wireless_link_qual: needs an argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(wireless_link_qual_max, INFO_NET)
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("wireless_link_qual_max: needs an argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(wireless_link_qual_perc, INFO_NET)
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("wireless_link_qual_perc: needs an argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(wireless_link_bar, INFO_NET)
 		SIZE_DEFAULTS(bar);
@@ -1311,7 +1332,10 @@ static struct text_object *construct_text_object(const char *s,
 			arg = scan_bar(arg, &obj->a, &obj->b);
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("wireless_link_bar: needs an argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 #endif /* HAVE_IWLIB */
 
@@ -1586,13 +1610,19 @@ static struct text_object *construct_text_object(const char *s,
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("downspeed needs argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(downspeedf, INFO_NET)
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("downspeedf needs argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 #ifdef X11
 	END OBJ(downspeedgraph, INFO_NET)
@@ -1927,14 +1957,20 @@ static struct text_object *construct_text_object(const char *s,
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("addr needs argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 #if defined(__linux__)
 	END OBJ(addrs, INFO_NET)
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("addrs needs argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 #endif /* __linux__ */
 	END OBJ(tail, 0)
@@ -2387,14 +2423,20 @@ static struct text_object *construct_text_object(const char *s,
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("totaldown needs argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(totalup, INFO_NET)
 		obj->data.net = get_net_stat(arg);
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("totalup needs argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(updates, 0)
 	END OBJ_IF(if_updatenr, 0)
@@ -2409,13 +2451,19 @@ static struct text_object *construct_text_object(const char *s,
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("upspeed needs argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(upspeedf, INFO_NET)
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("upspeedf needs argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 
 #ifdef X11

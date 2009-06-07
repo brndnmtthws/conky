@@ -31,7 +31,7 @@
             <command>
                 <option>addr</option>
             </command>
-            <option>interface</option>
+            <option>(interface)</option>
         </term>
         <listitem>IP address for an interface, or "No Address" if
         no address is assigned.
@@ -42,7 +42,7 @@
             <command>
                 <option>addrs</option>
             </command>
-            <option>interface</option>
+            <option>(interface)</option>
         </term>
         <listitem>IP addresses for an interface (if one - works
         like addr). Linux only.
@@ -745,7 +745,7 @@
             <command>
                 <option>downspeed</option>
             </command>
-            <option>net</option>
+            <option>(net)</option>
         </term>
         <listitem>Download speed in KiB
         <para /></listitem>
@@ -755,7 +755,7 @@
             <command>
                 <option>downspeedf</option>
             </command>
-            <option>net</option>
+            <option>(net)</option>
         </term>
         <listitem>Download speed in KiB with one decimal
         <para /></listitem>
@@ -2929,7 +2929,7 @@
             <command>
                 <option>totaldown</option>
             </command>
-            <option>net</option>
+            <option>(net)</option>
         </term>
         <listitem>Total download, overflows at 4 GB on Linux with
         32-bit arch and there doesn't seem to be a way to know how
@@ -2942,7 +2942,7 @@
             <command>
                 <option>totalup</option>
             </command>
-            <option>net</option>
+            <option>(net)</option>
         </term>
         <listitem>Total upload, this one too, may overflow
         <para /></listitem>
@@ -3041,7 +3041,7 @@
             <command>
                 <option>upspeed</option>
             </command>
-            <option>net</option>
+            <option>(net)</option>
         </term>
         <listitem>Upload speed in KiB
         <para /></listitem>
@@ -3051,7 +3051,7 @@
             <command>
                 <option>upspeedf</option>
             </command>
-            <option>net</option>
+            <option>(net)</option>
         </term>
         <listitem>Upload speed in KiB with one decimal
         <para /></listitem>
@@ -3176,7 +3176,7 @@
             <command>
                 <option>wireless_ap</option>
             </command>
-            <option>net</option>
+            <option>(net)</option>
         </term>
         <listitem>Wireless access point MAC address (Linux only)
         <para /></listitem>
@@ -3186,7 +3186,7 @@
             <command>
                 <option>wireless_bitrate</option>
             </command>
-            <option>net</option>
+            <option>(net)</option>
         </term>
         <listitem>Wireless bitrate (ie 11 Mb/s) (Linux only)
         <para /></listitem>
@@ -3196,7 +3196,7 @@
             <command>
                 <option>wireless_essid</option>
             </command>
-            <option>net</option>
+            <option>(net)</option>
         </term>
         <listitem>Wireless access point ESSID (Linux only)
         <para /></listitem>
@@ -3206,7 +3206,7 @@
             <command>
                 <option>wireless_link_bar</option>
             </command>
-            <option>(height), (width) net</option>
+            <option>(height),(width) (net)</option>
         </term>
         <listitem>Wireless link quality bar (Linux only)
         <para /></listitem>
@@ -3216,7 +3216,7 @@
             <command>
                 <option>wireless_link_qual</option>
             </command>
-            <option>net</option>
+            <option>(net)</option>
         </term>
         <listitem>Wireless link quality (Linux only)
         <para /></listitem>
@@ -3226,7 +3226,7 @@
             <command>
                 <option>wireless_link_qual_max</option>
             </command>
-            <option>net</option>
+            <option>(net)</option>
         </term>
         <listitem>Wireless link quality maximum value (Linux only)
         <para /></listitem>
@@ -3236,7 +3236,7 @@
             <command>
                 <option>wireless_link_qual_perc</option>
             </command>
-            <option>net</option>
+            <option>(net)</option>
         </term>
         <listitem>Wireless link quality in percents (Linux only)
         <para /></listitem>
@@ -3246,7 +3246,7 @@
             <command>
                 <option>wireless_mode</option>
             </command>
-            <option>net</option>
+            <option>(net)</option>
         </term>
         <listitem>Wireless mode (Managed/Ad-Hoc/Master) (Linux
         only)
