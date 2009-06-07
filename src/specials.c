@@ -254,8 +254,7 @@ void new_font(char *buf, char *args)
 		if (s->font_added > font_count || !s->font_added || (strncmp(args, fonts[s->font_added].name, DEFAULT_TEXT_BUFFER_SIZE) != EQUAL) ) {
 			int tmp = selected_font;
 
-			selected_font = s->font_added = addfont(args);
-			load_fonts();
+			selected_font = s->font_added = add_font(args);
 			selected_font = tmp;
 		}
 	} else {
