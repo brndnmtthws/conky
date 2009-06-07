@@ -8514,7 +8514,7 @@ static void print_help(const char *prog_name) {
 			"file.\n"
 			"   -v, --version             version\n"
 			"   -q, --quiet               quiet mode\n"
-			"   -D, --debug               increase debugging output\n"
+			"   -D, --debug               increase debugging output, ie. -DD for more debugging\n"
 			"   -c, --config=FILE         config file to load\n"
 #ifdef CONFIG_OUTPUT
 			"   -C, --print-config        print the builtin default config to stdout\n"
