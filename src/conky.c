@@ -1288,6 +1288,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			CRIT_ERR("wireless_link_qual_perc: needs an argument");
 		}
+#ifdef X11
 	END OBJ(wireless_link_bar, INFO_NET)
 		SIZE_DEFAULTS(bar);
 		if (arg) {
@@ -1296,6 +1297,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			CRIT_ERR("wireless_link_bar: needs an argument");
 		}
+#endif /* X11 */
 #endif /* HAVE_IWLIB */
 
 #endif /* __linux__ */
@@ -3452,7 +3454,9 @@ static void generate_text_internal(char *p, int p_max_size,
 		struct text_object root, struct information *cur)
 {
 	struct text_object *obj;
+#ifdef X11
 	int need_to_load_fonts = 0;
+#endif
 
 	/* for the OBJ_top* handler */
 	struct process **needed = 0;
@@ -3564,10 +3568,12 @@ static void generate_text_internal(char *p, int p_max_size,
 					spaced_print(p, p_max_size, "unk", 5);
 				}
 			}
+#ifdef X11
 			OBJ(wireless_link_bar) {
 				new_bar(p, obj->a, obj->b, ((double) obj->data.net->link_qual /
 							obj->data.net->link_qual_max) * 255.0);
 			}
+#endif /* X11 */
 #endif /* HAVE_IWLIB */
 
 #endif /* __linux__ */
