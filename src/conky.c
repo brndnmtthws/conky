@@ -3515,7 +3515,9 @@ static void generate_text_internal(char *p, int p_max_size,
 		struct text_object root, struct information *cur)
 {
 	struct text_object *obj;
+#ifdef X11
 	int need_to_load_fonts = 0;
+#endif /* X11 */
 
 	/* for the OBJ_top* handler */
 	struct process **needed = 0;
@@ -3524,7 +3526,7 @@ static void generate_text_internal(char *p, int p_max_size,
 	char buff_in[p_max_size];
 	buff_in[0] = 0;
 	iconv_converting = 0;
-#endif
+#endif /* HAVE_ICONV */
 
 	p[0] = 0;
 	obj = root.next;
@@ -3613,7 +3615,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					/* OpenBSD has no such flag (SUSv2) */
 					obj->a = get_freq(p, p_max_size, "%.2f", 1000,
 							obj->data.cpu_index);
-#endif
+#endif /* __OpenBSD */
 				}
 			}
 #if defined(__linux__)
