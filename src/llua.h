@@ -26,13 +26,20 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
+/* initialize lua stuff */
 void llua_init(void);
+/* load a lua script */
 void llua_load(const char *script);
+/* call a function with args, and return a string from it (must be free'd) */
 char *llua_getstring(const char *args);
+/* call a function with args, and return a string from it (must be free'd) */
 char *llua_getstring_read(const char *function, const char *arg);
-int llua_getinteger(const char *args, int *per);
+/* call a function with args, and put the result in ret */
+int llua_getnumber(const char *args, double *ret);
+/* close lua stuff */
 void llua_close(void);
 #ifdef HAVE_SYS_INOTIFY_H
+/* check our lua inotify status */
 void llua_inotify_query(int wd, int mask);
 #endif /* HAVE_SYS_INOTIFY_H */
 

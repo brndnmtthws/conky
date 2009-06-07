@@ -1267,43 +1267,64 @@ static struct text_object *construct_text_object(const char *s,
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("wireless_essid: needs an argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(wireless_mode, INFO_NET)
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("wireless_mode: needs an argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(wireless_bitrate, INFO_NET)
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("wireless_bitrate: needs an argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(wireless_ap, INFO_NET)
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("wireless_ap: needs an argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(wireless_link_qual, INFO_NET)
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("wireless_link_qual: needs an argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(wireless_link_qual_max, INFO_NET)
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("wireless_link_qual_max: needs an argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(wireless_link_qual_perc, INFO_NET)
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("wireless_link_qual_perc: needs an argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(wireless_link_bar, INFO_NET)
 		SIZE_DEFAULTS(bar);
@@ -1311,7 +1332,10 @@ static struct text_object *construct_text_object(const char *s,
 			arg = scan_bar(arg, &obj->a, &obj->b);
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("wireless_link_bar: needs an argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 #endif /* HAVE_IWLIB */
 
@@ -1586,13 +1610,19 @@ static struct text_object *construct_text_object(const char *s,
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("downspeed needs argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(downspeedf, INFO_NET)
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("downspeedf needs argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 #ifdef X11
 	END OBJ(downspeedgraph, INFO_NET)
@@ -1602,7 +1632,7 @@ static struct text_object *construct_text_object(const char *s,
 				&obj->e, &obj->char_a, &obj->char_b);
 
 		// default to DEFAULTNETDEV
-		buf = strndup(buf ? buf : "DEFAULTNETDEV", text_buffer_size);
+		buf = strndup(buf ? buf : DEFAULTNETDEV, text_buffer_size);
 		obj->data.net = get_net_stat(buf);
 		free(buf);
 #endif /* X11 */
@@ -1927,14 +1957,20 @@ static struct text_object *construct_text_object(const char *s,
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("addr needs argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 #if defined(__linux__)
 	END OBJ(addrs, INFO_NET)
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("addrs needs argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 #endif /* __linux__ */
 	END OBJ(tail, 0)
@@ -2387,14 +2423,20 @@ static struct text_object *construct_text_object(const char *s,
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("totaldown needs argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(totalup, INFO_NET)
 		obj->data.net = get_net_stat(arg);
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("totalup needs argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(updates, 0)
 	END OBJ_IF(if_updatenr, 0)
@@ -2409,13 +2451,19 @@ static struct text_object *construct_text_object(const char *s,
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("upspeed needs argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 	END OBJ(upspeedf, INFO_NET)
 		if (arg) {
 			obj->data.net = get_net_stat(arg);
 		} else {
-			CRIT_ERR("upspeedf needs argument");
+			// default to DEFAULTNETDEV
+			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
+			obj->data.net = get_net_stat(buf);
+			free(buf);
 		}
 
 #ifdef X11
@@ -2426,7 +2474,7 @@ static struct text_object *construct_text_object(const char *s,
 				&obj->e, &obj->char_a, &obj->char_b);
 
 		// default to DEFAULTNETDEV
-		buf = strndup(buf ? buf : "DEFAULTNETDEV", text_buffer_size);
+		buf = strndup(buf ? buf : DEFAULTNETDEV, text_buffer_size);
 		obj->data.net = get_net_stat(buf);
 		free(buf);
 #endif
@@ -2989,12 +3037,12 @@ static char *handle_template(const char *tmpl, const char *args)
 		args_dup = strdup(args);
 		p = args_dup;
 		while (*p) {
-			while (*p && (*p == ' ' && p > args_dup && *(p - 1) != '\\'))
+			while (*p && (*p == ' ' && (p == args_dup || *(p - 1) != '\\')))
 				p++;
 			if (p > args_dup && *(p - 1) == '\\')
 				p--;
 			p_old = p;
-			while (*p && (*p != ' ' || p == args_dup || *(p - 1) == '\\'))
+			while (*p && (*p != ' ' || (p > args_dup && *(p - 1) == '\\')))
 				p++;
 			if (*p) {
 				(*p) = '\0';
@@ -3467,6 +3515,7 @@ static void generate_text_internal(char *p, int p_max_size,
 		struct text_object root, struct information *cur)
 {
 	struct text_object *obj;
+	int need_to_load_fonts = 0;
 
 	/* for the OBJ_top* handler */
 	struct process **needed = 0;
@@ -3902,6 +3951,7 @@ static void generate_text_internal(char *p, int p_max_size,
 #ifdef X11
 			OBJ(font) {
 				new_font(p, obj->data.s);
+				need_to_load_fonts = 1;
 			}
 #endif /* X11 */
 			/* TODO: move this correction from kB to kB/s elsewhere
@@ -4073,7 +4123,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				read_exec(cmd, p, text_buffer_size);
 				barnum = get_barnum(p);
 
-				if (barnum >= 0.0) {
+				if (barnum > 0) {
 					new_graph(p, obj->a, obj->b, obj->c, obj->d, round_to_int(barnum),
 							100, 1, showaslog, tempgrad);
 				}
@@ -4514,8 +4564,8 @@ static void generate_text_internal(char *p, int p_max_size,
 				free(tmp_info);
 			}
 			OBJ(lua_bar) {
-				int per;
-				if (llua_getinteger(obj->data.s, &per)) {
+				double per;
+				if (llua_getnumber(obj->data.s, &per)) {
 #ifdef X11
 					if(output_methods & TO_X) {
 						new_bar(p, obj->a, obj->b, (per/100.0 * 255));
@@ -4530,15 +4580,15 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 #ifdef X11
 			OBJ(lua_graph) {
-				int per;
-				if (llua_getinteger(obj->data.s, &per)) {
+				double per;
+				if (llua_getnumber(obj->data.s, &per)) {
 					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-							(per/100.0 * 255), 100, 1, obj->char_a, obj->char_b);
+							per, obj->e, 1, obj->char_a, obj->char_b);
 				}
 			}
 			OBJ(lua_gauge) {
-				int per;
-				if (llua_getinteger(obj->data.s, &per)) {
+				double per;
+				if (llua_getnumber(obj->data.s, &per)) {
 					new_gauge(p, obj->a, obj->b, (per/100.0 * 255));
 				}
 			}
@@ -5733,6 +5783,12 @@ static void generate_text_internal(char *p, int p_max_size,
 		}
 		obj = obj->next;
 	}
+#ifdef X11
+	/* load any new fonts we may have had */
+	if (need_to_load_fonts) {
+		load_fonts();
+	}
+#endif /* X11 */
 }
 
 double current_update_time, next_update_time, last_update_time;
@@ -6444,7 +6500,6 @@ static void draw_line(char *s)
 					} else {
 						cur_y += font_ascent();
 					}
-					set_font();
 					font_h = font_height();
 					break;
 				}
@@ -6875,7 +6930,6 @@ static void main_loop(void)
 									|| ev.xconfigure.y != 0)) {
 								fixed_pos = 1;
 							} */
-							set_font();
 						}
 						break;
 
@@ -7140,7 +7194,6 @@ static void reload_config(void)
 		}
 
 #ifdef X11
-		x_initialised = NO;
 		if (output_methods & TO_X) {
 			X11_initialisation();
 		}
@@ -7163,10 +7216,10 @@ static void reload_config(void)
 		}
 		text_buffer = malloc(max_user_text);
 		memset(text_buffer, 0, max_user_text);
-		update_text();
 #ifdef X11
 		X11_create_window();
 #endif /* X11 */
+		update_text();
 	}
 }
 
@@ -7444,6 +7497,36 @@ static _Bool append_works(const char *path)
 }
 
 #ifdef X11
+#ifdef DEBUG
+/* WARNING, this type not in Xlib spec */
+int x11_error_handler(Display *d, XErrorEvent *err)
+	__attribute__((noreturn));
+int x11_error_handler(Display *d, XErrorEvent *err)
+{
+	ERR("X Error: type %i Display %lx XID %li serial %lu error_code %i request_code %i minor_code %i other Display: %lx\n",
+			err->type,
+			(long unsigned)err->display,
+			(long)err->resourceid,
+			err->serial,
+			err->error_code,
+			err->request_code,
+			err->minor_code,
+			(long unsigned)d
+			);
+	abort();
+}
+
+int x11_ioerror_handler(Display *d)
+	__attribute__((noreturn));
+int x11_ioerror_handler(Display *d)
+{
+	ERR("X Error: Display %lx\n",
+			(long unsigned)d
+			);
+	abort();
+}
+#endif /* DEBUG */
+
 static void X11_initialisation(void)
 {
 	if (x_initialised == YES) return;
@@ -7451,6 +7534,12 @@ static void X11_initialisation(void)
 	init_X11(disp);
 	set_default_configurations_for_x();
 	x_initialised = YES;
+#ifdef DEBUG
+	_Xdebug = 1;
+	/* WARNING, this type not in Xlib spec */
+	XSetErrorHandler(&x11_error_handler);
+	XSetIOErrorHandler(&x11_ioerror_handler);
+#endif /* DEBUG */
 }
 
 static void X11_destroy_window(void)
@@ -7468,6 +7557,7 @@ static void X11_destroy_window(void)
 #endif /* HAVE_XDAMAGE */
 		destroy_window();
 	}
+	x_initialised = NO;
 }
 
 static char **xargv = 0;
@@ -7486,7 +7576,7 @@ static void X11_create_window(void)
 				xargv, xargc);
 #endif /* OWN_WINDOW */
 
-		selected_font = 0;
+		setup_fonts();
 		load_fonts();
 		update_text_area();	/* to position text/window on screen */
 
@@ -7501,7 +7591,6 @@ static void X11_create_window(void)
 
 		create_gc();
 
-		set_font();
 		draw_stuff();
 
 		x11_stuff.region = XCreateRegion();
@@ -7926,7 +8015,7 @@ static void load_config_file(const char *f)
 #else
 		CONF("use_xft") {
 			if (string_to_bool(value)) {
-				ERR("Xft not enabled");
+				ERR("Xft not enabled at compile time");
 			}
 		}
 		CONF("xftfont") {
@@ -8514,7 +8603,7 @@ static void print_help(const char *prog_name) {
 			"file.\n"
 			"   -v, --version             version\n"
 			"   -q, --quiet               quiet mode\n"
-			"   -D, --debug               increase debugging output\n"
+			"   -D, --debug               increase debugging output, ie. -DD for more debugging\n"
 			"   -c, --config=FILE         config file to load\n"
 #ifdef CONFIG_OUTPUT
 			"   -C, --print-config        print the builtin default config to stdout\n"

@@ -8,6 +8,11 @@
 # This script also updates the vim and nano syntax files so it doesn't have to
 # be done manually.
 #
+# Requires the ElementTree Python module for the sorting stuff, see:
+# http://effbot.org/zone/element-index.htm
+#
+# You should also install htmltidy, but it's not necessary.
+#
 
 import os.path
 import re
@@ -211,4 +216,33 @@ file.truncate(0)
 file.seek(0)
 file.writelines(lines)
 file.close()
+
+
+print 'sorting/tidying docs...'
+
+# sort the docs by variable/config setting
+import string
+import xml.etree.ElementTree as ET
+
+vars_xml = ET.parse(file_names['variables'])
+config_xml = ET.parse(file_names['config_settings'])
+
+getkey = lambda x: x.findtext('term/command/option')
+
+vars = vars_xml.getroot()
+vars[:] = sorted(vars, key=getkey)
+
+configs = config_xml.getroot()
+configs[:] = sorted(configs, key=getkey)
+
+vars_xml.write(file_names['variables'])
+config_xml.write(file_names['config_settings'])
+
+def tidy(file):
+	command = ['tidy', '-qim', '-xml', '-utf8', '--indent-spaces', '4']
+	os.system('%s %s 2>/dev/null' % (string.join(command), file))
+
+tidy(file_names['variables'])
+tidy(file_names['config_settings'])
+
 print "done."

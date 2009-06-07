@@ -14,9 +14,16 @@
 	</varlistentry>
 
 	<varlistentry>
+		<term><command><option>-D | --debug</option></command></term>
+		<listitem>
+			Increase debugging output, ie. -DD for more debugging
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
 		<term><command><option>-a | --alignment=</option></command><option>ALIGNMENT</option></term>
 		<listitem>
-			Text alignment on screen, {top,bottom,middle}_{left,right,middle} or none
+			Text alignment on screen, {top,bottom,middle}_{left,right,middle} or none.  Can also be abbreviated with first chars of position, ie. tr for top_right.
 			<para></para></listitem>
 	</varlistentry>
 
@@ -87,6 +94,13 @@
 		<term><command><option>-w | --window-id=</option></command><option>WIN_ID</option></term>
 		<listitem>
 			Window id to draw
+			<para></para></listitem>
+	</varlistentry>
+
+	<varlistentry>
+		<term><command><option>-X | --display=</option></command><option>DISPLAY</option></term>
+		<listitem>
+			X11 display to use
 			<para></para></listitem>
 	</varlistentry>
 
