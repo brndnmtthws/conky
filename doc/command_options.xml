@@ -23,7 +23,7 @@
 	<varlistentry>
 		<term><command><option>-a | --alignment=</option></command><option>ALIGNMENT</option></term>
 		<listitem>
-			Text alignment on screen, {top,bottom,middle}_{left,right,middle} or none
+			Text alignment on screen, {top,bottom,middle}_{left,right,middle} or none.  Can also be abbreviated with first chars of position, ie. tr for top_right.
 			<para></para></listitem>
 	</varlistentry>
 
