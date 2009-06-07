@@ -1,5 +1,12 @@
+2009-06-06
+	* Add support for membar,swapbar,cpubar,fs_bar,fs_bar_free,battery_bar,
+	execbar,execibar,lua_bar,entropy_bar,mpd_bar,apcupsd_loadbar and
+	wireless_link_bar
+	* Fix finding IP before first update
+
 2009-06-04
 	* Add entropy_perc printing the available entropy as percentage
+	* Add read_tcp to print stuff from tcp-sockets
 
 2009-05-31
 	* Fix hostname resolution for mpd_host
