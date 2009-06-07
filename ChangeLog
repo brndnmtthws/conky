@@ -1,5 +1,6 @@
 2009-05-31
 	* Fix hostname resolution for mpd_host
+	* Made sure that no X11 stuff is in the binary with --disable-X11
 
 2009-05-19
 	* Added inotify support to reload the config when modified automatically
@@ -10,6 +11,16 @@
 	* Added support for the Lua programming language
 	* Added support for rending images by way of Imlib2
 	* Patch to fix rounding error with CPU values (thanks Filipe)
+	* Added support for execbar without X
+
+2009-05-16
+	* Added another builtin config that is used when compiled with --disable-X11
+
+2009-05-13
+	* Fix segfault when there is no config available
+
+2009-05-12
+	* Make sure if_gw isn't checked twice
 
 2009-05-11
 	* Added arguments to hwmon for value precalculation
@@ -17,10 +28,15 @@
 2009-05-10
 	* Added support for APC UPS daemon monitoring
 	* Fixed hwmon for kernel 2.6.29
+	* Fixed removing comments
 
 2009-05-09
 	* Allow the use of '#' for comments within text area (can be escaped with
 	'\#')
+
+2009-05-08
+	* Only include disp when needed
+	* Made sure update_uname works without X11
 
 2009-05-07
 	* Fix occasional cpubar segfaults
