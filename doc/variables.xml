@@ -684,8 +684,8 @@
             <command>
                 <option>diskiograph</option>
             </command>
-            <option>("normal"|"log") (height),(width) (gradient
-            colour 1) (gradient colour 2) (scale) (device)</option>
+            <option>(device) ("normal"|"log") (height),(width) (gradient
+            colour 1) (gradient colour 2) (scale)</option>
         </term>
         <listitem>Disk IO graph, colours defined in hex, minus the
         #. If scale is non-zero, it becomes the scale for the
@@ -698,8 +698,8 @@
             <command>
                 <option>diskiograph_read</option>
             </command>
-            <option>("normal"|"log") (height),(width) (gradient
-            colour 1) (gradient colour 2) (scale) (device)</option>
+            <option>(device) ("normal"|"log") (height),(width) (gradient
+            colour 1) (gradient colour 2) (scale)</option>
         </term>
         <listitem>Disk IO graph for reads, colours defined in hex,
         minus the #. If scale is non-zero, it becomes the scale for
@@ -713,8 +713,8 @@
             <command>
                 <option>diskiograph_write</option>
             </command>
-            <option>("normal"|"log") (height),(width) (gradient
-            colour 1) (gradient colour 2) (scale) (device)</option>
+            <option>(device) ("normal"|"log") (height),(width) (gradient
+            colour 1) (gradient colour 2) (scale)</option>
         </term>
         <listitem>Disk IO graph for writes, colours defined in hex,
         minus the #. If scale is non-zero, it becomes the scale for
@@ -748,8 +748,8 @@
             <command>
                 <option>downspeedgraph</option>
             </command>
-            <option>("normal"|"log") (height),(width) (gradient
-            colour 1) (gradient colour 2) (scale) (net)</option>
+            <option>(netdev) ("normal"|"log") (height),(width) (gradient
+				colour 1) (gradient colour 2) (scale)</option>
         </term>
         <listitem>Download speed graph, colours defined in hex,
         minus the #. If scale is non-zero, it becomes the scale for
@@ -1737,9 +1737,11 @@
             <command>
                 <option>lua_graph</option>
             </command>
-            <option>("normal"|"log") (height),(width) (gradient
-            colour 1) (gradient colour 2) (scale) function_name
-            (function parameters)</option>
+			<option>
+				function_name (function parameters)
+				("normal"|"log") (height),(width) (gradient
+				colour 1) (gradient colour 2) (scale)
+			</option>
         </term>
         <listitem>Executes a Lua function with given parameters and
         draws a graph. Expects result value to be any number, and
@@ -3003,8 +3005,8 @@
             <command>
                 <option>upspeedgraph</option>
             </command>
-            <option>("normal"|"log") (height),(width) (gradient
-            colour 1) (gradient colour 2) (scale) (net)</option>
+            <option>(netdev) ("normal"|"log") (height),(width) (gradient
+            colour 1) (gradient colour 2) (scale)</option>
         </term>
         <listitem>Upload speed graph, colours defined in hex, minus
         the #. If scale is non-zero, it becomes the scale for the
