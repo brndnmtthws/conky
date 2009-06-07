@@ -1585,7 +1585,7 @@ static struct text_object *construct_text_object(const char *s,
 			&obj->e, &obj->showaslog);
 
 		// default to DEFAULTNETDEV
-		buf = strndup(buf ? buf : "DEFAULTNETDEV", text_buffer_size);
+		buf = strndup(buf ? buf : DEFAULTNETDEV, text_buffer_size);
 		obj->data.net = get_net_stat(buf);
 		free(buf);
 #endif
@@ -2409,7 +2409,7 @@ static struct text_object *construct_text_object(const char *s,
 			&obj->e, &obj->showaslog);
 
 		// default to DEFAULTNETDEV
-		buf = strndup(buf ? buf : "DEFAULTNETDEV", text_buffer_size);
+		buf = strndup(buf ? buf : DEFAULTNETDEV, text_buffer_size);
 		obj->data.net = get_net_stat(buf);
 		free(buf);
 #endif
@@ -3452,6 +3452,7 @@ static void generate_text_internal(char *p, int p_max_size,
 		struct text_object root, struct information *cur)
 {
 	struct text_object *obj;
+	int need_to_load_fonts = 0;
 
 	/* for the OBJ_top* handler */
 	struct process **needed = 0;
@@ -3826,6 +3827,7 @@ static void generate_text_internal(char *p, int p_max_size,
 #ifdef X11
 			OBJ(font) {
 				new_font(p, obj->data.s);
+				need_to_load_fonts = 1;
 			}
 #endif
 			/* TODO: move this correction from kB to kB/s elsewhere
@@ -5538,6 +5540,12 @@ static void generate_text_internal(char *p, int p_max_size,
 		}
 		obj = obj->next;
 	}
+#ifdef X11
+	/* load any new fonts we may have had */
+	if (need_to_load_fonts) {
+		load_fonts();
+	}
+#endif /* X11 */
 }
 
 double current_update_time, next_update_time, last_update_time;
@@ -6233,7 +6241,6 @@ static void draw_line(char *s)
 					} else {
 						cur_y += font_ascent();
 					}
-					set_font();
 					font_h = font_height();
 					break;
 				}
@@ -6664,7 +6671,6 @@ static void main_loop(void)
 									|| ev.xconfigure.y != 0)) {
 								fixed_pos = 1;
 							} */
-							set_font();
 						}
 						break;
 
@@ -6929,7 +6935,6 @@ static void reload_config(void)
 		}
 
 #ifdef X11
-		x_initialised = NO;
 		if (output_methods & TO_X) {
 			X11_initialisation();
 		}
@@ -6952,10 +6957,10 @@ static void reload_config(void)
 		}
 		text_buffer = malloc(max_user_text);
 		memset(text_buffer, 0, max_user_text);
-		update_text();
 #ifdef X11
 		X11_create_window();
 #endif /* X11 */
+		update_text();
 	}
 }
 
@@ -7239,6 +7244,36 @@ static _Bool append_works(const char *path)
 }
 
 #ifdef X11
+#ifdef DEBUG
+/* WARNING, this type not in Xlib spec */
+int x11_error_handler(Display *d, XErrorEvent *err)
+	__attribute__((noreturn));
+int x11_error_handler(Display *d, XErrorEvent *err)
+{
+	ERR("X Error: type %i Display %lx XID %li serial %lu error_code %i request_code %i minor_code %i other Display: %lx\n",
+			err->type,
+			(long unsigned)err->display,
+			(long)err->resourceid,
+			err->serial,
+			err->error_code,
+			err->request_code,
+			err->minor_code,
+			(long unsigned)d
+			);
+	abort();
+}
+
+int x11_ioerror_handler(Display *d)
+	__attribute__((noreturn));
+int x11_ioerror_handler(Display *d)
+{
+	ERR("X Error: Display %lx\n",
+			(long unsigned)d
+			);
+	abort();
+}
+#endif /* DEBUG */
+
 static void X11_initialisation(void)
 {
 	if (x_initialised == YES) return;
@@ -7246,6 +7281,12 @@ static void X11_initialisation(void)
 	init_X11(disp);
 	set_default_configurations_for_x();
 	x_initialised = YES;
+#ifdef DEBUG
+	_Xdebug = 1;
+	/* WARNING, this type not in Xlib spec */
+	XSetErrorHandler(&x11_error_handler);
+	XSetIOErrorHandler(&x11_ioerror_handler);
+#endif /* DEBUG */
 }
 
 static void X11_destroy_window(void)
@@ -7263,6 +7304,7 @@ static void X11_destroy_window(void)
 #endif /* HAVE_XDAMAGE */
 		destroy_window();
 	}
+	x_initialised = NO;
 }
 
 static char **xargv = 0;
@@ -7281,7 +7323,7 @@ static void X11_create_window(void)
 				xargv, xargc);
 #endif /* OWN_WINDOW */
 
-		selected_font = 0;
+		setup_fonts();
 		load_fonts();
 		update_text_area();	/* to position text/window on screen */
 
@@ -7296,7 +7338,6 @@ static void X11_create_window(void)
 
 		create_gc();
 
-		set_font();
 		draw_stuff();
 
 		x11_stuff.region = XCreateRegion();
@@ -7721,7 +7762,7 @@ static void load_config_file(const char *f)
 #else
 		CONF("use_xft") {
 			if (string_to_bool(value)) {
-				ERR("Xft not enabled");
+				ERR("Xft not enabled at compile time");
 			}
 		}
 		CONF("xftfont") {
