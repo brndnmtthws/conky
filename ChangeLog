@@ -8,17 +8,17 @@
 	* Add entropy_perc printing the available entropy as percentage
 	* Add read_tcp to print stuff from tcp-sockets
 
+2009-05-24
+	* Added fancy new 'temperature gradients' feature for graphs, via the -t
+	switch at the end of graph arguments.
+	* Allow ~/... and $HOME/... paths for more stuff.
+
 2009-06-07
 	* Conky 1.7.1 released
 
 2009-05-31
 	* Fix hostname resolution for mpd_host
 	* Made sure that no X11 stuff is in the binary with --disable-X11
-
-2009-05-24
-	* Added fancy new 'temperature gradients' feature for graphs, via the -t
-	switch at the end of graph arguments.
-	* Allow ~/... and $HOME/... paths for more stuff.
 
 2009-05-19
 	* Added inotify support to reload the config when modified automatically
