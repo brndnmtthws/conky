@@ -2,6 +2,7 @@
 #define FREEBSD_H_
 
 #include "common.h"
+#include <sys/param.h>
 #include <sys/mount.h>
 #include <sys/ucred.h>
 #include <fcntl.h>
