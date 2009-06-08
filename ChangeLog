@@ -8,6 +8,9 @@
 	* Add entropy_perc printing the available entropy as percentage
 	* Add read_tcp to print stuff from tcp-sockets
 
+2009-06-07
+	* Conky 1.7.1 released
+
 2009-05-31
 	* Fix hostname resolution for mpd_host
 	* Made sure that no X11 stuff is in the binary with --disable-X11
