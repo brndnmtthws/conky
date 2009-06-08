@@ -1643,7 +1643,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
  		}
  		/* charged */
  		/* thanks to Lukas Zapletal <lzap@seznam.cz> */
- 		else if (strncmp(charging_state, "Charged", 64) == 0) {
+		else if (strncmp(charging_state, "Charged", 64) == 0 || strncmp(charging_state, "Full", 64) == 0) {
  				/* Below happens with the second battery on my X40,
  				 * when the second one is empty and the first one
  				 * being charged. */
@@ -1848,6 +1848,18 @@ void get_battery_short_status(char *buffer, unsigned int n, const char *bat)
 		memmove(buffer + 1, buffer + 8, n - 8);
 	} else if (0 == strncmp("discharging", buffer, 11)) {
 		buffer[0] = 'D';
+		memmove(buffer + 1, buffer + 11, n - 11);
+	} else if (0 == strncmp("charged", buffer, 7)) {
+		buffer[0] = 'F';
+		memmove(buffer + 1, buffer + 7, n - 7);
+	} else if (0 == strncmp("not present", buffer, 11)) {
+		buffer[0] = 'N';
+		memmove(buffer + 1, buffer + 11, n - 11);
+	} else if (0 == strncmp("empty", buffer, 5)) {
+		buffer[0] = 'E';
+		memmove(buffer + 1, buffer + 5, n - 5);
+	} else if (0 != strncmp("AC", buffer, 2)) {
+		buffer[0] = 'U';
 		memmove(buffer + 1, buffer + 11, n - 11);
 	}
 }

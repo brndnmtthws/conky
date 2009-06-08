@@ -433,8 +433,9 @@
         <listitem>Battery status and remaining percentage capacity
         of ACPI or APM battery. ACPI battery number can be given as
         argument (default is BAT0). This mode display a short
-        status, which means that C is displayed instead of charging
-        and D is displayed instead of discharging. 
+        status, which means that C is displayed instead of charging, 
+        D for discharging, F for full, N for not present, E for empty
+        and U for unknown. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>

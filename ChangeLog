@@ -1,3 +1,9 @@
+2009-06-08
+	* $battery_short can now also display F (full), N (not present),E (empty),
+	U (unknown)
+	* Fix problem that $battery and $battery_short displayed unknown on some
+	systems when the battery wasn't unknown but full
+
 2009-06-06
 	* Add support for membar,swapbar,cpubar,fs_bar,fs_bar_free,battery_bar,
 	execbar,execibar,lua_bar,entropy_bar,mpd_bar,apcupsd_loadbar and
