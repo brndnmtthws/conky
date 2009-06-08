@@ -74,7 +74,7 @@ void update_mail_count(struct local_mail_s *mail)
 	}
 
 	if (stat(mail->box, &st)) {
-		static int rep;
+		static int rep = 0;
 
 		if (!rep) {
 			ERR("can't stat %s: %s", mail->box, strerror(errno));
@@ -210,6 +210,7 @@ void update_mail_count(struct local_mail_s *mail)
 
 		while (!feof(fp)) {
 			char buf[128];
+			int was_new = 0;
 
 			if (fgets(buf, 128, fp) == NULL) {
 				break;
@@ -219,28 +220,53 @@ void update_mail_count(struct local_mail_s *mail)
 				/* ignore MAILER-DAEMON */
 				if (strncmp(buf + 5, "MAILER-DAEMON ", 14) != 0) {
 					mail->mail_count++;
+					was_new = 0;
 
-					if (reading_status) {
+					if (reading_status == 1) {
 						mail->new_mail_count++;
 					} else {
 						reading_status = 1;
 					}
 				}
 			} else {
-				if (reading_status
+				if (reading_status == 1
 						&& strncmp(buf, "X-Mozilla-Status:", 17) == 0) {
+					int xms = strtol(buf + 17, NULL, 16);
+					/* check that mail isn't marked for deletion */
+					if (xms & 0x0008) {
+						mail->trashed_mail_count++;
+						reading_status = 0;
+						/* Don't check whether the trashed email is unread */
+						continue;
+					}
 					/* check that mail isn't already read */
-					if (strchr(buf + 21, '0')) {
+					if (!(xms & 0x0001)) {
 						mail->new_mail_count++;
+						was_new = 1;
 					}
 
-					reading_status = 0;
+					/* check for an additional X-Status header */
+					reading_status = 2;
 					continue;
 				}
-				if (reading_status && strncmp(buf, "Status:", 7) == 0) {
+				if (reading_status == 1 && strncmp(buf, "Status:", 7) == 0) {
 					/* check that mail isn't already read */
 					if (strchr(buf + 7, 'R') == NULL) {
 						mail->new_mail_count++;
+						was_new = 1;
+					}
+
+					reading_status = 2;
+					continue;
+				}
+				if (reading_status >= 1 && strncmp(buf, "X-Status:", 9) == 0) {
+					/* check that mail isn't marked for deletion */
+					if (strchr(buf + 9, 'D') != NULL) {
+						mail->trashed_mail_count++;
+						/* If the mail was previously detected as new,
+						   subtract it from the new mail count */
+						if (was_new)
+							mail->new_mail_count--;
 					}
 
 					reading_status = 0;
