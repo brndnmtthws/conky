@@ -131,6 +131,7 @@ static char *tmpstring1, *tmpstring2;
 
 /* variables holding various config settings */
 int short_units;
+int format_human_readable;
 int cpu_separate;
 enum {
 	NO_SPACER = 0,
@@ -559,6 +560,11 @@ static void human_readable(long long num, char *buf, int size)
 	int width;
 	const char *format;
 
+	/* Possibly just output as usual, for example for stdout usage */
+	if (!format_human_readable) {
+		spaced_print(buf, size, "%d", 6, round_to_int(num));
+		return;
+	}
 	if (short_units) {
 		width = 5;
 		format = "%.*f%.1s";
@@ -7412,6 +7418,7 @@ static void set_default_configurations(void)
 	top_cpu = 0;
 	cpu_separate = 0;
 	short_units = 0;
+	format_human_readable = 1;
 	top_mem = 0;
 	top_time = 0;
 #ifdef MPD
@@ -8121,6 +8128,9 @@ static void load_config_file(const char *f)
 		}
 		CONF("short_units") {
 			short_units = string_to_bool(value);
+		}
+		CONF("format_human_readable") {
+			format_human_readable = string_to_bool(value);
 		}
 		CONF("pad_percents") {
 			pad_percents = atoi(value);

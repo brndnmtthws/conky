@@ -241,6 +241,17 @@
     <varlistentry>
         <term>
             <command>
+                <option>format_human_readable</option>
+            </command>
+        </term>
+        <listitem>If enabled, values which are in bytes will be
+        printed in human readable format (i.e., KiB, MiB, etc). If
+        disabled, the number of bytes is printed instead. 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>gap_x</option>
             </command>
         </term>

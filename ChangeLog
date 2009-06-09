@@ -1,3 +1,6 @@
+2009-06-09
+	* Added format_human_readable option (sf.net #2803345, thanks Vincent)
+
 2009-06-08
 	* $battery_short can now also display F (full), N (not present),E (empty),
 	U (unknown)
