@@ -3166,12 +3166,26 @@ static void strfold(char *start, int count)
 	for (curplace = start + count; *curplace != 0; curplace++) {
 		*(curplace - count) = *curplace;
 	}
-	*(curplace - count - 1) = 0;
+	*(curplace - count) = 0;
+}
+
+/*
+ * - assumes that *string is '#'
+ * - removes the part from '#' to the end of line ('\n' or '\0')
+ * - BUT, it leaves the '\n'
+ */
+static size_t remove_comment(char *string)
+{
+	char *end = string;
+	while(*end != '\0' && *end != '\n')
+		++end;
+	strfold(string, end - string);
+	return end - string;
 }
 
 static size_t remove_comments(char *string)
 {
-	char *curplace, *curplace2;
+	char *curplace;
 	size_t folded = 0;
 	for (curplace = string; *curplace != 0; curplace++) {
 		if (*curplace == '\\' && *(curplace + 1) == '#') {
@@ -3179,19 +3193,7 @@ static size_t remove_comments(char *string)
 			strfold(curplace, 1);
 			folded += 1;
 		} else if (*curplace == '#') {
-			// remove everything until we hit a '\n'
-			curplace2 = curplace;
-			while (*curplace2) {
-				curplace2++;
-				if (*curplace2 == '\n' &&
-						*(curplace2 + 1) != '#') break;
-			}
-			if (*curplace2) {
-				strfold(curplace, curplace2 - curplace);
-				folded += curplace2 - curplace;
-			} else {
-				*curplace = 0;
-			}
+			folded += remove_comment(curplace);
 		}
 	}
 	return folded;
@@ -3330,11 +3332,10 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 				}
 			}
 		} else if (*p == '#') {
-			remove_comments(p);
+			remove_comment(p);
 		}
 		p++;
 	}
-	remove_comments(s);
 	obj = create_plain_text(s);
 	if (obj != NULL) {
 		append_object(retval, obj);
