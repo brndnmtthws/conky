@@ -1,5 +1,7 @@
 2009-06-09
 	* Added format_human_readable option (sf.net #2803345, thanks Vincent)
+	* Fix bug in comments within TEXT (where the line contains just '#')
+	(sf.net #2803586), thanks Pavelo
 
 2009-06-08
 	* $battery_short can now also display F (full), N (not present),E (empty),
