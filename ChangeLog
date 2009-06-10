@@ -3,6 +3,7 @@
 	certain types of windows
 	* Fix bug in comments within TEXT (where the line contains just '#')
 	(sf.net #2803586), thanks Pavelo
+	* Fix bug in $mails (sf.net #2802529, thanks Nikos)
 
 2009-06-07
 	* Conky 1.7.1 released
