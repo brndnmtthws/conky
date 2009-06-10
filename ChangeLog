@@ -1,4 +1,6 @@
 2009-06-09
+	* Fixed a regression which causes fonts to not be rendered properly with
+	certain types of windows
 	* Added format_human_readable option (sf.net #2803345, thanks Vincent)
 	* Fix bug in comments within TEXT (where the line contains just '#')
 	(sf.net #2803586), thanks Pavelo
