@@ -1,6 +1,8 @@
 2009-06-09
 	* Fixed a regression which causes fonts to not be rendered properly with
 	certain types of windows
+	* Fix bug in comments within TEXT (where the line contains just '#')
+	(sf.net #2803586), thanks Pavelo
 
 2009-06-07
 	* Conky 1.7.1 released
