@@ -71,6 +71,7 @@ extern int selected_font;
 extern int font_count;
 
 void setup_fonts(void);
+void set_font(void);
 int add_font(const char *);
 void set_first_font(const char *);
 void free_fonts(void);

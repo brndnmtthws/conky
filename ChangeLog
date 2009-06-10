@@ -1,3 +1,6 @@
+2009-06-10
+	* Fix regression with loading of non-Xft fonts (sf.net #2804324)
+
 2009-06-09
 	* Fixed a regression which causes fonts to not be rendered properly with
 	certain types of windows

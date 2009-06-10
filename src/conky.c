@@ -6526,6 +6526,7 @@ static void draw_line(char *s)
 
 					cur_y -= font_ascent();
 					selected_font = specials[special_index].font_added;
+					set_font();
 					if (cur_y + font_ascent() < cur_y + old) {
 						cur_y += old;
 					} else {

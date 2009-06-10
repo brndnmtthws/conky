@@ -32,6 +32,16 @@ int selected_font = 0;
 int font_count = -1;
 struct font_list *fonts = NULL;
 
+void set_font(void)
+{
+#ifdef XFT
+	if (use_xft) return;
+#endif /* XFT */
+	if (font_count > -1 && fonts[selected_font].font) {
+		XSetFont(display, window.gc, fonts[selected_font].font->fid);
+	}
+}
+
 void setup_fonts(void)
 {
 	if ((output_methods & TO_X) == 0) {
@@ -45,7 +55,8 @@ void setup_fonts(void)
 		window.xftdraw = XftDrawCreate(display, window.drawable,
 				DefaultVisual(display, screen), DefaultColormap(display, screen));
 	}
-#endif
+#endif /* XFT */
+	set_font();
 }
 
 int add_font(const char *data_in)
@@ -171,7 +182,7 @@ void load_fonts(void)
 		}
 #endif
 		/* load normal font */
-		if (fonts[i].font || (fonts[i].font = XLoadQueryFont(display, fonts[i].name)) == NULL) {
+		if (!fonts[i].font && (fonts[i].font = XLoadQueryFont(display, fonts[i].name)) == NULL) {
 			ERR("can't load font '%s'", fonts[i].name);
 			if ((fonts[i].font = XLoadQueryFont(display, "fixed")) == NULL) {
 				CRIT_ERR("can't load font '%s'", "fixed");
