@@ -4342,8 +4342,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(fs_free) {
 				if (obj->data.fs != NULL) {
-					human_readable( (obj->data.fs->free ? obj->data.fs->free :
-								obj->data.fs->avail), p, 255);
+					human_readable(obj->data.fs->avail, p, 255);
 				}
 			}
 			OBJ(fs_free_perc) {
@@ -4351,9 +4350,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					int val = 0;
 
 					if (obj->data.fs->size) {
-						val = (obj->data.fs->free ? obj->data.fs->free :
-								obj->data.fs->avail) * 100 /
-							obj->data.fs->size;
+						val = obj->data.fs->free * 100 / obj->data.fs->size;
 					}
 
 					percent_print(p, p_max_size, val);
@@ -4370,8 +4367,8 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(fs_used) {
 				if (obj->data.fs != NULL) {
-					human_readable(obj->data.fs->size - (obj->data.fs->free
-						? obj->data.fs->free : obj->data.fs->avail), p, 255);
+					human_readable(obj->data.fs->size - obj->data.fs->free, p,
+							255);
 				}
 			}
 			OBJ(fs_bar_free) {
@@ -4409,8 +4406,8 @@ static void generate_text_internal(char *p, int p_max_size,
 					int val = 0;
 
 					if (obj->data.fs->size) {
-						val = (obj->data.fs->free ? obj->data.fs->free :
-								obj->data.fs->avail) * 100 /
+						val = obj->data.fs->free
+								* 100 /
 							obj->data.fs->size;
 					}
 
