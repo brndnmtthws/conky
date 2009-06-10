@@ -6391,6 +6391,7 @@ static void draw_text(void)
 		/* draw text */
 		special_index = 0;
 	}
+	setup_fonts();
 #endif /* X11 */
 	for_each_line(text_buffer, draw_line);
 }

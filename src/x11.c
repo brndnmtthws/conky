@@ -230,7 +230,6 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 
 #ifdef OWN_WINDOW
 	if (own_window) {
-
 		if (!find_desktop_window(&window.root, &window.desktop)) {
 			return;
 		}

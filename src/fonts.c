@@ -38,7 +38,10 @@ void setup_fonts(void)
 		return;
 	}
 #ifdef XFT
-	if (use_xft && !window.xftdraw) {
+	if (use_xft) {
+		if (window.xftdraw) {
+			XftDrawDestroy(window.xftdraw);
+		}
 		window.xftdraw = XftDrawCreate(display, window.drawable,
 				DefaultVisual(display, screen), DefaultColormap(display, screen));
 	}
