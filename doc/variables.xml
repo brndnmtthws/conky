@@ -1094,7 +1094,8 @@
         </term>
         <listitem>Bar that shows how much space is free on a file
         system. height is the height in pixels. fs is any file on
-        that file system. 
+        that file system. This uses f_bfree (as per man 2 statfs)
+        if it's available, or f_bavail as a fallback. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1104,7 +1105,9 @@
             </command>
             <option>(fs)</option>
         </term>
-        <listitem>Free space on a file system available for users. 
+        <listitem>Free space on a file system. This uses f_bfree
+        (as per man 2 statfs) if it's available, or f_bavail as a
+        fallback. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1114,8 +1117,9 @@
             </command>
             <option>(fs)</option>
         </term>
-        <listitem>Free percentage of space on a file system
-        available for users. 
+        <listitem>Free percentage of space on a file system. This
+        uses f_bfree (as per man 2 statfs) if it's available, or
+        f_bavail as a fallback. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1145,7 +1149,8 @@
             </command>
             <option>(fs)</option>
         </term>
-        <listitem>File system used space. 
+        <listitem>File system used space. This uses f_bfree (as per
+        man 2 statfs) if it's available, or f_bavail as a fallback.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1155,7 +1160,9 @@
             </command>
             <option>(fs)</option>
         </term>
-        <listitem>Percent of file system used space. 
+        <listitem>Percent of file system used space. This uses
+        f_bfree (as per man 2 statfs) if it's available, or
+        f_bavail as a fallback. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
