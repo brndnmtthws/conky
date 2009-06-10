@@ -4327,19 +4327,13 @@ static void generate_text_internal(char *p, int p_max_size,
 #ifdef X11
 						if(output_methods & TO_X) {
 							new_bar(p, obj->data.fsbar.w, obj->data.fsbar.h,
-									(int) (255 - (obj->data.fs->free ?
-											obj->data.fs->free :
-											obj->data.fsbar.fs->avail) * 255 /
-										obj->data.fs->size));
+								(int) (255 - obj->data.fsbar.fs->avail * 255 /
+								obj->data.fs->size));
 						}else{
 #endif /* X11 */
 							if(!obj->data.fsbar.w) obj->data.fsbar.w = DEFAULT_BAR_WIDTH_NO_X;
-							new_bar_in_shell(p, p_max_size, (int) (100 -
-										(obj->data.fs->free ?
-										 obj->data.fs->free :
-										 obj->data.fsbar.fs->avail) * 100 /
-										obj->data.fs->size),
-									obj->data.fsbar.w);
+							new_bar_in_shell(p, p_max_size,
+								(int) (100 - obj->data.fsbar.fs->avail * 100 / obj->data.fs->size), obj->data.fsbar.w);
 #ifdef X11
 						}
 #endif /* X11 */
@@ -4397,17 +4391,13 @@ static void generate_text_internal(char *p, int p_max_size,
 #ifdef X11
 						if(output_methods & TO_X) {
 							new_bar(p, obj->data.fsbar.w, obj->data.fsbar.h,
-									(int) ((obj->data.fs->free ?
-											obj->data.fs->free :
-											obj->data.fsbar.fs->avail) * 255 /
-										obj->data.fs->size));
+								(int) (obj->data.fsbar.fs->avail * 255 /
+								obj->data.fs->size));
 						}else{
 #endif /* X11 */
 							if(!obj->data.fsbar.w) obj->data.fsbar.w = DEFAULT_BAR_WIDTH_NO_X;
-							new_bar_in_shell(p, p_max_size, (int)
-									((obj->data.fs->free ? obj->data.fs->free :
-									  obj->data.fsbar.fs->avail) * 100 /
-									 obj->data.fs->size), obj->data.fsbar.w);
+							new_bar_in_shell(p, p_max_size,
+								(int) (obj->data.fsbar.fs->avail * 100 / obj->data.fs->size), obj->data.fsbar.w);
 #ifdef X11
 						}
 #endif /* X11 */
