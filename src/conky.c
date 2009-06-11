@@ -4350,7 +4350,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					int val = 0;
 
 					if (obj->data.fs->size) {
-						val = obj->data.fs->free * 100 / obj->data.fs->size;
+						val = obj->data.fs->avail * 100 / obj->data.fs->size;
 					}
 
 					percent_print(p, p_max_size, val);
