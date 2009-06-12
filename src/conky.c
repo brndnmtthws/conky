@@ -6850,10 +6850,10 @@ static void main_loop(void)
 				if (own_window) {
 					/* resize window if it isn't right size */
 					if (!fixed_size
-						&& (text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 + 1 != window.width
-						|| text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 + 1 != window.height)) {
-							window.width = text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 + 1;
-							window.height = text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 + 1;
+						&& (text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 != window.width
+						|| text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 != window.height)) {
+							window.width = text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2;
+							window.height = text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2;
 							XResizeWindow(display, window.window, window.width,
 								window.height);
 							if (own_window) {
@@ -7118,7 +7118,7 @@ static void main_loop(void)
 			fd_set descriptors;
 			struct timeval time_to_wait;
 
-			FD_ZERO (&descriptors);
+			FD_ZERO(&descriptors);
 			FD_SET(inotify_fd, &descriptors);
 
 			time_to_wait.tv_sec = time_to_wait.tv_usec = 0;
@@ -7588,12 +7588,12 @@ static void X11_create_window(void)
 {
 	if (output_methods & TO_X) {
 #ifdef OWN_WINDOW
-		init_window(own_window, text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 + 1,
-				text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 + 1, set_transparent, background_colour,
+		init_window(own_window, text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2,
+				text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2, set_transparent, background_colour,
 				xargv, xargc);
 #else /* OWN_WINDOW */
-		init_window(0, text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 + 1,
-				text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 + 1, set_transparent, 0,
+		init_window(0, text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2,
+				text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2, set_transparent, 0,
 				xargv, xargc);
 #endif /* OWN_WINDOW */
 
