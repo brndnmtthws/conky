@@ -1,3 +1,6 @@
+2009-06-13
+	* Added support for $to_bytes
+
 2009-06-12
 	* Added support for per-task I/O statistics - $top_io
 

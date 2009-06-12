@@ -2975,6 +2975,19 @@
     <varlistentry>
         <term>
             <command>
+                <option>to_bytes</option>
+            </command>
+            <option>size</option>
+        </term>
+        <listitem>If 'size' is a number followed by a size-unit
+        (kilobyte,mb,GiB,...) then it converts the size to bytes
+        and shows it without unit, otherwise it just shows
+        'size'.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>tztime</option>
             </command>
             <option>(timezone) (format)</option>

@@ -1034,6 +1034,10 @@ static void free_text_objects(struct text_object *root, int internal)
 				free_moc();
 				break;
 #endif /* MOC */
+			case OBJ_to_bytes:
+				free_text_objects(obj->sub, 1);
+				free(obj->sub);
+				break;
 			case OBJ_scroll:
 				free(data.scroll.text);
 				free_text_objects(obj->sub, 1);
@@ -2858,6 +2862,13 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(entropy_bar, INFO_ENTROPY)
 		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->a, &obj->b);
+	END OBJ(to_bytes, 0)
+		if(arg) {
+			obj->sub = malloc(sizeof(struct text_object));
+			extract_variable_text_internal(obj->sub, arg, 0);
+		}else{
+			CRIT_ERR("to_bytes needs a argument");
+		}
 	END OBJ(scroll, 0)
 		int n1, n2;
 
@@ -5612,6 +5623,21 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* X11 */
 #endif /* IBM */
+			OBJ(to_bytes) {
+				char buf[max_user_text];
+				long long bytes;
+				char unit[16];	//16 because we can also have long names (like mega-bytes)
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				if(sscanf(buf, "%lli%s", &bytes, unit) == 2 && strlen(unit) < 16){
+					if(strncasecmp("b", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes);
+					else if(strncasecmp("k", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes * 1024);
+					else if(strncasecmp("m", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes * 1024 * 1024);
+					else if(strncasecmp("g", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes * 1024 * 1024 * 1024);
+					else if(strncasecmp("t", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes * 1024 * 1024 * 1024 * 1024);
+				}
+				snprintf(p, p_max_size, "%s", buf);
+			}
 			OBJ(scroll) {
 				unsigned int j;
 				char *tmp, buf[max_user_text];
