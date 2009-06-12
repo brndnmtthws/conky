@@ -1,3 +1,6 @@
+2009-06-12
+	* Added support for per-task I/O statistics - $top_io
+
 2009-06-11
 	* Added border_inner_margin and border_outer_margin config options, and
 	deprecated border_margin
