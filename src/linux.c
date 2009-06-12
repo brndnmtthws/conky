@@ -2107,7 +2107,11 @@ void get_powerbook_batt_info(char *buffer, size_t n, int i)
 
 void update_top(void)
 {
-	process_find_top(info.cpu, info.memu, info.time);
+	process_find_top(info.cpu, info.memu, info.time
+#ifdef IOSTATS
+                , info.io
+#endif
+                );
 	info.first_process = get_first_process();
 }
 

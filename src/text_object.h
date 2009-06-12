@@ -191,6 +191,9 @@ enum text_object_type {
 	OBJ_top,
 	OBJ_top_mem,
 	OBJ_top_time,
+#ifdef IOSTATS
+	OBJ_top_io,
+#endif
 	OBJ_tail,
 	OBJ_head,
 	OBJ_lines,

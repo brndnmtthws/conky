@@ -70,6 +70,7 @@
 
 #define PROCFS_TEMPLATE "/proc/%d/stat"
 #define PROCFS_TEMPLATE_MEM "/proc/%d/statm"
+#define PROCFS_TEMPLATE_IO "/proc/%d/io"
 #define PROCFS_CMDLINE_TEMPLATE "/proc/%d/cmdline"
 #define MAX_SP 10	// number of elements to sort
 
@@ -80,7 +81,12 @@ enum top_field {
 	TOP_MEM,
 	TOP_TIME,
 	TOP_MEM_RES,
-	TOP_MEM_VSIZE
+	TOP_MEM_VSIZE,
+#ifdef IOSTATS
+	TOP_READ_BYTES,
+	TOP_WRITE_BYTES,
+	TOP_IO_PERC
+#endif
 };
 
 /******************************************
@@ -103,6 +109,13 @@ struct process {
 	unsigned long total_cpu_time;
 	unsigned int vsize;
 	unsigned int rss;
+#ifdef IOSTATS
+	unsigned long long read_bytes;
+	unsigned long long previous_read_bytes;
+	unsigned long long write_bytes;
+	unsigned long long previous_write_bytes;
+	float io_perc;
+#endif
 	unsigned int time_stamp;
 	unsigned int counted;
 	unsigned int changed;
@@ -116,6 +129,10 @@ struct sorted_process {
 };
 
 /* Pointer to head of process list */
-void process_find_top(struct process **, struct process **, struct process **);
+void process_find_top(struct process **, struct process **, struct process **
+#ifdef IOSTATS
+		, struct process **
+#endif
+		);
 
 #endif /* _top_h_ */

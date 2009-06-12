@@ -139,6 +139,9 @@ enum {
 	RIGHT_SPACER
 } use_spacer;
 int top_cpu, top_mem, top_time;
+#ifdef IOSTATS
+int top_io;
+#endif
 static unsigned int top_name_width = 15;
 int output_methods;
 enum x_initialiser_state x_initialised = NO;
@@ -232,8 +235,11 @@ static void print_version(void)
 		   "  * ALSA mixer support\n"
 #endif /* MIXER_IS_ALSA */
 #ifdef APCUPSD
-			"  * apcupsd\n"
+		   "  * apcupsd\n"
 #endif /* APCUPSD */
+#ifdef IOSTATS
+		   "  * iostats\n"
+#endif /* IOSTATS */
 	);
 
 	exit(0);
@@ -936,6 +942,9 @@ static void free_text_objects(struct text_object *root, int internal)
 			case OBJ_top:
 			case OBJ_top_mem:
 			case OBJ_top_time:
+#ifdef IOSTATS
+			case OBJ_top_io:
+#endif
 				if (info.first_process && !internal) {
 					free_all_processes();
 					info.first_process = NULL;
@@ -1127,8 +1136,17 @@ static int parse_top_args(const char *s, const char *arg, struct text_object *ob
 	} else if (strcmp(&s[3], "_time") == EQUAL) {
 		obj->type = OBJ_top_time;
 		top_time = 1;
+#ifdef IOSTATS
+	} else if (strcmp(&s[3], "_io") == EQUAL) {
+		obj->type = OBJ_top_io;
+		top_io = 1;
+#endif
 	} else {
+#ifdef IOSTATS
+		ERR("Must be top, top_mem, top_time or top_io");
+#else
 		ERR("Must be top, top_mem or top_time");
+#endif
 		return 0;
 	}
 
@@ -1152,9 +1170,22 @@ static int parse_top_args(const char *s, const char *arg, struct text_object *ob
 			obj->data.top.type = TOP_MEM_RES;
 		} else if (strcmp(buf, "mem_vsize") == EQUAL) {
 			obj->data.top.type = TOP_MEM_VSIZE;
+#ifdef IOSTATS
+		} else if (strcmp(buf, "io_read") == EQUAL) {
+			obj->data.top.type = TOP_READ_BYTES;
+		} else if (strcmp(buf, "io_write") == EQUAL) {
+			obj->data.top.type = TOP_WRITE_BYTES;
+		} else if (strcmp(buf, "io_perc") == EQUAL) {
+			obj->data.top.type = TOP_IO_PERC;
+#endif
 		} else {
 			ERR("invalid type arg for top");
+#ifdef IOSTATS
+			ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize, "
+					"io_read, io_write, io_perc");
+#else
 			ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize");
+#endif
 			return 0;
 		}
 		if (n < 1 || n > 10) {
@@ -1952,8 +1983,8 @@ static struct text_object *construct_text_object(const char *s,
 #endif /* !__OpenBSD__ */
 
 	END
-	/* we have three different types of top (top, top_mem and top_time). To
-	 * avoid having almost-same code three times, we have this special
+	/* we have four different types of top (top, top_mem, top_time and top_io). To
+	 * avoid having almost-same code four times, we have this special
 	 * handler. */
 	if (strncmp(s, "top", 3) == EQUAL) {
 		if (!parse_top_args(s, arg, obj)) {
@@ -5355,8 +5386,8 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%i", cur->bmpx.bitrate);
 			}
 #endif /* BMPX */
-			/* we have three different types of top (top, top_mem
-			 * and top_time). To avoid having almost-same code three
+			/* we have four different types of top (top, top_mem,
+			 * top_time and top_io). To avoid having almost-same code four
 			 * times, we have this special handler. */
 			break;
 			case OBJ_top:
@@ -5368,6 +5399,11 @@ static void generate_text_internal(char *p, int p_max_size,
 			case OBJ_top_time:
 				parse_top_args("top_time", obj->data.top.s, obj);
 				if (!needed) needed = cur->time;
+#ifdef IOSTATS
+			case OBJ_top_io:
+				parse_top_args("top_io", obj->data.top.s, obj);
+				if (!needed) needed = cur->io;
+#endif
 
 				if (needed[obj->data.top.num]) {
 					char *timeval;
@@ -5403,6 +5439,20 @@ static void generate_text_internal(char *p, int p_max_size,
 							human_readable(needed[obj->data.top.num]->vsize,
 									p, 255);
 							break;
+#ifdef IOSTATS
+						case TOP_READ_BYTES:
+							human_readable(needed[obj->data.top.num]->read_bytes / update_interval,
+									p, 255);
+							break;
+						case TOP_WRITE_BYTES:
+							human_readable(needed[obj->data.top.num]->write_bytes / update_interval,
+									p, 255);
+							break;
+						case TOP_IO_PERC:
+							snprintf(p, 7, "%6.2f",
+									needed[obj->data.top.num]->io_perc);
+							break;
+#endif
 					}
 				}
 			OBJ(tail)
@@ -7420,6 +7470,9 @@ static void set_default_configurations(void)
 	format_human_readable = 1;
 	top_mem = 0;
 	top_time = 0;
+#ifdef IOSTATS
+	top_io = 0;
+#endif
 #ifdef MPD
 	mpd_set_host("localhost");
 	mpd_set_port("6600");

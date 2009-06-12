@@ -265,6 +265,9 @@ struct information {
 	struct process *cpu[10];
 	struct process *memu[10];
 	struct process *time[10];
+#ifdef IOSTATS
+	struct process *io[10];
+#endif
 	struct process *first_process;
 	unsigned long looped;
 	struct entropy_s entropy;
@@ -298,6 +301,9 @@ enum {
 
 /* defined in conky.c, needed by top.c */
 extern int top_cpu, top_mem, top_time;
+#ifdef IOSTATS
+extern int top_io;
+#endif
 
 /* defined in conky.c, needed by top.c */
 extern int cpu_separate;

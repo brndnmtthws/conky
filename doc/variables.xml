@@ -2899,8 +2899,8 @@
         (number) Basically, processes are ranked from highest to
         lowest in terms of cpu usage, which is what (num)
         represents. The types are: "name", "pid", "cpu", "mem",
-        "mem_res", "mem_vsize", and "time". There can be a max of
-        10 processes listed. 
+        "mem_res", "mem_vsize", "time", "io_perc", "io_read" and
+        "io_write".  There can be a max of 10 processes listed. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2923,6 +2923,17 @@
         </term>
         <listitem>Same as top, except sorted by total CPU time
         instead of current CPU usage 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>top_io</option>
+            </command>
+            <option>type, num</option>
+        </term>
+        <listitem>Same as top, except sorted by the amount of I/O the
+            process has done during the update interval
         <para /></listitem>
     </varlistentry>
     <varlistentry>

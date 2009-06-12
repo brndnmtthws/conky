@@ -87,6 +87,10 @@ static struct process *new_process(int p)
 	process->time_stamp = 0;
 	process->previous_user_time = ULONG_MAX;
 	process->previous_kernel_time = ULONG_MAX;
+#ifdef IOSTATS
+	process->previous_read_bytes = ULLONG_MAX;
+	process->previous_write_bytes = ULLONG_MAX;
+#endif
 	process->counted = 1;
 
 	/* process_find_name(process); */
@@ -214,13 +218,85 @@ static int process_parse_stat(struct process *process)
 	return 0;
 }
 
+#ifdef IOSTATS
+static int process_parse_io(struct process *process)
+{
+	static const char *read_bytes_str="read_bytes:";
+	static const char *write_bytes_str="write_bytes:";
+
+	char line[BUFFER_LEN] = { 0 }, filename[BUFFER_LEN];
+	int ps;
+	int rc;
+	char *pos, *endpos;
+	unsigned long long read_bytes, write_bytes;
+
+	snprintf(filename, sizeof(filename), PROCFS_TEMPLATE_IO, process->pid);
+
+	ps = open(filename, O_RDONLY);
+	if (ps < 0) {
+		/* The process must have finished in the last few jiffies!
+		 * Or, the kernel doesn't support I/O accounting.
+		 */
+		return 1;
+	}
+
+	rc = read(ps, line, sizeof(line));
+	close(ps);
+	if (rc < 0) {
+		return 1;
+	}
+
+	pos = strstr(line, read_bytes_str);
+	if (pos == NULL) {
+		/* these should not happen (unless the format of the file changes) */
+		return 1;
+	}
+	pos += strlen(read_bytes_str);
+	process->read_bytes = strtoull(pos, &endpos, 10);
+	if (endpos == pos) {
+		return 1;
+	}
+
+	pos = strstr(line, write_bytes_str);
+	if (pos == NULL) {
+		return 1;
+	}
+	pos += strlen(write_bytes_str);
+	process->write_bytes = strtoull(pos, &endpos, 10);
+	if (endpos == pos) {
+		return 1;
+	}
+
+	if (process->previous_read_bytes == ULLONG_MAX) {
+		process->previous_read_bytes = process->read_bytes;
+	}
+	if (process->previous_write_bytes == ULLONG_MAX) {
+		process->previous_write_bytes = process->write_bytes;
+	}
+
+	/* store the difference of the byte counts */
+	read_bytes = process->read_bytes - process->previous_read_bytes;
+	write_bytes = process->write_bytes - process->previous_write_bytes;
+
+	/* backup the counts for next time around */
+	process->previous_read_bytes = process->read_bytes;
+	process->previous_write_bytes = process->write_bytes;
+
+	/* store only the difference here... */
+	process->read_bytes = read_bytes;
+	process->write_bytes = write_bytes;
+
+	return 0;
+}
+#endif
+
 /******************************************
  * Get process structure for process pid  *
  ******************************************/
 
 /* This function seems to hog all of the CPU time.
  * I can't figure out why - it doesn't do much. */
-static int calculate_cpu(struct process *process)
+static int calculate_stats(struct process *process)
 {
 	int rc;
 
@@ -229,6 +305,12 @@ static int calculate_cpu(struct process *process)
 	if (rc)
 		return 1;
 	/* rc = process_parse_statm(process); if (rc) return 1; */
+
+#ifdef IOSTATS
+	rc = process_parse_io(process);
+	if (rc)
+		return 1;
+#endif
 
 	/*
 	 * Check name against the exclusion list
@@ -274,7 +356,7 @@ static int update_process_table(void)
 			}
 
 			/* compute each process cpu usage */
-			calculate_cpu(p);
+			calculate_stats(p);
 		}
 	}
 
@@ -395,6 +477,22 @@ inline static void calc_cpu_each(unsigned long long total)
 	}
 }
 
+#ifdef IOSTATS
+static void calc_io_each(void)
+{
+	struct process *p;
+	unsigned long long sum = 0;
+	
+	for (p = first_process; p; p = p->next)
+		sum += p->read_bytes + p->write_bytes;
+
+	if(sum == 0)
+		sum = 1; /* to avoid having NANs if no I/O occured */
+	for (p = first_process; p; p = p->next)
+		p->io_perc = 100.0 * (p->read_bytes + p->write_bytes) / (float) sum;
+}
+#endif
+
 /******************************************
  * Find the top processes				  *
  ******************************************/
@@ -445,6 +543,20 @@ static int compare_time(struct process *a, struct process *b)
 {
 	return b->total_cpu_time - a->total_cpu_time;
 }
+
+#ifdef IOSTATS
+/* I/O comparision function for insert_sp_element */
+static int compare_io(struct process *a, struct process *b)
+{
+	if (a->io_perc < b->io_perc) {
+		return 1;
+	} else if (a->io_perc > b->io_perc) {
+		return -1;
+	} else {
+		return 0;
+	}
+}
+#endif
 
 /* insert this process into the list in a sorted fashion,
  * or destroy it if it doesn't fit on the list */
@@ -524,15 +636,26 @@ static void sp_acopy(struct sorted_process *sp_head, struct process **ar, int ma
  * ****************************************************************** */
 
 void process_find_top(struct process **cpu, struct process **mem,
-		struct process **ptime)
+		struct process **ptime
+#ifdef IOSTATS
+		, struct process **io
+#endif
+		)
 {
 	struct sorted_process *spc_head = NULL, *spc_tail = NULL, *spc_cur = NULL;
 	struct sorted_process *spm_head = NULL, *spm_tail = NULL, *spm_cur = NULL;
 	struct sorted_process *spt_head = NULL, *spt_tail = NULL, *spt_cur = NULL;
+#ifdef IOSTATS
+	struct sorted_process *spi_head = NULL, *spi_tail = NULL, *spi_cur = NULL;
+#endif
 	struct process *cur_proc = NULL;
 	unsigned long long total = 0;
 
-	if (!top_cpu && !top_mem && !top_time) {
+	if (!top_cpu && !top_mem && !top_time
+#ifdef IOSTATS
+			&& !top_io
+#endif
+	   ) {
 		return;
 	}
 
@@ -540,6 +663,9 @@ void process_find_top(struct process **cpu, struct process **mem,
 	update_process_table();		/* update the table with process list */
 	calc_cpu_each(total);		/* and then the percentage for each task */
 	process_cleanup();			/* cleanup list from exited processes */
+#ifdef IOSTATS
+	calc_io_each();			/* percentage of I/O for each task */
+#endif
 
 	cur_proc = first_process;
 
@@ -559,6 +685,13 @@ void process_find_top(struct process **cpu, struct process **mem,
 			insert_sp_element(spt_cur, &spt_head, &spt_tail, MAX_SP,
 				&compare_time);
 		}
+#ifdef IOSTATS
+		if (top_io) {
+			spi_cur = malloc_sp(cur_proc);
+			insert_sp_element(spi_cur, &spi_head, &spi_tail, MAX_SP,
+				&compare_io);
+		}
+#endif
 		cur_proc = cur_proc->next;
 	}
 
@@ -568,4 +701,8 @@ void process_find_top(struct process **cpu, struct process **mem,
 		sp_acopy(spm_head, mem, MAX_SP);
 	if (top_time)
 		sp_acopy(spt_head, ptime, MAX_SP);
+#ifdef IOSTATS
+	if (top_io)
+		sp_acopy(spi_head, io,MAX_SP);
+#endif
 }
