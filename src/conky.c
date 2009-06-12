@@ -318,7 +318,7 @@ static int stippled_borders;
 
 static int draw_shades, draw_outline;
 
-static int border_margin, border_width;
+static long border_inner_margin, border_outer_margin, border_width;
 
 static long default_fg_color, default_bg_color, default_out_color;
 
@@ -5996,10 +5996,10 @@ static void update_text_area(void)
 	if (own_window && !fixed_pos) {
 		x += workarea[0];
 		y += workarea[1];
-		text_start_x = border_margin + 1;
-		text_start_y = border_margin + 1;
-		window.x = x - border_margin - 1;
-		window.y = y - border_margin - 1;
+		text_start_x = border_inner_margin + border_outer_margin + border_width;
+		text_start_y = border_inner_margin + border_outer_margin + border_width;
+		window.x = x - border_inner_margin - border_outer_margin - border_width;
+		window.y = y - border_inner_margin - border_outer_margin - border_width;
 	} else
 #endif
 	{
@@ -6568,17 +6568,17 @@ static void draw_line(char *s)
 
 				case ALIGNR:
 				{
-					/* TODO: add back in "+ border_margin" to the end of
+					/* TODO: add back in "+ border_inner_margin" to the end of
 					 * this line? */
 					int pos_x = text_start_x + text_width -
 						get_string_width_special(s);
 
 					/* printf("pos_x %i text_start_x %i text_width %i cur_x %i "
 						"get_string_width(p) %i gap_x %i "
-						"specials[special_index].arg %i border_margin %i "
+						"specials[special_index].arg %i border_inner_margin %i "
 						"border_width %i\n", pos_x, text_start_x, text_width,
 						cur_x, get_string_width_special(s), gap_x,
-						specials[special_index].arg, border_margin,
+						specials[special_index].arg, border_inner_margin,
 						border_width); */
 					if (pos_x > specials[special_index].arg && pos_x > cur_x) {
 						cur_x = pos_x - specials[special_index].arg;
@@ -6630,8 +6630,6 @@ static void draw_text(void)
 
 		/* draw borders */
 		if (draw_borders && border_width > 0) {
-			unsigned int b = (border_width + 1) / 2;
-
 			if (stippled_borders) {
 				char ss[2] = { stippled_borders, stippled_borders };
 				XSetLineAttributes(display, window.gc, border_width, LineOnOffDash,
@@ -6643,9 +6641,10 @@ static void draw_text(void)
 			}
 
 			XDrawRectangle(display, window.drawable, window.gc,
-				text_start_x - border_margin + b, text_start_y - border_margin + b,
-				text_width + border_margin * 2 - 1 - b * 2,
-				text_height + border_margin * 2 - 1 - b * 2);
+				text_start_x - border_inner_margin - border_width,
+				text_start_y - border_inner_margin - border_width,
+				text_width + border_inner_margin * 2 + border_width * 2,
+				text_height + border_inner_margin * 2 + border_width * 2);
 		}
 
 		/* draw text */
@@ -6740,10 +6739,10 @@ static void clear_text(int exposures)
 #endif
 	if (display && window.window) { // make sure these are !null
 		/* there is some extra space for borders and outlines */
-		XClearArea(display, window.window, text_start_x - border_margin - 1,
-			text_start_y - border_margin - 1,
-			text_width + border_margin * 2 + 2,
-			text_height + border_margin * 2 + 2, exposures ? True : 0);
+		XClearArea(display, window.window, text_start_x - border_inner_margin - border_outer_margin - border_width,
+			text_start_y - border_inner_margin - border_outer_margin - border_width,
+			text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2,
+			text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2, exposures ? True : 0);
 	}
 }
 #endif /* X11 */
@@ -6851,10 +6850,10 @@ static void main_loop(void)
 				if (own_window) {
 					/* resize window if it isn't right size */
 					if (!fixed_size
-						&& (text_width + border_margin * 2 + 1 != window.width
-						|| text_height + border_margin * 2 + 1 != window.height)) {
-							window.width = text_width + border_margin * 2 + 1;
-							window.height = text_height + border_margin * 2 + 1;
+						&& (text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 + 1 != window.width
+						|| text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 + 1 != window.height)) {
+							window.width = text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 + 1;
+							window.height = text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 + 1;
 							XResizeWindow(display, window.window, window.width,
 								window.height);
 							if (own_window) {
@@ -6875,10 +6874,10 @@ static void main_loop(void)
 				if (use_xdbe) {
 					XRectangle r;
 
-					r.x = text_start_x - border_margin;
-					r.y = text_start_y - border_margin;
-					r.width = text_width + border_margin * 2;
-					r.height = text_height + border_margin * 2;
+					r.x = text_start_x - border_inner_margin - border_outer_margin - border_width;
+					r.y = text_start_y - border_inner_margin - border_outer_margin - border_width;
+					r.width = text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2;
+					r.height = text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2;
 					XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
 				}
 #endif
@@ -6931,8 +6930,8 @@ static void main_loop(void)
 									}
 								}
 
-								text_width = window.width - border_margin * 2 - 1;
-								text_height = window.height - border_margin * 2 - 1;
+								text_width = window.width - border_inner_margin * 2 - border_outer_margin * 2 - border_width * 2;
+								text_height = window.height - border_inner_margin * 2 - border_outer_margin * 2 - border_width * 2;
 								if (text_width > maximum_width
 										&& maximum_width > 0) {
 									text_width = maximum_width;
@@ -7026,10 +7025,10 @@ static void main_loop(void)
 				if (use_xdbe) {
 					XRectangle r;
 
-					r.x = text_start_x - border_margin;
-					r.y = text_start_y - border_margin;
-					r.width = text_width + border_margin * 2;
-					r.height = text_height + border_margin * 2;
+					r.x = text_start_x - border_inner_margin - border_outer_margin - border_width;
+					r.y = text_start_y - border_inner_margin - border_outer_margin - border_width;
+					r.width = text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2;
+					r.height = text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2;
 					XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
 				}
 #endif
@@ -7462,7 +7461,8 @@ static void set_default_configurations(void)
 	sprintf(window.title, PACKAGE_NAME" (%s)", info.uname_s.nodename);
 #endif
 	stippled_borders = 0;
-	border_margin = 3;
+	border_inner_margin = 3;
+	border_outer_margin = 1;
 	border_width = 1;
 	text_alignment = BOTTOM_LEFT;
 	info.x11.monitor.number = 1;
@@ -7588,12 +7588,12 @@ static void X11_create_window(void)
 {
 	if (output_methods & TO_X) {
 #ifdef OWN_WINDOW
-		init_window(own_window, text_width + border_margin * 2 + 1,
-				text_height + border_margin * 2 + 1, set_transparent, background_colour,
+		init_window(own_window, text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 + 1,
+				text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 + 1, set_transparent, background_colour,
 				xargv, xargc);
 #else /* OWN_WINDOW */
-		init_window(0, text_width + border_margin * 2 + 1,
-				text_height + border_margin * 2 + 1, set_transparent, 0,
+		init_window(0, text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 + 1,
+				text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 + 1, set_transparent, 0,
 				xargv, xargc);
 #endif /* OWN_WINDOW */
 
@@ -7776,8 +7776,20 @@ static void load_config_file(const char *f)
 			show_graph_range = string_to_bool(value);
 		}
 		CONF("border_margin") {
+			ERR("border_margin is deprecated, please use border_inner_margin instead");
+		}
+		CONF("border_inner_margin") {
 			if (value) {
-				border_margin = strtol(value, 0, 0);
+				border_inner_margin = strtol(value, 0, 0);
+				if (border_inner_margin < 0) border_inner_margin = 0;
+			} else {
+				CONF_ERR;
+			}
+		}
+		CONF("border_outer_margin") {
+			if (value) {
+				border_outer_margin = strtol(value, 0, 0);
+				if (border_outer_margin < 0) border_outer_margin = 0;
 			} else {
 				CONF_ERR;
 			}
@@ -7785,6 +7797,7 @@ static void load_config_file(const char *f)
 		CONF("border_width") {
 			if (value) {
 				border_width = strtol(value, 0, 0);
+				if (border_width < 0) border_width = 0;
 			} else {
 				CONF_ERR;
 			}

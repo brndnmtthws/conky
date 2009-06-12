@@ -62,10 +62,21 @@
     <varlistentry>
         <term>
             <command>
-                <option>border_margin</option>
+                <option>border_inner_margin</option>
             </command>
         </term>
-        <listitem>Border margin in pixels. 
+        <listitem>Inner border margin in pixels (the margin between
+        the border and text). 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>border_outer_margin</option>
+            </command>
+        </term>
+        <listitem>Outer border margin in pixels (the margin between
+        the border and the edge of the window). 
         <para /></listitem>
     </varlistentry>
     <varlistentry>

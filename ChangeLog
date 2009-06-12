@@ -1,3 +1,7 @@
+2009-06-11
+	* Added border_inner_margin and border_outer_margin config options, and
+	deprecated border_margin
+
 2009-06-10
 	* Fix regression with loading of non-Xft fonts (sf.net #2804324)
 
