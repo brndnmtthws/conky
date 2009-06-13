@@ -53,7 +53,7 @@ void llua_load(const char *script)
 		lua_pop(lua_L, 1);
 #ifdef HAVE_SYS_INOTIFY_H
 	} else if (!llua_block_notify && inotify_fd != -1) {
-		llua_append_notify(script);
+		llua_append_notify(path);
 #endif /* HAVE_SYS_INOTIFY_H */
 	}
 }
