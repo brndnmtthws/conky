@@ -6945,6 +6945,8 @@ static void main_loop(void)
 				update_text_area();
 #ifdef OWN_WINDOW
 				if (own_window) {
+					int changed = 0;
+
 					/* resize window if it isn't right size */
 					if (!fixed_size
 						&& (text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 != window.width
@@ -6954,12 +6956,52 @@ static void main_loop(void)
 							XResizeWindow(display, window.window, window.width,
 								window.height);
 							set_transparent_background(window.window);
+
+							changed++;
 					}
 
 					/* move window if it isn't in right position */
 					if (!fixed_pos && (window.x != wx || window.y != wy)) {
 						XMoveWindow(display, window.window, window.x, window.y);
+						changed++;
 					}
+
+                                        /* update struts */
+                                        if (changed && window.type == TYPE_PANEL) {
+						int sidenum = -1;
+
+                                                fprintf(stderr, PACKAGE_NAME": defining struts\n");
+                                                fflush(stderr);
+
+						switch (text_alignment) {
+							case TOP_LEFT:
+							case TOP_RIGHT:
+							case TOP_MIDDLE:
+							{
+								sidenum = 2;
+								break;
+							}
+							case BOTTOM_LEFT:
+							case BOTTOM_RIGHT:
+							case BOTTOM_MIDDLE:
+							{
+								sidenum = 3;
+								break;
+							}
+							case MIDDLE_LEFT:
+							{
+								sidenum = 0;
+								break;
+							}
+							case MIDDLE_RIGHT:
+							{
+								sidenum = 1;
+								break;
+							}
+						}
+
+						set_struts(sidenum);
+                                        }
 				}
 #endif
 
@@ -8312,6 +8354,8 @@ static void load_config_file(const char *f)
 				} else if (strncmp(value, "dock", 4) == EQUAL) {
 					window.type = TYPE_DOCK;
 					text_alignment = TOP_LEFT;
+				} else if (strncmp(value, "panel", 5) == EQUAL) {
+					window.type = TYPE_PANEL;
 				} else if (strncmp(value, "override", 8) == EQUAL) {
 					window.type = TYPE_OVERRIDE;
 				} else {

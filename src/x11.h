@@ -20,6 +20,7 @@
 enum _window_type {
 	TYPE_NORMAL = 0,
 	TYPE_DOCK,
+	TYPE_PANEL,
 	TYPE_DESKTOP,
 	TYPE_OVERRIDE
 };
@@ -84,6 +85,7 @@ void destroy_window(void);
 void create_gc(void);
 void set_transparent_background(Window win);
 long get_x11_color(const char *);
+void set_struts(int);
 
 #endif /*X11_H_*/
 #endif /* X11 */

@@ -278,8 +278,11 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 			/* allow decorated windows to be given input focus by WM */
 			wmHint.input =
 				TEST_HINT(window.hints, HINT_UNDECORATED) ? False : True;
-			wmHint.initial_state = ((window.type == TYPE_DOCK) ?
-			                        WithdrawnState : NormalState);
+                        if (window.type == TYPE_DOCK || window.type == TYPE_PANEL) {
+				wmHint.initial_state = WithdrawnState;
+                        } else {
+				wmHint.initial_state = NormalState;
+                        }
 
 			XmbSetWMProperties(display, window.window, window.title, NULL, argv,
 				argc, NULL, &wmHint, &classHint);
@@ -300,6 +303,11 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 					case TYPE_DOCK:
 						prop = ATOM(_NET_WM_WINDOW_TYPE_DOCK);
 						fprintf(stderr, PACKAGE_NAME": window type - dock\n");
+						fflush(stderr);
+						break;
+					case TYPE_PANEL:
+						prop = ATOM(_NET_WM_WINDOW_TYPE_DOCK);
+						fprintf(stderr, PACKAGE_NAME": window type - panel\n");
 						fflush(stderr);
 						break;
 					case TYPE_NORMAL:
@@ -578,4 +586,77 @@ void update_x11info(void)
 	struct information *current_info = &info;
 	current_info->x11.monitor.number = XScreenCount(display);
 	current_info->x11.monitor.current = XDefaultScreen(display);
+}
+
+/* reserve window manager space */
+void set_struts(int sidenum)
+{
+	Atom strut;
+	if ((strut = ATOM(_NET_WM_STRUT)) != None) {
+		/* reserve space at left, right, top, bottom */
+		signed long sizes[12] = {0};
+		int i;
+
+		/* define strut depth */
+		switch (sidenum) {
+			case 0:
+			{
+				/* left side */
+				sizes[0] = window.x + window.width;
+				break;
+			}
+			case 1:
+			{
+				/* right side */
+				sizes[1] = display_width - window.x;
+				break;
+			}
+			case 2:
+			{
+				/* top side */
+				sizes[2] = window.y + window.height;
+				break;
+			}
+			case 3:
+			{
+				/* bottom side */
+				sizes[3] = display_height - window.y;
+				break;
+			}
+		}
+
+		/* define partial strut length */
+		if (sidenum <= 1) {
+			sizes[4 + (sidenum*2)] = window.y;
+			sizes[5 + (sidenum*2)] = window.y + window.height;
+		} else if (sidenum <= 3) {
+			sizes[4 + (sidenum*2)] = window.x;
+			sizes[5 + (sidenum*2)] = window.x + window.width;
+		}
+
+		/* check constraints */
+		for (i = 0; i < 12; i++) {
+			if (sizes[i] < 0) {
+				sizes[i] = 0;
+			} else {
+				if (i <= 1 || i >= 8) {
+					if (sizes[i] > display_width) {
+						sizes[i] = display_width;
+					}
+				} else {
+					if (sizes[i] > display_height) {
+						sizes[i] = display_height;
+					}
+				}
+			}
+		}
+
+		XChangeProperty(display, window.window, strut, XA_CARDINAL, 32,
+				PropModeReplace, (unsigned char *) &sizes, 4);
+
+		if ((strut = ATOM(_NET_WM_STRUT_PARTIAL)) != None) {
+			XChangeProperty(display, window.window, strut, XA_CARDINAL, 32,
+					PropModeReplace, (unsigned char *) &sizes, 12);
+		}
+	}
 }
