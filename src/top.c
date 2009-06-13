@@ -117,9 +117,9 @@ static int process_parse_stat(struct process *process)
 	unsigned long kernel_time = 0;
 	int rc;
 	char *r, *q;
-	char deparenthesised_name[BUFFER_LEN];
 	int endl;
 	int nice_val;
+	char *lparen, *rparen;
 
 	snprintf(filename, sizeof(filename), PROCFS_TEMPLATE, process->pid);
 
@@ -139,16 +139,22 @@ static int process_parse_stat(struct process *process)
 	}
 
 	/* Extract cpu times from data in /proc filesystem */
-	rc = sscanf(line, "%*s %s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %lu "
-		"%lu %*s %*s %*s %d %*s %*s %*s %u %u", procname, &process->user_time,
+	lparen = strchr(line, '(');
+	rparen = strrchr(line, ')');
+	if(!lparen || !rparen || rparen < lparen)
+		return 1; // this should not happen
+
+	rc = MIN((unsigned)(rparen - lparen - 1), sizeof(procname) - 1);
+	strncpy(procname, lparen + 1, rc);
+	procname[rc] = '\0';
+	rc = sscanf(rparen + 1, "%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %lu "
+		"%lu %*s %*s %*s %d %*s %*s %*s %u %u", &process->user_time,
 		&process->kernel_time, &nice_val, &process->vsize, &process->rss);
 	if (rc < 5) {
 		return 1;
 	}
-	/* Remove parentheses from the process name stored in /proc/ under Linux */
-	r = procname + 1;
 	/* remove any "kdeinit: " */
-	if (r == strstr(r, "kdeinit")) {
+	if (procname == strstr(procname, "kdeinit")) {
 		snprintf(filename, sizeof(filename), PROCFS_CMDLINE_TEMPLATE,
 			process->pid);
 
@@ -170,15 +176,9 @@ static int process_parse_stat(struct process *process)
 			r = (char *) line;
 		}
 
-		q = deparenthesised_name;
+		q = procname;
 		/* stop at space */
 		while (*r && *r != ' ') {
-			*q++ = *r++;
-		}
-		*q = 0;
-	} else {
-		q = deparenthesised_name;
-		while (*r && *r != ')') {
 			*q++ = *r++;
 		}
 		*q = 0;
@@ -187,7 +187,7 @@ static int process_parse_stat(struct process *process)
 	if (process->name) {
 		free(process->name);
 	}
-	process->name = strndup(deparenthesised_name, text_buffer_size);
+	process->name = strndup(procname, text_buffer_size);
 	process->rss *= getpagesize();
 
 	if (!cur->memmax) {
