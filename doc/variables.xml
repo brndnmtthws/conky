@@ -2891,6 +2891,18 @@
     <varlistentry>
         <term>
             <command>
+                <option>to_bytes</option>
+            </command>
+            <option>size</option>
+        </term>
+        <listitem>If 'size' is a number followed by a size-unit
+        (kilobyte,mb,GiB,...) then it converts the size to bytes
+        and shows it without unit, otherwise it just shows 'size'. 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>top</option>
             </command>
             <option>type, num</option>
@@ -2900,7 +2912,18 @@
         lowest in terms of cpu usage, which is what (num)
         represents. The types are: "name", "pid", "cpu", "mem",
         "mem_res", "mem_vsize", "time", "io_perc", "io_read" and
-        "io_write".  There can be a max of 10 processes listed. 
+        "io_write". There can be a max of 10 processes listed. 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>top_io</option>
+            </command>
+            <option>type, num</option>
+        </term>
+        <listitem>Same as top, except sorted by the amount of I/O
+        the process has done during the update interval 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2923,17 +2946,6 @@
         </term>
         <listitem>Same as top, except sorted by total CPU time
         instead of current CPU usage 
-        <para /></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
-                <option>top_io</option>
-            </command>
-            <option>type, num</option>
-        </term>
-        <listitem>Same as top, except sorted by the amount of I/O the
-            process has done during the update interval
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2970,19 +2982,6 @@
         <listitem>Number of mails marked as trashed in the
         specified mailbox or mail spool if not. Only maildir type
         mailboxes are supported, mbox type will return -1. 
-        <para /></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
-                <option>to_bytes</option>
-            </command>
-            <option>size</option>
-        </term>
-        <listitem>If 'size' is a number followed by a size-unit
-        (kilobyte,mb,GiB,...) then it converts the size to bytes
-        and shows it without unit, otherwise it just shows
-        'size'.
         <para /></listitem>
     </varlistentry>
     <varlistentry>

@@ -77,6 +77,7 @@ while file:
 			# ignore colourN stuff
 			objects.append(res.group(1))
 file.close()
+print 'counted %i text objects' % len(objects)
 
 doc_objects = []
 exp = re.compile("\s*<command><option>(\w*)</option></command>.*")
@@ -123,6 +124,7 @@ while file:
 		if config_entries.count(conf) == 0:
 			config_entries.append(conf)
 file.close()
+print 'counted %i config settings' % len(config_entries)
 
 doc_configs = []
 print "checking docs -> configs consistency (in %s)" % (file_names["conky"])
