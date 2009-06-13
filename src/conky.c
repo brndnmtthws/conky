@@ -6932,9 +6932,7 @@ static void main_loop(void)
 							window.height = text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2;
 							XResizeWindow(display, window.window, window.width,
 								window.height);
-							if (own_window) {
-								set_transparent_background(window.window);
-							}
+							set_transparent_background(window.window);
 					}
 
 					/* move window if it isn't in right position */
@@ -8290,7 +8288,7 @@ static void load_config_file(const char *f)
 					window.type = TYPE_NORMAL;
 				} else if (strncmp(value, "desktop", 7) == EQUAL) {
 					window.type = TYPE_DESKTOP;
-				} else if (strncmp(value, "dock", 7) == EQUAL) {
+				} else if (strncmp(value, "dock", 4) == EQUAL) {
 					window.type = TYPE_DOCK;
 					text_alignment = TOP_LEFT;
 				} else if (strncmp(value, "override", 8) == EQUAL) {
