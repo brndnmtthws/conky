@@ -7184,7 +7184,7 @@ static void main_loop(void)
 				break;
 		}
 #ifdef HAVE_SYS_INOTIFY_H
-		if (inotify_fd != -1 && inotify_config_wd != -1) {
+		if (inotify_fd != -1 && inotify_config_wd == -1) {
 			inotify_config_wd = inotify_add_watch(inotify_fd,
 					current_config,
 					IN_MODIFY);
