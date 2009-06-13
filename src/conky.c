@@ -6851,7 +6851,7 @@ static void main_loop(void)
 #endif
 	double t;
 #ifdef HAVE_SYS_INOTIFY_H
-	int inotify_config_wd = 0;
+	int inotify_config_wd = -1;
 #define INOTIFY_EVENT_SIZE  (sizeof(struct inotify_event))
 #define INOTIFY_BUF_LEN     (20 * (INOTIFY_EVENT_SIZE + 16))
 	char inotify_buff[INOTIFY_BUF_LEN];
@@ -7184,12 +7184,12 @@ static void main_loop(void)
 				break;
 		}
 #ifdef HAVE_SYS_INOTIFY_H
-		if (inotify_fd && !inotify_config_wd) {
+		if (inotify_fd != -1 && inotify_config_wd != -1) {
 			inotify_config_wd = inotify_add_watch(inotify_fd,
 					current_config,
 					IN_MODIFY);
 		}
-		if (inotify_fd && inotify_config_wd) {
+		if (inotify_fd != -1 && inotify_config_wd != -1) {
 			int len = 0, idx = 0;
 			fd_set descriptors;
 			struct timeval time_to_wait;
@@ -7232,7 +7232,7 @@ static void main_loop(void)
 	}
 
 #ifdef HAVE_SYS_INOTIFY_H
-	if (inotify_fd) {
+	if (inotify_fd != -1) {
 		inotify_rm_watch(inotify_fd, inotify_config_wd);
 		close(inotify_fd);
 		inotify_fd = inotify_config_wd = 0;

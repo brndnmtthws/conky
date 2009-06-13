@@ -1,5 +1,7 @@
 2009-06-13
 	* Added support for $to_bytes
+	* Fix segfault due to bad checking of return values for inotify code
+	(sf.net #2804886)
 
 2009-06-12
 	* Added support for per-task I/O statistics - $top_io
