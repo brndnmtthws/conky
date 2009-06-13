@@ -1,4 +1,5 @@
 2009-06-13
+	* Added support for $blink
 	* Added support for $to_bytes
 	* Fix segfault due to bad checking of return values for inotify code
 	(sf.net #2804886)

@@ -1034,6 +1034,7 @@ static void free_text_objects(struct text_object *root, int internal)
 				free_moc();
 				break;
 #endif /* MOC */
+			case OBJ_blink:
 			case OBJ_to_bytes:
 				free_text_objects(obj->sub, 1);
 				free(obj->sub);
@@ -2862,6 +2863,13 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(entropy_bar, INFO_ENTROPY)
 		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->a, &obj->b);
+	END OBJ(blink, 0)
+		if(arg) {
+			obj->sub = malloc(sizeof(struct text_object));
+			extract_variable_text_internal(obj->sub, arg, 0);
+		}else{
+			CRIT_ERR("blink needs a argument");
+		}
 	END OBJ(to_bytes, 0)
 		if(arg) {
 			obj->sub = malloc(sizeof(struct text_object));
@@ -5623,6 +5631,19 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* X11 */
 #endif /* IBM */
+			OBJ(blink) {
+				//blinking like this can look a bit ugly if the chars in the font don't have the same width
+				char buf[max_user_text];
+				unsigned int j;
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				snprintf(p, p_max_size, "%s", buf);
+				if(total_updates % 2) {
+					for(j=0; p[j] != 0; j++) {
+						p[j] = ' ';
+					}
+				}
+			}
 			OBJ(to_bytes) {
 				char buf[max_user_text];
 				long long bytes;

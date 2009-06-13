@@ -453,6 +453,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>blink</option>
+            </command>
+            <option>text_and_other_conky_vars</option>
+        </term>
+        <listitem>Let 'text_and_other_conky_vars' blink on and off.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>bmpx_album</option>
             </command>
         </term>
