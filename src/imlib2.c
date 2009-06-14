@@ -64,7 +64,11 @@ void cimlib_set_cache_size(long size)
 
 void cimlib_set_cache_flush_interval(long interval)
 {
-	cimlib_cache_flush_interval = interval;
+	if (interval >= 0) {
+		cimlib_cache_flush_interval = interval;
+	} else {
+		ERR("Imlib2: flush interval should be >= 0");
+	}
 }
 
 void cimlib_cleanup(void)
@@ -131,6 +135,10 @@ void cimlib_add_image(const char *args)
 			cur->no_cache = 0;
 		}
 	}
+	if (cur->flush_interval < 0) {
+		ERR("Imlib2: flush interval should be >= 0");
+		cur->flush_interval = 0;
+	}
 
 	if (image_list_end) {
 		image_list_end->next = cur;
@@ -160,7 +168,7 @@ static void cimlib_draw_image(struct image_list_s *cur, int *clip_x, int *clip_y
 		imlib_blend_image_onto_image(image, 1, 0, 0, w, h,
 				cur->x, cur->y, cur->w, cur->h);
 		imlib_context_set_image(image);
-		if (cur->no_cache || (now % cur->flush_interval == 0)) {
+		if (cur->no_cache || (cur->flush_interval && now % cur->flush_interval == 0)) {
 			imlib_free_image_and_decache();
 		} else {
 			imlib_free_image();
