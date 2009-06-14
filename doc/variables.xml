@@ -759,7 +759,7 @@
             </command>
             <option>(net)</option>
         </term>
-        <listitem>Download speed in KiB 
+        <listitem>Download speed in suitable IEC units 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3078,7 +3078,7 @@
             </command>
             <option>(net)</option>
         </term>
-        <listitem>Upload speed in KiB 
+        <listitem>Upload speed in suitable IEC units 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
