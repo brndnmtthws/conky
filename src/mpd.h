@@ -23,7 +23,7 @@ struct mpd_s {
 
 /* functions for setting the configuration values */
 void mpd_set_host(const char *);
-void mpd_set_password(const char *);
+void mpd_set_password(const char *, int);
 void mpd_clear_password(void);
 int mpd_set_port(const char *);
 

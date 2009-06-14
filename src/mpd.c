@@ -35,6 +35,9 @@ static char mpd_host[128];
 static char mpd_password[128];
 static int mpd_port;
 
+/* this is >0 if the current password was set from MPD_HOST */
+static int mpd_environment_password = 0;
+
 /* global mpd information */
 static struct mpd_s mpd_info;
 
@@ -44,14 +47,21 @@ static int refcount = 0;
 void mpd_set_host(const char *host)
 {
 	snprintf(mpd_host, 128, "%s", host);
+
+	if (mpd_environment_password) {
+		/* for security, dont use environment password when user specifies host in config */
+		mpd_clear_password();
+	}
 }
-void mpd_set_password(const char *password)
+void mpd_set_password(const char *password, int from_environment)
 {
 	snprintf(mpd_password, 128, "%s", password);
+	mpd_environment_password = from_environment;
 }
 void mpd_clear_password(void)
 {
 	*mpd_password = '\0';
+	mpd_environment_password = 0;
 }
 int mpd_set_port(const char *port)
 {

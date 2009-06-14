@@ -7540,6 +7540,10 @@ static void set_default_configurations_for_x(void)
 static void set_default_configurations(void)
 {
 	int i;
+#ifdef MPD
+	char *mpd_env_host;
+	char *mpd_env_port;
+#endif
 	update_uname();
 	fork_to_background = 0;
 	total_run_times = 0;
@@ -7557,8 +7561,36 @@ static void set_default_configurations(void)
 	top_io = 0;
 #endif
 #ifdef MPD
-	mpd_set_host("localhost");
-	mpd_set_port("6600");
+	mpd_env_host = getenv("MPD_HOST");
+	mpd_env_port = getenv("MPD_PORT");
+
+	if (!mpd_env_host || !strlen(mpd_env_host)) {
+		mpd_set_host("localhost");
+	} else {
+		/* MPD_HOST environment variable is set */
+		char *mpd_hostpart = strchr(mpd_env_host, '@');
+		if (!mpd_hostpart) {
+			mpd_set_host(mpd_env_host);
+		} else {
+			/* MPD_HOST contains a password */
+			char mpd_password[mpd_hostpart - mpd_env_host + 1];
+			snprintf(mpd_password, mpd_hostpart - mpd_env_host + 1, "%s", mpd_env_host);
+
+			if (!strlen(mpd_hostpart + 1)) {
+				mpd_set_host("localhost");
+			} else {
+				mpd_set_host(mpd_hostpart + 1);
+			}
+
+			mpd_set_password(mpd_password, 1);
+		}
+	}
+
+
+	if (!mpd_env_port || mpd_set_port(mpd_env_port)) {
+		/* failed to set port from environment variable */
+		mpd_set_port("6600");
+	}
 #endif
 #ifdef XMMS2
 	info.xmms2.artist = NULL;
@@ -8034,7 +8066,7 @@ static void load_config_file(const char *f)
 		}
 		CONF("mpd_password") {
 			if (value) {
-				mpd_set_password(value);
+				mpd_set_password(value, 0);
 			} else {
 				CONF_ERR;
 			}
