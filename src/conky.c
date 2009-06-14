@@ -7913,6 +7913,12 @@ static void load_config_file(const char *f)
 		}
 		CONF("border_margin") {
 			ERR("border_margin is deprecated, please use border_inner_margin instead");
+			if (value) {
+				border_inner_margin = strtol(value, 0, 0);
+				if (border_inner_margin < 0) border_inner_margin = 0;
+			} else {
+				CONF_ERR;
+			}
 		}
 		CONF("border_inner_margin") {
 			if (value) {
