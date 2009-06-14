@@ -38,7 +38,6 @@ struct image_list_s {
 	int wh_set;
 	char no_cache;
 	int flush_interval;
-	int flush_last;
 	struct image_list_s *next;
 };
 
@@ -161,9 +160,8 @@ static void cimlib_draw_image(struct image_list_s *cur, int *clip_x, int *clip_y
 		imlib_blend_image_onto_image(image, 1, 0, 0, w, h,
 				cur->x, cur->y, cur->w, cur->h);
 		imlib_context_set_image(image);
-		if (cur->no_cache || (cur->flush_interval && now - cur->flush_interval > cur->flush_last)) {
+		if (cur->no_cache || (now % cur->flush_interval == 0)) {
 			imlib_free_image_and_decache();
-			cur->flush_last = now;
 		} else {
 			imlib_free_image();
 		}
