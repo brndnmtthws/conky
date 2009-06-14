@@ -249,7 +249,7 @@ int handle_playlist_loaded(xmmsv_t *value, void *p)
 	return TRUE;
 }
 
-void update_xmms2()
+void update_xmms2(void)
 {
 	struct information *current_info = &info;
 
@@ -316,23 +316,5 @@ void update_xmms2()
 
 		}
 	}
-
-
-void free_xmms2()
-{
-	struct information *current_info = &info;
-
-	current_info->xmms2.conn_state = -1;
-
-	free(current_info->xmms2.artist);
-	free(current_info->xmms2.album);
-	free(current_info->xmms2.title);
-	free(current_info->xmms2.genre);
-	free(current_info->xmms2.comment);
-	free(current_info->xmms2.url);
-	free(current_info->xmms2.date);
-	free(current_info->xmms2.playlist);
-	free(current_info->xmms2.status);
-}
 
 

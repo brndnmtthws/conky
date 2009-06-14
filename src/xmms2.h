@@ -52,6 +52,5 @@ struct xmms2_s {
 };
 
 void update_xmms2(void);
-void free_xmms2(void);
 
 #endif /*XMMS2_H_*/

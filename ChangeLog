@@ -1,3 +1,6 @@
+2009-06-14
+	* Fix XMMS2 related crash (sf.net #2806111 and #2805310, thanks Lassi)
+
 2009-06-13
 	* Added support for $blink
 	* Added support for $to_bytes
