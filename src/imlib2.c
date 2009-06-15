@@ -19,20 +19,20 @@
  *
  */
 
-#include "imlib2.h"
 #include "config.h"
+#include "imlib2.h"
+#include "conky.h"
 #include "logging.h"
-#include "common.h"
 
 #include <Imlib2.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <limits.h>
+#include <string.h>
 #include <time.h>
 
 struct image_list_s {
-	char name[DEFAULT_TEXT_BUFFER_SIZE];
+	char name[1024];
 	Imlib_Image image;
 	int x, y, w, h;
 	int wh_set;
@@ -54,7 +54,7 @@ static int cache_size_set = 0;
 static int cimlib_cache_flush_interval = 0;
 static int cimlib_cache_flush_last = 0;
 
-#define DEFAULT_CACHE_SIZE 4096 * 1024 /* default cache size for loaded images */
+#define DEFAULT_IMLIB2_CACHE_SIZE 4096 * 1024 /* default cache size for loaded images */
 
 void cimlib_set_cache_size(long size)
 {
@@ -85,7 +85,7 @@ void cimlib_cleanup(void)
 void cimlib_init(Display *display, Window drawable, Visual *visual, Colormap colourmap)
 {
 	image_list_start = image_list_end = NULL;
-	if (!cache_size_set) cimlib_set_cache_size(DEFAULT_CACHE_SIZE);
+	if (!cache_size_set) cimlib_set_cache_size(DEFAULT_IMLIB2_CACHE_SIZE);
 	/* set the maximum number of colors to allocate for 8bpp and less to 256 */
 	imlib_set_color_usage(256);
 	/* dither for depths < 24bpp */
@@ -105,8 +105,10 @@ void cimlib_add_image(const char *args)
 	cur = malloc(sizeof(struct image_list_s));
 	memset(cur, 0, sizeof(struct image_list_s));
 
-	if (!sscanf(args, "%1024s", cur->name)) {
+	if (!sscanf(args, "%1023s", cur->name)) {
 		ERR("Invalid args for $image.  Format is: '<path to image> (-p x,y) (-s WxH) (-n) (-f interval)' (got '%s')", args);
+		free(cur);
+		return;
 	}
 	to_real_path(cur->name, cur->name);
 	// now we check for optional args
