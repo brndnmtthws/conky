@@ -235,6 +235,8 @@ static void *update_mpd_thread(void *arg)
 			} else {
 				mpd_info.repeat = "";
 			}
+		} else {
+			mpd_info.is_playing = 0;
 		}
 
 		if (conn->error) {
