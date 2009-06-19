@@ -136,4 +136,7 @@ void process_find_top(struct process **, struct process **, struct process **
 #endif
 		);
 
+/* lookup a program by it's name */
+struct process *get_process_by_name(const char *);
+
 #endif /* _top_h_ */

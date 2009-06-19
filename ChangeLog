@@ -1,3 +1,6 @@
+2009-06-20
+	* Use the internal process list for if_running on Linux
+
 2009-06-14
 	* Fix XMMS2 related crash (sf.net #2806111 and #2805310, thanks Lassi)
 

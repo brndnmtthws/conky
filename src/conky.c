@@ -2100,12 +2100,18 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
 		}
+#ifdef __linux__
+	END OBJ_IF(if_running, INFO_TOP)
+		if (arg) {
+			obj->data.ifblock.s = strndup(arg, text_buffer_size);
+#else
 	END OBJ_IF(if_running, 0)
 		if (arg) {
 			char buf[256];
 
 			snprintf(buf, 256, "pidof %s >/dev/null", arg);
 			obj->data.ifblock.s = strndup(buf, text_buffer_size);
+#endif
 		} else {
 			ERR("if_running needs an argument");
 			obj->data.ifblock.s = 0;
@@ -4796,7 +4802,11 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 			OBJ(if_running) {
+#ifdef __linux__
+				if (!get_process_by_name(obj->data.ifblock.s)) {
+#else
 				if ((obj->data.ifblock.s) && system(obj->data.ifblock.s)) {
+#endif
 					DO_JUMP;
 				}
 			}

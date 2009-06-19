@@ -52,6 +52,18 @@ void free_all_processes(void)
 	first_process = NULL;
 }
 
+struct process *get_process_by_name(const char *name)
+{
+	struct process *p = first_process;
+
+	while (p) {
+		if (!strcmp(p->name, name))
+			return p;
+		p = p->next;
+	}
+	return 0;
+}
+
 static struct process *find_process(pid_t pid)
 {
 	struct process *p = first_process;
