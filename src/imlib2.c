@@ -150,38 +150,47 @@ void cimlib_add_image(const char *args)
 	}
 }
 
-static void cimlib_draw_image(struct image_list_s *cur, int *clip_x, int *clip_y, int *clip_x2, int *clip_y2)
+static void
+cimlib_draw_image(struct image_list_s *cur, int *clip_x,
+			int *clip_y, int *clip_x2, int *clip_y2)
 {
+	int w, h;
+	time_t now = time(NULL);
+
 	image = imlib_load_image(cur->name);
-	if (image) {
-		int w, h;
-		time_t now = time(NULL);
-		DBGP("Drawing image '%s' at (%i,%i) scaled to %ix%i, caching interval set to %i (with -n opt %i)", cur->name, cur->x, cur->y, cur->w, cur->h, cur->flush_interval, cur->no_cache);
-		imlib_context_set_image(image);
-		/* turn alpha channel on */
-		imlib_image_set_has_alpha(1);
-		w = imlib_image_get_width();
-		h = imlib_image_get_height();
-		if (!cur->wh_set) {
-			cur->w = w;
-			cur->h = h;
-		}
-		imlib_context_set_image(buffer);
-		imlib_blend_image_onto_image(image, 1, 0, 0, w, h,
-				cur->x, cur->y, cur->w, cur->h);
-		imlib_context_set_image(image);
-		if (cur->no_cache || (cur->flush_interval && now % cur->flush_interval == 0)) {
-			imlib_free_image_and_decache();
-		} else {
-			imlib_free_image();
-		}
-		if (cur->x < *clip_x) *clip_x = cur->x;
-		if (cur->y < *clip_y) *clip_y = cur->y;
-		if (cur->x + cur->w > *clip_x2) *clip_x2 = cur->x + cur->w;
-		if (cur->y + cur->h > *clip_y2) *clip_y2 = cur->y + cur->h;
-	} else {
+	if (!image) {
 		ERR("Unable to load image '%s'", cur->name);
+		return;
 	}
+
+	DBGP("Drawing image '%s' at (%i,%i) scaled to %ix%i, "
+	     "caching interval set to %i (with -n opt %i)",
+	     cur->name, cur->x, cur->y, cur->w, cur->h,
+	     cur->flush_interval, cur->no_cache);
+
+	imlib_context_set_image(image);
+	/* turn alpha channel on */
+	imlib_image_set_has_alpha(1);
+	w = imlib_image_get_width();
+	h = imlib_image_get_height();
+	if (!cur->wh_set) {
+		cur->w = w;
+		cur->h = h;
+	}
+	imlib_context_set_image(buffer);
+	imlib_blend_image_onto_image(image, 1, 0, 0, w, h,
+			cur->x, cur->y, cur->w, cur->h);
+	imlib_context_set_image(image);
+	if (cur->no_cache || (cur->flush_interval &&
+	                      now % cur->flush_interval == 0)) {
+		imlib_free_image_and_decache();
+	} else {
+		imlib_free_image();
+	}
+	if (cur->x < *clip_x) *clip_x = cur->x;
+	if (cur->y < *clip_y) *clip_y = cur->y;
+	if (cur->x + cur->w > *clip_x2) *clip_x2 = cur->x + cur->w;
+	if (cur->y + cur->h > *clip_y2) *clip_y2 = cur->y + cur->h;
 }
 
 static void cimlib_draw_all(int *clip_x, int *clip_y, int *clip_x2, int *clip_y2)
