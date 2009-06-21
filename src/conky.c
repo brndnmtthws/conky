@@ -5875,7 +5875,11 @@ static void generate_text_internal(char *p, int p_max_size,
 					&& (iconv_cd[iconv_selected - 1] != (iconv_t) (-1))) {
 				int bytes;
 				size_t dummy1, dummy2;
+#ifdef __FreeBSD__
+				const char *ptr = buff_in;
+#else
 				char *ptr = buff_in;
+#endif
 				char *outptr = p;
 
 				dummy1 = dummy2 = a;

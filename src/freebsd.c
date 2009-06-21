@@ -62,11 +62,12 @@
 #define	FREEBSD_DEBUG
 #endif
 
-inline void proc_find_top(struct process **cpu, struct process **mem);
+__attribute__((gnu_inline)) inline void
+proc_find_top(struct process **cpu, struct process **mem);
 
 static short cpu_setup = 0;
 
-static int getsysctl(char *name, void *ptr, size_t len)
+static int getsysctl(const char *name, void *ptr, size_t len)
 {
 	size_t nlen = len;
 
@@ -109,11 +110,11 @@ static int swapmode(unsigned long *retavail, unsigned long *retfree)
 	return n;
 }
 
-void prepare_update()
+void prepare_update(void)
 {
 }
 
-void update_uptime()
+void update_uptime(void)
 {
 	int mib[2] = { CTL_KERN, KERN_BOOTTIME };
 	struct timeval boottime;
@@ -145,7 +146,7 @@ int check_mount(char *s)
 	return 0;
 }
 
-void update_meminfo()
+void update_meminfo(void)
 {
 	u_int total_pages, inactive_pages, free_pages;
 	unsigned long swap_avail, swap_free;
@@ -177,7 +178,7 @@ void update_meminfo()
 	}
 }
 
-void update_net_stats()
+void update_net_stats(void)
 {
 	struct net_stat *ns;
 	double delta;
@@ -250,7 +251,7 @@ void update_net_stats()
 	freeifaddrs(ifap);
 }
 
-void update_total_processes()
+void update_total_processes(void)
 {
 	int n_processes;
 
@@ -259,7 +260,7 @@ void update_total_processes()
 	info.procs = n_processes;
 }
 
-void update_running_processes()
+void update_running_processes(void)
 {
 	struct kinfo_proc *p;
 	int n_processes;
@@ -286,7 +287,7 @@ struct cpu_load_struct {
 struct cpu_load_struct fresh = { {0, 0, 0, 0, 0} };
 long cpu_used, oldtotal, oldused;
 
-void get_cpu_count()
+void get_cpu_count(void)
 {
 	/* int cpu_count = 0; */
 
@@ -308,11 +309,11 @@ void get_cpu_count()
 }
 
 /* XXX: SMP support */
-void update_cpu_usage()
+void update_cpu_usage(void)
 {
 	long used, total;
 	long cp_time[CPUSTATES];
-	size_t len = sizeof(cp_time);
+	size_t cp_len = sizeof(cp_time);
 
 	/* add check for !info.cpu_usage since that mem is freed on a SIGUSR1 */
 	if ((cpu_setup == 0) || (!info.cpu_usage)) {
@@ -320,7 +321,7 @@ void update_cpu_usage()
 		cpu_setup = 1;
 	}
 
-	if (sysctlbyname("kern.cp_time", &cp_time, &len, NULL, 0) < 0) {
+	if (sysctlbyname("kern.cp_time", &cp_time, &cp_len, NULL, 0) < 0) {
 		fprintf(stderr, "Cannot get kern.cp_time");
 	}
 
@@ -344,7 +345,7 @@ void update_cpu_usage()
 	oldtotal = total;
 }
 
-void update_load_average()
+void update_load_average(void)
 {
 	double v[3];
 
@@ -358,6 +359,7 @@ void update_load_average()
 double get_acpi_temperature(int fd)
 {
 	int temp;
+	(void)fd;
 
 	if (GETSYSCTL("hw.acpi.thermal.tz0.temperature", temp)) {
 		fprintf(stderr,
@@ -386,6 +388,7 @@ static void get_battery_stats(int *battime, int *batcapacity, int *batstate, int
 void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 {
 	int battime, batcapacity, batstate, ac;
+	(void)bat;
 
 	get_battery_stats(&battime, &batcapacity, &batstate, &ac);
 
@@ -466,6 +469,7 @@ int get_battery_perct_bar(const char *bar)
 
 int open_acpi_temperature(const char *name)
 {
+	(void)name;
 	/* Not applicable for FreeBSD. */
 	return 0;
 }
@@ -517,7 +521,7 @@ void get_adt746x_fan(char *p_client_buffer, size_t client_buffer_size)
 /* rdtsc() and get_freq_dynamic() copied from linux.c */
 
 #if  defined(__i386) || defined(__x86_64)
-__inline__ unsigned long long int rdtsc()
+__attribute__((gnu_inline)) inline unsigned long long int rdtsc(void)
 {
 	unsigned long long int x;
 
@@ -587,13 +591,13 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size, const char *p_fo
 	return 1;
 }
 
-void update_top()
+void update_top(void)
 {
 	proc_find_top(info.cpu, info.memu);
 }
 
 #if 0
-void update_wifi_stats()
+void update_wifi_stats(void)
 {
 	struct ifreq ifr;		/* interface stats */
 	struct wi_req wireq;
@@ -647,7 +651,7 @@ cleanup:
 }
 #endif
 
-void update_diskio()
+void update_diskio(void)
 {
 	int devs_count, num_selected, num_selections, dn;
 	struct device_selection *dev_select = NULL;
@@ -703,9 +707,9 @@ void update_diskio()
 
 int comparecpu(const void *a, const void *b)
 {
-	if (((struct process *)a)->amount > ((struct process *)b)->amount) {
+	if (((const struct process *)a)->amount > ((const struct process *)b)->amount) {
 		return -1;
-	} else if (((struct process *)a)->amount < ((struct process *)b)->amount) {
+	} else if (((const struct process *)a)->amount < ((const struct process *)b)->amount) {
 		return 1;
 	} else {
 		return 0;
@@ -714,16 +718,17 @@ int comparecpu(const void *a, const void *b)
 
 int comparemem(const void *a, const void *b)
 {
-	if (((struct process *)a)->totalmem > ((struct process *)b)->totalmem) {
+	if (((const struct process *)a)->totalmem > ((const struct process *)b)->totalmem) {
 		return -1;
-	} else if (((struct process *)a)->totalmem < ((struct process *)b)->totalmem) {
+	} else if (((const struct process *)a)->totalmem < ((const struct process *)b)->totalmem) {
 		return 1;
 	} else {
 		return 0;
 	}
 }
 
-inline void proc_find_top(struct process **cpu, struct process **mem)
+__attribute__((gnu_inline)) inline void
+proc_find_top(struct process **cpu, struct process **mem)
 {
 	struct kinfo_proc *p;
 	int n_processes;
@@ -820,10 +825,10 @@ int apm_getinfo(int fd, apm_info_t aip)
 	return 0;
 }
 
-char *get_apm_adapter()
+char *get_apm_adapter(void)
 {
 	int fd;
-	struct apm_info info;
+	struct apm_info a_info;
 	char *out;
 
 	out = (char *) calloc(16, sizeof(char));
@@ -834,20 +839,20 @@ char *get_apm_adapter()
 		return out;
 	}
 
-	if (apm_getinfo(fd, &info) != 0) {
+	if (apm_getinfo(fd, &a_info) != 0) {
 		close(fd);
 		strncpy(out, "ERR", 16);
 		return out;
 	}
 	close(fd);
 
-	switch (info.ai_acline) {
+	switch (a_info.ai_acline) {
 		case 0:
 			strncpy(out, "off-line", 16);
 			return out;
 			break;
 		case 1:
-			if (info.ai_batt_stat == 3) {
+			if (a_info.ai_batt_stat == 3) {
 				strncpy(out, "charging", 16);
 				return out;
 			} else {
@@ -862,11 +867,11 @@ char *get_apm_adapter()
 	}
 }
 
-char *get_apm_battery_life()
+char *get_apm_battery_life(void)
 {
 	int fd;
 	u_int batt_life;
-	struct apm_info info;
+	struct apm_info a_info;
 	char *out;
 
 	out = (char *) calloc(16, sizeof(char));
@@ -877,14 +882,14 @@ char *get_apm_battery_life()
 		return out;
 	}
 
-	if (apm_getinfo(fd, &info) != 0) {
+	if (apm_getinfo(fd, &a_info) != 0) {
 		close(fd);
 		strncpy(out, "ERR", 16);
 		return out;
 	}
 	close(fd);
 
-	batt_life = info.ai_batt_life;
+	batt_life = a_info.ai_batt_life;
 	if (batt_life == APM_UNKNOWN) {
 		strncpy(out, "unknown", 16);
 	} else if (batt_life <= 100) {
@@ -897,12 +902,12 @@ char *get_apm_battery_life()
 	return out;
 }
 
-char *get_apm_battery_time()
+char *get_apm_battery_time(void)
 {
 	int fd;
 	int batt_time;
 	int h, m, s;
-	struct apm_info info;
+	struct apm_info a_info;
 	char *out;
 
 	out = (char *) calloc(16, sizeof(char));
@@ -913,14 +918,14 @@ char *get_apm_battery_time()
 		return out;
 	}
 
-	if (apm_getinfo(fd, &info) != 0) {
+	if (apm_getinfo(fd, &a_info) != 0) {
 		close(fd);
 		strncpy(out, "ERR", 16);
 		return out;
 	}
 	close(fd);
 
-	batt_time = info.ai_batt_time;
+	batt_time = a_info.ai_batt_time;
 
 	if (batt_time == -1) {
 		strncpy(out, "unknown", 16);

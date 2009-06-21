@@ -26,6 +26,7 @@
  */
 #define _GNU_SOURCE
 #include "config.h"
+#include "conky.h"
 #include "algebra.h"
 #include "logging.h"
 #include <ctype.h>

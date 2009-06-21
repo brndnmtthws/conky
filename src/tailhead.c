@@ -37,13 +37,13 @@
 #include <sys/stat.h>
 
 #ifndef HAVE_MEMRCHR
-static void *memrchr(const void *buffer, char c, size_t n)
+static const void *memrchr(const void *buffer, char c, size_t n)
 {
 	const unsigned char *p = buffer;
 
 	for (p += n; n; n--) {
 		if (*--p == c) {
-			return (void *) p;
+			return p;
 		}
 	}
 	return NULL;
@@ -223,7 +223,7 @@ static long rev_fcharfind(FILE *fp, char val, unsigned int step)
 	long buf_pos = -1;
 	long file_pos = orig_pos;
 	long buf_size = BUFSZ;
-	char *cur_found;
+	const char *cur_found;
 
 	while (count < step) {
 		if (buf_pos <= 0) {
