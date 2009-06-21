@@ -216,6 +216,7 @@ void set_transparent_background(Window win)
 void destroy_window(void)
 {
 	XDestroyWindow(display, window.window);
+	XFreeGC(display, window.gc);
 	memset(&window, 0, sizeof(struct conky_window));
 }
 

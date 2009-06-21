@@ -7416,7 +7416,6 @@ static void clean_up(void)
 			XFlush(display);
 		}
 
-		XFreeGC(display, window.gc);
 		free_fonts();
 	}
 
@@ -7650,6 +7649,8 @@ static void set_default_configurations(void)
 #endif /* X11 */
 
 	for (i = 0; i < MAX_TEMPLATES; i++) {
+		if (template[i])
+			free(template[i]);
 		template[i] = strdup("");
 	}
 
@@ -8907,6 +8908,7 @@ int main(int argc, char **argv)
 
 	g_signal_pending = 0;
 	memset(&info, 0, sizeof(info));
+	memset(template, 0, sizeof(template));
 	clear_net_stats();
 
 #ifdef TCP_PORT_MONITOR
