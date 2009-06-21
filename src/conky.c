@@ -108,9 +108,7 @@ char *get_apm_battery_time(void);
 
 #ifdef CONFIG_OUTPUT
 #include "defconfig.h"
-#ifdef HAVE_FOPENCOOKIE
 #include "conf_cookie.h"
-#endif
 #endif
 
 #ifndef S_ISSOCK
@@ -7822,9 +7820,7 @@ static FILE *open_config_file(const char *f)
 {
 #ifdef CONFIG_OUTPUT
 	if (!strcmp(f, "==builtin==")) {
-#ifdef HAVE_FOPENCOOKIE
-		return fopencookie(NULL, "r", conf_cookie);
-#endif /* HAVE_FOPENCOOKIE */
+		return conf_cookie_open();
 	} else
 #endif /* CONFIG_OUTPUT */
 		return fopen(f, "r");

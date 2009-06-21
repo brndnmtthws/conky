@@ -29,19 +29,20 @@ bin_PROGRAMS = conky
 
 if BUILD_CONFIG_OUTPUT
 config_output = defconfig.h
-if BUILD_FOR_FOPENCOOKIE
 config_cookie = conf_cookie.c conf_cookie.h
+if BUILD_X11
+config_input = ../data/conky.conf
+else
+config_input = ../data/conky_no_x11.conf
 endif
+
 conky_DEPENDENCIES = $(config_output)
 BUILT_SOURCES = $(config_output)
 CLEANFILES = $(config_output)
-if BUILD_X11
-$(config_output): ../data/conky.conf
-else
-$(config_output): ../data/conky_no_x11.conf
-endif
-	sh ../text2c.sh $< $@ defconfig
-endif
+
+$(config_output): ${config_input}
+	sh ../text2c.sh ${config_input} $@ defconfig
+endif # BUILD_CONFIG_OUTPUT
 
 if BUILD_AUDACIOUS
 audacious = audacious.c audacious.h

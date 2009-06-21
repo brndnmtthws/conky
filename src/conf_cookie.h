@@ -1,8 +1,6 @@
 #ifndef _CONF_COOKIE_H
 #define _CONF_COOKIE_H
 
-#include <stdio.h>
-
-extern cookie_io_functions_t conf_cookie;
+FILE *conf_cookie_open(void);
 
 #endif /* _CONF_COOKIE_H */
