@@ -1,3 +1,7 @@
+2009-06-29
+	* Fix segfault in to_real_path, it's sometimes called with the same
+	source and dest without checking the length, causing a segfault.
+
 2009-06-20
 	* Use the internal process list for if_running on Linux
 
