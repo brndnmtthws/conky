@@ -3385,6 +3385,8 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 					append_object(retval, obj);
 				}
 			}
+		} else if (*p == '\\' && *(p+1) == '#') {
+			strfold(p, 1);
 		} else if (*p == '#') {
 			remove_comment(p);
 		}
