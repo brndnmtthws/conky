@@ -3214,6 +3214,10 @@ static int text_contains_templates(const char *text)
 	return 0;
 }
 
+/* folds a string over top of itself, like so:
+ *
+ * if start is "blah", and you call it with count = 1, the result will be "lah"
+ */
 static void strfold(char *start, int count)
 {
 	char *curplace;
@@ -3226,13 +3230,18 @@ static void strfold(char *start, int count)
 /*
  * - assumes that *string is '#'
  * - removes the part from '#' to the end of line ('\n' or '\0')
- * - BUT, it leaves the '\n'
+ * - it removes the '\n'
+ * - copies the last char into 'char *last' argument, which should be a pointer
+ *   to a char rather than a string.
  */
-static size_t remove_comment(char *string)
+static size_t remove_comment(char *string, char *last)
 {
 	char *end = string;
-	while(*end != '\0' && *end != '\n')
+	while (*end != '\0' && *end != '\n') {
 		++end;
+	}
+	if (last) *last = *end;
+	if (*end == '\n') end++;
 	strfold(string, end - string);
 	return end - string;
 }
@@ -3247,7 +3256,7 @@ static size_t remove_comments(char *string)
 			strfold(curplace, 1);
 			folded += 1;
 		} else if (*curplace == '#') {
-			folded += remove_comment(curplace);
+			folded += remove_comment(curplace, 0);
 		}
 	}
 	return folded;
@@ -3388,7 +3397,11 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 		} else if (*p == '\\' && *(p+1) == '#') {
 			strfold(p, 1);
 		} else if (*p == '#') {
-			remove_comment(p);
+			char c;
+			if (remove_comment(p, &c) && p > orig_p && c == '\n') {
+				/* if remove_comment removed a newline, we need to 'back up' with p */
+				p--;
+			}
 		}
 		p++;
 	}
