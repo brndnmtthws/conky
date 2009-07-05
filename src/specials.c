@@ -107,9 +107,8 @@ char *scan_graph(const char *args, int *w, int *h,
                  unsigned int *first_colour, unsigned int *last_colour,
                  unsigned int *scale, char *showaslog, char *tempgrad)
 {
-	const char *nographtype;
-	char buf[64];
-	buf[0] = 0;
+	char buf[1024];
+	memset(buf, 0, 1024);
 
 	/* zero width means all space that is available */
 	*w = default_graph_width;
@@ -118,74 +117,61 @@ char *scan_graph(const char *args, int *w, int *h,
 	*last_colour = 0;
 	*scale = 0;
 	*tempgrad = FALSE;
+	*showaslog = FALSE;
 	if (args) {
-		// set showaslog and place the rest of the args in nographtype
-		if (strcasecmp(args, LOGGRAPH) == EQUAL) {
-			*showaslog = TRUE;
-			return NULL;
-		} else if (strcasecmp(args, NORMGRAPH) == EQUAL) {
-			*showaslog = FALSE;
-			return NULL;
-		} else if (strncasecmp(args, LOGGRAPH" ", strlen(LOGGRAPH) + 1 ) == EQUAL) {
-			*showaslog = TRUE;
-			nographtype = &args[strlen(LOGGRAPH) + 1];
-		} else if (strncasecmp(args, NORMGRAPH" ", strlen(NORMGRAPH) + 1 ) == EQUAL) {
-			*showaslog = FALSE;
-			nographtype = &args[strlen(NORMGRAPH) + 1];
-		} else {
-			*showaslog = FALSE;
-			nographtype = args;
-		}
 		if (strstr(args, " "TEMPGRAD)) {
 			*tempgrad = TRUE;
 		}
-		DBGP("printing graph as %s, other args are: %s", (*showaslog ? "log" : "normal"), nographtype);
+		if (strstr(args, " "LOGGRAPH)) {
+			*showaslog = TRUE;
+		}
+		DBGP("printing graph as %s, other args are: %s", (*showaslog ? "log" : "normal"), args);
 		//check the rest of the args
-		if (sscanf(nographtype, "%d,%d %x %x %u", h, w, first_colour, last_colour, scale) == 5) {
+		if (sscanf(args, "%d,%d %x %x %u", h, w, first_colour, last_colour, scale) == 5) {
 			return NULL;
 		}
 		*scale = 0;
-		if (sscanf(nographtype, "%d,%d %x %x", h, w, first_colour, last_colour) == 4) {
+		if (sscanf(args, "%d,%d %x %x", h, w, first_colour, last_colour) == 4) {
 			return NULL;
 		}
-		if (sscanf(nographtype, "%63s %d,%d %x %x %u", buf, h, w, first_colour, last_colour, scale) == 6) {
+		if (sscanf(args, "%1023s %d,%d %x %x %u", buf, h, w, first_colour, last_colour, scale) == 6) {
 			return strndup(buf, text_buffer_size);
 		}
 		*scale = 0;
-		if (sscanf(nographtype, "%63s %d,%d %x %x", buf, h, w, first_colour, last_colour) == 5) {
+		if (sscanf(args, "%1023s %d,%d %x %x", buf, h, w, first_colour, last_colour) == 5) {
 			return strndup(buf, text_buffer_size);
 		}
 		buf[0] = '\0';
 		*h = 25;
 		*w = 0;
-		if (sscanf(nographtype, "%x %x %u", first_colour, last_colour, scale) == 3) {
+		if (sscanf(args, "%x %x %u", first_colour, last_colour, scale) == 3) {
 			return NULL;
 		}
 		*scale = 0;
-		if (sscanf(nographtype, "%x %x", first_colour, last_colour) == 2) {
+		if (sscanf(args, "%x %x", first_colour, last_colour) == 2) {
 			return NULL;
 		}
-		if (sscanf(nographtype, "%63s %x %x %u", buf, first_colour, last_colour, scale) == 4) {
+		if (sscanf(args, "%1023s %x %x %u", buf, first_colour, last_colour, scale) == 4) {
 			return strndup(buf, text_buffer_size);
 		}
 		*scale = 0;
-		if (sscanf(nographtype, "%63s %x %x", buf, first_colour, last_colour) == 3) {
+		if (sscanf(args, "%1023s %x %x", buf, first_colour, last_colour) == 3) {
 			return strndup(buf, text_buffer_size);
 		}
 		buf[0] = '\0';
 		*first_colour = 0;
 		*last_colour = 0;
-		if (sscanf(nographtype, "%d,%d %u", h, w, scale) == 3) {
+		if (sscanf(args, "%d,%d %u", h, w, scale) == 3) {
 			return NULL;
 		}
 		*scale = 0;
-		if (sscanf(nographtype, "%d,%d", h, w) == 2) {
+		if (sscanf(args, "%d,%d", h, w) == 2) {
 			return NULL;
 		}
-		if (sscanf(nographtype, "%63s %d,%d %u", buf, h, w, scale) < 4) {
+		if (sscanf(args, "%1023s %d,%d %u", buf, h, w, scale) < 4) {
 			*scale = 0;
 			//TODO: check the return value and throw an error?
-			sscanf(nographtype, "%63s %d,%d", buf, h, w);
+			sscanf(args, "%1023s %d,%d", buf, h, w);
 		}
 
 		return strndup(buf, text_buffer_size);

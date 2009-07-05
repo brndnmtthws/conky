@@ -34,8 +34,7 @@
 #define MAX_GRAPH_DEPTH 512
 
 // don't use spaces in LOGGRAPH or NORMGRAPH if you change them
-#define LOGGRAPH "log"
-#define NORMGRAPH "normal"
+#define LOGGRAPH "-l"
 #define TEMPGRAD "-t"
 
 enum special_types {

@@ -2825,10 +2825,10 @@ static struct text_object *construct_text_object(const char *s,
 			if (buf) {
 				obj->data.s = buf;
 			} else {
-				CRIT_ERR("lua_graph needs arguments: <\"normal\"|\"log\"> <height>,<width> <gradient colour 1> <gradient colour 2> <scale> <function name> [function parameters]");
+				CRIT_ERR("lua_graph needs arguments: <function name> [height],[width] [gradient colour 1] [gradient colour 2] [scale] [-t] [-l]");
 			}
 		} else {
-			CRIT_ERR("lua_graph needs arguments: <\"normal\"|\"log\"> <height>,<width> <gradient colour 1> <gradient colour 2> <scale> <function name> [function parameters]");
+			CRIT_ERR("lua_graph needs arguments: <function name> [height],[width] [gradient colour 1] [gradient colour 2] [scale] [-t] [-l]");
 	}
 	END OBJ(lua_gauge, 0)
 		SIZE_DEFAULTS(gauge);
@@ -4192,15 +4192,13 @@ static void generate_text_internal(char *p, int p_max_size,
 				double barnum;
 				char *cmd = obj->data.s;
 
-				if (strncasecmp(obj->data.execi.cmd, LOGGRAPH" ", strlen(LOGGRAPH" ")) == EQUAL) {
-					showaslog = TRUE;
-					cmd = cmd + strlen(LOGGRAPH" ") * sizeof(char);
-				} else if(strncasecmp(obj->data.s, NORMGRAPH" ", strlen(NORMGRAPH" ")) == EQUAL) {
-					cmd = cmd + strlen(NORMGRAPH" ") * sizeof(char);
-				}
 				if (strstr(cmd, " "TEMPGRAD) && strlen(cmd) > strlen(" "TEMPGRAD)) {
 					tempgrad = TRUE;
 					cmd += strlen(" "TEMPGRAD);
+				}
+				if (strstr(cmd, " "LOGGRAPH) && strlen(cmd) > strlen(" "LOGGRAPH)) {
+					showaslog = TRUE;
+					cmd += strlen(" "LOGGRAPH);
 				}
 				read_exec(cmd, p, text_buffer_size);
 				barnum = get_barnum(p);
@@ -4244,15 +4242,13 @@ static void generate_text_internal(char *p, int p_max_size,
 					char tempgrad = FALSE;
 					char *cmd = obj->data.execi.cmd;
 
-					if (strncasecmp(obj->data.execi.cmd, LOGGRAPH" ", strlen(LOGGRAPH" ")) == EQUAL) {
-						showaslog = TRUE;
-						cmd = cmd + strlen(LOGGRAPH" ") * sizeof(char);
-					} else if(strncasecmp(obj->data.s, NORMGRAPH" ", strlen(NORMGRAPH" ")) == EQUAL) {
-						cmd = cmd + strlen(NORMGRAPH" ") * sizeof(char);
-					}
 					if (strstr(cmd, " "TEMPGRAD) && strlen(cmd) > strlen(" "TEMPGRAD)) {
 						tempgrad = TRUE;
 						cmd += strlen(" "TEMPGRAD);
+					}
+					if (strstr(cmd, " "LOGGRAPH) && strlen(cmd) > strlen(" "LOGGRAPH)) {
+						showaslog = TRUE;
+						cmd += strlen(" "LOGGRAPH);
 					}
 					obj->char_a = showaslog;
 					obj->char_b = tempgrad;
