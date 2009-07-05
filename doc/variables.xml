@@ -934,7 +934,7 @@
         default_graph_size config setting. Takes the switch '-t' to
         use a temperature gradient, which makes the gradient values
         change depending on the amplitude of a particular graph
-        value (try it and see). 
+        value (try it and see).  If -t or -l is your first argument, you may need to preceed it by a space (' ').
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -978,7 +978,7 @@
             <option>interval (-t) (-l) command</option>
         </term>
         <listitem>Same as execgraph, but takes an interval arg and
-        graphs values. 
+        graphs values.  If -t or -l is your first argument, you may need to preceed it by a space (' ').
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1716,8 +1716,10 @@
             <command>
                 <option>loadavg</option>
             </command>
+			<option>(1|2|3)
+			</option>
         </term>
-        <listitem>(1,2,3)&gt; System load average, 1 is for past 1
+        <listitem>System load average, 1 is for past 1
         minute, 2 for past 5 minutes and 3 for past 15 minutes. 
         <para /></listitem>
     </varlistentry>
@@ -1726,7 +1728,7 @@
             <command>
                 <option>loadgraph</option>
             </command>
-            <option>(height),(width) (gradient colour 1) (gradient
+            <option>(1|2|3) (height),(width) (gradient colour 1) (gradient
             colour 2) (scale) (-t) (-l)</option>
         </term>
         <listitem>Load1 average graph, similar to xload, with

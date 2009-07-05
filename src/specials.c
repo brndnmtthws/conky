@@ -119,14 +119,12 @@ char *scan_graph(const char *args, int *w, int *h,
 	*tempgrad = FALSE;
 	*showaslog = FALSE;
 	if (args) {
-		if (strstr(args, " "TEMPGRAD)) {
+		if (strstr(args, " "TEMPGRAD) || strncmp(args, TEMPGRAD, strlen(TEMPGRAD)) == 0) {
 			*tempgrad = TRUE;
 		}
-		if (strstr(args, " "LOGGRAPH)) {
+		if (strstr(args, " "LOGGRAPH) || strncmp(args, LOGGRAPH, strlen(LOGGRAPH)) == 0) {
 			*showaslog = TRUE;
 		}
-		DBGP("printing graph as %s, other args are: %s", (*showaslog ? "log" : "normal"), args);
-		//check the rest of the args
 		if (sscanf(args, "%d,%d %x %x %u", h, w, first_colour, last_colour, scale) == 5) {
 			return NULL;
 		}
