@@ -1559,11 +1559,13 @@ static struct text_object *construct_text_object(const char *s,
 		DBGP2("Adding $cpubar for CPU %d", obj->data.cpu_index);
 #ifdef X11
 	END OBJ(cpugraph, INFO_CPU)
+		char *buf = 0;
 		SIZE_DEFAULTS(graph);
 		SCAN_CPU(arg, obj->data.cpu_index);
-		scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->char_a, &obj->char_b);
 		DBGP2("Adding $cpugraph for CPU %d", obj->data.cpu_index);
+		if (buf) free(buf);
 	END OBJ(loadgraph, INFO_LOADAVG)
 		char *buf = 0;
 		SIZE_DEFAULTS(graph);
@@ -1592,8 +1594,7 @@ static struct text_object *construct_text_object(const char *s,
 				&obj->e, &obj->char_a, &obj->char_b);
 
 		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
-		if (buf)
-			free(buf);
+		if (buf) free(buf);
 	END OBJ(diskiograph_read, INFO_DISKIO)
 		char *buf = 0;
 		SIZE_DEFAULTS(graph);
@@ -1601,8 +1602,7 @@ static struct text_object *construct_text_object(const char *s,
 				&obj->e, &obj->char_a, &obj->char_b);
 
 		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
-		if (buf)
-			free(buf);
+		if (buf) free(buf);
 	END OBJ(diskiograph_write, INFO_DISKIO)
 		char *buf = 0;
 		SIZE_DEFAULTS(graph);
@@ -1610,8 +1610,7 @@ static struct text_object *construct_text_object(const char *s,
 				&obj->e, &obj->char_a, &obj->char_b);
 
 		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
-		if (buf)
-			free(buf);
+		if (buf) free(buf);
 #endif /* X11 */
 	END OBJ(color, 0)
 #ifdef X11
@@ -2351,9 +2350,7 @@ static struct text_object *construct_text_object(const char *s,
 		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 				&obj->e, &obj->char_a, &obj->char_b);
 
-		if (buf) {
-			free(buf);
-		}
+		if (buf) free(buf);
 #endif /* X11*/
 	END OBJ(mixer, INFO_MIXER)
 		obj->data.l = mixer_init(arg);
@@ -2822,10 +2819,11 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(lua_graph, 0)
 		SIZE_DEFAULTS(graph);
 		if (arg) {
-			arg = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+			char *buf = 0;
+			buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 					&obj->e, &obj->char_a, &obj->char_b);
-			if (arg) {
-				obj->data.s = strndup(arg, text_buffer_size);
+			if (buf) {
+				obj->data.s = buf;
 			} else {
 				CRIT_ERR("lua_graph needs arguments: <\"normal\"|\"log\"> <height>,<width> <gradient colour 1> <gradient colour 2> <scale> <function name> [function parameters]");
 			}
