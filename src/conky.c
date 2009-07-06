@@ -208,6 +208,9 @@ static void print_version(void)
 #ifdef RSS
 		   "  * RSS\n"
 #endif /* RSS */
+#ifdef WEATHER
+		   "  * WEATHER\n"
+#endif /* WEATHER */
 #ifdef HAVE_LUA
 		   "  * Lua\n"
 #endif /* HAVE_LUA */
@@ -893,6 +896,12 @@ static void free_text_objects(struct text_object *root, int internal)
 			case OBJ_rss:
 				free(data.rss.uri);
 				free(data.rss.action);
+				break;
+#endif
+#ifdef WEATHER
+			case OBJ_weather:
+				free(data.weather.uri);
+				free(data.weather.data_type);
 				break;
 #endif
 #ifdef HAVE_LUA
@@ -2784,6 +2793,41 @@ static struct text_object *construct_text_object(const char *s,
 					"[act_par] [spaces in front]");
 		}
 #endif
+#ifdef WEATHER
+	END OBJ(weather, 0)
+		if (arg) {
+		        int argc, delay;
+			char *icao = (char *) malloc(5 * sizeof(char));
+			char *uri = (char *) malloc(128 * sizeof(char));
+			char *data_type = (char *) malloc(32 * sizeof(char));
+
+			argc = sscanf(arg, "%4s %31s %d", icao, data_type, &delay);
+
+			//icao MUST BE upper-case
+			char *tmp_p = icao;
+			while (*tmp_p) {
+			  *tmp_p = toupper(*tmp_p);
+			  tmp_p++;
+			}
+
+			strcpy(uri, "http://weather.noaa.gov/pub/data/observations/metar/stations/");
+			strcat(uri, icao);
+			strcat(uri, ".TXT");
+			obj->data.weather.uri = uri;
+
+			obj->data.weather.data_type = data_type;
+
+			//The data retrieval interval is limited to half an hour
+			if(delay < 30) {
+			  delay = 30;
+			}
+			obj->data.weather.delay = delay*60;
+
+			init_weather_info();
+		} else {
+			CRIT_ERR("weather needs arguments: <icao> <data_type> [delay in minutes]");
+		}
+#endif
 #ifdef HAVE_LUA
 	END OBJ(lua, 0)
 		if (arg) {
@@ -4589,6 +4633,90 @@ static void generate_text_internal(char *p, int p_max_size,
 						}
 					}
 				}
+			}
+#endif
+#ifdef WEATHER
+			static const char *wc[18] =
+			  {"", "drizzle", "rain", "hail", "soft hail",
+			   "snow", "snow grains", "fog", "haze", "smoke",
+			   "mist", "dust", "sand", "funnel cloud tornado",
+			   "dust/sand", "squall", "sand storm", "dust storm"};
+
+			OBJ(weather) {
+			  PWEATHER *data = get_weather_info(obj->data.weather.uri, obj->data.weather.delay);
+
+			  if (data == NULL) {
+			    strncpy(p, "Error reading weather data", p_max_size);
+			  } else {
+			    if (strcmp(obj->data.weather.data_type, "last_update") == EQUAL) {
+			      strncpy(p, data->lastupd, p_max_size);
+			    } else if (strcmp(obj->data.weather.data_type, "temperature_C") == EQUAL) {
+			      snprintf(p, p_max_size, "%d", data->tmpC);
+			    } else if (strcmp(obj->data.weather.data_type, "temperature_F") == EQUAL) {
+			      snprintf(p, p_max_size, "%d", data->tmpF);
+			    } else if (strcmp(obj->data.weather.data_type, "cloud_cover") == EQUAL) {
+			      if (data->cc == 0) {
+				strncpy(p, "", p_max_size);
+			      } else if (data->cc < 3) {
+				strncpy(p, "clear", p_max_size);
+			      } else if (data->cc < 5) {
+				strncpy(p, "partly cloudy", p_max_size);
+			      } else if (data->cc == 5) {
+				strncpy(p, "cloudy", p_max_size);
+			      } else if (data->cc == 6) {
+				strncpy(p, "overcast", p_max_size);
+			      } else if (data->cc == 7) {
+				strncpy(p, "towering cumulus", p_max_size);
+			      } else  {
+				strncpy(p, "cumulonimbus", p_max_size);
+			      }
+			    } else if (strcmp(obj->data.weather.data_type, "pressure") == EQUAL) {
+			      snprintf(p, p_max_size, "%d", data->bar);
+			    } else if (strcmp(obj->data.weather.data_type, "wind_speed") == EQUAL) {
+			      snprintf(p, p_max_size, "%d", data->wind_s);
+			    } else if (strcmp(obj->data.weather.data_type, "wind_dir") == EQUAL) {
+			      if ((data->wind_d >= 349) || (data->wind_d < 12)) {
+				strncpy(p, "N", p_max_size);
+			      } else if (data->wind_d < 33) {
+				strncpy(p, "NNE", p_max_size);
+			      } else if (data->wind_d < 57) {
+				strncpy(p, "NE", p_max_size);
+			      } else if (data->wind_d < 79) {
+				strncpy(p, "ENE", p_max_size);
+			      } else if (data->wind_d < 102) {
+				strncpy(p, "E", p_max_size);
+			      } else if (data->wind_d < 124) {
+				strncpy(p, "ESE", p_max_size);
+			      } else if (data->wind_d < 147) {
+				strncpy(p, "SE", p_max_size);
+			      } else if (data->wind_d < 169) {
+				strncpy(p, "SSE", p_max_size);
+			      } else if (data->wind_d < 192) {
+				strncpy(p, "S", p_max_size);
+			      } else if (data->wind_d < 214) {
+				strncpy(p, "SSW", p_max_size);
+			      } else if (data->wind_d < 237) {
+				strncpy(p, "SW", p_max_size);
+			      } else if (data->wind_d < 259) {
+				strncpy(p, "WSW", p_max_size);
+			      } else if (data->wind_d < 282) {
+				strncpy(p, "W", p_max_size);
+			      } else if (data->wind_d < 304) {
+				strncpy(p, "WNW", p_max_size);
+			      } else if (data->wind_d < 327) {
+				strncpy(p, "NW", p_max_size);
+			      } else if (data->wind_d < 349) {
+				strncpy(p, "NNW", p_max_size);
+			      };
+			    } else if (strcmp(obj->data.weather.data_type, "wind_dir_DEG") == EQUAL) {
+			      snprintf(p, p_max_size, "%d", data->wind_d);
+
+			    } else if (strcmp(obj->data.weather.data_type, "humidity") == EQUAL) {
+			      snprintf(p, p_max_size, "%d", data->hmid);
+			    } else if (strcmp(obj->data.weather.data_type, "weather") == EQUAL) {
+			      strncpy(p, wc[data->wc], p_max_size);
+			    }
+			  }
 			}
 #endif
 #ifdef HAVE_LUA
@@ -7463,6 +7591,9 @@ static void clean_up(void)
 #endif
 #ifdef RSS
 	free_rss_info();
+#endif
+#ifdef WEATHER
+	free_weather_info();
 #endif
 #ifdef HAVE_LUA
 	llua_close();

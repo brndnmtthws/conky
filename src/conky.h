@@ -91,6 +91,10 @@ char *strndup(const char *s, size_t n);
 #include "rss.h"
 #endif
 
+#ifdef WEATHER
+#include "weather.h"
+#endif
+
 #ifdef HAVE_LUA
 #include "llua.h"
 #endif
@@ -203,6 +207,9 @@ enum {
 #endif
 #ifdef APCUPSD
  	INFO_APCUPSD = 32,
+#endif
+#ifdef WEATHER
+	INFO_WEATHER = 33,
 #endif
 };
 

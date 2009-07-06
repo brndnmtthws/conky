@@ -374,6 +374,9 @@ enum text_object_type {
 #ifdef RSS
 	OBJ_rss,
 #endif /* RSS */
+#ifdef WEATHER
+	OBJ_weather,
+#endif /* WEATHER */
 #ifdef HAVE_LUA
 	OBJ_lua,
 	OBJ_lua_parse,
@@ -540,6 +543,13 @@ struct text_object {
 			int delay;
 			unsigned int nrspaces;
 		} rss;
+#endif
+#ifdef WEATHER
+		struct {
+			char *uri;
+		        char *data_type;
+		        int delay;
+		} weather;
 #endif
 		struct {
 			char *text;

@@ -112,6 +112,10 @@ if BUILD_RSS
 rss = rss.c prss.c prss.h
 endif
 
+if BUILD_WEATHER
+weather = weather.c weather.h
+endif
+
 if BUILD_LUA
 lua = llua.c llua.h
 endif
@@ -154,6 +158,7 @@ conky_SOURCES = \
 	$(port_monitors)        \
 	$(eve)                  \
 	$(rss)                  \
+	$(weather)              \
 	$(lua)			\
 	$(solaris)              \
 	timed_thread.c          \
@@ -204,6 +209,7 @@ EXTRA_DIST = \
 	libtcp-portmon.c        \
 	libtcp-portmon.h        \
 	rss.h                   \
+	weather.h		\
 	llua.h			\
 	mail.h                  \
 	mixer.h                 \

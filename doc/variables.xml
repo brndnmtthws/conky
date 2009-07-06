@@ -3201,6 +3201,31 @@
     <varlistentry>
         <term>
             <command>
+                <option>weather</option>
+            </command>
+            <option>icao data_type (delay_in_minutes)</option>
+        </term>
+        <listitem>Download, parse and display METAR data from the
+        NWS. icao must be a valid icao for the required location
+        (see for instance https://pilotweb.nas.faa.gov/qryhtml/icao/).
+        data_type must be one of the following: last_update
+        (display the date (yyyy/mm/dd) and time (UTC) of the last
+        update), temperature_C (display air temperature in degree
+        Celsius), temperature_F (display air temperature in degree
+        Fahrenheit), cloud_cover (display the highest cloud cover
+        status), pressure (display air pressure in millibar),
+        wind_speed (display wind speed in km/hour), wind_dir (display
+        wind direction), wind_dir_DEG (display compass wind direction),
+        humidity (display relative humidity in %), weather (display
+        any relevant weather event (rain, snow, etc.)).
+        delay_in_minutes (optional, default 30) cannot be lower than
+        30 min. Up to 3 stations can be simultaneously queried. Note
+        that this feature is still EXPERIMENTAL. 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>wireless_ap</option>
             </command>
             <option>(net)</option>
