@@ -2804,10 +2804,9 @@ static struct text_object *construct_text_object(const char *s,
 			argc = sscanf(arg, "%4s %31s %d", icao, data_type, &delay);
 
 			//icao MUST BE upper-case
-			char *tmp_p = icao;
-			while (*tmp_p) {
-			  *tmp_p = toupper(*tmp_p);
-			  tmp_p++;
+			while (*icao) {
+			  *icao = toupper(*icao);
+			  icao++;
 			}
 
 			strcpy(uri, "http://weather.noaa.gov/pub/data/observations/metar/stations/");
@@ -4636,14 +4635,14 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 #endif
 #ifdef WEATHER
-			static const char *wc[18] =
-			  {"", "drizzle", "rain", "hail", "soft hail",
-			   "snow", "snow grains", "fog", "haze", "smoke",
-			   "mist", "dust", "sand", "funnel cloud tornado",
-			   "dust/sand", "squall", "sand storm", "dust storm"};
-
 			OBJ(weather) {
 			  PWEATHER *data = get_weather_info(obj->data.weather.uri, obj->data.weather.delay);
+			  static const char *wc[18] =
+			    {"", "drizzle", "rain", "hail", "soft hail",
+			     "snow", "snow grains", "fog", "haze", "smoke",
+			     "mist", "dust", "sand", "funnel cloud tornado",
+			     "dust/sand", "squall", "sand storm", "dust storm"};
+
 
 			  if (data == NULL) {
 			    strncpy(p, "Error reading weather data", p_max_size);
