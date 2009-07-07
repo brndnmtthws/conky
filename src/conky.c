@@ -2801,13 +2801,15 @@ static struct text_object *construct_text_object(const char *s,
 			char *icao = (char *) malloc(5 * sizeof(char));
 			char *uri = (char *) malloc(128 * sizeof(char));
 			char *data_type = (char *) malloc(32 * sizeof(char));
+			char *tmp_p;
 
 			argc = sscanf(arg, "%4s %31s %d", icao, data_type, &delay);
 
 			//icao MUST BE upper-case
-			while (*icao) {
-			  *icao = toupper(*icao);
-			  icao++;
+			tmp_p = icao;
+			while (*tmp_p) {
+			  *tmp_p = toupper(*tmp_p);
+			  tmp_p++;
 			}
 
 			strcpy(uri, "http://weather.noaa.gov/pub/data/observations/metar/stations/");
@@ -4638,6 +4640,7 @@ static void generate_text_internal(char *p, int p_max_size,
 #ifdef WEATHER
 			OBJ(weather) {
 			  PWEATHER *data = get_weather_info(obj->data.weather.uri, obj->data.weather.delay);
+
 			  static const char *wc[18] =
 			    {"", "drizzle", "rain", "hail", "soft hail",
 			     "snow", "snow grains", "fog", "haze", "smoke",
