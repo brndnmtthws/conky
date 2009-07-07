@@ -41,6 +41,11 @@
 const char *CC_CODES[NUM_CC_CODES] =
   {"SKC", "CLR", "FEW", "SCT", "BKN", "OVC"};
 
+/* Possible weather modifiers */
+#define NUM_WM_CODES 9
+const char *WM_CODES[NUM_WM_CODES] =
+  {"VC", "MI", "BC", "PR", "TS", "BL", "SH", "DR", "FZ"};
+
 /* Possible weather conditions */
 #define NUM_WC_CODES 17
 const char *WC_CODES[NUM_WC_CODES] =
@@ -200,11 +205,18 @@ static inline void parse_token(PWEATHER *res, char *token) {
     //Check all tokens 4 chars long
     case 4:
 
-      //Check if token is an icao
-      for (i=0; i<4; i++) {
-	if (!isalpha(token[i])) break;
+      //Check if token is a modified weather condition
+      for(i=0; i<NUM_WM_CODES; i++) {
+	if (!strncmp(token, WM_CODES[i], 2)) {
+	  for(i=0; i<NUM_WC_CODES; i++) {
+	    if (!strncmp(&token[2], WC_CODES[i], 2)) {
+	      res->wc=i+1;
+	      return;
+	    }
+	  }
+	  break;
+	}
       }
-      if (i==4) return;
 
       break;
 
@@ -260,6 +272,20 @@ static inline void parse_token(PWEATHER *res, char *token) {
 	}
       }
 
+      //Check if token is a modified weather condition
+      if ((token[0] == '+') || (token[0] == '-')) {
+	for(i=0; i<NUM_WM_CODES; i++) {
+	  if (!strncmp(&token[1], WM_CODES[i], 2)) {
+	    for(i=0; i<NUM_WC_CODES; i++) {
+	      if (!strncmp(&token[3], WC_CODES[i], 2)) {
+		res->wc=i+1;
+		return;
+	      }
+	    }
+	    break;
+	  }
+	}
+      }
       break;
 
     //Check all tokens 6 chars long
@@ -418,7 +444,11 @@ static inline PWEATHER *parse_weather(const char *data)
     char *p_tok = NULL;
     char *p_save = NULL;
 
-    if ((p_tok = strtok_r(s_tmp, delim, &p_save)) != NULL) {
+    if ((strtok_r(s_tmp, delim, &p_save)) != NULL) {
+
+      //Jump first token, must be icao
+      p_tok = strtok_r(NULL, delim, &p_save);
+
       do {
 
 	parse_token(res, p_tok);
@@ -426,7 +456,7 @@ static inline PWEATHER *parse_weather(const char *data)
       
       } while (p_tok != NULL);
     }
-      return res;
+    return res;
   }
   else {
     return NULL;
