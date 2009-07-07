@@ -146,6 +146,7 @@ enum x_initialiser_state x_initialised = NO;
 static volatile int g_signal_pending;
 /* Update interval */
 double update_interval;
+void *global_cpu = NULL;
 
 
 /* prototypes for internally used functions */
@@ -7609,6 +7610,7 @@ static void clean_up(void)
 	}
 
 	clear_diskio_stats();
+	if(global_cpu != NULL) free(global_cpu);
 }
 
 static int string_to_bool(const char *s)

@@ -617,6 +617,7 @@ inline static void update_stat(void)
 	double curtmp;
 	const char *stat_template = NULL;
 	unsigned int malloc_cpu_size = 0;
+	extern void* global_cpu;
 
 	/* add check for !info.cpu_usage since that mem is freed on a SIGUSR1 */
 	if (!cpu_setup || !info.cpu_usage) {
@@ -633,6 +634,7 @@ inline static void update_stat(void)
 		malloc_cpu_size = (info.cpu_count + 1) * sizeof(struct cpu_info);
 		cpu = malloc(malloc_cpu_size);
 		memset(cpu, 0, malloc_cpu_size);
+		global_cpu = cpu;
 	}
 
 	if (!(stat_fp = open_file("/proc/stat", &rep))) {
