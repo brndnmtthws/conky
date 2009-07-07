@@ -37,9 +37,9 @@
 #define MAX_LOCATIONS 3
 
 /* Possible sky conditions */
-#define NUM_CC_CODES 7
+#define NUM_CC_CODES 6
 const char *CC_CODES[NUM_CC_CODES] =
-  {"SKC", "CLR", "FEW", "SCT", "BKN", "OVC", "TCU"};
+  {"SKC", "CLR", "FEW", "SCT", "BKN", "OVC"};
 
 /* Possible weather conditions */
 #define NUM_WC_CODES 17
@@ -137,154 +137,163 @@ static inline void parse_token(PWEATHER *res, char *token) {
   int i;
   char s_tmp[64];
 
-  //Check all tokens 2 chars long
-  if (strlen(token) == 2 ) {
+  switch (strlen(token)) {
 
-    //Check if token is a weather condition
-    for (i=0; i<2; i++) {
-      if (!isalpha(token[i])) break;
-    }
-    if (i==2) {
-      for(i=0; i<NUM_WC_CODES; i++) {
-	if (!strncmp(token, WC_CODES[i], 2)) {
-	  res->wc=i+1;
-	  break;
-	}
-      }
-      return;
-    }
+    //Check all tokens 2 chars long
+    case 2:
 
-    //Check for CB
-    if (!strcmp(token, "CB")) {
-      res->cc = 8;
-      return;
-    }
-
-  }
-
-  //Check all tokens 3 chars long
-  if (strlen(token) == 3 ) {
-
-    //Check if token is a modified weather condition
-    if ((token[0] == '+') || (token[0] == '-')) {
-      for (i=1; i<3; i++) {
+      //Check if token is a weather condition
+      for (i=0; i<2; i++) {
 	if (!isalpha(token[i])) break;
       }
-      if (i==3) {
+      if (i==2) {
 	for(i=0; i<NUM_WC_CODES; i++) {
-	  if (!strncmp(&token[1], WC_CODES[i], 2)) {
+	  if (!strncmp(token, WC_CODES[i], 2)) {
 	    res->wc=i+1;
 	    break;
 	  }
 	}
 	return;
       }
-    }
 
-    //Check for NCD
-    if (!strcmp(token, "NCD")) {
-      res->cc = 1;
-      return;
-    }
-
-  }
-
-  //Check all tokens 4 chars long
-  if (strlen(token) == 4 ) {
-
-    //Check if token is an icao
-    for (i=0; i<4; i++) {
-      if (!isalpha(token[i])) break;
-    }
-    if (i==4) return;
-
-  }
-
-  //Check all tokens 5 chars long
-  if (strlen(token) == 5 ) {
-
-    //Check for CAVOK
-    if (!strcmp(token, "CAVOK")) {
-      res->cc = 1;
-      return;
-    }
-
-    //Check if token is the temperature
-    for (i=0; i<2; i++) {
-      if (!isdigit(token[i])) break;
-    }
-    if ((i==2) && (token[2] == '/')) {
-      for (i=3; i<5; i++) {
-	if (!isdigit(token[i])) break;
-      }
-      if (i==5) {
-	//First 2 digits gives the air temperature
-	res->tmpC=atoi(token);
-
-	//4th and 5th digits gives the dew point temperature
-	res->dew=atoi(&token[3]);
-
-	//Compute humidity
-	res->hmid = rel_humidity(res->dew, res->tmpC);
-
-	//Convert to Fahrenheit (faster here than in conky.c)
-	res->tmpF = (res->tmpC*9)/5 + 32;
-
+      //Check for CB
+      if (!strcmp(token, "CB")) {
+	res->cc = 8;
 	return;
       }
-    }
+    
+      break;
 
-    //Check if token is the pressure
-    if ((token[0] == 'Q') || (token[0] == 'A')) {
-      for (i=1; i<5; i++) {
-	if (!isdigit(token[i])) break;
-      }
-      if (i==5) {
-	if (token[0] == 'A') {
-	  //Convert inches of mercury to mbar
-	  res->bar = (int)(atoi(&token[1])*0.338637526f);
+    //Check all tokens 3 chars long
+    case 3:
+
+      //Check if token is a modified weather condition
+      if ((token[0] == '+') || (token[0] == '-')) {
+	for (i=1; i<3; i++) {
+	  if (!isalpha(token[i])) break;
+	}
+	if (i==3) {
+	  for(i=0; i<NUM_WC_CODES; i++) {
+	    if (!strncmp(&token[1], WC_CODES[i], 2)) {
+	      res->wc=i+1;
+	      break;
+	    }
+	  }
 	  return;
 	}
+      }
 
-	//Last 4 digits is pressure im mbar
-	res->bar = atoi(&token[1]);
+      //Check for NCD or NCD
+      if ((!strcmp(token, "NCD")) || (!strcmp(token, "NSC"))) {
+	res->cc = 1;
 	return;
       }
-    }
-  }
 
-  //Check all tokens 6 chars long
-  if (strlen(token) == 6 ) {
+      //Check for TCU
+      if (!strcmp(token, "TCU")) {
+	res->cc = 7;
+	return;
+      }
 
-    //Check if token is the cloud cover
-    for (i=0; i<3; i++) {
-      if (!isalpha(token[i])) break;
-    }
-    if (i==3) {
-      for (i=3; i<6; i++) {
+      break;
+
+    //Check all tokens 4 chars long
+    case 4:
+
+      //Check if token is an icao
+      for (i=0; i<4; i++) {
+	if (!isalpha(token[i])) break;
+      }
+      if (i==4) return;
+
+      break;
+
+    //Check all tokens 5 chars long
+    case 5:
+
+      //Check for CAVOK
+      if (!strcmp(token, "CAVOK")) {
+	res->cc = 1;
+	return;
+      }
+
+      //Check if token is the temperature
+      for (i=0; i<2; i++) {
 	if (!isdigit(token[i])) break;
       }
-      if (i==6) {
-	//Check if first 3 digits gives the cloud cover condition
-	for(i=0; i<NUM_CC_CODES; i++) {
-	  if (!strncmp(token, CC_CODES[i], 3)) {
-	    res->cc=i+1;
-	    break;
-	  }
+      if ((i==2) && (token[2] == '/')) {
+	for (i=3; i<5; i++) {
+	  if (!isdigit(token[i])) break;
 	}
-	return;
-      }
-    }
+	if (i==5) {
+	  //First 2 digits gives the air temperature
+	  res->tmpC=atoi(token);
 
-    //Check if token is positive temp and negative dew
-    for (i=0; i<2; i++) {
-      if (!isdigit(token[i])) break;
-    }
-    if ((i==2) && (token[2] == '/')  && (token[3] == 'M')) {
-      for (i=4; i<6; i++) {
+	  //4th and 5th digits gives the dew point temperature
+	  res->dew=atoi(&token[3]);
+
+	  //Compute humidity
+	  res->hmid = rel_humidity(res->dew, res->tmpC);
+
+	  //Convert to Fahrenheit (faster here than in conky.c)
+	  res->tmpF = (res->tmpC*9)/5 + 32;
+
+	  return;
+	}
+      }
+
+      //Check if token is the pressure
+      if ((token[0] == 'Q') || (token[0] == 'A')) {
+	for (i=1; i<5; i++) {
+	  if (!isdigit(token[i])) break;
+	}
+	if (i==5) {
+	  if (token[0] == 'A') {
+	    //Convert inches of mercury to mbar
+	    res->bar = (int)(atoi(&token[1])*0.338637526f);
+	    return;
+	  }
+
+	  //Last 4 digits is pressure im mbar
+	  res->bar = atoi(&token[1]);
+	  return;
+	}
+      }
+
+      break;
+
+    //Check all tokens 6 chars long
+    case 6:
+
+      //Check if token is the cloud cover
+      for (i=0; i<3; i++) {
+	if (!isalpha(token[i])) break;
+      }
+      if (i==3) {
+	for (i=3; i<6; i++) {
+	  if (!isdigit(token[i])) break;
+	}
+	if (i==6) {
+	  //Check if first 3 digits gives the cloud cover condition
+	  for(i=0; i<NUM_CC_CODES; i++) {
+	    if (!strncmp(token, CC_CODES[i], 3)) {
+	      res->cc=i+1;
+	      break;
+	    }
+	  }
+	  return;
+	}
+      }
+
+      //Check if token is positive temp and negative dew
+      for (i=0; i<2; i++) {
 	if (!isdigit(token[i])) break;
       }
-      if (i==6) {
+      if ((i==2) && (token[2] == '/')  && (token[3] == 'M')) {
+	for (i=4; i<6; i++) {
+	  if (!isdigit(token[i])) break;
+	}
+	if (i==6) {
 	  //1st and 2nd digits gives the temperature
 	  res->tmpC = atoi(token);
 
@@ -299,96 +308,99 @@ static inline void parse_token(PWEATHER *res, char *token) {
 
 	  return;
 	}
-    }
-  }
+      }
 
-  //Check all tokens 7 chars long
-  if (strlen(token) == 7 ) {
+      break;
 
-    //Check if token is the observation time
-    for (i=0; i<6; i++) {
-      if (!isdigit(token[i])) break;
-    }
-    if ((i==6) && (token[6] == 'Z')) return;
+    //Check all tokens 7 chars long
+    case 7:
 
-    //Check if token is the wind speed/direction in knots
-    for (i=0; i<5; i++) {
-      if (!isdigit(token[i])) break;
-    }
-    if ((i==5) && (token[5] == 'K') &&  (token[6] == 'T')) {
-
-      //First 3 digits are wind direction
-      strncpy(s_tmp, token, 3);
-      res->wind_d=atoi(s_tmp);
-
-      //4th and 5th digit are wind speed in knots (convert to km/hr)
-      res->wind_s = (int)(atoi(&token[3])*1.852);
-
-      return;
-    }
-
-    //Check if token is negative temperature
-    if ((token[0] == 'M') && (token[4] == 'M')) {
-      for (i=1; i<3; i++) {
+      //Check if token is the observation time
+      for (i=0; i<6; i++) {
 	if (!isdigit(token[i])) break;
       }
-    if ((i==3) && (token[3] == '/')) {
-	for (i=5; i<7; i++) {
+      if ((i==6) && (token[6] == 'Z')) return;
+
+      //Check if token is the wind speed/direction in knots
+      for (i=0; i<5; i++) {
+	if (!isdigit(token[i])) break;
+      }
+      if ((i==5) && (token[5] == 'K') &&  (token[6] == 'T')) {
+
+	//First 3 digits are wind direction
+	strncpy(s_tmp, token, 3);
+	res->wind_d=atoi(s_tmp);
+
+	//4th and 5th digit are wind speed in knots (convert to km/hr)
+	res->wind_s = (int)(atoi(&token[3])*1.852);
+
+	return;
+      }
+
+      //Check if token is negative temperature
+      if ((token[0] == 'M') && (token[4] == 'M')) {
+	for (i=1; i<3; i++) {
 	  if (!isdigit(token[i])) break;
 	}
-	if (i==7) {
-	  //2nd and 3rd digits gives the temperature
-	  res->tmpC = -atoi(&token[1]);
+	if ((i==3) && (token[3] == '/')) {
+	  for (i=5; i<7; i++) {
+	    if (!isdigit(token[i])) break;
+	  }
+	  if (i==7) {
+	    //2nd and 3rd digits gives the temperature
+	    res->tmpC = -atoi(&token[1]);
 
-	  //6th and 7th digits gives the dew point temperature
-	  res->dew = -atoi(&token[5]);
+	    //6th and 7th digits gives the dew point temperature
+	    res->dew = -atoi(&token[5]);
 
-	  //Compute humidity
-	  res->hmid = rel_humidity(res->dew, res->tmpC);
+	    //Compute humidity
+	    res->hmid = rel_humidity(res->dew, res->tmpC);
 
-	  //Convert to Fahrenheit (faster here than in conky.c)
-	  res->tmpF = (res->tmpC*9)/5 + 32;
+	    //Convert to Fahrenheit (faster here than in conky.c)
+	    res->tmpF = (res->tmpC*9)/5 + 32;
 
-	  return;
+	    return;
+	  }
 	}
       }
-    }
 
-    //Check if token is wind variability
-    for (i=0; i<3; i++) {
-      if (!isdigit(token[i])) break;
-    }
-    if ((i==3) && (token[3] == 'V')) {
-      for (i=4; i<7; i++) {
+      //Check if token is wind variability
+      for (i=0; i<3; i++) {
 	if (!isdigit(token[i])) break;
       }
-      if (i==7) return;
+      if ((i==3) && (token[3] == 'V')) {
+	for (i=4; i<7; i++) {
+	  if (!isdigit(token[i])) break;
+	}
+	if (i==7) return;
+      }
+
+      break;
+
+    //Check all tokens 8 chars long
+    case 8:
+
+      //Check if token is the wind speed/direction in m/s
+      for (i=0; i<5; i++) {
+	if (!isdigit(token[i])) break;
+      }
+      if ((i==5)&&(token[5] == 'M')&&(token[6] == 'P')&&(token[7] == 'S')) {
+
+	//First 3 digits are wind direction
+	strncpy(s_tmp, token, 3);
+	res->wind_d=atoi(s_tmp);
+
+	//4th and 5th digit are wind speed in m/s (convert to km/hr)
+	res->wind_s = (int)(atoi(&token[3])*3.6);
+
+	return;
+      }
+
+    default:
+
+      //printf("token : %s\n", token);
+      break;
     }
-
-  }
-
-  //Check all tokens 8 chars long
-  if (strlen(token) == 8 ) {
-
-    //Check if token is the wind speed/direction in m/s
-    for (i=0; i<5; i++) {
-      if (!isdigit(token[i])) break;
-    }
-    if ((i==5)&&(token[5] == 'M')&&(token[6] == 'P')&&(token[7] == 'S')) {
-
-      //First 3 digits are wind direction
-      strncpy(s_tmp, token, 3);
-      res->wind_d=atoi(s_tmp);
-
-      //4th and 5th digit are wind speed in m/s (convert to km/hr)
-      res->wind_s = (int)(atoi(&token[3])*3.6);
-
-      return;
-    }
-
-  }
-
-  //printf("token : %s\n", token);
 }
 
 static inline PWEATHER *parse_weather(const char *data)
