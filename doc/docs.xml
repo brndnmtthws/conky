@@ -69,9 +69,11 @@
 		<title>Compiling</title>
 		<para>
 			For users compiling from source on a binary distro, make sure you have the X development
-			libraries installed.  This should be a package along the lines of "libx11-dev" or
-			"xorg-x11-dev" for X11 libs, and similar "-dev" format for the other libs required (depending
-			on your configure options).
+			libraries installed (Unless you provide configure with "--disable-x11").  This should be a
+			package along the lines of "libx11-dev" or "xorg-x11-dev" for X11 libs, and similar "-dev"
+			format for the other libs required (depending on your configure options). You should be able
+			to see which extra packages you need to install by reading errors that you get from
+			'./configure'.
 		</para>
 		<para>
 			Conky has (for some time) been available in the repositories of most popular distributions.
@@ -232,6 +234,8 @@
 				http://conky.sourceforge.net/</ulink></para>
 		<para><ulink url="http://www.sourceforge.net/projects/conky">
 				http://www.sourceforge.net/projects/conky</ulink></para>
+		<para><ulink url="http://wiki.conky.be">
+				http://wiki.conky.be</ulink></para>
 		<para>
 			#conky on irc.freenode.net
 		</para>
