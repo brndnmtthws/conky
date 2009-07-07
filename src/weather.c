@@ -183,7 +183,7 @@ static inline void parse_token(PWEATHER *res, char *token) {
 	}
       }
 
-      //Check for NCD or NCD
+      //Check for NCD or NSC
       if ((!strcmp(token, "NCD")) || (!strcmp(token, "NSC"))) {
 	res->cc = 1;
 	return;
