@@ -7612,6 +7612,7 @@ static void clean_up(void)
 		specials = NULL;
 	}
 
+	clear_net_stats();
 	clear_diskio_stats();
 	if(global_cpu != NULL) free(global_cpu);
 }
