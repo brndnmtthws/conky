@@ -46,7 +46,8 @@ int timed_thread_lock(timed_thread *p_timed_thread);
 int timed_thread_unlock(timed_thread *p_timed_thread);
 
 /* waits required interval (unless override_wait_time is non-zero) for
- * termination signal returns 1 if received, 0 otherwise. */
+ * termination signal returns 1 if received, 0 otherwise.  should also return 1
+ * if the thread has been asked kindly to die.  */
 int timed_thread_test(timed_thread *p_timed_thread, int override_wait_time);
 
 /* exit a timed thread */
