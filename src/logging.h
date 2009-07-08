@@ -24,6 +24,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
+void clean_up(void);
+
 #ifndef _LOGGING_H
 #define _LOGGING_H
 
@@ -35,7 +38,7 @@
 
 /* critical error */
 #define CRIT_ERR(...) \
-	{ ERR(__VA_ARGS__); exit(EXIT_FAILURE); }
+	{ ERR(__VA_ARGS__); clean_up(); exit(EXIT_FAILURE); }
 
 /* debugging output */
 extern int global_debug_level;

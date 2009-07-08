@@ -153,7 +153,6 @@ void *global_cpu = NULL;
 static void signal_handler(int);
 static void print_version(void) __attribute__((noreturn));
 static void reload_config(void);
-static void clean_up(void);
 static void generate_text_internal(char *, int, struct text_object,
                                    struct information *);
 static int extract_variable_text_internal(struct text_object *,
@@ -7527,7 +7526,7 @@ static void reload_config(void)
 	}
 }
 
-static void clean_up(void)
+void clean_up(void)
 {
 	int i;
 	timed_thread_destroy_registered_threads();
