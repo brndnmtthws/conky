@@ -82,7 +82,7 @@ void cimlib_cleanup(void)
 	image_list_start = image_list_end = NULL;
 }
 
-void cimlib_init(Display *display, Window drawable, Visual *visual, Colormap colourmap)
+void cimlib_init(Display *disp, Window drawable, Visual *visual, Colormap colourmap)
 {
 	image_list_start = image_list_end = NULL;
 	if (!cache_size_set) cimlib_set_cache_size(DEFAULT_IMLIB2_CACHE_SIZE);
@@ -91,7 +91,7 @@ void cimlib_init(Display *display, Window drawable, Visual *visual, Colormap col
 	/* dither for depths < 24bpp */
 	imlib_context_set_dither(1);
 	/* set the display , visual, colormap and drawable we are using */
-	imlib_context_set_display(display);
+	imlib_context_set_display(disp);
 	imlib_context_set_visual(visual);
 	imlib_context_set_colormap(colourmap);
 	imlib_context_set_drawable(drawable);

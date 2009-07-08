@@ -934,7 +934,8 @@
         default_graph_size config setting. Takes the switch '-t' to
         use a temperature gradient, which makes the gradient values
         change depending on the amplitude of a particular graph
-        value (try it and see).  If -t or -l is your first argument, you may need to preceed it by a space (' ').
+        value (try it and see). If -t or -l is your first argument,
+        you may need to preceed it by a space (' '). 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -978,7 +979,8 @@
             <option>interval (-t) (-l) command</option>
         </term>
         <listitem>Same as execgraph, but takes an interval arg and
-        graphs values.  If -t or -l is your first argument, you may need to preceed it by a space (' ').
+        graphs values. If -t or -l is your first argument, you may
+        need to preceed it by a space (' '). 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1632,8 +1634,8 @@
         position (or any other formatting) of images, they are just
         rendered as per the arguments passed. The only reason
         $image is part of the TEXT section, is to allow for runtime
-        modifications, through $execp $lua_parse, $lua_read_parse,
-        or some other method. 
+        modifications, through $execp $lua_parse, or some other
+        method. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1716,11 +1718,10 @@
             <command>
                 <option>loadavg</option>
             </command>
-			<option>(1|2|3)
-			</option>
+            <option>(1|2|3)</option>
         </term>
-        <listitem>System load average, 1 is for past 1
-        minute, 2 for past 5 minutes and 3 for past 15 minutes. 
+        <listitem>System load average, 1 is for past 1 minute, 2
+        for past 5 minutes and 3 for past 15 minutes. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1728,8 +1729,8 @@
             <command>
                 <option>loadgraph</option>
             </command>
-            <option>(1|2|3) (height),(width) (gradient colour 1) (gradient
-            colour 2) (scale) (-t) (-l)</option>
+            <option>(1|2|3) (height),(width) (gradient colour 1)
+            (gradient colour 2) (scale) (-t) (-l)</option>
         </term>
         <listitem>Load1 average graph, similar to xload, with
         optional colours in hex, minus the #. Uses a logarithmic
@@ -1813,14 +1814,10 @@
             <command>
                 <option>lua_read_parse</option>
             </command>
-            <option>function_name (conky text)</option>
+            <option />
         </term>
-        <listitem>Executes a Lua function per $lua, except takes a
-        2nd argument which is first evaluated as per Conky's TEXT
-        section and passed to the function first. The return value
-        is then parsed and prints the result value as per the
-        syntax for Conky's TEXT section. See also 'lua_load' on how
-        to load scripts. 
+        <listitem>This function is deprecated. Please use the
+        conky_parse() Lua function instead. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2672,20 +2669,20 @@
     <varlistentry>
         <term>
             <command>
-                <option>swapfree</option>
-            </command>
-        </term>
-        <listitem>Amount of free swap
-        <para /></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
                 <option>swapbar</option>
             </command>
             <option>(height),(width)</option>
         </term>
         <listitem>Bar that shows amount of swap in use 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>swapfree</option>
+            </command>
+        </term>
+        <listitem>Amount of free swap 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3216,20 +3213,21 @@
         </term>
         <listitem>Download, parse and display METAR data from the
         NWS. icao must be a valid icao for the required location
-        (see for instance https://pilotweb.nas.faa.gov/qryhtml/icao/).
-        data_type must be one of the following: last_update
-        (display the date (yyyy/mm/dd) and time (UTC) of the last
-        update), temperature_C (display air temperature in degree
-        Celsius), temperature_F (display air temperature in degree
+        (see for instance
+        https://pilotweb.nas.faa.gov/qryhtml/icao/). data_type must
+        be one of the following: last_update (display the date
+        (yyyy/mm/dd) and time (UTC) of the last update),
+        temperature_C (display air temperature in degree Celsius),
+        temperature_F (display air temperature in degree
         Fahrenheit), cloud_cover (display the highest cloud cover
         status), pressure (display air pressure in millibar),
-        wind_speed (display wind speed in km/hour), wind_dir (display
-        wind direction), wind_dir_DEG (display compass wind direction),
-        humidity (display relative humidity in %), weather (display
-        any relevant weather event (rain, snow, etc.)).
-        delay_in_minutes (optional, default 30) cannot be lower than
-        30 min. Up to 3 stations can be simultaneously queried. Note
-        that this feature is still EXPERIMENTAL. 
+        wind_speed (display wind speed in km/hour), wind_dir
+        (display wind direction), wind_dir_DEG (display compass
+        wind direction), humidity (display relative humidity in %),
+        weather (display any relevant weather event (rain, snow,
+        etc.)). delay_in_minutes (optional, default 30) cannot be
+        lower than 30 min. Up to 3 stations can be simultaneously
+        queried. Note that this feature is still EXPERIMENTAL. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>

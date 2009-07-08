@@ -26,6 +26,7 @@
 SUBDIRS = 					\
 	src 					\
 	doc					\
+	lua					\
 	data
 
 AUTOMAKE_OPTIONS = 				\

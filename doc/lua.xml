@@ -1,0 +1,127 @@
+<variablelist>
+    <varlistentry>
+        <term>
+            <command>
+                <option>conky_parse(string)</option>
+            </command>
+            <option>function</option>
+        </term>
+        <listitem>
+            <para>This function takes a string that is evaluated as
+            per Conky's TEXT section, and then returns a string
+            with the result.</para>
+        </listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>conky_window</option>
+            </command>
+            <option>table</option>
+        </term>
+        <listitem>
+            <para>This table contains some information about
+            Conky's window. The following table describes the
+            values contained:</para>
+            <simplelist>
+                <member>
+                    <command>drawable</command>
+                    <option>- Window's drawable (Xlib
+                    Drawable)</option>
+                </member>
+                <member>
+                    <command>visual</command>
+                    <option>- Window's visual (Xlib
+                    Visual)</option>
+                </member>
+                <member>
+                    <command>display</command>
+                    <option>- Window's display (Xlib
+                    Display)</option>
+                </member>
+                <member>
+                    <command>width</command>
+                    <option>- Window width (in pixels)</option>
+                </member>
+                <member>
+                    <command>height</command>
+                    <option>- Window height (in pixels)</option>
+                </member>
+                <member>
+                    <command>border_inner_margin</command>
+                    <option>- Window's inner border margin (in
+                    pixels)</option>
+                </member>
+                <member>
+                    <command>border_outer_margin</command>
+                    <option>- Window's outer border margin (in
+                    pixels)</option>
+                </member>
+                <member>
+                    <command>border_width</command>
+                    <option>- Window's border width (in
+                    pixels)</option>
+                </member>
+                <member>
+                    <command>text_start_x</command>
+                    <option>- The x component of the starting
+                    coordinate of text drawing</option>
+                </member>
+                <member>
+                    <command>text_start_y</command>
+                    <option>- The y component of the starting
+                    coordinate of text drawing</option>
+                </member>
+                <member>
+                    <command>text_width</command>
+                    <option>- The width of the text drawing
+                    region</option>
+                </member>
+                <member>
+                    <command>text_height</command>
+                    <option>- The height of the text drawing
+                    region</option>
+                </member>
+            </simplelist>
+            <para>NOTE: This table is only defined when X support
+            is enabled.</para>
+        </listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>conky_build_info</option>
+            </command>
+            <option>string</option>
+        </term>
+        <listitem>
+            <para>A string containing the build info for this
+            particular instance of Conky, including the version,
+            build date, and architecture.</para>
+        </listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>conky_version</option>
+            </command>
+            <option>string</option>
+        </term>
+        <listitem>
+            <para>A string containing the version of the current
+            instance of Conky.</para>
+        </listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>conky_config</option>
+            </command>
+            <option>string</option>
+        </term>
+        <listitem>
+            <para>A string containing the path of the current Conky
+            configuration file.</para>
+        </listitem>
+    </varlistentry>
+</variablelist>

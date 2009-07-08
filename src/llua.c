@@ -21,6 +21,7 @@
 
 #include "conky.h"
 #include "logging.h"
+#include "build.h"
 
 #ifdef HAVE_SYS_INOTIFY_H
 #include <sys/inotify.h>
@@ -30,13 +31,64 @@ void llua_rm_notifies(void);
 static int llua_block_notify = 0;
 #endif /* HAVE_SYS_INOTIFY_H */
 
+static char *draw_pre = 0;
+static char *draw_post = 0;
+
 lua_State *lua_L = NULL;
+
+static int llua_conky_parse(lua_State *L)
+{
+	int n = lua_gettop(L);    /* number of arguments */
+	char *str;
+	char *buf = calloc(1, max_user_text);
+	if (n != 1) {
+		lua_pushstring(L, "incorrect arguments, conky_parse(string) takes exactly 1 argument");
+		lua_error(L);
+	}
+	if (!lua_isstring(L, 1)) {
+		lua_pushstring(L, "incorrect argument (expecting a string)");
+		lua_error(L);
+	}
+	str = strdup(lua_tostring(L, 1));
+	evaluate(str, buf);
+	lua_pushstring(L, buf);
+	free(str);
+	free(buf);
+	return 1;                 /* number of results */
+}
 
 void llua_init(void)
 {
-	if(lua_L) return;
+	const char *libs = PACKAGE_LIBDIR"/lib?.so;";
+	char *old_path, *new_path;
+	if (lua_L) return;
 	lua_L = lua_open();
+
+	/* add our library path to the lua package.cpath global var */
 	luaL_openlibs(lua_L);
+	lua_getglobal(lua_L, "package");
+	lua_getfield(lua_L, -1, "cpath");
+	old_path = strdup(lua_tostring(lua_L, -1));
+	new_path = malloc(strlen(old_path) + strlen(libs) + 1);
+	strcpy(new_path, libs);
+	strcat(new_path, old_path);
+	lua_pushstring(lua_L, new_path);
+	lua_setfield(lua_L, -3, "cpath");
+	lua_pop(lua_L, 2);
+	free(old_path);
+	free(new_path);
+
+	lua_pushstring(lua_L, PACKAGE_NAME" "VERSION" compiled "BUILD_DATE" for "BUILD_ARCH);
+	lua_setglobal(lua_L, "conky_build_info");
+
+	lua_pushstring(lua_L, VERSION);
+	lua_setglobal(lua_L, "conky_version");
+
+	lua_pushstring(lua_L, current_config);
+	lua_setglobal(lua_L, "conky_config");
+
+	lua_pushcfunction(lua_L, &llua_conky_parse);
+	lua_setglobal(lua_L, "conky_parse");
 }
 
 void llua_load(const char *script)
@@ -44,7 +96,7 @@ void llua_load(const char *script)
 	int error;
 	char path[DEFAULT_TEXT_BUFFER_SIZE];
 
-	if(!lua_L) return;
+	llua_init();
 
 	to_real_path(path, script);
 	error = luaL_dofile(lua_L, path);
@@ -72,7 +124,7 @@ char *llua_do_call(const char *string, int retc)
 	char *ptr = strtok(tmp, " ");
 
 	/* proceed only if the function name is present */
-	if(!ptr) {
+	if (!ptr) {
 		free(tmp);
 		return NULL;
 	}
@@ -85,7 +137,7 @@ char *llua_do_call(const char *string, int retc)
 
 	/* parse all function parameters from args and push them to the stack */
 	ptr = strtok(NULL, " ");
-	while(ptr) {
+	while (ptr) {
 		lua_pushstring(lua_L, ptr);
 		ptr = strtok(NULL, " ");
 		argc++;
@@ -133,8 +185,8 @@ char *llua_getstring(const char *args)
 	if(!lua_L) return NULL;
 
 	func = llua_do_call(args, 1);
-	if(func) {
-		if(!lua_isstring(lua_L, -1)) {
+	if (func) {
+		if (!lua_isstring(lua_L, -1)) {
 			ERR("llua_getstring: function %s didn't return a string, result discarded", func);
 		} else {
 			ret = strdup(lua_tostring(lua_L, -1));
@@ -189,6 +241,14 @@ void llua_close(void)
 #ifdef HAVE_SYS_INOTIFY_H
 	llua_rm_notifies();
 #endif /* HAVE_SYS_INOTIFY_H */
+	if (draw_pre) {
+		free(draw_pre);
+		draw_pre = 0;
+	}
+	if (draw_post) {
+		free(draw_post);
+		draw_post = 0;
+	}
 	if(!lua_L) return;
 	lua_close(lua_L);
 	lua_L = NULL;
@@ -275,4 +335,132 @@ void llua_inotify_query(int wd, int mask)
 	}
 }
 #endif /* HAVE_SYS_INOTIFY_H */
+
+void llua_draw_pre_hook(void)
+{
+	if (!lua_L || !draw_pre) return;
+	llua_do_call(draw_pre, 0);
+}
+
+void llua_draw_post_hook(void)
+{
+	if (!lua_L || !draw_post) return;
+	llua_do_call(draw_post, 0);
+}
+
+void llua_set_draw_pre_hook(const char *args)
+{
+	draw_pre = strdup(args);
+}
+
+void llua_set_draw_post_hook(const char *args)
+{
+	draw_post = strdup(args);
+}
+
+void llua_set_long(const char *key, long value)
+{
+	lua_pushnumber(lua_L, value);
+	lua_setfield(lua_L, -2, key);
+}
+
+/* this function mostly copied from tolua++ source so that we could play nice
+ * with tolua++ libs.  tolua++ is provided 'as is'
+ */
+void llua_set_userdata(const char *key, const char *type, void *value)
+{
+	if (value == NULL) {
+		lua_pushnil(lua_L);
+	} else {
+		luaL_getmetatable(lua_L, type);
+		lua_pushstring(lua_L,"tolua_ubox");
+		lua_rawget(lua_L,-2);        /* stack: mt ubox */
+		if (lua_isnil(lua_L, -1)) {
+			lua_pop(lua_L, 1);
+			lua_pushstring(lua_L, "tolua_ubox");
+			lua_rawget(lua_L, LUA_REGISTRYINDEX);
+		}
+		lua_pushlightuserdata(lua_L,value);
+		lua_rawget(lua_L,-2);                       /* stack: mt ubox ubox[u] */
+		if (lua_isnil(lua_L,-1)) {
+			lua_pop(lua_L,1);                          /* stack: mt ubox */
+			lua_pushlightuserdata(lua_L,value);
+			*(void**)lua_newuserdata(lua_L,sizeof(void *)) = value;   /* stack: mt ubox u newud */
+			lua_pushvalue(lua_L,-1);                   /* stack: mt ubox u newud newud */
+			lua_insert(lua_L,-4);                      /* stack: mt newud ubox u newud */
+			lua_rawset(lua_L,-3);                      /* stack: mt newud ubox */
+			lua_pop(lua_L,1);                          /* stack: mt newud */
+			/*luaL_getmetatable(lua_L,type);*/
+			lua_pushvalue(lua_L, -2);			/* stack: mt newud mt */
+			lua_setmetatable(lua_L,-2);			/* stack: mt newud */
+
+		} else {
+			/* check the need of updating the metatable to a more specialized class */
+			lua_insert(lua_L,-2);                       /* stack: mt ubox[u] ubox */
+			lua_pop(lua_L,1);                           /* stack: mt ubox[u] */
+			lua_pushstring(lua_L,"tolua_super");
+			lua_rawget(lua_L,LUA_REGISTRYINDEX);        /* stack: mt ubox[u] super */
+			lua_getmetatable(lua_L,-2);                 /* stack: mt ubox[u] super mt */
+			lua_rawget(lua_L,-2);                       /* stack: mt ubox[u] super super[mt] */
+			if (lua_istable(lua_L,-1)) {
+				lua_pushstring(lua_L,type);                 /* stack: mt ubox[u] super super[mt] type */
+				lua_rawget(lua_L,-2);                       /* stack: mt ubox[u] super super[mt] flag */
+				if (lua_toboolean(lua_L,-1) == 1) {
+					/* if true */
+					lua_pop(lua_L,3);	/* mt ubox[u]*/
+					lua_remove(lua_L, -2);
+					return;
+				}
+			}
+			/* type represents a more specilized type */
+			/*luaL_getmetatable(lua_L,type);             // stack: mt ubox[u] super super[mt] flag mt */
+			lua_pushvalue(lua_L, -5);					/* stack: mt ubox[u] super super[mt] flag mt */
+			lua_setmetatable(lua_L,-5);                /* stack: mt ubox[u] super super[mt] flag */
+			lua_pop(lua_L,3);                          /* stack: mt ubox[u] */
+		}
+		lua_remove(lua_L, -2);	/* stack: ubox[u]*/
+	}
+	lua_setfield(lua_L, -2, key);
+}
+
+void llua_setup_window_table(int text_start_x, int text_start_y, int text_width, int text_height)
+{
+	lua_newtable(lua_L);
+	
+	llua_set_userdata("drawable", "Drawable", (void*)&window.drawable);
+	llua_set_userdata("visual", "Visual", window.visual);
+	llua_set_userdata("display", "Display", display);
+
+	llua_set_long("width", window.width);
+	llua_set_long("height", window.height);
+	llua_set_long("border_inner_margin", window.border_inner_margin);
+	llua_set_long("border_outer_margin", window.border_outer_margin);
+	llua_set_long("border_width", window.border_width);
+
+	llua_set_long("text_start_x", text_start_x);
+	llua_set_long("text_start_y", text_start_y);
+	llua_set_long("text_width", text_width);
+	llua_set_long("text_height", text_height);
+
+	lua_setglobal(lua_L, "conky_window");
+}
+
+void llua_update_window_table(int text_start_x, int text_start_y, int text_width, int text_height)
+{
+	lua_getglobal(lua_L, "conky_window");
+	if (lua_isnil(lua_L, -1)) {
+		/* window table isn't populated yet */
+		return;
+	}
+
+	llua_set_long("width", window.width);
+	llua_set_long("height", window.height);
+
+	llua_set_long("text_start_x", text_start_x);
+	llua_set_long("text_start_y", text_start_y);
+	llua_set_long("text_width", text_width);
+	llua_set_long("text_height", text_height);
+
+	lua_setglobal(lua_L, "conky_window");
+}
 

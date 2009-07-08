@@ -483,13 +483,11 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 		fprintf(stderr, PACKAGE_NAME": drawing to single buffer\n");
 	}
 #endif
+	window.visual = DefaultVisual(display, DefaultScreen(display));
+	window.colourmap = DefaultColormap(display, DefaultScreen(display));
 #ifdef IMLIB2
 	{
-		Visual *visual;
-		Colormap colourmap;
-		visual = DefaultVisual(display, DefaultScreen(display));
-		colourmap = DefaultColormap(display, DefaultScreen(display));
-		cimlib_init(display, window.drawable, visual, colourmap);
+		cimlib_init(display, window.drawable, window.visual, window.colourmap);
 	}
 #endif /* IMLIB2 */
 	XFlush(display);

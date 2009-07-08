@@ -41,7 +41,11 @@ enum _window_hints {
 struct conky_window {
 	Window root, window, desktop;
 	Drawable drawable;
+	Visual *visual;
+	Colormap colourmap;
 	GC gc;
+	long border_inner_margin, border_outer_margin, border_width;
+
 #ifdef HAVE_XDBE
 	XdbeBackBuffer back_buffer;
 #endif

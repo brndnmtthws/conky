@@ -26,8 +26,12 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
-/* initialize lua stuff */
-void llua_init(void);
+#include "config.h"
+
+#ifdef X11
+#include "x11.h"
+#endif /* X11 */
+
 /* load a lua script */
 void llua_load(const char *script);
 /* call a function with args, and return a string from it (must be free'd) */
@@ -42,5 +46,15 @@ void llua_close(void);
 /* check our lua inotify status */
 void llua_inotify_query(int wd, int mask);
 #endif /* HAVE_SYS_INOTIFY_H */
+
+#ifdef X11
+void llua_draw_pre_hook(void);
+void llua_draw_post_hook(void);
+void llua_set_draw_pre_hook(const char *args);
+void llua_set_draw_post_hook(const char *args);
+
+void llua_setup_window_table(int text_start_x, int text_start_y, int text_width, int text_height);
+void llua_update_window_table(int text_start_x, int text_start_y, int text_width, int text_height);
+#endif /* X11 */
 
 #endif /* LUA_H_*/

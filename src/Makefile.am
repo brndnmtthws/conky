@@ -23,9 +23,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-INCLUDES = -DSYSTEM_CONFIG_FILE=\"$(sysconfdir)/conky/conky.conf\"
+INCLUDES = -DSYSTEM_CONFIG_FILE=\"$(sysconfdir)/conky/conky.conf\" -DPACKAGE_LIBDIR=\"$(pkglibdir)\"
 
 bin_PROGRAMS = conky
+
+LIBS = ${conky_LIBS}
 
 if BUILD_CONFIG_OUTPUT
 config_output = defconfig.h

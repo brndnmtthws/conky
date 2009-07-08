@@ -163,7 +163,8 @@ static void print_version(void)
 	printf(PACKAGE_NAME" "VERSION" compiled "BUILD_DATE" for "BUILD_ARCH"\n");
 
 	printf("\nCompiled in features:\n\n"
-		   "System config file: "SYSTEM_CONFIG_FILE"\n\n"
+		   "System config file: "SYSTEM_CONFIG_FILE"\n"
+		   "Package library path: "PACKAGE_LIBDIR"\n\n"
 #ifdef X11
 		   " X11:\n"
 # ifdef HAVE_XDAMAGE
@@ -209,11 +210,8 @@ static void print_version(void)
 		   "  * RSS\n"
 #endif /* RSS */
 #ifdef WEATHER
-		   "  * WEATHER\n"
+		   "  * Weather (METAR)\n"
 #endif /* WEATHER */
-#ifdef HAVE_LUA
-		   "  * Lua\n"
-#endif /* HAVE_LUA */
 #ifdef HAVE_IWLIB
 		   "  * wireless\n"
 #endif /* HAVE_IWLIB */
@@ -241,6 +239,16 @@ static void print_version(void)
 #ifdef IOSTATS
 		   "  * iostats\n"
 #endif /* IOSTATS */
+#ifdef HAVE_LUA
+		   "  * Lua\n"
+		   "\n  Lua bindings:\n"
+#ifdef HAVE_LUA_CAIRO
+		   "   * Cairo\n"
+#endif /* HAVE_LUA_CAIRO */
+#ifdef HAVE_LUA_IMLIB2
+		   "   * Imlib2\n"
+#endif /* IMLIB2 */
+#endif /* HAVE_LUA */
 	);
 
 	exit(0);
@@ -291,8 +299,8 @@ static char *disp = NULL;
  * instances of the same text object */
 struct information info;
 
-/* default config file */
-static char *current_config;
+/* path to config file */
+char *current_config;
 
 /* set to 1 if you want all text to be in uppercase */
 static unsigned int stuff_in_upper_case;
@@ -325,8 +333,6 @@ static int stippled_borders;
 
 static int draw_shades, draw_outline;
 
-static long border_inner_margin, border_outer_margin, border_width;
-
 static long default_fg_color, default_bg_color, default_out_color;
 
 /* create own window or draw stuff to root? */
@@ -356,7 +362,7 @@ static long color0, color1, color2, color3, color4, color5, color6, color7,
 static char *template[MAX_TEMPLATES];
 
 /* maximum size of config TEXT buffer, i.e. below TEXT line. */
-static unsigned int max_user_text = MAX_USER_TEXT_DEFAULT;
+unsigned int max_user_text;
 
 /* maximum size of individual text buffers, ie $exec buffer size */
 unsigned int text_buffer_size = DEFAULT_TEXT_BUFFER_SIZE;
@@ -906,8 +912,6 @@ static void free_text_objects(struct text_object *root, int internal)
 #endif
 #ifdef HAVE_LUA
 			case OBJ_lua:
-			case OBJ_lua_parse:
-			case OBJ_lua_read_parse:
 			case OBJ_lua_bar:
 #ifdef X11
 			case OBJ_lua_graph:
@@ -2843,12 +2847,6 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			CRIT_ERR("lua_parse needs arguments: <function name> [function parameters]");
 		}
-	END OBJ(lua_read_parse, 0)
-		if (arg) {
-			obj->data.s = strndup(arg, text_buffer_size);
-		} else {
-			CRIT_ERR("lua_read_parse needs arguments: <function name> <string to pass>");
-		}
 	END OBJ(lua_bar, 0)
 		SIZE_DEFAULTS(bar);
 		if (arg) {
@@ -4168,18 +4166,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* IMLIB2 */
 			OBJ(eval) {
-				struct information *tmp_info;
-				struct text_object subroot, subroot2;
-
-				tmp_info = malloc(sizeof(struct information));
-				memcpy(tmp_info, cur, sizeof(struct information));
-				parse_conky_vars(&subroot, obj->data.s, p, tmp_info);
-				DBGP("evaluated '%s' to '%s'", obj->data.s, p);
-				parse_conky_vars(&subroot2, p, p, tmp_info);
-
-				free_text_objects(&subroot, 1);
-				free_text_objects(&subroot2, 1);
-				free(tmp_info);
+				evaluate(obj->data.s, p);
 			}
 			OBJ(exec) {
 				read_exec(obj->data.s, p, text_buffer_size);
@@ -4639,87 +4626,87 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 #ifdef WEATHER
 			OBJ(weather) {
-			  PWEATHER *data = get_weather_info(obj->data.weather.uri, obj->data.weather.delay);
+				PWEATHER *data = get_weather_info(obj->data.weather.uri, obj->data.weather.delay);
 
-			  static const char *wc[18] =
-			    {"", "drizzle", "rain", "hail", "soft hail",
-			     "snow", "snow grains", "fog", "haze", "smoke",
-			     "mist", "dust", "sand", "funnel cloud tornado",
-			     "dust/sand", "squall", "sand storm", "dust storm"};
+				static const char *wc[18] =
+				{"", "drizzle", "rain", "hail", "soft hail",
+					"snow", "snow grains", "fog", "haze", "smoke",
+					"mist", "dust", "sand", "funnel cloud tornado",
+					"dust/sand", "squall", "sand storm", "dust storm"};
 
 
-			  if (data == NULL) {
-			    strncpy(p, "Error reading weather data", p_max_size);
-			  } else {
-			    if (strcmp(obj->data.weather.data_type, "last_update") == EQUAL) {
-			      strncpy(p, data->lastupd, p_max_size);
-			    } else if (strcmp(obj->data.weather.data_type, "temperature_C") == EQUAL) {
-			      snprintf(p, p_max_size, "%d", data->tmpC);
-			    } else if (strcmp(obj->data.weather.data_type, "temperature_F") == EQUAL) {
-			      snprintf(p, p_max_size, "%d", data->tmpF);
-			    } else if (strcmp(obj->data.weather.data_type, "cloud_cover") == EQUAL) {
-			      if (data->cc == 0) {
-				strncpy(p, "", p_max_size);
-			      } else if (data->cc < 3) {
-				strncpy(p, "clear", p_max_size);
-			      } else if (data->cc < 5) {
-				strncpy(p, "partly cloudy", p_max_size);
-			      } else if (data->cc == 5) {
-				strncpy(p, "cloudy", p_max_size);
-			      } else if (data->cc == 6) {
-				strncpy(p, "overcast", p_max_size);
-			      } else if (data->cc == 7) {
-				strncpy(p, "towering cumulus", p_max_size);
-			      } else  {
-				strncpy(p, "cumulonimbus", p_max_size);
-			      }
-			    } else if (strcmp(obj->data.weather.data_type, "pressure") == EQUAL) {
-			      snprintf(p, p_max_size, "%d", data->bar);
-			    } else if (strcmp(obj->data.weather.data_type, "wind_speed") == EQUAL) {
-			      snprintf(p, p_max_size, "%d", data->wind_s);
-			    } else if (strcmp(obj->data.weather.data_type, "wind_dir") == EQUAL) {
-			      if ((data->wind_d >= 349) || (data->wind_d < 12)) {
-				strncpy(p, "N", p_max_size);
-			      } else if (data->wind_d < 33) {
-				strncpy(p, "NNE", p_max_size);
-			      } else if (data->wind_d < 57) {
-				strncpy(p, "NE", p_max_size);
-			      } else if (data->wind_d < 79) {
-				strncpy(p, "ENE", p_max_size);
-			      } else if (data->wind_d < 102) {
-				strncpy(p, "E", p_max_size);
-			      } else if (data->wind_d < 124) {
-				strncpy(p, "ESE", p_max_size);
-			      } else if (data->wind_d < 147) {
-				strncpy(p, "SE", p_max_size);
-			      } else if (data->wind_d < 169) {
-				strncpy(p, "SSE", p_max_size);
-			      } else if (data->wind_d < 192) {
-				strncpy(p, "S", p_max_size);
-			      } else if (data->wind_d < 214) {
-				strncpy(p, "SSW", p_max_size);
-			      } else if (data->wind_d < 237) {
-				strncpy(p, "SW", p_max_size);
-			      } else if (data->wind_d < 259) {
-				strncpy(p, "WSW", p_max_size);
-			      } else if (data->wind_d < 282) {
-				strncpy(p, "W", p_max_size);
-			      } else if (data->wind_d < 304) {
-				strncpy(p, "WNW", p_max_size);
-			      } else if (data->wind_d < 327) {
-				strncpy(p, "NW", p_max_size);
-			      } else if (data->wind_d < 349) {
-				strncpy(p, "NNW", p_max_size);
-			      };
-			    } else if (strcmp(obj->data.weather.data_type, "wind_dir_DEG") == EQUAL) {
-			      snprintf(p, p_max_size, "%d", data->wind_d);
+				if (data == NULL) {
+					strncpy(p, "Error reading weather data", p_max_size);
+				} else {
+					if (strcmp(obj->data.weather.data_type, "last_update") == EQUAL) {
+						strncpy(p, data->lastupd, p_max_size);
+					} else if (strcmp(obj->data.weather.data_type, "temperature_C") == EQUAL) {
+						snprintf(p, p_max_size, "%d", data->tmpC);
+					} else if (strcmp(obj->data.weather.data_type, "temperature_F") == EQUAL) {
+						snprintf(p, p_max_size, "%d", data->tmpF);
+					} else if (strcmp(obj->data.weather.data_type, "cloud_cover") == EQUAL) {
+						if (data->cc == 0) {
+							strncpy(p, "", p_max_size);
+						} else if (data->cc < 3) {
+							strncpy(p, "clear", p_max_size);
+						} else if (data->cc < 5) {
+							strncpy(p, "partly cloudy", p_max_size);
+						} else if (data->cc == 5) {
+							strncpy(p, "cloudy", p_max_size);
+						} else if (data->cc == 6) {
+							strncpy(p, "overcast", p_max_size);
+						} else if (data->cc == 7) {
+							strncpy(p, "towering cumulus", p_max_size);
+						} else  {
+							strncpy(p, "cumulonimbus", p_max_size);
+						}
+					} else if (strcmp(obj->data.weather.data_type, "pressure") == EQUAL) {
+						snprintf(p, p_max_size, "%d", data->bar);
+					} else if (strcmp(obj->data.weather.data_type, "wind_speed") == EQUAL) {
+						snprintf(p, p_max_size, "%d", data->wind_s);
+					} else if (strcmp(obj->data.weather.data_type, "wind_dir") == EQUAL) {
+						if ((data->wind_d >= 349) || (data->wind_d < 12)) {
+							strncpy(p, "N", p_max_size);
+						} else if (data->wind_d < 33) {
+							strncpy(p, "NNE", p_max_size);
+						} else if (data->wind_d < 57) {
+							strncpy(p, "NE", p_max_size);
+						} else if (data->wind_d < 79) {
+							strncpy(p, "ENE", p_max_size);
+						} else if (data->wind_d < 102) {
+							strncpy(p, "E", p_max_size);
+						} else if (data->wind_d < 124) {
+							strncpy(p, "ESE", p_max_size);
+						} else if (data->wind_d < 147) {
+							strncpy(p, "SE", p_max_size);
+						} else if (data->wind_d < 169) {
+							strncpy(p, "SSE", p_max_size);
+						} else if (data->wind_d < 192) {
+							strncpy(p, "S", p_max_size);
+						} else if (data->wind_d < 214) {
+							strncpy(p, "SSW", p_max_size);
+						} else if (data->wind_d < 237) {
+							strncpy(p, "SW", p_max_size);
+						} else if (data->wind_d < 259) {
+							strncpy(p, "WSW", p_max_size);
+						} else if (data->wind_d < 282) {
+							strncpy(p, "W", p_max_size);
+						} else if (data->wind_d < 304) {
+							strncpy(p, "WNW", p_max_size);
+						} else if (data->wind_d < 327) {
+							strncpy(p, "NW", p_max_size);
+						} else if (data->wind_d < 349) {
+							strncpy(p, "NNW", p_max_size);
+						};
+					} else if (strcmp(obj->data.weather.data_type, "wind_dir_DEG") == EQUAL) {
+						snprintf(p, p_max_size, "%d", data->wind_d);
 
-			    } else if (strcmp(obj->data.weather.data_type, "humidity") == EQUAL) {
-			      snprintf(p, p_max_size, "%d", data->hmid);
-			    } else if (strcmp(obj->data.weather.data_type, "weather") == EQUAL) {
-			      strncpy(p, wc[data->wc], p_max_size);
-			    }
-			  }
+					} else if (strcmp(obj->data.weather.data_type, "humidity") == EQUAL) {
+						snprintf(p, p_max_size, "%d", data->hmid);
+					} else if (strcmp(obj->data.weather.data_type, "weather") == EQUAL) {
+						strncpy(p, wc[data->wc], p_max_size);
+					}
+				}
 			}
 #endif
 #ifdef HAVE_LUA
@@ -4733,41 +4720,8 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(lua_parse) {
 				char *str = llua_getstring(obj->data.s);
 				if (str) {
-					struct information *tmp_info;
-					struct text_object subroot;
-
-					tmp_info = malloc(sizeof(struct information));
-					memcpy(tmp_info, cur, sizeof(struct information));
-					parse_conky_vars(&subroot, str, p, tmp_info);
-
-					free_text_objects(&subroot, 1);
-					free(tmp_info);
-					free(str);
+					evaluate(str, p);
 				}
-			}
-			OBJ(lua_read_parse) {
-				struct information *tmp_info;
-				struct text_object subroot, subroot2;
-				char func[64];
-				char *text, *str;
-				sscanf(obj->data.s, "%64s", func);
-				text = obj->data.s + strlen(func) + 1;
-
-				tmp_info = malloc(sizeof(struct information));
-				memcpy(tmp_info, cur, sizeof(struct information));
-				parse_conky_vars(&subroot, text, p, tmp_info);
-				DBGP("evaluated '%s' to '%s'", text, p);
-
-				str = llua_getstring_read(func, p);
-				if (str) {
-					parse_conky_vars(&subroot2, str, p, tmp_info);
-					DBGP("evaluated '%s' to '%s'", str, p);
-
-					free(str);
-					free_text_objects(&subroot2, 1);
-				}
-				free_text_objects(&subroot, 1);
-				free(tmp_info);
 			}
 			OBJ(lua_bar) {
 				double per;
@@ -6057,6 +6011,20 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif /* X11 */
 }
 
+void evaluate(char *text, char *buffer)
+{
+	struct information *tmp_info;
+	struct text_object subroot;
+
+	tmp_info = malloc(sizeof(struct information));
+	memcpy(tmp_info, &info, sizeof(struct information));
+	parse_conky_vars(&subroot, text, buffer, tmp_info);
+	DBGP("evaluated '%s' to '%s'", text, buffer);
+
+	free_text_objects(&subroot, 1);
+	free(tmp_info);
+}
+
 double current_update_time, next_update_time, last_update_time;
 
 static void generate_text(void)
@@ -6244,10 +6212,10 @@ static void update_text_area(void)
 	if (own_window && !fixed_pos) {
 		x += workarea[0];
 		y += workarea[1];
-		text_start_x = border_inner_margin + border_outer_margin + border_width;
-		text_start_y = border_inner_margin + border_outer_margin + border_width;
-		window.x = x - border_inner_margin - border_outer_margin - border_width;
-		window.y = y - border_inner_margin - border_outer_margin - border_width;
+		text_start_x = window.border_inner_margin + window.border_outer_margin + window.border_width;
+		text_start_y = window.border_inner_margin + window.border_outer_margin + window.border_width;
+		window.x = x - window.border_inner_margin - window.border_outer_margin - window.border_width;
+		window.y = y - window.border_inner_margin - window.border_outer_margin - window.border_width;
 	} else
 #endif
 	{
@@ -6262,6 +6230,10 @@ static void update_text_area(void)
 		text_start_x = x;
 		text_start_y = y;
 	}
+#ifdef HAVE_LUA
+	/* update lua window globals */
+	llua_update_window_table(text_start_x, text_start_y, text_width, text_height);
+#endif /* HAVE_LUA */
 }
 
 /* drawing stuff */
@@ -6816,18 +6788,18 @@ static void draw_line(char *s)
 
 				case ALIGNR:
 				{
-					/* TODO: add back in "+ border_inner_margin" to the end of
+					/* TODO: add back in "+ window.border_inner_margin" to the end of
 					 * this line? */
 					int pos_x = text_start_x + text_width -
 						get_string_width_special(s);
 
 					/* printf("pos_x %i text_start_x %i text_width %i cur_x %i "
 						"get_string_width(p) %i gap_x %i "
-						"specials[special_index].arg %i border_inner_margin %i "
-						"border_width %i\n", pos_x, text_start_x, text_width,
+						"specials[special_index].arg %i window.border_inner_margin %i "
+						"window.border_width %i\n", pos_x, text_start_x, text_width,
 						cur_x, get_string_width_special(s), gap_x,
-						specials[special_index].arg, border_inner_margin,
-						border_width); */
+						specials[special_index].arg, window.border_inner_margin,
+						window.border_width); */
 					if (pos_x > specials[special_index].arg && pos_x > cur_x) {
 						cur_x = pos_x - specials[special_index].arg;
 					}
@@ -6873,26 +6845,29 @@ static void draw_line(char *s)
 static void draw_text(void)
 {
 #ifdef X11
+#ifdef HAVE_LUA
+	llua_draw_pre_hook();
+#endif /* HAVE_LUA */
 	if (output_methods & TO_X) {
 		cur_y = text_start_y;
 
 		/* draw borders */
-		if (draw_borders && border_width > 0) {
+		if (draw_borders && window.border_width > 0) {
 			if (stippled_borders) {
 				char ss[2] = { stippled_borders, stippled_borders };
-				XSetLineAttributes(display, window.gc, border_width, LineOnOffDash,
+				XSetLineAttributes(display, window.gc, window.border_width, LineOnOffDash,
 					CapButt, JoinMiter);
 				XSetDashes(display, window.gc, 0, ss, 2);
 			} else {
-				XSetLineAttributes(display, window.gc, border_width, LineSolid,
+				XSetLineAttributes(display, window.gc, window.border_width, LineSolid,
 					CapButt, JoinMiter);
 			}
 
 			XDrawRectangle(display, window.drawable, window.gc,
-				text_start_x - border_inner_margin - border_width,
-				text_start_y - border_inner_margin - border_width,
-				text_width + border_inner_margin * 2 + border_width * 2,
-				text_height + border_inner_margin * 2 + border_width * 2);
+				text_start_x - window.border_inner_margin - window.border_width,
+				text_start_y - window.border_inner_margin - window.border_width,
+				text_width + window.border_inner_margin * 2 + window.border_width * 2,
+				text_height + window.border_inner_margin * 2 + window.border_width * 2);
 		}
 
 		/* draw text */
@@ -6901,6 +6876,9 @@ static void draw_text(void)
 	setup_fonts();
 #endif /* X11 */
 	for_each_line(text_buffer, draw_line);
+#if defined(HAVE_LUA) && defined(X11)
+	llua_draw_post_hook();
+#endif /* HAVE_LUA */
 }
 
 static void draw_stuff(void)
@@ -6987,10 +6965,10 @@ static void clear_text(int exposures)
 #endif
 	if (display && window.window) { // make sure these are !null
 		/* there is some extra space for borders and outlines */
-		XClearArea(display, window.window, text_start_x - border_inner_margin - border_outer_margin - border_width,
-			text_start_y - border_inner_margin - border_outer_margin - border_width,
-			text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2,
-			text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2, exposures ? True : 0);
+		XClearArea(display, window.window, text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width,
+			text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width,
+			text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
+			text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, exposures ? True : 0);
 	}
 }
 #endif /* X11 */
@@ -7100,10 +7078,10 @@ static void main_loop(void)
 
 					/* resize window if it isn't right size */
 					if (!fixed_size
-						&& (text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 != window.width
-						|| text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2 != window.height)) {
-							window.width = text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2;
-							window.height = text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2;
+						&& (text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2 != window.width
+						|| text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2 != window.height)) {
+							window.width = text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
+							window.height = text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
 							XResizeWindow(display, window.window, window.width,
 								window.height);
 							set_transparent_background(window.window);
@@ -7162,10 +7140,10 @@ static void main_loop(void)
 				if (use_xdbe) {
 					XRectangle r;
 
-					r.x = text_start_x - border_inner_margin - border_outer_margin - border_width;
-					r.y = text_start_y - border_inner_margin - border_outer_margin - border_width;
-					r.width = text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2;
-					r.height = text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2;
+					r.x = text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width;
+					r.y = text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width;
+					r.width = text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
+					r.height = text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
 					XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
 				}
 #endif
@@ -7218,8 +7196,8 @@ static void main_loop(void)
 									}
 								}
 
-								text_width = window.width - border_inner_margin * 2 - border_outer_margin * 2 - border_width * 2;
-								text_height = window.height - border_inner_margin * 2 - border_outer_margin * 2 - border_width * 2;
+								text_width = window.width - window.border_inner_margin * 2 - window.border_outer_margin * 2 - window.border_width * 2;
+								text_height = window.height - window.border_inner_margin * 2 - window.border_outer_margin * 2 - window.border_width * 2;
 								if (text_width > maximum_width
 										&& maximum_width > 0) {
 									text_width = maximum_width;
@@ -7313,10 +7291,10 @@ static void main_loop(void)
 				if (use_xdbe) {
 					XRectangle r;
 
-					r.x = text_start_x - border_inner_margin - border_outer_margin - border_width;
-					r.y = text_start_y - border_inner_margin - border_outer_margin - border_width;
-					r.width = text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2;
-					r.height = text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2;
+					r.x = text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width;
+					r.y = text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width;
+					r.width = text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
+					r.height = text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
 					XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
 				}
 #endif
@@ -7788,9 +7766,9 @@ static void set_default_configurations(void)
 	sprintf(window.title, PACKAGE_NAME" (%s)", info.uname_s.nodename);
 #endif
 	stippled_borders = 0;
-	border_inner_margin = 3;
-	border_outer_margin = 1;
-	border_width = 1;
+	window.border_inner_margin = 3;
+	window.border_outer_margin = 1;
+	window.border_width = 1;
 	text_alignment = BOTTOM_LEFT;
 	info.x11.monitor.number = 1;
 	info.x11.monitor.current = 0;
@@ -7917,12 +7895,12 @@ static void X11_create_window(void)
 {
 	if (output_methods & TO_X) {
 #ifdef OWN_WINDOW
-		init_window(own_window, text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2,
-				text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2, set_transparent, background_colour,
+		init_window(own_window, text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
+				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, set_transparent, background_colour,
 				xargv, xargc);
 #else /* OWN_WINDOW */
-		init_window(0, text_width + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2,
-				text_height + border_inner_margin * 2 + border_outer_margin * 2 + border_width * 2, set_transparent, 0,
+		init_window(0, text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
+				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, set_transparent, 0,
 				xargv, xargc);
 #endif /* OWN_WINDOW */
 
@@ -7956,6 +7934,10 @@ static void X11_create_window(void)
 		selected_font = 0;
 		update_text_area();	/* to get initial size of the window */
 	}
+#ifdef HAVE_LUA
+	/* setup lua window globals */
+	llua_setup_window_table(text_start_x, text_start_y, text_width, text_height);
+#endif /* HAVE_LUA */
 }
 #endif /* X11 */
 
@@ -8103,34 +8085,34 @@ static void load_config_file(const char *f)
 			show_graph_range = string_to_bool(value);
 		}
 		CONF("border_margin") {
-			ERR("border_margin is deprecated, please use border_inner_margin instead");
+			ERR("border_margin is deprecated, please use window.border_inner_margin instead");
 			if (value) {
-				border_inner_margin = strtol(value, 0, 0);
-				if (border_inner_margin < 0) border_inner_margin = 0;
+				window.border_inner_margin = strtol(value, 0, 0);
+				if (window.border_inner_margin < 0) window.border_inner_margin = 0;
 			} else {
 				CONF_ERR;
 			}
 		}
 		CONF("border_inner_margin") {
 			if (value) {
-				border_inner_margin = strtol(value, 0, 0);
-				if (border_inner_margin < 0) border_inner_margin = 0;
+				window.border_inner_margin = strtol(value, 0, 0);
+				if (window.border_inner_margin < 0) window.border_inner_margin = 0;
 			} else {
 				CONF_ERR;
 			}
 		}
 		CONF("border_outer_margin") {
 			if (value) {
-				border_outer_margin = strtol(value, 0, 0);
-				if (border_outer_margin < 0) border_outer_margin = 0;
+				window.border_outer_margin = strtol(value, 0, 0);
+				if (window.border_outer_margin < 0) window.border_outer_margin = 0;
 			} else {
 				CONF_ERR;
 			}
 		}
 		CONF("border_width") {
 			if (value) {
-				border_width = strtol(value, 0, 0);
-				if (border_width < 0) border_width = 0;
+				window.border_width = strtol(value, 0, 0);
+				if (window.border_width < 0) window.border_width = 0;
 			} else {
 				CONF_ERR;
 			}
@@ -8739,10 +8721,9 @@ static void load_config_file(const char *f)
 		}
 #ifdef HAVE_LUA
 		CONF("lua_load") {
-			llua_init();
-			if(value) {
+			if (value) {
 				char *ptr = strtok(value, " ");
-				while(ptr) {
+				while (ptr) {
 					llua_load(ptr);
 					ptr = strtok(NULL, " ");
 				}
@@ -8750,6 +8731,22 @@ static void load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
+#ifdef X11
+		CONF("lua_draw_hook_pre") {
+			if (value) {
+				llua_set_draw_pre_hook(value);
+			} else {
+				CONF_ERR;
+			}
+		}
+		CONF("lua_draw_hook_post") {
+			if (value) {
+				llua_set_draw_post_hook(value);
+			} else {
+				CONF_ERR;
+			}
+		}
+#endif /* X11 */
 #endif /* HAVE_LUA */
 
 		CONF("color0"){}
@@ -9055,6 +9052,8 @@ int main(int argc, char **argv)
 	struct sigaction act, oact;
 
 	g_signal_pending = 0;
+	max_user_text = MAX_USER_TEXT_DEFAULT;
+	current_config = 0;
 	memset(&info, 0, sizeof(info));
 	memset(template, 0, sizeof(template));
 	clear_net_stats();

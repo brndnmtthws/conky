@@ -53,9 +53,6 @@ set_temp_output_unit(const char *name)
 		return 1;
 
 	buf = strdup(name);
-	#ifdef HAVE_OPENMP
-	#pragma omp parallel for
-	#endif /* HAVE_OPENMP */
 	for (i = 0; i < (long)strlen(name); i++)
 		buf[i] = tolower(name[i]);
 

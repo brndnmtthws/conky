@@ -25,6 +25,9 @@ file_names["vim_syntax"]      = "extras/vim/syntax/conkyrc.vim"
 file_names["nano_syntax"]     = "extras/nano/conky.nanorc"
 file_names["variables"]       = "doc/variables.xml"
 file_names["config_settings"] = "doc/config_settings.xml"
+file_names["lua"]             = "doc/lua.xml"
+file_names["docs"]            = "doc/docs.xml"
+file_names["command_options"] = "doc/command_options.xml"
 
 for fn in file_names.values():
 	if not os.path.exists(fn) or not os.path.isfile(fn):
@@ -57,6 +60,8 @@ def tidy(file):
 
 tidy(file_names['variables'])
 tidy(file_names['config_settings'])
+tidy(file_names['lua'])
+tidy(file_names['command_options'])
 
 #
 # Do all the objects first

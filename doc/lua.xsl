@@ -7,17 +7,6 @@
 	<xsl:template match="/">
 		<html>
 			<head>
-				<title>Conky Variables</title>
-			</head>
-			<body bgcolor="#FFFFFF">
-				<xsl:apply-templates />
-			</body>
-		</html>
-	</xsl:template>
-
-	<xsl:template match="/">
-		<html>
-			<head>
 				<title>Lua API</title>
 			</head>
 			<body bgcolor="#FFFFFF">
@@ -58,9 +47,9 @@
 		<table cellpadding="3">
 
 			<tr bgcolor = "#eecfa1">
-				<th>Variable</th>
-				<th>Arguments () = optional</th>
-				<th>Explanation</th>
+				<th>Name</th>
+				<th>Type</th>
+				<th>Details</th>
 			</tr>
 
 			<xsl:for-each select="varlistentry">

@@ -381,7 +381,6 @@ enum text_object_type {
 #ifdef HAVE_LUA
 	OBJ_lua,
 	OBJ_lua_parse,
-	OBJ_lua_read_parse,
 	OBJ_lua_bar,
 #ifdef X11
 	OBJ_lua_graph,

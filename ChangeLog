@@ -1,5 +1,8 @@
 2009-07-09
 	* Added support for $swapfree
+	* Improved Lua API (lua_read_parse has been removed in favour of the
+	conky_parse() Lua API call)
+	* Introduced new Lua Cairo and Imlib2 bindings
 
 2009-07-08
 	* Fixed a couple memory-related bugs
