@@ -148,7 +148,7 @@ void update_meminfo(void)
 	/* unsigned int a; */
 	char buf[256];
 
-	info.mem = info.memmax = info.swap = info.swapmax = info.bufmem =
+	info.mem = info.memmax = info.swap = info.swapfree = info.swapmax = info.bufmem =
 		info.buffers = info.cached = info.memfree = info.memeasyfree = 0;
 
 	if (!(meminfo_fp = open_file("/proc/meminfo", &rep))) {
@@ -167,7 +167,7 @@ void update_meminfo(void)
 		} else if (strncmp(buf, "SwapTotal:", 10) == 0) {
 			sscanf(buf, "%*s %llu", &info.swapmax);
 		} else if (strncmp(buf, "SwapFree:", 9) == 0) {
-			sscanf(buf, "%*s %llu", &info.swap);
+			sscanf(buf, "%*s %llu", &info.swapfree);
 		} else if (strncmp(buf, "Buffers:", 8) == 0) {
 			sscanf(buf, "%*s %llu", &info.buffers);
 		} else if (strncmp(buf, "Cached:", 7) == 0) {
@@ -177,7 +177,7 @@ void update_meminfo(void)
 
 	info.mem = info.memmax - info.memfree;
 	info.memeasyfree = info.memfree;
-	info.swap = info.swapmax - info.swap;
+	info.swap = info.swapmax - info.swapfree;
 
 	info.bufmem = info.cached + info.buffers;
 

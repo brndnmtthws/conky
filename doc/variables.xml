@@ -2672,6 +2672,15 @@
     <varlistentry>
         <term>
             <command>
+                <option>swapfree</option>
+            </command>
+        </term>
+        <listitem>Amount of free swap
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>swapbar</option>
             </command>
             <option>(height),(width)</option>

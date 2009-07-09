@@ -247,6 +247,7 @@ enum text_object_type {
 	OBJ_outlinecolor,
 	OBJ_stippled_hr,
 	OBJ_swap,
+	OBJ_swapfree,
 	OBJ_swapbar,
 	OBJ_swapmax,
 	OBJ_swapperc,

@@ -135,6 +135,7 @@ void update_meminfo()
 	if (swapmode(&swap_avail, &swap_free) >= 0) {
 		info.swapmax = swap_avail;
 		info.swap = (swap_avail - swap_free);
+		info.swapfree = swap_free;
 	}
 }
 

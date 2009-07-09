@@ -2414,6 +2414,7 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.pair.b = b;
 #endif /* X11 */
 	END OBJ(swap, INFO_MEM)
+	END OBJ(swapfree, INFO_MEM)
 	END OBJ(swapmax, INFO_MEM)
 	END OBJ(swapperc, INFO_MEM)
 	END OBJ(swapbar, INFO_MEM)
@@ -5130,6 +5131,9 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif /* X11 */
 			OBJ(swap) {
 				human_readable(cur->swap * 1024, p, 255);
+			}
+			OBJ(swapfree) {
+				human_readable(cur->swapfree * 1024, p, 255);
 			}
 			OBJ(swapmax) {
 				human_readable(cur->swapmax * 1024, p, 255);
