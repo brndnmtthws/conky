@@ -715,7 +715,7 @@ dnl Some functions
 dnl
 
 AC_CHECK_FUNCS([calloc malloc free popen sysinfo getloadavg memrchr strndup gethostbyname_r])
-AC_SEARCH_LIBS(clock_gettime, [rt],
+AC_SEARCH_LIBS(clock_gettime, [rt], conky_LIBS="$conky_LIBS -lrt"
                [AC_DEFINE(HAVE_CLOCK_GETTIME, 1, [Define if you have clock_gettime()])],
                [AC_CHECK_FUNCS([gettimeofday], [], [AC_MSG_ERROR([gettimeofday() not available!])])], [])
 
