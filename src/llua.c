@@ -336,6 +336,7 @@ void llua_inotify_query(int wd, int mask)
 }
 #endif /* HAVE_SYS_INOTIFY_H */
 
+#ifdef X11
 void llua_draw_pre_hook(void)
 {
 	if (!lua_L || !draw_pre) return;
@@ -463,4 +464,5 @@ void llua_update_window_table(int text_start_x, int text_start_y, int text_width
 
 	lua_setglobal(lua_L, "conky_window");
 }
+#endif /* X11 */
 
