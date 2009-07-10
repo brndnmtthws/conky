@@ -206,7 +206,7 @@
 			hooks.
 		</para>
 		<para>
-			At this time, the Lua API should not be considered stabe and may
+			At this time, the Lua API should not be considered stable and may
 			change drastically from one release to another as it matures.
 		</para>
 		&lua;
