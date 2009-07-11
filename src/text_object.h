@@ -236,6 +236,9 @@ enum text_object_type {
 #ifdef X11
 	OBJ_monitor,
 	OBJ_monitor_number,
+	OBJ_desktop,
+	OBJ_desktop_number,
+	OBJ_desktop_name,
 #endif /* X11 */
 	OBJ_nameserver,
 	OBJ_nodename,

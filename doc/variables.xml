@@ -652,6 +652,33 @@
     <varlistentry>
         <term>
             <command>
+                <option>desktop</option>
+            </command>
+        </term>
+        <listitem>Number of the desktop on which conky is running
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>desktop_number</option>
+            </command>
+        </term>
+        <listitem>Number of desktops 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>desktop_name</option>
+            </command>
+        </term>
+        <listitem>Name of the desktop on which conky is running
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>disk_protect</option>
             </command>
             <option>device</option>

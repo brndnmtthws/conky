@@ -147,8 +147,15 @@ struct monitor_info {
 	int current;
 };
 
+struct desktop_info {
+        int current;
+        int number;
+        char *name;
+};
+
 struct x11_info {
 	struct monitor_info monitor;
+	struct desktop_info desktop;
 };
 #endif
 

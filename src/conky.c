@@ -2390,6 +2390,9 @@ static struct text_object *construct_text_object(const char *s,
 #ifdef X11
 	END OBJ(monitor, INFO_X11)
 	END OBJ(monitor_number, INFO_X11)
+	END OBJ(desktop, INFO_X11)
+	END OBJ(desktop_number, INFO_X11)
+	END OBJ(desktop_name, INFO_X11)
 #endif
 	END OBJ(nodename, 0)
 	END OBJ(processes, INFO_PROCS)
@@ -4992,6 +4995,17 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(monitor_number) {
 				snprintf(p, p_max_size, "%d", cur->x11.monitor.number);
+			}
+			OBJ(desktop) {
+				snprintf(p, p_max_size, "%d", cur->x11.desktop.current);
+			}
+			OBJ(desktop_number) {
+				snprintf(p, p_max_size, "%d", cur->x11.desktop.number);
+			}
+			OBJ(desktop_name) {
+			  if(cur->x11.desktop.name != NULL) {
+			        strncpy(p, cur->x11.desktop.name, p_max_size);
+			  }
 			}
 #endif /* X11 */
 
@@ -7772,6 +7786,9 @@ static void set_default_configurations(void)
 	text_alignment = BOTTOM_LEFT;
 	info.x11.monitor.number = 1;
 	info.x11.monitor.current = 0;
+	info.x11.desktop.current = 1; 
+	info.x11.desktop.number = 1;
+	info.x11.desktop.name = NULL; 
 #endif /* X11 */
 
 	for (i = 0; i < MAX_TEMPLATES; i++) {

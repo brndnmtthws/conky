@@ -582,9 +582,71 @@ void create_gc(void)
 
 void update_x11info(void)
 {
+        Window root;
+	Atom actual_type, atom;
+	int actual_format;
+	unsigned long nitems;
+	unsigned long bytes_after;
+	unsigned char *prop = NULL;
+
 	struct information *current_info = &info;
 	current_info->x11.monitor.number = XScreenCount(display);
 	current_info->x11.monitor.current = XDefaultScreen(display);
+
+	root = RootWindow(display, current_info->x11.monitor.current);
+
+	//Get current desktop number
+	if ((atom = XInternAtom(display, "_NET_CURRENT_DESKTOP", True)) != None) {
+	  if ( (XGetWindowProperty( display, root, atom,
+				    0, 1L, False, XA_CARDINAL,
+				    &actual_type, &actual_format, &nitems,
+				    &bytes_after, &prop ) == Success ) &&
+	       (actual_type == XA_CARDINAL) &&
+	       (nitems == 1L) ) {
+	    current_info->x11.desktop.current = prop[0]+1;
+	  }
+	}
+
+	//Get total number of available desktops
+	if ((atom = XInternAtom(display, "_NET_NUMBER_OF_DESKTOPS", True)) != None) {
+	  if ( (XGetWindowProperty( display, root, atom,
+				    0, 1L, False, XA_CARDINAL,
+				    &actual_type, &actual_format, &nitems,
+				    &bytes_after, &prop ) == Success ) &&
+	       (actual_type == XA_CARDINAL) &&
+	       (nitems == 1L) ) {
+	    current_info->x11.desktop.number = prop[0];
+	  }
+	}
+
+	//Get current desktop name
+	if ((atom = XInternAtom(display, "_NET_DESKTOP_NAMES", True)) != None) {
+	  if ( (XGetWindowProperty( display, root, atom,
+				    0, (~0L), False, ATOM(UTF8_STRING),
+				    &actual_type, &actual_format, &nitems,
+				    &bytes_after, &prop ) == Success ) &&
+	       (actual_type == ATOM(UTF8_STRING)) &&
+	       (nitems > 0L) ) {
+	    unsigned int i = 0, j = 0;
+	    int k = 0;
+	    while ( i < nitems ) {
+	      if ( prop[i++] == '\0' ) {
+		if ( ++k == current_info->x11.desktop.current ) {
+		  if(current_info->x11.desktop.name) {
+		    free(current_info->x11.desktop.name);
+		    current_info->x11.desktop.name = NULL;
+		  }
+		  current_info->x11.desktop.name = malloc(i-j);
+		  //desktop names can be empty but should always be not null
+		  strcpy( current_info->x11.desktop.name, (char *)&prop[j] );
+		  break;
+		}
+		j = i;
+	      }
+	    }
+	  }
+	}
+
 }
 
 /* reserve window manager space */
