@@ -76,7 +76,11 @@
 			the other libs required (depending on your configure
 			options). You should be able to see which extra packages
 			you need to install by reading errors that you get from
-			'./configure'.
+			'./configure'. You can enable/disable stuff by giving
+			options to configure, but be careful with disabling. For
+			example: with --disable-math you won't get errors but
+			logarithmic graphs will be normal graphs and gauges
+			will miss their line. 
 		</para>
 		<para>Conky has (for some time) been available in the
 			repositories of most popular distributions. Here are some

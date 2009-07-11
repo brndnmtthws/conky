@@ -6522,8 +6522,10 @@ static void draw_line(char *s)
 				{
 					int h, by = 0;
 					unsigned long last_colour = current_color;
+#ifdef MATH
 					float angle, px, py;
 					int usage;
+#endif /* MATH */
 
 					if (cur_x - text_start_x > maximum_width
 							&& maximum_width > 0) {
