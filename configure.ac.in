@@ -425,6 +425,7 @@ AC_ARG_ENABLE([lua-extras],
 AC_ARG_ENABLE([lua-cairo],
 	      AC_HELP_STRING([--enable-lua-cairo], [enable if you want Lua Cairo bindings for Conky (requires lua-extras enabled) @<:@default=no@:>@]),
 	      [want_lua_cairo="$enableval"], [want_lua_cairo=no])
+want_lua_imlib2=no
 
 AM_CONDITIONAL(BUILD_LUA, test x$want_lua = xyes)
 if test x$want_lua = xyes; then
@@ -469,10 +470,10 @@ if test x$want_lua = xyes; then
 			fi
 		fi
 	fi
-	AM_CONDITIONAL(BUILD_LUA_CAIRO, test x$want_lua_cairo = xyes)
-	AM_CONDITIONAL(BUILD_LUA_IMLIB2, test x$want_lua_imlib2 = xyes)
 	AC_DEFINE(HAVE_LUA, 1, [Define if you want Lua scripting support])
 fi
+AM_CONDITIONAL(BUILD_LUA_CAIRO, test x$want_lua_cairo = xyes)
+AM_CONDITIONAL(BUILD_LUA_IMLIB2, test x$want_lua_imlib2 = xyes)
 
 dnl
 dnl Wireless extensions
