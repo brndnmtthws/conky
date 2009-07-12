@@ -7544,7 +7544,7 @@ void clean_up(void)
 		info.cpu_usage = NULL;
 	}
 #ifdef X11
-	if (output_methods & TO_X) {
+	if (x_initialised == YES) {
 #ifdef HAVE_XDBE
 		if (use_xdbe) {
 			XdbeDeallocateBackBufferName(display, window.back_buffer);
@@ -7564,6 +7564,8 @@ void clean_up(void)
 		}
 
 		free_fonts();
+	}else{
+		free(fonts);	//in set_default_configurations a font is set but not loaded
 	}
 
 #endif /* X11 */
@@ -8072,7 +8074,7 @@ static void load_config_file(const char *f)
 				} else {
 					output_methods &= ~TO_X;
 					x_initialised = NEVER;
-					free(fonts);	//in set_default_configurations a font is set
+					free(fonts);	//in set_default_configurations a font is set but not loaded
 				}
 			}
 		}
