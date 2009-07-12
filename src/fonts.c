@@ -31,6 +31,7 @@
 int selected_font = 0;
 int font_count = -1;
 struct font_list *fonts = NULL;
+char fontloaded = 0;
 
 void set_font(void)
 {
@@ -120,7 +121,7 @@ void free_fonts(void)
 {
 	int i;
 
-	if ((output_methods & TO_X) == 0) {
+	if ((output_methods & TO_X) == 0 || fontloaded == 0) {
 		return;
 	}
 	for (i = 0; i <= font_count; i++) {
@@ -189,4 +190,5 @@ void load_fonts(void)
 			}
 		}
 	}
+	fontloaded = 1;
 }
