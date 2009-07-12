@@ -7540,6 +7540,8 @@ void clean_up(void)
 		}
 
 		free_fonts();
+	}else{
+		free(fonts);	//in set_default_configurations a font is set but not loaded
 	}
 
 #endif /* X11 */
@@ -8045,7 +8047,7 @@ static void load_config_file(const char *f)
 				} else {
 					output_methods &= ~TO_X;
 					x_initialised = NEVER;
-					free(fonts);	//in set_default_configurations a font is set
+					free(fonts);	//in set_default_configurations a font is set but not loaded
 				}
 			}
 		}
