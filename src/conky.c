@@ -6536,8 +6536,10 @@ static void draw_line(char *s)
 				{
 					int h, by = 0;
 					unsigned long last_colour = current_color;
+#ifdef MATH
 					float angle, px, py;
 					int usage;
+#endif /* MATH */
 
 					if (cur_x - text_start_x > maximum_width
 							&& maximum_width > 0) {
@@ -7388,12 +7390,12 @@ static void main_loop(void)
 				break;
 		}
 #ifdef HAVE_SYS_INOTIFY_H
-		if (inotify_fd != -1 && inotify_config_wd == -1) {
+		if (inotify_fd != -1 && inotify_config_wd == -1 && current_config != 0) {
 			inotify_config_wd = inotify_add_watch(inotify_fd,
 					current_config,
 					IN_MODIFY);
 		}
-		if (inotify_fd != -1 && inotify_config_wd != -1) {
+		if (inotify_fd != -1 && inotify_config_wd != -1 && current_config != 0) {
 			int len = 0, idx = 0;
 			fd_set descriptors;
 			struct timeval time_to_wait;
@@ -7583,6 +7585,7 @@ void clean_up(void)
 	}
 
 	free(current_config);
+	current_config = 0;
 
 #ifdef TCP_PORT_MONITOR
 	tcp_portmon_clear();

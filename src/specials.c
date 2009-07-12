@@ -254,11 +254,11 @@ static void graph_append(struct special_t *graph, double f, char showaslog)
 {
 	int i;
 
-#ifdef MATH
 	if (showaslog) {
+#ifdef MATH
 		f = log10(f + 1);
-	}
 #endif
+	}
 	
 	if (!graph->scaled && f > graph->graph_scale) {
 		f = graph->graph_scale;
