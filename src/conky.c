@@ -7520,7 +7520,7 @@ void clean_up(void)
 		info.cpu_usage = NULL;
 	}
 #ifdef X11
-	if (output_methods & TO_X) {
+	if (x_initialised == YES) {
 #ifdef HAVE_XDBE
 		if (use_xdbe) {
 			XdbeDeallocateBackBufferName(display, window.back_buffer);
