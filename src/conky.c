@@ -1082,6 +1082,16 @@ static void free_text_objects(struct text_object *root, int internal)
 			case OBJ_apcupsd_lastxfer:
 				break;
 #endif /* APCUPSD */
+#ifdef X11
+			case OBJ_desktop:
+			case OBJ_desktop_number:
+			case OBJ_desktop_name:
+			        if(info.x11.desktop.name) {
+				  free(info.x11.desktop.name);
+				  info.x11.desktop.name = NULL;
+			        }
+				break;
+#endif /* X11 */
 		}
 		free(obj);
 	}
