@@ -121,7 +121,11 @@ void free_fonts(void)
 {
 	int i;
 
-	if ((output_methods & TO_X) == 0 || fontloaded == 0) {
+	if ((output_methods & TO_X) == 0) {
+		return;
+	}
+	if(fontloaded == 0) {
+		free(fonts);
 		return;
 	}
 	for (i = 0; i <= font_count; i++) {
