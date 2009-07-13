@@ -31,8 +31,6 @@
 #include <curl/types.h>
 #include <curl/easy.h>
 
-#define MAX_LOCATIONS 3
-
 /* Possible sky conditions */
 #define NUM_CC_CODES 6
 const char *CC_CODES[NUM_CC_CODES] = {

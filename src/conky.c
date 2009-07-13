@@ -2820,7 +2820,7 @@ static struct text_object *construct_text_object(const char *s,
 			char *data_type = (char *) malloc(32 * sizeof(char));
 			char *tmp_p;
 
-			argc = sscanf(arg, "%127s %4s %31s %d", uri, icao, data_type, &interval);
+			argc = sscanf(arg, "%119s %4s %31s %d", uri, icao, data_type, &interval);
 
 			//icao MUST BE upper-case
 			tmp_p = icao;

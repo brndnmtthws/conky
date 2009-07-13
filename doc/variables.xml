@@ -3288,10 +3288,13 @@
             <option>URI icao data_type (delay_in_minutes)</option>
         </term>
         <listitem>
-            <para>Download, parse and display METAR data from the
-            NWS. icao must be a valid icao for the required
-            location (see for instance
-			https://pilotweb.nas.faa.gov/qryhtml/icao/).  For the URI, you can use any METAR source, but a good example is http://weather.noaa.gov/pub/data/observations/metar/stations/ (from the US NOAA).</para>
+            <para>Download, parse and display METAR data.</para>
+	    <para>For the URI, you can use any METAR source, but
+            a good example is
+	    http://weather.noaa.gov/pub/data/observations/metar/stations/
+            (from the US NOAA).</para>
+            icao must be a valid icao for the required location
+            (see for instance https://pilotweb.nas.faa.gov/qryhtml/icao/).
             <para>'data_type' must be one of the following:</para>
             <simplelist>
                 <member>
@@ -3336,9 +3339,8 @@
                 </member>
             </simplelist>
             <para>delay_in_minutes (optional, default 30) cannot be
-            lower than 30 min. Up to 3 stations can be
-            simultaneously queried. Note that this feature is still
-            EXPERIMENTAL.</para>
+            lower than 30 min.</para>
+	    <para>Note that this feature is still EXPERIMENTAL.</para>
         </listitem>
     </varlistentry>
     <varlistentry>
