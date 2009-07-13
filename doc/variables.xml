@@ -3289,12 +3289,13 @@
         </term>
         <listitem>
             <para>Download, parse and display METAR data.</para>
-	    <para>For the URI, you can use any METAR source, but
-            a good example is
+	    <para>For the 'URI', right now only 
 	    http://weather.noaa.gov/pub/data/observations/metar/stations/
-            (from the US NOAA).</para>
-            icao must be a valid icao for the required location
+            is supported. Other sources might be supported in the future.
+	    </para>
+            <para>'icao' must be a valid icao for the required location
             (see for instance https://pilotweb.nas.faa.gov/qryhtml/icao/).
+            </para>
             <para>'data_type' must be one of the following:</para>
             <simplelist>
                 <member>
@@ -3338,9 +3339,10 @@
                     etc.))</option>
                 </member>
             </simplelist>
-            <para>delay_in_minutes (optional, default 30) cannot be
+            <para>'delay_in_minutes' (optional, default 30) cannot be
             lower than 30 min.</para>
-	    <para>Note that this feature is still EXPERIMENTAL.</para>
+	    <para>Note that these variables are still EXPERIMENTAL and
+            can be subject to many future changes.</para>
         </listitem>
     </varlistentry>
     <varlistentry>
