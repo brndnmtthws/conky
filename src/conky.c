@@ -2812,7 +2812,7 @@ static struct text_object *construct_text_object(const char *s,
 		}
 #endif
 #ifdef WEATHER
-	END OBJ(weather, 0)
+	END OBJ_THREAD(weather, 0)
 		if (arg) {
 			int argc, interval;
 			char *icao = (char *) malloc(5 * sizeof(char));
@@ -3491,11 +3491,11 @@ static void extract_variable_text(const char *p)
 	extract_variable_text_internal(&global_root_object, p, 1);
 }
 
-int parse_conky_vars(struct text_object *root, char *txt, char *p, struct information *cur)
+void parse_conky_vars(struct text_object *root, char *txt, char *p, struct information *cur)
 {
 	extract_variable_text_internal(root, txt, 0);
 	generate_text_internal(p, max_user_text, *root, cur);
-	return 0;
+	return;
 }
 
 static inline struct mail_s *ensure_mail_thread(struct text_object *obj,
