@@ -18,7 +18,7 @@
 	<xsl:template match="/">
 		<html>
 			<head>
-				<title>Conky Variables</title>
+				<title>Conky configuration settings</title>
 			</head>
 			<body bgcolor="#FFFFFF">
 				<xsl:apply-templates />
@@ -40,7 +40,7 @@
 	<xsl:template match="member/command">
 		<strong>
 			<xsl:value-of select="." />
-		</strong>
+		</strong> - 
 	</xsl:template>
 
 	<xsl:template match="member/option">

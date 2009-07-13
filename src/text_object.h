@@ -545,13 +545,15 @@ struct text_object {
 			int act_par;
 			int delay;
 			unsigned int nrspaces;
+			timed_thread *p_timed_thread;
 		} rss;
 #endif
 #ifdef WEATHER
 		struct {
 			char *uri;
 		        char *data_type;
-		        int delay;
+		        int interval;
+				timed_thread *p_timed_thread;
 		} weather;
 #endif
 		struct {

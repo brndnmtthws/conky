@@ -1,9 +1,5 @@
 /* Conky, a system monitor, based on torsmo
  *
- * Any original torsmo code is licensed under the BSD license
- *
- * All code written since the fork of torsmo is licensed under the GPL
- *
  * Please see COPYING for details
  *
  * Copyright (c) 2007 Toni Spets
@@ -36,11 +32,6 @@
 
 #define MAX_FEEDS 16
 
-struct MemoryStruct {
-	char *memory;
-	size_t size;
-};
-
 typedef struct feed_ {
 	char *uri;
 	int last_update;
@@ -49,20 +40,6 @@ typedef struct feed_ {
 
 int num_feeds = 0;
 feed feeds[MAX_FEEDS];
-
-size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void *data)
-{
-	size_t realsize = size * nmemb;
-	struct MemoryStruct *mem = (struct MemoryStruct *) data;
-
-	mem->memory = (char *) realloc(mem->memory, mem->size + realsize + 1);
-	if (mem->memory) {
-		memcpy(&(mem->memory[mem->size]), ptr, realsize);
-		mem->size += realsize;
-		mem->memory[mem->size] = 0;
-	}
-	return realsize;
-}
 
 int rss_delay(int *wait_time, int delay)
 {

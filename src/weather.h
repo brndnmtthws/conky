@@ -31,8 +31,7 @@
 /* WEATHER data */
 typedef struct PWEATHER_ {
   char lastupd[17];
-  int tmpC;
-  int tmpF;
+  int temp;
   int dew;
   int cc;
   int bar;
@@ -43,8 +42,8 @@ typedef struct PWEATHER_ {
 } PWEATHER;
 
 /* Prototypes */
-PWEATHER *get_weather_info(char *uri, int delay);
 void init_weather_info(void);
 void free_weather_info(void);
+void process_weather_info(char *p, int p_max_size, char *uri, char *data_type, int interval);
 
 #endif /*WEATHER_H_*/

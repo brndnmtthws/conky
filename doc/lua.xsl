@@ -18,7 +18,7 @@
 	<xsl:template match="member/command">
 		<strong>
 			<xsl:value-of select="." />
-		</strong>
+		</strong> - 
 	</xsl:template>
 
 	<xsl:template match="member/option">

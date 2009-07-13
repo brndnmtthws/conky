@@ -655,7 +655,16 @@
                 <option>desktop</option>
             </command>
         </term>
-        <listitem>Number of the desktop on which conky is running
+        <listitem>Number of the desktop on which conky is running 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>desktop_name</option>
+            </command>
+        </term>
+        <listitem>Name of the desktop on which conky is running 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -665,15 +674,6 @@
             </command>
         </term>
         <listitem>Number of desktops 
-        <para /></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
-                <option>desktop_name</option>
-            </command>
-        </term>
-        <listitem>Name of the desktop on which conky is running
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1532,13 +1532,13 @@
         and right side types are: 
         <simplelist>
             <member>
-            <command>double</command>: argument consists of only
+            <command>double</command>Argument consists of only
             digits and a single dot.</member>
             <member>
-            <command>long</command>: argument consists of only
+            <command>long</command>Argument consists of only
             digits.</member>
             <member>
-            <command>string</command>: argument is enclosed in
+            <command>string</command>Argument is enclosed in
             quotation mark or the checks for double and long failed
             before.</member>
         </simplelist>Valid operands are: '&gt;', '&lt;', '&gt;=',
@@ -2360,23 +2360,29 @@
         other values as integer. 
         <simplelist>
             <member>
-            <command>threshold</command>: the thresholdtemperature
-            at which the gpu slows down</member>
+            <command>threshold</command>The thresholdtemperature at
+            which the gpu slows down</member>
             <member>
-            <command>temp</command>: gives the gpu current
+            <command>temp</command>Tives the gpu current
             temperature</member>
             <member>
-            <command>ambient</command>: gives current air
-            temperature near GPU case</member>
+                <command>ambient</command>
+                <option>Gives current air temperature near GPU
+                case</option>
+            </member>
             <member>
-            <command>gpufreq</command>: gives the current gpu
-            frequency</member>
+                <command>gpufreq</command>
+                <option>Gives the current gpu frequency</option>
+            </member>
             <member>
-            <command>memfreq</command>: gives the current mem
-            frequency</member>
+                <command>memfreq</command>
+                <option>Gives the current mem frequency</option>
+            </member>
             <member>
-            <command>imagequality</command>: which imagequality
-            should be choosen by OpenGL applications</member>
+                <command>imagequality</command>
+                <option>Which imagequality should be choosen by
+                OpenGL applications</option>
+            </member>
         </simplelist>
         <para /></listitem>
     </varlistentry>
@@ -2413,20 +2419,25 @@
         must be specified. Valid items are: 
         <simplelist>
             <member>
-            <command>status</command>: Display if battery is fully
-            charged, charging, discharging or absent (running on
-            AC)</member>
+                <command>status</command>
+                <option>Display if battery is fully charged,
+                charging, discharging or absent (running on
+                AC)</option>
+            </member>
             <member>
-            <command>percent</command>: Display charge of battery
-            in percent, if charging or discharging. Nothing will be
-            displayed, if battery is fully charged or
-            absent.</member>
+                <command>percent</command>
+                <option>Display charge of battery in percent, if
+                charging or discharging. Nothing will be displayed,
+                if battery is fully charged or absent.</option>
+            </member>
             <member>
-            <command>time</command>: Display the time remaining
-            until the battery will be fully charged or discharged
-            at current rate. Nothing is displayed, if battery is
-            absent or if it's present but fully charged and not
-            discharging.</member>
+                <command>time</command>
+                <option>Display the time remaining until the
+                battery will be fully charged or discharged at
+                current rate. Nothing is displayed, if battery is
+                absent or if it's present but fully charged and not
+                discharging.</option>
+            </member>
         </simplelist>
         <para /></listitem>
     </varlistentry>
@@ -2771,68 +2782,102 @@
             <option>port_begin port_end item (index)</option>
             <emphasis>(ip4 only at present)</emphasis>
         </term>
-        <listitem>TCP port monitor for specified local ports. Port
-        numbers must be in the range 1 to 65535. Valid items are: 
-        <simplelist>
-            <member>
-            <command>count</command>- total number of connections
-            in the range</member>
-            <member>
-            <command>rip</command>- remote ip address</member>
-            <member>
-            <command>rhost</command>- remote host name</member>
-            <member>
-            <command>rport</command>- remote port number</member>
-            <member>
-            <command>rservice</command>- remote service name from
-            /etc/services</member>
-            <member>
-            <command>lip</command>- local ip address</member>
-            <member>
-            <command>lhost</command>- local host name</member>
-            <member>
-            <command>lport</command>- local port number</member>
-            <member>
-            <command>lservice</command>- local service name from
-            /etc/services</member>
-        </simplelist>The connection index provides you with access
-        to each connection in the port monitor. The monitor will
-        return information for index values from 0 to n-1
-        connections. Values higher than n-1 are simply ignored. For
-        the "count" item, the connection index must be omitted. It
-        is required for all other items. 
-        <simplelist>
-            <member>Examples:</member>
-            <member>
-            <command>${tcp_portmon 6881 6999 count}</command>-
-            displays the number of connections in the bittorrent
-            port range</member>
-            <member>
-            <command>${tcp_portmon 22 22 rip 0}</command>- displays
-            the remote host ip of the first sshd
-            connection</member>
-            <member>
-            <command>${tcp_portmon 22 22 rip 9}</command>- displays
-            the remote host ip of the tenth sshd
-            connection</member>
-            <member>
-            <command>${tcp_portmon 1 1024 rhost 0}</command>-
-            displays the remote host name of the first connection
-            on a privileged port</member>
-            <member>
-            <command>${tcp_portmon 1 1024 rport 4}</command>-
-            displays the remote host port of the fifth connection
-            on a privileged port</member>
-            <member>
-            <command>${tcp_portmon 1 65535 lservice 14}</command>-
-            displays the local service name of the fifteenth
-            connection in the range of all ports</member>
-        </simplelist>Note that port monitor variables which share
-        the same port range actually refer to the same monitor, so
-        many references to a single port range for different items
-        and different indexes all use the same monitor internally.
-        In other words, the program avoids creating redundant
-        monitors.</listitem>
+        <listitem>
+            <para>TCP port monitor for specified local ports. Port
+            numbers must be in the range 1 to 65535. Valid items
+            are:</para>
+            <simplelist>
+                <member>
+                    <command>count</command>
+                    <option>Total number of connections in the
+                    range</option>
+                </member>
+                <member>
+                    <command>rip</command>
+                    <option>Remote ip address</option>
+                </member>
+                <member>
+                    <command>rhost</command>
+                    <option>Remote host name</option>
+                </member>
+                <member>
+                    <command>rport</command>
+                    <option>Remote port number</option>
+                </member>
+                <member>
+                    <command>rservice</command>
+                    <option>Remote service name from
+                    /etc/services</option>
+                </member>
+                <member>
+                    <command>lip</command>
+                    <option>Local ip address</option>
+                </member>
+                <member>
+                    <command>lhost</command>
+                    <option>Local host name</option>
+                </member>
+                <member>
+                    <command>lport</command>
+                    <option>Local port number</option>
+                </member>
+                <member>
+                    <command>lservice</command>
+                    <option>Local service name from
+                    /etc/services</option>
+                </member>
+            </simplelist>
+            <para>The connection index provides you with access to
+            each connection in the port monitor. The monitor will
+            return information for index values from 0 to n-1
+            connections. Values higher than n-1 are simply ignored.
+            For the "count" item, the connection index must be
+            omitted. It is required for all other items.</para>
+            <para>Examples:</para>
+            <simplelist>
+                <member>
+                    <command>${tcp_portmon 6881 6999
+                    count}</command>
+                    <option>Displays the number of connections in
+                    the bittorrent port range</option>
+                </member>
+                <member>
+                    <command>${tcp_portmon 22 22 rip 0}</command>
+                    <option>Displays the remote host ip of the
+                    first sshd connection</option>
+                </member>
+                <member>
+                    <command>${tcp_portmon 22 22 rip 9}</command>
+                    <option>Displays the remote host ip of the
+                    tenth sshd connection</option>
+                </member>
+                <member>
+                    <command>${tcp_portmon 1 1024 rhost
+                    0}</command>
+                    <option>Displays the remote host name of the
+                    first connection on a privileged port</option>
+                </member>
+                <member>
+                    <command>${tcp_portmon 1 1024 rport
+                    4}</command>
+                    <option>Displays the remote host port of the
+                    fifth connection on a privileged port</option>
+                </member>
+                <member>
+                    <command>${tcp_portmon 1 65535 lservice
+                    14}</command>
+                    <option>Displays the local service name of the
+                    fifteenth connection in the range of all
+                    ports</option>
+                </member>
+            </simplelist>
+            <para>Note that port monitor variables which share the
+            same port range actually refer to the same monitor, so
+            many references to a single port range for different
+            items and different indexes all use the same monitor
+            internally. In other words, the program avoids creating
+            redundant monitors.</para>
+        </listitem>
     </varlistentry>
     <varlistentry>
         <term>
@@ -2843,59 +2888,63 @@
             <option>(arg2)</option>
             <option>(arg3 ...)</option>
         </term>
-        <listitem>Evaluate the content of the templateN
-        configuration variable (where N is a value between 0 and 9,
-        inclusively), applying substitutions as described in the
-        documentation of the corresponding configuration variable.
-        The number of arguments is optional, but must match the
-        highest referred index in the template. You can use the
-        same special sequences in each argument as the ones valid
-        for a template definition, e.g. to allow an argument to
-        contain a whitespace. Also simple nesting of templates is
-        possible this way. 
-        <para /></listitem>
-        <listitem>Here are some examples of template definitions: 
-        <simplelist>
-            <member>template0 $\1\2</member>
-            <member>template1 \1: ${fs_used \2} / ${fs_size
-            \2}</member>
-            <member>template2 \1 \2</member>
-        </simplelist>The following list shows sample usage of the
-        templates defined above, with the equivalent syntax when
-        not using any template at all: 
-        <table>
-            <tgroup cols="2">
-                <thead>
-                    <row rowsep="1">
-                        <entry>using template</entry>
-                        <entry>same without template</entry>
-                    </row>
-                </thead>
-                <tbody>
-                    <row>
-                        <entry>${template0 node name}</entry>
-                        <entry>$nodename</entry>
-                    </row>
-                    <row>
-                        <entry>${template1 root /}</entry>
-                        <entry>root: ${fs_free /} / ${fs_size
-                        /}</entry>
-                    </row>
-                    <row>
-                        <entry>
-                            <programlisting>${template1
-                            ${template2\ disk\ root}
-                            /}</programlisting>
-                        </entry>
-                        <entry>
-                            <programlisting>disk root: ${fs_free /}
-                            / ${fs_size /}</programlisting>
-                        </entry>
-                    </row>
-                </tbody>
-            </tgroup>
-        </table>
-        <para /></listitem>
+        <listitem>
+            <para>Evaluate the content of the templateN
+            configuration variable (where N is a value between 0
+            and 9, inclusively), applying substitutions as
+            described in the documentation of the corresponding
+            configuration variable. The number of arguments is
+            optional, but must match the highest referred index in
+            the template. You can use the same special sequences in
+            each argument as the ones valid for a template
+            definition, e.g. to allow an argument to contain a
+            whitespace. Also simple nesting of templates is
+            possible this way.</para>
+            <para>Here are some examples of template
+            definitions:</para>
+            <simplelist>
+                <member>template0 $\1\2</member>
+                <member>template1 \1: ${fs_used \2} / ${fs_size
+                \2}</member>
+                <member>template2 \1 \2</member>
+            </simplelist>
+            <para>The following list shows sample usage of the
+            templates defined above, with the equivalent syntax
+            when not using any template at all:</para>
+            <table>
+                <tgroup cols="2">
+                    <thead>
+                        <row rowsep="1">
+                            <entry>using template</entry>
+                            <entry>same without template</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>${template0 node name}</entry>
+                            <entry>$nodename</entry>
+                        </row>
+                        <row>
+                            <entry>${template1 root /}</entry>
+                            <entry>root: ${fs_free /} / ${fs_size
+                            /}</entry>
+                        </row>
+                        <row>
+                            <entry>
+                                <programlisting>${template1
+                                ${template2\ disk\ root}
+                                /}</programlisting>
+                            </entry>
+                            <entry>
+                                <programlisting>disk root:
+                                ${fs_free /} / ${fs_size
+                                /}</programlisting>
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </listitem>
     </varlistentry>
     <varlistentry>
         <term>
@@ -3236,26 +3285,61 @@
             <command>
                 <option>weather</option>
             </command>
-            <option>icao data_type (delay_in_minutes)</option>
+            <option>URI icao data_type (delay_in_minutes)</option>
         </term>
-        <listitem>Download, parse and display METAR data from the
-        NWS. icao must be a valid icao for the required location
-        (see for instance
-        https://pilotweb.nas.faa.gov/qryhtml/icao/). data_type must
-        be one of the following: last_update (display the date
-        (yyyy/mm/dd) and time (UTC) of the last update),
-        temperature_C (display air temperature in degree Celsius),
-        temperature_F (display air temperature in degree
-        Fahrenheit), cloud_cover (display the highest cloud cover
-        status), pressure (display air pressure in millibar),
-        wind_speed (display wind speed in km/hour), wind_dir
-        (display wind direction), wind_dir_DEG (display compass
-        wind direction), humidity (display relative humidity in %),
-        weather (display any relevant weather event (rain, snow,
-        etc.)). delay_in_minutes (optional, default 30) cannot be
-        lower than 30 min. Up to 3 stations can be simultaneously
-        queried. Note that this feature is still EXPERIMENTAL. 
-        <para /></listitem>
+        <listitem>
+            <para>Download, parse and display METAR data from the
+            NWS. icao must be a valid icao for the required
+            location (see for instance
+			https://pilotweb.nas.faa.gov/qryhtml/icao/).  For the URI, you can use any METAR source, but a good example is http://weather.noaa.gov/pub/data/observations/metar/stations/ (from the US NOAA).</para>
+            <para>'data_type' must be one of the following:</para>
+            <simplelist>
+                <member>
+                    <command>last_update</command>
+                    <option>The date (yyyy/mm/dd) and time (UTC) of
+                    the last update</option>
+                </member>
+                <member>
+                    <command>temperature</command>
+                    <option>Air temperature (you can use the
+                    'temperature_unit' config setting to change
+                    units)</option>
+                </member>
+                <member>
+                    <command>cloud_cover</command>
+                    <option>The highest cloud cover status</option>
+                </member>
+                <member>
+                    <command>pressurer</command>
+                    <option>Air pressure in millibar</option>
+                </member>
+                <member>
+                    <command>wind_speed</command>
+                    <option>Wind speed in km/h</option>
+                </member>
+                <member>
+                    <command>wind_dir</command>
+                    <option>Wind direction</option>
+                </member>
+                <member>
+                    <command>wind_dir_DEG</command>
+                    <option>Compass wind direction</option>
+                </member>
+                <member>
+                    <command>humidity</command>
+                    <option>Relative humidity in %</option>
+                </member>
+                <member>
+                    <command>weather</command>
+                    <option>Any relevant weather event (rain, snow,
+                    etc.))</option>
+                </member>
+            </simplelist>
+            <para>delay_in_minutes (optional, default 30) cannot be
+            lower than 30 min. Up to 3 stations can be
+            simultaneously queried. Note that this feature is still
+            EXPERIMENTAL.</para>
+        </listitem>
     </varlistentry>
     <varlistentry>
         <term>

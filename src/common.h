@@ -89,4 +89,14 @@ int get_battery_perct(const char *bat);
 int get_battery_perct_bar(const char *bat);
 void get_battery_short_status(char *buf, unsigned int n, const char *bat);
 
+/*
+ * used by RSS and Weather
+ */
+struct MemoryStruct {
+	char *memory;
+	size_t size;
+};
+
+size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void *data);
+
 #endif /* _COMMON_H */
