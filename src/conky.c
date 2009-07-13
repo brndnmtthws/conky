@@ -2841,6 +2841,7 @@ static struct text_object *construct_text_object(const char *s,
 				interval = 30;
 			}
 			obj->data.weather.interval = interval * 60; // convert to seconds
+			free(icao);
 		} else {
 			CRIT_ERR("weather needs arguments: <uri> <icao> <data_type> [interval in minutes]");
 		}
