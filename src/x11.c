@@ -626,6 +626,7 @@ void update_x11info(void)
 
 }
 
+#ifdef OWN_WINDOW
 /* reserve window manager space */
 void set_struts(int sidenum)
 {
@@ -698,3 +699,4 @@ void set_struts(int sidenum)
 		}
 	}
 }
+#endif /* OWN_WINDOW */

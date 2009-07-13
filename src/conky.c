@@ -8012,9 +8012,12 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("alignment") {
+#ifdef OWN_WINDOW
 			if (window.type == TYPE_DOCK)
 				;
-			else if (value) {
+			else
+#endif /*OWN_WINDOW */
+			if (value) {
 				int a = string_to_alignment(value);
 
 				if (a <= 0) {
