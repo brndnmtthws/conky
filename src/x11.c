@@ -85,34 +85,11 @@ void init_X11(const char *disp)
 
 static void update_workarea(void)
 {
-	Window root = RootWindow(display, screen);
-	unsigned long nitems, bytes;
-	unsigned char *buf = NULL;
-	Atom type;
-	int format;
-
 	/* default work area is display */
 	workarea[0] = 0;
 	workarea[1] = 0;
 	workarea[2] = display_width;
 	workarea[3] = display_height;
-
-	/* get current desktop */
-	if (XGetWindowProperty(display, root, ATOM(_NET_CURRENT_DESKTOP), 0, 1,
-			False, XA_CARDINAL, &type, &format, &nitems, &bytes, &buf)
-			== Success && type == XA_CARDINAL && nitems > 0) {
-
-		// Currently unused
-		/* long desktop = *(long *) buf; */
-
-		XFree(buf);
-		buf = 0;
-	}
-
-	if (buf) {
-		XFree(buf);
-		buf = 0;
-	}
 }
 
 /* Find root window and desktop window.
