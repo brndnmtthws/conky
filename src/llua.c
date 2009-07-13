@@ -426,13 +426,13 @@ void llua_set_userdata(const char *key, const char *type, void *value)
 
 void llua_setup_window_table(int text_start_x, int text_start_y, int text_width, int text_height)
 {
+	if (!lua_L) return;
 	lua_newtable(lua_L);
 	
-/* TODO fix this: (segfaults)
 	llua_set_userdata("drawable", "Drawable", (void*)&window.drawable);
 	llua_set_userdata("visual", "Visual", window.visual);
 	llua_set_userdata("display", "Display", display);
-*/
+
 
 	llua_set_long("width", window.width);
 	llua_set_long("height", window.height);
@@ -450,7 +450,8 @@ void llua_setup_window_table(int text_start_x, int text_start_y, int text_width,
 
 void llua_update_window_table(int text_start_x, int text_start_y, int text_width, int text_height)
 {
-	llua_init();	//needed because sometimes lua isn't initialised resulting in segfaults
+	if (!lua_L) return;
+
 	lua_getglobal(lua_L, "conky_window");
 	if (lua_isnil(lua_L, -1)) {
 		/* window table isn't populated yet */
