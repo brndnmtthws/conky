@@ -1090,6 +1090,10 @@ static void free_text_objects(struct text_object *root, int internal)
 				  free(info.x11.desktop.name);
 				  info.x11.desktop.name = NULL;
 			        }
+			        if(info.x11.desktop.all_names) {
+				  free(info.x11.desktop.all_names);
+				  info.x11.desktop.all_names = NULL;
+			        }
 				break;
 #endif /* X11 */
 		}
@@ -7111,6 +7115,14 @@ static void main_loop(void)
 						break;
 					}
 
+					case PropertyNotify:
+					{
+					        if ( ev.xproperty.state == PropertyNewValue ) {
+						        get_x11_desktop_info( ev.xproperty.display, ev.xproperty.atom );
+						}
+						break;
+					}
+
 #ifdef OWN_WINDOW
 					case ReparentNotify:
 						/* set background to ParentRelative for all parents */
@@ -7713,6 +7725,8 @@ static void set_default_configurations(void)
 	info.x11.monitor.current = 0;
 	info.x11.desktop.current = 1; 
 	info.x11.desktop.number = 1;
+	info.x11.desktop.nitems = 0;
+	info.x11.desktop.all_names = NULL; 
 	info.x11.desktop.name = NULL; 
 #endif /* X11 */
 

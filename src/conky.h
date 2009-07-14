@@ -150,6 +150,8 @@ struct monitor_info {
 struct desktop_info {
         int current;
         int number;
+        unsigned int nitems;
+        char *all_names;
         char *name;
 };
 

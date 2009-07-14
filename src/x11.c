@@ -80,6 +80,8 @@ void init_X11(const char *disp)
 	display_width = DisplayWidth(display, screen);
 	display_height = DisplayHeight(display, screen);
 
+	get_x11_desktop_info(display, 0);
+
 	update_workarea();
 }
 
@@ -478,9 +480,9 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 	} */
 #endif
 
-	XSelectInput(display, window.window, ExposureMask
+	XSelectInput(display, window.window, ExposureMask | PropertyChangeMask
 #ifdef OWN_WINDOW
-		| (own_window ? (StructureNotifyMask | PropertyChangeMask |
+		| (own_window ? (StructureNotifyMask |
 		ButtonPressMask | ButtonReleaseMask) : 0)
 #endif
 		);
@@ -557,73 +559,141 @@ void create_gc(void)
 		GCFunction | GCGraphicsExposures, &values);
 }
 
-void update_x11info(void)
+//Get current desktop number
+static inline void get_x11_desktop_current(Display *display, Window root, Atom atom)
 {
-        Window root;
-	Atom actual_type, atom;
+        Atom actual_type;
 	int actual_format;
 	unsigned long nitems;
 	unsigned long bytes_after;
 	unsigned char *prop = NULL;
-
 	struct information *current_info = &info;
-	current_info->x11.monitor.number = XScreenCount(display);
-	current_info->x11.monitor.current = XDefaultScreen(display);
+
+	if ( (XGetWindowProperty( display, root, atom,
+				  0, 1L, False, XA_CARDINAL,
+				  &actual_type, &actual_format, &nitems,
+				  &bytes_after, &prop ) == Success ) &&
+	     (actual_type == XA_CARDINAL) &&
+	     (nitems == 1L) && (actual_format == 32) ) {
+	  current_info->x11.desktop.current = prop[0]+1;
+	}
+	if(prop) {
+	  XFree(prop);
+	}
+}
+
+//Get total number of available desktops
+static inline void get_x11_desktop_number(Display *display, Window root, Atom atom)
+{
+        Atom actual_type;
+	int actual_format;
+	unsigned long nitems;
+	unsigned long bytes_after;
+	unsigned char *prop = NULL;
+	struct information *current_info = &info;
+
+	if ( (XGetWindowProperty( display, root, atom,
+				  0, 1L, False, XA_CARDINAL,
+				  &actual_type, &actual_format, &nitems,
+				  &bytes_after, &prop ) == Success ) &&
+	     (actual_type == XA_CARDINAL) &&
+	     (nitems == 1L) && (actual_format == 32) ) {
+	  current_info->x11.desktop.number = prop[0];
+	}
+	if(prop) {
+	  XFree(prop);
+	}
+}
+
+//Get all desktop names
+static inline void get_x11_desktop_names(Display *display, Window root, Atom atom)
+{
+        Atom actual_type;
+	int actual_format;
+	unsigned long nitems;
+	unsigned long bytes_after;
+	unsigned char *prop = NULL;
+	struct information *current_info = &info;
+
+	if ( (XGetWindowProperty( display, root, atom,
+				  0, (~0L), False, ATOM(UTF8_STRING),
+				  &actual_type, &actual_format, &nitems,
+				  &bytes_after, &prop ) == Success ) &&
+	     (actual_type == ATOM(UTF8_STRING)) &&
+	     (nitems > 0L) && (actual_format == 8) ) {
+
+	  if(current_info->x11.desktop.all_names) {
+	    free(current_info->x11.desktop.all_names);
+	    current_info->x11.desktop.all_names = NULL;
+	  }
+	  current_info->x11.desktop.all_names = malloc(nitems*sizeof(char));
+	  memcpy(current_info->x11.desktop.all_names, prop, nitems);
+	  current_info->x11.desktop.nitems = nitems;
+	}
+	if(prop) {
+	  XFree(prop);
+	}
+}
+
+//Get current desktop name
+static inline void get_x11_desktop_current_name(char *names)
+{
+	struct information *current_info = &info;
+	unsigned int i = 0, j = 0;
+	int k = 0;
+
+	while ( i < current_info->x11.desktop.nitems ) {
+	  if ( names[i++] == '\0' ) {
+	    if ( ++k == current_info->x11.desktop.current ) {
+	      if (current_info->x11.desktop.name) {
+		free(current_info->x11.desktop.name);
+		current_info->x11.desktop.name = NULL;
+	      }
+	      current_info->x11.desktop.name = malloc((i-j)*sizeof(char));
+	      //desktop names can be empty but should always be not null
+	      strcpy( current_info->x11.desktop.name, (char *)&names[j] );
+	      break;
+	    }
+	    j = i;
+	  }
+	}
+}
+
+void get_x11_desktop_info(Display *display, Atom atom)
+{
+        Window root;
+	static Atom atom_current, atom_number, atom_names;
+	struct information *current_info = &info;
 
 	root = RootWindow(display, current_info->x11.monitor.current);
 
-	//Get current desktop number
-	if ((atom = XInternAtom(display, "_NET_CURRENT_DESKTOP", True)) != None) {
-	  if ( (XGetWindowProperty( display, root, atom,
-				    0, 1L, False, XA_CARDINAL,
-				    &actual_type, &actual_format, &nitems,
-				    &bytes_after, &prop ) == Success ) &&
-	       (actual_type == XA_CARDINAL) &&
-	       (nitems == 1L) ) {
-	    current_info->x11.desktop.current = prop[0]+1;
+	//Check if we initialise else retrieve changed property
+	if (atom == 0) {
+	  atom_current = XInternAtom(display, "_NET_CURRENT_DESKTOP", True);
+	  atom_number  = XInternAtom(display, "_NET_NUMBER_OF_DESKTOPS", True);
+	  atom_names   = XInternAtom(display, "_NET_DESKTOP_NAMES", True);
+	  get_x11_desktop_current(display, root, atom_current);
+	  get_x11_desktop_number(display, root, atom_number);
+	  get_x11_desktop_names(display, root, atom_names);
+	  get_x11_desktop_current_name(current_info->x11.desktop.all_names);
+	} else {
+	  if (atom == atom_current) {
+	    get_x11_desktop_current(display, root, atom_current);
+	    get_x11_desktop_current_name(current_info->x11.desktop.all_names);
+	  } else if (atom == atom_number) {
+	    get_x11_desktop_number(display, root, atom_number);
+	  } else if (atom == atom_names) {
+	    get_x11_desktop_names(display, root, atom_names);
+	    get_x11_desktop_current_name(current_info->x11.desktop.all_names);
 	  }
 	}
+}
 
-	//Get total number of available desktops
-	if ((atom = XInternAtom(display, "_NET_NUMBER_OF_DESKTOPS", True)) != None) {
-	  if ( (XGetWindowProperty( display, root, atom,
-				    0, 1L, False, XA_CARDINAL,
-				    &actual_type, &actual_format, &nitems,
-				    &bytes_after, &prop ) == Success ) &&
-	       (actual_type == XA_CARDINAL) &&
-	       (nitems == 1L) ) {
-	    current_info->x11.desktop.number = prop[0];
-	  }
-	}
-
-	//Get current desktop name
-	if ((atom = XInternAtom(display, "_NET_DESKTOP_NAMES", True)) != None) {
-	  if ( (XGetWindowProperty( display, root, atom,
-				    0, (~0L), False, ATOM(UTF8_STRING),
-				    &actual_type, &actual_format, &nitems,
-				    &bytes_after, &prop ) == Success ) &&
-	       (actual_type == ATOM(UTF8_STRING)) &&
-	       (nitems > 0L) ) {
-	    unsigned int i = 0, j = 0;
-	    int k = 0;
-	    while ( i < nitems ) {
-	      if ( prop[i++] == '\0' ) {
-		if ( ++k == current_info->x11.desktop.current ) {
-		  if(current_info->x11.desktop.name) {
-		    free(current_info->x11.desktop.name);
-		    current_info->x11.desktop.name = NULL;
-		  }
-		  current_info->x11.desktop.name = malloc(i-j);
-		  //desktop names can be empty but should always be not null
-		  strcpy( current_info->x11.desktop.name, (char *)&prop[j] );
-		  break;
-		}
-		j = i;
-	      }
-	    }
-	  }
-	}
-
+void update_x11info(void)
+{
+	struct information *current_info = &info;
+	current_info->x11.monitor.number = XScreenCount(display);
+	current_info->x11.monitor.current = XDefaultScreen(display);
 }
 
 #ifdef OWN_WINDOW
