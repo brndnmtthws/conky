@@ -7283,7 +7283,6 @@ static void main_loop(void)
 			case SIGTERM:
 				ERR("received SIGINT or SIGTERM to terminate. bye!");
 				terminate = 1;
-				clean_up();
 #ifdef X11
 				if (output_methods & TO_X) {
 					XDestroyRegion(x11_stuff.region);
@@ -7365,6 +7364,7 @@ static void main_loop(void)
 
 		g_signal_pending = 0;
 	}
+	clean_up();
 
 #ifdef HAVE_SYS_INOTIFY_H
 	if (inotify_fd != -1) {
