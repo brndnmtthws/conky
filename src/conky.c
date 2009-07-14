@@ -7486,6 +7486,14 @@ void clean_up(void)
 		destroy_window();
 		XClearWindow(display, RootWindow(display, screen));
 		XCloseDisplay(display);
+		if(info.x11.desktop.all_names) {
+			free(info.x11.desktop.all_names);
+			info.x11.desktop.all_names = NULL;
+		}
+		if (info.x11.desktop.name) {
+			free(info.x11.desktop.name);
+			info.x11.desktop.name = NULL;
+		}
 	}else{
 		free(fonts);	//in set_default_configurations a font is set but not loaded
 	}
