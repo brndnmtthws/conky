@@ -194,7 +194,6 @@ void set_transparent_background(Window win)
 
 void destroy_window(void)
 {
-	XDestroyWindow(display, window.window);
 	XFreeGC(display, window.gc);
 	memset(&window, 0, sizeof(struct conky_window));
 }
@@ -560,7 +559,7 @@ void create_gc(void)
 }
 
 //Get current desktop number
-static inline void get_x11_desktop_current(Display *display, Window root, Atom atom)
+static inline void get_x11_desktop_current(Display *current_display, Window root, Atom atom)
 {
         Atom actual_type;
 	int actual_format;
@@ -569,7 +568,7 @@ static inline void get_x11_desktop_current(Display *display, Window root, Atom a
 	unsigned char *prop = NULL;
 	struct information *current_info = &info;
 
-	if ( (XGetWindowProperty( display, root, atom,
+	if ( (XGetWindowProperty( current_display, root, atom,
 				  0, 1L, False, XA_CARDINAL,
 				  &actual_type, &actual_format, &nitems,
 				  &bytes_after, &prop ) == Success ) &&
@@ -583,7 +582,7 @@ static inline void get_x11_desktop_current(Display *display, Window root, Atom a
 }
 
 //Get total number of available desktops
-static inline void get_x11_desktop_number(Display *display, Window root, Atom atom)
+static inline void get_x11_desktop_number(Display *current_display, Window root, Atom atom)
 {
         Atom actual_type;
 	int actual_format;
@@ -592,7 +591,7 @@ static inline void get_x11_desktop_number(Display *display, Window root, Atom at
 	unsigned char *prop = NULL;
 	struct information *current_info = &info;
 
-	if ( (XGetWindowProperty( display, root, atom,
+	if ( (XGetWindowProperty( current_display, root, atom,
 				  0, 1L, False, XA_CARDINAL,
 				  &actual_type, &actual_format, &nitems,
 				  &bytes_after, &prop ) == Success ) &&
@@ -606,7 +605,7 @@ static inline void get_x11_desktop_number(Display *display, Window root, Atom at
 }
 
 //Get all desktop names
-static inline void get_x11_desktop_names(Display *display, Window root, Atom atom)
+static inline void get_x11_desktop_names(Display *current_display, Window root, Atom atom)
 {
         Atom actual_type;
 	int actual_format;
@@ -615,7 +614,7 @@ static inline void get_x11_desktop_names(Display *display, Window root, Atom ato
 	unsigned char *prop = NULL;
 	struct information *current_info = &info;
 
-	if ( (XGetWindowProperty( display, root, atom,
+	if ( (XGetWindowProperty( current_display, root, atom,
 				  0, (~0L), False, ATOM(UTF8_STRING),
 				  &actual_type, &actual_format, &nitems,
 				  &bytes_after, &prop ) == Success ) &&
@@ -659,22 +658,22 @@ static inline void get_x11_desktop_current_name(char *names)
 	}
 }
 
-void get_x11_desktop_info(Display *display, Atom atom)
+void get_x11_desktop_info(Display *current_display, Atom atom)
 {
         Window root;
 	static Atom atom_current, atom_number, atom_names;
 	struct information *current_info = &info;
 
-	root = RootWindow(display, current_info->x11.monitor.current);
+	root = RootWindow(current_display, current_info->x11.monitor.current);
 
 	//Check if we initialise else retrieve changed property
 	if (atom == 0) {
-	  atom_current = XInternAtom(display, "_NET_CURRENT_DESKTOP", True);
-	  atom_number  = XInternAtom(display, "_NET_NUMBER_OF_DESKTOPS", True);
-	  atom_names   = XInternAtom(display, "_NET_DESKTOP_NAMES", True);
-	  get_x11_desktop_current(display, root, atom_current);
-	  get_x11_desktop_number(display, root, atom_number);
-	  get_x11_desktop_names(display, root, atom_names);
+	  atom_current = XInternAtom(current_display, "_NET_CURRENT_DESKTOP", True);
+	  atom_number  = XInternAtom(current_display, "_NET_NUMBER_OF_DESKTOPS", True);
+	  atom_names   = XInternAtom(current_display, "_NET_DESKTOP_NAMES", True);
+	  get_x11_desktop_current(current_display, root, atom_current);
+	  get_x11_desktop_number(current_display, root, atom_number);
+	  get_x11_desktop_names(current_display, root, atom_names);
 	  get_x11_desktop_current_name(current_info->x11.desktop.all_names);
 
 	  //Set the PropertyChangeMask on the root window, if not set
@@ -688,12 +687,12 @@ void get_x11_desktop_info(Display *display, Atom atom)
 	  }
 	} else {
 	  if (atom == atom_current) {
-	    get_x11_desktop_current(display, root, atom_current);
+	    get_x11_desktop_current(current_display, root, atom_current);
 	    get_x11_desktop_current_name(current_info->x11.desktop.all_names);
 	  } else if (atom == atom_number) {
-	    get_x11_desktop_number(display, root, atom_number);
+	    get_x11_desktop_number(current_display, root, atom_number);
 	  } else if (atom == atom_names) {
-	    get_x11_desktop_names(display, root, atom_names);
+	    get_x11_desktop_names(current_display, root, atom_names);
 	    get_x11_desktop_current_name(current_info->x11.desktop.all_names);
 	  }
 	}

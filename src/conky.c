@@ -7478,14 +7478,22 @@ void clean_up(void)
 	}
 #ifdef X11
 	if (x_initialised == YES) {
+		destroy_window();
 		free_fonts();
 		if(x11_stuff.region) {
 			XDestroyRegion(x11_stuff.region);
 			x11_stuff.region = NULL;
 		}
-		destroy_window();
 		XClearWindow(display, RootWindow(display, screen));
 		XCloseDisplay(display);
+		if(info.x11.desktop.all_names) {
+			free(info.x11.desktop.all_names);
+			info.x11.desktop.all_names = NULL;
+		}
+		if (info.x11.desktop.name) {
+			free(info.x11.desktop.name);
+			info.x11.desktop.name = NULL;
+		}
 	}else{
 		free(fonts);	//in set_default_configurations a font is set but not loaded
 	}
