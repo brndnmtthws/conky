@@ -663,6 +663,7 @@ void get_x11_desktop_info(Display *current_display, Atom atom)
         Window root;
 	static Atom atom_current, atom_number, atom_names;
 	struct information *current_info = &info;
+	XWindowAttributes window_attributes;
 
 	root = RootWindow(current_display, current_info->x11.monitor.current);
 
@@ -677,7 +678,6 @@ void get_x11_desktop_info(Display *current_display, Atom atom)
 	  get_x11_desktop_current_name(current_info->x11.desktop.all_names);
 
 	  //Set the PropertyChangeMask on the root window, if not set
-	  XWindowAttributes window_attributes;
 	  XGetWindowAttributes(display, root, &window_attributes);
 	  if (!(window_attributes.your_event_mask & PropertyChangeMask)) {
 	    XSetWindowAttributes attributes;
