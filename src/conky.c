@@ -7478,12 +7478,12 @@ void clean_up(void)
 	}
 #ifdef X11
 	if (x_initialised == YES) {
+		destroy_window();
 		free_fonts();
 		if(x11_stuff.region) {
 			XDestroyRegion(x11_stuff.region);
 			x11_stuff.region = NULL;
 		}
-		destroy_window();
 		XClearWindow(display, RootWindow(display, screen));
 		XCloseDisplay(display);
 		if(info.x11.desktop.all_names) {
