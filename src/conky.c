@@ -7373,10 +7373,6 @@ static void main_loop(void)
 		inotify_fd = inotify_config_wd = 0;
 	}
 #endif /* HAVE_SYS_INOTIFY_H */
-
-#ifdef X11
-	X11_destroy_window();
-#endif /* X11 */
 }
 
 static void load_config_file(const char *);
@@ -7470,25 +7466,14 @@ void clean_up(void)
 	}
 #ifdef X11
 	if (x_initialised == YES) {
-#ifdef HAVE_XDBE
-		if (use_xdbe) {
-			XdbeDeallocateBackBufferName(display, window.back_buffer);
-		}
-#endif
-#ifdef OWN_WINDOW
-		if (own_window) {
-			XDestroyWindow(display, window.window);
-			XClearWindow(display, RootWindow(display, screen));
-			XFlush(display);
-		} else
-#endif
-		{
-			XClearWindow(display, RootWindow(display, screen));
-			clear_text(1);
-			XFlush(display);
-		}
-
 		free_fonts();
+		if(x11_stuff.region) {
+			XDestroyRegion(x11_stuff.region);
+			x11_stuff.region = NULL;
+		}
+		destroy_window();
+		XClearWindow(display, RootWindow(display, screen));
+		XCloseDisplay(display);
 	}else{
 		free(fonts);	//in set_default_configurations a font is set but not loaded
 	}
