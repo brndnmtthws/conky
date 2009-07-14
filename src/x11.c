@@ -676,6 +676,16 @@ void get_x11_desktop_info(Display *display, Atom atom)
 	  get_x11_desktop_number(display, root, atom_number);
 	  get_x11_desktop_names(display, root, atom_names);
 	  get_x11_desktop_current_name(current_info->x11.desktop.all_names);
+
+	  //Set the PropertyChangeMask on the root window, if not set
+	  XWindowAttributes window_attributes;
+	  XGetWindowAttributes(display, root, &window_attributes);
+	  if (!(window_attributes.your_event_mask & PropertyChangeMask)) {
+	    XSetWindowAttributes attributes;
+	    attributes.event_mask = window_attributes.your_event_mask | PropertyChangeMask;
+	    XChangeWindowAttributes(display, root, CWEventMask, &attributes);
+	    XGetWindowAttributes(display, root, &window_attributes);
+	  }
 	} else {
 	  if (atom == atom_current) {
 	    get_x11_desktop_current(display, root, atom_current);
