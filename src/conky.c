@@ -8006,7 +8006,6 @@ static void load_config_file(const char *f)
 				} else {
 					output_methods &= ~TO_X;
 					x_initialised = NEVER;
-					free(fonts);	//in set_default_configurations a font is set but not loaded
 				}
 			}
 		}
