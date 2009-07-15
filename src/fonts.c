@@ -52,6 +52,7 @@ void setup_fonts(void)
 	if (use_xft) {
 		if (window.xftdraw) {
 			XftDrawDestroy(window.xftdraw);
+			window.xftdraw = 0;
 		}
 		window.xftdraw = XftDrawCreate(display, window.drawable,
 				DefaultVisual(display, screen), DefaultColormap(display, screen));

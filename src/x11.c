@@ -194,7 +194,12 @@ void set_transparent_background(Window win)
 
 void destroy_window(void)
 {
-	XFreeGC(display, window.gc);
+	if(window.xftdraw) {
+		XftDrawDestroy(window.xftdraw);
+	}
+	if(window.gc) {
+		XFreeGC(display, window.gc);
+	}
 	memset(&window, 0, sizeof(struct conky_window));
 }
 
