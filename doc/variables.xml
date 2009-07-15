@@ -656,6 +656,7 @@
             </command>
         </term>
         <listitem>Number of the desktop on which conky is running 
+        or the message "Not running in X" if this is the case.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -665,6 +666,7 @@
             </command>
         </term>
         <listitem>Name of the desktop on which conky is running 
+        or the message "Not running in X" if this is the case.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -673,7 +675,8 @@
                 <option>desktop_number</option>
             </command>
         </term>
-        <listitem>Number of desktops 
+        <listitem>Number of desktops or the message "Not running
+        in X" if this is the case.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2149,6 +2152,7 @@
             </command>
         </term>
         <listitem>Number of the monitor on which conky is running 
+        or the message "Not running in X" if this is the case.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2157,7 +2161,8 @@
                 <option>monitor_number</option>
             </command>
         </term>
-        <listitem>Number of monitors 
+        <listitem>Number of monitors or the message "Not running
+        in X" if this is the case.
         <para /></listitem>
     </varlistentry>
     <varlistentry>

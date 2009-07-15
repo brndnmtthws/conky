@@ -4923,22 +4923,41 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 #ifdef X11
+#define NOT_IN_X "Not running in X"
 			OBJ(monitor) {
-				snprintf(p, p_max_size, "%d", cur->x11.monitor.current);
+				if(x_initialised != YES) {
+					strncpy(p, NOT_IN_X, p_max_size);
+				}else{
+					snprintf(p, p_max_size, "%d", cur->x11.monitor.current);
+				}
 			}
 			OBJ(monitor_number) {
-				snprintf(p, p_max_size, "%d", cur->x11.monitor.number);
+				if(x_initialised != YES) {
+					strncpy(p, NOT_IN_X, p_max_size);
+				}else{
+					snprintf(p, p_max_size, "%d", cur->x11.monitor.number);
+				}
 			}
 			OBJ(desktop) {
-				snprintf(p, p_max_size, "%d", cur->x11.desktop.current);
+				if(x_initialised != YES) {
+					strncpy(p, NOT_IN_X, p_max_size);
+				}else{
+					snprintf(p, p_max_size, "%d", cur->x11.desktop.current);
+				}
 			}
 			OBJ(desktop_number) {
-				snprintf(p, p_max_size, "%d", cur->x11.desktop.number);
+				if(x_initialised != YES) {
+					strncpy(p, NOT_IN_X, p_max_size);
+				}else{
+					snprintf(p, p_max_size, "%d", cur->x11.desktop.number);
+				}
 			}
 			OBJ(desktop_name) {
-			  if(cur->x11.desktop.name != NULL) {
-			        strncpy(p, cur->x11.desktop.name, p_max_size);
-			  }
+				if(x_initialised != YES) {
+					strncpy(p, NOT_IN_X, p_max_size);
+				}else if(cur->x11.desktop.name != NULL) {
+					strncpy(p, cur->x11.desktop.name, p_max_size);
+				}
 			}
 #endif /* X11 */
 

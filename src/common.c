@@ -453,7 +453,7 @@ void update_stuff(void)
 	}
 	
 #ifdef X11
-	if (NEED(INFO_X11)) {
+	if (NEED(INFO_X11) && x_initialised == YES) {
 		update_x11info();
 	}
 #endif
