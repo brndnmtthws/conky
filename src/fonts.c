@@ -67,7 +67,7 @@ int add_font(const char *data_in)
 		return 0;
 	}
 	if (font_count > MAX_FONTS) {
-		CRIT_ERR("you don't need that many fonts, sorry.");
+		CRIT_ERR(NULL, NULL, "you don't need that many fonts, sorry.");
 	}
 	font_count++;
 	if (font_count == 0) {
@@ -76,14 +76,14 @@ int add_font(const char *data_in)
 		}
 		if ((fonts = (struct font_list *) malloc(sizeof(struct font_list)))
 				== NULL) {
-			CRIT_ERR("malloc");
+			CRIT_ERR(NULL, NULL, "malloc");
 		}
 		memset(fonts, 0, sizeof(struct font_list));
 	}
 	fonts = realloc(fonts, (sizeof(struct font_list) * (font_count + 1)));
 	memset(&fonts[font_count], 0, sizeof(struct font_list));
 	if (fonts == NULL) {
-		CRIT_ERR("realloc in add_font");
+		CRIT_ERR(NULL, NULL, "realloc in add_font");
 	}
 	// must account for null terminator
 	if (strlen(data_in) < DEFAULT_TEXT_BUFFER_SIZE) {
@@ -92,7 +92,7 @@ int add_font(const char *data_in)
 		fonts[font_count].font_alpha = 0xffff;
 #endif
 	} else {
-		CRIT_ERR("Oops...looks like something overflowed in add_font().");
+		CRIT_ERR(NULL, NULL, "Oops...looks like something overflowed in add_font().");
 	}
 	return font_count;
 }
@@ -105,7 +105,7 @@ void set_first_font(const char *data_in)
 	if (font_count < 0) {
 		if ((fonts = (struct font_list *) malloc(sizeof(struct font_list)))
 				== NULL) {
-			CRIT_ERR("malloc");
+			CRIT_ERR(NULL, NULL, "malloc");
 		}
 		memset(fonts, 0, sizeof(struct font_list));
 		font_count++;
@@ -180,7 +180,7 @@ void load_fonts(void)
 			ERR("can't load Xft font '%s'", "courier-12");
 
 			if ((fonts[i].font = XLoadQueryFont(display, "fixed")) == NULL) {
-				CRIT_ERR("can't load font '%s'", "fixed");
+				CRIT_ERR(NULL, NULL, "can't load font '%s'", "fixed");
 			}
 			use_xft = 0;
 
@@ -191,7 +191,7 @@ void load_fonts(void)
 		if (!fonts[i].font && (fonts[i].font = XLoadQueryFont(display, fonts[i].name)) == NULL) {
 			ERR("can't load font '%s'", fonts[i].name);
 			if ((fonts[i].font = XLoadQueryFont(display, "fixed")) == NULL) {
-				CRIT_ERR("can't load font '%s'", "fixed");
+				CRIT_ERR(NULL, NULL, "can't load font '%s'", "fixed");
 			}
 		}
 	}

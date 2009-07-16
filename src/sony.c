@@ -65,7 +65,7 @@ void get_sony_fanspeed(char *p_client_buffer, size_t client_buffer_size)
 			}
 		}
 	} else {
-		CRIT_ERR("can't open '%s': %s\nEnable sony support or remove "
+		CRIT_ERR(NULL, NULL, "can't open '%s': %s\nEnable sony support or remove "
 			"sony* from your "PACKAGE_NAME" config file.",
 			fan, strerror(errno));
 	}

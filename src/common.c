@@ -179,7 +179,7 @@ void variable_substitute(const char *s, char *dest, unsigned int n)
 
 static struct net_stat netstats[16];
 
-struct net_stat *get_net_stat(const char *dev)
+struct net_stat *get_net_stat(const char *dev, void *free_at_crash1, void *free_at_crash2)
 {
 	unsigned int i;
 
@@ -202,7 +202,7 @@ struct net_stat *get_net_stat(const char *dev)
 		}
 	}
 
-	CRIT_ERR("too many interfaces used (limit is 16)");
+	CRIT_ERR(free_at_crash1, free_at_crash2, "too many interfaces used (limit is 16)");
 	return 0;
 }
 
@@ -224,7 +224,7 @@ int interface_up(const char *dev)
 	struct ifreq ifr;
 
 	if ((fd = socket(PF_INET, SOCK_DGRAM, 0)) < 0) {
-		CRIT_ERR("could not create sockfd");
+		CRIT_ERR(NULL, NULL, "could not create sockfd");
 		return 0;
 	}
 	strncpy(ifr.ifr_name, dev, IFNAMSIZ);

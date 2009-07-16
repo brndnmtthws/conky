@@ -349,7 +349,7 @@ void update_net_stats(void)
 		*p = '\0';
 		p++;
 
-		ns = get_net_stat(s);
+		ns = get_net_stat(s, NULL, NULL);
 		ns->up = 1;
 		memset(&(ns->addr.sa_data), 0, 14);
 
@@ -393,7 +393,7 @@ void update_net_stats(void)
 				break;
 
 			ns2 = get_net_stat(
-					((struct ifreq *) conf.ifc_buf)[k].ifr_ifrn.ifrn_name);
+					((struct ifreq *) conf.ifc_buf)[k].ifr_ifrn.ifrn_name, NULL, NULL);
 			ns2->addr = ((struct ifreq *) conf.ifc_buf)[k].ifr_ifru.ifru_addr;
 			sprintf(temp_addr, "%u.%u.%u.%u, ",
 					ns2->addr.sa_data[2] & 255,
@@ -765,7 +765,7 @@ void update_i8k(void)
 		i8k_procbuf = (char *) malloc(128 * sizeof(char));
 	}
 	if ((fp = fopen(PROC_I8K, "r")) == NULL) {
-		CRIT_ERR("/proc/i8k doesn't exist! use insmod to make sure the kernel "
+		CRIT_ERR(NULL, NULL, "/proc/i8k doesn't exist! use insmod to make sure the kernel "
 			"driver is loaded...");
 	}
 
@@ -888,7 +888,7 @@ int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n,
 	/* open file */
 	fd = open(path, O_RDONLY);
 	if (fd < 0) {
-		CRIT_ERR("can't open '%s': %s\nplease check your device or remove this "
+		CRIT_ERR(NULL, NULL, "can't open '%s': %s\nplease check your device or remove this "
 			"var from "PACKAGE_NAME, path, strerror(errno));
 	}
 

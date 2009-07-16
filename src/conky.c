@@ -378,11 +378,11 @@ int register_iconv(iconv_t *new_iconv)
 {
 	iconv_cd = realloc(iconv_cd, sizeof(iconv_t *) * (iconv_count + 1));
 	if (!iconv_cd) {
-		CRIT_ERR("Out of memory");
+		CRIT_ERR(NULL, NULL, "Out of memory");
 	}
 	iconv_cd[iconv_count] = malloc(sizeof(iconv_t));
 	if (!iconv_cd[iconv_count]) {
-		CRIT_ERR("Out of memory");
+		CRIT_ERR(NULL, NULL, "Out of memory");
 	}
 	memcpy(iconv_cd[iconv_count], new_iconv, sizeof(iconv_t));
 	iconv_count++;
@@ -1233,7 +1233,7 @@ static int parse_top_args(const char *s, const char *arg, struct text_object *ob
 
 /* construct_text_object() creates a new text_object */
 static struct text_object *construct_text_object(const char *s,
-		const char *arg, long line, char allow_threaded, void **ifblock_opaque)
+		const char *arg, long line, char allow_threaded, void **ifblock_opaque, void *free_at_crash)
 {
 	// struct text_object *obj = new_text_object();
 	struct text_object *obj = new_text_object_internal();
@@ -1300,10 +1300,10 @@ static struct text_object *construct_text_object(const char *s,
 			}
 			obj->data.read_tcp.port = htons(obj->data.read_tcp.port);
 			if(obj->data.read_tcp.port < 1 || obj->data.read_tcp.port > 65535) {
-				CRIT_ERR("read_tcp: Needs \"(host) port\" as argument(s)");
+				CRIT_ERR(obj, free_at_crash, "read_tcp: Needs \"(host) port\" as argument(s)");
 			}
 		}else{
-			CRIT_ERR("read_tcp: Needs \"(host) port\" as argument(s)");
+			CRIT_ERR(obj, free_at_crash, "read_tcp: Needs \"(host) port\" as argument(s)");
 		}
 #if defined(__linux__)
 	END OBJ(voltage_mv, 0)
@@ -1332,76 +1332,76 @@ static struct text_object *construct_text_object(const char *s,
 #ifdef HAVE_IWLIB
 	END OBJ(wireless_essid, INFO_NET)
 		if (arg) {
-			obj->data.net = get_net_stat(arg);
+			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
 			// default to DEFAULTNETDEV
 			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf);
+			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
 	END OBJ(wireless_mode, INFO_NET)
 		if (arg) {
-			obj->data.net = get_net_stat(arg);
+			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
 			// default to DEFAULTNETDEV
 			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf);
+			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
 	END OBJ(wireless_bitrate, INFO_NET)
 		if (arg) {
-			obj->data.net = get_net_stat(arg);
+			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
 			// default to DEFAULTNETDEV
 			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf);
+			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
 	END OBJ(wireless_ap, INFO_NET)
 		if (arg) {
-			obj->data.net = get_net_stat(arg);
+			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
 			// default to DEFAULTNETDEV
 			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf);
+			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
 	END OBJ(wireless_link_qual, INFO_NET)
 		if (arg) {
-			obj->data.net = get_net_stat(arg);
+			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
 			// default to DEFAULTNETDEV
 			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf);
+			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
 	END OBJ(wireless_link_qual_max, INFO_NET)
 		if (arg) {
-			obj->data.net = get_net_stat(arg);
+			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
 			// default to DEFAULTNETDEV
 			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf);
+			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
 	END OBJ(wireless_link_qual_perc, INFO_NET)
 		if (arg) {
-			obj->data.net = get_net_stat(arg);
+			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
 			// default to DEFAULTNETDEV
 			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf);
+			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
 	END OBJ(wireless_link_bar, INFO_NET)
 		SIZE_DEFAULTS(bar);
 		if (arg) {
 			arg = scan_bar(arg, &obj->a, &obj->b);
-			obj->data.net = get_net_stat(arg);
+			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
 			// default to DEFAULTNETDEV
 			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf);
+			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
 #endif /* HAVE_IWLIB */
@@ -1464,7 +1464,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (arg)
 			obj->data.s = strndup(dev_name(arg), text_buffer_size);
 		else
-			CRIT_ERR("disk_protect needs an argument");
+			CRIT_ERR(obj, free_at_crash, "disk_protect needs an argument");
 	END OBJ(i8k_version, INFO_I8K)
 	END OBJ(i8k_bios, INFO_I8K)
 	END OBJ(i8k_serial, INFO_I8K)
@@ -1479,7 +1479,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(ibm_fan, 0)
 	END OBJ(ibm_temps, 0)
 		if (!arg) {
-			CRIT_ERR("ibm_temps: needs an argument");
+			CRIT_ERR(obj, free_at_crash, "ibm_temps: needs an argument");
 		}
 		if (!isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) >= 8) {
 			obj->data.sensor = 0;
@@ -1496,7 +1496,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ_IF(if_gw, INFO_GW)
 	END OBJ(ioscheduler, 0)
 		if (!arg) {
-			CRIT_ERR("get_ioscheduler needs an argument (e.g. hda)");
+			CRIT_ERR(obj, free_at_crash, "get_ioscheduler needs an argument (e.g. hda)");
 			obj->data.s = 0;
 		} else
 			obj->data.s = strndup(dev_name(arg), text_buffer_size);
@@ -1527,7 +1527,7 @@ static struct text_object *construct_text_object(const char *s,
 #if defined(__OpenBSD__)
 	END OBJ(obsd_sensors_temp, 0)
 		if (!arg) {
-			CRIT_ERR("obsd_sensors_temp: needs an argument");
+			CRIT_ERR(obj, free_at_crash, "obsd_sensors_temp: needs an argument");
 		}
 		if (!isdigit(arg[0]) || atoi(&arg[0]) < 0
 				|| atoi(&arg[0]) > OBSD_MAX_SENSORS - 1) {
@@ -1537,7 +1537,7 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.sensor = atoi(&arg[0]);
 	END OBJ(obsd_sensors_fan, 0)
 		if (!arg) {
-			CRIT_ERR("obsd_sensors_fan: needs 2 arguments (device and sensor "
+			CRIT_ERR(obj, free_at_crash, "obsd_sensors_fan: needs 2 arguments (device and sensor "
 				"number)");
 		}
 		if (!isdigit(arg[0]) || atoi(&arg[0]) < 0
@@ -1548,7 +1548,7 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.sensor = atoi(&arg[0]);
 	END OBJ(obsd_sensors_volt, 0)
 		if (!arg) {
-			CRIT_ERR("obsd_sensors_volt: needs 2 arguments (device and sensor "
+			CRIT_ERR(obj, free_at_crash, "obsd_sensors_volt: needs 2 arguments (device and sensor "
 				"number)");
 		}
 		if (!isdigit(arg[0]) || atoi(&arg[0]) < 0
@@ -1674,20 +1674,20 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(conky_build_arch, 0)
 	END OBJ(downspeed, INFO_NET)
 		if (arg) {
-			obj->data.net = get_net_stat(arg);
+			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
 			// default to DEFAULTNETDEV
 			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf);
+			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
 	END OBJ(downspeedf, INFO_NET)
 		if (arg) {
-			obj->data.net = get_net_stat(arg);
+			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
 			// default to DEFAULTNETDEV
 			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf);
+			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
 #ifdef X11
@@ -1699,7 +1699,7 @@ static struct text_object *construct_text_object(const char *s,
 
 		// default to DEFAULTNETDEV
 		buf = strndup(buf ? buf : DEFAULTNETDEV, text_buffer_size);
-		obj->data.net = get_net_stat(buf);
+		obj->data.net = get_net_stat(buf, obj, free_at_crash);
 		free(buf);
 #endif /* X11 */
 	END OBJ(else, 0)
@@ -2021,21 +2021,21 @@ static struct text_object *construct_text_object(const char *s,
 		}
 	} else OBJ(addr, INFO_NET)
 		if (arg) {
-			obj->data.net = get_net_stat(arg);
+			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
 			// default to DEFAULTNETDEV
 			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf);
+			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
 #if defined(__linux__)
 	END OBJ(addrs, INFO_NET)
 		if (arg) {
-			obj->data.net = get_net_stat(arg);
+			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
 			// default to DEFAULTNETDEV
 			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf);
+			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
 #endif /* __linux__ */
@@ -2053,13 +2053,13 @@ static struct text_object *construct_text_object(const char *s,
 		if (arg) {
 			obj->data.s = strndup(arg, text_buffer_size);
 		}else{
-			CRIT_ERR("lines needs a argument");
+			CRIT_ERR(obj, free_at_crash, "lines needs a argument");
 		}
 	END OBJ(words, 0)
 		if (arg) {
 			obj->data.s = strndup(arg, text_buffer_size);
 		}else{
-			CRIT_ERR("words needs a argument");
+			CRIT_ERR(obj, free_at_crash, "words needs a argument");
 		}
 	END OBJ(loadavg, INFO_LOADAVG)
 		int a = 1, b = 2, c = 3, r = 3;
@@ -2466,7 +2466,7 @@ static struct text_object *construct_text_object(const char *s,
 #ifdef HAVE_ICONV
 	END OBJ(iconv_start, 0)
 		if (iconv_converting) {
-			CRIT_ERR("You must stop your last iconv conversion before "
+			CRIT_ERR(obj, free_at_crash, "You must stop your last iconv conversion before "
 				"starting another");
 		}
 		if (arg) {
@@ -2474,7 +2474,7 @@ static struct text_object *construct_text_object(const char *s,
 			char iconv_to[CODEPAGE_LENGTH];
 
 			if (sscanf(arg, "%s %s", iconv_from, iconv_to) != 2) {
-				CRIT_ERR("Invalid arguments for iconv_start");
+				CRIT_ERR(obj, free_at_crash, "Invalid arguments for iconv_start");
 			} else {
 				iconv_t new_iconv;
 
@@ -2487,7 +2487,7 @@ static struct text_object *construct_text_object(const char *s,
 				}
 			}
 		} else {
-			CRIT_ERR("Iconv requires arguments");
+			CRIT_ERR(obj, free_at_crash, "Iconv requires arguments");
 		}
 	END OBJ(iconv_stop, 0)
 		iconv_converting = 0;
@@ -2495,27 +2495,27 @@ static struct text_object *construct_text_object(const char *s,
 #endif
 	END OBJ(totaldown, INFO_NET)
 		if (arg) {
-			obj->data.net = get_net_stat(arg);
+			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
 			// default to DEFAULTNETDEV
 			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf);
+			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
 	END OBJ(totalup, INFO_NET)
-		obj->data.net = get_net_stat(arg);
+		obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		if (arg) {
-			obj->data.net = get_net_stat(arg);
+			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
 			// default to DEFAULTNETDEV
 			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf);
+			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
 	END OBJ(updates, 0)
 	END OBJ_IF(if_updatenr, 0)
 		obj->data.ifblock.i = arg ? atoi(arg) : 0;
-		if(obj->data.ifblock.i == 0) CRIT_ERR("if_updatenr needs a number above 0 as argument");
+		if(obj->data.ifblock.i == 0) CRIT_ERR(obj, free_at_crash, "if_updatenr needs a number above 0 as argument");
 		updatereset = obj->data.ifblock.i > updatereset ? obj->data.ifblock.i : updatereset;
 	END OBJ(alignr, 0)
 		obj->data.i = arg ? atoi(arg) : 0;
@@ -2523,20 +2523,20 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.i = arg ? atoi(arg) : 0;
 	END OBJ(upspeed, INFO_NET)
 		if (arg) {
-			obj->data.net = get_net_stat(arg);
+			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
 			// default to DEFAULTNETDEV
 			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf);
+			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
 	END OBJ(upspeedf, INFO_NET)
 		if (arg) {
-			obj->data.net = get_net_stat(arg);
+			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
 			// default to DEFAULTNETDEV
 			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf);
+			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
 
@@ -2549,7 +2549,7 @@ static struct text_object *construct_text_object(const char *s,
 
 		// default to DEFAULTNETDEV
 		buf = strndup(buf ? buf : DEFAULTNETDEV, text_buffer_size);
-		obj->data.net = get_net_stat(buf);
+		obj->data.net = get_net_stat(buf, obj, free_at_crash);
 		free(buf);
 #endif
 	END OBJ(uptime_short, INFO_UPTIME)
@@ -2741,7 +2741,7 @@ static struct text_object *construct_text_object(const char *s,
 			if (info.audacious.max_title_len > 0) {
 				info.audacious.max_title_len++;
 			} else {
-				CRIT_ERR("audacious_title: invalid length argument");
+				CRIT_ERR(obj, free_at_crash, "audacious_title: invalid length argument");
 			}
 		}
 	END OBJ(audacious_length, INFO_AUDACIOUS)
@@ -2790,7 +2790,7 @@ static struct text_object *construct_text_object(const char *s,
 
 			init_eve();
 		} else {
-			CRIT_ERR("eve needs arguments: <userid> <apikey> <characterid>");
+			CRIT_ERR(obj, free_at_crash, "eve needs arguments: <userid> <apikey> <characterid>");
 		}
 #endif
 #ifdef RSS
@@ -2811,7 +2811,7 @@ static struct text_object *construct_text_object(const char *s,
 
 			init_rss_info();
 		} else {
-			CRIT_ERR("rss needs arguments: <uri> <delay in minutes> <action> "
+			CRIT_ERR(obj, free_at_crash, "rss needs arguments: <uri> <delay in minutes> <action> "
 					"[act_par] [spaces in front]");
 		}
 #endif
@@ -2847,7 +2847,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.weather.interval = interval * 60; // convert to seconds
 			free(icao);
 		} else {
-			CRIT_ERR("weather needs arguments: <uri> <icao> <data_type> [interval in minutes]");
+			CRIT_ERR(obj, free_at_crash, "weather needs arguments: <uri> <icao> <data_type> [interval in minutes]");
 		}
 #endif
 #ifdef HAVE_LUA
@@ -2855,13 +2855,13 @@ static struct text_object *construct_text_object(const char *s,
 		if (arg) {
 			obj->data.s = strndup(arg, text_buffer_size);
 		} else {
-			CRIT_ERR("lua needs arguments: <function name> [function parameters]");
+			CRIT_ERR(obj, free_at_crash, "lua needs arguments: <function name> [function parameters]");
 		}
 	END OBJ(lua_parse, 0)
 		if (arg) {
 			obj->data.s = strndup(arg, text_buffer_size);
 		} else {
-			CRIT_ERR("lua_parse needs arguments: <function name> [function parameters]");
+			CRIT_ERR(obj, free_at_crash, "lua_parse needs arguments: <function name> [function parameters]");
 		}
 	END OBJ(lua_bar, 0)
 		SIZE_DEFAULTS(bar);
@@ -2870,10 +2870,10 @@ static struct text_object *construct_text_object(const char *s,
 			if(arg) {
 				obj->data.s = strndup(arg, text_buffer_size);
 			} else {
-				CRIT_ERR("lua_bar needs arguments: <height>,<width> <function name> [function parameters]");
+				CRIT_ERR(obj, free_at_crash, "lua_bar needs arguments: <height>,<width> <function name> [function parameters]");
 			}
 		} else {
-			CRIT_ERR("lua_bar needs arguments: <height>,<width> <function name> [function parameters]");
+			CRIT_ERR(obj, free_at_crash, "lua_bar needs arguments: <height>,<width> <function name> [function parameters]");
 		}
 #ifdef X11
 	END OBJ(lua_graph, 0)
@@ -2885,10 +2885,10 @@ static struct text_object *construct_text_object(const char *s,
 			if (buf) {
 				obj->data.s = buf;
 			} else {
-				CRIT_ERR("lua_graph needs arguments: <function name> [height],[width] [gradient colour 1] [gradient colour 2] [scale] [-t] [-l]");
+				CRIT_ERR(obj, free_at_crash, "lua_graph needs arguments: <function name> [height],[width] [gradient colour 1] [gradient colour 2] [scale] [-t] [-l]");
 			}
 		} else {
-			CRIT_ERR("lua_graph needs arguments: <function name> [height],[width] [gradient colour 1] [gradient colour 2] [scale] [-t] [-l]");
+			CRIT_ERR(obj, free_at_crash, "lua_graph needs arguments: <function name> [height],[width] [gradient colour 1] [gradient colour 2] [scale] [-t] [-l]");
 	}
 	END OBJ(lua_gauge, 0)
 		SIZE_DEFAULTS(gauge);
@@ -2897,10 +2897,10 @@ static struct text_object *construct_text_object(const char *s,
 			if (arg) {
 				obj->data.s = strndup(arg, text_buffer_size);
 			} else {
-				CRIT_ERR("lua_gauge needs arguments: <height>,<width> <function name> [function parameters]");
+				CRIT_ERR(obj, free_at_crash, "lua_gauge needs arguments: <height>,<width> <function name> [function parameters]");
 			}
 		} else {
-			CRIT_ERR("lua_gauge needs arguments: <height>,<width> <function name> [function parameters]");
+			CRIT_ERR(obj, free_at_crash, "lua_gauge needs arguments: <height>,<width> <function name> [function parameters]");
 		}
 #endif /* X11 */
 #endif /* HAVE_LUA */
@@ -2930,14 +2930,14 @@ static struct text_object *construct_text_object(const char *s,
 			obj->sub = malloc(sizeof(struct text_object));
 			extract_variable_text_internal(obj->sub, arg, 0);
 		}else{
-			CRIT_ERR("blink needs a argument");
+			CRIT_ERR(obj, free_at_crash, "blink needs a argument");
 		}
 	END OBJ(to_bytes, 0)
 		if(arg) {
 			obj->sub = malloc(sizeof(struct text_object));
 			extract_variable_text_internal(obj->sub, arg, 0);
 		}else{
-			CRIT_ERR("to_bytes needs a argument");
+			CRIT_ERR(obj, free_at_crash, "to_bytes needs a argument");
 		}
 	END OBJ(scroll, 0)
 		int n1, n2;
@@ -2952,7 +2952,7 @@ static struct text_object *construct_text_object(const char *s,
 			extract_variable_text_internal(obj->sub,
 					obj->data.scroll.text, 0);
 		} else {
-			CRIT_ERR("scroll needs arguments: <length> [<step>] <text>");
+			CRIT_ERR(obj, free_at_crash, "scroll needs arguments: <length> [<step>] <text>");
 		}
 	END OBJ(combine, 0)
 		if(arg) {
@@ -2998,17 +2998,17 @@ static struct text_object *construct_text_object(const char *s,
 				obj->sub->sub = malloc(sizeof(struct text_object));
 				extract_variable_text_internal(obj->sub->sub, obj->data.combine.right, 0);
 			} else {
-				CRIT_ERR("combine needs arguments: <text1> <text2>");
+				CRIT_ERR(obj, free_at_crash, "combine needs arguments: <text1> <text2>");
 			}
 		} else {
-			CRIT_ERR("combine needs arguments: <text1> <text2>");
+			CRIT_ERR(obj, free_at_crash, "combine needs arguments: <text1> <text2>");
 		}
 #ifdef NVIDIA
 	END OBJ(nvidia, 0)
 		if (!arg) {
-			CRIT_ERR("nvidia needs an argument\n");
+			CRIT_ERR(obj, free_at_crash, "nvidia needs an argument\n");
 		} else if (set_nvidia_type(&obj->data.nvidia, arg)) {
-			CRIT_ERR("nvidia: invalid argument"
+			CRIT_ERR(obj, free_at_crash, "nvidia: invalid argument"
 				 " specified: '%s'\n", arg);
 		}
 #endif /* NVIDIA */
@@ -3019,13 +3019,13 @@ static struct text_object *construct_text_object(const char *s,
 				char host[64];
 				int port;
 				if (sscanf(arg, "%63s %d", host, &port) != 2) {
-					CRIT_ERR("apcupsd needs arguments: <host> <port>");
+					CRIT_ERR(obj, free_at_crash, "apcupsd needs arguments: <host> <port>");
 				} else {
 					info.apcupsd.port = htons(port);
 					strncpy(info.apcupsd.host, host, sizeof(info.apcupsd.host));
 				}
 			} else {
-				CRIT_ERR("apcupsd needs arguments: <host> <port>");
+				CRIT_ERR(obj, free_at_crash, "apcupsd needs arguments: <host> <port>");
 			}
 			END OBJ(apcupsd_name, INFO_APCUPSD)
 			END OBJ(apcupsd_model, INFO_APCUPSD)
@@ -3237,7 +3237,7 @@ static char *find_and_replace_templates(const char *inbuf)
 				*(p - 1) = '\0';
 			} else {
 				// we ran into the end of string without finding a closing }, bark
-				CRIT_ERR("cannot find a closing '}' in template expansion");
+				CRIT_ERR(NULL, NULL, "cannot find a closing '}' in template expansion");
 			}
 		} else {
 			templ = p + 1;
@@ -3440,7 +3440,7 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 
 				obj = construct_text_object(buf, arg,
 						line, allow_threaded,
-						&ifblock_opaque);
+						&ifblock_opaque, orig_p);
 				if (obj != NULL) {
 					append_object(retval, obj);
 				}
@@ -3869,7 +3869,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				if (obj->data.cpu_index > info.cpu_count) {
 					ERR("obj->data.cpu_index %i info.cpu_count %i",
 							obj->data.cpu_index, info.cpu_count);
-					CRIT_ERR("attempting to use more CPUs than you have!");
+					CRIT_ERR(NULL, NULL, "attempting to use more CPUs than you have!");
 				}
 				percent_print(p, p_max_size,
 				              round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100.0));
@@ -6992,7 +6992,7 @@ static void main_loop(void)
 #ifdef SIGNAL_BLOCKING
 		/* block signals.  we will inspect for pending signals later */
 		if (sigprocmask(SIG_BLOCK, &newmask, &oldmask) < 0) {
-			CRIT_ERR("unable to sigprocmask()");
+			CRIT_ERR(NULL, NULL, "unable to sigprocmask()");
 		}
 #endif
 
@@ -7300,7 +7300,7 @@ static void main_loop(void)
 #ifdef SIGNAL_BLOCKING
 		/* unblock signals of interest and let handler fly */
 		if (sigprocmask(SIG_SETMASK, &oldmask, NULL) < 0) {
-			CRIT_ERR("unable to sigprocmask()");
+			CRIT_ERR(NULL, NULL, "unable to sigprocmask()");
 		}
 #endif
 
@@ -7395,7 +7395,7 @@ static void main_loop(void)
 
 		g_signal_pending = 0;
 	}
-	clean_up();
+	clean_up(NULL, NULL);
 
 #ifdef HAVE_SYS_INOTIFY_H
 	if (inotify_fd != -1) {
@@ -7486,9 +7486,15 @@ static void reload_config(void)
 	}
 }
 
-void clean_up(void)
+void clean_up(void *memtofree1, void* memtofree2)
 {
 	int i;
+	if(memtofree1) {
+		free(memtofree1);
+	}
+	if(memtofree2) {
+		free(memtofree2);
+	}
 	timed_thread_destroy_registered_threads();
 
 	if (info.cpu_usage) {
@@ -8642,7 +8648,7 @@ static void load_config_file(const char *f)
 			}
 			fclose(fp);
 			if (strlen(global_text) < 1) {
-				CRIT_ERR("no text supplied in configuration; exiting");
+				CRIT_ERR(NULL, NULL, "no text supplied in configuration; exiting");
 			}
 			global_text_lines = line + 1;
 			return;
@@ -8762,7 +8768,7 @@ static void load_config_file(const char *f)
 		info.music_player_interval = update_interval;
 	}
 	if (!global_text) { // didn't supply any text
-		CRIT_ERR("missing text block in configuration; exiting");
+		CRIT_ERR(NULL, NULL, "missing text block in configuration; exiting");
 	}
 }
 
@@ -9148,7 +9154,7 @@ int main(int argc, char **argv)
 			ERR("no readable personal or system-wide config file found,"
 					" using builtin default");
 #else
-			CRIT_ERR("no readable personal or system-wide config file found");
+			CRIT_ERR(NULL, NULL, "no readable personal or system-wide config file found");
 #endif /* ! CONF_OUTPUT */
 		}
 	}
@@ -9187,7 +9193,7 @@ int main(int argc, char **argv)
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 	if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null", O_RDONLY,
 			"kvm_open")) == NULL) {
-		CRIT_ERR("cannot read kvm");
+		CRIT_ERR(NULL, NULL, "cannot read kvm");
 	}
 #endif
 

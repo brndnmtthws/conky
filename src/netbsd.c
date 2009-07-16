@@ -186,7 +186,7 @@ void update_net_stats()
 		long long last_recv, last_trans;
 
 		kvm_read(nkd, (u_long) ifnetaddr, (void *) &ifnet, sizeof(ifnet));
-		ns = get_net_stat(ifnet.if_xname);
+		ns = get_net_stat(ifnet.if_xname, NULL, NULL);
 		ns->up = 1;
 		last_recv = ns->recv;
 		last_trans = ns->trans;

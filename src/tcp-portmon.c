@@ -34,19 +34,19 @@ int tcp_portmon_init(const char *arg, struct tcp_port_monitor_data *pmd)
 	connection_index = 0;
 	/* massive argument checking */
 	if (!arg) {
-		CRIT_ERR("tcp_portmon: needs arguments");
+		CRIT_ERR(NULL, NULL, "tcp_portmon: needs arguments");
 	}
 	argc = sscanf(arg, "%d %d %31s %d", &port_begin, &port_end, itembuf,
 			&connection_index);
 	if ((argc != 3) && (argc != 4)) {
-		CRIT_ERR("tcp_portmon: requires 3 or 4 arguments");
+		CRIT_ERR(NULL, NULL, "tcp_portmon: requires 3 or 4 arguments");
 	}
 	if ((port_begin < 1) || (port_begin > 65535) || (port_end < 1)
 			|| (port_end > 65535)) {
-		CRIT_ERR("tcp_portmon: port values must be from 1 to 65535");
+		CRIT_ERR(NULL, NULL, "tcp_portmon: port values must be from 1 to 65535");
 	}
 	if (port_begin > port_end) {
-		CRIT_ERR("tcp_portmon: starting port must be <= ending port");
+		CRIT_ERR(NULL, NULL, "tcp_portmon: starting port must be <= ending port");
 	}
 	if (strncmp(itembuf, "count", 31) == EQUAL) {
 		item = COUNT;
@@ -67,14 +67,14 @@ int tcp_portmon_init(const char *arg, struct tcp_port_monitor_data *pmd)
 	} else if (strncmp(itembuf, "lservice", 31) == EQUAL) {
 		item = LOCALSERVICE;
 	} else {
-		CRIT_ERR("tcp_portmon: invalid item specified");
+		CRIT_ERR(NULL, NULL, "tcp_portmon: invalid item specified");
 	}
 	if ((argc == 3) && (item != COUNT)) {
-		CRIT_ERR("tcp_portmon: 3 argument form valid only for \"count\" "
+		CRIT_ERR(NULL, NULL, "tcp_portmon: 3 argument form valid only for \"count\" "
 				"item");
 	}
 	if ((argc == 4) && (connection_index < 0)) {
-		CRIT_ERR("tcp_portmon: connection index must be non-negative");
+		CRIT_ERR(NULL, NULL, "tcp_portmon: connection index must be non-negative");
 	}
 	/* ok, args looks good. save the text object data */
 	pmd->port_range_begin = (in_port_t) port_begin;
@@ -87,7 +87,7 @@ int tcp_portmon_init(const char *arg, struct tcp_port_monitor_data *pmd)
 	if (!pmc) {
 		pmc = create_tcp_port_monitor_collection();
 		if (!pmc) {
-			CRIT_ERR("tcp_portmon: unable to create port monitor "
+			CRIT_ERR(NULL, NULL, "tcp_portmon: unable to create port monitor "
 					"collection");
 		}
 	}
@@ -99,11 +99,11 @@ int tcp_portmon_init(const char *arg, struct tcp_port_monitor_data *pmd)
 				port_end, &pma);
 
 		if (!p_monitor) {
-			CRIT_ERR("tcp_portmon: unable to create port monitor");
+			CRIT_ERR(NULL, NULL, "tcp_portmon: unable to create port monitor");
 		}
 		/* add the newly created monitor to the collection */
 		if (insert_tcp_port_monitor_into_collection(pmc, p_monitor) != 0) {
-			CRIT_ERR("tcp_portmon: unable to add port monitor to "
+			CRIT_ERR(NULL, NULL, "tcp_portmon: unable to add port monitor to "
 					"collection");
 		}
 	}

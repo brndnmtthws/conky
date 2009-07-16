@@ -190,7 +190,7 @@ char *scan_graph(const char *args, int *w, int *h,
 static struct special_t *new_special(char *buf, enum special_types t)
 {
 	if (special_count >= max_specials) {
-		CRIT_ERR("too many special things in text");
+		CRIT_ERR(NULL, NULL, "too many special things in text");
 	}
 
 	buf[0] = SPECIAL_CHAR;

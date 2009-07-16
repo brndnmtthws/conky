@@ -199,7 +199,7 @@ void update_net_stats(void)
 	}
 
 	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-		ns = get_net_stat((const char *) ifa->ifa_name);
+		ns = get_net_stat((const char *) ifa->ifa_name, NULL, NULL);
 
 		if (ifa->ifa_flags & IFF_UP) {
 			struct ifaddrs *iftmp;
@@ -614,7 +614,7 @@ void update_wifi_stats(void)
 	}
 
 	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-		ns = get_net_stat((const char *) ifa->ifa_name);
+		ns = get_net_stat((const char *) ifa->ifa_name, NULL, NULL);
 
 		s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 

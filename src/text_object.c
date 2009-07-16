@@ -50,7 +50,7 @@ int append_object(struct text_object *root, struct text_object *obj)
 
 	if (end) {
 		if (end->next)
-			CRIT_ERR("huston, we have a lift-off");
+			CRIT_ERR(NULL, NULL, "huston, we have a lift-off");
 		end->next = obj;
 	} else {
 		root->next = obj;
@@ -101,7 +101,7 @@ static int push_ifblock(struct ifblock_stack_obj **ifblock_stack_top,
 	switch (type) {
 		case IFBLOCK_ENDIF:
 			if (!(*ifblock_stack_top))
-				CRIT_ERR("got an endif without matching if");
+				CRIT_ERR(NULL, NULL, "got an endif without matching if");
 			(*ifblock_stack_top)->obj->data.ifblock.next = obj;
 			/* if there's some else in between, remove and free it */
 			if ((*ifblock_stack_top)->type == IFBLOCK_ELSE) {
@@ -116,7 +116,7 @@ static int push_ifblock(struct ifblock_stack_obj **ifblock_stack_top,
 			break;
 		case IFBLOCK_ELSE:
 			if (!(*ifblock_stack_top))
-				CRIT_ERR("got an else without matching if");
+				CRIT_ERR(NULL, NULL, "got an else without matching if");
 			(*ifblock_stack_top)->obj->data.ifblock.next = obj;
 			/* fall through */
 		case IFBLOCK_IF:
@@ -127,7 +127,7 @@ static int push_ifblock(struct ifblock_stack_obj **ifblock_stack_top,
 			*ifblock_stack_top = stackobj;
 			break;
 		default:
-			CRIT_ERR("push_ifblock() missuse detected!");
+			CRIT_ERR(NULL, NULL, "push_ifblock() missuse detected!");
 	}
 	return 0;
 }

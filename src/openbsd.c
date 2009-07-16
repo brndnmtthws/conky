@@ -211,7 +211,7 @@ void update_net_stats()
 	}
 
 	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-		ns = get_net_stat((const char *) ifa->ifa_name);
+		ns = get_net_stat((const char *) ifa->ifa_name, NULL, NULL);
 
 		if (ifa->ifa_flags & IFF_UP) {
 			struct ifaddrs *iftmp;
