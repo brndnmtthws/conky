@@ -7408,7 +7408,9 @@ static void main_loop(void)
 }
 
 static void load_config_file(const char *);
+#ifdef X11
 static void load_config_file_x11(const char *);
+#endif /* X11 */
 void initialisation(int argc, char** argv);
 
 	/* reload the config file */
@@ -8693,6 +8695,7 @@ static void load_config_file(const char *f)
 	}
 }
 
+#ifdef X11
 static void load_config_file_x11(const char *f)
 {
 	int line = 0;
@@ -8713,7 +8716,6 @@ static void load_config_file_x11(const char *f)
 			continue;
 		}
 
-#ifdef X11
 		CONF2("color0") {
 			X11_initialisation();
 			if (x_initialised == YES) {
@@ -8863,7 +8865,6 @@ static void load_config_file_x11(const char *f)
 				X11_initialisation();
 			}
 		}
-#endif /* X11 */
 #undef CONF
 #undef CONF2
 #undef CONF3
@@ -8877,6 +8878,7 @@ static void load_config_file_x11(const char *f)
 	fclose(fp);
 
 }
+#endif /* X11 */
 
 static void print_help(const char *prog_name) {
 	printf("Usage: %s [OPTION]...\n"
