@@ -630,7 +630,7 @@ inline static void update_stat(void)
 			KFLAG_ISSET(KFLAG_IS_LONGSTAT) ? TMPL_LONGSTAT : TMPL_SHORTSTAT;
 	}
 
-	if (!cpu) {
+	if (!global_cpu) {
 		malloc_cpu_size = (info.cpu_count + 1) * sizeof(struct cpu_info);
 		cpu = malloc(malloc_cpu_size);
 		memset(cpu, 0, malloc_cpu_size);

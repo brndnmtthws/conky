@@ -148,6 +148,8 @@ static volatile int g_signal_pending;
 double update_interval;
 void *global_cpu = NULL;
 
+int argc_copy;
+char** argv_copy;
 
 /* prototypes for internally used functions */
 static void signal_handler(int);
@@ -259,7 +261,6 @@ static const char *suffixes[] = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "" };
 
 #ifdef X11
 
-static void X11_destroy_window(void);
 static void X11_create_window(void);
 static void X11_initialisation(void);
 
@@ -7408,82 +7409,15 @@ static void main_loop(void)
 
 static void load_config_file(const char *);
 static void load_config_file_x11(const char *);
+void initialisation(int argc, char** argv);
 
 	/* reload the config file */
 static void reload_config(void)
 {
-	timed_thread_destroy_registered_threads();
-
-	if (info.cpu_usage) {
-		free(info.cpu_usage);
-		info.cpu_usage = NULL;
-	}
-
-	if (info.mail) {
-		free(info.mail);
-	}
-
-#ifdef X11
-	free_fonts();
-#endif /* X11 */
-
-#ifdef TCP_PORT_MONITOR
-	tcp_portmon_clear();
-#endif
-
-#ifdef RSS
-	free_rss_info();
-#endif
-#ifdef WEATHER
-	free_weather_info();
-#endif
-#ifdef HAVE_LUA
-	llua_close();
-#endif /* HAVE_LUA */
-
-#ifdef X11
-	X11_destroy_window();
-#endif /* X11 */
-
-	if (current_config) {
-		clear_fs_stats();
-		load_config_file(current_config);
-		load_config_file_x11(current_config);
-
-		/* re-init specials array */
-		if ((specials = realloc((void *) specials,
-				sizeof(struct special_t) * max_specials)) == 0) {
-			ERR("failed to realloc specials array");
-		}
-
-#ifdef X11
-		if (output_methods & TO_X) {
-			X11_initialisation();
-		}
-#endif /* X11 */
-		extract_variable_text(global_text);
-		free(global_text);
-		global_text = NULL;
-		if (tmpstring1) {
-			free(tmpstring1);
-		}
-		tmpstring1 = malloc(text_buffer_size);
-		memset(tmpstring1, 0, text_buffer_size);
-		if (tmpstring2) {
-			free(tmpstring2);
-		}
-		tmpstring2 = malloc(text_buffer_size);
-		memset(tmpstring2, 0, text_buffer_size);
-		if (text_buffer) {
-			free(text_buffer);
-		}
-		text_buffer = malloc(max_user_text);
-		memset(text_buffer, 0, max_user_text);
-#ifdef X11
-		X11_create_window();
-#endif /* X11 */
-		update_text();
-	}
+	char *current_config_copy = strdup(current_config);
+	clean_up(NULL, NULL);
+	current_config = current_config_copy;
+	initialisation(argc_copy, argv_copy);
 }
 
 void clean_up(void *memtofree1, void* memtofree2)
@@ -7511,6 +7445,7 @@ void clean_up(void *memtofree1, void* memtofree2)
 		}
 		XClearWindow(display, RootWindow(display, screen));
 		XCloseDisplay(display);
+		display = NULL;
 		if(info.x11.desktop.all_names) {
 			free(info.x11.desktop.all_names);
 			info.x11.desktop.all_names = NULL;
@@ -7519,6 +7454,7 @@ void clean_up(void *memtofree1, void* memtofree2)
 			free(info.x11.desktop.name);
 			info.x11.desktop.name = NULL;
 		}
+		x_initialised = NO;
 	}else{
 		free(fonts);	//in set_default_configurations a font is set but not loaded
 	}
@@ -7579,7 +7515,10 @@ void clean_up(void *memtofree1, void* memtofree2)
 
 	clear_net_stats();
 	clear_diskio_stats();
-	if(global_cpu != NULL) free(global_cpu);
+	if(global_cpu != NULL) {
+		free(global_cpu);
+		global_cpu = NULL;
+	}
 }
 
 static int string_to_bool(const char *s)
@@ -7857,24 +7796,6 @@ static void X11_initialisation(void)
 	XSetErrorHandler(&x11_error_handler);
 	XSetIOErrorHandler(&x11_ioerror_handler);
 #endif /* DEBUG */
-}
-
-static void X11_destroy_window(void)
-{
-	/* this function only exists for the sake of consistency */
-	if (output_methods & TO_X) {
-#ifdef HAVE_XDAMAGE
-		XDamageDestroy(display, x11_stuff.damage);
-		XFixesDestroyRegion(display, x11_stuff.region2);
-		XFixesDestroyRegion(display, x11_stuff.part);
-		if (x11_stuff.region) {
-			XDestroyRegion(x11_stuff.region);
-		}
-		x11_stuff.region = NULL;
-#endif /* HAVE_XDAMAGE */
-		destroy_window();
-	}
-	x_initialised = NO;
 }
 
 static char **xargv = 0;
@@ -9035,132 +8956,8 @@ static const struct option longopts[] = {
 	{ 0, 0, 0, 0 }
 };
 
-int main(int argc, char **argv)
-{
-#ifdef X11
-	char *s, *temp;
-	unsigned int x;
-#endif
+void initialisation(int argc, char **argv) {
 	struct sigaction act, oact;
-
-	g_signal_pending = 0;
-	max_user_text = MAX_USER_TEXT_DEFAULT;
-	current_config = 0;
-	memset(&info, 0, sizeof(info));
-	memset(template, 0, sizeof(template));
-	clear_net_stats();
-
-#ifdef TCP_PORT_MONITOR
-	/* set default connection limit */
-	tcp_portmon_set_max_connections(0);
-#endif
-
-	/* handle command line parameters that don't change configs */
-#ifdef X11
-	if (((s = getenv("LC_ALL")) && *s) || ((s = getenv("LC_CTYPE")) && *s)
-			|| ((s = getenv("LANG")) && *s)) {
-		temp = (char *) malloc((strlen(s) + 1) * sizeof(char));
-		if (temp == NULL) {
-			ERR("malloc failed");
-		}
-		for (x = 0; x < strlen(s); x++) {
-			temp[x] = tolower(s[x]);
-		}
-		temp[x] = 0;
-		if (strstr(temp, "utf-8") || strstr(temp, "utf8")) {
-			utf8_mode = 1;
-		}
-
-		free(temp);
-	}
-	if (!setlocale(LC_CTYPE, "")) {
-		ERR("Can't set the specified locale!\nCheck LANG, LC_CTYPE, LC_ALL.");
-	}
-#endif /* X11 */
-	while (1) {
-		int c = getopt_long(argc, argv, getopt_string, longopts, NULL);
-
-		if (c == -1) {
-			break;
-		}
-
-		switch (c) {
-			case 'v':
-			case 'V':
-				print_version();
-			case 'c':
-				if (current_config) {
-					free(current_config);
-				}
-				current_config = strndup(optarg, max_user_text);
-				break;
-			case 'q':
-				freopen("/dev/null", "w", stderr);
-				break;
-			case 'h':
-				print_help(argv[0]);
-				return 0;
-#ifdef CONFIG_OUTPUT
-			case 'C':
-				print_defconfig();
-				return 0;
-#endif
-#ifdef X11
-			case 'w':
-				window.window = strtol(optarg, 0, 0);
-				break;
-#endif /* X11 */
-
-			case '?':
-				exit(EXIT_FAILURE);
-		}
-	}
-
-	/* check if specified config file is valid */
-	if (current_config) {
-		struct stat sb;
-		if (stat(current_config, &sb) ||
-				(!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
-			ERR("invalid configuration file '%s'\n", current_config);
-			free(current_config);
-			current_config = 0;
-		}
-	}
-
-	/* load current_config, CONFIG_FILE or SYSTEM_CONFIG_FILE */
-
-	if (!current_config) {
-		/* load default config file */
-		char buf[DEFAULT_TEXT_BUFFER_SIZE];
-		FILE *fp;
-
-		/* Try to use personal config file first */
-		to_real_path(buf, CONFIG_FILE);
-		if (buf[0] && (fp = fopen(buf, "r"))) {
-			current_config = strndup(buf, max_user_text);
-			fclose(fp);
-		}
-
-		/* Try to use system config file if personal config not readable */
-		if (!current_config && (fp = fopen(SYSTEM_CONFIG_FILE, "r"))) {
-			current_config = strndup(SYSTEM_CONFIG_FILE, max_user_text);
-			fclose(fp);
-		}
-
-		/* No readable config found */
-		if (!current_config) {
-#ifdef CONFIG_OUTPUT
-			current_config = strdup("==builtin==");
-			ERR("no readable personal or system-wide config file found,"
-					" using builtin default");
-#else
-			CRIT_ERR(NULL, NULL, "no readable personal or system-wide config file found");
-#endif /* ! CONF_OUTPUT */
-		}
-	}
-#ifdef HAVE_SYS_INOTIFY_H
-	inotify_fd = inotify_init();
-#endif /* HAVE_SYS_INOTIFY_H */
 
 	load_config_file(current_config);
 
@@ -9306,7 +9103,7 @@ int main(int argc, char **argv)
 				fprintf(stderr, PACKAGE_NAME": forked to background, pid is %d\n",
 					pid);
 				fflush(stderr);
-				return 0;
+				return;
 		}
 	}
 
@@ -9337,6 +9134,138 @@ int main(int argc, char **argv)
 			||	sigaction(SIGTERM, &act, &oact) < 0) {
 		ERR("error setting signal handler: %s", strerror(errno));
 	}
+
+}
+
+int main(int argc, char **argv)
+{
+#ifdef X11
+	char *s, *temp;
+	unsigned int x;
+#endif
+
+	argc_copy = argc;
+	argv_copy = argv;
+	g_signal_pending = 0;
+	max_user_text = MAX_USER_TEXT_DEFAULT;
+	current_config = 0;
+	memset(&info, 0, sizeof(info));
+	memset(template, 0, sizeof(template));
+	clear_net_stats();
+
+#ifdef TCP_PORT_MONITOR
+	/* set default connection limit */
+	tcp_portmon_set_max_connections(0);
+#endif
+
+	/* handle command line parameters that don't change configs */
+#ifdef X11
+	if (((s = getenv("LC_ALL")) && *s) || ((s = getenv("LC_CTYPE")) && *s)
+			|| ((s = getenv("LANG")) && *s)) {
+		temp = (char *) malloc((strlen(s) + 1) * sizeof(char));
+		if (temp == NULL) {
+			ERR("malloc failed");
+		}
+		for (x = 0; x < strlen(s); x++) {
+			temp[x] = tolower(s[x]);
+		}
+		temp[x] = 0;
+		if (strstr(temp, "utf-8") || strstr(temp, "utf8")) {
+			utf8_mode = 1;
+		}
+
+		free(temp);
+	}
+	if (!setlocale(LC_CTYPE, "")) {
+		ERR("Can't set the specified locale!\nCheck LANG, LC_CTYPE, LC_ALL.");
+	}
+#endif /* X11 */
+	while (1) {
+		int c = getopt_long(argc, argv, getopt_string, longopts, NULL);
+
+		if (c == -1) {
+			break;
+		}
+
+		switch (c) {
+			case 'v':
+			case 'V':
+				print_version();
+			case 'c':
+				if (current_config) {
+					free(current_config);
+				}
+				current_config = strndup(optarg, max_user_text);
+				break;
+			case 'q':
+				freopen("/dev/null", "w", stderr);
+				break;
+			case 'h':
+				print_help(argv[0]);
+				return 0;
+#ifdef CONFIG_OUTPUT
+			case 'C':
+				print_defconfig();
+				return 0;
+#endif
+#ifdef X11
+			case 'w':
+				window.window = strtol(optarg, 0, 0);
+				break;
+#endif /* X11 */
+
+			case '?':
+				exit(EXIT_FAILURE);
+		}
+	}
+
+	/* check if specified config file is valid */
+	if (current_config) {
+		struct stat sb;
+		if (stat(current_config, &sb) ||
+				(!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
+			ERR("invalid configuration file '%s'\n", current_config);
+			free(current_config);
+			current_config = 0;
+		}
+	}
+
+	/* load current_config, CONFIG_FILE or SYSTEM_CONFIG_FILE */
+
+	if (!current_config) {
+		/* load default config file */
+		char buf[DEFAULT_TEXT_BUFFER_SIZE];
+		FILE *fp;
+
+		/* Try to use personal config file first */
+		to_real_path(buf, CONFIG_FILE);
+		if (buf[0] && (fp = fopen(buf, "r"))) {
+			current_config = strndup(buf, max_user_text);
+			fclose(fp);
+		}
+
+		/* Try to use system config file if personal config not readable */
+		if (!current_config && (fp = fopen(SYSTEM_CONFIG_FILE, "r"))) {
+			current_config = strndup(SYSTEM_CONFIG_FILE, max_user_text);
+			fclose(fp);
+		}
+
+		/* No readable config found */
+		if (!current_config) {
+#ifdef CONFIG_OUTPUT
+			current_config = strdup("==builtin==");
+			ERR("no readable personal or system-wide config file found,"
+					" using builtin default");
+#else
+			CRIT_ERR(NULL, NULL, "no readable personal or system-wide config file found");
+#endif /* ! CONF_OUTPUT */
+		}
+	}
+#ifdef HAVE_SYS_INOTIFY_H
+	inotify_fd = inotify_init();
+#endif /* HAVE_SYS_INOTIFY_H */
+
+	initialisation(argc, argv);
 
 	main_loop();
 
