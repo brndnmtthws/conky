@@ -2945,8 +2945,12 @@ static struct text_object *construct_text_object(const char *s,
 
 		obj->data.scroll.step = 1;
 		if (arg && sscanf(arg, "%u %n", &obj->data.scroll.show, &n1) > 0) {
-			if (sscanf(arg + n1, "%u %n", &obj->data.scroll.step, &n2) > 0)
+			sscanf(arg + n1, "%u %n", &obj->data.scroll.step, &n2);
+			if(*(arg + n1 + n2)) {
 				n1 += n2;
+			}else{
+				obj->data.scroll.step = 1;
+			}
 			obj->data.scroll.text = strndup(arg + n1, text_buffer_size);
 			obj->data.scroll.start = 0;
 			obj->sub = malloc(sizeof(struct text_object));
