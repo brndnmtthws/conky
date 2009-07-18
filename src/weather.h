@@ -30,7 +30,8 @@
 
 /* WEATHER data */
 typedef struct PWEATHER_ {
-  char lastupd[17];
+  char lastupd[32];
+  char xoap_t[32];
   int temp;
   int dew;
   int cc;
@@ -39,6 +40,16 @@ typedef struct PWEATHER_ {
   int wind_d;
   int hmid;
   int wc;
+  /*
+   * TODO:
+   * Is it worth investigating about using icons from weather.com?
+   * We could use them for data from noaa as well.
+   * They can display nicely with cimlib_add_image (with appropriate
+   * #ifdefs on imlib2 and x11), and an additional input argoment for position.
+
+  char icon[3];
+
+  */
 } PWEATHER;
 
 /* Prototypes */
