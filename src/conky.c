@@ -8912,12 +8912,14 @@ static void load_config_file_x11(const char *f)
 }
 #endif /* X11 */
 
+#ifdef WEATHER
 /*
  * TODO: make the xoap keys file readable from the config file
  *       make the keys directly readable from the config file
  *       make the xoap keys file giveable as a command line option
  */
-static void load_xoap_keys(void) {
+static void load_xoap_keys(void)
+{
   FILE *fp;
   char *par = (char *) malloc(11 * sizeof(char));
   char *key = (char *) malloc(17 * sizeof(char));
@@ -8944,6 +8946,7 @@ static void load_xoap_keys(void) {
   free(par);
   free(key);
 }
+#endif /* WEATHER */
 
 static void print_help(const char *prog_name) {
 	printf("Usage: %s [OPTION]...\n"
