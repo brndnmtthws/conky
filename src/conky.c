@@ -6448,13 +6448,14 @@ static void draw_string(const char *s)
 }
 
 #ifdef X11
-int draw_each_line_inner(char *s, int special_index, const int last_special_applied)
+int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 {
 	int font_h = font_height();
 	int cur_y_add = 0;
 	char *recurse = 0;
 	char *p = s;
 	int last_special_needed = -1;
+	int orig_special_index = special_index;
 
 	cur_x = text_start_x;
 	cur_y += font_ascent();
@@ -6866,7 +6867,12 @@ int draw_each_line_inner(char *s, int special_index, const int last_special_appl
 
 			cur_x += w;
 
-			if (special_index != last_special_applied) special_index++;
+			if (special_index != last_special_applied) {
+				special_index++;
+			} else {
+				special_index = orig_special_index;
+				last_special_applied = -1;
+			}
 		}
 		p++;
 	}
