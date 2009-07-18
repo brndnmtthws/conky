@@ -21,11 +21,6 @@
  *
  */
 
-/*
- * TODO: Add weather forecast info from weather.com
- *
- */
-
 #include "conky.h"
 #include "logging.h"
 #include "weather.h"
@@ -38,7 +33,6 @@
 #include <curl/curl.h>
 #include <curl/types.h>
 #include <curl/easy.h>
-#include <libxml/parser.h>
 
 /* Possible sky conditions */
 #define NUM_CC_CODES 6
@@ -124,75 +118,6 @@ int rel_humidity(int dew_point, int air) {
 #else
 	return (int)(16.666667163372f*(6.f+diff*(6.f+diff*(3.f+diff))));
 #endif /* MATH */
-}
-
-//TODO: Lets get rid of the recursion
-static void parse_cc(PWEATHER *res, xmlNodePtr cc)
-{
-
-  xmlNodePtr cur = NULL;
-
-  for (cur = cc; cur; cur = cur->next) {
-    if (cur->type == XML_ELEMENT_NODE) {
-      if (!xmlStrcmp(cur->name, (const xmlChar *) "lsup")) {
-	strncpy(res->lastupd, (char *)cur->children->content, 31);
-      } else if	(!xmlStrcmp(cur->name, (const xmlChar *) "tmp")) {
-	res->temp = atoi((char *)cur->children->content);
-      } else if (!xmlStrcmp(cur->name, (const xmlChar *) "t")) {
-	if(res->xoap_t[0] == '\0') {
-	  strncpy(res->xoap_t, (char *)cur->children->content, 31);
-	}
-      } else if (!xmlStrcmp(cur->name, (const xmlChar *) "r")) {
-	res->bar = atoi((char *)cur->children->content);
-      } else if (!xmlStrcmp(cur->name, (const xmlChar *) "s")) {
-	res->wind_s = atoi((char *)cur->children->content);
-      } else if (!xmlStrcmp(cur->name, (const xmlChar *) "d")) {
-	if (isdigit((char)cur->children->content[0])) {
-	    res->wind_d = atoi((char *)cur->children->content);
-	  }
-      } else if (!xmlStrcmp(cur->name, (const xmlChar *) "hmid")) {
-	res->hmid = atoi((char *)cur->children->content);
-      }
-    }
-    parse_cc(res, cur->children);
-  }
-  return;
-}
-
-static void parse_weather_xml(PWEATHER *res, const char *data)
-{
-  xmlDocPtr doc;
-  xmlNodePtr cur;
-
-  if (!(doc = xmlReadMemory(data, strlen(data), "", NULL, 0))) {
-    ERR("weather: can't read xml data");
-    return;
-  }
-
-  cur = xmlDocGetRootElement(doc);
-
-  while(cur) {
-    if (cur->type == XML_ELEMENT_NODE) {
-      if (!xmlStrcmp(cur->name, (const xmlChar *) "weather")) {
-	cur = cur->children;
-	while (cur != NULL) {
-	  if (cur->type == XML_ELEMENT_NODE) {
-	    if (!xmlStrcmp(cur->name, (const xmlChar *) "cc")) {
-	      parse_cc(res, cur->children);
-	      xmlFreeDoc(doc);
-	      return;
-	    }
-	  }
-	  cur = cur->next;
-	}
-      }
-    }
-    cur = cur->next;
-  }
-
-  ERR("weather: incorrect xml data");
-  xmlFreeDoc(doc);
-  return ;
 }
 
 /*
@@ -412,7 +337,6 @@ static inline void parse_token(PWEATHER *res, char *token) {
 
 				//First 3 digits are wind direction
 				strncpy(s_tmp, token, 3);
-				s_tmp[3]='\0';
 				res->wind_d=atoi(s_tmp);
 
 				//4th and 5th digit are wind speed in knots (convert to km/hr)
@@ -469,7 +393,6 @@ static inline void parse_token(PWEATHER *res, char *token) {
 
 				//First 3 digits are wind direction
 				strncpy(s_tmp, token, 3);
-				s_tmp[3]='\0';
 				res->wind_d=atoi(s_tmp);
 
 				//4th and 5th digit are wind speed in m/s (convert to km/hr)
@@ -487,43 +410,37 @@ static inline void parse_token(PWEATHER *res, char *token) {
 
 static void parse_weather(PWEATHER *res, const char *data)
 {
-        //Reset results
+	char s_tmp[256];
+	const char delim[] = " ";
+
 	memset(res, 0, sizeof(PWEATHER));
 
-	//Check if it is an xml file
-	if ( strncmp(data, "<?xml ", 6) == 0 ) {
-	  parse_weather_xml(res, data);
-	} else {
-	  //We assume its a text file
-	  char s_tmp[256];
-	  const char delim[] = " ";
+	//Divide time stamp and metar data
+	if (sscanf(data, "%[^'\n']\n%[^'\n']", res->lastupd, s_tmp) == 2) {
 
-	  //Divide time stamp and metar data
-	  if (sscanf(data, "%[^'\n']\n%[^'\n']", res->lastupd, s_tmp) == 2) {
+		//Process all tokens
+		char *p_tok = NULL;
+		char *p_save = NULL;
 
-	    //Process all tokens
-	    char *p_tok = NULL;
-	    char *p_save = NULL;
+		if ((strtok_r(s_tmp, delim, &p_save)) != NULL) {
 
-	    if ((strtok_r(s_tmp, delim, &p_save)) != NULL) {
+			//Jump first token, must be icao
+			p_tok = strtok_r(NULL, delim, &p_save);
 
-	      //Jump first token, must be icao
-	      p_tok = strtok_r(NULL, delim, &p_save);
+			do {
 
-	      do {
+				parse_token(res, p_tok);
+				p_tok = strtok_r(NULL, delim, &p_save);
 
-		parse_token(res, p_tok);
-		p_tok = strtok_r(NULL, delim, &p_save);
-
-	      } while (p_tok != NULL);
-	    }
-	    return;
-	  }
-	  else {
-	    return;
-	  }
+			} while (p_tok != NULL);
+		}
+		return;
+	}
+	else {
+		return;
 	}
 }
+
 
 void fetch_weather_info(location *curloc)
 {
@@ -551,7 +468,7 @@ void fetch_weather_info(location *curloc)
 			timed_thread_unlock(curloc->p_timed_thread);
 			free(chunk.memory);
 		} else {
-			ERR("weather: no data from server");
+			ERR("No data from server");
 		}
 
 		curl_easy_cleanup(curl);
@@ -568,12 +485,12 @@ void init_thread(location *curloc, int interval)
 		timed_thread_create(&weather_thread,
 				(void *)curloc, interval * 1000000);
 	if (!curloc->p_timed_thread) {
-		ERR("weather: error creating timed thread");
+		ERR("Error creating weather timed thread");
 	}
 	timed_thread_register(curloc->p_timed_thread,
 			&curloc->p_timed_thread);
 	if (timed_thread_run(curloc->p_timed_thread)) {
-		ERR("weather: error running timed thread");
+		ERR("Error running weather timed thread");
 	}
 }
 
@@ -590,15 +507,14 @@ void process_weather_info(char *p, int p_max_size, char *uri, char *data_type, i
 	location *curloc = find_location(uri);
 	if (!curloc->p_timed_thread) init_thread(curloc, interval);
 
+
 	timed_thread_lock(curloc->p_timed_thread);
 	if (strcmp(data_type, "last_update") == EQUAL) {
 		strncpy(p, curloc->data.lastupd, p_max_size);
 	} else if (strcmp(data_type, "temperature") == EQUAL) {
 		temp_print(p, p_max_size, curloc->data.temp, TEMP_CELSIUS);
 	} else if (strcmp(data_type, "cloud_cover") == EQUAL) {
-	        if (curloc->data.xoap_t[0] != '\0') {
-			strncpy(p, curloc->data.xoap_t, p_max_size);
-		} else if (curloc->data.cc == 0) {
+		if (curloc->data.cc == 0) {
 			strncpy(p, "", p_max_size);
 		} else if (curloc->data.cc < 3) {
 			strncpy(p, "clear", p_max_size);
@@ -659,7 +575,6 @@ void process_weather_info(char *p, int p_max_size, char *uri, char *data_type, i
 	} else if (strcmp(data_type, "weather") == EQUAL) {
 		strncpy(p, wc[curloc->data.wc], p_max_size);
 	}
-
 	timed_thread_unlock(curloc->p_timed_thread);
 }
 

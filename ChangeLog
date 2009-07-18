@@ -1,6 +1,3 @@
-2009-07-18
-	* www.weather.com can now be used as well as a source of weather data
-
 2009-07-11
 	* Added support for $desktop, $desktop_number and $desktop_name (sf.net #2040528)
 
