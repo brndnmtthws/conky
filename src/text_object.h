@@ -561,6 +561,7 @@ struct text_object {
 			unsigned int show;
 			unsigned int step;
 			unsigned int start;
+			long resetcolor;
 		} scroll;
 
 		struct {

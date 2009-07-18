@@ -2583,12 +2583,11 @@
         may also contain variables. 'step' is optional and defaults
         to 1 if not set. If a var creates output on multiple lines
         then the lines are placed behind each other separated with
-        a '|'-sign. Do NOT use vars that change colors or otherwise
-        affect the design inside a scrolling text. If you want
-        spaces between the start and the end of 'text', place them
-        at the end of 'text' not at the front ("foobar" and "
-        foobar" can both generate "barfoo" but "foobar " will keep
-        the spaces like this "bar foo"). 
+        a '|'-sign. The effect of $color is disabled inside scroll.
+        If you want spaces between the start and the end of 'text',
+	place them at the end of 'text' not at the front ("4 foobar"
+	can generate "arfo" but "4 foobar " will keep the space like
+	this "ar f").
         <para /></listitem>
     </varlistentry>
     <varlistentry>

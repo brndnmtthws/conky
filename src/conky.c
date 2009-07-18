@@ -1238,6 +1238,8 @@ static int parse_top_args(const char *s, const char *arg, struct text_object *ob
 	return 1;
 }
 
+long current_text_color;
+
 /* construct_text_object() creates a new text_object */
 static struct text_object *construct_text_object(const char *s,
 		const char *arg, long line, char allow_threaded, void **ifblock_opaque, void *free_at_crash)
@@ -1650,28 +1652,39 @@ static struct text_object *construct_text_object(const char *s,
 #ifdef X11
 		if (output_methods & TO_X) {
 			obj->data.l = arg ? get_x11_color(arg) : default_fg_color;
+			current_text_color = obj->data.l;
 		}
 #endif /* X11 */
 	END OBJ(color0, 0)
 		obj->data.l = color0;
+		current_text_color = obj->data.l;
 	END OBJ(color1, 0)
 		obj->data.l = color1;
+		current_text_color = obj->data.l;
 	END OBJ(color2, 0)
 		obj->data.l = color2;
+		current_text_color = obj->data.l;
 	END OBJ(color3, 0)
 		obj->data.l = color3;
+		current_text_color = obj->data.l;
 	END OBJ(color4, 0)
 		obj->data.l = color4;
+		current_text_color = obj->data.l;
 	END OBJ(color5, 0)
 		obj->data.l = color5;
+		current_text_color = obj->data.l;
 	END OBJ(color6, 0)
 		obj->data.l = color6;
+		current_text_color = obj->data.l;
 	END OBJ(color7, 0)
 		obj->data.l = color7;
+		current_text_color = obj->data.l;
 	END OBJ(color8, 0)
 		obj->data.l = color8;
+		current_text_color = obj->data.l;
 	END OBJ(color9, 0)
 		obj->data.l = color9;
+		current_text_color = obj->data.l;
 #ifdef X11
 	END OBJ(font, 0)
 		obj->data.s = scan_font(arg);
@@ -2967,6 +2980,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(scroll, 0)
 		int n1 = 0, n2 = 0;
 
+		obj->data.scroll.resetcolor = current_text_color;
 		obj->data.scroll.step = 1;
 		if (arg && sscanf(arg, "%u %n", &obj->data.scroll.show, &n1) > 0) {
 			sscanf(arg + n1, "%u %n", &obj->data.scroll.step, &n2);
@@ -5775,7 +5789,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%s", buf);
 			}
 			OBJ(scroll) {
-				unsigned int j;
+				unsigned int j, k, colorchanges = 0;
 				char *tmp, buf[max_user_text];
 				generate_text_internal(buf, max_user_text,
 				                       *obj->sub, cur);
@@ -5784,11 +5798,16 @@ static void generate_text_internal(char *p, int p_max_size,
 					snprintf(p, p_max_size, "%s", buf);
 					break;
 				}
-#define LINESEPARATOR '|'
-				//place all the lines behind each other with LINESEPARATOR between them
 				for(j = 0; buf[j] != 0; j++) {
-					if(buf[j]=='\n') {
+					switch(buf[j]) {
+					case '\n':	//place all the lines behind each other with LINESEPARATOR between them
+#define LINESEPARATOR '|'
 						buf[j]=LINESEPARATOR;
+						break;
+					case 1:	//make sure $color isn't treated like a char
+						strfold(buf+j, 1);
+						colorchanges++;
+						break;
 					}
 				}
 				//scroll the output obj->data.scroll.start places by copying that many chars from
@@ -5803,7 +5822,10 @@ static void generate_text_internal(char *p, int p_max_size,
 				free(tmp);
 				//only show the requested number of chars
 				if(obj->data.scroll.show < j) {
-					buf[obj->data.scroll.show] = 0;
+					for(k = 0; k < colorchanges; k++) {
+						buf[obj->data.scroll.show + k] = 1;
+					}
+					buf[obj->data.scroll.show + colorchanges] = 0;
 				}
 				//next time, scroll a place more or reset scrolling if we are at the end
 				obj->data.scroll.start += obj->data.scroll.step;
@@ -5811,6 +5833,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					 obj->data.scroll.start = 0;
 				}
 				snprintf(p, p_max_size, "%s", buf);
+				new_fg(p + strlen(p), obj->data.scroll.resetcolor);
 			}
 			OBJ(combine) {
 				char buf[2][max_user_text];
@@ -7688,6 +7711,7 @@ static void set_default_configurations_for_x(void)
 	color7 = default_fg_color;
 	color8 = default_fg_color;
 	color9 = default_fg_color;
+	current_text_color = default_fg_color;
 }
 #endif /* X11 */
 
