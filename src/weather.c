@@ -38,7 +38,9 @@
 #include <curl/curl.h>
 #include <curl/types.h>
 #include <curl/easy.h>
+#ifdef XOAP
 #include <libxml/parser.h>
+#endif /* XOAP */
 
 /* Possible sky conditions */
 #define NUM_CC_CODES 6
@@ -58,7 +60,7 @@ const char *WM_CODES[NUM_WM_CODES] = {
 const char *WC_CODES[NUM_WC_CODES] = {
 	"DZ", "RA", "GR", "GS", "SN", "SG",
 	"FG", "HZ", "FU", "BR", "DU", "SA",
-	"FC", "PO", "SQ", "SS", "DS",
+	"FC", "PO", "SQ", "SS", "DS"
 };
 
 typedef struct location_ {
@@ -126,6 +128,7 @@ int rel_humidity(int dew_point, int air) {
 #endif /* MATH */
 }
 
+#ifdef XOAP
 //TODO: Lets get rid of the recursion
 static void parse_cc(PWEATHER *res, xmlNodePtr cc)
 {
@@ -194,6 +197,7 @@ static void parse_weather_xml(PWEATHER *res, const char *data)
   xmlFreeDoc(doc);
   return ;
 }
+#endif /* XOAP */
 
 /*
  * Horrible hack to avoid using regexes
@@ -490,16 +494,19 @@ static void parse_weather(PWEATHER *res, const char *data)
         //Reset results
 	memset(res, 0, sizeof(PWEATHER));
 
+#ifdef XOAP
 	//Check if it is an xml file
 	if ( strncmp(data, "<?xml ", 6) == 0 ) {
 	  parse_weather_xml(res, data);
-	} else {
-	  //We assume its a text file
-	  char s_tmp[256];
-	  const char delim[] = " ";
+	} else
+#endif /* XOAP */
+	  {
+	    //We assume its a text file
+	    char s_tmp[256];
+	    const char delim[] = " ";
 
-	  //Divide time stamp and metar data
-	  if (sscanf(data, "%[^'\n']\n%[^'\n']", res->lastupd, s_tmp) == 2) {
+	    //Divide time stamp and metar data
+	    if (sscanf(data, "%[^'\n']\n%[^'\n']", res->lastupd, s_tmp) == 2) {
 
 	    //Process all tokens
 	    char *p_tok = NULL;
@@ -518,11 +525,11 @@ static void parse_weather(PWEATHER *res, const char *data)
 	      } while (p_tok != NULL);
 	    }
 	    return;
+	    }
+	    else {
+	      return;
+	    }
 	  }
-	  else {
-	    return;
-	  }
-	}
 }
 
 void fetch_weather_info(location *curloc)
@@ -596,9 +603,12 @@ void process_weather_info(char *p, int p_max_size, char *uri, char *data_type, i
 	} else if (strcmp(data_type, "temperature") == EQUAL) {
 		temp_print(p, p_max_size, curloc->data.temp, TEMP_CELSIUS);
 	} else if (strcmp(data_type, "cloud_cover") == EQUAL) {
+#ifdef XOAP
 	        if (curloc->data.xoap_t[0] != '\0') {
 			strncpy(p, curloc->data.xoap_t, p_max_size);
-		} else if (curloc->data.cc == 0) {
+		} else
+#endif /* XOAP */
+		  if (curloc->data.cc == 0) {
 			strncpy(p, "", p_max_size);
 		} else if (curloc->data.cc < 3) {
 			strncpy(p, "clear", p_max_size);

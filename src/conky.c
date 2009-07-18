@@ -4673,7 +4673,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			        if( obj->data.weather.uri != NULL ) {
 				        process_weather_info(p, p_max_size, obj->data.weather.uri, obj->data.weather.data_type, obj->data.weather.interval);
 			        } else {
-				  strncpy(p, "invalid xoap keys file",  p_max_size);
+				  strncpy(p, "either invalid xoap keys file or compiled without xoap support",  p_max_size);
 				}
 			}
 #endif
@@ -8912,7 +8912,7 @@ static void load_config_file_x11(const char *f)
 }
 #endif /* X11 */
 
-#ifdef WEATHER
+#if defined(WEATHER) && defined(XOAP)
 /*
  * TODO: make the xoap keys file readable from the config file
  *       make the keys directly readable from the config file
@@ -8946,7 +8946,7 @@ static void load_xoap_keys(void)
   free(par);
   free(key);
 }
-#endif /* WEATHER */
+#endif /* WEATHER && XOAP */
 
 static void print_help(const char *prog_name) {
 	printf("Usage: %s [OPTION]...\n"
@@ -9332,10 +9332,10 @@ int main(int argc, char **argv)
 		}
 	}
 
-#ifdef WEATHER
+#if defined(WEATHER) && defined(XOAP)
 	/* Load xoap keys, if existing */
 	load_xoap_keys();
-#endif /* WEATHER */
+#endif /* WEATHER && XOAP */
 
 #ifdef HAVE_SYS_INOTIFY_H
 	inotify_fd = inotify_init();

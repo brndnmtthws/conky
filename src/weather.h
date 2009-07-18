@@ -31,15 +31,8 @@
 /* WEATHER data */
 typedef struct PWEATHER_ {
   char lastupd[32];
+#ifdef XOAP
   char xoap_t[32];
-  int temp;
-  int dew;
-  int cc;
-  int bar;
-  int wind_s;
-  int wind_d;
-  int hmid;
-  int wc;
   /*
    * TODO:
    * Is it worth investigating about using icons from weather.com?
@@ -50,6 +43,15 @@ typedef struct PWEATHER_ {
   char icon[3];
 
   */
+#endif /* XOAP */
+  int temp;
+  int dew;
+  int cc;
+  int bar;
+  int wind_s;
+  int wind_d;
+  int hmid;
+  int wc;
 } PWEATHER;
 
 /* Prototypes */
