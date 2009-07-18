@@ -3290,23 +3290,40 @@
             <command>
                 <option>weather</option>
             </command>
-            <option>URI icao data_type (delay_in_minutes)</option>
+            <option>URI locID data_type (delay_in_minutes)</option>
         </term>
         <listitem>
             <para>Download, parse and display METAR data.</para>
-	    <para>For the 'URI', right now only 
-	    http://weather.noaa.gov/pub/data/observations/metar/stations/
-            is supported. Other sources might be supported in the future.
+	    <para>For the 'URI', there are two possibilities:</para>
+	    <simplelist>
+	        <member>
+		    http://weather.noaa.gov/pub/data/observations/metar/stations/
+		</member>
+	        <member>
+		    http://xoap.weather.com/weather/local/
+		</member>
+	    </simplelist>
+	    <para>The first one is free to use but the second requires you to
+	    register and obtain your partner ID and license key.
+	    These two must be written, separated by a space, into a file
+	    called .xoaprc which needs to be placed into your home directory.
 	    </para>
-            <para>'icao' must be a valid icao for the required location
+            <para>'locID' must be a valid location identifier for the required
+	    uri. For the NOAA site this must be a valid ICAO
             (see for instance https://pilotweb.nas.faa.gov/qryhtml/icao/).
+	    For the weather.com site this must be a valid location ID
+            (see for instance http://aspnetresources.com/tools/locid.aspx).
             </para>
             <para>'data_type' must be one of the following:</para>
             <simplelist>
                 <member>
                     <command>last_update</command>
-                    <option>The date (yyyy/mm/dd) and time (UTC) of
-                    the last update</option>
+                    <option>The date and time stamp of the data.
+		    The result depends on the URI used. For the NOAA site
+		    it is date (yyyy/mm/dd) and UTC time. For the
+		    weather.com one it is date ([m]m/[d]d/yy) and Local Time
+		    of the station.
+		    </option>
                 </member>
                 <member>
                     <command>temperature</command>
@@ -3319,7 +3336,7 @@
                     <option>The highest cloud cover status</option>
                 </member>
                 <member>
-                    <command>pressurer</command>
+                    <command>pressure</command>
                     <option>Air pressure in millibar</option>
                 </member>
                 <member>
@@ -3341,7 +3358,9 @@
                 <member>
                     <command>weather</command>
                     <option>Any relevant weather event (rain, snow,
-                    etc.))</option>
+                    etc.). This is not used if you are querying the
+		    weather.com site since this data is aggregated
+		    into the cloud_cover one</option>
                 </member>
             </simplelist>
             <para>'delay_in_minutes' (optional, default 30) cannot be

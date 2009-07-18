@@ -356,9 +356,10 @@ AC_ARG_ENABLE([weather],
 #
 AM_CONDITIONAL(BUILD_WEATHER, test x$want_weather = xyes)
 if test x$want_weather = xyes; then
+	PKG_CHECK_MODULES([libxml2], libxml-2.0)
 	PKG_CHECK_MODULES([libcurl], libcurl)
-	conky_CFLAGS="$conky_CFLAGS $libcurl_CFLAGS"
-	conky_LIBS="$conky_LIBS $libcurl_LIBS"
+	conky_CFLAGS="$conky_CFLAGS $libxml2_CFLAGS $libcurl_CFLAGS"
+	conky_LIBS="$conky_LIBS $libxml2_LIBS $libcurl_LIBS"
 	AC_DEFINE(WEATHER, 1, [Define if you want weather support])
 fi
 
@@ -706,6 +707,7 @@ dnl
 
 AC_DEFINE(DEFAULTNETDEV, "eth0", [Default networkdevice])
 AC_DEFINE(CONFIG_FILE, "$HOME/.conkyrc", [Configfile of the user])
+AC_DEFINE(XOAP_FILE, "$HOME/.xoaprc", [User xoap keys file])
 AC_DEFINE(MAX_SPECIALS_DEFAULT, 512, [Default maximum number of special things, e.g. fonts, offsets, aligns, etc.])
 AC_DEFINE(MAX_USER_TEXT_DEFAULT, 16384, [Default maximum size of config TEXT buffer, i.e. below TEXT line.])
 AC_DEFINE(DEFAULT_TEXT_BUFFER_SIZE, 256, [Default size used for temporary, static text buffers])

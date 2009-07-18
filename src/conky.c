@@ -318,6 +318,11 @@ static int cpu_avg_samples, net_avg_samples, diskio_avg_samples;
 char *overwrite_file = NULL; FILE *overwrite_fpointer = NULL;
 char *append_file = NULL; FILE *append_fpointer = NULL;
 
+/* xoap suffix for weather from weather.com */
+#ifdef WEATHER
+static char *xoap = NULL;
+#endif /* WEATHER */
+
 #ifdef X11
 
 static int show_graph_scale;
@@ -2820,35 +2825,53 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ_THREAD(weather, 0)
 		if (arg) {
 			int argc, interval;
-			char *icao = (char *) malloc(5 * sizeof(char));
+			char *locID = (char *) malloc(9 * sizeof(char));
 			char *uri = (char *) malloc(128 * sizeof(char));
 			char *data_type = (char *) malloc(32 * sizeof(char));
 			char *tmp_p;
 
-			argc = sscanf(arg, "%119s %4s %31s %d", uri, icao, data_type, &interval);
+			argc = sscanf(arg, "%119s %8s %31s %d", uri, locID, data_type, &interval);
 
-			//icao MUST BE upper-case
-			tmp_p = icao;
+			//locID MUST BE upper-case
+			tmp_p = locID;
 			while (*tmp_p) {
-				*tmp_p = toupper(*tmp_p);
-				tmp_p++;
+			  *tmp_p = toupper(*tmp_p);
+			  tmp_p++;
 			}
 
+			//Construct complete uri
+			if (strstr(uri, "xoap.weather.com")) {
+			  if(xoap != NULL) {
+			    strcat(uri, locID);
+			    strcat(uri, xoap);
+			  } else {
+			    free(uri);
+			    uri = NULL;
+			  }
+			} else if (strstr(uri, "weather.noaa.gov")) {
+			    strcat(uri, locID);
+			    strcat(uri, ".TXT");
+			} else  if (!strstr(uri, "localhost") && !strstr(uri, "127.0.0.1")) {
+			      CRIT_ERR(obj, free_at_crash, \
+				       "could not recognize the weather uri");
+			}
 
-			strcat(uri, icao);
-			strcat(uri, ".TXT");
 			obj->data.weather.uri = uri;
-
 			obj->data.weather.data_type = data_type;
 
-			// The data retrieval interval is limited to half an hour
+			//Limit the data retrieval interval to half hour min
 			if (interval < 30) {
 				interval = 30;
 			}
-			obj->data.weather.interval = interval * 60; // convert to seconds
-			free(icao);
+
+			//Convert to seconds
+			obj->data.weather.interval = interval * 60;
+			free(locID);
+
+			DBGP("weather: fetching %s from %s every %d seconds", \
+			     data_type, uri, obj->data.weather.interval);
 		} else {
-			CRIT_ERR(obj, free_at_crash, "weather needs arguments: <uri> <icao> <data_type> [interval in minutes]");
+			CRIT_ERR(obj, free_at_crash, "weather needs arguments: <uri> <locID> <data_type> [interval in minutes]");
 		}
 #endif
 #ifdef HAVE_LUA
@@ -4647,7 +4670,11 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 #ifdef WEATHER
 			OBJ(weather) {
-				process_weather_info(p, p_max_size, obj->data.weather.uri, obj->data.weather.data_type, obj->data.weather.interval);
+			        if( obj->data.weather.uri != NULL ) {
+				        process_weather_info(p, p_max_size, obj->data.weather.uri, obj->data.weather.data_type, obj->data.weather.interval);
+			        } else {
+				  strncpy(p, "invalid xoap keys file",  p_max_size);
+				}
 			}
 #endif
 #ifdef HAVE_LUA
@@ -8885,6 +8912,42 @@ static void load_config_file_x11(const char *f)
 }
 #endif /* X11 */
 
+#ifdef WEATHER
+/*
+ * TODO: make the xoap keys file readable from the config file
+ *       make the keys directly readable from the config file
+ *       make the xoap keys file giveable as a command line option
+ */
+static void load_xoap_keys(void)
+{
+  FILE *fp;
+  char *par = (char *) malloc(11 * sizeof(char));
+  char *key = (char *) malloc(17 * sizeof(char));
+
+  xoap = (char *) malloc(64 * sizeof(char));
+  to_real_path(xoap, XOAP_FILE);
+  fp = fopen(xoap, "r");
+  if (fp != NULL) {
+    if( fscanf(fp, "%10s %16s", par, key) == 2 ) {
+      strcpy(xoap, "?cc=*&link=xoap&prod=xoap&par=");
+      strcat(xoap, par);
+      strcat(xoap, "&key=");
+      strcat(xoap, key);
+      strcat(xoap, "&unit=m");
+    } else {
+      free(xoap);
+      xoap = NULL;
+    }
+    fclose(fp);
+  } else {
+    free(xoap);
+    xoap = NULL;
+  }
+  free(par);
+  free(key);
+}
+#endif /* WEATHER */
+
 static void print_help(const char *prog_name) {
 	printf("Usage: %s [OPTION]...\n"
 			PACKAGE_NAME" is a system monitor that renders text on desktop or to own transparent\n"
@@ -9268,6 +9331,12 @@ int main(int argc, char **argv)
 #endif /* ! CONF_OUTPUT */
 		}
 	}
+
+#ifdef WEATHER
+	/* Load xoap keys, if existing */
+	load_xoap_keys();
+#endif /* WEATHER */
+
 #ifdef HAVE_SYS_INOTIFY_H
 	inotify_fd = inotify_init();
 #endif /* HAVE_SYS_INOTIFY_H */
