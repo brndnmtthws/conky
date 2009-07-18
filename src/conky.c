@@ -2941,7 +2941,7 @@ static struct text_object *construct_text_object(const char *s,
 			CRIT_ERR(obj, free_at_crash, "to_bytes needs a argument");
 		}
 	END OBJ(scroll, 0)
-		int n1, n2;
+		int n1 = 0, n2 = 0;
 
 		obj->data.scroll.step = 1;
 		if (arg && sscanf(arg, "%u %n", &obj->data.scroll.show, &n1) > 0) {
