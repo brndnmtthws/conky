@@ -2964,7 +2964,7 @@ static struct text_object *construct_text_object(const char *s,
 			CRIT_ERR(obj, free_at_crash, "to_bytes needs a argument");
 		}
 	END OBJ(scroll, 0)
-		int n1, n2;
+		int n1 = 0, n2 = 0;
 
 		obj->data.scroll.step = 1;
 		if (arg && sscanf(arg, "%u %n", &obj->data.scroll.show, &n1) > 0) {
@@ -7490,6 +7490,7 @@ void clean_up(void *memtofree1, void* memtofree2)
 		x_initialised = NO;
 	}else{
 		free(fonts);	//in set_default_configurations a font is set but not loaded
+		font_count = -1;
 	}
 
 #endif /* X11 */
@@ -7979,7 +7980,7 @@ static void load_config_file(const char *f)
 		CONF2("out_to_x") {
 			/* don't listen if X is already initialised or
 			 * if we already know we don't want it */
-			if(x_initialised == NO) {
+			if(x_initialised != YES) {
 				if (string_to_bool(value)) {
 					output_methods &= TO_X;
 				} else {
