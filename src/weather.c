@@ -27,6 +27,9 @@
 #include "temphelper.h"
 #include <time.h>
 #include <ctype.h>
+#ifdef MATH
+#include <math.h>
+#endif /* MATH */
 #include <curl/curl.h>
 #include <curl/types.h>
 #include <curl/easy.h>
@@ -109,8 +112,12 @@ int rel_humidity(int dew_point, int air) {
 	const float a = 17.27f;
 	const float b = 237.7f;
 
-	float g = a*dew_point/(b+dew_point);
-	return (int)(100.f*expf(g-a*air/(b+air)));
+	float diff = a*(dew_point/(b+dew_point)-air/(b+air));
+#ifdef MATH
+	return (int)(100.f*expf(diff));
+#else
+	return (int)(16.666667163372f*(6.f+diff*(6.f+diff*(3.f+diff))));
+#endif /* MATH */
 }
 
 /*
