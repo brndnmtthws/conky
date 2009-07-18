@@ -371,7 +371,7 @@ void new_bar_in_shell(char* buffer, int buf_max_size, double usage, int width)
 		int i = 0, j = 0, scaledusage = round_to_int( usage * width / 100);
 
 		#ifdef HAVE_OPENMP
-		#pragma omp parallel for
+		#pragma omp parallel for schedule(dynamic,10)
 		#endif /* HAVE_OPENMP */
 		for(i=0; i<(int)scaledusage; i++) {
 			*(buffer+i)='#';
@@ -379,7 +379,7 @@ void new_bar_in_shell(char* buffer, int buf_max_size, double usage, int width)
 		/* gcc seems to think i is not initialized properly :/ */
 		j = i;
 		#ifdef HAVE_OPENMP
-		#pragma omp parallel for
+		#pragma omp parallel for schedule(dynamic,10)
 		#endif /* HAVE_OPENMP */
 		for(i = j/* cheats */; i < width; i++) {
 			*(buffer+i)='_';

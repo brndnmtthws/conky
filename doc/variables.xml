@@ -655,8 +655,8 @@
                 <option>desktop</option>
             </command>
         </term>
-        <listitem>Number of the desktop on which conky is running 
-        or the message "Not running in X" if this is the case.
+        <listitem>Number of the desktop on which conky is running
+        or the message "Not running in X" if this is the case. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -665,8 +665,8 @@
                 <option>desktop_name</option>
             </command>
         </term>
-        <listitem>Name of the desktop on which conky is running 
-        or the message "Not running in X" if this is the case.
+        <listitem>Name of the desktop on which conky is running or
+        the message "Not running in X" if this is the case. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -675,8 +675,8 @@
                 <option>desktop_number</option>
             </command>
         </term>
-        <listitem>Number of desktops or the message "Not running
-        in X" if this is the case.
+        <listitem>Number of desktops or the message "Not running in
+        X" if this is the case. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2151,8 +2151,8 @@
                 <option>monitor</option>
             </command>
         </term>
-        <listitem>Number of the monitor on which conky is running 
-        or the message "Not running in X" if this is the case.
+        <listitem>Number of the monitor on which conky is running
+        or the message "Not running in X" if this is the case. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2161,8 +2161,8 @@
                 <option>monitor_number</option>
             </command>
         </term>
-        <listitem>Number of monitors or the message "Not running
-        in X" if this is the case.
+        <listitem>Number of monitors or the message "Not running in
+        X" if this is the case. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3363,10 +3363,10 @@
 		    into the cloud_cover one</option>
                 </member>
             </simplelist>
-            <para>'delay_in_minutes' (optional, default 30) cannot be
-            lower than 30 min.</para>
-	    <para>Note that these variables are still EXPERIMENTAL and
-            can be subject to many future changes.</para>
+            <para>'delay_in_minutes' (optional, default 30) cannot
+            be lower than 30 min.</para>
+            <para>Note that these variables are still EXPERIMENTAL
+            and can be subject to many future changes.</para>
         </listitem>
     </varlistentry>
     <varlistentry>

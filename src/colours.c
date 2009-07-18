@@ -111,7 +111,7 @@ unsigned long *do_gradient(int width, unsigned long first_colour, unsigned long 
 	greendiff = abs(green1 - green2);
 	bluediff = abs(blue1 - blue2);
 #ifdef HAVE_OPENMP
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic,10) shared(colours)
 #endif /* HAVE_OPENMP */
 	for (i = 0; i < width; i++) {
 		int red3 = 0, green3 = 0, blue3 = 0;	// colour components

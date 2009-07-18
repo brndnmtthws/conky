@@ -304,7 +304,7 @@ struct information info;
 char *current_config;
 
 /* set to 1 if you want all text to be in uppercase */
-static unsigned int stuff_in_upper_case;
+static unsigned int stuff_in_uppercase;
 
 /* Run how many times? */
 static unsigned long total_run_times;
@@ -450,10 +450,14 @@ int check_contains(char *f, char *s)
 }
 
 #ifdef X11
+
+#define SECRIT_MULTILINE_CHAR '\x02'
+
 static inline int calc_text_width(const char *s, int l)
 {
-	if ((output_methods & TO_X) == 0)
+	if ((output_methods & TO_X) == 0) {
 		return 0;
+	}
 #ifdef XFT
 	if (use_xft) {
 		XGlyphInfo gi;
@@ -479,27 +483,24 @@ static inline int calc_text_width(const char *s, int l)
 
 static char *text_buffer;
 
-#ifdef X11
-static unsigned int special_index;	/* used when drawing */
-#endif /* X11 */
-
 /* quite boring functions */
 
-static inline void for_each_line(char *b, void f(char *))
+static inline void for_each_line(char *b, int f(char *, int))
 {
 	char *ps, *pe;
+	int special_index = 0; /* specials index */
 
 	for (ps = b, pe = b; *pe; pe++) {
 		if (*pe == '\n') {
 			*pe = '\0';
-			f(ps);
+			special_index = f(ps, special_index);
 			*pe = '\n';
 			ps = pe + 1;
 		}
 	}
 
 	if (ps < pe) {
-		f(ps);
+		f(ps, special_index);
 	}
 }
 
@@ -3679,6 +3680,22 @@ static inline double get_barnum(char *buf)
 	return barnum;
 }
 
+/* substitutes all occurrences of '\n' with SECRIT_MULTILINE_CHAR, which allows
+ * multi-line objects like $exec work with $align[rc] and friends
+ */
+void substitute_newlines(char *p, long l)
+{
+	char *s = p;
+	if (l < 0) return;
+	while (p && *p && p < s + l) {
+		if (*p == '\n') {
+			/* only substitute if it's not the last newline */
+			*p = SECRIT_MULTILINE_CHAR;
+		}
+		p++;
+	}
+}
+
 static void generate_text_internal(char *p, int p_max_size,
 		struct text_object root, struct information *cur)
 {
@@ -3699,7 +3716,8 @@ static void generate_text_internal(char *p, int p_max_size,
 	p[0] = 0;
 	obj = root.next;
 	while (obj && p_max_size > 0) {
-		needed = 0; // reset for top stuff
+		char multiline = 0; /* set to 1 if we have a multi-line object */
+		needed = 0; /* reset for top stuff */
 
 /* IFBLOCK jumping algorithm
  *
@@ -4193,14 +4211,13 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 #if defined(__linux__)
 			OBJ(addrs) {
-				if(NULL != obj->data.net->addrs && strlen(obj->data.net->addrs) > 2)
-				{
+				if (NULL != obj->data.net->addrs && strlen(obj->data.net->addrs) > 2) {
 					obj->data.net->addrs[strlen(obj->data.net->addrs) - 2] = 0; /* remove ", " from end of string */
 					strcpy(p, obj->data.net->addrs);
+				} else {
+					strcpy(p, "0.0.0.0");
 				}
-				else
-                                        strcpy(p, "0.0.0.0");
-           }
+			}
 #endif /* __linux__ */
 #if defined(IMLIB2) && defined(X11)
 			OBJ(image) {
@@ -4211,10 +4228,12 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif /* IMLIB2 */
 			OBJ(eval) {
 				evaluate(obj->data.s, p);
+				multiline = 1;
 			}
 			OBJ(exec) {
 				read_exec(obj->data.s, p, text_buffer_size);
 				remove_deleted_chars(p);
+				multiline = 1;
 			}
 			OBJ(execp) {
 				struct information *tmp_info;
@@ -4228,6 +4247,7 @@ static void generate_text_internal(char *p, int p_max_size,
 
 				free_text_objects(&subroot, 1);
 				free(tmp_info);
+				multiline = 1;
 			}
 #ifdef X11
 			OBJ(execgauge) {
@@ -4364,6 +4384,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					obj->data.execi.last_update = current_update_time;
 				}
 				snprintf(p, text_buffer_size, "%s", obj->data.execi.buffer);
+				multiline = 1;
 			}
 			OBJ(execpi) {
 				struct text_object subroot;
@@ -4392,6 +4413,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 				free_text_objects(&subroot, 1);
 				free(tmp_info);
+				multiline = 1;
 			}
 			OBJ(texeci) {
 				if (!obj->data.texeci.p_timed_thread) {
@@ -4411,6 +4433,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					snprintf(p, text_buffer_size, "%s", obj->data.texeci.buffer);
 					timed_thread_unlock(obj->data.texeci.p_timed_thread);
 				}
+				multiline = 1;
 			}
 #endif /* HAVE_POPEN */
 			OBJ(imap_unseen) {
@@ -4684,12 +4707,14 @@ static void generate_text_internal(char *p, int p_max_size,
 					snprintf(p, p_max_size, "%s", str);
 					free(str);
 				}
+				multiline = 1;
 			}
 			OBJ(lua_parse) {
 				char *str = llua_getstring(obj->data.s);
 				if (str) {
 					evaluate(str, p);
 				}
+				multiline = 1;
 			}
 			OBJ(lua_bar) {
 				double per;
@@ -5746,7 +5771,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(to_bytes) {
 				char buf[max_user_text];
 				long long bytes;
-				char unit[16];	//16 because we can also have long names (like mega-bytes)
+				char unit[16];	// 16 because we can also have long names (like mega-bytes)
 
 				generate_text_internal(buf, max_user_text, *obj->sub, cur);
 				if(sscanf(buf, "%lli%s", &bytes, unit) == 2 && strlen(unit) < 16){
@@ -5849,12 +5874,12 @@ static void generate_text_internal(char *p, int p_max_size,
 					}
 					strcat(p, "\n");
 					#ifdef HAVE_OPENMP
-					#pragma omp parallel for
+					#pragma omp parallel for schedule(dynamic,10)
 					#endif /* HAVE_OPENMP */
 					for(i=0; i<2; i++) if(current[i]) current[i]=current[i]->next;
 				}
 				#ifdef HAVE_OPENMP
-				#pragma omp parallel for
+				#pragma omp parallel for schedule(dynamic,10)
 				#endif /* HAVE_OPENMP */
 				for(i=0; i<2; i++) {
 					while(ll_rows[i] != NULL) {
@@ -5996,6 +6021,9 @@ static void generate_text_internal(char *p, int p_max_size,
 				a = outptr - p;
 			}
 #endif /* HAVE_ICONV */
+			if (multiline) {
+				substitute_newlines(p, a - 2);
+			}
 			p += a;
 			p_max_size -= a;
 		}
@@ -6046,7 +6074,7 @@ static void generate_text(void)
 
 	generate_text_internal(p, max_user_text, global_root_object, cur);
 
-	if (stuff_in_upper_case) {
+	if (stuff_in_uppercase) {
 		char *tmp_p;
 
 		tmp_p = text_buffer;
@@ -6064,7 +6092,6 @@ static void generate_text(void)
 	}
 	last_update_time = current_update_time;
 	total_updates++;
-	// free(p);
 }
 
 static inline int get_string_width(const char *s)
@@ -6077,7 +6104,7 @@ static inline int get_string_width(const char *s)
 	return strlen(s);
 }
 
-static inline int get_string_width_special(char *s)
+static int get_string_width_special(char *s, int special_index)
 {
 #ifdef X11
 	char *p, *final;
@@ -6086,7 +6113,7 @@ static inline int get_string_width_special(char *s)
 	long i;
 
 	if ((output_methods & TO_X) == 0) {
-#endif
+#endif /* X11 */
 		return (s) ? strlen(s) : 0;
 #ifdef X11
 	}
@@ -6111,6 +6138,9 @@ static inline int get_string_width_special(char *s)
 				width += specials[special_index + idx].width;
 			}
 			idx++;
+		} else if (*p == SECRIT_MULTILINE_CHAR) {
+			*p = 0;
+			break;
 		} else {
 			p++;
 		}
@@ -6124,7 +6154,7 @@ static inline int get_string_width_special(char *s)
 }
 
 #ifdef X11
-static void text_size_updater(char *s);
+static int text_size_updater(char *s, int special_index);
 
 int last_font_height;
 static void update_text_area(void)
@@ -6140,7 +6170,6 @@ static void update_text_area(void)
 	{
 		text_width = minimum_width;
 		text_height = 0;
-		special_index = 0;
 		last_font_height = font_height();
 		for_each_line(text_buffer, text_size_updater);
 		text_width += 1;
@@ -6243,13 +6272,13 @@ static int draw_mode;		/* FG, BG or OUTLINE */
 #ifdef X11
 static long current_color;
 
-static void text_size_updater(char *s)
+static int text_size_updater(char *s, int special_index)
 {
 	int w = 0;
 	char *p;
 
 	if ((output_methods & TO_X) == 0)
-		return;
+		return 0;
 	/* get string widths and skip specials */
 	p = s;
 	while (*p) {
@@ -6293,6 +6322,14 @@ static void text_size_updater(char *s)
 
 			special_index++;
 			s = p + 1;
+		} else if (*p == SECRIT_MULTILINE_CHAR) {
+			int lw;
+			*p = '\0';
+			lw = get_string_width(s);
+			*p = SECRIT_MULTILINE_CHAR;
+			s = p + 1;
+			w = lw > w ? lw : w;
+			text_height += last_font_height;
 		}
 		p++;
 	}
@@ -6306,6 +6343,7 @@ static void text_size_updater(char *s)
 
 	text_height += last_font_height;
 	last_font_height = font_height();
+	return special_index;
 }
 
 static inline void set_foreground_color(long c)
@@ -6418,36 +6456,38 @@ static void draw_string(const char *s)
 	memcpy(tmpstring1, s, text_buffer_size);
 }
 
-static void draw_line(char *s)
+#ifdef X11
+int draw_each_line_inner(char *s, int special_index, const int last_special_applied)
 {
-#ifdef X11
-	char *p;
+	int font_h = font_height();
 	int cur_y_add = 0;
-	int font_h;
-	char *tmp_str;
+	char *recurse = 0;
+	char *p = s;
+	int last_special_needed = -1;
 
-	if ((output_methods & TO_X) == 0) {
-#endif /* X11 */
-		draw_string(s);
-		return;
-#ifdef X11
-	}
 	cur_x = text_start_x;
 	cur_y += font_ascent();
-	font_h = font_height();
 
-	/* find specials and draw stuff */
-	p = s;
 	while (*p) {
-		if (*p == SPECIAL_CHAR) {
+		if (*p == SECRIT_MULTILINE_CHAR) {
+			/* special newline marker for multi-line objects */
+			recurse = p + 1;
+			*p = '\0';
+			break;
+		}
+		if (*p == SPECIAL_CHAR || last_special_applied > -1) {
 			int w = 0;
 
-			/* draw string before special */
-			*p = '\0';
-			draw_string(s);
-			*p = SPECIAL_CHAR;
-			s = p + 1;
-
+			/* draw string before special, unless we're dealing multi-line
+			 * specials */
+			if (last_special_applied > -1) {
+				special_index = last_special_applied;
+			} else {
+				*p = '\0';
+				draw_string(s);
+				*p = SPECIAL_CHAR;
+				s = p + 1;
+			}
 			/* draw special */
 			switch (specials[special_index].type) {
 				case HORIZONTAL_LINE:
@@ -6670,6 +6710,7 @@ static void draw_line(char *s)
 						char *tmp_hour_str;
 						char *tmp_min_str;
 						char *tmp_sec_str;
+						char *tmp_str;
 						unsigned short int timeunits;
 						if (seconds != 0) {
 							timeunits = seconds / 86400; seconds %= 86400;
@@ -6711,6 +6752,7 @@ static void draw_line(char *s)
 					if (show_graph_scale && (specials[special_index].show_scale == 1)) {
 						int tmp_x = cur_x;
 						int tmp_y = cur_y;
+						char *tmp_str;
 						cur_x += font_ascent() / 2;
 						cur_y += font_h / 2;
 						tmp_str = (char *)
@@ -6762,6 +6804,7 @@ static void draw_line(char *s)
 
 				case OFFSET:
 					w += specials[special_index].arg;
+					last_special_needed = special_index;
 					break;
 
 				case VOFFSET:
@@ -6772,6 +6815,7 @@ static void draw_line(char *s)
 					if (specials[special_index].arg >= 0) {
 						cur_x = (int) specials[special_index].arg;
 					}
+					last_special_needed = special_index;
 					break;
 
 				case TAB:
@@ -6783,6 +6827,7 @@ static void draw_line(char *s)
 						step = 10;
 					}
 					w = step - (cur_x - text_start_x - start) % step;
+					last_special_needed = special_index;
 					break;
 				}
 
@@ -6791,7 +6836,7 @@ static void draw_line(char *s)
 					/* TODO: add back in "+ window.border_inner_margin" to the end of
 					 * this line? */
 					int pos_x = text_start_x + text_width -
-						get_string_width_special(s);
+						get_string_width_special(s, special_index);
 
 					/* printf("pos_x %i text_start_x %i text_width %i cur_x %i "
 						"get_string_width(p) %i gap_x %i "
@@ -6803,13 +6848,15 @@ static void draw_line(char *s)
 					if (pos_x > specials[special_index].arg && pos_x > cur_x) {
 						cur_x = pos_x - specials[special_index].arg;
 					}
+					last_special_needed = special_index;
 					break;
 				}
 
 				case ALIGNC:
 				{
-					int pos_x = (text_width) / 2 - get_string_width_special(s) /
-						2 - (cur_x - text_start_x);
+					int pos_x = (text_width) / 2 - get_string_width_special(s,
+							special_index) / 2 - (cur_x -
+								text_start_x);
 					/* int pos_x = text_start_x + text_width / 2 -
 						get_string_width_special(s) / 2; */
 
@@ -6821,24 +6868,41 @@ static void draw_line(char *s)
 					if (pos_x > specials[special_index].arg) {
 						w = pos_x - specials[special_index].arg;
 					}
+					last_special_needed = special_index;
 					break;
 				}
 			}
 
 			cur_x += w;
 
-			special_index++;
+			if (special_index != last_special_applied) special_index++;
 		}
-
 		p++;
 	}
 
-	if (cur_y_add > 0) {
-		cur_y += cur_y_add;
-	}
+	cur_y += cur_y_add;
 	draw_string(s);
 	cur_y += font_descent();
+	if (recurse && *recurse) {
+		special_index = draw_each_line_inner(recurse, special_index, last_special_applied);
+		*(recurse - 1) = SECRIT_MULTILINE_CHAR;
+	}
+	return special_index;
+}
+#endif /* X11 */
 
+static int draw_line(char *s, int special_index)
+{
+#ifdef X11
+	if ((output_methods & TO_X) == 0) {
+#endif /* X11 */
+		draw_string(s);
+		return 0;
+#ifdef X11
+	}
+
+	/* find specials and draw stuff */
+	return draw_each_line_inner(s, special_index, -1);
 #endif /* X11 */
 }
 
@@ -6871,7 +6935,6 @@ static void draw_text(void)
 		}
 
 		/* draw text */
-		special_index = 0;
 	}
 	setup_fonts();
 #endif /* X11 */
@@ -7755,7 +7818,7 @@ static void set_default_configurations(void)
 	no_buffers = 1;
 	update_interval = 3.0;
 	info.music_player_interval = 1.0;
-	stuff_in_upper_case = 0;
+	stuff_in_uppercase = 0;
 	info.users.number = 1;
 
 #ifdef TCP_PORT_MONITOR
@@ -8527,7 +8590,7 @@ static void load_config_file(const char *f)
 			}
 		}
 		CONF("uppercase") {
-			stuff_in_upper_case = string_to_bool(value);
+			stuff_in_uppercase = string_to_bool(value);
 		}
 		CONF("max_specials") {
 			if (value) {
@@ -8892,7 +8955,7 @@ static void load_config_file_x11(const char *f)
 		}
 #endif
 		CONF("text") {
-			//initialize X11 if nothing X11-related is mentioned before TEXT (and if X11 is the default outputmethod)
+			/* initialize X11 if nothing X11-related is mentioned before TEXT (and if X11 is the default outputmethod) */
 			if(output_methods & TO_X) {
 				X11_initialisation();
 			}
@@ -9359,3 +9422,4 @@ static void signal_handler(int sig)
 	 * and do any signal processing there, NOT here. */
 	g_signal_pending = sig;
 }
+

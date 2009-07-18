@@ -337,11 +337,13 @@
             </command>
             <option>function_name [function arguments]</option>
         </term>
-        <listitem>This function, if defined, will be called by
-        Conky through each iteration after drawing to the window.
-        Requires X support. Takes any number of optional arguments.
-        
-        <para /></listitem>
+        <listitem>
+            <para>This function, if defined, will be called by
+            Conky through each iteration after drawing to the
+            window. Requires X support. Takes any number of
+            optional arguments. Use this hook for drawing things on
+            top of what Conky draws.</para>
+        </listitem>
     </varlistentry>
     <varlistentry>
         <term>
@@ -350,11 +352,13 @@
             </command>
             <option>function_name [function arguments]</option>
         </term>
-        <listitem>This function, if defined, will be called by
-        Conky through each iteration before drawing to the window.
-        Requires X support. Takes any number of optional arguments.
-        
-        <para /></listitem>
+        <listitem>
+            <para>This function, if defined, will be called by
+            Conky through each iteration before drawing to the
+            window. Requires X support. Takes any number of
+            optional arguments. Use this hook for drawing things on
+            top of what Conky draws.</para>
+        </listitem>
     </varlistentry>
     <varlistentry>
         <term>

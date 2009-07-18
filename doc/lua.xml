@@ -102,6 +102,30 @@
     <varlistentry>
         <term>
             <command>
+                <option>conky_build_date</option>
+            </command>
+            <option>string</option>
+        </term>
+        <listitem>
+            <para>A string containing the build date for this
+            particular instance of Conky.</para>
+        </listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>conky_build_arch</option>
+            </command>
+            <option>string</option>
+        </term>
+        <listitem>
+            <para>A string containing the build architecture for
+            this particular instance of Conky.</para>
+        </listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>conky_version</option>
             </command>
             <option>string</option>

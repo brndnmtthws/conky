@@ -420,7 +420,7 @@ void update_net_stats(void)
 		curtmp2 = 0;
 		// get an average
 #ifdef HAVE_OPENMP
-#pragma omp parallel for reduction(+:curtmp1, curtmp2)
+#pragma omp parallel for reduction(+:curtmp1, curtmp2) schedule(dynamic,10)
 #endif /* HAVE_OPENMP */
 		for (i = 0; i < info.net_avg_samples; i++) {
 			curtmp1 = curtmp1 + ns->net_rec[i];
@@ -436,7 +436,7 @@ void update_net_stats(void)
 		ns->trans_speed = curtmp2 / (double) info.net_avg_samples;
 		if (info.net_avg_samples > 1) {
 #ifdef HAVE_OPENMP
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic,10)
 #endif /* HAVE_OPENMP */
 			for (i = info.net_avg_samples; i > 1; i--) {
 				ns->net_rec[i - 1] = ns->net_rec[i - 2];
@@ -687,7 +687,7 @@ inline static void update_stat(void)
 				(float) (cpu[idx].cpu_total - cpu[idx].cpu_last_total);
 			curtmp = 0;
 #ifdef HAVE_OPENMP
-#pragma omp parallel for reduction(+:curtmp)
+#pragma omp parallel for reduction(+:curtmp) schedule(dynamic,10)
 #endif /* HAVE_OPENMP */
 			for (i = 0; i < info.cpu_avg_samples; i++) {
 				curtmp = curtmp + cpu[idx].cpu_val[i];
@@ -707,7 +707,7 @@ inline static void update_stat(void)
 			cpu[idx].cpu_last_total = cpu[idx].cpu_total;
 			cpu[idx].cpu_last_active_total = cpu[idx].cpu_active_total;
 #ifdef HAVE_OPENMP
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic,10)
 #endif /* HAVE_OPENMP */
 			for (i = info.cpu_avg_samples - 1; i > 0; i--) {
 				cpu[idx].cpu_val[i] = cpu[idx].cpu_val[i - 1];
@@ -823,7 +823,7 @@ static int get_first_file_in_a_directory(const char *dir, char *s, int *rep)
 		s[255] = '\0';
 
 #ifdef HAVE_OPENMP
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic,10)
 #endif /* HAVE_OPENMP */
 		for (i = 0; i < n; i++) {
 			free(namelist[i]);
@@ -1492,7 +1492,7 @@ void init_batteries(void)
 		return;
 	}
 #ifdef HAVE_OPENMP
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic,10)
 #endif /* HAVE_OPENMP */
 	for (idx = 0; idx < MAX_BATTERY_COUNT; idx++) {
 		batteries[idx][0] = '\0';

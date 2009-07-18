@@ -366,7 +366,7 @@ void update_stuff(void)
 	 * updated */
 
 	#ifdef HAVE_OPENMP
-	#pragma omp parallel for
+	#pragma omp parallel for schedule(dynamic,10)
 	#endif /* HAVE_OPENMP */
 	for (i = 0; i < 16; i++) {
 		if (netstats[i].dev) {

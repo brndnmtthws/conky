@@ -188,7 +188,7 @@
 		&config_settings;
 	</refsect1>
 	<refsect1>
-		<title>Variables</title>
+		<title>Objects/Variables</title>
 		<para>Colours are parsed using XParsecolor(), there might be a
 			list of them: /usr/share/X11/rgb.txt. 
 			Colour can be also in

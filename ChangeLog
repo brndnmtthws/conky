@@ -3,6 +3,9 @@
 	www.weather.com as a source of weather data (this avoids adding
 	libxml2 as a required dependency for users that wish to use noaa
 	and not weather.com)
+	* Added support for X alignment across multi-lined objects (i.e., using
+	$alignr with $exec)
+	* Disabled OpenMP code until GCC's implementation stabilizes
 
 2009-07-18
 	* www.weather.com can now be used as well as a source of weather data

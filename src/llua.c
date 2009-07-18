@@ -84,6 +84,12 @@ void llua_init(void)
 	lua_pushstring(lua_L, VERSION);
 	lua_setglobal(lua_L, "conky_version");
 
+	lua_pushstring(lua_L, BUILD_DATE);
+	lua_setglobal(lua_L, "conky_build_date");
+
+	lua_pushstring(lua_L, BUILD_ARCH);
+	lua_setglobal(lua_L, "conky_build_arch");
+
 	lua_pushstring(lua_L, current_config);
 	lua_setglobal(lua_L, "conky_config");
 
