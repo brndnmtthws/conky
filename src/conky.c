@@ -2970,9 +2970,9 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.scroll.step = 1;
 		if (arg && sscanf(arg, "%u %n", &obj->data.scroll.show, &n1) > 0) {
 			sscanf(arg + n1, "%u %n", &obj->data.scroll.step, &n2);
-			if(*(arg + n1 + n2)) {
+			if (*(arg + n1 + n2)) {
 				n1 += n2;
-			}else{
+			} else {
 				obj->data.scroll.step = 1;
 			}
 			obj->data.scroll.text = strndup(arg + n1, text_buffer_size);
@@ -3681,7 +3681,7 @@ static inline double get_barnum(char *buf)
 }
 
 /* substitutes all occurrences of '\n' with SECRIT_MULTILINE_CHAR, which allows
- * multi-line objects like $exec work with $align[rc] and friends
+ * multiline objects like $exec work with $align[rc] and friends
  */
 void substitute_newlines(char *p, long l)
 {
@@ -3716,7 +3716,6 @@ static void generate_text_internal(char *p, int p_max_size,
 	p[0] = 0;
 	obj = root.next;
 	while (obj && p_max_size > 0) {
-		char multiline = 0; /* set to 1 if we have a multi-line object */
 		needed = 0; /* reset for top stuff */
 
 /* IFBLOCK jumping algorithm
@@ -4228,12 +4227,10 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif /* IMLIB2 */
 			OBJ(eval) {
 				evaluate(obj->data.s, p);
-				multiline = 1;
 			}
 			OBJ(exec) {
 				read_exec(obj->data.s, p, text_buffer_size);
 				remove_deleted_chars(p);
-				multiline = 1;
 			}
 			OBJ(execp) {
 				struct information *tmp_info;
@@ -4247,7 +4244,6 @@ static void generate_text_internal(char *p, int p_max_size,
 
 				free_text_objects(&subroot, 1);
 				free(tmp_info);
-				multiline = 1;
 			}
 #ifdef X11
 			OBJ(execgauge) {
@@ -4384,7 +4380,6 @@ static void generate_text_internal(char *p, int p_max_size,
 					obj->data.execi.last_update = current_update_time;
 				}
 				snprintf(p, text_buffer_size, "%s", obj->data.execi.buffer);
-				multiline = 1;
 			}
 			OBJ(execpi) {
 				struct text_object subroot;
@@ -4413,7 +4408,6 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 				free_text_objects(&subroot, 1);
 				free(tmp_info);
-				multiline = 1;
 			}
 			OBJ(texeci) {
 				if (!obj->data.texeci.p_timed_thread) {
@@ -4433,7 +4427,6 @@ static void generate_text_internal(char *p, int p_max_size,
 					snprintf(p, text_buffer_size, "%s", obj->data.texeci.buffer);
 					timed_thread_unlock(obj->data.texeci.p_timed_thread);
 				}
-				multiline = 1;
 			}
 #endif /* HAVE_POPEN */
 			OBJ(imap_unseen) {
@@ -4707,14 +4700,12 @@ static void generate_text_internal(char *p, int p_max_size,
 					snprintf(p, p_max_size, "%s", str);
 					free(str);
 				}
-				multiline = 1;
 			}
 			OBJ(lua_parse) {
 				char *str = llua_getstring(obj->data.s);
 				if (str) {
 					evaluate(str, p);
 				}
-				multiline = 1;
 			}
 			OBJ(lua_bar) {
 				double per;
@@ -6021,7 +6012,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				a = outptr - p;
 			}
 #endif /* HAVE_ICONV */
-			if (multiline) {
+			if (obj->type != OBJ_text) {
 				substitute_newlines(p, a - 2);
 			}
 			p += a;
@@ -6470,7 +6461,7 @@ int draw_each_line_inner(char *s, int special_index, const int last_special_appl
 
 	while (*p) {
 		if (*p == SECRIT_MULTILINE_CHAR) {
-			/* special newline marker for multi-line objects */
+			/* special newline marker for multiline objects */
 			recurse = p + 1;
 			*p = '\0';
 			break;
@@ -6478,7 +6469,7 @@ int draw_each_line_inner(char *s, int special_index, const int last_special_appl
 		if (*p == SPECIAL_CHAR || last_special_applied > -1) {
 			int w = 0;
 
-			/* draw string before special, unless we're dealing multi-line
+			/* draw string before special, unless we're dealing multiline
 			 * specials */
 			if (last_special_applied > -1) {
 				special_index = last_special_applied;
