@@ -6884,7 +6884,7 @@ int draw_each_line_inner(char *s, int special_index, const int last_special_appl
 	draw_string(s);
 	cur_y += font_descent();
 	if (recurse && *recurse) {
-		special_index = draw_each_line_inner(recurse, special_index, last_special_applied);
+		special_index = draw_each_line_inner(recurse, special_index, last_special_needed);
 		*(recurse - 1) = SECRIT_MULTILINE_CHAR;
 	}
 	return special_index;
