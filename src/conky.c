@@ -7463,6 +7463,7 @@ void clean_up(void *memtofree1, void* memtofree2)
 		x_initialised = NO;
 	}else{
 		free(fonts);	//in set_default_configurations a font is set but not loaded
+		font_count = -1;
 	}
 
 #endif /* X11 */
@@ -7952,7 +7953,7 @@ static void load_config_file(const char *f)
 		CONF2("out_to_x") {
 			/* don't listen if X is already initialised or
 			 * if we already know we don't want it */
-			if(x_initialised == NO) {
+			if(x_initialised != YES) {
 				if (string_to_bool(value)) {
 					output_methods &= TO_X;
 				} else {
