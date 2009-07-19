@@ -2583,11 +2583,10 @@
         may also contain variables. 'step' is optional and defaults
         to 1 if not set. If a var creates output on multiple lines
         then the lines are placed behind each other separated with
-        a '|'-sign. The effect of $color is disabled inside scroll.
-        If you want spaces between the start and the end of 'text',
-	place them at the end of 'text' not at the front ("4 foobar"
-	can generate "arfo" but "4 foobar " will keep the space like
-	this "ar f").
+        a '|'-sign. If you change the textcolor inside $scroll it
+        will automatically have it's old value back at the end of
+        $scroll. The end and the start of text will be seperated by
+        'length' number of spaces.
         <para /></listitem>
     </varlistentry>
     <varlistentry>

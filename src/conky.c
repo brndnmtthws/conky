@@ -2992,7 +2992,12 @@ static struct text_object *construct_text_object(const char *s,
 			} else {
 				obj->data.scroll.step = 1;
 			}
-			obj->data.scroll.text = strndup(arg + n1, text_buffer_size);
+			obj->data.scroll.text = malloc(strlen(arg + n1) + obj->data.scroll.show + 1);
+			for(n2 = 0; (unsigned int) n2 < obj->data.scroll.show; n2++) {
+				obj->data.scroll.text[n2] = ' ';
+			}
+			obj->data.scroll.text[n2] = 0;
+			strcat(obj->data.scroll.text, arg + n1);
 			obj->data.scroll.start = 0;
 			obj->sub = malloc(sizeof(struct text_object));
 			extract_variable_text_internal(obj->sub,
@@ -5792,50 +5797,68 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%s", buf);
 			}
 			OBJ(scroll) {
-				unsigned int j, k, colorchanges = 0;
-				char *tmp, buf[max_user_text];
+				unsigned int j, colorchanges = 0, frontcolorchanges = 0, visibcolorchanges = 0, strend;
+				char *pwithcolors;
+				char buf[max_user_text];
 				generate_text_internal(buf, max_user_text,
 				                       *obj->sub, cur);
-
-				if (strlen(buf) <= obj->data.scroll.show) {
-					snprintf(p, p_max_size, "%s", buf);
-					break;
-				}
 				for(j = 0; buf[j] != 0; j++) {
 					switch(buf[j]) {
 					case '\n':	//place all the lines behind each other with LINESEPARATOR between them
 #define LINESEPARATOR '|'
 						buf[j]=LINESEPARATOR;
 						break;
-					case 1:	//make sure $color isn't treated like a char
-						strfold(buf+j, 1);
+					case 1:	//every 1 is a color change (1, not '1')
 						colorchanges++;
 						break;
 					}
 				}
-				//scroll the output obj->data.scroll.start places by copying that many chars from
-				//the front of the string to tmp, scrolling the rest to the front and placing tmp
-				//at the back of the string
-				tmp = calloc(obj->data.scroll.start + 1, sizeof(char));
-				strncpy(tmp, buf, obj->data.scroll.start); tmp[obj->data.scroll.start] = 0;
-				for(j = obj->data.scroll.start; buf[j] != 0; j++){
-					buf[j - obj->data.scroll.start] = buf[j];
+				//no scrolling necessary if the length of the text to scroll is too short
+				if (strlen(buf) - colorchanges <= obj->data.scroll.show) {
+					snprintf(p, p_max_size, "%s", buf);
+					break;
 				}
-				strcpy(&buf[j - obj->data.scroll.start], tmp);
-				free(tmp);
-				//only show the requested number of chars
-				if(obj->data.scroll.show < j) {
-					for(k = 0; k < colorchanges; k++) {
-						buf[obj->data.scroll.show + k] = 1;
+				//make sure a colorchange at the front is not part of the string we are going to show
+				while(*(buf + obj->data.scroll.start) == 1) {
+					obj->data.scroll.start++;
+				}
+				//place all chars that should be visible in p, including colorchanges
+				for(j=0; j < obj->data.scroll.show + visibcolorchanges; j++) {
+					p[j] = *(buf + obj->data.scroll.start + j);
+					if(p[j] == 1) {
+						visibcolorchanges++;
 					}
-					buf[obj->data.scroll.show + colorchanges] = 0;
+					//if there is still room fill it with spaces
+					if( ! p[j]) break;
 				}
-				//next time, scroll a place more or reset scrolling if we are at the end
+				for(; j < obj->data.scroll.show + visibcolorchanges; j++) {
+					p[j] = ' ';
+				}
+				p[j] = 0;
+				//count colorchanges in front of the visible part and place that many colorchanges in front of the visible part
+				for(j = 0; j < obj->data.scroll.start; j++) {
+					if(buf[j] == 1) frontcolorchanges++;
+				}
+				pwithcolors=malloc(strlen(p) + 1 + colorchanges - visibcolorchanges);
+				for(j = 0; j < frontcolorchanges; j++) {
+					pwithcolors[j] = 1;
+				}
+				pwithcolors[j] = 0;
+				strcat(pwithcolors,p);
+				strend = strlen(pwithcolors);
+				//and place the colorchanges not in front or in the visible part behind the visible part
+				for(j = 0; j < colorchanges - frontcolorchanges - visibcolorchanges; j++) {
+					pwithcolors[strend + j] = 1;
+				}
+				pwithcolors[strend + j] = 0;
+				strcpy(p, pwithcolors);
+				free(pwithcolors);
+				//scroll
 				obj->data.scroll.start += obj->data.scroll.step;
-				if(obj->data.scroll.start >= j){
+				if(buf[obj->data.scroll.start] == 0){
 					 obj->data.scroll.start = 0;
 				}
-				snprintf(p, p_max_size, "%s", buf);
+				//reset color when scroll is finished
 				new_fg(p + strlen(p), obj->data.scroll.resetcolor);
 			}
 			OBJ(combine) {
