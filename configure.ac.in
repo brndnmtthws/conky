@@ -907,7 +907,9 @@ $PACKAGE $VERSION configured successfully:
   hddtemp:          $want_hddtemp
   portmon:          $want_portmon
   RSS:              $want_rss
-  Weather (METAR):  $want_weather
+  Weather (METAR)
+    NOAA:	    $want_weather
+    XOAP:	    $want_xoap
   wireless:         $want_wlan
   IBM:              $want_ibm
   nvidia:           $want_nvidia
