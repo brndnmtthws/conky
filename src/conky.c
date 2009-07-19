@@ -9283,7 +9283,7 @@ void initialisation(int argc, char **argv) {
 				fprintf(stderr, PACKAGE_NAME": forked to background, pid is %d\n",
 					pid);
 				fflush(stderr);
-				return;
+				exit(EXIT_SUCCESS);
 		}
 	}
 

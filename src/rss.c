@@ -144,7 +144,7 @@ PRSS *get_rss_info(char *uri, int delay)
 		curl_easy_setopt(curl, CURLOPT_USERAGENT, "conky-rss/1.0");
 
 		res = curl_easy_perform(curl);
-		if (chunk.size) {
+		if (res == CURLE_OK && chunk.size) {
 			curdata = prss_parse_data(chunk.memory);
 			free(chunk.memory);
 		} else {
