@@ -212,7 +212,10 @@ static void print_version(void)
 		   "  * RSS\n"
 #endif /* RSS */
 #ifdef WEATHER
-		   "  * Weather (METAR)\n"
+		   "  * Weather (NOAA)\n"
+#ifdef XOAP
+		   "  * Weather (XOAP)\n"
+#endif /* XOAP */
 #endif /* WEATHER */
 #ifdef HAVE_IWLIB
 		   "  * wireless\n"
