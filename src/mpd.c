@@ -197,7 +197,7 @@ static void *update_mpd_thread(void *arg)
 			printf("error: %s\n", status->error);
 		} */
 
-		switch(status->state) {
+		switch (status->state) {
 			case MPD_STATUS_STATE_PLAY:
 				mpd_info.status = "Playing";
 				break;
@@ -213,7 +213,11 @@ static void *update_mpd_thread(void *arg)
 				break;
 		}
 
-		if (status->state == MPD_STATUS_STATE_PLAY ||
+		if (status->state == MPD_STATUS_STATE_STOP) {
+			mpd_info.progress = (float) status->elapsedTime /
+				status->totalTime;
+			mpd_info.elapsed = status->elapsedTime;
+		} else if (status->state == MPD_STATUS_STATE_PLAY ||
 		    status->state == MPD_STATUS_STATE_PAUSE) {
 			mpd_info.is_playing = 1;
 			mpd_info.bitrate = status->bitRate;
