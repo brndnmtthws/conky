@@ -35,7 +35,7 @@ libcairo_la_CFLAGS = $(cairo_CFLAGS) $(cairo_xlib_CFLAGS)
 libcairo_la_LIBADD = $(cairo_LIBS) $(cairo_xlib_LIBS) -ltolua++
 
 cairo.c: cairo.pkg
-	${toluapp} -n cairo -o cairo.c cairo.pkg
+	${toluapp} -n cairo -o cairo.c $(srcdir)/cairo.pkg
 
 endif # BUILD_LUA_CAIRO
 
@@ -47,7 +47,7 @@ libimlib2_la_CFLAGS = $(Imlib2_CFLAGS)
 libimlib2_la_LIBADD = $(Imlib2_LIBS) -ltolua++
 
 imlib2.c: imlib2.pkg
-	${toluapp} -n imlib2 -o imlib2.c imlib2.pkg
+	${toluapp} -n imlib2 -o imlib2.c $(srcdir)/imlib2.pkg
 
 endif # BUILD_LUA_IMLIB2
 pkglib_LTLIBRARIES = $(libcairo) $(libimlib2)
