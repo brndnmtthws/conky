@@ -5808,7 +5808,7 @@ static void generate_text_internal(char *p, int p_max_size,
 #define LINESEPARATOR '|'
 						buf[j]=LINESEPARATOR;
 						break;
-					case 1:	//every 1 is a color change (1, not '1')
+					case SPECIAL_CHAR:
 						colorchanges++;
 						break;
 					}
@@ -5819,13 +5819,13 @@ static void generate_text_internal(char *p, int p_max_size,
 					break;
 				}
 				//make sure a colorchange at the front is not part of the string we are going to show
-				while(*(buf + obj->data.scroll.start) == 1) {
+				while(*(buf + obj->data.scroll.start) == SPECIAL_CHAR) {
 					obj->data.scroll.start++;
 				}
 				//place all chars that should be visible in p, including colorchanges
 				for(j=0; j < obj->data.scroll.show + visibcolorchanges; j++) {
 					p[j] = *(buf + obj->data.scroll.start + j);
-					if(p[j] == 1) {
+					if(p[j] == SPECIAL_CHAR) {
 						visibcolorchanges++;
 					}
 					//if there is still room fill it with spaces
@@ -5837,18 +5837,18 @@ static void generate_text_internal(char *p, int p_max_size,
 				p[j] = 0;
 				//count colorchanges in front of the visible part and place that many colorchanges in front of the visible part
 				for(j = 0; j < obj->data.scroll.start; j++) {
-					if(buf[j] == 1) frontcolorchanges++;
+					if(buf[j] == SPECIAL_CHAR) frontcolorchanges++;
 				}
 				pwithcolors=malloc(strlen(p) + 1 + colorchanges - visibcolorchanges);
 				for(j = 0; j < frontcolorchanges; j++) {
-					pwithcolors[j] = 1;
+					pwithcolors[j] = SPECIAL_CHAR;
 				}
 				pwithcolors[j] = 0;
 				strcat(pwithcolors,p);
 				strend = strlen(pwithcolors);
 				//and place the colorchanges not in front or in the visible part behind the visible part
 				for(j = 0; j < colorchanges - frontcolorchanges - visibcolorchanges; j++) {
-					pwithcolors[strend + j] = 1;
+					pwithcolors[strend + j] = SPECIAL_CHAR;
 				}
 				pwithcolors[strend + j] = 0;
 				strcpy(p, pwithcolors);
