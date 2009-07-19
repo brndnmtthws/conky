@@ -552,7 +552,7 @@ void fetch_weather_info(location *curloc)
 		curl_easy_setopt(curl, CURLOPT_USERAGENT, "conky-weather/1.0");
 
 		res = curl_easy_perform(curl);
-		if (chunk.size) {
+		if (res == CURLE_OK && chunk.size) {
 			timed_thread_lock(curloc->p_timed_thread);
 			parse_weather(&curloc->data, chunk.memory);
 			timed_thread_unlock(curloc->p_timed_thread);
