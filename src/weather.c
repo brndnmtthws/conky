@@ -133,69 +133,69 @@ int rel_humidity(int dew_point, int air) {
 static void parse_cc(PWEATHER *res, xmlNodePtr cc)
 {
 
-  xmlNodePtr cur = NULL;
+	xmlNodePtr cur = NULL;
 
-  for (cur = cc; cur; cur = cur->next) {
-    if (cur->type == XML_ELEMENT_NODE) {
-      if (!xmlStrcmp(cur->name, (const xmlChar *) "lsup")) {
-	strncpy(res->lastupd, (char *)cur->children->content, 31);
-      } else if	(!xmlStrcmp(cur->name, (const xmlChar *) "tmp")) {
-	res->temp = atoi((char *)cur->children->content);
-      } else if (!xmlStrcmp(cur->name, (const xmlChar *) "t")) {
-	if(res->xoap_t[0] == '\0') {
-	  strncpy(res->xoap_t, (char *)cur->children->content, 31);
+	for (cur = cc; cur; cur = cur->next) {
+		if (cur->type == XML_ELEMENT_NODE) {
+			if (!xmlStrcmp(cur->name, (const xmlChar *) "lsup")) {
+				strncpy(res->lastupd, (char *)cur->children->content, 31);
+			} else if	(!xmlStrcmp(cur->name, (const xmlChar *) "tmp")) {
+				res->temp = atoi((char *)cur->children->content);
+			} else if (!xmlStrcmp(cur->name, (const xmlChar *) "t")) {
+				if(res->xoap_t[0] == '\0') {
+					strncpy(res->xoap_t, (char *)cur->children->content, 31);
+				}
+			} else if (!xmlStrcmp(cur->name, (const xmlChar *) "r")) {
+				res->bar = atoi((char *)cur->children->content);
+			} else if (!xmlStrcmp(cur->name, (const xmlChar *) "s")) {
+				res->wind_s = atoi((char *)cur->children->content);
+			} else if (!xmlStrcmp(cur->name, (const xmlChar *) "d")) {
+				if (isdigit((char)cur->children->content[0])) {
+					res->wind_d = atoi((char *)cur->children->content);
+				}
+			} else if (!xmlStrcmp(cur->name, (const xmlChar *) "hmid")) {
+				res->hmid = atoi((char *)cur->children->content);
+			}
+		}
+		parse_cc(res, cur->children);
 	}
-      } else if (!xmlStrcmp(cur->name, (const xmlChar *) "r")) {
-	res->bar = atoi((char *)cur->children->content);
-      } else if (!xmlStrcmp(cur->name, (const xmlChar *) "s")) {
-	res->wind_s = atoi((char *)cur->children->content);
-      } else if (!xmlStrcmp(cur->name, (const xmlChar *) "d")) {
-	if (isdigit((char)cur->children->content[0])) {
-	    res->wind_d = atoi((char *)cur->children->content);
-	  }
-      } else if (!xmlStrcmp(cur->name, (const xmlChar *) "hmid")) {
-	res->hmid = atoi((char *)cur->children->content);
-      }
-    }
-    parse_cc(res, cur->children);
-  }
-  return;
+	return;
 }
 
 static void parse_weather_xml(PWEATHER *res, const char *data)
 {
-  xmlDocPtr doc;
-  xmlNodePtr cur;
+	xmlDocPtr doc;
+	xmlNodePtr cur;
 
-  if (!(doc = xmlReadMemory(data, strlen(data), "", NULL, 0))) {
-    ERR("weather: can't read xml data");
-    return;
-  }
-
-  cur = xmlDocGetRootElement(doc);
-
-  while(cur) {
-    if (cur->type == XML_ELEMENT_NODE) {
-      if (!xmlStrcmp(cur->name, (const xmlChar *) "weather")) {
-	cur = cur->children;
-	while (cur != NULL) {
-	  if (cur->type == XML_ELEMENT_NODE) {
-	    if (!xmlStrcmp(cur->name, (const xmlChar *) "cc")) {
-	      parse_cc(res, cur->children);
-	      xmlFreeDoc(doc);
-	      return;
-	    }
-	  }
-	  cur = cur->next;
+	if (!(doc = xmlReadMemory(data, strlen(data), "", NULL, 0))) {
+		ERR("weather: can't read xml data");
+		return;
 	}
-      }
-    }
-    cur = cur->next;
-  }
 
-  ERR("weather: incorrect xml data");
-  xmlFreeDoc(doc);
-  return ;
+	cur = xmlDocGetRootElement(doc);
+
+	while(cur) {
+		if (cur->type == XML_ELEMENT_NODE) {
+			if (!xmlStrcmp(cur->name, (const xmlChar *) "weather")) {
+				cur = cur->children;
+				while (cur != NULL) {
+					if (cur->type == XML_ELEMENT_NODE) {
+						if (!xmlStrcmp(cur->name, (const xmlChar *) "cc")) {
+							parse_cc(res, cur->children);
+							xmlFreeDoc(doc);
+							return;
+						}
+					}
+					cur = cur->next;
+				}
+			}
+		}
+		cur = cur->next;
+	}
+
+	ERR("weather: incorrect xml data");
+	xmlFreeDoc(doc);
+	return ;
 }
 #endif /* XOAP */
 
@@ -491,45 +491,45 @@ static inline void parse_token(PWEATHER *res, char *token) {
 
 static void parse_weather(PWEATHER *res, const char *data)
 {
-        //Reset results
+	//Reset results
 	memset(res, 0, sizeof(PWEATHER));
 
 #ifdef XOAP
 	//Check if it is an xml file
 	if ( strncmp(data, "<?xml ", 6) == 0 ) {
-	  parse_weather_xml(res, data);
+		parse_weather_xml(res, data);
 	} else
 #endif /* XOAP */
-	  {
-	    //We assume its a text file
-	    char s_tmp[256];
-	    const char delim[] = " ";
+	{
+		//We assume its a text file
+		char s_tmp[256];
+		const char delim[] = " ";
 
-	    //Divide time stamp and metar data
-	    if (sscanf(data, "%[^'\n']\n%[^'\n']", res->lastupd, s_tmp) == 2) {
+		//Divide time stamp and metar data
+		if (sscanf(data, "%[^'\n']\n%[^'\n']", res->lastupd, s_tmp) == 2) {
 
-	    //Process all tokens
-	    char *p_tok = NULL;
-	    char *p_save = NULL;
+			//Process all tokens
+			char *p_tok = NULL;
+			char *p_save = NULL;
 
-	    if ((strtok_r(s_tmp, delim, &p_save)) != NULL) {
+			if ((strtok_r(s_tmp, delim, &p_save)) != NULL) {
 
-	      //Jump first token, must be icao
-	      p_tok = strtok_r(NULL, delim, &p_save);
+				//Jump first token, must be icao
+				p_tok = strtok_r(NULL, delim, &p_save);
 
-	      do {
+				do {
 
-		parse_token(res, p_tok);
-		p_tok = strtok_r(NULL, delim, &p_save);
+					parse_token(res, p_tok);
+					p_tok = strtok_r(NULL, delim, &p_save);
 
-	      } while (p_tok != NULL);
-	    }
-	    return;
-	    }
-	    else {
-	      return;
-	    }
-	  }
+				} while (p_tok != NULL);
+			}
+			return;
+		}
+		else {
+			return;
+		}
+	}
 }
 
 void fetch_weather_info(location *curloc)
@@ -604,25 +604,25 @@ void process_weather_info(char *p, int p_max_size, char *uri, char *data_type, i
 		temp_print(p, p_max_size, curloc->data.temp, TEMP_CELSIUS);
 	} else if (strcmp(data_type, "cloud_cover") == EQUAL) {
 #ifdef XOAP
-	        if (curloc->data.xoap_t[0] != '\0') {
+		if (curloc->data.xoap_t[0] != '\0') {
 			strncpy(p, curloc->data.xoap_t, p_max_size);
 		} else
 #endif /* XOAP */
-		  if (curloc->data.cc == 0) {
-			strncpy(p, "", p_max_size);
-		} else if (curloc->data.cc < 3) {
-			strncpy(p, "clear", p_max_size);
-		} else if (curloc->data.cc < 5) {
-			strncpy(p, "partly cloudy", p_max_size);
-		} else if (curloc->data.cc == 5) {
-			strncpy(p, "cloudy", p_max_size);
-		} else if (curloc->data.cc == 6) {
-			strncpy(p, "overcast", p_max_size);
-		} else if (curloc->data.cc == 7) {
-			strncpy(p, "towering cumulus", p_max_size);
-		} else  {
-			strncpy(p, "cumulonimbus", p_max_size);
-		}
+			if (curloc->data.cc == 0) {
+				strncpy(p, "", p_max_size);
+			} else if (curloc->data.cc < 3) {
+				strncpy(p, "clear", p_max_size);
+			} else if (curloc->data.cc < 5) {
+				strncpy(p, "partly cloudy", p_max_size);
+			} else if (curloc->data.cc == 5) {
+				strncpy(p, "cloudy", p_max_size);
+			} else if (curloc->data.cc == 6) {
+				strncpy(p, "overcast", p_max_size);
+			} else if (curloc->data.cc == 7) {
+				strncpy(p, "towering cumulus", p_max_size);
+			} else  {
+				strncpy(p, "cumulonimbus", p_max_size);
+			}
 	} else if (strcmp(data_type, "pressure") == EQUAL) {
 		snprintf(p, p_max_size, "%d", curloc->data.bar);
 	} else if (strcmp(data_type, "wind_speed") == EQUAL) {
