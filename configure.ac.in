@@ -440,6 +440,7 @@ AC_ARG_ENABLE([lua-cairo],
 	      AC_HELP_STRING([--enable-lua-cairo], [enable if you want Lua Cairo bindings for Conky (requires lua-extras enabled) @<:@default=no@:>@]),
 	      [want_lua_cairo="$enableval"], [want_lua_cairo=no])
 want_lua_imlib2=no
+need_tolua=no
 
 AM_CONDITIONAL(BUILD_LUA, test x$want_lua = xyes)
 if test x$want_lua = xyes; then
@@ -456,7 +457,6 @@ if test x$want_lua = xyes; then
 		want_lua_cairo=no
 		want_lua_imlib2=no
 	else
-		AC_CHECK_PROGS(HAVE_TOLUAPP, [tolua++ tolua++5.1], no)
 		if test "x$want_x11" != "xyes"; then
 			dnl silently disable if no x11
 			want_lua_cairo=no
@@ -464,33 +464,27 @@ if test x$want_lua = xyes; then
 			if test x$want_lua_cairo = xyes; then
 				PKG_CHECK_MODULES([cairo], cairo)
 				PKG_CHECK_MODULES([cairo_xlib], cairo-xlib)
-				if test x"$HAVE_TOLUAPP" = x"no"; then
-					AC_MSG_ERROR([tolua++ or tolua++5.1 is required for Lua Cairo support.])
-				else
-					AC_CHECK_PROGS(toluapp, [tolua++ tolua++5.1])
-					AC_SEARCH_LIBS(tolua_error,
-						tolua++ tolua++5.1,
-						AC_SUBST(tolua_LIBS,"${LIBS}"),
-						AC_MSG_ERROR([tolua_error not found]),
-						-llua5.1)
-					AC_DEFINE(HAVE_LUA_CAIRO, 1, [Define if you want Lua Cairo bindings for Conky])
-				fi
+				AC_DEFINE(HAVE_LUA_CAIRO, 1, [Define if you want Lua Cairo bindings for Conky])
+				need_tolua=yes
 				libcairo_CFLAGS="$libcairo_CFLAGS $cairo_CFLAGS $cairo_xlib_CFLAGS"
 				libcairo_LIBS="$libcairo_LIBS $cairo_LIBS $cairo_xlib_LIBS"
 			fi
 			if test x$want_imlib2 = xyes; then
-				if test x"$HAVE_TOLUAPP" = x"no"; then
-					AC_MSG_ERROR([tolua++ or tolua++5.1 is required for Lua Imlib2 support.])
-				else
-					want_lua_imlib2=yes
-					AC_CHECK_PROGS(toluapp, [tolua++ tolua++5.1])
-					AC_SEARCH_LIBS(tolua_error,
-						tolua++ tolua++5.1,
-						AC_SUBST(tolua_LIBS,"${LIBS}"),
-						AC_MSG_ERROR([tolua_error not found]),
-						-llua5.1)
-					AC_DEFINE(HAVE_LUA_IMLIB2, 1, [Define if you want Lua Imlib2 bindings for Conky])
-				fi
+				need_tolua=yes
+				want_lua_imlib2=yes
+				AC_DEFINE(HAVE_LUA_IMLIB2, 1, [Define if you want Lua Imlib2 bindings for Conky])
+			fi
+		fi
+		if test x$need_tolua = xyes; then
+			AC_CHECK_PROGS(toluapp, [tolua++ tolua++5.1], no)
+			if test x$toluapp = xno; then
+				AC_MSG_ERROR([tolua++ or tolua++5.1 is required for Lua extras.])
+			else
+				AC_SEARCH_LIBS(tolua_error,
+							   [tolua++ tolua++5.1],
+							   AC_SUBST(tolua_LIBS,"${LIBS}"),
+							   AC_MSG_ERROR([tolua_error not found]),
+							   $LUA51_LIBS)
 			fi
 		fi
 	fi
