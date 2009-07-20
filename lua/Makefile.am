@@ -21,6 +21,10 @@
 libimlib2_la_SOURCES = imlib2.c
 libcairo_la_SOURCES = cairo.c
 
+EXTRA_DIST = \
+			 cairo.pkg \
+			 imlib2.pkg
+
 clean-am: clean-generic mostlyclean-am
 	rm -f $(libimlib2_la_SOURCES)
 	rm -f $(libcairo_la_SOURCES)
