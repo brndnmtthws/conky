@@ -17,6 +17,8 @@
 import os.path
 import re
 import sys
+import mmap
+from datetime import *
 
 file_names = dict()
 file_names["text_objects"]    = "src/text_object.h"
@@ -242,6 +244,15 @@ for line in lines:
 file.truncate(0)
 file.seek(0)
 file.writelines(lines)
+file.close()
+
+# lastly, update the date in docs.xml
+file = open(file_names["docs"], 'r+')
+map = mmap.mmap(file.fileno(), os.path.getsize(file_names["docs"]))
+d = map.find("<date>")
+d += 6 # skip over first date stuff
+map[d:d+10] = datetime.now().strftime("%F")
+map.close()
 file.close()
 
 print "done."
