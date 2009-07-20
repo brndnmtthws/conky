@@ -110,6 +110,10 @@ if BUILD_EVE
 eve = eve.c eve.h
 endif
 
+if BUILD_CURL
+ccurl_thread = ccurl_thread.c ccurl_thread.h
+endif
+
 if BUILD_RSS
 rss = rss.c prss.c prss.h
 endif
@@ -161,7 +165,7 @@ conky_SOURCES = \
 	$(eve)                  \
 	$(rss)                  \
 	$(weather)              \
-	$(lua)			\
+	$(lua)                  \
 	$(solaris)              \
 	timed_thread.c          \
 	timed_thread.h          \
@@ -179,8 +183,9 @@ conky_SOURCES = \
 	text_object.h           \
 	text_object.c           \
 	algebra.h               \
-	algebra.c		\
-	$(imlib2)
+	algebra.c               \
+	$(imlib2)               \
+	$(ccurl_thread)
 
 conky_LDFLAGS = \
 	$(PTHREAD_LIBS) \
@@ -211,8 +216,9 @@ EXTRA_DIST = \
 	libtcp-portmon.c        \
 	libtcp-portmon.h        \
 	rss.h                   \
-	weather.h		\
-	llua.h			\
+	prss.h                  \
+	weather.h               \
+	llua.h                  \
 	mail.h                  \
 	mixer.h                 \
 	moc.h                   \
@@ -240,9 +246,10 @@ EXTRA_DIST = \
 	ibm.c                   \
 	ibm.h                   \
 	sony.h                  \
-	users.c			\
-	imlib2.c		\
-	imlib2.h
+	users.c                 \
+	imlib2.c                \
+	imlib2.h                \
+	ccurl_thread.h
 
 
 # vi:set ts=4 sw=4 noet ai nocindent syntax=automake:

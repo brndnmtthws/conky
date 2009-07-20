@@ -24,29 +24,19 @@
 #define PARSE_OPTIONS 0
 #endif
 
-PRSS *prss_parse_doc(xmlDocPtr doc);
+void prss_parse_doc(PRSS *result, xmlDocPtr doc);
 
-PRSS *prss_parse_data(const char *xml_data)
+void prss_parse_data(void *result, const char *xml_data)
 {
+	PRSS *data = (PRSS*)result;
 	xmlDocPtr doc = xmlReadMemory(xml_data, strlen(xml_data), "", NULL,
 		PARSE_OPTIONS);
 
 	if (!doc) {
-		return NULL;
+		return;
 	}
 
-	return prss_parse_doc(doc);
-}
-
-PRSS *prss_parse_file(const char *xml_file)
-{
-	xmlDocPtr doc = xmlReadFile(xml_file, NULL, PARSE_OPTIONS);
-
-	if (!doc) {
-		return NULL;
-	}
-
-	return prss_parse_doc(doc);
+	prss_parse_doc(data, doc);
 }
 
 void prss_free(PRSS *data)
@@ -57,7 +47,6 @@ void prss_free(PRSS *data)
 	xmlFreeDoc(data->_data);
 	free(data->version);
 	free(data->items);
-	free(data);
 }
 
 static inline void prss_null(PRSS *p)
@@ -169,6 +158,7 @@ static inline int parse_rss_2_0(PRSS *res, xmlNodePtr root)
 	}
 
 	res->version = strndup("2.0", text_buffer_size);
+	if (res->items) free(res->items);
 	res->items = malloc(items * sizeof(PRSS_Item));
 	res->item_count = 0;
 
@@ -198,6 +188,7 @@ static inline int parse_rss_1_0(PRSS *res, xmlNodePtr root)
 	}
 
 	res->version = strndup("1.0", text_buffer_size);
+	if (res->items) free(res->items);
 	res->items = malloc(items * sizeof(PRSS_Item));
 	res->item_count = 0;
 
@@ -216,13 +207,12 @@ static inline int parse_rss_0_9x(PRSS *res, xmlNodePtr root)
 	return parse_rss_2_0(res, root);
 }
 
-PRSS *prss_parse_doc(xmlDocPtr doc)
+void prss_parse_doc(PRSS *result, xmlDocPtr doc)
 {
 	/* FIXME: doc shouldn't be freed after failure when called explicitly from
 	 * program! */
 
 	xmlNodePtr root = xmlDocGetRootElement(doc);
-	PRSS *result = malloc(sizeof(PRSS));
 
 	prss_null(result);
 	result->_data = doc;
@@ -230,24 +220,15 @@ PRSS *prss_parse_doc(xmlDocPtr doc)
 		if (root->type == XML_ELEMENT_NODE) {
 			if (!strcmp((const char *) root->name, "RDF")) {
 				// RSS 1.0 document
-				if (!parse_rss_1_0(result, root)) {
-					free(result);
-					xmlFreeDoc(doc);
-					return NULL;
-				}
-				return result;
+				parse_rss_1_0(result, root);
+				return;
 			} else if (!strcmp((const char *) root->name, "rss")) {
 				// RSS 2.0 or <1.0 document
-				if (!parse_rss_2_0(result, root)) {
-					free(result);
-					xmlFreeDoc(doc);
-					return NULL;
-				}
-				return result;
+				parse_rss_2_0(result, root);
+				return;
 			}
 		}
 		root = root->next;
 	} while (root);
-	free(result);
-	return NULL;
+	return;
 }

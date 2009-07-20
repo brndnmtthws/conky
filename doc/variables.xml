@@ -2549,19 +2549,45 @@
     <varlistentry>
         <term>
             <command>
+                <option>curl</option>
+            </command>
+			<option>url interval_in_minutes</option>
+        </term>
+		<listitem>
+			<para>
+				Download data from URI using Curl at the specified interval.
+				The interval may be a floating point value greater than 0,
+				otherwise defaults to 15 minutes.  Most useful when used in
+				conjunction with Lua and the Lua API.  This object is threaded,
+				and once a thread is created it can't be explicitely destroyed.
+				One thread will run for each URI specified.  You can use any
+				protocol that Curl supports.
+			</para>
+		</listitem>
+	</varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>rss</option>
             </command>
-            <option>url delay_in_minutes action (num_par
+            <option>uri interval_in_minutes action (num_par
             (spaces_in_front))</option>
         </term>
-        <listitem>Download and parse RSS feeds. Action may be one
-        of the following: feed_title, item_title (with num par),
-        item_desc (with num par) and item_titles (when using this
-        action and spaces_in_front is given conky places that many
-        spaces in front of each item). 
-        <para /></listitem>
-    </varlistentry>
-    <varlistentry>
+		<listitem>
+			<para>
+				Download and parse RSS feeds.  The interval may be a floating
+				point value greater than 0, otherwise defaults to 15 minutes.
+				Action may be one of the following: feed_title, item_title
+				(with num par), item_desc (with num par) and item_titles (when
+				using this action and spaces_in_front is given conky places
+				that many spaces in front of each item).  This object is
+				threaded, and once a thread is created it can't be explicitely
+				destroyed.  One thread will run for each URI specified.  You
+				can use any protocol that Curl supports.
+			</para>
+		</listitem>
+	</varlistentry>
+	<varlistentry>
         <term>
             <command>
                 <option>running_processes</option>
@@ -2963,7 +2989,9 @@
         longer then the time it takes your script to execute. For
         example, if you have a script that take 5 seconds to
         execute, you should make the interval at least 6 seconds.
-        See also $execi. 
+		See also $execi.  This object will clean up the thread when it is
+		destroyed, so it can safely be used in a nested fashion, though it may
+		not produce the desired behaviour if used this way.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3288,7 +3316,7 @@
             <command>
                 <option>weather</option>
             </command>
-            <option>URI locID data_type (delay_in_minutes)</option>
+            <option>URI locID data_type (interval_in_minutes)</option>
         </term>
         <listitem>
             <para>Download, parse and display METAR data.</para>
@@ -3363,6 +3391,11 @@
             </simplelist>
             <para>'delay_in_minutes' (optional, default 30) cannot
             be lower than 30 min.</para>
+		<para>
+			This object is threaded, and once a thread is created it can't be
+			explicitely destroyed.  One thread will run for each URI specified.
+			You can use any protocol that Curl supports.
+		</para>
             <para>Note that these variables are still EXPERIMENTAL
             and can be subject to many future changes.</para>
         </listitem>

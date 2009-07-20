@@ -375,6 +375,9 @@ enum text_object_type {
 #ifdef EVE
 	OBJ_eve,
 #endif /* EVE */
+#ifdef HAVE_CURL
+	OBJ_curl,
+#endif /* HAVE_CURL */
 #ifdef RSS
 	OBJ_rss,
 #endif /* RSS */
@@ -538,22 +541,26 @@ struct text_object {
 			char *userid;
 		} eve;
 #endif
+#ifdef HAVE_CURL
+		struct {
+			char *uri;
+			float interval;
+		} curl;
+#endif
 #ifdef RSS
 		struct {
 			char *uri;
 			char *action;
 			int act_par;
-			int delay;
+			float interval;
 			unsigned int nrspaces;
-			timed_thread *p_timed_thread;
 		} rss;
 #endif
 #ifdef WEATHER
 		struct {
 			char *uri;
-		        char *data_type;
-		        int interval;
-				timed_thread *p_timed_thread;
+			char *data_type;
+			int interval;
 		} weather;
 #endif
 		struct {

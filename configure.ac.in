@@ -308,6 +308,14 @@ if test x$want_xmms2 = xyes; then
 fi
 
 dnl
+dnl libcurl, see below for more (this has to be above the other uses of want_curl)
+dnl
+
+AC_ARG_ENABLE([curl],
+		AC_HELP_STRING([--enable-curl], [enable if you want curl support @<:@default=no@:>@]),
+		[want_curl="$enableval"], [want_curl=no])
+
+dnl
 dnl EVE Skill Monitor
 dnl
 
@@ -317,10 +325,8 @@ AC_ARG_ENABLE([eve],
 
 AM_CONDITIONAL(BUILD_EVE, test x$want_eve = xyes)
 if test x$want_eve = xyes; then
-	PKG_CHECK_MODULES([libxml2], libxml-2.0)
-	PKG_CHECK_MODULES([libcurl], libcurl)
-	conky_CFLAGS="$conky_CFLAGS $libxml2_CFLAGS $libcurl_CFLAGS"
-	conky_LIBS="$conky_LIBS $libxml2_LIBS $libcurl_LIBS"
+	want_curl=yes
+	want_libxml2=yes
 	AC_DEFINE(EVE, 1, [Define if you want Eve-Online Skill monitor support])
 	AC_DEFINE(EVEURL_TRAINING, "http://api.eve-online.com/char/SkillInTraining.xml.aspx", [Eve training URL])
 	AC_DEFINE(EVEURL_SKILLTREE, "http://api.eve-online.com/eve/Skilltree.xml.aspx", [Eve skilltree URL])
@@ -339,11 +345,9 @@ AC_ARG_ENABLE([rss],
 AM_CONDITIONAL(BUILD_RSS, test x$want_rss = xyes)
 if test x$want_rss = xyes; then
 	WANT_GLIB=yes
-	PKG_CHECK_MODULES([libxml2], libxml-2.0)
-	PKG_CHECK_MODULES([libcurl], libcurl)
-	conky_CFLAGS="$conky_CFLAGS $libxml2_CFLAGS $libcurl_CFLAGS"
-	conky_LIBS="$conky_LIBS $libxml2_LIBS $libcurl_LIBS"
-	AC_DEFINE(RSS, 1, [Define if you want rss support])
+	want_curl=yes
+	want_libxml2=yes
+	AC_DEFINE(RSS, 1, [Define if you want Curl support])
 fi
 
 dnl
@@ -360,17 +364,13 @@ AC_ARG_ENABLE([xoap],
 #
 AM_CONDITIONAL(BUILD_WEATHER, test x$want_weather = xyes)
 if test x$want_weather = xyes; then
-        AM_CONDITIONAL(BUILD_XOAP, test x$want_xoap = xyes)
-        if test x$want_xoap = xyes; then
-	   PKG_CHECK_MODULES([libxml2], libxml-2.0)
-	   conky_CFLAGS="$conky_CFLAGS $libxml2_CFLAGS"
-	   conky_LIBS="$conky_LIBS $libxml2_LIBS"
-	   AC_DEFINE(XOAP, 1, [Define if you want weather xoap support])
-	   AC_DEFINE(XOAP_FILE, "$HOME/.xoaprc", [User xoap keys file])
+	AM_CONDITIONAL(BUILD_XOAP, test x$want_xoap = xyes)
+	if test x$want_xoap = xyes; then
+		want_libxml2=yes
+		AC_DEFINE(XOAP, 1, [Define if you want weather xoap support])
+		AC_DEFINE(XOAP_FILE, "$HOME/.xoaprc", [User xoap keys file])
 	fi
-	PKG_CHECK_MODULES([libcurl], libcurl)
-	conky_CFLAGS="$conky_CFLAGS $libcurl_CFLAGS"
-	conky_LIBS="$conky_LIBS $libcurl_LIBS"
+	want_curl=yes
 	AC_DEFINE(WEATHER, 1, [Define if you want weather support])
 fi
 
@@ -649,6 +649,28 @@ if test x$WANT_GLIB = xyes; then
 fi
 
 dnl
+dnl libcurl
+dnl
+
+if test x$want_curl = xyes; then
+	PKG_CHECK_MODULES([libcurl], libcurl)
+	conky_CFLAGS="$conky_CFLAGS $libcurl_CFLAGS"
+	conky_LIBS="$conky_LIBS $libcurl_LIBS"
+	AC_DEFINE(HAVE_CURL, 1, [Define if you want Curl support])
+fi
+AM_CONDITIONAL(BUILD_CURL, test x$want_curl = xyes)
+
+dnl
+dnl libx
+dnl
+
+if test x$want_libxml2 = xyes; then
+	PKG_CHECK_MODULES([libxml2], libxml-2.0)
+	conky_CFLAGS="$conky_CFLAGS $libxml2_CFLAGS"
+	conky_LIBS="$conky_LIBS $libxml2_LIBS"
+fi
+
+dnl
 dnl KVM
 dnl
 
@@ -907,9 +929,10 @@ $PACKAGE $VERSION configured successfully:
   hddtemp:          $want_hddtemp
   portmon:          $want_portmon
   RSS:              $want_rss
-  Weather (METAR)
-    NOAA:	    $want_weather
-    XOAP:	    $want_xoap
+  Curl:             $want_curl
+  Weather
+    NOAA:           $want_weather
+    XOAP:           $want_xoap
   wireless:         $want_wlan
   IBM:              $want_ibm
   nvidia:           $want_nvidia

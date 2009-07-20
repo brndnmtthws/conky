@@ -87,17 +87,21 @@ char *strndup(const char *s, size_t n);
 #include "nvidia.h"
 #endif
 
+#ifdef HAVE_CURL
+#include "ccurl_thread.h"
+#endif /* HAVE_CURL */
+
 #ifdef RSS
 #include "rss.h"
-#endif
+#endif /* RSS */
 
 #ifdef WEATHER
 #include "weather.h"
-#endif
+#endif /* WEATHER */
 
 #ifdef HAVE_LUA
 #include "llua.h"
-#endif
+#endif /* HAVE_LUA */
 
 #ifdef TCP_PORT_MONITOR
 #include "tcp-portmon.h"
@@ -196,9 +200,6 @@ enum {
 	INFO_XMMS2 = 22,
 #endif
 	INFO_ENTROPY = 23,
-#ifdef RSS
-	INFO_RSS = 24,
-#endif
 #ifdef IBM
 	INFO_SMAPI = 25,
 #endif

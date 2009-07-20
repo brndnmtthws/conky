@@ -3,8 +3,8 @@
 
 #include "prss.h"
 
-PRSS *get_rss_info(char *uri, int delay);
-void init_rss_info(void);
-void free_rss_info(void);
+void rss_free_info(void);
+void rss_process_info(char *p, int p_max_size, char *uri, char *action, int
+		act_par, int interval, unsigned int nrspaces);
 
 #endif /*RSS_H_*/

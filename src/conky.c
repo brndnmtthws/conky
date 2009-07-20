@@ -158,7 +158,7 @@ static void reload_config(void);
 static void generate_text_internal(char *, int, struct text_object,
                                    struct information *);
 static int extract_variable_text_internal(struct text_object *,
-                                          const char *, char);
+                                          const char *);
 
 static void print_version(void)
 {
@@ -208,6 +208,9 @@ static void print_version(void)
 #ifdef TCP_PORT_MONITOR
 		   "  * portmon\n"
 #endif /* TCP_PORT_MONITOR */
+#ifdef HAVE_CURL
+		   "  * Curl\n"
+#endif /* HAVE_CURL */
 #ifdef RSS
 		   "  * RSS\n"
 #endif /* RSS */
@@ -908,6 +911,11 @@ static void free_text_objects(struct text_object *root, int internal)
 			case OBJ_eve:
 				break;
 #endif
+#ifdef HAVE_CURL
+			case OBJ_curl:
+				free(data.curl.uri);
+				break;
+#endif
 #ifdef RSS
 			case OBJ_rss:
 				free(data.rss.uri);
@@ -954,6 +962,7 @@ static void free_text_objects(struct text_object *root, int internal)
 				free(data.execi.buffer);
 				break;
 			case OBJ_texeci:
+				if (data.texeci.p_timed_thread) timed_thread_destroy(data.texeci.p_timed_thread, &data.texeci.p_timed_thread);
 				free(data.texeci.cmd);
 				free(data.texeci.buffer);
 				break;
@@ -1245,7 +1254,7 @@ long current_text_color;
 
 /* construct_text_object() creates a new text_object */
 static struct text_object *construct_text_object(const char *s,
-		const char *arg, long line, char allow_threaded, void **ifblock_opaque, void *free_at_crash)
+		const char *arg, long line, void **ifblock_opaque, void *free_at_crash)
 {
 	// struct text_object *obj = new_text_object();
 	struct text_object *obj = new_text_object_internal();
@@ -1257,8 +1266,6 @@ static struct text_object *construct_text_object(const char *s,
 #define OBJ_IF(a, n) if (strcmp(s, #a) == 0) { \
 	obj->type = OBJ_##a; need_mask |= (1ULL << n); \
 	obj_be_ifblock_if(ifblock_opaque, obj); {
-#define OBJ_THREAD(a, n) if (strcmp(s, #a) == 0 && allow_threaded) { \
-	obj->type = OBJ_##a; need_mask |= (1ULL << n); {
 #define END } } else
 
 #define SIZE_DEFAULTS(arg) { \
@@ -1821,7 +1828,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.execi.cmd = strndup(arg + n, text_buffer_size);
 			obj->data.execi.buffer = malloc(text_buffer_size);
 		}
-	END OBJ_THREAD(texeci, 0)
+	END OBJ(texeci, 0)
 			int n;
 
 			if (!arg || sscanf(arg, "%f %n", &obj->data.texeci.interval, &n) <= 0) {
@@ -2110,7 +2117,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
 			obj->sub = malloc(sizeof(struct text_object));
 			extract_variable_text_internal(obj->sub,
-			                               obj->data.ifblock.s, 0);
+			                               obj->data.ifblock.s);
 		}
 	END OBJ_IF(if_match, 0)
 		if (!arg) {
@@ -2120,7 +2127,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
 			obj->sub = malloc(sizeof(struct text_object));
 			extract_variable_text_internal(obj->sub,
-			                               obj->data.ifblock.s, 0);
+			                               obj->data.ifblock.s);
 		}
 	END OBJ_IF(if_existing, 0)
 		if (!arg) {
@@ -2595,7 +2602,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(apm_battery_life, 0)
 	END OBJ(apm_battery_time, 0)
 #endif /* __FreeBSD__ */
-	END OBJ_THREAD(imap_unseen, 0)
+	END OBJ(imap_unseen, 0)
 		if (arg) {
 			// proccss
 			obj->data.mail = parse_mail_args(IMAP_TYPE, arg);
@@ -2603,7 +2610,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->char_b = 1;
 		}
-	END OBJ_THREAD(imap_messages, 0)
+	END OBJ(imap_messages, 0)
 		if (arg) {
 			// proccss
 			obj->data.mail = parse_mail_args(IMAP_TYPE, arg);
@@ -2611,7 +2618,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->char_b = 1;
 		}
-	END OBJ_THREAD(pop3_unseen, 0)
+	END OBJ(pop3_unseen, 0)
 		if (arg) {
 			// proccss
 			obj->data.mail = parse_mail_args(POP3_TYPE, arg);
@@ -2619,7 +2626,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else {
 			obj->char_b = 1;
 		}
-	END OBJ_THREAD(pop3_used, 0)
+	END OBJ(pop3_used, 0)
 		if (arg) {
 			// proccss
 			obj->data.mail = parse_mail_args(POP3_TYPE, arg);
@@ -2816,30 +2823,43 @@ static struct text_object *construct_text_object(const char *s,
 			CRIT_ERR(obj, free_at_crash, "eve needs arguments: <userid> <apikey> <characterid>");
 		}
 #endif
+#ifdef HAVE_CURL
+	END OBJ(curl, 0)
+		if (arg) {
+			int argc;
+			float interval;
+			char *uri = (char *) malloc(128 * sizeof(char));
+
+			argc = sscanf(arg, "%127s %f", uri, &interval);
+			obj->data.curl.uri = uri;
+			obj->data.curl.interval = interval > 0 ? interval * 60 : 15*60;
+		} else {
+			CRIT_ERR(obj, free_at_crash, "curl needs arguments: <uri> <interval in minutes>");
+		}
+#endif
 #ifdef RSS
 	END OBJ(rss, 0)
 		if (arg) {
-			int argc, delay, act_par;
+			float interval;
+			int argc, act_par;
 			unsigned int nrspaces = 0;
 			char *uri = (char *) malloc(128 * sizeof(char));
 			char *action = (char *) malloc(64 * sizeof(char));
 
-			argc = sscanf(arg, "%127s %d %63s %d %u", uri, &delay, action,
+			argc = sscanf(arg, "%127s %f %63s %d %u", uri, &interval, action,
 					&act_par, &nrspaces);
 			obj->data.rss.uri = uri;
-			obj->data.rss.delay = delay;
+			obj->data.rss.interval = interval > 0 ? interval * 60 : 15*60;
 			obj->data.rss.action = action;
 			obj->data.rss.act_par = act_par;
 			obj->data.rss.nrspaces = nrspaces;
-
-			init_rss_info();
 		} else {
-			CRIT_ERR(obj, free_at_crash, "rss needs arguments: <uri> <delay in minutes> <action> "
+			CRIT_ERR(obj, free_at_crash, "rss needs arguments: <uri> <interval in minutes> <action> "
 					"[act_par] [spaces in front]");
 		}
 #endif
 #ifdef WEATHER
-	END OBJ_THREAD(weather, 0)
+	END OBJ(weather, 0)
 		if (arg) {
 			int argc, interval;
 			char *locID = (char *) malloc(9 * sizeof(char));
@@ -2849,14 +2869,14 @@ static struct text_object *construct_text_object(const char *s,
 
 			argc = sscanf(arg, "%119s %8s %31s %d", uri, locID, data_type, &interval);
 
-			//locID MUST BE upper-case
+			/* locID MUST BE upper-case */
 			tmp_p = locID;
 			while (*tmp_p) {
 			  *tmp_p = toupper(*tmp_p);
 			  tmp_p++;
 			}
 
-			//Construct complete uri
+			/* Construct complete uri */
 			if (strstr(uri, "xoap.weather.com")) {
 			  if(xoap != NULL) {
 			    strcat(uri, locID);
@@ -2876,12 +2896,12 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.weather.uri = uri;
 			obj->data.weather.data_type = data_type;
 
-			//Limit the data retrieval interval to half hour min
+			/* Limit the data retrieval interval to half hour min */
 			if (interval < 30) {
 				interval = 30;
 			}
 
-			//Convert to seconds
+			/* Convert to seconds */
 			obj->data.weather.interval = interval * 60;
 			free(locID);
 
@@ -2969,14 +2989,14 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(blink, 0)
 		if(arg) {
 			obj->sub = malloc(sizeof(struct text_object));
-			extract_variable_text_internal(obj->sub, arg, 0);
+			extract_variable_text_internal(obj->sub, arg);
 		}else{
 			CRIT_ERR(obj, free_at_crash, "blink needs a argument");
 		}
 	END OBJ(to_bytes, 0)
 		if(arg) {
 			obj->sub = malloc(sizeof(struct text_object));
-			extract_variable_text_internal(obj->sub, arg, 0);
+			extract_variable_text_internal(obj->sub, arg);
 		}else{
 			CRIT_ERR(obj, free_at_crash, "to_bytes needs a argument");
 		}
@@ -3001,7 +3021,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.scroll.start = 0;
 			obj->sub = malloc(sizeof(struct text_object));
 			extract_variable_text_internal(obj->sub,
-					obj->data.scroll.text, 0);
+					obj->data.scroll.text);
 		} else {
 			CRIT_ERR(obj, free_at_crash, "scroll needs arguments: <length> [<step>] <text>");
 		}
@@ -3045,9 +3065,9 @@ static struct text_object *construct_text_object(const char *s,
 				obj->data.combine.right[endvar[1] - startvar[1]] = 0;
 
 				obj->sub = malloc(sizeof(struct text_object));
-				extract_variable_text_internal(obj->sub, obj->data.combine.left, 0);
+				extract_variable_text_internal(obj->sub, obj->data.combine.left);
 				obj->sub->sub = malloc(sizeof(struct text_object));
-				extract_variable_text_internal(obj->sub->sub, obj->data.combine.right, 0);
+				extract_variable_text_internal(obj->sub->sub, obj->data.combine.right);
 			} else {
 				CRIT_ERR(obj, free_at_crash, "combine needs arguments: <text1> <text2>");
 			}
@@ -3371,7 +3391,7 @@ static size_t remove_comments(char *string)
 	return folded;
 }
 
-static int extract_variable_text_internal(struct text_object *retval, const char *const_p, char allow_threaded)
+static int extract_variable_text_internal(struct text_object *retval, const char *const_p)
 {
 	struct text_object *obj;
 	char *p, *s, *orig_p;
@@ -3490,8 +3510,7 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 				}
 
 				obj = construct_text_object(buf, arg,
-						line, allow_threaded,
-						&ifblock_opaque, orig_p);
+						line, &ifblock_opaque, orig_p);
 				if (obj != NULL) {
 					append_object(retval, obj);
 				}
@@ -3543,12 +3562,12 @@ static void extract_variable_text(const char *p)
 		text_buffer = 0;
 	}
 
-	extract_variable_text_internal(&global_root_object, p, 1);
+	extract_variable_text_internal(&global_root_object, p);
 }
 
 void parse_conky_vars(struct text_object *root, char *txt, char *p, struct information *cur)
 {
-	extract_variable_text_internal(root, txt, 0);
+	extract_variable_text_internal(root, txt);
 	generate_text_internal(p, max_user_text, *root, cur);
 	return;
 }
@@ -4439,8 +4458,10 @@ static void generate_text_internal(char *p, int p_max_size,
 					if (!obj->data.texeci.p_timed_thread) {
 						ERR("Error creating texeci timed thread");
 					}
-					timed_thread_register(obj->data.texeci.p_timed_thread,
-						&obj->data.texeci.p_timed_thread);
+					/*
+					 * note that we don't register this thread with the
+					 * timed_thread list, because we destroy it manually
+					 */
 					if (timed_thread_run(obj->data.texeci.p_timed_thread)) {
 						ERR("Error running texeci timed thread");
 					}
@@ -4631,87 +4652,30 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%s", skill);
 			}
 #endif
+#ifdef HAVE_CURL
+			OBJ(curl) {
+				if (obj->data.curl.uri != NULL) {
+					ccurl_process_info(p, p_max_size, obj->data.curl.uri, obj->data.curl.interval);
+				} else {
+					ERR("error processing Curl data");
+				}
+			}
+#endif
 #ifdef RSS
 			OBJ(rss) {
-				PRSS *data = get_rss_info(obj->data.rss.uri,
-					obj->data.rss.delay);
-				char *str;
-
-				if (data == NULL) {
-					snprintf(p, p_max_size, "prss: Error reading RSS data\n");
+				if (obj->data.rss.uri != NULL) {
+					rss_process_info(p, p_max_size, obj->data.rss.uri, obj->data.rss.action, obj->data.rss.act_par, obj->data.rss.interval, obj->data.rss.nrspaces);
 				} else {
-					if (strcmp(obj->data.rss.action, "feed_title") == EQUAL) {
-						str = data->title;
-						// remove trailing new line if one exists
-						if (str[strlen(str) - 1] == '\n') {
-							str[strlen(str) - 1] = 0;
-						}
-						snprintf(p, p_max_size, "%s", str);
-					} else if (strcmp(obj->data.rss.action, "item_title") == EQUAL) {
-						if (obj->data.rss.act_par < data->item_count) {
-							str = data->items[obj->data.rss.act_par].title;
-							// remove trailing new line if one exists
-							if (str[strlen(str) - 1] == '\n') {
-								str[strlen(str) - 1] = 0;
-							}
-							snprintf(p, p_max_size, "%s", str);
-						}
-					} else if (strcmp(obj->data.rss.action, "item_desc") == EQUAL) {
-						if (obj->data.rss.act_par < data->item_count) {
-							str =
-								data->items[obj->data.rss.act_par].description;
-							// remove trailing new line if one exists
-							if (str[strlen(str) - 1] == '\n') {
-								str[strlen(str) - 1] = 0;
-							}
-							snprintf(p, p_max_size, "%s", str);
-						}
-					} else if (strcmp(obj->data.rss.action, "item_titles") == EQUAL) {
-						if (data->item_count > 0) {
-							int itmp;
-							int show;
-							//'tmpspaces' is a string with spaces too be placed in front of each title
-							char *tmpspaces = malloc(obj->data.rss.nrspaces + 1);
-							memset(tmpspaces, ' ', obj->data.rss.nrspaces);
-							tmpspaces[obj->data.rss.nrspaces]=0;
-
-							p[0] = 0;
-
-							if (obj->data.rss.act_par > data->item_count) {
-								show = data->item_count;
-							} else {
-								show = obj->data.rss.act_par;
-							}
-							for (itmp = 0; itmp < show; itmp++) {
-								PRSS_Item *item = &data->items[itmp];
-
-								str = item->title;
-								if (str) {
-									// don't add new line before first item
-									if (itmp > 0) {
-										strncat(p, "\n", p_max_size);
-									}
-									/* remove trailing new line if one exists,
-									 * we have our own */
-									if (str[strlen(str) - 1] == '\n') {
-										str[strlen(str) - 1] = 0;
-									}
-									strncat(p, tmpspaces, p_max_size);
-									strncat(p, str, p_max_size);
-								}
-							}
-							free(tmpspaces);
-						}
-					}
+					ERR("error processing RSS data");
 				}
 			}
 #endif
 #ifdef WEATHER
 			OBJ(weather) {
-			        if( obj->data.weather.uri != NULL ) {
-				        process_weather_info(p, p_max_size, obj->data.weather.uri, obj->data.weather.data_type, obj->data.weather.interval);
-			        } else {
-				  strncpy(p, "either invalid xoap keys file or compiled without xoap support",  p_max_size);
+				if (obj->data.weather.uri != NULL) {
+					weather_process_info(p, p_max_size, obj->data.weather.uri, obj->data.weather.data_type, obj->data.weather.interval);
+				} else {
+					ERR("error processing weather data, check that you have a valid XOAP key if using XOAP.");
 				}
 			}
 #endif
@@ -7636,11 +7600,14 @@ void clean_up(void *memtofree1, void* memtofree2)
 #ifdef TCP_PORT_MONITOR
 	tcp_portmon_clear();
 #endif
+#ifdef HAVE_CURL
+	ccurl_free_info();
+#endif
 #ifdef RSS
-	free_rss_info();
+	rss_free_info();
 #endif
 #ifdef WEATHER
-	free_weather_info();
+	weather_free_info();
 #endif
 #ifdef HAVE_LUA
 	llua_close();

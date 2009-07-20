@@ -194,6 +194,16 @@
 			Colour can be also in
 			#rrggbb format (hex).
 		</para>
+		<para>
+			Some objects may create threads, and sometimes these threads will
+			not be destroyed until Conky terminates.  There is no way to
+			destroy or clean up threads while Conky is running.  For example,
+			if you use an MPD variable, the MPD thread will keep running until
+			Conky dies.  Some threaded objects will use one of the parameters
+			as a 'key', so that you only have 1 relevant thread running (for
+			example, the $curl, $rss and $weather objects launch one thread per
+			URI).
+		</para>
 		&variables;
 	</refsect1>
 	<refsect1>
@@ -208,6 +218,11 @@
 			must first be loaded using the lua_load configuration option.  You
 			then call functions in Lua via Conky's $lua, $lua_read, and Lua
 			hooks.
+		</para>
+		<para>
+			Be careful when creating threaded objects through the Lua API.  You
+			could wind up with a whole bunch of threads running if a thread is
+			created with each iteration.
 		</para>
 		<para>
 			At this time, the Lua API should not be considered stable and may

@@ -51,8 +51,7 @@ typedef struct PRSS_ {
 } PRSS;
 
 /* Functions for parsing RSS-data */
-PRSS *prss_parse_data(const char *xml_data);
-PRSS *prss_parse_file(const char *xml_file);
+void prss_parse_data(void *result, const char *xml_data);
 
 /* // Works wrong currently when called from application!
 PRSS *prss_parse_doc(xmlDocPtr doc); */

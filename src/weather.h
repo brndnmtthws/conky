@@ -55,8 +55,7 @@ typedef struct PWEATHER_ {
 } PWEATHER;
 
 /* Prototypes */
-void init_weather_info(void);
-void free_weather_info(void);
-void process_weather_info(char *p, int p_max_size, char *uri, char *data_type, int interval);
+void weather_free_info(void);
+void weather_process_info(char *p, int p_max_size, char *uri, char *data_type, int interval);
 
 #endif /*WEATHER_H_*/

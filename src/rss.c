@@ -24,137 +24,110 @@
 #include "conky.h"
 #include "logging.h"
 #include "prss.h"
+#include "ccurl_thread.h"
 #include <time.h>
 #include <assert.h>
-#include <curl/curl.h>
-#include <curl/types.h>
-#include <curl/easy.h>
 
-#define MAX_FEEDS 16
+static ccurl_location_t *locations_head = 0;
 
-typedef struct feed_ {
-	char *uri;
-	int last_update;
+void rss_free_info(void)
+{
+	ccurl_location_t *tail = locations_head;
+
+	while (tail) {
+		if (tail->result) prss_free((PRSS*)tail->result);	/* clean up old data */
+		tail = tail->next;
+	}
+	ccurl_free_locations(&locations_head);
+}
+
+void rss_process_info(char *p, int p_max_size, char *uri, char *action, int
+		act_par, int interval, unsigned int nrspaces)
+{
 	PRSS *data;
-} feed;
+	char *str;
 
-int num_feeds = 0;
-feed feeds[MAX_FEEDS];
-
-int rss_delay(int *wait_time, int delay)
-{
-	time_t now = time(NULL);
-
-	// make it minutes
-	if (delay < 1) {
-		delay = 1;
-	}
-	delay *= 60;
-
-	if (!*wait_time) {
-		*wait_time = now + delay;
-		return 1;
-	}
-
-	if (now >= *wait_time + delay) {
-		*wait_time = now + delay;
-		return 1;
-	}
-
-	return 0;
-}
-
-void init_rss_info(void)
-{
-	int i;
-
-	for (i = 0; i < MAX_FEEDS; i++) {
-		feeds[i].uri = NULL;
-		feeds[i].data = NULL;
-		feeds[i].last_update = 0;
-	}
-}
-
-void free_rss_info(void)
-{
-	int i;
-
-	for (i = 0; i < num_feeds; i++) {
-		if (feeds[i].uri != NULL) {
-			free(feeds[i].uri);
+	ccurl_location_t *curloc = ccurl_find_location(&locations_head, uri);
+	if (!curloc->p_timed_thread) {
+		curloc->result = malloc(sizeof(PRSS));
+		memset(curloc->result, 0, sizeof(PRSS));
+		curloc->process_function = &prss_parse_data;
+		ccurl_init_thread(curloc, interval);
+		if (!curloc->p_timed_thread) {
+			ERR("error setting up weather thread");
 		}
 	}
-}
 
-PRSS *get_rss_info(char *uri, int delay)
-{
-	CURL *curl = NULL;
-	CURLcode res;
+	timed_thread_lock(curloc->p_timed_thread);
+	data = (PRSS*)curloc->result;
 
-	// pointers to struct
-	feed *curfeed = NULL;
-	PRSS *curdata = NULL;
-	int *last_update = 0;
+	if (data == NULL) {
+		snprintf(p, p_max_size, "prss: Error reading RSS data\n");
+	} else {
+		if (strcmp(action, "feed_title") == EQUAL) {
+			str = data->title;
+			// remove trailing new line if one exists
+			if (str[strlen(str) - 1] == '\n') {
+				str[strlen(str) - 1] = 0;
+			}
+			snprintf(p, p_max_size, "%s", str);
+		} else if (strcmp(action, "item_title") == EQUAL) {
+			if (act_par < data->item_count) {
+				str = data->items[act_par].title;
+				// remove trailing new line if one exists
+				if (str[strlen(str) - 1] == '\n') {
+					str[strlen(str) - 1] = 0;
+				}
+				snprintf(p, p_max_size, "%s", str);
+			}
+		} else if (strcmp(action, "item_desc") == EQUAL) {
+			if (act_par < data->item_count) {
+				str =
+					data->items[act_par].description;
+				// remove trailing new line if one exists
+				if (str[strlen(str) - 1] == '\n') {
+					str[strlen(str) - 1] = 0;
+				}
+				snprintf(p, p_max_size, "%s", str);
+			}
+		} else if (strcmp(action, "item_titles") == EQUAL) {
+			if (data->item_count > 0) {
+				int itmp;
+				int show;
+				//'tmpspaces' is a string with spaces too be placed in front of each title
+				char *tmpspaces = malloc(nrspaces + 1);
+				memset(tmpspaces, ' ', nrspaces);
+				tmpspaces[nrspaces]=0;
 
-	int i;
+				p[0] = 0;
 
-	// curl temps
-	struct MemoryStruct chunk;
+				if (act_par > data->item_count) {
+					show = data->item_count;
+				} else {
+					show = act_par;
+				}
+				for (itmp = 0; itmp < show; itmp++) {
+					PRSS_Item *item = &data->items[itmp];
 
-	chunk.memory = NULL;
-	chunk.size = 0;
-
-	// first seek for the uri in list
-	for (i = 0; i < num_feeds; i++) {
-		if (feeds[i].uri != NULL) {
-			if (!strcmp(feeds[i].uri, uri)) {
-				curfeed = &feeds[i];
-				break;
+					str = item->title;
+					if (str) {
+						// don't add new line before first item
+						if (itmp > 0) {
+							strncat(p, "\n", p_max_size);
+						}
+						/* remove trailing new line if one exists,
+						 * we have our own */
+						if (str[strlen(str) - 1] == '\n') {
+							str[strlen(str) - 1] = 0;
+						}
+						strncat(p, tmpspaces, p_max_size);
+						strncat(p, str, p_max_size);
+					}
+				}
+				free(tmpspaces);
 			}
 		}
 	}
-
-	if (!curfeed) {	// new feed
-		if (num_feeds == MAX_FEEDS - 1) {
-			return NULL;
-		}
-		curfeed = &feeds[num_feeds];
-		curfeed->uri = strndup(uri, text_buffer_size);
-		num_feeds++;
-	}
-
-	last_update = &curfeed->last_update;
-	curdata = curfeed->data;
-
-	if (!rss_delay(last_update, delay)) {
-		return curdata;	// wait for delay to pass
-	}
-
-	if (curdata != NULL) {
-		prss_free(curdata);	// clean up old data
-		curdata = NULL;
-	}
-
-	curl = curl_easy_init();
-	if (curl) {
-		curl_easy_setopt(curl, CURLOPT_URL, uri);
-		curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1);
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &chunk);
-		curl_easy_setopt(curl, CURLOPT_USERAGENT, "conky-rss/1.0");
-
-		res = curl_easy_perform(curl);
-		if (res == CURLE_OK && chunk.size) {
-			curdata = prss_parse_data(chunk.memory);
-			free(chunk.memory);
-		} else {
-			ERR("No data from server");
-		}
-
-		curl_easy_cleanup(curl);
-	}
-
-	curfeed->data = curdata;
-
-	return curdata;
+	timed_thread_unlock(curloc->p_timed_thread);
 }
+

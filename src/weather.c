@@ -30,14 +30,12 @@
 #include "logging.h"
 #include "weather.h"
 #include "temphelper.h"
+#include "ccurl_thread.h"
 #include <time.h>
 #include <ctype.h>
 #ifdef MATH
 #include <math.h>
 #endif /* MATH */
-#include <curl/curl.h>
-#include <curl/types.h>
-#include <curl/easy.h>
 #ifdef XOAP
 #include <libxml/parser.h>
 #endif /* XOAP */
@@ -63,57 +61,11 @@ const char *WC_CODES[NUM_WC_CODES] = {
 	"FC", "PO", "SQ", "SS", "DS"
 };
 
-typedef struct location_ {
-	char *uri;
-	int last_update;
-	PWEATHER data;
-	timed_thread *p_timed_thread;
-	struct location_ *next;
-} location;
+static ccurl_location_t *locations_head = 0;
 
-static location *locations_head = 0;
-
-location *find_location(char *uri)
+void weather_free_info(void)
 {
-	location *tail = locations_head;
-	location *new = 0;
-	while (tail) {
-		if (tail->uri &&
-				strcmp(tail->uri, uri) == EQUAL) {
-			return tail;
-		}
-		tail = tail->next;
-	}
-	if (!tail) { // new location!!!!!!!
-		new = malloc(sizeof(location));
-		memset(new, 0, sizeof(location));
-		new->uri = strndup(uri, text_buffer_size);
-		tail = locations_head;
-		while (tail && tail->next) {
-			tail = tail->next;
-		}
-		if (!tail) {
-			// omg the first one!!!!!!!
-			locations_head = new;
-		} else {
-			tail->next = new;
-		}
-	}
-	return new;
-}
-
-void free_weather_info(void)
-{
-	location *tail = locations_head;
-	location *last = 0;
-
-	while (tail) {
-		if (tail->uri) free(tail->uri);
-		last = tail;
-		tail = tail->next;
-		free(last);
-	}
-	locations_head = 0;
+	ccurl_free_locations(&locations_head);
 }
 
 int rel_humidity(int dew_point, int air) {
@@ -489,9 +441,10 @@ static inline void parse_token(PWEATHER *res, char *token) {
 	}
 }
 
-static void parse_weather(PWEATHER *res, const char *data)
+void parse_weather(void *result, const char *data)
 {
-	//Reset results
+	PWEATHER *res = (PWEATHER*)result;
+	/* Reset results */
 	memset(res, 0, sizeof(PWEATHER));
 
 #ifdef XOAP
@@ -532,60 +485,7 @@ static void parse_weather(PWEATHER *res, const char *data)
 	}
 }
 
-void fetch_weather_info(location *curloc)
-{
-	CURL *curl = NULL;
-	CURLcode res;
-
-	// curl temps
-	struct MemoryStruct chunk;
-
-	chunk.memory = NULL;
-	chunk.size = 0;
-
-	curl = curl_easy_init();
-	if (curl) {
-		curl_easy_setopt(curl, CURLOPT_URL, curloc->uri);
-		curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1);
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &chunk);
-		curl_easy_setopt(curl, CURLOPT_USERAGENT, "conky-weather/1.0");
-
-		res = curl_easy_perform(curl);
-		if (res == CURLE_OK && chunk.size) {
-			timed_thread_lock(curloc->p_timed_thread);
-			parse_weather(&curloc->data, chunk.memory);
-			timed_thread_unlock(curloc->p_timed_thread);
-			free(chunk.memory);
-		} else {
-			ERR("weather: no data from server");
-		}
-
-		curl_easy_cleanup(curl);
-	}
-
-	return;
-}
-
-void *weather_thread(void *) __attribute__((noreturn));
-
-void init_thread(location *curloc, int interval)
-{
-	curloc->p_timed_thread =
-		timed_thread_create(&weather_thread,
-				(void *)curloc, interval * 1000000);
-	if (!curloc->p_timed_thread) {
-		ERR("weather: error creating timed thread");
-	}
-	timed_thread_register(curloc->p_timed_thread,
-			&curloc->p_timed_thread);
-	if (timed_thread_run(curloc->p_timed_thread)) {
-		ERR("weather: error running timed thread");
-	}
-}
-
-
-void process_weather_info(char *p, int p_max_size, char *uri, char *data_type, int interval)
+void weather_process_info(char *p, int p_max_size, char *uri, char *data_type, int interval)
 {
 	static const char *wc[] = {
 		"", "drizzle", "rain", "hail", "soft hail",
@@ -593,96 +493,93 @@ void process_weather_info(char *p, int p_max_size, char *uri, char *data_type, i
 		"mist", "dust", "sand", "funnel cloud tornado",
 		"dust/sand", "squall", "sand storm", "dust storm"
 	};
+	PWEATHER *data;
 
-	location *curloc = find_location(uri);
-	if (!curloc->p_timed_thread) init_thread(curloc, interval);
+	ccurl_location_t *curloc = ccurl_find_location(&locations_head, uri);
+	if (!curloc->p_timed_thread) {
+		curloc->result = malloc(sizeof(PWEATHER));
+		memset(curloc->result, 0, sizeof(PWEATHER));
+		curloc->process_function = &parse_weather;
+		ccurl_init_thread(curloc, interval);
+		if (!curloc->p_timed_thread) {
+			ERR("error setting up weather thread");
+		}
+	}
 
 	timed_thread_lock(curloc->p_timed_thread);
+	data = (PWEATHER*)curloc->result;
 	if (strcmp(data_type, "last_update") == EQUAL) {
-		strncpy(p, curloc->data.lastupd, p_max_size);
+		strncpy(p, data->lastupd, p_max_size);
 	} else if (strcmp(data_type, "temperature") == EQUAL) {
-		temp_print(p, p_max_size, curloc->data.temp, TEMP_CELSIUS);
+		temp_print(p, p_max_size, data->temp, TEMP_CELSIUS);
 	} else if (strcmp(data_type, "cloud_cover") == EQUAL) {
 #ifdef XOAP
-		if (curloc->data.xoap_t[0] != '\0') {
-			strncpy(p, curloc->data.xoap_t, p_max_size);
+		if (data->xoap_t[0] != '\0') {
+			strncpy(p, data->xoap_t, p_max_size);
 		} else
 #endif /* XOAP */
-			if (curloc->data.cc == 0) {
+			if (data->cc == 0) {
 				strncpy(p, "", p_max_size);
-			} else if (curloc->data.cc < 3) {
+			} else if (data->cc < 3) {
 				strncpy(p, "clear", p_max_size);
-			} else if (curloc->data.cc < 5) {
+			} else if (data->cc < 5) {
 				strncpy(p, "partly cloudy", p_max_size);
-			} else if (curloc->data.cc == 5) {
+			} else if (data->cc == 5) {
 				strncpy(p, "cloudy", p_max_size);
-			} else if (curloc->data.cc == 6) {
+			} else if (data->cc == 6) {
 				strncpy(p, "overcast", p_max_size);
-			} else if (curloc->data.cc == 7) {
+			} else if (data->cc == 7) {
 				strncpy(p, "towering cumulus", p_max_size);
 			} else  {
 				strncpy(p, "cumulonimbus", p_max_size);
 			}
 	} else if (strcmp(data_type, "pressure") == EQUAL) {
-		snprintf(p, p_max_size, "%d", curloc->data.bar);
+		snprintf(p, p_max_size, "%d", data->bar);
 	} else if (strcmp(data_type, "wind_speed") == EQUAL) {
-		snprintf(p, p_max_size, "%d", curloc->data.wind_s);
+		snprintf(p, p_max_size, "%d", data->wind_s);
 	} else if (strcmp(data_type, "wind_dir") == EQUAL) {
-		if ((curloc->data.wind_d >= 349) || (curloc->data.wind_d < 12)) {
+		if ((data->wind_d >= 349) || (data->wind_d < 12)) {
 			strncpy(p, "N", p_max_size);
-		} else if (curloc->data.wind_d < 33) {
+		} else if (data->wind_d < 33) {
 			strncpy(p, "NNE", p_max_size);
-		} else if (curloc->data.wind_d < 57) {
+		} else if (data->wind_d < 57) {
 			strncpy(p, "NE", p_max_size);
-		} else if (curloc->data.wind_d < 79) {
+		} else if (data->wind_d < 79) {
 			strncpy(p, "ENE", p_max_size);
-		} else if (curloc->data.wind_d < 102) {
+		} else if (data->wind_d < 102) {
 			strncpy(p, "E", p_max_size);
-		} else if (curloc->data.wind_d < 124) {
+		} else if (data->wind_d < 124) {
 			strncpy(p, "ESE", p_max_size);
-		} else if (curloc->data.wind_d < 147) {
+		} else if (data->wind_d < 147) {
 			strncpy(p, "SE", p_max_size);
-		} else if (curloc->data.wind_d < 169) {
+		} else if (data->wind_d < 169) {
 			strncpy(p, "SSE", p_max_size);
-		} else if (curloc->data.wind_d < 192) {
+		} else if (data->wind_d < 192) {
 			strncpy(p, "S", p_max_size);
-		} else if (curloc->data.wind_d < 214) {
+		} else if (data->wind_d < 214) {
 			strncpy(p, "SSW", p_max_size);
-		} else if (curloc->data.wind_d < 237) {
+		} else if (data->wind_d < 237) {
 			strncpy(p, "SW", p_max_size);
-		} else if (curloc->data.wind_d < 259) {
+		} else if (data->wind_d < 259) {
 			strncpy(p, "WSW", p_max_size);
-		} else if (curloc->data.wind_d < 282) {
+		} else if (data->wind_d < 282) {
 			strncpy(p, "W", p_max_size);
-		} else if (curloc->data.wind_d < 304) {
+		} else if (data->wind_d < 304) {
 			strncpy(p, "WNW", p_max_size);
-		} else if (curloc->data.wind_d < 327) {
+		} else if (data->wind_d < 327) {
 			strncpy(p, "NW", p_max_size);
-		} else if (curloc->data.wind_d < 349) {
+		} else if (data->wind_d < 349) {
 			strncpy(p, "NNW", p_max_size);
 		};
 	} else if (strcmp(data_type, "wind_dir_DEG") == EQUAL) {
-		snprintf(p, p_max_size, "%d", curloc->data.wind_d);
+		snprintf(p, p_max_size, "%d", data->wind_d);
 
 	} else if (strcmp(data_type, "humidity") == EQUAL) {
-		snprintf(p, p_max_size, "%d", curloc->data.hmid);
+		snprintf(p, p_max_size, "%d", data->hmid);
 	} else if (strcmp(data_type, "weather") == EQUAL) {
-		strncpy(p, wc[curloc->data.wc], p_max_size);
+		strncpy(p, wc[data->wc], p_max_size);
 	}
 
 	timed_thread_unlock(curloc->p_timed_thread);
-}
-
-void *weather_thread(void *arg)
-{
-	location *curloc = (location*)arg;
-
-	while (1) {
-		fetch_weather_info(curloc);
-		if (timed_thread_test(curloc->p_timed_thread, 0)) {
-			timed_thread_exit(curloc->p_timed_thread);
-		}
-	}
-	/* never reached */
 }
 
