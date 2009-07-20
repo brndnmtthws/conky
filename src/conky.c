@@ -216,7 +216,7 @@ static void print_version(void)
 		   "  * RSS\n"
 #endif /* RSS */
 #ifdef WEATHER
-		   "  * Weather (NOAA)\n"
+		   "  * Weather (METAR)\n"
 #ifdef XOAP
 		   "  * Weather (XOAP)\n"
 #endif /* XOAP */
@@ -324,11 +324,6 @@ static int cpu_avg_samples, net_avg_samples, diskio_avg_samples;
 /* filenames for output */
 char *overwrite_file = NULL; FILE *overwrite_fpointer = NULL;
 char *append_file = NULL; FILE *append_fpointer = NULL;
-
-/* xoap suffix for weather from weather.com */
-#ifdef WEATHER
-static char *xoap = NULL;
-#endif /* WEATHER */
 
 #ifdef X11
 
@@ -2829,7 +2824,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(curl, 0)
 		if (arg) {
 			int argc;
-			float interval;
+			float interval = 0;
 			char *uri = (char *) malloc(128 * sizeof(char));
 
 			argc = sscanf(arg, "%127s %f", uri, &interval);
@@ -2846,7 +2841,7 @@ static struct text_object *construct_text_object(const char *s,
 #ifdef RSS
 	END OBJ(rss, 0)
 		if (arg) {
-			float interval;
+			float interval = 0;
 			int argc, act_par;
 			unsigned int nrspaces = 0;
 			char *uri = (char *) malloc(128 * sizeof(char));
@@ -2872,35 +2867,15 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(weather, 0)
 		if (arg) {
 			int argc;
-			float interval;
+			float interval = 0;
 			char *locID = (char *) malloc(9 * sizeof(char));
 			char *uri = (char *) malloc(128 * sizeof(char));
 			char *data_type = (char *) malloc(32 * sizeof(char));
-			char *tmp_p;
 
 			argc = sscanf(arg, "%119s %8s %31s %f", uri, locID, data_type, &interval);
 
 			if (argc >= 3) {
-				/* locID MUST BE upper-case */
-				tmp_p = locID;
-				while (*tmp_p) {
-					*tmp_p = toupper(*tmp_p);
-					tmp_p++;
-				}
-
-				/* Construct complete uri */
-				if (strstr(uri, "xoap.weather.com")) {
-					if(xoap != NULL) {
-						strcat(uri, locID);
-						strcat(uri, xoap);
-					} else {
-						free(uri);
-						uri = NULL;
-					}
-				} else if (strstr(uri, "weather.noaa.gov")) {
-					strcat(uri, locID);
-					strcat(uri, ".TXT");
-				} else  if (!strstr(uri, "localhost") && !strstr(uri, "127.0.0.1")) {
+				if (process_weather_uri(uri, locID)) {
 					CRIT_ERR(obj, free_at_crash, \
 							"could not recognize the weather uri");
 				}
@@ -9008,42 +8983,6 @@ static void load_config_file_x11(const char *f)
 }
 #endif /* X11 */
 
-#if defined(WEATHER) && defined(XOAP)
-/*
- * TODO: make the xoap keys file readable from the config file
- *       make the keys directly readable from the config file
- *       make the xoap keys file giveable as a command line option
- */
-static void load_xoap_keys(void)
-{
-  FILE *fp;
-  char *par = (char *) malloc(11 * sizeof(char));
-  char *key = (char *) malloc(17 * sizeof(char));
-
-  xoap = (char *) malloc(64 * sizeof(char));
-  to_real_path(xoap, XOAP_FILE);
-  fp = fopen(xoap, "r");
-  if (fp != NULL) {
-    if( fscanf(fp, "%10s %16s", par, key) == 2 ) {
-      strcpy(xoap, "?cc=*&link=xoap&prod=xoap&par=");
-      strcat(xoap, par);
-      strcat(xoap, "&key=");
-      strcat(xoap, key);
-      strcat(xoap, "&unit=m");
-    } else {
-      free(xoap);
-      xoap = NULL;
-    }
-    fclose(fp);
-  } else {
-    free(xoap);
-    xoap = NULL;
-  }
-  free(par);
-  free(key);
-}
-#endif /* WEATHER && XOAP */
-
 static void print_help(const char *prog_name) {
 	printf("Usage: %s [OPTION]...\n"
 			PACKAGE_NAME" is a system monitor that renders text on desktop or to own transparent\n"
@@ -9428,10 +9367,10 @@ int main(int argc, char **argv)
 		}
 	}
 
-#if defined(WEATHER) && defined(XOAP)
+#ifdef XOAP
 	/* Load xoap keys, if existing */
 	load_xoap_keys();
-#endif /* WEATHER && XOAP */
+#endif /* XOAP */
 
 #ifdef HAVE_SYS_INOTIFY_H
 	inotify_fd = inotify_init();

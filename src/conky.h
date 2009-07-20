@@ -95,6 +95,12 @@ char *strndup(const char *s, size_t n);
 #include "rss.h"
 #endif /* RSS */
 
+#ifdef XOAP
+#ifndef WEATHER
+#error "WEATHER needs to be defined if XOAP is defined"
+#endif /* WEATHER */
+#endif /* XOAP */
+
 #ifdef WEATHER
 #include "weather.h"
 #endif /* WEATHER */

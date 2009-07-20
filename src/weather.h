@@ -28,6 +28,8 @@
 #ifndef WEATHER_H_
 #define WEATHER_H_
 
+#include "config.h"
+
 /* WEATHER data */
 typedef struct PWEATHER_ {
 	char lastupd[32];
@@ -57,5 +59,11 @@ typedef struct PWEATHER_ {
 /* Prototypes */
 void weather_free_info(void);
 void weather_process_info(char *p, int p_max_size, char *uri, char *data_type, int interval);
+int process_weather_uri(char *uri, char *locID);
+
+#ifdef XOAP
+void load_xoap_keys(void);
+#endif /* XOAP */
+
 
 #endif /*WEATHER_H_*/
