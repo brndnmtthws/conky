@@ -33,11 +33,18 @@
 #include <curl/types.h>
 #include <curl/easy.h>
 
+/*
+ * The following code is the conky curl thread lib, which can be re-used to
+ * create any curl-based object (see weather and rss).  Below is an
+ * implementation of a curl-only object ($curl) which can also be used as an
+ * example.
+ */
 typedef struct _ccurl_memory_t {
 	char *memory;
 	size_t size;
 } ccurl_memory_t;
 
+/* finds a location based on uri in the list provided */
 ccurl_location_t *ccurl_find_location(ccurl_location_t **locations_head, char *uri)
 {
 	ccurl_location_t *tail = *locations_head;
@@ -68,6 +75,7 @@ ccurl_location_t *ccurl_find_location(ccurl_location_t **locations_head, char *u
 	return new;
 }
 
+/* iterates over the list provided, frees stuff (list item, uri, result) */
 void ccurl_free_locations(ccurl_location_t **locations_head)
 {
 	ccurl_location_t *tail = *locations_head;
@@ -83,6 +91,7 @@ void ccurl_free_locations(ccurl_location_t **locations_head)
 	*locations_head = 0;
 }
 
+/* callback used by curl for writing the received data */
 size_t ccurl_write_memory_callback(void *ptr, size_t size, size_t nmemb, void *data)
 {
 	size_t realsize = size * nmemb;
@@ -98,7 +107,7 @@ size_t ccurl_write_memory_callback(void *ptr, size_t size, size_t nmemb, void *d
 }
 
 
-
+/* fetch our datums */
 void ccurl_fetch_data(ccurl_location_t *curloc)
 {
 	CURL *curl = NULL;
@@ -126,13 +135,11 @@ void ccurl_fetch_data(ccurl_location_t *curloc)
 			timed_thread_unlock(curloc->p_timed_thread);
 			free(chunk.memory);
 		} else {
-			ERR("weather: no data from server");
+			ERR("curl: no data from server");
 		}
 
 		curl_easy_cleanup(curl);
 	}
-
-	return;
 }
 
 void *ccurl_thread(void *) __attribute__((noreturn));
@@ -169,18 +176,27 @@ void *ccurl_thread(void *arg)
 	/* never reached */
 }
 
+
+/*
+ * This is where the $curl section begins.
+ */
+
+/* internal location pointer for use by $curl, no touchy */
 static ccurl_location_t *ccurl_locations_head = 0;
 
+/* used to free data used by $curl */
 void ccurl_free_info(void)
 {
 	ccurl_free_locations(&ccurl_locations_head);
 }
 
+/* straight copy, used by $curl */
 void ccurl_parse_data(void *result, const char *data)
 {
 	strncpy(result, data, max_user_text);
 }
 
+/* prints result data to text buffer, used by $curl */
 void ccurl_process_info(char *p, int p_max_size, char *uri, int interval)
 {
 	ccurl_location_t *curloc = ccurl_find_location(&ccurl_locations_head, uri);
@@ -190,7 +206,7 @@ void ccurl_process_info(char *p, int p_max_size, char *uri, int interval)
 		curloc->process_function = &ccurl_parse_data;
 		ccurl_init_thread(curloc, interval);
 		if (!curloc->p_timed_thread) {
-			ERR("error setting up weather thread");
+			ERR("error setting up curl thread");
 		}
 	}
 
