@@ -306,7 +306,7 @@ void get_cpu_count(void)
 
 	info.cpu_usage = malloc(info.cpu_count * sizeof(float));
 	if (info.cpu_usage == NULL) {
-		CRIT_ERR("malloc");
+		CRIT_ERR(NULL, NULL, "malloc");
 	}
 }
 
@@ -741,7 +741,7 @@ proc_find_top(struct process **cpu, struct process **mem)
 
 	/* we get total pages count again to be sure it is up to date */
 	if (GETSYSCTL("vm.stats.vm.v_page_count", total_pages) != 0) {
-		CRIT_ERR("Cannot read sysctl \"vm.stats.vm.v_page_count\"");
+		CRIT_ERR(NULL, NULL, "Cannot read sysctl \"vm.stats.vm.v_page_count\"");
 	}
 
 	p = kvm_getprocs(kd, KERN_PROC_PROC, 0, &n_processes);
