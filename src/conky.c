@@ -2832,8 +2832,12 @@ static struct text_object *construct_text_object(const char *s,
 			char *uri = (char *) malloc(128 * sizeof(char));
 
 			argc = sscanf(arg, "%127s %f", uri, &interval);
-			obj->data.curl.uri = uri;
-			obj->data.curl.interval = interval > 0 ? interval * 60 : 15*60;
+			if (argc == 2) {
+				obj->data.curl.uri = uri;
+				obj->data.curl.interval = interval > 0 ? interval * 60 : 15*60;
+			} else {
+				ERR("wrong number of arguments for $curl");
+			}
 		} else {
 			CRIT_ERR(obj, free_at_crash, "curl needs arguments: <uri> <interval in minutes>");
 		}
@@ -2849,11 +2853,15 @@ static struct text_object *construct_text_object(const char *s,
 
 			argc = sscanf(arg, "%127s %f %63s %d %u", uri, &interval, action,
 					&act_par, &nrspaces);
-			obj->data.rss.uri = uri;
-			obj->data.rss.interval = interval > 0 ? interval * 60 : 15*60;
-			obj->data.rss.action = action;
-			obj->data.rss.act_par = act_par;
-			obj->data.rss.nrspaces = nrspaces;
+			if (argc == 5) {
+				obj->data.rss.uri = uri;
+				obj->data.rss.interval = interval > 0 ? interval * 60 : 15*60;
+				obj->data.rss.action = action;
+				obj->data.rss.act_par = act_par;
+				obj->data.rss.nrspaces = nrspaces;
+			} else {
+				ERR("wrong number of arguments for $rss");
+			}
 		} else {
 			CRIT_ERR(obj, free_at_crash, "rss needs arguments: <uri> <interval in minutes> <action> "
 					"[act_par] [spaces in front]");
@@ -2862,52 +2870,57 @@ static struct text_object *construct_text_object(const char *s,
 #ifdef WEATHER
 	END OBJ(weather, 0)
 		if (arg) {
-			int argc, interval;
+			int argc;
+			float interval;
 			char *locID = (char *) malloc(9 * sizeof(char));
 			char *uri = (char *) malloc(128 * sizeof(char));
 			char *data_type = (char *) malloc(32 * sizeof(char));
 			char *tmp_p;
 
-			argc = sscanf(arg, "%119s %8s %31s %d", uri, locID, data_type, &interval);
+			argc = sscanf(arg, "%119s %8s %31s %f", uri, locID, data_type, &interval);
 
-			/* locID MUST BE upper-case */
-			tmp_p = locID;
-			while (*tmp_p) {
-			  *tmp_p = toupper(*tmp_p);
-			  tmp_p++;
+			if (argc >= 3) {
+				/* locID MUST BE upper-case */
+				tmp_p = locID;
+				while (*tmp_p) {
+					*tmp_p = toupper(*tmp_p);
+					tmp_p++;
+				}
+
+				/* Construct complete uri */
+				if (strstr(uri, "xoap.weather.com")) {
+					if(xoap != NULL) {
+						strcat(uri, locID);
+						strcat(uri, xoap);
+					} else {
+						free(uri);
+						uri = NULL;
+					}
+				} else if (strstr(uri, "weather.noaa.gov")) {
+					strcat(uri, locID);
+					strcat(uri, ".TXT");
+				} else  if (!strstr(uri, "localhost") && !strstr(uri, "127.0.0.1")) {
+					CRIT_ERR(obj, free_at_crash, \
+							"could not recognize the weather uri");
+				}
+
+				obj->data.weather.uri = uri;
+				obj->data.weather.data_type = data_type;
+
+				/* Limit the data retrieval interval to half hour min */
+				if (interval < 30) {
+					interval = 30;
+				}
+
+				/* Convert to seconds */
+				obj->data.weather.interval = interval * 60;
+				free(locID);
+
+				DBGP("weather: fetching %s from %s every %d seconds", \
+						data_type, uri, obj->data.weather.interval);
+			} else {
+				ERR("wrong number of arguments for $weather");
 			}
-
-			/* Construct complete uri */
-			if (strstr(uri, "xoap.weather.com")) {
-			  if(xoap != NULL) {
-			    strcat(uri, locID);
-			    strcat(uri, xoap);
-			  } else {
-			    free(uri);
-			    uri = NULL;
-			  }
-			} else if (strstr(uri, "weather.noaa.gov")) {
-			    strcat(uri, locID);
-			    strcat(uri, ".TXT");
-			} else  if (!strstr(uri, "localhost") && !strstr(uri, "127.0.0.1")) {
-			      CRIT_ERR(obj, free_at_crash, \
-				       "could not recognize the weather uri");
-			}
-
-			obj->data.weather.uri = uri;
-			obj->data.weather.data_type = data_type;
-
-			/* Limit the data retrieval interval to half hour min */
-			if (interval < 30) {
-				interval = 30;
-			}
-
-			/* Convert to seconds */
-			obj->data.weather.interval = interval * 60;
-			free(locID);
-
-			DBGP("weather: fetching %s from %s every %d seconds", \
-			     data_type, uri, obj->data.weather.interval);
 		} else {
 			CRIT_ERR(obj, free_at_crash, "weather needs arguments: <uri> <locID> <data_type> [interval in minutes]");
 		}
