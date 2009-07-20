@@ -24,6 +24,8 @@
 #ifndef _CURL_THREAD_H_
 #define _CURL_THREAD_H_
 
+#include "timed_thread.h"
+
 typedef struct _ccurl_location_t {
 	char *uri; /* uri of location */
 	void *result; /* a pointer to some arbitrary data, will be freed by ccurl_free_info() if non-null */
