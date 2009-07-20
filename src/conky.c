@@ -930,6 +930,7 @@ static void free_text_objects(struct text_object *root, int internal)
 #endif
 #ifdef HAVE_LUA
 			case OBJ_lua:
+			case OBJ_lua_parse:
 			case OBJ_lua_bar:
 #ifdef X11
 			case OBJ_lua_graph:
@@ -4691,6 +4692,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				char *str = llua_getstring(obj->data.s);
 				if (str) {
 					evaluate(str, p);
+					free(str);
 				}
 			}
 			OBJ(lua_bar) {
