@@ -652,6 +652,24 @@
     <varlistentry>
         <term>
             <command>
+                <option>curl</option>
+            </command>
+            <option>url interval_in_minutes</option>
+        </term>
+        <listitem>
+            <para>Download data from URI using Curl at the
+            specified interval. The interval may be a floating
+            point value greater than 0, otherwise defaults to 15
+            minutes. Most useful when used in conjunction with Lua
+            and the Lua API. This object is threaded, and once a
+            thread is created it can't be explicitely destroyed.
+            One thread will run for each URI specified. You can use
+            any protocol that Curl supports.</para>
+        </listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>desktop</option>
             </command>
         </term>
@@ -2549,45 +2567,26 @@
     <varlistentry>
         <term>
             <command>
-                <option>curl</option>
-            </command>
-			<option>url interval_in_minutes</option>
-        </term>
-		<listitem>
-			<para>
-				Download data from URI using Curl at the specified interval.
-				The interval may be a floating point value greater than 0,
-				otherwise defaults to 15 minutes.  Most useful when used in
-				conjunction with Lua and the Lua API.  This object is threaded,
-				and once a thread is created it can't be explicitely destroyed.
-				One thread will run for each URI specified.  You can use any
-				protocol that Curl supports.
-			</para>
-		</listitem>
-	</varlistentry>
-    <varlistentry>
-        <term>
-            <command>
                 <option>rss</option>
             </command>
             <option>uri interval_in_minutes action (num_par
             (spaces_in_front))</option>
         </term>
-		<listitem>
-			<para>
-				Download and parse RSS feeds.  The interval may be a floating
-				point value greater than 0, otherwise defaults to 15 minutes.
-				Action may be one of the following: feed_title, item_title
-				(with num par), item_desc (with num par) and item_titles (when
-				using this action and spaces_in_front is given conky places
-				that many spaces in front of each item).  This object is
-				threaded, and once a thread is created it can't be explicitely
-				destroyed.  One thread will run for each URI specified.  You
-				can use any protocol that Curl supports.
-			</para>
-		</listitem>
-	</varlistentry>
-	<varlistentry>
+        <listitem>
+            <para>Download and parse RSS feeds. The interval may be
+            a floating point value greater than 0, otherwise
+            defaults to 15 minutes. Action may be one of the
+            following: feed_title, item_title (with num par),
+            item_desc (with num par) and item_titles (when using
+            this action and spaces_in_front is given conky places
+            that many spaces in front of each item). This object is
+            threaded, and once a thread is created it can't be
+            explicitely destroyed. One thread will run for each URI
+            specified. You can use any protocol that Curl
+            supports.</para>
+        </listitem>
+    </varlistentry>
+    <varlistentry>
         <term>
             <command>
                 <option>running_processes</option>
@@ -2612,7 +2611,7 @@
         a '|'-sign. If you change the textcolor inside $scroll it
         will automatically have it's old value back at the end of
         $scroll. The end and the start of text will be seperated by
-        'length' number of spaces.
+        'length' number of spaces. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2989,9 +2988,10 @@
         longer then the time it takes your script to execute. For
         example, if you have a script that take 5 seconds to
         execute, you should make the interval at least 6 seconds.
-		See also $execi.  This object will clean up the thread when it is
-		destroyed, so it can safely be used in a nested fashion, though it may
-		not produce the desired behaviour if used this way.
+        See also $execi. This object will clean up the thread when
+        it is destroyed, so it can safely be used in a nested
+        fashion, though it may not produce the desired behaviour if
+        used this way. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3316,40 +3316,41 @@
             <command>
                 <option>weather</option>
             </command>
-            <option>URI locID data_type (interval_in_minutes)</option>
+            <option>URI locID data_type
+            (interval_in_minutes)</option>
         </term>
         <listitem>
             <para>Download, parse and display METAR data.</para>
-	    <para>For the 'URI', there are two possibilities:</para>
-	    <simplelist>
-	        <member>
-		    http://weather.noaa.gov/pub/data/observations/metar/stations/
-		</member>
-	        <member>
-		    http://xoap.weather.com/weather/local/
-		</member>
-	    </simplelist>
-	    <para>The first one is free to use but the second requires you to
-	    register and obtain your partner ID and license key.
-	    These two must be written, separated by a space, into a file
-	    called .xoaprc which needs to be placed into your home directory.
-	    </para>
-            <para>'locID' must be a valid location identifier for the required
-	    uri. For the NOAA site this must be a valid ICAO
-            (see for instance https://pilotweb.nas.faa.gov/qryhtml/icao/).
-	    For the weather.com site this must be a valid location ID
-            (see for instance http://aspnetresources.com/tools/locid.aspx).
-            </para>
+            <para>For the 'URI', there are two
+            possibilities:</para>
+            <simplelist>
+                <member>
+                http://weather.noaa.gov/pub/data/observations/metar/stations/</member>
+                <member>
+                http://xoap.weather.com/weather/local/</member>
+            </simplelist>
+            <para>The first one is free to use but the second
+            requires you to register and obtain your partner ID and
+            license key. These two must be written, separated by a
+            space, into a file called .xoaprc which needs to be
+            placed into your home directory.</para>
+            <para>'locID' must be a valid location identifier for
+            the required uri. For the NOAA site this must be a
+            valid ICAO (see for instance
+            https://pilotweb.nas.faa.gov/qryhtml/icao/). For the
+            weather.com site this must be a valid location ID (see
+            for instance
+            http://aspnetresources.com/tools/locid.aspx).</para>
             <para>'data_type' must be one of the following:</para>
             <simplelist>
                 <member>
                     <command>last_update</command>
                     <option>The date and time stamp of the data.
-		    The result depends on the URI used. For the NOAA site
-		    it is date (yyyy/mm/dd) and UTC time. For the
-		    weather.com one it is date ([m]m/[d]d/yy) and Local Time
-		    of the station.
-		    </option>
+                    The result depends on the URI used. For the
+                    NOAA site it is date (yyyy/mm/dd) and UTC time.
+                    For the weather.com one it is date
+                    ([m]m/[d]d/yy) and Local Time of the
+                    station.</option>
                 </member>
                 <member>
                     <command>temperature</command>
@@ -3385,17 +3386,16 @@
                     <command>weather</command>
                     <option>Any relevant weather event (rain, snow,
                     etc.). This is not used if you are querying the
-		    weather.com site since this data is aggregated
-		    into the cloud_cover one</option>
+                    weather.com site since this data is aggregated
+                    into the cloud_cover one</option>
                 </member>
             </simplelist>
             <para>'delay_in_minutes' (optional, default 30) cannot
             be lower than 30 min.</para>
-		<para>
-			This object is threaded, and once a thread is created it can't be
-			explicitely destroyed.  One thread will run for each URI specified.
-			You can use any protocol that Curl supports.
-		</para>
+            <para>This object is threaded, and once a thread is
+            created it can't be explicitely destroyed. One thread
+            will run for each URI specified. You can use any
+            protocol that Curl supports.</para>
             <para>Note that these variables are still EXPERIMENTAL
             and can be subject to many future changes.</para>
         </listitem>
