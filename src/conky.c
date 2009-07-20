@@ -455,9 +455,9 @@ int check_contains(char *f, char *s)
 	return ret;
 }
 
-#ifdef X11
-
 #define SECRIT_MULTILINE_CHAR '\x02'
+
+#ifdef X11
 
 static inline int calc_text_width(const char *s, int l)
 {
@@ -5822,8 +5822,10 @@ static void generate_text_internal(char *p, int p_max_size,
 				if(buf[obj->data.scroll.start] == 0){
 					 obj->data.scroll.start = 0;
 				}
+#ifdef X11
 				//reset color when scroll is finished
 				new_fg(p + strlen(p), obj->data.scroll.resetcolor);
+#endif
 			}
 			OBJ(combine) {
 				char buf[2][max_user_text];
@@ -6108,18 +6110,16 @@ static inline int get_string_width(const char *s)
 	return strlen(s);
 }
 
+#ifdef X11
 static int get_string_width_special(char *s, int special_index)
 {
-#ifdef X11
 	char *p, *final;
 	int idx = 1;
 	int width = 0;
 	long i;
 
 	if ((output_methods & TO_X) == 0) {
-#endif /* X11 */
 		return (s) ? strlen(s) : 0;
-#ifdef X11
 	}
 
 	if (!s) {
@@ -6154,10 +6154,8 @@ static int get_string_width_special(char *s, int special_index)
 	}
 	free(final);
 	return width;
-#endif /* X11 */
 }
 
-#ifdef X11
 static int text_size_updater(char *s, int special_index);
 
 int last_font_height;
@@ -6907,7 +6905,8 @@ static int draw_line(char *s, int special_index)
 	if ((output_methods & TO_X) == 0) {
 #endif /* X11 */
 		draw_string(s);
-		return 0;
+		//'special_index - special_index' instead of 0 otherwise gcc complains about not using special_index when build without X11
+		return special_index - special_index;
 #ifdef X11
 	}
 

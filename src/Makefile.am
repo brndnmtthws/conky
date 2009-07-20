@@ -43,7 +43,7 @@ BUILT_SOURCES = $(config_output)
 CLEANFILES = $(config_output)
 
 $(config_output): ${config_input}
-	sh ../text2c.sh ${config_input} $@ defconfig
+	sh $(srcdir)/../text2c.sh ${config_input} $@ defconfig
 endif # BUILD_CONFIG_OUTPUT
 
 if BUILD_AUDACIOUS
@@ -252,4 +252,4 @@ EXTRA_DIST = \
 	ccurl_thread.h
 
 
-# vi:set ts=4 sw=4 noet ai nocindent syntax=automake:
+# vi:set ts=8 sw=8 noet ai nocindent syntax=automake:
