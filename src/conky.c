@@ -6353,27 +6353,35 @@ static void draw_string(const char *s)
 	int i, i2, pos, width_of_s;
 	int max = 0;
 	int added;
+	char *s_with_newlines;
 
 	if (s[0] == '\0') {
 		return;
 	}
 
 	width_of_s = get_string_width(s);
+	s_with_newlines = strdup(s);
+	for(i = 0; i < width_of_s; i++) {
+		if(s_with_newlines[i] == SECRIT_MULTILINE_CHAR) {
+			s_with_newlines[i] = '\n';
+		}
+	}
 	if ((output_methods & TO_STDOUT) && draw_mode == FG) {
-		printf("%s\n", s);
+		printf("%s\n", s_with_newlines);
 		if (extra_newline) fputc('\n', stdout);
 		fflush(stdout);	/* output immediately, don't buffer */
 	}
 	if ((output_methods & TO_STDERR) && draw_mode == FG) {
-		fprintf(stderr, "%s\n", s);
+		fprintf(stderr, "%s\n", s_with_newlines);
 		fflush(stderr);	/* output immediately, don't buffer */
 	}
 	if ((output_methods & OVERWRITE_FILE) && draw_mode == FG && overwrite_fpointer) {
-		fprintf(overwrite_fpointer, "%s\n", s);
+		fprintf(overwrite_fpointer, "%s\n", s_with_newlines);
 	}
 	if ((output_methods & APPEND_FILE) && draw_mode == FG && append_fpointer) {
-		fprintf(append_fpointer, "%s\n", s);
+		fprintf(append_fpointer, "%s\n", s_with_newlines);
 	}
+	free(s_with_newlines);
 	memset(tmpstring1, 0, text_buffer_size);
 	memset(tmpstring2, 0, text_buffer_size);
 	strncpy(tmpstring1, s, text_buffer_size - 1);
