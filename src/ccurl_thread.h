@@ -26,12 +26,24 @@
 
 #include "timed_thread.h"
 
+
+/* curl thread lib exports begin */
+
 typedef struct _ccurl_location_t {
-	char *uri; /* uri of location */
-	void *result; /* a pointer to some arbitrary data, will be freed by ccurl_free_info() if non-null */
-	timed_thread *p_timed_thread; /* internal thread pointer */
-	void (*process_function)(void *, const char *); /* function to call when data is ready to be processed, the first argument will be the result pointer, and the second argument is an internal buffer that shouldn't be mangled */
-	struct _ccurl_location_t *next; /* internal list pointer */
+	/* uri of location */
+	char *uri;
+	/* a pointer to some arbitrary data, will be freed by ccurl_free_info() if
+	 * non-null */
+	void *result;
+	/* internal thread pointer, destroyed by timed_thread.c */
+	timed_thread *p_timed_thread;
+	/* function to call when data is ready to be processed, the first argument
+	 * will be the result pointer, and the second argument is an internal
+	 * buffer that shouldn't be mangled */
+	void (*process_function)(void *, const char *);
+	/* internal list pointer, don't mess with this unless you don't know any
+	 * better */
+	struct _ccurl_location_t *next;
 } ccurl_location_t;
 
 /* find an existing location for the uri specified */
@@ -39,13 +51,21 @@ ccurl_location_t *ccurl_find_location(ccurl_location_t **locations_head, char *u
 /* free all locations (as well as location->uri and location->result if
  * non-null) */
 void ccurl_free_locations(ccurl_location_t **locations_head);
-/* initiates a thread at the location specified using the interval in seconds */
+/* initiates a curl thread at the location specified using the interval in
+ * seconds */
 void ccurl_init_thread(ccurl_location_t *curloc, int interval);
+
+/* curl thread lib exports end */
+
+
+/* $curl exports begin */
 
 /* for $curl, free internal list pointer */
 void ccurl_free_info(void);
 /* runs instance of $curl */
 void ccurl_process_info(char *p, int p_max_size, char *uri, int interval);
+
+/* $curl exports end */
 
 #endif /* _CURL_THREAD_H_ */
 
