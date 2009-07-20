@@ -354,27 +354,27 @@ dnl
 dnl WEATHER
 dnl
 
-AC_ARG_ENABLE([weather],
-	      AC_HELP_STRING([--enable-weather], [enable if you want weather support @<:@default=no@:>@]),
-	      [want_weather="$enableval"], [want_weather=no])
+AC_ARG_ENABLE([weather-metar],
+	      AC_HELP_STRING([--enable-weather-metar], [enable if you want METAR weather support @<:@default=no@:>@]),
+	      [want_metar="$enableval"], [want_metar=no])
 
-AC_ARG_ENABLE([xoap],
-	      AC_HELP_STRING([--enable-xoap], [enable if you want weather xoap support @<:@default=no@:>@]),
+AC_ARG_ENABLE([weather-xoap],
+	      AC_HELP_STRING([--enable-weather-xoap], [enable if you want XOAP weather support (also enables METAR) @<:@default=no@:>@]),
 	      [want_xoap="$enableval"], [want_xoap=no])
 #
 if test x$want_xoap = xyes; then
-	want_weather=yes
+	want_metar=yes
 fi
-AM_CONDITIONAL(BUILD_WEATHER, test x$want_weather = xyes)
+AM_CONDITIONAL(BUILD_WEATHER, test x$want_metar = xyes)
 AM_CONDITIONAL(BUILD_XOAP, test x$want_xoap = xyes)
-if test x$want_weather = xyes; then
+if test x$want_metar = xyes; then
 	if test x$want_xoap = xyes; then
 		want_libxml2=yes
-		AC_DEFINE(XOAP, 1, [Define if you want weather xoap support])
+		AC_DEFINE(XOAP, 1, [Define if you want XOAP weather support])
 		AC_DEFINE(XOAP_FILE, "$HOME/.xoaprc", [User xoap keys file])
 	fi
 	want_curl=yes
-	AC_DEFINE(WEATHER, 1, [Define if you want weather support])
+	AC_DEFINE(WEATHER, 1, [Define if you want METAR weather support])
 fi
 
 dnl
@@ -944,7 +944,7 @@ $PACKAGE $VERSION configured successfully:
   RSS:              $want_rss
   Curl:             $want_curl
   Weather
-    NOAA:           $want_weather
+    METAR:          $want_metar
     XOAP:           $want_xoap
   wireless:         $want_wlan
   IBM:              $want_ibm

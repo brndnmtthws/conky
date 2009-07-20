@@ -583,3 +583,73 @@ void weather_process_info(char *p, int p_max_size, char *uri, char *data_type, i
 	timed_thread_unlock(curloc->p_timed_thread);
 }
 
+#ifdef XOAP
+
+/* xoap suffix for weather from weather.com */
+static char *xoap = NULL;
+
+/*
+ * TODO: make the xoap keys file readable from the config file
+ *       make the keys directly readable from the config file
+ *       make the xoap keys file giveable as a command line option
+ */
+void load_xoap_keys(void)
+{
+	FILE *fp;
+	char *par = (char *) malloc(11 * sizeof(char));
+	char *key = (char *) malloc(17 * sizeof(char));
+
+	xoap = (char *) malloc(64 * sizeof(char));
+	to_real_path(xoap, XOAP_FILE);
+	fp = fopen(xoap, "r");
+	if (fp != NULL) {
+		if (fscanf(fp, "%10s %16s", par, key) == 2) {
+			strcpy(xoap, "?cc=*&link=xoap&prod=xoap&par=");
+			strcat(xoap, par);
+			strcat(xoap, "&key=");
+			strcat(xoap, key);
+			strcat(xoap, "&unit=m");
+		} else {
+			free(xoap);
+			xoap = NULL;
+		}
+		fclose(fp);
+	} else {
+		free(xoap);
+		xoap = NULL;
+	}
+	free(par);
+	free(key);
+}
+#endif /* XOAP */
+
+int process_weather_uri(char *uri, char *locID)
+{
+	/* locID MUST BE upper-case */
+	char *tmp_p = locID;
+	while (*tmp_p) {
+		*tmp_p = toupper(*tmp_p);
+		tmp_p++;
+	}
+
+	/* Construct complete uri */
+#ifdef XOAP
+	if (strstr(uri, "xoap.weather.com")) {
+		if (xoap != NULL) {
+			strcat(uri, locID);
+			strcat(uri, xoap);
+		} else {
+			free(uri);
+			uri = NULL;
+		}
+	} else 
+#endif /* XOAP */
+	if (strstr(uri, "weather.noaa.gov")) {
+		strcat(uri, locID);
+		strcat(uri, ".TXT");
+	} else  if (!strstr(uri, "localhost") && !strstr(uri, "127.0.0.1")) {
+		return -1;
+	}
+	return 0;
+}
+
