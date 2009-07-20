@@ -142,6 +142,7 @@ int top_io;
 #endif
 static unsigned int top_name_width = 15;
 int output_methods;
+static int extra_newline;
 enum x_initialiser_state x_initialised = NO;
 static volatile int g_signal_pending;
 /* Update interval */
@@ -6385,6 +6386,7 @@ static void draw_string(const char *s)
 	width_of_s = get_string_width(s);
 	if ((output_methods & TO_STDOUT) && draw_mode == FG) {
 		printf("%s\n", s);
+		if (extra_newline) fputc('\n', stdout);
 		fflush(stdout);	/* output immediately, don't buffer */
 	}
 	if ((output_methods & TO_STDERR) && draw_mode == FG) {
@@ -8329,6 +8331,9 @@ static void load_config_file(const char *f)
 		CONF("out_to_console") {
 			if(string_to_bool(value))
 				output_methods |= TO_STDOUT;
+		}
+		CONF("extra_newline") {
+			extra_newline = string_to_bool(value);
 		}
 		CONF("out_to_stderr") {
 			if(string_to_bool(value))

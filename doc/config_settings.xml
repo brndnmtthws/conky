@@ -242,6 +242,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>extra_newline</option>
+            </command>
+        </term>
+        <listitem>Put an extra newline at the end when writing to
+        stdout, useful for writing to awesome's wiboxes. 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>font</option>
             </command>
         </term>
