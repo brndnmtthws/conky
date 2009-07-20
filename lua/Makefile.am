@@ -35,8 +35,8 @@ if BUILD_LUA
 if BUILD_LUA_CAIRO
 libcairo = libcairo.la
 
-libcairo_la_CFLAGS = $(cairo_CFLAGS) $(cairo_xlib_CFLAGS)
-libcairo_la_LIBADD = $(cairo_LIBS) $(cairo_xlib_LIBS) -ltolua++
+libcairo_la_CFLAGS = $(cairo_CFLAGS) $(cairo_xlib_CFLAGS) -I$(prefix)/include/lua5.1
+libcairo_la_LIBADD = $(cairo_LIBS) $(cairo_xlib_LIBS) $(tolua_LIBS)
 
 cairo.c: cairo.pkg
 	${toluapp} -n cairo -o cairo.c $(srcdir)/cairo.pkg
@@ -47,8 +47,8 @@ if BUILD_LUA_IMLIB2
 
 libimlib2 = libimlib2.la
 
-libimlib2_la_CFLAGS = $(Imlib2_CFLAGS)
-libimlib2_la_LIBADD = $(Imlib2_LIBS) -ltolua++
+libimlib2_la_CFLAGS = $(Imlib2_CFLAGS) -I$(prefix)/include/lua5.1
+libimlib2_la_LIBADD = $(Imlib2_LIBS) $(tolua_LIBS)
 
 imlib2.c: imlib2.pkg
 	${toluapp} -n imlib2 -o imlib2.c $(srcdir)/imlib2.pkg
