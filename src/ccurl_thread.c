@@ -50,6 +50,7 @@ ccurl_location_t *ccurl_find_location(ccurl_location_t **locations_head, char *u
 		tail = tail->next;
 	}
 	if (!tail) { /* new location!!!!!!! */
+		DBGP("new curl location: '%s'", uri);
 		new = malloc(sizeof(ccurl_location_t));
 		memset(new, 0, sizeof(ccurl_location_t));
 		new->uri = strndup(uri, text_buffer_size);
@@ -111,6 +112,7 @@ void ccurl_fetch_data(ccurl_location_t *curloc)
 
 	curl = curl_easy_init();
 	if (curl) {
+		DBGP("reading curl data from '%s'", curloc->uri);
 		curl_easy_setopt(curl, CURLOPT_URL, curloc->uri);
 		curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ccurl_write_memory_callback);
