@@ -451,9 +451,9 @@ int check_contains(char *f, char *s)
 	return ret;
 }
 
-#ifdef X11
-
 #define SECRIT_MULTILINE_CHAR '\x02'
+
+#ifdef X11
 
 static inline int calc_text_width(const char *s, int l)
 {
@@ -3711,7 +3711,6 @@ static inline double get_barnum(char *buf)
 	return barnum;
 }
 
-#ifdef X11
 /* substitutes all occurrences of '\n' with SECRIT_MULTILINE_CHAR, which allows
  * multiline objects like $exec work with $align[rc] and friends
  */
@@ -3727,7 +3726,6 @@ void substitute_newlines(char *p, long l)
 		p++;
 	}
 }
-#endif /* X11 */
 
 static void generate_text_internal(char *p, int p_max_size,
 		struct text_object root, struct information *cur)
@@ -6020,11 +6018,9 @@ static void generate_text_internal(char *p, int p_max_size,
 				a = outptr - p;
 			}
 #endif /* HAVE_ICONV */
-#ifdef X11
 			if (obj->type != OBJ_text) {
 				substitute_newlines(p, a - 2);
 			}
-#endif /* X11 */
 			p += a;
 			p_max_size -= a;
 		}
@@ -6357,27 +6353,35 @@ static void draw_string(const char *s)
 	int i, i2, pos, width_of_s;
 	int max = 0;
 	int added;
+	char *s_with_newlines;
 
 	if (s[0] == '\0') {
 		return;
 	}
 
 	width_of_s = get_string_width(s);
+	s_with_newlines = strdup(s);
+	for(i = 0; i < (int) strlen(s_with_newlines); i++) {
+		if(s_with_newlines[i] == SECRIT_MULTILINE_CHAR) {
+			s_with_newlines[i] = '\n';
+		}
+	}
 	if ((output_methods & TO_STDOUT) && draw_mode == FG) {
-		printf("%s\n", s);
+		printf("%s\n", s_with_newlines);
 		if (extra_newline) fputc('\n', stdout);
 		fflush(stdout);	/* output immediately, don't buffer */
 	}
 	if ((output_methods & TO_STDERR) && draw_mode == FG) {
-		fprintf(stderr, "%s\n", s);
+		fprintf(stderr, "%s\n", s_with_newlines);
 		fflush(stderr);	/* output immediately, don't buffer */
 	}
 	if ((output_methods & OVERWRITE_FILE) && draw_mode == FG && overwrite_fpointer) {
-		fprintf(overwrite_fpointer, "%s\n", s);
+		fprintf(overwrite_fpointer, "%s\n", s_with_newlines);
 	}
 	if ((output_methods & APPEND_FILE) && draw_mode == FG && append_fpointer) {
-		fprintf(append_fpointer, "%s\n", s);
+		fprintf(append_fpointer, "%s\n", s_with_newlines);
 	}
+	free(s_with_newlines);
 	memset(tmpstring1, 0, text_buffer_size);
 	memset(tmpstring2, 0, text_buffer_size);
 	strncpy(tmpstring1, s, text_buffer_size - 1);
