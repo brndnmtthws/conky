@@ -451,9 +451,9 @@ int check_contains(char *f, char *s)
 	return ret;
 }
 
-#define SECRIT_MULTILINE_CHAR '\x02'
-
 #ifdef X11
+
+#define SECRIT_MULTILINE_CHAR '\x02'
 
 static inline int calc_text_width(const char *s, int l)
 {
@@ -3711,6 +3711,7 @@ static inline double get_barnum(char *buf)
 	return barnum;
 }
 
+#ifdef X11
 /* substitutes all occurrences of '\n' with SECRIT_MULTILINE_CHAR, which allows
  * multiline objects like $exec work with $align[rc] and friends
  */
@@ -3726,6 +3727,7 @@ void substitute_newlines(char *p, long l)
 		p++;
 	}
 }
+#endif /* X11 */
 
 static void generate_text_internal(char *p, int p_max_size,
 		struct text_object root, struct information *cur)
@@ -6018,9 +6020,11 @@ static void generate_text_internal(char *p, int p_max_size,
 				a = outptr - p;
 			}
 #endif /* HAVE_ICONV */
+#ifdef X11
 			if (obj->type != OBJ_text) {
 				substitute_newlines(p, a - 2);
 			}
+#endif /* X11 */
 			p += a;
 			p_max_size -= a;
 		}
