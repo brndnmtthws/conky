@@ -1261,12 +1261,12 @@
             <command>
                 <option>head</option>
             </command>
-            <option>logfile lines (interval)</option>
+            <option>logfile lines (next_check)</option>
         </term>
-        <listitem>Displays first N lines of supplied text text
-        file. If interval is not supplied, Conky assumes 2x Conky's
-        interval. Max of 30 lines can be displayed, or until the
-        text buffer is filled. 
+        <listitem>Displays first N lines of supplied text file. The
+        file is checked every 'next_check' update. If next_check
+        is not supplied, Conky defaults to 2. Max of 30 lines can be
+        displayed, or until the text buffer is filled.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2794,12 +2794,12 @@
             <command>
                 <option>tail</option>
             </command>
-            <option>logfile lines (interval)</option>
+            <option>logfile lines (next_check)</option>
         </term>
-        <listitem>Displays last N lines of supplied text text file.
-        If interval is not supplied, Conky assumes 2x Conky's
-        interval. Max of 30 lines can be displayed, or until the
-        text buffer is filled. 
+        <listitem>Displays last N lines of supplied text file. The
+        file is checked every 'next_check' update. If next_check
+        is not supplied, Conky defaults to 2. Max of 30 lines can be
+        displayed, or until the text buffer is filled.
         <para /></listitem>
     </varlistentry>
     <varlistentry>

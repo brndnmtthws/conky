@@ -24,24 +24,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifndef _TAILHEAD_H
-#define _TAILHEAD_H
 
-#include "text_object.h"
-
-#define MAX_TAIL_LINES 100
-
-enum tailhead_type {
-	TAIL,
-	HEAD,
-};
-
-#define init_tail_object(o, a) init_tailhead_object(TAIL, o, a)
-#define init_head_object(o, a) init_tailhead_object(HEAD, o, a)
-
-int init_tailhead_object(enum tailhead_type,
-		struct text_object *, const char *);
-int print_head_object(struct text_object *, char *, size_t);
-int print_tail_object(struct text_object *, char *, size_t);
-
-#endif /* _TAILHEAD_H */
+void init_tailhead(const char* type, const char* arg, struct text_object *obj, void* free_at_crash);
+void print_tailhead(const char* type, struct text_object *obj, char *p, int p_max_size);

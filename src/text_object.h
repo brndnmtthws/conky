@@ -493,15 +493,11 @@ struct text_object {
 
 		struct {
 			int wantedlines;
-			int readlines;
 			char *logfile;
-			double last_update;
-			float interval;
 			char *buffer;
-			/* If not -1, a file descriptor to read from when
-			 * logfile is a FIFO. */
-			int fd;
-		} tail;
+			int current_use;
+			int max_uses;
+		} headtail;
 
 		struct {
 			double last_update;

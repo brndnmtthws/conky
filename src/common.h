@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/socket.h>
 
+void strfold(char *start, int count);
 int check_mount(char *s);
 void prepare_update(void);
 void update_uptime(void);

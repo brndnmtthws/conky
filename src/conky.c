@@ -773,9 +773,12 @@ static void free_text_objects(struct text_object *root, int internal)
 				free(data.ifblock.s);
 				free(data.ifblock.str);
 				break;
+			case OBJ_head:
 			case OBJ_tail:
-				free(data.tail.logfile);
-				free(data.tail.buffer);
+				free(data.headtail.logfile);
+				if(data.headtail.buffer) {
+					free(data.headtail.buffer);
+				}
 				break;
 			case OBJ_text:
 			case OBJ_font:
@@ -2067,15 +2070,9 @@ static struct text_object *construct_text_object(const char *s,
 		}
 #endif /* __linux__ */
 	END OBJ(tail, 0)
-		if (init_tail_object(obj, arg)) {
-			obj->type = OBJ_text;
-			obj->data.s = strndup("${tail}", text_buffer_size);
-		}
+		init_tailhead("tail", arg, obj, free_at_crash);
 	END OBJ(head, 0)
-		if (init_head_object(obj, arg)) {
-			obj->type = OBJ_text;
-			obj->data.s = strndup("${head}", text_buffer_size);
-		}
+		init_tailhead("head", arg, obj, free_at_crash);
 	END OBJ(lines, 0)
 		if (arg) {
 			obj->data.s = strndup(arg, text_buffer_size);
@@ -3331,19 +3328,6 @@ static int text_contains_templates(const char *text)
 	if (strcasestr(text, "$template") != NULL)
 		return 1;
 	return 0;
-}
-
-/* folds a string over top of itself, like so:
- *
- * if start is "blah", and you call it with count = 1, the result will be "lah"
- */
-static void strfold(char *start, int count)
-{
-	char *curplace;
-	for (curplace = start + count; *curplace != 0; curplace++) {
-		*(curplace - count) = *curplace;
-	}
-	*(curplace - count) = 0;
 }
 
 /*
@@ -5566,10 +5550,12 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 					}
 				}
-			OBJ(tail)
-				print_tail_object(obj, p, p_max_size);
-			OBJ(head)
-				print_head_object(obj, p, p_max_size);
+			OBJ(tail) {
+				print_tailhead("tail", obj, p, p_max_size);
+			}
+			OBJ(head) {
+				print_tailhead("head", obj, p, p_max_size);
+			}
 			OBJ(lines) {
 				FILE *fp = open_file(obj->data.s, &obj->a);
 
