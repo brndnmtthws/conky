@@ -51,6 +51,19 @@
 /* OS specific prototypes to be implemented by linux.c & Co. */
 void update_entropy(void);
 
+/* folds a string over top of itself, like so:
+ *
+ * if start is "blah", and you call it with count = 1, the result will be "lah"
+ */
+void strfold(char *start, int count)
+{
+	char *curplace;
+	for (curplace = start + count; *curplace != 0; curplace++) {
+		*(curplace - count) = *curplace;
+	}
+	*(curplace - count) = 0;
+}
+
 #ifndef HAVE_STRNDUP
 // use our own strndup() if it's not available
 char *strndup(const char *s, size_t n)
