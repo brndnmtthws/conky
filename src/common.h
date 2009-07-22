@@ -32,7 +32,8 @@ double get_time(void);
  * DEFAULT_TEXT_BUFFER_SIZE.  It's similar to variable_substitute, except only
  * cheques for $HOME and ~/ in path */
 void to_real_path(char *dest, const char *source);
-FILE *open_file(const char *, int *);
+FILE *open_file(const char *file, int *reported);
+int open_fifo(const char *file, int *reported);
 void variable_substitute(const char *s, char *dest, unsigned int n);
 
 void format_seconds(char *buf, unsigned int n, long t);

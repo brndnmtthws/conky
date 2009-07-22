@@ -38,6 +38,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include "diskio.h"
+#include <fcntl.h>
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
@@ -111,6 +112,27 @@ void to_real_path(char *dest, const char *source)
 	}
 }
 
+int open_fifo(const char *file, int *reported)
+{
+	char path[DEFAULT_TEXT_BUFFER_SIZE];
+	int fd = 0;
+
+	to_real_path(path, file);
+	fd = open(file, O_RDONLY | O_NONBLOCK);
+
+	if (fd == -1) {
+		if (!reported || *reported == 0) {
+			ERR("can't open %s: %s", file, strerror(errno));
+			if (reported) {
+				*reported = 1;
+			}
+		}
+		return -1;
+	}
+
+	return fd;
+}
+
 FILE *open_file(const char *file, int *reported)
 {
 	char path[DEFAULT_TEXT_BUFFER_SIZE];
@@ -126,7 +148,7 @@ FILE *open_file(const char *file, int *reported)
 				*reported = 1;
 			}
 		}
-		return 0;
+		return NULL;
 	}
 
 	return fp;
