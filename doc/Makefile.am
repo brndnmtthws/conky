@@ -1,6 +1,6 @@
 if HAVE_DOCSTUFF
 
-DOCS = conky.1 docs.html variables.html config_settings.html
+DOCS = conky.1 docs.html variables.html config_settings.html lua.html
 
 clean-am: clean-generic mostlyclean-am
 	rm -f docs.mxml
