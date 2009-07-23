@@ -327,14 +327,14 @@ void get_cpu_count()
 
 	info.cpu_usage = malloc(info.cpu_count * sizeof(float));
 	if (info.cpu_usage == NULL) {
-		CRIT_ERR("malloc");
+		CRIT_ERR(NULL, NULL, "malloc");
 	}
 
 #ifndef OLDCPU
 	assert(fresh == NULL);	/* XXX Is this leaking memory? */
 	/* XXX Where shall I free this? */
 	if (NULL == (fresh = calloc(cpu_count, sizeof(int64_t) * CPUSTATES))) {
-		CRIT_ERR("calloc");
+		CRIT_ERR(NULL, NULL, "calloc");
 	}
 #endif
 }

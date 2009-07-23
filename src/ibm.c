@@ -91,7 +91,7 @@ void get_ibm_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
 			}
 		}
 	} else {
-		CRIT_ERR("can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
+		CRIT_ERR(NULL, NULL, "can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
 			"ibm* from your "PACKAGE_NAME" config file.", fan, strerror(errno));
 	}
 
@@ -155,7 +155,7 @@ void get_ibm_acpi_temps(void)
 			}
 		}
 	} else {
-		CRIT_ERR("can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
+		CRIT_ERR(NULL, NULL, "can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
 			"ibm* from your "PACKAGE_NAME" config file.", thermal, strerror(errno));
 	}
 
@@ -203,7 +203,7 @@ void get_ibm_acpi_volume(char *p_client_buffer, size_t client_buffer_size)
 			}
 		}
 	} else {
-		CRIT_ERR("can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
+		CRIT_ERR(NULL, NULL, "can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
 			"ibm* from your "PACKAGE_NAME" config file.", volume, strerror(errno));
 	}
 
@@ -252,7 +252,7 @@ void get_ibm_acpi_brightness(char *p_client_buffer, size_t client_buffer_size)
 			}
 		}
 	} else {
-		CRIT_ERR("can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
+		CRIT_ERR(NULL, NULL, "can't open '%s': %s\nYou are not using the IBM ACPI. Remove "
 			"ibm* from your "PACKAGE_NAME" config file.", filename, strerror(errno));
 	}
 
