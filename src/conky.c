@@ -2873,6 +2873,9 @@ static struct text_object *construct_text_object(const char *s,
 
 			if (argc >= 3) {
 				if (process_weather_uri(uri, locID)) {
+					free(data_type);
+					free(uri);
+					free(locID);
 					CRIT_ERR(obj, free_at_crash, \
 							"could not recognize the weather uri");
 				}
@@ -2892,7 +2895,10 @@ static struct text_object *construct_text_object(const char *s,
 				DBGP("weather: fetching %s from %s every %d seconds", \
 						data_type, uri, obj->data.weather.interval);
 			} else {
-				ERR("wrong number of arguments for $weather");
+				free(data_type);
+				free(uri);
+				free(locID);
+				CRIT_ERR(obj, free_at_crash, "wrong number of arguments for $weather");
 			}
 		} else {
 			CRIT_ERR(obj, free_at_crash, "weather needs arguments: <uri> <locID> <data_type> [interval in minutes]");
