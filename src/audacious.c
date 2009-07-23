@@ -65,7 +65,7 @@ void update_audacious(void)
 	 * structure when the main thread's update cycle fires. */
 	if (!info.audacious.p_timed_thread) {
 		if (create_audacious_thread() != 0) {
-			CRIT_ERR("unable to create audacious thread!");
+			CRIT_ERR(NULL, NULL, "unable to create audacious thread!");
 		}
 		timed_thread_register(info.audacious.p_timed_thread,
 			&info.audacious.p_timed_thread);
@@ -140,12 +140,12 @@ void *audacious_thread_func(void *pvoid)
 	g_type_init();
 	connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
 	if (!connection) {
-		CRIT_ERR("unable to establish dbus connection");
+		CRIT_ERR(NULL, NULL, "unable to establish dbus connection");
 	}
 	session = dbus_g_proxy_new_for_name(connection, AUDACIOUS_DBUS_SERVICE,
 			AUDACIOUS_DBUS_PATH, AUDACIOUS_DBUS_INTERFACE);
 	if (!session) {
-		CRIT_ERR("unable to create dbus proxy");
+		CRIT_ERR(NULL, NULL, "unable to create dbus proxy");
 	}
 #endif /* AUDACIOUS_LEGACY */
 
