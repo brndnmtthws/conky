@@ -6004,7 +6004,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				a = outptr - p;
 			}
 #endif /* HAVE_ICONV */
-			if (obj->type != OBJ_text) {
+			if (obj->type != OBJ_text && obj->type != OBJ_execp && obj->type != OBJ_execpi) {
 				substitute_newlines(p, a - 2);
 			}
 			p += a;
