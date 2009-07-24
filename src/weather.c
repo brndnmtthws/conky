@@ -38,6 +38,15 @@
 #endif /* MATH */
 #ifdef XOAP
 #include <libxml/parser.h>
+#include <libxml/xpath.h>
+
+/* Xpath expressions for XOAP xml parsing */
+#define NUM_XPATH_EXPRESSIONS 7
+const xmlChar *xpath_expression[NUM_XPATH_EXPRESSIONS] = {
+	"/weather/cc/lsup", "/weather/cc/tmp", "/weather/cc/t",
+	"/weather/cc/bar/r", "/weather/cc/wind/s", "/weather/cc/wind/d",
+	"/weather/cc/hmid"
+};
 #endif /* XOAP */
 
 /* Possible sky conditions */
@@ -81,35 +90,45 @@ int rel_humidity(int dew_point, int air) {
 }
 
 #ifdef XOAP
-//TODO: Lets get rid of the recursion
-static void parse_cc(PWEATHER *res, xmlNodePtr cc)
+static void parse_cc(PWEATHER *res, xmlXPathContextPtr xpathCtx)
 {
+	int i;
+	char *content;
+	xmlXPathObjectPtr xpathObj;
 
-	xmlNodePtr cur = NULL;
-
-	for (cur = cc; cur; cur = cur->next) {
-		if (cur->type == XML_ELEMENT_NODE) {
-			if (!xmlStrcmp(cur->name, (const xmlChar *) "lsup")) {
-				strncpy(res->lastupd, (char *)cur->children->content, 31);
-			} else if	(!xmlStrcmp(cur->name, (const xmlChar *) "tmp")) {
-				res->temp = atoi((char *)cur->children->content);
-			} else if (!xmlStrcmp(cur->name, (const xmlChar *) "t")) {
-				if(res->xoap_t[0] == '\0') {
-					strncpy(res->xoap_t, (char *)cur->children->content, 31);
+	for (i = 0; i < NUM_XPATH_EXPRESSIONS; i++) {
+	  xpathObj = xmlXPathEvalExpression(xpath_expression[i], xpathCtx);
+		if ((xpathObj != NULL) && (xpathObj->nodesetval->nodeTab[0]->type == XML_ELEMENT_NODE)) {
+		  content = (char *)xmlNodeGetContent(xpathObj->nodesetval->nodeTab[0]);
+		  switch(i) {
+		       case 0:
+			    strncpy(res->lastupd, content, 31);
+		       break;
+		       case 1:
+			    res->temp = atoi(content);
+		       break;
+		       case 2:
+			    if(res->xoap_t[0] == '\0') {
+				strncpy(res->xoap_t, content, 31);
 				}
-			} else if (!xmlStrcmp(cur->name, (const xmlChar *) "r")) {
-				res->bar = atoi((char *)cur->children->content);
-			} else if (!xmlStrcmp(cur->name, (const xmlChar *) "s")) {
-				res->wind_s = atoi((char *)cur->children->content);
-			} else if (!xmlStrcmp(cur->name, (const xmlChar *) "d")) {
-				if (isdigit((char)cur->children->content[0])) {
-					res->wind_d = atoi((char *)cur->children->content);
-				}
-			} else if (!xmlStrcmp(cur->name, (const xmlChar *) "hmid")) {
-				res->hmid = atoi((char *)cur->children->content);
-			}
+		       break;
+		       case 3:
+			    res->bar = atoi(content);
+		       break;
+		       case 4:
+			    res->wind_s = atoi(content);
+		       break;
+		       case 5:
+			    if (isdigit((char)content[0])) {
+			        res->wind_d = atoi(content);
+			    }
+			    break;
+		       case 6:
+			    res->hmid = atoi(content);
+		  }
+		  xmlFree(content);
 		}
-		parse_cc(res, cur->children);
+		xmlXPathFreeObject(xpathObj);
 	}
 	return;
 }
@@ -117,37 +136,24 @@ static void parse_cc(PWEATHER *res, xmlNodePtr cc)
 static void parse_weather_xml(PWEATHER *res, const char *data)
 {
 	xmlDocPtr doc;
-	xmlNodePtr cur;
+	xmlXPathContextPtr xpathCtx;
 
 	if (!(doc = xmlReadMemory(data, strlen(data), "", NULL, 0))) {
 		ERR("weather: can't read xml data");
 		return;
 	}
 
-	cur = xmlDocGetRootElement(doc);
-
-	while(cur) {
-		if (cur->type == XML_ELEMENT_NODE) {
-			if (!xmlStrcmp(cur->name, (const xmlChar *) "weather")) {
-				cur = cur->children;
-				while (cur != NULL) {
-					if (cur->type == XML_ELEMENT_NODE) {
-						if (!xmlStrcmp(cur->name, (const xmlChar *) "cc")) {
-							parse_cc(res, cur->children);
-							xmlFreeDoc(doc);
-							return;
-						}
-					}
-					cur = cur->next;
-				}
-			}
-		}
-		cur = cur->next;
+	xpathCtx = xmlXPathNewContext(doc);
+	if(xpathCtx == NULL) {
+	        ERR("weather: unable to create new XPath context");
+		xmlFreeDoc(doc);
+		return;
 	}
 
-	ERR("weather: incorrect xml data");
+	parse_cc(res, xpathCtx);
+	xmlXPathFreeContext(xpathCtx);
 	xmlFreeDoc(doc);
-	return ;
+	return;
 }
 #endif /* XOAP */
 
