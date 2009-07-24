@@ -147,6 +147,8 @@ enum x_initialiser_state x_initialised = NO;
 static volatile int g_signal_pending;
 /* Update interval */
 double update_interval;
+double update_interval_old;
+double update_interval_bat;
 void *global_cpu = NULL;
 
 int argc_copy;
@@ -7083,6 +7085,13 @@ static void main_loop(void)
 	next_update_time = get_time();
 	info.looped = 0;
 	while (terminate == 0 && (total_run_times == 0 || info.looped < total_run_times)) {
+		char buf[max_user_text];
+		get_battery_short_status(buf, max_user_text, "BAT0");
+		if(buf[0] == 'D') {
+			update_interval = update_interval_bat;
+		} else {
+			update_interval = update_interval_old;
+		}
 		info.looped++;
 
 #ifdef SIGNAL_BLOCKING
@@ -7822,6 +7831,8 @@ static void set_default_configurations(void)
 
 	no_buffers = 1;
 	update_interval = 3.0;
+	update_interval_old = update_interval;
+	update_interval_bat = update_interval;
 	info.music_player_interval = 1.0;
 	stuff_in_uppercase = 0;
 	info.users.number = 1;
@@ -8579,9 +8590,17 @@ static void load_config_file(const char *f)
 		}
 #endif /* IMLIB2 */
 #endif /* X11 */
+		CONF("update_interval_on_battery") {
+			if (value) {
+				update_interval_bat = strtod(value, 0);
+			} else {
+				CONF_ERR;
+			}
+		}
 		CONF("update_interval") {
 			if (value) {
 				update_interval = strtod(value, 0);
+				update_interval_old = update_interval;
 			} else {
 				CONF_ERR;
 			}
@@ -9148,6 +9167,7 @@ void initialisation(int argc, char **argv) {
 
 			case 'u':
 				update_interval = strtod(optarg, 0);
+				update_interval_old = update_interval;
 				if (info.music_player_interval == 0) {
 					// default to update_interval
 					info.music_player_interval = update_interval;

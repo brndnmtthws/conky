@@ -773,8 +773,19 @@
             <command>
                 <option>update_interval</option>
             </command>
+            <option>seconds</option>
         </term>
-        <listitem>Update interval in seconds 
+        <listitem>Update interval
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>update_interval_on_battery</option>
+            </command>
+            <option>seconds</option>
+        </term>
+        <listitem>Update interval when running on batterypower
         <para /></listitem>
     </varlistentry>
     <varlistentry>
