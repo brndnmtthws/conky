@@ -1796,6 +1796,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 			}
 		}
 		fclose(acpi_bat_fp[idx]);
+		acpi_bat_fp[idx] = NULL;
 	} else {
 		/* APM */
 		if (apm_bat_fp[idx] == NULL) {
