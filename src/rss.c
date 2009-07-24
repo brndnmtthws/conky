@@ -65,12 +65,13 @@ void rss_process_info(char *p, int p_max_size, char *uri, char *action, int
 		snprintf(p, p_max_size, "prss: Error reading RSS data\n");
 	} else {
 		if (strcmp(action, "feed_title") == EQUAL) {
-			str = data->title;
-			// remove trailing new line if one exists
-			if (str[strlen(str) - 1] == '\n') {
-				str[strlen(str) - 1] = 0;
+		        if (str = data->title) {
+			        // remove trailing new line if one exists
+			        if (str[strlen(str) - 1] == '\n') {
+				        str[strlen(str) - 1] = 0;
+				}
+				snprintf(p, p_max_size, "%s", str);
 			}
-			snprintf(p, p_max_size, "%s", str);
 		} else if (strcmp(action, "item_title") == EQUAL) {
 			if (act_par < data->item_count) {
 				str = data->items[act_par].title;
