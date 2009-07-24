@@ -42,7 +42,7 @@
 
 /* Xpath expressions for XOAP xml parsing */
 #define NUM_XPATH_EXPRESSIONS 7
-const xmlChar *xpath_expression[NUM_XPATH_EXPRESSIONS] = {
+const char *xpath_expression[NUM_XPATH_EXPRESSIONS] = {
 	"/weather/cc/lsup", "/weather/cc/tmp", "/weather/cc/t",
 	"/weather/cc/bar/r", "/weather/cc/wind/s", "/weather/cc/wind/d",
 	"/weather/cc/hmid"
@@ -97,7 +97,7 @@ static void parse_cc(PWEATHER *res, xmlXPathContextPtr xpathCtx)
 	xmlXPathObjectPtr xpathObj;
 
 	for (i = 0; i < NUM_XPATH_EXPRESSIONS; i++) {
-	  xpathObj = xmlXPathEvalExpression(xpath_expression[i], xpathCtx);
+	  xpathObj = xmlXPathEvalExpression((xmlChar *)xpath_expression[i], xpathCtx);
 		if ((xpathObj != NULL) && (xpathObj->nodesetval->nodeTab[0]->type == XML_ELEMENT_NODE)) {
 		  content = (char *)xmlNodeGetContent(xpathObj->nodesetval->nodeTab[0]);
 		  switch(i) {
