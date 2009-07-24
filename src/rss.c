@@ -54,7 +54,7 @@ void rss_process_info(char *p, int p_max_size, char *uri, char *action, int
 		curloc->process_function = &prss_parse_data;
 		ccurl_init_thread(curloc, interval);
 		if (!curloc->p_timed_thread) {
-			ERR("error setting up weather thread");
+			ERR("error setting up RSS thread");
 		}
 	}
 
