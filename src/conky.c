@@ -2846,7 +2846,7 @@ static struct text_object *construct_text_object(const char *s,
 
 			argc = sscanf(arg, "%127s %f %63s %d %u", uri, &interval, action,
 					&act_par, &nrspaces);
-			if (argc == 5) {
+			if (argc >= 3) {
 				obj->data.rss.uri = uri;
 				obj->data.rss.interval = interval > 0 ? interval * 60 : 15*60;
 				obj->data.rss.action = action;
