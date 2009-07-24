@@ -1795,6 +1795,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 				strncpy(last_battery_str[idx], "AC", 64);
 			}
 		}
+		fclose(acpi_bat_fp[idx]);
 	} else {
 		/* APM */
 		if (apm_bat_fp[idx] == NULL) {
