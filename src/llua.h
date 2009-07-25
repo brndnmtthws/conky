@@ -32,6 +32,8 @@
 #include "x11.h"
 #endif /* X11 */
 
+#define LUAPREFIX "conky_"
+
 /* load a lua script */
 void llua_load(const char *script);
 /* call a function with args, and return a string from it (must be free'd) */

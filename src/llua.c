@@ -136,7 +136,11 @@ char *llua_do_call(const char *string, int retc)
 	}
 
 	/* call only conky_ prefixed functions */
-	snprintf(func, 64, "conky_%s", ptr);
+	if(strncmp(ptr, LUAPREFIX, strlen(LUAPREFIX)) == 0) {
+		snprintf(func, 64, "%s", ptr);
+	}else{
+		snprintf(func, 64, "%s%s", LUAPREFIX, ptr);
+	}
 
 	/* push the function name to stack */
 	lua_getglobal(lua_L, func);
