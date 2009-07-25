@@ -435,23 +435,25 @@ void llua_setup_window_table(int text_start_x, int text_start_y, int text_width,
 	if (!lua_L) return;
 	lua_newtable(lua_L);
 	
-	llua_set_userdata("drawable", "Drawable", (void*)&window.drawable);
-	llua_set_userdata("visual", "Visual", window.visual);
-	llua_set_userdata("display", "Display", display);
+	if (output_methods & TO_X) {
+		llua_set_userdata("drawable", "Drawable", (void*)&window.drawable);
+		llua_set_userdata("visual", "Visual", window.visual);
+		llua_set_userdata("display", "Display", display);
 
 
-	llua_set_long("width", window.width);
-	llua_set_long("height", window.height);
-	llua_set_long("border_inner_margin", window.border_inner_margin);
-	llua_set_long("border_outer_margin", window.border_outer_margin);
-	llua_set_long("border_width", window.border_width);
+		llua_set_long("width", window.width);
+		llua_set_long("height", window.height);
+		llua_set_long("border_inner_margin", window.border_inner_margin);
+		llua_set_long("border_outer_margin", window.border_outer_margin);
+		llua_set_long("border_width", window.border_width);
 
-	llua_set_long("text_start_x", text_start_x);
-	llua_set_long("text_start_y", text_start_y);
-	llua_set_long("text_width", text_width);
-	llua_set_long("text_height", text_height);
+		llua_set_long("text_start_x", text_start_x);
+		llua_set_long("text_start_y", text_start_y);
+		llua_set_long("text_width", text_width);
+		llua_set_long("text_height", text_height);
 
-	lua_setglobal(lua_L, "conky_window");
+		lua_setglobal(lua_L, "conky_window");
+	}
 }
 
 void llua_update_window_table(int text_start_x, int text_start_y, int text_width, int text_height)
