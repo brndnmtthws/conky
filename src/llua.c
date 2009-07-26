@@ -467,6 +467,7 @@ void llua_update_window_table(int text_start_x, int text_start_y, int text_width
 	lua_getglobal(lua_L, "conky_window");
 	if (lua_isnil(lua_L, -1)) {
 		/* window table isn't populated yet */
+	        lua_pop(lua_L, 1);
 		return;
 	}
 
