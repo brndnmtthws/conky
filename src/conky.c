@@ -263,7 +263,7 @@ static void print_version(void)
 #endif /* HAVE_LUA */
 	);
 
-	exit(0);
+	exit(EXIT_SUCCESS);
 }
 
 static const char *suffixes[] = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "" };
@@ -641,7 +641,7 @@ static void human_readable(long long num, char *buf, int size)
 static struct text_object global_root_object;
 
 //our own implementation of popen, the difference : the value of 'childpid' will be filled with
-//the pid of the running 'command'. This is useful if want to kill it it hangs while reading
+//the pid of the running 'command'. This is useful if want to kill it when it hangs while reading
 //or writing to it. We have to kill it because pclose will wait until the process dies by itself
 FILE* pid_popen(const char *command, const char *mode, pid_t *child) {
 	int ends[2];
