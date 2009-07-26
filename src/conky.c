@@ -260,7 +260,7 @@ static void print_version(void)
 #endif /* HAVE_LUA */
 	);
 
-	exit(0);
+	exit(EXIT_SUCCESS);
 }
 
 static const char *suffixes[] = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "" };

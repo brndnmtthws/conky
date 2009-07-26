@@ -458,12 +458,12 @@ void *imap_thread(void *arg)
 #ifdef HAVE_GETHOSTBYNAME_R
 	if (gethostbyname_r(mail->host, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
 		ERR("IMAP gethostbyname_r: %s", hstrerror(h_errno));
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 #else /* HAVE_GETHOSTBYNAME_R */
 	if ((he_res = gethostbyname(mail->host)) == NULL) {	// get the host info
 		herror("gethostbyname");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 #endif /* HAVE_GETHOSTBYNAME_R */
 	while (fail < mail->retries) {
@@ -767,12 +767,12 @@ void *pop3_thread(void *arg)
 #ifdef HAVE_GETHOSTBYNAME_R
 	if (gethostbyname_r(mail->host, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
 		ERR("POP3 gethostbyname_r: %s", hstrerror(h_errno));
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 #else /* HAVE_GETHOSTBYNAME_R */
 	if ((he_res = gethostbyname(mail->host)) == NULL) {	// get the host info
 		herror("gethostbyname");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 #endif /* HAVE_GETHOSTBYNAME_R */
 	while (fail < mail->retries) {
