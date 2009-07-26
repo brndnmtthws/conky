@@ -150,6 +150,7 @@ double update_interval;
 double update_interval_old;
 double update_interval_bat;
 void *global_cpu = NULL;
+pid_t childpid = 0;
 
 int argc_copy;
 char** argv_copy;
@@ -639,13 +640,61 @@ static void human_readable(long long num, char *buf, int size)
 /* global object list root element */
 static struct text_object global_root_object;
 
+//our own implementation of popen, the difference : the value of 'childpid' will be filled with
+//the pid of the running 'command'. This is useful if want to kill it it hangs while reading
+//or writing to it. We have to kill it because pclose will wait until the process dies by itself
+FILE* pid_popen(const char *command, const char *mode, pid_t *child) {
+	int ends[2];
+	int parentend, childend;
+
+	//by running pipe after the strcmp's we make sure that we don't have to create a pipe
+	//and close the ends if mode is something illegal
+	if(strcmp(mode, "r") == 0) {
+		if(pipe(ends) != 0) {
+			return NULL;
+		}
+		parentend = ends[0];
+		childend = ends[1];
+	} else if(strcmp(mode, "w") == 0) {
+		if(pipe(ends) != 0) {
+			return NULL;
+		}
+		parentend = ends[1];
+		childend = ends[0];
+	} else {
+		return NULL;
+	}
+	*child = fork();
+	if(*child == -1) {
+		close(parentend);
+		close(childend);
+		return NULL;
+	} else if(*child > 0) {
+		close(childend);
+	} else {
+		//don't read from both stdin and pipe or write to both stdout and pipe
+		if(childend == ends[0]) {
+			close(0);
+		} else {
+			close(1);
+		}
+		dup(childend);	//by dupping childend, the returned fd will have close-on-exec turned off
+		execl("/bin/sh", "sh", "-c", command, (char *) NULL);
+		_exit(EXIT_FAILURE); //child should die here, (normally execl will take care of this but it can fail) 
+	}
+	return fdopen(parentend, mode);
+}
+
 static inline void read_exec(const char *data, char *buf, const int size)
 {
-	FILE *fp = popen(data, "r");
+	FILE *fp = pid_popen(data, "r", &childpid);
 	if(fp) {
-		int length = fread(buf, 1, size, fp);
+		int length;
 
+		alarm(update_interval);
+		length = fread(buf, 1, size, fp);
 		pclose(fp);
+		alarm(0);
 		buf[length] = '\0';
 		if (length > 0 && buf[length - 1] == '\n') {
 			buf[length - 1] = '\0';
@@ -9261,6 +9310,7 @@ void initialisation(int argc, char **argv) {
 #endif
 
 	if (		sigaction(SIGINT,  &act, &oact) < 0
+			||	sigaction(SIGALRM, &act, &oact) < 0
 			||	sigaction(SIGUSR1, &act, &oact) < 0
 			||	sigaction(SIGHUP,  &act, &oact) < 0
 			||	sigaction(SIGTERM, &act, &oact) < 0) {
@@ -9414,11 +9464,21 @@ int main(int argc, char **argv)
 	return 0;
 }
 
+void alarm_handler(void) {
+	if(childpid > 0) {
+		kill(childpid, SIGTERM);
+	}
+}
+
 static void signal_handler(int sig)
 {
 	/* signal handler is light as a feather, as it should be.
 	 * we will poll g_signal_pending with each loop of conky
-	 * and do any signal processing there, NOT here. */
-	g_signal_pending = sig;
+	 * and do any signal processing there, NOT here (except 
+	 * SIGALRM because this is caused when conky is hanging) */
+	if(sig == SIGALRM) {
+		alarm_handler();
+	} else {
+		g_signal_pending = sig;
+	}
 }
-
