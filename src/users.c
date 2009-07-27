@@ -24,7 +24,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * vim: ts=4 sw=4 noet ai cindent syntax=c
- *
+ * -*- c-basic-offset: 4; tab-width: 4 -*-
  */
 
 #include "conky.h"
@@ -76,7 +76,6 @@ static void user_time(char *ptr)
 {
 	const struct utmp *usr;
 	time_t log_in, real, diff;
-	struct tm *dtime;
 	char buf[BUFLEN] = "";
 
 	setutent();
@@ -85,21 +84,7 @@ static void user_time(char *ptr)
 			log_in = usr->ut_time;
 			time(&real);
 			diff = difftime(real, log_in);
-			dtime = localtime(&diff);
-			dtime->tm_year = dtime->tm_year - 70;
-			dtime->tm_mon = dtime->tm_mon - 1;
-			dtime->tm_mday = dtime->tm_mday - 1;
-			if (dtime->tm_year > 0) {
-				strftime(buf, BUFLEN, "%yy %mm %dd %Hh %Mm", dtime);
-			} else if (dtime->tm_mon > 0) {
-				strftime(buf, BUFLEN, "%mm %dd %Hh %Mm", dtime);
-			} else if (dtime->tm_mday > 0) {
-				strftime(buf, BUFLEN, "%dd %Hh %Mm", dtime);
-			} else if (dtime->tm_hour > 0) {
-				strftime(buf, BUFLEN, "%Hh %Mm", dtime);
-			} else if (dtime->tm_min > 0) {
-				strftime(buf, BUFLEN, "%Mm", dtime);
-			}
+			format_seconds(buf, BUFLEN, diff);
 			if (strlen(ptr) + strlen(buf) + 1 <= BUFLEN) {
 				strncat(ptr, buf, BUFLEN-strlen(ptr)-1);
 			}
