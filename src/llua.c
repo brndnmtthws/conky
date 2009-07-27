@@ -385,11 +385,13 @@ void llua_set_long(const char *key, long value)
 	lua_setfield(lua_L, -2, key);
 }
 
+#ifdef LUA_EXTRAS
 void llua_set_userdata(const char *key, const char *type, void *value)
 {
 	tolua_pushusertype(lua_L, value, type);
 	lua_setfield(lua_L, -2, key);
 }
+#endif /* LUA_EXTRAS */
 
 void llua_setup_window_table(int text_start_x, int text_start_y, int text_width, int text_height)
 {
