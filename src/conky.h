@@ -374,4 +374,6 @@ extern enum x_initialiser_state x_initialised;
 
 #define DEFAULT_TEXT_BUFFER_SIZE_S "##DEFAULT_TEXT_BUFFER_SIZE"
 
+#define NOBATTERY 0
+
 #endif /* _conky_h_ */

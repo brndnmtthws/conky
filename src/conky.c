@@ -7138,7 +7138,7 @@ static void main_loop(void)
 	next_update_time = get_time();
 	info.looped = 0;
 	while (terminate == 0 && (total_run_times == 0 || info.looped < total_run_times)) {
-		if(update_interval_bat != update_interval_old) {
+		if(update_interval_bat != NOBATTERY && update_interval_bat != update_interval_old) {
 			char buf[max_user_text];
 
 			get_battery_short_status(buf, max_user_text, "BAT0");
@@ -7888,7 +7888,7 @@ static void set_default_configurations(void)
 	no_buffers = 1;
 	update_interval = 3.0;
 	update_interval_old = update_interval;
-	update_interval_bat = update_interval;
+	update_interval_bat = NOBATTERY;
 	info.music_player_interval = 1.0;
 	stuff_in_uppercase = 0;
 	info.users.number = 1;
