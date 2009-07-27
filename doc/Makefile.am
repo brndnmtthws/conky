@@ -29,4 +29,4 @@ man_MANS = conky.1
 
 EXTRA_DIST = $(DOCS) command_options.xml config_settings.xml docgen.sh docs.xml variables.xml variables.xsl config_settings.xsl lua.xml lua.xsl
 
-# vi:set ts=8 sw=8 noet ai nocindent syntax=automake:
+# vi:set ts=4 sw=4 noet ai nocindent syntax=automake:

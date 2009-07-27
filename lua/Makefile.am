@@ -58,3 +58,4 @@ pkglib_LTLIBRARIES = $(libcairo) $(libimlib2)
 
 endif # BUILD_LUA
 
+# vi:set ts=4 sw=4 noet ai nocindent syntax=automake:
