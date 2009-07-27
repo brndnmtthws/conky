@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301
  * USA.
  *
+ * vim: ts=4 sw=4 noet ai cindent syntax=c
+ *
  */
 #define _GNU_SOURCE
 #include "conky.h"	/* text_buffer_size, PACKAGE_NAME, maybe more */

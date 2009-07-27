@@ -1,5 +1,6 @@
 /* Conky, a system monitor, based on torsmo
  *
+ *
  * Any original torsmo code is licensed under the BSD license
  *
  * All code written since the fork of torsmo is licensed under the GPL
@@ -22,6 +23,8 @@
  * GNU General Public License for more details.
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * vim: ts=4 sw=4 noet ai cindent syntax=c
  *
  */
 
@@ -9389,6 +9392,7 @@ int main(int argc, char **argv)
 #endif
 
 	return 0;
+
 }
 
 static void signal_handler(int sig)
