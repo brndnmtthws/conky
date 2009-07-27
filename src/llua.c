@@ -23,6 +23,10 @@
 #include "logging.h"
 #include "build.h"
 
+#ifdef LUA_EXTRAS
+#include <tolua++.h>
+#endif /* LUA_EXTRAS */
+
 #ifdef HAVE_SYS_INOTIFY_H
 #include <sys/inotify.h>
 
@@ -95,6 +99,14 @@ void llua_init(void)
 
 	lua_pushcfunction(lua_L, &llua_conky_parse);
 	lua_setglobal(lua_L, "conky_parse");
+
+#if defined(X11) && defined(LUA_EXTRAS)
+	/* register tolua++ user types */
+	tolua_open(lua_L);
+	tolua_usertype(lua_L, "Drawable");
+	tolua_usertype(lua_L, "Visual");
+	tolua_usertype(lua_L, "Display");
+#endif /* X11 */
 }
 
 void llua_load(const char *script)
@@ -117,10 +129,10 @@ void llua_load(const char *script)
 }
 
 /*
-	llua_do_call does a flexible call to any Lua function
-	string: <function> [par1] [par2...]
-	retc: the number of return values expected
-*/
+   llua_do_call does a flexible call to any Lua function
+string: <function> [par1] [par2...]
+retc: the number of return values expected
+ */
 char *llua_do_call(const char *string, int retc)
 {
 	static char func[64];
@@ -171,7 +183,7 @@ char *llua_do_read_call(const char *function, const char *arg, int retc)
 {
 	static char func[64];
 	snprintf(func, 64, "conky_%s", function);
-	
+
 	/* push the function name to stack */
 	lua_getglobal(lua_L, func);
 
@@ -375,62 +387,9 @@ void llua_set_long(const char *key, long value)
 	lua_setfield(lua_L, -2, key);
 }
 
-/* this function mostly copied from tolua++ source so that we could play nice
- * with tolua++ libs.  tolua++ is provided 'as is'
- */
 void llua_set_userdata(const char *key, const char *type, void *value)
 {
-	if (value == NULL) {
-		lua_pushnil(lua_L);
-	} else {
-		luaL_getmetatable(lua_L, type);
-		lua_pushstring(lua_L,"tolua_ubox");
-		lua_rawget(lua_L,-2);        /* stack: mt ubox */
-		if (lua_isnil(lua_L, -1)) {
-			lua_pop(lua_L, 1);
-			lua_pushstring(lua_L, "tolua_ubox");
-			lua_rawget(lua_L, LUA_REGISTRYINDEX);
-		}
-		lua_pushlightuserdata(lua_L,value);
-		lua_rawget(lua_L,-2);                       /* stack: mt ubox ubox[u] */
-		if (lua_isnil(lua_L,-1)) {
-			lua_pop(lua_L,1);                          /* stack: mt ubox */
-			lua_pushlightuserdata(lua_L,value);
-			*(void**)lua_newuserdata(lua_L,sizeof(void *)) = value;   /* stack: mt ubox u newud */
-			lua_pushvalue(lua_L,-1);                   /* stack: mt ubox u newud newud */
-			lua_insert(lua_L,-4);                      /* stack: mt newud ubox u newud */
-			lua_rawset(lua_L,-3);                      /* stack: mt newud ubox */
-			lua_pop(lua_L,1);                          /* stack: mt newud */
-			/*luaL_getmetatable(lua_L,type);*/
-			lua_pushvalue(lua_L, -2);			/* stack: mt newud mt */
-			lua_setmetatable(lua_L,-2);			/* stack: mt newud */
-
-		} else {
-			/* check the need of updating the metatable to a more specialized class */
-			lua_insert(lua_L,-2);                       /* stack: mt ubox[u] ubox */
-			lua_pop(lua_L,1);                           /* stack: mt ubox[u] */
-			lua_pushstring(lua_L,"tolua_super");
-			lua_rawget(lua_L,LUA_REGISTRYINDEX);        /* stack: mt ubox[u] super */
-			lua_getmetatable(lua_L,-2);                 /* stack: mt ubox[u] super mt */
-			lua_rawget(lua_L,-2);                       /* stack: mt ubox[u] super super[mt] */
-			if (lua_istable(lua_L,-1)) {
-				lua_pushstring(lua_L,type);                 /* stack: mt ubox[u] super super[mt] type */
-				lua_rawget(lua_L,-2);                       /* stack: mt ubox[u] super super[mt] flag */
-				if (lua_toboolean(lua_L,-1) == 1) {
-					/* if true */
-					lua_pop(lua_L,3);	/* mt ubox[u]*/
-					lua_remove(lua_L, -2);
-					return;
-				}
-			}
-			/* type represents a more specilized type */
-			/*luaL_getmetatable(lua_L,type);             // stack: mt ubox[u] super super[mt] flag mt */
-			lua_pushvalue(lua_L, -5);					/* stack: mt ubox[u] super super[mt] flag mt */
-			lua_setmetatable(lua_L,-5);                /* stack: mt ubox[u] super super[mt] flag */
-			lua_pop(lua_L,3);                          /* stack: mt ubox[u] */
-		}
-		lua_remove(lua_L, -2);	/* stack: ubox[u]*/
-	}
+	tolua_pushusertype(lua_L, value, type);
 	lua_setfield(lua_L, -2, key);
 }
 
@@ -438,11 +397,13 @@ void llua_setup_window_table(int text_start_x, int text_start_y, int text_width,
 {
 	if (!lua_L) return;
 	lua_newtable(lua_L);
-	
+
 	if (output_methods & TO_X) {
+#ifdef LUA_EXTRAS
 		llua_set_userdata("drawable", "Drawable", (void*)&window.drawable);
 		llua_set_userdata("visual", "Visual", window.visual);
 		llua_set_userdata("display", "Display", display);
+#endif /* LUA_EXTRAS */
 
 
 		llua_set_long("width", window.width);
@@ -467,7 +428,7 @@ void llua_update_window_table(int text_start_x, int text_start_y, int text_width
 	lua_getglobal(lua_L, "conky_window");
 	if (lua_isnil(lua_L, -1)) {
 		/* window table isn't populated yet */
-	        lua_pop(lua_L, 1);
+		lua_pop(lua_L, 1);
 		return;
 	}
 

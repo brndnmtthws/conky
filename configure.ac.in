@@ -457,6 +457,7 @@ if test x$want_lua = xyes; then
 		want_lua_cairo=no
 		want_lua_imlib2=no
 	else
+		AC_DEFINE(LUA_EXTRAS, 1, [Define if you want Lua extras])
 		if test "x$want_x11" != "xyes"; then
 			dnl silently disable if no x11
 			want_lua_cairo=no
@@ -486,7 +487,9 @@ if test x$want_lua = xyes; then
 							   AC_MSG_ERROR([tolua_error not found]),
 							   $LUA51_LIBS)
 			fi
+			conky_LIBS="$conky_LIBS $tolua_LIBS"
 		fi
+
 	fi
 	AC_DEFINE(HAVE_LUA, 1, [Define if you want Lua scripting support])
 fi
