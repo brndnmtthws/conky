@@ -26,4 +26,4 @@
 configdir = ${sysconfdir}/conky
 dist_config_DATA = conky.conf conky_no_x11.conf
 
-# vi:set ts=8 sw=8 noet ai nocindent syntax=automake:
+# vi:set ts=4 sw=4 noet ai nocindent syntax=automake:
