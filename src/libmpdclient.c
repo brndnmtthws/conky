@@ -29,6 +29,8 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ * vim: ts=4 sw=4 noet ai cindent syntax=c
+ *
  */
 
 #include "conky.h"
