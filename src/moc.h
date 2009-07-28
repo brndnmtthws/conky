@@ -1,4 +1,6 @@
-/* MOC Conky integration
+/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ *
+ * MOC Conky integration
  *
  * Please see COPYING for details
  *

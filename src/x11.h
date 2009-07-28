@@ -1,3 +1,5 @@
+/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*- */
+
 #ifdef X11
 #ifndef X11_H_
 #define X11_H_

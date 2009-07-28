@@ -1,3 +1,5 @@
+/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*- */
+
 #ifndef _LINUX_H
 #define _LINUX_H
 

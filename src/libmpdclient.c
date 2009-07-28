@@ -1,4 +1,6 @@
-/* libmpdclient
+/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ *
+ * libmpdclient
  * (c)2003-2006 by Warren Dukes (warren.dukes@gmail.com)
  * This project's homepage is: http://www.musicpd.org
  *

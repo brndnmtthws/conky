@@ -1,4 +1,4 @@
-/*
+/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
  *
  * Copyright (c) 2007 Mikko Sysikaski <mikko.sysikaski@gmail.com>
  *					  Toni Spets <toni.spets@gmail.com>

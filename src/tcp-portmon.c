@@ -1,4 +1,6 @@
-/* tcp-portmon.c - libtcp-portmon hooks
+/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ *
+ * tcp-portmon.c - libtcp-portmon hooks
  *
  * Copyright (C) 2008 Phil Sutter <Phil@nwl.cc>
  *

@@ -1,3 +1,5 @@
+/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*- */
+
 #ifndef FREEBSD_H_
 #define FREEBSD_H_
 

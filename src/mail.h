@@ -1,3 +1,5 @@
+/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*- */
+
 #ifndef _MAIL_H
 #define _MAIL_H
 

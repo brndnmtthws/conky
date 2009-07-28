@@ -1,4 +1,6 @@
-/* libtcp-portmon.c:  tcp port monitoring library.
+/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ *
+ * libtcp-portmon.c:  tcp port monitoring library.
  *
  * Copyright (C) 2005-2007 Philip Kovacs pkovacs@users.sourceforge.net
  *

@@ -1,4 +1,6 @@
-/* audacious.h:  conky support for audacious music player
+/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ *
+ * audacious.h:  conky support for audacious music player
  *
  * Copyright (C) 2005-2007 Philip Kovacs pkovacs@users.sourceforge.net
  *

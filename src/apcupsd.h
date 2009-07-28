@@ -1,4 +1,6 @@
-/* apcupsd.h:  conky module for APC UPS daemon monitoring
+/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ *
+ * apcupsd.h:  conky module for APC UPS daemon monitoring
  *
  * Copyright (C) 2009 Jaromir Smrcek <jaromir.smrcek@zoner.com>
  *

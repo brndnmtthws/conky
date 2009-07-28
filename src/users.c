@@ -1,4 +1,6 @@
-/* Conky, a system monitor, based on torsmo
+/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ *
+ * Conky, a system monitor, based on torsmo
  *
  * Any original torsmo code is licensed under the BSD license
  *
@@ -24,7 +26,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * vim: ts=4 sw=4 noet ai cindent syntax=c
- * -*- c-basic-offset: 4; tab-width: 4 -*-
+ *
  */
 
 #include "conky.h"

@@ -1,4 +1,6 @@
-/* temphelper.h:  aid in converting temperature units
+/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ *
+ * temphelper.h:  aid in converting temperature units
  *
  * Copyright (C) 2008 Phil Sutter <Phil@nwl.cc>
  *

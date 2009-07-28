@@ -1,4 +1,5 @@
-/*
+/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ *
  * Conky, a system monitor, based on torsmo
  *
  * Please see COPYING for details

@@ -1,4 +1,6 @@
-/* Conky, a system monitor, based on torsmo
+/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ *
+ * Conky, a system monitor, based on torsmo
  *
  * Copyright (c) 2008 Asbjørn Zweidorff Kjær
  * Copyright (c) 2005-2009 Brenden Matthews, Philip Kovacs, et. al.

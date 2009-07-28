@@ -1,4 +1,6 @@
-/* smapi.c:  conky support for IBM Thinkpad smapi
+/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ *
+ * smapi.c:  conky support for IBM Thinkpad smapi
  *
  * Copyright (C) 2007 Phil Sutter <Phil@nwl.cc>
  *

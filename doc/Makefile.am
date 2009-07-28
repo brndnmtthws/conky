@@ -1,3 +1,5 @@
+# -*- mode: Makefile; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+#
 if HAVE_DOCSTUFF
 
 DOCS = conky.1 docs.html variables.html config_settings.html lua.html

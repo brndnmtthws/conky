@@ -1,4 +1,6 @@
-/* timed_thread.h: Abstraction layer for timed threads
+/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ *
+ * timed_thread.h: Abstraction layer for timed threads
  *
  * Copyright (C) 2006-2007 Philip Kovacs pkovacs@users.sourceforge.net
  *
