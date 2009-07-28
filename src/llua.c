@@ -63,6 +63,23 @@ static int llua_conky_parse(lua_State *L)
 	return 1;                 /* number of results */
 }
 
+static int llua_conky_set_update_interval(lua_State *L)
+{
+	int n = lua_gettop(L);    /* number of arguments */
+	double value;
+	if (n != 1) {
+		lua_pushstring(L, "incorrect arguments, conky_set_update_interval(number) takes exactly 1 argument");
+		lua_error(L);
+	}
+	if (!lua_isnumber(L, 1)) {
+		lua_pushstring(L, "incorrect argument (expecting a string)");
+		lua_error(L);
+	}
+	value = lua_tonumber(L, 1);
+	set_update_interval(value);
+	return 0;                 /* number of results */
+}
+
 void llua_init(void)
 {
 	const char *libs = PACKAGE_LIBDIR"/lib?.so;";
@@ -101,6 +118,9 @@ void llua_init(void)
 
 	lua_pushcfunction(lua_L, &llua_conky_parse);
 	lua_setglobal(lua_L, "conky_parse");
+
+	lua_pushcfunction(lua_L, &llua_conky_set_update_interval);
+	lua_setglobal(lua_L, "conky_set_update_interval");
 
 #if defined(X11) && defined(LUA_EXTRAS)
 	/* register tolua++ user types */
@@ -360,6 +380,12 @@ void llua_inotify_query(int wd, int mask)
 }
 #endif /* HAVE_SYS_INOTIFY_H */
 
+void llua_set_number(const char *key, double value)
+{
+	lua_pushnumber(lua_L, value);
+	lua_setfield(lua_L, -2, key);
+}
+
 #ifdef X11
 void llua_draw_pre_hook(void)
 {
@@ -383,12 +409,6 @@ void llua_set_draw_post_hook(const char *args)
 	draw_post = strdup(args);
 }
 
-void llua_set_long(const char *key, long value)
-{
-	lua_pushnumber(lua_L, value);
-	lua_setfield(lua_L, -2, key);
-}
-
 #ifdef LUA_EXTRAS
 void llua_set_userdata(const char *key, const char *type, void *value)
 {
@@ -410,16 +430,16 @@ void llua_setup_window_table(int text_start_x, int text_start_y, int text_width,
 #endif /* LUA_EXTRAS */
 
 
-		llua_set_long("width", window.width);
-		llua_set_long("height", window.height);
-		llua_set_long("border_inner_margin", window.border_inner_margin);
-		llua_set_long("border_outer_margin", window.border_outer_margin);
-		llua_set_long("border_width", window.border_width);
+		llua_set_number("width", window.width);
+		llua_set_number("height", window.height);
+		llua_set_number("border_inner_margin", window.border_inner_margin);
+		llua_set_number("border_outer_margin", window.border_outer_margin);
+		llua_set_number("border_width", window.border_width);
 
-		llua_set_long("text_start_x", text_start_x);
-		llua_set_long("text_start_y", text_start_y);
-		llua_set_long("text_width", text_width);
-		llua_set_long("text_height", text_height);
+		llua_set_number("text_start_x", text_start_x);
+		llua_set_number("text_start_y", text_start_y);
+		llua_set_number("text_width", text_width);
+		llua_set_number("text_height", text_height);
 
 		lua_setglobal(lua_L, "conky_window");
 	}
@@ -436,15 +456,43 @@ void llua_update_window_table(int text_start_x, int text_start_y, int text_width
 		return;
 	}
 
-	llua_set_long("width", window.width);
-	llua_set_long("height", window.height);
+	llua_set_number("width", window.width);
+	llua_set_number("height", window.height);
 
-	llua_set_long("text_start_x", text_start_x);
-	llua_set_long("text_start_y", text_start_y);
-	llua_set_long("text_width", text_width);
-	llua_set_long("text_height", text_height);
+	llua_set_number("text_start_x", text_start_x);
+	llua_set_number("text_start_y", text_start_y);
+	llua_set_number("text_width", text_width);
+	llua_set_number("text_height", text_height);
 
 	lua_setglobal(lua_L, "conky_window");
 }
 #endif /* X11 */
+
+void llua_setup_info(struct information *i, double u_interval)
+{
+	if (!lua_L) return;
+	lua_newtable(lua_L);
+
+	llua_set_number("update_interval", u_interval);
+	llua_set_number("uptime", i->uptime);
+
+	lua_setglobal(lua_L, "conky_info");
+}
+
+void llua_update_info(struct information *i, double u_interval)
+{
+	if (!lua_L) return;
+
+	lua_getglobal(lua_L, "conky_info");
+	if (lua_isnil(lua_L, -1)) {
+		/* window table isn't populated yet */
+		lua_pop(lua_L, 1);
+		return;
+	}
+
+	llua_set_number("update_interval", u_interval);
+	llua_set_number("uptime", i->uptime);
+
+	lua_setglobal(lua_L, "conky_info");
+}
 

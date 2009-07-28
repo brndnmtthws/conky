@@ -107,10 +107,6 @@ char *strndup(const char *s, size_t n);
 #include "weather.h"
 #endif /* WEATHER */
 
-#ifdef HAVE_LUA
-#include "llua.h"
-#endif /* HAVE_LUA */
-
 #ifdef TCP_PORT_MONITOR
 #include "tcp-portmon.h"
 #endif
@@ -309,6 +305,10 @@ struct information {
 	short kflags;	/* kernel settings, see enum KFLAG */
 };
 
+#ifdef HAVE_LUA
+#include "llua.h"
+#endif /* HAVE_LUA */
+
 /* needed by linux.c and top.c -> outsource somewhere */
 enum {
 	/* set to true if kernel uses "long" format for /proc/stats */
@@ -373,6 +373,8 @@ enum x_initialiser_state {
 };
 extern int output_methods;
 extern enum x_initialiser_state x_initialised;
+
+void set_update_interval(double interval);
 
 #define DEFAULT_TEXT_BUFFER_SIZE_S "##DEFAULT_TEXT_BUFFER_SIZE"
 

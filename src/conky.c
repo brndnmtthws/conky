@@ -6136,6 +6136,12 @@ static void generate_text(void)
 	total_updates++;
 }
 
+void set_update_interval(double interval)
+{
+	update_interval = interval;
+	update_interval_old = interval;
+}
+
 static inline int get_string_width(const char *s)
 {
 #ifdef X11
@@ -7104,6 +7110,9 @@ static void update_text(void)
 		clear_text(1);
 #endif /* X11 */
 	need_to_update = 1;
+#ifdef HAVE_LUA
+	llua_update_info(&info, update_interval);
+#endif /* HAVE_LUA */
 }
 
 #ifdef HAVE_SYS_INOTIFY_H
@@ -7552,6 +7561,9 @@ static void main_loop(void)
 		}
 #endif /* HAVE_SYS_INOTIFY_H */
 
+#ifdef HAVE_LUA
+	llua_update_info(&info, update_interval);
+#endif /* HAVE_LUA */
 		g_signal_pending = 0;
 	}
 	clean_up(NULL, NULL);
@@ -7884,8 +7896,7 @@ static void set_default_configurations(void)
 	}
 
 	no_buffers = 1;
-	update_interval = 3.0;
-	update_interval_old = update_interval;
+	set_update_interval(3);
 	update_interval_bat = NOBATTERY;
 	info.music_player_interval = 1.0;
 	stuff_in_uppercase = 0;
@@ -8653,8 +8664,7 @@ static void load_config_file(const char *f)
 		}
 		CONF("update_interval") {
 			if (value) {
-				update_interval = strtod(value, 0);
-				update_interval_old = update_interval;
+				set_update_interval(strtod(value, 0));
 			} else {
 				CONF_ERR;
 			}
@@ -9298,6 +9308,9 @@ void initialisation(int argc, char **argv) {
 	xargv = argv;
 	X11_create_window();
 #endif /* X11 */
+#ifdef HAVE_LUA
+	llua_setup_info(&info, update_interval);
+#endif /* HAVE_LUA */
 
 	/* Set signal handlers */
 	act.sa_handler = signal_handler;

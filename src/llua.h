@@ -59,4 +59,7 @@ void llua_setup_window_table(int text_start_x, int text_start_y, int text_width,
 void llua_update_window_table(int text_start_x, int text_start_y, int text_width, int text_height);
 #endif /* X11 */
 
+void llua_setup_info(struct information *i, double u_interval);
+void llua_update_info(struct information *i, double u_interval);
+
 #endif /* LUA_H_*/
