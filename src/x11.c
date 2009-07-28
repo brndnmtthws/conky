@@ -574,6 +574,8 @@ static inline void get_x11_desktop_current(Display *current_display, Window root
 	unsigned char *prop = NULL;
 	struct information *current_info = &info;
 
+	if (atom == None) return;
+
 	if ( (XGetWindowProperty( current_display, root, atom,
 					0, 1L, False, XA_CARDINAL,
 					&actual_type, &actual_format, &nitems,
@@ -597,6 +599,8 @@ static inline void get_x11_desktop_number(Display *current_display, Window root,
 	unsigned char *prop = NULL;
 	struct information *current_info = &info;
 
+	if (atom == None) return;
+
 	if ( (XGetWindowProperty( current_display, root, atom,
 					0, 1L, False, XA_CARDINAL,
 					&actual_type, &actual_format, &nitems,
@@ -619,6 +623,8 @@ static inline void get_x11_desktop_names(Display *current_display, Window root, 
 	unsigned long bytes_after;
 	unsigned char *prop = NULL;
 	struct information *current_info = &info;
+
+	if (atom == None) return;
 
 	if ( (XGetWindowProperty( current_display, root, atom,
 					0, (~0L), False, ATOM(UTF8_STRING),
@@ -673,7 +679,7 @@ void get_x11_desktop_info(Display *current_display, Atom atom)
 
 	root = RootWindow(current_display, current_info->x11.monitor.current);
 
-	//Check if we initialise else retrieve changed property
+	/* Check if we initialise else retrieve changed property */
 	if (atom == 0) {
 		atom_current = XInternAtom(current_display, "_NET_CURRENT_DESKTOP", True);
 		atom_number  = XInternAtom(current_display, "_NET_NUMBER_OF_DESKTOPS", True);
@@ -683,7 +689,7 @@ void get_x11_desktop_info(Display *current_display, Atom atom)
 		get_x11_desktop_names(current_display, root, atom_names);
 		get_x11_desktop_current_name(current_info->x11.desktop.all_names);
 
-		//Set the PropertyChangeMask on the root window, if not set
+		/* Set the PropertyChangeMask on the root window, if not set */
 		XGetWindowAttributes(display, root, &window_attributes);
 		if (!(window_attributes.your_event_mask & PropertyChangeMask)) {
 			XSetWindowAttributes attributes;
