@@ -8175,15 +8175,6 @@ static void load_config_file(const char *f)
 		CONF("show_graph_range") {
 			show_graph_range = string_to_bool(value);
 		}
-		CONF("border_margin") {
-			ERR("border_margin is deprecated, please use window.border_inner_margin instead");
-			if (value) {
-				window.border_inner_margin = strtol(value, 0, 0);
-				if (window.border_inner_margin < 0) window.border_inner_margin = 0;
-			} else {
-				CONF_ERR;
-			}
-		}
 		CONF("border_inner_margin") {
 			if (value) {
 				window.border_inner_margin = strtol(value, 0, 0);

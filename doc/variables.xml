@@ -1264,9 +1264,9 @@
             <option>logfile lines (next_check)</option>
         </term>
         <listitem>Displays first N lines of supplied text file. The
-        file is checked every 'next_check' update. If next_check
-        is not supplied, Conky defaults to 2. Max of 30 lines can be
-        displayed, or until the text buffer is filled.
+        file is checked every 'next_check' update. If next_check is
+        not supplied, Conky defaults to 2. Max of 30 lines can be
+        displayed, or until the text buffer is filled. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1797,9 +1797,10 @@
         </term>
         <listitem>Executes a Lua function with given parameters,
         then prints the returned string. See also 'lua_load' on how
-        to load scripts. Conky puts 'conky_' in front of function_name
-        to prevent accidental calls to the wrong function unless you
-        put you place 'conky_' in front of it yourself.
+        to load scripts. Conky puts 'conky_' in front of
+        function_name to prevent accidental calls to the wrong
+        function unless you put you place 'conky_' in front of it
+        yourself. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1812,10 +1813,10 @@
         </term>
         <listitem>Executes a Lua function with given parameters and
         draws a bar. Expects result value to be an integer between
-        0 and 100. See also 'lua_load' on how to load scripts. 
+        0 and 100. See also 'lua_load' on how to load scripts.
         Conky puts 'conky_' in front of function_name to prevent
-        accidental calls to the wrong function unless you
-        put you place 'conky_' in front of it yourself.
+        accidental calls to the wrong function unless you put you
+        place 'conky_' in front of it yourself. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1829,9 +1830,9 @@
         <listitem>Executes a Lua function with given parameters and
         draws a gauge. Expects result value to be an integer
         between 0 and 100. See also 'lua_load' on how to load
-        scripts. Conky puts 'conky_' in front of function_name
-        to prevent accidental calls to the wrong function unless you
-        put you place 'conky_' in front of it yourself.
+        scripts. Conky puts 'conky_' in front of function_name to
+        prevent accidental calls to the wrong function unless you
+        put you place 'conky_' in front of it yourself. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1848,9 +1849,9 @@
         load scripts. Takes the switch '-t' to use a temperature
         gradient, which makes the gradient values change depending
         on the amplitude of a particular graph value (try it and
-        see). Conky puts 'conky_' in front of function_name
-        to prevent accidental calls to the wrong function unless you
-        put you place 'conky_' in front of it yourself.
+        see). Conky puts 'conky_' in front of function_name to
+        prevent accidental calls to the wrong function unless you
+        put you place 'conky_' in front of it yourself. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1863,20 +1864,10 @@
         <listitem>Executes a Lua function with given parameters as
         per $lua, then parses and prints the result value as per
         the syntax for Conky's TEXT section. See also 'lua_load' on
-        how to load scripts. Conky puts 'conky_' in front of function_name
-        to prevent accidental calls to the wrong function unless you
-        put you place 'conky_' in front of it yourself.
-        <para /></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
-                <option>lua_read_parse</option>
-            </command>
-            <option />
-        </term>
-        <listitem>This function is deprecated. Please use the
-        conky_parse() Lua function instead. 
+        how to load scripts. Conky puts 'conky_' in front of
+        function_name to prevent accidental calls to the wrong
+        function unless you put you place 'conky_' in front of it
+        yourself. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2808,9 +2799,9 @@
             <option>logfile lines (next_check)</option>
         </term>
         <listitem>Displays last N lines of supplied text file. The
-        file is checked every 'next_check' update. If next_check
-        is not supplied, Conky defaults to 2. Max of 30 lines can be
-        displayed, or until the text buffer is filled.
+        file is checked every 'next_check' update. If next_check is
+        not supplied, Conky defaults to 2. Max of 30 lines can be
+        displayed, or until the text buffer is filled. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>

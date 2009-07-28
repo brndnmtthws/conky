@@ -775,7 +775,7 @@
             </command>
             <option>seconds</option>
         </term>
-        <listitem>Update interval
+        <listitem>Update interval 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -785,7 +785,7 @@
             </command>
             <option>seconds</option>
         </term>
-        <listitem>Update interval when running on batterypower
+        <listitem>Update interval when running on batterypower 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
