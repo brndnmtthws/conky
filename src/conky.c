@@ -1797,7 +1797,6 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(image, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
-#ifdef HAVE_POPEN
 	END OBJ(exec, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(execp, 0)
@@ -1900,17 +1899,16 @@ static struct text_object *construct_text_object(const char *s,
 				obj->data.texeci.buffer = malloc(text_buffer_size);
 			}
 			obj->data.texeci.p_timed_thread = NULL;
-	END	OBJ(pre_exec, 0)
+	END OBJ(pre_exec, 0)
 		obj->type = OBJ_text;
-	if (arg) {
-		char buf[2048];
+		if (arg) {
+			char buf[2048];
 
-		read_exec(arg, buf, sizeof(buf));
-		obj->data.s = strndup(buf, text_buffer_size);
-	} else {
-		obj->data.s = strndup("", text_buffer_size);
-	}
-#endif
+			read_exec(arg, buf, sizeof(buf));
+			obj->data.s = strndup(buf, text_buffer_size);
+		} else {
+			obj->data.s = strndup("", text_buffer_size);
+		}
 	END OBJ(fs_bar, INFO_FS)
 		SIZE_DEFAULTS(bar);
 		arg = scan_bar(arg, &obj->data.fsbar.w, &obj->data.fsbar.h);
@@ -4271,7 +4269,6 @@ static void generate_text_internal(char *p, int p_max_size,
 			OBJ(endif) {
 				/* harmless object, just ignore */
 			}
-#ifdef HAVE_POPEN
 			OBJ(addr) {
 				if ((obj->data.net->addr.sa_data[2] & 255) == 0
 						&& (obj->data.net->addr.sa_data[3] & 255) == 0
@@ -4471,7 +4468,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					parse_conky_vars(&subroot, obj->data.execi.buffer, p, tmp_info);
 				} else {
 					char *output = obj->data.execi.buffer;
-					FILE *fp = popen(obj->data.execi.cmd, "r");
+					FILE *fp = pid_popen(obj->data.execi.cmd, "r", &childpid);
 					int length = fread(output, 1, text_buffer_size, fp);
 
 					pclose(fp);
@@ -4508,7 +4505,6 @@ static void generate_text_internal(char *p, int p_max_size,
 					timed_thread_unlock(obj->data.texeci.p_timed_thread);
 				}
 			}
-#endif /* HAVE_POPEN */
 			OBJ(imap_unseen) {
 				struct mail_s *mail = ensure_mail_thread(obj, imap_thread, "imap");
 
