@@ -74,7 +74,7 @@ static int llua_conky_set_update_interval(lua_State *L)
 		lua_error(L);
 	}
 	if (!lua_isnumber(L, 1)) {
-		lua_pushstring(L, "incorrect argument (expecting a string)");
+		lua_pushstring(L, "incorrect argument (expecting a number)");
 		lua_error(L);
 	}
 	value = lua_tonumber(L, 1);
