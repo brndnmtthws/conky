@@ -675,7 +675,7 @@ FILE* pid_popen(const char *command, const char *mode, pid_t *child) {
 		return NULL;
 	} else if(*child > 0) {
 		close(childend);
-		waitpid(*child, NULL, WNOHANG);
+		waitpid(*child, NULL, 0);
 	} else {
 		//don't read from both stdin and pipe or write to both stdout and pipe
 		if(childend == ends[0]) {
@@ -692,14 +692,15 @@ FILE* pid_popen(const char *command, const char *mode, pid_t *child) {
 
 static inline void read_exec(const char *data, char *buf, const int size)
 {
-	FILE *fp = pid_popen(data, "r", &childpid);
+	FILE *fp;
+
+	alarm(update_interval);
+	fp = pid_popen(data, "r", &childpid);
 	if(fp) {
 		int length;
 
-		alarm(update_interval);
 		length = fread(buf, 1, size, fp);
 		pclose(fp);
-		alarm(0);
 		buf[length] = '\0';
 		if (length > 0 && buf[length - 1] == '\n') {
 			buf[length - 1] = '\0';
@@ -707,6 +708,7 @@ static inline void read_exec(const char *data, char *buf, const int size)
 	} else {
 		buf[0] = '\0';
 	}
+	alarm(0);
 }
 
 void *threaded_exec(void *) __attribute__((noreturn));
