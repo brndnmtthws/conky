@@ -675,6 +675,7 @@ FILE* pid_popen(const char *command, const char *mode, pid_t *child) {
 		return NULL;
 	} else if(*child > 0) {
 		close(childend);
+		waitpid(*child, NULL, WNOHANG);
 	} else {
 		//don't read from both stdin and pipe or write to both stdout and pipe
 		if(childend == ends[0]) {
