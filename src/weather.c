@@ -44,11 +44,11 @@
 #include <libxml/xpath.h>
 
 /* Xpath expressions for XOAP xml parsing */
-#define NUM_XPATH_EXPRESSIONS 7
+#define NUM_XPATH_EXPRESSIONS 8
 const char *xpath_expression[NUM_XPATH_EXPRESSIONS] = {
 	"/weather/cc/lsup", "/weather/cc/tmp", "/weather/cc/t",
 	"/weather/cc/bar/r", "/weather/cc/wind/s", "/weather/cc/wind/d",
-	"/weather/cc/hmid"
+	"/weather/cc/hmid", "/weather/cc/icon"
 };
 #endif /* XOAP */
 
@@ -128,6 +128,9 @@ static void parse_cc(PWEATHER *res, xmlXPathContextPtr xpathCtx)
 			    break;
 		       case 6:
 			    res->hmid = atoi(content);
+				break;
+		       case 7:
+			    strncpy(res->icon, content, 2);
 		  }
 		  xmlFree(content);
 		}
@@ -542,6 +545,10 @@ void weather_process_info(char *p, int p_max_size, char *uri, char *data_type, i
 			} else  {
 				strncpy(p, "cumulonimbus", p_max_size);
 			}
+#ifdef XOAP
+	} else if (strcmp(data_type, "icon") == EQUAL) {
+		strncpy(p, data->icon, p_max_size);
+#endif /* XOAP */
 	} else if (strcmp(data_type, "pressure") == EQUAL) {
 		snprintf(p, p_max_size, "%d", data->bar);
 	} else if (strcmp(data_type, "wind_speed") == EQUAL) {

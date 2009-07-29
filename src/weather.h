@@ -37,16 +37,7 @@ typedef struct PWEATHER_ {
 	char lastupd[32];
 #ifdef XOAP
 	char xoap_t[32];
-	/*
-	 * TODO:
-	 * Is it worth investigating about using icons from weather.com?
-	 * We could use them for data from noaa as well.
-	 * They can display nicely with cimlib_add_image (with appropriate
-	 * #ifdefs on imlib2 and x11), and an additional input argoment for position.
-
-	 char icon[3];
-
-	 */
+	char icon[3];
 #endif /* XOAP */
 	int temp;
 	int dew;

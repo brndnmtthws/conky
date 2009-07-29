@@ -3391,6 +3391,12 @@
                     weather.com site since this data is aggregated
                     into the cloud_cover one</option>
                 </member>
+                <member>
+                    <command>icon</command>
+                    <option>Weather icon (only for www.weather.com).
+		    Can be used together with the icon kit provided
+		    upon registering to their service.</option>
+                </member>
             </simplelist>
             <para>'delay_in_minutes' (optional, default 30) cannot
             be lower than 30 min.</para>
