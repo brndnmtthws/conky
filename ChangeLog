@@ -88,6 +88,10 @@
 	* Add entropy_perc printing the available entropy as percentage
 	* Add read_tcp to print stuff from tcp-sockets
 
+2009-06-03
+	* Improved Imlib2 cache control by adding a global cache flush option, and
+	per image cache flushing
+
 2009-05-24
 	* Added fancy new 'temperature gradients' feature for graphs, via the -t
 	switch at the end of graph arguments.
