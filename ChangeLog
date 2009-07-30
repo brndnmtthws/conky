@@ -1,3 +1,6 @@
+2009-07-29
+	* Add icon data_type for xoap weather
+
 2009-07-23
 	* Changed xoap parsing method to xpath, in preparation to include
 	forecast data
