@@ -20,28 +20,27 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-libimlib2_la_SOURCES = imlib2.c
-libcairo_la_SOURCES = cairo.c
+libcairo_la_SOURCES = cairo.pkg
+libimlib2_la_SOURCES = imlib2.pkg
 
 EXTRA_DIST = \
 			 cairo.pkg \
 			 imlib2.pkg
 
 clean-am: clean-generic mostlyclean-am
-	rm -f $(libimlib2_la_SOURCES)
-	rm -f $(libcairo_la_SOURCES)
-	rm -f *.la *.so
+	rm -f *.la *.so *.c
 
-if BUILD_LUA 
+if BUILD_LUA
 
 if BUILD_LUA_CAIRO
+
 libcairo = libcairo.la
 
 libcairo_la_CFLAGS = $(cairo_CFLAGS) $(cairo_xlib_CFLAGS) -I$(prefix)/include/lua5.1
 libcairo_la_LIBADD = $(cairo_LIBS) $(cairo_xlib_LIBS) $(tolua_LIBS)
 
-cairo.c: cairo.pkg
-	${toluapp} -n cairo -o cairo.c $(srcdir)/cairo.pkg
+libcairo.c: cairo.pkg
+	${toluapp} -n cairo -o $@ $(srcdir)/cairo.pkg
 
 endif # BUILD_LUA_CAIRO
 
@@ -52,10 +51,11 @@ libimlib2 = libimlib2.la
 libimlib2_la_CFLAGS = $(Imlib2_CFLAGS) -I$(prefix)/include/lua5.1
 libimlib2_la_LIBADD = $(Imlib2_LIBS) $(tolua_LIBS)
 
-imlib2.c: imlib2.pkg
-	${toluapp} -n imlib2 -o imlib2.c $(srcdir)/imlib2.pkg
+libimlib2.c: imlib2.pkg
+	${toluapp} -n imlib2 -o $@ $(srcdir)/imlib2.pkg
 
 endif # BUILD_LUA_IMLIB2
+
 pkglib_LTLIBRARIES = $(libcairo) $(libimlib2)
 
 endif # BUILD_LUA
