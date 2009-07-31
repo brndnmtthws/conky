@@ -20,8 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-libcairo_la_SOURCES = cairo.pkg
-libimlib2_la_SOURCES = imlib2.pkg
+libcairo_la_SOURCES = libcairo.c
+libimlib2_la_SOURCES = libimlib2.c
 
 EXTRA_DIST = \
 			 cairo.pkg \
