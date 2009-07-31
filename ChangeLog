@@ -1,5 +1,6 @@
 2009-07-31
 	* Removed alias config option due to brokenness
+	* Added support for $include
 
 2009-07-29
 	* Add icon data_type for xoap weather

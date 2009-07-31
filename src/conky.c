@@ -1126,10 +1126,13 @@ static void free_text_objects(struct text_object *root, int internal)
 				free_moc();
 				break;
 #endif /* MOC */
+			case OBJ_include:
 			case OBJ_blink:
 			case OBJ_to_bytes:
-				free_text_objects(obj->sub, 1);
-				free(obj->sub);
+				if(obj->sub) {
+					free_text_objects(obj->sub, 1);
+					free(obj->sub);
+				}
 				break;
 			case OBJ_scroll:
 				free(data.scroll.text);
@@ -1313,6 +1316,53 @@ static int parse_top_args(const char *s, const char *arg, struct text_object *ob
 }
 
 long current_text_color;
+
+struct conftree {
+	char* string;
+	struct conftree* horz_next;
+	struct conftree* vert_next;
+	struct conftree* back;
+};
+
+//adds newstring to to the tree unless you can already see it when travelling back.
+//if it's possible to attach it then it returns a pointer to the leaf, else it returns NULL
+struct conftree* conftree_add(struct conftree* previous, const char* newstring) {
+	struct conftree* node;
+	struct conftree* node2;
+
+	for(node = previous; node != NULL; node = node->back) {
+		if(strcmp(node->string, newstring) == 0) {
+			return NULL;
+		}
+	}
+	node = malloc(sizeof(struct conftree));
+	if (previous != NULL) {
+		if(previous->vert_next == NULL) {
+			previous->vert_next = node;
+		} else {
+			for(node2 = previous->vert_next; node2->horz_next != NULL; node2 = node2->horz_next ) { }
+			node2->horz_next = node;
+		}
+	}
+	node->string = strdup(newstring);
+	node->horz_next = NULL;
+	node->vert_next = NULL;
+	node->back = previous;
+	return node;
+}
+
+void conftree_empty(struct conftree* tree) {
+	if(tree) {
+		conftree_empty(tree->horz_next);
+		conftree_empty(tree->vert_next);
+		free(tree->string);
+		free(tree);
+	}
+}
+
+struct conftree *currentconffile;
+
+char load_config_file(const char *);
 
 /* construct_text_object() creates a new text_object */
 static struct text_object *construct_text_object(const char *s,
@@ -3039,6 +3089,24 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(entropy_bar, INFO_ENTROPY)
 		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->a, &obj->b);
+	END OBJ(include, 0)
+		if(arg) {
+			struct conftree *leaf = conftree_add(currentconffile, arg);
+			if(leaf) {
+				if( load_config_file(arg) == TRUE) {
+					obj->sub = malloc(sizeof(struct text_object));
+					currentconffile = leaf;
+					extract_variable_text_internal(obj->sub, global_text);
+					currentconffile = leaf->back;
+				} else {
+					ERR("Can't load configfile '%s'.", arg);
+				}
+			} else {
+				ERR("You are trying to load '%s' recursively, I'm only going to load it once to prevent an infinite loop.", arg);
+			}
+		} else {
+			CRIT_ERR(obj, free_at_crash, "include needs a argument");
+		}
 	END OBJ(blink, 0)
 		if(arg) {
 			obj->sub = malloc(sizeof(struct text_object));
@@ -5772,6 +5840,16 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* X11 */
 #endif /* IBM */
+			OBJ(include) {
+				if(obj->sub) {
+					char buf[max_user_text];
+
+					generate_text_internal(buf, max_user_text, *obj->sub, cur);
+					snprintf(p, p_max_size, "%s", buf);
+				} else {
+					p[0] = 0;
+				}
+			}
 			OBJ(blink) {
 				//blinking like this can look a bit ugly if the chars in the font don't have the same width
 				char buf[max_user_text];
@@ -7581,7 +7659,6 @@ static void main_loop(void)
 #endif /* HAVE_SYS_INOTIFY_H */
 }
 
-static void load_config_file(const char *);
 #ifdef X11
 static void load_config_file_x11(const char *);
 #endif /* X11 */
@@ -7599,6 +7676,7 @@ static void reload_config(void)
 void clean_up(void *memtofree1, void* memtofree2)
 {
 	int i;
+	conftree_empty(currentconffile);
 	if(memtofree1) {
 		free(memtofree1);
 	}
@@ -8103,15 +8181,14 @@ static int do_config_step(int *line, FILE *fp, char *buf, char **name, char **va
 	return 0;
 }
 
-static void load_config_file(const char *f)
+char load_config_file(const char *f)
 {
 	int line = 0;
 	FILE *fp;
 
-	set_default_configurations();
 	fp = open_config_file(f);
 	if (!fp) {
-		return;
+		return FALSE;
 	}
 	DBGP("reading contents from config file '%s'", f);
 
@@ -8755,7 +8832,7 @@ static void load_config_file(const char *f)
 				CRIT_ERR(NULL, NULL, "no text supplied in configuration; exiting");
 			}
 			global_text_lines = line + 1;
-			return;
+			return TRUE;
 		}
 #ifdef TCP_PORT_MONITOR
 		CONF("max_port_monitor_connections") {
@@ -8853,6 +8930,7 @@ static void load_config_file(const char *f)
 	if (!global_text) { // didn't supply any text
 		CRIT_ERR(NULL, NULL, "missing text block in configuration; exiting");
 	}
+	return TRUE;
 }
 
 #ifdef X11
@@ -9121,7 +9199,9 @@ static const struct option longopts[] = {
 void initialisation(int argc, char **argv) {
 	struct sigaction act, oact;
 
+	set_default_configurations();
 	load_config_file(current_config);
+	currentconffile = conftree_add(currentconffile, current_config);
 
 	/* init specials array */
 	if ((specials = calloc(sizeof(struct special_t), max_specials)) == 0) {

@@ -405,6 +405,7 @@ enum text_object_type {
 #ifdef HDDTEMP
 	OBJ_hddtemp,
 #endif /* HDDTEMP */
+	OBJ_include,
 	OBJ_blink,
 	OBJ_to_bytes,
 	OBJ_scroll,
