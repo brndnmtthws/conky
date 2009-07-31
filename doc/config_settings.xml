@@ -14,22 +14,6 @@
     <varlistentry>
         <term>
             <command>
-                <option>alias</option>
-            </command>
-        </term>
-        <listitem>Use this to create aliases of variables. The
-        first argument is the new name, the second the old name,
-        and the other arguments are passed on to the variable.
-        Example: If you want to use $alpha instead of ${beta gamma
-        delta} then you have to write the following: alias alpha
-        beta gamma delta . PS: Instead of creating an alias in the
-        config you can also use environment variables. Example:
-        Start conky like this: alpha="beta gamma delta" conky 
-        <para /></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
                 <option>alignment</option>
             </command>
         </term>

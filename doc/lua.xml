@@ -26,17 +26,20 @@
             <simplelist>
                 <member>
                     <command>drawable</command>
-                    <option>Window's drawable (Xlib
-                    Drawable), requires Lua extras enabled at compile time.</option>
+                    <option>Window's drawable (Xlib Drawable),
+                    requires Lua extras enabled at compile
+                    time.</option>
                 </member>
                 <member>
                     <command>visual</command>
-                    <option>Window's visual (Xlib Visual), requires Lua extras enabled at compile time.</option>
+                    <option>Window's visual (Xlib Visual), requires
+                    Lua extras enabled at compile time.</option>
                 </member>
                 <member>
                     <command>display</command>
-                    <option>Window's display (Xlib
-                    Display), requires Lua extras enabled at compile time.</option>
+                    <option>Window's display (Xlib Display),
+                    requires Lua extras enabled at compile
+                    time.</option>
                 </member>
                 <member>
                     <command>width</command>
