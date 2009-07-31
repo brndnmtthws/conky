@@ -35,9 +35,9 @@ if BUILD_CONFIG_OUTPUT
 config_output = defconfig.h
 config_cookie = conf_cookie.c conf_cookie.h
 if BUILD_X11
-config_input = ../data/conky.conf
+config_input = $(srcdir)/../data/conky.conf
 else
-config_input = ../data/conky_no_x11.conf
+config_input = $(srcdir)/../data/conky_no_x11.conf
 endif
 
 conky_DEPENDENCIES = $(config_output)
