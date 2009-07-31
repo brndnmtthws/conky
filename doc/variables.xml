@@ -3393,9 +3393,10 @@
                 </member>
                 <member>
                     <command>icon</command>
-                    <option>Weather icon (only for www.weather.com).
-		    Can be used together with the icon kit provided
-		    upon registering to their service.</option>
+                    <option>Weather icon (only for
+                    www.weather.com). Can be used together with the
+                    icon kit provided upon registering to their
+                    service.</option>
                 </member>
             </simplelist>
             <para>'delay_in_minutes' (optional, default 30) cannot

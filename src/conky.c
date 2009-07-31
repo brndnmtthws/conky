@@ -3605,11 +3605,10 @@ static void extract_variable_text(const char *p)
 	extract_variable_text_internal(&global_root_object, p);
 }
 
-void parse_conky_vars(struct text_object *root, char *txt, char *p, struct information *cur)
+void parse_conky_vars(struct text_object *root, const char *txt, char *p, struct information *cur)
 {
 	extract_variable_text_internal(root, txt);
 	generate_text_internal(p, max_user_text, *root, cur);
-	return;
 }
 
 static inline struct mail_s *ensure_mail_thread(struct text_object *obj,
@@ -6084,7 +6083,7 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif /* X11 */
 }
 
-void evaluate(char *text, char *buffer)
+void evaluate(const char *text, char *buffer)
 {
 	struct information *tmp_info;
 	struct text_object subroot;
@@ -8795,27 +8794,6 @@ static void load_config_file(const char *f)
 			}
 		}
 
-		CONF("alias") {
-			if (value) {
-				size_t maxlength = strlen(value);	//+1 for terminating 0 not needed, 'cause of the space in the middle of value
-				char *skey = malloc(maxlength);
-				char *svalue = malloc(maxlength);
-				char *oldvalue;
-				if (sscanf(value, "%[0-9a-zA-Z_] %[^\n]", skey, svalue) == 2) {
-					oldvalue = getenv(skey);
-					if (oldvalue == NULL) {
-						setenv(skey, svalue, 0);
-					}
-					//PS: Don't free oldvalue, it's the real envvar, not a copy
-				} else {
-					CONF_ERR;
-				}
-				free(skey);
-				free(svalue);
-			} else {
-				CONF_ERR;
-			}
-		}
 #ifdef HAVE_LUA
 		CONF("lua_load") {
 			if (value) {

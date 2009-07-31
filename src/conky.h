@@ -353,7 +353,7 @@ extern int inotify_fd;
 /* defined in conky.c
  * evaluates 'text' and places the result in 'buffer'
  */
-void evaluate(char *text, char *buffer);
+void evaluate(const char *text, char *buffer);
 
 /* maximum size of config TEXT buffer, i.e. below TEXT line. */
 extern unsigned int max_user_text;
