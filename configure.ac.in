@@ -486,11 +486,16 @@ if test x$want_lua = xyes; then
 		else
 			AC_SEARCH_LIBS(tolua_error,
 						   [tolua++ tolua++5.1],
-						   AC_SUBST(tolua_LIBS,"${LIBS}"),
+						   [
+							AC_SUBST(tolua_LIBS, "${LIBS}")
+							AC_SUBST(tolua_CFLAGS, "${CFLAGS}")
+							],
 						   AC_MSG_ERROR([tolua_error not found]),
 						   $LUA51_LIBS)
 		fi
 		conky_LIBS="$conky_LIBS $tolua_LIBS"
+		tolua_CFLAGS="$tolua_CFLAGS $LUA_CFLAGS $LUA51_CFLAGS"
+		tolua_LIBS="$tolua_LIBS $LUA_LIBS $LUA51_LIBS"
 	fi
 	AC_DEFINE(HAVE_LUA, 1, [Define if you want Lua scripting support])
 fi
