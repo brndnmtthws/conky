@@ -46,7 +46,7 @@ if BUILD_LUA_IMLIB2
 
 libimlib2 = libimlib2.la
 
-libimlib2_la_CFLAGS = $(Imlib2_CFLAGS) $(tolua_LIBS)
+libimlib2_la_CFLAGS = $(Imlib2_CFLAGS) $(tolua_CFLAGS)
 libimlib2_la_LIBADD = $(Imlib2_LIBS) $(tolua_LIBS)
 
 libimlib2.c: imlib2.pkg
