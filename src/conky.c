@@ -8932,6 +8932,13 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
+		CONF("lua_startup_hook") {
+			if (value) {
+				llua_set_startup_hook(value);
+			} else {
+				CONF_ERR;
+			}
+		}
 		CONF("lua_shutdown_hook") {
 			if (value) {
 				llua_set_shutdown_hook(value);
@@ -9418,6 +9425,9 @@ void initialisation(int argc, char **argv) {
 		NORM_ERR("error setting signal handler: %s", strerror(errno));
 	}
 
+#ifdef HAVE_LUA
+	llua_startup_hook();
+#endif /* HAVE_LUA */
 }
 
 int main(int argc, char **argv)

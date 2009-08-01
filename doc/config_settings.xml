@@ -339,8 +339,8 @@
             optional arguments. Use this hook for drawing things on
             top of what Conky draws. Conky puts 'conky_' in front
             of function_name to prevent accidental calls to the
-            wrong function unless you place 'conky_' in front of
-            it yourself.</para>
+            wrong function unless you place 'conky_' in front of it
+            yourself.</para>
         </listitem>
     </varlistentry>
     <varlistentry>
@@ -357,8 +357,8 @@
             optional arguments. Use this hook for drawing things on
             top of what Conky draws. Conky puts 'conky_' in front
             of function_name to prevent accidental calls to the
-            wrong function unless you place 'conky_' in front of
-            it yourself.</para>
+            wrong function unless you place 'conky_' in front of it
+            yourself.</para>
         </listitem>
     </varlistentry>
     <varlistentry>
@@ -386,6 +386,23 @@
             front of function_name to prevent accidental calls to
             the wrong function unless you put you place 'conky_' in
             front of it yourself.</para>
+        </listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>lua_startup_hook</option>
+            </command>
+            <option>function_name [function arguments]</option>
+        </term>
+        <listitem>
+            <para>This function, if defined, will be called by
+            Conky at startup or when the configuration is reloaded.
+            Use this hook to initialize values, or for any run-once
+            applications. Conky puts 'conky_' in front of
+            function_name to prevent accidental calls to the wrong
+            function unless you put you place 'conky_' in front of
+            it yourself.</para>
         </listitem>
     </varlistentry>
     <varlistentry>

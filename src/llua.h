@@ -54,10 +54,12 @@ void llua_inotify_query(int wd, int mask);
 #ifdef X11
 void llua_draw_pre_hook(void);
 void llua_draw_post_hook(void);
+void llua_startup_hook(void);
 void llua_shutdown_hook(void);
 
 void llua_set_draw_pre_hook(const char *args);
 void llua_set_draw_post_hook(const char *args);
+void llua_set_startup_hook(const char *args);
 void llua_set_shutdown_hook(const char *args);
 
 void llua_setup_window_table(int text_start_x, int text_start_y, int text_width, int text_height);

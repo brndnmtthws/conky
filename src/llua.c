@@ -41,6 +41,7 @@ static int llua_block_notify = 0;
 
 static char *draw_pre_hook = 0;
 static char *draw_post_hook = 0;
+static char *startup_hook = 0;
 static char *shutdown_hook = 0;
 
 lua_State *lua_L = NULL;
@@ -402,6 +403,12 @@ void llua_draw_post_hook(void)
 	llua_do_call(draw_post_hook, 0);
 }
 
+void llua_startup_hook(void)
+{
+	if (!lua_L || !startup_hook) return;
+	llua_do_call(startup_hook, 0);
+}
+
 void llua_shutdown_hook(void)
 {
 	if (!lua_L || !shutdown_hook) return;
@@ -416,6 +423,11 @@ void llua_set_draw_pre_hook(const char *args)
 void llua_set_draw_post_hook(const char *args)
 {
 	draw_post_hook = strdup(args);
+}
+
+void llua_set_startup_hook(const char *args)
+{
+	startup_hook = strdup(args);
 }
 
 void llua_set_shutdown_hook(const char *args)
