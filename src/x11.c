@@ -76,7 +76,7 @@ void init_X11(const char *disp)
 {
 	if (!display) {
 		if ((display = XOpenDisplay(disp)) == NULL) {
-			CRIT_ERR(NULL, NULL, "can't open display: %s", XDisplayName(0));
+			CRIT_ERR(NULL, NULL, "can't open display: %s", XDisplayName(disp));
 		}
 	}
 

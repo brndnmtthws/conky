@@ -9257,11 +9257,6 @@ void initialisation(int argc, char **argv) {
 			case 'a':
 				text_alignment = string_to_alignment(optarg);
 				break;
-			case 'X':
-				if (disp)
-					free(disp);
-				disp = strdup(optarg);
-				break;
 
 #ifdef OWN_WINDOW
 			case 'o':
@@ -9458,6 +9453,11 @@ int main(int argc, char **argv)
 #ifdef X11
 			case 'w':
 				window.window = strtol(optarg, 0, 0);
+				break;
+			case 'X':
+				if (disp)
+					free(disp);
+				disp = strdup(optarg);
 				break;
 #endif /* X11 */
 
