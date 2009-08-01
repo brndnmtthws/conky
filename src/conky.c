@@ -7304,15 +7304,15 @@ static void main_loop(void)
 
 					/* resize window if it isn't right size */
 					if (!fixed_size
-						&& (text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2 != window.width
-						|| text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2 != window.height)) {
-							window.width = text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
-							window.height = text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
-							XResizeWindow(display, window.window, window.width,
+							&& (text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2 != window.width
+								|| text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2 != window.height)) {
+						window.width = text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
+						window.height = text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
+						XResizeWindow(display, window.window, window.width,
 								window.height);
-							set_transparent_background(window.window);
+						set_transparent_background(window.window);
 
-							changed++;
+						changed++;
 					}
 
 					/* move window if it isn't in right position */
@@ -7321,42 +7321,42 @@ static void main_loop(void)
 						changed++;
 					}
 
-                                        /* update struts */
-                                        if (changed && window.type == TYPE_PANEL) {
+					/* update struts */
+					if (changed && window.type == TYPE_PANEL) {
 						int sidenum = -1;
 
-                                                fprintf(stderr, PACKAGE_NAME": defining struts\n");
-                                                fflush(stderr);
+						fprintf(stderr, PACKAGE_NAME": defining struts\n");
+						fflush(stderr);
 
 						switch (text_alignment) {
 							case TOP_LEFT:
 							case TOP_RIGHT:
 							case TOP_MIDDLE:
-							{
-								sidenum = 2;
-								break;
-							}
+								{
+									sidenum = 2;
+									break;
+								}
 							case BOTTOM_LEFT:
 							case BOTTOM_RIGHT:
 							case BOTTOM_MIDDLE:
-							{
-								sidenum = 3;
-								break;
-							}
+								{
+									sidenum = 3;
+									break;
+								}
 							case MIDDLE_LEFT:
-							{
-								sidenum = 0;
-								break;
-							}
+								{
+									sidenum = 0;
+									break;
+								}
 							case MIDDLE_RIGHT:
-							{
-								sidenum = 1;
-								break;
-							}
+								{
+									sidenum = 1;
+									break;
+								}
 						}
 
 						set_struts(sidenum);
-                                        }
+					}
 				}
 #endif
 
