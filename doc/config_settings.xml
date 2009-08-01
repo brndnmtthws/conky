@@ -384,7 +384,7 @@
             such as freeing memory which has been allocated by
             external libraries via Lua. Conky puts 'conky_' in
             front of function_name to prevent accidental calls to
-            the wrong function unless you put you place 'conky_' in
+            the wrong function unless you place 'conky_' in
             front of it yourself.</para>
         </listitem>
     </varlistentry>
@@ -401,7 +401,7 @@
             Use this hook to initialize values, or for any run-once
             applications. Conky puts 'conky_' in front of
             function_name to prevent accidental calls to the wrong
-            function unless you put you place 'conky_' in front of
+            function unless you place 'conky_' in front of
             it yourself.</para>
         </listitem>
     </varlistentry>
