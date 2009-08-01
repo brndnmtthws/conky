@@ -7313,6 +7313,10 @@ static void main_loop(void)
 						set_transparent_background(window.window);
 
 						changed++;
+#ifdef HAVE_LUA
+						/* update lua window globals */
+						llua_update_window_table(text_start_x, text_start_y, text_width, text_height);
+#endif /* HAVE_LUA */
 					}
 
 					/* move window if it isn't in right position */
