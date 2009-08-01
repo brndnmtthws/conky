@@ -103,7 +103,7 @@ char *smapi_get_bat_val(const char *args)
 
 	if(sscanf(args, "%i %n", &idx, &cnt) <= 0 ||
 	   snprintf(fname, 127, "%s", (args + cnt)) < 0) {
-		ERR("smapi: wrong arguments, should be 'bat,<int>,<str>'");
+		NORM_ERR("smapi: wrong arguments, should be 'bat,<int>,<str>'");
 		return NULL;
 	}
 

@@ -58,7 +58,7 @@ void update_bmpx()
 
 		bus = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
 		if (bus == NULL) {
-			ERR("BMPx error 1: %s\n", error->message);
+			NORM_ERR("BMPx error 1: %s\n", error->message);
 			fail(error);
 			return;
 		}
@@ -66,7 +66,7 @@ void update_bmpx()
 		remote_object = dbus_g_proxy_new_for_name(bus, BMP_DBUS_SERVICE,
 				BMP_DBUS_PATH, BMP_DBUS_INTERFACE);
 		if (!remote_object) {
-			ERR("BMPx error 2: %s\n", error->message);
+			NORM_ERR("BMPx error 2: %s\n", error->message);
 			fail(error);
 			return;
 		}
@@ -78,7 +78,7 @@ void update_bmpx()
 		if (dbus_g_proxy_call(remote_object, "GetCurrentTrack", &error,
 					G_TYPE_INVALID, G_TYPE_INT, &current_track, G_TYPE_INVALID)) {
 		} else {
-			ERR("BMPx error 3: %s\n", error->message);
+			NORM_ERR("BMPx error 3: %s\n", error->message);
 			fail(error);
 			return;
 		}
@@ -112,7 +112,7 @@ void update_bmpx()
 			current_info->bmpx.uri =
 				g_value_get_string(g_hash_table_lookup(metadata, "location"));
 		} else {
-			ERR("BMPx error 4: %s\n", error->message);
+			NORM_ERR("BMPx error 4: %s\n", error->message);
 			fail(error);
 			return;
 		}

@@ -108,7 +108,7 @@ void to_real_path(char *dest, const char *source)
 		if (homedir) {
 			snprintf(dest, DEFAULT_TEXT_BUFFER_SIZE, "%s/%s", homedir, tmp);
 		} else {
-			ERR("$HOME environment variable doesn't exist");
+			NORM_ERR("$HOME environment variable doesn't exist");
 			strncpy(dest, source, DEFAULT_TEXT_BUFFER_SIZE);
 		}
 	} else if (dest != source) {	//see changelog 2009-06-29 if you doubt that this check is necessary 
@@ -126,7 +126,7 @@ int open_fifo(const char *file, int *reported)
 
 	if (fd == -1) {
 		if (!reported || *reported == 0) {
-			ERR("can't open %s: %s", file, strerror(errno));
+			NORM_ERR("can't open %s: %s", file, strerror(errno));
 			if (reported) {
 				*reported = 1;
 			}
@@ -147,7 +147,7 @@ FILE *open_file(const char *file, int *reported)
 
 	if (!fp) {
 		if (!reported || *reported == 0) {
-			ERR("can't open %s: %s", file, strerror(errno));
+			NORM_ERR("can't open %s: %s", file, strerror(errno));
 			if (reported) {
 				*reported = 1;
 			}

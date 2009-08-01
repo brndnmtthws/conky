@@ -136,7 +136,7 @@ int check_mount(char *s)
 		}
 		fclose(mtab);
 	} else {
-		ERR("Could not open mtab");
+		NORM_ERR("Could not open mtab");
 	}
 	return ret;
 }
@@ -775,7 +775,7 @@ void update_i8k(void)
 
 	memset(&i8k_procbuf[0], 0, 128);
 	if (fread(&i8k_procbuf[0], sizeof(char), 128, fp) == 0) {
-		ERR("something wrong with /proc/i8k...");
+		NORM_ERR("something wrong with /proc/i8k...");
 	}
 
 	fclose(fp);
@@ -812,7 +812,7 @@ static int get_first_file_in_a_directory(const char *dir, char *s, int *rep)
 	n = scandir(dir, &namelist, no_dots, alphasort);
 	if (n < 0) {
 		if (!rep || !*rep) {
-			ERR("scandir for %s: %s", dir, strerror(errno));
+			NORM_ERR("scandir for %s: %s", dir, strerror(errno));
 			if (rep) {
 				*rep = 1;
 			}
@@ -924,7 +924,7 @@ int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n,
 		/* should read until n == 0 but I doubt that kernel will give these
 		 * in multiple pieces. :) */
 		if (divn < 0) {
-			ERR("open_sysfs_sensor(): can't read from sysfs");
+			NORM_ERR("open_sysfs_sensor(): can't read from sysfs");
 		} else {
 			divbuf[divn] = '\0';
 			*divisor = atoi(divbuf);
@@ -954,7 +954,7 @@ double get_sysfs_info(int *fd, int divisor, char *devtype, char *type)
 		/* should read until n == 0 but I doubt that kernel will give these
 		 * in multiple pieces. :) */
 		if (n < 0) {
-			ERR("get_sysfs_info(): read from %s failed\n", devtype);
+			NORM_ERR("get_sysfs_info(): read from %s failed\n", devtype);
 		} else {
 			buf[n] = '\0';
 			val = atoi(buf);
@@ -965,7 +965,7 @@ double get_sysfs_info(int *fd, int divisor, char *devtype, char *type)
 	/* open file */
 	*fd = open(devtype, O_RDONLY);
 	if (*fd < 0) {
-		ERR("can't open '%s': %s", devtype, strerror(errno));
+		NORM_ERR("can't open '%s': %s", devtype, strerror(errno));
 	}
 
 	/* My dirty hack for computing CPU value
@@ -1357,7 +1357,7 @@ int open_acpi_temperature(const char *name)
 
 	fd = open(path, O_RDONLY);
 	if (fd < 0) {
-		ERR("can't open '%s': %s", path, strerror(errno));
+		NORM_ERR("can't open '%s': %s", path, strerror(errno));
 	}
 
 	return fd;
@@ -1388,7 +1388,7 @@ double get_acpi_temperature(int fd)
 
 		n = read(fd, buf, 255);
 		if (n < 0) {
-			ERR("can't read fd %d: %s", fd, strerror(errno));
+			NORM_ERR("can't read fd %d: %s", fd, strerror(errno));
 		} else {
 			buf[n] = '\0';
 			sscanf(buf, "temperature: %lf", &last_acpi_temp);

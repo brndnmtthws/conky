@@ -145,13 +145,13 @@ static void parse_weather_xml(PWEATHER *res, const char *data)
 	xmlXPathContextPtr xpathCtx;
 
 	if (!(doc = xmlReadMemory(data, strlen(data), "", NULL, 0))) {
-		ERR("weather: can't read xml data");
+		NORM_ERR("weather: can't read xml data");
 		return;
 	}
 
 	xpathCtx = xmlXPathNewContext(doc);
 	if(xpathCtx == NULL) {
-	        ERR("weather: unable to create new XPath context");
+	        NORM_ERR("weather: unable to create new XPath context");
 		xmlFreeDoc(doc);
 		return;
 	}
@@ -514,7 +514,7 @@ void weather_process_info(char *p, int p_max_size, char *uri, char *data_type, i
 		curloc->process_function = &parse_weather;
 		ccurl_init_thread(curloc, interval);
 		if (!curloc->p_timed_thread) {
-			ERR("error setting up weather thread");
+			NORM_ERR("error setting up weather thread");
 		}
 	}
 

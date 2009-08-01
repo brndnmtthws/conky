@@ -1,3 +1,6 @@
+2009-08-01
+	* Added support for out_to_ncurses
+
 2009-07-31
 	* Removed alias config option due to brokenness
 	* Added support for $include

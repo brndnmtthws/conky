@@ -27,7 +27,7 @@ struct mail_s {			// for imap and pop3
 };
 
 struct local_mail_s {
-	char *box;
+	char *mbox;
 	int mail_count;
 	int new_mail_count;
 	int seen_mail_count;

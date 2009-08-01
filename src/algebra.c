@@ -179,7 +179,7 @@ double arg_to_double(const char *arg)
 {
 	double d;
 	if (sscanf(arg, "%lf", &d) != 1) {
-		ERR("converting '%s' to double failed", arg);
+		NORM_ERR("converting '%s' to double failed", arg);
 		return 0.0;
 	}
 	return d;
@@ -188,7 +188,7 @@ long arg_to_long(const char *arg)
 {
 	long l;
 	if (sscanf(arg, "%ld", &l) != 1) {
-		ERR("converting '%s' to long failed", arg);
+		NORM_ERR("converting '%s' to long failed", arg);
 		return 0;
 	}
 	return l;
@@ -203,7 +203,7 @@ int compare(const char *expr)
 	mtype = get_match_type(expr);
 
 	if (!idx || mtype == -1) {
-		ERR("failed to parse compare string '%s'", expr);
+		NORM_ERR("failed to parse compare string '%s'", expr);
 		return -2;
 	}
 
@@ -219,7 +219,7 @@ int compare(const char *expr)
 	if (type1 == ARG_DOUBLE && type2 == ARG_LONG)
 		type2 = ARG_DOUBLE;
 	if (type1 != type2) {
-		ERR("trying to compare args '%s' and '%s' of different type",
+		NORM_ERR("trying to compare args '%s' and '%s' of different type",
 				expr_dup, (expr_dup + idx + 1));
 		return -2;
 	}

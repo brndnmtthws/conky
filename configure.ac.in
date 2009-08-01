@@ -123,6 +123,20 @@ if test $dah != "no"; then
   AC_DEFINE(OWN_WINDOW, 1, [Define if you want support for window creating])
 fi
 
+dnl
+dnl NCURSES option
+dnl
+
+AC_ARG_ENABLE([ncurses],
+              AC_HELP_STRING([--disable-ncurses], [disable if you do not want ncurses support in conky @<:@default=yes@:>@]),
+              [want_ncurses="$enableval"], [want_ncurses=yes])
+
+AM_CONDITIONAL(BUILD_NCURSES, test x$want_ncurses = xyes)
+if test x$want_ncurses = xyes; then
+      conky_LIBS="$conky_LIBS -lncurses"
+      AC_DEFINE(NCURSES, 1, [Define for ncurses support])
+fi
+
 
 dnl
 dnl Audacious Media Player

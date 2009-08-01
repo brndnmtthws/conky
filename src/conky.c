@@ -65,6 +65,9 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <getopt.h>
+#ifdef NCURSES
+#include <ncurses.h>
+#endif
 
 /* local headers */
 #include "algebra.h"
@@ -453,7 +456,7 @@ int check_contains(char *f, char *s)
 		}
 		fclose(where);
 	} else {
-		ERR("Could not open the file");
+		NORM_ERR("Could not open the file");
 	}
 	return ret;
 }
@@ -802,7 +805,7 @@ static void free_text_objects(struct text_object *root, int internal)
 			case OBJ_unreplied_mails:
 			case OBJ_draft_mails:
 			case OBJ_trashed_mails:
-				free(data.local_mail.box);
+				free(data.local_mail.mbox);
 				break;
 			case OBJ_imap_unseen:
 				if (!obj->char_b) {
@@ -1257,15 +1260,15 @@ static int parse_top_args(const char *s, const char *arg, struct text_object *ob
 #endif
 	} else {
 #ifdef IOSTATS
-		ERR("Must be top, top_mem, top_time or top_io");
+		NORM_ERR("Must be top, top_mem, top_time or top_io");
 #else
-		ERR("Must be top, top_mem or top_time");
+		NORM_ERR("Must be top, top_mem or top_time");
 #endif
 		return 0;
 	}
 
 	if (!arg) {
-		ERR("top needs arguments");
+		NORM_ERR("top needs arguments");
 		return 0;
 	}
 
@@ -1293,23 +1296,23 @@ static int parse_top_args(const char *s, const char *arg, struct text_object *ob
 			obj->data.top.type = TOP_IO_PERC;
 #endif
 		} else {
-			ERR("invalid type arg for top");
+			NORM_ERR("invalid type arg for top");
 #ifdef IOSTATS
-			ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize, "
+			NORM_ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize, "
 					"io_read, io_write, io_perc");
 #else
-			ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize");
+			NORM_ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize");
 #endif
 			return 0;
 		}
 		if (n < 1 || n > 10) {
-			ERR("invalid num arg for top. Must be between 1 and 10.");
+			NORM_ERR("invalid num arg for top. Must be between 1 and 10.");
 			return 0;
 		} else {
 			obj->data.top.num = n - 1;
 		}
 	} else {
-		ERR("invalid argument count for top");
+		NORM_ERR("invalid argument count for top");
 		return 0;
 	}
 	return 1;
@@ -1403,7 +1406,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) == 0
 				|| (unsigned int) atoi(&arg[0]) > info.cpu_count) {
 			obj->data.cpu_index = 1;
-			/* ERR("freq: Invalid CPU number or you don't have that many CPUs! "
+			/* NORM_ERR("freq: Invalid CPU number or you don't have that many CPUs! "
 				"Displaying the clock for CPU 1."); */
 		} else {
 			obj->data.cpu_index = atoi(&arg[0]);
@@ -1414,7 +1417,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) == 0
 				|| (unsigned int) atoi(&arg[0]) > info.cpu_count) {
 			obj->data.cpu_index = 1;
-			/* ERR("freq_g: Invalid CPU number or you don't have that many "
+			/* NORM_ERR("freq_g: Invalid CPU number or you don't have that many "
 				"CPUs! Displaying the clock for CPU 1."); */
 		} else {
 			obj->data.cpu_index = atoi(&arg[0]);
@@ -1442,7 +1445,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) == 0
 				|| (unsigned int) atoi(&arg[0]) > info.cpu_count) {
 			obj->data.cpu_index = 1;
-			/* ERR("voltage_mv: Invalid CPU number or you don't have that many "
+			/* NORM_ERR("voltage_mv: Invalid CPU number or you don't have that many "
 				"CPUs! Displaying voltage for CPU 1."); */
 		} else {
 			obj->data.cpu_index = atoi(&arg[0]);
@@ -1453,7 +1456,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) == 0
 				|| (unsigned int) atoi(&arg[0]) > info.cpu_count) {
 			obj->data.cpu_index = 1;
-			/* ERR("voltage_v: Invalid CPU number or you don't have that many "
+			/* NORM_ERR("voltage_v: Invalid CPU number or you don't have that many "
 				"CPUs! Displaying voltage for CPU 1."); */
 		} else {
 			obj->data.cpu_index = atoi(&arg[0]);
@@ -1614,7 +1617,7 @@ static struct text_object *construct_text_object(const char *s,
 		}
 		if (!isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) >= 8) {
 			obj->data.sensor = 0;
-			ERR("Invalid temperature sensor! Sensor number must be 0 to 7. "
+			NORM_ERR("Invalid temperature sensor! Sensor number must be 0 to 7. "
 				"Using 0 (CPU temp sensor).");
 		}
 		obj->data.sensor = atoi(&arg[0]);
@@ -1640,7 +1643,7 @@ static struct text_object *construct_text_object(const char *s,
 		} else if (arg && strcmp(arg, "time") == EQUAL) {
 			obj->data.i = PB_BATT_TIME;
 		} else {
-			ERR("pb_battery: needs one argument: status, percent or time");
+			NORM_ERR("pb_battery: needs one argument: status, percent or time");
 			free(obj);
 			return NULL;
 		}
@@ -1649,7 +1652,7 @@ static struct text_object *construct_text_object(const char *s,
 #if (defined(__FreeBSD__) || defined(__linux__))
 	END OBJ_IF(if_up, 0)
 		if (!arg) {
-			ERR("if_up needs an argument");
+			NORM_ERR("if_up needs an argument");
 			obj->data.ifblock.s = 0;
 		} else {
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
@@ -1663,7 +1666,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (!isdigit(arg[0]) || atoi(&arg[0]) < 0
 				|| atoi(&arg[0]) > OBSD_MAX_SENSORS - 1) {
 			obj->data.sensor = 0;
-			ERR("Invalid temperature sensor number!");
+			NORM_ERR("Invalid temperature sensor number!");
 		}
 		obj->data.sensor = atoi(&arg[0]);
 	END OBJ(obsd_sensors_fan, 0)
@@ -1674,7 +1677,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (!isdigit(arg[0]) || atoi(&arg[0]) < 0
 				|| atoi(&arg[0]) > OBSD_MAX_SENSORS - 1) {
 			obj->data.sensor = 0;
-			ERR("Invalid fan sensor number!");
+			NORM_ERR("Invalid fan sensor number!");
 		}
 		obj->data.sensor = atoi(&arg[0]);
 	END OBJ(obsd_sensors_volt, 0)
@@ -1685,7 +1688,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (!isdigit(arg[0]) || atoi(&arg[0]) < 0
 				|| atoi(&arg[0]) > OBSD_MAX_SENSORS - 1) {
 			obj->data.sensor = 0;
-			ERR("Invalid voltage sensor number!");
+			NORM_ERR("Invalid voltage sensor number!");
 		}
 		obj->data.sensor = atoi(&arg[0]);
 	END OBJ(obsd_vendor, 0)
@@ -1874,7 +1877,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
 			char buf[256];
 
-			ERR("${execibar <interval> command}");
+			NORM_ERR("${execibar <interval> command}");
 			obj->type = OBJ_text;
 			snprintf(buf, 256, "${%s}", s);
 			obj->data.s = strndup(buf, text_buffer_size);
@@ -1889,7 +1892,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
 			char buf[256];
 
-			ERR("${execigraph <interval> command}");
+			NORM_ERR("${execigraph <interval> command}");
 			obj->type = OBJ_text;
 			snprintf(buf, 256, "${%s}", s);
 			obj->data.s = strndup(buf, text_buffer_size);
@@ -1903,7 +1906,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
 			char buf[256];
 
-			ERR("${execigauge <interval> command}");
+			NORM_ERR("${execigauge <interval> command}");
 			obj->type = OBJ_text;
 			snprintf(buf, 256, "${%s}", s);
 			obj->data.s = strndup(buf, text_buffer_size);
@@ -1917,7 +1920,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
 			char buf[256];
 
-			ERR("${execi <interval> command}");
+			NORM_ERR("${execi <interval> command}");
 			obj->type = OBJ_text;
 			snprintf(buf, 256, "${%s}", s);
 			obj->data.s = strndup(buf, text_buffer_size);
@@ -1931,7 +1934,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
 			char buf[256];
 
-			ERR("${execi <interval> command}");
+			NORM_ERR("${execi <interval> command}");
 			obj->type = OBJ_text;
 			snprintf(buf, 256, "${%s}", s);
 			obj->data.s = strndup(buf, text_buffer_size);
@@ -1945,7 +1948,7 @@ static struct text_object *construct_text_object(const char *s,
 			if (!arg || sscanf(arg, "%f %n", &obj->data.texeci.interval, &n) <= 0) {
 				char buf[256];
 
-				ERR("${texeci <interval> command}");
+				NORM_ERR("${texeci <interval> command}");
 				obj->type = OBJ_text;
 				snprintf(buf, 256, "${%s}", s);
 				obj->data.s = strndup(buf, text_buffer_size);
@@ -2034,7 +2037,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(goto, 0)
 
 		if (!arg) {
-			ERR("goto needs arguments");
+			NORM_ERR("goto needs arguments");
 			obj->type = OBJ_text;
 			obj->data.s = strndup("${goto}", text_buffer_size);
 			return NULL;
@@ -2063,7 +2066,7 @@ static struct text_object *construct_text_object(const char *s,
 		int n, found = 0;
 
 		if (!arg) {
-			ERR("i2c needs arguments");
+			NORM_ERR("i2c needs arguments");
 			obj->type = OBJ_text;
 			// obj->data.s = strndup("${i2c}", text_buffer_size);
 			return NULL;
@@ -2080,7 +2083,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (!found && sscanf(arg, "%63s %d", buf2, &n) == 2) found = 1; else if (!found) HWMON_RESET();
 
 		if (!found) {
-			ERR("i2c failed to parse arguments");
+			NORM_ERR("i2c failed to parse arguments");
 			obj->type = OBJ_text;
 			return NULL;
 		}
@@ -2097,7 +2100,7 @@ static struct text_object *construct_text_object(const char *s,
 		int n, found = 0;
 
 		if (!arg) {
-			ERR("platform needs arguments");
+			NORM_ERR("platform needs arguments");
 			obj->type = OBJ_text;
 			return NULL;
 		}
@@ -2108,7 +2111,7 @@ static struct text_object *construct_text_object(const char *s,
 		if (!found && sscanf(arg, "%63s %d", buf2, &n) == 2) found = 1; else if (!found) HWMON_RESET();
 
 		if (!found) {
-			ERR("platform failed to parse arguments");
+			NORM_ERR("platform failed to parse arguments");
 			obj->type = OBJ_text;
 			return NULL;
 		}
@@ -2125,7 +2128,7 @@ static struct text_object *construct_text_object(const char *s,
 		int n, found = 0;
 
 		if (!arg) {
-			ERR("hwmon needs argumanets");
+			NORM_ERR("hwmon needs argumanets");
 			obj->type = OBJ_text;
 			return NULL;
 		}
@@ -2138,7 +2141,7 @@ static struct text_object *construct_text_object(const char *s,
 #undef HWMON_RESET
 
 		if (!found) {
-			ERR("hwmon failed to parse arguments");
+			NORM_ERR("hwmon failed to parse arguments");
 			obj->type = OBJ_text;
 			return NULL;
 		}
@@ -2215,7 +2218,7 @@ static struct text_object *construct_text_object(const char *s,
 		obj->data.loadavg[2] = (r >= 3) ? (unsigned char) c : 0;
 	END OBJ_IF(if_empty, 0)
 		if (!arg) {
-			ERR("if_empty needs an argument");
+			NORM_ERR("if_empty needs an argument");
 			obj->data.ifblock.s = 0;
 		} else {
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
@@ -2225,7 +2228,7 @@ static struct text_object *construct_text_object(const char *s,
 		}
 	END OBJ_IF(if_match, 0)
 		if (!arg) {
-			ERR("if_match needs arguments");
+			NORM_ERR("if_match needs arguments");
 			obj->data.ifblock.s = 0;
 		} else {
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
@@ -2235,7 +2238,7 @@ static struct text_object *construct_text_object(const char *s,
 		}
 	END OBJ_IF(if_existing, 0)
 		if (!arg) {
-			ERR("if_existing needs an argument or two");
+			NORM_ERR("if_existing needs an argument or two");
 			obj->data.ifblock.s = NULL;
 			obj->data.ifblock.str = NULL;
 		} else {
@@ -2253,7 +2256,7 @@ static struct text_object *construct_text_object(const char *s,
 		DBGP("if_existing: '%s' '%s'", obj->data.ifblock.s, obj->data.ifblock.str);
 	END OBJ_IF(if_mounted, 0)
 		if (!arg) {
-			ERR("if_mounted needs an argument");
+			NORM_ERR("if_mounted needs an argument");
 			obj->data.ifblock.s = 0;
 		} else {
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
@@ -2271,14 +2274,14 @@ static struct text_object *construct_text_object(const char *s,
 			obj->data.ifblock.s = strndup(buf, text_buffer_size);
 #endif
 		} else {
-			ERR("if_running needs an argument");
+			NORM_ERR("if_running needs an argument");
 			obj->data.ifblock.s = 0;
 		}
 	END OBJ(kernel, 0)
 	END OBJ(machine, 0)
 	END OBJ(mails, 0)
 		float n1;
-		char box[256], dst[256];
+		char mbox[256], dst[256];
 
 		if (!arg) {
 			n1 = 9.5;
@@ -2287,203 +2290,203 @@ static struct text_object *construct_text_object(const char *s,
 			   is a copy of the former if undefined
 			   but the latter should take precedence
 			   if defined */
-			strncpy(box, current_mail_spool, sizeof(box));
+			strncpy(mbox, current_mail_spool, sizeof(mbox));
 		} else {
-			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+			if (sscanf(arg, "%s %f", mbox, &n1) != 2) {
 				n1 = 9.5;
-				strncpy(box, arg, sizeof(box));
+				strncpy(mbox, arg, sizeof(mbox));
 			}
 		}
 
-		variable_substitute(box, dst, sizeof(dst));
-		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		variable_substitute(mbox, dst, sizeof(dst));
+		obj->data.local_mail.mbox = strndup(dst, text_buffer_size);
 		obj->data.local_mail.interval = n1;
 	END OBJ(new_mails, 0)
 		float n1;
-		char box[256], dst[256];
+		char mbox[256], dst[256];
 
 		if (!arg) {
 			n1 = 9.5;
-			strncpy(box, current_mail_spool, sizeof(box));
+			strncpy(mbox, current_mail_spool, sizeof(mbox));
 		} else {
-			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+			if (sscanf(arg, "%s %f", mbox, &n1) != 2) {
 				n1 = 9.5;
-				strncpy(box, arg, sizeof(box));
+				strncpy(mbox, arg, sizeof(mbox));
 			}
 		}
 
-		variable_substitute(box, dst, sizeof(dst));
-		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		variable_substitute(mbox, dst, sizeof(dst));
+		obj->data.local_mail.mbox = strndup(dst, text_buffer_size);
 		obj->data.local_mail.interval = n1;
 	END OBJ(seen_mails, 0)
 		float n1;
-		char box[256], dst[256];
+		char mbox[256], dst[256];
 
 		if (!arg) {
 			n1 = 9.5;
-			strncpy(box, current_mail_spool, sizeof(box));
+			strncpy(mbox, current_mail_spool, sizeof(mbox));
 		} else {
-			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+			if (sscanf(arg, "%s %f", mbox, &n1) != 2) {
 				n1 = 9.5;
-				strncpy(box, arg, sizeof(box));
+				strncpy(mbox, arg, sizeof(mbox));
 			}
 		}
 
-		variable_substitute(box, dst, sizeof(dst));
-		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		variable_substitute(mbox, dst, sizeof(dst));
+		obj->data.local_mail.mbox = strndup(dst, text_buffer_size);
 		obj->data.local_mail.interval = n1;
 	END OBJ(unseen_mails, 0)
 		float n1;
-		char box[256], dst[256];
+		char mbox[256], dst[256];
 
 		if (!arg) {
 			n1 = 9.5;
-			strncpy(box, current_mail_spool, sizeof(box));
+			strncpy(mbox, current_mail_spool, sizeof(mbox));
 		} else {
-			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+			if (sscanf(arg, "%s %f", mbox, &n1) != 2) {
 				n1 = 9.5;
-				strncpy(box, arg, sizeof(box));
+				strncpy(mbox, arg, sizeof(mbox));
 			}
 		}
 
-		variable_substitute(box, dst, sizeof(dst));
-		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		variable_substitute(mbox, dst, sizeof(dst));
+		obj->data.local_mail.mbox = strndup(dst, text_buffer_size);
 		obj->data.local_mail.interval = n1;
 	END OBJ(flagged_mails, 0)
 		float n1;
-		char box[256], dst[256];
+		char mbox[256], dst[256];
 
 		if (!arg) {
 			n1 = 9.5;
-			strncpy(box, current_mail_spool, sizeof(box));
+			strncpy(mbox, current_mail_spool, sizeof(mbox));
 		} else {
-			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+			if (sscanf(arg, "%s %f", mbox, &n1) != 2) {
 				n1 = 9.5;
-				strncpy(box, arg, sizeof(box));
+				strncpy(mbox, arg, sizeof(mbox));
 			}
 		}
 
-		variable_substitute(box, dst, sizeof(dst));
-		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		variable_substitute(mbox, dst, sizeof(dst));
+		obj->data.local_mail.mbox = strndup(dst, text_buffer_size);
 		obj->data.local_mail.interval = n1;
 	END OBJ(unflagged_mails, 0)
 		float n1;
-		char box[256], dst[256];
+		char mbox[256], dst[256];
 
 		if (!arg) {
 			n1 = 9.5;
-			strncpy(box, current_mail_spool, sizeof(box));
+			strncpy(mbox, current_mail_spool, sizeof(mbox));
 		} else {
-			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+			if (sscanf(arg, "%s %f", mbox, &n1) != 2) {
 				n1 = 9.5;
-				strncpy(box, arg, sizeof(box));
+				strncpy(mbox, arg, sizeof(mbox));
 			}
 		}
 
-		variable_substitute(box, dst, sizeof(dst));
-		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		variable_substitute(mbox, dst, sizeof(dst));
+		obj->data.local_mail.mbox = strndup(dst, text_buffer_size);
 		obj->data.local_mail.interval = n1;
 	END OBJ(forwarded_mails, 0)
 		float n1;
-		char box[256], dst[256];
+		char mbox[256], dst[256];
 
 		if (!arg) {
 			n1 = 9.5;
-			strncpy(box, current_mail_spool, sizeof(box));
+			strncpy(mbox, current_mail_spool, sizeof(mbox));
 		} else {
-			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+			if (sscanf(arg, "%s %f", mbox, &n1) != 2) {
 				n1 = 9.5;
-				strncpy(box, arg, sizeof(box));
+				strncpy(mbox, arg, sizeof(mbox));
 			}
 		}
 
-		variable_substitute(box, dst, sizeof(dst));
-		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		variable_substitute(mbox, dst, sizeof(dst));
+		obj->data.local_mail.mbox = strndup(dst, text_buffer_size);
 		obj->data.local_mail.interval = n1;
 	END OBJ(unforwarded_mails, 0)
 		float n1;
-		char box[256], dst[256];
+		char mbox[256], dst[256];
 
 		if (!arg) {
 			n1 = 9.5;
-			strncpy(box, current_mail_spool, sizeof(box));
+			strncpy(mbox, current_mail_spool, sizeof(mbox));
 		} else {
-			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+			if (sscanf(arg, "%s %f", mbox, &n1) != 2) {
 				n1 = 9.5;
-				strncpy(box, arg, sizeof(box));
+				strncpy(mbox, arg, sizeof(mbox));
 			}
 		}
 
-		variable_substitute(box, dst, sizeof(dst));
-		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		variable_substitute(mbox, dst, sizeof(dst));
+		obj->data.local_mail.mbox = strndup(dst, text_buffer_size);
 		obj->data.local_mail.interval = n1;
 	END OBJ(replied_mails, 0)
 		float n1;
-		char box[256], dst[256];
+		char mbox[256], dst[256];
 
 		if (!arg) {
 			n1 = 9.5;
-			strncpy(box, current_mail_spool, sizeof(box));
+			strncpy(mbox, current_mail_spool, sizeof(mbox));
 		} else {
-			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+			if (sscanf(arg, "%s %f", mbox, &n1) != 2) {
 				n1 = 9.5;
-				strncpy(box, arg, sizeof(box));
+				strncpy(mbox, arg, sizeof(mbox));
 			}
 		}
 
-		variable_substitute(box, dst, sizeof(dst));
-		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		variable_substitute(mbox, dst, sizeof(dst));
+		obj->data.local_mail.mbox = strndup(dst, text_buffer_size);
 		obj->data.local_mail.interval = n1;
 	END OBJ(unreplied_mails, 0)
 		float n1;
-		char box[256], dst[256];
+		char mbox[256], dst[256];
 
 		if (!arg) {
 			n1 = 9.5;
-			strncpy(box, current_mail_spool, sizeof(box));
+			strncpy(mbox, current_mail_spool, sizeof(mbox));
 		} else {
-			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+			if (sscanf(arg, "%s %f", mbox, &n1) != 2) {
 				n1 = 9.5;
-				strncpy(box, arg, sizeof(box));
+				strncpy(mbox, arg, sizeof(mbox));
 			}
 		}
 
-		variable_substitute(box, dst, sizeof(dst));
-		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		variable_substitute(mbox, dst, sizeof(dst));
+		obj->data.local_mail.mbox = strndup(dst, text_buffer_size);
 		obj->data.local_mail.interval = n1;
 	END OBJ(draft_mails, 0)
 		float n1;
-		char box[256], dst[256];
+		char mbox[256], dst[256];
 
 		if (!arg) {
 			n1 = 9.5;
-			strncpy(box, current_mail_spool, sizeof(box));
+			strncpy(mbox, current_mail_spool, sizeof(mbox));
 		} else {
-			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+			if (sscanf(arg, "%s %f", mbox, &n1) != 2) {
 				n1 = 9.5;
-				strncpy(box, arg, sizeof(box));
+				strncpy(mbox, arg, sizeof(mbox));
 			}
 		}
 
-		variable_substitute(box, dst, sizeof(dst));
-		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		variable_substitute(mbox, dst, sizeof(dst));
+		obj->data.local_mail.mbox = strndup(dst, text_buffer_size);
 		obj->data.local_mail.interval = n1;
 	END OBJ(trashed_mails, 0)
 		float n1;
-		char box[256], dst[256];
+		char mbox[256], dst[256];
 
 		if (!arg) {
 			n1 = 9.5;
-			strncpy(box, current_mail_spool, sizeof(box));
+			strncpy(mbox, current_mail_spool, sizeof(mbox));
 		} else {
-			if (sscanf(arg, "%s %f", box, &n1) != 2) {
+			if (sscanf(arg, "%s %f", mbox, &n1) != 2) {
 				n1 = 9.5;
-				strncpy(box, arg, sizeof(box));
+				strncpy(mbox, arg, sizeof(mbox));
 			}
 		}
 
-		variable_substitute(box, dst, sizeof(dst));
-		obj->data.local_mail.box = strndup(dst, text_buffer_size);
+		variable_substitute(mbox, dst, sizeof(dst));
+		obj->data.local_mail.mbox = strndup(dst, text_buffer_size);
 		obj->data.local_mail.interval = n1;
 	END OBJ(mboxscan, 0)
 		obj->data.mboxscan.args = (char *) malloc(text_buffer_size);
@@ -2614,7 +2617,7 @@ static struct text_object *construct_text_object(const char *s,
 
 				new_iconv = iconv_open(iconv_to, iconv_from);
 				if (new_iconv == (iconv_t) (-1)) {
-					ERR("Can't convert from %s to %s.", iconv_from, iconv_to);
+					NORM_ERR("Can't convert from %s to %s.", iconv_from, iconv_to);
 				} else {
 					obj->a = register_iconv(&new_iconv);
 					iconv_converting = 1;
@@ -2743,10 +2746,10 @@ static struct text_object *construct_text_object(const char *s,
 		if (arg)
 			obj->data.s = strndup(arg, text_buffer_size);
 		else
-			ERR("smapi needs an argument");
+			NORM_ERR("smapi needs an argument");
 	END OBJ_IF(if_smapi_bat_installed, 0)
 		if (!arg) {
-			ERR("if_smapi_bat_installed needs an argument");
+			NORM_ERR("if_smapi_bat_installed needs an argument");
 			obj->data.ifblock.s = 0;
 		} else
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
@@ -2754,31 +2757,31 @@ static struct text_object *construct_text_object(const char *s,
 		if (arg)
 			obj->data.s = strndup(arg, text_buffer_size);
 		else
-			ERR("smapi_bat_perc needs an argument");
+			NORM_ERR("smapi_bat_perc needs an argument");
 	END OBJ(smapi_bat_temp, 0)
 		if (arg)
 			obj->data.s = strndup(arg, text_buffer_size);
 		else
-			ERR("smapi_bat_temp needs an argument");
+			NORM_ERR("smapi_bat_temp needs an argument");
 	END OBJ(smapi_bat_power, 0)
 		if (arg)
 			obj->data.s = strndup(arg, text_buffer_size);
 		else
-			ERR("smapi_bat_power needs an argument");
+			NORM_ERR("smapi_bat_power needs an argument");
 #ifdef X11
 	END OBJ(smapi_bat_bar, 0)
 		SIZE_DEFAULTS(bar);
 		if(arg) {
 			int cnt;
 			if(sscanf(arg, "%i %n", &obj->data.i, &cnt) <= 0) {
-				ERR("first argument to smapi_bat_bar must be an integer value");
+				NORM_ERR("first argument to smapi_bat_bar must be an integer value");
 				obj->data.i = -1;
 			} else {
 				obj->b = 4;
 				arg = scan_bar(arg + cnt, &obj->a, &obj->b);
 			}
 		} else
-			ERR("smapi_bat_bar needs an argument");
+			NORM_ERR("smapi_bat_bar needs an argument");
 #endif /* X11 */
 #endif /* IBM */
 #ifdef MPD
@@ -2789,7 +2792,7 @@ static struct text_object *construct_text_object(const char *s,
 			if (i > 0) \
 				obj->data.i = i + 1; \
 			else \
-				ERR(#name ": invalid length argument"); \
+				NORM_ERR(#name ": invalid length argument"); \
 		}
 	END OBJ(mpd_artist, INFO_MPD)
 		mpd_set_maxlen(mpd_artist);
@@ -2939,7 +2942,7 @@ static struct text_object *construct_text_object(const char *s,
 				obj->data.curl.uri = uri;
 				obj->data.curl.interval = interval > 0 ? interval * 60 : 15*60;
 			} else {
-				ERR("wrong number of arguments for $curl");
+				NORM_ERR("wrong number of arguments for $curl");
 			}
 		} else {
 			CRIT_ERR(obj, free_at_crash, "curl needs arguments: <uri> <interval in minutes>");
@@ -2963,7 +2966,7 @@ static struct text_object *construct_text_object(const char *s,
 				obj->data.rss.act_par = act_par;
 				obj->data.rss.nrspaces = nrspaces;
 			} else {
-				ERR("wrong number of arguments for $rss");
+				NORM_ERR("wrong number of arguments for $rss");
 			}
 		} else {
 			CRIT_ERR(obj, free_at_crash, "rss needs arguments: <uri> <interval in minutes> <action> "
@@ -3072,7 +3075,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(hddtemp, 0)
 		if (scan_hddtemp(arg, &obj->data.hddtemp.dev,
 		                 &obj->data.hddtemp.addr, &obj->data.hddtemp.port)) {
-			ERR("hddtemp needs arguments");
+			NORM_ERR("hddtemp needs arguments");
 			obj->type = OBJ_text;
 			obj->data.s = strndup("${hddtemp}", text_buffer_size);
 			obj->data.hddtemp.update_time = 0;
@@ -3099,10 +3102,10 @@ static struct text_object *construct_text_object(const char *s,
 					extract_variable_text_internal(obj->sub, global_text);
 					currentconffile = leaf->back;
 				} else {
-					ERR("Can't load configfile '%s'.", arg);
+					NORM_ERR("Can't load configfile '%s'.", arg);
 				}
 			} else {
-				ERR("You are trying to load '%s' recursively, I'm only going to load it once to prevent an infinite loop.", arg);
+				NORM_ERR("You are trying to load '%s' recursively, I'm only going to load it once to prevent an infinite loop.", arg);
 			}
 		} else {
 			CRIT_ERR(obj, free_at_crash, "include needs a argument");
@@ -3248,7 +3251,7 @@ static struct text_object *construct_text_object(const char *s,
 	END {
 		char buf[256];
 
-		ERR("unknown variable %s", s);
+		NORM_ERR("unknown variable %s", s);
 		obj->type = OBJ_text;
 		snprintf(buf, 256, "${%s}", s);
 		obj->data.s = strndup(buf, text_buffer_size);
@@ -3446,7 +3449,7 @@ static char *find_and_replace_templates(const char *inbuf)
 			free(tmpl_out);
 			o = outbuf + strlen(outbuf);
 		} else {
-			ERR("failed to handle template '%s' with args '%s'", templ, args);
+			NORM_ERR("failed to handle template '%s' with args '%s'", templ, args);
 		}
 	}
 	*o = '\0';
@@ -3647,7 +3650,7 @@ static int extract_variable_text_internal(struct text_object *retval, const char
 	}
 
 	if (!ifblock_stack_empty(&ifblock_opaque)) {
-		ERR("one or more $endif's are missing");
+		NORM_ERR("one or more $endif's are missing");
 	}
 
 	free(orig_p);
@@ -3689,12 +3692,12 @@ static inline struct mail_s *ensure_mail_thread(struct text_object *obj,
 				timed_thread_create(thread,
 						(void *) info.mail, info.mail->interval * 1000000);
 			if (!info.mail->p_timed_thread) {
-				ERR("Error creating %s timed thread", text);
+				NORM_ERR("Error creating %s timed thread", text);
 			}
 			timed_thread_register(info.mail->p_timed_thread,
 					&info.mail->p_timed_thread);
 			if (timed_thread_run(info.mail->p_timed_thread)) {
-				ERR("Error running %s timed thread", text);
+				NORM_ERR("Error running %s timed thread", text);
 			}
 		}
 		return info.mail;
@@ -3706,18 +3709,18 @@ static inline struct mail_s *ensure_mail_thread(struct text_object *obj,
 						(void *) obj->data.mail,
 						obj->data.mail->interval * 1000000);
 			if (!obj->data.mail->p_timed_thread) {
-				ERR("Error creating %s timed thread", text);
+				NORM_ERR("Error creating %s timed thread", text);
 			}
 			timed_thread_register(obj->data.mail->p_timed_thread,
 					&obj->data.mail->p_timed_thread);
 			if (timed_thread_run(obj->data.mail->p_timed_thread)) {
-				ERR("Error running %s timed thread", text);
+				NORM_ERR("Error running %s timed thread", text);
 			}
 		}
 		return obj->data.mail;
 	} else if (!obj->a) {
 		// something is wrong, warn once then stop
-		ERR("There's a problem with your mail settings.  "
+		NORM_ERR("There's a problem with your mail settings.  "
 				"Check that the global mail settings are properly defined"
 				" (line %li).", obj->line);
 		obj->a++;
@@ -3816,12 +3819,12 @@ static inline double get_barnum(char *buf)
 	}
 
 	if (sscanf(buf, "%lf", &barnum) == 0) {
-		ERR("reading exec value failed (perhaps it's not the "
+		NORM_ERR("reading exec value failed (perhaps it's not the "
 				"correct format?)");
 		return -1;
 	}
 	if (barnum > 100.0 || barnum < 0.0) {
-		ERR("your exec value is not between 0 and 100, "
+		NORM_ERR("your exec value is not between 0 and 100, "
 				"therefore it will be ignored");
 		return -1;
 	}
@@ -3894,7 +3897,7 @@ static void generate_text_internal(char *p, int p_max_size,
 
 		switch (obj->type) {
 			default:
-				ERR("not implemented obj type %d", obj->type);
+				NORM_ERR("not implemented obj type %d", obj->type);
 			OBJ(read_tcp) {
 				int sock, received;
 				struct sockaddr_in addr;
@@ -3919,13 +3922,13 @@ static void generate_text_internal(char *p, int p_max_size,
 							}
 							close(sock);
 						} else {
-							ERR("read_tcp: Couldn't create a connection");
+							NORM_ERR("read_tcp: Couldn't create a connection");
 						}
 					}else{
-						ERR("read_tcp: Couldn't create a socket");
+						NORM_ERR("read_tcp: Couldn't create a socket");
 					}
 				}else{
-					ERR("read_tcp: Problem with resolving the hostname");
+					NORM_ERR("read_tcp: Problem with resolving the hostname");
 				}
 			}
 #ifndef __OpenBSD__
@@ -4060,7 +4063,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(cpu) {
 				if (obj->data.cpu_index > info.cpu_count) {
-					ERR("obj->data.cpu_index %i info.cpu_count %i",
+					NORM_ERR("obj->data.cpu_index %i info.cpu_count %i",
 							obj->data.cpu_index, info.cpu_count);
 					CRIT_ERR(NULL, NULL, "attempting to use more CPUs than you have!");
 				}
@@ -4562,14 +4565,14 @@ static void generate_text_internal(char *p, int p_max_size,
 						timed_thread_create(&threaded_exec,
 						(void *) obj, obj->data.texeci.interval * 1000000);
 					if (!obj->data.texeci.p_timed_thread) {
-						ERR("Error creating texeci timed thread");
+						NORM_ERR("Error creating texeci timed thread");
 					}
 					/*
 					 * note that we don't register this thread with the
 					 * timed_thread list, because we destroy it manually
 					 */
 					if (timed_thread_run(obj->data.texeci.p_timed_thread)) {
-						ERR("Error running texeci timed thread");
+						NORM_ERR("Error running texeci timed thread");
 					}
 				} else {
 					timed_thread_lock(obj->data.texeci.p_timed_thread);
@@ -4762,7 +4765,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				if (obj->data.curl.uri != NULL) {
 					ccurl_process_info(p, p_max_size, obj->data.curl.uri, obj->data.curl.interval);
 				} else {
-					ERR("error processing Curl data");
+					NORM_ERR("error processing Curl data");
 				}
 			}
 #endif
@@ -4771,7 +4774,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				if (obj->data.rss.uri != NULL) {
 					rss_process_info(p, p_max_size, obj->data.rss.uri, obj->data.rss.action, obj->data.rss.act_par, obj->data.rss.interval, obj->data.rss.nrspaces);
 				} else {
-					ERR("error processing RSS data");
+					NORM_ERR("error processing RSS data");
 				}
 			}
 #endif
@@ -4780,7 +4783,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				if (obj->data.weather.uri != NULL) {
 					weather_process_info(p, p_max_size, obj->data.weather.uri, obj->data.weather.data_type, obj->data.weather.interval);
 				} else {
-					ERR("error processing weather data, check that you have a valid XOAP key if using XOAP.");
+					NORM_ERR("error processing weather data, check that you have a valid XOAP key if using XOAP.");
 				}
 			}
 #endif
@@ -4946,7 +4949,7 @@ static void generate_text_internal(char *p, int p_max_size,
 
 				val = compare(expression);
 				if (val == -2) {
-					ERR("compare failed for expression '%s'",
+					NORM_ERR("compare failed for expression '%s'",
 							expression);
 				} else if (!val) {
 					DO_JUMP;
@@ -5799,7 +5802,7 @@ static void generate_text_internal(char *p, int p_max_size,
 						DO_JUMP;
 					}
 				} else
-					ERR("argument to if_smapi_bat_installed must be an integer");
+					NORM_ERR("argument to if_smapi_bat_installed must be an integer");
 			}
 			OBJ(smapi_bat_perc) {
 				int idx, val;
@@ -5808,7 +5811,7 @@ static void generate_text_internal(char *p, int p_max_size,
 						smapi_get_bat_int(idx, "remaining_percent") : 0;
 					percent_print(p, p_max_size, val);
 				} else
-					ERR("argument to smapi_bat_perc must be an integer");
+					NORM_ERR("argument to smapi_bat_perc must be an integer");
 			}
 			OBJ(smapi_bat_temp) {
 				int idx, val;
@@ -5818,7 +5821,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					/* temperature is in milli degree celsius */
 					temp_print(p, p_max_size, val / 1000, TEMP_CELSIUS);
 				} else
-					ERR("argument to smapi_bat_temp must be an integer");
+					NORM_ERR("argument to smapi_bat_temp must be an integer");
 			}
 			OBJ(smapi_bat_power) {
 				int idx, val;
@@ -5828,7 +5831,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					/* power_now is in mW, set to W with one digit precision */
 					snprintf(p, p_max_size, "%.1f", ((double)val / 1000));
 				} else
-					ERR("argument to smapi_bat_power must be an integer");
+					NORM_ERR("argument to smapi_bat_power must be an integer");
 			}
 #ifdef X11
 			OBJ(smapi_bat_bar) {
@@ -6135,7 +6138,7 @@ static void generate_text_internal(char *p, int p_max_size,
 					bytes = iconv(*iconv_cd[iconv_selected - 1], &ptr, &dummy1,
 							&outptr, &dummy2);
 					if (bytes == -1) {
-						ERR("Iconv codeset conversion failed");
+						NORM_ERR("Iconv codeset conversion failed");
 						break;
 					}
 				}
@@ -6514,6 +6517,11 @@ static void draw_string(const char *s)
 	if ((output_methods & APPEND_FILE) && draw_mode == FG && append_fpointer) {
 		fprintf(append_fpointer, "%s\n", s_with_newlines);
 	}
+#ifdef NCURSES
+	if ((output_methods & TO_NCURSES) && draw_mode == FG) {
+		printw("%s\n", s_with_newlines);
+	}
+#endif
 	free(s_with_newlines);
 	memset(tmpstring1, 0, text_buffer_size);
 	memset(tmpstring2, 0, text_buffer_size);
@@ -7091,12 +7099,12 @@ static void draw_stuff(void)
 	if (overwrite_file) {
 		overwrite_fpointer = fopen(overwrite_file, "w");
 		if(!overwrite_fpointer)
-			ERR("Can't overwrite '%s' anymore", overwrite_file);
+			NORM_ERR("Can't overwrite '%s' anymore", overwrite_file);
 	}
 	if (append_file) {
 		append_fpointer = fopen(append_file, "a");
 		if(!append_fpointer)
-			ERR("Can't append '%s' anymore", append_file);
+			NORM_ERR("Can't append '%s' anymore", append_file);
 	}
 #ifdef X11
 	if (output_methods & TO_X) {
@@ -7272,7 +7280,7 @@ static void main_loop(void)
 				s = select(ConnectionNumber(display) + 1, &fdsr, 0, 0, &tv);
 				if (s == -1) {
 					if (errno != EINTR) {
-						ERR("can't select(): %s", strerror(errno));
+						NORM_ERR("can't select(): %s", strerror(errno));
 					}
 				} else {
 					/* timeout */
@@ -7543,6 +7551,12 @@ static void main_loop(void)
 			if(t > 0) usleep((useconds_t)t);
 			update_text();
 			draw_stuff();
+#ifdef NCURSES
+			if(output_methods & TO_NCURSES) {
+				refresh();
+				clear();
+			}
+#endif
 #ifdef X11
 		}
 #endif /* X11 */
@@ -7557,12 +7571,12 @@ static void main_loop(void)
 		switch (g_signal_pending) {
 			case SIGHUP:
 			case SIGUSR1:
-				ERR("received SIGHUP or SIGUSR1. reloading the config file.");
+				NORM_ERR("received SIGHUP or SIGUSR1. reloading the config file.");
 				reload_config();
 				break;
 			case SIGINT:
 			case SIGTERM:
-				ERR("received SIGINT or SIGTERM to terminate. bye!");
+				NORM_ERR("received SIGINT or SIGTERM to terminate. bye!");
 				terminate = 1;
 #ifdef X11
 				if (output_methods & TO_X) {
@@ -7594,7 +7608,7 @@ static void main_loop(void)
 				 * If you don't want to handle a signal, don't set a handler on
 				 * it in the first place. */
 				if (g_signal_pending) {
-					ERR("ignoring signal (%d)", g_signal_pending);
+					NORM_ERR("ignoring signal (%d)", g_signal_pending);
 				}
 				break;
 		}
@@ -7622,7 +7636,7 @@ static void main_loop(void)
 					struct inotify_event *ev = (struct inotify_event *) &inotify_buff[idx];
 					if (ev->wd == inotify_config_wd && (ev->mask & IN_MODIFY || ev->mask & IN_IGNORED)) {
 						/* current_config should be reloaded */
-						ERR("'%s' modified, reloading...", current_config);
+						NORM_ERR("'%s' modified, reloading...", current_config);
 						reload_config();
 						if (ev->mask & IN_IGNORED) {
 							/* for some reason we get IN_IGNORED here
@@ -7676,6 +7690,13 @@ static void reload_config(void)
 void clean_up(void *memtofree1, void* memtofree2)
 {
 	int i;
+
+#ifdef NCURSES
+	if(output_methods & TO_NCURSES) {
+		delwin(stdscr);
+		endwin();
+	}
+#endif
 	conftree_empty(currentconffile);
 	currentconffile = NULL;
 	if(memtofree1) {
@@ -8020,7 +8041,7 @@ int x11_error_handler(Display *d, XErrorEvent *err)
 	__attribute__((noreturn));
 int x11_error_handler(Display *d, XErrorEvent *err)
 {
-	ERR("X Error: type %i Display %lx XID %li serial %lu error_code %i request_code %i minor_code %i other Display: %lx\n",
+	NORM_ERR("X Error: type %i Display %lx XID %li serial %lu error_code %i request_code %i minor_code %i other Display: %lx\n",
 			err->type,
 			(long unsigned)err->display,
 			(long)err->resourceid,
@@ -8037,7 +8058,7 @@ int x11_ioerror_handler(Display *d)
 	__attribute__((noreturn));
 int x11_ioerror_handler(Display *d)
 {
-	ERR("X Error: Display %lx\n",
+	NORM_ERR("X Error: Display %lx\n",
 			(long unsigned)d
 			);
 	abort();
@@ -8095,7 +8116,7 @@ static void X11_create_window(void)
 		x11_stuff.region = XCreateRegion();
 #ifdef HAVE_XDAMAGE
 		if (!XDamageQueryExtension(display, &x11_stuff.event_base, &x11_stuff.error_base)) {
-			ERR("Xdamage extension unavailable");
+			NORM_ERR("Xdamage extension unavailable");
 		}
 		x11_stuff.damage = XDamageCreate(display, window.window, XDamageReportNonEmpty);
 		x11_stuff.region2 = XFixesCreateRegionFromWindow(display, window.window, 0);
@@ -8112,8 +8133,8 @@ static void X11_create_window(void)
 }
 #endif /* X11 */
 
-#define CONF_ERR ERR("%s: %d: config file error", f, line)
-#define CONF_ERR2(a) ERR("%s: %d: config file error: %s", f, line, a)
+#define CONF_ERR NORM_ERR("%s: %d: config file error", f, line)
+#define CONF_ERR2(a) NORM_ERR("%s: %d: config file error: %s", f, line, a)
 #define CONF2(a) if (strcasecmp(name, a) == 0)
 #define CONF(a) else CONF2(a)
 #define CONF3(a, b) else if (strcasecmp(name, a) == 0 \
@@ -8453,8 +8474,11 @@ char load_config_file(const char *f)
 		}
 #endif /* X11 */
 		CONF("out_to_console") {
-			if(string_to_bool(value))
+			if(string_to_bool(value)) {
 				output_methods |= TO_STDOUT;
+			} else {
+				output_methods &= ~TO_STDOUT;
+			}
 		}
 		CONF("extra_newline") {
 			extra_newline = string_to_bool(value);
@@ -8463,6 +8487,14 @@ char load_config_file(const char *f)
 			if(string_to_bool(value))
 				output_methods |= TO_STDERR;
 		}
+#ifdef NCURSES
+		CONF("out_to_ncurses") {
+			if(string_to_bool(value)) {
+				initscr();
+				output_methods |= TO_NCURSES;
+			}
+		}
+#endif
 		CONF("overwrite_file") {
 			if(overwrite_file) {
 				free(overwrite_file);
@@ -8472,7 +8504,7 @@ char load_config_file(const char *f)
 				overwrite_file = strdup(value);
 				output_methods |= OVERWRITE_FILE;
 			} else
-				ERR("overwrite_file won't be able to create/overwrite '%s'", value);
+				NORM_ERR("overwrite_file won't be able to create/overwrite '%s'", value);
 		}
 		CONF("append_file") {
 			if(append_file) {
@@ -8483,7 +8515,7 @@ char load_config_file(const char *f)
 				append_file = strdup(value);
 				output_methods |= APPEND_FILE;
 			} else
-				ERR("append_file won't be able to create/append '%s'", value);
+				NORM_ERR("append_file won't be able to create/append '%s'", value);
 		}
 		CONF("use_spacer") {
 			if (value) {
@@ -8495,7 +8527,7 @@ char load_config_file(const char *f)
 					use_spacer = NO_SPACER;
 				} else {
 					use_spacer = string_to_bool(value);
-					ERR("use_spacer should have an argument of left, right, or"
+					NORM_ERR("use_spacer should have an argument of left, right, or"
 						" none.  '%s' seems to be some form of '%s', so"
 						" defaulting to %s.", value,
 						use_spacer ? "true" : "false",
@@ -8507,7 +8539,7 @@ char load_config_file(const char *f)
 					}
 				}
 			} else {
-				ERR("use_spacer should have an argument. Defaulting to right.");
+				NORM_ERR("use_spacer should have an argument. Defaulting to right.");
 				use_spacer = RIGHT_SPACER;
 			}
 		}
@@ -8531,7 +8563,7 @@ char load_config_file(const char *f)
 #else
 		CONF("use_xft") {
 			if (string_to_bool(value)) {
-				ERR("Xft not enabled at compile time");
+				NORM_ERR("Xft not enabled at compile time");
 			}
 		}
 		CONF("xftfont") {
@@ -8774,7 +8806,7 @@ char load_config_file(const char *f)
 			if (value) {
 				text_buffer_size = atoi(value);
 				if (text_buffer_size < DEFAULT_TEXT_BUFFER_SIZE) {
-					ERR("text_buffer_size must be >=%i bytes", DEFAULT_TEXT_BUFFER_SIZE);
+					NORM_ERR("text_buffer_size must be >=%i bytes", DEFAULT_TEXT_BUFFER_SIZE);
 					text_buffer_size = DEFAULT_TEXT_BUFFER_SIZE;
 				}
 			} else {
@@ -8850,7 +8882,7 @@ char load_config_file(const char *f)
 #endif
 		CONF("if_up_strictness") {
 			if (!value) {
-				ERR("incorrect if_up_strictness value, defaulting to 'up'");
+				NORM_ERR("incorrect if_up_strictness value, defaulting to 'up'");
 				ifup_strictness = IFUP_UP;
 			} else if (strcasecmp(value, "up") == EQUAL) {
 				ifup_strictness = IFUP_UP;
@@ -8859,16 +8891,16 @@ char load_config_file(const char *f)
 			} else if (strcasecmp(value, "address") == EQUAL) {
 				ifup_strictness = IFUP_ADDR;
 			} else {
-				ERR("incorrect if_up_strictness value, defaulting to 'up'");
+				NORM_ERR("incorrect if_up_strictness value, defaulting to 'up'");
 				ifup_strictness = IFUP_UP;
 			}
 		}
 
 		CONF("temperature_unit") {
 			if (!value) {
-				ERR("config option 'temperature_unit' needs an argument, either 'celsius' or 'fahrenheit'");
+				NORM_ERR("config option 'temperature_unit' needs an argument, either 'celsius' or 'fahrenheit'");
 			} else if (set_temp_output_unit(value)) {
-				ERR("temperature_unit: incorrect argument");
+				NORM_ERR("temperature_unit: incorrect argument");
 			}
 		}
 
@@ -8918,7 +8950,7 @@ char load_config_file(const char *f)
 		CONF("own_window_colour") {}
 
 		else {
-			ERR("%s: %d: no such configuration: '%s'", f, line, name);
+			NORM_ERR("%s: %d: no such configuration: '%s'", f, line, name);
 		}
 	}
 
@@ -9092,7 +9124,7 @@ static void load_config_file_x11(const char *f)
 				if (value) {
 					background_colour = get_x11_color(value);
 				} else {
-					ERR("Invalid colour for own_window_colour (try omitting the "
+					NORM_ERR("Invalid colour for own_window_colour (try omitting the "
 						"'#' for hex colours");
 				}
 			}
@@ -9206,7 +9238,7 @@ void initialisation(int argc, char **argv) {
 
 	/* init specials array */
 	if ((specials = calloc(sizeof(struct special_t), max_specials)) == 0) {
-		ERR("failed to create specials array");
+		NORM_ERR("failed to create specials array");
 	}
 
 #ifdef MAIL_FILE
@@ -9326,7 +9358,7 @@ void initialisation(int argc, char **argv) {
 
 		switch (pid) {
 			case -1:
-				ERR(PACKAGE_NAME": couldn't fork() to background: %s",
+				NORM_ERR(PACKAGE_NAME": couldn't fork() to background: %s",
 					strerror(errno));
 				break;
 
@@ -9375,7 +9407,7 @@ void initialisation(int argc, char **argv) {
 			||	sigaction(SIGUSR1, &act, &oact) < 0
 			||	sigaction(SIGHUP,  &act, &oact) < 0
 			||	sigaction(SIGTERM, &act, &oact) < 0) {
-		ERR("error setting signal handler: %s", strerror(errno));
+		NORM_ERR("error setting signal handler: %s", strerror(errno));
 	}
 
 }
@@ -9407,7 +9439,7 @@ int main(int argc, char **argv)
 			|| ((s = getenv("LANG")) && *s)) {
 		temp = (char *) malloc((strlen(s) + 1) * sizeof(char));
 		if (temp == NULL) {
-			ERR("malloc failed");
+			NORM_ERR("malloc failed");
 		}
 		for (x = 0; x < strlen(s); x++) {
 			temp[x] = tolower(s[x]);
@@ -9420,7 +9452,7 @@ int main(int argc, char **argv)
 		free(temp);
 	}
 	if (!setlocale(LC_CTYPE, "")) {
-		ERR("Can't set the specified locale!\nCheck LANG, LC_CTYPE, LC_ALL.");
+		NORM_ERR("Can't set the specified locale!\nCheck LANG, LC_CTYPE, LC_ALL.");
 	}
 #endif /* X11 */
 	while (1) {
@@ -9472,7 +9504,7 @@ int main(int argc, char **argv)
 		struct stat sb;
 		if (stat(current_config, &sb) ||
 				(!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
-			ERR("invalid configuration file '%s'\n", current_config);
+			NORM_ERR("invalid configuration file '%s'\n", current_config);
 			free(current_config);
 			current_config = 0;
 		}
@@ -9502,7 +9534,7 @@ int main(int argc, char **argv)
 		if (!current_config) {
 #ifdef CONFIG_OUTPUT
 			current_config = strdup("==builtin==");
-			ERR("no readable personal or system-wide config file found,"
+			NORM_ERR("no readable personal or system-wide config file found,"
 					" using builtin default");
 #else
 			CRIT_ERR(NULL, NULL, "no readable personal or system-wide config file found");

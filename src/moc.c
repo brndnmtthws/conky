@@ -123,12 +123,12 @@ int run_moc_thread(double interval)
 
 	moc_thread = timed_thread_create(&update_moc, NULL, interval);
 	if (!moc_thread) {
-		ERR("Failed to create MOC timed thread");
+		NORM_ERR("Failed to create MOC timed thread");
 		return 1;
 	}
 	timed_thread_register(moc_thread, &moc_thread);
 	if (timed_thread_run(moc_thread)) {
-		ERR("Failed to run MOC timed thread");
+		NORM_ERR("Failed to run MOC timed thread");
 		return 2;
 	}
 	return 0;

@@ -41,7 +41,7 @@ static void update_kstat()
 	if (kstat == NULL) {
 		kstat = kstat_open();
 		if (kstat == NULL) {
-			ERR("can't open kstat: %s", strerror(errno));
+			NORM_ERR("can't open kstat: %s", strerror(errno));
 		}
 	}
 

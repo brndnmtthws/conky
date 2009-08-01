@@ -137,7 +137,7 @@ char *get_hddtemp_info(char *dev, char *hostaddr, int port)
 #ifdef HAVE_GETHOSTBYNAME_R
 	if (gethostbyname_r(hostaddr, &he, hostbuff,
 	                    sizeof(hostbuff), &he_res, &he_errno)) {
-		ERR("hddtemp gethostbyname_r: %s", hstrerror(h_errno));
+		NORM_ERR("hddtemp gethostbyname_r: %s", hstrerror(h_errno));
 #else /* HAVE_GETHOSTBYNAME_R */
 	if (!(he_res = gethostbyname(hostaddr))) {
 		perror("gethostbyname()");
@@ -175,7 +175,7 @@ char *get_hddtemp_info(char *dev, char *hostaddr, int port)
 			perror("select");
 		}
 	} else if (i == 0) { /* select() timeouted */
-		ERR("hddtemp had nothing for us");
+		NORM_ERR("hddtemp had nothing for us");
 		goto GET_OUT;
 	}
 
@@ -192,7 +192,7 @@ char *get_hddtemp_info(char *dev, char *hostaddr, int port)
 	} while (i > 0 && p < buf + BUFLEN - 1);
 
 	if (len < 2) {
-		ERR("hddtemp returned nada");
+		NORM_ERR("hddtemp returned nada");
 		goto GET_OUT;
 	}
 

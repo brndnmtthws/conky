@@ -491,6 +491,17 @@
     <varlistentry>
         <term>
             <command>
+                <option>out_to_ncurses</option>
+            </command>
+        </term>
+        <listitem>Print text in the console, but use ncurses so that
+        conky can print the text of a new update over the old text.
+        (In the future this will provide more useful things)
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>out_to_stderr</option>
             </command>
         </term>

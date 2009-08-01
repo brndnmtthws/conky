@@ -183,7 +183,7 @@ void update_apcupsd(void) {
 		}
 #ifdef HAVE_GETHOSTBYNAME_R
 		if (gethostbyname_r(info.apcupsd.host, &he_mem, hostbuff, sizeof(hostbuff), &he, &he_errno)) {
-			ERR("APCUPSD gethostbyname_r: %s", hstrerror(h_errno));
+			NORM_ERR("APCUPSD gethostbyname_r: %s", hstrerror(h_errno));
 			break;
 		}
 #else /* HAVE_GETHOSTBYNAME_R */

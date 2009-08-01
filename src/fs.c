@@ -99,7 +99,7 @@ struct fs_stat *prepare_fs_stat(const char *s)
 	}
 	/* new path */
 	if (!new) {
-		ERR("too many fs stats");
+		NORM_ERR("too many fs stats");
 		return 0;
 	}
 	strncpy(new->path, s, DEFAULT_TEXT_BUFFER_SIZE);
@@ -123,7 +123,7 @@ static void update_fs_stat(struct fs_stat *fs)
 		fs->avail = 0;
 		fs->free = 0;
 		strncpy(fs->type, "unknown", DEFAULT_TEXT_BUFFER_SIZE);
-		ERR("statfs '%s': %s", fs->path, strerror(errno));
+		NORM_ERR("statfs '%s': %s", fs->path, strerror(errno));
 	}
 }
 
@@ -136,7 +136,7 @@ void get_fs_type(const char *path, char *result)
 	if (statfs(path, &s) == 0) {
 		strncpy(result, s.f_fstypename, DEFAULT_TEXT_BUFFER_SIZE);
 	} else {
-		ERR("statfs '%s': %s", path, strerror(errno));
+		NORM_ERR("statfs '%s': %s", path, strerror(errno));
 	}
 	return;
 
@@ -149,7 +149,7 @@ void get_fs_type(const char *path, char *result)
 	char *slash;
 
 	if (mtab == NULL) {
-		ERR("setmntent /etc/mtab: %s", strerror(errno));
+		NORM_ERR("setmntent /etc/mtab: %s", strerror(errno));
 		strncpy(result, "unknown", DEFAULT_TEXT_BUFFER_SIZE);
 		return;
 	}

@@ -89,7 +89,7 @@ static int kvm_init()
 
 	kd = kvm_open(NULL, NULL, NULL, KVM_NO_FILES, NULL);
 	if (kd == NULL) {
-		ERR("error opening kvm");
+		NORM_ERR("error opening kvm");
 	} else {
 		init_kvm = 1;
 	}
@@ -152,7 +152,7 @@ void update_uptime()
 		time(&now);
 		info.uptime = now - boottime.tv_sec;
 	} else {
-		ERR("Could not get uptime");
+		NORM_ERR("Could not get uptime");
 		info.uptime = 0;
 	}
 }
@@ -324,7 +324,7 @@ void get_cpu_count()
 	size_t len = sizeof(cpu_count);
 
 	if (sysctl(mib, 2, &cpu_count, &len, NULL, 0) != 0) {
-		ERR("error getting cpu count, defaulting to 1");
+		NORM_ERR("error getting cpu count, defaulting to 1");
 	}
 #endif
 	info.cpu_count = cpu_count;
@@ -363,7 +363,7 @@ void update_cpu_usage()
 
 #ifdef OLDCPU
 	if (sysctl(mib, 2, &cp_time, &len, NULL, 0) < 0) {
-		ERR("Cannot get kern.cp_time");
+		NORM_ERR("Cannot get kern.cp_time");
 	}
 
 	fresh.load[0] = cp_time[CP_USER];
@@ -391,7 +391,7 @@ void update_cpu_usage()
 			int cp_time_mib[] = { CTL_KERN, KERN_CPTIME2, i };
 			if (sysctl(cp_time_mib, 3, &(fresh[i * CPUSTATES]), &size, NULL, 0)
 					< 0) {
-				ERR("sysctl kern.cp_time2 failed");
+				NORM_ERR("sysctl kern.cp_time2 failed");
 			}
 		}
 	} else {
@@ -400,7 +400,7 @@ void update_cpu_usage()
 
 		size = sizeof(cp_time_tmp);
 		if (sysctl(cp_time_mib, 2, cp_time_tmp, &size, NULL, 0) < 0) {
-			ERR("sysctl kern.cp_time failed");
+			NORM_ERR("sysctl kern.cp_time failed");
 		}
 
 		for (i = 0; i < CPUSTATES; i++) {
@@ -514,7 +514,7 @@ void get_obsd_vendor(char *buf, size_t client_buffer_size)
 	size_t size = sizeof(vendor);
 
 	if (sysctl(mib, 2, vendor, &size, NULL, 0) == -1) {
-		ERR("error reading vendor");
+		NORM_ERR("error reading vendor");
 		snprintf(buf, client_buffer_size, "unknown");
 	} else {
 		snprintf(buf, client_buffer_size, "%s", vendor);
@@ -532,7 +532,7 @@ void get_obsd_product(char *buf, size_t client_buffer_size)
 	size_t size = sizeof(product);
 
 	if (sysctl(mib, 2, product, &size, NULL, 0) == -1) {
-		ERR("error reading product");
+		NORM_ERR("error reading product");
 		snprintf(buf, client_buffer_size, "unknown");
 	} else {
 		snprintf(buf, client_buffer_size, "%s", product);
@@ -724,7 +724,7 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 	size_t size = sizeof(usermem);
 
 	if (sysctl(mib, 2, &usermem, &size, NULL, 0) == -1) {
-		ERR("error reading usermem");
+		NORM_ERR("error reading usermem");
 	}
 
 	/* translate bytes into page count */

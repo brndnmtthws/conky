@@ -126,12 +126,12 @@ void update_mpd(void)
 	interval = info.music_player_interval * 1000000;
 	thread = timed_thread_create(&update_mpd_thread, &thread, interval);
 	if (!thread) {
-		ERR("Failed to create MPD timed thread");
+		NORM_ERR("Failed to create MPD timed thread");
 		return;
 	}
 	timed_thread_register(thread, &thread);
 	if (timed_thread_run(thread))
-		ERR("Failed to run MPD timed thread");
+		NORM_ERR("Failed to run MPD timed thread");
 }
 
 /* stringMAXdup dups at most text_buffer_size bytes */
@@ -157,7 +157,7 @@ static void *update_mpd_thread(void *arg)
 		timed_thread_lock(me);
 
 		if (conn->error || conn == NULL) {
-			ERR("MPD error: %s\n", conn->errorStr);
+			NORM_ERR("MPD error: %s\n", conn->errorStr);
 			mpd_closeConnection(conn);
 			conn = 0;
 			clear_mpd();
@@ -172,7 +172,7 @@ static void *update_mpd_thread(void *arg)
 
 		mpd_sendStatusCommand(conn);
 		if ((status = mpd_getStatus(conn)) == NULL) {
-			ERR("MPD error: %s\n", conn->errorStr);
+			NORM_ERR("MPD error: %s\n", conn->errorStr);
 			mpd_closeConnection(conn);
 			conn = 0;
 			clear_mpd();

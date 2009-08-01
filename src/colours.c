@@ -53,7 +53,7 @@ static void set_up_gradient(void)
 		colour_depth = 16;
 	}
 	if (colour_depth != 24 && colour_depth != 16) {
-		ERR("using non-standard colour depth, gradients may look like a "
+		NORM_ERR("using non-standard colour depth, gradients may look like a "
 			"lolly-pop");
 	}
 

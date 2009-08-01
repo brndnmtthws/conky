@@ -143,7 +143,7 @@ void llua_load(const char *script)
 	to_real_path(path, script);
 	error = luaL_dofile(lua_L, path);
 	if (error) {
-		ERR("llua_load: %s", lua_tostring(lua_L, -1));
+		NORM_ERR("llua_load: %s", lua_tostring(lua_L, -1));
 		lua_pop(lua_L, 1);
 #ifdef HAVE_SYS_INOTIFY_H
 	} else if (!llua_block_notify && inotify_fd != -1) {
@@ -192,7 +192,7 @@ char *llua_do_call(const char *string, int retc)
 	free(tmp);
 
 	if(lua_pcall(lua_L, argc, retc, 0) != 0) {
-		ERR("llua_do_call: function %s execution failed: %s", func, lua_tostring(lua_L, -1));
+		NORM_ERR("llua_do_call: function %s execution failed: %s", func, lua_tostring(lua_L, -1));
 		lua_pop(lua_L, -1);
 		return NULL;
 	}
@@ -215,7 +215,7 @@ char *llua_do_read_call(const char *function, const char *arg, int retc)
 	lua_pushstring(lua_L, arg);
 
 	if (lua_pcall(lua_L, 1, retc, 0) != 0) {
-		ERR("llua_do_call: function %s execution failed: %s", func, lua_tostring(lua_L, -1));
+		NORM_ERR("llua_do_call: function %s execution failed: %s", func, lua_tostring(lua_L, -1));
 		lua_pop(lua_L, -1);
 		return NULL;
 	}
@@ -233,7 +233,7 @@ char *llua_getstring(const char *args)
 	func = llua_do_call(args, 1);
 	if (func) {
 		if (!lua_isstring(lua_L, -1)) {
-			ERR("llua_getstring: function %s didn't return a string, result discarded", func);
+			NORM_ERR("llua_getstring: function %s didn't return a string, result discarded", func);
 		} else {
 			ret = strdup(lua_tostring(lua_L, -1));
 			lua_pop(lua_L, 1);
@@ -253,7 +253,7 @@ char *llua_getstring_read(const char *function, const char *arg)
 	func = llua_do_read_call(function, arg, 1);
 	if (func) {
 		if(!lua_isstring(lua_L, -1)) {
-			ERR("llua_getstring_read: function %s didn't return a string, result discarded", func);
+			NORM_ERR("llua_getstring_read: function %s didn't return a string, result discarded", func);
 		} else {
 			ret = strdup(lua_tostring(lua_L, -1));
 			lua_pop(lua_L, 1);
@@ -272,7 +272,7 @@ int llua_getnumber(const char *args, double *ret)
 	func = llua_do_call(args, 1);
 	if(func) {
 		if(!lua_isnumber(lua_L, -1)) {
-			ERR("llua_getnumber: function %s didn't return a number, result discarded", func);
+			NORM_ERR("llua_getnumber: function %s didn't return a number, result discarded", func);
 		} else {
 			*ret = lua_tonumber(lua_L, -1);
 			lua_pop(lua_L, 1);
@@ -366,7 +366,7 @@ void llua_inotify_query(int wd, int mask)
 				llua_block_notify = 1;
 				llua_load(head->name);
 				llua_block_notify = 0;
-				ERR("Lua script '%s' reloaded", head->name);
+				NORM_ERR("Lua script '%s' reloaded", head->name);
 				if (mask & IN_IGNORED) {
 					/* for some reason we get IN_IGNORED here
 					 * sometimes, so we need to re-add the watch */

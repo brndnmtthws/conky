@@ -462,7 +462,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 			}
 		}
 		if (!use_xdbe) {
-			ERR("failed to set up double buffer");
+			NORM_ERR("failed to set up double buffer");
 		}
 	}
 	if (!use_xdbe) {
@@ -545,12 +545,12 @@ long get_x11_color(const char *name)
 		/* now lets try again */
 		if (!XParseColor(display, DefaultColormap(display, screen), &newname[0],
 					&color)) {
-			ERR("can't parse X color '%s'", name);
+			NORM_ERR("can't parse X color '%s'", name);
 			return 0xFF00FF;
 		}
 	}
 	if (!XAllocColor(display, DefaultColormap(display, screen), &color)) {
-		ERR("can't allocate X color '%s'", name);
+		NORM_ERR("can't allocate X color '%s'", name);
 	}
 
 	return (long) color.pixel;

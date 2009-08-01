@@ -223,7 +223,7 @@ int mixer_init(const char *name)
 	if (mixer_fd <= 0) {
 		mixer_fd = open(MIXER_DEV, O_RDONLY);
 		if (mixer_fd == -1) {
-			ERR("can't open %s: %s", MIXER_DEV, strerror(errno));
+			NORM_ERR("can't open %s: %s", MIXER_DEV, strerror(errno));
 			return -1;
 		}
 	}
@@ -244,7 +244,7 @@ static int mixer_get(int i)
 
 	if (ioctl(mixer_fd, MIXER_READ(i), &val) == -1) {
 		if (!rep) {
-			ERR("mixer ioctl: %s", strerror(errno));
+			NORM_ERR("mixer ioctl: %s", strerror(errno));
 		}
 		rep = 1;
 		return 0;

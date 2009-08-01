@@ -138,7 +138,7 @@ void ccurl_fetch_data(ccurl_location_t *curloc)
 			timed_thread_unlock(curloc->p_timed_thread);
 			free(chunk.memory);
 		} else {
-			ERR("curl: no data from server");
+			NORM_ERR("curl: no data from server");
 		}
 
 		curl_easy_cleanup(curl);
@@ -157,12 +157,12 @@ void ccurl_init_thread(ccurl_location_t *curloc, int interval)
 				(void *)curloc, interval * 1000000);
 
 	if (!curloc->p_timed_thread) {
-		ERR("curl thread: error creating timed thread");
+		NORM_ERR("curl thread: error creating timed thread");
 	}
 	timed_thread_register(curloc->p_timed_thread,
 			&curloc->p_timed_thread);
 	if (timed_thread_run(curloc->p_timed_thread)) {
-		ERR("curl thread: error running timed thread");
+		NORM_ERR("curl thread: error running timed thread");
 	}
 }
 
@@ -209,7 +209,7 @@ void ccurl_process_info(char *p, int p_max_size, char *uri, int interval)
 		curloc->process_function = &ccurl_parse_data;
 		ccurl_init_thread(curloc, interval);
 		if (!curloc->p_timed_thread) {
-			ERR("error setting up curl thread");
+			NORM_ERR("error setting up curl thread");
 		}
 	}
 

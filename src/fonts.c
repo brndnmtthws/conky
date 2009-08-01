@@ -175,13 +175,13 @@ void load_fonts(void)
 				continue;
 			}
 
-			ERR("can't load Xft font '%s'", fonts[i].name);
+			NORM_ERR("can't load Xft font '%s'", fonts[i].name);
 			if ((fonts[i].xftfont = XftFontOpenName(display, screen,
 					"courier-12")) != NULL) {
 				continue;
 			}
 
-			ERR("can't load Xft font '%s'", "courier-12");
+			NORM_ERR("can't load Xft font '%s'", "courier-12");
 
 			if ((fonts[i].font = XLoadQueryFont(display, "fixed")) == NULL) {
 				CRIT_ERR(NULL, NULL, "can't load font '%s'", "fixed");
@@ -193,7 +193,7 @@ void load_fonts(void)
 #endif
 		/* load normal font */
 		if (!fonts[i].font && (fonts[i].font = XLoadQueryFont(display, fonts[i].name)) == NULL) {
-			ERR("can't load font '%s'", fonts[i].name);
+			NORM_ERR("can't load font '%s'", fonts[i].name);
 			if ((fonts[i].font = XLoadQueryFont(display, "fixed")) == NULL) {
 				CRIT_ERR(NULL, NULL, "can't load font '%s'", "fixed");
 			}

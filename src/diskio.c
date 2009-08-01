@@ -85,7 +85,7 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 	snprintf(stat_name, text_buffer_size, "/dev/%s", device_name);
 
 	if (stat(stat_name, &sb)) {
-		ERR("diskio device '%s' does not exist", s);
+		NORM_ERR("diskio device '%s' does not exist", s);
 		return 0;
 	}
 

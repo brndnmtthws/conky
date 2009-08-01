@@ -77,11 +77,11 @@ void update_mail_count(struct local_mail_s *mail)
 		mail->last_update = current_update_time;
 	}
 
-	if (stat(mail->box, &st)) {
+	if (stat(mail->mbox, &st)) {
 		static int rep = 0;
 
 		if (!rep) {
-			ERR("can't stat %s: %s", mail->box, strerror(errno));
+			NORM_ERR("can't stat %s: %s", mail->mbox, strerror(errno));
 			rep = 1;
 		}
 		return;
@@ -100,19 +100,19 @@ void update_mail_count(struct local_mail_s *mail)
 		mail->forwarded_mail_count = mail->unforwarded_mail_count = 0;
 		mail->replied_mail_count = mail->unreplied_mail_count = 0;
 		mail->draft_mail_count = mail->trashed_mail_count = 0;
-		dirname = (char *) malloc(sizeof(char) * (strlen(mail->box) + 5));
+		dirname = (char *) malloc(sizeof(char) * (strlen(mail->mbox) + 5));
 		if (!dirname) {
-			ERR("malloc");
+			NORM_ERR("malloc");
 			return;
 		}
-		strcpy(dirname, mail->box);
+		strcpy(dirname, mail->mbox);
 		strcat(dirname, "/");
 		/* checking the cur subdirectory */
 		strcat(dirname, "cur");
 
 		dir = opendir(dirname);
 		if (!dir) {
-			ERR("cannot open directory");
+			NORM_ERR("cannot open directory");
 			free(dirname);
 			return;
 		}
@@ -123,7 +123,7 @@ void update_mail_count(struct local_mail_s *mail)
 				mail->mail_count++;
 				mailflags = (char *) malloc(sizeof(char) * strlen(strrchr(dirent->d_name, ',')));
 				if (!mailflags) {
-					ERR("malloc");
+					NORM_ERR("malloc");
 					free(dirname);
 					return;
 				}
@@ -166,7 +166,7 @@ void update_mail_count(struct local_mail_s *mail)
 
 		dir = opendir(dirname);
 		if (!dir) {
-			ERR("cannot open directory");
+			NORM_ERR("cannot open directory");
 			free(dirname);
 			return;
 		}
@@ -205,7 +205,7 @@ void update_mail_count(struct local_mail_s *mail)
 		mail->replied_mail_count = mail->unreplied_mail_count = -1;
 		mail->draft_mail_count = mail->trashed_mail_count = -1;
 
-		fp = open_file(mail->box, &rep);
+		fp = open_file(mail->mbox, &rep);
 		if (!fp) {
 			return;
 		}
@@ -307,9 +307,9 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 	if (sscanf(arg, "%128s %128s %128s", mail->host, mail->user, mail->pass)
 			!= 3) {
 		if (type == POP3_TYPE) {
-			ERR("Scanning POP3 args failed");
+			NORM_ERR("Scanning POP3 args failed");
 		} else if (type == IMAP_TYPE) {
-			ERR("Scanning IMAP args failed");
+			NORM_ERR("Scanning IMAP args failed");
 		}
 		return 0;
 	}
@@ -420,7 +420,7 @@ int imap_check_status(char *recvbuf, struct mail_s *mail)
 	reply += 2;
 	*strchr(reply, ')') = '\0';
 	if (reply == NULL) {
-		ERR("Error parsing IMAP response: %s", recvbuf);
+		NORM_ERR("Error parsing IMAP response: %s", recvbuf);
 		return -1;
 	} else {
 		timed_thread_lock(mail->p_timed_thread);
@@ -461,7 +461,7 @@ void *imap_thread(void *arg)
 
 #ifdef HAVE_GETHOSTBYNAME_R
 	if (gethostbyname_r(mail->host, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
-		ERR("IMAP gethostbyname_r: %s", hstrerror(h_errno));
+		NORM_ERR("IMAP gethostbyname_r: %s", hstrerror(h_errno));
 		exit(EXIT_FAILURE);
 	}
 #else /* HAVE_GETHOSTBYNAME_R */
@@ -476,7 +476,7 @@ void *imap_thread(void *arg)
 		fd_set fdset;
 
 		if (fail > 0) {
-			ERR("Trying IMAP connection again for %s@%s (try %u/%u)",
+			NORM_ERR("Trying IMAP connection again for %s@%s (try %u/%u)",
 					mail->user, mail->host, fail + 1, mail->retries);
 		}
 		do {
@@ -513,14 +513,14 @@ void *imap_thread(void *arg)
 					break;
 				}
 			} else {
-				ERR("IMAP connection failed: timeout");
+				NORM_ERR("IMAP connection failed: timeout");
 				fail++;
 				break;
 			}
 			recvbuf[numbytes] = '\0';
 			DBGP2("imap_thread() received: %s", recvbuf);
 			if (strstr(recvbuf, "* OK") != recvbuf) {
-				ERR("IMAP connection failed, probably not an IMAP server");
+				NORM_ERR("IMAP connection failed, probably not an IMAP server");
 				fail++;
 				break;
 			}
@@ -706,7 +706,7 @@ void *imap_thread(void *arg)
 				recvbuf[numbytes] = '\0';
 				DBGP2("imap_thread() received: %s", recvbuf);
 				if (strstr(recvbuf, "a3 OK") == NULL) {
-					ERR("IMAP logout failed: %s", recvbuf);
+					NORM_ERR("IMAP logout failed: %s", recvbuf);
 					fail++;
 					break;
 				}
@@ -770,7 +770,7 @@ void *pop3_thread(void *arg)
 
 #ifdef HAVE_GETHOSTBYNAME_R
 	if (gethostbyname_r(mail->host, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
-		ERR("POP3 gethostbyname_r: %s", hstrerror(h_errno));
+		NORM_ERR("POP3 gethostbyname_r: %s", hstrerror(h_errno));
 		exit(EXIT_FAILURE);
 	}
 #else /* HAVE_GETHOSTBYNAME_R */
@@ -785,7 +785,7 @@ void *pop3_thread(void *arg)
 		fd_set fdset;
 
 		if (fail > 0) {
-			ERR("Trying POP3 connection again for %s@%s (try %u/%u)",
+			NORM_ERR("Trying POP3 connection again for %s@%s (try %u/%u)",
 					mail->user, mail->host, fail + 1, mail->retries);
 		}
 		do {
@@ -822,14 +822,14 @@ void *pop3_thread(void *arg)
 					break;
 				}
 			} else {
-				ERR("POP3 connection failed: timeout\n");
+				NORM_ERR("POP3 connection failed: timeout\n");
 				fail++;
 				break;
 			}
 			DBGP2("pop3_thread received: %s", recvbuf);
 			recvbuf[numbytes] = '\0';
 			if (strstr(recvbuf, "+OK ") != recvbuf) {
-				ERR("POP3 connection failed, probably not a POP3 server");
+				NORM_ERR("POP3 connection failed, probably not a POP3 server");
 				fail++;
 				break;
 			}
@@ -845,7 +845,7 @@ void *pop3_thread(void *arg)
 			strncat(sendbuf, mail->pass, MAXDATASIZE - strlen(sendbuf) - 1);
 			strncat(sendbuf, "\r\n", MAXDATASIZE - strlen(sendbuf) - 1);
 			if (pop3_command(sockfd, sendbuf, recvbuf, "+OK ")) {
-				ERR("POP3 server login failed: %s", recvbuf);
+				NORM_ERR("POP3 server login failed: %s", recvbuf);
 				fail++;
 				break;
 			}
@@ -860,7 +860,7 @@ void *pop3_thread(void *arg)
 			// now we get the data
 			reply = recvbuf + 4;
 			if (reply == NULL) {
-				ERR("Error parsing POP3 response: %s", recvbuf);
+				NORM_ERR("Error parsing POP3 response: %s", recvbuf);
 				fail++;
 				break;
 			} else {
@@ -871,7 +871,7 @@ void *pop3_thread(void *arg)
 			
 			strncpy(sendbuf, "QUIT\r\n", MAXDATASIZE);
 			if (pop3_command(sockfd, sendbuf, recvbuf, "+OK")) {
-				ERR("POP3 logout failed: %s", recvbuf);
+				NORM_ERR("POP3 logout failed: %s", recvbuf);
 				fail++;
 				break;
 			}

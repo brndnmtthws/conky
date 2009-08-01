@@ -71,7 +71,7 @@ void cimlib_set_cache_flush_interval(long interval)
 	if (interval >= 0) {
 		cimlib_cache_flush_interval = interval;
 	} else {
-		ERR("Imlib2: flush interval should be >= 0");
+		NORM_ERR("Imlib2: flush interval should be >= 0");
 	}
 }
 
@@ -110,7 +110,7 @@ void cimlib_add_image(const char *args)
 	memset(cur, 0, sizeof(struct image_list_s));
 
 	if (!sscanf(args, "%1023s", cur->name)) {
-		ERR("Invalid args for $image.  Format is: '<path to image> (-p x,y) (-s WxH) (-n) (-f interval)' (got '%s')", args);
+		NORM_ERR("Invalid args for $image.  Format is: '<path to image> (-p x,y) (-s WxH) (-n) (-f interval)' (got '%s')", args);
 		free(cur);
 		return;
 	}
@@ -142,7 +142,7 @@ void cimlib_add_image(const char *args)
 		}
 	}
 	if (cur->flush_interval < 0) {
-		ERR("Imlib2: flush interval should be >= 0");
+		NORM_ERR("Imlib2: flush interval should be >= 0");
 		cur->flush_interval = 0;
 	}
 
@@ -163,7 +163,7 @@ cimlib_draw_image(struct image_list_s *cur, int *clip_x,
 
 	image = imlib_load_image(cur->name);
 	if (!image) {
-		ERR("Unable to load image '%s'", cur->name);
+		NORM_ERR("Unable to load image '%s'", cur->name);
 		return;
 	}
 
