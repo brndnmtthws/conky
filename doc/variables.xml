@@ -1729,10 +1729,12 @@
             </command>
             <option>path</option>
         </term>
-        <listitem>Loads the configfile at path, places the configsettings
-        behind the configsettings in the orginal config and places the
-        vars where the includevar stood.
-        <para /></listitem>
+        <listitem>
+            <para>Loads the configfile at path, places the
+            configsettings behind the configsettings in the orginal
+            config and places the vars where the includevar
+            stood.</para>
+        </listitem>
     </varlistentry>
     <varlistentry>
         <term>

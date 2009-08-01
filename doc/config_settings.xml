@@ -319,10 +319,11 @@
                 <option>imlib_cache_size</option>
             </command>
         </term>
-        <listitem>Imlib2 image cache size, in bytes. Defaults to
-        4MiB. Increase this value if you use $image lots. Set to 0
-        to disable the image cache. 
-        <para /></listitem>
+        <listitem>
+            <para>Imlib2 image cache size, in bytes. Defaults to
+            4MiB. Increase this value if you use $image lots. Set
+            to 0 to disable the image cache.</para>
+        </listitem>
     </varlistentry>
     <varlistentry>
         <term>
@@ -336,7 +337,10 @@
             Conky through each iteration after drawing to the
             window. Requires X support. Takes any number of
             optional arguments. Use this hook for drawing things on
-            top of what Conky draws.</para>
+            top of what Conky draws. Conky puts 'conky_' in front
+            of function_name to prevent accidental calls to the
+            wrong function unless you put you place 'conky_' in
+            front of it yourself.</para>
         </listitem>
     </varlistentry>
     <varlistentry>
@@ -351,7 +355,10 @@
             Conky through each iteration before drawing to the
             window. Requires X support. Takes any number of
             optional arguments. Use this hook for drawing things on
-            top of what Conky draws.</para>
+            top of what Conky draws. Conky puts 'conky_' in front
+            of function_name to prevent accidental calls to the
+            wrong function unless you put you place 'conky_' in
+            front of it yourself.</para>
         </listitem>
     </varlistentry>
     <varlistentry>
@@ -494,9 +501,9 @@
                 <option>out_to_ncurses</option>
             </command>
         </term>
-        <listitem>Print text in the console, but use ncurses so that
-        conky can print the text of a new update over the old text.
-        (In the future this will provide more useful things)
+        <listitem>Print text in the console, but use ncurses so
+        that conky can print the text of a new update over the old
+        text. (In the future this will provide more useful things) 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
