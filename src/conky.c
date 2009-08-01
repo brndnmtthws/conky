@@ -7677,6 +7677,7 @@ void clean_up(void *memtofree1, void* memtofree2)
 {
 	int i;
 	conftree_empty(currentconffile);
+	currentconffile = NULL;
 	if(memtofree1) {
 		free(memtofree1);
 	}
