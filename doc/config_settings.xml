@@ -373,6 +373,24 @@
     <varlistentry>
         <term>
             <command>
+                <option>lua_shutdown_hook</option>
+            </command>
+            <option>function_name [function arguments]</option>
+        </term>
+        <listitem>
+            <para>This function, if defined, will be called by
+            Conky at shutdown or when the configuration is
+            reloaded. Use this hook to clean up after yourself,
+            such as freeing memory which has been allocated by
+            external libraries via Lua. Conky puts 'conky_' in
+            front of function_name to prevent accidental calls to
+            the wrong function unless you put you place 'conky_' in
+            front of it yourself.</para>
+        </listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>mail_spool</option>
             </command>
         </term>

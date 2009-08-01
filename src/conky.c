@@ -7780,6 +7780,7 @@ void clean_up(void *memtofree1, void* memtofree2)
 	weather_free_info();
 #endif
 #ifdef HAVE_LUA
+	llua_shutdown_hook();
 	llua_close();
 #endif /* HAVE_LUA */
 
@@ -8927,6 +8928,13 @@ char load_config_file(const char *f)
 		CONF("lua_draw_hook_post") {
 			if (value) {
 				llua_set_draw_post_hook(value);
+			} else {
+				CONF_ERR;
+			}
+		}
+		CONF("lua_shutdown_hook") {
+			if (value) {
+				llua_set_shutdown_hook(value);
 			} else {
 				CONF_ERR;
 			}

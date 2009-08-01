@@ -39,8 +39,9 @@ void llua_rm_notifies(void);
 static int llua_block_notify = 0;
 #endif /* HAVE_SYS_INOTIFY_H */
 
-static char *draw_pre = 0;
-static char *draw_post = 0;
+static char *draw_pre_hook = 0;
+static char *draw_post_hook = 0;
+static char *shutdown_hook = 0;
 
 lua_State *lua_L = NULL;
 
@@ -287,13 +288,13 @@ void llua_close(void)
 #ifdef HAVE_SYS_INOTIFY_H
 	llua_rm_notifies();
 #endif /* HAVE_SYS_INOTIFY_H */
-	if (draw_pre) {
-		free(draw_pre);
-		draw_pre = 0;
+	if (draw_pre_hook) {
+		free(draw_pre_hook);
+		draw_pre_hook = 0;
 	}
-	if (draw_post) {
-		free(draw_post);
-		draw_post = 0;
+	if (draw_post_hook) {
+		free(draw_post_hook);
+		draw_post_hook = 0;
 	}
 	if(!lua_L) return;
 	lua_close(lua_L);
@@ -391,24 +392,35 @@ void llua_set_number(const char *key, double value)
 #ifdef X11
 void llua_draw_pre_hook(void)
 {
-	if (!lua_L || !draw_pre) return;
-	llua_do_call(draw_pre, 0);
+	if (!lua_L || !draw_pre_hook) return;
+	llua_do_call(draw_pre_hook, 0);
 }
 
 void llua_draw_post_hook(void)
 {
-	if (!lua_L || !draw_post) return;
-	llua_do_call(draw_post, 0);
+	if (!lua_L || !draw_post_hook) return;
+	llua_do_call(draw_post_hook, 0);
+}
+
+void llua_shutdown_hook(void)
+{
+	if (!lua_L || !shutdown_hook) return;
+	llua_do_call(shutdown_hook, 0);
 }
 
 void llua_set_draw_pre_hook(const char *args)
 {
-	draw_pre = strdup(args);
+	draw_pre_hook = strdup(args);
 }
 
 void llua_set_draw_post_hook(const char *args)
 {
-	draw_post = strdup(args);
+	draw_post_hook = strdup(args);
+}
+
+void llua_set_shutdown_hook(const char *args)
+{
+	shutdown_hook = strdup(args);
 }
 
 #ifdef LUA_EXTRAS
