@@ -1725,6 +1725,20 @@
     <varlistentry>
         <term>
             <command>
+                <option>include</option>
+            </command>
+            <option>path</option>
+        </term>
+        <listitem>
+            <para>Loads the configfile at path, places the
+            configsettings behind the configsettings in the orginal
+            config and places the vars where the includevar
+            stood.</para>
+        </listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>ioscheduler</option>
             </command>
             <option>disk</option>
