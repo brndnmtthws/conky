@@ -24,11 +24,6 @@
  *
  */
 
-/*
- * TODO: Add weather forecast info from weather.com
- *
- */
-
 #include "conky.h"
 #include "logging.h"
 #include "weather.h"
@@ -44,11 +39,19 @@
 #include <libxml/xpath.h>
 
 /* Xpath expressions for XOAP xml parsing */
-#define NUM_XPATH_EXPRESSIONS 8
-const char *xpath_expression[NUM_XPATH_EXPRESSIONS] = {
+#define NUM_XPATH_EXPRESSIONS_CC 8
+const char *xpath_expression_cc[NUM_XPATH_EXPRESSIONS_CC] = {
 	"/weather/cc/lsup", "/weather/cc/tmp", "/weather/cc/t",
 	"/weather/cc/bar/r", "/weather/cc/wind/s", "/weather/cc/wind/d",
 	"/weather/cc/hmid", "/weather/cc/icon"
+};
+
+#define NUM_XPATH_EXPRESSIONS_DF 8
+const char *xpath_expression_df[NUM_XPATH_EXPRESSIONS_DF] = {
+	"/weather/dayf/day[*]/hi", "/weather/dayf/day[*]/low",
+	"/weather/dayf/day[*]/part[1]/icon", "/weather/dayf/day[*]/part[1]/t",
+	"/weather/dayf/day[*]/part[1]/wind/s","/weather/dayf/day[*]/part[1]/wind/d",
+	"/weather/dayf/day[*]/part[1]/ppcp", "/weather/dayf/day[*]/part[1]/hmid"
 };
 #endif /* XOAP */
 
@@ -73,11 +76,17 @@ const char *WC_CODES[NUM_WC_CODES] = {
 	"FC", "PO", "SQ", "SS", "DS"
 };
 
-static ccurl_location_t *locations_head = 0;
+static ccurl_location_t *locations_head_cc = 0;
+#ifdef XOAP
+static ccurl_location_t *locations_head_df = 0;
+#endif
 
 void weather_free_info(void)
 {
-	ccurl_free_locations(&locations_head);
+	ccurl_free_locations(&locations_head_cc);
+#ifdef XOAP
+	ccurl_free_locations(&locations_head_df);
+#endif
 }
 
 int rel_humidity(int dew_point, int air) {
@@ -93,46 +102,113 @@ int rel_humidity(int dew_point, int air) {
 }
 
 #ifdef XOAP
+static void parse_df(PWEATHER_FORECAST *res, xmlXPathContextPtr xpathCtx)
+{
+	int i, j, k;
+	char *content;
+	xmlXPathObjectPtr xpathObj;
+
+	for (i = 0; i < NUM_XPATH_EXPRESSIONS_DF; i++) {
+		xpathObj = xmlXPathEvalExpression((xmlChar *)xpath_expression_df[i], xpathCtx);
+		if (xpathObj != NULL) {
+			xmlNodeSetPtr nodes = xpathObj->nodesetval;
+			k = 0;
+			for (j = 0; j < nodes->nodeNr; ++j) {
+				if (nodes->nodeTab[j]->type == XML_ELEMENT_NODE) {
+					content = (char *)xmlNodeGetContent(nodes->nodeTab[k]);
+					switch(i) {
+					case 0:
+						res->hi[k] = atoi(content);
+						break;
+					case 1:
+						res->low[k] = atoi(content);
+						break;
+					case 2:
+						strncpy(res->icon[k], content, 2);
+					case 3:
+						strncpy(res->xoap_t[k], content, 31);
+						break;
+					case 4:
+						res->wind_s[k] = atoi(content);
+						break;
+					case 5:
+						res->wind_d[k] = atoi(content);
+						break;
+					case 6:
+						res->ppcp[k] = atoi(content);
+						break;
+					case 7:
+						res->hmid[k] = atoi(content);
+					}
+					xmlFree(content);
+					if (k++ == 4) break;
+				}
+			}
+			xmlXPathFreeObject(xpathObj);
+		}
+	}
+	return;
+}
+
+static void parse_weather_forecast_xml(PWEATHER_FORECAST *res, const char *data)
+{
+	xmlDocPtr doc;
+	xmlXPathContextPtr xpathCtx;
+
+	if (!(doc = xmlReadMemory(data, strlen(data), "", NULL, 0))) {
+		NORM_ERR("weather_forecast: can't read xml data");
+		return;
+	}
+
+	xpathCtx = xmlXPathNewContext(doc);
+	if(xpathCtx == NULL) {
+	        NORM_ERR("weather_forecast: unable to create new XPath context");
+		xmlFreeDoc(doc);
+		return;
+	}
+
+	parse_df(res, xpathCtx);
+	xmlXPathFreeContext(xpathCtx);
+	xmlFreeDoc(doc);
+	return;
+}
+
 static void parse_cc(PWEATHER *res, xmlXPathContextPtr xpathCtx)
 {
 	int i;
 	char *content;
 	xmlXPathObjectPtr xpathObj;
 
-	for (i = 0; i < NUM_XPATH_EXPRESSIONS; i++) {
-	  xpathObj = xmlXPathEvalExpression((xmlChar *)xpath_expression[i], xpathCtx);
+	for (i = 0; i < NUM_XPATH_EXPRESSIONS_CC; i++) {
+		xpathObj = xmlXPathEvalExpression((xmlChar *)xpath_expression_cc[i], xpathCtx);
 		if ((xpathObj != NULL) && (xpathObj->nodesetval->nodeTab[0]->type == XML_ELEMENT_NODE)) {
-		  content = (char *)xmlNodeGetContent(xpathObj->nodesetval->nodeTab[0]);
-		  switch(i) {
-		       case 0:
-			    strncpy(res->lastupd, content, 31);
-		       break;
-		       case 1:
-			    res->temp = atoi(content);
-		       break;
-		       case 2:
-			    if(res->xoap_t[0] == '\0') {
-				strncpy(res->xoap_t, content, 31);
-				}
-		       break;
-		       case 3:
-			    res->bar = atoi(content);
-		       break;
-		       case 4:
-			    res->wind_s = atoi(content);
-		       break;
-		       case 5:
-			    if (isdigit((char)content[0])) {
-			        res->wind_d = atoi(content);
-			    }
-			    break;
-		       case 6:
-			    res->hmid = atoi(content);
+			content = (char *)xmlNodeGetContent(xpathObj->nodesetval->nodeTab[0]);
+			switch(i) {
+			case 0:
+				strncpy(res->lastupd, content, 31);
 				break;
-		       case 7:
-			    strncpy(res->icon, content, 2);
-		  }
-		  xmlFree(content);
+			case 1:
+				res->temp = atoi(content);
+				break;
+			case 2:
+				strncpy(res->xoap_t, content, 31);
+				break;
+			case 3:
+				res->bar = atoi(content);
+				break;
+			case 4:
+				res->wind_s = atoi(content);
+				break;
+			case 5:
+				res->wind_d = atoi(content);
+			    break;
+			case 6:
+				res->hmid = atoi(content);
+				break;
+			case 7:
+				strncpy(res->icon, content, 2);
+			}
+			xmlFree(content);
 		}
 		xmlXPathFreeObject(xpathObj);
 	}
@@ -453,6 +529,20 @@ static inline void parse_token(PWEATHER *res, char *token) {
 	}
 }
 
+#ifdef XOAP
+void parse_weather_forecast(void *result, const char *data)
+{
+	PWEATHER_FORECAST *res = (PWEATHER_FORECAST*)result;
+	/* Reset results */
+	memset(res, 0, sizeof(PWEATHER_FORECAST));
+
+	//Check if it is an xml file
+	if ( strncmp(data, "<?xml ", 6) == 0 ) {
+		parse_weather_forecast_xml(res, data);
+	}
+}
+#endif /* XOAP */
+
 void parse_weather(void *result, const char *data)
 {
 	PWEATHER *res = (PWEATHER*)result;
@@ -497,6 +587,84 @@ void parse_weather(void *result, const char *data)
 	}
 }
 
+void wind_deg_to_dir(char *p, int p_max_size, int wind_deg) {
+	if ((wind_deg >= 349) || (wind_deg < 12)) {
+		strncpy(p, "N", p_max_size);
+	} else if (wind_deg < 33) {
+		strncpy(p, "NNE", p_max_size);
+	} else if (wind_deg < 57) {
+		strncpy(p, "NE", p_max_size);
+	} else if (wind_deg < 79) {
+		strncpy(p, "ENE", p_max_size);
+	} else if (wind_deg < 102) {
+		strncpy(p, "E", p_max_size);
+	} else if (wind_deg < 124) {
+		strncpy(p, "ESE", p_max_size);
+	} else if (wind_deg < 147) {
+		strncpy(p, "SE", p_max_size);
+	} else if (wind_deg < 169) {
+		strncpy(p, "SSE", p_max_size);
+	} else if (wind_deg < 192) {
+		strncpy(p, "S", p_max_size);
+	} else if (wind_deg < 214) {
+		strncpy(p, "SSW", p_max_size);
+	} else if (wind_deg < 237) {
+		strncpy(p, "SW", p_max_size);
+	} else if (wind_deg < 259) {
+		strncpy(p, "WSW", p_max_size);
+	} else if (wind_deg < 282) {
+			strncpy(p, "W", p_max_size);
+	} else if (wind_deg < 304) {
+		strncpy(p, "WNW", p_max_size);
+	} else if (wind_deg < 327) {
+		strncpy(p, "NW", p_max_size);
+	} else if (wind_deg < 349) {
+		strncpy(p, "NNW", p_max_size);
+	};
+}
+
+#ifdef XOAP
+void weather_forecast_process_info(char *p, int p_max_size, char *uri, unsigned int day, char *data_type, int interval)
+{
+	PWEATHER_FORECAST *data;
+
+	ccurl_location_t *curloc = ccurl_find_location(&locations_head_df, uri);
+	if (!curloc->p_timed_thread) {
+		curloc->result = malloc(sizeof(PWEATHER_FORECAST));
+		memset(curloc->result, 0, sizeof(PWEATHER_FORECAST));
+		curloc->process_function = &parse_weather_forecast;
+		ccurl_init_thread(curloc, interval);
+		if (!curloc->p_timed_thread) {
+			NORM_ERR("error setting up weather_forecast thread");
+		}
+	}
+
+	timed_thread_lock(curloc->p_timed_thread);
+	data = (PWEATHER_FORECAST*)curloc->result;
+	if (strcmp(data_type, "hi") == EQUAL) {
+		temp_print(p, p_max_size, data->hi[day], TEMP_CELSIUS);
+	} else if (strcmp(data_type, "low") == EQUAL) {
+		temp_print(p, p_max_size, data->low[day], TEMP_CELSIUS);
+	} else if (strcmp(data_type, "icon") == EQUAL) {
+		strncpy(p, data->icon[day], p_max_size);
+	} else if (strcmp(data_type, "forecast") == EQUAL) {
+		strncpy(p, data->xoap_t[day], p_max_size);
+	} else if (strcmp(data_type, "wind_speed") == EQUAL) {
+		snprintf(p, p_max_size, "%d", data->wind_s[day]);
+	} else if (strcmp(data_type, "wind_dir") == EQUAL) {
+		wind_deg_to_dir(p, p_max_size, data->wind_d[day]);
+	} else if (strcmp(data_type, "wind_dir_DEG") == EQUAL) {
+		snprintf(p, p_max_size, "%d", data->wind_d[day]);
+	} else if (strcmp(data_type, "humidity") == EQUAL) {
+		snprintf(p, p_max_size, "%d", data->hmid[day]);
+	} else if (strcmp(data_type, "precipitation") == EQUAL) {
+		snprintf(p, p_max_size, "%d", data->ppcp[day]);
+	}
+
+	timed_thread_unlock(curloc->p_timed_thread);
+}
+#endif /* XOAP */
+
 void weather_process_info(char *p, int p_max_size, char *uri, char *data_type, int interval)
 {
 	static const char *wc[] = {
@@ -507,7 +675,7 @@ void weather_process_info(char *p, int p_max_size, char *uri, char *data_type, i
 	};
 	PWEATHER *data;
 
-	ccurl_location_t *curloc = ccurl_find_location(&locations_head, uri);
+	ccurl_location_t *curloc = ccurl_find_location(&locations_head_cc, uri);
 	if (!curloc->p_timed_thread) {
 		curloc->result = malloc(sizeof(PWEATHER));
 		memset(curloc->result, 0, sizeof(PWEATHER));
@@ -554,39 +722,7 @@ void weather_process_info(char *p, int p_max_size, char *uri, char *data_type, i
 	} else if (strcmp(data_type, "wind_speed") == EQUAL) {
 		snprintf(p, p_max_size, "%d", data->wind_s);
 	} else if (strcmp(data_type, "wind_dir") == EQUAL) {
-		if ((data->wind_d >= 349) || (data->wind_d < 12)) {
-			strncpy(p, "N", p_max_size);
-		} else if (data->wind_d < 33) {
-			strncpy(p, "NNE", p_max_size);
-		} else if (data->wind_d < 57) {
-			strncpy(p, "NE", p_max_size);
-		} else if (data->wind_d < 79) {
-			strncpy(p, "ENE", p_max_size);
-		} else if (data->wind_d < 102) {
-			strncpy(p, "E", p_max_size);
-		} else if (data->wind_d < 124) {
-			strncpy(p, "ESE", p_max_size);
-		} else if (data->wind_d < 147) {
-			strncpy(p, "SE", p_max_size);
-		} else if (data->wind_d < 169) {
-			strncpy(p, "SSE", p_max_size);
-		} else if (data->wind_d < 192) {
-			strncpy(p, "S", p_max_size);
-		} else if (data->wind_d < 214) {
-			strncpy(p, "SSW", p_max_size);
-		} else if (data->wind_d < 237) {
-			strncpy(p, "SW", p_max_size);
-		} else if (data->wind_d < 259) {
-			strncpy(p, "WSW", p_max_size);
-		} else if (data->wind_d < 282) {
-			strncpy(p, "W", p_max_size);
-		} else if (data->wind_d < 304) {
-			strncpy(p, "WNW", p_max_size);
-		} else if (data->wind_d < 327) {
-			strncpy(p, "NW", p_max_size);
-		} else if (data->wind_d < 349) {
-			strncpy(p, "NNW", p_max_size);
-		};
+		wind_deg_to_dir(p, p_max_size, data->wind_d);
 	} else if (strcmp(data_type, "wind_dir_DEG") == EQUAL) {
 		snprintf(p, p_max_size, "%d", data->wind_d);
 
@@ -602,7 +738,8 @@ void weather_process_info(char *p, int p_max_size, char *uri, char *data_type, i
 #ifdef XOAP
 
 /* xoap suffix for weather from weather.com */
-static char *xoap = NULL;
+static char *xoap_cc = NULL;
+static char *xoap_df = NULL;
 
 /*
  * TODO: make the xoap keys file readable from the config file
@@ -614,17 +751,27 @@ void load_xoap_keys(void)
 	FILE *fp;
 	char *par = (char *) malloc(11 * sizeof(char));
 	char *key = (char *) malloc(17 * sizeof(char));
+	char *xoap = NULL;
 
 	xoap = (char *) malloc(64 * sizeof(char));
 	to_real_path(xoap, XOAP_FILE);
 	fp = fopen(xoap, "r");
 	if (fp != NULL) {
 		if (fscanf(fp, "%10s %16s", par, key) == 2) {
-			strcpy(xoap, "?cc=*&link=xoap&prod=xoap&par=");
-			strcat(xoap, par);
-			strcat(xoap, "&key=");
-			strcat(xoap, key);
-			strcat(xoap, "&unit=m");
+			xoap_cc = (char *) malloc(64 * sizeof(char));
+			xoap_df = (char *) malloc(64 * sizeof(char));
+
+			strcpy(xoap_cc, "?cc=*&link=xoap&prod=xoap&par=");
+			strcat(xoap_cc, par);
+			strcat(xoap_cc, "&key=");
+			strcat(xoap_cc, key);
+			strcat(xoap_cc, "&unit=m");
+
+			strcpy(xoap_df, "?dayf=5&link=xoap&prod=xoap&par=");
+			strcat(xoap_df, par);
+			strcat(xoap_df, "&key=");
+			strcat(xoap_df, key);
+			strcat(xoap_df, "&unit=m");
 		} else {
 			free(xoap);
 			xoap = NULL;
@@ -639,7 +786,7 @@ void load_xoap_keys(void)
 }
 #endif /* XOAP */
 
-int process_weather_uri(char *uri, char *locID)
+int process_weather_uri(char *uri, char *locID, int dayf)
 {
 	/* locID MUST BE upper-case */
 	char *tmp_p = locID;
@@ -651,9 +798,12 @@ int process_weather_uri(char *uri, char *locID)
 	/* Construct complete uri */
 #ifdef XOAP
 	if (strstr(uri, "xoap.weather.com")) {
-		if (xoap != NULL) {
+		if ((dayf == 0) && (xoap_cc != NULL)) {
 			strcat(uri, locID);
-			strcat(uri, xoap);
+			strcat(uri, xoap_cc);
+		} else if ((dayf == 1) && (xoap_df != NULL)) {
+			strcat(uri, locID);
+			strcat(uri, xoap_df);
 		} else {
 			free(uri);
 			uri = NULL;
@@ -668,4 +818,3 @@ int process_weather_uri(char *uri, char *locID)
 	}
 	return 0;
 }
-

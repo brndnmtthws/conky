@@ -385,6 +385,7 @@ enum text_object_type {
 #endif /* RSS */
 #ifdef WEATHER
 	OBJ_weather,
+	OBJ_weather_forecast,
 #endif /* WEATHER */
 #ifdef HAVE_LUA
 	OBJ_lua,
@@ -561,6 +562,14 @@ struct text_object {
 			char *data_type;
 			int interval;
 		} weather;
+#endif
+#ifdef XOAP
+		struct {
+			char *uri;
+			unsigned int day;
+			char *data_type;
+			int interval;
+		} weather_forecast;
 #endif
 		struct {
 			char *text;

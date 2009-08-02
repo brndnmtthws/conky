@@ -992,6 +992,12 @@ static void free_text_objects(struct text_object *root, int internal)
 				free(data.weather.data_type);
 				break;
 #endif
+#ifdef XOAP
+			case OBJ_weather_forecast:
+				free(data.weather_forecast.uri);
+				free(data.weather_forecast.data_type);
+				break;
+#endif
 #ifdef HAVE_LUA
 			case OBJ_lua:
 			case OBJ_lua_parse:
@@ -2985,7 +2991,7 @@ static struct text_object *construct_text_object(const char *s,
 			argc = sscanf(arg, "%119s %8s %31s %f", uri, locID, data_type, &interval);
 
 			if (argc >= 3) {
-				if (process_weather_uri(uri, locID)) {
+				if (process_weather_uri(uri, locID, 0)) {
 					free(data_type);
 					free(uri);
 					free(locID);
@@ -3015,6 +3021,57 @@ static struct text_object *construct_text_object(const char *s,
 			}
 		} else {
 			CRIT_ERR(obj, free_at_crash, "weather needs arguments: <uri> <locID> <data_type> [interval in minutes]");
+		}
+#endif
+#ifdef XOAP
+	END OBJ(weather_forecast, 0)
+		if (arg) {
+			int argc;
+			unsigned int day;
+			float interval = 0;
+			char *locID = (char *) malloc(9 * sizeof(char));
+			char *uri = (char *) malloc(128 * sizeof(char));
+			char *data_type = (char *) malloc(32 * sizeof(char));
+
+			argc = sscanf(arg, "%119s %8s %1u %31s %f", uri, locID, &day, data_type, &interval);
+
+			if (argc >= 4) {
+				if (process_weather_uri(uri, locID, 1)) {
+					free(data_type);
+					free(uri);
+					free(locID);
+					CRIT_ERR(obj, free_at_crash, \
+							"could not recognize the weather forecast uri");
+				}
+
+				obj->data.weather_forecast.uri = uri;
+				obj->data.weather_forecast.data_type = data_type;
+
+				/* Limit the day between 0 (today) and 4 */
+				if (day > 4) {
+					day = 4;
+				}
+				obj->data.weather_forecast.day = day;
+
+				/* Limit the data retrieval interval to 2 hours and an half */
+				if (interval < 150) {
+					interval = 150;
+				}
+
+				/* Convert to seconds */
+				obj->data.weather_forecast.interval = interval * 60;
+				free(locID);
+
+				DBGP("weather_forecast: fetching %s for day %d from %s every %d seconds", \
+					 data_type, day, uri, obj->data.weather_forecast.interval);
+			} else {
+				free(data_type);
+				free(uri);
+				free(locID);
+				CRIT_ERR(obj, free_at_crash, "wrong number of arguments for $weather_forecast");
+			}
+		} else {
+			CRIT_ERR(obj, free_at_crash, "weather_forecast needs arguments: <uri> <locID> <day> <data_type> [interval in minutes]");
 		}
 #endif
 #ifdef HAVE_LUA
@@ -4784,6 +4841,15 @@ static void generate_text_internal(char *p, int p_max_size,
 					weather_process_info(p, p_max_size, obj->data.weather.uri, obj->data.weather.data_type, obj->data.weather.interval);
 				} else {
 					NORM_ERR("error processing weather data, check that you have a valid XOAP key if using XOAP.");
+				}
+			}
+#endif
+#ifdef XOAP
+			OBJ(weather_forecast) {
+				if (obj->data.weather_forecast.uri != NULL) {
+					weather_forecast_process_info(p, p_max_size, obj->data.weather_forecast.uri, obj->data.weather_forecast.day, obj->data.weather_forecast.data_type, obj->data.weather_forecast.interval);
+				} else {
+					NORM_ERR("error processing weather forecast data, check that you have a valid XOAP key if using XOAP.");
 				}
 			}
 #endif

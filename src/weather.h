@@ -49,10 +49,26 @@ typedef struct PWEATHER_ {
 	int wc;
 } PWEATHER;
 
+#ifdef XOAP
+typedef struct PWEATHER_FORECAST_ {
+	int hi[5];
+	int low[5];
+	char icon[5][3];
+	char xoap_t[5][32];
+	int wind_s[5];
+	int wind_d[5];
+	int hmid[5];
+	int ppcp[5];
+} PWEATHER_FORECAST;
+#endif /* XOAP */
+
 /* Prototypes */
 void weather_free_info(void);
 void weather_process_info(char *p, int p_max_size, char *uri, char *data_type, int interval);
-int process_weather_uri(char *uri, char *locID);
+#ifdef XOAP
+void weather_forecast_process_info(char *p, int p_max_size, char *uri, unsigned int day, char *data_type, int interval);
+#endif /* XOAP */
+int process_weather_uri(char *uri, char *locID, int dayf);
 
 #ifdef XOAP
 void load_xoap_keys(void);
