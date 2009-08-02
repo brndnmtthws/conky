@@ -749,17 +749,16 @@ static char *xoap_df = NULL;
 void load_xoap_keys(void)
 {
 	FILE *fp;
-	char *par = (char *) malloc(11 * sizeof(char));
-	char *key = (char *) malloc(17 * sizeof(char));
-	char *xoap = NULL;
+	char *par  = (char *) malloc(11 * sizeof(char));
+	char *key  = (char *) malloc(17 * sizeof(char));
+	char *xoap = (char *) malloc(64 * sizeof(char));
 
-	xoap = (char *) malloc(64 * sizeof(char));
 	to_real_path(xoap, XOAP_FILE);
 	fp = fopen(xoap, "r");
 	if (fp != NULL) {
 		if (fscanf(fp, "%10s %16s", par, key) == 2) {
-			xoap_cc = (char *) malloc(64 * sizeof(char));
-			xoap_df = (char *) malloc(64 * sizeof(char));
+			xoap_cc = (char *) malloc(128 * sizeof(char));
+			xoap_df = (char *) malloc(128 * sizeof(char));
 
 			strcpy(xoap_cc, "?cc=*&link=xoap&prod=xoap&par=");
 			strcat(xoap_cc, par);
@@ -772,17 +771,12 @@ void load_xoap_keys(void)
 			strcat(xoap_df, "&key=");
 			strcat(xoap_df, key);
 			strcat(xoap_df, "&unit=m");
-		} else {
-			free(xoap);
-			xoap = NULL;
 		}
 		fclose(fp);
-	} else {
-		free(xoap);
-		xoap = NULL;
 	}
 	free(par);
 	free(key);
+	free(xoap);
 }
 #endif /* XOAP */
 
