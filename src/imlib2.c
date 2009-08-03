@@ -86,9 +86,14 @@ void cimlib_cleanup(void)
 	image_list_start = image_list_end = NULL;
 }
 
-void cimlib_init(Display *disp, Window drawable, Visual *visual, Colormap colourmap)
+Imlib_Context context;
+
+void cimlib_init(Display *disp, Window drawable, Visual *visual, Colormap
+		colourmap)
 {
 	image_list_start = image_list_end = NULL;
+	context = imlib_context_new();
+	imlib_context_push(context);
 	if (!cache_size_set) cimlib_set_cache_size(DEFAULT_IMLIB2_CACHE_SIZE);
 	/* set the maximum number of colors to allocate for 8bpp and less to 256 */
 	imlib_set_color_usage(256);
@@ -101,6 +106,15 @@ void cimlib_init(Display *disp, Window drawable, Visual *visual, Colormap colour
 	imlib_context_set_drawable(drawable);
 }
 
+void cimlib_deinit(void)
+{
+	cimlib_cleanup();
+	cache_size_set = 0;
+	imlib_context_disconnect_display();
+	imlib_context_pop();
+	imlib_context_free(context);
+}
+
 void cimlib_add_image(const char *args)
 {
 	struct image_list_s *cur = NULL;
@@ -110,7 +124,8 @@ void cimlib_add_image(const char *args)
 	memset(cur, 0, sizeof(struct image_list_s));
 
 	if (!sscanf(args, "%1023s", cur->name)) {
-		NORM_ERR("Invalid args for $image.  Format is: '<path to image> (-p x,y) (-s WxH) (-n) (-f interval)' (got '%s')", args);
+		NORM_ERR("Invalid args for $image.  Format is: '<path to image> (-p"
+				"x,y) (-s WxH) (-n) (-f interval)' (got '%s')", args);
 		free(cur);
 		return;
 	}
@@ -154,9 +169,8 @@ void cimlib_add_image(const char *args)
 	}
 }
 
-static void
-cimlib_draw_image(struct image_list_s *cur, int *clip_x,
-			int *clip_y, int *clip_x2, int *clip_y2)
+static void cimlib_draw_image(struct image_list_s *cur, int *clip_x, int
+		*clip_y, int *clip_x2, int *clip_y2)
 {
 	int w, h;
 	time_t now = time(NULL);
