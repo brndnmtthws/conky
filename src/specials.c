@@ -351,15 +351,21 @@ void new_stippled_hr(char *buf, int a, int b)
 	s->height = b;
 	s->arg = a;
 }
+#endif /* X11 */
 
 void new_fg(char *buf, long c)
 {
-	if ((output_methods & TO_X) == 0)
-		return;
-
-	new_special(buf, FG)->arg = c;
+#ifdef X11
+	if (output_methods & TO_X)
+		new_special(buf, FG)->arg = c;
+#endif /* X11 */
+#ifdef NCURSES
+	if (output_methods & TO_NCURSES)
+		new_special(buf, FG)->arg = c;
+#endif /* NCURSES */
 }
 
+#ifdef X11
 void new_bg(char *buf, long c)
 {
 	if ((output_methods & TO_X) == 0)

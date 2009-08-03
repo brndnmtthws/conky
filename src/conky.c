@@ -1789,6 +1789,30 @@ static struct text_object *construct_text_object(const char *s,
 			current_text_color = obj->data.l;
 		}
 #endif /* X11 */
+#ifdef NCURSES
+		if (output_methods & TO_NCURSES) {
+			obj->data.l = COLOR_WHITE;
+			if(arg) {
+				if(strcasecmp(arg, "red") == 0) {
+					obj->data.l = COLOR_RED;
+				}else if(strcasecmp(arg, "green") == 0) {
+					obj->data.l = COLOR_GREEN;
+				}else if(strcasecmp(arg, "yellow") == 0) {
+					obj->data.l = COLOR_YELLOW;
+				}else if(strcasecmp(arg, "blue") == 0) {
+					obj->data.l = COLOR_BLUE;
+				}else if(strcasecmp(arg, "magenta") == 0) {
+					obj->data.l = COLOR_MAGENTA;
+				}else if(strcasecmp(arg, "cyan") == 0) {
+					obj->data.l = COLOR_CYAN;
+				}else if(strcasecmp(arg, "black") == 0) {
+					obj->data.l = COLOR_BLACK;
+				}
+			}
+			current_text_color = obj->data.l;
+			init_pair(obj->data.l, obj->data.l, COLOR_BLACK);
+		}
+#endif /* NCURSES */
 	END OBJ(color0, 0)
 		obj->data.l = color0;
 		current_text_color = obj->data.l;
@@ -4158,9 +4182,11 @@ static void generate_text_internal(char *p, int p_max_size,
 				new_graph(p, obj->a, obj->b, obj->c, obj->d, cur->loadavg[0],
 						obj->e, 1, obj->char_a, obj->char_b);
 			}
+#endif /* X11 */
 			OBJ(color) {
 				new_fg(p, obj->data.l);
 			}
+#ifdef X11
 			OBJ(color0) {
 				new_fg(p, color0);
 			}
@@ -6543,15 +6569,23 @@ static int text_size_updater(char *s, int special_index)
 	last_font_height = font_height();
 	return special_index;
 }
+#endif /* X11 */
 
 static inline void set_foreground_color(long c)
 {
-	if ((output_methods & TO_X) == 0)
-		return;
-	current_color = c;
-	XSetForeground(display, window.gc, c);
-}
+#ifdef X11
+	if (output_methods & TO_X) {
+		current_color = c;
+		XSetForeground(display, window.gc, c);
+	}
 #endif /* X11 */
+#ifdef NCURSES
+	if (output_methods & TO_NCURSES) {
+		attron(COLOR_PAIR(c));
+	}
+#endif /* NCURSES */
+	return;
+}
 
 static void draw_string(const char *s)
 {
@@ -6588,7 +6622,7 @@ static void draw_string(const char *s)
 	}
 #ifdef NCURSES
 	if ((output_methods & TO_NCURSES) && draw_mode == FG) {
-		printw("%s\n", s_with_newlines);
+		printw("%s", s_with_newlines);
 	}
 #endif
 	free(s_with_newlines);
@@ -6668,18 +6702,21 @@ static void draw_string(const char *s)
 	memcpy(tmpstring1, s, text_buffer_size);
 }
 
-#ifdef X11
 int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 {
+#ifdef X11
 	int font_h = font_height();
 	int cur_y_add = 0;
+#endif /* X11 */
 	char *recurse = 0;
 	char *p = s;
 	int last_special_needed = -1;
 	int orig_special_index = special_index;
 
+#ifdef X11
 	cur_x = text_start_x;
 	cur_y += font_ascent();
+#endif /* X11 */
 
 	while (*p) {
 		if (*p == SECRIT_MULTILINE_CHAR) {
@@ -6689,7 +6726,9 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 			break;
 		}
 		if (*p == SPECIAL_CHAR || last_special_applied > -1) {
+#ifdef X11
 			int w = 0;
+#endif /* X11 */
 
 			/* draw string before special, unless we're dealing multiline
 			 * specials */
@@ -6703,6 +6742,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 			}
 			/* draw special */
 			switch (specials[special_index].type) {
+#ifdef X11
 				case HORIZONTAL_LINE:
 				{
 					int h = specials[special_index].height;
@@ -6997,12 +7037,14 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					font_h = font_height();
 					break;
 				}
+#endif /* X11 */
 				case FG:
 					if (draw_mode == FG) {
 						set_foreground_color(specials[special_index].arg);
 					}
 					break;
 
+#ifdef X11
 				case BG:
 					if (draw_mode == BG) {
 						set_foreground_color(specials[special_index].arg);
@@ -7084,9 +7126,12 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					last_special_needed = special_index;
 					break;
 				}
+#endif /* X11 */
 			}
 
+#ifdef X11
 			cur_x += w;
+#endif /* X11 */
 
 			if (special_index != last_special_applied) {
 				special_index++;
@@ -7098,31 +7143,40 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 		p++;
 	}
 
+#ifdef X11
 	cur_y += cur_y_add;
+#endif /* X11 */
 	draw_string(s);
+#ifdef NCURSES
+	if (output_methods & TO_NCURSES) {
+		printw("\n");
+	}
+#endif /* NCURSES */
+#ifdef X11
 	cur_y += font_descent();
+#endif /* X11 */
 	if (recurse && *recurse) {
 		special_index = draw_each_line_inner(recurse, special_index, last_special_needed);
 		*(recurse - 1) = SECRIT_MULTILINE_CHAR;
 	}
 	return special_index;
 }
-#endif /* X11 */
 
 static int draw_line(char *s, int special_index)
 {
 #ifdef X11
-	if ((output_methods & TO_X) == 0) {
-#endif /* X11 */
-		draw_string(s);
-		//'special_index - special_index' instead of 0 otherwise gcc complains about not using special_index when build without X11
-		return special_index - special_index;
-#ifdef X11
+	if (output_methods & TO_X) {
+		return draw_each_line_inner(s, special_index, -1);
 	}
-
-	/* find specials and draw stuff */
-	return draw_each_line_inner(s, special_index, -1);
 #endif /* X11 */
+#ifdef NCURSES
+	if (output_methods & TO_NCURSES) {
+		return draw_each_line_inner(s, special_index, -1);
+	}
+#endif /* NCURSES */
+	draw_string(s);
+	//'special_index - special_index' instead of 0 otherwise gcc complains about not using special_index when build without X11
+	return special_index - special_index;
 }
 
 static void draw_text(void)
@@ -7157,6 +7211,10 @@ static void draw_text(void)
 	}
 	setup_fonts();
 #endif /* X11 */
+#ifdef NCURSES
+	init_pair(COLOR_WHITE, COLOR_WHITE, COLOR_BLACK);
+	attron(COLOR_PAIR(COLOR_WHITE));
+#endif /* NCURSES */
 	for_each_line(text_buffer, draw_line);
 #if defined(HAVE_LUA) && defined(X11)
 	llua_draw_post_hook();
@@ -8568,6 +8626,7 @@ char load_config_file(const char *f)
 		CONF("out_to_ncurses") {
 			if(string_to_bool(value)) {
 				initscr();
+				start_color();
 				output_methods |= TO_NCURSES;
 			}
 		}
