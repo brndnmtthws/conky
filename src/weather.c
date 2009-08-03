@@ -781,7 +781,7 @@ void load_xoap_keys(void)
 }
 #endif /* XOAP */
 
-int process_weather_uri(char *uri, char *locID, int dayf)
+int process_weather_uri(char *uri, char *locID)
 {
 	/* locID MUST BE upper-case */
 	char *tmp_p = locID;
@@ -803,7 +803,7 @@ int process_weather_uri(char *uri, char *locID, int dayf)
 			free(uri);
 			uri = NULL;
 		}
-	} else 
+	} else
 #endif /* XOAP */
 	if (strstr(uri, "weather.noaa.gov")) {
 		strcat(uri, locID);

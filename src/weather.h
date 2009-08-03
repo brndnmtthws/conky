@@ -69,7 +69,7 @@ void weather_process_info(char *p, int p_max_size, char *uri, char *data_type, i
 #ifdef XOAP
 void weather_forecast_process_info(char *p, int p_max_size, char *uri, unsigned int day, char *data_type, int interval);
 #endif /* XOAP */
-int process_weather_uri(char *uri, char *locID, int dayf);
+int process_weather_uri(char *uri, char *locID);
 
 #ifdef XOAP
 void load_xoap_keys(void);
