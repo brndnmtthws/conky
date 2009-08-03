@@ -67,7 +67,7 @@ void rss_process_info(char *p, int p_max_size, char *uri, char *action, int
 		snprintf(p, p_max_size, "prss: Error reading RSS data\n");
 	} else {
 		if (strcmp(action, "feed_title") == EQUAL) {
-		        if (str = data->title) {
+		        if ((str = data->title)) {
 			        // remove trailing new line if one exists
 			        if (str[strlen(str) - 1] == '\n') {
 				        str[strlen(str) - 1] = 0;
