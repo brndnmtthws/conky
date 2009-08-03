@@ -3444,13 +3444,13 @@
             <simplelist>
                 <member>
                     <command>low</command>
-               	    <option>Minimun temperature (you can use the
+					<option>Minimun temperature (you can use the
                     'temperature_unit' config setting to change
                     units)</option>
 		</member>
                 <member>
                     <command>high</command>
-               	    <option>Maximum temperature (you can use the
+					<option>Maximum temperature (you can use the
                     'temperature_unit' config setting to change
                     units)</option>
 		</member>
@@ -3483,7 +3483,7 @@
                 <member>
                     <command>precipitation</command>
                     <option>Probability of having a
-		    precipitation (in %)</option>
+					precipitation (in %)</option>
                 </member>
             </simplelist>
             <para>'delay_in_minutes' (optional, default 150) cannot
