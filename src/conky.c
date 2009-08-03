@@ -7612,6 +7612,9 @@ void clean_up(void *memtofree1, void* memtofree2)
 #ifdef HAVE_LUA
 	llua_close();
 #endif /* HAVE_LUA */
+#ifdef IMLIB2
+	cimlib_deinit();
+#endif /* IMLIB2 */
 
 	if (specials) {
 		for (i = 0; i < special_count; i++) {
