@@ -803,7 +803,7 @@ int process_weather_uri(char *uri, char *locID, int dayf)
 			free(uri);
 			uri = NULL;
 		}
-	} else 
+	} else
 #endif /* XOAP */
 	if (strstr(uri, "weather.noaa.gov")) {
 		strcat(uri, locID);
@@ -811,5 +811,6 @@ int process_weather_uri(char *uri, char *locID, int dayf)
 	} else  if (!strstr(uri, "localhost") && !strstr(uri, "127.0.0.1")) {
 		return -1;
 	}
+	if (dayf) {} /* make gcc shut up */
 	return 0;
 }
