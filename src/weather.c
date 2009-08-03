@@ -781,11 +781,10 @@ void load_xoap_keys(void)
 }
 #endif /* XOAP */
 
-int process_weather_uri(char *uri, char *locID, int dayf)
+int process_weather_uri(char *uri, char *locID, int dayf UNUSED_ATTR)
 {
 	/* locID MUST BE upper-case */
 	char *tmp_p = locID;
-	UNUSED(dayf); /* make gcc shut up */
 
 	while (*tmp_p) {
 		*tmp_p = toupper(*tmp_p);

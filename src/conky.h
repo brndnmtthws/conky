@@ -387,5 +387,6 @@ void set_update_interval(double interval);
 
 /* to get rid of 'unused variable' warnings */
 #define UNUSED(a)  (void)a
+#define UNUSED_ATTR __attribute__ ((unused))
 
 #endif /* _conky_h_ */
