@@ -542,7 +542,7 @@
         </term>
         <listitem>Change drawing color to 'color' which is a name of
         a color or a hexcode preceded with # (for example #0A1B2C ).
-        In ncurses the following colors are supported:
+        If you use ncurses only the following colors are supported:
 	red,green,yellow,blue,magenta,cyan,black,white.
         <para /></listitem>
     </varlistentry>
