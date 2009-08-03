@@ -540,7 +540,10 @@
             </command>
             <option>(color)</option>
         </term>
-        <listitem>Change drawing color to color 
+        <listitem>Change drawing color to 'color' which is a name of
+        a color or a hexcode preceded with # (for example #0A1B2C ).
+        If you use ncurses only the following colors are supported:
+	red,green,yellow,blue,magenta,cyan,black,white.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3422,6 +3425,79 @@
             <para>Note that these variables are still EXPERIMENTAL
             and can be subject to many future changes.</para>
         </listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>weather_forecast</option>
+            </command>
+            <option>URI locID day data_type
+            (interval_in_minutes)</option>
+        </term>
+        <listitem>
+            <para>Download, parse and display weather forecast data
+	    for a given day (daytime only).</para>
+            <para>For the 'URI', for the time being only
+            http://xoap.weather.com/weather/local/ is
+	    supported. See 'weather' above for details of usage</para>
+            <para>'locID', see 'weather' above.</para>
+            <para>'day' is a number from 0 (today) to 4 (3 days
+            after tomorrow).</para>
+            <para>'data_type' must be one of the following:</para>
+            <simplelist>
+                <member>
+                    <command>low</command>
+					<option>Minimun temperature (you can use the
+                    'temperature_unit' config setting to change
+                    units)</option>
+		</member>
+                <member>
+                    <command>high</command>
+					<option>Maximum temperature (you can use the
+                    'temperature_unit' config setting to change
+                    units)</option>
+		</member>
+                <member>
+                    <command>icon</command>
+                    <option>Weather icon. Can be used together with the
+                    icon kit provided upon registering to the weather.com
+                    service</option>
+		</member>
+                <member>
+                    <command>forecast</command>
+                    <option>Weather forecast (sunny, rainy, etc.)</option>
+		</member>
+                <member>
+                    <command>wind_speed</command>
+                    <option>Wind speed in km/h</option>
+                </member>
+                <member>
+                    <command>wind_dir</command>
+                    <option>Wind direction</option>
+                </member>
+                <member>
+                    <command>wind_dir_DEG</command>
+                    <option>Compass wind direction</option>
+                </member>
+                <member>
+                    <command>humidity</command>
+                    <option>Relative humidity in %</option>
+                </member>
+                <member>
+                    <command>precipitation</command>
+                    <option>Probability of having a
+					precipitation (in %)</option>
+                </member>
+            </simplelist>
+            <para>'delay_in_minutes' (optional, default 150) cannot
+            be lower than 150 min.</para>
+            <para>This object is threaded, and once a thread is
+            created it can't be explicitely destroyed. One thread
+            will run for each URI specified. You can use any
+            protocol that Curl supports.</para>
+            <para>Note that these variables are still EXPERIMENTAL
+            and can be subject to many future changes.</para>
+	</listitem>
     </varlistentry>
     <varlistentry>
         <term>

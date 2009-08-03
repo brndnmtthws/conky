@@ -1,3 +1,6 @@
+2009-08-03
+	* Added support for $weather_forecast (experimental)
+
 2009-08-01
 	* Added support for out_to_ncurses
 
