@@ -50,15 +50,16 @@ typedef struct PWEATHER_ {
 } PWEATHER;
 
 #ifdef XOAP
+#define FORECAST_DAYS 5
 typedef struct PWEATHER_FORECAST_ {
-	int hi[5];
-	int low[5];
-	char icon[5][3];
-	char xoap_t[5][32];
-	int wind_s[5];
-	int wind_d[5];
-	int hmid[5];
-	int ppcp[5];
+	int hi[FORECAST_DAYS];
+	int low[FORECAST_DAYS];
+	char icon[FORECAST_DAYS][3];
+	char xoap_t[FORECAST_DAYS][32];
+	int wind_s[FORECAST_DAYS];
+	int wind_d[FORECAST_DAYS];
+	int hmid[FORECAST_DAYS];
+	int ppcp[FORECAST_DAYS];
 } PWEATHER_FORECAST;
 #endif /* XOAP */
 

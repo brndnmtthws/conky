@@ -3047,9 +3047,9 @@ static struct text_object *construct_text_object(const char *s,
 				obj->data.weather_forecast.uri = uri;
 				obj->data.weather_forecast.data_type = data_type;
 
-				/* Limit the day between 0 (today) and 4 */
-				if (day > 4) {
-					day = 4;
+				/* Limit the day between 0 (today) and FORECAST_DAYS */
+				if (day >= FORECAST_DAYS) {
+					day = FORECAST_DAYS-1;
 				}
 				obj->data.weather_forecast.day = day;
 

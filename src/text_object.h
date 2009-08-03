@@ -385,8 +385,10 @@ enum text_object_type {
 #endif /* RSS */
 #ifdef WEATHER
 	OBJ_weather,
-	OBJ_weather_forecast,
 #endif /* WEATHER */
+#ifdef XOAP
+	OBJ_weather_forecast,
+#endif /* XOAP */
 #ifdef HAVE_LUA
 	OBJ_lua,
 	OBJ_lua_parse,

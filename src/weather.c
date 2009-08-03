@@ -141,7 +141,7 @@ static void parse_df(PWEATHER_FORECAST *res, xmlXPathContextPtr xpathCtx)
 						res->hmid[k] = atoi(content);
 					}
 					xmlFree(content);
-					if (k++ == 4) break;
+					if (++k == FORECAST_DAYS) break;
 				}
 			}
 			xmlXPathFreeObject(xpathObj);
@@ -766,6 +766,7 @@ void load_xoap_keys(void)
 			strcat(xoap_cc, key);
 			strcat(xoap_cc, "&unit=m");
 
+			/* TODO: Use FORECAST_DAYS instead of 5 */
 			strcpy(xoap_df, "?dayf=5&link=xoap&prod=xoap&par=");
 			strcat(xoap_df, par);
 			strcat(xoap_df, "&key=");
