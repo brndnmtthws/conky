@@ -386,6 +386,6 @@ void set_update_interval(double interval);
 #define NOBATTERY 0
 
 /* to get rid of 'unused variable' warnings */
-#define UNUSED(a) if (a) {}
+#define UNUSED(a)  (void)a
 
 #endif /* _conky_h_ */
