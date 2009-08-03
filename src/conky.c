@@ -68,6 +68,9 @@
 #ifdef NCURSES
 #include <ncurses.h>
 #endif
+#ifdef XOAP
+#include <libxml/parser.h>
+#endif /* XOAP */
 
 /* local headers */
 #include "algebra.h"
@@ -7853,6 +7856,9 @@ void clean_up(void *memtofree1, void* memtofree2)
 	llua_shutdown_hook();
 	llua_close();
 #endif /* HAVE_LUA */
+#ifdef XOAP
+	xmlCleanupParser();
+#endif /* XOAP */
 
 	if (specials) {
 		for (i = 0; i < special_count; i++) {
@@ -9478,6 +9484,9 @@ void initialisation(int argc, char **argv) {
 #ifdef HAVE_LUA
 	llua_setup_info(&info, update_interval);
 #endif /* HAVE_LUA */
+#ifdef XOAP
+	xmlInitParser();
+#endif /* XOAP */
 
 	/* Set signal handlers */
 	act.sa_handler = signal_handler;
