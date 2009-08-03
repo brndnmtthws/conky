@@ -3018,7 +3018,7 @@ static struct text_object *construct_text_object(const char *s,
 			argc = sscanf(arg, "%119s %8s %31s %f", uri, locID, data_type, &interval);
 
 			if (argc >= 3) {
-				if (process_weather_uri(uri, locID)) {
+				if (process_weather_uri(uri, locID, 0)) {
 					free(data_type);
 					free(uri);
 					free(locID);
@@ -3063,7 +3063,7 @@ static struct text_object *construct_text_object(const char *s,
 			argc = sscanf(arg, "%119s %8s %1u %31s %f", uri, locID, &day, data_type, &interval);
 
 			if (argc >= 4) {
-				if (process_weather_uri(uri, locID)) {
+				if (process_weather_uri(uri, locID, 1)) {
 					free(data_type);
 					free(uri);
 					free(locID);
