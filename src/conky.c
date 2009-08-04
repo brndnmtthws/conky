@@ -7824,7 +7824,6 @@ void clean_up(void *memtofree1, void* memtofree2)
 
 #ifdef NCURSES
 	if(output_methods & TO_NCURSES) {
-		delwin(stdscr);
 		endwin();
 	}
 #endif
