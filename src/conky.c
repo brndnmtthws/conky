@@ -6584,6 +6584,7 @@ static inline void set_foreground_color(long c)
 		attron(COLOR_PAIR(c));
 	}
 #endif /* NCURSES */
+	UNUSED(c);
 	return;
 }
 
@@ -7175,8 +7176,8 @@ static int draw_line(char *s, int special_index)
 	}
 #endif /* NCURSES */
 	draw_string(s);
-	//'special_index - special_index' instead of 0 otherwise gcc complains about not using special_index when build without X11
-	return special_index - special_index;
+	UNUSED(special_index);
+	return 0;
 }
 
 static void draw_text(void)

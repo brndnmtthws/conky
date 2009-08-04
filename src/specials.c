@@ -363,6 +363,8 @@ void new_fg(char *buf, long c)
 	if (output_methods & TO_NCURSES)
 		new_special(buf, FG)->arg = c;
 #endif /* NCURSES */
+	UNUSED(buf);
+	UNUSED(c);
 }
 
 #ifdef X11
