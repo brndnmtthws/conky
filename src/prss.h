@@ -30,7 +30,6 @@ typedef struct PRSS_Item_ {
 } PRSS_Item;
 
 typedef struct PRSS_ {
-	xmlDocPtr _data;
 	char *version;
 
 	char *title;

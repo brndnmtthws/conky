@@ -41,6 +41,7 @@ void prss_parse_data(void *result, const char *xml_data)
 	}
 
 	prss_parse_doc(data, doc);
+	xmlFreeDoc(doc);
 }
 
 void prss_free(PRSS *data)
@@ -48,7 +49,6 @@ void prss_free(PRSS *data)
 	if (!data) {
 		return;
 	}
-	xmlFreeDoc(data->_data);
 	free(data->version);
 	free(data->items);
 }
@@ -213,13 +213,9 @@ static inline int parse_rss_0_9x(PRSS *res, xmlNodePtr root)
 
 void prss_parse_doc(PRSS *result, xmlDocPtr doc)
 {
-	/* FIXME: doc shouldn't be freed after failure when called explicitly from
-	 * program! */
-
 	xmlNodePtr root = xmlDocGetRootElement(doc);
 
 	prss_null(result);
-	result->_data = doc;
 	do {
 		if (root->type == XML_ELEMENT_NODE) {
 			if (!strcmp((const char *) root->name, "RDF")) {
