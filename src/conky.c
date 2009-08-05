@@ -7153,7 +7153,16 @@ static void main_loop(void)
 							window.height = text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
 							XResizeWindow(display, window.window, window.width,
 								window.height);
-							set_transparent_background(window.window);
+						set_transparent_background(window.window);
+#ifdef HAVE_XDBE
+						if (use_xdbe) {
+							XdbeSwapInfo swap;
+
+							swap.swap_window = window.window;
+							swap.swap_action = XdbeBackground;
+							XdbeSwapBuffers(display, &swap, 1);
+						}
+#endif
 
 							changed++;
 #ifdef HAVE_LUA
