@@ -3370,57 +3370,56 @@
             <simplelist>
                 <member>
                     <command>last_update</command>
-                    <option>The date and time stamp of the data.
+                    <para>The date and time stamp of the data.
                     The result depends on the URI used. For the
                     NOAA site it is date (yyyy/mm/dd) and UTC time.
                     For the weather.com one it is date
                     ([m]m/[d]d/yy) and Local Time of the
-                    station.</option>
+                    station.</para>
                 </member>
                 <member>
                     <command>temperature</command>
-                    <option>Air temperature (you can use the
+					<para>Air temperature (you can use the
                     'temperature_unit' config setting to change
-                    units)</option>
+					units)</para>
                 </member>
                 <member>
                     <command>cloud_cover</command>
-                    <option>The highest cloud cover status</option>
+                    <para>The highest cloud cover status</para>
                 </member>
                 <member>
                     <command>pressure</command>
-                    <option>Air pressure in millibar</option>
+                    <para>Air pressure in millibar</para>
                 </member>
                 <member>
                     <command>wind_speed</command>
-                    <option>Wind speed in km/h</option>
+                    <para>Wind speed in km/h</para>
                 </member>
                 <member>
                     <command>wind_dir</command>
-                    <option>Wind direction</option>
+                    <para>Wind direction</para>
                 </member>
                 <member>
                     <command>wind_dir_DEG</command>
-                    <option>Compass wind direction</option>
+                    <para>Compass wind direction</para>
                 </member>
                 <member>
                     <command>humidity</command>
-                    <option>Relative humidity in %</option>
+                    <para>Relative humidity in %</para>
                 </member>
                 <member>
                     <command>weather</command>
-                    <option>Any relevant weather event (rain, snow,
+                    <para>Any relevant weather event (rain, snow,
                     etc.). This is not used if you are querying the
                     weather.com site since this data is aggregated
-                    into the cloud_cover one</option>
+                    into the cloud_cover one</para>
                 </member>
             </simplelist>
             <para>'delay_in_minutes' (optional, default 30) cannot
-            be lower than 30 min.</para>
+            be less than 30 minutes.</para>
             <para>This object is threaded, and once a thread is
             created it can't be explicitely destroyed. One thread
-            will run for each URI specified. You can use any
-            protocol that Curl supports.</para>
+            will run for each URI specified.</para>
             <para>Note that these variables are still EXPERIMENTAL
             and can be subject to many future changes.</para>
         </listitem>
