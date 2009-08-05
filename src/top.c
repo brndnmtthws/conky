@@ -106,7 +106,7 @@ static struct process *new_process(int p)
 #ifdef IOSTATS
 	process->previous_read_bytes = ULLONG_MAX;
 	process->previous_write_bytes = ULLONG_MAX;
-#endif
+#endif /* IOSTATS */
 	process->counted = 1;
 
 	/* process_find_name(process); */
@@ -164,15 +164,15 @@ static int process_parse_stat(struct process *process)
 	strncpy(procname, lparen + 1, rc);
 	procname[rc] = '\0';
 	rc = sscanf(rparen + 1, "%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %lu "
-		"%lu %*s %*s %*s %d %*s %*s %*s %u %u", &process->user_time,
-		&process->kernel_time, &nice_val, &process->vsize, &process->rss);
+			"%lu %*s %*s %*s %d %*s %*s %*s %u %u", &process->user_time,
+			&process->kernel_time, &nice_val, &process->vsize, &process->rss);
 	if (rc < 5) {
 		return 1;
 	}
 	/* remove any "kdeinit: " */
 	if (procname == strstr(procname, "kdeinit")) {
 		snprintf(filename, sizeof(filename), PROCFS_CMDLINE_TEMPLATE,
-			process->pid);
+				process->pid);
 
 		ps = open(filename, O_RDONLY);
 		if (ps < 0) {
@@ -304,7 +304,7 @@ static int process_parse_io(struct process *process)
 
 	return 0;
 }
-#endif
+#endif /* IOSTATS */
 
 /******************************************
  * Get process structure for process pid  *
@@ -318,15 +318,13 @@ static int calculate_stats(struct process *process)
 
 	/* compute each process cpu usage by reading /proc/<proc#>/stat */
 	rc = process_parse_stat(process);
-	if (rc)
-		return 1;
+	if (rc)	return 1;
 	/* rc = process_parse_statm(process); if (rc) return 1; */
 
 #ifdef IOSTATS
 	rc = process_parse_io(process);
-	if (rc)
-		return 1;
-#endif
+	if (rc) return 1;
+#endif /* IOSTATS */
 
 	/*
 	 * Check name against the exclusion list
@@ -468,7 +466,7 @@ static unsigned long long calc_cpu_total(void)
 	}
 
 	sscanf(line, template, &cpu, &niceval, &systemval, &idle, &iowait, &irq,
-		&softirq, &steal);
+			&softirq, &steal);
 	total = cpu + niceval + systemval + idle + iowait + irq + softirq + steal;
 
 	t = total - previous_total;
@@ -498,7 +496,7 @@ static void calc_io_each(void)
 {
 	struct process *p;
 	unsigned long long sum = 0;
-	
+
 	for (p = first_process; p; p = p->next)
 		sum += p->read_bytes + p->write_bytes;
 
@@ -507,7 +505,7 @@ static void calc_io_each(void)
 	for (p = first_process; p; p = p->next)
 		p->io_perc = 100.0 * (p->read_bytes + p->write_bytes) / (float) sum;
 }
-#endif
+#endif /* IOSTATS */
 
 /******************************************
  * Find the top processes				  *
@@ -572,7 +570,7 @@ static int compare_io(struct process *a, struct process *b)
 		return 0;
 	}
 }
-#endif
+#endif /* IOSTATS */
 
 /* insert this process into the list in a sorted fashion,
  * or destroy it if it doesn't fit on the list */
@@ -655,7 +653,7 @@ void process_find_top(struct process **cpu, struct process **mem,
 		struct process **ptime
 #ifdef IOSTATS
 		, struct process **io
-#endif
+#endif /* IOSTATS */
 		)
 {
 	struct sorted_process *spc_head = NULL, *spc_tail = NULL, *spc_cur = NULL;
@@ -663,14 +661,14 @@ void process_find_top(struct process **cpu, struct process **mem,
 	struct sorted_process *spt_head = NULL, *spt_tail = NULL, *spt_cur = NULL;
 #ifdef IOSTATS
 	struct sorted_process *spi_head = NULL, *spi_tail = NULL, *spi_cur = NULL;
-#endif
+#endif /* IOSTATS */
 	struct process *cur_proc = NULL;
 	unsigned long long total = 0;
 
 	if (!top_cpu && !top_mem && !top_time
 #ifdef IOSTATS
 			&& !top_io
-#endif
+#endif /* IOSTATS */
 	   ) {
 		return;
 	}
@@ -681,7 +679,7 @@ void process_find_top(struct process **cpu, struct process **mem,
 	process_cleanup();			/* cleanup list from exited processes */
 #ifdef IOSTATS
 	calc_io_each();			/* percentage of I/O for each task */
-#endif
+#endif /* IOSTATS */
 
 	cur_proc = first_process;
 
@@ -689,36 +687,32 @@ void process_find_top(struct process **cpu, struct process **mem,
 		if (top_cpu) {
 			spc_cur = malloc_sp(cur_proc);
 			insert_sp_element(spc_cur, &spc_head, &spc_tail, MAX_SP,
-				&compare_cpu);
+					&compare_cpu);
 		}
 		if (top_mem) {
 			spm_cur = malloc_sp(cur_proc);
 			insert_sp_element(spm_cur, &spm_head, &spm_tail, MAX_SP,
-				&compare_mem);
+					&compare_mem);
 		}
 		if (top_time) {
 			spt_cur = malloc_sp(cur_proc);
 			insert_sp_element(spt_cur, &spt_head, &spt_tail, MAX_SP,
-				&compare_time);
+					&compare_time);
 		}
 #ifdef IOSTATS
 		if (top_io) {
 			spi_cur = malloc_sp(cur_proc);
 			insert_sp_element(spi_cur, &spi_head, &spi_tail, MAX_SP,
-				&compare_io);
+					&compare_io);
 		}
-#endif
+#endif /* IOSTATS */
 		cur_proc = cur_proc->next;
 	}
 
-	if (top_cpu)
-		sp_acopy(spc_head, cpu, MAX_SP);
-	if (top_mem)
-		sp_acopy(spm_head, mem, MAX_SP);
-	if (top_time)
-		sp_acopy(spt_head, ptime, MAX_SP);
+	if (top_cpu)	sp_acopy(spc_head, cpu,		MAX_SP);
+	if (top_mem)	sp_acopy(spm_head, mem,		MAX_SP);
+	if (top_time)	sp_acopy(spt_head, ptime,	MAX_SP);
 #ifdef IOSTATS
-	if (top_io)
-		sp_acopy(spi_head, io,MAX_SP);
-#endif
+	if (top_io)		sp_acopy(spi_head, io,		MAX_SP);
+#endif /* IOSTATS */
 }
