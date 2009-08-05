@@ -191,7 +191,6 @@ void set_transparent_background(Window win)
 		XSetWindowBackground(display, win, background_colour);
 		colour_set = background_colour;
 	}
-	// XClearWindow(display, win); not sure why this was here
 }
 
 void destroy_window(void)
@@ -475,15 +474,6 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 	}
 #endif /* IMLIB2 */
 	XFlush(display);
-
-	/* set_transparent_background(window.window);
-	 * must be done after double buffer stuff? */
-#ifdef OWN_WINDOW
-	/* if (own_window) {
-	   set_transparent_background(window.window);
-	   XClearWindow(display, window.window);
-	   } */
-#endif
 
 	XSelectInput(display, window.window, ExposureMask | PropertyChangeMask
 #ifdef OWN_WINDOW
