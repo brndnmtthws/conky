@@ -2845,7 +2845,7 @@ static struct text_object *construct_text_object(const char *s,
 	END OBJ(rss, 0)
 		if (arg) {
 			float interval = 0;
-			int argc, act_par;
+			int argc, act_par = 0;
 			unsigned int nrspaces = 0;
 			char *uri = (char *) malloc(128 * sizeof(char));
 			char *action = (char *) malloc(64 * sizeof(char));

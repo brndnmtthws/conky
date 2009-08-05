@@ -50,6 +50,9 @@ void rss_process_info(char *p, int p_max_size, char *uri, char *action, int
 	char *str;
 
 	ccurl_location_t *curloc = ccurl_find_location(&locations_head, uri);
+
+	assert(act_par >= 0 && action);
+
 	if (!curloc->p_timed_thread) {
 		curloc->result = malloc(sizeof(PRSS));
 		memset(curloc->result, 0, sizeof(PRSS));
@@ -63,14 +66,19 @@ void rss_process_info(char *p, int p_max_size, char *uri, char *action, int
 	timed_thread_lock(curloc->p_timed_thread);
 	data = (PRSS*)curloc->result;
 
-	if (data == NULL) {
-		snprintf(p, p_max_size, "prss: Error reading RSS data\n");
+	if (data == NULL || data->item_count < 1) {
+		*p = 0;
 	} else {
+		/*
+		 * XXX: Refactor this so that we can retrieve any of the fields in the
+		 * PRSS struct (in prss.h).
+		 */
 		if (strcmp(action, "feed_title") == EQUAL) {
-		        if ((str = data->title)) {
-			        // remove trailing new line if one exists
-			        if (str[strlen(str) - 1] == '\n') {
-				        str[strlen(str) - 1] = 0;
+			str = data->title;
+			if (str && strlen(str) > 0) {
+				// remove trailing new line if one exists
+				if (str[strlen(str) - 1] == '\n') {
+					str[strlen(str) - 1] = 0;
 				}
 				snprintf(p, p_max_size, "%s", str);
 			}
@@ -78,20 +86,24 @@ void rss_process_info(char *p, int p_max_size, char *uri, char *action, int
 			if (act_par < data->item_count) {
 				str = data->items[act_par].title;
 				// remove trailing new line if one exists
-				if (str[strlen(str) - 1] == '\n') {
-					str[strlen(str) - 1] = 0;
+				if (str && strlen(str) > 0) {
+					if (str[strlen(str) - 1] == '\n') {
+						str[strlen(str) - 1] = 0;
+					}
+					snprintf(p, p_max_size, "%s", str);
 				}
-				snprintf(p, p_max_size, "%s", str);
 			}
 		} else if (strcmp(action, "item_desc") == EQUAL) {
 			if (act_par < data->item_count) {
 				str =
 					data->items[act_par].description;
 				// remove trailing new line if one exists
-				if (str[strlen(str) - 1] == '\n') {
-					str[strlen(str) - 1] = 0;
+				if (str && strlen(str) > 0) {
+					if (str[strlen(str) - 1] == '\n') {
+						str[strlen(str) - 1] = 0;
+					}
+					snprintf(p, p_max_size, "%s", str);
 				}
-				snprintf(p, p_max_size, "%s", str);
 			}
 		} else if (strcmp(action, "item_titles") == EQUAL) {
 			if (data->item_count > 0) {
@@ -101,8 +113,6 @@ void rss_process_info(char *p, int p_max_size, char *uri, char *action, int
 				char *tmpspaces = malloc(nrspaces + 1);
 				memset(tmpspaces, ' ', nrspaces);
 				tmpspaces[nrspaces]=0;
-
-				p[0] = 0;
 
 				if (act_par > data->item_count) {
 					show = data->item_count;
@@ -120,7 +130,7 @@ void rss_process_info(char *p, int p_max_size, char *uri, char *action, int
 						}
 						/* remove trailing new line if one exists,
 						 * we have our own */
-						if (str[strlen(str) - 1] == '\n') {
+						if (strlen(str) > 0 && str[strlen(str) - 1] == '\n') {
 							str[strlen(str) - 1] = 0;
 						}
 						strncat(p, tmpspaces, p_max_size);
@@ -129,6 +139,8 @@ void rss_process_info(char *p, int p_max_size, char *uri, char *action, int
 				}
 				free(tmpspaces);
 			}
+		} else {
+			ERR("rss: Invalid action '%s'", action);
 		}
 	}
 	timed_thread_unlock(curloc->p_timed_thread);
