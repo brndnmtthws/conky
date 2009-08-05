@@ -169,7 +169,41 @@ struct x11_info {
 	struct monitor_info monitor;
 	struct desktop_info desktop;
 };
-#endif
+
+int get_stippled_borders(void);
+
+#endif /* X11 */
+
+/* defined in conky.c */
+extern long default_fg_color, default_bg_color, default_out_color;
+extern long color0, color1, color2, color3, color4, color5, color6, color7,
+	   color8, color9;
+void set_current_text_color(long colour);
+long get_current_text_color(void);
+
+void set_updatereset(int);
+int get_updatereset(void);
+
+struct conftree {
+	char* string;
+	struct conftree* horz_next;
+	struct conftree* vert_next;
+	struct conftree* back;
+};
+
+char load_config_file(const char *);
+
+char *get_global_text(void);
+extern long global_text_lines;
+
+//adds newstring to to the tree unless you can already see it when travelling back.
+//if it's possible to attach it then it returns a pointer to the leaf, else it returns NULL
+struct conftree* conftree_add(struct conftree* previous, const char* newstring);
+
+extern struct conftree *currentconffile;
+
+#define MAX_TEMPLATES 10
+char **get_templates(void);
 
 enum {
 	INFO_CPU = 0,
@@ -361,16 +395,19 @@ extern unsigned int max_user_text;
 /* path to config file */
 extern char *current_config;
 
+/* just a wrapper for read_exec() defined in conky.c */
+void do_read_exec(const char *data, char *buf, const int size);
+
 #ifdef X11
 #define TO_X 1
-#endif
+#endif /* X11 */
 #define TO_STDOUT 2
 #define TO_STDERR 4
 #define OVERWRITE_FILE 8
 #define APPEND_FILE 16
 #ifdef NCURSES
 #define TO_NCURSES 32
-#endif
+#endif /* NCURSES */
 enum x_initialiser_state {
 	NO = 0,
 	YES = 1,

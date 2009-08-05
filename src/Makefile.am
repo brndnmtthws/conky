@@ -150,6 +150,8 @@ conky_SOURCES = \
 	common.c                \
 	conky.c                 \
 	conky.h                 \
+	core.c                  \
+	core.h                  \
 	$(freebsd)              \
 	fs.c                    \
 	$(hddtemp)              \

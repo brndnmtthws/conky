@@ -31,6 +31,7 @@
 
 #include "conky.h"
 #include "logging.h"
+#include "specials.h"
 #include <sys/ioctl.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -210,7 +211,7 @@ int mixer_is_mute(int i)
 }
 #undef data
 
-#else
+#else /* MIXER_IS_ALSA */
 int mixer_init(const char *name)
 {
 	unsigned int i;
@@ -274,4 +275,22 @@ int mixer_is_mute(int i)
 {
 	return !mixer_get(i);
 }
-#endif
+
+#endif /* MIXER_IS_ALSA */
+
+#ifdef X11
+void scan_mixer_bar(const char *arg, int *a, int *w, int *h)
+{
+	char buf1[64];
+	int n;
+
+	if (arg && sscanf(arg, "%63s %n", buf1, &n) >= 1) {
+		*a = mixer_init(buf1);
+		scan_bar(arg + n, w, h);
+	} else {
+		*a = mixer_init(NULL);
+		scan_bar(arg, w, h);
+	}
+}
+#endif /* X11 */
+

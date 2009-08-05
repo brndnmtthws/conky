@@ -31,6 +31,7 @@
  */
 
 #include "top.h"
+#include "logging.h"
 
 static unsigned long g_time = 0;
 static unsigned long long previous_total = 0;
@@ -716,3 +717,95 @@ void process_find_top(struct process **cpu, struct process **mem,
 	if (top_io)		sp_acopy(spi_head, io,		MAX_SP);
 #endif /* IOSTATS */
 }
+
+int parse_top_args(const char *s, const char *arg, struct text_object *obj)
+{
+	char buf[64];
+	int n;
+
+	if (obj->data.top.was_parsed) {
+		return 1;
+	}
+	obj->data.top.was_parsed = 1;
+
+	if (arg && !obj->data.top.s) {
+		obj->data.top.s = strndup(arg, text_buffer_size);
+	}
+
+	need_mask |= (1 << INFO_TOP);
+
+	if (s[3] == 0) {
+		obj->type = OBJ_top;
+		top_cpu = 1;
+	} else if (strcmp(&s[3], "_mem") == EQUAL) {
+		obj->type = OBJ_top_mem;
+		top_mem = 1;
+	} else if (strcmp(&s[3], "_time") == EQUAL) {
+		obj->type = OBJ_top_time;
+		top_time = 1;
+#ifdef IOSTATS
+	} else if (strcmp(&s[3], "_io") == EQUAL) {
+		obj->type = OBJ_top_io;
+		top_io = 1;
+#endif /* IOSTATS */
+	} else {
+#ifdef IOSTATS
+		NORM_ERR("Must be top, top_mem, top_time or top_io");
+#else /* IOSTATS */
+		NORM_ERR("Must be top, top_mem or top_time");
+#endif /* IOSTATS */
+		return 0;
+	}
+
+	if (!arg) {
+		NORM_ERR("top needs arguments");
+		return 0;
+	}
+
+	if (sscanf(arg, "%63s %i", buf, &n) == 2) {
+		if (strcmp(buf, "name") == EQUAL) {
+			obj->data.top.type = TOP_NAME;
+		} else if (strcmp(buf, "cpu") == EQUAL) {
+			obj->data.top.type = TOP_CPU;
+		} else if (strcmp(buf, "pid") == EQUAL) {
+			obj->data.top.type = TOP_PID;
+		} else if (strcmp(buf, "mem") == EQUAL) {
+			obj->data.top.type = TOP_MEM;
+		} else if (strcmp(buf, "time") == EQUAL) {
+			obj->data.top.type = TOP_TIME;
+		} else if (strcmp(buf, "mem_res") == EQUAL) {
+			obj->data.top.type = TOP_MEM_RES;
+		} else if (strcmp(buf, "mem_vsize") == EQUAL) {
+			obj->data.top.type = TOP_MEM_VSIZE;
+#ifdef IOSTATS
+		} else if (strcmp(buf, "io_read") == EQUAL) {
+			obj->data.top.type = TOP_READ_BYTES;
+		} else if (strcmp(buf, "io_write") == EQUAL) {
+			obj->data.top.type = TOP_WRITE_BYTES;
+		} else if (strcmp(buf, "io_perc") == EQUAL) {
+			obj->data.top.type = TOP_IO_PERC;
+#endif /* IOSTATS */
+		} else {
+			NORM_ERR("invalid type arg for top");
+#ifdef IOSTATS
+			NORM_ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize, "
+					"io_read, io_write, io_perc");
+#else /* IOSTATS */
+			NORM_ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize");
+#endif /* IOSTATS */
+			return 0;
+		}
+		if (n < 1 || n > 10) {
+			NORM_ERR("invalid num arg for top. Must be between 1 and 10.");
+			return 0;
+		} else {
+			obj->data.top.num = n - 1;
+		}
+	} else {
+		NORM_ERR("invalid argument count for top");
+		return 0;
+	}
+	return 1;
+}
+
+

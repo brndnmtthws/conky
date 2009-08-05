@@ -390,17 +390,14 @@ void llua_set_number(const char *key, double value)
 	lua_setfield(lua_L, -2, key);
 }
 
-#ifdef X11
-void llua_draw_pre_hook(void)
+void llua_set_startup_hook(const char *args)
 {
-	if (!lua_L || !draw_pre_hook) return;
-	llua_do_call(draw_pre_hook, 0);
+	startup_hook = strdup(args);
 }
 
-void llua_draw_post_hook(void)
+void llua_set_shutdown_hook(const char *args)
 {
-	if (!lua_L || !draw_post_hook) return;
-	llua_do_call(draw_post_hook, 0);
+	shutdown_hook = strdup(args);
 }
 
 void llua_startup_hook(void)
@@ -415,6 +412,19 @@ void llua_shutdown_hook(void)
 	llua_do_call(shutdown_hook, 0);
 }
 
+#ifdef X11
+void llua_draw_pre_hook(void)
+{
+	if (!lua_L || !draw_pre_hook) return;
+	llua_do_call(draw_pre_hook, 0);
+}
+
+void llua_draw_post_hook(void)
+{
+	if (!lua_L || !draw_post_hook) return;
+	llua_do_call(draw_post_hook, 0);
+}
+
 void llua_set_draw_pre_hook(const char *args)
 {
 	draw_pre_hook = strdup(args);
@@ -423,16 +433,6 @@ void llua_set_draw_pre_hook(const char *args)
 void llua_set_draw_post_hook(const char *args)
 {
 	draw_post_hook = strdup(args);
-}
-
-void llua_set_startup_hook(const char *args)
-{
-	startup_hook = strdup(args);
-}
-
-void llua_set_shutdown_hook(const char *args)
-{
-	shutdown_hook = strdup(args);
 }
 
 #ifdef LUA_EXTRAS

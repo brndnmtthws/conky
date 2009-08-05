@@ -41,6 +41,7 @@
  ******************************************/
 
 #include "conky.h"
+#include "text_object.h"
 #define CPU_THRESHHOLD	0	/* threshhold for the cpu diff to appear */
 #include <time.h>
 #include <dirent.h>
@@ -140,5 +141,7 @@ void process_find_top(struct process **, struct process **, struct process **
 
 /* lookup a program by it's name */
 struct process *get_process_by_name(const char *);
+
+int parse_top_args(const char *s, const char *arg, struct text_object *obj);
 
 #endif /* _top_h_ */
