@@ -7276,15 +7276,9 @@ static void draw_stuff(void)
 	draw_mode = FG;
 	draw_text();
 #ifdef X11
+	xdbe_swap_buffers();
 	if (output_methods & TO_X) {
 #ifdef HAVE_XDBE
-		if (use_xdbe) {
-			XdbeSwapInfo swap;
-
-			swap.swap_window = window.window;
-			swap.swap_action = XdbeBackground;
-			XdbeSwapBuffers(display, &swap, 1);
-		}
 #endif
 	}
 #endif /* X11 */
@@ -7443,15 +7437,9 @@ static void main_loop(void)
 						XResizeWindow(display, window.window, window.width,
 								window.height); /* resize window */
 						set_transparent_background(window.window);
-						/* swap buffers */
 #ifdef HAVE_XDBE
-						if (use_xdbe) {
-							XdbeSwapInfo swap;
-
-							swap.swap_window = window.window;
-							swap.swap_action = XdbeBackground;
-							XdbeSwapBuffers(display, &swap, 1);
-						}
+						/* swap buffers */
+						xdbe_swap_buffers();
 #endif
 
 						changed++;
@@ -7660,12 +7648,12 @@ static void main_loop(void)
 			XFixesSetRegion(display, x11_stuff.region2, 0, 0);
 #endif /* HAVE_XDAMAGE */
 
-			/* XDBE doesn't seem to provide a way to clear the back buffer without
-			 * interfering with the front buffer, other than passing XdbeBackground
-			 * to XdbeSwapBuffers. That means that if we're using XDBE, we need to
-			 * redraw the text even if it wasn't part of the exposed area. OTOH,
-			 * if we're not going to call draw_stuff at all, then no swap happens
-			 * and we can safely do nothing. */
+			/* XDBE doesn't seem to provide a way to clear the back buffer
+			 * without interfering with the front buffer, other than passing
+			 * XdbeBackground to XdbeSwapBuffers. That means that if we're
+			 * using XDBE, we need to redraw the text even if it wasn't part of
+			 * the exposed area. OTOH, if we're not going to call draw_stuff at
+			 * all, then no swap happens and we can safely do nothing. */
 
 			if (!XEmptyRegion(x11_stuff.region)) {
 #ifdef HAVE_XDBE

@@ -94,5 +94,9 @@ long get_x11_color(const char *);
 void get_x11_desktop_info(Display *display, Atom atom);
 void set_struts(int);
 
+#ifdef HAVE_XDBE
+void xdbe_swap_buffers(void);
+#endif /* HAVE_XDBE */
+
 #endif /*X11_H_*/
 #endif /* X11 */

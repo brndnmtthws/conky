@@ -775,3 +775,17 @@ void set_struts(int sidenum)
 	}
 }
 #endif /* OWN_WINDOW */
+
+#ifdef HAVE_XDBE
+void xdbe_swap_buffers(void)
+{
+	if (use_xdbe) {
+		XdbeSwapInfo swap;
+
+		swap.swap_window = window.window;
+		swap.swap_action = XdbeBackground;
+		XdbeSwapBuffers(display, &swap, 1);
+	}
+}
+#endif /* HAVE_XDBE */
+
