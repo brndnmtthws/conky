@@ -48,7 +48,9 @@ void prss_parse_data(void *result, const char *xml_data)
 
 void free_rss_items(PRSS *data)
 {
-	for (int i = 0; i < data->item_count; i++) {
+	int i;
+
+	for (i = 0; i < data->item_count; i++) {
 #define CLEAR(a) if (data->items[i].a) { free(data->items[i].a); data->items[i].a = 0; }
 		CLEAR(title);
 		CLEAR(link);
