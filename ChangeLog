@@ -1,6 +1,10 @@
 2009-07-31
 	* Removed alias config option due to brokenness
 
+2009-07-23
+	* Changed xoap parsing method to xpath, in preparation to include
+	forecast data
+
 2009-07-19
 	* Fixed out-of-tree builds
 	* Update MPD elapsed/progress when stopped (sf.net #2792113)
