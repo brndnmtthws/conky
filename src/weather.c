@@ -107,6 +107,7 @@ static void parse_cc(PWEATHER *res, xmlXPathContextPtr xpathCtx)
 		xmlXPathFreeObject(xpathObj);
 		return;
 	}
+	xmlXPathFreeObject(xpathObj);
 
 	for (i = 0; i < NUM_XPATH_EXPRESSIONS; i++) {
 		xpathObj = xmlXPathEvalExpression((const xmlChar *)xpath_expression[i], xpathCtx);
@@ -608,7 +609,7 @@ void weather_process_info(char *p, int p_max_size, char *uri, char *data_type, i
 #ifdef XOAP
 
 /* xoap suffix for weather from weather.com */
-static char *xoap = NULL;
+static char *xoap_cc = NULL;
 
 /*
  * TODO: make the xoap keys file readable from the config file
@@ -618,30 +619,27 @@ static char *xoap = NULL;
 void load_xoap_keys(void)
 {
 	FILE *fp;
-	char *par = (char *) malloc(11 * sizeof(char));
-	char *key = (char *) malloc(17 * sizeof(char));
+	char *par  = (char *) malloc(11 * sizeof(char));
+	char *key  = (char *) malloc(17 * sizeof(char));
+	char *xoap = (char *) malloc(64 * sizeof(char));
 
-	xoap = (char *) malloc(64 * sizeof(char));
 	to_real_path(xoap, XOAP_FILE);
 	fp = fopen(xoap, "r");
 	if (fp != NULL) {
 		if (fscanf(fp, "%10s %16s", par, key) == 2) {
-			strcpy(xoap, "?cc=*&link=xoap&prod=xoap&par=");
-			strcat(xoap, par);
-			strcat(xoap, "&key=");
-			strcat(xoap, key);
-			strcat(xoap, "&unit=m");
-		} else {
-			free(xoap);
-			xoap = NULL;
+			xoap_cc = (char *) malloc(128 * sizeof(char));
+
+			strcpy(xoap_cc, "?cc=*&link=xoap&prod=xoap&par=");
+			strcat(xoap_cc, par);
+			strcat(xoap_cc, "&key=");
+			strcat(xoap_cc, key);
+			strcat(xoap_cc, "&unit=m");
 		}
 		fclose(fp);
-	} else {
-		free(xoap);
-		xoap = NULL;
 	}
 	free(par);
 	free(key);
+	free(xoap);
 }
 #endif /* XOAP */
 
@@ -657,14 +655,14 @@ int process_weather_uri(char *uri, char *locID)
 	/* Construct complete uri */
 #ifdef XOAP
 	if (strstr(uri, "xoap.weather.com")) {
-		if (xoap != NULL) {
+		if (xoap_cc != NULL) {
 			strcat(uri, locID);
-			strcat(uri, xoap);
+			strcat(uri, xoap_cc);
 		} else {
 			free(uri);
 			uri = NULL;
 		}
-	} else 
+	} else
 #endif /* XOAP */
 	if (strstr(uri, "weather.noaa.gov")) {
 		strcat(uri, locID);
