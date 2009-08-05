@@ -109,7 +109,7 @@ static void parse_df(PWEATHER_FORECAST *res, xmlXPathContextPtr xpathCtx)
 	xmlXPathObjectPtr xpathObj;
 
 	for (i = 0; i < NUM_XPATH_EXPRESSIONS_DF; i++) {
-		xpathObj = xmlXPathEvalExpression((xmlChar *)xpath_expression_df[i], xpathCtx);
+		xpathObj = xmlXPathEvalExpression((const xmlChar *)xpath_expression_df[i], xpathCtx);
 		if (xpathObj != NULL) {
 			xmlNodeSetPtr nodes = xpathObj->nodesetval;
 			k = 0;
@@ -179,34 +179,46 @@ static void parse_cc(PWEATHER *res, xmlXPathContextPtr xpathCtx)
 	char *content;
 	xmlXPathObjectPtr xpathObj;
 
+	xpathObj = xmlXPathEvalExpression((const xmlChar *)"/error/err", xpathCtx);
+	if (xpathObj && xpathObj->nodesetval && xpathObj->nodesetval->nodeNr > 0 &&
+			xpathObj->nodesetval->nodeTab[0]->type == XML_ELEMENT_NODE) {
+		content = (char *)xmlNodeGetContent(xpathObj->nodesetval->nodeTab[0]);
+		NORM_ERR("XOAP error: %s", content);
+		xmlFree(content);
+		xmlXPathFreeObject(xpathObj);
+		return;
+	}
+
 	for (i = 0; i < NUM_XPATH_EXPRESSIONS_CC; i++) {
-		xpathObj = xmlXPathEvalExpression((xmlChar *)xpath_expression_cc[i], xpathCtx);
-		if ((xpathObj != NULL) && (xpathObj->nodesetval->nodeTab[0]->type == XML_ELEMENT_NODE)) {
+		xpathObj = xmlXPathEvalExpression((const xmlChar *)xpath_expression_cc[i], xpathCtx);
+		if (xpathObj && xpathObj->nodesetval && xpathObj->nodesetval->nodeNr >0 &&
+				xpathObj->nodesetval->nodeTab[0]->type ==
+				XML_ELEMENT_NODE) {
 			content = (char *)xmlNodeGetContent(xpathObj->nodesetval->nodeTab[0]);
 			switch(i) {
-			case 0:
-				strncpy(res->lastupd, content, 31);
-				break;
-			case 1:
-				res->temp = atoi(content);
-				break;
-			case 2:
-				strncpy(res->xoap_t, content, 31);
-				break;
-			case 3:
-				res->bar = atoi(content);
-				break;
-			case 4:
-				res->wind_s = atoi(content);
-				break;
-			case 5:
-				res->wind_d = atoi(content);
-			    break;
-			case 6:
-				res->hmid = atoi(content);
-				break;
-			case 7:
-				strncpy(res->icon, content, 2);
+				case 0:
+					strncpy(res->lastupd, content, 31);
+					break;
+				case 1:
+					res->temp = atoi(content);
+					break;
+				case 2:
+					strncpy(res->xoap_t, content, 31);
+					break;
+				case 3:
+					res->bar = atoi(content);
+					break;
+				case 4:
+					res->wind_s = atoi(content);
+					break;
+				case 5:
+					res->wind_d = atoi(content);
+					break;
+				case 6:
+					res->hmid = atoi(content);
+					break;
+				case 7:
+					strncpy(res->icon, content, 2);
 			}
 			xmlFree(content);
 		}
@@ -695,7 +707,12 @@ void weather_process_info(char *p, int p_max_size, char *uri, char *data_type, i
 	} else if (strcmp(data_type, "cloud_cover") == EQUAL) {
 #ifdef XOAP
 		if (data->xoap_t[0] != '\0') {
+			char *s = p;
 			strncpy(p, data->xoap_t, p_max_size);
+			while (*s) {
+				*s = tolower(*s);
+				s++;
+			}
 		} else
 #endif /* XOAP */
 			if (data->cc == 0) {
