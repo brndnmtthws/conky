@@ -188,6 +188,7 @@ static void parse_cc(PWEATHER *res, xmlXPathContextPtr xpathCtx)
 		xmlXPathFreeObject(xpathObj);
 		return;
 	}
+	xmlXPathFreeObject(xpathObj);
 
 	for (i = 0; i < NUM_XPATH_EXPRESSIONS_CC; i++) {
 		xpathObj = xmlXPathEvalExpression((const xmlChar *)xpath_expression_cc[i], xpathCtx);

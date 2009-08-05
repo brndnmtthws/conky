@@ -25,7 +25,7 @@ typedef struct PRSS_Item_ {
 	char *link;
 	char *description;
 	char *category;
-	char *pubdate;
+	char *pubDate;
 	char *guid;
 } PRSS_Item;
 
@@ -37,11 +37,11 @@ typedef struct PRSS_ {
 	char *description;
 	char *language;
 	char *generator;
-	char *managingeditor;
-	char *webmaster;
+	char *managingEditor;
+	char *webMaster;
 	char *docs;
-	char *lastbuilddate;
-	char *pubdate;
+	char *lastBuildDate;
+	char *pubDate;
 	char *copyright;
 	char *ttl;
 
