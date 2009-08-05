@@ -7587,9 +7587,10 @@ static void main_loop(void)
 					case ButtonPress:
 						if (own_window) {
 							/* if an ordinary window with decorations */
-							if ((window.type == TYPE_NORMAL)
-								&& (!TEST_HINT(window.hints,
-								HINT_UNDECORATED))) {
+							if ((window.type == TYPE_NORMAL &&
+										(!TEST_HINT(window.hints,
+													HINT_UNDECORATED))) ||
+									window.type == TYPE_DESKTOP) {
 								/* allow conky to hold input focus. */
 								break;
 							} else {
