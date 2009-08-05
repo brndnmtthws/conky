@@ -2148,7 +2148,7 @@ static struct text_object *construct_text_object(const char *s,
 			obj->type = OBJ_text;
 			return NULL;
 		}
-		DBGP("parsed platform args: '%s' '%s' %d %f %f\n", buf1, buf2, n, factor, offset);
+		DBGP("parsed platform args: '%s' '%s' %d %f %f", buf1, buf2, n, factor, offset);
 		obj->data.sysfs.fd = open_platform_sensor((*buf1) ? buf1 : 0, buf2, n,
 				&obj->data.sysfs.arg, obj->data.sysfs.devtype);
 		strncpy(obj->data.sysfs.type, buf2, 63);

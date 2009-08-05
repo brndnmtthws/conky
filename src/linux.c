@@ -929,9 +929,8 @@ int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n,
 			divbuf[divn] = '\0';
 			*divisor = atoi(divbuf);
 		}
+		close(divfd);
 	}
-
-	close(divfd);
 
 	return fd;
 }
