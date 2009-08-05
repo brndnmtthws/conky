@@ -3488,8 +3488,8 @@
 					precipitation (in %)</option>
                 </member>
             </simplelist>
-            <para>'delay_in_minutes' (optional, default 150) cannot
-            be lower than 150 min.</para>
+            <para>'delay_in_minutes' (optional, default 210) cannot
+            be lower than 210 min.</para>
             <para>This object is threaded, and once a thread is
             created it can't be explicitely destroyed. One thread
             will run for each URI specified. You can use any

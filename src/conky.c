@@ -3080,9 +3080,9 @@ static struct text_object *construct_text_object(const char *s,
 				}
 				obj->data.weather_forecast.day = day;
 
-				/* Limit the data retrieval interval to 2 hours and an half */
-				if (interval < 150) {
-					interval = 150;
+				/* Limit the data retrieval interval to 3 hours and an half */
+				if (interval < 210) {
+					interval = 210;
 				}
 
 				/* Convert to seconds */
