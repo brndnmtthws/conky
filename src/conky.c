@@ -7224,6 +7224,9 @@ static void draw_text(void)
 
 static void draw_stuff(void)
 {
+#ifdef IMLIB2
+	cimlib_render(text_start_x, text_start_y, window.width, window.height);
+#endif /* IMLIB2 */
 	if (overwrite_file) {
 		overwrite_fpointer = fopen(overwrite_file, "w");
 		if(!overwrite_fpointer)
@@ -7436,9 +7439,11 @@ static void main_loop(void)
 								|| text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2 != window.height)) {
 						window.width = text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
 						window.height = text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
+						draw_stuff(); /* redraw everything in our newly sized window */
 						XResizeWindow(display, window.window, window.width,
-								window.height);
+								window.height); /* resize window */
 						set_transparent_background(window.window);
+						/* swap buffers */
 #ifdef HAVE_XDBE
 						if (use_xdbe) {
 							XdbeSwapInfo swap;
@@ -7680,9 +7685,6 @@ static void main_loop(void)
 					XftDrawSetClip(window.xftdraw, x11_stuff.region);
 				}
 #endif
-#ifdef IMLIB2
-				cimlib_render(text_start_x, text_start_y, window.width, window.height);
-#endif /* IMLIB2 */
 				draw_stuff();
 				XDestroyRegion(x11_stuff.region);
 				x11_stuff.region = XCreateRegion();
