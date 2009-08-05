@@ -108,6 +108,17 @@ static void parse_df(PWEATHER_FORECAST *res, xmlXPathContextPtr xpathCtx)
 	char *content;
 	xmlXPathObjectPtr xpathObj;
 
+	xpathObj = xmlXPathEvalExpression((const xmlChar *)"/error/err", xpathCtx);
+	if (xpathObj && xpathObj->nodesetval && xpathObj->nodesetval->nodeNr > 0 &&
+			xpathObj->nodesetval->nodeTab[0]->type == XML_ELEMENT_NODE) {
+		content = (char *)xmlNodeGetContent(xpathObj->nodesetval->nodeTab[0]);
+		NORM_ERR("XOAP error: %s", content);
+		xmlFree(content);
+		xmlXPathFreeObject(xpathObj);
+		return;
+	}
+	xmlXPathFreeObject(xpathObj);
+
 	for (i = 0; i < NUM_XPATH_EXPRESSIONS_DF; i++) {
 		xpathObj = xmlXPathEvalExpression((const xmlChar *)xpath_expression_df[i], xpathCtx);
 		if (xpathObj != NULL) {
