@@ -494,18 +494,18 @@ void llua_update_window_table(int text_start_x, int text_start_y, int text_width
 }
 #endif /* X11 */
 
-void llua_setup_info(struct information *i, double u_interval)
+void llua_setup_info(conky_context *ctx, double u_interval)
 {
 	if (!lua_L) return;
 	lua_newtable(lua_L);
 
 	llua_set_number("update_interval", u_interval);
-	llua_set_number("uptime", i->uptime);
+	llua_set_number("uptime", ctx->info.uptime);
 
 	lua_setglobal(lua_L, "conky_info");
 }
 
-void llua_update_info(struct information *i, double u_interval)
+void llua_update_info(conky_context *ctx, double u_interval)
 {
 	if (!lua_L) return;
 
@@ -517,7 +517,7 @@ void llua_update_info(struct information *i, double u_interval)
 	}
 
 	llua_set_number("update_interval", u_interval);
-	llua_set_number("uptime", i->uptime);
+	llua_set_number("uptime", ctx->info.uptime);
 
 	lua_setglobal(lua_L, "conky_info");
 }

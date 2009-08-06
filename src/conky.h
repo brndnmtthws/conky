@@ -33,8 +33,6 @@
 #define _conky_h_
 
 #include "config.h"	/* defines */
-#include "common.h"	/* at least for struct dns_data */
-#include <sys/utsname.h> /* struct uname_s */
 
 #if defined(HAS_MCHECK_H)
 #include <mcheck.h>
@@ -133,45 +131,8 @@ char *strndup(const char *s, size_t n);
  * one doesn't know what to choose. Defaults to 256.  */
 extern unsigned int text_buffer_size;
 
-struct entropy_s {
-	unsigned int entropy_avail;
-	unsigned int poolsize;
-};
-
-struct usr_info {
-	char *names;
-	char *times;
-	char *terms;
-	int number;
-};
-
-struct gateway_info {
-	char *iface;
-	char *ip;
-	int count;
-};
-
 #ifdef X11
-struct monitor_info {
-	int number;
-	int current;
-};
-
-struct desktop_info {
-        int current;
-        int number;
-        unsigned int nitems;
-        char *all_names;
-        char *name;
-};
-
-struct x11_info {
-	struct monitor_info monitor;
-	struct desktop_info desktop;
-};
-
 int get_stippled_borders(void);
-
 #endif /* X11 */
 
 /* defined in conky.c */
@@ -184,15 +145,6 @@ long get_current_text_color(void);
 void set_updatereset(int);
 int get_updatereset(void);
 
-struct conftree {
-	char* string;
-	struct conftree* horz_next;
-	struct conftree* vert_next;
-	struct conftree* back;
-};
-
-char load_config_file(const char *);
-
 char *get_global_text(void);
 extern long global_text_lines;
 
@@ -201,9 +153,6 @@ extern long global_text_lines;
 struct conftree* conftree_add(struct conftree* previous, const char* newstring);
 
 extern struct conftree *currentconffile;
-
-#define MAX_TEMPLATES 10
-char **get_templates(void);
 
 enum {
 	INFO_CPU = 0,
@@ -278,69 +227,6 @@ enum {
 	IFUP_ADDR
 } ifup_strictness;
 
-struct information {
-	unsigned int mask;
-
-	struct utsname uname_s;
-
-	char freq[10];
-
-	double uptime;
-
-	/* memory information in kilobytes */
-	unsigned long long mem, memeasyfree, memfree, memmax, swap, swapfree, swapmax;
-	unsigned long long bufmem, buffers, cached;
-
-	unsigned short procs;
-	unsigned short run_procs;
-
-	float *cpu_usage;
-	/* struct cpu_stat cpu_summed; what the hell is this? */
-	unsigned int cpu_count;
-	int cpu_avg_samples;
-
-	int net_avg_samples;
-
-	int diskio_avg_samples;
-
-	float loadavg[3];
-
-	struct mail_s *mail;
-	int mail_running;
-#ifdef XMMS2
-	struct xmms2_s xmms2;
-#endif
-#ifdef AUDACIOUS
-	AUDACIOUS_S audacious;
-#endif
-#ifdef BMPX
-	struct bmpx_s bmpx;
-#endif
-	struct usr_info users;
-	struct gateway_info gw_info;
-	struct dns_data nameserver_info;
-	struct process *cpu[10];
-	struct process *memu[10];
-	struct process *time[10];
-#ifdef IOSTATS
-	struct process *io[10];
-#endif
-	struct process *first_process;
-	unsigned long looped;
-	struct entropy_s entropy;
-	double music_player_interval;
-
-#ifdef X11
-	struct x11_info x11;
-#endif
-
-#ifdef APCUPSD
-	APCUPSD_S apcupsd;
-#endif
-
-	short kflags;	/* kernel settings, see enum KFLAG */
-};
-
 #ifdef HAVE_LUA
 #include "llua.h"
 #endif /* HAVE_LUA */
@@ -355,70 +241,15 @@ enum {
 	/* bits 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 available for future use */
 	/* KFLAG_NEXT_ONE = 0x04 */
 };
-#define KFLAG_SETON(a) info.kflags |= a
-#define KFLAG_SETOFF(a) info.kflags &= (~a)
-#define KFLAG_FLIP(a) info.kflags ^= a
-#define KFLAG_ISSET(a) info.kflags & a
-
-/* defined in conky.c, needed by top.c */
-extern int top_cpu, top_mem, top_time;
-#ifdef IOSTATS
-extern int top_io;
-#endif
-
-/* defined in conky.c, needed by top.c */
-extern int cpu_separate;
-
-/* struct that has all info to be shared between
- * instances of the same text object */
-extern struct information info;
+#define KFLAG_SETON(a) ctx->info.kflags |= a
+#define KFLAG_SETOFF(a) ctx->info.kflags &= (~a)
+#define KFLAG_FLIP(a) ctx->info.kflags ^= a
+#define KFLAG_ISSET(a) ctx->info.kflags & a
 
 /* defined in users.c */
 void update_users(void);
 
-/* defined in conky.c */
-extern double current_update_time, last_update_time, update_interval;
-
-/* defined in conky.c */
-int spaced_print(char *, int, const char *, int, ...)
-	__attribute__((format(printf, 3, 5)));
 extern int inotify_fd;
-
-/* defined in conky.c
- * evaluates 'text' and places the result in 'buffer'
- */
-void evaluate(const char *text, char *buffer);
-
-/* maximum size of config TEXT buffer, i.e. below TEXT line. */
-extern unsigned int max_user_text;
-
-/* path to config file */
-extern char *current_config;
-
-/* just a wrapper for read_exec() defined in conky.c */
-void do_read_exec(const char *data, char *buf, const int size);
-
-#ifdef X11
-#define TO_X 1
-#endif /* X11 */
-#define TO_STDOUT 2
-#define TO_STDERR 4
-#define OVERWRITE_FILE 8
-#define APPEND_FILE 16
-#ifdef NCURSES
-#define TO_NCURSES 32
-#endif /* NCURSES */
-enum x_initialiser_state {
-	NO = 0,
-	YES = 1,
-	NEVER = 2
-};
-extern int output_methods;
-extern enum x_initialiser_state x_initialised;
-
-void set_update_interval(double interval);
-
-#define DEFAULT_TEXT_BUFFER_SIZE_S "##DEFAULT_TEXT_BUFFER_SIZE"
 
 #define NOBATTERY 0
 

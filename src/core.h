@@ -32,25 +32,50 @@
 #ifndef _CONKY_CORE_H_
 #define _CONKY_CORE_H_
 
-#include "conky.h"
+#include "config.h"	/* defines */
 
-struct text_object *construct_text_object(const char *s, const char *arg, long
-		line, void **ifblock_opaque, void *free_at_crash);
-
-size_t remove_comments(char *string);
-
-int extract_variable_text_internal(struct text_object *retval, const char *const_p);
-
-void free_text_objects(struct text_object *root, int internal);
+/* alignments */
+enum alignment {
+	TOP_LEFT = 1,
+	TOP_RIGHT,
+	TOP_MIDDLE,
+	BOTTOM_LEFT,
+	BOTTOM_RIGHT,
+	BOTTOM_MIDDLE,
+	MIDDLE_LEFT,
+	MIDDLE_RIGHT,
+	NONE
+};
 
 #ifdef X11
-void scan_mixer_bar(const char *arg, int *a, int *w, int *h);
+#define TO_X 1
+#endif /* X11 */
+#define TO_STDOUT 2
+#define TO_STDERR 4
+#define OVERWRITE_FILE 8
+#define APPEND_FILE 16
+#ifdef NCURSES
+#define TO_NCURSES 32
+#endif /* NCURSES */
+
+void read_exec(const char *data, char *buf, const int size);
+void set_default_configurations(conky_context *ctx);
+void set_update_interval(double interval);
+
+/* update_text() generates new text and clears old text area */
+void update_text(conky_context *ctx);
+void update_text_area(conky_context *ctx);
+void draw_stuff(conky_context *ctx);
+char load_config_file(conky_context *ctx, const char *f);
+void extract_variable_text(conky_context *ctx, const char *p);
+
+#ifdef X11
+void clear_text(conky_context *ctx, int exposures);
+enum alignment string_to_alignment(const char *s);
+void load_config_file_x11(conky_context *ctx, const char *);
+void X11_create_window(conky_context *ctx);
 #endif /* X11 */
 
-#ifdef HAVE_ICONV
-void set_iconv_converting(char i);
-void set_iconv_selected(long i);
-void iconv_convert(size_t a, char *buff_in, char *p, size_t p_max_size);
-#endif /* HAVE_ICONV */
+void convert_escapes(char *buf);
 
 #endif /* _CONKY_CORE_H_ */

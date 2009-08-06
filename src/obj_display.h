@@ -25,11 +25,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
+ * vim: ts=4 sw=4 noet ai cindent syntax=c
+ *
  */
-#ifndef _COLOURS_H
-#define _COLOURS_H
 
-unsigned int adjust_colours(conky_context *ctx, unsigned int);
-unsigned long *do_gradient(conky_context *ctx, int, unsigned long, unsigned long);
+#ifndef _CONKY_OBJ_DISPLAY_H_
+#define _CONKY_OBJ_DISPLAY_H_
 
-#endif /* _COLOURS_H */
+#include "conky.h"
+#include "text_object.h"
+
+void generate_text_internal(char *p, int p_max_size, struct text_object root,
+		struct information *cur);
+
+#endif /* _CONKY_OBJ_DISPLAY_H_ */

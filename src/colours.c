@@ -28,7 +28,9 @@
  * vim: ts=4 sw=4 noet ai cindent syntax=c
  *
  */
+
 #include "conky.h"
+#include "core.h"
 #include "logging.h"
 #ifdef X11
 #include "x11.h"
@@ -38,49 +40,46 @@
 #define CONST_8_TO_5_BITS 0.12156862745098
 #define CONST_8_TO_6_BITS 0.247058823529412
 
-static short colour_depth = 0;
-static long redmask, greenmask, bluemask;
-
-static void set_up_gradient(void)
+static void set_up_gradient(conky_context *ctx)
 {
 	int i;
 #ifdef X11
-	if (output_methods & TO_X) {
-		colour_depth = DisplayPlanes(display, screen);
+	if (ctx->output_methods & TO_X) {
+		ctx->colour_depth = DisplayPlanes(display, screen);
 	} else
 #endif /* X11 */
 	{
-		colour_depth = 16;
+		ctx->colour_depth = 16;
 	}
-	if (colour_depth != 24 && colour_depth != 16) {
+	if (ctx->colour_depth != 24 && ctx->colour_depth != 16) {
 		NORM_ERR("using non-standard colour depth, gradients may look like a "
 			"lolly-pop");
 	}
 
-	redmask = 0;
-	greenmask = 0;
-	bluemask = 0;
-	for (i = (colour_depth / 3) - 1; i >= 0; i--) {
-		redmask |= 1 << i;
-		greenmask |= 1 << i;
-		bluemask |= 1 << i;
+	ctx->redmask = 0;
+	ctx->greenmask = 0;
+	ctx->bluemask = 0;
+	for (i = (ctx->colour_depth / 3) - 1; i >= 0; i--) {
+		ctx->redmask |= 1 << i;
+		ctx->greenmask |= 1 << i;
+		ctx->bluemask |= 1 << i;
 	}
-	if (colour_depth % 3 == 1) {
-		greenmask |= 1 << (colour_depth / 3);
+	if (ctx->colour_depth % 3 == 1) {
+		ctx->greenmask |= 1 << (ctx->colour_depth / 3);
 	}
-	redmask = redmask << (2 * colour_depth / 3 + colour_depth % 3);
-	greenmask = greenmask << (colour_depth / 3);
+	ctx->redmask = ctx->redmask << (2 * ctx->colour_depth / 3 + ctx->colour_depth % 3);
+	ctx->greenmask = ctx->greenmask << (ctx->colour_depth / 3);
 }
 
 /* adjust colour values depending on colour depth */
-unsigned int adjust_colours(unsigned int colour)
+unsigned int adjust_colours(conky_context *ctx, unsigned int colour)
 {
 	double r, g, b;
 
-	if (colour_depth == 0) {
-		set_up_gradient();
+	if (ctx->colour_depth == 0) {
+		set_up_gradient(ctx);
 	}
-	if (colour_depth == 16) {
+	if (ctx->colour_depth == 16) {
 		r = (colour & 0xff0000) >> 16;
 		g = (colour & 0xff00) >> 8;
 		b =  colour & 0xff;
@@ -92,25 +91,25 @@ unsigned int adjust_colours(unsigned int colour)
 }
 
 /* this function returns the next colour between two colours for a gradient */
-unsigned long *do_gradient(int width, unsigned long first_colour, unsigned long last_colour)
+unsigned long *do_gradient(conky_context *ctx, int width, unsigned long first_colour, unsigned long last_colour)
 {
 	int red1, green1, blue1;				// first colour
 	int red2, green2, blue2;				// last colour
 	int reddiff, greendiff, bluediff;		// difference
-	short redshift = (2 * colour_depth / 3 + colour_depth % 3);
-	short greenshift = (colour_depth / 3);
+	short redshift = (2 * ctx->colour_depth / 3 + ctx->colour_depth % 3);
+	short greenshift = (ctx->colour_depth / 3);
 	unsigned long *colours = malloc(width * sizeof(unsigned long));
 	int i;
 
-	if (colour_depth == 0) {
-		set_up_gradient();
+	if (ctx->colour_depth == 0) {
+		set_up_gradient(ctx);
 	}
-	red1 = (first_colour & redmask) >> redshift;
-	green1 = (first_colour & greenmask) >> greenshift;
-	blue1 = first_colour & bluemask;
-	red2 = (last_colour & redmask) >> redshift;
-	green2 = (last_colour & greenmask) >> greenshift;
-	blue2 = last_colour & bluemask;
+	red1 = (first_colour & ctx->redmask) >> redshift;
+	green1 = (first_colour & ctx->greenmask) >> greenshift;
+	blue1 = first_colour & ctx->bluemask;
+	red2 = (last_colour & ctx->redmask) >> redshift;
+	green2 = (last_colour & ctx->greenmask) >> greenshift;
+	blue2 = last_colour & ctx->bluemask;
 	reddiff = abs(red1 - red2);
 	greendiff = abs(green1 - green2);
 	bluediff = abs(blue1 - blue2);
@@ -150,14 +149,14 @@ unsigned long *do_gradient(int width, unsigned long first_colour, unsigned long 
 		if (blue3 < 0) {
 			blue3 = 0;
 		}
-		if (red3 > bluemask) {
-			red3 = bluemask;
+		if (red3 > ctx->bluemask) {
+			red3 = ctx->bluemask;
 		}
-		if (green3 > bluemask) {
-			green3 = bluemask;
+		if (green3 > ctx->bluemask) {
+			green3 = ctx->bluemask;
 		}
-		if (blue3 > bluemask) {
-			blue3 = bluemask;
+		if (blue3 > ctx->bluemask) {
+			blue3 = ctx->bluemask;
 		}
 		colours[i] = (red3 << redshift) | (green3 << greenshift) | blue3;
 	}

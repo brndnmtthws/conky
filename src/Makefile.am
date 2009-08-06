@@ -152,6 +152,13 @@ conky_SOURCES = \
 	conky.h                 \
 	core.c                  \
 	core.h                  \
+	obj_create.c            \
+	obj_create.h            \
+	obj_display.c           \
+	obj_display.h           \
+	obj_destroy.c           \
+	obj_destroy.h           \
+	structs.h               \
 	$(freebsd)              \
 	fs.c                    \
 	$(hddtemp)              \

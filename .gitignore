@@ -12,6 +12,7 @@ config.status
 config.sub
 configure
 configure.ac
+compile
 depcomp
 install-sh
 libtool
@@ -30,6 +31,8 @@ src/build.h
 src/config.h
 src/defconfig.h
 src/*.o
+lua/.deps/
+lua/.libs/
 conky-*.tar.*
 doc/*.html
 doc/*.mxml

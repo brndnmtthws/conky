@@ -33,6 +33,7 @@
 #include "text_object.h"
 #include "conky.h"
 #include "common.h"
+#include "core.h"
 #include <stdarg.h>
 #include <math.h>
 #include <time.h>
@@ -53,7 +54,7 @@
 #include <X11/Xutil.h>
 #ifdef HAVE_XDAMAGE
 #include <X11/extensions/Xdamage.h>
-#endif
+#endif /* HAVE_XDAMAGE */
 #ifdef IMLIB2
 #include "imlib2.h"
 #endif /* IMLIB2 */
@@ -72,7 +73,9 @@
 #endif /* XOAP */
 
 /* local headers */
-#include "core.h"
+#include "obj_create.h"
+#include "obj_display.h"
+#include "obj_destroy.h"
 #include "algebra.h"
 #include "build.h"
 #include "colours.h"
@@ -130,33 +133,7 @@ char *get_apm_battery_time(void);
 /* debugging level, used by logging.h */
 int global_debug_level = 0;
 
-/* two strings for internal use */
-static char *tmpstring1, *tmpstring2;
-
-/* variables holding various config settings */
-int short_units;
-int format_human_readable;
-int cpu_separate;
-enum {
-	NO_SPACER = 0,
-	LEFT_SPACER,
-	RIGHT_SPACER
-} use_spacer;
-int top_cpu, top_mem, top_time;
-#ifdef IOSTATS
-int top_io;
-#endif
-static unsigned int top_name_width = 15;
-int output_methods;
-static int extra_newline;
-enum x_initialiser_state x_initialised = NO;
 static volatile int g_signal_pending;
-/* Update interval */
-double update_interval;
-double update_interval_old;
-double update_interval_bat;
-void *global_cpu = NULL;
-pid_t childpid = 0;
 
 int argc_copy;
 char** argv_copy;
@@ -165,8 +142,6 @@ char** argv_copy;
 static void signal_handler(int);
 static void print_version(void) __attribute__((noreturn));
 static void reload_config(void);
-static void generate_text_internal(char *, int, struct text_object,
-                                   struct information *);
 
 static void print_version(void)
 {
@@ -270,4082 +245,11 @@ static void print_version(void)
 	exit(EXIT_SUCCESS);
 }
 
-static const char *suffixes[] = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "" };
-
-
-#ifdef X11
-
-static void X11_create_window(void);
-static void X11_initialisation(void);
-
-struct _x11_stuff_s {
-	Region region;
-#ifdef HAVE_XDAMAGE
-	Damage damage;
-	XserverRegion region2, part;
-	int event_base, error_base;
-#endif
-} x11_stuff;
-
-/* text size */
-
-static int text_start_x, text_start_y;	/* text start position in window */
-static int text_width, text_height;
-
-/* alignments */
-enum alignment {
-	TOP_LEFT = 1,
-	TOP_RIGHT,
-	TOP_MIDDLE,
-	BOTTOM_LEFT,
-	BOTTOM_RIGHT,
-	BOTTOM_MIDDLE,
-	MIDDLE_LEFT,
-	MIDDLE_RIGHT,
-	NONE
-};
-
-/* display to connect to */
-static char *disp = NULL;
-
-#endif /* X11 */
-
-/* struct that has all info to be shared between
- * instances of the same text object */
-struct information info;
-
-/* path to config file */
-char *current_config;
-
-/* set to 1 if you want all text to be in uppercase */
-static unsigned int stuff_in_uppercase;
-
-/* Run how many times? */
-static unsigned long total_run_times;
-
-/* fork? */
-static int fork_to_background;
-
-static int cpu_avg_samples, net_avg_samples, diskio_avg_samples;
-
-/* filenames for output */
-char *overwrite_file = NULL; FILE *overwrite_fpointer = NULL;
-char *append_file = NULL; FILE *append_fpointer = NULL;
-
-#ifdef X11
-
-static int show_graph_scale;
-static int show_graph_range;
-
-/* Position on the screen */
-static int text_alignment;
-static int gap_x, gap_y;
-
-/* border */
-static int draw_borders;
-static int draw_graph_borders;
-static int stippled_borders;
-
-int get_stippled_borders(void)
-{
-	return stippled_borders;
-}
-
-static int draw_shades, draw_outline;
-
-long default_fg_color, default_bg_color, default_out_color;
-
-/* create own window or draw stuff to root? */
-static int set_transparent = 0;
-
-#ifdef OWN_WINDOW
-static int own_window = 0;
-static int background_colour = 0;
-
-/* fixed size/pos is set if wm/user changes them */
-static int fixed_size = 0, fixed_pos = 0;
-#endif
-
-static int minimum_width, minimum_height;
-static int maximum_width;
-
-#endif /* X11 */
-
-#ifdef __OpenBSD__
-static int sensor_device;
-#endif
-
-long color0, color1, color2, color3, color4, color5, color6, color7, color8,
-	 color9;
-
-static char *template[MAX_TEMPLATES];
-
-char **get_templates(void)
-{
-	return template;
-}
-
-/* maximum size of config TEXT buffer, i.e. below TEXT line. */
-unsigned int max_user_text;
-
-/* maximum size of individual text buffers, ie $exec buffer size */
-unsigned int text_buffer_size = DEFAULT_TEXT_BUFFER_SIZE;
-
-/* UTF-8 */
-int utf8_mode = 0;
-
-/* no buffers in used memory? */
-int no_buffers;
-
-/* pad percentages to decimals? */
-static int pad_percents = 0;
-
-static char *global_text = 0;
-
-char *get_global_text(void)
-{
-	return global_text;
-}
-
-long global_text_lines;
-
-static int total_updates;
-static int updatereset;
-
-void set_updatereset(int i)
-{
-	updatereset = i;
-}
-
-int get_updatereset(void)
-{
-	return updatereset;
-}
-
-int check_contains(char *f, char *s)
-{
-	int ret = 0;
-	FILE *where = open_file(f, 0);
-
-	if (where) {
-		char buf1[256];
-
-		while (fgets(buf1, 256, where)) {
-			if (strstr(buf1, s)) {
-				ret = 1;
-				break;
-			}
-		}
-		fclose(where);
-	} else {
-		NORM_ERR("Could not open the file");
-	}
-	return ret;
-}
-
-#define SECRIT_MULTILINE_CHAR '\x02'
-
-#ifdef X11
-
-static inline int calc_text_width(const char *s, int l)
-{
-	if ((output_methods & TO_X) == 0) {
-		return 0;
-	}
-#ifdef XFT
-	if (use_xft) {
-		XGlyphInfo gi;
-
-		if (utf8_mode) {
-			XftTextExtentsUtf8(display, fonts[selected_font].xftfont,
-				(const FcChar8 *) s, l, &gi);
-		} else {
-			XftTextExtents8(display, fonts[selected_font].xftfont,
-				(const FcChar8 *) s, l, &gi);
-		}
-		return gi.xOff;
-	} else
-#endif
-	{
-		return XTextWidth(fonts[selected_font].font, s, l);
-	}
-}
-#endif /* X11 */
-
-/* formatted text to render on screen, generated in generate_text(),
- * drawn in draw_stuff() */
-
-static char *text_buffer;
-
-/* quite boring functions */
-
-static inline void for_each_line(char *b, int f(char *, int))
-{
-	char *ps, *pe;
-	int special_index = 0; /* specials index */
-
-	for (ps = b, pe = b; *pe; pe++) {
-		if (*pe == '\n') {
-			*pe = '\0';
-			special_index = f(ps, special_index);
-			*pe = '\n';
-			ps = pe + 1;
-		}
-	}
-
-	if (ps < pe) {
-		f(ps, special_index);
-	}
-}
-
-static void convert_escapes(char *buf)
-{
-	char *p = buf, *s = buf;
-
-	while (*s) {
-		if (*s == '\\') {
-			s++;
-			if (*s == 'n') {
-				*p++ = '\n';
-			} else if (*s == '\\') {
-				*p++ = '\\';
-			}
-			s++;
-		} else {
-			*p++ = *s++;
-		}
-	}
-	*p = '\0';
-}
-
-/* Prints anything normally printed with snprintf according to the current value
- * of use_spacer.  Actually slightly more flexible than snprintf, as you can
- * safely specify the destination buffer as one of your inputs.  */
-int spaced_print(char *buf, int size, const char *format, int width, ...)
-{
-	int len = 0;
-	va_list argp;
-	char *tempbuf;
-
-	if (size < 1) {
-		return 0;
-	}
-	tempbuf = malloc(size * sizeof(char));
-
-	// Passes the varargs along to vsnprintf
-	va_start(argp, width);
-	vsnprintf(tempbuf, size, format, argp);
-	va_end(argp);
-
-	switch (use_spacer) {
-		case NO_SPACER:
-			len = snprintf(buf, size, "%s", tempbuf);
-			break;
-		case LEFT_SPACER:
-			len = snprintf(buf, size, "%*s", width, tempbuf);
-			break;
-		case RIGHT_SPACER:
-			len = snprintf(buf, size, "%-*s", width, tempbuf);
-			break;
-	}
-	free(tempbuf);
-	return len;
-}
-
-/* print percentage values
- *
- * - i.e., unsigned values between 0 and 100
- * - respect the value of pad_percents */
-static int percent_print(char *buf, int size, unsigned value)
-{
-	return spaced_print(buf, size, "%u", pad_percents, value);
-}
-
-/* converts from bytes to human readable format (K, M, G, T)
- *
- * The algorithm always divides by 1024, as unit-conversion of byte
- * counts suggests. But for output length determination we need to
- * compare with 1000 here, as we print in decimal form. */
-static void human_readable(long long num, char *buf, int size)
-{
-	const char **suffix = suffixes;
-	float fnum;
-	int precision;
-	int width;
-	const char *format;
-
-	/* Possibly just output as usual, for example for stdout usage */
-	if (!format_human_readable) {
-		spaced_print(buf, size, "%d", 6, round_to_int(num));
-		return;
-	}
-	if (short_units) {
-		width = 5;
-		format = "%.*f%.1s";
-	} else {
-		width = 7;
-		format = "%.*f%-3s";
-	}
-
-	if (llabs(num) < 1000LL) {
-		spaced_print(buf, size, format, width, 0, (float)num, *suffix);
-		return;
-	}
-
-	while (llabs(num / 1024) >= 1000LL && **(suffix + 2)) {
-		num /= 1024;
-		suffix++;
-	}
-
-	suffix++;
-	fnum = num / 1024.0;
-
-	/* fnum should now be < 1000, so looks like 'AAA.BBBBB'
-	 *
-	 * The goal is to always have a significance of 3, by
-	 * adjusting the decimal part of the number. Sample output:
-	 *  123MiB
-	 * 23.4GiB
-	 * 5.12B   
-	 * so the point of alignment resides between number and unit. The
-	 * upside of this is that there is minimal padding necessary, though
-	 * there should be a way to make alignment take place at the decimal
-	 * dot (then with fixed width decimal part). 
-	 *
-	 * Note the repdigits below: when given a precision value, printf()
-	 * rounds the float to it, not just cuts off the remaining digits. So
-	 * e.g. 99.95 with a precision of 1 gets 100.0, which again should be
-	 * printed with a precision of 0. Yay. */
-
-	precision = 0;		/* print 100-999 without decimal part */
-	if (fnum < 99.95)
-		precision = 1;	/* print 10-99 with one decimal place */
-	if (fnum < 9.995)
-		precision = 2;	/* print 0-9 with two decimal places */
-
-	spaced_print(buf, size, format, width, precision, fnum, *suffix);
-}
-
-/* global object list root element */
-static struct text_object global_root_object;
-
-//our own implementation of popen, the difference : the value of 'childpid' will be filled with
-//the pid of the running 'command'. This is useful if want to kill it when it hangs while reading
-//or writing to it. We have to kill it because pclose will wait until the process dies by itself
-FILE* pid_popen(const char *command, const char *mode, pid_t *child) {
-	int ends[2];
-	int parentend, childend;
-
-	//by running pipe after the strcmp's we make sure that we don't have to create a pipe
-	//and close the ends if mode is something illegal
-	if(strcmp(mode, "r") == 0) {
-		if(pipe(ends) != 0) {
-			return NULL;
-		}
-		parentend = ends[0];
-		childend = ends[1];
-	} else if(strcmp(mode, "w") == 0) {
-		if(pipe(ends) != 0) {
-			return NULL;
-		}
-		parentend = ends[1];
-		childend = ends[0];
-	} else {
-		return NULL;
-	}
-	*child = fork();
-	if(*child == -1) {
-		close(parentend);
-		close(childend);
-		return NULL;
-	} else if(*child > 0) {
-		close(childend);
-		waitpid(*child, NULL, 0);
-	} else {
-		//don't read from both stdin and pipe or write to both stdout and pipe
-		if(childend == ends[0]) {
-			close(0);
-		} else {
-			close(1);
-		}
-		dup(childend);	//by dupping childend, the returned fd will have close-on-exec turned off
-		execl("/bin/sh", "sh", "-c", command, (char *) NULL);
-		_exit(EXIT_FAILURE); //child should die here, (normally execl will take care of this but it can fail) 
-	}
-	return fdopen(parentend, mode);
-}
-
-static inline void read_exec(const char *data, char *buf, const int size)
-{
-	FILE *fp;
-
-	alarm(update_interval);
-	fp = pid_popen(data, "r", &childpid);
-	if(fp) {
-		int length;
-
-		length = fread(buf, 1, size, fp);
-		pclose(fp);
-		buf[length] = '\0';
-		if (length > 0 && buf[length - 1] == '\n') {
-			buf[length - 1] = '\0';
-		}
-	} else {
-		buf[0] = '\0';
-	}
-	alarm(0);
-}
-
-void do_read_exec(const char *data, char *buf, const int size)
-{
-	read_exec(data, buf, size);
-}
-
-void *threaded_exec(void *) __attribute__((noreturn));
-
-void *threaded_exec(void *arg)
-{
-	char *buff, *p2;
-	struct text_object *obj = (struct text_object *)arg;
-
-	while (1) {
-		buff = malloc(text_buffer_size);
-		read_exec(obj->data.texeci.cmd, buff,
-			text_buffer_size);
-		p2 = buff;
-		while (*p2) {
-			if (*p2 == '\001') {
-				*p2 = ' ';
-			}
-			p2++;
-		}
-		timed_thread_lock(obj->data.texeci.p_timed_thread);
-		strncpy(obj->data.texeci.buffer, buff, text_buffer_size);
-		timed_thread_unlock(obj->data.texeci.p_timed_thread);
-		free(buff);
-		if (timed_thread_test(obj->data.texeci.p_timed_thread, 0)) {
-			timed_thread_exit(obj->data.texeci.p_timed_thread);
-		}
-	}
-	/* never reached */
-}
-
-static long current_text_color;
-
-void set_current_text_color(long colour)
-{
-	current_text_color = colour;
-}
-
-long get_current_text_color(void)
-{
-	return current_text_color;
-}
-
-//adds newstring to to the tree unless you can already see it when travelling back.
-//if it's possible to attach it then it returns a pointer to the leaf, else it returns NULL
-struct conftree* conftree_add(struct conftree* previous, const char* newstring) {
-	struct conftree* node;
-	struct conftree* node2;
-
-	for(node = previous; node != NULL; node = node->back) {
-		if(strcmp(node->string, newstring) == 0) {
-			return NULL;
-		}
-	}
-	node = malloc(sizeof(struct conftree));
-	if (previous != NULL) {
-		if(previous->vert_next == NULL) {
-			previous->vert_next = node;
-		} else {
-			for(node2 = previous->vert_next; node2->horz_next != NULL; node2 = node2->horz_next ) { }
-			node2->horz_next = node;
-		}
-	}
-	node->string = strdup(newstring);
-	node->horz_next = NULL;
-	node->vert_next = NULL;
-	node->back = previous;
-	return node;
-}
-
-void conftree_empty(struct conftree* tree) {
-	if(tree) {
-		conftree_empty(tree->horz_next);
-		conftree_empty(tree->vert_next);
-		free(tree->string);
-		free(tree);
-	}
-}
-
-struct conftree *currentconffile;
-
-static void extract_variable_text(const char *p)
-{
-	free_text_objects(&global_root_object, 0);
-	if (tmpstring1) {
-		free(tmpstring1);
-		tmpstring1 = 0;
-	}
-	if (tmpstring2) {
-		free(tmpstring2);
-		tmpstring2 = 0;
-	}
-	if (text_buffer) {
-		free(text_buffer);
-		text_buffer = 0;
-	}
-
-	extract_variable_text_internal(&global_root_object, p);
-}
-
-void parse_conky_vars(struct text_object *root, const char *txt, char *p, struct information *cur)
-{
-	extract_variable_text_internal(root, txt);
-	generate_text_internal(p, max_user_text, *root, cur);
-}
-
-static inline struct mail_s *ensure_mail_thread(struct text_object *obj,
-		void *thread(void *), const char *text)
-{
-	if (obj->char_b && info.mail) {
-		// this means we use info
-		if (!info.mail->p_timed_thread) {
-			info.mail->p_timed_thread =
-				timed_thread_create(thread,
-						(void *) info.mail, info.mail->interval * 1000000);
-			if (!info.mail->p_timed_thread) {
-				NORM_ERR("Error creating %s timed thread", text);
-			}
-			timed_thread_register(info.mail->p_timed_thread,
-					&info.mail->p_timed_thread);
-			if (timed_thread_run(info.mail->p_timed_thread)) {
-				NORM_ERR("Error running %s timed thread", text);
-			}
-		}
-		return info.mail;
-	} else if (obj->data.mail) {
-		// this means we use obj
-		if (!obj->data.mail->p_timed_thread) {
-			obj->data.mail->p_timed_thread =
-				timed_thread_create(thread,
-						(void *) obj->data.mail,
-						obj->data.mail->interval * 1000000);
-			if (!obj->data.mail->p_timed_thread) {
-				NORM_ERR("Error creating %s timed thread", text);
-			}
-			timed_thread_register(obj->data.mail->p_timed_thread,
-					&obj->data.mail->p_timed_thread);
-			if (timed_thread_run(obj->data.mail->p_timed_thread)) {
-				NORM_ERR("Error running %s timed thread", text);
-			}
-		}
-		return obj->data.mail;
-	} else if (!obj->a) {
-		// something is wrong, warn once then stop
-		NORM_ERR("There's a problem with your mail settings.  "
-				"Check that the global mail settings are properly defined"
-				" (line %li).", obj->line);
-		obj->a++;
-	}
-	return NULL;
-}
-
-char *format_time(unsigned long timeval, const int width)
-{
-	char buf[10];
-	unsigned long nt;	// narrow time, for speed on 32-bit
-	unsigned cc;		// centiseconds
-	unsigned nn;		// multi-purpose whatever
-
-	nt = timeval;
-	cc = nt % 100;		// centiseconds past second
-	nt /= 100;			// total seconds
-	nn = nt % 60;		// seconds past the minute
-	nt /= 60;			// total minutes
-	if (width >= snprintf(buf, sizeof buf, "%lu:%02u.%02u",
-				nt, nn, cc)) {
-		return strndup(buf, text_buffer_size);
-	}
-	if (width >= snprintf(buf, sizeof buf, "%lu:%02u", nt, nn)) {
-		return strndup(buf, text_buffer_size);
-	}
-	nn = nt % 60;		// minutes past the hour
-	nt /= 60;			// total hours
-	if (width >= snprintf(buf, sizeof buf, "%lu,%02u", nt, nn)) {
-		return strndup(buf, text_buffer_size);
-	}
-	nn = nt;			// now also hours
-	if (width >= snprintf(buf, sizeof buf, "%uh", nn)) {
-		return strndup(buf, text_buffer_size);
-	}
-	nn /= 24;			// now days
-	if (width >= snprintf(buf, sizeof buf, "%ud", nn)) {
-		return strndup(buf, text_buffer_size);
-	}
-	nn /= 7;			// now weeks
-	if (width >= snprintf(buf, sizeof buf, "%uw", nn)) {
-		return strndup(buf, text_buffer_size);
-	}
-	// well shoot, this outta' fit...
-	return strndup("<inf>", text_buffer_size);
-}
-
-//remove backspaced chars, example: "dog^H^H^Hcat" becomes "cat"
-//string has to end with \0 and it's length should fit in a int
-#define BACKSPACE 8
-void remove_deleted_chars(char *string){
-	int i = 0;
-	while(string[i] != 0){
-		if(string[i] == BACKSPACE){
-			if(i != 0){
-				strcpy( &(string[i-1]), &(string[i+1]) );
-				i--;
-			}else strcpy( &(string[i]), &(string[i+1]) ); //necessary for ^H's at the start of a string
-		}else i++;
-	}
-}
-
-static inline void format_media_player_time(char *buf, const int size,
-		int seconds)
-{
-	int days, hours, minutes;
-
-	days = seconds / (24 * 60 * 60);
-	seconds %= (24 * 60 * 60);
-	hours = seconds / (60 * 60);
-	seconds %= (60 * 60);
-	minutes = seconds / 60;
-	seconds %= 60;
-
-	if (days > 0) {
-		snprintf(buf, size, "%i days %i:%02i:%02i", days,
-				hours, minutes, seconds);
-	} else if (hours > 0) {
-		snprintf(buf, size, "%i:%02i:%02i", hours, minutes,
-				seconds);
-	} else {
-		snprintf(buf, size, "%i:%02i", minutes, seconds);
-	}
-}
-
-static inline double get_barnum(char *buf)
-{
-	char *c = buf;
-	double barnum;
-
-	while (*c) {
-		if (*c == '\001') {
-			*c = ' ';
-		}
-		c++;
-	}
-
-	if (sscanf(buf, "%lf", &barnum) == 0) {
-		NORM_ERR("reading exec value failed (perhaps it's not the "
-				"correct format?)");
-		return -1;
-	}
-	if (barnum > 100.0 || barnum < 0.0) {
-		NORM_ERR("your exec value is not between 0 and 100, "
-				"therefore it will be ignored");
-		return -1;
-	}
-	return barnum;
-}
-
-/* substitutes all occurrences of '\n' with SECRIT_MULTILINE_CHAR, which allows
- * multiline objects like $exec work with $align[rc] and friends
- */
-void substitute_newlines(char *p, long l)
-{
-	char *s = p;
-	if (l < 0) return;
-	while (p && *p && p < s + l) {
-		if (*p == '\n') {
-			/* only substitute if it's not the last newline */
-			*p = SECRIT_MULTILINE_CHAR;
-		}
-		p++;
-	}
-}
-
-static void generate_text_internal(char *p, int p_max_size,
-		struct text_object root, struct information *cur)
-{
-	struct text_object *obj;
-#ifdef X11
-	int need_to_load_fonts = 0;
-#endif /* X11 */
-
-	/* for the OBJ_top* handler */
-	struct process **needed = 0;
-
-#ifdef HAVE_ICONV
-	char buff_in[p_max_size];
-	buff_in[0] = 0;
-	set_iconv_converting(0);
-#endif /* HAVE_ICONV */
-
-	p[0] = 0;
-	obj = root.next;
-	while (obj && p_max_size > 0) {
-		needed = 0; /* reset for top stuff */
-
-/* IFBLOCK jumping algorithm
- *
- * This is easier as it looks like:
- * - each IF checks it's condition
- *   - on FALSE: call DO_JUMP
- *   - on TRUE: don't care
- * - each ELSE calls DO_JUMP unconditionally
- * - each ENDIF is silently being ignored
- *
- * Why this works:
- * DO_JUMP overwrites the "obj" variable of the loop and sets it to the target
- * (i.e. the corresponding ELSE or ENDIF). After that, processing for the given
- * object can continue, free()ing stuff e.g., then the for-loop does the rest: as
- * regularly, "obj" is being updated to point to obj->next, so object parsing
- * continues right after the corresponding ELSE or ENDIF. This means that if we
- * find an ELSE, it's corresponding IF must not have jumped, so we need to jump
- * always. If we encounter an ENDIF, it's corresponding IF or ELSE has not
- * jumped, and there is nothing to do.
- */
-#define DO_JUMP { \
-	DBGP2("jumping"); \
-	obj = obj->data.ifblock.next; \
-}
-
-#define OBJ(a) break; case OBJ_##a:
-
-		switch (obj->type) {
-			default:
-				NORM_ERR("not implemented obj type %d", obj->type);
-			OBJ(read_tcp) {
-				int sock, received;
-				struct sockaddr_in addr;
-				struct hostent* he = gethostbyname(obj->data.read_tcp.host);
-				if(he != NULL) {
-					sock = socket(he->h_addrtype, SOCK_STREAM, 0);
-					if(sock != -1) {
-						memset(&addr, 0, sizeof(addr));
-						addr.sin_family = AF_INET;
-						addr.sin_port = obj->data.read_tcp.port;
-						memcpy(&addr.sin_addr, he->h_addr, he->h_length);
-						if (connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr)) == 0) {
-							fd_set readfds;
-							struct timeval tv;
-							FD_ZERO(&readfds);
-							FD_SET(sock, &readfds);
-							tv.tv_sec = 1;
-							tv.tv_usec = 0;
-							if(select(sock + 1, &readfds, NULL, NULL, &tv) > 0){
-								received = recv(sock, p, p_max_size, 0);
-								p[received] = 0;
-							}
-							close(sock);
-						} else {
-							NORM_ERR("read_tcp: Couldn't create a connection");
-						}
-					}else{
-						NORM_ERR("read_tcp: Couldn't create a socket");
-					}
-				}else{
-					NORM_ERR("read_tcp: Problem with resolving the hostname");
-				}
-			}
-#ifndef __OpenBSD__
-			OBJ(acpitemp) {
-				temp_print(p, p_max_size, get_acpi_temperature(obj->data.i), TEMP_CELSIUS);
-			}
-#endif /* !__OpenBSD__ */
-			OBJ(freq) {
-				if (obj->a) {
-					obj->a = get_freq(p, p_max_size, "%.0f", 1,
-							obj->data.cpu_index);
-				}
-			}
-			OBJ(freq_g) {
-				if (obj->a) {
-#ifndef __OpenBSD__
-					obj->a = get_freq(p, p_max_size, "%'.2f", 1000,
-							obj->data.cpu_index);
-#else
-					/* OpenBSD has no such flag (SUSv2) */
-					obj->a = get_freq(p, p_max_size, "%.2f", 1000,
-							obj->data.cpu_index);
-#endif /* __OpenBSD */
-				}
-			}
-#if defined(__linux__)
-			OBJ(voltage_mv) {
-				if (obj->a) {
-					obj->a = get_voltage(p, p_max_size, "%.0f", 1,
-							obj->data.cpu_index);
-				}
-			}
-			OBJ(voltage_v) {
-				if (obj->a) {
-					obj->a = get_voltage(p, p_max_size, "%'.3f", 1000,
-							obj->data.cpu_index);
-				}
-			}
-
-#ifdef HAVE_IWLIB
-			OBJ(wireless_essid) {
-				snprintf(p, p_max_size, "%s", obj->data.net->essid);
-			}
-			OBJ(wireless_mode) {
-				snprintf(p, p_max_size, "%s", obj->data.net->mode);
-			}
-			OBJ(wireless_bitrate) {
-				snprintf(p, p_max_size, "%s", obj->data.net->bitrate);
-			}
-			OBJ(wireless_ap) {
-				snprintf(p, p_max_size, "%s", obj->data.net->ap);
-			}
-			OBJ(wireless_link_qual) {
-				spaced_print(p, p_max_size, "%d", 4,
-						obj->data.net->link_qual);
-			}
-			OBJ(wireless_link_qual_max) {
-				spaced_print(p, p_max_size, "%d", 4,
-						obj->data.net->link_qual_max);
-			}
-			OBJ(wireless_link_qual_perc) {
-				if (obj->data.net->link_qual_max > 0) {
-					spaced_print(p, p_max_size, "%.0f", 5,
-							(double) obj->data.net->link_qual /
-							obj->data.net->link_qual_max * 100);
-				} else {
-					spaced_print(p, p_max_size, "unk", 5);
-				}
-			}
-			OBJ(wireless_link_bar) {
-#ifdef X11
-				if(output_methods & TO_X) {
-					new_bar(p, obj->a, obj->b, ((double) obj->data.net->link_qual /
-						obj->data.net->link_qual_max) * 255.0);
-				}else{
-#endif /* X11 */
-					if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-					new_bar_in_shell(p, p_max_size, ((double) obj->data.net->link_qual /
-						obj->data.net->link_qual_max) * 100.0, obj->a);
-#ifdef X11
-				}
-#endif /* X11 */
-			}
-#endif /* HAVE_IWLIB */
-
-#endif /* __linux__ */
-
-#ifndef __OpenBSD__
-			OBJ(adt746xcpu) {
-				get_adt746x_cpu(p, p_max_size);
-			}
-			OBJ(adt746xfan) {
-				get_adt746x_fan(p, p_max_size);
-			}
-			OBJ(acpifan) {
-				get_acpi_fan(p, p_max_size);
-			}
-			OBJ(acpiacadapter) {
-				get_acpi_ac_adapter(p, p_max_size);
-			}
-			OBJ(battery) {
-				get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_STATUS);
-			}
-			OBJ(battery_time) {
-				get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_TIME);
-			}
-			OBJ(battery_percent) {
-				percent_print(p, p_max_size, get_battery_perct(obj->data.s));
-			}
-			OBJ(battery_bar) {
-#ifdef X11
-				if(output_methods & TO_X) {
-					new_bar(p, obj->a, obj->b, get_battery_perct_bar(obj->data.s));
-				}else{
-#endif /* X11 */
-					if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-					new_bar_in_shell(p, p_max_size, get_battery_perct_bar(obj->data.s) / 2.55, obj->a);
-#ifdef X11
-				}
-#endif /* X11 */
-			}
-			OBJ(battery_short) {
-				get_battery_short_status(p, p_max_size, obj->data.s);
-			}
-#endif /* __OpenBSD__ */
-
-			OBJ(buffers) {
-				human_readable(cur->buffers * 1024, p, 255);
-			}
-			OBJ(cached) {
-				human_readable(cur->cached * 1024, p, 255);
-			}
-			OBJ(cpu) {
-				if (obj->data.cpu_index > info.cpu_count) {
-					NORM_ERR("obj->data.cpu_index %i info.cpu_count %i",
-							obj->data.cpu_index, info.cpu_count);
-					CRIT_ERR(NULL, NULL, "attempting to use more CPUs than you have!");
-				}
-				percent_print(p, p_max_size,
-				              round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100.0));
-			}
-#ifdef X11
-			OBJ(cpugauge)
-				new_gauge(p, obj->a, obj->b,
-						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 255.0));
-#endif /* X11 */
-			OBJ(cpubar) {
-#ifdef X11
-				if(output_methods & TO_X) {
-					new_bar(p, obj->a, obj->b,
-						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 255.0));
-				}else{
-#endif /* X11 */
-					if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-					new_bar_in_shell(p, p_max_size, round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100), obj->a);
-#ifdef X11
-				}
-#endif /* X11 */
-			}
-#ifdef X11
-			OBJ(cpugraph) {
-				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100),
-						100, 1, obj->char_a, obj->char_b);
-			}
-			OBJ(loadgraph) {
-				new_graph(p, obj->a, obj->b, obj->c, obj->d, cur->loadavg[0],
-						obj->e, 1, obj->char_a, obj->char_b);
-			}
-#endif /* X11 */
-			OBJ(color) {
-				new_fg(p, obj->data.l);
-			}
-#ifdef X11
-			OBJ(color0) {
-				new_fg(p, color0);
-			}
-			OBJ(color1) {
-				new_fg(p, color1);
-			}
-			OBJ(color2) {
-				new_fg(p, color2);
-			}
-			OBJ(color3) {
-				new_fg(p, color3);
-			}
-			OBJ(color4) {
-				new_fg(p, color4);
-			}
-			OBJ(color5) {
-				new_fg(p, color5);
-			}
-			OBJ(color6) {
-				new_fg(p, color6);
-			}
-			OBJ(color7) {
-				new_fg(p, color7);
-			}
-			OBJ(color8) {
-				new_fg(p, color8);
-			}
-			OBJ(color9) {
-				new_fg(p, color9);
-			}
-#endif /* X11 */
-			OBJ(conky_version) {
-				snprintf(p, p_max_size, "%s", VERSION);
-			}
-			OBJ(conky_build_date) {
-				snprintf(p, p_max_size, "%s", BUILD_DATE);
-			}
-			OBJ(conky_build_arch) {
-				snprintf(p, p_max_size, "%s", BUILD_ARCH);
-			}
-#if defined(__linux__)
-			OBJ(disk_protect) {
-				snprintf(p, p_max_size, "%s",
-						get_disk_protect_queue(obj->data.s));
-			}
-			OBJ(i8k_version) {
-				snprintf(p, p_max_size, "%s", i8k.version);
-			}
-			OBJ(i8k_bios) {
-				snprintf(p, p_max_size, "%s", i8k.bios);
-			}
-			OBJ(i8k_serial) {
-				snprintf(p, p_max_size, "%s", i8k.serial);
-			}
-			OBJ(i8k_cpu_temp) {
-				int cpu_temp;
-
-				sscanf(i8k.cpu_temp, "%d", &cpu_temp);
-				temp_print(p, p_max_size, (double)cpu_temp, TEMP_CELSIUS);
-			}
-			OBJ(i8k_left_fan_status) {
-				int left_fan_status;
-
-				sscanf(i8k.left_fan_status, "%d", &left_fan_status);
-				if (left_fan_status == 0) {
-					snprintf(p, p_max_size, "off");
-				}
-				if (left_fan_status == 1) {
-					snprintf(p, p_max_size, "low");
-				}
-				if (left_fan_status == 2) {
-					snprintf(p, p_max_size, "high");
-				}
-			}
-			OBJ(i8k_right_fan_status) {
-				int right_fan_status;
-
-				sscanf(i8k.right_fan_status, "%d", &right_fan_status);
-				if (right_fan_status == 0) {
-					snprintf(p, p_max_size, "off");
-				}
-				if (right_fan_status == 1) {
-					snprintf(p, p_max_size, "low");
-				}
-				if (right_fan_status == 2) {
-					snprintf(p, p_max_size, "high");
-				}
-			}
-			OBJ(i8k_left_fan_rpm) {
-				snprintf(p, p_max_size, "%s", i8k.left_fan_rpm);
-			}
-			OBJ(i8k_right_fan_rpm) {
-				snprintf(p, p_max_size, "%s", i8k.right_fan_rpm);
-			}
-			OBJ(i8k_ac_status) {
-				int ac_status;
-
-				sscanf(i8k.ac_status, "%d", &ac_status);
-				if (ac_status == -1) {
-					snprintf(p, p_max_size, "disabled (read i8k docs)");
-				}
-				if (ac_status == 0) {
-					snprintf(p, p_max_size, "off");
-				}
-				if (ac_status == 1) {
-					snprintf(p, p_max_size, "on");
-				}
-			}
-			OBJ(i8k_buttons_status) {
-				snprintf(p, p_max_size, "%s", i8k.buttons_status);
-			}
-#if defined(IBM)
-			OBJ(ibm_fan) {
-				get_ibm_acpi_fan(p, p_max_size);
-			}
-			OBJ(ibm_temps) {
-				get_ibm_acpi_temps();
-				temp_print(p, p_max_size,
-				           ibm_acpi.temps[obj->data.sensor], TEMP_CELSIUS);
-			}
-			OBJ(ibm_volume) {
-				get_ibm_acpi_volume(p, p_max_size);
-			}
-			OBJ(ibm_brightness) {
-				get_ibm_acpi_brightness(p, p_max_size);
-			}
-#endif /* IBM */
-			/* information from sony_laptop kernel module
-			 * /sys/devices/platform/sony-laptop */
-			OBJ(sony_fanspeed) {
-				get_sony_fanspeed(p, p_max_size);
-			}
-			OBJ(if_gw) {
-				if (!cur->gw_info.count) {
-					DO_JUMP;
-				}
-			}
-			OBJ(gw_iface) {
-				snprintf(p, p_max_size, "%s", cur->gw_info.iface);
-			}
-			OBJ(gw_ip) {
-				snprintf(p, p_max_size, "%s", cur->gw_info.ip);
-			}
-			OBJ(laptop_mode) {
-				snprintf(p, p_max_size, "%d", get_laptop_mode());
-			}
-			OBJ(pb_battery) {
-				get_powerbook_batt_info(p, p_max_size, obj->data.i);
-			}
-#endif /* __linux__ */
-#if (defined(__FreeBSD__) || defined(__linux__))
-			OBJ(if_up) {
-				if ((obj->data.ifblock.s)
-						&& (!interface_up(obj->data.ifblock.s))) {
-					DO_JUMP;
-				}
-			}
-#endif
-#ifdef __OpenBSD__
-			OBJ(obsd_sensors_temp) {
-				obsd_sensors.device = sensor_device;
-				update_obsd_sensors();
-				temp_print(p, p_max_size,
-				           obsd_sensors.temp[obsd_sensors.device][obj->data.sensor],
-					   TEMP_CELSIUS);
-			}
-			OBJ(obsd_sensors_fan) {
-				obsd_sensors.device = sensor_device;
-				update_obsd_sensors();
-				snprintf(p, p_max_size, "%d",
-						obsd_sensors.fan[obsd_sensors.device][obj->data.sensor]);
-			}
-			OBJ(obsd_sensors_volt) {
-				obsd_sensors.device = sensor_device;
-				update_obsd_sensors();
-				snprintf(p, p_max_size, "%.2f",
-						obsd_sensors.volt[obsd_sensors.device][obj->data.sensor]);
-			}
-			OBJ(obsd_vendor) {
-				get_obsd_vendor(p, p_max_size);
-			}
-			OBJ(obsd_product) {
-				get_obsd_product(p, p_max_size);
-			}
-#endif /* __OpenBSD__ */
-#ifdef X11
-			OBJ(font) {
-				new_font(p, obj->data.s);
-				need_to_load_fonts = 1;
-			}
-#endif /* X11 */
-			/* TODO: move this correction from kB to kB/s elsewhere
-			 * (or get rid of it??) */
-			OBJ(diskio) {
-				human_readable((obj->data.diskio->current / update_interval) * 1024LL,
-						p, p_max_size);
-			}
-			OBJ(diskio_write) {
-				human_readable((obj->data.diskio->current_write / update_interval) * 1024LL,
-						p, p_max_size);
-			}
-			OBJ(diskio_read) {
-				human_readable((obj->data.diskio->current_read / update_interval) * 1024LL,
-						p, p_max_size);
-			}
-#ifdef X11
-			OBJ(diskiograph) {
-				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-				          obj->data.diskio->current, obj->e, 1, obj->char_a, obj->char_b);
-			}
-			OBJ(diskiograph_read) {
-				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-				          obj->data.diskio->current_read, obj->e, 1, obj->char_a, obj->char_b);
-			}
-			OBJ(diskiograph_write) {
-				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-				          obj->data.diskio->current_write, obj->e, 1, obj->char_a, obj->char_b);
-			}
-#endif /* X11 */
-			OBJ(downspeed) {
-				human_readable(obj->data.net->recv_speed, p, 255);
-			}
-			OBJ(downspeedf) {
-				spaced_print(p, p_max_size, "%.1f", 8,
-						obj->data.net->recv_speed / 1024.0);
-			}
-#ifdef X11
-			OBJ(downspeedgraph) {
-				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-					obj->data.net->recv_speed / 1024.0, obj->e, 1, obj->char_a, obj->char_b);
-			}
-#endif /* X11 */
-			OBJ(else) {
-				/* Since we see you, you're if has not jumped.
-				 * Do Ninja jump here: without leaving traces.
-				 * This is to prevent us from stale jumped flags.
-				 */
-				obj = obj->data.ifblock.next;
-				continue;
-			}
-			OBJ(endif) {
-				/* harmless object, just ignore */
-			}
-			OBJ(addr) {
-				if ((obj->data.net->addr.sa_data[2] & 255) == 0
-						&& (obj->data.net->addr.sa_data[3] & 255) == 0
-						&& (obj->data.net->addr.sa_data[4] & 255) == 0
-						&& (obj->data.net->addr.sa_data[5] & 255) == 0) {
-					snprintf(p, p_max_size, "No Address");
-				} else {
-					snprintf(p, p_max_size, "%u.%u.%u.%u",
-						obj->data.net->addr.sa_data[2] & 255,
-						obj->data.net->addr.sa_data[3] & 255,
-						obj->data.net->addr.sa_data[4] & 255,
-						obj->data.net->addr.sa_data[5] & 255);
-				}
-			}
-#if defined(__linux__)
-			OBJ(addrs) {
-				if (NULL != obj->data.net->addrs && strlen(obj->data.net->addrs) > 2) {
-					obj->data.net->addrs[strlen(obj->data.net->addrs) - 2] = 0; /* remove ", " from end of string */
-					strcpy(p, obj->data.net->addrs);
-				} else {
-					strcpy(p, "0.0.0.0");
-				}
-			}
-#endif /* __linux__ */
-#if defined(IMLIB2) && defined(X11)
-			OBJ(image) {
-				/* doesn't actually draw anything, just queues it omp.  the
-				 * image will get drawn after the X event loop */
-				cimlib_add_image(obj->data.s);
-			}
-#endif /* IMLIB2 */
-			OBJ(eval) {
-				evaluate(obj->data.s, p);
-			}
-			OBJ(exec) {
-				read_exec(obj->data.s, p, text_buffer_size);
-				remove_deleted_chars(p);
-			}
-			OBJ(execp) {
-				struct information *tmp_info;
-				struct text_object subroot;
-
-				read_exec(obj->data.s, p, text_buffer_size);
-
-				tmp_info = malloc(sizeof(struct information));
-				memcpy(tmp_info, cur, sizeof(struct information));
-				parse_conky_vars(&subroot, p, p, tmp_info);
-
-				free_text_objects(&subroot, 1);
-				free(tmp_info);
-			}
-#ifdef X11
-			OBJ(execgauge) {
-				double barnum;
-
-				read_exec(obj->data.s, p, text_buffer_size);
-				barnum = get_barnum(p); /*using the same function*/
-
-				if (barnum >= 0.0) {
-					barnum /= 100;
-					new_gauge(p, obj->a, obj->b, round_to_int(barnum * 255.0));
-				}
-			}
-#endif /* X11 */
-			OBJ(execbar) {
-				double barnum;
-
-				read_exec(obj->data.s, p, text_buffer_size);
-				barnum = get_barnum(p);
-
-				if (barnum >= 0.0) {
-#ifdef X11
-					if(output_methods & TO_X) {
-						barnum /= 100;
-						new_bar(p, obj->a, obj->b, round_to_int(barnum * 255.0));
-					}else{
-#endif /* X11 */
-						if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-						new_bar_in_shell(p, p_max_size, barnum, obj->a);
-#ifdef X11
-					}
-#endif /* X11 */
-				}
-			}
-#ifdef X11
-			OBJ(execgraph) {
-				char showaslog = FALSE;
-				char tempgrad = FALSE;
-				double barnum;
-				char *cmd = obj->data.s;
-
-				if (strstr(cmd, " "TEMPGRAD) && strlen(cmd) > strlen(" "TEMPGRAD)) {
-					tempgrad = TRUE;
-					cmd += strlen(" "TEMPGRAD);
-				}
-				if (strstr(cmd, " "LOGGRAPH) && strlen(cmd) > strlen(" "LOGGRAPH)) {
-					showaslog = TRUE;
-					cmd += strlen(" "LOGGRAPH);
-				}
-				read_exec(cmd, p, text_buffer_size);
-				barnum = get_barnum(p);
-
-				if (barnum > 0) {
-					new_graph(p, obj->a, obj->b, obj->c, obj->d, round_to_int(barnum),
-							100, 1, showaslog, tempgrad);
-				}
-			}
-#endif /* X11 */
-			OBJ(execibar) {
-				if (current_update_time - obj->data.execi.last_update
-						>= obj->data.execi.interval) {
-					double barnum;
-
-					read_exec(obj->data.execi.cmd, p, text_buffer_size);
-					barnum = get_barnum(p);
-
-					if (barnum >= 0.0) {
-						obj->f = barnum;
-					}
-					obj->data.execi.last_update = current_update_time;
-				}
-#ifdef X11
-				if(output_methods & TO_X) {
-					new_bar(p, obj->a, obj->b, round_to_int(obj->f * 2.55));
-				} else {
-#endif /* X11 */
-					if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-					new_bar_in_shell(p, p_max_size, round_to_int(obj->f), obj->a);
-#ifdef X11
-				}
-#endif /* X11 */
-			}
-#ifdef X11
-			OBJ(execigraph) {
-				if (current_update_time - obj->data.execi.last_update
-						>= obj->data.execi.interval) {
-					double barnum;
-					char showaslog = FALSE;
-					char tempgrad = FALSE;
-					char *cmd = obj->data.execi.cmd;
-
-					if (strstr(cmd, " "TEMPGRAD) && strlen(cmd) > strlen(" "TEMPGRAD)) {
-						tempgrad = TRUE;
-						cmd += strlen(" "TEMPGRAD);
-					}
-					if (strstr(cmd, " "LOGGRAPH) && strlen(cmd) > strlen(" "LOGGRAPH)) {
-						showaslog = TRUE;
-						cmd += strlen(" "LOGGRAPH);
-					}
-					obj->char_a = showaslog;
-					obj->char_b = tempgrad;
-					read_exec(cmd, p, text_buffer_size);
-					barnum = get_barnum(p);
-
-					if (barnum >= 0.0) {
-						obj->f = barnum;
-					}
-					obj->data.execi.last_update = current_update_time;
-				}
-				new_graph(p, obj->a, obj->b, obj->c, obj->d, (int) (obj->f), 100, 1, obj->char_a, obj->char_b);
-			}
-			OBJ(execigauge) {
-				if (current_update_time - obj->data.execi.last_update
-						>= obj->data.execi.interval) {
-					double barnum;
-
-					read_exec(obj->data.execi.cmd, p, text_buffer_size);
-					barnum = get_barnum(p);
-
-					if (barnum >= 0.0) {
-						obj->f = 255 * barnum / 100.0;
-					}
-					obj->data.execi.last_update = current_update_time;
-				}
-				new_gauge(p, obj->a, obj->b, round_to_int(obj->f));
-			}
-#endif /* X11 */
-			OBJ(execi) {
-				if (current_update_time - obj->data.execi.last_update
-						>= obj->data.execi.interval
-						&& obj->data.execi.interval != 0) {
-					read_exec(obj->data.execi.cmd, obj->data.execi.buffer,
-						text_buffer_size);
-					obj->data.execi.last_update = current_update_time;
-				}
-				snprintf(p, text_buffer_size, "%s", obj->data.execi.buffer);
-			}
-			OBJ(execpi) {
-				struct text_object subroot;
-				struct information *tmp_info =
-					malloc(sizeof(struct information));
-				memcpy(tmp_info, cur, sizeof(struct information));
-
-				if (current_update_time - obj->data.execi.last_update
-						< obj->data.execi.interval
-						|| obj->data.execi.interval == 0) {
-					parse_conky_vars(&subroot, obj->data.execi.buffer, p, tmp_info);
-				} else {
-					char *output = obj->data.execi.buffer;
-					FILE *fp = pid_popen(obj->data.execi.cmd, "r", &childpid);
-					int length = fread(output, 1, text_buffer_size, fp);
-
-					pclose(fp);
-
-					output[length] = '\0';
-					if (length > 0 && output[length - 1] == '\n') {
-						output[length - 1] = '\0';
-					}
-
-					parse_conky_vars(&subroot, obj->data.execi.buffer, p, tmp_info);
-					obj->data.execi.last_update = current_update_time;
-				}
-				free_text_objects(&subroot, 1);
-				free(tmp_info);
-			}
-			OBJ(texeci) {
-				if (!obj->data.texeci.p_timed_thread) {
-					obj->data.texeci.p_timed_thread =
-						timed_thread_create(&threaded_exec,
-						(void *) obj, obj->data.texeci.interval * 1000000);
-					if (!obj->data.texeci.p_timed_thread) {
-						NORM_ERR("Error creating texeci timed thread");
-					}
-					/*
-					 * note that we don't register this thread with the
-					 * timed_thread list, because we destroy it manually
-					 */
-					if (timed_thread_run(obj->data.texeci.p_timed_thread)) {
-						NORM_ERR("Error running texeci timed thread");
-					}
-				} else {
-					timed_thread_lock(obj->data.texeci.p_timed_thread);
-					snprintf(p, text_buffer_size, "%s", obj->data.texeci.buffer);
-					timed_thread_unlock(obj->data.texeci.p_timed_thread);
-				}
-			}
-			OBJ(imap_unseen) {
-				struct mail_s *mail = ensure_mail_thread(obj, imap_thread, "imap");
-
-				if (mail && mail->p_timed_thread) {
-					timed_thread_lock(mail->p_timed_thread);
-					snprintf(p, p_max_size, "%lu", mail->unseen);
-					timed_thread_unlock(mail->p_timed_thread);
-				}
-			}
-			OBJ(imap_messages) {
-				struct mail_s *mail = ensure_mail_thread(obj, imap_thread, "imap");
-
-				if (mail && mail->p_timed_thread) {
-					timed_thread_lock(mail->p_timed_thread);
-					snprintf(p, p_max_size, "%lu", mail->messages);
-					timed_thread_unlock(mail->p_timed_thread);
-				}
-			}
-			OBJ(pop3_unseen) {
-				struct mail_s *mail = ensure_mail_thread(obj, pop3_thread, "pop3");
-
-				if (mail && mail->p_timed_thread) {
-					timed_thread_lock(mail->p_timed_thread);
-					snprintf(p, p_max_size, "%lu", mail->unseen);
-					timed_thread_unlock(mail->p_timed_thread);
-				}
-			}
-			OBJ(pop3_used) {
-				struct mail_s *mail = ensure_mail_thread(obj, pop3_thread, "pop3");
-
-				if (mail && mail->p_timed_thread) {
-					timed_thread_lock(mail->p_timed_thread);
-					snprintf(p, p_max_size, "%.1f",
-						mail->used / 1024.0 / 1024.0);
-					timed_thread_unlock(mail->p_timed_thread);
-				}
-			}
-			OBJ(fs_bar) {
-				if (obj->data.fs != NULL) {
-					if (obj->data.fs->size == 0) {
-#ifdef X11
-						if(output_methods & TO_X) {
-							new_bar(p, obj->data.fsbar.w, obj->data.fsbar.h, 255);
-						}else{
-#endif /* X11 */
-							if(!obj->data.fsbar.w) obj->data.fsbar.w = DEFAULT_BAR_WIDTH_NO_X;
-							new_bar_in_shell(p, p_max_size, 100, obj->data.fsbar.w);
-#ifdef X11
-						}
-#endif /* X11 */
-					} else {
-#ifdef X11
-						if(output_methods & TO_X) {
-							new_bar(p, obj->data.fsbar.w, obj->data.fsbar.h,
-								(int) (255 - obj->data.fsbar.fs->avail * 255 /
-								obj->data.fs->size));
-						}else{
-#endif /* X11 */
-							if(!obj->data.fsbar.w) obj->data.fsbar.w = DEFAULT_BAR_WIDTH_NO_X;
-							new_bar_in_shell(p, p_max_size,
-								(int) (100 - obj->data.fsbar.fs->avail * 100 / obj->data.fs->size), obj->data.fsbar.w);
-#ifdef X11
-						}
-#endif /* X11 */
-					}
-				}
-			}
-			OBJ(fs_free) {
-				if (obj->data.fs != NULL) {
-					human_readable(obj->data.fs->avail, p, 255);
-				}
-			}
-			OBJ(fs_free_perc) {
-				if (obj->data.fs != NULL) {
-					int val = 0;
-
-					if (obj->data.fs->size) {
-						val = obj->data.fs->avail * 100 / obj->data.fs->size;
-					}
-
-					percent_print(p, p_max_size, val);
-				}
-			}
-			OBJ(fs_size) {
-				if (obj->data.fs != NULL) {
-					human_readable(obj->data.fs->size, p, 255);
-				}
-			}
-			OBJ(fs_type) {
-				if (obj->data.fs != NULL)
-					snprintf(p, p_max_size, "%s", obj->data.fs->type);
-			}
-			OBJ(fs_used) {
-				if (obj->data.fs != NULL) {
-					human_readable(obj->data.fs->size - obj->data.fs->free, p,
-							255);
-				}
-			}
-			OBJ(fs_bar_free) {
-				if (obj->data.fs != NULL) {
-					if (obj->data.fs->size == 0) {
-#ifdef X11
-						if(output_methods & TO_X) {
-							new_bar(p, obj->data.fsbar.w, obj->data.fsbar.h, 255);
-						}else{
-#endif /* X11 */
-							if(!obj->data.fsbar.w) obj->data.fsbar.w = DEFAULT_BAR_WIDTH_NO_X;
-							new_bar_in_shell(p, p_max_size, 100, obj->data.fsbar.w);
-#ifdef X11
-						}
-#endif /* X11 */
-					} else {
-#ifdef X11
-						if(output_methods & TO_X) {
-							new_bar(p, obj->data.fsbar.w, obj->data.fsbar.h,
-								(int) (obj->data.fsbar.fs->avail * 255 /
-								obj->data.fs->size));
-						}else{
-#endif /* X11 */
-							if(!obj->data.fsbar.w) obj->data.fsbar.w = DEFAULT_BAR_WIDTH_NO_X;
-							new_bar_in_shell(p, p_max_size,
-								(int) (obj->data.fsbar.fs->avail * 100 / obj->data.fs->size), obj->data.fsbar.w);
-#ifdef X11
-						}
-#endif /* X11 */
-					}
-				}
-			}
-			OBJ(fs_used_perc) {
-				if (obj->data.fs != NULL) {
-					int val = 0;
-
-					if (obj->data.fs->size) {
-						val = obj->data.fs->free
-								* 100 /
-							obj->data.fs->size;
-					}
-
-					percent_print(p, p_max_size, 100 - val);
-				}
-			}
-			OBJ(loadavg) {
-				float *v = info.loadavg;
-
-				if (obj->data.loadavg[2]) {
-					snprintf(p, p_max_size, "%.2f %.2f %.2f",
-						v[obj->data.loadavg[0] - 1],
-						v[obj->data.loadavg[1] - 1],
-						v[obj->data.loadavg[2] - 1]);
-				} else if (obj->data.loadavg[1]) {
-					snprintf(p, p_max_size, "%.2f %.2f",
-						v[obj->data.loadavg[0] - 1],
-						v[obj->data.loadavg[1] - 1]);
-				} else if (obj->data.loadavg[0]) {
-					snprintf(p, p_max_size, "%.2f",
-						v[obj->data.loadavg[0] - 1]);
-				}
-			}
-			OBJ(goto) {
-				new_goto(p, obj->data.i);
-			}
-			OBJ(tab) {
-				new_tab(p, obj->data.pair.a, obj->data.pair.b);
-			}
-#ifdef X11
-			OBJ(hr) {
-				new_hr(p, obj->data.i);
-			}
-#endif
-			OBJ(nameserver) {
-				if (cur->nameserver_info.nscount > obj->data.i)
-					snprintf(p, p_max_size, "%s",
-							cur->nameserver_info.ns_list[obj->data.i]);
-			}
-#ifdef EVE
-			OBJ(eve) {
-				char *skill = eve(obj->data.eve.userid, obj->data.eve.apikey, obj->data.eve.charid);
-				snprintf(p, p_max_size, "%s", skill);
-			}
-#endif
-#ifdef HAVE_CURL
-			OBJ(curl) {
-				if (obj->data.curl.uri != NULL) {
-					ccurl_process_info(p, p_max_size, obj->data.curl.uri, obj->data.curl.interval);
-				} else {
-					NORM_ERR("error processing Curl data");
-				}
-			}
-#endif
-#ifdef RSS
-			OBJ(rss) {
-				if (obj->data.rss.uri != NULL) {
-					rss_process_info(p, p_max_size, obj->data.rss.uri, obj->data.rss.action, obj->data.rss.act_par, obj->data.rss.interval, obj->data.rss.nrspaces);
-				} else {
-					NORM_ERR("error processing RSS data");
-				}
-			}
-#endif
-#ifdef WEATHER
-			OBJ(weather) {
-				if (obj->data.weather.uri != NULL) {
-					weather_process_info(p, p_max_size, obj->data.weather.uri, obj->data.weather.data_type, obj->data.weather.interval);
-				} else {
-					NORM_ERR("error processing weather data, check that you have a valid XOAP key if using XOAP.");
-				}
-			}
-#endif
-#ifdef XOAP
-			OBJ(weather_forecast) {
-				if (obj->data.weather_forecast.uri != NULL) {
-					weather_forecast_process_info(p, p_max_size, obj->data.weather_forecast.uri, obj->data.weather_forecast.day, obj->data.weather_forecast.data_type, obj->data.weather_forecast.interval);
-				} else {
-					NORM_ERR("error processing weather forecast data, check that you have a valid XOAP key if using XOAP.");
-				}
-			}
-#endif
-#ifdef HAVE_LUA
-			OBJ(lua) {
-				char *str = llua_getstring(obj->data.s);
-				if (str) {
-					snprintf(p, p_max_size, "%s", str);
-					free(str);
-				}
-			}
-			OBJ(lua_parse) {
-				char *str = llua_getstring(obj->data.s);
-				if (str) {
-					evaluate(str, p);
-					free(str);
-				}
-			}
-			OBJ(lua_bar) {
-				double per;
-				if (llua_getnumber(obj->data.s, &per)) {
-#ifdef X11
-					if(output_methods & TO_X) {
-						new_bar(p, obj->a, obj->b, (per/100.0 * 255));
-					} else {
-#endif /* X11 */
-						if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-						new_bar_in_shell(p, p_max_size, per, obj->a);
-#ifdef X11
-					}
-#endif /* X11 */
-				}
-			}
-#ifdef X11
-			OBJ(lua_graph) {
-				double per;
-				if (llua_getnumber(obj->data.s, &per)) {
-					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-							per, obj->e, 1, obj->char_a, obj->char_b);
-				}
-			}
-			OBJ(lua_gauge) {
-				double per;
-				if (llua_getnumber(obj->data.s, &per)) {
-					new_gauge(p, obj->a, obj->b, (per/100.0 * 255));
-				}
-			}
-#endif /* X11 */
-#endif /* HAVE_LUA */
-#ifdef HDDTEMP
-			OBJ(hddtemp) {
-				char *endptr, unit;
-				long val;
-				if (obj->data.hddtemp.update_time < current_update_time - 30) {
-					if (obj->data.hddtemp.temp)
-						free(obj->data.hddtemp.temp);
-					obj->data.hddtemp.temp = get_hddtemp_info(obj->data.hddtemp.dev,
-							obj->data.hddtemp.addr, obj->data.hddtemp.port);
-					obj->data.hddtemp.update_time = current_update_time;
-				}
-				if (!obj->data.hddtemp.temp) {
-					snprintf(p, p_max_size, "N/A");
-				} else {
-					val = strtol(obj->data.hddtemp.temp + 1, &endptr, 10);
-					unit = obj->data.hddtemp.temp[0];
-
-					if (*endptr != '\0')
-						snprintf(p, p_max_size, "N/A");
-					else if (unit == 'C')
-						temp_print(p, p_max_size, (double)val, TEMP_CELSIUS);
-					else if (unit == 'F')
-						temp_print(p, p_max_size, (double)val, TEMP_FAHRENHEIT);
-					else
-						snprintf(p, p_max_size, "N/A");
-				}
-			}
-#endif
-			OBJ(offset) {
-				new_offset(p, obj->data.i);
-			}
-			OBJ(voffset) {
-				new_voffset(p, obj->data.i);
-			}
-#ifdef __linux__
-			OBJ(i2c) {
-				double r;
-
-				r = get_sysfs_info(&obj->data.sysfs.fd, obj->data.sysfs.arg,
-					obj->data.sysfs.devtype, obj->data.sysfs.type);
-
-				r = r * obj->data.sysfs.factor + obj->data.sysfs.offset;
-
-				if (!strncmp(obj->data.sysfs.type, "temp", 4)) {
-					temp_print(p, p_max_size, r, TEMP_CELSIUS);
-				} else if (r >= 100.0 || r == 0) {
-					snprintf(p, p_max_size, "%d", (int) r);
-				} else {
-					snprintf(p, p_max_size, "%.1f", r);
-				}
-			}
-			OBJ(platform) {
-				double r;
-
-				r = get_sysfs_info(&obj->data.sysfs.fd, obj->data.sysfs.arg,
-					obj->data.sysfs.devtype, obj->data.sysfs.type);
-
-				r = r * obj->data.sysfs.factor + obj->data.sysfs.offset;
-
-				if (!strncmp(obj->data.sysfs.type, "temp", 4)) {
-					temp_print(p, p_max_size, r, TEMP_CELSIUS);
-				} else if (r >= 100.0 || r == 0) {
-					snprintf(p, p_max_size, "%d", (int) r);
-				} else {
-					snprintf(p, p_max_size, "%.1f", r);
-				}
-			}
-			OBJ(hwmon) {
-				double r;
-
-				r = get_sysfs_info(&obj->data.sysfs.fd, obj->data.sysfs.arg,
-					obj->data.sysfs.devtype, obj->data.sysfs.type);
-
-				r = r * obj->data.sysfs.factor + obj->data.sysfs.offset;
-
-				if (!strncmp(obj->data.sysfs.type, "temp", 4)) {
-					temp_print(p, p_max_size, r, TEMP_CELSIUS);
-				} else if (r >= 100.0 || r == 0) {
-					snprintf(p, p_max_size, "%d", (int) r);
-				} else {
-					snprintf(p, p_max_size, "%.1f", r);
-				}
-			}
-#endif /* __linux__ */
-			OBJ(alignr) {
-				new_alignr(p, obj->data.i);
-			}
-			OBJ(alignc) {
-				new_alignc(p, obj->data.i);
-			}
-			OBJ(if_empty) {
-				char buf[max_user_text];
-				struct information *tmp_info =
-					malloc(sizeof(struct information));
-				memcpy(tmp_info, cur, sizeof(struct information));
-				generate_text_internal(buf, max_user_text,
-				                       *obj->sub, tmp_info);
-
-				if (strlen(buf) != 0) {
-					DO_JUMP;
-				}
-				free(tmp_info);
-			}
-			OBJ(if_match) {
-				char expression[max_user_text];
-				int val;
-				struct information *tmp_info;
-
-				tmp_info = malloc(sizeof(struct information));
-				memcpy(tmp_info, cur, sizeof(struct information));
-				generate_text_internal(expression, max_user_text,
-				                       *obj->sub, tmp_info);
-				DBGP("parsed arg into '%s'", expression);
-
-				val = compare(expression);
-				if (val == -2) {
-					NORM_ERR("compare failed for expression '%s'",
-							expression);
-				} else if (!val) {
-					DO_JUMP;
-				}
-				free(tmp_info);
-			}
-			OBJ(if_existing) {
-				if (obj->data.ifblock.str
-				    && !check_contains(obj->data.ifblock.s,
-				                       obj->data.ifblock.str)) {
-					DO_JUMP;
-				} else if (obj->data.ifblock.s
-				           && access(obj->data.ifblock.s, F_OK)) {
-					DO_JUMP;
-				}
-			}
-			OBJ(if_mounted) {
-				if ((obj->data.ifblock.s)
-						&& (!check_mount(obj->data.ifblock.s))) {
-					DO_JUMP;
-				}
-			}
-			OBJ(if_running) {
-#ifdef __linux__
-				if (!get_process_by_name(obj->data.ifblock.s)) {
-#else
-				if ((obj->data.ifblock.s) && system(obj->data.ifblock.s)) {
-#endif
-					DO_JUMP;
-				}
-			}
-#if defined(__linux__)
-			OBJ(ioscheduler) {
-				snprintf(p, p_max_size, "%s", get_ioscheduler(obj->data.s));
-			}
-#endif
-			OBJ(kernel) {
-				snprintf(p, p_max_size, "%s", cur->uname_s.release);
-			}
-			OBJ(machine) {
-				snprintf(p, p_max_size, "%s", cur->uname_s.machine);
-			}
-
-			/* memory stuff */
-			OBJ(mem) {
-				human_readable(cur->mem * 1024, p, 255);
-			}
-			OBJ(memeasyfree) {
-				human_readable(cur->memeasyfree * 1024, p, 255);
-			}
-			OBJ(memfree) {
-				human_readable(cur->memfree * 1024, p, 255);
-			}
-			OBJ(memmax) {
-				human_readable(cur->memmax * 1024, p, 255);
-			}
-			OBJ(memperc) {
-				if (cur->memmax)
-					percent_print(p, p_max_size, cur->mem * 100 / cur->memmax);
-			}
-#ifdef X11
-			OBJ(memgauge){
-				new_gauge(p, obj->data.pair.a, obj->data.pair.b,
-					cur->memmax ? (cur->mem * 255) / (cur->memmax) : 0);
-			}
-#endif /* X11 */
-			OBJ(membar) {
-#ifdef X11
-				if(output_methods & TO_X) {
-					new_bar(p, obj->data.pair.a, obj->data.pair.b,
-						cur->memmax ? (cur->mem * 255) / (cur->memmax) : 0);
-				}else{
-#endif /* X11 */
-					if(!obj->data.pair.a) obj->data.pair.a = DEFAULT_BAR_WIDTH_NO_X;
-					new_bar_in_shell(p, p_max_size, cur->memmax ? (cur->mem * 100) / (cur->memmax) : 0, obj->data.pair.a);
-#ifdef X11
-				}
-#endif /* X11 */
-			}
-#ifdef X11
-			OBJ(memgraph) {
-				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-					cur->memmax ? (cur->mem * 100.0) / (cur->memmax) : 0.0,
-					100, 1, obj->char_a, obj->char_b);
-			}
-#endif /* X11 */
-			/* mixer stuff */
-			OBJ(mixer) {
-				percent_print(p, p_max_size, mixer_get_avg(obj->data.l));
-			}
-			OBJ(mixerl) {
-				percent_print(p, p_max_size, mixer_get_left(obj->data.l));
-			}
-			OBJ(mixerr) {
-				percent_print(p, p_max_size, mixer_get_right(obj->data.l));
-			}
-#ifdef X11
-			OBJ(mixerbar) {
-				new_bar(p, obj->data.mixerbar.w, obj->data.mixerbar.h,
-					mixer_to_255(obj->data.mixerbar.l,mixer_get_avg(obj->data.mixerbar.l)));
-			}
-			OBJ(mixerlbar) {
-				new_bar(p, obj->data.mixerbar.w, obj->data.mixerbar.h,
-					mixer_to_255(obj->data.mixerbar.l,mixer_get_left(obj->data.mixerbar.l)));
-			}
-			OBJ(mixerrbar) {
-				new_bar(p, obj->data.mixerbar.w, obj->data.mixerbar.h,
-					mixer_to_255(obj->data.mixerbar.l,mixer_get_right(obj->data.mixerbar.l)));
-			}
-#endif /* X11 */
-			OBJ(if_mixer_mute) {
-				if (!mixer_is_mute(obj->data.ifblock.i)) {
-					DO_JUMP;
-				}
-			}
-#ifdef X11
-#define NOT_IN_X "Not running in X"
-			OBJ(monitor) {
-				if(x_initialised != YES) {
-					strncpy(p, NOT_IN_X, p_max_size);
-				}else{
-					snprintf(p, p_max_size, "%d", cur->x11.monitor.current);
-				}
-			}
-			OBJ(monitor_number) {
-				if(x_initialised != YES) {
-					strncpy(p, NOT_IN_X, p_max_size);
-				}else{
-					snprintf(p, p_max_size, "%d", cur->x11.monitor.number);
-				}
-			}
-			OBJ(desktop) {
-				if(x_initialised != YES) {
-					strncpy(p, NOT_IN_X, p_max_size);
-				}else{
-					snprintf(p, p_max_size, "%d", cur->x11.desktop.current);
-				}
-			}
-			OBJ(desktop_number) {
-				if(x_initialised != YES) {
-					strncpy(p, NOT_IN_X, p_max_size);
-				}else{
-					snprintf(p, p_max_size, "%d", cur->x11.desktop.number);
-				}
-			}
-			OBJ(desktop_name) {
-				if(x_initialised != YES) {
-					strncpy(p, NOT_IN_X, p_max_size);
-				}else if(cur->x11.desktop.name != NULL) {
-					strncpy(p, cur->x11.desktop.name, p_max_size);
-				}
-			}
-#endif /* X11 */
-
-			/* mail stuff */
-			OBJ(mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d", obj->data.local_mail.mail_count);
-			}
-			OBJ(new_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.new_mail_count);
-			}
-			OBJ(seen_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.seen_mail_count);
-			}
-			OBJ(unseen_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.unseen_mail_count);
-			}
-			OBJ(flagged_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.flagged_mail_count);
-			}
-			OBJ(unflagged_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.unflagged_mail_count);
-			}
-			OBJ(forwarded_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.forwarded_mail_count);
-			}
-			OBJ(unforwarded_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.unforwarded_mail_count);
-			}
-			OBJ(replied_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.replied_mail_count);
-			}
-			OBJ(unreplied_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.unreplied_mail_count);
-			}
-			OBJ(draft_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.draft_mail_count);
-			}
-			OBJ(trashed_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.trashed_mail_count);
-			}
-			OBJ(mboxscan) {
-				mbox_scan(obj->data.mboxscan.args, obj->data.mboxscan.output,
-					text_buffer_size);
-				snprintf(p, p_max_size, "%s", obj->data.mboxscan.output);
-			}
-			OBJ(nodename) {
-				snprintf(p, p_max_size, "%s", cur->uname_s.nodename);
-			}
-			OBJ(outlinecolor) {
-				new_outline(p, obj->data.l);
-			}
-			OBJ(processes) {
-				spaced_print(p, p_max_size, "%hu", 4, cur->procs);
-			}
-			OBJ(running_processes) {
-				spaced_print(p, p_max_size, "%hu", 4, cur->run_procs);
-			}
-			OBJ(text) {
-				snprintf(p, p_max_size, "%s", obj->data.s);
-			}
-#ifdef X11
-			OBJ(shadecolor) {
-				new_bg(p, obj->data.l);
-			}
-			OBJ(stippled_hr) {
-				new_stippled_hr(p, obj->data.pair.a, obj->data.pair.b);
-			}
-#endif /* X11 */
-			OBJ(swap) {
-				human_readable(cur->swap * 1024, p, 255);
-			}
-			OBJ(swapfree) {
-				human_readable(cur->swapfree * 1024, p, 255);
-			}
-			OBJ(swapmax) {
-				human_readable(cur->swapmax * 1024, p, 255);
-			}
-			OBJ(swapperc) {
-				if (cur->swapmax == 0) {
-					strncpy(p, "No swap", p_max_size);
-				} else {
-					percent_print(p, p_max_size, cur->swap * 100 / cur->swapmax);
-				}
-			}
-			OBJ(swapbar) {
-#ifdef X11
-				if(output_methods & TO_X) {
-					new_bar(p, obj->data.pair.a, obj->data.pair.b,
-						cur->swapmax ? (cur->swap * 255) / (cur->swapmax) : 0);
-				}else{
-#endif /* X11 */
-					if(!obj->data.pair.a) obj->data.pair.a = DEFAULT_BAR_WIDTH_NO_X;
-					new_bar_in_shell(p, p_max_size, cur->swapmax ? (cur->swap * 100) / (cur->swapmax) : 0, obj->data.pair.a);
-#ifdef X11
-				}
-#endif /* X11 */
-			}
-			OBJ(sysname) {
-				snprintf(p, p_max_size, "%s", cur->uname_s.sysname);
-			}
-			OBJ(time) {
-				time_t t = time(NULL);
-				struct tm *tm = localtime(&t);
-
-				setlocale(LC_TIME, "");
-				strftime(p, p_max_size, obj->data.s, tm);
-			}
-			OBJ(utime) {
-				time_t t = time(NULL);
-				struct tm *tm = gmtime(&t);
-
-				strftime(p, p_max_size, obj->data.s, tm);
-			}
-			OBJ(tztime) {
-				char *oldTZ = NULL;
-				time_t t;
-				struct tm *tm;
-
-				if (obj->data.tztime.tz) {
-					oldTZ = getenv("TZ");
-					setenv("TZ", obj->data.tztime.tz, 1);
-					tzset();
-				}
-				t = time(NULL);
-				tm = localtime(&t);
-
-				setlocale(LC_TIME, "");
-				strftime(p, p_max_size, obj->data.tztime.fmt, tm);
-				if (oldTZ) {
-					setenv("TZ", oldTZ, 1);
-					tzset();
-				} else {
-					unsetenv("TZ");
-				}
-				// Needless to free oldTZ since getenv gives ptr to static data
-			}
-			OBJ(totaldown) {
-				human_readable(obj->data.net->recv, p, 255);
-			}
-			OBJ(totalup) {
-				human_readable(obj->data.net->trans, p, 255);
-			}
-			OBJ(updates) {
-				snprintf(p, p_max_size, "%d", total_updates);
-			}
-			OBJ(if_updatenr) {
-				if(total_updates % updatereset != obj->data.ifblock.i - 1) {
-					DO_JUMP;
-				}
-			}
-			OBJ(upspeed) {
-				human_readable(obj->data.net->trans_speed, p, 255);
-			}
-			OBJ(upspeedf) {
-				spaced_print(p, p_max_size, "%.1f", 8,
-					obj->data.net->trans_speed / 1024.0);
-			}
-#ifdef X11
-			OBJ(upspeedgraph) {
-				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-					obj->data.net->trans_speed / 1024.0, obj->e, 1, obj->char_a, obj->char_b);
-			}
-#endif /* X11 */
-			OBJ(uptime_short) {
-				format_seconds_short(p, p_max_size, (int) cur->uptime);
-			}
-			OBJ(uptime) {
-				format_seconds(p, p_max_size, (int) cur->uptime);
-			}
-			OBJ(user_names) {
-				snprintf(p, p_max_size, "%s", cur->users.names);
-			}
-			OBJ(user_terms) {
-				snprintf(p, p_max_size, "%s", cur->users.terms);
-			}
-			OBJ(user_times) {
-				snprintf(p, p_max_size, "%s", cur->users.times);
-			}
-			OBJ(user_number) {
-				snprintf(p, p_max_size, "%d", cur->users.number);
-			}
-#if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) \
-		|| defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
-			OBJ(apm_adapter) {
-				char *msg;
-
-				msg = get_apm_adapter();
-				snprintf(p, p_max_size, "%s", msg);
-				free(msg);
-			}
-			OBJ(apm_battery_life) {
-				char *msg;
-
-				msg = get_apm_battery_life();
-				snprintf(p, p_max_size, "%s", msg);
-				free(msg);
-			}
-			OBJ(apm_battery_time) {
-				char *msg;
-
-				msg = get_apm_battery_time();
-				snprintf(p, p_max_size, "%s", msg);
-				free(msg);
-			}
-#endif /* __FreeBSD__ __OpenBSD__ */
-
-#ifdef MPD
-#define mpd_printf(fmt, val) \
-	snprintf(p, p_max_size, fmt, mpd_get_info()->val)
-#define mpd_sprintf(val) { \
-	if (!obj->data.i || obj->data.i > p_max_size) \
-		mpd_printf("%s", val); \
-	else \
-		snprintf(p, obj->data.i, "%s", mpd_get_info()->val); \
-}
-			OBJ(mpd_title)
-				mpd_sprintf(title);
-			OBJ(mpd_artist)
-				mpd_sprintf(artist);
-			OBJ(mpd_album)
-				mpd_sprintf(album);
-			OBJ(mpd_random)
-				mpd_printf("%s", random);
-			OBJ(mpd_repeat)
-				mpd_printf("%s", repeat);
-			OBJ(mpd_track)
-				mpd_sprintf(track);
-			OBJ(mpd_name)
-				mpd_sprintf(name);
-			OBJ(mpd_file)
-				mpd_sprintf(file);
-			OBJ(mpd_vol)
-				mpd_printf("%d", volume);
-			OBJ(mpd_bitrate)
-				mpd_printf("%d", bitrate);
-			OBJ(mpd_status)
-				mpd_printf("%s", status);
-			OBJ(mpd_elapsed) {
-				format_media_player_time(p, p_max_size, mpd_get_info()->elapsed);
-			}
-			OBJ(mpd_length) {
-				format_media_player_time(p, p_max_size, mpd_get_info()->length);
-			}
-			OBJ(mpd_percent) {
-				percent_print(p, p_max_size, (int)(mpd_get_info()->progress * 100));
-			}
-			OBJ(mpd_bar) {
-#ifdef X11
-				if(output_methods & TO_X) {
-					new_bar(p, obj->data.pair.a, obj->data.pair.b,
-						(int) (mpd_get_info()->progress * 255.0f));
-				} else {
-#endif /* X11 */
-					if(!obj->data.pair.a) obj->data.pair.a = DEFAULT_BAR_WIDTH_NO_X;
-					new_bar_in_shell(p, p_max_size, (int) (mpd_get_info()->progress * 100.0f), obj->data.pair.a);
-#ifdef X11
-				}
-#endif /* X11 */
-			}
-			OBJ(mpd_smart) {
-				struct mpd_s *mpd = mpd_get_info();
-				int len = obj->data.i;
-				if (len == 0 || len > p_max_size)
-					len = p_max_size;
-
-				memset(p, 0, p_max_size);
-				if (mpd->artist && *mpd->artist &&
-				    mpd->title && *mpd->title) {
-					snprintf(p, len, "%s - %s", mpd->artist,
-						mpd->title);
-				} else if (mpd->title && *mpd->title) {
-					snprintf(p, len, "%s", mpd->title);
-				} else if (mpd->artist && *mpd->artist) {
-					snprintf(p, len, "%s", mpd->artist);
-				} else if (mpd->file && *mpd->file) {
-					snprintf(p, len, "%s", mpd->file);
-				} else {
-					*p = 0;
-				}
-			}
-			OBJ(if_mpd_playing) {
-				if (!mpd_get_info()->is_playing) {
-					DO_JUMP;
-				}
-			}
-#undef mpd_sprintf
-#undef mpd_printf
-#endif
-
-#ifdef MOC
-#define MOC_PRINT(t, a) \
-	snprintf(p, p_max_size, "%s", (moc.t ? moc.t : a))
-			OBJ(moc_state) {
-				MOC_PRINT(state, "??");
-			}
-			OBJ(moc_file) {
-				MOC_PRINT(file, "no file");
-			}
-			OBJ(moc_title) {
-				MOC_PRINT(title, "no title");
-			}
-			OBJ(moc_artist) {
-				MOC_PRINT(artist, "no artist");
-			}
-			OBJ(moc_song) {
-				MOC_PRINT(song, "no song");
-			}
-			OBJ(moc_album) {
-				MOC_PRINT(album, "no album");
-			}
-			OBJ(moc_totaltime) {
-				MOC_PRINT(totaltime, "0:00");
-			}
-			OBJ(moc_timeleft) {
-				MOC_PRINT(timeleft, "0:00");
-			}
-			OBJ(moc_curtime) {
-				MOC_PRINT(curtime, "0:00");
-			}
-			OBJ(moc_bitrate) {
-				MOC_PRINT(bitrate, "0Kbps");
-			}
-			OBJ(moc_rate) {
-				MOC_PRINT(rate, "0KHz");
-			}
-#undef MOC_PRINT
-#endif /* MOC */
-#ifdef XMMS2
-			OBJ(xmms2_artist) {
-				snprintf(p, p_max_size, "%s", cur->xmms2.artist);
-			}
-			OBJ(xmms2_album) {
-				snprintf(p, p_max_size, "%s", cur->xmms2.album);
-			}
-			OBJ(xmms2_title) {
-				snprintf(p, p_max_size, "%s", cur->xmms2.title);
-			}
-			OBJ(xmms2_genre) {
-				snprintf(p, p_max_size, "%s", cur->xmms2.genre);
-			}
-			OBJ(xmms2_comment) {
-				snprintf(p, p_max_size, "%s", cur->xmms2.comment);
-			}
-			OBJ(xmms2_url) {
-				snprintf(p, p_max_size, "%s", cur->xmms2.url);
-			}
-			OBJ(xmms2_status) {
-				snprintf(p, p_max_size, "%s", cur->xmms2.status);
-			}
-			OBJ(xmms2_date) {
-				snprintf(p, p_max_size, "%s", cur->xmms2.date);
-			}
-			OBJ(xmms2_tracknr) {
-				if (cur->xmms2.tracknr != -1) {
-					snprintf(p, p_max_size, "%i", cur->xmms2.tracknr);
-				}
-			}
-			OBJ(xmms2_bitrate) {
-				snprintf(p, p_max_size, "%i", cur->xmms2.bitrate);
-			}
-			OBJ(xmms2_id) {
-				snprintf(p, p_max_size, "%u", cur->xmms2.id);
-			}
-			OBJ(xmms2_size) {
-				snprintf(p, p_max_size, "%2.1f", cur->xmms2.size);
-			}
-			OBJ(xmms2_elapsed) {
-				snprintf(p, p_max_size, "%02d:%02d", cur->xmms2.elapsed / 60000,
-					(cur->xmms2.elapsed / 1000) % 60);
-			}
-			OBJ(xmms2_duration) {
-				snprintf(p, p_max_size, "%02d:%02d",
-					cur->xmms2.duration / 60000,
-					(cur->xmms2.duration / 1000) % 60);
-			}
-			OBJ(xmms2_percent) {
-				snprintf(p, p_max_size, "%2.0f", cur->xmms2.progress * 100);
-			}
-#ifdef X11
-			OBJ(xmms2_bar) {
-				new_bar(p, obj->data.pair.a, obj->data.pair.b,
-					(int) (cur->xmms2.progress * 255.0f));
-			}
-#endif /* X11 */
-			OBJ(xmms2_playlist) {
-				snprintf(p, p_max_size, "%s", cur->xmms2.playlist);
-			}
-			OBJ(xmms2_timesplayed) {
-				snprintf(p, p_max_size, "%i", cur->xmms2.timesplayed);
-			}
-			OBJ(xmms2_smart) {
-				if (strlen(cur->xmms2.title) < 2
-						&& strlen(cur->xmms2.title) < 2) {
-					snprintf(p, p_max_size, "%s", cur->xmms2.url);
-				} else {
-					snprintf(p, p_max_size, "%s - %s", cur->xmms2.artist,
-						cur->xmms2.title);
-				}
-			}
-			OBJ(if_xmms2_connected) {
-				if (cur->xmms2.conn_state != 1) {
-					DO_JUMP;
-				}
-			}
-#endif /* XMMS */
-#ifdef AUDACIOUS
-			OBJ(audacious_status) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_STATUS]);
-			}
-			OBJ(audacious_title) {
-				snprintf(p, cur->audacious.max_title_len > 0
-					? cur->audacious.max_title_len : p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_TITLE]);
-			}
-			OBJ(audacious_length) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_LENGTH]);
-			}
-			OBJ(audacious_length_seconds) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_LENGTH_SECONDS]);
-			}
-			OBJ(audacious_position) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_POSITION]);
-			}
-			OBJ(audacious_position_seconds) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_POSITION_SECONDS]);
-			}
-			OBJ(audacious_bitrate) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_BITRATE]);
-			}
-			OBJ(audacious_frequency) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_FREQUENCY]);
-			}
-			OBJ(audacious_channels) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_CHANNELS]);
-			}
-			OBJ(audacious_filename) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_FILENAME]);
-			}
-			OBJ(audacious_playlist_length) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_PLAYLIST_LENGTH]);
-			}
-			OBJ(audacious_playlist_position) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_PLAYLIST_POSITION]);
-			}
-			OBJ(audacious_main_volume) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_MAIN_VOLUME]);
-			}
-#ifdef X11
-			OBJ(audacious_bar) {
-				double progress;
-
-				progress =
-					atof(cur->audacious.items[AUDACIOUS_POSITION_SECONDS]) /
-					atof(cur->audacious.items[AUDACIOUS_LENGTH_SECONDS]);
-				new_bar(p, obj->a, obj->b, (int) (progress * 255.0f));
-			}
-#endif /* X11 */
-#endif /* AUDACIOUS */
-
-#ifdef BMPX
-			OBJ(bmpx_title) {
-				snprintf(p, p_max_size, "%s", cur->bmpx.title);
-			}
-			OBJ(bmpx_artist) {
-				snprintf(p, p_max_size, "%s", cur->bmpx.artist);
-			}
-			OBJ(bmpx_album) {
-				snprintf(p, p_max_size, "%s", cur->bmpx.album);
-			}
-			OBJ(bmpx_uri) {
-				snprintf(p, p_max_size, "%s", cur->bmpx.uri);
-			}
-			OBJ(bmpx_track) {
-				snprintf(p, p_max_size, "%i", cur->bmpx.track);
-			}
-			OBJ(bmpx_bitrate) {
-				snprintf(p, p_max_size, "%i", cur->bmpx.bitrate);
-			}
-#endif /* BMPX */
-			/* we have four different types of top (top, top_mem,
-			 * top_time and top_io). To avoid having almost-same code four
-			 * times, we have this special handler. */
-			break;
-			case OBJ_top:
-				parse_top_args("top", obj->data.top.s, obj);
-				if (!needed) needed = cur->cpu;
-			case OBJ_top_mem:
-				parse_top_args("top_mem", obj->data.top.s, obj);
-				if (!needed) needed = cur->memu;
-			case OBJ_top_time:
-				parse_top_args("top_time", obj->data.top.s, obj);
-				if (!needed) needed = cur->time;
-#ifdef IOSTATS
-			case OBJ_top_io:
-				parse_top_args("top_io", obj->data.top.s, obj);
-				if (!needed) needed = cur->io;
-#endif
-
-				if (needed[obj->data.top.num]) {
-					char *timeval;
-
-					switch (obj->data.top.type) {
-						case TOP_NAME:
-							snprintf(p, top_name_width + 1, "%-*s", top_name_width,
-									needed[obj->data.top.num]->name);
-							break;
-						case TOP_CPU:
-							snprintf(p, 7, "%6.2f",
-									needed[obj->data.top.num]->amount);
-							break;
-						case TOP_PID:
-							snprintf(p, 6, "%5i",
-									needed[obj->data.top.num]->pid);
-							break;
-						case TOP_MEM:
-							snprintf(p, 7, "%6.2f",
-									needed[obj->data.top.num]->totalmem);
-							break;
-						case TOP_TIME:
-							timeval = format_time(
-									needed[obj->data.top.num]->total_cpu_time, 9);
-							snprintf(p, 10, "%9s", timeval);
-							free(timeval);
-							break;
-						case TOP_MEM_RES:
-							human_readable(needed[obj->data.top.num]->rss,
-									p, 255);
-							break;
-						case TOP_MEM_VSIZE:
-							human_readable(needed[obj->data.top.num]->vsize,
-									p, 255);
-							break;
-#ifdef IOSTATS
-						case TOP_READ_BYTES:
-							human_readable(needed[obj->data.top.num]->read_bytes / update_interval,
-									p, 255);
-							break;
-						case TOP_WRITE_BYTES:
-							human_readable(needed[obj->data.top.num]->write_bytes / update_interval,
-									p, 255);
-							break;
-						case TOP_IO_PERC:
-							snprintf(p, 7, "%6.2f",
-									needed[obj->data.top.num]->io_perc);
-							break;
-#endif
-					}
-				}
-			OBJ(tail) {
-				print_tailhead("tail", obj, p, p_max_size);
-			}
-			OBJ(head) {
-				print_tailhead("head", obj, p, p_max_size);
-			}
-			OBJ(lines) {
-				FILE *fp = open_file(obj->data.s, &obj->a);
-
-				if(fp != NULL) {
-/* FIXME: use something more general (see also tail.c, head.c */
-#define BUFSZ 0x1000
-					char buf[BUFSZ];
-					int j, lines;
-
-					lines = 0;
-					while(fgets(buf, BUFSZ, fp) != NULL){
-						for(j = 0; buf[j] != 0; j++) {
-							if(buf[j] == '\n') {
-								lines++;
-							}
-						}
-					}
-					sprintf(p, "%d", lines);
-					fclose(fp);
-				} else {
-					sprintf(p, "File Unreadable");
-				}
-			}
-
-			OBJ(words) {
-				FILE *fp = open_file(obj->data.s, &obj->a);
-
-				if(fp != NULL) {
-					char buf[BUFSZ];
-					int j, words;
-					char inword = FALSE;
-
-					words = 0;
-					while(fgets(buf, BUFSZ, fp) != NULL){
-						for(j = 0; buf[j] != 0; j++) {
-							if(!isspace(buf[j])) {
-								if(inword == FALSE) {
-									words++;
-									inword = TRUE;
-								}
-							} else {
-								inword = FALSE;
-							}
-						}
-					}
-					sprintf(p, "%d", words);
-					fclose(fp);
-				} else {
-					sprintf(p, "File Unreadable");
-				}
-			}
-#ifdef TCP_PORT_MONITOR
-			OBJ(tcp_portmon) {
-				tcp_portmon_action(p, p_max_size,
-				                   &obj->data.tcp_port_monitor);
-			}
-#endif /* TCP_PORT_MONITOR */
-
-#ifdef HAVE_ICONV
-			OBJ(iconv_start) {
-				set_iconv_converting(1);
-				set_iconv_selected(obj->a);
-			}
-			OBJ(iconv_stop) {
-				set_iconv_converting(0);
-				set_iconv_selected(0);
-			}
-#endif /* HAVE_ICONV */
-
-			OBJ(entropy_avail) {
-				snprintf(p, p_max_size, "%d", cur->entropy.entropy_avail);
-			}
-			OBJ(entropy_perc) {
-				percent_print(p, p_max_size,
-				              cur->entropy.entropy_avail *
-					      100 / cur->entropy.poolsize);
-			}
-			OBJ(entropy_poolsize) {
-				snprintf(p, p_max_size, "%d", cur->entropy.poolsize);
-			}
-			OBJ(entropy_bar) {
-				double entropy_perc;
-
-				entropy_perc = (double) cur->entropy.entropy_avail /
-					(double) cur->entropy.poolsize;
-#ifdef X11
-				if(output_methods & TO_X) {
-					new_bar(p, obj->a, obj->b, (int) (entropy_perc * 255.0f));
-				} else {
-#endif /* X11 */
-					if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-					new_bar_in_shell(p, p_max_size, (int) (entropy_perc * 100.0f), obj->a);
-#ifdef X11
-				}
-#endif /* X11 */
-			}
-#ifdef IBM
-			OBJ(smapi) {
-				char *s;
-				if(obj->data.s) {
-					s = smapi_get_val(obj->data.s);
-					snprintf(p, p_max_size, "%s", s);
-					free(s);
-				}
-			}
-			OBJ(if_smapi_bat_installed) {
-				int idx;
-				if(obj->data.ifblock.s && sscanf(obj->data.ifblock.s, "%i", &idx) == 1) {
-					if(!smapi_bat_installed(idx)) {
-						DO_JUMP;
-					}
-				} else
-					NORM_ERR("argument to if_smapi_bat_installed must be an integer");
-			}
-			OBJ(smapi_bat_perc) {
-				int idx, val;
-				if(obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
-					val = smapi_bat_installed(idx) ?
-						smapi_get_bat_int(idx, "remaining_percent") : 0;
-					percent_print(p, p_max_size, val);
-				} else
-					NORM_ERR("argument to smapi_bat_perc must be an integer");
-			}
-			OBJ(smapi_bat_temp) {
-				int idx, val;
-				if(obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
-					val = smapi_bat_installed(idx) ?
-						smapi_get_bat_int(idx, "temperature") : 0;
-					/* temperature is in milli degree celsius */
-					temp_print(p, p_max_size, val / 1000, TEMP_CELSIUS);
-				} else
-					NORM_ERR("argument to smapi_bat_temp must be an integer");
-			}
-			OBJ(smapi_bat_power) {
-				int idx, val;
-				if(obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
-					val = smapi_bat_installed(idx) ?
-						smapi_get_bat_int(idx, "power_now") : 0;
-					/* power_now is in mW, set to W with one digit precision */
-					snprintf(p, p_max_size, "%.1f", ((double)val / 1000));
-				} else
-					NORM_ERR("argument to smapi_bat_power must be an integer");
-			}
-#ifdef X11
-			OBJ(smapi_bat_bar) {
-				if(obj->data.i >= 0 && smapi_bat_installed(obj->data.i))
-					new_bar(p, obj->a, obj->b, (int)
-							(255 * smapi_get_bat_int(obj->data.i, "remaining_percent") / 100));
-				else
-					new_bar(p, obj->a, obj->b, 0);
-			}
-#endif /* X11 */
-#endif /* IBM */
-			OBJ(include) {
-				if(obj->sub) {
-					char buf[max_user_text];
-
-					generate_text_internal(buf, max_user_text, *obj->sub, cur);
-					snprintf(p, p_max_size, "%s", buf);
-				} else {
-					p[0] = 0;
-				}
-			}
-			OBJ(blink) {
-				//blinking like this can look a bit ugly if the chars in the font don't have the same width
-				char buf[max_user_text];
-				unsigned int j;
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				snprintf(p, p_max_size, "%s", buf);
-				if(total_updates % 2) {
-					for(j=0; p[j] != 0; j++) {
-						p[j] = ' ';
-					}
-				}
-			}
-			OBJ(to_bytes) {
-				char buf[max_user_text];
-				long long bytes;
-				char unit[16];	// 16 because we can also have long names (like mega-bytes)
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				if(sscanf(buf, "%lli%s", &bytes, unit) == 2 && strlen(unit) < 16){
-					if(strncasecmp("b", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes);
-					else if(strncasecmp("k", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes * 1024);
-					else if(strncasecmp("m", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes * 1024 * 1024);
-					else if(strncasecmp("g", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes * 1024 * 1024 * 1024);
-					else if(strncasecmp("t", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes * 1024 * 1024 * 1024 * 1024);
-				}
-				snprintf(p, p_max_size, "%s", buf);
-			}
-			OBJ(scroll) {
-				unsigned int j, colorchanges = 0, frontcolorchanges = 0, visibcolorchanges = 0, strend;
-				char *pwithcolors;
-				char buf[max_user_text];
-				generate_text_internal(buf, max_user_text,
-				                       *obj->sub, cur);
-				for(j = 0; buf[j] != 0; j++) {
-					switch(buf[j]) {
-					case '\n':	//place all the lines behind each other with LINESEPARATOR between them
-#define LINESEPARATOR '|'
-						buf[j]=LINESEPARATOR;
-						break;
-					case SPECIAL_CHAR:
-						colorchanges++;
-						break;
-					}
-				}
-				//no scrolling necessary if the length of the text to scroll is too short
-				if (strlen(buf) - colorchanges <= obj->data.scroll.show) {
-					snprintf(p, p_max_size, "%s", buf);
-					break;
-				}
-				//make sure a colorchange at the front is not part of the string we are going to show
-				while(*(buf + obj->data.scroll.start) == SPECIAL_CHAR) {
-					obj->data.scroll.start++;
-				}
-				//place all chars that should be visible in p, including colorchanges
-				for(j=0; j < obj->data.scroll.show + visibcolorchanges; j++) {
-					p[j] = *(buf + obj->data.scroll.start + j);
-					if(p[j] == SPECIAL_CHAR) {
-						visibcolorchanges++;
-					}
-					//if there is still room fill it with spaces
-					if( ! p[j]) break;
-				}
-				for(; j < obj->data.scroll.show + visibcolorchanges; j++) {
-					p[j] = ' ';
-				}
-				p[j] = 0;
-				//count colorchanges in front of the visible part and place that many colorchanges in front of the visible part
-				for(j = 0; j < obj->data.scroll.start; j++) {
-					if(buf[j] == SPECIAL_CHAR) frontcolorchanges++;
-				}
-				pwithcolors=malloc(strlen(p) + 1 + colorchanges - visibcolorchanges);
-				for(j = 0; j < frontcolorchanges; j++) {
-					pwithcolors[j] = SPECIAL_CHAR;
-				}
-				pwithcolors[j] = 0;
-				strcat(pwithcolors,p);
-				strend = strlen(pwithcolors);
-				//and place the colorchanges not in front or in the visible part behind the visible part
-				for(j = 0; j < colorchanges - frontcolorchanges - visibcolorchanges; j++) {
-					pwithcolors[strend + j] = SPECIAL_CHAR;
-				}
-				pwithcolors[strend + j] = 0;
-				strcpy(p, pwithcolors);
-				free(pwithcolors);
-				//scroll
-				obj->data.scroll.start += obj->data.scroll.step;
-				if(buf[obj->data.scroll.start] == 0){
-					 obj->data.scroll.start = 0;
-				}
-#ifdef X11
-				//reset color when scroll is finished
-				new_fg(p + strlen(p), obj->data.scroll.resetcolor);
-#endif
-			}
-			OBJ(combine) {
-				char buf[2][max_user_text];
-				int i, j;
-				long longest=0;
-				int nextstart;
-				int nr_rows[2];
-				struct llrows {
-					char* row;
-					struct llrows* next;
-				};
-				struct llrows *ll_rows[2], *current[2];
-				struct text_object * objsub = obj->sub;
-
-				p[0]=0;
-				for(i=0; i<2; i++) {
-					nr_rows[i] = 1;
-					nextstart = 0;
-					ll_rows[i] = malloc(sizeof(struct llrows));
-					current[i] = ll_rows[i];
-					for(j=0; j<i; j++) objsub = objsub->sub;
-					generate_text_internal(buf[i], max_user_text, *objsub, cur);
-					for(j=0; buf[i][j] != 0; j++) {
-						if(buf[i][j] == '\t') buf[i][j] = ' ';
-						if(buf[i][j] == '\n') {
-							buf[i][j] = 0;
-							current[i]->row = strdup(buf[i]+nextstart);
-							if(i==0 && (long)strlen(current[i]->row) > longest) longest = (long)strlen(current[i]->row);
-							current[i]->next = malloc(sizeof(struct llrows));
-							current[i] = current[i]->next;
-							nextstart = j + 1;
-							nr_rows[i]++;
-						}
-					}
-					current[i]->row = strdup(buf[i]+nextstart);
-					if(i==0 && (long)strlen(current[i]->row) > longest) longest = (long)strlen(current[i]->row);
-					current[i]->next = NULL;
-					current[i] = ll_rows[i];
-				}
-				for(j=0; j < (nr_rows[0] > nr_rows[1] ? nr_rows[0] : nr_rows[1] ); j++) {
-					if(current[0]) {
-						strcat(p, current[0]->row);
-						i=strlen(current[0]->row);
-					}else i = 0;
-					while(i < longest) {
-						strcat(p, " ");
-						i++;
-					}
-					if(current[1]) {
-						strcat(p, obj->data.combine.seperation);
-						strcat(p, current[1]->row);
-					}
-					strcat(p, "\n");
-					#ifdef HAVE_OPENMP
-					#pragma omp parallel for schedule(dynamic,10)
-					#endif /* HAVE_OPENMP */
-					for(i=0; i<2; i++) if(current[i]) current[i]=current[i]->next;
-				}
-				#ifdef HAVE_OPENMP
-				#pragma omp parallel for schedule(dynamic,10)
-				#endif /* HAVE_OPENMP */
-				for(i=0; i<2; i++) {
-					while(ll_rows[i] != NULL) {
-						current[i]=ll_rows[i];
-						free(current[i]->row);
-						ll_rows[i]=current[i]->next;
-						free(current[i]);
-					}
-				}
-			}
-#ifdef NVIDIA
-			OBJ(nvidia) {
-				int value = get_nvidia_value(obj->data.nvidia.type, display);
-				if(value == -1)
-					snprintf(p, p_max_size, "N/A");
-				else if (obj->data.nvidia.type == NV_TEMP)
-					temp_print(p, p_max_size, (double)value, TEMP_CELSIUS);
-				else if (obj->data.nvidia.print_as_float &&
-						value > 0 && value < 100)
-					snprintf(p, p_max_size, "%.1f", (float)value);
-				else
-					snprintf(p, p_max_size, "%d", value);
-			}
-#endif /* NVIDIA */
-#ifdef APCUPSD
-			OBJ(apcupsd) {
-				/* This is just a meta-object to set host:port */
-			}
-			OBJ(apcupsd_name) {
-				snprintf(p, p_max_size, "%s",
-						 cur->apcupsd.items[APCUPSD_NAME]);
-			}
-			OBJ(apcupsd_model) {
-				snprintf(p, p_max_size, "%s",
-						 cur->apcupsd.items[APCUPSD_MODEL]);
-			}
-			OBJ(apcupsd_upsmode) {
-				snprintf(p, p_max_size, "%s",
-						 cur->apcupsd.items[APCUPSD_UPSMODE]);
-			}
-			OBJ(apcupsd_cable) {
-				snprintf(p, p_max_size, "%s",
-						 cur->apcupsd.items[APCUPSD_CABLE]);
-			}
-			OBJ(apcupsd_status) {
-				snprintf(p, p_max_size, "%s",
-						 cur->apcupsd.items[APCUPSD_STATUS]);
-			}
-			OBJ(apcupsd_linev) {
-				snprintf(p, p_max_size, "%s",
-						 cur->apcupsd.items[APCUPSD_LINEV]);
-			}
-			OBJ(apcupsd_load) {
-				snprintf(p, p_max_size, "%s",
-						 cur->apcupsd.items[APCUPSD_LOAD]);
-			}
-			OBJ(apcupsd_loadbar) {
-				double progress;
-#ifdef X11
-				if(output_methods & TO_X) {
-					progress = atof(cur->apcupsd.items[APCUPSD_LOAD]) / 100.0 * 255.0;
-					new_bar(p, obj->a, obj->b, (int) progress);
-				} else {
-#endif /* X11 */
-					progress = atof(cur->apcupsd.items[APCUPSD_LOAD]);
-					if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-					new_bar_in_shell(p, p_max_size, (int) progress, obj->a);
-#ifdef X11
-				}
-#endif /* X11 */
-			}
-#ifdef X11
-			OBJ(apcupsd_loadgraph) {
-				double progress;
-				progress =	atof(cur->apcupsd.items[APCUPSD_LOAD]);
-				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-						  (int)progress, 100, 1, obj->char_a, obj->char_b);
-			}
-			OBJ(apcupsd_loadgauge) {
-				double progress;
-				progress =	atof(cur->apcupsd.items[APCUPSD_LOAD]) / 100.0 * 255.0;
-				new_gauge(p, obj->a, obj->b,
-						  (int)progress);
-			}
-#endif /* X11 */
-			OBJ(apcupsd_charge) {
-				snprintf(p, p_max_size, "%s",
-						 cur->apcupsd.items[APCUPSD_CHARGE]);
-			}
-			OBJ(apcupsd_timeleft) {
-				snprintf(p, p_max_size, "%s",
-						 cur->apcupsd.items[APCUPSD_TIMELEFT]);
-			}
-			OBJ(apcupsd_temp) {
-				snprintf(p, p_max_size, "%s",
-						 cur->apcupsd.items[APCUPSD_TEMP]);
-			}
-			OBJ(apcupsd_lastxfer) {
-				snprintf(p, p_max_size, "%s",
-						 cur->apcupsd.items[APCUPSD_LASTXFER]);
-			}
-#endif /* APCUPSD */
-			break;
-		}
-#undef DO_JUMP
-
-
-		{
-			size_t a = strlen(p);
-
-#ifdef HAVE_ICONV
-			iconv_convert(a, buff_in, p, p_max_size);
-#endif /* HAVE_ICONV */
-			if (obj->type != OBJ_text && obj->type != OBJ_execp && obj->type != OBJ_execpi) {
-				substitute_newlines(p, a - 2);
-			}
-			p += a;
-			p_max_size -= a;
-		}
-		obj = obj->next;
-	}
-#ifdef X11
-	/* load any new fonts we may have had */
-	if (need_to_load_fonts) {
-		load_fonts();
-	}
-#endif /* X11 */
-}
-
-void evaluate(const char *text, char *buffer)
-{
-	struct information *tmp_info;
-	struct text_object subroot;
-
-	tmp_info = malloc(sizeof(struct information));
-	memcpy(tmp_info, &info, sizeof(struct information));
-	parse_conky_vars(&subroot, text, buffer, tmp_info);
-	DBGP("evaluated '%s' to '%s'", text, buffer);
-
-	free_text_objects(&subroot, 1);
-	free(tmp_info);
-}
-
-double current_update_time, next_update_time, last_update_time;
-
-static void generate_text(void)
-{
-	struct information *cur = &info;
-	char *p;
-
-	special_count = 0;
-
-	/* update info */
-
-	current_update_time = get_time();
-
-	update_stuff();
-
-	/* add things to the buffer */
-
-	/* generate text */
-
-	p = text_buffer;
-
-	generate_text_internal(p, max_user_text, global_root_object, cur);
-
-	if (stuff_in_uppercase) {
-		char *tmp_p;
-
-		tmp_p = text_buffer;
-		while (*tmp_p) {
-			*tmp_p = toupper(*tmp_p);
-			tmp_p++;
-		}
-	}
-
-	next_update_time += update_interval;
-	if (next_update_time < get_time()) {
-		next_update_time = get_time() + update_interval;
-	} else if (next_update_time > get_time() + update_interval) {
-		next_update_time = get_time() + update_interval;
-	}
-	last_update_time = current_update_time;
-	total_updates++;
-}
-
-void set_update_interval(double interval)
-{
-	update_interval = interval;
-	update_interval_old = interval;
-}
-
-static inline int get_string_width(const char *s)
-{
-#ifdef X11
-	if (output_methods & TO_X) {
-		return *s ? calc_text_width(s, strlen(s)) : 0;
-	}
-#endif /* X11 */
-	return strlen(s);
-}
-
-#ifdef X11
-static int get_string_width_special(char *s, int special_index)
-{
-	char *p, *final;
-	int idx = 1;
-	int width = 0;
-	long i;
-
-	if ((output_methods & TO_X) == 0) {
-		return (s) ? strlen(s) : 0;
-	}
-
-	if (!s) {
-		return 0;
-	}
-
-	p = strndup(s, text_buffer_size);
-	final = p;
-
-	while (*p) {
-		if (*p == SPECIAL_CHAR) {
-			/* shift everything over by 1 so that the special char
-			 * doesn't mess up the size calculation */
-			for (i = 0; i < (long)strlen(p); i++) {
-				*(p + i) = *(p + i + 1);
-			}
-			if (specials[special_index + idx].type == GRAPH
-					|| specials[special_index + idx].type == GAUGE
-					|| specials[special_index + idx].type == BAR) {
-				width += specials[special_index + idx].width;
-			}
-			idx++;
-		} else if (*p == SECRIT_MULTILINE_CHAR) {
-			*p = 0;
-			break;
-		} else {
-			p++;
-		}
-	}
-	if (strlen(final) > 1) {
-		width += calc_text_width(final, strlen(final));
-	}
-	free(final);
-	return width;
-}
-
-static int text_size_updater(char *s, int special_index);
-
-int last_font_height;
-static void update_text_area(void)
-{
-	int x = 0, y = 0;
-
-	if ((output_methods & TO_X) == 0)
-		return;
-	/* update text size if it isn't fixed */
-#ifdef OWN_WINDOW
-	if (!fixed_size)
-#endif
-	{
-		text_width = minimum_width;
-		text_height = 0;
-		last_font_height = font_height();
-		for_each_line(text_buffer, text_size_updater);
-		text_width += 1;
-		if (text_height < minimum_height) {
-			text_height = minimum_height;
-		}
-		if (text_width > maximum_width && maximum_width > 0) {
-			text_width = maximum_width;
-		}
-	}
-
-	/* get text position on workarea */
-	switch (text_alignment) {
-		case TOP_LEFT:
-			x = gap_x;
-			y = gap_y;
-			break;
-
-		case TOP_RIGHT:
-			x = workarea[2] - text_width - gap_x;
-			y = gap_y;
-			break;
-
-		case TOP_MIDDLE:
-			x = workarea[2] / 2 - text_width / 2 - gap_x;
-			y = gap_y;
-			break;
-
-		default:
-		case BOTTOM_LEFT:
-			x = gap_x;
-			y = workarea[3] - text_height - gap_y;
-			break;
-
-		case BOTTOM_RIGHT:
-			x = workarea[2] - text_width - gap_x;
-			y = workarea[3] - text_height - gap_y;
-			break;
-
-		case BOTTOM_MIDDLE:
-			x = workarea[2] / 2 - text_width / 2 - gap_x;
-			y = workarea[3] - text_height - gap_y;
-			break;
-
-		case MIDDLE_LEFT:
-			x = gap_x;
-			y = workarea[3] / 2 - text_height / 2 - gap_y;
-			break;
-
-		case MIDDLE_RIGHT:
-			x = workarea[2] - text_width - gap_x;
-			y = workarea[3] / 2 - text_height / 2 - gap_y;
-			break;
-
-#ifdef OWN_WINDOW
-		case NONE:	// Let the WM manage the window
-			x = window.x;
-			y = window.y;
-
-			fixed_pos = 1;
-			fixed_size = 1;
-			break;
-#endif
-	}
-#ifdef OWN_WINDOW
-
-	if (own_window && !fixed_pos) {
-		x += workarea[0];
-		y += workarea[1];
-		text_start_x = window.border_inner_margin + window.border_outer_margin + window.border_width;
-		text_start_y = window.border_inner_margin + window.border_outer_margin + window.border_width;
-		window.x = x - window.border_inner_margin - window.border_outer_margin - window.border_width;
-		window.y = y - window.border_inner_margin - window.border_outer_margin - window.border_width;
-	} else
-#endif
-	{
-		/* If window size doesn't match to workarea's size,
-		 * then window probably includes panels (gnome).
-		 * Blah, doesn't work on KDE. */
-		if (workarea[2] != window.width || workarea[3] != window.height) {
-			y += workarea[1];
-			x += workarea[0];
-		}
-
-		text_start_x = x;
-		text_start_y = y;
-	}
-#ifdef HAVE_LUA
-	/* update lua window globals */
-	llua_update_window_table(text_start_x, text_start_y, text_width, text_height);
-#endif /* HAVE_LUA */
-}
-
-/* drawing stuff */
-
-static int cur_x, cur_y;	/* current x and y for drawing */
-#endif
-//draw_mode also without X11 because we only need to print to stdout with FG
-static int draw_mode;		/* FG, BG or OUTLINE */
-#ifdef X11
-static long current_color;
-
-static int text_size_updater(char *s, int special_index)
-{
-	int w = 0;
-	char *p;
-
-	if ((output_methods & TO_X) == 0)
-		return 0;
-	/* get string widths and skip specials */
-	p = s;
-	while (*p) {
-		if (*p == SPECIAL_CHAR) {
-			*p = '\0';
-			w += get_string_width(s);
-			*p = SPECIAL_CHAR;
-
-			if (specials[special_index].type == BAR
-					|| specials[special_index].type == GAUGE
-					|| specials[special_index].type == GRAPH) {
-				w += specials[special_index].width;
-				if (specials[special_index].height > last_font_height) {
-					last_font_height = specials[special_index].height;
-					last_font_height += font_height();
-				}
-			} else if (specials[special_index].type == OFFSET) {
-				if (specials[special_index].arg > 0) {
-					w += specials[special_index].arg;
-				}
-			} else if (specials[special_index].type == VOFFSET) {
-				last_font_height += specials[special_index].arg;
-			} else if (specials[special_index].type == GOTO) {
-				if (specials[special_index].arg > cur_x) {
-					w = (int) specials[special_index].arg;
-				}
-			} else if (specials[special_index].type == TAB) {
-				int start = specials[special_index].arg;
-				int step = specials[special_index].width;
-
-				if (!step || step < 0) {
-					step = 10;
-				}
-				w += step - (cur_x - text_start_x - start) % step;
-			} else if (specials[special_index].type == FONT) {
-				selected_font = specials[special_index].font_added;
-				if (font_height() > last_font_height) {
-					last_font_height = font_height();
-				}
-			}
-
-			special_index++;
-			s = p + 1;
-		} else if (*p == SECRIT_MULTILINE_CHAR) {
-			int lw;
-			*p = '\0';
-			lw = get_string_width(s);
-			*p = SECRIT_MULTILINE_CHAR;
-			s = p + 1;
-			w = lw > w ? lw : w;
-			text_height += last_font_height;
-		}
-		p++;
-	}
-	w += get_string_width(s);
-	if (w > text_width) {
-		text_width = w;
-	}
-	if (text_width > maximum_width && maximum_width) {
-		text_width = maximum_width;
-	}
-
-	text_height += last_font_height;
-	last_font_height = font_height();
-	return special_index;
-}
-#endif /* X11 */
-
-static inline void set_foreground_color(long c)
-{
-#ifdef X11
-	if (output_methods & TO_X) {
-		current_color = c;
-		XSetForeground(display, window.gc, c);
-	}
-#endif /* X11 */
-#ifdef NCURSES
-	if (output_methods & TO_NCURSES) {
-		attron(COLOR_PAIR(c));
-	}
-#endif /* NCURSES */
-	UNUSED(c);
-	return;
-}
-
-static void draw_string(const char *s)
-{
-	int i, i2, pos, width_of_s;
-	int max = 0;
-	int added;
-	char *s_with_newlines;
-
-	if (s[0] == '\0') {
-		return;
-	}
-
-	width_of_s = get_string_width(s);
-	s_with_newlines = strdup(s);
-	for(i = 0; i < (int) strlen(s_with_newlines); i++) {
-		if(s_with_newlines[i] == SECRIT_MULTILINE_CHAR) {
-			s_with_newlines[i] = '\n';
-		}
-	}
-	if ((output_methods & TO_STDOUT) && draw_mode == FG) {
-		printf("%s\n", s_with_newlines);
-		if (extra_newline) fputc('\n', stdout);
-		fflush(stdout);	/* output immediately, don't buffer */
-	}
-	if ((output_methods & TO_STDERR) && draw_mode == FG) {
-		fprintf(stderr, "%s\n", s_with_newlines);
-		fflush(stderr);	/* output immediately, don't buffer */
-	}
-	if ((output_methods & OVERWRITE_FILE) && draw_mode == FG && overwrite_fpointer) {
-		fprintf(overwrite_fpointer, "%s\n", s_with_newlines);
-	}
-	if ((output_methods & APPEND_FILE) && draw_mode == FG && append_fpointer) {
-		fprintf(append_fpointer, "%s\n", s_with_newlines);
-	}
-#ifdef NCURSES
-	if ((output_methods & TO_NCURSES) && draw_mode == FG) {
-		printw("%s", s_with_newlines);
-	}
-#endif
-	free(s_with_newlines);
-	memset(tmpstring1, 0, text_buffer_size);
-	memset(tmpstring2, 0, text_buffer_size);
-	strncpy(tmpstring1, s, text_buffer_size - 1);
-	pos = 0;
-	added = 0;
-
-#ifdef X11
-	if (output_methods & TO_X) {
-		max = ((text_width - width_of_s) / get_string_width(" "));
-	}
-#endif /* X11 */
-	/* This code looks for tabs in the text and coverts them to spaces.
-	 * The trick is getting the correct number of spaces, and not going
-	 * over the window's size without forcing the window larger. */
-	for (i = 0; i < (int) text_buffer_size; i++) {
-		if (tmpstring1[i] == '\t') {
-			i2 = 0;
-			for (i2 = 0; i2 < (8 - (1 + pos) % 8) && added <= max; i2++) {
-				/* guard against overrun */
-				tmpstring2[MIN(pos + i2, (int)text_buffer_size - 1)] = ' ';
-				added++;
-			}
-			pos += i2;
-		} else {
-			/* guard against overrun */
-			tmpstring2[MIN(pos, (int) text_buffer_size - 1)] = tmpstring1[i];
-			pos++;
-		}
-	}
-#ifdef X11
-	if (output_methods & TO_X) {
-		if (text_width == maximum_width) {
-			/* this means the text is probably pushing the limit,
-			 * so we'll chop it */
-			while (cur_x + get_string_width(tmpstring2) - text_start_x
-					> maximum_width && strlen(tmpstring2) > 0) {
-				tmpstring2[strlen(tmpstring2) - 1] = '\0';
-			}
-		}
-	}
-#endif /* X11 */
-	s = tmpstring2;
-#ifdef X11
-	if (output_methods & TO_X) {
-#ifdef XFT
-		if (use_xft) {
-			XColor c;
-			XftColor c2;
-
-			c.pixel = current_color;
-			XQueryColor(display, DefaultColormap(display, screen), &c);
-
-			c2.pixel = c.pixel;
-			c2.color.red = c.red;
-			c2.color.green = c.green;
-			c2.color.blue = c.blue;
-			c2.color.alpha = fonts[selected_font].font_alpha;
-			if (utf8_mode) {
-				XftDrawStringUtf8(window.xftdraw, &c2, fonts[selected_font].xftfont,
-					cur_x, cur_y, (const XftChar8 *) s, strlen(s));
-			} else {
-				XftDrawString8(window.xftdraw, &c2, fonts[selected_font].xftfont,
-					cur_x, cur_y, (const XftChar8 *) s, strlen(s));
-			}
-		} else
-#endif
-		{
-			XDrawString(display, window.drawable, window.gc, cur_x, cur_y, s,
-				strlen(s));
-		}
-		cur_x += width_of_s;
-	}
-#endif /* X11 */
-	memcpy(tmpstring1, s, text_buffer_size);
-}
-
-int draw_each_line_inner(char *s, int special_index, int last_special_applied)
-{
-#ifdef X11
-	int font_h = font_height();
-	int cur_y_add = 0;
-#endif /* X11 */
-	char *recurse = 0;
-	char *p = s;
-	int last_special_needed = -1;
-	int orig_special_index = special_index;
-
-#ifdef X11
-	cur_x = text_start_x;
-	cur_y += font_ascent();
-#endif /* X11 */
-
-	while (*p) {
-		if (*p == SECRIT_MULTILINE_CHAR) {
-			/* special newline marker for multiline objects */
-			recurse = p + 1;
-			*p = '\0';
-			break;
-		}
-		if (*p == SPECIAL_CHAR || last_special_applied > -1) {
-#ifdef X11
-			int w = 0;
-#endif /* X11 */
-
-			/* draw string before special, unless we're dealing multiline
-			 * specials */
-			if (last_special_applied > -1) {
-				special_index = last_special_applied;
-			} else {
-				*p = '\0';
-				draw_string(s);
-				*p = SPECIAL_CHAR;
-				s = p + 1;
-			}
-			/* draw special */
-			switch (specials[special_index].type) {
-#ifdef X11
-				case HORIZONTAL_LINE:
-				{
-					int h = specials[special_index].height;
-					int mid = font_ascent() / 2;
-
-					w = text_start_x + text_width - cur_x;
-
-					XSetLineAttributes(display, window.gc, h, LineSolid,
-						CapButt, JoinMiter);
-					XDrawLine(display, window.drawable, window.gc, cur_x,
-						cur_y - mid / 2, cur_x + w, cur_y - mid / 2);
-					break;
-				}
-
-				case STIPPLED_HR:
-				{
-					int h = specials[special_index].height;
-					int tmp_s = specials[special_index].arg;
-					int mid = font_ascent() / 2;
-					char ss[2] = { tmp_s, tmp_s };
-
-					w = text_start_x + text_width - cur_x - 1;
-					XSetLineAttributes(display, window.gc, h, LineOnOffDash,
-						CapButt, JoinMiter);
-					XSetDashes(display, window.gc, 0, ss, 2);
-					XDrawLine(display, window.drawable, window.gc, cur_x,
-						cur_y - mid / 2, cur_x + w, cur_y - mid / 2);
-					break;
-				}
-
-				case BAR:
-				{
-					int h, bar_usage, by;
-					if (cur_x - text_start_x > maximum_width
-							&& maximum_width > 0) {
-						break;
-					}
-					h = specials[special_index].height;
-					bar_usage = specials[special_index].arg;
-					by = cur_y - (font_ascent() / 2) - 1;
-
-					if (h < font_h) {
-						by -= h / 2 - 1;
-					}
-					w = specials[special_index].width;
-					if (w == 0) {
-						w = text_start_x + text_width - cur_x - 1;
-					}
-					if (w < 0) {
-						w = 0;
-					}
-
-					XSetLineAttributes(display, window.gc, 1, LineSolid,
-						CapButt, JoinMiter);
-
-					XDrawRectangle(display, window.drawable, window.gc, cur_x,
-						by, w, h);
-					XFillRectangle(display, window.drawable, window.gc, cur_x,
-						by, w * bar_usage / 255, h);
-					if (h > cur_y_add
-							&& h > font_h) {
-						cur_y_add = h;
-					}
-					break;
-				}
-
-				case GAUGE: /* new GAUGE  */
-				{
-					int h, by = 0;
-					unsigned long last_colour = current_color;
-#ifdef MATH
-					float angle, px, py;
-					int usage;
-#endif /* MATH */
-
-					if (cur_x - text_start_x > maximum_width
-							&& maximum_width > 0) {
-						break;
-					}
-
-					h = specials[special_index].height;
-					by = cur_y - (font_ascent() / 2) - 1;
-
-					if (h < font_h) {
-						by -= h / 2 - 1;
-					}
-					w = specials[special_index].width;
-					if (w == 0) {
-						w = text_start_x + text_width - cur_x - 1;
-					}
-					if (w < 0) {
-						w = 0;
-					}
-
-					XSetLineAttributes(display, window.gc, 1, LineSolid,
-							CapButt, JoinMiter);
-
-					XDrawArc(display, window.drawable, window.gc,
-							cur_x, by, w, h * 2, 0, 180*64);
-
-#ifdef MATH
-					usage = specials[special_index].arg;
-					angle = (M_PI)*(float)(usage)/255.;
-					px = (float)(cur_x+(w/2.))-(float)(w/2.)*cos(angle);
-					py = (float)(by+(h))-(float)(h)*sin(angle);
-
-					XDrawLine(display, window.drawable, window.gc,
-							cur_x + (w/2.), by+(h), (int)(px), (int)(py));
-#endif /* MATH */
-
-					if (h > cur_y_add
-							&& h > font_h) {
-						cur_y_add = h;
-					}
-
-					set_foreground_color(last_colour);
-
-					break;
-
-				}
-
-				case GRAPH:
-				{
-					int h, by, i = 0, j = 0;
-					int colour_idx = 0;
-					unsigned long last_colour = current_color;
-					unsigned long *tmpcolour = 0;
-					if (cur_x - text_start_x > maximum_width
-							&& maximum_width > 0) {
-						break;
-					}
-					h = specials[special_index].height;
-					by = cur_y - (font_ascent() / 2) - 1;
-
-					if (h < font_h) {
-						by -= h / 2 - 1;
-					}
-					w = specials[special_index].width;
-					if (w == 0) {
-						w = text_start_x + text_width - cur_x - 1;
-					}
-					if (w < 0) {
-						w = 0;
-					}
-					if (draw_graph_borders) {
-						XSetLineAttributes(display, window.gc, 1, LineSolid,
-							CapButt, JoinMiter);
-						XDrawRectangle(display, window.drawable, window.gc,
-							cur_x, by, w, h);
-					}
-					XSetLineAttributes(display, window.gc, 1, LineSolid,
-						CapButt, JoinMiter);
-
-					if (specials[special_index].last_colour != 0
-							|| specials[special_index].first_colour != 0) {
-						tmpcolour = do_gradient(w - 1, specials[special_index].last_colour, specials[special_index].first_colour);
-					}
-					colour_idx = 0;
-					for (i = w - 2; i > -1; i--) {
-						if (specials[special_index].last_colour != 0
-								|| specials[special_index].first_colour != 0) {
-							if (specials[special_index].tempgrad) {
-#ifdef DEBUG_lol
-								assert(
-										(int)((float)(w - 2) - specials[special_index].graph[j] *
-											(w - 2) / (float)specials[special_index].graph_scale)
-										< w - 1
-									  );
-								assert(
-										(int)((float)(w - 2) - specials[special_index].graph[j] *
-											(w - 2) / (float)specials[special_index].graph_scale)
-										> -1
-									  );
-								if (specials[special_index].graph[j] == specials[special_index].graph_scale) {
-									assert(
-											(int)((float)(w - 2) - specials[special_index].graph[j] *
-												(w - 2) / (float)specials[special_index].graph_scale)
-											== 0
-										  );
-								}
-#endif /* DEBUG_lol */
-								XSetForeground(display, window.gc, tmpcolour[
-										(int)((float)(w - 2) - specials[special_index].graph[j] *
-											(w - 2) / (float)specials[special_index].graph_scale)
-										]);
-							} else {
-								XSetForeground(display, window.gc, tmpcolour[colour_idx++]);
-							}
-						}
-						/* this is mugfugly, but it works */
-						XDrawLine(display, window.drawable, window.gc,
-								cur_x + i + 1, by + h, cur_x + i + 1,
-								round_to_int((double)by + h - specials[special_index].graph[j] *
-									(h - 1) / specials[special_index].graph_scale));
-						if ((w - i) / ((float) (w - 2) /
-									(specials[special_index].graph_width)) > j
-								&& j < MAX_GRAPH_DEPTH - 3) {
-							j++;
-						}
-					}
-					if (tmpcolour) free(tmpcolour);
-					if (h > cur_y_add
-							&& h > font_h) {
-						cur_y_add = h;
-					}
-					/* if (draw_mode == BG) {
-						set_foreground_color(default_bg_color);
-					} else if (draw_mode == OUTLINE) {
-						set_foreground_color(default_out_color);
-					} else {
-						set_foreground_color(default_fg_color);
-					} */
-					if (show_graph_range) {
-						int tmp_x = cur_x;
-						int tmp_y = cur_y;
-						unsigned short int seconds = update_interval * w;
-						char *tmp_day_str;
-						char *tmp_hour_str;
-						char *tmp_min_str;
-						char *tmp_sec_str;
-						char *tmp_str;
-						unsigned short int timeunits;
-						if (seconds != 0) {
-							timeunits = seconds / 86400; seconds %= 86400;
-							if (timeunits > 0) {
-								asprintf(&tmp_day_str, "%dd", timeunits);
-							} else {
-								tmp_day_str = strdup("");
-							}
-							timeunits = seconds / 3600; seconds %= 3600;
-							if (timeunits > 0) {
-								asprintf(&tmp_hour_str, "%dh", timeunits);
-							} else {
-								tmp_hour_str = strdup("");
-							}
-							timeunits = seconds / 60; seconds %= 60;
-							if (timeunits > 0) {
-								asprintf(&tmp_min_str, "%dm", timeunits);
-							} else {
-								tmp_min_str = strdup("");
-							}
-							if (seconds > 0) {
-								asprintf(&tmp_sec_str, "%ds", seconds);
-							} else {
-								tmp_sec_str = strdup("");
-							}
-							asprintf(&tmp_str, "%s%s%s%s", tmp_day_str, tmp_hour_str, tmp_min_str, tmp_sec_str);
-							free(tmp_day_str); free(tmp_hour_str); free(tmp_min_str); free(tmp_sec_str);
-						} else {
-							asprintf(&tmp_str, "Range not possible"); // should never happen, but better safe then sorry
-						}
-						cur_x += (w / 2) - (font_ascent() * (strlen(tmp_str) / 2));
-						cur_y += font_h / 2;
-						draw_string(tmp_str);
-						free(tmp_str);
-						cur_x = tmp_x;
-						cur_y = tmp_y;
-					}
-#ifdef MATH
-					if (show_graph_scale && (specials[special_index].show_scale == 1)) {
-						int tmp_x = cur_x;
-						int tmp_y = cur_y;
-						char *tmp_str;
-						cur_x += font_ascent() / 2;
-						cur_y += font_h / 2;
-						tmp_str = (char *)
-							calloc(log10(floor(specials[special_index].graph_scale)) + 4,
-									sizeof(char));
-						sprintf(tmp_str, "%.1f", specials[special_index].graph_scale);
-						draw_string(tmp_str);
-						free(tmp_str);
-						cur_x = tmp_x;
-						cur_y = tmp_y;
-					}
-#endif
-					set_foreground_color(last_colour);
-					break;
-				}
-
-				case FONT:
-				{
-					int old = font_ascent();
-
-					cur_y -= font_ascent();
-					selected_font = specials[special_index].font_added;
-					set_font();
-					if (cur_y + font_ascent() < cur_y + old) {
-						cur_y += old;
-					} else {
-						cur_y += font_ascent();
-					}
-					font_h = font_height();
-					break;
-				}
-#endif /* X11 */
-				case FG:
-					if (draw_mode == FG) {
-						set_foreground_color(specials[special_index].arg);
-					}
-					break;
-
-#ifdef X11
-				case BG:
-					if (draw_mode == BG) {
-						set_foreground_color(specials[special_index].arg);
-					}
-					break;
-
-				case OUTLINE:
-					if (draw_mode == OUTLINE) {
-						set_foreground_color(specials[special_index].arg);
-					}
-					break;
-
-				case OFFSET:
-					w += specials[special_index].arg;
-					last_special_needed = special_index;
-					break;
-
-				case VOFFSET:
-					cur_y += specials[special_index].arg;
-					break;
-
-				case GOTO:
-					if (specials[special_index].arg >= 0) {
-						cur_x = (int) specials[special_index].arg;
-					}
-					last_special_needed = special_index;
-					break;
-
-				case TAB:
-				{
-					int start = specials[special_index].arg;
-					int step = specials[special_index].width;
-
-					if (!step || step < 0) {
-						step = 10;
-					}
-					w = step - (cur_x - text_start_x - start) % step;
-					last_special_needed = special_index;
-					break;
-				}
-
-				case ALIGNR:
-				{
-					/* TODO: add back in "+ window.border_inner_margin" to the end of
-					 * this line? */
-					int pos_x = text_start_x + text_width -
-						get_string_width_special(s, special_index);
-
-					/* printf("pos_x %i text_start_x %i text_width %i cur_x %i "
-						"get_string_width(p) %i gap_x %i "
-						"specials[special_index].arg %i window.border_inner_margin %i "
-						"window.border_width %i\n", pos_x, text_start_x, text_width,
-						cur_x, get_string_width_special(s), gap_x,
-						specials[special_index].arg, window.border_inner_margin,
-						window.border_width); */
-					if (pos_x > specials[special_index].arg && pos_x > cur_x) {
-						cur_x = pos_x - specials[special_index].arg;
-					}
-					last_special_needed = special_index;
-					break;
-				}
-
-				case ALIGNC:
-				{
-					int pos_x = (text_width) / 2 - get_string_width_special(s,
-							special_index) / 2 - (cur_x -
-								text_start_x);
-					/* int pos_x = text_start_x + text_width / 2 -
-						get_string_width_special(s) / 2; */
-
-					/* printf("pos_x %i text_start_x %i text_width %i cur_x %i "
-						"get_string_width(p) %i gap_x %i "
-						"specials[special_index].arg %i\n", pos_x, text_start_x,
-						text_width, cur_x, get_string_width(s), gap_x,
-						specials[special_index].arg); */
-					if (pos_x > specials[special_index].arg) {
-						w = pos_x - specials[special_index].arg;
-					}
-					last_special_needed = special_index;
-					break;
-				}
-#endif /* X11 */
-			}
-
-#ifdef X11
-			cur_x += w;
-#endif /* X11 */
-
-			if (special_index != last_special_applied) {
-				special_index++;
-			} else {
-				special_index = orig_special_index;
-				last_special_applied = -1;
-			}
-		}
-		p++;
-	}
-
-#ifdef X11
-	cur_y += cur_y_add;
-#endif /* X11 */
-	draw_string(s);
-#ifdef NCURSES
-	if (output_methods & TO_NCURSES) {
-		printw("\n");
-	}
-#endif /* NCURSES */
-#ifdef X11
-	cur_y += font_descent();
-#endif /* X11 */
-	if (recurse && *recurse) {
-		special_index = draw_each_line_inner(recurse, special_index, last_special_needed);
-		*(recurse - 1) = SECRIT_MULTILINE_CHAR;
-	}
-	return special_index;
-}
-
-static int draw_line(char *s, int special_index)
-{
-#ifdef X11
-	if (output_methods & TO_X) {
-		return draw_each_line_inner(s, special_index, -1);
-	}
-#endif /* X11 */
-#ifdef NCURSES
-	if (output_methods & TO_NCURSES) {
-		return draw_each_line_inner(s, special_index, -1);
-	}
-#endif /* NCURSES */
-	draw_string(s);
-	UNUSED(special_index);
-	return 0;
-}
-
-static void draw_text(void)
-{
-#ifdef X11
-#ifdef HAVE_LUA
-	llua_draw_pre_hook();
-#endif /* HAVE_LUA */
-	if (output_methods & TO_X) {
-		cur_y = text_start_y;
-
-		/* draw borders */
-		if (draw_borders && window.border_width > 0) {
-			if (stippled_borders) {
-				char ss[2] = { stippled_borders, stippled_borders };
-				XSetLineAttributes(display, window.gc, window.border_width, LineOnOffDash,
-					CapButt, JoinMiter);
-				XSetDashes(display, window.gc, 0, ss, 2);
-			} else {
-				XSetLineAttributes(display, window.gc, window.border_width, LineSolid,
-					CapButt, JoinMiter);
-			}
-
-			XDrawRectangle(display, window.drawable, window.gc,
-				text_start_x - window.border_inner_margin - window.border_width,
-				text_start_y - window.border_inner_margin - window.border_width,
-				text_width + window.border_inner_margin * 2 + window.border_width * 2,
-				text_height + window.border_inner_margin * 2 + window.border_width * 2);
-		}
-
-		/* draw text */
-	}
-	setup_fonts();
-#endif /* X11 */
-#ifdef NCURSES
-	init_pair(COLOR_WHITE, COLOR_WHITE, COLOR_BLACK);
-	attron(COLOR_PAIR(COLOR_WHITE));
-#endif /* NCURSES */
-	for_each_line(text_buffer, draw_line);
-#if defined(HAVE_LUA) && defined(X11)
-	llua_draw_post_hook();
-#endif /* HAVE_LUA */
-}
-
-static void draw_stuff(void)
-{
-#ifdef IMLIB2
-	cimlib_render(text_start_x, text_start_y, window.width, window.height);
-#endif /* IMLIB2 */
-	if (overwrite_file) {
-		overwrite_fpointer = fopen(overwrite_file, "w");
-		if(!overwrite_fpointer)
-			NORM_ERR("Can't overwrite '%s' anymore", overwrite_file);
-	}
-	if (append_file) {
-		append_fpointer = fopen(append_file, "a");
-		if(!append_fpointer)
-			NORM_ERR("Can't append '%s' anymore", append_file);
-	}
-#ifdef X11
-	if (output_methods & TO_X) {
-		selected_font = 0;
-		if (draw_shades && !draw_outline) {
-			text_start_x++;
-			text_start_y++;
-			set_foreground_color(default_bg_color);
-			draw_mode = BG;
-			draw_text();
-			text_start_x--;
-			text_start_y--;
-		}
-
-		if (draw_outline) {
-			int i, j;
-			selected_font = 0;
-
-			for (i = -1; i < 2; i++) {
-				for (j = -1; j < 2; j++) {
-					if (i == 0 && j == 0) {
-						continue;
-					}
-					text_start_x += i;
-					text_start_y += j;
-					set_foreground_color(default_out_color);
-					draw_mode = OUTLINE;
-					draw_text();
-					text_start_x -= i;
-					text_start_y -= j;
-				}
-			}
-		}
-
-		set_foreground_color(default_fg_color);
-	}
-#endif /* X11 */
-	draw_mode = FG;
-	draw_text();
-#ifdef X11
-	xdbe_swap_buffers();
-	if (output_methods & TO_X) {
-#ifdef HAVE_XDBE
-#endif
-	}
-#endif /* X11 */
-	if(overwrite_fpointer) {
-		fclose(overwrite_fpointer);
-		overwrite_fpointer = 0;
-	}
-	if(append_fpointer) {
-		fclose(append_fpointer);
-		append_fpointer = 0;
-	}
-}
-
-#ifdef X11
-static void clear_text(int exposures)
-{
-#ifdef HAVE_XDBE
-	if (use_xdbe) {
-		/* The swap action is XdbeBackground, which clears */
-		return;
-	} else
-#endif
-	if (display && window.window) { // make sure these are !null
-		/* there is some extra space for borders and outlines */
-		XClearArea(display, window.window, text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width,
-			text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width,
-			text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
-			text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, exposures ? True : 0);
-	}
-}
-#endif /* X11 */
-
-static int need_to_update;
-
-/* update_text() generates new text and clears old text area */
-static void update_text(void)
-{
-#ifdef IMLIB2
-	cimlib_cleanup();
-#endif /* IMLIB2 */
-	generate_text();
-#ifdef X11
-	if (output_methods & TO_X)
-		clear_text(1);
-#endif /* X11 */
-	need_to_update = 1;
-#ifdef HAVE_LUA
-	llua_update_info(&info, update_interval);
-#endif /* HAVE_LUA */
-}
-
 #ifdef HAVE_SYS_INOTIFY_H
 int inotify_fd;
 #endif
 
-static void main_loop(void)
+static void main_loop(conky_context *ctx)
 {
 	int terminate = 0;
 #ifdef SIGNAL_BLOCKING
@@ -4367,21 +271,19 @@ static void main_loop(void)
 	sigaddset(&newmask, SIGUSR1);
 #endif
 
-	last_update_time = 0.0;
-	next_update_time = get_time();
-	info.looped = 0;
-	while (terminate == 0 && (total_run_times == 0 || info.looped < total_run_times)) {
-		if(update_interval_bat != NOBATTERY && update_interval_bat != update_interval_old) {
-			char buf[max_user_text];
+	ctx->next_update_time = get_time();
+	while (terminate == 0 && (ctx->total_run_times == 0 || ctx->info.looped < ctx->total_run_times)) {
+		if (ctx->update_interval_bat != NOBATTERY && ctx->update_interval_bat != ctx->update_interval_old) {
+			char buf[ctx->max_user_text];
 
-			get_battery_short_status(buf, max_user_text, "BAT0");
+			get_battery_short_status(buf, ctx->max_user_text, "BAT0");
 			if(buf[0] == 'D') {
-				update_interval = update_interval_bat;
+				ctx->update_interval = ctx->update_interval_bat;
 			} else {
-				update_interval = update_interval_old;
+				ctx->update_interval = ctx->update_interval_old;
 			}
 		}
-		info.looped++;
+		ctx->info.looped++;
 
 #ifdef SIGNAL_BLOCKING
 		/* block signals.  we will inspect for pending signals later */
@@ -4391,7 +293,7 @@ static void main_loop(void)
 #endif
 
 #ifdef X11
-		if (output_methods & TO_X) {
+		if (ctx->output_methods & TO_X) {
 			XFlush(display);
 
 			/* wait for X event or timeout */
@@ -4400,12 +302,12 @@ static void main_loop(void)
 				fd_set fdsr;
 				struct timeval tv;
 				int s;
-				t = next_update_time - get_time();
+				t = ctx->next_update_time - get_time();
 
 				if (t < 0) {
 					t = 0;
-				} else if (t > update_interval) {
-					t = update_interval;
+				} else if (t > ctx->update_interval) {
+					t = ctx->update_interval;
 				}
 
 				tv.tv_sec = (long) t;
@@ -4421,33 +323,33 @@ static void main_loop(void)
 				} else {
 					/* timeout */
 					if (s == 0) {
-						update_text();
+						update_text(ctx);
 					}
 				}
 			}
 
-			if (need_to_update) {
+			if (ctx->need_to_update) {
 #ifdef OWN_WINDOW
-				int wx = window.x, wy = window.y;
+				int wx = ctx->window.x, wy = ctx->window.y;
 #endif
 
-				need_to_update = 0;
-				selected_font = 0;
-				update_text_area();
+				ctx->need_to_update = 0;
+				ctx->selected_font = 0;
+				update_text_area(ctx);
 #ifdef OWN_WINDOW
-				if (own_window) {
+				if (ctx->own_window) {
 					int changed = 0;
 
-					/* resize window if it isn't right size */
-					if (!fixed_size
-							&& (text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2 != window.width
-								|| text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2 != window.height)) {
-						window.width = text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
-						window.height = text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
-						draw_stuff(); /* redraw everything in our newly sized window */
-						XResizeWindow(display, window.window, window.width,
-								window.height); /* resize window */
-						set_transparent_background(window.window);
+					/* resize ctx->window if it isn't right size */
+					if (!ctx->fixed_size
+							&& (ctx->text_width + ctx->window.border_inner_margin * 2 + ctx->window.border_outer_margin * 2 + ctx->window.border_width * 2 != ctx->window.width
+								|| ctx->text_height + ctx->window.border_inner_margin * 2 + ctx->window.border_outer_margin * 2 + ctx->window.border_width * 2 != ctx->window.height)) {
+						ctx->window.width = ctx->text_width + ctx->window.border_inner_margin * 2 + ctx->window.border_outer_margin * 2 + ctx->window.border_width * 2;
+						ctx->window.height = ctx->text_height + ctx->window.border_inner_margin * 2 + ctx->window.border_outer_margin * 2 + ctx->window.border_width * 2;
+						draw_stuff(ctx); /* redraw everything in our newly sized ctx->window */
+						XResizeWindow(display, ctx->window.window, ctx->window.width,
+								ctx->window.height); /* resize ctx->window */
+						set_transparent_background(ctx->window.window);
 #ifdef HAVE_XDBE
 						/* swap buffers */
 						xdbe_swap_buffers();
@@ -4455,25 +357,25 @@ static void main_loop(void)
 
 						changed++;
 #ifdef HAVE_LUA
-						/* update lua window globals */
-						llua_update_window_table(text_start_x, text_start_y, text_width, text_height);
+						/* update lua ctx->window globals */
+						llua_update_window_table(ctx->text_start_x, ctx->text_start_y, ctx->text_width, ctx->text_height);
 #endif /* HAVE_LUA */
 					}
 
-					/* move window if it isn't in right position */
-					if (!fixed_pos && (window.x != wx || window.y != wy)) {
-						XMoveWindow(display, window.window, window.x, window.y);
+					/* move ctx->window if it isn't in right position */
+					if (!ctx->fixed_pos && (ctx->window.x != wx || ctx->window.y != wy)) {
+						XMoveWindow(display, ctx->window.window, ctx->window.x, ctx->window.y);
 						changed++;
 					}
 
 					/* update struts */
-					if (changed && window.type == TYPE_PANEL) {
+					if (changed && ctx->window.type == TYPE_PANEL) {
 						int sidenum = -1;
 
 						fprintf(stderr, PACKAGE_NAME": defining struts\n");
 						fflush(stderr);
 
-						switch (text_alignment) {
+						switch (ctx->text_alignment) {
 							case TOP_LEFT:
 							case TOP_RIGHT:
 							case TOP_MIDDLE:
@@ -4505,17 +407,17 @@ static void main_loop(void)
 				}
 #endif
 
-				clear_text(1);
+				clear_text(ctx, 1);
 
 #ifdef HAVE_XDBE
 				if (use_xdbe) {
 					XRectangle r;
 
-					r.x = text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width;
-					r.y = text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width;
-					r.width = text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
-					r.height = text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
-					XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
+					r.x = ctx->text_start_x - ctx->window.border_inner_margin - ctx->window.border_outer_margin - ctx->window.border_width;
+					r.y = ctx->text_start_y - ctx->window.border_inner_margin - ctx->window.border_outer_margin - ctx->window.border_width;
+					r.width = ctx->text_width + ctx->window.border_inner_margin * 2 + ctx->window.border_outer_margin * 2 + ctx->window.border_width * 2;
+					r.height = ctx->text_height + ctx->window.border_inner_margin * 2 + ctx->window.border_outer_margin * 2 + ctx->window.border_width * 2;
+					XUnionRectWithRegion(&r, ctx->window.region, ctx->window.region);
 				}
 #endif
 			}
@@ -4533,7 +435,7 @@ static void main_loop(void)
 						r.y = ev.xexpose.y;
 						r.width = ev.xexpose.width;
 						r.height = ev.xexpose.height;
-						XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
+						XUnionRectWithRegion(&r, ctx->window.region, ctx->window.region);
 						break;
 					}
 
@@ -4548,68 +450,68 @@ static void main_loop(void)
 #ifdef OWN_WINDOW
 					case ReparentNotify:
 						/* set background to ParentRelative for all parents */
-						if (own_window) {
-							set_transparent_background(window.window);
+						if (ctx->own_window) {
+							set_transparent_background(ctx->window.window);
 						}
 						break;
 
 					case ConfigureNotify:
-						if (own_window) {
-							/* if window size isn't what expected, set fixed size */
-							if (ev.xconfigure.width != window.width
-									|| ev.xconfigure.height != window.height) {
-								if (window.width != 0 && window.height != 0) {
-									fixed_size = 1;
+						if (ctx->own_window) {
+							/* if ctx->window size isn't what expected, set fixed size */
+							if (ev.xconfigure.width != ctx->window.width
+									|| ev.xconfigure.height != ctx->window.height) {
+								if (ctx->window.width != 0 && ctx->window.height != 0) {
+									ctx->fixed_size = 1;
 								}
 
 								/* clear old stuff before screwing up
 								 * size and pos */
-								clear_text(1);
+								clear_text(ctx, 1);
 
 								{
 									XWindowAttributes attrs;
 									if (XGetWindowAttributes(display,
-											window.window, &attrs)) {
-										window.width = attrs.width;
-										window.height = attrs.height;
+											ctx->window.window, &attrs)) {
+										ctx->window.width = attrs.width;
+										ctx->window.height = attrs.height;
 									}
 								}
 
-								text_width = window.width - window.border_inner_margin * 2 - window.border_outer_margin * 2 - window.border_width * 2;
-								text_height = window.height - window.border_inner_margin * 2 - window.border_outer_margin * 2 - window.border_width * 2;
-								if (text_width > maximum_width
-										&& maximum_width > 0) {
-									text_width = maximum_width;
+								ctx->text_width = ctx->window.width - ctx->window.border_inner_margin * 2 - ctx->window.border_outer_margin * 2 - ctx->window.border_width * 2;
+								ctx->text_height = ctx->window.height - ctx->window.border_inner_margin * 2 - ctx->window.border_outer_margin * 2 - ctx->window.border_width * 2;
+								if (ctx->text_width > ctx->maximum_width
+										&& ctx->maximum_width > 0) {
+									ctx->text_width = ctx->maximum_width;
 								}
 							}
 
 							/* if position isn't what expected, set fixed pos
-							 * total_updates avoids setting fixed_pos when window
+							 * total_updates avoids setting ctx->fixed_pos when ctx->window
 							 * is set to weird locations when started */
 							/* // this is broken
-							if (total_updates >= 2 && !fixed_pos
-									&& (window.x != ev.xconfigure.x
-									|| window.y != ev.xconfigure.y)
+							if (total_updates >= 2 && !ctx->fixed_pos
+									&& (ctx->window.x != ev.xconfigure.x
+									|| ctx->window.y != ev.xconfigure.y)
 									&& (ev.xconfigure.x != 0
 									|| ev.xconfigure.y != 0)) {
-								fixed_pos = 1;
+								ctx->fixed_pos = 1;
 							} */
 						}
 						break;
 
 					case ButtonPress:
-						if (own_window) {
-							/* if an ordinary window with decorations */
-							if ((window.type == TYPE_NORMAL &&
-										(!TEST_HINT(window.hints,
+						if (ctx->own_window) {
+							/* if an ordinary ctx->window with decorations */
+							if ((ctx->window.type == TYPE_NORMAL &&
+										(!TEST_HINT(ctx->window.hints,
 													HINT_UNDECORATED))) ||
-									window.type == TYPE_DESKTOP) {
+									ctx->window.type == TYPE_DESKTOP) {
 								/* allow conky to hold input focus. */
 								break;
 							} else {
-								/* forward the click to the desktop window */
+								/* forward the click to the desktop ctx->window */
 								XUngrabPointer(display, ev.xbutton.time);
-								ev.xbutton.window = window.desktop;
+								ev.xbutton.window = ctx->window.desktop;
 								ev.xbutton.x = ev.xbutton.x_root;
 								ev.xbutton.y = ev.xbutton.y_root;
 								XSendEvent(display, ev.xbutton.window, False,
@@ -4621,16 +523,16 @@ static void main_loop(void)
 						break;
 
 					case ButtonRelease:
-						if (own_window) {
-							/* if an ordinary window with decorations */
-							if ((window.type == TYPE_NORMAL)
-									&& (!TEST_HINT(window.hints,
+						if (ctx->own_window) {
+							/* if an ordinary ctx->window with decorations */
+							if ((ctx->window.type == TYPE_NORMAL)
+									&& (!TEST_HINT(ctx->window.hints,
 									HINT_UNDECORATED))) {
 								/* allow conky to hold input focus. */
 								break;
 							} else {
-								/* forward the release to the desktop window */
-								ev.xbutton.window = window.desktop;
+								/* forward the release to the desktop ctx->window */
+								ev.xbutton.window = ctx->window.desktop;
 								ev.xbutton.x = ev.xbutton.x_root;
 								ev.xbutton.y = ev.xbutton.y_root;
 								XSendEvent(display, ev.xbutton.window, False,
@@ -4643,11 +545,11 @@ static void main_loop(void)
 
 					default:
 #ifdef HAVE_XDAMAGE
-						if (ev.type == x11_stuff.event_base + XDamageNotify) {
+						if (ev.type == ctx->window.event_base + XDamageNotify) {
 							XDamageNotifyEvent *dev = (XDamageNotifyEvent *) &ev;
 
-							XFixesSetRegion(display, x11_stuff.part, &dev->area, 1);
-							XFixesUnionRegion(display, x11_stuff.region2, x11_stuff.region2, x11_stuff.part);
+							XFixesSetRegion(display, ctx->window.part, &dev->area, 1);
+							XFixesUnionRegion(display, ctx->window.region2, ctx->window.region2, ctx->window.part);
 						}
 #endif /* HAVE_XDAMAGE */
 						break;
@@ -4655,8 +557,8 @@ static void main_loop(void)
 			}
 
 #ifdef HAVE_XDAMAGE
-			XDamageSubtract(display, x11_stuff.damage, x11_stuff.region2, None);
-			XFixesSetRegion(display, x11_stuff.region2, 0, 0);
+			XDamageSubtract(display, ctx->window.damage, ctx->window.region2, None);
+			XFixesSetRegion(display, ctx->window.region2, 0, 0);
 #endif /* HAVE_XDAMAGE */
 
 			/* XDBE doesn't seem to provide a way to clear the back buffer
@@ -4666,36 +568,36 @@ static void main_loop(void)
 			 * the exposed area. OTOH, if we're not going to call draw_stuff at
 			 * all, then no swap happens and we can safely do nothing. */
 
-			if (!XEmptyRegion(x11_stuff.region)) {
+			if (!XEmptyRegion(ctx->window.region)) {
 #ifdef HAVE_XDBE
 				if (use_xdbe) {
 					XRectangle r;
 
-					r.x = text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width;
-					r.y = text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width;
-					r.width = text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
-					r.height = text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
-					XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
+					r.x = ctx->text_start_x - ctx->window.border_inner_margin - ctx->window.border_outer_margin - ctx->window.border_width;
+					r.y = ctx->text_start_y - ctx->window.border_inner_margin - ctx->window.border_outer_margin - ctx->window.border_width;
+					r.width = ctx->text_width + ctx->window.border_inner_margin * 2 + ctx->window.border_outer_margin * 2 + ctx->window.border_width * 2;
+					r.height = ctx->text_height + ctx->window.border_inner_margin * 2 + ctx->window.border_outer_margin * 2 + ctx->window.border_width * 2;
+					XUnionRectWithRegion(&r, ctx->window.region, ctx->window.region);
 				}
 #endif
-				XSetRegion(display, window.gc, x11_stuff.region);
+				XSetRegion(display, ctx->window.gc, ctx->window.region);
 #ifdef XFT
 				if (use_xft) {
-					XftDrawSetClip(window.xftdraw, x11_stuff.region);
+					XftDrawSetClip(ctx->window.xftdraw, ctx->window.region);
 				}
 #endif
-				draw_stuff();
-				XDestroyRegion(x11_stuff.region);
-				x11_stuff.region = XCreateRegion();
+				draw_stuff(ctx);
+				XDestroyRegion(ctx->window.region);
+				ctx->window.region = XCreateRegion();
 			}
 		} else {
 #endif /* X11 */
-			t = (next_update_time - get_time()) * 1000000;
+			t = (ctx->next_update_time - get_time()) * 1000000;
 			if(t > 0) usleep((useconds_t)t);
-			update_text();
-			draw_stuff();
+			update_text(ctx);
+			draw_stuff(ctx);
 #ifdef NCURSES
-			if(output_methods & TO_NCURSES) {
+			if(ctx->output_methods & TO_NCURSES) {
 				refresh();
 				clear();
 			}
@@ -4722,26 +624,26 @@ static void main_loop(void)
 				NORM_ERR("received SIGINT or SIGTERM to terminate. bye!");
 				terminate = 1;
 #ifdef X11
-				if (output_methods & TO_X) {
-					XDestroyRegion(x11_stuff.region);
-					x11_stuff.region = NULL;
+				if (ctx->output_methods & TO_X) {
+					XDestroyRegion(ctx->window.region);
+					ctx->window.region = NULL;
 #ifdef HAVE_XDAMAGE
-					XDamageDestroy(display, x11_stuff.damage);
-					XFixesDestroyRegion(display, x11_stuff.region2);
-					XFixesDestroyRegion(display, x11_stuff.part);
+					XDamageDestroy(display, ctx->window.damage);
+					XFixesDestroyRegion(display, ctx->window.region2);
+					XFixesDestroyRegion(display, ctx->window.part);
 #endif /* HAVE_XDAMAGE */
-					if (disp) {
-						free(disp);
+					if (ctx->disp) {
+						free(ctx->disp);
 					}
 				}
 #endif /* X11 */
-				if(overwrite_file) {
-					free(overwrite_file);
-					overwrite_file = 0;
+				if(ctx->overwrite_file) {
+					free(ctx->overwrite_file);
+					ctx->overwrite_file = 0;
 				}
-				if(append_file) {
-					free(append_file);
-					append_file = 0;
+				if(ctx->append_file) {
+					free(ctx->append_file);
+					ctx->append_file = 0;
 				}
 				break;
 			default:
@@ -4756,12 +658,12 @@ static void main_loop(void)
 				break;
 		}
 #ifdef HAVE_SYS_INOTIFY_H
-		if (inotify_fd != -1 && inotify_config_wd == -1 && current_config != 0) {
+		if (inotify_fd != -1 && inotify_config_wd == -1 && ctx->current_config != 0) {
 			inotify_config_wd = inotify_add_watch(inotify_fd,
-					current_config,
+					ctx->current_config,
 					IN_MODIFY);
 		}
-		if (inotify_fd != -1 && inotify_config_wd != -1 && current_config != 0) {
+		if (inotify_fd != -1 && inotify_config_wd != -1 && ctx->current_config != 0) {
 			int len = 0, idx = 0;
 			fd_set descriptors;
 			struct timeval time_to_wait;
@@ -4778,14 +680,14 @@ static void main_loop(void)
 				while (len > 0 && idx < len) {
 					struct inotify_event *ev = (struct inotify_event *) &inotify_buff[idx];
 					if (ev->wd == inotify_config_wd && (ev->mask & IN_MODIFY || ev->mask & IN_IGNORED)) {
-						/* current_config should be reloaded */
-						NORM_ERR("'%s' modified, reloading...", current_config);
+						/* ctx->current_config should be reloaded */
+						NORM_ERR("'%s' modified, reloading...", ctx->current_config);
 						reload_config();
 						if (ev->mask & IN_IGNORED) {
 							/* for some reason we get IN_IGNORED here
 							 * sometimes, so we need to re-add the watch */
 							inotify_config_wd = inotify_add_watch(inotify_fd,
-									current_config,
+									ctx->current_config,
 									IN_MODIFY);
 						}
 					}
@@ -4801,7 +703,7 @@ static void main_loop(void)
 #endif /* HAVE_SYS_INOTIFY_H */
 
 #ifdef HAVE_LUA
-	llua_update_info(&info, update_interval);
+	llua_update_info(ctx, ctx->update_interval);
 #endif /* HAVE_LUA */
 		g_signal_pending = 0;
 	}
@@ -4816,1512 +718,10 @@ static void main_loop(void)
 #endif /* HAVE_SYS_INOTIFY_H */
 }
 
-#ifdef X11
-static void load_config_file_x11(const char *);
-#endif /* X11 */
-void initialisation(int argc, char** argv);
-
-	/* reload the config file */
-static void reload_config(void)
-{
-	char *current_config_copy = strdup(current_config);
-	clean_up(NULL, NULL);
-	current_config = current_config_copy;
-	initialisation(argc_copy, argv_copy);
-}
-
-void clean_up(void *memtofree1, void* memtofree2)
-{
-	int i;
-
-#ifdef NCURSES
-	if(output_methods & TO_NCURSES) {
-		endwin();
-	}
-#endif
-	conftree_empty(currentconffile);
-	currentconffile = NULL;
-	if(memtofree1) {
-		free(memtofree1);
-	}
-	if(memtofree2) {
-		free(memtofree2);
-	}
-	timed_thread_destroy_registered_threads();
-
-	if (info.cpu_usage) {
-		free(info.cpu_usage);
-		info.cpu_usage = NULL;
-	}
-#ifdef X11
-	if (x_initialised == YES) {
-		XClearArea(display, window.window, text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width,
-			text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width,
-			text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
-			text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, 0);
-		destroy_window();
-		free_fonts();
-		if(x11_stuff.region) {
-			XDestroyRegion(x11_stuff.region);
-			x11_stuff.region = NULL;
-		}
-		XCloseDisplay(display);
-		display = NULL;
-		if(info.x11.desktop.all_names) {
-			free(info.x11.desktop.all_names);
-			info.x11.desktop.all_names = NULL;
-		}
-		if (info.x11.desktop.name) {
-			free(info.x11.desktop.name);
-			info.x11.desktop.name = NULL;
-		}
-		x_initialised = NO;
-	}else{
-		free(fonts);	//in set_default_configurations a font is set but not loaded
-		font_count = -1;
-	}
-
-#endif /* X11 */
-
-	for (i = 0; i < MAX_TEMPLATES; i++) {
-		if (template[i]) {
-			free(template[i]);
-			template[i] = NULL;
-		}
-	}
-
-	free_text_objects(&global_root_object, 0);
-	if (tmpstring1) {
-		free(tmpstring1);
-		tmpstring1 = 0;
-	}
-	if (tmpstring2) {
-		free(tmpstring2);
-		tmpstring2 = 0;
-	}
-	if (text_buffer) {
-		free(text_buffer);
-		text_buffer = 0;
-	}
-
-	if (global_text) {
-		free(global_text);
-		global_text = 0;
-	}
-
-	free(current_config);
-	current_config = 0;
-
-#ifdef TCP_PORT_MONITOR
-	tcp_portmon_clear();
-#endif
-#ifdef HAVE_CURL
-	ccurl_free_info();
-#endif
-#ifdef RSS
-	rss_free_info();
-#endif
-#ifdef WEATHER
-	weather_free_info();
-#endif
-#ifdef HAVE_LUA
-	llua_shutdown_hook();
-	llua_close();
-#endif /* HAVE_LUA */
-#ifdef IMLIB2
-	cimlib_deinit();
-#endif /* IMLIB2 */
-#ifdef XOAP
-	xmlCleanupParser();
-#endif /* XOAP */
-
-	if (specials) {
-		for (i = 0; i < special_count; i++) {
-			if (specials[i].type == GRAPH) {
-				free(specials[i].graph);
-			}
-		}
-		free(specials);
-		specials = NULL;
-	}
-
-	clear_net_stats();
-	clear_diskio_stats();
-	if(global_cpu != NULL) {
-		free(global_cpu);
-		global_cpu = NULL;
-	}
-}
-
-static int string_to_bool(const char *s)
-{
-	if (!s) {
-		// Assumes an option without a true/false means true
-		return 1;
-	} else if (strcasecmp(s, "yes") == EQUAL) {
-		return 1;
-	} else if (strcasecmp(s, "true") == EQUAL) {
-		return 1;
-	} else if (strcasecmp(s, "1") == EQUAL) {
-		return 1;
-	}
-	return 0;
-}
-
-#ifdef X11
-static enum alignment string_to_alignment(const char *s)
-{
-	if (strcasecmp(s, "top_left") == EQUAL) {
-		return TOP_LEFT;
-	} else if (strcasecmp(s, "top_right") == EQUAL) {
-		return TOP_RIGHT;
-	} else if (strcasecmp(s, "top_middle") == EQUAL) {
-		return TOP_MIDDLE;
-	} else if (strcasecmp(s, "bottom_left") == EQUAL) {
-		return BOTTOM_LEFT;
-	} else if (strcasecmp(s, "bottom_right") == EQUAL) {
-		return BOTTOM_RIGHT;
-	} else if (strcasecmp(s, "bottom_middle") == EQUAL) {
-		return BOTTOM_MIDDLE;
-	} else if (strcasecmp(s, "middle_left") == EQUAL) {
-		return MIDDLE_LEFT;
-	} else if (strcasecmp(s, "middle_right") == EQUAL) {
-		return MIDDLE_RIGHT;
-	} else if (strcasecmp(s, "tl") == EQUAL) {
-		return TOP_LEFT;
-	} else if (strcasecmp(s, "tr") == EQUAL) {
-		return TOP_RIGHT;
-	} else if (strcasecmp(s, "tm") == EQUAL) {
-		return TOP_MIDDLE;
-	} else if (strcasecmp(s, "bl") == EQUAL) {
-		return BOTTOM_LEFT;
-	} else if (strcasecmp(s, "br") == EQUAL) {
-		return BOTTOM_RIGHT;
-	} else if (strcasecmp(s, "bm") == EQUAL) {
-		return BOTTOM_MIDDLE;
-	} else if (strcasecmp(s, "ml") == EQUAL) {
-		return MIDDLE_LEFT;
-	} else if (strcasecmp(s, "mr") == EQUAL) {
-		return MIDDLE_RIGHT;
-	} else if (strcasecmp(s, "none") == EQUAL) {
-		return NONE;
-	}
-	return TOP_LEFT;
-}
-#endif /* X11 */
-
-#ifdef X11
-static void set_default_configurations_for_x(void)
-{
-	default_fg_color = WhitePixel(display, screen);
-	default_bg_color = BlackPixel(display, screen);
-	default_out_color = BlackPixel(display, screen);
-	color0 = default_fg_color;
-	color1 = default_fg_color;
-	color2 = default_fg_color;
-	color3 = default_fg_color;
-	color4 = default_fg_color;
-	color5 = default_fg_color;
-	color6 = default_fg_color;
-	color7 = default_fg_color;
-	color8 = default_fg_color;
-	color9 = default_fg_color;
-	current_text_color = default_fg_color;
-}
-#endif /* X11 */
-
-static void set_default_configurations(void)
-{
-	int i;
-#ifdef MPD
-	char *mpd_env_host;
-	char *mpd_env_port;
-#endif
-	update_uname();
-	fork_to_background = 0;
-	total_run_times = 0;
-	info.cpu_avg_samples = 2;
-	info.net_avg_samples = 2;
-	info.diskio_avg_samples = 2;
-	info.memmax = 0;
-	top_cpu = 0;
-	cpu_separate = 0;
-	short_units = 0;
-	format_human_readable = 1;
-	top_mem = 0;
-	top_time = 0;
-#ifdef IOSTATS
-	top_io = 0;
-#endif
-#ifdef MPD
-	mpd_env_host = getenv("MPD_HOST");
-	mpd_env_port = getenv("MPD_PORT");
-
-	if (!mpd_env_host || !strlen(mpd_env_host)) {
-		mpd_set_host("localhost");
-	} else {
-		/* MPD_HOST environment variable is set */
-		char *mpd_hostpart = strchr(mpd_env_host, '@');
-		if (!mpd_hostpart) {
-			mpd_set_host(mpd_env_host);
-		} else {
-			/* MPD_HOST contains a password */
-			char mpd_password[mpd_hostpart - mpd_env_host + 1];
-			snprintf(mpd_password, mpd_hostpart - mpd_env_host + 1, "%s", mpd_env_host);
-
-			if (!strlen(mpd_hostpart + 1)) {
-				mpd_set_host("localhost");
-			} else {
-				mpd_set_host(mpd_hostpart + 1);
-			}
-
-			mpd_set_password(mpd_password, 1);
-		}
-	}
-
-
-	if (!mpd_env_port || mpd_set_port(mpd_env_port)) {
-		/* failed to set port from environment variable */
-		mpd_set_port("6600");
-	}
-#endif
-#ifdef XMMS2
-	info.xmms2.artist = NULL;
-	info.xmms2.album = NULL;
-	info.xmms2.title = NULL;
-	info.xmms2.genre = NULL;
-	info.xmms2.comment = NULL;
-	info.xmms2.url = NULL;
-	info.xmms2.status = NULL;
-	info.xmms2.playlist = NULL;
-#endif
-	use_spacer = NO_SPACER;
-#ifdef X11
-	output_methods = TO_X;
-#else
-	output_methods = TO_STDOUT;
-#endif
-#ifdef X11
-	show_graph_scale = 0;
-	show_graph_range = 0;
-	draw_shades = 1;
-	draw_borders = 0;
-	draw_graph_borders = 1;
-	draw_outline = 0;
-	set_first_font("6x10");
-	gap_x = 5;
-	gap_y = 60;
-	minimum_width = 5;
-	minimum_height = 5;
-	maximum_width = 0;
-#ifdef OWN_WINDOW
-	own_window = 0;
-	window.type = TYPE_NORMAL;
-	window.hints = 0;
-	strcpy(window.class_name, PACKAGE_NAME);
-	sprintf(window.title, PACKAGE_NAME" (%s)", info.uname_s.nodename);
-#endif
-	stippled_borders = 0;
-	window.border_inner_margin = 3;
-	window.border_outer_margin = 1;
-	window.border_width = 1;
-	text_alignment = BOTTOM_LEFT;
-	info.x11.monitor.number = 1;
-	info.x11.monitor.current = 0;
-	info.x11.desktop.current = 1; 
-	info.x11.desktop.number = 1;
-	info.x11.desktop.nitems = 0;
-	info.x11.desktop.all_names = NULL; 
-	info.x11.desktop.name = NULL; 
-#endif /* X11 */
-
-	for (i = 0; i < MAX_TEMPLATES; i++) {
-		if (template[i])
-			free(template[i]);
-		template[i] = strdup("");
-	}
-
-	free(current_mail_spool);
-	{
-		char buf[256];
-
-		variable_substitute(MAIL_FILE, buf, 256);
-		if (buf[0] != '\0') {
-			current_mail_spool = strndup(buf, text_buffer_size);
-		}
-	}
-
-	no_buffers = 1;
-	set_update_interval(3);
-	update_interval_bat = NOBATTERY;
-	info.music_player_interval = 1.0;
-	stuff_in_uppercase = 0;
-	info.users.number = 1;
-
-#ifdef TCP_PORT_MONITOR
-	/* set default connection limit */
-	tcp_portmon_set_max_connections(0);
-#endif
-}
-
-/* returns 1 if you can overwrite or create the file at 'path' */
-static _Bool overwrite_works(const char *path)
-{
-	FILE *filepointer;
-
-	if (!(filepointer = fopen(path, "w")))
-		return 0;
-	fclose(filepointer);
-	return 1;
-}
-
-/* returns 1 if you can append or create the file at 'path' */
-static _Bool append_works(const char *path)
-{
-	FILE *filepointer;
-
-	if (!(filepointer = fopen(path, "a")))
-		return 0;
-	fclose(filepointer);
-	return 1;
-}
-
-#ifdef X11
-#ifdef DEBUG
-/* WARNING, this type not in Xlib spec */
-int x11_error_handler(Display *d, XErrorEvent *err)
-	__attribute__((noreturn));
-int x11_error_handler(Display *d, XErrorEvent *err)
-{
-	NORM_ERR("X Error: type %i Display %lx XID %li serial %lu error_code %i request_code %i minor_code %i other Display: %lx\n",
-			err->type,
-			(long unsigned)err->display,
-			(long)err->resourceid,
-			err->serial,
-			err->error_code,
-			err->request_code,
-			err->minor_code,
-			(long unsigned)d
-			);
-	abort();
-}
-
-int x11_ioerror_handler(Display *d)
-	__attribute__((noreturn));
-int x11_ioerror_handler(Display *d)
-{
-	NORM_ERR("X Error: Display %lx\n",
-			(long unsigned)d
-			);
-	abort();
-}
-#endif /* DEBUG */
-
-static void X11_initialisation(void)
-{
-	if (x_initialised == YES) return;
-	output_methods |= TO_X;
-	init_X11(disp);
-	set_default_configurations_for_x();
-	x_initialised = YES;
-#ifdef DEBUG
-	_Xdebug = 1;
-	/* WARNING, this type not in Xlib spec */
-	XSetErrorHandler(&x11_error_handler);
-	XSetIOErrorHandler(&x11_ioerror_handler);
-#endif /* DEBUG */
-}
-
-static char **xargv = 0;
-static int xargc = 0;
-
-static void X11_create_window(void)
-{
-	if (output_methods & TO_X) {
-#ifdef OWN_WINDOW
-		init_window(own_window, text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
-				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, set_transparent, background_colour,
-				xargv, xargc);
-#else /* OWN_WINDOW */
-		init_window(0, text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
-				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, set_transparent, 0,
-				xargv, xargc);
-#endif /* OWN_WINDOW */
-
-		setup_fonts();
-		load_fonts();
-		update_text_area();	/* to position text/window on screen */
-
-#ifdef OWN_WINDOW
-		if (own_window && !fixed_pos) {
-			XMoveWindow(display, window.window, window.x, window.y);
-		}
-		if (own_window) {
-			set_transparent_background(window.window);
-		}
-#endif
-
-		create_gc();
-
-		draw_stuff();
-
-		x11_stuff.region = XCreateRegion();
-#ifdef HAVE_XDAMAGE
-		if (!XDamageQueryExtension(display, &x11_stuff.event_base, &x11_stuff.error_base)) {
-			NORM_ERR("Xdamage extension unavailable");
-		}
-		x11_stuff.damage = XDamageCreate(display, window.window, XDamageReportNonEmpty);
-		x11_stuff.region2 = XFixesCreateRegionFromWindow(display, window.window, 0);
-		x11_stuff.part = XFixesCreateRegionFromWindow(display, window.window, 0);
-#endif /* HAVE_XDAMAGE */
-
-		selected_font = 0;
-		update_text_area();	/* to get initial size of the window */
-	}
-#ifdef HAVE_LUA
-	/* setup lua window globals */
-	llua_setup_window_table(text_start_x, text_start_y, text_width, text_height);
-#endif /* HAVE_LUA */
-}
-#endif /* X11 */
-
-#define CONF_ERR NORM_ERR("%s: %d: config file error", f, line)
-#define CONF_ERR2(a) NORM_ERR("%s: %d: config file error: %s", f, line, a)
-#define CONF2(a) if (strcasecmp(name, a) == 0)
-#define CONF(a) else CONF2(a)
-#define CONF3(a, b) else if (strcasecmp(name, a) == 0 \
-		|| strcasecmp(name, b) == 0)
-#define CONF_CONTINUE 1
-#define CONF_BREAK 2
-#define CONF_BUFF_SIZE 512
-
-static FILE *open_config_file(const char *f)
-{
-#ifdef CONFIG_OUTPUT
-	if (!strcmp(f, "==builtin==")) {
-		return conf_cookie_open();
-	} else
-#endif /* CONFIG_OUTPUT */
-		return fopen(f, "r");
-}
-
-static int do_config_step(int *line, FILE *fp, char *buf, char **name, char **value)
-{
-	char *p, *p2;
-	(*line)++;
-	if (fgets(buf, CONF_BUFF_SIZE, fp) == NULL) {
-		return CONF_BREAK;
-	}
-	remove_comments(buf);
-
-	p = buf;
-
-	/* skip spaces */
-	while (*p && isspace((int) *p)) {
-		p++;
-	}
-	if (*p == '\0') {
-		return CONF_CONTINUE;	/* empty line */
-	}
-
-	*name = p;
-
-	/* skip name */
-	p2 = p;
-	while (*p2 && !isspace((int) *p2)) {
-		p2++;
-	}
-	if (*p2 != '\0') {
-		*p2 = '\0';	/* break at name's end */
-		p2++;
-	}
-
-	/* get value */
-	if (*p2) {
-		p = p2;
-		while (*p && isspace((int) *p)) {
-			p++;
-		}
-
-		*value = p;
-
-		p2 = *value + strlen(*value);
-		while (isspace((int) *(p2 - 1))) {
-			*--p2 = '\0';
-		}
-	} else {
-		*value = 0;
-	}
-	return 0;
-}
-
-char load_config_file(const char *f)
-{
-	int line = 0;
-	FILE *fp;
-
-	fp = open_config_file(f);
-	if (!fp) {
-		return FALSE;
-	}
-	DBGP("reading contents from config file '%s'", f);
-
-	while (!feof(fp)) {
-		char buff[CONF_BUFF_SIZE], *name, *value;
-		int ret = do_config_step(&line, fp, buff, &name, &value);
-		if (ret == CONF_BREAK) {
-			break;
-		} else if (ret == CONF_CONTINUE) {
-			continue;
-		}
-
-#ifdef X11
-		CONF2("out_to_x") {
-			/* don't listen if X is already initialised or
-			 * if we already know we don't want it */
-			if(x_initialised != YES) {
-				if (string_to_bool(value)) {
-					output_methods &= TO_X;
-				} else {
-					output_methods &= ~TO_X;
-					x_initialised = NEVER;
-				}
-			}
-		}
-		CONF("display") {
-			if (!value || x_initialised == YES) {
-				CONF_ERR;
-			} else {
-				if (disp)
-					free(disp);
-				disp = strdup(value);
-			}
-		}
-		CONF("alignment") {
-#ifdef OWN_WINDOW
-			if (window.type == TYPE_DOCK)
-				;
-			else
-#endif /*OWN_WINDOW */
-			if (value) {
-				int a = string_to_alignment(value);
-
-				if (a <= 0) {
-					CONF_ERR;
-				} else {
-					text_alignment = a;
-				}
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("background") {
-			fork_to_background = string_to_bool(value);
-		}
-#else
-		CONF2("background") {
-			fork_to_background = string_to_bool(value);
-		}
-#endif /* X11 */
-#ifdef X11
-		CONF("show_graph_scale") {
-			show_graph_scale = string_to_bool(value);
-		}
-		CONF("show_graph_range") {
-			show_graph_range = string_to_bool(value);
-		}
-		CONF("border_inner_margin") {
-			if (value) {
-				window.border_inner_margin = strtol(value, 0, 0);
-				if (window.border_inner_margin < 0) window.border_inner_margin = 0;
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("border_outer_margin") {
-			if (value) {
-				window.border_outer_margin = strtol(value, 0, 0);
-				if (window.border_outer_margin < 0) window.border_outer_margin = 0;
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("border_width") {
-			if (value) {
-				window.border_width = strtol(value, 0, 0);
-				if (window.border_width < 0) window.border_width = 0;
-			} else {
-				CONF_ERR;
-			}
-		}
-#endif /* X11 */
-#define TEMPLATE_CONF(n) \
-		CONF("template"#n) { \
-			if (value) { \
-				free(template[n]); \
-				template[n] = strdup(value); \
-			} else { \
-				CONF_ERR; \
-			} \
-		}
-		TEMPLATE_CONF(0)
-		TEMPLATE_CONF(1)
-		TEMPLATE_CONF(2)
-		TEMPLATE_CONF(3)
-		TEMPLATE_CONF(4)
-		TEMPLATE_CONF(5)
-		TEMPLATE_CONF(6)
-		TEMPLATE_CONF(7)
-		TEMPLATE_CONF(8)
-		TEMPLATE_CONF(9)
-		CONF("imap") {
-			if (value) {
-				info.mail = parse_mail_args(IMAP_TYPE, value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("pop3") {
-			if (value) {
-				info.mail = parse_mail_args(POP3_TYPE, value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("default_bar_size") {
-			char err = 0;
-			if (value) {
-				if (sscanf(value, "%d %d", &default_bar_width, &default_bar_height) != 2) {
-					err = 1;
-				}
-			} else {
-				err = 1;
-			}
-			if (err) {
-				CONF_ERR2("default_bar_size takes 2 integer arguments (ie. 'default_bar_size 0 6')")
-			}
-		}
-#ifdef X11
-		CONF("default_graph_size") {
-			char err = 0;
-			if (value) {
-				if (sscanf(value, "%d %d", &default_graph_width, &default_graph_height) != 2) {
-					err = 1;
-				}
-			} else {
-				err = 1;
-			}
-			if (err) {
-				CONF_ERR2("default_graph_size takes 2 integer arguments (ie. 'default_graph_size 0 6')")
-			}
-		}
-		CONF("default_gauge_size") {
-			char err = 0;
-			if (value) {
-				if (sscanf(value, "%d %d", &default_gauge_width, &default_gauge_height) != 2) {
-					err = 1;
-				}
-			} else {
-				err = 1;
-			}
-			if (err) {
-				CONF_ERR2("default_gauge_size takes 2 integer arguments (ie. 'default_gauge_size 0 6')")
-			}
-		}
-#endif
-#ifdef MPD
-		CONF("mpd_host") {
-			if (value) {
-				mpd_set_host(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("mpd_port") {
-			if (value && mpd_set_port(value)) {
-				CONF_ERR;
-			}
-		}
-		CONF("mpd_password") {
-			if (value) {
-				mpd_set_password(value, 0);
-			} else {
-				CONF_ERR;
-			}
-		}
-#endif
-		CONF("music_player_interval") {
-			if (value) {
-				info.music_player_interval = strtod(value, 0);
-			} else {
-				CONF_ERR;
-			}
-		}
-#ifdef __OpenBSD__
-		CONF("sensor_device") {
-			if (value) {
-				sensor_device = strtol(value, 0, 0);
-			} else {
-				CONF_ERR;
-			}
-		}
-#endif
-		CONF("cpu_avg_samples") {
-			if (value) {
-				cpu_avg_samples = strtol(value, 0, 0);
-				if (cpu_avg_samples < 1 || cpu_avg_samples > 14) {
-					CONF_ERR;
-				} else {
-					info.cpu_avg_samples = cpu_avg_samples;
-				}
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("net_avg_samples") {
-			if (value) {
-				net_avg_samples = strtol(value, 0, 0);
-				if (net_avg_samples < 1 || net_avg_samples > 14) {
-					CONF_ERR;
-				} else {
-					info.net_avg_samples = net_avg_samples;
-				}
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("diskio_avg_samples") {
-			if (value) {
-				diskio_avg_samples = strtol(value, 0, 0);
-				if (diskio_avg_samples < 1 || diskio_avg_samples > 14) {
-					CONF_ERR;
-				} else {
-					info.diskio_avg_samples = diskio_avg_samples;
-				}
-			} else {
-				CONF_ERR;
-			}
-		}
-
-#ifdef HAVE_XDBE
-		CONF("double_buffer") {
-			use_xdbe = string_to_bool(value);
-		}
-#endif
-#ifdef X11
-		CONF("override_utf8_locale") {
-			utf8_mode = string_to_bool(value);
-		}
-		CONF("draw_borders") {
-			draw_borders = string_to_bool(value);
-		}
-		CONF("draw_graph_borders") {
-			draw_graph_borders = string_to_bool(value);
-		}
-		CONF("draw_shades") {
-			draw_shades = string_to_bool(value);
-		}
-		CONF("draw_outline") {
-			draw_outline = string_to_bool(value);
-		}
-#endif /* X11 */
-		CONF("out_to_console") {
-			if(string_to_bool(value)) {
-				output_methods |= TO_STDOUT;
-			} else {
-				output_methods &= ~TO_STDOUT;
-			}
-		}
-		CONF("extra_newline") {
-			extra_newline = string_to_bool(value);
-		}
-		CONF("out_to_stderr") {
-			if(string_to_bool(value))
-				output_methods |= TO_STDERR;
-		}
-#ifdef NCURSES
-		CONF("out_to_ncurses") {
-			if(string_to_bool(value)) {
-				initscr();
-				start_color();
-				output_methods |= TO_NCURSES;
-			}
-		}
-#endif
-		CONF("overwrite_file") {
-			if(overwrite_file) {
-				free(overwrite_file);
-				overwrite_file = 0;
-			}
-			if(overwrite_works(value)) {
-				overwrite_file = strdup(value);
-				output_methods |= OVERWRITE_FILE;
-			} else
-				NORM_ERR("overwrite_file won't be able to create/overwrite '%s'", value);
-		}
-		CONF("append_file") {
-			if(append_file) {
-				free(append_file);
-				append_file = 0;
-			}
-			if(append_works(value)) {
-				append_file = strdup(value);
-				output_methods |= APPEND_FILE;
-			} else
-				NORM_ERR("append_file won't be able to create/append '%s'", value);
-		}
-		CONF("use_spacer") {
-			if (value) {
-				if (strcasecmp(value, "left") == EQUAL) {
-					use_spacer = LEFT_SPACER;
-				} else if (strcasecmp(value, "right") == EQUAL) {
-					use_spacer = RIGHT_SPACER;
-				} else if (strcasecmp(value, "none") == EQUAL) {
-					use_spacer = NO_SPACER;
-				} else {
-					use_spacer = string_to_bool(value);
-					NORM_ERR("use_spacer should have an argument of left, right, or"
-						" none.  '%s' seems to be some form of '%s', so"
-						" defaulting to %s.", value,
-						use_spacer ? "true" : "false",
-						use_spacer ? "right" : "none");
-					if (use_spacer) {
-						use_spacer = RIGHT_SPACER;
-					} else {
-						use_spacer = NO_SPACER;
-					}
-				}
-			} else {
-				NORM_ERR("use_spacer should have an argument. Defaulting to right.");
-				use_spacer = RIGHT_SPACER;
-			}
-		}
-#ifdef X11
-#ifdef XFT
-		CONF("use_xft") {
-			use_xft = string_to_bool(value);
-		}
-		CONF("font") {
-			if (value) {
-				set_first_font(value);
-			}
-		}
-		CONF("xftalpha") {
-			if (value && font_count >= 0) {
-				fonts[0].font_alpha = atof(value) * 65535.0;
-			}
-		}
-		CONF("xftfont") {
-			if (use_xft) {
-#else
-		CONF("use_xft") {
-			if (string_to_bool(value)) {
-				NORM_ERR("Xft not enabled at compile time");
-			}
-		}
-		CONF("xftfont") {
-			/* xftfont silently ignored when no Xft */
-		}
-		CONF("xftalpha") {
-			/* xftalpha is silently ignored when no Xft */
-		}
-		CONF("font") {
-#endif
-			if (value) {
-				set_first_font(value);
-			}
-#ifdef XFT
-			}
-#endif
-		}
-		CONF("gap_x") {
-			if (value) {
-				gap_x = atoi(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("gap_y") {
-			if (value) {
-				gap_y = atoi(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-#endif /* X11 */
-		CONF("mail_spool") {
-			if (value) {
-				char buffer[256];
-
-				variable_substitute(value, buffer, 256);
-
-				if (buffer[0] != '\0') {
-					if (current_mail_spool) {
-						free(current_mail_spool);
-					}
-					current_mail_spool = strndup(buffer, text_buffer_size);
-				}
-			} else {
-				CONF_ERR;
-			}
-		}
-#ifdef X11
-		CONF("minimum_size") {
-			if (value) {
-				if (sscanf(value, "%d %d", &minimum_width, &minimum_height)
-						!= 2) {
-					if (sscanf(value, "%d", &minimum_width) != 1) {
-						CONF_ERR;
-					}
-				}
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("maximum_width") {
-			if (value) {
-				if (sscanf(value, "%d", &maximum_width) != 1) {
-					CONF_ERR;
-				}
-			} else {
-				CONF_ERR;
-			}
-		}
-#endif /* X11 */
-		CONF("no_buffers") {
-			no_buffers = string_to_bool(value);
-		}
-		CONF("top_name_width") {
-			if (value) {
-				if (sscanf(value, "%u", &top_name_width) != 1) {
-					CONF_ERR;
-				}
-			} else {
-				CONF_ERR;
-			}
-			if (top_name_width >= max_user_text) {
-				top_name_width = max_user_text - 1;
-			}
-		}
-		CONF("top_cpu_separate") {
-			cpu_separate = string_to_bool(value);
-		}
-		CONF("short_units") {
-			short_units = string_to_bool(value);
-		}
-		CONF("format_human_readable") {
-			format_human_readable = string_to_bool(value);
-		}
-		CONF("pad_percents") {
-			pad_percents = atoi(value);
-		}
-#ifdef X11
-#ifdef OWN_WINDOW
-		CONF("own_window") {
-			if (value) {
-				own_window = string_to_bool(value);
-			}
-		}
-		CONF("own_window_class") {
-			if (value) {
-				memset(window.class_name, 0, sizeof(window.class_name));
-				strncpy(window.class_name, value,
-						sizeof(window.class_name) - 1);
-			}
-		}
-		CONF("own_window_title") {
-			if (value) {
-				memset(window.title, 0, sizeof(window.title));
-				strncpy(window.title, value, sizeof(window.title) - 1);
-			}
-		}
-		CONF("own_window_transparent") {
-			if (value) {
-				set_transparent = string_to_bool(value);
-			}
-		}
-		CONF("own_window_hints") {
-			if (value) {
-				char *p_hint, *p_save;
-				char delim[] = ", ";
-
-				/* tokenize the value into individual hints */
-				if ((p_hint = strtok_r(value, delim, &p_save)) != NULL) {
-					do {
-						/* fprintf(stderr, "hint [%s] parsed\n", p_hint); */
-						if (strncmp(p_hint, "undecorate", 10) == EQUAL) {
-							SET_HINT(window.hints, HINT_UNDECORATED);
-						} else if (strncmp(p_hint, "below", 5) == EQUAL) {
-							SET_HINT(window.hints, HINT_BELOW);
-						} else if (strncmp(p_hint, "above", 5) == EQUAL) {
-							SET_HINT(window.hints, HINT_ABOVE);
-						} else if (strncmp(p_hint, "sticky", 6) == EQUAL) {
-							SET_HINT(window.hints, HINT_STICKY);
-						} else if (strncmp(p_hint, "skip_taskbar", 12) == EQUAL) {
-							SET_HINT(window.hints, HINT_SKIP_TASKBAR);
-						} else if (strncmp(p_hint, "skip_pager", 10) == EQUAL) {
-							SET_HINT(window.hints, HINT_SKIP_PAGER);
-						} else {
-							CONF_ERR;
-						}
-
-						p_hint = strtok_r(NULL, delim, &p_save);
-					} while (p_hint != NULL);
-				}
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("own_window_type") {
-			if (value) {
-				if (strncmp(value, "normal", 6) == EQUAL) {
-					window.type = TYPE_NORMAL;
-				} else if (strncmp(value, "desktop", 7) == EQUAL) {
-					window.type = TYPE_DESKTOP;
-				} else if (strncmp(value, "dock", 4) == EQUAL) {
-					window.type = TYPE_DOCK;
-					text_alignment = TOP_LEFT;
-				} else if (strncmp(value, "panel", 5) == EQUAL) {
-					window.type = TYPE_PANEL;
-				} else if (strncmp(value, "override", 8) == EQUAL) {
-					window.type = TYPE_OVERRIDE;
-				} else {
-					CONF_ERR;
-				}
-			} else {
-				CONF_ERR;
-			}
-		}
-#endif
-		CONF("stippled_borders") {
-			if (value) {
-				stippled_borders = strtol(value, 0, 0);
-			} else {
-				stippled_borders = 4;
-			}
-		}
-#ifdef IMLIB2
-		CONF("imlib_cache_size") {
-			if (value) {
-				cimlib_set_cache_size(atoi(value));
-			}
-		}
-		CONF("imlib_cache_flush_interval") {
-			if (value) {
-				cimlib_set_cache_flush_interval(atoi(value));
-			}
-		}
-#endif /* IMLIB2 */
-#endif /* X11 */
-		CONF("update_interval_on_battery") {
-			if (value) {
-				update_interval_bat = strtod(value, 0);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("update_interval") {
-			if (value) {
-				set_update_interval(strtod(value, 0));
-			} else {
-				CONF_ERR;
-			}
-			if (info.music_player_interval == 0) {
-				// default to update_interval
-				info.music_player_interval = update_interval;
-			}
-		}
-		CONF("total_run_times") {
-			if (value) {
-				total_run_times = strtod(value, 0);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("uppercase") {
-			stuff_in_uppercase = string_to_bool(value);
-		}
-		CONF("max_specials") {
-			if (value) {
-				max_specials = atoi(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("max_user_text") {
-			if (value) {
-				max_user_text = atoi(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("text_buffer_size") {
-			if (value) {
-				text_buffer_size = atoi(value);
-				if (text_buffer_size < DEFAULT_TEXT_BUFFER_SIZE) {
-					NORM_ERR("text_buffer_size must be >=%i bytes", DEFAULT_TEXT_BUFFER_SIZE);
-					text_buffer_size = DEFAULT_TEXT_BUFFER_SIZE;
-				}
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("text") {
-#ifdef X11
-			if (output_methods & TO_X) {
-				X11_initialisation();
-			}
-#endif
-
-			if (global_text) {
-				free(global_text);
-				global_text = 0;
-			}
-
-			global_text = (char *) malloc(1);
-			global_text[0] = '\0';
-
-			while (!feof(fp)) {
-				unsigned int l = strlen(global_text);
-				unsigned int bl;
-				char buf[CONF_BUFF_SIZE];
-
-				if (fgets(buf, CONF_BUFF_SIZE, fp) == NULL) {
-					break;
-				}
-
-				/* Remove \\-\n. */
-				bl = strlen(buf);
-				if (bl >= 2 && buf[bl-2] == '\\' && buf[bl-1] == '\n') {
-					buf[bl-2] = '\0';
-					bl -= 2;
-					if (bl == 0) {
-						continue;
-					}
-				}
-
-				/* Check for continuation of \\-\n. */
-				if (l > 0 && buf[0] == '\n' && global_text[l-1] == '\\') {
-					global_text[l-1] = '\0';
-					continue;
-				}
-
-				global_text = (char *) realloc(global_text, l + bl + 1);
-				strcat(global_text, buf);
-
-				if (strlen(global_text) > max_user_text) {
-					break;
-				}
-			}
-			fclose(fp);
-			if (strlen(global_text) < 1) {
-				CRIT_ERR(NULL, NULL, "no text supplied in configuration; exiting");
-			}
-			global_text_lines = line + 1;
-			return TRUE;
-		}
-#ifdef TCP_PORT_MONITOR
-		CONF("max_port_monitor_connections") {
-			int max;
-			if (!value || (sscanf(value, "%d", &max) != 1)) {
-				/* an error. use default, warn and continue. */
-				tcp_portmon_set_max_connections(0);
-				CONF_ERR;
-			} else if (tcp_portmon_set_max_connections(max)) {
-				/* max is < 0, default has been set*/
-				CONF_ERR;
-			}
-		}
-#endif
-		CONF("if_up_strictness") {
-			if (!value) {
-				NORM_ERR("incorrect if_up_strictness value, defaulting to 'up'");
-				ifup_strictness = IFUP_UP;
-			} else if (strcasecmp(value, "up") == EQUAL) {
-				ifup_strictness = IFUP_UP;
-			} else if (strcasecmp(value, "link") == EQUAL) {
-				ifup_strictness = IFUP_LINK;
-			} else if (strcasecmp(value, "address") == EQUAL) {
-				ifup_strictness = IFUP_ADDR;
-			} else {
-				NORM_ERR("incorrect if_up_strictness value, defaulting to 'up'");
-				ifup_strictness = IFUP_UP;
-			}
-		}
-
-		CONF("temperature_unit") {
-			if (!value) {
-				NORM_ERR("config option 'temperature_unit' needs an argument, either 'celsius' or 'fahrenheit'");
-			} else if (set_temp_output_unit(value)) {
-				NORM_ERR("temperature_unit: incorrect argument");
-			}
-		}
-
-#ifdef HAVE_LUA
-		CONF("lua_load") {
-			if (value) {
-				char *ptr = strtok(value, " ");
-				while (ptr) {
-					llua_load(ptr);
-					ptr = strtok(NULL, " ");
-				}
-			} else {
-				CONF_ERR;
-			}
-		}
-#ifdef X11
-		CONF("lua_draw_hook_pre") {
-			if (value) {
-				llua_set_draw_pre_hook(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("lua_draw_hook_post") {
-			if (value) {
-				llua_set_draw_post_hook(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("lua_startup_hook") {
-			if (value) {
-				llua_set_startup_hook(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("lua_shutdown_hook") {
-			if (value) {
-				llua_set_shutdown_hook(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-#endif /* X11 */
-#endif /* HAVE_LUA */
-
-		CONF("color0"){}
-		CONF("color1"){}
-		CONF("color2"){}
-		CONF("color3"){}
-		CONF("color4"){}
-		CONF("color5"){}
-		CONF("color6"){}
-		CONF("color7"){}
-		CONF("color8"){}
-		CONF("color9"){}
-		CONF("default_color"){}
-		CONF3("default_shade_color", "default_shadecolor"){}
-		CONF3("default_outline_color", "default_outlinecolor") {}
-		CONF("own_window_colour") {}
-
-		else {
-			NORM_ERR("%s: %d: no such configuration: '%s'", f, line, name);
-		}
-	}
-
-	fclose(fp);
-
-	if (info.music_player_interval == 0) {
-		// default to update_interval
-		info.music_player_interval = update_interval;
-	}
-	if (!global_text) { // didn't supply any text
-		CRIT_ERR(NULL, NULL, "missing text block in configuration; exiting");
-	}
-	return TRUE;
-}
-
-#ifdef X11
-static void load_config_file_x11(const char *f)
-{
-	int line = 0;
-	FILE *fp;
-
-	fp = open_config_file(f);
-	if (!fp) {
-		return;
-	}
-	DBGP("reading contents from config file '%s'", f);
-
-	while (!feof(fp)) {
-		char buff[CONF_BUFF_SIZE], *name, *value;
-		int ret = do_config_step(&line, fp, buff, &name, &value);
-		if (ret == CONF_BREAK) {
-			break;
-		} else if (ret == CONF_CONTINUE) {
-			continue;
-		}
-
-		CONF2("color0") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color0 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color1") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color1 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color2") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color2 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color3") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color3 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color4") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color4 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color5") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color5 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color6") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color6 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color7") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color7 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color8") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color8 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color9") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color9 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("default_color") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					default_fg_color = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF3("default_shade_color", "default_shadecolor") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					default_bg_color = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF3("default_outline_color", "default_outlinecolor") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					default_out_color = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-#ifdef OWN_WINDOW
-		CONF("own_window_colour") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					background_colour = get_x11_color(value);
-				} else {
-					NORM_ERR("Invalid colour for own_window_colour (try omitting the "
-						"'#' for hex colours");
-				}
-			}
-		}
-#endif
-		CONF("text") {
-			/* initialize X11 if nothing X11-related is mentioned before TEXT (and if X11 is the default outputmethod) */
-			if(output_methods & TO_X) {
-				X11_initialisation();
-			}
-		}
-#undef CONF
-#undef CONF2
-#undef CONF3
-#undef CONF_ERR
-#undef CONF_ERR2
-#undef CONF_BREAK
-#undef CONF_CONTINUE
-#undef CONF_BUFF_SIZE
-	}
-
-	fclose(fp);
-
-}
-#endif /* X11 */
-
 static void print_help(const char *prog_name) {
 	printf("Usage: %s [OPTION]...\n"
 			PACKAGE_NAME" is a system monitor that renders text on desktop or to own transparent\n"
-			"window. Command line options will override configurations defined in config\n"
+			"ctx->window. Command line options will override configurations defined in config\n"
 			"file.\n"
 			"   -v, --version             version\n"
 			"   -q, --quiet               quiet mode\n"
@@ -6338,12 +738,12 @@ static void print_help(const char *prog_name) {
 			"   -f, --font=FONT           font to use\n"
 			"   -X, --display=DISPLAY     X11 display to use\n"
 #ifdef OWN_WINDOW
-			"   -o, --own-window          create own window to draw\n"
+			"   -o, --own-ctx->window          create own ctx->window to draw\n"
 #endif
 #ifdef HAVE_XDBE
 			"   -b, --double-buffer       double buffer (prevents flickering)\n"
 #endif
-			"   -w, --window-id=WIN_ID    window id to draw\n"
+			"   -w, --ctx->window-id=WIN_ID    ctx->window id to draw\n"
 			"   -x X                      x position\n"
 			"   -y Y                      y position\n"
 #endif /* X11 */
@@ -6384,24 +784,25 @@ static const struct option longopts[] = {
 	{ "font", 1, NULL, 'f' },
 	{ "display", 1, NULL, 'X' },
 #ifdef OWN_WINDOW
-	{ "own-window", 0, NULL, 'o' },
+	{ "own-ctx->window", 0, NULL, 'o' },
 #endif
 #ifdef HAVE_XDBE
 	{ "double-buffer", 0, NULL, 'b' },
 #endif
-	{ "window-id", 1, NULL, 'w' },
+	{ "ctx->window-id", 1, NULL, 'w' },
 #endif /* X11 */
 	{ "text", 1, NULL, 't' },
 	{ "interval", 0, NULL, 'u' },
 	{ 0, 0, 0, 0 }
 };
 
-void initialisation(int argc, char **argv) {
+void initialisation(conky_context *ctx, int argc, char **argv)
+{
 	struct sigaction act, oact;
 
-	set_default_configurations();
-	load_config_file(current_config);
-	currentconffile = conftree_add(currentconffile, current_config);
+	set_default_configurations(ctx);
+	load_config_file(ctx, ctx->current_config);
+	currentconffile = conftree_add(currentconffile, ctx->current_config);
 
 	/* init specials array */
 	if ((specials = calloc(sizeof(struct special_t), max_specials)) == 0) {
@@ -6445,7 +846,7 @@ void initialisation(int argc, char **argv) {
 
 		switch (c) {
 			case 'd':
-				fork_to_background = 1;
+				ctx->fork_to_background = 1;
 				break;
 			case 'D':
 				global_debug_level++;
@@ -6455,12 +856,12 @@ void initialisation(int argc, char **argv) {
 				set_first_font(optarg);
 				break;
 			case 'a':
-				text_alignment = string_to_alignment(optarg);
+				ctx->text_alignment = string_to_alignment(optarg);
 				break;
 
 #ifdef OWN_WINDOW
 			case 'o':
-				own_window = 1;
+				ctx->own_window = 1;
 				break;
 #endif
 #ifdef HAVE_XDBE
@@ -6470,33 +871,33 @@ void initialisation(int argc, char **argv) {
 #endif
 #endif /* X11 */
 			case 't':
-				if (global_text) {
-					free(global_text);
-					global_text = 0;
+				if (ctx->global_text) {
+					free(ctx->global_text);
+					ctx->global_text = 0;
 				}
-				global_text = strndup(optarg, max_user_text);
-				convert_escapes(global_text);
+				ctx->global_text = strndup(optarg, ctx->max_user_text);
+				convert_escapes(ctx->global_text);
 				break;
 
 			case 'u':
-				update_interval = strtod(optarg, 0);
-				update_interval_old = update_interval;
-				if (info.music_player_interval == 0) {
-					// default to update_interval
-					info.music_player_interval = update_interval;
+				ctx->update_interval = strtod(optarg, 0);
+				ctx->update_interval_old = ctx->update_interval;
+				if (ctx->info.music_player_interval == 0) {
+					// default to ctx->update_interval
+					ctx->info.music_player_interval = ctx->update_interval;
 				}
 				break;
 
 			case 'i':
-				total_run_times = strtod(optarg, 0);
+				ctx->total_run_times = strtod(optarg, 0);
 				break;
 #ifdef X11
 			case 'x':
-				gap_x = atoi(optarg);
+				ctx->gap_x = atoi(optarg);
 				break;
 
 			case 'y':
-				gap_y = atoi(optarg);
+				ctx->gap_y = atoi(optarg);
 				break;
 #endif /* X11 */
 
@@ -6507,20 +908,20 @@ void initialisation(int argc, char **argv) {
 
 #ifdef X11
 	/* load font */
-	if (output_methods & TO_X) {
-		load_config_file_x11(current_config);
+	if (ctx->output_methods & TO_X) {
+		load_config_file_x11(ctx, ctx->current_config);
 	}
 #endif /* X11 */
 
 	/* generate text and get initial size */
-	extract_variable_text(global_text);
-	if (global_text) {
-		free(global_text);
-		global_text = 0;
+	extract_variable_text(ctx, ctx->global_text);
+	if (ctx->global_text) {
+		free(ctx->global_text);
+		ctx->global_text = 0;
 	}
-	global_text = NULL;
+	ctx->global_text = NULL;
 	/* fork */
-	if (fork_to_background) {
+	if (ctx->fork_to_background) {
 		int pid = fork();
 
 		switch (pid) {
@@ -6545,20 +946,20 @@ void initialisation(int argc, char **argv) {
 		}
 	}
 
-	text_buffer = malloc(max_user_text);
-	memset(text_buffer, 0, max_user_text);
-	tmpstring1 = malloc(text_buffer_size);
-	memset(tmpstring1, 0, text_buffer_size);
-	tmpstring2 = malloc(text_buffer_size);
-	memset(tmpstring2, 0, text_buffer_size);
+	ctx->text_buffer = malloc(ctx->max_user_text);
+	memset(ctx->text_buffer, 0, ctx->max_user_text);
+	ctx->tmpstring1 = malloc(text_buffer_size);
+	memset(ctx->tmpstring1, 0, text_buffer_size);
+	ctx->tmpstring2 = malloc(text_buffer_size);
+	memset(ctx->tmpstring2, 0, text_buffer_size);
 
 #ifdef X11
-	xargc = argc;
-	xargv = argv;
-	X11_create_window();
+	ctx->xargc = argc;
+	ctx->xargv = argv;
+	X11_create_window(ctx);
 #endif /* X11 */
 #ifdef HAVE_LUA
-	llua_setup_info(&info, update_interval);
+	llua_setup_info(ctx, ctx->update_interval);
 #endif /* HAVE_LUA */
 #ifdef XOAP
 	xmlInitParser();
@@ -6587,6 +988,10 @@ void initialisation(int argc, char **argv) {
 
 int main(int argc, char **argv)
 {
+	/* Conky's main context struct */
+	conky_context mctx;
+	conky_context *ctx = &mctx;
+
 #ifdef X11
 	char *s, *temp;
 	unsigned int x;
@@ -6595,10 +1000,8 @@ int main(int argc, char **argv)
 	argc_copy = argc;
 	argv_copy = argv;
 	g_signal_pending = 0;
-	max_user_text = MAX_USER_TEXT_DEFAULT;
-	current_config = 0;
-	memset(&info, 0, sizeof(info));
-	memset(template, 0, sizeof(template));
+	memset(ctx, 0, sizeof(conky_context));
+	ctx->max_user_text = MAX_USER_TEXT_DEFAULT;
 	clear_net_stats();
 
 #ifdef TCP_PORT_MONITOR
@@ -6619,7 +1022,7 @@ int main(int argc, char **argv)
 		}
 		temp[x] = 0;
 		if (strstr(temp, "utf-8") || strstr(temp, "utf8")) {
-			utf8_mode = 1;
+			ctx->utf8_mode = 1;
 		}
 
 		free(temp);
@@ -6640,10 +1043,10 @@ int main(int argc, char **argv)
 			case 'V':
 				print_version();
 			case 'c':
-				if (current_config) {
-					free(current_config);
+				if (ctx->current_config) {
+					free(ctx->current_config);
 				}
-				current_config = strndup(optarg, max_user_text);
+				ctx->current_config = strndup(optarg, ctx->max_user_text);
 				break;
 			case 'q':
 				freopen("/dev/null", "w", stderr);
@@ -6658,12 +1061,12 @@ int main(int argc, char **argv)
 #endif
 #ifdef X11
 			case 'w':
-				window.window = strtol(optarg, 0, 0);
+				ctx->window.window = strtol(optarg, 0, 0);
 				break;
 			case 'X':
-				if (disp)
-					free(disp);
-				disp = strdup(optarg);
+				if (ctx->disp)
+					free(ctx->disp);
+				ctx->disp = strdup(optarg);
 				break;
 #endif /* X11 */
 
@@ -6673,19 +1076,19 @@ int main(int argc, char **argv)
 	}
 
 	/* check if specified config file is valid */
-	if (current_config) {
+	if (ctx->current_config) {
 		struct stat sb;
-		if (stat(current_config, &sb) ||
+		if (stat(ctx->current_config, &sb) ||
 				(!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
-			NORM_ERR("invalid configuration file '%s'\n", current_config);
-			free(current_config);
-			current_config = 0;
+			NORM_ERR("invalid configuration file '%s'\n", ctx->current_config);
+			free(ctx->current_config);
+			ctx->current_config = 0;
 		}
 	}
 
-	/* load current_config, CONFIG_FILE or SYSTEM_CONFIG_FILE */
+	/* load ctx->current_config, CONFIG_FILE or SYSTEM_CONFIG_FILE */
 
-	if (!current_config) {
+	if (!ctx->current_config) {
 		/* load default config file */
 		char buf[DEFAULT_TEXT_BUFFER_SIZE];
 		FILE *fp;
@@ -6693,20 +1096,20 @@ int main(int argc, char **argv)
 		/* Try to use personal config file first */
 		to_real_path(buf, CONFIG_FILE);
 		if (buf[0] && (fp = fopen(buf, "r"))) {
-			current_config = strndup(buf, max_user_text);
+			ctx->current_config = strndup(buf, ctx->max_user_text);
 			fclose(fp);
 		}
 
 		/* Try to use system config file if personal config not readable */
-		if (!current_config && (fp = fopen(SYSTEM_CONFIG_FILE, "r"))) {
-			current_config = strndup(SYSTEM_CONFIG_FILE, max_user_text);
+		if (!ctx->current_config && (fp = fopen(SYSTEM_CONFIG_FILE, "r"))) {
+			ctx->current_config = strndup(SYSTEM_CONFIG_FILE, ctx->max_user_text);
 			fclose(fp);
 		}
 
 		/* No readable config found */
-		if (!current_config) {
+		if (!ctx->current_config) {
 #ifdef CONFIG_OUTPUT
-			current_config = strdup("==builtin==");
+			ctx->current_config = strdup("==builtin==");
 			NORM_ERR("no readable personal or system-wide config file found,"
 					" using builtin default");
 #else
@@ -6724,9 +1127,9 @@ int main(int argc, char **argv)
 	inotify_fd = inotify_init();
 #endif /* HAVE_SYS_INOTIFY_H */
 
-	initialisation(argc, argv);
+	initialisation(&mctx, argc, argv);
 
-	main_loop();
+	main_loop(&mctx);
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 	kvm_close(kd);
@@ -6736,21 +1139,10 @@ int main(int argc, char **argv)
 
 }
 
-void alarm_handler(void) {
-	if(childpid > 0) {
-		kill(childpid, SIGTERM);
-	}
-}
-
 static void signal_handler(int sig)
 {
-	/* signal handler is light as a feather, as it should be.
-	 * we will poll g_signal_pending with each loop of conky
-	 * and do any signal processing there, NOT here (except 
-	 * SIGALRM because this is caused when conky is hanging) */
-	if(sig == SIGALRM) {
-		alarm_handler();
-	} else {
+	/* signal handler is light as a feather, as it should be.  we will poll
+	 * g_signal_pending with each loop of conky and do any signal processing
+	 * there, NOT here */
 		g_signal_pending = sig;
-	}
 }

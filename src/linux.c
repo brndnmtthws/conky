@@ -610,6 +610,16 @@ void get_cpu_count(void)
 #define TMPL_LONGSTAT "%*s %llu %llu %llu %llu %llu %llu %llu %llu"
 #define TMPL_SHORTSTAT "%*s %llu %llu %llu %llu"
 
+static void *global_cpu = 0;
+
+void clear_cpu_stats(void)
+{
+	if (global_cpu) {
+		free(global_cpu);
+		global_cpu = 0;
+	}
+}
+
 inline static void update_stat(void)
 {
 	FILE *stat_fp;
@@ -621,7 +631,6 @@ inline static void update_stat(void)
 	double curtmp;
 	const char *stat_template = NULL;
 	unsigned int malloc_cpu_size = 0;
-	extern void* global_cpu;
 
 	/* add check for !info.cpu_usage since that mem is freed on a SIGUSR1 */
 	if (!cpu_setup || !info.cpu_usage) {

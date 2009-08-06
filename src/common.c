@@ -30,7 +30,7 @@
  */
 
 #include "config.h"
-#include "conky.h"
+#include "common.h"
 #include "fs.h"
 #include "logging.h"
 #include <ctype.h>
@@ -84,9 +84,9 @@ char *strndup(const char *s, size_t n)
 }
 #endif /* HAVE_STRNDUP */
 
-void update_uname(void)
+void update_uname(conky_context *ctx)
 {
-	uname(&info.uname_s);
+	uname(&ctx->info.uname_s);
 }
 
 double get_time(void)
@@ -111,7 +111,7 @@ void to_real_path(char *dest, const char *source)
 			NORM_ERR("$HOME environment variable doesn't exist");
 			strncpy(dest, source, DEFAULT_TEXT_BUFFER_SIZE);
 		}
-	} else if (dest != source) {	//see changelog 2009-06-29 if you doubt that this check is necessary 
+	} else if (dest != source) {	//see changelog 2009-06-29 if you doubt that this check is necessary
 		strncpy(dest, source, DEFAULT_TEXT_BUFFER_SIZE);
 	}
 }
@@ -299,10 +299,10 @@ END_TRUE:
 	return 1;
 }
 
-void free_dns_data(void)
+void free_dns_data(conky_context *ctx)
 {
 	int i;
-	struct dns_data *data = &info.nameserver_info;
+	struct dns_data *data = &ctx->info.nameserver_info;
 	for (i = 0; i < data->nscount; i++)
 		free(data->ns_list[i]);
 	if (data->ns_list)
@@ -312,20 +312,20 @@ void free_dns_data(void)
 
 //static double last_dns_update;
 
-static void update_dns_data(void)
+static void update_dns_data(conky_context *ctx)
 {
 	FILE *fp;
 	char line[256];
-	struct dns_data *data = &info.nameserver_info;
+	struct dns_data *data = &ctx->info.nameserver_info;
 
 	/* maybe updating too often causes higher load because of /etc lying on a real FS
-	if (current_update_time - last_dns_update < 10.0)
+	if (ctx->current_update_time - last_dns_update < 10.0)
 		return;
 	else
-		last_dns_update = current_update_time;
+		last_dns_update = ctx->current_update_time;
 	*/
 
-	free_dns_data();
+	free_dns_data(ctx);
 
 	if ((fp = fopen("/etc/resolv.conf", "r")) == NULL)
 		return;
@@ -383,21 +383,15 @@ void format_seconds_short(char *buf, unsigned int n, long seconds)
 	}
 }
 
-static double last_meminfo_update;
-static double last_fs_update;
+#define NEED(a) ((need_mask & (1ULL << a)) && ((ctx->info.mask & (1ULL << a)) == 0))
 
-unsigned long long need_mask;
-int no_buffers;
-
-#define NEED(a) ((need_mask & (1ULL << a)) && ((info.mask & (1ULL << a)) == 0))
-
-void update_stuff(void)
+void update_stuff(conky_context *ctx)
 {
 	int i;
 
-	info.mask = 0;
+	ctx->info.mask = 0;
 
-	if (no_buffers) {
+	if (ctx->no_buffers) {
 		need_mask |= 1 << INFO_BUFFERS;
 	}
 
@@ -455,7 +449,7 @@ void update_stuff(void)
 
 #ifdef MOC
 	if (NEED(INFO_MOC)) {
-		run_moc_thread(info.music_player_interval * 100000);
+		run_moc_thread(ctx->info.music_player_interval * 100000);
 	}
 #endif
 
@@ -482,17 +476,17 @@ void update_stuff(void)
 	}
 
 	if ((NEED(INFO_MEM) || NEED(INFO_BUFFERS) || NEED(INFO_TOP))
-			&& current_update_time - last_meminfo_update > 6.9) {
+			&& ctx->current_update_time - ctx->last_meminfo_update > 6.9) {
 		update_meminfo();
-		if (no_buffers) {
-			info.mem -= info.bufmem;
-			info.memeasyfree += info.bufmem;
+		if (ctx->no_buffers) {
+			ctx->info.mem -= ctx->info.bufmem;
+			ctx->info.memeasyfree += ctx->info.bufmem;
 		}
-		last_meminfo_update = current_update_time;
+		ctx->last_meminfo_update = ctx->current_update_time;
 	}
-	
+
 #ifdef X11
-	if (NEED(INFO_X11) && x_initialised == YES) {
+	if (NEED(INFO_X11) && ctx->x_initialised == YES) {
 		update_x11info();
 	}
 #endif
@@ -502,9 +496,9 @@ void update_stuff(void)
 	}
 
 	/* update_fs_stat() won't do anything if there aren't fs -things */
-	if (NEED(INFO_FS) && current_update_time - last_fs_update > 12.9) {
+	if (NEED(INFO_FS) && ctx->current_update_time - ctx->last_fs_update > 12.9) {
 		update_fs_stats();
-		last_fs_update = current_update_time;
+		ctx->last_fs_update = ctx->current_update_time;
 	}
 #ifdef TCP_PORT_MONITOR
 	if (NEED(INFO_TCP_PORT_MONITOR)) {
@@ -523,7 +517,7 @@ void update_stuff(void)
 	}
 #endif /* __linux__ */
 	if (NEED(INFO_DNS)) {
-		update_dns_data();
+		update_dns_data(ctx);
 	}
 #ifdef APCUPSD
 	if (NEED(INFO_APCUPSD)) {

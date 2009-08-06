@@ -43,6 +43,9 @@
 #include "nvidia.h"		/* nvidia_s */
 #endif
 
+#define SPECIAL_CHAR '\x01'
+#define SECRIT_MULTILINE_CHAR '\x02'
+
 enum text_object_type {
 	OBJ_read_tcp,
 	OBJ_addr,

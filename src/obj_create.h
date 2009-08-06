@@ -25,11 +25,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
+ * vim: ts=4 sw=4 noet ai cindent syntax=c
+ *
  */
-#ifndef _COLOURS_H
-#define _COLOURS_H
 
-unsigned int adjust_colours(conky_context *ctx, unsigned int);
-unsigned long *do_gradient(conky_context *ctx, int, unsigned long, unsigned long);
+#ifndef _CONKY_OBJ_CREATE_H_
+#define _CONKY_OBJ_CREATE_H_
 
-#endif /* _COLOURS_H */
+#include "conky.h"
+
+struct text_object *construct_text_object(const char *s, const char *arg, long
+		line, void **ifblock_opaque, void *free_at_crash);
+
+size_t remove_comments(char *string);
+
+int extract_variable_text_internal(struct text_object *retval, const char *const_p);
+
+void free_text_objects(struct text_object *root, int internal);
+
+#ifdef X11
+void scan_mixer_bar(const char *arg, int *a, int *w, int *h);
+#endif /* X11 */
+
+#ifdef HAVE_ICONV
+void set_iconv_converting(char i);
+void set_iconv_selected(long i);
+void iconv_convert(size_t a, char *buff_in, char *p, size_t p_max_size);
+#endif /* HAVE_ICONV */
+
+#endif /* _CONKY_OBJ_CREATE_H_ */

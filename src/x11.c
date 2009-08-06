@@ -63,9 +63,6 @@ static int background_colour;
 /* workarea from _NET_WORKAREA, this is where window / text is aligned */
 int workarea[4];
 
-/* Window stuff */
-struct conky_window window;
-
 /* local prototypes */
 static void update_workarea(void);
 static Window find_desktop_window(Window *p_root, Window *p_desktop);
