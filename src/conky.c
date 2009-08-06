@@ -64,9 +64,6 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <getopt.h>
-#ifdef NCURSES
-#include <ncurses.h>
-#endif
 #ifdef XOAP
 #include <libxml/parser.h>
 #endif /* XOAP */
