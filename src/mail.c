@@ -383,18 +383,18 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 
 int imap_command(int sockfd, const char *command, char *response, const char *verify)
 {
-	struct timeval fetchtimeout;
+	struct timeval timeout;
 	fd_set fdset;
 	int res, numbytes = 0;
 	if (send(sockfd, command, strlen(command), 0) == -1) {
 		perror("send");
 		return -1;
 	}
-	fetchtimeout.tv_sec = 60;	// 60 second timeout i guess
-	fetchtimeout.tv_usec = 0;
+	timeout.tv_sec = 60;	// 60 second timeout i guess
+	timeout.tv_usec = 0;
 	FD_ZERO(&fdset);
 	FD_SET(sockfd, &fdset);
-	res = select(sockfd + 1, &fdset, NULL, NULL, &fetchtimeout);
+	res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
 	if (res > 0) {
 		if ((numbytes = recv(sockfd, response, MAXDATASIZE - 1, 0)) == -1) {
 			perror("recv");
@@ -471,7 +471,7 @@ void *imap_thread(void *arg)
 	}
 #endif /* HAVE_GETHOSTBYNAME_R */
 	while (fail < mail->retries) {
-		struct timeval fetchtimeout;
+		struct timeval timeout;
 		int res;
 		fd_set fdset;
 
@@ -501,11 +501,11 @@ void *imap_thread(void *arg)
 				break;
 			}
 
-			fetchtimeout.tv_sec = 60;	// 60 second timeout i guess
-			fetchtimeout.tv_usec = 0;
+			timeout.tv_sec = 60;	// 60 second timeout i guess
+			timeout.tv_usec = 0;
 			FD_ZERO(&fdset);
 			FD_SET(sockfd, &fdset);
-			res = select(sockfd + 1, &fdset, NULL, NULL, &fetchtimeout);
+			res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
 			if (res > 0) {
 				if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
 					perror("recv");
@@ -576,8 +576,8 @@ void *imap_thread(void *arg)
 					 * RFC 2177 says we have to re-idle every 29 minutes.
 					 * We'll do it every 20 minutes to be safe.
 					 */
-					fetchtimeout.tv_sec = 1200;
-					fetchtimeout.tv_usec = 0;
+					timeout.tv_sec = 1200;
+					timeout.tv_usec = 0;
 					DBGP2("idling...");
 					FD_ZERO(&fdset);
 					FD_SET(sockfd, &fdset);
@@ -642,7 +642,7 @@ void *imap_thread(void *arg)
 						 * something other than 0, or we had a timeout
 						 */
 						buf = recvbuf;
-						if (recent > 0 || (buf && strstr(buf, " FETCH ")) || fetchtimeout.tv_sec == 0 || force_check) {
+						if (recent > 0 || (buf && strstr(buf, " FETCH ")) || timeout.tv_sec == 0 || force_check) {
 							// re-check messages and unseen
 							if (imap_command(sockfd, "DONE\r\n", recvbuf, "a5 OK")) {
 								fail++;
@@ -691,11 +691,11 @@ void *imap_thread(void *arg)
 					fail++;
 					break;
 				}
-				fetchtimeout.tv_sec = 60;	// 60 second timeout i guess
-				fetchtimeout.tv_usec = 0;
+				timeout.tv_sec = 60;	// 60 second timeout i guess
+				timeout.tv_usec = 0;
 				FD_ZERO(&fdset);
 				FD_SET(sockfd, &fdset);
-				res = select(sockfd + 1, &fdset, NULL, NULL, &fetchtimeout);
+				res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
 				if (res > 0) {
 					if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
 						perror("recv a3");
@@ -727,18 +727,18 @@ void *imap_thread(void *arg)
 
 int pop3_command(int sockfd, const char *command, char *response, const char *verify)
 {
-	struct timeval fetchtimeout;
+	struct timeval timeout;
 	fd_set fdset;
 	int res, numbytes = 0;
 	if (send(sockfd, command, strlen(command), 0) == -1) {
 		perror("send");
 		return -1;
 	}
-	fetchtimeout.tv_sec = 60;	// 60 second timeout i guess
-	fetchtimeout.tv_usec = 0;
+	timeout.tv_sec = 60;	// 60 second timeout i guess
+	timeout.tv_usec = 0;
 	FD_ZERO(&fdset);
 	FD_SET(sockfd, &fdset);
-	res = select(sockfd + 1, &fdset, NULL, NULL, &fetchtimeout);
+	res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
 	if (res > 0) {
 		if ((numbytes = recv(sockfd, response, MAXDATASIZE - 1, 0)) == -1) {
 			perror("recv");
@@ -780,7 +780,7 @@ void *pop3_thread(void *arg)
 	}
 #endif /* HAVE_GETHOSTBYNAME_R */
 	while (fail < mail->retries) {
-		struct timeval fetchtimeout;
+		struct timeval timeout;
 		int res;
 		fd_set fdset;
 
@@ -810,11 +810,11 @@ void *pop3_thread(void *arg)
 				break;
 			}
 
-			fetchtimeout.tv_sec = 60;	// 60 second timeout i guess
-			fetchtimeout.tv_usec = 0;
+			timeout.tv_sec = 60;	// 60 second timeout i guess
+			timeout.tv_usec = 0;
 			FD_ZERO(&fdset);
 			FD_SET(sockfd, &fdset);
-			res = select(sockfd + 1, &fdset, NULL, NULL, &fetchtimeout);
+			res = select(sockfd + 1, &fdset, NULL, NULL, &timeout);
 			if (res > 0) {
 				if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
 					perror("recv");

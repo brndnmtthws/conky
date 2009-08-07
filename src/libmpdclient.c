@@ -122,7 +122,7 @@ static int do_connect_fail(mpd_Connection *connection,
 
 #ifdef MPD_HAVE_GAI
 static int mpd_connect(mpd_Connection *connection, const char *host, int port,
-		float mpd_timeout)
+		float timeout)
 {
 	int error;
 	char service[INTLEN + 1];
@@ -170,7 +170,7 @@ static int mpd_connect(mpd_Connection *connection, const char *host, int port,
 			return -1;
 		}
 
-		mpd_setConnectionTimeout(connection, mpd_timeout);
+		mpd_setConnectionTimeout(connection, timeout);
 
 		/* connect stuff */
 		if (do_connect_fail(connection, res->ai_addr, res->ai_addrlen)) {
@@ -196,7 +196,7 @@ static int mpd_connect(mpd_Connection *connection, const char *host, int port,
 }
 #else /* !MPD_HAVE_GAI */
 static int mpd_connect(mpd_Connection *connection, const char *host, int port,
-		float mpd_timeout)
+		float timeout)
 {
 	struct hostent he, *he_res = 0;
 	int he_errno;
@@ -249,7 +249,7 @@ static int mpd_connect(mpd_Connection *connection, const char *host, int port,
 		return -1;
 	}
 
-	mpd_setConnectionTimeout(connection, mpd_timeout);
+	mpd_setConnectionTimeout(connection, timeout);
 
 	/* connect stuff */
 	if (do_connect_fail(connection, dest, destlen)) {
@@ -320,11 +320,11 @@ static void mpd_freeReturnElement(mpd_ReturnElement *re)
 	free(re);
 }
 
-void mpd_setConnectionTimeout(mpd_Connection *connection, float mpd_timeout)
+void mpd_setConnectionTimeout(mpd_Connection *connection, float timeout)
 {
 	connection->timeout.tv_sec = (int) timeout;
 	connection->timeout.tv_usec =
-		(int) ((mpd_timeout - connection->timeout.tv_sec) * 1e6 + 0.5);
+		(int) ((timeout - connection->timeout.tv_sec) * 1e6 + 0.5);
 }
 
 static int mpd_parseWelcome(mpd_Connection *connection, const char *host,
@@ -361,7 +361,7 @@ static int mpd_parseWelcome(mpd_Connection *connection, const char *host,
 	return 0;
 }
 
-mpd_Connection *mpd_newConnection(const char *host, int port, float mpd_timeout)
+mpd_Connection *mpd_newConnection(const char *host, int port, float timeout)
 {
 	int err;
 	char *rt;
@@ -387,7 +387,7 @@ mpd_Connection *mpd_newConnection(const char *host, int port, float mpd_timeout)
 		return connection;
 	}
 
-	if (mpd_connect(connection, host, port, mpd_timeout) < 0) {
+	if (mpd_connect(connection, host, port, timeout) < 0) {
 		return connection;
 	}
 
