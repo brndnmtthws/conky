@@ -35,7 +35,7 @@
 #include "conky.h"
 #include "text_object.h"
 
-void generate_text_internal(char *p, int p_max_size, struct text_object root,
-		struct information *cur);
+void generate_text_internal(conky_context *ctx, char *p, int p_max_size, struct
+		text_object root);
 
 #endif /* _CONKY_OBJ_DISPLAY_H_ */

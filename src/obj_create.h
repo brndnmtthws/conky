@@ -41,8 +41,6 @@ size_t remove_comments(char *string);
 
 int extract_variable_text_internal(struct text_object *retval, const char *const_p);
 
-void free_text_objects(struct text_object *root, int internal);
-
 #ifdef X11
 void scan_mixer_bar(const char *arg, int *a, int *w, int *h);
 #endif /* X11 */

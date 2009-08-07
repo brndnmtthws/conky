@@ -275,10 +275,57 @@ void evaluate(const char *text, char *buffer)
 	free(tmp_info);
 }
 
-void generate_text_internal(char *p, int p_max_size, struct text_object root,
-		struct information *cur)
+static struct mail_s *ensure_mail_thread(conky_context *ctx, struct text_object *obj,
+		void *thread(void *), const char *text)
+{
+	if (obj->char_b && ctx->info.mail) {
+		/* this means we use ctx->info */
+		if (!ctx->info.mail->p_timed_thread) {
+			ctx->info.mail->p_timed_thread =
+				timed_thread_create(thread,
+						(void *) ctx->info.mail, ctx->info.mail->interval * 1000000);
+			if (!ctx->info.mail->p_timed_thread) {
+				NORM_ERR("Error creating %s timed thread", text);
+			}
+			timed_thread_register(ctx->info.mail->p_timed_thread,
+					&ctx->info.mail->p_timed_thread);
+			if (timed_thread_run(ctx->info.mail->p_timed_thread)) {
+				NORM_ERR("Error running %s timed thread", text);
+			}
+		}
+		return ctx->info.mail;
+	} else if (obj->data.mail) {
+		// this means we use obj
+		if (!obj->data.mail->p_timed_thread) {
+			obj->data.mail->p_timed_thread =
+				timed_thread_create(thread,
+						(void *) obj->data.mail,
+						obj->data.mail->interval * 1000000);
+			if (!obj->data.mail->p_timed_thread) {
+				NORM_ERR("Error creating %s timed thread", text);
+			}
+			timed_thread_register(obj->data.mail->p_timed_thread,
+					&obj->data.mail->p_timed_thread);
+			if (timed_thread_run(obj->data.mail->p_timed_thread)) {
+				NORM_ERR("Error running %s timed thread", text);
+			}
+		}
+		return obj->data.mail;
+	} else if (!obj->a) {
+		// something is wrong, warn once then stop
+		NORM_ERR("There's a problem with your mail settings.  "
+				"Check that the global mail settings are properly defined"
+				" (line %li).", obj->line);
+		obj->a++;
+	}
+	return NULL;
+}
+
+void generate_text_internal(conky_context *ctx, char *p, int p_max_size, struct
+		text_object root)
 {
 	struct text_object *obj;
+	struct information *cur = &ctx->info;
 #ifdef X11
 	int need_to_load_fonts = 0;
 #endif /* X11 */
@@ -1011,7 +1058,7 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root,
 				}
 			}
 			OBJ(imap_unseen) {
-				struct mail_s *mail = ensure_mail_thread(obj, imap_thread, "imap");
+				struct mail_s *mail = ensure_mail_thread(ctx, obj, imap_thread, "imap");
 
 				if (mail && mail->p_timed_thread) {
 					timed_thread_lock(mail->p_timed_thread);
@@ -1020,7 +1067,7 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root,
 				}
 			}
 			OBJ(imap_messages) {
-				struct mail_s *mail = ensure_mail_thread(obj, imap_thread, "imap");
+				struct mail_s *mail = ensure_mail_thread(ctx, obj, imap_thread, "imap");
 
 				if (mail && mail->p_timed_thread) {
 					timed_thread_lock(mail->p_timed_thread);
@@ -1029,7 +1076,7 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root,
 				}
 			}
 			OBJ(pop3_unseen) {
-				struct mail_s *mail = ensure_mail_thread(obj, pop3_thread, "pop3");
+				struct mail_s *mail = ensure_mail_thread(ctx, obj, pop3_thread, "pop3");
 
 				if (mail && mail->p_timed_thread) {
 					timed_thread_lock(mail->p_timed_thread);
@@ -1038,7 +1085,7 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root,
 				}
 			}
 			OBJ(pop3_used) {
-				struct mail_s *mail = ensure_mail_thread(obj, pop3_thread, "pop3");
+				struct mail_s *mail = ensure_mail_thread(ctx, obj, pop3_thread, "pop3");
 
 				if (mail && mail->p_timed_thread) {
 					timed_thread_lock(mail->p_timed_thread);

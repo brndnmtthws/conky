@@ -29,31 +29,26 @@
  *
  */
 #include "conky.h"
-#include "fonts.h"
+#include "ctx->fonts.h"
 #include "logging.h"
 
-int selected_font = 0;
-int font_count = -1;
-struct font_list *fonts = NULL;
-char fontloaded = 0;
-
-void set_font(void)
+void set_font(conky_context *ctx)
 {
 #ifdef XFT
-	if (use_xft) return;
+	if (use_xft->ctx) return;
 #endif /* XFT */
-	if (font_count > -1 && fonts[selected_font].font) {
-		XSetFont(display, window.gc, fonts[selected_font].font->fid);
+	if (ctx->font_count > -1 && ctx->fonts[selected_font].font) {
+		XSetFont(display, window.gc, ctx->fonts[selected_font].font->fid);
 	}
 }
 
-void setup_fonts(void)
+void setup_fonts(conky_context *ctx)
 {
 	if ((output_methods & TO_X) == 0) {
 		return;
 	}
 #ifdef XFT
-	if (use_xft) {
+	if (use_xft->ctx) {
 		if (window.xftdraw) {
 			XftDrawDestroy(window.xftdraw);
 			window.xftdraw = 0;
@@ -65,89 +60,89 @@ void setup_fonts(void)
 	set_font();
 }
 
-int add_font(const char *data_in)
+int add_font(conky_context *ctx, const char *data_in)
 {
 	if ((output_methods & TO_X) == 0) {
 		return 0;
 	}
-	if (font_count > MAX_FONTS) {
-		CRIT_ERR(NULL, NULL, "you don't need that many fonts, sorry.");
+	if (ctx->font_count > MAX_FONTS) {
+		CRIT_ERR(NULL, NULL, "you don't need that many ctx->fonts, sorry.");
 	}
-	font_count++;
-	if (font_count == 0) {
-		if (fonts != NULL) {
-			free(fonts);
+	ctx->font_count++;
+	if (ctx->font_count == 0) {
+		if (ctx->fonts != NULL) {
+			free(ctx->fonts);
 		}
-		if ((fonts = (struct font_list *) malloc(sizeof(struct font_list)))
+		if ((ctx->fonts = (struct font_list *) malloc(sizeof(struct font_list)))
 				== NULL) {
 			CRIT_ERR(NULL, NULL, "malloc");
 		}
-		memset(fonts, 0, sizeof(struct font_list));
+		memset(ctx->fonts, 0, sizeof(struct font_list));
 	}
-	fonts = realloc(fonts, (sizeof(struct font_list) * (font_count + 1)));
-	memset(&fonts[font_count], 0, sizeof(struct font_list));
-	if (fonts == NULL) {
+	ctx->fonts = realloc(ctx->fonts, (sizeof(struct font_list) * (ctx->font_count + 1)));
+	memset(&ctx->fonts[ctx->font_count], 0, sizeof(struct font_list));
+	if (ctx->fonts == NULL) {
 		CRIT_ERR(NULL, NULL, "realloc in add_font");
 	}
 	// must account for null terminator
 	if (strlen(data_in) < DEFAULT_TEXT_BUFFER_SIZE) {
-		strncpy(fonts[font_count].name, data_in, DEFAULT_TEXT_BUFFER_SIZE);
+		strncpy(ctx->fonts[ctx->font_count].name, data_in, DEFAULT_TEXT_BUFFER_SIZE);
 #ifdef XFT
-		fonts[font_count].font_alpha = 0xffff;
+		ctx->fonts[ctx->font_count].font_alpha = 0xffff;
 #endif
 	} else {
 		CRIT_ERR(NULL, NULL, "Oops...looks like something overflowed in add_font().");
 	}
-	return font_count;
+	return ctx->font_count;
 }
 
-void set_first_font(const char *data_in)
+void set_first_font(conky_context *ctx, const char *data_in)
 {
 	if ((output_methods & TO_X) == 0) {
 		return;
 	}
-	if (font_count < 0) {
-		if ((fonts = (struct font_list *) malloc(sizeof(struct font_list)))
+	if (ctx->font_count < 0) {
+		if ((ctx->fonts = (struct font_list *) malloc(sizeof(struct font_list)))
 				== NULL) {
 			CRIT_ERR(NULL, NULL, "malloc");
 		}
-		memset(fonts, 0, sizeof(struct font_list));
-		font_count++;
+		memset(ctx->fonts, 0, sizeof(struct font_list));
+		ctx->font_count++;
 	}
 	if (strlen(data_in) > 1) {
-		strncpy(fonts[0].name, data_in, DEFAULT_TEXT_BUFFER_SIZE);
+		strncpy(ctx->fonts[0].name, data_in, DEFAULT_TEXT_BUFFER_SIZE);
 #ifdef XFT
-		fonts[0].font_alpha = 0xffff;
+		ctx->fonts[0].font_alpha = 0xffff;
 #endif
 	}
 }
 
-void free_fonts(void)
+void free_fonts(conky_context *ctx)
 {
 	int i;
 
 	if ((output_methods & TO_X) == 0) {
 		return;
 	}
-	if(fontloaded == 0) {
-		free(fonts);
+	if(ctx->fontloaded == 0) {
+		free(ctx->fonts);
 		return;
 	}
-	for (i = 0; i <= font_count; i++) {
+	for (i = 0; i <= ctx->font_count; i++) {
 #ifdef XFT
-		if (use_xft) {
-			XftFontClose(display, fonts[i].xftfont);
-			fonts[i].xftfont = 0;
+		if (use_xft->ctx) {
+			XftFontClose(display, ctx->fonts[i].xftfont);
+			ctx->fonts[i].xftfont = 0;
 		} else
 #endif /* XFT */
 		{
-			XFreeFont(display, fonts[i].font);
-			fonts[i].font = 0;
+			XFreeFont(display, ctx->fonts[i].font);
+			ctx->fonts[i].font = 0;
 		}
 	}
-	free(fonts);
-	fonts = 0;
-	font_count = -1;
+	free(ctx->fonts);
+	ctx->fonts = 0;
+	ctx->font_count = -1;
 	selected_font = 0;
 #ifdef XFT
 	if (window.xftdraw) {
@@ -157,47 +152,47 @@ void free_fonts(void)
 #endif /* XFT */
 }
 
-void load_fonts(void)
+void load_fonts(conky_context *ctx)
 {
 	int i;
 
 	if ((output_methods & TO_X) == 0)
 		return;
-	for (i = 0; i <= font_count; i++) {
+	for (i = 0; i <= ctx->font_count; i++) {
 #ifdef XFT
 		/* load Xft font */
-		if (use_xft && fonts[i].xftfont) {
+		if (use_xft->ctx && ctx->fonts[i].xftfont) {
 			continue;
-		} else if (use_xft) {
-			fonts[i].xftfont = XftFontOpenName(display, screen,
-					fonts[i].name);
-			if (fonts[i].xftfont) {
+		} else if (use_xft->ctx) {
+			ctx->fonts[i].xftfont = XftFontOpenName(display, screen,
+					ctx->fonts[i].name);
+			if (ctx->fonts[i].xftfont) {
 				continue;
 			}
 
-			NORM_ERR("can't load Xft font '%s'", fonts[i].name);
-			if ((fonts[i].xftfont = XftFontOpenName(display, screen,
+			NORM_ERR("can't load Xft font '%s'", ctx->fonts[i].name);
+			if ((ctx->fonts[i].xftfont = XftFontOpenName(display, screen,
 					"courier-12")) != NULL) {
 				continue;
 			}
 
 			NORM_ERR("can't load Xft font '%s'", "courier-12");
 
-			if ((fonts[i].font = XLoadQueryFont(display, "fixed")) == NULL) {
+			if ((ctx->fonts[i].font = XLoadQueryFont(display, "fixed")) == NULL) {
 				CRIT_ERR(NULL, NULL, "can't load font '%s'", "fixed");
 			}
-			use_xft = 0;
+			use_xft->ctx = 0;
 
 			continue;
 		}
 #endif
 		/* load normal font */
-		if (!fonts[i].font && (fonts[i].font = XLoadQueryFont(display, fonts[i].name)) == NULL) {
-			NORM_ERR("can't load font '%s'", fonts[i].name);
-			if ((fonts[i].font = XLoadQueryFont(display, "fixed")) == NULL) {
+		if (!ctx->fonts[i].font && (ctx->fonts[i].font = XLoadQueryFont(display, ctx->fonts[i].name)) == NULL) {
+			NORM_ERR("can't load font '%s'", ctx->fonts[i].name);
+			if ((ctx->fonts[i].font = XLoadQueryFont(display, "fixed")) == NULL) {
 				CRIT_ERR(NULL, NULL, "can't load font '%s'", "fixed");
 			}
 		}
 	}
-	fontloaded = 1;
+	ctx->fontloaded = 1;
 }

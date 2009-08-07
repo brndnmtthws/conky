@@ -34,15 +34,24 @@
 #include "core.h"
 
 #include "text_object.h"
+#include "obj_create.h"
+#include "obj_display.h"
 #include "obj_destroy.h"
 #include "common.h"
 #include "specials.h"
 #include "logging.h"
+#include "fonts.h"
+#include "colours.h"
+#include "diskio.h"
 
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <ctype.h>
 
 #ifdef X11
+#ifdef IMLIB2
+#include "imlib2.h"
+#endif /* IMLIB2 */
 
 static void X11_initialisation(conky_context *ctx);
 
@@ -209,7 +218,7 @@ static inline int calc_text_width(conky_context *ctx, const char *s, int l)
 
 /* quite boring functions */
 
-static inline void for_each_line(char *b, int f(char *, int))
+static inline void for_each_line(conky_context *ctx, char *b, int f(conky_context *, char *, int))
 {
 	char *ps, *pe;
 	int special_index = 0; /* specials index */
@@ -217,14 +226,14 @@ static inline void for_each_line(char *b, int f(char *, int))
 	for (ps = b, pe = b; *pe; pe++) {
 		if (*pe == '\n') {
 			*pe = '\0';
-			special_index = f(ps, special_index);
+			special_index = f(ctx, ps, special_index);
 			*pe = '\n';
 			ps = pe + 1;
 		}
 	}
 
 	if (ps < pe) {
-		f(ps, special_index);
+		f(ctx, ps, special_index);
 	}
 }
 
@@ -415,64 +424,17 @@ void extract_variable_text(conky_context *ctx, const char *p)
 		ctx->text_buffer = 0;
 	}
 
-	extract_variable_text_internal(ctx, &global_root_object, p);
+	extract_variable_text_internal(&global_root_object, p);
 }
 
-void parse_conky_vars(ctx, struct text_object *root, const char *txt, char *p)
+void parse_conky_vars(conky_context *ctx, struct text_object *root, const char *txt, char *p)
 {
-	extract_variable_text_internal(ctx, root, txt);
+	extract_variable_text_internal(root, txt);
 	generate_text_internal(ctx, p, max_user_text, *root);
 }
 
-static inline struct mail_s *ensure_mail_thread(struct text_object *obj,
-		void *thread(void *), const char *text)
+static void generate_text(conky_context *ctx)
 {
-	if (obj->char_b && ctx->info.mail) {
-		/* this means we use ctx->info */
-		if (!ctx->info.mail->p_timed_thread) {
-			ctx->info.mail->p_timed_thread =
-				timed_thread_create(thread,
-						(void *) ctx->info.mail, ctx->info.mail->interval * 1000000);
-			if (!ctx->info.mail->p_timed_thread) {
-				NORM_ERR("Error creating %s timed thread", text);
-			}
-			timed_thread_register(ctx->info.mail->p_timed_thread,
-					&ctx->info.mail->p_timed_thread);
-			if (timed_thread_run(ctx->info.mail->p_timed_thread)) {
-				NORM_ERR("Error running %s timed thread", text);
-			}
-		}
-		return ctx->info.mail;
-	} else if (obj->data.mail) {
-		// this means we use obj
-		if (!obj->data.mail->p_timed_thread) {
-			obj->data.mail->p_timed_thread =
-				timed_thread_create(thread,
-						(void *) obj->data.mail,
-						obj->data.mail->interval * 1000000);
-			if (!obj->data.mail->p_timed_thread) {
-				NORM_ERR("Error creating %s timed thread", text);
-			}
-			timed_thread_register(obj->data.mail->p_timed_thread,
-					&obj->data.mail->p_timed_thread);
-			if (timed_thread_run(obj->data.mail->p_timed_thread)) {
-				NORM_ERR("Error running %s timed thread", text);
-			}
-		}
-		return obj->data.mail;
-	} else if (!obj->a) {
-		// something is wrong, warn once then stop
-		NORM_ERR("There's a problem with your mail settings.  "
-				"Check that the global mail settings are properly defined"
-				" (line %li).", obj->line);
-		obj->a++;
-	}
-	return NULL;
-}
-
-static void generate_text(void)
-{
-	struct information *cur = &ctx->info;
 	char *p;
 
 	special_count = 0;
@@ -481,7 +443,7 @@ static void generate_text(void)
 
 	ctx->current_update_time = get_time();
 
-	update_stuff();
+	update_stuff(ctx);
 
 	/* add things to the buffer */
 
@@ -517,18 +479,18 @@ void set_update_interval(conky_context *ctx, double interval)
 	ctx->update_interval_old = interval;
 }
 
-static inline int get_string_width(const char *s)
+static inline int get_string_width(conky_context *ctx, const char *s)
 {
 #ifdef X11
 	if (ctx->output_methods & TO_X) {
-		return *s ? calc_text_width(s, strlen(s)) : 0;
+		return *s ? calc_text_width(ctx, s, strlen(s)) : 0;
 	}
 #endif /* X11 */
 	return strlen(s);
 }
 
 #ifdef X11
-static int get_string_width_special(char *s, int special_index)
+static int get_string_width_special(conky_context *ctx, char *s, int special_index)
 {
 	char *p, *final;
 	int idx = 1;
@@ -567,13 +529,13 @@ static int get_string_width_special(char *s, int special_index)
 		}
 	}
 	if (strlen(final) > 1) {
-		width += calc_text_width(final, strlen(final));
+		width += calc_text_width(ctx, final, strlen(final));
 	}
 	free(final);
 	return width;
 }
 
-static int text_size_updater(char *s, int special_index);
+static int text_size_updater(conky_context *ctx, char *s, int special_index);
 
 void update_text_area(conky_context *ctx)
 {
@@ -586,16 +548,16 @@ void update_text_area(conky_context *ctx)
 	if (!fixed_size)
 #endif
 	{
-		text_width = minimum_width;
-		text_height = 0;
-		last_font_height = font_height();
-		for_each_line(ctx->text_buffer, text_size_updater);
-		text_width += 1;
-		if (text_height < minimum_height) {
-			text_height = minimum_height;
+		ctx->text_width = minimum_width;
+		ctx->text_height = 0;
+		ctx->last_font_height = font_height();
+		for_each_line(ctx, ctx->text_buffer, text_size_updater);
+		ctx->text_width += 1;
+		if (ctx->text_height < minimum_height) {
+			ctx->text_height = minimum_height;
 		}
-		if (text_width > maximum_width && maximum_width > 0) {
-			text_width = maximum_width;
+		if (ctx->text_width > maximum_width && maximum_width > 0) {
+			ctx->text_width = maximum_width;
 		}
 	}
 
@@ -607,45 +569,45 @@ void update_text_area(conky_context *ctx)
 			break;
 
 		case TOP_RIGHT:
-			x = workarea[2] - text_width - gap_x;
+			x = workarea[2] - ctx->text_width - gap_x;
 			y = gap_y;
 			break;
 
 		case TOP_MIDDLE:
-			x = workarea[2] / 2 - text_width / 2 - gap_x;
+			x = workarea[2] / 2 - ctx->text_width / 2 - gap_x;
 			y = gap_y;
 			break;
 
 		default:
 		case BOTTOM_LEFT:
 			x = gap_x;
-			y = workarea[3] - text_height - gap_y;
+			y = workarea[3] - ctx->text_height - gap_y;
 			break;
 
 		case BOTTOM_RIGHT:
-			x = workarea[2] - text_width - gap_x;
-			y = workarea[3] - text_height - gap_y;
+			x = workarea[2] - ctx->text_width - gap_x;
+			y = workarea[3] - ctx->text_height - gap_y;
 			break;
 
 		case BOTTOM_MIDDLE:
-			x = workarea[2] / 2 - text_width / 2 - gap_x;
-			y = workarea[3] - text_height - gap_y;
+			x = workarea[2] / 2 - ctx->text_width / 2 - gap_x;
+			y = workarea[3] - ctx->text_height - gap_y;
 			break;
 
 		case MIDDLE_LEFT:
 			x = gap_x;
-			y = workarea[3] / 2 - text_height / 2 - gap_y;
+			y = workarea[3] / 2 - ctx->text_height / 2 - gap_y;
 			break;
 
 		case MIDDLE_RIGHT:
-			x = workarea[2] - text_width - gap_x;
-			y = workarea[3] / 2 - text_height / 2 - gap_y;
+			x = workarea[2] - ctx->text_width - gap_x;
+			y = workarea[3] / 2 - ctx->text_height / 2 - gap_y;
 			break;
 
 #ifdef OWN_WINDOW
 		case NONE:	// Let the WM manage the window
-			x = window.x;
-			y = window.y;
+			x = ctx->window.x;
+			y = ctx->window.y;
 
 			fixed_pos = 1;
 			fixed_size = 1;
@@ -657,27 +619,27 @@ void update_text_area(conky_context *ctx)
 	if (own_window && !fixed_pos) {
 		x += workarea[0];
 		y += workarea[1];
-		text_start_x = window.border_inner_margin + window.border_outer_margin + window.border_width;
-		text_start_y = window.border_inner_margin + window.border_outer_margin + window.border_width;
-		window.x = x - window.border_inner_margin - window.border_outer_margin - window.border_width;
-		window.y = y - window.border_inner_margin - window.border_outer_margin - window.border_width;
+		ctx->text_start_x = ctx->window.border_inner_margin + ctx->window.border_outer_margin + ctx->window.border_width;
+		ctx->text_start_y = ctx->window.border_inner_margin + ctx->window.border_outer_margin + ctx->window.border_width;
+		ctx->window.x = x - ctx->window.border_inner_margin - ctx->window.border_outer_margin - ctx->window.border_width;
+		ctx->window.y = y - ctx->window.border_inner_margin - ctx->window.border_outer_margin - ctx->window.border_width;
 	} else
 #endif
 	{
 		/* If window size doesn't match to workarea's size,
 		 * then window probably includes panels (gnome).
 		 * Blah, doesn't work on KDE. */
-		if (workarea[2] != window.width || workarea[3] != window.height) {
+		if (workarea[2] != ctx->window.width || workarea[3] != ctx->window.height) {
 			y += workarea[1];
 			x += workarea[0];
 		}
 
-		text_start_x = x;
-		text_start_y = y;
+		ctx->text_start_x = x;
+		ctx->text_start_y = y;
 	}
 #ifdef HAVE_LUA
 	/* update lua window globals */
-	llua_update_window_table(text_start_x, text_start_y, text_width, text_height);
+	llua_update_window_table(ctx->text_start_x, ctx->text_start_y, ctx->text_width, ctx->text_height);
 #endif /* HAVE_LUA */
 }
 
@@ -690,7 +652,7 @@ static int draw_mode;		/* FG, BG or OUTLINE */
 #ifdef X11
 static long current_color;
 
-static int text_size_updater(char *s, int special_index)
+static int text_size_updater(conky_context *ctx, char *s, int special_index)
 {
 	int w = 0;
 	char *p;
@@ -702,23 +664,23 @@ static int text_size_updater(char *s, int special_index)
 	while (*p) {
 		if (*p == SPECIAL_CHAR) {
 			*p = '\0';
-			w += get_string_width(s);
+			w += get_string_width(ctx, s);
 			*p = SPECIAL_CHAR;
 
 			if (specials[special_index].type == BAR
 					|| specials[special_index].type == GAUGE
 					|| specials[special_index].type == GRAPH) {
 				w += specials[special_index].width;
-				if (specials[special_index].height > last_font_height) {
-					last_font_height = specials[special_index].height;
-					last_font_height += font_height();
+				if (specials[special_index].height > ctx->last_font_height) {
+					ctx->last_font_height = specials[special_index].height;
+					ctx->last_font_height += font_height();
 				}
 			} else if (specials[special_index].type == OFFSET) {
 				if (specials[special_index].arg > 0) {
 					w += specials[special_index].arg;
 				}
 			} else if (specials[special_index].type == VOFFSET) {
-				last_font_height += specials[special_index].arg;
+				ctx->last_font_height += specials[special_index].arg;
 			} else if (specials[special_index].type == GOTO) {
 				if (specials[special_index].arg > cur_x) {
 					w = (int) specials[special_index].arg;
@@ -730,11 +692,11 @@ static int text_size_updater(char *s, int special_index)
 				if (!step || step < 0) {
 					step = 10;
 				}
-				w += step - (cur_x - text_start_x - start) % step;
+				w += step - (cur_x - ctx->text_start_x - start) % step;
 			} else if (specials[special_index].type == FONT) {
 				ctx->selected_font = specials[special_index].font_added;
-				if (font_height() > last_font_height) {
-					last_font_height = font_height();
+				if (font_height() > ctx->last_font_height) {
+					ctx->last_font_height = font_height();
 				}
 			}
 
@@ -743,34 +705,34 @@ static int text_size_updater(char *s, int special_index)
 		} else if (*p == SECRIT_MULTILINE_CHAR) {
 			int lw;
 			*p = '\0';
-			lw = get_string_width(s);
+			lw = get_string_width(ctx, s);
 			*p = SECRIT_MULTILINE_CHAR;
 			s = p + 1;
 			w = lw > w ? lw : w;
-			text_height += last_font_height;
+			ctx->text_height += ctx->last_font_height;
 		}
 		p++;
 	}
-	w += get_string_width(s);
-	if (w > text_width) {
-		text_width = w;
+	w += get_string_width(ctx, s);
+	if (w > ctx->text_width) {
+		ctx->text_width = w;
 	}
-	if (text_width > maximum_width && maximum_width) {
-		text_width = maximum_width;
+	if (ctx->text_width > maximum_width && maximum_width) {
+		ctx->text_width = maximum_width;
 	}
 
-	text_height += last_font_height;
-	last_font_height = font_height();
+	ctx->text_height += ctx->last_font_height;
+	ctx->last_font_height = font_height();
 	return special_index;
 }
 #endif /* X11 */
 
-static inline void set_foreground_color(long c)
+static inline void set_foreground_color(conky_context *ctx, long c)
 {
 #ifdef X11
 	if (ctx->output_methods & TO_X) {
 		current_color = c;
-		XSetForeground(display, window.gc, c);
+		XSetForeground(display, ctx->window.gc, c);
 	}
 #endif /* X11 */
 #ifdef NCURSES
@@ -782,7 +744,7 @@ static inline void set_foreground_color(long c)
 	return;
 }
 
-static void draw_string(const char *s)
+static void draw_string(conky_context *ctx, const char *s)
 {
 	int i, i2, pos, width_of_s;
 	int max = 0;
@@ -793,7 +755,7 @@ static void draw_string(const char *s)
 		return;
 	}
 
-	width_of_s = get_string_width(s);
+	width_of_s = get_string_width(ctx, s);
 	s_with_newlines = strdup(s);
 	for(i = 0; i < (int) strlen(s_with_newlines); i++) {
 		if(s_with_newlines[i] == SECRIT_MULTILINE_CHAR) {
@@ -802,7 +764,7 @@ static void draw_string(const char *s)
 	}
 	if ((ctx->output_methods & TO_STDOUT) && draw_mode == FG) {
 		printf("%s\n", s_with_newlines);
-		if (extra_newline) fputc('\n', stdout);
+		if (ctx->extra_newline) fputc('\n', stdout);
 		fflush(stdout);	/* output immediately, don't buffer */
 	}
 	if ((ctx->output_methods & TO_STDERR) && draw_mode == FG) {
@@ -829,7 +791,7 @@ static void draw_string(const char *s)
 
 #ifdef X11
 	if (ctx->output_methods & TO_X) {
-		max = ((text_width - width_of_s) / get_string_width(" "));
+		max = ((ctx->text_width - width_of_s) / get_string_width(ctx, " "));
 	}
 #endif /* X11 */
 	/* This code looks for tabs in the text and coverts them to spaces.
@@ -852,10 +814,10 @@ static void draw_string(const char *s)
 	}
 #ifdef X11
 	if (ctx->output_methods & TO_X) {
-		if (text_width == maximum_width) {
+		if (ctx->text_width == maximum_width) {
 			/* this means the text is probably pushing the limit,
 			 * so we'll chop it */
-			while (cur_x + get_string_width(ctx->tmpstring2) - text_start_x
+			while (cur_x + get_string_width(ctx, ctx->tmpstring2) - ctx->text_start_x
 					> maximum_width && strlen(ctx->tmpstring2) > 0) {
 				ctx->tmpstring2[strlen(ctx->tmpstring2) - 1] = '\0';
 			}
@@ -879,16 +841,16 @@ static void draw_string(const char *s)
 			c2.color.blue = c.blue;
 			c2.color.alpha = ctx->fonts[ctx->selected_font].font_alpha;
 			if (utf8_mode) {
-				XftDrawStringUtf8(window.xftdraw, &c2, ctx->fonts[ctx->selected_font].xftfont,
+				XftDrawStringUtf8(ctx->window.xftdraw, &c2, ctx->fonts[ctx->selected_font].xftfont,
 					cur_x, cur_y, (const XftChar8 *) s, strlen(s));
 			} else {
-				XftDrawString8(window.xftdraw, &c2, ctx->fonts[ctx->selected_font].xftfont,
+				XftDrawString8(ctx->window.xftdraw, &c2, ctx->fonts[ctx->selected_font].xftfont,
 					cur_x, cur_y, (const XftChar8 *) s, strlen(s));
 			}
 		} else
 #endif
 		{
-			XDrawString(display, window.drawable, window.gc, cur_x, cur_y, s,
+			XDrawString(display, ctx->window.drawable, ctx->window.gc, cur_x, cur_y, s,
 				strlen(s));
 		}
 		cur_x += width_of_s;
@@ -897,7 +859,7 @@ static void draw_string(const char *s)
 	memcpy(ctx->tmpstring1, s, text_buffer_size);
 }
 
-int draw_each_line_inner(char *s, int special_index, int last_special_applied)
+static int draw_each_line_inner(conky_context *ctx, char *s, int special_index, int last_special_applied)
 {
 #ifdef X11
 	int font_h = font_height();
@@ -909,7 +871,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 	int orig_special_index = special_index;
 
 #ifdef X11
-	cur_x = text_start_x;
+	cur_x = ctx->text_start_x;
 	cur_y += font_ascent();
 #endif /* X11 */
 
@@ -931,7 +893,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 				special_index = last_special_applied;
 			} else {
 				*p = '\0';
-				draw_string(s);
+				draw_string(ctx, s);
 				*p = SPECIAL_CHAR;
 				s = p + 1;
 			}
@@ -943,11 +905,11 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					int h = specials[special_index].height;
 					int mid = font_ascent() / 2;
 
-					w = text_start_x + text_width - cur_x;
+					w = ctx->text_start_x + ctx->text_width - cur_x;
 
-					XSetLineAttributes(display, window.gc, h, LineSolid,
+					XSetLineAttributes(display, ctx->window.gc, h, LineSolid,
 						CapButt, JoinMiter);
-					XDrawLine(display, window.drawable, window.gc, cur_x,
+					XDrawLine(display, ctx->window.drawable, ctx->window.gc, cur_x,
 						cur_y - mid / 2, cur_x + w, cur_y - mid / 2);
 					break;
 				}
@@ -959,11 +921,11 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					int mid = font_ascent() / 2;
 					char ss[2] = { tmp_s, tmp_s };
 
-					w = text_start_x + text_width - cur_x - 1;
-					XSetLineAttributes(display, window.gc, h, LineOnOffDash,
+					w = ctx->text_start_x + ctx->text_width - cur_x - 1;
+					XSetLineAttributes(display, ctx->window.gc, h, LineOnOffDash,
 						CapButt, JoinMiter);
-					XSetDashes(display, window.gc, 0, ss, 2);
-					XDrawLine(display, window.drawable, window.gc, cur_x,
+					XSetDashes(display, ctx->window.gc, 0, ss, 2);
+					XDrawLine(display, ctx->window.drawable, ctx->window.gc, cur_x,
 						cur_y - mid / 2, cur_x + w, cur_y - mid / 2);
 					break;
 				}
@@ -971,7 +933,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 				case BAR:
 				{
 					int h, bar_usage, by;
-					if (cur_x - text_start_x > maximum_width
+					if (cur_x - ctx->text_start_x > maximum_width
 							&& maximum_width > 0) {
 						break;
 					}
@@ -984,18 +946,18 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					}
 					w = specials[special_index].width;
 					if (w == 0) {
-						w = text_start_x + text_width - cur_x - 1;
+						w = ctx->text_start_x + ctx->text_width - cur_x - 1;
 					}
 					if (w < 0) {
 						w = 0;
 					}
 
-					XSetLineAttributes(display, window.gc, 1, LineSolid,
+					XSetLineAttributes(display, ctx->window.gc, 1, LineSolid,
 						CapButt, JoinMiter);
 
-					XDrawRectangle(display, window.drawable, window.gc, cur_x,
+					XDrawRectangle(display, ctx->window.drawable, ctx->window.gc, cur_x,
 						by, w, h);
-					XFillRectangle(display, window.drawable, window.gc, cur_x,
+					XFillRectangle(display, ctx->window.drawable, ctx->window.gc, cur_x,
 						by, w * bar_usage / 255, h);
 					if (h > cur_y_add
 							&& h > font_h) {
@@ -1013,7 +975,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					int usage;
 #endif /* MATH */
 
-					if (cur_x - text_start_x > maximum_width
+					if (cur_x - ctx->text_start_x > maximum_width
 							&& maximum_width > 0) {
 						break;
 					}
@@ -1026,16 +988,16 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					}
 					w = specials[special_index].width;
 					if (w == 0) {
-						w = text_start_x + text_width - cur_x - 1;
+						w = ctx->text_start_x + ctx->text_width - cur_x - 1;
 					}
 					if (w < 0) {
 						w = 0;
 					}
 
-					XSetLineAttributes(display, window.gc, 1, LineSolid,
+					XSetLineAttributes(display, ctx->window.gc, 1, LineSolid,
 							CapButt, JoinMiter);
 
-					XDrawArc(display, window.drawable, window.gc,
+					XDrawArc(display, ctx->window.drawable, ctx->window.gc,
 							cur_x, by, w, h * 2, 0, 180*64);
 
 #ifdef MATH
@@ -1044,7 +1006,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					px = (float)(cur_x+(w/2.))-(float)(w/2.)*cos(angle);
 					py = (float)(by+(h))-(float)(h)*sin(angle);
 
-					XDrawLine(display, window.drawable, window.gc,
+					XDrawLine(display, ctx->window.drawable, ctx->window.gc,
 							cur_x + (w/2.), by+(h), (int)(px), (int)(py));
 #endif /* MATH */
 
@@ -1053,7 +1015,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						cur_y_add = h;
 					}
 
-					set_foreground_color(last_colour);
+					set_foreground_color(ctx, last_colour);
 
 					break;
 
@@ -1065,7 +1027,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					int colour_idx = 0;
 					unsigned long last_colour = current_color;
 					unsigned long *tmpcolour = 0;
-					if (cur_x - text_start_x > maximum_width
+					if (cur_x - ctx->text_start_x > maximum_width
 							&& maximum_width > 0) {
 						break;
 					}
@@ -1077,23 +1039,23 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					}
 					w = specials[special_index].width;
 					if (w == 0) {
-						w = text_start_x + text_width - cur_x - 1;
+						w = ctx->text_start_x + ctx->text_width - cur_x - 1;
 					}
 					if (w < 0) {
 						w = 0;
 					}
 					if (draw_graph_borders) {
-						XSetLineAttributes(display, window.gc, 1, LineSolid,
+						XSetLineAttributes(display, ctx->window.gc, 1, LineSolid,
 							CapButt, JoinMiter);
-						XDrawRectangle(display, window.drawable, window.gc,
+						XDrawRectangle(display, ctx->window.drawable, ctx->window.gc,
 							cur_x, by, w, h);
 					}
-					XSetLineAttributes(display, window.gc, 1, LineSolid,
+					XSetLineAttributes(display, ctx->window.gc, 1, LineSolid,
 						CapButt, JoinMiter);
 
 					if (specials[special_index].last_colour != 0
 							|| specials[special_index].first_colour != 0) {
-						tmpcolour = do_gradient(w - 1, specials[special_index].last_colour, specials[special_index].first_colour);
+						tmpcolour = do_gradient(ctx, w - 1, specials[special_index].last_colour, specials[special_index].first_colour);
 					}
 					colour_idx = 0;
 					for (i = w - 2; i > -1; i--) {
@@ -1119,16 +1081,16 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 										  );
 								}
 #endif /* DEBUG_lol */
-								XSetForeground(display, window.gc, tmpcolour[
+								XSetForeground(display, ctx->window.gc, tmpcolour[
 										(int)((float)(w - 2) - specials[special_index].graph[j] *
 											(w - 2) / (float)specials[special_index].graph_scale)
 										]);
 							} else {
-								XSetForeground(display, window.gc, tmpcolour[colour_idx++]);
+								XSetForeground(display, ctx->window.gc, tmpcolour[colour_idx++]);
 							}
 						}
 						/* this is mugfugly, but it works */
-						XDrawLine(display, window.drawable, window.gc,
+						XDrawLine(display, ctx->window.drawable, ctx->window.gc,
 								cur_x + i + 1, by + h, cur_x + i + 1,
 								round_to_int((double)by + h - specials[special_index].graph[j] *
 									(h - 1) / specials[special_index].graph_scale));
@@ -1144,16 +1106,16 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						cur_y_add = h;
 					}
 					/* if (draw_mode == BG) {
-						set_foreground_color(default_bg_color);
+						set_foreground_color(ctx, default_bg_color);
 					} else if (draw_mode == OUTLINE) {
-						set_foreground_color(default_out_color);
+						set_foreground_color(ctx, default_out_color);
 					} else {
-						set_foreground_color(default_fg_color);
+						set_foreground_color(ctx, default_fg_color);
 					} */
 					if (show_graph_range) {
 						int tmp_x = cur_x;
 						int tmp_y = cur_y;
-						unsigned short int seconds = update_interval * w;
+						unsigned short int seconds = ctx->update_interval * w;
 						char *tmp_day_str;
 						char *tmp_hour_str;
 						char *tmp_min_str;
@@ -1191,7 +1153,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						}
 						cur_x += (w / 2) - (font_ascent() * (strlen(tmp_str) / 2));
 						cur_y += font_h / 2;
-						draw_string(tmp_str);
+						draw_string(ctx, tmp_str);
 						free(tmp_str);
 						cur_x = tmp_x;
 						cur_y = tmp_y;
@@ -1207,13 +1169,13 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 							calloc(log10(floor(specials[special_index].graph_scale)) + 4,
 									sizeof(char));
 						sprintf(tmp_str, "%.1f", specials[special_index].graph_scale);
-						draw_string(tmp_str);
+						draw_string(ctx, tmp_str);
 						free(tmp_str);
 						cur_x = tmp_x;
 						cur_y = tmp_y;
 					}
 #endif
-					set_foreground_color(last_colour);
+					set_foreground_color(ctx, last_colour);
 					break;
 				}
 
@@ -1235,20 +1197,20 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 #endif /* X11 */
 				case FG:
 					if (draw_mode == FG) {
-						set_foreground_color(specials[special_index].arg);
+						set_foreground_color(ctx, specials[special_index].arg);
 					}
 					break;
 
 #ifdef X11
 				case BG:
 					if (draw_mode == BG) {
-						set_foreground_color(specials[special_index].arg);
+						set_foreground_color(ctx, specials[special_index].arg);
 					}
 					break;
 
 				case OUTLINE:
 					if (draw_mode == OUTLINE) {
-						set_foreground_color(specials[special_index].arg);
+						set_foreground_color(ctx, specials[special_index].arg);
 					}
 					break;
 
@@ -1276,25 +1238,25 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					if (!step || step < 0) {
 						step = 10;
 					}
-					w = step - (cur_x - text_start_x - start) % step;
+					w = step - (cur_x - ctx->text_start_x - start) % step;
 					last_special_needed = special_index;
 					break;
 				}
 
 				case ALIGNR:
 				{
-					/* TODO: add back in "+ window.border_inner_margin" to the end of
+					/* TODO: add back in "+ ctx->window.border_inner_margin" to the end of
 					 * this line? */
-					int pos_x = text_start_x + text_width -
-						get_string_width_special(s, special_index);
+					int pos_x = ctx->text_start_x + ctx->text_width -
+						get_string_width_special(ctx, s, special_index);
 
-					/* printf("pos_x %i text_start_x %i text_width %i cur_x %i "
+					/* printf("pos_x %i ctx->text_start_x %i ctx->text_width %i cur_x %i "
 						"get_string_width(p) %i gap_x %i "
-						"specials[special_index].arg %i window.border_inner_margin %i "
-						"window.border_width %i\n", pos_x, text_start_x, text_width,
+						"specials[special_index].arg %i ctx->window.border_inner_margin %i "
+						"ctx->window.border_width %i\n", pos_x, ctx->text_start_x, ctx->text_width,
 						cur_x, get_string_width_special(s), gap_x,
-						specials[special_index].arg, window.border_inner_margin,
-						window.border_width); */
+						specials[special_index].arg, ctx->window.border_inner_margin,
+						ctx->window.border_width); */
 					if (pos_x > specials[special_index].arg && pos_x > cur_x) {
 						cur_x = pos_x - specials[special_index].arg;
 					}
@@ -1304,16 +1266,16 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 
 				case ALIGNC:
 				{
-					int pos_x = (text_width) / 2 - get_string_width_special(s,
-							special_index) / 2 - (cur_x -
-								text_start_x);
-					/* int pos_x = text_start_x + text_width / 2 -
+					int pos_x = (ctx->text_width) / 2 -
+						get_string_width_special(ctx, s, special_index) / 2 -
+						(cur_x - ctx->text_start_x);
+					/* int pos_x = ctx->text_start_x + ctx->text_width / 2 -
 						get_string_width_special(s) / 2; */
 
-					/* printf("pos_x %i text_start_x %i text_width %i cur_x %i "
+					/* printf("pos_x %i ctx->text_start_x %i ctx->text_width %i cur_x %i "
 						"get_string_width(p) %i gap_x %i "
-						"specials[special_index].arg %i\n", pos_x, text_start_x,
-						text_width, cur_x, get_string_width(s), gap_x,
+						"specials[special_index].arg %i\n", pos_x, ctx->text_start_x,
+						ctx->text_width, cur_x, get_string_width(s), gap_x,
 						specials[special_index].arg); */
 					if (pos_x > specials[special_index].arg) {
 						w = pos_x - specials[special_index].arg;
@@ -1341,7 +1303,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 #ifdef X11
 	cur_y += cur_y_add;
 #endif /* X11 */
-	draw_string(s);
+	draw_string(ctx, s);
 #ifdef NCURSES
 	if (ctx->output_methods & TO_NCURSES) {
 		printw("\n");
@@ -1351,55 +1313,55 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 	cur_y += font_descent();
 #endif /* X11 */
 	if (recurse && *recurse) {
-		special_index = draw_each_line_inner(recurse, special_index, last_special_needed);
+		special_index = draw_each_line_inner(ctx, recurse, special_index, last_special_needed);
 		*(recurse - 1) = SECRIT_MULTILINE_CHAR;
 	}
 	return special_index;
 }
 
-static int draw_line(char *s, int special_index)
+static int draw_line(conky_context *ctx, char *s, int special_index)
 {
 #ifdef X11
 	if (ctx->output_methods & TO_X) {
-		return draw_each_line_inner(s, special_index, -1);
+		return draw_each_line_inner(ctx, s, special_index, -1);
 	}
 #endif /* X11 */
 #ifdef NCURSES
 	if (ctx->output_methods & TO_NCURSES) {
-		return draw_each_line_inner(s, special_index, -1);
+		return draw_each_line_inner(ctx, s, special_index, -1);
 	}
 #endif /* NCURSES */
-	draw_string(s);
+	draw_string(ctx, s);
 	UNUSED(special_index);
 	return 0;
 }
 
-static void draw_text(void)
+static void draw_text(conky_context *ctx)
 {
 #ifdef X11
 #ifdef HAVE_LUA
 	llua_draw_pre_hook();
 #endif /* HAVE_LUA */
 	if (ctx->output_methods & TO_X) {
-		cur_y = text_start_y;
+		cur_y = ctx->text_start_y;
 
 		/* draw borders */
-		if (draw_borders && window.border_width > 0) {
+		if (draw_borders && ctx->window.border_width > 0) {
 			if (stippled_borders) {
 				char ss[2] = { stippled_borders, stippled_borders };
-				XSetLineAttributes(display, window.gc, window.border_width, LineOnOffDash,
+				XSetLineAttributes(display, ctx->window.gc, ctx->window.border_width, LineOnOffDash,
 					CapButt, JoinMiter);
-				XSetDashes(display, window.gc, 0, ss, 2);
+				XSetDashes(display, ctx->window.gc, 0, ss, 2);
 			} else {
-				XSetLineAttributes(display, window.gc, window.border_width, LineSolid,
+				XSetLineAttributes(display, ctx->window.gc, ctx->window.border_width, LineSolid,
 					CapButt, JoinMiter);
 			}
 
-			XDrawRectangle(display, window.drawable, window.gc,
-				text_start_x - window.border_inner_margin - window.border_width,
-				text_start_y - window.border_inner_margin - window.border_width,
-				text_width + window.border_inner_margin * 2 + window.border_width * 2,
-				text_height + window.border_inner_margin * 2 + window.border_width * 2);
+			XDrawRectangle(display, ctx->window.drawable, ctx->window.gc,
+				ctx->text_start_x - ctx->window.border_inner_margin - ctx->window.border_width,
+				ctx->text_start_y - ctx->window.border_inner_margin - ctx->window.border_width,
+				ctx->text_width + ctx->window.border_inner_margin * 2 + ctx->window.border_width * 2,
+				ctx->text_height + ctx->window.border_inner_margin * 2 + ctx->window.border_width * 2);
 		}
 
 		/* draw text */
@@ -1410,7 +1372,7 @@ static void draw_text(void)
 	init_pair(COLOR_WHITE, COLOR_WHITE, COLOR_BLACK);
 	attron(COLOR_PAIR(COLOR_WHITE));
 #endif /* NCURSES */
-	for_each_line(ctx->text_buffer, draw_line);
+	for_each_line(ctx, ctx->text_buffer, draw_line);
 #if defined(HAVE_LUA) && defined(X11)
 	llua_draw_post_hook();
 #endif /* HAVE_LUA */
@@ -1419,7 +1381,7 @@ static void draw_text(void)
 void draw_stuff(conky_context *ctx)
 {
 #ifdef IMLIB2
-	cimlib_render(text_start_x, text_start_y, window.width, window.height);
+	cimlib_render(ctx->text_start_x, ctx->text_start_y, ctx->window.width, ctx->window.height);
 #endif /* IMLIB2 */
 	if (overwrite_file) {
 		overwrite_fpointer = fopen(overwrite_file, "w");
@@ -1435,13 +1397,13 @@ void draw_stuff(conky_context *ctx)
 	if (ctx->output_methods & TO_X) {
 		ctx->selected_font = 0;
 		if (draw_shades && !draw_outline) {
-			text_start_x++;
-			text_start_y++;
-			set_foreground_color(default_bg_color);
+			ctx->text_start_x++;
+			ctx->text_start_y++;
+			set_foreground_color(ctx, default_bg_color);
 			draw_mode = BG;
-			draw_text();
-			text_start_x--;
-			text_start_y--;
+			draw_text(ctx);
+			ctx->text_start_x--;
+			ctx->text_start_y--;
 		}
 
 		if (draw_outline) {
@@ -1453,22 +1415,22 @@ void draw_stuff(conky_context *ctx)
 					if (i == 0 && j == 0) {
 						continue;
 					}
-					text_start_x += i;
-					text_start_y += j;
-					set_foreground_color(default_out_color);
+					ctx->text_start_x += i;
+					ctx->text_start_y += j;
+					set_foreground_color(ctx, default_out_color);
 					draw_mode = OUTLINE;
-					draw_text();
-					text_start_x -= i;
-					text_start_y -= j;
+					draw_text(ctx);
+					ctx->text_start_x -= i;
+					ctx->text_start_y -= j;
 				}
 			}
 		}
 
-		set_foreground_color(default_fg_color);
+		set_foreground_color(ctx, default_fg_color);
 	}
 #endif /* X11 */
 	draw_mode = FG;
-	draw_text();
+	draw_text(ctx);
 #ifdef X11
 	xdbe_swap_buffers();
 	if (ctx->output_methods & TO_X) {
@@ -1495,12 +1457,12 @@ void clear_text(conky_context *ctx, int exposures)
 		return;
 	} else
 #endif
-	if (display && window.window) { // make sure these are !null
+	if (display && ctx->window.window) { // make sure these are !null
 		/* there is some extra space for borders and outlines */
-		XClearArea(display, window.window, text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width,
-			text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width,
-			text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
-			text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, exposures ? True : 0);
+		XClearArea(display, ctx->window.window, ctx->text_start_x - ctx->window.border_inner_margin - ctx->window.border_outer_margin - ctx->window.border_width,
+			ctx->text_start_y - ctx->window.border_inner_margin - ctx->window.border_outer_margin - ctx->window.border_width,
+			ctx->text_width + ctx->window.border_inner_margin * 2 + ctx->window.border_outer_margin * 2 + ctx->window.border_width * 2,
+			ctx->text_height + ctx->window.border_inner_margin * 2 + ctx->window.border_outer_margin * 2 + ctx->window.border_width * 2, exposures ? True : 0);
 	}
 }
 #endif /* X11 */
@@ -1511,34 +1473,34 @@ void update_text(conky_context *ctx)
 #ifdef IMLIB2
 	cimlib_cleanup();
 #endif /* IMLIB2 */
-	generate_text();
+	generate_text(ctx);
 #ifdef X11
 	if (ctx->output_methods & TO_X)
-		clear_text(1);
+		clear_text(ctx, 1);
 #endif /* X11 */
 	ctx->need_to_update = 1;
 #ifdef HAVE_LUA
-	llua_update_info(&ctx->info, update_interval);
+	llua_update_info(ctx, ctx->update_interval);
 #endif /* HAVE_LUA */
 }
 
 void initialisation(conky_context *ctx, int argc, char** argv);
 
-	/* reload the config file */
-static void reload_config(conky_context *ctx)
+/* reload the config file */
+void reload_config(conky_context *ctx)
 {
 	char *current_config_copy = strdup(current_config);
-	clean_up(NULL, NULL);
+	clean_up(ctx, NULL, NULL);
 	current_config = current_config_copy;
 	initialisation(ctx, argc_copy, argv_copy);
 }
 
-void clean_up(void *memtofree1, void *memtofree2)
+void clean_up(conky_context *ctx, void *memtofree1, void *memtofree2)
 {
 	int i;
 
 #ifdef NCURSES
-	if(ctx->output_methods & TO_NCURSES) {
+	if (ctx->output_methods & TO_NCURSES) {
 		endwin();
 	}
 #endif
@@ -1557,16 +1519,16 @@ void clean_up(void *memtofree1, void *memtofree2)
 		ctx->info.cpu_usage = NULL;
 	}
 #ifdef X11
-	if (x_initialised == YES) {
-		XClearArea(display, window.window, text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width,
-				text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width,
-				text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
-				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, 0);
+	if (ctx->x_initialised == YES) {
+		XClearArea(display, ctx->window.window, ctx->text_start_x - ctx->window.border_inner_margin - ctx->window.border_outer_margin - ctx->window.border_width,
+				ctx->text_start_y - ctx->window.border_inner_margin - ctx->window.border_outer_margin - ctx->window.border_width,
+				ctx->text_width + ctx->window.border_inner_margin * 2 + ctx->window.border_outer_margin * 2 + ctx->window.border_width * 2,
+				ctx->text_height + ctx->window.border_inner_margin * 2 + ctx->window.border_outer_margin * 2 + ctx->window.border_width * 2, 0);
 		destroy_window();
 		free_fonts();
-		if(x11_stuff.region) {
-			XDestroyRegion(x11_stuff.region);
-			x11_stuff.region = NULL;
+		if(ctx->window.region) {
+			XDestroyRegion(ctx->window.region);
+			ctx->window.region = NULL;
 		}
 		XCloseDisplay(display);
 		display = NULL;
@@ -1578,10 +1540,10 @@ void clean_up(void *memtofree1, void *memtofree2)
 			free(ctx->info.x11.desktop.name);
 			ctx->info.x11.desktop.name = NULL;
 		}
-		x_initialised = NO;
+		ctx->x_initialised = NO;
 	} else {
 		free(ctx->fonts);	//in set_default_configurations a font is set but not loaded
-		font_count = -1;
+		ctx->font_count = -1;
 	}
 
 #endif /* X11 */
@@ -1738,11 +1700,11 @@ void set_default_configurations(conky_context *ctx)
 	char *mpd_env_port;
 #endif
 	ctx->text_buffer_size = DEFAULT_TEXT_BUFFER_SIZE;
-	update_uname();
+	update_uname(ctx);
 	ctx->info.cpu_avg_samples = 2;
 	ctx->info.net_avg_samples = 2;
 	ctx->info.diskio_avg_samples = 2;
-	format_human_readable = 1;
+	ctx->format_human_readable = 1;
 #ifdef MPD
 	mpd_env_host = getenv("MPD_HOST");
 	mpd_env_port = getenv("MPD_PORT");
@@ -1785,7 +1747,7 @@ void set_default_configurations(conky_context *ctx)
 	ctx->info.xmms2.status = NULL;
 	ctx->info.xmms2.playlist = NULL;
 #endif
-	use_spacer = NO_SPACER;
+	ctx->use_spacer = NO_SPACER;
 #ifdef X11
 	ctx->output_methods = TO_X;
 #else
@@ -1806,23 +1768,23 @@ void set_default_configurations(conky_context *ctx)
 	maximum_width = 0;
 #ifdef OWN_WINDOW
 	own_window = 0;
-	window.type = TYPE_NORMAL;
-	window.hints = 0;
-	strcpy(window.class_name, PACKAGE_NAME);
-	sprintf(window.title, PACKAGE_NAME" (%s)", ctx->info.uname_s.nodename);
+	ctx->window.type = TYPE_NORMAL;
+	ctx->window.hints = 0;
+	strcpy(ctx->window.class_name, PACKAGE_NAME);
+	sprintf(ctx->window.title, PACKAGE_NAME" (%s)", ctx->info.uname_s.nodename);
 #endif
 	stippled_borders = 0;
-	window.border_inner_margin = 3;
-	window.border_outer_margin = 1;
-	window.border_width = 1;
+	ctx->window.border_inner_margin = 3;
+	ctx->window.border_outer_margin = 1;
+	ctx->window.border_width = 1;
 	text_alignment = BOTTOM_LEFT;
 	ctx->info.x11.monitor.number = 1;
 	ctx->info.x11.monitor.current = 0;
-	ctx->info.x11.desktop.current = 1; 
+	ctx->info.x11.desktop.current = 1;
 	ctx->info.x11.desktop.number = 1;
 	ctx->info.x11.desktop.nitems = 0;
-	ctx->info.x11.desktop.all_names = NULL; 
-	ctx->info.x11.desktop.name = NULL; 
+	ctx->info.x11.desktop.all_names = NULL;
+	ctx->info.x11.desktop.name = NULL;
 #endif /* X11 */
 
 	for (i = 0; i < MAX_TEMPLATES; i++) {
@@ -1842,8 +1804,8 @@ void set_default_configurations(conky_context *ctx)
 	}
 
 	no_buffers = 1;
-	set_update_interval(3);
-	update_interval_bat = NOBATTERY;
+	set_update_interval(ctx, 3);
+	ctx->update_interval_bat = NOBATTERY;
 	ctx->info.music_player_interval = 1.0;
 	stuff_in_uppercase = 0;
 	ctx->info.users.number = 1;
@@ -1909,11 +1871,11 @@ int x11_ioerror_handler(Display *d)
 
 static void X11_initialisation(conky_context *ctx)
 {
-	if (x_initialised == YES) return;
+	if (ctx->x_initialised == YES) return;
 	ctx->output_methods |= TO_X;
 	init_X11(disp);
 	set_default_configurations_for_x();
-	x_initialised = YES;
+	ctx->x_initialised = YES;
 #ifdef DEBUG
 	_Xdebug = 1;
 	/* WARNING, this type not in Xlib spec */
@@ -1926,25 +1888,25 @@ void X11_create_window(conky_context *ctx)
 {
 	if (ctx->output_methods & TO_X) {
 #ifdef OWN_WINDOW
-		init_window(own_window, text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
-				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, set_transparent, background_colour,
+		init_window(own_window, ctx->text_width + ctx->window.border_inner_margin * 2 + ctx->window.border_outer_margin * 2 + ctx->window.border_width * 2,
+				ctx->text_height + ctx->window.border_inner_margin * 2 + ctx->window.border_outer_margin * 2 + ctx->window.border_width * 2, set_transparent, background_colour,
 				ctx->xargv, ctx->xargc);
 #else /* OWN_WINDOW */
-		init_window(0, text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
-				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, set_transparent, 0,
+		init_window(0, ctx->text_width + ctx->window.border_inner_margin * 2 + ctx->window.border_outer_margin * 2 + ctx->window.border_width * 2,
+				ctx->text_height + ctx->window.border_inner_margin * 2 + ctx->window.border_outer_margin * 2 + ctx->window.border_width * 2, set_transparent, 0,
 				ctx->xargv, ctx->xargc);
 #endif /* OWN_WINDOW */
 
-		setup_fonts();
-		load_fonts();
-		update_text_area();	/* to position text/window on screen */
+		setup_fonts(ctx);
+		load_fonts(ctx);
+		update_text_area(ctx);	/* to position text/window on screen */
 
 #ifdef OWN_WINDOW
 		if (own_window && !fixed_pos) {
-			XMoveWindow(display, window.window, window.x, window.y);
+			XMoveWindow(display, ctx->window.window, ctx->window.x, ctx->window.y);
 		}
 		if (own_window) {
-			set_transparent_background(window.window);
+			set_transparent_background(ctx->window.window);
 		}
 #endif
 
@@ -1952,14 +1914,14 @@ void X11_create_window(conky_context *ctx)
 
 		draw_stuff();
 
-		x11_stuff.region = XCreateRegion();
+		ctx->window.region = XCreateRegion();
 #ifdef HAVE_XDAMAGE
-		if (!XDamageQueryExtension(display, &x11_stuff.event_base, &x11_stuff.error_base)) {
+		if (!XDamageQueryExtension(display, &ctx->window.event_base, &ctx->window.error_base)) {
 			NORM_ERR("Xdamage extension unavailable");
 		}
-		x11_stuff.damage = XDamageCreate(display, window.window, XDamageReportNonEmpty);
-		x11_stuff.region2 = XFixesCreateRegionFromWindow(display, window.window, 0);
-		x11_stuff.part = XFixesCreateRegionFromWindow(display, window.window, 0);
+		ctx->window.damage = XDamageCreate(display, ctx->window.window, XDamageReportNonEmpty);
+		ctx->window.region2 = XFixesCreateRegionFromWindow(display, ctx->window.window, 0);
+		ctx->window.part = XFixesCreateRegionFromWindow(display, ctx->window.window, 0);
 #endif /* HAVE_XDAMAGE */
 
 		ctx->selected_font = 0;
@@ -1967,7 +1929,7 @@ void X11_create_window(conky_context *ctx)
 	}
 #ifdef HAVE_LUA
 	/* setup lua window globals */
-	llua_setup_window_table(text_start_x, text_start_y, text_width, text_height);
+	llua_setup_window_table(ctx->text_start_x, ctx->text_start_y, ctx->text_width, ctx->text_height);
 #endif /* HAVE_LUA */
 }
 #endif /* X11 */
@@ -2066,17 +2028,17 @@ char load_config_file(conky_context *ctx, const char *f)
 		CONF2("out_to_x") {
 			/* don't listen if X is already initialised or
 			 * if we already know we don't want it */
-			if(x_initialised != YES) {
+			if(ctx->x_initialised != YES) {
 				if (string_to_bool(value)) {
 					ctx->output_methods &= TO_X;
 				} else {
 					ctx->output_methods &= ~TO_X;
-					x_initialised = NEVER;
+					ctx->x_initialised = NEVER;
 				}
 			}
 		}
 		CONF("display") {
-			if (!value || x_initialised == YES) {
+			if (!value || ctx->x_initialised == YES) {
 				CONF_ERR;
 			} else {
 				if (disp)
@@ -2086,7 +2048,7 @@ char load_config_file(conky_context *ctx, const char *f)
 		}
 		CONF("alignment") {
 #ifdef OWN_WINDOW
-			if (window.type == TYPE_DOCK)
+			if (ctx->window.type == TYPE_DOCK)
 				;
 			else
 #endif /*OWN_WINDOW */
@@ -2119,24 +2081,24 @@ char load_config_file(conky_context *ctx, const char *f)
 		}
 		CONF("border_inner_margin") {
 			if (value) {
-				window.border_inner_margin = strtol(value, 0, 0);
-				if (window.border_inner_margin < 0) window.border_inner_margin = 0;
+				ctx->window.border_inner_margin = strtol(value, 0, 0);
+				if (ctx->window.border_inner_margin < 0) ctx->window.border_inner_margin = 0;
 			} else {
 				CONF_ERR;
 			}
 		}
 		CONF("border_outer_margin") {
 			if (value) {
-				window.border_outer_margin = strtol(value, 0, 0);
-				if (window.border_outer_margin < 0) window.border_outer_margin = 0;
+				ctx->window.border_outer_margin = strtol(value, 0, 0);
+				if (ctx->window.border_outer_margin < 0) ctx->window.border_outer_margin = 0;
 			} else {
 				CONF_ERR;
 			}
 		}
 		CONF("border_width") {
 			if (value) {
-				window.border_width = strtol(value, 0, 0);
-				if (window.border_width < 0) window.border_width = 0;
+				ctx->window.border_width = strtol(value, 0, 0);
+				if (ctx->window.border_width < 0) ctx->window.border_width = 0;
 			} else {
 				CONF_ERR;
 			}
@@ -2320,7 +2282,7 @@ char load_config_file(conky_context *ctx, const char *f)
 			}
 		}
 		CONF("extra_newline") {
-			extra_newline = string_to_bool(value);
+			ctx->extra_newline = string_to_bool(value);
 		}
 		CONF("out_to_stderr") {
 			if(string_to_bool(value))
@@ -2360,27 +2322,27 @@ char load_config_file(conky_context *ctx, const char *f)
 		CONF("use_spacer") {
 			if (value) {
 				if (strcasecmp(value, "left") == EQUAL) {
-					use_spacer = LEFT_SPACER;
+					ctx->use_spacer = LEFT_SPACER;
 				} else if (strcasecmp(value, "right") == EQUAL) {
-					use_spacer = RIGHT_SPACER;
+					ctx->use_spacer = RIGHT_SPACER;
 				} else if (strcasecmp(value, "none") == EQUAL) {
-					use_spacer = NO_SPACER;
+					ctx->use_spacer = NO_SPACER;
 				} else {
-					use_spacer = string_to_bool(value);
+					ctx->use_spacer = string_to_bool(value);
 					NORM_ERR("use_spacer should have an argument of left, right, or"
 						" none.  '%s' seems to be some form of '%s', so"
 						" defaulting to %s.", value,
-						use_spacer ? "true" : "false",
-						use_spacer ? "right" : "none");
-					if (use_spacer) {
-						use_spacer = RIGHT_SPACER;
+						ctx->use_spacer ? "true" : "false",
+						ctx->use_spacer ? "right" : "none");
+					if (ctx->use_spacer) {
+						ctx->use_spacer = RIGHT_SPACER;
 					} else {
-						use_spacer = NO_SPACER;
+						ctx->use_spacer = NO_SPACER;
 					}
 				}
 			} else {
 				NORM_ERR("use_spacer should have an argument. Defaulting to right.");
-				use_spacer = RIGHT_SPACER;
+				ctx->use_spacer = RIGHT_SPACER;
 			}
 		}
 #ifdef X11
@@ -2394,7 +2356,7 @@ char load_config_file(conky_context *ctx, const char *f)
 			}
 		}
 		CONF("xftalpha") {
-			if (value && font_count >= 0) {
+			if (value && ctx->font_count >= 0) {
 				ctx->fonts[0].font_alpha = atof(value) * 65535.0;
 			}
 		}
@@ -2497,7 +2459,7 @@ char load_config_file(conky_context *ctx, const char *f)
 			short_units = string_to_bool(value);
 		}
 		CONF("format_human_readable") {
-			format_human_readable = string_to_bool(value);
+			ctx->format_human_readable = string_to_bool(value);
 		}
 		CONF("pad_percents") {
 			pad_percents = atoi(value);
@@ -2511,15 +2473,15 @@ char load_config_file(conky_context *ctx, const char *f)
 		}
 		CONF("own_window_class") {
 			if (value) {
-				memset(window.class_name, 0, sizeof(window.class_name));
-				strncpy(window.class_name, value,
-						sizeof(window.class_name) - 1);
+				memset(ctx->window.class_name, 0, sizeof(ctx->window.class_name));
+				strncpy(ctx->window.class_name, value,
+						sizeof(ctx->window.class_name) - 1);
 			}
 		}
 		CONF("own_window_title") {
 			if (value) {
-				memset(window.title, 0, sizeof(window.title));
-				strncpy(window.title, value, sizeof(window.title) - 1);
+				memset(ctx->window.title, 0, sizeof(ctx->window.title));
+				strncpy(ctx->window.title, value, sizeof(ctx->window.title) - 1);
 			}
 		}
 		CONF("own_window_transparent") {
@@ -2537,17 +2499,17 @@ char load_config_file(conky_context *ctx, const char *f)
 					do {
 						/* fprintf(stderr, "hint [%s] parsed\n", p_hint); */
 						if (strncmp(p_hint, "undecorate", 10) == EQUAL) {
-							SET_HINT(window.hints, HINT_UNDECORATED);
+							SET_HINT(ctx->window.hints, HINT_UNDECORATED);
 						} else if (strncmp(p_hint, "below", 5) == EQUAL) {
-							SET_HINT(window.hints, HINT_BELOW);
+							SET_HINT(ctx->window.hints, HINT_BELOW);
 						} else if (strncmp(p_hint, "above", 5) == EQUAL) {
-							SET_HINT(window.hints, HINT_ABOVE);
+							SET_HINT(ctx->window.hints, HINT_ABOVE);
 						} else if (strncmp(p_hint, "sticky", 6) == EQUAL) {
-							SET_HINT(window.hints, HINT_STICKY);
+							SET_HINT(ctx->window.hints, HINT_STICKY);
 						} else if (strncmp(p_hint, "skip_taskbar", 12) == EQUAL) {
-							SET_HINT(window.hints, HINT_SKIP_TASKBAR);
+							SET_HINT(ctx->window.hints, HINT_SKIP_TASKBAR);
 						} else if (strncmp(p_hint, "skip_pager", 10) == EQUAL) {
-							SET_HINT(window.hints, HINT_SKIP_PAGER);
+							SET_HINT(ctx->window.hints, HINT_SKIP_PAGER);
 						} else {
 							CONF_ERR;
 						}
@@ -2562,16 +2524,16 @@ char load_config_file(conky_context *ctx, const char *f)
 		CONF("own_window_type") {
 			if (value) {
 				if (strncmp(value, "normal", 6) == EQUAL) {
-					window.type = TYPE_NORMAL;
+					ctx->window.type = TYPE_NORMAL;
 				} else if (strncmp(value, "desktop", 7) == EQUAL) {
-					window.type = TYPE_DESKTOP;
+					ctx->window.type = TYPE_DESKTOP;
 				} else if (strncmp(value, "dock", 4) == EQUAL) {
-					window.type = TYPE_DOCK;
+					ctx->window.type = TYPE_DOCK;
 					text_alignment = TOP_LEFT;
 				} else if (strncmp(value, "panel", 5) == EQUAL) {
-					window.type = TYPE_PANEL;
+					ctx->window.type = TYPE_PANEL;
 				} else if (strncmp(value, "override", 8) == EQUAL) {
-					window.type = TYPE_OVERRIDE;
+					ctx->window.type = TYPE_OVERRIDE;
 				} else {
 					CONF_ERR;
 				}
@@ -2602,19 +2564,19 @@ char load_config_file(conky_context *ctx, const char *f)
 #endif /* X11 */
 		CONF("update_interval_on_battery") {
 			if (value) {
-				update_interval_bat = strtod(value, 0);
+				ctx->update_interval_bat = strtod(value, 0);
 			} else {
 				CONF_ERR;
 			}
 		}
 		CONF("update_interval") {
 			if (value) {
-				set_update_interval(strtod(value, 0));
+				set_update_interval(ctx, strtod(value, 0));
 			} else {
 				CONF_ERR;
 			}
 			if (ctx->info.music_player_interval == 0) {
-				// default to update_interval
+				// default to ctx->update_interval
 				ctx->info.music_player_interval = ctx->update_interval;
 			}
 		}
@@ -2811,7 +2773,7 @@ char load_config_file(conky_context *ctx, const char *f)
 	fclose(fp);
 
 	if (ctx->info.music_player_interval == 0) {
-		// default to update_interval
+		// default to ctx->update_interval
 		ctx->info.music_player_interval = ctx->update_interval;
 	}
 	if (!global_text) { // didn't supply any text
@@ -2843,7 +2805,7 @@ void load_config_file_x11(conky_context *ctx, const char *f)
 
 		CONF2("color0") {
 			X11_initialisation();
-			if (x_initialised == YES) {
+			if (ctx->x_initialised == YES) {
 				if (value) {
 					color0 = get_x11_color(value);
 				} else {
@@ -2853,7 +2815,7 @@ void load_config_file_x11(conky_context *ctx, const char *f)
 		}
 		CONF("color1") {
 			X11_initialisation();
-			if (x_initialised == YES) {
+			if (ctx->x_initialised == YES) {
 				if (value) {
 					color1 = get_x11_color(value);
 				} else {
@@ -2863,7 +2825,7 @@ void load_config_file_x11(conky_context *ctx, const char *f)
 		}
 		CONF("color2") {
 			X11_initialisation();
-			if (x_initialised == YES) {
+			if (ctx->x_initialised == YES) {
 				if (value) {
 					color2 = get_x11_color(value);
 				} else {
@@ -2873,7 +2835,7 @@ void load_config_file_x11(conky_context *ctx, const char *f)
 		}
 		CONF("color3") {
 			X11_initialisation();
-			if (x_initialised == YES) {
+			if (ctx->x_initialised == YES) {
 				if (value) {
 					color3 = get_x11_color(value);
 				} else {
@@ -2883,7 +2845,7 @@ void load_config_file_x11(conky_context *ctx, const char *f)
 		}
 		CONF("color4") {
 			X11_initialisation();
-			if (x_initialised == YES) {
+			if (ctx->x_initialised == YES) {
 				if (value) {
 					color4 = get_x11_color(value);
 				} else {
@@ -2893,7 +2855,7 @@ void load_config_file_x11(conky_context *ctx, const char *f)
 		}
 		CONF("color5") {
 			X11_initialisation();
-			if (x_initialised == YES) {
+			if (ctx->x_initialised == YES) {
 				if (value) {
 					color5 = get_x11_color(value);
 				} else {
@@ -2903,7 +2865,7 @@ void load_config_file_x11(conky_context *ctx, const char *f)
 		}
 		CONF("color6") {
 			X11_initialisation();
-			if (x_initialised == YES) {
+			if (ctx->x_initialised == YES) {
 				if (value) {
 					color6 = get_x11_color(value);
 				} else {
@@ -2913,7 +2875,7 @@ void load_config_file_x11(conky_context *ctx, const char *f)
 		}
 		CONF("color7") {
 			X11_initialisation();
-			if (x_initialised == YES) {
+			if (ctx->x_initialised == YES) {
 				if (value) {
 					color7 = get_x11_color(value);
 				} else {
@@ -2923,7 +2885,7 @@ void load_config_file_x11(conky_context *ctx, const char *f)
 		}
 		CONF("color8") {
 			X11_initialisation();
-			if (x_initialised == YES) {
+			if (ctx->x_initialised == YES) {
 				if (value) {
 					color8 = get_x11_color(value);
 				} else {
@@ -2933,7 +2895,7 @@ void load_config_file_x11(conky_context *ctx, const char *f)
 		}
 		CONF("color9") {
 			X11_initialisation();
-			if (x_initialised == YES) {
+			if (ctx->x_initialised == YES) {
 				if (value) {
 					color9 = get_x11_color(value);
 				} else {
@@ -2943,7 +2905,7 @@ void load_config_file_x11(conky_context *ctx, const char *f)
 		}
 		CONF("default_color") {
 			X11_initialisation();
-			if (x_initialised == YES) {
+			if (ctx->x_initialised == YES) {
 				if (value) {
 					default_fg_color = get_x11_color(value);
 				} else {
@@ -2953,7 +2915,7 @@ void load_config_file_x11(conky_context *ctx, const char *f)
 		}
 		CONF3("default_shade_color", "default_shadecolor") {
 			X11_initialisation();
-			if (x_initialised == YES) {
+			if (ctx->x_initialised == YES) {
 				if (value) {
 					default_bg_color = get_x11_color(value);
 				} else {
@@ -2963,7 +2925,7 @@ void load_config_file_x11(conky_context *ctx, const char *f)
 		}
 		CONF3("default_outline_color", "default_outlinecolor") {
 			X11_initialisation();
-			if (x_initialised == YES) {
+			if (ctx->x_initialised == YES) {
 				if (value) {
 					default_out_color = get_x11_color(value);
 				} else {
@@ -2974,7 +2936,7 @@ void load_config_file_x11(conky_context *ctx, const char *f)
 #ifdef OWN_WINDOW
 		CONF("own_window_colour") {
 			X11_initialisation();
-			if (x_initialised == YES) {
+			if (ctx->x_initialised == YES) {
 				if (value) {
 					background_colour = get_x11_color(value);
 				} else {
