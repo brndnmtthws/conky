@@ -6952,6 +6952,11 @@ static void draw_text(void)
 
 static void draw_stuff(void)
 {
+#ifdef OWN_WINDOW
+	if (own_window) {
+		set_transparent_background();
+	}
+#endif /* OWN_WINDOW */
 #ifdef IMLIB2
 	cimlib_render(text_start_x, text_start_y, window.width, window.height);
 #endif /* IMLIB2 */
@@ -7157,7 +7162,6 @@ static void main_loop(void)
 						draw_stuff(); /* redraw everything in our newly sized window */
 						XResizeWindow(display, window.window, window.width,
 								window.height); /* resize window */
-						set_transparent_background(window.window);
 						/* swap buffers */
 #ifdef HAVE_XDBE
 						if (use_xdbe) {
@@ -7265,7 +7269,7 @@ static void main_loop(void)
 					case ReparentNotify:
 						/* set background to ParentRelative for all parents */
 						if (own_window) {
-							set_transparent_background(window.window);
+							set_transparent_background();
 						}
 						break;
 
@@ -7952,7 +7956,7 @@ static void X11_create_window(void)
 			XMoveWindow(display, window.window, window.x, window.y);
 		}
 		if (own_window) {
-			set_transparent_background(window.window);
+			set_transparent_background();
 		}
 #endif
 

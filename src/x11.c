@@ -119,14 +119,18 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop)
 
 	XQueryTree(display, root, &troot, &parent, &children, &n);
 	for (i = 0; i < (int) n; i++) {
-		if (XGetWindowProperty(display, children[i], ATOM(__SWM_VROOT), 0, 1,
-					False, XA_WINDOW, &type, &format, &nitems, &bytes, &buf)
-				== Success && type == XA_WINDOW) {
+		if ((XGetWindowProperty(display, children[i], ATOM(__SWM_VROOT), 0,
+						1, False, XA_WINDOW, &type, &format,
+						&nitems, &bytes, &buf) == Success ||
+					XGetWindowProperty(display, children[i],
+						ATOM(_NET_CURRENT_DESKTOP), 0, 1, False, XA_WINDOW, &type,
+						&format, &nitems, &bytes, &buf) == Success) &&
+				type ==	XA_WINDOW) {
 			win = *(Window *) buf;
 			XFree(buf);
 			XFree(children);
 			fprintf(stderr,
-					PACKAGE_NAME": desktop window (%lx) found from __SWM_VROOT property\n",
+					PACKAGE_NAME": desktop window (%lx) found from __SWM_VROOT or _NET_CURRENT_DESKTOP property\n",
 					win);
 			fflush(stderr);
 			*p_root = win;
@@ -170,35 +174,59 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop)
 }
 
 /* sets background to ParentRelative for the Window and all parents */
-void set_transparent_background(Window win)
+void set_transparent_background(void)
 {
 	static int colour_set = -1;
 
 	if (set_transparent) {
-		Window parent = win;
-		unsigned int i;
+		int format, i;
+		Atom type;
+		unsigned long nitems, bytes;
+		unsigned int n;
+		Window root = RootWindow(display, screen);
+		Pixmap *pixmap = 0;
+		if (
+				(
+				 XGetWindowProperty(display, root, ATOM(_XROOTPMAP_ID), 0,
+					 1, False, ATOM(PIXMAP), &type, &format,
+					 &nitems, &bytes, (unsigned char**)&pixmap) == Success ||
+				 XGetWindowProperty(display, root, ATOM(ESETROOT_PMAP_ID), 0,
+					 1, False, ATOM(PIXMAP), &type, &format,
+					 &nitems, &bytes, (unsigned char**)&pixmap) == Success
+				)
+				&&
+				nitems == 1L && format == 32) {
+			GC gc = XCreateGC(display, window.drawable, 0, NULL);
+			XCopyArea(display, *pixmap, window.drawable, gc, window.x, window.y, window.width, window.height, 0, 0);
+			XFreeGC(display, gc);
+		} else {
+			Window parent = window.window;
+			for (i = 0; i < 50 && parent != root; i++) {
+				Window r, *children;
 
-		for (i = 0; i < 50 && parent != RootWindow(display, screen); i++) {
-			Window r, *children;
-			unsigned int n;
+				XSetWindowBackgroundPixmap(display, parent, ParentRelative);
 
-			XSetWindowBackgroundPixmap(display, parent, ParentRelative);
-
-			XQueryTree(display, parent, &r, &parent, &children, &n);
-			XFree(children);
+				XQueryTree(display, parent, &r, &parent, &children, &n);
+				XFree(children);
+			}
+		}
+		if (pixmap) {
+			XFree(pixmap);
 		}
 	} else if (colour_set != background_colour) {
-		XSetWindowBackground(display, win, background_colour);
+		XSetWindowBackground(display, window.window, background_colour);
 		colour_set = background_colour;
 	}
 }
 
 void destroy_window(void)
 {
-	if(window.xftdraw) {
+#ifdef XFT
+	if (window.xftdraw) {
 		XftDrawDestroy(window.xftdraw);
 	}
-	if(window.gc) {
+#endif /* XFT */
+	if (window.gc) {
 		XFreeGC(display, window.gc);
 	}
 	memset(&window, 0, sizeof(struct conky_window));
