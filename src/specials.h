@@ -31,6 +31,8 @@
 
 /* special stuff in text_buffer */
 
+#define SPECIAL_CHAR '\x01'
+
 #define MAX_GRAPH_DEPTH 512
 
 // don't use spaces in LOGGRAPH or NORMGRAPH if you change them

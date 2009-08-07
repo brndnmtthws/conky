@@ -16,10 +16,6 @@
 #include <X11/extensions/Xdbe.h>
 #endif
 
-#ifdef HAVE_XDAMAGE
-#include <X11/extensions/Xdamage.h>
-#endif /* HAVE_XDAMAGE */
-
 #define ATOM(a) XInternAtom(display, #a, False)
 
 #ifdef OWN_WINDOW
@@ -44,7 +40,7 @@ enum _window_hints {
 #define TEST_HINT(mask, hint)	(mask & (1 << hint))
 #endif
 
-typedef struct _conky_window_s {
+struct conky_window {
 	Window root, window, desktop;
 	Drawable drawable;
 	Visual *visual;
@@ -69,13 +65,7 @@ typedef struct _conky_window_s {
 	unsigned int type;
 	unsigned long hints;
 #endif
-	Region region;
-#ifdef HAVE_XDAMAGE
-	Damage damage;
-	XserverRegion region2, part;
-	int event_base, error_base;
-#endif
-} conky_window;
+};
 
 #ifdef HAVE_XDBE
 extern int use_xdbe;
@@ -91,6 +81,8 @@ extern int display_height;
 extern int screen;
 
 extern int workarea[4];
+
+extern struct conky_window window;
 
 void init_X11(const char*);
 void init_window(int use_own_window, int width, int height, int set_trans,

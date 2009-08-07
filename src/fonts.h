@@ -32,28 +32,45 @@
 
 #include "x11.h"
 
+/* for fonts */
+struct font_list {
+
+	char name[DEFAULT_TEXT_BUFFER_SIZE];
+	int num;
+	XFontStruct *font;
+
+#ifdef XFT
+	XftFont *xftfont;
+	int font_alpha;
+#endif
+};
+
 #ifdef XFT
 
-#define font_height() (use_xft ? (fonts[ctx->selected_font].xftfont->ascent + \
-	fonts[ctx->selected_font].xftfont->descent) \
-	: (fonts[ctx->selected_font].font->max_bounds.ascent + \
-	fonts[ctx->selected_font].font->max_bounds.descent))
-#define font_ascent() (use_xft ? fonts[ctx->selected_font].xftfont->ascent \
-	: fonts[ctx->selected_font].font->max_bounds.ascent)
-#define font_descent() (use_xft ? fonts[ctx->selected_font].xftfont->descent \
-	: fonts[ctx->selected_font].font->max_bounds.descent)
+#define font_height() (use_xft ? (fonts[selected_font].xftfont->ascent + \
+	fonts[selected_font].xftfont->descent) \
+	: (fonts[selected_font].font->max_bounds.ascent + \
+	fonts[selected_font].font->max_bounds.descent))
+#define font_ascent() (use_xft ? fonts[selected_font].xftfont->ascent \
+	: fonts[selected_font].font->max_bounds.ascent)
+#define font_descent() (use_xft ? fonts[selected_font].xftfont->descent \
+	: fonts[selected_font].font->max_bounds.descent)
 
 #else
 
-#define font_height() (fonts[ctx->selected_font].font->max_bounds.ascent + \
-	fonts[ctx->selected_font].font->max_bounds.descent)
-#define font_ascent() fonts[ctx->selected_font].font->max_bounds.ascent
-#define font_descent() fonts[ctx->selected_font].font->max_bounds.descent
+#define font_height() (fonts[selected_font].font->max_bounds.ascent + \
+	fonts[selected_font].font->max_bounds.descent)
+#define font_ascent() fonts[selected_font].font->max_bounds.ascent
+#define font_descent() fonts[selected_font].font->max_bounds.descent
 
 #endif
 
 #define MAX_FONTS 256
 
+/* direct access to registered fonts (FIXME: bad encapsulation) */
+extern struct font_list *fonts;
+extern int selected_font;
+extern int font_count;
 
 void setup_fonts(void);
 void set_font(void);

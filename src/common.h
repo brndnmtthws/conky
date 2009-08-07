@@ -3,8 +3,6 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
-#include "structs.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,10 +16,10 @@ void update_meminfo(void);
 void update_net_stats(void);
 void update_cpu_usage(void);
 void update_total_processes(void);
-void update_uname(conky_context *ctx);
+void update_uname(void);
 void update_running_processes(void);
 void update_i8k(void);
-void update_stuff(conky_context *ctx);
+void update_stuff(void);
 char get_freq(char *, size_t, const char *, int, unsigned int);
 void get_freq_dynamic(char *, size_t, const char *, int);
 char get_voltage(char *, size_t, const char *, int, unsigned int);	/* ptarjan */
@@ -54,7 +52,11 @@ unsigned int round_to_int(float);
 extern unsigned long long need_mask;
 extern int no_buffers;
 
-void free_dns_data(conky_context *ctx);
+struct dns_data {
+        int nscount;
+        char **ns_list;
+};
+void free_dns_data(void);
 
 struct net_stat {
         char *dev;
@@ -76,7 +78,6 @@ struct net_stat {
         char ap[18];
 };
 void clear_net_stats(void);
-void clear_cpu_stats(void);
 struct net_stat *get_net_stat(const char *dev, void *free_at_crash1, void *free_at_crash2);
 int interface_up(const char *dev);
 

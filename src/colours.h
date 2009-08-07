@@ -29,7 +29,7 @@
 #ifndef _COLOURS_H
 #define _COLOURS_H
 
-unsigned int adjust_colours(conky_context *ctx, unsigned int);
-unsigned long *do_gradient(conky_context *ctx, int, unsigned long, unsigned long);
+unsigned int adjust_colours(unsigned int);
+unsigned long *do_gradient(int, unsigned long, unsigned long);
 
 #endif /* _COLOURS_H */

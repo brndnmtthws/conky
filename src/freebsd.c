@@ -964,8 +964,12 @@ void get_battery_short_status(char *buffer, unsigned int n, const char *bat)
 	}
 }
 
-/* empty stubs so conky links */
-void update_entropy(void) {}
-void free_all_processes(void) {}
-void clear_cpu_stats(void) {}
+void update_entropy(void)
+{
+	/* Not applicable for FreeBSD as it uses the yarrow prng. */
+}
 
+/* empty stub so conky links */
+void free_all_processes(void)
+{
+}
