@@ -44,6 +44,9 @@
 #include "mixer.h"
 #include "mail.h"
 #include "mboxscan.h"
+#ifdef NCURSES
+#include "ncurses.h"
+#endif
 #include "specials.h"
 #include "temphelper.h"
 #include "tailhead.h"
