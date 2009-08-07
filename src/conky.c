@@ -55,6 +55,9 @@
 #ifdef HAVE_XDAMAGE
 #include <X11/extensions/Xdamage.h>
 #endif /* HAVE_XDAMAGE */
+#ifdef IMLIB2
+#include "imlib2.h"
+#endif /* IMLIB2 */
 #endif /* X11 */
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -73,6 +76,7 @@
 #include "algebra.h"
 #include "build.h"
 #include "colours.h"
+#include "diskio.h"
 #ifdef X11
 #include "fonts.h"
 #endif
@@ -117,6 +121,7 @@ char *get_apm_battery_time(void);
 #define S_ISSOCK(x)   ((x & S_IFMT) == S_IFSOCK)
 #endif
 
+#define MAIL_FILE "$MAIL"
 #define MAX_IF_BLOCK_DEPTH 5
 
 //#define SIGNAL_BLOCKING
@@ -133,6 +138,7 @@ char** argv_copy;
 /* prototypes for internally used functions */
 static void signal_handler(int);
 static void print_version(void) __attribute__((noreturn));
+static void reload_config(void);
 
 static void print_version(void)
 {
@@ -608,7 +614,7 @@ static void main_loop(conky_context *ctx)
 			case SIGHUP:
 			case SIGUSR1:
 				NORM_ERR("received SIGHUP or SIGUSR1. reloading the config file.");
-				reload_config(ctx);
+				reload_config();
 				break;
 			case SIGINT:
 			case SIGTERM:
@@ -673,7 +679,7 @@ static void main_loop(conky_context *ctx)
 					if (ev->wd == inotify_config_wd && (ev->mask & IN_MODIFY || ev->mask & IN_IGNORED)) {
 						/* ctx->current_config should be reloaded */
 						NORM_ERR("'%s' modified, reloading...", ctx->current_config);
-						reload_config(ctx);
+						reload_config();
 						if (ev->mask & IN_IGNORED) {
 							/* for some reason we get IN_IGNORED here
 							 * sometimes, so we need to re-add the watch */
@@ -698,7 +704,7 @@ static void main_loop(conky_context *ctx)
 #endif /* HAVE_LUA */
 		g_signal_pending = 0;
 	}
-	clean_up(ctx, NULL, NULL);
+	clean_up(NULL, NULL);
 
 #ifdef HAVE_SYS_INOTIFY_H
 	if (inotify_fd != -1) {
@@ -844,7 +850,7 @@ void initialisation(conky_context *ctx, int argc, char **argv)
 				break;
 #ifdef X11
 			case 'f':
-				set_first_font(ctx, optarg);
+				set_first_font(optarg);
 				break;
 			case 'a':
 				ctx->text_alignment = string_to_alignment(optarg);

@@ -33,7 +33,6 @@
 #include "common.h"
 #include "fs.h"
 #include "logging.h"
-#include "core.h"
 #include <ctype.h>
 #include <errno.h>
 #include <sys/time.h>
@@ -219,7 +218,7 @@ void variable_substitute(const char *s, char *dest, unsigned int n)
 
 static struct net_stat netstats[16];
 
-struct net_stat *get_net_stat(conky_context *ctx, const char *dev, void *free_at_crash1, void *free_at_crash2)
+struct net_stat *get_net_stat(const char *dev, void *free_at_crash1, void *free_at_crash2)
 {
 	unsigned int i;
 
@@ -242,7 +241,7 @@ struct net_stat *get_net_stat(conky_context *ctx, const char *dev, void *free_at
 		}
 	}
 
-	CRIT_ERR(ctx, free_at_crash1, free_at_crash2, "too many interfaces used (limit is 16)");
+	CRIT_ERR(free_at_crash1, free_at_crash2, "too many interfaces used (limit is 16)");
 	return 0;
 }
 
@@ -258,13 +257,13 @@ void clear_net_stats(void)
 }
 
 /* We should check if this is ok with OpenBSD and NetBSD as well. */
-int interface_up(conky_context *ctx, const char *dev)
+int interface_up(const char *dev)
 {
 	int fd;
 	struct ifreq ifr;
 
 	if ((fd = socket(PF_INET, SOCK_DGRAM, 0)) < 0) {
-		CRIT_ERR(ctx, NULL, NULL, "could not create sockfd");
+		CRIT_ERR(NULL, NULL, "could not create sockfd");
 		return 0;
 	}
 	strncpy(ifr.ifr_name, dev, IFNAMSIZ);

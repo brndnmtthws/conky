@@ -60,7 +60,7 @@ enum alignment {
 
 void read_exec(const char *data, char *buf, const int size);
 void set_default_configurations(conky_context *ctx);
-void set_update_interval(conky_context *ctx, double interval);
+void set_update_interval(double interval);
 
 /* update_text() generates new text and clears old text area */
 void update_text(conky_context *ctx);
@@ -77,9 +77,5 @@ void X11_create_window(conky_context *ctx);
 #endif /* X11 */
 
 void convert_escapes(char *buf);
-
-void reload_config(conky_context *ctx);
-
-void clean_up(conky_context *ctx, void *memtofree1, void *memtofree2);
 
 #endif /* _CONKY_CORE_H_ */

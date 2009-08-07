@@ -34,33 +34,33 @@
 
 #ifdef XFT
 
-#define font_height() (use_xft ? (ctx->fonts[ctx->selected_font].xftfont->ascent + \
-	ctx->fonts[ctx->selected_font].xftfont->descent) \
-	: (ctx->fonts[ctx->selected_font].font->max_bounds.ascent + \
-	ctx->fonts[ctx->selected_font].font->max_bounds.descent))
-#define font_ascent() (use_xft ? ctx->fonts[ctx->selected_font].xftfont->ascent \
-	: ctx->fonts[ctx->selected_font].font->max_bounds.ascent)
-#define font_descent() (use_xft ? ctx->fonts[ctx->selected_font].xftfont->descent \
-	: ctx->fonts[ctx->selected_font].font->max_bounds.descent)
+#define font_height() (use_xft ? (fonts[ctx->selected_font].xftfont->ascent + \
+	fonts[ctx->selected_font].xftfont->descent) \
+	: (fonts[ctx->selected_font].font->max_bounds.ascent + \
+	fonts[ctx->selected_font].font->max_bounds.descent))
+#define font_ascent() (use_xft ? fonts[ctx->selected_font].xftfont->ascent \
+	: fonts[ctx->selected_font].font->max_bounds.ascent)
+#define font_descent() (use_xft ? fonts[ctx->selected_font].xftfont->descent \
+	: fonts[ctx->selected_font].font->max_bounds.descent)
 
 #else
 
-#define font_height() (ctx->fonts[ctx->selected_font].font->max_bounds.ascent + \
-	ctx->fonts[ctx->selected_font].font->max_bounds.descent)
-#define font_ascent() ctx->fonts[ctx->selected_font].font->max_bounds.ascent
-#define font_descent() ctx->fonts[ctx->selected_font].font->max_bounds.descent
+#define font_height() (fonts[ctx->selected_font].font->max_bounds.ascent + \
+	fonts[ctx->selected_font].font->max_bounds.descent)
+#define font_ascent() fonts[ctx->selected_font].font->max_bounds.ascent
+#define font_descent() fonts[ctx->selected_font].font->max_bounds.descent
 
 #endif
 
 #define MAX_FONTS 256
 
 
-void setup_fonts(conky_context *ctx);
-void set_font(conky_context *ctx);
-int add_font(conky_context *ctx, const char *);
-void set_first_font(conky_context *ctx, const char *);
-void free_fonts(conky_context *ctx);
-void load_fonts(conky_context *ctx);
+void setup_fonts(void);
+void set_font(void);
+int add_font(const char *);
+void set_first_font(const char *);
+void free_fonts(void);
+void load_fonts(void);
 
 #endif /* _FONTS_H */
 #endif /* X11 */

@@ -27,6 +27,8 @@
  *
  */
 
+void clean_up(void *memtofree1, void* memtofree2);
+
 #ifndef _LOGGING_H
 #define _LOGGING_H
 
@@ -37,8 +39,8 @@
 }
 
 /* critical error */
-#define CRIT_ERR(ctx, memtofree1, memtofree2, ...) \
-	{ NORM_ERR(__VA_ARGS__); clean_up(ctx, memtofree1, memtofree2); exit(EXIT_FAILURE); }
+#define CRIT_ERR(memtofree1, memtofree2, ...) \
+	{ NORM_ERR(__VA_ARGS__); clean_up(memtofree1, memtofree2); exit(EXIT_FAILURE); }
 
 /* debugging output */
 extern int global_debug_level;

@@ -77,8 +77,8 @@ struct net_stat {
 };
 void clear_net_stats(void);
 void clear_cpu_stats(void);
-struct net_stat *get_net_stat(conky_context *ctx, const char *dev, void *free_at_crash1, void *free_at_crash2);
-int interface_up(conky_context *ctx, const char *dev);
+struct net_stat *get_net_stat(const char *dev, void *free_at_crash1, void *free_at_crash2);
+int interface_up(const char *dev);
 
 void get_adt746x_cpu(char *, size_t);
 void get_adt746x_fan(char *, size_t);

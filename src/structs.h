@@ -318,6 +318,7 @@ typedef struct _conky_context_s {
 	short colour_depth;
 	long redmask, greenmask, bluemask;
 
+
 	struct font_list *fonts;
 	int font_count;
 

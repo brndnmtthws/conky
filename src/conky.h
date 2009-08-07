@@ -250,14 +250,10 @@ enum {
 #define KFLAG_FLIP(a) ctx->info.kflags ^= a
 #define KFLAG_ISSET(a) ctx->info.kflags & a
 
-#define MAIL_FILE "$MAIL"
-
 /* defined in users.c */
 void update_users(void);
 
 extern int inotify_fd;
-extern int argc_copy;
-extern char** argv_copy;
 
 #define NOBATTERY 0
 

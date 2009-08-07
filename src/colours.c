@@ -53,7 +53,7 @@ static void set_up_gradient(conky_context *ctx)
 	}
 	if (ctx->colour_depth != 24 && ctx->colour_depth != 16) {
 		NORM_ERR("using non-standard colour depth, gradients may look like a "
-			"lollipop");
+			"lolly-pop");
 	}
 
 	ctx->redmask = 0;
