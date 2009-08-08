@@ -116,6 +116,10 @@ int dcompare(double a, enum match_type mtype, double b)
 
 int scompare(const char *a, enum match_type mtype, const char *b)
 {
+	if (!a || !b) {
+		DBGP2("skipping comparison of '%s' and '%s'", a, b);
+		return 0;
+	}
 	DBGP2("comparing strings '%s' and '%s'", a, b);
 	COMPARE(strcmp(a, b), mtype);
 }

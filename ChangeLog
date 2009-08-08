@@ -1,3 +1,7 @@
+2009-08-08
+	* Fix crash when using $if_match with objects that may return a null
+	pointer (like $rss, $weather, or $curl before data is available)
+
 2009-07-31
 	* Removed alias config option due to brokenness
 
