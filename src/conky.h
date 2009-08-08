@@ -35,6 +35,7 @@
 #include "config.h"	/* defines */
 #include "common.h"	/* at least for struct dns_data */
 #include <sys/utsname.h> /* struct uname_s */
+#include <arpa/inet.h>
 
 #if defined(HAS_MCHECK_H)
 #include <mcheck.h>
