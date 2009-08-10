@@ -339,8 +339,8 @@
             optional arguments. Use this hook for drawing things on
             top of what Conky draws. Conky puts 'conky_' in front
             of function_name to prevent accidental calls to the
-            wrong function unless you place 'conky_' in front of
-            it yourself.</para>
+            wrong function unless you place 'conky_' in front of it
+            yourself.</para>
         </listitem>
     </varlistentry>
     <varlistentry>
@@ -357,8 +357,8 @@
             optional arguments. Use this hook for drawing things on
             top of what Conky draws. Conky puts 'conky_' in front
             of function_name to prevent accidental calls to the
-            wrong function unless you place 'conky_' in front of
-            it yourself.</para>
+            wrong function unless you place 'conky_' in front of it
+            yourself.</para>
         </listitem>
     </varlistentry>
     <varlistentry>

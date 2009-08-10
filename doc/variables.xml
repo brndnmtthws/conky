@@ -1811,9 +1811,10 @@
         </term>
         <listitem>Executes a Lua function with given parameters,
         then prints the returned string. See also 'lua_load' on how
-        to load scripts. Conky puts 'conky_' in front of function_name
-        to prevent accidental calls to the wrong function unless you
-        put you place 'conky_' in front of it yourself.
+        to load scripts. Conky puts 'conky_' in front of
+        function_name to prevent accidental calls to the wrong
+        function unless you put you place 'conky_' in front of it
+        yourself. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1826,10 +1827,10 @@
         </term>
         <listitem>Executes a Lua function with given parameters and
         draws a bar. Expects result value to be an integer between
-        0 and 100. See also 'lua_load' on how to load scripts. 
+        0 and 100. See also 'lua_load' on how to load scripts.
         Conky puts 'conky_' in front of function_name to prevent
-        accidental calls to the wrong function unless you
-        put you place 'conky_' in front of it yourself.
+        accidental calls to the wrong function unless you put you
+        place 'conky_' in front of it yourself. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1843,9 +1844,9 @@
         <listitem>Executes a Lua function with given parameters and
         draws a gauge. Expects result value to be an integer
         between 0 and 100. See also 'lua_load' on how to load
-        scripts. Conky puts 'conky_' in front of function_name
-        to prevent accidental calls to the wrong function unless you
-        put you place 'conky_' in front of it yourself.
+        scripts. Conky puts 'conky_' in front of function_name to
+        prevent accidental calls to the wrong function unless you
+        put you place 'conky_' in front of it yourself. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1862,9 +1863,9 @@
         load scripts. Takes the switch '-t' to use a temperature
         gradient, which makes the gradient values change depending
         on the amplitude of a particular graph value (try it and
-        see). Conky puts 'conky_' in front of function_name
-        to prevent accidental calls to the wrong function unless you
-        put you place 'conky_' in front of it yourself.
+        see). Conky puts 'conky_' in front of function_name to
+        prevent accidental calls to the wrong function unless you
+        put you place 'conky_' in front of it yourself. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1877,9 +1878,10 @@
         <listitem>Executes a Lua function with given parameters as
         per $lua, then parses and prints the result value as per
         the syntax for Conky's TEXT section. See also 'lua_load' on
-        how to load scripts. Conky puts 'conky_' in front of function_name
-        to prevent accidental calls to the wrong function unless you
-        put you place 'conky_' in front of it yourself.
+        how to load scripts. Conky puts 'conky_' in front of
+        function_name to prevent accidental calls to the wrong
+        function unless you put you place 'conky_' in front of it
+        yourself. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3370,18 +3372,17 @@
             <simplelist>
                 <member>
                     <command>last_update</command>
-                    <para>The date and time stamp of the data.
-                    The result depends on the URI used. For the
-                    NOAA site it is date (yyyy/mm/dd) and UTC time.
-                    For the weather.com one it is date
-                    ([m]m/[d]d/yy) and Local Time of the
-                    station.</para>
+                    <para>The date and time stamp of the data. The
+                    result depends on the URI used. For the NOAA
+                    site it is date (yyyy/mm/dd) and UTC time. For
+                    the weather.com one it is date ([m]m/[d]d/yy)
+                    and Local Time of the station.</para>
                 </member>
                 <member>
                     <command>temperature</command>
-					<para>Air temperature (you can use the
+                    <para>Air temperature (you can use the
                     'temperature_unit' config setting to change
-					units)</para>
+                    units)</para>
                 </member>
                 <member>
                     <command>cloud_cover</command>
