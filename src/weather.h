@@ -56,6 +56,8 @@ typedef struct PWEATHER_FORECAST_ {
 	int low[FORECAST_DAYS];
 	char icon[FORECAST_DAYS][3];
 	char xoap_t[FORECAST_DAYS][32];
+	char day[FORECAST_DAYS][9];
+	char date[FORECAST_DAYS][7];
 	int wind_s[FORECAST_DAYS];
 	int wind_d[FORECAST_DAYS];
 	int hmid[FORECAST_DAYS];

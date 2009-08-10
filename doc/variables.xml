@@ -3445,27 +3445,35 @@
             <para>'data_type' must be one of the following:</para>
             <simplelist>
                 <member>
+                    <command>day</command>
+					<option>Day of the week</option>
+				</member>
+                <member>
+                    <command>date</command>
+					<option>Date, in the form MMM DD (ie. Jul 14)</option>
+				</member>
+                <member>
                     <command>low</command>
 					<option>Minimun temperature (you can use the
                     'temperature_unit' config setting to change
                     units)</option>
-		</member>
+				</member>
                 <member>
                     <command>high</command>
 					<option>Maximum temperature (you can use the
                     'temperature_unit' config setting to change
                     units)</option>
-		</member>
+				</member>
                 <member>
                     <command>icon</command>
                     <option>Weather icon. Can be used together with the
                     icon kit provided upon registering to the weather.com
                     service</option>
-		</member>
+				</member>
                 <member>
                     <command>forecast</command>
                     <option>Weather forecast (sunny, rainy, etc.)</option>
-		</member>
+				</member>
                 <member>
                     <command>wind_speed</command>
                     <option>Wind speed in km/h</option>

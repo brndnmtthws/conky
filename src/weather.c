@@ -46,12 +46,13 @@ const char *xpath_expression_cc[NUM_XPATH_EXPRESSIONS_CC] = {
 	"/weather/cc/hmid", "/weather/cc/icon"
 };
 
-#define NUM_XPATH_EXPRESSIONS_DF 8
+#define NUM_XPATH_EXPRESSIONS_DF 10
 const char *xpath_expression_df[NUM_XPATH_EXPRESSIONS_DF] = {
 	"/weather/dayf/day[*]/hi", "/weather/dayf/day[*]/low",
 	"/weather/dayf/day[*]/part[1]/icon", "/weather/dayf/day[*]/part[1]/t",
 	"/weather/dayf/day[*]/part[1]/wind/s","/weather/dayf/day[*]/part[1]/wind/d",
-	"/weather/dayf/day[*]/part[1]/ppcp", "/weather/dayf/day[*]/part[1]/hmid"
+	"/weather/dayf/day[*]/part[1]/ppcp", "/weather/dayf/day[*]/part[1]/hmid",
+	"//@t", "//@dt"
 };
 #endif /* XOAP */
 
@@ -151,12 +152,21 @@ static void parse_df(PWEATHER_FORECAST *res, xmlXPathContextPtr xpathCtx)
 					case 7:
 						res->hmid[k] = atoi(content);
 					}
-					xmlFree(content);
-					if (++k == FORECAST_DAYS) break;
+				} else if (nodes->nodeTab[j]->type == XML_ATTRIBUTE_NODE) {
+					content = (char *)xmlNodeGetContent(nodes->nodeTab[k]);
+					switch(i) {
+					case 8:
+						strncpy(res->day[k], content, 8);
+						break;
+					case 9:
+						strncpy(res->date[k], content, 6);
+					}
 				}
+				xmlFree(content);
+				if (++k == FORECAST_DAYS) break;
 			}
-			xmlXPathFreeObject(xpathObj);
 		}
+		xmlXPathFreeObject(xpathObj);
 	}
 	return;
 }
@@ -683,6 +693,10 @@ void weather_forecast_process_info(char *p, int p_max_size, char *uri, unsigned 
 		snprintf(p, p_max_size, "%d", data->hmid[day]);
 	} else if (strcmp(data_type, "precipitation") == EQUAL) {
 		snprintf(p, p_max_size, "%d", data->ppcp[day]);
+	} else if (strcmp(data_type, "day") == EQUAL) {
+		strncpy(p, data->day[day], p_max_size);
+	} else if (strcmp(data_type, "date") == EQUAL) {
+		strncpy(p, data->date[day], p_max_size);
 	}
 
 	timed_thread_unlock(curloc->p_timed_thread);

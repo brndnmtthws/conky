@@ -1,3 +1,6 @@
+2009-08-10
+	* Add day and date data_type to $weather_forecast
+
 2009-08-03
 	* Added support for $weather_forecast (experimental)
 
