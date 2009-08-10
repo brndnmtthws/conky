@@ -1,3 +1,6 @@
+2009-08-10
+	* Fixed minor memleak in pop3/imap code on config reload
+
 2009-08-08
 	* Fix crash when using $if_match with objects that may return a null
 	pointer (like $rss, $weather, or $curl before data is available)

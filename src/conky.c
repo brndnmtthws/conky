@@ -749,20 +749,8 @@ static void free_text_objects(struct text_object *root, int internal)
 				free(data.local_mail.box);
 				break;
 			case OBJ_imap_unseen:
-				if (!obj->char_b) {
-					free(data.mail);
-				}
-				break;
 			case OBJ_imap_messages:
-				if (!obj->char_b) {
-					free(data.mail);
-				}
-				break;
 			case OBJ_pop3_unseen:
-				if (!obj->char_b) {
-					free(data.mail);
-				}
-				break;
 			case OBJ_pop3_used:
 				if (!obj->char_b) {
 					free(data.mail);
@@ -7084,7 +7072,6 @@ static void main_loop(void)
 	char inotify_buff[INOTIFY_BUF_LEN];
 #endif /* HAVE_SYS_INOTIFY_H */
 
-
 #ifdef SIGNAL_BLOCKING
 	sigemptyset(&newmask);
 	sigaddset(&newmask, SIGINT);
@@ -8185,6 +8172,10 @@ static void load_config_file(const char *f)
 		TEMPLATE_CONF(9)
 		CONF("imap") {
 			if (value) {
+				if (info.mail) {
+					free(info.mail);
+					info.mail = 0;
+				}
 				info.mail = parse_mail_args(IMAP_TYPE, value);
 			} else {
 				CONF_ERR;
@@ -8192,6 +8183,10 @@ static void load_config_file(const char *f)
 		}
 		CONF("pop3") {
 			if (value) {
+				if (info.mail) {
+					free(info.mail);
+					info.mail = 0;
+				}
 				info.mail = parse_mail_args(POP3_TYPE, value);
 			} else {
 				CONF_ERR;
