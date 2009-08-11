@@ -52,7 +52,7 @@ const char *xpath_expression_df[NUM_XPATH_EXPRESSIONS_DF] = {
 	"/weather/dayf/day[*]/part[1]/icon", "/weather/dayf/day[*]/part[1]/t",
 	"/weather/dayf/day[*]/part[1]/wind/s","/weather/dayf/day[*]/part[1]/wind/d",
 	"/weather/dayf/day[*]/part[1]/ppcp", "/weather/dayf/day[*]/part[1]/hmid",
-	"//@t", "//@dt"
+	"/weather/dayf/day[*]/@t", "/weather/dayf/day[*]/@dt"
 };
 #endif /* XOAP */
 
