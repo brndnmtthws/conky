@@ -86,7 +86,6 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 
 	if (stat(stat_name, &sb)) {
 		NORM_ERR("diskio device '%s' does not exist", s);
-		return 0;
 	}
 
 	/* lookup existing */
