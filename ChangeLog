@@ -1,3 +1,6 @@
+2009-08-24
+	* Conky 1.7.2 released
+
 2009-08-10
 	* Fixed minor memleak in pop3/imap code on config reload
 
