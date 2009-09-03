@@ -146,6 +146,9 @@ int top_cpu, top_mem, top_time;
 #ifdef IOSTATS
 int top_io;
 #endif
+#ifdef __linux__
+int top_running;
+#endif
 static unsigned int top_name_width = 15;
 int output_methods;
 static int extra_newline;
@@ -5052,6 +5055,9 @@ static void set_default_configurations(void)
 	top_time = 0;
 #ifdef IOSTATS
 	top_io = 0;
+#endif
+#ifdef __linux__
+	top_running = 0;
 #endif
 #ifdef MPD
 	mpd_env_host = getenv("MPD_HOST");

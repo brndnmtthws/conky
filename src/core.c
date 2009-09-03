@@ -1124,6 +1124,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef __linux__
 	END OBJ_IF(if_running, INFO_TOP)
 		if (arg) {
+			top_running = 1;
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
 #else
 	END OBJ_IF(if_running, 0)

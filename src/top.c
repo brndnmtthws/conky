@@ -670,6 +670,7 @@ void process_find_top(struct process **cpu, struct process **mem,
 #ifdef IOSTATS
 			&& !top_io
 #endif /* IOSTATS */
+			&& !top_running
 	   ) {
 		return;
 	}
