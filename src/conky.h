@@ -127,10 +127,6 @@ char *strndup(const char *s, size_t n);
 #include "apcupsd.h"
 #endif
 
-#ifdef NCURSES
-#include <ncurses.h>
-#endif
-
 /* sony support */
 #include "sony.h"
 

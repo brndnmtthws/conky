@@ -65,6 +65,10 @@
 #ifdef HAVE_ICONV
 #include <iconv.h>
 
+#ifdef NCURSES
+#include <ncurses.h>
+#endif
+
 #define ICONV_CODEPAGE_LENGTH 20
 
 int register_iconv(iconv_t *new_iconv);
