@@ -87,6 +87,7 @@
 #include "mboxscan.h"
 #include "specials.h"
 #include "temphelper.h"
+#include "template.h"
 #include "tailhead.h"
 #include "top.h"
 
@@ -380,13 +381,6 @@ static int sensor_device;
 
 long color0, color1, color2, color3, color4, color5, color6, color7, color8,
 	 color9;
-
-static char *template[MAX_TEMPLATES];
-
-char **get_templates(void)
-{
-	return template;
-}
 
 /* maximum size of config TEXT buffer, i.e. below TEXT line. */
 unsigned int max_user_text;
@@ -4886,12 +4880,7 @@ void clean_up(void *memtofree1, void* memtofree2)
 
 #endif /* X11 */
 
-	for (i = 0; i < MAX_TEMPLATES; i++) {
-		if (template[i]) {
-			free(template[i]);
-			template[i] = NULL;
-		}
-	}
+	free_templates();
 
 	free_text_objects(&global_root_object, 0);
 	if (tmpstring1) {
@@ -5035,7 +5024,6 @@ static void set_default_configurations_for_x(void)
 
 static void set_default_configurations(void)
 {
-	int i;
 #ifdef MPD
 	char *mpd_env_host;
 	char *mpd_env_port;
@@ -5141,11 +5129,7 @@ static void set_default_configurations(void)
 	info.x11.desktop.name = NULL; 
 #endif /* X11 */
 
-	for (i = 0; i < MAX_TEMPLATES; i++) {
-		if (template[i])
-			free(template[i]);
-		template[i] = strdup("");
-	}
+	free_templates();
 
 	free(current_mail_spool);
 	{
@@ -5463,12 +5447,8 @@ char load_config_file(const char *f)
 #endif /* X11 */
 #define TEMPLATE_CONF(n) \
 		CONF("template"#n) { \
-			if (value) { \
-				free(template[n]); \
-				template[n] = strdup(value); \
-			} else { \
+			if (set_template(n, value)) \
 				CONF_ERR; \
-			} \
 		}
 		TEMPLATE_CONF(0)
 		TEMPLATE_CONF(1)
@@ -6604,7 +6584,7 @@ int main(int argc, char **argv)
 	max_user_text = MAX_USER_TEXT_DEFAULT;
 	current_config = 0;
 	memset(&info, 0, sizeof(info));
-	memset(template, 0, sizeof(template));
+	free_templates();
 	clear_net_stats();
 
 #ifdef TCP_PORT_MONITOR

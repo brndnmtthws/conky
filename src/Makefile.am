@@ -171,6 +171,8 @@ conky_SOURCES = \
 	$(weather)              \
 	$(lua)                  \
 	$(solaris)              \
+	template.c              \
+	template.h              \
 	timed_thread.c          \
 	timed_thread.h          \
 	mboxscan.c              \
@@ -239,6 +241,8 @@ EXTRA_DIST = \
 	specials.h              \
 	tailhead.c              \
 	tailhead.h              \
+	template.c              \
+	template.h              \
 	top.h                   \
 	diskio.h                \
 	x11.c                   \
