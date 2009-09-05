@@ -4,12 +4,7 @@ if HAVE_DOCSTUFF
 
 DOCS = conky.1 docs.html variables.html config_settings.html lua.html
 
-clean-am: clean-generic mostlyclean-am
-	rm -f docs.mxml
-	rm -f conky.1
-	rm -f variables.html
-	rm -f config_settings.html
-	rm -f lua.html
+CLEANFILES = docs.mxml conky.1 variable.html config_settings.html lua.html
 
 conky.1: command_options.xml config_settings.xml docs.xml variables.xml lua.xml
 	${db2x_xsltproc_cmd} -s man ${srcdir}/docs.xml -o docs.mxml
