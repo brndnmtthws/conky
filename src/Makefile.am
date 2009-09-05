@@ -48,216 +48,124 @@ $(config_output): ${config_input}
 	sh $(srcdir)/../text2c.sh ${config_input} $@ defconfig
 endif # BUILD_CONFIG_OUTPUT
 
-if BUILD_AUDACIOUS
+# source files always needed for compiling
+mandatory_sources = colours.c colours.h common.c common.h conky.c conky.h \
+		core.c core.h diskio.c diskio.h fs.c fs.h logging.h mail.c mail.h \
+		mixer.c mixer.h template.c template.h timed_thread.c timed_thread.h \
+		mboxscan.c mboxscan.h specials.c specials.h tailhead.c tailhead.h \
+		temphelper.c temphelper.h text_object.c text_object.h algebra.c \
+		algebra.h
+
+# source files only needed when the apropriate option is enabled
 audacious = audacious.c audacious.h
-endif
-
-if BUILD_BMPX
-bmpx = bmpx.c
-endif
-
-if BUILD_IBM
+bmpx = bmpx.c bmpx.h
 ibm = ibm.c ibm.h smapi.c smapi.h
-endif
-
-if BUILD_MPD
-mpd = mpd.c libmpdclient.c
-endif
-
-if BUILD_MOC
-moc = moc.c
-endif
-
-if BUILD_XMMS2
-xmms2 = xmms2.c
-endif
-
-if BUILD_LINUX
-linux = linux.c top.c diskio.c users.c sony.c
-PTHREAD_LIBS =  -lpthread
-endif
-
-#if BUILD_SOLARIS
-#solaris = solaris.c
-#endif
-
-if BUILD_FREEBSD
-freebsd = freebsd.c diskio.c
-PTHREAD_LIBS =  -pthread
-endif
-
-#if BUILD_NETBSD
-#netbsd = netbsd.c
-#endif
-
-if BUILD_OPENBSD
-openbsd = openbsd.c
-PTHREAD_LIBS =  -pthread
-endif
-
-if BUILD_PORT_MONITORS
-port_monitors = libtcp-portmon.h libtcp-portmon.c \
-		tcp-portmon.h tcp-portmon.c
-endif
-
-if BUILD_X11
-x11 = x11.c fonts.c
-endif
-
-if BUILD_HDDTEMP
-hddtemp = hddtemp.c
-endif
-
-if BUILD_EVE
+mpd = mpd.c mpd.h libmpdclient.c libmpdclient.h
+moc = moc.c moc.h
+xmms2 = xmms2.c xmms2.h
+linux = linux.c linux.h top.c top.h users.c sony.c sony.h
+solaris = solaris.c
+freebsd = freebsd.c freebsd.h
+netbsd = netbsd.c netbsd.h
+openbsd = openbsd.c openbsd.h
+port_monitors = libtcp-portmon.c libtcp-portmon.h \
+                tcp-portmon.c tcp-portmon.h
+x11 = x11.c x11.h fonts.c fonts.h
+hddtemp = hddtemp.c hddtemp.h
 eve = eve.c eve.h
-endif
-
-if BUILD_CURL
 ccurl_thread = ccurl_thread.c ccurl_thread.h
-endif
-
-if BUILD_RSS
-rss = rss.c prss.c prss.h
-endif
-
-if BUILD_WEATHER
+rss = rss.c rss.h prss.c prss.h
 weather = weather.c weather.h
-endif
-
-if BUILD_LUA
 lua = llua.c llua.h
-endif
-
-if BUILD_NVIDIA
 nvidia = nvidia.c nvidia.h
-endif
-
-if BUILD_IMLIB2
 imlib2 = imlib2.c imlib2.h
-endif
-
-if BUILD_APCUPSD
 apcupsd = apcupsd.c apcupsd.h
+
+# make sure the files from above are always included in the distfile
+EXTRA_DIST = $(audacious) $(bmpx) $(ibm) $(mpd) $(moc) $(xmms2) $(linux) \
+             $(solaris) $(freebsd) $(netbsd) $(openbsd) $(port_monitors) \
+             $(x11) $(hddtemp) $(eve) $(ccurl_thread) $(rss) $(weather) \
+             $(lua) $(nvidia) $(imlib2) $(apcupsd)
+
+# collect all selected optional sources
+optional_sources =
+if BUILD_AUDACIOUS
+optional_sources += $(audacious)
+endif
+if BUILD_BMPX
+optional_sources += $(bmpx)
+endif
+if BUILD_IBM
+optional_sources += $(ibm)
+endif
+if BUILD_MPD
+optional_sources += $(mpd)
+endif
+if BUILD_MOC
+optional_sources += $(moc)
+endif
+if BUILD_XMMS2
+optional_sources += $(xmms2)
+endif
+if BUILD_LINUX
+optional_sources += $(linux)
+endif
+#if BUILD_SOLARIS
+#optional_sources += $(solaris)
+#endif
+if BUILD_FREEBSD
+optional_sources += $(freebsd)
+endif
+#if BUILD_NETBSD
+#optional_sources += $(netbsd)
+#endif
+if BUILD_OPENBSD
+optional_sources += $(openbsd)
+endif
+if BUILD_PORT_MONITORS
+optional_sources += $(port_monitors)
+endif
+if BUILD_X11
+optional_sources += $(x11)
+endif
+if BUILD_HDDTEMP
+optional_sources += $(hddtemp)
+endif
+if BUILD_EVE
+optional_sources += $(eve)
+endif
+if BUILD_CURL
+optional_sources += $(ccurl_thread)
+endif
+if BUILD_RSS
+optional_sources += $(rss)
+endif
+if BUILD_WEATHER
+optional_sources += $(weather)
+endif
+if BUILD_LUA
+optional_sources += $(lua)
+endif
+if BUILD_NVIDIA
+optional_sources += $(nvidia)
+endif
+if BUILD_IMLIB2
+optional_sources += $(imlib2)
+endif
+if BUILD_APCUPSD
+optional_sources += $(apcupsd)
 endif
 
-conky_SOURCES = \
-	$(config_output)        \
-	$(config_cookie)        \
-	$(audacious)            \
-	$(bmpx)                 \
-	colours.c               \
-	colours.h               \
-	common.c                \
-	conky.c                 \
-	conky.h                 \
-	core.c                  \
-	core.h                  \
-	$(freebsd)              \
-	fs.c                    \
-	$(hddtemp)              \
-	$(apcupsd)              \
-	$(linux)                \
-	logging.h               \
-	$(nvidia)               \
-	mail.c                  \
-	mixer.c                 \
-	$(mpd)                  \
-	$(moc)                  \
-	$(netbsd)               \
-	$(openbsd)              \
-	$(port_monitors)        \
-	$(eve)                  \
-	$(rss)                  \
-	$(weather)              \
-	$(lua)                  \
-	$(solaris)              \
-	template.c              \
-	template.h              \
-	timed_thread.c          \
-	timed_thread.h          \
-	mboxscan.c              \
-	mboxscan.h              \
-	$(x11)                  \
-	$(xmms2)                \
-	$(ibm)                  \
-	specials.c              \
-	specials.h              \
-	tailhead.c              \
-	tailhead.h              \
-	temphelper.c            \
-	temphelper.h            \
-	text_object.h           \
-	text_object.c           \
-	algebra.h               \
-	algebra.c               \
-	$(imlib2)               \
-	$(ccurl_thread)
+# linux takes the standard to the max
+if BUILD_LINUX
+PTHREAD_LIBS = -lpthread
+else
+PTHREAD_LIBS = -pthread
+endif
 
-conky_LDFLAGS = \
-	$(PTHREAD_LIBS) \
-	-lm
+conky_LDFLAGS = $(PTHREAD_LIBS) -lm
 
-EXTRA_DIST = \
-	$(config_output)        \
-	$(config_cookie)        \
-	audacious.c             \
-	audacious.h             \
-	bmpx.c                  \
-	colours.c               \
-	colours.h               \
-	common.h                \
-	fonts.c                 \
-	fonts.h                 \
-	freebsd.c               \
-	freebsd.h               \
-	fs.h                    \
-	hddtemp.c               \
-	hddtemp.h               \
-	apcupsd.c               \
-	apcupsd.h               \
-	linux.c                 \
-	linux.h                 \
-	libmpdclient.c          \
-	libmpdclient.h          \
-	libtcp-portmon.c        \
-	libtcp-portmon.h        \
-	rss.h                   \
-	prss.h                  \
-	weather.h               \
-	llua.h                  \
-	mail.h                  \
-	mixer.h                 \
-	moc.h                   \
-	moc.c                   \
-	mpd.c                   \
-	mpd.h                   \
-	netbsd.c                \
-	nvidia.c                \
-	nvidia.h                \
-	openbsd.c               \
-	openbsd.h               \
-	solaris.c               \
-	specials.c              \
-	specials.h              \
-	tailhead.c              \
-	tailhead.h              \
-	template.c              \
-	template.h              \
-	top.h                   \
-	diskio.h                \
-	x11.c                   \
-	x11.h                   \
-	xmms2.c                 \
-	xmms2.h                 \
-	smapi.c                 \
-	smapi.h                 \
-	ibm.c                   \
-	ibm.h                   \
-	sony.h                  \
-	users.c                 \
-	imlib2.c                \
-	imlib2.h                \
-	ccurl_thread.h
-
+conky_SOURCES = $(config_output) $(config_cookie) \
+		$(optional_sources) $(mandatory_sources)
 
 # vi:set ts=4 sw=4 noet ai nocindent syntax=automake:
