@@ -1028,6 +1028,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	 * handler. */
 	if (strncmp(s, "top", 3) == EQUAL) {
 		add_update_callback(&update_meminfo);
+		add_update_callback(&update_top);
 		if (!parse_top_args(s, arg, obj)) {
 			return NULL;
 		}
