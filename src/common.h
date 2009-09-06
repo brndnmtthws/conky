@@ -8,9 +8,13 @@
 #include <string.h>
 #include <sys/socket.h>
 
+void add_update_callback(void (*func)(void));
+void free_update_callbacks(void);
+
 void strfold(char *start, int count);
 int check_mount(char *s);
 void prepare_update(void);
+void update_dns_data(void);
 void update_uptime(void);
 void update_meminfo(void);
 void update_net_stats(void);

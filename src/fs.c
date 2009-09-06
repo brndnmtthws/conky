@@ -66,12 +66,17 @@ void get_fs_type(const char *path, char *result);
 void update_fs_stats(void)
 {
 	unsigned i;
+	static double last_fs_update = 0.0;
+
+	if (current_update_time - last_fs_update < 13)
+		return;
 
 	for (i = 0; i < MAX_FS_STATS; ++i) {
 		if (fs_stats[i].set) {
 			update_fs_stat(&fs_stats[i]);
 		}
 	}
+	last_fs_update = current_update_time;
 }
 
 void clear_fs_stats(void)

@@ -40,7 +40,7 @@ struct moc_s {
 };
 extern struct moc_s moc;
 
-int run_moc_thread(double interval);
+void update_moc(void);
 void free_moc(void);
 
 #endif /* MOC_H_ */

@@ -53,9 +53,6 @@
 #include "openbsd.h"
 #endif
 
-/* OS specific prototypes to be implemented by linux.c & Co. */
-void update_entropy(void);
-
 /* folds a string over top of itself, like so:
  *
  * if start is "blah", and you call it with count = 1, the result will be "lah"
@@ -312,7 +309,7 @@ void free_dns_data(void)
 
 //static double last_dns_update;
 
-static void update_dns_data(void)
+void update_dns_data(void)
 {
 	FILE *fp;
 	char line[256];
@@ -383,6 +380,41 @@ void format_seconds_short(char *buf, unsigned int n, long seconds)
 	}
 }
 
+static struct update_cb {
+	struct update_cb *next;
+	void (*func)(void);
+} update_cb_head = {
+	.next = NULL,
+};
+
+void add_update_callback(void (*func)(void))
+{
+	struct update_cb *uc = &update_cb_head;
+
+	while (uc->next) {
+		if (uc->next->func == func)
+			return;
+		uc = uc->next;
+	}
+	uc->next = malloc(sizeof(struct update_cb));
+	memset(uc->next, 0, sizeof(struct update_cb));
+	uc->next->func = func;
+}
+
+static void __free_update_callbacks(struct update_cb *uc)
+{
+	if (uc->next)
+		__free_update_callbacks(uc->next);
+	free(uc);
+}
+
+void free_update_callbacks(void)
+{
+	if (update_cb_head.next)
+		__free_update_callbacks(update_cb_head.next);
+	update_cb_head.next = NULL;
+}
+
 unsigned long long need_mask;
 int no_buffers;
 
@@ -392,7 +424,7 @@ void update_stuff(void)
 {
 	int i;
 	static double last_meminfo_update;
-	static double last_fs_update;
+	struct update_cb *uc;
 
 	info.mask = 0;
 
@@ -416,69 +448,8 @@ void update_stuff(void)
 
 	prepare_update();
 
-	if (NEED(INFO_UPTIME)) {
-		update_uptime();
-	}
-
-	if (NEED(INFO_PROCS)) {
-		update_total_processes();
-	}
-
-	if (NEED(INFO_RUN_PROCS)) {
-		update_running_processes();
-	}
-
-	if (NEED(INFO_CPU)) {
-		update_cpu_usage();
-	}
-
-	if (NEED(INFO_NET)) {
-		update_net_stats();
-	}
-
-	if (NEED(INFO_DISKIO)) {
-		update_diskio();
-	}
-
-#if defined(__linux__)
-	if (NEED(INFO_I8K)) {
-		update_i8k();
-	}
-#endif /* __linux__ */
-
-#ifdef MPD
-	if (NEED(INFO_MPD)) {
-		update_mpd();
-	}
-#endif
-
-#ifdef MOC
-	if (NEED(INFO_MOC)) {
-		run_moc_thread(info.music_player_interval * 100000);
-	}
-#endif
-
-#ifdef XMMS2
-	if (NEED(INFO_XMMS2)) {
-		update_xmms2();
-	}
-#endif
-
-#ifdef AUDACIOUS
-	if (NEED(INFO_AUDACIOUS)) {
-		update_audacious();
-	}
-#endif
-
-#ifdef BMPX
-	if (NEED(INFO_BMPX)) {
-		update_bmpx();
-	}
-#endif
-
-	if (NEED(INFO_LOADAVG)) {
-		update_load_average();
-	}
+	for (uc = update_cb_head.next; uc; uc = uc->next)
+		(*uc->func)();
 
 	if ((NEED(INFO_MEM) || NEED(INFO_BUFFERS) || NEED(INFO_TOP))
 			&& current_update_time - last_meminfo_update > 6.9) {
@@ -493,45 +464,6 @@ void update_stuff(void)
 #ifdef X11
 	if (NEED(INFO_X11) && x_initialised == YES) {
 		update_x11info();
-	}
-#endif
-
-	if (NEED(INFO_TOP)) {
-		update_top();
-	}
-
-	/* update_fs_stat() won't do anything if there aren't fs -things */
-	if (NEED(INFO_FS) && current_update_time - last_fs_update > 12.9) {
-		update_fs_stats();
-		last_fs_update = current_update_time;
-	}
-#ifdef TCP_PORT_MONITOR
-	if (NEED(INFO_TCP_PORT_MONITOR)) {
-		tcp_portmon_update();
-	}
-#endif
-	if (NEED(INFO_ENTROPY)) {
-		update_entropy();
-	}
-#if defined(__linux__)
-	if (NEED(INFO_USERS)) {
-		update_users();
-	}
-	if (NEED(INFO_GW)) {
-		update_gateway_info();
-	}
-#endif /* __linux__ */
-	if (NEED(INFO_DNS)) {
-		update_dns_data();
-	}
-#ifdef APCUPSD
-	if (NEED(INFO_APCUPSD)) {
-		update_apcupsd();
-	}
-#endif
-#ifdef HDDTEMP
-	if (NEED(INFO_HDDTEMP)) {
-		update_hddtemp();
 	}
 #endif
 }

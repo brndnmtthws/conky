@@ -116,7 +116,7 @@ void *update_moc(void *arg)
 	/* never reached */
 }
 
-int run_moc_thread(double interval)
+static int run_moc_thread(double interval)
 {
 	if (moc_thread)
 		return 0;
@@ -134,3 +134,7 @@ int run_moc_thread(double interval)
 	return 0;
 }
 
+void update_moc(void)
+{
+	run_moc_thread(info.music_player_interval * 100000);
+}

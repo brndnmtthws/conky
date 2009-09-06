@@ -4865,6 +4865,8 @@ void clean_up(void *memtofree1, void* memtofree2)
 
 #endif /* X11 */
 
+	free_update_callbacks();
+
 	free_templates();
 
 	free_text_objects(&global_root_object, 0);

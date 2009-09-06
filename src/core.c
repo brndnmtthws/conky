@@ -59,6 +59,9 @@
 #include "openbsd.h"
 #endif
 
+/* OS specific prototypes to be implemented by linux.c & Co. */
+void update_entropy(void);
+
 #include <string.h>
 #include <ctype.h>
 
@@ -217,11 +220,16 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 
 	obj->line = line;
 
+#define CALLBACK(x) (-(long)x)
+
 #define OBJ(a, n) if (strcmp(s, #a) == 0) { \
-	obj->type = OBJ_##a; need_mask |= (1ULL << n); {
+	obj->type = OBJ_##a; \
+	if (n > 0) { need_mask |= (1ULL << n); } \
+	else if (n < 0) { add_update_callback((void (*)(void))CALLBACK(n)); } {
 #define OBJ_IF(a, n) if (strcmp(s, #a) == 0) { \
-	obj->type = OBJ_##a; need_mask |= (1ULL << n); \
-	obj_be_ifblock_if(ifblock_opaque, obj); {
+	obj->type = OBJ_##a; obj_be_ifblock_if(ifblock_opaque, obj); \
+	if (n > 0) { need_mask |= (1ULL << n); } \
+	else if (n < 0) { add_update_callback((void (*)(void))CALLBACK(n)); } {
 #define END } } else
 
 #define SIZE_DEFAULTS(arg) { \
@@ -305,7 +313,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->a = 1;
 
 #ifdef HAVE_IWLIB
-	END OBJ(wireless_essid, INFO_NET)
+	END OBJ(wireless_essid, CALLBACK(&update_net_stats))
 		if (arg) {
 			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
@@ -314,7 +322,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
-	END OBJ(wireless_mode, INFO_NET)
+	END OBJ(wireless_mode, CALLBACK(&update_net_stats))
 		if (arg) {
 			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
@@ -323,7 +331,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
-	END OBJ(wireless_bitrate, INFO_NET)
+	END OBJ(wireless_bitrate, CALLBACK(&update_net_stats))
 		if (arg) {
 			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
@@ -332,7 +340,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
-	END OBJ(wireless_ap, INFO_NET)
+	END OBJ(wireless_ap, CALLBACK(&update_net_stats))
 		if (arg) {
 			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
@@ -341,7 +349,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
-	END OBJ(wireless_link_qual, INFO_NET)
+	END OBJ(wireless_link_qual, CALLBACK(&update_net_stats))
 		if (arg) {
 			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
@@ -350,7 +358,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
-	END OBJ(wireless_link_qual_max, INFO_NET)
+	END OBJ(wireless_link_qual_max, CALLBACK(&update_net_stats))
 		if (arg) {
 			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
@@ -359,7 +367,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
-	END OBJ(wireless_link_qual_perc, INFO_NET)
+	END OBJ(wireless_link_qual_perc, CALLBACK(&update_net_stats))
 		if (arg) {
 			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
@@ -368,7 +376,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
-	END OBJ(wireless_link_bar, INFO_NET)
+	END OBJ(wireless_link_bar, CALLBACK(&update_net_stats))
 		SIZE_DEFAULTS(bar);
 		if (arg) {
 			arg = scan_bar(arg, &obj->a, &obj->b);
@@ -440,16 +448,16 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			obj->data.s = strndup(dev_name(arg), text_buffer_size);
 		else
 			CRIT_ERR(obj, free_at_crash, "disk_protect needs an argument");
-	END OBJ(i8k_version, INFO_I8K)
-	END OBJ(i8k_bios, INFO_I8K)
-	END OBJ(i8k_serial, INFO_I8K)
-	END OBJ(i8k_cpu_temp, INFO_I8K)
-	END OBJ(i8k_left_fan_status, INFO_I8K)
-	END OBJ(i8k_right_fan_status, INFO_I8K)
-	END OBJ(i8k_left_fan_rpm, INFO_I8K)
-	END OBJ(i8k_right_fan_rpm, INFO_I8K)
-	END OBJ(i8k_ac_status, INFO_I8K)
-	END OBJ(i8k_buttons_status, INFO_I8K)
+	END OBJ(i8k_version, CALLBACK(&update_i8k))
+	END OBJ(i8k_bios, CALLBACK(&update_i8k))
+	END OBJ(i8k_serial, CALLBACK(&update_i8k))
+	END OBJ(i8k_cpu_temp, CALLBACK(&update_i8k))
+	END OBJ(i8k_left_fan_status, CALLBACK(&update_i8k))
+	END OBJ(i8k_right_fan_status, CALLBACK(&update_i8k))
+	END OBJ(i8k_left_fan_rpm, CALLBACK(&update_i8k))
+	END OBJ(i8k_right_fan_rpm, CALLBACK(&update_i8k))
+	END OBJ(i8k_ac_status, CALLBACK(&update_i8k))
+	END OBJ(i8k_buttons_status, CALLBACK(&update_i8k))
 #if defined(IBM)
 	END OBJ(ibm_fan, 0)
 	END OBJ(ibm_temps, 0)
@@ -468,7 +476,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	/* information from sony_laptop kernel module
 	 * /sys/devices/platform/sony-laptop */
 	END OBJ(sony_fanspeed, 0)
-	END OBJ_IF(if_gw, INFO_GW)
+	END OBJ_IF(if_gw, CALLBACK(&update_gateway_info))
 	END OBJ(ioscheduler, 0)
 		if (!arg) {
 			CRIT_ERR(obj, free_at_crash, "get_ioscheduler needs an argument (e.g. hda)");
@@ -544,23 +552,23 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	else \
 		__var = 0; \
 }
-	END OBJ(cpu, INFO_CPU)
+	END OBJ(cpu, CALLBACK(&update_cpu_usage))
 		SCAN_CPU(arg, obj->data.cpu_index);
 		DBGP2("Adding $cpu for CPU %d", obj->data.cpu_index);
 #ifdef X11
-	END OBJ(cpugauge, INFO_CPU)
+	END OBJ(cpugauge, CALLBACK(&update_cpu_usage))
 		SIZE_DEFAULTS(gauge);
 		SCAN_CPU(arg, obj->data.cpu_index);
 		scan_gauge(arg, &obj->a, &obj->b);
 		DBGP2("Adding $cpugauge for CPU %d", obj->data.cpu_index);
 #endif /* X11 */
-	END OBJ(cpubar, INFO_CPU)
+	END OBJ(cpubar, CALLBACK(&update_cpu_usage))
 		SIZE_DEFAULTS(bar);
 		SCAN_CPU(arg, obj->data.cpu_index);
 		scan_bar(arg, &obj->a, &obj->b);
 		DBGP2("Adding $cpubar for CPU %d", obj->data.cpu_index);
 #ifdef X11
-	END OBJ(cpugraph, INFO_CPU)
+	END OBJ(cpugraph, CALLBACK(&update_cpu_usage))
 		char *buf = 0;
 		SIZE_DEFAULTS(graph);
 		SCAN_CPU(arg, obj->data.cpu_index);
@@ -568,7 +576,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			&obj->e, &obj->char_a, &obj->char_b);
 		DBGP2("Adding $cpugraph for CPU %d", obj->data.cpu_index);
 		if (buf) free(buf);
-	END OBJ(loadgraph, INFO_LOADAVG)
+	END OBJ(loadgraph, CALLBACK(&update_load_average))
 		char *buf = 0;
 		SIZE_DEFAULTS(graph);
 		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
@@ -582,14 +590,14 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			free(buf);
 		}
 #endif /* X11 */
-	END OBJ(diskio, INFO_DISKIO)
+	END OBJ(diskio, CALLBACK(&update_diskio))
 		obj->data.diskio = prepare_diskio_stat(dev_name(arg));
-	END OBJ(diskio_read, INFO_DISKIO)
+	END OBJ(diskio_read, CALLBACK(&update_diskio))
 		obj->data.diskio = prepare_diskio_stat(dev_name(arg));
-	END OBJ(diskio_write, INFO_DISKIO)
+	END OBJ(diskio_write, CALLBACK(&update_diskio))
 		obj->data.diskio = prepare_diskio_stat(dev_name(arg));
 #ifdef X11
-	END OBJ(diskiograph, INFO_DISKIO)
+	END OBJ(diskiograph, CALLBACK(&update_diskio))
 		char *buf = 0;
 		SIZE_DEFAULTS(graph);
 		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
@@ -597,7 +605,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 
 		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
 		if (buf) free(buf);
-	END OBJ(diskiograph_read, INFO_DISKIO)
+	END OBJ(diskiograph_read, CALLBACK(&update_diskio))
 		char *buf = 0;
 		SIZE_DEFAULTS(graph);
 		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
@@ -605,7 +613,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 
 		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
 		if (buf) free(buf);
-	END OBJ(diskiograph_write, INFO_DISKIO)
+	END OBJ(diskiograph_write, CALLBACK(&update_diskio))
 		char *buf = 0;
 		SIZE_DEFAULTS(graph);
 		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
@@ -682,7 +690,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(conky_version, 0)
 	END OBJ(conky_build_date, 0)
 	END OBJ(conky_build_arch, 0)
-	END OBJ(downspeed, INFO_NET)
+	END OBJ(downspeed, CALLBACK(&update_net_stats))
 		if (arg) {
 			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
@@ -691,7 +699,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
-	END OBJ(downspeedf, INFO_NET)
+	END OBJ(downspeedf, CALLBACK(&update_net_stats))
 		if (arg) {
 			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
@@ -701,7 +709,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			free(buf);
 		}
 #ifdef X11
-	END OBJ(downspeedgraph, INFO_NET)
+	END OBJ(downspeedgraph, CALLBACK(&update_net_stats))
 		char *buf = 0;
 		SIZE_DEFAULTS(graph);
 		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
@@ -832,7 +840,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		} else {
 			obj->data.s = strndup("", text_buffer_size);
 		}
-	END OBJ(fs_bar, INFO_FS)
+	END OBJ(fs_bar, CALLBACK(&update_fs_stats))
 		SIZE_DEFAULTS(bar);
 		arg = scan_bar(arg, &obj->data.fsbar.w, &obj->data.fsbar.h);
 		if (arg) {
@@ -846,7 +854,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			arg = "/";
 		}
 		obj->data.fsbar.fs = prepare_fs_stat(arg);
-	END OBJ(fs_bar_free, INFO_FS)
+	END OBJ(fs_bar_free, CALLBACK(&update_fs_stats))
 		SIZE_DEFAULTS(bar);
 		arg = scan_bar(arg, &obj->data.fsbar.w, &obj->data.fsbar.h);
 		if (arg) {
@@ -861,39 +869,39 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		}
 
 		obj->data.fsbar.fs = prepare_fs_stat(arg);
-	END OBJ(fs_free, INFO_FS)
+	END OBJ(fs_free, CALLBACK(&update_fs_stats))
 		if (!arg) {
 			arg = "/";
 		}
 		obj->data.fs = prepare_fs_stat(arg);
-	END OBJ(fs_used_perc, INFO_FS)
+	END OBJ(fs_used_perc, CALLBACK(&update_fs_stats))
 		if (!arg) {
 			arg = "/";
 		}
 		obj->data.fs = prepare_fs_stat(arg);
-	END OBJ(fs_free_perc, INFO_FS)
+	END OBJ(fs_free_perc, CALLBACK(&update_fs_stats))
 		if (!arg) {
 			arg = "/";
 		}
 		obj->data.fs = prepare_fs_stat(arg);
-	END OBJ(fs_size, INFO_FS)
+	END OBJ(fs_size, CALLBACK(&update_fs_stats))
 		if (!arg) {
 			arg = "/";
 		}
 		obj->data.fs = prepare_fs_stat(arg);
-	END OBJ(fs_type, INFO_FS)
+	END OBJ(fs_type, CALLBACK(&update_fs_stats))
 		if (!arg) {
 			arg = "/";
 		}
 		obj->data.fs = prepare_fs_stat(arg);
-	END OBJ(fs_used, INFO_FS)
+	END OBJ(fs_used, CALLBACK(&update_fs_stats))
 		if (!arg) {
 			arg = "/";
 		}
 		obj->data.fs = prepare_fs_stat(arg);
 	END OBJ(hr, 0)
 		obj->data.i = arg ? atoi(arg) : 1;
-	END OBJ(nameserver, INFO_DNS)
+	END OBJ(nameserver, CALLBACK(&update_dns_data))
 		obj->data.i = arg ? atoi(arg) : 0;
 	END OBJ(offset, 0)
 		obj->data.i = arg ? atoi(arg) : 1;
@@ -1027,7 +1035,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		if (!parse_top_args(s, arg, obj)) {
 			return NULL;
 		}
-	} else OBJ(addr, INFO_NET)
+	} else OBJ(addr, CALLBACK(&update_net_stats))
 		if (arg) {
 			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
@@ -1037,7 +1045,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			free(buf);
 		}
 #if defined(__linux__)
-	END OBJ(addrs, INFO_NET)
+	END OBJ(addrs, CALLBACK(&update_net_stats))
 		if (arg) {
 			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
@@ -1063,7 +1071,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		}else{
 			CRIT_ERR(obj, free_at_crash, "words needs a argument");
 		}
-	END OBJ(loadavg, INFO_LOADAVG)
+	END OBJ(loadavg, CALLBACK(&update_load_average))
 		int a = 1, b = 2, c = 3, r = 3;
 
 		if (arg) {
@@ -1127,7 +1135,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
 		}
 #ifdef __linux__
-	END OBJ_IF(if_running, INFO_TOP)
+	END OBJ_IF(if_running, CALLBACK(&update_top))
 		if (arg) {
 			top_running = 1;
 			obj->data.ifblock.s = strndup(arg, text_buffer_size);
@@ -1412,8 +1420,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(desktop_name, INFO_X11)
 #endif
 	END OBJ(nodename, 0)
-	END OBJ(processes, INFO_PROCS)
-	END OBJ(running_processes, INFO_RUN_PROCS)
+	END OBJ(processes, CALLBACK(&update_total_processes))
+	END OBJ(running_processes, CALLBACK(&update_running_processes))
 	END OBJ(shadecolor, 0)
 #ifdef X11
 		obj->data.l = arg ? get_x11_color(arg) : default_bg_color;
@@ -1496,7 +1504,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		set_iconv_converting(0);
 
 #endif
-	END OBJ(totaldown, INFO_NET)
+	END OBJ(totaldown, CALLBACK(&update_net_stats))
 		if (arg) {
 			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
@@ -1505,7 +1513,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
-	END OBJ(totalup, INFO_NET)
+	END OBJ(totalup, CALLBACK(&update_net_stats))
 		obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		if (arg) {
 			obj->data.net = get_net_stat(arg, obj, free_at_crash);
@@ -1524,7 +1532,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.i = arg ? atoi(arg) : 0;
 	END OBJ(alignc, 0)
 		obj->data.i = arg ? atoi(arg) : 0;
-	END OBJ(upspeed, INFO_NET)
+	END OBJ(upspeed, CALLBACK(&update_net_stats))
 		if (arg) {
 			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
@@ -1533,7 +1541,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			obj->data.net = get_net_stat(buf, obj, free_at_crash);
 			free(buf);
 		}
-	END OBJ(upspeedf, INFO_NET)
+	END OBJ(upspeedf, CALLBACK(&update_net_stats))
 		if (arg) {
 			obj->data.net = get_net_stat(arg, obj, free_at_crash);
 		} else {
@@ -1544,7 +1552,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		}
 
 #ifdef X11
-	END OBJ(upspeedgraph, INFO_NET)
+	END OBJ(upspeedgraph, CALLBACK(&update_net_stats))
 		char *buf = 0;
 		SIZE_DEFAULTS(graph);
 		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
@@ -1555,15 +1563,15 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.net = get_net_stat(buf, obj, free_at_crash);
 		free(buf);
 #endif
-	END OBJ(uptime_short, INFO_UPTIME)
+	END OBJ(uptime_short, CALLBACK(&update_uptime))
 	END OBJ(uptime, INFO_UPTIME)
-	END OBJ(user_names, INFO_USERS)
-	END OBJ(user_times, INFO_USERS)
-	END OBJ(user_terms, INFO_USERS)
-	END OBJ(user_number, INFO_USERS)
+	END OBJ(user_names, CALLBACK(&update_users))
+	END OBJ(user_times, CALLBACK(&update_users))
+	END OBJ(user_terms, CALLBACK(&update_users))
+	END OBJ(user_number, CALLBACK(&update_users))
 #if defined(__linux__)
-	END OBJ(gw_iface, INFO_GW)
-	END OBJ(gw_ip, INFO_GW)
+	END OBJ(gw_iface, CALLBACK(&update_gateway_info))
+	END OBJ(gw_ip, CALLBACK(&update_gateway_info))
 #endif /* !__linux__ */
 #ifndef __OpenBSD__
 	END OBJ(adt746xcpu, 0)
@@ -1660,85 +1668,85 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			else \
 				NORM_ERR(#name ": invalid length argument"); \
 		}
-	END OBJ(mpd_artist, INFO_MPD)
+	END OBJ(mpd_artist, CALLBACK(&update_mpd))
 		mpd_set_maxlen(mpd_artist);
 		init_mpd();
-	END OBJ(mpd_title, INFO_MPD)
+	END OBJ(mpd_title, CALLBACK(&update_mpd))
 		mpd_set_maxlen(mpd_title);
 		init_mpd();
-	END OBJ(mpd_random, INFO_MPD) init_mpd();
-	END OBJ(mpd_repeat, INFO_MPD) init_mpd();
-	END OBJ(mpd_elapsed, INFO_MPD) init_mpd();
-	END OBJ(mpd_length, INFO_MPD) init_mpd();
-	END OBJ(mpd_track, INFO_MPD)
+	END OBJ(mpd_random, CALLBACK(&update_mpd)) init_mpd();
+	END OBJ(mpd_repeat, CALLBACK(&update_mpd)) init_mpd();
+	END OBJ(mpd_elapsed, CALLBACK(&update_mpd)) init_mpd();
+	END OBJ(mpd_length, CALLBACK(&update_mpd)) init_mpd();
+	END OBJ(mpd_track, CALLBACK(&update_mpd))
 		mpd_set_maxlen(mpd_track);
 		init_mpd();
-	END OBJ(mpd_name, INFO_MPD)
+	END OBJ(mpd_name, CALLBACK(&update_mpd))
 		mpd_set_maxlen(mpd_name);
 		init_mpd();
-	END OBJ(mpd_file, INFO_MPD)
+	END OBJ(mpd_file, CALLBACK(&update_mpd))
 		mpd_set_maxlen(mpd_file);
 		init_mpd();
-	END OBJ(mpd_percent, INFO_MPD) init_mpd();
-	END OBJ(mpd_album, INFO_MPD)
+	END OBJ(mpd_percent, CALLBACK(&update_mpd)) init_mpd();
+	END OBJ(mpd_album, CALLBACK(&update_mpd))
 		mpd_set_maxlen(mpd_album);
 		init_mpd();
-	END OBJ(mpd_vol, INFO_MPD) init_mpd();
-	END OBJ(mpd_bitrate, INFO_MPD) init_mpd();
-	END OBJ(mpd_status, INFO_MPD) init_mpd();
-	END OBJ(mpd_bar, INFO_MPD)
+	END OBJ(mpd_vol, CALLBACK(&update_mpd)) init_mpd();
+	END OBJ(mpd_bitrate, CALLBACK(&update_mpd)) init_mpd();
+	END OBJ(mpd_status, CALLBACK(&update_mpd)) init_mpd();
+	END OBJ(mpd_bar, CALLBACK(&update_mpd))
 		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 		init_mpd();
-	END OBJ(mpd_smart, INFO_MPD)
+	END OBJ(mpd_smart, CALLBACK(&update_mpd))
 		mpd_set_maxlen(mpd_smart);
 		init_mpd();
-	END OBJ_IF(if_mpd_playing, INFO_MPD)
+	END OBJ_IF(if_mpd_playing, CALLBACK(&update_mpd))
 		init_mpd();
 #undef mpd_set_maxlen
 #endif /* MPD */
 #ifdef MOC
-	END OBJ(moc_state, INFO_MOC)
-	END OBJ(moc_file, INFO_MOC)
-	END OBJ(moc_title, INFO_MOC)
-	END OBJ(moc_artist, INFO_MOC)
-	END OBJ(moc_song, INFO_MOC)
-	END OBJ(moc_album, INFO_MOC)
-	END OBJ(moc_totaltime, INFO_MOC)
-	END OBJ(moc_timeleft, INFO_MOC)
-	END OBJ(moc_curtime, INFO_MOC)
-	END OBJ(moc_bitrate, INFO_MOC)
-	END OBJ(moc_rate, INFO_MOC)
+	END OBJ(moc_state, CALLBACK(&update_moc))
+	END OBJ(moc_file, CALLBACK(&update_moc))
+	END OBJ(moc_title, CALLBACK(&update_moc))
+	END OBJ(moc_artist, CALLBACK(&update_moc))
+	END OBJ(moc_song, CALLBACK(&update_moc))
+	END OBJ(moc_album, CALLBACK(&update_moc))
+	END OBJ(moc_totaltime, CALLBACK(&update_moc))
+	END OBJ(moc_timeleft, CALLBACK(&update_moc))
+	END OBJ(moc_curtime, CALLBACK(&update_moc))
+	END OBJ(moc_bitrate, CALLBACK(&update_moc))
+	END OBJ(moc_rate, CALLBACK(&update_moc))
 #endif /* MOC */
 #ifdef XMMS2
-	END OBJ(xmms2_artist, INFO_XMMS2)
-	END OBJ(xmms2_album, INFO_XMMS2)
-	END OBJ(xmms2_title, INFO_XMMS2)
-	END OBJ(xmms2_genre, INFO_XMMS2)
-	END OBJ(xmms2_comment, INFO_XMMS2)
-	END OBJ(xmms2_url, INFO_XMMS2)
-	END OBJ(xmms2_tracknr, INFO_XMMS2)
-	END OBJ(xmms2_bitrate, INFO_XMMS2)
-	END OBJ(xmms2_date, INFO_XMMS2)
-	END OBJ(xmms2_id, INFO_XMMS2)
-	END OBJ(xmms2_duration, INFO_XMMS2)
-	END OBJ(xmms2_elapsed, INFO_XMMS2)
-	END OBJ(xmms2_size, INFO_XMMS2)
-	END OBJ(xmms2_status, INFO_XMMS2)
-	END OBJ(xmms2_percent, INFO_XMMS2)
+	END OBJ(xmms2_artist, CALLBACK(&update_xmms2))
+	END OBJ(xmms2_album, CALLBACK(&update_xmms2))
+	END OBJ(xmms2_title, CALLBACK(&update_xmms2))
+	END OBJ(xmms2_genre, CALLBACK(&update_xmms2))
+	END OBJ(xmms2_comment, CALLBACK(&update_xmms2))
+	END OBJ(xmms2_url, CALLBACK(&update_xmms2))
+	END OBJ(xmms2_tracknr, CALLBACK(&update_xmms2))
+	END OBJ(xmms2_bitrate, CALLBACK(&update_xmms2))
+	END OBJ(xmms2_date, CALLBACK(&update_xmms2))
+	END OBJ(xmms2_id, CALLBACK(&update_xmms2))
+	END OBJ(xmms2_duration, CALLBACK(&update_xmms2))
+	END OBJ(xmms2_elapsed, CALLBACK(&update_xmms2))
+	END OBJ(xmms2_size, CALLBACK(&update_xmms2))
+	END OBJ(xmms2_status, CALLBACK(&update_xmms2))
+	END OBJ(xmms2_percent, CALLBACK(&update_xmms2))
 #ifdef X11
-	END OBJ(xmms2_bar, INFO_XMMS2)
+	END OBJ(xmms2_bar, CALLBACK(&update_xmms2))
 		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 #endif /* X11 */
-	END OBJ(xmms2_smart, INFO_XMMS2)
-	END OBJ(xmms2_playlist, INFO_XMMS2)
-	END OBJ(xmms2_timesplayed, INFO_XMMS2)
-	END OBJ_IF(if_xmms2_connected, INFO_XMMS2)
+	END OBJ(xmms2_smart, CALLBACK(&update_xmms2))
+	END OBJ(xmms2_playlist, CALLBACK(&update_xmms2))
+	END OBJ(xmms2_timesplayed, CALLBACK(&update_xmms2))
+	END OBJ_IF(if_xmms2_connected, CALLBACK(&update_xmms2))
 #endif
 #ifdef AUDACIOUS
-	END OBJ(audacious_status, INFO_AUDACIOUS)
-	END OBJ(audacious_title, INFO_AUDACIOUS)
+	END OBJ(audacious_status, CALLBACK(&update_audacious))
+	END OBJ(audacious_title, CALLBACK(&update_audacious))
 		if (arg) {
 			sscanf(arg, "%d", &info.audacious.max_title_len);
 			if (info.audacious.max_title_len > 0) {
@@ -1747,35 +1755,35 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 				CRIT_ERR(obj, free_at_crash, "audacious_title: invalid length argument");
 			}
 		}
-	END OBJ(audacious_length, INFO_AUDACIOUS)
-	END OBJ(audacious_length_seconds, INFO_AUDACIOUS)
-	END OBJ(audacious_position, INFO_AUDACIOUS)
-	END OBJ(audacious_position_seconds, INFO_AUDACIOUS)
-	END OBJ(audacious_bitrate, INFO_AUDACIOUS)
-	END OBJ(audacious_frequency, INFO_AUDACIOUS)
-	END OBJ(audacious_channels, INFO_AUDACIOUS)
-	END OBJ(audacious_filename, INFO_AUDACIOUS)
-	END OBJ(audacious_playlist_length, INFO_AUDACIOUS)
-	END OBJ(audacious_playlist_position, INFO_AUDACIOUS)
-	END OBJ(audacious_main_volume, INFO_AUDACIOUS)
+	END OBJ(audacious_length, CALLBACK(&update_audacious))
+	END OBJ(audacious_length_seconds, CALLBACK(&update_audacious))
+	END OBJ(audacious_position, CALLBACK(&update_audacious))
+	END OBJ(audacious_position_seconds, CALLBACK(&update_audacious))
+	END OBJ(audacious_bitrate, CALLBACK(&update_audacious))
+	END OBJ(audacious_frequency, CALLBACK(&update_audacious))
+	END OBJ(audacious_channels, CALLBACK(&update_audacious))
+	END OBJ(audacious_filename, CALLBACK(&update_audacious))
+	END OBJ(audacious_playlist_length, CALLBACK(&update_audacious))
+	END OBJ(audacious_playlist_position, CALLBACK(&update_audacious))
+	END OBJ(audacious_main_volume, CALLBACK(&update_audacious))
 #ifdef X11
-	END OBJ(audacious_bar, INFO_AUDACIOUS)
+	END OBJ(audacious_bar, CALLBACK(&update_audacious))
 		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->a, &obj->b);
 #endif /* X11 */
 #endif
 #ifdef BMPX
-	END OBJ(bmpx_title, INFO_BMPX)
+	END OBJ(bmpx_title, CALLBACK(&update_bmpx))
 		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
-	END OBJ(bmpx_artist, INFO_BMPX)
+	END OBJ(bmpx_artist, CALLBACK(&update_bmpx))
 		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
-	END OBJ(bmpx_album, INFO_BMPX)
+	END OBJ(bmpx_album, CALLBACK(&update_bmpx))
 		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
-	END OBJ(bmpx_track, INFO_BMPX)
+	END OBJ(bmpx_track, CALLBACK(&update_bmpx))
 		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
-	END OBJ(bmpx_uri, INFO_BMPX)
+	END OBJ(bmpx_uri, CALLBACK(&update_bmpx))
 		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
-	END OBJ(bmpx_bitrate, INFO_BMPX)
+	END OBJ(bmpx_bitrate, CALLBACK(&update_bmpx))
 		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
 #endif
 #ifdef EVE
@@ -1989,18 +1997,18 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif /* X11 */
 #endif /* HAVE_LUA */
 #ifdef HDDTEMP
-	END OBJ(hddtemp, INFO_HDDTEMP)
+	END OBJ(hddtemp, CALLBACK(&update_hddtemp))
 		if (arg)
 			obj->data.s = strndup(arg, text_buffer_size);
 #endif /* HDDTEMP */
 #ifdef TCP_PORT_MONITOR
-	END OBJ(tcp_portmon, INFO_TCP_PORT_MONITOR)
+	END OBJ(tcp_portmon, CALLBACK(&tcp_portmon_update))
 		tcp_portmon_init(arg, &obj->data.tcp_port_monitor);
 #endif /* TCP_PORT_MONITOR */
-	END OBJ(entropy_avail, INFO_ENTROPY)
-	END OBJ(entropy_perc, INFO_ENTROPY)
-	END OBJ(entropy_poolsize, INFO_ENTROPY)
-	END OBJ(entropy_bar, INFO_ENTROPY)
+	END OBJ(entropy_avail, CALLBACK(&update_entropy))
+	END OBJ(entropy_perc, CALLBACK(&update_entropy))
+	END OBJ(entropy_poolsize, CALLBACK(&update_entropy))
+	END OBJ(entropy_bar, CALLBACK(&update_entropy))
 		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->a, &obj->b);
 	END OBJ(include, 0)
@@ -2120,7 +2128,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif /* NVIDIA */
 #ifdef APCUPSD
 		init_apcupsd();
-		END OBJ(apcupsd, INFO_APCUPSD)
+		END OBJ(apcupsd, CALLBACK(&update_apcupsd))
 			if (arg) {
 				char host[64];
 				int port;
@@ -2133,31 +2141,31 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			} else {
 				CRIT_ERR(obj, free_at_crash, "apcupsd needs arguments: <host> <port>");
 			}
-			END OBJ(apcupsd_name, INFO_APCUPSD)
-			END OBJ(apcupsd_model, INFO_APCUPSD)
-			END OBJ(apcupsd_upsmode, INFO_APCUPSD)
-			END OBJ(apcupsd_cable, INFO_APCUPSD)
-			END OBJ(apcupsd_status, INFO_APCUPSD)
-			END OBJ(apcupsd_linev, INFO_APCUPSD)
-			END OBJ(apcupsd_load, INFO_APCUPSD)
-			END OBJ(apcupsd_loadbar, INFO_APCUPSD)
+			END OBJ(apcupsd_name, CALLBACK(&update_apcupsd))
+			END OBJ(apcupsd_model, CALLBACK(&update_apcupsd))
+			END OBJ(apcupsd_upsmode, CALLBACK(&update_apcupsd))
+			END OBJ(apcupsd_cable, CALLBACK(&update_apcupsd))
+			END OBJ(apcupsd_status, CALLBACK(&update_apcupsd))
+			END OBJ(apcupsd_linev, CALLBACK(&update_apcupsd))
+			END OBJ(apcupsd_load, CALLBACK(&update_apcupsd))
+			END OBJ(apcupsd_loadbar, CALLBACK(&update_apcupsd))
 				SIZE_DEFAULTS(bar);
 				scan_bar(arg, &obj->a, &obj->b);
 #ifdef X11
-			END OBJ(apcupsd_loadgraph, INFO_APCUPSD)
+			END OBJ(apcupsd_loadgraph, CALLBACK(&update_apcupsd))
 				char* buf = 0;
 				SIZE_DEFAULTS(graph);
 				buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 						&obj->e, &obj->char_a, &obj->char_b);
 				if (buf) free(buf);
-			END OBJ(apcupsd_loadgauge, INFO_APCUPSD)
+			END OBJ(apcupsd_loadgauge, CALLBACK(&update_apcupsd))
 				SIZE_DEFAULTS(gauge);
 				scan_gauge(arg, &obj->a, &obj->b);
 #endif /* X11 */
-			END OBJ(apcupsd_charge, INFO_APCUPSD)
-			END OBJ(apcupsd_timeleft, INFO_APCUPSD)
-			END OBJ(apcupsd_temp, INFO_APCUPSD)
-			END OBJ(apcupsd_lastxfer, INFO_APCUPSD)
+			END OBJ(apcupsd_charge, CALLBACK(&update_apcupsd))
+			END OBJ(apcupsd_timeleft, CALLBACK(&update_apcupsd))
+			END OBJ(apcupsd_temp, CALLBACK(&update_apcupsd))
+			END OBJ(apcupsd_lastxfer, CALLBACK(&update_apcupsd))
 #endif /* APCUPSD */
 	END {
 		char buf[256];
