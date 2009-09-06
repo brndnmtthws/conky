@@ -383,9 +383,6 @@ void format_seconds_short(char *buf, unsigned int n, long seconds)
 	}
 }
 
-static double last_meminfo_update;
-static double last_fs_update;
-
 unsigned long long need_mask;
 int no_buffers;
 
@@ -394,6 +391,8 @@ int no_buffers;
 void update_stuff(void)
 {
 	int i;
+	static double last_meminfo_update;
+	static double last_fs_update;
 
 	info.mask = 0;
 
