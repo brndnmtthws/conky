@@ -391,6 +391,9 @@ void add_update_callback(void (*func)(void))
 {
 	struct update_cb *uc = &update_cb_head;
 
+	if (!func)
+		return;
+
 	while (uc->next) {
 		if (uc->next->func == func)
 			return;
