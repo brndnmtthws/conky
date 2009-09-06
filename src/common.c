@@ -423,14 +423,9 @@ int no_buffers;
 void update_stuff(void)
 {
 	int i;
-	static double last_meminfo_update;
 	struct update_cb *uc;
 
 	info.mask = 0;
-
-	if (no_buffers) {
-		need_mask |= 1 << INFO_BUFFERS;
-	}
 
 	/* clear speeds and up status in case device was removed and doesn't get
 	 * updated */
@@ -451,21 +446,11 @@ void update_stuff(void)
 	for (uc = update_cb_head.next; uc; uc = uc->next)
 		(*uc->func)();
 
-	if ((NEED(INFO_MEM) || NEED(INFO_BUFFERS) || NEED(INFO_TOP))
-			&& current_update_time - last_meminfo_update > 6.9) {
-		update_meminfo();
-		if (no_buffers) {
-			info.mem -= info.bufmem;
-			info.memeasyfree += info.bufmem;
-		}
-		last_meminfo_update = current_update_time;
+	/* XXX: move the following into the update_meminfo() functions? */
+	if (no_buffers) {
+		info.mem -= info.bufmem;
+		info.memeasyfree += info.bufmem;
 	}
-	
-#ifdef X11
-	if (NEED(INFO_X11) && x_initialised == YES) {
-		update_x11info();
-	}
-#endif
 }
 
 /* Ohkie to return negative values for temperatures */

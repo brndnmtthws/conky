@@ -116,7 +116,6 @@ void update_uptime(void)
 		fscanf(fp, "%lf", &info.uptime);
 		fclose(fp);
 	}
-	info.mask |= (1 << INFO_UPTIME);
 }
 
 int check_mount(char *s)
@@ -184,8 +183,6 @@ void update_meminfo(void)
 	info.swap = info.swapmax - info.swapfree;
 
 	info.bufmem = info.cached + info.buffers;
-
-	info.mask |= (1 << INFO_MEM) | (1 << INFO_BUFFERS);
 
 	fclose(meminfo_fp);
 }
@@ -509,8 +506,6 @@ void update_net_stats(void)
 	first = 0;
 
 	fclose(net_dev_fp);
-
-	info.mask |= (1 << INFO_NET);
 }
 
 int result;
@@ -536,7 +531,6 @@ void update_total_processes(void)
 		fscanf(fp, "%*f %*f %*f %*d/%hu", &info.procs);
 		fclose(fp);
 	}
-	info.mask |= (1 << INFO_PROCS);
 }
 
 #define CPU_SAMPLE_COUNT 15
@@ -657,7 +651,6 @@ inline static void update_stat(void)
 
 		if (strncmp(buf, "procs_running ", 14) == 0) {
 			sscanf(buf, "%*s %hu", &info.run_procs);
-			info.mask |= (1 << INFO_RUN_PROCS);
 		} else if (strncmp(buf, "cpu", 3) == 0) {
 			double delta;
 			if (isdigit(buf[3])) {
@@ -678,7 +671,6 @@ inline static void update_stat(void)
 
 			cpu[idx].cpu_active_total = cpu[idx].cpu_total -
 				(cpu[idx].cpu_idle + cpu[idx].cpu_iowait);
-			info.mask |= (1 << INFO_CPU);
 
 			delta = current_update_time - last_update_time;
 
@@ -755,7 +747,6 @@ void update_load_average(void)
 			&info.loadavg[2]);
 		fclose(fp);
 	}
-	info.mask |= (1 << INFO_LOADAVG);
 }
 
 #define PROC_I8K "/proc/i8k"
@@ -2146,8 +2137,6 @@ void update_entropy(void)
 
 	fclose(fp1);
 	fclose(fp2);
-
-	info.mask |= (1 << INFO_ENTROPY);
 }
 
 const char *get_disk_protect_queue(const char *disk)

@@ -207,63 +207,21 @@ extern struct conftree *currentconffile;
 char **get_templates(void);
 
 enum {
-	INFO_CPU = 0,
 	INFO_MAIL = 1,
-	INFO_MEM = 2,
-	INFO_NET = 3,
-	INFO_PROCS = 4,
-	INFO_RUN_PROCS = 5,
-	INFO_UPTIME = 6,
-	INFO_BUFFERS = 7,
 	INFO_FS = 8,
 	INFO_SYSFS = 9,
 	INFO_MIXER = 10,
-	INFO_LOADAVG = 11,
 	INFO_UNAME = 12,
 	INFO_FREQ = 13,
-#ifdef MPD
-	INFO_MPD = 14,
-#endif
-	INFO_TOP = 15,
 	INFO_WIFI = 16,
-	INFO_DISKIO = 17,
-	INFO_I8K = 18,
-#ifdef TCP_PORT_MONITOR
-	INFO_TCP_PORT_MONITOR = 19,
-#endif
-#ifdef AUDACIOUS
-	INFO_AUDACIOUS = 20,
-#endif
-#ifdef BMPX
-	INFO_BMPX = 21,
-#endif
-#ifdef XMMS2
-	INFO_XMMS2 = 22,
-#endif
-	INFO_ENTROPY = 23,
 #ifdef IBM
 	INFO_SMAPI = 25,
 #endif
-	INFO_USERS = 26,
-	INFO_GW = 27,
 #ifdef NVIDIA
 	INFO_NVIDIA = 28,
 #endif
-#ifdef X11
-	INFO_X11 = 29,
-#endif
-	INFO_DNS = 30,
-#ifdef MOC
-	INFO_MOC = 31,
-#endif
-#ifdef APCUPSD
- 	INFO_APCUPSD = 32,
-#endif
 #ifdef WEATHER
 	INFO_WEATHER = 33,
-#endif
-#ifdef HDDTEMP
-	INFO_HDDTEMP = 34,
 #endif
 };
 

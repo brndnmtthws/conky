@@ -733,8 +733,6 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj)
 		obj->data.top.s = strndup(arg, text_buffer_size);
 	}
 
-	need_mask |= (1 << INFO_TOP);
-
 	if (s[3] == 0) {
 		obj->type = OBJ_top;
 		top_cpu = 1;

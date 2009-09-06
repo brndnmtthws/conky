@@ -543,8 +543,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(obsd_vendor, 0)
 	END OBJ(obsd_product, 0)
 #endif /* __OpenBSD__ */
-	END OBJ(buffers, INFO_BUFFERS)
-	END OBJ(cached, INFO_BUFFERS)
+	END OBJ(buffers, CALLBACK(&update_meminfo))
+	END OBJ(cached, CALLBACK(&update_meminfo))
 #define SCAN_CPU(__arg, __var) { \
 	int __offset = 0; \
 	if (__arg && sscanf(__arg, " cpu%u %n", &__var, &__offset) > 0) \
@@ -1032,6 +1032,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	 * avoid having almost-same code four times, we have this special
 	 * handler. */
 	if (strncmp(s, "top", 3) == EQUAL) {
+		add_update_callback(&update_meminfo);
 		if (!parse_top_args(s, arg, obj)) {
 			return NULL;
 		}
@@ -1368,21 +1369,21 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		/* if '1' (in mboxscan.c) then there was SIGUSR1, hmm */
 		obj->data.mboxscan.output[0] = 1;
 		strncpy(obj->data.mboxscan.args, arg, text_buffer_size);
-	END OBJ(mem, INFO_MEM)
-	END OBJ(memeasyfree, INFO_MEM)
-	END OBJ(memfree, INFO_MEM)
-	END OBJ(memmax, INFO_MEM)
-	END OBJ(memperc, INFO_MEM)
+	END OBJ(mem, CALLBACK(&update_meminfo))
+	END OBJ(memeasyfree, CALLBACK(&update_meminfo))
+	END OBJ(memfree, CALLBACK(&update_meminfo))
+	END OBJ(memmax, CALLBACK(&update_meminfo))
+	END OBJ(memperc, CALLBACK(&update_meminfo))
 #ifdef X11
-	END OBJ(memgauge, INFO_MEM)
+	END OBJ(memgauge, CALLBACK(&update_meminfo))
 		SIZE_DEFAULTS(gauge);
 		scan_gauge(arg, &obj->data.pair.a, &obj->data.pair.b);
 #endif /* X11*/
-	END OBJ(membar, INFO_MEM)
+	END OBJ(membar, CALLBACK(&update_meminfo))
 		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 #ifdef X11
-	END OBJ(memgraph, INFO_MEM)
+	END OBJ(memgraph, CALLBACK(&update_meminfo))
 		char *buf = 0;
 		SIZE_DEFAULTS(graph);
 		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
@@ -1413,11 +1414,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ_IF(if_mixer_mute, INFO_MIXER)
 		obj->data.ifblock.i = mixer_init(arg);
 #ifdef X11
-	END OBJ(monitor, INFO_X11)
-	END OBJ(monitor_number, INFO_X11)
-	END OBJ(desktop, INFO_X11)
-	END OBJ(desktop_number, INFO_X11)
-	END OBJ(desktop_name, INFO_X11)
+	END OBJ(monitor, CALLBACK(&update_x11info))
+	END OBJ(monitor_number, CALLBACK(&update_x11info))
+	END OBJ(desktop, CALLBACK(&update_x11info))
+	END OBJ(desktop_number, CALLBACK(&update_x11info))
+	END OBJ(desktop_name, CALLBACK(&update_x11info))
 #endif
 	END OBJ(nodename, 0)
 	END OBJ(processes, CALLBACK(&update_total_processes))
@@ -1445,11 +1446,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.pair.a = a;
 		obj->data.pair.b = b;
 #endif /* X11 */
-	END OBJ(swap, INFO_MEM)
-	END OBJ(swapfree, INFO_MEM)
-	END OBJ(swapmax, INFO_MEM)
-	END OBJ(swapperc, INFO_MEM)
-	END OBJ(swapbar, INFO_MEM)
+	END OBJ(swap, CALLBACK(&update_meminfo))
+	END OBJ(swapfree, CALLBACK(&update_meminfo))
+	END OBJ(swapmax, CALLBACK(&update_meminfo))
+	END OBJ(swapperc, CALLBACK(&update_meminfo))
+	END OBJ(swapbar, CALLBACK(&update_meminfo))
 		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(sysname, 0)
@@ -1564,7 +1565,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		free(buf);
 #endif
 	END OBJ(uptime_short, CALLBACK(&update_uptime))
-	END OBJ(uptime, INFO_UPTIME)
+	END OBJ(uptime, CALLBACK(&update_uptime))
 	END OBJ(user_names, CALLBACK(&update_users))
 	END OBJ(user_times, CALLBACK(&update_users))
 	END OBJ(user_terms, CALLBACK(&update_users))
