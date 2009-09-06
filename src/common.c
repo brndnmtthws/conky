@@ -530,6 +530,11 @@ void update_stuff(void)
 		update_apcupsd();
 	}
 #endif
+#ifdef HDDTEMP
+	if (NEED(INFO_HDDTEMP)) {
+		update_hddtemp();
+	}
+#endif
 }
 
 /* Ohkie to return negative values for temperatures */

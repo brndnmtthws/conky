@@ -1966,29 +1966,14 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif /* HAVE_LUA */
 #ifdef HDDTEMP
 			OBJ(hddtemp) {
-				char *endptr, unit;
-				long val;
-				if (obj->data.hddtemp.update_time < current_update_time - 30) {
-					if (obj->data.hddtemp.temp)
-						free(obj->data.hddtemp.temp);
-					obj->data.hddtemp.temp = get_hddtemp_info(obj->data.hddtemp.dev,
-							obj->data.hddtemp.addr, obj->data.hddtemp.port);
-					obj->data.hddtemp.update_time = current_update_time;
-				}
-				if (!obj->data.hddtemp.temp) {
+				short val;
+				char unit;
+
+				if (get_hddtemp_info(obj->data.s, &val, &unit)) {
 					snprintf(p, p_max_size, "N/A");
 				} else {
-					val = strtol(obj->data.hddtemp.temp + 1, &endptr, 10);
-					unit = obj->data.hddtemp.temp[0];
-
-					if (*endptr != '\0')
-						snprintf(p, p_max_size, "N/A");
-					else if (unit == 'C')
-						temp_print(p, p_max_size, (double)val, TEMP_CELSIUS);
-					else if (unit == 'F')
-						temp_print(p, p_max_size, (double)val, TEMP_FAHRENHEIT);
-					else
-						snprintf(p, p_max_size, "N/A");
+					temp_print(p, p_max_size, (double)val,
+							(unit == 'C' ? TEMP_CELSIUS : TEMP_FAHRENHEIT));
 				}
 			}
 #endif
@@ -5798,6 +5783,14 @@ char load_config_file(const char *f)
 		CONF("format_human_readable") {
 			format_human_readable = string_to_bool(value);
 		}
+#ifdef HDDTEMP
+		CONF("hddtemp_host") {
+			set_hddtemp_host(value);
+		}
+		CONF("hddtemp_port") {
+			set_hddtemp_port(value);
+		}
+#endif /* HDDTEMP */
 		CONF("pad_percents") {
 			pad_percents = atoi(value);
 		}

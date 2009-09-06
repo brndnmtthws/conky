@@ -1251,12 +1251,13 @@
             <command>
                 <option>hddtemp</option>
             </command>
-            <option>dev, (host,(port))</option>
+            <option>(dev)</option>
         </term>
         <listitem>Displays temperature of a selected hard disk
-        drive as reported by the hddtemp daemon running on
-        host:port. Default host is 127.0.0.1, default port is 7634.
-        
+		drive as reported by the hddtemp daemon. Use hddtemp_host
+		and hddtemp_port to specify a host and port for all hddtemp
+		objects. If no dev parameter is given, the first disk returned
+		by the hddtemp daemon is used.
         <para /></listitem>
     </varlistentry>
     <varlistentry>

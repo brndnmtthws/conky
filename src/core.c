@@ -1989,15 +1989,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif /* X11 */
 #endif /* HAVE_LUA */
 #ifdef HDDTEMP
-	END OBJ(hddtemp, 0)
-		if (scan_hddtemp(arg, &obj->data.hddtemp.dev,
-		                 &obj->data.hddtemp.addr, &obj->data.hddtemp.port)) {
-			NORM_ERR("hddtemp needs arguments");
-			obj->type = OBJ_text;
-			obj->data.s = strndup("${hddtemp}", text_buffer_size);
-			obj->data.hddtemp.update_time = 0;
-		} else
-			obj->data.hddtemp.temp = NULL;
+	END OBJ(hddtemp, INFO_HDDTEMP)
+		if (arg)
+			obj->data.s = strndup(arg, text_buffer_size);
 #endif /* HDDTEMP */
 #ifdef TCP_PORT_MONITOR
 	END OBJ(tcp_portmon, INFO_TCP_PORT_MONITOR)
@@ -2672,10 +2666,11 @@ void free_text_objects(struct text_object *root, int internal)
 				break;
 #ifdef HDDTEMP
 			case OBJ_hddtemp:
-				free(data.hddtemp.dev);
-				free(data.hddtemp.addr);
-				if (data.hddtemp.temp)
-					free(data.hddtemp.temp);
+				if (data.s) {
+					free(data.s);
+					data.s = NULL;
+				}
+				free_hddtemp();
 				break;
 #endif /* HDDTEMP */
 			case OBJ_entropy_avail:

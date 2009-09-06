@@ -262,6 +262,9 @@ enum {
 #ifdef WEATHER
 	INFO_WEATHER = 33,
 #endif
+#ifdef HDDTEMP
+	INFO_HDDTEMP = 34,
+#endif
 };
 
 /* get_battery_stuff() item selector

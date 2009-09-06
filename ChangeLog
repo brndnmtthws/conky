@@ -1,3 +1,6 @@
+2009-09-06
+	* Rewrite hddtemp support for better scaling.
+
 2009-08-10
 	* Add day and date data_type to $weather_forecast
 

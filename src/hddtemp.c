@@ -40,173 +40,217 @@
 #include <netinet/in.h>
 
 #define BUFLEN 512
-#define PORT 7634
+#define DEFAULT_PORT "7634"
+#define DEFAULT_HOST "127.0.0.1"
 
-char buf[BUFLEN];
+static char *hddtemp_host = NULL;
+static char *hddtemp_port = NULL;
 
-int scan_hddtemp(const char *arg, char **dev, char **addr, int *port)
+static struct hdd_info {
+	struct hdd_info *next;
+	char *dev;
+	short temp;
+	char unit;
+} hdd_info_head = {
+	.next = NULL,
+};
+
+void set_hddtemp_host(const char *host)
 {
-	char buf1[32], buf2[64];
-	int n, ret;
+	if (hddtemp_host)
+		free(hddtemp_host);
+	hddtemp_host = strdup(host);
+}
 
-	if (!arg)
-		return 1;
+void set_hddtemp_port(const char *port)
+{
+	if (hddtemp_port)
+		free(hddtemp_port);
+	hddtemp_port = strdup(port);
+}
 
-	if ((ret = sscanf(arg, "%31s %63s %d", buf1, buf2, &n)) < 1)
-		return 1;
+static void __free_hddtemp_info(struct hdd_info *hdi)
+{
+	if (hdi->next)
+		__free_hddtemp_info(hdi->next);
+	free(hdi->dev);
+	free(hdi);
+}
 
-	if (strncmp(buf1, "/dev/", 5)) {
-		strncpy(buf1 + 5, buf1, 32 - 5);
-		strncpy(buf1, "/dev/", 5);
+static void free_hddtemp_info(void)
+{
+	DBGP("free_hddtemp_info() called");
+	if (!hdd_info_head.next)
+		return;
+	__free_hddtemp_info(hdd_info_head.next);
+	hdd_info_head.next = NULL;
+}
+
+static void add_hddtemp_info(char *dev, short temp, char unit)
+{
+	struct hdd_info *hdi = &hdd_info_head;
+
+	DBGP("add_hddtemp_info(%s, %d, %c) being called", dev, temp, unit);
+	while (hdi->next)
+		hdi = hdi->next;
+
+	hdi->next = malloc(sizeof(struct hdd_info));
+	memset(hdi->next, 0, sizeof(struct hdd_info));
+	hdi->next->dev = strdup(dev);
+	hdi->next->temp = temp;
+	hdi->next->unit = unit;
+}
+
+static char *fetch_hddtemp_output(void)
+{
+	int sockfd;
+	const char *dst_host, *dst_port;
+	char *buf = NULL;
+	int buflen, offset = 0, rlen;
+	struct addrinfo hints, *result, *rp;
+	int i;
+
+	dst_host = hddtemp_host ? hddtemp_host : DEFAULT_HOST;
+	dst_port = hddtemp_port ? hddtemp_port : DEFAULT_PORT;
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_INET;	/* XXX: hddtemp has no ipv6 support (yet?) */
+	hints.ai_socktype = SOCK_STREAM;
+
+	if ((i = getaddrinfo(dst_host, dst_port, &hints, &result))) {
+		NORM_ERR("getaddrinfo(): %s", gai_strerror(i));
+		return NULL;
 	}
-	*dev = strndup(buf1, text_buffer_size);
 
-	if (ret >= 2) {
-		*addr = strndup(buf2, text_buffer_size);
-	} else {
-		*addr = strndup("127.0.0.1", text_buffer_size);
+	for (rp = result; rp; rp = rp->ai_next) {
+		sockfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+		if (sockfd == -1)
+			continue;
+		if (connect(sockfd, rp->ai_addr, rp->ai_addrlen) != -1)
+			break;
+		close(sockfd);
+	}
+	if (!rp) {
+		NORM_ERR("could not connect to mpd host");
+		goto GET_OUT;
 	}
 
-	if (ret == 3) {
-		*port = n;
-	} else {
-		*port = PORT;
+	buflen = 1024;
+	buf = malloc(buflen);
+	while ((rlen = recv(sockfd, buf + offset, buflen - offset - 1, 0)) > 0) {
+		offset += rlen;
+		if (buflen - offset < 1) {
+			buflen += 1024;
+			buf = realloc(buf, buflen);
+		}
 	}
+	if (rlen < 0)
+		perror("recv");
 
-	return 0;
+	buf[offset] = '\0';
+
+	close(sockfd);
+GET_OUT:
+	freeaddrinfo(result);
+	return buf;
 }
 
 /* this is an iterator:
  * set line to NULL in consecutive calls to get the next field
- * returns "<dev><unit><val>" or NULL on error
+ * note that exhausing iteration is assumed - otherwise *saveptr
+ * is not being freed!
  */
-static char *read_hdd_val(const char *line)
+static int read_hdd_val(const char *line, char **dev, short *val, char *unit,
+		char **saveptr)
 {
-	static char line_s[512] = "\0";
+	char *line_s, *cval, *endptr;
 	static char *p = 0;
-	char *dev, *val, unit;
-	char *ret = NULL;
 
 	if (line) {
-		if (!snprintf(line_s, 512, "%s", line)) return ret;
-		p = line_s;
+		*saveptr = strdup(line);
+		p = *saveptr;
 	}
-	if (!(*line_s) || !p)
-		return ret;
+	line_s = *saveptr;
+
 	/* read the device */
-	dev = ++p;
+	*dev = ++p;
 	if (!(p = strchr(p, line_s[0])))
-		return ret;
+		goto out_fail;
 	*(p++) = '\0';
 	/* jump over the devname */
 	if (!(p = strchr(p, line_s[0])))
-		return ret;
+		goto out_fail;
 	/* read the value */
-	val = ++p;
+	cval = ++p;
 	if (!(p = strchr(p, line_s[0])))
-		return ret;
+		goto out_fail;
 	*(p++) = '\0';
-	unit = *(p++);
+	*unit = *(p++);
+	*val = strtol(cval, &endptr, 10);
+	if (*endptr)
+		goto out_fail;
+	
 	/* preset p for next call */
-	p = strchr(p + 1, line_s[0]);
+	p++;
 
-	if (dev && *dev && val && *val) {
-		asprintf(&ret, "%s%c%s", dev, unit, val);
-	}
-	return ret;
+	return 0;
+out_fail:
+	free(*saveptr);
+	return 1;
 }
 
-/* returns <unit><val> or NULL on error or N/A */
-char *get_hddtemp_info(char *dev, char *hostaddr, int port)
+void update_hddtemp(void) {
+	char *data, *dev, unit, *saveptr;
+	short val;
+	static double last_hddtemp_update = 0.0;
+
+	/* limit tcp connection overhead */
+	if (current_update_time - last_hddtemp_update < 5)
+		return;
+	last_hddtemp_update = current_update_time;
+
+	free_hddtemp_info();
+
+	if (!(data = fetch_hddtemp_output()))
+		return;
+
+	if (read_hdd_val(data, &dev, &val, &unit, &saveptr)) {
+		free(data);
+		return;
+	}
+	do {
+		add_hddtemp_info(dev, val, unit);
+	} while (!read_hdd_val(NULL, &dev, &val, &unit, &saveptr));
+	free(data);
+}
+
+void free_hddtemp(void)
 {
-	int sockfd = 0;
-	struct hostent he, *he_res = 0;
-	int he_errno;
-	char hostbuff[2048];
-	struct sockaddr_in addr;
-	struct timeval tv;
-	fd_set rfds;
-	int len, i;
-	char *p, *r = NULL;
-
-	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-		perror("socket");
-		goto GET_OUT;
+	free_hddtemp_info();
+	if (hddtemp_host) {
+		free(hddtemp_host);
+		hddtemp_host = NULL;
 	}
-
-#ifdef HAVE_GETHOSTBYNAME_R
-	if (gethostbyname_r(hostaddr, &he, hostbuff,
-	                    sizeof(hostbuff), &he_res, &he_errno)) {
-		NORM_ERR("hddtemp gethostbyname_r: %s", hstrerror(h_errno));
-#else /* HAVE_GETHOSTBYNAME_R */
-	if (!(he_res = gethostbyname(hostaddr))) {
-		perror("gethostbyname()");
-#endif /* HAVE_GETHOSTBYNAME_R */
-		goto GET_OUT;
+	if (hddtemp_port) {
+		free(hddtemp_port);
+		hddtemp_port = NULL;
 	}
+}
 
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(port);
-	addr.sin_addr = *((struct in_addr *) he_res->h_addr);
-	memset(&(addr.sin_zero), 0, 8);
+int get_hddtemp_info(const char *dev, short *val, char *unit)
+{
+	struct hdd_info *hdi = hdd_info_head.next;
 
-	if (connect(sockfd, (struct sockaddr *) &addr,
-				sizeof(struct sockaddr)) == -1) {
-		perror("connect");
-		goto GET_OUT;
-	}
-
-	FD_ZERO(&rfds);
-	FD_SET(sockfd, &rfds);
-
-	/* We're going to wait up to a half second to see whether there's any
-	 * data available. Polling with timeout set to 0 doesn't seem to work
-	 * with hddtemp.
-	 */
-	tv.tv_sec = 0;
-	tv.tv_usec = 500000;
-
-	i = select(sockfd + 1, &rfds, NULL, NULL, &tv);
-	if (i == -1) { /* select() failed */
-		if (errno == EINTR) {
-			/* silently ignore interrupted system call */
-			goto GET_OUT;
-		} else {
-			perror("select");
-		}
-	} else if (i == 0) { /* select() timeouted */
-		NORM_ERR("hddtemp had nothing for us");
-		goto GET_OUT;
-	}
-
-	p = buf;
-	len = 0;
-	do {
-		i = recv(sockfd, p, BUFLEN - (p - buf), 0);
-		if (i < 0) {
-			perror("recv");
+	/* if no dev is given, just use hdd_info_head->next */
+	while(dev && hdi) {
+		if (!strcmp(dev, hdi->dev))
 			break;
-		}
-		len += i;
-		p += i;
-	} while (i > 0 && p < buf + BUFLEN - 1);
-
-	if (len < 2) {
-		NORM_ERR("hddtemp returned nada");
-		goto GET_OUT;
+		hdi = hdi->next;
 	}
-
-	buf[len] = 0;
-
-	if ((p = read_hdd_val(buf)) == NULL)
-		goto GET_OUT;
-	do {
-		if (!strncmp(dev, p, strlen(dev)))
-			asprintf(&r, "%s", p + strlen(dev));
-		free(p);
-	} while(!r && (p = read_hdd_val(NULL)) != NULL);
-
-GET_OUT:
-	close(sockfd);
-	return r;
+	if (!hdi)
+		return 1;
+	
+	*val = hdi->temp;
+	*unit = hdi->unit;
+	return 0;
 }

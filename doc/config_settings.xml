@@ -279,6 +279,26 @@
     <varlistentry>
         <term>
             <command>
+                <option>hddtemp_host</option>
+            </command>
+        </term>
+	<listitem>Hostname to connect to for hddtemp objects. Defaults
+		to "127.0.0.1".
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>hddtemp_port</option>
+            </command>
+        </term>
+	<listitem>Port to use for hddtemp connections. Defaults to
+		7634.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>if_up_strictness</option>
             </command>
         </term>
