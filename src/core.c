@@ -244,12 +244,12 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	} else
 #endif /* X11 */
 #ifdef __OpenBSD__
-	OBJ(freq, INFO_FREQ)
+	OBJ(freq, 0)
 #else
 	OBJ(acpitemp, 0)
 		obj->data.i = open_acpi_temperature(arg);
 	END OBJ(acpiacadapter, 0)
-	END OBJ(freq, INFO_FREQ)
+	END OBJ(freq, 0)
 #endif /* !__OpenBSD__ */
 		get_cpu_count();
 		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) == 0
@@ -261,7 +261,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			obj->data.cpu_index = atoi(&arg[0]);
 		}
 		obj->a = 1;
-	END OBJ(freq_g, INFO_FREQ)
+	END OBJ(freq_g, 0)
 		get_cpu_count();
 		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) == 0
 				|| (unsigned int) atoi(&arg[0]) > info.cpu_count) {
@@ -933,7 +933,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.pair.b = b;
 
 #ifdef __linux__
-	END OBJ(i2c, INFO_SYSFS)
+	END OBJ(i2c, 0)
 		char buf1[64], buf2[64];
 		float factor, offset;
 		int n, found = 0;
@@ -967,7 +967,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.sysfs.factor = factor;
 		obj->data.sysfs.offset = offset;
 
-	END OBJ(platform, INFO_SYSFS)
+	END OBJ(platform, 0)
 		char buf1[64], buf2[64];
 		float factor, offset;
 		int n, found = 0;
@@ -995,7 +995,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.sysfs.factor = factor;
 		obj->data.sysfs.offset = offset;
 
-	END OBJ(hwmon, INFO_SYSFS)
+	END OBJ(hwmon, 0)
 		char buf1[64], buf2[64];
 		float factor, offset;
 		int n, found = 0;
@@ -1391,27 +1391,27 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 
 		if (buf) free(buf);
 #endif /* X11*/
-	END OBJ(mixer, INFO_MIXER)
+	END OBJ(mixer, 0)
 		obj->data.l = mixer_init(arg);
-	END OBJ(mixerl, INFO_MIXER)
+	END OBJ(mixerl, 0)
 		obj->data.l = mixer_init(arg);
-	END OBJ(mixerr, INFO_MIXER)
+	END OBJ(mixerr, 0)
 		obj->data.l = mixer_init(arg);
 #ifdef X11
-	END OBJ(mixerbar, INFO_MIXER)
+	END OBJ(mixerbar, 0)
 		SIZE_DEFAULTS(bar);
 		scan_mixer_bar(arg, &obj->data.mixerbar.l, &obj->data.mixerbar.w,
 			&obj->data.mixerbar.h);
-	END OBJ(mixerlbar, INFO_MIXER)
+	END OBJ(mixerlbar, 0)
 		SIZE_DEFAULTS(bar);
 		scan_mixer_bar(arg, &obj->data.mixerbar.l, &obj->data.mixerbar.w,
 			&obj->data.mixerbar.h);
-	END OBJ(mixerrbar, INFO_MIXER)
+	END OBJ(mixerrbar, 0)
 		SIZE_DEFAULTS(bar);
 		scan_mixer_bar(arg, &obj->data.mixerbar.l, &obj->data.mixerbar.w,
 			&obj->data.mixerbar.h);
 #endif
-	END OBJ_IF(if_mixer_mute, INFO_MIXER)
+	END OBJ_IF(if_mixer_mute, 0)
 		obj->data.ifblock.i = mixer_init(arg);
 #ifdef X11
 	END OBJ(monitor, CALLBACK(&update_x11info))

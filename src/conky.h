@@ -206,25 +206,6 @@ extern struct conftree *currentconffile;
 #define MAX_TEMPLATES 10
 char **get_templates(void);
 
-enum {
-	INFO_MAIL = 1,
-	INFO_FS = 8,
-	INFO_SYSFS = 9,
-	INFO_MIXER = 10,
-	INFO_UNAME = 12,
-	INFO_FREQ = 13,
-	INFO_WIFI = 16,
-#ifdef IBM
-	INFO_SMAPI = 25,
-#endif
-#ifdef NVIDIA
-	INFO_NVIDIA = 28,
-#endif
-#ifdef WEATHER
-	INFO_WEATHER = 33,
-#endif
-};
-
 /* get_battery_stuff() item selector
  * needed by conky.c, linux.c and freebsd.c */
 enum {

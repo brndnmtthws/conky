@@ -415,17 +415,12 @@ void free_update_callbacks(void)
 	update_cb_head.next = NULL;
 }
 
-unsigned long long need_mask;
 int no_buffers;
-
-#define NEED(a) ((need_mask & (1ULL << a)) && ((info.mask & (1ULL << a)) == 0))
 
 void update_stuff(void)
 {
 	int i;
 	struct update_cb *uc;
-
-	info.mask = 0;
 
 	/* clear speeds and up status in case device was removed and doesn't get
 	 * updated */

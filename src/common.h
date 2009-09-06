@@ -53,7 +53,6 @@ int round_to_int_temp(float);
 
 unsigned int round_to_int(float);
 
-extern unsigned long long need_mask;
 extern int no_buffers;
 
 struct dns_data {
