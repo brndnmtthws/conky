@@ -616,6 +616,14 @@ inline static void update_stat(void)
 	const char *stat_template = NULL;
 	unsigned int malloc_cpu_size = 0;
 	extern void* global_cpu;
+	static double last_stat_update = 0.0;
+
+	/* since we use wrappers for this function, the update machinery
+	 * can't eliminate double invocations of this function. Check for
+	 * them here, otherwise cpu_usage counters are freaking out. */
+	if (last_stat_update == current_update_time)
+		return;
+	last_stat_update = current_update_time;
 
 	/* add check for !info.cpu_usage since that mem is freed on a SIGUSR1 */
 	if (!cpu_setup || !info.cpu_usage) {
