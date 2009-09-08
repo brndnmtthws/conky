@@ -954,7 +954,7 @@ $PACKAGE $VERSION configured successfully:
   XMMS2:            $want_xmms2
 
  * General:
-  OpenMP:           $want_openmp
+dnl  OpenMP:           $want_openmp
   math:             $want_math
   hddtemp:          $want_hddtemp
   portmon:          $want_portmon
