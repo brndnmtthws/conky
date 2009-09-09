@@ -379,6 +379,8 @@ void format_seconds_short(char *buf, unsigned int n, long seconds)
 	}
 }
 
+/* Linked list containing the functions to call upon each update interval.
+ * Populated while initialising text objects in construct_text_object(). */
 static struct update_cb {
 	struct update_cb *next;
 	void (*func)(void);
@@ -386,6 +388,8 @@ static struct update_cb {
 	.next = NULL,
 };
 
+/* Register an update callback. Don't allow duplicates, to minimise side
+ * effects and overhead. */
 void add_update_callback(void (*func)(void))
 {
 	struct update_cb *uc = &update_cb_head;
@@ -403,6 +407,7 @@ void add_update_callback(void (*func)(void))
 	uc->next->func = func;
 }
 
+/* Free the list element uc and all decendants recursively. */
 static void __free_update_callbacks(struct update_cb *uc)
 {
 	if (uc->next)
@@ -410,6 +415,7 @@ static void __free_update_callbacks(struct update_cb *uc)
 	free(uc);
 }
 
+/* Free the whole list of update callbacks. */
 void free_update_callbacks(void)
 {
 	if (update_cb_head.next)
