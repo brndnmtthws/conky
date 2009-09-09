@@ -173,12 +173,16 @@ static void cimlib_draw_image(struct image_list_s *cur, int *clip_x, int
 {
 	int w, h;
 	time_t now = time(NULL);
+	static int rep = 0;
 
 	image = imlib_load_image(cur->name);
 	if (!image) {
-		NORM_ERR("Unable to load image '%s'", cur->name);
+		if (!rep)
+			NORM_ERR("Unable to load image '%s'", cur->name);
+		rep = 1;
 		return;
 	}
+	rep = 0;	/* reset so disappearing images are reported */
 
 	DBGP("Drawing image '%s' at (%i,%i) scaled to %ix%i, "
 	     "caching interval set to %i (with -n opt %i)",
