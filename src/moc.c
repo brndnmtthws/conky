@@ -99,9 +99,9 @@ static void update_infos(void)
 	pclose(fp);
 }
 
-void *update_moc(void *) __attribute__((noreturn));
+static void *update_moc_loop(void *) __attribute__((noreturn));
 
-void *update_moc(void *arg)
+static void *update_moc_loop(void *arg)
 {
 	(void)arg;
 
@@ -121,7 +121,7 @@ static int run_moc_thread(double interval)
 	if (moc_thread)
 		return 0;
 
-	moc_thread = timed_thread_create(&update_moc, NULL, interval);
+	moc_thread = timed_thread_create(&update_moc_loop, NULL, interval);
 	if (!moc_thread) {
 		NORM_ERR("Failed to create MOC timed thread");
 		return 1;
