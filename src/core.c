@@ -462,8 +462,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			obj->data.sensor = 0;
 			NORM_ERR("Invalid temperature sensor! Sensor number must be 0 to 7. "
 				"Using 0 (CPU temp sensor).");
-		}
-		obj->data.sensor = atoi(&arg[0]);
+		} else
+			obj->data.sensor = atoi(&arg[0]);
 	END OBJ(ibm_volume, 0)
 	END OBJ(ibm_brightness, 0)
 #endif
@@ -510,8 +510,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 				|| atoi(&arg[0]) > OBSD_MAX_SENSORS - 1) {
 			obj->data.sensor = 0;
 			NORM_ERR("Invalid temperature sensor number!");
-		}
-		obj->data.sensor = atoi(&arg[0]);
+		} else
+			obj->data.sensor = atoi(&arg[0]);
 	END OBJ(obsd_sensors_fan, 0)
 		if (!arg) {
 			CRIT_ERR(obj, free_at_crash, "obsd_sensors_fan: needs 2 arguments (device and sensor "
@@ -521,8 +521,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 				|| atoi(&arg[0]) > OBSD_MAX_SENSORS - 1) {
 			obj->data.sensor = 0;
 			NORM_ERR("Invalid fan sensor number!");
-		}
-		obj->data.sensor = atoi(&arg[0]);
+		} else
+			obj->data.sensor = atoi(&arg[0]);
 	END OBJ(obsd_sensors_volt, 0)
 		if (!arg) {
 			CRIT_ERR(obj, free_at_crash, "obsd_sensors_volt: needs 2 arguments (device and sensor "
@@ -532,8 +532,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 				|| atoi(&arg[0]) > OBSD_MAX_SENSORS - 1) {
 			obj->data.sensor = 0;
 			NORM_ERR("Invalid voltage sensor number!");
-		}
-		obj->data.sensor = atoi(&arg[0]);
+		} else
+			obj->data.sensor = atoi(&arg[0]);
 	END OBJ(obsd_vendor, 0)
 	END OBJ(obsd_product, 0)
 #endif /* __OpenBSD__ */
