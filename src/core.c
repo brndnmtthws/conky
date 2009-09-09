@@ -2123,44 +2123,44 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		}
 #endif /* NVIDIA */
 #ifdef APCUPSD
-		END OBJ(apcupsd, &update_apcupsd)
-			if (arg) {
-				char host[64];
-				int port;
-				if (sscanf(arg, "%63s %d", host, &port) != 2) {
-					CRIT_ERR(obj, free_at_crash, "apcupsd needs arguments: <host> <port>");
-				} else {
-					info.apcupsd.port = htons(port);
-					strncpy(info.apcupsd.host, host, sizeof(info.apcupsd.host));
-				}
-			} else {
+	END OBJ(apcupsd, &update_apcupsd)
+		if (arg) {
+			char host[64];
+			int port;
+			if (sscanf(arg, "%63s %d", host, &port) != 2) {
 				CRIT_ERR(obj, free_at_crash, "apcupsd needs arguments: <host> <port>");
+			} else {
+				info.apcupsd.port = htons(port);
+				strncpy(info.apcupsd.host, host, sizeof(info.apcupsd.host));
 			}
-			END OBJ(apcupsd_name, &update_apcupsd)
-			END OBJ(apcupsd_model, &update_apcupsd)
-			END OBJ(apcupsd_upsmode, &update_apcupsd)
-			END OBJ(apcupsd_cable, &update_apcupsd)
-			END OBJ(apcupsd_status, &update_apcupsd)
-			END OBJ(apcupsd_linev, &update_apcupsd)
-			END OBJ(apcupsd_load, &update_apcupsd)
-			END OBJ(apcupsd_loadbar, &update_apcupsd)
-				SIZE_DEFAULTS(bar);
-				scan_bar(arg, &obj->a, &obj->b);
+		} else {
+			CRIT_ERR(obj, free_at_crash, "apcupsd needs arguments: <host> <port>");
+		}
+	END OBJ(apcupsd_name, &update_apcupsd)
+	END OBJ(apcupsd_model, &update_apcupsd)
+	END OBJ(apcupsd_upsmode, &update_apcupsd)
+	END OBJ(apcupsd_cable, &update_apcupsd)
+	END OBJ(apcupsd_status, &update_apcupsd)
+	END OBJ(apcupsd_linev, &update_apcupsd)
+	END OBJ(apcupsd_load, &update_apcupsd)
+	END OBJ(apcupsd_loadbar, &update_apcupsd)
+		SIZE_DEFAULTS(bar);
+		scan_bar(arg, &obj->a, &obj->b);
 #ifdef X11
-			END OBJ(apcupsd_loadgraph, &update_apcupsd)
-				char* buf = 0;
-				SIZE_DEFAULTS(graph);
-				buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-						&obj->e, &obj->char_a, &obj->char_b);
-				if (buf) free(buf);
-			END OBJ(apcupsd_loadgauge, &update_apcupsd)
-				SIZE_DEFAULTS(gauge);
-				scan_gauge(arg, &obj->a, &obj->b);
+	END OBJ(apcupsd_loadgraph, &update_apcupsd)
+		char* buf = 0;
+		SIZE_DEFAULTS(graph);
+		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+				&obj->e, &obj->char_a, &obj->char_b);
+		if (buf) free(buf);
+	END OBJ(apcupsd_loadgauge, &update_apcupsd)
+		SIZE_DEFAULTS(gauge);
+		scan_gauge(arg, &obj->a, &obj->b);
 #endif /* X11 */
-			END OBJ(apcupsd_charge, &update_apcupsd)
-			END OBJ(apcupsd_timeleft, &update_apcupsd)
-			END OBJ(apcupsd_temp, &update_apcupsd)
-			END OBJ(apcupsd_lastxfer, &update_apcupsd)
+	END OBJ(apcupsd_charge, &update_apcupsd)
+	END OBJ(apcupsd_timeleft, &update_apcupsd)
+	END OBJ(apcupsd_temp, &update_apcupsd)
+	END OBJ(apcupsd_lastxfer, &update_apcupsd)
 #endif /* APCUPSD */
 	END {
 		char buf[256];
