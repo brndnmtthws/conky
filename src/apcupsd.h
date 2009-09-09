@@ -51,7 +51,4 @@ typedef struct apcupsd_s {
 /* Service routine for the conky main thread */
 void update_apcupsd(void);
 
-/* fill in the default values */
-void init_apcupsd(void);
-
 #endif /*APCUPSD_H_*/

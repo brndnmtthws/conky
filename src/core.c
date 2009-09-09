@@ -2123,7 +2123,6 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		}
 #endif /* NVIDIA */
 #ifdef APCUPSD
-		init_apcupsd();
 		END OBJ(apcupsd, &update_apcupsd)
 			if (arg) {
 				char host[64];

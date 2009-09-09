@@ -227,15 +227,3 @@ void update_apcupsd(void) {
 	memcpy(info.apcupsd.items, apc.items, sizeof(info.apcupsd.items));
 	return;
 }
-
-//
-// fills in the N/A strings and default host:port
-//
-void init_apcupsd(void) {
-
-	int i;
-	for (i = 0; i < _APCUPSD_COUNT; ++i)
-		memcpy(info.apcupsd.items[i], "N/A", 4); // including \0
-	memcpy(info.apcupsd.host, "localhost", 10);
-	info.apcupsd.port = htons(3551);
-}
