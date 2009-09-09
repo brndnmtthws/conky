@@ -3460,7 +3460,7 @@
                     units)</option>
 				</member>
                 <member>
-                    <command>high</command>
+                    <command>hi</command>
 					<option>Maximum temperature (you can use the
                     'temperature_unit' config setting to change
                     units)</option>
