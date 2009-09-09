@@ -219,11 +219,17 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 
 	obj->line = line;
 
-#define OBJ(a, n) if (strcmp(s, #a) == 0) { \
-	obj->type = OBJ_##a; add_update_callback(n); {
-#define OBJ_IF(a, n) if (strcmp(s, #a) == 0) { \
-	obj->type = OBJ_##a; obj_be_ifblock_if(ifblock_opaque, obj); \
-	add_update_callback(n); {
+/* helper defines for internal use only */
+#define __OBJ_HEAD(a, n) if (!strcmp(s, #a)) { \
+	obj->type = OBJ_##a; add_update_callback(n);
+#define __OBJ_IF obj_be_ifblock_if(ifblock_opaque, obj)
+#define __OBJ_ARG(...) if (!arg) { CRIT_ERR(obj, free_at_crash, __VA_ARGS__); }
+
+/* defines to be used below */
+#define OBJ(a, n) __OBJ_HEAD(a, n) {
+#define OBJ_ARG(a, n, ...) __OBJ_HEAD(a, n) __OBJ_ARG(__VA_ARGS__) {
+#define OBJ_IF(a, n) __OBJ_HEAD(a, n) __OBJ_IF; {
+#define OBJ_IF_ARG(a, n, ...) __OBJ_HEAD(a, n) __OBJ_ARG(__VA_ARGS__) __OBJ_IF; {
 #define END } } else
 
 #define SIZE_DEFAULTS(arg) { \
@@ -266,20 +272,16 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			obj->data.cpu_index = atoi(&arg[0]);
 		}
 		obj->a = 1;
-	END OBJ(read_tcp, 0)
-		if (arg) {
-			obj->data.read_tcp.host = malloc(text_buffer_size);
-			sscanf(arg, "%s", obj->data.read_tcp.host);
-			sscanf(arg+strlen(obj->data.read_tcp.host), "%u", &(obj->data.read_tcp.port));
-			if(obj->data.read_tcp.port == 0) {
-				obj->data.read_tcp.port = atoi(obj->data.read_tcp.host);
-				strcpy(obj->data.read_tcp.host,"localhost");
-			}
-			obj->data.read_tcp.port = htons(obj->data.read_tcp.port);
-			if(obj->data.read_tcp.port < 1 || obj->data.read_tcp.port > 65535) {
-				CRIT_ERR(obj, free_at_crash, "read_tcp: Needs \"(host) port\" as argument(s)");
-			}
-		}else{
+	END OBJ_ARG(read_tcp, 0, "read_tcp: Needs \"(host) port\" as argument(s)")
+		obj->data.read_tcp.host = malloc(text_buffer_size);
+		sscanf(arg, "%s", obj->data.read_tcp.host);
+		sscanf(arg+strlen(obj->data.read_tcp.host), "%u", &(obj->data.read_tcp.port));
+		if(obj->data.read_tcp.port == 0) {
+			obj->data.read_tcp.port = atoi(obj->data.read_tcp.host);
+			strcpy(obj->data.read_tcp.host,"localhost");
+		}
+		obj->data.read_tcp.port = htons(obj->data.read_tcp.port);
+		if(obj->data.read_tcp.port < 1 || obj->data.read_tcp.port > 65535) {
 			CRIT_ERR(obj, free_at_crash, "read_tcp: Needs \"(host) port\" as argument(s)");
 		}
 #if defined(__linux__)
@@ -437,11 +439,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif /* !__OpenBSD__ */
 
 #if defined(__linux__)
-	END OBJ(disk_protect, 0)
-		if (arg)
-			obj->data.s = strndup(dev_name(arg), text_buffer_size);
-		else
-			CRIT_ERR(obj, free_at_crash, "disk_protect needs an argument");
+	END OBJ_ARG(disk_protect, 0, "disk_protect needs an argument")
+		obj->data.s = strndup(dev_name(arg), text_buffer_size);
 	END OBJ(i8k_version, &update_i8k)
 	END OBJ(i8k_bios, &update_i8k)
 	END OBJ(i8k_serial, &update_i8k)
@@ -454,10 +453,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(i8k_buttons_status, &update_i8k)
 #if defined(IBM)
 	END OBJ(ibm_fan, 0)
-	END OBJ(ibm_temps, 0)
-		if (!arg) {
-			CRIT_ERR(obj, free_at_crash, "ibm_temps: needs an argument");
-		}
+	END OBJ(ibm_temps, 0, "ibm_temps: needs an argument")
 		if (!isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) >= 8) {
 			obj->data.sensor = 0;
 			NORM_ERR("Invalid temperature sensor! Sensor number must be 0 to 7. "
@@ -471,63 +467,41 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	 * /sys/devices/platform/sony-laptop */
 	END OBJ(sony_fanspeed, 0)
 	END OBJ_IF(if_gw, &update_gateway_info)
-	END OBJ(ioscheduler, 0)
-		if (!arg) {
-			CRIT_ERR(obj, free_at_crash, "get_ioscheduler needs an argument (e.g. hda)");
-			obj->data.s = 0;
-		} else
-			obj->data.s = strndup(dev_name(arg), text_buffer_size);
+	END OBJ_ARG(ioscheduler, 0, "get_ioscheduler needs an argument (e.g. hda)")
+		obj->data.s = strndup(dev_name(arg), text_buffer_size);
 	END OBJ(laptop_mode, 0)
-	END OBJ(pb_battery, 0)
-		if (arg && strcmp(arg, "status") == EQUAL) {
+	END OBJ_ARG(pb_battery, 0, "pb_battery: needs one argument: status, percent or time")
+		if (strcmp(arg, "status") == EQUAL) {
 			obj->data.i = PB_BATT_STATUS;
-		} else if (arg && strcmp(arg, "percent") == EQUAL) {
+		} else if (strcmp(arg, "percent") == EQUAL) {
 			obj->data.i = PB_BATT_PERCENT;
-		} else if (arg && strcmp(arg, "time") == EQUAL) {
+		} else if (strcmp(arg, "time") == EQUAL) {
 			obj->data.i = PB_BATT_TIME;
 		} else {
-			NORM_ERR("pb_battery: needs one argument: status, percent or time");
-			free(obj);
-			return NULL;
+			NORM_ERR("pb_battery: illegal argument '%s', defaulting to status", arg);
+			obj->data.i = PB_BATT_STATUS;
 		}
-
 #endif /* __linux__ */
 #if (defined(__FreeBSD__) || defined(__linux__))
-	END OBJ_IF(if_up, 0)
-		if (!arg) {
-			NORM_ERR("if_up needs an argument");
-			obj->data.ifblock.s = 0;
-		} else {
-			obj->data.ifblock.s = strndup(arg, text_buffer_size);
-		}
+	END OBJ_IF_ARG(if_up, 0, "if_up needs an argument")
+		obj->data.ifblock.s = strndup(arg, text_buffer_size);
 #endif
 #if defined(__OpenBSD__)
-	END OBJ(obsd_sensors_temp, 0)
-		if (!arg) {
-			CRIT_ERR(obj, free_at_crash, "obsd_sensors_temp: needs an argument");
-		}
+	END OBJ_ARG(obsd_sensors_temp, 0, "obsd_sensors_temp: needs an argument")
 		if (!isdigit(arg[0]) || atoi(&arg[0]) < 0
 				|| atoi(&arg[0]) > OBSD_MAX_SENSORS - 1) {
 			obj->data.sensor = 0;
 			NORM_ERR("Invalid temperature sensor number!");
 		} else
 			obj->data.sensor = atoi(&arg[0]);
-	END OBJ(obsd_sensors_fan, 0)
-		if (!arg) {
-			CRIT_ERR(obj, free_at_crash, "obsd_sensors_fan: needs 2 arguments (device and sensor "
-				"number)");
-		}
+	END OBJ_ARG(obsd_sensors_fan, 0, "obsd_sensors_fan: needs 2 arguments (device and sensor number)")
 		if (!isdigit(arg[0]) || atoi(&arg[0]) < 0
 				|| atoi(&arg[0]) > OBSD_MAX_SENSORS - 1) {
 			obj->data.sensor = 0;
 			NORM_ERR("Invalid fan sensor number!");
 		} else
 			obj->data.sensor = atoi(&arg[0]);
-	END OBJ(obsd_sensors_volt, 0)
-		if (!arg) {
-			CRIT_ERR(obj, free_at_crash, "obsd_sensors_volt: needs 2 arguments (device and sensor "
-				"number)");
-		}
+	END OBJ_ARG(obsd_sensors_volt, 0, "obsd_sensors_volt: needs 2 arguments (device and sensor number)")
 		if (!isdigit(arg[0]) || atoi(&arg[0]) < 0
 				|| atoi(&arg[0]) > OBSD_MAX_SENSORS - 1) {
 			obj->data.sensor = 0;
@@ -901,17 +875,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.i = arg ? atoi(arg) : 1;
 	END OBJ(voffset, 0)
 		obj->data.i = arg ? atoi(arg) : 1;
-	END OBJ(goto, 0)
-
-		if (!arg) {
-			NORM_ERR("goto needs arguments");
-			obj->type = OBJ_text;
-			obj->data.s = strndup("${goto}", text_buffer_size);
-			return NULL;
-		}
-
+	END OBJ_ARG(goto, 0, "goto needs arguments")
 		obj->data.i = atoi(arg);
-
 	END OBJ(tab, 0)
 		int a = 10, b = 0;
 
@@ -927,17 +892,10 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.pair.b = b;
 
 #ifdef __linux__
-	END OBJ(i2c, 0)
+	END OBJ_ARG(i2c, 0, "i2c needs arguments")
 		char buf1[64], buf2[64];
 		float factor, offset;
 		int n, found = 0;
-
-		if (!arg) {
-			NORM_ERR("i2c needs arguments");
-			obj->type = OBJ_text;
-			// obj->data.s = strndup("${i2c}", text_buffer_size);
-			return NULL;
-		}
 
 #define HWMON_RESET() {\
 		buf1[0] = 0; \
@@ -961,16 +919,10 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.sysfs.factor = factor;
 		obj->data.sysfs.offset = offset;
 
-	END OBJ(platform, 0)
+	END OBJ_ARG(platform, 0, "platform needs arguments")
 		char buf1[64], buf2[64];
 		float factor, offset;
 		int n, found = 0;
-
-		if (!arg) {
-			NORM_ERR("platform needs arguments");
-			obj->type = OBJ_text;
-			return NULL;
-		}
 
 		if (sscanf(arg, "%63s %d %f %f", buf2, &n, &factor, &offset) == 4) found = 1; else HWMON_RESET();
 		if (!found && sscanf(arg, "%63s %63s %d %f %f", buf1, buf2, &n, &factor, &offset) == 5) found = 1; else if (!found) HWMON_RESET();
@@ -989,16 +941,10 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.sysfs.factor = factor;
 		obj->data.sysfs.offset = offset;
 
-	END OBJ(hwmon, 0)
+	END OBJ_ARG(hwmon, 0, "hwmon needs argumanets")
 		char buf1[64], buf2[64];
 		float factor, offset;
 		int n, found = 0;
-
-		if (!arg) {
-			NORM_ERR("hwmon needs argumanets");
-			obj->type = OBJ_text;
-			return NULL;
-		}
 
 		if (sscanf(arg, "%63s %d %f %f", buf2, &n, &factor, &offset) == 4) found = 1; else HWMON_RESET();
 		if (!found && sscanf(arg, "%63s %63s %d %f %f", buf1, buf2, &n, &factor, &offset) == 5) found = 1; else if (!found) HWMON_RESET();
@@ -1055,18 +1001,10 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		init_tailhead("tail", arg, obj, free_at_crash);
 	END OBJ(head, 0)
 		init_tailhead("head", arg, obj, free_at_crash);
-	END OBJ(lines, 0)
-		if (arg) {
-			obj->data.s = strndup(arg, text_buffer_size);
-		}else{
-			CRIT_ERR(obj, free_at_crash, "lines needs a argument");
-		}
-	END OBJ(words, 0)
-		if (arg) {
-			obj->data.s = strndup(arg, text_buffer_size);
-		}else{
-			CRIT_ERR(obj, free_at_crash, "words needs a argument");
-		}
+	END OBJ_ARG(lines, 0, "lines needs an argument")
+		obj->data.s = strndup(arg, text_buffer_size);
+	END OBJ_ARG(words, 0, "words needs a argument")
+		obj->data.s = strndup(arg, text_buffer_size);
 	END OBJ(loadavg, &update_load_average)
 		int a = 1, b = 2, c = 3, r = 3;
 
@@ -1085,68 +1023,39 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.loadavg[0] = (r >= 1) ? (unsigned char) a : 0;
 		obj->data.loadavg[1] = (r >= 2) ? (unsigned char) b : 0;
 		obj->data.loadavg[2] = (r >= 3) ? (unsigned char) c : 0;
-	END OBJ_IF(if_empty, 0)
-		if (!arg) {
-			NORM_ERR("if_empty needs an argument");
-			obj->data.ifblock.s = 0;
-		} else {
-			obj->data.ifblock.s = strndup(arg, text_buffer_size);
-			obj->sub = malloc(sizeof(struct text_object));
-			extract_variable_text_internal(obj->sub,
-			                               obj->data.ifblock.s);
-		}
-	END OBJ_IF(if_match, 0)
-		if (!arg) {
-			NORM_ERR("if_match needs arguments");
-			obj->data.ifblock.s = 0;
-		} else {
-			obj->data.ifblock.s = strndup(arg, text_buffer_size);
-			obj->sub = malloc(sizeof(struct text_object));
-			extract_variable_text_internal(obj->sub,
-			                               obj->data.ifblock.s);
-		}
-	END OBJ_IF(if_existing, 0)
-		if (!arg) {
-			NORM_ERR("if_existing needs an argument or two");
-			obj->data.ifblock.s = NULL;
+	END OBJ_IF_ARG(if_empty, 0, "if_empty needs an argument")
+		obj->data.ifblock.s = strndup(arg, text_buffer_size);
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, obj->data.ifblock.s);
+	END OBJ_IF_ARG(if_match, 0, "if_match needs arguments")
+		obj->data.ifblock.s = strndup(arg, text_buffer_size);
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, obj->data.ifblock.s);
+	END OBJ_IF_ARG(if_existing, 0, "if_existing needs an argument or two")
+		char buf1[256], buf2[256];
+		int r = sscanf(arg, "%255s %255[^\n]", buf1, buf2);
+
+		if (r == 1) {
+			obj->data.ifblock.s = strndup(buf1, text_buffer_size);
 			obj->data.ifblock.str = NULL;
 		} else {
-			char buf1[256], buf2[256];
-			int r = sscanf(arg, "%255s %255[^\n]", buf1, buf2);
-
-			if (r == 1) {
-				obj->data.ifblock.s = strndup(buf1, text_buffer_size);
-				obj->data.ifblock.str = NULL;
-			} else {
-				obj->data.ifblock.s = strndup(buf1, text_buffer_size);
-				obj->data.ifblock.str = strndup(buf2, text_buffer_size);
-			}
+			obj->data.ifblock.s = strndup(buf1, text_buffer_size);
+			obj->data.ifblock.str = strndup(buf2, text_buffer_size);
 		}
 		DBGP("if_existing: '%s' '%s'", obj->data.ifblock.s, obj->data.ifblock.str);
-	END OBJ_IF(if_mounted, 0)
-		if (!arg) {
-			NORM_ERR("if_mounted needs an argument");
-			obj->data.ifblock.s = 0;
-		} else {
-			obj->data.ifblock.s = strndup(arg, text_buffer_size);
-		}
+	END OBJ_IF_ARG(if_mounted, 0, "if_mounted needs an argument")
+		obj->data.ifblock.s = strndup(arg, text_buffer_size);
 #ifdef __linux__
-	END OBJ_IF(if_running, &update_top)
-		if (arg) {
-			top_running = 1;
-			obj->data.ifblock.s = strndup(arg, text_buffer_size);
+	END OBJ_IF_ARG(if_running, &update_top, "if_running needs an argument")
+		top_running = 1;
+		obj->data.ifblock.s = strndup(arg, text_buffer_size);
 #else
-	END OBJ_IF(if_running, 0)
-		if (arg) {
-			char buf[256];
+	END OBJ_IF_ARG(if_running, 0, "if_running needs an argument")
+		char buf[256];
 
-			snprintf(buf, 256, "pidof %s >/dev/null", arg);
-			obj->data.ifblock.s = strndup(buf, text_buffer_size);
+		snprintf(buf, 256, "pidof %s >/dev/null", arg);
+		obj->data.ifblock.s = strndup(buf, text_buffer_size);
 #endif
-		} else {
-			NORM_ERR("if_running needs an argument");
-			obj->data.ifblock.s = 0;
-		}
 	END OBJ(kernel, 0)
 	END OBJ(machine, 0)
 	END OBJ(mails, 0)
@@ -1471,30 +1380,26 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.tztime.fmt = strndup(fmt ? fmt : "%F %T", text_buffer_size);
 		obj->data.tztime.tz = tz ? strndup(tz, text_buffer_size) : NULL;
 #ifdef HAVE_ICONV
-	END OBJ(iconv_start, 0)
+	END OBJ_ARG(iconv_start, 0, "Iconv requires arguments")
+		char iconv_from[ICONV_CODEPAGE_LENGTH];
+		char iconv_to[ICONV_CODEPAGE_LENGTH];
+
 		if (is_iconv_converting()) {
 			CRIT_ERR(obj, free_at_crash, "You must stop your last iconv conversion before "
 				"starting another");
 		}
-		if (arg) {
-			char iconv_from[ICONV_CODEPAGE_LENGTH];
-			char iconv_to[ICONV_CODEPAGE_LENGTH];
-
-			if (sscanf(arg, "%s %s", iconv_from, iconv_to) != 2) {
-				CRIT_ERR(obj, free_at_crash, "Invalid arguments for iconv_start");
-			} else {
-				iconv_t new_iconv;
-
-				new_iconv = iconv_open(iconv_to, iconv_from);
-				if (new_iconv == (iconv_t) (-1)) {
-					NORM_ERR("Can't convert from %s to %s.", iconv_from, iconv_to);
-				} else {
-					obj->a = register_iconv(&new_iconv);
-					set_iconv_converting(1);
-				}
-			}
+		if (sscanf(arg, "%s %s", iconv_from, iconv_to) != 2) {
+			CRIT_ERR(obj, free_at_crash, "Invalid arguments for iconv_start");
 		} else {
-			CRIT_ERR(obj, free_at_crash, "Iconv requires arguments");
+			iconv_t new_iconv;
+
+			new_iconv = iconv_open(iconv_to, iconv_from);
+			if (new_iconv == (iconv_t) (-1)) {
+				NORM_ERR("Can't convert from %s to %s.", iconv_from, iconv_to);
+			} else {
+				obj->a = register_iconv(&new_iconv);
+				set_iconv_converting(1);
+			}
 		}
 	END OBJ(iconv_stop, 0)
 		set_iconv_converting(0);
@@ -1612,46 +1517,27 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			obj->char_b = 1;
 		}
 #ifdef IBM
-	END OBJ(smapi, 0)
-		if (arg)
-			obj->data.s = strndup(arg, text_buffer_size);
-		else
-			NORM_ERR("smapi needs an argument");
-	END OBJ_IF(if_smapi_bat_installed, 0)
-		if (!arg) {
-			NORM_ERR("if_smapi_bat_installed needs an argument");
-			obj->data.ifblock.s = 0;
-		} else
-			obj->data.ifblock.s = strndup(arg, text_buffer_size);
-	END OBJ(smapi_bat_perc, 0)
-		if (arg)
-			obj->data.s = strndup(arg, text_buffer_size);
-		else
-			NORM_ERR("smapi_bat_perc needs an argument");
-	END OBJ(smapi_bat_temp, 0)
-		if (arg)
-			obj->data.s = strndup(arg, text_buffer_size);
-		else
-			NORM_ERR("smapi_bat_temp needs an argument");
-	END OBJ(smapi_bat_power, 0)
-		if (arg)
-			obj->data.s = strndup(arg, text_buffer_size);
-		else
-			NORM_ERR("smapi_bat_power needs an argument");
+	END OBJ_ARG(smapi, 0, "smapi needs an argument")
+		obj->data.s = strndup(arg, text_buffer_size);
+	END OBJ_IF_ARG(if_smapi_bat_installed, 0, "if_smapi_bat_installed needs an argument")
+		obj->data.ifblock.s = strndup(arg, text_buffer_size);
+	END OBJ_ARG(smapi_bat_perc, 0, "smapi_bat_perc needs an argument")
+		obj->data.s = strndup(arg, text_buffer_size);
+	END OBJ_ARG(smapi_bat_temp, 0, "smapi_bat_temp needs an argument")
+		obj->data.s = strndup(arg, text_buffer_size);
+	END OBJ_ARG(smapi_bat_power, 0, "smapi_bat_power needs an argument")
+		obj->data.s = strndup(arg, text_buffer_size);
 #ifdef X11
-	END OBJ(smapi_bat_bar, 0)
+	END OBJ_ARG(smapi_bat_bar, 0, "smapi_bat_bar needs an argument")
+		int cnt;
 		SIZE_DEFAULTS(bar);
-		if(arg) {
-			int cnt;
-			if(sscanf(arg, "%i %n", &obj->data.i, &cnt) <= 0) {
-				NORM_ERR("first argument to smapi_bat_bar must be an integer value");
-				obj->data.i = -1;
-			} else {
-				obj->b = 4;
-				arg = scan_bar(arg + cnt, &obj->a, &obj->b);
-			}
-		} else
-			NORM_ERR("smapi_bat_bar needs an argument");
+		if(sscanf(arg, "%i %n", &obj->data.i, &cnt) <= 0) {
+			NORM_ERR("first argument to smapi_bat_bar must be an integer value");
+			obj->data.i = -1;
+		} else {
+			obj->b = 4;
+			arg = scan_bar(arg + cnt, &obj->a, &obj->b);
+		}
 #endif /* X11 */
 #endif /* IBM */
 #ifdef MPD
@@ -1742,14 +1628,12 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif
 #ifdef AUDACIOUS
 	END OBJ(audacious_status, &update_audacious)
-	END OBJ(audacious_title, &update_audacious)
-		if (arg) {
-			sscanf(arg, "%d", &info.audacious.max_title_len);
-			if (info.audacious.max_title_len > 0) {
-				info.audacious.max_title_len++;
-			} else {
-				CRIT_ERR(obj, free_at_crash, "audacious_title: invalid length argument");
-			}
+	END OBJ_ARG(audacious_title, &update_audacious, "audacious_title needs an argument")
+		sscanf(arg, "%d", &info.audacious.max_title_len);
+		if (info.audacious.max_title_len > 0) {
+			info.audacious.max_title_len++;
+		} else {
+			CRIT_ERR(obj, free_at_crash, "audacious_title: invalid length argument");
 		}
 	END OBJ(audacious_length, &update_audacious)
 	END OBJ(audacious_length_seconds, &update_audacious)
@@ -1783,210 +1667,169 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
 #endif
 #ifdef EVE
-	END OBJ(eve, 0)
-		if(arg) {
-			int argc;
-			char *userid = (char *) malloc(20 * sizeof(char));
-			char *apikey = (char *) malloc(64 * sizeof(char));
-			char *charid = (char *) malloc(20 * sizeof(char));
+	END OBJ_ARG(eve, 0, "eve needs arguments: <userid> <apikey> <characterid>")
+		int argc;
+		char *userid = (char *) malloc(20 * sizeof(char));
+		char *apikey = (char *) malloc(64 * sizeof(char));
+		char *charid = (char *) malloc(20 * sizeof(char));
 
-			argc = sscanf(arg, "%20s %64s %20s", userid, apikey, charid);
-			obj->data.eve.charid = charid;
-			obj->data.eve.userid = userid;
-			obj->data.eve.apikey = apikey;
+		argc = sscanf(arg, "%20s %64s %20s", userid, apikey, charid);
+		obj->data.eve.charid = charid;
+		obj->data.eve.userid = userid;
+		obj->data.eve.apikey = apikey;
 
-			init_eve();
-		} else {
-			CRIT_ERR(obj, free_at_crash, "eve needs arguments: <userid> <apikey> <characterid>");
-		}
+		init_eve();
 #endif
 #ifdef HAVE_CURL
-	END OBJ(curl, 0)
-		if (arg) {
-			int argc;
-			float interval = 0;
-			char *uri = (char *) malloc(128 * sizeof(char));
+	END OBJ(curl, 0, "curl needs arguments: <uri> <interval in minutes>")
+		int argc;
+		float interval = 0;
+		char *uri = (char *) malloc(128 * sizeof(char));
 
-			argc = sscanf(arg, "%127s %f", uri, &interval);
-			if (argc == 2) {
-				obj->data.curl.uri = uri;
-				obj->data.curl.interval = interval > 0 ? interval * 60 : 15*60;
-			} else {
-				NORM_ERR("wrong number of arguments for $curl");
-			}
+		argc = sscanf(arg, "%127s %f", uri, &interval);
+		if (argc == 2) {
+			obj->data.curl.uri = uri;
+			obj->data.curl.interval = interval > 0 ? interval * 60 : 15*60;
 		} else {
-			CRIT_ERR(obj, free_at_crash, "curl needs arguments: <uri> <interval in minutes>");
+			NORM_ERR("wrong number of arguments for $curl");
 		}
 #endif
 #ifdef RSS
-	END OBJ(rss, 0)
-		if (arg) {
-			float interval = 0;
-			int argc, act_par = 0;
-			unsigned int nrspaces = 0;
-			char *uri = (char *) malloc(128 * sizeof(char));
-			char *action = (char *) malloc(64 * sizeof(char));
+	END OBJ_ARG(rss, 0, "rss needs arguments: <uri> <interval in minutes> <action> [act_par] [spaces in front]")
+		float interval = 0;
+		int argc, act_par = 0;
+		unsigned int nrspaces = 0;
+		char *uri = (char *) malloc(128 * sizeof(char));
+		char *action = (char *) malloc(64 * sizeof(char));
 
-			argc = sscanf(arg, "%127s %f %63s %d %u", uri, &interval, action,
-					&act_par, &nrspaces);
-			if (argc >= 3) {
-				obj->data.rss.uri = uri;
-				obj->data.rss.interval = interval > 0 ? interval * 60 : 15*60;
-				obj->data.rss.action = action;
-				obj->data.rss.act_par = act_par;
-				obj->data.rss.nrspaces = nrspaces;
-			} else {
-				NORM_ERR("wrong number of arguments for $rss");
-			}
+		argc = sscanf(arg, "%127s %f %63s %d %u", uri, &interval, action,
+				&act_par, &nrspaces);
+		if (argc >= 3) {
+			obj->data.rss.uri = uri;
+			obj->data.rss.interval = interval > 0 ? interval * 60 : 15*60;
+			obj->data.rss.action = action;
+			obj->data.rss.act_par = act_par;
+			obj->data.rss.nrspaces = nrspaces;
 		} else {
-			CRIT_ERR(obj, free_at_crash, "rss needs arguments: <uri> <interval in minutes> <action> "
-					"[act_par] [spaces in front]");
+			NORM_ERR("wrong number of arguments for $rss");
 		}
 #endif
 #ifdef WEATHER
-	END OBJ(weather, 0)
-		if (arg) {
-			int argc;
-			float interval = 0;
-			char *locID = (char *) malloc(9 * sizeof(char));
-			char *uri = (char *) malloc(128 * sizeof(char));
-			char *data_type = (char *) malloc(32 * sizeof(char));
+	END OBJ_ARG(weather, 0, "weather needs arguments: <uri> <locID> <data_type> [interval in minutes]")
+		int argc;
+		float interval = 0;
+		char *locID = (char *) malloc(9 * sizeof(char));
+		char *uri = (char *) malloc(128 * sizeof(char));
+		char *data_type = (char *) malloc(32 * sizeof(char));
 
-			argc = sscanf(arg, "%119s %8s %31s %f", uri, locID, data_type, &interval);
+		argc = sscanf(arg, "%119s %8s %31s %f", uri, locID, data_type, &interval);
 
-			if (argc >= 3) {
-				if (process_weather_uri(uri, locID, 0)) {
-					free(data_type);
-					free(uri);
-					free(locID);
-					CRIT_ERR(obj, free_at_crash, \
-							"could not recognize the weather uri");
-				}
-
-				obj->data.weather.uri = uri;
-				obj->data.weather.data_type = data_type;
-
-				/* Limit the data retrieval interval to half hour min */
-				if (interval < 30) {
-					interval = 30;
-				}
-
-				/* Convert to seconds */
-				obj->data.weather.interval = interval * 60;
-				free(locID);
-
-				DBGP("weather: fetching %s from %s every %d seconds", \
-						data_type, uri, obj->data.weather.interval);
-			} else {
+		if (argc >= 3) {
+			if (process_weather_uri(uri, locID, 0)) {
 				free(data_type);
 				free(uri);
 				free(locID);
-				CRIT_ERR(obj, free_at_crash, "wrong number of arguments for $weather");
+				CRIT_ERR(obj, free_at_crash, \
+						"could not recognize the weather uri");
 			}
+
+			obj->data.weather.uri = uri;
+			obj->data.weather.data_type = data_type;
+
+			/* Limit the data retrieval interval to half hour min */
+			if (interval < 30) {
+				interval = 30;
+			}
+
+			/* Convert to seconds */
+			obj->data.weather.interval = interval * 60;
+			free(locID);
+
+			DBGP("weather: fetching %s from %s every %d seconds", \
+					data_type, uri, obj->data.weather.interval);
 		} else {
-			CRIT_ERR(obj, free_at_crash, "weather needs arguments: <uri> <locID> <data_type> [interval in minutes]");
+			free(data_type);
+			free(uri);
+			free(locID);
+			CRIT_ERR(obj, free_at_crash, "wrong number of arguments for $weather");
 		}
 #endif
 #ifdef XOAP
-	END OBJ(weather_forecast, 0)
-		if (arg) {
-			int argc;
-			unsigned int day;
-			float interval = 0;
-			char *locID = (char *) malloc(9 * sizeof(char));
-			char *uri = (char *) malloc(128 * sizeof(char));
-			char *data_type = (char *) malloc(32 * sizeof(char));
+	END OBJ_ARG(weather_forecast, 0, "weather_forecast needs arguments: <uri> <locID> <day> <data_type> [interval in minutes]")
+		int argc;
+		unsigned int day;
+		float interval = 0;
+		char *locID = (char *) malloc(9 * sizeof(char));
+		char *uri = (char *) malloc(128 * sizeof(char));
+		char *data_type = (char *) malloc(32 * sizeof(char));
 
-			argc = sscanf(arg, "%119s %8s %1u %31s %f", uri, locID, &day, data_type, &interval);
+		argc = sscanf(arg, "%119s %8s %1u %31s %f", uri, locID, &day, data_type, &interval);
 
-			if (argc >= 4) {
-				if (process_weather_uri(uri, locID, 1)) {
-					free(data_type);
-					free(uri);
-					free(locID);
-					CRIT_ERR(obj, free_at_crash, \
-							"could not recognize the weather forecast uri");
-				}
-
-				obj->data.weather_forecast.uri = uri;
-				obj->data.weather_forecast.data_type = data_type;
-
-				/* Limit the day between 0 (today) and FORECAST_DAYS */
-				if (day >= FORECAST_DAYS) {
-					day = FORECAST_DAYS-1;
-				}
-				obj->data.weather_forecast.day = day;
-
-				/* Limit the data retrieval interval to 3 hours and an half */
-				if (interval < 210) {
-					interval = 210;
-				}
-
-				/* Convert to seconds */
-				obj->data.weather_forecast.interval = interval * 60;
-				free(locID);
-
-				DBGP("weather_forecast: fetching %s for day %d from %s every %d seconds", \
-					 data_type, day, uri, obj->data.weather_forecast.interval);
-			} else {
+		if (argc >= 4) {
+			if (process_weather_uri(uri, locID, 1)) {
 				free(data_type);
 				free(uri);
 				free(locID);
-				CRIT_ERR(obj, free_at_crash, "wrong number of arguments for $weather_forecast");
+				CRIT_ERR(obj, free_at_crash, \
+						"could not recognize the weather forecast uri");
 			}
+
+			obj->data.weather_forecast.uri = uri;
+			obj->data.weather_forecast.data_type = data_type;
+
+			/* Limit the day between 0 (today) and FORECAST_DAYS */
+			if (day >= FORECAST_DAYS) {
+				day = FORECAST_DAYS-1;
+			}
+			obj->data.weather_forecast.day = day;
+
+			/* Limit the data retrieval interval to 3 hours and an half */
+			if (interval < 210) {
+				interval = 210;
+			}
+
+			/* Convert to seconds */
+			obj->data.weather_forecast.interval = interval * 60;
+			free(locID);
+
+			DBGP("weather_forecast: fetching %s for day %d from %s every %d seconds", \
+				 data_type, day, uri, obj->data.weather_forecast.interval);
 		} else {
-			CRIT_ERR(obj, free_at_crash, "weather_forecast needs arguments: <uri> <locID> <day> <data_type> [interval in minutes]");
+			free(data_type);
+			free(uri);
+			free(locID);
+			CRIT_ERR(obj, free_at_crash, "wrong number of arguments for $weather_forecast");
 		}
 #endif
 #ifdef HAVE_LUA
-	END OBJ(lua, 0)
-		if (arg) {
-			obj->data.s = strndup(arg, text_buffer_size);
-		} else {
-			CRIT_ERR(obj, free_at_crash, "lua needs arguments: <function name> [function parameters]");
-		}
-	END OBJ(lua_parse, 0)
-		if (arg) {
-			obj->data.s = strndup(arg, text_buffer_size);
-		} else {
-			CRIT_ERR(obj, free_at_crash, "lua_parse needs arguments: <function name> [function parameters]");
-		}
-	END OBJ(lua_bar, 0)
+	END OBJ_ARG(lua, 0, "lua needs arguments: <function name> [function parameters]")
+		obj->data.s = strndup(arg, text_buffer_size);
+	END OBJ_ARG(lua_parse, 0, "lua_parse needs arguments: <function name> [function parameters]")
+		obj->data.s = strndup(arg, text_buffer_size);
+	END OBJ_ARG(lua_bar, 0, "lua_bar needs arguments: <height>,<width> <function name> [function parameters]")
 		SIZE_DEFAULTS(bar);
-		if (arg) {
-			arg = scan_bar(arg, &obj->a, &obj->b);
-			if(arg) {
-				obj->data.s = strndup(arg, text_buffer_size);
-			} else {
-				CRIT_ERR(obj, free_at_crash, "lua_bar needs arguments: <height>,<width> <function name> [function parameters]");
-			}
+		arg = scan_bar(arg, &obj->a, &obj->b);
+		if(arg) {
+			obj->data.s = strndup(arg, text_buffer_size);
 		} else {
 			CRIT_ERR(obj, free_at_crash, "lua_bar needs arguments: <height>,<width> <function name> [function parameters]");
 		}
 #ifdef X11
-	END OBJ(lua_graph, 0)
+	END OBJ_ARG(lua_graph, 0, "lua_graph needs arguments: <function name> [height],[width] [gradient colour 1] [gradient colour 2] [scale] [-t] [-l]")
+		char *buf = 0;
 		SIZE_DEFAULTS(graph);
-		if (arg) {
-			char *buf = 0;
-			buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-					&obj->e, &obj->char_a, &obj->char_b);
-			if (buf) {
-				obj->data.s = buf;
-			} else {
-				CRIT_ERR(obj, free_at_crash, "lua_graph needs arguments: <function name> [height],[width] [gradient colour 1] [gradient colour 2] [scale] [-t] [-l]");
-			}
+		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+				&obj->e, &obj->char_a, &obj->char_b);
+		if (buf) {
+			obj->data.s = buf;
 		} else {
 			CRIT_ERR(obj, free_at_crash, "lua_graph needs arguments: <function name> [height],[width] [gradient colour 1] [gradient colour 2] [scale] [-t] [-l]");
-	}
-	END OBJ(lua_gauge, 0)
+		}
+	END OBJ_ARG(lua_gauge, 0, "lua_gauge needs arguments: <height>,<width> <function name> [function parameters]")
 		SIZE_DEFAULTS(gauge);
+		arg = scan_gauge(arg, &obj->a, &obj->b);
 		if (arg) {
-			arg = scan_gauge(arg, &obj->a, &obj->b);
-			if (arg) {
-				obj->data.s = strndup(arg, text_buffer_size);
-			} else {
-				CRIT_ERR(obj, free_at_crash, "lua_gauge needs arguments: <height>,<width> <function name> [function parameters]");
-			}
+			obj->data.s = strndup(arg, text_buffer_size);
 		} else {
 			CRIT_ERR(obj, free_at_crash, "lua_gauge needs arguments: <height>,<width> <function name> [function parameters]");
 		}
@@ -2007,38 +1850,26 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(entropy_bar, &update_entropy)
 		SIZE_DEFAULTS(bar);
 		scan_bar(arg, &obj->a, &obj->b);
-	END OBJ(include, 0)
-		if(arg) {
-			struct conftree *leaf = conftree_add(currentconffile, arg);
-			if(leaf) {
-				if (load_config_file(arg) == TRUE) {
-					obj->sub = malloc(sizeof(struct text_object));
-					currentconffile = leaf;
-					extract_variable_text_internal(obj->sub, get_global_text());
-					currentconffile = leaf->back;
-				} else {
-					NORM_ERR("Can't load configfile '%s'.", arg);
-				}
+	END OBJ_ARG(include, 0, "include needs a argument")
+		struct conftree *leaf = conftree_add(currentconffile, arg);
+		if(leaf) {
+			if (load_config_file(arg) == TRUE) {
+				obj->sub = malloc(sizeof(struct text_object));
+				currentconffile = leaf;
+				extract_variable_text_internal(obj->sub, get_global_text());
+				currentconffile = leaf->back;
 			} else {
-				NORM_ERR("You are trying to load '%s' recursively, I'm only going to load it once to prevent an infinite loop.", arg);
+				NORM_ERR("Can't load configfile '%s'.", arg);
 			}
 		} else {
-			CRIT_ERR(obj, free_at_crash, "include needs a argument");
+			NORM_ERR("You are trying to load '%s' recursively, I'm only going to load it once to prevent an infinite loop.", arg);
 		}
-	END OBJ(blink, 0)
-		if(arg) {
-			obj->sub = malloc(sizeof(struct text_object));
-			extract_variable_text_internal(obj->sub, arg);
-		}else{
-			CRIT_ERR(obj, free_at_crash, "blink needs a argument");
-		}
-	END OBJ(to_bytes, 0)
-		if(arg) {
-			obj->sub = malloc(sizeof(struct text_object));
-			extract_variable_text_internal(obj->sub, arg);
-		}else{
-			CRIT_ERR(obj, free_at_crash, "to_bytes needs a argument");
-		}
+	END OBJ_ARG(blink, 0, "blink needs a argument")
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
+	END OBJ_ARG(to_bytes, 0, "to_bytes needs a argument")
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
 	END OBJ(scroll, 0)
 		int n1 = 0, n2 = 0;
 
@@ -2064,77 +1895,67 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		} else {
 			CRIT_ERR(obj, free_at_crash, "scroll needs arguments: <length> [<step>] <text>");
 		}
-	END OBJ(combine, 0)
-		if(arg) {
-			unsigned int i,j;
-			unsigned int indenting = 0;	//vars can be used as args for other vars
-			int startvar[2];
-			int endvar[2];
-			startvar[0] = endvar[0] = startvar[1] = endvar[1] = -1;
-			j=0;
-			for (i=0; arg[i] != 0 && j < 2; i++) {
-				if(startvar[j] == -1) {
-					if(arg[i] == '$') {
-						startvar[j] = i;
-					}
-				}else if(endvar[j] == -1) {
-					if(arg[i] == '{') {
-						indenting++;
-					}else if(arg[i] == '}') {
-						indenting--;
-					}
-					if (indenting == 0 && arg[i+1] < 48) {	//<48 has 0, $, and the most used chars not used in varnames but not { or }
-						endvar[j]=i+1;
-						j++;
-					}
+	END OBJ_ARG(combine, 0, "combine needs arguments: <text1> <text2>")
+		unsigned int i,j;
+		unsigned int indenting = 0;	//vars can be used as args for other vars
+		int startvar[2];
+		int endvar[2];
+		startvar[0] = endvar[0] = startvar[1] = endvar[1] = -1;
+		j=0;
+		for (i=0; arg[i] != 0 && j < 2; i++) {
+			if(startvar[j] == -1) {
+				if(arg[i] == '$') {
+					startvar[j] = i;
+				}
+			}else if(endvar[j] == -1) {
+				if(arg[i] == '{') {
+					indenting++;
+				}else if(arg[i] == '}') {
+					indenting--;
+				}
+				if (indenting == 0 && arg[i+1] < 48) {	//<48 has 0, $, and the most used chars not used in varnames but not { or }
+					endvar[j]=i+1;
+					j++;
 				}
 			}
-			if(startvar[0] >= 0 && endvar[0] >= 0 && startvar[1] >= 0 && endvar[1] >= 0) {
-				obj->data.combine.left = malloc(endvar[0]-startvar[0] + 1);
-				obj->data.combine.seperation = malloc(startvar[1] - endvar[0] + 1);
-				obj->data.combine.right= malloc(endvar[1]-startvar[1] + 1);
+		}
+		if(startvar[0] >= 0 && endvar[0] >= 0 && startvar[1] >= 0 && endvar[1] >= 0) {
+			obj->data.combine.left = malloc(endvar[0]-startvar[0] + 1);
+			obj->data.combine.seperation = malloc(startvar[1] - endvar[0] + 1);
+			obj->data.combine.right= malloc(endvar[1]-startvar[1] + 1);
 
-				strncpy(obj->data.combine.left, arg + startvar[0], endvar[0] - startvar[0]);
-				obj->data.combine.left[endvar[0] - startvar[0]] = 0;
+			strncpy(obj->data.combine.left, arg + startvar[0], endvar[0] - startvar[0]);
+			obj->data.combine.left[endvar[0] - startvar[0]] = 0;
 
-				strncpy(obj->data.combine.seperation, arg + endvar[0], startvar[1] - endvar[0]);
-				obj->data.combine.seperation[startvar[1] - endvar[0]] = 0;
+			strncpy(obj->data.combine.seperation, arg + endvar[0], startvar[1] - endvar[0]);
+			obj->data.combine.seperation[startvar[1] - endvar[0]] = 0;
 
-				strncpy(obj->data.combine.right, arg + startvar[1], endvar[1] - startvar[1]);
-				obj->data.combine.right[endvar[1] - startvar[1]] = 0;
+			strncpy(obj->data.combine.right, arg + startvar[1], endvar[1] - startvar[1]);
+			obj->data.combine.right[endvar[1] - startvar[1]] = 0;
 
-				obj->sub = malloc(sizeof(struct text_object));
-				extract_variable_text_internal(obj->sub, obj->data.combine.left);
-				obj->sub->sub = malloc(sizeof(struct text_object));
-				extract_variable_text_internal(obj->sub->sub, obj->data.combine.right);
-			} else {
-				CRIT_ERR(obj, free_at_crash, "combine needs arguments: <text1> <text2>");
-			}
+			obj->sub = malloc(sizeof(struct text_object));
+			extract_variable_text_internal(obj->sub, obj->data.combine.left);
+			obj->sub->sub = malloc(sizeof(struct text_object));
+			extract_variable_text_internal(obj->sub->sub, obj->data.combine.right);
 		} else {
 			CRIT_ERR(obj, free_at_crash, "combine needs arguments: <text1> <text2>");
 		}
 #ifdef NVIDIA
-	END OBJ(nvidia, 0)
-		if (!arg) {
-			CRIT_ERR(obj, free_at_crash, "nvidia needs an argument\n");
-		} else if (set_nvidia_type(&obj->data.nvidia, arg)) {
+	END OBJ_ARG(nvidia, 0, "nvidia needs an argument")
+		if (set_nvidia_type(&obj->data.nvidia, arg)) {
 			CRIT_ERR(obj, free_at_crash, "nvidia: invalid argument"
 				 " specified: '%s'\n", arg);
 		}
 #endif /* NVIDIA */
 #ifdef APCUPSD
-	END OBJ(apcupsd, &update_apcupsd)
-		if (arg) {
-			char host[64];
-			int port;
-			if (sscanf(arg, "%63s %d", host, &port) != 2) {
-				CRIT_ERR(obj, free_at_crash, "apcupsd needs arguments: <host> <port>");
-			} else {
-				info.apcupsd.port = htons(port);
-				strncpy(info.apcupsd.host, host, sizeof(info.apcupsd.host));
-			}
-		} else {
+	END OBJ_ARG(apcupsd, &update_apcupsd, "apcupsd needs arguments: <host> <port>")
+		char host[64];
+		int port;
+		if (sscanf(arg, "%63s %d", host, &port) != 2) {
 			CRIT_ERR(obj, free_at_crash, "apcupsd needs arguments: <host> <port>");
+		} else {
+			info.apcupsd.port = htons(port);
+			strncpy(info.apcupsd.host, host, sizeof(info.apcupsd.host));
 		}
 	END OBJ(apcupsd_name, &update_apcupsd)
 	END OBJ(apcupsd_model, &update_apcupsd)
@@ -2171,6 +1992,14 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.s = strndup(buf, text_buffer_size);
 	}
 #undef OBJ
+#undef OBJ_IF
+#undef OBJ_ARG
+#undef OBJ_IF_ARG
+#undef __OBJ_HEAD
+#undef __OBJ_IF
+#undef __OBJ_ARG
+#undef END
+#undef SIZE_DEFAULTS
 
 	return obj;
 }
