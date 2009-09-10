@@ -384,6 +384,7 @@ void format_seconds_short(char *buf, unsigned int n, long seconds)
 static struct update_cb {
 	struct update_cb *next;
 	void (*func)(void);
+	pthread_t thread;
 } update_cb_head = {
 	.next = NULL,
 };
@@ -423,6 +424,16 @@ void free_update_callbacks(void)
 	update_cb_head.next = NULL;
 }
 
+static void *run_update_callback(void *) __attribute__((noreturn));
+
+static void *run_update_callback(void *data)
+{
+	struct update_cb *ucb = data;
+
+	(*ucb->func)();
+	pthread_exit(NULL);
+}
+
 int no_buffers;
 
 void update_stuff(void)
@@ -446,8 +457,13 @@ void update_stuff(void)
 
 	prepare_update();
 
+	for (uc = update_cb_head.next; uc; uc = uc->next) {
+		pthread_create(&uc->thread, NULL, &run_update_callback, uc);
+	}
+	/* need to synchronise here, otherwise locking is needed (as data
+	 * would be printed with some update callbacks still running) */
 	for (uc = update_cb_head.next; uc; uc = uc->next)
-		(*uc->func)();
+		pthread_join(uc->thread, NULL);
 
 	/* XXX: move the following into the update_meminfo() functions? */
 	if (no_buffers) {
