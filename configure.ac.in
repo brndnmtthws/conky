@@ -505,7 +505,7 @@ if test x$want_lua = xyes; then
 							AC_SUBST(tolua_CFLAGS, "${CFLAGS}")
 							],
 						   AC_MSG_ERROR([tolua_error not found]),
-						   $LUA51_LIBS)
+						   [$LUA_LIBS $LUA51_LIBS])
 		fi
 		conky_LIBS="$conky_LIBS $tolua_LIBS"
 		tolua_CFLAGS="$tolua_CFLAGS $LUA_CFLAGS $LUA51_CFLAGS"
