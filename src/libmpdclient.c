@@ -1,4 +1,5 @@
 /* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=c
  *
  * libmpdclient
  * (c)2003-2006 by Warren Dukes (warren.dukes@gmail.com)
@@ -30,8 +31,6 @@
  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * vim: ts=4 sw=4 noet ai cindent syntax=c
  *
  */
 

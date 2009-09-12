@@ -1,4 +1,5 @@
 /* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=c
  *
  * Copyright (c) 2007 Mikko Sysikaski <mikko.sysikaski@gmail.com>
  *					  Toni Spets <toni.spets@gmail.com>
@@ -14,8 +15,6 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * vim: ts=4 sw=4 noet ai cindent syntax=c
  *
  */
 

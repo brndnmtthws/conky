@@ -1,4 +1,5 @@
 /* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=c
  *
  * libtcp-portmon.c:  tcp port monitoring library.
  *
@@ -18,8 +19,6 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301
  * USA.
- *
- * vim: ts=4 sw=4 noet ai cindent syntax=c
  *
  */
 
