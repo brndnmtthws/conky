@@ -522,8 +522,7 @@ static struct sorted_process *malloc_sp(struct process *proc)
 {
 	struct sorted_process *sp;
 	sp = malloc(sizeof(struct sorted_process));
-	sp->greater = NULL;
-	sp->less = NULL;
+	memset(sp, 0, sizeof(struct sorted_process));
 	sp->proc = proc;
 	return sp;
 }
