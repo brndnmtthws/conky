@@ -167,6 +167,7 @@ static int process_parse_stat(struct process *process)
 			"%lu %*s %*s %*s %d %*s %*s %*s %u %u", &process->user_time,
 			&process->kernel_time, &nice_val, &process->vsize, &process->rss);
 	if (rc < 5) {
+		NORM_ERR("scaning data for %s failed, got only %d fields", procname, rc);
 		return 1;
 	}
 	/* remove any "kdeinit: " */
@@ -218,6 +219,13 @@ static int process_parse_stat(struct process *process)
 	if (process->previous_kernel_time == ULONG_MAX) {
 		process->previous_kernel_time = process->kernel_time;
 	}
+
+	/* strangely, the values aren't monotonous */
+	if (process->previous_user_time > process->user_time)
+		process->previous_user_time = process->user_time;
+
+	if (process->previous_kernel_time > process->kernel_time)
+		process->previous_kernel_time = process->kernel_time;
 
 	/* store the difference of the user_time */
 	user_time = process->user_time - process->previous_user_time;
