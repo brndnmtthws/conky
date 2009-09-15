@@ -1681,7 +1681,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		init_eve();
 #endif
 #ifdef HAVE_CURL
-	END OBJ(curl, 0, "curl needs arguments: <uri> <interval in minutes>")
+	END OBJ_ARG(curl, 0, "curl needs arguments: <uri> <interval in minutes>")
 		int argc;
 		float interval = 0;
 		char *uri = (char *) malloc(128 * sizeof(char));
