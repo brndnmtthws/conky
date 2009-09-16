@@ -29,7 +29,7 @@
 	<xsl:template match="/">
 		<html>
 			<head>
-				<title>Lua API</title>
+				<title>Configuration Settings</title>
 			</head>
 			<body bgcolor="#FFFFFF">
 				<xsl:apply-templates />
