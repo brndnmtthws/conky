@@ -4514,8 +4514,8 @@ static void main_loop(void)
 
 					case PropertyNotify:
 					{
-					        if ( ev.xproperty.state == PropertyNewValue ) {
-						        get_x11_desktop_info( ev.xproperty.display, ev.xproperty.atom );
+						if ( ev.xproperty.state == PropertyNewValue ) {
+							get_x11_desktop_info( ev.xproperty.display, ev.xproperty.atom );
 						}
 						break;
 					}
@@ -4776,7 +4776,7 @@ static void main_loop(void)
 #endif /* HAVE_SYS_INOTIFY_H */
 
 #ifdef HAVE_LUA
-	llua_update_info(&info, update_interval);
+		llua_update_info(&info, update_interval);
 #endif /* HAVE_LUA */
 		g_signal_pending = 0;
 	}
