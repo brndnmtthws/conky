@@ -39,6 +39,7 @@
 #include <net/if.h>
 #include <netinet/in.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <unistd.h>
 #include "diskio.h"
 #include <fcntl.h>
@@ -385,9 +386,12 @@ static struct update_cb {
 	struct update_cb *next;
 	void (*func)(void);
 	pthread_t thread;
+	sem_t start_wait, end_wait;
 } update_cb_head = {
 	.next = NULL,
 };
+
+static void *run_update_callback(void *) __attribute__((noreturn));
 
 /* Register an update callback. Don't allow duplicates, to minimise side
  * effects and overhead. */
@@ -403,9 +407,16 @@ void add_update_callback(void (*func)(void))
 			return;
 		uc = uc->next;
 	}
+
 	uc->next = malloc(sizeof(struct update_cb));
-	memset(uc->next, 0, sizeof(struct update_cb));
-	uc->next->func = func;
+	uc = uc->next;
+
+	memset(uc, 0, sizeof(struct update_cb));
+	uc->func = func;
+	sem_init(&uc->start_wait, 0, 0);
+	sem_init(&uc->end_wait, 0, 0);
+
+	pthread_create(&uc->thread, NULL, &run_update_callback, uc);
 }
 
 /* Free the list element uc and all decendants recursively. */
@@ -413,6 +424,16 @@ static void __free_update_callbacks(struct update_cb *uc)
 {
 	if (uc->next)
 		__free_update_callbacks(uc->next);
+
+	/* send cancellation request, then trigger and join the thread */
+	pthread_cancel(uc->thread);
+	sem_post(&uc->start_wait);
+	pthread_join(uc->thread, NULL);
+
+	/* finally destroy the semaphores */
+	sem_destroy(&uc->start_wait);
+	sem_destroy(&uc->end_wait);
+
 	free(uc);
 }
 
@@ -424,14 +445,15 @@ void free_update_callbacks(void)
 	update_cb_head.next = NULL;
 }
 
-static void *run_update_callback(void *) __attribute__((noreturn));
-
 static void *run_update_callback(void *data)
 {
 	struct update_cb *ucb = data;
 
-	(*ucb->func)();
-	pthread_exit(NULL);
+	while (1) {
+		sem_wait(&ucb->start_wait);
+		(*ucb->func)();
+		sem_post(&ucb->end_wait);
+	}
 }
 
 int no_buffers;
@@ -457,13 +479,12 @@ void update_stuff(void)
 
 	prepare_update();
 
-	for (uc = update_cb_head.next; uc; uc = uc->next) {
-		pthread_create(&uc->thread, NULL, &run_update_callback, uc);
-	}
+	for (uc = update_cb_head.next; uc; uc = uc->next)
+		sem_post(&uc->start_wait);
 	/* need to synchronise here, otherwise locking is needed (as data
 	 * would be printed with some update callbacks still running) */
 	for (uc = update_cb_head.next; uc; uc = uc->next)
-		pthread_join(uc->thread, NULL);
+		sem_wait(&uc->end_wait);
 
 	/* XXX: move the following into the update_meminfo() functions? */
 	if (no_buffers) {

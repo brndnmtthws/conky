@@ -755,7 +755,7 @@ dnl Some headers
 dnl
 
 AC_CHECK_HEADERS([signal.h unistd.h sys/utsname.h sys/stat.h linux/soundcard.h alsa/asoundlib.h dirent.h mcheck.h \
-      sys/statfs.h sys/param.h pthread.h assert.h errno.h time.h])
+      sys/statfs.h sys/param.h pthread.h semaphore.h assert.h errno.h time.h])
 AC_CHECK_HEADERS([sys/mount.h], [], [],
      [#ifdef HAVE_SYS_PARAM_H
       #include <sys/param.h>
