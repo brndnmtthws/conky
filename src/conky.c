@@ -5987,12 +5987,8 @@ char load_config_file(const char *f)
 					break;
 				}
 			}
-			fclose(fp);
-			if (strlen(global_text) < 1) {
-				CRIT_ERR(NULL, NULL, "no text supplied in configuration; exiting");
-			}
 			global_text_lines = line + 1;
-			return TRUE;
+			break;
 		}
 #ifdef TCP_PORT_MONITOR
 		CONF("max_port_monitor_connections") {
