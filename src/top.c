@@ -36,6 +36,73 @@ static unsigned long g_time = 0;
 static unsigned long long previous_total = 0;
 static struct process *first_process = 0;
 
+/* a simple hash table to speed up find_process() */
+struct proc_hash_entry {
+	struct proc_hash_entry *next;
+	struct process *proc;
+};
+static struct proc_hash_entry proc_hash_table[256];
+
+static void hash_process(struct process *p)
+{
+	struct proc_hash_entry *phe;
+	static char first_run = 1;
+
+	/* better make sure all next pointers are zero upon first access */
+	if (first_run) {
+		memset(proc_hash_table, 0, sizeof(struct proc_hash_entry) * 256);
+		first_run = 0;
+	}
+
+	/* get the bucket head */
+	phe = &proc_hash_table[p->pid % 256];
+
+	/* find the bucket's end */
+	while (phe->next)
+		phe = phe->next;
+
+	/* append process */
+	phe->next = malloc(sizeof(struct proc_hash_entry));
+	memset(phe->next, 0, sizeof(struct proc_hash_entry));
+	phe->next->proc = p;
+}
+
+static void unhash_process(struct process *p)
+{
+	struct proc_hash_entry *phe, *tmp;
+
+	/* get the bucket head */
+	phe = &proc_hash_table[p->pid % 256];
+
+	/* find the entry pointing to p and drop it */
+	while (phe->next) {
+		if (phe->next->proc == p) {
+			tmp = phe->next;
+			phe->next = phe->next->next;
+			free(tmp);
+			return;
+		}
+		phe = phe->next;
+	}
+}
+
+static void __unhash_all_processes(struct proc_hash_entry *phe)
+{
+	if (phe->next)
+		__unhash_all_processes(phe->next);
+	free(phe->next);
+}
+
+static void unhash_all_processes(void)
+{
+	int i;
+
+	for (i = 0; i < 256; i++) {
+		__unhash_all_processes(&proc_hash_table[i]);
+		proc_hash_table[i].next = NULL;
+	}
+}
+
 struct process *get_first_process(void)
 {
 	return first_process;
@@ -54,6 +121,9 @@ void free_all_processes(void)
 		pr = next;
 	}
 	first_process = NULL;
+
+	/* drop the whole hash table */
+	unhash_all_processes();
 }
 
 struct process *get_process_by_name(const char *name)
@@ -70,13 +140,13 @@ struct process *get_process_by_name(const char *name)
 
 static struct process *find_process(pid_t pid)
 {
-	struct process *p = first_process;
+	struct proc_hash_entry *phe;
 
-	while (p) {
-		if (p->pid == pid) {
-			return p;
-		}
-		p = p->next;
+	phe = &proc_hash_table[pid % 256];
+	while (phe->next) {
+		if (phe->next->proc->pid == pid)
+			return phe->next->proc;
+		phe = phe->next;
 	}
 	return 0;
 }
@@ -110,6 +180,9 @@ static struct process *new_process(int p)
 	process->counted = 1;
 
 	/* process_find_name(process); */
+
+	/* add the process to the hash table */
+	hash_process(process);
 
 	return process;
 }
@@ -415,6 +488,8 @@ static void delete_process(struct process *p)
 	if (p->name) {
 		free(p->name);
 	}
+	/* remove the process from the hash table */
+	unhash_process(p);
 	free(p);
 }
 
