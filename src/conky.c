@@ -3694,7 +3694,7 @@ static void draw_string(const char *s)
 int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 {
 #ifdef X11
-	int font_h = font_height();
+	int font_h;
 	int cur_y_add = 0;
 #endif /* X11 */
 	char *recurse = 0;
@@ -3703,8 +3703,11 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 	int orig_special_index = special_index;
 
 #ifdef X11
+	if (output_methods & TO_X) {
+		font_h = font_height();
+		cur_y += font_ascent();
+	}
 	cur_x = text_start_x;
-	cur_y += font_ascent();
 #endif /* X11 */
 
 	while (*p) {
@@ -4142,7 +4145,8 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 	}
 #endif /* NCURSES */
 #ifdef X11
-	cur_y += font_descent();
+	if (output_methods & TO_X)
+		cur_y += font_descent();
 #endif /* X11 */
 	if (recurse && *recurse) {
 		special_index = draw_each_line_inner(recurse, special_index, last_special_needed);
@@ -4901,7 +4905,8 @@ void clean_up(void *memtofree1, void* memtofree2)
 	llua_close();
 #endif /* HAVE_LUA */
 #ifdef IMLIB2
-	cimlib_deinit();
+	if (output_methods & TO_X)
+		cimlib_deinit();
 #endif /* IMLIB2 */
 #ifdef XOAP
 	xmlCleanupParser();
@@ -6100,6 +6105,22 @@ char load_config_file(const char *f)
 	if (!global_text) { // didn't supply any text
 		CRIT_ERR(NULL, NULL, "missing text block in configuration; exiting");
 	}
+	if (!output_methods) {
+		CRIT_ERR(0, 0, "no output_methods have been selected; exiting");
+	}
+#if defined(NCURSES)
+#if defined(X11)
+	if ((output_methods & TO_X) && (output_methods & TO_NCURSES)) {
+		NORM_ERR("out_to_x and out_to_ncurses are incompatible, turning out_to_ncurses off");
+		output_methods &= ~TO_NCURSES;
+		endwin();
+	}
+#endif /* X11 */
+	if ((output_methods & (TO_STDOUT | TO_STDERR)) && (output_methods & TO_NCURSES)) {
+		NORM_ERR("out_to_ncurses conflicts with out_to_console and out_to_stderr, disabling the later ones");
+		output_methods &= ~(TO_STDOUT | TO_STDERR);
+	}
+#endif /* NCURSES */
 	return TRUE;
 }
 
