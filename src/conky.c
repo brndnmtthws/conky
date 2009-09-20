@@ -6712,7 +6712,7 @@ int main(int argc, char **argv)
 #endif /* XOAP */
 
 #ifdef HAVE_SYS_INOTIFY_H
-	inotify_fd = inotify_init();
+	inotify_fd = inotify_init1(IN_NONBLOCK);
 #endif /* HAVE_SYS_INOTIFY_H */
 
 	initialisation(argc, argv);
