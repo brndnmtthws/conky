@@ -3330,13 +3330,11 @@ static int get_string_width_special(char *s, int special_index)
 	int width = 0;
 	long i;
 
-	if ((output_methods & TO_X) == 0) {
-		return (s) ? strlen(s) : 0;
-	}
-
-	if (!s) {
+	if (!s)
 		return 0;
-	}
+
+	if ((output_methods & TO_X) == 0)
+		return strlen(s);
 
 	p = strndup(s, text_buffer_size);
 	final = p;
