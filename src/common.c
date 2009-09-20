@@ -387,11 +387,12 @@ static struct update_cb {
 	void (*func)(void);
 	pthread_t thread;
 	sem_t start_wait, end_wait;
+	volatile char cancel;
 } update_cb_head = {
 	.next = NULL,
 };
 
-static void *run_update_callback(void *) __attribute__((noreturn));
+static void *run_update_callback(void *);
 
 /* Register an update callback. Don't allow duplicates, to minimise side
  * effects and overhead. */
@@ -426,7 +427,7 @@ static void __free_update_callbacks(struct update_cb *uc)
 		__free_update_callbacks(uc->next);
 
 	/* send cancellation request, then trigger and join the thread */
-	pthread_cancel(uc->thread);
+	uc->cancel = 1;
 	sem_post(&uc->start_wait);
 	pthread_join(uc->thread, NULL);
 
@@ -451,6 +452,8 @@ static void *run_update_callback(void *data)
 
 	while (1) {
 		sem_wait(&ucb->start_wait);
+		if(ucb->cancel)
+			return NULL;
 		(*ucb->func)();
 		sem_post(&ucb->end_wait);
 	}
