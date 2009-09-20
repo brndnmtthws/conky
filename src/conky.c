@@ -443,10 +443,12 @@ int check_contains(char *f, char *s)
 
 #ifdef X11
 
-static inline int calc_text_width(const char *s, int l)
+static inline int calc_text_width(const char *s)
 {
+	size_t slen = strlen(s);
+
 	if ((output_methods & TO_X) == 0) {
-		return 0;
+		return slen;
 	}
 #ifdef XFT
 	if (use_xft) {
@@ -454,16 +456,16 @@ static inline int calc_text_width(const char *s, int l)
 
 		if (utf8_mode) {
 			XftTextExtentsUtf8(display, fonts[selected_font].xftfont,
-				(const FcChar8 *) s, l, &gi);
+				(const FcChar8 *) s, slen, &gi);
 		} else {
 			XftTextExtents8(display, fonts[selected_font].xftfont,
-				(const FcChar8 *) s, l, &gi);
+				(const FcChar8 *) s, slen, &gi);
 		}
 		return gi.xOff;
 	} else
 #endif
 	{
-		return XTextWidth(fonts[selected_font].font, s, l);
+		return XTextWidth(fonts[selected_font].font, s, slen);
 	}
 }
 #endif /* X11 */
@@ -3317,12 +3319,7 @@ void set_update_interval(double interval)
 
 static inline int get_string_width(const char *s)
 {
-#ifdef X11
-	if (output_methods & TO_X) {
-		return *s ? calc_text_width(s, strlen(s)) : 0;
-	}
-#endif /* X11 */
-	return strlen(s);
+	return *s ? calc_text_width(s) : 0;
 }
 
 #ifdef X11
@@ -3365,7 +3362,7 @@ static int get_string_width_special(char *s, int special_index)
 		}
 	}
 	if (strlen(final) > 1) {
-		width += calc_text_width(final, strlen(final));
+		width += calc_text_width(final);
 	}
 	free(final);
 	return width;
