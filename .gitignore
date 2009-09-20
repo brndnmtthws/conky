@@ -32,6 +32,9 @@ src/build.h
 src/config.h
 src/defconfig.h
 src/*.o
+src/*.gcda
+src/*.gcno
+src/*.gcov
 conky-*.tar.*
 doc/*.html
 doc/*.mxml

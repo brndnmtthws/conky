@@ -921,6 +921,23 @@ if test "x$want_testing" = "xyes" -a $ac_cv_c_compiler_gnu != no; then
   fi
 fi
 
+dnl
+dnl profiling
+dnl
+
+AC_ARG_ENABLE([profiling],
+	      AC_HELP_STRING([--enable-profiling], [specify compiler flags for use with gprof and gcov @<:@default=no@:>@]),
+	      [want_profiling="$enableval"], [want_profiling=no])
+
+if test "x$want_profiling" = "xyes" -a $ac_cv_c_compiler_gnu != no; then
+  if test "x$want_debug" = "xyes"; then
+    conky_CFLAGS="$conky_CFLAGS -pg -fprofile-arcs -ftest-coverage"
+  else
+    conky_CFLAGS="$conky_CFLAGS -g3 -pg -fprofile-arcs -ftest-coverage"
+  fi
+  AC_DEFINE([PROFILING], [], [Define for profiling (gprof and gcov) support])
+fi
+
 AC_SUBST(conky_CFLAGS)
 AC_SUBST(conky_LIBS)
 AC_SUBST(X11_LIBS)
