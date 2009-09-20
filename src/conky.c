@@ -4263,13 +4263,11 @@ static void draw_stuff(void)
 #endif /* X11 */
 	draw_mode = FG;
 	draw_text();
-#ifdef X11
-	xdbe_swap_buffers();
+#if defined(X11) && defined(HAVE_XDBE)
 	if (output_methods & TO_X) {
-#ifdef HAVE_XDBE
-#endif
+		xdbe_swap_buffers();
 	}
-#endif /* X11 */
+#endif /* X11 && HAVE_XDBE */
 	if(overwrite_fpointer) {
 		fclose(overwrite_fpointer);
 		overwrite_fpointer = 0;
