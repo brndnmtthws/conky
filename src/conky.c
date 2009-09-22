@@ -6536,6 +6536,8 @@ void initialisation(int argc, char **argv) {
 		}
 	}
 
+	start_update_threading();
+
 	text_buffer = malloc(max_user_text);
 	memset(text_buffer, 0, max_user_text);
 	tmpstring1 = malloc(text_buffer_size);

@@ -387,12 +387,16 @@ static struct update_cb {
 	void (*func)(void);
 	pthread_t thread;
 	sem_t start_wait, end_wait;
-	volatile char cancel;
+
+    /* set to 1 when starting the thread
+	 * set to 0 to request thread termination */
+	volatile char running;
 } update_cb_head = {
 	.next = NULL,
 };
 
 static void *run_update_callback(void *);
+static int threading_started;
 
 /* Register an update callback. Don't allow duplicates, to minimise side
  * effects and overhead. */
@@ -417,7 +421,10 @@ void add_update_callback(void (*func)(void))
 	sem_init(&uc->start_wait, 0, 0);
 	sem_init(&uc->end_wait, 0, 0);
 
-	pthread_create(&uc->thread, NULL, &run_update_callback, uc);
+	if (threading_started) {
+		uc->running = 1;
+		pthread_create(&uc->thread, NULL, &run_update_callback, uc);
+	}
 }
 
 /* Free the list element uc and all decendants recursively. */
@@ -426,10 +433,12 @@ static void __free_update_callbacks(struct update_cb *uc)
 	if (uc->next)
 		__free_update_callbacks(uc->next);
 
-	/* send cancellation request, then trigger and join the thread */
-	uc->cancel = 1;
-	sem_post(&uc->start_wait);
-	pthread_join(uc->thread, NULL);
+	if (uc->running) {
+		/* send cancellation request, then trigger and join the thread */
+		uc->running = 0;
+		sem_post(&uc->start_wait);
+		pthread_join(uc->thread, NULL);
+	}
 
 	/* finally destroy the semaphores */
 	sem_destroy(&uc->start_wait);
@@ -446,13 +455,33 @@ void free_update_callbacks(void)
 	update_cb_head.next = NULL;
 }
 
+/* We cannot start threads before we forked to background, because the threads
+ * would remain in the wrong process. Because of that, add_update_callback()
+ * doesn't create threads before start_update_threading() is called.
+ * start_update_threading() starts all threads previously registered, and sets a
+ * flag so that future threads are automagically started by
+ * add_update_callback().
+ * This text is almost longer than the actual code.
+ */
+void start_update_threading(void)
+{
+	struct update_cb *uc;
+
+	threading_started = 1;
+
+	for(uc = update_cb_head.next; uc; uc = uc->next) {
+		uc->running = 1;
+		pthread_create(&uc->thread, NULL, &run_update_callback, uc);
+	}
+}
+
 static void *run_update_callback(void *data)
 {
 	struct update_cb *ucb = data;
 
 	while (1) {
 		sem_wait(&ucb->start_wait);
-		if(ucb->cancel)
+		if (ucb->running == 0)
 			return NULL;
 		(*ucb->func)();
 		sem_post(&ucb->end_wait);

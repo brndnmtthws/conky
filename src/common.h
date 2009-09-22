@@ -1,4 +1,6 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*- */
+/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*- 
+ * vim: ts=4 sw=4 noet ai cindent syntax=c
+ */
 
 #ifndef _COMMON_H
 #define _COMMON_H
@@ -10,6 +12,8 @@
 
 void add_update_callback(void (*func)(void));
 void free_update_callbacks(void);
+void start_update_threading(void);
+
 
 void strfold(char *start, int count);
 int check_mount(char *s);
