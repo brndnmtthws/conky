@@ -694,8 +694,10 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj_be_ifblock_endif(ifblock_opaque, obj);
 	END OBJ(eval, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
+#if defined(IMLIB2) && defined(X11)
 	END OBJ(image, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
+#endif /* IMLIB2 */
 	END OBJ(exec, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(execp, 0)
