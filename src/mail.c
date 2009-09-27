@@ -355,8 +355,15 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 	if (type == IMAP_TYPE) {
 		tmp = strstr(arg, "-f ");
 		if (tmp) {
+			int len = 1024;
 			tmp += 3;
-			sscanf(tmp, "%s", mail->folder);
+			if (tmp[0] == '\'') {
+				len = strstr(tmp + 1, "'") - tmp - 1;
+				if (len > 1024) {
+					len = 1024;
+				}
+			}
+			strncpy(mail->folder, tmp + 1, len);
 		} else {
 			strncpy(mail->folder, "INBOX", 128);	// default imap inbox
 		}
@@ -542,9 +549,9 @@ void *imap_thread(void *arg)
 				break;
 			}
 
-			strncpy(sendbuf, "a2 STATUS ", MAXDATASIZE);
+			strncpy(sendbuf, "a2 STATUS \"", MAXDATASIZE);
 			strncat(sendbuf, mail->folder, MAXDATASIZE - strlen(sendbuf) - 1);
-			strncat(sendbuf, " (MESSAGES UNSEEN)\r\n",
+			strncat(sendbuf, "\" (MESSAGES UNSEEN)\r\n",
 					MAXDATASIZE - strlen(sendbuf) - 1);
 			if (imap_command(sockfd, sendbuf, recvbuf, "a2 OK")) {
 				fail++;
@@ -561,9 +568,9 @@ void *imap_thread(void *arg)
 			old_messages = mail->messages;
 
 			if (has_idle) {
-				strncpy(sendbuf, "a4 SELECT ", MAXDATASIZE);
+				strncpy(sendbuf, "a4 SELECT \"", MAXDATASIZE);
 				strncat(sendbuf, mail->folder, MAXDATASIZE - strlen(sendbuf) - 1);
-				strncat(sendbuf, "\r\n", MAXDATASIZE - strlen(sendbuf) - 1);
+				strncat(sendbuf, "\"\r\n", MAXDATASIZE - strlen(sendbuf) - 1);
 				if (imap_command(sockfd, sendbuf, recvbuf, "a4 OK")) {
 					fail++;
 					break;
@@ -653,9 +660,9 @@ void *imap_thread(void *arg)
 								fail++;
 								break;
 							}
-							strncpy(sendbuf, "a2 STATUS ", MAXDATASIZE);
+							strncpy(sendbuf, "a2 STATUS \"", MAXDATASIZE);
 							strncat(sendbuf, mail->folder, MAXDATASIZE - strlen(sendbuf) - 1);
-							strncat(sendbuf, " (MESSAGES UNSEEN)\r\n",
+							strncat(sendbuf, "\" (MESSAGES UNSEEN)\r\n",
 									MAXDATASIZE - strlen(sendbuf) - 1);
 							if (imap_command(sockfd, sendbuf, recvbuf, "a2 OK")) {
 								fail++;

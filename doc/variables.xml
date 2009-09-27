@@ -1701,7 +1701,7 @@
         IMAP inbox by default. You can define individual IMAP
         inboxes seperately by passing arguments to this object.
         Arguments are: "host user pass [-i interval (in seconds)]
-        [-f folder] [-p port] [-e command] [-r retries]". Default
+        [-f 'folder'] [-p port] [-e 'command'] [-r retries]". Default
         port is 143, default folder is 'INBOX', default interval is
         5 minutes, and default number of retries before giving up
         is 5. If the password is supplied as '*', you will be
@@ -1719,7 +1719,7 @@
         global IMAP inbox by default. You can define individual
         IMAP inboxes seperately by passing arguments to this
         object. Arguments are: "host user pass [-i interval (in
-        seconds)] [-f folder] [-p port] [-e command] [-r retries]".
+        seconds)] [-f 'folder'] [-p port] [-e 'command'] [-r retries]".
         Default port is 143, default folder is 'INBOX', default
         interval is 5 minutes, and default number of retries before
         giving up is 5. If the password is supplied as '*', you
@@ -2514,7 +2514,7 @@
         global POP3 inbox by default. You can define individual
         POP3 inboxes seperately by passing arguments to this
         object. Arguments are: "host user pass [-i interval (in
-        seconds)] [-p port] [-e command] [-r retries]". Default
+        seconds)] [-p port] [-e 'command'] [-r retries]". Default
         port is 110, default interval is 5 minutes, and default
         number of retries before giving up is 5. If the password is
         supplied as '*', you will be prompted to enter the password
@@ -2532,7 +2532,7 @@
         in your global POP3 inbox by default. You can define
         individual POP3 inboxes seperately by passing arguments to
         this object. Arguments are: "host user pass [-i interval
-        (in seconds)] [-p port] [-e command] [-r retries]". Default
+        (in seconds)] [-p port] [-e 'command'] [-r retries]". Default
         port is 110, default interval is 5 minutes, and default
         number of retries before giving up is 5. If the password is
         supplied as '*', you will be prompted to enter the password

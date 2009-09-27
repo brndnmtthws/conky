@@ -316,8 +316,8 @@
             </command>
         </term>
         <listitem>Default global IMAP server. Arguments are: "host
-        user pass [-i interval (in seconds)] [-f folder] [-p port]
-        [-e command] [-r retries]". Default port is 143, default
+        user pass [-i interval (in seconds)] [-f 'folder'] [-p port]
+        [-e 'command'] [-r retries]". Default port is 143, default
         folder is 'INBOX', default interval is 5 minutes, and
         default number of retries before giving up is 5. If the
         password is supplied as '*', you will be prompted to enter
@@ -704,7 +704,7 @@
             </command>
         </term>
         <listitem>Default global POP3 server. Arguments are: "host
-        user pass [-i interval (in seconds)] [-p port] [-e command]
+        user pass [-i interval (in seconds)] [-p port] [-e 'command']
         [-r retries]". Default port is 110, default interval is 5
         minutes, and default number of retries before giving up is
         5. If the password is supplied as '*', you will be prompted
