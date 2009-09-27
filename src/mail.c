@@ -523,6 +523,15 @@ void *imap_thread(void *arg)
 				fail++;
 				break;
 			}
+			strncpy(sendbuf, "abc CAPABILITY\r\n", MAXDATASIZE);
+			if (imap_command(sockfd, sendbuf, recvbuf, "abc OK")) {
+				fail++;
+				break;
+			}
+			if (strstr(recvbuf, " IDLE ") != NULL) {
+				has_idle = 1;
+			}
+
 			strncpy(sendbuf, "a1 login ", MAXDATASIZE);
 			strncat(sendbuf, mail->user, MAXDATASIZE - strlen(sendbuf) - 1);
 			strncat(sendbuf, " ", MAXDATASIZE - strlen(sendbuf) - 1);
@@ -531,9 +540,6 @@ void *imap_thread(void *arg)
 			if (imap_command(sockfd, sendbuf, recvbuf, "a1 OK")) {
 				fail++;
 				break;
-			}
-			if (strstr(recvbuf, " IDLE ") != NULL) {
-				has_idle = 1;
 			}
 
 			strncpy(sendbuf, "a2 STATUS ", MAXDATASIZE);
