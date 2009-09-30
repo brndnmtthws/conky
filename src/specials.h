@@ -86,6 +86,12 @@ extern int default_gauge_width;
 extern int default_gauge_height;
 #endif
 
+/* set the obj's default width and height (FIXME: referencing the global obj is evil) */
+#define SIZE_DEFAULTS(arg) { \
+	obj->a = default_##arg##_width; \
+	obj->b = default_##arg##_height; \
+}
+
 /* max number of specials allowed (TODO: use linked list instead) */
 extern int max_specials;
 

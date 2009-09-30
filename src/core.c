@@ -232,11 +232,6 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #define OBJ_IF_ARG(a, n, ...) __OBJ_HEAD(a, n) __OBJ_ARG(__VA_ARGS__) __OBJ_IF; {
 #define END } } else
 
-#define SIZE_DEFAULTS(arg) { \
-	obj->a = default_##arg##_width; \
-	obj->b = default_##arg##_height; \
-}
-
 #ifdef X11
 	if (s[0] == '#') {
 		obj->type = OBJ_color;
