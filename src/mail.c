@@ -464,23 +464,29 @@ void *imap_thread(void *arg)
 	struct mail_s *mail = (struct mail_s *)arg;
 	int has_idle = 0;
 	int threadfd = timed_thread_readfd(mail->p_timed_thread);
+	char resolved_host = 0;
 
-#ifdef HAVE_GETHOSTBYNAME_R
-	if (gethostbyname_r(mail->host, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
-		NORM_ERR("IMAP gethostbyname_r: %s", hstrerror(h_errno));
-		exit(EXIT_FAILURE);
-	}
-#else /* HAVE_GETHOSTBYNAME_R */
-	if ((he_res = gethostbyname(mail->host)) == NULL) {	// get the host info
-		herror("gethostbyname");
-		exit(EXIT_FAILURE);
-	}
-#endif /* HAVE_GETHOSTBYNAME_R */
 	while (fail < mail->retries) {
 		struct timeval fetchtimeout;
 		int res;
 		fd_set fdset;
 
+		if (!resolved_host) {
+#ifdef HAVE_GETHOSTBYNAME_R
+			if (gethostbyname_r(mail->host, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
+				NORM_ERR("IMAP gethostbyname_r: %s", hstrerror(h_errno));
+				fail++;
+				break;
+			}
+#else /* HAVE_GETHOSTBYNAME_R */
+			if ((he_res = gethostbyname(mail->host)) == NULL) {	// get the host info
+				herror("gethostbyname");
+				fail++;
+				break;
+			}
+#endif /* HAVE_GETHOSTBYNAME_R */
+			resolved_host = 1;
+		}
 		if (fail > 0) {
 			NORM_ERR("Trying IMAP connection again for %s@%s (try %u/%u)",
 					mail->user, mail->host, fail + 1, mail->retries);
@@ -594,7 +600,7 @@ void *imap_thread(void *arg)
 					FD_ZERO(&fdset);
 					FD_SET(sockfd, &fdset);
 					FD_SET(threadfd, &fdset);
-					res = select(MAX(sockfd + 1, threadfd + 1), &fdset, NULL, NULL, NULL);
+					res = select(MAX(sockfd + 1, threadfd + 1), &fdset, NULL, NULL, &fetchtimeout);
 					if (timed_thread_test(mail->p_timed_thread, 1) || (res == -1 && errno == EINTR) || FD_ISSET(threadfd, &fdset)) {
 						if ((fstat(sockfd, &stat_buf) == 0) && S_ISSOCK(stat_buf.st_mode)) {
 							/* if a valid socket, close it */
@@ -779,23 +785,28 @@ void *pop3_thread(void *arg)
 	char hostbuff[2048];
 	struct sockaddr_in their_addr;	// connector's address information
 	struct mail_s *mail = (struct mail_s *)arg;
+	char resolved_host = 0;
 
-#ifdef HAVE_GETHOSTBYNAME_R
-	if (gethostbyname_r(mail->host, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
-		NORM_ERR("POP3 gethostbyname_r: %s", hstrerror(h_errno));
-		exit(EXIT_FAILURE);
-	}
-#else /* HAVE_GETHOSTBYNAME_R */
-	if ((he_res = gethostbyname(mail->host)) == NULL) {	// get the host info
-		herror("gethostbyname");
-		exit(EXIT_FAILURE);
-	}
-#endif /* HAVE_GETHOSTBYNAME_R */
 	while (fail < mail->retries) {
 		struct timeval fetchtimeout;
 		int res;
 		fd_set fdset;
-
+		if (!resolved_host) {
+#ifdef HAVE_GETHOSTBYNAME_R
+			if (gethostbyname_r(mail->host, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
+				NORM_ERR("POP3 gethostbyname_r: %s", hstrerror(h_errno));
+				fail++;
+				break;
+			}
+#else /* HAVE_GETHOSTBYNAME_R */
+			if ((he_res = gethostbyname(mail->host)) == NULL) {	// get the host info
+				herror("gethostbyname");
+		fail++;
+		break;
+	}
+#endif /* HAVE_GETHOSTBYNAME_R */
+	resolved_host = 1;
+}
 		if (fail > 0) {
 			NORM_ERR("Trying POP3 connection again for %s@%s (try %u/%u)",
 					mail->user, mail->host, fail + 1, mail->retries);
