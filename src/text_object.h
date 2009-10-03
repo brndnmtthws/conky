@@ -39,10 +39,6 @@
 #include "mail.h"		/* local_mail_s */
 #include "fs.h"			/* struct fs_stat */
 
-#ifdef NVIDIA
-#include "nvidia.h"		/* nvidia_s */
-#endif
-
 enum text_object_type {
 	OBJ_read_tcp,
 	OBJ_addr,
@@ -578,10 +574,6 @@ struct text_object {
 		} read_tcp;
 
 		struct local_mail_s local_mail;
-#ifdef NVIDIA
-		struct nvidia_s nvidia;
-#endif /* NVIDIA */
-
 	} data;
 	int type;
 	int a, b;

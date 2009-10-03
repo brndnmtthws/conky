@@ -49,6 +49,9 @@
 #include "mail.h"
 #include "mboxscan.h"
 #include "net_stat.h"
+#ifdef NVIDIA
+#include "nvidia.h"
+#endif
 #include "read_tcp.h"
 #include "scroll.h"
 #include "specials.h"
@@ -1109,7 +1112,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		parse_combine_arg(obj, arg, free_at_crash);
 #ifdef NVIDIA
 	END OBJ_ARG(nvidia, 0, "nvidia needs an argument")
-		if (set_nvidia_type(&obj->data.nvidia, arg)) {
+		if (set_nvidia_type(obj, arg)) {
 			CRIT_ERR(obj, free_at_crash, "nvidia: invalid argument"
 				 " specified: '%s'\n", arg);
 		}
@@ -1682,6 +1685,7 @@ void free_text_objects(struct text_object *root, int internal)
 #endif /* IBM */
 #ifdef NVIDIA
 			case OBJ_nvidia:
+				free_nvidia(obj);
 				break;
 #endif /* NVIDIA */
 #ifdef MPD

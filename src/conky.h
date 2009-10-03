@@ -90,10 +90,6 @@ struct text_object;
 #include "mpd.h"
 #endif
 
-#ifdef NVIDIA
-#include "nvidia.h"
-#endif
-
 #ifdef HAVE_CURL
 #include "ccurl_thread.h"
 #endif /* HAVE_CURL */

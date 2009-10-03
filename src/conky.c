@@ -90,6 +90,9 @@
 #include "mail.h"
 #include "mboxscan.h"
 #include "net_stat.h"
+#ifdef NVIDIA
+#include "nvidia.h"
+#endif
 #include "read_tcp.h"
 #include "scroll.h"
 #include "specials.h"
@@ -2401,16 +2404,7 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #ifdef NVIDIA
 			OBJ(nvidia) {
-				int value = get_nvidia_value(obj->data.nvidia.type, display);
-				if(value == -1)
-					snprintf(p, p_max_size, "N/A");
-				else if (obj->data.nvidia.type == NV_TEMP)
-					temp_print(p, p_max_size, (double)value, TEMP_CELSIUS);
-				else if (obj->data.nvidia.print_as_float &&
-						value > 0 && value < 100)
-					snprintf(p, p_max_size, "%.1f", (float)value);
-				else
-					snprintf(p, p_max_size, "%d", value);
+				print_nvidia_value(obj, display, p, p_max_size);
 			}
 #endif /* NVIDIA */
 #ifdef APCUPSD

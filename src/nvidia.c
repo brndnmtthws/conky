@@ -28,7 +28,11 @@
  *
  */
 
+#include "conky.h"
+#include "logging.h"
 #include "nvidia.h"
+#include "temphelper.h"
+#include <NVCtrl/NVCtrlLib.h>
 
 const int nvidia_query_to_attr[] = {NV_CTRL_GPU_CORE_TEMPERATURE,
 				    NV_CTRL_GPU_CORE_THRESHOLD,
@@ -37,7 +41,22 @@ const int nvidia_query_to_attr[] = {NV_CTRL_GPU_CORE_TEMPERATURE,
 				    NV_CTRL_GPU_CURRENT_CLOCK_FREQS,
 				    NV_CTRL_IMAGE_SETTINGS};
 
-int get_nvidia_value(QUERY_ID qid, Display *dpy){
+typedef enum _QUERY_ID {
+	NV_TEMP,
+	NV_TEMP_THRESHOLD,
+	NV_TEMP_AMBIENT,
+	NV_GPU_FREQ,
+	NV_MEM_FREQ,
+	NV_IMAGE_QUALITY
+} QUERY_ID;
+
+struct nvidia_s {
+	int interval;
+	int print_as_float;
+	QUERY_ID type;
+};
+
+static int get_nvidia_value(QUERY_ID qid, Display *dpy){
 	int tmp;
 	if(!XNVCTRLQueryAttribute(dpy, 0, 0, nvidia_query_to_attr[qid], &tmp)){
 		return -1;
@@ -50,37 +69,66 @@ int get_nvidia_value(QUERY_ID qid, Display *dpy){
 	return tmp;
 }
 
-int set_nvidia_type(struct nvidia_s *nvidia, const char *arg)
+int set_nvidia_type(struct text_object *obj, const char *arg)
 {
-	if (!arg || !arg[0] || !arg[1])
-		return 1;
+	struct nvidia_s *nvs;
 
-	nvidia->print_as_float = 0;
+	nvs = obj->data.opaque = malloc(sizeof(struct nvidia_s));
+	memset(nvs, 0, sizeof(struct nvidia_s));
+
 	switch(arg[0]) {
 		case 't':                              // temp or threshold
-			nvidia->print_as_float = 1;
+			nvs->print_as_float = 1;
 			if (arg[1] == 'e')
-				nvidia->type = NV_TEMP;
+				nvs->type = NV_TEMP;
 			else if (arg[1] == 'h')
-				nvidia->type = NV_TEMP_THRESHOLD;
+				nvs->type = NV_TEMP_THRESHOLD;
 			else
 				return 1;
 			break;
 		case 'a':                              // ambient temp
-			nvidia->print_as_float = 1;
-			nvidia->type = NV_TEMP_AMBIENT;
+			nvs->print_as_float = 1;
+			nvs->type = NV_TEMP_AMBIENT;
 			break;
 		case 'g':                              // gpufreq
-			nvidia->type = NV_GPU_FREQ;
+			nvs->type = NV_GPU_FREQ;
 			break;
 		case 'm':                              // memfreq
-			nvidia->type = NV_MEM_FREQ;
+			nvs->type = NV_MEM_FREQ;
 			break;
 		case 'i':                              // imagequality
-			nvidia->type = NV_IMAGE_QUALITY;
+			nvs->type = NV_IMAGE_QUALITY;
 			break;
 		default:
 			return 1;
 	}
 	return 0;
 }
+
+void print_nvidia_value(struct text_object *obj, Display *dpy, char *p, int p_max_size)
+{
+	int value;
+	struct nvidia_s *nvs = obj->data.opaque;
+
+	if (!nvs ||
+	    (value = get_nvidia_value(nvs->type, dpy)) == -1) {
+		snprintf(p, p_max_size, "N/A");
+		return;
+	}
+	if (nvs->type == NV_TEMP)
+		temp_print(p, p_max_size, (double)value, TEMP_CELSIUS);
+	else if (nvs->print_as_float &&
+			value > 0 && value < 100)
+		snprintf(p, p_max_size, "%.1f", (float)value);
+	else
+		snprintf(p, p_max_size, "%d", value);
+}
+
+void free_nvidia(struct text_object *obj)
+{
+	if (obj->data.opaque) {
+		free(obj->data.opaque);
+		obj->data.opaque = NULL;
+	}
+}
+
