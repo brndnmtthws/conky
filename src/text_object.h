@@ -442,6 +442,7 @@ struct text_object {
 	struct text_object *next, *prev;	/* doubly linked list of text objects */
 	struct text_object *sub;		/* for objects parsing text into objects */
 	union {
+		void *opaque;		/* new style generic per object data */
 		char *s;		/* some string */
 		int i;			/* some integer */
 		long l;			/* some other integer */
