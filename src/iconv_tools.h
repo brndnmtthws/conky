@@ -28,22 +28,14 @@
  *
  */
 
-#ifndef _CONKY_CORE_H_
-#define _CONKY_CORE_H_
+#ifndef _ICONV_TOOLS_H
+#define _ICONV_TOOLS_H
 
-#include "conky.h"
+void free_iconv(void);
+void iconv_convert(size_t *, char *, char *, size_t);
+void init_iconv_start(struct text_object *, void *, const char *);
+void init_iconv_stop(void);
+void do_iconv_start(struct text_object *);
+void do_iconv_stop(void);
 
-struct text_object *construct_text_object(const char *s, const char *arg, long
-		line, void **ifblock_opaque, void *free_at_crash);
-
-size_t remove_comments(char *string);
-
-int extract_variable_text_internal(struct text_object *retval, const char *const_p);
-
-void free_text_objects(struct text_object *root, int internal);
-
-#ifdef X11
-void scan_mixer_bar(const char *arg, int *a, int *w, int *h);
-#endif /* X11 */
-
-#endif /* _CONKY_CORE_H_ */
+#endif /* _ICONV_TOOLS_H */

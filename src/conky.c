@@ -80,6 +80,9 @@
 #include "fonts.h"
 #endif
 #include "fs.h"
+#ifdef HAVE_ICONV
+#include "iconv_tools.h"
+#endif
 #include "logging.h"
 #include "mixer.h"
 #include "mail.h"
@@ -983,7 +986,6 @@ static void generate_text_internal(char *p, int p_max_size,
 #ifdef HAVE_ICONV
 	char buff_in[p_max_size];
 	buff_in[0] = 0;
-	set_iconv_converting(0);
 #endif /* HAVE_ICONV */
 
 	p[0] = 0;
@@ -2841,12 +2843,10 @@ static void generate_text_internal(char *p, int p_max_size,
 
 #ifdef HAVE_ICONV
 			OBJ(iconv_start) {
-				set_iconv_converting(1);
-				set_iconv_selected(obj->a);
+				do_iconv_start(obj);
 			}
 			OBJ(iconv_stop) {
-				set_iconv_converting(0);
-				set_iconv_selected(0);
+				do_iconv_stop();
 			}
 #endif /* HAVE_ICONV */
 
@@ -3209,7 +3209,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			size_t a = strlen(p);
 
 #ifdef HAVE_ICONV
-			iconv_convert(a, buff_in, p, p_max_size);
+			iconv_convert(&a, buff_in, p, p_max_size);
 #endif /* HAVE_ICONV */
 			if (obj->type != OBJ_text && obj->type != OBJ_execp && obj->type != OBJ_execpi
 					&& obj->type != OBJ_lua && obj->type != OBJ_lua_parse) {
@@ -3217,6 +3217,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 			p += a;
 			p_max_size -= a;
+			(*p) = 0;
 		}
 		obj = obj->next;
 	}

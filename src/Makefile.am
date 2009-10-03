@@ -80,6 +80,7 @@ lua = llua.c llua.h
 nvidia = nvidia.c nvidia.h
 imlib2 = imlib2.c imlib2.h
 apcupsd = apcupsd.c apcupsd.h
+iconv = iconv_tools.c iconv_tools.h
 
 # make sure the files from above are always included in the distfile
 EXTRA_DIST = $(audacious) $(bmpx) $(ibm) $(mpd) $(moc) $(xmms2) $(linux) \
@@ -154,6 +155,9 @@ optional_sources += $(imlib2)
 endif
 if BUILD_APCUPSD
 optional_sources += $(apcupsd)
+endif
+if BUILD_ICONV
+optional_sources += $(iconv)
 endif
 
 # linux takes the standard to the max

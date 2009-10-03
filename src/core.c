@@ -39,6 +39,9 @@
 #include "fonts.h"
 #endif
 #include "fs.h"
+#ifdef HAVE_ICONV
+#include "iconv_tools.h"
+#endif
 #include "logging.h"
 #include "mixer.h"
 #include "mail.h"
@@ -49,6 +52,10 @@
 #include "tailhead.h"
 #include "timeinfo.h"
 #include "top.h"
+
+#ifdef NCURSES
+#include <ncurses.h>
+#endif
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
@@ -64,107 +71,6 @@ void update_entropy(void);
 
 #include <string.h>
 #include <ctype.h>
-
-#ifdef HAVE_ICONV
-#include <iconv.h>
-
-#ifdef NCURSES
-#include <ncurses.h>
-#endif
-
-#define ICONV_CODEPAGE_LENGTH 20
-
-int register_iconv(iconv_t *new_iconv);
-
-long iconv_selected;
-long iconv_count = 0;
-char iconv_converting;
-static iconv_t **iconv_cd = 0;
-
-char is_iconv_converting(void)
-{
-	return iconv_converting;
-}
-
-void set_iconv_converting(char i)
-{
-	iconv_converting = i;
-}
-
-long get_iconv_selected(void)
-{
-	return iconv_selected;
-}
-
-void set_iconv_selected(long i)
-{
-	iconv_selected = i;
-}
-
-int register_iconv(iconv_t *new_iconv)
-{
-	iconv_cd = realloc(iconv_cd, sizeof(iconv_t *) * (iconv_count + 1));
-	if (!iconv_cd) {
-		CRIT_ERR(NULL, NULL, "Out of memory");
-	}
-	iconv_cd[iconv_count] = malloc(sizeof(iconv_t));
-	if (!iconv_cd[iconv_count]) {
-		CRIT_ERR(NULL, NULL, "Out of memory");
-	}
-	memcpy(iconv_cd[iconv_count], new_iconv, sizeof(iconv_t));
-	iconv_count++;
-	return iconv_count;
-}
-
-void free_iconv(void)
-{
-	if (iconv_cd) {
-		long i;
-
-		for (i = 0; i < iconv_count; i++) {
-			if (iconv_cd[i]) {
-				iconv_close(*iconv_cd[i]);
-				free(iconv_cd[i]);
-			}
-		}
-		free(iconv_cd);
-	}
-	iconv_cd = 0;
-}
-
-void iconv_convert(size_t a, char *buff_in, char *p, size_t p_max_size)
-{
-	if (a > 0 && is_iconv_converting() && get_iconv_selected() > 0
-			&& (iconv_cd[iconv_selected - 1] != (iconv_t) (-1))) {
-		int bytes;
-		size_t dummy1, dummy2;
-#ifdef __FreeBSD__
-		const char *ptr = buff_in;
-#else
-		char *ptr = buff_in;
-#endif
-		char *outptr = p;
-
-		dummy1 = dummy2 = a;
-
-		strncpy(buff_in, p, p_max_size);
-
-		iconv(*iconv_cd[iconv_selected - 1], NULL, NULL, NULL, NULL);
-		while (dummy1 > 0) {
-			bytes = iconv(*iconv_cd[iconv_selected - 1], &ptr, &dummy1,
-					&outptr, &dummy2);
-			if (bytes == -1) {
-				NORM_ERR("Iconv codeset conversion failed");
-				break;
-			}
-		}
-
-		/* It is nessecary when we are converting from multibyte to
-		 * singlebyte codepage */
-		a = outptr - p;
-	}
-}
-#endif /* HAVE_ICONV */
 
 /* strip a leading /dev/ if any, following symlinks first
  *
@@ -1364,29 +1270,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		scan_tztime(obj, arg);
 #ifdef HAVE_ICONV
 	END OBJ_ARG(iconv_start, 0, "Iconv requires arguments")
-		char iconv_from[ICONV_CODEPAGE_LENGTH];
-		char iconv_to[ICONV_CODEPAGE_LENGTH];
-
-		if (is_iconv_converting()) {
-			CRIT_ERR(obj, free_at_crash, "You must stop your last iconv conversion before "
-				"starting another");
-		}
-		if (sscanf(arg, "%s %s", iconv_from, iconv_to) != 2) {
-			CRIT_ERR(obj, free_at_crash, "Invalid arguments for iconv_start");
-		} else {
-			iconv_t new_iconv;
-
-			new_iconv = iconv_open(iconv_to, iconv_from);
-			if (new_iconv == (iconv_t) (-1)) {
-				NORM_ERR("Can't convert from %s to %s.", iconv_from, iconv_to);
-			} else {
-				obj->a = register_iconv(&new_iconv);
-				set_iconv_converting(1);
-			}
-		}
+		init_iconv_start(obj, free_at_crash, arg);
 	END OBJ(iconv_stop, 0)
-		set_iconv_converting(0);
-
+		init_iconv_stop();
 #endif
 	END OBJ(totaldown, &update_net_stats)
 		if (arg) {

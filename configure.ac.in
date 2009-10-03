@@ -568,6 +568,7 @@ if test "$am_cv_func_iconv" != yes; then
 else
   conky_LIBS="$conky_LIBS $LIBICONV"
 fi
+AM_CONDITIONAL(BUILD_ICONV, test "$am_cv_func_iconv" = yes)
 
 dnl
 dnl Xext Double-buffering Extension
