@@ -47,6 +47,7 @@
 #include "temphelper.h"
 #include "template.h"
 #include "tailhead.h"
+#include "timeinfo.h"
 #include "top.h"
 
 /* check for OS and include appropriate headers */
@@ -1356,26 +1357,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
 	END OBJ(sysname, 0)
 	END OBJ(time, 0)
-		obj->data.s = strndup(arg ? arg : "%F %T", text_buffer_size);
+		scan_time(obj, arg);
 	END OBJ(utime, 0)
-		obj->data.s = strndup(arg ? arg : "%F %T", text_buffer_size);
+		scan_time(obj, arg);
 	END OBJ(tztime, 0)
-		char buf1[256], buf2[256], *fmt, *tz;
-
-		fmt = tz = NULL;
-		if (arg) {
-			int nArgs = sscanf(arg, "%255s %255[^\n]", buf1, buf2);
-
-			switch (nArgs) {
-				case 2:
-					tz = buf1;
-				case 1:
-					fmt = buf2;
-			}
-		}
-
-		obj->data.tztime.fmt = strndup(fmt ? fmt : "%F %T", text_buffer_size);
-		obj->data.tztime.tz = tz ? strndup(tz, text_buffer_size) : NULL;
+		scan_tztime(obj, arg);
 #ifdef HAVE_ICONV
 	END OBJ_ARG(iconv_start, 0, "Iconv requires arguments")
 		char iconv_from[ICONV_CODEPAGE_LENGTH];
@@ -2224,11 +2210,10 @@ void free_text_objects(struct text_object *root, int internal)
 				break;
 			case OBJ_time:
 			case OBJ_utime:
-				free(data.s);
+				free_time(obj);
 				break;
 			case OBJ_tztime:
-				free(data.tztime.tz);
-				free(data.tztime.fmt);
+				free_tztime(obj);
 				break;
 			case OBJ_mboxscan:
 				free(data.mboxscan.args);

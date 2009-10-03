@@ -88,6 +88,7 @@
 #include "temphelper.h"
 #include "template.h"
 #include "tailhead.h"
+#include "timeinfo.h"
 #include "top.h"
 
 /* check for OS and include appropriate headers */
@@ -2342,40 +2343,13 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%s", cur->uname_s.sysname);
 			}
 			OBJ(time) {
-				time_t t = time(NULL);
-				struct tm *tm = localtime(&t);
-
-				setlocale(LC_TIME, "");
-				strftime(p, p_max_size, obj->data.s, tm);
+				print_time(obj, p, p_max_size);
 			}
 			OBJ(utime) {
-				time_t t = time(NULL);
-				struct tm *tm = gmtime(&t);
-
-				strftime(p, p_max_size, obj->data.s, tm);
+				print_utime(obj, p, p_max_size);
 			}
 			OBJ(tztime) {
-				char *oldTZ = NULL;
-				time_t t;
-				struct tm *tm;
-
-				if (obj->data.tztime.tz) {
-					oldTZ = getenv("TZ");
-					setenv("TZ", obj->data.tztime.tz, 1);
-					tzset();
-				}
-				t = time(NULL);
-				tm = localtime(&t);
-
-				setlocale(LC_TIME, "");
-				strftime(p, p_max_size, obj->data.tztime.fmt, tm);
-				if (oldTZ) {
-					setenv("TZ", oldTZ, 1);
-					tzset();
-				} else {
-					unsetenv("TZ");
-				}
-				// Needless to free oldTZ since getenv gives ptr to static data
+				print_tztime(obj, p, p_max_size);
 			}
 			OBJ(totaldown) {
 				human_readable(obj->data.net->recv, p, 255);
