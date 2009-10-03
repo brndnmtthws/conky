@@ -2403,11 +2403,15 @@
         other values as integer. 
         <simplelist>
             <member>
-            <command>threshold</command>The thresholdtemperature at
-            which the gpu slows down</member>
+		<command>threshold</command>
+		<option>The thresholdtemperature at
+			which the gpu slows down</option>
+            </member>
             <member>
-            <command>temp</command>Tives the gpu current
-            temperature</member>
+		<command>temp</command>
+		<option>Gives the gpu current
+			temperature</option>
+            </member>
             <member>
                 <command>ambient</command>
                 <option>Gives current air temperature near GPU
