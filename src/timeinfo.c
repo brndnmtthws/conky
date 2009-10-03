@@ -31,14 +31,20 @@
 #include "text_object.h"
 #include <locale.h>
 
+struct tztime_s {
+	char *tz;	/* timezone variable */
+	char *fmt;	/* time display formatting */
+};
+
 void scan_time(struct text_object *obj, const char *arg)
 {
-	obj->data.s = strndup(arg ? arg : "%F %T", text_buffer_size);
+	obj->data.opaque = strndup(arg ? arg : "%F %T", text_buffer_size);
 }
 
 void scan_tztime(struct text_object *obj, const char *arg)
 {
 	char buf1[256], buf2[256], *fmt, *tz;
+	struct tztime_s *ts;
 
 	fmt = tz = NULL;
 	if (arg) {
@@ -52,8 +58,11 @@ void scan_tztime(struct text_object *obj, const char *arg)
 		}
 	}
 
-	obj->data.tztime.fmt = strndup(fmt ? fmt : "%F %T", text_buffer_size);
-	obj->data.tztime.tz = tz ? strndup(tz, text_buffer_size) : NULL;
+	ts = malloc(sizeof(struct tztime_s));
+	memset(ts, 0, sizeof(struct tztime_s));
+	ts->fmt = strndup(fmt ? fmt : "%F %T", text_buffer_size);
+	ts->tz = tz ? strndup(tz, text_buffer_size) : NULL;
+	obj->data.opaque = ts;
 }
 
 void print_time(struct text_object *obj, char *p, int p_max_size)
@@ -62,7 +71,7 @@ void print_time(struct text_object *obj, char *p, int p_max_size)
 	struct tm *tm = localtime(&t);
 
 	setlocale(LC_TIME, "");
-	strftime(p, p_max_size, obj->data.s, tm);
+	strftime(p, p_max_size, (char *)obj->data.opaque, tm);
 }
 
 void print_utime(struct text_object *obj, char *p, int p_max_size)
@@ -71,7 +80,7 @@ void print_utime(struct text_object *obj, char *p, int p_max_size)
 	struct tm *tm = gmtime(&t);
 
 	setlocale(LC_TIME, "");
-	strftime(p, p_max_size, obj->data.s, tm);
+	strftime(p, p_max_size, (char *)obj->data.opaque, tm);
 }
 
 void print_tztime(struct text_object *obj, char *p, int p_max_size)
@@ -79,17 +88,21 @@ void print_tztime(struct text_object *obj, char *p, int p_max_size)
 	char *oldTZ = NULL;
 	time_t t;
 	struct tm *tm;
+	struct tztime_s *ts = obj->data.opaque;
 
-	if (obj->data.tztime.tz) {
+	if (!ts)
+		return;
+
+	if (ts->tz) {
 		oldTZ = getenv("TZ");
-		setenv("TZ", obj->data.tztime.tz, 1);
+		setenv("TZ", ts->tz, 1);
 		tzset();
 	}
 	t = time(NULL);
 	tm = localtime(&t);
 
 	setlocale(LC_TIME, "");
-	strftime(p, p_max_size, obj->data.tztime.fmt, tm);
+	strftime(p, p_max_size, ts->fmt, tm);
 	if (oldTZ) {
 		setenv("TZ", oldTZ, 1);
 		tzset();
@@ -101,20 +114,24 @@ void print_tztime(struct text_object *obj, char *p, int p_max_size)
 
 void free_time(struct text_object *obj)
 {
-	if (!obj->data.s)
+	if (!obj->data.opaque)
 		return;
-	free(obj->data.s);
-	obj->data.s = NULL;
+	free(obj->data.opaque);
+	obj->data.opaque = NULL;
 }
 
 void free_tztime(struct text_object *obj)
 {
-	if (obj->data.tztime.tz) {
-		free(obj->data.tztime.tz);
-		obj->data.tztime.tz = NULL;
-	}
-	if (obj->data.tztime.fmt) {
-		free(obj->data.tztime.fmt);
-		obj->data.tztime.fmt = NULL;
-	}
+	struct tztime_s *ts = obj->data.opaque;
+
+	if (!ts)
+		return;
+
+	if (ts->tz)
+		free(ts->tz);
+	if (ts->fmt)
+		free(ts->fmt);
+
+	free(obj->data.opaque);
+	obj->data.opaque = NULL;
 }

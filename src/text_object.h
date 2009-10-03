@@ -456,11 +456,6 @@ struct text_object {
 		} mboxscan;
 
 		struct {
-			char *tz;	/* timezone variable */
-			char *fmt;	/* time display formatting */
-		} tztime;
-
-		struct {
 			struct fs_stat *fs;
 			int w, h;
 		} fsbar;		/* 3 */
