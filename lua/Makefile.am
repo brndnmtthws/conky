@@ -20,10 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-libcairo_la_SOURCES = cairo.pkg
-libimlib2_la_SOURCES = imlib2.pkg
-
-CLEANFILES = libcairo.c libimlib2.c
+libcairo_la_SOURCES = libcairo.c
+libimlib2_la_SOURCES = libimlib2.c
 
 if BUILD_LUA
 

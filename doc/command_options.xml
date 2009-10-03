@@ -120,6 +120,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>-p | --pause=</option>
+            </command>
+            <option>SECONDS</option>
+        </term>
+        <listitem>Time to pause before actually starting Conky
+        <para></para></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>-u | --interval=</option>
             </command>
             <option>SECONDS</option>

@@ -6340,13 +6340,14 @@ static void print_help(const char *prog_name) {
 #endif /* X11 */
 			"   -t, --text=TEXT           text to render, remember single quotes, like -t '$uptime'\n"
 			"   -u, --interval=SECS       update interval\n"
-			"   -i COUNT                  number of times to update "PACKAGE_NAME" (and quit)\n",
+			"   -i COUNT                  number of times to update "PACKAGE_NAME" (and quit)\n"
+			"   -p, --pause=SECS          pause for SECS seconds at startup before doing anything\n",
 			prog_name
 	);
 }
 
 /* : means that character before that takes an argument */
-static const char *getopt_string = "vVqdDt:u:i:hc:"
+static const char *getopt_string = "vVqdDt:u:i:hc:p:"
 #ifdef X11
 	"x:y:w:a:f:X:"
 #ifdef OWN_WINDOW
@@ -6384,6 +6385,7 @@ static const struct option longopts[] = {
 #endif /* X11 */
 	{ "text", 1, NULL, 't' },
 	{ "interval", 0, NULL, 'u' },
+	{ "pause", 0, NULL, 'p' },
 	{ 0, 0, 0, 0 }
 };
 
@@ -6429,6 +6431,7 @@ void initialisation(int argc, char **argv) {
 
 	while (1) {
 		int c = getopt_long(argc, argv, getopt_string, longopts, NULL);
+		int startup_pause;
 
 		if (c == -1) {
 			break;
@@ -6490,6 +6493,10 @@ void initialisation(int argc, char **argv) {
 				gap_y = atoi(optarg);
 				break;
 #endif /* X11 */
+			case 'p':
+				startup_pause = atoi(optarg);
+				sleep(startup_pause);
+				break;
 
 			case '?':
 				exit(EXIT_FAILURE);
