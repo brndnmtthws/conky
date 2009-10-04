@@ -249,3 +249,45 @@ void print_fs_bar(struct text_object *obj, int be_free_bar, char *p, int p_max_s
 			new_bar_in_shell(p, p_max_size, (int)(100 * val), fb->w);
 		}
 }
+
+void init_fs(struct text_object *obj, const char *arg)
+{
+	obj->data.opaque = prepare_fs_stat(arg ? arg : "/");
+}
+
+void print_fs_perc(struct text_object *obj, int be_free, char *p, int p_max_size)
+{
+	struct fs_stat *fs = obj->data.opaque;
+	int val = 100;
+
+	if (!fs)
+		return;
+
+	if (fs->size)
+		val = fs->avail * 100 / fs->size;
+
+	if (!be_free)
+		val = 100 - val;
+
+	percent_print(p, p_max_size, val);
+}
+
+#define HUMAN_PRINT_FS_GENERATOR(name, expr)                           \
+void print_fs_##name(struct text_object *obj, char *p, int p_max_size) \
+{                                                                      \
+	struct fs_stat *fs = obj->data.opaque;                             \
+	if (fs)                                                            \
+		human_readable(expr, p, p_max_size);                           \
+}
+
+HUMAN_PRINT_FS_GENERATOR(free, fs->avail)
+HUMAN_PRINT_FS_GENERATOR(size, fs->size)
+HUMAN_PRINT_FS_GENERATOR(used, fs->size - fs->free)
+
+void print_fs_type(struct text_object *obj, char *p, int p_max_size)
+{
+	struct fs_stat *fs = obj->data.opaque;
+
+	if (fs)
+		snprintf(p, p_max_size, "%s", fs->type);
+}

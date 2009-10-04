@@ -563,7 +563,7 @@ int spaced_print(char *buf, int size, const char *format, int width, ...)
  *
  * - i.e., unsigned values between 0 and 100
  * - respect the value of pad_percents */
-static int percent_print(char *buf, int size, unsigned value)
+int percent_print(char *buf, int size, unsigned value)
 {
 	return spaced_print(buf, size, "%u", pad_percents, value);
 }
@@ -573,7 +573,7 @@ static int percent_print(char *buf, int size, unsigned value)
  * The algorithm always divides by 1024, as unit-conversion of byte
  * counts suggests. But for output length determination we need to
  * compare with 1000 here, as we print in decimal form. */
-static void human_readable(long long num, char *buf, int size)
+void human_readable(long long num, char *buf, int size)
 {
 	const char **suffix = suffixes;
 	float fnum;
@@ -1308,51 +1308,25 @@ void generate_text_internal(char *p, int p_max_size,
 				print_fs_bar(obj, 0, p, p_max_size);
 			}
 			OBJ(fs_free) {
-				if (obj->data.fs != NULL) {
-					human_readable(obj->data.fs->avail, p, 255);
-				}
+				print_fs_free(obj, p, p_max_size);
 			}
 			OBJ(fs_free_perc) {
-				if (obj->data.fs != NULL) {
-					int val = 0;
-
-					if (obj->data.fs->size) {
-						val = obj->data.fs->avail * 100 / obj->data.fs->size;
-					}
-
-					percent_print(p, p_max_size, val);
-				}
+				print_fs_perc(obj, 1, p, p_max_size);
 			}
 			OBJ(fs_size) {
-				if (obj->data.fs != NULL) {
-					human_readable(obj->data.fs->size, p, 255);
-				}
+				print_fs_size(obj, p, p_max_size);
 			}
 			OBJ(fs_type) {
-				if (obj->data.fs != NULL)
-					snprintf(p, p_max_size, "%s", obj->data.fs->type);
+				print_fs_type(obj, p, p_max_size);
 			}
 			OBJ(fs_used) {
-				if (obj->data.fs != NULL) {
-					human_readable(obj->data.fs->size - obj->data.fs->free, p,
-							255);
-				}
+				print_fs_used(obj, p, p_max_size);
 			}
 			OBJ(fs_bar_free) {
 				print_fs_bar(obj, 1, p, p_max_size);
 			}
 			OBJ(fs_used_perc) {
-				if (obj->data.fs != NULL) {
-					int val = 0;
-
-					if (obj->data.fs->size) {
-						val = obj->data.fs->free
-								* 100 /
-							obj->data.fs->size;
-					}
-
-					percent_print(p, p_max_size, 100 - val);
-				}
+				print_fs_perc(obj, 0, p, p_max_size);
 			}
 			OBJ(loadavg) {
 				float *v = info.loadavg;

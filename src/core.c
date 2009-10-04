@@ -552,35 +552,17 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(fs_bar_free, &update_fs_stats)
 		init_fs_bar(obj, arg);
 	END OBJ(fs_free, &update_fs_stats)
-		if (!arg) {
-			arg = "/";
-		}
-		obj->data.fs = prepare_fs_stat(arg);
+		init_fs(obj, arg);
 	END OBJ(fs_used_perc, &update_fs_stats)
-		if (!arg) {
-			arg = "/";
-		}
-		obj->data.fs = prepare_fs_stat(arg);
+		init_fs(obj, arg);
 	END OBJ(fs_free_perc, &update_fs_stats)
-		if (!arg) {
-			arg = "/";
-		}
-		obj->data.fs = prepare_fs_stat(arg);
+		init_fs(obj, arg);
 	END OBJ(fs_size, &update_fs_stats)
-		if (!arg) {
-			arg = "/";
-		}
-		obj->data.fs = prepare_fs_stat(arg);
+		init_fs(obj, arg);
 	END OBJ(fs_type, &update_fs_stats)
-		if (!arg) {
-			arg = "/";
-		}
-		obj->data.fs = prepare_fs_stat(arg);
+		init_fs(obj, arg);
 	END OBJ(fs_used, &update_fs_stats)
-		if (!arg) {
-			arg = "/";
-		}
-		obj->data.fs = prepare_fs_stat(arg);
+		init_fs(obj, arg);
 	END OBJ(hr, 0)
 		obj->data.i = arg ? atoi(arg) : 1;
 	END OBJ(nameserver, &update_dns_data)
