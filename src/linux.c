@@ -34,6 +34,7 @@
 #include "common.h"
 #include "linux.h"
 #include "diskio.h"
+#include "temphelper.h"
 #include <dirent.h>
 #include <ctype.h>
 #include <errno.h>
@@ -836,7 +837,7 @@ static int get_first_file_in_a_directory(const char *dir, char *s, int *rep)
 	}
 }
 
-int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n,
+static int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n,
 		int *divisor, char *devtype)
 {
 	char path[256];
@@ -933,7 +934,7 @@ int open_sysfs_sensor(const char *dir, const char *dev, const char *type, int n,
 	return fd;
 }
 
-double get_sysfs_info(int *fd, int divisor, char *devtype, char *type)
+static double get_sysfs_info(int *fd, int divisor, char *devtype, char *type)
 {
 	int val = 0;
 
@@ -989,6 +990,63 @@ double get_sysfs_info(int *fd, int divisor, char *devtype, char *type)
 		} else {
 			return val;
 		}
+	}
+}
+
+#define HWMON_RESET() {\
+		buf1[0] = 0; \
+		factor = 1.0; \
+		offset = 0.0; }
+
+static void parse_sysfs_sensor(struct text_object *obj, const char *arg, const char *path, const char *type)
+{
+	char buf1[64], buf2[64];
+	float factor, offset;
+	int n, found = 0;
+
+	if (sscanf(arg, "%63s %d %f %f", buf2, &n, &factor, &offset) == 4) found = 1; else HWMON_RESET();
+	if (!found && sscanf(arg, "%63s %63s %d %f %f", buf1, buf2, &n, &factor, &offset) == 5) found = 1; else if (!found) HWMON_RESET();
+	if (!found && sscanf(arg, "%63s %63s %d", buf1, buf2, &n) == 3) found = 1; else if (!found) HWMON_RESET();
+	if (!found && sscanf(arg, "%63s %d", buf2, &n) == 2) found = 1; else if (!found) HWMON_RESET();
+
+	if (!found) {
+		NORM_ERR("i2c failed to parse arguments");
+		obj->type = OBJ_text;
+		return;
+	}
+	DBGP("parsed %s args: '%s' '%s' %d %f %f\n", type, buf1, buf2, n, factor, offset);
+	obj->data.sysfs.fd = open_sysfs_sensor(path, (*buf1) ? buf1 : 0, buf2, n,
+			&obj->data.sysfs.arg, obj->data.sysfs.devtype);
+	strncpy(obj->data.sysfs.type, buf2, 63);
+	obj->data.sysfs.factor = factor;
+	obj->data.sysfs.offset = offset;
+}
+
+#define PARSER_GENERATOR(name, path)                                \
+void parse_##name##_sensor(struct text_object *obj, const char *arg) \
+{                                                                   \
+	parse_sysfs_sensor(obj, arg, path, #name);           \
+}
+
+PARSER_GENERATOR(i2c, "/sys/bus/i2c/devices/")
+PARSER_GENERATOR(hwmon, "/sys/class/hwmon/")
+PARSER_GENERATOR(platform, "/sys/bus/platform/devices/")
+
+void print_sysfs_sensor(struct text_object *obj, char *p, int p_max_size)
+{
+	double r;
+
+	r = get_sysfs_info(&obj->data.sysfs.fd, obj->data.sysfs.arg,
+			obj->data.sysfs.devtype, obj->data.sysfs.type);
+
+	r = r * obj->data.sysfs.factor + obj->data.sysfs.offset;
+
+	if (!strncmp(obj->data.sysfs.type, "temp", 4)) {
+		temp_print(p, p_max_size, r, TEMP_CELSIUS);
+	} else if (r >= 100.0 || r == 0) {
+		snprintf(p, p_max_size, "%d", (int) r);
+	} else {
+		snprintf(p, p_max_size, "%.1f", r);
 	}
 }
 

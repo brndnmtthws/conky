@@ -1935,52 +1935,13 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 #ifdef __linux__
 			OBJ(i2c) {
-				double r;
-
-				r = get_sysfs_info(&obj->data.sysfs.fd, obj->data.sysfs.arg,
-					obj->data.sysfs.devtype, obj->data.sysfs.type);
-
-				r = r * obj->data.sysfs.factor + obj->data.sysfs.offset;
-
-				if (!strncmp(obj->data.sysfs.type, "temp", 4)) {
-					temp_print(p, p_max_size, r, TEMP_CELSIUS);
-				} else if (r >= 100.0 || r == 0) {
-					snprintf(p, p_max_size, "%d", (int) r);
-				} else {
-					snprintf(p, p_max_size, "%.1f", r);
-				}
+				print_sysfs_sensor(obj, p, p_max_size);
 			}
 			OBJ(platform) {
-				double r;
-
-				r = get_sysfs_info(&obj->data.sysfs.fd, obj->data.sysfs.arg,
-					obj->data.sysfs.devtype, obj->data.sysfs.type);
-
-				r = r * obj->data.sysfs.factor + obj->data.sysfs.offset;
-
-				if (!strncmp(obj->data.sysfs.type, "temp", 4)) {
-					temp_print(p, p_max_size, r, TEMP_CELSIUS);
-				} else if (r >= 100.0 || r == 0) {
-					snprintf(p, p_max_size, "%d", (int) r);
-				} else {
-					snprintf(p, p_max_size, "%.1f", r);
-				}
+				print_sysfs_sensor(obj, p, p_max_size);
 			}
 			OBJ(hwmon) {
-				double r;
-
-				r = get_sysfs_info(&obj->data.sysfs.fd, obj->data.sysfs.arg,
-					obj->data.sysfs.devtype, obj->data.sysfs.type);
-
-				r = r * obj->data.sysfs.factor + obj->data.sysfs.offset;
-
-				if (!strncmp(obj->data.sysfs.type, "temp", 4)) {
-					temp_print(p, p_max_size, r, TEMP_CELSIUS);
-				} else if (r >= 100.0 || r == 0) {
-					snprintf(p, p_max_size, "%d", (int) r);
-				} else {
-					snprintf(p, p_max_size, "%.1f", r);
-				}
+				print_sysfs_sensor(obj, p, p_max_size);
 			}
 #endif /* __linux__ */
 			OBJ(alignr) {

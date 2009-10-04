@@ -772,79 +772,12 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 
 #ifdef __linux__
 	END OBJ_ARG(i2c, 0, "i2c needs arguments")
-		char buf1[64], buf2[64];
-		float factor, offset;
-		int n, found = 0;
-
-#define HWMON_RESET() {\
-		buf1[0] = 0; \
-		factor = 1.0; \
-		offset = 0.0; }
-
-		if (sscanf(arg, "%63s %d %f %f", buf2, &n, &factor, &offset) == 4) found = 1; else HWMON_RESET();
-		if (!found && sscanf(arg, "%63s %63s %d %f %f", buf1, buf2, &n, &factor, &offset) == 5) found = 1; else if (!found) HWMON_RESET();
-		if (!found && sscanf(arg, "%63s %63s %d", buf1, buf2, &n) == 3) found = 1; else if (!found) HWMON_RESET();
-		if (!found && sscanf(arg, "%63s %d", buf2, &n) == 2) found = 1; else if (!found) HWMON_RESET();
-
-		if (!found) {
-			NORM_ERR("i2c failed to parse arguments");
-			obj->type = OBJ_text;
-			return NULL;
-		}
-		DBGP("parsed i2c args: '%s' '%s' %d %f %f\n", buf1, buf2, n, factor, offset);
-		obj->data.sysfs.fd = open_i2c_sensor((*buf1) ? buf1 : 0, buf2, n,
-				&obj->data.sysfs.arg, obj->data.sysfs.devtype);
-		strncpy(obj->data.sysfs.type, buf2, 63);
-		obj->data.sysfs.factor = factor;
-		obj->data.sysfs.offset = offset;
-
+		parse_i2c_sensor(obj, arg);
 	END OBJ_ARG(platform, 0, "platform needs arguments")
-		char buf1[64], buf2[64];
-		float factor, offset;
-		int n, found = 0;
-
-		if (sscanf(arg, "%63s %d %f %f", buf2, &n, &factor, &offset) == 4) found = 1; else HWMON_RESET();
-		if (!found && sscanf(arg, "%63s %63s %d %f %f", buf1, buf2, &n, &factor, &offset) == 5) found = 1; else if (!found) HWMON_RESET();
-		if (!found && sscanf(arg, "%63s %63s %d", buf1, buf2, &n) == 3) found = 1; else if (!found) HWMON_RESET();
-		if (!found && sscanf(arg, "%63s %d", buf2, &n) == 2) found = 1; else if (!found) HWMON_RESET();
-
-		if (!found) {
-			NORM_ERR("platform failed to parse arguments");
-			obj->type = OBJ_text;
-			return NULL;
-		}
-		DBGP("parsed platform args: '%s' '%s' %d %f %f", buf1, buf2, n, factor, offset);
-		obj->data.sysfs.fd = open_platform_sensor((*buf1) ? buf1 : 0, buf2, n,
-				&obj->data.sysfs.arg, obj->data.sysfs.devtype);
-		strncpy(obj->data.sysfs.type, buf2, 63);
-		obj->data.sysfs.factor = factor;
-		obj->data.sysfs.offset = offset;
-
+		parse_platform_sensor(obj, arg);
 	END OBJ_ARG(hwmon, 0, "hwmon needs argumanets")
-		char buf1[64], buf2[64];
-		float factor, offset;
-		int n, found = 0;
-
-		if (sscanf(arg, "%63s %d %f %f", buf2, &n, &factor, &offset) == 4) found = 1; else HWMON_RESET();
-		if (!found && sscanf(arg, "%63s %63s %d %f %f", buf1, buf2, &n, &factor, &offset) == 5) found = 1; else if (!found) HWMON_RESET();
-		if (!found && sscanf(arg, "%63s %63s %d", buf1, buf2, &n) == 3) found = 1; else if (!found) HWMON_RESET();
-		if (!found && sscanf(arg, "%63s %d", buf2, &n) == 2) found = 1; else if (!found) HWMON_RESET();
-
-#undef HWMON_RESET
-
-		if (!found) {
-			NORM_ERR("hwmon failed to parse arguments");
-			obj->type = OBJ_text;
-			return NULL;
-		}
-		DBGP("parsed hwmon args: '%s' '%s' %d %f %f\n", buf1, buf2, n, factor, offset);
-		obj->data.sysfs.fd = open_hwmon_sensor((*buf1) ? buf1 : 0, buf2, n,
-				&obj->data.sysfs.arg, obj->data.sysfs.devtype);
-		strncpy(obj->data.sysfs.type, buf2, 63);
-		obj->data.sysfs.factor = factor;
-		obj->data.sysfs.offset = offset;
-
-#endif /* !__OpenBSD__ */
+		parse_hwmon_sensor(obj, arg);
+#endif /* __linux__ */
 
 	END
 	/* we have four different types of top (top, top_mem, top_time and top_io). To
