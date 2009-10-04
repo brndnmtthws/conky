@@ -66,6 +66,9 @@ void ccurl_free_info(void);
 /* runs instance of $curl */
 void ccurl_process_info(char *p, int p_max_size, char *uri, int interval);
 
+void curl_parse_arg(struct text_object *, const char *);
+void curl_print(struct text_object *, char *, int);
+
 /* $curl exports end */
 
 #endif /* _CURL_THREAD_H_ */

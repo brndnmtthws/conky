@@ -1833,11 +1833,7 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 #ifdef HAVE_CURL
 			OBJ(curl) {
-				if (obj->data.curl.uri != NULL) {
-					ccurl_process_info(p, p_max_size, obj->data.curl.uri, obj->data.curl.interval);
-				} else {
-					NORM_ERR("error processing Curl data");
-				}
+				curl_print(obj, p, p_max_size);
 			}
 #endif
 #ifdef RSS

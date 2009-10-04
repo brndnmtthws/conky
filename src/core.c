@@ -1449,17 +1449,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif
 #ifdef HAVE_CURL
 	END OBJ_ARG(curl, 0, "curl needs arguments: <uri> <interval in minutes>")
-		int argc;
-		float interval = 0;
-		char *uri = (char *) malloc(128 * sizeof(char));
-
-		argc = sscanf(arg, "%127s %f", uri, &interval);
-		if (argc == 2) {
-			obj->data.curl.uri = uri;
-			obj->data.curl.interval = interval > 0 ? interval * 60 : 15*60;
-		} else {
-			NORM_ERR("wrong number of arguments for $curl");
-		}
+		curl_parse_arg(obj, arg);
 #endif
 #ifdef RSS
 	END OBJ_ARG(rss, 0, "rss needs arguments: <uri> <interval in minutes> <action> [act_par] [spaces in front]")

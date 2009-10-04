@@ -657,7 +657,7 @@
             <command>
                 <option>curl</option>
             </command>
-            <option>url interval_in_minutes</option>
+            <option>url (interval_in_minutes)</option>
         </term>
         <listitem>
             <para>Download data from URI using Curl at the

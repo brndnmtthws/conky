@@ -26,6 +26,7 @@
 #include "conky.h"
 #include "logging.h"
 #include "ccurl_thread.h"
+#include "text_object.h"
 
 #ifdef DEBUG
 #include <assert.h>
@@ -193,7 +194,7 @@ void ccurl_free_info(void)
 }
 
 /* straight copy, used by $curl */
-void ccurl_parse_data(void *result, const char *data)
+static void ccurl_parse_data(void *result, const char *data)
 {
 	strncpy(result, data, max_user_text);
 }
@@ -217,3 +218,27 @@ void ccurl_process_info(char *p, int p_max_size, char *uri, int interval)
 	timed_thread_unlock(curloc->p_timed_thread);
 }
 
+void curl_parse_arg(struct text_object *obj, const char *arg)
+{
+	int argc;
+	float interval = 0;
+	char *uri = (char *) malloc(128 * sizeof(char));
+
+	argc = sscanf(arg, "%127s %f", uri, &interval);
+	if (argc < 1) {
+		free(uri);
+		NORM_ERR("wrong number of arguments for $curl");
+		return;
+	}
+	obj->data.curl.uri = uri;
+	obj->data.curl.interval = interval > 0 ? interval * 60 : 15*60;
+}
+
+void curl_print(struct text_object *obj, char *p, int p_max_size)
+{
+	if (!obj->data.curl.uri) {
+		NORM_ERR("error processing Curl data");
+		return;
+	}
+	ccurl_process_info(p, p_max_size, obj->data.curl.uri, obj->data.curl.interval);
+}
