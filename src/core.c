@@ -1439,10 +1439,7 @@ void free_text_objects(struct text_object *root, int internal)
 				break;
 			case OBJ_head:
 			case OBJ_tail:
-				free(data.headtail.logfile);
-				if(data.headtail.buffer) {
-					free(data.headtail.buffer);
-				}
+				free_tailhead(obj);
 				break;
 			case OBJ_text:
 			case OBJ_font:

@@ -490,14 +490,6 @@ struct text_object {
 		} top;
 
 		struct {
-			int wantedlines;
-			char *logfile;
-			char *buffer;
-			int current_use;
-			int max_uses;
-		} headtail;
-
-		struct {
 			double last_update;
 			float interval;
 			char *cmd;

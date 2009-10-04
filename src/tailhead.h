@@ -27,5 +27,11 @@
  *
  */
 
-void init_tailhead(const char* type, const char* arg, struct text_object *obj, void* free_at_crash);
-void print_tailhead(const char* type, struct text_object *obj, char *p, int p_max_size);
+#ifndef _TAILHEAD_H
+#define _TAILHEAD_H
+
+void free_tailhead(struct text_object *);
+void init_tailhead(const char *, const char *, struct text_object *, void *);
+void print_tailhead(const char *, struct text_object *, char *, int);
+
+#endif /* _TAILHEAD_H */
