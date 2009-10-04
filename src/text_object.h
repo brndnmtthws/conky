@@ -527,15 +527,6 @@ struct text_object {
 #ifdef TCP_PORT_MONITOR
 		struct tcp_port_monitor_data tcp_port_monitor;
 #endif
-#ifdef HDDTEMP
-		struct {
-			char *addr;
-			int port;
-			char *dev;
-			double update_time;
-			char *temp;
-		} hddtemp;		/* 2 */
-#endif
 #ifdef EVE
 		struct {
 			char *apikey;
