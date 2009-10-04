@@ -1371,7 +1371,7 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_i2c:
 			case OBJ_platform:
 			case OBJ_hwmon:
-				close(data.sysfs.fd);
+				free_sysfs_sensor(obj);
 				break;
 #endif /* __linux__ */
 			case OBJ_read_tcp:

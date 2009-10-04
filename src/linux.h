@@ -38,5 +38,6 @@ void parse_i2c_sensor(struct text_object *, const char *);
 void parse_hwmon_sensor(struct text_object *, const char *);
 void parse_platform_sensor(struct text_object *, const char *);
 void print_sysfs_sensor(struct text_object *, char *, int );
+void free_sysfs_sensor(struct text_object *);
 
 #endif /* _LINUX_H */

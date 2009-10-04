@@ -462,14 +462,6 @@ struct text_object {
 #endif
 
 		struct {
-			int fd;
-			int arg;
-			char devtype[256];
-			char type[64];
-			float factor, offset;
-		} sysfs;
-
-		struct {
 			struct text_object *next;
 			char *s;
 			int i;

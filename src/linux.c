@@ -83,6 +83,14 @@
 #include <iwlib.h>
 #endif
 
+struct sysfs {
+	int fd;
+	int arg;
+	char devtype[256];
+	char type[64];
+	float factor, offset;
+};
+
 #define SHORTSTAT_TEMPL "%*s %llu %llu %llu"
 #define LONGSTAT_TEMPL "%*s %llu %llu %llu "
 
@@ -1033,6 +1041,7 @@ static void parse_sysfs_sensor(struct text_object *obj, const char *arg, const c
 	char buf1[64], buf2[64];
 	float factor, offset;
 	int n, found = 0;
+	struct sysfs *sf;
 
 	if (sscanf(arg, "%63s %d %f %f", buf2, &n, &factor, &offset) == 4) found = 1; else HWMON_RESET();
 	if (!found && sscanf(arg, "%63s %63s %d %f %f", buf1, buf2, &n, &factor, &offset) == 5) found = 1; else if (!found) HWMON_RESET();
@@ -1045,11 +1054,14 @@ static void parse_sysfs_sensor(struct text_object *obj, const char *arg, const c
 		return;
 	}
 	DBGP("parsed %s args: '%s' '%s' %d %f %f\n", type, buf1, buf2, n, factor, offset);
-	obj->data.sysfs.fd = open_sysfs_sensor(path, (*buf1) ? buf1 : 0, buf2, n,
-			&obj->data.sysfs.arg, obj->data.sysfs.devtype);
-	strncpy(obj->data.sysfs.type, buf2, 63);
-	obj->data.sysfs.factor = factor;
-	obj->data.sysfs.offset = offset;
+	sf = malloc(sizeof(struct sysfs));
+	memset(sf, 0, sizeof(struct sysfs));
+	sf->fd = open_sysfs_sensor(path, (*buf1) ? buf1 : 0, buf2, n,
+			&sf->arg, sf->devtype);
+	strncpy(sf->type, buf2, 63);
+	sf->factor = factor;
+	sf->offset = offset;
+	obj->data.opaque = sf;
 }
 
 #define PARSER_GENERATOR(name, path)                                \
@@ -1065,19 +1077,35 @@ PARSER_GENERATOR(platform, "/sys/bus/platform/devices/")
 void print_sysfs_sensor(struct text_object *obj, char *p, int p_max_size)
 {
 	double r;
+	struct sysfs *sf = obj->data.opaque;
 
-	r = get_sysfs_info(&obj->data.sysfs.fd, obj->data.sysfs.arg,
-			obj->data.sysfs.devtype, obj->data.sysfs.type);
+	if (!sf)
+		return;
 
-	r = r * obj->data.sysfs.factor + obj->data.sysfs.offset;
+	r = get_sysfs_info(&sf->fd, sf->arg,
+			sf->devtype, sf->type);
 
-	if (!strncmp(obj->data.sysfs.type, "temp", 4)) {
+	r = r * sf->factor + sf->offset;
+
+	if (!strncmp(sf->type, "temp", 4)) {
 		temp_print(p, p_max_size, r, TEMP_CELSIUS);
 	} else if (r >= 100.0 || r == 0) {
 		snprintf(p, p_max_size, "%d", (int) r);
 	} else {
 		snprintf(p, p_max_size, "%.1f", r);
 	}
+}
+
+void free_sysfs_sensor(struct text_object *obj)
+{
+	struct sysfs *sf = obj->data.opaque;
+
+	if (!sf)
+		return;
+
+	close(sf->fd);
+	free(obj->data.opaque);
+	obj->data.opaque = NULL;
 }
 
 /* Prior to kernel version 2.6.12, the CPU fan speed was available in
