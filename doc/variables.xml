@@ -3126,7 +3126,7 @@
             <command>
                 <option>tztime</option>
             </command>
-            <option>(timezone) (format)</option>
+            <option>(timezone (format))</option>
         </term>
         <listitem>Local time for specified timezone, see man
         strftime to get more information about format. The timezone

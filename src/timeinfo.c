@@ -46,9 +46,9 @@ void scan_tztime(struct text_object *obj, const char *arg)
 
 		switch (nArgs) {
 			case 2:
-				tz = buf1;
-			case 1:
 				fmt = buf2;
+			case 1:
+				tz = buf1;
 		}
 	}
 
