@@ -495,9 +495,6 @@ struct text_object {
 		struct {
 			int a, b;
 		} pair;			/* 2 */
-#ifdef TCP_PORT_MONITOR
-		struct tcp_port_monitor_data tcp_port_monitor;
-#endif
 #ifdef EVE
 		struct {
 			char *apikey;

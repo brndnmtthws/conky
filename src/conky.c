@@ -2234,8 +2234,7 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #ifdef TCP_PORT_MONITOR
 			OBJ(tcp_portmon) {
-				tcp_portmon_action(p, p_max_size,
-				                   &obj->data.tcp_port_monitor);
+				tcp_portmon_action(obj, p, p_max_size);
 			}
 #endif /* TCP_PORT_MONITOR */
 

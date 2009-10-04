@@ -21,15 +21,17 @@
 #include "conky.h"
 #include "logging.h"
 #include "tcp-portmon.h"
+#include "text_object.h"
 #include "libtcp-portmon.h"
 
 static tcp_port_monitor_collection_t *pmc = NULL;
 static tcp_port_monitor_args_t pma;
 
-int tcp_portmon_init(const char *arg, struct tcp_port_monitor_data *pmd)
+int tcp_portmon_init(struct text_object *obj, const char *arg)
 {
 	int argc, port_begin, port_end, item, connection_index;
 	char itembuf[32];
+	struct tcp_port_monitor_data *pmd;
 
 	memset(itembuf, 0, sizeof(itembuf));
 	connection_index = 0;
@@ -75,10 +77,13 @@ int tcp_portmon_init(const char *arg, struct tcp_port_monitor_data *pmd)
 		CRIT_ERR(NULL, NULL, "tcp_portmon: connection index must be non-negative");
 	}
 	/* ok, args looks good. save the text object data */
+	pmd = malloc(sizeof(struct tcp_port_monitor_data));
+	memset(pmd, 0, sizeof(struct tcp_port_monitor_data));
 	pmd->port_range_begin = (in_port_t) port_begin;
 	pmd->port_range_end = (in_port_t) port_end;
 	pmd->item = item;
 	pmd->connection_index = connection_index;
+	obj->data.opaque = pmd;
 
 	/* if the port monitor collection hasn't been created,
 	 * we must create it */
@@ -108,9 +113,13 @@ int tcp_portmon_init(const char *arg, struct tcp_port_monitor_data *pmd)
 	return 0;
 }
 
-int tcp_portmon_action(char *p, int p_max_size, struct tcp_port_monitor_data *pmd)
+int tcp_portmon_action(struct text_object *obj, char *p, int p_max_size)
 {
+	struct tcp_port_monitor_data *pmd = obj->data.opaque;
 	tcp_port_monitor_t *p_monitor;
+
+	if (!pmd)
+		return 1;
 
 	/* grab a pointer to this port monitor */
 	p_monitor = find_tcp_port_monitor(pmc, pmd->port_range_begin,
@@ -153,3 +162,10 @@ int tcp_portmon_set_max_connections(int max)
 	return (max < 0) ? 1 : 0;
 }
 
+void tcp_portmon_free(struct text_object *obj)
+{
+	if (obj->data.opaque) {
+		free(obj->data.opaque);
+		obj->data.opaque = NULL;
+	}
+}

@@ -1060,7 +1060,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif /* HDDTEMP */
 #ifdef TCP_PORT_MONITOR
 	END OBJ_ARG(tcp_portmon, &tcp_portmon_update, "tcp_portmon: needs arguments")
-		tcp_portmon_init(arg, &obj->data.tcp_port_monitor);
+		tcp_portmon_init(obj, arg);
 #endif /* TCP_PORT_MONITOR */
 	END OBJ(entropy_avail, &update_entropy)
 	END OBJ(entropy_perc, &update_entropy)
@@ -1737,6 +1737,11 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_apcupsd_lastxfer:
 				break;
 #endif /* APCUPSD */
+#ifdef TCP_PORT_MONITOR
+			case OBJ_tcp_portmon:
+				tcp_portmon_free(obj);
+				break;
+#endif /* TCP_PORT_MONITOR */
 #ifdef X11
 			case OBJ_desktop:
 			case OBJ_desktop_number:
