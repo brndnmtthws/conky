@@ -1828,8 +1828,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			}
 #ifdef EVE
 			OBJ(eve) {
-				char *skill = eve(obj->data.eve.userid, obj->data.eve.apikey, obj->data.eve.charid);
-				snprintf(p, p_max_size, "%s", skill);
+				print_eve(obj, p, p_max_size);
 			}
 #endif
 #ifdef HAVE_CURL

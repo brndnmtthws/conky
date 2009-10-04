@@ -1445,17 +1445,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif
 #ifdef EVE
 	END OBJ_ARG(eve, 0, "eve needs arguments: <userid> <apikey> <characterid>")
-		int argc;
-		char *userid = (char *) malloc(20 * sizeof(char));
-		char *apikey = (char *) malloc(64 * sizeof(char));
-		char *charid = (char *) malloc(20 * sizeof(char));
-
-		argc = sscanf(arg, "%20s %64s %20s", userid, apikey, charid);
-		obj->data.eve.charid = charid;
-		obj->data.eve.userid = userid;
-		obj->data.eve.apikey = apikey;
-
-		init_eve();
+		scan_eve(obj, arg);
 #endif
 #ifdef HAVE_CURL
 	END OBJ_ARG(curl, 0, "curl needs arguments: <uri> <interval in minutes>")
