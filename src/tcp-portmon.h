@@ -37,7 +37,7 @@ struct tcp_port_monitor_data {
 
 int tcp_portmon_init(const char *, struct tcp_port_monitor_data *);
 int tcp_portmon_action(char *, int, struct tcp_port_monitor_data *);
-int tcp_portmon_update(void);
+void tcp_portmon_update(void);
 int tcp_portmon_clear(void);
 int tcp_portmon_set_max_connections(int);
 

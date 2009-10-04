@@ -34,9 +34,6 @@ int tcp_portmon_init(const char *arg, struct tcp_port_monitor_data *pmd)
 	memset(itembuf, 0, sizeof(itembuf));
 	connection_index = 0;
 	/* massive argument checking */
-	if (!arg) {
-		CRIT_ERR(NULL, NULL, "tcp_portmon: needs arguments");
-	}
 	argc = sscanf(arg, "%d %d %31s %d", &port_begin, &port_end, itembuf,
 			&connection_index);
 	if ((argc != 3) && (argc != 4)) {
@@ -133,10 +130,9 @@ int tcp_portmon_action(char *p, int p_max_size, struct tcp_port_monitor_data *pm
 	return 0;
 }
 
-int tcp_portmon_update(void)
+void tcp_portmon_update(void)
 {
 	update_tcp_port_monitor_collection(pmc);
-	return 0;
 }
 
 int tcp_portmon_clear(void)

@@ -1685,7 +1685,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			obj->data.s = strndup(arg, text_buffer_size);
 #endif /* HDDTEMP */
 #ifdef TCP_PORT_MONITOR
-	END OBJ(tcp_portmon, (void (*)(void))&tcp_portmon_update)
+	END OBJ_ARG(tcp_portmon, &tcp_portmon_update, "tcp_portmon: needs arguments")
 		tcp_portmon_init(arg, &obj->data.tcp_port_monitor);
 #endif /* TCP_PORT_MONITOR */
 	END OBJ(entropy_avail, &update_entropy)
