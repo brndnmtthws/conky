@@ -15,6 +15,11 @@ struct fs_stat {
 	char set;
 };
 
+/* forward declare to make gcc happy (fs.h <-> text_object.h include) */
+struct text_object;
+
+void init_fs_bar(struct text_object *, const char *);
+void print_fs_bar(struct text_object *, int, char *, int);
 void update_fs_stats(void);
 struct fs_stat *prepare_fs_stat(const char *path);
 void clear_fs_stats(void);

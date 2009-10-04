@@ -31,6 +31,9 @@
 #include "conky.h"
 #include "logging.h"
 #include "fs.h"
+#include "specials.h"
+#include "text_object.h"
+#include <ctype.h>
 #include <unistd.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -190,4 +193,47 @@ void get_fs_type(const char *path, char *result)
 
 	strncpy(result, "unknown", DEFAULT_TEXT_BUFFER_SIZE);
 
+}
+
+void init_fs_bar(struct text_object *obj, const char *arg)
+{
+	SIZE_DEFAULTS(bar);
+	arg = scan_bar(arg, &obj->data.fsbar.w, &obj->data.fsbar.h);
+	if (arg) {
+		while (isspace(*arg)) {
+			arg++;
+		}
+		if (*arg == '\0') {
+			arg = "/";
+		}
+	} else {
+		arg = "/";
+	}
+	obj->data.fsbar.fs = prepare_fs_stat(arg);
+}
+
+void print_fs_bar(struct text_object *obj, int be_free_bar, char *p, int p_max_size)
+{
+	double val;
+
+	if (!obj->data.fsbar.fs)
+		return;
+
+	if (!obj->data.fsbar.fs->size)
+		val = 1.0;
+	else
+		val = (double)obj->data.fsbar.fs->avail / (double)obj->data.fsbar.fs->size;
+
+	if (!be_free_bar)
+		val = 1.0 - val;
+
+#ifdef X11
+		if(output_methods & TO_X) {
+			new_bar(p, obj->data.fsbar.w, obj->data.fsbar.h, (int)(255 * val));
+		}else
+#endif /* X11 */
+		{
+			if(!obj->data.fsbar.w) obj->data.fsbar.w = DEFAULT_BAR_WIDTH_NO_X;
+			new_bar_in_shell(p, p_max_size, (int)(100 * val), obj->data.fsbar.w);
+		}
 }

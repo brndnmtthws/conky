@@ -713,34 +713,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			obj->data.s = strndup("", text_buffer_size);
 		}
 	END OBJ(fs_bar, &update_fs_stats)
-		SIZE_DEFAULTS(bar);
-		arg = scan_bar(arg, &obj->data.fsbar.w, &obj->data.fsbar.h);
-		if (arg) {
-			while (isspace(*arg)) {
-				arg++;
-			}
-			if (*arg == '\0') {
-				arg = "/";
-			}
-		} else {
-			arg = "/";
-		}
-		obj->data.fsbar.fs = prepare_fs_stat(arg);
+		init_fs_bar(obj, arg);
 	END OBJ(fs_bar_free, &update_fs_stats)
-		SIZE_DEFAULTS(bar);
-		arg = scan_bar(arg, &obj->data.fsbar.w, &obj->data.fsbar.h);
-		if (arg) {
-			while (isspace(*arg)) {
-				arg++;
-			}
-			if (*arg == '\0') {
-				arg = "/";
-			}
-		} else {
-			arg = "/";
-		}
-
-		obj->data.fsbar.fs = prepare_fs_stat(arg);
+		init_fs_bar(obj, arg);
 	END OBJ(fs_free, &update_fs_stats)
 		if (!arg) {
 			arg = "/";

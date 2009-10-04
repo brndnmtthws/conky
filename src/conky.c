@@ -1744,34 +1744,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 			OBJ(fs_bar) {
-				if (obj->data.fs != NULL) {
-					if (obj->data.fs->size == 0) {
-#ifdef X11
-						if(output_methods & TO_X) {
-							new_bar(p, obj->data.fsbar.w, obj->data.fsbar.h, 255);
-						}else{
-#endif /* X11 */
-							if(!obj->data.fsbar.w) obj->data.fsbar.w = DEFAULT_BAR_WIDTH_NO_X;
-							new_bar_in_shell(p, p_max_size, 100, obj->data.fsbar.w);
-#ifdef X11
-						}
-#endif /* X11 */
-					} else {
-#ifdef X11
-						if(output_methods & TO_X) {
-							new_bar(p, obj->data.fsbar.w, obj->data.fsbar.h,
-								(int) (255 - obj->data.fsbar.fs->avail * 255 /
-								obj->data.fs->size));
-						}else{
-#endif /* X11 */
-							if(!obj->data.fsbar.w) obj->data.fsbar.w = DEFAULT_BAR_WIDTH_NO_X;
-							new_bar_in_shell(p, p_max_size,
-								(int) (100 - obj->data.fsbar.fs->avail * 100 / obj->data.fs->size), obj->data.fsbar.w);
-#ifdef X11
-						}
-#endif /* X11 */
-					}
-				}
+				print_fs_bar(obj, 0, p, p_max_size);
 			}
 			OBJ(fs_free) {
 				if (obj->data.fs != NULL) {
@@ -1805,34 +1778,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 			OBJ(fs_bar_free) {
-				if (obj->data.fs != NULL) {
-					if (obj->data.fs->size == 0) {
-#ifdef X11
-						if(output_methods & TO_X) {
-							new_bar(p, obj->data.fsbar.w, obj->data.fsbar.h, 255);
-						}else{
-#endif /* X11 */
-							if(!obj->data.fsbar.w) obj->data.fsbar.w = DEFAULT_BAR_WIDTH_NO_X;
-							new_bar_in_shell(p, p_max_size, 100, obj->data.fsbar.w);
-#ifdef X11
-						}
-#endif /* X11 */
-					} else {
-#ifdef X11
-						if(output_methods & TO_X) {
-							new_bar(p, obj->data.fsbar.w, obj->data.fsbar.h,
-								(int) (obj->data.fsbar.fs->avail * 255 /
-								obj->data.fs->size));
-						}else{
-#endif /* X11 */
-							if(!obj->data.fsbar.w) obj->data.fsbar.w = DEFAULT_BAR_WIDTH_NO_X;
-							new_bar_in_shell(p, p_max_size,
-								(int) (obj->data.fsbar.fs->avail * 100 / obj->data.fs->size), obj->data.fsbar.w);
-#ifdef X11
-						}
-#endif /* X11 */
-					}
-				}
+				print_fs_bar(obj, 1, p, p_max_size);
 			}
 			OBJ(fs_used_perc) {
 				if (obj->data.fs != NULL) {
