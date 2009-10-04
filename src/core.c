@@ -1544,6 +1544,7 @@ void free_text_objects(struct text_object *root, int internal)
 #endif
 #ifdef EVE
 			case OBJ_eve:
+				free_eve(obj);
 				break;
 #endif
 #ifdef HAVE_CURL

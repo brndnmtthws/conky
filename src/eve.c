@@ -22,7 +22,6 @@
  *
  */
 
-#include "eve.h"
 #include "config.h"
 #include "text_object.h"
 #include <stdio.h>
@@ -64,6 +63,12 @@ typedef struct {
 struct xmlData {
 	char *data;
 	size_t size;
+};
+
+struct eve_data {
+	char apikey[64];
+	char charid[20];
+	char userid[20];
 };
 
 int num_chars = 0;
@@ -406,21 +411,31 @@ static char *eve(char *userid, char *apikey, char *charid)
 void scan_eve(struct text_object *obj, const char *arg)
 {
 	int argc;
-	char *userid = (char *) malloc(20 * sizeof(char));
-	char *apikey = (char *) malloc(64 * sizeof(char));
-	char *charid = (char *) malloc(20 * sizeof(char));
+	struct eve_data *ed;
 
-	argc = sscanf(arg, "%20s %64s %20s", userid, apikey, charid);
-	obj->data.eve.charid = charid;
-	obj->data.eve.userid = userid;
-	obj->data.eve.apikey = apikey;
+	ed = malloc(sizeof(struct eve_data));
+	memset(ed, 0, sizeof(struct eve_data));
+
+	argc = sscanf(arg, "%20s %64s %20s", ed->userid, ed->apikey, ed->charid);
 
 	init_eve();
+	obj->data.opaque = ed;
 }
 
 void print_eve(struct text_object *obj, char *p, int p_max_size)
 {
-	snprintf(p, p_max_size, "%s",
-			eve(obj->data.eve.userid,
-				obj->data.eve.apikey, obj->data.eve.charid));
+	struct eve_data *ed = obj->data.opaque;
+
+	if (!ed)
+		return;
+
+	snprintf(p, p_max_size, "%s", eve(ed->userid, ed->apikey, ed->charid));
+}
+
+void free_eve(struct text_object *obj)
+{
+	if (obj->data.opaque) {
+		free(obj->data.opaque);
+		obj->data.opaque = NULL;
+	}
 }

@@ -487,13 +487,6 @@ struct text_object {
 		struct {
 			int a, b;
 		} pair;			/* 2 */
-#ifdef EVE
-		struct {
-			char *apikey;
-			char *charid;
-			char *userid;
-		} eve;
-#endif
 #ifdef HAVE_CURL
 		struct {
 			char *uri;

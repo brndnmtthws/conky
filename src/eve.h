@@ -26,5 +26,6 @@
 
 void scan_eve(struct text_object *, const char *);
 void print_eve(struct text_object *, char *, int);
+void free_eve(struct text_object *);
 
 #endif /* _EVE_H */
