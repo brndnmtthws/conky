@@ -41,5 +41,6 @@ void print_weather_forecast(struct text_object *, char *, int);
 
 void scan_weather_arg(struct text_object *, const char *, void *);
 void print_weather(struct text_object *, char *, int);
+void free_weather(struct text_object *);
 
 #endif /*WEATHER_H_*/

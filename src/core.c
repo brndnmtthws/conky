@@ -1559,14 +1559,12 @@ void free_text_objects(struct text_object *root, int internal)
 #endif
 #ifdef WEATHER
 			case OBJ_weather:
-				free(data.weather.uri);
-				free(data.weather.data_type);
+				free_weather(obj);
 				break;
 #endif
 #ifdef XOAP
 			case OBJ_weather_forecast:
-				free(data.weather_forecast.uri);
-				free(data.weather_forecast.data_type);
+				free_weather(obj);
 				break;
 #endif
 #ifdef HAVE_LUA

@@ -493,21 +493,6 @@ struct text_object {
 			float interval;
 		} curl;
 #endif
-#ifdef WEATHER
-		struct {
-			char *uri;
-			char *data_type;
-			int interval;
-		} weather;
-#endif
-#ifdef XOAP
-		struct {
-			char *uri;
-			unsigned int day;
-			char *data_type;
-			int interval;
-		} weather_forecast;
-#endif
 		struct {
 			char *text;
 			unsigned int show;

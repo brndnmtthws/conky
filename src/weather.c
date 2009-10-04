@@ -116,6 +116,21 @@ static ccurl_location_t *locations_head_cc = 0;
 static ccurl_location_t *locations_head_df = 0;
 #endif
 
+struct weather_data {
+	char uri[128];
+	char data_type[32];
+	int interval;
+};
+
+#ifdef XOAP
+struct weather_forecast_data {
+	char uri[128];
+	unsigned int day;
+	char data_type[32];
+	int interval;
+};
+#endif
+
 void weather_free_info(void)
 {
 	ccurl_free_locations(&locations_head_cc);
@@ -894,36 +909,31 @@ void load_xoap_keys(void)
 void scan_weather_forecast_arg(struct text_object *obj, const char *arg, void *free_at_crash)
 {
 	int argc;
-	unsigned int day;
+	struct weather_forecast_data *wfd;
 	float interval = 0;
 	char *locID = (char *) malloc(9 * sizeof(char));
-	char *uri = (char *) malloc(128 * sizeof(char));
-	char *data_type = (char *) malloc(32 * sizeof(char));
 
-	argc = sscanf(arg, "%119s %8s %1u %31s %f", uri, locID, &day, data_type, &interval);
+	wfd = malloc(sizeof(struct weather_forecast_data));
+	memset(wfd, 0, sizeof(struct weather_forecast_data));
+
+	argc = sscanf(arg, "%119s %8s %1u %31s %f", wfd->uri, locID, &wfd->day, wfd->data_type, &interval);
 
 	if (argc < 4) {
-		free(data_type);
-		free(uri);
 		free(locID);
+		free(wfd);
 		CRIT_ERR(obj, free_at_crash, "wrong number of arguments for $weather_forecast");
 	}
-	if (process_weather_uri(uri, locID, 1)) {
-		free(data_type);
-		free(uri);
+	if (process_weather_uri(wfd->uri, locID, 1)) {
 		free(locID);
+		free(wfd);
 		CRIT_ERR(obj, free_at_crash, \
 				"could not recognize the weather forecast uri");
 	}
 
-	obj->data.weather_forecast.uri = uri;
-	obj->data.weather_forecast.data_type = data_type;
-
 	/* Limit the day between 0 (today) and FORECAST_DAYS */
-	if (day >= FORECAST_DAYS) {
-		day = FORECAST_DAYS-1;
+	if (wfd->day >= FORECAST_DAYS) {
+		wfd->day = FORECAST_DAYS-1;
 	}
-	obj->data.weather_forecast.day = day;
 
 	/* Limit the data retrieval interval to 3 hours and an half */
 	if (interval < 210) {
@@ -931,49 +941,48 @@ void scan_weather_forecast_arg(struct text_object *obj, const char *arg, void *f
 	}
 
 	/* Convert to seconds */
-	obj->data.weather_forecast.interval = interval * 60;
+	wfd->interval = interval * 60;
 	free(locID);
 
 	DBGP("weather_forecast: fetching %s for day %d from %s every %d seconds", \
-			data_type, day, uri, obj->data.weather_forecast.interval);
+			wfd->data_type, wfd->day, wfd->uri, wfd->interval);
 }
 
 void print_weather_forecast(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.weather_forecast.uri) {
+	struct weather_forecast_data *wfd = obj->data.opaque;
+
+	if (!wfd || !wfd->uri) {
 		NORM_ERR("error processing weather forecast data, check that you have a valid XOAP key if using XOAP.");
 		return;
 	}
-	weather_forecast_process_info(p, p_max_size, obj->data.weather_forecast.uri, obj->data.weather_forecast.day, obj->data.weather_forecast.data_type, obj->data.weather_forecast.interval);
+	weather_forecast_process_info(p, p_max_size, wfd->uri, wfd->day, wfd->data_type, wfd->interval);
 }
 #endif /* XOAP */
 
 void scan_weather_arg(struct text_object *obj, const char *arg, void *free_at_crash)
 {
 	int argc;
-	float interval = 0;
+	struct weather_data *wd;
 	char *locID = (char *) malloc(9 * sizeof(char));
-	char *uri = (char *) malloc(128 * sizeof(char));
-	char *data_type = (char *) malloc(32 * sizeof(char));
+	float interval = 0;
 
-	argc = sscanf(arg, "%119s %8s %31s %f", uri, locID, data_type, &interval);
+	wd = malloc(sizeof(struct weather_data));
+	memset(wd, 0, sizeof(struct weather_data));
+
+	argc = sscanf(arg, "%119s %8s %31s %f", wd->uri, locID, wd->data_type, &interval);
 
 	if (argc < 3) {
-		free(data_type);
-		free(uri);
 		free(locID);
+		free(wd);
 		CRIT_ERR(obj, free_at_crash, "wrong number of arguments for $weather");
 	}
-	if (process_weather_uri(uri, locID, 0)) {
-		free(data_type);
-		free(uri);
+	if (process_weather_uri(wd->uri, locID, 0)) {
 		free(locID);
+		free(wd);
 		CRIT_ERR(obj, free_at_crash, \
 				"could not recognize the weather uri");
 	}
-
-	obj->data.weather.uri = uri;
-	obj->data.weather.data_type = data_type;
 
 	/* Limit the data retrieval interval to half hour min */
 	if (interval < 30) {
@@ -981,18 +990,28 @@ void scan_weather_arg(struct text_object *obj, const char *arg, void *free_at_cr
 	}
 
 	/* Convert to seconds */
-	obj->data.weather.interval = interval * 60;
+	wd->interval = interval * 60;
 	free(locID);
 
 	DBGP("weather: fetching %s from %s every %d seconds", \
-			data_type, uri, obj->data.weather.interval);
+			wd->data_type, wd->uri, wd->interval);
 }
 
 void print_weather(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.weather.uri) {
+	struct weather_data *wd = obj->data.opaque;
+
+	if (!wd || !wd->uri) {
 		NORM_ERR("error processing weather data, check that you have a valid XOAP key if using XOAP.");
 		return;
 	}
-	weather_process_info(p, p_max_size, obj->data.weather.uri, obj->data.weather.data_type, obj->data.weather.interval);
+	weather_process_info(p, p_max_size, wd->uri, wd->data_type, wd->interval);
+}
+
+void free_weather(struct text_object *obj)
+{
+	if (obj->data.opaque) {
+		free(obj->data.opaque);
+		obj->data.opaque = NULL;
+	}
 }
