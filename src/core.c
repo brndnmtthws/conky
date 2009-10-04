@@ -1549,7 +1549,7 @@ void free_text_objects(struct text_object *root, int internal)
 #endif
 #ifdef HAVE_CURL
 			case OBJ_curl:
-				free(data.curl.uri);
+				curl_obj_free(obj);
 				break;
 #endif
 #ifdef RSS

@@ -487,12 +487,6 @@ struct text_object {
 		struct {
 			int a, b;
 		} pair;			/* 2 */
-#ifdef HAVE_CURL
-		struct {
-			char *uri;
-			float interval;
-		} curl;
-#endif
 		struct {
 			char *text;
 			unsigned int show;

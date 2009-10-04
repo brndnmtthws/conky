@@ -184,6 +184,11 @@ void *ccurl_thread(void *arg)
  * This is where the $curl section begins.
  */
 
+struct curl_data {
+	char uri[128];
+	float interval;
+};
+
 /* internal location pointer for use by $curl, no touchy */
 static ccurl_location_t *ccurl_locations_head = 0;
 
@@ -221,24 +226,37 @@ void ccurl_process_info(char *p, int p_max_size, char *uri, int interval)
 void curl_parse_arg(struct text_object *obj, const char *arg)
 {
 	int argc;
+	struct curl_data *cd;
 	float interval = 0;
-	char *uri = (char *) malloc(128 * sizeof(char));
 
-	argc = sscanf(arg, "%127s %f", uri, &interval);
+	cd = malloc(sizeof(struct curl_data));
+	memset(cd, 0, sizeof(struct curl_data));
+
+	argc = sscanf(arg, "%127s %f", cd->uri, &interval);
 	if (argc < 1) {
-		free(uri);
+		free(cd);
 		NORM_ERR("wrong number of arguments for $curl");
 		return;
 	}
-	obj->data.curl.uri = uri;
-	obj->data.curl.interval = interval > 0 ? interval * 60 : 15*60;
+	cd->interval = interval > 0 ? interval * 60 : 15*60;
+	obj->data.opaque = cd;
 }
 
 void curl_print(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.curl.uri) {
+	struct curl_data *cd = obj->data.opaque;
+
+	if (!cd || !cd->uri) {
 		NORM_ERR("error processing Curl data");
 		return;
 	}
-	ccurl_process_info(p, p_max_size, obj->data.curl.uri, obj->data.curl.interval);
+	ccurl_process_info(p, p_max_size, cd->uri, cd->interval);
+}
+
+void curl_obj_free(struct text_object *obj)
+{
+	if (obj->data.opaque) {
+		free(obj->data.opaque);
+		obj->data.opaque = NULL;
+	}
 }
