@@ -23,10 +23,12 @@
  *
  */
 
+#include "config.h"
 #include "conky.h"
 #include "logging.h"
 #include "weather.h"
 #include "temphelper.h"
+#include "text_object.h"
 #include "ccurl_thread.h"
 #include <time.h>
 #include <ctype.h>
@@ -36,6 +38,39 @@
 #ifdef XOAP
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
+
+/* WEATHER data */
+typedef struct PWEATHER_ {
+	char lastupd[32];
+#ifdef XOAP
+	char xoap_t[32];
+	char icon[3];
+#endif /* XOAP */
+	int temp;
+	int dew;
+	int cc;
+	int bar;
+	int wind_s;
+	int wind_d;
+	int hmid;
+	int wc;
+} PWEATHER;
+
+#ifdef XOAP
+#define FORECAST_DAYS 5
+typedef struct PWEATHER_FORECAST_ {
+	int hi[FORECAST_DAYS];
+	int low[FORECAST_DAYS];
+	char icon[FORECAST_DAYS][3];
+	char xoap_t[FORECAST_DAYS][32];
+	char day[FORECAST_DAYS][9];
+	char date[FORECAST_DAYS][7];
+	int wind_s[FORECAST_DAYS];
+	int wind_d[FORECAST_DAYS];
+	int hmid[FORECAST_DAYS];
+	int ppcp[FORECAST_DAYS];
+} PWEATHER_FORECAST;
+#endif /* XOAP */
 
 /* Xpath expressions for XOAP xml parsing */
 #define NUM_XPATH_EXPRESSIONS_CC 8
@@ -657,7 +692,7 @@ void wind_deg_to_dir(char *p, int p_max_size, int wind_deg) {
 }
 
 #ifdef XOAP
-void weather_forecast_process_info(char *p, int p_max_size, char *uri, unsigned int day, char *data_type, int interval)
+static void weather_forecast_process_info(char *p, int p_max_size, char *uri, unsigned int day, char *data_type, int interval)
 {
 	PWEATHER_FORECAST *data;
 
@@ -702,7 +737,7 @@ void weather_forecast_process_info(char *p, int p_max_size, char *uri, unsigned 
 }
 #endif /* XOAP */
 
-void weather_process_info(char *p, int p_max_size, char *uri, char *data_type, int interval)
+static void weather_process_info(char *p, int p_max_size, char *uri, char *data_type, int interval)
 {
 	static const char *wc[] = {
 		"", "drizzle", "rain", "hail", "soft hail",
@@ -777,11 +812,45 @@ void weather_process_info(char *p, int p_max_size, char *uri, char *data_type, i
 	timed_thread_unlock(curloc->p_timed_thread);
 }
 
-#ifdef XOAP
-
 /* xoap suffix for weather from weather.com */
 static char *xoap_cc = NULL;
 static char *xoap_df = NULL;
+
+static int process_weather_uri(char *uri, char *locID, int dayf UNUSED_ATTR)
+{
+	/* locID MUST BE upper-case */
+	char *tmp_p = locID;
+
+	while (*tmp_p) {
+		*tmp_p = toupper(*tmp_p);
+		tmp_p++;
+	}
+
+	/* Construct complete uri */
+#ifdef XOAP
+	if (strstr(uri, "xoap.weather.com")) {
+		if ((dayf == 0) && (xoap_cc != NULL)) {
+			strcat(uri, locID);
+			strcat(uri, xoap_cc);
+		} else if ((dayf == 1) && (xoap_df != NULL)) {
+			strcat(uri, locID);
+			strcat(uri, xoap_df);
+		} else {
+			free(uri);
+			uri = NULL;
+		}
+	} else
+#endif /* XOAP */
+	if (strstr(uri, "weather.noaa.gov")) {
+		strcat(uri, locID);
+		strcat(uri, ".TXT");
+	} else  if (!strstr(uri, "localhost") && !strstr(uri, "127.0.0.1")) {
+		return -1;
+	}
+	return 0;
+}
+
+#ifdef XOAP
 
 /*
  * TODO: make the xoap keys file readable from the config file
@@ -821,38 +890,109 @@ void load_xoap_keys(void)
 	free(key);
 	free(xoap);
 }
-#endif /* XOAP */
 
-int process_weather_uri(char *uri, char *locID, int dayf UNUSED_ATTR)
+void scan_weather_forecast_arg(struct text_object *obj, const char *arg, void *free_at_crash)
 {
-	/* locID MUST BE upper-case */
-	char *tmp_p = locID;
+	int argc;
+	unsigned int day;
+	float interval = 0;
+	char *locID = (char *) malloc(9 * sizeof(char));
+	char *uri = (char *) malloc(128 * sizeof(char));
+	char *data_type = (char *) malloc(32 * sizeof(char));
 
-	while (*tmp_p) {
-		*tmp_p = toupper(*tmp_p);
-		tmp_p++;
+	argc = sscanf(arg, "%119s %8s %1u %31s %f", uri, locID, &day, data_type, &interval);
+
+	if (argc < 4) {
+		free(data_type);
+		free(uri);
+		free(locID);
+		CRIT_ERR(obj, free_at_crash, "wrong number of arguments for $weather_forecast");
+	}
+	if (process_weather_uri(uri, locID, 1)) {
+		free(data_type);
+		free(uri);
+		free(locID);
+		CRIT_ERR(obj, free_at_crash, \
+				"could not recognize the weather forecast uri");
 	}
 
-	/* Construct complete uri */
-#ifdef XOAP
-	if (strstr(uri, "xoap.weather.com")) {
-		if ((dayf == 0) && (xoap_cc != NULL)) {
-			strcat(uri, locID);
-			strcat(uri, xoap_cc);
-		} else if ((dayf == 1) && (xoap_df != NULL)) {
-			strcat(uri, locID);
-			strcat(uri, xoap_df);
-		} else {
-			free(uri);
-			uri = NULL;
-		}
-	} else
+	obj->data.weather_forecast.uri = uri;
+	obj->data.weather_forecast.data_type = data_type;
+
+	/* Limit the day between 0 (today) and FORECAST_DAYS */
+	if (day >= FORECAST_DAYS) {
+		day = FORECAST_DAYS-1;
+	}
+	obj->data.weather_forecast.day = day;
+
+	/* Limit the data retrieval interval to 3 hours and an half */
+	if (interval < 210) {
+		interval = 210;
+	}
+
+	/* Convert to seconds */
+	obj->data.weather_forecast.interval = interval * 60;
+	free(locID);
+
+	DBGP("weather_forecast: fetching %s for day %d from %s every %d seconds", \
+			data_type, day, uri, obj->data.weather_forecast.interval);
+}
+
+void print_weather_forecast(struct text_object *obj, char *p, int p_max_size)
+{
+	if (!obj->data.weather_forecast.uri) {
+		NORM_ERR("error processing weather forecast data, check that you have a valid XOAP key if using XOAP.");
+		return;
+	}
+	weather_forecast_process_info(p, p_max_size, obj->data.weather_forecast.uri, obj->data.weather_forecast.day, obj->data.weather_forecast.data_type, obj->data.weather_forecast.interval);
+}
 #endif /* XOAP */
-	if (strstr(uri, "weather.noaa.gov")) {
-		strcat(uri, locID);
-		strcat(uri, ".TXT");
-	} else  if (!strstr(uri, "localhost") && !strstr(uri, "127.0.0.1")) {
-		return -1;
+
+void scan_weather_arg(struct text_object *obj, const char *arg, void *free_at_crash)
+{
+	int argc;
+	float interval = 0;
+	char *locID = (char *) malloc(9 * sizeof(char));
+	char *uri = (char *) malloc(128 * sizeof(char));
+	char *data_type = (char *) malloc(32 * sizeof(char));
+
+	argc = sscanf(arg, "%119s %8s %31s %f", uri, locID, data_type, &interval);
+
+	if (argc < 3) {
+		free(data_type);
+		free(uri);
+		free(locID);
+		CRIT_ERR(obj, free_at_crash, "wrong number of arguments for $weather");
 	}
-	return 0;
+	if (process_weather_uri(uri, locID, 0)) {
+		free(data_type);
+		free(uri);
+		free(locID);
+		CRIT_ERR(obj, free_at_crash, \
+				"could not recognize the weather uri");
+	}
+
+	obj->data.weather.uri = uri;
+	obj->data.weather.data_type = data_type;
+
+	/* Limit the data retrieval interval to half hour min */
+	if (interval < 30) {
+		interval = 30;
+	}
+
+	/* Convert to seconds */
+	obj->data.weather.interval = interval * 60;
+	free(locID);
+
+	DBGP("weather: fetching %s from %s every %d seconds", \
+			data_type, uri, obj->data.weather.interval);
+}
+
+void print_weather(struct text_object *obj, char *p, int p_max_size)
+{
+	if (!obj->data.weather.uri) {
+		NORM_ERR("error processing weather data, check that you have a valid XOAP key if using XOAP.");
+		return;
+	}
+	weather_process_info(p, p_max_size, obj->data.weather.uri, obj->data.weather.data_type, obj->data.weather.interval);
 }

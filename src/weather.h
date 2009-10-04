@@ -30,52 +30,16 @@
 #ifndef WEATHER_H_
 #define WEATHER_H_
 
-#include "config.h"
-
-/* WEATHER data */
-typedef struct PWEATHER_ {
-	char lastupd[32];
-#ifdef XOAP
-	char xoap_t[32];
-	char icon[3];
-#endif /* XOAP */
-	int temp;
-	int dew;
-	int cc;
-	int bar;
-	int wind_s;
-	int wind_d;
-	int hmid;
-	int wc;
-} PWEATHER;
-
-#ifdef XOAP
-#define FORECAST_DAYS 5
-typedef struct PWEATHER_FORECAST_ {
-	int hi[FORECAST_DAYS];
-	int low[FORECAST_DAYS];
-	char icon[FORECAST_DAYS][3];
-	char xoap_t[FORECAST_DAYS][32];
-	char day[FORECAST_DAYS][9];
-	char date[FORECAST_DAYS][7];
-	int wind_s[FORECAST_DAYS];
-	int wind_d[FORECAST_DAYS];
-	int hmid[FORECAST_DAYS];
-	int ppcp[FORECAST_DAYS];
-} PWEATHER_FORECAST;
-#endif /* XOAP */
-
 /* Prototypes */
 void weather_free_info(void);
-void weather_process_info(char *p, int p_max_size, char *uri, char *data_type, int interval);
-#ifdef XOAP
-void weather_forecast_process_info(char *p, int p_max_size, char *uri, unsigned int day, char *data_type, int interval);
-#endif /* XOAP */
-int process_weather_uri(char *uri, char *locID, int dayf);
 
 #ifdef XOAP
 void load_xoap_keys(void);
+void scan_weather_forecast_arg(struct text_object *, const char *, void *);
+void print_weather_forecast(struct text_object *, char *, int);
 #endif /* XOAP */
 
+void scan_weather_arg(struct text_object *, const char *, void *);
+void print_weather(struct text_object *, char *, int);
 
 #endif /*WEATHER_H_*/

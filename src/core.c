@@ -1467,90 +1467,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif
 #ifdef WEATHER
 	END OBJ_ARG(weather, 0, "weather needs arguments: <uri> <locID> <data_type> [interval in minutes]")
-		int argc;
-		float interval = 0;
-		char *locID = (char *) malloc(9 * sizeof(char));
-		char *uri = (char *) malloc(128 * sizeof(char));
-		char *data_type = (char *) malloc(32 * sizeof(char));
-
-		argc = sscanf(arg, "%119s %8s %31s %f", uri, locID, data_type, &interval);
-
-		if (argc >= 3) {
-			if (process_weather_uri(uri, locID, 0)) {
-				free(data_type);
-				free(uri);
-				free(locID);
-				CRIT_ERR(obj, free_at_crash, \
-						"could not recognize the weather uri");
-			}
-
-			obj->data.weather.uri = uri;
-			obj->data.weather.data_type = data_type;
-
-			/* Limit the data retrieval interval to half hour min */
-			if (interval < 30) {
-				interval = 30;
-			}
-
-			/* Convert to seconds */
-			obj->data.weather.interval = interval * 60;
-			free(locID);
-
-			DBGP("weather: fetching %s from %s every %d seconds", \
-					data_type, uri, obj->data.weather.interval);
-		} else {
-			free(data_type);
-			free(uri);
-			free(locID);
-			CRIT_ERR(obj, free_at_crash, "wrong number of arguments for $weather");
-		}
+		scan_weather_arg(obj, arg, free_at_crash);
 #endif
 #ifdef XOAP
 	END OBJ_ARG(weather_forecast, 0, "weather_forecast needs arguments: <uri> <locID> <day> <data_type> [interval in minutes]")
-		int argc;
-		unsigned int day;
-		float interval = 0;
-		char *locID = (char *) malloc(9 * sizeof(char));
-		char *uri = (char *) malloc(128 * sizeof(char));
-		char *data_type = (char *) malloc(32 * sizeof(char));
-
-		argc = sscanf(arg, "%119s %8s %1u %31s %f", uri, locID, &day, data_type, &interval);
-
-		if (argc >= 4) {
-			if (process_weather_uri(uri, locID, 1)) {
-				free(data_type);
-				free(uri);
-				free(locID);
-				CRIT_ERR(obj, free_at_crash, \
-						"could not recognize the weather forecast uri");
-			}
-
-			obj->data.weather_forecast.uri = uri;
-			obj->data.weather_forecast.data_type = data_type;
-
-			/* Limit the day between 0 (today) and FORECAST_DAYS */
-			if (day >= FORECAST_DAYS) {
-				day = FORECAST_DAYS-1;
-			}
-			obj->data.weather_forecast.day = day;
-
-			/* Limit the data retrieval interval to 3 hours and an half */
-			if (interval < 210) {
-				interval = 210;
-			}
-
-			/* Convert to seconds */
-			obj->data.weather_forecast.interval = interval * 60;
-			free(locID);
-
-			DBGP("weather_forecast: fetching %s for day %d from %s every %d seconds", \
-				 data_type, day, uri, obj->data.weather_forecast.interval);
-		} else {
-			free(data_type);
-			free(uri);
-			free(locID);
-			CRIT_ERR(obj, free_at_crash, "wrong number of arguments for $weather_forecast");
-		}
+		scan_weather_forecast_arg(obj, arg, free_at_crash);
 #endif
 #ifdef HAVE_LUA
 	END OBJ_ARG(lua, 0, "lua needs arguments: <function name> [function parameters]")

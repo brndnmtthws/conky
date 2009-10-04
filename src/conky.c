@@ -1847,20 +1847,12 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 #ifdef WEATHER
 			OBJ(weather) {
-				if (obj->data.weather.uri != NULL) {
-					weather_process_info(p, p_max_size, obj->data.weather.uri, obj->data.weather.data_type, obj->data.weather.interval);
-				} else {
-					NORM_ERR("error processing weather data, check that you have a valid XOAP key if using XOAP.");
-				}
+				print_weather(obj, p, p_max_size);
 			}
 #endif
 #ifdef XOAP
 			OBJ(weather_forecast) {
-				if (obj->data.weather_forecast.uri != NULL) {
-					weather_forecast_process_info(p, p_max_size, obj->data.weather_forecast.uri, obj->data.weather_forecast.day, obj->data.weather_forecast.data_type, obj->data.weather_forecast.interval);
-				} else {
-					NORM_ERR("error processing weather forecast data, check that you have a valid XOAP key if using XOAP.");
-				}
+				print_weather_forecast(obj, p, p_max_size);
 			}
 #endif
 #ifdef HAVE_LUA
