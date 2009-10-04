@@ -455,11 +455,6 @@ struct text_object {
 			char *output;
 		} mboxscan;
 
-		struct {
-			struct fs_stat *fs;
-			int w, h;
-		} fsbar;		/* 3 */
-
 #ifdef X11
 		struct {
 			int l;
