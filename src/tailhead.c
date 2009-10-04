@@ -59,29 +59,25 @@ void tailstring(char *string, int endofstring, int wantedlines) {
 void init_tailhead(const char* type, const char* arg, struct text_object *obj, void* free_at_crash) {
 	unsigned int args;
 
-	if(arg) {
-		obj->data.headtail.logfile=malloc(DEFAULT_TEXT_BUFFER_SIZE);
-		obj->data.headtail.max_uses = DEFAULT_MAX_HEADTAIL_USES;
-		args = sscanf(arg, "%s %d %d", obj->data.headtail.logfile, &obj->data.headtail.wantedlines, &obj->data.headtail.max_uses);
-		if(args == 2 || args == 3) {
-			if(obj->data.headtail.max_uses < 1) {
-				free(obj->data.headtail.logfile);
-				CRIT_ERR(obj, free_at_crash, "invalid arg for %s, next_check must be larger than 0", type);
-			}
-			if (obj->data.headtail.wantedlines > 0 && obj->data.headtail.wantedlines <= MAX_HEADTAIL_LINES) {
-				to_real_path(obj->data.headtail.logfile, obj->data.headtail.logfile);
-				obj->data.headtail.buffer = NULL;
-				obj->data.headtail.current_use = 0;
-			}else{
-				free(obj->data.headtail.logfile);
-				CRIT_ERR(obj, free_at_crash, "invalid arg for %s, number of lines must be between 1 and %d", type, MAX_HEADTAIL_LINES);
-			}
-		} else {
+	obj->data.headtail.logfile=malloc(DEFAULT_TEXT_BUFFER_SIZE);
+	obj->data.headtail.max_uses = DEFAULT_MAX_HEADTAIL_USES;
+	args = sscanf(arg, "%s %d %d", obj->data.headtail.logfile, &obj->data.headtail.wantedlines, &obj->data.headtail.max_uses);
+	if(args == 2 || args == 3) {
+		if(obj->data.headtail.max_uses < 1) {
 			free(obj->data.headtail.logfile);
-			CRIT_ERR(obj, free_at_crash, "%s needs a file as 1st and a number of lines as 2nd argument", type);
+			CRIT_ERR(obj, free_at_crash, "invalid arg for %s, next_check must be larger than 0", type);
+		}
+		if (obj->data.headtail.wantedlines > 0 && obj->data.headtail.wantedlines <= MAX_HEADTAIL_LINES) {
+			to_real_path(obj->data.headtail.logfile, obj->data.headtail.logfile);
+			obj->data.headtail.buffer = NULL;
+			obj->data.headtail.current_use = 0;
+		}else{
+			free(obj->data.headtail.logfile);
+			CRIT_ERR(obj, free_at_crash, "invalid arg for %s, number of lines must be between 1 and %d", type, MAX_HEADTAIL_LINES);
 		}
 	} else {
-		CRIT_ERR(obj, free_at_crash, "%s needs arguments", type);
+		free(obj->data.headtail.logfile);
+		CRIT_ERR(obj, free_at_crash, "%s needs a file as 1st and a number of lines as 2nd argument", type);
 	}
 }
 

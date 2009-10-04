@@ -901,9 +901,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			free(buf);
 		}
 #endif /* __linux__ */
-	END OBJ(tail, 0)
+	END OBJ_ARG(tail, 0, "tail needs arguments")
 		init_tailhead("tail", arg, obj, free_at_crash);
-	END OBJ(head, 0)
+	END OBJ_ARG(head, 0, "head needs arguments")
 		init_tailhead("head", arg, obj, free_at_crash);
 	END OBJ_ARG(lines, 0, "lines needs an argument")
 		obj->data.s = strndup(arg, text_buffer_size);
