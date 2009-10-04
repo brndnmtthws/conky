@@ -32,6 +32,14 @@
 #include <time.h>
 #include <assert.h>
 
+struct rss_data {
+	char uri[128];
+	char action[64];
+	int act_par;
+	float interval;
+	unsigned int nrspaces;
+};
+
 static ccurl_location_t *locations_head = 0;
 
 void rss_free_info(void)
@@ -150,31 +158,38 @@ static void rss_process_info(char *p, int p_max_size, char *uri, char *action, i
 
 void rss_scan_arg(struct text_object *obj, const char *arg)
 {
-	float interval = 0;
-	int argc, act_par = 0;
-	unsigned int nrspaces = 0;
-	char *uri = (char *) malloc(128 * sizeof(char));
-	char *action = (char *) malloc(64 * sizeof(char));
+	int argc;
+	struct rss_data *rd;
 
-	argc = sscanf(arg, "%127s %f %63s %d %u", uri, &interval, action,
-			&act_par, &nrspaces);
+	rd = malloc(sizeof(struct rss_data));
+	memset(rd, 0, sizeof(struct rss_data));
+
+	argc = sscanf(arg, "%127s %f %63s %d %u", rd->uri, &rd->interval, rd->action,
+			&rd->act_par, &rd->nrspaces);
 	if (argc < 3) {
 		NORM_ERR("wrong number of arguments for $rss");
+		free(rd);
 		return;
 	}
-	obj->data.rss.uri = uri;
-	obj->data.rss.interval = interval > 0 ? interval * 60 : 15*60;
-	obj->data.rss.action = action;
-	obj->data.rss.act_par = act_par;
-	obj->data.rss.nrspaces = nrspaces;
+	obj->data.opaque = rd;
 }
 
 void rss_print_info(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.rss.uri) {
+	struct rss_data *rd = obj->data.opaque;
+
+	if (!rd) {
 		NORM_ERR("error processing RSS data");
 		return;
 	}
-	rss_process_info(p, p_max_size, obj->data.rss.uri, obj->data.rss.action,
-			obj->data.rss.act_par, obj->data.rss.interval, obj->data.rss.nrspaces);
+	rss_process_info(p, p_max_size, rd->uri, rd->action,
+			rd->act_par, rd->interval, rd->nrspaces);
+}
+
+void rss_free_obj_info(struct text_object *obj)
+{
+	if (obj->data.opaque) {
+		free(obj->data.opaque);
+		obj->data.opaque = NULL;
+	}
 }

@@ -1554,8 +1554,7 @@ void free_text_objects(struct text_object *root, int internal)
 #endif
 #ifdef RSS
 			case OBJ_rss:
-				free(data.rss.uri);
-				free(data.rss.action);
+				rss_free_obj_info(obj);
 				break;
 #endif
 #ifdef WEATHER

@@ -493,15 +493,6 @@ struct text_object {
 			float interval;
 		} curl;
 #endif
-#ifdef RSS
-		struct {
-			char *uri;
-			char *action;
-			int act_par;
-			float interval;
-			unsigned int nrspaces;
-		} rss;
-#endif
 #ifdef WEATHER
 		struct {
 			char *uri;
