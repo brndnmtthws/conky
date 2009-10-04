@@ -1842,11 +1842,7 @@ static void generate_text_internal(char *p, int p_max_size,
 #endif
 #ifdef RSS
 			OBJ(rss) {
-				if (obj->data.rss.uri != NULL) {
-					rss_process_info(p, p_max_size, obj->data.rss.uri, obj->data.rss.action, obj->data.rss.act_par, obj->data.rss.interval, obj->data.rss.nrspaces);
-				} else {
-					NORM_ERR("error processing RSS data");
-				}
+				rss_print_info(obj, p, p_max_size);
 			}
 #endif
 #ifdef WEATHER

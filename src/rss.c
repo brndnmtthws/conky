@@ -27,6 +27,7 @@
 #include "conky.h"
 #include "logging.h"
 #include "prss.h"
+#include "text_object.h"
 #include "ccurl_thread.h"
 #include <time.h>
 #include <assert.h>
@@ -44,7 +45,7 @@ void rss_free_info(void)
 	ccurl_free_locations(&locations_head);
 }
 
-void rss_process_info(char *p, int p_max_size, char *uri, char *action, int
+static void rss_process_info(char *p, int p_max_size, char *uri, char *action, int
 		act_par, int interval, unsigned int nrspaces)
 {
 	PRSS *data;
@@ -147,3 +148,33 @@ void rss_process_info(char *p, int p_max_size, char *uri, char *action, int
 	timed_thread_unlock(curloc->p_timed_thread);
 }
 
+void rss_scan_arg(struct text_object *obj, const char *arg)
+{
+	float interval = 0;
+	int argc, act_par = 0;
+	unsigned int nrspaces = 0;
+	char *uri = (char *) malloc(128 * sizeof(char));
+	char *action = (char *) malloc(64 * sizeof(char));
+
+	argc = sscanf(arg, "%127s %f %63s %d %u", uri, &interval, action,
+			&act_par, &nrspaces);
+	if (argc < 3) {
+		NORM_ERR("wrong number of arguments for $rss");
+		return;
+	}
+	obj->data.rss.uri = uri;
+	obj->data.rss.interval = interval > 0 ? interval * 60 : 15*60;
+	obj->data.rss.action = action;
+	obj->data.rss.act_par = act_par;
+	obj->data.rss.nrspaces = nrspaces;
+}
+
+void rss_print_info(struct text_object *obj, char *p, int p_max_size)
+{
+	if (!obj->data.rss.uri) {
+		NORM_ERR("error processing RSS data");
+		return;
+	}
+	rss_process_info(p, p_max_size, obj->data.rss.uri, obj->data.rss.action,
+			obj->data.rss.act_par, obj->data.rss.interval, obj->data.rss.nrspaces);
+}

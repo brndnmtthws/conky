@@ -5,8 +5,8 @@
 
 #include "prss.h"
 
+void rss_scan_arg(struct text_object *, const char *);
+void rss_print_info(struct text_object *, char *, int);
 void rss_free_info(void);
-void rss_process_info(char *p, int p_max_size, char *uri, char *action, int
-		act_par, int interval, unsigned int nrspaces);
 
 #endif /*RSS_H_*/

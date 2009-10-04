@@ -1463,23 +1463,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif
 #ifdef RSS
 	END OBJ_ARG(rss, 0, "rss needs arguments: <uri> <interval in minutes> <action> [act_par] [spaces in front]")
-		float interval = 0;
-		int argc, act_par = 0;
-		unsigned int nrspaces = 0;
-		char *uri = (char *) malloc(128 * sizeof(char));
-		char *action = (char *) malloc(64 * sizeof(char));
-
-		argc = sscanf(arg, "%127s %f %63s %d %u", uri, &interval, action,
-				&act_par, &nrspaces);
-		if (argc >= 3) {
-			obj->data.rss.uri = uri;
-			obj->data.rss.interval = interval > 0 ? interval * 60 : 15*60;
-			obj->data.rss.action = action;
-			obj->data.rss.act_par = act_par;
-			obj->data.rss.nrspaces = nrspaces;
-		} else {
-			NORM_ERR("wrong number of arguments for $rss");
-		}
+		rss_scan_arg(obj, arg);
 #endif
 #ifdef WEATHER
 	END OBJ_ARG(weather, 0, "weather needs arguments: <uri> <locID> <data_type> [interval in minutes]")
