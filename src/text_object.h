@@ -454,14 +454,8 @@ struct text_object {
 			char *output;
 		} mboxscan;
 
-#ifdef X11
 		struct {
-			int l;
-			int w, h;
-		} mixerbar;		/* 3 */
-#endif
-
-		struct {
+			void *opaque;	/* temporary workaround to not blow stuff */
 			struct text_object *next;
 			char *s;
 			int i;

@@ -1581,30 +1581,27 @@ void generate_text_internal(char *p, int p_max_size,
 #endif /* X11 */
 			/* mixer stuff */
 			OBJ(mixer) {
-				percent_print(p, p_max_size, mixer_get_avg(obj->data.l));
+				print_mixer(obj, 0, p, p_max_size);
 			}
 			OBJ(mixerl) {
-				percent_print(p, p_max_size, mixer_get_left(obj->data.l));
+				print_mixer(obj, -1, p, p_max_size);
 			}
 			OBJ(mixerr) {
-				percent_print(p, p_max_size, mixer_get_right(obj->data.l));
+				print_mixer(obj, 1, p, p_max_size);
 			}
 #ifdef X11
 			OBJ(mixerbar) {
-				new_bar(p, obj->data.mixerbar.w, obj->data.mixerbar.h,
-					mixer_to_255(obj->data.mixerbar.l,mixer_get_avg(obj->data.mixerbar.l)));
+				print_mixer_bar(obj, 0, p);
 			}
 			OBJ(mixerlbar) {
-				new_bar(p, obj->data.mixerbar.w, obj->data.mixerbar.h,
-					mixer_to_255(obj->data.mixerbar.l,mixer_get_left(obj->data.mixerbar.l)));
+				print_mixer_bar(obj, -1, p);
 			}
 			OBJ(mixerrbar) {
-				new_bar(p, obj->data.mixerbar.w, obj->data.mixerbar.h,
-					mixer_to_255(obj->data.mixerbar.l,mixer_get_right(obj->data.mixerbar.l)));
+				print_mixer_bar(obj, 1, p);
 			}
 #endif /* X11 */
 			OBJ(if_mixer_mute) {
-				if (!mixer_is_mute(obj->data.ifblock.i)) {
+				if (!check_mixer_muted(obj)) {
 					DO_JUMP;
 				}
 			}

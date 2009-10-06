@@ -3,17 +3,13 @@
 #ifndef MIXER_H_
 #define MIXER_H_
 
+void parse_mixer_arg(struct text_object *, const char *);
+void print_mixer(struct text_object *, int, char *, int);
+int check_mixer_muted(struct text_object *);
 
-#ifdef MIXER_IS_ALSA
-int mixer_to_255(int, int);
-#else
-#define mixer_to_255(l,x) x
-#endif
-
-int mixer_init(const char *);
-int mixer_get_avg(int);
-int mixer_get_left(int);
-int mixer_get_right(int);
-int mixer_is_mute(int);
+#ifdef X11
+void scan_mixer_bar(struct text_object *, const char *);
+void print_mixer_bar(struct text_object *, int, char *);
+#endif /* X11 */
 
 #endif /*MIXER_H_*/

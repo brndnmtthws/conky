@@ -726,27 +726,21 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		if (buf) free(buf);
 #endif /* X11*/
 	END OBJ(mixer, 0)
-		obj->data.l = mixer_init(arg);
+		parse_mixer_arg(obj, arg);
 	END OBJ(mixerl, 0)
-		obj->data.l = mixer_init(arg);
+		parse_mixer_arg(obj, arg);
 	END OBJ(mixerr, 0)
-		obj->data.l = mixer_init(arg);
+		parse_mixer_arg(obj, arg);
 #ifdef X11
 	END OBJ(mixerbar, 0)
-		SIZE_DEFAULTS(bar);
-		scan_mixer_bar(arg, &obj->data.mixerbar.l, &obj->data.mixerbar.w,
-			&obj->data.mixerbar.h);
+		scan_mixer_bar(obj, arg);
 	END OBJ(mixerlbar, 0)
-		SIZE_DEFAULTS(bar);
-		scan_mixer_bar(arg, &obj->data.mixerbar.l, &obj->data.mixerbar.w,
-			&obj->data.mixerbar.h);
+		scan_mixer_bar(obj, arg);
 	END OBJ(mixerrbar, 0)
-		SIZE_DEFAULTS(bar);
-		scan_mixer_bar(arg, &obj->data.mixerbar.l, &obj->data.mixerbar.w,
-			&obj->data.mixerbar.h);
+		scan_mixer_bar(obj, arg);
 #endif
 	END OBJ_IF(if_mixer_mute, 0)
-		obj->data.ifblock.i = mixer_init(arg);
+		parse_mixer_arg(obj, arg);
 #ifdef X11
 	END OBJ(monitor, &update_x11info)
 	END OBJ(monitor_number, &update_x11info)
