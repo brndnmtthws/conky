@@ -30,20 +30,32 @@
 
 #include "logging.h"
 #include "text_object.h"
+#include <netdb.h>
+
+struct read_tcp_data {
+	char *host;
+	unsigned int port;
+};
 
 void parse_read_tcp_arg(struct text_object *obj, const char *arg, void *free_at_crash)
 {
-	obj->data.read_tcp.host = malloc(text_buffer_size);
-	sscanf(arg, "%s", obj->data.read_tcp.host);
-	sscanf(arg+strlen(obj->data.read_tcp.host), "%u", &(obj->data.read_tcp.port));
-	if(obj->data.read_tcp.port == 0) {
-		obj->data.read_tcp.port = atoi(obj->data.read_tcp.host);
-		strcpy(obj->data.read_tcp.host,"localhost");
+	struct read_tcp_data *rtd;
+
+	rtd = malloc(sizeof(struct read_tcp_data));
+	memset(rtd, 0, sizeof(struct read_tcp_data));
+
+	rtd->host = malloc(text_buffer_size);
+	sscanf(arg, "%s", rtd->host);
+	sscanf(arg+strlen(rtd->host), "%u", &(rtd->port));
+	if(rtd->port == 0) {
+		rtd->port = atoi(rtd->host);
+		strcpy(rtd->host,"localhost");
 	}
-	if(obj->data.read_tcp.port < 1 || obj->data.read_tcp.port > 65535)
+	if(rtd->port < 1 || rtd->port > 65535)
 		CRIT_ERR(obj, free_at_crash, "read_tcp: Needs \"(host) port\" as argument(s)");
 
-	obj->data.read_tcp.port = htons(obj->data.read_tcp.port);
+	rtd->port = htons(rtd->port);
+	obj->data.opaque = rtd;
 }
 
 void print_read_tcp(struct text_object *obj, char *p, int p_max_size)
@@ -53,8 +65,12 @@ void print_read_tcp(struct text_object *obj, char *p, int p_max_size)
 	struct hostent* he;
 	fd_set readfds;
 	struct timeval tv;
+	struct read_tcp_data *rtd = obj->data.opaque;
 
-	if (!(he = gethostbyname(obj->data.read_tcp.host))) {
+	if (!rtd)
+		return;
+
+	if (!(he = gethostbyname(rtd->host))) {
 		NORM_ERR("read_tcp: Problem with resolving the hostname");
 		return;
 	}
@@ -64,7 +80,7 @@ void print_read_tcp(struct text_object *obj, char *p, int p_max_size)
 	}
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
-	addr.sin_port = obj->data.read_tcp.port;
+	addr.sin_port = rtd->port;
 	memcpy(&addr.sin_addr, he->h_addr, he->h_length);
 	if (!connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr))) {
 		NORM_ERR("read_tcp: Couldn't create a connection");
@@ -83,6 +99,13 @@ void print_read_tcp(struct text_object *obj, char *p, int p_max_size)
 
 void free_read_tcp(struct text_object *obj)
 {
-	if (obj->data.read_tcp.host)
-		free(obj->data.read_tcp.host);
+	struct read_tcp_data *rtd = obj->data.opaque;
+
+	if (!rtd)
+		return;
+
+	if (rtd->host)
+		free(rtd->host);
+	free(obj->data.opaque);
+	obj->data.opaque = NULL;
 }

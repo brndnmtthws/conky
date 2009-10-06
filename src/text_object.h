@@ -474,11 +474,6 @@ struct text_object {
 			char *right;
 		} combine;
 
-		struct {
-			char *host;
-			unsigned int port;
-		} read_tcp;
-
 		struct local_mail_s local_mail;
 	} data;
 	int type;
