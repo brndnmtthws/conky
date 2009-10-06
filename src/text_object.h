@@ -458,13 +458,6 @@ struct text_object {
 		} ifblock;
 
 		struct {
-			int num;
-			int type;
-			int was_parsed;
-			char *s;
-		} top;
-
-		struct {
 			double last_update;
 			float interval;
 			char *cmd;

@@ -800,18 +800,26 @@ void process_find_top(struct process **cpu, struct process **mem,
 #endif /* IOSTATS */
 }
 
+struct top_data {
+	int num;
+	int type;
+	int was_parsed;
+	char *s;
+};
+
 int parse_top_args(const char *s, const char *arg, struct text_object *obj)
 {
+	struct top_data *td;
 	char buf[64];
 	int n;
 
-	if (obj->data.top.was_parsed) {
-		return 1;
+	if (!arg) {
+		NORM_ERR("top needs arguments");
+		return 0;
 	}
-	obj->data.top.was_parsed = 1;
 
-	if (arg && !obj->data.top.s) {
-		obj->data.top.s = strndup(arg, text_buffer_size);
+	if (obj->data.opaque) {
+		return 1;
 	}
 
 	if (s[3] == 0) {
@@ -837,33 +845,32 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj)
 		return 0;
 	}
 
-	if (!arg) {
-		NORM_ERR("top needs arguments");
-		return 0;
-	}
+	obj->data.opaque = td = malloc(sizeof(struct top_data));
+	memset(td, 0, sizeof(struct top_data));
+	td->s = strndup(arg, text_buffer_size);
 
 	if (sscanf(arg, "%63s %i", buf, &n) == 2) {
 		if (strcmp(buf, "name") == EQUAL) {
-			obj->data.top.type = TOP_NAME;
+			td->type = TOP_NAME;
 		} else if (strcmp(buf, "cpu") == EQUAL) {
-			obj->data.top.type = TOP_CPU;
+			td->type = TOP_CPU;
 		} else if (strcmp(buf, "pid") == EQUAL) {
-			obj->data.top.type = TOP_PID;
+			td->type = TOP_PID;
 		} else if (strcmp(buf, "mem") == EQUAL) {
-			obj->data.top.type = TOP_MEM;
+			td->type = TOP_MEM;
 		} else if (strcmp(buf, "time") == EQUAL) {
-			obj->data.top.type = TOP_TIME;
+			td->type = TOP_TIME;
 		} else if (strcmp(buf, "mem_res") == EQUAL) {
-			obj->data.top.type = TOP_MEM_RES;
+			td->type = TOP_MEM_RES;
 		} else if (strcmp(buf, "mem_vsize") == EQUAL) {
-			obj->data.top.type = TOP_MEM_VSIZE;
+			td->type = TOP_MEM_VSIZE;
 #ifdef IOSTATS
 		} else if (strcmp(buf, "io_read") == EQUAL) {
-			obj->data.top.type = TOP_READ_BYTES;
+			td->type = TOP_READ_BYTES;
 		} else if (strcmp(buf, "io_write") == EQUAL) {
-			obj->data.top.type = TOP_WRITE_BYTES;
+			td->type = TOP_WRITE_BYTES;
 		} else if (strcmp(buf, "io_perc") == EQUAL) {
-			obj->data.top.type = TOP_IO_PERC;
+			td->type = TOP_IO_PERC;
 #endif /* IOSTATS */
 		} else {
 			NORM_ERR("invalid type arg for top");
@@ -879,7 +886,7 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj)
 			NORM_ERR("invalid num arg for top. Must be between 1 and 10.");
 			return 0;
 		} else {
-			obj->data.top.num = n - 1;
+			td->num = n - 1;
 		}
 	} else {
 		NORM_ERR("invalid argument count for top");
@@ -888,4 +895,137 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj)
 	return 1;
 }
 
+static char *format_time(unsigned long timeval, const int width)
+{
+	char buf[10];
+	unsigned long nt;	// narrow time, for speed on 32-bit
+	unsigned cc;		// centiseconds
+	unsigned nn;		// multi-purpose whatever
 
+	nt = timeval;
+	cc = nt % 100;		// centiseconds past second
+	nt /= 100;			// total seconds
+	nn = nt % 60;		// seconds past the minute
+	nt /= 60;			// total minutes
+	if (width >= snprintf(buf, sizeof buf, "%lu:%02u.%02u",
+				nt, nn, cc)) {
+		return strndup(buf, text_buffer_size);
+	}
+	if (width >= snprintf(buf, sizeof buf, "%lu:%02u", nt, nn)) {
+		return strndup(buf, text_buffer_size);
+	}
+	nn = nt % 60;		// minutes past the hour
+	nt /= 60;			// total hours
+	if (width >= snprintf(buf, sizeof buf, "%lu,%02u", nt, nn)) {
+		return strndup(buf, text_buffer_size);
+	}
+	nn = nt;			// now also hours
+	if (width >= snprintf(buf, sizeof buf, "%uh", nn)) {
+		return strndup(buf, text_buffer_size);
+	}
+	nn /= 24;			// now days
+	if (width >= snprintf(buf, sizeof buf, "%ud", nn)) {
+		return strndup(buf, text_buffer_size);
+	}
+	nn /= 7;			// now weeks
+	if (width >= snprintf(buf, sizeof buf, "%uw", nn)) {
+		return strndup(buf, text_buffer_size);
+	}
+	// well shoot, this outta' fit...
+	return strndup("<inf>", text_buffer_size);
+}
+
+void print_top(struct text_object *obj, char *p, int top_name_width)
+{
+	struct information *cur = &info;
+	struct top_data *td = obj->data.opaque;
+	struct process **needed = 0;
+
+	if (!td)
+		return;
+
+	switch (obj->type) {
+		case OBJ_top:
+			needed = cur->cpu;
+			break;
+		case OBJ_top_mem:
+			needed = cur->memu;
+			break;
+		case OBJ_top_time:
+			needed = cur->time;
+			break;
+		case OBJ_top_io:
+			needed = cur->io;
+			break;
+		default:
+			return;
+	}
+
+	if (needed[td->num]) {
+		char *timeval;
+
+		switch (td->type) {
+			case TOP_NAME:
+				snprintf(p, top_name_width + 1, "%-*s", top_name_width,
+						needed[td->num]->name);
+				break;
+			case TOP_CPU:
+				snprintf(p, 7, "%6.2f",
+						needed[td->num]->amount);
+				break;
+			case TOP_PID:
+				snprintf(p, 6, "%5i",
+						needed[td->num]->pid);
+				break;
+			case TOP_MEM:
+				snprintf(p, 7, "%6.2f",
+						needed[td->num]->totalmem);
+				break;
+			case TOP_TIME:
+				timeval = format_time(
+						needed[td->num]->total_cpu_time, 9);
+				snprintf(p, 10, "%9s", timeval);
+				free(timeval);
+				break;
+			case TOP_MEM_RES:
+				human_readable(needed[td->num]->rss,
+						p, 255);
+				break;
+			case TOP_MEM_VSIZE:
+				human_readable(needed[td->num]->vsize,
+						p, 255);
+				break;
+#ifdef IOSTATS
+			case TOP_READ_BYTES:
+				human_readable(needed[td->num]->read_bytes / update_interval,
+						p, 255);
+				break;
+			case TOP_WRITE_BYTES:
+				human_readable(needed[td->num]->write_bytes / update_interval,
+						p, 255);
+				break;
+			case TOP_IO_PERC:
+				snprintf(p, 7, "%6.2f",
+						needed[td->num]->io_perc);
+				break;
+#endif
+		}
+	}
+}
+
+void free_top(struct text_object *obj, int internal)
+{
+	struct top_data *td = obj->data.opaque;
+
+	if (info.first_process && !internal) {
+		free_all_processes();
+		info.first_process = NULL;
+	}
+
+	if (!td)
+		return;
+	if (td->s)
+		free(td->s);
+	free(obj->data.opaque);
+	obj->data.opaque = NULL;
+}

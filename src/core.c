@@ -1599,11 +1599,7 @@ void free_text_objects(struct text_object *root, int internal)
 #ifdef IOSTATS
 			case OBJ_top_io:
 #endif
-				if (info.first_process && !internal) {
-					free_all_processes();
-					info.first_process = NULL;
-				}
-				if (data.top.s) free(data.top.s);
+				free_top(obj, internal);
 				break;
 #ifdef HDDTEMP
 			case OBJ_hddtemp:

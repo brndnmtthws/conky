@@ -711,46 +711,6 @@ void parse_conky_vars(struct text_object *root, const char *txt, char *p, struct
 	generate_text_internal(p, max_user_text, *root, cur);
 }
 
-char *format_time(unsigned long timeval, const int width)
-{
-	char buf[10];
-	unsigned long nt;	// narrow time, for speed on 32-bit
-	unsigned cc;		// centiseconds
-	unsigned nn;		// multi-purpose whatever
-
-	nt = timeval;
-	cc = nt % 100;		// centiseconds past second
-	nt /= 100;			// total seconds
-	nn = nt % 60;		// seconds past the minute
-	nt /= 60;			// total minutes
-	if (width >= snprintf(buf, sizeof buf, "%lu:%02u.%02u",
-				nt, nn, cc)) {
-		return strndup(buf, text_buffer_size);
-	}
-	if (width >= snprintf(buf, sizeof buf, "%lu:%02u", nt, nn)) {
-		return strndup(buf, text_buffer_size);
-	}
-	nn = nt % 60;		// minutes past the hour
-	nt /= 60;			// total hours
-	if (width >= snprintf(buf, sizeof buf, "%lu,%02u", nt, nn)) {
-		return strndup(buf, text_buffer_size);
-	}
-	nn = nt;			// now also hours
-	if (width >= snprintf(buf, sizeof buf, "%uh", nn)) {
-		return strndup(buf, text_buffer_size);
-	}
-	nn /= 24;			// now days
-	if (width >= snprintf(buf, sizeof buf, "%ud", nn)) {
-		return strndup(buf, text_buffer_size);
-	}
-	nn /= 7;			// now weeks
-	if (width >= snprintf(buf, sizeof buf, "%uw", nn)) {
-		return strndup(buf, text_buffer_size);
-	}
-	// well shoot, this outta' fit...
-	return strndup("<inf>", text_buffer_size);
-}
-
 static inline void format_media_player_time(char *buf, const int size,
 		int seconds)
 {
@@ -2106,70 +2066,14 @@ void generate_text_internal(char *p, int p_max_size,
 			 * times, we have this special handler. */
 			break;
 			case OBJ_top:
-				parse_top_args("top", obj->data.top.s, obj);
-				if (!needed) needed = cur->cpu;
 			case OBJ_top_mem:
-				parse_top_args("top_mem", obj->data.top.s, obj);
-				if (!needed) needed = cur->memu;
 			case OBJ_top_time:
-				parse_top_args("top_time", obj->data.top.s, obj);
-				if (!needed) needed = cur->time;
 #ifdef IOSTATS
 			case OBJ_top_io:
-				parse_top_args("top_io", obj->data.top.s, obj);
-				if (!needed) needed = cur->io;
 #endif
-
-				if (needed[obj->data.top.num]) {
-					char *timeval;
-
-					switch (obj->data.top.type) {
-						case TOP_NAME:
-							snprintf(p, top_name_width + 1, "%-*s", top_name_width,
-									needed[obj->data.top.num]->name);
-							break;
-						case TOP_CPU:
-							snprintf(p, 7, "%6.2f",
-									needed[obj->data.top.num]->amount);
-							break;
-						case TOP_PID:
-							snprintf(p, 6, "%5i",
-									needed[obj->data.top.num]->pid);
-							break;
-						case TOP_MEM:
-							snprintf(p, 7, "%6.2f",
-									needed[obj->data.top.num]->totalmem);
-							break;
-						case TOP_TIME:
-							timeval = format_time(
-									needed[obj->data.top.num]->total_cpu_time, 9);
-							snprintf(p, 10, "%9s", timeval);
-							free(timeval);
-							break;
-						case TOP_MEM_RES:
-							human_readable(needed[obj->data.top.num]->rss,
-									p, 255);
-							break;
-						case TOP_MEM_VSIZE:
-							human_readable(needed[obj->data.top.num]->vsize,
-									p, 255);
-							break;
-#ifdef IOSTATS
-						case TOP_READ_BYTES:
-							human_readable(needed[obj->data.top.num]->read_bytes / update_interval,
-									p, 255);
-							break;
-						case TOP_WRITE_BYTES:
-							human_readable(needed[obj->data.top.num]->write_bytes / update_interval,
-									p, 255);
-							break;
-						case TOP_IO_PERC:
-							snprintf(p, 7, "%6.2f",
-									needed[obj->data.top.num]->io_perc);
-							break;
-#endif
-					}
-				}
+				/* yes, passing top_name_width instead
+				 * of p_max_size is intended here */
+				print_top(obj, p, top_name_width);
 			OBJ(tail) {
 				print_tailhead("tail", obj, p, p_max_size);
 			}
