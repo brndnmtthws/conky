@@ -450,11 +450,6 @@ struct text_object {
 		struct mail_s *mail;
 
 		struct {
-			char *args;
-			char *output;
-		} mboxscan;
-
-		struct {
 			void *opaque;	/* temporary workaround to not blow stuff */
 			struct text_object *next;
 			char *s;

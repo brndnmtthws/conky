@@ -698,11 +698,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(trashed_mails, 0)
 		parse_local_mail_args(obj, arg);
 	END OBJ(mboxscan, 0)
-		obj->data.mboxscan.args = (char *) malloc(text_buffer_size);
-		obj->data.mboxscan.output = (char *) malloc(text_buffer_size);
-		/* if '1' (in mboxscan.c) then there was SIGUSR1, hmm */
-		obj->data.mboxscan.output[0] = 1;
-		strncpy(obj->data.mboxscan.args, arg, text_buffer_size);
+		parse_mboxscan_arg(obj, arg);
 	END OBJ(mem, &update_meminfo)
 	END OBJ(memeasyfree, &update_meminfo)
 	END OBJ(memfree, &update_meminfo)
@@ -1379,8 +1375,7 @@ void free_text_objects(struct text_object *root, int internal)
 				free_tztime(obj);
 				break;
 			case OBJ_mboxscan:
-				free(data.mboxscan.args);
-				free(data.mboxscan.output);
+				free_mboxscan(obj);
 				break;
 			case OBJ_mails:
 			case OBJ_new_mails:

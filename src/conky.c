@@ -1682,9 +1682,7 @@ void generate_text_internal(char *p, int p_max_size,
 				print_trashed_mails(obj, p, p_max_size);
 			}
 			OBJ(mboxscan) {
-				mbox_scan(obj->data.mboxscan.args, obj->data.mboxscan.output,
-					text_buffer_size);
-				snprintf(p, p_max_size, "%s", obj->data.mboxscan.output);
+				print_mboxscan(obj, p, p_max_size);
 			}
 			OBJ(nodename) {
 				snprintf(p, p_max_size, "%s", cur->uname_s.nodename);

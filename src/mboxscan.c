@@ -31,10 +31,10 @@
 #include "conky.h"
 #include "logging.h"
 #include "mail.h"
+#include "text_object.h"
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <errno.h>
-#include "mboxscan.h"
 
 #define FROM_WIDTH 10
 #define SUBJECT_WIDTH 22
@@ -60,7 +60,7 @@ static int time_delay;
 
 static char mbox_mail_spool[DEFAULT_TEXT_BUFFER_SIZE];
 
-void mbox_scan(char *args, char *output, size_t max_len)
+static void mbox_scan(char *args, char *output, size_t max_len)
 {
 	int i, u, flag;
 	int force_rescan = 0;
@@ -365,3 +365,49 @@ void mbox_scan(char *args, char *output, size_t max_len)
 		i--;
 	}
 }
+
+struct mboxscan_data {
+	char *args;
+	char *output;
+};
+
+void parse_mboxscan_arg(struct text_object *obj, const char *arg)
+{
+	struct mboxscan_data *msd;
+
+	msd = malloc(sizeof(struct mboxscan_data));
+	memset(msd, 0, sizeof(struct mboxscan_data));
+
+	msd->args = strndup(arg, text_buffer_size);
+	msd->output = (char *) malloc(text_buffer_size);
+	/* if '1' (in mboxscan.c) then there was SIGUSR1, hmm */
+	msd->output[0] = 1;
+
+	obj->data.opaque = msd;
+}
+
+void print_mboxscan(struct text_object *obj, char *p, int p_max_size)
+{
+	struct mboxscan_data *msd = obj->data.opaque;
+
+	if (!msd)
+		return;
+
+	mbox_scan(msd->args, msd->output, text_buffer_size);
+	snprintf(p, p_max_size, "%s", msd->output);
+}
+
+void free_mboxscan(struct text_object *obj)
+{
+	struct mboxscan_data *msd = obj->data.opaque;
+
+	if (!msd)
+		return;
+	if (msd->args)
+		free(msd->args);
+	if (msd->output)
+		free(msd->output);
+	free(obj->data.opaque);
+	obj->data.opaque = NULL;
+}
+

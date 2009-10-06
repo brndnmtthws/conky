@@ -30,6 +30,8 @@
 #ifndef _MBOXSCAN_H_
 #define _MBOXSCAN_H_
 
-void mbox_scan(char *args, char *output, size_t max_len);
+void parse_mboxscan_arg(struct text_object *, const char *);
+void print_mboxscan(struct text_object *, char *, int);
+void free_mboxscan(struct text_object *);
 
 #endif /* _MBOXSCAN_H_ */
