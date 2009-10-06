@@ -32,37 +32,55 @@
 #include "specials.h"
 #include "text_object.h"
 
+struct scroll_data {
+	char *text;
+	unsigned int show;
+	unsigned int step;
+	unsigned int start;
+	long resetcolor;
+};
+
 void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_crash)
 {
+	struct scroll_data *sd;
 	int n1 = 0, n2 = 0;
 
-	obj->data.scroll.resetcolor = get_current_text_color();
-	obj->data.scroll.step = 1;
-	if (!arg || sscanf(arg, "%u %n", &obj->data.scroll.show, &n1) <= 0)
+	sd = malloc(sizeof(struct scroll_data));
+	memset(sd, 0, sizeof(struct scroll_data));
+
+	sd->resetcolor = get_current_text_color();
+	sd->step = 1;
+	if (!arg || sscanf(arg, "%u %n", &sd->show, &n1) <= 0)
 		CRIT_ERR(obj, free_at_crash, "scroll needs arguments: <length> [<step>] <text>");
 
-	sscanf(arg + n1, "%u %n", &obj->data.scroll.step, &n2);
+	sscanf(arg + n1, "%u %n", &sd->step, &n2);
 	if (*(arg + n1 + n2)) {
 		n1 += n2;
 	} else {
-		obj->data.scroll.step = 1;
+		sd->step = 1;
 	}
-	obj->data.scroll.text = malloc(strlen(arg + n1) + obj->data.scroll.show + 1);
-	for(n2 = 0; (unsigned int) n2 < obj->data.scroll.show; n2++) {
-		obj->data.scroll.text[n2] = ' ';
+	sd->text = malloc(strlen(arg + n1) + sd->show + 1);
+	for(n2 = 0; (unsigned int) n2 < sd->show; n2++) {
+		sd->text[n2] = ' ';
 	}
-	obj->data.scroll.text[n2] = 0;
-	strcat(obj->data.scroll.text, arg + n1);
-	obj->data.scroll.start = 0;
+	sd->text[n2] = 0;
+	strcat(sd->text, arg + n1);
+	sd->start = 0;
 	obj->sub = malloc(sizeof(struct text_object));
-	extract_variable_text_internal(obj->sub, obj->data.scroll.text);
+	extract_variable_text_internal(obj->sub, sd->text);
+
+	obj->data.opaque = sd;
 }
 
 void print_scroll(struct text_object *obj, char *p, int p_max_size, struct information *cur)
 {
+	struct scroll_data *sd = obj->data.opaque;
 	unsigned int j, colorchanges = 0, frontcolorchanges = 0, visibcolorchanges = 0, strend;
 	char *pwithcolors;
 	char buf[max_user_text];
+
+	if (!sd)
+		return;
 
 	generate_text_internal(buf, max_user_text, *obj->sub, cur);
 	for(j = 0; buf[j] != 0; j++) {
@@ -77,29 +95,29 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size, struct infor
 		}
 	}
 	//no scrolling necessary if the length of the text to scroll is too short
-	if (strlen(buf) - colorchanges <= obj->data.scroll.show) {
+	if (strlen(buf) - colorchanges <= sd->show) {
 		snprintf(p, p_max_size, "%s", buf);
 		return;
 	}
 	//make sure a colorchange at the front is not part of the string we are going to show
-	while(*(buf + obj->data.scroll.start) == SPECIAL_CHAR) {
-		obj->data.scroll.start++;
+	while(*(buf + sd->start) == SPECIAL_CHAR) {
+		sd->start++;
 	}
 	//place all chars that should be visible in p, including colorchanges
-	for(j=0; j < obj->data.scroll.show + visibcolorchanges; j++) {
-		p[j] = *(buf + obj->data.scroll.start + j);
+	for(j=0; j < sd->show + visibcolorchanges; j++) {
+		p[j] = *(buf + sd->start + j);
 		if(p[j] == SPECIAL_CHAR) {
 			visibcolorchanges++;
 		}
 		//if there is still room fill it with spaces
 		if( ! p[j]) return;
 	}
-	for(; j < obj->data.scroll.show + visibcolorchanges; j++) {
+	for(; j < sd->show + visibcolorchanges; j++) {
 		p[j] = ' ';
 	}
 	p[j] = 0;
 	//count colorchanges in front of the visible part and place that many colorchanges in front of the visible part
-	for(j = 0; j < obj->data.scroll.start; j++) {
+	for(j = 0; j < sd->start; j++) {
 		if(buf[j] == SPECIAL_CHAR) frontcolorchanges++;
 	}
 	pwithcolors=malloc(strlen(p) + 1 + colorchanges - visibcolorchanges);
@@ -117,23 +135,30 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size, struct infor
 	strcpy(p, pwithcolors);
 	free(pwithcolors);
 	//scroll
-	obj->data.scroll.start += obj->data.scroll.step;
-	if(buf[obj->data.scroll.start] == 0){
-		obj->data.scroll.start = 0;
+	sd->start += sd->step;
+	if(buf[sd->start] == 0){
+		sd->start = 0;
 	}
 #ifdef X11
 	//reset color when scroll is finished
-	new_fg(p + strlen(p), obj->data.scroll.resetcolor);
+	new_fg(p + strlen(p), sd->resetcolor);
 #endif
 }
 
 void free_scroll(struct text_object *obj)
 {
-	if (obj->data.scroll.text)
-		free(obj->data.scroll.text);
+	struct scroll_data *sd = obj->data.opaque;
+
+	if (!sd)
+		return;
+
+	if (sd->text)
+		free(sd->text);
 	if (obj->sub) {
 		free_text_objects(obj->sub, 1);
 		free(obj->sub);
 		obj->sub = NULL;
 	}
+	free(obj->data.opaque);
+	obj->data.opaque = NULL;
 }

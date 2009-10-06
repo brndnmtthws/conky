@@ -461,14 +461,6 @@ struct text_object {
 			int a, b;
 		} pair;			/* 2 */
 		struct {
-			char *text;
-			unsigned int show;
-			unsigned int step;
-			unsigned int start;
-			long resetcolor;
-		} scroll;
-
-		struct {
 			char *left;
 			char *seperation;
 			char *right;
