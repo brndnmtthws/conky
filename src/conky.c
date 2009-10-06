@@ -89,6 +89,7 @@
 #include "mail.h"
 #include "mboxscan.h"
 #include "read_tcp.h"
+#include "scroll.h"
 #include "specials.h"
 #include "temphelper.h"
 #include "template.h"
@@ -173,8 +174,6 @@ char** argv_copy;
 static void signal_handler(int);
 static void print_version(void) __attribute__((noreturn));
 static void reload_config(void);
-static void generate_text_internal(char *, int, struct text_object,
-                                   struct information *);
 
 static void print_version(void)
 {
@@ -832,7 +831,7 @@ void substitute_newlines(char *p, long l)
 	}
 }
 
-static void generate_text_internal(char *p, int p_max_size,
+void generate_text_internal(char *p, int p_max_size,
 		struct text_object root, struct information *cur)
 {
 	struct text_object *obj;
@@ -2528,71 +2527,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%s", buf);
 			}
 			OBJ(scroll) {
-				unsigned int j, colorchanges = 0, frontcolorchanges = 0, visibcolorchanges = 0, strend;
-				char *pwithcolors;
-				char buf[max_user_text];
-				generate_text_internal(buf, max_user_text,
-				                       *obj->sub, cur);
-				for(j = 0; buf[j] != 0; j++) {
-					switch(buf[j]) {
-					case '\n':	//place all the lines behind each other with LINESEPARATOR between them
-#define LINESEPARATOR '|'
-						buf[j]=LINESEPARATOR;
-						break;
-					case SPECIAL_CHAR:
-						colorchanges++;
-						break;
-					}
-				}
-				//no scrolling necessary if the length of the text to scroll is too short
-				if (strlen(buf) - colorchanges <= obj->data.scroll.show) {
-					snprintf(p, p_max_size, "%s", buf);
-					break;
-				}
-				//make sure a colorchange at the front is not part of the string we are going to show
-				while(*(buf + obj->data.scroll.start) == SPECIAL_CHAR) {
-					obj->data.scroll.start++;
-				}
-				//place all chars that should be visible in p, including colorchanges
-				for(j=0; j < obj->data.scroll.show + visibcolorchanges; j++) {
-					p[j] = *(buf + obj->data.scroll.start + j);
-					if(p[j] == SPECIAL_CHAR) {
-						visibcolorchanges++;
-					}
-					//if there is still room fill it with spaces
-					if( ! p[j]) break;
-				}
-				for(; j < obj->data.scroll.show + visibcolorchanges; j++) {
-					p[j] = ' ';
-				}
-				p[j] = 0;
-				//count colorchanges in front of the visible part and place that many colorchanges in front of the visible part
-				for(j = 0; j < obj->data.scroll.start; j++) {
-					if(buf[j] == SPECIAL_CHAR) frontcolorchanges++;
-				}
-				pwithcolors=malloc(strlen(p) + 1 + colorchanges - visibcolorchanges);
-				for(j = 0; j < frontcolorchanges; j++) {
-					pwithcolors[j] = SPECIAL_CHAR;
-				}
-				pwithcolors[j] = 0;
-				strcat(pwithcolors,p);
-				strend = strlen(pwithcolors);
-				//and place the colorchanges not in front or in the visible part behind the visible part
-				for(j = 0; j < colorchanges - frontcolorchanges - visibcolorchanges; j++) {
-					pwithcolors[strend + j] = SPECIAL_CHAR;
-				}
-				pwithcolors[strend + j] = 0;
-				strcpy(p, pwithcolors);
-				free(pwithcolors);
-				//scroll
-				obj->data.scroll.start += obj->data.scroll.step;
-				if(buf[obj->data.scroll.start] == 0){
-					 obj->data.scroll.start = 0;
-				}
-#ifdef X11
-				//reset color when scroll is finished
-				new_fg(p + strlen(p), obj->data.scroll.resetcolor);
-#endif
+				print_scroll(obj, p, p_max_size, cur);
 			}
 			OBJ(combine) {
 				char buf[2][max_user_text];

@@ -48,6 +48,7 @@
 #include "mail.h"
 #include "mboxscan.h"
 #include "read_tcp.h"
+#include "scroll.h"
 #include "specials.h"
 #include "temphelper.h"
 #include "template.h"
@@ -1442,30 +1443,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->sub = malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
 	END OBJ(scroll, 0)
-		int n1 = 0, n2 = 0;
-
-		obj->data.scroll.resetcolor = get_current_text_color();
-		obj->data.scroll.step = 1;
-		if (arg && sscanf(arg, "%u %n", &obj->data.scroll.show, &n1) > 0) {
-			sscanf(arg + n1, "%u %n", &obj->data.scroll.step, &n2);
-			if (*(arg + n1 + n2)) {
-				n1 += n2;
-			} else {
-				obj->data.scroll.step = 1;
-			}
-			obj->data.scroll.text = malloc(strlen(arg + n1) + obj->data.scroll.show + 1);
-			for(n2 = 0; (unsigned int) n2 < obj->data.scroll.show; n2++) {
-				obj->data.scroll.text[n2] = ' ';
-			}
-			obj->data.scroll.text[n2] = 0;
-			strcat(obj->data.scroll.text, arg + n1);
-			obj->data.scroll.start = 0;
-			obj->sub = malloc(sizeof(struct text_object));
-			extract_variable_text_internal(obj->sub,
-					obj->data.scroll.text);
-		} else {
-			CRIT_ERR(obj, free_at_crash, "scroll needs arguments: <length> [<step>] <text>");
-		}
+		parse_scroll_arg(obj, arg, free_at_crash);
 	END OBJ_ARG(combine, 0, "combine needs arguments: <text1> <text2>")
 		unsigned int i,j;
 		unsigned int indenting = 0;	//vars can be used as args for other vars
@@ -2147,9 +2125,7 @@ void free_text_objects(struct text_object *root, int internal)
 				}
 				break;
 			case OBJ_scroll:
-				free(data.scroll.text);
-				free_text_objects(obj->sub, 1);
-				free(obj->sub);
+				free_scroll(obj);
 				break;
 			case OBJ_combine:
 				free(data.combine.left);

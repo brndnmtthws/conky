@@ -52,9 +52,10 @@ endif # BUILD_CONFIG_OUTPUT
 mandatory_sources = colours.c colours.h common.c common.h conky.c conky.h \
 		core.c core.h diskio.c diskio.h exec.c exec.h fs.c fs.h logging.h \
 		mail.c mail.h mixer.c mixer.h template.c template.h timed_thread.c \
-		timed_thread.h mboxscan.c mboxscan.h read_tcp.c read_tcp.h specials.c \
-		specials.h tailhead.c tailhead.h temphelper.c temphelper.h \
-		text_object.c text_object.h timeinfo.c timeinfo.h algebra.c algebra.h
+		timed_thread.h mboxscan.c mboxscan.h read_tcp.c read_tcp.h scroll.c \
+		scroll.h specials.c specials.h tailhead.c tailhead.h temphelper.c \
+		temphelper.h text_object.c text_object.h timeinfo.c timeinfo.h \
+		algebra.c algebra.h
 
 # source files only needed when the apropriate option is enabled
 audacious = audacious.c audacious.h

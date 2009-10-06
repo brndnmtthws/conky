@@ -367,4 +367,6 @@ void set_update_interval(double interval);
 void parse_conky_vars(struct text_object *, const char *,
 			char *, struct information *);
 
+void generate_text_internal(char *, int, struct text_object,
+                                   struct information *);
 #endif /* _conky_h_ */
