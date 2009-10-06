@@ -37,6 +37,15 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+struct execi_data {
+	double last_update;
+	float interval;
+	char *cmd;
+	char *buffer;
+	double data;
+	timed_thread *p_timed_thread;
+};
+
 /* FIXME: this will probably not work, since the variable is being reused
  * between different text objects. So when a process really hangs, it's PID
  * will be overwritten at the next iteration. */
@@ -83,7 +92,7 @@ static FILE* pid_popen(const char *command, const char *mode, pid_t *child) {
 		}
 		dup(childend);	//by dupping childend, the returned fd will have close-on-exec turned off
 		execl("/bin/sh", "sh", "-c", command, (char *) NULL);
-		_exit(EXIT_FAILURE); //child should die here, (normally execl will take care of this but it can fail) 
+		_exit(EXIT_FAILURE); //child should die here, (normally execl will take care of this but it can fail)
 	}
 	return fdopen(parentend, mode);
 }
@@ -160,10 +169,11 @@ static void *threaded_exec(void *arg)
 {
 	char *buff, *p2;
 	struct text_object *obj = arg;
+	struct execi_data *ed = obj->data.opaque;
 
 	while (1) {
 		buff = malloc(text_buffer_size);
-		read_exec(obj->data.execi.cmd, buff, text_buffer_size);
+		read_exec(ed->cmd, buff, text_buffer_size);
 		p2 = buff;
 		while (*p2) {
 			if (*p2 == '\001') {
@@ -171,24 +181,24 @@ static void *threaded_exec(void *arg)
 			}
 			p2++;
 		}
-		timed_thread_lock(obj->data.execi.p_timed_thread);
-		if (obj->data.execi.buffer)
-			free(obj->data.execi.buffer);
-		obj->data.execi.buffer = buff;
-		timed_thread_unlock(obj->data.execi.p_timed_thread);
-		if (timed_thread_test(obj->data.execi.p_timed_thread, 0)) {
-			timed_thread_exit(obj->data.execi.p_timed_thread);
+		timed_thread_lock(ed->p_timed_thread);
+		if (ed->buffer)
+			free(ed->buffer);
+		ed->buffer = buff;
+		timed_thread_unlock(ed->p_timed_thread);
+		if (timed_thread_test(ed->p_timed_thread, 0)) {
+			timed_thread_exit(ed->p_timed_thread);
 		}
 	}
 	/* never reached */
 }
 
 /* check the execi fields and return true if the given interval has passed */
-static int time_to_update(struct text_object *obj)
+static int time_to_update(struct execi_data *ed)
 {
-	if (!obj->data.execi.interval)
+	if (!ed->interval)
 		return 0;
-	if (current_update_time - obj->data.execi.last_update >= obj->data.execi.interval)
+	if (current_update_time - ed->last_update >= ed->interval)
 		return 1;
 	return 0;
 }
@@ -209,13 +219,19 @@ void scan_pre_exec_arg(struct text_object *obj, const char *arg)
 
 void scan_execi_arg(struct text_object *obj, const char *arg)
 {
+	struct execi_data *ed;
 	int n;
 
-	if (sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
+	ed = malloc(sizeof(struct execi_data));
+	memset(ed, 0, sizeof(struct execi_data));
+
+	if (sscanf(arg, "%f %n", &ed->interval, &n) <= 0) {
 		NORM_ERR("${execi* <interval> command}");
+		free(ed);
 		return;
 	}
-	obj->data.execi.cmd = strndup(arg + n, text_buffer_size);
+	ed->cmd = strndup(arg + n, text_buffer_size);
+	obj->data.opaque = ed;
 }
 
 void print_exec(struct text_object *obj, char *p, int p_max_size)
@@ -241,44 +257,53 @@ void print_execp(struct text_object *obj, char *p, int p_max_size)
 
 void print_execi(struct text_object *obj, char *p, int p_max_size)
 {
-	if (time_to_update(obj)) {
-		if (!obj->data.execi.buffer)
-			obj->data.execi.buffer = malloc(text_buffer_size);
-		read_exec(obj->data.execi.cmd, obj->data.execi.buffer, text_buffer_size);
-		obj->data.execi.last_update = current_update_time;
+	struct execi_data *ed = obj->data.opaque;
+
+	if (!ed)
+		return;
+
+	if (time_to_update(ed)) {
+		if (!ed->buffer)
+			ed->buffer = malloc(text_buffer_size);
+		read_exec(ed->cmd, ed->buffer, text_buffer_size);
+		ed->last_update = current_update_time;
 	}
-	snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
+	snprintf(p, p_max_size, "%s", ed->buffer);
 }
 
 void print_execpi(struct text_object *obj, char *p)
 {
+	struct execi_data *ed = obj->data.opaque;
 	struct text_object subroot;
 	struct information *tmp_info;
+
+	if (!ed)
+		return;
 
 	tmp_info = malloc(sizeof(struct information));
 	memcpy(tmp_info, &info, sizeof(struct information));
 
-	if (!time_to_update(obj)) {
-		parse_conky_vars(&subroot, obj->data.execi.buffer, p, tmp_info);
+	if (!time_to_update(ed)) {
+		parse_conky_vars(&subroot, ed->buffer, p, tmp_info);
 	} else {
 		char *output;
 		int length;
-		FILE *fp = pid_popen(obj->data.execi.cmd, "r", &childpid);
+		FILE *fp = pid_popen(ed->cmd, "r", &childpid);
 
-		if (!obj->data.execi.buffer)
-			obj->data.execi.buffer = malloc(text_buffer_size);
+		if (!ed->buffer)
+			ed->buffer = malloc(text_buffer_size);
 
-		length = fread(obj->data.execi.buffer, 1, text_buffer_size, fp);
+		length = fread(ed->buffer, 1, text_buffer_size, fp);
 		pclose(fp);
 
-		output = obj->data.execi.buffer;
+		output = ed->buffer;
 		output[length] = '\0';
 		if (length > 0 && output[length - 1] == '\n') {
 			output[length - 1] = '\0';
 		}
 
-		parse_conky_vars(&subroot, obj->data.execi.buffer, p, tmp_info);
-		obj->data.execi.last_update = current_update_time;
+		parse_conky_vars(&subroot, ed->buffer, p, tmp_info);
+		ed->last_update = current_update_time;
 	}
 	free_text_objects(&subroot, 1);
 	free(tmp_info);
@@ -286,24 +311,28 @@ void print_execpi(struct text_object *obj, char *p)
 
 void print_texeci(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.execi.p_timed_thread) {
-		obj->data.execi.p_timed_thread =
-			timed_thread_create(&threaded_exec,
-					(void *) obj, obj->data.execi.interval * 1000000);
-		if (!obj->data.execi.p_timed_thread) {
+	struct execi_data *ed = obj->data.opaque;
+
+	if (!ed)
+		return;
+
+	if (!ed->p_timed_thread) {
+		ed->p_timed_thread = timed_thread_create(&threaded_exec,
+					(void *) obj, ed->interval * 1000000);
+		if (!ed->p_timed_thread) {
 			NORM_ERR("Error creating texeci timed thread");
 		}
 		/*
 		 * note that we don't register this thread with the
 		 * timed_thread list, because we destroy it manually
 		 */
-		if (timed_thread_run(obj->data.execi.p_timed_thread)) {
+		if (timed_thread_run(ed->p_timed_thread)) {
 			NORM_ERR("Error running texeci timed thread");
 		}
 	} else {
-		timed_thread_lock(obj->data.execi.p_timed_thread);
-		snprintf(p, p_max_size, "%s", obj->data.execi.buffer);
-		timed_thread_unlock(obj->data.execi.p_timed_thread);
+		timed_thread_lock(ed->p_timed_thread);
+		snprintf(p, p_max_size, "%s", ed->buffer);
+		timed_thread_unlock(ed->p_timed_thread);
 	}
 }
 
@@ -326,7 +355,13 @@ void print_execgraph(struct text_object *obj, char *p, int p_max_size)
 	char showaslog = FALSE;
 	char tempgrad = FALSE;
 	double barnum;
-	char *cmd = obj->data.execi.cmd;
+	struct execi_data *ed = obj->data.opaque;
+	char *cmd;
+
+	if (!ed)
+		return;
+
+	cmd = ed->cmd;
 
 	if (strstr(cmd, " "TEMPGRAD) && strlen(cmd) > strlen(" "TEMPGRAD)) {
 		tempgrad = TRUE;
@@ -347,11 +382,16 @@ void print_execgraph(struct text_object *obj, char *p, int p_max_size)
 
 void print_execigraph(struct text_object *obj, char *p, int p_max_size)
 {
-	if (time_to_update(obj)) {
+	struct execi_data *ed = obj->data.opaque;
+
+	if (!ed)
+		return;
+
+	if (time_to_update(ed)) {
 		double barnum;
 		char showaslog = FALSE;
 		char tempgrad = FALSE;
-		char *cmd = obj->data.execi.cmd;
+		char *cmd = ed->cmd;
 
 		if (strstr(cmd, " "TEMPGRAD) && strlen(cmd) > strlen(" "TEMPGRAD)) {
 			tempgrad = TRUE;
@@ -369,23 +409,28 @@ void print_execigraph(struct text_object *obj, char *p, int p_max_size)
 		if (barnum >= 0.0) {
 			obj->f = barnum;
 		}
-		obj->data.execi.last_update = current_update_time;
+		ed->last_update = current_update_time;
 	}
 	new_graph(p, obj->a, obj->b, obj->c, obj->d, (int) (obj->f), 100, 1, obj->char_a, obj->char_b);
 }
 
 void print_execigauge(struct text_object *obj, char *p, int p_max_size)
 {
-	if (time_to_update(obj)) {
+	struct execi_data *ed = obj->data.opaque;
+
+	if (!ed)
+		return;
+
+	if (time_to_update(ed)) {
 		double barnum;
 
-		read_exec(obj->data.execi.cmd, p, p_max_size);
+		read_exec(ed->cmd, p, p_max_size);
 		barnum = get_barnum(p);
 
 		if (barnum >= 0.0) {
 			obj->f = 255 * barnum / 100.0;
 		}
-		obj->data.execi.last_update = current_update_time;
+		ed->last_update = current_update_time;
 	}
 	new_gauge(p, obj->a, obj->b, round_to_int(obj->f));
 }
@@ -413,16 +458,20 @@ void print_execbar(struct text_object *obj, char *p, int p_max_size)
 
 void print_execibar(struct text_object *obj, char *p, int p_max_size)
 {
+	struct execi_data *ed = obj->data.opaque;
 	double barnum;
 
-	if (time_to_update(obj)) {
-		read_exec(obj->data.execi.cmd, p, p_max_size);
+	if (!ed)
+		return;
+
+	if (time_to_update(ed)) {
+		read_exec(ed->cmd, p, p_max_size);
 		barnum = get_barnum(p);
 
 		if (barnum >= 0.0) {
 			obj->f = barnum;
 		}
-		obj->data.execi.last_update = current_update_time;
+		ed->last_update = current_update_time;
 	}
 #ifdef X11
 	if(output_methods & TO_X) {
@@ -445,11 +494,17 @@ void free_exec(struct text_object *obj)
 
 void free_execi(struct text_object *obj)
 {
-	if (obj->data.execi.p_timed_thread)
-		timed_thread_destroy(obj->data.execi.p_timed_thread, &obj->data.execi.p_timed_thread);
-	if (obj->data.execi.cmd)
-		free(obj->data.execi.cmd);
-	if (obj->data.execi.buffer)
-		free(obj->data.execi.buffer);
-	memset(&obj->data.execi, 0, sizeof(obj->data.execi));
+	struct execi_data *ed = obj->data.opaque;
+
+	if (!ed)
+		return;
+
+	if (ed->p_timed_thread)
+		timed_thread_destroy(ed->p_timed_thread, &ed->p_timed_thread);
+	if (ed->cmd)
+		free(ed->cmd);
+	if (ed->buffer)
+		free(ed->buffer);
+	free(obj->data.opaque);
+	obj->data.opaque = NULL;
 }

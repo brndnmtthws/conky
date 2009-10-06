@@ -458,15 +458,6 @@ struct text_object {
 		} ifblock;
 
 		struct {
-			double last_update;
-			float interval;
-			char *cmd;
-			char *buffer;
-			double data;
-			timed_thread *p_timed_thread;
-		} execi;		/* 5 */
-
-		struct {
 			int a, b;
 		} pair;			/* 2 */
 		struct {
