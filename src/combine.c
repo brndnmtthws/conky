@@ -31,8 +31,15 @@
 #include "logging.h"
 #include "text_object.h"
 
+struct combine_data {
+	char *left;
+	char *seperation;
+	char *right;
+};
+
 void parse_combine_arg(struct text_object *obj, const char *arg, void *free_at_crash)
 {
+	struct combine_data *cd;
 	unsigned int i,j;
 	unsigned int indenting = 0;	//vars can be used as args for other vars
 	int startvar[2];
@@ -57,23 +64,27 @@ void parse_combine_arg(struct text_object *obj, const char *arg, void *free_at_c
 		}
 	}
 	if(startvar[0] >= 0 && endvar[0] >= 0 && startvar[1] >= 0 && endvar[1] >= 0) {
-		obj->data.combine.left = malloc(endvar[0]-startvar[0] + 1);
-		obj->data.combine.seperation = malloc(startvar[1] - endvar[0] + 1);
-		obj->data.combine.right= malloc(endvar[1]-startvar[1] + 1);
+		cd = malloc(sizeof(struct combine_data));
+		memset(cd, 0, sizeof(struct combine_data));
 
-		strncpy(obj->data.combine.left, arg + startvar[0], endvar[0] - startvar[0]);
-		obj->data.combine.left[endvar[0] - startvar[0]] = 0;
+		cd->left = malloc(endvar[0]-startvar[0] + 1);
+		cd->seperation = malloc(startvar[1] - endvar[0] + 1);
+		cd->right= malloc(endvar[1]-startvar[1] + 1);
 
-		strncpy(obj->data.combine.seperation, arg + endvar[0], startvar[1] - endvar[0]);
-		obj->data.combine.seperation[startvar[1] - endvar[0]] = 0;
+		strncpy(cd->left, arg + startvar[0], endvar[0] - startvar[0]);
+		cd->left[endvar[0] - startvar[0]] = 0;
 
-		strncpy(obj->data.combine.right, arg + startvar[1], endvar[1] - startvar[1]);
-		obj->data.combine.right[endvar[1] - startvar[1]] = 0;
+		strncpy(cd->seperation, arg + endvar[0], startvar[1] - endvar[0]);
+		cd->seperation[startvar[1] - endvar[0]] = 0;
+
+		strncpy(cd->right, arg + startvar[1], endvar[1] - startvar[1]);
+		cd->right[endvar[1] - startvar[1]] = 0;
 
 		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, obj->data.combine.left);
+		extract_variable_text_internal(obj->sub, cd->left);
 		obj->sub->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub->sub, obj->data.combine.right);
+		extract_variable_text_internal(obj->sub->sub, cd->right);
+		obj->data.opaque = cd;
 	} else {
 		CRIT_ERR(obj, free_at_crash, "combine needs arguments: <text1> <text2>");
 	}
@@ -81,6 +92,7 @@ void parse_combine_arg(struct text_object *obj, const char *arg, void *free_at_c
 
 void print_combine(struct text_object *obj, char *p, struct information *cur)
 {
+	struct combine_data *cd = obj->data.opaque;
 	char buf[2][max_user_text];
 	int i, j;
 	long longest=0;
@@ -131,7 +143,7 @@ void print_combine(struct text_object *obj, char *p, struct information *cur)
 			i++;
 		}
 		if(current[1]) {
-			strcat(p, obj->data.combine.seperation);
+			strcat(p, cd->seperation);
 			strcat(p, current[1]->row);
 		}
 		strcat(p, "\n");
@@ -155,9 +167,15 @@ void print_combine(struct text_object *obj, char *p, struct information *cur)
 
 void free_combine(struct text_object *obj)
 {
-	free(obj->data.combine.left);
-	free(obj->data.combine.seperation);
-	free(obj->data.combine.right);
+	struct combine_data *cd = obj->data.opaque;
+
+	if (!cd)
+		return;
+	free(cd->left);
+	free(cd->seperation);
+	free(cd->right);
 	free_text_objects(obj->sub, 1);
 	free(obj->sub);
+	free(obj->data.opaque);
+	obj->data.opaque = NULL;
 }

@@ -460,11 +460,6 @@ struct text_object {
 		struct {
 			int a, b;
 		} pair;			/* 2 */
-		struct {
-			char *left;
-			char *seperation;
-			char *right;
-		} combine;
 
 		struct local_mail_s local_mail;
 	} data;
