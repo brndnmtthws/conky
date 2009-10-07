@@ -30,9 +30,12 @@
 
 #include "config.h"
 #include "conky.h"	/* text_buffer_size */
+#include "core.h"
 #include "logging.h"
 #include "diskio.h"
 #include "common.h"
+#include "specials.h"
+#include "text_object.h"
 #include <stdlib.h>
 #include <limits.h>
 #include <sys/stat.h>
@@ -105,6 +108,69 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 
 	return cur;
 }
+
+void parse_diskio_arg(struct text_object *obj, const char *arg)
+{
+	obj->data.opaque = prepare_diskio_stat(arg);
+}
+
+/* dir indicates the direction:
+ * -1: read
+ *  0: read + write
+ *  1: write
+ */
+void print_diskio(struct text_object *obj, int dir, char *p, int p_max_size)
+{
+	struct diskio_stat *diskio = obj->data.opaque;
+	double val;
+
+	if (!diskio)
+		return;
+
+	if (dir < 0)
+		val = diskio->current_read;
+	if (dir == 0)
+		val = diskio->current;
+	else
+		val = diskio->current_write;
+
+	/* TODO: move this correction from kB to kB/s elsewhere
+	 * (or get rid of it??) */
+	human_readable((val / update_interval) * 1024LL, p, p_max_size);
+}
+
+#ifdef X11
+void parse_diskiograph_arg(struct text_object *obj, const char *arg)
+{
+	char *buf = 0;
+	SIZE_DEFAULTS(graph);
+	buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+			&obj->e, &obj->char_a, &obj->char_b);
+
+	obj->data.opaque = prepare_diskio_stat(dev_name(buf));
+	if (buf)
+		free(buf);
+}
+
+void print_diskiograph(struct text_object *obj, int dir, char *p)
+{
+	struct diskio_stat *diskio = obj->data.opaque;
+	double val;
+
+	if (!diskio)
+		return;
+
+	if (dir < 0)
+		val = diskio->current_read;
+	else if (dir == 0)
+		val = diskio->current;
+	else
+		val = diskio->current_write;
+
+	new_graph(p, obj->a, obj->b, obj->c, obj->d,
+			val, obj->e, 1, obj->char_a, obj->char_b);
+}
+#endif /* X11 */
 
 void update_diskio_values(struct diskio_stat *ds,
 		unsigned int reads, unsigned int writes)

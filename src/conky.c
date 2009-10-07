@@ -1145,32 +1145,24 @@ void generate_text_internal(char *p, int p_max_size,
 				need_to_load_fonts = 1;
 			}
 #endif /* X11 */
-			/* TODO: move this correction from kB to kB/s elsewhere
-			 * (or get rid of it??) */
 			OBJ(diskio) {
-				human_readable((obj->data.diskio->current / update_interval) * 1024LL,
-						p, p_max_size);
+				print_diskio(obj, 0, p, p_max_size);
 			}
 			OBJ(diskio_write) {
-				human_readable((obj->data.diskio->current_write / update_interval) * 1024LL,
-						p, p_max_size);
+				print_diskio(obj, 1, p, p_max_size);
 			}
 			OBJ(diskio_read) {
-				human_readable((obj->data.diskio->current_read / update_interval) * 1024LL,
-						p, p_max_size);
+				print_diskio(obj, -1, p, p_max_size);
 			}
 #ifdef X11
 			OBJ(diskiograph) {
-				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-				          obj->data.diskio->current, obj->e, 1, obj->char_a, obj->char_b);
+				print_diskiograph(obj, 0, p);
 			}
 			OBJ(diskiograph_read) {
-				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-				          obj->data.diskio->current_read, obj->e, 1, obj->char_a, obj->char_b);
+				print_diskiograph(obj, -1, p);
 			}
 			OBJ(diskiograph_write) {
-				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-				          obj->data.diskio->current_write, obj->e, 1, obj->char_a, obj->char_b);
+				print_diskiograph(obj, 1, p);
 			}
 #endif /* X11 */
 			OBJ(downspeed) {

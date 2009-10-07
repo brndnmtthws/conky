@@ -51,4 +51,11 @@ void update_diskio(void);
 void clear_diskio_stats(void);
 void update_diskio_values(struct diskio_stat *, unsigned int, unsigned int);
 
+void parse_diskio_arg(struct text_object *, const char *);
+void print_diskio(struct text_object *, int, char *, int);
+#ifdef X11
+void parse_diskiograph_arg(struct text_object *, const char *);
+void print_diskiograph(struct text_object *, int, char *);
+#endif /* X11 */
+
 #endif /* DISKIO_H_ */

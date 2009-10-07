@@ -396,36 +396,18 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		}
 #endif /* X11 */
 	END OBJ(diskio, &update_diskio)
-		obj->data.diskio = prepare_diskio_stat(dev_name(arg));
+		parse_diskio_arg(obj, arg);
 	END OBJ(diskio_read, &update_diskio)
-		obj->data.diskio = prepare_diskio_stat(dev_name(arg));
+		parse_diskio_arg(obj, arg);
 	END OBJ(diskio_write, &update_diskio)
-		obj->data.diskio = prepare_diskio_stat(dev_name(arg));
+		parse_diskio_arg(obj, arg);
 #ifdef X11
 	END OBJ(diskiograph, &update_diskio)
-		char *buf = 0;
-		SIZE_DEFAULTS(graph);
-		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-				&obj->e, &obj->char_a, &obj->char_b);
-
-		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
-		if (buf) free(buf);
+		parse_diskiograph_arg(obj, arg);
 	END OBJ(diskiograph_read, &update_diskio)
-		char *buf = 0;
-		SIZE_DEFAULTS(graph);
-		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-				&obj->e, &obj->char_a, &obj->char_b);
-
-		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
-		if (buf) free(buf);
+		parse_diskiograph_arg(obj, arg);
 	END OBJ(diskiograph_write, &update_diskio)
-		char *buf = 0;
-		SIZE_DEFAULTS(graph);
-		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-				&obj->e, &obj->char_a, &obj->char_b);
-
-		obj->data.diskio = prepare_diskio_stat(dev_name(buf));
-		if (buf) free(buf);
+		parse_diskiograph_arg(obj, arg);
 #endif /* X11 */
 	END OBJ(color, 0)
 #ifdef X11

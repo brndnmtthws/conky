@@ -444,7 +444,6 @@ struct text_object {
 		long l;			/* some other integer */
 		unsigned int sensor;
 		struct net_stat *net;
-		struct diskio_stat *diskio;
 		unsigned char loadavg[3];
 		unsigned int cpu_index;
 		struct mail_s *mail;
