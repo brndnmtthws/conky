@@ -442,7 +442,6 @@ struct text_object {
 		char *s;		/* some string */
 		int i;			/* some integer */
 		long l;			/* some other integer */
-		unsigned int sensor;
 		unsigned char loadavg[3];
 		unsigned int cpu_index;
 		struct mail_s *mail;
