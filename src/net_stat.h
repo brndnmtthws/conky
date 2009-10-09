@@ -88,7 +88,10 @@ void print_wireless_link_bar(struct text_object *, char *, int);
 #endif /* __linux__ */
 
 void clear_net_stats(void);
-int interface_up(const char *);
+
+void parse_if_up_arg(struct text_object *, const char *);
+int interface_up(struct text_object *);
+void free_if_up(struct text_object *);
 
 void free_dns_data(void);
 void update_dns_data(void);

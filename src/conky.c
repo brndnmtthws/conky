@@ -1106,8 +1106,7 @@ void generate_text_internal(char *p, int p_max_size,
 #endif /* __linux__ */
 #if (defined(__FreeBSD__) || defined(__linux__))
 			OBJ(if_up) {
-				if ((obj->data.ifblock.s)
-						&& (!interface_up(obj->data.ifblock.s))) {
+				if (!interface_up(obj)) {
 					DO_JUMP;
 				}
 			}

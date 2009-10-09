@@ -333,11 +333,28 @@ void clear_net_stats(void)
 	memset(netstats, 0, sizeof(netstats));
 }
 
+void parse_if_up_arg(struct text_object *obj, const char *arg)
+{
+	obj->data.opaque = strndup(arg, text_buffer_size);
+}
+
+void free_if_up(struct text_object *obj)
+{
+	if (obj->data.opaque) {
+		free(obj->data.opaque);
+		obj->data.opaque = NULL;
+	}
+}
+
 /* We should check if this is ok with OpenBSD and NetBSD as well. */
-int interface_up(const char *dev)
+int interface_up(struct text_object *obj)
 {
 	int fd;
 	struct ifreq ifr;
+	char *dev = obj->data.opaque;
+
+	if (!dev)
+		return 0;
 
 	if ((fd = socket(PF_INET, SOCK_DGRAM, 0)) < 0) {
 		CRIT_ERR(NULL, NULL, "could not create sockfd");

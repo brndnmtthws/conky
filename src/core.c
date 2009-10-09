@@ -321,7 +321,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif /* __linux__ */
 #if (defined(__FreeBSD__) || defined(__linux__))
 	END OBJ_IF_ARG(if_up, 0, "if_up needs an argument")
-		obj->data.ifblock.s = strndup(arg, text_buffer_size);
+		parse_if_up_arg(obj, arg);
 #endif
 #if defined(__OpenBSD__)
 	END OBJ_ARG(obsd_sensors_temp, 0, "obsd_sensors_temp: needs an argument")
@@ -1415,8 +1415,7 @@ void free_text_objects(struct text_object *root, int internal)
 #endif
 #if (defined(__FreeBSD__) || defined(__linux__))
 			case OBJ_if_up:
-				free(data.ifblock.s);
-				free(data.ifblock.str);
+				free_if_up(obj);
 				break;
 #endif
 #ifdef XMMS2
