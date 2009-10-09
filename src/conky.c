@@ -1114,23 +1114,13 @@ void generate_text_internal(char *p, int p_max_size,
 #endif
 #ifdef __OpenBSD__
 			OBJ(obsd_sensors_temp) {
-				obsd_sensors.device = sensor_device;
-				update_obsd_sensors();
-				temp_print(p, p_max_size,
-				           obsd_sensors.temp[obsd_sensors.device][obj->data.sensor],
-					   TEMP_CELSIUS);
+				print_obsd_sensors_temp(obj, p, p_max_size);
 			}
 			OBJ(obsd_sensors_fan) {
-				obsd_sensors.device = sensor_device;
-				update_obsd_sensors();
-				snprintf(p, p_max_size, "%d",
-						obsd_sensors.fan[obsd_sensors.device][obj->data.sensor]);
+				print_obsd_sensors_fan(obj, p, p_max_size);
 			}
 			OBJ(obsd_sensors_volt) {
-				obsd_sensors.device = sensor_device;
-				update_obsd_sensors();
-				snprintf(p, p_max_size, "%.2f",
-						obsd_sensors.volt[obsd_sensors.device][obj->data.sensor]);
+				print_obsd_sensors_volt(obj, p, p_max_size);
 			}
 			OBJ(obsd_vendor) {
 				get_obsd_vendor(p, p_max_size);

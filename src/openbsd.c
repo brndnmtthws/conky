@@ -440,6 +440,14 @@ void update_load_average()
 	info.loadavg[2] = (float) v[2];
 }
 
+#define OBSD_MAX_SENSORS 256
+static struct obsd_sensors_struct {
+       int device;
+       float temp[MAXSENSORDEVICES][OBSD_MAX_SENSORS];
+       unsigned int fan[MAXSENSORDEVICES][OBSD_MAX_SENSORS];
+       float volt[MAXSENSORDEVICES][OBSD_MAX_SENSORS];
+} obsd_sensors;
+
 /* read sensors from sysctl */
 void update_obsd_sensors()
 {
@@ -501,6 +509,41 @@ void update_obsd_sensors()
 	/* } */
 
 	init_sensors = 1;
+}
+
+void parse_obsd_sensor(struct text_object *obj, const char *arg)
+{
+	if (!isdigit(arg[0]) || atoi(&arg[0]) < 0
+			|| atoi(&arg[0]) > OBSD_MAX_SENSORS - 1) {
+		obj->data.l = 0;
+		NORM_ERR("Invalid sensor number!");
+	} else
+		obj->data.l = atoi(&arg[0]);
+}
+
+void print_obsd_sensors_temp(struct text_object *obj, char *p, int p_max_size)
+{
+	obsd_sensors.device = sensor_device;
+	update_obsd_sensors();
+	temp_print(p, p_max_size,
+			obsd_sensors.temp[obsd_sensors.device][obj->data.l],
+			TEMP_CELSIUS);
+}
+
+void print_obsd_sensors_fan(struct text_object *obj, char *p, int p_max_size)
+{
+	obsd_sensors.device = sensor_device;
+	update_obsd_sensors();
+	snprintf(p, p_max_size, "%d",
+			obsd_sensors.fan[obsd_sensors.device][obj->data.l]);
+}
+
+void print_obsd_sensors_volt(struct text_object *obj, char *p, int p_max_size)
+{
+	obsd_sensors.device = sensor_device;
+	update_obsd_sensors();
+	snprintf(p, p_max_size, "%.2f",
+			obsd_sensors.volt[obsd_sensors.device][obj->data.l]);
 }
 
 /* chipset vendor */

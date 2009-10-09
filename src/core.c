@@ -325,26 +325,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif
 #if defined(__OpenBSD__)
 	END OBJ_ARG(obsd_sensors_temp, 0, "obsd_sensors_temp: needs an argument")
-		if (!isdigit(arg[0]) || atoi(&arg[0]) < 0
-				|| atoi(&arg[0]) > OBSD_MAX_SENSORS - 1) {
-			obj->data.sensor = 0;
-			NORM_ERR("Invalid temperature sensor number!");
-		} else
-			obj->data.sensor = atoi(&arg[0]);
+		parse_obsd_sensor(obj, arg);
 	END OBJ_ARG(obsd_sensors_fan, 0, "obsd_sensors_fan: needs 2 arguments (device and sensor number)")
-		if (!isdigit(arg[0]) || atoi(&arg[0]) < 0
-				|| atoi(&arg[0]) > OBSD_MAX_SENSORS - 1) {
-			obj->data.sensor = 0;
-			NORM_ERR("Invalid fan sensor number!");
-		} else
-			obj->data.sensor = atoi(&arg[0]);
+		parse_obsd_sensor(obj, arg);
 	END OBJ_ARG(obsd_sensors_volt, 0, "obsd_sensors_volt: needs 2 arguments (device and sensor number)")
-		if (!isdigit(arg[0]) || atoi(&arg[0]) < 0
-				|| atoi(&arg[0]) > OBSD_MAX_SENSORS - 1) {
-			obj->data.sensor = 0;
-			NORM_ERR("Invalid voltage sensor number!");
-		} else
-			obj->data.sensor = atoi(&arg[0]);
+		parse_obsd_sensor(obj, arg);
 	END OBJ(obsd_vendor, 0)
 	END OBJ(obsd_product, 0)
 #endif /* __OpenBSD__ */
