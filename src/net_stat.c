@@ -74,7 +74,7 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg, void *free_at_
 	if (!arg)
 		arg = DEFAULTNETDEV;
 
-	obj->data.net = get_net_stat(arg, obj, free_at_crash);
+	obj->data.opaque = get_net_stat(arg, obj, free_at_crash);
 }
 
 void parse_net_stat_bar_arg(struct text_object *obj, const char *arg, void *free_at_crash)
@@ -82,91 +82,107 @@ void parse_net_stat_bar_arg(struct text_object *obj, const char *arg, void *free
 	SIZE_DEFAULTS(bar);
 	if (arg) {
 		arg = scan_bar(arg, &obj->a, &obj->b);
-		obj->data.net = get_net_stat(arg, obj, free_at_crash);
+		obj->data.opaque = get_net_stat(arg, obj, free_at_crash);
 	} else {
 		// default to DEFAULTNETDEV
 		char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-		obj->data.net = get_net_stat(buf, obj, free_at_crash);
+		obj->data.opaque = get_net_stat(buf, obj, free_at_crash);
 		free(buf);
 	}
 }
 
 void print_downspeed(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.net)
+	struct net_stat *ns = obj->data.opaque;
+
+	if (!ns)
 		return;
 
-	human_readable(obj->data.net.recv_speed, p, p_max_size);
+	human_readable(ns->recv_speed, p, p_max_size);
 }
 
 void print_downspeedf(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.net)
+	struct net_stat *ns = obj->data.opaque;
+
+	if (!ns)
 		return;
 
-	spaced_print(p, p_max_size, "%.1f", 8, obj->data.netrecv_speed / 1024.0);
+	spaced_print(p, p_max_size, "%.1f", 8, ns->recv_speed / 1024.0);
 }
 
 void print_upspeed(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.net)
+	struct net_stat *ns = obj->data.opaque;
+
+	if (!ns)
 		return;
 
-	human_readable(obj->data.net.trans_speed, p, p_max_size);
+	human_readable(ns->trans_speed, p, p_max_size);
 }
 
 void print_upspeedf(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.net)
+	struct net_stat *ns = obj->data.opaque;
+
+	if (!ns)
 		return;
 
-	spaced_print(p, p_max_size, "%.1f", 8, obj->data.net.trans_speed / 1024.0);
+	spaced_print(p, p_max_size, "%.1f", 8, ns->trans_speed / 1024.0);
 }
 
 void print_totaldown(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.net)
+	struct net_stat *ns = obj->data.opaque;
+
+	if (!ns)
 		return;
 
-	human_readable(obj->data.net.recv, p, p_max_size);
+	human_readable(ns->recv, p, p_max_size);
 }
 
 void print_totalup(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.net)
+	struct net_stat *ns = obj->data.opaque;
+
+	if (!ns)
 		return;
 
-	human_readable(obj->data.net.trans, p, p_max_size);
+	human_readable(ns->trans, p, p_max_size);
 }
 
 void print_addr(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.net)
+	struct net_stat *ns = obj->data.opaque;
+
+	if (!ns)
 		return;
 
-	if ((obj->data.net.addr.sa_data[2] & 255) == 0 &&
-	    (obj->data.net.addr.sa_data[3] & 255) == 0 &&
-	    (obj->data.net.addr.sa_data[4] & 255) == 0 &&
-	    (obj->data.net.addr.sa_data[5] & 255) == 0) {
+	if ((ns->addr.sa_data[2] & 255) == 0 &&
+	    (ns->addr.sa_data[3] & 255) == 0 &&
+	    (ns->addr.sa_data[4] & 255) == 0 &&
+	    (ns->addr.sa_data[5] & 255) == 0) {
 		snprintf(p, p_max_size, "No Address");
 	} else {
 		snprintf(p, p_max_size, "%u.%u.%u.%u",
-		         obj->data.net.addr.sa_data[2] & 255,
-		         obj->data.net.addr.sa_data[3] & 255,
-		         obj->data.net.addr.sa_data[4] & 255,
-		         obj->data.net.addr.sa_data[5] & 255);
+		         ns->addr.sa_data[2] & 255,
+		         ns->addr.sa_data[3] & 255,
+		         ns->addr.sa_data[4] & 255,
+		         ns->addr.sa_data[5] & 255);
 	}
 }
 
 #ifdef __linux__
 void print_addrs(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.net)
+	struct net_stat *ns = obj->data.opaque;
+
+	if (!ns)
 		return;
 
-	if (NULL != obj->data.net.addrs && strlen(obj->data.net.addrs) > 2) {
-		obj->data.net.addrs[strlen(obj->data.net.addrs) - 2] = 0; /* remove ", " from end of string */
-		strncpy(p, obj->data.net.addrs, p_max_size);
+	if (NULL != ns->addrs && strlen(ns->addrs) > 2) {
+		ns->addrs[strlen(ns->addrs) - 2] = 0; /* remove ", " from end of string */
+		strncpy(p, ns->addrs, p_max_size);
 	} else {
 		strncpy(p, "0.0.0.0", p_max_size);
 	}
@@ -183,29 +199,33 @@ void parse_net_stat_graph_arg(struct text_object *obj, const char *arg, void *fr
 
 	// default to DEFAULTNETDEV
 	if (buf) {
-		obj->data.net = get_net_stat(buf, obj, free_at_crash);
+		obj->data.opaque = get_net_stat(buf, obj, free_at_crash);
 		free(buf);
 		return;
 	}
-	obj->data.net = get_net_stat(DEFAULTNETDEV, obj, free_at_crash);
+	obj->data.opaque = get_net_stat(DEFAULTNETDEV, obj, free_at_crash);
 }
 
 void print_downspeedgraph(struct text_object *obj, char *p)
 {
-	if (!obj->data.net)
+	struct net_stat *ns = obj->data.opaque;
+
+	if (!ns)
 		return;
 
 	new_graph(p, obj->a, obj->b, obj->c, obj->d,
-			obj->data.net.recv_speed / 1024.0, obj->e, 1, obj->char_a, obj->char_b);
+			ns->recv_speed / 1024.0, obj->e, 1, obj->char_a, obj->char_b);
 }
 
 void print_upspeedgraph(struct text_object *obj, char *p)
 {
-	if (!obj->data.net)
+	struct net_stat *ns = obj->data.opaque;
+
+	if (!ns)
 		return;
 
 	new_graph(p, obj->a, obj->b, obj->c, obj->d,
-			obj->data.net.trans_speed / 1024.0, obj->e, 1, obj->char_a, obj->char_b);
+			ns->trans_speed / 1024.0, obj->e, 1, obj->char_a, obj->char_b);
 }
 #endif /* X11 */
 
@@ -213,74 +233,90 @@ void print_upspeedgraph(struct text_object *obj, char *p)
 #ifdef HAVE_IWLIB
 void print_wireless_essid(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.net)
+	struct net_stat *ns = obj->data.opaque;
+
+	if (!ns)
 		return;
 
-	snprintf(p, p_max_size, "%s", obj->data.net.essid);
+	snprintf(p, p_max_size, "%s", ns->essid);
 }
 void print_wireless_mode(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.net)
+	struct net_stat *ns = obj->data.opaque;
+
+	if (!ns)
 		return;
 
-	snprintf(p, p_max_size, "%s", obj->data.net.mode);
+	snprintf(p, p_max_size, "%s", ns->mode);
 }
 void print_wireless_bitrate(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.net)
+	struct net_stat *ns = obj->data.opaque;
+
+	if (!ns)
 		return;
 
-	snprintf(p, p_max_size, "%s", obj->data.net.bitrate);
+	snprintf(p, p_max_size, "%s", ns->bitrate);
 }
 void print_wireless_ap(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.net)
+	struct net_stat *ns = obj->data.opaque;
+
+	if (!ns)
 		return;
 
-	snprintf(p, p_max_size, "%s", obj->data.net.ap);
+	snprintf(p, p_max_size, "%s", ns->ap);
 }
 void print_wireless_link_qual(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.net)
+	struct net_stat *ns = obj->data.opaque;
+
+	if (!ns)
 		return;
 
-	spaced_print(p, p_max_size, "%d", 4, obj->data.net.link_qual);
+	spaced_print(p, p_max_size, "%d", 4, ns->link_qual);
 }
 void print_wireless_link_qual_max(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.net)
+	struct net_stat *ns = obj->data.opaque;
+
+	if (!ns)
 		return;
 
-	spaced_print(p, p_max_size, "%d", 4, obj->data.net.link_qual_max);
+	spaced_print(p, p_max_size, "%d", 4, ns->link_qual_max);
 }
 void print_wireless_link_qual_perc(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.net)
+	struct net_stat *ns = obj->data.opaque;
+
+	if (!ns)
 		return;
 
-	if (obj->data.net.link_qual_max > 0) {
+	if (ns->link_qual_max > 0) {
 		spaced_print(p, p_max_size, "%.0f", 5,
-				(double) obj->data.net.link_qual /
-				obj->data.net.link_qual_max * 100);
+				(double) ns->link_qual /
+				ns->link_qual_max * 100);
 	} else {
 		spaced_print(p, p_max_size, "unk", 5);
 	}
 }
 void print_wireless_link_bar(struct text_object *obj, char *p, int p_max_size)
 {
-	if (!obj->data.net)
+	struct net_stat *ns = obj->data.opaque;
+
+	if (!ns)
 		return;
 
 #ifdef X11
 	if(output_methods & TO_X) {
-		new_bar(p, obj->a, obj->b, ((double) obj->data.net.link_qual /
-					obj->data.net.link_qual_max) * 255.0);
+		new_bar(p, obj->a, obj->b, ((double) ns->link_qual /
+					ns->link_qual_max) * 255.0);
 	} else
 #endif /* X11 */
 	{
 		if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-		new_bar_in_shell(p, p_max_size, ((double) obj->data.net.link_qual /
-					obj->data.net.link_qual_max) * 100.0, obj->a);
+		new_bar_in_shell(p, p_max_size, ((double) ns->link_qual /
+					ns->link_qual_max) * 100.0, obj->a);
 	}
 }
 #endif /* HAVE_IWLIB */
