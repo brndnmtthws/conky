@@ -125,22 +125,11 @@ void get_ibm_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
 temperatures:   41 43 31 46 33 -128 29 -128
  * Peter Tarjan (ptarjan@citromail.hu) */
 
-static double last_ibm_acpi_temp_time;
 void get_ibm_acpi_temps(void)
 {
 
 	FILE *fp;
 	char thermal[128];
-
-	/* don't update too often */
-	if (current_update_time - last_ibm_acpi_temp_time < 10.00) {
-		return;
-	}
-	last_ibm_acpi_temp_time = current_update_time;
-
-	/* if (!p_client_buffer || client_buffer_size <= 0) {
-		return;
-	} */
 
 	snprintf(thermal, 127, "%s/thermal", IBM_ACPI_DIR);
 	fp = fopen(thermal, "r");
@@ -269,14 +258,14 @@ void get_ibm_acpi_brightness(char *p_client_buffer, size_t client_buffer_size)
 void parse_ibm_temps_arg(struct text_object *obj, const char *arg)
 {
 	if (!isdigit(arg[0]) || strlen(arg) > 1 || atoi(&arg[0]) >= 8) {
-		obj->data.sensor = 0;
+		obj->data.l = 0;
 		NORM_ERR("Invalid temperature sensor! Sensor number must be 0 to 7. "
 				"Using 0 (CPU temp sensor).");
 	} else
-		obj->data.sensor = atoi(arg);
+		obj->data.l = atoi(arg);
 }
 
 void print_ibm_temps(struct text_object *obj, char *p, int p_max_size)
 {
-	temp_print(p, p_max_size, ibm_acpi_temps[obj->data.sensor], TEMP_CELSIUS);
+	temp_print(p, p_max_size, ibm_acpi_temps[obj->data.l], TEMP_CELSIUS);
 }
