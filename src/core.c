@@ -2492,11 +2492,11 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_desktop:
 			case OBJ_desktop_number:
 			case OBJ_desktop_name:
-			        if(info.x11.desktop.name) {
+			        if(info.x11.desktop.name && !internal) {
 				  free(info.x11.desktop.name);
 				  info.x11.desktop.name = NULL;
 			        }
-			        if(info.x11.desktop.all_names) {
+			        if(info.x11.desktop.all_names && !internal) {
 				  free(info.x11.desktop.all_names);
 				  info.x11.desktop.all_names = NULL;
 			        }
