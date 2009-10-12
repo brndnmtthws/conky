@@ -24,8 +24,6 @@
 #ifndef _EVE_H
 #define _EVE_H
 
-struct text_object;
-
 void scan_eve(struct text_object *, const char *);
 void print_eve(struct text_object *, char *, int);
 

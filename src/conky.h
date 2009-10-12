@@ -63,6 +63,9 @@ char *strndup(const char *s, size_t n);
  * in every code file optionally using the feature
  */
 
+/* forward define to make gcc happy */
+struct text_object;
+
 #ifdef AUDACIOUS
 #include "audacious.h"
 #endif
