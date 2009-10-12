@@ -3,8 +3,6 @@
 #ifndef RSS_H_
 #define RSS_H_
 
-#include "prss.h"
-
 void rss_scan_arg(struct text_object *, const char *);
 void rss_print_info(struct text_object *, char *, int);
 void rss_free_info(void);
