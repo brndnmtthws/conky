@@ -24,7 +24,12 @@ struct i8k_struct i8k;
 
 char *get_ioscheduler(char *);
 int get_laptop_mode(void);
+
 void update_gateway_info(void);
+void free_gateway_info(void);
+int gateway_exists(void);
+void print_gateway_iface(char *, int);
+void print_gateway_ip(char *, int);
 
 enum { PB_BATT_STATUS, PB_BATT_PERCENT, PB_BATT_TIME };
 void get_powerbook_batt_info(char *, size_t, int);

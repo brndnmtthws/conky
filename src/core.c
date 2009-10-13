@@ -1977,14 +1977,7 @@ void free_text_objects(struct text_object *root, int internal)
 				free(data.ifblock.str);
 			case OBJ_gw_iface:
 			case OBJ_gw_ip:
-				if (info.gw_info.iface) {
-					free(info.gw_info.iface);
-					info.gw_info.iface = 0;
-				}
-				if (info.gw_info.ip) {
-					free(info.gw_info.ip);
-					info.gw_info.ip = 0;
-				}
+				free_gateway_info();
 				break;
 			case OBJ_ioscheduler:
 				if(data.s)

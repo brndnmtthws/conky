@@ -226,6 +226,12 @@ char *get_ioscheduler(char *disk)
 	return strndup("n/a", text_buffer_size);
 }
 
+static struct {
+	char *iface;
+	char *ip;
+	int count;
+} gw_info;
+
 #define COND_FREE(x) if(x) free(x); x = 0
 #define SAVE_SET_STRING(x, y) \
 	if (x && strcmp((char *)x, (char *)y)) { \
@@ -241,8 +247,8 @@ void update_gateway_info_failure(const char *reason)
 		perror(reason);
 	}
 	//2 pointers to 1 location causes a crash when we try to free them both
-	info.gw_info.iface = strndup("failed", text_buffer_size);
-	info.gw_info.ip = strndup("failed", text_buffer_size);
+	gw_info.iface = strndup("failed", text_buffer_size);
+	gw_info.ip = strndup("failed", text_buffer_size);
 }
 
 
@@ -257,11 +263,9 @@ void update_gateway_info(void)
 	unsigned long dest, gate, mask;
 	unsigned int flags;
 
-	struct gateway_info *gw_info = &info.gw_info;
-
-	COND_FREE(gw_info->iface);
-	COND_FREE(gw_info->ip);
-	gw_info->count = 0;
+	COND_FREE(gw_info.iface);
+	COND_FREE(gw_info.ip);
+	gw_info.count = 0;
 
 	if ((fp = fopen("/proc/net/route", "r")) == NULL) {
 		update_gateway_info_failure("fopen()");
@@ -278,14 +282,38 @@ void update_gateway_info(void)
 			break;
 		}
 		if (!(dest || mask) && ((flags & RTF_GATEWAY) || !gate) ) {
-			gw_info->count++;
-			SAVE_SET_STRING(gw_info->iface, iface)
+			gw_info.count++;
+			SAVE_SET_STRING(gw_info.iface, iface)
 			ina.s_addr = gate;
-			SAVE_SET_STRING(gw_info->ip, inet_ntoa(ina))
+			SAVE_SET_STRING(gw_info.ip, inet_ntoa(ina))
 		}
 	}
 	fclose(fp);
 	return;
+}
+
+void free_gateway_info(void)
+{
+	if (gw_info.iface)
+		free(gw_info.iface);
+	if (gw_info.ip)
+		free(gw_info.ip);
+	memset(&gw_info, 0, sizeof(gw_info));
+}
+
+int gateway_exists(void)
+{
+	return !!gw_info.count;
+}
+
+void print_gateway_iface(char *p, int p_max_size)
+{
+	snprintf(p, p_max_size, "%s", gw_info.iface);
+}
+
+void print_gateway_ip(char *p, int p_max_size)
+{
+	snprintf(p, p_max_size, "%s", gw_info.ip);
 }
 
 void update_net_stats(void)

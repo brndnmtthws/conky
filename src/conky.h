@@ -148,12 +148,6 @@ struct usr_info {
 	int number;
 };
 
-struct gateway_info {
-	char *iface;
-	char *ip;
-	int count;
-};
-
 #ifdef X11
 struct monitor_info {
 	int number;
@@ -262,7 +256,6 @@ struct information {
 	struct bmpx_s bmpx;
 #endif
 	struct usr_info users;
-	struct gateway_info gw_info;
 	struct dns_data nameserver_info;
 	struct process *cpu[10];
 	struct process *memu[10];

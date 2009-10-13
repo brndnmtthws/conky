@@ -1360,15 +1360,15 @@ static void generate_text_internal(char *p, int p_max_size,
 				get_sony_fanspeed(p, p_max_size);
 			}
 			OBJ(if_gw) {
-				if (!cur->gw_info.count) {
+				if (!gateway_exists()) {
 					DO_JUMP;
 				}
 			}
 			OBJ(gw_iface) {
-				snprintf(p, p_max_size, "%s", cur->gw_info.iface);
+				print_gateway_iface(p, p_max_size);
 			}
 			OBJ(gw_ip) {
-				snprintf(p, p_max_size, "%s", cur->gw_info.ip);
+				print_gateway_ip(p, p_max_size);
 			}
 			OBJ(laptop_mode) {
 				snprintf(p, p_max_size, "%d", get_laptop_mode());
