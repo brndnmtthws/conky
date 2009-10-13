@@ -38,6 +38,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+static int ibm_acpi_temps[8];
+
 /* Here come the IBM ACPI-specific things. For reference, see
  * http://ibm-acpi.sourceforge.net/README
  * If IBM ACPI is installed, /proc/acpi/ibm contains the following files:
@@ -151,9 +153,9 @@ void get_ibm_acpi_temps(void)
 				break;
 			}
 			if (sscanf(line, "temperatures: %d %d %d %d %d %d %d %d",
-					&ibm_acpi.temps[0], &ibm_acpi.temps[1], &ibm_acpi.temps[2],
-					&ibm_acpi.temps[3], &ibm_acpi.temps[4], &ibm_acpi.temps[5],
-					&ibm_acpi.temps[6], &ibm_acpi.temps[7])) {
+					&ibm_acpi_temps[0], &ibm_acpi_temps[1], &ibm_acpi_temps[2],
+					&ibm_acpi_temps[3], &ibm_acpi_temps[4], &ibm_acpi_temps[5],
+					&ibm_acpi_temps[6], &ibm_acpi_temps[7])) {
 				break;
 			}
 		}
@@ -264,3 +266,17 @@ void get_ibm_acpi_brightness(char *p_client_buffer, size_t client_buffer_size)
 	snprintf(p_client_buffer, client_buffer_size, "%d", brightness);
 }
 
+void parse_ibm_temps_arg(struct text_object *obj, const char *arg)
+{
+	if (!isdigit(arg[0]) || strlen(arg) > 1 || atoi(&arg[0]) >= 8) {
+		obj->data.sensor = 0;
+		NORM_ERR("Invalid temperature sensor! Sensor number must be 0 to 7. "
+				"Using 0 (CPU temp sensor).");
+	} else
+		obj->data.sensor = atoi(arg);
+}
+
+void print_ibm_temps(struct text_object *obj, char *p, int p_max_size)
+{
+	temp_print(p, p_max_size, ibm_acpi_temps[obj->data.sensor], TEMP_CELSIUS);
+}

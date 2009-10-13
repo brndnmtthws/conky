@@ -355,13 +355,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(i8k_buttons_status, &update_i8k)
 #if defined(IBM)
 	END OBJ(ibm_fan, 0)
-	END OBJ(ibm_temps, 0, "ibm_temps: needs an argument")
-		if (!isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) >= 8) {
-			obj->data.sensor = 0;
-			NORM_ERR("Invalid temperature sensor! Sensor number must be 0 to 7. "
-				"Using 0 (CPU temp sensor).");
-		} else
-			obj->data.sensor = atoi(&arg[0]);
+	END OBJ(ibm_temps, &get_ibm_acpi_temps, "ibm_temps: needs an argument")
+		parse_ibm_temps_arg(obj, arg);
 	END OBJ(ibm_volume, 0)
 	END OBJ(ibm_brightness, 0)
 #endif

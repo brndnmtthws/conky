@@ -1343,9 +1343,7 @@ static void generate_text_internal(char *p, int p_max_size,
 				get_ibm_acpi_fan(p, p_max_size);
 			}
 			OBJ(ibm_temps) {
-				get_ibm_acpi_temps();
-				temp_print(p, p_max_size,
-				           ibm_acpi.temps[obj->data.sensor], TEMP_CELSIUS);
+				print_ibm_temps(obj, p, p_max_size);
 			}
 			OBJ(ibm_volume) {
 				get_ibm_acpi_volume(p, p_max_size);
