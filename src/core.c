@@ -35,6 +35,7 @@
 #include "build.h"
 #include "colours.h"
 #include "diskio.h"
+#include "exec.h"
 #ifdef X11
 #include "fonts.h"
 #endif
@@ -596,117 +597,39 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 #endif /* IMLIB2 */
 	END OBJ(exec, 0)
-		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
+		scan_exec_arg(obj, arg);
 	END OBJ(execp, 0)
-		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
+		scan_exec_arg(obj, arg);
 	END OBJ(execbar, 0)
 		SIZE_DEFAULTS(bar);
-		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
+		scan_exec_arg(obj, arg);
 #ifdef X11
 	END OBJ(execgauge, 0)
 		SIZE_DEFAULTS(gauge);
-		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
+		scan_exec_arg(obj, arg);
 	END OBJ(execgraph, 0)
 		SIZE_DEFAULTS(graph);
-		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
+		scan_exec_arg(obj, arg);
 #endif /* X11 */
-	END OBJ(execibar, 0)
-		int n;
+	END OBJ_ARG(execibar, 0, "execibar needs arguments")
 		SIZE_DEFAULTS(bar);
-
-		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
-			char buf[256];
-
-			NORM_ERR("${execibar <interval> command}");
-			obj->type = OBJ_text;
-			snprintf(buf, 256, "${%s}", s);
-			obj->data.s = strndup(buf, text_buffer_size);
-		} else {
-			obj->data.execi.cmd = strndup(arg + n, text_buffer_size);
-		}
+		scan_execi_arg(obj, arg);
 #ifdef X11
-	END OBJ(execigraph, 0)
-		int n;
+	END OBJ_ARG(execigraph, 0, "execigraph needs arguments")
 		SIZE_DEFAULTS(graph);
-
-		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
-			char buf[256];
-
-			NORM_ERR("${execigraph <interval> command}");
-			obj->type = OBJ_text;
-			snprintf(buf, 256, "${%s}", s);
-			obj->data.s = strndup(buf, text_buffer_size);
-		} else {
-			obj->data.execi.cmd = strndup(arg + n, text_buffer_size);
-		}
-	END OBJ(execigauge, 0)
-		int n;
+		scan_execi_arg(obj, arg);
+	END OBJ_ARG(execigauge, 0, "execigauge needs arguments")
 		SIZE_DEFAULTS(gauge);
-
-		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
-			char buf[256];
-
-			NORM_ERR("${execigauge <interval> command}");
-			obj->type = OBJ_text;
-			snprintf(buf, 256, "${%s}", s);
-			obj->data.s = strndup(buf, text_buffer_size);
-		} else {
-			obj->data.execi.cmd = strndup(arg + n, text_buffer_size);
-		}
+		scan_execi_arg(obj, arg);
 #endif /* X11 */
-	END OBJ(execi, 0)
-		int n;
-
-		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
-			char buf[256];
-
-			NORM_ERR("${execi <interval> command}");
-			obj->type = OBJ_text;
-			snprintf(buf, 256, "${%s}", s);
-			obj->data.s = strndup(buf, text_buffer_size);
-		} else {
-			obj->data.execi.cmd = strndup(arg + n, text_buffer_size);
-			obj->data.execi.buffer = malloc(text_buffer_size);
-		}
-	END OBJ(execpi, 0)
-		int n;
-
-		if (!arg || sscanf(arg, "%f %n", &obj->data.execi.interval, &n) <= 0) {
-			char buf[256];
-
-			NORM_ERR("${execi <interval> command}");
-			obj->type = OBJ_text;
-			snprintf(buf, 256, "${%s}", s);
-			obj->data.s = strndup(buf, text_buffer_size);
-		} else {
-			obj->data.execi.cmd = strndup(arg + n, text_buffer_size);
-			obj->data.execi.buffer = malloc(text_buffer_size);
-		}
-	END OBJ(texeci, 0)
-			int n;
-
-			if (!arg || sscanf(arg, "%f %n", &obj->data.texeci.interval, &n) <= 0) {
-				char buf[256];
-
-				NORM_ERR("${texeci <interval> command}");
-				obj->type = OBJ_text;
-				snprintf(buf, 256, "${%s}", s);
-				obj->data.s = strndup(buf, text_buffer_size);
-			} else {
-				obj->data.texeci.cmd = strndup(arg + n, text_buffer_size);
-				obj->data.texeci.buffer = malloc(text_buffer_size);
-			}
-			obj->data.texeci.p_timed_thread = NULL;
+	END OBJ_ARG(execi, 0, "execi needs arguments")
+		scan_execi_arg(obj, arg);
+	END OBJ_ARG(execpi, 0, "execpi needs arguments")
+		scan_execi_arg(obj, arg);
+	END OBJ_ARG(texeci, 0, "texeci needs arguments")
+		scan_execi_arg(obj, arg);
 	END OBJ(pre_exec, 0)
-		obj->type = OBJ_text;
-		if (arg) {
-			char buf[2048];
-
-			do_read_exec(arg, buf, sizeof(buf));
-			obj->data.s = strndup(buf, text_buffer_size);
-		} else {
-			obj->data.s = strndup("", text_buffer_size);
-		}
+		scan_pre_exec_arg(obj, arg);
 	END OBJ(fs_bar, &update_fs_stats)
 		init_fs_bar(obj, arg);
 	END OBJ(fs_bar_free, &update_fs_stats)
@@ -1956,7 +1879,7 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_execgraph:
 #endif
 			case OBJ_execp:
-				free(data.s);
+				free_exec(obj);
 				break;
 #ifdef HAVE_ICONV
 			case OBJ_iconv_start:
@@ -2118,17 +2041,12 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_execpi:
 			case OBJ_execi:
 			case OBJ_execibar:
+			case OBJ_texeci:
 #ifdef X11
 			case OBJ_execigraph:
 			case OBJ_execigauge:
 #endif /* X11 */
-				free(data.execi.cmd);
-				free(data.execi.buffer);
-				break;
-			case OBJ_texeci:
-				if (data.texeci.p_timed_thread) timed_thread_destroy(data.texeci.p_timed_thread, &data.texeci.p_timed_thread);
-				free(data.texeci.cmd);
-				free(data.texeci.buffer);
+				free_execi(obj);
 				break;
 			case OBJ_nameserver:
 				free_dns_data();

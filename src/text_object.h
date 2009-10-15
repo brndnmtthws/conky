@@ -511,15 +511,8 @@ struct text_object {
 			char *cmd;
 			char *buffer;
 			double data;
-		} execi;		/* 5 */
-
-		struct {
-			float interval;
-			char *cmd;
-			char *buffer;
-			double data;
 			timed_thread *p_timed_thread;
-		} texeci;
+		} execi;		/* 5 */
 
 		struct {
 			int a, b;

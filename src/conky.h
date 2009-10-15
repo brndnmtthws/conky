@@ -336,9 +336,6 @@ extern unsigned int max_user_text;
 /* path to config file */
 extern char *current_config;
 
-/* just a wrapper for read_exec() defined in conky.c */
-void do_read_exec(const char *data, char *buf, const int size);
-
 #ifdef X11
 #define TO_X 1
 #endif /* X11 */
@@ -366,5 +363,8 @@ void set_update_interval(double interval);
 /* to get rid of 'unused variable' warnings */
 #define UNUSED(a)  (void)a
 #define UNUSED_ATTR __attribute__ ((unused))
+
+void parse_conky_vars(struct text_object *, const char *,
+			char *, struct information *);
 
 #endif /* _conky_h_ */

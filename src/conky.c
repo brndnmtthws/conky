@@ -76,6 +76,7 @@
 #include "build.h"
 #include "colours.h"
 #include "diskio.h"
+#include "exec.h"
 #ifdef X11
 #include "fonts.h"
 #endif
@@ -163,7 +164,6 @@ double update_interval;
 double update_interval_old;
 double update_interval_bat;
 void *global_cpu = NULL;
-pid_t childpid = 0;
 
 int argc_copy;
 char** argv_copy;
@@ -631,107 +631,6 @@ static void human_readable(long long num, char *buf, int size)
 /* global object list root element */
 static struct text_object global_root_object;
 
-//our own implementation of popen, the difference : the value of 'childpid' will be filled with
-//the pid of the running 'command'. This is useful if want to kill it when it hangs while reading
-//or writing to it. We have to kill it because pclose will wait until the process dies by itself
-FILE* pid_popen(const char *command, const char *mode, pid_t *child) {
-	int ends[2];
-	int parentend, childend;
-
-	//by running pipe after the strcmp's we make sure that we don't have to create a pipe
-	//and close the ends if mode is something illegal
-	if(strcmp(mode, "r") == 0) {
-		if(pipe(ends) != 0) {
-			return NULL;
-		}
-		parentend = ends[0];
-		childend = ends[1];
-	} else if(strcmp(mode, "w") == 0) {
-		if(pipe(ends) != 0) {
-			return NULL;
-		}
-		parentend = ends[1];
-		childend = ends[0];
-	} else {
-		return NULL;
-	}
-	*child = fork();
-	if(*child == -1) {
-		close(parentend);
-		close(childend);
-		return NULL;
-	} else if(*child > 0) {
-		close(childend);
-		waitpid(*child, NULL, 0);
-	} else {
-		//don't read from both stdin and pipe or write to both stdout and pipe
-		if(childend == ends[0]) {
-			close(0);
-		} else {
-			close(1);
-		}
-		dup(childend);	//by dupping childend, the returned fd will have close-on-exec turned off
-		execl("/bin/sh", "sh", "-c", command, (char *) NULL);
-		_exit(EXIT_FAILURE); //child should die here, (normally execl will take care of this but it can fail) 
-	}
-	return fdopen(parentend, mode);
-}
-
-static inline void read_exec(const char *data, char *buf, const int size)
-{
-	FILE *fp;
-
-	alarm(update_interval);
-	fp = pid_popen(data, "r", &childpid);
-	if(fp) {
-		int length;
-
-		length = fread(buf, 1, size, fp);
-		pclose(fp);
-		buf[length] = '\0';
-		if (length > 0 && buf[length - 1] == '\n') {
-			buf[length - 1] = '\0';
-		}
-	} else {
-		buf[0] = '\0';
-	}
-	alarm(0);
-}
-
-void do_read_exec(const char *data, char *buf, const int size)
-{
-	read_exec(data, buf, size);
-}
-
-void *threaded_exec(void *) __attribute__((noreturn));
-
-void *threaded_exec(void *arg)
-{
-	char *buff, *p2;
-	struct text_object *obj = (struct text_object *)arg;
-
-	while (1) {
-		buff = malloc(text_buffer_size);
-		read_exec(obj->data.texeci.cmd, buff,
-			text_buffer_size);
-		p2 = buff;
-		while (*p2) {
-			if (*p2 == '\001') {
-				*p2 = ' ';
-			}
-			p2++;
-		}
-		timed_thread_lock(obj->data.texeci.p_timed_thread);
-		strncpy(obj->data.texeci.buffer, buff, text_buffer_size);
-		timed_thread_unlock(obj->data.texeci.p_timed_thread);
-		free(buff);
-		if (timed_thread_test(obj->data.texeci.p_timed_thread, 0)) {
-			timed_thread_exit(obj->data.texeci.p_timed_thread);
-		}
-	}
-	/* never reached */
-}
-
 static long current_text_color;
 
 void set_current_text_color(long colour)
@@ -893,21 +792,6 @@ char *format_time(unsigned long timeval, const int width)
 	return strndup("<inf>", text_buffer_size);
 }
 
-//remove backspaced chars, example: "dog^H^H^Hcat" becomes "cat"
-//string has to end with \0 and it's length should fit in a int
-#define BACKSPACE 8
-void remove_deleted_chars(char *string){
-	int i = 0;
-	while(string[i] != 0){
-		if(string[i] == BACKSPACE){
-			if(i != 0){
-				strcpy( &(string[i-1]), &(string[i+1]) );
-				i--;
-			}else strcpy( &(string[i]), &(string[i+1]) ); //necessary for ^H's at the start of a string
-		}else i++;
-	}
-}
-
 static inline void format_media_player_time(char *buf, const int size,
 		int seconds)
 {
@@ -929,31 +813,6 @@ static inline void format_media_player_time(char *buf, const int size,
 	} else {
 		snprintf(buf, size, "%i:%02i", minutes, seconds);
 	}
-}
-
-static inline double get_barnum(char *buf)
-{
-	char *c = buf;
-	double barnum;
-
-	while (*c) {
-		if (*c == '\001') {
-			*c = ' ';
-		}
-		c++;
-	}
-
-	if (sscanf(buf, "%lf", &barnum) == 0) {
-		NORM_ERR("reading exec value failed (perhaps it's not the "
-				"correct format?)");
-		return -1;
-	}
-	if (barnum > 100.0 || barnum < 0.0) {
-		NORM_ERR("your exec value is not between 0 and 100, "
-				"therefore it will be ignored");
-		return -1;
-	}
-	return barnum;
 }
 
 /* substitutes all occurrences of '\n' with SECRIT_MULTILINE_CHAR, which allows
@@ -1503,206 +1362,43 @@ static void generate_text_internal(char *p, int p_max_size,
 				evaluate(obj->data.s, p);
 			}
 			OBJ(exec) {
-				read_exec(obj->data.s, p, text_buffer_size);
-				remove_deleted_chars(p);
+				print_exec(obj, p, p_max_size);
 			}
 			OBJ(execp) {
-				struct information *tmp_info;
-				struct text_object subroot;
-
-				read_exec(obj->data.s, p, text_buffer_size);
-
-				tmp_info = malloc(sizeof(struct information));
-				memcpy(tmp_info, cur, sizeof(struct information));
-				parse_conky_vars(&subroot, p, p, tmp_info);
-
-				free_text_objects(&subroot, 1);
-				free(tmp_info);
+				print_execp(obj, p, p_max_size);
 			}
 #ifdef X11
 			OBJ(execgauge) {
-				double barnum;
-
-				read_exec(obj->data.s, p, text_buffer_size);
-				barnum = get_barnum(p); /*using the same function*/
-
-				if (barnum >= 0.0) {
-					barnum /= 100;
-					new_gauge(p, obj->a, obj->b, round_to_int(barnum * 255.0));
-				}
+				print_execgauge(obj, p, p_max_size);
 			}
 #endif /* X11 */
 			OBJ(execbar) {
-				double barnum;
-
-				read_exec(obj->data.s, p, text_buffer_size);
-				barnum = get_barnum(p);
-
-				if (barnum >= 0.0) {
-#ifdef X11
-					if(output_methods & TO_X) {
-						barnum /= 100;
-						new_bar(p, obj->a, obj->b, round_to_int(barnum * 255.0));
-					}else{
-#endif /* X11 */
-						if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-						new_bar_in_shell(p, p_max_size, barnum, obj->a);
-#ifdef X11
-					}
-#endif /* X11 */
-				}
+				print_execbar(obj, p, p_max_size);
 			}
 #ifdef X11
 			OBJ(execgraph) {
-				char showaslog = FALSE;
-				char tempgrad = FALSE;
-				double barnum;
-				char *cmd = obj->data.s;
-
-				if (strstr(cmd, " "TEMPGRAD) && strlen(cmd) > strlen(" "TEMPGRAD)) {
-					tempgrad = TRUE;
-					cmd += strlen(" "TEMPGRAD);
-				}
-				if (strstr(cmd, " "LOGGRAPH) && strlen(cmd) > strlen(" "LOGGRAPH)) {
-					showaslog = TRUE;
-					cmd += strlen(" "LOGGRAPH);
-				}
-				read_exec(cmd, p, text_buffer_size);
-				barnum = get_barnum(p);
-
-				if (barnum > 0) {
-					new_graph(p, obj->a, obj->b, obj->c, obj->d, round_to_int(barnum),
-							100, 1, showaslog, tempgrad);
-				}
+				print_execgraph(obj, p, p_max_size);
 			}
 #endif /* X11 */
 			OBJ(execibar) {
-				if (current_update_time - obj->data.execi.last_update
-						>= obj->data.execi.interval) {
-					double barnum;
-
-					read_exec(obj->data.execi.cmd, p, text_buffer_size);
-					barnum = get_barnum(p);
-
-					if (barnum >= 0.0) {
-						obj->f = barnum;
-					}
-					obj->data.execi.last_update = current_update_time;
-				}
-#ifdef X11
-				if(output_methods & TO_X) {
-					new_bar(p, obj->a, obj->b, round_to_int(obj->f * 2.55));
-				} else {
-#endif /* X11 */
-					if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-					new_bar_in_shell(p, p_max_size, round_to_int(obj->f), obj->a);
-#ifdef X11
-				}
-#endif /* X11 */
+				print_execibar(obj, p, p_max_size);
 			}
 #ifdef X11
 			OBJ(execigraph) {
-				if (current_update_time - obj->data.execi.last_update
-						>= obj->data.execi.interval) {
-					double barnum;
-					char showaslog = FALSE;
-					char tempgrad = FALSE;
-					char *cmd = obj->data.execi.cmd;
-
-					if (strstr(cmd, " "TEMPGRAD) && strlen(cmd) > strlen(" "TEMPGRAD)) {
-						tempgrad = TRUE;
-						cmd += strlen(" "TEMPGRAD);
-					}
-					if (strstr(cmd, " "LOGGRAPH) && strlen(cmd) > strlen(" "LOGGRAPH)) {
-						showaslog = TRUE;
-						cmd += strlen(" "LOGGRAPH);
-					}
-					obj->char_a = showaslog;
-					obj->char_b = tempgrad;
-					read_exec(cmd, p, text_buffer_size);
-					barnum = get_barnum(p);
-
-					if (barnum >= 0.0) {
-						obj->f = barnum;
-					}
-					obj->data.execi.last_update = current_update_time;
-				}
-				new_graph(p, obj->a, obj->b, obj->c, obj->d, (int) (obj->f), 100, 1, obj->char_a, obj->char_b);
+				print_execigraph(obj, p, p_max_size);
 			}
 			OBJ(execigauge) {
-				if (current_update_time - obj->data.execi.last_update
-						>= obj->data.execi.interval) {
-					double barnum;
-
-					read_exec(obj->data.execi.cmd, p, text_buffer_size);
-					barnum = get_barnum(p);
-
-					if (barnum >= 0.0) {
-						obj->f = 255 * barnum / 100.0;
-					}
-					obj->data.execi.last_update = current_update_time;
-				}
-				new_gauge(p, obj->a, obj->b, round_to_int(obj->f));
+				print_execigauge(obj, p, p_max_size);
 			}
 #endif /* X11 */
 			OBJ(execi) {
-				if (current_update_time - obj->data.execi.last_update
-						>= obj->data.execi.interval
-						&& obj->data.execi.interval != 0) {
-					read_exec(obj->data.execi.cmd, obj->data.execi.buffer,
-						text_buffer_size);
-					obj->data.execi.last_update = current_update_time;
-				}
-				snprintf(p, text_buffer_size, "%s", obj->data.execi.buffer);
+				print_execi(obj, p, p_max_size);
 			}
 			OBJ(execpi) {
-				struct text_object subroot;
-				struct information *tmp_info =
-					malloc(sizeof(struct information));
-				memcpy(tmp_info, cur, sizeof(struct information));
-
-				if (current_update_time - obj->data.execi.last_update
-						< obj->data.execi.interval
-						|| obj->data.execi.interval == 0) {
-					parse_conky_vars(&subroot, obj->data.execi.buffer, p, tmp_info);
-				} else {
-					char *output = obj->data.execi.buffer;
-					FILE *fp = pid_popen(obj->data.execi.cmd, "r", &childpid);
-					int length = fread(output, 1, text_buffer_size, fp);
-
-					pclose(fp);
-
-					output[length] = '\0';
-					if (length > 0 && output[length - 1] == '\n') {
-						output[length - 1] = '\0';
-					}
-
-					parse_conky_vars(&subroot, obj->data.execi.buffer, p, tmp_info);
-					obj->data.execi.last_update = current_update_time;
-				}
-				free_text_objects(&subroot, 1);
-				free(tmp_info);
+				print_execpi(obj, p);
 			}
 			OBJ(texeci) {
-				if (!obj->data.texeci.p_timed_thread) {
-					obj->data.texeci.p_timed_thread =
-						timed_thread_create(&threaded_exec,
-						(void *) obj, obj->data.texeci.interval * 1000000);
-					if (!obj->data.texeci.p_timed_thread) {
-						NORM_ERR("Error creating texeci timed thread");
-					}
-					/*
-					 * note that we don't register this thread with the
-					 * timed_thread list, because we destroy it manually
-					 */
-					if (timed_thread_run(obj->data.texeci.p_timed_thread)) {
-						NORM_ERR("Error running texeci timed thread");
-					}
-				} else {
-					timed_thread_lock(obj->data.texeci.p_timed_thread);
-					snprintf(p, text_buffer_size, "%s", obj->data.texeci.buffer);
-					timed_thread_unlock(obj->data.texeci.p_timed_thread);
-				}
+				print_texeci(obj, p, p_max_size);
 			}
 			OBJ(imap_unseen) {
 				struct mail_s *mail = ensure_mail_thread(obj, imap_thread, "imap");
