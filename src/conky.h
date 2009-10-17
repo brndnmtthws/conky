@@ -256,7 +256,6 @@ struct information {
 	struct bmpx_s bmpx;
 #endif
 	struct usr_info users;
-	struct dns_data nameserver_info;
 	struct process *cpu[10];
 	struct process *memu[10];
 	struct process *time[10];

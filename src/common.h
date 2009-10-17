@@ -18,7 +18,6 @@ void start_update_threading(void);
 void strfold(char *start, int count);
 int check_mount(char *s);
 void prepare_update(void);
-void update_dns_data(void);
 void update_uptime(void);
 void update_meminfo(void);
 void update_net_stats(void);
@@ -58,35 +57,6 @@ int round_to_int_temp(float);
 unsigned int round_to_int(float);
 
 extern int no_buffers;
-
-struct dns_data {
-        int nscount;
-        char **ns_list;
-};
-void free_dns_data(void);
-
-struct net_stat {
-        char *dev;
-        int up;
-        long long last_read_recv, last_read_trans;
-        long long recv, trans;
-        double recv_speed, trans_speed;
-        struct sockaddr addr;
-#if defined(__linux__)
-        char addrs[273];
-#endif /* __linux__ */
-        double net_rec[15], net_trans[15];
-        // wireless extensions
-        char essid[32];
-        char bitrate[16];
-        char mode[16];
-        int link_qual;
-        int link_qual_max;
-        char ap[18];
-};
-void clear_net_stats(void);
-struct net_stat *get_net_stat(const char *dev, void *free_at_crash1, void *free_at_crash2);
-int interface_up(const char *dev);
 
 void get_adt746x_cpu(char *, size_t);
 void get_adt746x_fan(char *, size_t);

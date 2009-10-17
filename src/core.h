@@ -46,4 +46,6 @@ void free_text_objects(struct text_object *root, int internal);
 void scan_mixer_bar(const char *arg, int *a, int *w, int *h);
 #endif /* X11 */
 
+const char *dev_name(const char *);
+
 #endif /* _CONKY_CORE_H_ */

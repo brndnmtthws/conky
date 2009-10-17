@@ -32,6 +32,7 @@
 #include "conky.h"
 #include "fs.h"
 #include "logging.h"
+#include "net_stat.h"
 #include <ctype.h>
 #include <errno.h>
 #include <sys/time.h>
@@ -209,135 +210,6 @@ void variable_substitute(const char *s, char *dest, unsigned int n)
 	}
 
 	*dest = '\0';
-}
-
-/* network interface stuff */
-
-static struct net_stat netstats[16];
-
-struct net_stat *get_net_stat(const char *dev, void *free_at_crash1, void *free_at_crash2)
-{
-	unsigned int i;
-
-	if (!dev) {
-		return 0;
-	}
-
-	/* find interface stat */
-	for (i = 0; i < 16; i++) {
-		if (netstats[i].dev && strcmp(netstats[i].dev, dev) == 0) {
-			return &netstats[i];
-		}
-	}
-
-	/* wasn't found? add it */
-	for (i = 0; i < 16; i++) {
-		if (netstats[i].dev == 0) {
-			netstats[i].dev = strndup(dev, text_buffer_size);
-			return &netstats[i];
-		}
-	}
-
-	CRIT_ERR(free_at_crash1, free_at_crash2, "too many interfaces used (limit is 16)");
-	return 0;
-}
-
-void clear_net_stats(void)
-{
-	int i;
-	for (i = 0; i < 16; i++) {
-		if (netstats[i].dev) {
-			free(netstats[i].dev);
-		}
-	}
-	memset(netstats, 0, sizeof(netstats));
-}
-
-/* We should check if this is ok with OpenBSD and NetBSD as well. */
-int interface_up(const char *dev)
-{
-	int fd;
-	struct ifreq ifr;
-
-	if ((fd = socket(PF_INET, SOCK_DGRAM, 0)) < 0) {
-		CRIT_ERR(NULL, NULL, "could not create sockfd");
-		return 0;
-	}
-	strncpy(ifr.ifr_name, dev, IFNAMSIZ);
-	if (ioctl(fd, SIOCGIFFLAGS, &ifr)) {
-		/* if device does not exist, treat like not up */
-		if (errno != ENODEV && errno != ENXIO)
-			perror("SIOCGIFFLAGS");
-		goto END_FALSE;
-	}
-
-	if (!(ifr.ifr_flags & IFF_UP)) /* iface is not up */
-		goto END_FALSE;
-	if (ifup_strictness == IFUP_UP)
-		goto END_TRUE;
-
-	if (!(ifr.ifr_flags & IFF_RUNNING))
-		goto END_FALSE;
-	if (ifup_strictness == IFUP_LINK)
-		goto END_TRUE;
-
-	if (ioctl(fd, SIOCGIFADDR, &ifr)) {
-		perror("SIOCGIFADDR");
-		goto END_FALSE;
-	}
-	if (((struct sockaddr_in *)&(ifr.ifr_ifru.ifru_addr))->sin_addr.s_addr)
-		goto END_TRUE;
-
-END_FALSE:
-	close(fd);
-	return 0;
-END_TRUE:
-	close(fd);
-	return 1;
-}
-
-void free_dns_data(void)
-{
-	int i;
-	struct dns_data *data = &info.nameserver_info;
-	for (i = 0; i < data->nscount; i++)
-		free(data->ns_list[i]);
-	if (data->ns_list)
-		free(data->ns_list);
-	memset(data, 0, sizeof(struct dns_data));
-}
-
-//static double last_dns_update;
-
-void update_dns_data(void)
-{
-	FILE *fp;
-	char line[256];
-	struct dns_data *data = &info.nameserver_info;
-
-	/* maybe updating too often causes higher load because of /etc lying on a real FS
-	if (current_update_time - last_dns_update < 10.0)
-		return;
-	else
-		last_dns_update = current_update_time;
-	*/
-
-	free_dns_data();
-
-	if ((fp = fopen("/etc/resolv.conf", "r")) == NULL)
-		return;
-	while(!feof(fp)) {
-		if (fgets(line, 255, fp) == NULL) {
-			break;
-		}
-		if (!strncmp(line, "nameserver ", 11)) {
-			line[strlen(line) - 1] = '\0';	// remove trailing newline
-			data->nscount++;
-			data->ns_list = realloc(data->ns_list, data->nscount * sizeof(char *));
-			data->ns_list[data->nscount - 1] = strndup(line + 11, text_buffer_size);
-		}
-	}
-	fclose(fp);
 }
 
 void format_seconds(char *buf, unsigned int n, long seconds)

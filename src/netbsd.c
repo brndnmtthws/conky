@@ -29,6 +29,7 @@
  */
 
 #include "netbsd.h"
+#include "net_stat.h"
 
 static kvm_t *kd = NULL;
 int kd_init = 0, nkd_init = 0;

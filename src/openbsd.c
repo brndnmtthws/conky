@@ -61,6 +61,7 @@
 #include "conky.h"
 #include "diskio.h"
 #include "logging.h"
+#include "net_stat.h"
 #include "openbsd.h"
 #include "top.h"
 

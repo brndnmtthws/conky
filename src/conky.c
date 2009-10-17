@@ -89,6 +89,7 @@
 #include "mixer.h"
 #include "mail.h"
 #include "mboxscan.h"
+#include "net_stat.h"
 #include "read_tcp.h"
 #include "scroll.h"
 #include "specials.h"
@@ -924,47 +925,28 @@ void generate_text_internal(char *p, int p_max_size,
 
 #ifdef HAVE_IWLIB
 			OBJ(wireless_essid) {
-				snprintf(p, p_max_size, "%s", obj->data.net->essid);
+				print_wireless_essid(obj, p, p_max_size);
 			}
 			OBJ(wireless_mode) {
-				snprintf(p, p_max_size, "%s", obj->data.net->mode);
+				print_wireless_mode(obj, p, p_max_size);
 			}
 			OBJ(wireless_bitrate) {
-				snprintf(p, p_max_size, "%s", obj->data.net->bitrate);
+				print_wireless_bitrate(obj, p, p_max_size);
 			}
 			OBJ(wireless_ap) {
-				snprintf(p, p_max_size, "%s", obj->data.net->ap);
+				print_wireless_ap(obj, p, p_max_size);
 			}
 			OBJ(wireless_link_qual) {
-				spaced_print(p, p_max_size, "%d", 4,
-						obj->data.net->link_qual);
+				print_wireless_link_qual(obj, p, p_max_size);
 			}
 			OBJ(wireless_link_qual_max) {
-				spaced_print(p, p_max_size, "%d", 4,
-						obj->data.net->link_qual_max);
+				print_wireless_link_qual_max(obj, p, p_max_size);
 			}
 			OBJ(wireless_link_qual_perc) {
-				if (obj->data.net->link_qual_max > 0) {
-					spaced_print(p, p_max_size, "%.0f", 5,
-							(double) obj->data.net->link_qual /
-							obj->data.net->link_qual_max * 100);
-				} else {
-					spaced_print(p, p_max_size, "unk", 5);
-				}
+				print_wireless_link_qual_perc(obj, p, p_max_size);
 			}
 			OBJ(wireless_link_bar) {
-#ifdef X11
-				if(output_methods & TO_X) {
-					new_bar(p, obj->a, obj->b, ((double) obj->data.net->link_qual /
-						obj->data.net->link_qual_max) * 255.0);
-				}else{
-#endif /* X11 */
-					if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-					new_bar_in_shell(p, p_max_size, ((double) obj->data.net->link_qual /
-						obj->data.net->link_qual_max) * 100.0, obj->a);
-#ifdef X11
-				}
-#endif /* X11 */
+				print_wireless_link_bar(obj, p, p_max_size);
 			}
 #endif /* HAVE_IWLIB */
 
@@ -1275,16 +1257,14 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* X11 */
 			OBJ(downspeed) {
-				human_readable(obj->data.net->recv_speed, p, 255);
+				print_downspeed(obj, p, p_max_size);
 			}
 			OBJ(downspeedf) {
-				spaced_print(p, p_max_size, "%.1f", 8,
-						obj->data.net->recv_speed / 1024.0);
+				print_downspeedf(obj, p, p_max_size);
 			}
 #ifdef X11
 			OBJ(downspeedgraph) {
-				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-					obj->data.net->recv_speed / 1024.0, obj->e, 1, obj->char_a, obj->char_b);
+				print_downspeedgraph(obj, p);
 			}
 #endif /* X11 */
 			OBJ(else) {
@@ -1299,27 +1279,11 @@ void generate_text_internal(char *p, int p_max_size,
 				/* harmless object, just ignore */
 			}
 			OBJ(addr) {
-				if ((obj->data.net->addr.sa_data[2] & 255) == 0
-						&& (obj->data.net->addr.sa_data[3] & 255) == 0
-						&& (obj->data.net->addr.sa_data[4] & 255) == 0
-						&& (obj->data.net->addr.sa_data[5] & 255) == 0) {
-					snprintf(p, p_max_size, "No Address");
-				} else {
-					snprintf(p, p_max_size, "%u.%u.%u.%u",
-						obj->data.net->addr.sa_data[2] & 255,
-						obj->data.net->addr.sa_data[3] & 255,
-						obj->data.net->addr.sa_data[4] & 255,
-						obj->data.net->addr.sa_data[5] & 255);
-				}
+				print_addr(obj, p, p_max_size);
 			}
 #if defined(__linux__)
 			OBJ(addrs) {
-				if (NULL != obj->data.net->addrs && strlen(obj->data.net->addrs) > 2) {
-					obj->data.net->addrs[strlen(obj->data.net->addrs) - 2] = 0; /* remove ", " from end of string */
-					strcpy(p, obj->data.net->addrs);
-				} else {
-					strcpy(p, "0.0.0.0");
-				}
+				print_addrs(obj, p, p_max_size);
 			}
 #endif /* __linux__ */
 #if defined(IMLIB2) && defined(X11)
@@ -1487,9 +1451,7 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif
 			OBJ(nameserver) {
-				if (cur->nameserver_info.nscount > obj->data.i)
-					snprintf(p, p_max_size, "%s",
-							cur->nameserver_info.ns_list[obj->data.i]);
+				print_nameserver(obj, p, p_max_size);
 			}
 #ifdef EVE
 			OBJ(eve) {
@@ -1909,10 +1871,10 @@ void generate_text_internal(char *p, int p_max_size,
 				print_tztime(obj, p, p_max_size);
 			}
 			OBJ(totaldown) {
-				human_readable(obj->data.net->recv, p, 255);
+				print_totaldown(obj, p, p_max_size);
 			}
 			OBJ(totalup) {
-				human_readable(obj->data.net->trans, p, 255);
+				print_totalup(obj, p, p_max_size);
 			}
 			OBJ(updates) {
 				snprintf(p, p_max_size, "%d", total_updates);
@@ -1923,16 +1885,14 @@ void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 			OBJ(upspeed) {
-				human_readable(obj->data.net->trans_speed, p, 255);
+				print_upspeed(obj, p, p_max_size);
 			}
 			OBJ(upspeedf) {
-				spaced_print(p, p_max_size, "%.1f", 8,
-					obj->data.net->trans_speed / 1024.0);
+				print_upspeedf(obj, p, p_max_size);
 			}
 #ifdef X11
 			OBJ(upspeedgraph) {
-				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-					obj->data.net->trans_speed / 1024.0, obj->e, 1, obj->char_a, obj->char_b);
+				print_upspeedgraph(obj, p);
 			}
 #endif /* X11 */
 			OBJ(uptime_short) {

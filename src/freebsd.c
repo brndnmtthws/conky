@@ -54,6 +54,7 @@
 #include "conky.h"
 #include "freebsd.h"
 #include "logging.h"
+#include "net_stat.h"
 #include "top.h"
 #include "diskio.h"
 

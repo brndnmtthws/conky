@@ -48,6 +48,7 @@
 #include "mixer.h"
 #include "mail.h"
 #include "mboxscan.h"
+#include "net_stat.h"
 #include "read_tcp.h"
 #include "scroll.h"
 #include "specials.h"
@@ -82,7 +83,7 @@ void update_entropy(void);
  *         which gets overwritten in consecutive calls. I.e.:
  *         this function is NOT reentrant.
  */
-static const char *dev_name(const char *path)
+const char *dev_name(const char *path)
 {
 	static char buf[255];	/* should be enough for pathnames */
 	ssize_t buflen;
@@ -206,79 +207,21 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 
 #ifdef HAVE_IWLIB
 	END OBJ(wireless_essid, &update_net_stats)
-		if (arg) {
-			obj->data.net = get_net_stat(arg, obj, free_at_crash);
-		} else {
-			// default to DEFAULTNETDEV
-			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf, obj, free_at_crash);
-			free(buf);
-		}
+		parse_net_stat_arg(obj, arg, free_at_crash);
 	END OBJ(wireless_mode, &update_net_stats)
-		if (arg) {
-			obj->data.net = get_net_stat(arg, obj, free_at_crash);
-		} else {
-			// default to DEFAULTNETDEV
-			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf, obj, free_at_crash);
-			free(buf);
-		}
+		parse_net_stat_arg(obj, arg, free_at_crash);
 	END OBJ(wireless_bitrate, &update_net_stats)
-		if (arg) {
-			obj->data.net = get_net_stat(arg, obj, free_at_crash);
-		} else {
-			// default to DEFAULTNETDEV
-			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf, obj, free_at_crash);
-			free(buf);
-		}
+		parse_net_stat_arg(obj, arg, free_at_crash);
 	END OBJ(wireless_ap, &update_net_stats)
-		if (arg) {
-			obj->data.net = get_net_stat(arg, obj, free_at_crash);
-		} else {
-			// default to DEFAULTNETDEV
-			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf, obj, free_at_crash);
-			free(buf);
-		}
+		parse_net_stat_arg(obj, arg, free_at_crash);
 	END OBJ(wireless_link_qual, &update_net_stats)
-		if (arg) {
-			obj->data.net = get_net_stat(arg, obj, free_at_crash);
-		} else {
-			// default to DEFAULTNETDEV
-			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf, obj, free_at_crash);
-			free(buf);
-		}
+		parse_net_stat_arg(obj, arg, free_at_crash);
 	END OBJ(wireless_link_qual_max, &update_net_stats)
-		if (arg) {
-			obj->data.net = get_net_stat(arg, obj, free_at_crash);
-		} else {
-			// default to DEFAULTNETDEV
-			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf, obj, free_at_crash);
-			free(buf);
-		}
+		parse_net_stat_arg(obj, arg, free_at_crash);
 	END OBJ(wireless_link_qual_perc, &update_net_stats)
-		if (arg) {
-			obj->data.net = get_net_stat(arg, obj, free_at_crash);
-		} else {
-			// default to DEFAULTNETDEV
-			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf, obj, free_at_crash);
-			free(buf);
-		}
+		parse_net_stat_arg(obj, arg, free_at_crash);
 	END OBJ(wireless_link_bar, &update_net_stats)
-		SIZE_DEFAULTS(bar);
-		if (arg) {
-			arg = scan_bar(arg, &obj->a, &obj->b);
-			obj->data.net = get_net_stat(arg, obj, free_at_crash);
-		} else {
-			// default to DEFAULTNETDEV
-			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf, obj, free_at_crash);
-			free(buf);
-		}
+		parse_net_stat_bar_arg(obj, arg, free_at_crash);
 #endif /* HAVE_IWLIB */
 
 #endif /* __linux__ */
@@ -550,34 +493,12 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(conky_build_date, 0)
 	END OBJ(conky_build_arch, 0)
 	END OBJ(downspeed, &update_net_stats)
-		if (arg) {
-			obj->data.net = get_net_stat(arg, obj, free_at_crash);
-		} else {
-			// default to DEFAULTNETDEV
-			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf, obj, free_at_crash);
-			free(buf);
-		}
+		parse_net_stat_arg(obj, arg, free_at_crash);
 	END OBJ(downspeedf, &update_net_stats)
-		if (arg) {
-			obj->data.net = get_net_stat(arg, obj, free_at_crash);
-		} else {
-			// default to DEFAULTNETDEV
-			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf, obj, free_at_crash);
-			free(buf);
-		}
+		parse_net_stat_arg(obj, arg, free_at_crash);
 #ifdef X11
 	END OBJ(downspeedgraph, &update_net_stats)
-		char *buf = 0;
-		SIZE_DEFAULTS(graph);
-		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-				&obj->e, &obj->char_a, &obj->char_b);
-
-		// default to DEFAULTNETDEV
-		buf = strndup(buf ? buf : DEFAULTNETDEV, text_buffer_size);
-		obj->data.net = get_net_stat(buf, obj, free_at_crash);
-		free(buf);
+		parse_net_stat_graph_arg(obj, arg, free_at_crash);
 #endif /* X11 */
 	END OBJ(else, 0)
 		obj_be_ifblock_else(ifblock_opaque, obj);
@@ -660,7 +581,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(hr, 0)
 		obj->data.i = arg ? atoi(arg) : 1;
 	END OBJ(nameserver, &update_dns_data)
-		obj->data.i = arg ? atoi(arg) : 0;
+		parse_nameserver_arg(obj, arg);
 	END OBJ(offset, 0)
 		obj->data.i = arg ? atoi(arg) : 1;
 	END OBJ(voffset, 0)
@@ -701,24 +622,10 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			return NULL;
 		}
 	} else OBJ(addr, &update_net_stats)
-		if (arg) {
-			obj->data.net = get_net_stat(arg, obj, free_at_crash);
-		} else {
-			// default to DEFAULTNETDEV
-			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf, obj, free_at_crash);
-			free(buf);
-		}
+		parse_net_stat_arg(obj, arg, free_at_crash);
 #if defined(__linux__)
 	END OBJ(addrs, &update_net_stats)
-		if (arg) {
-			obj->data.net = get_net_stat(arg, obj, free_at_crash);
-		} else {
-			// default to DEFAULTNETDEV
-			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf, obj, free_at_crash);
-			free(buf);
-		}
+		parse_net_stat_arg(obj, arg, free_at_crash);
 #endif /* __linux__ */
 	END OBJ_ARG(tail, 0, "tail needs arguments")
 		init_tailhead("tail", arg, obj, free_at_crash);
@@ -1094,24 +1001,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		init_iconv_stop();
 #endif
 	END OBJ(totaldown, &update_net_stats)
-		if (arg) {
-			obj->data.net = get_net_stat(arg, obj, free_at_crash);
-		} else {
-			// default to DEFAULTNETDEV
-			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf, obj, free_at_crash);
-			free(buf);
-		}
+		parse_net_stat_arg(obj, arg, free_at_crash);
 	END OBJ(totalup, &update_net_stats)
-		obj->data.net = get_net_stat(arg, obj, free_at_crash);
-		if (arg) {
-			obj->data.net = get_net_stat(arg, obj, free_at_crash);
-		} else {
-			// default to DEFAULTNETDEV
-			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf, obj, free_at_crash);
-			free(buf);
-		}
+		parse_net_stat_arg(obj, arg, free_at_crash);
 	END OBJ(updates, 0)
 	END OBJ_IF(if_updatenr, 0)
 		obj->data.ifblock.i = arg ? atoi(arg) : 0;
@@ -1122,35 +1014,12 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(alignc, 0)
 		obj->data.i = arg ? atoi(arg) : 0;
 	END OBJ(upspeed, &update_net_stats)
-		if (arg) {
-			obj->data.net = get_net_stat(arg, obj, free_at_crash);
-		} else {
-			// default to DEFAULTNETDEV
-			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf, obj, free_at_crash);
-			free(buf);
-		}
+		parse_net_stat_arg(obj, arg, free_at_crash);
 	END OBJ(upspeedf, &update_net_stats)
-		if (arg) {
-			obj->data.net = get_net_stat(arg, obj, free_at_crash);
-		} else {
-			// default to DEFAULTNETDEV
-			char *buf = strndup(DEFAULTNETDEV, text_buffer_size);
-			obj->data.net = get_net_stat(buf, obj, free_at_crash);
-			free(buf);
-		}
-
+		parse_net_stat_arg(obj, arg, free_at_crash);
 #ifdef X11
 	END OBJ(upspeedgraph, &update_net_stats)
-		char *buf = 0;
-		SIZE_DEFAULTS(graph);
-		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-				&obj->e, &obj->char_a, &obj->char_b);
-
-		// default to DEFAULTNETDEV
-		buf = strndup(buf ? buf : DEFAULTNETDEV, text_buffer_size);
-		obj->data.net = get_net_stat(buf, obj, free_at_crash);
-		free(buf);
+		parse_net_stat_graph_arg(obj, arg, free_at_crash);
 #endif
 	END OBJ(uptime_short, &update_uptime)
 	END OBJ(uptime, &update_uptime)

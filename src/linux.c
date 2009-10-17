@@ -33,6 +33,7 @@
 #include "logging.h"
 #include "common.h"
 #include "linux.h"
+#include "net_stat.h"
 #include "diskio.h"
 #include "temphelper.h"
 #include <dirent.h>
