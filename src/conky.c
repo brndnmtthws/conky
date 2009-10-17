@@ -75,6 +75,7 @@
 #include "algebra.h"
 #include "build.h"
 #include "colours.h"
+#include "combine.h"
 #include "diskio.h"
 #include "exec.h"
 #ifdef X11
@@ -2530,73 +2531,7 @@ void generate_text_internal(char *p, int p_max_size,
 				print_scroll(obj, p, p_max_size, cur);
 			}
 			OBJ(combine) {
-				char buf[2][max_user_text];
-				int i, j;
-				long longest=0;
-				int nextstart;
-				int nr_rows[2];
-				struct llrows {
-					char* row;
-					struct llrows* next;
-				};
-				struct llrows *ll_rows[2], *current[2];
-				struct text_object * objsub = obj->sub;
-
-				p[0]=0;
-				for(i=0; i<2; i++) {
-					nr_rows[i] = 1;
-					nextstart = 0;
-					ll_rows[i] = malloc(sizeof(struct llrows));
-					current[i] = ll_rows[i];
-					for(j=0; j<i; j++) objsub = objsub->sub;
-					generate_text_internal(buf[i], max_user_text, *objsub, cur);
-					for(j=0; buf[i][j] != 0; j++) {
-						if(buf[i][j] == '\t') buf[i][j] = ' ';
-						if(buf[i][j] == '\n') {
-							buf[i][j] = 0;
-							current[i]->row = strdup(buf[i]+nextstart);
-							if(i==0 && (long)strlen(current[i]->row) > longest) longest = (long)strlen(current[i]->row);
-							current[i]->next = malloc(sizeof(struct llrows));
-							current[i] = current[i]->next;
-							nextstart = j + 1;
-							nr_rows[i]++;
-						}
-					}
-					current[i]->row = strdup(buf[i]+nextstart);
-					if(i==0 && (long)strlen(current[i]->row) > longest) longest = (long)strlen(current[i]->row);
-					current[i]->next = NULL;
-					current[i] = ll_rows[i];
-				}
-				for(j=0; j < (nr_rows[0] > nr_rows[1] ? nr_rows[0] : nr_rows[1] ); j++) {
-					if(current[0]) {
-						strcat(p, current[0]->row);
-						i=strlen(current[0]->row);
-					}else i = 0;
-					while(i < longest) {
-						strcat(p, " ");
-						i++;
-					}
-					if(current[1]) {
-						strcat(p, obj->data.combine.seperation);
-						strcat(p, current[1]->row);
-					}
-					strcat(p, "\n");
-					#ifdef HAVE_OPENMP
-					#pragma omp parallel for schedule(dynamic,10)
-					#endif /* HAVE_OPENMP */
-					for(i=0; i<2; i++) if(current[i]) current[i]=current[i]->next;
-				}
-				#ifdef HAVE_OPENMP
-				#pragma omp parallel for schedule(dynamic,10)
-				#endif /* HAVE_OPENMP */
-				for(i=0; i<2; i++) {
-					while(ll_rows[i] != NULL) {
-						current[i]=ll_rows[i];
-						free(current[i]->row);
-						ll_rows[i]=current[i]->next;
-						free(current[i]);
-					}
-				}
+				print_combine(obj, p, cur);
 			}
 #ifdef NVIDIA
 			OBJ(nvidia) {

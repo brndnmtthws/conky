@@ -34,6 +34,7 @@
 #include "algebra.h"
 #include "build.h"
 #include "colours.h"
+#include "combine.h"
 #include "diskio.h"
 #include "exec.h"
 #ifdef X11
@@ -1445,50 +1446,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(scroll, 0)
 		parse_scroll_arg(obj, arg, free_at_crash);
 	END OBJ_ARG(combine, 0, "combine needs arguments: <text1> <text2>")
-		unsigned int i,j;
-		unsigned int indenting = 0;	//vars can be used as args for other vars
-		int startvar[2];
-		int endvar[2];
-		startvar[0] = endvar[0] = startvar[1] = endvar[1] = -1;
-		j=0;
-		for (i=0; arg[i] != 0 && j < 2; i++) {
-			if(startvar[j] == -1) {
-				if(arg[i] == '$') {
-					startvar[j] = i;
-				}
-			}else if(endvar[j] == -1) {
-				if(arg[i] == '{') {
-					indenting++;
-				}else if(arg[i] == '}') {
-					indenting--;
-				}
-				if (indenting == 0 && arg[i+1] < 48) {	//<48 has 0, $, and the most used chars not used in varnames but not { or }
-					endvar[j]=i+1;
-					j++;
-				}
-			}
-		}
-		if(startvar[0] >= 0 && endvar[0] >= 0 && startvar[1] >= 0 && endvar[1] >= 0) {
-			obj->data.combine.left = malloc(endvar[0]-startvar[0] + 1);
-			obj->data.combine.seperation = malloc(startvar[1] - endvar[0] + 1);
-			obj->data.combine.right= malloc(endvar[1]-startvar[1] + 1);
-
-			strncpy(obj->data.combine.left, arg + startvar[0], endvar[0] - startvar[0]);
-			obj->data.combine.left[endvar[0] - startvar[0]] = 0;
-
-			strncpy(obj->data.combine.seperation, arg + endvar[0], startvar[1] - endvar[0]);
-			obj->data.combine.seperation[startvar[1] - endvar[0]] = 0;
-
-			strncpy(obj->data.combine.right, arg + startvar[1], endvar[1] - startvar[1]);
-			obj->data.combine.right[endvar[1] - startvar[1]] = 0;
-
-			obj->sub = malloc(sizeof(struct text_object));
-			extract_variable_text_internal(obj->sub, obj->data.combine.left);
-			obj->sub->sub = malloc(sizeof(struct text_object));
-			extract_variable_text_internal(obj->sub->sub, obj->data.combine.right);
-		} else {
-			CRIT_ERR(obj, free_at_crash, "combine needs arguments: <text1> <text2>");
-		}
+		parse_combine_arg(obj, arg, free_at_crash);
 #ifdef NVIDIA
 	END OBJ_ARG(nvidia, 0, "nvidia needs an argument")
 		if (set_nvidia_type(&obj->data.nvidia, arg)) {
@@ -2128,11 +2086,7 @@ void free_text_objects(struct text_object *root, int internal)
 				free_scroll(obj);
 				break;
 			case OBJ_combine:
-				free(data.combine.left);
-				free(data.combine.seperation);
-				free(data.combine.right);
-				free_text_objects(obj->sub, 1);
-				free(obj->sub);
+				free_combine(obj);
 				break;
 #ifdef APCUPSD
 			case OBJ_apcupsd:
