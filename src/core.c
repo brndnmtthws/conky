@@ -163,23 +163,23 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif /* !__OpenBSD__ */
 		get_cpu_count();
 		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) == 0
-				|| (unsigned int) atoi(&arg[0]) > info.cpu_count) {
-			obj->data.cpu_index = 1;
+				|| atoi(&arg[0]) > info.cpu_count) {
+			obj->data.i = 1;
 			/* NORM_ERR("freq: Invalid CPU number or you don't have that many CPUs! "
 				"Displaying the clock for CPU 1."); */
 		} else {
-			obj->data.cpu_index = atoi(&arg[0]);
+			obj->data.i = atoi(&arg[0]);
 		}
 		obj->a = 1;
 	END OBJ(freq_g, 0)
 		get_cpu_count();
 		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) == 0
-				|| (unsigned int) atoi(&arg[0]) > info.cpu_count) {
-			obj->data.cpu_index = 1;
+				|| atoi(&arg[0]) > info.cpu_count) {
+			obj->data.i = 1;
 			/* NORM_ERR("freq_g: Invalid CPU number or you don't have that many "
 				"CPUs! Displaying the clock for CPU 1."); */
 		} else {
-			obj->data.cpu_index = atoi(&arg[0]);
+			obj->data.i = atoi(&arg[0]);
 		}
 		obj->a = 1;
 	END OBJ_ARG(read_tcp, 0, "read_tcp: Needs \"(host) port\" as argument(s)")
@@ -188,23 +188,23 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(voltage_mv, 0)
 		get_cpu_count();
 		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) == 0
-				|| (unsigned int) atoi(&arg[0]) > info.cpu_count) {
-			obj->data.cpu_index = 1;
+				|| atoi(&arg[0]) > info.cpu_count) {
+			obj->data.i = 1;
 			/* NORM_ERR("voltage_mv: Invalid CPU number or you don't have that many "
 				"CPUs! Displaying voltage for CPU 1."); */
 		} else {
-			obj->data.cpu_index = atoi(&arg[0]);
+			obj->data.i = atoi(&arg[0]);
 		}
 		obj->a = 1;
 	END OBJ(voltage_v, 0)
 		get_cpu_count();
 		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) == 0
-				|| (unsigned int) atoi(&arg[0]) > info.cpu_count) {
-			obj->data.cpu_index = 1;
+				|| atoi(&arg[0]) > info.cpu_count) {
+			obj->data.i = 1;
 			/* NORM_ERR("voltage_v: Invalid CPU number or you don't have that many "
 				"CPUs! Displaying voltage for CPU 1."); */
 		} else {
-			obj->data.cpu_index = atoi(&arg[0]);
+			obj->data.i = atoi(&arg[0]);
 		}
 		obj->a = 1;
 
@@ -337,34 +337,34 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(cached, &update_meminfo)
 #define SCAN_CPU(__arg, __var) { \
 	int __offset = 0; \
-	if (__arg && sscanf(__arg, " cpu%u %n", &__var, &__offset) > 0) \
+	if (__arg && sscanf(__arg, " cpu%d %n", &__var, &__offset) > 0) \
 		__arg += __offset; \
 	else \
 		__var = 0; \
 }
 	END OBJ(cpu, &update_cpu_usage)
-		SCAN_CPU(arg, obj->data.cpu_index);
-		DBGP2("Adding $cpu for CPU %d", obj->data.cpu_index);
+		SCAN_CPU(arg, obj->data.i);
+		DBGP2("Adding $cpu for CPU %d", obj->data.i);
 #ifdef X11
 	END OBJ(cpugauge, &update_cpu_usage)
 		SIZE_DEFAULTS(gauge);
-		SCAN_CPU(arg, obj->data.cpu_index);
+		SCAN_CPU(arg, obj->data.i);
 		scan_gauge(arg, &obj->a, &obj->b);
-		DBGP2("Adding $cpugauge for CPU %d", obj->data.cpu_index);
+		DBGP2("Adding $cpugauge for CPU %d", obj->data.i);
 #endif /* X11 */
 	END OBJ(cpubar, &update_cpu_usage)
 		SIZE_DEFAULTS(bar);
-		SCAN_CPU(arg, obj->data.cpu_index);
+		SCAN_CPU(arg, obj->data.i);
 		scan_bar(arg, &obj->a, &obj->b);
-		DBGP2("Adding $cpubar for CPU %d", obj->data.cpu_index);
+		DBGP2("Adding $cpubar for CPU %d", obj->data.i);
 #ifdef X11
 	END OBJ(cpugraph, &update_cpu_usage)
 		char *buf = 0;
 		SIZE_DEFAULTS(graph);
-		SCAN_CPU(arg, obj->data.cpu_index);
+		SCAN_CPU(arg, obj->data.i);
 		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->char_a, &obj->char_b);
-		DBGP2("Adding $cpugraph for CPU %d", obj->data.cpu_index);
+		DBGP2("Adding $cpugraph for CPU %d", obj->data.i);
 		if (buf) free(buf);
 	END OBJ(loadgraph, &update_load_average)
 		char *buf = 0;

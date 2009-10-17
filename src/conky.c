@@ -811,18 +811,18 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(freq) {
 				if (obj->a) {
 					obj->a = get_freq(p, p_max_size, "%.0f", 1,
-							obj->data.cpu_index);
+							obj->data.i);
 				}
 			}
 			OBJ(freq_g) {
 				if (obj->a) {
 #ifndef __OpenBSD__
 					obj->a = get_freq(p, p_max_size, "%'.2f", 1000,
-							obj->data.cpu_index);
+							obj->data.i);
 #else
 					/* OpenBSD has no such flag (SUSv2) */
 					obj->a = get_freq(p, p_max_size, "%.2f", 1000,
-							obj->data.cpu_index);
+							obj->data.i);
 #endif /* __OpenBSD */
 				}
 			}
@@ -830,13 +830,13 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(voltage_mv) {
 				if (obj->a) {
 					obj->a = get_voltage(p, p_max_size, "%.0f", 1,
-							obj->data.cpu_index);
+							obj->data.i);
 				}
 			}
 			OBJ(voltage_v) {
 				if (obj->a) {
 					obj->a = get_voltage(p, p_max_size, "%'.3f", 1000,
-							obj->data.cpu_index);
+							obj->data.i);
 				}
 			}
 
@@ -915,28 +915,28 @@ void generate_text_internal(char *p, int p_max_size,
 				human_readable(cur->cached * 1024, p, 255);
 			}
 			OBJ(cpu) {
-				if (obj->data.cpu_index > info.cpu_count) {
-					NORM_ERR("obj->data.cpu_index %i info.cpu_count %i",
-							obj->data.cpu_index, info.cpu_count);
+				if (obj->data.i > info.cpu_count) {
+					NORM_ERR("obj->data.i %i info.cpu_count %i",
+							obj->data.i, info.cpu_count);
 					CRIT_ERR(NULL, NULL, "attempting to use more CPUs than you have!");
 				}
 				percent_print(p, p_max_size,
-				              round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100.0));
+				              round_to_int(cur->cpu_usage[obj->data.i] * 100.0));
 			}
 #ifdef X11
 			OBJ(cpugauge)
 				new_gauge(p, obj->a, obj->b,
-						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 255.0));
+						round_to_int(cur->cpu_usage[obj->data.i] * 255.0));
 #endif /* X11 */
 			OBJ(cpubar) {
 #ifdef X11
 				if(output_methods & TO_X) {
 					new_bar(p, obj->a, obj->b,
-						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 255.0));
+						round_to_int(cur->cpu_usage[obj->data.i] * 255.0));
 				}else{
 #endif /* X11 */
 					if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-					new_bar_in_shell(p, p_max_size, round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100), obj->a);
+					new_bar_in_shell(p, p_max_size, round_to_int(cur->cpu_usage[obj->data.i] * 100), obj->a);
 #ifdef X11
 				}
 #endif /* X11 */
@@ -944,7 +944,7 @@ void generate_text_internal(char *p, int p_max_size,
 #ifdef X11
 			OBJ(cpugraph) {
 				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-						round_to_int(cur->cpu_usage[obj->data.cpu_index] * 100),
+						round_to_int(cur->cpu_usage[obj->data.i] * 100),
 						100, 1, obj->char_a, obj->char_b);
 			}
 			OBJ(loadgraph) {

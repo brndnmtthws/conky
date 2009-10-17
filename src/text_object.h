@@ -443,7 +443,6 @@ struct text_object {
 		int i;			/* some integer */
 		long l;			/* some other integer */
 		unsigned char loadavg[3];
-		unsigned int cpu_index;
 		struct mail_s *mail;
 
 		struct {
