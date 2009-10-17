@@ -47,6 +47,7 @@
 #include "mixer.h"
 #include "mail.h"
 #include "mboxscan.h"
+#include "read_tcp.h"
 #include "specials.h"
 #include "temphelper.h"
 #include "template.h"
@@ -176,17 +177,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		}
 		obj->a = 1;
 	END OBJ_ARG(read_tcp, 0, "read_tcp: Needs \"(host) port\" as argument(s)")
-		obj->data.read_tcp.host = malloc(text_buffer_size);
-		sscanf(arg, "%s", obj->data.read_tcp.host);
-		sscanf(arg+strlen(obj->data.read_tcp.host), "%u", &(obj->data.read_tcp.port));
-		if(obj->data.read_tcp.port == 0) {
-			obj->data.read_tcp.port = atoi(obj->data.read_tcp.host);
-			strcpy(obj->data.read_tcp.host,"localhost");
-		}
-		obj->data.read_tcp.port = htons(obj->data.read_tcp.port);
-		if(obj->data.read_tcp.port < 1 || obj->data.read_tcp.port > 65535) {
-			CRIT_ERR(obj, free_at_crash, "read_tcp: Needs \"(host) port\" as argument(s)");
-		}
+		parse_read_tcp_arg(obj, arg, free_at_crash);
 #if defined(__linux__)
 	END OBJ(voltage_mv, 0)
 		get_cpu_count();
@@ -1803,7 +1794,7 @@ void free_text_objects(struct text_object *root, int internal)
 				break;
 #endif /* __linux__ */
 			case OBJ_read_tcp:
-				free(data.read_tcp.host);
+				free_read_tcp(obj);
 				break;
 			case OBJ_time:
 			case OBJ_utime:

@@ -88,6 +88,7 @@
 #include "mixer.h"
 #include "mail.h"
 #include "mboxscan.h"
+#include "read_tcp.h"
 #include "specials.h"
 #include "temphelper.h"
 #include "template.h"
@@ -882,37 +883,7 @@ static void generate_text_internal(char *p, int p_max_size,
 			default:
 				NORM_ERR("not implemented obj type %d", obj->type);
 			OBJ(read_tcp) {
-				int sock, received;
-				struct sockaddr_in addr;
-				struct hostent* he;
-				fd_set readfds;
-				struct timeval tv;
-
-				if (!(he = gethostbyname(obj->data.read_tcp.host))) {
-					NORM_ERR("read_tcp: Problem with resolving the hostname");
-					break;
-				}
-				if ((sock = socket(he->h_addrtype, SOCK_STREAM, 0)) == -1) {
-					NORM_ERR("read_tcp: Couldn't create a socket");
-					break;
-				}
-				memset(&addr, 0, sizeof(addr));
-				addr.sin_family = AF_INET;
-				addr.sin_port = obj->data.read_tcp.port;
-				memcpy(&addr.sin_addr, he->h_addr, he->h_length);
-				if (!connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr))) {
-					NORM_ERR("read_tcp: Couldn't create a connection");
-					break;
-				}
-				FD_ZERO(&readfds);
-				FD_SET(sock, &readfds);
-				tv.tv_sec = 1;
-				tv.tv_usec = 0;
-				if(select(sock + 1, &readfds, NULL, NULL, &tv) > 0){
-					received = recv(sock, p, p_max_size, 0);
-					p[received] = 0;
-				}
-				close(sock);
+				print_read_tcp(obj, p, p_max_size);
 			}
 #ifndef __OpenBSD__
 			OBJ(acpitemp) {
