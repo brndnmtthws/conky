@@ -243,8 +243,6 @@ struct information {
 
 	float loadavg[3];
 
-	struct mail_s *mail;
-	int mail_running;
 #ifdef XMMS2
 	struct xmms2_s xmms2;
 #endif

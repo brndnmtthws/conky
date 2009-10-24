@@ -71,8 +71,8 @@ PRINT_MAILS_PROTO_GENERATOR(unreplied_)
 PRINT_MAILS_PROTO_GENERATOR(draft_)
 PRINT_MAILS_PROTO_GENERATOR(trashed_)
 
-/* FIXME: this is here for the config leftovers only */
-struct mail_s *parse_mail_args(char, const char *);
+void parse_global_imap_mail_args(const char *);
+void parse_global_pop3_mail_args(const char *);
 
 void parse_imap_mail_args(struct text_object *, const char *);
 void parse_pop3_mail_args(struct text_object *, const char *);

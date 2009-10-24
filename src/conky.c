@@ -4560,14 +4560,14 @@ char load_config_file(const char *f)
 		TEMPLATE_CONF(9)
 		CONF("imap") {
 			if (value) {
-				info.mail = parse_mail_args(IMAP_TYPE, value);
+				parse_global_imap_mail_args(value);
 			} else {
 				CONF_ERR;
 			}
 		}
 		CONF("pop3") {
 			if (value) {
-				info.mail = parse_mail_args(POP3_TYPE, value);
+				parse_global_pop3_mail_args(value);
 			} else {
 				CONF_ERR;
 			}

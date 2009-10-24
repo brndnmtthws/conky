@@ -60,6 +60,9 @@
 
 char *current_mail_spool;
 
+static struct mail_s *global_mail;
+static int global_mail_use = 0;
+
 void update_mail_count(struct local_mail_s *mail)
 {
 	struct stat st;
@@ -435,30 +438,69 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 
 void parse_imap_mail_args(struct text_object *obj, const char *arg)
 {
+	static int rep = 0;
+
 	if (!arg) {
-		obj->char_b = 1;
+		if (!global_mail && !rep) {
+			// something is wrong, warn once then stop
+			NORM_ERR("There's a problem with your mail settings.  "
+					"Check that the global mail settings are properly defined"
+					" (line %li).", obj->line);
+			rep = 1;
+			return;
+		}
+		obj->data.mail = global_mail;
+		global_mail_use++;
 		return;
 	}
 	// proccss
 	obj->data.mail = parse_mail_args(IMAP_TYPE, arg);
-	obj->char_b = 0;
 }
 
 void parse_pop3_mail_args(struct text_object *obj, const char *arg)
 {
+	static int rep = 0;
+
 	if (!arg) {
-		obj->char_b = 1;
+		if (!global_mail && !rep) {
+			// something is wrong, warn once then stop
+			NORM_ERR("There's a problem with your mail settings.  "
+					"Check that the global mail settings are properly defined"
+					" (line %li).", obj->line);
+			rep = 1;
+			return;
+		}
+		obj->data.mail = global_mail;
+		global_mail_use++;
 		return;
 	}
 	// proccss
 	obj->data.mail = parse_mail_args(POP3_TYPE, arg);
-	obj->char_b = 0;
+}
+
+void parse_global_imap_mail_args(const char *value)
+{
+	global_mail = parse_mail_args(IMAP_TYPE, value);
+}
+
+void parse_global_pop3_mail_args(const char *value)
+{
+	global_mail = parse_mail_args(POP3_TYPE, value);
 }
 
 void free_mail_obj(struct text_object *obj)
 {
-	if (!obj->char_b) {
+	if (!obj->data.mail)
+		return;
+
+	if (obj->data.mail == global_mail) {
+		if (--global_mail_use == 0) {
+			free(global_mail);
+			global_mail = 0;
+		}
+	} else {
 		free(obj->data.mail);
+		obj->data.mail = 0;
 	}
 }
 
@@ -523,50 +565,27 @@ void imap_unseen_command(struct mail_s *mail, unsigned long old_unseen, unsigned
 	}
 }
 
-static inline struct mail_s *ensure_mail_thread(struct text_object *obj,
+static void ensure_mail_thread(struct text_object *obj,
 		void *thread(void *), const char *text)
 {
-	if (obj->char_b && info.mail) {
-		// this means we use info
-		if (!info.mail->p_timed_thread) {
-			info.mail->p_timed_thread =
-				timed_thread_create(thread,
-						(void *) info.mail, info.mail->interval * 1000000);
-			if (!info.mail->p_timed_thread) {
-				NORM_ERR("Error creating %s timed thread", text);
-			}
-			timed_thread_register(info.mail->p_timed_thread,
-					&info.mail->p_timed_thread);
-			if (timed_thread_run(info.mail->p_timed_thread)) {
-				NORM_ERR("Error running %s timed thread", text);
-			}
-		}
-		return info.mail;
-	} else if (obj->data.mail) {
-		// this means we use obj
-		if (!obj->data.mail->p_timed_thread) {
-			obj->data.mail->p_timed_thread =
-				timed_thread_create(thread,
-						(void *) obj->data.mail,
-						obj->data.mail->interval * 1000000);
-			if (!obj->data.mail->p_timed_thread) {
-				NORM_ERR("Error creating %s timed thread", text);
-			}
-			timed_thread_register(obj->data.mail->p_timed_thread,
-					&obj->data.mail->p_timed_thread);
-			if (timed_thread_run(obj->data.mail->p_timed_thread)) {
-				NORM_ERR("Error running %s timed thread", text);
-			}
-		}
-		return obj->data.mail;
-	} else if (!obj->a) {
-		// something is wrong, warn once then stop
-		NORM_ERR("There's a problem with your mail settings.  "
-				"Check that the global mail settings are properly defined"
-				" (line %li).", obj->line);
-		obj->a++;
+	if (!obj->data.mail)
+		return;
+
+	if (obj->data.mail->p_timed_thread)
+		return;
+
+	obj->data.mail->p_timed_thread =
+		timed_thread_create(thread,
+				(void *) obj->data.mail,
+				obj->data.mail->interval * 1000000);
+	if (!obj->data.mail->p_timed_thread) {
+		NORM_ERR("Error creating %s timed thread", text);
 	}
-	return NULL;
+	timed_thread_register(obj->data.mail->p_timed_thread,
+			&obj->data.mail->p_timed_thread);
+	if (timed_thread_run(obj->data.mail->p_timed_thread)) {
+		NORM_ERR("Error running %s timed thread", text);
+	}
 }
 
 static void *imap_thread(void *arg)
