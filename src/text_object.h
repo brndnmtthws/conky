@@ -443,7 +443,6 @@ struct text_object {
 		int i;			/* some integer */
 		long l;			/* some other integer */
 		unsigned char loadavg[3];
-		struct mail_s *mail;
 
 		struct {
 			void *opaque;	/* temporary workaround to not blow stuff */

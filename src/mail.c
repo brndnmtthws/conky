@@ -449,12 +449,12 @@ void parse_imap_mail_args(struct text_object *obj, const char *arg)
 			rep = 1;
 			return;
 		}
-		obj->data.mail = global_mail;
+		obj->data.opaque = global_mail;
 		global_mail_use++;
 		return;
 	}
 	// proccss
-	obj->data.mail = parse_mail_args(IMAP_TYPE, arg);
+	obj->data.opaque = parse_mail_args(IMAP_TYPE, arg);
 }
 
 void parse_pop3_mail_args(struct text_object *obj, const char *arg)
@@ -470,12 +470,12 @@ void parse_pop3_mail_args(struct text_object *obj, const char *arg)
 			rep = 1;
 			return;
 		}
-		obj->data.mail = global_mail;
+		obj->data.opaque = global_mail;
 		global_mail_use++;
 		return;
 	}
 	// proccss
-	obj->data.mail = parse_mail_args(POP3_TYPE, arg);
+	obj->data.opaque = parse_mail_args(POP3_TYPE, arg);
 }
 
 void parse_global_imap_mail_args(const char *value)
@@ -490,17 +490,17 @@ void parse_global_pop3_mail_args(const char *value)
 
 void free_mail_obj(struct text_object *obj)
 {
-	if (!obj->data.mail)
+	if (!obj->data.opaque)
 		return;
 
-	if (obj->data.mail == global_mail) {
+	if (obj->data.opaque == global_mail) {
 		if (--global_mail_use == 0) {
 			free(global_mail);
 			global_mail = 0;
 		}
 	} else {
-		free(obj->data.mail);
-		obj->data.mail = 0;
+		free(obj->data.opaque);
+		obj->data.opaque = 0;
 	}
 }
 
@@ -565,25 +565,20 @@ void imap_unseen_command(struct mail_s *mail, unsigned long old_unseen, unsigned
 	}
 }
 
-static void ensure_mail_thread(struct text_object *obj,
+static void ensure_mail_thread(struct mail_s *mail,
 		void *thread(void *), const char *text)
 {
-	if (!obj->data.mail)
+	if (mail->p_timed_thread)
 		return;
 
-	if (obj->data.mail->p_timed_thread)
-		return;
-
-	obj->data.mail->p_timed_thread =
-		timed_thread_create(thread,
-				(void *) obj->data.mail,
-				obj->data.mail->interval * 1000000);
-	if (!obj->data.mail->p_timed_thread) {
+	mail->p_timed_thread = timed_thread_create(thread,
+				mail, mail->interval * 1000000);
+	if (!mail->p_timed_thread) {
 		NORM_ERR("Error creating %s timed thread", text);
 	}
-	timed_thread_register(obj->data.mail->p_timed_thread,
-			&obj->data.mail->p_timed_thread);
-	if (timed_thread_run(obj->data.mail->p_timed_thread)) {
+	timed_thread_register(mail->p_timed_thread,
+			&mail->p_timed_thread);
+	if (timed_thread_run(mail->p_timed_thread)) {
 		NORM_ERR("Error running %s timed thread", text);
 	}
 }
@@ -885,7 +880,12 @@ static void *imap_thread(void *arg)
 
 void print_imap_unseen(struct text_object *obj, char *p, int p_max_size)
 {
-	struct mail_s *mail = ensure_mail_thread(obj, imap_thread, "imap");
+	struct mail_s *mail = obj->data.opaque;
+
+	if (!mail)
+		return;
+
+	ensure_mail_thread(mail, imap_thread, "imap");
 
 	if (mail && mail->p_timed_thread) {
 		timed_thread_lock(mail->p_timed_thread);
@@ -896,7 +896,12 @@ void print_imap_unseen(struct text_object *obj, char *p, int p_max_size)
 
 void print_imap_messages(struct text_object *obj, char *p, int p_max_size)
 {
-	struct mail_s *mail = ensure_mail_thread(obj, imap_thread, "imap");
+	struct mail_s *mail = obj->data.opaque;
+
+	if (!mail)
+		return;
+
+	ensure_mail_thread(mail, imap_thread, "imap");
 
 	if (mail && mail->p_timed_thread) {
 		timed_thread_lock(mail->p_timed_thread);
@@ -1053,14 +1058,14 @@ static void *pop3_thread(void *arg)
 				sscanf(reply, "%lu %lu", &mail->unseen, &mail->used);
 				timed_thread_unlock(mail->p_timed_thread);
 			}
-			
+
 			strncpy(sendbuf, "QUIT\r\n", MAXDATASIZE);
 			if (pop3_command(sockfd, sendbuf, recvbuf, "+OK")) {
 				NORM_ERR("POP3 logout failed: %s", recvbuf);
 				fail++;
 				break;
 			}
-			
+
 			if (strlen(mail->command) > 1 && mail->unseen > old_unseen) {
 				// new mail goodie
 				if (system(mail->command) == -1) {
@@ -1085,7 +1090,12 @@ static void *pop3_thread(void *arg)
 
 void print_pop3_unseen(struct text_object *obj, char *p, int p_max_size)
 {
-	struct mail_s *mail = ensure_mail_thread(obj, pop3_thread, "pop3");
+	struct mail_s *mail = obj->data.opaque;
+
+	if (!mail)
+		return;
+
+	ensure_mail_thread(mail, pop3_thread, "pop3");
 
 	if (mail && mail->p_timed_thread) {
 		timed_thread_lock(mail->p_timed_thread);
@@ -1096,7 +1106,12 @@ void print_pop3_unseen(struct text_object *obj, char *p, int p_max_size)
 
 void print_pop3_used(struct text_object *obj, char *p, int p_max_size)
 {
-	struct mail_s *mail = ensure_mail_thread(obj, pop3_thread, "pop3");
+	struct mail_s *mail = obj->data.opaque;
+
+	if (!mail)
+		return;
+
+	ensure_mail_thread(mail, pop3_thread, "pop3");
 
 	if (mail && mail->p_timed_thread) {
 		timed_thread_lock(mail->p_timed_thread);
