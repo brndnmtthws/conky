@@ -30,14 +30,6 @@
 #define _TEXT_OBJECT_H
 
 #include "config.h"		/* for the defines */
-#include "timed_thread.h"	/* timed_thread */
-
-#ifdef TCP_PORT_MONITOR
-#include "tcp-portmon.h"	/* tcp_port_monitor_data */
-#endif
-
-#include "mail.h"		/* local_mail_s */
-#include "fs.h"			/* struct fs_stat */
 
 enum text_object_type {
 	OBJ_read_tcp,
@@ -456,7 +448,6 @@ struct text_object {
 			int a, b;
 		} pair;			/* 2 */
 
-		struct local_mail_s local_mail;
 	} data;
 	int type;
 	int a, b;

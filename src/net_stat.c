@@ -29,6 +29,7 @@
  */
 
 #include "config.h"
+#include "conky.h"
 #include "logging.h"
 #include "specials.h"
 #include "net/if.h"

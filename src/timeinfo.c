@@ -28,8 +28,11 @@
  *
  */
 
+#include "conky.h"
 #include "text_object.h"
 #include <locale.h>
+#include <string.h>
+#include <time.h>
 
 struct tztime_s {
 	char *tz;	/* timezone variable */

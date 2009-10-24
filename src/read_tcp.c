@@ -28,9 +28,12 @@
  *
  */
 
+#include "conky.h"
 #include "logging.h"
 #include "text_object.h"
 #include <netdb.h>
+#include <stdlib.h>
+#include <string.h>
 
 struct read_tcp_data {
 	char *host;

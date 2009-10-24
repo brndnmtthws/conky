@@ -32,7 +32,6 @@
 #include "conky.h"
 #include "common.h"
 #include "logging.h"
-#include "mail.h"
 #include "text_object.h"
 
 #include <errno.h>
@@ -58,12 +57,52 @@
  * #define MAX(a, b)  ((a > b) ? a : b)
  */
 
+#define POP3_TYPE 1
+#define IMAP_TYPE 2
+
+struct mail_s {			// for imap and pop3
+	unsigned long unseen;
+	unsigned long messages;
+	unsigned long used;
+	unsigned long quota;
+	unsigned long port;
+	unsigned int retries;
+	float interval;
+	double last_update;
+	char host[128];
+	char user[128];
+	char pass[128];
+	char command[1024];
+	char folder[128];
+	timed_thread *p_timed_thread;
+	char secure;
+};
+
+struct local_mail_s {
+	char *mbox;
+	int mail_count;
+	int new_mail_count;
+	int seen_mail_count;
+	int unseen_mail_count;
+	int flagged_mail_count;
+	int unflagged_mail_count;
+	int forwarded_mail_count;
+	int unforwarded_mail_count;
+	int replied_mail_count;
+	int unreplied_mail_count;
+	int draft_mail_count;
+	int trashed_mail_count;
+	float interval;
+	time_t last_mtime;
+	double last_update;
+};
+
 char *current_mail_spool;
 
 static struct mail_s *global_mail;
 static int global_mail_use = 0;
 
-void update_mail_count(struct local_mail_s *mail)
+static void update_mail_count(struct local_mail_s *mail)
 {
 	struct stat st;
 
@@ -301,6 +340,7 @@ void parse_local_mail_args(struct text_object *obj, const char *arg)
 {
 	float n1;
 	char mbox[256], dst[256];
+	struct local_mail_s *locmail;
 
 	if (!arg) {
 		n1 = 9.5;
@@ -318,15 +358,22 @@ void parse_local_mail_args(struct text_object *obj, const char *arg)
 	}
 
 	variable_substitute(mbox, dst, sizeof(dst));
-	obj->data.local_mail.mbox = strndup(dst, text_buffer_size);
-	obj->data.local_mail.interval = n1;
+
+	locmail = malloc(sizeof(struct local_mail_s));
+	memset(locmail, 0, sizeof(struct local_mail_s));
+	locmail->mbox = strndup(dst, text_buffer_size);
+	locmail->interval = n1;
+	obj->data.opaque = locmail;
 }
 
 #define PRINT_MAILS_GENERATOR(x) \
 void print_##x##mails(struct text_object *obj, char *p, int p_max_size) \
 { \
-	update_mail_count(&obj->data.local_mail); \
-	snprintf(p, p_max_size, "%d", obj->data.local_mail.x##mail_count); \
+	struct local_mail_s *locmail = obj->data.opaque; \
+	if (!locmail) \
+		return; \
+	update_mail_count(locmail); \
+	snprintf(p, p_max_size, "%d", locmail->x##mail_count); \
 }
 
 PRINT_MAILS_GENERATOR()
@@ -341,6 +388,19 @@ PRINT_MAILS_GENERATOR(replied_)
 PRINT_MAILS_GENERATOR(unreplied_)
 PRINT_MAILS_GENERATOR(draft_)
 PRINT_MAILS_GENERATOR(trashed_)
+
+void free_local_mails(struct text_object *obj)
+{
+	struct local_mail_s *locmail = obj->data.opaque;
+
+	if (!locmail)
+		return;
+
+	if (locmail->mbox)
+		free(locmail->mbox);
+	free(obj->data.opaque);
+	obj->data.opaque = 0;
+}
 
 #define MAXDATASIZE 1000
 

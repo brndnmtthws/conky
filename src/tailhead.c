@@ -28,10 +28,13 @@
  *
  */
 
+#define _GNU_SOURCE
+#include "common.h"
 #include "text_object.h"
 #include "logging.h"
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h>
 #include <unistd.h>
 
 #define MAX_HEADTAIL_LINES 30

@@ -1356,7 +1356,7 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_unreplied_mails:
 			case OBJ_draft_mails:
 			case OBJ_trashed_mails:
-				free(data.local_mail.mbox);
+				free_local_mails(obj);
 				break;
 			case OBJ_imap_unseen:
 			case OBJ_imap_messages:

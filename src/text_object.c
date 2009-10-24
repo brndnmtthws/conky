@@ -28,6 +28,8 @@
  */
 #include "text_object.h"
 #include "logging.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 /* text_object_list
  *
