@@ -55,7 +55,7 @@ static double last_update;
 static int args_ok = 0;
 static int from_width;
 static int subject_width;
-static int print_mails;
+static int print_num_mails;
 static int time_delay;
 
 static char mbox_mail_spool[DEFAULT_TEXT_BUFFER_SIZE];
@@ -81,14 +81,14 @@ void mbox_scan(char *args, char *output, size_t max_len)
 		char *substr = strstr(args, "-n");
 
 		if (substr) {
-			if (sscanf(substr, "-n %i", &print_mails) != 1) {
-				print_mails = PRINT_MAILS;
+			if (sscanf(substr, "-n %i", &print_num_mails) != 1) {
+				print_num_mails = PRINT_MAILS;
 			}
 		} else {
-			print_mails = PRINT_MAILS;
+			print_num_mails = PRINT_MAILS;
 		}
-		if (print_mails < 1) {
-			print_mails = 1;
+		if (print_num_mails < 1) {
+			print_num_mails = 1;
 		}
 
 		substr = strstr(args, "-t");
@@ -181,7 +181,7 @@ void mbox_scan(char *args, char *output, size_t max_len)
 
 	/* build up double-linked ring-list to hold data, while scanning down the
 	 * mbox */
-	for (i = 0; i < print_mails; i++) {
+	for (i = 0; i < print_num_mails; i++) {
 		curr = (struct ring_list *) malloc(sizeof(struct ring_list));
 		curr->from = (char *) malloc(sizeof(char[from_width + 1]));
 		curr->subject = (char *) malloc(sizeof(char[subject_width + 1]));
@@ -340,11 +340,11 @@ void mbox_scan(char *args, char *output, size_t max_len)
 
 	output[0] = '\0';
 
-	i = print_mails;
+	i = print_num_mails;
 	while (i) {
 		struct ring_list *tmp;
 		if (curr->from[0] != '\0') {
-			if (i != print_mails) {
+			if (i != print_num_mails) {
 				snprintf(buf, text_buffer_size, "\nF: %-*s S: %-*s", from_width,
 					curr->from, subject_width, curr->subject);
 			} else {	/* first time - no \n in front */

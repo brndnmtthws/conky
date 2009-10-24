@@ -294,6 +294,51 @@ void update_mail_count(struct local_mail_s *mail)
 	}
 }
 
+void parse_local_mail_args(struct text_object *obj, const char *arg)
+{
+	float n1;
+	char mbox[256], dst[256];
+
+	if (!arg) {
+		n1 = 9.5;
+		/* Kapil: Changed from MAIL_FILE to
+		   current_mail_spool since the latter
+		   is a copy of the former if undefined
+		   but the latter should take precedence
+		   if defined */
+		strncpy(mbox, current_mail_spool, sizeof(mbox));
+	} else {
+		if (sscanf(arg, "%s %f", mbox, &n1) != 2) {
+			n1 = 9.5;
+			strncpy(mbox, arg, sizeof(mbox));
+		}
+	}
+
+	variable_substitute(mbox, dst, sizeof(dst));
+	obj->data.local_mail.mbox = strndup(dst, text_buffer_size);
+	obj->data.local_mail.interval = n1;
+}
+
+#define PRINT_MAILS_GENERATOR(x) \
+void print_##x##mails(struct text_object *obj, char *p, int p_max_size) \
+{ \
+	update_mail_count(&obj->data.local_mail); \
+	snprintf(p, p_max_size, "%d", obj->data.local_mail.x##mail_count); \
+}
+
+PRINT_MAILS_GENERATOR()
+PRINT_MAILS_GENERATOR(new_)
+PRINT_MAILS_GENERATOR(seen_)
+PRINT_MAILS_GENERATOR(unseen_)
+PRINT_MAILS_GENERATOR(flagged_)
+PRINT_MAILS_GENERATOR(unflagged_)
+PRINT_MAILS_GENERATOR(forwarded_)
+PRINT_MAILS_GENERATOR(unforwarded_)
+PRINT_MAILS_GENERATOR(replied_)
+PRINT_MAILS_GENERATOR(unreplied_)
+PRINT_MAILS_GENERATOR(draft_)
+PRINT_MAILS_GENERATOR(trashed_)
+
 #define MAXDATASIZE 1000
 
 struct mail_s *parse_mail_args(char type, const char *arg)

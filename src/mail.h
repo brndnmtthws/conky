@@ -53,6 +53,24 @@ void update_mail_count(struct local_mail_s *);
 #define POP3_TYPE 1
 #define IMAP_TYPE 2
 
+void parse_local_mail_args(struct text_object *, const char *);
+
+#define PRINT_MAILS_PROTO_GENERATOR(x) \
+void print_##x##mails(struct text_object *, char *, int);
+
+PRINT_MAILS_PROTO_GENERATOR()
+PRINT_MAILS_PROTO_GENERATOR(new_)
+PRINT_MAILS_PROTO_GENERATOR(seen_)
+PRINT_MAILS_PROTO_GENERATOR(unseen_)
+PRINT_MAILS_PROTO_GENERATOR(flagged_)
+PRINT_MAILS_PROTO_GENERATOR(unflagged_)
+PRINT_MAILS_PROTO_GENERATOR(forwarded_)
+PRINT_MAILS_PROTO_GENERATOR(unforwarded_)
+PRINT_MAILS_PROTO_GENERATOR(replied_)
+PRINT_MAILS_PROTO_GENERATOR(unreplied_)
+PRINT_MAILS_PROTO_GENERATOR(draft_)
+PRINT_MAILS_PROTO_GENERATOR(trashed_)
+
 /* FIXME: this is here for the config leftovers only */
 struct mail_s *parse_mail_args(char, const char *);
 

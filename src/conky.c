@@ -1672,63 +1672,40 @@ void generate_text_internal(char *p, int p_max_size,
 
 			/* mail stuff */
 			OBJ(mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d", obj->data.local_mail.mail_count);
+				print_mails(obj, p, p_max_size);
 			}
 			OBJ(new_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.new_mail_count);
+				print_new_mails(obj, p, p_max_size);
 			}
 			OBJ(seen_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.seen_mail_count);
+				print_seen_mails(obj, p, p_max_size);
 			}
 			OBJ(unseen_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.unseen_mail_count);
+				print_unseen_mails(obj, p, p_max_size);
 			}
 			OBJ(flagged_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.flagged_mail_count);
+				print_flagged_mails(obj, p, p_max_size);
 			}
 			OBJ(unflagged_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.unflagged_mail_count);
+				print_unflagged_mails(obj, p, p_max_size);
 			}
 			OBJ(forwarded_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.forwarded_mail_count);
+				print_forwarded_mails(obj, p, p_max_size);
 			}
 			OBJ(unforwarded_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.unforwarded_mail_count);
+				print_unforwarded_mails(obj, p, p_max_size);
 			}
 			OBJ(replied_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.replied_mail_count);
+				print_replied_mails(obj, p, p_max_size);
 			}
 			OBJ(unreplied_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.unreplied_mail_count);
+				print_unreplied_mails(obj, p, p_max_size);
 			}
 			OBJ(draft_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.draft_mail_count);
+				print_draft_mails(obj, p, p_max_size);
 			}
 			OBJ(trashed_mails) {
-				update_mail_count(&obj->data.local_mail);
-				snprintf(p, p_max_size, "%d",
-					obj->data.local_mail.trashed_mail_count);
+				print_trashed_mails(obj, p, p_max_size);
 			}
 			OBJ(mboxscan) {
 				mbox_scan(obj->data.mboxscan.args, obj->data.mboxscan.output,
