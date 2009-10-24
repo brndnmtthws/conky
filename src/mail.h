@@ -6,6 +6,9 @@
 #include "timed_thread.h"
 #include <time.h>
 
+/* forward declare to make gcc happy */
+struct text_object;
+
 extern char *current_mail_spool;
 
 struct mail_s {			// for imap and pop3
@@ -50,8 +53,15 @@ void update_mail_count(struct local_mail_s *);
 #define POP3_TYPE 1
 #define IMAP_TYPE 2
 
-struct mail_s *parse_mail_args(char type, const char *arg);
-void *imap_thread(void *arg);
-void *pop3_thread(void *arg);
+/* FIXME: this is here for the config leftovers only */
+struct mail_s *parse_mail_args(char, const char *);
+
+void parse_imap_mail_args(struct text_object *, const char *);
+void parse_pop3_mail_args(struct text_object *, const char *);
+void free_mail_obj(struct text_object *);
+void print_imap_unseen(struct text_object *, char *, int);
+void print_imap_messages(struct text_object *, char *, int);
+void print_pop3_unseen(struct text_object *, char *, int);
+void print_pop3_used(struct text_object *, char *, int);
 
 #endif /* _MAIL_H */

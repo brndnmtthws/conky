@@ -1042,37 +1042,13 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(apm_battery_time, 0)
 #endif /* __FreeBSD__ */
 	END OBJ(imap_unseen, 0)
-		if (arg) {
-			// proccss
-			obj->data.mail = parse_mail_args(IMAP_TYPE, arg);
-			obj->char_b = 0;
-		} else {
-			obj->char_b = 1;
-		}
+		parse_imap_mail_args(obj, arg);
 	END OBJ(imap_messages, 0)
-		if (arg) {
-			// proccss
-			obj->data.mail = parse_mail_args(IMAP_TYPE, arg);
-			obj->char_b = 0;
-		} else {
-			obj->char_b = 1;
-		}
+		parse_imap_mail_args(obj, arg);
 	END OBJ(pop3_unseen, 0)
-		if (arg) {
-			// proccss
-			obj->data.mail = parse_mail_args(POP3_TYPE, arg);
-			obj->char_b = 0;
-		} else {
-			obj->char_b = 1;
-		}
+		parse_pop3_mail_args(obj, arg);
 	END OBJ(pop3_used, 0)
-		if (arg) {
-			// proccss
-			obj->data.mail = parse_mail_args(POP3_TYPE, arg);
-			obj->char_b = 0;
-		} else {
-			obj->char_b = 1;
-		}
+		parse_pop3_mail_args(obj, arg);
 #ifdef IBM
 	END OBJ_ARG(smapi, 0, "smapi needs an argument")
 		obj->data.s = strndup(arg, text_buffer_size);
@@ -1627,24 +1603,10 @@ void free_text_objects(struct text_object *root, int internal)
 				free(data.local_mail.mbox);
 				break;
 			case OBJ_imap_unseen:
-				if (!obj->char_b) {
-					free(data.mail);
-				}
-				break;
 			case OBJ_imap_messages:
-				if (!obj->char_b) {
-					free(data.mail);
-				}
-				break;
 			case OBJ_pop3_unseen:
-				if (!obj->char_b) {
-					free(data.mail);
-				}
-				break;
 			case OBJ_pop3_used:
-				if (!obj->char_b) {
-					free(data.mail);
-				}
+				free_mail_obj(obj);
 				break;
 			case OBJ_if_empty:
 			case OBJ_if_match:

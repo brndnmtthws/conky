@@ -33,6 +33,7 @@
 #include "common.h"
 #include "logging.h"
 #include "mail.h"
+#include "text_object.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -387,6 +388,35 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 	return mail;
 }
 
+void parse_imap_mail_args(struct text_object *obj, const char *arg)
+{
+	if (!arg) {
+		obj->char_b = 1;
+		return;
+	}
+	// proccss
+	obj->data.mail = parse_mail_args(IMAP_TYPE, arg);
+	obj->char_b = 0;
+}
+
+void parse_pop3_mail_args(struct text_object *obj, const char *arg)
+{
+	if (!arg) {
+		obj->char_b = 1;
+		return;
+	}
+	// proccss
+	obj->data.mail = parse_mail_args(POP3_TYPE, arg);
+	obj->char_b = 0;
+}
+
+void free_mail_obj(struct text_object *obj)
+{
+	if (!obj->char_b) {
+		free(obj->data.mail);
+	}
+}
+
 int imap_command(int sockfd, const char *command, char *response, const char *verify)
 {
 	struct timeval fetchtimeout;
@@ -448,7 +478,53 @@ void imap_unseen_command(struct mail_s *mail, unsigned long old_unseen, unsigned
 	}
 }
 
-void *imap_thread(void *arg)
+static inline struct mail_s *ensure_mail_thread(struct text_object *obj,
+		void *thread(void *), const char *text)
+{
+	if (obj->char_b && info.mail) {
+		// this means we use info
+		if (!info.mail->p_timed_thread) {
+			info.mail->p_timed_thread =
+				timed_thread_create(thread,
+						(void *) info.mail, info.mail->interval * 1000000);
+			if (!info.mail->p_timed_thread) {
+				NORM_ERR("Error creating %s timed thread", text);
+			}
+			timed_thread_register(info.mail->p_timed_thread,
+					&info.mail->p_timed_thread);
+			if (timed_thread_run(info.mail->p_timed_thread)) {
+				NORM_ERR("Error running %s timed thread", text);
+			}
+		}
+		return info.mail;
+	} else if (obj->data.mail) {
+		// this means we use obj
+		if (!obj->data.mail->p_timed_thread) {
+			obj->data.mail->p_timed_thread =
+				timed_thread_create(thread,
+						(void *) obj->data.mail,
+						obj->data.mail->interval * 1000000);
+			if (!obj->data.mail->p_timed_thread) {
+				NORM_ERR("Error creating %s timed thread", text);
+			}
+			timed_thread_register(obj->data.mail->p_timed_thread,
+					&obj->data.mail->p_timed_thread);
+			if (timed_thread_run(obj->data.mail->p_timed_thread)) {
+				NORM_ERR("Error running %s timed thread", text);
+			}
+		}
+		return obj->data.mail;
+	} else if (!obj->a) {
+		// something is wrong, warn once then stop
+		NORM_ERR("There's a problem with your mail settings.  "
+				"Check that the global mail settings are properly defined"
+				" (line %li).", obj->line);
+		obj->a++;
+	}
+	return NULL;
+}
+
+static void *imap_thread(void *arg)
 {
 	int sockfd, numbytes;
 	char recvbuf[MAXDATASIZE];
@@ -743,6 +819,28 @@ void *imap_thread(void *arg)
 	return 0;
 }
 
+void print_imap_unseen(struct text_object *obj, char *p, int p_max_size)
+{
+	struct mail_s *mail = ensure_mail_thread(obj, imap_thread, "imap");
+
+	if (mail && mail->p_timed_thread) {
+		timed_thread_lock(mail->p_timed_thread);
+		snprintf(p, p_max_size, "%lu", mail->unseen);
+		timed_thread_unlock(mail->p_timed_thread);
+	}
+}
+
+void print_imap_messages(struct text_object *obj, char *p, int p_max_size)
+{
+	struct mail_s *mail = ensure_mail_thread(obj, imap_thread, "imap");
+
+	if (mail && mail->p_timed_thread) {
+		timed_thread_lock(mail->p_timed_thread);
+		snprintf(p, p_max_size, "%lu", mail->messages);
+		timed_thread_unlock(mail->p_timed_thread);
+	}
+}
+
 int pop3_command(int sockfd, const char *command, char *response, const char *verify)
 {
 	struct timeval fetchtimeout;
@@ -771,7 +869,7 @@ int pop3_command(int sockfd, const char *command, char *response, const char *ve
 	return 0;
 }
 
-void *pop3_thread(void *arg)
+static void *pop3_thread(void *arg)
 {
 	int sockfd, numbytes;
 	char recvbuf[MAXDATASIZE];
@@ -921,3 +1019,25 @@ void *pop3_thread(void *arg)
 	return 0;
 }
 
+void print_pop3_unseen(struct text_object *obj, char *p, int p_max_size)
+{
+	struct mail_s *mail = ensure_mail_thread(obj, pop3_thread, "pop3");
+
+	if (mail && mail->p_timed_thread) {
+		timed_thread_lock(mail->p_timed_thread);
+		snprintf(p, p_max_size, "%lu", mail->unseen);
+		timed_thread_unlock(mail->p_timed_thread);
+	}
+}
+
+void print_pop3_used(struct text_object *obj, char *p, int p_max_size)
+{
+	struct mail_s *mail = ensure_mail_thread(obj, pop3_thread, "pop3");
+
+	if (mail && mail->p_timed_thread) {
+		timed_thread_lock(mail->p_timed_thread);
+		snprintf(p, p_max_size, "%.1f",
+				mail->used / 1024.0 / 1024.0);
+		timed_thread_unlock(mail->p_timed_thread);
+	}
+}
