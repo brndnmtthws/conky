@@ -434,7 +434,7 @@ struct text_object {
 		void *opaque;		/* new style generic per object data */
 		char *s;		/* some string */
 		int i;			/* some integer */
-		long l;			/* some other integer */
+		long l;			/* some long integer */
 
 		struct {
 			void *opaque;	/* temporary workaround to not blow stuff */
@@ -455,7 +455,6 @@ struct text_object {
 	int a, b;
 	long line;
 	unsigned int c, d, e;
-	float f;
 	char char_a, char_b;
 };
 

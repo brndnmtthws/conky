@@ -45,6 +45,7 @@ struct execi_data {
 	char *buffer;
 	double data;
 	timed_thread *p_timed_thread;
+	float barnum;
 };
 
 /* FIXME: this will probably not work, since the variable is being reused
@@ -398,11 +399,11 @@ void print_execigraph(struct text_object *obj, char *p, int p_max_size)
 		barnum = get_barnum(p);
 
 		if (barnum >= 0.0) {
-			obj->f = barnum;
+			ed->barnum = barnum;
 		}
 		ed->last_update = current_update_time;
 	}
-	new_graph(obj, p, (int) (obj->f));
+	new_graph(obj, p, (int) (ed->barnum));
 }
 
 void print_execigauge(struct text_object *obj, char *p, int p_max_size)
@@ -419,11 +420,11 @@ void print_execigauge(struct text_object *obj, char *p, int p_max_size)
 		barnum = get_barnum(p);
 
 		if (barnum >= 0.0) {
-			obj->f = 255 * barnum / 100.0;
+			ed->barnum = 255 * barnum / 100.0;
 		}
 		ed->last_update = current_update_time;
 	}
-	new_gauge(obj, p, round_to_int(obj->f));
+	new_gauge(obj, p, round_to_int(ed->barnum));
 }
 #endif /* X11 */
 
@@ -457,16 +458,16 @@ void print_execibar(struct text_object *obj, char *p, int p_max_size)
 		barnum = get_barnum(p);
 
 		if (barnum >= 0.0) {
-			obj->f = barnum;
+			ed->barnum = barnum;
 		}
 		ed->last_update = current_update_time;
 	}
 #ifdef X11
 	if(output_methods & TO_X) {
-		new_bar(obj, p, round_to_int(obj->f * 2.55));
+		new_bar(obj, p, round_to_int(ed->barnum * 2.55));
 	} else
 #endif /* X11 */
-		new_bar_in_shell(obj, p, p_max_size, round_to_int(obj->f));
+		new_bar_in_shell(obj, p, p_max_size, round_to_int(ed->barnum));
 }
 
 void free_exec(struct text_object *obj)
