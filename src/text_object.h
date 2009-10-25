@@ -443,11 +443,6 @@ struct text_object {
 			int i;
 			char *str;
 		} ifblock;
-
-		struct {
-			int a, b;
-		} pair;			/* 2 */
-
 	} data;
 
 	void *special_data;
