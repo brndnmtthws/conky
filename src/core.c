@@ -367,18 +367,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		DBGP2("Adding $cpugraph for CPU %d", obj->data.i);
 		if (buf) free(buf);
 	END OBJ(loadgraph, &update_load_average)
-		char *buf = 0;
-		SIZE_DEFAULTS(graph);
-		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-				&obj->e, &obj->char_a, &obj->char_b);
-		if (buf) {
-			int a = 1, r = 3;
-			if (arg) {
-				r = sscanf(arg, "%d", &a);
-			}
-			obj->data.loadavg[0] = (r >= 1) ? (unsigned char) a : 0;
-			free(buf);
-		}
+		scan_loadgraph_arg(obj, arg);
 #endif /* X11 */
 	END OBJ(diskio, &update_diskio)
 		parse_diskio_arg(obj, arg);
@@ -588,23 +577,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ_ARG(words, 0, "words needs a argument")
 		obj->data.s = strndup(arg, text_buffer_size);
 	END OBJ(loadavg, &update_load_average)
-		int a = 1, b = 2, c = 3, r = 3;
-
-		if (arg) {
-			r = sscanf(arg, "%d %d %d", &a, &b, &c);
-			if (r >= 3 && (c < 1 || c > 3)) {
-				r--;
-			}
-			if (r >= 2 && (b < 1 || b > 3)) {
-				r--, b = c;
-			}
-			if (r >= 1 && (a < 1 || a > 3)) {
-				r--, a = b, b = c;
-			}
-		}
-		obj->data.loadavg[0] = (r >= 1) ? (unsigned char) a : 0;
-		obj->data.loadavg[1] = (r >= 2) ? (unsigned char) b : 0;
-		obj->data.loadavg[2] = (r >= 3) ? (unsigned char) c : 0;
+		scan_loadavg_arg(obj, arg);
 	END OBJ_IF_ARG(if_empty, 0, "if_empty needs an argument")
 		obj->data.ifblock.s = strndup(arg, text_buffer_size);
 		obj->sub = malloc(sizeof(struct text_object));

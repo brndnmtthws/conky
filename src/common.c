@@ -33,6 +33,7 @@
 #include "fs.h"
 #include "logging.h"
 #include "net_stat.h"
+#include "specials.h"
 #include <ctype.h>
 #include <errno.h>
 #include <sys/time.h>
@@ -417,3 +418,66 @@ unsigned int round_to_int(float f)
 	}
 }
 
+void scan_loadavg_arg(struct text_object *obj, const char *arg)
+{
+	int a = 1, b = 2, c = 3, r = 3;
+
+	if (arg) {
+		r = sscanf(arg, "%d %d %d", &a, &b, &c);
+		if (r >= 3 && (c < 1 || c > 3)) {
+			r--;
+		}
+		if (r >= 2 && (b < 1 || b > 3)) {
+			r--, b = c;
+		}
+		if (r >= 1 && (a < 1 || a > 3)) {
+			r--, a = b, b = c;
+		}
+	}
+	obj->data.loadavg[0] = (r >= 1) ? (unsigned char) a : 0;
+	obj->data.loadavg[1] = (r >= 2) ? (unsigned char) b : 0;
+	obj->data.loadavg[2] = (r >= 3) ? (unsigned char) c : 0;
+}
+
+void print_loadavg(struct text_object *obj, char *p, int p_max_size)
+{
+	float *v = info.loadavg;
+
+	if (obj->data.loadavg[2]) {
+		snprintf(p, p_max_size, "%.2f %.2f %.2f",
+				v[obj->data.loadavg[0] - 1],
+				v[obj->data.loadavg[1] - 1],
+				v[obj->data.loadavg[2] - 1]);
+	} else if (obj->data.loadavg[1]) {
+		snprintf(p, p_max_size, "%.2f %.2f",
+				v[obj->data.loadavg[0] - 1],
+				v[obj->data.loadavg[1] - 1]);
+	} else if (obj->data.loadavg[0]) {
+		snprintf(p, p_max_size, "%.2f",
+				v[obj->data.loadavg[0] - 1]);
+	}
+}
+
+#ifdef X11
+void scan_loadgraph_arg(struct text_object *obj, const char *arg)
+{
+	char *buf = 0;
+	SIZE_DEFAULTS(graph);
+	buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
+			&obj->e, &obj->char_a, &obj->char_b);
+	if (buf) {
+		int a = 1, r = 3;
+		if (arg) {
+			r = sscanf(arg, "%d", &a);
+		}
+		obj->data.loadavg[0] = (r >= 1) ? (unsigned char) a : 0;
+		free(buf);
+	}
+}
+
+void print_loadgraph(struct text_object *obj, char *p)
+{
+	new_graph(p, obj->a, obj->b, obj->c, obj->d, info.loadavg[0],
+			obj->e, 1, obj->char_a, obj->char_b);
+}
+#endif /* X11 */

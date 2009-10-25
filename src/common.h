@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include "text_object.h"
 
 void add_update_callback(void (*func)(void));
 void free_update_callbacks(void);
@@ -69,5 +70,12 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item);
 int get_battery_perct(const char *bat);
 int get_battery_perct_bar(const char *bat);
 void get_battery_short_status(char *buf, unsigned int n, const char *bat);
+
+void scan_loadavg_arg(struct text_object *, const char *);
+void print_loadavg(struct text_object *, char *, int);
+#ifdef X11
+void scan_loadgraph_arg(struct text_object *, const char *);
+void print_loadgraph(struct text_object *, char *);
+#endif /* X11 */
 
 #endif /* _COMMON_H */

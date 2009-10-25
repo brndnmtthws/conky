@@ -948,8 +948,7 @@ void generate_text_internal(char *p, int p_max_size,
 						100, 1, obj->char_a, obj->char_b);
 			}
 			OBJ(loadgraph) {
-				new_graph(p, obj->a, obj->b, obj->c, obj->d, cur->loadavg[0],
-						obj->e, 1, obj->char_a, obj->char_b);
+				print_loadgraph(obj, p);
 			}
 #endif /* X11 */
 			OBJ(color) {
@@ -1270,21 +1269,7 @@ void generate_text_internal(char *p, int p_max_size,
 				print_fs_perc(obj, 0, p, p_max_size);
 			}
 			OBJ(loadavg) {
-				float *v = info.loadavg;
-
-				if (obj->data.loadavg[2]) {
-					snprintf(p, p_max_size, "%.2f %.2f %.2f",
-						v[obj->data.loadavg[0] - 1],
-						v[obj->data.loadavg[1] - 1],
-						v[obj->data.loadavg[2] - 1]);
-				} else if (obj->data.loadavg[1]) {
-					snprintf(p, p_max_size, "%.2f %.2f",
-						v[obj->data.loadavg[0] - 1],
-						v[obj->data.loadavg[1] - 1]);
-				} else if (obj->data.loadavg[0]) {
-					snprintf(p, p_max_size, "%.2f",
-						v[obj->data.loadavg[0] - 1]);
-				}
+				print_loadavg(obj, p, p_max_size);
 			}
 			OBJ(goto) {
 				new_goto(p, obj->data.i);
