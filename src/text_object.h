@@ -30,6 +30,7 @@
 #define _TEXT_OBJECT_H
 
 #include "config.h"		/* for the defines */
+#include "specials.h"		/* enum special_types */
 
 enum text_object_type {
 	OBJ_read_tcp,
@@ -448,6 +449,8 @@ struct text_object {
 		} pair;			/* 2 */
 
 	} data;
+
+	void *special_data;
 	int type;
 	int a, b;
 	long line;

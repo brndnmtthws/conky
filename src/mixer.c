@@ -311,46 +311,32 @@ int check_mixer_muted(struct text_object *obj)
 }
 
 #ifdef X11
-struct mixerbar_data {
-	int l;
-	int w, h;
-};
-
 void scan_mixer_bar(struct text_object *obj, const char *arg)
 {
 	char buf1[64];
-	struct mixerbar_data *mbd;
 	int n;
 
-	mbd = malloc(sizeof(struct mixerbar_data));
-	memset(mbd, 0, sizeof(struct mixerbar_data));
-
 	if (arg && sscanf(arg, "%63s %n", buf1, &n) >= 1) {
-		mbd->l = mixer_init(buf1);
-		scan_bar(arg + n, &mbd->w, &mbd->h);
+		obj->data.i = mixer_init(buf1);
+		scan_bar(obj, arg + n);
 	} else {
-		mbd->l = mixer_init(NULL);
-		scan_bar(arg, &mbd->w, &mbd->h);
+		obj->data.i = mixer_init(NULL);
+		scan_bar(obj, arg);
 	}
-	obj->data.opaque = mbd;
 }
 
 /* see print_mixer() above for a description of 'chan' */
 void print_mixer_bar(struct text_object *obj, int chan, char *p)
 {
-	struct mixerbar_data *mdp = obj->data.opaque;
 	int val;
 
-	if (!mdp)
-		return;
-
 	if (chan < 0)
-		val = mixer_get_left(mdp->l);
+		val = mixer_get_left(obj->data.i);
 	else if (chan == 0)
-		val = mixer_get_avg(mdp->l);
+		val = mixer_get_avg(obj->data.i);
 	else
-		val = mixer_get_right(mdp->l);
+		val = mixer_get_right(obj->data.i);
 
-	new_bar(p, mdp->w, mdp->h, mixer_to_255(mdp->l, val));
+	new_bar(obj, p, mixer_to_255(obj->data.i, val));
 }
 #endif /* X11 */

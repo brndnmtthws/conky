@@ -52,6 +52,14 @@ int default_gauge_width = 40, default_gauge_height = 25;
 #endif /* X11 */
 
 /*
+ * Special data typedefs
+ */
+
+struct bar {
+	int width, height;
+};
+
+/*
  * Scanning arguments to various special text objects
  */
 
@@ -78,21 +86,27 @@ const char *scan_gauge(const char *args, int *w, int *h)
 }
 #endif /* X11 */
 
-const char *scan_bar(const char *args, int *w, int *h)
+const char *scan_bar(struct text_object *obj, const char *args)
 {
+	struct bar *b;
+
+	b = malloc(sizeof(struct bar));
+	memset(b, 0, sizeof(struct bar));
+
 	/* zero width means all space that is available */
-	*w = default_bar_width;
-	*h = default_bar_height;
+	b->width = default_bar_width;
+	b->height = default_bar_height;
 	/* bar's argument is either height or height,width */
 	if (args) {
 		int n = 0;
 
-		if (sscanf(args, "%d,%d %n", h, w, &n) <= 1) {
-			sscanf(args, "%d %n", h, &n);
+		if (sscanf(args, "%d,%d %n", &b->height, &b->width, &n) <= 1) {
+			sscanf(args, "%d %n", &b->height, &n);
 		}
 		args += n;
 	}
 
+	obj->special_data = b;
 	return args;
 }
 
@@ -216,18 +230,22 @@ void new_gauge(char *buf, int w, int h, int usage)
 	s->height = h;
 }
 
-void new_bar(char *buf, int w, int h, int usage)
+void new_bar(struct text_object *obj, char *buf, int usage)
 {
 	struct special_t *s = 0;
+	struct bar *b = obj->special_data;
 
 	if ((output_methods & TO_X) == 0)
+		return;
+
+	if (!b)
 		return;
 
 	s = new_special(buf, BAR);
 
 	s->arg = (usage > 255) ? 255 : ((usage < 0) ? 0 : usage);
-	s->width = w;
-	s->height = h;
+	s->width = b->width;
+	s->height = b->height;
 }
 
 void new_font(char *buf, char *args)
@@ -376,8 +394,18 @@ void new_bg(char *buf, long c)
 }
 #endif /* X11 */
 
-void new_bar_in_shell(char* buffer, int buf_max_size, double usage, int width)
+void new_bar_in_shell(struct text_object *obj, char* buffer, int buf_max_size, double usage)
 {
+	struct bar *b = obj->special_data;
+	int width;
+
+	if (!b)
+		return;
+
+	width = b->width;
+	if (!width)
+		width = DEFAULT_BAR_WIDTH_NO_X;
+
 	if(width<=buf_max_size){
 		int i = 0, j = 0, scaledusage = round_to_int( usage * width / 100);
 

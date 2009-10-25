@@ -446,13 +446,10 @@ void print_execbar(struct text_object *obj, char *p, int p_max_size)
 #ifdef X11
 		if(output_methods & TO_X) {
 			barnum /= 100;
-			new_bar(p, obj->a, obj->b, round_to_int(barnum * 255.0));
+			new_bar(obj, p, round_to_int(barnum * 255.0));
 		}else
 #endif /* X11 */
-		{
-			if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-			new_bar_in_shell(p, p_max_size, barnum, obj->a);
-		}
+			new_bar_in_shell(obj, p, p_max_size, barnum);
 	}
 }
 
@@ -475,13 +472,10 @@ void print_execibar(struct text_object *obj, char *p, int p_max_size)
 	}
 #ifdef X11
 	if(output_methods & TO_X) {
-		new_bar(p, obj->a, obj->b, round_to_int(obj->f * 2.55));
+		new_bar(obj, p, round_to_int(obj->f * 2.55));
 	} else
 #endif /* X11 */
-	{
-		if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-		new_bar_in_shell(p, p_max_size, round_to_int(obj->f), obj->a);
-	}
+		new_bar_in_shell(obj, p, p_max_size, round_to_int(obj->f));
 }
 
 void free_exec(struct text_object *obj)

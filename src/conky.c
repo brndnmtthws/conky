@@ -894,14 +894,10 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(battery_bar) {
 #ifdef X11
 				if(output_methods & TO_X) {
-					new_bar(p, obj->a, obj->b, get_battery_perct_bar(obj->data.s));
-				}else{
+					new_bar(obj, p, get_battery_perct_bar(obj->data.s));
+				}else
 #endif /* X11 */
-					if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-					new_bar_in_shell(p, p_max_size, get_battery_perct_bar(obj->data.s) / 2.55, obj->a);
-#ifdef X11
-				}
-#endif /* X11 */
+					new_bar_in_shell(obj, p, p_max_size, get_battery_perct_bar(obj->data.s) / 2.55);
 			}
 			OBJ(battery_short) {
 				get_battery_short_status(p, p_max_size, obj->data.s);
@@ -931,15 +927,10 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(cpubar) {
 #ifdef X11
 				if(output_methods & TO_X) {
-					new_bar(p, obj->a, obj->b,
-						round_to_int(cur->cpu_usage[obj->data.i] * 255.0));
-				}else{
+					new_bar(obj, p, round_to_int(cur->cpu_usage[obj->data.i] * 255.0));
+				}else
 #endif /* X11 */
-					if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-					new_bar_in_shell(p, p_max_size, round_to_int(cur->cpu_usage[obj->data.i] * 100), obj->a);
-#ifdef X11
-				}
-#endif /* X11 */
+					new_bar_in_shell(obj, p, p_max_size, round_to_int(cur->cpu_usage[obj->data.i] * 100));
 			}
 #ifdef X11
 			OBJ(cpugraph) {
@@ -1330,14 +1321,10 @@ void generate_text_internal(char *p, int p_max_size,
 				if (llua_getnumber(obj->data.s, &per)) {
 #ifdef X11
 					if(output_methods & TO_X) {
-						new_bar(p, obj->a, obj->b, (per/100.0 * 255));
-					} else {
+						new_bar(obj, p, (per/100.0 * 255));
+					} else
 #endif /* X11 */
-						if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-						new_bar_in_shell(p, p_max_size, per, obj->a);
-#ifdef X11
-					}
-#endif /* X11 */
+						new_bar_in_shell(obj, p, p_max_size, per);
 				}
 			}
 #ifdef X11
@@ -1488,15 +1475,10 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(membar) {
 #ifdef X11
 				if(output_methods & TO_X) {
-					new_bar(p, obj->data.pair.a, obj->data.pair.b,
-						cur->memmax ? (cur->mem * 255) / (cur->memmax) : 0);
-				}else{
+					new_bar(obj, p, cur->memmax ? (cur->mem * 255) / (cur->memmax) : 0);
+				}else
 #endif /* X11 */
-					if(!obj->data.pair.a) obj->data.pair.a = DEFAULT_BAR_WIDTH_NO_X;
-					new_bar_in_shell(p, p_max_size, cur->memmax ? (cur->mem * 100) / (cur->memmax) : 0, obj->data.pair.a);
-#ifdef X11
-				}
-#endif /* X11 */
+					new_bar_in_shell(obj, p, p_max_size, cur->memmax ? (cur->mem * 100) / (cur->memmax) : 0);
 			}
 #ifdef X11
 			OBJ(memgraph) {
@@ -1652,15 +1634,10 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(swapbar) {
 #ifdef X11
 				if(output_methods & TO_X) {
-					new_bar(p, obj->data.pair.a, obj->data.pair.b,
-						cur->swapmax ? (cur->swap * 255) / (cur->swapmax) : 0);
-				}else{
+					new_bar(obj, p, cur->swapmax ? (cur->swap * 255) / (cur->swapmax) : 0);
+				}else
 #endif /* X11 */
-					if(!obj->data.pair.a) obj->data.pair.a = DEFAULT_BAR_WIDTH_NO_X;
-					new_bar_in_shell(p, p_max_size, cur->swapmax ? (cur->swap * 100) / (cur->swapmax) : 0, obj->data.pair.a);
-#ifdef X11
-				}
-#endif /* X11 */
+					new_bar_in_shell(obj, p, p_max_size, cur->swapmax ? (cur->swap * 100) / (cur->swapmax) : 0);
 			}
 			OBJ(sysname) {
 				snprintf(p, p_max_size, "%s", cur->uname_s.sysname);
@@ -1785,15 +1762,10 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(mpd_bar) {
 #ifdef X11
 				if(output_methods & TO_X) {
-					new_bar(p, obj->data.pair.a, obj->data.pair.b,
-						(int) (mpd_get_info()->progress * 255.0f));
-				} else {
+					new_bar(obj, p, (int) (mpd_get_info()->progress * 255.0f));
+				} else
 #endif /* X11 */
-					if(!obj->data.pair.a) obj->data.pair.a = DEFAULT_BAR_WIDTH_NO_X;
-					new_bar_in_shell(p, p_max_size, (int) (mpd_get_info()->progress * 100.0f), obj->data.pair.a);
-#ifdef X11
-				}
-#endif /* X11 */
+					new_bar_in_shell(obj, p, p_max_size, (int) (mpd_get_info()->progress * 100.0f));
 			}
 			OBJ(mpd_smart) {
 				struct mpd_s *mpd = mpd_get_info();
@@ -1916,8 +1888,7 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #ifdef X11
 			OBJ(xmms2_bar) {
-				new_bar(p, obj->data.pair.a, obj->data.pair.b,
-					(int) (cur->xmms2.progress * 255.0f));
+				new_bar(obj, p, (int) (cur->xmms2.progress * 255.0f));
 			}
 #endif /* X11 */
 			OBJ(xmms2_playlist) {
@@ -2002,7 +1973,7 @@ void generate_text_internal(char *p, int p_max_size,
 				progress =
 					atof(cur->audacious.items[AUDACIOUS_POSITION_SECONDS]) /
 					atof(cur->audacious.items[AUDACIOUS_LENGTH_SECONDS]);
-				new_bar(p, obj->a, obj->b, (int) (progress * 255.0f));
+				new_bar(obj, p, (int) (progress * 255.0f));
 			}
 #endif /* X11 */
 #endif /* AUDACIOUS */
@@ -2130,14 +2101,10 @@ void generate_text_internal(char *p, int p_max_size,
 					(double) cur->entropy.poolsize;
 #ifdef X11
 				if(output_methods & TO_X) {
-					new_bar(p, obj->a, obj->b, (int) (entropy_perc * 255.0f));
-				} else {
+					new_bar(obj, p, (int) (entropy_perc * 255.0f));
+				} else
 #endif /* X11 */
-					if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-					new_bar_in_shell(p, p_max_size, (int) (entropy_perc * 100.0f), obj->a);
-#ifdef X11
-				}
-#endif /* X11 */
+					new_bar_in_shell(obj, p, p_max_size, (int) (entropy_perc * 100.0f));
 			}
 #ifdef IBM
 			OBJ(smapi) {
@@ -2189,10 +2156,10 @@ void generate_text_internal(char *p, int p_max_size,
 #ifdef X11
 			OBJ(smapi_bat_bar) {
 				if(obj->data.i >= 0 && smapi_bat_installed(obj->data.i))
-					new_bar(p, obj->a, obj->b, (int)
+					new_bar(obj, p, (int)
 							(255 * smapi_get_bat_int(obj->data.i, "remaining_percent") / 100));
 				else
-					new_bar(p, obj->a, obj->b, 0);
+					new_bar(obj, p, 0);
 			}
 #endif /* X11 */
 #endif /* IBM */
@@ -2282,15 +2249,13 @@ void generate_text_internal(char *p, int p_max_size,
 #ifdef X11
 				if(output_methods & TO_X) {
 					progress = atof(cur->apcupsd.items[APCUPSD_LOAD]) / 100.0 * 255.0;
-					new_bar(p, obj->a, obj->b, (int) progress);
-				} else {
+					new_bar(obj, p, (int) progress);
+				} else
 #endif /* X11 */
+				{
 					progress = atof(cur->apcupsd.items[APCUPSD_LOAD]);
-					if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-					new_bar_in_shell(p, p_max_size, (int) progress, obj->a);
-#ifdef X11
+					new_bar_in_shell(obj, p, p_max_size, (int) progress);
 				}
-#endif /* X11 */
 			}
 #ifdef X11
 			OBJ(apcupsd_loadgraph) {

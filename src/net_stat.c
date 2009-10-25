@@ -80,9 +80,8 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg, void *free_at_
 
 void parse_net_stat_bar_arg(struct text_object *obj, const char *arg, void *free_at_crash)
 {
-	SIZE_DEFAULTS(bar);
 	if (arg) {
-		arg = scan_bar(arg, &obj->a, &obj->b);
+		arg = scan_bar(obj, arg);
 		obj->data.opaque = get_net_stat(arg, obj, free_at_crash);
 	} else {
 		// default to DEFAULTNETDEV
@@ -310,15 +309,12 @@ void print_wireless_link_bar(struct text_object *obj, char *p, int p_max_size)
 
 #ifdef X11
 	if(output_methods & TO_X) {
-		new_bar(p, obj->a, obj->b, ((double) ns->link_qual /
+		new_bar(obj, p, ((double) ns->link_qual /
 					ns->link_qual_max) * 255.0);
 	} else
 #endif /* X11 */
-	{
-		if(!obj->a) obj->a = DEFAULT_BAR_WIDTH_NO_X;
-		new_bar_in_shell(p, p_max_size, ((double) ns->link_qual /
-					ns->link_qual_max) * 100.0, obj->a);
-	}
+		new_bar_in_shell(obj, p, p_max_size, ((double) ns->link_qual /
+					ns->link_qual_max) * 100.0);
 }
 #endif /* HAVE_IWLIB */
 #endif /* __linux__ */

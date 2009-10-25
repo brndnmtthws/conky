@@ -92,11 +92,14 @@ extern int default_gauge_height;
 	obj->b = default_##arg##_height; \
 }
 
+/* forward declare to avoid mutual inclusion between specials.h and text_object.h */
+struct text_object;
+
 /* max number of specials allowed (TODO: use linked list instead) */
 extern int max_specials;
 
 /* scanning special arguments */
-const char *scan_bar(const char *, int *, int *);
+const char *scan_bar(struct text_object *, const char *);
 #ifdef X11
 const char *scan_gauge(const char *, int *, int *);
 char *scan_font(const char *);
@@ -105,14 +108,14 @@ char *scan_graph(const char *, int *, int *, unsigned int *,
 
 /* printing specials */
 void new_gauge(char *, int, int, int);
-void new_bar(char *, int, int, int);
+void new_bar(struct text_object *, char *, int);
 void new_font(char *, char *);
 void new_graph(char *, int, int, unsigned int,
                unsigned int, double, int, int, char, char);
 void new_hr(char *, int);
 void new_stippled_hr(char *, int, int);
 #endif
-void new_bar_in_shell(char *, int, double, int);
+void new_bar_in_shell(struct text_object *, char *, int, double);
 void new_fg(char *, long);
 void new_bg(char *, long);
 void new_outline(char *, long);

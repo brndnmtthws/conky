@@ -269,10 +269,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.s = strndup(bat, text_buffer_size);
 	END OBJ(battery_bar, 0)
 		char bat[64];
-		SIZE_DEFAULTS(bar);
-		obj->b = 6;
 		if (arg) {
-			arg = scan_bar(arg, &obj->a, &obj->b);
+			arg = scan_bar(obj, arg);
 			sscanf(arg, "%63s", bat);
 		} else {
 			strcpy(bat, "BAT0");
@@ -353,9 +351,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		DBGP2("Adding $cpugauge for CPU %d", obj->data.i);
 #endif /* X11 */
 	END OBJ(cpubar, &update_cpu_usage)
-		SIZE_DEFAULTS(bar);
 		SCAN_CPU(arg, obj->data.i);
-		scan_bar(arg, &obj->a, &obj->b);
+		scan_bar(obj, arg);
 		DBGP2("Adding $cpubar for CPU %d", obj->data.i);
 #ifdef X11
 	END OBJ(cpugraph, &update_cpu_usage)
@@ -474,7 +471,6 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(execp, 0)
 		scan_exec_arg(obj, arg);
 	END OBJ(execbar, 0)
-		SIZE_DEFAULTS(bar);
 		scan_exec_arg(obj, arg);
 #ifdef X11
 	END OBJ(execgauge, 0)
@@ -485,7 +481,6 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		scan_exec_arg(obj, arg);
 #endif /* X11 */
 	END OBJ_ARG(execibar, 0, "execibar needs arguments")
-		SIZE_DEFAULTS(bar);
 		scan_execi_arg(obj, arg);
 #ifdef X11
 	END OBJ_ARG(execigraph, 0, "execigraph needs arguments")
@@ -650,8 +645,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		scan_gauge(arg, &obj->data.pair.a, &obj->data.pair.b);
 #endif /* X11*/
 	END OBJ(membar, &update_meminfo)
-		SIZE_DEFAULTS(bar);
-		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+		scan_bar(obj, arg);
 #ifdef X11
 	END OBJ(memgraph, &update_meminfo)
 		char *buf = 0;
@@ -715,8 +709,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(swapmax, &update_meminfo)
 	END OBJ(swapperc, &update_meminfo)
 	END OBJ(swapbar, &update_meminfo)
-		SIZE_DEFAULTS(bar);
-		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+		scan_bar(obj, arg);
 	END OBJ(sysname, 0)
 	END OBJ(time, 0)
 		scan_time(obj, arg);
@@ -793,14 +786,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef X11
 	END OBJ_ARG(smapi_bat_bar, 0, "smapi_bat_bar needs an argument")
 		int cnt;
-		SIZE_DEFAULTS(bar);
 		if(sscanf(arg, "%i %n", &obj->data.i, &cnt) <= 0) {
 			NORM_ERR("first argument to smapi_bat_bar must be an integer value");
 			obj->data.i = -1;
-		} else {
-			obj->b = 4;
-			arg = scan_bar(arg + cnt, &obj->a, &obj->b);
-		}
+		} else
+			arg = scan_bar(obj, arg + cnt);
 #endif /* X11 */
 #endif /* IBM */
 #ifdef MPD
@@ -840,8 +830,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(mpd_bitrate, &update_mpd) init_mpd();
 	END OBJ(mpd_status, &update_mpd) init_mpd();
 	END OBJ(mpd_bar, &update_mpd)
-		SIZE_DEFAULTS(bar);
-		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+		scan_bar(obj, arg);
 		init_mpd();
 	END OBJ(mpd_smart, &update_mpd)
 		mpd_set_maxlen(mpd_smart);
@@ -881,8 +870,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(xmms2_percent, &update_xmms2)
 #ifdef X11
 	END OBJ(xmms2_bar, &update_xmms2)
-		SIZE_DEFAULTS(bar);
-		scan_bar(arg, &obj->data.pair.a, &obj->data.pair.b);
+		scan_bar(obj, arg);
 #endif /* X11 */
 	END OBJ(xmms2_smart, &update_xmms2)
 	END OBJ(xmms2_playlist, &update_xmms2)
@@ -911,8 +899,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(audacious_main_volume, &update_audacious)
 #ifdef X11
 	END OBJ(audacious_bar, &update_audacious)
-		SIZE_DEFAULTS(bar);
-		scan_bar(arg, &obj->a, &obj->b);
+		scan_bar(obj, arg);
 #endif /* X11 */
 #endif
 #ifdef BMPX
@@ -955,8 +942,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ_ARG(lua_parse, 0, "lua_parse needs arguments: <function name> [function parameters]")
 		obj->data.s = strndup(arg, text_buffer_size);
 	END OBJ_ARG(lua_bar, 0, "lua_bar needs arguments: <height>,<width> <function name> [function parameters]")
-		SIZE_DEFAULTS(bar);
-		arg = scan_bar(arg, &obj->a, &obj->b);
+		arg = scan_bar(obj, arg);
 		if(arg) {
 			obj->data.s = strndup(arg, text_buffer_size);
 		} else {
@@ -996,8 +982,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(entropy_perc, &update_entropy)
 	END OBJ(entropy_poolsize, &update_entropy)
 	END OBJ(entropy_bar, &update_entropy)
-		SIZE_DEFAULTS(bar);
-		scan_bar(arg, &obj->a, &obj->b);
+		scan_bar(obj, arg);
 	END OBJ_ARG(include, 0, "include needs a argument")
 		struct conftree *leaf = conftree_add(currentconffile, arg);
 		if(leaf) {
@@ -1047,8 +1032,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(apcupsd_linev, &update_apcupsd)
 	END OBJ(apcupsd_load, &update_apcupsd)
 	END OBJ(apcupsd_loadbar, &update_apcupsd)
-		SIZE_DEFAULTS(bar);
-		scan_bar(arg, &obj->a, &obj->b);
+		scan_bar(obj, arg);
 #ifdef X11
 	END OBJ(apcupsd_loadgraph, &update_apcupsd)
 		char* buf = 0;

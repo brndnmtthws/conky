@@ -58,11 +58,6 @@
 
 #define MAX_FS_STATS 64
 
-struct fsbar {
-	struct fs_stat *fs;
-	int w, h;
-};
-
 static struct fs_stat fs_stats_[MAX_FS_STATS];
 struct fs_stat *fs_stats = fs_stats_;
 
@@ -202,15 +197,7 @@ void get_fs_type(const char *path, char *result)
 
 void init_fs_bar(struct text_object *obj, const char *arg)
 {
-	struct fsbar *fb;
-
-	fb = malloc(sizeof(struct fsbar));
-	memset(fb, 0, sizeof(struct fsbar));
-
-	fb->w = default_bar_width;
-	fb->h = default_bar_height;
-
-	arg = scan_bar(arg, &fb->w, &fb->h);
+	arg = scan_bar(obj, arg);
 	if (arg) {
 		while (isspace(*arg)) {
 			arg++;
@@ -221,33 +208,29 @@ void init_fs_bar(struct text_object *obj, const char *arg)
 	} else {
 		arg = "/";
 	}
-	fb->fs = prepare_fs_stat(arg);
-	obj->data.opaque = fb;
+	obj->data.opaque = prepare_fs_stat(arg);
 }
 
 void print_fs_bar(struct text_object *obj, int be_free_bar, char *p, int p_max_size)
 {
 	double val = 1.0;
-	struct fsbar *fb = obj->data.opaque;
+	struct fs_stat *fs = obj->data.opaque;
 
-	if (!fb || !fb->fs)
+	if (!fs)
 		return;
 
-	if (fb->fs->size)
-		val = (double)fb->fs->avail / (double)fb->fs->size;
+	if (fs->size)
+		val = (double)fs->avail / (double)fs->size;
 
 	if (!be_free_bar)
 		val = 1.0 - val;
 
 #ifdef X11
 		if(output_methods & TO_X) {
-			new_bar(p, fb->w, fb->h, (int)(255 * val));
+			new_bar(obj, p, (int)(255 * val));
 		}else
 #endif /* X11 */
-		{
-			if(!fb->w) fb->w = DEFAULT_BAR_WIDTH_NO_X;
-			new_bar_in_shell(p, p_max_size, (int)(100 * val), fb->w);
-		}
+			new_bar_in_shell(obj, p, p_max_size, (int)(100 * val));
 }
 
 void init_fs(struct text_object *obj, const char *arg)
