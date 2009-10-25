@@ -420,41 +420,26 @@ unsigned int round_to_int(float f)
 
 void scan_loadavg_arg(struct text_object *obj, const char *arg)
 {
-	int a = 1, b = 2, c = 3, r = 3;
-
-	if (arg) {
-		r = sscanf(arg, "%d %d %d", &a, &b, &c);
-		if (r >= 3 && (c < 1 || c > 3)) {
-			r--;
-		}
-		if (r >= 2 && (b < 1 || b > 3)) {
-			r--, b = c;
-		}
-		if (r >= 1 && (a < 1 || a > 3)) {
-			r--, a = b, b = c;
+	obj->data.i = 0;
+	if (arg && !arg[1] && isdigit(arg[0])) {
+		obj->data.i = atoi(arg);
+		if (obj->data.i > 3 || obj->data.i < 1) {
+			NORM_ERR("loadavg arg needs to be in range (1,3)");
+			obj->data.i = 0;
 		}
 	}
-	obj->data.loadavg[0] = (r >= 1) ? (unsigned char) a : 0;
-	obj->data.loadavg[1] = (r >= 2) ? (unsigned char) b : 0;
-	obj->data.loadavg[2] = (r >= 3) ? (unsigned char) c : 0;
+	/* convert to array index (or the default (-1)) */
+	obj->data.i--;
 }
 
 void print_loadavg(struct text_object *obj, char *p, int p_max_size)
 {
 	float *v = info.loadavg;
 
-	if (obj->data.loadavg[2]) {
-		snprintf(p, p_max_size, "%.2f %.2f %.2f",
-				v[obj->data.loadavg[0] - 1],
-				v[obj->data.loadavg[1] - 1],
-				v[obj->data.loadavg[2] - 1]);
-	} else if (obj->data.loadavg[1]) {
-		snprintf(p, p_max_size, "%.2f %.2f",
-				v[obj->data.loadavg[0] - 1],
-				v[obj->data.loadavg[1] - 1]);
-	} else if (obj->data.loadavg[0]) {
-		snprintf(p, p_max_size, "%.2f",
-				v[obj->data.loadavg[0] - 1]);
+	if (obj->data.i < 0) {
+		snprintf(p, p_max_size, "%.2f %.2f %.2f", v[0], v[1], v[2]);
+	} else {
+		snprintf(p, p_max_size, "%.2f", v[obj->data.i]);
 	}
 }
 
@@ -462,17 +447,12 @@ void print_loadavg(struct text_object *obj, char *p, int p_max_size)
 void scan_loadgraph_arg(struct text_object *obj, const char *arg)
 {
 	char *buf = 0;
+
 	SIZE_DEFAULTS(graph);
 	buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
 			&obj->e, &obj->char_a, &obj->char_b);
-	if (buf) {
-		int a = 1, r = 3;
-		if (arg) {
-			r = sscanf(arg, "%d", &a);
-		}
-		obj->data.loadavg[0] = (r >= 1) ? (unsigned char) a : 0;
+	if (buf)
 		free(buf);
-	}
 }
 
 void print_loadgraph(struct text_object *obj, char *p)

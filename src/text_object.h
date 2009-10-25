@@ -434,7 +434,6 @@ struct text_object {
 		char *s;		/* some string */
 		int i;			/* some integer */
 		long l;			/* some other integer */
-		unsigned char loadavg[3];
 
 		struct {
 			void *opaque;	/* temporary workaround to not blow stuff */

@@ -1787,7 +1787,8 @@
             <option>(1|2|3)</option>
         </term>
         <listitem>System load average, 1 is for past 1 minute, 2
-        for past 5 minutes and 3 for past 15 minutes. 
+	for past 5 minutes and 3 for past 15 minutes. Without argument, prints
+	all three values separated by whitespace.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1795,7 +1796,7 @@
             <command>
                 <option>loadgraph</option>
             </command>
-            <option>(1|2|3) (height),(width) (gradient colour 1)
+            <option>(height),(width) (gradient colour 1)
             (gradient colour 2) (scale) (-t) (-l)</option>
         </term>
         <listitem>Load1 average graph, similar to xload, with

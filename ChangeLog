@@ -1,3 +1,7 @@
+2009-10-25
+	* Fixed loadavg and loadgraph argument parsing and corrected it's
+	documentation.
+
 2009-09-11
 	* Fixed configure test failure. Tolua test program couldn't find lua
 	libraries (even though they existed) and failed to compile.
