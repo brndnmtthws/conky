@@ -1026,7 +1026,6 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #undef __OBJ_IF
 #undef __OBJ_ARG
 #undef END
-#undef SIZE_DEFAULTS
 
 	return obj;
 }

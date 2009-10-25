@@ -86,12 +86,6 @@ extern int default_gauge_width;
 extern int default_gauge_height;
 #endif
 
-/* set the obj's default width and height (FIXME: referencing the global obj is evil) */
-#define SIZE_DEFAULTS(arg) { \
-	obj->a = default_##arg##_width; \
-	obj->b = default_##arg##_height; \
-}
-
 /* forward declare to avoid mutual inclusion between specials.h and text_object.h */
 struct text_object;
 
