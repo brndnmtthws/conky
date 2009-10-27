@@ -551,13 +551,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(loadavg, &update_load_average)
 		scan_loadavg_arg(obj, arg);
 	END OBJ_IF_ARG(if_empty, 0, "if_empty needs an argument")
-		obj->data.ifblock.s = strndup(arg, text_buffer_size);
 		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, obj->data.ifblock.s);
+		extract_variable_text_internal(obj->sub, arg);
 	END OBJ_IF_ARG(if_match, 0, "if_match needs arguments")
-		obj->data.ifblock.s = strndup(arg, text_buffer_size);
 		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, obj->data.ifblock.s);
+		extract_variable_text_internal(obj->sub, arg);
 	END OBJ_IF_ARG(if_existing, 0, "if_existing needs an argument or two")
 		char buf1[256], buf2[256];
 		int r = sscanf(arg, "%255s %255[^\n]", buf1, buf2);
@@ -1281,7 +1279,7 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_if_match:
 				free_text_objects(obj->sub, 1);
 				free(obj->sub);
-				/* fall through */
+				break;
 			case OBJ_if_existing:
 			case OBJ_if_mounted:
 			case OBJ_if_running:
