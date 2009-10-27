@@ -40,6 +40,7 @@
 #define TEMPGRAD "-t"
 
 enum special_types {
+	NONSPECIAL = 0,
 	HORIZONTAL_LINE = 1,
 	STIPPLED_HR,
 	BAR,
