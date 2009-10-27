@@ -810,33 +810,37 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* !__OpenBSD__ */
 			OBJ(freq) {
-				if (obj->a) {
-					obj->a = get_freq(p, p_max_size, "%.0f", 1,
+				static int ok = 1;
+				if (ok) {
+					ok = get_freq(p, p_max_size, "%.0f", 1,
 							obj->data.i);
 				}
 			}
 			OBJ(freq_g) {
-				if (obj->a) {
+				static int ok = 1;
+				if (ok) {
 #ifndef __OpenBSD__
-					obj->a = get_freq(p, p_max_size, "%'.2f", 1000,
+					ok = get_freq(p, p_max_size, "%'.2f", 1000,
 							obj->data.i);
 #else
 					/* OpenBSD has no such flag (SUSv2) */
-					obj->a = get_freq(p, p_max_size, "%.2f", 1000,
+					ok = get_freq(p, p_max_size, "%.2f", 1000,
 							obj->data.i);
 #endif /* __OpenBSD */
 				}
 			}
 #if defined(__linux__)
 			OBJ(voltage_mv) {
-				if (obj->a) {
-					obj->a = get_voltage(p, p_max_size, "%.0f", 1,
+				static int ok = 1;
+				if (ok) {
+					ok = get_voltage(p, p_max_size, "%.0f", 1,
 							obj->data.i);
 				}
 			}
 			OBJ(voltage_v) {
-				if (obj->a) {
-					obj->a = get_voltage(p, p_max_size, "%'.3f", 1000,
+				static int ok = 1;
+				if (ok) {
+					ok = get_voltage(p, p_max_size, "%'.3f", 1000,
 							obj->data.i);
 				}
 			}
@@ -2012,7 +2016,8 @@ void generate_text_internal(char *p, int p_max_size,
 				print_tailhead("head", obj, p, p_max_size);
 			}
 			OBJ(lines) {
-				FILE *fp = open_file(obj->data.s, &obj->a);
+				static int rep = 0;
+				FILE *fp = open_file(obj->data.s, &rep);
 
 				if(fp != NULL) {
 /* FIXME: use something more general (see also tail.c, head.c */
@@ -2036,7 +2041,8 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 
 			OBJ(words) {
-				FILE *fp = open_file(obj->data.s, &obj->a);
+				static int rep = 0;
+				FILE *fp = open_file(obj->data.s, &rep);
 
 				if(fp != NULL) {
 					char buf[BUFSZ];

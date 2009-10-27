@@ -128,7 +128,7 @@ void init_iconv_start(struct text_object *obj, void *free_at_crash, const char *
 		if (new_iconv == (iconv_t) (-1)) {
 			NORM_ERR("Can't convert from %s to %s.", iconv_from, iconv_to);
 		} else {
-			obj->a = register_iconv(&new_iconv);
+			obj->data.i = register_iconv(&new_iconv);
 			iconv_converting = 1;
 		}
 	}
@@ -142,7 +142,7 @@ void init_iconv_stop(void)
 void do_iconv_start(struct text_object *obj)
 {
 	iconv_converting = 1;
-	iconv_selected = obj->a;
+	iconv_selected = obj->data.i;
 }
 
 void do_iconv_stop(void)

@@ -170,7 +170,6 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		} else {
 			obj->data.i = atoi(&arg[0]);
 		}
-		obj->a = 1;
 	END OBJ(freq_g, 0)
 		get_cpu_count();
 		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) == 0
@@ -181,7 +180,6 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		} else {
 			obj->data.i = atoi(&arg[0]);
 		}
-		obj->a = 1;
 	END OBJ_ARG(read_tcp, 0, "read_tcp: Needs \"(host) port\" as argument(s)")
 		parse_read_tcp_arg(obj, arg, free_at_crash);
 #if defined(__linux__)
@@ -195,7 +193,6 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		} else {
 			obj->data.i = atoi(&arg[0]);
 		}
-		obj->a = 1;
 	END OBJ(voltage_v, 0)
 		get_cpu_count();
 		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) == 0
@@ -206,7 +203,6 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		} else {
 			obj->data.i = atoi(&arg[0]);
 		}
-		obj->a = 1;
 
 #ifdef HAVE_IWLIB
 	END OBJ(wireless_essid, &update_net_stats)

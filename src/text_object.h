@@ -447,10 +447,7 @@ struct text_object {
 
 	void *special_data;
 	int type;
-	int a, b;
 	long line;
-	unsigned int c, d, e;
-	char char_a, char_b;
 };
 
 /* text object list helpers */
