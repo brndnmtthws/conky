@@ -33,6 +33,8 @@
 #include "config.h"
 #include "ibm.h"
 #include "logging.h"
+#include "temphelper.h"
+#include <ctype.h>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
