@@ -104,6 +104,7 @@ const char *scan_bar(struct text_object *, const char *);
 const char *scan_gauge(struct text_object *, const char *);
 char *scan_font(const char *);
 char *scan_graph(struct text_object *, const char *);
+void scan_tab(struct text_object *, const char *);
 
 /* printing specials */
 void new_gauge(struct text_object *, char *, int);
@@ -122,6 +123,6 @@ void new_voffset(char *, long);
 void new_alignr(char *, long);
 void new_alignc(char *, long);
 void new_goto(char *, long);
-void new_tab(char *, int, int);
+void new_tab(struct text_object *, char *);
 
 #endif /* _SPECIALS_H */

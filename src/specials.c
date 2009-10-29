@@ -70,6 +70,10 @@ struct graph {
 	char tempgrad;
 };
 
+struct tab {
+	int width, arg;
+};
+
 /*
  * Scanning arguments to various special text objects
  */
@@ -485,11 +489,36 @@ void new_goto(char *buf, long c)
 	new_special(buf, GOTO)->arg = c;
 }
 
-void new_tab(char *buf, int a, int b)
+void scan_tab(struct text_object *obj, const char *arg)
 {
-	struct special_t *s = new_special(buf, TAB);
+	struct tab *t;
 
-	s->width = a;
-	s->arg = b;
+	t = malloc(sizeof(struct tab));
+	memset(t, 0, sizeof(struct tab));
+
+	t->width = 10;
+	t->arg = 0;
+
+	if (arg) {
+		if (sscanf(arg, "%d %d", &t->width, &t->arg) != 2) {
+			sscanf(arg, "%d", &t->arg);
+		}
+	}
+	if (t->width <= 0) {
+		t->width = 1;
+	}
+	obj->special_data = t;
 }
 
+void new_tab(struct text_object *obj, char *buf)
+{
+	struct special_t *s = 0;
+	struct tab *t = obj->special_data;
+
+	if (!t)
+		return;
+
+	s = new_special(buf, TAB);
+	s->width = t->width;
+	s->arg = t->arg;
+}

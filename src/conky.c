@@ -1264,7 +1264,7 @@ void generate_text_internal(char *p, int p_max_size,
 				new_goto(p, obj->data.i);
 			}
 			OBJ(tab) {
-				new_tab(p, obj->data.pair.a, obj->data.pair.b);
+				new_tab(obj, p);
 			}
 #ifdef X11
 			OBJ(hr) {

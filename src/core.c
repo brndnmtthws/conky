@@ -518,19 +518,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ_ARG(goto, 0, "goto needs arguments")
 		obj->data.i = atoi(arg);
 	END OBJ(tab, 0)
-		int a = 10, b = 0;
-
-		if (arg) {
-			if (sscanf(arg, "%d %d", &a, &b) != 2) {
-				sscanf(arg, "%d", &b);
-			}
-		}
-		if (a <= 0) {
-			a = 1;
-		}
-		obj->data.pair.a = a;
-		obj->data.pair.b = b;
-
+		scan_tab(obj, arg);
 #ifdef __linux__
 	END OBJ_ARG(i2c, 0, "i2c needs arguments")
 		parse_i2c_sensor(obj, arg);
