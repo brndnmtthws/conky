@@ -105,6 +105,7 @@ const char *scan_gauge(struct text_object *, const char *);
 char *scan_font(const char *);
 char *scan_graph(struct text_object *, const char *);
 void scan_tab(struct text_object *, const char *);
+void scan_stippled_hr(struct text_object *, const char*);
 
 /* printing specials */
 void new_gauge(struct text_object *, char *, int);
@@ -112,7 +113,7 @@ void new_bar(struct text_object *, char *, int);
 void new_font(char *, char *);
 void new_graph(struct text_object *, char *, double);
 void new_hr(char *, int);
-void new_stippled_hr(char *, int, int);
+void new_stippled_hr(struct text_object *, char *);
 #endif
 void new_bar_in_shell(struct text_object *, char *, int, double);
 void new_fg(char *, long);

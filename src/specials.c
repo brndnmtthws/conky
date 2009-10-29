@@ -70,6 +70,10 @@ struct graph {
 	char tempgrad;
 };
 
+struct stippled_hr {
+	int height, arg;
+};
+
 struct tab {
 	int width, arg;
 };
@@ -387,17 +391,42 @@ void new_hr(char *buf, int a)
 	new_special(buf, HORIZONTAL_LINE)->height = a;
 }
 
-void new_stippled_hr(char *buf, int a, int b)
+void scan_stippled_hr(struct text_object *obj, const char *arg)
+{
+	struct stippled_hr *sh;
+
+	sh = malloc(sizeof(struct stippled_hr));
+	memset(sh, 0, sizeof(struct stippled_hr));
+
+	sh->arg = get_stippled_borders();
+	sh->height = 1;
+
+	if (arg) {
+		if (sscanf(arg, "%d %d", &sh->arg, &sh->height) != 2) {
+			sscanf(arg, "%d", &sh->height);
+		}
+	}
+	if (sh->arg <= 0) {
+		sh->arg = 1;
+	}
+	obj->special_data = sh;
+}
+
+void new_stippled_hr(struct text_object *obj, char *buf)
 {
 	struct special_t *s = 0;
+	struct stippled_hr *sh = obj->special_data;
 
 	if ((output_methods & TO_X) == 0)
 		return;
 
+	if (!sh)
+		return;
+
 	s = new_special(buf, STIPPLED_HR);
 
-	s->height = b;
-	s->arg = a;
+	s->height = sh->height;
+	s->arg = sh->arg;
 }
 #endif /* X11 */
 

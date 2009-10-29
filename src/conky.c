@@ -1606,7 +1606,7 @@ void generate_text_internal(char *p, int p_max_size,
 				new_bg(p, obj->data.l);
 			}
 			OBJ(stippled_hr) {
-				new_stippled_hr(p, obj->data.pair.a, obj->data.pair.b);
+				new_stippled_hr(obj, p);
 			}
 #endif /* X11 */
 			OBJ(swap) {

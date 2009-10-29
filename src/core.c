@@ -669,18 +669,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif /* X11 */
 	END OBJ(stippled_hr, 0)
 #ifdef X11
-		int a = get_stippled_borders(), b = 1;
-
-		if (arg) {
-			if (sscanf(arg, "%d %d", &a, &b) != 2) {
-				sscanf(arg, "%d", &b);
-			}
-		}
-		if (a <= 0) {
-			a = 1;
-		}
-		obj->data.pair.a = a;
-		obj->data.pair.b = b;
+		scan_stippled_hr(obj, arg);
 #endif /* X11 */
 	END OBJ(swap, &update_meminfo)
 	END OBJ(swapfree, &update_meminfo)
