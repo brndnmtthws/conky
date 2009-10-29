@@ -1414,13 +1414,16 @@ void generate_text_internal(char *p, int p_max_size,
 				free(tmp_info);
 			}
 			OBJ(if_existing) {
-				if (obj->data.ifblock.str
-				    && !check_contains(obj->data.ifblock.s,
-				                       obj->data.ifblock.str)) {
+				char *spc;
+
+				spc = strchr(obj->data.ifblock.s, ' ');
+				if (!spc && access(obj->data.ifblock.s, F_OK)) {
 					DO_JUMP;
-				} else if (obj->data.ifblock.s
-				           && access(obj->data.ifblock.s, F_OK)) {
-					DO_JUMP;
+				} else if (spc) {
+					*spc = '\0';
+					if (check_contains(obj->data.ifblock.s, spc + 1))
+						DO_JUMP;
+					*spc = ' ';
 				}
 			}
 			OBJ(if_mounted) {

@@ -557,17 +557,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->sub = malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
 	END OBJ_IF_ARG(if_existing, 0, "if_existing needs an argument or two")
-		char buf1[256], buf2[256];
-		int r = sscanf(arg, "%255s %255[^\n]", buf1, buf2);
-
-		if (r == 1) {
-			obj->data.ifblock.s = strndup(buf1, text_buffer_size);
-			obj->data.ifblock.str = NULL;
-		} else {
-			obj->data.ifblock.s = strndup(buf1, text_buffer_size);
-			obj->data.ifblock.str = strndup(buf2, text_buffer_size);
-		}
-		DBGP("if_existing: '%s' '%s'", obj->data.ifblock.s, obj->data.ifblock.str);
+		obj->data.ifblock.s = strndup(arg, text_buffer_size);
 	END OBJ_IF_ARG(if_mounted, 0, "if_mounted needs an argument")
 		obj->data.ifblock.s = strndup(arg, text_buffer_size);
 #ifdef __linux__
@@ -1284,7 +1274,6 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_if_mounted:
 			case OBJ_if_running:
 				free(data.ifblock.s);
-				free(data.ifblock.str);
 				break;
 			case OBJ_head:
 			case OBJ_tail:
@@ -1314,7 +1303,6 @@ void free_text_objects(struct text_object *root, int internal)
 				break;
 			case OBJ_if_gw:
 				free(data.ifblock.s);
-				free(data.ifblock.str);
 			case OBJ_gw_iface:
 			case OBJ_gw_ip:
 				free_gateway_info();
@@ -1519,7 +1507,6 @@ void free_text_objects(struct text_object *root, int internal)
 				break;
 			case OBJ_if_smapi_bat_installed:
 				free(data.ifblock.s);
-				free(data.ifblock.str);
 				break;
 #endif /* IBM */
 #ifdef NVIDIA

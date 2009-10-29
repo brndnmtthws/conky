@@ -441,7 +441,6 @@ struct text_object {
 			struct text_object *next;
 			char *s;
 			int i;
-			char *str;
 		} ifblock;
 	} data;
 
