@@ -922,8 +922,7 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #ifdef X11
 			OBJ(cpugauge)
-				new_gauge(p, obj->a, obj->b,
-						round_to_int(cur->cpu_usage[obj->data.i] * 255.0));
+				new_gauge(obj, p, round_to_int(cur->cpu_usage[obj->data.i] * 255.0));
 #endif /* X11 */
 			OBJ(cpubar) {
 #ifdef X11
@@ -1336,7 +1335,7 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(lua_gauge) {
 				double per;
 				if (llua_getnumber(obj->data.s, &per)) {
-					new_gauge(p, obj->a, obj->b, (per/100.0 * 255));
+					new_gauge(obj, p, (per/100.0 * 255));
 				}
 			}
 #endif /* X11 */
@@ -1466,8 +1465,7 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #ifdef X11
 			OBJ(memgauge){
-				new_gauge(p, obj->data.pair.a, obj->data.pair.b,
-					cur->memmax ? (cur->mem * 255) / (cur->memmax) : 0);
+				new_gauge(obj, p, cur->memmax ? (cur->mem * 255) / (cur->memmax) : 0);
 			}
 #endif /* X11 */
 			OBJ(membar) {
@@ -2262,8 +2260,7 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(apcupsd_loadgauge) {
 				double progress;
 				progress =	atof(cur->apcupsd.items[APCUPSD_LOAD]) / 100.0 * 255.0;
-				new_gauge(p, obj->a, obj->b,
-						  (int)progress);
+				new_gauge(obj, p, (int)progress);
 			}
 #endif /* X11 */
 			OBJ(apcupsd_charge) {

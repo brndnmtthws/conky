@@ -101,12 +101,12 @@ extern int max_specials;
 /* scanning special arguments */
 const char *scan_bar(struct text_object *, const char *);
 #ifdef X11
-const char *scan_gauge(const char *, int *, int *);
+const char *scan_gauge(struct text_object *, const char *);
 char *scan_font(const char *);
 char *scan_graph(struct text_object *, const char *);
 
 /* printing specials */
-void new_gauge(char *, int, int, int);
+void new_gauge(struct text_object *, char *, int);
 void new_bar(struct text_object *, char *, int);
 void new_font(char *, char *);
 void new_graph(struct text_object *, char *, double);

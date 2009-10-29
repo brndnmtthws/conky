@@ -364,7 +364,7 @@ void print_execgauge(struct text_object *obj, char *p, int p_max_size)
 
 	if (barnum >= 0.0) {
 		barnum /= 100;
-		new_gauge(p, obj->a, obj->b, round_to_int(barnum * 255.0));
+		new_gauge(obj, p, round_to_int(barnum * 255.0));
 	}
 }
 
@@ -423,7 +423,7 @@ void print_execigauge(struct text_object *obj, char *p, int p_max_size)
 		}
 		ed->last_update = current_update_time;
 	}
-	new_gauge(p, obj->a, obj->b, round_to_int(obj->f));
+	new_gauge(obj, p, round_to_int(obj->f));
 }
 #endif /* X11 */
 

@@ -59,6 +59,10 @@ struct bar {
 	int width, height;
 };
 
+struct gauge {
+	int width, height;
+};
+
 struct graph {
 	int width, height;
 	unsigned int first_colour, last_colour;
@@ -71,24 +75,30 @@ struct graph {
  */
 
 #ifdef X11
-const char *scan_gauge(const char *args, int *w, int *h)
+const char *scan_gauge(struct text_object *obj, const char *args)
 {
+	struct gauge *g;
+
+	g = malloc(sizeof(struct gauge));
+	memset(g, 0, sizeof(struct gauge));
+
 	/*width and height*/
-	*w = default_gauge_width;
-	*h = default_gauge_height;
+	g->width = default_gauge_width;
+	g->height = default_gauge_height;
 
 	/* gauge's argument is either height or height,width */
 	if (args) {
 		int n = 0;
 
-		if (sscanf(args, "%d,%d %n", h, w, &n) <= 1) {
-			if (sscanf(args, "%d %n", h, &n) == 2) {
-				*w = *h; /*square gauge*/
+		if (sscanf(args, "%d,%d %n", &g->height, &g->width, &n) <= 1) {
+			if (sscanf(args, "%d %n", &g->height, &n) == 2) {
+				g->width = g->height; /*square gauge*/
 			}
 		}
 		args += n;
 	}
 
+	obj->special_data = g;
 	return args;
 }
 #endif /* X11 */
@@ -228,17 +238,22 @@ static struct special_t *new_special(char *buf, enum special_types t)
 }
 
 #ifdef X11
-void new_gauge(char *buf, int w, int h, int usage)
+void new_gauge(struct text_object *obj, char *buf, int usage)
 {
 	struct special_t *s = 0;
+	struct gauge *g = obj->special_data;
+
 	if ((output_methods & TO_X) == 0)
+		return;
+
+	if (!g)
 		return;
 
 	s = new_special(buf, GAUGE);
 
 	s->arg = (usage > 255) ? 255 : ((usage < 0) ? 0 : usage);
-	s->width = w;
-	s->height = h;
+	s->width = g->width;
+	s->height = g->height;
 }
 
 void new_bar(struct text_object *obj, char *buf, int usage)
