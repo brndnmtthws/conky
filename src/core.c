@@ -557,19 +557,19 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->sub = malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
 	END OBJ_IF_ARG(if_existing, 0, "if_existing needs an argument or two")
-		obj->data.ifblock.s = strndup(arg, text_buffer_size);
+		obj->data.s = strndup(arg, text_buffer_size);
 	END OBJ_IF_ARG(if_mounted, 0, "if_mounted needs an argument")
-		obj->data.ifblock.s = strndup(arg, text_buffer_size);
+		obj->data.s = strndup(arg, text_buffer_size);
 #ifdef __linux__
 	END OBJ_IF_ARG(if_running, &update_top, "if_running needs an argument")
 		top_running = 1;
-		obj->data.ifblock.s = strndup(arg, text_buffer_size);
+		obj->data.s = strndup(arg, text_buffer_size);
 #else
 	END OBJ_IF_ARG(if_running, 0, "if_running needs an argument")
 		char buf[256];
 
 		snprintf(buf, 256, "pidof %s >/dev/null", arg);
-		obj->data.ifblock.s = strndup(buf, text_buffer_size);
+		obj->data.s = strndup(buf, text_buffer_size);
 #endif
 	END OBJ(kernel, 0)
 	END OBJ(machine, 0)
@@ -680,9 +680,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		parse_net_stat_arg(obj, arg, free_at_crash);
 	END OBJ(updates, 0)
 	END OBJ_IF(if_updatenr, 0)
-		obj->data.ifblock.i = arg ? atoi(arg) : 0;
-		if(obj->data.ifblock.i == 0) CRIT_ERR(obj, free_at_crash, "if_updatenr needs a number above 0 as argument");
-		set_updatereset(obj->data.ifblock.i > get_updatereset() ? obj->data.ifblock.i : get_updatereset());
+		obj->data.i = arg ? atoi(arg) : 0;
+		if(obj->data.i == 0) CRIT_ERR(obj, free_at_crash, "if_updatenr needs a number above 0 as argument");
+		set_updatereset(obj->data.i > get_updatereset() ? obj->data.i : get_updatereset());
 	END OBJ(alignr, 0)
 		obj->data.i = arg ? atoi(arg) : 0;
 	END OBJ(alignc, 0)
@@ -727,7 +727,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ_ARG(smapi, 0, "smapi needs an argument")
 		obj->data.s = strndup(arg, text_buffer_size);
 	END OBJ_IF_ARG(if_smapi_bat_installed, 0, "if_smapi_bat_installed needs an argument")
-		obj->data.ifblock.s = strndup(arg, text_buffer_size);
+		obj->data.s = strndup(arg, text_buffer_size);
 	END OBJ_ARG(smapi_bat_perc, 0, "smapi_bat_perc needs an argument")
 		obj->data.s = strndup(arg, text_buffer_size);
 	END OBJ_ARG(smapi_bat_temp, 0, "smapi_bat_temp needs an argument")
@@ -1273,7 +1273,7 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_if_existing:
 			case OBJ_if_mounted:
 			case OBJ_if_running:
-				free(data.ifblock.s);
+				free(data.s);
 				break;
 			case OBJ_head:
 			case OBJ_tail:
@@ -1302,7 +1302,7 @@ void free_text_objects(struct text_object *root, int internal)
 				free(data.s);
 				break;
 			case OBJ_if_gw:
-				free(data.ifblock.s);
+				free(data.s);
 			case OBJ_gw_iface:
 			case OBJ_gw_ip:
 				free_gateway_info();
@@ -1506,7 +1506,7 @@ void free_text_objects(struct text_object *root, int internal)
 				free(data.s);
 				break;
 			case OBJ_if_smapi_bat_installed:
-				free(data.ifblock.s);
+				free(data.s);
 				break;
 #endif /* IBM */
 #ifdef NVIDIA

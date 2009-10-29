@@ -107,7 +107,7 @@ static int push_ifblock(struct ifblock_stack_obj **ifblock_stack_top,
 		case IFBLOCK_ENDIF:
 			if (!(*ifblock_stack_top))
 				CRIT_ERR(NULL, NULL, "got an endif without matching if");
-			(*ifblock_stack_top)->obj->data.ifblock.next = obj;
+			(*ifblock_stack_top)->obj->sub = obj;
 			/* if there's some else in between, remove and free it */
 			if ((*ifblock_stack_top)->type == IFBLOCK_ELSE) {
 				stackobj = *ifblock_stack_top;
@@ -122,7 +122,7 @@ static int push_ifblock(struct ifblock_stack_obj **ifblock_stack_top,
 		case IFBLOCK_ELSE:
 			if (!(*ifblock_stack_top))
 				CRIT_ERR(NULL, NULL, "got an else without matching if");
-			(*ifblock_stack_top)->obj->data.ifblock.next = obj;
+			(*ifblock_stack_top)->obj->sub = obj;
 			/* fall through */
 		case IFBLOCK_IF:
 			stackobj = malloc(sizeof(struct ifblock_stack_obj));

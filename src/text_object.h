@@ -435,13 +435,6 @@ struct text_object {
 		char *s;		/* some string */
 		int i;			/* some integer */
 		long l;			/* some long integer */
-
-		struct {
-			void *opaque;	/* temporary workaround to not blow stuff */
-			struct text_object *next;
-			char *s;
-			int i;
-		} ifblock;
 	} data;
 
 	void *special_data;

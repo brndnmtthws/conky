@@ -793,7 +793,7 @@ void generate_text_internal(char *p, int p_max_size,
  */
 #define DO_JUMP { \
 	DBGP2("jumping"); \
-	obj = obj->data.ifblock.next; \
+	obj = obj->sub; \
 }
 
 #define OBJ(a) break; case OBJ_##a:
@@ -1162,7 +1162,7 @@ void generate_text_internal(char *p, int p_max_size,
 				 * Do Ninja jump here: without leaving traces.
 				 * This is to prevent us from stale jumped flags.
 				 */
-				obj = obj->data.ifblock.next;
+				obj = obj->sub;
 				continue;
 			}
 			OBJ(endif) {
@@ -1416,27 +1416,27 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(if_existing) {
 				char *spc;
 
-				spc = strchr(obj->data.ifblock.s, ' ');
-				if (!spc && access(obj->data.ifblock.s, F_OK)) {
+				spc = strchr(obj->data.s, ' ');
+				if (!spc && access(obj->data.s, F_OK)) {
 					DO_JUMP;
 				} else if (spc) {
 					*spc = '\0';
-					if (check_contains(obj->data.ifblock.s, spc + 1))
+					if (check_contains(obj->data.s, spc + 1))
 						DO_JUMP;
 					*spc = ' ';
 				}
 			}
 			OBJ(if_mounted) {
-				if ((obj->data.ifblock.s)
-						&& (!check_mount(obj->data.ifblock.s))) {
+				if ((obj->data.s)
+						&& (!check_mount(obj->data.s))) {
 					DO_JUMP;
 				}
 			}
 			OBJ(if_running) {
 #ifdef __linux__
-				if (!get_process_by_name(obj->data.ifblock.s)) {
+				if (!get_process_by_name(obj->data.s)) {
 #else
-				if ((obj->data.ifblock.s) && system(obj->data.ifblock.s)) {
+				if ((obj->data.s) && system(obj->data.s)) {
 #endif
 					DO_JUMP;
 				}
@@ -1662,7 +1662,7 @@ void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%d", total_updates);
 			}
 			OBJ(if_updatenr) {
-				if(total_updates % updatereset != obj->data.ifblock.i - 1) {
+				if(total_updates % updatereset != obj->data.i - 1) {
 					DO_JUMP;
 				}
 			}
@@ -2120,7 +2120,7 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(if_smapi_bat_installed) {
 				int idx;
-				if(obj->data.ifblock.s && sscanf(obj->data.ifblock.s, "%i", &idx) == 1) {
+				if(obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
 					if(!smapi_bat_installed(idx)) {
 						DO_JUMP;
 					}
