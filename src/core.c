@@ -357,10 +357,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef X11
 	END OBJ(cpugraph, &update_cpu_usage)
 		char *buf = 0;
-		SIZE_DEFAULTS(graph);
 		SCAN_CPU(arg, obj->data.i);
-		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-			&obj->e, &obj->char_a, &obj->char_b);
+		buf = scan_graph(obj, arg);
 		DBGP2("Adding $cpugraph for CPU %d", obj->data.i);
 		if (buf) free(buf);
 	END OBJ(loadgraph, &update_load_average)
@@ -477,15 +475,13 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		SIZE_DEFAULTS(gauge);
 		scan_exec_arg(obj, arg);
 	END OBJ(execgraph, 0)
-		SIZE_DEFAULTS(graph);
-		scan_exec_arg(obj, arg);
+		scan_execgraph_arg(obj, arg);
 #endif /* X11 */
 	END OBJ_ARG(execibar, 0, "execibar needs arguments")
 		scan_execi_arg(obj, arg);
 #ifdef X11
 	END OBJ_ARG(execigraph, 0, "execigraph needs arguments")
-		SIZE_DEFAULTS(graph);
-		scan_execi_arg(obj, arg);
+		scan_execgraph_arg(obj, arg);
 	END OBJ_ARG(execigauge, 0, "execigauge needs arguments")
 		SIZE_DEFAULTS(gauge);
 		scan_execi_arg(obj, arg);
@@ -649,9 +645,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef X11
 	END OBJ(memgraph, &update_meminfo)
 		char *buf = 0;
-		SIZE_DEFAULTS(graph);
-		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-				&obj->e, &obj->char_a, &obj->char_b);
+		buf = scan_graph(obj, arg);
 
 		if (buf) free(buf);
 #endif /* X11*/
@@ -951,9 +945,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef X11
 	END OBJ_ARG(lua_graph, 0, "lua_graph needs arguments: <function name> [height],[width] [gradient colour 1] [gradient colour 2] [scale] [-t] [-l]")
 		char *buf = 0;
-		SIZE_DEFAULTS(graph);
-		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-				&obj->e, &obj->char_a, &obj->char_b);
+		buf = scan_graph(obj, arg);
 		if (buf) {
 			obj->data.s = buf;
 		} else {
@@ -1036,9 +1028,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef X11
 	END OBJ(apcupsd_loadgraph, &update_apcupsd)
 		char* buf = 0;
-		SIZE_DEFAULTS(graph);
-		buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-				&obj->e, &obj->char_a, &obj->char_b);
+		buf = scan_graph(obj, arg);
 		if (buf) free(buf);
 	END OBJ(apcupsd_loadgauge, &update_apcupsd)
 		SIZE_DEFAULTS(gauge);

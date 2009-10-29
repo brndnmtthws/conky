@@ -935,9 +935,7 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #ifdef X11
 			OBJ(cpugraph) {
-				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-						round_to_int(cur->cpu_usage[obj->data.i] * 100),
-						100, 1, obj->char_a, obj->char_b);
+				new_graph(obj, p, round_to_int(cur->cpu_usage[obj->data.i] * 100));
 			}
 			OBJ(loadgraph) {
 				print_loadgraph(obj, p);
@@ -1332,8 +1330,7 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(lua_graph) {
 				double per;
 				if (llua_getnumber(obj->data.s, &per)) {
-					new_graph(p, obj->a, obj->b, obj->c, obj->d,
-							per, obj->e, 1, obj->char_a, obj->char_b);
+					new_graph(obj, p, per);
 				}
 			}
 			OBJ(lua_gauge) {
@@ -1483,9 +1480,7 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #ifdef X11
 			OBJ(memgraph) {
-				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-					cur->memmax ? (cur->mem * 100.0) / (cur->memmax) : 0.0,
-					100, 1, obj->char_a, obj->char_b);
+				new_graph(obj, p, cur->memmax ? (cur->mem * 100.0) / (cur->memmax) : 0.0);
 			}
 #endif /* X11 */
 			/* mixer stuff */
@@ -2262,8 +2257,7 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(apcupsd_loadgraph) {
 				double progress;
 				progress =	atof(cur->apcupsd.items[APCUPSD_LOAD]);
-				new_graph(p, obj->a, obj->b, obj->c, obj->d,
-						  (int)progress, 100, 1, obj->char_a, obj->char_b);
+				new_graph(obj, p, (int)progress);
 			}
 			OBJ(apcupsd_loadgauge) {
 				double progress;

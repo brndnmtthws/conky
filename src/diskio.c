@@ -143,9 +143,7 @@ void print_diskio(struct text_object *obj, int dir, char *p, int p_max_size)
 void parse_diskiograph_arg(struct text_object *obj, const char *arg)
 {
 	char *buf = 0;
-	SIZE_DEFAULTS(graph);
-	buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-			&obj->e, &obj->char_a, &obj->char_b);
+	buf = scan_graph(obj, arg);
 
 	obj->data.opaque = prepare_diskio_stat(dev_name(buf));
 	if (buf)
@@ -167,8 +165,7 @@ void print_diskiograph(struct text_object *obj, int dir, char *p)
 	else
 		val = diskio->current_write;
 
-	new_graph(p, obj->a, obj->b, obj->c, obj->d,
-			val, obj->e, 1, obj->char_a, obj->char_b);
+	new_graph(obj, p, val);
 }
 #endif /* X11 */
 

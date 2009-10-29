@@ -103,15 +103,13 @@ const char *scan_bar(struct text_object *, const char *);
 #ifdef X11
 const char *scan_gauge(const char *, int *, int *);
 char *scan_font(const char *);
-char *scan_graph(const char *, int *, int *, unsigned int *,
-                 unsigned int *, unsigned int *, char *, char *);
+char *scan_graph(struct text_object *, const char *);
 
 /* printing specials */
 void new_gauge(char *, int, int, int);
 void new_bar(struct text_object *, char *, int);
 void new_font(char *, char *);
-void new_graph(char *, int, int, unsigned int,
-               unsigned int, double, int, int, char, char);
+void new_graph(struct text_object *, char *, double);
 void new_hr(char *, int);
 void new_stippled_hr(char *, int, int);
 #endif

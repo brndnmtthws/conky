@@ -448,16 +448,13 @@ void scan_loadgraph_arg(struct text_object *obj, const char *arg)
 {
 	char *buf = 0;
 
-	SIZE_DEFAULTS(graph);
-	buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-			&obj->e, &obj->char_a, &obj->char_b);
+	buf = scan_graph(obj, arg);
 	if (buf)
 		free(buf);
 }
 
 void print_loadgraph(struct text_object *obj, char *p)
 {
-	new_graph(p, obj->a, obj->b, obj->c, obj->d, info.loadavg[0],
-			obj->e, 1, obj->char_a, obj->char_b);
+	new_graph(obj, p, info.loadavg[0]);
 }
 #endif /* X11 */

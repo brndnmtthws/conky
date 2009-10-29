@@ -235,6 +235,23 @@ void scan_execi_arg(struct text_object *obj, const char *arg)
 	obj->data.opaque = ed;
 }
 
+void scan_execgraph_arg(struct text_object *obj, const char *arg)
+{
+	struct execi_data *ed;
+	char *buf;
+
+	ed = malloc(sizeof(struct execi_data));
+	memset(ed, 0, sizeof(struct execi_data));
+
+	buf = scan_graph(obj, arg);
+	if (!buf) {
+		NORM_ERR("missing command argument to execgraph object");
+		return;
+	}
+	ed->cmd = buf;
+	obj->data.opaque = ed;
+}
+
 void print_exec(struct text_object *obj, char *p, int p_max_size)
 {
 	read_exec(obj->data.s, p, p_max_size);
@@ -353,31 +370,17 @@ void print_execgauge(struct text_object *obj, char *p, int p_max_size)
 
 void print_execgraph(struct text_object *obj, char *p, int p_max_size)
 {
-	char showaslog = FALSE;
-	char tempgrad = FALSE;
 	double barnum;
 	struct execi_data *ed = obj->data.opaque;
-	char *cmd;
 
 	if (!ed)
 		return;
 
-	cmd = ed->cmd;
-
-	if (strstr(cmd, " "TEMPGRAD) && strlen(cmd) > strlen(" "TEMPGRAD)) {
-		tempgrad = TRUE;
-		cmd += strlen(" "TEMPGRAD);
-	}
-	if (strstr(cmd, " "LOGGRAPH) && strlen(cmd) > strlen(" "LOGGRAPH)) {
-		showaslog = TRUE;
-		cmd += strlen(" "LOGGRAPH);
-	}
-	read_exec(cmd, p, p_max_size);
+	read_exec(ed->cmd, p, p_max_size);
 	barnum = get_barnum(p);
 
 	if (barnum > 0) {
-		new_graph(p, obj->a, obj->b, obj->c, obj->d, round_to_int(barnum),
-				100, 1, showaslog, tempgrad);
+		new_graph(obj, p, round_to_int(barnum));
 	}
 }
 
@@ -390,21 +393,8 @@ void print_execigraph(struct text_object *obj, char *p, int p_max_size)
 
 	if (time_to_update(ed)) {
 		double barnum;
-		char showaslog = FALSE;
-		char tempgrad = FALSE;
-		char *cmd = ed->cmd;
 
-		if (strstr(cmd, " "TEMPGRAD) && strlen(cmd) > strlen(" "TEMPGRAD)) {
-			tempgrad = TRUE;
-			cmd += strlen(" "TEMPGRAD);
-		}
-		if (strstr(cmd, " "LOGGRAPH) && strlen(cmd) > strlen(" "LOGGRAPH)) {
-			showaslog = TRUE;
-			cmd += strlen(" "LOGGRAPH);
-		}
-		obj->char_a = showaslog;
-		obj->char_b = tempgrad;
-		read_exec(cmd, p, p_max_size);
+		read_exec(ed->cmd, p, p_max_size);
 		barnum = get_barnum(p);
 
 		if (barnum >= 0.0) {
@@ -412,7 +402,7 @@ void print_execigraph(struct text_object *obj, char *p, int p_max_size)
 		}
 		ed->last_update = current_update_time;
 	}
-	new_graph(p, obj->a, obj->b, obj->c, obj->d, (int) (obj->f), 100, 1, obj->char_a, obj->char_b);
+	new_graph(obj, p, (int) (obj->f));
 }
 
 void print_execigauge(struct text_object *obj, char *p, int p_max_size)

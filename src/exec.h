@@ -36,6 +36,7 @@ extern pid_t childpid;
 void scan_exec_arg(struct text_object *, const char *);
 void scan_pre_exec_arg(struct text_object *, const char *);
 void scan_execi_arg(struct text_object *, const char *);
+void scan_execgraph_arg(struct text_object *, const char *);
 void print_exec(struct text_object *, char *, int);
 void print_execp(struct text_object *, char *, int);
 void print_execi(struct text_object *, char *, int);

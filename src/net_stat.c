@@ -193,9 +193,7 @@ void print_addrs(struct text_object *obj, char *p, int p_max_size)
 void parse_net_stat_graph_arg(struct text_object *obj, const char *arg, void *free_at_crash)
 {
 	char *buf = 0;
-	SIZE_DEFAULTS(graph);
-	buf = scan_graph(arg, &obj->a, &obj->b, &obj->c, &obj->d,
-			&obj->e, &obj->char_a, &obj->char_b);
+	buf = scan_graph(obj, arg);
 
 	// default to DEFAULTNETDEV
 	if (buf) {
@@ -213,8 +211,7 @@ void print_downspeedgraph(struct text_object *obj, char *p)
 	if (!ns)
 		return;
 
-	new_graph(p, obj->a, obj->b, obj->c, obj->d,
-			ns->recv_speed / 1024.0, obj->e, 1, obj->char_a, obj->char_b);
+	new_graph(obj, p, ns->recv_speed / 1024.0);
 }
 
 void print_upspeedgraph(struct text_object *obj, char *p)
@@ -224,8 +221,7 @@ void print_upspeedgraph(struct text_object *obj, char *p)
 	if (!ns)
 		return;
 
-	new_graph(p, obj->a, obj->b, obj->c, obj->d,
-			ns->trans_speed / 1024.0, obj->e, 1, obj->char_a, obj->char_b);
+	new_graph(obj, p, ns->trans_speed / 1024.0);
 }
 #endif /* X11 */
 

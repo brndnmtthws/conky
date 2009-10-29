@@ -59,6 +59,13 @@ struct bar {
 	int width, height;
 };
 
+struct graph {
+	int width, height;
+	unsigned int first_colour, last_colour;
+	unsigned int scale, showaslog;
+	char tempgrad;
+};
+
 /*
  * Scanning arguments to various special text objects
  */
@@ -120,74 +127,78 @@ char *scan_font(const char *args)
 	return NULL;
 }
 
-char *scan_graph(const char *args, int *w, int *h,
-                 unsigned int *first_colour, unsigned int *last_colour,
-                 unsigned int *scale, char *showaslog, char *tempgrad)
+char *scan_graph(struct text_object *obj, const char *args)
 {
+	struct graph *g;
 	char buf[1024];
 	memset(buf, 0, 1024);
 
+	g = malloc(sizeof(struct graph));
+	memset(g, 0, sizeof(struct graph));
+	obj->special_data = g;
+
 	/* zero width means all space that is available */
-	*w = default_graph_width;
-	*h = default_graph_height;
-	*first_colour = 0;
-	*last_colour = 0;
-	*scale = 0;
-	*tempgrad = FALSE;
-	*showaslog = FALSE;
+	g->width = default_graph_width;
+	g->height = default_graph_height;
+	g->first_colour = 0;
+	g->last_colour = 0;
+	g->scale = 0;
+	g->tempgrad = FALSE;
+	g->showaslog = FALSE;
 	if (args) {
 		if (strstr(args, " "TEMPGRAD) || strncmp(args, TEMPGRAD, strlen(TEMPGRAD)) == 0) {
-			*tempgrad = TRUE;
+			g->tempgrad = TRUE;
 		}
 		if (strstr(args, " "LOGGRAPH) || strncmp(args, LOGGRAPH, strlen(LOGGRAPH)) == 0) {
-			*showaslog = TRUE;
+			g->showaslog = TRUE;
 		}
-		if (sscanf(args, "%d,%d %x %x %u", h, w, first_colour, last_colour, scale) == 5) {
+		if (sscanf(args, "%d,%d %x %x %u", &g->height, &g->width, &g->first_colour, &g->last_colour, &g->scale) == 5) {
 			return NULL;
 		}
-		*scale = 0;
-		if (sscanf(args, "%d,%d %x %x", h, w, first_colour, last_colour) == 4) {
+		g->scale = 0;
+		if (sscanf(args, "%d,%d %x %x", &g->height, &g->width, &g->first_colour, &g->last_colour) == 4) {
 			return NULL;
 		}
-		if (sscanf(args, "%1023s %d,%d %x %x %u", buf, h, w, first_colour, last_colour, scale) == 6) {
+		if (sscanf(args, "%1023s %d,%d %x %x %u", buf, &g->height, &g->width, &g->first_colour, &g->last_colour, &g->scale) == 6) {
 			return strndup(buf, text_buffer_size);
 		}
-		*scale = 0;
-		if (sscanf(args, "%1023s %d,%d %x %x", buf, h, w, first_colour, last_colour) == 5) {
-			return strndup(buf, text_buffer_size);
-		}
-		buf[0] = '\0';
-		*h = 25;
-		*w = 0;
-		if (sscanf(args, "%x %x %u", first_colour, last_colour, scale) == 3) {
-			return NULL;
-		}
-		*scale = 0;
-		if (sscanf(args, "%x %x", first_colour, last_colour) == 2) {
-			return NULL;
-		}
-		if (sscanf(args, "%1023s %x %x %u", buf, first_colour, last_colour, scale) == 4) {
-			return strndup(buf, text_buffer_size);
-		}
-		*scale = 0;
-		if (sscanf(args, "%1023s %x %x", buf, first_colour, last_colour) == 3) {
+		g->scale = 0;
+		if (sscanf(args, "%1023s %d,%d %x %x", buf, &g->height, &g->width, &g->first_colour, &g->last_colour) == 5) {
 			return strndup(buf, text_buffer_size);
 		}
 		buf[0] = '\0';
-		*first_colour = 0;
-		*last_colour = 0;
-		if (sscanf(args, "%d,%d %u", h, w, scale) == 3) {
+		g->height = 25;
+		g->width = 0;
+		if (sscanf(args, "%x %x %u", &g->first_colour, &g->last_colour, &g->scale) == 3) {
 			return NULL;
 		}
-		*scale = 0;
-		if (sscanf(args, "%d,%d", h, w) == 2) {
+		g->scale = 0;
+		if (sscanf(args, "%x %x", &g->first_colour, &g->last_colour) == 2) {
 			return NULL;
 		}
-		if (sscanf(args, "%1023s %d,%d %u", buf, h, w, scale) < 4) {
-			*scale = 0;
+		if (sscanf(args, "%1023s %x %x %u", buf, &g->first_colour, &g->last_colour, &g->scale) == 4) {
+			return strndup(buf, text_buffer_size);
+		}
+		g->scale = 0;
+		if (sscanf(args, "%1023s %x %x", buf, &g->first_colour, &g->last_colour) == 3) {
+			return strndup(buf, text_buffer_size);
+		}
+		buf[0] = '\0';
+		g->first_colour = 0;
+		g->last_colour = 0;
+		if (sscanf(args, "%d,%d %u", &g->height, &g->width, &g->scale) == 3) {
+			return NULL;
+		}
+		g->scale = 0;
+		if (sscanf(args, "%d,%d", &g->height, &g->width) == 2) {
+			return NULL;
+		}
+		if (sscanf(args, "%1023s %d,%d %u", buf, &g->height, &g->width, &g->scale) < 4) {
+			g->scale = 0;
 			//TODO: check the return value and throw an error?
-			sscanf(args, "%1023s %d,%d", buf, h, w);
+			sscanf(args, "%1023s %d,%d", buf, &g->height, &g->width);
 		}
+#undef g
 
 		return strndup(buf, text_buffer_size);
 	}
@@ -280,7 +291,7 @@ static void graph_append(struct special_t *graph, double f, char showaslog)
 		f = log10(f + 1);
 #endif
 	}
-	
+
 	if (!graph->scaled && f > graph->graph_scale) {
 		f = graph->graph_scale;
 	}
@@ -300,17 +311,20 @@ static void graph_append(struct special_t *graph, double f, char showaslog)
 	}
 }
 
-void new_graph(char *buf, int w, int h, unsigned int first_colour,
-		unsigned int second_colour, double i, int scale, int append, char showaslog, char tempgrad)
+void new_graph(struct text_object *obj, char *buf, double val)
 {
 	struct special_t *s = 0;
+	struct graph *g = obj->special_data;
 
 	if ((output_methods & TO_X) == 0)
 		return;
 
+	if (!g)
+		return;
+
 	s = new_special(buf, GRAPH);
 
-	s->width = w;
+	s->width = g->width;
 	if (s->graph == NULL) {
 		if (s->width > 0 && s->width < MAX_GRAPH_DEPTH) {
 			// subtract 2 for the box
@@ -322,30 +336,28 @@ void new_graph(char *buf, int w, int h, unsigned int first_colour,
 		memset(s->graph, 0, s->graph_width * sizeof(double));
 		s->graph_scale = 100;
 	}
-	s->height = h;
-	s->first_colour = adjust_colours(first_colour);
-	s->last_colour = adjust_colours(second_colour);
-	if (scale != 0) {
+	s->height = g->height;
+	s->first_colour = adjust_colours(g->first_colour);
+	s->last_colour = adjust_colours(g->last_colour);
+	if (g->scale != 0) {
 		s->scaled = 0;
-		s->graph_scale = scale;
+		s->graph_scale = g->scale;
 		s->show_scale = 0;
 	} else {
 		s->scaled = 1;
 		s->graph_scale = 1;
 		s->show_scale = 1;
 	}
-	s->tempgrad = tempgrad;
+	s->tempgrad = g->tempgrad;
 	/* if (s->width) {
 		s->graph_width = s->width - 2;	// subtract 2 for rectangle around
 	} */
 #ifdef MATH
-	if (showaslog) {
+	if (g->showaslog) {
 		s->graph_scale = log10(s->graph_scale + 1);
 	}
 #endif
-	if (append) {
-		graph_append(s, i, showaslog);
-	}
+	graph_append(s, val, g->showaslog);
 }
 
 void new_hr(char *buf, int a)
