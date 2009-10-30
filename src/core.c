@@ -1302,7 +1302,6 @@ void free_text_objects(struct text_object *root, int internal)
 				free(data.s);
 				break;
 			case OBJ_if_gw:
-				free(data.s);
 			case OBJ_gw_iface:
 			case OBJ_gw_ip:
 				free_gateway_info();
