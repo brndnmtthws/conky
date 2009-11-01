@@ -884,14 +884,14 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
 	fd = open(path, O_RDONLY);
 	if (fd < 0) {
 
-	  /* if it fails, strip the /device from dev and attempt again */
-	  buf[strlen(buf) - 7] = 0;
-	  snprintf(path, 255, "%s%s/%s%d_input", dir, dev, type, n);
-	  fd = open(path, O_RDONLY);
-	  if (fd < 0) {
-		  CRIT_ERR(NULL, NULL, "can't open '%s': %s\nplease check your device or remove this "
-				   "var from "PACKAGE_NAME, path, strerror(errno));
-	  }
+		/* if it fails, strip the /device from dev and attempt again */
+		buf[strlen(buf) - 7] = 0;
+		snprintf(path, 255, "%s%s/%s%d_input", dir, dev, type, n);
+		fd = open(path, O_RDONLY);
+		if (fd < 0) {
+			CRIT_ERR(NULL, NULL, "can't open '%s': %s\nplease check your device or remove this "
+					 "var from "PACKAGE_NAME, path, strerror(errno));
+		}
 	}
 
 	strncpy(devtype, path, 255);
