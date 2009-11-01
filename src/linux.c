@@ -844,7 +844,6 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
 	char buf[256];
 	int fd;
 	int divfd;
-	struct stat st;
 
 	memset(buf, 0, sizeof(buf));
 
@@ -871,13 +870,6 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
 		}
 	}
 
-	/* At least the acpitz hwmon doesn't have a 'device' subdir,
-	 * so check it's existence and strip it from buf otherwise. */
-	snprintf(path, 255, "%s%s", dir, dev);
-	if (stat(path, &st)) {
-		buf[strlen(buf) - 7] = 0;
-	}
-
 	/* change vol to in, tempf to temp */
 	if (strcmp(type, "vol") == 0) {
 		type = "in";
@@ -885,15 +877,24 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
 		type = "temp";
 	}
 
+	/* construct path */
 	snprintf(path, 255, "%s%s/%s%d_input", dir, dev, type, n);
-	strncpy(devtype, path, 255);
 
-	/* open file */
+	/* first, attempt to open file in /device */
 	fd = open(path, O_RDONLY);
 	if (fd < 0) {
-		CRIT_ERR(NULL, NULL, "can't open '%s': %s\nplease check your device or remove this "
-			"var from "PACKAGE_NAME, path, strerror(errno));
+
+	  /* if it fails, strip the /device from dev and attempt again */
+	  buf[strlen(buf) - 7] = 0;
+	  snprintf(path, 255, "%s%s/%s%d_input", dir, dev, type, n);
+	  fd = open(path, O_RDONLY);
+	  if (fd < 0) {
+		  CRIT_ERR(NULL, NULL, "can't open '%s': %s\nplease check your device or remove this "
+				   "var from "PACKAGE_NAME, path, strerror(errno));
+	  }
 	}
+
+	strncpy(devtype, path, 255);
 
 	if (strcmp(type, "in") == 0 || strcmp(type, "temp") == 0
 			|| strcmp(type, "tempf") == 0) {
