@@ -738,11 +738,11 @@ int comparecpu(const void *a, const void *b)
 
 int comparemem(const void *a, const void *b)
 {
-	if (((struct process *) a)->totalmem > ((struct process *) b)->totalmem) {
+	if (((struct process *) a)->rss > ((struct process *) b)->rss) {
 		return -1;
 	}
 
-	if (((struct process *) a)->totalmem < ((struct process *) b)->totalmem) {
+	if (((struct process *) a)->rss < ((struct process *) b)->rss) {
 		return 1;
 	}
 
@@ -783,8 +783,6 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 			processes[j].pid = p[i].p_pid;
 			processes[j].name = strndup(p[i].p_comm, text_buffer_size);
 			processes[j].amount = 100.0 * p[i].p_pctcpu / FSCALE;
-			processes[j].totalmem = (float) (p[i].p_vm_rssize /
-					(float) total_pages) * 100.0;
 			j++;
 		}
 	}
@@ -796,7 +794,6 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 		tmp = malloc(sizeof(struct process));
 		tmp->pid = processes[i].pid;
 		tmp->amount = processes[i].amount;
-		tmp->totalmem = processes[i].totalmem;
 		tmp->name = strndup(processes[i].name, text_buffer_size);
 
 		ttmp = mem[i];
@@ -814,7 +811,6 @@ inline void proc_find_top(struct process **cpu, struct process **mem)
 		tmp = malloc(sizeof(struct process));
 		tmp->pid = processes[i].pid;
 		tmp->amount = processes[i].amount;
-		tmp->totalmem = processes[i].totalmem;
 		tmp->name = strndup(processes[i].name, text_buffer_size);
 
 		ttmp = cpu[i];

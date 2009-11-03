@@ -199,7 +199,6 @@ static struct process *new_process(int p)
  * Anyone hoping to port wmtop should look here first. */
 static int process_parse_stat(struct process *process)
 {
-	struct information *cur = &info;
 	char line[BUFFER_LEN] = { 0 }, filename[BUFFER_LEN], procname[BUFFER_LEN];
 	int ps;
 	unsigned long user_time = 0;
@@ -280,12 +279,7 @@ static int process_parse_stat(struct process *process)
 	process->name = strndup(procname, text_buffer_size);
 	process->rss *= getpagesize();
 
-	if (!cur->memmax) {
-		update_total_processes();
-	}
-
 	process->total_cpu_time = process->user_time + process->kernel_time;
-	process->totalmem = (float) (((float) process->rss / cur->memmax) / 10);
 	if (process->previous_user_time == ULONG_MAX) {
 		process->previous_user_time = process->user_time;
 	}
@@ -625,9 +619,9 @@ static int compare_cpu(struct process *a, struct process *b)
 /* mem comparison function for insert_sp_element */
 static int compare_mem(struct process *a, struct process *b)
 {
-	if (a->totalmem < b->totalmem) {
+	if (a->rss < b->rss) {
 		return 1;
-	} else if (a->totalmem > b->totalmem) {
+	} else if (a->rss > b->rss) {
 		return -1;
 	} else {
 		return 0;
@@ -978,8 +972,10 @@ void print_top(struct text_object *obj, char *p, int top_name_width)
 						needed[td->num]->pid);
 				break;
 			case TOP_MEM:
+				/* Calculate a percentage of residential mem from total mem available.
+				 * Since rss is bytes and memmax kilobytes, dividing by 10 suffices here. */
 				snprintf(p, 7, "%6.2f",
-						needed[td->num]->totalmem);
+						(float) ((float)needed[td->num]->rss / cur->memmax) / 10);
 				break;
 			case TOP_TIME:
 				timeval = format_time(

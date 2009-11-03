@@ -123,7 +123,6 @@ struct process {
 	unsigned int time_stamp;
 	unsigned int counted;
 	unsigned int changed;
-	float totalmem;
 };
 
 struct sorted_process {

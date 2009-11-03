@@ -724,9 +724,9 @@ int comparecpu(const void *a, const void *b)
 
 int comparemem(const void *a, const void *b)
 {
-	if (((const struct process *)a)->totalmem > ((const struct process *)b)->totalmem) {
+	if (((const struct process *)a)->rss > ((const struct process *)b)->rss) {
 		return -1;
-	} else if (((const struct process *)a)->totalmem < ((const struct process *)b)->totalmem) {
+	} else if (((const struct process *)a)->rss < ((const struct process *)b)->rss) {
 		return 1;
 	} else {
 		return 0;
@@ -756,8 +756,6 @@ proc_find_top(struct process **cpu, struct process **mem)
 			processes[j].pid = p[i].ki_pid;
 			processes[j].name = strndup(p[i].ki_comm, text_buffer_size);
 			processes[j].amount = 100.0 * p[i].ki_pctcpu / FSCALE;
-			processes[j].totalmem = (float) (p[i].ki_rssize /
-				(float) total_pages) * 100.0;
 			processes[j].vsize = p[i].ki_size;
 			processes[j].rss = (p[i].ki_rssize * getpagesize());
 			j++;
@@ -771,7 +769,6 @@ proc_find_top(struct process **cpu, struct process **mem)
 		tmp = malloc(sizeof(struct process));
 		tmp->pid = processes[i].pid;
 		tmp->amount = processes[i].amount;
-		tmp->totalmem = processes[i].totalmem;
 		tmp->name = strndup(processes[i].name, text_buffer_size);
 		tmp->rss = processes[i].rss;
 		tmp->vsize = processes[i].vsize;
@@ -791,7 +788,6 @@ proc_find_top(struct process **cpu, struct process **mem)
 		tmp = malloc(sizeof(struct process));
 		tmp->pid = processes[i].pid;
 		tmp->amount = processes[i].amount;
-		tmp->totalmem = processes[i].totalmem;
 		tmp->name = strndup(processes[i].name, text_buffer_size);
 		tmp->rss = processes[i].rss;
 		tmp->vsize = processes[i].vsize;
@@ -807,8 +803,8 @@ proc_find_top(struct process **cpu, struct process **mem)
 #if defined(FREEBSD_DEBUG)
 	printf("=====\nmem\n");
 	for (i = 0; i < 10; i++) {
-		printf("%d: %s(%d) %.2f %ld %ld\n", i, mem[i]->name,
-				mem[i]->pid, mem[i]->totalmem, mem[i]->vsize, mem[i]->rss);
+		printf("%d: %s(%d) %ld %ld\n", i, mem[i]->name,
+				mem[i]->pid, mem[i]->vsize, mem[i]->rss);
 	}
 #endif
 
