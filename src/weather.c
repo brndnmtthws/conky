@@ -946,6 +946,8 @@ void scan_weather_forecast_arg(struct text_object *obj, const char *arg, void *f
 
 	DBGP("weather_forecast: fetching %s for day %d from %s every %d seconds", \
 			wfd->data_type, wfd->day, wfd->uri, wfd->interval);
+
+	obj->data.opaque = wfd;
 }
 
 void print_weather_forecast(struct text_object *obj, char *p, int p_max_size)
@@ -995,6 +997,8 @@ void scan_weather_arg(struct text_object *obj, const char *arg, void *free_at_cr
 
 	DBGP("weather: fetching %s from %s every %d seconds", \
 			wd->data_type, wd->uri, wd->interval);
+
+	obj->data.opaque = wd;
 }
 
 void print_weather(struct text_object *obj, char *p, int p_max_size)
