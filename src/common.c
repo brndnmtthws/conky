@@ -448,7 +448,7 @@ void scan_loadgraph_arg(struct text_object *obj, const char *arg)
 {
 	char *buf = 0;
 
-	buf = scan_graph(obj, arg);
+	buf = scan_graph(obj, arg, 0);
 	if (buf)
 		free(buf);
 }

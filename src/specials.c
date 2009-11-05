@@ -145,7 +145,7 @@ char *scan_font(const char *args)
 	return NULL;
 }
 
-char *scan_graph(struct text_object *obj, const char *args)
+char *scan_graph(struct text_object *obj, const char *args, int defscale)
 {
 	struct graph *g;
 	char buf[1024];
@@ -160,7 +160,7 @@ char *scan_graph(struct text_object *obj, const char *args)
 	g->height = default_graph_height;
 	g->first_colour = 0;
 	g->last_colour = 0;
-	g->scale = 0;
+	g->scale = defscale;
 	g->tempgrad = FALSE;
 	g->showaslog = FALSE;
 	if (args) {
@@ -173,14 +173,14 @@ char *scan_graph(struct text_object *obj, const char *args)
 		if (sscanf(args, "%d,%d %x %x %u", &g->height, &g->width, &g->first_colour, &g->last_colour, &g->scale) == 5) {
 			return NULL;
 		}
-		g->scale = 0;
+		g->scale = defscale;
 		if (sscanf(args, "%d,%d %x %x", &g->height, &g->width, &g->first_colour, &g->last_colour) == 4) {
 			return NULL;
 		}
 		if (sscanf(args, "%1023s %d,%d %x %x %u", buf, &g->height, &g->width, &g->first_colour, &g->last_colour, &g->scale) == 6) {
 			return strndup(buf, text_buffer_size);
 		}
-		g->scale = 0;
+		g->scale = defscale;
 		if (sscanf(args, "%1023s %d,%d %x %x", buf, &g->height, &g->width, &g->first_colour, &g->last_colour) == 5) {
 			return strndup(buf, text_buffer_size);
 		}
@@ -190,14 +190,14 @@ char *scan_graph(struct text_object *obj, const char *args)
 		if (sscanf(args, "%x %x %u", &g->first_colour, &g->last_colour, &g->scale) == 3) {
 			return NULL;
 		}
-		g->scale = 0;
+		g->scale = defscale;
 		if (sscanf(args, "%x %x", &g->first_colour, &g->last_colour) == 2) {
 			return NULL;
 		}
 		if (sscanf(args, "%1023s %x %x %u", buf, &g->first_colour, &g->last_colour, &g->scale) == 4) {
 			return strndup(buf, text_buffer_size);
 		}
-		g->scale = 0;
+		g->scale = defscale;
 		if (sscanf(args, "%1023s %x %x", buf, &g->first_colour, &g->last_colour) == 3) {
 			return strndup(buf, text_buffer_size);
 		}
@@ -207,12 +207,12 @@ char *scan_graph(struct text_object *obj, const char *args)
 		if (sscanf(args, "%d,%d %u", &g->height, &g->width, &g->scale) == 3) {
 			return NULL;
 		}
-		g->scale = 0;
+		g->scale = defscale;
 		if (sscanf(args, "%d,%d", &g->height, &g->width) == 2) {
 			return NULL;
 		}
 		if (sscanf(args, "%1023s %d,%d %u", buf, &g->height, &g->width, &g->scale) < 4) {
-			g->scale = 0;
+			g->scale = defscale;
 			//TODO: check the return value and throw an error?
 			sscanf(args, "%1023s %d,%d", buf, &g->height, &g->width);
 		}

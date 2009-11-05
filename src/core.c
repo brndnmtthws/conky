@@ -353,7 +353,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(cpugraph, &update_cpu_usage)
 		char *buf = 0;
 		SCAN_CPU(arg, obj->data.i);
-		buf = scan_graph(obj, arg);
+		buf = scan_graph(obj, arg, 100);
 		DBGP2("Adding $cpugraph for CPU %d", obj->data.i);
 		if (buf) free(buf);
 	END OBJ(loadgraph, &update_load_average)
@@ -613,7 +613,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef X11
 	END OBJ(memgraph, &update_meminfo)
 		char *buf = 0;
-		buf = scan_graph(obj, arg);
+		buf = scan_graph(obj, arg, 100);
 
 		if (buf) free(buf);
 #endif /* X11*/
@@ -902,7 +902,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef X11
 	END OBJ_ARG(lua_graph, 0, "lua_graph needs arguments: <function name> [height],[width] [gradient colour 1] [gradient colour 2] [scale] [-t] [-l]")
 		char *buf = 0;
-		buf = scan_graph(obj, arg);
+		buf = scan_graph(obj, arg, 0);
 		if (buf) {
 			obj->data.s = buf;
 		} else {
@@ -984,7 +984,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef X11
 	END OBJ(apcupsd_loadgraph, &update_apcupsd)
 		char* buf = 0;
-		buf = scan_graph(obj, arg);
+		buf = scan_graph(obj, arg, 0);
 		if (buf) free(buf);
 	END OBJ(apcupsd_loadgauge, &update_apcupsd)
 		scan_gauge(obj, arg);

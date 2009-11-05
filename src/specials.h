@@ -98,7 +98,7 @@ const char *scan_bar(struct text_object *, const char *);
 #ifdef X11
 const char *scan_gauge(struct text_object *, const char *);
 char *scan_font(const char *);
-char *scan_graph(struct text_object *, const char *);
+char *scan_graph(struct text_object *, const char *, int);
 void scan_tab(struct text_object *, const char *);
 void scan_stippled_hr(struct text_object *, const char*);
 

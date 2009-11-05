@@ -193,7 +193,7 @@ void print_addrs(struct text_object *obj, char *p, int p_max_size)
 void parse_net_stat_graph_arg(struct text_object *obj, const char *arg, void *free_at_crash)
 {
 	char *buf = 0;
-	buf = scan_graph(obj, arg);
+	buf = scan_graph(obj, arg, 0);
 
 	// default to DEFAULTNETDEV
 	if (buf) {
