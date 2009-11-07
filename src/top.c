@@ -948,9 +948,11 @@ void print_top(struct text_object *obj, char *p, int top_name_width)
 		case OBJ_top_time:
 			needed = cur->time;
 			break;
+#ifdef IOSTATS
 		case OBJ_top_io:
 			needed = cur->io;
 			break;
+#endif /* IOSTATS */
 		default:
 			return;
 	}
