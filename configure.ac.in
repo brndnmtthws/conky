@@ -562,6 +562,7 @@ dnl
 dnl ICONV
 dnl
 
+m4_pattern_allow([AM_ICONV])
 AM_ICONV
 if test "$am_cv_func_iconv" != yes; then
   AC_MSG_WARN([Could not find libiconv])
