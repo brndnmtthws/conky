@@ -268,6 +268,9 @@ static void print_version(void)
 #ifdef IOSTATS
 		   "  * iostats\n"
 #endif /* IOSTATS */
+#ifdef NCURSES
+		   "  * ncurses\n"
+#endif /* NCURSES */
 #ifdef HAVE_LUA
 		   "  * Lua\n"
 		   "\n  Lua bindings:\n"

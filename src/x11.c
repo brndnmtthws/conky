@@ -196,9 +196,11 @@ void set_transparent_background(Window win)
 
 void destroy_window(void)
 {
+#ifdef XFT
 	if(window.xftdraw) {
 		XftDrawDestroy(window.xftdraw);
 	}
+#endif
 	if(window.gc) {
 		XFreeGC(display, window.gc);
 	}
