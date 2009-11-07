@@ -34,6 +34,7 @@
 #include <netdb.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 struct read_tcp_data {
 	char *host;

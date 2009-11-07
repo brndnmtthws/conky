@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 struct execi_data {
 	double last_update;
@@ -236,6 +237,7 @@ void scan_execi_arg(struct text_object *obj, const char *arg)
 	obj->data.opaque = ed;
 }
 
+#ifdef X11
 void scan_execgraph_arg(struct text_object *obj, const char *arg)
 {
 	struct execi_data *ed;
@@ -252,6 +254,7 @@ void scan_execgraph_arg(struct text_object *obj, const char *arg)
 	ed->cmd = buf;
 	obj->data.opaque = ed;
 }
+#endif /* X11 */
 
 void print_exec(struct text_object *obj, char *p, int p_max_size)
 {

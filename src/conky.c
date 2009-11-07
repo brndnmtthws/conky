@@ -451,14 +451,15 @@ int check_contains(char *f, char *s)
 
 #define SECRIT_MULTILINE_CHAR '\x02'
 
-#ifdef X11
-
 static inline int calc_text_width(const char *s)
 {
 	size_t slen = strlen(s);
 
+#ifdef X11
 	if ((output_methods & TO_X) == 0) {
+#endif /* X11 */
 		return slen;
+#ifdef X11
 	}
 #ifdef XFT
 	if (use_xft) {
@@ -477,8 +478,8 @@ static inline int calc_text_width(const char *s)
 	{
 		return XTextWidth(fonts[selected_font].font, s, slen);
 	}
-}
 #endif /* X11 */
+}
 
 /* formatted text to render on screen, generated in generate_text(),
  * drawn in draw_stuff() */
@@ -2301,7 +2302,10 @@ void generate_text_internal(char *p, int p_max_size,
 			iconv_convert(&a, buff_in, p, p_max_size);
 #endif /* HAVE_ICONV */
 			if (obj->type != OBJ_text && obj->type != OBJ_execp && obj->type != OBJ_execpi
-					&& obj->type != OBJ_lua && obj->type != OBJ_lua_parse) {
+#ifdef HAVE_LUA
+					&& obj->type != OBJ_lua && obj->type != OBJ_lua_parse
+#endif /* HAVE_LUA */
+					) {
 				substitute_newlines(p, a - 2);
 			}
 			p += a;
