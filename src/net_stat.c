@@ -42,7 +42,7 @@
 
 /* network interface stuff */
 
-struct net_stat netstats[16];
+struct net_stat netstats[MAX_NET_INTERFACES];
 
 struct net_stat *get_net_stat(const char *dev, void *free_at_crash1, void *free_at_crash2)
 {
@@ -53,21 +53,21 @@ struct net_stat *get_net_stat(const char *dev, void *free_at_crash1, void *free_
 	}
 
 	/* find interface stat */
-	for (i = 0; i < 16; i++) {
+	for (i = 0; i < MAX_NET_INTERFACES; i++) {
 		if (netstats[i].dev && strcmp(netstats[i].dev, dev) == 0) {
 			return &netstats[i];
 		}
 	}
 
 	/* wasn't found? add it */
-	for (i = 0; i < 16; i++) {
+	for (i = 0; i < MAX_NET_INTERFACES; i++) {
 		if (netstats[i].dev == 0) {
 			netstats[i].dev = strndup(dev, text_buffer_size);
 			return &netstats[i];
 		}
 	}
 
-	CRIT_ERR(free_at_crash1, free_at_crash2, "too many interfaces used (limit is 16)");
+	CRIT_ERR(free_at_crash1, free_at_crash2, "too many interfaces used (limit is %d)", MAX_NET_INTERFACES);
 	return 0;
 }
 
@@ -319,7 +319,7 @@ void print_wireless_link_bar(struct text_object *obj, char *p, int p_max_size)
 void clear_net_stats(void)
 {
 	int i;
-	for (i = 0; i < 16; i++) {
+	for (i = 0; i < MAX_NET_INTERFACES; i++) {
 		if (netstats[i].dev) {
 			free(netstats[i].dev);
 		}

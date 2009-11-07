@@ -362,7 +362,7 @@ void update_net_stats(void)
 	fgets(buf, 255, net_dev_fp);	/* garbage (field names) */
 
 	/* read each interface */
-	for (i2 = 0; i2 < 16; i2++) {
+	for (i2 = 0; i2 < MAX_NET_INTERFACES; i2++) {
 		struct net_stat *ns;
 		char *s, *p;
 		char temp_addr[18];
@@ -391,7 +391,7 @@ void update_net_stats(void)
 		ns->up = 1;
 		memset(&(ns->addr.sa_data), 0, 14);
 
-		memset(ns->addrs, 0, 17 * 16 + 1); /* Up to 17 chars per ip, max 16 interfaces. Nasty memory usage... */
+		memset(ns->addrs, 0, 17 * MAX_NET_INTERFACES + 1); /* Up to 17 chars per ip, max MAX_NET_INTERFACES interfaces. Nasty memory usage... */
 
 		last_recv = ns->recv;
 		last_trans = ns->trans;
@@ -418,8 +418,8 @@ void update_net_stats(void)
 		/*** ip addr patch ***/
 		i = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
 
-		conf.ifc_buf = malloc(sizeof(struct ifreq) * 16);
-		conf.ifc_len = sizeof(struct ifreq) * 16;
+		conf.ifc_buf = malloc(sizeof(struct ifreq) * MAX_NET_INTERFACES);
+		conf.ifc_len = sizeof(struct ifreq) * MAX_NET_INTERFACES;
 		memset(conf.ifc_buf, 0, conf.ifc_len);
 
 		ioctl((long) i, SIOCGIFCONF, &conf);

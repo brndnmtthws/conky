@@ -374,7 +374,7 @@ void update_stuff(void)
 	#ifdef HAVE_OPENMP
 	#pragma omp parallel for schedule(dynamic,10)
 	#endif /* HAVE_OPENMP */
-	for (i = 0; i < 16; i++) {
+	for (i = 0; i < MAX_NET_INTERFACES; i++) {
 		if (netstats[i].dev) {
 			netstats[i].up = 0;
 			netstats[i].recv_speed = 0.0;
