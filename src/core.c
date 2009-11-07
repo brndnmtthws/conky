@@ -645,6 +645,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(nodename, 0)
 	END OBJ(processes, &update_total_processes)
 	END OBJ(running_processes, &update_running_processes)
+	END OBJ(threads, &update_threads)
 	END OBJ(shadecolor, 0)
 #ifdef X11
 		obj->data.l = arg ? get_x11_color(arg) : default_bg_color;

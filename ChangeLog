@@ -1,3 +1,10 @@
+2009-11-07
+	* Added support for $threads on Linux
+	* Fixed bug in $processes on Linux
+	* Fixed building with --disable-x11, --disable-xft, --disable-lua,
+	--disable-ncurses and --disable-iostats
+	* Added ncurses to the "-v" output when necessary
+
 2009-10-25
 	* Fixed loadavg and loadgraph argument parsing and corrected it's
 	documentation.

@@ -247,6 +247,7 @@ enum text_object_type {
 	OBJ_swapperc,
 	OBJ_sysname,
 	OBJ_text,
+	OBJ_threads,
 	OBJ_time,
 	OBJ_utime,
 	OBJ_tztime,
