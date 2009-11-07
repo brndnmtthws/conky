@@ -3022,15 +3022,6 @@
     <varlistentry>
         <term>
             <command>
-                <option>threads</option>
-            </command>
-        </term>
-        <listitem>Total threads
-        <para /></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
                 <option>time</option>
             </command>
             <option>(format)</option>

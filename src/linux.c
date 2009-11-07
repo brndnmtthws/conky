@@ -549,37 +549,12 @@ int result;
 
 void update_total_processes(void)
 {
-	DIR *dir;
-	struct dirent *entry;
-	int ignore1;
-	char ignore2;
-
-	info.procs = 0;
-	if (!(dir = opendir("/proc"))) {
-		return;
-	}
-	while ((entry = readdir(dir))) {
-		if (!entry) {
-			/* Problem reading list of processes */
-			closedir(dir);
-			info.procs = 0;
-			return;
-		}
-		if (sscanf(entry->d_name, "%d%c", &ignore1, &ignore2) == 1) {
-			info.procs++;
-		}
-	}
-	closedir(dir);
-}
-
-void update_threads(void)
-{
 #ifdef HAVE_SYSINFO
 	if (!prefer_proc) {
 		struct sysinfo s_info;
 
 		sysinfo(&s_info);
-		info.threads = s_info.procs;
+		info.procs = s_info.procs;
 	} else
 #endif
 	{
@@ -587,10 +562,10 @@ void update_threads(void)
 		FILE *fp;
 
 		if (!(fp = open_file("/proc/loadavg", &rep))) {
-			info.threads = 0;
+			info.procs = 0;
 			return;
 		}
-		fscanf(fp, "%*f %*f %*f %*d/%hu", &info.threads);
+		fscanf(fp, "%*f %*f %*f %*d/%hu", &info.procs);
 		fclose(fp);
 	}
 }
