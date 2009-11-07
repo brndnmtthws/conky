@@ -25,6 +25,7 @@ void update_net_stats(void);
 void update_cpu_usage(void);
 void update_total_processes(void);
 void update_uname(void);
+void update_threads(void);
 void update_running_processes(void);
 void update_i8k(void);
 void update_stuff(void);
