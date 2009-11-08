@@ -23,7 +23,8 @@
 
 #include "conky.h"
 #include "logging.h"
-#include "moc.h"
+#include "text_object.h"
+#include "timed_thread.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,11 +32,25 @@
 
 #define xfree(x) if (x) free(x); x = 0
 
-struct moc_s moc;
+static struct {
+	char *state;
+	char *file;
+	char *title;
+	char *artist;
+	char *song;
+	char *album;
+	char *totaltime;
+	char *timeleft;
+	char *curtime;
+	char *bitrate;
+	char *rate;
+} moc;
+
 static timed_thread *moc_thread = NULL;
 
-void free_moc(void)
+void free_moc(struct text_object *obj)
 {
+	(void)obj;
 	xfree(moc.state);
 	xfree(moc.file);
 	xfree(moc.title);
@@ -53,7 +68,7 @@ static void update_infos(void)
 {
 	FILE *fp;
 
-	free_moc();
+	free_moc(NULL);
 	fp = popen("mocp -i", "r");
 	if (!fp) {
 		moc.state = strndup("Can't run 'mocp -i'", text_buffer_size);
@@ -137,3 +152,24 @@ void update_moc(void)
 {
 	run_moc_thread(info.music_player_interval * 100000);
 }
+
+#define MOC_PRINT_GENERATOR(type, alt) \
+void print_moc_##type(struct text_object *obj, char *p, int p_max_size) \
+{ \
+	(void)obj; \
+	snprintf(p, p_max_size, "%s", (moc.type ? moc.type : alt)); \
+}
+
+MOC_PRINT_GENERATOR(state, "??")
+MOC_PRINT_GENERATOR(file, "no file")
+MOC_PRINT_GENERATOR(title, "no title")
+MOC_PRINT_GENERATOR(artist, "no artist")
+MOC_PRINT_GENERATOR(song, "no song")
+MOC_PRINT_GENERATOR(album, "no album")
+MOC_PRINT_GENERATOR(totaltime, "0:00")
+MOC_PRINT_GENERATOR(timeleft, "0:00")
+MOC_PRINT_GENERATOR(curtime, "0:00")
+MOC_PRINT_GENERATOR(bitrate, "0Kbps")
+MOC_PRINT_GENERATOR(rate, "0KHz")
+
+#undef MOC_PRINT_GENERATOR

@@ -1522,44 +1522,6 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif
 
-#ifdef MOC
-#define MOC_PRINT(t, a) \
-	snprintf(p, p_max_size, "%s", (moc.t ? moc.t : a))
-			OBJ(moc_state) {
-				MOC_PRINT(state, "??");
-			}
-			OBJ(moc_file) {
-				MOC_PRINT(file, "no file");
-			}
-			OBJ(moc_title) {
-				MOC_PRINT(title, "no title");
-			}
-			OBJ(moc_artist) {
-				MOC_PRINT(artist, "no artist");
-			}
-			OBJ(moc_song) {
-				MOC_PRINT(song, "no song");
-			}
-			OBJ(moc_album) {
-				MOC_PRINT(album, "no album");
-			}
-			OBJ(moc_totaltime) {
-				MOC_PRINT(totaltime, "0:00");
-			}
-			OBJ(moc_timeleft) {
-				MOC_PRINT(timeleft, "0:00");
-			}
-			OBJ(moc_curtime) {
-				MOC_PRINT(curtime, "0:00");
-			}
-			OBJ(moc_bitrate) {
-				MOC_PRINT(bitrate, "0Kbps");
-			}
-			OBJ(moc_rate) {
-				MOC_PRINT(rate, "0KHz");
-			}
-#undef MOC_PRINT
-#endif /* MOC */
 #ifdef XMMS2
 			OBJ(xmms2_artist) {
 				snprintf(p, p_max_size, "%s", cur->xmms2.artist);
