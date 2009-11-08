@@ -2367,12 +2367,7 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #ifdef IBM
 			OBJ(smapi) {
-				char *s;
-				if(obj->data.s) {
-					s = smapi_get_val(obj->data.s);
-					snprintf(p, p_max_size, "%s", s);
-					free(s);
-				}
+				print_smapi(obj, p, p_max_size);
 			}
 			OBJ(if_smapi_bat_installed) {
 				int idx;
@@ -2384,41 +2379,17 @@ void generate_text_internal(char *p, int p_max_size,
 					NORM_ERR("argument to if_smapi_bat_installed must be an integer");
 			}
 			OBJ(smapi_bat_perc) {
-				int idx, val;
-				if(obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
-					val = smapi_bat_installed(idx) ?
-						smapi_get_bat_int(idx, "remaining_percent") : 0;
-					percent_print(p, p_max_size, val);
-				} else
-					NORM_ERR("argument to smapi_bat_perc must be an integer");
+				print_smapi_bat_perc(obj, p, p_max_size);
 			}
 			OBJ(smapi_bat_temp) {
-				int idx, val;
-				if(obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
-					val = smapi_bat_installed(idx) ?
-						smapi_get_bat_int(idx, "temperature") : 0;
-					/* temperature is in milli degree celsius */
-					temp_print(p, p_max_size, val / 1000, TEMP_CELSIUS);
-				} else
-					NORM_ERR("argument to smapi_bat_temp must be an integer");
+				print_smapi_bat_temp(obj, p, p_max_size);
 			}
 			OBJ(smapi_bat_power) {
-				int idx, val;
-				if(obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
-					val = smapi_bat_installed(idx) ?
-						smapi_get_bat_int(idx, "power_now") : 0;
-					/* power_now is in mW, set to W with one digit precision */
-					snprintf(p, p_max_size, "%.1f", ((double)val / 1000));
-				} else
-					NORM_ERR("argument to smapi_bat_power must be an integer");
+				print_smapi_bat_power(obj, p, p_max_size);
 			}
 #ifdef X11
 			OBJ(smapi_bat_bar) {
-				if(obj->data.i >= 0 && smapi_bat_installed(obj->data.i))
-					new_bar(obj, p, (int)
-							(255 * smapi_get_bat_int(obj->data.i, "remaining_percent") / 100));
-				else
-					new_bar(obj, p, 0);
+				print_smapi_bat_bar(obj, p, p_max_size);
 			}
 #endif /* X11 */
 #endif /* IBM */
