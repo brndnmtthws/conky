@@ -1173,9 +1173,6 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(nodename) {
 				snprintf(p, p_max_size, "%s", cur->uname_s.nodename);
 			}
-			OBJ(outlinecolor) {
-				new_outline(obj, p, p_max_size);
-			}
 			OBJ(pid_chroot) {
 				char buf[max_user_text];
 

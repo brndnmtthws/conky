@@ -925,6 +925,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(outlinecolor, 0)
 #ifdef X11
 		obj->data.l = arg ? get_x11_color(arg) : default_out_color;
+		obj->callbacks.print = &new_outline;
 #endif /* X11 */
 	END OBJ(stippled_hr, 0)
 #ifdef X11
