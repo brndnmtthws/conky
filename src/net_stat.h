@@ -71,8 +71,8 @@ void print_addrs(struct text_object *, char *, int);
 #endif /* __linux__ */
 #ifdef X11
 void parse_net_stat_graph_arg(struct text_object *, const char *, void *);
-void print_downspeedgraph(struct text_object *, char *);
-void print_upspeedgraph(struct text_object *, char *);
+void print_downspeedgraph(struct text_object *, char *, int);
+void print_upspeedgraph(struct text_object *, char *, int);
 #endif /* X11 */
 #ifdef __linux__
 #ifdef HAVE_IWLIB

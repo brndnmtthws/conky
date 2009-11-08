@@ -1130,7 +1130,7 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #ifdef X11
 			OBJ(downspeedgraph) {
-				print_downspeedgraph(obj, p);
+				print_downspeedgraph(obj, p, p_max_size);
 			}
 #endif /* X11 */
 			OBJ(else) {
@@ -1935,7 +1935,7 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #ifdef X11
 			OBJ(upspeedgraph) {
-				print_upspeedgraph(obj, p);
+				print_upspeedgraph(obj, p, p_max_size);
 			}
 #endif /* X11 */
 			OBJ(uptime_short) {
