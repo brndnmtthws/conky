@@ -1469,9 +1469,6 @@ void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%s", obj->data.s);
 			}
 #ifdef X11
-			OBJ(shadecolor) {
-				new_bg(obj, p, p_max_size);
-			}
 			OBJ(stippled_hr) {
 				new_stippled_hr(obj, p, p_max_size);
 			}
