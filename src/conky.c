@@ -797,7 +797,7 @@ void generate_text_internal(char *p, int p_max_size,
  */
 #define DO_JUMP { \
 	DBGP2("jumping"); \
-	obj = obj->sub; \
+	obj = obj->special_data; \
 }
 
 #define OBJ(a) break; case OBJ_##a:
