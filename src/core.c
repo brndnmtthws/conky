@@ -1267,6 +1267,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(hddtemp, &update_hddtemp)
 		if (arg)
 			obj->data.s = strndup(arg, text_buffer_size);
+		obj->callbacks.free = &free_hddtemp;
 #endif /* HDDTEMP */
 #ifdef TCP_PORT_MONITOR
 	END OBJ_ARG(tcp_portmon, &tcp_portmon_update, "tcp_portmon: needs arguments")
@@ -1748,15 +1749,6 @@ void free_text_objects(struct text_object *root, int internal)
 				free_top(obj, internal);
 				break;
 #endif /* __linux__ */
-#ifdef HDDTEMP
-			case OBJ_hddtemp:
-				if (data.s) {
-					free(data.s);
-					data.s = NULL;
-				}
-				free_hddtemp();
-				break;
-#endif /* HDDTEMP */
 			case OBJ_user_names:
 				if (info.users.names) {
 					free(info.users.names);

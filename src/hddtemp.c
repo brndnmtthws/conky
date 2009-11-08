@@ -30,6 +30,7 @@
 
 #include "conky.h"
 #include "logging.h"
+#include "text_object.h"
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -223,7 +224,7 @@ void update_hddtemp(void) {
 	free(data);
 }
 
-void free_hddtemp(void)
+void free_hddtemp(struct text_object *obj)
 {
 	free_hddtemp_info();
 	if (hddtemp_host) {
@@ -233,6 +234,10 @@ void free_hddtemp(void)
 	if (hddtemp_port) {
 		free(hddtemp_port);
 		hddtemp_port = NULL;
+	}
+	if (obj->data.s) {
+		free(obj->data.s);
+		obj->data.s = NULL;
 	}
 }
 
