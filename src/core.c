@@ -596,6 +596,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_fs_used;
 	END OBJ(hr, 0)
 		obj->data.l = arg ? atoi(arg) : 1;
+		obj->callbacks.print = &new_hr;
 	END OBJ(nameserver, &update_dns_data)
 		parse_nameserver_arg(obj, arg);
 		obj->callbacks.print = &print_nameserver;
@@ -933,6 +934,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(stippled_hr, 0)
 #ifdef X11
 		scan_stippled_hr(obj, arg);
+		obj->callbacks.print = &new_stippled_hr;
 #endif /* X11 */
 	END OBJ(swap, &update_meminfo)
 	END OBJ(swapfree, &update_meminfo)

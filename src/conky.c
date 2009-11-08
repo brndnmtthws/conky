@@ -981,11 +981,6 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(fs_used_perc) {
 				print_fs_perc(obj, 0, p, p_max_size);
 			}
-#ifdef X11
-			OBJ(hr) {
-				new_hr(obj, p, p_max_size);
-			}
-#endif
 #ifdef HDDTEMP
 			OBJ(hddtemp) {
 				short val;
@@ -1462,11 +1457,6 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(text) {
 				snprintf(p, p_max_size, "%s", obj->data.s);
 			}
-#ifdef X11
-			OBJ(stippled_hr) {
-				new_stippled_hr(obj, p, p_max_size);
-			}
-#endif /* X11 */
 			OBJ(swap) {
 				human_readable(cur->swap * 1024, p, 255);
 			}
