@@ -1774,12 +1774,6 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(head) {
 				print_tailhead("head", obj, p, p_max_size);
 			}
-#ifdef TCP_PORT_MONITOR
-			OBJ(tcp_portmon) {
-				tcp_portmon_action(obj, p, p_max_size);
-			}
-#endif /* TCP_PORT_MONITOR */
-
 #ifdef HAVE_ICONV
 			OBJ(iconv_start) {
 				do_iconv_start(obj);

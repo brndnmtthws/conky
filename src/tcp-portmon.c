@@ -113,13 +113,13 @@ int tcp_portmon_init(struct text_object *obj, const char *arg)
 	return 0;
 }
 
-int tcp_portmon_action(struct text_object *obj, char *p, int p_max_size)
+void tcp_portmon_action(struct text_object *obj, char *p, int p_max_size)
 {
 	struct tcp_port_monitor_data *pmd = obj->data.opaque;
 	tcp_port_monitor_t *p_monitor;
 
 	if (!pmd)
-		return 1;
+		return;
 
 	/* grab a pointer to this port monitor */
 	p_monitor = find_tcp_port_monitor(pmc, pmd->port_range_begin,
@@ -127,16 +127,14 @@ int tcp_portmon_action(struct text_object *obj, char *p, int p_max_size)
 
 	if (!p_monitor) {
 		snprintf(p, p_max_size, "monitor not found");
-		return 1;
+		return;
 	}
 
 	/* now grab the text of interest */
 	if (peek_tcp_port_monitor(p_monitor, pmd->item,
 				pmd->connection_index, p, p_max_size) != 0) {
 		snprintf(p, p_max_size, "monitor peek error");
-		return 1;
 	}
-	return 0;
 }
 
 void tcp_portmon_update(void)

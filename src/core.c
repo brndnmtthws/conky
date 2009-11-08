@@ -1272,6 +1272,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef TCP_PORT_MONITOR
 	END OBJ_ARG(tcp_portmon, &tcp_portmon_update, "tcp_portmon: needs arguments")
 		tcp_portmon_init(obj, arg);
+		obj->callbacks.print = &tcp_portmon_action;
 		obj->callbacks.free = &tcp_portmon_free;
 #endif /* TCP_PORT_MONITOR */
 	END OBJ(entropy_avail, &update_entropy)
