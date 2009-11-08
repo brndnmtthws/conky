@@ -119,7 +119,7 @@ void parse_diskio_arg(struct text_object *obj, const char *arg)
  *  0: read + write
  *  1: write
  */
-void print_diskio(struct text_object *obj, int dir, char *p, int p_max_size)
+static void print_diskio_dir(struct text_object *obj, int dir, char *p, int p_max_size)
 {
 	struct diskio_stat *diskio = obj->data.opaque;
 	double val;
@@ -139,6 +139,21 @@ void print_diskio(struct text_object *obj, int dir, char *p, int p_max_size)
 	human_readable((val / update_interval) * 1024LL, p, p_max_size);
 }
 
+void print_diskio(struct text_object *obj, char *p, int p_max_size)
+{
+	print_diskio_dir(obj, 0, p, p_max_size);
+}
+
+void print_diskio_read(struct text_object *obj, char *p, int p_max_size)
+{
+	print_diskio_dir(obj, -1, p, p_max_size);
+}
+
+void print_diskio_write(struct text_object *obj, char *p, int p_max_size)
+{
+	print_diskio_dir(obj, 1, p, p_max_size);
+}
+
 #ifdef X11
 void parse_diskiograph_arg(struct text_object *obj, const char *arg)
 {
@@ -150,12 +165,15 @@ void parse_diskiograph_arg(struct text_object *obj, const char *arg)
 		free(buf);
 }
 
-void print_diskiograph(struct text_object *obj, int dir, char *p)
+static void print_diskiograph_dir(struct text_object *obj, int dir, char *p, int p_max_size)
 {
 	struct diskio_stat *diskio = obj->data.opaque;
 	double val;
 
 	if (!diskio)
+		return;
+
+	if (!p_max_size)
 		return;
 
 	if (dir < 0)
@@ -166,6 +184,21 @@ void print_diskiograph(struct text_object *obj, int dir, char *p)
 		val = diskio->current_write;
 
 	new_graph(obj, p, val);
+}
+
+void print_diskiograph(struct text_object *obj, char *p, int p_max_size)
+{
+	print_diskiograph_dir(obj, 0, p, p_max_size);
+}
+
+void print_diskiograph_read(struct text_object *obj, char *p, int p_max_size)
+{
+	print_diskiograph_dir(obj, -1, p, p_max_size);
+}
+
+void print_diskiograph_write(struct text_object *obj, char *p, int p_max_size)
+{
+	print_diskiograph_dir(obj, 1, p, p_max_size);
 }
 #endif /* X11 */
 

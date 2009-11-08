@@ -1103,23 +1103,23 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* X11 */
 			OBJ(diskio) {
-				print_diskio(obj, 0, p, p_max_size);
+				print_diskio(obj, p, p_max_size);
 			}
 			OBJ(diskio_write) {
-				print_diskio(obj, 1, p, p_max_size);
+				print_diskio_write(obj, p, p_max_size);
 			}
 			OBJ(diskio_read) {
-				print_diskio(obj, -1, p, p_max_size);
+				print_diskio_read(obj, p, p_max_size);
 			}
 #ifdef X11
 			OBJ(diskiograph) {
-				print_diskiograph(obj, 0, p);
+				print_diskiograph(obj, p, p_max_size);
 			}
 			OBJ(diskiograph_read) {
-				print_diskiograph(obj, -1, p);
+				print_diskiograph(obj, p, p_max_size);
 			}
 			OBJ(diskiograph_write) {
-				print_diskiograph(obj, 1, p);
+				print_diskiograph(obj, p, p_max_size);
 			}
 #endif /* X11 */
 			OBJ(downspeed) {
