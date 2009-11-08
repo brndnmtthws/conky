@@ -981,12 +981,6 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(fs_used_perc) {
 				print_fs_perc(obj, 0, p, p_max_size);
 			}
-			OBJ(goto) {
-				new_goto(obj, p, p_max_size);
-			}
-			OBJ(tab) {
-				new_tab(obj, p, p_max_size);
-			}
 #ifdef X11
 			OBJ(hr) {
 				new_hr(obj, p, p_max_size);

@@ -605,9 +605,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.l = arg ? atoi(arg) : 1;
 	END OBJ_ARG(goto, 0, "goto needs arguments")
 		obj->data.l = atoi(arg);
+		obj->callbacks.print = &new_goto;
 #ifdef X11
 	END OBJ(tab, 0)
 		scan_tab(obj, arg);
+		obj->callbacks.print = &new_tab;
 #endif /* X11 */
 #ifdef __linux__
 	END OBJ_ARG(i2c, 0, "i2c needs arguments")
