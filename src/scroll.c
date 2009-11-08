@@ -78,7 +78,7 @@ void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_cr
 #endif /* X11 */
 }
 
-void print_scroll(struct text_object *obj, char *p, int p_max_size, struct information *cur)
+void print_scroll(struct text_object *obj, char *p, int p_max_size)
 {
 	struct scroll_data *sd = obj->data.opaque;
 	unsigned int j, colorchanges = 0, frontcolorchanges = 0, visibcolorchanges = 0, strend;
@@ -88,7 +88,7 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size, struct infor
 	if (!sd)
 		return;
 
-	generate_text_internal(buf, max_user_text, *obj->sub, cur);
+	generate_text_internal(buf, max_user_text, *obj->sub, &info);
 	for(j = 0; buf[j] != 0; j++) {
 		switch(buf[j]) {
 			case '\n':	//place all the lines behind each other with LINESEPARATOR between them

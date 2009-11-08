@@ -1669,9 +1669,6 @@ void generate_text_internal(char *p, int p_max_size,
 				}
 				snprintf(p, p_max_size, "%s", buf);
 			}
-			OBJ(scroll) {
-				print_scroll(obj, p, p_max_size, cur);
-			}
 			OBJ(combine) {
 				print_combine(obj, p, cur);
 			}

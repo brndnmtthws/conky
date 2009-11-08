@@ -30,7 +30,7 @@
 #define _SCROLL_H
 
 void parse_scroll_arg(struct text_object *, const char *, void *);
-void print_scroll(struct text_object *, char *, int, struct information *);
+void print_scroll(struct text_object *, char *, int);
 void free_scroll(struct text_object *);
 
 #endif /* _SCROLL_H */

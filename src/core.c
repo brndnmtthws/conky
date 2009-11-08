@@ -1357,6 +1357,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->next = new_text_object_internal();
 #endif /* X11 */
 		parse_scroll_arg(obj, arg, free_at_crash);
+		obj->callbacks.print = &print_scroll;
 		obj->callbacks.free = &free_scroll;
 	END OBJ_ARG(combine, 0, "combine needs arguments: <text1> <text2>")
 		parse_combine_arg(obj, arg, free_at_crash);
