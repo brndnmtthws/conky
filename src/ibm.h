@@ -5,10 +5,10 @@
 
 #include <sys/types.h>
 
-void get_ibm_acpi_fan(char *buf, size_t client_buffer_size);
+void get_ibm_acpi_fan(struct text_object *, char *, int);
 void get_ibm_acpi_temps(void);
-void get_ibm_acpi_volume(char *buf, size_t client_buffer_size);
-void get_ibm_acpi_brightness(char *buf, size_t client_buffer_size);
+void get_ibm_acpi_volume(struct text_object *, char *, int);
+void get_ibm_acpi_brightness(struct text_object *, char *, int);
 
 void parse_ibm_temps_arg(struct text_object *, const char *);
 void print_ibm_temps(struct text_object *, char *, int);

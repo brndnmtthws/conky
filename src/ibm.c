@@ -73,13 +73,15 @@ speed:          2944
 commands:       enable, disable
  * Peter Tarjan (ptarjan@citromail.hu) */
 
-void get_ibm_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
+void get_ibm_acpi_fan(struct text_object *obj, char *p, int p_max_size)
 {
 	FILE *fp;
 	unsigned int speed = 0;
 	char fan[128];
 
-	if (!p_client_buffer || client_buffer_size <= 0) {
+	(void)obj;
+
+	if (!p || p_max_size <= 0) {
 		return;
 	}
 
@@ -103,7 +105,7 @@ void get_ibm_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
 	}
 
 	fclose(fp);
-	snprintf(p_client_buffer, client_buffer_size, "%d", speed);
+	snprintf(p, p_max_size, "%d", speed);
 }
 
 /* get the measured temperatures from the temperature sensors
@@ -168,14 +170,16 @@ commands:       up, down, mute
 commands:       level <level> (<level> is 0-15)
  * Peter Tarjan (ptarjan@citromail.hu) */
 
-void get_ibm_acpi_volume(char *p_client_buffer, size_t client_buffer_size)
+void get_ibm_acpi_volume(struct text_object *obj, char *p, int p_max_size)
 {
 	FILE *fp;
 	char volume[128];
 	unsigned int vol = -1;
 	char mute[3] = "";
 
-	if (!p_client_buffer || client_buffer_size <= 0) {
+	(void)obj;
+
+	if (!p || p_max_size <= 0) {
 		return;
 	}
 
@@ -205,13 +209,10 @@ void get_ibm_acpi_volume(char *p_client_buffer, size_t client_buffer_size)
 
 	fclose(fp);
 
-	if (strcmp(mute, "on") == 0) {
-		snprintf(p_client_buffer, client_buffer_size, "%s", "mute");
-		return;
-	} else {
-		snprintf(p_client_buffer, client_buffer_size, "%d", vol);
-		return;
-	}
+	if (strcmp(mute, "on") == 0)
+		snprintf(p, p_max_size, "%s", "mute");
+	else
+		snprintf(p, p_max_size, "%d", vol);
 }
 
 /* static FILE *fp = NULL; */
@@ -223,13 +224,15 @@ commands:       up, down
 commands:       level <level> (<level> is 0-7)
  * Peter Tarjan (ptarjan@citromail.hu) */
 
-void get_ibm_acpi_brightness(char *p_client_buffer, size_t client_buffer_size)
+void get_ibm_acpi_brightness(struct text_object *obj, char *p, int p_max_size)
 {
 	FILE *fp;
 	unsigned int brightness = 0;
 	char filename[128];
 
-	if (!p_client_buffer || client_buffer_size <= 0) {
+	(void)obj;
+
+	if (!p || p_max_size <= 0) {
 		return;
 	}
 
@@ -254,7 +257,7 @@ void get_ibm_acpi_brightness(char *p_client_buffer, size_t client_buffer_size)
 
 	fclose(fp);
 
-	snprintf(p_client_buffer, client_buffer_size, "%d", brightness);
+	snprintf(p, p_max_size, "%d", brightness);
 }
 
 void parse_ibm_temps_arg(struct text_object *obj, const char *arg)

@@ -1037,16 +1037,16 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #if defined(IBM)
 			OBJ(ibm_fan) {
-				get_ibm_acpi_fan(p, p_max_size);
+				get_ibm_acpi_fan(obj, p, p_max_size);
 			}
 			OBJ(ibm_temps) {
 				print_ibm_temps(obj, p, p_max_size);
 			}
 			OBJ(ibm_volume) {
-				get_ibm_acpi_volume(p, p_max_size);
+				get_ibm_acpi_volume(obj, p, p_max_size);
 			}
 			OBJ(ibm_brightness) {
-				get_ibm_acpi_brightness(p, p_max_size);
+				get_ibm_acpi_brightness(obj, p, p_max_size);
 			}
 #endif /* IBM */
 			/* information from sony_laptop kernel module
