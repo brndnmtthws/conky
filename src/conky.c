@@ -78,9 +78,7 @@
 #include "colours.h"
 #include "combine.h"
 #include "diskio.h"
-#include "entropy.h"
 #include "exec.h"
-#include "i8k.h"
 #include "proc.h"
 #include "user.h"
 #ifdef X11
@@ -821,9 +819,6 @@ void generate_text_internal(char *p, int p_max_size,
 		switch (obj->type) {
 			default:
 				NORM_ERR("not implemented obj type %d", obj->type);
-			OBJ(read_tcp) {
-				print_read_tcp(obj, p, p_max_size);
-			}
 #ifndef __OpenBSD__
 			OBJ(acpitemp) {
 				temp_print(p, p_max_size, get_acpi_temperature(obj->data.i), TEMP_CELSIUS);
@@ -849,43 +844,6 @@ void generate_text_internal(char *p, int p_max_size,
 #endif /* __OpenBSD */
 				}
 			}
-#if defined(__linux__)
-			OBJ(voltage_mv) {
-				print_voltage_mv(obj, p, p_max_size);
-			}
-			OBJ(voltage_v) {
-				print_voltage_v(obj, p, p_max_size);
-			}
-
-#ifdef HAVE_IWLIB
-			OBJ(wireless_essid) {
-				print_wireless_essid(obj, p, p_max_size);
-			}
-			OBJ(wireless_mode) {
-				print_wireless_mode(obj, p, p_max_size);
-			}
-			OBJ(wireless_bitrate) {
-				print_wireless_bitrate(obj, p, p_max_size);
-			}
-			OBJ(wireless_ap) {
-				print_wireless_ap(obj, p, p_max_size);
-			}
-			OBJ(wireless_link_qual) {
-				print_wireless_link_qual(obj, p, p_max_size);
-			}
-			OBJ(wireless_link_qual_max) {
-				print_wireless_link_qual_max(obj, p, p_max_size);
-			}
-			OBJ(wireless_link_qual_perc) {
-				print_wireless_link_qual_perc(obj, p, p_max_size);
-			}
-			OBJ(wireless_link_bar) {
-				print_wireless_link_bar(obj, p, p_max_size);
-			}
-#endif /* HAVE_IWLIB */
-
-#endif /* __linux__ */
-
 #ifndef __OpenBSD__
 			OBJ(acpifan) {
 				get_acpi_fan(p, p_max_size);
@@ -981,50 +939,6 @@ void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%s",
 						get_disk_protect_queue(obj->data.s));
 			}
-			OBJ(i8k_version) {
-				print_i8k_version(obj, p, p_max_size);
-			}
-			OBJ(i8k_bios) {
-				print_i8k_bios(obj, p, p_max_size);
-			}
-			OBJ(i8k_serial) {
-				print_i8k_serial(obj, p, p_max_size);
-			}
-			OBJ(i8k_cpu_temp) {
-				print_i8k_cpu_temp(obj, p, p_max_size);
-			}
-			OBJ(i8k_left_fan_status) {
-				print_i8k_left_fan_status(obj, p, p_max_size);
-			}
-			OBJ(i8k_right_fan_status) {
-				print_i8k_right_fan_status(obj, p, p_max_size);
-			}
-			OBJ(i8k_left_fan_rpm) {
-				print_i8k_left_fan_rpm(obj, p, p_max_size);
-			}
-			OBJ(i8k_right_fan_rpm) {
-				print_i8k_right_fan_rpm(obj, p, p_max_size);
-			}
-			OBJ(i8k_ac_status) {
-				print_i8k_ac_status(obj, p, p_max_size);
-			}
-			OBJ(i8k_buttons_status) {
-				print_i8k_buttons_status(obj, p, p_max_size);
-			}
-#if defined(IBM)
-			OBJ(ibm_fan) {
-				get_ibm_acpi_fan(obj, p, p_max_size);
-			}
-			OBJ(ibm_temps) {
-				print_ibm_temps(obj, p, p_max_size);
-			}
-			OBJ(ibm_volume) {
-				get_ibm_acpi_volume(obj, p, p_max_size);
-			}
-			OBJ(ibm_brightness) {
-				get_ibm_acpi_brightness(obj, p, p_max_size);
-			}
-#endif /* IBM */
 			/* information from sony_laptop kernel module
 			 * /sys/devices/platform/sony-laptop */
 			OBJ(sony_fanspeed) {
@@ -1056,15 +970,6 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif
 #ifdef __OpenBSD__
-			OBJ(obsd_sensors_temp) {
-				print_obsd_sensors_temp(obj, p, p_max_size);
-			}
-			OBJ(obsd_sensors_fan) {
-				print_obsd_sensors_fan(obj, p, p_max_size);
-			}
-			OBJ(obsd_sensors_volt) {
-				print_obsd_sensors_volt(obj, p, p_max_size);
-			}
 			OBJ(obsd_vendor) {
 				get_obsd_vendor(p, p_max_size);
 			}
@@ -1078,37 +983,6 @@ void generate_text_internal(char *p, int p_max_size,
 				need_to_load_fonts = 1;
 			}
 #endif /* X11 */
-			OBJ(diskio) {
-				print_diskio(obj, p, p_max_size);
-			}
-			OBJ(diskio_write) {
-				print_diskio_write(obj, p, p_max_size);
-			}
-			OBJ(diskio_read) {
-				print_diskio_read(obj, p, p_max_size);
-			}
-#ifdef X11
-			OBJ(diskiograph) {
-				print_diskiograph(obj, p, p_max_size);
-			}
-			OBJ(diskiograph_read) {
-				print_diskiograph(obj, p, p_max_size);
-			}
-			OBJ(diskiograph_write) {
-				print_diskiograph(obj, p, p_max_size);
-			}
-#endif /* X11 */
-			OBJ(downspeed) {
-				print_downspeed(obj, p, p_max_size);
-			}
-			OBJ(downspeedf) {
-				print_downspeedf(obj, p, p_max_size);
-			}
-#ifdef X11
-			OBJ(downspeedgraph) {
-				print_downspeedgraph(obj, p, p_max_size);
-			}
-#endif /* X11 */
 			OBJ(else) {
 				/* Since we see you, you're if has not jumped.
 				 * Do Ninja jump here: without leaving traces.
@@ -1120,14 +994,6 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(endif) {
 				/* harmless object, just ignore */
 			}
-			OBJ(addr) {
-				print_addr(obj, p, p_max_size);
-			}
-#if defined(__linux__)
-			OBJ(addrs) {
-				print_addrs(obj, p, p_max_size);
-			}
-#endif /* __linux__ */
 #if defined(IMLIB2) && defined(X11)
 			OBJ(image) {
 				/* doesn't actually draw anything, just queues it omp.  the
@@ -1138,81 +1004,17 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(eval) {
 				evaluate(obj->data.s, p, p_max_size);
 			}
-			OBJ(exec) {
-				print_exec(obj, p, p_max_size);
-			}
-			OBJ(execp) {
-				print_execp(obj, p, p_max_size);
-			}
-			OBJ(execgauge) {
-				print_execgauge(obj, p, p_max_size);
-			}
-			OBJ(execbar) {
-				print_execbar(obj, p, p_max_size);
-			}
-#ifdef X11
-			OBJ(execgraph) {
-				print_execgraph(obj, p, p_max_size);
-			}
-#endif /* X11 */
-			OBJ(execibar) {
-				print_execibar(obj, p, p_max_size);
-			}
-#ifdef X11
-			OBJ(execigraph) {
-				print_execigraph(obj, p, p_max_size);
-			}
-#endif /* X11 */
-			OBJ(execigauge) {
-				print_execigauge(obj, p, p_max_size);
-			}
-			OBJ(execi) {
-				print_execi(obj, p, p_max_size);
-			}
-			OBJ(execpi) {
-				print_execpi(obj, p, p_max_size);
-			}
-			OBJ(texeci) {
-				print_texeci(obj, p, p_max_size);
-			}
-			OBJ(imap_unseen) {
-				print_imap_unseen(obj, p, p_max_size);
-			}
-			OBJ(imap_messages) {
-				print_imap_messages(obj, p, p_max_size);
-			}
-			OBJ(pop3_unseen) {
-				print_pop3_unseen(obj, p, p_max_size);
-			}
-			OBJ(pop3_used) {
-				print_pop3_used(obj, p, p_max_size);
-			}
 			OBJ(fs_bar) {
 				print_fs_bar(obj, 0, p, p_max_size);
 			}
-			OBJ(fs_free) {
-				print_fs_free(obj, p, p_max_size);
-			}
 			OBJ(fs_free_perc) {
 				print_fs_perc(obj, 1, p, p_max_size);
-			}
-			OBJ(fs_size) {
-				print_fs_size(obj, p, p_max_size);
-			}
-			OBJ(fs_type) {
-				print_fs_type(obj, p, p_max_size);
-			}
-			OBJ(fs_used) {
-				print_fs_used(obj, p, p_max_size);
 			}
 			OBJ(fs_bar_free) {
 				print_fs_bar(obj, 1, p, p_max_size);
 			}
 			OBJ(fs_used_perc) {
 				print_fs_perc(obj, 0, p, p_max_size);
-			}
-			OBJ(loadavg) {
-				print_loadavg(obj, p, p_max_size);
 			}
 			OBJ(goto) {
 				new_goto(p, obj->data.i);
@@ -1225,53 +1027,6 @@ void generate_text_internal(char *p, int p_max_size,
 				new_hr(p, obj->data.i);
 			}
 #endif
-			OBJ(nameserver) {
-				print_nameserver(obj, p, p_max_size);
-			}
-#ifdef EVE
-			OBJ(eve) {
-				print_eve(obj, p, p_max_size);
-			}
-#endif
-#ifdef HAVE_CURL
-			OBJ(curl) {
-				curl_print(obj, p, p_max_size);
-			}
-#endif
-#ifdef RSS
-			OBJ(rss) {
-				rss_print_info(obj, p, p_max_size);
-			}
-#endif
-#ifdef WEATHER
-			OBJ(weather) {
-				print_weather(obj, p, p_max_size);
-			}
-#endif
-#ifdef XOAP
-			OBJ(weather_forecast) {
-				print_weather_forecast(obj, p, p_max_size);
-			}
-#endif
-#ifdef HAVE_LUA
-			OBJ(lua) {
-				print_lua(obj, p, p_max_size);
-			}
-			OBJ(lua_parse) {
-				print_lua_parse(obj, p, p_max_size);
-			}
-			OBJ(lua_bar) {
-				print_lua_bar(obj, p, p_max_size);
-			}
-#ifdef X11
-			OBJ(lua_graph) {
-				print_lua_graph(obj, p, p_max_size);
-			}
-#endif /* X11 */
-			OBJ(lua_gauge) {
-				print_lua_gauge(obj, p, p_max_size);
-			}
-#endif /* HAVE_LUA */
 #ifdef HDDTEMP
 			OBJ(hddtemp) {
 				short val;
@@ -1291,17 +1046,6 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(voffset) {
 				new_voffset(p, obj->data.i);
 			}
-#ifdef __linux__
-			OBJ(i2c) {
-				print_sysfs_sensor(obj, p, p_max_size);
-			}
-			OBJ(platform) {
-				print_sysfs_sensor(obj, p, p_max_size);
-			}
-			OBJ(hwmon) {
-				print_sysfs_sensor(obj, p, p_max_size);
-			}
-#endif /* __linux__ */
 			OBJ(alignr) {
 				new_alignr(p, obj->data.i);
 			}
@@ -1410,24 +1154,6 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* X11 */
 			/* mixer stuff */
-			OBJ(mixer) {
-				print_mixer(obj, p, p_max_size);
-			}
-			OBJ(mixerl) {
-				print_mixerl(obj, p, p_max_size);
-			}
-			OBJ(mixerr) {
-				print_mixerr(obj, p, p_max_size);
-			}
-			OBJ(mixerbar) {
-				print_mixer_bar(obj, p, p_max_size);
-			}
-			OBJ(mixerlbar) {
-				print_mixerl_bar(obj, p, p_max_size);
-			}
-			OBJ(mixerrbar) {
-				print_mixerr_bar(obj, p, p_max_size);
-			}
 			OBJ(if_mixer_mute) {
 				if (!check_mixer_muted(obj)) {
 					DO_JUMP;
@@ -1478,46 +1204,6 @@ void generate_text_internal(char *p, int p_max_size,
 				generate_text_internal(buf, max_user_text, *obj->sub, cur);
 				obj->data.s = buf;
 				print_format_time(obj, p, p_max_size);
-			}
-			/* mail stuff */
-			OBJ(mails) {
-				print_mails(obj, p, p_max_size);
-			}
-			OBJ(new_mails) {
-				print_new_mails(obj, p, p_max_size);
-			}
-			OBJ(seen_mails) {
-				print_seen_mails(obj, p, p_max_size);
-			}
-			OBJ(unseen_mails) {
-				print_unseen_mails(obj, p, p_max_size);
-			}
-			OBJ(flagged_mails) {
-				print_flagged_mails(obj, p, p_max_size);
-			}
-			OBJ(unflagged_mails) {
-				print_unflagged_mails(obj, p, p_max_size);
-			}
-			OBJ(forwarded_mails) {
-				print_forwarded_mails(obj, p, p_max_size);
-			}
-			OBJ(unforwarded_mails) {
-				print_unforwarded_mails(obj, p, p_max_size);
-			}
-			OBJ(replied_mails) {
-				print_replied_mails(obj, p, p_max_size);
-			}
-			OBJ(unreplied_mails) {
-				print_unreplied_mails(obj, p, p_max_size);
-			}
-			OBJ(draft_mails) {
-				print_draft_mails(obj, p, p_max_size);
-			}
-			OBJ(trashed_mails) {
-				print_trashed_mails(obj, p, p_max_size);
-			}
-			OBJ(mboxscan) {
-				print_mboxscan(obj, p, p_max_size);
 			}
 			OBJ(nodename) {
 				snprintf(p, p_max_size, "%s", cur->uname_s.nodename);
@@ -1850,21 +1536,6 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(sysname) {
 				snprintf(p, p_max_size, "%s", cur->uname_s.sysname);
 			}
-			OBJ(time) {
-				print_time(obj, p, p_max_size);
-			}
-			OBJ(utime) {
-				print_utime(obj, p, p_max_size);
-			}
-			OBJ(tztime) {
-				print_tztime(obj, p, p_max_size);
-			}
-			OBJ(totaldown) {
-				print_totaldown(obj, p, p_max_size);
-			}
-			OBJ(totalup) {
-				print_totalup(obj, p, p_max_size);
-			}
 			OBJ(gid_name) {
 				char buf[max_user_text];
 
@@ -1887,17 +1558,6 @@ void generate_text_internal(char *p, int p_max_size,
 					DO_JUMP;
 				}
 			}
-			OBJ(upspeed) {
-				print_upspeed(obj, p, p_max_size);
-			}
-			OBJ(upspeedf) {
-				print_upspeedf(obj, p, p_max_size);
-			}
-#ifdef X11
-			OBJ(upspeedgraph) {
-				print_upspeedgraph(obj, p, p_max_size);
-			}
-#endif /* X11 */
 			OBJ(uptime_short) {
 				format_seconds_short(p, p_max_size, (int) cur->uptime);
 			}
@@ -1948,43 +1608,6 @@ void generate_text_internal(char *p, int p_max_size,
 #endif /* __FreeBSD__ __OpenBSD__ */
 
 #ifdef MPD
-			OBJ(mpd_title)
-				print_mpd_title(obj, p, p_max_size);
-			OBJ(mpd_artist)
-				print_mpd_artist(obj, p, p_max_size);
-			OBJ(mpd_album)
-				print_mpd_album(obj, p, p_max_size);
-			OBJ(mpd_random)
-				print_mpd_random(obj, p, p_max_size);
-			OBJ(mpd_repeat)
-				print_mpd_repeat(obj, p, p_max_size);
-			OBJ(mpd_track)
-				print_mpd_track(obj, p, p_max_size);
-			OBJ(mpd_name)
-				print_mpd_name(obj, p, p_max_size);
-			OBJ(mpd_file)
-				print_mpd_file(obj, p, p_max_size);
-			OBJ(mpd_vol)
-				print_mpd_vol(obj, p, p_max_size);
-			OBJ(mpd_bitrate)
-				print_mpd_bitrate(obj, p, p_max_size);
-			OBJ(mpd_status)
-				print_mpd_status(obj, p, p_max_size);
-			OBJ(mpd_elapsed) {
-				print_mpd_elapsed(obj, p, p_max_size);
-			}
-			OBJ(mpd_length) {
-				print_mpd_length(obj, p, p_max_size);
-			}
-			OBJ(mpd_percent) {
-				print_mpd_percent(obj, p, p_max_size);
-			}
-			OBJ(mpd_bar) {
-				print_mpd_bar(obj, p, p_max_size);
-			}
-			OBJ(mpd_smart) {
-				print_mpd_smart(obj, p, p_max_size);
-			}
 			OBJ(if_mpd_playing) {
 				if (!mpd_get_info()->is_playing) {
 					DO_JUMP;
@@ -2208,13 +1831,6 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(head) {
 				print_tailhead("head", obj, p, p_max_size);
 			}
-			OBJ(lines) {
-				print_lines(obj, p, p_max_size);
-			}
-
-			OBJ(words) {
-				print_words(obj, p, p_max_size);
-			}
 #ifdef TCP_PORT_MONITOR
 			OBJ(tcp_portmon) {
 				tcp_portmon_action(obj, p, p_max_size);
@@ -2230,22 +1846,7 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* HAVE_ICONV */
 
-			OBJ(entropy_avail) {
-				print_entropy_avail(obj, p, p_max_size);
-			}
-			OBJ(entropy_perc) {
-				print_entropy_perc(obj, p, p_max_size);
-			}
-			OBJ(entropy_poolsize) {
-				print_entropy_poolsize(obj, p, p_max_size);
-			}
-			OBJ(entropy_bar) {
-				print_entropy_bar(obj, p, p_max_size);
-			}
 #ifdef IBM
-			OBJ(smapi) {
-				print_smapi(obj, p, p_max_size);
-			}
 			OBJ(if_smapi_bat_installed) {
 				int idx;
 				if(obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
@@ -2254,18 +1855,6 @@ void generate_text_internal(char *p, int p_max_size,
 					}
 				} else
 					NORM_ERR("argument to if_smapi_bat_installed must be an integer");
-			}
-			OBJ(smapi_bat_perc) {
-				print_smapi_bat_perc(obj, p, p_max_size);
-			}
-			OBJ(smapi_bat_temp) {
-				print_smapi_bat_temp(obj, p, p_max_size);
-			}
-			OBJ(smapi_bat_power) {
-				print_smapi_bat_power(obj, p, p_max_size);
-			}
-			OBJ(smapi_bat_bar) {
-				print_smapi_bat_bar(obj, p, p_max_size);
 			}
 #endif /* IBM */
 			OBJ(include) {
