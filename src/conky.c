@@ -1669,9 +1669,6 @@ void generate_text_internal(char *p, int p_max_size,
 				}
 				snprintf(p, p_max_size, "%s", buf);
 			}
-			OBJ(combine) {
-				print_combine(obj, p, cur);
-			}
 #ifdef NVIDIA
 			OBJ(nvidia) {
 				print_nvidia_value(obj, display, p, p_max_size);

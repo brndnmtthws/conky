@@ -90,7 +90,7 @@ void parse_combine_arg(struct text_object *obj, const char *arg, void *free_at_c
 	}
 }
 
-void print_combine(struct text_object *obj, char *p, struct information *cur)
+void print_combine(struct text_object *obj, char *p, int p_max_size)
 {
 	struct combine_data *cd = obj->data.opaque;
 	char buf[2][max_user_text];
@@ -105,7 +105,7 @@ void print_combine(struct text_object *obj, char *p, struct information *cur)
 	struct llrows *ll_rows[2], *current[2];
 	struct text_object * objsub = obj->sub;
 
-	if (!cd)
+	if (!cd || !p_max_size)
 		return;
 
 	p[0]=0;
@@ -115,7 +115,7 @@ void print_combine(struct text_object *obj, char *p, struct information *cur)
 		ll_rows[i] = malloc(sizeof(struct llrows));
 		current[i] = ll_rows[i];
 		for(j=0; j<i; j++) objsub = objsub->sub;
-		generate_text_internal(buf[i], max_user_text, *objsub, cur);
+		generate_text_internal(buf[i], max_user_text, *objsub, &info);
 		for(j=0; buf[i][j] != 0; j++) {
 			if(buf[i][j] == '\t') buf[i][j] = ' ';
 			if(buf[i][j] == '\n') {
