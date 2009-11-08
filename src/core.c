@@ -489,7 +489,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &new_fg;
 #ifdef X11
 	END OBJ(font, 0)
-		obj->data.s = scan_font(arg);
+		scan_font(obj, arg);
 		obj->callbacks.free = &gen_free_opaque;
 #endif /* X11 */
 	END OBJ(conky_version, 0)

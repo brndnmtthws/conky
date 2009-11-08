@@ -134,13 +134,10 @@ const char *scan_bar(struct text_object *obj, const char *args)
 }
 
 #ifdef X11
-char *scan_font(const char *args)
+void scan_font(struct text_object *obj, const char *args)
 {
-	if (args && *args) {
-		return strndup(args, DEFAULT_TEXT_BUFFER_SIZE);
-	}
-
-	return NULL;
+	if (args && *args)
+		obj->data.s = strndup(args, DEFAULT_TEXT_BUFFER_SIZE);
 }
 
 char *scan_graph(struct text_object *obj, const char *args, int defscale)
