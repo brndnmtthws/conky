@@ -145,3 +145,20 @@ void fail(GError *error)
 	current_info->bmpx.bitrate = 0;
 	current_info->bmpx.track = 0;
 }
+
+#define BMPX_PRINT_GENERATOR(name, fmt) \
+void print_bmpx_##name(struct text_object *obj, char *p, int p_max_size) \
+{ \
+	(void)obj; \
+	snprintf(p, p_max_size, fmt, info.bmpx.name); \
+}
+
+BMPX_PRINT_GENERATOR(title, "%s")
+BMPX_PRINT_GENERATOR(artist, "%s")
+BMPX_PRINT_GENERATOR(album, "%s")
+BMPX_PRINT_GENERATOR(uri, "%s")
+BMPX_PRINT_GENERATOR(track, "%i")
+BMPX_PRINT_GENERATOR(bitrate, "%i")
+
+#undef BMPX_PRINT_GENERATOR
+

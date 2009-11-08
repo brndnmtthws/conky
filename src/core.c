@@ -1205,17 +1205,17 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif /* AUDACIOUS */
 #ifdef BMPX
 	END OBJ(bmpx_title, &update_bmpx)
-		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+		obj->callbacks.print = &print_bmpx_title;
 	END OBJ(bmpx_artist, &update_bmpx)
-		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+		obj->callbacks.print = &print_bmpx_artist;
 	END OBJ(bmpx_album, &update_bmpx)
-		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+		obj->callbacks.print = &print_bmpx_album;
 	END OBJ(bmpx_track, &update_bmpx)
-		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+		obj->callbacks.print = &print_bmpx_track;
 	END OBJ(bmpx_uri, &update_bmpx)
-		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+		obj->callbacks.print = &print_bmpx_uri;
 	END OBJ(bmpx_bitrate, &update_bmpx)
-		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
+		obj->callbacks.print = &print_bmpx_bitrate;
 #endif
 #ifdef EVE
 	END OBJ_ARG(eve, 0, "eve needs arguments: <userid> <apikey> <characterid>")

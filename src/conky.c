@@ -1636,26 +1636,6 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* XMMS */
 
-#ifdef BMPX
-			OBJ(bmpx_title) {
-				snprintf(p, p_max_size, "%s", cur->bmpx.title);
-			}
-			OBJ(bmpx_artist) {
-				snprintf(p, p_max_size, "%s", cur->bmpx.artist);
-			}
-			OBJ(bmpx_album) {
-				snprintf(p, p_max_size, "%s", cur->bmpx.album);
-			}
-			OBJ(bmpx_uri) {
-				snprintf(p, p_max_size, "%s", cur->bmpx.uri);
-			}
-			OBJ(bmpx_track) {
-				snprintf(p, p_max_size, "%i", cur->bmpx.track);
-			}
-			OBJ(bmpx_bitrate) {
-				snprintf(p, p_max_size, "%i", cur->bmpx.bitrate);
-			}
-#endif /* BMPX */
 			/* we have four different types of top (top, top_mem,
 			 * top_time and top_io). To avoid having almost-same code four
 			 * times, we have this special handler. */
