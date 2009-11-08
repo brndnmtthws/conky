@@ -30,6 +30,7 @@
 
 #include "conky.h"
 #include "logging.h"
+#include "temphelper.h"
 #include "text_object.h"
 #include <errno.h>
 #include <unistd.h>
@@ -241,7 +242,7 @@ void free_hddtemp(struct text_object *obj)
 	}
 }
 
-int get_hddtemp_info(const char *dev, short *val, char *unit)
+static int get_hddtemp_info(const char *dev, short *val, char *unit)
 {
 	struct hdd_info *hdi = hdd_info_head.next;
 
@@ -257,4 +258,17 @@ int get_hddtemp_info(const char *dev, short *val, char *unit)
 	*val = hdi->temp;
 	*unit = hdi->unit;
 	return 0;
+}
+
+void print_hddtemp(struct text_object *obj, char *p, int p_max_size)
+{
+	short val;
+	char unit;
+
+	if (get_hddtemp_info(obj->data.s, &val, &unit)) {
+		snprintf(p, p_max_size, "N/A");
+	} else {
+		temp_print(p, p_max_size, (double)val,
+				(unit == 'C' ? TEMP_CELSIUS : TEMP_FAHRENHEIT));
+	}
 }

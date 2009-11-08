@@ -7,6 +7,6 @@ void set_hddtemp_host(const char *);
 void set_hddtemp_port(const char *);
 void update_hddtemp(void);
 void free_hddtemp(struct text_object *);
-int get_hddtemp_info(const char *, short *, char *);
+void print_hddtemp(struct text_object *, char *, int);
 
 #endif /*HDDTEMP_H_*/

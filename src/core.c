@@ -1277,6 +1277,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(hddtemp, &update_hddtemp)
 		if (arg)
 			obj->data.s = strndup(arg, text_buffer_size);
+		obj->callbacks.print = &print_hddtemp;
 		obj->callbacks.free = &free_hddtemp;
 #endif /* HDDTEMP */
 #ifdef TCP_PORT_MONITOR

@@ -970,19 +970,6 @@ void generate_text_internal(char *p, int p_max_size,
 				evaluate(obj->data.s, p, p_max_size);
 			}
 			}
-#ifdef HDDTEMP
-			OBJ(hddtemp) {
-				short val;
-				char unit;
-
-				if (get_hddtemp_info(obj->data.s, &val, &unit)) {
-					snprintf(p, p_max_size, "N/A");
-				} else {
-					temp_print(p, p_max_size, (double)val,
-							(unit == 'C' ? TEMP_CELSIUS : TEMP_FAHRENHEIT));
-				}
-			}
-#endif
 			OBJ(if_empty) {
 				char buf[max_user_text];
 				struct information *tmp_info =
