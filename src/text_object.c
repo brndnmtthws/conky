@@ -50,15 +50,16 @@ void gen_free_opaque(struct text_object *obj)
  *   (this works in BOTH directions)
  */
 
-/* append an object to the given root object's list */
+/* append an object or list of objects to the given root object's list */
 int append_object(struct text_object *root, struct text_object *obj)
 {
 	struct text_object *end;
 
+	/* hook in start of list to append */
 	end = root->prev;
 	obj->prev = end;
-	obj->next = NULL;
 
+	/* update pointers of the list to append to */
 	if (end) {
 		if (end->next)
 			CRIT_ERR(NULL, NULL, "huston, we have a lift-off");
@@ -66,7 +67,12 @@ int append_object(struct text_object *root, struct text_object *obj)
 	} else {
 		root->next = obj;
 	}
+
+	/* find end of appended list to point root->prev there */
+	while (obj->next)
+		obj = obj->next;
 	root->prev = obj;
+
 	return 0;
 }
 
