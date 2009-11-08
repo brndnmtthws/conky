@@ -606,8 +606,10 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_nameserver;
 	END OBJ(offset, 0)
 		obj->data.l = arg ? atoi(arg) : 1;
+		obj->callbacks.print = &new_offset;
 	END OBJ(voffset, 0)
 		obj->data.l = arg ? atoi(arg) : 1;
+		obj->callbacks.print = &new_voffset;
 	END OBJ_ARG(goto, 0, "goto needs arguments")
 		obj->data.l = atoi(arg);
 		obj->callbacks.print = &new_goto;
@@ -648,9 +650,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif /* __linux__ */
 	END OBJ_ARG(tail, 0, "tail needs arguments")
 		init_tailhead("tail", arg, obj, free_at_crash);
+		obj->callbacks.print = &print_tail;
 		obj->callbacks.free = &free_tailhead;
 	END OBJ_ARG(head, 0, "head needs arguments")
 		init_tailhead("head", arg, obj, free_at_crash);
+		obj->callbacks.print = &print_head;
 		obj->callbacks.free = &free_tailhead;
 	END OBJ_ARG(lines, 0, "lines needs an argument")
 		obj->data.s = strndup(arg, text_buffer_size);
@@ -978,8 +982,10 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		set_updatereset(obj->data.i > get_updatereset() ? obj->data.i : get_updatereset());
 	END OBJ(alignr, 0)
 		obj->data.l = arg ? atoi(arg) : 1;
+		obj->callbacks.print = &new_alignr;
 	END OBJ(alignc, 0)
 		obj->data.l = arg ? atoi(arg) : 0;
+		obj->callbacks.print = &new_alignc;
 	END OBJ(upspeed, &update_net_stats)
 		parse_net_stat_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_upspeed;

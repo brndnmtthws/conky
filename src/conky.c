@@ -983,18 +983,6 @@ void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 #endif
-			OBJ(offset) {
-				new_offset(obj, p, p_max_size);
-			}
-			OBJ(voffset) {
-				new_voffset(obj, p, p_max_size);
-			}
-			OBJ(alignr) {
-				new_alignr(obj, p, p_max_size);
-			}
-			OBJ(alignc) {
-				new_alignc(obj, p, p_max_size);
-			}
 			OBJ(if_empty) {
 				char buf[max_user_text];
 				struct information *tmp_info =
@@ -1757,12 +1745,6 @@ void generate_text_internal(char *p, int p_max_size,
 #endif
 				print_top(obj, p, p_max_size);
 #endif /* __linux__ */
-			OBJ(tail) {
-				print_tailhead("tail", obj, p, p_max_size);
-			}
-			OBJ(head) {
-				print_tailhead("head", obj, p, p_max_size);
-			}
 #ifdef HAVE_ICONV
 			OBJ(iconv_start) {
 				do_iconv_start(obj);

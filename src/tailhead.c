@@ -114,7 +114,7 @@ void init_tailhead(const char* type, const char* arg, struct text_object *obj, v
 	obj->data.opaque = ht;
 }
 
-void print_tailhead(const char* type, struct text_object *obj, char *p, int p_max_size) {
+static void print_tailhead(const char* type, struct text_object *obj, char *p, int p_max_size) {
 	int fd, i, endofstring = 0, linescounted = 0;
 	FILE *fp;
 	struct stat st;
@@ -178,6 +178,16 @@ void print_tailhead(const char* type, struct text_object *obj, char *p, int p_ma
 		}
 	}
 	return;
+}
+
+void print_head(struct text_object *obj, char *p, int p_max_size)
+{
+	print_tailhead("head", obj, p, p_max_size);
+}
+
+void print_tail(struct text_object *obj, char *p, int p_max_size)
+{
+	print_tailhead("tail", obj, p, p_max_size);
 }
 
 /* FIXME: use something more general (see also tail.c, head.c */

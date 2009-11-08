@@ -32,7 +32,8 @@
 
 void free_tailhead(struct text_object *);
 void init_tailhead(const char *, const char *, struct text_object *, void *);
-void print_tailhead(const char *, struct text_object *, char *, int);
+void print_head(struct text_object *, char *, int);
+void print_tail(struct text_object *, char *, int);
 
 void print_lines(struct text_object *, char *, int);
 void print_words(struct text_object *, char *, int);
