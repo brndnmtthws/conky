@@ -1286,6 +1286,8 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_font:
 			case OBJ_image:
 			case OBJ_eval:
+				free(data.s);
+				break;
 			case OBJ_exec:
 			case OBJ_execbar:
 #ifdef X11
