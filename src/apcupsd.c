@@ -25,6 +25,7 @@
 #include "conky.h"
 #include "apcupsd.h"
 #include "logging.h"
+#include "text_object.h"
 
 #include <errno.h>
 #include <netinet/in.h>
@@ -227,3 +228,65 @@ void update_apcupsd(void) {
 	memcpy(info.apcupsd.items, apc.items, sizeof(info.apcupsd.items));
 	return;
 }
+
+/* this is just a NOP for the $apcupsd object */
+void print_apcupsd_nop(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	(void)p;
+	(void)p_max_size;
+}
+
+void print_apcupsd_loadgraph(struct text_object *obj, char *p, int p_max_size)
+{
+	double progress;
+
+	if (!p_max_size)
+		return;
+
+	progress =  atof(info.apcupsd.items[APCUPSD_LOAD]);
+	new_graph(obj, p, p_max_size, (int)progress);
+}
+
+void print_apcupsd_loadgauge(struct text_object *obj, char *p, int p_max_size)
+{
+	double progress;
+
+	if (!p_max_size)
+		return;
+
+	progress =  atof(info.apcupsd.items[APCUPSD_LOAD]) / 100.0 * 255.0;
+	new_gauge(obj, p, p_max_size, (int)progress);
+}
+
+void print_apcupsd_loadbar(struct text_object *obj, char *p, int p_max_size)
+{
+	double progress;
+
+	if (!p_max_size)
+		return;
+
+	progress = atof(info.apcupsd.items[APCUPSD_LOAD]) / 100.0 * 255.0;
+	new_bar(obj, p, p_max_size, (int) progress);
+}
+
+#define APCUPSD_PRINT_GENERATOR(name, idx)                                  \
+void print_apcupsd_##name(struct text_object *obj, char *p, int p_max_size) \
+{                                                                           \
+	(void)obj;                                                              \
+	snprintf(p, p_max_size, "%s", info.apcupsd.items[APCUPSD_##idx]);       \
+}
+
+APCUPSD_PRINT_GENERATOR(name, NAME)
+APCUPSD_PRINT_GENERATOR(model, MODEL)
+APCUPSD_PRINT_GENERATOR(upsmode, UPSMODE)
+APCUPSD_PRINT_GENERATOR(cable, CABLE)
+APCUPSD_PRINT_GENERATOR(status, STATUS)
+APCUPSD_PRINT_GENERATOR(linev, LINEV)
+APCUPSD_PRINT_GENERATOR(load, LOAD)
+APCUPSD_PRINT_GENERATOR(charge, CHARGE)
+APCUPSD_PRINT_GENERATOR(timeleft, TIMELEFT)
+APCUPSD_PRINT_GENERATOR(temp, TEMP)
+APCUPSD_PRINT_GENERATOR(lastxfer, LASTXFER)
+
+#undef APCUPSD_PRINT_GENERATOR

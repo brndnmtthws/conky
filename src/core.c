@@ -1343,27 +1343,42 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			info.apcupsd.port = htons(port);
 			strncpy(info.apcupsd.host, host, sizeof(info.apcupsd.host));
 		}
+		obj->callbacks.print = &print_apcupsd_nop;
 	END OBJ(apcupsd_name, &update_apcupsd)
+		obj->callbacks.print = &print_apcupsd_name;
 	END OBJ(apcupsd_model, &update_apcupsd)
+		obj->callbacks.print = &print_apcupsd_model;
 	END OBJ(apcupsd_upsmode, &update_apcupsd)
+		obj->callbacks.print = &print_apcupsd_upsmode;
 	END OBJ(apcupsd_cable, &update_apcupsd)
+		obj->callbacks.print = &print_apcupsd_cable;
 	END OBJ(apcupsd_status, &update_apcupsd)
+		obj->callbacks.print = &print_apcupsd_status;
 	END OBJ(apcupsd_linev, &update_apcupsd)
+		obj->callbacks.print = &print_apcupsd_linev;
 	END OBJ(apcupsd_load, &update_apcupsd)
+		obj->callbacks.print = &print_apcupsd_load;
 	END OBJ(apcupsd_loadbar, &update_apcupsd)
 		scan_bar(obj, arg);
+		obj->callbacks.print = &print_apcupsd_loadbar;
 #ifdef X11
 	END OBJ(apcupsd_loadgraph, &update_apcupsd)
 		char* buf = 0;
 		buf = scan_graph(obj, arg, 0);
 		if (buf) free(buf);
+		obj->callbacks.print = &print_apcupsd_loadgraph;
 #endif /* X11 */
 	END OBJ(apcupsd_loadgauge, &update_apcupsd)
 		scan_gauge(obj, arg);
+		obj->callbacks.print = &print_apcupsd_loadgauge;
 	END OBJ(apcupsd_charge, &update_apcupsd)
+		obj->callbacks.print = &print_apcupsd_charge;
 	END OBJ(apcupsd_timeleft, &update_apcupsd)
+		obj->callbacks.print = &print_apcupsd_timeleft;
 	END OBJ(apcupsd_temp, &update_apcupsd)
+		obj->callbacks.print = &print_apcupsd_temp;
 	END OBJ(apcupsd_lastxfer, &update_apcupsd)
+		obj->callbacks.print = &print_apcupsd_lastxfer;
 #endif /* APCUPSD */
 	END {
 		char buf[text_buffer_size];

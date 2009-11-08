@@ -51,4 +51,21 @@ typedef struct apcupsd_s {
 /* Service routine for the conky main thread */
 void update_apcupsd(void);
 
+void print_apcupsd_nop(struct text_object *, char *, int);
+void print_apcupsd_loadgraph(struct text_object *, char *, int);
+void print_apcupsd_loadgauge(struct text_object *, char *, int);
+void print_apcupsd_loadbar(struct text_object *, char *, int);
+
+void print_apcupsd_name(struct text_object *, char *, int);
+void print_apcupsd_model(struct text_object *, char *, int);
+void print_apcupsd_upsmode(struct text_object *, char *, int);
+void print_apcupsd_cable(struct text_object *, char *, int);
+void print_apcupsd_status(struct text_object *, char *, int);
+void print_apcupsd_linev(struct text_object *, char *, int);
+void print_apcupsd_load(struct text_object *, char *, int);
+void print_apcupsd_charge(struct text_object *, char *, int);
+void print_apcupsd_timeleft(struct text_object *, char *, int);
+void print_apcupsd_temp(struct text_object *, char *, int);
+void print_apcupsd_lastxfer(struct text_object *, char *, int);
+
 #endif /*APCUPSD_H_*/
