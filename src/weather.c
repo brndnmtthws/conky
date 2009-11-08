@@ -38,6 +38,7 @@
 #ifdef XOAP
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
+#endif /* XOAP */
 
 /* WEATHER data */
 typedef struct PWEATHER_ {
@@ -70,7 +71,6 @@ typedef struct PWEATHER_FORECAST_ {
 	int hmid[FORECAST_DAYS];
 	int ppcp[FORECAST_DAYS];
 } PWEATHER_FORECAST;
-#endif /* XOAP */
 
 /* Xpath expressions for XOAP xml parsing */
 #define NUM_XPATH_EXPRESSIONS_CC 8
@@ -827,9 +827,11 @@ static void weather_process_info(char *p, int p_max_size, char *uri, char *data_
 	timed_thread_unlock(curloc->p_timed_thread);
 }
 
+#ifdef XOAP
 /* xoap suffix for weather from weather.com */
 static char *xoap_cc = NULL;
 static char *xoap_df = NULL;
+#endif /* XOAP */
 
 static int process_weather_uri(char *uri, char *locID, int dayf UNUSED_ATTR)
 {
