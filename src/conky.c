@@ -1444,23 +1444,23 @@ void generate_text_internal(char *p, int p_max_size,
 #endif /* X11 */
 			/* mixer stuff */
 			OBJ(mixer) {
-				print_mixer(obj, 0, p, p_max_size);
+				print_mixer(obj, p, p_max_size);
 			}
 			OBJ(mixerl) {
-				print_mixer(obj, -1, p, p_max_size);
+				print_mixerl(obj, p, p_max_size);
 			}
 			OBJ(mixerr) {
-				print_mixer(obj, 1, p, p_max_size);
+				print_mixerr(obj, p, p_max_size);
 			}
 #ifdef X11
 			OBJ(mixerbar) {
-				print_mixer_bar(obj, 0, p);
+				print_mixer_bar(obj, p, p_max_size);
 			}
 			OBJ(mixerlbar) {
-				print_mixer_bar(obj, -1, p);
+				print_mixerl_bar(obj, p, p_max_size);
 			}
 			OBJ(mixerrbar) {
-				print_mixer_bar(obj, 1, p);
+				print_mixerr_bar(obj, p, p_max_size);
 			}
 #endif /* X11 */
 			OBJ(if_mixer_mute) {

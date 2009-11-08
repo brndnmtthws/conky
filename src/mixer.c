@@ -289,7 +289,7 @@ void parse_mixer_arg(struct text_object *obj, const char *arg)
  *  0 := channel average
  *  1 := right channel
  */
-void print_mixer(struct text_object *obj, int chan, char *p, int p_max_size)
+static void print_mixer_chan(struct text_object *obj, int chan, char *p, int p_max_size)
 {
 	int val;
 
@@ -301,6 +301,21 @@ void print_mixer(struct text_object *obj, int chan, char *p, int p_max_size)
 		val = mixer_get_right(obj->data.l);
 
 	percent_print(p, p_max_size, val);
+}
+
+void print_mixer(struct text_object *obj, char *p, int p_max_size)
+{
+	print_mixer_chan(obj, 0, p, p_max_size);
+}
+
+void print_mixerl(struct text_object *obj, char *p, int p_max_size)
+{
+	print_mixer_chan(obj, -1, p, p_max_size);
+}
+
+void print_mixerr(struct text_object *obj, char *p, int p_max_size)
+{
+	print_mixer_chan(obj, 1, p, p_max_size);
 }
 
 int check_mixer_muted(struct text_object *obj)
@@ -326,9 +341,12 @@ void scan_mixer_bar(struct text_object *obj, const char *arg)
 }
 
 /* see print_mixer() above for a description of 'chan' */
-void print_mixer_bar(struct text_object *obj, int chan, char *p)
+static void print_mixer_bar_chan(struct text_object *obj, int chan, char *p, int p_max_size)
 {
 	int val;
+
+	if (!p_max_size)
+		return;
 
 	if (chan < 0)
 		val = mixer_get_left(obj->data.i);
@@ -339,4 +357,20 @@ void print_mixer_bar(struct text_object *obj, int chan, char *p)
 
 	new_bar(obj, p, mixer_to_255(obj->data.i, val));
 }
+
+void print_mixer_bar(struct text_object *obj, char *p, int p_max_size)
+{
+	print_mixer_bar_chan(obj, 0, p, p_max_size);
+}
+
+void print_mixerl_bar(struct text_object *obj, char *p, int p_max_size)
+{
+	print_mixer_bar_chan(obj, -1, p, p_max_size);
+}
+
+void print_mixerr_bar(struct text_object *obj, char *p, int p_max_size)
+{
+	print_mixer_bar_chan(obj, 1, p, p_max_size);
+}
+
 #endif /* X11 */
