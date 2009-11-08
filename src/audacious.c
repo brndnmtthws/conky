@@ -254,3 +254,44 @@ void *audacious_thread_func(void *pvoid)
 		}
 	}
 }
+
+void print_audacious_title(struct text_object *obj, char *p, int p_max_size)
+{
+	snprintf(p, info.audacious.max_title_len > 0
+			? info.audacious.max_title_len : p_max_size, "%s",
+			info.audacious.items[AUDACIOUS_TITLE]);
+}
+
+void print_audacious_bar(struct text_object *obj, char *p, int p_max_size)
+{
+	double progress;
+
+	if (!p_max_size)
+		return;
+
+	progress =
+		atof(info.audacious.items[AUDACIOUS_POSITION_SECONDS]) /
+		atof(info.audacious.items[AUDACIOUS_LENGTH_SECONDS]);
+	new_bar(obj, p, p_max_size, (int) (progress * 255.0f));
+}
+
+#define AUDACIOUS_PRINT_GENERATOR(name, idx) \
+void print_audacious_##name(struct text_object *obj, char *p, int p_max_size) \
+{ \
+	snprintf(p, p_max_size, "%s", info.audacious.items[AUDACIOUS_##idx]); \
+}
+
+AUDACIOUS_PRINT_GENERATOR(status, STATUS)
+AUDACIOUS_PRINT_GENERATOR(length, LENGTH)
+AUDACIOUS_PRINT_GENERATOR(length_seconds, LENGTH_SECONDS)
+AUDACIOUS_PRINT_GENERATOR(position, POSITION)
+AUDACIOUS_PRINT_GENERATOR(position_seconds, POSITION_SECONDS)
+AUDACIOUS_PRINT_GENERATOR(bitrate, BITRATE)
+AUDACIOUS_PRINT_GENERATOR(frequency, FREQUENCY)
+AUDACIOUS_PRINT_GENERATOR(channels, CHANNELS)
+AUDACIOUS_PRINT_GENERATOR(filename, FILENAME)
+AUDACIOUS_PRINT_GENERATOR(playlist_length, PLAYLIST_LENGTH)
+AUDACIOUS_PRINT_GENERATOR(playlist_position, PLAYLIST_POSITION)
+AUDACIOUS_PRINT_GENERATOR(main_volume, MAIN_VOLUME)
+
+#undef AUDACIOUS_PRINT_GENERATOR

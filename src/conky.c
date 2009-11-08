@@ -1635,69 +1635,6 @@ void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 #endif /* XMMS */
-#ifdef AUDACIOUS
-			OBJ(audacious_status) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_STATUS]);
-			}
-			OBJ(audacious_title) {
-				snprintf(p, cur->audacious.max_title_len > 0
-					? cur->audacious.max_title_len : p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_TITLE]);
-			}
-			OBJ(audacious_length) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_LENGTH]);
-			}
-			OBJ(audacious_length_seconds) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_LENGTH_SECONDS]);
-			}
-			OBJ(audacious_position) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_POSITION]);
-			}
-			OBJ(audacious_position_seconds) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_POSITION_SECONDS]);
-			}
-			OBJ(audacious_bitrate) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_BITRATE]);
-			}
-			OBJ(audacious_frequency) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_FREQUENCY]);
-			}
-			OBJ(audacious_channels) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_CHANNELS]);
-			}
-			OBJ(audacious_filename) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_FILENAME]);
-			}
-			OBJ(audacious_playlist_length) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_PLAYLIST_LENGTH]);
-			}
-			OBJ(audacious_playlist_position) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_PLAYLIST_POSITION]);
-			}
-			OBJ(audacious_main_volume) {
-				snprintf(p, p_max_size, "%s",
-					cur->audacious.items[AUDACIOUS_MAIN_VOLUME]);
-			}
-			OBJ(audacious_bar) {
-				double progress;
-
-				progress =
-					atof(cur->audacious.items[AUDACIOUS_POSITION_SECONDS]) /
-					atof(cur->audacious.items[AUDACIOUS_LENGTH_SECONDS]);
-				new_bar(obj, p, p_max_size, (int) (progress * 255.0f));
-			}
-#endif /* AUDACIOUS */
 
 #ifdef BMPX
 			OBJ(bmpx_title) {

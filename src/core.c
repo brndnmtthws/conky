@@ -1168,6 +1168,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif
 #ifdef AUDACIOUS
 	END OBJ(audacious_status, &update_audacious)
+		obj->callbacks.print = &print_audacious_status;
 	END OBJ_ARG(audacious_title, &update_audacious, "audacious_title needs an argument")
 		sscanf(arg, "%d", &info.audacious.max_title_len);
 		if (info.audacious.max_title_len > 0) {
@@ -1175,20 +1176,33 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		} else {
 			CRIT_ERR(obj, free_at_crash, "audacious_title: invalid length argument");
 		}
+		obj->callbacks.print = &print_audacious_title;
 	END OBJ(audacious_length, &update_audacious)
+		obj->callbacks.print = &print_audacious_length;
 	END OBJ(audacious_length_seconds, &update_audacious)
+		obj->callbacks.print = &print_audacious_length_seconds;
 	END OBJ(audacious_position, &update_audacious)
+		obj->callbacks.print = &print_audacious_position;
 	END OBJ(audacious_position_seconds, &update_audacious)
+		obj->callbacks.print = &print_audacious_position_seconds;
 	END OBJ(audacious_bitrate, &update_audacious)
+		obj->callbacks.print = &print_audacious_bitrate;
 	END OBJ(audacious_frequency, &update_audacious)
+		obj->callbacks.print = &print_audacious_frequency;
 	END OBJ(audacious_channels, &update_audacious)
+		obj->callbacks.print = &print_audacious_channels;
 	END OBJ(audacious_filename, &update_audacious)
+		obj->callbacks.print = &print_audacious_filename;
 	END OBJ(audacious_playlist_length, &update_audacious)
+		obj->callbacks.print = &print_audacious_playlist_length;
 	END OBJ(audacious_playlist_position, &update_audacious)
+		obj->callbacks.print = &print_audacious_playlist_position;
 	END OBJ(audacious_main_volume, &update_audacious)
+		obj->callbacks.print = &print_audacious_main_volume;
 	END OBJ(audacious_bar, &update_audacious)
 		scan_bar(obj, arg);
-#endif
+		obj->callbacks.print = &print_audacious_bar;
+#endif /* AUDACIOUS */
 #ifdef BMPX
 	END OBJ(bmpx_title, &update_bmpx)
 		memset(&(info.bmpx), 0, sizeof(struct bmpx_s));
