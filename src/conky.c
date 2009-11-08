@@ -899,41 +899,6 @@ void generate_text_internal(char *p, int p_max_size,
 				print_loadgraph(obj, p, p_max_size);
 			}
 #endif /* X11 */
-			OBJ(color) {
-				new_fg(obj, p, p_max_size);
-			}
-#ifdef X11
-			OBJ(color0) {
-				new_fg(obj, p, p_max_size);
-			}
-			OBJ(color1) {
-				new_fg(obj, p, p_max_size);
-			}
-			OBJ(color2) {
-				new_fg(obj, p, p_max_size);
-			}
-			OBJ(color3) {
-				new_fg(obj, p, p_max_size);
-			}
-			OBJ(color4) {
-				new_fg(obj, p, p_max_size);
-			}
-			OBJ(color5) {
-				new_fg(obj, p, p_max_size);
-			}
-			OBJ(color6) {
-				new_fg(obj, p, p_max_size);
-			}
-			OBJ(color7) {
-				new_fg(obj, p, p_max_size);
-			}
-			OBJ(color8) {
-				new_fg(obj, p, p_max_size);
-			}
-			OBJ(color9) {
-				new_fg(obj, p, p_max_size);
-			}
-#endif /* X11 */
 #if defined(__linux__)
 			OBJ(disk_protect) {
 				snprintf(p, p_max_size, "%s",

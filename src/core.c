@@ -151,6 +151,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	if (s[0] == '#') {
 		obj->type = OBJ_color;
 		obj->data.l = get_x11_color(s);
+		obj->callbacks.print = &new_fg;
 	} else
 #endif /* X11 */
 #ifdef __OpenBSD__
@@ -445,36 +446,47 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			init_pair(obj->data.l, obj->data.l, COLOR_BLACK);
 		}
 #endif /* NCURSES */
+		obj->callbacks.print = &new_fg;
 	END OBJ(color0, 0)
 		obj->data.l = color0;
 		set_current_text_color(obj->data.l);
+		obj->callbacks.print = &new_fg;
 	END OBJ(color1, 0)
 		obj->data.l = color1;
 		set_current_text_color(obj->data.l);
+		obj->callbacks.print = &new_fg;
 	END OBJ(color2, 0)
 		obj->data.l = color2;
 		set_current_text_color(obj->data.l);
+		obj->callbacks.print = &new_fg;
 	END OBJ(color3, 0)
 		obj->data.l = color3;
 		set_current_text_color(obj->data.l);
+		obj->callbacks.print = &new_fg;
 	END OBJ(color4, 0)
 		obj->data.l = color4;
 		set_current_text_color(obj->data.l);
+		obj->callbacks.print = &new_fg;
 	END OBJ(color5, 0)
 		obj->data.l = color5;
 		set_current_text_color(obj->data.l);
+		obj->callbacks.print = &new_fg;
 	END OBJ(color6, 0)
 		obj->data.l = color6;
 		set_current_text_color(obj->data.l);
+		obj->callbacks.print = &new_fg;
 	END OBJ(color7, 0)
 		obj->data.l = color7;
 		set_current_text_color(obj->data.l);
+		obj->callbacks.print = &new_fg;
 	END OBJ(color8, 0)
 		obj->data.l = color8;
 		set_current_text_color(obj->data.l);
+		obj->callbacks.print = &new_fg;
 	END OBJ(color9, 0)
 		obj->data.l = color9;
 		set_current_text_color(obj->data.l);
+		obj->callbacks.print = &new_fg;
 #ifdef X11
 	END OBJ(font, 0)
 		obj->data.s = scan_font(arg);
