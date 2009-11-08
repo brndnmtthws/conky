@@ -211,7 +211,7 @@ void init_fs_bar(struct text_object *obj, const char *arg)
 	obj->data.opaque = prepare_fs_stat(arg);
 }
 
-void print_fs_bar(struct text_object *obj, int be_free_bar, char *p, int p_max_size)
+static void do_print_fs_bar(struct text_object *obj, int be_free_bar, char *p, int p_max_size)
 {
 	double val = 1.0;
 	struct fs_stat *fs = obj->data.opaque;
@@ -228,12 +228,22 @@ void print_fs_bar(struct text_object *obj, int be_free_bar, char *p, int p_max_s
 	new_bar(obj, p, p_max_size, (int)(255 * val));
 }
 
+void print_fs_bar(struct text_object *obj, char *p, int p_max_size)
+{
+	do_print_fs_bar(obj, 0, p, p_max_size);
+}
+
+void print_fs_bar_free(struct text_object *obj, char *p, int p_max_size)
+{
+	do_print_fs_bar(obj, 1, p, p_max_size);
+}
+
 void init_fs(struct text_object *obj, const char *arg)
 {
 	obj->data.opaque = prepare_fs_stat(arg ? arg : "/");
 }
 
-void print_fs_perc(struct text_object *obj, int be_free, char *p, int p_max_size)
+static void print_fs_perc(struct text_object *obj, int be_free, char *p, int p_max_size)
 {
 	struct fs_stat *fs = obj->data.opaque;
 	int val = 100;
@@ -248,6 +258,16 @@ void print_fs_perc(struct text_object *obj, int be_free, char *p, int p_max_size
 		val = 100 - val;
 
 	percent_print(p, p_max_size, val);
+}
+
+void print_fs_free_perc(struct text_object *obj, char *p, int p_max_size)
+{
+	print_fs_perc(obj, 1, p, p_max_size);
+}
+
+void print_fs_used_perc(struct text_object *obj, char *p, int p_max_size)
+{
+	print_fs_perc(obj, 0, p, p_max_size);
 }
 
 #define HUMAN_PRINT_FS_GENERATOR(name, expr)                           \

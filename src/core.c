@@ -576,15 +576,19 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		scan_pre_exec_arg(obj, arg);
 	END OBJ(fs_bar, &update_fs_stats)
 		init_fs_bar(obj, arg);
+		obj->callbacks.print = &print_fs_bar;
 	END OBJ(fs_bar_free, &update_fs_stats)
 		init_fs_bar(obj, arg);
+		obj->callbacks.print = &print_fs_bar_free;
 	END OBJ(fs_free, &update_fs_stats)
 		init_fs(obj, arg);
 		obj->callbacks.print = &print_fs_free;
 	END OBJ(fs_used_perc, &update_fs_stats)
 		init_fs(obj, arg);
+		obj->callbacks.print = &print_fs_used_perc;
 	END OBJ(fs_free_perc, &update_fs_stats)
 		init_fs(obj, arg);
+		obj->callbacks.print = &print_fs_free_perc;
 	END OBJ(fs_size, &update_fs_stats)
 		init_fs(obj, arg);
 		obj->callbacks.print = &print_fs_size;

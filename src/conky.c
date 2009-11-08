@@ -969,17 +969,6 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(eval) {
 				evaluate(obj->data.s, p, p_max_size);
 			}
-			OBJ(fs_bar) {
-				print_fs_bar(obj, 0, p, p_max_size);
-			}
-			OBJ(fs_free_perc) {
-				print_fs_perc(obj, 1, p, p_max_size);
-			}
-			OBJ(fs_bar_free) {
-				print_fs_bar(obj, 1, p, p_max_size);
-			}
-			OBJ(fs_used_perc) {
-				print_fs_perc(obj, 0, p, p_max_size);
 			}
 #ifdef HDDTEMP
 			OBJ(hddtemp) {
