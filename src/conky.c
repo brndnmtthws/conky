@@ -900,38 +900,38 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* X11 */
 			OBJ(color) {
-				new_fg(p, obj->data.l);
+				new_fg(obj, p, p_max_size);
 			}
 #ifdef X11
 			OBJ(color0) {
-				new_fg(p, color0);
+				new_fg(obj, p, p_max_size);
 			}
 			OBJ(color1) {
-				new_fg(p, color1);
+				new_fg(obj, p, p_max_size);
 			}
 			OBJ(color2) {
-				new_fg(p, color2);
+				new_fg(obj, p, p_max_size);
 			}
 			OBJ(color3) {
-				new_fg(p, color3);
+				new_fg(obj, p, p_max_size);
 			}
 			OBJ(color4) {
-				new_fg(p, color4);
+				new_fg(obj, p, p_max_size);
 			}
 			OBJ(color5) {
-				new_fg(p, color5);
+				new_fg(obj, p, p_max_size);
 			}
 			OBJ(color6) {
-				new_fg(p, color6);
+				new_fg(obj, p, p_max_size);
 			}
 			OBJ(color7) {
-				new_fg(p, color7);
+				new_fg(obj, p, p_max_size);
 			}
 			OBJ(color8) {
-				new_fg(p, color8);
+				new_fg(obj, p, p_max_size);
 			}
 			OBJ(color9) {
-				new_fg(p, color9);
+				new_fg(obj, p, p_max_size);
 			}
 #endif /* X11 */
 #if defined(__linux__)
@@ -1017,14 +1017,14 @@ void generate_text_internal(char *p, int p_max_size,
 				print_fs_perc(obj, 0, p, p_max_size);
 			}
 			OBJ(goto) {
-				new_goto(p, obj->data.i);
+				new_goto(obj, p, p_max_size);
 			}
 			OBJ(tab) {
-				new_tab(obj, p);
+				new_tab(obj, p, p_max_size);
 			}
 #ifdef X11
 			OBJ(hr) {
-				new_hr(p, obj->data.i);
+				new_hr(obj, p, p_max_size);
 			}
 #endif
 #ifdef HDDTEMP
@@ -1041,16 +1041,16 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif
 			OBJ(offset) {
-				new_offset(p, obj->data.i);
+				new_offset(obj, p, p_max_size);
 			}
 			OBJ(voffset) {
-				new_voffset(p, obj->data.i);
+				new_voffset(obj, p, p_max_size);
 			}
 			OBJ(alignr) {
-				new_alignr(p, obj->data.i);
+				new_alignr(obj, p, p_max_size);
 			}
 			OBJ(alignc) {
-				new_alignc(p, obj->data.i);
+				new_alignc(obj, p, p_max_size);
 			}
 			OBJ(if_empty) {
 				char buf[max_user_text];
@@ -1209,7 +1209,7 @@ void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%s", cur->uname_s.nodename);
 			}
 			OBJ(outlinecolor) {
-				new_outline(p, obj->data.l);
+				new_outline(obj, p, p_max_size);
 			}
 			OBJ(pid_chroot) {
 				char buf[max_user_text];
@@ -1508,10 +1508,10 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #ifdef X11
 			OBJ(shadecolor) {
-				new_bg(p, obj->data.l);
+				new_bg(obj, p, p_max_size);
 			}
 			OBJ(stippled_hr) {
-				new_stippled_hr(obj, p);
+				new_stippled_hr(obj, p, p_max_size);
 			}
 #endif /* X11 */
 			OBJ(swap) {

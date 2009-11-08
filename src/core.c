@@ -583,16 +583,16 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		init_fs(obj, arg);
 		obj->callbacks.print = &print_fs_used;
 	END OBJ(hr, 0)
-		obj->data.i = arg ? atoi(arg) : 1;
+		obj->data.l = arg ? atoi(arg) : 1;
 	END OBJ(nameserver, &update_dns_data)
 		parse_nameserver_arg(obj, arg);
 		obj->callbacks.print = &print_nameserver;
 	END OBJ(offset, 0)
-		obj->data.i = arg ? atoi(arg) : 1;
+		obj->data.l = arg ? atoi(arg) : 1;
 	END OBJ(voffset, 0)
-		obj->data.i = arg ? atoi(arg) : 1;
+		obj->data.l = arg ? atoi(arg) : 1;
 	END OBJ_ARG(goto, 0, "goto needs arguments")
-		obj->data.i = atoi(arg);
+		obj->data.l = atoi(arg);
 #ifdef X11
 	END OBJ(tab, 0)
 		scan_tab(obj, arg);
@@ -955,9 +955,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		if(obj->data.i == 0) CRIT_ERR(obj, free_at_crash, "if_updatenr needs a number above 0 as argument");
 		set_updatereset(obj->data.i > get_updatereset() ? obj->data.i : get_updatereset());
 	END OBJ(alignr, 0)
-		obj->data.i = arg ? atoi(arg) : 0;
+		obj->data.l = arg ? atoi(arg) : 1;
 	END OBJ(alignc, 0)
-		obj->data.i = arg ? atoi(arg) : 0;
+		obj->data.l = arg ? atoi(arg) : 0;
 	END OBJ(upspeed, &update_net_stats)
 		parse_net_stat_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_upspeed;
@@ -1285,6 +1285,10 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->sub = malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
 	END OBJ(scroll, 0)
+#ifdef X11
+		/* allocate a follower to reset any color changes */
+		obj->next = new_text_object_internal();
+#endif /* X11 */
 		parse_scroll_arg(obj, arg, free_at_crash);
 		obj->callbacks.free = &free_scroll;
 	END OBJ_ARG(combine, 0, "combine needs arguments: <text1> <text2>")

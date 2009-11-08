@@ -388,12 +388,15 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size, double val)
 	graph_append(s, val, g->showaslog);
 }
 
-void new_hr(char *buf, int a)
+void new_hr(struct text_object *obj, char *p, int p_max_size)
 {
 	if ((output_methods & TO_X) == 0)
 		return;
 
-	new_special(buf, HORIZONTAL_LINE)->height = a;
+	if (!p_max_size)
+		return;
+
+	new_special(p, HORIZONTAL_LINE)->height = obj->data.l;
 }
 
 void scan_stippled_hr(struct text_object *obj, const char *arg)
@@ -417,7 +420,7 @@ void scan_stippled_hr(struct text_object *obj, const char *arg)
 	obj->special_data = sh;
 }
 
-void new_stippled_hr(struct text_object *obj, char *buf)
+void new_stippled_hr(struct text_object *obj, char *p, int p_max_size)
 {
 	struct special_t *s = 0;
 	struct stippled_hr *sh = obj->special_data;
@@ -425,37 +428,41 @@ void new_stippled_hr(struct text_object *obj, char *buf)
 	if ((output_methods & TO_X) == 0)
 		return;
 
-	if (!sh)
+	if (!sh || !p_max_size)
 		return;
 
-	s = new_special(buf, STIPPLED_HR);
+	s = new_special(p, STIPPLED_HR);
 
 	s->height = sh->height;
 	s->arg = sh->arg;
 }
 #endif /* X11 */
 
-void new_fg(char *buf, long c)
+void new_fg(struct text_object *obj, char *p, int p_max_size)
 {
 #ifdef X11
 	if (output_methods & TO_X)
-		new_special(buf, FG)->arg = c;
+		new_special(p, FG)->arg = obj->data.l;
 #endif /* X11 */
 #ifdef NCURSES
 	if (output_methods & TO_NCURSES)
-		new_special(buf, FG)->arg = c;
+		new_special(p, FG)->arg = obj->data.l;
 #endif /* NCURSES */
-	UNUSED(buf);
-	UNUSED(c);
+	UNUSED(obj);
+	UNUSED(p);
+	UNUSED(p_max_size);
 }
 
 #ifdef X11
-void new_bg(char *buf, long c)
+void new_bg(struct text_object *obj, char *p, int p_max_size)
 {
 	if ((output_methods & TO_X) == 0)
 		return;
 
-	new_special(buf, BG)->arg = c;
+	if (!p_max_size)
+		return;
+
+	new_special(p, BG)->arg = obj->data.l;
 }
 #endif /* X11 */
 
@@ -521,35 +528,47 @@ void new_bar(struct text_object *obj, char *p, int p_max_size, int usage)
 		new_bar_in_shell(obj, p, p_max_size, usage);
 }
 
-void new_outline(char *buf, long c)
+void new_outline(struct text_object *obj, char *p, int p_max_size)
 {
-	new_special(buf, OUTLINE)->arg = c;
+	if (!p_max_size)
+		return;
+	new_special(p, OUTLINE)->arg = obj->data.l;
 }
 
-void new_offset(char *buf, long c)
+void new_offset(struct text_object *obj, char *p, int p_max_size)
 {
-	new_special(buf, OFFSET)->arg = c;
+	if (!p_max_size)
+		return;
+	new_special(p, OFFSET)->arg = obj->data.l;
 }
 
-void new_voffset(char *buf, long c)
+void new_voffset(struct text_object *obj, char *p, int p_max_size)
 {
-	new_special(buf, VOFFSET)->arg = c;
+	if (!p_max_size)
+		return;
+	new_special(p, VOFFSET)->arg = obj->data.l;
 }
 
-void new_alignr(char *buf, long c)
+void new_alignr(struct text_object *obj, char *p, int p_max_size)
 {
-	new_special(buf, ALIGNR)->arg = c;
+	if (!p_max_size)
+		return;
+	new_special(p, ALIGNR)->arg = obj->data.l;
 }
 
 // A postive offset pushes the text further left
-void new_alignc(char *buf, long c)
+void new_alignc(struct text_object *obj, char *p, int p_max_size)
 {
-	new_special(buf, ALIGNC)->arg = c;
+	if (!p_max_size)
+		return;
+	new_special(p, ALIGNC)->arg = obj->data.l;
 }
 
-void new_goto(char *buf, long c)
+void new_goto(struct text_object *obj, char *p, int p_max_size)
 {
-	new_special(buf, GOTO)->arg = c;
+	if (!p_max_size)
+		return;
+	new_special(p, GOTO)->arg = obj->data.l;
 }
 
 void scan_tab(struct text_object *obj, const char *arg)
@@ -573,15 +592,15 @@ void scan_tab(struct text_object *obj, const char *arg)
 	obj->special_data = t;
 }
 
-void new_tab(struct text_object *obj, char *buf)
+void new_tab(struct text_object *obj, char *p, int p_max_size)
 {
 	struct special_t *s = 0;
 	struct tab *t = obj->special_data;
 
-	if (!t)
+	if (!t || !p_max_size)
 		return;
 
-	s = new_special(buf, TAB);
+	s = new_special(p, TAB);
 	s->width = t->width;
 	s->arg = t->arg;
 }

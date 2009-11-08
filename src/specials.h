@@ -105,19 +105,19 @@ void scan_stippled_hr(struct text_object *, const char*);
 /* printing specials */
 void new_font(char *, char *);
 void new_graph(struct text_object *, char *, int, double);
-void new_hr(char *, int);
-void new_stippled_hr(struct text_object *, char *);
+void new_hr(struct text_object *, char *, int);
+void new_stippled_hr(struct text_object *, char *, int);
 #endif
 void new_gauge(struct text_object *, char *, int, int);
 void new_bar(struct text_object *, char *, int, int);
-void new_fg(char *, long);
-void new_bg(char *, long);
-void new_outline(char *, long);
-void new_offset(char *, long);
-void new_voffset(char *, long);
-void new_alignr(char *, long);
-void new_alignc(char *, long);
-void new_goto(char *, long);
-void new_tab(struct text_object *, char *);
+void new_fg(struct text_object *, char *, int);
+void new_bg(struct text_object *, char *, int);
+void new_outline(struct text_object *, char *, int);
+void new_offset(struct text_object *, char *, int);
+void new_voffset(struct text_object *, char *, int);
+void new_alignr(struct text_object *, char *, int);
+void new_alignc(struct text_object *, char *, int);
+void new_goto(struct text_object *, char *, int);
+void new_tab(struct text_object *, char *, int);
 
 #endif /* _SPECIALS_H */
