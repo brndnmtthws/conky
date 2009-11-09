@@ -721,34 +721,6 @@ void parse_conky_vars(struct text_object *root, const char *txt,
 	generate_text_internal(p, p_max_size, *root, cur);
 }
 
-static inline void format_media_player_time(char *buf, const int size,
-		int seconds)
-{
-	int days, hours, minutes;
-
-	if (times_in_seconds()) {
-		snprintf(buf, size, "%d", seconds);
-		return;
-	}
-
-	days = seconds / (24 * 60 * 60);
-	seconds %= (24 * 60 * 60);
-	hours = seconds / (60 * 60);
-	seconds %= (60 * 60);
-	minutes = seconds / 60;
-	seconds %= 60;
-
-	if (days > 0) {
-		snprintf(buf, size, "%i days %i:%02i:%02i", days,
-				hours, minutes, seconds);
-	} else if (hours > 0) {
-		snprintf(buf, size, "%i:%02i:%02i", hours, minutes,
-				seconds);
-	} else {
-		snprintf(buf, size, "%i:%02i", minutes, seconds);
-	}
-}
-
 /* substitutes all occurrences of '\n' with SECRIT_MULTILINE_CHAR, which allows
  * multiline objects like $exec work with $align[rc] and friends
  */
@@ -1988,81 +1960,48 @@ void generate_text_internal(char *p, int p_max_size,
 #endif /* __FreeBSD__ __OpenBSD__ */
 
 #ifdef MPD
-#define mpd_printf(fmt, val) \
-	snprintf(p, p_max_size, fmt, mpd_get_info()->val)
-#define mpd_sprintf(val) { \
-	if (!obj->data.i || obj->data.i > p_max_size) \
-		mpd_printf("%s", val); \
-	else \
-		snprintf(p, obj->data.i, "%s", mpd_get_info()->val); \
-}
 			OBJ(mpd_title)
-				mpd_sprintf(title);
+				print_mpd_title(obj, p, p_max_size);
 			OBJ(mpd_artist)
-				mpd_sprintf(artist);
+				print_mpd_artist(obj, p, p_max_size);
 			OBJ(mpd_album)
-				mpd_sprintf(album);
+				print_mpd_album(obj, p, p_max_size);
 			OBJ(mpd_random)
-				mpd_printf("%s", random);
+				print_mpd_random(obj, p, p_max_size);
 			OBJ(mpd_repeat)
-				mpd_printf("%s", repeat);
+				print_mpd_repeat(obj, p, p_max_size);
 			OBJ(mpd_track)
-				mpd_sprintf(track);
+				print_mpd_track(obj, p, p_max_size);
 			OBJ(mpd_name)
-				mpd_sprintf(name);
+				print_mpd_name(obj, p, p_max_size);
 			OBJ(mpd_file)
-				mpd_sprintf(file);
+				print_mpd_file(obj, p, p_max_size);
 			OBJ(mpd_vol)
-				mpd_printf("%d", volume);
+				print_mpd_vol(obj, p, p_max_size);
 			OBJ(mpd_bitrate)
-				mpd_printf("%d", bitrate);
+				print_mpd_bitrate(obj, p, p_max_size);
 			OBJ(mpd_status)
-				mpd_printf("%s", status);
+				print_mpd_status(obj, p, p_max_size);
 			OBJ(mpd_elapsed) {
-				format_media_player_time(p, p_max_size, mpd_get_info()->elapsed);
+				print_mpd_elapsed(obj, p, p_max_size);
 			}
 			OBJ(mpd_length) {
-				format_media_player_time(p, p_max_size, mpd_get_info()->length);
+				print_mpd_length(obj, p, p_max_size);
 			}
 			OBJ(mpd_percent) {
-				percent_print(p, p_max_size, (int)(mpd_get_info()->progress * 100));
+				print_mpd_percent(obj, p, p_max_size);
 			}
 			OBJ(mpd_bar) {
-#ifdef X11
-				if(output_methods & TO_X) {
-					new_bar(obj, p, (int) (mpd_get_info()->progress * 255.0f));
-				} else
-#endif /* X11 */
-					new_bar_in_shell(obj, p, p_max_size, (int) (mpd_get_info()->progress * 100.0f));
+				print_mpd_bar(obj, p, p_max_size);
 			}
 			OBJ(mpd_smart) {
-				struct mpd_s *mpd = mpd_get_info();
-				int len = obj->data.i;
-				if (len == 0 || len > p_max_size)
-					len = p_max_size;
-
-				memset(p, 0, p_max_size);
-				if (mpd->artist && *mpd->artist &&
-				    mpd->title && *mpd->title) {
-					snprintf(p, len, "%s - %s", mpd->artist,
-						mpd->title);
-				} else if (mpd->title && *mpd->title) {
-					snprintf(p, len, "%s", mpd->title);
-				} else if (mpd->artist && *mpd->artist) {
-					snprintf(p, len, "%s", mpd->artist);
-				} else if (mpd->file && *mpd->file) {
-					snprintf(p, len, "%s", mpd->file);
-				} else {
-					*p = 0;
-				}
+				print_mpd_smart(obj, p, p_max_size);
 			}
 			OBJ(if_mpd_playing) {
 				if (!mpd_get_info()->is_playing) {
 					DO_JUMP;
 				}
 			}
-#undef mpd_sprintf
-#undef mpd_printf
 #endif
 
 #ifdef MOC

@@ -30,6 +30,7 @@
 #include "conky.h"
 #include "logging.h"
 #include "timed_thread.h"
+#include "timeinfo.h"
 #include "libmpdclient.h"
 #include "mpd.h"
 
@@ -195,7 +196,7 @@ static void *update_mpd_thread(void *arg)
 			continue;
 		}
 
-		mpd_info.volume = status->volume;
+		mpd_info.vol = status->volume;
 		if (status->random == 0) {
 			mpd_info.random = "Off";
 		} else if (status->random == 1) {
@@ -318,3 +319,103 @@ static void *update_mpd_thread(void *arg)
 	/* never reached */
 }
 
+static inline void format_media_player_time(char *buf, const int size,
+		int seconds)
+{
+	int days, hours, minutes;
+
+	if (times_in_seconds()) {
+		snprintf(buf, size, "%d", seconds);
+		return;
+	}
+
+	days = seconds / (24 * 60 * 60);
+	seconds %= (24 * 60 * 60);
+	hours = seconds / (60 * 60);
+	seconds %= (60 * 60);
+	minutes = seconds / 60;
+	seconds %= 60;
+
+	if (days > 0) {
+		snprintf(buf, size, "%i days %i:%02i:%02i", days,
+				hours, minutes, seconds);
+	} else if (hours > 0) {
+		snprintf(buf, size, "%i:%02i:%02i", hours, minutes,
+				seconds);
+	} else {
+		snprintf(buf, size, "%i:%02i", minutes, seconds);
+	}
+}
+
+void print_mpd_elapsed(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	format_media_player_time(p, p_max_size, mpd_get_info()->elapsed);
+}
+
+void print_mpd_length(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	format_media_player_time(p, p_max_size, mpd_get_info()->length);
+}
+
+void print_mpd_percent(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	percent_print(p, p_max_size, (int)(mpd_get_info()->progress * 100));
+}
+
+void print_mpd_bar(struct text_object *obj, char *p, int p_max_size)
+{
+#ifdef X11
+	if(output_methods & TO_X) {
+		new_bar(obj, p, (int) (mpd_get_info()->progress * 255.0f));
+	} else
+#endif /* X11 */
+		new_bar_in_shell(obj, p, p_max_size, (int) (mpd_get_info()->progress * 100.0f));
+}
+
+void print_mpd_smart(struct text_object *obj, char *p, int p_max_size)
+{
+	struct mpd_s *mpd = mpd_get_info();
+	int len = obj->data.i;
+	if (len == 0 || len > p_max_size)
+		len = p_max_size;
+
+	memset(p, 0, p_max_size);
+	if (mpd->artist && *mpd->artist &&
+			mpd->title && *mpd->title) {
+		snprintf(p, len, "%s - %s", mpd->artist,
+				mpd->title);
+	} else if (mpd->title && *mpd->title) {
+		snprintf(p, len, "%s", mpd->title);
+	} else if (mpd->artist && *mpd->artist) {
+		snprintf(p, len, "%s", mpd->artist);
+	} else if (mpd->file && *mpd->file) {
+		snprintf(p, len, "%s", mpd->file);
+	} else {
+		*p = 0;
+	}
+}
+
+#define MPD_PRINT_GENERATOR(name, fmt) \
+void print_mpd_##name(struct text_object *obj, char *p, int p_max_size) \
+{ \
+	if (obj->data.i && obj->data.i < p_max_size) \
+		p_max_size = obj->data.i; \
+	snprintf(p, p_max_size, fmt, mpd_get_info()->name); \
+}
+
+MPD_PRINT_GENERATOR(title, "%s")
+MPD_PRINT_GENERATOR(artist, "%s")
+MPD_PRINT_GENERATOR(album, "%s")
+MPD_PRINT_GENERATOR(random, "%s")
+MPD_PRINT_GENERATOR(repeat, "%s")
+MPD_PRINT_GENERATOR(track, "%s")
+MPD_PRINT_GENERATOR(name, "%s")
+MPD_PRINT_GENERATOR(file, "%s")
+MPD_PRINT_GENERATOR(vol, "%d")
+MPD_PRINT_GENERATOR(bitrate, "%d")
+MPD_PRINT_GENERATOR(status, "%s")
+
+#undef MPD_PRINT_GENERATOR
