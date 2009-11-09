@@ -87,14 +87,14 @@ static void xmms_alloc(struct information *ptr)
 void connection_lost(void *p)
 {
 	struct information *ptr = p;
-	 ptr->xmms2.conn_state = CONN_NO;
+	ptr->xmms2.conn_state = CONN_NO;
 
-	 fprintf(stderr,"XMMS2 connection failed. %s\n", xmmsc_get_last_error(xmms2_conn));
+	fprintf(stderr,"XMMS2 connection failed. %s\n", xmmsc_get_last_error(xmms2_conn));
 
-	 xmms_alloc(ptr);
-	 strncpy(ptr->xmms2.status, "Disocnnected", text_buffer_size - 1);
-	 ptr->xmms2.playlist[0] = '\0';
-	 ptr->xmms2.id = 0;
+	xmms_alloc(ptr);
+	strncpy(ptr->xmms2.status, "Disocnnected", text_buffer_size - 1);
+	ptr->xmms2.playlist[0] = '\0';
+	ptr->xmms2.id = 0;
 }
 
 
@@ -113,7 +113,7 @@ int handle_curent_id(xmmsv_t *value, void *p)
 	if (xmmsv_get_error(value, &errbuf)) {
 		fprintf(stderr,"XMMS2 server error. %s\n", errbuf);
 		return TRUE;
-		}
+	}
 
 	if (xmmsv_get_int(value, &current_id) && current_id > 0) {
 
@@ -138,10 +138,10 @@ int handle_curent_id(xmmsv_t *value, void *p)
 
 		if (xmmsv_dict_get(infos, "title", &dict_entry) && xmmsv_get_string(dict_entry, &charval)) 
 			strncpy(ptr->xmms2.title, charval, text_buffer_size - 1);
-	
+
 		if (xmmsv_dict_get(infos, "album", &dict_entry) && xmmsv_get_string(dict_entry, &charval)) 
 			strncpy(ptr->xmms2.album, charval, text_buffer_size - 1);
-		
+
 		if (xmmsv_dict_get(infos, "genre", &dict_entry) && xmmsv_get_string(dict_entry, &charval))
 			strncpy(ptr->xmms2.genre, charval, text_buffer_size - 1);
 
@@ -153,7 +153,7 @@ int handle_curent_id(xmmsv_t *value, void *p)
 
 		if (xmmsv_dict_get(infos, "date", &dict_entry) && xmmsv_get_string(dict_entry, &charval))
 			strncpy(ptr->xmms2.date, charval, text_buffer_size - 1);
-		
+
 
 
 		if (xmmsv_dict_get(infos, "tracknr", &dict_entry) && xmmsv_get_int(dict_entry, &intval))
@@ -214,19 +214,19 @@ int handle_playback_state_change(xmmsv_t *value, void *p)
 	}
 
 	if (xmmsv_get_int(value, &pb_state)) {
-	switch (pb_state) {
-		case XMMS_PLAYBACK_STATUS_PLAY:
-			strncpy(ptr->xmms2.status, "Playing", text_buffer_size - 1);
-			break;
-		case XMMS_PLAYBACK_STATUS_PAUSE:
-			strncpy(ptr->xmms2.status, "Paused", text_buffer_size - 1);
-			break;
-		case XMMS_PLAYBACK_STATUS_STOP:
-			strncpy(ptr->xmms2.status, "Stopped", text_buffer_size - 1);
-			break;
-		default:
-			strncpy(ptr->xmms2.status, "Unknown", text_buffer_size - 1);
-	}
+		switch (pb_state) {
+			case XMMS_PLAYBACK_STATUS_PLAY:
+				strncpy(ptr->xmms2.status, "Playing", text_buffer_size - 1);
+				break;
+			case XMMS_PLAYBACK_STATUS_PAUSE:
+				strncpy(ptr->xmms2.status, "Paused", text_buffer_size - 1);
+				break;
+			case XMMS_PLAYBACK_STATUS_STOP:
+				strncpy(ptr->xmms2.status, "Stopped", text_buffer_size - 1);
+				break;
+			default:
+				strncpy(ptr->xmms2.status, "Unknown", text_buffer_size - 1);
+		}
 	}
 	return TRUE;
 }
@@ -317,7 +317,7 @@ void update_xmms2(void)
 		if (xmmsc_io_want_out(xmms2_conn))
 			xmmsc_io_out_handle(xmms2_conn);
 
-		}
 	}
+}
 
 
