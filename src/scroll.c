@@ -110,7 +110,7 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size, struct infor
 			visibcolorchanges++;
 		}
 		//if there is still room fill it with spaces
-		if( ! p[j]) return;
+		if( ! p[j]) break;
 	}
 	for(; j < sd->show + visibcolorchanges; j++) {
 		p[j] = ' ';
