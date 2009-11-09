@@ -55,4 +55,25 @@ struct xmms2_s {
 
 void update_xmms2(void);
 
+void print_xmms2_tracknr(struct text_object *, char *, int);
+void print_xmms2_elapsed(struct text_object *, char *, int);
+void print_xmms2_duration(struct text_object *, char *, int);
+#ifdef X11
+void print_xmms2_bar(struct text_object *, char *, int);
+#endif /* X11 */
+void print_xmms2_smart(struct text_object *, char *, int);
+void print_xmms2_artist(struct text_object *, char *, int);
+void print_xmms2_album(struct text_object *, char *, int);
+void print_xmms2_title(struct text_object *, char *, int);
+void print_xmms2_genre(struct text_object *, char *, int);
+void print_xmms2_comment(struct text_object *, char *, int);
+void print_xmms2_url(struct text_object *, char *, int);
+void print_xmms2_status(struct text_object *, char *, int);
+void print_xmms2_date(struct text_object *, char *, int);
+void print_xmms2_bitrate(struct text_object *, char *, int);
+void print_xmms2_id(struct text_object *, char *, int);
+void print_xmms2_size(struct text_object *, char *, int);
+void print_xmms2_playlist(struct text_object *, char *, int);
+void print_xmms2_timesplayed(struct text_object *, char *, int);
+
 #endif /*XMMS2_H_*/

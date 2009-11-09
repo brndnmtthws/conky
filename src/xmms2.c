@@ -320,4 +320,69 @@ void update_xmms2(void)
 	}
 }
 
+void print_xmms2_tracknr(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	if (info.xmms2.tracknr != -1) {
+		snprintf(p, p_max_size, "%i", info.xmms2.tracknr);
+	}
+}
 
+void print_xmms2_elapsed(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	snprintf(p, p_max_size, "%02d:%02d", info.xmms2.elapsed / 60000,
+			(info.xmms2.elapsed / 1000) % 60);
+}
+
+void print_xmms2_duration(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	snprintf(p, p_max_size, "%02d:%02d",
+			info.xmms2.duration / 60000,
+			(info.xmms2.duration / 1000) % 60);
+}
+
+void print_xmms2_bar(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	if (!p_max_size)
+		return;
+
+	new_bar(obj, p, p_max_size, (int) (info.xmms2.progress * 255.0f));
+}
+
+void print_xmms2_smart(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	if (strlen(info.xmms2.title) < 2
+			&& strlen(info.xmms2.title) < 2) {
+		snprintf(p, p_max_size, "%s", info.xmms2.url);
+	} else {
+		snprintf(p, p_max_size, "%s - %s", info.xmms2.artist,
+				info.xmms2.title);
+	}
+}
+
+#define XMMS2_PRINT_GENERATOR(name, fmt) \
+void print_xmms2_##name(struct text_object *obj, char *p, int p_max_size) \
+{ \
+	(void)obj; \
+	snprintf(p, p_max_size, fmt, info.xmms2.name); \
+}
+
+XMMS2_PRINT_GENERATOR(artist, "%s")
+XMMS2_PRINT_GENERATOR(album, "%s")
+XMMS2_PRINT_GENERATOR(title, "%s")
+XMMS2_PRINT_GENERATOR(genre, "%s")
+XMMS2_PRINT_GENERATOR(comment, "%s")
+XMMS2_PRINT_GENERATOR(url, "%s")
+XMMS2_PRINT_GENERATOR(status, "%s")
+XMMS2_PRINT_GENERATOR(date, "%s")
+XMMS2_PRINT_GENERATOR(bitrate, "%i")
+XMMS2_PRINT_GENERATOR(id, "%u")
+XMMS2_PRINT_GENERATOR(size, "%2.1f")
+XMMS2_PRINT_GENERATOR(playlist, "%s")
+XMMS2_PRINT_GENERATOR(timesplayed, "%i")
+
+#undef XMMS2_PRINT_GENERATOR

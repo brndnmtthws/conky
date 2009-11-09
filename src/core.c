@@ -1167,25 +1167,44 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif /* MOC */
 #ifdef XMMS2
 	END OBJ(xmms2_artist, &update_xmms2)
+		obj->callbacks.print = &print_xmms2_artist;
 	END OBJ(xmms2_album, &update_xmms2)
+		obj->callbacks.print = &print_xmms2_album;
 	END OBJ(xmms2_title, &update_xmms2)
+		obj->callbacks.print = &print_xmms2_title;
 	END OBJ(xmms2_genre, &update_xmms2)
+		obj->callbacks.print = &print_xmms2_genre;
 	END OBJ(xmms2_comment, &update_xmms2)
+		obj->callbacks.print = &print_xmms2_comment;
 	END OBJ(xmms2_url, &update_xmms2)
+		obj->callbacks.print = &print_xmms2_url;
 	END OBJ(xmms2_tracknr, &update_xmms2)
+		obj->callbacks.print = &print_xmms2_tracknr;
 	END OBJ(xmms2_bitrate, &update_xmms2)
+		obj->callbacks.print = &print_xmms2_bitrate;
 	END OBJ(xmms2_date, &update_xmms2)
+		obj->callbacks.print = &print_xmms2_date;
 	END OBJ(xmms2_id, &update_xmms2)
+		obj->callbacks.print = &print_xmms2_id;
 	END OBJ(xmms2_duration, &update_xmms2)
+		obj->callbacks.print = &print_xmms2_duration;
 	END OBJ(xmms2_elapsed, &update_xmms2)
+		obj->callbacks.print = &print_xmms2_elapsed;
 	END OBJ(xmms2_size, &update_xmms2)
+		obj->callbacks.print = &print_xmms2_size;
 	END OBJ(xmms2_status, &update_xmms2)
+		obj->callbacks.print = &print_xmms2_status;
 	END OBJ(xmms2_percent, &update_xmms2)
+		obj->callbacks.print = &print_xmms2_percent;
 	END OBJ(xmms2_bar, &update_xmms2)
 		scan_bar(obj, arg);
+		obj->callbacks.print = &print_xmms2_bar;
 	END OBJ(xmms2_smart, &update_xmms2)
+		obj->callbacks.print = &print_xmms2_smart;
 	END OBJ(xmms2_playlist, &update_xmms2)
+		obj->callbacks.print = &print_xmms2_playlist;
 	END OBJ(xmms2_timesplayed, &update_xmms2)
+		obj->callbacks.print = &print_xmms2_timesplayed;
 	END OBJ_IF(if_xmms2_connected, &update_xmms2)
 #endif
 #ifdef AUDACIOUS
