@@ -196,6 +196,20 @@ static void *update_mpd_thread(void *arg)
 		}
 
 		mpd_info.volume = status->volume;
+		if (status->random == 0) {
+			mpd_info.random = "Off";
+		} else if (status->random == 1) {
+			mpd_info.random = "On";
+		} else {
+			mpd_info.random = "";
+		}
+		if (status->repeat == 0) {
+			mpd_info.repeat = "Off";
+		} else if (status->repeat == 1) {
+			mpd_info.repeat = "On";
+		} else {
+			mpd_info.repeat = "";
+		}
 		/* if (status->error) {
 			printf("error: %s\n", status->error);
 		} */
@@ -216,11 +230,7 @@ static void *update_mpd_thread(void *arg)
 				break;
 		}
 
-		if (status->state == MPD_STATUS_STATE_STOP) {
-			mpd_info.progress = (float) status->elapsedTime /
-				status->totalTime;
-			mpd_info.elapsed = status->elapsedTime;
-		} else if (status->state == MPD_STATUS_STATE_PLAY ||
+		if (status->state == MPD_STATUS_STATE_PLAY ||
 		    status->state == MPD_STATUS_STATE_PAUSE) {
 			mpd_info.is_playing = 1;
 			mpd_info.bitrate = status->bitRate;
@@ -228,22 +238,10 @@ static void *update_mpd_thread(void *arg)
 				status->totalTime;
 			mpd_info.elapsed = status->elapsedTime;
 			mpd_info.length = status->totalTime;
-			if (status->random == 0) {
-				mpd_info.random = "Off";
-			} else if (status->random == 1) {
-				mpd_info.random = "On";
-			} else {
-				mpd_info.random = "";
-			}
-			if (status->repeat == 0) {
-				mpd_info.repeat = "Off";
-			} else if (status->repeat == 1) {
-				mpd_info.repeat = "On";
-			} else {
-				mpd_info.repeat = "";
-			}
 		} else {
+			mpd_info.progress = 0;
 			mpd_info.is_playing = 0;
+			mpd_info.elapsed = 0;
 		}
 
 		if (conn->error) {
