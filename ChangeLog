@@ -1,6 +1,7 @@
 2009-11-11
 	* Added support for $pid_cmdline
 	* Added support for $pid_cwd
+	* Added support for $pid_environ
 
 2009-11-10
 	* Fix $if_mpd_playing and $mpd_percent when you stop playing a song,

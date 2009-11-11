@@ -30,9 +30,20 @@
 
 #define PROCDIR	"/proc"
 #define READERR	"Can't read '%s'"
+#define VARNOTFOUND	"<empty>"
+
+struct environ_data {
+	char *file;
+	char *var;
+};
 
 void scan_pid_cmdline_arg(struct text_object *obj, const char *arg, void* free_at_crash);
 void print_pid_cmdline(struct text_object *obj, char *p, int p_max_size);
 
 void scan_pid_cwd_arg(struct text_object *obj, const char *arg, void* free_at_crash);
 void print_pid_cwd(struct text_object *obj, char *p, int p_max_size);
+
+void scan_pid_environ_arg(struct text_object *obj, const char *arg, void* free_at_crash);
+void print_pid_environ(struct text_object *obj, char *p, int p_max_size);
+
+void free_pid_environ(struct text_object *obj);

@@ -32,6 +32,7 @@
 #include "conky.h"
 #include "proc.h"
 #include <unistd.h>
+#include <ctype.h>
 
 void scan_pid_arg(struct text_object *obj, const char *arg, void* free_at_crash, const char *file)
 {
@@ -40,7 +41,7 @@ void scan_pid_arg(struct text_object *obj, const char *arg, void* free_at_crash,
 	if(sscanf(arg, "%d", &pid) == 1) {
 		asprintf(&obj->data.s, PROCDIR "/%d/%s", pid, file);
 	} else {
-		CRIT_ERR(obj, free_at_crash, "${pid_cmdline pid}");
+		CRIT_ERR(obj, free_at_crash, "syntax error: ${pid_%s pid}", file);
 	}
 }
 
@@ -87,4 +88,64 @@ void print_pid_cwd(struct text_object *obj, char *p, int p_max_size)
 	} else {
 		NORM_ERR(READERR, obj->data.s);
 	}
+}
+
+void scan_pid_environ_arg(struct text_object *obj, const char *arg, void* free_at_crash)
+{
+	pid_t pid;
+	struct environ_data* ed = malloc(sizeof(struct environ_data));
+	ed->var = malloc(strlen(arg));
+
+	if(sscanf(arg, "%d %s", &pid, ed->var) == 2) {
+		asprintf(&ed->file, PROCDIR "/%d/environ", pid);
+		for(int i = 0; ed->var[i] != 0; i++) {
+			ed->var[i] = toupper(ed->var[i]);
+		}
+		obj->data.opaque = ed;
+	} else {
+		free(ed->var);
+		free(ed);
+		CRIT_ERR(obj, free_at_crash, "${pid_environ pid varname}");
+	}
+}
+
+void print_pid_environ(struct text_object *obj, char *p, int p_max_size)
+{
+	char *buf = NULL;
+	char *searchstring;
+	FILE* infofile;
+	int bytes_read, total_read = 0;
+
+	searchstring = malloc(strlen(((struct environ_data*) obj->data.opaque)->var) + strlen("=%s") + 1);
+	strcpy(searchstring, ((struct environ_data*) obj->data.opaque)->var);
+	strcat(searchstring, "=%s");
+	infofile = fopen(((struct environ_data*) obj->data.opaque)->file, "r");
+	if(infofile) {
+		do {
+			buf = realloc(buf, total_read + p_max_size + 1);
+			bytes_read = fread(buf + total_read, 1, p_max_size, infofile);
+			total_read += bytes_read;
+			buf[total_read] = 0;
+		}while(bytes_read != 0);
+		for(bytes_read = 0; bytes_read < total_read; bytes_read += strlen(buf + bytes_read) + 1) {
+			if(sscanf(buf + bytes_read, searchstring, p) == 1) {
+				free(buf);
+				free(searchstring);
+				fclose(infofile);
+				return;
+			}
+		}
+		snprintf(p, p_max_size, VARNOTFOUND);
+		free(buf);
+		free(searchstring);
+		fclose(infofile);
+	} else {
+		NORM_ERR(READERR, ((struct environ_data*) obj->data.opaque)->file);
+	}
+}
+
+void free_pid_environ(struct text_object *obj) {
+	free(((struct environ_data*) obj->data.opaque)->file);
+	free(((struct environ_data*) obj->data.opaque)->var);
+	free(obj->data.opaque);
 }

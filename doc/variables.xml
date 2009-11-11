@@ -2512,6 +2512,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>pid_environ</option>
+            </command>
+            <option>pid varname</option>
+        </term>
+        <listitem>Contents of a environment-var of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>platform</option>
             </command>
             <option>(dev) type n (factor offset)</option>
