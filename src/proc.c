@@ -30,19 +30,19 @@
 
 #include <logging.h>
 #include "conky.h"
+#include "proc.h"
 
-#define PROCDIR "/proc"
-
-void scan_pid_arg(struct text_object *obj, const char *arg)
+void scan_pid_arg(struct text_object *obj, const char *arg, void* free_at_crash)
 {
 	char* string = strdup(arg);
 	pid_t pid;
 
 	if(sscanf(arg, "%s %d", string, &pid) == 2 && strcasecmp(string, "cmdline") == 0) {
-		asprintf(&obj->data.s, "/proc/%d/%s",  pid, string);
+		asprintf(&obj->data.s, PROCDIR "/%d/%s",  pid, string);
 		free(string);
 	} else {
-		CRIT_ERR(string, NULL, "${proc cmdline <pid>}");
+		free(string);
+		CRIT_ERR(obj, free_at_crash, PID_SYNTAXERR);
 	}
 }
 
@@ -63,6 +63,6 @@ void print_pid(struct text_object *obj, char *p, int p_max_size)
 		snprintf(p, p_max_size, "%s", buf);
 		fclose(infofile);
 	} else {
-		NORM_ERR("Can't read %s", obj->data.s);
+		NORM_ERR(READERR, obj->data.s);
 	}
 }

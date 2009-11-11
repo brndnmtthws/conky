@@ -645,7 +645,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif
 	END OBJ(nodename, 0)
 	END OBJ_ARG(pid, 0, "pid needs arguments")
-		scan_pid_arg(obj, arg);
+		scan_pid_arg(obj, arg, free_at_crash);
 	END OBJ(processes, &update_total_processes)
 	END OBJ(running_processes, &update_running_processes)
 	END OBJ(threads, &update_threads)
