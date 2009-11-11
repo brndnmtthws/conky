@@ -50,11 +50,11 @@ void print_pid(struct text_object *obj, char *p, int p_max_size)
 {
 	char buf[p_max_size];
 	FILE* infofile;
-	int i, read;
+	int i, bytes_read;
 
 	infofile = fopen(obj->data.s, "r");
 	if(infofile) {
-		read = fread(buf, 1, p_max_size, infofile);
+		bytes_read = fread(buf, 1, p_max_size, infofile);
 		for(i = 0; i < read-1; i++) {
 			if(buf[i] == 0) {
 				buf[i] = ' ';
