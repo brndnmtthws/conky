@@ -29,8 +29,10 @@
  */
 
 #define PROCDIR	"/proc"
-#define PID_SYNTAXERR	"${pid cmdline <pid>}"
 #define READERR	"Can't read '%s'"
 
-void scan_pid_arg(struct text_object *, const char *, void* free_at_crash);
-void print_pid(struct text_object *, char *, int);
+void scan_pid_cmdline_arg(struct text_object *obj, const char *arg, void* free_at_crash);
+void print_pid_cmdline(struct text_object *obj, char *p, int p_max_size);
+
+void scan_pid_cwd_arg(struct text_object *obj, const char *arg, void* free_at_crash);
+void print_pid_cwd(struct text_object *obj, char *p, int p_max_size);

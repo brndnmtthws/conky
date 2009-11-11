@@ -31,22 +31,25 @@
 #include <logging.h>
 #include "conky.h"
 #include "proc.h"
+#include <unistd.h>
 
-void scan_pid_arg(struct text_object *obj, const char *arg, void* free_at_crash)
+void scan_pid_arg(struct text_object *obj, const char *arg, void* free_at_crash, const char *file)
 {
-	char* string = strdup(arg);
 	pid_t pid;
 
-	if(sscanf(arg, "%s %d", string, &pid) == 2 && strcasecmp(string, "cmdline") == 0) {
-		asprintf(&obj->data.s, PROCDIR "/%d/%s",  pid, string);
-		free(string);
+	if(sscanf(arg, "%d", &pid) == 1) {
+		asprintf(&obj->data.s, PROCDIR "/%d/%s", pid, file);
 	} else {
-		free(string);
-		CRIT_ERR(obj, free_at_crash, PID_SYNTAXERR);
+		CRIT_ERR(obj, free_at_crash, "${pid_cmdline pid}");
 	}
 }
 
-void print_pid(struct text_object *obj, char *p, int p_max_size)
+void scan_pid_cmdline_arg(struct text_object *obj, const char *arg, void* free_at_crash)
+{
+	scan_pid_arg(obj, arg, free_at_crash, "cmdline");
+}
+
+void print_pid_cmdline(struct text_object *obj, char *p, int p_max_size)
 {
 	char buf[p_max_size];
 	FILE* infofile;
@@ -62,6 +65,25 @@ void print_pid(struct text_object *obj, char *p, int p_max_size)
 		}
 		snprintf(p, p_max_size, "%s", buf);
 		fclose(infofile);
+	} else {
+		NORM_ERR(READERR, obj->data.s);
+	}
+}
+
+void scan_pid_cwd_arg(struct text_object *obj, const char *arg, void* free_at_crash)
+{
+	scan_pid_arg(obj, arg, free_at_crash, "cwd");
+}
+
+void print_pid_cwd(struct text_object *obj, char *p, int p_max_size)
+{
+	char buf[p_max_size];
+	int bytes_read;
+
+	memset(buf, 0, p_max_size);
+	bytes_read = readlink(obj->data.s, buf, p_max_size);
+	if(bytes_read != -1) {
+		snprintf(p, p_max_size, "%s", buf);
 	} else {
 		NORM_ERR(READERR, obj->data.s);
 	}

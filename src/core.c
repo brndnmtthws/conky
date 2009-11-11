@@ -644,8 +644,10 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(desktop_name, &update_x11info)
 #endif
 	END OBJ(nodename, 0)
-	END OBJ_ARG(pid, 0, "pid needs arguments")
-		scan_pid_arg(obj, arg, free_at_crash);
+	END OBJ_ARG(pid_cmdline, 0, "pid_cmdline needs a pid as argument")
+		scan_pid_cmdline_arg(obj, arg, free_at_crash);
+	END OBJ_ARG(pid_cwd, 0, "pid_cwd needs a pid as argument")
+		scan_pid_cwd_arg(obj, arg, free_at_crash);
 	END OBJ(processes, &update_total_processes)
 	END OBJ(running_processes, &update_running_processes)
 	END OBJ(threads, &update_threads)
@@ -1238,7 +1240,10 @@ void free_text_objects(struct text_object *root, int internal)
 				free_sysfs_sensor(obj);
 				break;
 #endif /* __linux__ */
-			case OBJ_pid:
+			case OBJ_pid_cmdline:
+				free(data.s);
+				break;
+			case OBJ_pid_cwd:
 				free(data.s);
 				break;
 			case OBJ_read_tcp:

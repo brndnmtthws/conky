@@ -1604,8 +1604,11 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(outlinecolor) {
 				new_outline(p, obj->data.l);
 			}
-			OBJ(pid) {
-				print_pid(obj, p, p_max_size);
+			OBJ(pid_cmdline) {
+				print_pid_cmdline(obj, p, p_max_size);
+			}
+			OBJ(pid_cwd) {
+				print_pid_cwd(obj, p, p_max_size);
 			}
 			OBJ(processes) {
 				spaced_print(p, p_max_size, "%hu", 4, cur->procs);

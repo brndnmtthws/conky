@@ -2492,11 +2492,21 @@
     <varlistentry>
         <term>
             <command>
-                <option>pid</option>
+                <option>pid_cmdline</option>
             </command>
-            <option>cmdline pid</option>
+            <option>pid</option>
         </term>
         <listitem>Command line this process was invoked with
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pid_cwd</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Current working directory of the process
         <para /></listitem>
     </varlistentry>
     <varlistentry>
