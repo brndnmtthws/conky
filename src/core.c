@@ -37,6 +37,7 @@
 #include "combine.h"
 #include "diskio.h"
 #include "exec.h"
+#include "proc.h"
 #ifdef X11
 #include "fonts.h"
 #endif
@@ -643,6 +644,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(desktop_name, &update_x11info)
 #endif
 	END OBJ(nodename, 0)
+	END OBJ_ARG(pid, 0, "pid needs arguments")
+		scan_pid_arg(obj, arg);
 	END OBJ(processes, &update_total_processes)
 	END OBJ(running_processes, &update_running_processes)
 	END OBJ(threads, &update_threads)
@@ -1235,6 +1238,9 @@ void free_text_objects(struct text_object *root, int internal)
 				free_sysfs_sensor(obj);
 				break;
 #endif /* __linux__ */
+			case OBJ_pid:
+				free(data.s);
+				break;
 			case OBJ_read_tcp:
 				free_read_tcp(obj);
 				break;

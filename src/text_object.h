@@ -235,6 +235,7 @@ enum text_object_type {
 	OBJ_nodename,
 	OBJ_nvidia,
 	OBJ_pre_exec,
+	OBJ_pid,
 	OBJ_processes,
 	OBJ_running_processes,
 	OBJ_shadecolor,

@@ -1,3 +1,17 @@
+2009-11-11
+	* Added support for $pid
+
+2009-11-10
+	* Fix $if_mpd_playing and $mpd_percent when you stop playing a song,
+	thanks Sakari Matikka
+
+2009-11-09
+	* Fix $scroll only scrolls once
+
+2009-11-08
+	* Fix segfaults and memleaks in curl
+	* Fix building with metar but without xoap
+
 2009-11-07
 	* Added support for $threads on Linux
 	* Fixed bug in $processes on Linux

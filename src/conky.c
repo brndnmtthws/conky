@@ -79,6 +79,7 @@
 #include "combine.h"
 #include "diskio.h"
 #include "exec.h"
+#include "proc.h"
 #ifdef X11
 #include "fonts.h"
 #endif
@@ -1602,6 +1603,9 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(outlinecolor) {
 				new_outline(p, obj->data.l);
+			}
+			OBJ(pid) {
+				print_pid(obj, p, p_max_size);
 			}
 			OBJ(processes) {
 				spaced_print(p, p_max_size, "%hu", 4, cur->procs);

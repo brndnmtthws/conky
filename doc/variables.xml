@@ -2492,6 +2492,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>pid</option>
+            </command>
+            <option>cmdline pid</option>
+        </term>
+        <listitem>Command line this process was invoked with
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>platform</option>
             </command>
             <option>(dev) type n (factor offset)</option>
@@ -3056,7 +3066,7 @@
             <command>
                 <option>top</option>
             </command>
-            <option>type, num</option>
+            <option>type num</option>
         </term>
         <listitem>This takes arguments in the form:top (name)
         (number) Basically, processes are ranked from highest to
@@ -3071,7 +3081,7 @@
             <command>
                 <option>top_io</option>
             </command>
-            <option>type, num</option>
+            <option>type num</option>
         </term>
         <listitem>Same as top, except sorted by the amount of I/O
         the process has done during the update interval 
@@ -3082,7 +3092,7 @@
             <command>
                 <option>top_mem</option>
             </command>
-            <option>type, num</option>
+            <option>type num</option>
         </term>
         <listitem>Same as top, except sorted by mem usage instead
         of cpu 
@@ -3093,7 +3103,7 @@
             <command>
                 <option>top_time</option>
             </command>
-            <option>type, num</option>
+            <option>type num</option>
         </term>
         <listitem>Same as top, except sorted by total CPU time
         instead of current CPU usage 
