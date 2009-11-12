@@ -93,12 +93,13 @@ void print_pid_cwd(struct text_object *obj, char *p, int p_max_size)
 void scan_pid_environ_arg(struct text_object *obj, const char *arg, void* free_at_crash)
 {
 	pid_t pid;
+	int i;
 	struct environ_data* ed = malloc(sizeof(struct environ_data));
-	ed->var = malloc(strlen(arg));
 
+	ed->var = malloc(strlen(arg));
 	if(sscanf(arg, "%d %s", &pid, ed->var) == 2) {
 		asprintf(&ed->file, PROCDIR "/%d/environ", pid);
-		for(int i = 0; ed->var[i] != 0; i++) {
+		for(i = 0; ed->var[i] != 0; i++) {
 			ed->var[i] = toupper(ed->var[i]);
 		}
 		obj->data.opaque = ed;
