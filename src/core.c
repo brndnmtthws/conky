@@ -36,6 +36,7 @@
 #include "colours.h"
 #include "combine.h"
 #include "diskio.h"
+#include "entropy.h"
 #include "exec.h"
 #include "proc.h"
 #ifdef X11
@@ -74,9 +75,6 @@
 #elif defined(__OpenBSD__)
 #include "openbsd.h"
 #endif
-
-/* OS specific prototypes to be implemented by linux.c & Co. */
-void update_entropy(void);
 
 #include <string.h>
 #include <ctype.h>

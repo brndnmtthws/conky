@@ -958,8 +958,14 @@ void prepare_update()
 {
 }
 
-void update_entropy(void)
+int get_entropy_avail(unsigned int *val)
 {
+	return 1;
+}
+
+int get_entropy_poolsize(unsigned int *val)
+{
+	return 1;
 }
 
 void free_all_processes(void)

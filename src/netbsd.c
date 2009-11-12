@@ -353,6 +353,12 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
 	memset(p_client_buffer, 0, client_buffer_size);
 }
 
-void update_entropy(void)
+int get_entropy_avail(unsigned int *val)
 {
+	return 1;
+}
+
+int get_entropy_poolsize(unsigned int *val)
+{
+	return 1;
 }

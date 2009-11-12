@@ -20,4 +20,7 @@ void get_obsd_product(char *buf, size_t client_buffer_size);
 typedef struct apm_power_info *apm_info_t;
 #endif
 
+int get_entropy_avail(unsigned int *);
+int get_entropy_poolsize(unsigned int *);
+
 #endif /*OPENBSD_H_*/

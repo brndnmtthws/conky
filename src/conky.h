@@ -132,11 +132,6 @@ struct text_object;
  * one doesn't know what to choose. Defaults to 256.  */
 extern unsigned int text_buffer_size;
 
-struct entropy_s {
-	unsigned int entropy_avail;
-	unsigned int poolsize;
-};
-
 struct usr_info {
 	char *names;
 	char *times;
@@ -262,7 +257,6 @@ struct information {
 #endif
 	struct process *first_process;
 	unsigned long looped;
-	struct entropy_s entropy;
 	double music_player_interval;
 
 #ifdef X11
