@@ -1,7 +1,6 @@
 2009-11-12
-	* Added support for $pid_environ_list
-	* Added support for $pid_exe
-	* Added support for $pid_stdin, $pid_stdout and $pid_stderr
+	* Added support for $pid_environ_list, $pid_exe, $pid_openfiles,
+	$pid_stdin, $pid_stdout and $pid_stderr
 
 2009-11-11
 	* Added support for $pid_cmdline

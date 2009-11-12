@@ -240,6 +240,7 @@ enum text_object_type {
 	OBJ_pid_environ,
 	OBJ_pid_environ_list,
 	OBJ_pid_exe,
+	OBJ_pid_openfiles,
 	OBJ_pid_stderr,
 	OBJ_pid_stdin,
 	OBJ_pid_stdout,

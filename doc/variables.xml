@@ -2542,6 +2542,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>pid_openfiles</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>List of files that the process has open
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>pid_stdin</option>
             </command>
             <option>pid</option>

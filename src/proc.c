@@ -33,6 +33,7 @@
 #include "proc.h"
 #include <unistd.h>
 #include <ctype.h>
+#include <dirent.h>
 
 void scan_pid_arg(struct text_object *obj, const char *arg, void* free_at_crash, const char *file)
 {
@@ -232,4 +233,71 @@ void scan_pid_stdout_arg(struct text_object *obj, const char *arg, void* free_at
 
 void print_pid_stdout(struct text_object *obj, char *p, int p_max_size) {
 	print_pid_readlink(obj, p, p_max_size);
+}
+
+void scan_pid_openfiles_arg(struct text_object *obj, const char *arg, void* free_at_crash) {
+	scan_pid_arg(obj, arg, free_at_crash, "fd");
+}
+
+struct ll_string {
+	char *string;
+	struct ll_string* next;
+};
+
+struct ll_string* addnode(struct ll_string* end, char* string) {
+	struct ll_string* current = malloc(sizeof(struct ll_string));
+	current->string = strdup(string);
+	current->next = NULL;
+	if(end != NULL) end->next = current;
+	return current;
+}
+
+void freelist(struct ll_string* front) {
+	if(front != NULL) {
+		free(front->string);
+		if(front->next != NULL) {
+			freelist(front->next);
+		}
+		free(front);
+	}
+}
+
+int inlist(struct ll_string* front, char* string) {
+	struct ll_string* current;
+
+	for(current = front; current != NULL; current = current->next) {
+		if(strcmp(current->string, string) == 0) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
+void print_pid_openfiles(struct text_object *obj, char *p, int p_max_size) {
+	DIR* dir;
+	struct dirent *entry;
+	char buf[p_max_size];
+	int length, totallength = 0;
+	struct ll_string* files_front = NULL;
+	struct ll_string* files_back = NULL;
+
+	dir = opendir(obj->data.s);
+	while ((entry = readdir(dir))) {
+		if(entry->d_name[0] != '.') {
+			snprintf(buf, p_max_size, "%s/%s", obj->data.s, entry->d_name);
+			length = readlink(buf, buf, p_max_size);
+			buf[length] = 0;
+			if(inlist(files_front, buf) == 0) {
+				files_back = addnode(files_back, buf);
+				snprintf(p + totallength, p_max_size - totallength, "%s; " , buf);
+				totallength += length + strlen("; ");
+			}
+			if(files_front == NULL) {
+				files_front = files_back;
+			}
+		}
+	}
+	closedir(dir);
+	freelist(files_front);
+	p[totallength - strlen("; ")] = 0;
 }
