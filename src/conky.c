@@ -1616,6 +1616,18 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(pid_environ_list) {
 				print_pid_environ_list(obj, p, p_max_size);
 			}
+			OBJ(pid_exe) {
+				print_pid_exe(obj, p, p_max_size);
+			}
+			OBJ(pid_stderr) {
+				print_pid_stderr(obj, p, p_max_size);
+			}
+			OBJ(pid_stdin) {
+				print_pid_stdin(obj, p, p_max_size);
+			}
+			OBJ(pid_stdout) {
+				print_pid_stdout(obj, p, p_max_size);
+			}
 			OBJ(processes) {
 				spaced_print(p, p_max_size, "%hu", 4, cur->procs);
 			}

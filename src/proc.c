@@ -152,13 +152,7 @@ void free_pid_environ(struct text_object *obj) {
 
 void scan_pid_environ_list_arg(struct text_object *obj, const char *arg, void* free_at_crash)
 {
-	pid_t pid;
-
-	if(sscanf(arg, "%d", &pid) == 1) {
-		asprintf(&obj->data.s, PROCDIR "/%d/environ", pid);
-	} else {
-		CRIT_ERR(obj, free_at_crash, "syntax error: ${pid_environ pid}");
-	}
+	scan_pid_arg(obj, arg, free_at_crash, "environ");
 }
 
 void print_pid_environ_list(struct text_object *obj, char *p, int p_max_size)
@@ -192,4 +186,49 @@ void print_pid_environ_list(struct text_object *obj, char *p, int p_max_size)
 	} else {
 		NORM_ERR(READERR, obj->data.s);
 	}
+}
+
+void scan_pid_exe_arg(struct text_object *obj, const char *arg, void* free_at_crash)
+{
+	scan_pid_arg(obj, arg, free_at_crash, "exe");
+}
+
+void print_pid_readlink(struct text_object *obj, char *p, int p_max_size)
+{
+	char buf[p_max_size];
+
+	memset(buf, 0, p_max_size);
+	if(readlink(obj->data.s, buf, p_max_size) >= 0) {
+		snprintf(p, p_max_size, buf);
+	} else {
+		NORM_ERR(READERR, obj->data.s);
+	}
+}
+
+void print_pid_exe(struct text_object *obj, char *p, int p_max_size) {
+	print_pid_readlink(obj, p, p_max_size);
+}
+
+void scan_pid_stderr_arg(struct text_object *obj, const char *arg, void* free_at_crash) {
+	scan_pid_arg(obj, arg, free_at_crash, "fd/2");
+}
+
+void print_pid_stderr(struct text_object *obj, char *p, int p_max_size) {
+	print_pid_readlink(obj, p, p_max_size);
+}
+
+void scan_pid_stdin_arg(struct text_object *obj, const char *arg, void* free_at_crash) {
+	scan_pid_arg(obj, arg, free_at_crash, "fd/0");
+}
+
+void print_pid_stdin(struct text_object *obj, char *p, int p_max_size) {
+	print_pid_readlink(obj, p, p_max_size);
+}
+
+void scan_pid_stdout_arg(struct text_object *obj, const char *arg, void* free_at_crash) {
+	scan_pid_arg(obj, arg, free_at_crash, "fd/1");
+}
+
+void print_pid_stdout(struct text_object *obj, char *p, int p_max_size) {
+	print_pid_readlink(obj, p, p_max_size);
 }

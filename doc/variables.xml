@@ -2532,6 +2532,46 @@
     <varlistentry>
         <term>
             <command>
+                <option>pid_exe</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Path to executed command that started the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pid_stdin</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Filedescriptor binded to the STDIN of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pid_stdout</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Filedescriptor binded to the STDOUT of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pid_stderr</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Filedescriptor binded to the STDERR of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>platform</option>
             </command>
             <option>(dev) type n (factor offset)</option>

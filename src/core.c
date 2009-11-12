@@ -650,8 +650,16 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		scan_pid_cwd_arg(obj, arg, free_at_crash);
 	END OBJ_ARG(pid_environ, 0, "pid_environ needs arguments")
 		scan_pid_environ_arg(obj, arg, free_at_crash);
-	END OBJ_ARG(pid_environ_list, 0, "pid_environ needs a pid as argument")
+	END OBJ_ARG(pid_environ_list, 0, "pid_environ_list needs a pid as argument")
 		scan_pid_environ_list_arg(obj, arg, free_at_crash);
+	END OBJ_ARG(pid_exe, 0, "pid_exe needs a pid as argument")
+		scan_pid_exe_arg(obj, arg, free_at_crash);
+	END OBJ_ARG(pid_stderr, 0, "pid_stderr needs a pid as argument")
+		scan_pid_stderr_arg(obj, arg, free_at_crash);
+	END OBJ_ARG(pid_stdin, 0, "pid_stdin needs a pid as argument")
+		scan_pid_stdin_arg(obj, arg, free_at_crash);
+	END OBJ_ARG(pid_stdout, 0, "pid_stdout needs a pid as argument")
+		scan_pid_stdout_arg(obj, arg, free_at_crash);
 	END OBJ(processes, &update_total_processes)
 	END OBJ(running_processes, &update_running_processes)
 	END OBJ(threads, &update_threads)
@@ -1254,6 +1262,18 @@ void free_text_objects(struct text_object *root, int internal)
 				free_pid_environ(obj);
 				break;
 			case OBJ_pid_environ_list:
+				free(data.s);
+				break;
+			case OBJ_pid_exe:
+				free(data.s);
+				break;
+			case OBJ_pid_stderr:
+				free(data.s);
+				break;
+			case OBJ_pid_stdin:
+				free(data.s);
+				break;
+			case OBJ_pid_stdout:
 				free(data.s);
 				break;
 			case OBJ_read_tcp:
