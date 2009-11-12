@@ -30,4 +30,7 @@
 #include "conky.h"
 #include "common.h"
 
+int get_entropy_avail(unsigned int *);
+int get_entropy_poolsize(unsigned int *);
+
 #endif /*NETBSD_H_*/

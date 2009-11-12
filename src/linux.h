@@ -40,4 +40,7 @@ void parse_platform_sensor(struct text_object *, const char *);
 void print_sysfs_sensor(struct text_object *, char *, int );
 void free_sysfs_sensor(struct text_object *);
 
+int get_entropy_avail(unsigned int *);
+int get_entropy_poolsize(unsigned int *);
+
 #endif /* _LINUX_H */

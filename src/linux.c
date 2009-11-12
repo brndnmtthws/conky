@@ -2261,30 +2261,38 @@ void update_top(void)
 	info.first_process = get_first_process();
 }
 
-void update_entropy(void)
+#define ENTROPY_AVAIL_PATH "/proc/sys/kernel/random/entropy_avail"
+
+int get_entropy_avail(unsigned int *val)
 {
 	static int rep = 0;
-	const char *entropy_avail = "/proc/sys/kernel/random/entropy_avail";
-	const char *entropy_poolsize = "/proc/sys/kernel/random/poolsize";
-	FILE *fp1, *fp2;
+	FILE *fp;
 
-	info.entropy.entropy_avail = 0;
-	info.entropy.poolsize = 0;
+	if (!(fp = open_file(ENTROPY_AVAIL_PATH, &rep)))
+		return 1;
 
-	if ((fp1 = open_file(entropy_avail, &rep)) == NULL) {
-		return;
-	}
+	if (fscanf(fp, "%u", val) != 1)
+		return 1;
 
-	if ((fp2 = open_file(entropy_poolsize, &rep)) == NULL) {
-		fclose(fp1);
-		return;
-	}
+	fclose(fp);
+	return 0;
+}
 
-	fscanf(fp1, "%u", &info.entropy.entropy_avail);
-	fscanf(fp2, "%u", &info.entropy.poolsize);
+#define ENTROPY_POOLSIZE_PATH "/proc/sys/kernel/random/poolsize"
 
-	fclose(fp1);
-	fclose(fp2);
+int get_entropy_poolsize(unsigned int *val)
+{
+	static int rep = 0;
+	FILE *fp;
+
+	if (!(fp = open_file(ENTROPY_POOLSIZE_PATH, &rep)))
+		return 1;
+
+	if (fscanf(fp, "%u", val) != 1)
+		return 1;
+
+	fclose(fp);
+	return 0;
 }
 
 const char *get_disk_protect_queue(const char *disk)

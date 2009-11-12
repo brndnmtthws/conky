@@ -960,9 +960,18 @@ void get_battery_short_status(char *buffer, unsigned int n, const char *bat)
 	}
 }
 
-void update_entropy(void)
+int get_entropy_avail(unsigned int *val)
 {
 	/* Not applicable for FreeBSD as it uses the yarrow prng. */
+	(void)val;
+	return 1;
+}
+
+int get_entropy_poolsize(unsigned int *val)
+{
+	/* Not applicable for FreeBSD as it uses the yarrow prng. */
+	(void)val;
+	return 1;
 }
 
 /* empty stub so conky links */

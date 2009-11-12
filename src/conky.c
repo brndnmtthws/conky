@@ -78,6 +78,7 @@
 #include "colours.h"
 #include "combine.h"
 #include "diskio.h"
+#include "entropy.h"
 #include "exec.h"
 #include "proc.h"
 #ifdef X11
@@ -2119,27 +2120,16 @@ void generate_text_internal(char *p, int p_max_size,
 #endif /* HAVE_ICONV */
 
 			OBJ(entropy_avail) {
-				snprintf(p, p_max_size, "%d", cur->entropy.entropy_avail);
+				print_entropy_avail(obj, p, p_max_size);
 			}
 			OBJ(entropy_perc) {
-				percent_print(p, p_max_size,
-				              cur->entropy.entropy_avail *
-					      100 / cur->entropy.poolsize);
+				print_entropy_perc(obj, p, p_max_size);
 			}
 			OBJ(entropy_poolsize) {
-				snprintf(p, p_max_size, "%d", cur->entropy.poolsize);
+				print_entropy_poolsize(obj, p, p_max_size);
 			}
 			OBJ(entropy_bar) {
-				double entropy_perc;
-
-				entropy_perc = (double) cur->entropy.entropy_avail /
-					(double) cur->entropy.poolsize;
-#ifdef X11
-				if(output_methods & TO_X) {
-					new_bar(obj, p, (int) (entropy_perc * 255.0f));
-				} else
-#endif /* X11 */
-					new_bar_in_shell(obj, p, p_max_size, (int) (entropy_perc * 100.0f));
+				print_entropy_bar(obj, p, p_max_size);
 			}
 #ifdef IBM
 			OBJ(smapi) {
