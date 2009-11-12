@@ -1,3 +1,6 @@
+2009-11-12
+	* Added support for $pid_environ_list
+
 2009-11-11
 	* Added support for $pid_cmdline
 	* Added support for $pid_cwd

@@ -238,6 +238,7 @@ enum text_object_type {
 	OBJ_pid_cmdline,
 	OBJ_pid_cwd,
 	OBJ_pid_environ,
+	OBJ_pid_environ_list,
 	OBJ_processes,
 	OBJ_running_processes,
 	OBJ_shadecolor,

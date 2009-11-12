@@ -116,9 +116,9 @@ void print_pid_environ(struct text_object *obj, char *p, int p_max_size)
 	FILE* infofile;
 	int bytes_read, total_read = 0;
 
-	searchstring = malloc(strlen(((struct environ_data*) obj->data.opaque)->var) + strlen("=%s") + 1);
+	searchstring = malloc(strlen(((struct environ_data*) obj->data.opaque)->var) + strlen("=%[\1-\255]") + 1);
 	strcpy(searchstring, ((struct environ_data*) obj->data.opaque)->var);
-	strcat(searchstring, "=%s");
+	strcat(searchstring, "=%[\1-\255]");
 	infofile = fopen(((struct environ_data*) obj->data.opaque)->file, "r");
 	if(infofile) {
 		do {
@@ -135,7 +135,7 @@ void print_pid_environ(struct text_object *obj, char *p, int p_max_size)
 				return;
 			}
 		}
-		snprintf(p, p_max_size, VARNOTFOUND);
+		p[0] = 0;
 		free(buf);
 		free(searchstring);
 		fclose(infofile);
@@ -148,4 +148,48 @@ void free_pid_environ(struct text_object *obj) {
 	free(((struct environ_data*) obj->data.opaque)->file);
 	free(((struct environ_data*) obj->data.opaque)->var);
 	free(obj->data.opaque);
+}
+
+void scan_pid_environ_list_arg(struct text_object *obj, const char *arg, void* free_at_crash)
+{
+	pid_t pid;
+
+	if(sscanf(arg, "%d", &pid) == 1) {
+		asprintf(&obj->data.s, PROCDIR "/%d/environ", pid);
+	} else {
+		CRIT_ERR(obj, free_at_crash, "syntax error: ${pid_environ pid}");
+	}
+}
+
+void print_pid_environ_list(struct text_object *obj, char *p, int p_max_size)
+{
+	char *buf = NULL;
+	char *buf2;
+	FILE* infofile;
+	int bytes_read, total_read = 0;
+	int i = 0;
+
+	infofile = fopen(obj->data.s, "r");
+	if(infofile) {
+		do {
+			buf = realloc(buf, total_read + p_max_size + 1);
+			bytes_read = fread(buf + total_read, 1, p_max_size, infofile);
+			total_read += bytes_read;
+			buf[total_read] = 0;
+		}while(bytes_read != 0);
+		while(bytes_read < total_read) {
+			buf2 = strdup(buf+bytes_read);
+			bytes_read += strlen(buf2)+1;
+			sscanf(buf2, "%[^=]", buf+i);
+			free(buf2);
+			i = strlen(buf) + 1;
+			buf[i-1] = ';';
+		}
+		buf[i-1] = 0;
+		snprintf(p, p_max_size, buf);
+		free(buf);
+		fclose(infofile);
+	} else {
+		NORM_ERR(READERR, obj->data.s);
+	}
 }
