@@ -181,7 +181,7 @@ void print_pid_environ_list(struct text_object *obj, char *p, int p_max_size)
 			buf[i-1] = ';';
 		}
 		buf[i-1] = 0;
-		snprintf(p, p_max_size, buf);
+		snprintf(p, p_max_size, "%s", buf);
 		free(buf);
 		fclose(infofile);
 	} else {
@@ -200,7 +200,7 @@ void print_pid_readlink(struct text_object *obj, char *p, int p_max_size)
 
 	memset(buf, 0, p_max_size);
 	if(readlink(obj->data.s, buf, p_max_size) >= 0) {
-		snprintf(p, p_max_size, buf);
+		snprintf(p, p_max_size, "%s", buf);
 	} else {
 		NORM_ERR(READERR, obj->data.s);
 	}
