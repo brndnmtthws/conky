@@ -131,7 +131,7 @@ struct process *get_process_by_name(const char *name)
 	struct process *p = first_process;
 
 	while (p) {
-		if (!strcmp(p->name, name))
+		if (p->name && !strcmp(p->name, name))
 			return p;
 		p = p->next;
 	}
