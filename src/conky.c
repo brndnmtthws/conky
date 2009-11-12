@@ -818,18 +818,10 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #if defined(__linux__)
 			OBJ(voltage_mv) {
-				static int ok = 1;
-				if (ok) {
-					ok = get_voltage(p, p_max_size, "%.0f", 1,
-							obj->data.i);
-				}
+				print_voltage_mv(obj, p, p_max_size);
 			}
 			OBJ(voltage_v) {
-				static int ok = 1;
-				if (ok) {
-					ok = get_voltage(p, p_max_size, "%'.3f", 1000,
-							obj->data.i);
-				}
+				print_voltage_v(obj, p, p_max_size);
 			}
 
 #ifdef HAVE_IWLIB

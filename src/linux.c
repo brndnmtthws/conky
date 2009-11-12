@@ -1201,7 +1201,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
  * Peter Tarjan (ptarjan@citromail.hu) */
 
 /* return cpu voltage in mV (use divisor=1) or V (use divisor=1000) */
-char get_voltage(char *p_client_buffer, size_t client_buffer_size,
+static char get_voltage(char *p_client_buffer, size_t client_buffer_size,
 		const char *p_format, int divisor, unsigned int cpu)
 {
 	FILE *f;
@@ -1268,6 +1268,22 @@ char get_voltage(char *p_client_buffer, size_t client_buffer_size,
 	snprintf(p_client_buffer, client_buffer_size, p_format,
 		(float) voltage / divisor);
 	return 1;
+}
+
+void print_voltage_mv(struct text_object *obj, char *p, int p_max_size)
+{
+	static int ok = 1;
+	if (ok) {
+		ok = get_voltage(p, p_max_size, "%.0f", 1, obj->data.i);
+	}
+}
+
+void print_voltage_v(struct text_object *obj, char *p, int p_max_size)
+{
+	static int ok = 1;
+	if (ok) {
+		ok = get_voltage(p, p_max_size, "%'.3f", 1000, obj->data.i);
+	}
 }
 
 #define ACPI_FAN_DIR "/proc/acpi/fan/"

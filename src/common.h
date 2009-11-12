@@ -29,7 +29,8 @@ void update_threads(void);
 void update_running_processes(void);
 void update_stuff(void);
 char get_freq(char *, size_t, const char *, int, unsigned int);
-char get_voltage(char *, size_t, const char *, int, unsigned int);	/* ptarjan */
+void print_voltage_mv(struct text_object *, char *, int);
+void print_voltage_v(struct text_object *, char *, int);
 void update_load_average(void);
 void update_top(void);
 void free_all_processes(void);
