@@ -40,8 +40,6 @@ enum text_object_type {
 #endif /* __linux__ */
 #ifndef __OpenBSD__
 	OBJ_acpiacadapter,
-	OBJ_adt746xcpu,
-	OBJ_adt746xfan,
 	OBJ_acpifan,
 	OBJ_acpitemp,
 	OBJ_battery,

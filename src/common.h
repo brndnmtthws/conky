@@ -60,9 +60,6 @@ unsigned int round_to_int(float);
 
 extern int no_buffers;
 
-void get_adt746x_cpu(char *, size_t);
-void get_adt746x_fan(char *, size_t);
-
 int open_acpi_temperature(const char *name);
 double get_acpi_temperature(int fd);
 void get_acpi_ac_adapter(char *, size_t);

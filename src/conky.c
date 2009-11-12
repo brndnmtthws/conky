@@ -881,12 +881,6 @@ void generate_text_internal(char *p, int p_max_size,
 #endif /* __linux__ */
 
 #ifndef __OpenBSD__
-			OBJ(adt746xcpu) {
-				get_adt746x_cpu(p, p_max_size);
-			}
-			OBJ(adt746xfan) {
-				get_adt746x_fan(p, p_max_size);
-			}
 			OBJ(acpifan) {
 				get_acpi_fan(p, p_max_size);
 			}

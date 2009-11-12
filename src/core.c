@@ -725,10 +725,6 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(gw_iface, &update_gateway_info)
 	END OBJ(gw_ip, &update_gateway_info)
 #endif /* !__linux__ */
-#ifndef __OpenBSD__
-	END OBJ(adt746xcpu, 0)
-	END OBJ(adt746xfan, 0)
-#endif /* !__OpenBSD__ */
 #if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) \
 		|| defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
 	END OBJ(apm_adapter, 0)

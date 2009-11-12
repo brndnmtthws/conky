@@ -1133,61 +1133,6 @@ void free_sysfs_sensor(struct text_object *obj)
 	obj->data.opaque = NULL;
 }
 
-/* Prior to kernel version 2.6.12, the CPU fan speed was available in
- * ADT746X_FAN_OLD, whereas later kernel versions provide this information in
- * ADT746X_FAN. */
-#define ADT746X_FAN "/sys/devices/temperatures/sensor1_fan_speed"
-#define ADT746X_FAN_OLD "/sys/devices/temperatures/cpu_fan_speed"
-
-void get_adt746x_fan(char *p_client_buffer, size_t client_buffer_size)
-{
-	static int rep = 0;
-	char adt746x_fan_state[64];
-	FILE *fp;
-
-	if (!p_client_buffer || client_buffer_size <= 0) {
-		return;
-	}
-
-	if ((fp = open_file(ADT746X_FAN, &rep)) == NULL
-			&& (fp = open_file(ADT746X_FAN_OLD, &rep)) == NULL) {
-		sprintf(adt746x_fan_state, "adt746x not found");
-	} else {
-		fgets(adt746x_fan_state, sizeof(adt746x_fan_state), fp);
-		adt746x_fan_state[strlen(adt746x_fan_state) - 1] = 0;
-		fclose(fp);
-	}
-
-	snprintf(p_client_buffer, client_buffer_size, "%s", adt746x_fan_state);
-}
-
-/* Prior to kernel version 2.6.12, the CPU temperature was found in
- * ADT746X_CPU_OLD, whereas later kernel versions provide this information in
- * ADT746X_CPU. */
-#define ADT746X_CPU "/sys/devices/temperatures/sensor1_temperature"
-#define ADT746X_CPU_OLD "/sys/devices/temperatures/cpu_temperature"
-
-void get_adt746x_cpu(char *p_client_buffer, size_t client_buffer_size)
-{
-	static int rep = 0;
-	char adt746x_cpu_state[64];
-	FILE *fp;
-
-	if (!p_client_buffer || client_buffer_size <= 0) {
-		return;
-	}
-
-	if ((fp = open_file(ADT746X_CPU, &rep)) == NULL
-			&& (fp = open_file(ADT746X_CPU_OLD, &rep)) == NULL) {
-		sprintf(adt746x_cpu_state, "adt746x not found");
-	} else {
-		fscanf(fp, "%2s", adt746x_cpu_state);
-		fclose(fp);
-	}
-
-	snprintf(p_client_buffer, client_buffer_size, "%s", adt746x_cpu_state);
-}
-
 #define CPUFREQ_PREFIX "/sys/devices/system/cpu"
 #define CPUFREQ_POSTFIX "cpufreq/scaling_cur_freq"
 
