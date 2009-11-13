@@ -92,6 +92,37 @@ static void user_time(char *ptr)
 		}
 	}
 }
+static void conky_user_time(char *ptr)
+{
+	time_t real, diff;
+	static time_t log_in = 0;
+	char buf[BUFLEN] = "";
+
+	if (log_in == 0) {
+		struct utmp *usr, line;
+		char *real_tty_path = NULL;
+
+		real_tty_path = ttyname(0);
+		if (real_tty_path == NULL ) {
+			return;
+		}
+
+		real_tty_path += 5; /* Remove "/dev/". */
+
+		setutent();
+		strcpy(line.ut_line, real_tty_path);
+		usr = getutline(&line);
+		if (usr == NULL ) {
+			return;
+		}
+
+		log_in = usr->ut_time;
+	}
+	time(&real);
+	diff = difftime(real, log_in);
+	format_seconds(buf, BUFLEN, diff);
+	strncpy(ptr, buf, BUFLEN-1);
+}
 
 static void users_alloc(struct information *ptr)
 {
@@ -105,6 +136,9 @@ static void users_alloc(struct information *ptr)
 	if (ptr->users.times == NULL) {
 		ptr->users.times = malloc(text_buffer_size);
 	}
+	if (ptr->users.ctime == NULL) {
+		ptr->users.ctime = malloc(text_buffer_size);
+	}
 }
 
 void update_users(void)
@@ -114,6 +148,24 @@ void update_users(void)
 	int t;
 	users_alloc(current_info);
 	user_name(temp);
+	temp[0] = 0;
+	conky_user_time(temp);
+	if (temp != NULL) {
+		if (current_info->users.ctime) {
+			free(current_info->users.ctime);
+			current_info->users.ctime = 0;
+		}
+		current_info->users.ctime = malloc(text_buffer_size);
+		strncpy(current_info->users.ctime, temp, text_buffer_size);
+	} else {
+		if (current_info->users.ctime) {
+			free(current_info->users.ctime);
+			current_info->users.ctime = 0;
+		}
+		current_info->users.ctime = malloc(text_buffer_size);
+		strncpy(current_info->users.ctime, "broken", text_buffer_size);
+	}
+	temp[0] = 0;
 	if (temp != NULL) {
 		if (current_info->users.names) {
 			free(current_info->users.names);

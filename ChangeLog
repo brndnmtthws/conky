@@ -1,4 +1,5 @@
 2009-11-13
+	* Add $conky_user_time (sf.net #2830919)
 	* Drop adt746x objects
 
 2009-11-12

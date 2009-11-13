@@ -135,6 +135,7 @@ extern unsigned int text_buffer_size;
 struct usr_info {
 	char *names;
 	char *times;
+	char *ctime;
 	char *terms;
 	int number;
 };

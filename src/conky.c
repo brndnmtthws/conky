@@ -1722,6 +1722,9 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(user_times) {
 				snprintf(p, p_max_size, "%s", cur->users.times);
 			}
+			OBJ(conky_user_time) {
+				snprintf(p, p_max_size, "%s", cur->users.ctime);
+			}
 			OBJ(user_number) {
 				snprintf(p, p_max_size, "%d", cur->users.number);
 			}

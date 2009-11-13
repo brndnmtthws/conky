@@ -719,6 +719,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(uptime, &update_uptime)
 	END OBJ(user_names, &update_users)
 	END OBJ(user_times, &update_users)
+	END OBJ(conky_user_time, &update_users)
 	END OBJ(user_terms, &update_users)
 	END OBJ(user_number, &update_users)
 #if defined(__linux__)
@@ -1540,6 +1541,12 @@ void free_text_objects(struct text_object *root, int internal)
 				if (info.users.times) {
 					free(info.users.times);
 					info.users.times = 0;
+				}
+				break;
+			case OBJ_conky_user_time:
+				if (info.users.ctime) {
+					free(info.users.ctime);
+					info.users.ctime = 0;
 				}
 				break;
 #ifdef IBM
