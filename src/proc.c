@@ -282,22 +282,26 @@ void print_pid_openfiles(struct text_object *obj, char *p, int p_max_size) {
 	struct ll_string* files_back = NULL;
 
 	dir = opendir(obj->data.s);
-	while ((entry = readdir(dir))) {
-		if(entry->d_name[0] != '.') {
-			snprintf(buf, p_max_size, "%s/%s", obj->data.s, entry->d_name);
-			length = readlink(buf, buf, p_max_size);
-			buf[length] = 0;
-			if(inlist(files_front, buf) == 0) {
-				files_back = addnode(files_back, buf);
-				snprintf(p + totallength, p_max_size - totallength, "%s; " , buf);
-				totallength += length + strlen("; ");
-			}
-			if(files_front == NULL) {
-				files_front = files_back;
+	if(dir != NULL) {
+		while ((entry = readdir(dir))) {
+			if(entry->d_name[0] != '.') {
+				snprintf(buf, p_max_size, "%s/%s", obj->data.s, entry->d_name);
+				length = readlink(buf, buf, p_max_size);
+				buf[length] = 0;
+				if(inlist(files_front, buf) == 0) {
+					files_back = addnode(files_back, buf);
+					snprintf(p + totallength, p_max_size - totallength, "%s; " , buf);
+					totallength += length + strlen("; ");
+				}
+				if(files_front == NULL) {
+					files_front = files_back;
+				}
 			}
 		}
+		closedir(dir);
+		freelist(files_front);
+		p[totallength - strlen("; ")] = 0;
+	} else {
+		p[0] = 0;
 	}
-	closedir(dir);
-	freelist(files_front);
-	p[totallength - strlen("; ")] = 0;
 }
