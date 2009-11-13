@@ -34,6 +34,7 @@ syn keyword ConkyrcConstant
 			\ top_middle
 			\ middle_left
 			\ middle_right
+			\ middle_middle
 			\ undecorated
 			\ yes
 

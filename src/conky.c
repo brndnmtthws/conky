@@ -319,6 +319,7 @@ enum alignment {
 	BOTTOM_RIGHT,
 	BOTTOM_MIDDLE,
 	MIDDLE_LEFT,
+	MIDDLE_MIDDLE,
 	MIDDLE_RIGHT,
 	NONE
 };
@@ -2487,57 +2488,40 @@ static void update_text_area(void)
 
 	/* get text position on workarea */
 	switch (text_alignment) {
-		case TOP_LEFT:
-			x = gap_x;
+		case TOP_LEFT: case TOP_RIGHT: case TOP_MIDDLE:
 			y = gap_y;
 			break;
 
-		case TOP_RIGHT:
-			x = workarea[2] - text_width - gap_x;
-			y = gap_y;
-			break;
-
-		case TOP_MIDDLE:
-			x = workarea[2] / 2 - text_width / 2 - gap_x;
-			y = gap_y;
-			break;
-
-		default:
-		case BOTTOM_LEFT:
-			x = gap_x;
+		case BOTTOM_LEFT: case BOTTOM_RIGHT: case BOTTOM_MIDDLE: default:
 			y = workarea[3] - text_height - gap_y;
 			break;
 
-		case BOTTOM_RIGHT:
-			x = workarea[2] - text_width - gap_x;
-			y = workarea[3] - text_height - gap_y;
-			break;
-
-		case BOTTOM_MIDDLE:
-			x = workarea[2] / 2 - text_width / 2 - gap_x;
-			y = workarea[3] - text_height - gap_y;
-			break;
-
-		case MIDDLE_LEFT:
-			x = gap_x;
+		case MIDDLE_LEFT: case MIDDLE_RIGHT: case MIDDLE_MIDDLE:
 			y = workarea[3] / 2 - text_height / 2 - gap_y;
 			break;
-
-		case MIDDLE_RIGHT:
-			x = workarea[2] - text_width - gap_x;
-			y = workarea[3] / 2 - text_height / 2 - gap_y;
+	}
+	switch (text_alignment) {
+		case TOP_LEFT: case BOTTOM_LEFT: case MIDDLE_LEFT: default:
+			x = gap_x;
 			break;
 
+		case TOP_RIGHT: case BOTTOM_RIGHT: case MIDDLE_RIGHT:
+			x = workarea[2] - text_width - gap_x;
+			break;
+
+		case TOP_MIDDLE: case BOTTOM_MIDDLE: case MIDDLE_MIDDLE:
+			x = workarea[2] / 2 - text_width / 2 - gap_x;
+			break;
+	}
 #ifdef OWN_WINDOW
-		case NONE:	// Let the WM manage the window
+	if (text_alignment == NONE) {	// Let the WM manage the window
 			x = window.x;
 			y = window.y;
 
 			fixed_pos = 1;
 			fixed_size = 1;
-			break;
-#endif
 	}
+#endif /* OWN_WINDOW */
 #ifdef OWN_WINDOW
 
 	if (own_window && !fixed_pos) {
@@ -4056,6 +4040,8 @@ static enum alignment string_to_alignment(const char *s)
 		return MIDDLE_LEFT;
 	} else if (strcasecmp(s, "middle_right") == EQUAL) {
 		return MIDDLE_RIGHT;
+	} else if (strcasecmp(s, "middle_middle") == EQUAL) {
+		return MIDDLE_MIDDLE;
 	} else if (strcasecmp(s, "tl") == EQUAL) {
 		return TOP_LEFT;
 	} else if (strcasecmp(s, "tr") == EQUAL) {
@@ -4072,6 +4058,8 @@ static enum alignment string_to_alignment(const char *s)
 		return MIDDLE_LEFT;
 	} else if (strcasecmp(s, "mr") == EQUAL) {
 		return MIDDLE_RIGHT;
+	} else if (strcasecmp(s, "mm") == EQUAL) {
+		return MIDDLE_MIDDLE;
 	} else if (strcasecmp(s, "none") == EQUAL) {
 		return NONE;
 	}
