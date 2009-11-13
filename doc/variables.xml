@@ -2502,6 +2502,17 @@
     <varlistentry>
         <term>
             <command>
+                <option>pid_chroot</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Directory used as rootdirectory by the process
+	(this will be "/" unless the process did a chroot syscall)
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>pid_cmdline</option>
             </command>
             <option>pid</option>

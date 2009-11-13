@@ -1599,6 +1599,9 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(outlinecolor) {
 				new_outline(p, obj->data.l);
 			}
+			OBJ(pid_chroot) {
+				print_pid_chroot(obj, p, p_max_size);
+			}
 			OBJ(pid_cmdline) {
 				print_pid_cmdline(obj, p, p_max_size);
 			}

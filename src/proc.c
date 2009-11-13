@@ -207,6 +207,14 @@ void print_pid_readlink(struct text_object *obj, char *p, int p_max_size)
 	}
 }
 
+void scan_pid_chroot_arg(struct text_object *obj, const char *arg, void* free_at_crash) {
+	scan_pid_arg(obj, arg, free_at_crash, "root");
+}
+
+void print_pid_chroot(struct text_object *obj, char *p, int p_max_size) {
+	print_pid_readlink(obj, p, p_max_size);
+}
+
 void print_pid_exe(struct text_object *obj, char *p, int p_max_size) {
 	print_pid_readlink(obj, p, p_max_size);
 }

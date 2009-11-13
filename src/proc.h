@@ -36,6 +36,9 @@ struct environ_data {
 	char *var;
 };
 
+void scan_pid_chroot_arg(struct text_object *obj, const char *arg, void* free_at_crash);
+void print_pid_chroot(struct text_object *obj, char *p, int p_max_size);
+
 void scan_pid_cmdline_arg(struct text_object *obj, const char *arg, void* free_at_crash);
 void print_pid_cmdline(struct text_object *obj, char *p, int p_max_size);
 
