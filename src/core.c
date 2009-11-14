@@ -656,6 +656,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		scan_pid_exe_arg(obj, arg, free_at_crash);
 	END OBJ_ARG(pid_openfiles, 0, "pid_openfiles needs a pid as argument")
 		scan_pid_openfiles_arg(obj, arg, free_at_crash);
+	END OBJ_ARG(pid_state, 0, "pid_state needs a pid as argument")
+		scan_pid_state_arg(obj, arg, free_at_crash);
 	END OBJ_ARG(pid_stderr, 0, "pid_stderr needs a pid as argument")
 		scan_pid_stderr_arg(obj, arg, free_at_crash);
 	END OBJ_ARG(pid_stdin, 0, "pid_stdin needs a pid as argument")
@@ -1270,6 +1272,9 @@ void free_text_objects(struct text_object *root, int internal)
 				free(data.s);
 				break;
 			case OBJ_pid_openfiles:
+				free(data.s);
+				break;
+			case OBJ_pid_state:
 				free(data.s);
 				break;
 			case OBJ_pid_stderr:

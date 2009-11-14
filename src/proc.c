@@ -219,6 +219,42 @@ void print_pid_exe(struct text_object *obj, char *p, int p_max_size) {
 	print_pid_readlink(obj, p, p_max_size);
 }
 
+void scan_pid_state_arg(struct text_object *obj, const char *arg, void* free_at_crash) {
+	scan_pid_arg(obj, arg, free_at_crash, "status");
+}
+
+void print_pid_state(struct text_object *obj, char *p, int p_max_size) {
+#define STATE_ENTRY "State:\t"
+	char *begin, *end, *buf = NULL;
+	FILE* infofile;
+	int bytes_read, total_read = 0;
+
+	infofile = fopen(obj->data.s, "r");
+	if(infofile) {
+		do {
+			buf = realloc(buf, total_read + p_max_size + 1);
+			bytes_read = fread(buf + total_read, 1, p_max_size, infofile);
+			total_read += bytes_read;
+			buf[total_read] = 0;
+		}while(bytes_read != 0);
+		begin = strstr(buf, STATE_ENTRY);
+		if(begin != NULL) {
+			begin += strlen(STATE_ENTRY) + 3;	// +3 will strip the char representing the short state and the space and '(' that follow
+			end = strchr(begin, '\n');
+			if(end != NULL) {
+				*(end-1) = 0;
+			}
+			snprintf(p, p_max_size, "%s",begin);
+		} else {
+			NORM_ERR(STATENOTFOUND, obj->data.s);
+		}
+		free(buf);
+		fclose(infofile);
+	} else {
+		NORM_ERR(READERR, obj->data.s);
+	}
+}
+
 void scan_pid_stderr_arg(struct text_object *obj, const char *arg, void* free_at_crash) {
 	scan_pid_arg(obj, arg, free_at_crash, "fd/2");
 }

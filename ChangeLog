@@ -1,3 +1,6 @@
+2009-11-14
+	* Added support for $pid_state
+
 2009-11-13
 	* Add $conky_user_time (sf.net #2830919)
 	* Drop adt746x objects

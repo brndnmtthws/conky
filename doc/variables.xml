@@ -2573,6 +2573,26 @@
     <varlistentry>
         <term>
             <command>
+                <option>pid_state</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>State of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pid_stderr</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Filedescriptor binded to the STDERR of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>pid_stdin</option>
             </command>
             <option>pid</option>
@@ -2588,16 +2608,6 @@
             <option>pid</option>
         </term>
         <listitem>Filedescriptor binded to the STDOUT of the process
-        <para /></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
-                <option>pid_stderr</option>
-            </command>
-            <option>pid</option>
-        </term>
-        <listitem>Filedescriptor binded to the STDERR of the process
         <para /></listitem>
     </varlistentry>
     <varlistentry>
