@@ -916,6 +916,9 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(cached) {
 				human_readable(cur->cached * 1024, p, 255);
 			}
+			OBJ(cmdline_to_pid) {
+				print_cmdline_to_pid(obj, p, p_max_size);
+			}
 			OBJ(cpu) {
 				if (obj->data.i > info.cpu_count) {
 					NORM_ERR("obj->data.i %i info.cpu_count %i",
@@ -1601,36 +1604,87 @@ void generate_text_internal(char *p, int p_max_size,
 				new_outline(p, obj->data.l);
 			}
 			OBJ(pid_chroot) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
 				print_pid_chroot(obj, p, p_max_size);
 			}
 			OBJ(pid_cmdline) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
 				print_pid_cmdline(obj, p, p_max_size);
 			}
 			OBJ(pid_cwd) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
 				print_pid_cwd(obj, p, p_max_size);
 			}
 			OBJ(pid_environ) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
 				print_pid_environ(obj, p, p_max_size);
 			}
 			OBJ(pid_environ_list) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
 				print_pid_environ_list(obj, p, p_max_size);
 			}
 			OBJ(pid_exe) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
 				print_pid_exe(obj, p, p_max_size);
 			}
 			OBJ(pid_openfiles) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
 				print_pid_openfiles(obj, p, p_max_size);
 			}
 			OBJ(pid_state) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
 				print_pid_state(obj, p, p_max_size);
 			}
+			OBJ(pid_state_short) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_state_short(obj, p, p_max_size);
+			}
 			OBJ(pid_stderr) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
 				print_pid_stderr(obj, p, p_max_size);
 			}
 			OBJ(pid_stdin) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
 				print_pid_stdin(obj, p, p_max_size);
 			}
 			OBJ(pid_stdout) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
 				print_pid_stdout(obj, p, p_max_size);
 			}
 			OBJ(processes) {

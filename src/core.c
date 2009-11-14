@@ -642,28 +642,44 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(desktop_name, &update_x11info)
 #endif
 	END OBJ(nodename, 0)
+	END OBJ_ARG(cmdline_to_pid, 0, "cmdline_to_pid needs a command line as argument")
+		scan_cmdline_to_pid_arg(obj, arg, free_at_crash);
 	END OBJ_ARG(pid_chroot, 0, "pid_chroot needs a pid as argument")
-		scan_pid_chroot_arg(obj, arg, free_at_crash);
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
 	END OBJ_ARG(pid_cmdline, 0, "pid_cmdline needs a pid as argument")
-		scan_pid_cmdline_arg(obj, arg, free_at_crash);
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
 	END OBJ_ARG(pid_cwd, 0, "pid_cwd needs a pid as argument")
-		scan_pid_cwd_arg(obj, arg, free_at_crash);
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
 	END OBJ_ARG(pid_environ, 0, "pid_environ needs arguments")
-		scan_pid_environ_arg(obj, arg, free_at_crash);
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
 	END OBJ_ARG(pid_environ_list, 0, "pid_environ_list needs a pid as argument")
-		scan_pid_environ_list_arg(obj, arg, free_at_crash);
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
 	END OBJ_ARG(pid_exe, 0, "pid_exe needs a pid as argument")
-		scan_pid_exe_arg(obj, arg, free_at_crash);
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
 	END OBJ_ARG(pid_openfiles, 0, "pid_openfiles needs a pid as argument")
-		scan_pid_openfiles_arg(obj, arg, free_at_crash);
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
 	END OBJ_ARG(pid_state, 0, "pid_state needs a pid as argument")
-		scan_pid_state_arg(obj, arg, free_at_crash);
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
+	END OBJ_ARG(pid_state_short, 0, "pid_state_short needs a pid as argument")
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
 	END OBJ_ARG(pid_stderr, 0, "pid_stderr needs a pid as argument")
-		scan_pid_stderr_arg(obj, arg, free_at_crash);
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
 	END OBJ_ARG(pid_stdin, 0, "pid_stdin needs a pid as argument")
-		scan_pid_stdin_arg(obj, arg, free_at_crash);
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
 	END OBJ_ARG(pid_stdout, 0, "pid_stdout needs a pid as argument")
-		scan_pid_stdout_arg(obj, arg, free_at_crash);
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
 	END OBJ(processes, &update_total_processes)
 	END OBJ(running_processes, &update_running_processes)
 	END OBJ(threads, &update_threads)
@@ -1254,38 +1270,25 @@ void free_text_objects(struct text_object *root, int internal)
 				free_sysfs_sensor(obj);
 				break;
 #endif /* __linux__ */
-			case OBJ_pid_chroot:
-				free(data.s);
-				break;
-			case OBJ_pid_cmdline:
-				free(data.s);
-				break;
-			case OBJ_pid_cwd:
+			case OBJ_cmdline_to_pid:
 				free(data.s);
 				break;
 			case OBJ_pid_environ:
-				free_pid_environ(obj);
-				break;
+			case OBJ_pid_chroot:
+			case OBJ_pid_cmdline:
+			case OBJ_pid_cwd:
 			case OBJ_pid_environ_list:
-				free(data.s);
-				break;
 			case OBJ_pid_exe:
-				free(data.s);
-				break;
 			case OBJ_pid_openfiles:
-				free(data.s);
-				break;
 			case OBJ_pid_state:
-				free(data.s);
-				break;
+			case OBJ_pid_state_short:
 			case OBJ_pid_stderr:
-				free(data.s);
-				break;
 			case OBJ_pid_stdin:
-				free(data.s);
-				break;
 			case OBJ_pid_stdout:
-				free(data.s);
+				if(obj->sub) {
+					free_text_objects(obj->sub, 1);
+					free(obj->sub);
+				}
 				break;
 			case OBJ_read_tcp:
 				free_read_tcp(obj);

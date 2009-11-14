@@ -536,6 +536,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>cmdline_to_pid</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>PID of process invoked with this command line
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>color</option>
             </command>
             <option>(color)</option>
@@ -2568,6 +2578,19 @@
             <option>pid</option>
         </term>
         <listitem>State of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pid_state_short</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>One of the chars in "RSDZTW" representing the state
+	of the process where R is running, S is sleeping in an
+	interruptible wait, D is waiting in uninterruptible disk sleep,
+	Z is zombie, T is traced or stopped (on a signal), and W is paging
         <para /></listitem>
     </varlistentry>
     <varlistentry>

@@ -35,23 +35,7 @@
 #include <ctype.h>
 #include <dirent.h>
 
-void scan_pid_arg(struct text_object *obj, const char *arg, void* free_at_crash, const char *file)
-{
-	pid_t pid;
-
-	if(sscanf(arg, "%d", &pid) == 1) {
-		asprintf(&obj->data.s, PROCDIR "/%d/%s", pid, file);
-	} else {
-		CRIT_ERR(obj, free_at_crash, "syntax error: ${pid_%s pid}", file);
-	}
-}
-
-void scan_pid_cmdline_arg(struct text_object *obj, const char *arg, void* free_at_crash)
-{
-	scan_pid_arg(obj, arg, free_at_crash, "cmdline");
-}
-
-char* readfile(char* filename, int* total_read) {
+char* readfile(char* filename, int* total_read, char showerror) {
 	FILE* file;
 	char* buf = NULL;
 	int bytes_read;
@@ -66,201 +50,22 @@ char* readfile(char* filename, int* total_read) {
 			buf[*total_read] = 0;
 		}while(bytes_read != 0);
 		fclose(file);
-	} else {
+	} else if(showerror != 0) {
 		NORM_ERR(READERR, filename);
 	}
 	return buf;
 }
 
-void print_pid_cmdline(struct text_object *obj, char *p, int p_max_size)
-{
-	char* buf;
-	int i, bytes_read;
-
-	buf = readfile(obj->data.s, &bytes_read);
-	if(buf != NULL) {
-		for(i = 0; i < bytes_read-1; i++) {
-			if(buf[i] == 0) {
-				buf[i] = ' ';
-			}
-		}
-		snprintf(p, p_max_size, "%s", buf);
-		free(buf);
-	}
-}
-
-void scan_pid_cwd_arg(struct text_object *obj, const char *arg, void* free_at_crash)
-{
-	scan_pid_arg(obj, arg, free_at_crash, "cwd");
-}
-
-void print_pid_cwd(struct text_object *obj, char *p, int p_max_size)
-{
-	char buf[p_max_size];
-	int bytes_read;
-
-	memset(buf, 0, p_max_size);
-	bytes_read = readlink(obj->data.s, buf, p_max_size);
-	if(bytes_read != -1) {
-		snprintf(p, p_max_size, "%s", buf);
-	} else {
-		NORM_ERR(READERR, obj->data.s);
-	}
-}
-
-void scan_pid_environ_arg(struct text_object *obj, const char *arg, void* free_at_crash)
-{
-	pid_t pid;
-	int i;
-	struct environ_data* ed = malloc(sizeof(struct environ_data));
-
-	ed->var = malloc(strlen(arg));
-	if(sscanf(arg, "%d %s", &pid, ed->var) == 2) {
-		asprintf(&ed->file, PROCDIR "/%d/environ", pid);
-		for(i = 0; ed->var[i] != 0; i++) {
-			ed->var[i] = toupper(ed->var[i]);
-		}
-		obj->data.opaque = ed;
-	} else {
-		free(ed->var);
-		free(ed);
-		CRIT_ERR(obj, free_at_crash, "${pid_environ pid varname}");
-	}
-}
-
-void print_pid_environ(struct text_object *obj, char *p, int p_max_size)
-{
-	char *buf = NULL;
-	char *searchstring = ((struct environ_data*) obj->data.opaque)->var;
-	int bytes_read, total_read = 0;
-
-	buf = readfile(((struct environ_data*) obj->data.opaque)->file, &total_read);
-	if(buf != NULL) {
-		for(bytes_read = 0; bytes_read < total_read; bytes_read += strlen(buf + bytes_read) + 1) {
-			if(strncmp(buf + bytes_read, searchstring, strlen(searchstring)) == 0 && *(buf + bytes_read + strlen(searchstring)) == '=') {
-				snprintf(p, p_max_size, "%s", buf + bytes_read + strlen(searchstring) + 1);
-				free(buf);
-				return;
-			}
-		}
-		p[0] = 0;
-		free(buf);
-	}
-}
-
-void free_pid_environ(struct text_object *obj) {
-	free(((struct environ_data*) obj->data.opaque)->file);
-	free(((struct environ_data*) obj->data.opaque)->var);
-	free(obj->data.opaque);
-}
-
-void scan_pid_environ_list_arg(struct text_object *obj, const char *arg, void* free_at_crash)
-{
-	scan_pid_arg(obj, arg, free_at_crash, "environ");
-}
-
-void print_pid_environ_list(struct text_object *obj, char *p, int p_max_size)
-{
-	char *buf = NULL;
-	char *buf2;
-	int bytes_read, total_read;
-	int i = 0;
-
-	buf = readfile(obj->data.s, &total_read);
-	if(buf != NULL) {
-		for(bytes_read = 0; bytes_read < total_read; buf[i-1] = ';') {
-			buf2 = strdup(buf+bytes_read);
-			bytes_read += strlen(buf2)+1;
-			sscanf(buf2, "%[^=]", buf+i);
-			free(buf2);
-			i = strlen(buf) + 1;
-		}
-		buf[i-1] = 0;
-		snprintf(p, p_max_size, "%s", buf);
-		free(buf);
-	}
-}
-
-void scan_pid_exe_arg(struct text_object *obj, const char *arg, void* free_at_crash)
-{
-	scan_pid_arg(obj, arg, free_at_crash, "exe");
-}
-
-void print_pid_readlink(struct text_object *obj, char *p, int p_max_size)
+void pid_readlink(char *file, char *p, int p_max_size)
 {
 	char buf[p_max_size];
 
 	memset(buf, 0, p_max_size);
-	if(readlink(obj->data.s, buf, p_max_size) >= 0) {
+	if(readlink(file, buf, p_max_size) >= 0) {
 		snprintf(p, p_max_size, "%s", buf);
 	} else {
-		NORM_ERR(READERR, obj->data.s);
+		NORM_ERR(READERR, file);
 	}
-}
-
-void scan_pid_chroot_arg(struct text_object *obj, const char *arg, void* free_at_crash) {
-	scan_pid_arg(obj, arg, free_at_crash, "root");
-}
-
-void print_pid_chroot(struct text_object *obj, char *p, int p_max_size) {
-	print_pid_readlink(obj, p, p_max_size);
-}
-
-void print_pid_exe(struct text_object *obj, char *p, int p_max_size) {
-	print_pid_readlink(obj, p, p_max_size);
-}
-
-void scan_pid_state_arg(struct text_object *obj, const char *arg, void* free_at_crash) {
-	scan_pid_arg(obj, arg, free_at_crash, "status");
-}
-
-void print_pid_state(struct text_object *obj, char *p, int p_max_size) {
-	char *begin, *end, *buf = NULL;
-	int bytes_read;
-
-	buf = readfile(obj->data.s, &bytes_read);
-	if(buf != NULL) {
-		begin = strstr(buf, STATE_ENTRY);
-		if(begin != NULL) {
-			begin += strlen(STATE_ENTRY) + 3;	// +3 will strip the char representing the short state and the space and '(' that follow
-			end = strchr(begin, '\n');
-			if(end != NULL) {
-				*(end-1) = 0;
-			}
-			snprintf(p, p_max_size, "%s", begin);
-		} else {
-			NORM_ERR(STATENOTFOUND, obj->data.s);
-		}
-		free(buf);
-	}
-}
-
-void scan_pid_stderr_arg(struct text_object *obj, const char *arg, void* free_at_crash) {
-	scan_pid_arg(obj, arg, free_at_crash, "fd/2");
-}
-
-void print_pid_stderr(struct text_object *obj, char *p, int p_max_size) {
-	print_pid_readlink(obj, p, p_max_size);
-}
-
-void scan_pid_stdin_arg(struct text_object *obj, const char *arg, void* free_at_crash) {
-	scan_pid_arg(obj, arg, free_at_crash, "fd/0");
-}
-
-void print_pid_stdin(struct text_object *obj, char *p, int p_max_size) {
-	print_pid_readlink(obj, p, p_max_size);
-}
-
-void scan_pid_stdout_arg(struct text_object *obj, const char *arg, void* free_at_crash) {
-	scan_pid_arg(obj, arg, free_at_crash, "fd/1");
-}
-
-void print_pid_stdout(struct text_object *obj, char *p, int p_max_size) {
-	print_pid_readlink(obj, p, p_max_size);
-}
-
-void scan_pid_openfiles_arg(struct text_object *obj, const char *arg, void* free_at_crash) {
-	scan_pid_arg(obj, arg, free_at_crash, "fd");
 }
 
 struct ll_string {
@@ -297,6 +102,112 @@ int inlist(struct ll_string* front, char* string) {
 	return 0;
 }
 
+void print_pid_chroot(struct text_object *obj, char *p, int p_max_size) {
+	char *buffer;
+
+	asprintf(&buffer, PROCDIR "/%s/root", obj->data.s);
+	print_pid_readlink(buffer, p, p_max_size);
+	free(buffer);
+}
+
+void print_pid_cmdline(struct text_object *obj, char *p, int p_max_size)
+{
+	char* buf;
+	int i, bytes_read;
+
+	asprintf(&buf, PROCDIR "/%s/cmdline", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &bytes_read, 1);
+	if(buf != NULL) {
+		for(i = 0; i < bytes_read-1; i++) {
+			if(buf[i] == 0) {
+				buf[i] = ' ';
+			}
+		}
+		snprintf(p, p_max_size, "%s", buf);
+		free(buf);
+	}
+}
+
+void print_pid_cwd(struct text_object *obj, char *p, int p_max_size)
+{
+	char buf[p_max_size];
+	int bytes_read;
+
+	sprintf(buf, PROCDIR "/%s/cwd", obj->data.s);
+	strcpy(obj->data.s, buf);
+	bytes_read = readlink(obj->data.s, buf, p_max_size);
+	if(bytes_read != -1) {
+		buf[bytes_read] = 0;
+		snprintf(p, p_max_size, "%s", buf);
+	} else {
+		NORM_ERR(READERR, obj->data.s);
+	}
+}
+
+void print_pid_environ(struct text_object *obj, char *p, int p_max_size)
+{
+	int i, total_read;
+	pid_t pid;
+	char *buf, *file, *var=strdup(obj->data.s);;
+
+	if(sscanf(obj->data.s, "%d %s", &pid, var) == 2) {
+		for(i = 0; var[i] != 0; i++) {
+			var[i] = toupper(var[i]);
+		}
+		asprintf(&file, PROCDIR "/%d/environ", pid);
+		buf = readfile(file, &total_read, 1);
+		free(file);
+		if(buf != NULL) {
+			for(i = 0; i < total_read; i += strlen(buf + i) + 1) {
+				if(strncmp(buf + i, var, strlen(var)) == 0 && *(buf + i + strlen(var)) == '=') {
+					snprintf(p, p_max_size, "%s", buf + i + strlen(var) + 1);
+					free(buf);
+					free(var);
+					return;
+				}
+			}
+			free(buf);
+		}
+		free(var);
+		*p = 0;
+	}
+}
+
+void print_pid_environ_list(struct text_object *obj, char *p, int p_max_size)
+{
+	char *buf = NULL;
+	char *buf2;
+	int bytes_read, total_read;
+	int i = 0;
+
+	asprintf(&buf, PROCDIR "/%s/environ", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &total_read, 1);
+	if(buf != NULL) {
+		for(bytes_read = 0; bytes_read < total_read; buf[i-1] = ';') {
+			buf2 = strdup(buf+bytes_read);
+			bytes_read += strlen(buf2)+1;
+			sscanf(buf2, "%[^=]", buf+i);
+			free(buf2);
+			i = strlen(buf) + 1;
+		}
+		buf[i-1] = 0;
+		snprintf(p, p_max_size, "%s", buf);
+		free(buf);
+	}
+}
+
+void print_pid_exe(struct text_object *obj, char *p, int p_max_size) {
+	char *buffer;
+
+	asprintf(&buffer, PROCDIR "/%s/exe", obj->data.s);
+	print_pid_readlink(buffer, p, p_max_size);
+	free(buffer);
+}
+
 void print_pid_openfiles(struct text_object *obj, char *p, int p_max_size) {
 	DIR* dir;
 	struct dirent *entry;
@@ -327,5 +238,121 @@ void print_pid_openfiles(struct text_object *obj, char *p, int p_max_size) {
 		p[totallength - strlen("; ")] = 0;
 	} else {
 		p[0] = 0;
+	}
+}
+
+void print_pid_state(struct text_object *obj, char *p, int p_max_size) {
+	char *begin, *end, *buf = NULL;
+	int bytes_read;
+
+	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &bytes_read, 1);
+	if(buf != NULL) {
+		begin = strstr(buf, STATE_ENTRY);
+		if(begin != NULL) {
+			begin += strlen(STATE_ENTRY) + 3;	// +3 will strip the char representing the short state and the space and '(' that follow
+			end = strchr(begin, '\n');
+			if(end != NULL) {
+				*(end-1) = 0;
+			}
+			snprintf(p, p_max_size, "%s", begin);
+		} else {
+			NORM_ERR(STATENOTFOUND, obj->data.s);
+		}
+		free(buf);
+	}
+}
+
+void print_pid_state_short(struct text_object *obj, char *p, int p_max_size) {
+	char *begin, *buf = NULL;
+	int bytes_read;
+
+	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &bytes_read, 1);
+	if(buf != NULL) {
+		begin = strstr(buf, STATE_ENTRY);
+		if(begin != NULL) {
+			snprintf(p, p_max_size, "%c", *begin);
+		} else {
+			NORM_ERR(STATENOTFOUND, obj->data.s);
+		}
+		free(buf);
+	}
+}
+
+void print_pid_stderr(struct text_object *obj, char *p, int p_max_size) {
+	char *buffer;
+
+	asprintf(&buffer, PROCDIR "/%s/fd/2", obj->data.s);
+	print_pid_readlink(buffer, p, p_max_size);
+	free(buffer);
+}
+
+void print_pid_stdin(struct text_object *obj, char *p, int p_max_size) {
+	char *buffer;
+
+	asprintf(&buffer, PROCDIR "/%s/fd/0", obj->data.s);
+	print_pid_readlink(buffer, p, p_max_size);
+	free(buffer);
+}
+
+void print_pid_stdout(struct text_object *obj, char *p, int p_max_size) {
+	char *buffer;
+
+	asprintf(&buffer, PROCDIR "/%s/fd/1", obj->data.s);
+	print_pid_readlink(buffer, p, p_max_size);
+	free(buffer);
+}
+
+void scan_cmdline_to_pid_arg(struct text_object *obj, const char *arg, void* free_at_crash) {
+	unsigned int i;
+
+	if(strlen(arg) > 0) {
+		obj->data.s = strdup(arg);
+		for(i = 0; obj->data.s[i] != 0; i++) {
+			while(obj->data.s[i] == ' ' && obj->data.s[i + 1] == ' ') {
+				memmove(obj->data.s + i, obj->data.s + i + 1, strlen(obj->data.s + i + 1) + 1);
+			}
+		}
+		if(obj->data.s[i - 1] == ' ') {
+			obj->data.s[i - 1] = 0;
+		}
+	} else {
+		CRIT_ERR(obj, free_at_crash, "${cmdline_to_pid commandline}");
+	}
+}
+
+void print_cmdline_to_pid(struct text_object *obj, char *p, int p_max_size) {
+	DIR* dir;
+	struct dirent *entry;
+	char *filename, *buf;
+	int bytes_read, i;
+
+	dir = opendir(PROCDIR);
+	if(dir != NULL) {
+		while ((entry = readdir(dir))) {
+			asprintf(&filename, PROCDIR "/%s/cmdline", entry->d_name);
+			buf = readfile(filename, &bytes_read, 0);
+			free(filename);
+			if(buf != NULL) {
+				for(i = 0; i < bytes_read - 1; i++) {
+					if(buf[i] == 0) buf[i] = ' ';
+				}
+				if(strcmp(buf, obj->data.s) == 0) {
+					snprintf(p, p_max_size, "%s", entry->d_name);
+					free(buf);
+					closedir(dir);
+					return;
+				}
+				free(buf);
+			}
+		}
+		closedir(dir);
+	} else {
+		NORM_ERR(READERR, PROCDIR);
 	}
 }

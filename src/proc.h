@@ -34,42 +34,18 @@
 #define READSIZE 128
 #define STATE_ENTRY "State:\t"
 
-struct environ_data {
-	char *file;
-	char *var;
-};
-
-void scan_pid_chroot_arg(struct text_object *obj, const char *arg, void* free_at_crash);
 void print_pid_chroot(struct text_object *obj, char *p, int p_max_size);
-
-void scan_pid_cmdline_arg(struct text_object *obj, const char *arg, void* free_at_crash);
 void print_pid_cmdline(struct text_object *obj, char *p, int p_max_size);
-
-void scan_pid_cwd_arg(struct text_object *obj, const char *arg, void* free_at_crash);
 void print_pid_cwd(struct text_object *obj, char *p, int p_max_size);
-
-void scan_pid_environ_arg(struct text_object *obj, const char *arg, void* free_at_crash);
 void print_pid_environ(struct text_object *obj, char *p, int p_max_size);
-
-void free_pid_environ(struct text_object *obj);
-
-void scan_pid_environ_list_arg(struct text_object *obj, const char *arg, void* free_at_crash);
 void print_pid_environ_list(struct text_object *obj, char *p, int p_max_size);
-
-void scan_pid_exe_arg(struct text_object *obj, const char *arg, void* free_at_crash);
 void print_pid_exe(struct text_object *obj, char *p, int p_max_size);
-
-void scan_pid_state_arg(struct text_object *obj, const char *arg, void* free_at_crash);
+void print_pid_openfiles(struct text_object *obj, char *p, int p_max_size);
 void print_pid_state(struct text_object *obj, char *p, int p_max_size);
-
-void scan_pid_stderr_arg(struct text_object *obj, const char *arg, void* free_at_crash);
+void print_pid_state_short(struct text_object *obj, char *p, int p_max_size);
 void print_pid_stderr(struct text_object *obj, char *p, int p_max_size);
-
-void scan_pid_stdin_arg(struct text_object *obj, const char *arg, void* free_at_crash);
 void print_pid_stdin(struct text_object *obj, char *p, int p_max_size);
-
-void scan_pid_stdout_arg(struct text_object *obj, const char *arg, void* free_at_crash);
 void print_pid_stdout(struct text_object *obj, char *p, int p_max_size);
 
-void scan_pid_openfiles_arg(struct text_object *obj, const char *arg, void* free_at_crash);
-void print_pid_openfiles(struct text_object *obj, char *p, int p_max_size);
+void scan_cmdline_to_pid_arg(struct text_object *obj, const char *arg, void* free_at_crash);
+void print_cmdline_to_pid(struct text_object *obj, char *p, int p_max_size);

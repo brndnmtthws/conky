@@ -1,5 +1,7 @@
 2009-11-14
-	* Added support for $pid_state
+	* Added support for $pid_state and $pid_state_short
+	* Added support for $cmdline_to_pid
+	* Make it possible to use other vars as arguments for the $pid_'s
 
 2009-11-13
 	* Add $conky_user_time (sf.net #2830919)
