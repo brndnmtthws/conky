@@ -593,16 +593,6 @@
     <varlistentry>
         <term>
             <command>
-                <option>conky_user_time</option>
-            </command>
-        </term>
-        <listitem>List how long the user that launched
-	 conky has been logged in for.
-        <para /></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
                 <option>conky_version</option>
             </command>
         </term>
@@ -3421,6 +3411,17 @@
             </command>
         </term>
         <listitem>Lists how long users have been logged in for 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>user_time</option>
+            </command>
+	    <option>console</option>
+        </term>
+        <listitem>Lists how long the user for the given console has been
+        logged in for
         <para /></listitem>
     </varlistentry>
     <varlistentry>

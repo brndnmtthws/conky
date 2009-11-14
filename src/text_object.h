@@ -273,7 +273,7 @@ enum text_object_type {
 	OBJ_user_names,
 	OBJ_user_terms,
 	OBJ_user_times,
-	OBJ_conky_user_time,
+	OBJ_user_time,
 	OBJ_user_number,
 	OBJ_imap_messages,
 	OBJ_imap_unseen,
