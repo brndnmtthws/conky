@@ -2,6 +2,7 @@
 	* Add $conky_user_time (sf.net #2830919)
 	* Drop adt746x objects
 	* Added support for $pid_chroot
+	* Added middle_middle alignment support
 
 2009-11-12
 	* Added support for $pid_environ_list, $pid_exe, $pid_openfiles,
