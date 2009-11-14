@@ -42,7 +42,7 @@ endif
 
 conky_DEPENDENCIES = $(config_output)
 BUILT_SOURCES = $(config_output)
-CLEANFILES = $(config_output)
+CLEANFILES = $(config_output) *.gcda *.gcno
 
 $(config_output): ${config_input}
 	sh $(srcdir)/../text2c.sh ${config_input} $@ defconfig
