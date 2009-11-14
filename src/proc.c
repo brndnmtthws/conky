@@ -51,24 +51,41 @@ void scan_pid_cmdline_arg(struct text_object *obj, const char *arg, void* free_a
 	scan_pid_arg(obj, arg, free_at_crash, "cmdline");
 }
 
+char* readfile(char* filename, int* total_read) {
+	FILE* file;
+	char* buf = NULL;
+	int bytes_read;
+
+	*total_read = 0;
+	file = fopen(filename, "r");
+	if(file) {
+		do {
+			buf = realloc(buf, *total_read + READSIZE + 1);
+			bytes_read = fread(buf + *total_read, 1, READSIZE, file);
+			*total_read += bytes_read;
+			buf[*total_read] = 0;
+		}while(bytes_read != 0);
+		fclose(file);
+	} else {
+		NORM_ERR(READERR, filename);
+	}
+	return buf;
+}
+
 void print_pid_cmdline(struct text_object *obj, char *p, int p_max_size)
 {
-	char buf[p_max_size];
-	FILE* infofile;
+	char* buf;
 	int i, bytes_read;
 
-	infofile = fopen(obj->data.s, "r");
-	if(infofile) {
-		bytes_read = fread(buf, 1, p_max_size, infofile);
+	buf = readfile(obj->data.s, &bytes_read);
+	if(buf != NULL) {
 		for(i = 0; i < bytes_read-1; i++) {
 			if(buf[i] == 0) {
 				buf[i] = ' ';
 			}
 		}
 		snprintf(p, p_max_size, "%s", buf);
-		fclose(infofile);
-	} else {
-		NORM_ERR(READERR, obj->data.s);
+		free(buf);
 	}
 }
 
@@ -114,35 +131,20 @@ void scan_pid_environ_arg(struct text_object *obj, const char *arg, void* free_a
 void print_pid_environ(struct text_object *obj, char *p, int p_max_size)
 {
 	char *buf = NULL;
-	char *searchstring;
-	FILE* infofile;
+	char *searchstring = ((struct environ_data*) obj->data.opaque)->var;
 	int bytes_read, total_read = 0;
 
-	searchstring = malloc(strlen(((struct environ_data*) obj->data.opaque)->var) + strlen("=%[\1-\255]") + 1);
-	strcpy(searchstring, ((struct environ_data*) obj->data.opaque)->var);
-	strcat(searchstring, "=%[\1-\255]");
-	infofile = fopen(((struct environ_data*) obj->data.opaque)->file, "r");
-	if(infofile) {
-		do {
-			buf = realloc(buf, total_read + p_max_size + 1);
-			bytes_read = fread(buf + total_read, 1, p_max_size, infofile);
-			total_read += bytes_read;
-			buf[total_read] = 0;
-		}while(bytes_read != 0);
+	buf = readfile(((struct environ_data*) obj->data.opaque)->file, &total_read);
+	if(buf != NULL) {
 		for(bytes_read = 0; bytes_read < total_read; bytes_read += strlen(buf + bytes_read) + 1) {
-			if(sscanf(buf + bytes_read, searchstring, p) == 1) {
+			if(strncmp(buf + bytes_read, searchstring, strlen(searchstring)) == 0 && *(buf + bytes_read + strlen(searchstring)) == '=') {
+				snprintf(p, p_max_size, "%s", buf + bytes_read + strlen(searchstring) + 1);
 				free(buf);
-				free(searchstring);
-				fclose(infofile);
 				return;
 			}
 		}
 		p[0] = 0;
 		free(buf);
-		free(searchstring);
-		fclose(infofile);
-	} else {
-		NORM_ERR(READERR, ((struct environ_data*) obj->data.opaque)->file);
 	}
 }
 
@@ -161,32 +163,21 @@ void print_pid_environ_list(struct text_object *obj, char *p, int p_max_size)
 {
 	char *buf = NULL;
 	char *buf2;
-	FILE* infofile;
-	int bytes_read, total_read = 0;
+	int bytes_read, total_read;
 	int i = 0;
 
-	infofile = fopen(obj->data.s, "r");
-	if(infofile) {
-		do {
-			buf = realloc(buf, total_read + p_max_size + 1);
-			bytes_read = fread(buf + total_read, 1, p_max_size, infofile);
-			total_read += bytes_read;
-			buf[total_read] = 0;
-		}while(bytes_read != 0);
-		while(bytes_read < total_read) {
+	buf = readfile(obj->data.s, &total_read);
+	if(buf != NULL) {
+		for(bytes_read = 0; bytes_read < total_read; buf[i-1] = ';') {
 			buf2 = strdup(buf+bytes_read);
 			bytes_read += strlen(buf2)+1;
 			sscanf(buf2, "%[^=]", buf+i);
 			free(buf2);
 			i = strlen(buf) + 1;
-			buf[i-1] = ';';
 		}
 		buf[i-1] = 0;
 		snprintf(p, p_max_size, "%s", buf);
 		free(buf);
-		fclose(infofile);
-	} else {
-		NORM_ERR(READERR, obj->data.s);
 	}
 }
 
@@ -224,19 +215,11 @@ void scan_pid_state_arg(struct text_object *obj, const char *arg, void* free_at_
 }
 
 void print_pid_state(struct text_object *obj, char *p, int p_max_size) {
-#define STATE_ENTRY "State:\t"
 	char *begin, *end, *buf = NULL;
-	FILE* infofile;
-	int bytes_read, total_read = 0;
+	int bytes_read;
 
-	infofile = fopen(obj->data.s, "r");
-	if(infofile) {
-		do {
-			buf = realloc(buf, total_read + p_max_size + 1);
-			bytes_read = fread(buf + total_read, 1, p_max_size, infofile);
-			total_read += bytes_read;
-			buf[total_read] = 0;
-		}while(bytes_read != 0);
+	buf = readfile(obj->data.s, &bytes_read);
+	if(buf != NULL) {
 		begin = strstr(buf, STATE_ENTRY);
 		if(begin != NULL) {
 			begin += strlen(STATE_ENTRY) + 3;	// +3 will strip the char representing the short state and the space and '(' that follow
@@ -244,14 +227,11 @@ void print_pid_state(struct text_object *obj, char *p, int p_max_size) {
 			if(end != NULL) {
 				*(end-1) = 0;
 			}
-			snprintf(p, p_max_size, "%s",begin);
+			snprintf(p, p_max_size, "%s", begin);
 		} else {
 			NORM_ERR(STATENOTFOUND, obj->data.s);
 		}
 		free(buf);
-		fclose(infofile);
-	} else {
-		NORM_ERR(READERR, obj->data.s);
 	}
 }
 
