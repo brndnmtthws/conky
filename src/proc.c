@@ -106,7 +106,7 @@ void print_pid_chroot(struct text_object *obj, char *p, int p_max_size) {
 	char *buffer;
 
 	asprintf(&buffer, PROCDIR "/%s/root", obj->data.s);
-	print_pid_readlink(buffer, p, p_max_size);
+	pid_readlink(buffer, p, p_max_size);
 	free(buffer);
 }
 
@@ -204,7 +204,7 @@ void print_pid_exe(struct text_object *obj, char *p, int p_max_size) {
 	char *buffer;
 
 	asprintf(&buffer, PROCDIR "/%s/exe", obj->data.s);
-	print_pid_readlink(buffer, p, p_max_size);
+	pid_readlink(buffer, p, p_max_size);
 	free(buffer);
 }
 
@@ -288,7 +288,7 @@ void print_pid_stderr(struct text_object *obj, char *p, int p_max_size) {
 	char *buffer;
 
 	asprintf(&buffer, PROCDIR "/%s/fd/2", obj->data.s);
-	print_pid_readlink(buffer, p, p_max_size);
+	pid_readlink(buffer, p, p_max_size);
 	free(buffer);
 }
 
@@ -296,7 +296,7 @@ void print_pid_stdin(struct text_object *obj, char *p, int p_max_size) {
 	char *buffer;
 
 	asprintf(&buffer, PROCDIR "/%s/fd/0", obj->data.s);
-	print_pid_readlink(buffer, p, p_max_size);
+	pid_readlink(buffer, p, p_max_size);
 	free(buffer);
 }
 
@@ -304,7 +304,7 @@ void print_pid_stdout(struct text_object *obj, char *p, int p_max_size) {
 	char *buffer;
 
 	asprintf(&buffer, PROCDIR "/%s/fd/1", obj->data.s);
-	print_pid_readlink(buffer, p, p_max_size);
+	pid_readlink(buffer, p, p_max_size);
 	free(buffer);
 }
 
