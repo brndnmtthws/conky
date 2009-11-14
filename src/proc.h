@@ -31,6 +31,8 @@
 #define PROCDIR	"/proc"
 #define READERR	"Can't read '%s'"
 #define STATENOTFOUND	"Can't find the process state in '%s'"
+#define READSIZE 128
+#define STATE_ENTRY "State:\t"
 
 struct environ_data {
 	char *file;
