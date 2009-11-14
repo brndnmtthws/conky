@@ -2097,6 +2097,7 @@ void generate_text_internal(char *p, int p_max_size,
 			/* we have four different types of top (top, top_mem,
 			 * top_time and top_io). To avoid having almost-same code four
 			 * times, we have this special handler. */
+#ifdef __linux__
 			break;
 			case OBJ_top:
 			case OBJ_top_mem:
@@ -2107,6 +2108,7 @@ void generate_text_internal(char *p, int p_max_size,
 				/* yes, passing top_name_width instead
 				 * of p_max_size is intended here */
 				print_top(obj, p, top_name_width);
+#endif /* __linux__ */
 			OBJ(tail) {
 				print_tailhead("tail", obj, p, p_max_size);
 			}

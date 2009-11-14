@@ -523,8 +523,6 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		parse_platform_sensor(obj, arg);
 	END OBJ_ARG(hwmon, 0, "hwmon needs argumanets")
 		parse_hwmon_sensor(obj, arg);
-#endif /* __linux__ */
-
 	END
 	/* we have four different types of top (top, top_mem, top_time and top_io). To
 	 * avoid having almost-same code four times, we have this special
@@ -537,7 +535,6 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		}
 	} else OBJ(addr, &update_net_stats)
 		parse_net_stat_arg(obj, arg, free_at_crash);
-#if defined(__linux__)
 	END OBJ(addrs, &update_net_stats)
 		parse_net_stat_arg(obj, arg, free_at_crash);
 #endif /* __linux__ */
@@ -682,7 +679,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		extract_variable_text_internal(obj->sub, arg);
 	END OBJ(processes, &update_total_processes)
 	END OBJ(running_processes, &update_running_processes)
+#ifdef __linux__
 	END OBJ(threads, &update_threads)
+#endif
 	END OBJ(shadecolor, 0)
 #ifdef X11
 		obj->data.l = arg ? get_x11_color(arg) : default_bg_color;
@@ -737,13 +736,13 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif
 	END OBJ(uptime_short, &update_uptime)
 	END OBJ(uptime, &update_uptime)
+#if defined(__linux__)
 	END OBJ(user_names, &update_users)
 	END OBJ(user_times, &update_users)
 	END OBJ_ARG(user_time, 0, "user time needs a console name as argument")
 		obj->data.s = strndup(arg, text_buffer_size);
 	END OBJ(user_terms, &update_users)
 	END OBJ(user_number, &update_users)
-#if defined(__linux__)
 	END OBJ(gw_iface, &update_gateway_info)
 	END OBJ(gw_ip, &update_gateway_info)
 #endif /* !__linux__ */
@@ -1517,6 +1516,7 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_nameserver:
 				free_dns_data();
 				break;
+#ifdef __linux__
 			case OBJ_top:
 			case OBJ_top_mem:
 			case OBJ_top_time:
@@ -1525,6 +1525,7 @@ void free_text_objects(struct text_object *root, int internal)
 #endif
 				free_top(obj, internal);
 				break;
+#endif /* __linux__ */
 #ifdef HDDTEMP
 			case OBJ_hddtemp:
 				if (data.s) {
