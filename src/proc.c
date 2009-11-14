@@ -342,7 +342,7 @@ void print_cmdline_to_pid(struct text_object *obj, char *p, int p_max_size) {
 				for(i = 0; i < bytes_read - 1; i++) {
 					if(buf[i] == 0) buf[i] = ' ';
 				}
-				if(strcmp(buf, obj->data.s) == 0) {
+				if(strstr(buf, obj->data.s) != NULL) {
 					snprintf(p, p_max_size, "%s", entry->d_name);
 					free(buf);
 					closedir(dir);

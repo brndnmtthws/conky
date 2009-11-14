@@ -538,9 +538,10 @@
             <command>
                 <option>cmdline_to_pid</option>
             </command>
-            <option>pid</option>
+            <option>string</option>
         </term>
-        <listitem>PID of process invoked with this command line
+        <listitem>PID of the first process that has string in it's
+	commandline
         <para /></listitem>
     </varlistentry>
     <varlistentry>
