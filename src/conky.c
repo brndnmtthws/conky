@@ -895,9 +895,6 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(cpugraph) {
 				new_graph(obj, p, p_max_size, round_to_int(cur->cpu_usage[obj->data.i] * 100));
 			}
-			OBJ(loadgraph) {
-				print_loadgraph(obj, p, p_max_size);
-			}
 #endif /* X11 */
 #if defined(__linux__)
 			OBJ(disk_protect) {

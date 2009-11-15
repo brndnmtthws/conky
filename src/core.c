@@ -394,6 +394,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		if (buf) free(buf);
 	END OBJ(loadgraph, &update_load_average)
 		scan_loadgraph_arg(obj, arg);
+		obj->callbacks.print = &print_loadgraph;
 #endif /* X11 */
 	END OBJ(diskio, &update_diskio)
 		parse_diskio_arg(obj, arg);

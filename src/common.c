@@ -466,6 +466,9 @@ void scan_loadgraph_arg(struct text_object *obj, const char *arg)
 
 void print_loadgraph(struct text_object *obj, char *p, int p_max_size)
 {
+	if (!p_max_size)
+		return;
+
 	new_graph(obj, p, p_max_size, info.loadavg[0]);
 }
 #endif /* X11 */
