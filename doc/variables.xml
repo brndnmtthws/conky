@@ -2717,6 +2717,106 @@
     <varlistentry>
         <term>
             <command>
+                <option>pid_vmpeak</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Peak virtual memory size of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pid_vmsize</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Virtual memory size of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pid_vmlck</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Locked memory size of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pid_vmhwm</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Peak resident set size ("high water mark") of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pid_vmrss</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Resident set size of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pid_vmdata</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Data segment size of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pid_vmstk</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Stack segment size of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pid_vmexe</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Text segment size of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pid_vmlib</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Shared library code size of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pid_vmpte</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Page table entries size of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>platform</option>
             </command>
             <option>(dev) type n (factor offset)</option>

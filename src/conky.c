@@ -1751,6 +1751,76 @@ void generate_text_internal(char *p, int p_max_size,
 				obj->data.s = buf;
 				print_pid_fsgid(obj, p, p_max_size);
 			}
+			OBJ(pid_vmpeak) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_vmpeak(obj, p, p_max_size);
+			}
+			OBJ(pid_vmsize) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_vmsize(obj, p, p_max_size);
+			}
+			OBJ(pid_vmlck) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_vmlck(obj, p, p_max_size);
+			}
+			OBJ(pid_vmhwm) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_vmhwm(obj, p, p_max_size);
+			}
+			OBJ(pid_vmrss) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_vmrss(obj, p, p_max_size);
+			}
+			OBJ(pid_vmdata) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_vmdata(obj, p, p_max_size);
+			}
+			OBJ(pid_vmstk) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_vmstk(obj, p, p_max_size);
+			}
+			OBJ(pid_vmexe) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_vmexe(obj, p, p_max_size);
+			}
+			OBJ(pid_vmlib) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_vmlib(obj, p, p_max_size);
+			}
+			OBJ(pid_vmpte) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_vmpte(obj, p, p_max_size);
+			}
 			OBJ(processes) {
 				spaced_print(p, p_max_size, "%hu", 4, cur->procs);
 			}

@@ -53,6 +53,16 @@ void print_pid_gid(struct text_object *obj, char *p, int p_max_size);
 void print_pid_egid(struct text_object *obj, char *p, int p_max_size);
 void print_pid_sgid(struct text_object *obj, char *p, int p_max_size);
 void print_pid_fsgid(struct text_object *obj, char *p, int p_max_size);
+void print_pid_vmpeak(struct text_object *obj, char *p, int p_max_size);
+void print_pid_vmsize(struct text_object *obj, char *p, int p_max_size);
+void print_pid_vmlck(struct text_object *obj, char *p, int p_max_size);
+void print_pid_vmhwm(struct text_object *obj, char *p, int p_max_size);
+void print_pid_vmrss(struct text_object *obj, char *p, int p_max_size);
+void print_pid_vmdata(struct text_object *obj, char *p, int p_max_size);
+void print_pid_vmstk(struct text_object *obj, char *p, int p_max_size);
+void print_pid_vmexe(struct text_object *obj, char *p, int p_max_size);
+void print_pid_vmlib(struct text_object *obj, char *p, int p_max_size);
+void print_pid_vmpte(struct text_object *obj, char *p, int p_max_size);
 
 void scan_cmdline_to_pid_arg(struct text_object *obj, const char *arg, void* free_at_crash);
 void print_cmdline_to_pid(struct text_object *obj, char *p, int p_max_size);

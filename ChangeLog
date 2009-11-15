@@ -4,6 +4,8 @@
 	* Added support for $uid_name and $gid_name
 	* Renamed $running_processes to $running_threads
 	* Added real $running_processes
+	* Added support for $pid_vmpeak, $pid_vmsize, $pid_vmlck, $pid_vmhwm,
+	$pid_vmrss, $pid_vmdata, $pid_vmstk, $pid_vmexe, $pid_vmlib, $pid_vmpte
 
 2009-11-14
 	* Added support for $pid_state and $pid_state_short
