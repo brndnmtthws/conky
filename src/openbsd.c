@@ -582,49 +582,6 @@ void get_obsd_product(char *buf, size_t client_buffer_size)
 	}
 }
 
-/* rdtsc() and get_freq_dynamic() copied from linux.c */
-
-#if  defined(__i386) || defined(__x86_64)
-__inline__ unsigned long long int rdtsc()
-{
-	unsigned long long int x;
-
-	__asm__ volatile(".byte 0x0f, 0x31":"=A" (x));
-	return x;
-}
-#endif
-
-/* return system frequency in MHz (use divisor=1) or GHz (use divisor=1000) */
-void get_freq_dynamic(char *p_client_buffer, size_t client_buffer_size,
-		const char *p_format, int divisor)
-{
-#if  defined(__i386) || defined(__x86_64)
-	struct timezone tz;
-	struct timeval tvstart, tvstop;
-	unsigned long long cycles[2];	/* gotta be 64 bit */
-	unsigned int microseconds;	/* total time taken */
-
-	memset(&tz, 0, sizeof(tz));
-
-	/* get this function in cached memory */
-	gettimeofday(&tvstart, &tz);
-	cycles[0] = rdtsc();
-	gettimeofday(&tvstart, &tz);
-
-	/* we don't trust that this is any specific length of time */
-	usleep(100);
-	cycles[1] = rdtsc();
-	gettimeofday(&tvstop, &tz);
-	microseconds = ((tvstop.tv_sec - tvstart.tv_sec) * 1000000) +
-		(tvstop.tv_usec - tvstart.tv_usec);
-
-	snprintf(p_client_buffer, client_buffer_size, p_format,
-		(float) ((cycles[1] - cycles[0]) / microseconds) / divisor);
-#else
-	get_freq(p_client_buffer, client_buffer_size, p_format, divisor, 1);
-#endif
-}
-
 /* void */
 char get_freq(char *p_client_buffer, size_t client_buffer_size,
 		const char *p_format, int divisor, unsigned int cpu)

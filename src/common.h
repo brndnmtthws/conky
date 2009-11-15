@@ -30,7 +30,6 @@ void update_running_processes(void);
 void update_i8k(void);
 void update_stuff(void);
 char get_freq(char *, size_t, const char *, int, unsigned int);
-void get_freq_dynamic(char *, size_t, const char *, int);
 char get_voltage(char *, size_t, const char *, int, unsigned int);	/* ptarjan */
 void update_load_average(void);
 void update_top(void);
