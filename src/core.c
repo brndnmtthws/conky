@@ -1766,7 +1766,7 @@ void free_text_objects(struct text_object *root, int internal)
 				break;
 #endif /* X11 */
 		}
-		if(obj->special_data) free(obj->special_data);
+		if(obj->type != OBJ_if_up && obj->special_data) free(obj->special_data);
 		free(obj);
 	}
 #undef data
