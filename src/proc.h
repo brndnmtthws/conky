@@ -45,6 +45,14 @@ void print_pid_state_short(struct text_object *obj, char *p, int p_max_size);
 void print_pid_stderr(struct text_object *obj, char *p, int p_max_size);
 void print_pid_stdin(struct text_object *obj, char *p, int p_max_size);
 void print_pid_stdout(struct text_object *obj, char *p, int p_max_size);
+void print_pid_uid(struct text_object *obj, char *p, int p_max_size);
+void print_pid_euid(struct text_object *obj, char *p, int p_max_size);
+void print_pid_suid(struct text_object *obj, char *p, int p_max_size);
+void print_pid_fsuid(struct text_object *obj, char *p, int p_max_size);
+void print_pid_gid(struct text_object *obj, char *p, int p_max_size);
+void print_pid_egid(struct text_object *obj, char *p, int p_max_size);
+void print_pid_sgid(struct text_object *obj, char *p, int p_max_size);
+void print_pid_fsgid(struct text_object *obj, char *p, int p_max_size);
 
 void scan_cmdline_to_pid_arg(struct text_object *obj, const char *arg, void* free_at_crash);
 void print_cmdline_to_pid(struct text_object *obj, char *p, int p_max_size);

@@ -680,6 +680,30 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ_ARG(pid_stdout, 0, "pid_stdout needs a pid as argument")
 		obj->sub = malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
+	END OBJ_ARG(pid_uid, 0, "pid_uid needs a pid as argument")
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
+	END OBJ_ARG(pid_euid, 0, "pid_euid needs a pid as argument")
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
+	END OBJ_ARG(pid_suid, 0, "pid_suid needs a pid as argument")
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
+	END OBJ_ARG(pid_fsuid, 0, "pid_fsuid needs a pid as argument")
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
+	END OBJ_ARG(pid_gid, 0, "pid_gid needs a pid as argument")
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
+	END OBJ_ARG(pid_egid, 0, "pid_egid needs a pid as argument")
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
+	END OBJ_ARG(pid_sgid, 0, "pid_sgid needs a pid as argument")
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
+	END OBJ_ARG(pid_fsgid, 0, "pid_fsgid needs a pid as argument")
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
 	END OBJ(processes, &update_total_processes)
 	END OBJ(running_processes, &update_running_processes)
 #ifdef __linux__
@@ -1288,6 +1312,14 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_pid_stderr:
 			case OBJ_pid_stdin:
 			case OBJ_pid_stdout:
+			case OBJ_pid_uid:
+			case OBJ_pid_euid:
+			case OBJ_pid_suid:
+			case OBJ_pid_fsuid:
+			case OBJ_pid_gid:
+			case OBJ_pid_egid:
+			case OBJ_pid_sgid:
+			case OBJ_pid_fsgid:
 				if(obj->sub) {
 					free_text_objects(obj->sub, 1);
 					free(obj->sub);

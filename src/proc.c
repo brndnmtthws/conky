@@ -384,3 +384,217 @@ void print_cmdline_to_pid(struct text_object *obj, char *p, int p_max_size) {
 		NORM_ERR(READERR, PROCDIR);
 	}
 }
+
+#define UID_ENTRY "Uid:\t"
+void print_pid_uid(struct text_object *obj, char *p, int p_max_size) {
+#define UIDNOTFOUND	"Can't find the process real uid in '%s'"
+	char *begin, *end, *buf = NULL;
+	int bytes_read;
+
+	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &bytes_read, 1);
+	if(buf != NULL) {
+		begin = strstr(buf, UID_ENTRY);
+		if(begin != NULL) {
+			begin += strlen(UID_ENTRY);
+			end = strchr(begin, '\t');
+			if(end != NULL) {
+				*(end) = 0;
+			}
+			snprintf(p, p_max_size, "%s", begin);
+		} else {
+			NORM_ERR(UIDNOTFOUND, obj->data.s);
+		}
+		free(buf);
+	}
+}
+
+void print_pid_euid(struct text_object *obj, char *p, int p_max_size) {
+#define EUIDNOTFOUND	"Can't find the process effective uid in '%s'"
+	char *begin, *end, *buf = NULL;
+	int bytes_read;
+
+	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &bytes_read, 1);
+	if(buf != NULL) {
+		begin = strstr(buf, UID_ENTRY);
+		if(begin != NULL) {
+			begin = strchr(begin, '\t'); begin++;
+			begin = strchr(begin, '\t'); begin++;
+			end = strchr(begin, '\t');
+			if(end != NULL) {
+				*(end) = 0;
+			}
+			snprintf(p, p_max_size, "%s", begin);
+		} else {
+			NORM_ERR(EUIDNOTFOUND, obj->data.s);
+		}
+		free(buf);
+	}
+}
+
+void print_pid_suid(struct text_object *obj, char *p, int p_max_size) {
+#define SUIDNOTFOUND	"Can't find the process saved set uid in '%s'"
+	char *begin, *end, *buf = NULL;
+	int bytes_read;
+
+	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &bytes_read, 1);
+	if(buf != NULL) {
+		begin = strstr(buf, UID_ENTRY);
+		if(begin != NULL) {
+			begin = strchr(begin, '\t'); begin++;
+			begin = strchr(begin, '\t'); begin++;
+			begin = strchr(begin, '\t'); begin++;
+			end = strchr(begin, '\t');
+			if(end != NULL) {
+				*(end) = 0;
+			}
+			snprintf(p, p_max_size, "%s", begin);
+		} else {
+			NORM_ERR(SUIDNOTFOUND, obj->data.s);
+		}
+		free(buf);
+	}
+}
+
+void print_pid_fsuid(struct text_object *obj, char *p, int p_max_size) {
+#define FSUIDNOTFOUND	"Can't find the process file system uid in '%s'"
+	char *begin, *end, *buf = NULL;
+	int bytes_read;
+
+	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &bytes_read, 1);
+	if(buf != NULL) {
+		begin = strstr(buf, UID_ENTRY);
+		if(begin != NULL) {
+			begin = strchr(begin, '\t'); begin++;
+			begin = strchr(begin, '\t'); begin++;
+			begin = strchr(begin, '\t'); begin++;
+			begin = strchr(begin, '\t'); begin++;
+			end = strchr(begin, '\n');
+			if(end != NULL) {
+				*(end) = 0;
+			}
+			snprintf(p, p_max_size, "%s", begin);
+		} else {
+			NORM_ERR(FSUIDNOTFOUND, obj->data.s);
+		}
+		free(buf);
+	}
+}
+
+#define GID_ENTRY "Gid:\t"
+void print_pid_gid(struct text_object *obj, char *p, int p_max_size) {
+#define GIDNOTFOUND	"Can't find the process real gid in '%s'"
+	char *begin, *end, *buf = NULL;
+	int bytes_read;
+
+	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &bytes_read, 1);
+	if(buf != NULL) {
+		begin = strstr(buf, GID_ENTRY);
+		if(begin != NULL) {
+			begin += strlen(GID_ENTRY);
+			end = strchr(begin, '\t');
+			if(end != NULL) {
+				*(end) = 0;
+			}
+			snprintf(p, p_max_size, "%s", begin);
+		} else {
+			NORM_ERR(GIDNOTFOUND, obj->data.s);
+		}
+		free(buf);
+	}
+}
+
+void print_pid_egid(struct text_object *obj, char *p, int p_max_size) {
+#define EGIDNOTFOUND	"Can't find the process effective gid in '%s'"
+	char *begin, *end, *buf = NULL;
+	int bytes_read;
+
+	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &bytes_read, 1);
+	if(buf != NULL) {
+		begin = strstr(buf, GID_ENTRY);
+		if(begin != NULL) {
+			begin = strchr(begin, '\t'); begin++;
+			begin = strchr(begin, '\t'); begin++;
+			end = strchr(begin, '\t');
+			if(end != NULL) {
+				*(end) = 0;
+			}
+			snprintf(p, p_max_size, "%s", begin);
+		} else {
+			NORM_ERR(EGIDNOTFOUND, obj->data.s);
+		}
+		free(buf);
+	}
+}
+
+void print_pid_sgid(struct text_object *obj, char *p, int p_max_size) {
+#define SGIDNOTFOUND	"Can't find the process saved set gid in '%s'"
+	char *begin, *end, *buf = NULL;
+	int bytes_read;
+
+	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &bytes_read, 1);
+	if(buf != NULL) {
+		begin = strstr(buf, GID_ENTRY);
+		if(begin != NULL) {
+			begin = strchr(begin, '\t'); begin++;
+			begin = strchr(begin, '\t'); begin++;
+			begin = strchr(begin, '\t'); begin++;
+			end = strchr(begin, '\t');
+			if(end != NULL) {
+				*(end) = 0;
+			}
+			snprintf(p, p_max_size, "%s", begin);
+		} else {
+			NORM_ERR(SGIDNOTFOUND, obj->data.s);
+		}
+		free(buf);
+	}
+}
+
+void print_pid_fsgid(struct text_object *obj, char *p, int p_max_size) {
+#define FSGIDNOTFOUND	"Can't find the process file system gid in '%s'"
+	char *begin, *end, *buf = NULL;
+	int bytes_read;
+
+	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &bytes_read, 1);
+	if(buf != NULL) {
+		begin = strstr(buf, GID_ENTRY);
+		if(begin != NULL) {
+			begin = strchr(begin, '\t'); begin++;
+			begin = strchr(begin, '\t'); begin++;
+			begin = strchr(begin, '\t'); begin++;
+			begin = strchr(begin, '\t'); begin++;
+			end = strchr(begin, '\n');
+			if(end != NULL) {
+				*(end) = 0;
+			}
+			snprintf(p, p_max_size, "%s", begin);
+		} else {
+			NORM_ERR(FSGIDNOTFOUND, obj->data.s);
+		}
+		free(buf);
+	}
+}

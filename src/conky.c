@@ -1694,6 +1694,62 @@ void generate_text_internal(char *p, int p_max_size,
 				obj->data.s = buf;
 				print_pid_stdout(obj, p, p_max_size);
 			}
+			OBJ(pid_uid) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_uid(obj, p, p_max_size);
+			}
+			OBJ(pid_euid) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_euid(obj, p, p_max_size);
+			}
+			OBJ(pid_suid) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_suid(obj, p, p_max_size);
+			}
+			OBJ(pid_fsuid) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_fsuid(obj, p, p_max_size);
+			}
+			OBJ(pid_gid) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_gid(obj, p, p_max_size);
+			}
+			OBJ(pid_egid) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_egid(obj, p, p_max_size);
+			}
+			OBJ(pid_sgid) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_sgid(obj, p, p_max_size);
+			}
+			OBJ(pid_fsgid) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_fsgid(obj, p, p_max_size);
+			}
 			OBJ(processes) {
 				spaced_print(p, p_max_size, "%hu", 4, cur->procs);
 			}
