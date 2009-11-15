@@ -30,9 +30,7 @@
 
 #define PROCDIR	"/proc"
 #define READERR	"Can't read '%s'"
-#define STATENOTFOUND	"Can't find the process state in '%s'"
 #define READSIZE 128
-#define STATE_ENTRY "State:\t"
 
 void print_pid_chroot(struct text_object *obj, char *p, int p_max_size);
 void print_pid_cmdline(struct text_object *obj, char *p, int p_max_size);
@@ -41,6 +39,7 @@ void print_pid_environ(struct text_object *obj, char *p, int p_max_size);
 void print_pid_environ_list(struct text_object *obj, char *p, int p_max_size);
 void print_pid_exe(struct text_object *obj, char *p, int p_max_size);
 void print_pid_openfiles(struct text_object *obj, char *p, int p_max_size);
+void print_pid_parent(struct text_object *obj, char *p, int p_max_size);
 void print_pid_state(struct text_object *obj, char *p, int p_max_size);
 void print_pid_state_short(struct text_object *obj, char *p, int p_max_size);
 void print_pid_stderr(struct text_object *obj, char *p, int p_max_size);

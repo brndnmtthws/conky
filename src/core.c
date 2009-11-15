@@ -662,6 +662,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ_ARG(pid_openfiles, 0, "pid_openfiles needs a pid as argument")
 		obj->sub = malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
+	END OBJ_ARG(pid_parent, 0, "pid_parent needs a pid as argument")
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
 	END OBJ_ARG(pid_state, 0, "pid_state needs a pid as argument")
 		obj->sub = malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
@@ -1279,6 +1282,7 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_pid_environ_list:
 			case OBJ_pid_exe:
 			case OBJ_pid_openfiles:
+			case OBJ_pid_parent:
 			case OBJ_pid_state:
 			case OBJ_pid_state_short:
 			case OBJ_pid_stderr:

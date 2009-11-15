@@ -2574,6 +2574,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>pid_parent</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>The pid of the parent of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>pid_state</option>
             </command>
             <option>pid</option>

@@ -1652,6 +1652,13 @@ void generate_text_internal(char *p, int p_max_size,
 				obj->data.s = buf;
 				print_pid_openfiles(obj, p, p_max_size);
 			}
+			OBJ(pid_parent) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_parent(obj, p, p_max_size);
+			}
 			OBJ(pid_state) {
 				char buf[max_user_text];
 

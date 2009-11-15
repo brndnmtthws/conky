@@ -241,7 +241,35 @@ void print_pid_openfiles(struct text_object *obj, char *p, int p_max_size) {
 	}
 }
 
+void print_pid_parent(struct text_object *obj, char *p, int p_max_size) {
+#define PARENT_ENTRY "PPid:\t"
+#define PARENTNOTFOUND	"Can't find the process parent in '%s'"
+	char *begin, *end, *buf = NULL;
+	int bytes_read;
+
+	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &bytes_read, 1);
+	if(buf != NULL) {
+		begin = strstr(buf, PARENT_ENTRY);
+		if(begin != NULL) {
+			begin += strlen(PARENT_ENTRY);
+			end = strchr(begin, '\n');
+			if(end != NULL) {
+				*(end) = 0;
+			}
+			snprintf(p, p_max_size, "%s", begin);
+		} else {
+			NORM_ERR(PARENTNOTFOUND, obj->data.s);
+		}
+		free(buf);
+	}
+}
+
 void print_pid_state(struct text_object *obj, char *p, int p_max_size) {
+#define STATE_ENTRY "State:\t"
+#define STATENOTFOUND	"Can't find the process state in '%s'"
 	char *begin, *end, *buf = NULL;
 	int bytes_read;
 
@@ -255,7 +283,7 @@ void print_pid_state(struct text_object *obj, char *p, int p_max_size) {
 			begin += strlen(STATE_ENTRY) + 3;	// +3 will strip the char representing the short state and the space and '(' that follow
 			end = strchr(begin, '\n');
 			if(end != NULL) {
-				*(end-1) = 0;
+				*(end-1) = 0;	// -1 strips the ')'
 			}
 			snprintf(p, p_max_size, "%s", begin);
 		} else {
