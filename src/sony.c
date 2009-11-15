@@ -33,6 +33,7 @@
 #include "config.h"
 #include "sony.h"
 #include "logging.h"
+#include "text_object.h"
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -43,11 +44,13 @@
 /* fanspeed in SONY_LAPTOP_DIR contains an integer value for fanspeed (0~255).
  * I don't know the exact measurement unit, though. I may assume that 0 for
  * 'fan stopped' and 255 for 'maximum fan speed'. */
-void get_sony_fanspeed(char *p_client_buffer, size_t client_buffer_size)
+void get_sony_fanspeed(struct text_object *obj, char *p_client_buffer, int client_buffer_size)
 {
 	FILE *fp;
 	unsigned int speed = 0;
 	char fan[128];
+
+	(void)obj;
 
 	if (!p_client_buffer || client_buffer_size <= 0) {
 		return;

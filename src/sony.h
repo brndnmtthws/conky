@@ -31,8 +31,6 @@
 #ifndef _SONY_H
 #define _SONY_H
 
-#include <sys/types.h>
-
-void get_sony_fanspeed(char *buf, size_t client_buffer_size);
+void get_sony_fanspeed(struct text_object *, char *, int);
 
 #endif /* _SONY_H */

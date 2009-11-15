@@ -901,10 +901,6 @@ void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%s",
 						get_disk_protect_queue(obj->data.s));
 			}
-			/* information from sony_laptop kernel module
-			 * /sys/devices/platform/sony-laptop */
-			OBJ(sony_fanspeed) {
-				get_sony_fanspeed(p, p_max_size);
 			}
 			OBJ(if_gw) {
 				if (!gateway_exists()) {
