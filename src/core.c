@@ -743,6 +743,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(processes, &update_total_processes)
 #ifdef __linux__
 	END OBJ(running_processes, &update_top)
+		top_running = 1;
 	END OBJ(threads, &update_threads)
 	END OBJ(running_threads, &update_stat)
 #else
