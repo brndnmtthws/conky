@@ -711,10 +711,13 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->sub = malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
 	END OBJ(processes, &update_total_processes)
-	END OBJ(running_processes, &update_running_processes)
 #ifdef __linux__
+	END OBJ(running_processes, &update_top)
 	END OBJ(threads, &update_threads)
-#endif
+	END OBJ(running_threads, &update_stat)
+#else
+	END OBJ(running_processes, &update_running_processes)
+#endif /* __linux__ */
 	END OBJ(shadecolor, 0)
 #ifdef X11
 		obj->data.l = arg ? get_x11_color(arg) : default_bg_color;

@@ -200,6 +200,7 @@ static struct process *new_process(int p)
 static int process_parse_stat(struct process *process)
 {
 	char line[BUFFER_LEN] = { 0 }, filename[BUFFER_LEN], procname[BUFFER_LEN];
+	char state[4];
 	int ps;
 	unsigned long user_time = 0;
 	unsigned long kernel_time = 0;
@@ -235,13 +236,17 @@ static int process_parse_stat(struct process *process)
 	rc = MIN((unsigned)(rparen - lparen - 1), sizeof(procname) - 1);
 	strncpy(procname, lparen + 1, rc);
 	procname[rc] = '\0';
-	rc = sscanf(rparen + 1, "%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %lu "
-			"%lu %*s %*s %*s %d %*s %*s %*s %u %u", &process->user_time,
+	rc = sscanf(rparen + 1, "%3s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %lu "
+			"%lu %*s %*s %*s %d %*s %*s %*s %u %u", state, &process->user_time,
 			&process->kernel_time, &nice_val, &process->vsize, &process->rss);
-	if (rc < 5) {
+	if (rc < 6) {
 		NORM_ERR("scaning data for %s failed, got only %d fields", procname, rc);
 		return 1;
 	}
+
+	if(state[0]=='R')
+		++ info.run_procs;
+
 	/* remove any "kdeinit: " */
 	if (procname == strstr(procname, "kdeinit")) {
 		snprintf(filename, sizeof(filename), PROCFS_CMDLINE_TEMPLATE,
@@ -424,6 +429,7 @@ static int update_process_table(void)
 		return 1;
 	}
 
+	info.run_procs = 0;
 	++g_time;
 
 	/* Get list of processes from /proc directory */

@@ -2849,6 +2849,15 @@
     <varlistentry>
         <term>
             <command>
+                <option>running_threads</option>
+            </command>
+        </term>
+        <listitem>Number of running (runnable) threads. Linux only.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>scroll</option>
             </command>
             <option>length (step) text</option>

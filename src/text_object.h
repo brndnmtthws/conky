@@ -270,6 +270,7 @@ enum text_object_type {
 	OBJ_sysname,
 	OBJ_text,
 	OBJ_threads,
+	OBJ_running_threads,
 	OBJ_time,
 	OBJ_utime,
 	OBJ_tztime,

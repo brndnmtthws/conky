@@ -666,7 +666,7 @@ void get_cpu_count(void)
 #define TMPL_LONGSTAT "%*s %llu %llu %llu %llu %llu %llu %llu %llu"
 #define TMPL_SHORTSTAT "%*s %llu %llu %llu %llu"
 
-inline static void update_stat(void)
+void update_stat(void)
 {
 	FILE *stat_fp;
 	static int rep = 0;
@@ -706,7 +706,7 @@ inline static void update_stat(void)
 	}
 
 	if (!(stat_fp = open_file("/proc/stat", &rep))) {
-		info.run_procs = 0;
+		info.run_threads = 0;
 		if (info.cpu_usage) {
 			memset(info.cpu_usage, 0, info.cpu_count * sizeof(float));
 		}
@@ -720,7 +720,7 @@ inline static void update_stat(void)
 		}
 
 		if (strncmp(buf, "procs_running ", 14) == 0) {
-			sscanf(buf, "%*s %hu", &info.run_procs);
+			sscanf(buf, "%*s %hu", &info.run_threads);
 		} else if (strncmp(buf, "cpu", 3) == 0) {
 			double delta;
 			if (isdigit(buf[3])) {

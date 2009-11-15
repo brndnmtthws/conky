@@ -228,6 +228,7 @@ struct information {
 	unsigned short procs;
 	unsigned short run_procs;
 	unsigned short threads;
+	unsigned short run_threads;
 
 	float *cpu_usage;
 	/* struct cpu_stat cpu_summed; what the hell is this? */

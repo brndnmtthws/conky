@@ -1757,6 +1757,9 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(running_processes) {
 				spaced_print(p, p_max_size, "%hu", 4, cur->run_procs);
 			}
+			OBJ(running_threads) {
+				spaced_print(p, p_max_size, "%hu", 4, cur->run_threads);
+			}
 			OBJ(threads) {
 				spaced_print(p, p_max_size, "%hu", 4, cur->threads);
 			}
