@@ -255,6 +255,7 @@ enum text_object_type {
 	OBJ_pid_egid,
 	OBJ_pid_sgid,
 	OBJ_pid_fsgid,
+	OBJ_gid_name,
 	OBJ_uid_name,
 	OBJ_processes,
 	OBJ_running_processes,

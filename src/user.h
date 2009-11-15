@@ -28,4 +28,5 @@
  *
  */
 
+void print_gid_name(struct text_object *obj, char *p, int p_max_size);
 void print_uid_name(struct text_object *obj, char *p, int p_max_size);

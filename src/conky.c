@@ -1813,6 +1813,13 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(totalup) {
 				print_totalup(obj, p, p_max_size);
 			}
+			OBJ(gid_name) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_gid_name(obj, p, p_max_size);
+			}
 			OBJ(uid_name) {
 				char buf[max_user_text];
 

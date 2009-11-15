@@ -30,6 +30,7 @@
 
 #include <logging.h>
 #include <pwd.h>
+#include <grp.h>
 #include <errno.h>
 #include "conky.h"
 
@@ -49,5 +50,24 @@ void print_uid_name(struct text_object *obj, char *p, int p_max_size) {
 		}
 	} else {
 		NORM_ERR("$uid_name didn't receive a uid as argument")
+	}
+}
+
+void print_gid_name(struct text_object *obj, char *p, int p_max_size) {
+	struct group *grp;
+	gid_t gid;
+	char* firstinvalid;
+
+	errno = 0;
+	gid = strtol(obj->data.s, &firstinvalid, 10);
+	if (errno == 0 && obj->data.s != firstinvalid) {
+		grp = getgrgid(gid);
+		if(grp != NULL) {
+			snprintf(p, p_max_size, "%s", grp->gr_name);
+		} else {
+			NORM_ERR("The gid %d doesn't exist", gid)
+		}
+	} else {
+		NORM_ERR("$gid_name didn't receive a gid as argument")
 	}
 }

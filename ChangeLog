@@ -1,7 +1,7 @@
 2009-11-15
 	* Added support for $pid_parent, $pid_uid, $pid_euid, $pid_suid,
 	$pid_fsuid, $pid_gid, $pid_egid, $pid_sgid and $pid_fsgid
-	* Added support for $uid_name
+	* Added support for $uid_name and $gid_name
 
 2009-11-14
 	* Added support for $pid_state and $pid_state_short

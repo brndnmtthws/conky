@@ -3377,6 +3377,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>gid_name</option>
+            </command>
+            <option>gid</option>
+        </term>
+        <listitem>Name of group with this gid
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>uid_name</option>
             </command>
             <option>uid</option>
