@@ -201,7 +201,7 @@ AM_CONDITIONAL(BUILD_IBM, test x$want_ibm = xyes)
 if test x$want_ibm = xyes; then
 	if test x"$uname" != xLinux; then
 		AC_MSG_NOTICE([support for IBM/Lenovo notebooks not supported on $uname... disabling])
-		want_ibm=no
+		want_ibm="not supported on $uname"
 	else
 		AC_DEFINE(IBM, 1, [Define if you want support for IBM/Lenovo notebooks (SMAPI)])
 	fi
@@ -221,7 +221,7 @@ AM_CONDITIONAL(BUILD_HDDTEMP, test x$want_hddtemp = xyes)
 if test x$want_hddtemp = xyes; then
   if test x"$uname" != xLinux; then
       AC_MSG_NOTICE([hddtemp not supported on $uname... disabling])
-      want_hddtemp=no
+      want_hddtemp="not supported on $uname"
   else
       AC_DEFINE(HDDTEMP, 1, [Define if you want hddtemp support])
   fi
@@ -240,7 +240,7 @@ AC_ARG_ENABLE([apcupsd],
 if test x$want_apcupsd = xyes; then
   if test x"$uname" != xLinux; then
       AC_MSG_NOTICE([apcupsd not supported on $uname... disabling])
-      want_apcupsd=no
+      want_apcupsd="not supported on $uname"
   else
       AC_DEFINE(APCUPSD, 1, [Define if you want apcupsd support])
   fi
@@ -260,7 +260,7 @@ AC_ARG_ENABLE([iostats],
 if test x$want_iostats = xyes; then
   if test x"$uname" != xLinux; then
       AC_MSG_NOTICE([iostats not supported on $uname... disabling])
-      want_iostats=no
+      want_iostats="not supported on $uname"
   else
       AC_DEFINE(IOSTATS, 1, [Define if you want support for per-task I/O statistics])
   fi
@@ -543,7 +543,7 @@ AC_ARG_ENABLE([portmon],
 if test x"$want_portmon" = xyes; then
   if test x"$uname" != xLinux; then
       AC_MSG_NOTICE([port monitors not supported on $uname... disabling])
-      want_portmon=no
+      want_portmon="not supported on $uname"
   else
         AC_CHECK_FUNCS([getnameinfo], [], AC_MSG_ERROR([getnameinfo function not found]))
         AC_CHECK_HEADERS([netdb.h netinet/in.h netinet/tcp.h sys/socket.h arpa/inet.h], [],
