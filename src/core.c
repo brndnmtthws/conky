@@ -1315,6 +1315,7 @@ int extract_variable_text_internal(struct text_object *retval, const char *const
 void free_text_objects(struct text_object *root, int internal)
 {
 	struct text_object *obj;
+	char type_is_if;
 
 	if (!root->prev) {
 		return;
@@ -1766,7 +1767,21 @@ void free_text_objects(struct text_object *root, int internal)
 				break;
 #endif /* X11 */
 		}
-		if(obj->type != OBJ_if_up && obj->special_data) free(obj->special_data);
+		type_is_if = 0;
+		if(obj->type == OBJ_if_gw || obj->type == OBJ_if_empty || obj->type == OBJ_if_match || obj->type == OBJ_if_existing || obj->type == OBJ_if_mounted || obj->type == OBJ_if_running || obj->type == OBJ_if_updatenr || obj->type == OBJ_if_mixer_mute) type_is_if = 1;
+#if defined(IBM)
+		if(obj->type == OBJ_if_smapi_bat_installed) type_is_if = 1;
+#endif
+#if defined(__FreeBSD__) || defined(__linux__)
+		if(obj->type == OBJ_if_up) type_is_if = 1;
+#endif
+#ifdef MPD
+		if(obj->type == OBJ_if_mpd_playing) type_is_if = 1;
+#endif
+#ifdef XMMS2
+		if(obj->type == OBJ_if_xmms2_connected) type_is_if = 1;
+#endif
+		if(obj->special_data && type_is_if == 0) free(obj->special_data);
 		free(obj);
 	}
 #undef data
