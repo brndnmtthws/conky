@@ -56,7 +56,7 @@ mandatory_sources = colours.c colours.h combine.c combine.h common.c common.h \
 		mboxscan.h read_tcp.c read_tcp.h scroll.c scroll.h specials.c \
 		specials.h tailhead.c tailhead.h temphelper.c temphelper.h \
 		text_object.c text_object.h timeinfo.c timeinfo.h algebra.c \
-		algebra.h proc.c proc.h
+		algebra.h proc.c proc.h user.c user.h
 
 # source files only needed when the apropriate option is enabled
 audacious = audacious.c audacious.h

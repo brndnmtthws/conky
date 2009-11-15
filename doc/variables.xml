@@ -3377,6 +3377,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>uid_name</option>
+            </command>
+            <option>uid</option>
+        </term>
+        <listitem>Username of user with this uid
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>unflagged_mails</option>
             </command>
             <option>(maildir)</option>
