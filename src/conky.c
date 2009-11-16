@@ -998,11 +998,6 @@ void generate_text_internal(char *p, int p_max_size,
 					DO_JUMP;
 				}
 			}
-#if defined(__linux__)
-			OBJ(ioscheduler) {
-				snprintf(p, p_max_size, "%s", get_ioscheduler(obj->data.s));
-			}
-#endif
 			OBJ(kernel) {
 				snprintf(p, p_max_size, "%s", cur->uname_s.release);
 			}

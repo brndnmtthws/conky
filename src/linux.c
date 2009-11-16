@@ -214,28 +214,31 @@ void print_laptop_mode(struct text_object *obj, char *p, int p_max_size)
  * # cat /sys/block/sda/queue/scheduler
  * noop [anticipatory] cfq
  */
-char *get_ioscheduler(char *disk)
+void print_ioscheduler(struct text_object *obj, char *p, int p_max_size)
 {
 	FILE *fp;
 	char buf[128];
 
-	if (!disk)
-		return strndup("n/a", text_buffer_size);
+	if (!obj->data.s)
+		goto out_fail;
 
-	snprintf(buf, 127, "/sys/block/%s/queue/scheduler", disk);
-	if ((fp = fopen(buf, "r")) == NULL) {
-		return strndup("n/a", text_buffer_size);
-	}
+	snprintf(buf, 127, "/sys/block/%s/queue/scheduler", obj->data.s);
+	if ((fp = fopen(buf, "r")) == NULL)
+		goto out_fail;
+
 	while (!feof(fp)) {
 		fscanf(fp, "%127s", buf);
 		if (buf[0] == '[') {
 			buf[strlen(buf) - 1] = '\0';
+			snprintf(p, p_max_size, "%s", buf + 1);
 			fclose(fp);
-			return strndup(buf + 1, text_buffer_size);
+			return;
 		}
 	}
 	fclose(fp);
-	return strndup("n/a", text_buffer_size);
+out_fail:
+	snprintf(p, p_max_size, "n/a");
+	return;
 }
 
 static struct {

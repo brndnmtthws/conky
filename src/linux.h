@@ -7,7 +7,7 @@
 
 void print_disk_protect_queue(struct text_object *, char *, int);
 
-char *get_ioscheduler(char *);
+void print_ioscheduler(struct text_object *, char *, int);
 void print_laptop_mode(struct text_object *, char *, int);
 
 void update_gateway_info(void);
