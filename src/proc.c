@@ -478,7 +478,7 @@ void print_pid_time_kernelmode(struct text_object *obj, char *p, int p_max_size)
 	buf = readfile(obj->data.s, &bytes_read, 1);
 	if(buf != NULL) {
 		sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %lu", &umtime);
-		snprintf(p, p_max_size, "%lu", umtime);
+		snprintf(p, p_max_size, "%.2f", (float) umtime / 100);
 		free(buf);
 	}
 }
@@ -494,7 +494,7 @@ void print_pid_time_usermode(struct text_object *obj, char *p, int p_max_size) {
 	buf = readfile(obj->data.s, &bytes_read, 1);
 	if(buf != NULL) {
 		sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %*u %lu", &kmtime);
-		snprintf(p, p_max_size, "%lu", kmtime);
+		snprintf(p, p_max_size, "%.2f", (float) kmtime / 100);
 		free(buf);
 	}
 }
@@ -510,7 +510,7 @@ void print_pid_time(struct text_object *obj, char *p, int p_max_size) {
 	buf = readfile(obj->data.s, &bytes_read, 1);
 	if(buf != NULL) {
 		sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %lu %lu", &umtime, &kmtime);
-		snprintf(p, p_max_size, "%lu", umtime + kmtime);
+		snprintf(p, p_max_size, "%.2f", (float) (umtime + kmtime) / 100);
 		free(buf);
 	}
 }

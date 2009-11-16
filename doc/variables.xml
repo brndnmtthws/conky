@@ -2681,7 +2681,7 @@
             </command>
             <option>pid</option>
         </term>
-        <listitem>Amount of time that the process has been scheduled in user mode
+        <listitem>Amount of time that the process has been scheduled in user mode in seconds
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2691,7 +2691,7 @@
             </command>
             <option>pid</option>
         </term>
-        <listitem>Amount of time that the process has been scheduled in user mode
+        <listitem>Amount of time that the process has been scheduled in user mode in seconds
         <para /></listitem>
     </varlistentry>
     <varlistentry>
