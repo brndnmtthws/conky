@@ -907,9 +907,6 @@ void generate_text_internal(char *p, int p_max_size,
 					DO_JUMP;
 				}
 			}
-			OBJ(laptop_mode) {
-				snprintf(p, p_max_size, "%d", get_laptop_mode());
-			}
 			OBJ(pb_battery) {
 				get_powerbook_batt_info(p, p_max_size, obj->data.i);
 			}

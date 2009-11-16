@@ -336,6 +336,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.s = strndup(dev_name(arg), text_buffer_size);
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(laptop_mode, 0)
+		obj->callbacks.print = &print_laptop_mode;
 	END OBJ_ARG(pb_battery, 0, "pb_battery: needs one argument: status, percent or time")
 		if (strcmp(arg, "status") == EQUAL) {
 			obj->data.i = PB_BATT_STATUS;

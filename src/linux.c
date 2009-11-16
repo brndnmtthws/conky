@@ -196,15 +196,18 @@ void update_meminfo(void)
 	fclose(meminfo_fp);
 }
 
-int get_laptop_mode(void)
+void print_laptop_mode(struct text_object *obj, char *p, int p_max_size)
 {
 	FILE *fp;
 	int val = -1;
 
-	if ((fp = fopen("/proc/sys/vm/laptop_mode", "r")) != NULL)
+	(void)obj;
+
+	if ((fp = fopen("/proc/sys/vm/laptop_mode", "r")) != NULL) {
 		fscanf(fp, "%d\n", &val);
-	fclose(fp);
-	return val;
+		fclose(fp);
+	}
+	snprintf(p, p_max_size, "%d", val);
 }
 
 /* my system says:
