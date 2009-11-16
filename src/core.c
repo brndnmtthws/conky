@@ -1009,7 +1009,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(user_terms, &update_users)
 	END OBJ(user_number, &update_users)
 	END OBJ(gw_iface, &update_gateway_info)
+		obj->callbacks.print = &print_gateway_iface;
 	END OBJ(gw_ip, &update_gateway_info)
+		obj->callbacks.print = &print_gateway_ip;
 #endif /* !__linux__ */
 #if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) \
 		|| defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))

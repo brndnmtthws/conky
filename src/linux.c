@@ -315,13 +315,17 @@ int gateway_exists(void)
 	return !!gw_info.count;
 }
 
-void print_gateway_iface(char *p, int p_max_size)
+void print_gateway_iface(struct text_object *obj, char *p, int p_max_size)
 {
+	(void)obj;
+
 	snprintf(p, p_max_size, "%s", gw_info.iface);
 }
 
-void print_gateway_ip(char *p, int p_max_size)
+void print_gateway_ip(struct text_object *obj, char *p, int p_max_size)
 {
+	(void)obj;
+
 	snprintf(p, p_max_size, "%s", gw_info.ip);
 }
 

@@ -907,12 +907,6 @@ void generate_text_internal(char *p, int p_max_size,
 					DO_JUMP;
 				}
 			}
-			OBJ(gw_iface) {
-				print_gateway_iface(p, p_max_size);
-			}
-			OBJ(gw_ip) {
-				print_gateway_ip(p, p_max_size);
-			}
 			OBJ(laptop_mode) {
 				snprintf(p, p_max_size, "%d", get_laptop_mode());
 			}

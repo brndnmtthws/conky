@@ -13,8 +13,8 @@ int get_laptop_mode(void);
 void update_gateway_info(void);
 void free_gateway_info(void);
 int gateway_exists(void);
-void print_gateway_iface(char *, int);
-void print_gateway_ip(char *, int);
+void print_gateway_iface(struct text_object *, char *, int);
+void print_gateway_ip(struct text_object *, char *, int);
 
 enum { PB_BATT_STATUS, PB_BATT_PERCENT, PB_BATT_TIME };
 void get_powerbook_batt_info(char *, size_t, int);
