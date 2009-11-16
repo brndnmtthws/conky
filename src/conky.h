@@ -320,9 +320,9 @@ int spaced_print(char *, int, const char *, int, ...)
 extern int inotify_fd;
 
 /* defined in conky.c
- * evaluates 'text' and places the result in 'buffer'
+ * evaluates 'text' and places the result in 'p' of max length 'p_max_size'
  */
-void evaluate(const char *text, char *buffer);
+void evaluate(const char *text, char *p, int p_max_size);
 
 /* maximum size of config TEXT buffer, i.e. below TEXT line. */
 extern unsigned int max_user_text;
@@ -359,7 +359,7 @@ void set_update_interval(double interval);
 #define UNUSED_ATTR __attribute__ ((unused))
 
 void parse_conky_vars(struct text_object *, const char *,
-			char *, struct information *);
+			char *, int, struct information *);
 
 void generate_text_internal(char *, int, struct text_object,
                                    struct information *);

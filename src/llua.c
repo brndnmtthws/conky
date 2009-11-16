@@ -59,7 +59,7 @@ static int llua_conky_parse(lua_State *L)
 		lua_error(L);
 	}
 	str = strdup(lua_tostring(L, 1));
-	evaluate(str, buf);
+	evaluate(str, buf, max_user_text);
 	lua_pushstring(L, buf);
 	free(str);
 	free(buf);

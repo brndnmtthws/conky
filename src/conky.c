@@ -714,10 +714,11 @@ static void extract_variable_text(const char *p)
 	extract_variable_text_internal(&global_root_object, p);
 }
 
-void parse_conky_vars(struct text_object *root, const char *txt, char *p, struct information *cur)
+void parse_conky_vars(struct text_object *root, const char *txt,
+		char *p, int p_max_size, struct information *cur)
 {
 	extract_variable_text_internal(root, txt);
-	generate_text_internal(p, max_user_text, *root, cur);
+	generate_text_internal(p, p_max_size, *root, cur);
 }
 
 static inline void format_media_player_time(char *buf, const int size,
@@ -1190,7 +1191,7 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* IMLIB2 */
 			OBJ(eval) {
-				evaluate(obj->data.s, p);
+				evaluate(obj->data.s, p, p_max_size);
 			}
 			OBJ(exec) {
 				print_exec(obj, p, p_max_size);
@@ -1226,7 +1227,7 @@ void generate_text_internal(char *p, int p_max_size,
 				print_execi(obj, p, p_max_size);
 			}
 			OBJ(execpi) {
-				print_execpi(obj, p);
+				print_execpi(obj, p, p_max_size);
 			}
 			OBJ(texeci) {
 				print_texeci(obj, p, p_max_size);
@@ -1320,7 +1321,7 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(lua_parse) {
 				char *str = llua_getstring(obj->data.s);
 				if (str) {
-					evaluate(str, p);
+					evaluate(str, p, p_max_size);
 					free(str);
 				}
 			}
@@ -2610,15 +2611,15 @@ void generate_text_internal(char *p, int p_max_size,
 #endif /* X11 */
 }
 
-void evaluate(const char *text, char *buffer)
+void evaluate(const char *text, char *p, int p_max_size)
 {
 	struct information *tmp_info;
 	struct text_object subroot;
 
 	tmp_info = malloc(sizeof(struct information));
 	memcpy(tmp_info, &info, sizeof(struct information));
-	parse_conky_vars(&subroot, text, buffer, tmp_info);
-	DBGP("evaluated '%s' to '%s'", text, buffer);
+	parse_conky_vars(&subroot, text, p, p_max_size, tmp_info);
+	DBGP("evaluated '%s' to '%s'", text, p);
 
 	free_text_objects(&subroot, 1);
 	free(tmp_info);

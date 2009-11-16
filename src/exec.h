@@ -40,7 +40,7 @@ void scan_execgraph_arg(struct text_object *, const char *);
 void print_exec(struct text_object *, char *, int);
 void print_execp(struct text_object *, char *, int);
 void print_execi(struct text_object *, char *, int);
-void print_execpi(struct text_object *, char *);
+void print_execpi(struct text_object *, char *, int);
 void print_texeci(struct text_object *, char *, int);
 #ifdef X11
 void print_execgauge(struct text_object *, char *, int);

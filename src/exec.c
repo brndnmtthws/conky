@@ -266,15 +266,20 @@ void print_execp(struct text_object *obj, char *p, int p_max_size)
 {
 	struct information *tmp_info;
 	struct text_object subroot;
+	char *buf;
 
-	read_exec(obj->data.s, p, p_max_size);
+	buf = malloc(text_buffer_size);
+	memset(buf, 0, text_buffer_size);
+
+	read_exec(obj->data.s, buf, text_buffer_size);
 
 	tmp_info = malloc(sizeof(struct information));
 	memcpy(tmp_info, &info, sizeof(struct information));
-	parse_conky_vars(&subroot, p, p, tmp_info);
+	parse_conky_vars(&subroot, buf, p, p_max_size, tmp_info);
 
 	free_text_objects(&subroot, 1);
 	free(tmp_info);
+	free(buf);
 }
 
 void print_execi(struct text_object *obj, char *p, int p_max_size)
@@ -293,7 +298,7 @@ void print_execi(struct text_object *obj, char *p, int p_max_size)
 	snprintf(p, p_max_size, "%s", ed->buffer);
 }
 
-void print_execpi(struct text_object *obj, char *p)
+void print_execpi(struct text_object *obj, char *p, int p_max_size)
 {
 	struct execi_data *ed = obj->data.opaque;
 	struct text_object subroot;
@@ -305,9 +310,7 @@ void print_execpi(struct text_object *obj, char *p)
 	tmp_info = malloc(sizeof(struct information));
 	memcpy(tmp_info, &info, sizeof(struct information));
 
-	if (!time_to_update(ed)) {
-		parse_conky_vars(&subroot, ed->buffer, p, tmp_info);
-	} else {
+	if (time_to_update(ed)) {
 		char *output;
 		int length;
 		FILE *fp = pid_popen(ed->cmd, "r", &childpid);
@@ -324,9 +327,9 @@ void print_execpi(struct text_object *obj, char *p)
 			output[length - 1] = '\0';
 		}
 
-		parse_conky_vars(&subroot, ed->buffer, p, tmp_info);
 		ed->last_update = current_update_time;
 	}
+	parse_conky_vars(&subroot, ed->buffer, p, p_max_size, tmp_info);
 	free_text_objects(&subroot, 1);
 	free(tmp_info);
 }
