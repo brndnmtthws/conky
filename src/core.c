@@ -1781,7 +1781,7 @@ void free_text_objects(struct text_object *root, int internal)
 #ifdef XMMS2
 		if(obj->type == OBJ_if_xmms2_connected) type_is_if = 1;
 #endif
-		if(obj->special_data && type_is_if == 0) free(obj->special_data);
+		if(obj->special_data && obj->type != OBJ_else && type_is_if == 0) free(obj->special_data);
 		free(obj);
 	}
 #undef data

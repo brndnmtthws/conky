@@ -1167,7 +1167,7 @@ void generate_text_internal(char *p, int p_max_size,
 				 * Do Ninja jump here: without leaving traces.
 				 * This is to prevent us from stale jumped flags.
 				 */
-				obj = obj->sub;
+				obj = obj->special_data;
 				continue;
 			}
 			OBJ(endif) {
