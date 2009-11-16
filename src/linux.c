@@ -127,17 +127,20 @@ void update_uptime(void)
 	}
 }
 
-int check_mount(char *s)
+int check_mount(struct text_object *obj)
 {
 	int ret = 0;
-	FILE *mtab = fopen("/etc/mtab", "r");
+	FILE *mtab;
 
-	if (mtab) {
+	if (!obj->data.s)
+		return 0;
+
+	if ((mtab = fopen("/etc/mtab", "r"))) {
 		char buf1[256], buf2[128];
 
 		while (fgets(buf1, 256, mtab)) {
 			sscanf(buf1, "%*s %128s", buf2);
-			if (!strcmp(s, buf2)) {
+			if (!strcmp(obj->data.s, buf2)) {
 				ret = 1;
 				break;
 			}

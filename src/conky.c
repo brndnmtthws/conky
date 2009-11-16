@@ -969,12 +969,6 @@ void generate_text_internal(char *p, int p_max_size,
 					*spc = ' ';
 				}
 			}
-			OBJ(if_mounted) {
-				if ((obj->data.s)
-						&& (!check_mount(obj->data.s))) {
-					DO_JUMP;
-				}
-			}
 			OBJ(if_running) {
 #ifdef __linux__
 				if (!get_process_by_name(obj->data.s)) {

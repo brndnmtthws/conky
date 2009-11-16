@@ -79,8 +79,9 @@ void update_meminfo()
 	/* TODO */
 }
 
-int check_mount(char *s)
+int check_mount(struct text_object *obj)
 {
 	/* stub */
+	(void)obj;
 	return 0;
 }

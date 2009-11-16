@@ -691,6 +691,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_IF_ARG(if_mounted, 0, "if_mounted needs an argument")
 		obj->data.s = strndup(arg, text_buffer_size);
+		obj->callbacks.iftest = &check_mount;
 		obj->callbacks.free = &gen_free_opaque;
 #ifdef __linux__
 	END OBJ_IF_ARG(if_running, &update_top, "if_running needs an argument")

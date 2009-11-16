@@ -17,7 +17,7 @@ void start_update_threading(void);
 
 
 void strfold(char *start, int count);
-int check_mount(char *s);
+int check_mount(struct text_object *);
 void prepare_update(void);
 void update_uptime(void);
 void update_meminfo(void);

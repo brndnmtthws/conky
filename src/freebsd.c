@@ -55,6 +55,7 @@
 #include "freebsd.h"
 #include "logging.h"
 #include "net_stat.h"
+#include "text_object.h"
 #include "top.h"
 #include "diskio.h"
 
@@ -135,14 +136,17 @@ void update_uptime(void)
 	}
 }
 
-int check_mount(char *s)
+int check_mount(struct text_object *obj)
 {
 	struct statfs *mntbuf;
 	int i, mntsize;
 
+	if (!obj->data.s)
+		return 0;
+
 	mntsize = getmntinfo(&mntbuf, MNT_NOWAIT);
 	for (i = mntsize - 1; i >= 0; i--) {
-		if (strcmp(mntbuf[i].f_mntonname, s) == 0) {
+		if (strcmp(mntbuf[i].f_mntonname, obj->data.s) == 0) {
 			return 1;
 		}
 	}
