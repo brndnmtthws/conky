@@ -819,40 +819,6 @@ void update_load_average(void)
 	}
 }
 
-#define PROC_I8K "/proc/i8k"
-#define I8K_DELIM " "
-static char *i8k_procbuf = NULL;
-void update_i8k(void)
-{
-	FILE *fp;
-
-	if (!i8k_procbuf) {
-		i8k_procbuf = (char *) malloc(128 * sizeof(char));
-	}
-	if ((fp = fopen(PROC_I8K, "r")) == NULL) {
-		CRIT_ERR(NULL, NULL, "/proc/i8k doesn't exist! use insmod to make sure the kernel "
-			"driver is loaded...");
-	}
-
-	memset(&i8k_procbuf[0], 0, 128);
-	if (fread(&i8k_procbuf[0], sizeof(char), 128, fp) == 0) {
-		NORM_ERR("something wrong with /proc/i8k...");
-	}
-
-	fclose(fp);
-
-	i8k.version = strtok(&i8k_procbuf[0], I8K_DELIM);
-	i8k.bios = strtok(NULL, I8K_DELIM);
-	i8k.serial = strtok(NULL, I8K_DELIM);
-	i8k.cpu_temp = strtok(NULL, I8K_DELIM);
-	i8k.left_fan_status = strtok(NULL, I8K_DELIM);
-	i8k.right_fan_status = strtok(NULL, I8K_DELIM);
-	i8k.left_fan_rpm = strtok(NULL, I8K_DELIM);
-	i8k.right_fan_rpm = strtok(NULL, I8K_DELIM);
-	i8k.ac_status = strtok(NULL, I8K_DELIM);
-	i8k.buttons_status = strtok(NULL, I8K_DELIM);
-}
-
 /***********************************************************/
 /***********************************************************/
 /***********************************************************/

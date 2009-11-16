@@ -80,6 +80,7 @@
 #include "diskio.h"
 #include "entropy.h"
 #include "exec.h"
+#include "i8k.h"
 #include "proc.h"
 #include "user.h"
 #ifdef X11
@@ -1002,70 +1003,34 @@ void generate_text_internal(char *p, int p_max_size,
 						get_disk_protect_queue(obj->data.s));
 			}
 			OBJ(i8k_version) {
-				snprintf(p, p_max_size, "%s", i8k.version);
+				print_i8k_version(obj, p, p_max_size);
 			}
 			OBJ(i8k_bios) {
-				snprintf(p, p_max_size, "%s", i8k.bios);
+				print_i8k_bios(obj, p, p_max_size);
 			}
 			OBJ(i8k_serial) {
-				snprintf(p, p_max_size, "%s", i8k.serial);
+				print_i8k_serial(obj, p, p_max_size);
 			}
 			OBJ(i8k_cpu_temp) {
-				int cpu_temp;
-
-				sscanf(i8k.cpu_temp, "%d", &cpu_temp);
-				temp_print(p, p_max_size, (double)cpu_temp, TEMP_CELSIUS);
+				print_i8k_cpu_temp(obj, p, p_max_size);
 			}
 			OBJ(i8k_left_fan_status) {
-				int left_fan_status;
-
-				sscanf(i8k.left_fan_status, "%d", &left_fan_status);
-				if (left_fan_status == 0) {
-					snprintf(p, p_max_size, "off");
-				}
-				if (left_fan_status == 1) {
-					snprintf(p, p_max_size, "low");
-				}
-				if (left_fan_status == 2) {
-					snprintf(p, p_max_size, "high");
-				}
+				print_i8k_left_fan_status(obj, p, p_max_size);
 			}
 			OBJ(i8k_right_fan_status) {
-				int right_fan_status;
-
-				sscanf(i8k.right_fan_status, "%d", &right_fan_status);
-				if (right_fan_status == 0) {
-					snprintf(p, p_max_size, "off");
-				}
-				if (right_fan_status == 1) {
-					snprintf(p, p_max_size, "low");
-				}
-				if (right_fan_status == 2) {
-					snprintf(p, p_max_size, "high");
-				}
+				print_i8k_right_fan_status(obj, p, p_max_size);
 			}
 			OBJ(i8k_left_fan_rpm) {
-				snprintf(p, p_max_size, "%s", i8k.left_fan_rpm);
+				print_i8k_left_fan_rpm(obj, p, p_max_size);
 			}
 			OBJ(i8k_right_fan_rpm) {
-				snprintf(p, p_max_size, "%s", i8k.right_fan_rpm);
+				print_i8k_right_fan_rpm(obj, p, p_max_size);
 			}
 			OBJ(i8k_ac_status) {
-				int ac_status;
-
-				sscanf(i8k.ac_status, "%d", &ac_status);
-				if (ac_status == -1) {
-					snprintf(p, p_max_size, "disabled (read i8k docs)");
-				}
-				if (ac_status == 0) {
-					snprintf(p, p_max_size, "off");
-				}
-				if (ac_status == 1) {
-					snprintf(p, p_max_size, "on");
-				}
+				print_i8k_ac_status(obj, p, p_max_size);
 			}
 			OBJ(i8k_buttons_status) {
-				snprintf(p, p_max_size, "%s", i8k.buttons_status);
+				print_i8k_buttons_status(obj, p, p_max_size);
 			}
 #if defined(IBM)
 			OBJ(ibm_fan) {

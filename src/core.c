@@ -38,6 +38,7 @@
 #include "diskio.h"
 #include "entropy.h"
 #include "exec.h"
+#include "i8k.h"
 #include "proc.h"
 #ifdef X11
 #include "fonts.h"

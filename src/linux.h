@@ -7,21 +7,6 @@
 
 const char *get_disk_protect_queue(const char *);
 
-struct i8k_struct {
-	char *version;
-	char *bios;
-	char *serial;
-	char *cpu_temp;
-	char *left_fan_status;
-	char *right_fan_status;
-	char *left_fan_rpm;
-	char *right_fan_rpm;
-	char *ac_status;
-	char *buttons_status;
-};
-
-struct i8k_struct i8k;
-
 char *get_ioscheduler(char *);
 int get_laptop_mode(void);
 

@@ -27,7 +27,6 @@ void update_total_processes(void);
 void update_uname(void);
 void update_threads(void);
 void update_running_processes(void);
-void update_i8k(void);
 void update_stuff(void);
 char get_freq(char *, size_t, const char *, int, unsigned int);
 char get_voltage(char *, size_t, const char *, int, unsigned int);	/* ptarjan */
