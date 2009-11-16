@@ -795,6 +795,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_mixerr_bar;
 	END OBJ_IF(if_mixer_mute, 0)
 		parse_mixer_arg(obj, arg);
+		obj->callbacks.iftest = &check_mixer_muted;
 #ifdef X11
 	END OBJ(monitor, &update_x11info)
 	END OBJ(monitor_number, &update_x11info)

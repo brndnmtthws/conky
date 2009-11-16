@@ -1013,12 +1013,6 @@ void generate_text_internal(char *p, int p_max_size,
 				new_graph(obj, p, p_max_size, cur->memmax ? (cur->mem * 100.0) / (cur->memmax) : 0.0);
 			}
 #endif /* X11 */
-			/* mixer stuff */
-			OBJ(if_mixer_mute) {
-				if (!check_mixer_muted(obj)) {
-					DO_JUMP;
-				}
-			}
 #ifdef X11
 #define NOT_IN_X "Not running in X"
 			OBJ(monitor) {
