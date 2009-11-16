@@ -17,7 +17,7 @@ void print_gateway_iface(struct text_object *, char *, int);
 void print_gateway_ip(struct text_object *, char *, int);
 
 enum { PB_BATT_STATUS, PB_BATT_PERCENT, PB_BATT_TIME };
-void get_powerbook_batt_info(char *, size_t, int);
+void get_powerbook_batt_info(struct text_object *, char *, int);
 
 void parse_i2c_sensor(struct text_object *, const char *);
 void parse_hwmon_sensor(struct text_object *, const char *);

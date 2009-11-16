@@ -348,6 +348,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			NORM_ERR("pb_battery: illegal argument '%s', defaulting to status", arg);
 			obj->data.i = PB_BATT_STATUS;
 		}
+		obj->callbacks.print = get_powerbook_batt_info;
 #endif /* __linux__ */
 #if (defined(__FreeBSD__) || defined(__linux__))
 	END OBJ_IF_ARG(if_up, 0, "if_up needs an argument")

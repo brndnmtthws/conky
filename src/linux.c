@@ -2081,7 +2081,7 @@ static char pb_battery_info[3][32];
 static double pb_battery_info_update;
 
 #define PMU_PATH "/proc/pmu"
-void get_powerbook_batt_info(char *buffer, size_t n, int i)
+void get_powerbook_batt_info(struct text_object *obj, char *buffer, int n)
 {
 	static int rep = 0;
 	const char *batt_path = PMU_PATH "/battery_0";
@@ -2092,7 +2092,7 @@ void get_powerbook_batt_info(char *buffer, size_t n, int i)
 
 	/* don't update battery too often */
 	if (current_update_time - pb_battery_info_update < 29.5) {
-		snprintf(buffer, n, "%s", pb_battery_info[i]);
+		snprintf(buffer, n, "%s", pb_battery_info[obj->data.i]);
 		return;
 	}
 	pb_battery_info_update = current_update_time;
@@ -2182,7 +2182,7 @@ void get_powerbook_batt_info(char *buffer, size_t n, int i)
 			sizeof(pb_battery_info[PB_BATT_TIME]), timeval);
 	}
 
-	snprintf(buffer, n, "%s", pb_battery_info[i]);
+	snprintf(buffer, n, "%s", pb_battery_info[obj->data.i]);
 }
 
 void update_top(void)

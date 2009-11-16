@@ -907,9 +907,6 @@ void generate_text_internal(char *p, int p_max_size,
 					DO_JUMP;
 				}
 			}
-			OBJ(pb_battery) {
-				get_powerbook_batt_info(p, p_max_size, obj->data.i);
-			}
 #endif /* __linux__ */
 #if (defined(__FreeBSD__) || defined(__linux__))
 			OBJ(if_up) {
