@@ -386,3 +386,10 @@ XMMS2_PRINT_GENERATOR(playlist, "%s")
 XMMS2_PRINT_GENERATOR(timesplayed, "%i")
 
 #undef XMMS2_PRINT_GENERATOR
+
+int check_xmms2_connected(struct text_object *obj)
+{
+	(void)obj;
+
+	return info.xmms2.conn_state == CONN_OK;
+}

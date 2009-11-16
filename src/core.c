@@ -1224,6 +1224,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(xmms2_timesplayed, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_timesplayed;
 	END OBJ_IF(if_xmms2_connected, &update_xmms2)
+		obj->callbacks.iftest = &if_xmms2_connected;
 #endif
 #ifdef AUDACIOUS
 	END OBJ(audacious_status, &update_audacious)

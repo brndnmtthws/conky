@@ -75,5 +75,6 @@ void print_xmms2_id(struct text_object *, char *, int);
 void print_xmms2_size(struct text_object *, char *, int);
 void print_xmms2_playlist(struct text_object *, char *, int);
 void print_xmms2_timesplayed(struct text_object *, char *, int);
+int check_xmms2_connected(struct text_object *);
 
 #endif /*XMMS2_H_*/

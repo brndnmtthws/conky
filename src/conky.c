@@ -1450,14 +1450,6 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* __FreeBSD__ __OpenBSD__ */
 
-#ifdef XMMS2
-			OBJ(if_xmms2_connected) {
-				if (cur->xmms2.conn_state != 1) {
-					DO_JUMP;
-				}
-			}
-#endif /* XMMS */
-
 #ifdef HAVE_ICONV
 			OBJ(iconv_start) {
 				do_iconv_start(obj);
