@@ -367,7 +367,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		parse_obsd_sensor(obj, arg);
 		obj->callbacks.print = &print_obsd_sensors_volt;
 	END OBJ(obsd_vendor, 0)
+		obj->callbacks.print = &get_obsd_vendor;
 	END OBJ(obsd_product, 0)
+		obj->callbacks.print = &get_obsd_product;
 #endif /* __OpenBSD__ */
 	END OBJ(buffers, &update_meminfo)
 	END OBJ(cached, &update_meminfo)

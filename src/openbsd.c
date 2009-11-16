@@ -547,14 +547,16 @@ void print_obsd_sensors_volt(struct text_object *obj, char *p, int p_max_size)
 }
 
 /* chipset vendor */
-void get_obsd_vendor(char *buf, size_t client_buffer_size)
+void get_obsd_vendor(struct text_object *obj, char *buf, size_t client_buffer_size)
 {
 	int mib[2];
+	char vendor[64];
+	size_t size = sizeof(vendor);
+
+	(void)obj;
 
 	mib[0] = CTL_HW;
 	mib[1] = HW_VENDOR;
-	char vendor[64];
-	size_t size = sizeof(vendor);
 
 	if (sysctl(mib, 2, vendor, &size, NULL, 0) == -1) {
 		NORM_ERR("error reading vendor");
@@ -565,14 +567,16 @@ void get_obsd_vendor(char *buf, size_t client_buffer_size)
 }
 
 /* chipset name */
-void get_obsd_product(char *buf, size_t client_buffer_size)
+void get_obsd_product(struct text_object *obj, char *buf, size_t client_buffer_size)
 {
 	int mib[2];
+	char product[64];
+	size_t size = sizeof(product);
+
+	(void)obj;
 
 	mib[0] = CTL_HW;
 	mib[1] = HW_PRODUCT;
-	char product[64];
-	size_t size = sizeof(product);
 
 	if (sysctl(mib, 2, product, &size, NULL, 0) == -1) {
 		NORM_ERR("error reading product");

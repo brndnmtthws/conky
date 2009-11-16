@@ -910,14 +910,6 @@ void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 #endif
-#ifdef __OpenBSD__
-			OBJ(obsd_vendor) {
-				get_obsd_vendor(p, p_max_size);
-			}
-			OBJ(obsd_product) {
-				get_obsd_product(p, p_max_size);
-			}
-#endif /* __OpenBSD__ */
 #ifdef X11
 			OBJ(font) {
 				new_font(p, obj->data.s);
