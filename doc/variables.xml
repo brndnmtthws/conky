@@ -2681,7 +2681,7 @@
             </command>
             <option>pid</option>
         </term>
-        <listitem>Amount of time that the process has been scheduled in user mode in seconds
+        <listitem>Amount of time that the process has been scheduled in kernel mode in seconds
         <para /></listitem>
     </varlistentry>
     <varlistentry>
