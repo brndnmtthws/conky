@@ -2637,6 +2637,26 @@
     <varlistentry>
         <term>
             <command>
+                <option>pid_threads</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Number of threads in process containing this thread
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pid_thread_list</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>List with pid's from threads from this process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>pid_uid</option>
             </command>
             <option>pid</option>

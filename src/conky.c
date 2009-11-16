@@ -1695,6 +1695,20 @@ void generate_text_internal(char *p, int p_max_size,
 				obj->data.s = buf;
 				print_pid_stdout(obj, p, p_max_size);
 			}
+			OBJ(pid_threads) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_threads(obj, p, p_max_size);
+			}
+			OBJ(pid_thread_list) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_thread_list(obj, p, p_max_size);
+			}
 			OBJ(pid_uid) {
 				char buf[max_user_text];
 

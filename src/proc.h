@@ -45,6 +45,8 @@ void print_pid_state_short(struct text_object *obj, char *p, int p_max_size);
 void print_pid_stderr(struct text_object *obj, char *p, int p_max_size);
 void print_pid_stdin(struct text_object *obj, char *p, int p_max_size);
 void print_pid_stdout(struct text_object *obj, char *p, int p_max_size);
+void print_pid_threads(struct text_object *obj, char *p, int p_max_size);
+void print_pid_thread_list(struct text_object *obj, char *p, int p_max_size);
 void print_pid_uid(struct text_object *obj, char *p, int p_max_size);
 void print_pid_euid(struct text_object *obj, char *p, int p_max_size);
 void print_pid_suid(struct text_object *obj, char *p, int p_max_size);

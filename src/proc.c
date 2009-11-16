@@ -385,6 +385,56 @@ void print_cmdline_to_pid(struct text_object *obj, char *p, int p_max_size) {
 	}
 }
 
+void print_pid_threads(struct text_object *obj, char *p, int p_max_size) {
+#define THREADS_ENTRY "Threads:\t"
+#define THREADSNOTFOUND	"Can't find the number of the threads of the process in '%s'"
+	char *begin, *end, *buf = NULL;
+	int bytes_read;
+
+	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &bytes_read, 1);
+	if(buf != NULL) {
+		begin = strstr(buf, THREADS_ENTRY);
+		if(begin != NULL) {
+			begin += strlen(THREADS_ENTRY);
+			end = strchr(begin, '\n');
+			if(end != NULL) {
+				*(end) = 0;
+			}
+			snprintf(p, p_max_size, "%s", begin);
+		} else {
+			NORM_ERR(THREADSNOTFOUND, obj->data.s);
+		}
+		free(buf);
+	}
+}
+
+void print_pid_thread_list(struct text_object *obj, char *p, int p_max_size) {
+	char *buf = NULL;
+	DIR* dir;
+	struct dirent *entry;
+	int totallength = 0;
+
+	asprintf(&buf, PROCDIR "/%s/task", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	dir = opendir(obj->data.s);
+	if(dir != NULL) {
+		while ((entry = readdir(dir))) {
+			if(entry->d_name[0] != '.') {
+				snprintf(p + totallength, p_max_size - totallength, "%s," , entry->d_name);
+				totallength += strlen(entry->d_name)+1;
+			}
+		}
+		closedir(dir);
+		if(p[totallength - 1] == ',') p[totallength - 1] = 0;
+	} else {
+		p[0] = 0;
+	}
+}
+
 #define UID_ENTRY "Uid:\t"
 void print_pid_uid(struct text_object *obj, char *p, int p_max_size) {
 #define UIDNOTFOUND	"Can't find the process real uid in '%s'"

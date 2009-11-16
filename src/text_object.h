@@ -247,6 +247,8 @@ enum text_object_type {
 	OBJ_pid_stderr,
 	OBJ_pid_stdin,
 	OBJ_pid_stdout,
+	OBJ_pid_threads,
+	OBJ_pid_thread_list,
 	OBJ_pid_uid,
 	OBJ_pid_euid,
 	OBJ_pid_suid,
