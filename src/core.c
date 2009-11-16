@@ -295,6 +295,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #if defined(__linux__)
 	END OBJ_ARG(disk_protect, 0, "disk_protect needs an argument")
 		obj->data.s = strndup(dev_name(arg), text_buffer_size);
+		obj->callbacks.print = &print_disk_protect_queue;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(i8k_version, &update_i8k)
 		obj->callbacks.print = &print_i8k_version;

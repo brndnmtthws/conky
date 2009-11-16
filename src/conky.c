@@ -897,11 +897,6 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* X11 */
 #if defined(__linux__)
-			OBJ(disk_protect) {
-				snprintf(p, p_max_size, "%s",
-						get_disk_protect_queue(obj->data.s));
-			}
-			}
 			OBJ(if_gw) {
 				if (!gateway_exists()) {
 					DO_JUMP;

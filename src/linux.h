@@ -5,7 +5,7 @@
 
 #include "common.h"
 
-const char *get_disk_protect_queue(const char *);
+void print_disk_protect_queue(struct text_object *, char *, int);
 
 char *get_ioscheduler(char *);
 void print_laptop_mode(struct text_object *, char *, int);

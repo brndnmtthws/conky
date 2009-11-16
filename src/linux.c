@@ -2229,24 +2229,27 @@ int get_entropy_poolsize(unsigned int *val)
 	return 0;
 }
 
-const char *get_disk_protect_queue(const char *disk)
+void print_disk_protect_queue(struct text_object *obj, char *p, int p_max_size)
 {
 	FILE *fp;
 	char path[128];
 	int state;
 
-	snprintf(path, 127, "/sys/block/%s/device/unload_heads", disk);
+	snprintf(path, 127, "/sys/block/%s/device/unload_heads", obj->data.s);
 	if (access(path, F_OK)) {
-		snprintf(path, 127, "/sys/block/%s/queue/protect", disk);
+		snprintf(path, 127, "/sys/block/%s/queue/protect", obj->data.s);
 	}
-	if ((fp = fopen(path, "r")) == NULL)
-		return "n/a   ";
+	if ((fp = fopen(path, "r")) == NULL) {
+		snprintf(p, p_max_size, "n/a   ");
+		return;
+	}
 	if (fscanf(fp, "%d\n", &state) != 1) {
 		fclose(fp);
-		return "failed";
+		snprintf(p, p_max_size, "failed");
+		return;
 	}
 	fclose(fp);
-	return (state > 0) ? "frozen" : "free  ";
+	snprintf(p, p_max_size, (state > 0) ? "frozen" : "free  ");
 }
 
 void update_diskio(void)
