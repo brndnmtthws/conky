@@ -356,6 +356,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #if (defined(__FreeBSD__) || defined(__linux__))
 	END OBJ_IF_ARG(if_up, 0, "if_up needs an argument")
 		parse_if_up_arg(obj, arg);
+		obj->callbacks.iftest = &interface_up;
 		obj->callbacks.free = &free_if_up;
 #endif
 #if defined(__OpenBSD__)
