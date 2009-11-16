@@ -1550,11 +1550,6 @@ void generate_text_internal(char *p, int p_max_size,
 				}
 				snprintf(p, p_max_size, "%s", buf);
 			}
-#ifdef NVIDIA
-			OBJ(nvidia) {
-				print_nvidia_value(obj, display, p, p_max_size);
-			}
-#endif /* NVIDIA */
 			break;
 		}
 #undef DO_JUMP

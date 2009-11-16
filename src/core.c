@@ -1401,6 +1401,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			CRIT_ERR(obj, free_at_crash, "nvidia: invalid argument"
 				 " specified: '%s'\n", arg);
 		}
+		obj->callbacks.print = &print_nvidia_value;
 		obj->callbacks.free = &free_nvidia;
 #endif /* NVIDIA */
 #ifdef APCUPSD

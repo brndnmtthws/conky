@@ -31,11 +31,8 @@
 #ifndef NVIDIA_CONKY_H
 #define NVIDIA_CONKY_H
 
-#include "text_object.h"
-#include <X11/Xlib.h>
-
 int set_nvidia_type(struct text_object *, const char *);
-void print_nvidia_value(struct text_object *, Display *, char *, int);
+void print_nvidia_value(struct text_object *, char *, int);
 void free_nvidia(struct text_object *);
 
 #endif
