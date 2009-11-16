@@ -935,11 +935,22 @@ static char *format_time(unsigned long timeval, const int width)
 	return strndup("<inf>", text_buffer_size);
 }
 
-void print_top(struct text_object *obj, char *p, int top_name_width)
+static unsigned int top_name_width = 15;
+
+/* return zero on success, non-zero otherwise */
+int set_top_name_width(const char *s)
+{
+	if (!s)
+		return 0;
+	return !(sscanf(s, "%u", &top_name_width) == 1);
+}
+
+void print_top(struct text_object *obj, char *p, int p_max_size)
 {
 	struct information *cur = &info;
 	struct top_data *td = obj->data.opaque;
 	struct process **needed = 0;
+	int width;
 
 	if (!td)
 		return;
@@ -963,53 +974,60 @@ void print_top(struct text_object *obj, char *p, int top_name_width)
 			return;
 	}
 
+
 	if (needed[td->num]) {
 		char *timeval;
 
 		switch (td->type) {
 			case TOP_NAME:
-				snprintf(p, top_name_width + 1, "%-*s", top_name_width,
+				width = MIN(p_max_size, (int)top_name_width + 1);
+				snprintf(p, width + 1, "%-*s", width,
 						needed[td->num]->name);
 				break;
 			case TOP_CPU:
-				snprintf(p, 7, "%6.2f",
+				width = MIN(p_max_size, 7);
+				snprintf(p, width, "%6.2f",
 						needed[td->num]->amount);
 				break;
 			case TOP_PID:
-				snprintf(p, 6, "%5i",
+				width = MIN(p_max_size, 6);
+				snprintf(p, width, "%5i",
 						needed[td->num]->pid);
 				break;
 			case TOP_MEM:
 				/* Calculate a percentage of residential mem from total mem available.
 				 * Since rss is bytes and memmax kilobytes, dividing by 10 suffices here. */
-				snprintf(p, 7, "%6.2f",
+				width = MIN(p_max_size, 7);
+				snprintf(p, width, "%6.2f",
 						(float) ((float)needed[td->num]->rss / cur->memmax) / 10);
 				break;
 			case TOP_TIME:
+				width = MIN(p_max_size, 10);
 				timeval = format_time(
 						needed[td->num]->total_cpu_time, 9);
-				snprintf(p, 10, "%9s", timeval);
+				snprintf(p, width, "%9s", timeval);
 				free(timeval);
 				break;
 			case TOP_MEM_RES:
 				human_readable(needed[td->num]->rss,
-						p, 255);
+						p, p_max_size);
 				break;
 			case TOP_MEM_VSIZE:
 				human_readable(needed[td->num]->vsize,
-						p, 255);
+						p, p_max_size);
 				break;
 #ifdef IOSTATS
 			case TOP_READ_BYTES:
 				human_readable(needed[td->num]->read_bytes / update_interval,
-						p, 255);
+						p, p_max_size);
 				break;
 			case TOP_WRITE_BYTES:
 				human_readable(needed[td->num]->write_bytes / update_interval,
-						p, 255);
+						p, p_max_size);
 				break;
 			case TOP_IO_PERC:
-				snprintf(p, 7, "%6.2f",
+				width = MIN(p_max_size, 7);
+				snprintf(p, width, "%6.2f",
 						needed[td->num]->io_perc);
 				break;
 #endif

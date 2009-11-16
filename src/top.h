@@ -145,4 +145,8 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj);
 void print_top(struct text_object *, char *, int);
 void free_top(struct text_object *, int);
 
+/* return zero on success, non-zero otherwise */
+int set_top_name_width(const char *);
+
+
 #endif /* _top_h_ */

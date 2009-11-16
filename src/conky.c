@@ -166,7 +166,6 @@ int top_io;
 #ifdef __linux__
 int top_running;
 #endif
-static unsigned int top_name_width = 15;
 int output_methods;
 char times_in_seconds = 0;
 static int extra_newline;
@@ -2294,9 +2293,7 @@ void generate_text_internal(char *p, int p_max_size,
 #ifdef IOSTATS
 			case OBJ_top_io:
 #endif
-				/* yes, passing top_name_width instead
-				 * of p_max_size is intended here */
-				print_top(obj, p, top_name_width);
+				print_top(obj, p, p_max_size);
 #endif /* __linux__ */
 			OBJ(tail) {
 				print_tailhead("tail", obj, p, p_max_size);
@@ -5095,16 +5092,8 @@ char load_config_file(const char *f)
 			no_buffers = string_to_bool(value);
 		}
 		CONF("top_name_width") {
-			if (value) {
-				if (sscanf(value, "%u", &top_name_width) != 1) {
-					CONF_ERR;
-				}
-			} else {
+			if (set_top_name_width(value))
 				CONF_ERR;
-			}
-			if (top_name_width >= max_user_text) {
-				top_name_width = max_user_text - 1;
-			}
 		}
 		CONF("top_cpu_separate") {
 			cpu_separate = string_to_bool(value);
