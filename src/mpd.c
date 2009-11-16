@@ -43,7 +43,23 @@ static int mpd_port;
 static int mpd_environment_password = 0;
 
 /* global mpd information */
-static struct mpd_s mpd_info;
+static struct {
+	char *title;
+	char *artist;
+	char *album;
+	const char *status;
+	const char *random;
+	const char *repeat;
+	char *track;
+	char *name;
+	char *file;
+	int is_playing;
+	int vol;
+	float progress;
+	int bitrate;
+	int length;
+	int elapsed;
+} mpd_info;
 
 /* number of users of the above struct */
 static int refcount = 0;
@@ -81,14 +97,9 @@ int mpd_set_port(const char *port)
 void init_mpd(void)
 {
 	if (!(refcount++))	/* first client */
-		memset(&mpd_info, 0, sizeof(struct mpd_s));
+		memset(&mpd_info, 0, sizeof(mpd_info));
 
 	refcount++;
-}
-
-struct mpd_s *mpd_get_info(void)
-{
-	return &mpd_info;
 }
 
 static void clear_mpd(void)
@@ -104,7 +115,7 @@ static void clear_mpd(void)
 	xfree(mpd_info.name);
 	xfree(mpd_info.file);
 #undef xfree
-	memset(&mpd_info, 0, sizeof(struct mpd_s));
+	memset(&mpd_info, 0, sizeof(mpd_info));
 }
 
 void free_mpd(void)
@@ -350,44 +361,43 @@ static inline void format_media_player_time(char *buf, const int size,
 void print_mpd_elapsed(struct text_object *obj, char *p, int p_max_size)
 {
 	(void)obj;
-	format_media_player_time(p, p_max_size, mpd_get_info()->elapsed);
+	format_media_player_time(p, p_max_size, mpd_info.elapsed);
 }
 
 void print_mpd_length(struct text_object *obj, char *p, int p_max_size)
 {
 	(void)obj;
-	format_media_player_time(p, p_max_size, mpd_get_info()->length);
+	format_media_player_time(p, p_max_size, mpd_info.length);
 }
 
 void print_mpd_percent(struct text_object *obj, char *p, int p_max_size)
 {
 	(void)obj;
-	percent_print(p, p_max_size, (int)(mpd_get_info()->progress * 100));
+	percent_print(p, p_max_size, (int)(mpd_info.progress * 100));
 }
 
 void print_mpd_bar(struct text_object *obj, char *p, int p_max_size)
 {
-	new_bar(obj, p, p_max_size, (int) (mpd_get_info()->progress * 255.0f));
+	new_bar(obj, p, p_max_size, (int) (mpd_info.progress * 255.0f));
 }
 
 void print_mpd_smart(struct text_object *obj, char *p, int p_max_size)
 {
-	struct mpd_s *mpd = mpd_get_info();
 	int len = obj->data.i;
 	if (len == 0 || len > p_max_size)
 		len = p_max_size;
 
 	memset(p, 0, p_max_size);
-	if (mpd->artist && *mpd->artist &&
-			mpd->title && *mpd->title) {
-		snprintf(p, len, "%s - %s", mpd->artist,
-				mpd->title);
-	} else if (mpd->title && *mpd->title) {
-		snprintf(p, len, "%s", mpd->title);
-	} else if (mpd->artist && *mpd->artist) {
-		snprintf(p, len, "%s", mpd->artist);
-	} else if (mpd->file && *mpd->file) {
-		snprintf(p, len, "%s", mpd->file);
+	if (mpd_info.artist && *mpd_info.artist &&
+			mpd_info.title && *mpd_info.title) {
+		snprintf(p, len, "%s - %s", mpd_info.artist,
+				mpd_info.title);
+	} else if (mpd_info.title && *mpd_info.title) {
+		snprintf(p, len, "%s", mpd_info.title);
+	} else if (mpd_info.artist && *mpd_info.artist) {
+		snprintf(p, len, "%s", mpd_info.artist);
+	} else if (mpd_info.file && *mpd_info.file) {
+		snprintf(p, len, "%s", mpd_info.file);
 	} else {
 		*p = 0;
 	}
@@ -396,7 +406,7 @@ void print_mpd_smart(struct text_object *obj, char *p, int p_max_size)
 int check_mpd_playing(struct text_object *obj)
 {
 	(void)obj;
-	return mpd_get_info()->is_playing;
+	return mpd_info.is_playing;
 }
 
 #define MPD_PRINT_GENERATOR(name, fmt) \
@@ -404,7 +414,7 @@ void print_mpd_##name(struct text_object *obj, char *p, int p_max_size) \
 { \
 	if (obj->data.i && obj->data.i < p_max_size) \
 		p_max_size = obj->data.i; \
-	snprintf(p, p_max_size, fmt, mpd_get_info()->name); \
+	snprintf(p, p_max_size, fmt, mpd_info.name); \
 }
 
 MPD_PRINT_GENERATOR(title, "%s")
