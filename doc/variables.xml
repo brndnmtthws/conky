@@ -2564,6 +2564,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>pid_nice</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>The nice value of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>pid_openfiles</option>
             </command>
             <option>pid</option>
@@ -2579,6 +2589,16 @@
             <option>pid</option>
         </term>
         <listitem>The pid of the parent of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pid_priority</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>The priority of the process (see 'priority' in "man 5 proc")
         <para /></listitem>
     </varlistentry>
     <varlistentry>

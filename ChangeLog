@@ -1,5 +1,5 @@
 2009-11-16
-	* Added support for $pid_threads and $pid_thread_list
+	* Added support for $pid_threads, $pid_thread_list, $pid_nice and $pid_priority
 
 2009-11-15
 	* Added support for $pid_parent, $pid_uid, $pid_euid, $pid_suid,

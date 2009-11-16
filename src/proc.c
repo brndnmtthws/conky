@@ -208,6 +208,22 @@ void print_pid_exe(struct text_object *obj, char *p, int p_max_size) {
 	free(buffer);
 }
 
+void print_pid_nice(struct text_object *obj, char *p, int p_max_size) {
+	char *buf = NULL;
+	int bytes_read;
+	long int nice_value;
+
+	asprintf(&buf, PROCDIR "/%s/stat", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &bytes_read, 1);
+	if(buf != NULL) {
+		sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %*u %*u %*d %*d %*d %ld", &nice_value);
+		snprintf(p, p_max_size, "%ld", nice_value);
+		free(buf);
+	}
+}
+
 void print_pid_openfiles(struct text_object *obj, char *p, int p_max_size) {
 	DIR* dir;
 	struct dirent *entry;
@@ -263,6 +279,22 @@ void print_pid_parent(struct text_object *obj, char *p, int p_max_size) {
 		} else {
 			NORM_ERR(PARENTNOTFOUND, obj->data.s);
 		}
+		free(buf);
+	}
+}
+
+void print_pid_priority(struct text_object *obj, char *p, int p_max_size) {
+	char *buf = NULL;
+	int bytes_read;
+	long int priority;
+
+	asprintf(&buf, PROCDIR "/%s/stat", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &bytes_read, 1);
+	if(buf != NULL) {
+		sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %*u %*u %*d %*d %ld", &priority);
+		snprintf(p, p_max_size, "%ld", priority);
 		free(buf);
 	}
 }
