@@ -316,8 +316,9 @@ void free_gateway_info(void)
 	memset(&gw_info, 0, sizeof(gw_info));
 }
 
-int gateway_exists(void)
+int gateway_exists(struct text_object *obj)
 {
+	(void)obj;
 	return !!gw_info.count;
 }
 

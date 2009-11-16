@@ -896,13 +896,6 @@ void generate_text_internal(char *p, int p_max_size,
 				new_graph(obj, p, p_max_size, round_to_int(cur->cpu_usage[obj->data.i] * 100));
 			}
 #endif /* X11 */
-#if defined(__linux__)
-			OBJ(if_gw) {
-				if (!gateway_exists()) {
-					DO_JUMP;
-				}
-			}
-#endif /* __linux__ */
 #if (defined(__FreeBSD__) || defined(__linux__))
 			OBJ(if_up) {
 				if (!interface_up(obj)) {

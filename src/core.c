@@ -333,6 +333,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(sony_fanspeed, 0)
 		obj->callbacks.print = &get_sony_fanspeed;
 	END OBJ_IF(if_gw, &update_gateway_info)
+		obj->callbacks.iftest = &gateway_exists;
 	END OBJ_ARG(ioscheduler, 0, "get_ioscheduler needs an argument (e.g. hda)")
 		obj->data.s = strndup(dev_name(arg), text_buffer_size);
 		obj->callbacks.print = &print_ioscheduler;

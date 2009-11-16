@@ -12,7 +12,7 @@ void print_laptop_mode(struct text_object *, char *, int);
 
 void update_gateway_info(void);
 void free_gateway_info(void);
-int gateway_exists(void);
+int gateway_exists(struct text_object *);
 void print_gateway_iface(struct text_object *, char *, int);
 void print_gateway_ip(struct text_object *, char *, int);
 
