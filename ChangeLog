@@ -1,6 +1,7 @@
 2009-11-16
 	* Added support for $pid_threads, $pid_thread_list, $pid_nice,
 	$pid_priority, $pid_time_usermode, $pid_time_kernelmode and $pid_time
+	* Added IPv6 support to $tcp_portmon
 
 2009-11-15
 	* Added support for $pid_parent, $pid_uid, $pid_euid, $pid_suid,

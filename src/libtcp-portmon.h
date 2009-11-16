@@ -39,7 +39,6 @@
 
 /* connection deleted if unseen again after this # of refreshes */
 #define TCP_CONNECTION_STARTING_AGE 1
-#define TCP_CONNECTION_HASH_KEY_SIZE 28
 #define TCP_PORT_MONITOR_HASH_KEY_SIZE 12
 #define MAX_PORT_MONITOR_CONNECTIONS_DEFAULT 256
 
@@ -72,10 +71,9 @@ enum tcp_port_monitor_peekables {
  * ------------------------------------------------------------------------ */
 typedef struct _tcp_connection_t {
 	/* connection's key in monitor hash */
-	gchar key[TCP_CONNECTION_HASH_KEY_SIZE];
-	in_addr_t local_addr;
+	struct in6_addr local_addr;
+	struct in6_addr remote_addr;
 	in_port_t local_port;
-	in_addr_t remote_addr;
 	in_port_t remote_port;
 	int age;
 } tcp_connection_t;

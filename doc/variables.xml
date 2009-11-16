@@ -3237,12 +3237,11 @@
                 <option>tcp_portmon</option>
             </command>
             <option>port_begin port_end item (index)</option>
-            <emphasis>(ip4 only at present)</emphasis>
         </term>
         <listitem>
-            <para>TCP port monitor for specified local ports. Port
-            numbers must be in the range 1 to 65535. Valid items
-            are:</para>
+            <para>TCP port (both IPv6 and IPv4) monitor for
+            specified local ports. Port numbers must be in
+            the range 1 to 65535. Valid items are:</para>
             <simplelist>
                 <member>
                     <command>count</command>

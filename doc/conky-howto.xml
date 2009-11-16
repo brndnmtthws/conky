@@ -54,7 +54,7 @@ Unlike other system monitors such as top, Conky can run as a window in an X sess
 <body>
 
 <p>
-Gentoo provides an ebuild to quickly and easily install Conky.  Pay particular attention to the the USE flags.  You'll most likely want X11 support (<c>X</c>), and make sure you select the USE flags for any music players (other than MPD) which you want.  XMMS (<c>xmms</c>), Audacious (<c>audacious</c>), BMPx (<c>bmpx</c>), or XMMS support via the xmms-infopipe plugin (<c>infopipe</c>).  If you want to use the TCP port monitor, be SURE to disable the <c>ipv6</c> use flag, as the port monitor is for ipv4 systems only.
+Gentoo provides an ebuild to quickly and easily install Conky.  Pay particular attention to the the USE flags.  You'll most likely want X11 support (<c>X</c>), and make sure you select the USE flags for any music players (other than MPD) which you want.  XMMS (<c>xmms</c>), Audacious (<c>audacious</c>), BMPx (<c>bmpx</c>), or XMMS support via the xmms-infopipe plugin (<c>infopipe</c>).
 </p>
 
 <pre caption="/etc/portage/package.use">

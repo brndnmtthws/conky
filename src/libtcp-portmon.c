@@ -49,8 +49,6 @@ int copy_tcp_connection(tcp_connection_t *p_dest_connection,
 		return -1;
 	}
 
-	g_strlcpy(p_dest_connection->key, p_source_connection->key,
-		sizeof(p_dest_connection->key));
 	p_dest_connection->local_addr = p_source_connection->local_addr;
 	p_dest_connection->local_port = p_source_connection->local_port;
 	p_dest_connection->remote_addr = p_source_connection->remote_addr;
@@ -129,7 +127,7 @@ void age_tcp_port_monitor(tcp_port_monitor_t *p_monitor, void *p_void)
 		fprintf(stderr, " - OK\n");
 #else
 		if (!g_hash_table_remove(p_monitor->hash,
-				(gconstpointer) p_conn->key)) {
+				(gconstpointer) p_conn)) {
 			return;
 		}
 #endif
@@ -215,7 +213,7 @@ void show_connection_to_tcp_port_monitor(tcp_port_monitor_t *p_monitor,
 
 		/* first check the hash to see if the connection is already there. */
 		if ((p_conn_hash = g_hash_table_lookup(p_monitor->hash,
-				(gconstpointer) p_connection->key))) {
+				(gconstpointer) p_connection))) {
 			/* it's already in the hash.  reset the age of the connection. */
 			p_conn_hash->age = TCP_CONNECTION_STARTING_AGE;
 
@@ -252,7 +250,7 @@ void show_connection_to_tcp_port_monitor(tcp_port_monitor_t *p_monitor,
 			p_node->connection.key);
 #endif
 		g_hash_table_insert(p_monitor->hash,
-			(gpointer) p_node->connection.key, (gpointer) &p_node->connection);
+			(gpointer) &p_node->connection, (gpointer) &p_node->connection);
 
 		/* append the node to the monitor's connection list */
 		if (p_monitor->connection_list.p_tail == NULL) {
@@ -294,6 +292,136 @@ void for_each_tcp_port_monitor_in_collection(
 	}
 }
 
+static const unsigned char prefix_4on6[] = {
+	0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0xff, 0xff
+};
+
+union sockaddr_in46 {
+	struct sockaddr_in  sa4;
+	struct sockaddr_in6 sa6;
+	struct sockaddr     sa;
+};
+
+/* checks whether the address is a IPv4-mapped IPv6 address */
+static int is_4on6(const struct in6_addr *addr)
+{
+	return ! memcmp(&addr->s6_addr, prefix_4on6, sizeof(prefix_4on6));
+}
+
+
+/* converts the address to appropriate textual representation (IPv6, IPv4 or fqdn) */
+static void print_host(char *p_buffer, size_t buffer_size, const struct in6_addr *addr, int fqdn)
+{
+	union sockaddr_in46 sa;
+	socklen_t slen;
+
+	memset(&sa, 0, sizeof(sa));
+
+	if(is_4on6(addr)) {
+		sa.sa4.sin_family = AF_INET;
+		memcpy(&sa.sa4.sin_addr.s_addr, &addr->s6_addr[12], 4);
+		slen = sizeof(sa.sa4);
+	} else {
+		sa.sa6.sin6_family = AF_INET6;
+		memcpy(&sa.sa6.sin6_addr, addr, sizeof(struct in6_addr));
+		slen = sizeof(sa.sa6);
+	}
+
+	getnameinfo(&sa.sa, slen, p_buffer, buffer_size, NULL, 0, fqdn?0:NI_NUMERICHOST);
+}
+
+/* converts the textual representation of an IPv4 or IPv6 address to struct in6_addr */
+static void string_to_addr(struct in6_addr *addr, const char *p_buffer)
+{
+	size_t i;
+
+	if(strlen(p_buffer) < 32) { //IPv4 address
+		i = sizeof(prefix_4on6);
+		memcpy(addr->s6_addr, prefix_4on6, i);
+	} else {
+		i = 0;
+	}
+
+	for( ; i < sizeof(addr->s6_addr); i+=4, p_buffer+=8) {
+		sscanf(p_buffer, "%8x", (unsigned *)&addr->s6_addr[i]);
+	}
+}
+
+/* hash function for tcp_connections */
+static guint tcp_connection_hash(gconstpointer A)
+{
+	const tcp_connection_t *a = (const tcp_connection_t *) A;
+	guint hash = 0;
+	size_t i;
+
+	hash = hash*47 + a->local_port;
+	hash = hash*47 + a->remote_port;
+	for(i = 0; i < sizeof(a->local_addr.s6_addr); ++i)
+		hash = hash*47 + a->local_addr.s6_addr[i];
+	for(i = 0; i < sizeof(a->remote_addr.s6_addr); ++i)
+		hash = hash*47 + a->remote_addr.s6_addr[i];
+
+	return hash;
+}
+
+/* comparison function for tcp_connections */
+static gboolean tcp_connection_equal(gconstpointer A, gconstpointer B)
+{
+	const tcp_connection_t *a = (const tcp_connection_t *) A;
+	const tcp_connection_t *b = (const tcp_connection_t *) B;
+
+	return a->local_port == b->local_port && a->remote_port == b->remote_port &&
+		! memcmp(&a->local_addr, &b->local_addr, sizeof(a->local_addr)) &&
+		! memcmp(&a->remote_addr.s6_addr, &b->remote_addr, sizeof(a->remote_addr));
+}
+
+/* adds connections from file to the collection */
+static void process_file(tcp_port_monitor_collection_t *p_collection, const char *file)
+{
+	FILE *fp;
+	char buf[256];
+	char local_addr[40];
+	char remote_addr[40];
+	tcp_connection_t conn;
+	unsigned long inode, uid, state;
+
+	if ((fp = fopen(file, "r")) == NULL) {
+		return;
+	}
+
+	/* ignore field name line */
+	fgets(buf, 255, fp);
+
+	/* read all tcp connections */
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
+
+		if (sscanf(buf,
+				"%*d: %39[0-9a-fA-F]:%hx %39[0-9a-fA-F]:%hx %lx %*x:%*x %*x:%*x %*x %lu %*d %lu",
+				local_addr, &conn.local_port,
+				remote_addr, &conn.remote_port,
+				(unsigned long *) &state, (unsigned long *) &uid,
+				(unsigned long *) &inode) != 7) {
+			fprintf(stderr, "/proc/net/tcp: bad file format\n");
+		}
+		/** TCP_ESTABLISHED equals 1, but is not (always??) included **/
+		//if ((inode == 0) || (state != TCP_ESTABLISHED)) {
+		if((inode == 0) || (state != 1)) {
+			continue;
+		}
+
+		string_to_addr(&conn.local_addr, local_addr);
+		string_to_addr(&conn.remote_addr, remote_addr);
+
+		/* show the connection to each port monitor. */
+		for_each_tcp_port_monitor_in_collection(p_collection,
+			&show_connection_to_tcp_port_monitor, (void *) &conn);
+	}
+
+	fclose(fp);
+}
+
 /* ----------------------------------------------------------------------
  * CLIENT INTERFACE
  *
@@ -324,7 +452,7 @@ tcp_port_monitor_t *create_tcp_port_monitor(in_port_t port_range_begin,
 	g_sprintf(p_monitor->key, ":%04X :%04X", port_range_begin, port_range_end);
 
 	/* create the monitor's connection hash */
-	if ((p_monitor->hash = g_hash_table_new(g_str_hash, g_str_equal)) == NULL) {
+	if ((p_monitor->hash = g_hash_table_new(tcp_connection_hash, tcp_connection_equal)) == NULL) {
 		/* we failed to create the hash, so destroy the monitor completely
 		 * so we don't leak */
 		destroy_tcp_port_monitor(p_monitor, NULL);
@@ -357,18 +485,17 @@ tcp_port_monitor_t *create_tcp_port_monitor(in_port_t port_range_begin,
 int peek_tcp_port_monitor(const tcp_port_monitor_t *p_monitor, int item,
 		int connection_index, char *p_buffer, size_t buffer_size)
 {
-	struct in_addr net;
 	struct sockaddr_in sa;
 
-	sa.sin_family = AF_INET;
-	
 	if (!p_monitor || !p_buffer || connection_index < 0) {
 		return -1;
 	}
 
 	memset(p_buffer, 0, buffer_size);
-	memset(&net, 0, sizeof(net));
+	memset(&sa, 0, sizeof(sa));
 
+	sa.sin_family = AF_INET;
+	
 	/* if the connection index is out of range, we simply return with no error,
 	 * having first cleared the client-supplied buffer. */
 	if ((item != COUNT) && (connection_index
@@ -386,14 +513,12 @@ int peek_tcp_port_monitor(const tcp_port_monitor_t *p_monitor, int item,
 
 		case REMOTEIP:
 
-			net.s_addr = p_monitor->p_peek[connection_index]->remote_addr;
-			snprintf(p_buffer, buffer_size, "%s", inet_ntoa(net));
+			print_host(p_buffer, buffer_size, &p_monitor->p_peek[connection_index]->remote_addr, 0);
 			break;
 
 		case REMOTEHOST:
 
-			memcpy(&sa.sin_addr.s_addr, &p_monitor->p_peek[connection_index]->remote_addr, sizeof(sa.sin_addr.s_addr));
-			getnameinfo((struct sockaddr *) &sa, sizeof(struct sockaddr_in), p_buffer, buffer_size, NULL, 0, 0);
+			print_host(p_buffer, buffer_size, &p_monitor->p_peek[connection_index]->remote_addr, 1);
 			break;
 
 		case REMOTEPORT:
@@ -410,14 +535,12 @@ int peek_tcp_port_monitor(const tcp_port_monitor_t *p_monitor, int item,
 
 		case LOCALIP:
 
-			net.s_addr = p_monitor->p_peek[connection_index]->local_addr;
-			snprintf(p_buffer, buffer_size, "%s", inet_ntoa(net));
+			print_host(p_buffer, buffer_size, &p_monitor->p_peek[connection_index]->local_addr, 0);
 			break;
 
 		case LOCALHOST:
 
-			memcpy(&sa.sin_addr.s_addr, &p_monitor->p_peek[connection_index]->local_addr, sizeof(sa.sin_addr.s_addr));
-			getnameinfo((struct sockaddr *) &sa, sizeof(struct sockaddr_in), p_buffer, buffer_size, NULL, 0, 0);
+			print_host(p_buffer, buffer_size, &p_monitor->p_peek[connection_index]->local_addr, 1);
 			break;
 
 		case LOCALPORT:
@@ -504,54 +627,16 @@ void destroy_tcp_port_monitor_collection(
 void update_tcp_port_monitor_collection(
 		tcp_port_monitor_collection_t *p_collection)
 {
-	FILE *fp;
-	char buf[256];
-	tcp_connection_t conn;
-	unsigned long inode, uid, state;
-
 	if (!p_collection) {
 		return;
 	}
 
+	process_file(p_collection, "/proc/net/tcp");
+	process_file(p_collection, "/proc/net/tcp6");
+
 	/* age the connections in all port monitors. */
 	for_each_tcp_port_monitor_in_collection(p_collection,
 		&age_tcp_port_monitor, NULL);
-
-	/* read tcp data from /proc/net/tcp */
-	if ((fp = fopen("/proc/net/tcp", "r")) == NULL) {
-		return;
-	}
-
-	/* ignore field name line */
-	fgets(buf, 255, fp);
-
-	/* read all tcp connections */
-	while (fgets(buf, sizeof(buf), fp) != NULL) {
-
-		if (sscanf(buf,
-				"%*d: %x:%hx %x:%hx %lx %*x:%*x %*x:%*x %*x %lu %*d %lu",
-				(unsigned int *) &conn.local_addr, &conn.local_port,
-				(unsigned int *) &conn.remote_addr, &conn.remote_port,
-				(unsigned long *) &state, (unsigned long *) &uid,
-				(unsigned long *) &inode) != 7) {
-			fprintf(stderr, "/proc/net/tcp: bad file format\n");
-		}
-		/** TCP_ESTABLISHED equals 1, but is not (always??) included **/
-		//if ((inode == 0) || (state != TCP_ESTABLISHED)) {
-		if((inode == 0) || (state != 1)) {
-			continue;
-		}
-
-		/* build hash key */
-		g_sprintf(conn.key, "%08X:%04X %08X:%04X", conn.local_addr,
-			conn.local_port, conn.remote_addr, conn.remote_port);
-
-		/* show the connection to each port monitor. */
-		for_each_tcp_port_monitor_in_collection(p_collection,
-			&show_connection_to_tcp_port_monitor, (void *) &conn);
-	}
-
-	fclose(fp);
 
 	/* rebuild the connection peek tables of all monitors
 	 * so clients can peek in O(1) time */
