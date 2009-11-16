@@ -472,6 +472,7 @@ enum text_object_type {
 struct text_object {
 	struct text_object *next, *prev;	/* doubly linked list of text objects */
 	struct text_object *sub;		/* for objects parsing text into objects */
+	struct text_object *ifblock_next;	/* jump target for ifblock objects */
 	union {
 		void *opaque;		/* new style generic per object data */
 		char *s;		/* some string */
