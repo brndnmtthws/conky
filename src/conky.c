@@ -1492,19 +1492,6 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* XMMS */
 
-			/* we have four different types of top (top, top_mem,
-			 * top_time and top_io). To avoid having almost-same code four
-			 * times, we have this special handler. */
-#ifdef __linux__
-			break;
-			case OBJ_top:
-			case OBJ_top_mem:
-			case OBJ_top_time:
-#ifdef IOSTATS
-			case OBJ_top_io:
-#endif
-				print_top(obj, p, p_max_size);
-#endif /* __linux__ */
 #ifdef HAVE_ICONV
 			OBJ(iconv_start) {
 				do_iconv_start(obj);

@@ -643,12 +643,15 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	/* we have four different types of top (top, top_mem, top_time and top_io). To
 	 * avoid having almost-same code four times, we have this special
 	 * handler. */
+	/* XXX: maybe fiddle them apart later, as print_top() does
+	 * nothing else than just that, using an ugly switch(). */
 	if (strncmp(s, "top", 3) == EQUAL) {
 		add_update_callback(&update_meminfo);
 		add_update_callback(&update_top);
 		if (!parse_top_args(s, arg, obj)) {
 			return NULL;
 		}
+		obj->callbacks.print = &print_top;
 	} else OBJ(addr, &update_net_stats)
 		parse_net_stat_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_addr;
