@@ -2677,6 +2677,36 @@
     <varlistentry>
         <term>
             <command>
+                <option>pid_time_kernelmode</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Amount of time that the process has been scheduled in user mode
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pid_time_usermode</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Amount of time that the process has been scheduled in user mode
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pid_time</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Sum of $pid_time_kernelmode and $pid_time_usermode
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>pid_uid</option>
             </command>
             <option>pid</option>

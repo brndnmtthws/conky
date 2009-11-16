@@ -692,6 +692,15 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ_ARG(pid_thread_list, 0, "pid_thread_list needs a pid as argument")
 		obj->sub = malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
+	END OBJ_ARG(pid_time_kernelmode, 0, "pid_time_kernelmode needs a pid as argument")
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
+	END OBJ_ARG(pid_time_usermode, 0, "pid_time_usermode needs a pid as argument")
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
+	END OBJ_ARG(pid_time, 0, "pid_time needs a pid as argument")
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
 	END OBJ_ARG(pid_uid, 0, "pid_uid needs a pid as argument")
 		obj->sub = malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
@@ -1369,6 +1378,9 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_pid_stdout:
 			case OBJ_pid_threads:
 			case OBJ_pid_thread_list:
+			case OBJ_pid_time_kernelmode:
+			case OBJ_pid_time_usermode:
+			case OBJ_pid_time:
 			case OBJ_pid_uid:
 			case OBJ_pid_euid:
 			case OBJ_pid_suid:

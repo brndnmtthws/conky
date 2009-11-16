@@ -467,6 +467,54 @@ void print_pid_thread_list(struct text_object *obj, char *p, int p_max_size) {
 	}
 }
 
+void print_pid_time_kernelmode(struct text_object *obj, char *p, int p_max_size) {
+	char *buf = NULL;
+	int bytes_read;
+	unsigned long int umtime;
+
+	asprintf(&buf, PROCDIR "/%s/stat", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &bytes_read, 1);
+	if(buf != NULL) {
+		sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %lu", &umtime);
+		snprintf(p, p_max_size, "%lu", umtime);
+		free(buf);
+	}
+}
+
+void print_pid_time_usermode(struct text_object *obj, char *p, int p_max_size) {
+	char *buf = NULL;
+	int bytes_read;
+	unsigned long int kmtime;
+
+	asprintf(&buf, PROCDIR "/%s/stat", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &bytes_read, 1);
+	if(buf != NULL) {
+		sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %*u %lu", &kmtime);
+		snprintf(p, p_max_size, "%lu", kmtime);
+		free(buf);
+	}
+}
+
+void print_pid_time(struct text_object *obj, char *p, int p_max_size) {
+	char *buf = NULL;
+	int bytes_read;
+	unsigned long int umtime, kmtime;
+
+	asprintf(&buf, PROCDIR "/%s/stat", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &bytes_read, 1);
+	if(buf != NULL) {
+		sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %lu %lu", &umtime, &kmtime);
+		snprintf(p, p_max_size, "%lu", umtime + kmtime);
+		free(buf);
+	}
+}
+
 #define UID_ENTRY "Uid:\t"
 void print_pid_uid(struct text_object *obj, char *p, int p_max_size) {
 #define UIDNOTFOUND	"Can't find the process real uid in '%s'"

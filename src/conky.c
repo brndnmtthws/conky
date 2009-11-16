@@ -1723,6 +1723,27 @@ void generate_text_internal(char *p, int p_max_size,
 				obj->data.s = buf;
 				print_pid_thread_list(obj, p, p_max_size);
 			}
+			OBJ(pid_time_kernelmode) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_time_kernelmode(obj, p, p_max_size);
+			}
+			OBJ(pid_time_usermode) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_time_usermode(obj, p, p_max_size);
+			}
+			OBJ(pid_time) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_time(obj, p, p_max_size);
+			}
 			OBJ(pid_uid) {
 				char buf[max_user_text];
 
