@@ -955,15 +955,6 @@ void generate_text_internal(char *p, int p_max_size,
 				new_fg(p, color9);
 			}
 #endif /* X11 */
-			OBJ(conky_version) {
-				snprintf(p, p_max_size, "%s", VERSION);
-			}
-			OBJ(conky_build_date) {
-				snprintf(p, p_max_size, "%s", BUILD_DATE);
-			}
-			OBJ(conky_build_arch) {
-				snprintf(p, p_max_size, "%s", BUILD_ARCH);
-			}
 #if defined(__linux__)
 			OBJ(disk_protect) {
 				snprintf(p, p_max_size, "%s",

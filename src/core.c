@@ -439,8 +439,14 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.s = scan_font(arg);
 #endif /* X11 */
 	END OBJ(conky_version, 0)
+		obj->type = OBJ_text;
+		obj->data.s = strdup(VERSION);
 	END OBJ(conky_build_date, 0)
+		obj->type = OBJ_text;
+		obj->data.s = strdup(BUILD_DATE);
 	END OBJ(conky_build_arch, 0)
+		obj->type = OBJ_text;
+		obj->data.s = strdup(BUILD_ARCH);
 	END OBJ(downspeed, &update_net_stats)
 		parse_net_stat_arg(obj, arg, free_at_crash);
 	END OBJ(downspeedf, &update_net_stats)
