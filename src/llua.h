@@ -38,12 +38,6 @@
 
 /* load a lua script */
 void llua_load(const char *script);
-/* call a function with args, and return a string from it (must be free'd) */
-char *llua_getstring(const char *args);
-/* call a function with args, and return a string from it (must be free'd) */
-char *llua_getstring_read(const char *function, const char *arg);
-/* call a function with args, and put the result in ret */
-int llua_getnumber(const char *args, double *ret);
 /* close lua stuff */
 void llua_close(void);
 #ifdef HAVE_SYS_INOTIFY_H
@@ -70,5 +64,13 @@ void llua_update_window_table(int text_start_x, int text_start_y, int text_width
 
 void llua_setup_info(struct information *i, double u_interval);
 void llua_update_info(struct information *i, double u_interval);
+
+void print_lua(struct text_object *, char *, int);
+void print_lua_parse(struct text_object *, char *, int);
+void print_lua_bar(struct text_object *, char *, int);
+#ifdef X11
+void print_lua_graph(struct text_object *, char *, int);
+void print_lua_gauge(struct text_object *, char *, int);
+#endif /* X11 */
 
 #endif /* LUA_H_*/

@@ -158,7 +158,7 @@ void llua_load(const char *script)
 string: <function> [par1] [par2...]
 retc: the number of return values expected
  */
-char *llua_do_call(const char *string, int retc)
+static char *llua_do_call(const char *string, int retc)
 {
 	static char func[64];
 	int argc = 0;
@@ -201,10 +201,11 @@ char *llua_do_call(const char *string, int retc)
 	return func;
 }
 
+#if 0
 /*
  * same as llua_do_call() except passes everything after func as one arg.
  */
-char *llua_do_read_call(const char *function, const char *arg, int retc)
+static char *llua_do_read_call(const char *function, const char *arg, int retc)
 {
 	static char func[64];
 	snprintf(func, 64, "conky_%s", function);
@@ -223,8 +224,10 @@ char *llua_do_read_call(const char *function, const char *arg, int retc)
 
 	return func;
 }
+#endif
 
-char *llua_getstring(const char *args)
+/* call a function with args, and return a string from it (must be free'd) */
+static char *llua_getstring(const char *args)
 {
 	char *func;
 	char *ret = NULL;
@@ -244,7 +247,9 @@ char *llua_getstring(const char *args)
 	return ret;
 }
 
-char *llua_getstring_read(const char *function, const char *arg)
+#if 0
+/* call a function with args, and return a string from it (must be free'd) */
+static char *llua_getstring_read(const char *function, const char *arg)
 {
 	char *func;
 	char *ret = NULL;
@@ -263,8 +268,10 @@ char *llua_getstring_read(const char *function, const char *arg)
 
 	return ret;
 }
+#endif
 
-int llua_getnumber(const char *args, double *ret)
+/* call a function with args, and put the result in ret */
+static int llua_getnumber(const char *args, double *ret)
 {
 	char *func;
 
@@ -521,3 +528,59 @@ void llua_update_info(struct information *i, double u_interval)
 	lua_setglobal(lua_L, "conky_info");
 }
 
+void print_lua(struct text_object *obj, char *p, int p_max_size)
+{
+	char *str = llua_getstring(obj->data.s);
+	if (str) {
+		snprintf(p, p_max_size, "%s", str);
+		free(str);
+	}
+}
+
+void print_lua_parse(struct text_object *obj, char *p, int p_max_size)
+{
+	char *str = llua_getstring(obj->data.s);
+	if (str) {
+		evaluate(str, p, p_max_size);
+		free(str);
+	}
+}
+
+void print_lua_bar(struct text_object *obj, char *p, int p_max_size)
+{
+	double per;
+	if (llua_getnumber(obj->data.s, &per)) {
+#ifdef X11
+		if(output_methods & TO_X) {
+			new_bar(obj, p, (per/100.0 * 255));
+		} else
+#endif /* X11 */
+			new_bar_in_shell(obj, p, p_max_size, per);
+	}
+}
+
+#ifdef X11
+void print_lua_graph(struct text_object *obj, char *p, int p_max_size)
+{
+	double per;
+
+	if (!p_max_size)
+		return;
+
+	if (llua_getnumber(obj->data.s, &per)) {
+		new_graph(obj, p, per);
+	}
+}
+
+void print_lua_gauge(struct text_object *obj, char *p, int p_max_size)
+{
+	double per;
+
+	if (!p_max_size)
+		return;
+
+	if (llua_getnumber(obj->data.s, &per)) {
+		new_gauge(obj, p, (per/100.0 * 255));
+	}
+}
+#endif /* X11 */

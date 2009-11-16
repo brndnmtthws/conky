@@ -1278,42 +1278,20 @@ void generate_text_internal(char *p, int p_max_size,
 #endif
 #ifdef HAVE_LUA
 			OBJ(lua) {
-				char *str = llua_getstring(obj->data.s);
-				if (str) {
-					snprintf(p, p_max_size, "%s", str);
-					free(str);
-				}
+				print_lua(obj, p, p_max_size);
 			}
 			OBJ(lua_parse) {
-				char *str = llua_getstring(obj->data.s);
-				if (str) {
-					evaluate(str, p, p_max_size);
-					free(str);
-				}
+				print_lua_parse(obj, p, p_max_size);
 			}
 			OBJ(lua_bar) {
-				double per;
-				if (llua_getnumber(obj->data.s, &per)) {
-#ifdef X11
-					if(output_methods & TO_X) {
-						new_bar(obj, p, (per/100.0 * 255));
-					} else
-#endif /* X11 */
-						new_bar_in_shell(obj, p, p_max_size, per);
-				}
+				print_lua_bar(obj, p, p_max_size);
 			}
 #ifdef X11
 			OBJ(lua_graph) {
-				double per;
-				if (llua_getnumber(obj->data.s, &per)) {
-					new_graph(obj, p, per);
-				}
+				print_lua_graph(obj, p, p_max_size);
 			}
 			OBJ(lua_gauge) {
-				double per;
-				if (llua_getnumber(obj->data.s, &per)) {
-					new_gauge(obj, p, (per/100.0 * 255));
-				}
+				print_lua_gauge(obj, p, p_max_size);
 			}
 #endif /* X11 */
 #endif /* HAVE_LUA */
