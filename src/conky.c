@@ -1450,14 +1450,6 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* __FreeBSD__ __OpenBSD__ */
 
-#ifdef MPD
-			OBJ(if_mpd_playing) {
-				if (!mpd_get_info()->is_playing) {
-					DO_JUMP;
-				}
-			}
-#endif
-
 #ifdef XMMS2
 			OBJ(if_xmms2_connected) {
 				if (cur->xmms2.conn_state != 1) {

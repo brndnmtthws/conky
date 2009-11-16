@@ -393,6 +393,12 @@ void print_mpd_smart(struct text_object *obj, char *p, int p_max_size)
 	}
 }
 
+int check_mpd_playing(struct text_object *obj)
+{
+	(void)obj;
+	return mpd_get_info()->is_playing;
+}
+
 #define MPD_PRINT_GENERATOR(name, fmt) \
 void print_mpd_##name(struct text_object *obj, char *p, int p_max_size) \
 { \

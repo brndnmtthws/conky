@@ -1145,6 +1145,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_mpd_smart;
 	END OBJ_IF(if_mpd_playing, &update_mpd)
 		init_mpd();
+		obj->callbacks.iftest = &check_mpd_playing;
 #undef mpd_set_maxlen
 #endif /* MPD */
 #ifdef MOC

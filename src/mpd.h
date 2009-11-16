@@ -49,5 +49,6 @@ void print_mpd_file(struct text_object *, char *, int);
 void print_mpd_vol(struct text_object *, char *, int);
 void print_mpd_bitrate(struct text_object *, char *, int);
 void print_mpd_status(struct text_object *, char *, int);
+int check_mpd_playing(struct text_object *);
 
 #endif /*MPD_H_*/
