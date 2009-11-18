@@ -309,7 +309,7 @@ extern struct information info;
 
 /* defined in users.c */
 void update_users(void);
-void update_user_time(char *tty);
+void update_user_time(char *tty, char times_in_seconds);
 
 /* defined in conky.c */
 extern double current_update_time, last_update_time, update_interval;

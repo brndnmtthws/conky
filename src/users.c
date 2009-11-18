@@ -93,7 +93,7 @@ static void user_time(char *ptr)
 		}
 	}
 }
-static void tty_user_time(char *ptr, char *tty)
+static void tty_user_time(char *ptr, char *tty, char times_in_seconds)
 {
 	time_t real, diff, log_in;
 	char buf[BUFLEN] = "";
@@ -111,7 +111,11 @@ static void tty_user_time(char *ptr, char *tty)
 
 	time(&real);
 	diff = difftime(real, log_in);
-	format_seconds(buf, BUFLEN, diff);
+	if(times_in_seconds) {
+		snprintf(buf, BUFLEN, "%d", (int) diff);
+	} else {
+		format_seconds(buf, BUFLEN, diff);
+	}
 	strncpy(ptr, buf, BUFLEN-1);
 }
 
@@ -129,7 +133,7 @@ static void users_alloc(struct information *ptr)
 	}
 }
 
-void update_user_time(char *tty)
+void update_user_time(char *tty, char times_in_seconds)
 {
 	struct information *current_info = &info;
 	char temp[BUFLEN] = "";
@@ -138,7 +142,7 @@ void update_user_time(char *tty)
 		current_info->users.ctime = malloc(text_buffer_size);
 	}
 
-	tty_user_time(temp, tty);
+	tty_user_time(temp, tty, times_in_seconds);
 
 	if (temp != NULL) {
 		if (current_info->users.ctime) {
