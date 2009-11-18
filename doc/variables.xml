@@ -1123,6 +1123,8 @@
 	then you can see the numbers behind the point by using \S
 	followed by a number that specifies the amount of
 	digits behind the point that you want to see (maximum 9).
+	You can also place a 'x' behind \S so you have all digits behind
+	the point and no trailing zero's. (also maximum 9)
         <para /></listitem>
     </varlistentry>
     <varlistentry>

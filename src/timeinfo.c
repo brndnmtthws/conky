@@ -217,6 +217,12 @@ void print_format_time(struct text_object *obj, char *p, unsigned int p_max_size
 							currentchar++;
 							if(*currentchar >= '0' && *currentchar <= '9') {
 								asprintf(&temp, "%.*f", (*currentchar) - '0', seconds);
+							} else if(*currentchar == 'x') {
+								asprintf(&temp, "%.9f", seconds);
+								while(*(temp + strlen(temp) - 1) == '0' || *(temp + strlen(temp) - 1) == '.') {
+									*(temp + strlen(temp) - 1) = 0;
+								}
+								if(*temp == 0) *temp = '0';
 							}else{
 								currentchar--;
 								NORM_ERR("$format_time needs a digit behind 'S' to specify precision")
