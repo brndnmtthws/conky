@@ -115,18 +115,22 @@ void print_pid_cmdline(struct text_object *obj, char *p, int p_max_size)
 	char* buf;
 	int i, bytes_read;
 
-	asprintf(&buf, PROCDIR "/%s/cmdline", obj->data.s);
-	strcpy(obj->data.s, buf);
-	free(buf);
-	buf = readfile(obj->data.s, &bytes_read, 1);
-	if(buf != NULL) {
-		for(i = 0; i < bytes_read-1; i++) {
-			if(buf[i] == 0) {
-				buf[i] = ' ';
-			}
-		}
-		snprintf(p, p_max_size, "%s", buf);
+	if(*(obj->data.s) != 0) {
+		asprintf(&buf, PROCDIR "/%s/cmdline", obj->data.s);
+		strcpy(obj->data.s, buf);
 		free(buf);
+		buf = readfile(obj->data.s, &bytes_read, 1);
+		if(buf != NULL) {
+			for(i = 0; i < bytes_read-1; i++) {
+				if(buf[i] == 0) {
+					buf[i] = ' ';
+				}
+			}
+			snprintf(p, p_max_size, "%s", buf);
+			free(buf);
+		}
+	} else {
+		NORM_ERR("$pid_cmdline didn't receive a argument");
 	}
 }
 
