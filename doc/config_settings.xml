@@ -797,6 +797,17 @@
     <varlistentry>
         <term>
             <command>
+                <option>time_in_seconds</option>
+            </command>
+        </term>
+        <listitem>If true, variables that output times output a number
+	that represents seconds. This doesn't affect $time, $tztime and
+	$utime
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>top_cpu_separate</option>
             </command>
         </term>

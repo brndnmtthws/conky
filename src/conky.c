@@ -167,6 +167,7 @@ int top_running;
 #endif
 static unsigned int top_name_width = 15;
 int output_methods;
+char times_in_seconds = 0;
 static int extra_newline;
 enum x_initialiser_state x_initialised = NO;
 static volatile int g_signal_pending;
@@ -1978,10 +1979,18 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* X11 */
 			OBJ(uptime_short) {
-				format_seconds_short(p, p_max_size, (int) cur->uptime);
+				if(times_in_seconds) {
+					snprintf(p, p_max_size, "%d", (int) cur->uptime);
+				} else {
+					format_seconds_short(p, p_max_size, (int) cur->uptime);
+				}
 			}
 			OBJ(uptime) {
-				format_seconds(p, p_max_size, (int) cur->uptime);
+				if(times_in_seconds) {
+					snprintf(p, p_max_size, "%d", (int) cur->uptime);
+				} else {
+					format_seconds(p, p_max_size, (int) cur->uptime);
+				}
 			}
 #ifdef __linux__
 			OBJ(user_names) {
@@ -4947,6 +4956,9 @@ char load_config_file(const char *f)
 			draw_outline = string_to_bool(value);
 		}
 #endif /* X11 */
+		CONF("times_in_seconds") {
+			times_in_seconds = string_to_bool(value);
+		}
 		CONF("out_to_console") {
 			if(string_to_bool(value)) {
 				output_methods |= TO_STDOUT;
