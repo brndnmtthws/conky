@@ -229,7 +229,9 @@ void print_format_time(struct text_object *obj, char *p, unsigned int p_max_size
 							}
 							break;
 						case '\\':
-							p[output_length] = '\\';
+						case '(':
+						case ')':
+							p[output_length] = *currentchar;
 							output_length++;
 							break;
 						default:

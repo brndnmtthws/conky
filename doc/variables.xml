@@ -1113,10 +1113,11 @@
             </command>
             <option>seconds format</option>
         </term>
-        <listitem>Format time given in seconds. Format is a string
+        <listitem>Format time given in seconds. This var only works when
+	the times_in_seconds configuration setting is on. Format is a string
 	that should start and end with a "-char. The "-chars are not
-	part of the output, \w,\d,\h,\m,\s and \\ are replaced by
-	weeks,days,hours,minutes,seconds and \. If you leave out a unit,
+	part of the output, \w,\d,\h,\m,\s,\(,\) and \\ are replaced by
+	weeks,days,hours,minutes,seconds,(,) and \. If you leave out a unit,
 	it's value will be expressed in the highest unite lower then the
 	one left out. Text between ()-chars will not be visible if a
 	replaced unit in this text is 0. If seconds is a decimal number
