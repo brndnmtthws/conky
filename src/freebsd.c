@@ -787,8 +787,3 @@ int get_entropy_poolsize(unsigned int *val)
 	(void)val;
 	return 1;
 }
-
-/* empty stub so conky links */
-void free_all_processes(void)
-{
-}

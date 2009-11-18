@@ -803,7 +803,3 @@ int get_entropy_poolsize(unsigned int *val)
 {
 	return 1;
 }
-
-void free_all_processes(void)
-{
-}

@@ -55,7 +55,7 @@ mandatory_sources = colours.c colours.h combine.c combine.h common.c common.h \
 		net_stat.h template.c template.h timed_thread.c timed_thread.h mboxscan.c \
 		mboxscan.h read_tcp.c read_tcp.h scroll.c scroll.h specials.c \
 		specials.h tailhead.c tailhead.h temphelper.c temphelper.h \
-		text_object.c text_object.h timeinfo.c timeinfo.h algebra.c \
+		text_object.c text_object.h timeinfo.c timeinfo.h top.c top.h algebra.c \
 		algebra.h proc.c proc.h user.c user.h
 
 # source files only needed when the apropriate option is enabled
@@ -65,7 +65,7 @@ ibm = ibm.c ibm.h smapi.c smapi.h
 mpd = mpd.c mpd.h libmpdclient.c libmpdclient.h
 moc = moc.c moc.h
 xmms2 = xmms2.c xmms2.h
-linux = linux.c linux.h top.c top.h users.c users.h sony.c sony.h i8k.c i8k.h
+linux = linux.c linux.h users.c users.h sony.c sony.h i8k.c i8k.h
 solaris = solaris.c
 freebsd = freebsd.c freebsd.h bsdapm.c bsdapm.h
 netbsd = netbsd.c netbsd.h

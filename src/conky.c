@@ -152,9 +152,7 @@ int top_cpu, top_mem, top_time;
 #ifdef IOSTATS
 int top_io;
 #endif
-#ifdef __linux__
 int top_running;
-#endif
 int output_methods;
 static int extra_newline;
 enum x_initialiser_state x_initialised = NO;
@@ -2565,9 +2563,7 @@ static void set_default_configurations(void)
 #ifdef IOSTATS
 	top_io = 0;
 #endif
-#ifdef __linux__
 	top_running = 0;
-#endif
 #ifdef MPD
 	mpd_env_host = getenv("MPD_HOST");
 	mpd_env_port = getenv("MPD_PORT");

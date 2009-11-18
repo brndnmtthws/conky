@@ -668,6 +668,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		parse_hwmon_sensor(obj, arg);
 		obj->callbacks.print = &print_sysfs_sensor;
 		obj->callbacks.free = &free_sysfs_sensor;
+#endif /* __linux__ */
 	END
 	/* we have four different types of top (top, top_mem, top_time and top_io). To
 	 * avoid having almost-same code four times, we have this special
@@ -682,14 +683,17 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		}
 		obj->callbacks.print = &print_top;
 		obj->callbacks.free = &free_top;
-	} else OBJ(addr, &update_net_stats)
+	} else
+#ifdef __linux__
+	OBJ(addr, &update_net_stats)
 		parse_net_stat_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_addr;
 	END OBJ(addrs, &update_net_stats)
 		parse_net_stat_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_addrs;
+	END
 #endif /* __linux__ */
-	END OBJ_ARG(tail, 0, "tail needs arguments")
+	OBJ_ARG(tail, 0, "tail needs arguments")
 		init_tailhead("tail", arg, obj, free_at_crash);
 		obj->callbacks.print = &print_tail;
 		obj->callbacks.free = &free_tailhead;
