@@ -1714,7 +1714,7 @@ int extract_variable_text_internal(struct text_object *retval, const char *const
 				}
 
 				/* copy variable to buffer */
-				len = (p - s > text_buffer_size-1) ? text_buffer_size-1 : (p - s);
+				len = (p - s > (int)text_buffer_size-1) ? (int)text_buffer_size-1 : (p - s);
 				strncpy(buf, s, len);
 				buf[len] = '\0';
 

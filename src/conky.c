@@ -3306,10 +3306,12 @@ char load_config_file(const char *f)
 		CONF("no_buffers") {
 			no_buffers = string_to_bool(value);
 		}
+#ifdef __linux__
 		CONF("top_name_width") {
 			if (set_top_name_width(value))
 				CONF_ERR;
 		}
+#endif /* __linux__ */
 		CONF("top_cpu_separate") {
 			cpu_separate = string_to_bool(value);
 		}
