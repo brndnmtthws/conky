@@ -213,14 +213,18 @@ void print_pid_nice(struct text_object *obj, char *p, int p_max_size) {
 	int bytes_read;
 	long int nice_value;
 
-	asprintf(&buf, PROCDIR "/%s/stat", obj->data.s);
-	strcpy(obj->data.s, buf);
-	free(buf);
-	buf = readfile(obj->data.s, &bytes_read, 1);
-	if(buf != NULL) {
-		sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %*u %*u %*d %*d %*d %ld", &nice_value);
-		snprintf(p, p_max_size, "%ld", nice_value);
+	if(*(obj->data.s) != 0) {
+		asprintf(&buf, PROCDIR "/%s/stat", obj->data.s);
+		strcpy(obj->data.s, buf);
 		free(buf);
+		buf = readfile(obj->data.s, &bytes_read, 1);
+		if(buf != NULL) {
+			sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %*u %*u %*d %*d %*d %ld", &nice_value);
+			snprintf(p, p_max_size, "%ld", nice_value);
+			free(buf);
+		}
+	} else {
+		NORM_ERR("$pid_nice didn't receive a argument");
 	}
 }
 
@@ -288,14 +292,18 @@ void print_pid_priority(struct text_object *obj, char *p, int p_max_size) {
 	int bytes_read;
 	long int priority;
 
-	asprintf(&buf, PROCDIR "/%s/stat", obj->data.s);
-	strcpy(obj->data.s, buf);
-	free(buf);
-	buf = readfile(obj->data.s, &bytes_read, 1);
-	if(buf != NULL) {
-		sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %*u %*u %*d %*d %ld", &priority);
-		snprintf(p, p_max_size, "%ld", priority);
+	if(*(obj->data.s) != 0) {
+		asprintf(&buf, PROCDIR "/%s/stat", obj->data.s);
+		strcpy(obj->data.s, buf);
 		free(buf);
+		buf = readfile(obj->data.s, &bytes_read, 1);
+		if(buf != NULL) {
+			sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %*u %*u %*d %*d %ld", &priority);
+			snprintf(p, p_max_size, "%ld", priority);
+			free(buf);
+		}
+	} else {
+		NORM_ERR("$pid_priority didn't receive a argument");
 	}
 }
 
@@ -472,14 +480,18 @@ void print_pid_time_kernelmode(struct text_object *obj, char *p, int p_max_size)
 	int bytes_read;
 	unsigned long int umtime;
 
-	asprintf(&buf, PROCDIR "/%s/stat", obj->data.s);
-	strcpy(obj->data.s, buf);
-	free(buf);
-	buf = readfile(obj->data.s, &bytes_read, 1);
-	if(buf != NULL) {
-		sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %lu", &umtime);
-		snprintf(p, p_max_size, "%.2f", (float) umtime / 100);
+	if(*(obj->data.s) != 0) {
+		asprintf(&buf, PROCDIR "/%s/stat", obj->data.s);
+		strcpy(obj->data.s, buf);
 		free(buf);
+		buf = readfile(obj->data.s, &bytes_read, 1);
+		if(buf != NULL) {
+			sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %lu", &umtime);
+			snprintf(p, p_max_size, "%.2f", (float) umtime / 100);
+			free(buf);
+		}
+	} else {
+		NORM_ERR("$pid_time_kernelmode didn't receive a argument");
 	}
 }
 
@@ -488,14 +500,18 @@ void print_pid_time_usermode(struct text_object *obj, char *p, int p_max_size) {
 	int bytes_read;
 	unsigned long int kmtime;
 
-	asprintf(&buf, PROCDIR "/%s/stat", obj->data.s);
-	strcpy(obj->data.s, buf);
-	free(buf);
-	buf = readfile(obj->data.s, &bytes_read, 1);
-	if(buf != NULL) {
-		sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %*u %lu", &kmtime);
-		snprintf(p, p_max_size, "%.2f", (float) kmtime / 100);
+	if(*(obj->data.s) != 0) {
+		asprintf(&buf, PROCDIR "/%s/stat", obj->data.s);
+		strcpy(obj->data.s, buf);
 		free(buf);
+		buf = readfile(obj->data.s, &bytes_read, 1);
+		if(buf != NULL) {
+			sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %*u %lu", &kmtime);
+			snprintf(p, p_max_size, "%.2f", (float) kmtime / 100);
+			free(buf);
+		}
+	} else {
+		NORM_ERR("$pid_time_usermode didn't receive a argument");
 	}
 }
 
@@ -504,14 +520,18 @@ void print_pid_time(struct text_object *obj, char *p, int p_max_size) {
 	int bytes_read;
 	unsigned long int umtime, kmtime;
 
-	asprintf(&buf, PROCDIR "/%s/stat", obj->data.s);
-	strcpy(obj->data.s, buf);
-	free(buf);
-	buf = readfile(obj->data.s, &bytes_read, 1);
-	if(buf != NULL) {
-		sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %lu %lu", &umtime, &kmtime);
-		snprintf(p, p_max_size, "%.2f", (float) (umtime + kmtime) / 100);
+	if(*(obj->data.s) != 0) {
+		asprintf(&buf, PROCDIR "/%s/stat", obj->data.s);
+		strcpy(obj->data.s, buf);
 		free(buf);
+		buf = readfile(obj->data.s, &bytes_read, 1);
+		if(buf != NULL) {
+			sscanf(buf, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u %lu %lu", &umtime, &kmtime);
+			snprintf(p, p_max_size, "%.2f", (float) (umtime + kmtime) / 100);
+			free(buf);
+		}
+	} else {
+		NORM_ERR("$pid_time didn't receive a argument");
 	}
 }
 
