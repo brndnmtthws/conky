@@ -1566,7 +1566,11 @@ void generate_text_internal(char *p, int p_max_size,
 
 				generate_text_internal(buf, max_user_text, *obj->sub, cur);
 				obj->data.s = buf;
-				print_format_time(obj, p, p_max_size);
+				if(times_in_seconds) {
+					print_format_time(obj, p, p_max_size);
+				} else {
+					NORM_ERR("Enable \"times_in_seconds\" to use $format_time");
+				}
 			}
 			/* mail stuff */
 			OBJ(mails) {
