@@ -47,3 +47,5 @@ void free_time(struct text_object *);
 void free_tztime(struct text_object *);
 
 #endif /* _TIMEINFO_H */
+
+void print_format_time(struct text_object *obj, char *p, int p_max_size);

@@ -196,6 +196,7 @@ enum text_object_type {
 	OBJ_unseen_mails,
 	OBJ_flagged_mails,
 	OBJ_unflagged_mails,
+	OBJ_format_time,
 	OBJ_forwarded_mails,
 	OBJ_unforwarded_mails,
 	OBJ_replied_mails,

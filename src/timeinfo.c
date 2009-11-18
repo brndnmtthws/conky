@@ -33,6 +33,8 @@
 #include <locale.h>
 #include <string.h>
 #include <time.h>
+#include <errno.h>
+#include <logging.h>
 
 struct tztime_s {
 	char *tz;	/* timezone variable */
@@ -137,4 +139,141 @@ void free_tztime(struct text_object *obj)
 
 	free(obj->data.opaque);
 	obj->data.opaque = NULL;
+}
+
+//all chars after the ending " and between the seconds and the starting " are silently
+//ignored, this is wanted behavior, not a bug, so don't "fix" this.
+void print_format_time(struct text_object *obj, char *p, unsigned int p_max_size) {
+	double seconds;
+	char *currentchar, *temp;
+	unsigned int output_length = 0;
+	int minutes, hours, days, weeks;
+	char show_minutes = 0, show_hours = 0, show_days = 0, show_weeks = 0, hidestring;
+
+	errno = 0;
+	seconds = strtod(obj->data.s, &currentchar);
+	if(errno == 0 && obj->data.s != currentchar) {
+		while(*currentchar != 0 && *currentchar != '"') {
+			currentchar++;
+		}
+		if(*currentchar != 0) {
+			currentchar++;
+			minutes = seconds / 60;
+			seconds -= minutes * 60;
+			hours = minutes / 60;
+			minutes %= 60;
+			days = hours / 24;
+			hours %= 24;
+			weeks = days / 7;
+			days %= 7;
+			for(temp = currentchar; *temp != 0 && *temp != '"'; temp++) {
+				if(*temp=='\\') {
+					switch(*(temp+1)) {
+					case '\\':
+						temp++;
+						break;
+					case 'w':
+						show_weeks = 1;
+						break;
+					case 'd':
+						show_days = 1;
+						break;
+					case 'h':
+						show_hours = 1;
+						break;
+					case 'm':
+						show_minutes = 1;
+						break;
+					}
+				}
+			}
+			if(show_weeks == 0) days += weeks * 7;
+			if(show_days == 0) hours += days * 24;
+			if(show_hours == 0) minutes += hours * 60;
+			if(show_minutes == 0) seconds += minutes * 60;
+			hidestring = 0;
+			while(output_length < p_max_size - 1) {
+				if(*currentchar != 0 && *currentchar != '"') {
+					temp = NULL;
+					if(*currentchar == '\\' && hidestring == 0) {
+						currentchar++;
+						switch(*currentchar){
+						case 'w':
+							asprintf(&temp, "%d", weeks);
+							break;
+						case 'd':
+							asprintf(&temp, "%d", days);
+							break;
+						case 'h':
+							asprintf(&temp, "%d", hours);
+							break;
+						case 'm':
+							asprintf(&temp, "%d", minutes);
+							break;
+						case 's':
+							asprintf(&temp, "%d", (int) seconds);
+							break;
+						case 'S':
+							currentchar++;
+							if(*currentchar >= '0' && *currentchar <= '9') {
+								asprintf(&temp, "%.*f", (*currentchar) - '0', seconds);
+							}else{
+								currentchar--;
+								NORM_ERR("$format_time needs a digit behind 'S' to specify precision")
+							}
+							break;
+						case '\\':
+							p[output_length] = '\\';
+							output_length++;
+							break;
+						default:
+							NORM_ERR("$format_time doesn't have a special char '%c'", *currentchar)
+						}
+					} else if(*currentchar == '(') {
+						for(temp = currentchar + 1; *temp != 0 && *temp != ')'; temp++) {
+							if(*(temp-1) == '\\') {
+								switch(*temp) {
+								case 'w':
+									if(weeks == 0) hidestring = 1;
+									break;
+								case 'd':
+									if(days == 0) hidestring = 1;
+									break;
+								case 'h':
+									if(hours == 0) hidestring = 1;
+									break;
+								case 'm':
+									if(minutes == 0) hidestring = 1;
+									break;
+								case 's':
+								case 'S':
+									if(seconds == 0) hidestring = 1;
+									break;
+								}
+							}
+						}
+						temp = NULL;
+					} else if(*currentchar == ')') {
+						hidestring = 0;
+					} else if(hidestring == 0) {
+						p[output_length] = *currentchar;
+						output_length++;
+					}
+					if(temp) {
+						if(output_length + strlen(temp) < p_max_size - 1) {
+							strcpy(p + output_length, temp);
+							output_length += strlen(temp);
+						} else NORM_ERR("The format string for $format_time is too long")
+						free(temp);
+					}
+					currentchar++;
+				} else break;
+			}
+			p[output_length] = 0;
+		} else {
+			NORM_ERR("$format_time needs a output-format starting with a \"-char as 2nd argument")
+		}
+	} else {
+		NORM_ERR("$format_time didn't receive a time in seconds as first argument")
+	}
 }

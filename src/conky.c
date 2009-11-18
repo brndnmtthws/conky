@@ -1560,6 +1560,13 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* X11 */
 
+			OBJ(format_time) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_format_time(obj, p, p_max_size);
+			}
 			/* mail stuff */
 			OBJ(mails) {
 				print_mails(obj, p, p_max_size);
