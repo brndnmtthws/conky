@@ -1814,6 +1814,13 @@ void generate_text_internal(char *p, int p_max_size,
 				obj->data.s = buf;
 				print_pid_fsgid(obj, p, p_max_size);
 			}
+			OBJ(pid_read) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_read(obj, p, p_max_size);
+			}
 			OBJ(pid_vmpeak) {
 				char buf[max_user_text];
 
@@ -1883,6 +1890,13 @@ void generate_text_internal(char *p, int p_max_size,
 				generate_text_internal(buf, max_user_text, *obj->sub, cur);
 				obj->data.s = buf;
 				print_pid_vmpte(obj, p, p_max_size);
+			}
+			OBJ(pid_write) {
+				char buf[max_user_text];
+
+				generate_text_internal(buf, max_user_text, *obj->sub, cur);
+				obj->data.s = buf;
+				print_pid_write(obj, p, p_max_size);
 			}
 			OBJ(processes) {
 				spaced_print(p, p_max_size, "%hu", 4, cur->procs);

@@ -819,3 +819,53 @@ void print_pid_vmlib(struct text_object *obj, char *p, int p_max_size) {
 void print_pid_vmpte(struct text_object *obj, char *p, int p_max_size) {
 	internal_print_pid_vm(obj->data.s, p, p_max_size, "VmPTE:\t", "Can't find the process page table entries size in '%s'");
 }
+
+#define READ_ENTRY "read_bytes: "
+#define READNOTFOUND	"Can't find the amount of bytes read in '%s'"
+void print_pid_read(struct text_object *obj, char *p, int p_max_size) {
+	char *begin, *end, *buf = NULL;
+	int bytes_read;
+
+	asprintf(&buf, PROCDIR "/%s/io", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &bytes_read, 1);
+	if(buf != NULL) {
+		begin = strstr(buf, READ_ENTRY);
+		if(begin != NULL) {
+			end = strchr(begin, '\n');
+			if(end != NULL) {
+				*(end) = 0;
+			}
+			snprintf(p, p_max_size, "%s", begin);
+		} else {
+			NORM_ERR(READNOTFOUND, obj->data.s);
+		}
+		free(buf);
+	}
+}
+
+#define WRITE_ENTRY "write_bytes: "
+#define WRITENOTFOUND	"Can't find the amount of bytes written in '%s'"
+void print_pid_write(struct text_object *obj, char *p, int p_max_size) {
+	char *begin, *end, *buf = NULL;
+	int bytes_read;
+
+	asprintf(&buf, PROCDIR "/%s/io", obj->data.s);
+	strcpy(obj->data.s, buf);
+	free(buf);
+	buf = readfile(obj->data.s, &bytes_read, 1);
+	if(buf != NULL) {
+		begin = strstr(buf, WRITE_ENTRY);
+		if(begin != NULL) {
+			end = strchr(begin, '\n');
+			if(end != NULL) {
+				*(end) = 0;
+			}
+			snprintf(p, p_max_size, "%s", begin);
+		} else {
+			NORM_ERR(WRITENOTFOUND, obj->data.s);
+		}
+		free(buf);
+	}
+}

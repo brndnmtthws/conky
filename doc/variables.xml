@@ -2626,6 +2626,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>pid_read</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Total number of bytes read by the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>pid_state</option>
             </command>
             <option>pid</option>
@@ -2904,6 +2914,16 @@
             <option>pid</option>
         </term>
         <listitem>Page table entries size of the process
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pid_write</option>
+            </command>
+            <option>pid</option>
+        </term>
+        <listitem>Total number of bytes written by the process
         <para /></listitem>
     </varlistentry>
     <varlistentry>

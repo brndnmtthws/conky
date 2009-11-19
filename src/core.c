@@ -734,6 +734,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ_ARG(uid_name, 0, "uid_name needs a uid as argument")
 		obj->sub = malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
+	END OBJ_ARG(pid_read, 0, "pid_read needs a pid as argument")
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
 	END OBJ_ARG(pid_vmpeak, 0, "pid_vmpeak needs a pid as argument")
 		obj->sub = malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
@@ -762,6 +765,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->sub = malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
 	END OBJ_ARG(pid_vmpte, 0, "pid_vmpte needs a pid as argument")
+		obj->sub = malloc(sizeof(struct text_object));
+		extract_variable_text_internal(obj->sub, arg);
+	END OBJ_ARG(pid_write, 0, "pid_write needs a pid as argument")
 		obj->sub = malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
 	END OBJ(processes, &update_total_processes)
@@ -1392,6 +1398,7 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_pid_egid:
 			case OBJ_pid_sgid:
 			case OBJ_pid_fsgid:
+			case OBJ_pid_read:
 			case OBJ_pid_vmpeak:
 			case OBJ_pid_vmsize:
 			case OBJ_pid_vmlck:
@@ -1402,6 +1409,7 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_pid_vmexe:
 			case OBJ_pid_vmlib:
 			case OBJ_pid_vmpte:
+			case OBJ_pid_write:
 			case OBJ_gid_name:
 				if(obj->sub) {
 					free_text_objects(obj->sub, 1);

@@ -1,3 +1,6 @@
+2009-11-19
+	* Added support for $pid_read and $pid_write
+
 2009-11-17
 	* Added support for $format_time
 
