@@ -36,10 +36,22 @@
 #include <errno.h>
 #include <logging.h>
 
+char print_times_in_seconds = 0;
+
 struct tztime_s {
 	char *tz;	/* timezone variable */
 	char *fmt;	/* time display formatting */
 };
+
+void set_times_in_seconds(char val)
+{
+	print_times_in_seconds = val;
+}
+
+char times_in_seconds(void)
+{
+	return print_times_in_seconds;
+}
 
 void scan_time(struct text_object *obj, const char *arg)
 {
@@ -149,6 +161,11 @@ void print_format_time(struct text_object *obj, char *p, unsigned int p_max_size
 	unsigned int output_length = 0;
 	int minutes, hours, days, weeks;
 	char show_minutes = 0, show_hours = 0, show_days = 0, show_weeks = 0, hidestring;
+
+	if (!times_in_seconds()) {
+		NORM_ERR("Enable \"times_in_seconds\" to use $format_time");
+		return;
+	}
 
 	errno = 0;
 	seconds = strtod(obj->data.s, &currentchar);

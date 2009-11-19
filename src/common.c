@@ -34,6 +34,7 @@
 #include "logging.h"
 #include "net_stat.h"
 #include "specials.h"
+#include "timeinfo.h"
 #include <ctype.h>
 #include <errno.h>
 #include <sys/time.h>
@@ -218,6 +219,11 @@ void format_seconds(char *buf, unsigned int n, long seconds)
 	long days;
 	int hours, minutes;
 
+	if (times_in_seconds()) {
+		snprintf(buf, n, "%ld", seconds);
+		return;
+	}
+
 	days = seconds / 86400;
 	seconds %= 86400;
 	hours = seconds / 3600;
@@ -236,6 +242,11 @@ void format_seconds_short(char *buf, unsigned int n, long seconds)
 {
 	long days;
 	int hours, minutes;
+
+	if (times_in_seconds()) {
+		snprintf(buf, n, "%ld", seconds);
+		return;
+	}
 
 	days = seconds / 86400;
 	seconds %= 86400;

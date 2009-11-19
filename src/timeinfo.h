@@ -30,6 +30,10 @@
 #ifndef _TIMEINFO_H
 #define _TIMEINFO_H
 
+/* for the times_in_seconds configuration variable and it's users */
+void set_times_in_seconds(char);
+char times_in_seconds(void);
+
 /* since time and utime are quite equal, certain functions
  * are shared in between both text object types. */
 

@@ -167,7 +167,6 @@ int top_io;
 int top_running;
 #endif
 int output_methods;
-char times_in_seconds = 0;
 static int extra_newline;
 enum x_initialiser_state x_initialised = NO;
 static volatile int g_signal_pending;
@@ -726,6 +725,11 @@ static inline void format_media_player_time(char *buf, const int size,
 		int seconds)
 {
 	int days, hours, minutes;
+
+	if (times_in_seconds()) {
+		snprintf(buf, size, "%d", seconds);
+		return;
+	}
 
 	days = seconds / (24 * 60 * 60);
 	seconds %= (24 * 60 * 60);
@@ -1508,11 +1512,7 @@ void generate_text_internal(char *p, int p_max_size,
 
 				generate_text_internal(buf, max_user_text, *obj->sub, cur);
 				obj->data.s = buf;
-				if(times_in_seconds) {
-					print_format_time(obj, p, p_max_size);
-				} else {
-					NORM_ERR("Enable \"times_in_seconds\" to use $format_time");
-				}
+				print_format_time(obj, p, p_max_size);
 			}
 			/* mail stuff */
 			OBJ(mails) {
@@ -1939,18 +1939,10 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* X11 */
 			OBJ(uptime_short) {
-				if(times_in_seconds) {
-					snprintf(p, p_max_size, "%d", (int) cur->uptime);
-				} else {
-					format_seconds_short(p, p_max_size, (int) cur->uptime);
-				}
+				format_seconds_short(p, p_max_size, (int) cur->uptime);
 			}
 			OBJ(uptime) {
-				if(times_in_seconds) {
-					snprintf(p, p_max_size, "%d", (int) cur->uptime);
-				} else {
-					format_seconds(p, p_max_size, (int) cur->uptime);
-				}
+				format_seconds(p, p_max_size, (int) cur->uptime);
 			}
 #ifdef __linux__
 			OBJ(user_names) {
@@ -1963,7 +1955,7 @@ void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%s", cur->users.times);
 			}
 			OBJ(user_time) {
-				update_user_time(obj->data.s, times_in_seconds);
+				update_user_time(obj->data.s);
 				snprintf(p, p_max_size, "%s", cur->users.ctime);
 			}
 			OBJ(user_number) {
@@ -2027,18 +2019,10 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(mpd_status)
 				mpd_printf("%s", status);
 			OBJ(mpd_elapsed) {
-				if(times_in_seconds) {
-					snprintf(p, p_max_size, "%d", mpd_get_info()->elapsed);
-				} else {
-					format_media_player_time(p, p_max_size, mpd_get_info()->elapsed);
-				}
+				format_media_player_time(p, p_max_size, mpd_get_info()->elapsed);
 			}
 			OBJ(mpd_length) {
-				if(times_in_seconds) {
-					snprintf(p, p_max_size, "%d", mpd_get_info()->length);
-				} else {
-					format_media_player_time(p, p_max_size, mpd_get_info()->length);
-				}
+				format_media_player_time(p, p_max_size, mpd_get_info()->length);
 			}
 			OBJ(mpd_percent) {
 				percent_print(p, p_max_size, (int)(mpd_get_info()->progress * 100));
@@ -4459,6 +4443,8 @@ static void set_default_configurations(void)
 	stuff_in_uppercase = 0;
 	info.users.number = 1;
 
+	set_times_in_seconds(0);
+
 #ifdef TCP_PORT_MONITOR
 	/* set default connection limit */
 	tcp_portmon_set_max_connections(0);
@@ -4923,7 +4909,7 @@ char load_config_file(const char *f)
 		}
 #endif /* X11 */
 		CONF("times_in_seconds") {
-			times_in_seconds = string_to_bool(value);
+			set_times_in_seconds(string_to_bool(value));
 		}
 		CONF("out_to_console") {
 			if(string_to_bool(value)) {
