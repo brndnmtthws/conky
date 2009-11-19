@@ -2286,57 +2286,11 @@ void generate_text_internal(char *p, int p_max_size,
 				print_tailhead("head", obj, p, p_max_size);
 			}
 			OBJ(lines) {
-				static int rep = 0;
-				FILE *fp = open_file(obj->data.s, &rep);
-
-				if(fp != NULL) {
-/* FIXME: use something more general (see also tail.c, head.c */
-#define BUFSZ 0x1000
-					char buf[BUFSZ];
-					int j, lines;
-
-					lines = 0;
-					while(fgets(buf, BUFSZ, fp) != NULL){
-						for(j = 0; buf[j] != 0; j++) {
-							if(buf[j] == '\n') {
-								lines++;
-							}
-						}
-					}
-					sprintf(p, "%d", lines);
-					fclose(fp);
-				} else {
-					sprintf(p, "File Unreadable");
-				}
+				print_lines(obj, p, p_max_size);
 			}
 
 			OBJ(words) {
-				static int rep = 0;
-				FILE *fp = open_file(obj->data.s, &rep);
-
-				if(fp != NULL) {
-					char buf[BUFSZ];
-					int j, words;
-					char inword = FALSE;
-
-					words = 0;
-					while(fgets(buf, BUFSZ, fp) != NULL){
-						for(j = 0; buf[j] != 0; j++) {
-							if(!isspace(buf[j])) {
-								if(inword == FALSE) {
-									words++;
-									inword = TRUE;
-								}
-							} else {
-								inword = FALSE;
-							}
-						}
-					}
-					sprintf(p, "%d", words);
-					fclose(fp);
-				} else {
-					sprintf(p, "File Unreadable");
-				}
+				print_words(obj, p, p_max_size);
 			}
 #ifdef TCP_PORT_MONITOR
 			OBJ(tcp_portmon) {

@@ -33,6 +33,7 @@
 #include "text_object.h"
 #include "logging.h"
 #include <sys/stat.h>
+#include <ctype.h>
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
@@ -177,4 +178,61 @@ void print_tailhead(const char* type, struct text_object *obj, char *p, int p_ma
 		}
 	}
 	return;
+}
+
+/* FIXME: use something more general (see also tail.c, head.c */
+#define BUFSZ 0x1000
+
+void print_lines(struct text_object *obj, char *p, int p_max_size)
+{
+	static int rep = 0;
+	FILE *fp = open_file(obj->data.s, &rep);
+	char buf[BUFSZ];
+	int j, lines;
+
+	if (!fp) {
+		snprintf(p, p_max_size, "File Unreadable");
+		return;
+	}
+
+	lines = 0;
+	while(fgets(buf, BUFSZ, fp) != NULL){
+		for(j = 0; buf[j] != 0; j++) {
+			if(buf[j] == '\n') {
+				lines++;
+			}
+		}
+	}
+	snprintf(p, p_max_size, "%d", lines);
+	fclose(fp);
+}
+
+void print_words(struct text_object *obj, char *p, int p_max_size)
+{
+	static int rep = 0;
+	FILE *fp = open_file(obj->data.s, &rep);
+	char buf[BUFSZ];
+	int j, words;
+	char inword = 0;
+
+	if(!fp) {
+		snprintf(p, p_max_size, "File Unreadable");
+		return;
+	}
+
+	words = 0;
+	while(fgets(buf, BUFSZ, fp) != NULL){
+		for(j = 0; buf[j] != 0; j++) {
+			if(!isspace(buf[j])) {
+				if(!inword) {
+					words++;
+					inword = 1;
+				}
+			} else {
+				inword = 0;
+			}
+		}
+	}
+	snprintf(p, p_max_size, "%d", words);
+	fclose(fp);
 }
