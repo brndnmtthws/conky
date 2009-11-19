@@ -4514,7 +4514,7 @@ int x11_ioerror_handler(Display *d)
 	NORM_ERR("X Error: Display %lx\n",
 			(long unsigned)d
 			);
-	abort();
+	exit(1);
 }
 #endif /* DEBUG */
 
