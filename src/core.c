@@ -1348,6 +1348,12 @@ void free_text_objects(struct text_object *root, int internal)
 #define data obj->data
 	for (obj = root->prev; obj; obj = root->prev) {
 		root->prev = obj->prev;
+
+		if (obj->callbacks.free) {
+			(*obj->callbacks.free)(obj);
+			goto obj_free_loop_tail;
+		}
+
 		switch (obj->type) {
 #ifndef __OpenBSD__
 			case OBJ_acpitemp:
@@ -1801,6 +1807,7 @@ void free_text_objects(struct text_object *root, int internal)
 				break;
 #endif /* X11 */
 		}
+obj_free_loop_tail:
 		if(obj->special_data)
 			free(obj->special_data);
 		free(obj);

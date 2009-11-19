@@ -29,6 +29,7 @@
 #ifndef _TEXT_OBJECT_H
 #define _TEXT_OBJECT_H
 
+#include <stdint.h>		/* uint8_t */
 #include "config.h"		/* for the defines */
 #include "specials.h"		/* enum special_types */
 
@@ -470,6 +471,24 @@ enum text_object_type {
 #endif /* APCUPSD */
 };
 
+/* text object callbacks */
+struct obj_cb {
+	/* text object: print obj's output to p */
+	void (*print)(struct text_object *obj, char *p, int p_max_size);
+	/* ifblock object: return zero to trigger jumping */
+	int (*iftest)(struct text_object *obj);
+	/* bar object: return bar value in range [0,255] */
+	uint8_t (*barval)(struct text_object *obj);
+	/* gauge object: return gauge value in range [0,255] */
+	uint8_t (*gaugeval)(struct text_object *obj);
+	/* graph object: return graph value in range [0,255] */
+	uint8_t (*graphval)(struct text_object *obj);
+	/* percentage object: return percentage in range [0,100] */
+	uint8_t (*percentage)(struct text_object *obj);
+	/* free obj's data */
+	void (*free)(struct text_object *obj);
+};
+
 struct text_object {
 	struct text_object *next, *prev;	/* doubly linked list of text objects */
 	struct text_object *sub;		/* for objects parsing text into objects */
@@ -484,6 +503,7 @@ struct text_object {
 	void *special_data;
 	int type;
 	long line;
+	struct obj_cb callbacks;
 };
 
 /* text object list helpers */

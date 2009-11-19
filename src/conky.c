@@ -784,6 +784,38 @@ void generate_text_internal(char *p, int p_max_size,
 		obj = obj->ifblock_next; \
 }
 
+		/* if a print callback exists, use it and jump over the switch() */
+		if (obj->callbacks.print) {
+			(*obj->callbacks.print)(obj, p, p_max_size);
+			goto obj_loop_tail;
+		}
+
+		if (obj->callbacks.iftest) {
+			if (!(*obj->callbacks.iftest)(obj))
+				DO_JUMP;
+			goto obj_loop_tail;
+		}
+
+		if (obj->callbacks.barval) {
+			new_bar(obj, p, p_max_size, (*obj->callbacks.barval)(obj));
+			goto obj_loop_tail;
+		}
+
+		if (obj->callbacks.gaugeval) {
+			new_gauge(obj, p, p_max_size, (*obj->callbacks.gaugeval)(obj));
+			goto obj_loop_tail;
+		}
+
+		if (obj->callbacks.graphval) {
+			new_graph(obj, p, p_max_size, (*obj->callbacks.graphval)(obj));
+			goto obj_loop_tail;
+		}
+
+		if (obj->callbacks.percentage) {
+			percent_print(p, p_max_size, (*obj->callbacks.percentage)(obj));
+			goto obj_loop_tail;
+		}
+
 #define OBJ(a) break; case OBJ_##a:
 
 		switch (obj->type) {
@@ -2355,7 +2387,7 @@ void generate_text_internal(char *p, int p_max_size,
 		}
 #undef DO_JUMP
 
-
+obj_loop_tail:
 		{
 			size_t a = strlen(p);
 
