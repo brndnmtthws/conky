@@ -1,3 +1,6 @@
+2009-11-20
+	* Allow for mpd connections to use IPv6
+
 2009-11-19
 	* Added support for $pid_read and $pid_write
 
