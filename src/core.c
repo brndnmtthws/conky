@@ -1713,17 +1713,6 @@ void free_text_objects(struct text_object *root, int internal)
 				}
 				break;
 #endif
-#ifdef BMPX
-			case OBJ_bmpx_title:
-			case OBJ_bmpx_artist:
-			case OBJ_bmpx_album:
-			case OBJ_bmpx_track:
-			case OBJ_bmpx_uri:
-			case OBJ_bmpx_bitrate:
-				break;
-#endif
-			case OBJ_pre_exec:
-				break;
 			case OBJ_nameserver:
 				free_dns_data();
 				break;
@@ -1746,11 +1735,6 @@ void free_text_objects(struct text_object *root, int internal)
 				free_hddtemp();
 				break;
 #endif /* HDDTEMP */
-			case OBJ_entropy_avail:
-			case OBJ_entropy_perc:
-			case OBJ_entropy_poolsize:
-			case OBJ_entropy_bar:
-				break;
 			case OBJ_user_names:
 				if (info.users.names) {
 					free(info.users.names);
@@ -1822,26 +1806,6 @@ void free_text_objects(struct text_object *root, int internal)
 					free(obj->sub);
 				}
 				break;
-#ifdef APCUPSD
-			case OBJ_apcupsd:
-			case OBJ_apcupsd_name:
-			case OBJ_apcupsd_model:
-			case OBJ_apcupsd_upsmode:
-			case OBJ_apcupsd_cable:
-			case OBJ_apcupsd_status:
-			case OBJ_apcupsd_linev:
-			case OBJ_apcupsd_load:
-			case OBJ_apcupsd_loadbar:
-#ifdef X11
-			case OBJ_apcupsd_loadgraph:
-#endif /* X11 */
-			case OBJ_apcupsd_loadgauge:
-			case OBJ_apcupsd_charge:
-			case OBJ_apcupsd_timeleft:
-			case OBJ_apcupsd_temp:
-			case OBJ_apcupsd_lastxfer:
-				break;
-#endif /* APCUPSD */
 #ifdef X11
 			case OBJ_desktop:
 			case OBJ_desktop_number:
