@@ -248,6 +248,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			strcpy(bat, "BAT0");
 		}
 		obj->data.s = strndup(bat, text_buffer_size);
+		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(battery_short, 0)
 		char bat[64];
 
@@ -257,6 +258,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			strcpy(bat, "BAT0");
 		}
 		obj->data.s = strndup(bat, text_buffer_size);
+		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(battery_time, 0)
 		char bat[64];
 
@@ -266,6 +268,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			strcpy(bat, "BAT0");
 		}
 		obj->data.s = strndup(bat, text_buffer_size);
+		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(battery_percent, 0)
 		char bat[64];
 
@@ -275,6 +278,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			strcpy(bat, "BAT0");
 		}
 		obj->data.s = strndup(bat, text_buffer_size);
+		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(battery_bar, 0)
 		char bat[64];
 		if (arg) {
@@ -284,11 +288,13 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			strcpy(bat, "BAT0");
 		}
 		obj->data.s = strndup(bat, text_buffer_size);
+		obj->callbacks.free = &gen_free_opaque;
 #endif /* !__OpenBSD__ */
 
 #if defined(__linux__)
 	END OBJ_ARG(disk_protect, 0, "disk_protect needs an argument")
 		obj->data.s = strndup(dev_name(arg), text_buffer_size);
+		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(i8k_version, &update_i8k)
 		obj->callbacks.print = &print_i8k_version;
 	END OBJ(i8k_bios, &update_i8k)
@@ -326,6 +332,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ_IF(if_gw, &update_gateway_info)
 	END OBJ_ARG(ioscheduler, 0, "get_ioscheduler needs an argument (e.g. hda)")
 		obj->data.s = strndup(dev_name(arg), text_buffer_size);
+		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(laptop_mode, 0)
 	END OBJ_ARG(pb_battery, 0, "pb_battery: needs one argument: status, percent or time")
 		if (strcmp(arg, "status") == EQUAL) {
@@ -471,6 +478,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef X11
 	END OBJ(font, 0)
 		obj->data.s = scan_font(arg);
+		obj->callbacks.free = &gen_free_opaque;
 #endif /* X11 */
 	END OBJ(conky_version, 0)
 		obj->type = OBJ_text;
@@ -498,9 +506,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj_be_ifblock_endif(ifblock_opaque, obj);
 	END OBJ(eval, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
+		obj->callbacks.free = &gen_free_opaque;
 #if defined(IMLIB2) && defined(X11)
 	END OBJ(image, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
+		obj->callbacks.free = &gen_free_opaque;
 #endif /* IMLIB2 */
 	END OBJ(exec, 0)
 		scan_exec_arg(obj, arg);
@@ -626,9 +636,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ_ARG(lines, 0, "lines needs an argument")
 		obj->data.s = strndup(arg, text_buffer_size);
 		obj->callbacks.print = &print_lines;
+		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(words, 0, "words needs a argument")
 		obj->data.s = strndup(arg, text_buffer_size);
 		obj->callbacks.print = &print_words;
+		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(loadavg, &update_load_average)
 		scan_loadavg_arg(obj, arg);
 		obj->callbacks.print = &print_loadavg;
@@ -640,12 +652,15 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		extract_variable_text_internal(obj->sub, arg);
 	END OBJ_IF_ARG(if_existing, 0, "if_existing needs an argument or two")
 		obj->data.s = strndup(arg, text_buffer_size);
+		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_IF_ARG(if_mounted, 0, "if_mounted needs an argument")
 		obj->data.s = strndup(arg, text_buffer_size);
+		obj->callbacks.free = &gen_free_opaque;
 #ifdef __linux__
 	END OBJ_IF_ARG(if_running, &update_top, "if_running needs an argument")
 		top_running = 1;
 		obj->data.s = strndup(arg, text_buffer_size);
+		obj->callbacks.free = &gen_free_opaque;
 #else
 	END OBJ_IF_ARG(if_running, 0, "if_running needs an argument")
 		char buf[text_buffer_size];
@@ -992,17 +1007,22 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ_ARG(smapi, 0, "smapi needs an argument")
 		obj->data.s = strndup(arg, text_buffer_size);
 		obj->callbacks.print = &print_smapi;
+		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_IF_ARG(if_smapi_bat_installed, 0, "if_smapi_bat_installed needs an argument")
 		obj->data.s = strndup(arg, text_buffer_size);
+		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(smapi_bat_perc, 0, "smapi_bat_perc needs an argument")
 		obj->data.s = strndup(arg, text_buffer_size);
 		obj->callbacks.print = &print_smapi_bat_perc;
+		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(smapi_bat_temp, 0, "smapi_bat_temp needs an argument")
 		obj->data.s = strndup(arg, text_buffer_size);
 		obj->callbacks.print = &print_smapi_bat_temp;
+		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(smapi_bat_power, 0, "smapi_bat_power needs an argument")
 		obj->data.s = strndup(arg, text_buffer_size);
 		obj->callbacks.print = &print_smapi_bat_power;
+		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(smapi_bat_bar, 0, "smapi_bat_bar needs an argument")
 		int cnt;
 		if(sscanf(arg, "%i %n", &obj->data.i, &cnt) <= 0) {
@@ -1189,9 +1209,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ_ARG(lua, 0, "lua needs arguments: <function name> [function parameters]")
 		obj->data.s = strndup(arg, text_buffer_size);
 		obj->callbacks.print = &print_lua;
+		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(lua_parse, 0, "lua_parse needs arguments: <function name> [function parameters]")
 		obj->data.s = strndup(arg, text_buffer_size);
 		obj->callbacks.print = &print_lua_parse;
+		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(lua_bar, 0, "lua_bar needs arguments: <height>,<width> <function name> [function parameters]")
 		arg = scan_bar(obj, arg);
 		if(arg) {
@@ -1200,6 +1222,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			CRIT_ERR(obj, free_at_crash, "lua_bar needs arguments: <height>,<width> <function name> [function parameters]");
 		}
 		obj->callbacks.print = &print_lua_bar;
+		obj->callbacks.free = &gen_free_opaque;
 #ifdef X11
 	END OBJ_ARG(lua_graph, 0, "lua_graph needs arguments: <function name> [height],[width] [gradient colour 1] [gradient colour 2] [scale] [-t] [-l]")
 		char *buf = 0;
@@ -1210,6 +1233,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			CRIT_ERR(obj, free_at_crash, "lua_graph needs arguments: <function name> [height],[width] [gradient colour 1] [gradient colour 2] [scale] [-t] [-l]");
 		}
 		obj->callbacks.print = &print_lua_graph;
+		obj->callbacks.free = &gen_free_opaque;
 #endif /* X11 */
 	END OBJ_ARG(lua_gauge, 0, "lua_gauge needs arguments: <height>,<width> <function name> [function parameters]")
 		arg = scan_gauge(obj, arg);
@@ -1219,6 +1243,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			CRIT_ERR(obj, free_at_crash, "lua_gauge needs arguments: <height>,<width> <function name> [function parameters]");
 		}
 		obj->callbacks.print = &print_lua_gauge;
+		obj->callbacks.free = &gen_free_opaque;
 #endif /* HAVE_LUA */
 #ifdef HDDTEMP
 	END OBJ(hddtemp, &update_hddtemp)
@@ -1603,15 +1628,7 @@ void free_text_objects(struct text_object *root, int internal)
 				free_text_objects(obj->sub, 1);
 				free(obj->sub);
 				break;
-			case OBJ_if_existing:
-			case OBJ_if_mounted:
-			case OBJ_if_running:
-				free(data.s);
-				break;
 			case OBJ_text:
-			case OBJ_font:
-			case OBJ_image:
-			case OBJ_eval:
 				free(data.s);
 				break;
 #ifdef HAVE_ICONV
@@ -1620,17 +1637,10 @@ void free_text_objects(struct text_object *root, int internal)
 				break;
 #endif
 #ifdef __linux__
-			case OBJ_disk_protect:
-				free(data.s);
-				break;
 			case OBJ_if_gw:
 			case OBJ_gw_iface:
 			case OBJ_gw_ip:
 				free_gateway_info();
-				break;
-			case OBJ_ioscheduler:
-				if(data.s)
-					free(data.s);
 				break;
 #endif
 #ifdef XMMS2
@@ -1712,30 +1722,8 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_bmpx_bitrate:
 				break;
 #endif
-#ifdef HAVE_LUA
-			case OBJ_lua:
-			case OBJ_lua_parse:
-			case OBJ_lua_bar:
-#ifdef X11
-			case OBJ_lua_graph:
-#endif /* X11 */
-			case OBJ_lua_gauge:
-				free(data.s);
-				break;
-#endif /* HAVE_LUA */
 			case OBJ_pre_exec:
 				break;
-#ifndef __OpenBSD__
-			case OBJ_battery:
-				free(data.s);
-				break;
-			case OBJ_battery_short:
-				free(data.s);
-				break;
-			case OBJ_battery_time:
-				free(data.s);
-				break;
-#endif /* !__OpenBSD__ */
 			case OBJ_nameserver:
 				free_dns_data();
 				break;
@@ -1790,17 +1778,6 @@ void free_text_objects(struct text_object *root, int internal)
 					free(data.s);
 				}
 				break;
-#ifdef IBM
-			case OBJ_smapi:
-			case OBJ_smapi_bat_perc:
-			case OBJ_smapi_bat_temp:
-			case OBJ_smapi_bat_power:
-				free(data.s);
-				break;
-			case OBJ_if_smapi_bat_installed:
-				free(data.s);
-				break;
-#endif /* IBM */
 #ifdef MPD
 			case OBJ_mpd_title:
 			case OBJ_mpd_artist:
