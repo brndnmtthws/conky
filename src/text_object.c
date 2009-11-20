@@ -31,6 +31,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+void gen_free_opaque(struct text_object *obj)
+{
+	if (obj->data.opaque)
+		free(obj->data.opaque);
+}
+
 /* text_object_list
  *
  * this list is special. it looks like this:
