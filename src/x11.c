@@ -274,8 +274,9 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 				wmHint.initial_state = NormalState;
 			}
 
-			XmbSetWMProperties(display, window.window, window.title, NULL, argv,
+			XmbSetWMProperties(display, window.window, NULL, NULL, argv,
 					argc, NULL, &wmHint, &classHint);
+			XStoreName(display, window.window, window.title);
 
 			/* Sets an empty WM_PROTOCOLS property */
 			XSetWMProtocols(display, window.window, NULL, 0);
