@@ -83,6 +83,7 @@ extern int screen;
 extern int workarea[4];
 
 extern struct conky_window window;
+extern char window_created;
 
 void init_X11(const char*);
 void init_window(int use_own_window, int width, int height, int set_trans,

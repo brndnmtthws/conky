@@ -3987,10 +3987,12 @@ void clean_up(void *memtofree1, void* memtofree2)
 	}
 #ifdef X11
 	if (x_initialised == YES) {
-		XClearArea(display, window.window, text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width,
-			text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width,
-			text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
-			text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, 0);
+		if(window_created == 1) {
+			XClearArea(display, window.window, text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width,
+				text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width,
+				text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
+				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, 0);
+		}
 		destroy_window();
 		free_fonts();
 		if(x11_stuff.region) {

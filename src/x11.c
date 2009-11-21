@@ -64,6 +64,7 @@ int workarea[4];
 
 /* Window stuff */
 struct conky_window window;
+char window_created = 0;
 
 /* local prototypes */
 static void update_workarea(void);
@@ -215,6 +216,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 	 * happens but I bet the bug is somewhere here. */
 	set_transparent = set_trans;
 	background_colour = back_colour;
+	window_created = 1;
 
 #ifdef OWN_WINDOW
 	if (own_window) {
