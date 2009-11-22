@@ -2054,13 +2054,13 @@ int get_battery_perct(const char *bat)
 	return last_battery_perct[idx];
 }
 
-int get_battery_perct_bar(const char *bar)
+uint8_t get_battery_perct_bar(struct text_object *obj)
 {
 	int idx;
 
-	get_battery_perct(bar);
-	idx = get_battery_idx(bar);
-	return (int) (last_battery_perct[idx] * 2.56 - 1);
+	get_battery_perct(obj->data.s);
+	idx = get_battery_idx(obj->data.s);
+	return round_to_int((double)last_battery_perct[idx] * 2.55);
 }
 
 /* On Apple powerbook and ibook:

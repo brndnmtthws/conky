@@ -860,9 +860,6 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(battery_percent) {
 				percent_print(p, p_max_size, get_battery_perct(obj->data.s));
 			}
-			OBJ(battery_bar) {
-				new_bar(obj, p, p_max_size, get_battery_perct_bar(obj->data.s));
-			}
 			OBJ(battery_short) {
 				get_battery_short_status(p, p_max_size, obj->data.s);
 			}

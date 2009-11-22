@@ -471,10 +471,10 @@ int get_battery_perct(const char *bat)
 	return batperct > 100 ? 100 : batperct;
 }
 
-int get_battery_perct_bar(const char *bar)
+uint8_t get_battery_perct_bar(struct text_object *obj)
 {
-	int batperct = get_battery_perct(bar);
-	return (int)(batperct * 2.56 - 1);
+	int batperct = get_battery_perct(obj->data.s);
+	return round_to_int((double)batperct * 2.55);
 }
 
 int open_acpi_temperature(const char *name)

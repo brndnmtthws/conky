@@ -289,6 +289,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			strcpy(bat, "BAT0");
 		}
 		obj->data.s = strndup(bat, text_buffer_size);
+		obj->callbacks.barval = &get_battery_perct_bar;
 		obj->callbacks.free = &gen_free_opaque;
 #endif /* !__OpenBSD__ */
 
