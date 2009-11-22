@@ -325,7 +325,6 @@ int check_mixer_muted(struct text_object *obj)
 	return 1;
 }
 
-#ifdef X11
 void scan_mixer_bar(struct text_object *obj, const char *arg)
 {
 	char buf1[64];
@@ -372,5 +371,3 @@ void print_mixerr_bar(struct text_object *obj, char *p, int p_max_size)
 {
 	print_mixer_bar_chan(obj, 1, p, p_max_size);
 }
-
-#endif /* X11 */

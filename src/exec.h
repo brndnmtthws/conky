@@ -42,12 +42,12 @@ void print_execp(struct text_object *, char *, int);
 void print_execi(struct text_object *, char *, int);
 void print_execpi(struct text_object *, char *, int);
 void print_texeci(struct text_object *, char *, int);
-#ifdef X11
 void print_execgauge(struct text_object *, char *, int);
+#ifdef X11
 void print_execgraph(struct text_object *, char *, int);
 void print_execigraph(struct text_object *, char *, int);
-void print_execigauge(struct text_object *, char *, int);
 #endif /* X11 */
+void print_execigauge(struct text_object *, char *, int);
 void print_execbar(struct text_object *, char *, int);
 void print_execibar(struct text_object *, char *, int);
 void free_exec(struct text_object *);

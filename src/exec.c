@@ -361,7 +361,6 @@ void print_texeci(struct text_object *obj, char *p, int p_max_size)
 	}
 }
 
-#ifdef X11
 void print_execgauge(struct text_object *obj, char *p, int p_max_size)
 {
 	double barnum;
@@ -375,6 +374,7 @@ void print_execgauge(struct text_object *obj, char *p, int p_max_size)
 	}
 }
 
+#ifdef X11
 void print_execgraph(struct text_object *obj, char *p, int p_max_size)
 {
 	double barnum;
@@ -411,6 +411,7 @@ void print_execigraph(struct text_object *obj, char *p, int p_max_size)
 	}
 	new_graph(obj, p, (int) (ed->barnum));
 }
+#endif /* X11 */
 
 void print_execigauge(struct text_object *obj, char *p, int p_max_size)
 {
@@ -432,7 +433,6 @@ void print_execigauge(struct text_object *obj, char *p, int p_max_size)
 	}
 	new_gauge(obj, p, p_max_size, round_to_int(ed->barnum));
 }
-#endif /* X11 */
 
 void print_execbar(struct text_object *obj, char *p, int p_max_size)
 {

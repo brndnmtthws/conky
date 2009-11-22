@@ -566,6 +566,7 @@ void print_lua_graph(struct text_object *obj, char *p, int p_max_size)
 		new_graph(obj, p, per);
 	}
 }
+#endif /* X11 */
 
 void print_lua_gauge(struct text_object *obj, char *p, int p_max_size)
 {
@@ -578,4 +579,3 @@ void print_lua_gauge(struct text_object *obj, char *p, int p_max_size)
 		new_gauge(obj, p, p_max_size, (per/100.0 * 255));
 	}
 }
-#endif /* X11 */

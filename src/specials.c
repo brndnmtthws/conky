@@ -48,8 +48,8 @@ int special_count;
 int default_bar_width = 0, default_bar_height = 6;
 #ifdef X11
 int default_graph_width = 0, default_graph_height = 25;
-int default_gauge_width = 40, default_gauge_height = 25;
 #endif /* X11 */
+int default_gauge_width = 40, default_gauge_height = 25;
 
 /*
  * Special data typedefs
@@ -82,7 +82,6 @@ struct tab {
  * Scanning arguments to various special text objects
  */
 
-#ifdef X11
 const char *scan_gauge(struct text_object *obj, const char *args)
 {
 	struct gauge *g;
@@ -109,7 +108,6 @@ const char *scan_gauge(struct text_object *obj, const char *args)
 	obj->special_data = g;
 	return args;
 }
-#endif /* X11 */
 
 const char *scan_bar(struct text_object *obj, const char *args)
 {

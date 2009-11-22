@@ -67,8 +67,8 @@ enum text_object_type {
 	OBJ_font,
 	OBJ_cpu,
 	OBJ_cpubar,
-#ifdef X11
 	OBJ_cpugauge,
+#ifdef X11
 	OBJ_cpugraph,
 	OBJ_loadgraph,
 #endif /* X11 */
@@ -94,11 +94,11 @@ enum text_object_type {
 	OBJ_texeci,
 	OBJ_execbar,
 	OBJ_execibar,
-#ifdef X11
 	OBJ_execgauge,
+	OBJ_execigauge,
+#ifdef X11
 	OBJ_execgraph,
 	OBJ_execigraph,
-	OBJ_execigauge,
 #endif /* X11 */
 	OBJ_execp,
 	OBJ_execpi,
@@ -207,8 +207,8 @@ enum text_object_type {
 	OBJ_mem,
 	OBJ_memeasyfree,
 	OBJ_memfree,
-#ifdef X11
 	OBJ_memgauge,
+#ifdef X11
 	OBJ_memgraph,
 #endif /* X11 */
 	OBJ_membar,
@@ -217,11 +217,9 @@ enum text_object_type {
 	OBJ_mixer,
 	OBJ_mixerl,
 	OBJ_mixerr,
-#ifdef X11
 	OBJ_mixerbar,
 	OBJ_mixerlbar,
 	OBJ_mixerrbar,
-#endif /* X11 */
 	OBJ_if_mixer_mute,
 #ifdef X11
 	OBJ_monitor,
@@ -427,9 +425,9 @@ enum text_object_type {
 	OBJ_lua,
 	OBJ_lua_parse,
 	OBJ_lua_bar,
+	OBJ_lua_gauge,
 #ifdef X11
 	OBJ_lua_graph,
-	OBJ_lua_gauge,
 #endif /* X11 */
 #endif /* HAVE_LUA */
 #ifdef TCP_PORT_MONITOR
@@ -461,9 +459,9 @@ enum text_object_type {
 	OBJ_apcupsd_linev,
 	OBJ_apcupsd_load,
 	OBJ_apcupsd_loadbar,
+	OBJ_apcupsd_loadgauge,
 #ifdef X11
 	OBJ_apcupsd_loadgraph,
-	OBJ_apcupsd_loadgauge,
 #endif /* X11 */
 	OBJ_apcupsd_charge,
 	OBJ_apcupsd_timeleft,

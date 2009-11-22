@@ -70,7 +70,7 @@ void print_lua_parse(struct text_object *, char *, int);
 void print_lua_bar(struct text_object *, char *, int);
 #ifdef X11
 void print_lua_graph(struct text_object *, char *, int);
-void print_lua_gauge(struct text_object *, char *, int);
 #endif /* X11 */
+void print_lua_gauge(struct text_object *, char *, int);
 
 #endif /* LUA_H_*/
