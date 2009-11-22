@@ -72,7 +72,7 @@ void scan_loadavg_arg(struct text_object *, const char *);
 void print_loadavg(struct text_object *, char *, int);
 #ifdef X11
 void scan_loadgraph_arg(struct text_object *, const char *);
-void print_loadgraph(struct text_object *, char *);
+void print_loadgraph(struct text_object *, char *, int);
 #endif /* X11 */
 
 #endif /* _COMMON_H */

@@ -183,7 +183,7 @@ static void print_diskiograph_dir(struct text_object *obj, int dir, char *p, int
 	else
 		val = diskio->current_write;
 
-	new_graph(obj, p, val);
+	new_graph(obj, p, p_max_size, val);
 }
 
 void print_diskiograph(struct text_object *obj, char *p, int p_max_size)

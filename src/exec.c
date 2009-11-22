@@ -387,7 +387,7 @@ void print_execgraph(struct text_object *obj, char *p, int p_max_size)
 	barnum = get_barnum(p);
 
 	if (barnum > 0) {
-		new_graph(obj, p, round_to_int(barnum));
+		new_graph(obj, p, p_max_size, round_to_int(barnum));
 	}
 }
 
@@ -409,7 +409,7 @@ void print_execigraph(struct text_object *obj, char *p, int p_max_size)
 		}
 		ed->last_update = current_update_time;
 	}
-	new_graph(obj, p, (int) (ed->barnum));
+	new_graph(obj, p, p_max_size, (int) (ed->barnum));
 }
 #endif /* X11 */
 

@@ -563,7 +563,7 @@ void print_lua_graph(struct text_object *obj, char *p, int p_max_size)
 		return;
 
 	if (llua_getnumber(obj->data.s, &per)) {
-		new_graph(obj, p, per);
+		new_graph(obj, p, p_max_size, per);
 	}
 }
 #endif /* X11 */

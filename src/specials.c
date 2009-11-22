@@ -339,7 +339,7 @@ static void graph_append(struct special_t *graph, double f, char showaslog)
 	}
 }
 
-void new_graph(struct text_object *obj, char *buf, double val)
+void new_graph(struct text_object *obj, char *buf, int buf_max_size, double val)
 {
 	struct special_t *s = 0;
 	struct graph *g = obj->special_data;
@@ -347,7 +347,7 @@ void new_graph(struct text_object *obj, char *buf, double val)
 	if ((output_methods & TO_X) == 0)
 		return;
 
-	if (!g)
+	if (!g || !buf_max_size)
 		return;
 
 	s = new_special(buf, GRAPH);

@@ -902,10 +902,10 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #ifdef X11
 			OBJ(cpugraph) {
-				new_graph(obj, p, round_to_int(cur->cpu_usage[obj->data.i] * 100));
+				new_graph(obj, p, p_max_size, round_to_int(cur->cpu_usage[obj->data.i] * 100));
 			}
 			OBJ(loadgraph) {
-				print_loadgraph(obj, p);
+				print_loadgraph(obj, p, p_max_size);
 			}
 #endif /* X11 */
 			OBJ(color) {
@@ -1373,7 +1373,7 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #ifdef X11
 			OBJ(memgraph) {
-				new_graph(obj, p, cur->memmax ? (cur->mem * 100.0) / (cur->memmax) : 0.0);
+				new_graph(obj, p, p_max_size, cur->memmax ? (cur->mem * 100.0) / (cur->memmax) : 0.0);
 			}
 #endif /* X11 */
 			/* mixer stuff */
@@ -2325,7 +2325,7 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(apcupsd_loadgraph) {
 				double progress;
 				progress =	atof(cur->apcupsd.items[APCUPSD_LOAD]);
-				new_graph(obj, p, (int)progress);
+				new_graph(obj, p, p_max_size, (int)progress);
 			}
 #endif /* X11 */
 			OBJ(apcupsd_loadgauge) {

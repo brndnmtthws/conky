@@ -464,8 +464,8 @@ void scan_loadgraph_arg(struct text_object *obj, const char *arg)
 		free(buf);
 }
 
-void print_loadgraph(struct text_object *obj, char *p)
+void print_loadgraph(struct text_object *obj, char *p, int p_max_size)
 {
-	new_graph(obj, p, info.loadavg[0]);
+	new_graph(obj, p, p_max_size, info.loadavg[0]);
 }
 #endif /* X11 */

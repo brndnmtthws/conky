@@ -213,7 +213,7 @@ void print_downspeedgraph(struct text_object *obj, char *p, int p_max_size)
 	if (!ns || !p_max_size)
 		return;
 
-	new_graph(obj, p, ns->recv_speed / 1024.0);
+	new_graph(obj, p, p_max_size, ns->recv_speed / 1024.0);
 }
 
 void print_upspeedgraph(struct text_object *obj, char *p, int p_max_size)
@@ -223,7 +223,7 @@ void print_upspeedgraph(struct text_object *obj, char *p, int p_max_size)
 	if (!ns || !p_max_size)
 		return;
 
-	new_graph(obj, p, ns->trans_speed / 1024.0);
+	new_graph(obj, p, p_max_size, ns->trans_speed / 1024.0);
 }
 #endif /* X11 */
 

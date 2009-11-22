@@ -104,7 +104,7 @@ void scan_stippled_hr(struct text_object *, const char*);
 
 /* printing specials */
 void new_font(char *, char *);
-void new_graph(struct text_object *, char *, double);
+void new_graph(struct text_object *, char *, int, double);
 void new_hr(char *, int);
 void new_stippled_hr(struct text_object *, char *);
 #endif
