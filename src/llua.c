@@ -575,7 +575,7 @@ void print_lua_gauge(struct text_object *obj, char *p, int p_max_size)
 		return;
 
 	if (llua_getnumber(obj->data.s, &per)) {
-		new_gauge(obj, p, (per/100.0 * 255));
+		new_gauge(obj, p, p_max_size, (per/100.0 * 255));
 	}
 }
 #endif /* X11 */

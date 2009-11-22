@@ -895,10 +895,8 @@ void generate_text_internal(char *p, int p_max_size,
 				percent_print(p, p_max_size,
 				              round_to_int(cur->cpu_usage[obj->data.i] * 100.0));
 			}
-#ifdef X11
 			OBJ(cpugauge)
-				new_gauge(obj, p, round_to_int(cur->cpu_usage[obj->data.i] * 255.0));
-#endif /* X11 */
+				new_gauge(obj, p, p_max_size, round_to_int(cur->cpu_usage[obj->data.i] * 255.0));
 			OBJ(cpubar) {
 				new_bar(obj, p, p_max_size, round_to_int(cur->cpu_usage[obj->data.i] * 255.0));
 			}
@@ -1113,11 +1111,9 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(execp) {
 				print_execp(obj, p, p_max_size);
 			}
-#ifdef X11
 			OBJ(execgauge) {
 				print_execgauge(obj, p, p_max_size);
 			}
-#endif /* X11 */
 			OBJ(execbar) {
 				print_execbar(obj, p, p_max_size);
 			}
@@ -1133,10 +1129,10 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(execigraph) {
 				print_execigraph(obj, p, p_max_size);
 			}
+#endif /* X11 */
 			OBJ(execigauge) {
 				print_execigauge(obj, p, p_max_size);
 			}
-#endif /* X11 */
 			OBJ(execi) {
 				print_execi(obj, p, p_max_size);
 			}
@@ -1238,10 +1234,10 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(lua_graph) {
 				print_lua_graph(obj, p, p_max_size);
 			}
+#endif /* X11 */
 			OBJ(lua_gauge) {
 				print_lua_gauge(obj, p, p_max_size);
 			}
-#endif /* X11 */
 #endif /* HAVE_LUA */
 #ifdef HDDTEMP
 			OBJ(hddtemp) {
@@ -1369,11 +1365,9 @@ void generate_text_internal(char *p, int p_max_size,
 				if (cur->memmax)
 					percent_print(p, p_max_size, cur->mem * 100 / cur->memmax);
 			}
-#ifdef X11
 			OBJ(memgauge){
-				new_gauge(obj, p, cur->memmax ? (cur->mem * 255) / (cur->memmax) : 0);
+				new_gauge(obj, p, p_max_size, cur->memmax ? (cur->mem * 255) / (cur->memmax) : 0);
 			}
-#endif /* X11 */
 			OBJ(membar) {
 				new_bar(obj, p, p_max_size, cur->memmax ? (cur->mem * 255) / (cur->memmax) : 0);
 			}
@@ -2333,12 +2327,12 @@ void generate_text_internal(char *p, int p_max_size,
 				progress =	atof(cur->apcupsd.items[APCUPSD_LOAD]);
 				new_graph(obj, p, (int)progress);
 			}
+#endif /* X11 */
 			OBJ(apcupsd_loadgauge) {
 				double progress;
 				progress =	atof(cur->apcupsd.items[APCUPSD_LOAD]) / 100.0 * 255.0;
-				new_gauge(obj, p, (int)progress);
+				new_gauge(obj, p, p_max_size, (int)progress);
 			}
-#endif /* X11 */
 			OBJ(apcupsd_charge) {
 				snprintf(p, p_max_size, "%s",
 						 cur->apcupsd.items[APCUPSD_CHARGE]);

@@ -339,12 +339,10 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(cpu, &update_cpu_usage)
 		SCAN_CPU(arg, obj->data.i);
 		DBGP2("Adding $cpu for CPU %d", obj->data.i);
-#ifdef X11
 	END OBJ(cpugauge, &update_cpu_usage)
 		SCAN_CPU(arg, obj->data.i);
 		scan_gauge(obj, arg);
 		DBGP2("Adding $cpugauge for CPU %d", obj->data.i);
-#endif /* X11 */
 	END OBJ(cpubar, &update_cpu_usage)
 		SCAN_CPU(arg, obj->data.i);
 		scan_bar(obj, arg);
@@ -471,9 +469,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		scan_exec_arg(obj, arg);
 	END OBJ(execbar, 0)
 		scan_exec_arg(obj, arg);
-#ifdef X11
 	END OBJ(execgauge, 0)
 		scan_exec_arg(obj, arg);
+#ifdef X11
 	END OBJ(execgraph, 0)
 		scan_execgraph_arg(obj, arg);
 #endif /* X11 */
@@ -482,9 +480,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef X11
 	END OBJ_ARG(execigraph, 0, "execigraph needs arguments")
 		scan_execgraph_arg(obj, arg);
+#endif /* X11 */
 	END OBJ_ARG(execigauge, 0, "execigauge needs arguments")
 		scan_execi_arg(obj, arg);
-#endif /* X11 */
 	END OBJ_ARG(execi, 0, "execi needs arguments")
 		scan_execi_arg(obj, arg);
 	END OBJ_ARG(execpi, 0, "execpi needs arguments")
@@ -609,10 +607,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(memfree, &update_meminfo)
 	END OBJ(memmax, &update_meminfo)
 	END OBJ(memperc, &update_meminfo)
-#ifdef X11
 	END OBJ(memgauge, &update_meminfo)
 		scan_gauge(obj, arg);
-#endif /* X11*/
 	END OBJ(membar, &update_meminfo)
 		scan_bar(obj, arg);
 #ifdef X11
@@ -1041,6 +1037,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		} else {
 			CRIT_ERR(obj, free_at_crash, "lua_graph needs arguments: <function name> [height],[width] [gradient colour 1] [gradient colour 2] [scale] [-t] [-l]");
 		}
+#endif /* X11 */
 	END OBJ_ARG(lua_gauge, 0, "lua_gauge needs arguments: <height>,<width> <function name> [function parameters]")
 		arg = scan_gauge(obj, arg);
 		if (arg) {
@@ -1048,7 +1045,6 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		} else {
 			CRIT_ERR(obj, free_at_crash, "lua_gauge needs arguments: <height>,<width> <function name> [function parameters]");
 		}
-#endif /* X11 */
 #endif /* HAVE_LUA */
 #ifdef HDDTEMP
 	END OBJ(hddtemp, &update_hddtemp)
@@ -1119,9 +1115,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		char* buf = 0;
 		buf = scan_graph(obj, arg, 0);
 		if (buf) free(buf);
+#endif /* X11 */
 	END OBJ(apcupsd_loadgauge, &update_apcupsd)
 		scan_gauge(obj, arg);
-#endif /* X11 */
 	END OBJ(apcupsd_charge, &update_apcupsd)
 	END OBJ(apcupsd_timeleft, &update_apcupsd)
 	END OBJ(apcupsd_temp, &update_apcupsd)
@@ -1476,8 +1472,8 @@ void free_text_objects(struct text_object *root, int internal)
 				break;
 			case OBJ_exec:
 			case OBJ_execbar:
-#ifdef X11
 			case OBJ_execgauge:
+#ifdef X11
 			case OBJ_execgraph:
 #endif
 			case OBJ_execp:
@@ -1617,8 +1613,8 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_lua_bar:
 #ifdef X11
 			case OBJ_lua_graph:
-			case OBJ_lua_gauge:
 #endif /* X11 */
+			case OBJ_lua_gauge:
 				free(data.s);
 				break;
 #endif /* HAVE_LUA */
@@ -1641,8 +1637,8 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_texeci:
 #ifdef X11
 			case OBJ_execigraph:
-			case OBJ_execigauge:
 #endif /* X11 */
+			case OBJ_execigauge:
 				free_execi(obj);
 				break;
 			case OBJ_nameserver:
@@ -1777,8 +1773,8 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_apcupsd_loadbar:
 #ifdef X11
 			case OBJ_apcupsd_loadgraph:
-			case OBJ_apcupsd_loadgauge:
 #endif /* X11 */
+			case OBJ_apcupsd_loadgauge:
 			case OBJ_apcupsd_charge:
 			case OBJ_apcupsd_timeleft:
 			case OBJ_apcupsd_temp:

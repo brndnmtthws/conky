@@ -245,8 +245,16 @@ static struct special_t *new_special(char *buf, enum special_types t)
 	return &specials[special_count++];
 }
 
+void new_gauge_in_shell(struct text_object *obj, char *p, int p_max_size, int usage)
+{
+	static const char *gaugevals[] = { "_. ", "\\. ", " | ", " ./", " ._" };
+	(void)obj;
+
+	snprintf(p, p_max_size, "%s", gaugevals[round_to_int((double)usage * 4 / 255)]);
+}
+
 #ifdef X11
-void new_gauge(struct text_object *obj, char *buf, int usage)
+void new_gauge_in_x11(struct text_object *obj, char *buf, int usage)
 {
 	struct special_t *s = 0;
 	struct gauge *g = obj->special_data;
@@ -259,11 +267,28 @@ void new_gauge(struct text_object *obj, char *buf, int usage)
 
 	s = new_special(buf, GAUGE);
 
-	s->arg = (usage > 255) ? 255 : ((usage < 0) ? 0 : usage);
+	s->arg = usage;
 	s->width = g->width;
 	s->height = g->height;
 }
+#endif /* X11 */
 
+void new_gauge(struct text_object *obj, char *p, int p_max_size, int usage)
+{
+	if (!p_max_size)
+		return;
+
+	usage = (usage > 255) ? 255 : ((usage < 0) ? 0 : usage);
+
+#ifdef X11
+	if (output_methods & TO_X)
+		new_gauge_in_x11(obj, p, usage);
+	else
+#endif /* X11 */
+		new_gauge_in_shell(obj, p, p_max_size, usage);
+}
+
+#ifdef X11
 void new_font(char *buf, char *args)
 {
 	if ((output_methods & TO_X) == 0)
