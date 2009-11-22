@@ -91,7 +91,6 @@ void init_window(int use_own_window, int width, int height, int set_trans,
 void destroy_window(void);
 void create_gc(void);
 void set_transparent_background(Window win);
-long get_x11_color(const char *);
 void get_x11_desktop_info(Display *display, Atom atom);
 void set_struts(int);
 

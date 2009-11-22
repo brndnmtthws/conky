@@ -524,32 +524,6 @@ static Window find_subwindow(Window win, int w, int h)
 	return win;
 }
 
-long get_x11_color(const char *name)
-{
-	XColor color;
-
-	color.pixel = 0;
-	if (!XParseColor(display, DefaultColormap(display, screen), name, &color)) {
-		/* lets check if it's a hex colour with the # missing in front
-		 * if yes, then do something about it */
-		char newname[DEFAULT_TEXT_BUFFER_SIZE];
-
-		newname[0] = '#';
-		strncpy(&newname[1], name, DEFAULT_TEXT_BUFFER_SIZE - 1);
-		/* now lets try again */
-		if (!XParseColor(display, DefaultColormap(display, screen), &newname[0],
-					&color)) {
-			NORM_ERR("can't parse X color '%s'", name);
-			return 0xFF00FF;
-		}
-	}
-	if (!XAllocColor(display, DefaultColormap(display, screen), &color)) {
-		NORM_ERR("can't allocate X color '%s'", name);
-	}
-
-	return (long) color.pixel;
-}
-
 void create_gc(void)
 {
 	XGCValues values;
