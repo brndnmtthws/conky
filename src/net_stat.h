@@ -83,7 +83,7 @@ void print_wireless_ap(struct text_object *, char *, int);
 void print_wireless_link_qual(struct text_object *, char *, int);
 void print_wireless_link_qual_max(struct text_object *, char *, int);
 void print_wireless_link_qual_perc(struct text_object *, char *, int);
-void print_wireless_link_bar(struct text_object *, char *, int);
+uint8_t wireless_link_barval(struct text_object *);
 #endif /* HAVE_IWLIB */
 #endif /* __linux__ */
 

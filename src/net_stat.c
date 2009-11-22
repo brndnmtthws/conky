@@ -298,15 +298,14 @@ void print_wireless_link_qual_perc(struct text_object *obj, char *p, int p_max_s
 		spaced_print(p, p_max_size, "unk", 5);
 	}
 }
-void print_wireless_link_bar(struct text_object *obj, char *p, int p_max_size)
+uint8_t wireless_link_barval(struct text_object *obj)
 {
 	struct net_stat *ns = obj->data.opaque;
 
 	if (!ns)
-		return;
+		return 0;
 
-	new_bar(obj, p, p_max_size,
-			((double) ns->link_qual / ns->link_qual_max) * 255.0);
+	return round_to_int((double) (ns->link_qual / ns->link_qual_max) * 255.0);
 }
 #endif /* HAVE_IWLIB */
 #endif /* __linux__ */

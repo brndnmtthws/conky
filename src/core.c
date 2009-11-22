@@ -233,7 +233,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_wireless_link_qual_perc;
 	END OBJ(wireless_link_bar, &update_net_stats)
 		parse_net_stat_bar_arg(obj, arg, free_at_crash);
-		obj->callbacks.print = &print_wireless_link_bar;
+		obj->callbacks.barval = &wireless_link_barval;
 #endif /* HAVE_IWLIB */
 
 #endif /* __linux__ */
