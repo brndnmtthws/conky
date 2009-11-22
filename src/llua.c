@@ -550,12 +550,7 @@ void print_lua_bar(struct text_object *obj, char *p, int p_max_size)
 {
 	double per;
 	if (llua_getnumber(obj->data.s, &per)) {
-#ifdef X11
-		if(output_methods & TO_X) {
-			new_bar(obj, p, (per/100.0 * 255));
-		} else
-#endif /* X11 */
-			new_bar_in_shell(obj, p, p_max_size, per);
+		new_bar(obj, p, p_max_size, (per/100.0 * 255));
 	}
 }
 

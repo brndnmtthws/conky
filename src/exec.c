@@ -441,13 +441,8 @@ void print_execbar(struct text_object *obj, char *p, int p_max_size)
 	barnum = get_barnum(p);
 
 	if (barnum >= 0.0) {
-#ifdef X11
-		if(output_methods & TO_X) {
-			barnum /= 100;
-			new_bar(obj, p, round_to_int(barnum * 255.0));
-		}else
-#endif /* X11 */
-			new_bar_in_shell(obj, p, p_max_size, barnum);
+		barnum /= 100;
+		new_bar(obj, p, p_max_size, round_to_int(barnum * 255.0));
 	}
 }
 
@@ -468,12 +463,7 @@ void print_execibar(struct text_object *obj, char *p, int p_max_size)
 		}
 		ed->last_update = current_update_time;
 	}
-#ifdef X11
-	if(output_methods & TO_X) {
-		new_bar(obj, p, round_to_int(ed->barnum * 2.55));
-	} else
-#endif /* X11 */
-		new_bar_in_shell(obj, p, p_max_size, round_to_int(ed->barnum));
+	new_bar(obj, p, p_max_size, round_to_int(ed->barnum * 2.55));
 }
 
 void free_exec(struct text_object *obj)

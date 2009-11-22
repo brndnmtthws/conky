@@ -355,7 +355,7 @@ static void print_mixer_bar_chan(struct text_object *obj, int chan, char *p, int
 	else
 		val = mixer_get_right(obj->data.i);
 
-	new_bar(obj, p, mixer_to_255(obj->data.i, val));
+	new_bar(obj, p, p_max_size, mixer_to_255(obj->data.i, val));
 }
 
 void print_mixer_bar(struct text_object *obj, char *p, int p_max_size)

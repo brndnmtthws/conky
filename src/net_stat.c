@@ -305,14 +305,8 @@ void print_wireless_link_bar(struct text_object *obj, char *p, int p_max_size)
 	if (!ns)
 		return;
 
-#ifdef X11
-	if(output_methods & TO_X) {
-		new_bar(obj, p, ((double) ns->link_qual /
-					ns->link_qual_max) * 255.0);
-	} else
-#endif /* X11 */
-		new_bar_in_shell(obj, p, p_max_size, ((double) ns->link_qual /
-					ns->link_qual_max) * 100.0);
+	new_bar(obj, p, p_max_size,
+			((double) ns->link_qual / ns->link_qual_max) * 255.0);
 }
 #endif /* HAVE_IWLIB */
 #endif /* __linux__ */

@@ -628,14 +628,12 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		parse_mixer_arg(obj, arg);
 	END OBJ(mixerr, 0)
 		parse_mixer_arg(obj, arg);
-#ifdef X11
 	END OBJ(mixerbar, 0)
 		scan_mixer_bar(obj, arg);
 	END OBJ(mixerlbar, 0)
 		scan_mixer_bar(obj, arg);
 	END OBJ(mixerrbar, 0)
 		scan_mixer_bar(obj, arg);
-#endif
 	END OBJ_IF(if_mixer_mute, 0)
 		parse_mixer_arg(obj, arg);
 #ifdef X11
@@ -875,7 +873,6 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.s = strndup(arg, text_buffer_size);
 	END OBJ_ARG(smapi_bat_power, 0, "smapi_bat_power needs an argument")
 		obj->data.s = strndup(arg, text_buffer_size);
-#ifdef X11
 	END OBJ_ARG(smapi_bat_bar, 0, "smapi_bat_bar needs an argument")
 		int cnt;
 		if(sscanf(arg, "%i %n", &obj->data.i, &cnt) <= 0) {
@@ -883,7 +880,6 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			obj->data.i = -1;
 		} else
 			arg = scan_bar(obj, arg + cnt);
-#endif /* X11 */
 #endif /* IBM */
 #ifdef MPD
 #define mpd_set_maxlen(name) \
@@ -960,10 +956,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(xmms2_size, &update_xmms2)
 	END OBJ(xmms2_status, &update_xmms2)
 	END OBJ(xmms2_percent, &update_xmms2)
-#ifdef X11
 	END OBJ(xmms2_bar, &update_xmms2)
 		scan_bar(obj, arg);
-#endif /* X11 */
 	END OBJ(xmms2_smart, &update_xmms2)
 	END OBJ(xmms2_playlist, &update_xmms2)
 	END OBJ(xmms2_timesplayed, &update_xmms2)
@@ -989,10 +983,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(audacious_playlist_length, &update_audacious)
 	END OBJ(audacious_playlist_position, &update_audacious)
 	END OBJ(audacious_main_volume, &update_audacious)
-#ifdef X11
 	END OBJ(audacious_bar, &update_audacious)
 		scan_bar(obj, arg);
-#endif /* X11 */
 #endif
 #ifdef BMPX
 	END OBJ(bmpx_title, &update_bmpx)

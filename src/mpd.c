@@ -367,12 +367,7 @@ void print_mpd_percent(struct text_object *obj, char *p, int p_max_size)
 
 void print_mpd_bar(struct text_object *obj, char *p, int p_max_size)
 {
-#ifdef X11
-	if(output_methods & TO_X) {
-		new_bar(obj, p, (int) (mpd_get_info()->progress * 255.0f));
-	} else
-#endif /* X11 */
-		new_bar_in_shell(obj, p, p_max_size, (int) (mpd_get_info()->progress * 100.0f));
+	new_bar(obj, p, p_max_size, (int) (mpd_get_info()->progress * 255.0f));
 }
 
 void print_mpd_smart(struct text_object *obj, char *p, int p_max_size)

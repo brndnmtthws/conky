@@ -225,12 +225,7 @@ void print_fs_bar(struct text_object *obj, int be_free_bar, char *p, int p_max_s
 	if (!be_free_bar)
 		val = 1.0 - val;
 
-#ifdef X11
-		if(output_methods & TO_X) {
-			new_bar(obj, p, (int)(255 * val));
-		}else
-#endif /* X11 */
-			new_bar_in_shell(obj, p, p_max_size, (int)(100 * val));
+	new_bar(obj, p, p_max_size, (int)(255 * val));
 }
 
 void init_fs(struct text_object *obj, const char *arg)

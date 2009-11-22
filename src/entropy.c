@@ -82,10 +82,5 @@ void print_entropy_bar(struct text_object *obj, char *p, int p_max_size)
 
 	ratio = (double) entropy.avail /
 		(double) entropy.poolsize;
-#ifdef X11
-	if(output_methods & TO_X) {
-		new_bar(obj, p, (int) (ratio * 255.0f));
-	} else
-#endif /* X11 */
-		new_bar_in_shell(obj, p, p_max_size, (int) (ratio * 100.0f));
+	new_bar(obj, p, p_max_size, (int) (ratio * 255.0f));
 }

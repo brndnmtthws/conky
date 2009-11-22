@@ -264,24 +264,6 @@ void new_gauge(struct text_object *obj, char *buf, int usage)
 	s->height = g->height;
 }
 
-void new_bar(struct text_object *obj, char *buf, int usage)
-{
-	struct special_t *s = 0;
-	struct bar *b = obj->special_data;
-
-	if ((output_methods & TO_X) == 0)
-		return;
-
-	if (!b)
-		return;
-
-	s = new_special(buf, BAR);
-
-	s->arg = (usage > 255) ? 255 : ((usage < 0) ? 0 : usage);
-	s->width = b->width;
-	s->height = b->height;
-}
-
 void new_font(char *buf, char *args)
 {
 	if ((output_methods & TO_X) == 0)
@@ -454,10 +436,10 @@ void new_bg(char *buf, long c)
 }
 #endif /* X11 */
 
-void new_bar_in_shell(struct text_object *obj, char* buffer, int buf_max_size, double usage)
+static void new_bar_in_shell(struct text_object *obj, char* buffer, int buf_max_size, double usage)
 {
 	struct bar *b = obj->special_data;
-	int width;
+	int width, i, scaledusage;
 
 	if (!b)
 		return;
@@ -466,25 +448,54 @@ void new_bar_in_shell(struct text_object *obj, char* buffer, int buf_max_size, d
 	if (!width)
 		width = DEFAULT_BAR_WIDTH_NO_X;
 
-	if(width<=buf_max_size){
-		int i = 0, j = 0, scaledusage = round_to_int( usage * width / 100);
+	if (width > buf_max_size)
+		width = buf_max_size;
 
-		#ifdef HAVE_OPENMP
-		#pragma omp parallel for schedule(dynamic,10)
-		#endif /* HAVE_OPENMP */
-		for(i=0; i<(int)scaledusage; i++) {
-			*(buffer+i)='#';
-		}
-		/* gcc seems to think i is not initialized properly :/ */
-		j = i;
-		#ifdef HAVE_OPENMP
-		#pragma omp parallel for schedule(dynamic,10)
-		#endif /* HAVE_OPENMP */
-		for(i = j/* cheats */; i < width; i++) {
-			*(buffer+i)='_';
-		}
-		*(buffer+i)=0;
-	}
+	scaledusage = round_to_int( usage * width / 255);
+
+	for (i = 0; i < scaledusage; i++)
+		buffer[i] = '#';
+
+	for (; i < width; i++)
+		buffer[i] = '_';
+
+	buffer[i] = 0;
+}
+
+#ifdef X11
+static void new_bar_in_x11(struct text_object *obj, char *buf, int usage)
+{
+	struct special_t *s = 0;
+	struct bar *b = obj->special_data;
+
+	if ((output_methods & TO_X) == 0)
+		return;
+
+	if (!b)
+		return;
+
+	s = new_special(buf, BAR);
+
+	s->arg = usage;
+	s->width = b->width;
+	s->height = b->height;
+}
+#endif /* X11 */
+
+/* usage is in range [0,255] */
+void new_bar(struct text_object *obj, char *p, int p_max_size, int usage)
+{
+	if (!p_max_size)
+		return;
+
+	usage = (usage > 255) ? 255 : ((usage < 0) ? 0 : usage);
+
+#ifdef X11
+	if ((output_methods & TO_X))
+		new_bar_in_x11(obj, p, usage);
+	else
+#endif /* X11 */
+		new_bar_in_shell(obj, p, p_max_size, usage);
 }
 
 void new_outline(char *buf, long c)
