@@ -130,12 +130,12 @@ static inline double get_barnum(char *buf)
 	if (sscanf(buf, "%lf", &barnum) == 0) {
 		NORM_ERR("reading exec value failed (perhaps it's not the "
 				"correct format?)");
-		return -1;
+		return 0.0;
 	}
 	if (barnum > 100.0 || barnum < 0.0) {
 		NORM_ERR("your exec value is not between 0 and 100, "
 				"therefore it will be ignored");
-		return -1;
+		return 0.0;
 	}
 	return barnum;
 }
@@ -164,6 +164,21 @@ static inline void read_exec(const char *data, char *buf, const int size)
 		buf[0] = '\0';
 	}
 	alarm(0);
+}
+
+static double read_exec_barnum(const char *data)
+{
+	static char *buf = NULL;
+	double barnum;
+
+	if (!buf)
+		buf = malloc(text_buffer_size);
+
+	read_exec(data, buf, text_buffer_size);
+	barnum = get_barnum(buf);
+	free(buf);
+
+	return barnum;
 }
 
 static void *threaded_exec(void *) __attribute__((noreturn));
@@ -311,22 +326,10 @@ void print_execpi(struct text_object *obj, char *p, int p_max_size)
 	memcpy(tmp_info, &info, sizeof(struct information));
 
 	if (time_to_update(ed)) {
-		char *output;
-		int length;
-		FILE *fp = pid_popen(ed->cmd, "r", &childpid);
-
 		if (!ed->buffer)
 			ed->buffer = malloc(text_buffer_size);
 
-		length = fread(ed->buffer, 1, text_buffer_size, fp);
-		pclose(fp);
-
-		output = ed->buffer;
-		output[length] = '\0';
-		if (length > 0 && output[length - 1] == '\n') {
-			output[length - 1] = '\0';
-		}
-
+		read_exec(ed->cmd, ed->buffer, text_buffer_size);
 		ed->last_update = current_update_time;
 	}
 	parse_conky_vars(&subroot, ed->buffer, p, p_max_size, tmp_info);
@@ -363,32 +366,18 @@ void print_texeci(struct text_object *obj, char *p, int p_max_size)
 
 void print_execgauge(struct text_object *obj, char *p, int p_max_size)
 {
-	double barnum;
-
-	read_exec(obj->data.s, p, p_max_size);
-	barnum = get_barnum(p); /*using the same function*/
-
-	if (barnum >= 0.0) {
-		barnum /= 100;
-		new_gauge(obj, p, p_max_size, round_to_int(barnum * 255.0));
-	}
+	new_gauge(obj, p, p_max_size, round_to_int(read_exec_barnum(obj->data.s) * 2.55));
 }
 
 #ifdef X11
 void print_execgraph(struct text_object *obj, char *p, int p_max_size)
 {
-	double barnum;
 	struct execi_data *ed = obj->data.opaque;
 
 	if (!ed)
 		return;
 
-	read_exec(ed->cmd, p, p_max_size);
-	barnum = get_barnum(p);
-
-	if (barnum > 0) {
-		new_graph(obj, p, p_max_size, round_to_int(barnum));
-	}
+	new_graph(obj, p, p_max_size, round_to_int(read_exec_barnum(ed->cmd)));
 }
 
 void print_execigraph(struct text_object *obj, char *p, int p_max_size)
@@ -399,14 +388,7 @@ void print_execigraph(struct text_object *obj, char *p, int p_max_size)
 		return;
 
 	if (time_to_update(ed)) {
-		double barnum;
-
-		read_exec(ed->cmd, p, p_max_size);
-		barnum = get_barnum(p);
-
-		if (barnum >= 0.0) {
-			ed->barnum = barnum;
-		}
+		ed->barnum = read_exec_barnum(ed->cmd) * 2.55;
 		ed->last_update = current_update_time;
 	}
 	new_graph(obj, p, p_max_size, (int) (ed->barnum));
@@ -421,14 +403,7 @@ void print_execigauge(struct text_object *obj, char *p, int p_max_size)
 		return;
 
 	if (time_to_update(ed)) {
-		double barnum;
-
-		read_exec(ed->cmd, p, p_max_size);
-		barnum = get_barnum(p);
-
-		if (barnum >= 0.0) {
-			ed->barnum = 255 * barnum / 100.0;
-		}
+		ed->barnum = read_exec_barnum(ed->cmd) * 2.55;
 		ed->last_update = current_update_time;
 	}
 	new_gauge(obj, p, p_max_size, round_to_int(ed->barnum));
@@ -436,31 +411,18 @@ void print_execigauge(struct text_object *obj, char *p, int p_max_size)
 
 void print_execbar(struct text_object *obj, char *p, int p_max_size)
 {
-	double barnum;
-	read_exec(obj->data.s, p, p_max_size);
-	barnum = get_barnum(p);
-
-	if (barnum >= 0.0) {
-		barnum /= 100;
-		new_bar(obj, p, p_max_size, round_to_int(barnum * 255.0));
-	}
+	new_bar(obj, p, p_max_size, read_exec_barnum(obj->data.s) * 2.55);
 }
 
 void print_execibar(struct text_object *obj, char *p, int p_max_size)
 {
 	struct execi_data *ed = obj->data.opaque;
-	double barnum;
 
 	if (!ed)
 		return;
 
 	if (time_to_update(ed)) {
-		read_exec(ed->cmd, p, p_max_size);
-		barnum = get_barnum(p);
-
-		if (barnum >= 0.0) {
-			ed->barnum = barnum;
-		}
+		ed->barnum = read_exec_barnum(ed->cmd) * 2.55;
 		ed->last_update = current_update_time;
 	}
 	new_bar(obj, p, p_max_size, round_to_int(ed->barnum * 2.55));
