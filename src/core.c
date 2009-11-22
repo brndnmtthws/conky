@@ -546,7 +546,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.free = &free_exec;
 	END OBJ(execbar, 0)
 		scan_exec_arg(obj, arg);
-		obj->callbacks.print = &print_execbar;
+		obj->callbacks.barval = &execbarval;
 		obj->callbacks.free = &free_exec;
 	END OBJ(execgauge, 0)
 		scan_exec_arg(obj, arg);

@@ -409,9 +409,9 @@ void print_execigauge(struct text_object *obj, char *p, int p_max_size)
 	new_gauge(obj, p, p_max_size, round_to_int(ed->barnum));
 }
 
-void print_execbar(struct text_object *obj, char *p, int p_max_size)
+uint8_t execbarval(struct text_object *obj)
 {
-	new_bar(obj, p, p_max_size, read_exec_barnum(obj->data.s) * 2.55);
+	return round_to_int(read_exec_barnum(obj->data.s) * 2.55);
 }
 
 void print_execibar(struct text_object *obj, char *p, int p_max_size)
