@@ -163,6 +163,7 @@ unsigned long *do_gradient(int width, unsigned long first_colour, unsigned long 
 	return colours;
 }
 
+#ifdef X11
 long get_x11_color(const char *name)
 {
 	XColor color;
@@ -188,3 +189,4 @@ long get_x11_color(const char *name)
 
 	return (long) color.pixel;
 }
+#endif
