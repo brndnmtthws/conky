@@ -340,9 +340,9 @@
             </command>
         </term>
         <listitem>
-            <para>Imlib2 image cache size, in bytes. Defaults to
+            Imlib2 image cache size, in bytes. Defaults to
             4MiB. Increase this value if you use $image lots. Set
-            to 0 to disable the image cache.</para>
+            to 0 to disable the image cache.<para/>
         </listitem>
     </varlistentry>
     <varlistentry>
@@ -353,14 +353,14 @@
             <option>function_name [function arguments]</option>
         </term>
         <listitem>
-            <para>This function, if defined, will be called by
+            This function, if defined, will be called by
             Conky through each iteration after drawing to the
             window. Requires X support. Takes any number of
             optional arguments. Use this hook for drawing things on
             top of what Conky draws. Conky puts 'conky_' in front
             of function_name to prevent accidental calls to the
             wrong function unless you place 'conky_' in front of it
-            yourself.</para>
+            yourself.<para/>
         </listitem>
     </varlistentry>
     <varlistentry>
@@ -371,14 +371,14 @@
             <option>function_name [function arguments]</option>
         </term>
         <listitem>
-            <para>This function, if defined, will be called by
+            This function, if defined, will be called by
             Conky through each iteration before drawing to the
             window. Requires X support. Takes any number of
             optional arguments. Use this hook for drawing things on
             top of what Conky draws. Conky puts 'conky_' in front
             of function_name to prevent accidental calls to the
             wrong function unless you place 'conky_' in front of it
-            yourself.</para>
+            yourself.<para/>
         </listitem>
     </varlistentry>
     <varlistentry>
@@ -398,14 +398,14 @@
             <option>function_name [function arguments]</option>
         </term>
         <listitem>
-            <para>This function, if defined, will be called by
+            This function, if defined, will be called by
             Conky at shutdown or when the configuration is
             reloaded. Use this hook to clean up after yourself,
             such as freeing memory which has been allocated by
             external libraries via Lua. Conky puts 'conky_' in
             front of function_name to prevent accidental calls to
             the wrong function unless you place 'conky_' in
-            front of it yourself.</para>
+            front of it yourself.<para/>
         </listitem>
     </varlistentry>
     <varlistentry>
@@ -416,13 +416,13 @@
             <option>function_name [function arguments]</option>
         </term>
         <listitem>
-            <para>This function, if defined, will be called by
+            This function, if defined, will be called by
             Conky at startup or when the configuration is reloaded.
             Use this hook to initialize values, or for any run-once
             applications. Conky puts 'conky_' in front of
             function_name to prevent accidental calls to the wrong
             function unless you place 'conky_' in front of
-            it yourself.</para>
+            it yourself.<para/>
         </listitem>
     </varlistentry>
     <varlistentry>
