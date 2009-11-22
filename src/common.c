@@ -472,3 +472,8 @@ void print_loadgraph(struct text_object *obj, char *p, int p_max_size)
 	new_graph(obj, p, p_max_size, info.loadavg[0]);
 }
 #endif /* X11 */
+
+uint8_t cpu_barval(struct text_object *obj)
+{
+	return (uint8_t)(info.cpu_usage[obj->data.i] * 255.0);
+}

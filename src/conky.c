@@ -886,10 +886,8 @@ void generate_text_internal(char *p, int p_max_size,
 				percent_print(p, p_max_size,
 				              round_to_int(cur->cpu_usage[obj->data.i] * 100.0));
 			}
-			OBJ(cpugauge)
+			OBJ(cpugauge) {
 				new_gauge(obj, p, p_max_size, round_to_int(cur->cpu_usage[obj->data.i] * 255.0));
-			OBJ(cpubar) {
-				new_bar(obj, p, p_max_size, round_to_int(cur->cpu_usage[obj->data.i] * 255.0));
 			}
 #ifdef X11
 			OBJ(cpugraph) {

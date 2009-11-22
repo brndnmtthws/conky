@@ -393,6 +393,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(cpubar, &update_cpu_usage)
 		SCAN_CPU(arg, obj->data.i);
 		scan_bar(obj, arg);
+		obj->callbacks.barval = &cpu_barval;
 		DBGP2("Adding $cpubar for CPU %d", obj->data.i);
 #ifdef X11
 	END OBJ(cpugraph, &update_cpu_usage)
