@@ -76,5 +76,6 @@ void print_loadgraph(struct text_object *, char *, int);
 #endif /* X11 */
 
 uint8_t cpu_barval(struct text_object *);
+uint8_t mem_barval(struct text_object *);
 
 #endif /* _COMMON_H */

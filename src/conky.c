@@ -997,17 +997,6 @@ void generate_text_internal(char *p, int p_max_size,
 				if (cur->memmax)
 					percent_print(p, p_max_size, cur->mem * 100 / cur->memmax);
 			}
-			OBJ(memgauge){
-				new_gauge(obj, p, p_max_size, cur->memmax ? (cur->mem * 255) / (cur->memmax) : 0);
-			}
-			OBJ(membar) {
-				new_bar(obj, p, p_max_size, cur->memmax ? (cur->mem * 255) / (cur->memmax) : 0);
-			}
-#ifdef X11
-			OBJ(memgraph) {
-				new_graph(obj, p, p_max_size, cur->memmax ? (cur->mem * 100.0) / (cur->memmax) : 0.0);
-			}
-#endif /* X11 */
 #ifdef X11
 #define NOT_IN_X "Not running in X"
 			OBJ(monitor) {

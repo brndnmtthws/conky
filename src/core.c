@@ -768,14 +768,17 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(memperc, &update_meminfo)
 	END OBJ(memgauge, &update_meminfo)
 		scan_gauge(obj, arg);
+		obj->callbacks.gaugeval = &mem_barval;
 	END OBJ(membar, &update_meminfo)
 		scan_bar(obj, arg);
+		obj->callbacks.barval = &mem_barval;
 #ifdef X11
 	END OBJ(memgraph, &update_meminfo)
 		char *buf = 0;
 		buf = scan_graph(obj, arg, 100);
 
 		if (buf) free(buf);
+		obj->callbacks.graphval = &mem_barval;
 #endif /* X11*/
 	END OBJ(mixer, 0)
 		parse_mixer_arg(obj, arg);

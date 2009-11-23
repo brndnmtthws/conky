@@ -475,5 +475,12 @@ void print_loadgraph(struct text_object *obj, char *p, int p_max_size)
 
 uint8_t cpu_barval(struct text_object *obj)
 {
-	return (uint8_t)(info.cpu_usage[obj->data.i] * 255.0);
+	return round_to_int(info.cpu_usage[obj->data.i] * 255.0);
+}
+
+uint8_t mem_barval(struct text_object *obj)
+{
+	(void)obj;
+
+	return round_to_int(info.memmax ? (info.mem * 255 / info.memmax) : 0);
 }
