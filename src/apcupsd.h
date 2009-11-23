@@ -54,7 +54,7 @@ void update_apcupsd(void);
 void print_apcupsd_nop(struct text_object *, char *, int);
 void print_apcupsd_loadgraph(struct text_object *, char *, int);
 void print_apcupsd_loadgauge(struct text_object *, char *, int);
-void print_apcupsd_loadbar(struct text_object *, char *, int);
+uint8_t apcupsd_loadbarval(struct text_object *);
 
 void print_apcupsd_name(struct text_object *, char *, int);
 void print_apcupsd_model(struct text_object *, char *, int);

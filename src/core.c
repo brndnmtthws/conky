@@ -1444,7 +1444,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_apcupsd_load;
 	END OBJ(apcupsd_loadbar, &update_apcupsd)
 		scan_bar(obj, arg);
-		obj->callbacks.print = &print_apcupsd_loadbar;
+		obj->callbacks.barval = &apcupsd_loadbarval;
 #ifdef X11
 	END OBJ(apcupsd_loadgraph, &update_apcupsd)
 		char* buf = 0;

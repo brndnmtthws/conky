@@ -259,15 +259,11 @@ void print_apcupsd_loadgauge(struct text_object *obj, char *p, int p_max_size)
 	new_gauge(obj, p, p_max_size, (int)progress);
 }
 
-void print_apcupsd_loadbar(struct text_object *obj, char *p, int p_max_size)
+uint8_t apcupsd_loadbarval(struct text_object *obj)
 {
-	double progress;
+	(void)obj;
 
-	if (!p_max_size)
-		return;
-
-	progress = atof(info.apcupsd.items[APCUPSD_LOAD]) / 100.0 * 255.0;
-	new_bar(obj, p, p_max_size, (int) progress);
+	return round_to_int(atof(info.apcupsd.items[APCUPSD_LOAD]) * 2.55);
 }
 
 #define APCUPSD_PRINT_GENERATOR(name, idx)                                  \
