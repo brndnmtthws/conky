@@ -10,8 +10,11 @@ conky.1: command_options.xml config_settings.xml docs.xml variables.xml lua.xml
 	${db2x_xsltproc_cmd} -s man ${srcdir}/docs.xml -o docs.mxml
 	${db2x_manxml_cmd} docs.mxml
 	${xsltproc_cmd} http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl ${srcdir}/docs.xml > docs.html
-	man -P '/usr/bin/less -is' ./conky.1 > README
+	man -P 'less -is' ./conky.1 > README
 	sed -i "s/[[:cntrl:]]\[[0-9]*m//g" README
+	sed -i "s/\xE2//g" README
+	sed -i "s/\x80//g" README
+	sed -i "s/\x90/-/g" README
 	mv README ${top_srcdir}
 	xsltproc ${srcdir}/variables.xsl ${srcdir}/variables.xml > variables.html
 	xsltproc ${srcdir}/config_settings.xsl ${srcdir}/config_settings.xml > config_settings.html
