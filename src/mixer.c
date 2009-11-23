@@ -339,35 +339,17 @@ void scan_mixer_bar(struct text_object *obj, const char *arg)
 	}
 }
 
-/* see print_mixer() above for a description of 'chan' */
-static void print_mixer_bar_chan(struct text_object *obj, int chan, char *p, int p_max_size)
+uint8_t mixer_barval(struct text_object *obj)
 {
-	int val;
-
-	if (!p_max_size)
-		return;
-
-	if (chan < 0)
-		val = mixer_get_left(obj->data.i);
-	else if (chan == 0)
-		val = mixer_get_avg(obj->data.i);
-	else
-		val = mixer_get_right(obj->data.i);
-
-	new_bar(obj, p, p_max_size, mixer_to_255(obj->data.i, val));
+	return mixer_to_255(obj->data.i, mixer_get_avg(obj->data.i));
 }
 
-void print_mixer_bar(struct text_object *obj, char *p, int p_max_size)
+uint8_t mixerl_barval(struct text_object *obj)
 {
-	print_mixer_bar_chan(obj, 0, p, p_max_size);
+	return mixer_to_255(obj->data.i, mixer_get_left(obj->data.i));
 }
 
-void print_mixerl_bar(struct text_object *obj, char *p, int p_max_size)
+uint8_t mixerr_barval(struct text_object *obj)
 {
-	print_mixer_bar_chan(obj, -1, p, p_max_size);
-}
-
-void print_mixerr_bar(struct text_object *obj, char *p, int p_max_size)
-{
-	print_mixer_bar_chan(obj, 1, p, p_max_size);
+	return mixer_to_255(obj->data.i, mixer_get_right(obj->data.i));
 }

@@ -10,8 +10,8 @@ void print_mixerr(struct text_object *, char *, int);
 int check_mixer_muted(struct text_object *);
 
 void scan_mixer_bar(struct text_object *, const char *);
-void print_mixer_bar(struct text_object *, char *, int);
-void print_mixerl_bar(struct text_object *, char *, int);
-void print_mixerr_bar(struct text_object *, char *, int);
+uint8_t mixer_barval(struct text_object *);
+uint8_t mixerl_barval(struct text_object *);
+uint8_t mixerr_barval(struct text_object *);
 
 #endif /*MIXER_H_*/

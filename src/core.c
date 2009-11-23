@@ -791,13 +791,13 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_mixerr;
 	END OBJ(mixerbar, 0)
 		scan_mixer_bar(obj, arg);
-		obj->callbacks.print = &print_mixer_bar;
+		obj->callbacks.barval = &mixer_barval;
 	END OBJ(mixerlbar, 0)
 		scan_mixer_bar(obj, arg);
-		obj->callbacks.print = &print_mixerl_bar;
+		obj->callbacks.barval = &mixerl_barval;
 	END OBJ(mixerrbar, 0)
 		scan_mixer_bar(obj, arg);
-		obj->callbacks.print = &print_mixerr_bar;
+		obj->callbacks.barval = &mixerr_barval;
 	END OBJ_IF(if_mixer_mute, 0)
 		parse_mixer_arg(obj, arg);
 		obj->callbacks.iftest = &check_mixer_muted;
