@@ -74,13 +74,9 @@ void print_entropy_poolsize(struct text_object *obj, char *p, int p_max_size)
 	snprintf(p, p_max_size, "%u", entropy.poolsize);
 }
 
-void print_entropy_bar(struct text_object *obj, char *p, int p_max_size)
+uint8_t entropy_barval(struct text_object *obj)
 {
-	double ratio;
-
 	(void)obj;
 
-	ratio = (double) entropy.avail /
-		(double) entropy.poolsize;
-	new_bar(obj, p, p_max_size, (int) (ratio * 255.0f));
+	return round_to_int((double) entropy.avail * 255.0f / (double) entropy.poolsize);
 }

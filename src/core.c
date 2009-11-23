@@ -1375,7 +1375,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_entropy_poolsize;
 	END OBJ(entropy_bar, &update_entropy)
 		scan_bar(obj, arg);
-		obj->callbacks.print = &print_entropy_bar;
+		obj->callbacks.barval = &entropy_barval;
 	END OBJ_ARG(include, 0, "include needs a argument")
 		struct conftree *leaf = conftree_add(currentconffile, arg);
 		if(leaf) {

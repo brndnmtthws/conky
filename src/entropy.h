@@ -36,6 +36,6 @@ void update_entropy(void);
 void print_entropy_avail(struct text_object *, char *, int);
 void print_entropy_perc(struct text_object *, char *, int);
 void print_entropy_poolsize(struct text_object *, char *, int);
-void print_entropy_bar(struct text_object *, char *, int);
+uint8_t entropy_barval(struct text_object *);
 
 #endif /* _ENTROPY_H */
