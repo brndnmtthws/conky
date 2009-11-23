@@ -165,40 +165,27 @@ void parse_diskiograph_arg(struct text_object *obj, const char *arg)
 		free(buf);
 }
 
-static void print_diskiograph_dir(struct text_object *obj, int dir, char *p, int p_max_size)
+/* XXX: what about max values? */
+
+uint8_t diskiographval(struct text_object *obj)
 {
 	struct diskio_stat *diskio = obj->data.opaque;
-	double val;
 
-	if (!diskio)
-		return;
-
-	if (!p_max_size)
-		return;
-
-	if (dir < 0)
-		val = diskio->current_read;
-	else if (dir == 0)
-		val = diskio->current;
-	else
-		val = diskio->current_write;
-
-	new_graph(obj, p, p_max_size, val);
+	return (diskio ? round_to_int(diskio->current) : 0);
 }
 
-void print_diskiograph(struct text_object *obj, char *p, int p_max_size)
+uint8_t diskiographval_read(struct text_object *obj)
 {
-	print_diskiograph_dir(obj, 0, p, p_max_size);
+	struct diskio_stat *diskio = obj->data.opaque;
+
+	return (diskio ? round_to_int(diskio->current_read) : 0);
 }
 
-void print_diskiograph_read(struct text_object *obj, char *p, int p_max_size)
+uint8_t diskiographval_write(struct text_object *obj)
 {
-	print_diskiograph_dir(obj, -1, p, p_max_size);
-}
+	struct diskio_stat *diskio = obj->data.opaque;
 
-void print_diskiograph_write(struct text_object *obj, char *p, int p_max_size)
-{
-	print_diskiograph_dir(obj, 1, p, p_max_size);
+	return (diskio ? round_to_int(diskio->current_write) : 0);
 }
 #endif /* X11 */
 

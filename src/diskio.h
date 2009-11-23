@@ -57,9 +57,9 @@ void print_diskio_read(struct text_object *, char *, int);
 void print_diskio_write(struct text_object *, char *, int);
 #ifdef X11
 void parse_diskiograph_arg(struct text_object *, const char *);
-void print_diskiograph(struct text_object *, char *, int);
-void print_diskiograph_read(struct text_object *, char *, int);
-void print_diskiograph_write(struct text_object *, char *, int);
+uint8_t diskiographval(struct text_object *);
+uint8_t diskiographval_read(struct text_object *);
+uint8_t diskiographval_write(struct text_object *);
 #endif /* X11 */
 
 #endif /* DISKIO_H_ */

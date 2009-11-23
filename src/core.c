@@ -421,13 +421,13 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef X11
 	END OBJ(diskiograph, &update_diskio)
 		parse_diskiograph_arg(obj, arg);
-		obj->callbacks.print = &print_diskiograph;
+		obj->callbacks.graphval = &diskiographval;
 	END OBJ(diskiograph_read, &update_diskio)
 		parse_diskiograph_arg(obj, arg);
-		obj->callbacks.print = &print_diskiograph_read;
+		obj->callbacks.graphval = &diskiographval_read;
 	END OBJ(diskiograph_write, &update_diskio)
 		parse_diskiograph_arg(obj, arg);
-		obj->callbacks.print = &print_diskiograph_write;
+		obj->callbacks.graphval = &diskiographval_write;
 #endif /* X11 */
 	END OBJ(color, 0)
 #ifdef X11
