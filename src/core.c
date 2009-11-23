@@ -1330,7 +1330,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		} else {
 			CRIT_ERR(obj, free_at_crash, "lua_bar needs arguments: <height>,<width> <function name> [function parameters]");
 		}
-		obj->callbacks.print = &print_lua_bar;
+		obj->callbacks.barval = &lua_barval;
 		obj->callbacks.free = &gen_free_opaque;
 #ifdef X11
 	END OBJ_ARG(lua_graph, 0, "lua_graph needs arguments: <function name> [height],[width] [gradient colour 1] [gradient colour 2] [scale] [-t] [-l]")

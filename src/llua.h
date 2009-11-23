@@ -67,7 +67,7 @@ void llua_update_info(struct information *i, double u_interval);
 
 void print_lua(struct text_object *, char *, int);
 void print_lua_parse(struct text_object *, char *, int);
-void print_lua_bar(struct text_object *, char *, int);
+uint8_t lua_barval(struct text_object *);
 #ifdef X11
 void print_lua_graph(struct text_object *, char *, int);
 #endif /* X11 */

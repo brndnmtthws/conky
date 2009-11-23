@@ -546,12 +546,13 @@ void print_lua_parse(struct text_object *obj, char *p, int p_max_size)
 	}
 }
 
-void print_lua_bar(struct text_object *obj, char *p, int p_max_size)
+uint8_t lua_barval(struct text_object *obj)
 {
 	double per;
 	if (llua_getnumber(obj->data.s, &per)) {
-		new_bar(obj, p, p_max_size, (per/100.0 * 255));
+		return round_to_int(per * 2.55);
 	}
+	return 0;
 }
 
 #ifdef X11
