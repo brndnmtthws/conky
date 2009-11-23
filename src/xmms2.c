@@ -343,13 +343,11 @@ void print_xmms2_duration(struct text_object *obj, char *p, int p_max_size)
 			(info.xmms2.duration / 1000) % 60);
 }
 
-void print_xmms2_bar(struct text_object *obj, char *p, int p_max_size)
+uint8_t xmms2_barval(struct text_object *obj)
 {
 	(void)obj;
-	if (!p_max_size)
-		return;
 
-	new_bar(obj, p, p_max_size, (int) (info.xmms2.progress * 255.0f));
+	return round_to_int(info.xmms2.progress * 255.0f);
 }
 
 void print_xmms2_smart(struct text_object *obj, char *p, int p_max_size)

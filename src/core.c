@@ -1223,7 +1223,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_xmms2_percent;
 	END OBJ(xmms2_bar, &update_xmms2)
 		scan_bar(obj, arg);
-		obj->callbacks.print = &print_xmms2_bar;
+		obj->callbacks.barval = &xmms2_barval;
 	END OBJ(xmms2_smart, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_smart;
 	END OBJ(xmms2_playlist, &update_xmms2)
