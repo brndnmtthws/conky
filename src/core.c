@@ -407,7 +407,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.graphval = &cpu_barval;
 	END OBJ(loadgraph, &update_load_average)
 		scan_loadgraph_arg(obj, arg);
-		obj->callbacks.print = &print_loadgraph;
+		obj->callbacks.graphval = &loadgraphval;
 #endif /* X11 */
 	END OBJ(diskio, &update_diskio)
 		parse_diskio_arg(obj, arg);

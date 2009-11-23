@@ -464,12 +464,11 @@ void scan_loadgraph_arg(struct text_object *obj, const char *arg)
 		free(buf);
 }
 
-void print_loadgraph(struct text_object *obj, char *p, int p_max_size)
+uint8_t loadgraphval(struct text_object *obj)
 {
-	if (!p_max_size)
-		return;
+	(void)obj;
 
-	new_graph(obj, p, p_max_size, info.loadavg[0]);
+	return round_to_int(info.loadavg[0]);
 }
 #endif /* X11 */
 
