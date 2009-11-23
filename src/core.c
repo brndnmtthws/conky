@@ -588,10 +588,10 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		scan_pre_exec_arg(obj, arg);
 	END OBJ(fs_bar, &update_fs_stats)
 		init_fs_bar(obj, arg);
-		obj->callbacks.print = &print_fs_bar;
+		obj->callbacks.barval = &fs_barval;
 	END OBJ(fs_bar_free, &update_fs_stats)
 		init_fs_bar(obj, arg);
-		obj->callbacks.print = &print_fs_bar_free;
+		obj->callbacks.barval = &fs_free_barval;
 	END OBJ(fs_free, &update_fs_stats)
 		init_fs(obj, arg);
 		obj->callbacks.print = &print_fs_free;

@@ -211,13 +211,13 @@ void init_fs_bar(struct text_object *obj, const char *arg)
 	obj->data.opaque = prepare_fs_stat(arg);
 }
 
-static void do_print_fs_bar(struct text_object *obj, int be_free_bar, char *p, int p_max_size)
+static uint8_t do_fs_barval(struct text_object *obj, int be_free_bar)
 {
 	double val = 1.0;
 	struct fs_stat *fs = obj->data.opaque;
 
 	if (!fs)
-		return;
+		return 0;
 
 	if (fs->size)
 		val = (double)fs->avail / (double)fs->size;
@@ -225,17 +225,17 @@ static void do_print_fs_bar(struct text_object *obj, int be_free_bar, char *p, i
 	if (!be_free_bar)
 		val = 1.0 - val;
 
-	new_bar(obj, p, p_max_size, (int)(255 * val));
+	return round_to_int(val * 255.0);
 }
 
-void print_fs_bar(struct text_object *obj, char *p, int p_max_size)
+uint8_t fs_barval(struct text_object *obj)
 {
-	do_print_fs_bar(obj, 0, p, p_max_size);
+	return do_fs_barval(obj, 0);
 }
 
-void print_fs_bar_free(struct text_object *obj, char *p, int p_max_size)
+uint8_t fs_free_barval(struct text_object *obj)
 {
-	do_print_fs_bar(obj, 1, p, p_max_size);
+	return do_fs_barval(obj, 1);
 }
 
 void init_fs(struct text_object *obj, const char *arg)
