@@ -206,24 +206,18 @@ void parse_net_stat_graph_arg(struct text_object *obj, const char *arg, void *fr
 	obj->data.opaque = get_net_stat(DEFAULTNETDEV, obj, free_at_crash);
 }
 
-void print_downspeedgraph(struct text_object *obj, char *p, int p_max_size)
+uint8_t downspeedgraphval(struct text_object *obj)
 {
 	struct net_stat *ns = obj->data.opaque;
 
-	if (!ns || !p_max_size)
-		return;
-
-	new_graph(obj, p, p_max_size, ns->recv_speed / 1024.0);
+	return (ns ? round_to_int(ns->recv_speed / 1024.0) : 0);
 }
 
-void print_upspeedgraph(struct text_object *obj, char *p, int p_max_size)
+uint8_t upspeedgraphval(struct text_object *obj)
 {
 	struct net_stat *ns = obj->data.opaque;
 
-	if (!ns || !p_max_size)
-		return;
-
-	new_graph(obj, p, p_max_size, ns->trans_speed / 1024.0);
+	return (ns ? round_to_int(ns->trans_speed / 1024.0) : 0);
 }
 #endif /* X11 */
 

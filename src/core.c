@@ -524,7 +524,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef X11
 	END OBJ(downspeedgraph, &update_net_stats)
 		parse_net_stat_graph_arg(obj, arg, free_at_crash);
-		obj->callbacks.print = &print_downspeedgraph;
+		obj->callbacks.graphval = &downspeedgraphval;
 #endif /* X11 */
 	END OBJ(else, 0)
 		obj_be_ifblock_else(ifblock_opaque, obj);
@@ -1019,7 +1019,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef X11
 	END OBJ(upspeedgraph, &update_net_stats)
 		parse_net_stat_graph_arg(obj, arg, free_at_crash);
-		obj->callbacks.print = &print_upspeedgraph;
+		obj->callbacks.graphval = &upspeedgraphval;
 #endif
 	END OBJ(uptime_short, &update_uptime)
 	END OBJ(uptime, &update_uptime)
