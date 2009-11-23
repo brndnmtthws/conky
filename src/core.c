@@ -1082,7 +1082,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			obj->data.i = -1;
 		} else
 			arg = scan_bar(obj, arg + cnt);
-		obj->callbacks.print = &print_smapi_bat_bar;
+		obj->callbacks.barval = &smapi_bat_barval;
 #endif /* IBM */
 #ifdef MPD
 #define mpd_set_maxlen(name) \
