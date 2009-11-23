@@ -203,7 +203,7 @@ char *find_and_replace_templates(const char *inbuf)
 		if (!(*p))
 			break;
 
-		if (strncmp(p, "$template", 9) && strncmp(p, "${template", 10)) {
+		if (strncmp(p, "$template", strlen("$template")) && strncmp(p, "${template", strlen("${template"))) {
 			*(o++) = *(p++);
 			continue;
 		}
@@ -235,7 +235,8 @@ char *find_and_replace_templates(const char *inbuf)
 			}
 		} else {
 			templ = p + 1;
-			while (*p && !isspace(*p))
+			p += strlen("$template");
+			while (*p && isdigit(*p))
 				p++;
 			args = NULL;
 		}
