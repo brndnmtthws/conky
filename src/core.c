@@ -1268,7 +1268,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_audacious_main_volume;
 	END OBJ(audacious_bar, &update_audacious)
 		scan_bar(obj, arg);
-		obj->callbacks.print = &print_audacious_bar;
+		obj->callbacks.barval = &audacious_barval;
 #endif /* AUDACIOUS */
 #ifdef BMPX
 	END OBJ(bmpx_title, &update_bmpx)

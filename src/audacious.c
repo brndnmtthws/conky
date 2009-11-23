@@ -262,17 +262,13 @@ void print_audacious_title(struct text_object *obj, char *p, int p_max_size)
 			info.audacious.items[AUDACIOUS_TITLE]);
 }
 
-void print_audacious_bar(struct text_object *obj, char *p, int p_max_size)
+uint8_t audacious_barval(struct text_object *obj)
 {
-	double progress;
+	(void)obj;
 
-	if (!p_max_size)
-		return;
-
-	progress =
-		atof(info.audacious.items[AUDACIOUS_POSITION_SECONDS]) /
-		atof(info.audacious.items[AUDACIOUS_LENGTH_SECONDS]);
-	new_bar(obj, p, p_max_size, (int) (progress * 255.0f));
+	return round_to_int(
+		atof(info.audacious.items[AUDACIOUS_POSITION_SECONDS]) * 255.0 /
+		atof(info.audacious.items[AUDACIOUS_LENGTH_SECONDS]));
 }
 
 #define AUDACIOUS_PRINT_GENERATOR(name, idx) \

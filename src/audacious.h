@@ -78,6 +78,6 @@ void print_audacious_filename(struct text_object *, char *, int);
 void print_audacious_playlist_length(struct text_object *, char *, int);
 void print_audacious_playlist_position(struct text_object *, char *, int);
 void print_audacious_main_volume(struct text_object *, char *, int);
-void print_audacious_bar(struct text_object *, char *, int);
+uint8_t audacious_barval(struct text_object *);
 
 #endif
