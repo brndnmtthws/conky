@@ -1145,7 +1145,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(mpd_bar, &update_mpd)
 		scan_bar(obj, arg);
 		init_mpd();
-		obj->callbacks.print = &print_mpd_bar;
+		obj->callbacks.barval = &mpd_barval;
 	END OBJ(mpd_smart, &update_mpd)
 		mpd_set_maxlen(mpd_smart);
 		init_mpd();

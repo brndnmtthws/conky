@@ -376,9 +376,10 @@ void print_mpd_percent(struct text_object *obj, char *p, int p_max_size)
 	percent_print(p, p_max_size, (int)(mpd_info.progress * 100));
 }
 
-void print_mpd_bar(struct text_object *obj, char *p, int p_max_size)
+uint8_t mpd_barval(struct text_object *obj)
 {
-	new_bar(obj, p, p_max_size, (int) (mpd_info.progress * 255.0f));
+	(void)obj;
+	return round_to_int(mpd_info.progress * 255.0f);
 }
 
 void print_mpd_smart(struct text_object *obj, char *p, int p_max_size)
