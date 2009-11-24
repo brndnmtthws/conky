@@ -569,9 +569,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.s = strndup(arg, text_buffer_size);
 #else
 	END OBJ_IF_ARG(if_running, 0, "if_running needs an argument")
-		char buf[256];
+		char buf[text_buffer_size];
 
-		snprintf(buf, 256, "pidof %s >/dev/null", arg);
+		snprintf(buf, text_buffer_size, "pidof %s >/dev/null", arg);
 		obj->data.s = strndup(buf, text_buffer_size);
 #endif
 	END OBJ(kernel, 0)
@@ -1124,11 +1124,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(apcupsd_lastxfer, &update_apcupsd)
 #endif /* APCUPSD */
 	END {
-		char buf[256];
+		char buf[text_buffer_size];
 
 		NORM_ERR("unknown variable %s", s);
 		obj->type = OBJ_text;
-		snprintf(buf, 256, "${%s}", s);
+		snprintf(buf, text_buffer_size, "${%s}", s);
 		obj->data.s = strndup(buf, text_buffer_size);
 	}
 #undef OBJ
@@ -1222,7 +1222,7 @@ int extract_variable_text_internal(struct text_object *retval, const char *const
 			s = p;
 
 			if (*p != '$') {
-				char buf[256];
+				char buf[text_buffer_size];
 				const char *var;
 
 				/* variable is either $foo or ${foo} */
@@ -1252,7 +1252,7 @@ int extract_variable_text_internal(struct text_object *retval, const char *const
 				}
 
 				/* copy variable to buffer */
-				len = (p - s > 255) ? 255 : (p - s);
+				len = (p - s > text_buffer_size-1) ? text_buffer_size-1 : (p - s);
 				strncpy(buf, s, len);
 				buf[len] = '\0';
 
