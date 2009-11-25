@@ -711,7 +711,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.s = strndup(buf, text_buffer_size);
 #endif
 	END OBJ(kernel, 0)
+		obj->callbacks.print = &print_kernel;
 	END OBJ(machine, 0)
+		obj->callbacks.print = &print_machine;
 	END OBJ(mails, 0)
 		parse_local_mail_args(obj, arg);
 		obj->callbacks.print = &print_mails;

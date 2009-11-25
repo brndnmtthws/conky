@@ -956,13 +956,6 @@ void generate_text_internal(char *p, int p_max_size,
 					DO_JUMP;
 				}
 			}
-			OBJ(kernel) {
-				snprintf(p, p_max_size, "%s", cur->uname_s.release);
-			}
-			OBJ(machine) {
-				snprintf(p, p_max_size, "%s", cur->uname_s.machine);
-			}
-
 			OBJ(format_time) {
 				char buf[max_user_text];
 

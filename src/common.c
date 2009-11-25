@@ -529,3 +529,15 @@ uint8_t swap_barval(struct text_object *obj)
 
 	return round_to_int(info.swapmax ? (info.swap * 255 / info.swapmax) : 0);
 }
+
+void print_kernel(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	snprintf(p, p_max_size, "%s", info.uname_s.release);
+}
+
+void print_machine(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	snprintf(p, p_max_size, "%s", info.uname_s.machine);
+}

@@ -86,4 +86,7 @@ uint8_t mem_barval(struct text_object *);
 uint8_t swap_percentage(struct text_object *);
 uint8_t swap_barval(struct text_object *);
 
+void print_kernel(struct text_object *, char *, int);
+void print_machine(struct text_object *, char *, int);
+
 #endif /* _COMMON_H */
