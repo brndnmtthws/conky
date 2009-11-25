@@ -874,15 +874,6 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(cmdline_to_pid) {
 				print_cmdline_to_pid(obj, p, p_max_size);
 			}
-			OBJ(cpu) {
-				if (obj->data.i > info.cpu_count) {
-					NORM_ERR("obj->data.i %i info.cpu_count %i",
-							obj->data.i, info.cpu_count);
-					CRIT_ERR(NULL, NULL, "attempting to use more CPUs than you have!");
-				}
-				percent_print(p, p_max_size,
-				              round_to_int(cur->cpu_usage[obj->data.i] * 100.0));
-			}
 #ifdef X11
 			OBJ(font) {
 				new_font(p, obj->data.s);

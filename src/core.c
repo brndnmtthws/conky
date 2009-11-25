@@ -386,6 +386,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 }
 	END OBJ(cpu, &update_cpu_usage)
 		SCAN_CPU(arg, obj->data.i);
+		obj->callbacks.percentage = &cpu_percentage;
 		DBGP2("Adding $cpu for CPU %d", obj->data.i);
 	END OBJ(cpugauge, &update_cpu_usage)
 		SCAN_CPU(arg, obj->data.i);

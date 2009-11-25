@@ -472,6 +472,16 @@ uint8_t loadgraphval(struct text_object *obj)
 }
 #endif /* X11 */
 
+uint8_t cpu_percentage(struct text_object *obj)
+{
+	if (obj->data.i > info.cpu_count) {
+		NORM_ERR("obj->data.i %i info.cpu_count %i",
+				obj->data.i, info.cpu_count);
+		CRIT_ERR(NULL, NULL, "attempting to use more CPUs than you have!");
+	}
+	return round_to_int(info.cpu_usage[obj->data.i] * 100.0);
+}
+
 uint8_t cpu_barval(struct text_object *obj)
 {
 	return round_to_int(info.cpu_usage[obj->data.i] * 255.0);

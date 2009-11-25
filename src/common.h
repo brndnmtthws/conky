@@ -75,6 +75,7 @@ void scan_loadgraph_arg(struct text_object *, const char *);
 uint8_t loadgraphval(struct text_object *);
 #endif /* X11 */
 
+uint8_t cpu_percentage(struct text_object *);
 uint8_t cpu_barval(struct text_object *);
 uint8_t mem_barval(struct text_object *);
 uint8_t swap_barval(struct text_object *);
