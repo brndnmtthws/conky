@@ -94,6 +94,12 @@ void set_transparent_background(Window win);
 void get_x11_desktop_info(Display *display, Atom atom);
 void set_struts(int);
 
+void print_monitor(struct text_object *, char *, int);
+void print_monitor_number(struct text_object *, char *, int);
+void print_desktop(struct text_object *, char *, int);
+void print_desktop_number(struct text_object *, char *, int);
+void print_desktop_name(struct text_object *, char *, int);
+
 #ifdef HAVE_XDBE
 void xdbe_swap_buffers(void);
 #endif /* HAVE_XDBE */

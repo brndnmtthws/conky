@@ -689,6 +689,63 @@ void update_x11info(void)
 	current_info->x11.monitor.current = XDefaultScreen(display);
 }
 
+#define NOT_IN_X "Not running in X"
+
+void print_monitor(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+
+	if(x_initialised != YES) {
+		strncpy(p, NOT_IN_X, p_max_size);
+		return;
+	}
+	snprintf(p, p_max_size, "%d", XDefaultScreen(display));
+}
+
+void print_monitor_number(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+
+	if(x_initialised != YES) {
+		strncpy(p, NOT_IN_X, p_max_size);
+		return;
+	}
+	snprintf(p, p_max_size, "%d", XScreenCount(display));
+}
+
+void print_desktop(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+
+	if(x_initialised != YES) {
+		strncpy(p, NOT_IN_X, p_max_size);
+		return;
+	}
+	snprintf(p, p_max_size, "%d", info.x11.desktop.current);
+}
+
+void print_desktop_number(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+
+	if(x_initialised != YES) {
+		strncpy(p, NOT_IN_X, p_max_size);
+		return;
+	}
+	snprintf(p, p_max_size, "%d", info.x11.desktop.number);
+}
+
+void print_desktop_name(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+
+	if(x_initialised != YES) {
+		strncpy(p, NOT_IN_X, p_max_size);
+	}else if(info.x11.desktop.name != NULL) {
+		strncpy(p, info.x11.desktop.name, p_max_size);
+	}
+}
+
 #ifdef OWN_WINDOW
 /* reserve window manager space */
 void set_struts(int sidenum)
