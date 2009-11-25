@@ -155,7 +155,7 @@ void free_tztime(struct text_object *obj)
 
 //all chars after the ending " and between the seconds and the starting " are silently
 //ignored, this is wanted behavior, not a bug, so don't "fix" this.
-void print_format_time(struct text_object *obj, char *p, unsigned int p_max_size) {
+static void do_format_time(struct text_object *obj, char *p, unsigned int p_max_size) {
 	double seconds;
 	char *currentchar, *temp;
 	unsigned int output_length = 0;
@@ -305,3 +305,13 @@ void print_format_time(struct text_object *obj, char *p, unsigned int p_max_size
 		NORM_ERR("$format_time didn't receive a time in seconds as first argument")
 	}
 }
+
+void print_format_time(struct text_object *obj, char *p, int p_max_size)
+{
+	char buf[max_user_text];
+
+	generate_text_internal(buf, max_user_text, *obj->sub, &info);
+	obj->data.s = buf;
+	do_format_time(obj, p, p_max_size);
+}
+

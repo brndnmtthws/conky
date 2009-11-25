@@ -956,13 +956,6 @@ void generate_text_internal(char *p, int p_max_size,
 					DO_JUMP;
 				}
 			}
-			OBJ(format_time) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
-				print_format_time(obj, p, p_max_size);
-			}
 			OBJ(nodename) {
 				snprintf(p, p_max_size, "%s", cur->uname_s.nodename);
 			}

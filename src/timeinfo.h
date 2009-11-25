@@ -45,11 +45,10 @@ void scan_tztime(struct text_object *, const char *);
 void print_time(struct text_object *, char *, int);
 void print_utime(struct text_object *, char *, int);
 void print_tztime(struct text_object *, char *, int);
+void print_format_time(struct text_object *obj, char *p, int p_max_size);
 
 /* free object data */
 void free_time(struct text_object *);
 void free_tztime(struct text_object *);
 
 #endif /* _TIMEINFO_H */
-
-void print_format_time(struct text_object *obj, char *p, int p_max_size);
