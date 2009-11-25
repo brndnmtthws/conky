@@ -1273,12 +1273,6 @@ void generate_text_internal(char *p, int p_max_size,
 					DO_JUMP;
 				}
 			}
-			OBJ(uptime_short) {
-				format_seconds_short(p, p_max_size, (int) cur->uptime);
-			}
-			OBJ(uptime) {
-				format_seconds(p, p_max_size, (int) cur->uptime);
-			}
 #ifdef __linux__
 			OBJ(user_names) {
 				snprintf(p, p_max_size, "%s", cur->users.names);

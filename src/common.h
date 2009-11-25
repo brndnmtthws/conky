@@ -91,4 +91,7 @@ void print_machine(struct text_object *, char *, int);
 void print_nodename(struct text_object *, char *, int);
 void print_sysname(struct text_object *, char *, int);
 
+void print_uptime(struct text_object *, char *, int);
+void print_uptime_short(struct text_object *, char *, int);
+
 #endif /* _COMMON_H */

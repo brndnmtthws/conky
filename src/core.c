@@ -1042,7 +1042,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.graphval = &upspeedgraphval;
 #endif
 	END OBJ(uptime_short, &update_uptime)
+		obj->callbacks.print = &print_uptime_short;
 	END OBJ(uptime, &update_uptime)
+		obj->callbacks.print = &print_uptime;
 #if defined(__linux__)
 	END OBJ(user_names, &update_users)
 	END OBJ(user_times, &update_users)
