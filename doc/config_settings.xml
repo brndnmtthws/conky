@@ -457,6 +457,19 @@
     <varlistentry>
         <term>
             <command>
+                <option>max_text_width</option>
+            </command>
+            <option>width</option>
+        </term>
+        <listitem>When a line in the output contains 'width'
+	chars and the end isn't reached, the next char will start
+	on a new line. If you want to make sure that lines don't
+	get broken, set 'width' to 0
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>max_user_text</option>
             </command>
             <option>bytes</option>

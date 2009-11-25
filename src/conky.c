@@ -175,6 +175,7 @@ double update_interval;
 double update_interval_old;
 double update_interval_bat;
 void *global_cpu = NULL;
+unsigned int max_text_width = 0;
 
 int argc_copy;
 char** argv_copy;
@@ -2402,6 +2403,7 @@ static void generate_text(void)
 {
 	struct information *cur = &info;
 	char *p;
+	unsigned int i, j, k;
 
 	special_count = 0;
 
@@ -2418,6 +2420,22 @@ static void generate_text(void)
 	p = text_buffer;
 
 	generate_text_internal(p, max_user_text, global_root_object, cur);
+	if(max_text_width > 0) {
+		for(i = 0, j = 0; p[i] != 0; i++) {
+			if(p[i] == '\n') j = 0;
+			else if(j == max_text_width) {
+				k = i + strlen(p + i) + 1;
+				if(k < text_buffer_size) {
+					while(k != i) {
+						p[k] = p[k-1];
+						k--;
+					}
+					p[k] = '\n';
+					j = 0;
+				} else NORM_ERR("The end of the text_buffer is reached, increase \"text_buffer_size\"");
+			} else j++;
+		}
+	}
 
 	if (stuff_in_uppercase) {
 		char *tmp_p;
@@ -4717,6 +4735,9 @@ char load_config_file(const char *f)
 #endif /* X11 */
 		CONF("times_in_seconds") {
 			set_times_in_seconds(string_to_bool(value));
+		}
+		CONF("max_text_width") {
+			max_text_width = atoi(value);
 		}
 		CONF("out_to_console") {
 			if(string_to_bool(value)) {
