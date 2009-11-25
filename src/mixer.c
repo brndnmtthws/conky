@@ -284,38 +284,19 @@ void parse_mixer_arg(struct text_object *obj, const char *arg)
 	obj->data.l = mixer_init(arg);
 }
 
-/* chan specifies the channel to print:
- * -1 := left channel
- *  0 := channel average
- *  1 := right channel
- */
-static void print_mixer_chan(struct text_object *obj, int chan, char *p, int p_max_size)
+uint8_t mixer_percentage(struct text_object *obj)
 {
-	int val;
-
-	if (chan < 0)
-		val = mixer_get_left(obj->data.l);
-	else if (chan == 0)
-		val = mixer_get_avg(obj->data.l);
-	else
-		val = mixer_get_right(obj->data.l);
-
-	percent_print(p, p_max_size, val);
+	return mixer_get_avg(obj->data.l);
 }
 
-void print_mixer(struct text_object *obj, char *p, int p_max_size)
+uint8_t mixerl_percentage(struct text_object *obj)
 {
-	print_mixer_chan(obj, 0, p, p_max_size);
+	return mixer_get_left(obj->data.l);
 }
 
-void print_mixerl(struct text_object *obj, char *p, int p_max_size)
+uint8_t mixerr_percentage(struct text_object *obj)
 {
-	print_mixer_chan(obj, -1, p, p_max_size);
-}
-
-void print_mixerr(struct text_object *obj, char *p, int p_max_size)
-{
-	print_mixer_chan(obj, 1, p, p_max_size);
+	return mixer_get_right(obj->data.l);
 }
 
 int check_mixer_muted(struct text_object *obj)

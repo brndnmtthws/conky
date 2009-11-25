@@ -786,13 +786,13 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif /* X11*/
 	END OBJ(mixer, 0)
 		parse_mixer_arg(obj, arg);
-		obj->callbacks.print = &print_mixer;
+		obj->callbacks.percentage = &mixer_percentage;
 	END OBJ(mixerl, 0)
 		parse_mixer_arg(obj, arg);
-		obj->callbacks.print = &print_mixerl;
+		obj->callbacks.percentage = &mixerl_percentage;
 	END OBJ(mixerr, 0)
 		parse_mixer_arg(obj, arg);
-		obj->callbacks.print = &print_mixerr;
+		obj->callbacks.percentage = &mixerr_percentage;
 	END OBJ(mixerbar, 0)
 		scan_mixer_bar(obj, arg);
 		obj->callbacks.barval = &mixer_barval;

@@ -4,9 +4,9 @@
 #define MIXER_H_
 
 void parse_mixer_arg(struct text_object *, const char *);
-void print_mixer(struct text_object *, char *, int);
-void print_mixerl(struct text_object *, char *, int);
-void print_mixerr(struct text_object *, char *, int);
+uint8_t mixer_percentage(struct text_object *obj);
+uint8_t mixerl_percentage(struct text_object *obj);
+uint8_t mixerr_percentage(struct text_object *obj);
 int check_mixer_muted(struct text_object *);
 
 void scan_mixer_bar(struct text_object *, const char *);
