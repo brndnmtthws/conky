@@ -806,15 +806,15 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		parse_mixer_arg(obj, arg);
 		obj->callbacks.iftest = &check_mixer_muted;
 #ifdef X11
-	END OBJ(monitor, &update_x11info)
+	END OBJ(monitor, 0)
 		obj->callbacks.print = &print_monitor;
-	END OBJ(monitor_number, &update_x11info)
+	END OBJ(monitor_number, 0)
 		obj->callbacks.print = &print_monitor_number;
-	END OBJ(desktop, &update_x11info)
+	END OBJ(desktop, 0)
 		obj->callbacks.print = &print_desktop;
-	END OBJ(desktop_number, &update_x11info)
+	END OBJ(desktop_number, 0)
 		obj->callbacks.print = &print_desktop_number;
-	END OBJ(desktop_name, &update_x11info)
+	END OBJ(desktop_name, 0)
 		obj->callbacks.print = &print_desktop_name;
 #endif
 	END OBJ_ARG(format_time, 0, "format_time needs a pid as argument")

@@ -49,10 +49,6 @@ void variable_substitute(const char *s, char *dest, unsigned int n);
 void format_seconds(char *buf, unsigned int n, long t);
 void format_seconds_short(char *buf, unsigned int n, long t);
 
-#ifdef X11
-void update_x11info(void);
-#endif
-
 int round_to_int_temp(float);
 
 unsigned int round_to_int(float);

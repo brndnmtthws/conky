@@ -680,15 +680,6 @@ void get_x11_desktop_info(Display *current_display, Atom atom)
 	}
 }
 
-void update_x11info(void)
-{
-	struct information *current_info = &info;
-	if (!x_initialised == YES)
-		return;
-	current_info->x11.monitor.number = XScreenCount(display);
-	current_info->x11.monitor.current = XDefaultScreen(display);
-}
-
 #define NOT_IN_X "Not running in X"
 
 void print_monitor(struct text_object *obj, char *p, int p_max_size)
