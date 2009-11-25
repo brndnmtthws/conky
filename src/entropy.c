@@ -61,11 +61,10 @@ void print_entropy_avail(struct text_object *obj, char *p, int p_max_size)
 	snprintf(p, p_max_size, "%u", entropy.avail);
 }
 
-void print_entropy_perc(struct text_object *obj, char *p, int p_max_size)
+uint8_t entropy_percentage(struct text_object *obj)
 {
 	(void)obj;
-	percent_print(p, p_max_size, entropy.avail *
-			100 / entropy.poolsize);
+	return round_to_int((double)entropy.avail * 100.0 / (double)entropy.poolsize);
 }
 
 void print_entropy_poolsize(struct text_object *obj, char *p, int p_max_size)

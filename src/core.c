@@ -1375,7 +1375,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(entropy_avail, &update_entropy)
 		obj->callbacks.print = &print_entropy_avail;
 	END OBJ(entropy_perc, &update_entropy)
-		obj->callbacks.print = &print_entropy_perc;
+		obj->callbacks.percentage = &entropy_percentage;
 	END OBJ(entropy_poolsize, &update_entropy)
 		obj->callbacks.print = &print_entropy_poolsize;
 	END OBJ(entropy_bar, &update_entropy)
