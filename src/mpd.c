@@ -370,10 +370,10 @@ void print_mpd_length(struct text_object *obj, char *p, int p_max_size)
 	format_media_player_time(p, p_max_size, mpd_info.length);
 }
 
-void print_mpd_percent(struct text_object *obj, char *p, int p_max_size)
+uint8_t mpd_percentage(struct text_object *obj)
 {
 	(void)obj;
-	percent_print(p, p_max_size, (int)(mpd_info.progress * 100));
+	return round_to_int(mpd_info.progress * 100.0f);
 }
 
 uint8_t mpd_barval(struct text_object *obj)

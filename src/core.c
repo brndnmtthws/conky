@@ -1133,7 +1133,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_mpd_file;
 	END OBJ(mpd_percent, &update_mpd)
 		init_mpd();
-		obj->callbacks.print = &print_mpd_percent;
+		obj->callbacks.percentage = &mpd_percentage;
 	END OBJ(mpd_album, &update_mpd)
 		mpd_set_maxlen(mpd_album);
 		init_mpd();
