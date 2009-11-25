@@ -1251,9 +1251,6 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(text) {
 				snprintf(p, p_max_size, "%s", obj->data.s);
 			}
-			OBJ(sysname) {
-				snprintf(p, p_max_size, "%s", cur->uname_s.sysname);
-			}
 			OBJ(gid_name) {
 				char buf[max_user_text];
 
