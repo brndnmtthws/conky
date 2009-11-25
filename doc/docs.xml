@@ -208,10 +208,10 @@
 	</refsect1>
 	<refsect1>
 		<title>Lua API</title>
-		<para>Conky features a Lua Programming API, and also ships with
-			some Lua bindings for some useful libraries. Conky defines
-			certain global functions and variables which can be accessed
-			from Lua code running in Conky.
+		<para>Conky features a Lua Programming API, and also ships with Lua
+			bindings for some useful libraries. Conky defines certain global
+			functions and variables which can be accessed from Lua code running
+			in Conky.
 		</para>
 		<para>To use Lua Conky, you first need to make sure you have a version of Conky
 			with Lua support enabled (``conky -v'' will report this).  Scripts
@@ -227,6 +227,11 @@
 		<para>
 			At this time, the Lua API should not be considered stable and may
 			change drastically from one release to another as it matures.
+		</para>
+		<para>
+			NOTE: In order to accommodate certain features in the cairo
+			library's API, Conky will export a few additional functions for the
+			creation of certain structures.  These are documented below.
 		</para>
 		&lua;
 	</refsect1>

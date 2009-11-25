@@ -20,37 +20,44 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-libcairo_la_SOURCES = libcairo.c
-libimlib2_la_SOURCES = libimlib2.c
 
 if BUILD_LUA
 
 if BUILD_LUA_CAIRO
 
-libcairo = libcairo.la
+libcairo_built_sources = libcairo.c
 
-libcairo_la_CFLAGS = $(cairo_CFLAGS) $(cairo_xlib_CFLAGS) $(tolua_CFLAGS)
-libcairo_la_LIBADD = $(cairo_LIBS) $(cairo_xlib_LIBS) $(tolua_LIBS)
+libcairo = libcairo.la
 
 libcairo.c: cairo.pkg
 	${toluapp} -n cairo -o $@ $(srcdir)/cairo.pkg
+
+libcairo_la_CFLAGS = $(cairo_CFLAGS) $(cairo_xlib_CFLAGS) $(tolua_CFLAGS)
+libcairo_la_LIBADD = $(cairo_LIBS) $(cairo_xlib_LIBS) $(tolua_LIBS)
+libcairo_la_SOURCES = cairo.pkg libcairo-helper.h libcairo.c
 
 endif # BUILD_LUA_CAIRO
 
 if BUILD_LUA_IMLIB2
 
-libimlib2 = libimlib2.la
+libimlib2_built_sources = libimlib2.c
 
-libimlib2_la_CFLAGS = $(Imlib2_CFLAGS) $(tolua_CFLAGS)
-libimlib2_la_LIBADD = $(Imlib2_LIBS) $(tolua_LIBS)
+libimlib2 = libimlib2.la
 
 libimlib2.c: imlib2.pkg
 	${toluapp} -n imlib2 -o $@ $(srcdir)/imlib2.pkg
+
+libimlib2_la_CFLAGS = $(Imlib2_CFLAGS) $(tolua_CFLAGS)
+libimlib2_la_LIBADD = $(Imlib2_LIBS) $(tolua_LIBS)
+libimlib2_la_SOURCES = imlib2.pkg libimlib2.c
 
 endif # BUILD_LUA_IMLIB2
 
 pkglib_LTLIBRARIES = $(libcairo) $(libimlib2)
 
 endif # BUILD_LUA
+
+EXTRA_DIST = libcairo-helper.h
+BUILT_SOURCES = $(cairo_built_sources) $(imlib2_built_sources)
 
 # vi:set ts=4 sw=4 noet ai nocindent syntax=automake:

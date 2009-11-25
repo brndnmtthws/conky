@@ -3,6 +3,7 @@ $#include <cairo-deprecated.h>
 $#include <cairo.h>
 $#include <cairo-xlib.h>
 $#include <X11/Xlib.h>
+$#include "libcairo-helper.h"
 /*
  * This code was mostly copied from cairo.h and cairo-xlib.h with comments
  * removed.  The licence noticed below is present for the sake of clarity.
@@ -59,6 +60,7 @@ typedef struct _cairo_matrix {
 	double yy;
 	double x0;
 	double y0;
+	static tolua_outside cairo_matrix_t* create_cairo_matrix_t @ create();
 } cairo_matrix_t;
 typedef int cairo_bool_t;
 
@@ -375,6 +377,7 @@ typedef struct {
 	double height;
 	double x_advance;
 	double y_advance;
+	static tolua_outside cairo_text_extents_t* create_cairo_text_extents_t @ create();
 } cairo_text_extents_t;
 
 typedef struct {
@@ -383,6 +386,7 @@ typedef struct {
 	double height;
 	double max_x_advance;
 	double max_y_advance;
+	static tolua_outside cairo_font_extents_t* create_cairo_font_extents_t @ create();
 } cairo_font_extents_t;
 
 typedef enum _cairo_font_slant {
