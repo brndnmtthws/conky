@@ -976,10 +976,6 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(memmax) {
 				human_readable(cur->memmax * 1024, p, 255);
 			}
-			OBJ(memperc) {
-				if (cur->memmax)
-					percent_print(p, p_max_size, cur->mem * 100 / cur->memmax);
-			}
 #ifdef X11
 #define NOT_IN_X "Not running in X"
 			OBJ(monitor) {

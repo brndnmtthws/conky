@@ -769,6 +769,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(memfree, &update_meminfo)
 	END OBJ(memmax, &update_meminfo)
 	END OBJ(memperc, &update_meminfo)
+		obj->callbacks.percentage = &mem_percentage;
 	END OBJ(memgauge, &update_meminfo)
 		scan_gauge(obj, arg);
 		obj->callbacks.gaugeval = &mem_barval;

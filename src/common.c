@@ -487,6 +487,13 @@ uint8_t cpu_barval(struct text_object *obj)
 	return round_to_int(info.cpu_usage[obj->data.i] * 255.0);
 }
 
+uint8_t mem_percentage(struct text_object *obj)
+{
+	(void)obj;
+
+	return (info.memmax ? round_to_int(info.mem * 100 / info.memmax) : 0);
+}
+
 uint8_t mem_barval(struct text_object *obj)
 {
 	(void)obj;
