@@ -63,6 +63,7 @@
 #include "tailhead.h"
 #include "timeinfo.h"
 #include "top.h"
+#include "users.h"
 
 #ifdef NCURSES
 #include <ncurses.h>
@@ -1047,11 +1048,20 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_uptime;
 #if defined(__linux__)
 	END OBJ(user_names, &update_users)
+		obj->callbacks.print = &print_user_names;
+		obj->callbacks.free = &free_user_names;
 	END OBJ(user_times, &update_users)
+		obj->callbacks.print = &print_user_times;
+		obj->callbacks.free = &free_user_times;
 	END OBJ_ARG(user_time, 0, "user time needs a console name as argument")
 		obj->data.s = strndup(arg, text_buffer_size);
+		obj->callbacks.print = &print_user_time;
+		obj->callbacks.free = &free_user_time;
 	END OBJ(user_terms, &update_users)
+		obj->callbacks.print = &print_user_terms;
+		obj->callbacks.free = &free_user_terms;
 	END OBJ(user_number, &update_users)
+		obj->callbacks.print = &print_user_number;
 	END OBJ(gw_iface, &update_gateway_info)
 		obj->callbacks.print = &print_gateway_iface;
 	END OBJ(gw_ip, &update_gateway_info)
@@ -1885,33 +1895,6 @@ void free_text_objects(struct text_object *root, int internal)
 				free_top(obj, internal);
 				break;
 #endif /* __linux__ */
-			case OBJ_user_names:
-				if (info.users.names) {
-					free(info.users.names);
-					info.users.names = 0;
-				}
-				break;
-			case OBJ_user_terms:
-				if (info.users.terms) {
-					free(info.users.terms);
-					info.users.terms = 0;
-				}
-				break;
-			case OBJ_user_times:
-				if (info.users.times) {
-					free(info.users.times);
-					info.users.times = 0;
-				}
-				break;
-			case OBJ_user_time:
-				if (info.users.ctime) {
-					free(info.users.ctime);
-					info.users.ctime = 0;
-				}
-				if (data.s) {
-					free(data.s);
-				}
-				break;
 #ifdef MPD
 			case OBJ_mpd_title:
 			case OBJ_mpd_artist:

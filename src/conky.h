@@ -307,10 +307,6 @@ extern int cpu_separate;
  * instances of the same text object */
 extern struct information info;
 
-/* defined in users.c */
-void update_users(void);
-void update_user_time(char *tty);
-
 /* defined in conky.c */
 extern double current_update_time, last_update_time, update_interval;
 

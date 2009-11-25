@@ -129,7 +129,7 @@ static void users_alloc(struct information *ptr)
 	}
 }
 
-void update_user_time(char *tty)
+static void update_user_time(char *tty)
 {
 	struct information *current_info = &info;
 	char temp[BUFLEN] = "";
@@ -221,4 +221,71 @@ void update_users(void)
 		current_info->users.times = malloc(text_buffer_size);
 		strncpy(current_info->users.times, "broken", text_buffer_size);
 	}
+}
+
+void print_user_names(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	snprintf(p, p_max_size, "%s", info.users.names);
+}
+
+void print_user_terms(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	snprintf(p, p_max_size, "%s", info.users.terms);
+}
+
+void print_user_times(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	snprintf(p, p_max_size, "%s", info.users.times);
+}
+
+void print_user_time(struct text_object *obj, char *p, int p_max_size)
+{
+	update_user_time(obj->data.s);
+	snprintf(p, p_max_size, "%s", info.users.ctime);
+}
+
+void print_user_number(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	snprintf(p, p_max_size, "%d", info.users.number);
+}
+
+void free_user_names(struct text_object *obj)
+{
+	(void)obj;
+	if (info.users.names) {
+		free(info.users.names);
+		info.users.names = 0;
+	}
+}
+
+void free_user_terms(struct text_object *obj)
+{
+	(void)obj;
+	if (info.users.terms) {
+		free(info.users.terms);
+		info.users.terms = 0;
+	}
+}
+
+void free_user_times(struct text_object *obj)
+{
+	(void)obj;
+	if (info.users.times) {
+		free(info.users.times);
+		info.users.times = 0;
+	}
+}
+
+void free_user_time(struct text_object *obj)
+{
+	if (info.users.ctime) {
+		free(info.users.ctime);
+		info.users.ctime = 0;
+	}
+	if (obj->data.s)
+		free(obj->data.s);
 }

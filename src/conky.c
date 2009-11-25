@@ -1273,24 +1273,6 @@ void generate_text_internal(char *p, int p_max_size,
 					DO_JUMP;
 				}
 			}
-#ifdef __linux__
-			OBJ(user_names) {
-				snprintf(p, p_max_size, "%s", cur->users.names);
-			}
-			OBJ(user_terms) {
-				snprintf(p, p_max_size, "%s", cur->users.terms);
-			}
-			OBJ(user_times) {
-				snprintf(p, p_max_size, "%s", cur->users.times);
-			}
-			OBJ(user_time) {
-				update_user_time(obj->data.s);
-				snprintf(p, p_max_size, "%s", cur->users.ctime);
-			}
-			OBJ(user_number) {
-				snprintf(p, p_max_size, "%d", cur->users.number);
-			}
-#endif /* __linux__ */
 #if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) \
 		|| defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
 			OBJ(apm_adapter) {
