@@ -137,15 +137,16 @@ void print_smapi(struct text_object *obj, char *p, int p_max_size)
 	free(s);
 }
 
-void print_smapi_bat_perc(struct text_object *obj, char *p, int p_max_size)
+uint8_t smapi_bat_percentage(struct text_object *obj)
 {
-	int idx, val;
+	int idx, val = 0;
 	if (obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
 		val = smapi_bat_installed(idx) ?
 			smapi_get_bat_int(idx, "remaining_percent") : 0;
-		percent_print(p, p_max_size, val);
 	} else
 		NORM_ERR("argument to smapi_bat_perc must be an integer");
+
+	return val;
 }
 
 void print_smapi_bat_temp(struct text_object *obj, char *p, int p_max_size)

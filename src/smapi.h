@@ -37,7 +37,7 @@ int smapi_get_bat_int(int, const char *);
 char *smapi_get_bat_val(const char *);
 
 void print_smapi(struct text_object *, char *, int);
-void print_smapi_bat_perc(struct text_object *, char *, int);
+uint8_t smapi_bat_percentage(struct text_object *);
 void print_smapi_bat_temp(struct text_object *, char *, int);
 void print_smapi_bat_power(struct text_object *, char *, int);
 uint8_t smapi_bat_barval(struct text_object *);
