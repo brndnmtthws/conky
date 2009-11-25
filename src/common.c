@@ -501,6 +501,13 @@ uint8_t mem_barval(struct text_object *obj)
 	return round_to_int(info.memmax ? (info.mem * 255 / info.memmax) : 0);
 }
 
+uint8_t swap_percentage(struct text_object *obj)
+{
+	(void)obj;
+
+	return (info.swapmax ? round_to_int(info.swap * 100 / info.swapmax) : 0);
+}
+
 uint8_t swap_barval(struct text_object *obj)
 {
 	(void)obj;

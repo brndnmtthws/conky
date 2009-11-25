@@ -79,6 +79,7 @@ uint8_t cpu_percentage(struct text_object *);
 uint8_t cpu_barval(struct text_object *);
 uint8_t mem_percentage(struct text_object *);
 uint8_t mem_barval(struct text_object *);
+uint8_t swap_percentage(struct text_object *);
 uint8_t swap_barval(struct text_object *);
 
 #endif /* _COMMON_H */

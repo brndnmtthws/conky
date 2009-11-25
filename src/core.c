@@ -972,6 +972,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(swapfree, &update_meminfo)
 	END OBJ(swapmax, &update_meminfo)
 	END OBJ(swapperc, &update_meminfo)
+		obj->callbacks.percentage = &swap_percentage;
 	END OBJ(swapbar, &update_meminfo)
 		scan_bar(obj, arg);
 		obj->callbacks.barval = &swap_barval;

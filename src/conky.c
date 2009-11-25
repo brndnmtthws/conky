@@ -1329,13 +1329,6 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(swapmax) {
 				human_readable(cur->swapmax * 1024, p, 255);
 			}
-			OBJ(swapperc) {
-				if (cur->swapmax == 0) {
-					strncpy(p, "No swap", p_max_size);
-				} else {
-					percent_print(p, p_max_size, cur->swap * 100 / cur->swapmax);
-				}
-			}
 			OBJ(sysname) {
 				snprintf(p, p_max_size, "%s", cur->uname_s.sysname);
 			}
