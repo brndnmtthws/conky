@@ -1412,17 +1412,6 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* HAVE_ICONV */
 
-#ifdef IBM
-			OBJ(if_smapi_bat_installed) {
-				int idx;
-				if(obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
-					if(!smapi_bat_installed(idx)) {
-						DO_JUMP;
-					}
-				} else
-					NORM_ERR("argument to if_smapi_bat_installed must be an integer");
-			}
-#endif /* IBM */
 			OBJ(include) {
 				if(obj->sub) {
 					char buf[max_user_text];

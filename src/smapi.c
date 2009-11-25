@@ -179,3 +179,15 @@ uint8_t smapi_bat_barval(struct text_object *obj)
 		return round_to_int(smapi_get_bat_int(obj->data.i, "remaining_percent") * 2.55);
 	return 0;
 }
+
+int smapi_bat_installed(struct text_object *obj)
+{
+	int idx;
+	if(obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
+		if(!smapi_bat_installed(idx)) {
+			return 0;
+		}
+	} else
+		NORM_ERR("argument to if_smapi_bat_installed must be an integer");
+	return 1;
+}

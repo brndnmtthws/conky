@@ -1067,6 +1067,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_IF_ARG(if_smapi_bat_installed, 0, "if_smapi_bat_installed needs an argument")
 		obj->data.s = strndup(arg, text_buffer_size);
+		obj->callbacks.iftest = &smapi_bat_installed;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(smapi_bat_perc, 0, "smapi_bat_perc needs an argument")
 		obj->data.s = strndup(arg, text_buffer_size);
