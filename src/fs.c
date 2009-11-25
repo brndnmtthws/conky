@@ -243,13 +243,13 @@ void init_fs(struct text_object *obj, const char *arg)
 	obj->data.opaque = prepare_fs_stat(arg ? arg : "/");
 }
 
-static void print_fs_perc(struct text_object *obj, int be_free, char *p, int p_max_size)
+static uint8_t fs_percentage(struct text_object *obj, int be_free)
 {
 	struct fs_stat *fs = obj->data.opaque;
 	int val = 100;
 
 	if (!fs)
-		return;
+		return 0;
 
 	if (fs->size)
 		val = fs->avail * 100 / fs->size;
@@ -257,17 +257,17 @@ static void print_fs_perc(struct text_object *obj, int be_free, char *p, int p_m
 	if (!be_free)
 		val = 100 - val;
 
-	percent_print(p, p_max_size, val);
+	return val;
 }
 
-void print_fs_free_perc(struct text_object *obj, char *p, int p_max_size)
+uint8_t fs_free_percentage(struct text_object *obj)
 {
-	print_fs_perc(obj, 1, p, p_max_size);
+	return fs_percentage(obj, 1);
 }
 
-void print_fs_used_perc(struct text_object *obj, char *p, int p_max_size)
+uint8_t fs_used_percentage(struct text_object *obj)
 {
-	print_fs_perc(obj, 0, p, p_max_size);
+	return fs_percentage(obj, 0);
 }
 
 #define HUMAN_PRINT_FS_GENERATOR(name, expr)                           \

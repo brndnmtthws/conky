@@ -23,8 +23,8 @@ uint8_t fs_barval(struct text_object *);
 uint8_t fs_free_barval(struct text_object *);
 
 void init_fs(struct text_object *, const char *);
-void print_fs_free_perc(struct text_object *, char *, int);
-void print_fs_used_perc(struct text_object *, char *, int);
+uint8_t fs_free_percentage(struct text_object *);
+uint8_t fs_used_percentage(struct text_object *);
 void print_fs_free(struct text_object *, char *, int);
 void print_fs_size(struct text_object *, char *, int);
 void print_fs_used(struct text_object *, char *, int);

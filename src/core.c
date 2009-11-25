@@ -600,10 +600,10 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_fs_free;
 	END OBJ(fs_used_perc, &update_fs_stats)
 		init_fs(obj, arg);
-		obj->callbacks.print = &print_fs_used_perc;
+		obj->callbacks.percentage = &fs_used_percentage;
 	END OBJ(fs_free_perc, &update_fs_stats)
 		init_fs(obj, arg);
-		obj->callbacks.print = &print_fs_free_perc;
+		obj->callbacks.percentage = &fs_free_percentage;
 	END OBJ(fs_size, &update_fs_stats)
 		init_fs(obj, arg);
 		obj->callbacks.print = &print_fs_size;
