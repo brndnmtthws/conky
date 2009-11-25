@@ -956,9 +956,6 @@ void generate_text_internal(char *p, int p_max_size,
 					DO_JUMP;
 				}
 			}
-			OBJ(nodename) {
-				snprintf(p, p_max_size, "%s", cur->uname_s.nodename);
-			}
 			OBJ(pid_chroot) {
 				char buf[max_user_text];
 

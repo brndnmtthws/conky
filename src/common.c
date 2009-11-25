@@ -541,3 +541,9 @@ void print_machine(struct text_object *obj, char *p, int p_max_size)
 	(void)obj;
 	snprintf(p, p_max_size, "%s", info.uname_s.machine);
 }
+
+void print_nodename(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	snprintf(p, p_max_size, "%s", info.uname_s.nodename);
+}
