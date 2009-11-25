@@ -963,20 +963,6 @@ void generate_text_internal(char *p, int p_max_size,
 				snprintf(p, p_max_size, "%s", cur->uname_s.machine);
 			}
 
-			/* memory stuff */
-			OBJ(mem) {
-				human_readable(cur->mem * 1024, p, 255);
-			}
-			OBJ(memeasyfree) {
-				human_readable(cur->memeasyfree * 1024, p, 255);
-			}
-			OBJ(memfree) {
-				human_readable(cur->memfree * 1024, p, 255);
-			}
-			OBJ(memmax) {
-				human_readable(cur->memmax * 1024, p, 255);
-			}
-
 			OBJ(format_time) {
 				char buf[max_user_text];
 
@@ -1281,15 +1267,6 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 			OBJ(text) {
 				snprintf(p, p_max_size, "%s", obj->data.s);
-			}
-			OBJ(swap) {
-				human_readable(cur->swap * 1024, p, 255);
-			}
-			OBJ(swapfree) {
-				human_readable(cur->swapfree * 1024, p, 255);
-			}
-			OBJ(swapmax) {
-				human_readable(cur->swapmax * 1024, p, 255);
 			}
 			OBJ(sysname) {
 				snprintf(p, p_max_size, "%s", cur->uname_s.sysname);

@@ -765,9 +765,13 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_mboxscan;
 		obj->callbacks.free = &free_mboxscan;
 	END OBJ(mem, &update_meminfo)
+		obj->callbacks.print = &print_mem;
 	END OBJ(memeasyfree, &update_meminfo)
+		obj->callbacks.print = &print_memeasyfree;
 	END OBJ(memfree, &update_meminfo)
+		obj->callbacks.print = &print_memfree;
 	END OBJ(memmax, &update_meminfo)
+		obj->callbacks.print = &print_memmax;
 	END OBJ(memperc, &update_meminfo)
 		obj->callbacks.percentage = &mem_percentage;
 	END OBJ(memgauge, &update_meminfo)
@@ -974,8 +978,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &new_stippled_hr;
 #endif /* X11 */
 	END OBJ(swap, &update_meminfo)
+		obj->callbacks.print = &print_swap;
 	END OBJ(swapfree, &update_meminfo)
+		obj->callbacks.print = &print_swapfree;
 	END OBJ(swapmax, &update_meminfo)
+		obj->callbacks.print = &print_swapmax;
 	END OBJ(swapperc, &update_meminfo)
 		obj->callbacks.percentage = &swap_percentage;
 	END OBJ(swapbar, &update_meminfo)

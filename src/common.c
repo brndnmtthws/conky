@@ -487,6 +487,21 @@ uint8_t cpu_barval(struct text_object *obj)
 	return round_to_int(info.cpu_usage[obj->data.i] * 255.0);
 }
 
+#define PRINT_HR_GENERATOR(name) \
+void print_##name(struct text_object *obj, char *p, int p_max_size) \
+{ \
+	(void)obj; \
+	human_readable(info.name * 1024, p, p_max_size); \
+}
+
+PRINT_HR_GENERATOR(mem)
+PRINT_HR_GENERATOR(memeasyfree)
+PRINT_HR_GENERATOR(memfree)
+PRINT_HR_GENERATOR(memmax)
+PRINT_HR_GENERATOR(swap)
+PRINT_HR_GENERATOR(swapfree)
+PRINT_HR_GENERATOR(swapmax)
+
 uint8_t mem_percentage(struct text_object *obj)
 {
 	(void)obj;
