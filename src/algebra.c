@@ -243,3 +243,25 @@ int compare(const char *expr)
 	/* not reached */
 	return -2;
 }
+
+int check_if_match(struct text_object *obj)
+{
+	char expression[max_user_text];
+	int val;
+	struct information *tmp_info;
+	int result = 1;
+
+	tmp_info = malloc(sizeof(struct information));
+	memcpy(tmp_info, &info, sizeof(struct information));
+	generate_text_internal(expression, max_user_text, *obj->sub, tmp_info);
+	DBGP("parsed arg into '%s'", expression);
+
+	val = compare(expression);
+	if (val == -2) {
+		NORM_ERR("compare failed for expression '%s'", expression);
+	} else if (!val) {
+		result = 0;
+	}
+	free(tmp_info);
+	return result;
+}

@@ -692,11 +692,14 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ_IF_ARG(if_empty, 0, "if_empty needs an argument")
 		obj->sub = malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
+		obj->callbacks.iftest = &if_empty_iftest;
 	END OBJ_IF_ARG(if_match, 0, "if_match needs arguments")
 		obj->sub = malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
+		obj->callbacks.iftest = &check_if_match;
 	END OBJ_IF_ARG(if_existing, 0, "if_existing needs an argument or two")
 		obj->data.s = strndup(arg, text_buffer_size);
+		obj->callbacks.iftest = &if_existing_iftest;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_IF_ARG(if_mounted, 0, "if_mounted needs an argument")
 		obj->data.s = strndup(arg, text_buffer_size);
@@ -706,6 +709,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ_IF_ARG(if_running, &update_top, "if_running needs an argument")
 		top_running = 1;
 		obj->data.s = strndup(arg, text_buffer_size);
+		obj->callbacks.iftest = &if_running_iftest;
 		obj->callbacks.free = &gen_free_opaque;
 #else
 	END OBJ_IF_ARG(if_running, 0, "if_running needs an argument")
@@ -713,6 +717,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 
 		snprintf(buf, text_buffer_size, "pidof %s >/dev/null", arg);
 		obj->data.s = strndup(buf, text_buffer_size);
+		/* XXX: maybe use a different callback here */
+		obj->callbacks.iftest = &if_running_iftest;
 #endif
 	END OBJ(kernel, 0)
 		obj->callbacks.print = &print_kernel;

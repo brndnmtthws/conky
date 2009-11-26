@@ -434,27 +434,6 @@ int get_updatereset(void)
 	return updatereset;
 }
 
-int check_contains(char *f, char *s)
-{
-	int ret = 0;
-	FILE *where = open_file(f, 0);
-
-	if (where) {
-		char buf1[256];
-
-		while (fgets(buf1, 256, where)) {
-			if (strstr(buf1, s)) {
-				ret = 1;
-				break;
-			}
-		}
-		fclose(where);
-	} else {
-		NORM_ERR("Could not open the file");
-	}
-	return ret;
-}
-
 #define SECRIT_MULTILINE_CHAR '\x02'
 
 static inline int calc_text_width(const char *s)
@@ -889,61 +868,6 @@ void generate_text_internal(char *p, int p_max_size,
 				cimlib_add_image(obj->data.s);
 			}
 #endif /* IMLIB2 */
-			OBJ(if_empty) {
-				char buf[max_user_text];
-				struct information *tmp_info =
-					malloc(sizeof(struct information));
-				memcpy(tmp_info, cur, sizeof(struct information));
-				generate_text_internal(buf, max_user_text,
-				                       *obj->sub, tmp_info);
-
-				if (strlen(buf) != 0) {
-					DO_JUMP;
-				}
-				free(tmp_info);
-			}
-			OBJ(if_match) {
-				char expression[max_user_text];
-				int val;
-				struct information *tmp_info;
-
-				tmp_info = malloc(sizeof(struct information));
-				memcpy(tmp_info, cur, sizeof(struct information));
-				generate_text_internal(expression, max_user_text,
-				                       *obj->sub, tmp_info);
-				DBGP("parsed arg into '%s'", expression);
-
-				val = compare(expression);
-				if (val == -2) {
-					NORM_ERR("compare failed for expression '%s'",
-							expression);
-				} else if (!val) {
-					DO_JUMP;
-				}
-				free(tmp_info);
-			}
-			OBJ(if_existing) {
-				char *spc;
-
-				spc = strchr(obj->data.s, ' ');
-				if (!spc && access(obj->data.s, F_OK)) {
-					DO_JUMP;
-				} else if (spc) {
-					*spc = '\0';
-					if (check_contains(obj->data.s, spc + 1))
-						DO_JUMP;
-					*spc = ' ';
-				}
-			}
-			OBJ(if_running) {
-#ifdef __linux__
-				if (!get_process_by_name(obj->data.s)) {
-#else
-				if ((obj->data.s) && system(obj->data.s)) {
-#endif
-					DO_JUMP;
-				}
-			}
 			OBJ(pid_chroot) {
 				char buf[max_user_text];
 

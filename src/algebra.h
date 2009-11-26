@@ -46,5 +46,6 @@ enum arg_type {
 };
 
 int compare(const char *);
+int check_if_match(struct text_object *);
 
 #endif /* _ALGEBRA_H */

@@ -104,4 +104,8 @@ void print_cached(struct text_object *, char *, int);
 
 void print_evaluate(struct text_object *, char *, int);
 
+int if_empty_iftest(struct text_object *);
+int if_existing_iftest(struct text_object *);
+int if_running_iftest(struct text_object *);
+
 #endif /* _COMMON_H */

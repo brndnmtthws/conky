@@ -35,6 +35,7 @@
 #include "net_stat.h"
 #include "specials.h"
 #include "timeinfo.h"
+#include "top.h"
 #include <ctype.h>
 #include <errno.h>
 #include <sys/time.h>
@@ -605,4 +606,72 @@ void print_cached(struct text_object *obj, char *p, int p_max_size)
 void print_evaluate(struct text_object *obj, char *p, int p_max_size)
 {
 	evaluate(obj->data.s, p, p_max_size);
+}
+
+int if_empty_iftest(struct text_object *obj)
+{
+	char buf[max_user_text];
+	struct information *tmp_info;
+	int result = 1;
+
+	tmp_info = malloc(sizeof(struct information));
+	memcpy(tmp_info, &info, sizeof(struct information));
+
+	generate_text_internal(buf, max_user_text, *obj->sub, tmp_info);
+
+	if (strlen(buf) != 0) {
+		result = 0;
+	}
+	free(tmp_info);
+	return result;
+}
+
+static int check_contains(char *f, char *s)
+{
+	int ret = 0;
+	FILE *where = open_file(f, 0);
+
+	if (where) {
+		char buf1[256];
+
+		while (fgets(buf1, 256, where)) {
+			if (strstr(buf1, s)) {
+				ret = 1;
+				break;
+			}
+		}
+		fclose(where);
+	} else {
+		NORM_ERR("Could not open the file");
+	}
+	return ret;
+}
+
+int if_existing_iftest(struct text_object *obj)
+{
+	char *spc;
+	int result = 1;
+
+	spc = strchr(obj->data.s, ' ');
+	if (!spc && access(obj->data.s, F_OK)) {
+		result = 0;
+	} else if (spc) {
+		*spc = '\0';
+		if (check_contains(obj->data.s, spc + 1))
+			result = 0;
+		*spc = ' ';
+	}
+	return result;
+}
+
+int if_running_iftest(struct text_object *obj)
+{
+#ifdef __linux__
+	if (!get_process_by_name(obj->data.s)) {
+#else
+	if ((obj->data.s) && system(obj->data.s)) {
+#endif
+		return 0;
+	}
+	return 1;
 }
