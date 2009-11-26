@@ -565,3 +565,27 @@ void print_uptime_short(struct text_object *obj, char *p, int p_max_size)
 	(void)obj;
 	format_seconds_short(p, p_max_size, (int)info.uptime);
 }
+
+void print_processes(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	spaced_print(p, p_max_size, "%hu", 4, info.procs);
+}
+
+void print_running_processes(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	spaced_print(p, p_max_size, "%hu", 4, info.run_procs);
+}
+
+void print_running_threads(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	spaced_print(p, p_max_size, "%hu", 4, info.run_threads);
+}
+
+void print_threads(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	spaced_print(p, p_max_size, "%hu", 4, info.threads);
+}

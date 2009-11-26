@@ -94,4 +94,9 @@ void print_sysname(struct text_object *, char *, int);
 void print_uptime(struct text_object *, char *, int);
 void print_uptime_short(struct text_object *, char *, int);
 
+void print_processes(struct text_object *, char *, int);
+void print_running_processes(struct text_object *, char *, int);
+void print_running_threads(struct text_object *, char *, int);
+void print_threads(struct text_object *, char *, int);
+
 #endif /* _COMMON_H */

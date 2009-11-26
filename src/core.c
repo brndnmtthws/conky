@@ -959,13 +959,18 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->sub = malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
 	END OBJ(processes, &update_total_processes)
+		obj->callbacks.print = &print_processes;
 #ifdef __linux__
 	END OBJ(running_processes, &update_top)
 		top_running = 1;
+		obj->callbacks.print = &print_running_processes;
 	END OBJ(threads, &update_threads)
+		obj->callbacks.print = &print_threads;
 	END OBJ(running_threads, &update_stat)
+		obj->callbacks.print = &print_running_threads;
 #else
 	END OBJ(running_processes, &update_running_processes)
+		obj->callbacks.print = &print_running_processes;
 #endif /* __linux__ */
 	END OBJ(shadecolor, 0)
 #ifdef X11
