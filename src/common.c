@@ -601,3 +601,8 @@ void print_cached(struct text_object *obj, char *p, int p_max_size)
 	(void)obj;
 	human_readable(info.cached * 1024, p, p_max_size);
 }
+
+void print_evaluate(struct text_object *obj, char *p, int p_max_size)
+{
+	evaluate(obj->data.s, p, p_max_size);
+}

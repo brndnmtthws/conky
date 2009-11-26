@@ -536,6 +536,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj_be_ifblock_endif(ifblock_opaque, obj);
 	END OBJ(eval, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
+		obj->callbacks.print = &print_evaluate;
 		obj->callbacks.free = &gen_free_opaque;
 #if defined(IMLIB2) && defined(X11)
 	END OBJ(image, 0)

@@ -889,9 +889,6 @@ void generate_text_internal(char *p, int p_max_size,
 				cimlib_add_image(obj->data.s);
 			}
 #endif /* IMLIB2 */
-			OBJ(eval) {
-				evaluate(obj->data.s, p, p_max_size);
-			}
 			OBJ(if_empty) {
 				char buf[max_user_text];
 				struct information *tmp_info =
