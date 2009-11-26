@@ -113,4 +113,7 @@ void print_acpitemp(struct text_object *, char *, int);
 void free_acpitemp(struct text_object *);
 #endif /* !__OpenBSD__ */
 
+void print_freq(struct text_object *, char *, int);
+void print_freq_g(struct text_object *, char *, int);
+
 #endif /* _COMMON_H */

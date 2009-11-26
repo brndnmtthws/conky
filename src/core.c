@@ -157,6 +157,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif /* X11 */
 #ifdef __OpenBSD__
 	OBJ(freq, 0)
+		obj->callbacks.print = &print_freq;
 #else
 	OBJ(acpitemp, 0)
 		obj->data.i = open_acpi_temperature(arg);
@@ -174,6 +175,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		} else {
 			obj->data.i = atoi(&arg[0]);
 		}
+		obj->callbacks.print = &print_freq;
 	END OBJ(freq_g, 0)
 		get_cpu_count();
 		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) == 0
@@ -184,6 +186,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		} else {
 			obj->data.i = atoi(&arg[0]);
 		}
+		obj->callbacks.print = &print_freq_g;
 	END OBJ_ARG(read_tcp, 0, "read_tcp: Needs \"(host) port\" as argument(s)")
 		parse_read_tcp_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_read_tcp;

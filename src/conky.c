@@ -798,26 +798,6 @@ void generate_text_internal(char *p, int p_max_size,
 		switch (obj->type) {
 			default:
 				NORM_ERR("not implemented obj type %d", obj->type);
-			OBJ(freq) {
-				static int ok = 1;
-				if (ok) {
-					ok = get_freq(p, p_max_size, "%.0f", 1,
-							obj->data.i);
-				}
-			}
-			OBJ(freq_g) {
-				static int ok = 1;
-				if (ok) {
-#ifndef __OpenBSD__
-					ok = get_freq(p, p_max_size, "%'.2f", 1000,
-							obj->data.i);
-#else
-					/* OpenBSD has no such flag (SUSv2) */
-					ok = get_freq(p, p_max_size, "%.2f", 1000,
-							obj->data.i);
-#endif /* __OpenBSD */
-				}
-			}
 #ifndef __OpenBSD__
 			OBJ(acpifan) {
 				get_acpi_fan(p, p_max_size);
