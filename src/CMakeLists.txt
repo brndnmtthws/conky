@@ -1,0 +1,64 @@
+# vim: ts=4 sw=4 noet ai cindent syntax=cmake
+
+set(CONKY_SOURCES
+	algebra.c
+	apcupsd.c
+	audacious.c
+	bmpx.c
+	ccurl_thread.c
+	colours.c
+	combine.c
+	common.c
+	conf_cookie.c
+	conky.c
+	core.c
+	diskio.c
+	entropy.c
+	eve.c
+	exec.c
+	fonts.c
+	freebsd.c
+	fs.c
+	hddtemp.c
+	i8k.c
+	ibm.c
+	iconv_tools.c
+	imlib2.c
+	libmpdclient.c
+	libtcp-portmon.c
+	linux.c
+	llua.c
+	mail.c
+	mboxscan.c
+	mixer.c
+	moc.c
+	mpd.c
+	netbsd.c
+	net_stat.c
+	nvidia.c
+	openbsd.c
+	proc.c
+	prss.c
+	read_tcp.c
+	rss.c
+	scroll.c
+	smapi.c
+	solaris.c
+	sony.c
+	specials.c
+	tailhead.c
+	tcp-portmon.c
+	temphelper.c
+	template.c
+	text_object.c
+	timed_thread.c
+	timeinfo.c
+	top.c
+	user.c
+	users.c
+	weather.c
+	x11.c
+	xmms2.c
+)
+
+add_executable(conky ${CONKY_SOURCES})
