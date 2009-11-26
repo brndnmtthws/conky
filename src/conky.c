@@ -865,9 +865,6 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* __OpenBSD__ */
 
-			OBJ(cmdline_to_pid) {
-				print_cmdline_to_pid(obj, p, p_max_size);
-			}
 #ifdef X11
 			OBJ(font) {
 				new_font(p, obj->data.s);
