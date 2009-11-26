@@ -116,4 +116,13 @@ void free_acpitemp(struct text_object *);
 void print_freq(struct text_object *, char *, int);
 void print_freq_g(struct text_object *, char *, int);
 
+#ifndef __OpenBSD__
+void print_acpifan(struct text_object *, char *, int);
+void print_acpiacadapter(struct text_object *, char *, int);
+void print_battery(struct text_object *, char *, int);
+void print_battery_time(struct text_object *, char *, int);
+uint8_t battery_percentage(struct text_object *);
+void print_battery_short(struct text_object *, char *, int);
+#endif /* !__OpenBSD__ */
+
 #endif /* _COMMON_H */

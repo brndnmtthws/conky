@@ -798,27 +798,6 @@ void generate_text_internal(char *p, int p_max_size,
 		switch (obj->type) {
 			default:
 				NORM_ERR("not implemented obj type %d", obj->type);
-#ifndef __OpenBSD__
-			OBJ(acpifan) {
-				get_acpi_fan(p, p_max_size);
-			}
-			OBJ(acpiacadapter) {
-				get_acpi_ac_adapter(p, p_max_size);
-			}
-			OBJ(battery) {
-				get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_STATUS);
-			}
-			OBJ(battery_time) {
-				get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_TIME);
-			}
-			OBJ(battery_percent) {
-				percent_print(p, p_max_size, get_battery_perct(obj->data.s));
-			}
-			OBJ(battery_short) {
-				get_battery_short_status(p, p_max_size, obj->data.s);
-			}
-#endif /* __OpenBSD__ */
-
 #ifdef X11
 			OBJ(font) {
 				new_font(p, obj->data.s);

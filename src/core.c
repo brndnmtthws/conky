@@ -164,6 +164,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_acpitemp;
 		obj->callbacks.free = &free_acpitemp;
 	END OBJ(acpiacadapter, 0)
+		obj->callbacks.print = &print_acpiacadapter;
 	END OBJ(freq, 0)
 #endif /* !__OpenBSD__ */
 		get_cpu_count();
@@ -246,6 +247,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 
 #ifndef __OpenBSD__
 	END OBJ(acpifan, 0)
+		obj->callbacks.print = &print_acpifan;
 	END OBJ(battery, 0)
 		char bat[64];
 
@@ -255,6 +257,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			strcpy(bat, "BAT0");
 		}
 		obj->data.s = strndup(bat, text_buffer_size);
+		obj->callbacks.print = &print_battery;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(battery_short, 0)
 		char bat[64];
@@ -265,6 +268,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			strcpy(bat, "BAT0");
 		}
 		obj->data.s = strndup(bat, text_buffer_size);
+		obj->callbacks.print = &print_battery_short;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(battery_time, 0)
 		char bat[64];
@@ -275,6 +279,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			strcpy(bat, "BAT0");
 		}
 		obj->data.s = strndup(bat, text_buffer_size);
+		obj->callbacks.print = &print_battery_time;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(battery_percent, 0)
 		char bat[64];
@@ -285,6 +290,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			strcpy(bat, "BAT0");
 		}
 		obj->data.s = strndup(bat, text_buffer_size);
+		obj->callbacks.percentage = &battery_percentage;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(battery_bar, 0)
 		char bat[64];

@@ -709,3 +709,37 @@ void print_freq_g(struct text_object *obj, char *p, int p_max_size)
 #endif /* __OpenBSD */
 	}
 }
+
+#ifndef __OpenBSD__
+void print_acpifan(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	get_acpi_fan(p, p_max_size);
+}
+
+void print_acpiacadapter(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	get_acpi_ac_adapter(p, p_max_size);
+}
+
+void print_battery(struct text_object *obj, char *p, int p_max_size)
+{
+	get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_STATUS);
+}
+
+void print_battery_time(struct text_object *obj, char *p, int p_max_size)
+{
+	get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_TIME);
+}
+
+uint8_t battery_percentage(struct text_object *obj)
+{
+	return get_battery_perct(obj->data.s);
+}
+
+void print_battery_short(struct text_object *obj, char *p, int p_max_size)
+{
+	get_battery_short_status(p, p_max_size, obj->data.s);
+}
+#endif /* !__OpenBSD__ */
