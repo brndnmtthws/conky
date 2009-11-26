@@ -865,12 +865,6 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* __OpenBSD__ */
 
-			OBJ(buffers) {
-				human_readable(cur->buffers * 1024, p, 255);
-			}
-			OBJ(cached) {
-				human_readable(cur->cached * 1024, p, 255);
-			}
 			OBJ(cmdline_to_pid) {
 				print_cmdline_to_pid(obj, p, p_max_size);
 			}

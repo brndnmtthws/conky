@@ -377,7 +377,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &get_obsd_product;
 #endif /* __OpenBSD__ */
 	END OBJ(buffers, &update_meminfo)
+		obj->callbacks.print = &print_buffers;
 	END OBJ(cached, &update_meminfo)
+		obj->callbacks.print = &print_cached;
 #define SCAN_CPU(__arg, __var) { \
 	int __offset = 0; \
 	if (__arg && sscanf(__arg, " cpu%d %n", &__var, &__offset) > 0) \

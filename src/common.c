@@ -589,3 +589,15 @@ void print_threads(struct text_object *obj, char *p, int p_max_size)
 	(void)obj;
 	spaced_print(p, p_max_size, "%hu", 4, info.threads);
 }
+
+void print_buffers(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	human_readable(info.buffers * 1024, p, p_max_size);
+}
+
+void print_cached(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	human_readable(info.cached * 1024, p, p_max_size);
+}
