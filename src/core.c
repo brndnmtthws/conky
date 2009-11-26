@@ -160,6 +160,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #else
 	OBJ(acpitemp, 0)
 		obj->data.i = open_acpi_temperature(arg);
+		obj->callbacks.print = &print_acpitemp;
+		obj->callbacks.free = &free_acpitemp;
 	END OBJ(acpiacadapter, 0)
 	END OBJ(freq, 0)
 #endif /* !__OpenBSD__ */
@@ -1746,11 +1748,6 @@ void free_text_objects(struct text_object *root, int internal)
 		}
 
 		switch (obj->type) {
-#ifndef __OpenBSD__
-			case OBJ_acpitemp:
-				close(data.i);
-				break;
-#endif /* !__OpenBSD__ */
 			case OBJ_cmdline_to_pid:
 				free(data.s);
 				break;

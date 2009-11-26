@@ -34,6 +34,7 @@
 #include "logging.h"
 #include "net_stat.h"
 #include "specials.h"
+#include "temphelper.h"
 #include "timeinfo.h"
 #include "top.h"
 #include <ctype.h>
@@ -675,3 +676,15 @@ int if_running_iftest(struct text_object *obj)
 	}
 	return 1;
 }
+
+#ifndef __OpenBSD__
+void print_acpitemp(struct text_object *obj, char *p, int p_max_size)
+{
+	temp_print(p, p_max_size, get_acpi_temperature(obj->data.i), TEMP_CELSIUS);
+}
+
+void free_acpitemp(struct text_object *obj)
+{
+	close(obj->data.i);
+}
+#endif /* !__OpenBSD__ */

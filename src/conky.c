@@ -798,11 +798,6 @@ void generate_text_internal(char *p, int p_max_size,
 		switch (obj->type) {
 			default:
 				NORM_ERR("not implemented obj type %d", obj->type);
-#ifndef __OpenBSD__
-			OBJ(acpitemp) {
-				temp_print(p, p_max_size, get_acpi_temperature(obj->data.i), TEMP_CELSIUS);
-			}
-#endif /* !__OpenBSD__ */
 			OBJ(freq) {
 				static int ok = 1;
 				if (ok) {

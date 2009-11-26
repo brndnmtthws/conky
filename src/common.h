@@ -108,4 +108,9 @@ int if_empty_iftest(struct text_object *);
 int if_existing_iftest(struct text_object *);
 int if_running_iftest(struct text_object *);
 
+#ifndef __OpenBSD__
+void print_acpitemp(struct text_object *, char *, int);
+void free_acpitemp(struct text_object *);
+#endif /* !__OpenBSD__ */
+
 #endif /* _COMMON_H */
