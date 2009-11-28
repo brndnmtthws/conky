@@ -493,6 +493,10 @@ struct obj_cb {
  * can be used to simply free obj->data.opaque or obj->data.s */
 void gen_free_opaque(struct text_object *);
 
+/* generic iftest returning false (i.e. trigger jumping)
+ * used for the else object */
+int gen_false_iftest(struct text_object *);
+
 struct text_object {
 	struct text_object *next, *prev;	/* doubly linked list of text objects */
 	struct text_object *sub;		/* for objects parsing text into objects */

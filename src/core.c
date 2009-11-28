@@ -544,6 +544,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif /* X11 */
 	END OBJ(else, 0)
 		obj_be_ifblock_else(ifblock_opaque, obj);
+		obj->callbacks.iftest = &gen_false_iftest;
 	END OBJ(endif, 0)
 		obj_be_ifblock_endif(ifblock_opaque, obj);
 	END OBJ(eval, 0)

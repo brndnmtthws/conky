@@ -37,6 +37,12 @@ void gen_free_opaque(struct text_object *obj)
 		free(obj->data.opaque);
 }
 
+int gen_false_iftest(struct text_object *obj)
+{
+	(void)obj;
+	return 0;
+}
+
 /* text_object_list
  *
  * this list is special. it looks like this:

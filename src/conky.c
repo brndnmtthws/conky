@@ -804,14 +804,6 @@ void generate_text_internal(char *p, int p_max_size,
 				need_to_load_fonts = 1;
 			}
 #endif /* X11 */
-			OBJ(else) {
-				/* Since we see you, you're if has not jumped.
-				 * Do Ninja jump here: without leaving traces.
-				 * This is to prevent us from stale jumped flags.
-				 */
-				obj = obj->ifblock_next;
-				continue;
-			}
 			OBJ(endif) {
 				/* harmless object, just ignore */
 			}
