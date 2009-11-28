@@ -34,4 +34,6 @@ void cimlib_deinit(void);
 void cimlib_render(int x, int y, int width, int height);
 void cimlib_cleanup(void);
 
+void print_image_callback(struct text_object *, char *, int);
+
 #endif /* _CONKY_IMBLI2_H_ */

@@ -23,9 +23,10 @@
  */
 
 #include "config.h"
-#include "imlib2.h"
 #include "conky.h"
 #include "logging.h"
+#include "text_object.h"
+#include "imlib2.h"
 
 #include <Imlib2.h>
 #include <stdio.h>
@@ -269,3 +270,10 @@ void cimlib_render(int x, int y, int width, int height)
 	imlib_free_image();
 }
 
+void print_image_callback(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)p;
+	(void)p_max_size;
+
+	cimlib_add_image(obj->data.s);
+}

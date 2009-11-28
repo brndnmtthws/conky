@@ -815,13 +815,6 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(endif) {
 				/* harmless object, just ignore */
 			}
-#if defined(IMLIB2) && defined(X11)
-			OBJ(image) {
-				/* doesn't actually draw anything, just queues it omp.  the
-				 * image will get drawn after the X event loop */
-				cimlib_add_image(obj->data.s);
-			}
-#endif /* IMLIB2 */
 			OBJ(pid_chroot) {
 				char buf[max_user_text];
 

@@ -39,6 +39,7 @@
 #include "entropy.h"
 #include "exec.h"
 #include "i8k.h"
+#include "imlib2.h"
 #include "proc.h"
 #ifdef X11
 #include "fonts.h"
@@ -552,6 +553,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #if defined(IMLIB2) && defined(X11)
 	END OBJ(image, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
+		obj->callbacks.print = &print_image_callback;
 		obj->callbacks.free = &gen_free_opaque;
 #endif /* IMLIB2 */
 	END OBJ(exec, 0)
