@@ -497,6 +497,10 @@ void gen_free_opaque(struct text_object *);
  * used for the else object */
 int gen_false_iftest(struct text_object *);
 
+/* generic nothing printer callback printing nothing
+ * used for the endif object */
+void gen_print_nothing(struct text_object *, char *, int);
+
 struct text_object {
 	struct text_object *next, *prev;	/* doubly linked list of text objects */
 	struct text_object *sub;		/* for objects parsing text into objects */

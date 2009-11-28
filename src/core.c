@@ -547,6 +547,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.iftest = &gen_false_iftest;
 	END OBJ(endif, 0)
 		obj_be_ifblock_endif(ifblock_opaque, obj);
+		obj->callbacks.print = &gen_print_nothing;
 	END OBJ(eval, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 		obj->callbacks.print = &print_evaluate;

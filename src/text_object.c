@@ -43,6 +43,13 @@ int gen_false_iftest(struct text_object *obj)
 	return 0;
 }
 
+void gen_print_nothing(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	(void)p;
+	(void)p_max_size;
+}
+
 /* text_object_list
  *
  * this list is special. it looks like this:

@@ -804,9 +804,6 @@ void generate_text_internal(char *p, int p_max_size,
 				need_to_load_fonts = 1;
 			}
 #endif /* X11 */
-			OBJ(endif) {
-				/* harmless object, just ignore */
-			}
 			OBJ(pid_chroot) {
 				char buf[max_user_text];
 
