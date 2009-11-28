@@ -1492,7 +1492,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			info.apcupsd.port = htons(port);
 			strncpy(info.apcupsd.host, host, sizeof(info.apcupsd.host));
 		}
-		obj->callbacks.print = &print_apcupsd_nop;
+		obj->callbacks.print = &gen_print_nothing;
 	END OBJ(apcupsd_name, &update_apcupsd)
 		obj->callbacks.print = &print_apcupsd_name;
 	END OBJ(apcupsd_model, &update_apcupsd)

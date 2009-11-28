@@ -229,14 +229,6 @@ void update_apcupsd(void) {
 	return;
 }
 
-/* this is just a NOP for the $apcupsd object */
-void print_apcupsd_nop(struct text_object *obj, char *p, int p_max_size)
-{
-	(void)obj;
-	(void)p;
-	(void)p_max_size;
-}
-
 uint8_t apcupsd_loadbarval(struct text_object *obj)
 {
 	(void)obj;
