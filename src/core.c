@@ -859,131 +859,89 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		scan_cmdline_to_pid_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_cmdline_to_pid;
 	END OBJ_ARG(pid_chroot, 0, "pid_chroot needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_cmdline, 0, "pid_cmdline needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_cwd, 0, "pid_cwd needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_environ, 0, "pid_environ needs arguments")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_environ_list, 0, "pid_environ_list needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_exe, 0, "pid_exe needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_nice, 0, "pid_nice needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_openfiles, 0, "pid_openfiles needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_parent, 0, "pid_parent needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_priority, 0, "pid_priority needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_state, 0, "pid_state needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_state_short, 0, "pid_state_short needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_stderr, 0, "pid_stderr needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_stdin, 0, "pid_stdin needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_stdout, 0, "pid_stdout needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_threads, 0, "pid_threads needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_thread_list, 0, "pid_thread_list needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_time_kernelmode, 0, "pid_time_kernelmode needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_time_usermode, 0, "pid_time_usermode needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_time, 0, "pid_time needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_uid, 0, "pid_uid needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_euid, 0, "pid_euid needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_suid, 0, "pid_suid needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_fsuid, 0, "pid_fsuid needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_gid, 0, "pid_gid needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_egid, 0, "pid_egid needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_sgid, 0, "pid_sgid needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_fsgid, 0, "pid_fsgid needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(gid_name, 0, "gid_name needs a gid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(uid_name, 0, "uid_name needs a uid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_read, 0, "pid_read needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_vmpeak, 0, "pid_vmpeak needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_vmsize, 0, "pid_vmsize needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_vmlck, 0, "pid_vmlck needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_vmhwm, 0, "pid_vmhwm needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_vmrss, 0, "pid_vmrss needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_vmdata, 0, "pid_vmdata needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_vmstk, 0, "pid_vmstk needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_vmexe, 0, "pid_vmexe needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_vmlib, 0, "pid_vmlib needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_vmpte, 0, "pid_vmpte needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ_ARG(pid_write, 0, "pid_write needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
-		extract_variable_text_internal(obj->sub, arg);
+		extract_object_args_to_sub(obj, arg);
 	END OBJ(processes, &update_total_processes)
 		obj->callbacks.print = &print_processes;
 #ifdef __linux__

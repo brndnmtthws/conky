@@ -796,283 +796,123 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* X11 */
 			OBJ(pid_chroot) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_chroot(obj, p, p_max_size);
 			}
 			OBJ(pid_cmdline) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_cmdline(obj, p, p_max_size);
 			}
 			OBJ(pid_cwd) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_cwd(obj, p, p_max_size);
 			}
 			OBJ(pid_environ) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_environ(obj, p, p_max_size);
 			}
 			OBJ(pid_environ_list) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_environ_list(obj, p, p_max_size);
 			}
 			OBJ(pid_exe) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_exe(obj, p, p_max_size);
 			}
 			OBJ(pid_nice) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_nice(obj, p, p_max_size);
 			}
 			OBJ(pid_openfiles) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_openfiles(obj, p, p_max_size);
 			}
 			OBJ(pid_parent) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_parent(obj, p, p_max_size);
 			}
 			OBJ(pid_priority) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_priority(obj, p, p_max_size);
 			}
 			OBJ(pid_state) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_state(obj, p, p_max_size);
 			}
 			OBJ(pid_state_short) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_state_short(obj, p, p_max_size);
 			}
 			OBJ(pid_stderr) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_stderr(obj, p, p_max_size);
 			}
 			OBJ(pid_stdin) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_stdin(obj, p, p_max_size);
 			}
 			OBJ(pid_stdout) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_stdout(obj, p, p_max_size);
 			}
 			OBJ(pid_threads) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_threads(obj, p, p_max_size);
 			}
 			OBJ(pid_thread_list) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_thread_list(obj, p, p_max_size);
 			}
 			OBJ(pid_time_kernelmode) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_time_kernelmode(obj, p, p_max_size);
 			}
 			OBJ(pid_time_usermode) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_time_usermode(obj, p, p_max_size);
 			}
 			OBJ(pid_time) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_time(obj, p, p_max_size);
 			}
 			OBJ(pid_uid) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_uid(obj, p, p_max_size);
 			}
 			OBJ(pid_euid) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_euid(obj, p, p_max_size);
 			}
 			OBJ(pid_suid) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_suid(obj, p, p_max_size);
 			}
 			OBJ(pid_fsuid) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_fsuid(obj, p, p_max_size);
 			}
 			OBJ(pid_gid) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_gid(obj, p, p_max_size);
 			}
 			OBJ(pid_egid) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_egid(obj, p, p_max_size);
 			}
 			OBJ(pid_sgid) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_sgid(obj, p, p_max_size);
 			}
 			OBJ(pid_fsgid) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_fsgid(obj, p, p_max_size);
 			}
 			OBJ(pid_read) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_read(obj, p, p_max_size);
 			}
 			OBJ(pid_vmpeak) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_vmpeak(obj, p, p_max_size);
 			}
 			OBJ(pid_vmsize) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_vmsize(obj, p, p_max_size);
 			}
 			OBJ(pid_vmlck) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_vmlck(obj, p, p_max_size);
 			}
 			OBJ(pid_vmhwm) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_vmhwm(obj, p, p_max_size);
 			}
 			OBJ(pid_vmrss) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_vmrss(obj, p, p_max_size);
 			}
 			OBJ(pid_vmdata) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_vmdata(obj, p, p_max_size);
 			}
 			OBJ(pid_vmstk) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_vmstk(obj, p, p_max_size);
 			}
 			OBJ(pid_vmexe) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_vmexe(obj, p, p_max_size);
 			}
 			OBJ(pid_vmlib) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_vmlib(obj, p, p_max_size);
 			}
 			OBJ(pid_vmpte) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_vmpte(obj, p, p_max_size);
 			}
 			OBJ(pid_write) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
 				print_pid_write(obj, p, p_max_size);
 			}
 			OBJ(text) {

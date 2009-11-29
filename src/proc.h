@@ -32,6 +32,9 @@
 #define READERR	"Can't read '%s'"
 #define READSIZE 128
 
+/* XXX: this should go global */
+void extract_object_args_to_sub(struct text_object *, const char *);
+
 void print_pid_chroot(struct text_object *obj, char *p, int p_max_size);
 void print_pid_cmdline(struct text_object *obj, char *p, int p_max_size);
 void print_pid_cwd(struct text_object *obj, char *p, int p_max_size);
