@@ -40,7 +40,7 @@ size_t remove_comments(char *string);
 
 int extract_variable_text_internal(struct text_object *retval, const char *const_p);
 
-void free_text_objects(struct text_object *root, int internal);
+void free_text_objects(struct text_object *root);
 
 const char *dev_name(const char *);
 

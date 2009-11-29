@@ -671,7 +671,7 @@ struct conftree *currentconffile;
 
 static void extract_variable_text(const char *p)
 {
-	free_text_objects(&global_root_object, 0);
+	free_text_objects(&global_root_object);
 	if (tmpstring1) {
 		free(tmpstring1);
 		tmpstring1 = 0;
@@ -787,7 +787,7 @@ void evaluate(const char *text, char *p, int p_max_size)
 	parse_conky_vars(&subroot, text, p, p_max_size);
 	DBGP("evaluated '%s' to '%s'", text, p);
 
-	free_text_objects(&subroot, 1);
+	free_text_objects(&subroot);
 }
 
 double current_update_time, next_update_time, last_update_time;
@@ -2398,7 +2398,7 @@ void clean_up(void *memtofree1, void* memtofree2)
 	free_desktop_info();
 #endif /* X11 */
 
-	free_text_objects(&global_root_object, 0);
+	free_text_objects(&global_root_object);
 	if (tmpstring1) {
 		free(tmpstring1);
 		tmpstring1 = 0;

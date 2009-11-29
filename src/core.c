@@ -1795,41 +1795,29 @@ int extract_variable_text_internal(struct text_object *retval, const char *const
 	return 0;
 }
 
-/*
- * Frees the list of text objects root points to.  When internal = 1, it won't
- * free global objects.
- */
-void free_text_objects(struct text_object *root, int internal)
+/* Frees the list of text objects root points to. */
+void free_text_objects(struct text_object *root)
 {
 	struct text_object *obj;
-
-	(void)internal;
 
 	if (!root->prev) {
 		return;
 	}
 
-#define data obj->data
 	for (obj = root->prev; obj; obj = root->prev) {
 		root->prev = obj->prev;
 
 		if (obj->callbacks.free) {
 			(*obj->callbacks.free)(obj);
-			goto obj_free_loop_tail;
 		}
-
-		switch (obj->type) {
-			default: break;
-		}
-obj_free_loop_tail:
 		if(obj->sub) {
-			free_text_objects(obj->sub, 1);
+			free_text_objects(obj->sub);
 			free(obj->sub);
 		}
 		if(obj->special_data)
 			free(obj->special_data);
+
 		free(obj);
 	}
-#undef data
 }
 

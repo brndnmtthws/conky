@@ -287,7 +287,7 @@ void print_execp(struct text_object *obj, char *p, int p_max_size)
 	read_exec(obj->data.s, buf, text_buffer_size);
 	parse_conky_vars(&subroot, buf, p, p_max_size);
 
-	free_text_objects(&subroot, 1);
+	free_text_objects(&subroot);
 	free(buf);
 }
 
@@ -323,7 +323,7 @@ void print_execpi(struct text_object *obj, char *p, int p_max_size)
 		ed->last_update = current_update_time;
 	}
 	parse_conky_vars(&subroot, ed->buffer, p, p_max_size);
-	free_text_objects(&subroot, 1);
+	free_text_objects(&subroot);
 }
 
 void print_texeci(struct text_object *obj, char *p, int p_max_size)

@@ -157,7 +157,7 @@ void free_scroll(struct text_object *obj)
 	if (sd->text)
 		free(sd->text);
 	if (obj->sub) {
-		free_text_objects(obj->sub, 1);
+		free_text_objects(obj->sub);
 		free(obj->sub);
 		obj->sub = NULL;
 	}

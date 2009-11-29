@@ -174,7 +174,7 @@ void free_combine(struct text_object *obj)
 	free(cd->left);
 	free(cd->seperation);
 	free(cd->right);
-	free_text_objects(obj->sub, 1);
+	free_text_objects(obj->sub);
 	free(obj->sub);
 	free(obj->data.opaque);
 	obj->data.opaque = NULL;
