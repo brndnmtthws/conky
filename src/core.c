@@ -1803,6 +1803,8 @@ void free_text_objects(struct text_object *root, int internal)
 {
 	struct text_object *obj;
 
+	(void)internal;
+
 	if (!root->prev) {
 		return;
 	}
@@ -1817,20 +1819,7 @@ void free_text_objects(struct text_object *root, int internal)
 		}
 
 		switch (obj->type) {
-#ifdef X11
-			case OBJ_desktop:
-			case OBJ_desktop_number:
-			case OBJ_desktop_name:
-			        if(info.x11.desktop.name && !internal) {
-				  free(info.x11.desktop.name);
-				  info.x11.desktop.name = NULL;
-			        }
-			        if(info.x11.desktop.all_names && !internal) {
-				  free(info.x11.desktop.all_names);
-				  info.x11.desktop.all_names = NULL;
-			        }
-				break;
-#endif /* X11 */
+			default: break;
 		}
 obj_free_loop_tail:
 		if(obj->sub) {

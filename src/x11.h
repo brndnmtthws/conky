@@ -99,6 +99,7 @@ void print_monitor_number(struct text_object *, char *, int);
 void print_desktop(struct text_object *, char *, int);
 void print_desktop_number(struct text_object *, char *, int);
 void print_desktop_name(struct text_object *, char *, int);
+void free_desktop_info(void);
 
 #ifdef HAVE_XDBE
 void xdbe_swap_buffers(void);

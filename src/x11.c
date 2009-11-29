@@ -737,6 +737,18 @@ void print_desktop_name(struct text_object *obj, char *p, int p_max_size)
 	}
 }
 
+void free_desktop_info(void)
+{
+	if(info.x11.desktop.name) {
+		free(info.x11.desktop.name);
+		info.x11.desktop.name = NULL;
+	}
+	if(info.x11.desktop.all_names) {
+		free(info.x11.desktop.all_names);
+		info.x11.desktop.all_names = NULL;
+	}
+}
+
 #ifdef OWN_WINDOW
 /* reserve window manager space */
 void set_struts(int sidenum)

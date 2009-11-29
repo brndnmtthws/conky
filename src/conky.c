@@ -2394,6 +2394,10 @@ void clean_up(void *memtofree1, void* memtofree2)
 		info.first_process = NULL;
 	}
 
+#ifdef X11
+	free_desktop_info();
+#endif /* X11 */
+
 	free_text_objects(&global_root_object, 0);
 	if (tmpstring1) {
 		free(tmpstring1);
