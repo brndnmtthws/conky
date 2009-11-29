@@ -681,6 +681,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			return NULL;
 		}
 		obj->callbacks.print = &print_top;
+		obj->callbacks.free = &free_top;
 	} else OBJ(addr, &update_net_stats)
 		parse_net_stat_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_addr;
@@ -1816,16 +1817,6 @@ void free_text_objects(struct text_object *root, int internal)
 		}
 
 		switch (obj->type) {
-#ifdef __linux__
-			case OBJ_top:
-			case OBJ_top_mem:
-			case OBJ_top_time:
-#ifdef IOSTATS
-			case OBJ_top_io:
-#endif
-				free_top(obj, internal);
-				break;
-#endif /* __linux__ */
 #ifdef X11
 			case OBJ_desktop:
 			case OBJ_desktop_number:

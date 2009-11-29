@@ -1035,11 +1035,9 @@ void print_top(struct text_object *obj, char *p, int p_max_size)
 	}
 }
 
-void free_top(struct text_object *obj, int internal)
+void free_top(struct text_object *obj)
 {
 	struct top_data *td = obj->data.opaque;
-
-	(void)internal;
 
 	if (!td)
 		return;
