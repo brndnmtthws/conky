@@ -1054,8 +1054,7 @@ static void parse_sysfs_sensor(struct text_object *obj, const char *arg, const c
 	if (!found && sscanf(arg, "%63s %d", buf2, &n) == 2) found = 1; else if (!found) HWMON_RESET();
 
 	if (!found) {
-		NORM_ERR("i2c failed to parse arguments");
-		obj->type = OBJ_text;
+		obj_be_plain_text(obj, "fail");
 		return;
 	}
 	DBGP("parsed %s args: '%s' '%s' %d %f %f\n", type, buf1, buf2, n, factor, offset);

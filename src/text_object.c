@@ -50,6 +50,13 @@ void gen_print_nothing(struct text_object *obj, char *p, int p_max_size)
 	(void)p_max_size;
 }
 
+void gen_print_obj_data_s(struct text_object *obj, char *p, int p_max_size)
+{
+	if (!obj->data.s)
+		return;
+	snprintf(p, p_max_size, "%s", obj->data.s);
+}
+
 /* text_object_list
  *
  * this list is special. it looks like this:
@@ -183,4 +190,14 @@ int obj_be_ifblock_endif(void **opaque, struct text_object *obj)
 int ifblock_stack_empty(void **opaque)
 {
 	return *opaque == NULL;
+}
+
+void obj_be_plain_text(struct text_object *obj, const char *text)
+{
+	obj->type = OBJ_text;
+	obj->data.s = strdup(text);
+
+	memset(&obj->callbacks, 0, sizeof(obj->callbacks));
+	obj->callbacks.print = &gen_print_obj_data_s;
+	obj->callbacks.free = &gen_free_opaque;
 }

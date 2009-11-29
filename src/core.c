@@ -124,8 +124,7 @@ static struct text_object *create_plain_text(const char *s)
 
 	obj = new_text_object_internal();
 
-	obj->type = OBJ_text;
-	obj->data.s = strndup(s, text_buffer_size);
+	obj_be_plain_text(obj, s);
 	return obj;
 }
 
@@ -526,14 +525,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.free = &gen_free_opaque;
 #endif /* X11 */
 	END OBJ(conky_version, 0)
-		obj->type = OBJ_text;
-		obj->data.s = strdup(VERSION);
+		obj_be_plain_text(obj, VERSION);
 	END OBJ(conky_build_date, 0)
-		obj->type = OBJ_text;
-		obj->data.s = strdup(BUILD_DATE);
+		obj_be_plain_text(obj, BUILD_DATE);
 	END OBJ(conky_build_arch, 0)
-		obj->type = OBJ_text;
-		obj->data.s = strdup(BUILD_ARCH);
+		obj_be_plain_text(obj, BUILD_ARCH);
 	END OBJ(downspeed, &update_net_stats)
 		parse_net_stat_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_downspeed;
@@ -1547,9 +1543,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		char buf[text_buffer_size];
 
 		NORM_ERR("unknown variable %s", s);
-		obj->type = OBJ_text;
 		snprintf(buf, text_buffer_size, "${%s}", s);
-		obj->data.s = strndup(buf, text_buffer_size);
+		obj_be_plain_text(obj, buf);
 	}
 #undef OBJ
 #undef OBJ_IF
@@ -1835,9 +1830,6 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_if_match:
 				free_text_objects(obj->sub, 1);
 				free(obj->sub);
-				break;
-			case OBJ_text:
-				free(data.s);
 				break;
 #ifdef __linux__
 			case OBJ_if_gw:

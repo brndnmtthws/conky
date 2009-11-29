@@ -230,9 +230,8 @@ void scan_pre_exec_arg(struct text_object *obj, const char *arg)
 {
 	char buf[2048];
 
-	obj->type = OBJ_text;
 	read_exec(arg, buf, sizeof(buf));
-	obj->data.s = strndup(buf, text_buffer_size);
+	obj_be_plain_text(obj, buf);
 }
 
 void scan_execi_arg(struct text_object *obj, const char *arg)

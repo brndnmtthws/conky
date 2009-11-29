@@ -501,6 +501,10 @@ int gen_false_iftest(struct text_object *);
  * used for the endif object */
 void gen_print_nothing(struct text_object *, char *, int);
 
+/* generic obj->data.s printer
+ * used by the $text object */
+void gen_print_obj_data_s(struct text_object *, char *, int);
+
 struct text_object {
 	struct text_object *next, *prev;	/* doubly linked list of text objects */
 	struct text_object *sub;		/* for objects parsing text into objects */
@@ -531,5 +535,8 @@ int obj_be_ifblock_if(void **opaque, struct text_object *);
 int obj_be_ifblock_else(void **opaque, struct text_object *);
 int obj_be_ifblock_endif(void **opaque, struct text_object *);
 int ifblock_stack_empty(void **opaque);
+
+/* make the given object be a plain text object printing given string */
+void obj_be_plain_text(struct text_object *, const char *);
 
 #endif /* _TEXT_OBJECT_H */

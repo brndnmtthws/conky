@@ -794,10 +794,6 @@ void generate_text_internal(char *p, int p_max_size,
 		switch (obj->type) {
 			default:
 				NORM_ERR("not implemented obj type %d", obj->type);
-			OBJ(text) {
-				snprintf(p, p_max_size, "%s", obj->data.s);
-			}
-
 			break;
 		}
 #undef DO_JUMP
