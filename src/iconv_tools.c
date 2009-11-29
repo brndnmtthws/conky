@@ -58,9 +58,11 @@ int register_iconv(iconv_t *new_iconv)
 	return iconv_count;
 }
 
-void free_iconv(void)
+void free_iconv(struct text_object *obj)
 {
 	long i;
+
+	(void)obj;
 
 	if (!iconv_cd)
 		return;
@@ -139,14 +141,21 @@ void init_iconv_stop(void)
 	iconv_converting = 0;
 }
 
-void do_iconv_start(struct text_object *obj)
+void print_iconv_start(struct text_object *obj, char *p, int p_max_size)
 {
+	(void)p;
+	(void)p_max_size;
+
 	iconv_converting = 1;
 	iconv_selected = obj->data.i;
 }
 
-void do_iconv_stop(void)
+void print_iconv_stop(struct text_object *obj, char *p, int p_max_size)
 {
+	(void)obj;
+	(void)p;
+	(void)p_max_size;
+
 	iconv_converting = 0;
 	iconv_selected = 0;
 }

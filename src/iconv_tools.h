@@ -31,11 +31,12 @@
 #ifndef _ICONV_TOOLS_H
 #define _ICONV_TOOLS_H
 
-void free_iconv(void);
+void free_iconv(struct text_object *);
 void iconv_convert(size_t *, char *, char *, size_t);
 void init_iconv_start(struct text_object *, void *, const char *);
 void init_iconv_stop(void);
-void do_iconv_start(struct text_object *);
-void do_iconv_stop(void);
+
+void print_iconv_start(struct text_object *, char *, int);
+void print_iconv_stop(struct text_object *, char *, int);
 
 #endif /* _ICONV_TOOLS_H */

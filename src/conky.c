@@ -1101,15 +1101,6 @@ void generate_text_internal(char *p, int p_max_size,
 				}
 			}
 
-#ifdef HAVE_ICONV
-			OBJ(iconv_start) {
-				do_iconv_start(obj);
-			}
-			OBJ(iconv_stop) {
-				do_iconv_stop();
-			}
-#endif /* HAVE_ICONV */
-
 			break;
 		}
 #undef DO_JUMP

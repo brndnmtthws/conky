@@ -1042,8 +1042,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef HAVE_ICONV
 	END OBJ_ARG(iconv_start, 0, "Iconv requires arguments")
 		init_iconv_start(obj, free_at_crash, arg);
+		obj->callbacks.print = &print_iconv_start;
+		obj->callbacks.free = &free_iconv;
 	END OBJ(iconv_stop, 0)
 		init_iconv_stop();
+		obj->callbacks.print = &print_iconv_stop;
 #endif
 	END OBJ(totaldown, &update_net_stats)
 		parse_net_stat_arg(obj, arg, free_at_crash);
@@ -1832,11 +1835,6 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_text:
 				free(data.s);
 				break;
-#ifdef HAVE_ICONV
-			case OBJ_iconv_start:
-				free_iconv();
-				break;
-#endif
 #ifdef __linux__
 			case OBJ_if_gw:
 			case OBJ_gw_iface:
