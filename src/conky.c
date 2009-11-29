@@ -791,7 +791,7 @@ void generate_text_internal(char *p, int p_max_size,
 				NORM_ERR("not implemented obj type %d", obj->type);
 #ifdef X11
 			OBJ(font) {
-				new_font(p, obj->data.s);
+				new_font(obj, p, p_max_size);
 			}
 #endif /* X11 */
 			OBJ(text) {

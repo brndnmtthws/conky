@@ -284,24 +284,25 @@ void new_gauge(struct text_object *obj, char *p, int p_max_size, int usage)
 }
 
 #ifdef X11
-void new_font(char *buf, char *args)
+void new_font(struct text_object *obj, char *p, int p_max_size)
 {
+	struct special_t *s;
+	int tmp = selected_font;
+
 	if ((output_methods & TO_X) == 0)
 		return;
 
-	if (args) {
-		struct special_t *s = new_special(buf, FONT);
+	if (!p_max_size)
+		return;
 
-		if (s->font_added > font_count || !s->font_added || (strncmp(args, fonts[s->font_added].name, DEFAULT_TEXT_BUFFER_SIZE) != EQUAL) ) {
-			int tmp = selected_font;
+	s = new_special(p, FONT);
 
-			selected_font = s->font_added = add_font(args);
+	if (obj->data.s) {
+		if (s->font_added > font_count || !s->font_added || (strncmp(obj->data.s, fonts[s->font_added].name, DEFAULT_TEXT_BUFFER_SIZE) != EQUAL) ) {
+			selected_font = s->font_added = add_font(obj->data.s);
 			selected_font = tmp;
 		}
 	} else {
-		struct special_t *s = new_special(buf, FONT);
-		int tmp = selected_font;
-
 		selected_font = s->font_added = 0;
 		selected_font = tmp;
 	}
