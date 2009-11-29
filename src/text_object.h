@@ -516,6 +516,9 @@ struct text_object {
 		long l;			/* some long integer */
 	} data;
 
+	/* if non-zero, no substitute_newlines() is applied to object's output */
+	char verbatim_output;
+
 	void *special_data;
 	int type;
 	long line;

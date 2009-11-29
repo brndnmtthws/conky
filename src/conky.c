@@ -805,13 +805,8 @@ obj_loop_tail:
 #ifdef HAVE_ICONV
 			iconv_convert(&a, buff_in, p, p_max_size);
 #endif /* HAVE_ICONV */
-			if (obj->type != OBJ_text && obj->type != OBJ_execp && obj->type != OBJ_execpi
-#ifdef HAVE_LUA
-					&& obj->type != OBJ_lua && obj->type != OBJ_lua_parse
-#endif /* HAVE_LUA */
-					) {
+			if (!obj->verbatim_output)
 				substitute_newlines(p, a - 2);
-			}
 			p += a;
 			p_max_size -= a;
 			(*p) = 0;

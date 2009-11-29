@@ -26,10 +26,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+#define _GNU_SOURCE
 #include "text_object.h"
 #include "logging.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 void gen_free_opaque(struct text_object *obj)
 {
@@ -196,6 +198,7 @@ void obj_be_plain_text(struct text_object *obj, const char *text)
 {
 	obj->type = OBJ_text;
 	obj->data.s = strdup(text);
+	obj->verbatim_output = 1;
 
 	memset(&obj->callbacks, 0, sizeof(obj->callbacks));
 	obj->callbacks.print = &gen_print_obj_data_s;
