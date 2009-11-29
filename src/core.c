@@ -1177,61 +1177,78 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		mpd_set_maxlen(mpd_artist);
 		init_mpd();
 		obj->callbacks.print = &print_mpd_artist;
+		obj->callbacks.free = &free_mpd;
 	END OBJ(mpd_title, &update_mpd)
 		mpd_set_maxlen(mpd_title);
 		init_mpd();
 		obj->callbacks.print = &print_mpd_title;
+		obj->callbacks.free = &free_mpd;
 	END OBJ(mpd_random, &update_mpd)
 		init_mpd();
 		obj->callbacks.print = &print_mpd_random;
+		obj->callbacks.free = &free_mpd;
 	END OBJ(mpd_repeat, &update_mpd)
 		init_mpd();
 		obj->callbacks.print = &print_mpd_repeat;
+		obj->callbacks.free = &free_mpd;
 	END OBJ(mpd_elapsed, &update_mpd)
 		init_mpd();
 		obj->callbacks.print = &print_mpd_elapsed;
+		obj->callbacks.free = &free_mpd;
 	END OBJ(mpd_length, &update_mpd)
 		init_mpd();
 		obj->callbacks.print = &print_mpd_length;
+		obj->callbacks.free = &free_mpd;
 	END OBJ(mpd_track, &update_mpd)
 		mpd_set_maxlen(mpd_track);
 		init_mpd();
 		obj->callbacks.print = &print_mpd_track;
+		obj->callbacks.free = &free_mpd;
 	END OBJ(mpd_name, &update_mpd)
 		mpd_set_maxlen(mpd_name);
 		init_mpd();
 		obj->callbacks.print = &print_mpd_name;
+		obj->callbacks.free = &free_mpd;
 	END OBJ(mpd_file, &update_mpd)
 		mpd_set_maxlen(mpd_file);
 		init_mpd();
 		obj->callbacks.print = &print_mpd_file;
+		obj->callbacks.free = &free_mpd;
 	END OBJ(mpd_percent, &update_mpd)
 		init_mpd();
 		obj->callbacks.percentage = &mpd_percentage;
+		obj->callbacks.free = &free_mpd;
 	END OBJ(mpd_album, &update_mpd)
 		mpd_set_maxlen(mpd_album);
 		init_mpd();
 		obj->callbacks.print = &print_mpd_album;
+		obj->callbacks.free = &free_mpd;
 	END OBJ(mpd_vol, &update_mpd)
 		init_mpd();
 		obj->callbacks.print = &print_mpd_vol;
+		obj->callbacks.free = &free_mpd;
 	END OBJ(mpd_bitrate, &update_mpd)
 		init_mpd();
 		obj->callbacks.print = &print_mpd_bitrate;
+		obj->callbacks.free = &free_mpd;
 	END OBJ(mpd_status, &update_mpd)
 		init_mpd();
 		obj->callbacks.print = &print_mpd_status;
+		obj->callbacks.free = &free_mpd;
 	END OBJ(mpd_bar, &update_mpd)
 		scan_bar(obj, arg);
 		init_mpd();
 		obj->callbacks.barval = &mpd_barval;
+		obj->callbacks.free = &free_mpd;
 	END OBJ(mpd_smart, &update_mpd)
 		mpd_set_maxlen(mpd_smart);
 		init_mpd();
 		obj->callbacks.print = &print_mpd_smart;
+		obj->callbacks.free = &free_mpd;
 	END OBJ_IF(if_mpd_playing, &update_mpd)
 		init_mpd();
 		obj->callbacks.iftest = &check_mpd_playing;
+		obj->callbacks.free = &free_mpd;
 #undef mpd_set_maxlen
 #endif /* MPD */
 #ifdef MOC
@@ -1859,27 +1876,6 @@ void free_text_objects(struct text_object *root, int internal)
 				free_top(obj, internal);
 				break;
 #endif /* __linux__ */
-#ifdef MPD
-			case OBJ_mpd_title:
-			case OBJ_mpd_artist:
-			case OBJ_mpd_album:
-			case OBJ_mpd_random:
-			case OBJ_mpd_repeat:
-			case OBJ_mpd_vol:
-			case OBJ_mpd_bitrate:
-			case OBJ_mpd_status:
-			case OBJ_mpd_bar:
-			case OBJ_mpd_elapsed:
-			case OBJ_mpd_length:
-			case OBJ_mpd_track:
-			case OBJ_mpd_name:
-			case OBJ_mpd_file:
-			case OBJ_mpd_percent:
-			case OBJ_mpd_smart:
-			case OBJ_if_mpd_playing:
-				free_mpd();
-				break;
-#endif /* MPD */
 #ifdef X11
 			case OBJ_desktop:
 			case OBJ_desktop_number:

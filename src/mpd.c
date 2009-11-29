@@ -118,8 +118,10 @@ static void clear_mpd(void)
 	memset(&mpd_info, 0, sizeof(mpd_info));
 }
 
-void free_mpd(void)
+void free_mpd(struct text_object *obj)
 {
+	(void)obj;
+
 	if (!(--refcount))	/* last client */
 		clear_mpd();
 }
