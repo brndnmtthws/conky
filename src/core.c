@@ -65,6 +65,7 @@
 #include "tailhead.h"
 #include "timeinfo.h"
 #include "top.h"
+#include "user.h"
 #include "users.h"
 
 #ifdef NCURSES
@@ -944,8 +945,10 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_pid_fsgid;
 	END OBJ_ARG(gid_name, 0, "gid_name needs a gid as argument")
 		extract_object_args_to_sub(obj, arg);
+		obj->callbacks.print = &print_gid_name;
 	END OBJ_ARG(uid_name, 0, "uid_name needs a uid as argument")
 		extract_object_args_to_sub(obj, arg);
+		obj->callbacks.print = &print_uid_name;
 	END OBJ_ARG(pid_read, 0, "pid_read needs a pid as argument")
 		extract_object_args_to_sub(obj, arg);
 		obj->callbacks.print = &print_pid_read;

@@ -28,5 +28,10 @@
  *
  */
 
+#ifndef _USER_H
+#define _USER_H
+
 void print_gid_name(struct text_object *obj, char *p, int p_max_size);
 void print_uid_name(struct text_object *obj, char *p, int p_max_size);
+
+#endif /* _USER_H */

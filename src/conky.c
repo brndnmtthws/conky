@@ -722,6 +722,9 @@ void generate_text_internal(char *p, int p_max_size,
 	buff_in[0] = 0;
 #endif /* HAVE_ICONV */
 
+	/* \o/ */
+	(void)cur;
+
 	p[0] = 0;
 	obj = root.next;
 	while (obj && p_max_size > 0) {
@@ -797,20 +800,6 @@ void generate_text_internal(char *p, int p_max_size,
 #endif /* X11 */
 			OBJ(text) {
 				snprintf(p, p_max_size, "%s", obj->data.s);
-			}
-			OBJ(gid_name) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
-				print_gid_name(obj, p, p_max_size);
-			}
-			OBJ(uid_name) {
-				char buf[max_user_text];
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				obj->data.s = buf;
-				print_uid_name(obj, p, p_max_size);
 			}
 			OBJ(updates) {
 				snprintf(p, p_max_size, "%d", total_updates);

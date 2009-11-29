@@ -38,10 +38,13 @@ void print_uid_name(struct text_object *obj, char *p, int p_max_size) {
 	struct passwd *pw;
 	uid_t uid;
 	char* firstinvalid;
+	char objbuf[max_user_text];
+
+	generate_text_internal(objbuf, max_user_text, *obj->sub, &info);
 
 	errno = 0;
-	uid = strtol(obj->data.s, &firstinvalid, 10);
-	if (errno == 0 && obj->data.s != firstinvalid) {
+	uid = strtol(objbuf, &firstinvalid, 10);
+	if (errno == 0 && objbuf != firstinvalid) {
 		pw = getpwuid(uid);
 		if(pw != NULL) {
 			snprintf(p, p_max_size, "%s", pw->pw_name);
@@ -57,10 +60,13 @@ void print_gid_name(struct text_object *obj, char *p, int p_max_size) {
 	struct group *grp;
 	gid_t gid;
 	char* firstinvalid;
+	char objbuf[max_user_text];
+
+	generate_text_internal(objbuf, max_user_text, *obj->sub, &info);
 
 	errno = 0;
-	gid = strtol(obj->data.s, &firstinvalid, 10);
-	if (errno == 0 && obj->data.s != firstinvalid) {
+	gid = strtol(objbuf, &firstinvalid, 10);
+	if (errno == 0 && objbuf != firstinvalid) {
 		grp = getgrgid(gid);
 		if(grp != NULL) {
 			snprintf(p, p_max_size, "%s", grp->gr_name);
