@@ -858,6 +858,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ_ARG(cmdline_to_pid, 0, "cmdline_to_pid needs a command line as argument")
 		scan_cmdline_to_pid_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_cmdline_to_pid;
+		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(pid_chroot, 0, "pid_chroot needs a pid as argument")
 		extract_object_args_to_sub(obj, arg);
 		obj->callbacks.print = &print_pid_chroot;
@@ -1774,9 +1775,6 @@ void free_text_objects(struct text_object *root, int internal)
 		}
 
 		switch (obj->type) {
-			case OBJ_cmdline_to_pid:
-				free(data.s);
-				break;
 			case OBJ_format_time:
 			case OBJ_pid_environ:
 			case OBJ_pid_chroot:
