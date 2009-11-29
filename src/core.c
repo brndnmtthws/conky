@@ -640,6 +640,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(nameserver, &update_dns_data)
 		parse_nameserver_arg(obj, arg);
 		obj->callbacks.print = &print_nameserver;
+		obj->callbacks.free = &free_dns_data;
 	END OBJ(offset, 0)
 		obj->data.l = arg ? atoi(arg) : 1;
 		obj->callbacks.print = &new_offset;
@@ -1848,9 +1849,6 @@ void free_text_objects(struct text_object *root, int internal)
 				}
 				break;
 #endif
-			case OBJ_nameserver:
-				free_dns_data();
-				break;
 #ifdef __linux__
 			case OBJ_top:
 			case OBJ_top_mem:

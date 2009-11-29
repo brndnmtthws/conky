@@ -383,9 +383,12 @@ static struct {
 	.ns_list = NULL,
 };
 
-void free_dns_data(void)
+void free_dns_data(struct text_object *obj)
 {
 	int i;
+
+	(void)obj;
+
 	for (i = 0; i < dns_data.nscount; i++)
 		free(dns_data.ns_list[i]);
 	if (dns_data.ns_list)
@@ -406,7 +409,7 @@ void update_dns_data(void)
 	last_dns_update = current_update_time;
 	*/
 
-	free_dns_data();
+	free_dns_data(NULL);
 
 	if ((fp = fopen("/etc/resolv.conf", "r")) == NULL)
 		return;
