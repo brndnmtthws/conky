@@ -711,14 +711,30 @@ void substitute_newlines(char *p, long l)
 	}
 }
 
+
+/* IFBLOCK jumping algorithm
+ *
+ * This is easier as it looks like:
+ * - each IF checks it's condition
+ *   - on FALSE: jump
+ *   - on TRUE: don't care
+ * - each ELSE jumps unconditionally
+ * - each ENDIF is silently being ignored
+ *
+ * Why this works (or: how jumping works):
+ * Jumping means to overwrite the "obj" variable of the loop and set it to the
+ * target (i.e. the corresponding ELSE or ENDIF). After that, the for-loop does
+ * the rest: as regularly, "obj" is being updated to point to obj->next, so
+ * object parsing continues right after the corresponding ELSE or ENDIF. This
+ * means that if we find an ELSE, it's corresponding IF must not have jumped,
+ * so we need to jump always. If we encounter an ENDIF, it's corresponding IF
+ * or ELSE has not jumped, and there is nothing to do.
+ */
 void generate_text_internal(char *p, int p_max_size,
 		struct text_object root, struct information *cur)
 {
 	struct text_object *obj;
-
-	/* for the OBJ_top* handler */
-	struct process **needed = 0;
-
+	size_t a;
 #ifdef HAVE_ICONV
 	char buff_in[p_max_size];
 	buff_in[0] = 0;
@@ -730,87 +746,36 @@ void generate_text_internal(char *p, int p_max_size,
 	p[0] = 0;
 	obj = root.next;
 	while (obj && p_max_size > 0) {
-		needed = 0; /* reset for top stuff */
 
-/* IFBLOCK jumping algorithm
- *
- * This is easier as it looks like:
- * - each IF checks it's condition
- *   - on FALSE: call DO_JUMP
- *   - on TRUE: don't care
- * - each ELSE calls DO_JUMP unconditionally
- * - each ENDIF is silently being ignored
- *
- * Why this works:
- * DO_JUMP overwrites the "obj" variable of the loop and sets it to the target
- * (i.e. the corresponding ELSE or ENDIF). After that, processing for the given
- * object can continue, free()ing stuff e.g., then the for-loop does the rest: as
- * regularly, "obj" is being updated to point to obj->next, so object parsing
- * continues right after the corresponding ELSE or ENDIF. This means that if we
- * find an ELSE, it's corresponding IF must not have jumped, so we need to jump
- * always. If we encounter an ENDIF, it's corresponding IF or ELSE has not
- * jumped, and there is nothing to do.
- */
-#define DO_JUMP { \
-	DBGP2("jumping"); \
-	if (obj->ifblock_next) \
-		obj = obj->ifblock_next; \
-}
-
-		/* if a print callback exists, use it and jump over the switch() */
+		/* check callbacks for existence and act accordingly */
 		if (obj->callbacks.print) {
 			(*obj->callbacks.print)(obj, p, p_max_size);
-			goto obj_loop_tail;
-		}
-
-		if (obj->callbacks.iftest) {
-			if (!(*obj->callbacks.iftest)(obj))
-				DO_JUMP;
-			goto obj_loop_tail;
-		}
-
-		if (obj->callbacks.barval) {
+		} else if (obj->callbacks.iftest) {
+			if (!(*obj->callbacks.iftest)(obj)) {
+				DBGP2("jumping");
+				if (obj->ifblock_next)
+					obj = obj->ifblock_next;
+			}
+		} else if (obj->callbacks.barval) {
 			new_bar(obj, p, p_max_size, (*obj->callbacks.barval)(obj));
-			goto obj_loop_tail;
-		}
-
-		if (obj->callbacks.gaugeval) {
+		} else if (obj->callbacks.gaugeval) {
 			new_gauge(obj, p, p_max_size, (*obj->callbacks.gaugeval)(obj));
-			goto obj_loop_tail;
-		}
-
-		if (obj->callbacks.graphval) {
+		} else if (obj->callbacks.graphval) {
 			new_graph(obj, p, p_max_size, (*obj->callbacks.graphval)(obj));
-			goto obj_loop_tail;
-		}
-
-		if (obj->callbacks.percentage) {
+		} else if (obj->callbacks.percentage) {
 			percent_print(p, p_max_size, (*obj->callbacks.percentage)(obj));
-			goto obj_loop_tail;
 		}
 
-#define OBJ(a) break; case OBJ_##a:
-
-		switch (obj->type) {
-			default:
-				NORM_ERR("not implemented obj type %d", obj->type);
-			break;
-		}
-#undef DO_JUMP
-
-obj_loop_tail:
-		{
-			size_t a = strlen(p);
-
+		a = strlen(p);
 #ifdef HAVE_ICONV
-			iconv_convert(&a, buff_in, p, p_max_size);
+		iconv_convert(&a, buff_in, p, p_max_size);
 #endif /* HAVE_ICONV */
-			if (!obj->verbatim_output)
-				substitute_newlines(p, a - 2);
-			p += a;
-			p_max_size -= a;
-			(*p) = 0;
-		}
+		if (!obj->verbatim_output)
+			substitute_newlines(p, a - 2);
+		p += a;
+		p_max_size -= a;
+		(*p) = 0;
+
 		obj = obj->next;
 	}
 #ifdef X11
