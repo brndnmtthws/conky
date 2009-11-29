@@ -88,7 +88,7 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size)
 	if (!sd)
 		return;
 
-	generate_text_internal(buf, max_user_text, *obj->sub, &info);
+	generate_text_internal(buf, max_user_text, *obj->sub);
 	for(j = 0; buf[j] != 0; j++) {
 		switch(buf[j]) {
 			case '\n':	//place all the lines behind each other with LINESEPARATOR between them

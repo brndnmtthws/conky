@@ -689,10 +689,10 @@ static void extract_variable_text(const char *p)
 }
 
 void parse_conky_vars(struct text_object *root, const char *txt,
-		char *p, int p_max_size, struct information *cur)
+		char *p, int p_max_size)
 {
 	extract_variable_text_internal(root, txt);
-	generate_text_internal(p, p_max_size, *root, cur);
+	generate_text_internal(p, p_max_size, *root);
 }
 
 /* substitutes all occurrences of '\n' with SECRIT_MULTILINE_CHAR, which allows
@@ -730,8 +730,7 @@ void substitute_newlines(char *p, long l)
  * so we need to jump always. If we encounter an ENDIF, it's corresponding IF
  * or ELSE has not jumped, and there is nothing to do.
  */
-void generate_text_internal(char *p, int p_max_size,
-		struct text_object root, struct information *cur)
+void generate_text_internal(char *p, int p_max_size, struct text_object root)
 {
 	struct text_object *obj;
 	size_t a;
@@ -739,9 +738,6 @@ void generate_text_internal(char *p, int p_max_size,
 	char buff_in[p_max_size];
 	buff_in[0] = 0;
 #endif /* HAVE_ICONV */
-
-	/* \o/ */
-	(void)cur;
 
 	p[0] = 0;
 	obj = root.next;
@@ -786,23 +782,18 @@ void generate_text_internal(char *p, int p_max_size,
 
 void evaluate(const char *text, char *p, int p_max_size)
 {
-	struct information *tmp_info;
 	struct text_object subroot;
 
-	tmp_info = malloc(sizeof(struct information));
-	memcpy(tmp_info, &info, sizeof(struct information));
-	parse_conky_vars(&subroot, text, p, p_max_size, tmp_info);
+	parse_conky_vars(&subroot, text, p, p_max_size);
 	DBGP("evaluated '%s' to '%s'", text, p);
 
 	free_text_objects(&subroot, 1);
-	free(tmp_info);
 }
 
 double current_update_time, next_update_time, last_update_time;
 
 static void generate_text(void)
 {
-	struct information *cur = &info;
 	char *p;
 	unsigned int i, j, k;
 
@@ -820,7 +811,7 @@ static void generate_text(void)
 
 	p = text_buffer;
 
-	generate_text_internal(p, max_user_text, global_root_object, cur);
+	generate_text_internal(p, max_user_text, global_root_object);
 	if(max_text_width > 0) {
 		for(i = 0, j = 0; p[i] != 0; i++) {
 			if(p[i] == '\n') j = 0;

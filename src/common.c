@@ -612,18 +612,13 @@ void print_evaluate(struct text_object *obj, char *p, int p_max_size)
 int if_empty_iftest(struct text_object *obj)
 {
 	char buf[max_user_text];
-	struct information *tmp_info;
 	int result = 1;
 
-	tmp_info = malloc(sizeof(struct information));
-	memcpy(tmp_info, &info, sizeof(struct information));
-
-	generate_text_internal(buf, max_user_text, *obj->sub, tmp_info);
+	generate_text_internal(buf, max_user_text, *obj->sub);
 
 	if (strlen(buf) != 0) {
 		result = 0;
 	}
-	free(tmp_info);
 	return result;
 }
 
@@ -750,7 +745,7 @@ void print_to_bytes(struct text_object *obj, char *p, int p_max_size)
 	long long bytes;
 	char unit[16];	// 16 because we can also have long names (like mega-bytes)
 
-	generate_text_internal(buf, max_user_text, *obj->sub, &info);
+	generate_text_internal(buf, max_user_text, *obj->sub);
 	if(sscanf(buf, "%lli%s", &bytes, unit) == 2 && strlen(unit) < 16){
 		if(strncasecmp("b", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes);
 		else if(strncasecmp("k", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes * 1024);
@@ -771,7 +766,7 @@ void print_blink(struct text_object *obj, char *p, int p_max_size)
 	memset(buf, 0, max_user_text);
 
 	if (visible) {
-		generate_text_internal(buf, max_user_text, *obj->sub, &info);
+		generate_text_internal(buf, max_user_text, *obj->sub);
 		last_len = strlen(buf);
 	} else {
 		for (int i = 0; i < last_len; i++)
@@ -789,7 +784,7 @@ void print_include(struct text_object *obj, char *p, int p_max_size)
 	if (!obj->sub)
 		return;
 
-	generate_text_internal(buf, max_user_text, *obj->sub, &info);
+	generate_text_internal(buf, max_user_text, *obj->sub);
 	snprintf(p, p_max_size, "%s", buf);
 }
 

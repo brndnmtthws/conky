@@ -278,7 +278,6 @@ void print_exec(struct text_object *obj, char *p, int p_max_size)
 
 void print_execp(struct text_object *obj, char *p, int p_max_size)
 {
-	struct information *tmp_info;
 	struct text_object subroot;
 	char *buf;
 
@@ -286,13 +285,9 @@ void print_execp(struct text_object *obj, char *p, int p_max_size)
 	memset(buf, 0, text_buffer_size);
 
 	read_exec(obj->data.s, buf, text_buffer_size);
-
-	tmp_info = malloc(sizeof(struct information));
-	memcpy(tmp_info, &info, sizeof(struct information));
-	parse_conky_vars(&subroot, buf, p, p_max_size, tmp_info);
+	parse_conky_vars(&subroot, buf, p, p_max_size);
 
 	free_text_objects(&subroot, 1);
-	free(tmp_info);
 	free(buf);
 }
 
@@ -316,13 +311,9 @@ void print_execpi(struct text_object *obj, char *p, int p_max_size)
 {
 	struct execi_data *ed = obj->data.opaque;
 	struct text_object subroot;
-	struct information *tmp_info;
 
 	if (!ed)
 		return;
-
-	tmp_info = malloc(sizeof(struct information));
-	memcpy(tmp_info, &info, sizeof(struct information));
 
 	if (time_to_update(ed)) {
 		if (!ed->buffer)
@@ -331,9 +322,8 @@ void print_execpi(struct text_object *obj, char *p, int p_max_size)
 		read_exec(ed->cmd, ed->buffer, text_buffer_size);
 		ed->last_update = current_update_time;
 	}
-	parse_conky_vars(&subroot, ed->buffer, p, p_max_size, tmp_info);
+	parse_conky_vars(&subroot, ed->buffer, p, p_max_size);
 	free_text_objects(&subroot, 1);
-	free(tmp_info);
 }
 
 void print_texeci(struct text_object *obj, char *p, int p_max_size)

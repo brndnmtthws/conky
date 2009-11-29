@@ -310,7 +310,7 @@ void print_format_time(struct text_object *obj, char *p, int p_max_size)
 {
 	char buf[max_user_text];
 
-	generate_text_internal(buf, max_user_text, *obj->sub, &info);
+	generate_text_internal(buf, max_user_text, *obj->sub);
 	obj->data.s = buf;
 	do_format_time(obj, p, p_max_size);
 }

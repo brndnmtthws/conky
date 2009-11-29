@@ -355,9 +355,7 @@ void set_update_interval(double interval);
 #define UNUSED(a)  (void)a
 #define UNUSED_ATTR __attribute__ ((unused))
 
-void parse_conky_vars(struct text_object *, const char *,
-			char *, int, struct information *);
+void parse_conky_vars(struct text_object *, const char *, char *, int);
 
-void generate_text_internal(char *, int, struct text_object,
-                                   struct information *);
+void generate_text_internal(char *, int, struct text_object);
 #endif /* _conky_h_ */

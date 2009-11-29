@@ -115,7 +115,7 @@ void print_combine(struct text_object *obj, char *p, int p_max_size)
 		ll_rows[i] = malloc(sizeof(struct llrows));
 		current[i] = ll_rows[i];
 		for(j=0; j<i; j++) objsub = objsub->sub;
-		generate_text_internal(buf[i], max_user_text, *objsub, &info);
+		generate_text_internal(buf[i], max_user_text, *objsub);
 		for(j=0; buf[i][j] != 0; j++) {
 			if(buf[i][j] == '\t') buf[i][j] = ' ';
 			if(buf[i][j] == '\n') {

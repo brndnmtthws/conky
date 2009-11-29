@@ -40,7 +40,7 @@ void print_uid_name(struct text_object *obj, char *p, int p_max_size) {
 	char* firstinvalid;
 	char objbuf[max_user_text];
 
-	generate_text_internal(objbuf, max_user_text, *obj->sub, &info);
+	generate_text_internal(objbuf, max_user_text, *obj->sub);
 
 	errno = 0;
 	uid = strtol(objbuf, &firstinvalid, 10);
@@ -62,7 +62,7 @@ void print_gid_name(struct text_object *obj, char *p, int p_max_size) {
 	char* firstinvalid;
 	char objbuf[max_user_text];
 
-	generate_text_internal(objbuf, max_user_text, *obj->sub, &info);
+	generate_text_internal(objbuf, max_user_text, *obj->sub);
 
 	errno = 0;
 	gid = strtol(objbuf, &firstinvalid, 10);
