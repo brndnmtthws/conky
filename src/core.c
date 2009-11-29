@@ -1289,45 +1289,65 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef XMMS2
 	END OBJ(xmms2_artist, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_artist;
+		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_album, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_album;
+		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_title, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_title;
+		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_genre, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_genre;
+		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_comment, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_comment;
+		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_url, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_url;
+		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_tracknr, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_tracknr;
+		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_bitrate, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_bitrate;
+		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_date, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_date;
+		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_id, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_id;
+		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_duration, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_duration;
+		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_elapsed, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_elapsed;
+		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_size, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_size;
+		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_status, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_status;
+		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_percent, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_percent;
+		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_bar, &update_xmms2)
 		scan_bar(obj, arg);
 		obj->callbacks.barval = &xmms2_barval;
+		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_smart, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_smart;
+		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_playlist, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_playlist;
+		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_timesplayed, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_timesplayed;
+		obj->callbacks.free = &free_xmms2;
 	END OBJ_IF(if_xmms2_connected, &update_xmms2)
 		obj->callbacks.iftest = &if_xmms2_connected;
+		obj->callbacks.free = &free_xmms2;
 #endif
 #ifdef AUDACIOUS
 	END OBJ(audacious_status, &update_audacious)
@@ -1796,76 +1816,6 @@ void free_text_objects(struct text_object *root, int internal)
 		}
 
 		switch (obj->type) {
-#ifdef XMMS2
-			case OBJ_xmms2_artist:
-				if (info.xmms2.artist) {
-					free(info.xmms2.artist);
-					info.xmms2.artist = 0;
-				}
-				break;
-			case OBJ_xmms2_album:
-				if (info.xmms2.album) {
-					free(info.xmms2.album);
-					info.xmms2.album = 0;
-				}
-				break;
-			case OBJ_xmms2_title:
-				if (info.xmms2.title) {
-					free(info.xmms2.title);
-					info.xmms2.title = 0;
-				}
-				break;
-			case OBJ_xmms2_genre:
-				if (info.xmms2.genre) {
-					free(info.xmms2.genre);
-					info.xmms2.genre = 0;
-				}
-				break;
-			case OBJ_xmms2_comment:
-				if (info.xmms2.comment) {
-					free(info.xmms2.comment);
-					info.xmms2.comment = 0;
-				}
-				break;
-			case OBJ_xmms2_url:
-				if (info.xmms2.url) {
-					free(info.xmms2.url);
-					info.xmms2.url = 0;
-				}
-				break;
-			case OBJ_xmms2_date:
-				if (info.xmms2.date) {
-					free(info.xmms2.date);
-					info.xmms2.date = 0;
-				}
-				break;
-			case OBJ_xmms2_status:
-				if (info.xmms2.status) {
-					free(info.xmms2.status);
-					info.xmms2.status = 0;
-				}
-				break;
-			case OBJ_xmms2_playlist:
-				if (info.xmms2.playlist) {
-					free(info.xmms2.playlist);
-					info.xmms2.playlist = 0;
-				}
-				break;
-			case OBJ_xmms2_smart:
-				if (info.xmms2.artist) {
-					free(info.xmms2.artist);
-					info.xmms2.artist = 0;
-				}
-				if (info.xmms2.title) {
-					free(info.xmms2.title);
-					info.xmms2.title = 0;
-				}
-				if (info.xmms2.url) {
-					free(info.xmms2.url);
-					info.xmms2.url = 0;
-				}
-				break;
-#endif
 #ifdef __linux__
 			case OBJ_top:
 			case OBJ_top_mem:
