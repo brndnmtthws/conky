@@ -79,37 +79,38 @@ void free_iconv(struct text_object *obj)
 
 void iconv_convert(size_t *a, char *buff_in, char *p, size_t p_max_size)
 {
-	if (*a > 0 && iconv_converting && iconv_selected > 0
-			&& (iconv_cd[iconv_selected - 1] != (iconv_t) (-1))) {
-		int bytes;
-		size_t dummy1, dummy2;
+	int bytes;
+	size_t dummy1, dummy2;
 #ifdef __FreeBSD__
-		const char *ptr = buff_in;
+	const char *ptr = buff_in;
 #else
-		char *ptr = buff_in;
+	char *ptr = buff_in;
 #endif
-		char *outptr = p;
+	char *outptr = p;
 
-		dummy1 = dummy2 = *a;
+	if (*a <= 0 || !iconv_converting || iconv_selected <= 0
+			|| iconv_cd[iconv_selected - 1] == (iconv_t) (-1))
+		return;
 
-		strncpy(buff_in, p, p_max_size);
+	dummy1 = dummy2 = *a;
 
-		iconv(*iconv_cd[iconv_selected - 1], NULL, NULL, NULL, NULL);
-		while (dummy1 > 0) {
-			bytes = iconv(*iconv_cd[iconv_selected - 1], &ptr, &dummy1,
-					&outptr, &dummy2);
-			if (bytes == -1) {
-				NORM_ERR("Iconv codeset conversion failed");
-				break;
-			}
+	strncpy(buff_in, p, p_max_size);
+
+	iconv(*iconv_cd[iconv_selected - 1], NULL, NULL, NULL, NULL);
+	while (dummy1 > 0) {
+		bytes = iconv(*iconv_cd[iconv_selected - 1], &ptr, &dummy1,
+				&outptr, &dummy2);
+		if (bytes == -1) {
+			NORM_ERR("Iconv codeset conversion failed");
+			break;
 		}
-
-		/* It is nessecary when we are converting from multibyte to
-		 * singlebyte codepage */
-		//a = outptr - p;
-		//(*a) = *a - dummy2;
-		(*a) = outptr - p;
 	}
+
+	/* It is nessecary when we are converting from multibyte to
+	 * singlebyte codepage */
+	//a = outptr - p;
+	//(*a) = *a - dummy2;
+	(*a) = outptr - p;
 }
 
 void init_iconv_start(struct text_object *obj, void *free_at_crash, const char *arg)
