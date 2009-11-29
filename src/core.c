@@ -522,6 +522,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef X11
 	END OBJ(font, 0)
 		scan_font(obj, arg);
+		obj->callbacks.print = &new_font;
 		obj->callbacks.free = &gen_free_opaque;
 #endif /* X11 */
 	END OBJ(conky_version, 0)

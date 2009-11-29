@@ -789,11 +789,6 @@ void generate_text_internal(char *p, int p_max_size,
 		switch (obj->type) {
 			default:
 				NORM_ERR("not implemented obj type %d", obj->type);
-#ifdef X11
-			OBJ(font) {
-				new_font(obj, p, p_max_size);
-			}
-#endif /* X11 */
 			OBJ(text) {
 				snprintf(p, p_max_size, "%s", obj->data.s);
 			}
