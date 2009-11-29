@@ -1062,6 +1062,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->data.i = arg ? atoi(arg) : 0;
 		if(obj->data.i == 0) CRIT_ERR(obj, free_at_crash, "if_updatenr needs a number above 0 as argument");
 		set_updatereset(obj->data.i > get_updatereset() ? obj->data.i : get_updatereset());
+		obj->callbacks.iftest = &updatenr_iftest;
 	END OBJ(alignr, 0)
 		obj->data.l = arg ? atoi(arg) : 1;
 		obj->callbacks.print = &new_alignr;

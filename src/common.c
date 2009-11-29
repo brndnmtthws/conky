@@ -798,3 +798,10 @@ void print_updates(struct text_object *obj, char *p, int p_max_size)
 	(void)obj;
 	snprintf(p, p_max_size, "%d", get_total_updates());
 }
+
+int updatenr_iftest(struct text_object *obj)
+{
+	if (get_total_updates() % get_updatereset() != obj->data.i - 1)
+		return 0;
+	return 1;
+}

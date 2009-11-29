@@ -797,11 +797,6 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(text) {
 				snprintf(p, p_max_size, "%s", obj->data.s);
 			}
-			OBJ(if_updatenr) {
-				if(total_updates % updatereset != obj->data.i - 1) {
-					DO_JUMP;
-				}
-			}
 
 			break;
 		}
