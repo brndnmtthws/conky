@@ -760,3 +760,24 @@ void print_to_bytes(struct text_object *obj, char *p, int p_max_size)
 	}
 	snprintf(p, p_max_size, "%s", buf);
 }
+
+void print_blink(struct text_object *obj, char *p, int p_max_size)
+{
+	//blinking like this can look a bit ugly if the chars in the font don't have the same width
+	char buf[max_user_text];
+	static int visible = 1;
+	static int last_len = 0;
+
+	memset(buf, 0, max_user_text);
+
+	if (visible) {
+		generate_text_internal(buf, max_user_text, *obj->sub, &info);
+		last_len = strlen(buf);
+	} else {
+		for (int i = 0; i < last_len; i++)
+			buf[i] = ' ';
+	}
+
+	snprintf(p, p_max_size, "%s", buf);
+	visible = !visible;
+}

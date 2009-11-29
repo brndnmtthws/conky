@@ -126,5 +126,6 @@ void print_battery_short(struct text_object *, char *, int);
 #endif /* !__OpenBSD__ */
 
 void print_to_bytes(struct text_object *, char *, int);
+void print_blink(struct text_object *, char *, int);
 
 #endif /* _COMMON_H */

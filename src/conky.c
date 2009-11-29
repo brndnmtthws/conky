@@ -1153,19 +1153,6 @@ void generate_text_internal(char *p, int p_max_size,
 					p[0] = 0;
 				}
 			}
-			OBJ(blink) {
-				//blinking like this can look a bit ugly if the chars in the font don't have the same width
-				char buf[max_user_text];
-				unsigned int j;
-
-				generate_text_internal(buf, max_user_text, *obj->sub, cur);
-				snprintf(p, p_max_size, "%s", buf);
-				if(total_updates % 2) {
-					for(j=0; p[j] != 0; j++) {
-						p[j] = ' ';
-					}
-				}
-			}
 			break;
 		}
 #undef DO_JUMP
