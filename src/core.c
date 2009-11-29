@@ -1775,64 +1775,6 @@ void free_text_objects(struct text_object *root, int internal)
 		}
 
 		switch (obj->type) {
-			case OBJ_format_time:
-			case OBJ_pid_environ:
-			case OBJ_pid_chroot:
-			case OBJ_pid_cmdline:
-			case OBJ_pid_cwd:
-			case OBJ_pid_environ_list:
-			case OBJ_pid_exe:
-			case OBJ_pid_nice:
-			case OBJ_pid_openfiles:
-			case OBJ_pid_parent:
-			case OBJ_pid_priority:
-			case OBJ_pid_state:
-			case OBJ_pid_state_short:
-			case OBJ_pid_stderr:
-			case OBJ_pid_stdin:
-			case OBJ_pid_stdout:
-			case OBJ_pid_threads:
-			case OBJ_pid_thread_list:
-			case OBJ_pid_time_kernelmode:
-			case OBJ_pid_time_usermode:
-			case OBJ_pid_time:
-			case OBJ_pid_uid:
-			case OBJ_pid_euid:
-			case OBJ_pid_suid:
-			case OBJ_pid_fsuid:
-			case OBJ_pid_gid:
-			case OBJ_pid_egid:
-			case OBJ_pid_sgid:
-			case OBJ_pid_fsgid:
-			case OBJ_pid_read:
-			case OBJ_pid_vmpeak:
-			case OBJ_pid_vmsize:
-			case OBJ_pid_vmlck:
-			case OBJ_pid_vmhwm:
-			case OBJ_pid_vmrss:
-			case OBJ_pid_vmdata:
-			case OBJ_pid_vmstk:
-			case OBJ_pid_vmexe:
-			case OBJ_pid_vmlib:
-			case OBJ_pid_vmpte:
-			case OBJ_pid_write:
-			case OBJ_gid_name:
-				if(obj->sub) {
-					free_text_objects(obj->sub, 1);
-					free(obj->sub);
-				}
-				break;
-			case OBJ_uid_name:
-				if(obj->sub) {
-					free_text_objects(obj->sub, 1);
-					free(obj->sub);
-				}
-				break;
-			case OBJ_if_empty:
-			case OBJ_if_match:
-				free_text_objects(obj->sub, 1);
-				free(obj->sub);
-				break;
 #ifdef __linux__
 			case OBJ_if_gw:
 			case OBJ_gw_iface:
@@ -1944,14 +1886,6 @@ void free_text_objects(struct text_object *root, int internal)
 				free_mpd();
 				break;
 #endif /* MPD */
-			case OBJ_include:
-			case OBJ_blink:
-			case OBJ_to_bytes:
-				if(obj->sub) {
-					free_text_objects(obj->sub, 1);
-					free(obj->sub);
-				}
-				break;
 #ifdef X11
 			case OBJ_desktop:
 			case OBJ_desktop_number:
@@ -1968,6 +1902,10 @@ void free_text_objects(struct text_object *root, int internal)
 #endif /* X11 */
 		}
 obj_free_loop_tail:
+		if(obj->sub) {
+			free_text_objects(obj->sub, 1);
+			free(obj->sub);
+		}
 		if(obj->special_data)
 			free(obj->special_data);
 		free(obj);
