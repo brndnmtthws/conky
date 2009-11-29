@@ -1461,6 +1461,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ_ARG(to_bytes, 0, "to_bytes needs a argument")
 		obj->sub = malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
+		obj->callbacks.print = &print_to_bytes;
 	END OBJ(scroll, 0)
 #ifdef X11
 		/* allocate a follower to reset any color changes */

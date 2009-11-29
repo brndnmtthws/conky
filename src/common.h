@@ -125,4 +125,6 @@ uint8_t battery_percentage(struct text_object *);
 void print_battery_short(struct text_object *, char *, int);
 #endif /* !__OpenBSD__ */
 
+void print_to_bytes(struct text_object *, char *, int);
+
 #endif /* _COMMON_H */

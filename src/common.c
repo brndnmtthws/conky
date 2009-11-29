@@ -743,3 +743,20 @@ void print_battery_short(struct text_object *obj, char *p, int p_max_size)
 	get_battery_short_status(p, p_max_size, obj->data.s);
 }
 #endif /* !__OpenBSD__ */
+
+void print_to_bytes(struct text_object *obj, char *p, int p_max_size)
+{
+	char buf[max_user_text];
+	long long bytes;
+	char unit[16];	// 16 because we can also have long names (like mega-bytes)
+
+	generate_text_internal(buf, max_user_text, *obj->sub, &info);
+	if(sscanf(buf, "%lli%s", &bytes, unit) == 2 && strlen(unit) < 16){
+		if(strncasecmp("b", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes);
+		else if(strncasecmp("k", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes * 1024);
+		else if(strncasecmp("m", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes * 1024 * 1024);
+		else if(strncasecmp("g", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes * 1024 * 1024 * 1024);
+		else if(strncasecmp("t", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes * 1024 * 1024 * 1024 * 1024);
+	}
+	snprintf(p, p_max_size, "%s", buf);
+}
