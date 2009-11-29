@@ -710,9 +710,6 @@ void generate_text_internal(char *p, int p_max_size,
 		struct text_object root, struct information *cur)
 {
 	struct text_object *obj;
-#ifdef X11
-	int need_to_load_fonts = 0;
-#endif /* X11 */
 
 	/* for the OBJ_top* handler */
 	struct process **needed = 0;
@@ -795,7 +792,6 @@ void generate_text_internal(char *p, int p_max_size,
 #ifdef X11
 			OBJ(font) {
 				new_font(p, obj->data.s);
-				need_to_load_fonts = 1;
 			}
 #endif /* X11 */
 			OBJ(text) {
@@ -836,9 +832,7 @@ obj_loop_tail:
 	}
 #ifdef X11
 	/* load any new fonts we may have had */
-	if (need_to_load_fonts) {
-		load_fonts();
-	}
+	load_fonts();
 #endif /* X11 */
 }
 

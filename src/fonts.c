@@ -128,10 +128,6 @@ void free_fonts(void)
 	if ((output_methods & TO_X) == 0) {
 		return;
 	}
-	if(fontloaded == 0) {
-		free(fonts);
-		return;
-	}
 	for (i = 0; i <= font_count; i++) {
 #ifdef XFT
 		if (use_xft) {
@@ -144,8 +140,10 @@ void free_fonts(void)
 			fonts[i].font = 0;
 		}
 	}
-	free(fonts);
-	fonts = 0;
+	if (fonts) {
+		free(fonts);
+		fonts = 0;
+	}
 	font_count = -1;
 	selected_font = 0;
 #ifdef XFT
@@ -198,5 +196,4 @@ void load_fonts(void)
 			}
 		}
 	}
-	fontloaded = 1;
 }
