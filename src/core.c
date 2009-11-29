@@ -33,6 +33,7 @@
 #include "text_object.h"
 #include "algebra.h"
 #include "build.h"
+#include "bsdapm.h"
 #include "colours.h"
 #include "combine.h"
 #include "diskio.h"
@@ -1100,8 +1101,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) \
 		|| defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
 	END OBJ(apm_adapter, 0)
+		obj->callbacks.print = &print_apm_adapter;
 	END OBJ(apm_battery_life, 0)
+		obj->callbacks.print = &print_apm_battery_life;
 	END OBJ(apm_battery_time, 0)
+		obj->callbacks.print = &print_apm_battery_time;
 #endif /* __FreeBSD__ */
 	END OBJ(imap_unseen, 0)
 		parse_imap_mail_args(obj, arg);

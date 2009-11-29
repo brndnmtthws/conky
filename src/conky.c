@@ -118,15 +118,6 @@
 #include <bsd/bsd.h>
 #endif
 
-/* FIXME: apm_getinfo is unused here. maybe it's meant for common.c */
-#if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) \
-		|| defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
-int apm_getinfo(int fd, apm_info_t aip);
-char *get_apm_adapter(void);
-char *get_apm_battery_life(void);
-char *get_apm_battery_time(void);
-#endif
-
 #ifdef CONFIG_OUTPUT
 #include "defconfig.h"
 #include "conf_cookie.h"
@@ -1109,30 +1100,6 @@ void generate_text_internal(char *p, int p_max_size,
 					DO_JUMP;
 				}
 			}
-#if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) \
-		|| defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
-			OBJ(apm_adapter) {
-				char *msg;
-
-				msg = get_apm_adapter();
-				snprintf(p, p_max_size, "%s", msg);
-				free(msg);
-			}
-			OBJ(apm_battery_life) {
-				char *msg;
-
-				msg = get_apm_battery_life();
-				snprintf(p, p_max_size, "%s", msg);
-				free(msg);
-			}
-			OBJ(apm_battery_time) {
-				char *msg;
-
-				msg = get_apm_battery_time();
-				snprintf(p, p_max_size, "%s", msg);
-				free(msg);
-			}
-#endif /* __FreeBSD__ __OpenBSD__ */
 
 #ifdef HAVE_ICONV
 			OBJ(iconv_start) {

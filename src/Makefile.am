@@ -67,9 +67,9 @@ moc = moc.c moc.h
 xmms2 = xmms2.c xmms2.h
 linux = linux.c linux.h top.c top.h users.c users.h sony.c sony.h i8k.c i8k.h
 solaris = solaris.c
-freebsd = freebsd.c freebsd.h
+freebsd = freebsd.c freebsd.h bsdapm.c bsdapm.h
 netbsd = netbsd.c netbsd.h
-openbsd = openbsd.c openbsd.h
+openbsd = openbsd.c openbsd.h bsdapm.c bsdapm.h
 port_monitors = libtcp-portmon.c libtcp-portmon.h \
                 tcp-portmon.c tcp-portmon.h
 x11 = x11.c x11.h fonts.c fonts.h
