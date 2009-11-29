@@ -1039,10 +1039,7 @@ void free_top(struct text_object *obj, int internal)
 {
 	struct top_data *td = obj->data.opaque;
 
-	if (info.first_process && !internal) {
-		free_all_processes();
-		info.first_process = NULL;
-	}
+	(void)internal;
 
 	if (!td)
 		return;

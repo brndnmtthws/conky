@@ -2389,6 +2389,11 @@ void clean_up(void *memtofree1, void* memtofree2)
 
 	free_templates();
 
+	if (info.first_process) {
+		free_all_processes();
+		info.first_process = NULL;
+	}
+
 	free_text_objects(&global_root_object, 0);
 	if (tmpstring1) {
 		free(tmpstring1);
