@@ -310,8 +310,10 @@ void update_gateway_info(void)
 	return;
 }
 
-void free_gateway_info(void)
+void free_gateway_info(struct text_object *obj)
 {
+	(void)obj;
+
 	if (gw_info.iface)
 		free(gw_info.iface);
 	if (gw_info.ip)
