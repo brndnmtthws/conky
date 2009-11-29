@@ -1143,16 +1143,6 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* HAVE_ICONV */
 
-			OBJ(include) {
-				if(obj->sub) {
-					char buf[max_user_text];
-
-					generate_text_internal(buf, max_user_text, *obj->sub, cur);
-					snprintf(p, p_max_size, "%s", buf);
-				} else {
-					p[0] = 0;
-				}
-			}
 			break;
 		}
 #undef DO_JUMP

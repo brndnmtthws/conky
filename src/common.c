@@ -781,3 +781,14 @@ void print_blink(struct text_object *obj, char *p, int p_max_size)
 	snprintf(p, p_max_size, "%s", buf);
 	visible = !visible;
 }
+
+void print_include(struct text_object *obj, char *p, int p_max_size)
+{
+	char buf[max_user_text];
+
+	if (!obj->sub)
+		return;
+
+	generate_text_internal(buf, max_user_text, *obj->sub, &info);
+	snprintf(p, p_max_size, "%s", buf);
+}

@@ -127,5 +127,6 @@ void print_battery_short(struct text_object *, char *, int);
 
 void print_to_bytes(struct text_object *, char *, int);
 void print_blink(struct text_object *, char *, int);
+void print_include(struct text_object *, char *, int);
 
 #endif /* _COMMON_H */

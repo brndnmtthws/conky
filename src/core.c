@@ -1449,6 +1449,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 				currentconffile = leaf;
 				extract_variable_text_internal(obj->sub, get_global_text());
 				currentconffile = leaf->back;
+				obj->callbacks.print = &print_include;
 			} else {
 				NORM_ERR("Can't load configfile '%s'.", arg);
 			}
