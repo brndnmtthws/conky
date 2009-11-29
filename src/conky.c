@@ -425,6 +425,11 @@ int get_updatereset(void)
 	return updatereset;
 }
 
+int get_total_updates(void)
+{
+	return total_updates;
+}
+
 #define SECRIT_MULTILINE_CHAR '\x02'
 
 static inline int calc_text_width(const char *s)
@@ -791,9 +796,6 @@ void generate_text_internal(char *p, int p_max_size,
 				NORM_ERR("not implemented obj type %d", obj->type);
 			OBJ(text) {
 				snprintf(p, p_max_size, "%s", obj->data.s);
-			}
-			OBJ(updates) {
-				snprintf(p, p_max_size, "%d", total_updates);
 			}
 			OBJ(if_updatenr) {
 				if(total_updates % updatereset != obj->data.i - 1) {

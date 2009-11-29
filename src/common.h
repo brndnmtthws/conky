@@ -15,7 +15,6 @@ void add_update_callback(void (*func)(void));
 void free_update_callbacks(void);
 void start_update_threading(void);
 
-
 void strfold(char *start, int count);
 int check_mount(struct text_object *);
 void prepare_update(void);
@@ -128,5 +127,7 @@ void print_battery_short(struct text_object *, char *, int);
 void print_to_bytes(struct text_object *, char *, int);
 void print_blink(struct text_object *, char *, int);
 void print_include(struct text_object *, char *, int);
+
+void print_updates(struct text_object *, char *, int);
 
 #endif /* _COMMON_H */

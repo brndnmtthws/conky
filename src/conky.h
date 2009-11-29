@@ -172,6 +172,7 @@ long get_current_text_color(void);
 
 void set_updatereset(int);
 int get_updatereset(void);
+int get_total_updates(void);
 
 int percent_print(char *, int, unsigned);
 void human_readable(long long, char *, int);

@@ -792,3 +792,9 @@ void print_include(struct text_object *obj, char *p, int p_max_size)
 	generate_text_internal(buf, max_user_text, *obj->sub, &info);
 	snprintf(p, p_max_size, "%s", buf);
 }
+
+void print_updates(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	snprintf(p, p_max_size, "%d", get_total_updates());
+}
