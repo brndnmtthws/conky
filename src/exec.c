@@ -414,18 +414,18 @@ uint8_t execbarval(struct text_object *obj)
 	return round_to_int(read_exec_barnum(obj->data.s) * 2.55);
 }
 
-void print_execibar(struct text_object *obj, char *p, int p_max_size)
+uint8_t execi_barval(struct text_object *obj)
 {
 	struct execi_data *ed = obj->data.opaque;
 
 	if (!ed)
-		return;
+		return 0;
 
 	if (time_to_update(ed)) {
 		ed->barnum = read_exec_barnum(ed->cmd) * 2.55;
 		ed->last_update = current_update_time;
 	}
-	new_bar(obj, p, p_max_size, round_to_int(ed->barnum * 2.55));
+	return round_to_int(ed->barnum * 2.55);
 }
 
 void free_exec(struct text_object *obj)

@@ -49,7 +49,7 @@ void print_execigraph(struct text_object *, char *, int);
 #endif /* X11 */
 uint8_t execigaugeval(struct text_object *);
 uint8_t execbarval(struct text_object *);
-void print_execibar(struct text_object *, char *, int);
+uint8_t execi_barval(struct text_object *);
 void free_exec(struct text_object *);
 void free_execi(struct text_object *);
 #endif /* _EXEC_H */

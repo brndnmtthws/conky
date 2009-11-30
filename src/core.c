@@ -560,7 +560,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif /* X11 */
 	END OBJ_ARG(execibar, 0, "execibar needs arguments")
 		scan_execi_arg(obj, arg);
-		obj->callbacks.print = &print_execibar;
+		obj->callbacks.barval = &execi_barval;
 		obj->callbacks.free = &free_execi;
 #ifdef X11
 	END OBJ_ARG(execigraph, 0, "execigraph needs arguments")
