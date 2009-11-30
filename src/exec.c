@@ -395,18 +395,18 @@ void print_execigraph(struct text_object *obj, char *p, int p_max_size)
 }
 #endif /* X11 */
 
-void print_execigauge(struct text_object *obj, char *p, int p_max_size)
+uint8_t execigaugeval(struct text_object *obj)
 {
 	struct execi_data *ed = obj->data.opaque;
 
 	if (!ed)
-		return;
+		return 0;
 
 	if (time_to_update(ed)) {
 		ed->barnum = read_exec_barnum(ed->cmd) * 2.55;
 		ed->last_update = current_update_time;
 	}
-	new_gauge(obj, p, p_max_size, round_to_int(ed->barnum));
+	return round_to_int(ed->barnum);
 }
 
 uint8_t execbarval(struct text_object *obj)
