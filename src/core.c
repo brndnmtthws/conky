@@ -970,6 +970,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(swapperc, &update_meminfo)
 	END OBJ(swapbar, &update_meminfo)
 		scan_bar(obj, arg);
+		obj->callbacks.barval = &swap_barval;
+	/* XXX: swapgraph, swapgauge? */
 	END OBJ(sysname, 0)
 	END OBJ(time, 0)
 		scan_time(obj, arg);

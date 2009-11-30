@@ -1357,9 +1357,6 @@ void generate_text_internal(char *p, int p_max_size,
 					percent_print(p, p_max_size, cur->swap * 100 / cur->swapmax);
 				}
 			}
-			OBJ(swapbar) {
-				new_bar(obj, p, p_max_size, cur->swapmax ? (cur->swap * 255) / (cur->swapmax) : 0);
-			}
 			OBJ(sysname) {
 				snprintf(p, p_max_size, "%s", cur->uname_s.sysname);
 			}

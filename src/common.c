@@ -484,3 +484,10 @@ uint8_t mem_barval(struct text_object *obj)
 
 	return round_to_int(info.memmax ? (info.mem * 255 / info.memmax) : 0);
 }
+
+uint8_t swap_barval(struct text_object *obj)
+{
+	(void)obj;
+
+	return round_to_int(info.swapmax ? (info.swap * 255 / info.swapmax) : 0);
+}
