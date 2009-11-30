@@ -364,51 +364,6 @@ void print_texeci(struct text_object *obj, char *p, int p_max_size)
 	}
 }
 
-void print_execgauge(struct text_object *obj, char *p, int p_max_size)
-{
-	new_gauge(obj, p, p_max_size, round_to_int(read_exec_barnum(obj->data.s) * 2.55));
-}
-
-#ifdef X11
-void print_execgraph(struct text_object *obj, char *p, int p_max_size)
-{
-	struct execi_data *ed = obj->data.opaque;
-
-	if (!ed)
-		return;
-
-	new_graph(obj, p, p_max_size, round_to_int(read_exec_barnum(ed->cmd)));
-}
-
-void print_execigraph(struct text_object *obj, char *p, int p_max_size)
-{
-	struct execi_data *ed = obj->data.opaque;
-
-	if (!ed)
-		return;
-
-	if (time_to_update(ed)) {
-		ed->barnum = read_exec_barnum(ed->cmd) * 2.55;
-		ed->last_update = current_update_time;
-	}
-	new_graph(obj, p, p_max_size, (int) (ed->barnum));
-}
-#endif /* X11 */
-
-uint8_t execigaugeval(struct text_object *obj)
-{
-	struct execi_data *ed = obj->data.opaque;
-
-	if (!ed)
-		return 0;
-
-	if (time_to_update(ed)) {
-		ed->barnum = read_exec_barnum(ed->cmd) * 2.55;
-		ed->last_update = current_update_time;
-	}
-	return round_to_int(ed->barnum);
-}
-
 uint8_t execbarval(struct text_object *obj)
 {
 	return round_to_int(read_exec_barnum(obj->data.s) * 2.55);
@@ -425,7 +380,7 @@ uint8_t execi_barval(struct text_object *obj)
 		ed->barnum = read_exec_barnum(ed->cmd) * 2.55;
 		ed->last_update = current_update_time;
 	}
-	return round_to_int(ed->barnum * 2.55);
+	return round_to_int(ed->barnum);
 }
 
 void free_exec(struct text_object *obj)

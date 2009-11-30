@@ -554,29 +554,3 @@ uint8_t lua_barval(struct text_object *obj)
 	}
 	return 0;
 }
-
-#ifdef X11
-void print_lua_graph(struct text_object *obj, char *p, int p_max_size)
-{
-	double per;
-
-	if (!p_max_size)
-		return;
-
-	if (llua_getnumber(obj->data.s, &per)) {
-		new_graph(obj, p, p_max_size, per);
-	}
-}
-#endif /* X11 */
-
-void print_lua_gauge(struct text_object *obj, char *p, int p_max_size)
-{
-	double per;
-
-	if (!p_max_size)
-		return;
-
-	if (llua_getnumber(obj->data.s, &per)) {
-		new_gauge(obj, p, p_max_size, (per/100.0 * 255));
-	}
-}

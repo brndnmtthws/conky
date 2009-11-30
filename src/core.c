@@ -390,6 +390,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(cpugauge, &update_cpu_usage)
 		SCAN_CPU(arg, obj->data.i);
 		scan_gauge(obj, arg);
+		obj->callbacks.gaugeval = &cpu_barval;
 		DBGP2("Adding $cpugauge for CPU %d", obj->data.i);
 	END OBJ(cpubar, &update_cpu_usage)
 		SCAN_CPU(arg, obj->data.i);
@@ -403,6 +404,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		buf = scan_graph(obj, arg, 100);
 		DBGP2("Adding $cpugraph for CPU %d", obj->data.i);
 		if (buf) free(buf);
+		obj->callbacks.graphval = &cpu_barval;
 	END OBJ(loadgraph, &update_load_average)
 		scan_loadgraph_arg(obj, arg);
 		obj->callbacks.print = &print_loadgraph;
@@ -550,12 +552,12 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.free = &free_exec;
 	END OBJ(execgauge, 0)
 		scan_exec_arg(obj, arg);
-		obj->callbacks.print = &print_execgauge;
+		obj->callbacks.gaugeval = &execbarval;
 		obj->callbacks.free = &free_exec;
 #ifdef X11
 	END OBJ(execgraph, 0)
 		scan_execgraph_arg(obj, arg);
-		obj->callbacks.print = &print_execgraph;
+		obj->callbacks.graphval = &execbarval;
 		obj->callbacks.free = &free_exec;
 #endif /* X11 */
 	END OBJ_ARG(execibar, 0, "execibar needs arguments")
@@ -565,12 +567,12 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef X11
 	END OBJ_ARG(execigraph, 0, "execigraph needs arguments")
 		scan_execgraph_arg(obj, arg);
-		obj->callbacks.print = &print_execigraph;
+		obj->callbacks.graphval = &execi_barval;
 		obj->callbacks.free = &free_execi;
 #endif /* X11 */
 	END OBJ_ARG(execigauge, 0, "execigauge needs arguments")
 		scan_execi_arg(obj, arg);
-		obj->callbacks.gaugeval = &execigaugeval;
+		obj->callbacks.gaugeval = &execi_barval;
 		obj->callbacks.free = &free_execi;
 	END OBJ_ARG(execi, 0, "execi needs arguments")
 		scan_execi_arg(obj, arg);
@@ -1341,7 +1343,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		} else {
 			CRIT_ERR(obj, free_at_crash, "lua_graph needs arguments: <function name> [height],[width] [gradient colour 1] [gradient colour 2] [scale] [-t] [-l]");
 		}
-		obj->callbacks.print = &print_lua_graph;
+		obj->callbacks.graphval = &lua_barval;
 		obj->callbacks.free = &gen_free_opaque;
 #endif /* X11 */
 	END OBJ_ARG(lua_gauge, 0, "lua_gauge needs arguments: <height>,<width> <function name> [function parameters]")
@@ -1351,7 +1353,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		} else {
 			CRIT_ERR(obj, free_at_crash, "lua_gauge needs arguments: <height>,<width> <function name> [function parameters]");
 		}
-		obj->callbacks.print = &print_lua_gauge;
+		obj->callbacks.gaugeval = &lua_barval;
 		obj->callbacks.free = &gen_free_opaque;
 #endif /* HAVE_LUA */
 #ifdef HDDTEMP
@@ -1450,11 +1452,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		char* buf = 0;
 		buf = scan_graph(obj, arg, 0);
 		if (buf) free(buf);
-		obj->callbacks.print = &print_apcupsd_loadgraph;
+		obj->callbacks.graphval = &apcupsd_loadbarval;
 #endif /* X11 */
 	END OBJ(apcupsd_loadgauge, &update_apcupsd)
 		scan_gauge(obj, arg);
-		obj->callbacks.print = &print_apcupsd_loadgauge;
+		obj->callbacks.gaugeval = &apcupsd_loadbarval;
 	END OBJ(apcupsd_charge, &update_apcupsd)
 		obj->callbacks.print = &print_apcupsd_charge;
 	END OBJ(apcupsd_timeleft, &update_apcupsd)

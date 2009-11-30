@@ -42,12 +42,6 @@ void print_execp(struct text_object *, char *, int);
 void print_execi(struct text_object *, char *, int);
 void print_execpi(struct text_object *, char *, int);
 void print_texeci(struct text_object *, char *, int);
-void print_execgauge(struct text_object *, char *, int);
-#ifdef X11
-void print_execgraph(struct text_object *, char *, int);
-void print_execigraph(struct text_object *, char *, int);
-#endif /* X11 */
-uint8_t execigaugeval(struct text_object *);
 uint8_t execbarval(struct text_object *);
 uint8_t execi_barval(struct text_object *);
 void free_exec(struct text_object *);

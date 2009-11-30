@@ -237,28 +237,6 @@ void print_apcupsd_nop(struct text_object *obj, char *p, int p_max_size)
 	(void)p_max_size;
 }
 
-void print_apcupsd_loadgraph(struct text_object *obj, char *p, int p_max_size)
-{
-	double progress;
-
-	if (!p_max_size)
-		return;
-
-	progress =  atof(info.apcupsd.items[APCUPSD_LOAD]);
-	new_graph(obj, p, p_max_size, (int)progress);
-}
-
-void print_apcupsd_loadgauge(struct text_object *obj, char *p, int p_max_size)
-{
-	double progress;
-
-	if (!p_max_size)
-		return;
-
-	progress =  atof(info.apcupsd.items[APCUPSD_LOAD]) / 100.0 * 255.0;
-	new_gauge(obj, p, p_max_size, (int)progress);
-}
-
 uint8_t apcupsd_loadbarval(struct text_object *obj)
 {
 	(void)obj;
