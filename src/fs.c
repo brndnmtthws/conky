@@ -197,7 +197,7 @@ void get_fs_type(const char *path, char *result)
 
 void init_fs_bar(struct text_object *obj, const char *arg)
 {
-	arg = scan_bar(obj, arg);
+	arg = scan_bar(obj, arg, 255);
 	if (arg) {
 		while (isspace(*arg)) {
 			arg++;

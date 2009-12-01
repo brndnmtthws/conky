@@ -1289,12 +1289,14 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 				case BAR:
 				{
 					int h, bar_usage, by;
+					float scale;
 					if (cur_x - text_start_x > maximum_width
 							&& maximum_width > 0) {
 						break;
 					}
 					h = specials[special_index].height;
 					bar_usage = specials[special_index].arg;
+					scale = specials[special_index].graph_scale;
 					by = cur_y - (font_ascent() / 2) - 1;
 
 					if (h < font_h) {
@@ -1314,7 +1316,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					XDrawRectangle(display, window.drawable, window.gc, cur_x,
 						by, w, h);
 					XFillRectangle(display, window.drawable, window.gc, cur_x,
-						by, w * bar_usage / 255, h);
+						by, w * bar_usage / scale, h);
 					if (h > cur_y_add
 							&& h > font_h) {
 						cur_y_add = h;
@@ -1329,6 +1331,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 #ifdef MATH
 					float angle, px, py;
 					int usage;
+					float scale;
 #endif /* MATH */
 
 					if (cur_x - text_start_x > maximum_width
@@ -1358,7 +1361,8 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 
 #ifdef MATH
 					usage = specials[special_index].arg;
-					angle = (M_PI)*(float)(usage)/255.;
+					scale = specials[special_index].graph_scale;
+					angle = (M_PI)*(float)(usage)/scale;
 					px = (float)(cur_x+(w/2.))-(float)(w/2.)*cos(angle);
 					py = (float)(by+(h))-(float)(h)*sin(angle);
 

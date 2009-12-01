@@ -83,7 +83,7 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg, void *free_at_
 void parse_net_stat_bar_arg(struct text_object *obj, const char *arg, void *free_at_crash)
 {
 	if (arg) {
-		arg = scan_bar(obj, arg);
+		arg = scan_bar(obj, arg, 0);
 		obj->data.opaque = get_net_stat(arg, obj, free_at_crash);
 	} else {
 		// default to DEFAULTNETDEV

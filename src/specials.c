@@ -51,24 +51,31 @@ int default_graph_width = 0, default_graph_height = 25;
 #endif /* X11 */
 int default_gauge_width = 40, default_gauge_height = 25;
 
+/* special data types flags */
+#define SF_SCALED	(1 << 0)
+#define SF_SHOWLOG	(1 << 1)
+
 /*
  * Special data typedefs
  */
 
 struct bar {
+	char flags;
 	int width, height;
 	unsigned int scale;
 };
 
 struct gauge {
+	char flags;
 	int width, height;
 	unsigned int scale;
 };
 
 struct graph {
+	char flags;
 	int width, height;
 	unsigned int first_colour, last_colour;
-	unsigned int scale, showaslog;
+	unsigned int scale;
 	char tempgrad;
 };
 
@@ -84,7 +91,7 @@ struct tab {
  * Scanning arguments to various special text objects
  */
 
-const char *scan_gauge(struct text_object *obj, const char *args)
+const char *scan_gauge(struct text_object *obj, const char *args, unsigned int scale)
 {
 	struct gauge *g;
 
@@ -94,6 +101,11 @@ const char *scan_gauge(struct text_object *obj, const char *args)
 	/*width and height*/
 	g->width = default_gauge_width;
 	g->height = default_gauge_height;
+
+	if (scale)
+		g->scale = scale;
+	else
+		g->flags |= SF_SCALED;
 
 	/* gauge's argument is either height or height,width */
 	if (args) {
@@ -111,7 +123,7 @@ const char *scan_gauge(struct text_object *obj, const char *args)
 	return args;
 }
 
-const char *scan_bar(struct text_object *obj, const char *args)
+const char *scan_bar(struct text_object *obj, const char *args, unsigned int scale)
 {
 	struct bar *b;
 
@@ -121,6 +133,12 @@ const char *scan_bar(struct text_object *obj, const char *args)
 	/* zero width means all space that is available */
 	b->width = default_bar_width;
 	b->height = default_bar_height;
+
+	if (scale)
+		b->scale = scale;
+	else
+		b->flags |= SF_SCALED;
+
 	/* bar's argument is either height or height,width */
 	if (args) {
 		int n = 0;
@@ -159,13 +177,12 @@ char *scan_graph(struct text_object *obj, const char *args, int defscale)
 	g->last_colour = 0;
 	g->scale = defscale;
 	g->tempgrad = FALSE;
-	g->showaslog = FALSE;
 	if (args) {
 		if (strstr(args, " "TEMPGRAD) || strncmp(args, TEMPGRAD, strlen(TEMPGRAD)) == 0) {
 			g->tempgrad = TRUE;
 		}
 		if (strstr(args, " "LOGGRAPH) || strncmp(args, LOGGRAPH, strlen(LOGGRAPH)) == 0) {
-			g->showaslog = TRUE;
+			g->flags |= SF_SHOWLOG;
 		}
 		if (sscanf(args, "%d,%d %x %x %u", &g->height, &g->width, &g->first_colour, &g->last_colour, &g->scale) == 5) {
 			return NULL;
@@ -245,9 +262,9 @@ static struct special_t *new_special(char *buf, enum special_types t)
 void new_gauge_in_shell(struct text_object *obj, char *p, int p_max_size, int usage)
 {
 	static const char *gaugevals[] = { "_. ", "\\. ", " | ", " ./", " ._" };
-	(void)obj;
+	struct gauge *g = obj->special_data;
 
-	snprintf(p, p_max_size, "%s", gaugevals[round_to_int((double)usage * 4 / 255)]);
+	snprintf(p, p_max_size, "%s", gaugevals[round_to_int((double)usage * 4 / g->scale)]);
 }
 
 #ifdef X11
@@ -267,15 +284,21 @@ void new_gauge_in_x11(struct text_object *obj, char *buf, int usage)
 	s->arg = usage;
 	s->width = g->width;
 	s->height = g->height;
+	s->graph_scale = g->scale;
 }
 #endif /* X11 */
 
 void new_gauge(struct text_object *obj, char *p, int p_max_size, int usage)
 {
-	if (!p_max_size)
+	struct gauge *g = obj->special_data;
+
+	if (!p_max_size || !g)
 		return;
 
-	usage = (usage > 255) ? 255 : ((usage < 0) ? 0 : usage);
+	if (g->flags & SF_SCALED)
+		g->scale = MAX(g->scale, (unsigned int)usage);
+	else
+		usage = MIN(g->scale, (unsigned int)usage);
 
 #ifdef X11
 	if (output_methods & TO_X)
@@ -381,11 +404,11 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size, double val)
 		s->graph_width = s->width - 2;	// subtract 2 for rectangle around
 	} */
 #ifdef MATH
-	if (g->showaslog) {
+	if (g->flags & SF_SHOWLOG) {
 		s->graph_scale = log10(s->graph_scale + 1);
 	}
 #endif
-	graph_append(s, val, g->showaslog);
+	graph_append(s, val, g->flags & SF_SHOWLOG);
 }
 
 void new_hr(struct text_object *obj, char *p, int p_max_size)
@@ -481,7 +504,7 @@ static void new_bar_in_shell(struct text_object *obj, char* buffer, int buf_max_
 	if (width > buf_max_size)
 		width = buf_max_size;
 
-	scaledusage = round_to_int( usage * width / 255);
+	scaledusage = round_to_int( usage * width / b->scale);
 
 	for (i = 0; i < scaledusage; i++)
 		buffer[i] = '#';
@@ -509,16 +532,22 @@ static void new_bar_in_x11(struct text_object *obj, char *buf, int usage)
 	s->arg = usage;
 	s->width = b->width;
 	s->height = b->height;
+	s->graph_scale = b->scale;
 }
 #endif /* X11 */
 
 /* usage is in range [0,255] */
 void new_bar(struct text_object *obj, char *p, int p_max_size, int usage)
 {
-	if (!p_max_size)
+	struct bar *b = obj->special_data;
+
+	if (!p_max_size || !b)
 		return;
 
-	usage = (usage > 255) ? 255 : ((usage < 0) ? 0 : usage);
+	if (b->flags & SF_SCALED)
+		b->scale = MAX(b->scale, (unsigned int)usage);
+	else
+		usage = MIN(b->scale, (unsigned int)usage);
 
 #ifdef X11
 	if ((output_methods & TO_X))

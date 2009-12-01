@@ -94,8 +94,8 @@ struct text_object;
 extern int max_specials;
 
 /* scanning special arguments */
-const char *scan_bar(struct text_object *, const char *);
-const char *scan_gauge(struct text_object *, const char *);
+const char *scan_bar(struct text_object *, const char *, unsigned int);
+const char *scan_gauge(struct text_object *, const char *, unsigned int);
 #ifdef X11
 void scan_font(struct text_object *, const char *);
 char *scan_graph(struct text_object *, const char *, int);

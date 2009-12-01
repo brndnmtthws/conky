@@ -297,7 +297,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(battery_bar, 0)
 		char bat[64];
 		if (arg) {
-			arg = scan_bar(obj, arg);
+			arg = scan_bar(obj, arg, 255);
 			sscanf(arg, "%63s", bat);
 		} else {
 			strcpy(bat, "BAT0");
@@ -407,12 +407,12 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		DBGP2("Adding $cpu for CPU %d", obj->data.i);
 	END OBJ(cpugauge, &update_cpu_usage)
 		SCAN_CPU(arg, obj->data.i);
-		scan_gauge(obj, arg);
+		scan_gauge(obj, arg, 255);
 		obj->callbacks.gaugeval = &cpu_barval;
 		DBGP2("Adding $cpugauge for CPU %d", obj->data.i);
 	END OBJ(cpubar, &update_cpu_usage)
 		SCAN_CPU(arg, obj->data.i);
-		scan_bar(obj, arg);
+		scan_bar(obj, arg, 255);
 		obj->callbacks.barval = &cpu_barval;
 		DBGP2("Adding $cpubar for CPU %d", obj->data.i);
 #ifdef X11
@@ -812,10 +812,10 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(memperc, &update_meminfo)
 		obj->callbacks.percentage = &mem_percentage;
 	END OBJ(memgauge, &update_meminfo)
-		scan_gauge(obj, arg);
+		scan_gauge(obj, arg, 255);
 		obj->callbacks.gaugeval = &mem_barval;
 	END OBJ(membar, &update_meminfo)
-		scan_bar(obj, arg);
+		scan_bar(obj, arg, 255);
 		obj->callbacks.barval = &mem_barval;
 #ifdef X11
 	END OBJ(memgraph, &update_meminfo)
@@ -1032,7 +1032,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(swapperc, &update_meminfo)
 		obj->callbacks.percentage = &swap_percentage;
 	END OBJ(swapbar, &update_meminfo)
-		scan_bar(obj, arg);
+		scan_bar(obj, arg, 255);
 		obj->callbacks.barval = &swap_barval;
 	/* XXX: swapgraph, swapgauge? */
 	END OBJ(sysname, 0)
@@ -1167,7 +1167,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			NORM_ERR("first argument to smapi_bat_bar must be an integer value");
 			obj->data.i = -1;
 		} else
-			arg = scan_bar(obj, arg + cnt);
+			arg = scan_bar(obj, arg + cnt, 255);
 		obj->callbacks.barval = &smapi_bat_barval;
 #endif /* IBM */
 #ifdef MPD
@@ -1243,7 +1243,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_mpd_status;
 		obj->callbacks.free = &free_mpd;
 	END OBJ(mpd_bar, &update_mpd)
-		scan_bar(obj, arg);
+		scan_bar(obj, arg, 255);
 		init_mpd();
 		obj->callbacks.barval = &mpd_barval;
 		obj->callbacks.free = &free_mpd;
@@ -1340,7 +1340,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_xmms2_percent;
 		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_bar, &update_xmms2)
-		scan_bar(obj, arg);
+		scan_bar(obj, arg, 255);
 		obj->callbacks.barval = &xmms2_barval;
 		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_smart, &update_xmms2)
@@ -1390,7 +1390,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(audacious_main_volume, &update_audacious)
 		obj->callbacks.print = &print_audacious_main_volume;
 	END OBJ(audacious_bar, &update_audacious)
-		scan_bar(obj, arg);
+		scan_bar(obj, arg, 255);
 		obj->callbacks.barval = &audacious_barval;
 #endif /* AUDACIOUS */
 #ifdef BMPX
@@ -1449,7 +1449,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_lua_parse;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(lua_bar, 0, "lua_bar needs arguments: <height>,<width> <function name> [function parameters]")
-		arg = scan_bar(obj, arg);
+		arg = scan_bar(obj, arg, 255);
 		if(arg) {
 			obj->data.s = strndup(arg, text_buffer_size);
 		} else {
@@ -1460,7 +1460,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef X11
 	END OBJ_ARG(lua_graph, 0, "lua_graph needs arguments: <function name> [height],[width] [gradient colour 1] [gradient colour 2] [scale] [-t] [-l]")
 		char *buf = 0;
-		buf = scan_graph(obj, arg, 0);
+		buf = scan_graph(obj, arg, 255);
 		if (buf) {
 			obj->data.s = buf;
 		} else {
@@ -1470,7 +1470,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.free = &gen_free_opaque;
 #endif /* X11 */
 	END OBJ_ARG(lua_gauge, 0, "lua_gauge needs arguments: <height>,<width> <function name> [function parameters]")
-		arg = scan_gauge(obj, arg);
+		arg = scan_gauge(obj, arg, 255);
 		if (arg) {
 			obj->data.s = strndup(arg, text_buffer_size);
 		} else {
@@ -1499,7 +1499,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(entropy_poolsize, &update_entropy)
 		obj->callbacks.print = &print_entropy_poolsize;
 	END OBJ(entropy_bar, &update_entropy)
-		scan_bar(obj, arg);
+		scan_bar(obj, arg, 255);
 		obj->callbacks.barval = &entropy_barval;
 	END OBJ_ARG(include, 0, "include needs a argument")
 		struct conftree *leaf = conftree_add(currentconffile, arg);
@@ -1571,17 +1571,17 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(apcupsd_load, &update_apcupsd)
 		obj->callbacks.print = &print_apcupsd_load;
 	END OBJ(apcupsd_loadbar, &update_apcupsd)
-		scan_bar(obj, arg);
+		scan_bar(obj, arg, 255);
 		obj->callbacks.barval = &apcupsd_loadbarval;
 #ifdef X11
 	END OBJ(apcupsd_loadgraph, &update_apcupsd)
 		char* buf = 0;
-		buf = scan_graph(obj, arg, 0);
+		buf = scan_graph(obj, arg, 255);
 		if (buf) free(buf);
 		obj->callbacks.graphval = &apcupsd_loadbarval;
 #endif /* X11 */
 	END OBJ(apcupsd_loadgauge, &update_apcupsd)
-		scan_gauge(obj, arg);
+		scan_gauge(obj, arg, 255);
 		obj->callbacks.gaugeval = &apcupsd_loadbarval;
 	END OBJ(apcupsd_charge, &update_apcupsd)
 		obj->callbacks.print = &print_apcupsd_charge;
