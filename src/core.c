@@ -419,7 +419,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(cpugraph, &update_cpu_usage)
 		char *buf = 0;
 		SCAN_CPU(arg, obj->data.i);
-		buf = scan_graph(obj, arg, 100);
+		buf = scan_graph(obj, arg, 255);
 		DBGP2("Adding $cpugraph for CPU %d", obj->data.i);
 		if (buf) free(buf);
 		obj->callbacks.graphval = &cpu_barval;
@@ -820,7 +820,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef X11
 	END OBJ(memgraph, &update_meminfo)
 		char *buf = 0;
-		buf = scan_graph(obj, arg, 100);
+		buf = scan_graph(obj, arg, 255);
 
 		if (buf) free(buf);
 		obj->callbacks.graphval = &mem_barval;
