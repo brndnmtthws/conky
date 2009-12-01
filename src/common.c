@@ -762,6 +762,7 @@ void print_blink(struct text_object *obj, char *p, int p_max_size)
 	char buf[max_user_text];
 	static int visible = 1;
 	static int last_len = 0;
+	int i;
 
 	memset(buf, 0, max_user_text);
 
@@ -769,7 +770,7 @@ void print_blink(struct text_object *obj, char *p, int p_max_size)
 		generate_text_internal(buf, max_user_text, *obj->sub);
 		last_len = strlen(buf);
 	} else {
-		for (int i = 0; i < last_len; i++)
+		for (i = 0; i < last_len; i++)
 			buf[i] = ' ';
 	}
 
