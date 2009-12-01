@@ -260,7 +260,7 @@ void scan_execgraph_arg(struct text_object *obj, const char *arg)
 	ed = malloc(sizeof(struct execi_data));
 	memset(ed, 0, sizeof(struct execi_data));
 
-	buf = scan_graph(obj, arg, 100);
+	buf = scan_graph(obj, arg, 255);
 	if (!buf) {
 		NORM_ERR("missing command argument to execgraph object");
 		return;
