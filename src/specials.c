@@ -57,10 +57,12 @@ int default_gauge_width = 40, default_gauge_height = 25;
 
 struct bar {
 	int width, height;
+	unsigned int scale;
 };
 
 struct gauge {
 	int width, height;
+	unsigned int scale;
 };
 
 struct graph {
