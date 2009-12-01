@@ -284,7 +284,7 @@ void new_gauge_in_x11(struct text_object *obj, char *buf, int usage)
 	s->arg = usage;
 	s->width = g->width;
 	s->height = g->height;
-	s->graph_scale = g->scale;
+	s->scale = g->scale;
 }
 #endif /* X11 */
 
@@ -343,22 +343,22 @@ static void graph_append(struct special_t *graph, double f, char showaslog)
 #endif
 	}
 
-	if (!graph->scaled && f > graph->graph_scale) {
-		f = graph->graph_scale;
+	if (!graph->scaled && f > graph->scale) {
+		f = graph->scale;
 	}
 
 	graph->graph[0] = f;	/* add new data */
 	/* shift all the data by 1 */
 	for (i = graph->graph_width - 1; i > 0; i--) {
 		graph->graph[i] = graph->graph[i - 1];
-		if (graph->scaled && graph->graph[i - 1] > graph->graph_scale) {
+		if (graph->scaled && graph->graph[i - 1] > graph->scale) {
 			/* check if we need to update the scale */
-			graph->graph_scale = graph->graph[i - 1];
+			graph->scale = graph->graph[i - 1];
 		}
 	}
-	if (graph->scaled && graph->graph[graph->graph_width] > graph->graph_scale) {
+	if (graph->scaled && graph->graph[graph->graph_width] > graph->scale) {
 		/* check if we need to update the scale */
-		graph->graph_scale = graph->graph[graph->graph_width];
+		graph->scale = graph->graph[graph->graph_width];
 	}
 }
 
@@ -385,18 +385,18 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size, double val)
 		}
 		s->graph = malloc(s->graph_width * sizeof(double));
 		memset(s->graph, 0, s->graph_width * sizeof(double));
-		s->graph_scale = 100;
+		s->scale = 100;
 	}
 	s->height = g->height;
 	s->first_colour = adjust_colours(g->first_colour);
 	s->last_colour = adjust_colours(g->last_colour);
 	if (g->scale != 0) {
 		s->scaled = 0;
-		s->graph_scale = g->scale;
+		s->scale = g->scale;
 		s->show_scale = 0;
 	} else {
 		s->scaled = 1;
-		s->graph_scale = 1;
+		s->scale = 1;
 		s->show_scale = 1;
 	}
 	s->tempgrad = g->tempgrad;
@@ -405,7 +405,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size, double val)
 	} */
 #ifdef MATH
 	if (g->flags & SF_SHOWLOG) {
-		s->graph_scale = log10(s->graph_scale + 1);
+		s->scale = log10(s->scale + 1);
 	}
 #endif
 	graph_append(s, val, g->flags & SF_SHOWLOG);
@@ -532,7 +532,7 @@ static void new_bar_in_x11(struct text_object *obj, char *buf, int usage)
 	s->arg = usage;
 	s->width = b->width;
 	s->height = b->height;
-	s->graph_scale = b->scale;
+	s->scale = b->scale;
 }
 #endif /* X11 */
 

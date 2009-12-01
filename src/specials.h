@@ -64,10 +64,10 @@ struct special_t {
 	short width;
 	long arg;
 	double *graph;
-	double graph_scale;
+	double scale;			/* maximum value */
 	short show_scale;
 	int graph_width;
-	int scaled;
+	int scaled;			/* auto adjust maximum */
 	unsigned long first_colour;	// for graph gradient
 	unsigned long last_colour;
 	short font_added;

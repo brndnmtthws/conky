@@ -1296,7 +1296,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					}
 					h = specials[special_index].height;
 					bar_usage = specials[special_index].arg;
-					scale = specials[special_index].graph_scale;
+					scale = specials[special_index].scale;
 					by = cur_y - (font_ascent() / 2) - 1;
 
 					if (h < font_h) {
@@ -1361,7 +1361,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 
 #ifdef MATH
 					usage = specials[special_index].arg;
-					scale = specials[special_index].graph_scale;
+					scale = specials[special_index].scale;
 					angle = (M_PI)*(float)(usage)/scale;
 					px = (float)(cur_x+(w/2.))-(float)(w/2.)*cos(angle);
 					py = (float)(by+(h))-(float)(h)*sin(angle);
@@ -1425,25 +1425,25 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 #ifdef DEBUG_lol
 								assert(
 										(int)((float)(w - 2) - specials[special_index].graph[j] *
-											(w - 2) / (float)specials[special_index].graph_scale)
+											(w - 2) / (float)specials[special_index].scale)
 										< w - 1
 									  );
 								assert(
 										(int)((float)(w - 2) - specials[special_index].graph[j] *
-											(w - 2) / (float)specials[special_index].graph_scale)
+											(w - 2) / (float)specials[special_index].scale)
 										> -1
 									  );
-								if (specials[special_index].graph[j] == specials[special_index].graph_scale) {
+								if (specials[special_index].graph[j] == specials[special_index].scale) {
 									assert(
 											(int)((float)(w - 2) - specials[special_index].graph[j] *
-												(w - 2) / (float)specials[special_index].graph_scale)
+												(w - 2) / (float)specials[special_index].scale)
 											== 0
 										  );
 								}
 #endif /* DEBUG_lol */
 								XSetForeground(display, window.gc, tmpcolour[
 										(int)((float)(w - 2) - specials[special_index].graph[j] *
-											(w - 2) / (float)specials[special_index].graph_scale)
+											(w - 2) / (float)specials[special_index].scale)
 										]);
 							} else {
 								XSetForeground(display, window.gc, tmpcolour[colour_idx++]);
@@ -1453,7 +1453,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						XDrawLine(display, window.drawable, window.gc,
 								cur_x + i + 1, by + h, cur_x + i + 1,
 								round_to_int((double)by + h - specials[special_index].graph[j] *
-									(h - 1) / specials[special_index].graph_scale));
+									(h - 1) / specials[special_index].scale));
 						if ((w - i) / ((float) (w - 2) /
 									(specials[special_index].graph_width)) > j
 								&& j < MAX_GRAPH_DEPTH - 3) {
@@ -1526,9 +1526,9 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						cur_x += font_ascent() / 2;
 						cur_y += font_h / 2;
 						tmp_str = (char *)
-							calloc(log10(floor(specials[special_index].graph_scale)) + 4,
+							calloc(log10(floor(specials[special_index].scale)) + 4,
 									sizeof(char));
-						sprintf(tmp_str, "%.1f", specials[special_index].graph_scale);
+						sprintf(tmp_str, "%.1f", specials[special_index].scale);
 						draw_string(tmp_str);
 						free(tmp_str);
 						cur_x = tmp_x;
