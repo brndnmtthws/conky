@@ -754,8 +754,10 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root)
 			new_bar(obj, p, p_max_size, (*obj->callbacks.barval)(obj));
 		} else if (obj->callbacks.gaugeval) {
 			new_gauge(obj, p, p_max_size, (*obj->callbacks.gaugeval)(obj));
+#ifdef X11
 		} else if (obj->callbacks.graphval) {
 			new_graph(obj, p, p_max_size, (*obj->callbacks.graphval)(obj));
+#endif /* X11 */
 		} else if (obj->callbacks.percentage) {
 			percent_print(p, p_max_size, (*obj->callbacks.percentage)(obj));
 		}

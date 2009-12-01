@@ -634,9 +634,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(fs_used, &update_fs_stats)
 		init_fs(obj, arg);
 		obj->callbacks.print = &print_fs_used;
+#ifdef X11
 	END OBJ(hr, 0)
 		obj->data.l = arg ? atoi(arg) : 1;
 		obj->callbacks.print = &new_hr;
+#endif /* X11 */
 	END OBJ(nameserver, &update_dns_data)
 		parse_nameserver_arg(obj, arg);
 		obj->callbacks.print = &print_nameserver;
