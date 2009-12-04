@@ -17,7 +17,7 @@ void update_mpd(void);
 void print_mpd_elapsed(struct text_object *, char *, int);
 void print_mpd_length(struct text_object *, char *, int);
 uint8_t mpd_percentage(struct text_object *);
-uint8_t mpd_barval(struct text_object *);
+double mpd_barval(struct text_object *);
 void print_mpd_smart(struct text_object *, char *, int);
 void print_mpd_title(struct text_object *, char *, int);
 void print_mpd_artist(struct text_object *, char *, int);

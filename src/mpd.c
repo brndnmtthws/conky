@@ -378,10 +378,10 @@ uint8_t mpd_percentage(struct text_object *obj)
 	return round_to_int(mpd_info.progress * 100.0f);
 }
 
-uint8_t mpd_barval(struct text_object *obj)
+double mpd_barval(struct text_object *obj)
 {
 	(void)obj;
-	return round_to_int(mpd_info.progress * 255.0f);
+	return mpd_info.progress;
 }
 
 void print_mpd_smart(struct text_object *obj, char *p, int p_max_size)

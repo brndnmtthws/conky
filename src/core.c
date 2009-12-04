@@ -1243,7 +1243,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_mpd_status;
 		obj->callbacks.free = &free_mpd;
 	END OBJ(mpd_bar, &update_mpd)
-		scan_bar(obj, arg, 255);
+		scan_bar(obj, arg, 1);
 		init_mpd();
 		obj->callbacks.barval = &mpd_barval;
 		obj->callbacks.free = &free_mpd;
