@@ -525,11 +525,11 @@ uint8_t swap_percentage(struct text_object *obj)
 	return (info.swapmax ? round_to_int(info.swap * 100 / info.swapmax) : 0);
 }
 
-uint8_t swap_barval(struct text_object *obj)
+double swap_barval(struct text_object *obj)
 {
 	(void)obj;
 
-	return round_to_int(info.swapmax ? (info.swap * 255 / info.swapmax) : 0);
+	return info.swapmax ? ((double)info.swap / info.swapmax) : 0;
 }
 
 void print_kernel(struct text_object *obj, char *p, int p_max_size)

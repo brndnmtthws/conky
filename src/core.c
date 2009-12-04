@@ -1032,7 +1032,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(swapperc, &update_meminfo)
 		obj->callbacks.percentage = &swap_percentage;
 	END OBJ(swapbar, &update_meminfo)
-		scan_bar(obj, arg, 255);
+		scan_bar(obj, arg, 1);
 		obj->callbacks.barval = &swap_barval;
 	/* XXX: swapgraph, swapgauge? */
 	END OBJ(sysname, 0)
