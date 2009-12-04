@@ -229,11 +229,11 @@ void update_apcupsd(void) {
 	return;
 }
 
-uint8_t apcupsd_loadbarval(struct text_object *obj)
+double apcupsd_loadbarval(struct text_object *obj)
 {
 	(void)obj;
 
-	return round_to_int(atof(info.apcupsd.items[APCUPSD_LOAD]) * 2.55);
+	return atof(info.apcupsd.items[APCUPSD_LOAD]);
 }
 
 #define APCUPSD_PRINT_GENERATOR(name, idx)                                  \

@@ -1571,17 +1571,17 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(apcupsd_load, &update_apcupsd)
 		obj->callbacks.print = &print_apcupsd_load;
 	END OBJ(apcupsd_loadbar, &update_apcupsd)
-		scan_bar(obj, arg, 255);
+		scan_bar(obj, arg, 100);
 		obj->callbacks.barval = &apcupsd_loadbarval;
 #ifdef X11
 	END OBJ(apcupsd_loadgraph, &update_apcupsd)
 		char* buf = 0;
-		buf = scan_graph(obj, arg, 255);
+		buf = scan_graph(obj, arg, 100);
 		if (buf) free(buf);
 		obj->callbacks.graphval = &apcupsd_loadbarval;
 #endif /* X11 */
 	END OBJ(apcupsd_loadgauge, &update_apcupsd)
-		scan_gauge(obj, arg, 255);
+		scan_gauge(obj, arg, 100);
 		obj->callbacks.gaugeval = &apcupsd_loadbarval;
 	END OBJ(apcupsd_charge, &update_apcupsd)
 		obj->callbacks.print = &print_apcupsd_charge;

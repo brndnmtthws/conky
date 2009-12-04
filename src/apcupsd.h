@@ -51,7 +51,7 @@ typedef struct apcupsd_s {
 /* Service routine for the conky main thread */
 void update_apcupsd(void);
 
-uint8_t apcupsd_loadbarval(struct text_object *);
+double apcupsd_loadbarval(struct text_object *);
 
 void print_apcupsd_name(struct text_object *, char *, int);
 void print_apcupsd_model(struct text_object *, char *, int);
