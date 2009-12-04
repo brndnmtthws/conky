@@ -253,6 +253,20 @@ void scan_execi_arg(struct text_object *obj, const char *arg)
 	obj->data.opaque = ed;
 }
 
+void scan_execi_bar_arg(struct text_object *obj, const char *arg)
+{
+	/* XXX: do real bar parsing here */
+	scan_bar(obj, "", 100);
+	scan_execi_arg(obj, arg);
+}
+
+void scan_execi_gauge_arg(struct text_object *obj, const char *arg)
+{
+	/* XXX: do real gauge parsing here */
+	scan_gauge(obj, "", 100);
+	scan_execi_arg(obj, arg);
+}
+
 #ifdef X11
 void scan_execgraph_arg(struct text_object *obj, const char *arg)
 {
@@ -360,7 +374,7 @@ double execbarval(struct text_object *obj)
 	return read_exec_barnum(obj->data.s);
 }
 
-uint8_t execi_barval(struct text_object *obj)
+double execi_barval(struct text_object *obj)
 {
 	struct execi_data *ed = obj->data.opaque;
 
@@ -368,10 +382,10 @@ uint8_t execi_barval(struct text_object *obj)
 		return 0;
 
 	if (time_to_update(ed)) {
-		ed->barnum = read_exec_barnum(ed->cmd) * 2.55;
+		ed->barnum = read_exec_barnum(ed->cmd);
 		ed->last_update = current_update_time;
 	}
-	return round_to_int(ed->barnum);
+	return ed->barnum;
 }
 
 void free_exec(struct text_object *obj)

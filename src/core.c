@@ -582,7 +582,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.free = &free_exec;
 #endif /* X11 */
 	END OBJ_ARG(execibar, 0, "execibar needs arguments")
-		scan_execi_arg(obj, arg);
+		scan_execi_bar_arg(obj, arg);
 		obj->callbacks.barval = &execi_barval;
 		obj->callbacks.free = &free_execi;
 #ifdef X11
@@ -592,7 +592,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.free = &free_execi;
 #endif /* X11 */
 	END OBJ_ARG(execigauge, 0, "execigauge needs arguments")
-		scan_execi_arg(obj, arg);
+		scan_execi_gauge_arg(obj, arg);
 		obj->callbacks.gaugeval = &execi_barval;
 		obj->callbacks.free = &free_execi;
 	END OBJ_ARG(execi, 0, "execi needs arguments")
