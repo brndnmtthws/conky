@@ -19,8 +19,8 @@ struct fs_stat {
 struct text_object;
 
 void init_fs_bar(struct text_object *, const char *);
-uint8_t fs_barval(struct text_object *);
-uint8_t fs_free_barval(struct text_object *);
+double fs_barval(struct text_object *);
+double fs_free_barval(struct text_object *);
 
 void init_fs(struct text_object *, const char *);
 uint8_t fs_free_percentage(struct text_object *);

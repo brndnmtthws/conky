@@ -197,7 +197,7 @@ void get_fs_type(const char *path, char *result)
 
 void init_fs_bar(struct text_object *obj, const char *arg)
 {
-	arg = scan_bar(obj, arg, 255);
+	arg = scan_bar(obj, arg, 1);
 	if (arg) {
 		while (isspace(*arg)) {
 			arg++;
@@ -211,7 +211,7 @@ void init_fs_bar(struct text_object *obj, const char *arg)
 	obj->data.opaque = prepare_fs_stat(arg);
 }
 
-static uint8_t do_fs_barval(struct text_object *obj, int be_free_bar)
+static double do_fs_barval(struct text_object *obj, int be_free_bar)
 {
 	double val = 1.0;
 	struct fs_stat *fs = obj->data.opaque;
@@ -220,20 +220,20 @@ static uint8_t do_fs_barval(struct text_object *obj, int be_free_bar)
 		return 0;
 
 	if (fs->size)
-		val = (double)fs->avail / (double)fs->size;
+		val = (double)fs->avail / fs->size;
 
 	if (!be_free_bar)
 		val = 1.0 - val;
 
-	return round_to_int(val * 255.0);
+	return val;
 }
 
-uint8_t fs_barval(struct text_object *obj)
+double fs_barval(struct text_object *obj)
 {
 	return do_fs_barval(obj, 0);
 }
 
-uint8_t fs_free_barval(struct text_object *obj)
+double fs_free_barval(struct text_object *obj)
 {
 	return do_fs_barval(obj, 1);
 }
