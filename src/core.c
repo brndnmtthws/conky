@@ -297,7 +297,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(battery_bar, 0)
 		char bat[64];
 		if (arg) {
-			arg = scan_bar(obj, arg, 255);
+			arg = scan_bar(obj, arg, 100);
 			sscanf(arg, "%63s", bat);
 		} else {
 			strcpy(bat, "BAT0");
