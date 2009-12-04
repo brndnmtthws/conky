@@ -812,15 +812,15 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(memperc, &update_meminfo)
 		obj->callbacks.percentage = &mem_percentage;
 	END OBJ(memgauge, &update_meminfo)
-		scan_gauge(obj, arg, 255);
+		scan_gauge(obj, arg, 1);
 		obj->callbacks.gaugeval = &mem_barval;
 	END OBJ(membar, &update_meminfo)
-		scan_bar(obj, arg, 255);
+		scan_bar(obj, arg, 1);
 		obj->callbacks.barval = &mem_barval;
 #ifdef X11
 	END OBJ(memgraph, &update_meminfo)
 		char *buf = 0;
-		buf = scan_graph(obj, arg, 255);
+		buf = scan_graph(obj, arg, 1);
 
 		if (buf) free(buf);
 		obj->callbacks.graphval = &mem_barval;
