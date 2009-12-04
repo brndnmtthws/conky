@@ -223,6 +223,8 @@ static int time_to_update(struct execi_data *ed)
 
 void scan_exec_arg(struct text_object *obj, const char *arg)
 {
+	/* XXX: do real bar parsing here */
+	scan_bar(obj, "", 100);
 	obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 }
 
@@ -260,7 +262,7 @@ void scan_execgraph_arg(struct text_object *obj, const char *arg)
 	ed = malloc(sizeof(struct execi_data));
 	memset(ed, 0, sizeof(struct execi_data));
 
-	buf = scan_graph(obj, arg, 255);
+	buf = scan_graph(obj, arg, 100);
 	if (!buf) {
 		NORM_ERR("missing command argument to execgraph object");
 		return;
@@ -353,9 +355,9 @@ void print_texeci(struct text_object *obj, char *p, int p_max_size)
 	}
 }
 
-uint8_t execbarval(struct text_object *obj)
+double execbarval(struct text_object *obj)
 {
-	return round_to_int(read_exec_barnum(obj->data.s) * 2.55);
+	return read_exec_barnum(obj->data.s);
 }
 
 uint8_t execi_barval(struct text_object *obj)
