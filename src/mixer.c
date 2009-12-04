@@ -320,17 +320,17 @@ void scan_mixer_bar(struct text_object *obj, const char *arg)
 	}
 }
 
-uint8_t mixer_barval(struct text_object *obj)
+double mixer_barval(struct text_object *obj)
 {
 	return mixer_to_255(obj->data.i, mixer_get_avg(obj->data.i));
 }
 
-uint8_t mixerl_barval(struct text_object *obj)
+double mixerl_barval(struct text_object *obj)
 {
 	return mixer_to_255(obj->data.i, mixer_get_left(obj->data.i));
 }
 
-uint8_t mixerr_barval(struct text_object *obj)
+double mixerr_barval(struct text_object *obj)
 {
 	return mixer_to_255(obj->data.i, mixer_get_right(obj->data.i));
 }
