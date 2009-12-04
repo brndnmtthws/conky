@@ -262,13 +262,12 @@ void print_audacious_title(struct text_object *obj, char *p, int p_max_size)
 			info.audacious.items[AUDACIOUS_TITLE]);
 }
 
-uint8_t audacious_barval(struct text_object *obj)
+double audacious_barval(struct text_object *obj)
 {
 	(void)obj;
 
-	return round_to_int(
-		atof(info.audacious.items[AUDACIOUS_POSITION_SECONDS]) * 255.0 /
-		atof(info.audacious.items[AUDACIOUS_LENGTH_SECONDS]));
+	return atof(info.audacious.items[AUDACIOUS_POSITION_SECONDS]) /
+		atof(info.audacious.items[AUDACIOUS_LENGTH_SECONDS]);
 }
 
 #define AUDACIOUS_PRINT_GENERATOR(name, idx) \
