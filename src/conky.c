@@ -1288,8 +1288,8 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 
 				case BAR:
 				{
-					int h, bar_usage, by;
-					float scale;
+					int h, by;
+					double bar_usage, scale;
 					if (cur_x - text_start_x > maximum_width
 							&& maximum_width > 0) {
 						break;
@@ -1330,8 +1330,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					unsigned long last_colour = current_color;
 #ifdef MATH
 					float angle, px, py;
-					int usage;
-					float scale;
+					double usage, scale;
 #endif /* MATH */
 
 					if (cur_x - text_start_x > maximum_width
@@ -1362,7 +1361,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 #ifdef MATH
 					usage = specials[special_index].arg;
 					scale = specials[special_index].scale;
-					angle = (M_PI)*(float)(usage)/scale;
+					angle = M_PI * usage / scale;
 					px = (float)(cur_x+(w/2.))-(float)(w/2.)*cos(angle);
 					py = (float)(by+(h))-(float)(h)*sin(angle);
 

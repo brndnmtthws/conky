@@ -62,7 +62,7 @@ struct special_t {
 	int type;
 	short height;
 	short width;
-	long arg;
+	double arg;
 	double *graph;
 	double scale;			/* maximum value */
 	short show_scale;
@@ -94,11 +94,11 @@ struct text_object;
 extern int max_specials;
 
 /* scanning special arguments */
-const char *scan_bar(struct text_object *, const char *, unsigned int);
-const char *scan_gauge(struct text_object *, const char *, unsigned int);
+const char *scan_bar(struct text_object *, const char *, double);
+const char *scan_gauge(struct text_object *, const char *, double);
 #ifdef X11
 void scan_font(struct text_object *, const char *);
-char *scan_graph(struct text_object *, const char *, int);
+char *scan_graph(struct text_object *, const char *, double);
 void scan_tab(struct text_object *, const char *);
 void scan_stippled_hr(struct text_object *, const char*);
 
@@ -108,8 +108,8 @@ void new_graph(struct text_object *, char *, int, double);
 void new_hr(struct text_object *, char *, int);
 void new_stippled_hr(struct text_object *, char *, int);
 #endif
-void new_gauge(struct text_object *, char *, int, int);
-void new_bar(struct text_object *, char *, int, int);
+void new_gauge(struct text_object *, char *, int, double);
+void new_bar(struct text_object *, char *, int, double);
 void new_fg(struct text_object *, char *, int);
 void new_bg(struct text_object *, char *, int);
 void new_outline(struct text_object *, char *, int);

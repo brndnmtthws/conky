@@ -475,16 +475,23 @@ enum text_object_type {
 struct obj_cb {
 	/* text object: print obj's output to p */
 	void (*print)(struct text_object *obj, char *p, int p_max_size);
+
 	/* ifblock object: return zero to trigger jumping */
 	int (*iftest)(struct text_object *obj);
-	/* bar object: return bar value in range [0,255] */
-	uint8_t (*barval)(struct text_object *obj);
-	/* gauge object: return gauge value in range [0,255] */
-	uint8_t (*gaugeval)(struct text_object *obj);
-	/* graph object: return graph value in range [0,255] */
-	uint8_t (*graphval)(struct text_object *obj);
-	/* percentage object: return percentage in range [0,100] */
+
+	/* meter objects:
+	 * The following functions return the current meter-type value
+	 * in a range between 0 and the value passed to the appropriate
+	 * scan_* function. Or, if named function has been called with
+	 * a value of 0, make use of auto-scaling (i.e., scaling to the
+	 * maximum value seen so far). */
+	double (*barval)(struct text_object *obj);
+	double (*gaugeval)(struct text_object *obj);
+	double (*graphval)(struct text_object *obj);
+
+	/* percentage object: return value in range [0, 100] */
 	uint8_t (*percentage)(struct text_object *obj);
+
 	/* free obj's data */
 	void (*free)(struct text_object *obj);
 };

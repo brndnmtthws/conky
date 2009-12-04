@@ -62,20 +62,20 @@ int default_gauge_width = 40, default_gauge_height = 25;
 struct bar {
 	char flags;
 	int width, height;
-	unsigned int scale;
+	double scale;
 };
 
 struct gauge {
 	char flags;
 	int width, height;
-	unsigned int scale;
+	double scale;
 };
 
 struct graph {
 	char flags;
 	int width, height;
 	unsigned int first_colour, last_colour;
-	unsigned int scale;
+	double scale;
 	char tempgrad;
 };
 
@@ -91,7 +91,7 @@ struct tab {
  * Scanning arguments to various special text objects
  */
 
-const char *scan_gauge(struct text_object *obj, const char *args, unsigned int scale)
+const char *scan_gauge(struct text_object *obj, const char *args, double scale)
 {
 	struct gauge *g;
 
@@ -123,7 +123,7 @@ const char *scan_gauge(struct text_object *obj, const char *args, unsigned int s
 	return args;
 }
 
-const char *scan_bar(struct text_object *obj, const char *args, unsigned int scale)
+const char *scan_bar(struct text_object *obj, const char *args, double scale)
 {
 	struct bar *b;
 
@@ -160,7 +160,7 @@ void scan_font(struct text_object *obj, const char *args)
 		obj->data.s = strndup(args, DEFAULT_TEXT_BUFFER_SIZE);
 }
 
-char *scan_graph(struct text_object *obj, const char *args, int defscale)
+char *scan_graph(struct text_object *obj, const char *args, double defscale)
 {
 	struct graph *g;
 	char buf[1024];
@@ -184,14 +184,14 @@ char *scan_graph(struct text_object *obj, const char *args, int defscale)
 		if (strstr(args, " "LOGGRAPH) || strncmp(args, LOGGRAPH, strlen(LOGGRAPH)) == 0) {
 			g->flags |= SF_SHOWLOG;
 		}
-		if (sscanf(args, "%d,%d %x %x %u", &g->height, &g->width, &g->first_colour, &g->last_colour, &g->scale) == 5) {
+		if (sscanf(args, "%d,%d %x %x %lf", &g->height, &g->width, &g->first_colour, &g->last_colour, &g->scale) == 5) {
 			return NULL;
 		}
 		g->scale = defscale;
 		if (sscanf(args, "%d,%d %x %x", &g->height, &g->width, &g->first_colour, &g->last_colour) == 4) {
 			return NULL;
 		}
-		if (sscanf(args, "%1023s %d,%d %x %x %u", buf, &g->height, &g->width, &g->first_colour, &g->last_colour, &g->scale) == 6) {
+		if (sscanf(args, "%1023s %d,%d %x %x %lf", buf, &g->height, &g->width, &g->first_colour, &g->last_colour, &g->scale) == 6) {
 			return strndup(buf, text_buffer_size);
 		}
 		g->scale = defscale;
@@ -201,14 +201,14 @@ char *scan_graph(struct text_object *obj, const char *args, int defscale)
 		buf[0] = '\0';
 		g->height = 25;
 		g->width = 0;
-		if (sscanf(args, "%x %x %u", &g->first_colour, &g->last_colour, &g->scale) == 3) {
+		if (sscanf(args, "%x %x %lf", &g->first_colour, &g->last_colour, &g->scale) == 3) {
 			return NULL;
 		}
 		g->scale = defscale;
 		if (sscanf(args, "%x %x", &g->first_colour, &g->last_colour) == 2) {
 			return NULL;
 		}
-		if (sscanf(args, "%1023s %x %x %u", buf, &g->first_colour, &g->last_colour, &g->scale) == 4) {
+		if (sscanf(args, "%1023s %x %x %lf", buf, &g->first_colour, &g->last_colour, &g->scale) == 4) {
 			return strndup(buf, text_buffer_size);
 		}
 		g->scale = defscale;
@@ -218,14 +218,14 @@ char *scan_graph(struct text_object *obj, const char *args, int defscale)
 		buf[0] = '\0';
 		g->first_colour = 0;
 		g->last_colour = 0;
-		if (sscanf(args, "%d,%d %u", &g->height, &g->width, &g->scale) == 3) {
+		if (sscanf(args, "%d,%d %lf", &g->height, &g->width, &g->scale) == 3) {
 			return NULL;
 		}
 		g->scale = defscale;
 		if (sscanf(args, "%d,%d", &g->height, &g->width) == 2) {
 			return NULL;
 		}
-		if (sscanf(args, "%1023s %d,%d %u", buf, &g->height, &g->width, &g->scale) < 4) {
+		if (sscanf(args, "%1023s %d,%d %lf", buf, &g->height, &g->width, &g->scale) < 4) {
 			g->scale = defscale;
 			//TODO: check the return value and throw an error?
 			sscanf(args, "%1023s %d,%d", buf, &g->height, &g->width);
@@ -259,16 +259,16 @@ static struct special_t *new_special(char *buf, enum special_types t)
 	return &specials[special_count++];
 }
 
-void new_gauge_in_shell(struct text_object *obj, char *p, int p_max_size, int usage)
+void new_gauge_in_shell(struct text_object *obj, char *p, int p_max_size, double usage)
 {
 	static const char *gaugevals[] = { "_. ", "\\. ", " | ", " ./", " ._" };
 	struct gauge *g = obj->special_data;
 
-	snprintf(p, p_max_size, "%s", gaugevals[round_to_int((double)usage * 4 / g->scale)]);
+	snprintf(p, p_max_size, "%s", gaugevals[round_to_int(usage * 4 / g->scale)]);
 }
 
 #ifdef X11
-void new_gauge_in_x11(struct text_object *obj, char *buf, int usage)
+void new_gauge_in_x11(struct text_object *obj, char *buf, double usage)
 {
 	struct special_t *s = 0;
 	struct gauge *g = obj->special_data;
@@ -288,7 +288,7 @@ void new_gauge_in_x11(struct text_object *obj, char *buf, int usage)
 }
 #endif /* X11 */
 
-void new_gauge(struct text_object *obj, char *p, int p_max_size, int usage)
+void new_gauge(struct text_object *obj, char *p, int p_max_size, double usage)
 {
 	struct gauge *g = obj->special_data;
 
@@ -296,9 +296,9 @@ void new_gauge(struct text_object *obj, char *p, int p_max_size, int usage)
 		return;
 
 	if (g->flags & SF_SCALED)
-		g->scale = MAX(g->scale, (unsigned int)usage);
+		g->scale = MAX(g->scale, usage);
 	else
-		usage = MIN(g->scale, (unsigned int)usage);
+		usage = MIN(g->scale, usage);
 
 #ifdef X11
 	if (output_methods & TO_X)
@@ -516,7 +516,7 @@ static void new_bar_in_shell(struct text_object *obj, char* buffer, int buf_max_
 }
 
 #ifdef X11
-static void new_bar_in_x11(struct text_object *obj, char *buf, int usage)
+static void new_bar_in_x11(struct text_object *obj, char *buf, double usage)
 {
 	struct special_t *s = 0;
 	struct bar *b = obj->special_data;
@@ -537,7 +537,7 @@ static void new_bar_in_x11(struct text_object *obj, char *buf, int usage)
 #endif /* X11 */
 
 /* usage is in range [0,255] */
-void new_bar(struct text_object *obj, char *p, int p_max_size, int usage)
+void new_bar(struct text_object *obj, char *p, int p_max_size, double usage)
 {
 	struct bar *b = obj->special_data;
 
@@ -545,9 +545,9 @@ void new_bar(struct text_object *obj, char *p, int p_max_size, int usage)
 		return;
 
 	if (b->flags & SF_SCALED)
-		b->scale = MAX(b->scale, (unsigned int)usage);
+		b->scale = MAX(b->scale, usage);
 	else
-		usage = MIN(b->scale, (unsigned int)usage);
+		usage = MIN(b->scale, usage);
 
 #ifdef X11
 	if ((output_methods & TO_X))
