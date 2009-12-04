@@ -58,7 +58,7 @@ void update_xmms2(void);
 void print_xmms2_tracknr(struct text_object *, char *, int);
 void print_xmms2_elapsed(struct text_object *, char *, int);
 void print_xmms2_duration(struct text_object *, char *, int);
-uint8_t xmms2_barval(struct text_object *);
+double xmms2_barval(struct text_object *);
 void print_xmms2_smart(struct text_object *, char *, int);
 void print_xmms2_artist(struct text_object *, char *, int);
 void print_xmms2_album(struct text_object *, char *, int);

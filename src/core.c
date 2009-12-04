@@ -1340,7 +1340,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_xmms2_percent;
 		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_bar, &update_xmms2)
-		scan_bar(obj, arg, 255);
+		scan_bar(obj, arg, 1);
 		obj->callbacks.barval = &xmms2_barval;
 		obj->callbacks.free = &free_xmms2;
 	END OBJ(xmms2_smart, &update_xmms2)
