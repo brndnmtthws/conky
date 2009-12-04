@@ -83,7 +83,7 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg, void *free_at_
 void parse_net_stat_bar_arg(struct text_object *obj, const char *arg, void *free_at_crash)
 {
 	if (arg) {
-		arg = scan_bar(obj, arg, 0);
+		arg = scan_bar(obj, arg, 1);
 		obj->data.opaque = get_net_stat(arg, obj, free_at_crash);
 	} else {
 		// default to DEFAULTNETDEV
@@ -292,14 +292,14 @@ void print_wireless_link_qual_perc(struct text_object *obj, char *p, int p_max_s
 		spaced_print(p, p_max_size, "unk", 5);
 	}
 }
-uint8_t wireless_link_barval(struct text_object *obj)
+double wireless_link_barval(struct text_object *obj)
 {
 	struct net_stat *ns = obj->data.opaque;
 
 	if (!ns)
 		return 0;
 
-	return round_to_int((double) (ns->link_qual / ns->link_qual_max) * 255.0);
+	return (double)ns->link_qual / ns->link_qual_max;
 }
 #endif /* HAVE_IWLIB */
 #endif /* __linux__ */
