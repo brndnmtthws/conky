@@ -407,19 +407,19 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		DBGP2("Adding $cpu for CPU %d", obj->data.i);
 	END OBJ(cpugauge, &update_cpu_usage)
 		SCAN_CPU(arg, obj->data.i);
-		scan_gauge(obj, arg, 255);
+		scan_gauge(obj, arg, 1);
 		obj->callbacks.gaugeval = &cpu_barval;
 		DBGP2("Adding $cpugauge for CPU %d", obj->data.i);
 	END OBJ(cpubar, &update_cpu_usage)
 		SCAN_CPU(arg, obj->data.i);
-		scan_bar(obj, arg, 255);
+		scan_bar(obj, arg, 1);
 		obj->callbacks.barval = &cpu_barval;
 		DBGP2("Adding $cpubar for CPU %d", obj->data.i);
 #ifdef X11
 	END OBJ(cpugraph, &update_cpu_usage)
 		char *buf = 0;
 		SCAN_CPU(arg, obj->data.i);
-		buf = scan_graph(obj, arg, 255);
+		buf = scan_graph(obj, arg, 1);
 		DBGP2("Adding $cpugraph for CPU %d", obj->data.i);
 		if (buf) free(buf);
 		obj->callbacks.graphval = &cpu_barval;

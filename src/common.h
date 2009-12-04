@@ -71,7 +71,7 @@ uint8_t loadgraphval(struct text_object *);
 #endif /* X11 */
 
 uint8_t cpu_percentage(struct text_object *);
-uint8_t cpu_barval(struct text_object *);
+double cpu_barval(struct text_object *);
 
 void print_mem(struct text_object *, char *, int);
 void print_memeasyfree(struct text_object *, char *, int);
