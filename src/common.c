@@ -466,11 +466,11 @@ void scan_loadgraph_arg(struct text_object *obj, const char *arg)
 		free(buf);
 }
 
-uint8_t loadgraphval(struct text_object *obj)
+double loadgraphval(struct text_object *obj)
 {
 	(void)obj;
 
-	return round_to_int(info.loadavg[0]);
+	return info.loadavg[0];
 }
 #endif /* X11 */
 
