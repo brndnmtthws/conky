@@ -67,6 +67,6 @@ void llua_update_info(struct information *i, double u_interval);
 
 void print_lua(struct text_object *, char *, int);
 void print_lua_parse(struct text_object *, char *, int);
-uint8_t lua_barval(struct text_object *);
+double lua_barval(struct text_object *);
 
 #endif /* LUA_H_*/

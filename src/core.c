@@ -1449,7 +1449,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_lua_parse;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(lua_bar, 0, "lua_bar needs arguments: <height>,<width> <function name> [function parameters]")
-		arg = scan_bar(obj, arg, 255);
+		arg = scan_bar(obj, arg, 100);
 		if(arg) {
 			obj->data.s = strndup(arg, text_buffer_size);
 		} else {
@@ -1460,7 +1460,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #ifdef X11
 	END OBJ_ARG(lua_graph, 0, "lua_graph needs arguments: <function name> [height],[width] [gradient colour 1] [gradient colour 2] [scale] [-t] [-l]")
 		char *buf = 0;
-		buf = scan_graph(obj, arg, 255);
+		buf = scan_graph(obj, arg, 100);
 		if (buf) {
 			obj->data.s = buf;
 		} else {
@@ -1470,7 +1470,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.free = &gen_free_opaque;
 #endif /* X11 */
 	END OBJ_ARG(lua_gauge, 0, "lua_gauge needs arguments: <height>,<width> <function name> [function parameters]")
-		arg = scan_gauge(obj, arg, 255);
+		arg = scan_gauge(obj, arg, 100);
 		if (arg) {
 			obj->data.s = strndup(arg, text_buffer_size);
 		} else {

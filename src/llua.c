@@ -546,11 +546,11 @@ void print_lua_parse(struct text_object *obj, char *p, int p_max_size)
 	}
 }
 
-uint8_t lua_barval(struct text_object *obj)
+double lua_barval(struct text_object *obj)
 {
 	double per;
 	if (llua_getnumber(obj->data.s, &per)) {
-		return round_to_int(per * 2.55);
+		return per;
 	}
 	return 0;
 }
