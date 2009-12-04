@@ -165,27 +165,25 @@ void parse_diskiograph_arg(struct text_object *obj, const char *arg)
 		free(buf);
 }
 
-/* XXX: what about max values? */
-
-uint8_t diskiographval(struct text_object *obj)
+double diskiographval(struct text_object *obj)
 {
 	struct diskio_stat *diskio = obj->data.opaque;
 
-	return (diskio ? round_to_int(diskio->current) : 0);
+	return (diskio ? diskio->current : 0);
 }
 
-uint8_t diskiographval_read(struct text_object *obj)
+double diskiographval_read(struct text_object *obj)
 {
 	struct diskio_stat *diskio = obj->data.opaque;
 
-	return (diskio ? round_to_int(diskio->current_read) : 0);
+	return (diskio ? diskio->current_read : 0);
 }
 
-uint8_t diskiographval_write(struct text_object *obj)
+double diskiographval_write(struct text_object *obj)
 {
 	struct diskio_stat *diskio = obj->data.opaque;
 
-	return (diskio ? round_to_int(diskio->current_write) : 0);
+	return (diskio ? diskio->current_write : 0);
 }
 #endif /* X11 */
 
