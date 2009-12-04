@@ -173,10 +173,10 @@ void print_smapi_bat_power(struct text_object *obj, char *p, int p_max_size)
 		NORM_ERR("argument to smapi_bat_power must be an integer");
 }
 
-uint8_t smapi_bat_barval(struct text_object *obj)
+double smapi_bat_barval(struct text_object *obj)
 {
 	if (obj->data.i >= 0 && smapi_bat_installed(obj->data.i))
-		return round_to_int(smapi_get_bat_int(obj->data.i, "remaining_percent") * 2.55);
+		return smapi_get_bat_int(obj->data.i, "remaining_percent");
 	return 0;
 }
 

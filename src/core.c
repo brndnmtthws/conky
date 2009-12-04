@@ -1167,7 +1167,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			NORM_ERR("first argument to smapi_bat_bar must be an integer value");
 			obj->data.i = -1;
 		} else
-			arg = scan_bar(obj, arg + cnt, 255);
+			arg = scan_bar(obj, arg + cnt, 100);
 		obj->callbacks.barval = &smapi_bat_barval;
 #endif /* IBM */
 #ifdef MPD
