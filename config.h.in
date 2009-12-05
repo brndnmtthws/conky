@@ -18,3 +18,20 @@
 #ifdef BUILD_X11
 #define X11
 #endif /* BUILD_X11 */
+
+#cmakedefine OWN_WINDOW 1
+
+#cmakedefine BUILD_XDAMAGE 1
+#ifdef BUILD_XDAMAGE
+#define HAVE_XDAMAGE
+#endif /* BUILD_XDAMAGE */
+
+#cmakedefine BUILD_XFT 1
+#ifdef BUILD_XFT
+#define XFT
+#endif /* BUILD_XFT */
+
+#cmakedefine BUILD_XDBE 1
+#ifdef BUILD_XDBE
+#define HAVE_XDBE
+#endif /* BUILD_XDBE */
