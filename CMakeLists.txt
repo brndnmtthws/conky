@@ -30,9 +30,23 @@ set(COPYRIGHT "Copyright Brenden Matthews, et al, 2005-2009")
 # This is the directory for our custom CMake modules.
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_modules)
 
+include(FindThreads)
+find_package(Threads)
+
+set(conky_libs ${CMAKE_THREAD_LIBS_INIT} rt c m)
+set(conky_includes ${CMAKE_BINARY_DIR})
+
 # Include CPack module for installation
 include(ConkyCPackSetup)
 
+# Handle build options
+include(ConkyBuildOptions)
+
+# Do platform checks
+include(ConkyPlatformChecks)
+
+# setup our configuration header
+configure_file(${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/config.h)
 
 add_subdirectory(src)
 add_subdirectory(lua)

@@ -34,7 +34,7 @@
 #include <string.h>
 #include <time.h>
 #include <errno.h>
-#include <logging.h>
+#include "logging.h"
 
 char print_times_in_seconds = 0;
 
@@ -245,7 +245,7 @@ static void do_format_time(struct text_object *obj, char *p, unsigned int p_max_
 								}
 							}else{
 								currentchar--;
-								NORM_ERR("$format_time needs a digit behind 'S' to specify precision")
+								NORM_ERR("$format_time needs a digit behind 'S' to specify precision");
 							}
 							break;
 						case '\\':
@@ -255,7 +255,7 @@ static void do_format_time(struct text_object *obj, char *p, unsigned int p_max_
 							output_length++;
 							break;
 						default:
-							NORM_ERR("$format_time doesn't have a special char '%c'", *currentchar)
+							NORM_ERR("$format_time doesn't have a special char '%c'", *currentchar);
 						}
 					} else if(*currentchar == '(') {
 						for(temp = currentchar + 1; *temp != 0 && *temp != ')'; temp++) {
@@ -291,7 +291,7 @@ static void do_format_time(struct text_object *obj, char *p, unsigned int p_max_
 						if(output_length + strlen(temp) < p_max_size - 1) {
 							strcpy(p + output_length, temp);
 							output_length += strlen(temp);
-						} else NORM_ERR("The format string for $format_time is too long")
+						} else NORM_ERR("The format string for $format_time is too long");
 						free(temp);
 					}
 					currentchar++;
@@ -299,10 +299,10 @@ static void do_format_time(struct text_object *obj, char *p, unsigned int p_max_
 			}
 			p[output_length] = 0;
 		} else {
-			NORM_ERR("$format_time needs a output-format starting with a \"-char as 2nd argument")
+			NORM_ERR("$format_time needs a output-format starting with a \"-char as 2nd argument");
 		}
 	} else {
-		NORM_ERR("$format_time didn't receive a time in seconds as first argument")
+		NORM_ERR("$format_time didn't receive a time in seconds as first argument");
 	}
 }
 

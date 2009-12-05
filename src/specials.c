@@ -35,6 +35,9 @@
 #include "logging.h"
 #include "specials.h"
 #include <math.h>
+#ifdef HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#endif /* HAVE_SYS_PARAM_H */
 
 /* maximum number of special things, e.g. fonts, offsets, aligns, etc. */
 int max_specials = MAX_SPECIALS_DEFAULT;

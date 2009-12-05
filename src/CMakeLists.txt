@@ -1,64 +1,88 @@
 # vim: ts=4 sw=4 noet ai cindent syntax=cmake
 
-set(CONKY_SOURCES
-	algebra.c
-	apcupsd.c
-	audacious.c
-	bmpx.c
-	ccurl_thread.c
-	colours.c
-	combine.c
-	common.c
-	conf_cookie.c
-	conky.c
-	core.c
-	diskio.c
-	entropy.c
-	eve.c
-	exec.c
-	fonts.c
-	freebsd.c
-	fs.c
-	hddtemp.c
-	i8k.c
-	ibm.c
-	iconv_tools.c
-	imlib2.c
-	libmpdclient.c
-	libtcp-portmon.c
-	linux.c
-	llua.c
-	mail.c
-	mboxscan.c
-	mixer.c
-	moc.c
-	mpd.c
-	netbsd.c
-	net_stat.c
-	nvidia.c
-	openbsd.c
-	proc.c
-	prss.c
-	read_tcp.c
-	rss.c
-	scroll.c
-	smapi.c
-	solaris.c
-	sony.c
-	specials.c
-	tailhead.c
-	tcp-portmon.c
-	temphelper.c
-	template.c
-	text_object.c
-	timed_thread.c
-	timeinfo.c
-	top.c
-	user.c
-	users.c
-	weather.c
-	x11.c
-	xmms2.c
-)
+include_directories(${conky_includes})
 
-add_executable(conky ${CONKY_SOURCES})
+set(conky_sources colours.c combine.c common.c conky.c core.c diskio.c
+	entropy.c exec.c fs.c mail.c mixer.c net_stat.c template.c timed_thread.c
+	mboxscan.c read_tcp.c scroll.c specials.c tailhead.c temphelper.c
+	text_object.c timeinfo.c top.c algebra.c proc.c user.c)
+
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+	set(conky_sources ${conky_sources} linux.c i8k.c sony.c users.c)
+endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
+
+# optional
+if(BUILD_AUDACIOUS)
+	set(optional_sources ${optional_sources} ${audacious})
+endif(BUILD_AUDACIOUS)
+if(BUILD_BMPX)
+	set(optional_sources ${optional_sources} ${bmpx})
+endif(BUILD_BMPX)
+if(BUILD_IBM)
+	set(optional_sources ${optional_sources} ${ibm})
+endif(BUILD_IBM)
+if(BUILD_MPD)
+	set(optional_sources ${optional_sources} ${mpd})
+endif(BUILD_MPD)
+if(BUILD_MOC)
+	set(optional_sources ${optional_sources} ${moc})
+endif(BUILD_MOC)
+if(BUILD_XMMS2)
+	set(optional_sources ${optional_sources} ${xmms2})
+endif(BUILD_XMMS2)
+if(BUILD_LINUX)
+	set(optional_sources ${optional_sources} ${linux})
+endif(BUILD_LINUX)
+#if(BUILD_SOLARIS)
+#set(optional_sources ${optional_sources} ${solaris})
+#endif
+if(BUILD_FREEBSD)
+	set(optional_sources ${optional_sources} ${freebsd})
+endif(BUILD_FREEBSD)
+#if(BUILD_NETBSD)
+#set(optional_sources ${optional_sources} ${netbsd})
+#endif
+if(BUILD_OPENBSD)
+	set(optional_sources ${optional_sources} ${openbsd})
+endif(BUILD_OPENBSD)
+if(BUILD_PORT_MONITORS)
+	set(optional_sources ${optional_sources} ${port_monitors})
+endif(BUILD_PORT_MONITORS)
+if(BUILD_X11)
+	set(x11 x11.c x11.h fonts.c fonts.h)
+	set(optional_sources ${optional_sources} ${x11})
+endif(BUILD_X11)
+if(BUILD_HDDTEMP)
+	set(optional_sources ${optional_sources} ${hddtemp})
+endif(BUILD_HDDTEMP)
+if(BUILD_EVE)
+	set(optional_sources ${optional_sources} ${eve})
+endif(BUILD_EVE)
+if(BUILD_CURL)
+	set(optional_sources ${optional_sources} ${ccurl_thread})
+endif(BUILD_CURL)
+if(BUILD_RSS)
+	set(optional_sources ${optional_sources} ${rss})
+endif(BUILD_RSS)
+if(BUILD_WEATHER)
+	set(optional_sources ${optional_sources} ${weather})
+endif(BUILD_WEATHER)
+if(BUILD_LUA)
+	set(optional_sources ${optional_sources} ${lua})
+endif(BUILD_LUA)
+if(BUILD_NVIDIA)
+	set(optional_sources ${optional_sources} ${nvidia})
+endif(BUILD_NVIDIA)
+if(BUILD_IMLIB2)
+	set(optional_sources ${optional_sources} ${imlib2})
+endif(BUILD_IMLIB2)
+if(BUILD_APCUPSD)
+	set(optional_sources ${optional_sources} ${apcupsd})
+endif(BUILD_APCUPSD)
+if(BUILD_ICONV)
+	set(optional_sources ${optional_sources} ${iconv})
+endif(BUILD_ICONV)
+
+add_executable(conky ${conky_sources} ${optional_sources})
+
+target_link_libraries(conky ${conky_libs})

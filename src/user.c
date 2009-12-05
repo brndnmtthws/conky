@@ -28,7 +28,7 @@
  *
  */
 
-#include <logging.h>
+#include "logging.h"
 #include <pwd.h>
 #include <grp.h>
 #include <errno.h>
