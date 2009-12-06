@@ -47,6 +47,7 @@ static void hash_process(struct process *p)
 {
 	struct proc_hash_entry *phe;
 	static char first_run = 1;
+	int bucket;
 
 	/* better make sure all next pointers are zero upon first access */
 	if (first_run) {
@@ -54,17 +55,14 @@ static void hash_process(struct process *p)
 		first_run = 0;
 	}
 
-	/* get the bucket head */
-	phe = &proc_hash_table[p->pid % 256];
+	/* get the bucket index */
+	bucket = p->pid % 256;
 
-	/* find the bucket's end */
-	while (phe->next)
-		phe = phe->next;
-
-	/* append process */
-	phe->next = malloc(sizeof(struct proc_hash_entry));
-	memset(phe->next, 0, sizeof(struct proc_hash_entry));
-	phe->next->proc = p;
+	/* insert a new element on bucket's top */
+	phe = malloc(sizeof(struct proc_hash_entry));
+	phe->proc = p;
+	phe->next = proc_hash_table[bucket].next;
+	proc_hash_table[bucket].next = phe;
 }
 
 static void unhash_process(struct process *p)
