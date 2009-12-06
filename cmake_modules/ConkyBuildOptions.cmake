@@ -13,6 +13,11 @@ set(DEFAULT_TEXT_BUFFER_SIZE "256" CACHE STRING "Default size used for temporary
 set(MAX_NET_INTERFACES "16" CACHE STRING "Maximum number of network devices")
 
 
+# Platform specific options
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+	option(BUILD_PORT_MONITORS "Build TCP portmon support" true)
+endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
+
 # Optional features etc
 option(BUILD_X11 "Build X11 support" true)
 if(BUILD_X11)
@@ -24,9 +29,10 @@ endif(BUILD_X11)
 
 option(BUILD_LUA "Build Lua support" true)
 
-
-# Platform specific options
-if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-	option(BUILD_PORT_MONITORS "Build TCP portmon support" true)
-endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
+option(BUILD_AUDACIOUS "Build audacious player support" false)
+if(BUILD_AUDACIOUS)
+	option(BUILD_AUDACIOUS_LEGACY "Use legacy audacious player support" false)
+else(BUILD_AUDACIOUS)
+	set(BUILD_AUDACIOUS_LEGACY false)
+endif(BUILD_AUDACIOUS)
 

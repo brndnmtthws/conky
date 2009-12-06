@@ -6,6 +6,9 @@ check_include_files(sys/statfs.h HAVE_SYS_STATFS_H)
 check_include_files(sys/param.h HAVE_SYS_PARAM_H)
 check_include_files(sys/inotify.h HAVE_SYS_INOTIFY_H)
 
+# standard path to search for includes
+set(INCLUDE_SEARCH_PATH /usr/include /usr/local/include)
+
 # check for Xlib
 if(BUILD_X11)
 	include(FindX11)
@@ -26,8 +29,8 @@ if(BUILD_X11)
 
 	# check for Xft
 	if(BUILD_XFT)
-		find_path(freetype_INCLUDE_PATH freetype/config/ftconfig.h /usr/include
-			/usr/local/include /usr/include/freetype2
+		find_path(freetype_INCLUDE_PATH freetype/config/ftconfig.h ${INCLUDE_SEARCH_PATH}
+			/usr/include/freetype2
 			/usr/local/include/freetype2)
 		if(freetype_INCLUDE_PATH)
 			set(freetype_FOUND TRUE)
@@ -64,6 +67,24 @@ endif(BUILD_LUA)
 if(BUILD_PORT_MONITORS)
 	set(WANT_GLIB true)
 endif(BUILD_PORT_MONITORS)
+
+if(BUILD_AUDACIOUS)
+	set(WANT_GLIB true)
+	if(NOT BUILD_AUDACIOUS_LEGACY)
+		pkg_check_modules(AUDACIOUS REQUIRED audacious>=1.4.0 dbus-glib-1 gobject-2.0)
+		# do we need this below?
+		#CPPFLAGS="$Audacious_CFLAGS -I`pkg-config --variable=audacious_include_dir audacious`/audacious"
+		#AC_CHECK_HEADERS([audacious/audctrl.h audacious/dbus.h glib.h glib-object.h],
+		#                 [], AC_MSG_ERROR([required header(s) not found]))
+	else(NOT BUILD_AUDACIOUS_LEGACY)
+		pkg_check_modules(AUDACIOUS REQUIRED audacious<1.4.0)
+		# do we need this below?
+		#CPPFLAGS="$Audacious_CFLAGS -I`pkg-config --variable=audacious_include_dir audacious`/audacious"
+		#AC_CHECK_HEADERS([audacious/beepctrl.h glib.h], [], AC_MSG_ERROR([required  header(s) not found]))
+		#CPPFLAGS="$save_CPPFLAGS"
+	endif(NOT BUILD_AUDACIOUS_LEGACY)
+endif(BUILD_AUDACIOUS)
+
 
 if(WANT_GLIB)
 	pkg_check_modules(GLIB REQUIRED glib-2.0)
