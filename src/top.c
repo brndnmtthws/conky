@@ -32,6 +32,9 @@
 #include "top.h"
 #include "logging.h"
 
+/* hash table size - always a power of 2 */
+#define HTABSIZE 256
+
 static unsigned long g_time = 0;
 static unsigned long long previous_total = 0;
 static struct process *first_process = 0;
@@ -41,7 +44,7 @@ struct proc_hash_entry {
 	struct proc_hash_entry *next;
 	struct process *proc;
 };
-static struct proc_hash_entry proc_hash_table[256];
+static struct proc_hash_entry proc_hash_table[HTABSIZE];
 
 static void hash_process(struct process *p)
 {
@@ -51,12 +54,12 @@ static void hash_process(struct process *p)
 
 	/* better make sure all next pointers are zero upon first access */
 	if (first_run) {
-		memset(proc_hash_table, 0, sizeof(struct proc_hash_entry) * 256);
+		memset(proc_hash_table, 0, sizeof(struct proc_hash_entry) * HTABSIZE);
 		first_run = 0;
 	}
 
 	/* get the bucket index */
-	bucket = p->pid % 256;
+	bucket = p->pid & (HTABSIZE - 1);
 
 	/* insert a new element on bucket's top */
 	phe = malloc(sizeof(struct proc_hash_entry));
@@ -70,7 +73,7 @@ static void unhash_process(struct process *p)
 	struct proc_hash_entry *phe, *tmp;
 
 	/* get the bucket head */
-	phe = &proc_hash_table[p->pid % 256];
+	phe = &proc_hash_table[p->pid & (HTABSIZE - 1)];
 
 	/* find the entry pointing to p and drop it */
 	while (phe->next) {
@@ -95,7 +98,7 @@ static void unhash_all_processes(void)
 {
 	int i;
 
-	for (i = 0; i < 256; i++) {
+	for (i = 0; i < HTABSIZE; i++) {
 		__unhash_all_processes(&proc_hash_table[i]);
 		proc_hash_table[i].next = NULL;
 	}
@@ -140,7 +143,7 @@ static struct process *find_process(pid_t pid)
 {
 	struct proc_hash_entry *phe;
 
-	phe = &proc_hash_table[pid % 256];
+	phe = &proc_hash_table[pid & (HTABSIZE - 1)];
 	while (phe->next) {
 		if (phe->next->proc->pid == pid)
 			return phe->next->proc;
