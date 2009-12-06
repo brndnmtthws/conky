@@ -53,8 +53,8 @@ mandatory_sources = colours.c colours.h combine.c combine.h common.c common.h \
 		conky.cc conky.h core.cc core.h diskio.c diskio.h entropy.c entropy.h \
 		exec.c exec.h fs.c fs.h logging.h mail.c mail.h mixer.c mixer.h net_stat.c \
 		net_stat.h template.c template.h timed_thread.c timed_thread.h mboxscan.c \
-		mboxscan.h read_tcp.c read_tcp.h scroll.c scroll.h specials.c \
-		specials.h tailhead.c tailhead.h temphelper.c temphelper.h \
+		mboxscan.h prioqueue.c prioqueue.h read_tcp.c read_tcp.h scroll.c scroll.h \
+		specials.c specials.h tailhead.c tailhead.h temphelper.c temphelper.h \
 		text_object.c text_object.h timeinfo.c timeinfo.h top.c top.h algebra.c \
 		algebra.h proc.c proc.h user.c user.h
 

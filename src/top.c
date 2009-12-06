@@ -29,6 +29,7 @@
  *
  */
 
+#include "prioqueue.h"
 #include "top.h"
 #include "logging.h"
 
@@ -595,25 +596,11 @@ static void calc_io_each(void)
  * Find the top processes				  *
  ******************************************/
 
-/* free a sp_process structure */
-static void free_sp(struct sorted_process *sp)
+/* cpu comparison function for prio queue */
+static int compare_cpu(void *va, void *vb)
 {
-	free(sp);
-}
+	struct process *a = va, *b = vb;
 
-/* create a new sp_process structure */
-static struct sorted_process *malloc_sp(struct process *proc)
-{
-	struct sorted_process *sp;
-	sp = malloc(sizeof(struct sorted_process));
-	memset(sp, 0, sizeof(struct sorted_process));
-	sp->proc = proc;
-	return sp;
-}
-
-/* cpu comparison function for insert_sp_element */
-static int compare_cpu(struct process *a, struct process *b)
-{
 	if (a->amount < b->amount) {
 		return 1;
 	} else if (a->amount > b->amount) {
@@ -623,9 +610,11 @@ static int compare_cpu(struct process *a, struct process *b)
 	}
 }
 
-/* mem comparison function for insert_sp_element */
-static int compare_mem(struct process *a, struct process *b)
+/* mem comparison function for prio queue */
+static int compare_mem(void *va, void *vb)
 {
+	struct process *a = va, *b = vb;
+
 	if (a->rss < b->rss) {
 		return 1;
 	} else if (a->rss > b->rss) {
@@ -635,16 +624,20 @@ static int compare_mem(struct process *a, struct process *b)
 	}
 }
 
-/* CPU time comparision function for insert_sp_element */
-static int compare_time(struct process *a, struct process *b)
+/* CPU time comparision function for prio queue */
+static int compare_time(void *va, void *vb)
 {
+	struct process *a = va, *b = vb;
+
 	return b->total_cpu_time - a->total_cpu_time;
 }
 
 #ifdef IOSTATS
-/* I/O comparision function for insert_sp_element */
-static int compare_io(struct process *a, struct process *b)
+/* I/O comparision function for prio queue */
+static int compare_io(void *va, void *vb)
 {
+	struct process *a = va, *b = vb;
+
 	if (a->io_perc < b->io_perc) {
 		return 1;
 	} else if (a->io_perc > b->io_perc) {
@@ -654,78 +647,6 @@ static int compare_io(struct process *a, struct process *b)
 	}
 }
 #endif /* IOSTATS */
-
-/* insert this process into the list in a sorted fashion,
- * or destroy it if it doesn't fit on the list */
-static int insert_sp_element(struct sorted_process *sp_cur,
-		struct sorted_process **p_sp_head, struct sorted_process **p_sp_tail,
-		int max_elements, int compare_funct(struct process *, struct process *))
-{
-
-	struct sorted_process *sp_readthru = NULL, *sp_destroy = NULL;
-	int did_insert = 0, x = 0;
-
-	if (*p_sp_head == NULL) {
-		*p_sp_head = sp_cur;
-		*p_sp_tail = sp_cur;
-		return 1;
-	}
-	for (sp_readthru = *p_sp_head, x = 0;
-			sp_readthru != NULL && x < max_elements;
-			sp_readthru = sp_readthru->less, x++) {
-		if (compare_funct(sp_readthru->proc, sp_cur->proc) > 0 && !did_insert) {
-			/* sp_cur is bigger than sp_readthru
-			 * so insert it before sp_readthru */
-			sp_cur->less = sp_readthru;
-			if (sp_readthru == *p_sp_head) {
-				/* insert as the new head of the list */
-				*p_sp_head = sp_cur;
-			} else {
-				/* insert inside the list */
-				sp_readthru->greater->less = sp_cur;
-				sp_cur->greater = sp_readthru->greater;
-			}
-			sp_readthru->greater = sp_cur;
-			/* element was inserted, so increase the counter */
-			did_insert = ++x;
-		}
-	}
-	if (x < max_elements && sp_readthru == NULL && !did_insert) {
-		/* sp_cur is the smallest element and list isn't full,
-		 * so insert at the end */
-		(*p_sp_tail)->less = sp_cur;
-		sp_cur->greater = *p_sp_tail;
-		*p_sp_tail = sp_cur;
-		did_insert = x;
-	} else if (x >= max_elements) {
-		/* We inserted an element and now the list is too big by one.
-		 * Destroy the smallest element */
-		sp_destroy = *p_sp_tail;
-		*p_sp_tail = sp_destroy->greater;
-		(*p_sp_tail)->less = NULL;
-		free_sp(sp_destroy);
-	}
-	if (!did_insert) {
-		/* sp_cur wasn't added to the sorted list, so destroy it */
-		free_sp(sp_cur);
-	}
-	return did_insert;
-}
-
-/* copy the procs in the sorted list to the array, and destroy the list */
-static void sp_acopy(struct sorted_process *sp_head, struct process **ar, int max_size)
-{
-	struct sorted_process *sp_cur, *sp_tmp;
-	int x;
-
-	sp_cur = sp_head;
-	for (x = 0; x < max_size && sp_cur != NULL; x++) {
-		ar[x] = sp_cur->proc;
-		sp_tmp = sp_cur;
-		sp_cur = sp_cur->less;
-		free_sp(sp_tmp);
-	}
-}
 
 /* ****************************************************************** *
  * Get a sorted list of the top cpu hogs and top mem hogs.			  *
@@ -739,14 +660,14 @@ void process_find_top(struct process **cpu, struct process **mem,
 #endif /* IOSTATS */
 		)
 {
-	struct sorted_process *spc_head = NULL, *spc_tail = NULL, *spc_cur = NULL;
-	struct sorted_process *spm_head = NULL, *spm_tail = NULL, *spm_cur = NULL;
-	struct sorted_process *spt_head = NULL, *spt_tail = NULL, *spt_cur = NULL;
+	prio_queue_t cpu_queue, mem_queue, time_queue
 #ifdef IOSTATS
-	struct sorted_process *spi_head = NULL, *spi_tail = NULL, *spi_cur = NULL;
-#endif /* IOSTATS */
+		, io_queue
+#endif
+		;
 	struct process *cur_proc = NULL;
 	unsigned long long total = 0;
+	int i;
 
 	if (!top_cpu && !top_mem && !top_time
 #ifdef IOSTATS
@@ -756,6 +677,24 @@ void process_find_top(struct process **cpu, struct process **mem,
 	   ) {
 		return;
 	}
+
+	cpu_queue = init_prio_queue();
+	pq_set_compare(cpu_queue, &compare_cpu);
+	pq_set_max_size(cpu_queue, MAX_SP);
+
+	mem_queue = init_prio_queue();
+	pq_set_compare(mem_queue, &compare_mem);
+	pq_set_max_size(mem_queue, MAX_SP);
+
+	time_queue = init_prio_queue();
+	pq_set_compare(time_queue, &compare_time);
+	pq_set_max_size(time_queue, MAX_SP);
+
+#ifdef IOSTATS
+	io_queue = init_prio_queue();
+	pq_set_compare(io_queue, &compare_io);
+	pq_set_max_size(io_queue, MAX_SP);
+#endif
 
 	total = calc_cpu_total();	/* calculate the total of the processor */
 	update_process_table();		/* update the table with process list */
@@ -769,35 +708,39 @@ void process_find_top(struct process **cpu, struct process **mem,
 
 	while (cur_proc != NULL) {
 		if (top_cpu) {
-			spc_cur = malloc_sp(cur_proc);
-			insert_sp_element(spc_cur, &spc_head, &spc_tail, MAX_SP,
-					&compare_cpu);
+			insert_prio_elem(cpu_queue, cur_proc);
 		}
 		if (top_mem) {
-			spm_cur = malloc_sp(cur_proc);
-			insert_sp_element(spm_cur, &spm_head, &spm_tail, MAX_SP,
-					&compare_mem);
+			insert_prio_elem(mem_queue, cur_proc);
 		}
 		if (top_time) {
-			spt_cur = malloc_sp(cur_proc);
-			insert_sp_element(spt_cur, &spt_head, &spt_tail, MAX_SP,
-					&compare_time);
+			insert_prio_elem(time_queue, cur_proc);
 		}
 #ifdef IOSTATS
 		if (top_io) {
-			spi_cur = malloc_sp(cur_proc);
-			insert_sp_element(spi_cur, &spi_head, &spi_tail, MAX_SP,
-					&compare_io);
+			insert_prio_elem(io_queue, cur_proc);
 		}
 #endif /* IOSTATS */
 		cur_proc = cur_proc->next;
 	}
 
-	if (top_cpu)	sp_acopy(spc_head, cpu,		MAX_SP);
-	if (top_mem)	sp_acopy(spm_head, mem,		MAX_SP);
-	if (top_time)	sp_acopy(spt_head, ptime,	MAX_SP);
+	for (i = 0; i < MAX_SP; i++) {
+		if (top_cpu)
+			cpu[i] = pop_prio_elem(cpu_queue);
+		if (top_mem)
+			mem[i] = pop_prio_elem(mem_queue);
+		if (top_time)
+			ptime[i] = pop_prio_elem(time_queue);
 #ifdef IOSTATS
-	if (top_io)		sp_acopy(spi_head, io,		MAX_SP);
+		if (top_io)
+			io[i] = pop_prio_elem(io_queue);
+#endif /* IOSTATS */
+	}
+	free_prio_queue(cpu_queue);
+	free_prio_queue(mem_queue);
+	free_prio_queue(time_queue);
+#ifdef IOSTATS
+	free_prio_queue(io_queue);
 #endif /* IOSTATS */
 }
 
