@@ -28,7 +28,7 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
-#include "config.h"
+#include <config.h>
 
 #ifdef X11
 #include "x11.h"

@@ -22,3 +22,4 @@ if(BUILD_X11)
 	option(BUILD_XFT "Build Xft (freetype fonts) support" true)
 endif(BUILD_X11)
 
+option(BUILD_LUA "Build Lua support" true)

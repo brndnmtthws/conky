@@ -1,7 +1,10 @@
 # vim: ts=4 sw=4 noet ai cindent syntax=cmake
 
+include(FindPkgConfig)
+
 check_include_files(sys/statfs.h HAVE_SYS_STATFS_H)
 check_include_files(sys/param.h HAVE_SYS_PARAM_H)
+check_include_files(sys/inotify.h HAVE_SYS_INOTIFY_H)
 
 # check for Xlib
 if(BUILD_X11)
@@ -52,3 +55,8 @@ if(BUILD_X11)
 
 endif(BUILD_X11)
 
+if(BUILD_LUA)
+	pkg_search_module(LUA REQUIRED lua>=5.1 lua-5.1>=5.1 lua5.1>=5.1)
+	set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
+	set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIRS})
+endif(BUILD_LUA)
