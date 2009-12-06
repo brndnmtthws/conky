@@ -60,3 +60,14 @@ if(BUILD_LUA)
 	set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
 	set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIRS})
 endif(BUILD_LUA)
+
+if(BUILD_PORT_MONITORS)
+	set(WANT_GLIB true)
+endif(BUILD_PORT_MONITORS)
+
+if(WANT_GLIB)
+	pkg_check_modules(GLIB REQUIRED glib-2.0)
+	set(conky_libs ${conky_libs} ${GLIB_LIBRARIES})
+	set(conky_includes ${conky_includes} ${GLIB_INCLUDE_DIRS})
+endif(WANT_GLIB)
+

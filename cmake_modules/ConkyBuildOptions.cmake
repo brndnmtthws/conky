@@ -23,3 +23,10 @@ if(BUILD_X11)
 endif(BUILD_X11)
 
 option(BUILD_LUA "Build Lua support" true)
+
+
+# Platform specific options
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+	option(BUILD_PORT_MONITORS "Build TCP portmon support" true)
+endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
+
