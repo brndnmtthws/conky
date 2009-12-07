@@ -1,6 +1,5 @@
 # vim: ts=4 sw=4 noet ai cindent syntax=cmake
 
-
 # Some standard options
 set(SYSTEM_CONFIG_FILE "/etc/conky/conky.conf" CACHE STRING "Default system-wide Conky configuration file")
 # use FORCE below to make sure this changes when CMAKE_INSTALL_PREFIX is modified

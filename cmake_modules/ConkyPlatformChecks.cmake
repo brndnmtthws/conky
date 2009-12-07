@@ -9,6 +9,31 @@ check_include_files(sys/inotify.h HAVE_SYS_INOTIFY_H)
 # standard path to search for includes
 set(INCLUDE_SEARCH_PATH /usr/include /usr/local/include)
 
+# Set system vars
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+	set(OS_LINUX true)
+endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
+
+if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+	set(OS_FREEBSD true)
+endif(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+
+if(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
+	set(OS_OPENBSD true)
+endif(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
+
+if(CMAKE_SYSTEM_NAME MATCHES "Solaris")
+	set(OS_SOLARIS true)
+endif(CMAKE_SYSTEM_NAME MATCHES "Solaris")
+
+if(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
+	set(OS_NETBSD true)
+endif(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
+
+if(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD)
+	message(FATAL_ERROR "Your platform, '${CMAKE_SYSTEM_NAME}', is not currently supported.  Patches are welcome.")
+endif(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD)
+
 # check for Xlib
 if(BUILD_X11)
 	include(FindX11)

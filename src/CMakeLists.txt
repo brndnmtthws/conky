@@ -8,30 +8,31 @@ set(conky_sources colours.c combine.c common.c conky.c core.c diskio.c
 	text_object.c timeinfo.c top.c algebra.c proc.c user.c)
 
 # Platform specific sources
-if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+if(OS_LINUX)
 	set(linux linux.c linux.h users.c users.h sony.c sony.h i8k.c i8k.h)
 	set(optional_sources ${optional_sources} ${linux})
-endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
+endif(OS_LINUX)
 
-if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+if(OS_FREEBSD)
 	set(freebsd freebsd.c freebsd.h bsdapm.c bsdapm.h)
 	set(optional_sources ${optional_sources} ${freebsd})
-endif(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+endif(OS_FREEBSD)
 
-if(CMAKE_SYSTEM_NAME MATCHES "Solaris")
-	set(solaris solaris.c)
-	set(optional_sources ${optional_sources} ${solaris})
-endif(CMAKE_SYSTEM_NAME MATCHES "Solaris")
-
-if(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
-	set(netbsd netbsd.c netbsd.h)
-	set(optional_sources ${optional_sources} ${netbsd})
-endif(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
-
-if(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
+if(OS_OPENBSD)
 	set(openbsd openbsd.c openbsd.h bsdapm.c bsdapm.h)
 	set(optional_sources ${optional_sources} ${openbsd})
-endif(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
+endif(OS_OPENBSD)
+
+# These below are not actually supported.  No idea what their status is.
+if(OS_SOLARIS)
+	set(solaris solaris.c)
+	set(optional_sources ${optional_sources} ${solaris})
+endif(OS_SOLARIS)
+
+if(OS_NETBSD)
+	set(netbsd netbsd.c netbsd.h)
+	set(optional_sources ${optional_sources} ${netbsd})
+endif(OS_NETBSD)
 
 
 # Optional sources
