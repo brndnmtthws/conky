@@ -1,3 +1,11 @@
+/*
+ * Auto-generated header for CMake.  See config.h.in if you need to modify the
+ * original.
+ */
+
+#ifndef _conky_config_h_
+#define _conky_config_h_
+
 #cmakedefine DEBUG
 
 #define SYSTEM_NAME "@CMAKE_SYSTEM_NAME@"
@@ -57,3 +65,5 @@
 #ifdef BUILD_AUDACIOUS_LEGACY
 #define AUDACIOUS_LEGACY
 #endif /* BUILD_AUDACIOUS_LEGACY */
+
+#endif /* _conky_config_h_ */
