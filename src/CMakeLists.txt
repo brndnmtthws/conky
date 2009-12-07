@@ -2,9 +2,13 @@
 
 include_directories(${conky_includes})
 
+# ensure build.h and config.h aren't in the way
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
 	message(FATAL_ERROR "You must remove the autotools generated file '${CMAKE_CURRENT_SOURCE_DIR}/config.h' in order to build with CMake.")
 endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build.h)
+	message(FATAL_ERROR "You must remove the autotools generated file '${CMAKE_CURRENT_SOURCE_DIR}/build.h' in order to build with CMake.")
+endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build.h)
 
 set(conky_sources colours.c combine.c common.c conky.c core.c diskio.c
 	entropy.c exec.c fs.c mail.c mixer.c net_stat.c template.c timed_thread.c

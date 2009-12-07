@@ -33,8 +33,6 @@ src/config.h.in
 src/conky
 src/stamp-h1
 src/.deps/
-src/build.h
-src/config.h
 src/defconfig.h
 src/*.o
 src/*.gcda
