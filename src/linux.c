@@ -464,12 +464,6 @@ void update_net_stats(void)
 			curtmp1 = curtmp1 + ns->net_rec[i];
 			curtmp2 = curtmp2 + ns->net_trans[i];
 		}
-		if (curtmp1 == 0) {
-			curtmp1 = 1;
-		}
-		if (curtmp2 == 0) {
-			curtmp2 = 1;
-		}
 		ns->recv_speed = curtmp1 / (double) info.net_avg_samples;
 		ns->trans_speed = curtmp2 / (double) info.net_avg_samples;
 		if (info.net_avg_samples > 1) {
