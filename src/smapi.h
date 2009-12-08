@@ -24,7 +24,7 @@
 #ifndef _SMAPI_H
 #define _SMAPI_H
 
-int smapi_bat_installed(int);
+int smapi_bat_installed_internal(int);
 
 char *smapi_read_str(const char *);
 int smapi_read_int(const char *);
@@ -41,6 +41,6 @@ uint8_t smapi_bat_percentage(struct text_object *);
 void print_smapi_bat_temp(struct text_object *, char *, int);
 void print_smapi_bat_power(struct text_object *, char *, int);
 double smapi_bat_barval(struct text_object *);
-int smapi_bat_installed(struct text_object *obj)
+int smapi_bat_installed(struct text_object *obj);
 
 #endif /* _SMAPI_H */

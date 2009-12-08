@@ -24,6 +24,7 @@
 #define _GNU_SOURCE
 #include "conky.h"	/* text_buffer_size, PACKAGE_NAME, maybe more */
 #include "smapi.h"
+#include "temphelper.h"
 #include "logging.h"
 #include <stdio.h>
 #include <string.h>
@@ -33,7 +34,7 @@
 
 #define SYS_SMAPI_PATH "/sys/devices/platform/smapi"
 
-int smapi_bat_installed(int idx)
+int smapi_bat_installed_internal(int idx)
 {
 	char path[128];
 	struct stat sb;
@@ -106,7 +107,7 @@ char *smapi_get_bat_val(const char *args)
 		return NULL;
 	}
 
-	if(!smapi_bat_installed(idx))
+	if(!smapi_bat_installed_internal(idx))
 		return NULL;
 
 	return smapi_get_bat_str(idx, fname);
@@ -141,7 +142,7 @@ uint8_t smapi_bat_percentage(struct text_object *obj)
 {
 	int idx, val = 0;
 	if (obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
-		val = smapi_bat_installed(idx) ?
+		val = smapi_bat_installed_internal(idx) ?
 			smapi_get_bat_int(idx, "remaining_percent") : 0;
 	} else
 		NORM_ERR("argument to smapi_bat_perc must be an integer");
@@ -153,7 +154,7 @@ void print_smapi_bat_temp(struct text_object *obj, char *p, int p_max_size)
 {
 	int idx, val;
 	if (obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
-		val = smapi_bat_installed(idx) ?
+		val = smapi_bat_installed_internal(idx) ?
 			smapi_get_bat_int(idx, "temperature") : 0;
 		/* temperature is in milli degree celsius */
 		temp_print(p, p_max_size, val / 1000, TEMP_CELSIUS);
@@ -165,7 +166,7 @@ void print_smapi_bat_power(struct text_object *obj, char *p, int p_max_size)
 {
 	int idx, val;
 	if (obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
-		val = smapi_bat_installed(idx) ?
+		val = smapi_bat_installed_internal(idx) ?
 			smapi_get_bat_int(idx, "power_now") : 0;
 		/* power_now is in mW, set to W with one digit precision */
 		snprintf(p, p_max_size, "%.1f", ((double)val / 1000));
@@ -175,7 +176,7 @@ void print_smapi_bat_power(struct text_object *obj, char *p, int p_max_size)
 
 double smapi_bat_barval(struct text_object *obj)
 {
-	if (obj->data.i >= 0 && smapi_bat_installed(obj->data.i))
+	if (obj->data.i >= 0 && smapi_bat_installed_internal(obj->data.i))
 		return smapi_get_bat_int(obj->data.i, "remaining_percent");
 	return 0;
 }
@@ -184,7 +185,7 @@ int smapi_bat_installed(struct text_object *obj)
 {
 	int idx;
 	if(obj->data.s && sscanf(obj->data.s, "%i", &idx) == 1) {
-		if(!smapi_bat_installed(idx)) {
+		if(!smapi_bat_installed_internal(idx)) {
 			return 0;
 		}
 	} else

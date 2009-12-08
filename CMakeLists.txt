@@ -19,6 +19,10 @@ include(ConkyPlatformChecks)
 # CPack module for installation tasks
 include(ConkyCPackSetup)
 
+# setup our configuration headers
+configure_file(${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/config.h)
+configure_file(${CMAKE_SOURCE_DIR}/build.h.in ${CMAKE_BINARY_DIR}/build.h)
+
 # Finally, add some code
 add_subdirectory(src)
 add_subdirectory(lua)

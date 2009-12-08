@@ -40,9 +40,9 @@
 #include <signal.h>
 #include <errno.h>
 #include <limits.h>
-#if HAVE_DIRENT_H
+#ifdef HAVE_DIRENT_H
 #include <dirent.h>
-#endif
+#endif /* HAVE_DIRENT_H */
 #include <sys/time.h>
 #include <sys/param.h>
 #ifdef HAVE_SYS_INOTIFY_H
