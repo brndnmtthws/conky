@@ -24,6 +24,8 @@
 #cmakedefine HAVE_SYS_PARAM_H 1
 #cmakedefine HAVE_SYS_INOTIFY_H 1
 
+#cmakedefine HAVE_STRNDUP 1
+
 #cmakedefine BUILD_X11 1
 #ifdef BUILD_X11
 #define X11
@@ -65,5 +67,51 @@
 #ifdef BUILD_AUDACIOUS_LEGACY
 #define AUDACIOUS_LEGACY
 #endif /* BUILD_AUDACIOUS_LEGACY */
+
+#cmakedefine BUILD_MPD 1
+#ifdef BUILD_MPD
+#define MPD
+#endif /* BUILD_MPD */
+
+#cmakedefine BUILD_MOC 1
+#ifdef BUILD_MOC
+#define MOC
+#endif /* BUILD_MOC */
+
+#cmakedefine BUILD_XMMS2 1
+#ifdef BUILD_XMMS2
+#define XMMS2
+#endif /* BUILD_XMMS2 */
+
+#cmakedefine BUILD_HDDTEMP 1
+#ifdef BUILD_HDDTEMP
+#define HDDTEMP
+#endif /* BUILD_HDDTEMP */
+
+#cmakedefine BUILD_EVE 1
+#ifdef BUILD_EVE
+#define EVE
+#define EVEURL_TRAINING "http://api.eve-online.com/char/SkillInTraining.xml.aspx"
+#define EVEURL_SKILLTREE "http://api.eve-online.com/eve/Skilltree.xml.aspx"
+#define EVE_OUTPUT_FORMAT "%s %d in %s"
+#endif /* BUILD_EVE */
+
+#cmakedefine BUILD_LIBXML2 1
+
+#cmakedefine BUILD_CURL 1
+#ifdef BUILD_CURL
+#define HAVE_CURL
+#endif /* BUILD_CURL */
+
+#cmakedefine BUILD_WEATHER_XOAP 1
+#ifdef BUILD_WEATHER_XOAP
+#define XOAP
+#define XOAP_FILE "$HOME/.xoaprc"
+#endif /* BUILD_WEATHER_XOAP */
+
+#cmakedefine BUILD_WEATHER_METAR 1
+#ifdef BUILD_WEATHER_METAR
+#define BUILD_WEATHER
+#endif /* BUILD_WEATHER_METAR */
 
 #endif /* _conky_config_h_ */

@@ -1,10 +1,15 @@
 # vim: ts=4 sw=4 noet ai cindent syntax=cmake
 
 include(FindPkgConfig)
+include(CheckFunctionExists)
 
+# Check for some headers
 check_include_files(sys/statfs.h HAVE_SYS_STATFS_H)
 check_include_files(sys/param.h HAVE_SYS_PARAM_H)
 check_include_files(sys/inotify.h HAVE_SYS_INOTIFY_H)
+
+# Check for some functions
+check_function_exists(strndup HAVE_STRNDUP)
 
 # standard path to search for includes
 set(INCLUDE_SEARCH_PATH /usr/include /usr/local/include)
@@ -58,7 +63,7 @@ if(BUILD_X11)
 			/usr/include/freetype2
 			/usr/local/include/freetype2)
 		if(freetype_INCLUDE_PATH)
-			set(freetype_FOUND TRUE)
+			set(freetype_FOUND true)
 			set(conky_includes ${conky_includes} ${freetype_INCLUDE_PATH})
 		else(freetype_INCLUDE_PATH)
 			message(FATAL_ERROR "Unable to find freetype library")
@@ -73,7 +78,7 @@ if(BUILD_X11)
 	if(BUILD_XDBE)
 		find_path(X11_Xdbe_INCLUDE_PATH X11/extensions/Xdbe.h ${X11_INC_SEARCH_PATH})
 		if(X11_Xdbe_INCLUDE_PATH)
-			set(X11_Xdbe_FOUND TRUE)
+			set(X11_Xdbe_FOUND true)
 			set(X11_INCLUDE_DIR ${X11_INCLUDE_DIR} ${X11_Xdbe_INCLUDE_PATH})
 		endif(X11_Xdbe_INCLUDE_PATH)
 		if(NOT X11_Xdbe_FOUND)
@@ -110,10 +115,73 @@ if(BUILD_AUDACIOUS)
 	endif(NOT BUILD_AUDACIOUS_LEGACY)
 endif(BUILD_AUDACIOUS)
 
+if(BUILD_BMPX)
+	pkg_check_modules(BMPX REQUIRED bmp-2.0>=0.14.0)
+	set(conky_libs ${conky_libs} ${BMPX_LIBRARIES})
+	set(conky_includes ${conky_includes} ${BMPX_INCLUDE_DIRS})
+endif(BUILD_BMPX)
 
+if(BUILD_XMMS2)
+	pkg_check_modules(XMMS2 REQUIRED xmms2-client)
+	set(conky_libs ${conky_libs} ${XMMS2_LIBRARIES})
+	set(conky_includes ${conky_includes} ${XMMS2_INCLUDE_DIRS})
+endif(BUILD_XMMS2)
+
+if(BUILD_EVE)
+	set(WANT_CURL true)
+	set(WANT_LIBXML2 true)
+endif(BUILD_EVE)
+
+if(BUILD_CURL)
+	set(WANT_CURL true)
+endif(BUILD_CURL)
+
+if(BUILD_RSS)
+	set(WANT_CURL true)
+	set(WANT_GLIB true)
+	set(WANT_LIBXML2 true)
+endif(BUILD_RSS)
+
+if(BUILD_WEATHER_METAR)
+	set(WANT_CURL true)
+	set(BUILD_WEATHER true)
+endif(BUILD_WEATHER_METAR)
+
+if(BUILD_WEATHER_XOAP)
+	set(WANT_LIBXML2 true)
+	set(WANT_CURL true)
+	set(BUILD_XOAP true)
+	set(BUILD_WEATHER true)
+endif(BUILD_WEATHER_XOAP)
+
+if(BUILD_NVIDIA)
+	find_path(XNVCtrl_INCLUDE_PATH NVCtrl/NVCtrl.h ${INCLUDE_SEARCH_PATH})
+	find_library(XNVCtrl_LIB NAMES XNVCtrl)
+	if(XNVCtrl_INCLUDE_PATH AND XNVCtrl_LIB)
+		set(XNVCtrl_FOUND true)
+		set(conky_libs ${conky_libs} ${XNVCtrl_LIB})
+		set(conky_includes ${conky_includes} ${XNVCtrl_INCLUDE_PATH})
+	else(XNVCtrl_INCLUDE_PATH AND XNVCtrl_LIB)
+		message(FATAL_ERROR "Unable to find XNVCtrl library")
+	endif(XNVCtrl_INCLUDE_PATH AND XNVCtrl_LIB)
+endif(BUILD_NVIDIA)
+
+# Common libraries
 if(WANT_GLIB)
 	pkg_check_modules(GLIB REQUIRED glib-2.0)
 	set(conky_libs ${conky_libs} ${GLIB_LIBRARIES})
 	set(conky_includes ${conky_includes} ${GLIB_INCLUDE_DIRS})
 endif(WANT_GLIB)
+
+if(WANT_CURL)
+	pkg_check_modules(CURL REQUIRED libcurl)
+	set(conky_libs ${conky_libs} ${CURL_LIBRARIES})
+	set(conky_includes ${conky_includes} ${CURL_INCLUDE_DIRS})
+endif(WANT_CURL)
+
+if(WANT_LIBXML2)
+	pkg_check_modules(LIBXML2 REQUIRED libxml-2.0)
+	set(conky_libs ${conky_libs} ${LIBXML2_LIBRARIES})
+	set(conky_includes ${conky_includes} ${LIBXML2_INCLUDE_DIRS})
+endif(WANT_LIBXML2)
 
