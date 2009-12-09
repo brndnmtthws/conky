@@ -1,3 +1,7 @@
+2009-12-09
+	* Replaced GHashTable with tr1::unordered_map in tcp_portmon.
+	This means portmon no longer depends on glib.
+
 2009-12-01
 	* Reenable top objects for all target OS's
 

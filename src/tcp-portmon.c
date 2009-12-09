@@ -98,14 +98,8 @@ int tcp_portmon_init(struct text_object *obj, const char *arg)
 	/* if a port monitor for this port does not exist,
 	 * create one and add it to the collection */
 	if (find_tcp_port_monitor(pmc, port_begin, port_end) == NULL) {
-		tcp_port_monitor_t *p_monitor = create_tcp_port_monitor(port_begin,
-				port_end, &pma);
-
-		if (!p_monitor) {
-			CRIT_ERR(NULL, NULL, "tcp_portmon: unable to create port monitor");
-		}
 		/* add the newly created monitor to the collection */
-		if (insert_tcp_port_monitor_into_collection(pmc, p_monitor) != 0) {
+		if (insert_new_tcp_port_monitor_into_collection(pmc, port_begin, port_end, &pma) != 0) {
 			CRIT_ERR(NULL, NULL, "tcp_portmon: unable to add port monitor to "
 					"collection");
 		}

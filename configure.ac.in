@@ -30,6 +30,7 @@ dnl
 dnl Tools
 dnl
 AC_PROG_CC
+AC_PROG_CXX
 AC_PROG_LD
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
@@ -551,7 +552,6 @@ if test x"$want_portmon" = xyes; then
         if test x"$PORT_MONITORS_MISSING" = xyes; then
               AC_MSG_ERROR([missing a needed network header for port monitoring])
         fi
-	WANT_GLIB=yes
 	AC_DEFINE(TCP_PORT_MONITOR, 1, [Define if you want tcp port monitoring support])
   fi
 fi

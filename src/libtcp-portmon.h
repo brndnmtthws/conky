@@ -1,4 +1,5 @@
 /* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=c
  *
  * libtcp-portmon.h:  tcp port monitoring library.
  *
@@ -29,13 +30,11 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 
-#include <math.h>
 #include <netdb.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 
-#include <glib.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* connection deleted if unseen again after this # of refreshes */
 #define TCP_CONNECTION_STARTING_AGE 1
@@ -63,118 +62,21 @@ enum tcp_port_monitor_peekables {
 	LOCALSERVICE
 };
 
-/* ------------------------------------------------------------------------
- * A single tcp connection
- *
- * The age variable provides the mechanism for removing connections if they
- * are not seen again in subsequent update cycles.
- * ------------------------------------------------------------------------ */
-typedef struct _tcp_connection_t {
-	/* connection's key in monitor hash */
-	struct in6_addr local_addr;
-	struct in6_addr remote_addr;
-	in_port_t local_port;
-	in_port_t remote_port;
-	int age;
-} tcp_connection_t;
-
-/* ----------------------------------
- * Copy a connection
- *
- * Returns 0 on success, -1 otherwise
- * ---------------------------------- */
-int copy_tcp_connection(tcp_connection_t *p_dest_connection,
-	const tcp_connection_t *p_source_connection);
-
-/* -------------------------------------------------------------------
- * A tcp connection node/list
- *
- * Connections within each monitor are stored in a double-linked list.
- * ------------------------------------------------------------------- */
-typedef struct _tcp_connection_node_t {
-	tcp_connection_t connection;
-	struct _tcp_connection_node_t *p_prev;
-	struct _tcp_connection_node_t *p_next;
-} tcp_connection_node_t;
-
-typedef struct _tcp_connection_list_t {
-	tcp_connection_node_t *p_head;
-	tcp_connection_node_t *p_tail;
-} tcp_connection_list_t;
-
-/* --------------
+/* ------------------------------------------------------------
  * A port monitor
- * -------------- */
-typedef struct _tcp_port_monitor_t {
-	/* monitor's key in collection hash */
-	gchar key[TCP_PORT_MONITOR_HASH_KEY_SIZE];
-	/* start of monitor port range */
-	in_port_t port_range_begin;
-	/* begin = end to monitor a single port */
-	in_port_t port_range_end;
-	/* list of connections for this monitor */
-	tcp_connection_list_t connection_list;
-	/* hash table of pointers into connection list */
-	GHashTable *hash;
-	/* array of connection pointers for O(1) peeking */
-	tcp_connection_t **p_peek;
-	/* max number of connections */
-	unsigned int max_port_monitor_connections;
-} tcp_port_monitor_t;
+ *
+ * The definition of the struct is hidden because it contains
+ * C++-specific stuff and we want to #include this from C code.
+ * ------------------------------------------------------------ */
+typedef struct _tcp_port_monitor_t tcp_port_monitor_t;
 
-/* ------------------------
- * A port monitor node/list
- * ------------------------ */
-typedef struct _tcp_port_monitor_node_t {
-	tcp_port_monitor_t *p_monitor;
-	struct _tcp_port_monitor_node_t *p_next;
-} tcp_port_monitor_node_t;
-
-typedef struct __tcp_port_monitor_list_t {
-	tcp_port_monitor_node_t *p_head;
-	tcp_port_monitor_node_t *p_tail;
-} tcp_port_monitor_list_t;
-
-/* ---------------------------------------
- * A port monitor utility function typedef
- * --------------------------------------- */
-typedef void (*tcp_port_monitor_function_ptr_t)(tcp_port_monitor_t *p_monitor,
-	void *p_void);
-
-/* -------------------------------------------
- * Port monitor utility functions implementing
- * tcp_port_monitor_function_ptr_t
- * ------------------------------------------- */
-void destroy_tcp_port_monitor(tcp_port_monitor_t *p_monitor,
-	void *p_void /* (use NULL for this function) */);
-
-void age_tcp_port_monitor(tcp_port_monitor_t *p_monitor,
-	void *p_void /* (use NULL for this function) */);
-
-void rebuild_tcp_port_monitor_peek_table(tcp_port_monitor_t *p_monitor,
-	void *p_void /* (use NULL for this function) */);
-
-void show_connection_to_tcp_port_monitor(tcp_port_monitor_t *p_monitor,
-	void *p_connection /* (client should cast) */);
-
-/* -----------------------------
+/* ------------------------------------------------------------
  * A tcp port monitor collection
- * ----------------------------- */
-typedef struct _tcp_port_monitor_collection_t {
-	/* list of monitors for this collection */
-	tcp_port_monitor_list_t monitor_list;
-	/* hash table of pointers into collection's monitor list */
-	GHashTable *hash;
-} tcp_port_monitor_collection_t;
-
-/* --------------------------------------------------------
- * Apply a tcp_port_monitor_function_ptr_t function to each
- * port monitor in the collection.
- * -------------------------------------------------------- */
-void for_each_tcp_port_monitor_in_collection(
-	tcp_port_monitor_collection_t *p_collection,
-	tcp_port_monitor_function_ptr_t p_function,
-	void *p_function_args /* (for user arguments) */);
+ *
+ * The definition of the struct is hidden because it contains
+ * C++-specific stuff and we want to #include this from C code.
+ * ------------------------------------------------------------ */
+typedef struct _tcp_port_monitor_collection_t tcp_port_monitor_collection_t;
 
 /* ----------------------------------------------------------------------
  * CLIENT INTERFACE
@@ -191,11 +93,6 @@ typedef struct _tcp_port_monitor_args_t {
 /* ----------------------------------
  * Client operations on port monitors
  * ---------------------------------- */
-
-/* Clients should first try to "find_tcp_port_monitor" before creating one,
- * so that there are no redundant monitors. */
-tcp_port_monitor_t *create_tcp_port_monitor(in_port_t port_range_begin,
-	in_port_t port_range_end, tcp_port_monitor_args_t *p_creation_args);
 
 /* Clients use this function to get connection data from
  * the indicated port monitor.
@@ -227,14 +124,19 @@ void destroy_tcp_port_monitor_collection(
 void update_tcp_port_monitor_collection(
 	tcp_port_monitor_collection_t *p_collection);
 
-/* After clients create a monitor, use this to add it to the collection.
+/* Creation of reduntant monitors is silently ignored
  * Returns 0 on success, -1 otherwise. */
-int insert_tcp_port_monitor_into_collection(
-	tcp_port_monitor_collection_t *p_collection, tcp_port_monitor_t *p_monitor);
+int insert_new_tcp_port_monitor_into_collection(
+	tcp_port_monitor_collection_t *p_collection, in_port_t port_range_begin,
+	in_port_t port_range_end, tcp_port_monitor_args_t *p_creation_args);
 
 /* Clients need a way to find monitors */
 tcp_port_monitor_t *find_tcp_port_monitor(
-	const tcp_port_monitor_collection_t *p_collection,
+	tcp_port_monitor_collection_t *p_collection,
 	in_port_t port_range_begin, in_port_t port_range_end);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

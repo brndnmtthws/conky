@@ -70,7 +70,7 @@ solaris = solaris.c
 freebsd = freebsd.c freebsd.h bsdapm.c bsdapm.h
 netbsd = netbsd.c netbsd.h
 openbsd = openbsd.c openbsd.h bsdapm.c bsdapm.h
-port_monitors = libtcp-portmon.c libtcp-portmon.h \
+port_monitors = libtcp-portmon.cc libtcp-portmon.h \
                 tcp-portmon.c tcp-portmon.h
 x11 = x11.c x11.h fonts.c fonts.h
 hddtemp = hddtemp.c hddtemp.h
