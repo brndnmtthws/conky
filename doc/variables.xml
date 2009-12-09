@@ -3429,14 +3429,14 @@
                         </row>
                         <row>
                             <entry>
-                                <programlisting>${template1
+                                ${template1
                                 ${template2\ disk\ root}
-                                /}</programlisting>
+                                /}
                             </entry>
                             <entry>
-                                <programlisting>disk root:
+                                disk root:
                                 ${fs_free /} / ${fs_size
-                                /}</programlisting>
+                                /}
                             </entry>
                         </row>
                     </tbody>
