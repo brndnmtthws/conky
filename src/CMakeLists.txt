@@ -75,7 +75,7 @@ if(BUILD_XMMS2)
 endif(BUILD_XMMS2)
 
 if(BUILD_PORT_MONITORS)
-	set(port_monitors libtcp-portmon.c libtcp-portmon.h tcp-portmon.c tcp-portmon.h)
+	set(port_monitors libtcp-portmon.cc libtcp-portmon.h tcp-portmon.c tcp-portmon.h)
 	set(optional_sources ${optional_sources} ${port_monitors})
 endif(BUILD_PORT_MONITORS)
 

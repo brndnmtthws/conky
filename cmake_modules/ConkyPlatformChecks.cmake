@@ -95,10 +95,6 @@ if(BUILD_LUA)
 	set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIRS})
 endif(BUILD_LUA)
 
-if(BUILD_PORT_MONITORS)
-	set(WANT_GLIB true)
-endif(BUILD_PORT_MONITORS)
-
 if(BUILD_AUDACIOUS)
 	set(WANT_GLIB true)
 	if(NOT BUILD_AUDACIOUS_LEGACY)
