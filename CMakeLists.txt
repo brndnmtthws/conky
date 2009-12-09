@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 2.6)
 project(conky)
 
 # This is the directory for our custom CMake modules.
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_modules)
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # 'core' CMake stuff
 include(Conky)
@@ -20,8 +20,8 @@ include(ConkyPlatformChecks)
 include(ConkyCPackSetup)
 
 # setup our configuration headers
-configure_file(${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/config.h)
-configure_file(${CMAKE_SOURCE_DIR}/build.h.in ${CMAKE_BINARY_DIR}/build.h)
+configure_file(${CMAKE_MODULE_PATH}/config.h.in ${CMAKE_BINARY_DIR}/config.h)
+configure_file(${CMAKE_MODULE_PATH}/build.h.in ${CMAKE_BINARY_DIR}/build.h)
 
 # Finally, add some code
 add_subdirectory(src)
