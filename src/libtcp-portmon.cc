@@ -396,7 +396,7 @@ int peek_tcp_port_monitor(const tcp_port_monitor_t *p_monitor, int item,
 	
 	/* if the connection index is out of range, we simply return with no error,
 	 * having first cleared the client-supplied buffer. */
-	if ((item != COUNT) && (connection_index >= p_monitor->hash.size())) {
+	if ( (item != COUNT) && (connection_index >= ssize_t(p_monitor->hash.size())) ) {
 		return 0;
 	}
 
@@ -404,7 +404,7 @@ int peek_tcp_port_monitor(const tcp_port_monitor_t *p_monitor, int item,
 
 		case COUNT:
 
-			std::snprintf(p_buffer, buffer_size, "%zd", p_monitor->hash.size());
+			std::snprintf(p_buffer, buffer_size, "%u", unsigned(p_monitor->hash.size()));
 			break;
 
 		case REMOTEIP:

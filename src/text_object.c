@@ -26,7 +26,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#define _GNU_SOURCE
+#include "config.h"
 #include "text_object.h"
 #include "logging.h"
 #include <stdlib.h>

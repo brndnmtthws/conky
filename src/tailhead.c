@@ -28,7 +28,7 @@
  *
  */
 
-#define _GNU_SOURCE
+#include "config.h"
 #include "common.h"
 #include "text_object.h"
 #include "logging.h"

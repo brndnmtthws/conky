@@ -24,7 +24,7 @@ if test x"$CFLAGS" = x""; then
   AC_SUBST(CFLAGS, [ ])
 fi
 
-AC_DEFINE([_GNU_SOURCE], [], [Define for GNU source and extensions])
+conky_CFLAGS="$conky_CFLAGS -D_GNU_SOURCE"
 
 dnl
 dnl Tools
@@ -916,10 +916,10 @@ AC_ARG_ENABLE([testing],
 
 if test "x$want_testing" = "xyes" -a $ac_cv_c_compiler_gnu != no; then
   if test "x$want_debug" = "xyes"; then
-    conky_CFLAGS="$conky_CFLAGS -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -std=c99 -pedantic -Werror"
+    conky_CFLAGS="$conky_CFLAGS -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -std=c99 -pedantic -Werror"
     AC_DEFINE([TESTING], [], [Define for testing (enables strict compiler flags)])
   else
-    conky_CFLAGS="$conky_CFLAGS -O0 -g3 -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -std=c99 -pedantic -Werror"
+    conky_CFLAGS="$conky_CFLAGS -O0 -g3 -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -std=c99 -pedantic -Werror"
     AC_DEFINE([TESTING], [], [Define for testing (enables strict compiler flags)])
   fi
 fi
@@ -941,7 +941,16 @@ if test "x$want_profiling" = "xyes" -a $ac_cv_c_compiler_gnu != no; then
   AC_DEFINE([PROFILING], [], [Define for profiling (gprof and gcov) support])
 fi
 
+conky_CXXFLAGS=$conky_CFLAGS
+#remove C-only options
+conky_CXXFLAGS=${conky_CXXFLAGS/-Wdeclaration-after-statement/}
+conky_CXXFLAGS=${conky_CXXFLAGS/-Wbad-function-cast/}
+conky_CXXFLAGS=${conky_CXXFLAGS/-Wstrict-prototypes/}
+conky_CXXFLAGS=${conky_CXXFLAGS/-Wold-style-definition/}
+conky_CXXFLAGS=${conky_CXXFLAGS/-std=c99/-std=c++98}
+
 AC_SUBST(conky_CFLAGS)
+AC_SUBST(conky_CXXFLAGS)
 AC_SUBST(conky_LIBS)
 AC_SUBST(X11_LIBS)
 
@@ -957,6 +966,7 @@ $PACKAGE $VERSION configured successfully:
  Installing into:   $prefix
  System config dir: $sysconfdir
  C compiler flags:  $conky_CFLAGS
+ C++ compiler flags:$conky_CXXFLAGS
  Libraries:         $conky_LIBS
  Linker flags:      $conky_LDFLAGS
 
