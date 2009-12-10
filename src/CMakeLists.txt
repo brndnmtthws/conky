@@ -75,7 +75,9 @@ if(BUILD_XMMS2)
 endif(BUILD_XMMS2)
 
 if(BUILD_PORT_MONITORS)
-	set(port_monitors libtcp-portmon.cc tcp-portmon.cc)
+	add_library(tcp-portmon libtcp-portmon.cc)
+	set(conky_libs ${conky_libs} tcp-portmon)
+	set(port_monitors tcp-portmon.cc)
 	set(optional_sources ${optional_sources} ${port_monitors})
 endif(BUILD_PORT_MONITORS)
 
