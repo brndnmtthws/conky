@@ -13,6 +13,5 @@ Using CMake to build Conky is pretty easy, and here is how I do it:
   $ make
   # make install # if you want
 
-When switching back from cmake to autotools, you need to call 'make distclean'.
 
 NOTE: I haven't actually finished the CMake build system yet, because I'm lazy.  I'll add all the different options eventually though.
