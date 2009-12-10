@@ -115,11 +115,11 @@ struct _tcp_port_monitor_t {
 	std::vector<const tcp_connection_t *> p_peek;
 
 	_tcp_port_monitor_t(int max_connections)
-		: hash(), p_peek(max_connections, NULL)
+		: hash(), p_peek(max_connections, static_cast<const tcp_connection_t *>(NULL))
 	{ }
 
 	_tcp_port_monitor_t(const _tcp_port_monitor_t &other)
-		: hash(other.hash), p_peek(other.p_peek.size(), NULL)
+		: hash(other.hash), p_peek(other.p_peek.size(), static_cast<const tcp_connection_t *>(NULL))
 	{
 		// we must rebuild the peek table because the pointers are no longer valid
 		rebuild_peek_table();
