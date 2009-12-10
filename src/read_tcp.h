@@ -31,8 +31,16 @@
 #ifndef _READ_TCP_H
 #define _READ_TCP_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void parse_read_tcp_arg(struct text_object *, const char *, void *);
 void print_read_tcp(struct text_object *, char *, int);
 void free_read_tcp(struct text_object *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _READ_TCP_H */

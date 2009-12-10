@@ -64,6 +64,10 @@
 
 #include <regex.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /******************************************
  * Defines								  *
  ******************************************/
@@ -148,5 +152,9 @@ void free_top(struct text_object *);
 /* return zero on success, non-zero otherwise */
 int set_top_name_width(const char *);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _top_h_ */

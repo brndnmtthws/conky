@@ -27,6 +27,10 @@
 
 #include "timed_thread.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum _audacious_items {
 	AUDACIOUS_STATUS = 0,
 	AUDACIOUS_TITLE,
@@ -79,5 +83,9 @@ void print_audacious_playlist_length(struct text_object *, char *, int);
 void print_audacious_playlist_position(struct text_object *, char *, int);
 void print_audacious_main_volume(struct text_object *, char *, int);
 double audacious_barval(struct text_object *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

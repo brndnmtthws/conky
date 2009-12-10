@@ -31,6 +31,10 @@
 #ifndef _EXEC_H
 #define _EXEC_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern pid_t childpid;
 
 void scan_exec_arg(struct text_object *, const char *);
@@ -48,4 +52,8 @@ double execbarval(struct text_object *);
 double execi_barval(struct text_object *);
 void free_exec(struct text_object *);
 void free_execi(struct text_object *);
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* _EXEC_H */

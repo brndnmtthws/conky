@@ -50,7 +50,7 @@ endif # BUILD_CONFIG_OUTPUT
 
 # source files always needed for compiling
 mandatory_sources = colours.c colours.h combine.c combine.h common.c common.h \
-		conky.c conky.h core.c core.h diskio.c diskio.h entropy.c entropy.h \
+		conky.cc conky.h core.cc core.h diskio.c diskio.h entropy.c entropy.h \
 		exec.c exec.h fs.c fs.h logging.h mail.c mail.h mixer.c mixer.h net_stat.c \
 		net_stat.h template.c template.h timed_thread.c timed_thread.h mboxscan.c \
 		mboxscan.h read_tcp.c read_tcp.h scroll.c scroll.h specials.c \
@@ -71,7 +71,7 @@ freebsd = freebsd.c freebsd.h bsdapm.c bsdapm.h
 netbsd = netbsd.c netbsd.h
 openbsd = openbsd.c openbsd.h bsdapm.c bsdapm.h
 port_monitors = libtcp-portmon.cc libtcp-portmon.h \
-                tcp-portmon.c tcp-portmon.h
+                tcp-portmon.cc tcp-portmon.h
 x11 = x11.c x11.h fonts.c fonts.h
 hddtemp = hddtemp.c hddtemp.h
 eve = eve.c eve.h

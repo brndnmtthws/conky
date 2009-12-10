@@ -29,8 +29,16 @@
 #ifndef _SCROLL_H
 #define _SCROLL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void parse_scroll_arg(struct text_object *, const char *, void *);
 void print_scroll(struct text_object *, char *, int);
 void free_scroll(struct text_object *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _SCROLL_H */

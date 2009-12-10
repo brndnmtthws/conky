@@ -24,8 +24,16 @@
 #ifndef _EVE_H
 #define _EVE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void scan_eve(struct text_object *, const char *);
 void print_eve(struct text_object *, char *, int);
 void free_eve(struct text_object *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _EVE_H */

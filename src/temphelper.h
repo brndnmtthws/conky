@@ -24,6 +24,10 @@
 #ifndef TEMPHELPER_H
 #define TEMPHELPER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum TEMP_UNIT {
 	TEMP_CELSIUS,
 	TEMP_FAHRENHEIT
@@ -31,5 +35,9 @@ enum TEMP_UNIT {
 
 int set_temp_output_unit(const char *);
 int temp_print(char *, size_t, double, enum TEMP_UNIT);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* TEMPHELPER_H */

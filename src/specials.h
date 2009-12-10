@@ -29,6 +29,10 @@
 #ifndef _SPECIALS_H
 #define _SPECIALS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* special stuff in text_buffer */
 
 #define SPECIAL_CHAR '\x01'
@@ -119,5 +123,9 @@ void new_alignr(struct text_object *, char *, int);
 void new_alignc(struct text_object *, char *, int);
 void new_goto(struct text_object *, char *, int);
 void new_tab(struct text_object *, char *, int);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _SPECIALS_H */

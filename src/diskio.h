@@ -30,6 +30,10 @@
 #ifndef DISKIO_H_
 #define DISKIO_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct diskio_stat {
 	struct diskio_stat *next;
 	char *dev;
@@ -61,5 +65,9 @@ double diskiographval(struct text_object *);
 double diskiographval_read(struct text_object *);
 double diskiographval_write(struct text_object *);
 #endif /* X11 */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* DISKIO_H_ */

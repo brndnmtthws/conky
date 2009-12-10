@@ -24,6 +24,10 @@
 #ifndef _SMAPI_H
 #define _SMAPI_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int smapi_bat_installed_internal(int);
 
 char *smapi_read_str(const char *);
@@ -42,5 +46,9 @@ void print_smapi_bat_temp(struct text_object *, char *, int);
 void print_smapi_bat_power(struct text_object *, char *, int);
 double smapi_bat_barval(struct text_object *);
 int smapi_bat_installed(struct text_object *obj);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _SMAPI_H */

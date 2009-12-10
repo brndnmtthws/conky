@@ -26,6 +26,10 @@
 #ifndef BMPX_H_
 #define BMPX_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void update_bmpx(void);
 struct bmpx_s {
 	char *title;
@@ -42,5 +46,9 @@ void print_bmpx_album(struct text_object *, char *, int);
 void print_bmpx_uri(struct text_object *, char *, int);
 void print_bmpx_track(struct text_object *, char *, int);
 void print_bmpx_bitrate(struct text_object *, char *, int);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /*BMPX_H_*/

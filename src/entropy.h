@@ -31,11 +31,19 @@
 #ifndef _ENTROPY_H
 #define _ENTROPY_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void update_entropy(void);
 
 void print_entropy_avail(struct text_object *, char *, int);
 uint8_t entropy_percentage(struct text_object *);
 void print_entropy_poolsize(struct text_object *, char *, int);
 double entropy_barval(struct text_object *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _ENTROPY_H */

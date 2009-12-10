@@ -3,6 +3,10 @@
 #ifndef MIXER_H_
 #define MIXER_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void parse_mixer_arg(struct text_object *, const char *);
 uint8_t mixer_percentage(struct text_object *obj);
 uint8_t mixerl_percentage(struct text_object *obj);
@@ -13,5 +17,9 @@ void scan_mixer_bar(struct text_object *, const char *);
 double mixer_barval(struct text_object *);
 double mixerl_barval(struct text_object *);
 double mixerr_barval(struct text_object *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /*MIXER_H_*/

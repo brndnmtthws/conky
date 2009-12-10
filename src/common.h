@@ -11,6 +11,10 @@
 #include <sys/socket.h>
 #include "text_object.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void add_update_callback(void (*func)(void));
 void free_update_callbacks(void);
 void start_update_threading(void);
@@ -130,5 +134,9 @@ void print_include(struct text_object *, char *, int);
 
 void print_updates(struct text_object *, char *, int);
 int updatenr_iftest(struct text_object *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _COMMON_H */

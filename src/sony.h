@@ -31,6 +31,14 @@
 #ifndef _SONY_H
 #define _SONY_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void get_sony_fanspeed(struct text_object *, char *, int);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _SONY_H */

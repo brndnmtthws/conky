@@ -32,10 +32,6 @@
 
 #include <netdb.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* connection deleted if unseen again after this # of refreshes */
 #define TCP_CONNECTION_STARTING_AGE 1
 #define TCP_PORT_MONITOR_HASH_KEY_SIZE 12
@@ -134,9 +130,5 @@ int insert_new_tcp_port_monitor_into_collection(
 tcp_port_monitor_t *find_tcp_port_monitor(
 	tcp_port_monitor_collection_t *p_collection,
 	in_port_t port_range_begin, in_port_t port_range_end);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

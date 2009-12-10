@@ -5,6 +5,10 @@
 
 #include "common.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void print_disk_protect_queue(struct text_object *, char *, int);
 
 void print_ioscheduler(struct text_object *, char *, int);
@@ -29,5 +33,9 @@ int get_entropy_avail(unsigned int *);
 int get_entropy_poolsize(unsigned int *);
 
 void update_stat(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _LINUX_H */

@@ -33,6 +33,10 @@
 #include "config.h"		/* for the defines */
 #include "specials.h"		/* enum special_types */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum text_object_type {
 	OBJ_read_tcp,
 	OBJ_addr,
@@ -548,5 +552,9 @@ int ifblock_stack_empty(void **opaque);
 
 /* make the given object be a plain text object printing given string */
 void obj_be_plain_text(struct text_object *, const char *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _TEXT_OBJECT_H */

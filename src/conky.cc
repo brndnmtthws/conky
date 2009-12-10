@@ -163,6 +163,7 @@ double update_interval_old;
 double update_interval_bat;
 void *global_cpu = NULL;
 unsigned int max_text_width = 0;
+int ifup_strictness = IFUP_UP;
 
 int argc_copy;
 char** argv_copy;
@@ -518,7 +519,7 @@ int spaced_print(char *buf, int size, const char *format, int width, ...)
 	if (size < 1) {
 		return 0;
 	}
-	tempbuf = malloc(size * sizeof(char));
+	tempbuf = (char*)malloc(size * sizeof(char));
 
 	// Passes the varargs along to vsnprintf
 	va_start(argp, width);
@@ -640,7 +641,7 @@ struct conftree* conftree_add(struct conftree* previous, const char* newstring) 
 			return NULL;
 		}
 	}
-	node = malloc(sizeof(struct conftree));
+	node = (struct conftree*)malloc(sizeof(struct conftree));
 	if (previous != NULL) {
 		if(previous->vert_next == NULL) {
 			previous->vert_next = node;
@@ -1800,7 +1801,7 @@ static void draw_stuff(void)
 		fclose(overwrite_fpointer);
 		overwrite_fpointer = 0;
 	}
-	if(append_fpointer) {
+	if (append_fpointer) {
 		fclose(append_fpointer);
 		append_fpointer = 0;
 	}
@@ -2679,25 +2680,25 @@ static void set_default_configurations(void)
 }
 
 /* returns 1 if you can overwrite or create the file at 'path' */
-static _Bool overwrite_works(const char *path)
+static bool overwrite_works(const char *path)
 {
 	FILE *filepointer;
 
 	if (!(filepointer = fopen(path, "w")))
-		return 0;
+		return false;
 	fclose(filepointer);
-	return 1;
+	return true;
 }
 
 /* returns 1 if you can append or create the file at 'path' */
-static _Bool append_works(const char *path)
+static bool append_works(const char *path)
 {
 	FILE *filepointer;
 
 	if (!(filepointer = fopen(path, "a")))
-		return 0;
+		return false;
 	fclose(filepointer);
-	return 1;
+	return true;
 }
 
 #ifdef X11
@@ -3169,7 +3170,7 @@ char load_config_file(const char *f)
 				free(overwrite_file);
 				overwrite_file = 0;
 			}
-			if(overwrite_works(value)) {
+			if (overwrite_works(value)) {
 				overwrite_file = strdup(value);
 				output_methods |= OVERWRITE_FILE;
 			} else
@@ -3195,7 +3196,7 @@ char load_config_file(const char *f)
 				} else if (strcasecmp(value, "none") == EQUAL) {
 					use_spacer = NO_SPACER;
 				} else {
-					use_spacer = string_to_bool(value);
+					use_spacer = string_to_bool(value) ? RIGHT_SPACER : NO_SPACER;
 					NORM_ERR("use_spacer should have an argument of left, right, or"
 						" none.  '%s' seems to be some form of '%s', so"
 						" defaulting to %s.", value,
@@ -3936,7 +3937,7 @@ void initialisation(int argc, char **argv) {
 	currentconffile = conftree_add(currentconffile, current_config);
 
 	/* init specials array */
-	if ((specials = calloc(sizeof(struct special_t), max_specials)) == 0) {
+	if ((specials = (special_t*)calloc(sizeof(struct special_t), max_specials)) == 0) {
 		NORM_ERR("failed to create specials array");
 	}
 
@@ -4084,11 +4085,11 @@ void initialisation(int argc, char **argv) {
 
 	start_update_threading();
 
-	text_buffer = malloc(max_user_text);
+	text_buffer = (char*)malloc(max_user_text);
 	memset(text_buffer, 0, max_user_text);
-	tmpstring1 = malloc(text_buffer_size);
+	tmpstring1 = (char*)malloc(text_buffer_size);
 	memset(tmpstring1, 0, text_buffer_size);
-	tmpstring2 = malloc(text_buffer_size);
+	tmpstring2 = (char*)malloc(text_buffer_size);
 	memset(tmpstring2, 0, text_buffer_size);
 
 #ifdef X11

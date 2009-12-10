@@ -29,9 +29,17 @@
 #ifndef _COLOURS_H
 #define _COLOURS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 unsigned int adjust_colours(unsigned int);
 unsigned long *do_gradient(int, unsigned long, unsigned long);
 
 long get_x11_color(const char *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _COLOURS_H */

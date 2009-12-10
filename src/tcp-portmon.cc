@@ -77,7 +77,7 @@ int tcp_portmon_init(struct text_object *obj, const char *arg)
 		CRIT_ERR(NULL, NULL, "tcp_portmon: connection index must be non-negative");
 	}
 	/* ok, args looks good. save the text object data */
-	pmd = malloc(sizeof(struct tcp_port_monitor_data));
+	pmd = (tcp_port_monitor_data*)malloc(sizeof(struct tcp_port_monitor_data));
 	memset(pmd, 0, sizeof(struct tcp_port_monitor_data));
 	pmd->port_range_begin = (in_port_t) port_begin;
 	pmd->port_range_end = (in_port_t) port_end;
@@ -109,7 +109,7 @@ int tcp_portmon_init(struct text_object *obj, const char *arg)
 
 void tcp_portmon_action(struct text_object *obj, char *p, int p_max_size)
 {
-	struct tcp_port_monitor_data *pmd = obj->data.opaque;
+	struct tcp_port_monitor_data *pmd = (tcp_port_monitor_data*)obj->data.opaque;
 	tcp_port_monitor_t *p_monitor;
 
 	if (!pmd)

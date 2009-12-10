@@ -109,7 +109,7 @@ const char *dev_name(const char *path)
 
 static struct text_object *new_text_object_internal(void)
 {
-	struct text_object *obj = malloc(sizeof(struct text_object));
+	struct text_object *obj = (text_object*)malloc(sizeof(struct text_object));
 	memset(obj, 0, sizeof(struct text_object));
 	return obj;
 }
@@ -715,11 +715,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		scan_loadavg_arg(obj, arg);
 		obj->callbacks.print = &print_loadavg;
 	END OBJ_IF_ARG(if_empty, 0, "if_empty needs an argument")
-		obj->sub = malloc(sizeof(struct text_object));
+		obj->sub = (text_object*)malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
 		obj->callbacks.iftest = &if_empty_iftest;
 	END OBJ_IF_ARG(if_match, 0, "if_match needs arguments")
-		obj->sub = malloc(sizeof(struct text_object));
+		obj->sub = (text_object*)malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
 		obj->callbacks.iftest = &check_if_match;
 	END OBJ_IF_ARG(if_existing, 0, "if_existing needs an argument or two")
@@ -859,7 +859,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_desktop_name;
 #endif
 	END OBJ_ARG(format_time, 0, "format_time needs a pid as argument")
-		obj->sub = malloc(sizeof(struct text_object));
+		obj->sub = (text_object*)malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
 		obj->callbacks.print = &print_format_time;
 	END OBJ(nodename, 0)
@@ -1505,7 +1505,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		struct conftree *leaf = conftree_add(currentconffile, arg);
 		if(leaf) {
 			if (load_config_file(arg) == TRUE) {
-				obj->sub = malloc(sizeof(struct text_object));
+				obj->sub = (text_object*)malloc(sizeof(struct text_object));
 				currentconffile = leaf;
 				extract_variable_text_internal(obj->sub, get_global_text());
 				currentconffile = leaf->back;
@@ -1517,11 +1517,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			NORM_ERR("You are trying to load '%s' recursively, I'm only going to load it once to prevent an infinite loop.", arg);
 		}
 	END OBJ_ARG(blink, 0, "blink needs a argument")
-		obj->sub = malloc(sizeof(struct text_object));
+		obj->sub = (text_object*)malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
 		obj->callbacks.print = &print_blink;
 	END OBJ_ARG(to_bytes, 0, "to_bytes needs a argument")
-		obj->sub = malloc(sizeof(struct text_object));
+		obj->sub = (text_object*)malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
 		obj->callbacks.print = &print_to_bytes;
 	END OBJ(scroll, 0)

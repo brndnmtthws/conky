@@ -27,6 +27,9 @@
 
 #include "timed_thread.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* curl thread lib exports begin */
 
@@ -71,6 +74,10 @@ void curl_print(struct text_object *, char *, int);
 void curl_obj_free(struct text_object *);
 
 /* $curl exports end */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _CURL_THREAD_H_ */
 

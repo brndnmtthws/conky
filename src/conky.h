@@ -159,23 +159,12 @@ struct x11_info {
 	struct desktop_info desktop;
 };
 
-int get_stippled_borders(void);
-
 #endif /* X11 */
 
 /* defined in conky.c */
 extern long default_fg_color, default_bg_color, default_out_color;
 extern long color0, color1, color2, color3, color4, color5, color6, color7,
 	   color8, color9;
-void set_current_text_color(long colour);
-long get_current_text_color(void);
-
-void set_updatereset(int);
-int get_updatereset(void);
-int get_total_updates(void);
-
-int percent_print(char *, int, unsigned);
-void human_readable(long long, char *, int);
 
 struct conftree {
 	char* string;
@@ -204,14 +193,6 @@ enum {
 	BATTERY_STATUS,
 	BATTERY_TIME
 };
-
-/* if_up strictness selector
- * needed by conky.c and linux.c (and potentially others) */
-enum {
-	IFUP_UP,
-	IFUP_LINK,
-	IFUP_ADDR
-} ifup_strictness;
 
 struct information {
 	unsigned int mask;
@@ -309,6 +290,28 @@ extern struct information info;
 /* defined in conky.c */
 extern double current_update_time, last_update_time, update_interval;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* if_up strictness selector
+ * needed by conky.c and linux.c (and potentially others) */
+enum _ifup_strictness {
+	IFUP_UP,
+	IFUP_LINK,
+	IFUP_ADDR
+};
+extern int ifup_strictness;
+
+int get_stippled_borders(void);
+
+void set_current_text_color(long colour);
+long get_current_text_color(void);
+
+void set_updatereset(int);
+int get_updatereset(void);
+int get_total_updates(void);
+
 /* defined in conky.c */
 int spaced_print(char *, int, const char *, int, ...)
 	__attribute__((format(printf, 3, 5)));
@@ -318,6 +321,19 @@ extern int inotify_fd;
  * evaluates 'text' and places the result in 'p' of max length 'p_max_size'
  */
 void evaluate(const char *text, char *p, int p_max_size);
+
+void set_update_interval(double interval);
+
+void parse_conky_vars(struct text_object *, const char *, char *, int);
+
+void generate_text_internal(char *, int, struct text_object);
+
+int percent_print(char *, int, unsigned);
+void human_readable(long long, char *, int);
+
+#ifdef __cplusplus
+}
+#endif
 
 /* maximum size of config TEXT buffer, i.e. below TEXT line. */
 extern unsigned int max_user_text;
@@ -343,8 +359,6 @@ enum x_initialiser_state {
 extern int output_methods;
 extern enum x_initialiser_state x_initialised;
 
-void set_update_interval(double interval);
-
 #define DEFAULT_TEXT_BUFFER_SIZE_S "##DEFAULT_TEXT_BUFFER_SIZE"
 
 #define NOBATTERY 0
@@ -353,7 +367,4 @@ void set_update_interval(double interval);
 #define UNUSED(a)  (void)a
 #define UNUSED_ATTR __attribute__ ((unused))
 
-void parse_conky_vars(struct text_object *, const char *, char *, int);
-
-void generate_text_internal(char *, int, struct text_object);
 #endif /* _conky_h_ */

@@ -16,8 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
- *
  */
 #ifndef _TCP_PORTMON_H
 #define _TCP_PORTMON_H

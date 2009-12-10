@@ -36,6 +36,10 @@
 
 #define LUAPREFIX "conky_"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* load a lua script */
 void llua_load(const char *script);
 /* close lua stuff */
@@ -68,5 +72,9 @@ void llua_update_info(struct information *i, double u_interval);
 void print_lua(struct text_object *, char *, int);
 void print_lua_parse(struct text_object *, char *, int);
 double lua_barval(struct text_object *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LUA_H_*/

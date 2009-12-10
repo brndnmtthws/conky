@@ -27,6 +27,10 @@
  *
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void clean_up(void *memtofree1, void* memtofree2);
 
 #ifndef _LOGGING_H
@@ -52,5 +56,9 @@ extern int global_debug_level;
 	}
 #define DBGP(...) __DBGP(0, __VA_ARGS__)
 #define DBGP2(...) __DBGP(1, __VA_ARGS__)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _LOGGING_H */

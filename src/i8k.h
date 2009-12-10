@@ -32,6 +32,10 @@
 #ifndef _I8K_H
 #define _I8K_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void update_i8k(void);
 void print_i8k_left_fan_status(struct text_object *, char *, int);
 void print_i8k_cpu_temp(struct text_object *, char *, int);
@@ -43,5 +47,9 @@ void print_i8k_serial(struct text_object *, char *, int);
 void print_i8k_left_fan_rpm(struct text_object *, char *, int);
 void print_i8k_right_fan_rpm(struct text_object *, char *, int);
 void print_i8k_buttons_status(struct text_object *, char *, int);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _I8K_H */

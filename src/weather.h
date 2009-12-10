@@ -30,6 +30,10 @@
 #ifndef WEATHER_H_
 #define WEATHER_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Prototypes */
 void weather_free_info(void);
 
@@ -42,5 +46,9 @@ void print_weather_forecast(struct text_object *, char *, int);
 void scan_weather_arg(struct text_object *, const char *, void *);
 void print_weather(struct text_object *, char *, int);
 void free_weather(struct text_object *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /*WEATHER_H_*/

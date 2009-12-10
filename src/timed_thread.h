@@ -27,6 +27,10 @@
 /* 10000 microseconds = 10 ms =  0.01 sec */
 #define MINIMUM_INTERVAL_USECS 10000
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* opaque structure for clients */
 typedef struct _timed_thread timed_thread;
 
@@ -66,4 +70,7 @@ void timed_thread_destroy_registered_threads(void);
 /* returns read file descriptor for thread pipe */
 int timed_thread_readfd(timed_thread *p_timed_thread);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* #ifdef _TIMED_THREAD_H_ */

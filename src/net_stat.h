@@ -33,6 +33,10 @@
 
 #include <sys/socket.h>	/* struct sockaddr */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct net_stat {
         char *dev;
         int up;
@@ -97,5 +101,9 @@ void free_dns_data(struct text_object *);
 void update_dns_data(void);
 void parse_nameserver_arg(struct text_object *, const char *);
 void print_nameserver(struct text_object *, char *, int);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _NET_STAT_H */

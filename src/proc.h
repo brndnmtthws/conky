@@ -32,6 +32,10 @@
 #define READERR	"Can't read '%s'"
 #define READSIZE 128
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* XXX: this should go global */
 void extract_object_args_to_sub(struct text_object *, const char *);
 
@@ -78,3 +82,7 @@ void print_pid_write(struct text_object *obj, char *p, int p_max_size);
 
 void scan_cmdline_to_pid_arg(struct text_object *obj, const char *arg, void* free_at_crash);
 void print_cmdline_to_pid(struct text_object *obj, char *p, int p_max_size);
+#ifdef __cplusplus
+}
+#endif
+

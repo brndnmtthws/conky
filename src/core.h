@@ -38,10 +38,18 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 
 size_t remove_comments(char *string);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int extract_variable_text_internal(struct text_object *retval, const char *const_p);
 
 void free_text_objects(struct text_object *root);
 
 const char *dev_name(const char *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _CONKY_CORE_H_ */

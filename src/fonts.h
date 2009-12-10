@@ -32,6 +32,10 @@
 
 #include "x11.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* for fonts */
 struct font_list {
 
@@ -78,6 +82,10 @@ int add_font(const char *);
 void set_first_font(const char *);
 void free_fonts(void);
 void load_fonts(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _FONTS_H */
 #endif /* X11 */
