@@ -104,15 +104,18 @@
 #define HAVE_CURL
 #endif /* BUILD_CURL */
 
+#cmakedefine BUILD_WEATHER 1
 #cmakedefine BUILD_WEATHER_XOAP 1
+#cmakedefine BUILD_WEATHER_METAR 1
+
 #ifdef BUILD_WEATHER_XOAP
 #define XOAP
 #define XOAP_FILE "$HOME/.xoaprc"
 #endif /* BUILD_WEATHER_XOAP */
 
-#cmakedefine BUILD_WEATHER_METAR 1
-#ifdef BUILD_WEATHER_METAR
-#define BUILD_WEATHER
-#endif /* BUILD_WEATHER_METAR */
+#ifdef BUILD_WEATHER
+#define WEATHER
+#define WEATHER
+#endif /* BUILD_WEATHER */
 
 #endif /* _conky_config_h_ */

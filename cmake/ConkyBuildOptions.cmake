@@ -79,4 +79,7 @@ option(BUILD_RSS "Enable if you want RSS support" false)
 
 option(BUILD_WEATHER_METAR "Enable METAR weather support" false)
 option(BUILD_WEATHER_XOAP "Enable XOAP weather support" false)
+if(BUILD_WEATHER_METAR OR BUILD_WEATHER_XOAP)
+	set(BUILD_CURL true)
+endif(BUILD_WEATHER_METAR OR BUILD_WEATHER_XOAP)
 
