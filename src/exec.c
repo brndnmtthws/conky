@@ -168,11 +168,10 @@ static inline void read_exec(const char *data, char *buf, const int size)
 
 static double read_exec_barnum(const char *data)
 {
-	static char *buf = NULL;
+	char *buf = NULL;
 	double barnum;
 
-	if (!buf)
-		buf = malloc(text_buffer_size);
+	buf = malloc(text_buffer_size);
 
 	read_exec(data, buf, text_buffer_size);
 	barnum = get_barnum(buf);
