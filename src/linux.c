@@ -63,6 +63,7 @@
 #endif
 #include <linux/route.h>
 #include <math.h>
+#include <pthread.h>
 
 /* The following ifdefs were adapted from gkrellm */
 #include <linux/major.h>
@@ -688,14 +689,20 @@ void update_stat(void)
 	const char *stat_template = NULL;
 	unsigned int malloc_cpu_size = 0;
 	extern void* global_cpu;
+
+	static pthread_mutex_t last_stat_update_mutex = PTHREAD_MUTEX_INITIALIZER;
 	static double last_stat_update = 0.0;
 
 	/* since we use wrappers for this function, the update machinery
 	 * can't eliminate double invocations of this function. Check for
 	 * them here, otherwise cpu_usage counters are freaking out. */
-	if (last_stat_update == current_update_time)
+	pthread_mutex_lock(&last_stat_update_mutex);
+	if (last_stat_update == current_update_time) {
+		pthread_mutex_unlock(&last_stat_update_mutex);
 		return;
+	}
 	last_stat_update = current_update_time;
+	pthread_mutex_unlock(&last_stat_update_mutex);
 
 	/* add check for !info.cpu_usage since that mem is freed on a SIGUSR1 */
 	if (!cpu_setup || !info.cpu_usage) {
