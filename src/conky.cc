@@ -143,7 +143,7 @@ static char *tmpstring1, *tmpstring2;
 int short_units;
 int format_human_readable;
 int cpu_separate;
-enum {
+enum spacer_state {
 	NO_SPACER = 0,
 	LEFT_SPACER,
 	RIGHT_SPACER
