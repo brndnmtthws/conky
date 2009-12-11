@@ -104,7 +104,6 @@
 #define HAVE_CURL
 #endif /* BUILD_CURL */
 
-#cmakedefine BUILD_WEATHER 1
 #cmakedefine BUILD_WEATHER_XOAP 1
 #cmakedefine BUILD_WEATHER_METAR 1
 
@@ -117,5 +116,32 @@
 #define WEATHER
 #define WEATHER
 #endif /* BUILD_WEATHER */
+
+#cmakedefine BUILD_IMLIB2 1
+#ifdef BUILD_IMLIB2
+#define IMLIB2
+#endif /* BUILD_IMLIB2 */
+
+#cmakedefine BUILD_MATH 1
+#ifdef BUILD_MATH
+#define MATH
+#endif /* BUILD_MATH */
+
+#cmakedefine BUILD_CONFIG_OUTPUT 1
+#ifdef BUILD_CONFIG_OUTPUT
+#define CONFIG_OUTPUT
+#endif /* BUILD_CONFIG_OUTPUT */
+
+#cmakedefine BUILD_NCURSES 1
+#ifdef BUILD_NCURSES
+#define NCURSES
+#endif /* BUILD_NCURSES */
+
+#cmakedefine BUILD_APCUPSD 1
+#ifdef BUILD_APCUPSD
+#define APCUPSD
+#endif /* BUILD_APCUPSD */
+
+#cmakedefine HAVE_ICONV 1
 
 #endif /* _conky_config_h_ */

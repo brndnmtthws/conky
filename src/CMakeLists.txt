@@ -136,6 +136,10 @@ if(BUILD_ICONV)
 	set(optional_sources ${optional_sources} ${iconv})
 endif(BUILD_ICONV)
 
+if(BUILD_CONFIG_OUTPUT)
+	 set(optional_sources ${optional_sources} defconfig.h conf_cookie.c conf_cookie.h)
+endif(BUILD_CONFIG_OUTPUT)
+
 add_executable(conky ${conky_sources} ${optional_sources})
 
 target_link_libraries(conky ${conky_libs})

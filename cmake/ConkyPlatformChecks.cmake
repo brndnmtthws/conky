@@ -2,6 +2,7 @@
 
 include(FindPkgConfig)
 include(CheckFunctionExists)
+include(CheckIncludeFile)
 
 # Check for some headers
 check_include_files(sys/statfs.h HAVE_SYS_STATFS_H)
@@ -39,6 +40,61 @@ endif(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
 if(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD)
 	message(FATAL_ERROR "Your platform, '${CMAKE_SYSTEM_NAME}', is not currently supported.  Patches are welcome.")
 endif(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD)
+
+if(BUILD_MATH)
+	set(conky_libs ${conky_libs} -lm)
+endif(BUILD_MATH)
+
+if(BUILD_CONFIG_OUTPUT)
+	check_function_exists(fopencookie HAVE_FOPENCOOKIE)
+	check_function_exists(funopen HAVE_FUNOPEN)
+endif(BUILD_CONFIG_OUTPUT)
+
+if(BUILD_NCURSES)
+	check_include_file(ncurses.h NCURSES_H)
+	find_library(NCURSES_LIB NAMES ncurses)
+	if(NOT NCURSES_H OR NOT NCURSES_LIB)
+		message(FATAL_ERROR "Unable to find ncurses library")
+	endif(NOT NCURSES_H OR NOT NCURSES_LIB)
+	set(conky_libs ${conky_libs} ${NCURSES_LIB})
+endif(BUILD_NCURSES)
+
+if(BUILD_WLAN)
+	check_include_file(iwlib.h IWLIB_H)
+	find_library(IWLIB_LIB NAMES iw)
+	if(NOT IWLIB_H OR NOT IWLIB_LIB)
+		message(FATAL_ERROR "Unable to find iwlib")
+	endif(NOT IWLIB_H OR NOT IWLIB_LIB)
+	set(CMAKE_REQUIRED_LIBRARIES ${IWLIB_LIB})
+	check_function_exists(iw_sockets_open IWLIB_SOCKETS_OPEN_FUNC)
+endif(BUILD_WLAN)
+
+if(BUILD_PORT_MONITORS)
+	check_function_exists(getnameinfo HAVE_GETNAMEINFO)
+	if(NOT HAVE_GETNAMEINFO)
+		message(FATAL_ERROR "could not find getnameinfo()")
+	endif(NOT HAVE_GETNAMEINFO)
+	check_include_files("netdb.h;netinet/in.h;netinet/tcp.h;sys/socket.h;arpa/inet.h" HAVE_PORTMON_HEADERS)
+	if(NOT HAVE_PORTMON_HEADERS)
+		message(FATAL_ERROR "missing needed network header(s) for port monitoring")
+	endif(NOT HAVE_PORTMON_HEADERS)
+endif(BUILD_PORT_MONITORS)
+
+
+# Check for iconv
+check_include_file(iconv.h HAVE_ICONV_H)
+find_library(ICONV_LIBRARY NAMES iconv)
+if(HAVE_ICONV_H AND ICONV_LIBRARY)
+	set(conky_includes ${conky_includes} ${ICONV_INCLUDE_DIR})
+	set(conky_libs ${conky_libs} ${ICONV_LIBRARY})
+	set(HAVE_ICONV true)
+else(HAVE_ICONV_H AND ICONV_LIBRARY)
+	# too annoying
+	# message(WARNING "Unable to find iconv library")
+	set(HAVE_ICONV false)
+endif(HAVE_ICONV_H AND ICONV_LIBRARY)
+
+
 
 # check for Xlib
 if(BUILD_X11)
@@ -162,6 +218,12 @@ if(BUILD_NVIDIA)
 		message(FATAL_ERROR "Unable to find XNVCtrl library")
 	endif(XNVCtrl_INCLUDE_PATH AND XNVCtrl_LIB)
 endif(BUILD_NVIDIA)
+
+if(BUILD_IMLIB2)
+	pkg_check_modules(IMLIB2 imlib2)
+	set(conky_libs ${conky_libs} ${IMLIB2_LIB})
+	set(conky_includes ${conky_includes} ${IMLIB2_INCLUDE_PATH})
+endif(BUILD_IMLIB2)
 
 # Common libraries
 if(WANT_GLIB)

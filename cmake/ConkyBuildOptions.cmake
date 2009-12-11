@@ -36,22 +36,35 @@ if(OS_LINUX)
 	option(BUILD_PORT_MONITORS "Build TCP portmon support" true)
 	option(BUILD_IBM "Support for IBM/Lenovo notebooks" true)
 	option(BUILD_HDDTEMP "Support for hddtemp" true)
+	option(BUILD_IOSTATS "Enable disk I/O stats" true)
+	option(BUILD_WLAN "Enable wireless support" false)
 	# nvidia may also work on FreeBSD, not sure
 	option(BUILD_NVIDIA "Enable nvidia support" false)
 else(OS_LINUX)
 	set(BUILD_PORT_MONITORS false)
 	set(BUILD_IBM false)
 	set(BUILD_HDDTEMP false)
+	set(BUILD_IOSTATS false)
+	set(BUILD_WLAN false)
 	set(BUILD_NVIDIA false)
 endif(OS_LINUX)
 
 # Optional features etc
+#
+
+option(BUILD_CONFIG_OUTPUT "Enable default config file output" true)
+
+option(BUILD_MATH "Enable math support" true)
+
+option(BUILD_NCURSES "Enable ncurses support" true)
+
 option(BUILD_X11 "Build X11 support" true)
 if(BUILD_X11)
 	option(OWN_WINDOW "Enable own_window support" true)
 	option(BUILD_XDAMAGE "Build Xdamage support" true)
 	option(BUILD_XDBE "Build Xdbe (double-buffer) support" true)
 	option(BUILD_XFT "Build Xft (freetype fonts) support" true)
+	option(BUILD_IMLIB2 "Enable Imlib2 support" false)
 endif(BUILD_X11)
 
 option(BUILD_LUA "Build Lua support" true)
@@ -83,3 +96,4 @@ if(BUILD_WEATHER_METAR OR BUILD_WEATHER_XOAP)
 	set(BUILD_CURL true)
 endif(BUILD_WEATHER_METAR OR BUILD_WEATHER_XOAP)
 
+option(BUILD_APCUPSD "Enable APCUPSD support" true)
