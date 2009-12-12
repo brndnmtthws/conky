@@ -810,7 +810,7 @@
     <varlistentry>
         <term>
             <command>
-                <option>time_in_seconds</option>
+                <option>times_in_seconds</option>
             </command>
         </term>
         <listitem>If true, variables that output times output a number
