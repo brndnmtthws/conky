@@ -139,7 +139,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 
 /* helper defines for internal use only */
 #define __OBJ_HEAD(a, n) if (!strcmp(s, #a)) { \
-	obj->type = OBJ_##a; add_update_callback(n);
+	add_update_callback(n);
 #define __OBJ_IF obj_be_ifblock_if(ifblock_opaque, obj)
 #define __OBJ_ARG(...) if (!arg) { CRIT_ERR(obj, free_at_crash, __VA_ARGS__); }
 
@@ -152,7 +152,6 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 
 #ifdef X11
 	if (s[0] == '#') {
-		obj->type = OBJ_color;
 		obj->data.l = get_x11_color(s);
 		obj->callbacks.print = &new_fg;
 	} else
@@ -683,8 +682,6 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		if (!parse_top_args(s, arg, obj)) {
 			return NULL;
 		}
-		obj->callbacks.print = &print_top;
-		obj->callbacks.free = &free_top;
 	} else
 #ifdef __linux__
 	OBJ(addr, &update_net_stats)

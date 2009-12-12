@@ -146,8 +146,6 @@ void process_find_top(struct process **, struct process **, struct process **
 struct process *get_process_by_name(const char *);
 
 int parse_top_args(const char *s, const char *arg, struct text_object *obj);
-void print_top(struct text_object *, char *, int);
-void free_top(struct text_object *);
 
 /* return zero on success, non-zero otherwise */
 int set_top_name_width(const char *);

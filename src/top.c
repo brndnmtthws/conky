@@ -801,101 +801,6 @@ void process_find_top(struct process **cpu, struct process **mem,
 #endif /* IOSTATS */
 }
 
-struct top_data {
-	int num;
-	int type;
-	int was_parsed;
-	char *s;
-};
-
-int parse_top_args(const char *s, const char *arg, struct text_object *obj)
-{
-	struct top_data *td;
-	char buf[64];
-	int n;
-
-	if (!arg) {
-		NORM_ERR("top needs arguments");
-		return 0;
-	}
-
-	if (obj->data.opaque) {
-		return 1;
-	}
-
-	if (s[3] == 0) {
-		obj->type = OBJ_top;
-		top_cpu = 1;
-	} else if (strcmp(&s[3], "_mem") == EQUAL) {
-		obj->type = OBJ_top_mem;
-		top_mem = 1;
-	} else if (strcmp(&s[3], "_time") == EQUAL) {
-		obj->type = OBJ_top_time;
-		top_time = 1;
-#ifdef IOSTATS
-	} else if (strcmp(&s[3], "_io") == EQUAL) {
-		obj->type = OBJ_top_io;
-		top_io = 1;
-#endif /* IOSTATS */
-	} else {
-#ifdef IOSTATS
-		NORM_ERR("Must be top, top_mem, top_time or top_io");
-#else /* IOSTATS */
-		NORM_ERR("Must be top, top_mem or top_time");
-#endif /* IOSTATS */
-		return 0;
-	}
-
-	obj->data.opaque = td = malloc(sizeof(struct top_data));
-	memset(td, 0, sizeof(struct top_data));
-	td->s = strndup(arg, text_buffer_size);
-
-	if (sscanf(arg, "%63s %i", buf, &n) == 2) {
-		if (strcmp(buf, "name") == EQUAL) {
-			td->type = TOP_NAME;
-		} else if (strcmp(buf, "cpu") == EQUAL) {
-			td->type = TOP_CPU;
-		} else if (strcmp(buf, "pid") == EQUAL) {
-			td->type = TOP_PID;
-		} else if (strcmp(buf, "mem") == EQUAL) {
-			td->type = TOP_MEM;
-		} else if (strcmp(buf, "time") == EQUAL) {
-			td->type = TOP_TIME;
-		} else if (strcmp(buf, "mem_res") == EQUAL) {
-			td->type = TOP_MEM_RES;
-		} else if (strcmp(buf, "mem_vsize") == EQUAL) {
-			td->type = TOP_MEM_VSIZE;
-#ifdef IOSTATS
-		} else if (strcmp(buf, "io_read") == EQUAL) {
-			td->type = TOP_READ_BYTES;
-		} else if (strcmp(buf, "io_write") == EQUAL) {
-			td->type = TOP_WRITE_BYTES;
-		} else if (strcmp(buf, "io_perc") == EQUAL) {
-			td->type = TOP_IO_PERC;
-#endif /* IOSTATS */
-		} else {
-			NORM_ERR("invalid type arg for top");
-#ifdef IOSTATS
-			NORM_ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize, "
-					"io_read, io_write, io_perc");
-#else /* IOSTATS */
-			NORM_ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize");
-#endif /* IOSTATS */
-			return 0;
-		}
-		if (n < 1 || n > 10) {
-			NORM_ERR("invalid num arg for top. Must be between 1 and 10.");
-			return 0;
-		} else {
-			td->num = n - 1;
-		}
-	} else {
-		NORM_ERR("invalid argument count for top");
-		return 0;
-	}
-	return 1;
-}
-
 static char *format_time(unsigned long timeval, const int width)
 {
 	char buf[10];
@@ -936,6 +841,13 @@ static char *format_time(unsigned long timeval, const int width)
 	return strndup("<inf>", text_buffer_size);
 }
 
+struct top_data {
+	struct process **list;
+	int num;
+	int was_parsed;
+	char *s;
+};
+
 static unsigned int top_name_width = 15;
 
 /* return zero on success, non-zero otherwise */
@@ -946,97 +858,74 @@ int set_top_name_width(const char *s)
 	return !(sscanf(s, "%u", &top_name_width) == 1);
 }
 
-void print_top(struct text_object *obj, char *p, int p_max_size)
+static void print_top_name(struct text_object *obj, char *p, int p_max_size)
 {
-	struct information *cur = &info;
 	struct top_data *td = obj->data.opaque;
-	struct process **needed = 0;
 	int width;
 
-	if (!td)
+	if (!td || !td->list || !td->list[td->num])
 		return;
 
-	switch (obj->type) {
-		case OBJ_top:
-			needed = cur->cpu;
-			break;
-		case OBJ_top_mem:
-			needed = cur->memu;
-			break;
-		case OBJ_top_time:
-			needed = cur->time;
-			break;
-#ifdef IOSTATS
-		case OBJ_top_io:
-			needed = cur->io;
-			break;
-#endif /* IOSTATS */
-		default:
-			return;
-	}
-
-
-	if (needed[td->num]) {
-		char *timeval;
-
-		switch (td->type) {
-			case TOP_NAME:
-				width = MIN(p_max_size, (int)top_name_width + 1);
-				snprintf(p, width + 1, "%-*s", width,
-						needed[td->num]->name);
-				break;
-			case TOP_CPU:
-				width = MIN(p_max_size, 7);
-				snprintf(p, width, "%6.2f",
-						needed[td->num]->amount);
-				break;
-			case TOP_PID:
-				width = MIN(p_max_size, 6);
-				snprintf(p, width, "%5i",
-						needed[td->num]->pid);
-				break;
-			case TOP_MEM:
-				/* Calculate a percentage of residential mem from total mem available.
-				 * Since rss is bytes and memmax kilobytes, dividing by 10 suffices here. */
-				width = MIN(p_max_size, 7);
-				snprintf(p, width, "%6.2f",
-						(float) ((float)needed[td->num]->rss / cur->memmax) / 10);
-				break;
-			case TOP_TIME:
-				width = MIN(p_max_size, 10);
-				timeval = format_time(
-						needed[td->num]->total_cpu_time, 9);
-				snprintf(p, width, "%9s", timeval);
-				free(timeval);
-				break;
-			case TOP_MEM_RES:
-				human_readable(needed[td->num]->rss,
-						p, p_max_size);
-				break;
-			case TOP_MEM_VSIZE:
-				human_readable(needed[td->num]->vsize,
-						p, p_max_size);
-				break;
-#ifdef IOSTATS
-			case TOP_READ_BYTES:
-				human_readable(needed[td->num]->read_bytes / update_interval,
-						p, p_max_size);
-				break;
-			case TOP_WRITE_BYTES:
-				human_readable(needed[td->num]->write_bytes / update_interval,
-						p, p_max_size);
-				break;
-			case TOP_IO_PERC:
-				width = MIN(p_max_size, 7);
-				snprintf(p, width, "%6.2f",
-						needed[td->num]->io_perc);
-				break;
-#endif
-		}
-	}
+	width = MIN(p_max_size, (int)top_name_width + 1);
+	snprintf(p, width + 1, "%-*s", width, td->list[td->num]->name);
 }
 
-void free_top(struct text_object *obj)
+static void print_top_mem(struct text_object *obj, char *p, int p_max_size)
+{
+	struct top_data *td = obj->data.opaque;
+	int width;
+
+	if (!td || !td->list || !td->list[td->num])
+		return;
+
+	width = MIN(p_max_size, 7);
+	snprintf(p, width, "%6.2f", (float) ((float)td->list[td->num]->rss / info.memmax) / 10);
+}
+
+static void print_top_time(struct text_object *obj, char *p, int p_max_size)
+{
+	struct top_data *td = obj->data.opaque;
+	int width;
+	char *timeval;
+
+	if (!td || !td->list || !td->list[td->num])
+		return;
+
+	width = MIN(p_max_size, 10);
+	timeval = format_time(td->list[td->num]->total_cpu_time, 9);
+	snprintf(p, width, "%9s", timeval);
+	free(timeval);
+}
+
+#define PRINT_TOP_GENERATOR(name, width, fmt, field) \
+static void print_top_##name(struct text_object *obj, char *p, int p_max_size) \
+{ \
+	struct top_data *td = obj->data.opaque; \
+	if (!td || !td->list || !td->list[td->num]) \
+		return; \
+	snprintf(p, MIN(p_max_size, width), fmt, td->list[td->num]->field); \
+}
+
+#define PRINT_TOP_HR_GENERATOR(name, field, denom) \
+static void print_top_##name(struct text_object *obj, char *p, int p_max_size) \
+{ \
+	struct top_data *td = obj->data.opaque; \
+	if (!td || !td->list || !td->list[td->num]) \
+		return; \
+	human_readable(td->list[td->num]->field / denom, p, p_max_size); \
+}
+
+PRINT_TOP_GENERATOR(cpu, 7, "%6.2f", amount)
+PRINT_TOP_GENERATOR(pid, 6, "%5i", pid)
+PRINT_TOP_HR_GENERATOR(mem_res, rss, 1)
+PRINT_TOP_HR_GENERATOR(mem_vsize, vsize, 1)
+#ifdef IOSTATS
+PRINT_TOP_HR_GENERATOR(read_bytes, read_bytes, update_interval)
+PRINT_TOP_HR_GENERATOR(write_bytes, write_bytes, update_interval)
+PRINT_TOP_GENERATOR(io_perc, 7, "%6.2f", io_perc)
+#endif /* IOSTATS */
+
+static void free_top(struct text_object *obj)
 {
 	struct top_data *td = obj->data.opaque;
 
@@ -1046,4 +935,96 @@ void free_top(struct text_object *obj)
 		free(td->s);
 	free(obj->data.opaque);
 	obj->data.opaque = NULL;
+}
+
+int parse_top_args(const char *s, const char *arg, struct text_object *obj)
+{
+	struct top_data *td;
+	char buf[64];
+	int n;
+
+	if (!arg) {
+		NORM_ERR("top needs arguments");
+		return 0;
+	}
+
+	if (obj->data.opaque) {
+		return 1;
+	}
+
+	obj->data.opaque = td = malloc(sizeof(struct top_data));
+	memset(td, 0, sizeof(struct top_data));
+
+	if (s[3] == 0) {
+		td->list = info.cpu;
+		top_cpu = 1;
+	} else if (strcmp(&s[3], "_mem") == EQUAL) {
+		td->list = info.memu;
+		top_mem = 1;
+	} else if (strcmp(&s[3], "_time") == EQUAL) {
+		td->list = info.time;
+		top_time = 1;
+#ifdef IOSTATS
+	} else if (strcmp(&s[3], "_io") == EQUAL) {
+		td->list = info.io;
+		top_io = 1;
+#endif /* IOSTATS */
+	} else {
+#ifdef IOSTATS
+		NORM_ERR("Must be top, top_mem, top_time or top_io");
+#else /* IOSTATS */
+		NORM_ERR("Must be top, top_mem or top_time");
+#endif /* IOSTATS */
+		free(obj->data.opaque);
+		obj->data.opaque = 0;
+		return 0;
+	}
+
+	td->s = strndup(arg, text_buffer_size);
+
+	if (sscanf(arg, "%63s %i", buf, &n) == 2) {
+		if (strcmp(buf, "name") == EQUAL) {
+			obj->callbacks.print = &print_top_name;
+		} else if (strcmp(buf, "cpu") == EQUAL) {
+			obj->callbacks.print = &print_top_cpu;
+		} else if (strcmp(buf, "pid") == EQUAL) {
+			obj->callbacks.print = &print_top_pid;
+		} else if (strcmp(buf, "mem") == EQUAL) {
+			obj->callbacks.print = &print_top_mem;
+		} else if (strcmp(buf, "time") == EQUAL) {
+			obj->callbacks.print = &print_top_time;
+		} else if (strcmp(buf, "mem_res") == EQUAL) {
+			obj->callbacks.print = &print_top_mem_res;
+		} else if (strcmp(buf, "mem_vsize") == EQUAL) {
+			obj->callbacks.print = &print_top_mem_vsize;
+#ifdef IOSTATS
+		} else if (strcmp(buf, "io_read") == EQUAL) {
+			obj->callbacks.print = &print_top_read_bytes;
+		} else if (strcmp(buf, "io_write") == EQUAL) {
+			obj->callbacks.print = &print_top_write_bytes;
+		} else if (strcmp(buf, "io_perc") == EQUAL) {
+			obj->callbacks.print = &print_top_io_perc;
+#endif /* IOSTATS */
+		} else {
+			NORM_ERR("invalid type arg for top");
+#ifdef IOSTATS
+			NORM_ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize, "
+					"io_read, io_write, io_perc");
+#else /* IOSTATS */
+			NORM_ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize");
+#endif /* IOSTATS */
+			return 0;
+		}
+		if (n < 1 || n > 10) {
+			NORM_ERR("invalid num arg for top. Must be between 1 and 10.");
+			return 0;
+		} else {
+			td->num = n - 1;
+		}
+	} else {
+		NORM_ERR("invalid argument count for top");
+		return 0;
+	}
+	obj->callbacks.free = &free_top;
+	return 1;
 }
