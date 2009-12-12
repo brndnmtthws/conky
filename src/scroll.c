@@ -75,6 +75,7 @@ void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_cr
 	/* add a color object right after scroll to reset any color changes */
 	obj->next->type = OBJ_color;
 	obj->next->data.l = sd->resetcolor;
+	obj->next->callbacks.print = &new_fg;
 #endif /* X11 */
 }
 
