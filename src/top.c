@@ -948,10 +948,6 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj)
 		return 0;
 	}
 
-	if (obj->data.opaque) {
-		return 1;
-	}
-
 	obj->data.opaque = td = malloc(sizeof(struct top_data));
 	memset(td, 0, sizeof(struct top_data));
 
@@ -991,6 +987,7 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj)
 			obj->callbacks.print = &print_top_pid;
 		} else if (strcmp(buf, "mem") == EQUAL) {
 			obj->callbacks.print = &print_top_mem;
+			add_update_callback(&update_meminfo);
 		} else if (strcmp(buf, "time") == EQUAL) {
 			obj->callbacks.print = &print_top_time;
 		} else if (strcmp(buf, "mem_res") == EQUAL) {
