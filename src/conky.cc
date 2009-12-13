@@ -33,6 +33,7 @@
 #include "conky.h"
 #include "common.h"
 #include "timed_thread.h"
+#include <ctype.h>
 #include <stdarg.h>
 #include <math.h>
 #include <time.h>
@@ -73,35 +74,21 @@
 
 /* local headers */
 #include "core.h"
-#include "algebra.h"
 #include "build.h"
 #include "colours.h"
-#include "combine.h"
 #include "diskio.h"
 #include "exec.h"
-#include "proc.h"
-#include "user.h"
 #ifdef X11
 #include "fonts.h"
 #endif
-#include "fs.h"
 #ifdef HAVE_ICONV
 #include "iconv_tools.h"
 #endif
 #include "logging.h"
-#include "mixer.h"
 #include "mail.h"
-#include "mboxscan.h"
 #include "net_stat.h"
-#ifdef NVIDIA
-#include "nvidia.h"
-#endif
-#include "read_tcp.h"
-#include "scroll.h"
-#include "specials.h"
 #include "temphelper.h"
 #include "template.h"
-#include "tailhead.h"
 #include "timeinfo.h"
 #include "top.h"
 
