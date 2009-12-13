@@ -156,18 +156,15 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &new_fg;
 	} else
 #endif /* X11 */
-#ifdef __OpenBSD__
-	OBJ(freq, 0)
-		obj->callbacks.print = &print_freq;
-#else
+#ifndef __OpenBSD__
 	OBJ(acpitemp, 0)
 		obj->data.i = open_acpi_temperature(arg);
 		obj->callbacks.print = &print_acpitemp;
 		obj->callbacks.free = &free_acpitemp;
 	END OBJ(acpiacadapter, 0)
 		obj->callbacks.print = &print_acpiacadapter;
-	END OBJ(freq, 0)
 #endif /* !__OpenBSD__ */
+	END OBJ(freq, 0)
 		get_cpu_count();
 		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) == 0
 				|| atoi(&arg[0]) > info.cpu_count) {
