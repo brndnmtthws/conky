@@ -494,12 +494,12 @@ if test x$want_lua = xyes; then
 				AC_DEFINE(HAVE_LUA_IMLIB2, 1, [Define if you want Lua Imlib2 bindings for Conky])
 			fi
 		fi
-		AC_CHECK_PROGS(toluapp, [tolua++ tolua++5.1], no)
+		AC_CHECK_PROGS(toluapp, [tolua++ tolua++5.1 tolua++-5.1], no)
 		if test x$toluapp = xno; then
-			AC_MSG_ERROR([tolua++ or tolua++5.1 is required for Lua extras.])
+			AC_MSG_ERROR([tolua++, tolua++5.1, or tolua++-5.1 is required for Lua extras.])
 		else
 			AC_SEARCH_LIBS(tolua_error,
-						   [tolua++ tolua++5.1],
+						   [tolua++-5.1 tolua++ tolua++5.1],
 						   [
 							AC_SUBST(tolua_LIBS, "${LIBS}")
 							AC_SUBST(tolua_CFLAGS, "${CFLAGS}")
