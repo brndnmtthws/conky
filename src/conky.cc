@@ -1476,32 +1476,29 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						unsigned short int timeunits;
 						if (seconds != 0) {
 							timeunits = seconds / 86400; seconds %= 86400;
-							if (timeunits > 0) {
-								asprintf(&tmp_day_str, "%dd", timeunits);
-							} else {
+							if (timeunits <= 0 ||
+									asprintf(&tmp_day_str, "%dd", timeunits) == -1) {
 								tmp_day_str = strdup("");
 							}
 							timeunits = seconds / 3600; seconds %= 3600;
-							if (timeunits > 0) {
-								asprintf(&tmp_hour_str, "%dh", timeunits);
-							} else {
+							if (timeunits <= 0 ||
+									asprintf(&tmp_hour_str, "%dh", timeunits) == -1) {
 								tmp_hour_str = strdup("");
 							}
 							timeunits = seconds / 60; seconds %= 60;
-							if (timeunits > 0) {
-								asprintf(&tmp_min_str, "%dm", timeunits);
-							} else {
+							if (timeunits <= 0 ||
+									asprintf(&tmp_min_str, "%dm", timeunits) == -1) {
 								tmp_min_str = strdup("");
 							}
-							if (seconds > 0) {
-								asprintf(&tmp_sec_str, "%ds", seconds);
-							} else {
+							if (seconds <= 0 ||
+									asprintf(&tmp_sec_str, "%ds", seconds) == -1) {
 								tmp_sec_str = strdup("");
 							}
-							asprintf(&tmp_str, "%s%s%s%s", tmp_day_str, tmp_hour_str, tmp_min_str, tmp_sec_str);
+							if (asprintf(&tmp_str, "%s%s%s%s", tmp_day_str, tmp_hour_str, tmp_min_str, tmp_sec_str) == -1)
+								tmp_str = strdup("");
 							free(tmp_day_str); free(tmp_hour_str); free(tmp_min_str); free(tmp_sec_str);
 						} else {
-							asprintf(&tmp_str, "Range not possible"); // should never happen, but better safe then sorry
+							tmp_str = strdup("Range not possible"); // should never happen, but better safe then sorry
 						}
 						cur_x += (w / 2) - (font_ascent() * (strlen(tmp_str) / 2));
 						cur_y += font_h / 2;
@@ -4179,7 +4176,8 @@ int main(int argc, char **argv)
 				current_config = strndup(optarg, max_user_text);
 				break;
 			case 'q':
-				freopen("/dev/null", "w", stderr);
+				if (freopen("/dev/null", "w", stderr))
+					CRIT_ERR(0, 0, "could not open /dev/null as stderr!");
 				break;
 			case 'h':
 				print_help(argv[0]);
