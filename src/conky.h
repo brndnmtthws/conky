@@ -242,10 +242,6 @@ struct information {
 	struct x11_info x11;
 #endif
 
-#ifdef APCUPSD
-	APCUPSD_S apcupsd;
-#endif
-
 	short kflags;	/* kernel settings, see enum KFLAG */
 };
 

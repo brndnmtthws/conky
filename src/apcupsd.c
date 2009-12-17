@@ -33,12 +33,37 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+enum _apcupsd_items {
+	APCUPSD_NAME,
+	APCUPSD_MODEL,
+	APCUPSD_UPSMODE,
+	APCUPSD_CABLE,
+	APCUPSD_STATUS,
+	APCUPSD_LINEV,
+	APCUPSD_LOAD,
+	APCUPSD_CHARGE,
+	APCUPSD_TIMELEFT,
+	APCUPSD_TEMP,
+	APCUPSD_LASTXFER,
+	_APCUPSD_COUNT
+};
+
+/* type for data exchange with main thread */
+#define APCUPSD_MAXSTR 32
+typedef struct apcupsd_s {
+	char items[_APCUPSD_COUNT][APCUPSD_MAXSTR+1];	/* e.g. items[APCUPSD_STATUS] */
+	char host[64];
+	int  port;
+} APCUPSD_S, *PAPCUPSD_S;
+
+static APCUPSD_S apcupsd;
+
+
 //
 // encapsulated recv()
 //
 static int net_recv_ex(int sock, void *buf, int size, struct timeval *tv)
 {
-	
 	fd_set	fds;
 	int		res;
 
@@ -74,8 +99,8 @@ static int net_recv_ex(int sock, void *buf, int size, struct timeval *tv)
 //
 // read whole buffer or fail
 //
-static int net_recv(int sock, void* buf, int size) {
-
+static int net_recv(int sock, void* buf, int size)
+{
 	int todo = size;
 	int off = 0;
 	int len;
@@ -93,8 +118,8 @@ static int net_recv(int sock, void* buf, int size) {
 //
 // get one response line
 //
-static int get_line(int sock, char line[], short linesize) {
-
+static int get_line(int sock, char line[], short linesize)
+{
 	// get the line length
 	short sz;
 	if (!net_recv(sock, &sz, sizeof(sz))) return -1;
@@ -130,8 +155,8 @@ static int get_line(int sock, char line[], short linesize) {
 //
 // fills in the data received from a socket
 //
-static int fill_items(int sock, PAPCUPSD_S apc) {
-
+static int fill_items(int sock, PAPCUPSD_S apc)
+{
 	char line[512];
 	int len;
 	while ((len = get_line(sock, line, sizeof(line)))) {
@@ -148,15 +173,15 @@ static int fill_items(int sock, PAPCUPSD_S apc) {
 		FILL("ITEMP",		APCUPSD_TEMP,		TRUE);
 		FILL("LASTXFER",	APCUPSD_LASTXFER,	FALSE);
 	}
-	
+
 	return len == 0;
 }
 
 //
 // Conky update function for apcupsd data
 //
-void update_apcupsd(void) {
-
+void update_apcupsd(void)
+{
 	int i;
 	APCUPSD_S apc;
 	int sock;
@@ -182,27 +207,27 @@ void update_apcupsd(void) {
 			break;
 		}
 #ifdef HAVE_GETHOSTBYNAME_R
-		if (gethostbyname_r(info.apcupsd.host, &he_mem, hostbuff, sizeof(hostbuff), &he, &he_errno) || !he ) {
+		if (gethostbyname_r(apcupsd.host, &he_mem, hostbuff, sizeof(hostbuff), &he, &he_errno) || !he ) {
 			NORM_ERR("APCUPSD gethostbyname_r: %s", hstrerror(h_errno));
 			break;
 		}
 #else /* HAVE_GETHOSTBYNAME_R */
-		he = gethostbyname(info.apcupsd.host);
+		he = gethostbyname(apcupsd.host);
 		if (!he) {
 			herror("gethostbyname");
 			break;
 		}
 #endif /* HAVE_GETHOSTBYNAME_R */
-		
+
 		memset(&addr, 0, sizeof(addr));
 		addr.sin_family = AF_INET;
-		addr.sin_port = info.apcupsd.port;
+		addr.sin_port = apcupsd.port;
 		memcpy(&addr.sin_addr, he->h_addr, he->h_length);
 		if (connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr)) < 0) {
 			// no error reporting, the daemon is probably not running
 			break;
 		}
-	
+
 		//
 		// send status request - "status" - 6B
 		//
@@ -212,7 +237,7 @@ void update_apcupsd(void) {
 			perror("send");
 			break;
 		}
-	
+
 		//
 		// read the lines of output and put them into the info structure
 		//
@@ -225,22 +250,34 @@ void update_apcupsd(void) {
 	//
 	// "atomically" copy the data into working set
 	//
-	memcpy(info.apcupsd.items, apc.items, sizeof(info.apcupsd.items));
+	memcpy(apcupsd.items, apc.items, sizeof(apcupsd.items));
 	return;
+}
+
+int apcupsd_scan_arg(const char *arg)
+{
+		char host[64];
+		int port;
+		if (sscanf(arg, "%63s %d", host, &port) != 2)
+			return 1;
+
+		apcupsd.port = htons(port);
+		strncpy(apcupsd.host, host, sizeof(apcupsd.host));
+		return 0;
 }
 
 double apcupsd_loadbarval(struct text_object *obj)
 {
 	(void)obj;
 
-	return atof(info.apcupsd.items[APCUPSD_LOAD]);
+	return atof(apcupsd.items[APCUPSD_LOAD]);
 }
 
 #define APCUPSD_PRINT_GENERATOR(name, idx)                                  \
 void print_apcupsd_##name(struct text_object *obj, char *p, int p_max_size) \
 {                                                                           \
 	(void)obj;                                                              \
-	snprintf(p, p_max_size, "%s", info.apcupsd.items[APCUPSD_##idx]);       \
+	snprintf(p, p_max_size, "%s", apcupsd.items[APCUPSD_##idx]);       \
 }
 
 APCUPSD_PRINT_GENERATOR(name, NAME)

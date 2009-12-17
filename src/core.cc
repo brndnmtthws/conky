@@ -1546,13 +1546,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif /* NVIDIA */
 #ifdef APCUPSD
 	END OBJ_ARG(apcupsd, &update_apcupsd, "apcupsd needs arguments: <host> <port>")
-		char host[64];
-		int port;
-		if (sscanf(arg, "%63s %d", host, &port) != 2) {
+		if (apcupsd_scan_arg(arg)) {
 			CRIT_ERR(obj, free_at_crash, "apcupsd needs arguments: <host> <port>");
-		} else {
-			info.apcupsd.port = htons(port);
-			strncpy(info.apcupsd.host, host, sizeof(info.apcupsd.host));
 		}
 		obj->callbacks.print = &gen_print_nothing;
 	END OBJ(apcupsd_name, &update_apcupsd)
