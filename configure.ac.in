@@ -947,7 +947,7 @@ conky_CXXFLAGS=${conky_CXXFLAGS/-Wdeclaration-after-statement/}
 conky_CXXFLAGS=${conky_CXXFLAGS/-Wbad-function-cast/}
 conky_CXXFLAGS=${conky_CXXFLAGS/-Wstrict-prototypes/}
 conky_CXXFLAGS=${conky_CXXFLAGS/-Wold-style-definition/}
-conky_CXXFLAGS=${conky_CXXFLAGS/-std=c99/-std=c++98}
+conky_CXXFLAGS=${conky_CXXFLAGS/-std=c99/-std=c++0x}
 
 AC_SUBST(conky_CFLAGS)
 AC_SUBST(conky_CXXFLAGS)
