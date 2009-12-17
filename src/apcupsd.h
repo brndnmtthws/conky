@@ -41,7 +41,7 @@ enum _apcupsd_items {
 	APCUPSD_TIMELEFT,
 	APCUPSD_TEMP,
 	APCUPSD_LASTXFER,
-	_APCUPSD_COUNT,
+	_APCUPSD_COUNT
 };
 
 /* type for data exchange with main thread */

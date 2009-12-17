@@ -59,7 +59,7 @@ enum special_types {
 	VOFFSET,
 	FONT,
 	GOTO,
-	TAB,
+	TAB
 };
 
 struct special_t {

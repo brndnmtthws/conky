@@ -40,13 +40,13 @@ enum match_type {
 	OP_EQ = 3,	/* == */
 	OP_LEQ = 4,	/* <= */
 	OP_GEQ = 5,	/* >= */
-	OP_NEQ = 6,	/* != */
+	OP_NEQ = 6	/* != */
 };
 
 enum arg_type {
 	ARG_STRING = 1, /* "asdf" */
 	ARG_LONG = 2,	/* 123456 */
-	ARG_DOUBLE = 3, /* 12.456 */
+	ARG_DOUBLE = 3  /* 12.456 */
 };
 
 int compare(const char *);
