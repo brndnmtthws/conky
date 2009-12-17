@@ -721,8 +721,10 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root)
 	struct text_object *obj;
 	size_t a;
 #ifdef HAVE_ICONV
-	char buff_in[p_max_size];
-	buff_in[0] = 0;
+	char *buff_in;
+
+	buff_in = (char *)malloc(p_max_size);
+	memset(buff_in, 0, p_max_size);
 #endif /* HAVE_ICONV */
 
 	p[0] = 0;
@@ -766,6 +768,9 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root)
 	/* load any new fonts we may have had */
 	load_fonts();
 #endif /* X11 */
+#ifdef HAVE_ICONV
+	free(buff_in);
+#endif /* HAVE_ICONV */
 }
 
 void evaluate(const char *text, char *p, int p_max_size)
@@ -1863,9 +1868,9 @@ static void main_loop(void)
 	info.looped = 0;
 	while (terminate == 0 && (total_run_times == 0 || info.looped < total_run_times)) {
 		if(update_interval_bat != NOBATTERY && update_interval_bat != update_interval_old) {
-			char buf[max_user_text];
+			char buf[64];
 
-			get_battery_short_status(buf, max_user_text, "BAT0");
+			get_battery_short_status(buf, 64, "BAT0");
 			if(buf[0] == 'D') {
 				update_interval = update_interval_bat;
 			} else {
@@ -2570,7 +2575,7 @@ static void set_default_configurations(void)
 			mpd_set_host(mpd_env_host);
 		} else {
 			/* MPD_HOST contains a password */
-			char mpd_password[mpd_hostpart - mpd_env_host + 1];
+			char *mpd_password = (char *)malloc(mpd_hostpart - mpd_env_host + 1);
 			snprintf(mpd_password, mpd_hostpart - mpd_env_host + 1, "%s", mpd_env_host);
 
 			if (!strlen(mpd_hostpart + 1)) {
@@ -2580,6 +2585,7 @@ static void set_default_configurations(void)
 			}
 
 			mpd_set_password(mpd_password, 1);
+			free(mpd_password);
 		}
 	}
 

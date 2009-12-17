@@ -1588,11 +1588,12 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_apcupsd_lastxfer;
 #endif /* APCUPSD */
 	END {
-		char buf[text_buffer_size];
+		char *buf = (char *)malloc(text_buffer_size);
 
 		NORM_ERR("unknown variable %s", s);
 		snprintf(buf, text_buffer_size, "${%s}", s);
 		obj_be_plain_text(obj, buf);
+		free(buf);
 	}
 #undef OBJ
 #undef OBJ_IF
@@ -1685,7 +1686,7 @@ int extract_variable_text_internal(struct text_object *retval, const char *const
 			s = p;
 
 			if (*p != '$') {
-				char buf[text_buffer_size];
+				char *buf = (char *)malloc(text_buffer_size);
 				const char *var;
 
 				/* variable is either $foo or ${foo} */
@@ -1732,6 +1733,7 @@ int extract_variable_text_internal(struct text_object *retval, const char *const
 					if (obj) {
 						append_object(retval, obj);
 					}
+					free(buf);
 					continue;
 				}
 
@@ -1764,6 +1766,7 @@ int extract_variable_text_internal(struct text_object *retval, const char *const
 				if (obj != NULL) {
 					append_object(retval, obj);
 				}
+				free(buf);
 				continue;
 			} else {
 				obj = create_plain_text("$");
