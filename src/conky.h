@@ -116,11 +116,6 @@ struct text_object;
 #include "xmms2.h"
 #endif
 
-#ifdef IBM
-#include "ibm.h"
-#include "smapi.h"
-#endif
-
 #ifdef APCUPSD
 #include "apcupsd.h"
 #endif

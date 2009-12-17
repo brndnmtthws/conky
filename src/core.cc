@@ -46,6 +46,10 @@
 #include "fonts.h"
 #endif
 #include "fs.h"
+#ifdef IBM
+#include "ibm.h"
+#include "smapi.h"
+#endif
 #ifdef HAVE_ICONV
 #include "iconv_tools.h"
 #endif

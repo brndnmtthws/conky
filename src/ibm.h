@@ -3,8 +3,6 @@
 #ifndef _IBM_H
 #define _IBM_H
 
-#include <sys/types.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif

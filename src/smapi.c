@@ -22,7 +22,6 @@
  *
  */
 #include "conky.h"	/* text_buffer_size, PACKAGE_NAME, maybe more */
-#include "smapi.h"
 #include "temphelper.h"
 #include "logging.h"
 #include <stdio.h>
@@ -33,7 +32,18 @@
 
 #define SYS_SMAPI_PATH "/sys/devices/platform/smapi"
 
-int smapi_bat_installed_internal(int idx)
+static int smapi_read_int(const char *path)
+{
+	FILE *fp;
+	int i = 0;
+	if ((fp = fopen(path, "r")) != NULL) {
+		fscanf(fp, "%i\n", &i);
+		fclose(fp);
+	}
+	return i;
+}
+
+static int smapi_bat_installed_internal(int idx)
 {
 	char path[128];
 	struct stat sb;
@@ -48,7 +58,7 @@ int smapi_bat_installed_internal(int idx)
 
 }
 
-char *smapi_read_str(const char *path)
+static char *smapi_read_str(const char *path)
 {
 	FILE *fp;
 	char str[256] = "failed";
@@ -59,18 +69,7 @@ char *smapi_read_str(const char *path)
 	return strndup(str, text_buffer_size);
 }
 
-int smapi_read_int(const char *path)
-{
-	FILE *fp;
-	int i = 0;
-	if ((fp = fopen(path, "r")) != NULL) {
-		fscanf(fp, "%i\n", &i);
-		fclose(fp);
-	}
-	return i;
-}
-
-char *smapi_get_str(const char *fname)
+static char *smapi_get_str(const char *fname)
 {
 	char path[128];
 	if(snprintf(path, 127, SYS_SMAPI_PATH "/%s", fname) < 0)
@@ -79,7 +78,7 @@ char *smapi_get_str(const char *fname)
 	return smapi_read_str(path);
 }
 
-char *smapi_get_bat_str(int idx, const char *fname)
+static char *smapi_get_bat_str(int idx, const char *fname)
 {
 	char path[128];
 	if(snprintf(path, 127, SYS_SMAPI_PATH "/BAT%i/%s", idx, fname) < 0)
@@ -87,7 +86,7 @@ char *smapi_get_bat_str(int idx, const char *fname)
 	return smapi_read_str(path);
 }
 
-int smapi_get_bat_int(int idx, const char *fname)
+static int smapi_get_bat_int(int idx, const char *fname)
 {
 	char path[128];
 	if(snprintf(path, 127, SYS_SMAPI_PATH "/BAT%i/%s", idx, fname) < 0)
@@ -95,7 +94,7 @@ int smapi_get_bat_int(int idx, const char *fname)
 	return smapi_read_int(path);
 }
 
-char *smapi_get_bat_val(const char *args)
+static char *smapi_get_bat_val(const char *args)
 {
 	char fname[128];
 	int idx, cnt;
@@ -112,7 +111,7 @@ char *smapi_get_bat_val(const char *args)
 	return smapi_get_bat_str(idx, fname);
 }
 
-char *smapi_get_val(const char *args)
+static char *smapi_get_val(const char *args)
 {
 	char str[128];
 

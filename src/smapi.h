@@ -28,18 +28,6 @@
 extern "C" {
 #endif
 
-int smapi_bat_installed_internal(int);
-
-char *smapi_read_str(const char *);
-int smapi_read_int(const char *);
-
-char *smapi_get_str(const char *);
-char *smapi_get_val(const char *);
-
-char *smapi_get_bat_str(int, const char *);
-int smapi_get_bat_int(int, const char *);
-char *smapi_get_bat_val(const char *);
-
 void print_smapi(struct text_object *, char *, int);
 uint8_t smapi_bat_percentage(struct text_object *);
 void print_smapi_bat_temp(struct text_object *, char *, int);
