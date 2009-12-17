@@ -1208,7 +1208,7 @@ static void draw_string(const char *s)
 int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 {
 #ifdef X11
-	int font_h;
+	int font_h = 0;
 	int cur_y_add = 0;
 #endif /* X11 */
 	char *recurse = 0;
