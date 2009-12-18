@@ -196,7 +196,6 @@ int ifblock_stack_empty(void **opaque)
 
 void obj_be_plain_text(struct text_object *obj, const char *text)
 {
-	obj->type = OBJ_text;
 	obj->data.s = strdup(text);
 	obj->verbatim_output = 1;
 

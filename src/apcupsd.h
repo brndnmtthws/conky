@@ -29,28 +29,7 @@
 extern "C" {
 #endif
 
-enum _apcupsd_items {
-	APCUPSD_NAME,
-	APCUPSD_MODEL,
-	APCUPSD_UPSMODE,
-	APCUPSD_CABLE,
-	APCUPSD_STATUS,
-	APCUPSD_LINEV,
-	APCUPSD_LOAD,
-	APCUPSD_CHARGE,
-	APCUPSD_TIMELEFT,
-	APCUPSD_TEMP,
-	APCUPSD_LASTXFER,
-	_APCUPSD_COUNT,
-};
-
-/* type for data exchange with main thread */
-#define APCUPSD_MAXSTR 32
-typedef struct apcupsd_s {
-	char items[_APCUPSD_COUNT][APCUPSD_MAXSTR+1];	/* e.g. items[APCUPSD_STATUS] */
-	char host[64];
-	int  port;
-} APCUPSD_S, *PAPCUPSD_S;
+int apcupsd_scan_arg(const char *);
 
 /* Service routine for the conky main thread */
 void update_apcupsd(void);

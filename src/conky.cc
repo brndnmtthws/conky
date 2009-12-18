@@ -33,6 +33,7 @@
 #include "conky.h"
 #include "common.h"
 #include "timed_thread.h"
+#include <ctype.h>
 #include <stdarg.h>
 #include <math.h>
 #include <time.h>
@@ -73,35 +74,21 @@
 
 /* local headers */
 #include "core.h"
-#include "algebra.h"
 #include "build.h"
 #include "colours.h"
-#include "combine.h"
 #include "diskio.h"
 #include "exec.h"
-#include "proc.h"
-#include "user.h"
 #ifdef X11
 #include "fonts.h"
 #endif
-#include "fs.h"
 #ifdef HAVE_ICONV
 #include "iconv_tools.h"
 #endif
 #include "logging.h"
-#include "mixer.h"
 #include "mail.h"
-#include "mboxscan.h"
 #include "net_stat.h"
-#ifdef NVIDIA
-#include "nvidia.h"
-#endif
-#include "read_tcp.h"
-#include "scroll.h"
-#include "specials.h"
 #include "temphelper.h"
 #include "template.h"
-#include "tailhead.h"
 #include "timeinfo.h"
 #include "top.h"
 
@@ -143,7 +130,7 @@ static char *tmpstring1, *tmpstring2;
 int short_units;
 int format_human_readable;
 int cpu_separate;
-enum {
+enum spacer_state {
 	NO_SPACER = 0,
 	LEFT_SPACER,
 	RIGHT_SPACER
@@ -734,8 +721,10 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root)
 	struct text_object *obj;
 	size_t a;
 #ifdef HAVE_ICONV
-	char buff_in[p_max_size];
-	buff_in[0] = 0;
+	char *buff_in;
+
+	buff_in = (char *)malloc(p_max_size);
+	memset(buff_in, 0, p_max_size);
 #endif /* HAVE_ICONV */
 
 	p[0] = 0;
@@ -779,6 +768,9 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root)
 	/* load any new fonts we may have had */
 	load_fonts();
 #endif /* X11 */
+#ifdef HAVE_ICONV
+	free(buff_in);
+#endif /* HAVE_ICONV */
 }
 
 void evaluate(const char *text, char *p, int p_max_size)
@@ -1216,7 +1208,7 @@ static void draw_string(const char *s)
 int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 {
 #ifdef X11
-	int font_h;
+	int font_h = 0;
 	int cur_y_add = 0;
 #endif /* X11 */
 	char *recurse = 0;
@@ -1484,32 +1476,29 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						unsigned short int timeunits;
 						if (seconds != 0) {
 							timeunits = seconds / 86400; seconds %= 86400;
-							if (timeunits > 0) {
-								asprintf(&tmp_day_str, "%dd", timeunits);
-							} else {
+							if (timeunits <= 0 ||
+									asprintf(&tmp_day_str, "%dd", timeunits) == -1) {
 								tmp_day_str = strdup("");
 							}
 							timeunits = seconds / 3600; seconds %= 3600;
-							if (timeunits > 0) {
-								asprintf(&tmp_hour_str, "%dh", timeunits);
-							} else {
+							if (timeunits <= 0 ||
+									asprintf(&tmp_hour_str, "%dh", timeunits) == -1) {
 								tmp_hour_str = strdup("");
 							}
 							timeunits = seconds / 60; seconds %= 60;
-							if (timeunits > 0) {
-								asprintf(&tmp_min_str, "%dm", timeunits);
-							} else {
+							if (timeunits <= 0 ||
+									asprintf(&tmp_min_str, "%dm", timeunits) == -1) {
 								tmp_min_str = strdup("");
 							}
-							if (seconds > 0) {
-								asprintf(&tmp_sec_str, "%ds", seconds);
-							} else {
+							if (seconds <= 0 ||
+									asprintf(&tmp_sec_str, "%ds", seconds) == -1) {
 								tmp_sec_str = strdup("");
 							}
-							asprintf(&tmp_str, "%s%s%s%s", tmp_day_str, tmp_hour_str, tmp_min_str, tmp_sec_str);
+							if (asprintf(&tmp_str, "%s%s%s%s", tmp_day_str, tmp_hour_str, tmp_min_str, tmp_sec_str) == -1)
+								tmp_str = strdup("");
 							free(tmp_day_str); free(tmp_hour_str); free(tmp_min_str); free(tmp_sec_str);
 						} else {
-							asprintf(&tmp_str, "Range not possible"); // should never happen, but better safe then sorry
+							tmp_str = strdup("Range not possible"); // should never happen, but better safe then sorry
 						}
 						cur_x += (w / 2) - (font_ascent() * (strlen(tmp_str) / 2));
 						cur_y += font_h / 2;
@@ -1876,9 +1865,9 @@ static void main_loop(void)
 	info.looped = 0;
 	while (terminate == 0 && (total_run_times == 0 || info.looped < total_run_times)) {
 		if(update_interval_bat != NOBATTERY && update_interval_bat != update_interval_old) {
-			char buf[max_user_text];
+			char buf[64];
 
-			get_battery_short_status(buf, max_user_text, "BAT0");
+			get_battery_short_status(buf, 64, "BAT0");
 			if(buf[0] == 'D') {
 				update_interval = update_interval_bat;
 			} else {
@@ -2583,7 +2572,7 @@ static void set_default_configurations(void)
 			mpd_set_host(mpd_env_host);
 		} else {
 			/* MPD_HOST contains a password */
-			char mpd_password[mpd_hostpart - mpd_env_host + 1];
+			char *mpd_password = (char *)malloc(mpd_hostpart - mpd_env_host + 1);
 			snprintf(mpd_password, mpd_hostpart - mpd_env_host + 1, "%s", mpd_env_host);
 
 			if (!strlen(mpd_hostpart + 1)) {
@@ -2593,6 +2582,7 @@ static void set_default_configurations(void)
 			}
 
 			mpd_set_password(mpd_password, 1);
+			free(mpd_password);
 		}
 	}
 
@@ -4186,7 +4176,8 @@ int main(int argc, char **argv)
 				current_config = strndup(optarg, max_user_text);
 				break;
 			case 'q':
-				freopen("/dev/null", "w", stderr);
+				if (freopen("/dev/null", "w", stderr))
+					CRIT_ERR(0, 0, "could not open /dev/null as stderr!");
 				break;
 			case 'h':
 				print_help(argv[0]);

@@ -116,11 +116,6 @@ struct text_object;
 #include "xmms2.h"
 #endif
 
-#ifdef IBM
-#include "ibm.h"
-#include "smapi.h"
-#endif
-
 #ifdef APCUPSD
 #include "apcupsd.h"
 #endif
@@ -245,10 +240,6 @@ struct information {
 
 #ifdef X11
 	struct x11_info x11;
-#endif
-
-#ifdef APCUPSD
-	APCUPSD_S apcupsd;
 #endif
 
 	short kflags;	/* kernel settings, see enum KFLAG */

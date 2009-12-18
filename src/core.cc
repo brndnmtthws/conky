@@ -46,6 +46,10 @@
 #include "fonts.h"
 #endif
 #include "fs.h"
+#ifdef IBM
+#include "ibm.h"
+#include "smapi.h"
+#endif
 #ifdef HAVE_ICONV
 #include "iconv_tools.h"
 #endif
@@ -139,7 +143,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 
 /* helper defines for internal use only */
 #define __OBJ_HEAD(a, n) if (!strcmp(s, #a)) { \
-	obj->type = OBJ_##a; add_update_callback(n);
+	add_update_callback(n);
 #define __OBJ_IF obj_be_ifblock_if(ifblock_opaque, obj)
 #define __OBJ_ARG(...) if (!arg) { CRIT_ERR(obj, free_at_crash, __VA_ARGS__); }
 
@@ -152,23 +156,19 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 
 #ifdef X11
 	if (s[0] == '#') {
-		obj->type = OBJ_color;
 		obj->data.l = get_x11_color(s);
 		obj->callbacks.print = &new_fg;
 	} else
 #endif /* X11 */
-#ifdef __OpenBSD__
-	OBJ(freq, 0)
-		obj->callbacks.print = &print_freq;
-#else
+#ifndef __OpenBSD__
 	OBJ(acpitemp, 0)
 		obj->data.i = open_acpi_temperature(arg);
 		obj->callbacks.print = &print_acpitemp;
 		obj->callbacks.free = &free_acpitemp;
 	END OBJ(acpiacadapter, 0)
 		obj->callbacks.print = &print_acpiacadapter;
-	END OBJ(freq, 0)
 #endif /* !__OpenBSD__ */
+	END OBJ(freq, 0)
 		get_cpu_count();
 		if (!arg || !isdigit(arg[0]) || strlen(arg) >= 2 || atoi(&arg[0]) == 0
 				|| atoi(&arg[0]) > info.cpu_count) {
@@ -678,13 +678,12 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	/* XXX: maybe fiddle them apart later, as print_top() does
 	 * nothing else than just that, using an ugly switch(). */
 	if (strncmp(s, "top", 3) == EQUAL) {
-		add_update_callback(&update_meminfo);
-		add_update_callback(&update_top);
-		if (!parse_top_args(s, arg, obj)) {
+		if (parse_top_args(s, arg, obj)) {
+			add_update_callback(&update_top);
+		} else {
+			free(obj);
 			return NULL;
 		}
-		obj->callbacks.print = &print_top;
-		obj->callbacks.free = &free_top;
 	} else
 #ifdef __linux__
 	OBJ(addr, &update_net_stats)
@@ -1547,13 +1546,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif /* NVIDIA */
 #ifdef APCUPSD
 	END OBJ_ARG(apcupsd, &update_apcupsd, "apcupsd needs arguments: <host> <port>")
-		char host[64];
-		int port;
-		if (sscanf(arg, "%63s %d", host, &port) != 2) {
+		if (apcupsd_scan_arg(arg)) {
 			CRIT_ERR(obj, free_at_crash, "apcupsd needs arguments: <host> <port>");
-		} else {
-			info.apcupsd.port = htons(port);
-			strncpy(info.apcupsd.host, host, sizeof(info.apcupsd.host));
 		}
 		obj->callbacks.print = &gen_print_nothing;
 	END OBJ(apcupsd_name, &update_apcupsd)
@@ -1593,11 +1587,12 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_apcupsd_lastxfer;
 #endif /* APCUPSD */
 	END {
-		char buf[text_buffer_size];
+		char *buf = (char *)malloc(text_buffer_size);
 
 		NORM_ERR("unknown variable %s", s);
 		snprintf(buf, text_buffer_size, "${%s}", s);
 		obj_be_plain_text(obj, buf);
+		free(buf);
 	}
 #undef OBJ
 #undef OBJ_IF
@@ -1690,7 +1685,7 @@ int extract_variable_text_internal(struct text_object *retval, const char *const
 			s = p;
 
 			if (*p != '$') {
-				char buf[text_buffer_size];
+				char *buf = (char *)malloc(text_buffer_size);
 				const char *var;
 
 				/* variable is either $foo or ${foo} */
@@ -1737,6 +1732,7 @@ int extract_variable_text_internal(struct text_object *retval, const char *const
 					if (obj) {
 						append_object(retval, obj);
 					}
+					free(buf);
 					continue;
 				}
 
@@ -1769,6 +1765,7 @@ int extract_variable_text_internal(struct text_object *retval, const char *const
 				if (obj != NULL) {
 					append_object(retval, obj);
 				}
+				free(buf);
 				continue;
 			} else {
 				obj = create_plain_text("$");

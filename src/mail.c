@@ -653,9 +653,7 @@ static void *imap_thread(void *arg)
 	unsigned long old_unseen = ULONG_MAX;
 	unsigned long old_messages = ULONG_MAX;
 	struct stat stat_buf;
-	struct hostent he, *he_res = 0;
-	int he_errno;
-	char hostbuff[2048];
+	struct hostent *he_res = 0;
 	struct sockaddr_in their_addr;	// connector's address information
 	struct mail_s *mail = (struct mail_s *)arg;
 	int has_idle = 0;
@@ -669,6 +667,10 @@ static void *imap_thread(void *arg)
 
 		if (!resolved_host) {
 #ifdef HAVE_GETHOSTBYNAME_R
+			int he_errno;
+			struct hostent he;
+			char hostbuff[2048];
+
 			if (gethostbyname_r(mail->host, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
 				NORM_ERR("IMAP gethostbyname_r: %s", hstrerror(h_errno));
 				fail++;
@@ -1008,9 +1010,7 @@ static void *pop3_thread(void *arg)
 	unsigned int fail = 0;
 	unsigned long old_unseen = ULONG_MAX;
 	struct stat stat_buf;
-	struct hostent he, *he_res = 0;
-	int he_errno;
-	char hostbuff[2048];
+	struct hostent *he_res = 0;
 	struct sockaddr_in their_addr;	// connector's address information
 	struct mail_s *mail = (struct mail_s *)arg;
 	char resolved_host = 0;
@@ -1021,6 +1021,10 @@ static void *pop3_thread(void *arg)
 		fd_set fdset;
 		if (!resolved_host) {
 #ifdef HAVE_GETHOSTBYNAME_R
+			int he_errno;
+			struct hostent he;
+			char hostbuff[2048];
+
 			if (gethostbyname_r(mail->host, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
 				NORM_ERR("POP3 gethostbyname_r: %s", hstrerror(h_errno));
 				fail++;
