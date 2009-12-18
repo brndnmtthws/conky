@@ -1,0 +1,24 @@
+function(wrap_tolua VAR)
+if(NOT ARGN)
+	message(SEND_ERROR "Error: wrap_tolua called without any files")
+	return()
+endif(NOT ARGN)
+
+SET(INCL)
+SET(${VAR})
+FOREACH(FIL ${ARGN})
+	GET_FILENAME_COMPONENT(ABS_FIL ${FIL} ABSOLUTE)
+	GET_FILENAME_COMPONENT(FIL_WE ${FIL} NAME_WE)
+	LIST(APPEND ${VAR} "${CMAKE_CURRENT_BINARY_DIR}/lib${FIL_WE}.c")
+
+	ADD_CUSTOM_COMMAND( OUTPUT ${${VAR}} ${INCL} COMMAND ${APP_TOLUA} -n
+		${FIL_WE} -o ${CMAKE_CURRENT_BINARY_DIR}/lib${FIL_WE}.c ${ABS_FIL} DEPENDS
+		${ABS_FIL} COMMENT "Running tolua++ on ${FIL}"
+		VERBATIM )
+
+	SET_SOURCE_FILES_PROPERTIES(${${VAR}} ${INCL} PROPERTIES GENERATED TRUE)
+ENDFOREACH(FIL)
+
+SET(${VAR} ${${VAR}} PARENT_SCOPE)
+
+endfunction(wrap_tolua)

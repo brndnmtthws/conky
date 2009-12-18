@@ -3,7 +3,7 @@ $#include <cairo-deprecated.h>
 $#include <cairo.h>
 $#include <cairo-xlib.h>
 $#include <X11/Xlib.h>
-$#include "libcairo-helper.h"
+$#include <libcairo-helper.h>
 /*
  * This code was mostly copied from cairo.h and cairo-xlib.h with comments
  * removed.  The licence noticed below is present for the sake of clarity.

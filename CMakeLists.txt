@@ -28,3 +28,10 @@ add_subdirectory(src)
 add_subdirectory(lua)
 add_subdirectory(doc)
 
+# Install README into share dir (is this even the right spot? need to revisit
+# this at some point)
+install(FILES
+	README
+	DESTINATION share/doc/conky
+)
+

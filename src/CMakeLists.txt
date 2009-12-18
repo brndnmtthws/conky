@@ -143,3 +143,11 @@ endif(BUILD_CONFIG_OUTPUT)
 add_executable(conky ${conky_sources} ${optional_sources})
 
 target_link_libraries(conky ${conky_libs})
+
+# Install libtcp-portmon too?
+install(TARGETS
+	conky
+	RUNTIME DESTINATION bin
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+)
