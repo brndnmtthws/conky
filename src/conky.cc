@@ -1266,7 +1266,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 				case STIPPLED_HR:
 				{
 					int h = specials[special_index].height;
-					int tmp_s = specials[special_index].arg;
+					char tmp_s = specials[special_index].arg;
 					int mid = font_ascent() / 2;
 					char ss[2] = { tmp_s, tmp_s };
 
@@ -1698,7 +1698,7 @@ static void draw_text(void)
 		/* draw borders */
 		if (draw_borders && window.border_width > 0) {
 			if (stippled_borders) {
-				char ss[2] = { stippled_borders, stippled_borders };
+				char ss[2] = { (char)stippled_borders, (char)stippled_borders };
 				XSetLineAttributes(display, window.gc, window.border_width, LineOnOffDash,
 					CapButt, JoinMiter);
 				XSetDashes(display, window.gc, 0, ss, 2);

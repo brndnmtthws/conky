@@ -13,7 +13,7 @@ endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build.h)
 set(conky_sources colours.c combine.c common.c conky.cc core.cc diskio.c
 	entropy.c exec.c fs.c mail.c mixer.c net_stat.c template.c timed_thread.c
 	mboxscan.c read_tcp.c scroll.c specials.c tailhead.c temphelper.c
-	text_object.c timeinfo.c top.c algebra.c proc.c user.c)
+	text_object.c timeinfo.c top.c algebra.c prioqueue.c proc.c user.c)
 
 # Platform specific sources
 if(OS_LINUX)
