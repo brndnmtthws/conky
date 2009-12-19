@@ -257,7 +257,7 @@ if(WANT_LIBXML2)
 endif(WANT_LIBXML2)
 
 if(WANT_TOLUA)
-	find_program(APP_TOLUA tolua++)
+	find_program(APP_TOLUA NAMES tolua++ tolua++5.1)
 	if(NOT APP_TOLUA)
 		message(FATAL_ERROR "Unable to find program 'tolua++'")
 	endif(NOT APP_TOLUA)
