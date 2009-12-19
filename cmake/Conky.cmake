@@ -75,12 +75,7 @@ if(NOT RELEASE)
 	mark_as_advanced(APP_GIT)
 endif(NOT RELEASE)
 
-# Used for doc generation
-find_program(APP_DB2X_XSLTPROC db2x_xsltproc)
-find_program(APP_DB2X_MANXML db2x_manxml)
-find_program(APP_XSLTPROC xsltproc)
-
-mark_as_advanced(APP_GAWK APP_WC APP_DATE APP_UNAME APP_DB2X_XSLTPROC APP_DB2X_MANXML APP_XSLTPROC)
+mark_as_advanced(APP_GAWK APP_WC APP_DATE APP_UNAME)
 
 # The version numbers are simply derived from the date and number of commits
 # since start of month

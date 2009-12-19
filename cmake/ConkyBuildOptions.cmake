@@ -1,9 +1,15 @@
 # vim: ts=4 sw=4 noet ai cindent syntax=cmake
 
 if(NOT CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
-		"Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
-		FORCE)
+	if(MAINTAINER_MODE)
+		set(CMAKE_BUILD_TYPE Debug CACHE STRING
+			"Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+			FORCE)
+	else(MAINTAINER_MODE)
+		set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
+			"Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+			FORCE)
+	endif(MAINTAINER_MODE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 # -std options for all build types
@@ -21,6 +27,8 @@ endif(CMAKE_BUILD_TYPE MATCHES "Debug")
 
 option(RELEASE "Build release package" false)
 mark_as_advanced(RELEASE)
+
+option(MAINTAINER_MODE "Enable maintainer mode (builds docs)" false)
 
 # Some standard options
 set(SYSTEM_CONFIG_FILE "/etc/conky/conky.conf" CACHE STRING "Default system-wide Conky configuration file")
