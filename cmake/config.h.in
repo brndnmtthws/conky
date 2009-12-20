@@ -109,13 +109,13 @@
 
 #ifdef BUILD_WEATHER_XOAP
 #define XOAP
+#define WEATHER
 #define XOAP_FILE "$HOME/.xoaprc"
 #endif /* BUILD_WEATHER_XOAP */
 
 #ifdef BUILD_WEATHER_METAR
 #define WEATHER
-#define WEATHER
-#endif /* BUILD_WEATHER */
+#endif /* BUILD_WEATHER_METAR */
 
 #cmakedefine BUILD_IMLIB2 1
 #ifdef BUILD_IMLIB2
