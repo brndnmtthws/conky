@@ -323,7 +323,8 @@ static void update_mail_count(struct local_mail_s *mail)
 
 			/* skip until \n */
 			while (strchr(buf, '\n') == NULL && !feof(fp)) {
-				fgets(buf, 128, fp);
+				if (!fgets(buf, 128, fp))
+					break;
 			}
 		}
 
@@ -431,7 +432,8 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 		term.c_lflag &= ~ECHO;
 		tcsetattr(fp, TCSANOW, &term);
 		printf("Enter mailbox password (%s@%s): ", mail->user, mail->host);
-		scanf("%128s", mail->pass);
+		if (scanf("%128s", mail->pass))
+			mail->pass[0] = 0;
 		printf("\n");
 		term.c_lflag |= ECHO;
 		tcsetattr(fp, TCSANOW, &term);
