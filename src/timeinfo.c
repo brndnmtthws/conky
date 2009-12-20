@@ -153,6 +153,19 @@ void free_tztime(struct text_object *obj)
 	obj->data.opaque = NULL;
 }
 
+/* a safer asprintf()
+ * - no need to check for errors
+ * - exit conky on memory allocation failure
+ * - XXX: no return value at all, otherwise this
+ *        could be used globally */
+#define safe_asprintf(bufp, ...) { \
+	int __v; \
+	if ((__v = asprintf(bufp, __VA_ARGS__)) == -1) { \
+		fprintf(stderr, "%s: memory allocation failed\n", __func__); \
+		exit(__v); \
+	} \
+}
+
 //all chars after the ending " and between the seconds and the starting " are silently
 //ignored, this is wanted behavior, not a bug, so don't "fix" this.
 static void do_format_time(struct text_object *obj, char *p, unsigned int p_max_size) {
@@ -216,29 +229,29 @@ static void do_format_time(struct text_object *obj, char *p, unsigned int p_max_
 						currentchar++;
 						switch(*currentchar){
 						case 'w':
-							asprintf(&temp, "%d", weeks);
+							safe_asprintf(&temp, "%d", weeks);
 							break;
 						case 'd':
-							asprintf(&temp, "%d", days);
+							safe_asprintf(&temp, "%d", days);
 							break;
 						case 'h':
-							asprintf(&temp, "%d", hours);
+							safe_asprintf(&temp, "%d", hours);
 							break;
 						case 'm':
-							asprintf(&temp, "%d", minutes);
+							safe_asprintf(&temp, "%d", minutes);
 							break;
 						case 's':
-							asprintf(&temp, "%d", (int) seconds);
+							safe_asprintf(&temp, "%d", (int) seconds);
 							break;
 						case 'S':
 							currentchar++;
 							if(*currentchar >= '0' && *currentchar <= '9') {
-								asprintf(&temp, "%.*f", (*currentchar) - '0', seconds);
+								safe_asprintf(&temp, "%.*f", (*currentchar) - '0', seconds);
 							} else if(*currentchar == 'x') {
 								if(seconds == (int) seconds ) {
-									asprintf(&temp, "%d", (int) seconds);
+									safe_asprintf(&temp, "%d", (int) seconds);
 								} else {
-									asprintf(&temp, "%.9f", seconds);
+									safe_asprintf(&temp, "%.9f", seconds);
 									while(*(temp + strlen(temp) - 1) == '0' || *(temp + strlen(temp) - 1) == '.') {
 										*(temp + strlen(temp) - 1) = 0;
 									}
