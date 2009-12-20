@@ -112,7 +112,7 @@
 #define XOAP_FILE "$HOME/.xoaprc"
 #endif /* BUILD_WEATHER_XOAP */
 
-#ifdef BUILD_WEATHER
+#ifdef BUILD_WEATHER_METAR
 #define WEATHER
 #define WEATHER
 #endif /* BUILD_WEATHER */
