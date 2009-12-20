@@ -123,7 +123,8 @@ void update_uptime(void)
 			info.uptime = 0.0;
 			return;
 		}
-		fscanf(fp, "%lf", &info.uptime);
+		if (fscanf(fp, "%lf", &info.uptime) <= 0)
+			info.uptime = 0;
 		fclose(fp);
 	}
 }
@@ -208,7 +209,8 @@ void print_laptop_mode(struct text_object *obj, char *p, int p_max_size)
 	(void)obj;
 
 	if ((fp = fopen("/proc/sys/vm/laptop_mode", "r")) != NULL) {
-		fscanf(fp, "%d\n", &val);
+		if (fscanf(fp, "%d\n", &val) <= 0)
+			val = 0;
 		fclose(fp);
 	}
 	snprintf(p, p_max_size, "%d", val);
@@ -230,8 +232,7 @@ void print_ioscheduler(struct text_object *obj, char *p, int p_max_size)
 	if ((fp = fopen(buf, "r")) == NULL)
 		goto out_fail;
 
-	while (!feof(fp)) {
-		fscanf(fp, "%127s", buf);
+	while (fscanf(fp, "%127s", buf) == 1) {
 		if (buf[0] == '[') {
 			buf[strlen(buf) - 1] = '\0';
 			snprintf(p, p_max_size, "%s", buf + 1);
@@ -292,7 +293,10 @@ void update_gateway_info(void)
 	}
 
 	/* skip over the table header line, which is always present */
-	fscanf(fp, "%*[^\n]\n");
+	if (fscanf(fp, "%*[^\n]\n") < 0) {
+		fclose(fp);
+		return;
+	}
 
 	while (!feof(fp)) {
 		if(fscanf(fp, RT_ENTRY_FORMAT,
@@ -375,8 +379,11 @@ void update_net_stats(void)
 		return;
 	}
 
-	fgets(buf, 255, net_dev_fp);	/* garbage */
-	fgets(buf, 255, net_dev_fp);	/* garbage (field names) */
+	if (!fgets(buf, 255, net_dev_fp) ||  /* garbage */
+	    !fgets(buf, 255, net_dev_fp)) {  /* garbage (field names) */
+		fclose(net_dev_fp);
+		return;
+	}
 
 	/* read each interface */
 	for (i2 = 0; i2 < MAX_NET_INTERFACES; i2++) {
@@ -601,7 +608,8 @@ void update_threads(void)
 			info.threads = 0;
 			return;
 		}
-		fscanf(fp, "%*f %*f %*f %*d/%hu", &info.threads);
+		if (fscanf(fp, "%*f %*f %*f %*d/%hu", &info.threads) <= 0)
+			info.threads = 0;
 		fclose(fp);
 	}
 }
@@ -830,8 +838,9 @@ void update_load_average(void)
 			info.loadavg[0] = info.loadavg[1] = info.loadavg[2] = 0.0;
 			return;
 		}
-		fscanf(fp, "%f %f %f", &info.loadavg[0], &info.loadavg[1],
-			&info.loadavg[2]);
+		if (fscanf(fp, "%f %f %f", &info.loadavg[0], &info.loadavg[1],
+		           &info.loadavg[2]) < 0)
+			info.loadavg[0] = info.loadavg[1] = info.loadavg[2] = 0.0;
 		fclose(fp);
 	}
 }
@@ -1330,7 +1339,8 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
 		return;
 	}
 	memset(buf, 0, sizeof(buf));
-	fscanf(fp, "%*s %99s", buf);
+	if (fscanf(fp, "%*s %99s", buf) <= 0)
+		perror("fscanf()");
 	fclose(fp);
 
 	snprintf(p_client_buffer, client_buffer_size, "%s", buf);
@@ -1395,7 +1405,8 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size)
 			return;
 		}
 		memset(buf, 0, sizeof(buf));
-		fscanf(fp, "%*s %99s", buf);
+		if (fscanf(fp, "%*s %99s", buf) <= 0)
+			perror("fscanf()");
 		fclose(fp);
 
 		snprintf(p_client_buffer, client_buffer_size, "%s", buf);
@@ -1892,8 +1903,9 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 			unsigned int ac, status, flag;
 			int life;
 
-			fscanf(apm_bat_fp[idx], "%*s %*s %*x %x   %x       %x     %d%%",
-				&ac, &status, &flag, &life);
+			if (fscanf(apm_bat_fp[idx], "%*s %*s %*x %x   %x       %x     %d%%",
+			           &ac, &status, &flag, &life) <= 0)
+				goto read_bat_fp_end;
 
 			if (life == -1) {
 				/* could check now that there is ac */
@@ -1906,6 +1918,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 				snprintf(last_battery_str[idx], 64, "%d%%", life);
 			}
 
+read_bat_fp_end:
 			/* it seemed to buffer it so file must be closed (or could use
 			 * syscalls directly but I don't feel like coding it now) */
 			fclose(apm_bat_fp[idx]);
