@@ -232,8 +232,8 @@ if(BUILD_NVIDIA)
 endif(BUILD_NVIDIA)
 
 if(BUILD_IMLIB2)
-	pkg_check_modules(IMLIB2 imlib2)
-	set(conky_libs ${conky_libs} ${IMLIB2_LIB})
+	pkg_search_module(IMLIB2 REQUIRED imlib2 Imlib2)
+	set(conky_libs ${conky_libs} ${IMLIB2_LIB} ${IMLIB2_LDFLAGS})
 	set(conky_includes ${conky_includes} ${IMLIB2_INCLUDE_PATH})
 endif(BUILD_IMLIB2)
 
