@@ -22,6 +22,7 @@
  *
  */
 #include "conky.h"	/* text_buffer_size, PACKAGE_NAME, maybe more */
+#include <errno.h>
 #include "temphelper.h"
 #include "logging.h"
 #include <stdio.h>
@@ -36,8 +37,9 @@ static int smapi_read_int(const char *path)
 {
 	FILE *fp;
 	int i = 0;
-	if ((fp = fopen(path, "r")) != NULL) {
-		fscanf(fp, "%i\n", &i);
+	if ((fp = fopen(path, "r"))) {
+		if (fscanf(fp, "%i\n", &i) < 0)
+			perror("fscanf()");
 		fclose(fp);
 	}
 	return i;
@@ -63,7 +65,8 @@ static char *smapi_read_str(const char *path)
 	FILE *fp;
 	char str[256] = "failed";
 	if ((fp = fopen(path, "r")) != NULL) {
-		fscanf(fp, "%255s\n", str);
+		if (fscanf(fp, "%255s\n", str) < 0)
+			perror("fscanf()");
 		fclose(fp);
 	}
 	return strndup(str, text_buffer_size);
