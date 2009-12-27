@@ -140,7 +140,8 @@ static void print_tailhead(const char* type, struct text_object *obj, char *p, i
 				if(fd != -1) {
 					if(strcmp(type, "head") == 0) {
 						for(i = 0; linescounted < ht->wantedlines; i++) {
-							read(fd, p + i, 1);
+							if (read(fd, p + i, 1) <= 0)
+								break;
 							if(p[i] == '\n') {
 								linescounted++;
 							}
@@ -159,7 +160,8 @@ static void print_tailhead(const char* type, struct text_object *obj, char *p, i
 				if(fp != NULL) {
 					if(strcmp(type, "head") == 0) {
 						for(i = 0; i < ht->wantedlines; i++) {
-							fgets(p + endofstring, p_max_size - endofstring, fp);
+							if (!fgets(p + endofstring, p_max_size - endofstring, fp))
+								break;
 							endofstring = strlen(p);
 						}
 					} else if(strcmp(type, "tail") == 0) {
