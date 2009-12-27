@@ -29,6 +29,7 @@
 #include <pthread.h>
 #include <assert.h>
 #include <errno.h>
+#include <stdio.h>
 #include <time.h>
 #include <unistd.h>
 #ifndef HAVE_CLOCK_GETTIME
@@ -164,7 +165,8 @@ void timed_thread_destroy(timed_thread *p_timed_thread,
 	pthread_cond_signal(&p_timed_thread->runnable_cond);
 	p_timed_thread->die = 1;
 	pthread_mutex_unlock(&p_timed_thread->runnable_mutex);
-	write(p_timed_thread->pipefd[1], "die", 3);
+	if (write(p_timed_thread->pipefd[1], "die", 3) == -1)
+		perror("write()");
 
 	/* join the terminating thread */
 	if (p_timed_thread->thread) {
