@@ -23,6 +23,7 @@
  */
 
 #include "config.h"
+#include "logging.h"
 #include "text_object.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -268,7 +269,8 @@ static int file_exists(const char *filename)
 static void writeSkilltree(char *content, const char *filename)
 {
 	FILE *fp = fopen(filename, "w");
-	fwrite(content, sizeof(char), strlen(content), fp);
+	if (fwrite(content, sizeof(char), strlen(content), fp) < strlen(content))
+		NORM_ERR("skill tree write failed");
 	fclose(fp);
 }
 
