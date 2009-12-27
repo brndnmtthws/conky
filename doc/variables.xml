@@ -575,7 +575,7 @@
             <option>var1 var2</option>
         </term>
         <listitem>Places the lines of var2 to the right of the
-        lines of var1 seperated by the chars that are put between
+        lines of var1 separated by the chars that are put between
         var1 and var2. For example: ${combine ${head /proc/cpuinfo
         2} - ${head /proc/meminfo 1}} gives as output
         "cpuinfo_line1 - meminfo_line1" on line 1 and
@@ -676,7 +676,7 @@
             point value greater than 0, otherwise defaults to 15
             minutes. Most useful when used in conjunction with Lua
             and the Lua API. This object is threaded, and once a
-            thread is created it can't be explicitely destroyed.
+            thread is created it can't be explicitly destroyed.
             One thread will run for each URI specified. You can use
             any protocol that Curl supports.</para>
         </listitem>
@@ -1732,7 +1732,7 @@
         </term>
         <listitem>Displays the number of messages in your global
         IMAP inbox by default. You can define individual IMAP
-        inboxes seperately by passing arguments to this object.
+        inboxes separately by passing arguments to this object.
         Arguments are: "host user pass [-i interval (in seconds)]
         [-f 'folder'] [-p port] [-e 'command'] [-r retries]". Default
         port is 143, default folder is 'INBOX', default interval is
@@ -1750,7 +1750,7 @@
         </term>
         <listitem>Displays the number of unseen messages in your
         global IMAP inbox by default. You can define individual
-        IMAP inboxes seperately by passing arguments to this
+        IMAP inboxes separately by passing arguments to this
         object. Arguments are: "host user pass [-i interval (in
         seconds)] [-f 'folder'] [-p port] [-e 'command'] [-r retries]".
         Default port is 143, default folder is 'INBOX', default
@@ -2461,7 +2461,7 @@
             </member>
             <member>
                 <command>imagequality</command>
-                <option>Which imagequality should be choosen by
+                <option>Which imagequality should be chosen by
                 OpenGL applications</option>
             </member>
         </simplelist>
@@ -2954,7 +2954,7 @@
         </term>
         <listitem>Displays the number of unseen messages in your
         global POP3 inbox by default. You can define individual
-        POP3 inboxes seperately by passing arguments to this
+        POP3 inboxes separately by passing arguments to this
         object. Arguments are: "host user pass [-i interval (in
         seconds)] [-p port] [-e 'command'] [-r retries]". Default
         port is 110, default interval is 5 minutes, and default
@@ -2972,7 +2972,7 @@
         </term>
         <listitem>Displays the amount of space (in MiB, 2^20) used
         in your global POP3 inbox by default. You can define
-        individual POP3 inboxes seperately by passing arguments to
+        individual POP3 inboxes separately by passing arguments to
         this object. Arguments are: "host user pass [-i interval
         (in seconds)] [-p port] [-e 'command'] [-r retries]". Default
         port is 110, default interval is 5 minutes, and default
@@ -3043,7 +3043,7 @@
             this action and spaces_in_front is given conky places
             that many spaces in front of each item). This object is
             threaded, and once a thread is created it can't be
-            explicitely destroyed. One thread will run for each URI
+            explicitly destroyed. One thread will run for each URI
             specified. You can use any protocol that Curl
             supports.</para>
         </listitem>
@@ -3081,7 +3081,7 @@
         then the lines are placed behind each other separated with
         a '|'-sign. If you change the textcolor inside $scroll it
         will automatically have it's old value back at the end of
-        $scroll. The end and the start of text will be seperated by
+        $scroll. The end and the start of text will be separated by
         'length' number of spaces. 
         <para /></listitem>
     </varlistentry>
@@ -3910,7 +3910,7 @@
             <para>'delay_in_minutes' (optional, default 30) cannot
             be less than 30 minutes.</para>
             <para>This object is threaded, and once a thread is
-            created it can't be explicitely destroyed. One thread
+            created it can't be explicitly destroyed. One thread
             will run for each URI specified.</para>
             <para>Note that these variables are still EXPERIMENTAL
             and can be subject to many future changes.</para>
@@ -3990,7 +3990,7 @@
             <para>'delay_in_minutes' (optional, default 210) cannot
             be lower than 210 min.</para>
             <para>This object is threaded, and once a thread is
-            created it can't be explicitely destroyed. One thread
+            created it can't be explicitly destroyed. One thread
             will run for each URI specified. You can use any
             protocol that Curl supports.</para>
             <para>Note that these variables are still EXPERIMENTAL
