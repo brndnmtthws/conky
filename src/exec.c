@@ -93,7 +93,11 @@ static FILE* pid_popen(const char *command, const char *mode, pid_t *child) {
 		} else {
 			close(1);
 		}
-		dup(childend);	//by dupping childend, the returned fd will have close-on-exec turned off
+
+		//by dupping childend, the returned fd will have close-on-exec turned off
+		if (dup(childend) == -1)
+			perror("dup()");
+
 		execl("/bin/sh", "sh", "-c", command, (char *) NULL);
 		_exit(EXIT_FAILURE); //child should die here, (normally execl will take care of this but it can fail)
 	}
