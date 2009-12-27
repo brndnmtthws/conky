@@ -220,7 +220,8 @@ static void mbox_scan(char *args, char *output, size_t max_len)
 
 			/* skip until \n */
 			while (strchr(buf, '\n') == NULL && !feof(fp)) {
-				fgets(buf, text_buffer_size, fp);
+				if (!fgets(buf, text_buffer_size, fp))
+					break;
 			}
 
 			flag = 0;	/* in the headers now */
@@ -236,7 +237,8 @@ static void mbox_scan(char *args, char *output, size_t max_len)
 			/* then search for new mail ("From ") */
 
 			while (strchr(buf, '\n') == NULL && !feof(fp)) {
-				fgets(buf, text_buffer_size, fp);
+				if (!fgets(buf, text_buffer_size, fp))
+					break;
 			}
 			flag = 1;	/* in the body now */
 			continue;
@@ -253,7 +255,8 @@ static void mbox_scan(char *args, char *output, size_t max_len)
 			curr = curr->previous;
 			/* Skip until \n */
 			while (strchr(buf, '\n') == NULL && !feof(fp)) {
-				fgets(buf, text_buffer_size, fp);
+				if (!fgets(buf, text_buffer_size, fp))
+					break;
 			}
 			continue;
 		}
@@ -276,7 +279,8 @@ static void mbox_scan(char *args, char *output, size_t max_len)
 					curr->from[i] = '\0';
 					/* skip until \n */
 					while (strchr(buf, '\n') == NULL && !feof(fp)) {
-						fgets(buf, text_buffer_size, fp);
+						if (!fgets(buf, text_buffer_size, fp))
+							break;
 					}
 					break;
 				}
@@ -295,7 +299,8 @@ static void mbox_scan(char *args, char *output, size_t max_len)
 					curr->from[i] = '\0';
 					/* skip until \n */
 					while (strchr(buf, '\n') == NULL && !feof(fp)) {
-						fgets(buf, text_buffer_size, fp);
+						if (!fgets(buf, text_buffer_size, fp))
+							break;
 					}
 					break;
 				}
@@ -325,7 +330,8 @@ static void mbox_scan(char *args, char *output, size_t max_len)
 
 					/* skip until \n */
 					while (strchr(buf, '\n') == NULL && !feof(fp)) {
-						fgets(buf, text_buffer_size, fp);
+						if (!fgets(buf, text_buffer_size, fp))
+							break;
 					}
 					break;
 				}
