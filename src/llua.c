@@ -23,6 +23,7 @@
  */
 
 #include "conky.h"
+#include "llua.h"
 #include "logging.h"
 #include "build.h"
 

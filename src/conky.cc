@@ -84,6 +84,9 @@
 #ifdef HAVE_ICONV
 #include "iconv_tools.h"
 #endif
+#ifdef HAVE_LUA
+#include "llua.h"
+#endif /* HAVE_LUA */
 #include "logging.h"
 #include "mail.h"
 #include "net_stat.h"

@@ -53,6 +53,9 @@
 #ifdef HAVE_ICONV
 #include "iconv_tools.h"
 #endif
+#ifdef HAVE_LUA
+#include "llua.h"
+#endif /* HAVE_LUA */
 #include "logging.h"
 #include "mixer.h"
 #include "mail.h"

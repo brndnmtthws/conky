@@ -245,10 +245,6 @@ struct information {
 	short kflags;	/* kernel settings, see enum KFLAG */
 };
 
-#ifdef HAVE_LUA
-#include "llua.h"
-#endif /* HAVE_LUA */
-
 /* needed by linux.c and top.c -> outsource somewhere */
 enum {
 	/* set to true if kernel uses "long" format for /proc/stats */
