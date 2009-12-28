@@ -103,13 +103,6 @@ int inlist(struct ll_string* front, char* string) {
 	return 0;
 }
 
-void extract_object_args_to_sub(struct text_object *obj, const char *args)
-{
-	obj->sub = malloc(sizeof(struct text_object));
-	memset(obj->sub, 0, sizeof(struct text_object));
-	extract_variable_text_internal(obj->sub, args);
-}
-
 void print_pid_chroot(struct text_object *obj, char *p, int p_max_size) {
 	char pathbuf[64];
 	char buf[max_user_text];

@@ -1798,6 +1798,13 @@ int extract_variable_text_internal(struct text_object *retval, const char *const
 	return 0;
 }
 
+void extract_object_args_to_sub(struct text_object *obj, const char *args)
+{
+	obj->sub = (struct text_object *)malloc(sizeof(struct text_object));
+	memset(obj->sub, 0, sizeof(struct text_object));
+	extract_variable_text_internal(obj->sub, args);
+}
+
 /* Frees the list of text objects root points to. */
 void free_text_objects(struct text_object *root)
 {

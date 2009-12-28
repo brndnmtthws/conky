@@ -317,6 +317,8 @@ void set_update_interval(double interval);
 
 void parse_conky_vars(struct text_object *, const char *, char *, int);
 
+void extract_object_args_to_sub(struct text_object *, const char *);
+
 void generate_text_internal(char *, int, struct text_object);
 
 int percent_print(char *, int, unsigned);
