@@ -88,7 +88,7 @@ static void xmms_alloc(struct information *ptr)
 void free_xmms2(struct text_object *obj)
 {
 	(void)obj;
-	
+
 	xfree(info.xmms2.artist);
 	xfree(info.xmms2.album);
 	xfree(info.xmms2.title);
@@ -152,10 +152,10 @@ int handle_curent_id(xmmsv_t *value, void *p)
 		if (xmmsv_dict_get(infos, "artist", &dict_entry) && xmmsv_get_string(dict_entry, &charval))
 			strncpy(ptr->xmms2.artist, charval, text_buffer_size - 1);
 
-		if (xmmsv_dict_get(infos, "title", &dict_entry) && xmmsv_get_string(dict_entry, &charval)) 
+		if (xmmsv_dict_get(infos, "title", &dict_entry) && xmmsv_get_string(dict_entry, &charval))
 			strncpy(ptr->xmms2.title, charval, text_buffer_size - 1);
 
-		if (xmmsv_dict_get(infos, "album", &dict_entry) && xmmsv_get_string(dict_entry, &charval)) 
+		if (xmmsv_dict_get(infos, "album", &dict_entry) && xmmsv_get_string(dict_entry, &charval))
 			strncpy(ptr->xmms2.album, charval, text_buffer_size - 1);
 
 		if (xmmsv_dict_get(infos, "genre", &dict_entry) && xmmsv_get_string(dict_entry, &charval))
@@ -247,7 +247,7 @@ int handle_playback_state_change(xmmsv_t *value, void *p)
 	return TRUE;
 }
 
-int handle_playlist_loaded(xmmsv_t *value, void *p) 
+int handle_playlist_loaded(xmmsv_t *value, void *p)
 {
 	struct information *ptr = p;
 	const char *c, *errbuf;
@@ -305,21 +305,21 @@ void update_xmms2(void)
 
 		/* set callbacks */
 		xmmsc_disconnect_callback_set(xmms2_conn, connection_lost, current_info);
-		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_broadcast_playback_current_id, 
+		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_broadcast_playback_current_id,
 				handle_curent_id, current_info);
-		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_signal_playback_playtime, 
+		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_signal_playback_playtime,
 				handle_playtime, current_info);
-		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_broadcast_playback_status, 
+		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_broadcast_playback_status,
 				handle_playback_state_change, current_info);
-		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_broadcast_playlist_loaded, 
+		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_broadcast_playlist_loaded,
 				handle_playlist_loaded, current_info);
 
 		/* get playback status, current id and active playlist */
-		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_playback_current_id, 
+		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_playback_current_id,
 				handle_curent_id, current_info);
-		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_playback_status, 
+		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_playback_status,
 				handle_playback_state_change, current_info);
-		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_playlist_current_active, 
+		XMMS_CALLBACK_SET(xmms2_conn, xmmsc_playlist_current_active,
 				handle_playlist_loaded, current_info);
 
 		/* everything seems to be ok */

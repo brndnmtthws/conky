@@ -73,7 +73,7 @@ namespace {
 
 	/* comparison function for tcp connections */
 	bool operator==(const tcp_connection_t &a, const tcp_connection_t &b)
-	{ 
+	{
 		return a.local_port == b.local_port && a.remote_port == b.remote_port &&
 			! std::memcmp(&a.local_addr, &b.local_addr, sizeof(a.local_addr)) &&
 			! std::memcmp(&a.remote_addr.s6_addr, &b.remote_addr, sizeof(a.remote_addr));

@@ -585,11 +585,11 @@ void human_readable(long long num, char *buf, int size)
 	 * adjusting the decimal part of the number. Sample output:
 	 *  123MiB
 	 * 23.4GiB
-	 * 5.12B   
+	 * 5.12B
 	 * so the point of alignment resides between number and unit. The
 	 * upside of this is that there is minimal padding necessary, though
 	 * there should be a way to make alignment take place at the decimal
-	 * dot (then with fixed width decimal part). 
+	 * dot (then with fixed width decimal part).
 	 *
 	 * Note the repdigits below: when given a precision value, printf()
 	 * rounds the float to it, not just cuts off the remaining digits. So
@@ -2638,11 +2638,11 @@ static void set_default_configurations(void)
 	text_alignment = BOTTOM_LEFT;
 	info.x11.monitor.number = 1;
 	info.x11.monitor.current = 0;
-	info.x11.desktop.current = 1; 
+	info.x11.desktop.current = 1;
 	info.x11.desktop.number = 1;
 	info.x11.desktop.nitems = 0;
-	info.x11.desktop.all_names = NULL; 
-	info.x11.desktop.name = NULL; 
+	info.x11.desktop.all_names = NULL;
+	info.x11.desktop.name = NULL;
 #endif /* X11 */
 
 	free_templates();
@@ -4280,7 +4280,7 @@ static void signal_handler(int sig)
 {
 	/* signal handler is light as a feather, as it should be.
 	 * we will poll g_signal_pending with each loop of conky
-	 * and do any signal processing there, NOT here (except 
+	 * and do any signal processing there, NOT here (except
 	 * SIGALRM because this is caused when conky is hanging) */
 	if(sig == SIGALRM) {
 		alarm_handler();

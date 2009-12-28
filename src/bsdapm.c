@@ -188,8 +188,8 @@ void print_apm_battery_time(struct text_object *obj, char *p, int p_max_size)
 
 	if (batt_time == -1) {
 		snprintf(p, p_max_size, "unknown");
-	} else 
-	
+	} else
+
 #ifdef __OpenBSD__
 	{
 		h = batt_time / 60;
