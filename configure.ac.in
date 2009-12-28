@@ -941,13 +941,13 @@ if test "x$want_profiling" = "xyes" -a $ac_cv_c_compiler_gnu != no; then
   AC_DEFINE([PROFILING], [], [Define for profiling (gprof and gcov) support])
 fi
 
-conky_CXXFLAGS=$conky_CFLAGS
 #remove C-only options
-conky_CXXFLAGS=${conky_CXXFLAGS/-Wdeclaration-after-statement/}
-conky_CXXFLAGS=${conky_CXXFLAGS/-Wbad-function-cast/}
-conky_CXXFLAGS=${conky_CXXFLAGS/-Wstrict-prototypes/}
-conky_CXXFLAGS=${conky_CXXFLAGS/-Wold-style-definition/}
-conky_CXXFLAGS=${conky_CXXFLAGS/-std=c99/-std=c++0x}
+conky_CXXFLAGS=`echo $conky_CFLAGS | sed \
+	-e 's/-Wdeclaration-after-statement//g' \
+	-e 's/-Wbad-function-cast//g' \
+	-e 's/-Wstrict-prototypes//g' \
+	-e 's/-Wold-style-definition//g' \
+	-e 's/-std=c99/-std=c++0x/g'`
 
 AC_SUBST(conky_CFLAGS)
 AC_SUBST(conky_CXXFLAGS)
