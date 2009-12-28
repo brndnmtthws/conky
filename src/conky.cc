@@ -3974,9 +3974,6 @@ void initialisation(int argc, char **argv) {
 			case 'd':
 				fork_to_background = 1;
 				break;
-			case 'D':
-				global_debug_level++;
-				break;
 #ifdef X11
 			case 'f':
 				set_first_font(optarg);
@@ -4169,9 +4166,12 @@ int main(int argc, char **argv)
 		}
 
 		switch (c) {
+			case 'D':
+				global_debug_level++;
+				break;
 			case 'v':
 			case 'V':
-				print_version();
+				print_version(); /* doesn't return */
 			case 'c':
 				if (current_config) {
 					free(current_config);
