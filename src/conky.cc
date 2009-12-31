@@ -1004,6 +1004,8 @@ static long current_color;
 static int text_size_updater(char *s, int special_index)
 {
 	int w = 0;
+	int lw;
+	int contain_SECRIT_MULTILINE_CHAR = 0;
 	char *p;
 
 	if ((output_methods & TO_X) == 0)
@@ -1052,7 +1054,7 @@ static int text_size_updater(char *s, int special_index)
 			special_index++;
 			s = p + 1;
 		} else if (*p == SECRIT_MULTILINE_CHAR) {
-			int lw;
+			contain_SECRIT_MULTILINE_CHAR = 1;
 			*p = '\0';
 			lw = get_string_width(s);
 			*p = SECRIT_MULTILINE_CHAR;
@@ -1062,7 +1064,13 @@ static int text_size_updater(char *s, int special_index)
 		}
 		p++;
 	}
-	w += get_string_width(s);
+	/* Check also last substring if string contains SECRIT_MULTILINE_CHAR */
+	if (contain_SECRIT_MULTILINE_CHAR) {
+		lw = get_string_width(s);
+		w = lw > w ? lw : w;
+	} else {
+		w += get_string_width(s);
+	}
 	if (w > text_width) {
 		text_width = w;
 	}
