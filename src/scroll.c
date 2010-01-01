@@ -60,10 +60,16 @@ void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_cr
 		sd->step = 1;
 	}
 	sd->text = malloc(strlen(arg + n1) + sd->show + 1);
-	for(n2 = 0; (unsigned int) n2 < sd->show; n2++) {
-		sd->text[n2] = ' ';
+
+	if (strlen(arg) > sd->show) {
+		for(n2 = 0; (unsigned int) n2 < sd->show; n2++) {
+		    sd->text[n2] = ' ';
+		}
+		sd->text[n2] = 0;
 	}
-	sd->text[n2] = 0;
+	else
+	    sd->text[0] = 0;
+
 	strcat(sd->text, arg + n1);
 	sd->start = 0;
 	obj->sub = malloc(sizeof(struct text_object));
@@ -136,7 +142,7 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size, struct infor
 	free(pwithcolors);
 	//scroll
 	sd->start += sd->step;
-	if(buf[sd->start] == 0){
+	if(buf[sd->start] == 0 || sd->start > strlen(buf)){
 		sd->start = 0;
 	}
 #ifdef X11
