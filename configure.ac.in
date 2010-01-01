@@ -423,6 +423,17 @@ if test "x$want_x11" = "xyes"; then
 fi
 
 dnl
+dnl ARGB
+dnl
+
+AC_ARG_ENABLE([argb],
+              AC_HELP_STRING([--enable-argb], [enable if you want a argb visual [[default=no]]]),
+              [want_argb="$enableval"], [want_argb=no])
+if test x$want_argb = xyes; then
+	AC_DEFINE(USE_ARGB, 1, [Define if you want argb visual support])
+fi
+
+dnl
 dnl IMLIB2
 dnl
 
@@ -965,6 +976,7 @@ $PACKAGE $VERSION configured successfully:
   XDamage support:  $want_xdamage
   XDBE support:     $want_double_buffer
   Xft support:      $want_xft
+  ARGB support      $want_argb
 
  * Music detection:
   Audacious:        $want_audacious

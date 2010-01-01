@@ -675,10 +675,21 @@
     <varlistentry>
         <term>
             <command>
+                <option>own_window_argb</option>
+            </command>
+        </term>
+        <listitem>Boolean, use ARGB visual? ARGB can be used for real transparency,
+	note that a composite manager is required for real transparency.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>own_window_transparent</option>
             </command>
         </term>
-        <listitem>Boolean, set pseudo-transparency? 
+        <listitem>Boolean, set transparency? If argb visual is configured
+	true transparency is used, else pseudo transparency is used.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
