@@ -27,6 +27,9 @@
 
 #cmakedefine HAVE_STRNDUP 1
 
+#cmakedefine HAVE_FOPENCOOKIE 1
+#cmakedefine HAVE_FUNOPEN 1
+
 #cmakedefine BUILD_X11 1
 #ifdef BUILD_X11
 #define X11

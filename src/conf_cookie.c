@@ -36,6 +36,7 @@
 #define COOKIE_RET_T	int
 #endif
 
+#if defined(HAVE_FOPENCOOKIE) || defined(HAVE_FUNOPEN)
 static COOKIE_RET_T
 conf_read(void *cookie, char *buf, COOKIE_LEN_T size)
 {
@@ -57,6 +58,7 @@ conf_read(void *cookie, char *buf, COOKIE_LEN_T size)
 	}
 	return i;
 }
+#endif /* defined(HAVE_FOPENCOOKIE) || defined(HAVE_FUNOPEN) */
 
 #if defined(HAVE_FOPENCOOKIE)
 static cookie_io_functions_t conf_cookie = {
