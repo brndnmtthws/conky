@@ -51,6 +51,11 @@ int use_xft = 0;
 int use_xdbe;
 #endif
 
+#ifdef USE_ARGB
+int use_argb_visual;
+int have_argb_visual;
+#endif /* USE_ARGB */
+
 /* some basic X11 stuff */
 Display *display = NULL;
 int display_width;
@@ -171,11 +176,26 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop)
 	return win;
 }
 
-/* sets background to ParentRelative for the Window and all parents */
+/* if no argb visual is configured sets background to ParentRelative for the Window and all parents,
+   else real transparency is used */
 void set_transparent_background(Window win)
 {
 	static int colour_set = -1;
 
+#ifdef USE_ARGB
+	if (have_argb_visual) {
+		// real transparency
+		if (set_transparent) {
+			XSetWindowBackground(display, win, 0x00);
+		} else if (colour_set != background_colour) {
+			XSetWindowBackground(display, win,
+				background_colour | (0xff << 24));
+			colour_set = background_colour;
+		}
+	} else {
+#endif /* USE_ARGB */
+	// pseudo transparency
+	
 	if (set_transparent) {
 		Window parent = win;
 		unsigned int i;
@@ -193,7 +213,35 @@ void set_transparent_background(Window win)
 		XSetWindowBackground(display, win, background_colour);
 		colour_set = background_colour;
 	}
+#ifdef USE_ARGB
+	}
+#endif /* USE_ARGB */
 }
+
+#ifdef USE_ARGB
+static int get_argb_visual(Visual** visual, int *depth) {
+	/* code from gtk project, gdk_screen_get_rgba_visual */
+	XVisualInfo visual_template;
+	XVisualInfo *visual_list;
+	int nxvisuals = 0, i;
+	
+	visual_template.screen = screen;
+	visual_list = XGetVisualInfo (display, VisualScreenMask,
+				&visual_template, &nxvisuals);
+	for (i = 0; i < nxvisuals; i++) {
+		if (visual_list[i].depth == 32 &&
+			 (visual_list[i].red_mask   == 0xff0000 &&
+			  visual_list[i].green_mask == 0x00ff00 &&
+			  visual_list[i].blue_mask  == 0x0000ff)) {
+			*visual = visual_list[i].visual;
+			*depth = visual_list[i].depth;
+			return 1;
+		}
+	}
+	// no argb visual available
+	return 0;
+}
+#endif /* USE_ARGB */
 
 void destroy_window(void)
 {
@@ -220,9 +268,28 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 
 #ifdef OWN_WINDOW
 	if (own_window) {
+		int depth = 0, flags;
+		Visual *visual = NULL;
+		
 		if (!find_desktop_window(&window.root, &window.desktop)) {
 			return;
 		}
+		
+#ifdef USE_ARGB
+		if (use_argb_visual && get_argb_visual(&visual, &depth)) {
+			have_argb_visual = 1;
+			window.visual = visual;
+			window.colourmap = XCreateColormap(display,
+				DefaultRootWindow(display), window.visual, AllocNone);
+		} else {
+#endif /* USE_ARGB */
+			window.visual = DefaultVisual(display, screen);
+			window.colourmap = DefaultColormap(display, screen);
+			depth = CopyFromParent;
+			visual = CopyFromParent;
+#ifdef USE_ARGB
+		}
+#endif /* USE_ARGB */
 
 		if (window.type == TYPE_OVERRIDE) {
 
@@ -231,11 +298,21 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 			XSetWindowAttributes attrs = { ParentRelative, 0L, 0, 0L, 0, 0,
 				Always, 0L, 0L, False, StructureNotifyMask | ExposureMask, 0L,
 				True, 0, 0 };
+#ifdef USE_ARGB
+			if (have_argb_visual) {
+				attrs.colormap = window.colourmap;
+				flags = CWBorderPixel | CWColormap | CWOverrideRedirect;
+			} else {
+#endif /* USE_ARGB */
+				flags = CWBackPixel | CWOverrideRedirect;
+#ifdef USE_ARGB
+			}
+#endif /* USE_ARGB */
 
 			/* Parent is desktop window (which might be a child of root) */
 			window.window = XCreateWindow(display, window.desktop, window.x,
-					window.y, w, h, 0, CopyFromParent, InputOutput, CopyFromParent,
-					CWBackPixel | CWOverrideRedirect, &attrs);
+					window.y, w, h, 0, depth, InputOutput, visual,
+					flags, &attrs);
 
 			XLowerWindow(display, window.window);
 
@@ -252,14 +329,25 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 			XClassHint classHint;
 			XWMHints wmHint;
 			Atom xa;
+			
+#ifdef USE_ARGB
+			if (have_argb_visual) {
+				attrs.colormap = window.colourmap;
+				flags = CWBorderPixel | CWColormap | CWOverrideRedirect;
+			} else {
+#endif /* USE_ARGB */
+				flags = CWBackPixel | CWOverrideRedirect;
+#ifdef USE_ARGB
+			}
+#endif /* USE_ARGB */
 
 			if (window.type == TYPE_DOCK) {
 				window.x = window.y = 0;
 			}
 			/* Parent is root window so WM can take control */
 			window.window = XCreateWindow(display, window.root, window.x,
-					window.y, w, h, 0, CopyFromParent, InputOutput, CopyFromParent,
-					CWBackPixel | CWOverrideRedirect, &attrs);
+					window.y, w, h, 0, depth, InputOutput, visual,
+					flags, &attrs);
 
 			classHint.res_name = window.class_name;
 			classHint.res_class = classHint.res_name;
@@ -472,8 +560,6 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 		fprintf(stderr, PACKAGE_NAME": drawing to single buffer\n");
 	}
 #endif
-	window.visual = DefaultVisual(display, DefaultScreen(display));
-	window.colourmap = DefaultColormap(display, DefaultScreen(display));
 #ifdef IMLIB2
 	{
 		cimlib_init(display, window.drawable, window.visual, window.colourmap);

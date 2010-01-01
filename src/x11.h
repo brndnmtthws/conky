@@ -75,6 +75,13 @@ extern int use_xdbe;
 extern int use_xft;
 #endif
 
+#if defined(USE_ARGB) && defined(OWN_WINDOW)
+/* 1 if config var set to 1, otherwise 0 */
+extern int use_argb_visual;
+/* 1 if use_argb_visual=1 and argb visual was found, otherwise 0 */
+extern int have_argb_visual;
+#endif
+
 extern Display *display;
 extern int display_width;
 extern int display_height;

@@ -346,3 +346,6 @@ zimba-tm <zimba-tm at users dot sourceforge dot net>
 
 zotrix <zotrix at users dot sourceforge dot net>
   FreeBSD patch for <10 procs
+
+Daniel Beßler <daniel@orgizm.net>
+  argb visual patch

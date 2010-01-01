@@ -58,7 +58,7 @@ void setup_fonts(void)
 			window.xftdraw = 0;
 		}
 		window.xftdraw = XftDrawCreate(display, window.drawable,
-				DefaultVisual(display, screen), DefaultColormap(display, screen));
+				window.visual, window.colourmap);
 	}
 #endif /* XFT */
 	set_font();

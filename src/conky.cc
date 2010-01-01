@@ -181,6 +181,9 @@ static void print_version(void)
 # ifdef XFT
 		   "  * Xft\n"
 # endif /* XFT */
+# ifdef USE_ARGB
+		   "  * ARGB visual\n"
+# endif /* USE_ARGB */
 #endif /* X11 */
 		   "\n Music detection:\n"
 #ifdef AUDACIOUS
@@ -1088,8 +1091,16 @@ static inline void set_foreground_color(long c)
 {
 #ifdef X11
 	if (output_methods & TO_X) {
-		current_color = c;
-		XSetForeground(display, window.gc, c);
+#ifdef USE_ARGB
+		if (have_argb_visual) {
+			current_color = c | (0xff << 24);
+		} else {
+#endif /* USE_ARGB */
+			current_color = c;
+#ifdef USE_ARGB
+		}
+#endif /* USE_ARGB */
+		XSetForeground(display, window.gc, current_color);
 	}
 #endif /* X11 */
 #ifdef NCURSES
@@ -1190,7 +1201,8 @@ static void draw_string(const char *s)
 			XftColor c2;
 
 			c.pixel = current_color;
-			XQueryColor(display, DefaultColormap(display, screen), &c);
+			// query color on custom colormap
+			XQueryColor(display, window.colourmap, &c);
 
 			c2.pixel = c.pixel;
 			c2.color.red = c.red;
@@ -2051,7 +2063,7 @@ static void main_loop(void)
 
 #ifdef OWN_WINDOW
 					case ReparentNotify:
-						/* set background to ParentRelative for all parents */
+						/* make background transparent */
 						if (own_window) {
 							set_transparent_background(window.window);
 						}
@@ -2638,6 +2650,9 @@ static void set_default_configurations(void)
 	window.hints = 0;
 	strcpy(window.class_name, PACKAGE_NAME);
 	sprintf(window.title, PACKAGE_NAME" (%s)", info.uname_s.nodename);
+#ifdef USE_ARGB
+	use_argb_visual = 0;
+#endif
 #endif
 	stippled_borders = 0;
 	window.border_inner_margin = 3;
@@ -3412,6 +3427,11 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
+#ifdef USE_ARGB
+		CONF("own_window_argb_visual") {
+			use_argb_visual = string_to_bool(value);
+		}
+#endif /* USE_ARGB */
 #endif
 		CONF("stippled_borders") {
 			if (value) {
