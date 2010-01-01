@@ -171,6 +171,7 @@ static int read_hdd_val(const char *line, char **dev, short *val, char *unit,
 	}
 	line_s = *saveptr;
 
+again:
 	/* read the device */
 	*dev = ++p;
 	if (!(p = strchr(p, line_s[0])))
@@ -186,8 +187,13 @@ static int read_hdd_val(const char *line, char **dev, short *val, char *unit,
 	*(p++) = '\0';
 	*unit = *(p++);
 	*val = strtol(cval, &endptr, 10);
-	if (*endptr)
-		goto out_fail;
+	if (*endptr) {
+		if (!(p = strchr(p, line_s[0])))
+			goto out_fail;
+
+		p++;
+		goto again;
+	}
 	
 	/* preset p for next call */
 	p++;
