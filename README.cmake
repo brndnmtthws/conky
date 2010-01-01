@@ -13,5 +13,10 @@ Using CMake to build Conky is pretty easy, and here is how I do it:
   $ make
   # make install # if you want
 
+There are a number of build options for Conky, and the best way to discover
+them is to use the ccmake (or cmake-gui) CMake tool for browsing them.
 
-NOTE: I haven't actually finished the CMake build system yet, because I'm lazy.  I'll add all the different options eventually though.
+Certain Conky build time features (such as doc generation) require third-party
+applications, which you should be notified of via CMake.  In the case of doc
+generation, you'll need the docbook2X package (available on most
+distributions).

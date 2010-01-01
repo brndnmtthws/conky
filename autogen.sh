@@ -26,6 +26,11 @@
 #
 # optional $1 = optional directory containing build tree or git working copy
 
+# Something exceptionally irritating to get people to move away from autotools.
+echo
+echo "\033[41m\033[34m The Conky autotools build system is now deprecated in favour of CMake.  Please see README.cmake for usage instructions."
+echo
+
 AUTOCONF=${AUTOCONF:-autoconf}
 AUTOMAKE=${AUTOMAKE:-automake}
 ACLOCAL=${ACLOCAL:-aclocal}

@@ -68,19 +68,18 @@
 	</refsect1>
 	<refsect1>
 		<title>Compiling</title>
-		<para>For users compiling from source on a binary distro,
-			make sure you have the X development libraries installed
-			(Unless you provide configure with "--disable-x11"). This
-			should be a package along the lines of "libx11-dev" or
-			"xorg-x11-dev" for X11 libs, and similar "-dev" format for
-			the other libs required (depending on your configure
-			options). You should be able to see which extra packages
-			you need to install by reading errors that you get from
-			'./configure'. You can enable/disable stuff by giving
-			options to configure, but be careful with disabling. For
-			example: with --disable-math you won't get errors but
-			logarithmic graphs will be normal graphs and gauges
-			will miss their line. 
+		<para>For users compiling from source on a binary distro, make sure you
+			have the X development libraries installed (Unless you configure
+			your build without X11). This should be a package along the lines
+			of "libx11-dev" or "xorg-x11-dev" for X11 libs, and similar "-dev"
+			format for the other libs required (depending on your build
+			options). You should be able to see which extra packages you need
+			to install by reading errors that you get from running `cmake'. The
+			easiest way to view the available build options is to run `ccmake' or
+			`cmake-gui' from the source tree, but be careful when disabling
+			certain features as you may lose desired functionality.  E.g.,
+			with BUILD_MATH disabled you won't get errors but logarithmic
+			graphs will be normal graphs and gauges will miss their line.
 		</para>
 		<para>Conky has (for some time) been available in the
 			repositories of most popular distributions. Here are some
@@ -94,35 +93,17 @@
 			repositories, and can be installed by doing "aptitude
 			install conky".
 		</para>
-		<para>Example to compile and run Conky with all optional
-			components (note that some configure options may differ for
+		<para>Example to compile and run Conky with default
+			components (note that some build options may differ for
 			your system):
 		</para>
 		<variablelist>
 			<varlistentry>
 				<term>
 					<command>
-						<option>sh autogen.sh</option>
+						<option>cmake</option>
 					</command>
-					<option># Only required if building from the
-						git repo</option>
-				</term>
-			</varlistentry>
-			<varlistentry>
-				<term>
-					<command>
-						<option>./configure</option>
-					</command>
-					<option>--prefix=/usr --mandir=/usr/share/man
-						--infodir=/usr/share/info --datadir=/usr/share
-						--sysconfdir=/etc --localstatedir=/var/lib
-						--disable-own-window
-						--enable-audacious[=yes|no|legacy]
-						--enable-bmpx --disable-hddtemp --disable-mpd
-						--enable-xmms2 --disable-portmon
-						--disable-network --enable-debug --disable-x11
-						--disable-double-buffer --disable-xdamage
-						--disable-xft</option>
+					<option>-D CMAKE_INSTALL_PREFIX:string=/usr .</option>
 				</term>
 			</varlistentry>
 			<varlistentry>
@@ -148,10 +129,12 @@
 				</term>
 			</varlistentry>
 		</variablelist>
-		<para>Conky has been tested to be compatible with C99 C,
-			however it has not been tested with anything other than
-			gcc, and is not guaranteed to work with other
-			compilers.
+		<para>Conky has been tested to be compatible with C99 C and C++0x C++,
+			however it has not been tested with anything other than gcc, and is
+			not guaranteed to work with other compilers.
+		</para>
+		<para>TIP: Try configuring Conky with `ccmake' or `cmake-gui' instead of
+			just `cmake'.
 		</para>
 		<para></para>
 	</refsect1>
