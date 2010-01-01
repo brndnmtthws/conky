@@ -318,7 +318,7 @@ AC_ARG_ENABLE([xmms2],
 
 AM_CONDITIONAL(BUILD_XMMS2, test x$want_xmms2 = xyes)
 if test x$want_xmms2 = xyes; then
-  PKG_CHECK_MODULES([XMMS2], [xmms2-client])
+  PKG_CHECK_MODULES([XMMS2], [xmms2-client] >= [0.6])
     conky_CFLAGS="$conky_CFLAGS $XMMS2_CFLAGS"
     conky_LIBS="$conky_LIBS $XMMS2_LIBS"
     AC_DEFINE(XMMS2, 1, [Define if you want XMMS2 support])
