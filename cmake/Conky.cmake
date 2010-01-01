@@ -99,5 +99,5 @@ else(RELEASE)
 	set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}_pre${COMMIT_COUNT}")
 endif(RELEASE)
 
-set(COPYRIGHT "Copyright Brenden Matthews, et al, 2005-2009")
+set(COPYRIGHT "Copyright Brenden Matthews, et al, 2005-2010")
 
