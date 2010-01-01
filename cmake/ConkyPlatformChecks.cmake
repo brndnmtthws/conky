@@ -190,7 +190,7 @@ if(BUILD_BMPX)
 endif(BUILD_BMPX)
 
 if(BUILD_XMMS2)
-	pkg_check_modules(XMMS2 REQUIRED xmms2-client)
+	pkg_check_modules(XMMS2 REQUIRED xmms2-client>=0.6)
 	set(conky_libs ${conky_libs} ${XMMS2_LIBRARIES})
 	set(conky_includes ${conky_includes} ${XMMS2_INCLUDE_DIRS})
 endif(BUILD_XMMS2)
