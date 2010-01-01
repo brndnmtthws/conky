@@ -47,6 +47,11 @@
 #define XFT
 #endif /* BUILD_XFT */
 
+#cmakedefine BUILD_ARGB 1
+#ifdef BUILD_ARGB
+#define USE_ARGB
+#endif /* BUILD_ARGB */
+
 #cmakedefine BUILD_XDBE 1
 #ifdef BUILD_XDBE
 #define HAVE_XDBE

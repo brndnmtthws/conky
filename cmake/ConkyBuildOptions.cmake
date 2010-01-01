@@ -78,6 +78,7 @@ if(BUILD_X11)
 	option(BUILD_XDAMAGE "Build Xdamage support" true)
 	option(BUILD_XDBE "Build Xdbe (double-buffer) support" true)
 	option(BUILD_XFT "Build Xft (freetype fonts) support" true)
+	option(BUILD_ARGB "Build ARGB (real transparency) support" true)
 	option(BUILD_IMLIB2 "Enable Imlib2 support" false)
 endif(BUILD_X11)
 
