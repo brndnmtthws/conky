@@ -3919,6 +3919,7 @@ static void main_loop(void)
 									current_config,
 									IN_MODIFY);
 						}
+						break;
 					}
 #ifdef HAVE_LUA
 					else {
