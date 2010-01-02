@@ -160,6 +160,15 @@
     <varlistentry>
         <term>
             <command>
+                <option>disable_auto_reload</option>
+            </command>
+        </term>
+		<listitem>Enable to disable the inotify-based auto config reload feature.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>diskio_avg_samples</option>
             </command>
         </term>

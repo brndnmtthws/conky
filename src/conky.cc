@@ -126,6 +126,9 @@
 /* debugging level, used by logging.h */
 int global_debug_level = 0;
 
+/* disable inotify auto reload feature if desired */
+int disable_auto_reload = 0;
+
 /* two strings for internal use */
 static char *tmpstring1, *tmpstring2;
 
@@ -424,7 +427,7 @@ int get_total_updates(void)
 
 #define SECRIT_MULTILINE_CHAR '\x02'
 
-static inline int calc_text_width(const char *s)
+int calc_text_width(const char *s)
 {
 	size_t slen = strlen(s);
 
@@ -854,7 +857,7 @@ void set_update_interval(double interval)
 	update_interval_old = interval;
 }
 
-static inline int get_string_width(const char *s)
+int get_string_width(const char *s)
 {
 	return *s ? calc_text_width(s) : 0;
 }
@@ -2272,12 +2275,12 @@ static void main_loop(void)
 				break;
 		}
 #ifdef HAVE_SYS_INOTIFY_H
-		if (inotify_fd != -1 && inotify_config_wd == -1 && current_config != 0) {
+		if (!disable_auto_reload && inotify_fd != -1 && inotify_config_wd == -1 && current_config != 0) {
 			inotify_config_wd = inotify_add_watch(inotify_fd,
 					current_config,
 					IN_MODIFY);
 		}
-		if (inotify_fd != -1 && inotify_config_wd != -1 && current_config != 0) {
+		if (!disable_auto_reload && inotify_fd != -1 && inotify_config_wd != -1 && current_config != 0) {
 			int len = 0, idx = 0;
 			fd_set descriptors;
 			struct timeval time_to_wait;
@@ -2313,6 +2316,10 @@ static void main_loop(void)
 					idx += INOTIFY_EVENT_SIZE + ev->len;
 				}
 			}
+		} else if (disable_auto_reload && inotify_fd != -1) {
+			inotify_rm_watch(inotify_fd, inotify_config_wd);
+			close(inotify_fd);
+			inotify_fd = inotify_config_wd = 0;
 		}
 #endif /* HAVE_SYS_INOTIFY_H */
 
@@ -2342,6 +2349,7 @@ static void reload_config(void)
 {
 	char *current_config_copy = strdup(current_config);
 	clean_up(NULL, NULL);
+	sleep(1); /* slight pause */
 	current_config = current_config_copy;
 	initialisation(argc_copy, argv_copy);
 }
@@ -2349,6 +2357,8 @@ static void reload_config(void)
 void clean_up(void *memtofree1, void* memtofree2)
 {
 	int i;
+
+	free_update_callbacks();
 
 #ifdef NCURSES
 	if(output_methods & TO_NCURSES) {
@@ -2400,8 +2410,6 @@ void clean_up(void *memtofree1, void* memtofree2)
 	}
 
 #endif /* X11 */
-
-	free_update_callbacks();
 
 	free_templates();
 
@@ -3168,6 +3176,9 @@ char load_config_file(const char *f)
 		}
 		CONF("extra_newline") {
 			extra_newline = string_to_bool(value);
+		}
+		CONF("disable_auto_reload") {
+			disable_auto_reload = string_to_bool(value);
 		}
 		CONF("out_to_stderr") {
 			if(string_to_bool(value))

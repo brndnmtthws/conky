@@ -279,10 +279,12 @@ static struct update_cb {
 	volatile char running;
 } update_cb_head = {
 	.next = NULL,
+	.func = NULL,
 };
 
-static void *run_update_callback(void *);
-static int threading_started;
+static void *run_update_callback(void *) __attribute__((noreturn));
+
+static int threading_started = 0;
 
 /* Register an update callback. Don't allow duplicates, to minimise side
  * effects and overhead. */
@@ -308,8 +310,10 @@ void add_update_callback(void (*func)(void))
 	sem_init(&uc->end_wait, 0, 0);
 
 	if (threading_started) {
-		uc->running = 1;
-		pthread_create(&uc->thread, NULL, &run_update_callback, uc);
+		if (!uc->running) {
+			uc->running = 1;
+			pthread_create(&uc->thread, NULL, &run_update_callback, uc);
+		}
 	}
 }
 
@@ -323,7 +327,9 @@ static void __free_update_callbacks(struct update_cb *uc)
 		/* send cancellation request, then trigger and join the thread */
 		uc->running = 0;
 		sem_post(&uc->start_wait);
-		pthread_join(uc->thread, NULL);
+	}
+	if (pthread_join(uc->thread, NULL)) {
+		NORM_ERR("Error destroying thread");
 	}
 
 	/* finally destroy the semaphores */
@@ -355,9 +361,11 @@ void start_update_threading(void)
 
 	threading_started = 1;
 
-	for(uc = update_cb_head.next; uc; uc = uc->next) {
-		uc->running = 1;
-		pthread_create(&uc->thread, NULL, &run_update_callback, uc);
+	for (uc = update_cb_head.next; uc; uc = uc->next) {
+		if (!uc->running) {
+			uc->running = 1;
+			pthread_create(&uc->thread, NULL, &run_update_callback, uc);
+		}
 	}
 }
 
@@ -365,12 +373,13 @@ static void *run_update_callback(void *data)
 {
 	struct update_cb *ucb = data;
 
+	if (!ucb || !ucb->func) pthread_exit(NULL);
+
 	while (1) {
-		sem_wait(&ucb->start_wait);
-		if (ucb->running == 0)
-			return NULL;
+		if (sem_wait(&ucb->start_wait)) pthread_exit(NULL);
+		if (ucb->running == 0) pthread_exit(NULL);
 		(*ucb->func)();
-		sem_post(&ucb->end_wait);
+		if (sem_post(&ucb->end_wait)) pthread_exit(NULL);
 	}
 }
 
@@ -397,8 +406,11 @@ void update_stuff(void)
 
 	prepare_update();
 
-	for (uc = update_cb_head.next; uc; uc = uc->next)
-		sem_post(&uc->start_wait);
+	for (uc = update_cb_head.next; uc; uc = uc->next) {
+		if (sem_post(&uc->start_wait)) {
+			NORM_ERR("Semaphore error");
+		}
+	}
 	/* need to synchronise here, otherwise locking is needed (as data
 	 * would be printed with some update callbacks still running) */
 	for (uc = update_cb_head.next; uc; uc = uc->next)
