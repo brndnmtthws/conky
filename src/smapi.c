@@ -24,6 +24,7 @@
 #define _GNU_SOURCE
 #include "conky.h"	/* text_buffer_size, PACKAGE_NAME, maybe more */
 #include "smapi.h"
+#include "temphelper.h"
 #include "logging.h"
 #include <stdio.h>
 #include <string.h>
