@@ -4214,7 +4214,7 @@ int main(int argc, char **argv)
 				current_config = strndup(optarg, max_user_text);
 				break;
 			case 'q':
-				if (freopen("/dev/null", "w", stderr))
+				if (!freopen("/dev/null", "w", stderr))
 					CRIT_ERR(0, 0, "could not open /dev/null as stderr!");
 				break;
 			case 'h':
