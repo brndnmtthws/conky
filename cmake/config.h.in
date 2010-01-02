@@ -87,6 +87,11 @@
 #define MOC
 #endif /* BUILD_MOC */
 
+#cmakedefine BUILD_NVIDIA 0
+#ifdef BUILD_NVIDIA
+#define NVIDIA
+#endif /* BUILD_NVIDIA */
+
 #cmakedefine BUILD_XMMS2 1
 #ifdef BUILD_XMMS2
 #define XMMS2
