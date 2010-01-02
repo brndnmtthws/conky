@@ -177,11 +177,11 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop)
 	return win;
 }
 
+static int colour_set = -1;
 /* if no argb visual is configured sets background to ParentRelative for the Window and all parents,
    else real transparency is used */
 void set_transparent_background(Window win, int alpha)
 {
-	static int colour_set = -1;
 	(void)alpha; /* disable warnings when unused */
 
 #ifdef USE_ARGB
@@ -258,6 +258,7 @@ void destroy_window(void)
 		XFreeGC(display, window.gc);
 	}
 	memset(&window, 0, sizeof(struct conky_window));
+	colour_set = -1;
 }
 
 void init_window(int own_window, int w, int h, int set_trans, int back_colour,
