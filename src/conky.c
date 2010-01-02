@@ -2394,7 +2394,7 @@ void evaluate(const char *text, char *p, int p_max_size)
 	tmp_info = malloc(sizeof(struct information));
 	memcpy(tmp_info, &info, sizeof(struct information));
 	parse_conky_vars(&subroot, text, p, p_max_size, tmp_info);
-	DBGP("evaluated '%s' to '%s'", text, p);
+	DBGP2("evaluated '%s' to '%s'", text, p);
 
 	free_text_objects(&subroot, 1);
 	free(tmp_info);
@@ -2705,7 +2705,7 @@ static inline void set_foreground_color(long c)
 	if (output_methods & TO_X) {
 #ifdef USE_ARGB
 		if (have_argb_visual) {
-			current_color = c | (0xff << 24);
+			current_color = c | (own_window_argb_value << 24);
 		} else {
 #endif /* USE_ARGB */
 			current_color = c;
@@ -3575,7 +3575,7 @@ static void main_loop(void)
 						draw_stuff(); /* redraw everything in our newly sized window */
 						XResizeWindow(display, window.window, window.width,
 								window.height); /* resize window */
-						set_transparent_background(window.window);
+						set_transparent_background(window.window, own_window_argb_value);
 #ifdef HAVE_XDBE
 						/* swap buffers */
 						xdbe_swap_buffers();
@@ -3677,7 +3677,7 @@ static void main_loop(void)
 					case ReparentNotify:
 						/* make background transparent */
 						if (own_window) {
-							set_transparent_background(window.window);
+							set_transparent_background(window.window, own_window_argb_value);
 						}
 						break;
 
@@ -4256,6 +4256,7 @@ static void set_default_configurations(void)
 	sprintf(window.title, PACKAGE_NAME" (%s)", info.uname_s.nodename);
 #ifdef USE_ARGB
 	use_argb_visual = 0;
+	own_window_argb_value = 255;
 #endif
 #endif
 	stippled_borders = 0;
@@ -4392,7 +4393,7 @@ static void X11_create_window(void)
 			XMoveWindow(display, window.window, window.x, window.y);
 		}
 		if (own_window) {
-			set_transparent_background(window.window);
+			set_transparent_background(window.window, own_window_argb_value);
 		}
 #endif
 
@@ -5032,6 +5033,12 @@ char load_config_file(const char *f)
 #ifdef USE_ARGB
 		CONF("own_window_argb_visual") {
 			use_argb_visual = string_to_bool(value);
+		}
+		CONF("own_window_argb_value") {
+			own_window_argb_value = strtol(value, 0, 0);
+			if (own_window_argb_value > 255 || own_window_argb_value < 0) {
+				CONF_ERR2("own_window_argb_value must be <= 255 and >= 0");
+			}
 		}
 #endif /* USE_ARGB */
 #endif

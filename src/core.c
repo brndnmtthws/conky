@@ -1196,9 +1196,9 @@ int extract_variable_text_internal(struct text_object *retval, const char *const
 	s = orig_p = p;
 
 	if (strcmp(p, const_p)) {
-		DBGP("replaced all templates in text: input is\n'%s'\noutput is\n'%s'", const_p, p);
+		DBGP2("replaced all templates in text: input is\n'%s'\noutput is\n'%s'", const_p, p);
 	} else {
-		DBGP("no templates to replace");
+		DBGP2("no templates to replace");
 	}
 
 	memset(retval, 0, sizeof(struct text_object));

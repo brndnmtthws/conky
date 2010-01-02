@@ -53,6 +53,7 @@ int use_xdbe;
 
 #ifdef USE_ARGB
 int use_argb_visual;
+int own_window_argb_value;
 int have_argb_visual;
 #endif /* USE_ARGB */
 
@@ -178,9 +179,10 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop)
 
 /* if no argb visual is configured sets background to ParentRelative for the Window and all parents,
    else real transparency is used */
-void set_transparent_background(Window win)
+void set_transparent_background(Window win, int alpha)
 {
 	static int colour_set = -1;
+	(void)alpha; /* disable warnings when unused */
 
 #ifdef USE_ARGB
 	if (have_argb_visual) {
@@ -189,7 +191,7 @@ void set_transparent_background(Window win)
 			XSetWindowBackground(display, win, 0x00);
 		} else if (colour_set != background_colour) {
 			XSetWindowBackground(display, win,
-				background_colour | (0xff << 24));
+				background_colour | (alpha << 24));
 			colour_set = background_colour;
 		}
 	} else {
@@ -235,10 +237,12 @@ static int get_argb_visual(Visual** visual, int *depth) {
 			  visual_list[i].blue_mask  == 0x0000ff)) {
 			*visual = visual_list[i].visual;
 			*depth = visual_list[i].depth;
+			DBGP("Found ARGB Visual");
 			return 1;
 		}
 	}
 	// no argb visual available
+	DBGP("No ARGB Visual found");
 	return 0;
 }
 #endif /* USE_ARGB */
