@@ -820,7 +820,7 @@ static void *imap_thread(void *arg)
 					recvbuf[numbytes] = '\0';
 					DBGP2("imap_thread() received: %s", recvbuf);
 					if (strlen(recvbuf) > 2) {
-						unsigned long messages, recent;
+						unsigned long messages, recent = 0;
 						char *buf = recvbuf;
 						char force_check = 0;
 						buf = strstr(buf, "EXISTS");

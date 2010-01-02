@@ -304,6 +304,14 @@ void llua_close(void)
 		free(draw_post_hook);
 		draw_post_hook = 0;
 	}
+	if (startup_hook) {
+		free(startup_hook);
+		startup_hook = 0;
+	}
+	if (shutdown_hook) {
+		free(shutdown_hook);
+		shutdown_hook = 0;
+	}
 	if(!lua_L) return;
 	lua_close(lua_L);
 	lua_L = NULL;
@@ -399,11 +407,13 @@ void llua_set_number(const char *key, double value)
 
 void llua_set_startup_hook(const char *args)
 {
+	if (startup_hook) free(startup_hook);
 	startup_hook = strdup(args);
 }
 
 void llua_set_shutdown_hook(const char *args)
 {
+	if (shutdown_hook) free(shutdown_hook);
 	shutdown_hook = strdup(args);
 }
 

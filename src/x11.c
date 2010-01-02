@@ -238,11 +238,13 @@ static int get_argb_visual(Visual** visual, int *depth) {
 			*visual = visual_list[i].visual;
 			*depth = visual_list[i].depth;
 			DBGP("Found ARGB Visual");
+			XFree(visual_list);
 			return 1;
 		}
 	}
 	// no argb visual available
 	DBGP("No ARGB Visual found");
+	XFree(visual_list);
 	return 0;
 }
 #endif /* USE_ARGB */

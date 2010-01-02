@@ -131,7 +131,13 @@ void free_fonts(void)
 	for (i = 0; i <= font_count; i++) {
 #ifdef XFT
 		if (use_xft) {
-			XftFontClose(display, fonts[i].xftfont);
+			/*
+			 * Do we not need to close fonts with Xft? Unsure.  Not freeing the
+			 * fonts seems to incur a slight memory leak, but it also prevents
+			 * a crash.
+			 *
+			 * XftFontClose(display, fonts[i].xftfont);
+			 */
 			fonts[i].xftfont = 0;
 		} else
 #endif /* XFT */
