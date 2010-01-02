@@ -31,6 +31,10 @@
 
 #include <xmmsclient/xmmsclient.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct xmms2_s {
 	char *artist;
 	char *album;
@@ -49,6 +53,7 @@ struct xmms2_s {
 	float size;
 
 	float progress;
+	int percent;
 	char *status;
 	int conn_state;
 };
@@ -73,8 +78,13 @@ void print_xmms2_id(struct text_object *, char *, int);
 void print_xmms2_size(struct text_object *, char *, int);
 void print_xmms2_playlist(struct text_object *, char *, int);
 void print_xmms2_timesplayed(struct text_object *, char *, int);
-int check_xmms2_connected(struct text_object *);
+void print_xmms2_percent(struct text_object *, char *, int);
+int if_xmms2_connected(struct text_object *);
 
 void free_xmms2(struct text_object *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /*XMMS2_H_*/

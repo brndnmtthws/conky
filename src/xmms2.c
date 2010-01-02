@@ -208,6 +208,7 @@ int handle_playtime(xmmsv_t *value, void *p)
 	if (xmmsv_get_int(value, &play_time)) {
 		ptr->xmms2.elapsed = play_time;
 		ptr->xmms2.progress = (float) play_time / ptr->xmms2.duration;
+		ptr->xmms2.percent = (int)(ptr->xmms2.progress*100);
 	}
 
 	return TRUE;
@@ -276,7 +277,7 @@ void update_xmms2(void)
 	if (current_info->xmms2.conn_state == CONN_INIT) {
 
 		if (xmms2_conn == NULL) {
-			xmms2_conn = xmmsc_init(PACKAGE);
+			xmms2_conn = xmmsc_init(PACKAGE_NAME);
 		}
 
 		/* did init fail? */
@@ -398,10 +399,11 @@ XMMS2_PRINT_GENERATOR(id, "%u")
 XMMS2_PRINT_GENERATOR(size, "%2.1f")
 XMMS2_PRINT_GENERATOR(playlist, "%s")
 XMMS2_PRINT_GENERATOR(timesplayed, "%i")
+XMMS2_PRINT_GENERATOR(percent, "%i")
 
 #undef XMMS2_PRINT_GENERATOR
 
-int check_xmms2_connected(struct text_object *obj)
+int if_xmms2_connected(struct text_object *obj)
 {
 	(void)obj;
 
