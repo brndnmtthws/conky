@@ -675,11 +675,22 @@
     <varlistentry>
         <term>
             <command>
-                <option>own_window_argb</option>
+                <option>own_window_argb_visual</option>
             </command>
         </term>
-        <listitem>Boolean, use ARGB visual? ARGB can be used for real transparency,
-	note that a composite manager is required for real transparency.
+		<listitem>Boolean, use ARGB visual? ARGB can be used for real
+			transparency, note that a composite manager is required for real
+			transparency.  This option will not work as desired (in most cases)
+			in conjunction with 'own_window_type override'.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>own_window_argb_value</option>
+            </command>
+        </term>
+		<listitem>When ARGB visuals are enabled, this use this to modify the alpha value used.  Valid range is 0-255, where 0 is 0% opacity, and 255 is 100% opacity.  Note that if own_window_transparent is enabled, this value has no effect.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -688,8 +699,8 @@
                 <option>own_window_transparent</option>
             </command>
         </term>
-        <listitem>Boolean, set transparency? If argb visual is configured
-	true transparency is used, else pseudo transparency is used.
+		<listitem>Boolean, set transparency? If ARGB visual is enabled, sets
+			background opacity to 0%.
         <para /></listitem>
     </varlistentry>
     <varlistentry>

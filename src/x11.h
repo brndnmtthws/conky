@@ -80,6 +80,8 @@ extern int use_xft;
 extern int use_argb_visual;
 /* 1 if use_argb_visual=1 and argb visual was found, otherwise 0 */
 extern int have_argb_visual;
+/* range of 0-255 for alpha */
+extern int own_window_argb_value;
 #endif
 
 extern Display *display;
@@ -101,7 +103,7 @@ void init_window(int use_own_window, int width, int height, int set_trans,
 	int back_colour, char **argv, int argc);
 void destroy_window(void);
 void create_gc(void);
-void set_transparent_background(Window win);
+void set_transparent_background(Window win, int alpha);
 void get_x11_desktop_info(Display *display, Atom atom);
 void set_struts(int);
 

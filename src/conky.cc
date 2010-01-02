@@ -168,105 +168,105 @@ static void print_version(void)
 	printf(PACKAGE_NAME" "VERSION" compiled "BUILD_DATE" for "BUILD_ARCH"\n");
 
 	printf("\nCompiled in features:\n\n"
-		   "System config file: "SYSTEM_CONFIG_FILE"\n"
-		   "Package library path: "PACKAGE_LIBDIR"\n\n"
+			"System config file: "SYSTEM_CONFIG_FILE"\n"
+			"Package library path: "PACKAGE_LIBDIR"\n\n"
 #ifdef X11
-		   " X11:\n"
+			" X11:\n"
 # ifdef HAVE_XDAMAGE
-		   "  * Xdamage extension\n"
+			"  * Xdamage extension\n"
 # endif /* HAVE_XDAMAGE */
 # ifdef HAVE_XDBE
-		   "  * XDBE (double buffer extension)\n"
+			"  * XDBE (double buffer extension)\n"
 # endif /* HAVE_XDBE */
 # ifdef XFT
-		   "  * Xft\n"
+			"  * Xft\n"
 # endif /* XFT */
 # ifdef USE_ARGB
-		   "  * ARGB visual\n"
+			"  * ARGB visual\n"
 # endif /* USE_ARGB */
 #endif /* X11 */
-		   "\n Music detection:\n"
+			"\n Music detection:\n"
 #ifdef AUDACIOUS
-		   "  * Audacious\n"
+			"  * Audacious\n"
 #endif /* AUDACIOUS */
 #ifdef BMPX
-		   "  * BMPx\n"
+			"  * BMPx\n"
 #endif /* BMPX */
 #ifdef MPD
-		   "  * MPD\n"
+			"  * MPD\n"
 #endif /* MPD */
 #ifdef MOC
-		   "  * MOC\n"
+			"  * MOC\n"
 #endif /* MOC */
 #ifdef XMMS2
-		   "  * XMMS2\n"
+			"  * XMMS2\n"
 #endif /* XMMS2 */
-		   "\n General:\n"
+			"\n General:\n"
 #ifdef HAVE_OPENMP
-		   "  * OpenMP\n"
+			"  * OpenMP\n"
 #endif /* HAVE_OPENMP */
 #ifdef MATH
-		   "  * math\n"
+			"  * math\n"
 #endif /* Math */
 #ifdef HDDTEMP
-		   "  * hddtemp\n"
+			"  * hddtemp\n"
 #endif /* HDDTEMP */
 #ifdef TCP_PORT_MONITOR
-		   "  * portmon\n"
+			"  * portmon\n"
 #endif /* TCP_PORT_MONITOR */
 #ifdef HAVE_CURL
-		   "  * Curl\n"
+			"  * Curl\n"
 #endif /* HAVE_CURL */
 #ifdef RSS
-		   "  * RSS\n"
+			"  * RSS\n"
 #endif /* RSS */
 #ifdef WEATHER
-		   "  * Weather (METAR)\n"
+			"  * Weather (METAR)\n"
 #ifdef XOAP
-		   "  * Weather (XOAP)\n"
+			"  * Weather (XOAP)\n"
 #endif /* XOAP */
 #endif /* WEATHER */
 #ifdef HAVE_IWLIB
-		   "  * wireless\n"
+			"  * wireless\n"
 #endif /* HAVE_IWLIB */
 #ifdef IBM
-		   "  * support for IBM/Lenovo notebooks\n"
+			"  * support for IBM/Lenovo notebooks\n"
 #endif /* IBM */
 #ifdef NVIDIA
-		   "  * nvidia\n"
+			"  * nvidia\n"
 #endif /* NVIDIA */
 #ifdef EVE
-		   "  * eve-online\n"
+			"  * eve-online\n"
 #endif /* EVE */
 #ifdef CONFIG_OUTPUT
-		   "  * config-output\n"
+			"  * config-output\n"
 #endif /* CONFIG_OUTPUT */
 #ifdef IMLIB2
-		   "  * Imlib2\n"
+			"  * Imlib2\n"
 #endif /* IMLIB2 */
 #ifdef MIXER_IS_ALSA
-		   "  * ALSA mixer support\n"
+			"  * ALSA mixer support\n"
 #endif /* MIXER_IS_ALSA */
 #ifdef APCUPSD
-		   "  * apcupsd\n"
+			"  * apcupsd\n"
 #endif /* APCUPSD */
 #ifdef IOSTATS
-		   "  * iostats\n"
+			"  * iostats\n"
 #endif /* IOSTATS */
 #ifdef NCURSES
-		   "  * ncurses\n"
+			"  * ncurses\n"
 #endif /* NCURSES */
 #ifdef HAVE_LUA
-		   "  * Lua\n"
-		   "\n  Lua bindings:\n"
+			"  * Lua\n"
+			"\n  Lua bindings:\n"
 #ifdef HAVE_LUA_CAIRO
-		   "   * Cairo\n"
+			"   * Cairo\n"
 #endif /* HAVE_LUA_CAIRO */
 #ifdef HAVE_LUA_IMLIB2
-		   "   * Imlib2\n"
+			"   * Imlib2\n"
 #endif /* IMLIB2 */
 #endif /* HAVE_LUA */
-	);
+			);
 
 	exit(EXIT_SUCCESS);
 }
@@ -440,10 +440,10 @@ static inline int calc_text_width(const char *s)
 
 		if (utf8_mode) {
 			XftTextExtentsUtf8(display, fonts[selected_font].xftfont,
-				(const FcChar8 *) s, slen, &gi);
+					(const FcChar8 *) s, slen, &gi);
 		} else {
 			XftTextExtents8(display, fonts[selected_font].xftfont,
-				(const FcChar8 *) s, slen, &gi);
+					(const FcChar8 *) s, slen, &gi);
 		}
 		return gi.xOff;
 	} else
@@ -1093,7 +1093,7 @@ static inline void set_foreground_color(long c)
 	if (output_methods & TO_X) {
 #ifdef USE_ARGB
 		if (have_argb_visual) {
-			current_color = c | (0xff << 24);
+			current_color = c | (own_window_argb_value << 24);
 		} else {
 #endif /* USE_ARGB */
 			current_color = c;
@@ -1963,7 +1963,7 @@ static void main_loop(void)
 						draw_stuff(); /* redraw everything in our newly sized window */
 						XResizeWindow(display, window.window, window.width,
 								window.height); /* resize window */
-						set_transparent_background(window.window);
+						set_transparent_background(window.window, own_window_argb_value);
 #ifdef HAVE_XDBE
 						/* swap buffers */
 						xdbe_swap_buffers();
@@ -2065,7 +2065,7 @@ static void main_loop(void)
 					case ReparentNotify:
 						/* make background transparent */
 						if (own_window) {
-							set_transparent_background(window.window);
+							set_transparent_background(window.window, own_window_argb_value);
 						}
 						break;
 
@@ -2652,6 +2652,7 @@ static void set_default_configurations(void)
 	sprintf(window.title, PACKAGE_NAME" (%s)", info.uname_s.nodename);
 #ifdef USE_ARGB
 	use_argb_visual = 0;
+	own_window_argb_value = 255;
 #endif
 #endif
 	stippled_borders = 0;
@@ -2788,7 +2789,7 @@ static void X11_create_window(void)
 			XMoveWindow(display, window.window, window.x, window.y);
 		}
 		if (own_window) {
-			set_transparent_background(window.window);
+			set_transparent_background(window.window, own_window_argb_value);
 		}
 #endif
 
@@ -3430,6 +3431,12 @@ char load_config_file(const char *f)
 #ifdef USE_ARGB
 		CONF("own_window_argb_visual") {
 			use_argb_visual = string_to_bool(value);
+		}
+		CONF("own_window_argb_value") {
+			own_window_argb_value = strtol(value, 0, 0);
+			if (own_window_argb_value > 255 || own_window_argb_value < 0) {
+				CONF_ERR2("own_window_argb_value must be <= 255 and >= 0");
+			}
 		}
 #endif /* USE_ARGB */
 #endif
