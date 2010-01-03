@@ -21,6 +21,10 @@
 #
 
 include_directories(${conky_includes})
+if(BUILD_CONFIG_OUTPUT)
+	# include config output dir
+	include_directories(${CMAKE_BINARY_DIR}/data)
+endif(BUILD_CONFIG_OUTPUT)
 
 # ensure build.h and config.h aren't in the way
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
@@ -157,7 +161,7 @@ if(BUILD_ICONV)
 endif(BUILD_ICONV)
 
 if(BUILD_CONFIG_OUTPUT)
-	 set(optional_sources ${optional_sources} defconfig.h conf_cookie.c conf_cookie.h)
+	 set(optional_sources ${optional_sources} conf_cookie.c)
 endif(BUILD_CONFIG_OUTPUT)
 
 add_executable(conky ${conky_sources} ${optional_sources})

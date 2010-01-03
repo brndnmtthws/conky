@@ -1,15 +1,10 @@
-#!/bin/sh
+# vim: ts=4 sw=4 noet ai cindent syntax=cmake
 #
 # Conky, a system monitor, based on torsmo
 #
-# Any original torsmo code is licensed under the BSD license
-#
-# All code written since the fork of torsmo is licensed under the GPL
-#
 # Please see COPYING for details
 #
-# Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
-# Copyright (c) 2005-2010 Brenden Matthews, Philip Kovacs, et. al. (see AUTHORS)
+# Copyright (c) 2005-2010 Brenden Matthews, et. al. (see AUTHORS)
 # All rights reserved.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -24,9 +19,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# optional $1 = optional directory containing build tree or git working copy
 
-# Something exceptionally irritating to get people to move away from autotools.
-echo
-echo "\033[41m\033[34m The Conky autotools build system is now deprecated in favour of CMake.  Please see README.cmake for usage instructions."
-echo
+if(BUILD_CONFIG_OUTPUT)
+	# generate defconfig
+	add_custom_command(OUTPUT defconfig.h COMMAND
+		${CMAKE_SOURCE_DIR}/text2c.sh ${CMAKE_CURRENT_SOURCE_DIR}/conky.conf
+		defconfig.h defconfig DEPENDS conky.conf
+	)
+	add_custom_target(defconfig ALL DEPENDS defconfig.h)
+	set_source_files_properties(defconfig.h PROPERTIES GENERATED TRUE)
+endif(BUILD_CONFIG_OUTPUT)
+

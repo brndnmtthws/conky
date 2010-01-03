@@ -44,9 +44,10 @@ configure_file(${CMAKE_MODULE_PATH}/config.h.in ${CMAKE_BINARY_DIR}/config.h)
 configure_file(${CMAKE_MODULE_PATH}/build.h.in ${CMAKE_BINARY_DIR}/build.h)
 
 # Finally, add some code
-add_subdirectory(src)
 add_subdirectory(lua)
+add_subdirectory(data)
 add_subdirectory(doc)
+add_subdirectory(src)
 
 # Install README into share dir (is this even the right spot? need to revisit
 # this at some point)
