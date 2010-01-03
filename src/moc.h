@@ -23,10 +23,6 @@
 #ifndef MOC_H_
 #define MOC_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 void update_moc(void);
 void free_moc(struct text_object *);
 
@@ -41,10 +37,6 @@ void print_moc_timeleft(struct text_object *, char *, int);
 void print_moc_curtime(struct text_object *, char *, int);
 void print_moc_bitrate(struct text_object *, char *, int);
 void print_moc_rate(struct text_object *, char *, int);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* MOC_H_ */
 

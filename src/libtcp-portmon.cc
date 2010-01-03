@@ -31,7 +31,7 @@
 #include <cstdio>
 #include <cstring>
 #include <vector>
-#include <tr1/unordered_map>
+#include <unordered_map>
 
 /* -------------------------------------------------------------------
  * IMPLEMENTATION INTERFACE
@@ -85,7 +85,7 @@ namespace {
 	 * The second parameter provides the mechanism for removing connections if
 	 * they are not seen again in subsequent update cycles.
 	 * ------------------------------------------------------------------------ */
-	typedef std::tr1::unordered_map<tcp_connection_t, int, tcp_connection_hash> connection_hash_t;
+	typedef std::unordered_map<tcp_connection_t, int, tcp_connection_hash> connection_hash_t;
 
 	/* start and end of port monitor range. Set start=end to monitor a single port */
 	typedef std::pair<in_port_t, in_port_t> port_range_t;
@@ -98,7 +98,7 @@ namespace {
 		}
 	};
 
-	typedef std::tr1::unordered_map<port_range_t,
+	typedef std::unordered_map<port_range_t,
 									tcp_port_monitor_t,
 									port_range_hash>		monitor_hash_t;
 

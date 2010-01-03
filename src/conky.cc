@@ -33,10 +33,9 @@
 #include "conky.h"
 #include "common.h"
 #include "timed_thread.h"
-#include <ctype.h>
 #include <stdarg.h>
-#include <math.h>
-#include <time.h>
+#include <cmath>
+#include <ctime>
 #include <locale.h>
 #include <signal.h>
 #include <errno.h>
@@ -787,7 +786,7 @@ void evaluate(const char *text, char *p, int p_max_size)
 	struct text_object subroot;
 
 	parse_conky_vars(&subroot, text, p, p_max_size);
-	DBGP("evaluated '%s' to '%s'", text, p);
+	DBGP2("evaluated '%s' to '%s'", text, p);
 
 	free_text_objects(&subroot);
 }
@@ -2374,7 +2373,7 @@ void clean_up(void *memtofree1, void* memtofree2)
 	if(memtofree2) {
 		free(memtofree2);
 	}
-	timed_thread_destroy_registered_threads();
+	timed_thread::destroy_registered_threads();
 
 	if (info.cpu_usage) {
 		free(info.cpu_usage);

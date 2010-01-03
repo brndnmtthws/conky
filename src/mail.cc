@@ -1,5 +1,5 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=c
+/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -40,6 +40,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <limits.h>
+#include <mutex>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <sys/socket.h>
@@ -75,8 +76,16 @@ struct mail_s {			// for imap and pop3
 	char pass[128];
 	char command[1024];
 	char folder[128];
-	timed_thread *p_timed_thread;
+	timed_thread_ptr p_timed_thread;
 	char secure;
+	mail_s() : unseen(0), messages(0), used(0), quota(0), port(0), retries(0),
+	interval(0), last_update(0), secure(0) {
+		host[0] = 0;
+		user[0] = 0;
+		pass[0] = 0;
+		command[0] = 0;
+		folder[0] = 0;
+	}
 };
 
 struct local_mail_s {
@@ -361,7 +370,7 @@ void parse_local_mail_args(struct text_object *obj, const char *arg)
 
 	variable_substitute(mbox, dst, sizeof(dst));
 
-	locmail = malloc(sizeof(struct local_mail_s));
+	locmail = (struct local_mail_s*)malloc(sizeof(struct local_mail_s));
 	memset(locmail, 0, sizeof(struct local_mail_s));
 	locmail->mbox = strndup(dst, text_buffer_size);
 	locmail->interval = n1;
@@ -371,7 +380,7 @@ void parse_local_mail_args(struct text_object *obj, const char *arg)
 #define PRINT_MAILS_GENERATOR(x) \
 void print_##x##mails(struct text_object *obj, char *p, int p_max_size) \
 { \
-	struct local_mail_s *locmail = obj->data.opaque; \
+	struct local_mail_s *locmail = (struct local_mail_s *)obj->data.opaque; \
 	if (!locmail) \
 		return; \
 	update_mail_count(locmail); \
@@ -393,7 +402,7 @@ PRINT_MAILS_GENERATOR(trashed_)
 
 void free_local_mails(struct text_object *obj)
 {
-	struct local_mail_s *locmail = obj->data.opaque;
+	struct local_mail_s *locmail = (struct local_mail_s *)obj->data.opaque;
 
 	if (!locmail)
 		return;
@@ -411,8 +420,7 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 	struct mail_s *mail;
 	char *tmp;
 
-	mail = malloc(sizeof(struct mail_s));
-	memset(mail, 0, sizeof(struct mail_s));
+	mail = new mail_s;
 
 	if (sscanf(arg, "%128s %128s %128s", mail->host, mail->user, mail->pass)
 			!= 3) {
@@ -439,21 +447,21 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 		tcsetattr(fp, TCSANOW, &term);
 	}
 	// now we check for optional args
-	tmp = strstr(arg, "-r ");
+	tmp = (char*)strstr(arg, "-r ");
 	if (tmp) {
 		tmp += 3;
 		sscanf(tmp, "%u", &mail->retries);
 	} else {
 		mail->retries = 5;	// 5 retries after failure
 	}
-	tmp = strstr(arg, "-i ");
+	tmp = (char*)strstr(arg, "-i ");
 	if (tmp) {
 		tmp += 3;
 		sscanf(tmp, "%f", &mail->interval);
 	} else {
 		mail->interval = 300;	// 5 minutes
 	}
-	tmp = strstr(arg, "-p ");
+	tmp = (char*)strstr(arg, "-p ");
 	if (tmp) {
 		tmp += 3;
 		sscanf(tmp, "%lu", &mail->port);
@@ -465,12 +473,12 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 		}
 	}
 	if (type == IMAP_TYPE) {
-		tmp = strstr(arg, "-f ");
+		tmp = (char*)strstr(arg, "-f ");
 		if (tmp) {
 			int len = 1024;
 			tmp += 3;
 			if (tmp[0] == '\'') {
-				len = strstr(tmp + 1, "'") - tmp - 1;
+				len = (char*)strstr(tmp + 1, "'") - tmp - 1;
 				if (len > 1024) {
 					len = 1024;
 				}
@@ -480,13 +488,13 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 			strncpy(mail->folder, "INBOX", 128);	// default imap inbox
 		}
 	}
-	tmp = strstr(arg, "-e ");
+	tmp = (char*)strstr(arg, "-e ");
 	if (tmp) {
 		int len = 1024;
 		tmp += 3;
 
 		if (tmp[0] == '\'') {
-			len = strstr(tmp + 1, "'") - tmp - 1;
+			len = (char*)strstr(tmp + 1, "'") - tmp - 1;
 			if (len > 1024) {
 				len = 1024;
 			}
@@ -495,7 +503,6 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 	} else {
 		mail->command[0] = '\0';
 	}
-	mail->p_timed_thread = NULL;
 	return mail;
 }
 
@@ -558,11 +565,12 @@ void free_mail_obj(struct text_object *obj)
 
 	if (obj->data.opaque == global_mail) {
 		if (--global_mail_use == 0) {
-			free(global_mail);
+			delete global_mail;
 			global_mail = 0;
 		}
 	} else {
-		free(obj->data.opaque);
+		struct mail_s *mail = (struct mail_s*)obj->data.opaque;
+		delete mail;
 		obj->data.opaque = 0;
 	}
 }
@@ -596,10 +604,10 @@ int imap_command(int sockfd, const char *command, char *response, const char *ve
 	return 0;
 }
 
-int imap_check_status(char *recvbuf, struct mail_s *mail)
+int imap_check_status(char *recvbuf, struct mail_s *mail, thread_handle &handle)
 {
 	char *reply;
-	reply = strstr(recvbuf, " (MESSAGES ");
+	reply = (char*)strstr(recvbuf, " (MESSAGES ");
 	if (!reply || strlen(reply) < 2) {
 		return -1;
 	}
@@ -609,10 +617,9 @@ int imap_check_status(char *recvbuf, struct mail_s *mail)
 		NORM_ERR("Error parsing IMAP response: %s", recvbuf);
 		return -1;
 	} else {
-		timed_thread_lock(mail->p_timed_thread);
+		std::lock_guard<std::mutex> lock(handle.mutex());
 		sscanf(reply, "MESSAGES %lu UNSEEN %lu", &mail->messages,
 				&mail->unseen);
-		timed_thread_unlock(mail->p_timed_thread);
 	}
 	return 0;
 }
@@ -629,24 +636,18 @@ void imap_unseen_command(struct mail_s *mail, unsigned long old_unseen, unsigned
 }
 
 static void ensure_mail_thread(struct mail_s *mail,
-		void *thread(void *), const char *text)
+		const std::function<void(thread_handle &, struct mail_s *mail)> &func, const char *text)
 {
 	if (mail->p_timed_thread)
 		return;
 
-	mail->p_timed_thread = timed_thread_create(thread,
-				mail, mail->interval * 1000000);
+	mail->p_timed_thread = timed_thread::create(std::bind(func, std::placeholders::_1, mail), mail->interval * 1000000);
 	if (!mail->p_timed_thread) {
 		NORM_ERR("Error creating %s timed thread", text);
 	}
-	timed_thread_register(mail->p_timed_thread,
-			&mail->p_timed_thread);
-	if (timed_thread_run(mail->p_timed_thread)) {
-		NORM_ERR("Error running %s timed thread", text);
-	}
 }
 
-static void *imap_thread(void *arg)
+static void imap_thread(thread_handle &handle, struct mail_s *mail)
 {
 	int sockfd, numbytes;
 	char recvbuf[MAXDATASIZE];
@@ -657,9 +658,8 @@ static void *imap_thread(void *arg)
 	struct stat stat_buf;
 	struct hostent *he_res = 0;
 	struct sockaddr_in their_addr;	// connector's address information
-	struct mail_s *mail = (struct mail_s *)arg;
 	int has_idle = 0;
-	int threadfd = timed_thread_readfd(mail->p_timed_thread);
+	int threadfd = handle.readfd();
 	char resolved_host = 0;
 
 	while (fail < mail->retries) {
@@ -764,7 +764,7 @@ static void *imap_thread(void *arg)
 				break;
 			}
 
-			if (imap_check_status(recvbuf, mail)) {
+			if (imap_check_status(recvbuf, mail, handle)) {
 				fail++;
 				break;
 			}
@@ -801,12 +801,12 @@ static void *imap_thread(void *arg)
 					FD_SET(sockfd, &fdset);
 					FD_SET(threadfd, &fdset);
 					res = select(MAX(sockfd + 1, threadfd + 1), &fdset, NULL, NULL, &fetchtimeout);
-					if (timed_thread_test(mail->p_timed_thread, 1) || (res == -1 && errno == EINTR) || FD_ISSET(threadfd, &fdset)) {
+					if (handle.test(1) || (res == -1 && errno == EINTR) || FD_ISSET(threadfd, &fdset)) {
 						if ((fstat(sockfd, &stat_buf) == 0) && S_ISSOCK(stat_buf.st_mode)) {
 							/* if a valid socket, close it */
 							close(sockfd);
 						}
-						timed_thread_exit(mail->p_timed_thread);
+						return;
 					} else if (res > 0) {
 						if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
 							perror("recv idling");
@@ -823,9 +823,9 @@ static void *imap_thread(void *arg)
 						unsigned long messages, recent = 0;
 						char *buf = recvbuf;
 						char force_check = 0;
-						buf = strstr(buf, "EXISTS");
+						buf = (char*)strstr(buf, "EXISTS");
 						while (buf && strlen(buf) > 1 && strstr(buf + 1, "EXISTS")) {
-							buf = strstr(buf + 1, "EXISTS");
+							buf = (char*)strstr(buf + 1, "EXISTS");
 						}
 						if (buf) {
 							// back up until we reach '*'
@@ -833,18 +833,17 @@ static void *imap_thread(void *arg)
 								buf--;
 							}
 							if (sscanf(buf, "* %lu EXISTS\r\n", &messages) == 1) {
-								timed_thread_lock(mail->p_timed_thread);
+								std::lock_guard<std::mutex> lock(handle.mutex());
 								if (mail->messages != messages) {
 									force_check = 1;
 									mail->messages = messages;
 								}
-								timed_thread_unlock(mail->p_timed_thread);
 							}
 						}
 						buf = recvbuf;
-						buf = strstr(buf, "RECENT");
+						buf = (char*)strstr(buf, "RECENT");
 						while (buf && strlen(buf) > 1 && strstr(buf + 1, "RECENT")) {
-							buf = strstr(buf + 1, "RECENT");
+							buf = (char*)strstr(buf + 1, "RECENT");
 						}
 						if (buf) {
 							// back up until we reach '*'
@@ -874,7 +873,7 @@ static void *imap_thread(void *arg)
 								fail++;
 								break;
 							}
-							if (imap_check_status(recvbuf, mail)) {
+							if (imap_check_status(recvbuf, mail, handle)) {
 								fail++;
 								break;
 							}
@@ -934,44 +933,41 @@ static void *imap_thread(void *arg)
 			/* if a valid socket, close it */
 			close(sockfd);
 		}
-		if (timed_thread_test(mail->p_timed_thread, 0)) {
-			timed_thread_exit(mail->p_timed_thread);
+		if (handle.test(0)) {
+			return;
 		}
 	}
 	mail->unseen = 0;
 	mail->messages = 0;
-	return 0;
 }
 
 void print_imap_unseen(struct text_object *obj, char *p, int p_max_size)
 {
-	struct mail_s *mail = obj->data.opaque;
+	struct mail_s *mail = (struct mail_s*)obj->data.opaque;
 
 	if (!mail)
 		return;
 
-	ensure_mail_thread(mail, imap_thread, "imap");
+	ensure_mail_thread(mail, std::bind(imap_thread, std::placeholders::_1, std::placeholders::_2), "imap");
 
 	if (mail && mail->p_timed_thread) {
-		timed_thread_lock(mail->p_timed_thread);
+		std::lock_guard<std::mutex> lock(mail->p_timed_thread->mutex());
 		snprintf(p, p_max_size, "%lu", mail->unseen);
-		timed_thread_unlock(mail->p_timed_thread);
 	}
 }
 
 void print_imap_messages(struct text_object *obj, char *p, int p_max_size)
 {
-	struct mail_s *mail = obj->data.opaque;
+	struct mail_s *mail = (struct mail_s*)obj->data.opaque;
 
 	if (!mail)
 		return;
 
-	ensure_mail_thread(mail, imap_thread, "imap");
+	ensure_mail_thread(mail, std::bind(imap_thread, std::placeholders::_1, std::placeholders::_2), "imap");
 
 	if (mail && mail->p_timed_thread) {
-		timed_thread_lock(mail->p_timed_thread);
+		std::lock_guard<std::mutex> lock(mail->p_timed_thread->mutex());
 		snprintf(p, p_max_size, "%lu", mail->messages);
-		timed_thread_unlock(mail->p_timed_thread);
 	}
 }
 
@@ -1003,7 +999,7 @@ int pop3_command(int sockfd, const char *command, char *response, const char *ve
 	return 0;
 }
 
-static void *pop3_thread(void *arg)
+static void pop3_thread(thread_handle &handle, struct mail_s *mail)
 {
 	int sockfd, numbytes;
 	char recvbuf[MAXDATASIZE];
@@ -1014,7 +1010,6 @@ static void *pop3_thread(void *arg)
 	struct stat stat_buf;
 	struct hostent *he_res = 0;
 	struct sockaddr_in their_addr;	// connector's address information
-	struct mail_s *mail = (struct mail_s *)arg;
 	char resolved_host = 0;
 
 	while (fail < mail->retries) {
@@ -1121,9 +1116,8 @@ static void *pop3_thread(void *arg)
 				fail++;
 				break;
 			} else {
-				timed_thread_lock(mail->p_timed_thread);
+				std::lock_guard<std::mutex> lock(handle.mutex());
 				sscanf(reply, "%lu %lu", &mail->unseen, &mail->used);
-				timed_thread_unlock(mail->p_timed_thread);
 			}
 
 			strncpy(sendbuf, "QUIT\r\n", MAXDATASIZE);
@@ -1146,44 +1140,41 @@ static void *pop3_thread(void *arg)
 			/* if a valid socket, close it */
 			close(sockfd);
 		}
-		if (timed_thread_test(mail->p_timed_thread, 0)) {
-			timed_thread_exit(mail->p_timed_thread);
+		if (handle.test(0)) {
+			return;
 		}
 	}
 	mail->unseen = 0;
 	mail->used = 0;
-	return 0;
 }
 
 void print_pop3_unseen(struct text_object *obj, char *p, int p_max_size)
 {
-	struct mail_s *mail = obj->data.opaque;
+	struct mail_s *mail = (struct mail_s *)obj->data.opaque;
 
 	if (!mail)
 		return;
 
-	ensure_mail_thread(mail, pop3_thread, "pop3");
+	ensure_mail_thread(mail, std::bind(pop3_thread, std::placeholders::_1, std::placeholders::_2), "pop3");
 
 	if (mail && mail->p_timed_thread) {
-		timed_thread_lock(mail->p_timed_thread);
+		std::lock_guard<std::mutex> lock(mail->p_timed_thread->mutex());
 		snprintf(p, p_max_size, "%lu", mail->unseen);
-		timed_thread_unlock(mail->p_timed_thread);
 	}
 }
 
 void print_pop3_used(struct text_object *obj, char *p, int p_max_size)
 {
-	struct mail_s *mail = obj->data.opaque;
+	struct mail_s *mail = (struct mail_s *)obj->data.opaque;
 
 	if (!mail)
 		return;
 
-	ensure_mail_thread(mail, pop3_thread, "pop3");
+	ensure_mail_thread(mail, std::bind(pop3_thread, std::placeholders::_1, std::placeholders::_2), "pop3");
 
 	if (mail && mail->p_timed_thread) {
-		timed_thread_lock(mail->p_timed_thread);
+		std::lock_guard<std::mutex> lock(mail->p_timed_thread->mutex());
 		snprintf(p, p_max_size, "%.1f",
 				mail->used / 1024.0 / 1024.0);
-		timed_thread_unlock(mail->p_timed_thread);
 	}
 }

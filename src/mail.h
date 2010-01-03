@@ -3,10 +3,6 @@
 #ifndef _MAIL_H
 #define _MAIL_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 extern char *current_mail_spool;
 
 void parse_local_mail_args(struct text_object *, const char *);
@@ -39,9 +35,5 @@ void print_imap_unseen(struct text_object *, char *, int);
 void print_imap_messages(struct text_object *, char *, int);
 void print_pop3_unseen(struct text_object *, char *, int);
 void print_pop3_used(struct text_object *, char *, int);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* _MAIL_H */

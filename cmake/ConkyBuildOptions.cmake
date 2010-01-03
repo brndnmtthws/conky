@@ -43,10 +43,6 @@ if(MAINTAINER_MODE)
 endif(MAINTAINER_MODE)
 
 
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-	set(DEBUG true)
-endif(CMAKE_BUILD_TYPE MATCHES "Debug")
-
 option(RELEASE "Build release package" false)
 mark_as_advanced(RELEASE)
 

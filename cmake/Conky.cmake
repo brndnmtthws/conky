@@ -97,6 +97,10 @@ endif(NOT RELEASE)
 
 mark_as_advanced(APP_GAWK APP_WC APP_DATE APP_UNAME)
 
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+	set(DEBUG true)
+endif(CMAKE_BUILD_TYPE MATCHES "Debug")
+
 # The version numbers are simply derived from the date and number of commits
 # since start of month
 if(DEBUG)

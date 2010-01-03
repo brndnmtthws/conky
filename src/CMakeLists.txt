@@ -35,7 +35,7 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build.h)
 endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build.h)
 
 set(conky_sources colours.c combine.c common.c conky.cc core.cc diskio.c
-	entropy.c exec.c fs.c mail.c mixer.c net_stat.c template.c timed_thread.c
+	entropy.c exec.cc fs.c mail.cc mixer.c net_stat.c template.c timed_thread.cc
 	mboxscan.c read_tcp.c scroll.c specials.c tailhead.c temphelper.c
 	text_object.c timeinfo.c top.c algebra.c prioqueue.c proc.c user.c)
 
@@ -84,12 +84,12 @@ if(BUILD_IBM)
 endif(BUILD_IBM)
 
 if(BUILD_MPD)
-	set(mpd mpd.c libmpdclient.c)
+	set(mpd mpd.cc libmpdclient.c)
 	set(optional_sources ${optional_sources} ${mpd})
 endif(BUILD_MPD)
 
 if(BUILD_MOC)
-	set(moc moc.c)
+	set(moc moc.cc)
 	set(optional_sources ${optional_sources} ${moc})
 endif(BUILD_MOC)
 

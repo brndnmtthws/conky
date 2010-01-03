@@ -3,10 +3,6 @@
 #ifndef MPD_H_
 #define MPD_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* functions for setting the configuration values */
 void mpd_set_host(const char *);
 void mpd_set_password(const char *, int);
@@ -35,9 +31,5 @@ void print_mpd_vol(struct text_object *, char *, int);
 void print_mpd_bitrate(struct text_object *, char *, int);
 void print_mpd_status(struct text_object *, char *, int);
 int check_mpd_playing(struct text_object *);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /*MPD_H_*/

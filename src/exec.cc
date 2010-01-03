@@ -1,5 +1,5 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=c
+/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -38,6 +38,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <mutex>
 
 struct execi_data {
 	double last_update;
@@ -45,8 +46,9 @@ struct execi_data {
 	char *cmd;
 	char *buffer;
 	double data;
-	timed_thread *p_timed_thread;
+	timed_thread_ptr p_timed_thread;
 	float barnum;
+	execi_data() : last_update(0), interval(0), cmd(0), data(0), barnum(0) {}
 };
 
 /* FIXME: this will probably not work, since the variable is being reused
@@ -175,7 +177,7 @@ static double read_exec_barnum(const char *data)
 	char *buf = NULL;
 	double barnum;
 
-	buf = malloc(text_buffer_size);
+	buf = (char*)malloc(text_buffer_size);
 
 	read_exec(data, buf, text_buffer_size);
 	barnum = get_barnum(buf);
@@ -184,16 +186,13 @@ static double read_exec_barnum(const char *data)
 	return barnum;
 }
 
-static void *threaded_exec(void *) __attribute__((noreturn));
-
-static void *threaded_exec(void *arg)
+static void threaded_exec(thread_handle &handle, struct text_object *obj)
 {
 	char *buff, *p2;
-	struct text_object *obj = arg;
-	struct execi_data *ed = obj->data.opaque;
+	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
 
 	while (1) {
-		buff = malloc(text_buffer_size);
+		buff = (char*)malloc(text_buffer_size);
 		read_exec(ed->cmd, buff, text_buffer_size);
 		p2 = buff;
 		while (*p2) {
@@ -202,13 +201,15 @@ static void *threaded_exec(void *arg)
 			}
 			p2++;
 		}
-		timed_thread_lock(ed->p_timed_thread);
-		if (ed->buffer)
-			free(ed->buffer);
-		ed->buffer = buff;
-		timed_thread_unlock(ed->p_timed_thread);
-		if (timed_thread_test(ed->p_timed_thread, 0)) {
-			timed_thread_exit(ed->p_timed_thread);
+
+		{
+			std::lock_guard<std::mutex> lock(handle.mutex());
+			if (ed->buffer)
+				free(ed->buffer);
+			ed->buffer = buff;
+		}
+		if (handle.test(0)) {
+			return;
 		}
 	}
 	/* never reached */
@@ -244,8 +245,7 @@ void scan_execi_arg(struct text_object *obj, const char *arg)
 	struct execi_data *ed;
 	int n;
 
-	ed = malloc(sizeof(struct execi_data));
-	memset(ed, 0, sizeof(struct execi_data));
+	ed = new execi_data;
 
 	if (sscanf(arg, "%f %n", &ed->interval, &n) <= 0) {
 		NORM_ERR("${execi* <interval> command}");
@@ -276,7 +276,7 @@ void scan_execgraph_arg(struct text_object *obj, const char *arg)
 	struct execi_data *ed;
 	char *buf;
 
-	ed = malloc(sizeof(struct execi_data));
+	ed = new execi_data;
 	memset(ed, 0, sizeof(struct execi_data));
 
 	buf = scan_graph(obj, arg, 100);
@@ -300,7 +300,7 @@ void print_execp(struct text_object *obj, char *p, int p_max_size)
 	struct text_object subroot;
 	char *buf;
 
-	buf = malloc(text_buffer_size);
+	buf = (char*)malloc(text_buffer_size);
 	memset(buf, 0, text_buffer_size);
 
 	read_exec(obj->data.s, buf, text_buffer_size);
@@ -312,14 +312,14 @@ void print_execp(struct text_object *obj, char *p, int p_max_size)
 
 void print_execi(struct text_object *obj, char *p, int p_max_size)
 {
-	struct execi_data *ed = obj->data.opaque;
+	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
 
 	if (!ed)
 		return;
 
 	if (time_to_update(ed)) {
 		if (!ed->buffer)
-			ed->buffer = malloc(text_buffer_size);
+			ed->buffer = (char*)malloc(text_buffer_size);
 		read_exec(ed->cmd, ed->buffer, text_buffer_size);
 		ed->last_update = current_update_time;
 	}
@@ -328,7 +328,7 @@ void print_execi(struct text_object *obj, char *p, int p_max_size)
 
 void print_execpi(struct text_object *obj, char *p, int p_max_size)
 {
-	struct execi_data *ed = obj->data.opaque;
+	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
 	struct text_object subroot;
 
 	if (!ed)
@@ -336,7 +336,7 @@ void print_execpi(struct text_object *obj, char *p, int p_max_size)
 
 	if (time_to_update(ed)) {
 		if (!ed->buffer)
-			ed->buffer = malloc(text_buffer_size);
+			ed->buffer = (char*)malloc(text_buffer_size);
 
 		read_exec(ed->cmd, ed->buffer, text_buffer_size);
 		ed->last_update = current_update_time;
@@ -347,28 +347,23 @@ void print_execpi(struct text_object *obj, char *p, int p_max_size)
 
 void print_texeci(struct text_object *obj, char *p, int p_max_size)
 {
-	struct execi_data *ed = obj->data.opaque;
+	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
 
 	if (!ed)
 		return;
 
 	if (!ed->p_timed_thread) {
-		ed->p_timed_thread = timed_thread_create(&threaded_exec,
-					(void *) obj, ed->interval * 1000000);
-		if (!ed->p_timed_thread) {
-			NORM_ERR("Error creating texeci timed thread");
-		}
 		/*
 		 * note that we don't register this thread with the
 		 * timed_thread list, because we destroy it manually
 		 */
-		if (timed_thread_run(ed->p_timed_thread)) {
-			NORM_ERR("Error running texeci timed thread");
+		ed->p_timed_thread = timed_thread::create(std::bind(threaded_exec, std::placeholders::_1, obj), ed->interval * 1000000, false);
+		if (!ed->p_timed_thread) {
+			NORM_ERR("Error creating texeci timed thread");
 		}
 	} else {
-		timed_thread_lock(ed->p_timed_thread);
+		std::lock_guard<std::mutex> lock(ed->p_timed_thread->mutex());
 		snprintf(p, p_max_size, "%s", ed->buffer);
-		timed_thread_unlock(ed->p_timed_thread);
 	}
 }
 
@@ -379,7 +374,7 @@ double execbarval(struct text_object *obj)
 
 double execi_barval(struct text_object *obj)
 {
-	struct execi_data *ed = obj->data.opaque;
+	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
 
 	if (!ed)
 		return 0;
@@ -401,13 +396,14 @@ void free_exec(struct text_object *obj)
 
 void free_execi(struct text_object *obj)
 {
-	struct execi_data *ed = obj->data.opaque;
+	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
 
 	if (!ed)
 		return;
 
-	if (ed->p_timed_thread)
-		timed_thread_destroy(ed->p_timed_thread, &ed->p_timed_thread);
+	if (ed->p_timed_thread) {
+		ed->p_timed_thread.reset();
+	}
 	if (ed->cmd)
 		free(ed->cmd);
 	if (ed->buffer)
