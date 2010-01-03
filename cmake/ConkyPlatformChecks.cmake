@@ -226,7 +226,6 @@ endif(BUILD_CURL)
 
 if(BUILD_RSS)
 	set(WANT_CURL true)
-	set(WANT_GLIB true)
 	set(WANT_LIBXML2 true)
 endif(BUILD_RSS)
 

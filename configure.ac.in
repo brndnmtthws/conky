@@ -361,7 +361,6 @@ AC_ARG_ENABLE([rss],
 #
 AM_CONDITIONAL(BUILD_RSS, test x$want_rss = xyes)
 if test x$want_rss = xyes; then
-	WANT_GLIB=yes
 	want_curl=yes
 	want_libxml2=yes
 	AC_DEFINE(RSS, 1, [Define if you want Curl support])
