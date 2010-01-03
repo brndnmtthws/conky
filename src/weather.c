@@ -155,7 +155,7 @@ int rel_humidity(int dew_point, int air) {
 static void parse_df(PWEATHER_FORECAST *res, xmlXPathContextPtr xpathCtx)
 {
 	int i, j, k;
-	char *content;
+	char *content = NULL;
 	xmlXPathObjectPtr xpathObj;
 
 	xpathObj = xmlXPathEvalExpression((const xmlChar *)"/error/err", xpathCtx);
