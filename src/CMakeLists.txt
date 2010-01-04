@@ -34,7 +34,7 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build.h)
 	message(FATAL_ERROR "You must remove the autotools generated file '${CMAKE_CURRENT_SOURCE_DIR}/build.h' in order to build with CMake.")
 endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build.h)
 
-set(conky_sources colours.c combine.c common.c conky.cc core.cc diskio.c
+set(conky_sources colours.cc combine.cc common.c conky.cc core.cc diskio.c
 	entropy.c exec.cc fs.c mail.cc mixer.c net_stat.c template.c timed_thread.cc
 	mboxscan.c read_tcp.c scroll.c specials.c tailhead.c temphelper.c
 	text_object.c timeinfo.c top.c algebra.c prioqueue.c proc.c user.c)
@@ -121,17 +121,17 @@ if(BUILD_EVE)
 endif(BUILD_EVE)
 
 if(BUILD_CURL)
-	set(ccurl_thread ccurl_thread.c)
+	set(ccurl_thread ccurl_thread.cc)
 	set(optional_sources ${optional_sources} ${ccurl_thread})
 endif(BUILD_CURL)
 
 if(BUILD_RSS)
-	set(rss rss.c prss.c)
+	set(rss rss.cc prss.c)
 	set(optional_sources ${optional_sources} ${rss})
 endif(BUILD_RSS)
 
 if(BUILD_WEATHER)
-	set(weather weather.c)
+	set(weather weather.cc)
 	set(optional_sources ${optional_sources} ${weather})
 endif(BUILD_WEATHER)
 

@@ -1,5 +1,5 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=c
+/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -71,6 +71,12 @@ static void set_up_gradient(void)
 	greenmask = greenmask << (colour_depth / 3);
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* this function is used in C code, use C calling conventions */
+
 /* adjust colour values depending on colour depth */
 unsigned int adjust_colours(unsigned int colour)
 {
@@ -90,6 +96,10 @@ unsigned int adjust_colours(unsigned int colour)
 	return colour;
 }
 
+#ifdef __cplusplus
+}
+#endif
+
 /* this function returns the next colour between two colours for a gradient */
 unsigned long *do_gradient(int width, unsigned long first_colour, unsigned long last_colour)
 {
@@ -98,7 +108,7 @@ unsigned long *do_gradient(int width, unsigned long first_colour, unsigned long 
 	int reddiff, greendiff, bluediff;		// difference
 	short redshift = (2 * colour_depth / 3 + colour_depth % 3);
 	short greenshift = (colour_depth / 3);
-	unsigned long *colours = malloc(width * sizeof(unsigned long));
+	unsigned long *colours = (unsigned long*)malloc(width * sizeof(unsigned long));
 	int i;
 
 	if (colour_depth == 0) {

@@ -46,7 +46,6 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <unistd.h>
-#include "diskio.h"
 #include <fcntl.h>
 
 /* check for OS and include appropriate headers */

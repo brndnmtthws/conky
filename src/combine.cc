@@ -27,6 +27,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
+#include <vector>
+
 #include "core.h"
 #include "logging.h"
 #include "text_object.h"
@@ -64,12 +67,12 @@ void parse_combine_arg(struct text_object *obj, const char *arg, void *free_at_c
 		}
 	}
 	if(startvar[0] >= 0 && endvar[0] >= 0 && startvar[1] >= 0 && endvar[1] >= 0) {
-		cd = malloc(sizeof(struct combine_data));
+		cd = (struct combine_data*)malloc(sizeof(struct combine_data));
 		memset(cd, 0, sizeof(struct combine_data));
 
-		cd->left = malloc(endvar[0]-startvar[0] + 1);
-		cd->seperation = malloc(startvar[1] - endvar[0] + 1);
-		cd->right= malloc(endvar[1]-startvar[1] + 1);
+		cd->left = (char*)malloc(endvar[0]-startvar[0] + 1);
+		cd->seperation = (char*)malloc(startvar[1] - endvar[0] + 1);
+		cd->right= (char*)malloc(endvar[1]-startvar[1] + 1);
 
 		strncpy(cd->left, arg + startvar[0], endvar[0] - startvar[0]);
 		cd->left[endvar[0] - startvar[0]] = 0;
@@ -80,9 +83,9 @@ void parse_combine_arg(struct text_object *obj, const char *arg, void *free_at_c
 		strncpy(cd->right, arg + startvar[1], endvar[1] - startvar[1]);
 		cd->right[endvar[1] - startvar[1]] = 0;
 
-		obj->sub = malloc(sizeof(struct text_object));
+		obj->sub = (struct text_object*)malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, cd->left);
-		obj->sub->sub = malloc(sizeof(struct text_object));
+		obj->sub->sub = (struct text_object*)malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub->sub, cd->right);
 		obj->data.opaque = cd;
 	} else {
@@ -92,8 +95,11 @@ void parse_combine_arg(struct text_object *obj, const char *arg, void *free_at_c
 
 void print_combine(struct text_object *obj, char *p, int p_max_size)
 {
-	struct combine_data *cd = obj->data.opaque;
-	char buf[2][max_user_text];
+	struct combine_data *cd = (struct combine_data *)obj->data.opaque;
+	std::vector<std::vector<char>> buf;
+	buf.resize(2);
+	buf[0].resize(max_user_text);
+	buf[1].resize(max_user_text);
 	int i, j;
 	long longest=0;
 	int nextstart;
@@ -112,23 +118,23 @@ void print_combine(struct text_object *obj, char *p, int p_max_size)
 	for(i=0; i<2; i++) {
 		nr_rows[i] = 1;
 		nextstart = 0;
-		ll_rows[i] = malloc(sizeof(struct llrows));
+		ll_rows[i] = (struct llrows*)malloc(sizeof(struct llrows));
 		current[i] = ll_rows[i];
 		for(j=0; j<i; j++) objsub = objsub->sub;
-		generate_text_internal(buf[i], max_user_text, *objsub);
+		generate_text_internal(&(buf[i][0]), max_user_text, *objsub);
 		for(j=0; buf[i][j] != 0; j++) {
 			if(buf[i][j] == '\t') buf[i][j] = ' ';
 			if(buf[i][j] == '\n') {
 				buf[i][j] = 0;
-				current[i]->row = strdup(buf[i]+nextstart);
+				current[i]->row = strdup(&(buf[i][0])+nextstart);
 				if(i==0 && (long)strlen(current[i]->row) > longest) longest = (long)strlen(current[i]->row);
-				current[i]->next = malloc(sizeof(struct llrows));
+				current[i]->next = (struct llrows*)malloc(sizeof(struct llrows));
 				current[i] = current[i]->next;
 				nextstart = j + 1;
 				nr_rows[i]++;
 			}
 		}
-		current[i]->row = strdup(buf[i]+nextstart);
+		current[i]->row = strdup(&(buf[i][0])+nextstart);
 		if(i==0 && (long)strlen(current[i]->row) > longest) longest = (long)strlen(current[i]->row);
 		current[i]->next = NULL;
 		current[i] = ll_rows[i];
@@ -167,7 +173,7 @@ void print_combine(struct text_object *obj, char *p, int p_max_size)
 
 void free_combine(struct text_object *obj)
 {
-	struct combine_data *cd = obj->data.opaque;
+	struct combine_data *cd = (struct combine_data *)obj->data.opaque;
 
 	if (!cd)
 		return;

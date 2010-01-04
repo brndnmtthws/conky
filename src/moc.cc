@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <mutex>
 
 #define xfree(x) if (x) free(x); x = 0
 
@@ -46,7 +47,7 @@ static struct {
 	char *rate;
 } moc;
 
-static timed_thread *moc_thread = NULL;
+static timed_thread_ptr moc_thread;
 
 void free_moc(struct text_object *obj)
 {
@@ -113,18 +114,15 @@ static void update_infos(void)
 	pclose(fp);
 }
 
-static void *update_moc_loop(void *) __attribute__((noreturn));
-
-static void *update_moc_loop(void *arg)
+static void update_moc_loop(thread_handle &handle)
 {
-	(void)arg;
-
 	while (1) {
-		timed_thread_lock(moc_thread);
-		update_infos();
-		timed_thread_unlock(moc_thread);
-		if (timed_thread_test(moc_thread, 0)) {
-			timed_thread_exit(moc_thread);
+		{
+			std::lock_guard<std::mutex> lock(handle.mutex());
+			update_infos();
+		}
+		if (handle.test(0)) {
+			return;
 		}
 	}
 	/* never reached */
@@ -135,15 +133,10 @@ static int run_moc_thread(double interval)
 	if (moc_thread)
 		return 0;
 
-	moc_thread = timed_thread_create(&update_moc_loop, NULL, interval);
+	moc_thread = timed_thread::create(std::bind(update_moc_loop, std::placeholders::_1), interval);
 	if (!moc_thread) {
 		NORM_ERR("Failed to create MOC timed thread");
 		return 1;
-	}
-	timed_thread_register(moc_thread, &moc_thread);
-	if (timed_thread_run(moc_thread)) {
-		NORM_ERR("Failed to run MOC timed thread");
-		return 2;
 	}
 	return 0;
 }

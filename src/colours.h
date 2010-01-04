@@ -33,13 +33,15 @@
 extern "C" {
 #endif
 
+/* this function is used in C code, use C calling conventions */
 unsigned int adjust_colours(unsigned int);
-unsigned long *do_gradient(int, unsigned long, unsigned long);
-
-long get_x11_color(const char *);
 
 #ifdef __cplusplus
 }
 #endif
+
+unsigned long *do_gradient(int, unsigned long, unsigned long);
+
+long get_x11_color(const char *);
 
 #endif /* _COLOURS_H */

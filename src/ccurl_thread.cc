@@ -27,6 +27,7 @@
 #include "logging.h"
 #include "ccurl_thread.h"
 #include "text_object.h"
+#include <mutex>
 
 #ifdef DEBUG
 #include <assert.h>
@@ -48,50 +49,31 @@ typedef struct _ccurl_memory_t {
 } ccurl_memory_t;
 
 /* finds a location based on uri in the list provided */
-ccurl_location_t *ccurl_find_location(ccurl_location_t **locations_head, char *uri)
+ccurl_location_ptr ccurl_find_location(ccurl_location_list locations, char *uri)
 {
-	ccurl_location_t *tail = *locations_head;
-	ccurl_location_t *new = 0;
-	while (tail) {
-		if (tail->uri &&
-				strcmp(tail->uri, uri) == EQUAL) {
-			return tail;
-		}
-		tail = tail->next;
-	}
-	if (!tail) { /* new location!!!!!!! */
-		DBGP("new curl location: '%s'", uri);
-		new = malloc(sizeof(ccurl_location_t));
-		memset(new, 0, sizeof(ccurl_location_t));
-		new->uri = strndup(uri, text_buffer_size);
-		tail = *locations_head;
-		while (tail && tail->next) {
-			tail = tail->next;
-		}
-		if (!tail) {
-			/* omg the first one!!!!!!! */
-			*locations_head = new;
-		} else {
-			tail->next = new;
+	for (ccurl_location_list::iterator i = locations.begin();
+			i != locations.end(); i++) {
+		if ((*i)->uri &&
+				strcmp((*i)->uri, uri) == EQUAL) {
+			return *i;
 		}
 	}
-	return new;
+	ccurl_location_ptr next = ccurl_location_ptr(new ccurl_location_t);
+	DBGP("new curl location: '%s'", uri);
+	next->uri = strndup(uri, text_buffer_size);
+	locations.push_back(next);
+	return next;
 }
 
 /* iterates over the list provided, frees stuff (list item, uri, result) */
-void ccurl_free_locations(ccurl_location_t **locations_head)
+void ccurl_free_locations(ccurl_location_list &locations)
 {
-	ccurl_location_t *tail = *locations_head;
-	ccurl_location_t *last = 0;
-
-	while (tail) {
-		if (tail->uri) free(tail->uri);
-		if (tail->result) free(tail->result);
-		last = tail;
-		tail = tail->next;
-		free(last);
+	for (ccurl_location_list::iterator i = locations.begin();
+			i != locations.end(); i++) {
+		if ((*i)->uri) free((*i)->uri);
+		if ((*i)->result) free((*i)->result);
 	}
-	*locations_head = 0;
+	locations.clear();
 }
 
 /* callback used by curl for writing the received data */
@@ -111,7 +93,7 @@ size_t ccurl_write_memory_callback(void *ptr, size_t size, size_t nmemb, void *d
 
 
 /* fetch our datums */
-void ccurl_fetch_data(ccurl_location_t *curloc)
+void ccurl_fetch_data(thread_handle &handle, ccurl_location_ptr &curloc)
 {
 	CURL *curl = NULL;
 	CURLcode res;
@@ -137,9 +119,8 @@ void ccurl_fetch_data(ccurl_location_t *curloc)
 				long http_status_code;
 
 				if(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_status_code) == CURLE_OK && http_status_code == 200) {
-					timed_thread_lock(curloc->p_timed_thread);
-					(*curloc->process_function)(curloc->result, chunk.memory);
-					timed_thread_unlock(curloc->p_timed_thread);
+					std::lock_guard<std::mutex> lock(handle.mutex());
+					curloc->process_function(curloc->result, chunk.memory);
 				} else {
 					NORM_ERR("curl: no data from server");
 				}
@@ -154,35 +135,28 @@ void ccurl_fetch_data(ccurl_location_t *curloc)
 	}
 }
 
-void *ccurl_thread(void *) __attribute__((noreturn));
+void ccurl_thread(thread_handle &handle, ccurl_location_ptr curloc);
 
-void ccurl_init_thread(ccurl_location_t *curloc, int interval)
+void ccurl_init_thread(ccurl_location_ptr curloc, int interval)
 {
 #ifdef DEBUG
 	assert(curloc->result);
 #endif /* DEBUG */
-	curloc->p_timed_thread =
-		timed_thread_create(&ccurl_thread,
-				(void *)curloc, interval * 1000000);
+	curloc->p_timed_thread = timed_thread::create(std::bind(ccurl_thread,
+				std::placeholders::_1, curloc), interval * 1000000);
 
 	if (!curloc->p_timed_thread) {
 		NORM_ERR("curl thread: error creating timed thread");
 	}
-	timed_thread_register(curloc->p_timed_thread,
-			&curloc->p_timed_thread);
-	if (timed_thread_run(curloc->p_timed_thread)) {
-		NORM_ERR("curl thread: error running timed thread");
-	}
 }
 
-void *ccurl_thread(void *arg)
+void ccurl_thread(thread_handle &handle, ccurl_location_ptr curloc)
 {
-	ccurl_location_t *curloc = (ccurl_location_t*)arg;
 
 	while (1) {
-		ccurl_fetch_data(curloc);
-		if (timed_thread_test(curloc->p_timed_thread, 0)) {
-			timed_thread_exit(curloc->p_timed_thread);
+		ccurl_fetch_data(handle, curloc);
+		if (handle.test(0)) {
+			return;
 		}
 	}
 	/* never reached */
@@ -199,16 +173,16 @@ struct curl_data {
 };
 
 /* internal location pointer for use by $curl, no touchy */
-static ccurl_location_t *ccurl_locations_head = 0;
+static ccurl_location_list ccurl_locations;
 
 /* used to free data used by $curl */
 void ccurl_free_info(void)
 {
-	ccurl_free_locations(&ccurl_locations_head);
+	ccurl_free_locations(ccurl_locations);
 }
 
 /* straight copy, used by $curl */
-static void ccurl_parse_data(void *result, const char *data)
+static void ccurl_parse_data(char *result, const char *data)
 {
 	strncpy(result, data, max_user_text);
 }
@@ -216,20 +190,21 @@ static void ccurl_parse_data(void *result, const char *data)
 /* prints result data to text buffer, used by $curl */
 void ccurl_process_info(char *p, int p_max_size, char *uri, int interval)
 {
-	ccurl_location_t *curloc = ccurl_find_location(&ccurl_locations_head, uri);
+	ccurl_location_ptr curloc = ccurl_find_location(ccurl_locations, uri);
 	if (!curloc->p_timed_thread) {
-		curloc->result = malloc(max_user_text);
+		curloc->result = (char*)malloc(max_user_text);
 		memset(curloc->result, 0, max_user_text);
-		curloc->process_function = &ccurl_parse_data;
+		curloc->process_function = std::bind(ccurl_parse_data,
+				std::placeholders::_1, std::placeholders::_2);
 		ccurl_init_thread(curloc, interval);
 		if (!curloc->p_timed_thread) {
 			NORM_ERR("error setting up curl thread");
 		}
 	}
 
-	timed_thread_lock(curloc->p_timed_thread);
+
+	std::lock_guard<std::mutex> lock(curloc->p_timed_thread->mutex());
 	strncpy(p, curloc->result, p_max_size);
-	timed_thread_unlock(curloc->p_timed_thread);
 }
 
 void curl_parse_arg(struct text_object *obj, const char *arg)
@@ -238,7 +213,7 @@ void curl_parse_arg(struct text_object *obj, const char *arg)
 	struct curl_data *cd;
 	float interval = 0;
 
-	cd = malloc(sizeof(struct curl_data));
+	cd = (struct curl_data*)malloc(sizeof(struct curl_data));
 	memset(cd, 0, sizeof(struct curl_data));
 
 	argc = sscanf(arg, "%127s %f", cd->uri, &interval);
@@ -253,7 +228,7 @@ void curl_parse_arg(struct text_object *obj, const char *arg)
 
 void curl_print(struct text_object *obj, char *p, int p_max_size)
 {
-	struct curl_data *cd = obj->data.opaque;
+	struct curl_data *cd = (struct curl_data *)obj->data.opaque;
 
 	if (!cd || !cd->uri) {
 		NORM_ERR("error processing Curl data");

@@ -90,9 +90,14 @@ struct text_object;
 #include "mpd.h"
 #endif
 
+#ifdef __cplusplus
+/* C++ headers */
+
 #ifdef HAVE_CURL
 #include "ccurl_thread.h"
 #endif /* HAVE_CURL */
+
+#endif /* __cplusplus */
 
 #ifdef RSS
 #include "rss.h"

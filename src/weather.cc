@@ -32,6 +32,7 @@
 #include "ccurl_thread.h"
 #include <time.h>
 #include <ctype.h>
+#include <mutex>
 #ifdef MATH
 #include <math.h>
 #endif /* MATH */
@@ -111,9 +112,9 @@ const char *WC_CODES[NUM_WC_CODES] = {
 	"FC", "PO", "SQ", "SS", "DS"
 };
 
-static ccurl_location_t *locations_head_cc = 0;
+static ccurl_location_list locations_cc;
 #ifdef XOAP
-static ccurl_location_t *locations_head_df = 0;
+static ccurl_location_list locations_df;
 #endif
 
 struct weather_data {
@@ -133,9 +134,9 @@ struct weather_forecast_data {
 
 void weather_free_info(void)
 {
-	ccurl_free_locations(&locations_head_cc);
+	ccurl_free_locations(locations_cc);
 #ifdef XOAP
-	ccurl_free_locations(&locations_head_df);
+	ccurl_free_locations(locations_df);
 #endif
 }
 
@@ -711,18 +712,19 @@ static void weather_forecast_process_info(char *p, int p_max_size, char *uri, un
 {
 	PWEATHER_FORECAST *data;
 
-	ccurl_location_t *curloc = ccurl_find_location(&locations_head_df, uri);
+	ccurl_location_ptr curloc = ccurl_find_location(locations_df, uri);
 	if (!curloc->p_timed_thread) {
-		curloc->result = malloc(sizeof(PWEATHER_FORECAST));
+		curloc->result = (char*)malloc(sizeof(PWEATHER_FORECAST));
 		memset(curloc->result, 0, sizeof(PWEATHER_FORECAST));
-		curloc->process_function = &parse_weather_forecast;
+		curloc->process_function = std::bind(parse_weather_forecast,
+				std::placeholders::_1, std::placeholders::_2);
 		ccurl_init_thread(curloc, interval);
 		if (!curloc->p_timed_thread) {
 			NORM_ERR("error setting up weather_forecast thread");
 		}
 	}
 
-	timed_thread_lock(curloc->p_timed_thread);
+	std::lock_guard<std::mutex> lock(curloc->p_timed_thread->mutex());
 	data = (PWEATHER_FORECAST*)curloc->result;
 	if (strcmp(data_type, "hi") == EQUAL) {
 		temp_print(p, p_max_size, data->hi[day], TEMP_CELSIUS);
@@ -748,7 +750,6 @@ static void weather_forecast_process_info(char *p, int p_max_size, char *uri, un
 		strncpy(p, data->date[day], p_max_size);
 	}
 
-	timed_thread_unlock(curloc->p_timed_thread);
 }
 #endif /* XOAP */
 
@@ -762,18 +763,19 @@ static void weather_process_info(char *p, int p_max_size, char *uri, char *data_
 	};
 	PWEATHER *data;
 
-	ccurl_location_t *curloc = ccurl_find_location(&locations_head_cc, uri);
+	ccurl_location_ptr curloc = ccurl_find_location(locations_cc, uri);
 	if (!curloc->p_timed_thread) {
-		curloc->result = malloc(sizeof(PWEATHER));
+		curloc->result = (char*)malloc(sizeof(PWEATHER));
 		memset(curloc->result, 0, sizeof(PWEATHER));
-		curloc->process_function = &parse_weather;
+		curloc->process_function = std::bind(parse_weather,
+				std::placeholders::_1, std::placeholders::_2);
 		ccurl_init_thread(curloc, interval);
 		if (!curloc->p_timed_thread) {
 			NORM_ERR("error setting up weather thread");
 		}
 	}
 
-	timed_thread_lock(curloc->p_timed_thread);
+	std::lock_guard<std::mutex> lock(curloc->p_timed_thread->mutex());
 	data = (PWEATHER*)curloc->result;
 	if (strcmp(data_type, "last_update") == EQUAL) {
 		strncpy(p, data->lastupd, p_max_size);
@@ -824,7 +826,6 @@ static void weather_process_info(char *p, int p_max_size, char *uri, char *data_
 		strncpy(p, wc[data->wc], p_max_size);
 	}
 
-	timed_thread_unlock(curloc->p_timed_thread);
 }
 
 #ifdef XOAP
@@ -915,7 +916,7 @@ void scan_weather_forecast_arg(struct text_object *obj, const char *arg, void *f
 	float interval = 0;
 	char *locID = (char *) malloc(9 * sizeof(char));
 
-	wfd = malloc(sizeof(struct weather_forecast_data));
+	wfd = (struct weather_forecast_data *)malloc(sizeof(struct weather_forecast_data));
 	memset(wfd, 0, sizeof(struct weather_forecast_data));
 
 	argc = sscanf(arg, "%119s %8s %1u %31s %f", wfd->uri, locID, &wfd->day, wfd->data_type, &interval);
@@ -954,7 +955,7 @@ void scan_weather_forecast_arg(struct text_object *obj, const char *arg, void *f
 
 void print_weather_forecast(struct text_object *obj, char *p, int p_max_size)
 {
-	struct weather_forecast_data *wfd = obj->data.opaque;
+	struct weather_forecast_data *wfd = (struct weather_forecast_data *)obj->data.opaque;
 
 	if (!wfd || !wfd->uri) {
 		NORM_ERR("error processing weather forecast data, check that you have a valid XOAP key if using XOAP.");
@@ -971,7 +972,7 @@ void scan_weather_arg(struct text_object *obj, const char *arg, void *free_at_cr
 	char *locID = (char *) malloc(9 * sizeof(char));
 	float interval = 0;
 
-	wd = malloc(sizeof(struct weather_data));
+	wd = (struct weather_data *)malloc(sizeof(struct weather_data));
 	memset(wd, 0, sizeof(struct weather_data));
 
 	argc = sscanf(arg, "%119s %8s %31s %f", wd->uri, locID, wd->data_type, &interval);
@@ -1005,7 +1006,7 @@ void scan_weather_arg(struct text_object *obj, const char *arg, void *free_at_cr
 
 void print_weather(struct text_object *obj, char *p, int p_max_size)
 {
-	struct weather_data *wd = obj->data.opaque;
+	struct weather_data *wd = (struct weather_data *)obj->data.opaque;
 
 	if (!wd || !wd->uri) {
 		NORM_ERR("error processing weather data, check that you have a valid XOAP key if using XOAP.");

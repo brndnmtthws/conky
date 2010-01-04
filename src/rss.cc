@@ -31,6 +31,7 @@
 #include "ccurl_thread.h"
 #include <time.h>
 #include <assert.h>
+#include <mutex>
 
 struct rss_data {
 	char uri[128];
@@ -40,17 +41,11 @@ struct rss_data {
 	unsigned int nrspaces;
 };
 
-static ccurl_location_t *locations_head = 0;
+static ccurl_location_list locations;
 
 void rss_free_info(void)
 {
-	ccurl_location_t *tail = locations_head;
-
-	while (tail) {
-		if (tail->result) prss_free((PRSS*)tail->result);	/* clean up old data */
-		tail = tail->next;
-	}
-	ccurl_free_locations(&locations_head);
+	ccurl_free_locations(locations);
 }
 
 static void rss_process_info(char *p, int p_max_size, char *uri, char *action, int
@@ -59,21 +54,22 @@ static void rss_process_info(char *p, int p_max_size, char *uri, char *action, i
 	PRSS *data;
 	char *str;
 
-	ccurl_location_t *curloc = ccurl_find_location(&locations_head, uri);
+	ccurl_location_ptr curloc = ccurl_find_location(locations, uri);
 
 	assert(act_par >= 0 && action);
 
 	if (!curloc->p_timed_thread) {
-		curloc->result = malloc(sizeof(PRSS));
+		curloc->result = (char*)malloc(sizeof(PRSS));
 		memset(curloc->result, 0, sizeof(PRSS));
-		curloc->process_function = &prss_parse_data;
+		curloc->process_function = std::bind(prss_parse_data,
+				std::placeholders::_1, std::placeholders::_2);
 		ccurl_init_thread(curloc, interval);
 		if (!curloc->p_timed_thread) {
 			NORM_ERR("error setting up RSS thread");
 		}
 	}
 
-	timed_thread_lock(curloc->p_timed_thread);
+	std::lock_guard<std::mutex> lock(curloc->p_timed_thread->mutex());
 	data = (PRSS*)curloc->result;
 
 	if (data == NULL || data->item_count < 1) {
@@ -120,7 +116,7 @@ static void rss_process_info(char *p, int p_max_size, char *uri, char *action, i
 				int itmp;
 				int show;
 				//'tmpspaces' is a string with spaces too be placed in front of each title
-				char *tmpspaces = malloc(nrspaces + 1);
+				char *tmpspaces = (char*)malloc(nrspaces + 1);
 				memset(tmpspaces, ' ', nrspaces);
 				tmpspaces[nrspaces]=0;
 
@@ -153,7 +149,6 @@ static void rss_process_info(char *p, int p_max_size, char *uri, char *action, i
 			NORM_ERR("rss: Invalid action '%s'", action);
 		}
 	}
-	timed_thread_unlock(curloc->p_timed_thread);
 }
 
 void rss_scan_arg(struct text_object *obj, const char *arg)
@@ -161,7 +156,7 @@ void rss_scan_arg(struct text_object *obj, const char *arg)
 	int argc;
 	struct rss_data *rd;
 
-	rd = malloc(sizeof(struct rss_data));
+	rd = (struct rss_data *)malloc(sizeof(struct rss_data));
 	memset(rd, 0, sizeof(struct rss_data));
 
 	argc = sscanf(arg, "%127s %f %63s %d %u", rd->uri, &rd->interval, rd->action,
@@ -176,7 +171,7 @@ void rss_scan_arg(struct text_object *obj, const char *arg)
 
 void rss_print_info(struct text_object *obj, char *p, int p_max_size)
 {
-	struct rss_data *rd = obj->data.opaque;
+	struct rss_data *rd = (struct rss_data *)obj->data.opaque;
 
 	if (!rd) {
 		NORM_ERR("error processing RSS data");

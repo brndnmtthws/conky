@@ -27,6 +27,7 @@
  *
  */
 
+#include <mutex>
 #include "conky.h"
 #include "logging.h"
 #include "timed_thread.h"
@@ -126,39 +127,43 @@ void free_mpd(struct text_object *obj)
 		clear_mpd();
 }
 
-static void *update_mpd_thread(void *) __attribute__((noreturn));
+static void update_mpd_thread(thread_handle &handle);
 
 void update_mpd(void)
 {
 	int interval;
-	static timed_thread *thread = NULL;
+	static timed_thread_ptr thread;
 
 	if (thread)
 		return;
 
 	interval = info.music_player_interval * 1000000;
-	thread = timed_thread_create(&update_mpd_thread, &thread, interval);
+	thread = timed_thread::create(std::bind(update_mpd_thread, std::placeholders::_1), interval);
 	if (!thread) {
 		NORM_ERR("Failed to create MPD timed thread");
 		return;
 	}
-	timed_thread_register(thread, &thread);
-	if (timed_thread_run(thread))
-		NORM_ERR("Failed to run MPD timed thread");
 }
 
 /* stringMAXdup dups at most text_buffer_size bytes */
 #define strmdup(x) strndup(x, text_buffer_size - 1)
 
-static void *update_mpd_thread(void *arg)
+#define SONGSET(x) {                            \
+	free(mpd_info.x);                       \
+	if(song->x)                             \
+	mpd_info.x = strmdup(song->x);  \
+	else                                    \
+	mpd_info.x = strmdup(emptystr); \
+}
+
+bool mpd_process(thread_handle &handle)
 {
 	static mpd_Connection *conn = NULL;
 	mpd_Status *status;
 	mpd_InfoEntity *entity;
-	timed_thread *me = *(timed_thread **)arg;
 	const char *emptystr = "";
 
-	while (1) {
+	do {
 		if (!conn)
 			conn = mpd_newConnection(mpd_host, mpd_port, 10);
 
@@ -167,168 +172,141 @@ static void *update_mpd_thread(void *arg)
 			mpd_finishCommand(conn);
 		}
 
-		timed_thread_lock(me);
+		{
+			std::lock_guard<std::mutex> lock(handle.mutex());
 
-		if (conn->error || conn == NULL) {
-			NORM_ERR("MPD error: %s\n", conn->errorStr);
-			mpd_closeConnection(conn);
-			conn = 0;
-			clear_mpd();
-
-			mpd_info.status = "MPD not responding";
-			timed_thread_unlock(me);
-			if (timed_thread_test(me, 0)) {
-				timed_thread_exit(me);
-			}
-			continue;
-		}
-
-		mpd_sendStatusCommand(conn);
-		if ((status = mpd_getStatus(conn)) == NULL) {
-			NORM_ERR("MPD error: %s\n", conn->errorStr);
-			mpd_closeConnection(conn);
-			conn = 0;
-			clear_mpd();
-
-			mpd_info.status = "MPD not responding";
-			timed_thread_unlock(me);
-			if (timed_thread_test(me, 0)) {
-				timed_thread_exit(me);
-			}
-			continue;
-		}
-		mpd_finishCommand(conn);
-		if (conn->error) {
-			// fprintf(stderr, "%s\n", conn->errorStr);
-			mpd_closeConnection(conn);
-			conn = 0;
-			timed_thread_unlock(me);
-			if (timed_thread_test(me, 0)) {
-				timed_thread_exit(me);
-			}
-			continue;
-		}
-
-		mpd_info.vol = status->volume;
-		if (status->random == 0) {
-			mpd_info.random = "Off";
-		} else if (status->random == 1) {
-			mpd_info.random = "On";
-		} else {
-			mpd_info.random = "";
-		}
-		if (status->repeat == 0) {
-			mpd_info.repeat = "Off";
-		} else if (status->repeat == 1) {
-			mpd_info.repeat = "On";
-		} else {
-			mpd_info.repeat = "";
-		}
-		/* if (status->error) {
-			printf("error: %s\n", status->error);
-		} */
-
-		switch (status->state) {
-			case MPD_STATUS_STATE_PLAY:
-				mpd_info.status = "Playing";
-				break;
-			case MPD_STATUS_STATE_STOP:
-				mpd_info.status = "Stopped";
-				break;
-			case MPD_STATUS_STATE_PAUSE:
-				mpd_info.status = "Paused";
-				break;
-			default:
-				mpd_info.status = "";
+			if (conn->error || conn == NULL) {
+				NORM_ERR("MPD error: %s\n", conn->errorStr);
+				mpd_closeConnection(conn);
+				conn = 0;
 				clear_mpd();
+
+				mpd_info.status = "MPD not responding";
 				break;
-		}
-
-		if (status->state == MPD_STATUS_STATE_PLAY ||
-		    status->state == MPD_STATUS_STATE_PAUSE) {
-			mpd_info.is_playing = 1;
-			mpd_info.bitrate = status->bitRate;
-			mpd_info.progress = (float) status->elapsedTime /
-				status->totalTime;
-			mpd_info.elapsed = status->elapsedTime;
-			mpd_info.length = status->totalTime;
-		} else {
-			mpd_info.progress = 0;
-			mpd_info.is_playing = 0;
-			mpd_info.elapsed = 0;
-		}
-
-		if (conn->error) {
-			// fprintf(stderr, "%s\n", conn->errorStr);
-			mpd_closeConnection(conn);
-			conn = 0;
-			timed_thread_unlock(me);
-			if (timed_thread_test(me, 0)) {
-				timed_thread_exit(me);
 			}
-			continue;
-		}
 
-		mpd_sendCurrentSongCommand(conn);
-		while ((entity = mpd_getNextInfoEntity(conn))) {
-			mpd_Song *song = entity->info.song;
+			mpd_sendStatusCommand(conn);
+			if ((status = mpd_getStatus(conn)) == NULL) {
+				NORM_ERR("MPD error: %s\n", conn->errorStr);
+				mpd_closeConnection(conn);
+				conn = 0;
+				clear_mpd();
 
-			if (entity->type != MPD_INFO_ENTITY_TYPE_SONG) {
-				mpd_freeInfoEntity(entity);
-				continue;
+				mpd_info.status = "MPD not responding";
 			}
-#define SONGSET(x) {                            \
-	free(mpd_info.x);                       \
-	if(song->x)                             \
-		mpd_info.x = strmdup(song->x);  \
-	else                                    \
-		mpd_info.x = strmdup(emptystr); \
-}
-			SONGSET(artist);
-			SONGSET(album);
-			SONGSET(title);
-			SONGSET(track);
-			SONGSET(name);
-			SONGSET(file);
+			mpd_finishCommand(conn);
+			if (conn->error) {
+				// fprintf(stderr, "%s\n", conn->errorStr);
+				mpd_closeConnection(conn);
+				conn = 0;
+				break;
+			}
+
+			mpd_info.vol = status->volume;
+			if (status->random == 0) {
+				mpd_info.random = "Off";
+			} else if (status->random == 1) {
+				mpd_info.random = "On";
+			} else {
+				mpd_info.random = "";
+			}
+			if (status->repeat == 0) {
+				mpd_info.repeat = "Off";
+			} else if (status->repeat == 1) {
+				mpd_info.repeat = "On";
+			} else {
+				mpd_info.repeat = "";
+			}
+			/* if (status->error) {
+			   printf("error: %s\n", status->error);
+			   } */
+
+			switch (status->state) {
+				case MPD_STATUS_STATE_PLAY:
+					mpd_info.status = "Playing";
+					break;
+				case MPD_STATUS_STATE_STOP:
+					mpd_info.status = "Stopped";
+					break;
+				case MPD_STATUS_STATE_PAUSE:
+					mpd_info.status = "Paused";
+					break;
+				default:
+					mpd_info.status = "";
+					clear_mpd();
+					break;
+			}
+
+			if (status->state == MPD_STATUS_STATE_PLAY ||
+					status->state == MPD_STATUS_STATE_PAUSE) {
+				mpd_info.is_playing = 1;
+				mpd_info.bitrate = status->bitRate;
+				mpd_info.progress = (float) status->elapsedTime /
+					status->totalTime;
+				mpd_info.elapsed = status->elapsedTime;
+				mpd_info.length = status->totalTime;
+			} else {
+				mpd_info.progress = 0;
+				mpd_info.is_playing = 0;
+				mpd_info.elapsed = 0;
+			}
+
+			if (conn->error) {
+				// fprintf(stderr, "%s\n", conn->errorStr);
+				mpd_closeConnection(conn);
+				conn = 0;
+				break;
+			}
+
+			mpd_sendCurrentSongCommand(conn);
+			while ((entity = mpd_getNextInfoEntity(conn))) {
+				mpd_Song *song = entity->info.song;
+
+				if (entity->type != MPD_INFO_ENTITY_TYPE_SONG) {
+					mpd_freeInfoEntity(entity);
+					continue;
+				}
+				SONGSET(artist);
+				SONGSET(album);
+				SONGSET(title);
+				SONGSET(track);
+				SONGSET(name);
+				SONGSET(file);
 #undef SONGSET
-			if (entity != NULL) {
-				mpd_freeInfoEntity(entity);
-				entity = NULL;
+				if (entity != NULL) {
+					mpd_freeInfoEntity(entity);
+					entity = NULL;
+				}
 			}
-		}
-		mpd_finishCommand(conn);
-		if (conn->error) {
-			// fprintf(stderr, "%s\n", conn->errorStr);
-			mpd_closeConnection(conn);
-			conn = 0;
-			timed_thread_unlock(me);
-			if (timed_thread_test(me, 0)) {
-				timed_thread_exit(me);
+			mpd_finishCommand(conn);
+			if (conn->error) {
+				// fprintf(stderr, "%s\n", conn->errorStr);
+				mpd_closeConnection(conn);
+				conn = 0;
+				break;
 			}
-			continue;
+
 		}
 
-		timed_thread_unlock(me);
 		if (conn->error) {
 			// fprintf(stderr, "%s\n", conn->errorStr);
 			mpd_closeConnection(conn);
 			conn = 0;
-			if (timed_thread_test(me, 0)) {
-				timed_thread_exit(me);
-			}
-			continue;
+			break;
 		}
 
 		mpd_freeStatus(status);
 		/* if (conn) {
-			mpd_closeConnection(conn);
-			conn = 0;
-		} */
-		if (timed_thread_test(me, 0)) {
-			timed_thread_exit(me);
-		}
-		continue;
-	}
+		   mpd_closeConnection(conn);
+		   conn = 0;
+		   } */
+	} while (0);
+	return !handle.test(0);
+}
+
+static void update_mpd_thread(thread_handle &handle)
+{
+	while (1) if (mpd_process(handle)) return;
 	/* never reached */
 }
 
