@@ -1,5 +1,5 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=c
+/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -37,23 +37,12 @@
 #include "specials.h"
 #include "text_object.h"
 #include <stdlib.h>
-#include <limits.h>
 #include <sys/stat.h>
+#include <vector>
 
 /* this is the root of all per disk stats,
  * also containing the totals. */
-struct diskio_stat stats = {
-	.next = NULL,
-	.sample = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	.sample_read = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	.sample_write = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	.current = 0,
-	.current_read = 0,
-	.current_write = 0,
-	.last = UINT_MAX,
-	.last_read = UINT_MAX,
-	.last_write = UINT_MAX,
-};
+struct diskio_stat stats;
 
 void clear_diskio_stats(void)
 {
@@ -70,7 +59,7 @@ void clear_diskio_stats(void)
 struct diskio_stat *prepare_diskio_stat(const char *s)
 {
 	struct stat sb;
-	char stat_name[text_buffer_size], device_name[text_buffer_size];
+	std::vector<char> stat_name(text_buffer_size), device_name(text_buffer_size);
 	struct diskio_stat *cur = &stats;
 
 	if (!s)
@@ -79,29 +68,29 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 #if defined(__FreeBSD__)
 	if (strncmp(s, "/dev/", 5) == 0) {
 		// supplied a /dev/device arg, so cut off the /dev part
-		strncpy(device_name, s + 5, text_buffer_size);
+		strncpy(&(device_name[0]), s + 5, text_buffer_size);
 	} else
 #endif
-	strncpy(device_name, s, text_buffer_size);
+	strncpy(&(device_name[0]), s, text_buffer_size);
 
-	snprintf(stat_name, text_buffer_size, "/dev/%s", device_name);
+	snprintf(&(stat_name[0]), text_buffer_size, "/dev/%s", &(device_name[0]));
 
-	if (stat(stat_name, &sb)) {
+	if (stat(&(stat_name[0]), &sb)) {
 		NORM_ERR("diskio device '%s' does not exist", s);
 	}
 
 	/* lookup existing */
 	while (cur->next) {
 		cur = cur->next;
-		if (!strcmp(cur->dev, device_name)) {
+		if (!strcmp(cur->dev, &(device_name[0]))) {
 			return cur;
 		}
 	}
 
 	/* no existing found, make a new one */
-	cur->next = calloc(1, sizeof(struct diskio_stat));
+	cur->next = new diskio_stat;
 	cur = cur->next;
-	cur->dev = strndup(device_name, text_buffer_size);
+	cur->dev = strndup(&(device_name[0]), text_buffer_size);
 	cur->last = UINT_MAX;
 	cur->last_read = UINT_MAX;
 	cur->last_write = UINT_MAX;
@@ -121,7 +110,7 @@ void parse_diskio_arg(struct text_object *obj, const char *arg)
  */
 static void print_diskio_dir(struct text_object *obj, int dir, char *p, int p_max_size)
 {
-	struct diskio_stat *diskio = obj->data.opaque;
+	struct diskio_stat *diskio = (struct diskio_stat *)obj->data.opaque;
 	double val;
 
 	if (!diskio)
@@ -167,21 +156,21 @@ void parse_diskiograph_arg(struct text_object *obj, const char *arg)
 
 double diskiographval(struct text_object *obj)
 {
-	struct diskio_stat *diskio = obj->data.opaque;
+	struct diskio_stat *diskio = (struct diskio_stat *)obj->data.opaque;
 
 	return (diskio ? diskio->current : 0);
 }
 
 double diskiographval_read(struct text_object *obj)
 {
-	struct diskio_stat *diskio = obj->data.opaque;
+	struct diskio_stat *diskio = (struct diskio_stat *)obj->data.opaque;
 
 	return (diskio ? diskio->current_read : 0);
 }
 
 double diskiographval_write(struct text_object *obj)
 {
-	struct diskio_stat *diskio = obj->data.opaque;
+	struct diskio_stat *diskio = (struct diskio_stat *)obj->data.opaque;
 
 	return (diskio ? diskio->current_write : 0);
 }

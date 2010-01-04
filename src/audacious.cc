@@ -22,10 +22,11 @@
  *
  */
 
-#include "config.h"
+#include <config.h>
 #include "conky.h"
 #include "logging.h"
 #include "audacious.h"
+#include <mutex>
 
 #include <glib.h>
 #ifndef AUDACIOUS_LEGACY
@@ -72,13 +73,10 @@ void update_audacious(void)
 		if (create_audacious_thread() != 0) {
 			CRIT_ERR(NULL, NULL, "unable to create audacious thread!");
 		}
-		timed_thread_register(info.audacious.p_timed_thread,
-			&info.audacious.p_timed_thread);
 	}
 
-	timed_thread_lock(info.audacious.p_timed_thread);
+	std::lock_guard<std::mutex> lock(info.audacious.p_timed_thread->mutex());
 	memcpy(&info.audacious.items, audacious_items, sizeof(audacious_items));
-	timed_thread_unlock(info.audacious.p_timed_thread);
 }
 
 /* ---------------------------------------------------------
@@ -90,12 +88,12 @@ int create_audacious_thread(void)
 {
 	if (!info.audacious.p_timed_thread) {
 		info.audacious.p_timed_thread =
-			timed_thread_create(audacious_thread_func, NULL,
-			info.music_player_interval * 1000000);
+			timed_thread::create(std::bind(audacious_thread_func,
+						std::placeholders::_1), info.music_player_interval *
+					1000000);
 	}
 
-	if (!info.audacious.p_timed_thread
-			|| timed_thread_run(info.audacious.p_timed_thread)) {
+	if (!info.audacious.p_timed_thread) {
 		return -1;
 	}
 
@@ -111,8 +109,7 @@ int destroy_audacious_thread(void)
 {
 	/* Is a worker is thread running? If not, no error. */
 	if (info.audacious.p_timed_thread) {
-		timed_thread_destroy(info.audacious.p_timed_thread,
-			&info.audacious.p_timed_thread);
+		info.audacious.p_timed_thread.reset();
 	}
 
 	return 0;
@@ -121,8 +118,7 @@ int destroy_audacious_thread(void)
 /* ---------------------------------------------------
  * Worker thread function for audacious data sampling.
  * --------------------------------------------------- */
-__attribute((noreturn))
-void *audacious_thread_func(void *pvoid)
+void audacious_thread_func(thread_handle &handle)
 {
 	static audacious_t items;
 	gint playpos, frames, length;
@@ -136,7 +132,6 @@ void *audacious_thread_func(void *pvoid)
 	gint session;
 #endif
 
-	pvoid = (void *) pvoid;	/* avoid warning */
 	session = 0;
 	psong = NULL;
 	pfilename = NULL;
@@ -240,38 +235,38 @@ void *audacious_thread_func(void *pvoid)
 					sizeof(items[AUDACIOUS_MAIN_VOLUME]) - 1, "%d", vol);
 
 		} while (0);
-		/* Deliver the refreshed items array to audacious_items. */
-		timed_thread_lock(info.audacious.p_timed_thread);
-		memcpy(&audacious_items, items, sizeof(items));
-		timed_thread_unlock(info.audacious.p_timed_thread);
+		{
+			/* Deliver the refreshed items array to audacious_items. */
+			std::lock_guard<std::mutex> lock(handle.mutex());
+			memcpy(&audacious_items, items, sizeof(items));
+		}
 
-		if (timed_thread_test(info.audacious.p_timed_thread, 0)) {
+		if (handle.test(0)) {
 #ifndef AUDACIOUS_LEGACY
 			/* release reference to dbus proxy */
 			g_object_unref(session);
 #endif
-			timed_thread_exit(info.audacious.p_timed_thread);
+			return;
 		}
 	}
 }
 
-void print_audacious_title(struct text_object *obj, char *p, int p_max_size)
+void print_audacious_title(struct text_object *, char *p, int p_max_size)
 {
 	snprintf(p, info.audacious.max_title_len > 0
 			? info.audacious.max_title_len : p_max_size, "%s",
 			info.audacious.items[AUDACIOUS_TITLE]);
 }
 
-double audacious_barval(struct text_object *obj)
+double audacious_barval(struct text_object *)
 {
-	(void)obj;
 
 	return atof(info.audacious.items[AUDACIOUS_POSITION_SECONDS]) /
 		atof(info.audacious.items[AUDACIOUS_LENGTH_SECONDS]);
 }
 
 #define AUDACIOUS_PRINT_GENERATOR(name, idx) \
-void print_audacious_##name(struct text_object *obj, char *p, int p_max_size) \
+void print_audacious_##name(struct text_object *, char *p, int p_max_size) \
 { \
 	snprintf(p, p_max_size, "%s", info.audacious.items[AUDACIOUS_##idx]); \
 }

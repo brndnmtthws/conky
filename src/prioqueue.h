@@ -25,6 +25,9 @@
 #ifndef _PRIOQUEUE_H
 #define _PRIOQUEUE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 /* forward-define for private data */
 struct prio_queue;
 
@@ -62,5 +65,9 @@ void *pop_prio_elem(prio_queue_t);
 
 /* clear and free the given queue */
 void free_prio_queue(prio_queue_t);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _PRIOQUEUE_H */

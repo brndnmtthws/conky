@@ -30,11 +30,22 @@
 #ifndef DISKIO_H_
 #define DISKIO_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <limits.h>
 
 struct diskio_stat {
+	diskio_stat() :
+		next(NULL),
+		current(0),
+		current_read(0),
+		current_write(0),
+		last(UINT_MAX),
+		last_read(UINT_MAX),
+		last_write(UINT_MAX)
+	{
+		memset(sample, 0, sizeof(sample) / sizeof(sample[0]));
+		memset(sample_read, 0, sizeof(sample_read) / sizeof(sample_read[0]));
+		memset(sample_write, 0, sizeof(sample_write) / sizeof(sample_write[0]));
+	}
 	struct diskio_stat *next;
 	char *dev;
 	double sample[15];
@@ -65,9 +76,5 @@ double diskiographval(struct text_object *);
 double diskiographval_read(struct text_object *);
 double diskiographval_write(struct text_object *);
 #endif /* X11 */
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* DISKIO_H_ */

@@ -1,18 +1,11 @@
-/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=cpp
+/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=c
  *
  * Conky, a system monitor, based on torsmo
  *
- * Any original torsmo code is licensed under the BSD license
- *
- * All code written since the fork of torsmo is licensed under the GPL
- *
  * Please see COPYING for details
  *
- * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
- * Copyright (c) 2007 Toni Spets
- * Copyright (c) 2005-2010 Brenden Matthews, Philip Kovacs, et. al.
- *	(see AUTHORS)
+ * Copyright (c) 2005-2010 Brenden Matthews, et. al.  (see AUTHORS)
  * All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -29,13 +22,24 @@
  *
  */
 
-#ifndef HDDTEMP_H_
-#define HDDTEMP_H_
+#ifndef _c_funcs_h_
+#define _c_funcs_h_
 
-void set_hddtemp_host(const char *);
-void set_hddtemp_port(const char *);
-void update_hddtemp(void);
-void free_hddtemp(struct text_object *);
-void print_hddtemp(struct text_object *, char *, int);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif /*HDDTEMP_H_*/
+/* these functions provide a workaround for a problem in g++ claiming to not
+ * support long longs with these functions */
+
+int sscanf_c(const char *__restrict s, const char *__restrict format, ...);
+
+int snprintf_c(char *__restrict s, size_t maxlen, const char *__restrict format,
+		...);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _c_funcs_h_ */
+

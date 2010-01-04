@@ -31,7 +31,7 @@
 #ifndef _conky_h_
 #define _conky_h_
 
-#include "config.h"	/* defines */
+#include <config.h>	/* defines */
 #include "common.h"	/* at least for struct dns_data */
 #include <sys/utsname.h> /* struct uname_s */
 #include <arpa/inet.h>
@@ -66,10 +66,6 @@ char *strndup(const char *s, size_t n);
 /* forward define to make gcc happy */
 struct text_object;
 
-#ifdef AUDACIOUS
-#include "audacious.h"
-#endif
-
 #ifdef BMPX
 #include "bmpx.h"
 #endif
@@ -91,11 +87,17 @@ struct text_object;
 #endif
 
 #ifdef __cplusplus
-/* C++ headers */
+/* this hack exists only to get around a compilation issue with some files
+ * being converted to C++, will need a better solution */
 
+/* C++ headers */
 #ifdef HAVE_CURL
 #include "ccurl_thread.h"
 #endif /* HAVE_CURL */
+
+#ifdef AUDACIOUS
+#include "audacious.h"
+#endif
 
 #endif /* __cplusplus */
 
@@ -194,6 +196,9 @@ enum {
 	BATTERY_TIME
 };
 
+#ifdef __cplusplus
+/* this hack exists only to get around a compilation issue with some files
+ * being converted to C++, will need a better solution */
 struct information {
 	unsigned int mask;
 
@@ -249,6 +254,7 @@ struct information {
 
 	short kflags;	/* kernel settings, see enum KFLAG */
 };
+#endif /* __cplusplus */
 
 /* needed by linux.c and top.c -> outsource somewhere */
 enum {

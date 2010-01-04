@@ -15,6 +15,12 @@
 extern "C" {
 #endif
 
+void print_to_bytes(struct text_object *, char *, int);
+
+#ifdef __cplusplus
+}
+#endif
+
 void add_update_callback(void (*func)(void));
 void free_update_callbacks(void);
 void start_update_threading(void);
@@ -128,15 +134,10 @@ uint8_t battery_percentage(struct text_object *);
 void print_battery_short(struct text_object *, char *, int);
 #endif /* !__OpenBSD__ */
 
-void print_to_bytes(struct text_object *, char *, int);
 void print_blink(struct text_object *, char *, int);
 void print_include(struct text_object *, char *, int);
 
 void print_updates(struct text_object *, char *, int);
 int updatenr_iftest(struct text_object *);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* _COMMON_H */

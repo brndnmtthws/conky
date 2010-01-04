@@ -64,9 +64,6 @@
 
 #include <regex.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /******************************************
  * Defines								  *
@@ -149,10 +146,5 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj);
 
 /* return zero on success, non-zero otherwise */
 int set_top_name_width(const char *);
-
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* _top_h_ */

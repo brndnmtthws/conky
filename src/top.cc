@@ -1,5 +1,5 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=c
+/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -63,7 +63,7 @@ static void hash_process(struct process *p)
 	bucket = p->pid & (HTABSIZE - 1);
 
 	/* insert a new element on bucket's top */
-	phe = malloc(sizeof(struct proc_hash_entry));
+	phe = (struct proc_hash_entry *)malloc(sizeof(struct proc_hash_entry));
 	phe->proc = p;
 	phe->next = proc_hash_table[bucket].next;
 	proc_hash_table[bucket].next = phe;
@@ -540,7 +540,7 @@ static unsigned long long calc_cpu_total(void)
 	unsigned long long irq = 0;
 	unsigned long long softirq = 0;
 	unsigned long long steal = 0;
-	const char *template =
+	const char *template_ =
 		KFLAG_ISSET(KFLAG_IS_LONGSTAT) ? TMPL_LONGPROC : TMPL_SHORTPROC;
 
 	ps = open("/proc/stat", O_RDONLY);
@@ -550,7 +550,7 @@ static unsigned long long calc_cpu_total(void)
 		return 0;
 	}
 
-	sscanf(line, template, &cpu, &niceval, &systemval, &idle, &iowait, &irq,
+	sscanf(line, template_, &cpu, &niceval, &systemval, &idle, &iowait, &irq,
 			&softirq, &steal);
 	total = cpu + niceval + systemval + idle + iowait + irq + softirq + steal;
 
@@ -599,7 +599,7 @@ static void calc_io_each(void)
 /* cpu comparison function for prio queue */
 static int compare_cpu(void *va, void *vb)
 {
-	struct process *a = va, *b = vb;
+	struct process *a = (struct process *)va, *b = (struct process *)vb;
 
 	if (a->amount < b->amount) {
 		return 1;
@@ -613,7 +613,7 @@ static int compare_cpu(void *va, void *vb)
 /* mem comparison function for prio queue */
 static int compare_mem(void *va, void *vb)
 {
-	struct process *a = va, *b = vb;
+	struct process *a = (struct process *)va, *b = (struct process *)vb;
 
 	if (a->rss < b->rss) {
 		return 1;
@@ -627,7 +627,7 @@ static int compare_mem(void *va, void *vb)
 /* CPU time comparision function for prio queue */
 static int compare_time(void *va, void *vb)
 {
-	struct process *a = va, *b = vb;
+	struct process *a = (struct process *)va, *b = (struct process *)vb;
 
 	return b->total_cpu_time - a->total_cpu_time;
 }
@@ -636,7 +636,7 @@ static int compare_time(void *va, void *vb)
 /* I/O comparision function for prio queue */
 static int compare_io(void *va, void *vb)
 {
-	struct process *a = va, *b = vb;
+	struct process *a = (struct process *)va, *b = (struct process *)vb;
 
 	if (a->io_perc < b->io_perc) {
 		return 1;
@@ -726,14 +726,14 @@ void process_find_top(struct process **cpu, struct process **mem,
 
 	for (i = 0; i < MAX_SP; i++) {
 		if (top_cpu)
-			cpu[i] = pop_prio_elem(cpu_queue);
+			cpu[i] = (process*)pop_prio_elem(cpu_queue);
 		if (top_mem)
-			mem[i] = pop_prio_elem(mem_queue);
+			mem[i] = (process*)pop_prio_elem(mem_queue);
 		if (top_time)
-			ptime[i] = pop_prio_elem(time_queue);
+			ptime[i] = (process*)pop_prio_elem(time_queue);
 #ifdef IOSTATS
 		if (top_io)
-			io[i] = pop_prio_elem(io_queue);
+			io[i] = (process*)pop_prio_elem(io_queue);
 #endif /* IOSTATS */
 	}
 	free_prio_queue(cpu_queue);
@@ -803,7 +803,7 @@ int set_top_name_width(const char *s)
 
 static void print_top_name(struct text_object *obj, char *p, int p_max_size)
 {
-	struct top_data *td = obj->data.opaque;
+	struct top_data *td = (struct top_data *)obj->data.opaque;
 	int width;
 
 	if (!td || !td->list || !td->list[td->num])
@@ -815,7 +815,7 @@ static void print_top_name(struct text_object *obj, char *p, int p_max_size)
 
 static void print_top_mem(struct text_object *obj, char *p, int p_max_size)
 {
-	struct top_data *td = obj->data.opaque;
+	struct top_data *td = (struct top_data *)obj->data.opaque;
 	int width;
 
 	if (!td || !td->list || !td->list[td->num])
@@ -827,7 +827,7 @@ static void print_top_mem(struct text_object *obj, char *p, int p_max_size)
 
 static void print_top_time(struct text_object *obj, char *p, int p_max_size)
 {
-	struct top_data *td = obj->data.opaque;
+	struct top_data *td = (struct top_data *)obj->data.opaque;
 	int width;
 	char *timeval;
 
@@ -843,7 +843,7 @@ static void print_top_time(struct text_object *obj, char *p, int p_max_size)
 #define PRINT_TOP_GENERATOR(name, width, fmt, field) \
 static void print_top_##name(struct text_object *obj, char *p, int p_max_size) \
 { \
-	struct top_data *td = obj->data.opaque; \
+	struct top_data *td = (struct top_data *)obj->data.opaque; \
 	if (!td || !td->list || !td->list[td->num]) \
 		return; \
 	snprintf(p, MIN(p_max_size, width), fmt, td->list[td->num]->field); \
@@ -852,7 +852,7 @@ static void print_top_##name(struct text_object *obj, char *p, int p_max_size) \
 #define PRINT_TOP_HR_GENERATOR(name, field, denom) \
 static void print_top_##name(struct text_object *obj, char *p, int p_max_size) \
 { \
-	struct top_data *td = obj->data.opaque; \
+	struct top_data *td = (struct top_data *)obj->data.opaque; \
 	if (!td || !td->list || !td->list[td->num]) \
 		return; \
 	human_readable(td->list[td->num]->field / denom, p, p_max_size); \
@@ -870,7 +870,7 @@ PRINT_TOP_GENERATOR(io_perc, 7, "%6.2f", io_perc)
 
 static void free_top(struct text_object *obj)
 {
-	struct top_data *td = obj->data.opaque;
+	struct top_data *td = (struct top_data *)obj->data.opaque;
 
 	if (!td)
 		return;
@@ -891,7 +891,7 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj)
 		return 0;
 	}
 
-	obj->data.opaque = td = malloc(sizeof(struct top_data));
+	obj->data.opaque = td = (struct top_data *)malloc(sizeof(struct top_data));
 	memset(td, 0, sizeof(struct top_data));
 
 	if (s[3] == 0) {

@@ -98,7 +98,7 @@ const char *scan_gauge(struct text_object *obj, const char *args, double scale)
 {
 	struct gauge *g;
 
-	g = malloc(sizeof(struct gauge));
+	g = (struct gauge *)malloc(sizeof(struct gauge));
 	memset(g, 0, sizeof(struct gauge));
 
 	/*width and height*/
@@ -130,7 +130,7 @@ const char *scan_bar(struct text_object *obj, const char *args, double scale)
 {
 	struct bar *b;
 
-	b = malloc(sizeof(struct bar));
+	b = (struct bar *)malloc(sizeof(struct bar));
 	memset(b, 0, sizeof(struct bar));
 
 	/* zero width means all space that is available */
@@ -169,7 +169,7 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale)
 	char buf[1024];
 	memset(buf, 0, 1024);
 
-	g = malloc(sizeof(struct graph));
+	g = (struct graph *)malloc(sizeof(struct graph));
 	memset(g, 0, sizeof(struct graph));
 	obj->special_data = g;
 
@@ -265,7 +265,7 @@ static struct special_t *new_special(char *buf, enum special_types t)
 void new_gauge_in_shell(struct text_object *obj, char *p, int p_max_size, double usage)
 {
 	static const char *gaugevals[] = { "_. ", "\\. ", " | ", " ./", " ._" };
-	struct gauge *g = obj->special_data;
+	struct gauge *g = (struct gauge *)obj->special_data;
 
 	snprintf(p, p_max_size, "%s", gaugevals[round_to_int(usage * 4 / g->scale)]);
 }
@@ -274,7 +274,7 @@ void new_gauge_in_shell(struct text_object *obj, char *p, int p_max_size, double
 void new_gauge_in_x11(struct text_object *obj, char *buf, double usage)
 {
 	struct special_t *s = 0;
-	struct gauge *g = obj->special_data;
+	struct gauge *g = (struct gauge *)obj->special_data;
 
 	if ((output_methods & TO_X) == 0)
 		return;
@@ -293,7 +293,7 @@ void new_gauge_in_x11(struct text_object *obj, char *buf, double usage)
 
 void new_gauge(struct text_object *obj, char *p, int p_max_size, double usage)
 {
-	struct gauge *g = obj->special_data;
+	struct gauge *g = (struct gauge *)obj->special_data;
 
 	if (!p_max_size || !g)
 		return;
@@ -368,7 +368,7 @@ static void graph_append(struct special_t *graph, double f, char showaslog)
 void new_graph(struct text_object *obj, char *buf, int buf_max_size, double val)
 {
 	struct special_t *s = 0;
-	struct graph *g = obj->special_data;
+	struct graph *g = (struct graph *)obj->special_data;
 
 	if ((output_methods & TO_X) == 0)
 		return;
@@ -386,7 +386,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size, double val)
 		} else {
 			s->graph_width = MAX_GRAPH_DEPTH - 2;
 		}
-		s->graph = malloc(s->graph_width * sizeof(double));
+		s->graph = (double*)malloc(s->graph_width * sizeof(double));
 		memset(s->graph, 0, s->graph_width * sizeof(double));
 		s->scale = 100;
 	}
@@ -429,7 +429,7 @@ void scan_stippled_hr(struct text_object *obj, const char *arg)
 {
 	struct stippled_hr *sh;
 
-	sh = malloc(sizeof(struct stippled_hr));
+	sh = (struct stippled_hr *)malloc(sizeof(struct stippled_hr));
 	memset(sh, 0, sizeof(struct stippled_hr));
 
 	sh->arg = get_stippled_borders();
@@ -449,7 +449,7 @@ void scan_stippled_hr(struct text_object *obj, const char *arg)
 void new_stippled_hr(struct text_object *obj, char *p, int p_max_size)
 {
 	struct special_t *s = 0;
-	struct stippled_hr *sh = obj->special_data;
+	struct stippled_hr *sh = (struct stippled_hr *)obj->special_data;
 
 	if ((output_methods & TO_X) == 0)
 		return;
@@ -494,7 +494,7 @@ void new_bg(struct text_object *obj, char *p, int p_max_size)
 
 static void new_bar_in_shell(struct text_object *obj, char* buffer, int buf_max_size, double usage)
 {
-	struct bar *b = obj->special_data;
+	struct bar *b = (struct bar *)obj->special_data;
 	int width, i, scaledusage;
 
 	if (!b)
@@ -522,7 +522,7 @@ static void new_bar_in_shell(struct text_object *obj, char* buffer, int buf_max_
 static void new_bar_in_x11(struct text_object *obj, char *buf, double usage)
 {
 	struct special_t *s = 0;
-	struct bar *b = obj->special_data;
+	struct bar *b = (struct bar *)obj->special_data;
 
 	if ((output_methods & TO_X) == 0)
 		return;
@@ -542,7 +542,7 @@ static void new_bar_in_x11(struct text_object *obj, char *buf, double usage)
 /* usage is in range [0,255] */
 void new_bar(struct text_object *obj, char *p, int p_max_size, double usage)
 {
-	struct bar *b = obj->special_data;
+	struct bar *b = (struct bar *)obj->special_data;
 
 	if (!p_max_size || !b)
 		return;
@@ -607,7 +607,7 @@ void scan_tab(struct text_object *obj, const char *arg)
 {
 	struct tab *t;
 
-	t = malloc(sizeof(struct tab));
+	t = (struct tab *)malloc(sizeof(struct tab));
 	memset(t, 0, sizeof(struct tab));
 
 	t->width = 10;
@@ -627,7 +627,7 @@ void scan_tab(struct text_object *obj, const char *arg)
 void new_tab(struct text_object *obj, char *p, int p_max_size)
 {
 	struct special_t *s = 0;
-	struct tab *t = obj->special_data;
+	struct tab *t = (struct tab *)obj->special_data;
 
 	if (!t || !p_max_size)
 		return;

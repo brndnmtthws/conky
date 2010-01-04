@@ -1,5 +1,5 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=c
+/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -91,7 +91,7 @@ void clear_fs_stats(void)
 
 struct fs_stat *prepare_fs_stat(const char *s)
 {
-	struct fs_stat *new = 0;
+	struct fs_stat *next = 0;
 	unsigned i;
 
 	/* lookup existing or get new */
@@ -101,18 +101,18 @@ struct fs_stat *prepare_fs_stat(const char *s)
 				return &fs_stats[i];
 			}
 		} else {
-			new = &fs_stats[i];
+			next = &fs_stats[i];
 		}
 	}
 	/* new path */
-	if (!new) {
+	if (!next) {
 		NORM_ERR("too many fs stats");
 		return 0;
 	}
-	strncpy(new->path, s, DEFAULT_TEXT_BUFFER_SIZE);
-	new->set = 1;
-	update_fs_stat(new);
-	return new;
+	strncpy(next->path, s, DEFAULT_TEXT_BUFFER_SIZE);
+	next->set = 1;
+	update_fs_stat(next);
+	return next;
 }
 
 static void update_fs_stat(struct fs_stat *fs)
@@ -214,7 +214,7 @@ void init_fs_bar(struct text_object *obj, const char *arg)
 static double do_fs_barval(struct text_object *obj, int be_free_bar)
 {
 	double val = 1.0;
-	struct fs_stat *fs = obj->data.opaque;
+	struct fs_stat *fs = (struct fs_stat *)obj->data.opaque;
 
 	if (!fs)
 		return 0;
@@ -245,7 +245,7 @@ void init_fs(struct text_object *obj, const char *arg)
 
 static uint8_t fs_percentage(struct text_object *obj, int be_free)
 {
-	struct fs_stat *fs = obj->data.opaque;
+	struct fs_stat *fs = (struct fs_stat *)obj->data.opaque;
 	int val = 100;
 
 	if (!fs)
@@ -273,7 +273,7 @@ uint8_t fs_used_percentage(struct text_object *obj)
 #define HUMAN_PRINT_FS_GENERATOR(name, expr)                           \
 void print_fs_##name(struct text_object *obj, char *p, int p_max_size) \
 {                                                                      \
-	struct fs_stat *fs = obj->data.opaque;                             \
+	struct fs_stat *fs = (struct fs_stat *)obj->data.opaque;                             \
 	if (fs)                                                            \
 		human_readable(expr, p, p_max_size);                           \
 }
@@ -284,7 +284,7 @@ HUMAN_PRINT_FS_GENERATOR(used, fs->size - fs->free)
 
 void print_fs_type(struct text_object *obj, char *p, int p_max_size)
 {
-	struct fs_stat *fs = obj->data.opaque;
+	struct fs_stat *fs = (struct fs_stat *)obj->data.opaque;
 
 	if (fs)
 		snprintf(p, p_max_size, "%s", fs->type);

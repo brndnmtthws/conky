@@ -41,13 +41,13 @@
 #include "openbsd.h"
 #endif
 
-static struct {
+struct _entropy {
+	_entropy() : avail(0), poolsize(0) {}
 	unsigned int avail;
 	unsigned int poolsize;
-} entropy = {
-	.avail = 0,
-	.poolsize = 0,
 };
+
+static _entropy entropy;
 
 void update_entropy(void)
 {

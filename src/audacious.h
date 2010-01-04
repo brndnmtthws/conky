@@ -27,10 +27,6 @@
 
 #include "timed_thread.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 enum _audacious_items {
 	AUDACIOUS_STATUS = 0,
 	AUDACIOUS_TITLE,
@@ -54,7 +50,7 @@ typedef char audacious_t[13][128];
 typedef struct audacious_s {
   audacious_t items;  /* e.g. items[AUDACIOUS_STATUS] */
   int max_title_len;  /* e.g. ${audacious_title 50} */
-  timed_thread *p_timed_thread;
+  timed_thread_ptr p_timed_thread;
 } AUDACIOUS_S;
 
 /* create a worker thread for audacious media player status */
@@ -67,7 +63,7 @@ int destroy_audacious_thread(void);
 void update_audacious(void);
 
 /* Thread functions */
-void *audacious_thread_func(void *);
+void audacious_thread_func(thread_handle &handle);
 
 void print_audacious_status(struct text_object *, char *, int);
 void print_audacious_title(struct text_object *, char *, int);
@@ -83,9 +79,5 @@ void print_audacious_playlist_length(struct text_object *, char *, int);
 void print_audacious_playlist_position(struct text_object *, char *, int);
 void print_audacious_main_volume(struct text_object *, char *, int);
 double audacious_barval(struct text_object *);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

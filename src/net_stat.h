@@ -1,5 +1,5 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=c
+/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -32,10 +32,6 @@
 #define _NET_STAT_H
 
 #include <sys/socket.h>	/* struct sockaddr */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 struct net_stat {
         char *dev;
@@ -101,9 +97,5 @@ void free_dns_data(struct text_object *);
 void update_dns_data(void);
 void parse_nameserver_arg(struct text_object *, const char *);
 void print_nameserver(struct text_object *, char *, int);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* _NET_STAT_H */

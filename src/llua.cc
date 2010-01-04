@@ -28,9 +28,11 @@
 #include "logging.h"
 #include "build.h"
 
+extern "C" {
 #ifdef LUA_EXTRAS
 #include <tolua++.h>
 #endif /* LUA_EXTRAS */
+}
 
 #ifdef HAVE_SYS_INOTIFY_H
 #include <sys/inotify.h>
@@ -51,7 +53,7 @@ static int llua_conky_parse(lua_State *L)
 {
 	int n = lua_gettop(L);    /* number of arguments */
 	char *str;
-	char *buf = calloc(1, max_user_text);
+	char *buf = (char*)calloc(1, max_user_text);
 	if (n != 1) {
 		lua_pushstring(L, "incorrect arguments, conky_parse(string) takes exactly 1 argument");
 		lua_error(L);
@@ -97,7 +99,7 @@ void llua_init(void)
 	lua_getglobal(lua_L, "package");
 	lua_getfield(lua_L, -1, "cpath");
 	old_path = strdup(lua_tostring(lua_L, -1));
-	new_path = malloc(strlen(old_path) + strlen(libs) + 1);
+	new_path = (char*)malloc(strlen(old_path) + strlen(libs) + 1);
 	strcpy(new_path, libs);
 	strcat(new_path, old_path);
 	lua_pushstring(lua_L, new_path);
@@ -328,7 +330,7 @@ static struct _lua_notify_s *lua_notifies = 0;
 
 static struct _lua_notify_s *llua_notify_list_do_alloc(const char *name)
 {
-	struct _lua_notify_s *ret = malloc(sizeof(struct _lua_notify_s));
+	struct _lua_notify_s *ret = (struct _lua_notify_s *)malloc(sizeof(struct _lua_notify_s));
 	memset(ret, 0, sizeof(struct _lua_notify_s));
 	strncpy(ret->name, name, DEFAULT_TEXT_BUFFER_SIZE);
 	return ret;

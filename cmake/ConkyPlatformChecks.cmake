@@ -190,16 +190,12 @@ if(BUILD_AUDACIOUS)
 	set(WANT_GLIB true)
 	if(NOT BUILD_AUDACIOUS_LEGACY)
 		pkg_check_modules(AUDACIOUS REQUIRED audacious>=1.4.0 dbus-glib-1 gobject-2.0)
-		# do we need this below?
-		#CPPFLAGS="$Audacious_CFLAGS -I`pkg-config --variable=audacious_include_dir audacious`/audacious"
-		#AC_CHECK_HEADERS([audacious/audctrl.h audacious/dbus.h glib.h glib-object.h],
-		#                 [], AC_MSG_ERROR([required header(s) not found]))
+		set(conky_libs ${conky_libs} ${AUDACIOUS_LIBRARIES})
+		set(conky_includes ${conky_includes} ${AUDACIOUS_INCLUDE_DIRS})
 	else(NOT BUILD_AUDACIOUS_LEGACY)
 		pkg_check_modules(AUDACIOUS REQUIRED audacious<1.4.0)
-		# do we need this below?
-		#CPPFLAGS="$Audacious_CFLAGS -I`pkg-config --variable=audacious_include_dir audacious`/audacious"
-		#AC_CHECK_HEADERS([audacious/beepctrl.h glib.h], [], AC_MSG_ERROR([required  header(s) not found]))
-		#CPPFLAGS="$save_CPPFLAGS"
+		set(conky_libs ${conky_libs} ${AUDACIOUS_LIBRARIES})
+		set(conky_includes ${conky_includes} ${AUDACIOUS_INCLUDE_DIRS})
 	endif(NOT BUILD_AUDACIOUS_LEGACY)
 endif(BUILD_AUDACIOUS)
 

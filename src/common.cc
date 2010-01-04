@@ -1,5 +1,5 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=c
+/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -37,6 +37,7 @@
 #include "temphelper.h"
 #include "timeinfo.h"
 #include "top.h"
+#include "c-funcs.h"
 #include <ctype.h>
 #include <errno.h>
 #include <sys/time.h>
@@ -47,6 +48,7 @@
 #include <semaphore.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <vector>
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
@@ -267,19 +269,19 @@ void format_seconds_short(char *buf, unsigned int n, long seconds)
 
 /* Linked list containing the functions to call upon each update interval.
  * Populated while initialising text objects in construct_text_object(). */
-static struct update_cb {
+struct update_cb {
 	struct update_cb *next;
 	void (*func)(void);
 	pthread_t thread;
 	sem_t start_wait, end_wait;
+	update_cb() : next(NULL), func(NULL) {}
 
     /* set to 1 when starting the thread
 	 * set to 0 to request thread termination */
 	volatile char running;
-} update_cb_head = {
-	.next = NULL,
-	.func = NULL,
 };
+
+static struct update_cb update_cb_head;
 
 static void *run_update_callback(void *) __attribute__((noreturn));
 
@@ -300,7 +302,7 @@ void add_update_callback(void (*func)(void))
 		uc = uc->next;
 	}
 
-	uc->next = malloc(sizeof(struct update_cb));
+	uc->next = new update_cb;
 	uc = uc->next;
 
 	memset(uc, 0, sizeof(struct update_cb));
@@ -370,7 +372,7 @@ void start_update_threading(void)
 
 static void *run_update_callback(void *data)
 {
-	struct update_cb *ucb = data;
+	struct update_cb *ucb = static_cast<struct update_cb *>(data);
 
 	if (!ucb || !ucb->func) pthread_exit(NULL);
 
@@ -382,7 +384,7 @@ static void *run_update_callback(void *data)
 	}
 }
 
-int no_buffers;
+extern int no_buffers;
 
 void update_stuff(void)
 {
@@ -622,12 +624,12 @@ void print_evaluate(struct text_object *obj, char *p, int p_max_size)
 
 int if_empty_iftest(struct text_object *obj)
 {
-	char buf[max_user_text];
+	std::vector<char> buf(max_user_text);
 	int result = 1;
 
-	generate_text_internal(buf, max_user_text, *obj->sub);
+	generate_text_internal(&(buf[0]), max_user_text, *obj->sub);
 
-	if (strlen(buf) != 0) {
+	if (strlen(&(buf[0])) != 0) {
 		result = 0;
 	}
 	return result;
@@ -750,55 +752,55 @@ void print_battery_short(struct text_object *obj, char *p, int p_max_size)
 }
 #endif /* !__OpenBSD__ */
 
-void print_to_bytes(struct text_object *obj, char *p, int p_max_size)
-{
-	char buf[max_user_text];
-	long long bytes;
-	char unit[16];	// 16 because we can also have long names (like mega-bytes)
-
-	generate_text_internal(buf, max_user_text, *obj->sub);
-	if(sscanf(buf, "%lli%s", &bytes, unit) == 2 && strlen(unit) < 16){
-		if(strncasecmp("b", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes);
-		else if(strncasecmp("k", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes * 1024);
-		else if(strncasecmp("m", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes * 1024 * 1024);
-		else if(strncasecmp("g", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes * 1024 * 1024 * 1024);
-		else if(strncasecmp("t", unit, 1) == 0) snprintf(buf, max_user_text, "%lli", bytes * 1024 * 1024 * 1024 * 1024);
-	}
-	snprintf(p, p_max_size, "%s", buf);
-}
 
 void print_blink(struct text_object *obj, char *p, int p_max_size)
 {
 	//blinking like this can look a bit ugly if the chars in the font don't have the same width
-	char buf[max_user_text];
+	std::vector<char> buf(max_user_text);
 	static int visible = 1;
 	static int last_len = 0;
 	int i;
 
-	memset(buf, 0, max_user_text);
-
 	if (visible) {
-		generate_text_internal(buf, max_user_text, *obj->sub);
-		last_len = strlen(buf);
+		generate_text_internal(&(buf[0]), max_user_text, *obj->sub);
+		last_len = strlen(&(buf[0]));
 	} else {
 		for (i = 0; i < last_len; i++)
 			buf[i] = ' ';
 	}
 
-	snprintf(p, p_max_size, "%s", buf);
+	snprintf(p, p_max_size, "%s", &(buf[0]));
 	visible = !visible;
 }
 
 void print_include(struct text_object *obj, char *p, int p_max_size)
 {
-	char buf[max_user_text];
+	std::vector<char> buf(max_user_text);
 
 	if (!obj->sub)
 		return;
 
-	generate_text_internal(buf, max_user_text, *obj->sub);
-	snprintf(p, p_max_size, "%s", buf);
+	generate_text_internal(&(buf[0]), max_user_text, *obj->sub);
+	snprintf(p, p_max_size, "%s", &(buf[0]));
 }
+
+void print_to_bytes(struct text_object *obj, char *p, int p_max_size)
+{
+	std::vector<char> buf(max_user_text);
+	long long bytes;
+	char unit[16];	// 16 because we can also have long names (like mega-bytes)
+
+	generate_text_internal(&(buf[0]), max_user_text, *obj->sub);
+	if(sscanf(&(buf[0]), "%lli%s", &bytes, unit) == 2 && strlen(unit) < 16){
+		if(strncasecmp("b", unit, 1) == 0) snprintf(&(buf[0]), max_user_text, "%lli", bytes);
+		else if(strncasecmp("k", unit, 1) == 0) snprintf(&(buf[0]), max_user_text, "%lli", bytes * 1024);
+		else if(strncasecmp("m", unit, 1) == 0) snprintf(&(buf[0]), max_user_text, "%lli", bytes * 1024 * 1024);
+		else if(strncasecmp("g", unit, 1) == 0) snprintf(&(buf[0]), max_user_text, "%lli", bytes * 1024 * 1024 * 1024);
+		else if(strncasecmp("t", unit, 1) == 0) snprintf(&(buf[0]), max_user_text, "%lli", bytes * 1024 * 1024 * 1024 * 1024);
+	}
+	snprintf(p, p_max_size, "%s", &(buf[0]));
+}
+
 
 void print_updates(struct text_object *obj, char *p, int p_max_size)
 {

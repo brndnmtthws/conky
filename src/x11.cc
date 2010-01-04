@@ -700,7 +700,7 @@ static inline void get_x11_desktop_names(Display *current_display, Window root, 
 			free(current_info->x11.desktop.all_names);
 			current_info->x11.desktop.all_names = NULL;
 		}
-		current_info->x11.desktop.all_names = malloc(nitems*sizeof(char));
+		current_info->x11.desktop.all_names = (char*)malloc(nitems*sizeof(char));
 		memcpy(current_info->x11.desktop.all_names, prop, nitems);
 		current_info->x11.desktop.nitems = nitems;
 	}
@@ -723,7 +723,7 @@ static inline void get_x11_desktop_current_name(char *names)
 					free(current_info->x11.desktop.name);
 					current_info->x11.desktop.name = NULL;
 				}
-				current_info->x11.desktop.name = malloc((i-j)*sizeof(char));
+				current_info->x11.desktop.name = (char*)malloc((i-j)*sizeof(char));
 				//desktop names can be empty but should always be not null
 				strcpy( current_info->x11.desktop.name, (char *)&names[j] );
 				break;

@@ -3,10 +3,6 @@
  *
  * Conky, a system monitor, based on torsmo
  *
- * Any original torsmo code is licensed under the BSD license
- *
- * All code written since the fork of torsmo is licensed under the GPL
- *
  * Please see COPYING for details
  *
  * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
@@ -36,6 +32,7 @@
 #include "net_stat.h"
 #include "diskio.h"
 #include "temphelper.h"
+#include "c-funcs.h"
 #include <dirent.h>
 #include <ctype.h>
 #include <errno.h>
@@ -178,17 +175,17 @@ void update_meminfo(void)
 		}
 
 		if (strncmp(buf, "MemTotal:", 9) == 0) {
-			sscanf(buf, "%*s %llu", &info.memmax);
+			sscanf_c(buf, "%*s %llu", &info.memmax);
 		} else if (strncmp(buf, "MemFree:", 8) == 0) {
-			sscanf(buf, "%*s %llu", &info.memfree);
+			sscanf_c(buf, "%*s %llu", &info.memfree);
 		} else if (strncmp(buf, "SwapTotal:", 10) == 0) {
-			sscanf(buf, "%*s %llu", &info.swapmax);
+			sscanf_c(buf, "%*s %llu", &info.swapmax);
 		} else if (strncmp(buf, "SwapFree:", 9) == 0) {
-			sscanf(buf, "%*s %llu", &info.swapfree);
+			sscanf_c(buf, "%*s %llu", &info.swapfree);
 		} else if (strncmp(buf, "Buffers:", 8) == 0) {
-			sscanf(buf, "%*s %llu", &info.buffers);
+			sscanf_c(buf, "%*s %llu", &info.buffers);
 		} else if (strncmp(buf, "Cached:", 7) == 0) {
-			sscanf(buf, "%*s %llu", &info.cached);
+			sscanf_c(buf, "%*s %llu", &info.cached);
 		}
 	}
 
@@ -421,7 +418,7 @@ void update_net_stats(void)
 		last_trans = ns->trans;
 
 		/* bytes packets errs drop fifo frame compressed multicast|bytes ... */
-		sscanf(p, "%lld  %*d     %*d  %*d  %*d  %*d   %*d        %*d       %lld",
+		sscanf_c(p, "%lld  %*d     %*d  %*d  %*d  %*d   %*d        %*d       %lld",
 			&r, &t);
 
 		/* if recv or trans is less than last time, an overflow happened */
@@ -442,7 +439,7 @@ void update_net_stats(void)
 		/*** ip addr patch ***/
 		i = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
 
-		conf.ifc_buf = malloc(sizeof(struct ifreq) * MAX_NET_INTERFACES);
+		conf.ifc_buf = (char*)malloc(sizeof(struct ifreq) * MAX_NET_INTERFACES);
 		conf.ifc_len = sizeof(struct ifreq) * MAX_NET_INTERFACES;
 		memset(conf.ifc_buf, 0, conf.ifc_len);
 
@@ -644,7 +641,7 @@ void determine_longstat(char *buf)
 
 	KFLAG_SETOFF(KFLAG_IS_LONGSTAT);
 	/* scanf will either return -1 or 1 because there is only 1 assignment */
-	if (sscanf(buf, "%*s %*d %*d %*d %*d %llu", &iowait) > 0) {
+	if (sscanf_c(buf, "%*s %*d %*d %*d %*d %llu", &iowait) > 0) {
 		KFLAG_SETON(KFLAG_IS_LONGSTAT);
 	}
 }
@@ -677,7 +674,7 @@ void get_cpu_count(void)
 			info.cpu_count++;
 		}
 	}
-	info.cpu_usage = malloc((info.cpu_count + 1) * sizeof(float));
+	info.cpu_usage = (float*)malloc((info.cpu_count + 1) * sizeof(float));
 
 	fclose(stat_fp);
 }
@@ -725,7 +722,7 @@ void update_stat(void)
 
 	if (!global_cpu) {
 		malloc_cpu_size = (info.cpu_count + 1) * sizeof(struct cpu_info);
-		cpu = malloc(malloc_cpu_size);
+		cpu = (struct cpu_info *)malloc(malloc_cpu_size);
 		memset(cpu, 0, malloc_cpu_size);
 		global_cpu = cpu;
 	}
@@ -753,7 +750,7 @@ void update_stat(void)
 			} else {
 				idx = 0;
 			}
-			sscanf(buf, stat_template, &(cpu[idx].cpu_user),
+			sscanf_c(buf, stat_template, &(cpu[idx].cpu_user),
 				&(cpu[idx].cpu_nice), &(cpu[idx].cpu_system),
 				&(cpu[idx].cpu_idle), &(cpu[idx].cpu_iowait),
 				&(cpu[idx].cpu_irq), &(cpu[idx].cpu_softirq),
@@ -1070,7 +1067,7 @@ static void parse_sysfs_sensor(struct text_object *obj, const char *arg, const c
 		return;
 	}
 	DBGP("parsed %s args: '%s' '%s' %d %f %f\n", type, buf1, buf2, n, factor, offset);
-	sf = malloc(sizeof(struct sysfs));
+	sf = (struct sysfs*)malloc(sizeof(struct sysfs));
 	memset(sf, 0, sizeof(struct sysfs));
 	sf->fd = open_sysfs_sensor(path, (*buf1) ? buf1 : 0, buf2, n,
 			&sf->arg, sf->devtype);
@@ -1093,7 +1090,7 @@ PARSER_GENERATOR(platform, "/sys/bus/platform/devices/")
 void print_sysfs_sensor(struct text_object *obj, char *p, int p_max_size)
 {
 	double r;
-	struct sysfs *sf = obj->data.opaque;
+	struct sysfs *sf = (struct sysfs *)obj->data.opaque;
 
 	if (!sf)
 		return;
@@ -1114,7 +1111,7 @@ void print_sysfs_sensor(struct text_object *obj, char *p, int p_max_size)
 
 void free_sysfs_sensor(struct text_object *obj)
 {
-	struct sysfs *sf = obj->data.opaque;
+	struct sysfs *sf = (struct sysfs *)obj->data.opaque;
 
 	if (!sf)
 		return;

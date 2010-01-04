@@ -1,5 +1,5 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=c
+/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -47,14 +47,15 @@
 static char *hddtemp_host = NULL;
 static char *hddtemp_port = NULL;
 
-static struct hdd_info {
+struct hdd_info {
+	hdd_info() : next(0) {}
 	struct hdd_info *next;
 	char *dev;
 	short temp;
 	char unit;
-} hdd_info_head = {
-	.next = NULL,
 };
+
+struct hdd_info hdd_info_head;
 
 void set_hddtemp_host(const char *host)
 {
@@ -75,7 +76,7 @@ static void __free_hddtemp_info(struct hdd_info *hdi)
 	if (hdi->next)
 		__free_hddtemp_info(hdi->next);
 	free(hdi->dev);
-	free(hdi);
+	delete hdi;
 }
 
 static void free_hddtemp_info(void)
@@ -95,7 +96,7 @@ static void add_hddtemp_info(char *dev, short temp, char unit)
 	while (hdi->next)
 		hdi = hdi->next;
 
-	hdi->next = malloc(sizeof(struct hdd_info));
+	hdi->next = new hdd_info;
 	memset(hdi->next, 0, sizeof(struct hdd_info));
 	hdi->next->dev = strdup(dev);
 	hdi->next->temp = temp;
@@ -137,12 +138,12 @@ static char *fetch_hddtemp_output(void)
 	}
 
 	buflen = 1024;
-	buf = malloc(buflen);
+	buf = (char*)malloc(buflen);
 	while ((rlen = recv(sockfd, buf + offset, buflen - offset - 1, 0)) > 0) {
 		offset += rlen;
 		if (buflen - offset < 1) {
 			buflen += 1024;
-			buf = realloc(buf, buflen);
+			buf = (char*)realloc(buf, buflen);
 		}
 	}
 	if (rlen < 0)

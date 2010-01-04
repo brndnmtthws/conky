@@ -31,10 +31,6 @@
 #ifndef _USERS_H
 #define _USERS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 void update_users(void);
 
 void print_user_names(struct text_object *, char *, int);
@@ -47,9 +43,5 @@ void free_user_names(struct text_object *);
 void free_user_terms(struct text_object *);
 void free_user_times(struct text_object *);
 void free_user_time(struct text_object *);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* _USERS_H */

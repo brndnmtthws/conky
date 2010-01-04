@@ -71,7 +71,7 @@ static void tailstring(char *string, int endofstring, int wantedlines) {
 
 void free_tailhead(struct text_object *obj)
 {
-	struct headtail *ht = obj->data.opaque;
+	struct headtail *ht = (struct headtail *)obj->data.opaque;
 	if (!ht)
 		return;
 	if (ht->logfile)
@@ -86,10 +86,10 @@ void init_tailhead(const char* type, const char* arg, struct text_object *obj, v
 	unsigned int args;
 	struct headtail *ht;
 
-	ht = malloc(sizeof(struct headtail));
+	ht = (struct headtail *)malloc(sizeof(struct headtail));
 	memset(ht, 0, sizeof(struct headtail));
 
-	ht->logfile = malloc(DEFAULT_TEXT_BUFFER_SIZE);
+	ht->logfile = (char*)malloc(DEFAULT_TEXT_BUFFER_SIZE);
 	memset(ht->logfile, 0, DEFAULT_TEXT_BUFFER_SIZE);
 
 	ht->max_uses = DEFAULT_MAX_HEADTAIL_USES;
@@ -118,7 +118,7 @@ static void print_tailhead(const char* type, struct text_object *obj, char *p, i
 	int fd, i, endofstring = 0, linescounted = 0;
 	FILE *fp;
 	struct stat st;
-	struct headtail *ht = obj->data.opaque;
+	struct headtail *ht = (struct headtail *)obj->data.opaque;
 
 	if (!ht)
 		return;
@@ -248,3 +248,4 @@ void print_words(struct text_object *obj, char *p, int p_max_size)
 	snprintf(p, p_max_size, "%d", words);
 	fclose(fp);
 }
+

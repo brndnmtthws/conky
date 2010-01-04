@@ -34,14 +34,15 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build.h)
 	message(FATAL_ERROR "You must remove the autotools generated file '${CMAKE_CURRENT_SOURCE_DIR}/build.h' in order to build with CMake.")
 endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build.h)
 
-set(conky_sources colours.cc combine.cc common.c conky.cc core.cc diskio.c
-	entropy.c exec.cc fs.c mail.cc mixer.c net_stat.c template.c timed_thread.cc
-	mboxscan.c read_tcp.c scroll.c specials.c tailhead.c temphelper.c
-	text_object.c timeinfo.c top.c algebra.c prioqueue.c proc.c user.c)
+set(conky_sources colours.cc combine.cc common.cc conky.cc core.cc
+	diskio.cc entropy.cc exec.cc fs.cc mail.cc mixer.cc net_stat.cc template.c
+	timed_thread.cc mboxscan.c read_tcp.c scroll.cc specials.cc tailhead.cc
+	temphelper.cc text_object.c timeinfo.c top.cc algebra.c prioqueue.c proc.c
+	user.c)
 
 # Platform specific sources
 if(OS_LINUX)
-	set(linux linux.c users.c sony.c i8k.c)
+	set(linux linux.cc users.cc sony.c i8k.cc)
 	set(optional_sources ${optional_sources} ${linux})
 endif(OS_LINUX)
 
@@ -69,7 +70,7 @@ endif(OS_NETBSD)
 
 # Optional sources
 if(BUILD_AUDACIOUS)
-	set(audacious audacious.c)
+	set(audacious audacious.cc)
 	set(optional_sources ${optional_sources} ${audacious})
 endif(BUILD_AUDACIOUS)
 
@@ -79,7 +80,7 @@ if(BUILD_BMPX)
 endif(BUILD_BMPX)
 
 if(BUILD_IBM)
-	set(ibm ibm.c smapi.c)
+	set(ibm ibm.cc smapi.cc)
 	set(optional_sources ${optional_sources} ${ibm})
 endif(BUILD_IBM)
 
@@ -106,12 +107,12 @@ if(BUILD_PORT_MONITORS)
 endif(BUILD_PORT_MONITORS)
 
 if(BUILD_X11)
-	set(x11 x11.c fonts.c)
+	set(x11 x11.cc fonts.c)
 	set(optional_sources ${optional_sources} ${x11})
 endif(BUILD_X11)
 
 if(BUILD_HDDTEMP)
-	set(hddtemp hddtemp.c)
+	set(hddtemp hddtemp.cc)
 	set(optional_sources ${optional_sources} ${hddtemp})
 endif(BUILD_HDDTEMP)
 
@@ -136,7 +137,7 @@ if(BUILD_WEATHER)
 endif(BUILD_WEATHER)
 
 if(BUILD_LUA)
-	set(lua llua.c)
+	set(lua llua.cc)
 	set(optional_sources ${optional_sources} ${lua})
 endif(BUILD_LUA)
 

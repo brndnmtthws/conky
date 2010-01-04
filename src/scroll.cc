@@ -1,4 +1,5 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -31,6 +32,7 @@
 #include "logging.h"
 #include "specials.h"
 #include "text_object.h"
+#include <vector>
 
 struct scroll_data {
 	char *text;
@@ -45,7 +47,7 @@ void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_cr
 	struct scroll_data *sd;
 	int n1 = 0, n2 = 0;
 
-	sd = malloc(sizeof(struct scroll_data));
+	sd = (struct scroll_data *)malloc(sizeof(struct scroll_data));
 	memset(sd, 0, sizeof(struct scroll_data));
 
 	sd->resetcolor = get_current_text_color();
@@ -59,7 +61,7 @@ void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_cr
 	} else {
 		sd->step = 1;
 	}
-	sd->text = malloc(strlen(arg + n1) + sd->show + 1);
+	sd->text = (char*)malloc(strlen(arg + n1) + sd->show + 1);
 
 	if (strlen(arg) > sd->show) {
 		for(n2 = 0; (unsigned int) n2 < sd->show; n2++) {
@@ -72,7 +74,7 @@ void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_cr
 
 	strcat(sd->text, arg + n1);
 	sd->start = 0;
-	obj->sub = malloc(sizeof(struct text_object));
+	obj->sub = (struct text_object *)malloc(sizeof(struct text_object));
 	extract_variable_text_internal(obj->sub, sd->text);
 
 	obj->data.opaque = sd;
@@ -86,15 +88,15 @@ void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_cr
 
 void print_scroll(struct text_object *obj, char *p, int p_max_size)
 {
-	struct scroll_data *sd = obj->data.opaque;
+	struct scroll_data *sd = (struct scroll_data *)obj->data.opaque;
 	unsigned int j, colorchanges = 0, frontcolorchanges = 0, visibcolorchanges = 0, strend;
 	char *pwithcolors;
-	char buf[max_user_text];
+	std::vector<char> buf(max_user_text);
 
 	if (!sd)
 		return;
 
-	generate_text_internal(buf, max_user_text, *obj->sub);
+	generate_text_internal(&(buf[0]), max_user_text, *obj->sub);
 	for(j = 0; buf[j] != 0; j++) {
 		switch(buf[j]) {
 			case '\n':	//place all the lines behind each other with LINESEPARATOR between them
@@ -107,17 +109,17 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size)
 		}
 	}
 	//no scrolling necessary if the length of the text to scroll is too short
-	if (strlen(buf) - colorchanges <= sd->show) {
-		snprintf(p, p_max_size, "%s", buf);
+	if (strlen(&(buf[0])) - colorchanges <= sd->show) {
+		snprintf(p, p_max_size, "%s", &(buf[0]));
 		return;
 	}
 	//make sure a colorchange at the front is not part of the string we are going to show
-	while(*(buf + sd->start) == SPECIAL_CHAR) {
+	while(buf[sd->start] == SPECIAL_CHAR) {
 		sd->start++;
 	}
 	//place all chars that should be visible in p, including colorchanges
 	for(j=0; j < sd->show + visibcolorchanges; j++) {
-		p[j] = *(buf + sd->start + j);
+		p[j] = buf[sd->start + j];
 		if(p[j] == SPECIAL_CHAR) {
 			visibcolorchanges++;
 		}
@@ -132,7 +134,7 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size)
 	for(j = 0; j < sd->start; j++) {
 		if(buf[j] == SPECIAL_CHAR) frontcolorchanges++;
 	}
-	pwithcolors=malloc(strlen(p) + 1 + colorchanges - visibcolorchanges);
+	pwithcolors=(char*)malloc(strlen(p) + 1 + colorchanges - visibcolorchanges);
 	for(j = 0; j < frontcolorchanges; j++) {
 		pwithcolors[j] = SPECIAL_CHAR;
 	}
@@ -148,14 +150,14 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size)
 	free(pwithcolors);
 	//scroll
 	sd->start += sd->step;
-	if(buf[sd->start] == 0 || sd->start > strlen(buf)){
+	if(buf[sd->start] == 0 || sd->start > strlen(&(buf[0]))){
 		sd->start = 0;
 	}
 }
 
 void free_scroll(struct text_object *obj)
 {
-	struct scroll_data *sd = obj->data.opaque;
+	struct scroll_data *sd = (struct scroll_data *)obj->data.opaque;
 
 	if (!sd)
 		return;
