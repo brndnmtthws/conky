@@ -494,12 +494,20 @@ uint8_t cpu_percentage(struct text_object *obj)
 				obj->data.i, info.cpu_count);
 		CRIT_ERR(NULL, NULL, "attempting to use more CPUs than you have!");
 	}
-	return round_to_int(info.cpu_usage[obj->data.i] * 100.0);
+	if (info.cpu_usage) {
+		return round_to_int(info.cpu_usage[obj->data.i] * 100.0);
+	} else {
+		return 0;
+	}
 }
 
 double cpu_barval(struct text_object *obj)
 {
-	return info.cpu_usage[obj->data.i];
+	if (info.cpu_usage) {
+		return info.cpu_usage[obj->data.i];
+	} else {
+		return 0.;
+	}
 }
 
 #define PRINT_HR_GENERATOR(name) \
