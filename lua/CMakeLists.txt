@@ -22,6 +22,12 @@
 
 include(ToLua)
 
+add_definitions(-DTOLUA_RELEASE)
+set(CMAKE_C_FLAGS "-O3")
+set(CMAKE_C_FLAGS_DEBUG "-ggdb")
+set(CMAKE_CXX_FLAGS "-O3")
+set(CMAKE_CXX_FLAGS_DEBUG "-ggdb")
+
 if(BUILD_LUA_CAIRO)
 	include_directories(${luacairo_includes} ${CMAKE_CURRENT_SOURCE_DIR})
 	wrap_tolua(luacairo_src cairo.pkg)

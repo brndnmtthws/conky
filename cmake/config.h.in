@@ -157,4 +157,6 @@
 
 #cmakedefine HAVE_ICONV 1
 
+#cmakedefine LUA_EXTRAS 1
+
 #endif /* _conky_config_h_ */

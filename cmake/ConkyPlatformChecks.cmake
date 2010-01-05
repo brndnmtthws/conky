@@ -291,6 +291,9 @@ if(WANT_TOLUA)
 		message(FATAL_ERROR "Unable to find tolua++ library")
 	endif(TOLUA_INCLUDE_PATH AND TOLUA_LIBS)
 	mark_as_advanced(APP_TOLUA TOLUA_INCLUDE_PATH TOLUA_LIBS)
+	set(conky_includes ${conky_includes} ${TOLUA_INCLUDE_PATH})
+	set(conky_libs ${conky_libs} ${TOLUA_LIBS})
+	set(LUA_EXTRAS true)
 endif(WANT_TOLUA)
 
 # Look for doc generation programs
