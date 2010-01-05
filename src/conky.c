@@ -899,8 +899,10 @@ void generate_text_internal(char *p, int p_max_size,
 							obj->data.i, info.cpu_count);
 					CRIT_ERR(NULL, NULL, "attempting to use more CPUs than you have!");
 				}
-				percent_print(p, p_max_size,
+				if (cur->cpu_usage) {
+				    percent_print(p, p_max_size,
 				              round_to_int(cur->cpu_usage[obj->data.i] * 100.0));
+				}
 			}
 			OBJ(cpugauge)
 				new_gauge(obj, p, p_max_size, round_to_int(cur->cpu_usage[obj->data.i] * 255.0));
