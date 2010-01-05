@@ -84,7 +84,7 @@ struct mail_s {			// for imap and pop3
 		user[0] = 0;
 		pass[0] = 0;
 		command[0] = 0;
-		folder[0] = 0;
+		memset(folder, 0, 128); /* to satisfy valgrind */
 	}
 };
 

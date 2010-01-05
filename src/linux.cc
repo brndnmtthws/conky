@@ -175,17 +175,17 @@ void update_meminfo(void)
 		}
 
 		if (strncmp(buf, "MemTotal:", 9) == 0) {
-			sscanf_c(buf, "%*s %llu", &info.memmax);
+			sscanf(buf, "%*s %llu", &info.memmax);
 		} else if (strncmp(buf, "MemFree:", 8) == 0) {
-			sscanf_c(buf, "%*s %llu", &info.memfree);
+			sscanf(buf, "%*s %llu", &info.memfree);
 		} else if (strncmp(buf, "SwapTotal:", 10) == 0) {
-			sscanf_c(buf, "%*s %llu", &info.swapmax);
+			sscanf(buf, "%*s %llu", &info.swapmax);
 		} else if (strncmp(buf, "SwapFree:", 9) == 0) {
-			sscanf_c(buf, "%*s %llu", &info.swapfree);
+			sscanf(buf, "%*s %llu", &info.swapfree);
 		} else if (strncmp(buf, "Buffers:", 8) == 0) {
-			sscanf_c(buf, "%*s %llu", &info.buffers);
+			sscanf(buf, "%*s %llu", &info.buffers);
 		} else if (strncmp(buf, "Cached:", 7) == 0) {
-			sscanf_c(buf, "%*s %llu", &info.cached);
+			sscanf(buf, "%*s %llu", &info.cached);
 		}
 	}
 
@@ -418,7 +418,7 @@ void update_net_stats(void)
 		last_trans = ns->trans;
 
 		/* bytes packets errs drop fifo frame compressed multicast|bytes ... */
-		sscanf_c(p, "%lld  %*d     %*d  %*d  %*d  %*d   %*d        %*d       %lld",
+		sscanf(p, "%lld  %*d     %*d  %*d  %*d  %*d   %*d        %*d       %lld",
 			&r, &t);
 
 		/* if recv or trans is less than last time, an overflow happened */
@@ -641,7 +641,7 @@ void determine_longstat(char *buf)
 
 	KFLAG_SETOFF(KFLAG_IS_LONGSTAT);
 	/* scanf will either return -1 or 1 because there is only 1 assignment */
-	if (sscanf_c(buf, "%*s %*d %*d %*d %*d %llu", &iowait) > 0) {
+	if (sscanf(buf, "%*s %*d %*d %*d %*d %llu", &iowait) > 0) {
 		KFLAG_SETON(KFLAG_IS_LONGSTAT);
 	}
 }
@@ -750,7 +750,7 @@ void update_stat(void)
 			} else {
 				idx = 0;
 			}
-			sscanf_c(buf, stat_template, &(cpu[idx].cpu_user),
+			sscanf(buf, stat_template, &(cpu[idx].cpu_user),
 				&(cpu[idx].cpu_nice), &(cpu[idx].cpu_system),
 				&(cpu[idx].cpu_idle), &(cpu[idx].cpu_iowait),
 				&(cpu[idx].cpu_irq), &(cpu[idx].cpu_softirq),

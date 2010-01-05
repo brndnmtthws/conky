@@ -39,7 +39,7 @@ set(CMAKE_CXX_FLAGS "-std=c++0x" CACHE STRING "Flags used by the C++ compiler du
 if(MAINTAINER_MODE)
 	# some extra debug flags when in 'maintainer mode'
 	set(CMAKE_C_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -pedantic -Werror" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
-	set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -pedantic -Werror" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
+	set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -pedantic -Werror -Wno-format" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
 endif(MAINTAINER_MODE)
 
 

@@ -48,7 +48,7 @@ struct execi_data {
 	double data;
 	timed_thread_ptr p_timed_thread;
 	float barnum;
-	execi_data() : last_update(0), interval(0), cmd(0), data(0), barnum(0) {}
+	execi_data() : last_update(0), interval(0), cmd(0), buffer(0), data(0), barnum(0) {}
 };
 
 /* FIXME: this will probably not work, since the variable is being reused
@@ -408,6 +408,6 @@ void free_execi(struct text_object *obj)
 		free(ed->cmd);
 	if (ed->buffer)
 		free(ed->buffer);
-	free(obj->data.opaque);
+	delete ed;
 	obj->data.opaque = NULL;
 }

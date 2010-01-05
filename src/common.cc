@@ -337,7 +337,7 @@ static void __free_update_callbacks(struct update_cb *uc)
 	sem_destroy(&uc->start_wait);
 	sem_destroy(&uc->end_wait);
 
-	free(uc);
+	delete uc;
 }
 
 /* Free the whole list of update callbacks. */

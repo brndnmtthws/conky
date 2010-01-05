@@ -52,6 +52,7 @@ struct _timed_thread {
 	clk::time_point last_time;				/* last time interval */
 	int pipefd[2];
 	int die;
+	_timed_thread() : die(0) {}
 };
 
 typedef std::list<timed_thread_ptr> thread_list_t;
@@ -90,11 +91,11 @@ timed_thread::timed_thread(const std::function<void(thread_handle &)> &start_rou
 }
 
 /* destroy a timed thread. */
-void timed_thread::destroy(void)
+void timed_thread::destroy(bool deregister_this)
 {
 	DBGP("destroying thread %ld", (long)p_timed_thread->thread.get());
 #ifdef DEBUG
-	assert(running);
+	assert(running && p_timed_thread->thread->joinable());
 #endif /* DEBUG */
 	{
 		/* signal thread to stop */
@@ -111,10 +112,11 @@ void timed_thread::destroy(void)
 
 	close(p_timed_thread->pipefd[0]);
 	close(p_timed_thread->pipefd[1]);
-
-	deregister(this);
-
+	
 	running = false;
+
+	if (deregister_this) deregister(this);
+
 }
 
 /* lock a timed thread for critical section activity */
@@ -234,7 +236,7 @@ void timed_thread::deregister(const timed_thread *timed_thread)
 void timed_thread::destroy_registered_threads(void)
 {
 	for (thread_list_t::iterator i = thread_list.begin(); i != thread_list.end(); i++) {
-		(*i)->destroy();
+//		(*i)->destroy(false /* don't deregister */);
 #ifdef DEBUG
 		/* if this assert is ever reached, we have an unreleased shared_ptr
 		 * somewhere holding on to this instance */

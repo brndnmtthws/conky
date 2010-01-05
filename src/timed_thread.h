@@ -101,7 +101,7 @@ class timed_thread {
 		int test(int override_wait_time);
 
 		/* destroy a timed thread */
-		void destroy(void);
+		void destroy(bool deregister_this = true);
 
 		/* register a timed thread for destruction */
 		static int register_(const timed_thread_ptr &timed_thread);
