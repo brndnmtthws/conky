@@ -129,7 +129,7 @@ static void print_diskio_dir(struct text_object *obj, int dir, char *p, int p_ma
 
 	if (dir < 0)
 		val = diskio->current_read;
-	if (dir == 0)
+	else if (dir == 0)
 		val = diskio->current;
 	else
 		val = diskio->current_write;
