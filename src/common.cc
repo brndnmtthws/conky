@@ -37,7 +37,6 @@
 #include "temphelper.h"
 #include "timeinfo.h"
 #include "top.h"
-#include "c-funcs.h"
 #include <ctype.h>
 #include <errno.h>
 #include <sys/time.h>

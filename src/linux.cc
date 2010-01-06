@@ -32,7 +32,6 @@
 #include "net_stat.h"
 #include "diskio.h"
 #include "temphelper.h"
-#include "c-funcs.h"
 #include <dirent.h>
 #include <ctype.h>
 #include <errno.h>
