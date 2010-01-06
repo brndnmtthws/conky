@@ -142,7 +142,7 @@ if(BUILD_LUA)
 endif(BUILD_LUA)
 
 if(BUILD_NVIDIA)
-	set(nvidia nvidia.c)
+	set(nvidia nvidia.cc)
 	set(optional_sources ${optional_sources} ${nvidia})
 endif(BUILD_NVIDIA)
 

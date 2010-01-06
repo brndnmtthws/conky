@@ -1,5 +1,5 @@
 /* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=c
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -74,7 +74,8 @@ int set_nvidia_type(struct text_object *obj, const char *arg)
 {
 	struct nvidia_s *nvs;
 
-	nvs = obj->data.opaque = malloc(sizeof(struct nvidia_s));
+	obj->data.opaque = malloc(sizeof(struct nvidia_s));
+	nvs = static_cast<nvidia_s *>(obj->data.opaque);
 	memset(nvs, 0, sizeof(struct nvidia_s));
 
 	switch(arg[0]) {
@@ -109,7 +110,7 @@ int set_nvidia_type(struct text_object *obj, const char *arg)
 void print_nvidia_value(struct text_object *obj, char *p, int p_max_size)
 {
 	int value;
-	struct nvidia_s *nvs = obj->data.opaque;
+	struct nvidia_s *nvs = static_cast<nvidia_s *>(obj->data.opaque);
 
 	if (!nvs ||
 	    (value = get_nvidia_value(nvs->type, display)) == -1) {
