@@ -155,6 +155,11 @@
 #define APCUPSD
 #endif /* BUILD_APCUPSD */
 
+#cmakedefine BUILD_IOSTATS 1
+#ifdef BUILD_IOSTATS
+#define IOSTATS
+#endif /* BUILD_IOSTATS */
+
 #cmakedefine HAVE_ICONV 1
 
 #cmakedefine LUA_EXTRAS 1
