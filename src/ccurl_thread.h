@@ -50,7 +50,7 @@ typedef std::shared_ptr<ccurl_location_t> ccurl_location_ptr;
 typedef std::list<ccurl_location_ptr> ccurl_location_list;
 
 /* find an existing location for the uri specified */
-ccurl_location_ptr ccurl_find_location(ccurl_location_list locations, char *uri);
+ccurl_location_ptr ccurl_find_location(ccurl_location_list &locations, char *uri);
 /* free all locations (as well as location->uri and location->result if
  * non-null) */
 void ccurl_free_locations(ccurl_location_list &locations);

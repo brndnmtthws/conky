@@ -49,7 +49,7 @@ typedef struct _ccurl_memory_t {
 } ccurl_memory_t;
 
 /* finds a location based on uri in the list provided */
-ccurl_location_ptr ccurl_find_location(ccurl_location_list locations, char *uri)
+ccurl_location_ptr ccurl_find_location(ccurl_location_list &locations, char *uri)
 {
 	for (ccurl_location_list::iterator i = locations.begin();
 			i != locations.end(); i++) {
