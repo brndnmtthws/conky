@@ -491,17 +491,11 @@ static void new_bar_in_x11(struct text_object *obj, char *buf, int usage)
 	struct special_t *s = 0;
 	struct bar *b = obj->special_data;
 
-	if ((output_methods & TO_X) == 0)
-		return;
-
-	if (!b)
-		return;
-
 	s = new_special(buf, BAR);
 
 	s->arg = usage;
-	s->width = b->width;
-	s->height = b->height;
+	s->width = b ?  b->width : default_bar_width;
+	s->height = b ? b->height : default_bar_height;
 }
 #endif /* X11 */
 
