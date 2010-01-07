@@ -2205,7 +2205,7 @@ void get_powerbook_batt_info(struct text_object *obj, char *buffer, int n)
 void update_top(void)
 {
 	process_find_top(info.cpu, info.memu, info.time
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
                 , info.io
 #endif
                 );

@@ -67,9 +67,9 @@
 #ifdef NCURSES
 #include <ncurses.h>
 #endif
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 #include <libxml/parser.h>
-#endif /* XOAP */
+#endif /* BUILD_WEATHER_XOAP */
 
 /* local headers */
 #include "core.h"
@@ -141,7 +141,7 @@ enum spacer_state {
 	RIGHT_SPACER
 } use_spacer;
 int top_cpu, top_mem, top_time;
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 int top_io;
 #endif
 int top_running;
@@ -2464,9 +2464,9 @@ void clean_up(void *memtofree1, void* memtofree2)
 	if (output_methods & TO_X)
 		cimlib_deinit();
 #endif /* IMLIB2 */
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 	xmlCleanupParser();
-#endif /* XOAP */
+#endif /* BUILD_WEATHER_XOAP */
 
 	if (specials) {
 		for (i = 0; i < special_count; i++) {
@@ -2586,7 +2586,7 @@ static void set_default_configurations(void)
 	format_human_readable = 1;
 	top_mem = 0;
 	top_time = 0;
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 	top_io = 0;
 #endif
 	top_running = 0;
@@ -4136,9 +4136,9 @@ void initialisation(int argc, char **argv) {
 #ifdef BUILD_LUA
 	llua_setup_info(&info, update_interval);
 #endif /* BUILD_LUA */
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 	xmlInitParser();
-#endif /* XOAP */
+#endif /* BUILD_WEATHER_XOAP */
 
 	/* Set signal handlers */
 	act.sa_handler = signal_handler;
@@ -4295,10 +4295,10 @@ int main(int argc, char **argv)
 		}
 	}
 
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 	/* Load xoap keys, if existing */
 	load_xoap_keys();
-#endif /* XOAP */
+#endif /* BUILD_WEATHER_XOAP */
 
 #ifdef HAVE_SYS_INOTIFY_H
 	inotify_fd = inotify_init1(IN_NONBLOCK);

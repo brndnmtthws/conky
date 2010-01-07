@@ -175,10 +175,10 @@ static struct process *new_process(int p)
 	process->time_stamp = 0;
 	process->previous_user_time = ULONG_MAX;
 	process->previous_kernel_time = ULONG_MAX;
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 	process->previous_read_bytes = ULLONG_MAX;
 	process->previous_write_bytes = ULLONG_MAX;
-#endif /* IOSTATS */
+#endif /* BUILD_IOSTATS */
 	process->counted = 1;
 
 	/* process_find_name(process); */
@@ -316,7 +316,7 @@ static int process_parse_stat(struct process *process)
 	return 0;
 }
 
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 static int process_parse_io(struct process *process)
 {
 	static const char *read_bytes_str="read_bytes:";
@@ -386,7 +386,7 @@ static int process_parse_io(struct process *process)
 
 	return 0;
 }
-#endif /* IOSTATS */
+#endif /* BUILD_IOSTATS */
 
 /******************************************
  * Get process structure for process pid  *
@@ -403,10 +403,10 @@ static int calculate_stats(struct process *process)
 	if (rc)	return 1;
 	/* rc = process_parse_statm(process); if (rc) return 1; */
 
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 	rc = process_parse_io(process);
 	if (rc) return 1;
-#endif /* IOSTATS */
+#endif /* BUILD_IOSTATS */
 
 	/*
 	 * Check name against the exclusion list
@@ -576,7 +576,7 @@ inline static void calc_cpu_each(unsigned long long total)
 	}
 }
 
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 static void calc_io_each(void)
 {
 	struct process *p;
@@ -590,7 +590,7 @@ static void calc_io_each(void)
 	for (p = first_process; p; p = p->next)
 		p->io_perc = 100.0 * (p->read_bytes + p->write_bytes) / (float) sum;
 }
-#endif /* IOSTATS */
+#endif /* BUILD_IOSTATS */
 
 /******************************************
  * Find the top processes				  *
@@ -632,7 +632,7 @@ static int compare_time(void *va, void *vb)
 	return b->total_cpu_time - a->total_cpu_time;
 }
 
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 /* I/O comparision function for prio queue */
 static int compare_io(void *va, void *vb)
 {
@@ -646,7 +646,7 @@ static int compare_io(void *va, void *vb)
 		return 0;
 	}
 }
-#endif /* IOSTATS */
+#endif /* BUILD_IOSTATS */
 
 /* ****************************************************************** *
  * Get a sorted list of the top cpu hogs and top mem hogs.			  *
@@ -655,13 +655,13 @@ static int compare_io(void *va, void *vb)
 
 void process_find_top(struct process **cpu, struct process **mem,
 		struct process **ptime
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 		, struct process **io
-#endif /* IOSTATS */
+#endif /* BUILD_IOSTATS */
 		)
 {
 	prio_queue_t cpu_queue, mem_queue, time_queue
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 		, io_queue
 #endif
 		;
@@ -670,9 +670,9 @@ void process_find_top(struct process **cpu, struct process **mem,
 	int i;
 
 	if (!top_cpu && !top_mem && !top_time
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 			&& !top_io
-#endif /* IOSTATS */
+#endif /* BUILD_IOSTATS */
 			&& !top_running
 	   ) {
 		return;
@@ -690,7 +690,7 @@ void process_find_top(struct process **cpu, struct process **mem,
 	pq_set_compare(time_queue, &compare_time);
 	pq_set_max_size(time_queue, MAX_SP);
 
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 	io_queue = init_prio_queue();
 	pq_set_compare(io_queue, &compare_io);
 	pq_set_max_size(io_queue, MAX_SP);
@@ -700,9 +700,9 @@ void process_find_top(struct process **cpu, struct process **mem,
 	update_process_table();		/* update the table with process list */
 	calc_cpu_each(total);		/* and then the percentage for each task */
 	process_cleanup();			/* cleanup list from exited processes */
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 	calc_io_each();			/* percentage of I/O for each task */
-#endif /* IOSTATS */
+#endif /* BUILD_IOSTATS */
 
 	cur_proc = first_process;
 
@@ -716,11 +716,11 @@ void process_find_top(struct process **cpu, struct process **mem,
 		if (top_time) {
 			insert_prio_elem(time_queue, cur_proc);
 		}
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 		if (top_io) {
 			insert_prio_elem(io_queue, cur_proc);
 		}
-#endif /* IOSTATS */
+#endif /* BUILD_IOSTATS */
 		cur_proc = cur_proc->next;
 	}
 
@@ -731,17 +731,17 @@ void process_find_top(struct process **cpu, struct process **mem,
 			mem[i] = (process*)pop_prio_elem(mem_queue);
 		if (top_time)
 			ptime[i] = (process*)pop_prio_elem(time_queue);
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 		if (top_io)
 			io[i] = (process*)pop_prio_elem(io_queue);
-#endif /* IOSTATS */
+#endif /* BUILD_IOSTATS */
 	}
 	free_prio_queue(cpu_queue);
 	free_prio_queue(mem_queue);
 	free_prio_queue(time_queue);
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 	free_prio_queue(io_queue);
-#endif /* IOSTATS */
+#endif /* BUILD_IOSTATS */
 }
 
 static char *format_time(unsigned long timeval, const int width)
@@ -862,11 +862,11 @@ PRINT_TOP_GENERATOR(cpu, 7, "%6.2f", amount)
 PRINT_TOP_GENERATOR(pid, 6, "%5i", pid)
 PRINT_TOP_HR_GENERATOR(mem_res, rss, 1)
 PRINT_TOP_HR_GENERATOR(mem_vsize, vsize, 1)
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 PRINT_TOP_HR_GENERATOR(read_bytes, read_bytes, update_interval)
 PRINT_TOP_HR_GENERATOR(write_bytes, write_bytes, update_interval)
 PRINT_TOP_GENERATOR(io_perc, 7, "%6.2f", io_perc)
-#endif /* IOSTATS */
+#endif /* BUILD_IOSTATS */
 
 static void free_top(struct text_object *obj)
 {
@@ -903,17 +903,17 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj)
 	} else if (strcmp(&s[3], "_time") == EQUAL) {
 		td->list = info.time;
 		top_time = 1;
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 	} else if (strcmp(&s[3], "_io") == EQUAL) {
 		td->list = info.io;
 		top_io = 1;
-#endif /* IOSTATS */
+#endif /* BUILD_IOSTATS */
 	} else {
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 		NORM_ERR("Must be top, top_mem, top_time or top_io");
-#else /* IOSTATS */
+#else /* BUILD_IOSTATS */
 		NORM_ERR("Must be top, top_mem or top_time");
-#endif /* IOSTATS */
+#endif /* BUILD_IOSTATS */
 		free(obj->data.opaque);
 		obj->data.opaque = 0;
 		return 0;
@@ -937,22 +937,22 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj)
 			obj->callbacks.print = &print_top_mem_res;
 		} else if (strcmp(buf, "mem_vsize") == EQUAL) {
 			obj->callbacks.print = &print_top_mem_vsize;
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 		} else if (strcmp(buf, "io_read") == EQUAL) {
 			obj->callbacks.print = &print_top_read_bytes;
 		} else if (strcmp(buf, "io_write") == EQUAL) {
 			obj->callbacks.print = &print_top_write_bytes;
 		} else if (strcmp(buf, "io_perc") == EQUAL) {
 			obj->callbacks.print = &print_top_io_perc;
-#endif /* IOSTATS */
+#endif /* BUILD_IOSTATS */
 		} else {
 			NORM_ERR("invalid type arg for top");
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 			NORM_ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize, "
 					"io_read, io_write, io_perc");
-#else /* IOSTATS */
+#else /* BUILD_IOSTATS */
 			NORM_ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize");
-#endif /* IOSTATS */
+#endif /* BUILD_IOSTATS */
 			return 0;
 		}
 		if (n < 1 || n > 10) {

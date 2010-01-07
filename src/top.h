@@ -87,12 +87,10 @@ enum top_field {
 	TOP_MEM,
 	TOP_TIME,
 	TOP_MEM_RES,
-	TOP_MEM_VSIZE
-#ifdef IOSTATS
-	,TOP_READ_BYTES
-	,TOP_WRITE_BYTES
-	,TOP_IO_PERC
-#endif
+	TOP_MEM_VSIZE,
+	TOP_READ_BYTES,
+	TOP_WRITE_BYTES,
+	TOP_IO_PERC
 };
 
 /******************************************
@@ -115,7 +113,7 @@ struct process {
 	unsigned long total_cpu_time;
 	unsigned int vsize;
 	unsigned int rss;
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 	unsigned long long read_bytes;
 	unsigned long long previous_read_bytes;
 	unsigned long long write_bytes;
@@ -135,7 +133,7 @@ struct sorted_process {
 
 /* Pointer to head of process list */
 void process_find_top(struct process **, struct process **, struct process **
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 		, struct process **
 #endif
 		);
