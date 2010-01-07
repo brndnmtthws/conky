@@ -38,9 +38,9 @@ char fontloaded = 0;
 
 void set_font(void)
 {
-#ifdef XFT
+#ifdef BUILD_XFT
 	if (use_xft) return;
-#endif /* XFT */
+#endif /* BUILD_XFT */
 	if (font_count > -1 && fonts[selected_font].font) {
 		XSetFont(display, window.gc, fonts[selected_font].font->fid);
 	}
@@ -51,7 +51,7 @@ void setup_fonts(void)
 	if ((output_methods & TO_X) == 0) {
 		return;
 	}
-#ifdef XFT
+#ifdef BUILD_XFT
 	if (use_xft) {
 		if (window.xftdraw) {
 			XftDrawDestroy(window.xftdraw);
@@ -60,7 +60,7 @@ void setup_fonts(void)
 		window.xftdraw = XftDrawCreate(display, window.drawable,
 				window.visual, window.colourmap);
 	}
-#endif /* XFT */
+#endif /* BUILD_XFT */
 	set_font();
 }
 
@@ -91,7 +91,7 @@ int add_font(const char *data_in)
 	// must account for null terminator
 	if (strlen(data_in) < DEFAULT_TEXT_BUFFER_SIZE) {
 		strncpy(fonts[font_count].name, data_in, DEFAULT_TEXT_BUFFER_SIZE);
-#ifdef XFT
+#ifdef BUILD_XFT
 		fonts[font_count].font_alpha = 0xffff;
 #endif
 	} else {
@@ -115,7 +115,7 @@ void set_first_font(const char *data_in)
 	}
 	if (strlen(data_in) > 1) {
 		strncpy(fonts[0].name, data_in, DEFAULT_TEXT_BUFFER_SIZE);
-#ifdef XFT
+#ifdef BUILD_XFT
 		fonts[0].font_alpha = 0xffff;
 #endif
 	}
@@ -129,7 +129,7 @@ void free_fonts(void)
 		return;
 	}
 	for (i = 0; i <= font_count; i++) {
-#ifdef XFT
+#ifdef BUILD_XFT
 		if (use_xft) {
 			/*
 			 * Do we not need to close fonts with Xft? Unsure.  Not freeing the
@@ -140,7 +140,7 @@ void free_fonts(void)
 			 */
 			fonts[i].xftfont = 0;
 		} else
-#endif /* XFT */
+#endif /* BUILD_XFT */
 		{
 			XFreeFont(display, fonts[i].font);
 			fonts[i].font = 0;
@@ -152,12 +152,12 @@ void free_fonts(void)
 	}
 	font_count = -1;
 	selected_font = 0;
-#ifdef XFT
+#ifdef BUILD_XFT
 	if (window.xftdraw) {
 		XftDrawDestroy(window.xftdraw);
 		window.xftdraw = 0;
 	}
-#endif /* XFT */
+#endif /* BUILD_XFT */
 }
 
 void load_fonts(void)
@@ -167,7 +167,7 @@ void load_fonts(void)
 	if ((output_methods & TO_X) == 0)
 		return;
 	for (i = 0; i <= font_count; i++) {
-#ifdef XFT
+#ifdef BUILD_XFT
 		/* load Xft font */
 		if (use_xft && fonts[i].xftfont) {
 			continue;

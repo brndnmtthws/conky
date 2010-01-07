@@ -75,10 +75,10 @@ void get_battery_short_status(char *buf, unsigned int n, const char *bat);
 
 void scan_loadavg_arg(struct text_object *, const char *);
 void print_loadavg(struct text_object *, char *, int);
-#ifdef X11
+#ifdef BUILD_X11
 void scan_loadgraph_arg(struct text_object *, const char *);
 double loadgraphval(struct text_object *);
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 uint8_t cpu_percentage(struct text_object *);
 double cpu_barval(struct text_object *);

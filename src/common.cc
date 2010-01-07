@@ -468,7 +468,7 @@ void print_loadavg(struct text_object *obj, char *p, int p_max_size)
 	}
 }
 
-#ifdef X11
+#ifdef BUILD_X11
 void scan_loadgraph_arg(struct text_object *obj, const char *arg)
 {
 	char *buf = 0;
@@ -484,7 +484,7 @@ double loadgraphval(struct text_object *obj)
 
 	return info.loadavg[0];
 }
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 uint8_t cpu_percentage(struct text_object *obj)
 {

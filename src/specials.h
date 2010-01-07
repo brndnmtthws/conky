@@ -80,12 +80,12 @@ extern int special_count;
 
 extern int default_bar_width;
 extern int default_bar_height;
-#ifdef X11
+#ifdef BUILD_X11
 extern int default_graph_width;
 extern int default_graph_height;
 extern int default_gauge_width;
 extern int default_gauge_height;
-#endif
+#endif /* BUILD_X11 */
 
 /* forward declare to avoid mutual inclusion between specials.h and text_object.h */
 struct text_object;
@@ -96,7 +96,7 @@ extern int max_specials;
 /* scanning special arguments */
 const char *scan_bar(struct text_object *, const char *, double);
 const char *scan_gauge(struct text_object *, const char *, double);
-#ifdef X11
+#ifdef BUILD_X11
 void scan_font(struct text_object *, const char *);
 char *scan_graph(struct text_object *, const char *, double);
 void scan_tab(struct text_object *, const char *);
@@ -107,7 +107,7 @@ void new_font(struct text_object *, char *, int);
 void new_graph(struct text_object *, char *, int, double);
 void new_hr(struct text_object *, char *, int);
 void new_stippled_hr(struct text_object *, char *, int);
-#endif
+#endif /* BUILD_X11 */
 void new_gauge(struct text_object *, char *, int, double);
 void new_bar(struct text_object *, char *, int, double);
 void new_fg(struct text_object *, char *, int);

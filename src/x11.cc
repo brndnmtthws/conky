@@ -42,20 +42,20 @@
 #include "imlib2.h"
 #endif /* IMLIB2 */
 
-#ifdef XFT
+#ifdef BUILD_XFT
 #include <X11/Xft/Xft.h>
 int use_xft = 0;
 #endif
 
-#ifdef HAVE_XDBE
+#ifdef BUILD_XDBE
 int use_xdbe;
 #endif
 
-#ifdef USE_ARGB
+#ifdef BUILD_ARGB
 int use_argb_visual;
 int own_window_argb_value;
 int have_argb_visual;
-#endif /* USE_ARGB */
+#endif /* BUILD_ARGB */
 
 /* some basic X11 stuff */
 Display *display = NULL;
@@ -184,7 +184,7 @@ void set_transparent_background(Window win, int alpha)
 {
 	(void)alpha; /* disable warnings when unused */
 
-#ifdef USE_ARGB
+#ifdef BUILD_ARGB
 	if (have_argb_visual) {
 		// real transparency
 		if (set_transparent) {
@@ -195,7 +195,7 @@ void set_transparent_background(Window win, int alpha)
 			colour_set = background_colour;
 		}
 	} else {
-#endif /* USE_ARGB */
+#endif /* BUILD_ARGB */
 	// pseudo transparency
 	
 	if (set_transparent) {
@@ -215,12 +215,12 @@ void set_transparent_background(Window win, int alpha)
 		XSetWindowBackground(display, win, background_colour);
 		colour_set = background_colour;
 	}
-#ifdef USE_ARGB
+#ifdef BUILD_ARGB
 	}
-#endif /* USE_ARGB */
+#endif /* BUILD_ARGB */
 }
 
-#ifdef USE_ARGB
+#ifdef BUILD_ARGB
 static int get_argb_visual(Visual** visual, int *depth) {
 	/* code from gtk project, gdk_screen_get_rgba_visual */
 	XVisualInfo visual_template;
@@ -247,15 +247,15 @@ static int get_argb_visual(Visual** visual, int *depth) {
 	XFree(visual_list);
 	return 0;
 }
-#endif /* USE_ARGB */
+#endif /* BUILD_ARGB */
 
 void destroy_window(void)
 {
-#ifdef XFT
+#ifdef BUILD_XFT
 	if(window.xftdraw) {
 		XftDrawDestroy(window.xftdraw);
 	}
-#endif
+#endif /* BUILD_XFT */
 	if(window.gc) {
 		XFreeGC(display, window.gc);
 	}
@@ -282,21 +282,21 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 			return;
 		}
 		
-#ifdef USE_ARGB
+#ifdef BUILD_ARGB
 		if (use_argb_visual && get_argb_visual(&visual, &depth)) {
 			have_argb_visual = 1;
 			window.visual = visual;
 			window.colourmap = XCreateColormap(display,
 				DefaultRootWindow(display), window.visual, AllocNone);
 		} else {
-#endif /* USE_ARGB */
+#endif /* BUILD_ARGB */
 			window.visual = DefaultVisual(display, screen);
 			window.colourmap = DefaultColormap(display, screen);
 			depth = CopyFromParent;
 			visual = CopyFromParent;
-#ifdef USE_ARGB
+#ifdef BUILD_ARGB
 		}
-#endif /* USE_ARGB */
+#endif /* BUILD_ARGB */
 
 		if (window.type == TYPE_OVERRIDE) {
 
@@ -305,16 +305,16 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 			XSetWindowAttributes attrs = { ParentRelative, 0L, 0, 0L, 0, 0,
 				Always, 0L, 0L, False, StructureNotifyMask | ExposureMask, 0L,
 				True, 0, 0 };
-#ifdef USE_ARGB
+#ifdef BUILD_ARGB
 			if (have_argb_visual) {
 				attrs.colormap = window.colourmap;
 				flags = CWBorderPixel | CWColormap | CWOverrideRedirect;
 			} else {
-#endif /* USE_ARGB */
+#endif /* BUILD_ARGB */
 				flags = CWBackPixel | CWOverrideRedirect;
-#ifdef USE_ARGB
+#ifdef BUILD_ARGB
 			}
-#endif /* USE_ARGB */
+#endif /* BUILD_ARGB */
 
 			/* Parent is desktop window (which might be a child of root) */
 			window.window = XCreateWindow(display, window.desktop, window.x,
@@ -337,16 +337,16 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 			XWMHints wmHint;
 			Atom xa;
 			
-#ifdef USE_ARGB
+#ifdef BUILD_ARGB
 			if (have_argb_visual) {
 				attrs.colormap = window.colourmap;
 				flags = CWBorderPixel | CWColormap | CWOverrideRedirect;
 			} else {
-#endif /* USE_ARGB */
+#endif /* BUILD_ARGB */
 				flags = CWBackPixel | CWOverrideRedirect;
-#ifdef USE_ARGB
+#ifdef BUILD_ARGB
 			}
-#endif /* USE_ARGB */
+#endif /* BUILD_ARGB */
 
 			if (window.type == TYPE_DOCK) {
 				window.x = window.y = 0;
@@ -543,7 +543,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 	/* Drawable is same as window. This may be changed by double buffering. */
 	window.drawable = window.window;
 
-#ifdef HAVE_XDBE
+#ifdef BUILD_XDBE
 	if (use_xdbe) {
 		int major, minor;
 
@@ -909,7 +909,7 @@ void set_struts(int sidenum)
 }
 #endif /* OWN_WINDOW */
 
-#ifdef HAVE_XDBE
+#ifdef BUILD_XDBE
 void xdbe_swap_buffers(void)
 {
 	if (use_xdbe) {
@@ -920,5 +920,5 @@ void xdbe_swap_buffers(void)
 		XdbeSwapBuffers(display, &swap, 1);
 	}
 }
-#endif /* HAVE_XDBE */
+#endif /* BUILD_XDBE */
 

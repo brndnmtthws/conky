@@ -143,7 +143,7 @@ void print_diskio_write(struct text_object *obj, char *p, int p_max_size)
 	print_diskio_dir(obj, 1, p, p_max_size);
 }
 
-#ifdef X11
+#ifdef BUILD_X11
 void parse_diskiograph_arg(struct text_object *obj, const char *arg)
 {
 	char *buf = 0;
@@ -174,7 +174,7 @@ double diskiographval_write(struct text_object *obj)
 
 	return (diskio ? diskio->current_write : 0);
 }
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 void update_diskio_values(struct diskio_stat *ds,
 		unsigned int reads, unsigned int writes)

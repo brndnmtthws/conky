@@ -29,7 +29,7 @@
  */
 #include "conky.h"
 #include "logging.h"
-#ifdef X11
+#ifdef BUILD_X11
 #include "x11.h"
 #endif
 
@@ -43,11 +43,11 @@ static long redmask, greenmask, bluemask;
 static void set_up_gradient(void)
 {
 	int i;
-#ifdef X11
+#ifdef BUILD_X11
 	if (output_methods & TO_X) {
 		colour_depth = DisplayPlanes(display, screen);
 	} else
-#endif /* X11 */
+#endif /* BUILD_X11 */
 	{
 		colour_depth = 16;
 	}
@@ -173,7 +173,7 @@ unsigned long *do_gradient(int width, unsigned long first_colour, unsigned long 
 	return colours;
 }
 
-#ifdef X11
+#ifdef BUILD_X11
 long get_x11_color(const char *name)
 {
 	XColor color;

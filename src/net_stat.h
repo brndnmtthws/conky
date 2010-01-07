@@ -69,11 +69,11 @@ void print_addr(struct text_object *, char *, int);
 #ifdef __linux__
 void print_addrs(struct text_object *, char *, int);
 #endif /* __linux__ */
-#ifdef X11
+#ifdef BUILD_X11
 void parse_net_stat_graph_arg(struct text_object *, const char *, void *);
 double downspeedgraphval(struct text_object *);
 double upspeedgraphval(struct text_object *);
-#endif /* X11 */
+#endif /* BUILD_X11 */
 #ifdef __linux__
 #ifdef HAVE_IWLIB
 void print_wireless_essid(struct text_object *, char *, int);

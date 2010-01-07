@@ -36,18 +36,18 @@
 #ifdef MATH
 #include <math.h>
 #endif /* MATH */
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
-#endif /* XOAP */
+#endif /* BUILD_WEATHER_XOAP */
 
 /* WEATHER data */
 typedef struct PWEATHER_ {
 	char lastupd[32];
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 	char xoap_t[32];
 	char icon[3];
-#endif /* XOAP */
+#endif /* BUILD_WEATHER_XOAP */
 	int temp;
 	int dew;
 	int cc;
@@ -58,7 +58,7 @@ typedef struct PWEATHER_ {
 	int wc;
 } PWEATHER;
 
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 #define FORECAST_DAYS 5
 typedef struct PWEATHER_FORECAST_ {
 	int hi[FORECAST_DAYS];
@@ -73,7 +73,7 @@ typedef struct PWEATHER_FORECAST_ {
 	int ppcp[FORECAST_DAYS];
 } PWEATHER_FORECAST;
 
-/* Xpath expressions for XOAP xml parsing */
+/* Xpath expressions for BUILD_WEATHER_XOAP xml parsing */
 #define NUM_XPATH_EXPRESSIONS_CC 8
 const char *xpath_expression_cc[NUM_XPATH_EXPRESSIONS_CC] = {
 	"/weather/cc/lsup", "/weather/cc/tmp", "/weather/cc/t",
@@ -89,7 +89,7 @@ const char *xpath_expression_df[NUM_XPATH_EXPRESSIONS_DF] = {
 	"/weather/dayf/day[*]/part[1]/ppcp", "/weather/dayf/day[*]/part[1]/hmid",
 	"/weather/dayf/day[*]/@t", "/weather/dayf/day[*]/@dt"
 };
-#endif /* XOAP */
+#endif /* BUILD_WEATHER_XOAP */
 
 /* Possible sky conditions */
 #define NUM_CC_CODES 6
@@ -113,7 +113,7 @@ const char *WC_CODES[NUM_WC_CODES] = {
 };
 
 static ccurl_location_list locations_cc;
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 static ccurl_location_list locations_df;
 #endif
 
@@ -123,7 +123,7 @@ struct weather_data {
 	int interval;
 };
 
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 struct weather_forecast_data {
 	char uri[128];
 	unsigned int day;
@@ -135,7 +135,7 @@ struct weather_forecast_data {
 void weather_free_info(void)
 {
 	ccurl_free_locations(locations_cc);
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 	ccurl_free_locations(locations_df);
 #endif
 }
@@ -152,7 +152,7 @@ int rel_humidity(int dew_point, int air) {
 #endif /* MATH */
 }
 
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 static void parse_df(PWEATHER_FORECAST *res, xmlXPathContextPtr xpathCtx)
 {
 	int i, j, k;
@@ -321,7 +321,7 @@ static void parse_weather_xml(PWEATHER *res, const char *data)
 	xmlFreeDoc(doc);
 	return;
 }
-#endif /* XOAP */
+#endif /* BUILD_WEATHER_XOAP */
 
 /*
  * Horrible hack to avoid using regexes
@@ -613,7 +613,7 @@ static inline void parse_token(PWEATHER *res, char *token) {
 	}
 }
 
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 void parse_weather_forecast(void *result, const char *data)
 {
 	PWEATHER_FORECAST *res = (PWEATHER_FORECAST*)result;
@@ -625,7 +625,7 @@ void parse_weather_forecast(void *result, const char *data)
 		parse_weather_forecast_xml(res, data);
 	}
 }
-#endif /* XOAP */
+#endif /* BUILD_WEATHER_XOAP */
 
 void parse_weather(void *result, const char *data)
 {
@@ -633,12 +633,12 @@ void parse_weather(void *result, const char *data)
 	/* Reset results */
 	memset(res, 0, sizeof(PWEATHER));
 
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 	//Check if it is an xml file
 	if ( strncmp(data, "<?xml ", 6) == 0 ) {
 		parse_weather_xml(res, data);
 	} else
-#endif /* XOAP */
+#endif /* BUILD_WEATHER_XOAP */
 	{
 		//We assume its a text file
 		char s_tmp[256];
@@ -707,7 +707,7 @@ void wind_deg_to_dir(char *p, int p_max_size, int wind_deg) {
 	};
 }
 
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 static void weather_forecast_process_info(char *p, int p_max_size, char *uri, unsigned int day, char *data_type, int interval)
 {
 	PWEATHER_FORECAST *data;
@@ -751,7 +751,7 @@ static void weather_forecast_process_info(char *p, int p_max_size, char *uri, un
 	}
 
 }
-#endif /* XOAP */
+#endif /* BUILD_WEATHER_XOAP */
 
 static void weather_process_info(char *p, int p_max_size, char *uri, char *data_type, int interval)
 {
@@ -782,7 +782,7 @@ static void weather_process_info(char *p, int p_max_size, char *uri, char *data_
 	} else if (strcmp(data_type, "temperature") == EQUAL) {
 		temp_print(p, p_max_size, data->temp, TEMP_CELSIUS);
 	} else if (strcmp(data_type, "cloud_cover") == EQUAL) {
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 		if (data->xoap_t[0] != '\0') {
 			char *s = p;
 			strncpy(p, data->xoap_t, p_max_size);
@@ -791,7 +791,7 @@ static void weather_process_info(char *p, int p_max_size, char *uri, char *data_
 				s++;
 			}
 		} else
-#endif /* XOAP */
+#endif /* BUILD_WEATHER_XOAP */
 			if (data->cc == 0) {
 				strncpy(p, "", p_max_size);
 			} else if (data->cc < 3) {
@@ -807,10 +807,10 @@ static void weather_process_info(char *p, int p_max_size, char *uri, char *data_
 			} else  {
 				strncpy(p, "cumulonimbus", p_max_size);
 			}
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 	} else if (strcmp(data_type, "icon") == EQUAL) {
 		strncpy(p, data->icon, p_max_size);
-#endif /* XOAP */
+#endif /* BUILD_WEATHER_XOAP */
 	} else if (strcmp(data_type, "pressure") == EQUAL) {
 		snprintf(p, p_max_size, "%d", data->bar);
 	} else if (strcmp(data_type, "wind_speed") == EQUAL) {
@@ -828,11 +828,11 @@ static void weather_process_info(char *p, int p_max_size, char *uri, char *data_
 
 }
 
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 /* xoap suffix for weather from weather.com */
 static char *xoap_cc = NULL;
 static char *xoap_df = NULL;
-#endif /* XOAP */
+#endif /* BUILD_WEATHER_XOAP */
 
 static int process_weather_uri(char *uri, char *locID, int dayf UNUSED_ATTR)
 {
@@ -845,7 +845,7 @@ static int process_weather_uri(char *uri, char *locID, int dayf UNUSED_ATTR)
 	}
 
 	/* Construct complete uri */
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 	if (strstr(uri, "xoap.weather.com")) {
 		if ((dayf == 0) && (xoap_cc != NULL)) {
 			strcat(uri, locID);
@@ -858,7 +858,7 @@ static int process_weather_uri(char *uri, char *locID, int dayf UNUSED_ATTR)
 			uri = NULL;
 		}
 	} else
-#endif /* XOAP */
+#endif /* BUILD_WEATHER_XOAP */
 	if (strstr(uri, "weather.noaa.gov")) {
 		strcat(uri, locID);
 		strcat(uri, ".TXT");
@@ -868,7 +868,7 @@ static int process_weather_uri(char *uri, char *locID, int dayf UNUSED_ATTR)
 	return 0;
 }
 
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 
 /*
  * TODO: make the xoap keys file readable from the config file
@@ -963,7 +963,7 @@ void print_weather_forecast(struct text_object *obj, char *p, int p_max_size)
 	}
 	weather_forecast_process_info(p, p_max_size, wfd->uri, wfd->day, wfd->data_type, wfd->interval);
 }
-#endif /* XOAP */
+#endif /* BUILD_WEATHER_XOAP */
 
 void scan_weather_arg(struct text_object *obj, const char *arg, void *free_at_crash)
 {

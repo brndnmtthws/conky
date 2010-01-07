@@ -66,66 +66,66 @@ char *strndup(const char *s, size_t n);
 /* forward define to make gcc happy */
 struct text_object;
 
-#ifdef BMPX
+#ifdef BUILD_BMPX
 #include "bmpx.h"
-#endif
+#endif /* BUILD_BMPX */
 
-#ifdef EVE
+#ifdef BUILD_EVE
 #include "eve.h"
-#endif
+#endif /* BUILD_EVE */
 
-#ifdef HDDTEMP
+#ifdef BUILD_HDDTEMP
 #include "hddtemp.h"
-#endif /* HDDTEMP */
+#endif /* BUILD_HDDTEMP */
 
-#ifdef MOC
+#ifdef BUILD_MOC
 #include "moc.h"
-#endif
+#endif /* BUILD_MOC */
 
-#ifdef MPD
+#ifdef BUILD_MPD
 #include "mpd.h"
-#endif
+#endif /* BUILD_MPD */
 
 #ifdef __cplusplus
 /* this hack exists only to get around a compilation issue with some files
  * being converted to C++, will need a better solution */
 
 /* C++ headers */
-#ifdef HAVE_CURL
+#ifdef BUILD_CURL
 #include "ccurl_thread.h"
-#endif /* HAVE_CURL */
+#endif /* BUILD_CURL */
 
-#ifdef AUDACIOUS
+#ifdef BUILD_AUDACIOUS
 #include "audacious.h"
-#endif
+#endif /* BUILD_AUDACIOUS */
 
 #endif /* __cplusplus */
 
-#ifdef RSS
+#ifdef BUILD_RSS
 #include "rss.h"
-#endif /* RSS */
+#endif /* BUILD_RSS */
 
-#ifdef XOAP
-#ifndef WEATHER
-#error "WEATHER needs to be defined if XOAP is defined"
-#endif /* WEATHER */
-#endif /* XOAP */
+#ifdef BUILD_WEATHER_XOAP
+#ifndef BUILD_WEATHER_METAR
+#error "BUILD_WEATHER_METAR needs to be defined if XOAP is defined"
+#endif /* BUILD_WEATHER_METAR */
+#endif /* BUILD_WEATHER_XOAP */
 
-#ifdef WEATHER
+#ifdef BUILD_WEATHER_METAR
 #include "weather.h"
-#endif /* WEATHER */
+#endif /* BUILD_WEATHER_METAR */
 
-#ifdef TCP_PORT_MONITOR
+#ifdef BUILD_PORT_MONITORS
 #include "tcp-portmon.h"
 #endif
 
-#ifdef XMMS2
+#ifdef BUILD_XMMS2
 #include "xmms2.h"
-#endif
+#endif /* BUILD_XMMS2 */
 
-#ifdef APCUPSD
+#ifdef BUILD_APCUPSD
 #include "apcupsd.h"
-#endif
+#endif /* BUILD_APCUPSD */
 
 /* sony support */
 #include "sony.h"
@@ -142,7 +142,7 @@ struct usr_info {
 	int number;
 };
 
-#ifdef X11
+#ifdef BUILD_X11
 struct monitor_info {
 	int number;
 	int current;
@@ -161,7 +161,7 @@ struct x11_info {
 	struct desktop_info desktop;
 };
 
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 /* defined in conky.c */
 extern long default_fg_color, default_bg_color, default_out_color;
@@ -228,29 +228,29 @@ struct information {
 
 	float loadavg[3];
 
-#ifdef XMMS2
+#ifdef BUILD_XMMS2
 	struct xmms2_s xmms2;
+#endif /* BUILD_XMMS2 */
+#ifdef BUILD_AUDACIOUS
+	audacious_s audacious;
 #endif
-#ifdef AUDACIOUS
-	AUDACIOUS_S audacious;
-#endif
-#ifdef BMPX
+#ifdef BUILD_BMPX
 	struct bmpx_s bmpx;
-#endif
+#endif /* BUILD_BMPX */
 	struct usr_info users;
 	struct process *cpu[10];
 	struct process *memu[10];
 	struct process *time[10];
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 	struct process *io[10];
-#endif
+#endif /* BUILD_IOSTATS */
 	struct process *first_process;
 	unsigned long looped;
 	double music_player_interval;
 
-#ifdef X11
+#ifdef BUILD_X11
 	struct x11_info x11;
-#endif
+#endif /* BUILD_X11 */
 
 	short kflags;	/* kernel settings, see enum KFLAG */
 };
@@ -273,9 +273,9 @@ enum {
 
 /* defined in conky.c, needed by top.c */
 extern int top_cpu, top_mem, top_time;
-#ifdef IOSTATS
+#ifdef BUILD_IOSTATS
 extern int top_io;
-#endif
+#endif /* BUILD_IOSTATS */
 extern int top_running;
 
 /* defined in conky.c, needed by top.c */
@@ -341,16 +341,16 @@ extern unsigned int max_user_text;
 /* path to config file */
 extern char *current_config;
 
-#ifdef X11
+#ifdef BUILD_X11
 #define TO_X 1
-#endif /* X11 */
+#endif /* BUILD_X11 */
 #define TO_STDOUT 2
 #define TO_STDERR 4
 #define OVERWRITE_FILE 8
 #define APPEND_FILE 16
-#ifdef NCURSES
+#ifdef BUILD_NCURSES
 #define TO_NCURSES 32
-#endif /* NCURSES */
+#endif /* BUILD_NCURSES */
 enum x_initialiser_state {
 	NO = 0,
 	YES = 1,

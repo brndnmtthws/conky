@@ -26,7 +26,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#ifdef X11
+#ifdef BUILD_X11
 #ifndef _FONTS_H
 #define _FONTS_H
 
@@ -43,13 +43,13 @@ struct font_list {
 	int num;
 	XFontStruct *font;
 
-#ifdef XFT
+#ifdef BUILD_XFT
 	XftFont *xftfont;
 	int font_alpha;
 #endif
 };
 
-#ifdef XFT
+#ifdef BUILD_XFT
 
 #define font_height() (use_xft ? (fonts[selected_font].xftfont->ascent + \
 	fonts[selected_font].xftfont->descent) \
@@ -88,4 +88,4 @@ void load_fonts(void);
 #endif
 
 #endif /* _FONTS_H */
-#endif /* X11 */
+#endif /* BUILD_X11 */

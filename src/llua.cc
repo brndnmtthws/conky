@@ -129,13 +129,13 @@ void llua_init(void)
 	lua_pushcfunction(lua_L, &llua_conky_set_update_interval);
 	lua_setglobal(lua_L, "conky_set_update_interval");
 
-#if defined(X11) && defined(LUA_EXTRAS)
+#if defined(BUILD_X11) && defined(LUA_EXTRAS)
 	/* register tolua++ user types */
 	tolua_open(lua_L);
 	tolua_usertype(lua_L, "Drawable");
 	tolua_usertype(lua_L, "Visual");
 	tolua_usertype(lua_L, "Display");
-#endif /* X11 */
+#endif /* BUILD_X11 */
 }
 
 void llua_load(const char *script)
@@ -432,7 +432,7 @@ void llua_shutdown_hook(void)
 	llua_do_call(shutdown_hook, 0);
 }
 
-#ifdef X11
+#ifdef BUILD_X11
 void llua_draw_pre_hook(void)
 {
 	if (!lua_L || !draw_pre_hook) return;
@@ -512,7 +512,7 @@ void llua_update_window_table(int text_start_x, int text_start_y, int text_width
 
 	lua_setglobal(lua_L, "conky_window");
 }
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 void llua_setup_info(struct information *i, double u_interval)
 {

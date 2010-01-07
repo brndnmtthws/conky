@@ -1,6 +1,6 @@
 /* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*- */
 
-#ifdef X11
+#ifdef BUILD_X11
 #ifndef X11_H_
 #define X11_H_
 
@@ -8,11 +8,11 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
-#ifdef XFT
+#ifdef BUILD_XFT
 #include <X11/Xft/Xft.h>
 #endif
 
-#ifdef HAVE_XDBE
+#ifdef BUILD_XDBE
 #include <X11/extensions/Xdbe.h>
 #endif
 
@@ -48,10 +48,10 @@ struct conky_window {
 	GC gc;
 	long border_inner_margin, border_outer_margin, border_width;
 
-#ifdef HAVE_XDBE
+#ifdef BUILD_XDBE
 	XdbeBackBuffer back_buffer;
 #endif
-#ifdef XFT
+#ifdef BUILD_XFT
 	XftDraw *xftdraw;
 #endif
 
@@ -67,15 +67,15 @@ struct conky_window {
 #endif
 };
 
-#ifdef HAVE_XDBE
+#ifdef BUILD_XDBE
 extern int use_xdbe;
 #endif
 
-#ifdef XFT
+#ifdef BUILD_XFT
 extern int use_xft;
 #endif
 
-#if defined(USE_ARGB) && defined(OWN_WINDOW)
+#if defined(BUILD_ARGB) && defined(OWN_WINDOW)
 /* 1 if config var set to 1, otherwise 0 */
 extern int use_argb_visual;
 /* 1 if use_argb_visual=1 and argb visual was found, otherwise 0 */
@@ -110,9 +110,9 @@ void print_desktop_number(struct text_object *, char *, int);
 void print_desktop_name(struct text_object *, char *, int);
 void free_desktop_info(void);
 
-#ifdef HAVE_XDBE
+#ifdef BUILD_XDBE
 void xdbe_swap_buffers(void);
-#endif /* HAVE_XDBE */
+#endif /* BUILD_XDBE */
 
 #endif /*X11_H_*/
-#endif /* X11 */
+#endif /* BUILD_X11 */

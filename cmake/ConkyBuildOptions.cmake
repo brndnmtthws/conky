@@ -130,5 +130,8 @@ option(BUILD_WEATHER_XOAP "Enable XOAP weather support" false)
 if(BUILD_WEATHER_METAR OR BUILD_WEATHER_XOAP)
 	set(BUILD_CURL true)
 endif(BUILD_WEATHER_METAR OR BUILD_WEATHER_XOAP)
+if(BUILD_WEATHER_XOAP)
+	set(XOAP_FILE "$HOME/.xoaprc" CACHE STRING "Path of XOAP file for weather" FORCE)
+endif(BUILD_WEATHER_XOAP)
 
 option(BUILD_APCUPSD "Enable APCUPSD support" true)

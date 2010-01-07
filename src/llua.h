@@ -32,9 +32,9 @@ extern "C" {
 
 #include <config.h>
 
-#ifdef X11
+#ifdef BUILD_X11
 #include "x11.h"
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 #define LUAPREFIX "conky_"
 
@@ -53,7 +53,7 @@ void llua_set_shutdown_hook(const char *args);
 void llua_startup_hook(void);
 void llua_shutdown_hook(void);
 
-#ifdef X11
+#ifdef BUILD_X11
 void llua_draw_pre_hook(void);
 void llua_draw_post_hook(void);
 
@@ -62,7 +62,7 @@ void llua_set_draw_post_hook(const char *args);
 
 void llua_setup_window_table(int text_start_x, int text_start_y, int text_width, int text_height);
 void llua_update_window_table(int text_start_x, int text_start_y, int text_width, int text_height);
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 void llua_setup_info(struct information *i, double u_interval);
 void llua_update_info(struct information *i, double u_interval);

@@ -48,16 +48,16 @@
 #ifdef HAVE_SYS_INOTIFY_H
 #include <sys/inotify.h>
 #endif /* HAVE_SYS_INOTIFY_H */
-#ifdef X11
+#ifdef BUILD_X11
 #include "x11.h"
 #include <X11/Xutil.h>
-#ifdef HAVE_XDAMAGE
+#ifdef BUILD_XDAMAGE
 #include <X11/extensions/Xdamage.h>
 #endif
 #ifdef IMLIB2
 #include "imlib2.h"
 #endif /* IMLIB2 */
-#endif /* X11 */
+#endif /* BUILD_X11 */
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <netinet/in.h>
@@ -77,15 +77,15 @@
 #include "colours.h"
 #include "diskio.h"
 #include "exec.h"
-#ifdef X11
+#ifdef BUILD_X11
 #include "fonts.h"
 #endif
 #ifdef HAVE_ICONV
 #include "iconv_tools.h"
 #endif
-#ifdef HAVE_LUA
+#ifdef BUILD_LUA
 #include "llua.h"
-#endif /* HAVE_LUA */
+#endif /* BUILD_LUA */
 #include "logging.h"
 #include "mail.h"
 #include "net_stat.h"
@@ -172,102 +172,102 @@ static void print_version(void)
 	printf("\nCompiled in features:\n\n"
 			"System config file: "SYSTEM_CONFIG_FILE"\n"
 			"Package library path: "PACKAGE_LIBDIR"\n\n"
-#ifdef X11
+#ifdef BUILD_X11
 			" X11:\n"
-# ifdef HAVE_XDAMAGE
+# ifdef BUILD_XDAMAGE
 			"  * Xdamage extension\n"
-# endif /* HAVE_XDAMAGE */
-# ifdef HAVE_XDBE
+# endif /* BUILD_XDAMAGE */
+# ifdef BUILD_XDBE
 			"  * XDBE (double buffer extension)\n"
-# endif /* HAVE_XDBE */
-# ifdef XFT
+# endif /* BUILD_XDBE */
+# ifdef BUILD_XFT
 			"  * Xft\n"
-# endif /* XFT */
-# ifdef USE_ARGB
+# endif /* BUILD_XFT */
+# ifdef BUILD_ARGB
 			"  * ARGB visual\n"
-# endif /* USE_ARGB */
-#endif /* X11 */
+# endif /* BUILD_ARGB */
+#endif /* BUILD_X11 */
 			"\n Music detection:\n"
-#ifdef AUDACIOUS
+#ifdef BUILD_AUDACIOUS
 			"  * Audacious\n"
-#endif /* AUDACIOUS */
-#ifdef BMPX
+#endif /* BUILD_AUDACIOUS */
+#ifdef BUILD_BMPX
 			"  * BMPx\n"
-#endif /* BMPX */
-#ifdef MPD
+#endif /* BUILD_BMPX */
+#ifdef BUILD_MPD
 			"  * MPD\n"
-#endif /* MPD */
-#ifdef MOC
+#endif /* BUILD_MPD */
+#ifdef BUILD_MOC
 			"  * MOC\n"
-#endif /* MOC */
-#ifdef XMMS2
+#endif /* BUILD_MOC */
+#ifdef BUILD_XMMS2
 			"  * XMMS2\n"
-#endif /* XMMS2 */
+#endif /* BUILD_XMMS2 */
 			"\n General:\n"
 #ifdef HAVE_OPENMP
 			"  * OpenMP\n"
 #endif /* HAVE_OPENMP */
-#ifdef MATH
+#ifdef BUILD_MATH
 			"  * math\n"
-#endif /* Math */
-#ifdef HDDTEMP
+#endif /* BUILD_MATH */
+#ifdef BUILD_HDDTEMP
 			"  * hddtemp\n"
-#endif /* HDDTEMP */
-#ifdef TCP_PORT_MONITOR
+#endif /* BUILD_HDDTEMP */
+#ifdef BUILD_PORT_MONITORS
 			"  * portmon\n"
-#endif /* TCP_PORT_MONITOR */
-#ifdef HAVE_CURL
+#endif /* BUILD_PORT_MONITORS */
+#ifdef BUILD_CURL
 			"  * Curl\n"
-#endif /* HAVE_CURL */
-#ifdef RSS
+#endif /* BUILD_CURL */
+#ifdef BUILD_RSS
 			"  * RSS\n"
-#endif /* RSS */
-#ifdef WEATHER
+#endif /* BUILD_RSS */
+#ifdef BUILD_WEATHER_METAR
 			"  * Weather (METAR)\n"
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 			"  * Weather (XOAP)\n"
-#endif /* XOAP */
-#endif /* WEATHER */
+#endif /* BUILD_WEATHER_XOAP */
+#endif /* BUILD_WEATHER_METAR */
 #ifdef HAVE_IWLIB
 			"  * wireless\n"
 #endif /* HAVE_IWLIB */
-#ifdef IBM
+#ifdef BUILD_IBM
 			"  * support for IBM/Lenovo notebooks\n"
-#endif /* IBM */
-#ifdef NVIDIA
+#endif /* BUILD_IBM */
+#ifdef BUILD_NVIDIA
 			"  * nvidia\n"
-#endif /* NVIDIA */
-#ifdef EVE
+#endif /* BUILD_NVIDIA */
+#ifdef BUILD_EVE
 			"  * eve-online\n"
-#endif /* EVE */
-#ifdef CONFIG_OUTPUT
+#endif /* BUILD_EVE */
+#ifdef BUILD_CONFIG_OUTPUT
 			"  * config-output\n"
 #endif /* CONFIG_OUTPUT */
-#ifdef IMLIB2
+#ifdef BUILD_IMLIB2
 			"  * Imlib2\n"
-#endif /* IMLIB2 */
-#ifdef MIXER_IS_ALSA
+#endif /* BUILD_IMLIB2 */
+#ifdef BUILD_MIXER_ALSA
 			"  * ALSA mixer support\n"
-#endif /* MIXER_IS_ALSA */
-#ifdef APCUPSD
+#endif /* BUILD_MIXER_ALSA */
+#ifdef BUILD_APCUPSD
 			"  * apcupsd\n"
-#endif /* APCUPSD */
-#ifdef IOSTATS
+#endif /* BUILD_APCUPSD */
+#ifdef BUILD_IOSTATS
 			"  * iostats\n"
-#endif /* IOSTATS */
-#ifdef NCURSES
+#endif /* BUILD_IOSTATS */
+#ifdef BUILD_NCURSES
 			"  * ncurses\n"
-#endif /* NCURSES */
-#ifdef HAVE_LUA
+#endif /* BUILD_NCURSES */
+#ifdef BUILD_LUA
 			"  * Lua\n"
 			"\n  Lua bindings:\n"
-#ifdef HAVE_LUA_CAIRO
+#ifdef BUILD_LUA_CAIRO
 			"   * Cairo\n"
-#endif /* HAVE_LUA_CAIRO */
-#ifdef HAVE_LUA_IMLIB2
+#endif /* BUILD_LUA_CAIRO */
+#ifdef BUILD_LUA_IMLIB2
 			"   * Imlib2\n"
-#endif /* IMLIB2 */
-#endif /* HAVE_LUA */
+#endif /* BUILD_LUA_IMLIB2 */
+#endif /* BUILD_LUA */
 			);
 
 	exit(EXIT_SUCCESS);
@@ -276,14 +276,14 @@ static void print_version(void)
 static const char *suffixes[] = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "" };
 
 
-#ifdef X11
+#ifdef BUILD_X11
 
 static void X11_create_window(void);
 static void X11_initialisation(void);
 
 struct _x11_stuff_s {
 	Region region;
-#ifdef HAVE_XDAMAGE
+#ifdef BUILD_XDAMAGE
 	Damage damage;
 	XserverRegion region2, part;
 	int event_base, error_base;
@@ -312,7 +312,7 @@ enum alignment {
 /* display to connect to */
 static char *disp = NULL;
 
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 /* struct that has all info to be shared between
  * instances of the same text object */
@@ -336,7 +336,7 @@ static int cpu_avg_samples, net_avg_samples, diskio_avg_samples;
 char *overwrite_file = NULL; FILE *overwrite_fpointer = NULL;
 char *append_file = NULL; FILE *append_fpointer = NULL;
 
-#ifdef X11
+#ifdef BUILD_X11
 
 static int show_graph_scale;
 static int show_graph_range;
@@ -373,7 +373,7 @@ static int fixed_size = 0, fixed_pos = 0;
 static int minimum_width, minimum_height;
 static int maximum_width;
 
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 #ifdef __OpenBSD__
 static int sensor_device;
@@ -430,13 +430,13 @@ int calc_text_width(const char *s)
 {
 	size_t slen = strlen(s);
 
-#ifdef X11
+#ifdef BUILD_X11
 	if ((output_methods & TO_X) == 0) {
-#endif /* X11 */
+#endif /* BUILD_X11 */
 		return slen;
-#ifdef X11
+#ifdef BUILD_X11
 	}
-#ifdef XFT
+#ifdef BUILD_XFT
 	if (use_xft) {
 		XGlyphInfo gi;
 
@@ -449,11 +449,11 @@ int calc_text_width(const char *s)
 		}
 		return gi.xOff;
 	} else
-#endif
+#endif /* BUILD_XFT */
 	{
 		return XTextWidth(fonts[selected_font].font, s, slen);
 	}
-#endif /* X11 */
+#endif /* BUILD_X11 */
 }
 
 /* formatted text to render on screen, generated in generate_text(),
@@ -752,10 +752,10 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root)
 			new_bar(obj, p, p_max_size, (*obj->callbacks.barval)(obj));
 		} else if (obj->callbacks.gaugeval) {
 			new_gauge(obj, p, p_max_size, (*obj->callbacks.gaugeval)(obj));
-#ifdef X11
+#ifdef BUILD_X11
 		} else if (obj->callbacks.graphval) {
 			new_graph(obj, p, p_max_size, (*obj->callbacks.graphval)(obj));
-#endif /* X11 */
+#endif /* BUILD_X11 */
 		} else if (obj->callbacks.percentage) {
 			percent_print(p, p_max_size, (*obj->callbacks.percentage)(obj));
 		}
@@ -772,10 +772,10 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root)
 
 		obj = obj->next;
 	}
-#ifdef X11
+#ifdef BUILD_X11
 	/* load any new fonts we may have had */
 	load_fonts();
-#endif /* X11 */
+#endif /* BUILD_X11 */
 #ifdef HAVE_ICONV
 	free(buff_in);
 #endif /* HAVE_ICONV */
@@ -861,7 +861,7 @@ int get_string_width(const char *s)
 	return *s ? calc_text_width(s) : 0;
 }
 
-#ifdef X11
+#ifdef BUILD_X11
 static int get_string_width_special(char *s, int special_index)
 {
 	char *p, *final;
@@ -991,19 +991,19 @@ static void update_text_area(void)
 		text_start_x = x;
 		text_start_y = y;
 	}
-#ifdef HAVE_LUA
+#ifdef BUILD_LUA
 	/* update lua window globals */
 	llua_update_window_table(text_start_x, text_start_y, text_width, text_height);
-#endif /* HAVE_LUA */
+#endif /* BUILD_LUA */
 }
 
 /* drawing stuff */
 
 static int cur_x, cur_y;	/* current x and y for drawing */
 #endif
-//draw_mode also without X11 because we only need to print to stdout with FG
+//draw_mode also without BUILD_X11 because we only need to print to stdout with FG
 static int draw_mode;		/* FG, BG or OUTLINE */
-#ifdef X11
+#ifdef BUILD_X11
 static long current_color;
 
 static int text_size_updater(char *s, int special_index)
@@ -1087,24 +1087,24 @@ static int text_size_updater(char *s, int special_index)
 	last_font_height = font_height();
 	return special_index;
 }
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 static inline void set_foreground_color(long c)
 {
-#ifdef X11
+#ifdef BUILD_X11
 	if (output_methods & TO_X) {
-#ifdef USE_ARGB
+#ifdef BUILD_ARGB
 		if (have_argb_visual) {
 			current_color = c | (own_window_argb_value << 24);
 		} else {
-#endif /* USE_ARGB */
+#endif /* BUILD_ARGB */
 			current_color = c;
-#ifdef USE_ARGB
+#ifdef BUILD_ARGB
 		}
-#endif /* USE_ARGB */
+#endif /* BUILD_ARGB */
 		XSetForeground(display, window.gc, current_color);
 	}
-#endif /* X11 */
+#endif /* BUILD_X11 */
 #ifdef NCURSES
 	if (output_methods & TO_NCURSES) {
 		attron(COLOR_PAIR(c));
@@ -1159,11 +1159,11 @@ static void draw_string(const char *s)
 	pos = 0;
 	added = 0;
 
-#ifdef X11
+#ifdef BUILD_X11
 	if (output_methods & TO_X) {
 		max = ((text_width - width_of_s) / get_string_width(" "));
 	}
-#endif /* X11 */
+#endif /* BUILD_X11 */
 	/* This code looks for tabs in the text and coverts them to spaces.
 	 * The trick is getting the correct number of spaces, and not going
 	 * over the window's size without forcing the window larger. */
@@ -1182,7 +1182,7 @@ static void draw_string(const char *s)
 			pos++;
 		}
 	}
-#ifdef X11
+#ifdef BUILD_X11
 	if (output_methods & TO_X) {
 		if (text_width == maximum_width) {
 			/* this means the text is probably pushing the limit,
@@ -1193,11 +1193,11 @@ static void draw_string(const char *s)
 			}
 		}
 	}
-#endif /* X11 */
+#endif /* BUILD_X11 */
 	s = tmpstring2;
-#ifdef X11
+#ifdef BUILD_X11
 	if (output_methods & TO_X) {
-#ifdef XFT
+#ifdef BUILD_XFT
 		if (use_xft) {
 			XColor c;
 			XftColor c2;
@@ -1226,28 +1226,28 @@ static void draw_string(const char *s)
 		}
 		cur_x += width_of_s;
 	}
-#endif /* X11 */
+#endif /* BUILD_X11 */
 	memcpy(tmpstring1, s, text_buffer_size);
 }
 
 int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 {
-#ifdef X11
+#ifdef BUILD_X11
 	int font_h = 0;
 	int cur_y_add = 0;
-#endif /* X11 */
+#endif /* BUILD_X11 */
 	char *recurse = 0;
 	char *p = s;
 	int last_special_needed = -1;
 	int orig_special_index = special_index;
 
-#ifdef X11
+#ifdef BUILD_X11
 	if (output_methods & TO_X) {
 		font_h = font_height();
 		cur_y += font_ascent();
 	}
 	cur_x = text_start_x;
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 	while (*p) {
 		if (*p == SECRIT_MULTILINE_CHAR) {
@@ -1257,9 +1257,9 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 			break;
 		}
 		if (*p == SPECIAL_CHAR || last_special_applied > -1) {
-#ifdef X11
+#ifdef BUILD_X11
 			int w = 0;
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 			/* draw string before special, unless we're dealing multiline
 			 * specials */
@@ -1273,7 +1273,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 			}
 			/* draw special */
 			switch (specials[special_index].type) {
-#ifdef X11
+#ifdef BUILD_X11
 				case HORIZONTAL_LINE:
 				{
 					int h = specials[special_index].height;
@@ -1568,14 +1568,14 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					font_h = font_height();
 					break;
 				}
-#endif /* X11 */
+#endif /* BUILD_X11 */
 				case FG:
 					if (draw_mode == FG) {
 						set_foreground_color(specials[special_index].arg);
 					}
 					break;
 
-#ifdef X11
+#ifdef BUILD_X11
 				case BG:
 					if (draw_mode == BG) {
 						set_foreground_color(specials[special_index].arg);
@@ -1657,12 +1657,12 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					last_special_needed = special_index;
 					break;
 				}
-#endif /* X11 */
+#endif /* BUILD_X11 */
 			}
 
-#ifdef X11
+#ifdef BUILD_X11
 			cur_x += w;
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 			if (special_index != last_special_applied) {
 				special_index++;
@@ -1674,19 +1674,19 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 		p++;
 	}
 
-#ifdef X11
+#ifdef BUILD_X11
 	cur_y += cur_y_add;
-#endif /* X11 */
+#endif /* BUILD_X11 */
 	draw_string(s);
 #ifdef NCURSES
 	if (output_methods & TO_NCURSES) {
 		printw("\n");
 	}
 #endif /* NCURSES */
-#ifdef X11
+#ifdef BUILD_X11
 	if (output_methods & TO_X)
 		cur_y += font_descent();
-#endif /* X11 */
+#endif /* BUILD_X11 */
 	if (recurse && *recurse) {
 		special_index = draw_each_line_inner(recurse, special_index, last_special_needed);
 		*(recurse - 1) = SECRIT_MULTILINE_CHAR;
@@ -1696,11 +1696,11 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 
 static int draw_line(char *s, int special_index)
 {
-#ifdef X11
+#ifdef BUILD_X11
 	if (output_methods & TO_X) {
 		return draw_each_line_inner(s, special_index, -1);
 	}
-#endif /* X11 */
+#endif /* BUILD_X11 */
 #ifdef NCURSES
 	if (output_methods & TO_NCURSES) {
 		return draw_each_line_inner(s, special_index, -1);
@@ -1713,10 +1713,10 @@ static int draw_line(char *s, int special_index)
 
 static void draw_text(void)
 {
-#ifdef X11
-#ifdef HAVE_LUA
+#ifdef BUILD_X11
+#ifdef BUILD_LUA
 	llua_draw_pre_hook();
-#endif /* HAVE_LUA */
+#endif /* BUILD_LUA */
 	if (output_methods & TO_X) {
 		cur_y = text_start_y;
 
@@ -1742,15 +1742,15 @@ static void draw_text(void)
 		/* draw text */
 	}
 	setup_fonts();
-#endif /* X11 */
+#endif /* BUILD_X11 */
 #ifdef NCURSES
 	init_pair(COLOR_WHITE, COLOR_WHITE, COLOR_BLACK);
 	attron(COLOR_PAIR(COLOR_WHITE));
 #endif /* NCURSES */
 	for_each_line(text_buffer, draw_line);
-#if defined(HAVE_LUA) && defined(X11)
+#if defined(BUILD_LUA) && defined(BUILD_X11)
 	llua_draw_post_hook();
-#endif /* HAVE_LUA */
+#endif /* BUILD_LUA */
 }
 
 static void draw_stuff(void)
@@ -1768,7 +1768,7 @@ static void draw_stuff(void)
 		if(!append_fpointer)
 			NORM_ERR("Can't append '%s' anymore", append_file);
 	}
-#ifdef X11
+#ifdef BUILD_X11
 	if (output_methods & TO_X) {
 		selected_font = 0;
 		if (draw_shades && !draw_outline) {
@@ -1803,14 +1803,14 @@ static void draw_stuff(void)
 
 		set_foreground_color(default_fg_color);
 	}
-#endif /* X11 */
+#endif /* BUILD_X11 */
 	draw_mode = FG;
 	draw_text();
-#if defined(X11) && defined(HAVE_XDBE)
+#if defined(BUILD_X11) && defined(BUILD_XDBE)
 	if (output_methods & TO_X) {
 		xdbe_swap_buffers();
 	}
-#endif /* X11 && HAVE_XDBE */
+#endif /* BUILD_X11 && BUILD_XDBE */
 	if(overwrite_fpointer) {
 		fclose(overwrite_fpointer);
 		overwrite_fpointer = 0;
@@ -1821,10 +1821,10 @@ static void draw_stuff(void)
 	}
 }
 
-#ifdef X11
+#ifdef BUILD_X11
 static void clear_text(int exposures)
 {
-#ifdef HAVE_XDBE
+#ifdef BUILD_XDBE
 	if (use_xdbe) {
 		/* The swap action is XdbeBackground, which clears */
 		return;
@@ -1838,7 +1838,7 @@ static void clear_text(int exposures)
 			text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, exposures ? True : 0);
 	}
 }
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 static int need_to_update;
 
@@ -1849,14 +1849,14 @@ static void update_text(void)
 	cimlib_cleanup();
 #endif /* IMLIB2 */
 	generate_text();
-#ifdef X11
+#ifdef BUILD_X11
 	if (output_methods & TO_X)
 		clear_text(1);
-#endif /* X11 */
+#endif /* BUILD_X11 */
 	need_to_update = 1;
-#ifdef HAVE_LUA
+#ifdef BUILD_LUA
 	llua_update_info(&info, update_interval);
-#endif /* HAVE_LUA */
+#endif /* BUILD_LUA */
 }
 
 #ifdef HAVE_SYS_INOTIFY_H
@@ -1908,7 +1908,7 @@ static void main_loop(void)
 		}
 #endif
 
-#ifdef X11
+#ifdef BUILD_X11
 		if (output_methods & TO_X) {
 			XFlush(display);
 
@@ -1966,16 +1966,16 @@ static void main_loop(void)
 						XResizeWindow(display, window.window, window.width,
 								window.height); /* resize window */
 						set_transparent_background(window.window, own_window_argb_value);
-#ifdef HAVE_XDBE
+#ifdef BUILD_XDBE
 						/* swap buffers */
 						xdbe_swap_buffers();
 #endif
 
 						changed++;
-#ifdef HAVE_LUA
+#ifdef BUILD_LUA
 						/* update lua window globals */
 						llua_update_window_table(text_start_x, text_start_y, text_width, text_height);
-#endif /* HAVE_LUA */
+#endif /* BUILD_LUA */
 					}
 
 					/* move window if it isn't in right position */
@@ -2025,7 +2025,7 @@ static void main_loop(void)
 
 				clear_text(1);
 
-#ifdef HAVE_XDBE
+#ifdef BUILD_XDBE
 				if (use_xdbe) {
 					XRectangle r;
 
@@ -2160,22 +2160,22 @@ static void main_loop(void)
 #endif
 
 					default:
-#ifdef HAVE_XDAMAGE
+#ifdef BUILD_XDAMAGE
 						if (ev.type == x11_stuff.event_base + XDamageNotify) {
 							XDamageNotifyEvent *dev = (XDamageNotifyEvent *) &ev;
 
 							XFixesSetRegion(display, x11_stuff.part, &dev->area, 1);
 							XFixesUnionRegion(display, x11_stuff.region2, x11_stuff.region2, x11_stuff.part);
 						}
-#endif /* HAVE_XDAMAGE */
+#endif /* BUILD_XDAMAGE */
 						break;
 				}
 			}
 
-#ifdef HAVE_XDAMAGE
+#ifdef BUILD_XDAMAGE
 			XDamageSubtract(display, x11_stuff.damage, x11_stuff.region2, None);
 			XFixesSetRegion(display, x11_stuff.region2, 0, 0);
-#endif /* HAVE_XDAMAGE */
+#endif /* BUILD_XDAMAGE */
 
 			/* XDBE doesn't seem to provide a way to clear the back buffer
 			 * without interfering with the front buffer, other than passing
@@ -2185,7 +2185,7 @@ static void main_loop(void)
 			 * all, then no swap happens and we can safely do nothing. */
 
 			if (!XEmptyRegion(x11_stuff.region)) {
-#ifdef HAVE_XDBE
+#ifdef BUILD_XDBE
 				if (use_xdbe) {
 					XRectangle r;
 
@@ -2197,7 +2197,7 @@ static void main_loop(void)
 				}
 #endif
 				XSetRegion(display, window.gc, x11_stuff.region);
-#ifdef XFT
+#ifdef BUILD_XFT
 				if (use_xft) {
 					XftDrawSetClip(window.xftdraw, x11_stuff.region);
 				}
@@ -2207,7 +2207,7 @@ static void main_loop(void)
 				x11_stuff.region = XCreateRegion();
 			}
 		} else {
-#endif /* X11 */
+#endif /* BUILD_X11 */
 			t = (next_update_time - get_time()) * 1000000;
 			if(t > 0) usleep((useconds_t)t);
 			update_text();
@@ -2218,9 +2218,9 @@ static void main_loop(void)
 				clear();
 			}
 #endif
-#ifdef X11
+#ifdef BUILD_X11
 		}
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 #ifdef SIGNAL_BLOCKING
 		/* unblock signals of interest and let handler fly */
@@ -2239,20 +2239,20 @@ static void main_loop(void)
 			case SIGTERM:
 				NORM_ERR("received SIGINT or SIGTERM to terminate. bye!");
 				terminate = 1;
-#ifdef X11
+#ifdef BUILD_X11
 				if (output_methods & TO_X) {
 					XDestroyRegion(x11_stuff.region);
 					x11_stuff.region = NULL;
-#ifdef HAVE_XDAMAGE
+#ifdef BUILD_XDAMAGE
 					XDamageDestroy(display, x11_stuff.damage);
 					XFixesDestroyRegion(display, x11_stuff.region2);
 					XFixesDestroyRegion(display, x11_stuff.part);
-#endif /* HAVE_XDAMAGE */
+#endif /* BUILD_XDAMAGE */
 					if (disp) {
 						free(disp);
 					}
 				}
-#endif /* X11 */
+#endif /* BUILD_X11 */
 				if(overwrite_file) {
 					free(overwrite_file);
 					overwrite_file = 0;
@@ -2308,11 +2308,11 @@ static void main_loop(void)
 						}
 						break;
 					}
-#ifdef HAVE_LUA
+#ifdef BUILD_LUA
 					else {
 						llua_inotify_query(ev->wd, ev->mask);
 					}
-#endif /* HAVE_LUA */
+#endif /* BUILD_LUA */
 					idx += INOTIFY_EVENT_SIZE + ev->len;
 				}
 			}
@@ -2323,9 +2323,9 @@ static void main_loop(void)
 		}
 #endif /* HAVE_SYS_INOTIFY_H */
 
-#ifdef HAVE_LUA
+#ifdef BUILD_LUA
 		llua_update_info(&info, update_interval);
-#endif /* HAVE_LUA */
+#endif /* BUILD_LUA */
 		g_signal_pending = 0;
 	}
 	clean_up(NULL, NULL);
@@ -2339,9 +2339,9 @@ static void main_loop(void)
 #endif /* HAVE_SYS_INOTIFY_H */
 }
 
-#ifdef X11
+#ifdef BUILD_X11
 static void load_config_file_x11(const char *);
-#endif /* X11 */
+#endif /* BUILD_X11 */
 void initialisation(int argc, char** argv);
 
 	/* reload the config file */
@@ -2379,7 +2379,7 @@ void clean_up(void *memtofree1, void* memtofree2)
 		free(info.cpu_usage);
 		info.cpu_usage = NULL;
 	}
-#ifdef X11
+#ifdef BUILD_X11
 	if (x_initialised == YES) {
 		if(window_created == 1) {
 			XClearArea(display, window.window, text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width,
@@ -2409,7 +2409,7 @@ void clean_up(void *memtofree1, void* memtofree2)
 		font_count = -1;
 	}
 
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 	free_templates();
 
@@ -2418,9 +2418,9 @@ void clean_up(void *memtofree1, void* memtofree2)
 		info.first_process = NULL;
 	}
 
-#ifdef X11
+#ifdef BUILD_X11
 	free_desktop_info();
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 	free_text_objects(&global_root_object);
 	if (tmpstring1) {
@@ -2444,22 +2444,22 @@ void clean_up(void *memtofree1, void* memtofree2)
 	free(current_config);
 	current_config = 0;
 
-#ifdef TCP_PORT_MONITOR
+#ifdef BUILD_PORT_MONITORS
 	tcp_portmon_clear();
 #endif
-#ifdef HAVE_CURL
+#ifdef BUILD_CURL
 	ccurl_free_info();
 #endif
 #ifdef RSS
 	rss_free_info();
 #endif
-#ifdef WEATHER
+#ifdef BUILD_WEATHER
 	weather_free_info();
 #endif
-#ifdef HAVE_LUA
+#ifdef BUILD_LUA
 	llua_shutdown_hook();
 	llua_close();
-#endif /* HAVE_LUA */
+#endif /* BUILD_LUA */
 #ifdef IMLIB2
 	if (output_methods & TO_X)
 		cimlib_deinit();
@@ -2501,7 +2501,7 @@ static int string_to_bool(const char *s)
 	return 0;
 }
 
-#ifdef X11
+#ifdef BUILD_X11
 static enum alignment string_to_alignment(const char *s)
 {
 	if (strcasecmp(s, "top_left") == EQUAL) {
@@ -2545,9 +2545,9 @@ static enum alignment string_to_alignment(const char *s)
 	}
 	return TOP_LEFT;
 }
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
-#ifdef X11
+#ifdef BUILD_X11
 static void set_default_configurations_for_x(void)
 {
 	default_fg_color = WhitePixel(display, screen);
@@ -2565,14 +2565,14 @@ static void set_default_configurations_for_x(void)
 	color9 = default_fg_color;
 	current_text_color = default_fg_color;
 }
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 static void set_default_configurations(void)
 {
-#ifdef MPD
+#ifdef BUILD_MPD
 	char *mpd_env_host;
 	char *mpd_env_port;
-#endif
+#endif /* BUILD_MPD */
 	update_uname();
 	fork_to_background = 0;
 	total_run_times = 0;
@@ -2590,7 +2590,7 @@ static void set_default_configurations(void)
 	top_io = 0;
 #endif
 	top_running = 0;
-#ifdef MPD
+#ifdef BUILD_MPD
 	mpd_env_host = getenv("MPD_HOST");
 	mpd_env_port = getenv("MPD_PORT");
 
@@ -2622,8 +2622,8 @@ static void set_default_configurations(void)
 		/* failed to set port from environment variable */
 		mpd_set_port("6600");
 	}
-#endif
-#ifdef XMMS2
+#endif /* BUILD_MPD */
+#ifdef BUILD_XMMS2
 	info.xmms2.artist = NULL;
 	info.xmms2.album = NULL;
 	info.xmms2.title = NULL;
@@ -2632,14 +2632,14 @@ static void set_default_configurations(void)
 	info.xmms2.url = NULL;
 	info.xmms2.status = NULL;
 	info.xmms2.playlist = NULL;
-#endif
+#endif /* BUILD_XMMS2 */
 	use_spacer = NO_SPACER;
-#ifdef X11
+#ifdef BUILD_X11
 	output_methods = TO_X;
 #else
 	output_methods = TO_STDOUT;
 #endif
-#ifdef X11
+#ifdef BUILD_X11
 	show_graph_scale = 0;
 	show_graph_range = 0;
 	draw_shades = 1;
@@ -2658,7 +2658,7 @@ static void set_default_configurations(void)
 	window.hints = 0;
 	strcpy(window.class_name, PACKAGE_NAME);
 	sprintf(window.title, PACKAGE_NAME" (%s)", info.uname_s.nodename);
-#ifdef USE_ARGB
+#ifdef BUILD_ARGB
 	use_argb_visual = 0;
 	own_window_argb_value = 255;
 #endif
@@ -2675,7 +2675,7 @@ static void set_default_configurations(void)
 	info.x11.desktop.nitems = 0;
 	info.x11.desktop.all_names = NULL;
 	info.x11.desktop.name = NULL;
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 	free_templates();
 
@@ -2698,7 +2698,7 @@ static void set_default_configurations(void)
 
 	set_times_in_seconds(0);
 
-#ifdef TCP_PORT_MONITOR
+#ifdef BUILD_PORT_MONITORS
 	/* set default connection limit */
 	tcp_portmon_set_max_connections(0);
 #endif
@@ -2726,7 +2726,7 @@ static bool append_works(const char *path)
 	return true;
 }
 
-#ifdef X11
+#ifdef BUILD_X11
 #ifdef DEBUG
 /* WARNING, this type not in Xlib spec */
 int x11_error_handler(Display *d, XErrorEvent *err)
@@ -2806,24 +2806,24 @@ static void X11_create_window(void)
 		draw_stuff();
 
 		x11_stuff.region = XCreateRegion();
-#ifdef HAVE_XDAMAGE
+#ifdef BUILD_XDAMAGE
 		if (!XDamageQueryExtension(display, &x11_stuff.event_base, &x11_stuff.error_base)) {
 			NORM_ERR("Xdamage extension unavailable");
 		}
 		x11_stuff.damage = XDamageCreate(display, window.window, XDamageReportNonEmpty);
 		x11_stuff.region2 = XFixesCreateRegionFromWindow(display, window.window, 0);
 		x11_stuff.part = XFixesCreateRegionFromWindow(display, window.window, 0);
-#endif /* HAVE_XDAMAGE */
+#endif /* BUILD_XDAMAGE */
 
 		selected_font = 0;
 		update_text_area();	/* to get initial size of the window */
 	}
-#ifdef HAVE_LUA
+#ifdef BUILD_LUA
 	/* setup lua window globals */
 	llua_setup_window_table(text_start_x, text_start_y, text_width, text_height);
-#endif /* HAVE_LUA */
+#endif /* BUILD_LUA */
 }
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 #define CONF_ERR NORM_ERR("%s: %d: config file error", f, line)
 #define CONF_ERR2(a) NORM_ERR("%s: %d: config file error: %s", f, line, a)
@@ -2915,7 +2915,7 @@ char load_config_file(const char *f)
 			continue;
 		}
 
-#ifdef X11
+#ifdef BUILD_X11
 		CONF2("out_to_x") {
 			/* don't listen if X is already initialised or
 			 * if we already know we don't want it */
@@ -2962,8 +2962,8 @@ char load_config_file(const char *f)
 		CONF2("background") {
 			fork_to_background = string_to_bool(value);
 		}
-#endif /* X11 */
-#ifdef X11
+#endif /* BUILD_X11 */
+#ifdef BUILD_X11
 		CONF("show_graph_scale") {
 			show_graph_scale = string_to_bool(value);
 		}
@@ -2994,7 +2994,7 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-#endif /* X11 */
+#endif /* BUILD_X11 */
 #define TEMPLATE_CONF(n) \
 		CONF("template"#n) { \
 			if (set_template(n, value)) \
@@ -3037,7 +3037,7 @@ char load_config_file(const char *f)
 				CONF_ERR2("default_bar_size takes 2 integer arguments (ie. 'default_bar_size 0 6')")
 			}
 		}
-#ifdef X11
+#ifdef BUILD_X11
 		CONF("default_graph_size") {
 			char err = 0;
 			if (value) {
@@ -3065,7 +3065,7 @@ char load_config_file(const char *f)
 			}
 		}
 #endif
-#ifdef MPD
+#ifdef BUILD_MPD
 		CONF("mpd_host") {
 			if (value) {
 				mpd_set_host(value);
@@ -3085,7 +3085,7 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-#endif
+#endif /* BUILD_MPD */
 		CONF("music_player_interval") {
 			if (value) {
 				info.music_player_interval = strtod(value, 0);
@@ -3139,12 +3139,12 @@ char load_config_file(const char *f)
 			}
 		}
 
-#ifdef HAVE_XDBE
+#ifdef BUILD_XDBE
 		CONF("double_buffer") {
 			use_xdbe = string_to_bool(value);
 		}
 #endif
-#ifdef X11
+#ifdef BUILD_X11
 		CONF("override_utf8_locale") {
 			utf8_mode = string_to_bool(value);
 		}
@@ -3160,7 +3160,7 @@ char load_config_file(const char *f)
 		CONF("draw_outline") {
 			draw_outline = string_to_bool(value);
 		}
-#endif /* X11 */
+#endif /* BUILD_X11 */
 		CONF("times_in_seconds") {
 			set_times_in_seconds(string_to_bool(value));
 		}
@@ -3241,8 +3241,8 @@ char load_config_file(const char *f)
 				use_spacer = RIGHT_SPACER;
 			}
 		}
-#ifdef X11
-#ifdef XFT
+#ifdef BUILD_X11
+#ifdef BUILD_XFT
 		CONF("use_xft") {
 			use_xft = string_to_bool(value);
 		}
@@ -3275,7 +3275,7 @@ char load_config_file(const char *f)
 			if (value) {
 				set_first_font(value);
 			}
-#ifdef XFT
+#ifdef BUILD_XFT
 			}
 #endif
 		}
@@ -3293,7 +3293,7 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-#endif /* X11 */
+#endif /* BUILD_X11 */
 		CONF("mail_spool") {
 			if (value) {
 				char buffer[256];
@@ -3310,7 +3310,7 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-#ifdef X11
+#ifdef BUILD_X11
 		CONF("minimum_size") {
 			if (value) {
 				if (sscanf(value, "%d %d", &minimum_width, &minimum_height)
@@ -3332,7 +3332,7 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-#endif /* X11 */
+#endif /* BUILD_X11 */
 		CONF("no_buffers") {
 			no_buffers = string_to_bool(value);
 		}
@@ -3362,7 +3362,7 @@ char load_config_file(const char *f)
 		CONF("pad_percents") {
 			pad_percents = atoi(value);
 		}
-#ifdef X11
+#ifdef BUILD_X11
 #ifdef OWN_WINDOW
 		CONF("own_window") {
 			if (value) {
@@ -3439,7 +3439,7 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-#ifdef USE_ARGB
+#ifdef BUILD_ARGB
 		CONF("own_window_argb_visual") {
 			use_argb_visual = string_to_bool(value);
 		}
@@ -3449,7 +3449,7 @@ char load_config_file(const char *f)
 				CONF_ERR2("own_window_argb_value must be <= 255 and >= 0");
 			}
 		}
-#endif /* USE_ARGB */
+#endif /* BUILD_ARGB */
 #endif
 		CONF("stippled_borders") {
 			if (value) {
@@ -3470,7 +3470,7 @@ char load_config_file(const char *f)
 			}
 		}
 #endif /* IMLIB2 */
-#endif /* X11 */
+#endif /* BUILD_X11 */
 		CONF("update_interval_on_battery") {
 			if (value) {
 				update_interval_bat = strtod(value, 0);
@@ -3525,7 +3525,7 @@ char load_config_file(const char *f)
 			}
 		}
 		CONF("text") {
-#ifdef X11
+#ifdef BUILD_X11
 			if (output_methods & TO_X) {
 				X11_initialisation();
 			}
@@ -3574,7 +3574,7 @@ char load_config_file(const char *f)
 			global_text_lines = line + 1;
 			break;
 		}
-#ifdef TCP_PORT_MONITOR
+#ifdef BUILD_PORT_MONITORS
 		CONF("max_port_monitor_connections") {
 			int max;
 			if (!value || (sscanf(value, "%d", &max) != 1)) {
@@ -3611,7 +3611,7 @@ char load_config_file(const char *f)
 			}
 		}
 
-#ifdef HAVE_LUA
+#ifdef BUILD_LUA
 		CONF("lua_load") {
 			if (value) {
 				char *ptr = strtok(value, " ");
@@ -3623,7 +3623,7 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-#ifdef X11
+#ifdef BUILD_X11
 		CONF("lua_draw_hook_pre") {
 			if (value) {
 				llua_set_draw_pre_hook(value);
@@ -3652,8 +3652,8 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-#endif /* X11 */
-#endif /* HAVE_LUA */
+#endif /* BUILD_X11 */
+#endif /* BUILD_LUA */
 
 		CONF("color0"){}
 		CONF("color1"){}
@@ -3688,13 +3688,13 @@ char load_config_file(const char *f)
 		CRIT_ERR(0, 0, "no output_methods have been selected; exiting");
 	}
 #if defined(NCURSES)
-#if defined(X11)
+#if defined(BUILD_X11)
 	if ((output_methods & TO_X) && (output_methods & TO_NCURSES)) {
 		NORM_ERR("out_to_x and out_to_ncurses are incompatible, turning out_to_ncurses off");
 		output_methods &= ~TO_NCURSES;
 		endwin();
 	}
-#endif /* X11 */
+#endif /* BUILD_X11 */
 	if ((output_methods & (TO_STDOUT | TO_STDERR)) && (output_methods & TO_NCURSES)) {
 		NORM_ERR("out_to_ncurses conflicts with out_to_console and out_to_stderr, disabling the later ones");
 		output_methods &= ~(TO_STDOUT | TO_STDERR);
@@ -3703,7 +3703,7 @@ char load_config_file(const char *f)
 	return TRUE;
 }
 
-#ifdef X11
+#ifdef BUILD_X11
 static void load_config_file_x11(const char *f)
 {
 	int line = 0;
@@ -3868,7 +3868,7 @@ static void load_config_file_x11(const char *f)
 		}
 #endif
 		CONF("text") {
-			/* initialize X11 if nothing X11-related is mentioned before TEXT (and if X11 is the default outputmethod) */
+			/* initialize BUILD_X11 if nothing BUILD_X11-related is mentioned before TEXT (and if BUILD_X11 is the default outputmethod) */
 			if(output_methods & TO_X) {
 				X11_initialisation();
 			}
@@ -3886,7 +3886,7 @@ static void load_config_file_x11(const char *f)
 	fclose(fp);
 
 }
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 static void print_help(const char *prog_name) {
 	printf("Usage: %s [OPTION]...\n"
@@ -3903,20 +3903,20 @@ static void print_help(const char *prog_name) {
 #endif
 			"   -d, --daemonize           daemonize, fork to background\n"
 			"   -h, --help                help\n"
-#ifdef X11
+#ifdef BUILD_X11
 			"   -a, --alignment=ALIGNMENT text alignment on screen, {top,bottom,middle}_{left,right,middle}\n"
 			"   -f, --font=FONT           font to use\n"
-			"   -X, --display=DISPLAY     X11 display to use\n"
+			"   -X, --display=DISPLAY     BUILD_X11 display to use\n"
 #ifdef OWN_WINDOW
 			"   -o, --own-window          create own window to draw\n"
 #endif
-#ifdef HAVE_XDBE
+#ifdef BUILD_XDBE
 			"   -b, --double-buffer       double buffer (prevents flickering)\n"
 #endif
 			"   -w, --window-id=WIN_ID    window id to draw\n"
 			"   -x X                      x position\n"
 			"   -y Y                      y position\n"
-#endif /* X11 */
+#endif /* BUILD_X11 */
 			"   -t, --text=TEXT           text to render, remember single quotes, like -t '$uptime'\n"
 			"   -u, --interval=SECS       update interval\n"
 			"   -i COUNT                  number of times to update "PACKAGE_NAME" (and quit)\n"
@@ -3927,15 +3927,15 @@ static void print_help(const char *prog_name) {
 
 /* : means that character before that takes an argument */
 static const char *getopt_string = "vVqdDt:u:i:hc:p:"
-#ifdef X11
+#ifdef BUILD_X11
 	"x:y:w:a:f:X:"
 #ifdef OWN_WINDOW
 	"o"
 #endif
-#ifdef HAVE_XDBE
+#ifdef BUILD_XDBE
 	"b"
 #endif
-#endif /* X11 */
+#endif /* BUILD_X11 */
 #ifdef CONFIG_OUTPUT
 	"C"
 #endif
@@ -3950,18 +3950,18 @@ static const struct option longopts[] = {
 	{ "print-config", 0, NULL, 'C' },
 #endif
 	{ "daemonize", 0, NULL, 'd' },
-#ifdef X11
+#ifdef BUILD_X11
 	{ "alignment", 1, NULL, 'a' },
 	{ "font", 1, NULL, 'f' },
 	{ "display", 1, NULL, 'X' },
 #ifdef OWN_WINDOW
 	{ "own-window", 0, NULL, 'o' },
 #endif
-#ifdef HAVE_XDBE
+#ifdef BUILD_XDBE
 	{ "double-buffer", 0, NULL, 'b' },
 #endif
 	{ "window-id", 1, NULL, 'w' },
-#endif /* X11 */
+#endif /* BUILD_X11 */
 	{ "text", 1, NULL, 't' },
 	{ "interval", 0, NULL, 'u' },
 	{ "pause", 0, NULL, 'p' },
@@ -4020,7 +4020,7 @@ void initialisation(int argc, char **argv) {
 			case 'd':
 				fork_to_background = 1;
 				break;
-#ifdef X11
+#ifdef BUILD_X11
 			case 'f':
 				set_first_font(optarg);
 				break;
@@ -4033,12 +4033,12 @@ void initialisation(int argc, char **argv) {
 				own_window = 1;
 				break;
 #endif
-#ifdef HAVE_XDBE
+#ifdef BUILD_XDBE
 			case 'b':
 				use_xdbe = 1;
 				break;
 #endif
-#endif /* X11 */
+#endif /* BUILD_X11 */
 			case 't':
 				if (global_text) {
 					free(global_text);
@@ -4060,7 +4060,7 @@ void initialisation(int argc, char **argv) {
 			case 'i':
 				total_run_times = strtod(optarg, 0);
 				break;
-#ifdef X11
+#ifdef BUILD_X11
 			case 'x':
 				gap_x = atoi(optarg);
 				break;
@@ -4068,7 +4068,7 @@ void initialisation(int argc, char **argv) {
 			case 'y':
 				gap_y = atoi(optarg);
 				break;
-#endif /* X11 */
+#endif /* BUILD_X11 */
 			case 'p':
 				startup_pause = atoi(optarg);
 				sleep(startup_pause);
@@ -4079,12 +4079,12 @@ void initialisation(int argc, char **argv) {
 		}
 	}
 
-#ifdef X11
+#ifdef BUILD_X11
 	/* load font */
 	if (output_methods & TO_X) {
 		load_config_file_x11(current_config);
 	}
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 	/* generate text and get initial size */
 	extract_variable_text(global_text);
@@ -4128,14 +4128,14 @@ void initialisation(int argc, char **argv) {
 	tmpstring2 = (char*)malloc(text_buffer_size);
 	memset(tmpstring2, 0, text_buffer_size);
 
-#ifdef X11
+#ifdef BUILD_X11
 	xargc = argc;
 	xargv = argv;
 	X11_create_window();
-#endif /* X11 */
-#ifdef HAVE_LUA
+#endif /* BUILD_X11 */
+#ifdef BUILD_LUA
 	llua_setup_info(&info, update_interval);
-#endif /* HAVE_LUA */
+#endif /* BUILD_LUA */
 #ifdef XOAP
 	xmlInitParser();
 #endif /* XOAP */
@@ -4156,14 +4156,14 @@ void initialisation(int argc, char **argv) {
 		NORM_ERR("error setting signal handler: %s", strerror(errno));
 	}
 
-#ifdef HAVE_LUA
+#ifdef BUILD_LUA
 	llua_startup_hook();
-#endif /* HAVE_LUA */
+#endif /* BUILD_LUA */
 }
 
 int main(int argc, char **argv)
 {
-#ifdef X11
+#ifdef BUILD_X11
 	char *s, *temp;
 	unsigned int x;
 #endif
@@ -4177,13 +4177,13 @@ int main(int argc, char **argv)
 	free_templates();
 	clear_net_stats();
 
-#ifdef TCP_PORT_MONITOR
+#ifdef BUILD_PORT_MONITORS
 	/* set default connection limit */
 	tcp_portmon_set_max_connections(0);
 #endif
 
 	/* handle command line parameters that don't change configs */
-#ifdef X11
+#ifdef BUILD_X11
 	if (((s = getenv("LC_ALL")) && *s) || ((s = getenv("LC_CTYPE")) && *s)
 			|| ((s = getenv("LANG")) && *s)) {
 		temp = (char *) malloc((strlen(s) + 1) * sizeof(char));
@@ -4203,7 +4203,7 @@ int main(int argc, char **argv)
 	if (!setlocale(LC_CTYPE, "")) {
 		NORM_ERR("Can't set the specified locale!\nCheck LANG, LC_CTYPE, LC_ALL.");
 	}
-#endif /* X11 */
+#endif /* BUILD_X11 */
 	while (1) {
 		int c = getopt_long(argc, argv, getopt_string, longopts, NULL);
 
@@ -4236,7 +4236,7 @@ int main(int argc, char **argv)
 				print_defconfig();
 				return 0;
 #endif
-#ifdef X11
+#ifdef BUILD_X11
 			case 'w':
 				window.window = strtol(optarg, 0, 0);
 				break;
@@ -4245,7 +4245,7 @@ int main(int argc, char **argv)
 					free(disp);
 				disp = strdup(optarg);
 				break;
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 			case '?':
 				exit(EXIT_FAILURE);

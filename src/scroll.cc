@@ -79,11 +79,11 @@ void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_cr
 
 	obj->data.opaque = sd;
 
-#ifdef X11
+#ifdef BUILD_X11
 	/* add a color object right after scroll to reset any color changes */
 	obj->next->data.l = sd->resetcolor;
 	obj->next->callbacks.print = &new_fg;
-#endif /* X11 */
+#endif /* BUILD_X11 */
 }
 
 void print_scroll(struct text_object *obj, char *p, int p_max_size)

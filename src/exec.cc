@@ -270,7 +270,7 @@ void scan_execi_gauge_arg(struct text_object *obj, const char *arg)
 	scan_execi_arg(obj, arg);
 }
 
-#ifdef X11
+#ifdef BUILD_X11
 void scan_execgraph_arg(struct text_object *obj, const char *arg)
 {
 	struct execi_data *ed;
@@ -287,7 +287,7 @@ void scan_execgraph_arg(struct text_object *obj, const char *arg)
 	ed->cmd = buf;
 	obj->data.opaque = ed;
 }
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 void print_exec(struct text_object *obj, char *p, int p_max_size)
 {

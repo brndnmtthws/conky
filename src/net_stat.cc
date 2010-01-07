@@ -191,7 +191,7 @@ void print_addrs(struct text_object *obj, char *p, int p_max_size)
 }
 #endif /* __linux__ */
 
-#ifdef X11
+#ifdef BUILD_X11
 void parse_net_stat_graph_arg(struct text_object *obj, const char *arg, void *free_at_crash)
 {
 	char *buf = 0;
@@ -219,7 +219,7 @@ double upspeedgraphval(struct text_object *obj)
 
 	return (ns ? (ns->trans_speed / 1024.0) : 0);
 }
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 #ifdef __linux__
 #ifdef HAVE_IWLIB

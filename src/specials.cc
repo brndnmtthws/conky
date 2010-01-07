@@ -29,9 +29,9 @@
  */
 #include "conky.h"
 #include "colours.h"
-#ifdef X11
+#ifdef BUILD_X11
 #include "fonts.h"
-#endif /* X11 */
+#endif /* BUILD_X11 */
 #include "logging.h"
 #include "specials.h"
 #include <math.h>
@@ -49,9 +49,9 @@ struct special_t *specials = NULL;
 int special_count;
 
 int default_bar_width = 0, default_bar_height = 6;
-#ifdef X11
+#ifdef BUILD_X11
 int default_graph_width = 0, default_graph_height = 25;
-#endif /* X11 */
+#endif /* BUILD_X11 */
 int default_gauge_width = 40, default_gauge_height = 25;
 
 /* special data types flags */
@@ -156,7 +156,7 @@ const char *scan_bar(struct text_object *obj, const char *args, double scale)
 	return args;
 }
 
-#ifdef X11
+#ifdef BUILD_X11
 void scan_font(struct text_object *obj, const char *args)
 {
 	if (args && *args)
@@ -244,7 +244,7 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale)
 		return strndup(buf, text_buffer_size);
 	}
 }
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 /*
  * Printing various special text objects
@@ -270,7 +270,7 @@ void new_gauge_in_shell(struct text_object *obj, char *p, int p_max_size, double
 	snprintf(p, p_max_size, "%s", gaugevals[round_to_int(usage * 4 / g->scale)]);
 }
 
-#ifdef X11
+#ifdef BUILD_X11
 void new_gauge_in_x11(struct text_object *obj, char *buf, double usage)
 {
 	struct special_t *s = 0;
@@ -289,7 +289,7 @@ void new_gauge_in_x11(struct text_object *obj, char *buf, double usage)
 	s->height = g->height;
 	s->scale = g->scale;
 }
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 void new_gauge(struct text_object *obj, char *p, int p_max_size, double usage)
 {
@@ -303,15 +303,15 @@ void new_gauge(struct text_object *obj, char *p, int p_max_size, double usage)
 	else
 		usage = MIN(g->scale, usage);
 
-#ifdef X11
+#ifdef BUILD_X11
 	if (output_methods & TO_X)
 		new_gauge_in_x11(obj, p, usage);
 	else
-#endif /* X11 */
+#endif /* BUILD_X11 */
 		new_gauge_in_shell(obj, p, p_max_size, usage);
 }
 
-#ifdef X11
+#ifdef BUILD_X11
 void new_font(struct text_object *obj, char *p, int p_max_size)
 {
 	struct special_t *s;
@@ -462,14 +462,14 @@ void new_stippled_hr(struct text_object *obj, char *p, int p_max_size)
 	s->height = sh->height;
 	s->arg = sh->arg;
 }
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 void new_fg(struct text_object *obj, char *p, int p_max_size)
 {
-#ifdef X11
+#ifdef BUILD_X11
 	if (output_methods & TO_X)
 		new_special(p, FG)->arg = obj->data.l;
-#endif /* X11 */
+#endif /* BUILD_X11 */
 #ifdef NCURSES
 	if (output_methods & TO_NCURSES)
 		new_special(p, FG)->arg = obj->data.l;
@@ -479,7 +479,7 @@ void new_fg(struct text_object *obj, char *p, int p_max_size)
 	UNUSED(p_max_size);
 }
 
-#ifdef X11
+#ifdef BUILD_X11
 void new_bg(struct text_object *obj, char *p, int p_max_size)
 {
 	if ((output_methods & TO_X) == 0)
@@ -490,7 +490,7 @@ void new_bg(struct text_object *obj, char *p, int p_max_size)
 
 	new_special(p, BG)->arg = obj->data.l;
 }
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 static void new_bar_in_shell(struct text_object *obj, char* buffer, int buf_max_size, double usage)
 {
@@ -518,7 +518,7 @@ static void new_bar_in_shell(struct text_object *obj, char* buffer, int buf_max_
 	buffer[i] = 0;
 }
 
-#ifdef X11
+#ifdef BUILD_X11
 static void new_bar_in_x11(struct text_object *obj, char *buf, double usage)
 {
 	struct special_t *s = 0;
@@ -537,7 +537,7 @@ static void new_bar_in_x11(struct text_object *obj, char *buf, double usage)
 	s->height = b->height;
 	s->scale = b->scale;
 }
-#endif /* X11 */
+#endif /* BUILD_X11 */
 
 /* usage is in range [0,255] */
 void new_bar(struct text_object *obj, char *p, int p_max_size, double usage)
@@ -552,11 +552,11 @@ void new_bar(struct text_object *obj, char *p, int p_max_size, double usage)
 	else
 		usage = MIN(b->scale, usage);
 
-#ifdef X11
+#ifdef BUILD_X11
 	if ((output_methods & TO_X))
 		new_bar_in_x11(obj, p, usage);
 	else
-#endif /* X11 */
+#endif /* BUILD_X11 */
 		new_bar_in_shell(obj, p, p_max_size, usage);
 }
 

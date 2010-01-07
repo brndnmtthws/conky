@@ -48,10 +48,10 @@ typedef char audacious_t[13][128];
 
 /* type for data exchange with main thread */
 typedef struct audacious_s {
-  audacious_t items;  /* e.g. items[AUDACIOUS_STATUS] */
+  audacious_t items;  /* e.g. items[BUILD_AUDACIOUS_STATUS] */
   int max_title_len;  /* e.g. ${audacious_title 50} */
   timed_thread_ptr p_timed_thread;
-} AUDACIOUS_S;
+} audacious_s;
 
 /* create a worker thread for audacious media player status */
 int create_audacious_thread(void);
@@ -80,4 +80,4 @@ void print_audacious_playlist_position(struct text_object *, char *, int);
 void print_audacious_main_volume(struct text_object *, char *, int);
 double audacious_barval(struct text_object *);
 
-#endif
+#endif /* AUDACIOUS_H */

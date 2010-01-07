@@ -34,7 +34,7 @@
 
 /* connection deleted if unseen again after this # of refreshes */
 #define TCP_CONNECTION_STARTING_AGE 1
-#define TCP_PORT_MONITOR_HASH_KEY_SIZE 12
+#define BUILD_PORT_MONITORS_HASH_KEY_SIZE 12
 #define MAX_PORT_MONITOR_CONNECTIONS_DEFAULT 256
 
 /* -------------------------------------------------------------------

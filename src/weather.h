@@ -37,11 +37,11 @@ extern "C" {
 /* Prototypes */
 void weather_free_info(void);
 
-#ifdef XOAP
+#ifdef BUILD_WEATHER_XOAP
 void load_xoap_keys(void);
 void scan_weather_forecast_arg(struct text_object *, const char *, void *);
 void print_weather_forecast(struct text_object *, char *, int);
-#endif /* XOAP */
+#endif /* BUILD_WEATHER_XOAP */
 
 void scan_weather_arg(struct text_object *, const char *, void *);
 void print_weather(struct text_object *, char *, int);
