@@ -3,13 +3,8 @@
  *
  * Conky, a system monitor, based on torsmo
  *
- * Any original torsmo code is licensed under the BSD license
- *
- * All code written since the fork of torsmo is licensed under the GPL
- *
  * Please see COPYING for details
  *
- * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
  * Copyright (c) 2007 Toni Spets
  * Copyright (c) 2005-2010 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
