@@ -38,9 +38,9 @@
 #include <X11/Xatom.h>
 #include <X11/Xmd.h>
 #include <X11/Xutil.h>
-#ifdef IMLIB2
+#ifdef BUILD_IMLIB2
 #include "imlib2.h"
-#endif /* IMLIB2 */
+#endif /* BUILD_IMLIB2 */
 
 #ifdef BUILD_XFT
 #include <X11/Xft/Xft.h>
@@ -567,11 +567,11 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 		fprintf(stderr, PACKAGE_NAME": drawing to single buffer\n");
 	}
 #endif
-#ifdef IMLIB2
+#ifdef BUILD_IMLIB2
 	{
 		cimlib_init(display, window.drawable, window.visual, window.colourmap);
 	}
-#endif /* IMLIB2 */
+#endif /* BUILD_IMLIB2 */
 	XFlush(display);
 
 	XSelectInput(display, window.window, ExposureMask | PropertyChangeMask

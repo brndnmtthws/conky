@@ -85,7 +85,13 @@
 
 #cmakedefine HAVE_ICONV 1
 
-#cmakedefine LUA_EXTRAS 1
+#cmakedefine BUILD_LUA_CAIRO 1
+
+#cmakedefine BUILD_LUA_IMLIB2 1
+
+#if defined(BUILD_LUA_CAIRO) || defined(BUILD_LUA_IMLIB2)
+#define BUILD_LUA_EXTRAS
+#endif
 
 #cmakedefine BUILD_IBM 1
 

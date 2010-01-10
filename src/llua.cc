@@ -28,11 +28,11 @@
 #include "logging.h"
 #include "build.h"
 
+#ifdef BUILD_LUA_EXTRAS
 extern "C" {
-#ifdef LUA_EXTRAS
 #include <tolua++.h>
-#endif /* LUA_EXTRAS */
 }
+#endif /* BUILD_LUA_EXTRAS */
 
 #ifdef HAVE_SYS_INOTIFY_H
 #include <sys/inotify.h>
@@ -129,7 +129,7 @@ void llua_init(void)
 	lua_pushcfunction(lua_L, &llua_conky_set_update_interval);
 	lua_setglobal(lua_L, "conky_set_update_interval");
 
-#if defined(BUILD_X11) && defined(LUA_EXTRAS)
+#if defined(BUILD_X11) && defined(BUILD_LUA_EXTRAS)
 	/* register tolua++ user types */
 	tolua_open(lua_L);
 	tolua_usertype(lua_L, "Drawable");
@@ -455,13 +455,13 @@ void llua_set_draw_post_hook(const char *args)
 	draw_post_hook = strdup(args);
 }
 
-#ifdef LUA_EXTRAS
+#ifdef BUILD_LUA_EXTRAS
 void llua_set_userdata(const char *key, const char *type, void *value)
 {
 	tolua_pushusertype(lua_L, value, type);
 	lua_setfield(lua_L, -2, key);
 }
-#endif /* LUA_EXTRAS */
+#endif /* BUILD_LUA_EXTRAS */
 
 void llua_setup_window_table(int text_start_x, int text_start_y, int text_width, int text_height)
 {
@@ -469,11 +469,11 @@ void llua_setup_window_table(int text_start_x, int text_start_y, int text_width,
 	lua_newtable(lua_L);
 
 	if (output_methods & TO_X) {
-#ifdef LUA_EXTRAS
+#ifdef BUILD_LUA_EXTRAS
 		llua_set_userdata("drawable", "Drawable", (void*)&window.drawable);
 		llua_set_userdata("visual", "Visual", window.visual);
 		llua_set_userdata("display", "Display", display);
-#endif /* LUA_EXTRAS */
+#endif /* BUILD_LUA_EXTRAS */
 
 
 		llua_set_number("width", window.width);

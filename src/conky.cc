@@ -54,9 +54,9 @@
 #ifdef BUILD_XDAMAGE
 #include <X11/extensions/Xdamage.h>
 #endif
-#ifdef IMLIB2
+#ifdef BUILD_IMLIB2
 #include "imlib2.h"
-#endif /* IMLIB2 */
+#endif /* BUILD_IMLIB2 */
 #endif /* BUILD_X11 */
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -1755,9 +1755,9 @@ static void draw_text(void)
 
 static void draw_stuff(void)
 {
-#ifdef IMLIB2
+#ifdef BUILD_IMLIB2
 	cimlib_render(text_start_x, text_start_y, window.width, window.height);
-#endif /* IMLIB2 */
+#endif /* BUILD_IMLIB2 */
 	if (overwrite_file) {
 		overwrite_fpointer = fopen(overwrite_file, "w");
 		if(!overwrite_fpointer)
@@ -1845,9 +1845,9 @@ static int need_to_update;
 /* update_text() generates new text and clears old text area */
 static void update_text(void)
 {
-#ifdef IMLIB2
+#ifdef BUILD_IMLIB2
 	cimlib_cleanup();
-#endif /* IMLIB2 */
+#endif /* BUILD_IMLIB2 */
 	generate_text();
 #ifdef BUILD_X11
 	if (output_methods & TO_X)
@@ -2460,10 +2460,10 @@ void clean_up(void *memtofree1, void* memtofree2)
 	llua_shutdown_hook();
 	llua_close();
 #endif /* BUILD_LUA */
-#ifdef IMLIB2
+#ifdef BUILD_IMLIB2
 	if (output_methods & TO_X)
 		cimlib_deinit();
-#endif /* IMLIB2 */
+#endif /* BUILD_IMLIB2 */
 #ifdef BUILD_WEATHER_XOAP
 	xmlCleanupParser();
 #endif /* BUILD_WEATHER_XOAP */
@@ -3458,7 +3458,7 @@ char load_config_file(const char *f)
 				stippled_borders = 4;
 			}
 		}
-#ifdef IMLIB2
+#ifdef BUILD_IMLIB2
 		CONF("imlib_cache_size") {
 			if (value) {
 				cimlib_set_cache_size(atoi(value));
@@ -3469,7 +3469,7 @@ char load_config_file(const char *f)
 				cimlib_set_cache_flush_interval(atoi(value));
 			}
 		}
-#endif /* IMLIB2 */
+#endif /* BUILD_IMLIB2 */
 #endif /* BUILD_X11 */
 		CONF("update_interval_on_battery") {
 			if (value) {
