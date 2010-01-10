@@ -328,7 +328,7 @@ static void __free_update_callbacks(struct update_cb *uc)
 		uc->running = 0;
 		sem_post(&uc->start_wait);
 	}
-	if (pthread_join(uc->thread, NULL)) {
+	if (uc->thread && pthread_join(uc->thread, NULL)) {
 		NORM_ERR("Error destroying thread");
 	}
 

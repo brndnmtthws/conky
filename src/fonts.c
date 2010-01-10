@@ -142,8 +142,10 @@ void free_fonts(void)
 		} else
 #endif /* BUILD_XFT */
 		{
-			XFreeFont(display, fonts[i].font);
-			fonts[i].font = 0;
+			if (fonts[i].font) {
+				XFreeFont(display, fonts[i].font);
+				fonts[i].font = 0;
+			}
 		}
 	}
 	if (fonts) {
