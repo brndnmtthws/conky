@@ -293,7 +293,7 @@ struct _x11_stuff_s {
 /* text size */
 
 static int text_start_x, text_start_y;	/* text start position in window */
-static int text_width, text_height;
+static int text_width = 1, text_height = 1; /* initially 1 so no zero-sized window is created */
 
 /* alignments */
 enum alignment {
