@@ -87,4 +87,6 @@
 
 #cmakedefine LUA_EXTRAS 1
 
+#cmakedefine BUILD_IBM 1
+
 #endif /* _conky_config_h_ */
