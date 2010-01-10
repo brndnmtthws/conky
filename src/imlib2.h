@@ -26,10 +26,6 @@
 
 #include <X11/Xlib.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 void cimlib_add_image(const char *name);
 void cimlib_set_cache_size(long size);
 void cimlib_set_cache_flush_interval(long interval);
@@ -39,9 +35,5 @@ void cimlib_render(int x, int y, int width, int height);
 void cimlib_cleanup(void);
 
 void print_image_callback(struct text_object *, char *, int);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* _CONKY_IMBLI2_H_ */

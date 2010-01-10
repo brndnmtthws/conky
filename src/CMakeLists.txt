@@ -147,7 +147,7 @@ if(BUILD_NVIDIA)
 endif(BUILD_NVIDIA)
 
 if(BUILD_IMLIB2)
-	set(imlib2 imlib2.c)
+	set(imlib2 imlib2.cc)
 	set(optional_sources ${optional_sources} ${imlib2})
 endif(BUILD_IMLIB2)
 

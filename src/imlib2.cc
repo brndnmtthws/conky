@@ -118,9 +118,9 @@ void cimlib_deinit(void)
 void cimlib_add_image(const char *args)
 {
 	struct image_list_s *cur = NULL;
-	char *tmp;
+	const char *tmp;
 
-	cur = malloc(sizeof(struct image_list_s));
+	cur = (struct image_list_s *)malloc(sizeof(struct image_list_s));
 	memset(cur, 0, sizeof(struct image_list_s));
 
 	if (!sscanf(args, "%1023s", cur->name)) {
