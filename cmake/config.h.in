@@ -83,6 +83,8 @@
 
 #cmakedefine BUILD_IOSTATS 1
 
+#cmakedefine BUILD_WLAN 1
+
 #cmakedefine HAVE_ICONV 1
 
 #cmakedefine BUILD_LUA_CAIRO 1

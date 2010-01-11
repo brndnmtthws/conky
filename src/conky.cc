@@ -228,9 +228,9 @@ static void print_version(void)
 			"  * Weather (XOAP)\n"
 #endif /* BUILD_WEATHER_XOAP */
 #endif /* BUILD_WEATHER_METAR */
-#ifdef HAVE_IWLIB
+#ifdef BUILD_WLAN
 			"  * wireless\n"
-#endif /* HAVE_IWLIB */
+#endif /* BUILD_WLAN */
 #ifdef BUILD_IBM
 			"  * support for IBM/Lenovo notebooks\n"
 #endif /* BUILD_IBM */

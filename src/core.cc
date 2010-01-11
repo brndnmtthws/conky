@@ -221,7 +221,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		}
 		obj->callbacks.print = &print_voltage_v;
 
-#ifdef HAVE_IWLIB
+#ifdef BUILD_WLAN
 	END OBJ(wireless_essid, &update_net_stats)
 		parse_net_stat_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_wireless_essid;
@@ -246,7 +246,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(wireless_link_bar, &update_net_stats)
 		parse_net_stat_bar_arg(obj, arg, free_at_crash);
 		obj->callbacks.barval = &wireless_link_barval;
-#endif /* HAVE_IWLIB */
+#endif /* BUILD_WLAN */
 
 #endif /* __linux__ */
 

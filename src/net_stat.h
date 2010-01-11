@@ -74,8 +74,7 @@ void parse_net_stat_graph_arg(struct text_object *, const char *, void *);
 double downspeedgraphval(struct text_object *);
 double upspeedgraphval(struct text_object *);
 #endif /* BUILD_X11 */
-#ifdef __linux__
-#ifdef HAVE_IWLIB
+#ifdef BUILD_WLAN
 void print_wireless_essid(struct text_object *, char *, int);
 void print_wireless_mode(struct text_object *, char *, int);
 void print_wireless_bitrate(struct text_object *, char *, int);
@@ -84,8 +83,7 @@ void print_wireless_link_qual(struct text_object *, char *, int);
 void print_wireless_link_qual_max(struct text_object *, char *, int);
 void print_wireless_link_qual_perc(struct text_object *, char *, int);
 double wireless_link_barval(struct text_object *);
-#endif /* HAVE_IWLIB */
-#endif /* __linux__ */
+#endif /* BUILD_WLAN */
 
 void clear_net_stats(void);
 

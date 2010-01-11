@@ -221,8 +221,7 @@ double upspeedgraphval(struct text_object *obj)
 }
 #endif /* BUILD_X11 */
 
-#ifdef __linux__
-#ifdef HAVE_IWLIB
+#ifdef BUILD_WLAN
 void print_wireless_essid(struct text_object *obj, char *p, int p_max_size)
 {
 	struct net_stat *ns = (struct net_stat *)obj->data.opaque;
@@ -301,8 +300,7 @@ double wireless_link_barval(struct text_object *obj)
 
 	return (double)ns->link_qual / ns->link_qual_max;
 }
-#endif /* HAVE_IWLIB */
-#endif /* __linux__ */
+#endif /* BUILD_WLAN */
 
 void clear_net_stats(void)
 {
