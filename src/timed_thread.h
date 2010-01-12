@@ -59,7 +59,7 @@ class thread_handle {
 class timed_thread {
 	public:
 		/* create a timed thread (object creation only) */
-		static timed_thread_ptr create(const std::function<void(thread_handle &)> &start_routine, const unsigned int
+		static timed_thread_ptr create(const std::function<void(thread_handle &)> start_routine, const unsigned int
 				interval_usecs, bool register_for_destruction = true) {
 			timed_thread_ptr ptr(new timed_thread(std::cref(start_routine), interval_usecs));
 			if (register_for_destruction) {
