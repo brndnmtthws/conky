@@ -59,7 +59,7 @@ typedef std::list<timed_thread_ptr> thread_list_t;
 thread_list_t thread_list;
 
 /* create a timed thread (object creation only) */
-timed_thread::timed_thread(const std::function<void(thread_handle &)> &start_routine, unsigned
+timed_thread::timed_thread(const std::function<void(thread_handle &)> start_routine, unsigned
 		int interval_usecs) :
 	p_timed_thread(new _timed_thread), p_thread_handle(this),
 	interval_usecs(interval_usecs), running(false)

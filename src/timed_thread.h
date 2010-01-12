@@ -92,7 +92,7 @@ class timed_thread {
 
 	private:
 		/* create a timed thread (object creation only) */
-		timed_thread(const std::function<void(thread_handle &)> &start_routine, unsigned int
+		timed_thread(const std::function<void(thread_handle &)> start_routine, unsigned int
 				interval_usecs);
 
 		/* waits required interval (unless override_wait_time is non-zero) for
