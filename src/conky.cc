@@ -3906,7 +3906,7 @@ static void print_help(const char *prog_name) {
 #ifdef BUILD_X11
 			"   -a, --alignment=ALIGNMENT text alignment on screen, {top,bottom,middle}_{left,right,middle}\n"
 			"   -f, --font=FONT           font to use\n"
-			"   -X, --display=DISPLAY     BUILD_X11 display to use\n"
+			"   -X, --display=DISPLAY     X11 display to use\n"
 #ifdef OWN_WINDOW
 			"   -o, --own-window          create own window to draw\n"
 #endif
