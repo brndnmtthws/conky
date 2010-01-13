@@ -25,7 +25,7 @@
 #ifndef AUDACIOUS_H
 #define AUDACIOUS_H
 
-#include "timed_thread.h"
+#include "timed-thread.h"
 
 enum _audacious_items {
 	AUDACIOUS_STATUS = 0,

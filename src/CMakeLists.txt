@@ -36,9 +36,13 @@ endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build.h)
 
 set(conky_sources colours.cc combine.cc common.cc conky.cc core.cc
 	diskio.cc entropy.cc exec.cc fs.cc mail.cc mixer.cc net_stat.cc template.c
-	timed_thread.cc mboxscan.c read_tcp.c scroll.cc specials.cc tailhead.cc
+	mboxscan.c read_tcp.c scroll.cc specials.cc tailhead.cc
 	temphelper.cc text_object.c timeinfo.c top.cc algebra.c prioqueue.c proc.c
 	user.c)
+
+# add timed thread library
+add_library(timed-thread timed-thread.cc)
+set(conky_libs ${conky_libs} timed-thread)
 
 # Platform specific sources
 if(OS_LINUX)

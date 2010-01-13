@@ -27,7 +27,7 @@
 #define _CURL_THREAD_H_
 
 #include <list>
-#include "timed_thread.h"
+#include "timed-thread.h"
 
 /* curl thread lib exports begin */
 

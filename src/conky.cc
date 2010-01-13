@@ -32,7 +32,7 @@
 #include "text_object.h"
 #include "conky.h"
 #include "common.h"
-#include "timed_thread.h"
+#include "timed-thread.h"
 #include <stdarg.h>
 #include <cmath>
 #include <ctime>

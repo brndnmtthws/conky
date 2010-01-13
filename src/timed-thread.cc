@@ -36,7 +36,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <unistd.h>
-#include "timed_thread.h"
+#include "timed-thread.h"
 #include "logging.h"
 
 /* Abstraction layer for timed threads */

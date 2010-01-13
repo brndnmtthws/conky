@@ -33,7 +33,7 @@
 #include "common.h"
 #include "logging.h"
 #include "text_object.h"
-#include "timed_thread.h"
+#include "timed-thread.h"
 
 #include <errno.h>
 #include <stdio.h>

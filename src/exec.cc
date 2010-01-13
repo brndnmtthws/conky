@@ -33,7 +33,7 @@
 #include "logging.h"
 #include "specials.h"
 #include "text_object.h"
-#include "timed_thread.h"
+#include "timed-thread.h"
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/wait.h>
