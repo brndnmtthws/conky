@@ -162,7 +162,7 @@ static inline void read_exec(const char *data, char *buf, const int size)
 
 		length = fread(buf, 1, size, fp);
 		pclose(fp);
-		buf[length] = '\0';
+		buf[std::min(length, size-1)] = '\0';
 		if (length > 0 && buf[length - 1] == '\n') {
 			buf[length - 1] = '\0';
 		}
