@@ -33,6 +33,7 @@
 #include <time.h>
 #include <ctype.h>
 #include <mutex>
+#include <string>
 #ifdef MATH
 #include <math.h>
 #endif /* MATH */
@@ -830,8 +831,10 @@ static void weather_process_info(char *p, int p_max_size, char *uri, char *data_
 
 #ifdef BUILD_WEATHER_XOAP
 /* xoap suffix for weather from weather.com */
-static char *xoap_cc = NULL;
-static char *xoap_df = NULL;
+namespace {
+	std::string xoap_cc;
+	std::string xoap_df;
+}
 #endif /* BUILD_WEATHER_XOAP */
 
 static int process_weather_uri(char *uri, char *locID, int dayf UNUSED_ATTR)
@@ -847,15 +850,14 @@ static int process_weather_uri(char *uri, char *locID, int dayf UNUSED_ATTR)
 	/* Construct complete uri */
 #ifdef BUILD_WEATHER_XOAP
 	if (strstr(uri, "xoap.weather.com")) {
-		if ((dayf == 0) && (xoap_cc != NULL)) {
+		if ((dayf == 0) && (xoap_cc.length() != 0)) {
 			strcat(uri, locID);
-			strcat(uri, xoap_cc);
-		} else if ((dayf == 1) && (xoap_df != NULL)) {
+			strcat(uri, xoap_cc.c_str());
+		} else if ((dayf == 1) && (xoap_df.length() != 0)) {
 			strcat(uri, locID);
-			strcat(uri, xoap_df);
+			strcat(uri, xoap_df.c_str());
 		} else {
-			free(uri);
-			uri = NULL;
+			return 0;
 		}
 	} else
 #endif /* BUILD_WEATHER_XOAP */
@@ -886,21 +888,12 @@ void load_xoap_keys(void)
 	fp = fopen(xoap, "r");
 	if (fp != NULL) {
 		if (fscanf(fp, "%10s %16s", par, key) == 2) {
-			xoap_cc = (char *) malloc(128 * sizeof(char));
-			xoap_df = (char *) malloc(128 * sizeof(char));
-
-			strcpy(xoap_cc, "?cc=*&link=xoap&prod=xoap&par=");
-			strcat(xoap_cc, par);
-			strcat(xoap_cc, "&key=");
-			strcat(xoap_cc, key);
-			strcat(xoap_cc, "&unit=m");
+			xoap_cc = std::string("?cc=*&link=xoap&prod=xoap&par=")
+				+ par + "&key=" + key + "&unit=m";
 
 			/* TODO: Use FORECAST_DAYS instead of 5 */
-			strcpy(xoap_df, "?dayf=5&link=xoap&prod=xoap&par=");
-			strcat(xoap_df, par);
-			strcat(xoap_df, "&key=");
-			strcat(xoap_df, key);
-			strcat(xoap_df, "&unit=m");
+			xoap_df = std::string("?dayf=5&link=xoap&prod=xoap&par=")
+				+ par + "&key=" + key + "&unit=m";
 		}
 		fclose(fp);
 	}
