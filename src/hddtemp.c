@@ -130,7 +130,7 @@ static char *fetch_hddtemp_output(void)
 		close(sockfd);
 	}
 	if (!rp) {
-		NORM_ERR("could not connect to mpd host");
+		NORM_ERR("could not connect to hddtemp host");
 		goto GET_OUT;
 	}
 
@@ -172,6 +172,8 @@ static int read_hdd_val(const char *line, char **dev, short *val, char *unit,
 	line_s = *saveptr;
 
 again:
+	if(!*p)
+		goto out_fail;
 	/* read the device */
 	*dev = ++p;
 	if (!(p = strchr(p, line_s[0])))
