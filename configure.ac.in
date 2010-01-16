@@ -427,10 +427,16 @@ dnl ARGB
 dnl
 
 AC_ARG_ENABLE([argb],
-              AC_HELP_STRING([--enable-argb], [enable if you want a argb visual [[default=no]]]),
-              [want_argb="$enableval"], [want_argb=no])
+              AC_HELP_STRING([--disable-argb], [disable if you do not want a argb visual @<:@default=yes@:>@]),
+              [want_argb="$enableval"], [want_argb=yes])
+
 if test x$want_argb = xyes; then
+    if test "x$want_x11" != "xyes"; then
+	dnl silently disable if no x11
+	want_argb=no
+    else
 	AC_DEFINE(USE_ARGB, 1, [Define if you want argb visual support])
+    fi
 fi
 
 dnl
