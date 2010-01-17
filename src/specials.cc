@@ -38,6 +38,7 @@
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #endif /* HAVE_SYS_PARAM_H */
+#include <algorithm>
 
 /* maximum number of special things, e.g. fonts, offsets, aligns, etc. */
 int max_specials = MAX_SPECIALS_DEFAULT;
@@ -350,18 +351,19 @@ static void graph_append(struct special_t *graph, double f, char showaslog)
 		f = graph->scale;
 	}
 
-	graph->graph[0] = f;	/* add new data */
 	/* shift all the data by 1 */
 	for (i = graph->graph_width - 1; i > 0; i--) {
 		graph->graph[i] = graph->graph[i - 1];
-		if (graph->scaled && graph->graph[i - 1] > graph->scale) {
-			/* check if we need to update the scale */
-			graph->scale = graph->graph[i - 1];
-		}
 	}
-	if (graph->scaled && graph->graph[graph->graph_width] > graph->scale) {
-		/* check if we need to update the scale */
-		graph->scale = graph->graph[graph->graph_width];
+	graph->graph[0] = f;	/* add new data */
+	
+	if(graph->scaled) {
+		graph->scale = *std::max_element(graph->graph + 0, graph->graph + graph->graph_width);
+		if(graph->scale < 1e-47) {
+			/* avoid NaN's when the graph is all-zero (e.g. before the first update)
+			 * there is nothing magical about 1e-47 here */
+			graph->scale = 1e-47;
+		}
 	}
 }
 
