@@ -22,9 +22,14 @@
 
 if(BUILD_BUILTIN_CONFIG)
 	# generate defconfig
+	if(BUILD_X11)
+		set(builtin_config conky.conf)
+	else(BUILD_X11)
+		set(builtin_config conky_no_x11.conf)
+	endif(BUILD_X11)
 	add_custom_command(OUTPUT defconfig.h COMMAND
-		${CMAKE_SOURCE_DIR}/text2c.sh ${CMAKE_CURRENT_SOURCE_DIR}/conky.conf
-		defconfig.h defconfig DEPENDS conky.conf
+		${CMAKE_SOURCE_DIR}/text2c.sh ${CMAKE_CURRENT_SOURCE_DIR}/${builtin_config}
+		defconfig.h defconfig DEPENDS ${builtin_config}
 	)
 	add_custom_target(defconfig ALL DEPENDS defconfig.h)
 	set_source_files_properties(defconfig.h PROPERTIES GENERATED TRUE)
