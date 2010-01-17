@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-if(BUILD_CONFIG_OUTPUT)
+if(BUILD_BUILTIN_CONFIG)
 	# generate defconfig
 	add_custom_command(OUTPUT defconfig.h COMMAND
 		${CMAKE_SOURCE_DIR}/text2c.sh ${CMAKE_CURRENT_SOURCE_DIR}/conky.conf
@@ -28,5 +28,5 @@ if(BUILD_CONFIG_OUTPUT)
 	)
 	add_custom_target(defconfig ALL DEPENDS defconfig.h)
 	set_source_files_properties(defconfig.h PROPERTIES GENERATED TRUE)
-endif(BUILD_CONFIG_OUTPUT)
+endif(BUILD_BUILTIN_CONFIG)
 

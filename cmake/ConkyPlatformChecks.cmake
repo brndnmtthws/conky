@@ -65,10 +65,10 @@ if(BUILD_MATH)
 	set(conky_libs ${conky_libs} -lm)
 endif(BUILD_MATH)
 
-if(BUILD_CONFIG_OUTPUT)
+if(BUILD_BUILTIN_CONFIG)
 	check_function_exists(fopencookie HAVE_FOPENCOOKIE)
 	check_function_exists(funopen HAVE_FUNOPEN)
-endif(BUILD_CONFIG_OUTPUT)
+endif(BUILD_BUILTIN_CONFIG)
 
 if(BUILD_NCURSES)
 	check_include_file(ncurses.h NCURSES_H)

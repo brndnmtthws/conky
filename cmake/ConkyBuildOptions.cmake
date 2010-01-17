@@ -82,7 +82,7 @@ endif(OS_LINUX)
 # Optional features etc
 #
 
-option(BUILD_CONFIG_OUTPUT "Enable default config file output" true)
+option(BUILD_BUILTIN_CONFIG "Enable builtin default configuration" true)
 
 option(BUILD_MATH "Enable math support" true)
 

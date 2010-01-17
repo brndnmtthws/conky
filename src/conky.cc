@@ -107,7 +107,7 @@
 #include <bsd/bsd.h>
 #endif
 
-#ifdef CONFIG_OUTPUT
+#ifdef BUILD_BUILTIN_CONFIG
 #include "defconfig.h"
 #include "conf_cookie.h"
 #endif
@@ -240,9 +240,9 @@ static void print_version(void)
 #ifdef BUILD_EVE
 			"  * eve-online\n"
 #endif /* BUILD_EVE */
-#ifdef BUILD_CONFIG_OUTPUT
-			"  * config-output\n"
-#endif /* CONFIG_OUTPUT */
+#ifdef BUILD_BUILTIN_CONFIG
+			"  * builtin default configuration\n"
+#endif /* BUILD_BUILTIN_CONFIG */
 #ifdef BUILD_IMLIB2
 			"  * Imlib2\n"
 #endif /* BUILD_IMLIB2 */
@@ -2837,11 +2837,11 @@ static void X11_create_window(void)
 
 static FILE *open_config_file(const char *f)
 {
-#ifdef CONFIG_OUTPUT
+#ifdef BUILD_BUILTIN_CONFIG
 	if (!strcmp(f, "==builtin==")) {
 		return conf_cookie_open();
 	} else
-#endif /* CONFIG_OUTPUT */
+#endif /* BUILD_BUILTIN_CONFIG */
 		return fopen(f, "r");
 }
 
@@ -3897,7 +3897,7 @@ static void print_help(const char *prog_name) {
 			"   -q, --quiet               quiet mode\n"
 			"   -D, --debug               increase debugging output, ie. -DD for more debugging\n"
 			"   -c, --config=FILE         config file to load\n"
-#ifdef CONFIG_OUTPUT
+#ifdef BUILD_BUILTIN_CONFIG
 			"   -C, --print-config        print the builtin default config to stdout\n"
 			"                             e.g. 'conky -C > ~/.conkyrc' will create a new default config\n"
 #endif
@@ -3936,7 +3936,7 @@ static const char *getopt_string = "vVqdDt:u:i:hc:p:"
 	"b"
 #endif
 #endif /* BUILD_X11 */
-#ifdef CONFIG_OUTPUT
+#ifdef BUILD_BUILTIN_CONFIG
 	"C"
 #endif
 	;
@@ -3946,7 +3946,7 @@ static const struct option longopts[] = {
 	{ "version", 0, NULL, 'V' },
 	{ "debug", 0, NULL, 'D' },
 	{ "config", 1, NULL, 'c' },
-#ifdef CONFIG_OUTPUT
+#ifdef BUILD_BUILTIN_CONFIG
 	{ "print-config", 0, NULL, 'C' },
 #endif
 	{ "daemonize", 0, NULL, 'd' },
@@ -4231,7 +4231,7 @@ int main(int argc, char **argv)
 			case 'h':
 				print_help(argv[0]);
 				return 0;
-#ifdef CONFIG_OUTPUT
+#ifdef BUILD_BUILTIN_CONFIG
 			case 'C':
 				print_defconfig();
 				return 0;
@@ -4285,12 +4285,13 @@ int main(int argc, char **argv)
 
 		/* No readable config found */
 		if (!current_config) {
-#ifdef CONFIG_OUTPUT
+#define NOCFGFILEFOUND "no readable personal or system-wide config file found"
+#ifdef BUILD_BUILTIN_CONFIG
 			current_config = strdup("==builtin==");
-			NORM_ERR("no readable personal or system-wide config file found,"
-					" using builtin default");
+			NORM_ERR(NOCFGFILEFOUND
+					", using builtin default");
 #else
-			CRIT_ERR(NULL, NULL, "no readable personal or system-wide config file found");
+			CRIT_ERR(NULL, NULL, NOCFGFILEFOUND);
 #endif /* ! CONF_OUTPUT */
 		}
 	}
