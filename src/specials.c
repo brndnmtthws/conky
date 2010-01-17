@@ -324,7 +324,6 @@ static void graph_append(struct special_t *graph, double f, char showaslog)
 		f = graph->graph_scale;
 	}
 
-	graph->graph[0] = f;	/* add new data */
 	/* shift all the data by 1 */
 	for (i = graph->graph_width - 1; i > 0; i--) {
 		graph->graph[i] = graph->graph[i - 1];
@@ -333,9 +332,10 @@ static void graph_append(struct special_t *graph, double f, char showaslog)
 			graph->graph_scale = graph->graph[i - 1];
 		}
 	}
-	if (graph->scaled && graph->graph[graph->graph_width] > graph->graph_scale) {
+	graph->graph[0] = f;	/* add new data */
+	if (graph->scaled && graph->graph[0] > graph->graph_scale) {
 		/* check if we need to update the scale */
-		graph->graph_scale = graph->graph[graph->graph_width];
+		graph->graph_scale = graph->graph[0];
 	}
 }
 
