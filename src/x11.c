@@ -531,6 +531,8 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 		if (!window.window) {
 			window.window = find_desktop_window(&window.root, &window.desktop);
 		}
+		window.visual = DefaultVisual(display, screen);
+		window.colourmap = DefaultColormap(display, screen);
 
 		if (XGetWindowAttributes(display, window.window, &attrs)) {
 			window.width = attrs.width;
