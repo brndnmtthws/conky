@@ -105,18 +105,22 @@ endif(BUILD_PORT_MONITORS)
 
 
 # Check for iconv
-check_include_file(iconv.h HAVE_ICONV_H)
-find_library(ICONV_LIBRARY NAMES iconv)
-if(HAVE_ICONV_H AND ICONV_LIBRARY)
-	set(conky_includes ${conky_includes} ${ICONV_INCLUDE_DIR})
-	set(conky_libs ${conky_libs} ${ICONV_LIBRARY})
-	set(HAVE_ICONV true)
-else(HAVE_ICONV_H AND ICONV_LIBRARY)
-	# too annoying
-	# message(WARNING "Unable to find iconv library")
-	set(HAVE_ICONV false)
-endif(HAVE_ICONV_H AND ICONV_LIBRARY)
-
+if(BUILD_ICONV)
+	check_include_file(iconv.h HAVE_ICONV_H)
+	find_library(ICONV_LIBRARY NAMES iconv)
+	if(NOT ICONV_LIBRARY)
+		# maybe iconv() is provided by libc
+		set(ICONV_LIBRARY "" CACHE FILEPATH "Path to the iconv library, if iconv is not provided by libc" FORCE)
+	endif(NOT ICONV_LIBRARY)
+	set(CMAKE_REQUIRED_LIBRARIES ${ICONV_LIBRARY})
+	check_function_exists(iconv ICONV_FUNC)
+	if(HAVE_ICONV_H AND ICONV_FUNC)
+		set(conky_includes ${conky_includes} ${ICONV_INCLUDE_DIR})
+		set(conky_libs ${conky_libs} ${ICONV_LIBRARY})
+	else(HAVE_ICONV_H AND ICONV_FUNC)
+		message(FATAL_ERROR "Unable to find iconv library")
+	endif(HAVE_ICONV_H AND ICONV_FUNC)
+endif(BUILD_ICONV)
 
 
 # check for Xlib

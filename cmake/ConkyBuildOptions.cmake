@@ -142,3 +142,5 @@ if(BUILD_WEATHER_XOAP)
 endif(BUILD_WEATHER_XOAP)
 
 option(BUILD_APCUPSD "Enable APCUPSD support" true)
+
+option(BUILD_ICONV "Enable iconv support" false)

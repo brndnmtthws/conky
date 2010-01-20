@@ -80,7 +80,7 @@
 #ifdef BUILD_X11
 #include "fonts.h"
 #endif
-#ifdef HAVE_ICONV
+#ifdef BUILD_ICONV
 #include "iconv_tools.h"
 #endif
 #ifdef BUILD_LUA
@@ -728,12 +728,12 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root)
 {
 	struct text_object *obj;
 	size_t a;
-#ifdef HAVE_ICONV
+#ifdef BUILD_ICONV
 	char *buff_in;
 
 	buff_in = (char *)malloc(p_max_size);
 	memset(buff_in, 0, p_max_size);
-#endif /* HAVE_ICONV */
+#endif /* BUILD_ICONV */
 
 	p[0] = 0;
 	obj = root.next;
@@ -761,9 +761,9 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root)
 		}
 
 		a = strlen(p);
-#ifdef HAVE_ICONV
+#ifdef BUILD_ICONV
 		iconv_convert(&a, buff_in, p, p_max_size);
-#endif /* HAVE_ICONV */
+#endif /* BUILD_ICONV */
 		if (!obj->verbatim_output)
 			substitute_newlines(p, a - 2);
 		p += a;
@@ -776,9 +776,9 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root)
 	/* load any new fonts we may have had */
 	load_fonts();
 #endif /* BUILD_X11 */
-#ifdef HAVE_ICONV
+#ifdef BUILD_ICONV
 	free(buff_in);
-#endif /* HAVE_ICONV */
+#endif /* BUILD_ICONV */
 }
 
 void evaluate(const char *text, char *p, int p_max_size)

@@ -50,7 +50,7 @@
 #include "ibm.h"
 #include "smapi.h"
 #endif
-#ifdef HAVE_ICONV
+#ifdef BUILD_ICONV
 #include "iconv_tools.h"
 #endif
 #ifdef BUILD_LUA
@@ -1051,7 +1051,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		scan_tztime(obj, arg);
 		obj->callbacks.print = &print_tztime;
 		obj->callbacks.free = &free_tztime;
-#ifdef HAVE_ICONV
+#ifdef BUILD_ICONV
 	END OBJ_ARG(iconv_start, 0, "Iconv requires arguments")
 		init_iconv_start(obj, free_at_crash, arg);
 		obj->callbacks.print = &print_iconv_start;
