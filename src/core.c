@@ -157,6 +157,22 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	OBJ(acpitemp, 0)
 		obj->data.i = open_acpi_temperature(arg);
 	END OBJ(acpiacadapter, 0)
+		if(arg) {
+#ifdef __linux__
+			if(strpbrk(arg, "/.") != NULL) {
+				/* 
+				 * a bit of paranoia. screen out funky paths
+				 * i hope no device will have a '.' in its name
+				 */
+				NORM_ERR("acpiacadapter: arg must not contain '/' or '.'");
+			} else 
+				obj->data.opaque = strdup(arg);
+#else
+			NORM_ERR("acpiacadapter: arg is only used on linux");
+#endif
+		}
+		if(! obj->data.opaque)
+			obj->data.opaque = strdup("AC");
 #endif /* !__OpenBSD__ */
 	END OBJ(freq, 0)
 		get_cpu_count();
@@ -1350,6 +1366,9 @@ void free_text_objects(struct text_object *root, int internal)
 #ifndef __OpenBSD__
 			case OBJ_acpitemp:
 				close(data.i);
+				break;
+			case OBJ_acpiacadapter:
+				free(data.opaque);
 				break;
 #endif /* !__OpenBSD__ */
 #ifdef __linux__
