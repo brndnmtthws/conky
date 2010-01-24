@@ -160,14 +160,10 @@ if(BUILD_X11)
 
 	# check for Xdbe
 	if(BUILD_XDBE)
-		find_path(X11_Xdbe_INCLUDE_PATH X11/extensions/Xdbe.h ${X11_INC_SEARCH_PATH})
-		if(X11_Xdbe_INCLUDE_PATH)
-			set(X11_Xdbe_FOUND true)
-			set(X11_INCLUDE_DIR ${X11_INCLUDE_DIR} ${X11_Xdbe_INCLUDE_PATH})
-		endif(X11_Xdbe_INCLUDE_PATH)
-		if(NOT X11_Xdbe_FOUND)
-			message(FATAL_ERROR "Unable to find Xdbe library")
-		endif(NOT X11_Xdbe_FOUND)
+		if(NOT X11_Xext_FOUND)
+			message(FATAL_ERROR "Unable to find Xext library (needed for Xdbe)")
+		endif(NOT X11_Xext_FOUND)
+		set(conky_libs ${conky_libs} ${X11_Xext_LIB})
 	endif(BUILD_XDBE)
 
 endif(BUILD_X11)
