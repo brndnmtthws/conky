@@ -429,6 +429,7 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 		} else if (type == IMAP_TYPE) {
 			NORM_ERR("Scanning IMAP args failed");
 		}
+		delete mail;
 		return 0;
 	}
 	// see if password needs prompting
