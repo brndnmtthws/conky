@@ -865,7 +865,7 @@ void generate_text_internal(char *p, int p_max_size,
 				get_acpi_fan(p, p_max_size);
 			}
 			OBJ(acpiacadapter) {
-				get_acpi_ac_adapter(p, p_max_size);
+				get_acpi_ac_adapter(p, p_max_size, (const char *)obj->data.opaque);
 			}
 			OBJ(battery) {
 				get_battery_stuff(p, p_max_size, obj->data.s, BATTERY_STATUS);
