@@ -169,7 +169,25 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.print = &print_acpitemp;
 		obj->callbacks.free = &free_acpitemp;
 	END OBJ(acpiacadapter, 0)
+		if(arg) {
+#ifdef __linux__
+			if(strpbrk(arg, "/.") != NULL) {
+				/* 
+				 * a bit of paranoia. screen out funky paths
+				 * i hope no device will have a '.' in its name
+				 */
+				NORM_ERR("acpiacadapter: arg must not contain '/' or '.'");
+			} else 
+				obj->data.opaque = strdup(arg);
+#else
+			NORM_ERR("acpiacadapter: arg is only used on linux");
+#endif
+		}
+		if(! obj->data.opaque)
+			obj->data.opaque = strdup("AC");
+		
 		obj->callbacks.print = &print_acpiacadapter;
+		obj->callbacks.free = &gen_free_opaque;
 #endif /* !__OpenBSD__ */
 	END OBJ(freq, 0)
 		get_cpu_count();

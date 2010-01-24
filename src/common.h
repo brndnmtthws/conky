@@ -87,7 +87,7 @@ extern int no_buffers;
 
 int open_acpi_temperature(const char *name);
 double get_acpi_temperature(int fd);
-void get_acpi_ac_adapter(char *, size_t);
+void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size, const char *adapter);
 void get_acpi_fan(char *, size_t);
 void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item);
 int get_battery_perct(const char *bat);

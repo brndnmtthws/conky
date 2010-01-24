@@ -1342,7 +1342,7 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
 	snprintf(p_client_buffer, client_buffer_size, "%s", buf);
 }
 
-#define SYSFS_AC_ADAPTER_DIR "/sys/class/power_supply/AC"
+#define SYSFS_AC_ADAPTER_DIR "/sys/class/power_supply"
 #define ACPI_AC_ADAPTER_DIR "/proc/acpi/ac_adapter/"
 /* Linux 2.6.25 onwards ac adapter info is in
    /sys/class/power_supply/AC/
@@ -1354,9 +1354,12 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
      POWER_SUPPLY_NAME=AC
      POWER_SUPPLY_TYPE=Mains
      POWER_SUPPLY_ONLINE=1
+
+   Update: it seems the folder name is hardware-dependent. We add an aditional adapter
+   argument, specifying the folder name.
 */
 
-void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size)
+void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size, const char *adapter)
 {
 	static int rep = 0;
 
@@ -1368,7 +1371,7 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size)
 		return;
 	}
 
-	snprintf(buf2, sizeof(buf2), "%s/uevent", SYSFS_AC_ADAPTER_DIR);
+	snprintf(buf2, sizeof(buf2), "%s/%s/uevent", SYSFS_AC_ADAPTER_DIR, adapter);
 	fp = open_file(buf2, &rep);
 	if (fp) {
 		/* sysfs processing */

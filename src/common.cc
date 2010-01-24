@@ -734,8 +734,7 @@ void print_acpifan(struct text_object *obj, char *p, int p_max_size)
 
 void print_acpiacadapter(struct text_object *obj, char *p, int p_max_size)
 {
-	(void)obj;
-	get_acpi_ac_adapter(p, p_max_size);
+	get_acpi_ac_adapter(p, p_max_size, (const char *)obj->data.opaque);
 }
 
 void print_battery(struct text_object *obj, char *p, int p_max_size)

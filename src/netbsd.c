@@ -333,8 +333,10 @@ int open_acpi_temperature(const char *name)
 	return -1;
 }
 
-void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size)
+void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size, const char *adapter)
 {
+	(void) adapter; // only linux uses this
+
 	if (!p_client_buffer || client_buffer_size <= 0) {
 		return;
 	}
