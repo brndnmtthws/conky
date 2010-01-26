@@ -5619,7 +5619,7 @@ void initialisation(int argc, char **argv) {
 
 	while (1) {
 		int c = getopt_long(argc, argv, getopt_string, longopts, NULL);
-		static int startup_pause = 0;
+		int startup_pause;
 
 		if (c == -1) {
 			break;
