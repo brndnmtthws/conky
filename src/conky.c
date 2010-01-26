@@ -5615,7 +5615,7 @@ void initialisation(int argc, char **argv) {
 
 	while (1) {
 		int c = getopt_long(argc, argv, getopt_string, longopts, NULL);
-		int startup_pause;
+		static int startup_pause = 0;
 
 		if (c == -1) {
 			break;
@@ -5678,8 +5678,10 @@ void initialisation(int argc, char **argv) {
 				break;
 #endif /* X11 */
 			case 'p':
-				startup_pause = atoi(optarg);
-				sleep(startup_pause);
+				if (startup_pause == 0) {
+					startup_pause = atoi(optarg);
+					sleep(startup_pause);
+				}
 				break;
 
 			case '?':
