@@ -330,6 +330,10 @@ static unsigned long total_run_times;
 /* fork? */
 static int fork_to_background;
 
+/* set to 0 after the first time conky is run, so we don't fork again after the
+ * first forking */
+static int first_pass = 1;
+
 static int cpu_avg_samples, net_avg_samples, diskio_avg_samples;
 
 /* filenames for output */
@@ -4010,7 +4014,7 @@ void initialisation(int argc, char **argv) {
 
 	while (1) {
 		int c = getopt_long(argc, argv, getopt_string, longopts, NULL);
-		static int startup_pause = 0;
+		int startup_pause;
 
 		if (c == -1) {
 			break;
@@ -4070,7 +4074,7 @@ void initialisation(int argc, char **argv) {
 				break;
 #endif /* BUILD_X11 */
 			case 'p':
-				if (startup_pause == 0) {
+				if (first_pass) {
 					startup_pause = atoi(optarg);
 					sleep(startup_pause);
 				}
@@ -4096,7 +4100,7 @@ void initialisation(int argc, char **argv) {
 	}
 	global_text = NULL;
 	/* fork */
-	if (fork_to_background) {
+	if (fork_to_background && first_pass) {
 		int pid = fork();
 
 		switch (pid) {
@@ -4308,6 +4312,8 @@ int main(int argc, char **argv)
 #endif /* HAVE_SYS_INOTIFY_H */
 
 	initialisation(argc, argv);
+
+	first_pass = 0; /* don't ever call fork() again */
 
 	main_loop();
 
