@@ -1072,10 +1072,10 @@ void generate_text_internal(char *p, int p_max_size,
 				print_diskiograph(obj, p, p_max_size);
 			}
 			OBJ(diskiograph_read) {
-				print_diskiograph(obj, p, p_max_size);
+				print_diskiograph_read(obj, p, p_max_size);
 			}
 			OBJ(diskiograph_write) {
-				print_diskiograph(obj, p, p_max_size);
+				print_diskiograph_write(obj, p, p_max_size);
 			}
 #endif /* X11 */
 			OBJ(downspeed) {
