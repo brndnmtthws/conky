@@ -2282,6 +2282,7 @@ void update_diskio(void)
 	struct diskio_stat *cur;
 	unsigned int reads, writes;
 	unsigned int total_reads = 0, total_writes = 0;
+	size_t len_devbuf;
 
 	stats.current = 0;
 	stats.current_read = 0;
@@ -2302,8 +2303,15 @@ void update_diskio(void)
 		 * XXX: ignore devices which are part of a SW RAID (MD_MAJOR) */
 		if (col_count == 5 && major != LVM_BLK_MAJOR && major != NBD_MAJOR
 				&& major != RAMDISK_MAJOR && major != LOOP_MAJOR) {
-			total_reads += reads;
-			total_writes += writes;
+			/* If the last character of the device is a digit we assume
+			 * it is a subdevice (needed for kernel > 2.6.31) */
+			if (devbuf) {
+				len_devbuf = strlen(devbuf);
+				if ((len_devbuf > 0) && !isdigit(devbuf[len_devbuf-1])) {
+					total_reads += reads;
+					total_writes += writes;
+				}
+			}
 		} else {
 			col_count = sscanf(buf, "%u %u %s %*u %u %*u %u",
 				&major, &minor, devbuf, &reads, &writes);
