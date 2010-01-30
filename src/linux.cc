@@ -2305,12 +2305,10 @@ void update_diskio(void)
 				&& major != RAMDISK_MAJOR && major != LOOP_MAJOR) {
 			/* If the last character of the device is a digit we assume
 			 * it is a subdevice (needed for kernel > 2.6.31) */
-			if (devbuf) {
-				len_devbuf = strlen(devbuf);
-				if ((len_devbuf > 0) && !isdigit(devbuf[len_devbuf-1])) {
-					total_reads += reads;
-					total_writes += writes;
-				}
+			len_devbuf = strlen(devbuf);
+			if ((len_devbuf > 0) && !isdigit(devbuf[len_devbuf-1])) {
+				total_reads += reads;
+				total_writes += writes;
 			}
 		} else {
 			col_count = sscanf(buf, "%u %u %s %*u %u %*u %u",
