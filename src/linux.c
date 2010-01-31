@@ -2246,6 +2246,49 @@ const char *get_disk_protect_queue(const char *disk)
 	return (state > 0) ? "frozen" : "free  ";
 }
 
+typedef struct DEV_LIST_TYPE
+{
+	char *dev_name;
+	int memoized;
+	struct DEV_LIST_TYPE *next;
+
+} DEV_LIST, *DEV_LIST_PTR;
+
+/* Same as sf #2942117 but memoized using a linked list */
+int is_disk(char *dev)
+{
+	char syspath[PATH_MAX];
+	char *slash;
+	static DEV_LIST_PTR dev_head = NULL;
+	DEV_LIST_PTR dev_cur, dev_last;
+
+	dev_cur = dev_head;
+
+	while (dev_cur) {
+		if (strcmp(dev_cur->dev_name, dev) == 0)
+			return dev_cur->memoized;
+		dev_last = dev_cur;
+		dev_cur  = dev_cur->next;
+	}
+
+	dev_cur = (DEV_LIST_PTR)malloc(sizeof(DEV_LIST));
+	dev_cur->dev_name = (char *)malloc((strlen(dev)+1)*sizeof(char));
+	strcpy(dev_cur->dev_name,dev);
+	dev_cur->next = NULL;
+
+	while ((slash = strchr(dev, '/')))
+		*slash = '!';
+	snprintf(syspath, sizeof(syspath), "/sys/block/%s", dev);
+	dev_cur->memoized = !(access(syspath, F_OK));
+
+	if (dev_head)
+		dev_last->next = dev_cur;
+	else
+		dev_head = dev_cur;
+
+	return dev_cur->memoized;
+}
+
 void update_diskio(void)
 {
 	FILE *fp;
@@ -2256,7 +2299,6 @@ void update_diskio(void)
 	struct diskio_stat *cur;
 	unsigned int reads, writes;
 	unsigned int total_reads = 0, total_writes = 0;
-	size_t len_devbuf;
 
 	stats.current = 0;
 	stats.current_read = 0;
@@ -2277,10 +2319,8 @@ void update_diskio(void)
 		 * XXX: ignore devices which are part of a SW RAID (MD_MAJOR) */
 		if (col_count == 5 && major != LVM_BLK_MAJOR && major != NBD_MAJOR
 				&& major != RAMDISK_MAJOR && major != LOOP_MAJOR) {
-			/* If the last character of the device is a digit we assume
-			 * it is a subdevice (needed for kernel > 2.6.31) */
-			len_devbuf = strlen(devbuf);
-			if ((len_devbuf > 0) && !isdigit(devbuf[len_devbuf-1])) {
+			/* check needed for kernel >= 2.6.31, see sf #2942117 */
+			if (is_disk(devbuf)) {
 				total_reads += reads;
 				total_writes += writes;
 			}
