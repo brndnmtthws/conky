@@ -80,9 +80,9 @@ extern int use_xft;
 extern int use_argb_visual;
 /* 1 if use_argb_visual=1 and argb visual was found, otherwise 0 */
 extern int have_argb_visual;
+#endif
 /* range of 0-255 for alpha */
 extern int own_window_argb_value;
-#endif
 
 extern Display *display;
 extern int display_width;
