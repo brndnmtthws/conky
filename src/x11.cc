@@ -53,9 +53,9 @@ int use_xdbe;
 
 #ifdef BUILD_ARGB
 int use_argb_visual;
-int own_window_argb_value;
 int have_argb_visual;
 #endif /* BUILD_ARGB */
+int own_window_argb_value;
 
 /* some basic X11 stuff */
 Display *display = NULL;
