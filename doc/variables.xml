@@ -674,15 +674,15 @@
             <option>url (interval_in_minutes)</option>
         </term>
         <listitem>
-            <para>Download data from URI using Curl at the
+            Download data from URI using Curl at the
             specified interval. The interval may be a floating
             point value greater than 0, otherwise defaults to 15
             minutes. Most useful when used in conjunction with Lua
             and the Lua API. This object is threaded, and once a
             thread is created it can't be explicitly destroyed.
             One thread will run for each URI specified. You can use
-            any protocol that Curl supports.</para>
-        </listitem>
+            any protocol that Curl supports.
+	<para /></listitem>
     </varlistentry>
     <varlistentry>
         <term>
@@ -1770,11 +1770,11 @@
             <option>path</option>
         </term>
         <listitem>
-            <para>Loads the configfile at path, places the
+            Loads the configfile at path, places the
             configsettings behind the configsettings in the orginal
             config and places the vars where the includevar
-            stood.</para>
-        </listitem>
+            stood.
+        <para /></listitem>
     </varlistentry>
     <varlistentry>
         <term>
@@ -3038,7 +3038,7 @@
             (spaces_in_front))</option>
         </term>
         <listitem>
-            <para>Download and parse RSS feeds. The interval may be
+            Download and parse RSS feeds. The interval may be
             a floating point value greater than 0, otherwise
             defaults to 15 minutes. Action may be one of the
             following: feed_title, item_title (with num par),
@@ -3048,8 +3048,8 @@
             threaded, and once a thread is created it can't be
             explicitly destroyed. One thread will run for each URI
             specified. You can use any protocol that Curl
-            supports.</para>
-        </listitem>
+            supports.
+        <para /></listitem>
     </varlistentry>
     <varlistentry>
         <term>
