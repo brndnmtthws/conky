@@ -52,6 +52,7 @@
 #  include <netinet/in.h>
 #  include <arpa/inet.h>
 #  include <sys/socket.h>
+#  include <sys/un.h>
 #  include <netdb.h>
 #endif
 
@@ -119,6 +120,38 @@ static int do_connect_fail(mpd_Connection *connection,
 }
 #endif /* !WIN32 */
 
+static int uds_connect(mpd_Connection *connection, const char *host,
+		float timeout)
+{
+	struct sockaddr_un addr;
+
+	strncpy(addr.sun_path, host, sizeof(addr.sun_path)-1);
+	addr.sun_family = AF_UNIX;
+	addr.sun_path[sizeof(addr.sun_path)-1] = 0;
+	connection->sock = socket(AF_UNIX, SOCK_STREAM, 0);
+
+	if (connection->sock < 0) {
+		snprintf(connection->errorStr, MPD_ERRORSTR_MAX_LENGTH,
+				"problems creating socket: %s", strerror(errno));
+		connection->error = MPD_ERROR_SYSTEM;
+		return -1;
+	}
+
+	mpd_setConnectionTimeout(connection, timeout);
+
+	/* connect stuff */
+	if (do_connect_fail(connection, (struct sockaddr *)&addr, SUN_LEN(&addr))) {
+		snprintf(connection->errorStr, MPD_ERRORSTR_MAX_LENGTH,
+				"problems cconnecting socket: %s", strerror(errno));
+		closesocket(connection->sock);
+		connection->sock = -1;
+		connection->error = MPD_ERROR_SYSTEM;
+		return -1;
+	}
+
+	return 0;
+}
+
 #ifdef MPD_HAVE_GAI
 static int mpd_connect(mpd_Connection *connection, const char *host, int port,
 		float timeout)
@@ -128,6 +161,9 @@ static int mpd_connect(mpd_Connection *connection, const char *host, int port,
 	struct addrinfo hints;
 	struct addrinfo *res = NULL;
 	struct addrinfo *addrinfo = NULL;
+
+	if (*host == '/')
+		return uds_connect(connection, host, timeout);
 
 	/* Setup hints */
 	hints.ai_flags		= AI_ADDRCONFIG;
@@ -199,6 +235,9 @@ static int mpd_connect(mpd_Connection *connection, const char *host, int port,
 	struct sockaddr *dest;
 	int destlen;
 	struct sockaddr_in sin;
+
+	if (*host == '/')
+		return uds_connect(connection, host, timeout);
 
 #ifdef HAVE_GETHOSTBYNAME_R
 		if (gethostbyname_r(rhost, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
