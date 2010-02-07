@@ -382,7 +382,7 @@ void print_texecpi(struct text_object *obj, char *p, int p_max_size)
 		 */
 		ed->p_timed_thread = timed_thread::create(std::bind(threaded_exec, std::placeholders::_1, obj), ed->interval * 1000000, false);
 		if (!ed->p_timed_thread) {
-			NORM_ERR("Error creating texeci timed thread");
+			NORM_ERR("Error creating texecpi timed thread");
 		}
 	} else {
 		std::lock_guard<std::mutex> lock(ed->p_timed_thread->mutex());
