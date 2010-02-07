@@ -3470,6 +3470,17 @@
     <varlistentry>
         <term>
             <command>
+                <option>texecpi</option>
+            </command>
+            <option>interval command</option>
+        </term>
+        <listitem>Same as execpi, except the command is run inside
+        a thread.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>threads</option>
             </command>
         </term>

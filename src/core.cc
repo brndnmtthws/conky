@@ -629,6 +629,10 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		scan_execi_arg(obj, arg);
 		obj->callbacks.print = &print_texeci;
 		obj->callbacks.free = &free_execi;
+	END OBJ_ARG(texecpi, 0, "texecpi needs arguments")
+		scan_execi_arg(obj, arg);
+		obj->callbacks.print = &print_texecpi;
+		obj->callbacks.free = &free_execi;
 	END OBJ(pre_exec, 0)
 		scan_pre_exec_arg(obj, arg);
 	END OBJ(fs_bar, &update_fs_stats)

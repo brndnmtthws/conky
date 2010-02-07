@@ -367,6 +367,30 @@ void print_texeci(struct text_object *obj, char *p, int p_max_size)
 	}
 }
 
+void print_texecpi(struct text_object *obj, char *p, int p_max_size)
+{
+	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
+	struct text_object subroot;
+
+	if (!ed)
+		return;
+
+	if (!ed->p_timed_thread) {
+		/*
+		 * note that we don't register this thread with the
+		 * timed_thread list, because we destroy it manually
+		 */
+		ed->p_timed_thread = timed_thread::create(std::bind(threaded_exec, std::placeholders::_1, obj), ed->interval * 1000000, false);
+		if (!ed->p_timed_thread) {
+			NORM_ERR("Error creating texeci timed thread");
+		}
+	} else {
+		std::lock_guard<std::mutex> lock(ed->p_timed_thread->mutex());
+		parse_conky_vars(&subroot, ed->buffer, p, p_max_size);
+		free_text_objects(&subroot);
+	}
+}
+
 double execbarval(struct text_object *obj)
 {
 	return read_exec_barnum(obj->data.s);

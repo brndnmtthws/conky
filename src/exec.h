@@ -44,6 +44,7 @@ void print_execp(struct text_object *, char *, int);
 void print_execi(struct text_object *, char *, int);
 void print_execpi(struct text_object *, char *, int);
 void print_texeci(struct text_object *, char *, int);
+void print_texecpi(struct text_object *, char *, int);
 double execbarval(struct text_object *);
 double execi_barval(struct text_object *);
 void free_exec(struct text_object *);
