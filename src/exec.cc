@@ -345,12 +345,11 @@ void print_execpi(struct text_object *obj, char *p, int p_max_size)
 	free_text_objects(&subroot);
 }
 
-void print_texeci(struct text_object *obj, char *p, int p_max_size)
-{
+char* threaded_exec_caller(struct text_object *obj) {
 	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
 
 	if (!ed)
-		return;
+		return NULL;
 
 	if (!ed->p_timed_thread) {
 		/*
@@ -361,32 +360,27 @@ void print_texeci(struct text_object *obj, char *p, int p_max_size)
 		if (!ed->p_timed_thread) {
 			NORM_ERR("Error creating texeci timed thread");
 		}
+		return NULL;
 	} else {
 		std::lock_guard<std::mutex> lock(ed->p_timed_thread->mutex());
-		snprintf(p, p_max_size, "%s", ed->buffer);
+		return ed->buffer;
 	}
+}
+
+void print_texeci(struct text_object *obj, char *p, int p_max_size)
+{
+	char* buffer = threaded_exec_caller(obj);
+
+	if(buffer != NULL) snprintf(p, p_max_size, "%s", buffer);
 }
 
 void print_texecpi(struct text_object *obj, char *p, int p_max_size)
 {
-	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
+	char* buffer = threaded_exec_caller(obj);
 	struct text_object subroot;
 
-	if (!ed)
-		return;
-
-	if (!ed->p_timed_thread) {
-		/*
-		 * note that we don't register this thread with the
-		 * timed_thread list, because we destroy it manually
-		 */
-		ed->p_timed_thread = timed_thread::create(std::bind(threaded_exec, std::placeholders::_1, obj), ed->interval * 1000000, false);
-		if (!ed->p_timed_thread) {
-			NORM_ERR("Error creating texecpi timed thread");
-		}
-	} else {
-		std::lock_guard<std::mutex> lock(ed->p_timed_thread->mutex());
-		parse_conky_vars(&subroot, ed->buffer, p, p_max_size);
+	if(buffer != NULL) {
+		parse_conky_vars(&subroot, buffer, p, p_max_size);
 		free_text_objects(&subroot);
 	}
 }
