@@ -1,5 +1,5 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=c
+/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -31,11 +31,11 @@
 #include "logging.h"
 #include <ctype.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string>
 /* The templates defined by the user.
  *
  * This is a 1 to 1 mapping from templateN config option to template[N] field. */
-static char *template[MAX_TEMPLATES];
+static char *_template[MAX_TEMPLATES];	//this is named _template because template is a reserved word in c++
 
 /* free all templates
  *
@@ -47,15 +47,15 @@ void free_templates(void)
 	static int initialised = 0;
 
 	if (!initialised) {
-		memset(template, 0, MAX_TEMPLATES * sizeof(char *));
+		memset(_template, 0, MAX_TEMPLATES * sizeof(char *));
 		initialised = 1;
 		return;
 	}
 
 	for (i = 0; i < MAX_TEMPLATES; i++) {
-		if (template[i]) {
-			free(template[i]);
-			template[i] = NULL;
+		if (_template[i]) {
+			free(_template[i]);
+			_template[i] = NULL;
 		}
 	}
 }
@@ -67,9 +67,9 @@ int set_template(int n, const char *val)
 {
 	if (n < 0 || n >= MAX_TEMPLATES || !val)
 		return 1;
-	if (template[n])
-		free(template[n]);
-	template[n] = strdup(val);
+	if (_template[n])
+		free(_template[n]);
+	_template[n] = strdup(val);
 	return 0;
 }
 
@@ -85,7 +85,7 @@ static char *backslash_escape(const char *src, char **templates, unsigned int te
 	unsigned int dup_idx = 0, dup_len;
 
 	dup_len = strlen(src) + 1;
-	src_dup = malloc(dup_len * sizeof(char));
+	src_dup = (char*) malloc(dup_len * sizeof(char));
 
 	p = src;
 	while (*p) {
@@ -109,7 +109,7 @@ static char *backslash_escape(const char *src, char **templates, unsigned int te
 				    (tmpl_num > template_count))
 					break;
 				dup_len += strlen(templates[tmpl_num - 1]);
-				src_dup = realloc(src_dup, dup_len * sizeof(char));
+				src_dup = (char*) realloc(src_dup, dup_len * sizeof(char));
 				sprintf(src_dup + dup_idx, "%s", templates[tmpl_num - 1]);
 				dup_idx += strlen(templates[tmpl_num - 1]);
 				p += digits;
@@ -122,7 +122,7 @@ static char *backslash_escape(const char *src, char **templates, unsigned int te
 		p++;
 	}
 	src_dup[dup_idx] = '\0';
-	src_dup = realloc(src_dup, (strlen(src_dup) + 1) * sizeof(char));
+	src_dup = (char*) realloc(src_dup, (strlen(src_dup) + 1) * sizeof(char));
 	return src_dup;
 }
 
@@ -164,7 +164,7 @@ static char *handle_template(const char *tmpl, const char *args)
 				(*p) = '\0';
 				p++;
 			}
-			argsp = realloc(argsp, ++argcnt * sizeof(char *));
+			argsp = (char**) realloc(argsp, ++argcnt * sizeof(char *));
 			argsp[argcnt - 1] = p_old;
 		}
 		for (i = 0; i < argcnt; i++) {
@@ -175,7 +175,7 @@ static char *handle_template(const char *tmpl, const char *args)
 		}
 	}
 
-	eval_text = backslash_escape(template[template_idx], argsp, argcnt);
+	eval_text = backslash_escape(_template[template_idx], argsp, argcnt);
 	DBGP("substituted %s, output is '%s'", tmpl, eval_text);
 	free(args_dup);
 	for (i = 0; i < argcnt; i++)
@@ -192,7 +192,7 @@ char *find_and_replace_templates(const char *inbuf)
 	int stack, outlen;
 
 	outlen = strlen(inbuf) + 1;
-	o = outbuf = calloc(outlen, sizeof(char));
+	o = outbuf = (char*) calloc(outlen, sizeof(char));
 	memset(outbuf, 0, outlen * sizeof(char));
 
 	p = indup = strdup(inbuf);
@@ -244,7 +244,7 @@ char *find_and_replace_templates(const char *inbuf)
 		if (tmpl_out) {
 			outlen += strlen(tmpl_out);
 			*o = '\0';
-			outbuf = realloc(outbuf, outlen * sizeof(char));
+			outbuf = (char*) realloc(outbuf, outlen * sizeof(char));
 			strcat (outbuf, tmpl_out);
 			free(tmpl_out);
 			o = outbuf + strlen(outbuf);
@@ -253,7 +253,7 @@ char *find_and_replace_templates(const char *inbuf)
 		}
 	}
 	*o = '\0';
-	outbuf = realloc(outbuf, (strlen(outbuf) + 1) * sizeof(char));
+	outbuf = (char*) realloc(outbuf, (strlen(outbuf) + 1) * sizeof(char));
 	free(indup);
 	return outbuf;
 }
