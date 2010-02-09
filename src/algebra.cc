@@ -245,16 +245,16 @@ int compare(const char *expr)
 
 int check_if_match(struct text_object *obj)
 {
-	char expression[max_user_text];
+	std::unique_ptr<char []> expression(new char[max_user_text]);
 	int val;
 	int result = 1;
 
-	generate_text_internal(expression, max_user_text, *obj->sub);
-	DBGP("parsed arg into '%s'", expression);
+	generate_text_internal(expression.get(), max_user_text, *obj->sub);
+	DBGP("parsed arg into '%s'", expression.get());
 
-	val = compare(expression);
+	val = compare(expression.get());
 	if (val == -2) {
-		NORM_ERR("compare failed for expression '%s'", expression);
+		NORM_ERR("compare failed for expression '%s'", expression.get());
 	} else if (!val) {
 		result = 0;
 	}

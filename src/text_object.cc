@@ -111,7 +111,7 @@ int append_object(struct text_object *root, struct text_object *obj)
 enum ifblock_type {
 	IFBLOCK_IF = 1,
 	IFBLOCK_ELSE,
-	IFBLOCK_ENDIF,
+	IFBLOCK_ENDIF
 };
 
 /* linked list of ifblock objects, building a stack
