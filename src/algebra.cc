@@ -1,5 +1,5 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=c
+/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -227,16 +227,16 @@ int compare(const char *expr)
 				char *a, *b;
 				a = arg_to_string(expr_dup);
 				b = arg_to_string(expr_dup + idx + 1);
-				idx = scompare(a, mtype, b);
+				idx = scompare(a, (enum match_type) mtype, b);
 				free(a);
 				free(b);
 				return idx;
 			}
 		case ARG_LONG:
-			return lcompare(arg_to_long(expr_dup), mtype,
+			return lcompare(arg_to_long(expr_dup), (enum match_type) mtype,
 					arg_to_long(expr_dup + idx + 1));
 		case ARG_DOUBLE:
-			return dcompare(arg_to_double(expr_dup), mtype,
+			return dcompare(arg_to_double(expr_dup), (enum match_type) mtype,
 					arg_to_double(expr_dup + idx + 1));
 	}
 	/* not reached */

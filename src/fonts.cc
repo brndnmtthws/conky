@@ -1,5 +1,5 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=c
+/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -83,7 +83,7 @@ int add_font(const char *data_in)
 		}
 		memset(fonts, 0, sizeof(struct font_list));
 	}
-	fonts = realloc(fonts, (sizeof(struct font_list) * (font_count + 1)));
+	fonts = (font_list*) realloc(fonts, (sizeof(struct font_list) * (font_count + 1)));
 	memset(&fonts[font_count], 0, sizeof(struct font_list));
 	if (fonts == NULL) {
 		CRIT_ERR(NULL, NULL, "realloc in add_font");

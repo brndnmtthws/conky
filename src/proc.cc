@@ -1,5 +1,5 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=c
+/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -45,7 +45,7 @@ char* readfile(char* filename, int* total_read, char showerror) {
 	file = fopen(filename, "r");
 	if(file) {
 		do {
-			buf = realloc(buf, *total_read + READSIZE + 1);
+			buf = (char *) realloc(buf, *total_read + READSIZE + 1);
 			bytes_read = fread(buf + *total_read, 1, READSIZE, file);
 			*total_read += bytes_read;
 			buf[*total_read] = 0;
@@ -75,7 +75,7 @@ struct ll_string {
 };
 
 struct ll_string* addnode(struct ll_string* end, char* string) {
-	struct ll_string* current = malloc(sizeof(struct ll_string));
+	struct ll_string* current = (struct ll_string*) malloc(sizeof(struct ll_string));
 	current->string = strdup(string);
 	current->next = NULL;
 	if(end != NULL) end->next = current;

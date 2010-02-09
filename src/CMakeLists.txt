@@ -37,8 +37,8 @@ endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build.h)
 set(conky_sources colours.cc combine.cc common.cc conky.cc core.cc
 	diskio.cc entropy.cc exec.cc fs.cc mail.cc mixer.cc net_stat.cc template.cc
 	mboxscan.cc read_tcp.cc scroll.cc specials.cc tailhead.cc
-	temphelper.cc text_object.cc timeinfo.cc top.cc algebra.c prioqueue.c proc.c
-	user.c)
+	temphelper.cc text_object.cc timeinfo.cc top.cc algebra.cc prioqueue.c proc.cc
+	user.cc)
 
 # add timed thread library
 add_library(timed-thread timed-thread.cc)
@@ -46,28 +46,28 @@ set(conky_libs ${conky_libs} timed-thread)
 
 # Platform specific sources
 if(OS_LINUX)
-	set(linux linux.cc users.cc sony.c i8k.cc)
+	set(linux linux.cc users.cc sony.cc i8k.cc)
 	set(optional_sources ${optional_sources} ${linux})
 endif(OS_LINUX)
 
 if(OS_FREEBSD)
-	set(freebsd freebsd.c bsdapm.c)
+	set(freebsd freebsd.cc bsdapm.cc)
 	set(optional_sources ${optional_sources} ${freebsd})
 endif(OS_FREEBSD)
 
 if(OS_OPENBSD)
-	set(openbsd openbsd.c bsdapm.c)
+	set(openbsd openbsd.cc bsdapm.cc)
 	set(optional_sources ${optional_sources} ${openbsd})
 endif(OS_OPENBSD)
 
 # These below are not actually supported.  No idea what their status is.
 if(OS_SOLARIS)
-	set(solaris solaris.c)
+	set(solaris solaris.cc)
 	set(optional_sources ${optional_sources} ${solaris})
 endif(OS_SOLARIS)
 
 if(OS_NETBSD)
-	set(netbsd netbsd.c)
+	set(netbsd netbsd.cc)
 	set(optional_sources ${optional_sources} ${netbsd})
 endif(OS_NETBSD)
 
@@ -79,7 +79,7 @@ if(BUILD_AUDACIOUS)
 endif(BUILD_AUDACIOUS)
 
 if(BUILD_BMPX)
-	set(bmpx bmpx.c)
+	set(bmpx bmpx.cc)
 	set(optional_sources ${optional_sources} ${bmpx})
 endif(BUILD_BMPX)
 
@@ -89,7 +89,7 @@ if(BUILD_IBM)
 endif(BUILD_IBM)
 
 if(BUILD_MPD)
-	set(mpd mpd.cc libmpdclient.c)
+	set(mpd mpd.cc libmpdclient.cc)
 	set(optional_sources ${optional_sources} ${mpd})
 endif(BUILD_MPD)
 
@@ -99,7 +99,7 @@ if(BUILD_MOC)
 endif(BUILD_MOC)
 
 if(BUILD_XMMS2)
-	set(xmms2 xmms2.c)
+	set(xmms2 xmms2.cc)
 	set(optional_sources ${optional_sources} ${xmms2})
 endif(BUILD_XMMS2)
 
@@ -111,7 +111,7 @@ if(BUILD_PORT_MONITORS)
 endif(BUILD_PORT_MONITORS)
 
 if(BUILD_X11)
-	set(x11 x11.cc fonts.c)
+	set(x11 x11.cc fonts.cc)
 	set(optional_sources ${optional_sources} ${x11})
 endif(BUILD_X11)
 
@@ -121,7 +121,7 @@ if(BUILD_HDDTEMP)
 endif(BUILD_HDDTEMP)
 
 if(BUILD_EVE)
-	set(eve eve.c)
+	set(eve eve.cc)
 	set(optional_sources ${optional_sources} ${eve})
 endif(BUILD_EVE)
 
@@ -131,7 +131,7 @@ if(BUILD_CURL)
 endif(BUILD_CURL)
 
 if(BUILD_RSS)
-	set(rss rss.cc prss.c)
+	set(rss rss.cc prss.cc)
 	set(optional_sources ${optional_sources} ${rss})
 endif(BUILD_RSS)
 
@@ -156,12 +156,12 @@ if(BUILD_IMLIB2)
 endif(BUILD_IMLIB2)
 
 if(BUILD_APCUPSD)
-	set(apcupsd apcupsd.c)
+	set(apcupsd apcupsd.cc)
 	set(optional_sources ${optional_sources} ${apcupsd})
 endif(BUILD_APCUPSD)
 
 if(BUILD_ICONV)
-	set(iconv iconv_tools.c)
+	set(iconv iconv_tools.cc)
 	set(optional_sources ${optional_sources} ${iconv})
 endif(BUILD_ICONV)
 
