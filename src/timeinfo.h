@@ -30,10 +30,6 @@
 #ifndef _TIMEINFO_H
 #define _TIMEINFO_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* for the times_in_seconds configuration variable and it's users */
 void set_times_in_seconds(char);
 char times_in_seconds(void);
@@ -54,9 +50,5 @@ void print_format_time(struct text_object *obj, char *p, int p_max_size);
 /* free object data */
 void free_time(struct text_object *);
 void free_tztime(struct text_object *);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* _TIMEINFO_H */

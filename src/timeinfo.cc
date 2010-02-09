@@ -1,5 +1,5 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=c
+/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -75,7 +75,7 @@ void scan_tztime(struct text_object *obj, const char *arg)
 		}
 	}
 
-	ts = malloc(sizeof(struct tztime_s));
+	ts = (tztime_s*) malloc(sizeof(struct tztime_s));
 	memset(ts, 0, sizeof(struct tztime_s));
 	ts->fmt = strndup(fmt ? fmt : "%F %T", text_buffer_size);
 	ts->tz = tz ? strndup(tz, text_buffer_size) : NULL;
@@ -105,7 +105,7 @@ void print_tztime(struct text_object *obj, char *p, int p_max_size)
 	char *oldTZ = NULL;
 	time_t t;
 	struct tm *tm;
-	struct tztime_s *ts = obj->data.opaque;
+	struct tztime_s *ts = (tztime_s*) obj->data.opaque;
 
 	if (!ts)
 		return;
@@ -139,7 +139,7 @@ void free_time(struct text_object *obj)
 
 void free_tztime(struct text_object *obj)
 {
-	struct tztime_s *ts = obj->data.opaque;
+	struct tztime_s *ts = (tztime_s*) obj->data.opaque;
 
 	if (!ts)
 		return;
