@@ -1,5 +1,5 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=c
+/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -33,7 +33,7 @@
 #include "text_object.h"
 #include <netdb.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string>
 #include <unistd.h>
 #include <netinet/in.h>
 
@@ -46,10 +46,10 @@ void parse_read_tcp_arg(struct text_object *obj, const char *arg, void *free_at_
 {
 	struct read_tcp_data *rtd;
 
-	rtd = malloc(sizeof(struct read_tcp_data));
+	rtd = (struct read_tcp_data *) malloc(sizeof(struct read_tcp_data));
 	memset(rtd, 0, sizeof(struct read_tcp_data));
 
-	rtd->host = malloc(text_buffer_size);
+	rtd->host = (char *) malloc(text_buffer_size);
 	sscanf(arg, "%s", rtd->host);
 	sscanf(arg+strlen(rtd->host), "%u", &(rtd->port));
 	if(rtd->port == 0) {
@@ -70,7 +70,7 @@ void print_read_tcp(struct text_object *obj, char *p, int p_max_size)
 	struct hostent* he;
 	fd_set readfds;
 	struct timeval tv;
-	struct read_tcp_data *rtd = obj->data.opaque;
+	struct read_tcp_data *rtd = (struct read_tcp_data *) obj->data.opaque;
 
 	if (!rtd)
 		return;
@@ -104,7 +104,7 @@ void print_read_tcp(struct text_object *obj, char *p, int p_max_size)
 
 void free_read_tcp(struct text_object *obj)
 {
-	struct read_tcp_data *rtd = obj->data.opaque;
+	struct read_tcp_data *rtd = (struct read_tcp_data *) obj->data.opaque;
 
 	if (!rtd)
 		return;
