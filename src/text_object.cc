@@ -1,5 +1,5 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=c
+/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -31,7 +31,7 @@
 #include "logging.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
+#include <cstring>
 
 void gen_free_opaque(struct text_object *obj)
 {
@@ -159,7 +159,7 @@ static int push_ifblock(struct ifblock_stack_obj **ifblock_stack_top,
 			(*ifblock_stack_top)->obj->ifblock_next = obj;
 			/* fall through */
 		case IFBLOCK_IF:
-			stackobj = malloc(sizeof(struct ifblock_stack_obj));
+			stackobj = (ifblock_stack_obj*) malloc(sizeof(struct ifblock_stack_obj));
 			stackobj->type = type;
 			stackobj->obj = obj;
 			stackobj->next = *ifblock_stack_top;
