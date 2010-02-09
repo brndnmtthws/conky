@@ -45,11 +45,11 @@ static iconv_t **iconv_cd = 0;
 
 int register_iconv(iconv_t *new_iconv)
 {
-	iconv_cd = realloc(iconv_cd, sizeof(iconv_t *) * (iconv_count + 1));
+	iconv_cd = (void ***) realloc(iconv_cd, sizeof(iconv_t *) * (iconv_count + 1));
 	if (!iconv_cd) {
 		CRIT_ERR(NULL, NULL, "Out of memory");
 	}
-	iconv_cd[iconv_count] = malloc(sizeof(iconv_t));
+	iconv_cd[iconv_count] = (void **) malloc(sizeof(iconv_t));
 	if (!iconv_cd[iconv_count]) {
 		CRIT_ERR(NULL, NULL, "Out of memory");
 	}
