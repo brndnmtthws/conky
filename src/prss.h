@@ -20,10 +20,6 @@
 
 #include <libxml/parser.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef struct PRSS_Item_ {
 	char *title;
 	char *link;
@@ -63,9 +59,5 @@ PRSS *prss_parse_doc(xmlDocPtr doc); */
  * The memory area pointed by data becomes invalid
  * after call to this function. */
 void prss_free(PRSS *data);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* PRSS_H */
