@@ -35,6 +35,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <errno.h>
+#include <memory>
 
 #define FROM_WIDTH 10
 #define SUBJECT_WIDTH 22

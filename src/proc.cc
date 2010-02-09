@@ -35,6 +35,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <dirent.h>
+#include <memory>
 
 char* readfile(char* filename, int* total_read, char showerror) {
 	FILE* file;

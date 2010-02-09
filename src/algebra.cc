@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <memory>
 
 /* find the operand in the given expression
  * returns the index of the first op character or -1 on error
