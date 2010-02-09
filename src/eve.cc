@@ -22,6 +22,7 @@
  *
  */
 
+#include "eve.h"
 #include "config.h"
 #include "logging.h"
 #include "text_object.h"
@@ -237,7 +238,7 @@ static char *formatTime(struct tm *ends)
 		int hours = (int)((diff / 60 / 60) - (days * 24));
 		int minutes = (int)((diff / 60) - ((hours * 60) + (days * 60 * 24)));
 		int seconds = (int)(diff - ((minutes * 60) + (hours * 60 * 60) + (days * 60 * 60 * 24)));
-		char *output = malloc(100 * sizeof(char));
+		char *output = (char*) malloc(100 * sizeof(char));
 
 		if (days > 0)
 			sprintf(output, "%dd, %dh, %02dm and %02ds", days, hours, minutes, seconds);
@@ -415,7 +416,7 @@ void scan_eve(struct text_object *obj, const char *arg)
 	int argc;
 	struct eve_data *ed;
 
-	ed = malloc(sizeof(struct eve_data));
+	ed = (struct eve_data *) malloc(sizeof(struct eve_data));
 	memset(ed, 0, sizeof(struct eve_data));
 
 	argc = sscanf(arg, "%20s %64s %20s", ed->userid, ed->apikey, ed->charid);
@@ -426,7 +427,7 @@ void scan_eve(struct text_object *obj, const char *arg)
 
 void print_eve(struct text_object *obj, char *p, int p_max_size)
 {
-	struct eve_data *ed = obj->data.opaque;
+	struct eve_data *ed = (struct eve_data *) obj->data.opaque;
 
 	if (!ed)
 		return;
