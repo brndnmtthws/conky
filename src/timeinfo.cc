@@ -36,6 +36,8 @@
 #include <errno.h>
 #include "logging.h"
 
+#include <memory>
+
 char print_times_in_seconds = 0;
 
 struct tztime_s {
@@ -321,10 +323,10 @@ static void do_format_time(struct text_object *obj, char *p, unsigned int p_max_
 
 void print_format_time(struct text_object *obj, char *p, int p_max_size)
 {
-	char buf[max_user_text];
+	std::unique_ptr<char []> buf(new char[max_user_text]);
 
-	generate_text_internal(buf, max_user_text, *obj->sub);
-	obj->data.s = buf;
+	generate_text_internal(buf.get(), max_user_text, *obj->sub);
+	obj->data.s = buf.get();
 	do_format_time(obj, p, p_max_size);
 }
 

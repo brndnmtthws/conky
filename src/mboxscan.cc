@@ -64,7 +64,8 @@ static void mbox_scan(char *args, char *output, size_t max_len)
 {
 	int i, u, flag;
 	int force_rescan = 0;
-	char buf[text_buffer_size];
+	std::unique_ptr<char []> buf_(new char[text_buffer_size]);
+	char *buf = buf_.get();
 	struct stat statbuf;
 	struct ring_list *curr = 0, *prev = 0, *startlist = 0;
 	FILE *fp;
@@ -183,8 +184,8 @@ static void mbox_scan(char *args, char *output, size_t max_len)
 	 * mbox */
 	for (i = 0; i < print_num_mails; i++) {
 		curr = (struct ring_list *) malloc(sizeof(struct ring_list));
-		curr->from = (char *) malloc(sizeof(char[from_width + 1]));
-		curr->subject = (char *) malloc(sizeof(char[subject_width + 1]));
+		curr->from = (char *) malloc(from_width + 1);
+		curr->subject = (char *) malloc(subject_width + 1);
 		curr->from[0] = '\0';
 		curr->subject[0] = '\0';
 

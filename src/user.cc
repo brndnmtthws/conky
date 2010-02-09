@@ -38,13 +38,13 @@ void print_uid_name(struct text_object *obj, char *p, int p_max_size) {
 	struct passwd *pw;
 	uid_t uid;
 	char* firstinvalid;
-	char objbuf[max_user_text];
+	std::unique_ptr<char []> objbuf(new char[max_user_text]);
 
-	generate_text_internal(objbuf, max_user_text, *obj->sub);
+	generate_text_internal(objbuf.get(), max_user_text, *obj->sub);
 
 	errno = 0;
-	uid = strtol(objbuf, &firstinvalid, 10);
-	if (errno == 0 && objbuf != firstinvalid) {
+	uid = strtol(objbuf.get(), &firstinvalid, 10);
+	if (errno == 0 && objbuf.get() != firstinvalid) {
 		pw = getpwuid(uid);
 		if(pw != NULL) {
 			snprintf(p, p_max_size, "%s", pw->pw_name);
@@ -60,13 +60,13 @@ void print_gid_name(struct text_object *obj, char *p, int p_max_size) {
 	struct group *grp;
 	gid_t gid;
 	char* firstinvalid;
-	char objbuf[max_user_text];
+	std::unique_ptr<char []> objbuf(new char[max_user_text]);
 
-	generate_text_internal(objbuf, max_user_text, *obj->sub);
+	generate_text_internal(objbuf.get(), max_user_text, *obj->sub);
 
 	errno = 0;
-	gid = strtol(objbuf, &firstinvalid, 10);
-	if (errno == 0 && objbuf != firstinvalid) {
+	gid = strtol(objbuf.get(), &firstinvalid, 10);
+	if (errno == 0 && objbuf.get() != firstinvalid) {
 		grp = getgrgid(gid);
 		if(grp != NULL) {
 			snprintf(p, p_max_size, "%s", grp->gr_name);
