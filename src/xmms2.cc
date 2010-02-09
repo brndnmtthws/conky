@@ -39,31 +39,31 @@ static void xmms_alloc(struct information *ptr)
 {
 
 	if (ptr->xmms2.artist == NULL) {
-		ptr->xmms2.artist = malloc(text_buffer_size);
+		ptr->xmms2.artist = (char*) malloc(text_buffer_size);
 	}
 
 	if (ptr->xmms2.album == NULL) {
-		ptr->xmms2.album = malloc(text_buffer_size);
+		ptr->xmms2.album = (char*) malloc(text_buffer_size);
 	}
 
 	if (ptr->xmms2.title == NULL) {
-		ptr->xmms2.title = malloc(text_buffer_size);
+		ptr->xmms2.title = (char*) malloc(text_buffer_size);
 	}
 
 	if (ptr->xmms2.genre == NULL) {
-		ptr->xmms2.genre = malloc(text_buffer_size);
+		ptr->xmms2.genre = (char*) malloc(text_buffer_size);
 	}
 
 	if (ptr->xmms2.comment == NULL) {
-		ptr->xmms2.comment = malloc(text_buffer_size);
+		ptr->xmms2.comment = (char*) malloc(text_buffer_size);
 	}
 
 	if (ptr->xmms2.url == NULL) {
-		ptr->xmms2.url = malloc(text_buffer_size);
+		ptr->xmms2.url = (char*) malloc(text_buffer_size);
 	}
 
 	if (ptr->xmms2.date == NULL) {
-		ptr->xmms2.date = malloc(text_buffer_size);
+		ptr->xmms2.date = (char*) malloc(text_buffer_size);
 	}
 
 	ptr->xmms2.artist[0] = '\0';
@@ -102,7 +102,7 @@ void free_xmms2(struct text_object *obj)
 
 void connection_lost(void *p)
 {
-	struct information *ptr = p;
+	struct information *ptr = (struct information*) p;
 	ptr->xmms2.conn_state = CONN_NO;
 
 	fprintf(stderr,"XMMS2 connection failed. %s\n", xmmsc_get_last_error(xmms2_conn));
@@ -116,7 +116,7 @@ void connection_lost(void *p)
 
 int handle_curent_id(xmmsv_t *value, void *p)
 {
-	struct information *ptr = p;
+	struct information *ptr = (struct information*) p;
 	xmmsv_t *val, *infos, *dict_entry;
 	xmmsc_result_t *res;
 	const char *errbuf;
@@ -196,7 +196,7 @@ int handle_curent_id(xmmsv_t *value, void *p)
 
 int handle_playtime(xmmsv_t *value, void *p)
 {
-	struct information *ptr = p;
+	struct information *ptr = (struct information*) p;
 	int play_time;
 	const char *errbuf;
 
@@ -216,7 +216,7 @@ int handle_playtime(xmmsv_t *value, void *p)
 
 int handle_playback_state_change(xmmsv_t *value, void *p)
 {
-	struct information *ptr = p;
+	struct information *ptr = (struct information*) p;
 	int pb_state = 0;
 	const char *errbuf;
 
@@ -226,7 +226,7 @@ int handle_playback_state_change(xmmsv_t *value, void *p)
 	}
 
 	if (ptr->xmms2.status == NULL) {
-		ptr->xmms2.status = malloc(text_buffer_size);
+		ptr->xmms2.status = (char*) malloc(text_buffer_size);
 		ptr->xmms2.status[0] = '\0';
 	}
 
@@ -250,7 +250,7 @@ int handle_playback_state_change(xmmsv_t *value, void *p)
 
 int handle_playlist_loaded(xmmsv_t *value, void *p)
 {
-	struct information *ptr = p;
+	struct information *ptr = (struct information*) p;
 	const char *c, *errbuf;
 
 	if (xmmsv_get_error(value, &errbuf)) {
@@ -259,7 +259,7 @@ int handle_playlist_loaded(xmmsv_t *value, void *p)
 	}
 
 	if (ptr->xmms2.playlist == NULL) {
-		ptr->xmms2.playlist = malloc(text_buffer_size);
+		ptr->xmms2.playlist = (char*) malloc(text_buffer_size);
 		ptr->xmms2.playlist[0] = '\0';
 	}
 
