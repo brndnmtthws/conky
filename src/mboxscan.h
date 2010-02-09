@@ -30,16 +30,8 @@
 #ifndef _MBOXSCAN_H_
 #define _MBOXSCAN_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 void parse_mboxscan_arg(struct text_object *, const char *);
 void print_mboxscan(struct text_object *, char *, int);
 void free_mboxscan(struct text_object *);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* _MBOXSCAN_H_ */

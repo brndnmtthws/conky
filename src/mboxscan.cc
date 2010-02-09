@@ -1,5 +1,5 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=c
+/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -381,7 +381,7 @@ void parse_mboxscan_arg(struct text_object *obj, const char *arg)
 {
 	struct mboxscan_data *msd;
 
-	msd = malloc(sizeof(struct mboxscan_data));
+	msd = (mboxscan_data*) malloc(sizeof(struct mboxscan_data));
 	memset(msd, 0, sizeof(struct mboxscan_data));
 
 	msd->args = strndup(arg, text_buffer_size);
@@ -394,7 +394,7 @@ void parse_mboxscan_arg(struct text_object *obj, const char *arg)
 
 void print_mboxscan(struct text_object *obj, char *p, int p_max_size)
 {
-	struct mboxscan_data *msd = obj->data.opaque;
+	struct mboxscan_data *msd = (mboxscan_data*) obj->data.opaque;
 
 	if (!msd)
 		return;
@@ -405,7 +405,7 @@ void print_mboxscan(struct text_object *obj, char *p, int p_max_size)
 
 void free_mboxscan(struct text_object *obj)
 {
-	struct mboxscan_data *msd = obj->data.opaque;
+	struct mboxscan_data *msd = (mboxscan_data*) obj->data.opaque;
 
 	if (!msd)
 		return;
