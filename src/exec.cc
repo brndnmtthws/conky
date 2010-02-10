@@ -318,39 +318,34 @@ void print_execp(struct text_object *obj, char *p, int p_max_size)
 void print_execi(struct text_object *obj, char *p, int p_max_size)
 {
 	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
+	bool fillbuffer = true;
 
 	if (!ed)
 		return;
 
-	if (time_to_update(ed)) {
-		if (!ed->buffer)
-			ed->buffer = (char*)malloc(text_buffer_size);
-		read_exec(ed->cmd, ed->buffer, text_buffer_size);
-		ed->last_update = current_update_time;
-	}
-	fill_p(ed->buffer, obj, p, p_max_size);
-}
-
-void print_texeci(struct text_object *obj, char *p, int p_max_size)
-{
-	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
-
-	if (!ed)
-		return;
-
-	if (!ed->p_timed_thread) {
-		/*
-		 * note that we don't register this thread with the
-		 * timed_thread list, because we destroy it manually
-		 */
-		ed->p_timed_thread = timed_thread::create(std::bind(threaded_exec, std::placeholders::_1, obj), ed->interval * 1000000, false);
+	if(obj->thread == true) {
 		if (!ed->p_timed_thread) {
-			NORM_ERR("Error creating texeci timed thread");
+			/*
+			 * note that we don't register this thread with the
+			 * timed_thread list, because we destroy it manually
+			 */
+			ed->p_timed_thread = timed_thread::create(std::bind(threaded_exec, std::placeholders::_1, obj), ed->interval * 1000000, false);
+			if (!ed->p_timed_thread) {
+				NORM_ERR("Error creating texeci timed thread");
+			}
+			fillbuffer = false;
+		} else {
+			std::lock_guard<std::mutex> lock(ed->p_timed_thread->mutex());
 		}
 	} else {
-		std::lock_guard<std::mutex> lock(ed->p_timed_thread->mutex());
-		fill_p(ed->buffer, obj, p, p_max_size);
+		if (time_to_update(ed)) {
+			if (!ed->buffer)
+				ed->buffer = (char*)malloc(text_buffer_size);
+			read_exec(ed->cmd, ed->buffer, text_buffer_size);
+			ed->last_update = current_update_time;
+		}
 	}
+	if(fillbuffer) fill_p(ed->buffer, obj, p, p_max_size);
 }
 
 double execbarval(struct text_object *obj)
