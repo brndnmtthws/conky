@@ -295,27 +295,24 @@ void print_exec(struct text_object *obj, char *p, int p_max_size)
 	remove_deleted_chars(p);
 }
 
+void fill_p(char *buffer, struct text_object *obj, char *p, int p_max_size) {
+	if(obj->parse == true) {
+		struct text_object subroot;
+		parse_conky_vars(&subroot, buffer, p, p_max_size);
+		free_text_objects(&subroot);
+	} else snprintf(p, p_max_size, "%s", buffer);
+}
+
 void print_execp(struct text_object *obj, char *p, int p_max_size)
 {
-	struct text_object subroot;
 	char *buf;
 
 	buf = (char*)malloc(text_buffer_size);
 	memset(buf, 0, text_buffer_size);
 
 	read_exec(obj->data.s, buf, text_buffer_size);
-	parse_conky_vars(&subroot, buf, p, p_max_size);
-
-	free_text_objects(&subroot);
+	fill_p(buf, obj, p, p_max_size);
 	free(buf);
-}
-
-void fill_p(struct execi_data *ed, struct text_object *obj, char *p, int p_max_size) {
-	if(obj->parse == true) {
-		struct text_object subroot;
-		parse_conky_vars(&subroot, ed->buffer, p, p_max_size);
-		free_text_objects(&subroot);
-	} else snprintf(p, p_max_size, "%s", ed->buffer);
 }
 
 void print_execi(struct text_object *obj, char *p, int p_max_size)
@@ -331,7 +328,7 @@ void print_execi(struct text_object *obj, char *p, int p_max_size)
 		read_exec(ed->cmd, ed->buffer, text_buffer_size);
 		ed->last_update = current_update_time;
 	}
-	fill_p(ed, obj, p, p_max_size);
+	fill_p(ed->buffer, obj, p, p_max_size);
 }
 
 void print_texeci(struct text_object *obj, char *p, int p_max_size)
@@ -352,7 +349,7 @@ void print_texeci(struct text_object *obj, char *p, int p_max_size)
 		}
 	} else {
 		std::lock_guard<std::mutex> lock(ed->p_timed_thread->mutex());
-		fill_p(ed, obj, p, p_max_size);
+		fill_p(ed->buffer, obj, p, p_max_size);
 	}
 }
 
