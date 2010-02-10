@@ -356,17 +356,12 @@ void print_texeci(struct text_object *obj, char *p, int p_max_size)
 {
 	char* buffer = threaded_exec_caller(obj);
 
-	if(buffer != NULL) snprintf(p, p_max_size, "%s", buffer);
-}
-
-void print_texecpi(struct text_object *obj, char *p, int p_max_size)
-{
-	char* buffer = threaded_exec_caller(obj);
-	struct text_object subroot;
-
 	if(buffer != NULL) {
-		parse_conky_vars(&subroot, buffer, p, p_max_size);
-		free_text_objects(&subroot);
+		if(obj->parse == true) {
+			struct text_object subroot;
+			parse_conky_vars(&subroot, buffer, p, p_max_size);
+			free_text_objects(&subroot);
+		} else snprintf(p, p_max_size, "%s", buffer);
 	}
 }
 
