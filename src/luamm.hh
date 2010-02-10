@@ -19,6 +19,9 @@
  *
  */
 
+#ifndef LUAMM_HH
+#define LUAMM_HH
+
 #include <assert.h>
 #include <memory>
 #include <stdexcept>
@@ -265,3 +268,5 @@ namespace lua {
         void operator-=(int n_) throw() { n-=n_; }
     };
 }
+
+#endif /* LUAMM_HH */
