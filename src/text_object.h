@@ -95,6 +95,7 @@ struct text_object {
 	void *special_data;
 	long line;
 	struct obj_cb callbacks;
+	bool parse;	//if this true then data.s should still be parsed
 };
 
 /* text object list helpers */

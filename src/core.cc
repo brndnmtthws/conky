@@ -623,7 +623,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ_ARG(execpi, 0, "execpi needs arguments")
 		scan_execi_arg(obj, arg);
 		obj->verbatim_output = 1;
-		obj->callbacks.print = &print_execpi;
+		obj->parse = true;
+		obj->callbacks.print = &print_execi;
 		obj->callbacks.free = &free_execi;
 	END OBJ_ARG(texeci, 0, "texeci needs arguments")
 		scan_execi_arg(obj, arg);

@@ -323,26 +323,11 @@ void print_execi(struct text_object *obj, char *p, int p_max_size)
 		read_exec(ed->cmd, ed->buffer, text_buffer_size);
 		ed->last_update = current_update_time;
 	}
-	snprintf(p, p_max_size, "%s", ed->buffer);
-}
-
-void print_execpi(struct text_object *obj, char *p, int p_max_size)
-{
-	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
-	struct text_object subroot;
-
-	if (!ed)
-		return;
-
-	if (time_to_update(ed)) {
-		if (!ed->buffer)
-			ed->buffer = (char*)malloc(text_buffer_size);
-
-		read_exec(ed->cmd, ed->buffer, text_buffer_size);
-		ed->last_update = current_update_time;
-	}
-	parse_conky_vars(&subroot, ed->buffer, p, p_max_size);
-	free_text_objects(&subroot);
+	if(obj->parse == true) {
+		struct text_object subroot;
+		parse_conky_vars(&subroot, ed->buffer, p, p_max_size);
+		free_text_objects(&subroot);
+	} else snprintf(p, p_max_size, "%s", ed->buffer);
 }
 
 char* threaded_exec_caller(struct text_object *obj) {
