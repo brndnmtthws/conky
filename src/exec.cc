@@ -330,11 +330,12 @@ void print_execi(struct text_object *obj, char *p, int p_max_size)
 	} else snprintf(p, p_max_size, "%s", ed->buffer);
 }
 
-char* threaded_exec_caller(struct text_object *obj) {
+void print_texeci(struct text_object *obj, char *p, int p_max_size)
+{
 	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
 
 	if (!ed)
-		return NULL;
+		return;
 
 	if (!ed->p_timed_thread) {
 		/*
@@ -345,23 +346,13 @@ char* threaded_exec_caller(struct text_object *obj) {
 		if (!ed->p_timed_thread) {
 			NORM_ERR("Error creating texeci timed thread");
 		}
-		return NULL;
 	} else {
 		std::lock_guard<std::mutex> lock(ed->p_timed_thread->mutex());
-		return ed->buffer;
-	}
-}
-
-void print_texeci(struct text_object *obj, char *p, int p_max_size)
-{
-	char* buffer = threaded_exec_caller(obj);
-
-	if(buffer != NULL) {
 		if(obj->parse == true) {
 			struct text_object subroot;
-			parse_conky_vars(&subroot, buffer, p, p_max_size);
+			parse_conky_vars(&subroot, ed->buffer, p, p_max_size);
 			free_text_objects(&subroot);
-		} else snprintf(p, p_max_size, "%s", buffer);
+		} else snprintf(p, p_max_size, "%s", ed->buffer);
 	}
 }
 
