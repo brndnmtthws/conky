@@ -301,6 +301,7 @@ void fill_p(char *buffer, struct text_object *obj, char *p, int p_max_size) {
 		parse_conky_vars(&subroot, buffer, p, p_max_size);
 		free_text_objects(&subroot);
 	} else snprintf(p, p_max_size, "%s", buffer);
+	remove_deleted_chars(p);
 }
 
 void print_execp(struct text_object *obj, char *p, int p_max_size)
