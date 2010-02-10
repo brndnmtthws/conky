@@ -310,6 +310,14 @@ void print_execp(struct text_object *obj, char *p, int p_max_size)
 	free(buf);
 }
 
+void fill_p(struct execi_data *ed, struct text_object *obj, char *p, int p_max_size) {
+	if(obj->parse == true) {
+		struct text_object subroot;
+		parse_conky_vars(&subroot, ed->buffer, p, p_max_size);
+		free_text_objects(&subroot);
+	} else snprintf(p, p_max_size, "%s", ed->buffer);
+}
+
 void print_execi(struct text_object *obj, char *p, int p_max_size)
 {
 	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
@@ -323,11 +331,7 @@ void print_execi(struct text_object *obj, char *p, int p_max_size)
 		read_exec(ed->cmd, ed->buffer, text_buffer_size);
 		ed->last_update = current_update_time;
 	}
-	if(obj->parse == true) {
-		struct text_object subroot;
-		parse_conky_vars(&subroot, ed->buffer, p, p_max_size);
-		free_text_objects(&subroot);
-	} else snprintf(p, p_max_size, "%s", ed->buffer);
+	fill_p(ed, obj, p, p_max_size);
 }
 
 void print_texeci(struct text_object *obj, char *p, int p_max_size)
@@ -348,11 +352,7 @@ void print_texeci(struct text_object *obj, char *p, int p_max_size)
 		}
 	} else {
 		std::lock_guard<std::mutex> lock(ed->p_timed_thread->mutex());
-		if(obj->parse == true) {
-			struct text_object subroot;
-			parse_conky_vars(&subroot, ed->buffer, p, p_max_size);
-			free_text_objects(&subroot);
-		} else snprintf(p, p_max_size, "%s", ed->buffer);
+		fill_p(ed, obj, p, p_max_size);
 	}
 }
 
