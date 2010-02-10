@@ -70,7 +70,7 @@ namespace lua {
     };
 
     // we reserve one upvalue for the function pointer
-    int upvalueindex(int n)
+    inline int upvalueindex(int n)
     { return lua_upvalueindex(n+1); }
 
     /*
