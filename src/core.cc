@@ -581,13 +581,16 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif /* BUILD_IMLIB2 */
 	END OBJ(exec, 0)
 		scan_exec_arg(obj, arg);
+		obj->parse = false;
+		obj->thread = false;
 		obj->callbacks.print = &print_exec;
 		obj->callbacks.free = &free_exec;
 	END OBJ(execp, 0)
 		scan_exec_arg(obj, arg);
 		obj->verbatim_output = 1;
 		obj->parse = true;
-		obj->callbacks.print = &print_execp;
+		obj->thread = false;
+		obj->callbacks.print = &print_exec;
 		obj->callbacks.free = &free_exec;
 	END OBJ(execbar, 0)
 		scan_exec_arg(obj, arg);

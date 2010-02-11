@@ -289,12 +289,6 @@ void scan_execgraph_arg(struct text_object *obj, const char *arg)
 }
 #endif /* BUILD_X11 */
 
-void print_exec(struct text_object *obj, char *p, int p_max_size)
-{
-	read_exec(obj->data.s, p, p_max_size);
-	remove_deleted_chars(p);
-}
-
 void fill_p(char *buffer, struct text_object *obj, char *p, int p_max_size) {
 	if(obj->parse == true) {
 		struct text_object subroot;
@@ -304,7 +298,7 @@ void fill_p(char *buffer, struct text_object *obj, char *p, int p_max_size) {
 	remove_deleted_chars(p);
 }
 
-void print_execp(struct text_object *obj, char *p, int p_max_size)
+void print_exec(struct text_object *obj, char *p, int p_max_size)
 {
 	char *buf;
 
