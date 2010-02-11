@@ -28,7 +28,6 @@
 #include <iostream>
 #include <limits>
 #include <sstream>
-#include <unordered_map>
 
 namespace conky {
 	namespace {
@@ -45,7 +44,6 @@ namespace conky {
 		 * different modules is not defined, so register_source could be called before this
 		 * object is constructed. Therefore, we create it on the first call to register_source.
 		 */
-		typedef std::unordered_map<std::string, data_source_factory> data_sources_t;
 		data_sources_t *data_sources;
 
 		void register_data_source_(const std::string &name, const data_source_factory &factory_func)
@@ -103,4 +101,17 @@ namespace conky {
 							std::placeholders::_1, std::placeholders::_2, setting)
 			);
 	}
+
+	// at least one data source should always be registered, so the pointer will not be null
+	const data_sources_t& get_data_sources()
+	{ return *data_sources; }
 }
+
+/////////// example data sources, remove after real data sources are available ///////
+int asdf_ = 47;
+conky::register_data_source asdf("asdf", std::bind(
+			conky::simple_numeric_source<int>::factory,
+			std::placeholders::_1, std::placeholders::_2, &asdf_)
+		);
+
+conky::register_disabled_data_source zxcv("zxcv", "BUILD_ZXCV");

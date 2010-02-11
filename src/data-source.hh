@@ -28,6 +28,7 @@
 #include <stdexcept>
 #include <string>
 #include <type_traits>
+#include <unordered_map>
 
 #include "luamm.hh"
 
@@ -39,7 +40,9 @@ namespace conky {
 	 * Recieves a lua table on the stack and the name the object was registered with. It should
 	 * pop the table after consuming it and return the data source.
 	 */
-    typedef std::function<std::shared_ptr<data_source_base> (lua::state &l, const std::string &name)> data_source_factory;
+    typedef std::function<
+				std::shared_ptr<data_source_base> (lua::state &l, const std::string &name)
+			> data_source_factory;
 
 	/*
 	 * A base class for all data sources.
@@ -102,6 +105,11 @@ namespace conky {
 	public:
 		register_disabled_data_source(const std::string &name, const std::string &setting);
 	};
+
+	typedef std::unordered_map<std::string, data_source_factory> data_sources_t;
+
+	// returns the list of registered data sources
+	const data_sources_t& get_data_sources();
 }
 
 #endif /* DATA_SOURCE_HH */
