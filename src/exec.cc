@@ -249,7 +249,7 @@ void scan_execi_arg(struct text_object *obj, const char *arg)
 
 	if (sscanf(arg, "%f %n", &ed->interval, &n) <= 0) {
 		NORM_ERR("${execi* <interval> command}");
-		free(ed);
+		delete ed;
 		return;
 	}
 	ed->cmd = strndup(arg + n, text_buffer_size);
