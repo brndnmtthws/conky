@@ -581,12 +581,16 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 #endif /* BUILD_IMLIB2 */
 	END OBJ(exec, 0)
 		scan_exec_arg(obj, arg);
+		obj->parse = false;
+		obj->thread = false;
 		obj->callbacks.print = &print_exec;
 		obj->callbacks.free = &free_exec;
 	END OBJ(execp, 0)
 		scan_exec_arg(obj, arg);
 		obj->verbatim_output = 1;
-		obj->callbacks.print = &print_execp;
+		obj->parse = true;
+		obj->thread = false;
+		obj->callbacks.print = &print_exec;
 		obj->callbacks.free = &free_exec;
 	END OBJ(execbar, 0)
 		scan_exec_arg(obj, arg);
@@ -618,22 +622,28 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->callbacks.free = &free_execi;
 	END OBJ_ARG(execi, 0, "execi needs arguments")
 		scan_execi_arg(obj, arg);
+		obj->parse = false;
+		obj->thread = false;
 		obj->callbacks.print = &print_execi;
 		obj->callbacks.free = &free_execi;
 	END OBJ_ARG(execpi, 0, "execpi needs arguments")
 		scan_execi_arg(obj, arg);
 		obj->verbatim_output = 1;
 		obj->parse = true;
+		obj->thread = false;
 		obj->callbacks.print = &print_execi;
 		obj->callbacks.free = &free_execi;
 	END OBJ_ARG(texeci, 0, "texeci needs arguments")
 		scan_execi_arg(obj, arg);
-		obj->callbacks.print = &print_texeci;
+		obj->parse = false;
+		obj->thread = true;
+		obj->callbacks.print = &print_execi;
 		obj->callbacks.free = &free_execi;
 	END OBJ_ARG(texecpi, 0, "texecpi needs arguments")
 		scan_execi_arg(obj, arg);
 		obj->parse = true;
-		obj->callbacks.print = &print_texeci;
+		obj->thread = true;
+		obj->callbacks.print = &print_execi;
 		obj->callbacks.free = &free_execi;
 	END OBJ(pre_exec, 0)
 		scan_pre_exec_arg(obj, arg);

@@ -96,6 +96,7 @@ struct text_object {
 	long line;
 	struct obj_cb callbacks;
 	bool parse;	//if this true then data.s should still be parsed
+	bool thread;	//if this true then data.s should be set by a seperate thread
 };
 
 /* text object list helpers */

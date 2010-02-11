@@ -249,7 +249,7 @@ void scan_execi_arg(struct text_object *obj, const char *arg)
 
 	if (sscanf(arg, "%f %n", &ed->interval, &n) <= 0) {
 		NORM_ERR("${execi* <interval> command}");
-		free(ed);
+		delete ed;
 		return;
 	}
 	ed->cmd = strndup(arg + n, text_buffer_size);
@@ -289,71 +289,58 @@ void scan_execgraph_arg(struct text_object *obj, const char *arg)
 }
 #endif /* BUILD_X11 */
 
-void print_exec(struct text_object *obj, char *p, int p_max_size)
-{
-	read_exec(obj->data.s, p, p_max_size);
+void fill_p(char *buffer, struct text_object *obj, char *p, int p_max_size) {
+	if(obj->parse == true) {
+		struct text_object subroot;
+		parse_conky_vars(&subroot, buffer, p, p_max_size);
+		free_text_objects(&subroot);
+	} else snprintf(p, p_max_size, "%s", buffer);
 	remove_deleted_chars(p);
 }
 
-void print_execp(struct text_object *obj, char *p, int p_max_size)
+void print_exec(struct text_object *obj, char *p, int p_max_size)
 {
-	struct text_object subroot;
 	char *buf;
 
 	buf = (char*)malloc(text_buffer_size);
 	memset(buf, 0, text_buffer_size);
 
 	read_exec(obj->data.s, buf, text_buffer_size);
-	parse_conky_vars(&subroot, buf, p, p_max_size);
-
-	free_text_objects(&subroot);
+	fill_p(buf, obj, p, p_max_size);
 	free(buf);
 }
 
 void print_execi(struct text_object *obj, char *p, int p_max_size)
 {
 	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
+	bool fillbuffer = true;
 
 	if (!ed)
 		return;
 
-	if (time_to_update(ed)) {
-		if (!ed->buffer)
-			ed->buffer = (char*)malloc(text_buffer_size);
-		read_exec(ed->cmd, ed->buffer, text_buffer_size);
-		ed->last_update = current_update_time;
-	}
-	if(obj->parse == true) {
-		struct text_object subroot;
-		parse_conky_vars(&subroot, ed->buffer, p, p_max_size);
-		free_text_objects(&subroot);
-	} else snprintf(p, p_max_size, "%s", ed->buffer);
-}
-
-void print_texeci(struct text_object *obj, char *p, int p_max_size)
-{
-	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
-
-	if (!ed)
-		return;
-
-	if (!ed->p_timed_thread) {
-		/*
-		 * note that we don't register this thread with the
-		 * timed_thread list, because we destroy it manually
-		 */
-		ed->p_timed_thread = timed_thread::create(std::bind(threaded_exec, std::placeholders::_1, obj), ed->interval * 1000000, false);
+	if(obj->thread == true) {
 		if (!ed->p_timed_thread) {
-			NORM_ERR("Error creating texeci timed thread");
+			/*
+			 * note that we don't register this thread with the
+			 * timed_thread list, because we destroy it manually
+			 */
+			ed->p_timed_thread = timed_thread::create(std::bind(threaded_exec, std::placeholders::_1, obj), ed->interval * 1000000, false);
+			if (!ed->p_timed_thread) {
+				NORM_ERR("Error creating texeci timed thread");
+			}
+			fillbuffer = false;
+		} else {
+			std::lock_guard<std::mutex> lock(ed->p_timed_thread->mutex());
 		}
 	} else {
-		std::lock_guard<std::mutex> lock(ed->p_timed_thread->mutex());
-		if(obj->parse == true) {
-			struct text_object subroot;
-			parse_conky_vars(&subroot, ed->buffer, p, p_max_size);
-			free_text_objects(&subroot);
-		} else snprintf(p, p_max_size, "%s", ed->buffer);
+		if (time_to_update(ed)) {
+			if (!ed->buffer)
+				ed->buffer = (char*)malloc(text_buffer_size);
+			read_exec(ed->cmd, ed->buffer, text_buffer_size);
+			ed->last_update = current_update_time;
+		}
 	}
+	if(fillbuffer) fill_p(ed->buffer, obj, p, p_max_size);
 }
 
 double execbarval(struct text_object *obj)
