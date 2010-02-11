@@ -189,7 +189,6 @@ namespace lua {
         void rawget(int index) throw() { lua_rawget(cobj.get(), index); }
         void rawgeti(int index, int n) throw() { lua_rawgeti(cobj.get(), index, n); }
         bool rawequal(int index1, int index2) throw() { return lua_rawequal(cobj.get(), index1, index2); }
-        void rawset(int index) throw() { lua_rawset(cobj.get(), index); }
         void replace(int index) throw() { lua_replace(cobj.get(), index); }
         // lua_setmetatable returns int, but docs don't specify it's meaning :/
         int setmetatable(int index) throw() { return lua_setmetatable(cobj.get(), index); }
@@ -214,6 +213,7 @@ namespace lua {
         void pushfunction(const cpp_function &fn) { pushclosure(fn, 0); }
         void pushstring(const char *s) { lua_pushstring(cobj.get(), s); }
         void rawgetfield(int index, const char *k) throw(std::bad_alloc);
+        void rawset(int index) { lua_rawset(cobj.get(), index); }
         void rawsetfield(int index, const char *k) throw(std::bad_alloc);
         int ref(int t) { return luaL_ref(cobj.get(), t); }
         // len recieves length, if not null. Returned value may contain '\0'
