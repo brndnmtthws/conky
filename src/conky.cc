@@ -2943,9 +2943,9 @@ char load_config_file(const char *f)
 		}
 		CONF("alignment") {
 #ifdef OWN_WINDOW
-			if (window.type == TYPE_DOCK)
-				;
-			else
+			if (window.type == TYPE_DOCK) {
+				NORM_ERR("alignment is disabled when own_window_type is dock");
+			} else
 #endif /*OWN_WINDOW */
 			if (value) {
 				int a = string_to_alignment(value);
@@ -4029,6 +4029,11 @@ void initialisation(int argc, char **argv) {
 				set_first_font(optarg);
 				break;
 			case 'a':
+#ifdef OWN_WINDOW
+				if (window.type == TYPE_DOCK) {
+					NORM_ERR("alignment is disabled when own_window_type is dock");
+				} else
+#endif /*OWN_WINDOW */
 				text_alignment = string_to_alignment(optarg);
 				break;
 
