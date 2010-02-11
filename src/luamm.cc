@@ -446,7 +446,7 @@ namespace lua {
         insert(-3);
         lua_pushcfunction(cobj.get(), (&safe_misc_trampoline<&lua_settable, 0>));
         insert(-4);
-        call(2, 0, 0);
+        call(3, 0, 0);
     }
 
     std::string state::tostring(int index) throw(lua::not_string_error)
