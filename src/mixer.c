@@ -177,11 +177,16 @@ int mixer_init (const char *name)
 }
 static int mixer_get_avg (int i)
 {
-  long val;
+	long val;
 
-  snd_mixer_handle_events (data.mixer);
-  snd_mixer_selem_get_playback_volume (data.elem, 0, &val);
-  return (int) val;
+	snd_mixer_handle_events (data.mixer);
+	snd_mixer_selem_get_playback_volume (data.elem, 0, &val);
+	if(data.vol_max != 100) {
+		float avgf = ((float)val / data.vol_max) * 100;
+		int avg = (int)avgf;
+		return (avgf - avg < 0.5) ? avg : avg + 1;
+	}
+	return (int) val;
 }
 static int mixer_get_left (int i)
 {
