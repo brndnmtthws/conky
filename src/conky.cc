@@ -297,7 +297,8 @@ static int text_width = 1, text_height = 1; /* initially 1 so no zero-sized wind
 
 /* alignments */
 enum alignment {
-	TOP_LEFT = 1,
+	ALIGNMENT_ERROR,
+	TOP_LEFT,
 	TOP_RIGHT,
 	TOP_MIDDLE,
 	BOTTOM_LEFT,
@@ -2547,7 +2548,7 @@ static enum alignment string_to_alignment(const char *s)
 	} else if (strcasecmp(s, "none") == EQUAL) {
 		return NONE;
 	}
-	return TOP_LEFT;
+	return ALIGNMENT_ERROR;
 }
 #endif /* BUILD_X11 */
 
@@ -2899,6 +2900,27 @@ static int do_config_step(int *line, FILE *fp, char *buf, char **name, char **va
 	return 0;
 }
 
+void setalignment(int* text_alignment, unsigned int windowtype, const char* value, const char *f, int line, bool conffile) {
+#ifdef OWN_WINDOW
+	if (windowtype == TYPE_DOCK) {
+		NORM_ERR("alignment is disabled when own_window_type is dock");
+	} else
+#endif /*OWN_WINDOW */
+	if (value) {
+		int a = string_to_alignment(value);
+
+		if (a <= 0) {
+			if(conffile == true) {
+				CONF_ERR;
+			} else NORM_ERR("'%s' is not a alignment setting", value);
+		} else {
+			*text_alignment = a;
+		}
+	} else if(conffile == true) {
+		CONF_ERR;
+	}
+}
+
 char load_config_file(const char *f)
 {
 	int line = 0;
@@ -2942,22 +2964,7 @@ char load_config_file(const char *f)
 			}
 		}
 		CONF("alignment") {
-#ifdef OWN_WINDOW
-			if (window.type == TYPE_DOCK) {
-				NORM_ERR("alignment is disabled when own_window_type is dock");
-			} else
-#endif /*OWN_WINDOW */
-			if (value) {
-				int a = string_to_alignment(value);
-
-				if (a <= 0) {
-					CONF_ERR;
-				} else {
-					text_alignment = a;
-				}
-			} else {
-				CONF_ERR;
-			}
+			setalignment(&text_alignment, window.type, value, f, line, true);
 		}
 		CONF("background") {
 			fork_to_background = string_to_bool(value);
@@ -4029,12 +4036,7 @@ void initialisation(int argc, char **argv) {
 				set_first_font(optarg);
 				break;
 			case 'a':
-#ifdef OWN_WINDOW
-				if (window.type == TYPE_DOCK) {
-					NORM_ERR("alignment is disabled when own_window_type is dock");
-				} else
-#endif /*OWN_WINDOW */
-				text_alignment = string_to_alignment(optarg);
+				setalignment(&text_alignment, window.type, optarg, NULL, 0, false);
 				break;
 
 #ifdef OWN_WINDOW
