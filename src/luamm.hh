@@ -143,6 +143,22 @@ namespace lua {
     class state {
         std::shared_ptr<lua_State> cobj;
 
+        // destructor for C++ objects stored as lua userdata
+        template<typename T>
+        static int destroy_cpp_object(lua_State *l)
+        {
+            T *ptr = static_cast<T *>(lua_touserdata(l, -1));
+            assert(ptr);
+			try {
+				// throwing exceptions in destructors is a bad idea
+				// but we catch (and ignore) them, just in case
+				ptr->~T();
+			}
+			catch(...) {
+			}
+            return 0;
+        }
+
         bool safe_compare(lua_CFunction trampoline, int index1, int index2);
     public:
         state();
@@ -218,6 +234,13 @@ namespace lua {
         int ref(int t) { return luaL_ref(cobj.get(), t); }
         // len recieves length, if not null. Returned value may contain '\0'
         const char* tocstring(int index, size_t *len = NULL) { return lua_tolstring(cobj.get(), index, len); }
+		// Don't use pushclosure() to create a __gc function. The problem is that lua calls them
+		// in an unspecified order, and we may end up destroying the object holding the
+		// std::function before we get a chance to call it. This pushes a function that simply
+		// calls ~T when the time comes. Only set it as __gc on userdata of type T.
+		template<typename T>
+		void pushdestructor()
+		{ lua_pushcfunction(cobj.get(), &destroy_cpp_object<T>); }
 
         // type c, throw everything but the kitchen sink
         // call() is a protected mode call, we don't allow unprotected calls

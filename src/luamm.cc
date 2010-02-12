@@ -31,16 +31,6 @@ namespace lua {
         const char lua_exception_namespace[] = "lua::lua_exception_namespace";
         const char this_cpp_object        [] = "lua::this_cpp_object";
 
-        // destructor for C++ objects stored as lua userdata
-        template<typename T>
-        int destroy_cpp_object(lua_State *l)
-        {
-            T *ptr = static_cast<T *>(lua_touserdata(l, -1));
-            assert(ptr);
-            ptr->~T();
-            return 0;
-        }
-
         // converts C++ exceptions to strings, so lua can do something with them
         int exception_to_string(lua_State *l)
         {
@@ -247,13 +237,15 @@ namespace lua {
         rawsetfield(-2, "__tostring");
         pushboolean(false);
         rawsetfield(-2, "__metatable");
-        lua_pushcfunction(cobj.get(), &destroy_cpp_object<std::exception_ptr>);
+        pushdestructor<std::exception_ptr>();
         rawsetfield(-2, "__gc");
         pop();
 
         // a metatable for C++ functions callable from lua code
         newmetatable(cpp_function_metatable);
-        lua_pushcfunction(cobj.get(), &destroy_cpp_object<cpp_function>);
+        pushboolean(false);
+        rawsetfield(-2, "__metatable");
+        pushdestructor<cpp_function>();
         rawsetfield(-2, "__gc");
         pop();
 
