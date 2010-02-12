@@ -201,6 +201,7 @@ namespace lua {
         void pushinteger(integer n) throw() { lua_pushinteger(cobj.get(), n); }
         void pushlightuserdata(void *p) throw() { lua_pushlightuserdata(cobj.get(), p); }
         void pushnil() throw() { lua_pushnil(cobj.get()); }
+		void pushnumber(number n) throw() { lua_pushnumber(cobj.get(), n); }
         void pushvalue(int index) throw() { lua_pushvalue(cobj.get(), index); }
         void rawget(int index) throw() { lua_rawget(cobj.get(), index); }
         void rawgeti(int index, int n) throw() { lua_rawgeti(cobj.get(), index, n); }
