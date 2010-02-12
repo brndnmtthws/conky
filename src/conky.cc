@@ -94,6 +94,9 @@
 #include "timeinfo.h"
 #include "top.h"
 
+#include <iostream>
+#include "lua-config.hh"
+
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
 #include "linux.h"
@@ -3945,6 +3948,9 @@ static const char *getopt_string = "vVqdDt:u:i:hc:p:"
 #endif
 	;
 
+int printme(lua::state *, const char *str)
+{ fprintf(stderr, str); return 0;}
+
 static const struct option longopts[] = {
 	{ "help", 0, NULL, 'h' },
 	{ "version", 0, NULL, 'V' },
@@ -4301,6 +4307,53 @@ int main(int argc, char **argv)
 #endif /* ! CONF_OUTPUT */
 		}
 	}
+
+	//////////// XXX ////////////////////////////////
+	lua::state l;	
+	try {
+		conky::export_symbols(l);
+		l.loadstring(
+				"print(conky.asnumber(conky.variables.asdf{}));\n"
+				"print(conky.astext(conky.variables.asdf{}));\n"
+				"print(conky.asnumber(conky.variables.zxcv{}));\n"
+				);
+		l.call(0, 0);
+	}
+	catch(std::exception &e) {
+		std::cerr << "caught exception: " << e.what() << std::endl;
+	}
+
+#if 0
+    try {
+        lua::stack_sentry s(l);
+		l.pushvalue(lua::GLOBALSINDEX); ++s;
+        l.pushnil();                     ++s;
+        while(l.next(-2)) {
+            lua::stack_sentry s2(l, 1);
+            if(l.isnumber(-2))
+                std::cout << l.tonumber(-2);
+			else if(l.isstring(-2))
+				std::cout << '"' << l.tostring(-2) << '"';
+            else
+                std::cout << l.type_name(l.type(-2));
+            std::cout << " -> ";
+
+            if(l.isnumber(-1))
+                std::cout << l.tonumber(-1);
+			else if(l.isstring(-1))
+				std::cout << '"' << l.tostring(-1) << '"';
+            else
+                std::cout << l.type_name(l.type(-1));
+            std::cout << std::endl;
+        }
+    }
+    catch(std::exception &e) {
+        std::cerr << "caught exception: " << e.what() << std::endl;
+    }
+#endif
+	free(current_config);
+	return 0;
+	//////////// XXX ////////////////////////////////
 
 #ifdef BUILD_WEATHER_XOAP
 	/* Load xoap keys, if existing */
