@@ -263,6 +263,10 @@ namespace lua {
 		// lua_tostring uses NULL to indicate conversion error, since there is no such thing as a
 		// NULL std::string, we throw an exception. Returned value may contain '\0'
 		std::string tostring(int index) throw(lua::not_string_error);
+		// allocate a new lua userdata of appropriate size, and create a object in it
+		// pushes the userdata on stack and returns the pointer
+		template<typename T, typename... Args>
+		T* createuserdata(Args&&... args);
 	};
 
 	/*
@@ -291,6 +295,16 @@ namespace lua {
 		void operator+=(int n_) throw() { n+=n_; }
 		void operator-=(int n_) throw() { n-=n_; }
 	};
+
+	template<typename T, typename... Args>
+	T* state::createuserdata(Args&&... args)
+	{
+		stack_sentry s(*this);
+
+		void *t = newuserdata(sizeof(T)); ++s;
+		new(t) T(std::forward<Args>(args)...); --s;
+		return static_cast<T *>(t);
+	}
 }
 
 #endif /* LUAMM_HH */

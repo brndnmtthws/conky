@@ -94,10 +94,9 @@ namespace lua {
 			catch(...) {
 				// C++ exceptions (pointers to them, actually) are stored as lua userdata and
 				// then thrown
-				void *ptr = L->newuserdata(sizeof(std::exception_ptr));
+				L->createuserdata<std::exception_ptr>(std::current_exception());
 				L->rawgetfield(REGISTRYINDEX, cpp_exception_metatable);
 				L->setmetatable(-2);
-				new(ptr) std::exception_ptr(std::current_exception());
 			}
 
 			// lua_error does longjmp(), so destructors for objects in this function will not be
@@ -386,10 +385,9 @@ namespace lua {
 	{
 		checkstack(2);
 
-		void *ptr = newuserdata(sizeof(cpp_function));
+		createuserdata<cpp_function>(fn);
 		rawgetfield(REGISTRYINDEX, cpp_function_metatable);
 		setmetatable(-2);
-		new(ptr) cpp_function(fn);
 
 		insert(-n-1);
 		lua_pushcclosure(cobj.get(), &closure_trampoline, n+1);
