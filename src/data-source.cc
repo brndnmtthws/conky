@@ -63,7 +63,7 @@ namespace conky {
 		disabled_source_factory(lua::state &l, const std::string &name, const std::string &setting)
 		{
 			// XXX some generic way of reporting errors? NORM_ERR?
-			std::cerr << "Support for setting '" << name
+			std::cerr << "Support for variable '" << name
 					  << "' has been disabled during compilation. Please recompile with '"
 					  << setting << "'" << std::endl;
 
