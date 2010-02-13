@@ -64,6 +64,17 @@ namespace conky {
 			l->setmetatable(-2);
 			return 1;
 		}
+
+		const char data_source__index[] = 
+			"local table, key = ...;\n"
+			"if key == 'num' then\n"
+			"  return conky.asnumber(table);\n"
+			"elseif key == 'text' then\n"
+			"  return conky.astext(table);\n"
+			"else\n"
+			"  print(string.format([[Invalid data source operation: '%s']], key));\n"
+			"  return 0/0;\n"
+			"end\n";
 	}
 
 	void export_symbols(lua::state &l)
@@ -77,6 +88,9 @@ namespace conky {
 
 			l.pushdestructor<std::shared_ptr<data_source_base>>(); ++s;
 			l.rawsetfield(-2, "__gc"); --s;
+
+			l.loadstring(data_source__index); ++s;
+			l.rawsetfield(-2, "__index"); --s;
 		} l.pop(); --s;
 
 		l.newtable(); ++s; {

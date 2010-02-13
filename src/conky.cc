@@ -4323,6 +4323,8 @@ int main(int argc, char **argv)
 				"print(conky.asnumber(conky.variables.asdf{}));\n"
 				"print(conky.astext(conky.variables.asdf{}));\n"
 				"print(conky.asnumber(conky.variables.zxcv{}));\n"
+				"print(conky.variables.asdf{}.text);\n"
+				"print(conky.variables.asdf{}.xxx);\n"
 				);
 		l.call(0, 0);
 	}
