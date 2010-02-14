@@ -157,6 +157,10 @@ void *global_cpu = NULL;
 unsigned int max_text_width = 0;
 int ifup_strictness = IFUP_UP;
 
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+extern kvm_t *kd;
+#endif
+
 int argc_copy;
 char** argv_copy;
 

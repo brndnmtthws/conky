@@ -67,6 +67,8 @@
 #define	FREEBSD_DEBUG
 #endif
 
+kvm_t *kd;
+
 __attribute__((gnu_inline)) inline void
 proc_find_top(struct process **cpu, struct process **mem);
 
