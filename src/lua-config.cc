@@ -40,7 +40,7 @@ namespace conky {
 			if(not l->getmetatable(-2) or not l->rawequal(-1, -2))
 				throw std::runtime_error("Invalid parameter");
 
-			return **static_cast<std::shared_ptr<data_source_base> *>(l->touserdata(1));
+			return *static_cast<data_source_base *>(l->touserdata(1));
 		}
 
 		int data_source_asnumber(lua::state *l)
@@ -59,7 +59,7 @@ namespace conky {
 
 		int create_data_source(lua::state *l, const data_sources_t::value_type &v)
 		{
-			l->createuserdata<std::shared_ptr<data_source_base>>(v.second(*l, v.first));
+			v.second(*l, v.first);
 			l->rawgetfield(lua::REGISTRYINDEX, data_source_metatable);
 			l->setmetatable(-2);
 			return 1;

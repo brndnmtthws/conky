@@ -34,15 +34,12 @@
 
 namespace conky {
 
-    class data_source_base;
-
 	/*
 	 * Recieves a lua table on the stack and the name the object was registered with. It should
-	 * pop the table after consuming it and return the data source.
+	 * pop the table after consuming it. The result should be pushed on the stack as lua userdata
+	 * containing (a subclass of) data_source_base.
 	 */
-    typedef std::function<
-				std::shared_ptr<data_source_base> (lua::state &l, const std::string &name)
-			> data_source_factory;
+    typedef std::function<void (lua::state &l, const std::string &name)> data_source_factory;
 
 	/*
 	 * A base class for all data sources.
@@ -76,13 +73,12 @@ namespace conky {
 		static_assert(std::is_convertible<T, double>::value, "T must be convertible to double");
 
 		const T *source;
-
+	public:
 		simple_numeric_source(const std::string &name_, const T *source_)
 			: data_source_base(name_), source(source_)
 		{}
-	public:
-		static std::shared_ptr<data_source_base>
-		factory(lua::state &l, const std::string &name, const T *source);
+
+		static void factory(lua::state &l, const std::string &name, const T *source);
 
 		virtual double get_number() const
 		{ return *source; }

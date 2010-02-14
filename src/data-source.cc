@@ -59,7 +59,7 @@ namespace conky {
 				throw std::logic_error("Data source with name '" + name + "' already registered");
 		}
 
-		static std::shared_ptr<data_source_base>
+		static void
 		disabled_source_factory(lua::state &l, const std::string &name, const std::string &setting)
 		{
 			// XXX some generic way of reporting errors? NORM_ERR?
@@ -67,7 +67,7 @@ namespace conky {
 					  << "' has been disabled during compilation. Please recompile with '"
 					  << setting << "'" << std::endl;
 
-			return simple_numeric_source<float>::factory(l, name, &NaN);
+			simple_numeric_source<float>::factory(l, name, &NaN);
 		}
 	}
 
@@ -82,11 +82,11 @@ namespace conky {
 	}
 
 	template<typename T>
-	std::shared_ptr<data_source_base>
+	void
 	simple_numeric_source<T>::factory(lua::state &l, const std::string &name, const T *source)
 	{
 		l.pop();
-		return std::shared_ptr<simple_numeric_source>(new simple_numeric_source(name, source));
+		l.createuserdata<simple_numeric_source<T>>(name, source);
 	}
 
 	register_data_source::register_data_source(const std::string &name, 
