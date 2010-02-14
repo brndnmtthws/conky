@@ -302,7 +302,7 @@ void get_cpu_count(void)
 		info.cpu_count = 0;
 	}
 
-	info.cpu_usage = malloc((info.cpu_count + 1) * sizeof(float));
+	info.cpu_usage = (float *) malloc((info.cpu_count + 1) * sizeof(float));
 	if (info.cpu_usage == NULL) {
 		CRIT_ERR(NULL, NULL, "malloc");
 	}
@@ -331,14 +331,14 @@ void update_cpu_usage(void)
 
 	if (!global_cpu) {
 		malloc_cpu_size = (info.cpu_count + 1) * sizeof(struct cpu_info);
-		cpu = malloc(malloc_cpu_size);
+		cpu = (cpu_info *) malloc(malloc_cpu_size);
 		memset(cpu, 0, malloc_cpu_size);
 		global_cpu = cpu;
 	}
 
 	/* cpu[0] is overall stats, get it from separate sysctl */
 	cp_len = CPUSTATES * sizeof(long);
-	cp_time = malloc(cp_len);
+	cp_time = (long int *) malloc(cp_len);
 
 	if (sysctlbyname("kern.cp_time", cp_time, &cp_len, NULL, 0) < 0) {
 		fprintf(stderr, "Cannot get kern.cp_time\n");
@@ -364,7 +364,7 @@ void update_cpu_usage(void)
 
 	/* per-core stats */
 	cp_len = CPUSTATES * sizeof(long) * info.cpu_count;
-	cp_time = malloc(cp_len);
+	cp_time = (long int *) malloc(cp_len);
 
 	/* on e.g. i386 SMP we may have more values than actual cpus; this will just drop extra values */
 	if (sysctlbyname("kern.cp_times", cp_time, &cp_len, NULL, 0) < 0 && errno != ENOMEM) {
@@ -734,7 +734,7 @@ proc_find_top(struct process **cpu, struct process **mem)
 	}
 
 	p = kvm_getprocs(kd, KERN_PROC_PROC, 0, &n_processes);
-	processes = malloc(n_processes * sizeof(struct process));
+	processes = (process *) malloc(n_processes * sizeof(struct process));
 
 	for (i = 0; i < n_processes; i++) {
 		if (!((p[i].ki_flag & P_SYSTEM)) && p[i].ki_comm != NULL) {
@@ -751,7 +751,7 @@ proc_find_top(struct process **cpu, struct process **mem)
 	for (i = 0; i < 10 && i < n_processes; i++) {
 		struct process *tmp, *ttmp;
 
-		tmp = malloc(sizeof(struct process));
+		tmp = (process *) malloc(sizeof(struct process));
 		tmp->pid = processes[i].pid;
 		tmp->amount = processes[i].amount;
 		tmp->name = strndup(processes[i].name, text_buffer_size);
@@ -770,7 +770,7 @@ proc_find_top(struct process **cpu, struct process **mem)
 	for (i = 0; i < 10 && i < n_processes; i++) {
 		struct process *tmp, *ttmp;
 
-		tmp = malloc(sizeof(struct process));
+		tmp = (process *) malloc(sizeof(struct process));
 		tmp->pid = processes[i].pid;
 		tmp->amount = processes[i].amount;
 		tmp->name = strndup(processes[i].name, text_buffer_size);
