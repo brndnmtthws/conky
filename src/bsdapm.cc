@@ -33,6 +33,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <machine/apm_bios.h>
+#include <unistd.h>
 
 #define	APMDEV		"/dev/apm"
 #define	APM_UNKNOWN	255
