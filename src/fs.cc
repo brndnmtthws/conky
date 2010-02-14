@@ -51,6 +51,10 @@
 #ifdef HAVE_SYS_MOUNT_H
 #include <sys/mount.h>
 #endif
+#if defined(__FreeBSD__)
+#include "freebsd.h"
+#endif
+
 
 #if !defined(HAVE_STRUCT_STATFS_F_FSTYPENAME) && !defined (__OpenBSD__) && !defined(__FreeBSD__)
 #include <mntent.h>
