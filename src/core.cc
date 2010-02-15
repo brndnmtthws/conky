@@ -136,7 +136,7 @@ static struct text_object *create_plain_text(const char *s)
 }
 
 /* construct_text_object() creates a new text_object */
-struct text_object *construct_text_object(const char *s, const char *arg, long
+struct text_object *construct_text_object(char *s, const char *arg, long
 		line, void **ifblock_opaque, void *free_at_crash)
 {
 	// struct text_object *obj = new_text_object();
@@ -1565,7 +1565,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		/* allocate a follower to reset any color changes */
 		obj->next = new_text_object_internal();
 #endif /* BUILD_X11 */
-		parse_scroll_arg(obj, arg, free_at_crash);
+		parse_scroll_arg(obj, arg, free_at_crash, s);
 		obj->callbacks.print = &print_scroll;
 		obj->callbacks.free = &free_scroll;
 	END OBJ_ARG(combine, 0, "combine needs arguments: <text1> <text2>")

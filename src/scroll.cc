@@ -42,7 +42,7 @@ struct scroll_data {
 	long resetcolor;
 };
 
-void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_crash)
+void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_crash, char *free_at_crash2)
 {
 	struct scroll_data *sd;
 	int n1 = 0, n2 = 0;
@@ -52,8 +52,14 @@ void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_cr
 
 	sd->resetcolor = get_current_text_color();
 	sd->step = 1;
-	if (!arg || sscanf(arg, "%u %n", &sd->show, &n1) <= 0)
+	if (!arg || sscanf(arg, "%u %n", &sd->show, &n1) <= 0) {
+		free(sd);
+#ifdef BUILD_X11
+		free(obj->next);
+#endif
+		free(free_at_crash2);
 		CRIT_ERR(obj, free_at_crash, "scroll needs arguments: <length> [<step>] <text>");
+	}
 
 	sscanf(arg + n1, "%u %n", &sd->step, &n2);
 	if (*(arg + n1 + n2)) {
