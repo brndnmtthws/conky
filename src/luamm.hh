@@ -209,6 +209,7 @@ namespace lua {
 		void replace(int index) throw() { lua_replace(cobj.get(), index); }
 		// lua_setmetatable returns int, but docs don't specify it's meaning :/
 		int setmetatable(int index) throw() { return lua_setmetatable(cobj.get(), index); }
+		void settop(int index) throw() { return lua_settop(cobj.get(), index); }
 		integer tointeger(int index) throw() { return lua_tointeger(cobj.get(), index); }
 		number tonumber(int index) throw() { return lua_tonumber(cobj.get(), index); }
 		void* touserdata(int index) throw() { return lua_touserdata(cobj.get(), index); }
