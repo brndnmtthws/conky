@@ -24,6 +24,7 @@
 #ifndef DATA_SOURCE_HH
 #define DATA_SOURCE_HH
 
+#include <limits>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -33,13 +34,6 @@
 #include "luamm.hh"
 
 namespace conky {
-
-	/*
-	 * Recieves a lua table on the stack and the name the object was registered with. It should
-	 * pop the table after consuming it. The result should be pushed on the stack as lua userdata
-	 * containing (a subclass of) data_source_base.
-	 */
-    typedef std::function<void (lua::state &l, const std::string &name)> data_source_factory;
 
 	/*
 	 * A base class for all data sources.
@@ -74,38 +68,69 @@ namespace conky {
 
 		const T *source;
 	public:
-		simple_numeric_source(const std::string &name_, const T *source_)
+		simple_numeric_source(lua::state *, const std::string &name_, const T *source_)
 			: data_source_base(name_), source(source_)
 		{}
-
-		static void factory(lua::state &l, const std::string &name, const T *source);
 
 		virtual double get_number() const
 		{ return *source; }
 	};
 
+	namespace priv {
+		const char data_source_metatable[] = "conky::data_source_metatable";
+
+		void do_register_data_source(const std::string &name, const lua::cpp_function &fn);
+
+		class disabled_data_source: public simple_numeric_source<float> {
+		public:
+			disabled_data_source(lua::state *l, const std::string &name,
+					const std::string &setting);
+		};
+
+	}
+
 	/*
 	 * Declaring an object of this type at global scope will register a data source with the give
 	 * name and factory function.
 	 */
+	template<typename T>
 	class register_data_source {
+		template<typename... Args>
+		static int factory(lua::state *l, const std::string &name, Args&&... args)
+		{
+			T *t = static_cast<T *>(l->newuserdata(sizeof(T)));
+			l->insert(1);
+			new(t) T(l, name, std::forward<Args>(args)...);
+			l->settop(1);
+			l->rawgetfield(lua::REGISTRYINDEX, priv::data_source_metatable);
+			l->setmetatable(-2);
+			return 1;
+		}
+
 	public:
-		register_data_source(const std::string &name, const data_source_factory &factory_func);
+		template<typename... Args>
+		register_data_source(const std::string &name, Args&&... args)
+		{
+			priv::do_register_data_source( name, std::bind(&factory<Args...>,
+						std::placeholders::_1,
+						name,
+						std::forward<Args>(args)...
+				)); 
+		}
 	};
 
 	/*
 	 * Use this to declare a data source that has been disabled during compilation. We can then
 	 * print a nice error message telling the used which setting to enable.
 	 */
-	class register_disabled_data_source {
+	class register_disabled_data_source: public register_data_source<priv::disabled_data_source> {
 	public:
 		register_disabled_data_source(const std::string &name, const std::string &setting);
 	};
 
-	typedef std::unordered_map<std::string, data_source_factory> data_sources_t;
+	typedef std::unordered_map<std::string, lua::cpp_function> data_sources_t;
 
-	// returns the list of registered data sources
-	const data_sources_t& get_data_sources();
+	void export_data_sources(lua::state &l);
 }
 
 #endif /* DATA_SOURCE_HH */

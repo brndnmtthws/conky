@@ -26,7 +26,6 @@
 #include "data-source.hh"
 
 #include <iostream>
-#include <limits>
 #include <sstream>
 
 namespace conky {
@@ -46,7 +45,46 @@ namespace conky {
 		 */
 		data_sources_t *data_sources;
 
-		void register_data_source_(const std::string &name, const data_source_factory &factory_func)
+		data_source_base& get_data_source(lua::state *l)
+		{
+			if(l->gettop() != 1)
+				throw std::runtime_error("Wrong number of parameters");
+
+			l->rawgetfield(lua::REGISTRYINDEX, priv::data_source_metatable);
+			if(not l->getmetatable(-2) or not l->rawequal(-1, -2))
+				throw std::runtime_error("Invalid parameter");
+
+			return *static_cast<data_source_base *>(l->touserdata(1));
+		}
+
+		int data_source_asnumber(lua::state *l)
+		{
+			double x = get_data_source(l).get_number();
+			l->pushnumber(x);
+			return 1;
+		}
+
+		int data_source_astext(lua::state *l)
+		{
+			std::string x = get_data_source(l).get_text();
+			l->pushstring(x.c_str());
+			return 1;
+		}
+
+		const char data_source__index[] = 
+			"local table, key = ...;\n"
+			"if key == 'num' then\n"
+			"  return conky.asnumber(table);\n"
+			"elseif key == 'text' then\n"
+			"  return conky.astext(table);\n"
+			"else\n"
+			"  print(string.format([[Invalid data source operation: '%s']], key));\n"
+			"  return 0/0;\n"
+			"end\n";
+	}
+
+	namespace priv {
+		void do_register_data_source(const std::string &name, const lua::cpp_function &fn)
 		{
 			struct data_source_constructor {
 				data_source_constructor()  { data_sources = new data_sources_t(); }
@@ -54,20 +92,19 @@ namespace conky {
 			};
 			static data_source_constructor constructor;
 
-			bool inserted = data_sources->insert({name, factory_func}).second;
+			bool inserted = data_sources->insert({name, fn}).second;
 			if(not inserted)
 				throw std::logic_error("Data source with name '" + name + "' already registered");
 		}
 
-		static void
-		disabled_source_factory(lua::state &l, const std::string &name, const std::string &setting)
+		disabled_data_source::disabled_data_source(lua::state *l, const std::string &name,
+								   const std::string &setting)
+			: simple_numeric_source<float>(l, name, &NaN)
 		{
 			// XXX some generic way of reporting errors? NORM_ERR?
 			std::cerr << "Support for variable '" << name
 					  << "' has been disabled during compilation. Please recompile with '"
 					  << setting << "'" << std::endl;
-
-			simple_numeric_source<float>::factory(l, name, &NaN);
 		}
 	}
 
@@ -81,37 +118,45 @@ namespace conky {
 		return s.str();
 	}
 
-	template<typename T>
-	void
-	simple_numeric_source<T>::factory(lua::state &l, const std::string &name, const T *source)
-	{
-		l.pop();
-		l.createuserdata<simple_numeric_source<T>>(name, source);
-	}
-
-	register_data_source::register_data_source(const std::string &name, 
-			const data_source_factory &factory_func)
-	{ register_data_source_(name, factory_func); }
-
 	register_disabled_data_source::register_disabled_data_source(const std::string &name, 
 			const std::string &setting)
-	{
-		register_data_source_(name,
-				std::bind(disabled_source_factory,
-							std::placeholders::_1, std::placeholders::_2, setting)
-			);
-	}
+		: register_data_source<priv::disabled_data_source>(name, setting)
+	{}
 
-	// at least one data source should always be registered, so the pointer will not be null
-	const data_sources_t& get_data_sources()
-	{ return *data_sources; }
+	// at least one data source should always be registered, so data_sources will not be null
+	void export_data_sources(lua::state &l)
+	{
+		lua::stack_sentry s(l);
+		l.checkstack(2);
+
+		l.newmetatable(priv::data_source_metatable); ++s; {
+			l.pushboolean(false); ++s;
+			l.rawsetfield(-2, "__metatable"); --s;
+
+			l.pushdestructor<data_source_base>(); ++s;
+			l.rawsetfield(-2, "__gc"); --s;
+
+			l.loadstring(data_source__index); ++s;
+			l.rawsetfield(-2, "__index"); --s;
+		} l.pop(); --s;
+
+		l.newtable(); ++s; {
+			for(auto i = data_sources->begin(); i != data_sources->end(); ++i) {
+				l.pushfunction(i->second); ++s;
+				l.rawsetfield(-2, i->first.c_str()); --s;
+			}
+		} l.rawsetfield(-2, "variables"); --s;
+
+		l.pushfunction(data_source_asnumber); ++s;
+		l.rawsetfield(-2, "asnumber"); --s;
+
+		l.pushfunction(data_source_astext); ++s;
+		l.rawsetfield(-2, "astext"); --s;
+	}
 }
 
 /////////// example data sources, remove after real data sources are available ///////
 int asdf_ = 47;
-conky::register_data_source asdf("asdf", std::bind(
-			conky::simple_numeric_source<int>::factory,
-			std::placeholders::_1, std::placeholders::_2, &asdf_)
-		);
+conky::register_data_source<conky::simple_numeric_source<int>> asdf("asdf", &asdf_);
 
 conky::register_disabled_data_source zxcv("zxcv", "BUILD_ZXCV");
