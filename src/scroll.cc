@@ -82,6 +82,7 @@ void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_cr
 	sd->start = 0;
 	obj->sub = (struct text_object *)malloc(sizeof(struct text_object));
 	extract_variable_text_internal(obj->sub, sd->text);
+	free(sd->text);
 
 	obj->data.opaque = sd;
 
