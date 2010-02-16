@@ -38,6 +38,8 @@ namespace conky {
 		 */
 		float NaN = std::numeric_limits<float>::quiet_NaN();
 
+		typedef std::unordered_map<std::string, lua::cpp_function> data_sources_t;
+
 		/*
 		 * We cannot construct this object statically, because order of object construction in
 		 * different modules is not defined, so register_source could be called before this

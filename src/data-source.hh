@@ -58,9 +58,10 @@ namespace conky {
     };
 
 	/*
-	 * A simple data source that returns the value of some variable.
-	 * It ignores the lua table, but one can create a wrapper for the factory function that uses
-	 * data in the table to decide which variable to return.
+	 * A simple data source that returns the value of some variable. It ignores the lua table.
+	 * The source variable can be specified as a fixed parameter to the register_data_source
+	 * constructor, or one can create a subclass and then set the source from the subclass
+	 * constructor.
 	 */
 	template<typename T>
 	class simple_numeric_source: public data_source_base {
@@ -76,6 +77,10 @@ namespace conky {
 		{ return *source; }
 	};
 
+	/*
+	 * This is a part of the implementation, but it cannot be in .cc file because the template
+	 * functions below call it
+	 */
 	namespace priv {
 		const char data_source_metatable[] = "conky::data_source_metatable";
 
@@ -90,8 +95,8 @@ namespace conky {
 	}
 
 	/*
-	 * Declaring an object of this type at global scope will register a data source with the give
-	 * name and factory function.
+	 * Declaring an object of this type at global scope will register a data source with the
+	 * given name. Any additional parameters are passed on to the data source constructor.
 	 */
 	template<typename T>
 	class register_data_source {
@@ -128,8 +133,10 @@ namespace conky {
 		register_disabled_data_source(const std::string &name, const std::string &setting);
 	};
 
-	typedef std::unordered_map<std::string, lua::cpp_function> data_sources_t;
-
+	/*
+	 * It expects to have a table at the top of lua stack. It then exports all the data sources
+	 * into that table (actually, into a "variables" subtable).
+	 */
 	void export_data_sources(lua::state &l);
 }
 
