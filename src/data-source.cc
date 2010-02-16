@@ -27,6 +27,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <unordered_map>
 
 namespace conky {
 	namespace {

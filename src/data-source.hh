@@ -25,11 +25,8 @@
 #define DATA_SOURCE_HH
 
 #include <limits>
-#include <memory>
-#include <stdexcept>
 #include <string>
 #include <type_traits>
-#include <unordered_map>
 
 #include "luamm.hh"
 
