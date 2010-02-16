@@ -472,10 +472,10 @@ void new_fg(struct text_object *obj, char *p, int p_max_size)
 	if (output_methods & TO_X)
 		new_special(p, FG)->arg = obj->data.l;
 #endif /* BUILD_X11 */
-#ifdef NCURSES
+#ifdef BUILD_NCURSES
 	if (output_methods & TO_NCURSES)
 		new_special(p, FG)->arg = obj->data.l;
-#endif /* NCURSES */
+#endif /* BUILD_NCURSES */
 	UNUSED(obj);
 	UNUSED(p);
 	UNUSED(p_max_size);
