@@ -193,6 +193,7 @@ namespace lua {
 		void insert(int index) throw() { lua_insert(cobj.get(), index); }
 		bool isfunction(int index) throw() { return lua_isfunction(cobj.get(), index); }
 		bool islightuserdata(int index) throw() { return lua_islightuserdata(cobj.get(), index); }
+		bool isnil(int index) throw() { return lua_isnil(cobj.get(), index); }
 		bool isnone(int index) throw() { return lua_isnone(cobj.get(), index); }
 		bool isnumber(int index) throw() { return lua_isnumber(cobj.get(), index); }
 		bool isstring(int index) throw() { return lua_isstring(cobj.get(), index); }
