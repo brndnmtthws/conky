@@ -82,14 +82,11 @@ void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_cr
 	sd->start = 0;
 	obj->sub = (struct text_object *)malloc(sizeof(struct text_object));
 	extract_variable_text_internal(obj->sub, sd->text);
-	free(sd->text);
 
 	obj->data.opaque = sd;
 
 #ifdef BUILD_X11
 	/* add a color object right after scroll to reset any color changes */
-	obj->next->data.l = sd->resetcolor;
-	obj->next->callbacks.print = &new_fg;
 #endif /* BUILD_X11 */
 }
 
@@ -160,6 +157,11 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size)
 	if(buf[sd->start] == 0 || sd->start > strlen(&(buf[0]))){
 		sd->start = 0;
 	}
+#ifdef BUILD_X11
+	//reset color when scroll is finished
+	if (output_methods & TO_X)
+		new_special(p + strlen(p), FG)->arg = sd->resetcolor;
+#endif
 }
 
 void free_scroll(struct text_object *obj)

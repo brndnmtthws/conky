@@ -1563,7 +1563,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 	END OBJ(scroll, 0)
 #ifdef BUILD_X11
 		/* allocate a follower to reset any color changes */
-		obj->next = new_text_object_internal();
 #endif /* BUILD_X11 */
 		parse_scroll_arg(obj, arg, free_at_crash, s);
 		obj->callbacks.print = &print_scroll;

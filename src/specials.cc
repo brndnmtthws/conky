@@ -251,7 +251,7 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale)
  * Printing various special text objects
  */
 
-static struct special_t *new_special(char *buf, enum special_types t)
+struct special_t *new_special(char *buf, enum special_types t)
 {
 	if (special_count >= max_specials) {
 		CRIT_ERR(NULL, NULL, "too many special things in text");
