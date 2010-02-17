@@ -1600,8 +1600,7 @@
             digits.</member>
             <member>
             <command>string</command>Argument is enclosed in
-            quotation mark or the checks for double and long failed
-            before.</member>
+            quotation marks (")</member>
         </simplelist>Valid operands are: '&gt;', '&lt;', '&gt;=',
         '&lt;=', '==', '!='. 
         <para /></listitem>
