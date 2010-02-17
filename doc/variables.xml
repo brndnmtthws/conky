@@ -3075,12 +3075,14 @@
             <command>
                 <option>scroll</option>
             </command>
-            <option>length (step) text</option>
+            <option>(direction) length (step) text</option>
         </term>
-        <listitem>Scroll 'text' by 'step' characters showing
+        <listitem>Scroll 'text' by 'step' characters to the left
+        or right (set 'direction' to 'left' or 'right') showing
         'length' number of characters at the same time. The text
         may also contain variables. 'step' is optional and defaults
-        to 1 if not set. If a var creates output on multiple lines
+        to 1 if not set. 'direction' is optional and defaults to left
+        if not set. If a var creates output on multiple lines
         then the lines are placed behind each other separated with
         a '|'-sign. If you change the textcolor inside $scroll it
         will automatically have it's old value back at the end of
