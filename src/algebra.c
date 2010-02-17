@@ -195,6 +195,8 @@ int compare(const char *expr)
 	char *expr_dup;
 	int idx, mtype;
 	enum arg_type type1, type2;
+	long lng_a, lng_b;
+	double dbl_a, dbl_b;
 
 	idx = find_match_op(expr);
 	mtype = get_match_type(expr);
@@ -213,6 +215,7 @@ int compare(const char *expr)
 	type2 = get_arg_type(expr_dup + idx + 1);
 	if (type1 == ARG_BAD || type2 == ARG_BAD) {
 		NORM_ERR("Bad arguments: '%s' and '%s'", expr_dup, (expr_dup + idx + 1));
+		free(expr_dup);
 		return -2;
 	}
 	if (type1 == ARG_LONG && type2 == ARG_DOUBLE)
@@ -222,6 +225,7 @@ int compare(const char *expr)
 	if (type1 != type2) {
 		NORM_ERR("trying to compare args '%s' and '%s' of different type",
 				expr_dup, (expr_dup + idx + 1));
+		free(expr_dup);
 		return -2;
 	}
 	switch (type1) {
@@ -233,16 +237,22 @@ int compare(const char *expr)
 				idx = scompare(a, mtype, b);
 				free(a);
 				free(b);
+				free(expr_dup);
 				return idx;
 			}
 		case ARG_LONG:
-			return lcompare(arg_to_long(expr_dup), mtype,
-					arg_to_long(expr_dup + idx + 1));
+			lng_a = arg_to_long(expr_dup);
+			lng_b = arg_to_long(expr_dup + idx + 1);
+			free(expr_dup);
+			return lcompare(lng_a, mtype, lng_b);
 		case ARG_DOUBLE:
-			return dcompare(arg_to_double(expr_dup), mtype,
-					arg_to_double(expr_dup + idx + 1));
+			dbl_a = arg_to_double(expr_dup);
+			dbl_b = arg_to_double(expr_dup + idx + 1);
+			free(expr_dup);
+			return lcompare(dbl_a, mtype, dbl_b);
 		case ARG_BAD: /* make_gcc_happy() */;
 	}
 	/* not reached */
+	free(expr_dup);
 	return -2;
 }
