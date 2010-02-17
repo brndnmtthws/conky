@@ -161,10 +161,6 @@ int ifup_strictness = IFUP_UP;
 extern kvm_t *kd;
 #endif
 
-#ifdef BUILD_NCURSES
-WINDOW* ncurses_screen;
-#endif
-
 int argc_copy;
 char** argv_copy;
 
@@ -2383,7 +2379,6 @@ void clean_up(void *memtofree1, void* memtofree2)
 #ifdef BUILD_NCURSES
 	if(output_methods & TO_NCURSES) {
 		endwin();
-		delwin(ncurses_screen);
 	}
 #endif
 	conftree_empty(currentconffile);
@@ -3216,7 +3211,7 @@ char load_config_file(const char *f)
 #ifdef BUILD_NCURSES
 		CONF("out_to_ncurses") {
 			if(string_to_bool(value)) {
-				ncurses_screen = initscr();
+				initscr();
 				start_color();
 				output_methods |= TO_NCURSES;
 			}
