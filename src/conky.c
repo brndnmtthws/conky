@@ -4507,6 +4507,7 @@ static int do_config_step(int *line, FILE *fp, char *buf, char **name, char **va
 	return 0;
 }
 
+#ifdef X11
 void setalignment(int* text_alignment, unsigned int windowtype, const char* value, const char *f, int line, char setbyconffile) {
 #ifdef OWN_WINDOW
 	if (windowtype == TYPE_DOCK) {
@@ -4527,6 +4528,7 @@ void setalignment(int* text_alignment, unsigned int windowtype, const char* valu
 		CONF_ERR;
 	}
 }
+#endif /* X11 */
 
 char load_config_file(const char *f)
 {
