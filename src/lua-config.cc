@@ -26,6 +26,7 @@
 #include "lua-config.hh"
 
 #include "data-source.hh"
+#include "setting.hh"
 
 namespace conky {
 	void export_symbols(lua::state &l)
@@ -35,6 +36,9 @@ namespace conky {
 
 		l.newtable(); ++s; {
 			export_data_sources(l);
-		} l.setglobal("conky"); --s;
+
+			l.newtable();
+			l.rawsetfield(-2, "config");
+		} --s; l.setglobal("conky");
 	}
 }

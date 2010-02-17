@@ -96,6 +96,7 @@
 
 #include <iostream>
 #include "lua-config.hh"
+#include "setting.hh"
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
@@ -4325,6 +4326,15 @@ int main(int argc, char **argv)
 				"print(conky.asnumber(conky.variables.zxcv{}));\n"
 				"print(conky.variables.asdf{}.text);\n"
 				"print(conky.variables.asdf{}.xxx);\n"
+				"conky.config = { a='z', asdf=47, [42]=47 };\n"
+				);
+		l.call(0, 0);
+		conky::check_config_settings(l);
+		std::cout << "config.asdf = " << conky::asdf.get(l) << std::endl;
+		l.loadstring(
+				"print('config.asdf = ', conky.config.asdf);\n"
+				"conky.config.asdf = 42;\n"
+				"print('config.asdf = ', conky.config.asdf);\n"
 				);
 		l.call(0, 0);
 	}
