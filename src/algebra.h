@@ -44,6 +44,7 @@ enum match_type {
 };
 
 enum arg_type {
+	ARG_BAD = 0,    /* something strange */
 	ARG_STRING = 1, /* "asdf" */
 	ARG_LONG = 2,	/* 123456 */
 	ARG_DOUBLE = 3  /* 12.456 */
