@@ -126,11 +126,9 @@ enum arg_type get_arg_type(const char *arg)
 	const char *p, *e;
 
 	p = arg;
-	e = arg + strlen(arg);
+	e = arg + strlen(arg)-1;
 
-	if (*(e - 1) == ' ')
-		e--;
-	while (*e && *e == ' ')
+	while (p != e && *e && *e == ' ')
 		e--;
 	while (p != e && *p == ' ')
 		p++;
@@ -140,23 +138,23 @@ enum arg_type get_arg_type(const char *arg)
 
 	if (*p == '-')	//allow negative values
 		p++;
-	while (p != e) {
+	while (p <= e) {
 		if (!isdigit(*p))
 			break;
 		p++;
 	}
-	if (p == e)
+	if (p == e+1)
 		return ARG_LONG;
 	if (*p == '.') {
 		p++;
-		while (p != e) {
+		while (p <= e) {
 			if (!isdigit(*p))
-				return ARG_STRING;
+				return ARG_BAD;
 			p++;
 		}
 		return ARG_DOUBLE;
 	}
-	return ARG_STRING;
+	return ARG_BAD;
 }
 
 char *arg_to_string(const char *arg)
@@ -213,6 +211,10 @@ int compare(const char *expr)
 
 	type1 = get_arg_type(expr_dup);
 	type2 = get_arg_type(expr_dup + idx + 1);
+	if (type1 == ARG_BAD || type2 == ARG_BAD) {
+		NORM_ERR("Bad arguments: '%s' and '%s'", expr_dup, (expr_dup + idx + 1));
+		return -2;
+	}
 	if (type1 == ARG_LONG && type2 == ARG_DOUBLE)
 		type1 = ARG_DOUBLE;
 	if (type1 == ARG_DOUBLE && type2 == ARG_LONG)
@@ -239,6 +241,7 @@ int compare(const char *expr)
 		case ARG_DOUBLE:
 			return dcompare(arg_to_double(expr_dup), mtype,
 					arg_to_double(expr_dup + idx + 1));
+		case ARG_BAD: /* make_gcc_happy() */;
 	}
 	/* not reached */
 	return -2;
