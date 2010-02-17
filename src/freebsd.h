@@ -17,8 +17,6 @@
 extern "C" {
 #endif
 
-kvm_t *kd;
-
 int get_entropy_avail(unsigned int *);
 int get_entropy_poolsize(unsigned int *);
 

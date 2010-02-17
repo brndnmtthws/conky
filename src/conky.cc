@@ -64,7 +64,7 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <getopt.h>
-#ifdef NCURSES
+#ifdef BUILD_NCURSES
 #include <ncurses.h>
 #endif
 #ifdef BUILD_WEATHER_XOAP
@@ -160,6 +160,10 @@ double update_interval_bat;
 void *global_cpu = NULL;
 unsigned int max_text_width = 0;
 int ifup_strictness = IFUP_UP;
+
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+extern kvm_t *kd;
+#endif
 
 int argc_copy;
 char** argv_copy;
@@ -553,6 +557,13 @@ int percent_print(char *buf, int size, unsigned value)
 {
 	return spaced_print(buf, size, "%u", pad_percents, value);
 }
+
+#if defined(__FreeBSD__)
+unsigned long long llabs(long long num) {
+       if(num < 0) return -num;
+       else return num;
+}
+#endif
 
 /* converts from bytes to human readable format (K, M, G, T)
  *
@@ -1114,11 +1125,11 @@ static inline void set_foreground_color(long c)
 		XSetForeground(display, window.gc, current_color);
 	}
 #endif /* BUILD_X11 */
-#ifdef NCURSES
+#ifdef BUILD_NCURSES
 	if (output_methods & TO_NCURSES) {
 		attron(COLOR_PAIR(c));
 	}
-#endif /* NCURSES */
+#endif /* BUILD_NCURSES */
 	UNUSED(c);
 	return;
 }
@@ -1156,7 +1167,7 @@ static void draw_string(const char *s)
 	if ((output_methods & APPEND_FILE) && draw_mode == FG && append_fpointer) {
 		fprintf(append_fpointer, "%s\n", s_with_newlines);
 	}
-#ifdef NCURSES
+#ifdef BUILD_NCURSES
 	if ((output_methods & TO_NCURSES) && draw_mode == FG) {
 		printw("%s", s_with_newlines);
 	}
@@ -1687,11 +1698,11 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 	cur_y += cur_y_add;
 #endif /* BUILD_X11 */
 	draw_string(s);
-#ifdef NCURSES
+#ifdef BUILD_NCURSES
 	if (output_methods & TO_NCURSES) {
 		printw("\n");
 	}
-#endif /* NCURSES */
+#endif /* BUILD_NCURSES */
 #ifdef BUILD_X11
 	if (output_methods & TO_X)
 		cur_y += font_descent();
@@ -1710,11 +1721,11 @@ static int draw_line(char *s, int special_index)
 		return draw_each_line_inner(s, special_index, -1);
 	}
 #endif /* BUILD_X11 */
-#ifdef NCURSES
+#ifdef BUILD_NCURSES
 	if (output_methods & TO_NCURSES) {
 		return draw_each_line_inner(s, special_index, -1);
 	}
-#endif /* NCURSES */
+#endif /* BUILD_NCURSES */
 	draw_string(s);
 	UNUSED(special_index);
 	return 0;
@@ -1752,10 +1763,10 @@ static void draw_text(void)
 	}
 	setup_fonts();
 #endif /* BUILD_X11 */
-#ifdef NCURSES
+#ifdef BUILD_NCURSES
 	init_pair(COLOR_WHITE, COLOR_WHITE, COLOR_BLACK);
 	attron(COLOR_PAIR(COLOR_WHITE));
-#endif /* NCURSES */
+#endif /* BUILD_NCURSES */
 	for_each_line(text_buffer, draw_line);
 #if defined(BUILD_LUA) && defined(BUILD_X11)
 	llua_draw_post_hook();
@@ -2221,7 +2232,7 @@ static void main_loop(void)
 			if(t > 0) usleep((useconds_t)t);
 			update_text();
 			draw_stuff();
-#ifdef NCURSES
+#ifdef BUILD_NCURSES
 			if(output_methods & TO_NCURSES) {
 				refresh();
 				clear();
@@ -2369,7 +2380,7 @@ void clean_up(void *memtofree1, void* memtofree2)
 
 	free_update_callbacks();
 
-#ifdef NCURSES
+#ifdef BUILD_NCURSES
 	if(output_methods & TO_NCURSES) {
 		endwin();
 	}
@@ -2904,6 +2915,7 @@ static int do_config_step(int *line, FILE *fp, char *buf, char **name, char **va
 	return 0;
 }
 
+#ifdef BUILD_X11
 void setalignment(int* text_alignment, unsigned int windowtype, const char* value, const char *f, int line, bool conffile) {
 #ifdef OWN_WINDOW
 	if (windowtype == TYPE_DOCK) {
@@ -2924,6 +2936,7 @@ void setalignment(int* text_alignment, unsigned int windowtype, const char* valu
 		CONF_ERR;
 	}
 }
+#endif /* BUILD_X11 */
 
 char load_config_file(const char *f)
 {
@@ -3199,7 +3212,7 @@ char load_config_file(const char *f)
 			if(string_to_bool(value))
 				output_methods |= TO_STDERR;
 		}
-#ifdef NCURSES
+#ifdef BUILD_NCURSES
 		CONF("out_to_ncurses") {
 			if(string_to_bool(value)) {
 				initscr();
@@ -3702,7 +3715,7 @@ char load_config_file(const char *f)
 	if (!output_methods) {
 		CRIT_ERR(0, 0, "no output_methods have been selected; exiting");
 	}
-#if defined(NCURSES)
+#if defined(BUILD_NCURSES)
 #if defined(BUILD_X11)
 	if ((output_methods & TO_X) && (output_methods & TO_NCURSES)) {
 		NORM_ERR("out_to_x and out_to_ncurses are incompatible, turning out_to_ncurses off");
@@ -3714,7 +3727,7 @@ char load_config_file(const char *f)
 		NORM_ERR("out_to_ncurses conflicts with out_to_console and out_to_stderr, disabling the later ones");
 		output_methods &= ~(TO_STDOUT | TO_STDERR);
 	}
-#endif /* NCURSES */
+#endif /* BUILD_NCURSES */
 	return TRUE;
 }
 

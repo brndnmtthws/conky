@@ -30,16 +30,8 @@
 #ifndef _BSDAPM_H
 #define _BSDAPM_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 void print_apm_adapter(struct text_object *, char *, int);
 void print_apm_battery_life(struct text_object *, char *, int);
 void print_apm_battery_time(struct text_object *, char *, int);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* _BSDAPM_H */

@@ -34,29 +34,49 @@
 #include "text_object.h"
 #include <vector>
 
+#define SCROLL_LEFT true
+#define SCROLL_RIGHT false
+
 struct scroll_data {
 	char *text;
 	unsigned int show;
 	unsigned int step;
-	unsigned int start;
+	signed int start;
 	long resetcolor;
+	bool direction;
 };
 
-void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_crash)
+void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_crash, char *free_at_crash2)
 {
 	struct scroll_data *sd;
 	int n1 = 0, n2 = 0;
+	char dirarg[6];
 
 	sd = (struct scroll_data *)malloc(sizeof(struct scroll_data));
 	memset(sd, 0, sizeof(struct scroll_data));
 
 	sd->resetcolor = get_current_text_color();
 	sd->step = 1;
-	if (!arg || sscanf(arg, "%u %n", &sd->show, &n1) <= 0)
-		CRIT_ERR(obj, free_at_crash, "scroll needs arguments: <length> [<step>] <text>");
+	sd->direction = SCROLL_LEFT;
 
-	sscanf(arg + n1, "%u %n", &sd->step, &n2);
-	if (*(arg + n1 + n2)) {
+	if (arg && sscanf(arg, "%5s %n", dirarg, &n1) == 1) {
+		if (strcasecmp(dirarg, "right") == 0 || strcasecmp(dirarg, "r") == 0)
+			sd->direction = SCROLL_RIGHT;
+		else if ( strcasecmp(dirarg, "left") != 0 && strcasecmp(dirarg, "l") != 0)
+			n1 = 0;
+	}
+
+	if (!arg || sscanf(arg + n1, "%u %n", &sd->show, &n2) <= 0) {
+		free(sd);
+#ifdef BUILD_X11
+		free(obj->next);
+#endif
+		free(free_at_crash2);
+		CRIT_ERR(obj, free_at_crash, "scroll needs arguments: [left|right] <length> [<step>] <text>");
+	}
+	n1 += n2;
+
+	if(sscanf(arg + n1, "%u %n", &sd->step, &n2) == 1) {
 		n1 += n2;
 	} else {
 		sd->step = 1;
@@ -81,8 +101,6 @@ void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_cr
 
 #ifdef BUILD_X11
 	/* add a color object right after scroll to reset any color changes */
-	obj->next->data.l = sd->resetcolor;
-	obj->next->callbacks.print = &new_fg;
 #endif /* BUILD_X11 */
 }
 
@@ -131,7 +149,7 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size)
 	}
 	p[j] = 0;
 	//count colorchanges in front of the visible part and place that many colorchanges in front of the visible part
-	for(j = 0; j < sd->start; j++) {
+	for(j = 0; j < (unsigned) sd->start; j++) {
 		if(buf[j] == SPECIAL_CHAR) frontcolorchanges++;
 	}
 	pwithcolors=(char*)malloc(strlen(p) + 1 + colorchanges - visibcolorchanges);
@@ -149,10 +167,22 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size)
 	strcpy(p, pwithcolors);
 	free(pwithcolors);
 	//scroll
-	sd->start += sd->step;
-	if(buf[sd->start] == 0 || sd->start > strlen(&(buf[0]))){
-		sd->start = 0;
+	if(sd->direction == SCROLL_LEFT) {
+		sd->start += sd->step;
+		if(buf[sd->start] == 0 || (unsigned) sd->start > strlen(&(buf[0]))) {
+			sd->start = 0;
+		}
+	} else {
+		if(sd->start < 1) {
+			sd->start = strlen(&(buf[0]));
+		}
+		sd->start -= sd->step;
 	}
+#ifdef BUILD_X11
+	//reset color when scroll is finished
+	if (output_methods & TO_X)
+		new_special(p + strlen(p), FG)->arg = sd->resetcolor;
+#endif
 }
 
 void free_scroll(struct text_object *obj)
