@@ -66,6 +66,9 @@
 #include <getopt.h>
 #ifdef BUILD_NCURSES
 #include <ncurses.h>
+#ifdef DEBUG
+#include "nc.h"
+#endif
 #endif
 #ifdef BUILD_WEATHER_XOAP
 #include <libxml/parser.h>
@@ -4341,6 +4344,9 @@ int main(int argc, char **argv)
 	kvm_close(kd);
 #endif
 
+#if defined(BUILD_NCURSES) && defined(DEBUG)
+	_nc_free_and_exit(0);	//hide false memleaks
+#endif
 	return 0;
 
 }
