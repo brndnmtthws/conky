@@ -2344,7 +2344,7 @@ static void main_loop(void)
 #endif /* BUILD_LUA */
 		g_signal_pending = 0;
 	}
-	clean_up(NULL, NULL);
+	clean_up(current_mail_spool, NULL);
 
 #ifdef HAVE_SYS_INOTIFY_H
 	if (inotify_fd != -1) {

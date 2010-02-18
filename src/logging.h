@@ -27,6 +27,8 @@
  *
  */
 
+#include "mail.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -44,7 +46,7 @@ void clean_up(void *memtofree1, void* memtofree2);
 
 /* critical error */
 #define CRIT_ERR(memtofree1, memtofree2, ...) \
-	{ NORM_ERR(__VA_ARGS__); clean_up(memtofree1, memtofree2); exit(EXIT_FAILURE); }
+	{ NORM_ERR(__VA_ARGS__); clean_up(memtofree1, memtofree2); free(current_mail_spool); exit(EXIT_FAILURE); }
 
 /* debugging output */
 extern int global_debug_level;
