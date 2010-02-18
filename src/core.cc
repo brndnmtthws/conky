@@ -839,6 +839,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.free = &free_mboxscan;
 	END OBJ(mem, &update_meminfo)
 		obj->callbacks.print = &print_mem;
+	END OBJ(memwithbuffers, &update_meminfo)
+		obj->callbacks.print = &print_memwithbuffers;
 	END OBJ(memeasyfree, &update_meminfo)
 		obj->callbacks.print = &print_memeasyfree;
 	END OBJ(memfree, &update_meminfo)
@@ -853,6 +855,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 	END OBJ(membar, &update_meminfo)
 		scan_bar(obj, arg, 1);
 		obj->callbacks.barval = &mem_barval;
+	END OBJ(memwithbuffersbar, &update_meminfo)
+		scan_bar(obj, arg, 1);
+		obj->callbacks.barval = &mem_with_buffers_barval;
 #ifdef BUILD_X11
 	END OBJ(memgraph, &update_meminfo)
 		char *buf = 0;

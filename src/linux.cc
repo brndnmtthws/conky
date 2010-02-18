@@ -161,8 +161,8 @@ void update_meminfo(void)
 	/* unsigned int a; */
 	char buf[256];
 
-	info.mem = info.memmax = info.swap = info.swapfree = info.swapmax = info.bufmem =
-		info.buffers = info.cached = info.memfree = info.memeasyfree = 0;
+	info.mem = info.memwithbuffers = info.memmax = info.swap = info.swapfree = info.swapmax =
+        info.bufmem = info.buffers = info.cached = info.memfree = info.memeasyfree = 0;
 
 	if (!(meminfo_fp = open_file("/proc/meminfo", &rep))) {
 		return;
@@ -188,7 +188,7 @@ void update_meminfo(void)
 		}
 	}
 
-	info.mem = info.memmax - info.memfree;
+	info.mem = info.memwithbuffers = info.memmax - info.memfree;
 	info.memeasyfree = info.memfree;
 	info.swap = info.swapmax - info.swapfree;
 

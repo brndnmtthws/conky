@@ -517,6 +517,7 @@ void print_##name(struct text_object *obj, char *p, int p_max_size) \
 }
 
 PRINT_HR_GENERATOR(mem)
+PRINT_HR_GENERATOR(memwithbuffers)
 PRINT_HR_GENERATOR(memeasyfree)
 PRINT_HR_GENERATOR(memfree)
 PRINT_HR_GENERATOR(memmax)
@@ -536,6 +537,13 @@ double mem_barval(struct text_object *obj)
 	(void)obj;
 
 	return info.memmax ? ((double)info.mem / info.memmax) : 0;
+}
+
+double mem_with_buffers_barval(struct text_object *obj)
+{
+	(void)obj;
+
+	return info.memmax ? ((double)info.memwithbuffers / info.memmax) : 0;
 }
 
 uint8_t swap_percentage(struct text_object *obj)
