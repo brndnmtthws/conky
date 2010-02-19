@@ -87,6 +87,11 @@ option(BUILD_BUILTIN_CONFIG "Enable builtin default configuration" true)
 option(BUILD_MATH "Enable math support" true)
 
 option(BUILD_NCURSES "Enable ncurses support" true)
+if(BUILD_NCURSES)
+	option(LEAKFREE_NCURSES "Enable to hide false ncurses-memleaks in valgrind (works only when ncurses is compiled with --disable-leaks)" false)
+else(BUILD_NCURSES)
+	set(LEAKFREE_NCURSES false CACHE BOOL "Enable to hide false ncurses-memleaks in valgrind (works only when ncurses is compiled with --disable-leaks)" FORCE)
+endif(BUILD_NCURSES)
 
 option(BUILD_X11 "Build X11 support" true)
 if(BUILD_X11)

@@ -78,6 +78,7 @@
 #cmakedefine BUILD_BUILTIN_CONFIG 1
 
 #cmakedefine BUILD_NCURSES 1
+#cmakedefine LEAKFREE_NCURSES 1
 
 #cmakedefine BUILD_APCUPSD 1
 

@@ -66,7 +66,7 @@
 #include <getopt.h>
 #ifdef BUILD_NCURSES
 #include <ncurses.h>
-#ifdef DEBUG
+#ifdef LEAKFREE_NCURSES
 #include "nc.h"
 #endif
 #endif
@@ -4344,7 +4344,7 @@ int main(int argc, char **argv)
 	kvm_close(kd);
 #endif
 
-#if defined(BUILD_NCURSES) && defined(DEBUG)
+#ifdef LEAKFREE_NCURSES
 	_nc_free_and_exit(0);	//hide false memleaks
 #endif
 	return 0;
