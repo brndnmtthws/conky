@@ -89,7 +89,7 @@ if(BUILD_WLAN)
 	if(NOT IWLIB_LIB)
 		message(FATAL_ERROR "Unable to find libiw.so")
 	endif(NOT IWLIB_LIB)
-	set(CMAKE_REQUIRED_LIBRARIES ${IWLIB_LIB})
+	set(conky_libs ${conky_libs} ${IWLIB_LIB})
 	check_function_exists(iw_sockets_open IWLIB_SOCKETS_OPEN_FUNC)
 endif(BUILD_WLAN)
 

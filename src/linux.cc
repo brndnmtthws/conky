@@ -76,7 +76,7 @@
 #define NBD_MAJOR 43
 #endif
 
-#ifdef HAVE_IWLIB
+#ifdef BUILD_WLAN
 #include <iwlib.h>
 #endif
 
@@ -356,7 +356,7 @@ void update_net_stats(void)
 	char buf[256];
 	double delta;
 
-#ifdef HAVE_IWLIB
+#ifdef BUILD_WLAN
 	// wireless info variables
 	int skfd, has_bitrate = 0;
 	struct wireless_info *winfo;
@@ -496,9 +496,9 @@ void update_net_stats(void)
 			}
 		}
 
-#ifdef HAVE_IWLIB
+#ifdef BUILD_WLAN
 		/* update wireless info */
-		winfo = malloc(sizeof(struct wireless_info));
+		winfo = (struct wireless_info *) malloc(sizeof(struct wireless_info));
 		memset(winfo, 0, sizeof(struct wireless_info));
 
 		skfd = iw_sockets_open();
