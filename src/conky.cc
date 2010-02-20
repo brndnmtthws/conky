@@ -3953,6 +3953,15 @@ static void print_help(const char *prog_name) {
 	);
 }
 
+inline void reset_optind() {
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__OpenBSD__) \
+		|| defined(__NetBSD__)
+	optind = optreset = 1;
+#else
+	optind = 0;
+#endif
+}
+
 /* : means that character before that takes an argument */
 static const char *getopt_string = "vVqdDs:t:u:i:hc:p:"
 #ifdef BUILD_X11
@@ -4002,13 +4011,8 @@ void initialisation(int argc, char **argv) {
 	bool for_scripts = false;
 
 	set_default_configurations();
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__OpenBSD__) \
-		|| defined(__NetBSD__)
-	optind = optreset = 1;
-#else
-	optind = 0;
-#endif
 
+	reset_optind();
 	while (1) {
 		int c = getopt_long(argc, argv, getopt_string, longopts, NULL);
 
@@ -4050,12 +4054,7 @@ void initialisation(int argc, char **argv) {
 
 	/* handle other command line arguments */
 
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__OpenBSD__) \
-		|| defined(__NetBSD__)
-	optind = optreset = 1;
-#else
-	optind = 0;
-#endif
+	reset_optind();
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 	if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null", O_RDONLY,
