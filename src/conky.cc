@@ -682,21 +682,14 @@ void conftree_empty(struct conftree* tree) {
 
 struct conftree *currentconffile;
 
+#define free_and_zero(PTR)  if(PTR) { free(PTR); PTR = NULL; }
+
 static void extract_variable_text(const char *p)
 {
 	free_text_objects(&global_root_object);
-	if (tmpstring1) {
-		free(tmpstring1);
-		tmpstring1 = 0;
-	}
-	if (tmpstring2) {
-		free(tmpstring2);
-		tmpstring2 = 0;
-	}
-	if (text_buffer) {
-		free(text_buffer);
-		text_buffer = 0;
-	}
+	free_and_zero(tmpstring1);
+	free_and_zero(tmpstring2);
+	free_and_zero(text_buffer);
 
 	extract_variable_text_internal(&global_root_object, p);
 }
@@ -2272,14 +2265,8 @@ static void main_loop(void)
 					}
 				}
 #endif /* BUILD_X11 */
-				if(overwrite_file) {
-					free(overwrite_file);
-					overwrite_file = 0;
-				}
-				if(append_file) {
-					free(append_file);
-					append_file = 0;
-				}
+				free_and_zero(overwrite_file);
+				free_and_zero(append_file);
 				break;
 			default:
 				/* Reaching here means someone set a signal
@@ -2394,10 +2381,7 @@ void clean_up(void *memtofree1, void* memtofree2)
 	}
 	timed_thread::destroy_registered_threads();
 
-	if (info.cpu_usage) {
-		free(info.cpu_usage);
-		info.cpu_usage = NULL;
-	}
+	free_and_zero(info.cpu_usage);
 #ifdef BUILD_X11
 	if (x_initialised == YES) {
 		if(window_created == 1) {
@@ -2414,14 +2398,8 @@ void clean_up(void *memtofree1, void* memtofree2)
 		}
 		XCloseDisplay(display);
 		display = NULL;
-		if(info.x11.desktop.all_names) {
-			free(info.x11.desktop.all_names);
-			info.x11.desktop.all_names = NULL;
-		}
-		if (info.x11.desktop.name) {
-			free(info.x11.desktop.name);
-			info.x11.desktop.name = NULL;
-		}
+		free_and_zero(info.x11.desktop.all_names);
+		free_and_zero(info.x11.desktop.name);
 		x_initialised = NO;
 	}else{
 		free(fonts);	//in set_default_configurations a font is set but not loaded
@@ -2442,26 +2420,11 @@ void clean_up(void *memtofree1, void* memtofree2)
 #endif /* BUILD_X11 */
 
 	free_text_objects(&global_root_object);
-	if (tmpstring1) {
-		free(tmpstring1);
-		tmpstring1 = 0;
-	}
-	if (tmpstring2) {
-		free(tmpstring2);
-		tmpstring2 = 0;
-	}
-	if (text_buffer) {
-		free(text_buffer);
-		text_buffer = 0;
-	}
-
-	if (global_text) {
-		free(global_text);
-		global_text = 0;
-	}
-
-	free(current_config);
-	current_config = 0;
+	free_and_zero(tmpstring1);
+	free_and_zero(tmpstring2);
+	free_and_zero(text_buffer);
+	free_and_zero(global_text);
+	free_and_zero(current_config);
 
 #ifdef BUILD_PORT_MONITORS
 	tcp_portmon_clear();
@@ -2493,16 +2456,12 @@ void clean_up(void *memtofree1, void* memtofree2)
 				free(specials[i].graph);
 			}
 		}
-		free(specials);
-		specials = NULL;
+		free_and_zero(specials);
 	}
 
 	clear_net_stats();
 	clear_diskio_stats();
-	if(global_cpu != NULL) {
-		free(global_cpu);
-		global_cpu = NULL;
-	}
+	free_and_zero(global_cpu);
 }
 
 static int string_to_bool(const char *s)
@@ -3221,10 +3180,7 @@ char load_config_file(const char *f)
 		}
 #endif
 		CONF("overwrite_file") {
-			if(overwrite_file) {
-				free(overwrite_file);
-				overwrite_file = 0;
-			}
+			free_and_zero(overwrite_file);
 			if (overwrite_works(value)) {
 				overwrite_file = strdup(value);
 				output_methods |= OVERWRITE_FILE;
@@ -3232,10 +3188,7 @@ char load_config_file(const char *f)
 				NORM_ERR("overwrite_file won't be able to create/overwrite '%s'", value);
 		}
 		CONF("append_file") {
-			if(append_file) {
-				free(append_file);
-				append_file = 0;
-			}
+			free_and_zero(append_file);
 			if(append_works(value)) {
 				append_file = strdup(value);
 				output_methods |= APPEND_FILE;
@@ -3558,10 +3511,7 @@ char load_config_file(const char *f)
 			}
 #endif
 
-			if (global_text) {
-				free(global_text);
-				global_text = 0;
-			}
+			free_and_zero(global_text);
 
 			global_text = (char *) malloc(1);
 			global_text[0] = '\0';
@@ -4019,10 +3969,7 @@ void initialisation(int argc, char **argv) {
 		if (c == -1) {
 			break;
 		}else if (c == 's') {
-			if (global_text) {
-				free(global_text);
-				global_text = 0;
-			}
+			free_and_zero(global_text);
 			global_text = strndup(optarg, max_user_text);
 			convert_escapes(global_text);
 			total_run_times = 1;
@@ -4095,10 +4042,7 @@ void initialisation(int argc, char **argv) {
 #endif
 #endif /* BUILD_X11 */
 			case 't':
-				if (global_text) {
-					free(global_text);
-					global_text = 0;
-				}
+				free_and_zero(global_text);
 				global_text = strndup(optarg, max_user_text);
 				convert_escapes(global_text);
 				break;
@@ -4145,11 +4089,7 @@ void initialisation(int argc, char **argv) {
 
 	/* generate text and get initial size */
 	extract_variable_text(global_text);
-	if (global_text) {
-		free(global_text);
-		global_text = 0;
-	}
-	global_text = NULL;
+	free_and_zero(global_text);
 	/* fork */
 	if (fork_to_background && first_pass) {
 		int pid = fork();
@@ -4315,8 +4255,7 @@ int main(int argc, char **argv)
 		if (stat(current_config, &sb) ||
 				(!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
 			NORM_ERR("invalid configuration file '%s'\n", current_config);
-			free(current_config);
-			current_config = 0;
+			free_and_zero(current_config);
 		}
 	}
 
