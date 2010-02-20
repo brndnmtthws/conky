@@ -3944,6 +3944,7 @@ static void print_help(const char *prog_name) {
 			"   -x X                      x position\n"
 			"   -y Y                      y position\n"
 #endif /* BUILD_X11 */
+			"   -s, --for-scripts=TEXT    render TEXT on stdout and exit, enclose TEXT by single quotes\n"
 			"   -t, --text=TEXT           text to render, remember single quotes, like -t '$uptime'\n"
 			"   -u, --interval=SECS       update interval\n"
 			"   -i COUNT                  number of times to update "PACKAGE_NAME" (and quit)\n"
@@ -3953,7 +3954,7 @@ static void print_help(const char *prog_name) {
 }
 
 /* : means that character before that takes an argument */
-static const char *getopt_string = "vVqdDt:u:i:hc:p:"
+static const char *getopt_string = "vVqdDs:t:u:i:hc:p:"
 #ifdef BUILD_X11
 	"x:y:w:a:f:X:"
 #ifdef OWN_WINDOW
@@ -3989,6 +3990,7 @@ static const struct option longopts[] = {
 #endif
 	{ "window-id", 1, NULL, 'w' },
 #endif /* BUILD_X11 */
+	{ "for-scripts", 1, NULL, 's' },
 	{ "text", 1, NULL, 't' },
 	{ "interval", 0, NULL, 'u' },
 	{ "pause", 0, NULL, 'p' },
@@ -3997,10 +3999,37 @@ static const struct option longopts[] = {
 
 void initialisation(int argc, char **argv) {
 	struct sigaction act, oact;
+	bool for_scripts = false;
 
 	set_default_configurations();
-	load_config_file(current_config);
-	currentconffile = conftree_add(currentconffile, current_config);
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__OpenBSD__) \
+		|| defined(__NetBSD__)
+	optind = optreset = 1;
+#else
+	optind = 0;
+#endif
+
+	while (1) {
+		int c = getopt_long(argc, argv, getopt_string, longopts, NULL);
+
+		if (c == -1) {
+			break;
+		}else if (c == 's') {
+			if (global_text) {
+				free(global_text);
+				global_text = 0;
+			}
+			global_text = strndup(optarg, max_user_text);
+			convert_escapes(global_text);
+			total_run_times = 1;
+			output_methods = TO_STDOUT;
+			for_scripts = true;
+		}
+	}
+	if(for_scripts == false) {
+		load_config_file(current_config);
+		currentconffile = conftree_add(currentconffile, current_config);
+	}
 
 	/* init specials array */
 	if ((specials = (special_t*)calloc(sizeof(struct special_t), max_specials)) == 0) {
