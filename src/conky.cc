@@ -2419,6 +2419,7 @@ void clean_up(void *memtofree1, void* memtofree2)
 	free_desktop_info();
 #endif /* BUILD_X11 */
 
+	free_text_objects(&global_root_object);
 	free_and_zero(tmpstring1);
 	free_and_zero(tmpstring2);
 	free_and_zero(text_buffer);
