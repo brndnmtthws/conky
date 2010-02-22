@@ -1863,6 +1863,7 @@ void free_text_objects(struct text_object *root)
 		}
 		if(obj->sub) {
 			free_text_objects(obj->sub);
+			free_and_zero(obj->sub);
 		}
 		if(obj->special_data)
 			free(obj->special_data);
