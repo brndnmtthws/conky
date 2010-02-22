@@ -180,6 +180,8 @@ void free_combine(struct text_object *obj)
 	free(cd->left);
 	free(cd->seperation);
 	free(cd->right);
+	free_text_objects(obj->sub->sub);
+	free_and_zero(obj->sub->sub);
 	free_text_objects(obj->sub);
 	free_and_zero(obj->sub);
 	free_and_zero(obj->data.opaque);
