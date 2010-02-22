@@ -682,8 +682,6 @@ void conftree_empty(struct conftree* tree) {
 
 struct conftree *currentconffile;
 
-#define free_and_zero(PTR)  if(PTR) { free(PTR); PTR = NULL; }
-
 static void extract_variable_text(const char *p)
 {
 	free_text_objects(&global_root_object);
