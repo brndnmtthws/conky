@@ -124,7 +124,8 @@ void print_combine(struct text_object *obj, char *p, int p_max_size)
 		generate_text_internal(&(buf[i][0]), max_user_text, *objsub);
 		for(j=0; buf[i][j] != 0; j++) {
 			if(buf[i][j] == '\t') buf[i][j] = ' ';
-			if(buf[i][j] == '\n' || buf[i][j] == 2) { //Some vars like $head use \002 instead of \n to separate lines
+			if(buf[i][j] == '\n') buf[i][j] = 0;	//the vars inside combine may not have a \n at the end
+			if(buf[i][j] == 2) {	// \002 is used instead of \n to separate lines inside a var
 				buf[i][j] = 0;
 				current[i]->row = strdup(&(buf[i][0])+nextstart);
 				if(i==0 && (long)strlen(current[i]->row) > longest) longest = (long)strlen(current[i]->row);
