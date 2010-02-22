@@ -28,7 +28,7 @@
  *
  */
 
-#define free_and_zero(PTR)  if(PTR) { free(PTR); PTR = NULL; }
+#define free_and_zero(PTR)  if(PTR) free(PTR); PTR = NULL;
 
 #ifndef _CONKY_CORE_H_
 #define _CONKY_CORE_H_
