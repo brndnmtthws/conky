@@ -442,7 +442,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		SCAN_CPU(arg, obj->data.i);
 		buf = scan_graph(obj, arg, 1);
 		DBGP2("Adding $cpugraph for CPU %d", obj->data.i);
-		if (buf) free(buf);
+		free_and_zero(buf);
 		obj->callbacks.graphval = &cpu_barval;
 	END OBJ(loadgraph, &update_load_average)
 		scan_loadgraph_arg(obj, arg);
@@ -863,7 +863,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		char *buf = 0;
 		buf = scan_graph(obj, arg, 1);
 
-		if (buf) free(buf);
+		free_and_zero(buf);
 		obj->callbacks.graphval = &mem_barval;
 #endif /* BUILD_X11*/
 	END OBJ(mixer, 0)
@@ -1612,7 +1612,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 	END OBJ(apcupsd_loadgraph, &update_apcupsd)
 		char* buf = 0;
 		buf = scan_graph(obj, arg, 100);
-		if (buf) free(buf);
+		free_and_zero(buf);
 		obj->callbacks.graphval = &apcupsd_loadbarval;
 #endif /* BUILD_X11 */
 	END OBJ(apcupsd_loadgauge, &update_apcupsd)
@@ -1865,8 +1865,7 @@ void free_text_objects(struct text_object *root)
 			free_text_objects(obj->sub);
 			free_and_zero(obj->sub);
 		}
-		if(obj->special_data)
-			free(obj->special_data);
+		free_and_zero(obj->special_data);
 
 		free(obj);
 	}

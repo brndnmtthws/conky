@@ -1487,7 +1487,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 							j++;
 						}
 					}
-					if (tmpcolour) free(tmpcolour);
+					free_and_zero(tmpcolour);
 					if (h > cur_y_add
 							&& h > font_h) {
 						cur_y_add = h;
@@ -2258,9 +2258,7 @@ static void main_loop(void)
 					XFixesDestroyRegion(display, x11_stuff.region2);
 					XFixesDestroyRegion(display, x11_stuff.part);
 #endif /* BUILD_XDAMAGE */
-					if (disp) {
-						free(disp);
-					}
+					free_and_zero(disp);
 				}
 #endif /* BUILD_X11 */
 				free_and_zero(overwrite_file);
@@ -2371,12 +2369,8 @@ void clean_up(void *memtofree1, void* memtofree2)
 #endif
 	conftree_empty(currentconffile);
 	currentconffile = NULL;
-	if(memtofree1) {
-		free(memtofree1);
-	}
-	if(memtofree2) {
-		free(memtofree2);
-	}
+	free_and_zero(memtofree1);
+	free_and_zero(memtofree2);
 	timed_thread::destroy_registered_threads();
 
 	free_and_zero(info.cpu_usage);
@@ -2931,8 +2925,7 @@ char load_config_file(const char *f)
 			if (!value || x_initialised == YES) {
 				CONF_ERR;
 			} else {
-				if (disp)
-					free(disp);
+				free_and_zero(disp);
 				disp = strdup(value);
 			}
 		}
@@ -3279,9 +3272,7 @@ char load_config_file(const char *f)
 				variable_substitute(value, buffer, 256);
 
 				if (buffer[0] != '\0') {
-					if (current_mail_spool) {
-						free(current_mail_spool);
-					}
+					free_and_zero(current_mail_spool);
 					current_mail_spool = strndup(buffer, text_buffer_size);
 				}
 			} else {
@@ -4260,9 +4251,7 @@ int main(int argc, char **argv)
 			case 'V':
 				print_version(); /* doesn't return */
 			case 'c':
-				if (current_config) {
-					free(current_config);
-				}
+				free_and_zero(current_config);
 				current_config = strndup(optarg, max_user_text);
 				break;
 			case 'q':
@@ -4282,8 +4271,7 @@ int main(int argc, char **argv)
 				window.window = strtol(optarg, 0, 0);
 				break;
 			case 'X':
-				if (disp)
-					free(disp);
+				free_and_zero(disp);
 				disp = strdup(optarg);
 				break;
 #endif /* BUILD_X11 */
