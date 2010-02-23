@@ -2299,12 +2299,10 @@ static void main_loop(void)
 				len = read(inotify_fd, inotify_buff, INOTIFY_BUF_LEN);
 				while (len > 0 && idx < len) {
 					struct inotify_event *ev = (struct inotify_event *) &inotify_buff[idx];
-					if (ev->wd == inotify_config_wd) {
-						if (ev->mask & IN_MODIFY) {
-							/* current_config should be reloaded */
-							NORM_ERR("'%s' modified, reloading...", current_config);
-							reload_config();
-						}
+					if (ev->wd == inotify_config_wd && (ev->mask & IN_MODIFY || ev->mask & IN_IGNORED)) {
+						/* current_config should be reloaded */
+						NORM_ERR("'%s' modified, reloading...", current_config);
+						reload_config();
 						if (ev->mask & IN_IGNORED) {
 							/* for some reason we get IN_IGNORED here
 							 * sometimes, so we need to re-add the watch */
@@ -3956,6 +3954,51 @@ static const struct option longopts[] = {
 	{ 0, 0, 0, 0 }
 };
 
+void set_current_config() {
+	/* check if specified config file is valid */
+	if (current_config) {
+		struct stat sb;
+		if (stat(current_config, &sb) ||
+				(!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
+			NORM_ERR("invalid configuration file '%s'\n", current_config);
+			free_and_zero(current_config);
+		}
+	}
+
+	/* load current_config, CONFIG_FILE or SYSTEM_CONFIG_FILE */
+
+	if (!current_config) {
+		/* load default config file */
+		char buf[DEFAULT_TEXT_BUFFER_SIZE];
+		FILE *fp;
+
+		/* Try to use personal config file first */
+		to_real_path(buf, CONFIG_FILE);
+		if (buf[0] && (fp = fopen(buf, "r"))) {
+			current_config = strndup(buf, max_user_text);
+			fclose(fp);
+		}
+
+		/* Try to use system config file if personal config not readable */
+		if (!current_config && (fp = fopen(SYSTEM_CONFIG_FILE, "r"))) {
+			current_config = strndup(SYSTEM_CONFIG_FILE, max_user_text);
+			fclose(fp);
+		}
+
+		/* No readable config found */
+		if (!current_config) {
+#define NOCFGFILEFOUND "no readable personal or system-wide config file found"
+#ifdef BUILD_BUILTIN_CONFIG
+			current_config = strdup("==builtin==");
+			NORM_ERR(NOCFGFILEFOUND
+					", using builtin default");
+#else
+			CRIT_ERR(NULL, NULL, NOCFGFILEFOUND);
+#endif /* ! CONF_OUTPUT */
+		}
+	}
+}
+
 void initialisation(int argc, char **argv) {
 	struct sigaction act, oact;
 	bool for_scripts = false;
@@ -3978,6 +4021,7 @@ void initialisation(int argc, char **argv) {
 		}
 	}
 	if(for_scripts == false) {
+		set_current_config();
 		load_config_file(current_config);
 		currentconffile = conftree_add(currentconffile, current_config);
 	}
@@ -4249,48 +4293,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	/* check if specified config file is valid */
-	if (current_config) {
-		struct stat sb;
-		if (stat(current_config, &sb) ||
-				(!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
-			NORM_ERR("invalid configuration file '%s'\n", current_config);
-			free_and_zero(current_config);
-		}
-	}
-
-	/* load current_config, CONFIG_FILE or SYSTEM_CONFIG_FILE */
-
-	if (!current_config) {
-		/* load default config file */
-		char buf[DEFAULT_TEXT_BUFFER_SIZE];
-		FILE *fp;
-
-		/* Try to use personal config file first */
-		to_real_path(buf, CONFIG_FILE);
-		if (buf[0] && (fp = fopen(buf, "r"))) {
-			current_config = strndup(buf, max_user_text);
-			fclose(fp);
-		}
-
-		/* Try to use system config file if personal config not readable */
-		if (!current_config && (fp = fopen(SYSTEM_CONFIG_FILE, "r"))) {
-			current_config = strndup(SYSTEM_CONFIG_FILE, max_user_text);
-			fclose(fp);
-		}
-
-		/* No readable config found */
-		if (!current_config) {
-#define NOCFGFILEFOUND "no readable personal or system-wide config file found"
-#ifdef BUILD_BUILTIN_CONFIG
-			current_config = strdup("==builtin==");
-			NORM_ERR(NOCFGFILEFOUND
-					", using builtin default");
-#else
-			CRIT_ERR(NULL, NULL, NOCFGFILEFOUND);
-#endif /* ! CONF_OUTPUT */
-		}
-	}
+	set_current_config();
 
 #ifdef BUILD_WEATHER_XOAP
 	/* Load xoap keys, if existing */
