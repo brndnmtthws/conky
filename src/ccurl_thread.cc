@@ -70,8 +70,8 @@ void ccurl_free_locations(ccurl_location_list &locations)
 {
 	for (ccurl_location_list::iterator i = locations.begin();
 			i != locations.end(); i++) {
-		if ((*i)->uri) free((*i)->uri);
-		if ((*i)->result) free((*i)->result);
+		free_and_zero((*i)->uri);
+		free_and_zero((*i)->result);
 	}
 	locations.clear();
 }
@@ -239,8 +239,5 @@ void curl_print(struct text_object *obj, char *p, int p_max_size)
 
 void curl_obj_free(struct text_object *obj)
 {
-	if (obj->data.opaque) {
-		free(obj->data.opaque);
-		obj->data.opaque = NULL;
-	}
+	free_and_zero(obj->data.opaque);
 }
