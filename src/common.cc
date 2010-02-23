@@ -474,8 +474,7 @@ void scan_loadgraph_arg(struct text_object *obj, const char *arg)
 	char *buf = 0;
 
 	buf = scan_graph(obj, arg, 0);
-	if (buf)
-		free(buf);
+	free_and_zero(buf);
 }
 
 double loadgraphval(struct text_object *obj)

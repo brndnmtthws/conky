@@ -31,8 +31,6 @@
 #ifndef _CONKY_CORE_H_
 #define _CONKY_CORE_H_
 
-#define free_and_zero(PTR)  do { if(PTR) free(PTR); (PTR) = NULL; } while(0)
-
 #include "conky.h"
 
 struct text_object *construct_text_object(const char *s, const char *arg, long
