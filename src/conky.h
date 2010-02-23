@@ -368,7 +368,8 @@ extern enum x_initialiser_state x_initialised;
 #define UNUSED(a)  (void)a
 #define UNUSED_ATTR __attribute__ ((unused))
 
-template <class T> void free_and_zero(T *ptr) {
+template <class T>
+void free_and_zero(T *&ptr) {
 	if(ptr) {
 		free(ptr);
 		ptr = NULL;
