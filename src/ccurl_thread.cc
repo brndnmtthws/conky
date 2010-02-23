@@ -24,6 +24,7 @@
  */
 
 #include "conky.h"
+#include "core.h"
 #include "logging.h"
 #include "ccurl_thread.h"
 #include "text_object.h"
