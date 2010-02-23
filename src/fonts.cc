@@ -74,9 +74,7 @@ int add_font(const char *data_in)
 	}
 	font_count++;
 	if (font_count == 0) {
-		if (fonts != NULL) {
-			free(fonts);
-		}
+		free_and_zero(fonts);
 		if ((fonts = (struct font_list *) malloc(sizeof(struct font_list)))
 				== NULL) {
 			CRIT_ERR(NULL, NULL, "malloc");
@@ -148,10 +146,7 @@ void free_fonts(void)
 			}
 		}
 	}
-	if (fonts) {
-		free(fonts);
-		fonts = 0;
-	}
+	free_and_zero(fonts);
 	font_count = -1;
 	selected_font = 0;
 #ifdef BUILD_XFT
