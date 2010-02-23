@@ -27,6 +27,9 @@
  *
  */
 
+#ifndef _LOGGING_H
+#define _LOGGING_H
+
 #include "mail.h"
 
 #ifdef __cplusplus
@@ -34,9 +37,6 @@ extern "C" {
 #endif
 
 void clean_up(void *memtofree1, void* memtofree2);
-
-#ifndef _LOGGING_H
-#define _LOGGING_H
 
 #define NORM_ERR(...) { \
 	fprintf(stderr, PACKAGE_NAME": "); \
