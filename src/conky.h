@@ -31,8 +31,6 @@
 #ifndef _conky_h_
 #define _conky_h_
 
-#define free_and_zero(PTR)  do { if(PTR) free(PTR); (PTR) = NULL; } while(0)
-
 #include <config.h>	/* defines */
 #include "common.h"	/* at least for struct dns_data */
 #include <sys/utsname.h> /* struct uname_s */
@@ -369,5 +367,12 @@ extern enum x_initialiser_state x_initialised;
 /* to get rid of 'unused variable' warnings */
 #define UNUSED(a)  (void)a
 #define UNUSED_ATTR __attribute__ ((unused))
+
+template <class T> void free_and_zero(T *ptr) {
+	if(ptr) {
+		free(ptr);
+		ptr = NULL;
+	}
+}
 
 #endif /* _conky_h_ */
