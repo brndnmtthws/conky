@@ -28,6 +28,7 @@
  *
  */
 
+#include "conky.h"
 #include "config.h"
 #include "common.h"
 #include "text_object.h"

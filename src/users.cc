@@ -141,17 +141,11 @@ static void update_user_time(char *tty)
 	tty_user_time(temp, tty);
 
 	if (temp != NULL) {
-		if (current_info->users.ctime) {
-			free(current_info->users.ctime);
-			current_info->users.ctime = 0;
-		}
+		free_and_zero(current_info->users.ctime);
 		current_info->users.ctime = (char*)malloc(text_buffer_size);
 		strncpy(current_info->users.ctime, temp, text_buffer_size);
 	} else {
-		if (current_info->users.ctime) {
-			free(current_info->users.ctime);
-			current_info->users.ctime = 0;
-		}
+		free_and_zero(current_info->users.ctime);
 		current_info->users.ctime = (char*)malloc(text_buffer_size);
 		strncpy(current_info->users.ctime, "broken", text_buffer_size);
 	}
@@ -165,17 +159,11 @@ void update_users(void)
 	users_alloc(current_info);
 	user_name(temp);
 	if (temp != NULL) {
-		if (current_info->users.names) {
-			free(current_info->users.names);
-			current_info->users.names = 0;
-		}
+		free_and_zero(current_info->users.names);
 		current_info->users.names = (char*)malloc(text_buffer_size);
 		strncpy(current_info->users.names, temp, text_buffer_size);
 	} else {
-		if (current_info->users.names) {
-			free(current_info->users.names);
-			current_info->users.names = 0;
-		}
+		free_and_zero(current_info->users.names);
 		current_info->users.names = (char*)malloc(text_buffer_size);
 		strncpy(current_info->users.names, "broken", text_buffer_size);
 	}
@@ -191,33 +179,21 @@ void update_users(void)
 	temp[0] = 0;
 	user_term(temp);
 	if (temp != NULL) {
-		if (current_info->users.terms) {
-			free(current_info->users.terms);
-			current_info->users.terms = 0;
-		}
+		free_and_zero(current_info->users.terms);
 		current_info->users.terms = (char*)malloc(text_buffer_size);
 		strncpy(current_info->users.terms, temp, text_buffer_size);
 	} else {
-		if (current_info->users.terms) {
-			free(current_info->users.terms);
-			current_info->users.terms = 0;
-		}
+		free_and_zero(current_info->users.terms);
 		current_info->users.terms = (char*)malloc(text_buffer_size);
 		strncpy(current_info->users.terms, "broken", text_buffer_size);
 	}
 	user_time(temp);
 	if (temp != NULL) {
-		if (current_info->users.times) {
-			free(current_info->users.times);
-			current_info->users.times = 0;
-		}
+		free_and_zero(current_info->users.times);
 		current_info->users.times = (char*)malloc(text_buffer_size);
 		strncpy(current_info->users.times, temp, text_buffer_size);
 	} else {
-		if (current_info->users.times) {
-			free(current_info->users.times);
-			current_info->users.times = 0;
-		}
+		free_and_zero(current_info->users.times);
 		current_info->users.times = (char*)malloc(text_buffer_size);
 		strncpy(current_info->users.times, "broken", text_buffer_size);
 	}
@@ -256,36 +232,23 @@ void print_user_number(struct text_object *obj, char *p, int p_max_size)
 void free_user_names(struct text_object *obj)
 {
 	(void)obj;
-	if (info.users.names) {
-		free(info.users.names);
-		info.users.names = 0;
-	}
+	free_and_zero(info.users.names);
 }
 
 void free_user_terms(struct text_object *obj)
 {
 	(void)obj;
-	if (info.users.terms) {
-		free(info.users.terms);
-		info.users.terms = 0;
-	}
+	free_and_zero(info.users.terms);
 }
 
 void free_user_times(struct text_object *obj)
 {
 	(void)obj;
-	if (info.users.times) {
-		free(info.users.times);
-		info.users.times = 0;
-	}
+	free_and_zero(info.users.times);
 }
 
 void free_user_time(struct text_object *obj)
 {
-	if (info.users.ctime) {
-		free(info.users.ctime);
-		info.users.ctime = 0;
-	}
-	if (obj->data.s)
-		free(obj->data.s);
+	free_and_zero(info.users.ctime);
+	free_and_zero(obj->data.s);
 }

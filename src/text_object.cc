@@ -26,6 +26,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+#include "conky.h"
 #include "config.h"
 #include "text_object.h"
 #include "logging.h"

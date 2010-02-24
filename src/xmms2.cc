@@ -84,20 +84,19 @@ static void xmms_alloc(struct information *ptr)
 	ptr->xmms2.timesplayed = -1;
 }
 
-#define xfree(x) if (x) { free(x); x = 0; }
 void free_xmms2(struct text_object *obj)
 {
 	(void)obj;
 
-	xfree(info.xmms2.artist);
-	xfree(info.xmms2.album);
-	xfree(info.xmms2.title);
-	xfree(info.xmms2.genre);
-	xfree(info.xmms2.comment);
-	xfree(info.xmms2.url);
-	xfree(info.xmms2.date);
-	xfree(info.xmms2.status);
-	xfree(info.xmms2.playlist);
+	free_and_zero(info.xmms2.artist);
+	free_and_zero(info.xmms2.album);
+	free_and_zero(info.xmms2.title);
+	free_and_zero(info.xmms2.genre);
+	free_and_zero(info.xmms2.comment);
+	free_and_zero(info.xmms2.url);
+	free_and_zero(info.xmms2.date);
+	free_and_zero(info.xmms2.status);
+	free_and_zero(info.xmms2.playlist);
 }
 
 void connection_lost(void *p)

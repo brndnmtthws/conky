@@ -1010,8 +1010,5 @@ void print_weather(struct text_object *obj, char *p, int p_max_size)
 
 void free_weather(struct text_object *obj)
 {
-	if (obj->data.opaque) {
-		free(obj->data.opaque);
-		obj->data.opaque = NULL;
-	}
+	free_and_zero(obj->data.opaque);
 }

@@ -698,10 +698,7 @@ static inline void get_x11_desktop_names(Display *current_display, Window root, 
 			(actual_type == ATOM(UTF8_STRING)) &&
 			(nitems > 0L) && (actual_format == 8) ) {
 
-		if(current_info->x11.desktop.all_names) {
-			free(current_info->x11.desktop.all_names);
-			current_info->x11.desktop.all_names = NULL;
-		}
+		free_and_zero(current_info->x11.desktop.all_names);
 		current_info->x11.desktop.all_names = (char*)malloc(nitems*sizeof(char));
 		memcpy(current_info->x11.desktop.all_names, prop, nitems);
 		current_info->x11.desktop.nitems = nitems;
@@ -721,10 +718,7 @@ static inline void get_x11_desktop_current_name(char *names)
 	while ( i < current_info->x11.desktop.nitems ) {
 		if ( names[i++] == '\0' ) {
 			if ( ++k == current_info->x11.desktop.current ) {
-				if (current_info->x11.desktop.name) {
-					free(current_info->x11.desktop.name);
-					current_info->x11.desktop.name = NULL;
-				}
+				free_and_zero(current_info->x11.desktop.name);
 				current_info->x11.desktop.name = (char*)malloc((i-j)*sizeof(char));
 				//desktop names can be empty but should always be not null
 				strcpy( current_info->x11.desktop.name, (char *)&names[j] );
@@ -834,14 +828,8 @@ void print_desktop_name(struct text_object *obj, char *p, int p_max_size)
 
 void free_desktop_info(void)
 {
-	if(info.x11.desktop.name) {
-		free(info.x11.desktop.name);
-		info.x11.desktop.name = NULL;
-	}
-	if(info.x11.desktop.all_names) {
-		free(info.x11.desktop.all_names);
-		info.x11.desktop.all_names = NULL;
-	}
+	free_and_zero(info.x11.desktop.name);
+	free_and_zero(info.x11.desktop.all_names);
 }
 
 #ifdef OWN_WINDOW
