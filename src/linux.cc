@@ -248,7 +248,6 @@ static struct {
 	int count;
 } gw_info;
 
-#define COND_FREE(x) if(x) free(x); x = 0
 #define SAVE_SET_STRING(x, y) \
 	if (x && strcmp((char *)x, (char *)y)) { \
 		free(x); \
@@ -279,8 +278,8 @@ void update_gateway_info(void)
 	unsigned long dest, gate, mask;
 	unsigned int flags;
 
-	COND_FREE(gw_info.iface);
-	COND_FREE(gw_info.ip);
+	free_and_zero(gw_info.iface);
+	free_and_zero(gw_info.ip);
 	gw_info.count = 0;
 
 	if ((fp = fopen("/proc/net/route", "r")) == NULL) {
@@ -315,10 +314,8 @@ void free_gateway_info(struct text_object *obj)
 {
 	(void)obj;
 
-	if (gw_info.iface)
-		free(gw_info.iface);
-	if (gw_info.ip)
-		free(gw_info.ip);
+	free_and_zero(gw_info.iface);
+	free_and_zero(gw_info.ip);
 	memset(&gw_info, 0, sizeof(gw_info));
 }
 
@@ -1116,8 +1113,7 @@ void free_sysfs_sensor(struct text_object *obj)
 		return;
 
 	close(sf->fd);
-	free(obj->data.opaque);
-	obj->data.opaque = NULL;
+	free_and_zero(obj->data.opaque);
 }
 
 #define CPUFREQ_PREFIX "/sys/devices/system/cpu"
