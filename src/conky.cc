@@ -4305,6 +4305,9 @@ int main(int argc, char **argv)
 		l.call(0, 0);
 		conky::check_config_settings(l);
 		std::cout << "config.asdf = " << conky::asdf.get(l) << std::endl;
+		l.pushstring("X");
+		conky::asdf.lua_set(l);
+		std::cout << "config.asdf = " << conky::asdf.get(l) << std::endl;
 		l.loadstring(
 				"print('config.asdf = ', conky.config.asdf);\n"
 				"conky.config.asdf = 42;\n"

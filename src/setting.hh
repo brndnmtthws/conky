@@ -107,6 +107,13 @@ namespace conky {
 
 			config_setting_base(const std::string &name_, const lua_setter_t &lua_setter_);
 			virtual ~config_setting_base() {}
+
+			/*
+			 * Set the setting manually.
+			 * stack on entry: | ... new_value |
+			 * stack on exit:  | ... |
+			 */
+			void lua_set(lua::state &l);
 		};
 
 		typedef std::unordered_map<std::string, config_setting_base *> config_settings_t;
@@ -120,7 +127,7 @@ namespace conky {
 	 * lua stack. It should pop it and return the C++ value. In case the value is nil, it should
 	 * return a predefined default value. Translation into basic types is provided with the
 	 * default simple_getter::do_it functions.
-	 * The lua_setter function is called when the user tries to set the value it the lua script.
+	 * The lua_setter function is called when someone tries to set the value.
 	 * It recieves the new and the old value on the stack (old one is on top). It should return
 	 * the new value for the setting. It doesn't have to be the value the user set, if e.g. the
 	 * value doesn't make sense. The second parameter is true if the assignment occurs during the

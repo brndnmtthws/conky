@@ -49,6 +49,21 @@ namespace conky {
 			if(not inserted)
 				throw std::logic_error("Setting with name '" + name + "' already registered");
 		}
+
+		void config_setting_base::lua_set(lua::state &l)
+		{
+			lua::stack_sentry s(l, 1);
+			l.checkstack(2);
+
+			l.getglobal("conky"); ++s;
+			l.rawgetfield(-1, "config"); ++s;
+			--s; l.replace(-2);
+			l.insert(-2);
+			l.pushstring(name.c_str()); ++s;
+			l.insert(-2);
+			s-=2; l.settable(-3);
+			--s; l.pop();
+		}
 	}
 
 	namespace {
