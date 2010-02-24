@@ -166,7 +166,7 @@ if(BUILD_ICONV)
 endif(BUILD_ICONV)
 
 if(BUILD_BUILTIN_CONFIG)
-	 set(optional_sources ${optional_sources} conf_cookie.c)
+	 set(optional_sources ${optional_sources} conf_cookie.cc)
 endif(BUILD_BUILTIN_CONFIG)
 
 add_executable(conky ${conky_sources} ${optional_sources})

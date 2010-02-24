@@ -61,14 +61,13 @@ conf_read(void *cookie, char *buf, COOKIE_LEN_T size)
 #endif /* defined(HAVE_FOPENCOOKIE) || defined(HAVE_FUNOPEN) */
 
 #if defined(HAVE_FOPENCOOKIE)
-static cookie_io_functions_t conf_cookie = {
-	.read = &conf_read,
-	.write = NULL,
-	.seek = NULL,
-	.close = NULL,
-};
+static cookie_io_functions_t conf_cookie;
 FILE *conf_cookie_open(void)
 {
+	conf_cookie.read = &conf_read;
+	conf_cookie.write = NULL;
+	conf_cookie.seek = NULL;
+	conf_cookie.close = NULL;
 	return fopencookie(NULL, "r", conf_cookie);
 }
 #elif defined(HAVE_FUNOPEN)
