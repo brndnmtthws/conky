@@ -1851,23 +1851,19 @@ void free_text_objects(struct text_object *root)
 {
 	struct text_object *obj;
 
-	if (!root->prev) {
-		return;
-	}
+	if(root && root->prev) {
+		for (obj = root->prev; obj; obj = root->prev) {
+			root->prev = obj->prev;
 
-	for (obj = root->prev; obj; obj = root->prev) {
-		root->prev = obj->prev;
-
-		if (obj->callbacks.free) {
-			(*obj->callbacks.free)(obj);
-		}
-		if(obj->sub) {
+			if (obj->callbacks.free) {
+				(*obj->callbacks.free)(obj);
+			}
 			free_text_objects(obj->sub);
 			free_and_zero(obj->sub);
-		}
-		free_and_zero(obj->special_data);
+			free_and_zero(obj->special_data);
 
-		free(obj);
+			free(obj);
+		}
 	}
 }
 
