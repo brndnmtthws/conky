@@ -61,15 +61,15 @@ static void rss_process_info(char *p, int p_max_size, char *uri, char *action, i
 	if (!curloc->p_timed_thread) {
 		curloc->result = (char*)malloc(sizeof(PRSS));
 		memset(curloc->result, 0, sizeof(PRSS));
-		curloc->process_function = std::bind(prss_parse_data,
-				std::placeholders::_1, std::placeholders::_2);
+		curloc->process_function = bind(prss_parse_data,
+				placeholders::_1, placeholders::_2);
 		ccurl_init_thread(curloc, interval);
 		if (!curloc->p_timed_thread) {
 			NORM_ERR("error setting up RSS thread");
 		}
 	}
 
-	std::lock_guard<std::mutex> lock(curloc->p_timed_thread->mutex());
+	lock_guard<mutex> lock(curloc->p_timed_thread->mutex());
 	data = (PRSS*)curloc->result;
 
 	if (data == NULL || data->item_count < 1) {

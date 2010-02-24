@@ -616,7 +616,7 @@ int imap_check_status(char *recvbuf, struct mail_s *mail, thread_handle &handle)
 		NORM_ERR("Error parsing IMAP response: %s", recvbuf);
 		return -1;
 	} else {
-		std::lock_guard<std::mutex> lock(handle.mutex());
+		lock_guard<mutex> lock(handle.mutex());
 		sscanf(reply, "MESSAGES %lu UNSEEN %lu", &mail->messages,
 				&mail->unseen);
 	}
@@ -635,12 +635,12 @@ void imap_unseen_command(struct mail_s *mail, unsigned long old_unseen, unsigned
 }
 
 static void ensure_mail_thread(struct mail_s *mail,
-		const std::function<void(thread_handle &, struct mail_s *mail)> &func, const char *text)
+		const function<void(thread_handle &, struct mail_s *mail)> &func, const char *text)
 {
 	if (mail->p_timed_thread)
 		return;
 
-	mail->p_timed_thread = timed_thread::create(std::bind(func, std::placeholders::_1, mail), mail->interval * 1000000);
+	mail->p_timed_thread = timed_thread::create(bind(func, placeholders::_1, mail), mail->interval * 1000000);
 	if (!mail->p_timed_thread) {
 		NORM_ERR("Error creating %s timed thread", text);
 	}
@@ -832,7 +832,7 @@ static void imap_thread(thread_handle &handle, struct mail_s *mail)
 								buf--;
 							}
 							if (sscanf(buf, "* %lu EXISTS\r\n", &messages) == 1) {
-								std::lock_guard<std::mutex> lock(handle.mutex());
+								lock_guard<mutex> lock(handle.mutex());
 								if (mail->messages != messages) {
 									force_check = 1;
 									mail->messages = messages;
@@ -947,10 +947,10 @@ void print_imap_unseen(struct text_object *obj, char *p, int p_max_size)
 	if (!mail)
 		return;
 
-	ensure_mail_thread(mail, std::bind(imap_thread, std::placeholders::_1, std::placeholders::_2), "imap");
+	ensure_mail_thread(mail, bind(imap_thread, placeholders::_1, placeholders::_2), "imap");
 
 	if (mail && mail->p_timed_thread) {
-		std::lock_guard<std::mutex> lock(mail->p_timed_thread->mutex());
+		lock_guard<mutex> lock(mail->p_timed_thread->mutex());
 		snprintf(p, p_max_size, "%lu", mail->unseen);
 	}
 }
@@ -962,10 +962,10 @@ void print_imap_messages(struct text_object *obj, char *p, int p_max_size)
 	if (!mail)
 		return;
 
-	ensure_mail_thread(mail, std::bind(imap_thread, std::placeholders::_1, std::placeholders::_2), "imap");
+	ensure_mail_thread(mail, bind(imap_thread, placeholders::_1, placeholders::_2), "imap");
 
 	if (mail && mail->p_timed_thread) {
-		std::lock_guard<std::mutex> lock(mail->p_timed_thread->mutex());
+		lock_guard<mutex> lock(mail->p_timed_thread->mutex());
 		snprintf(p, p_max_size, "%lu", mail->messages);
 	}
 }
@@ -1115,7 +1115,7 @@ static void pop3_thread(thread_handle &handle, struct mail_s *mail)
 				fail++;
 				break;
 			} else {
-				std::lock_guard<std::mutex> lock(handle.mutex());
+				lock_guard<mutex> lock(handle.mutex());
 				sscanf(reply, "%lu %lu", &mail->unseen, &mail->used);
 			}
 
@@ -1154,10 +1154,10 @@ void print_pop3_unseen(struct text_object *obj, char *p, int p_max_size)
 	if (!mail)
 		return;
 
-	ensure_mail_thread(mail, std::bind(pop3_thread, std::placeholders::_1, std::placeholders::_2), "pop3");
+	ensure_mail_thread(mail, bind(pop3_thread, placeholders::_1, placeholders::_2), "pop3");
 
 	if (mail && mail->p_timed_thread) {
-		std::lock_guard<std::mutex> lock(mail->p_timed_thread->mutex());
+		lock_guard<mutex> lock(mail->p_timed_thread->mutex());
 		snprintf(p, p_max_size, "%lu", mail->unseen);
 	}
 }
@@ -1169,10 +1169,10 @@ void print_pop3_used(struct text_object *obj, char *p, int p_max_size)
 	if (!mail)
 		return;
 
-	ensure_mail_thread(mail, std::bind(pop3_thread, std::placeholders::_1, std::placeholders::_2), "pop3");
+	ensure_mail_thread(mail, bind(pop3_thread, placeholders::_1, placeholders::_2), "pop3");
 
 	if (mail && mail->p_timed_thread) {
-		std::lock_guard<std::mutex> lock(mail->p_timed_thread->mutex());
+		lock_guard<mutex> lock(mail->p_timed_thread->mutex());
 		snprintf(p, p_max_size, "%.1f",
 				mail->used / 1024.0 / 1024.0);
 	}

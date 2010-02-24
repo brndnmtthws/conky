@@ -136,7 +136,7 @@ void update_mpd(void)
 		return;
 
 	interval = info.music_player_interval * 1000000;
-	thread = timed_thread::create(std::bind(update_mpd_thread, std::placeholders::_1), interval);
+	thread = timed_thread::create(bind(update_mpd_thread, placeholders::_1), interval);
 	if (!thread) {
 		NORM_ERR("Failed to create MPD timed thread");
 		return;
@@ -171,7 +171,7 @@ bool mpd_process(thread_handle &handle)
 		}
 
 		{
-			std::lock_guard<std::mutex> lock(handle.mutex());
+			lock_guard<mutex> lock(handle.mutex());
 
 			if (conn->error || conn == NULL) {
 				NORM_ERR("MPD error: %s\n", conn->errorStr);

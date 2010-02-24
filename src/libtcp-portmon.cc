@@ -26,6 +26,7 @@
 #include <config.h>
 #endif
 
+#include "conky.h"
 #include "libtcp-portmon.h"
 
 #include <cstdio>
@@ -75,8 +76,8 @@ namespace {
 	bool operator==(const tcp_connection_t &a, const tcp_connection_t &b)
 	{
 		return a.local_port == b.local_port && a.remote_port == b.remote_port &&
-			! std::memcmp(&a.local_addr, &b.local_addr, sizeof(a.local_addr)) &&
-			! std::memcmp(&a.remote_addr.s6_addr, &b.remote_addr, sizeof(a.remote_addr));
+			! memcmp(&a.local_addr, &b.local_addr, sizeof(a.local_addr)) &&
+			! memcmp(&a.remote_addr.s6_addr, &b.remote_addr, sizeof(a.remote_addr));
 	}
 
 	/* ------------------------------------------------------------------------
@@ -85,10 +86,10 @@ namespace {
 	 * The second parameter provides the mechanism for removing connections if
 	 * they are not seen again in subsequent update cycles.
 	 * ------------------------------------------------------------------------ */
-	typedef std::unordered_map<tcp_connection_t, int, tcp_connection_hash> connection_hash_t;
+	typedef unordered_map<tcp_connection_t, int, tcp_connection_hash> connection_hash_t;
 
 	/* start and end of port monitor range. Set start=end to monitor a single port */
-	typedef std::pair<in_port_t, in_port_t> port_range_t;
+	typedef pair<in_port_t, in_port_t> port_range_t;
 
 	/* hash function for port ranges */
 	struct port_range_hash {
@@ -98,7 +99,7 @@ namespace {
 		}
 	};
 
-	typedef std::unordered_map<port_range_t,
+	typedef unordered_map<port_range_t,
 									tcp_port_monitor_t,
 									port_range_hash>		monitor_hash_t;
 
@@ -112,7 +113,7 @@ struct _tcp_port_monitor_t {
 	connection_hash_t hash;
 	/* array of connection pointers for O(1) peeking
 	 * these point into the hash table*/
-	std::vector<const tcp_connection_t *> p_peek;
+	vector<const tcp_connection_t *> p_peek;
 
 	_tcp_port_monitor_t(int max_connections)
 		: hash(), p_peek(max_connections, static_cast<const tcp_connection_t *>(NULL))
@@ -132,7 +133,7 @@ struct _tcp_port_monitor_t {
 		 * done in O(1) time instead of O(n) time for each peek. */
 
 		/* zero out the peek array */
-		std::fill(p_peek.begin(), p_peek.end(), static_cast<tcp_connection_t *>(NULL));
+		fill(p_peek.begin(), p_peek.end(), static_cast<tcp_connection_t *>(NULL));
 
 		size_t i = 0;
 		for (connection_hash_t::iterator j = hash.begin(); j != hash.end(); ++j, ++i ) {
@@ -275,7 +276,7 @@ namespace {
 	/* checks whether the address is a IPv4-mapped IPv6 address */
 	bool is_4on6(const struct in6_addr *addr)
 	{
-		return ! std::memcmp(&addr->s6_addr, prefix_4on6, sizeof(prefix_4on6));
+		return ! memcmp(&addr->s6_addr, prefix_4on6, sizeof(prefix_4on6));
 	}
 
 
@@ -285,15 +286,15 @@ namespace {
 		union sockaddr_in46 sa;
 		socklen_t slen;
 
-		std::memset(&sa, 0, sizeof(sa));
+		memset(&sa, 0, sizeof(sa));
 
 		if(is_4on6(addr)) {
 			sa.sa4.sin_family = AF_INET;
-			std::memcpy(&sa.sa4.sin_addr.s_addr, &addr->s6_addr[12], 4);
+			memcpy(&sa.sa4.sin_addr.s_addr, &addr->s6_addr[12], 4);
 			slen = sizeof(sa.sa4);
 		} else {
 			sa.sa6.sin6_family = AF_INET6;
-			std::memcpy(&sa.sa6.sin6_addr, addr, sizeof(struct in6_addr));
+			memcpy(&sa.sa6.sin6_addr, addr, sizeof(struct in6_addr));
 			slen = sizeof(sa.sa6);
 		}
 
@@ -305,48 +306,48 @@ namespace {
 	{
 		size_t i;
 
-		if(std::strlen(p_buffer) < 32) { //IPv4 address
+		if(strlen(p_buffer) < 32) { //IPv4 address
 			i = sizeof(prefix_4on6);
-			std::memcpy(addr->s6_addr, prefix_4on6, i);
+			memcpy(addr->s6_addr, prefix_4on6, i);
 		} else {
 			i = 0;
 		}
 
 		for( ; i < sizeof(addr->s6_addr); i+=4, p_buffer+=8) {
-			std::sscanf(p_buffer, "%8x", (unsigned *)&addr->s6_addr[i]);
+			sscanf(p_buffer, "%8x", (unsigned *)&addr->s6_addr[i]);
 		}
 	}
 
 	/* adds connections from file to the collection */
 	void process_file(tcp_port_monitor_collection_t *p_collection, const char *file)
 	{
-		std::FILE *fp;
+		FILE *fp;
 		char buf[256];
 		char local_addr[40];
 		char remote_addr[40];
 		tcp_connection_t conn;
 		unsigned long inode, uid, state;
 
-		if ((fp = std::fopen(file, "r")) == NULL) {
+		if ((fp = fopen(file, "r")) == NULL) {
 			return;
 		}
 
 		/* ignore field name line */
-		if(std::fgets(buf, 255, fp) == NULL) {
-			std::fclose(fp);
+		if(fgets(buf, 255, fp) == NULL) {
+			fclose(fp);
 			return;
 		}
 
 		/* read all tcp connections */
-		while (std::fgets(buf, sizeof(buf), fp) != NULL) {
+		while (fgets(buf, sizeof(buf), fp) != NULL) {
 
-			if (std::sscanf(buf,
+			if (sscanf(buf,
 					"%*d: %39[0-9a-fA-F]:%hx %39[0-9a-fA-F]:%hx %lx %*x:%*x %*x:%*x %*x %lu %*d %lu",
 					local_addr, &conn.local_port,
 					remote_addr, &conn.remote_port,
 					(unsigned long *) &state, (unsigned long *) &uid,
 					(unsigned long *) &inode) != 7) {
-				std::fprintf(stderr, "%s: bad file format\n", file);
+				fprintf(stderr, "%s: bad file format\n", file);
 			}
 			/** TCP_ESTABLISHED equals 1, but is not (always??) included **/
 			//if ((inode == 0) || (state != TCP_ESTABLISHED)) {
@@ -362,7 +363,7 @@ namespace {
 				&show_connection_to_tcp_port_monitor, (void *) &conn);
 		}
 
-		std::fclose(fp);
+		fclose(fp);
 	}
 }
 
@@ -389,8 +390,8 @@ int peek_tcp_port_monitor(const tcp_port_monitor_t *p_monitor, int item,
 		return -1;
 	}
 
-	std::memset(p_buffer, 0, buffer_size);
-	std::memset(&sa, 0, sizeof(sa));
+	memset(p_buffer, 0, buffer_size);
+	memset(&sa, 0, sizeof(sa));
 
 	sa.sin_family = AF_INET;
 	
@@ -404,7 +405,7 @@ int peek_tcp_port_monitor(const tcp_port_monitor_t *p_monitor, int item,
 
 		case COUNT:
 
-			std::snprintf(p_buffer, buffer_size, "%u", unsigned(p_monitor->hash.size()));
+			snprintf(p_buffer, buffer_size, "%u", unsigned(p_monitor->hash.size()));
 			break;
 
 		case REMOTEIP:
@@ -419,7 +420,7 @@ int peek_tcp_port_monitor(const tcp_port_monitor_t *p_monitor, int item,
 
 		case REMOTEPORT:
 
-			std::snprintf(p_buffer, buffer_size, "%d",
+			snprintf(p_buffer, buffer_size, "%d",
 				p_monitor->p_peek[connection_index]->remote_port);
 			break;
 
@@ -441,7 +442,7 @@ int peek_tcp_port_monitor(const tcp_port_monitor_t *p_monitor, int item,
 
 		case LOCALPORT:
 
-			std::snprintf(p_buffer, buffer_size, "%d",
+			snprintf(p_buffer, buffer_size, "%d",
 				p_monitor->p_peek[connection_index]->local_port);
 			break;
 

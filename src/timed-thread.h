@@ -25,6 +25,7 @@
 #ifndef _TIMED_THREAD_H_
 #define _TIMED_THREAD_H_
 
+#include "conky.h"
 #include <stdlib.h>
 #include <functional>
 #include <memory>
@@ -36,7 +37,7 @@ const unsigned int MINIMUM_INTERVAL_USECS = 10000;
 typedef struct _timed_thread _timed_thread;
 
 class timed_thread;
-typedef std::shared_ptr<timed_thread> timed_thread_ptr;
+typedef shared_ptr<timed_thread> timed_thread_ptr;
 
 namespace std { class mutex; }
 
@@ -59,9 +60,9 @@ class thread_handle {
 class timed_thread {
 	public:
 		/* create a timed thread (object creation only) */
-		static timed_thread_ptr create(const std::function<void(thread_handle &)> start_routine, const unsigned int
+		static timed_thread_ptr create(const function<void(thread_handle &)> start_routine, const unsigned int
 				interval_usecs, bool register_for_destruction = true) {
-			timed_thread_ptr ptr(new timed_thread(std::cref(start_routine), interval_usecs));
+			timed_thread_ptr ptr(new timed_thread(cref(start_routine), interval_usecs));
 			if (register_for_destruction) {
 				register_(ptr);
 			}
@@ -92,7 +93,7 @@ class timed_thread {
 
 	private:
 		/* create a timed thread (object creation only) */
-		timed_thread(const std::function<void(thread_handle &)> start_routine, unsigned int
+		timed_thread(const function<void(thread_handle &)> start_routine, unsigned int
 				interval_usecs);
 
 		/* waits required interval (unless override_wait_time is non-zero) for
@@ -110,7 +111,7 @@ class timed_thread {
 		static void deregister(const timed_thread *timed_thread);
 
 		/* private internal data */
-		std::auto_ptr<_timed_thread> p_timed_thread;
+		auto_ptr<_timed_thread> p_timed_thread;
 		thread_handle p_thread_handle;
 		unsigned int interval_usecs;
 		bool running;

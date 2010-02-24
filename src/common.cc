@@ -638,7 +638,7 @@ void print_evaluate(struct text_object *obj, char *p, int p_max_size)
 
 int if_empty_iftest(struct text_object *obj)
 {
-	std::vector<char> buf(max_user_text);
+	vector<char> buf(max_user_text);
 	int result = 1;
 
 	generate_text_internal(&(buf[0]), max_user_text, *obj->sub);
@@ -769,7 +769,7 @@ void print_battery_short(struct text_object *obj, char *p, int p_max_size)
 void print_blink(struct text_object *obj, char *p, int p_max_size)
 {
 	//blinking like this can look a bit ugly if the chars in the font don't have the same width
-	std::vector<char> buf(max_user_text);
+	vector<char> buf(max_user_text);
 	static int visible = 1;
 	static int last_len = 0;
 	int i;
@@ -788,7 +788,7 @@ void print_blink(struct text_object *obj, char *p, int p_max_size)
 
 void print_include(struct text_object *obj, char *p, int p_max_size)
 {
-	std::vector<char> buf(max_user_text);
+	vector<char> buf(max_user_text);
 
 	if (!obj->sub)
 		return;
@@ -799,7 +799,7 @@ void print_include(struct text_object *obj, char *p, int p_max_size)
 
 void print_to_bytes(struct text_object *obj, char *p, int p_max_size)
 {
-	std::vector<char> buf(max_user_text);
+	vector<char> buf(max_user_text);
 	long long bytes;
 	char unit[16];	// 16 because we can also have long names (like mega-bytes)
 

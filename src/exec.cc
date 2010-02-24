@@ -162,7 +162,7 @@ static inline void read_exec(const char *data, char *buf, const int size)
 
 		length = fread(buf, 1, size, fp);
 		pclose(fp);
-		buf[std::min(length, size-1)] = '\0';
+		buf[min(length, size-1)] = '\0';
 		if (length > 0 && buf[length - 1] == '\n') {
 			buf[length - 1] = '\0';
 		}
@@ -203,7 +203,7 @@ static void threaded_exec(thread_handle &handle, struct text_object *obj)
 		}
 
 		{
-			std::lock_guard<std::mutex> lock(handle.mutex());
+			lock_guard<mutex> lock(handle.mutex());
 			free_and_zero(ed->buffer);
 			ed->buffer = buff;
 		}
@@ -323,13 +323,13 @@ void print_execi(struct text_object *obj, char *p, int p_max_size)
 			 * note that we don't register this thread with the
 			 * timed_thread list, because we destroy it manually
 			 */
-			ed->p_timed_thread = timed_thread::create(std::bind(threaded_exec, std::placeholders::_1, obj), ed->interval * 1000000, false);
+			ed->p_timed_thread = timed_thread::create(bind(threaded_exec, placeholders::_1, obj), ed->interval * 1000000, false);
 			if (!ed->p_timed_thread) {
 				NORM_ERR("Error creating texeci timed thread");
 			}
 			fillbuffer = false;
 		} else {
-			std::lock_guard<std::mutex> lock(ed->p_timed_thread->mutex());
+			lock_guard<mutex> lock(ed->p_timed_thread->mutex());
 		}
 	} else {
 		if (time_to_update(ed)) {

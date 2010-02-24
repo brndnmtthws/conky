@@ -116,7 +116,7 @@ static void update_moc_loop(thread_handle &handle)
 {
 	while (1) {
 		{
-			std::lock_guard<std::mutex> lock(handle.mutex());
+			lock_guard<mutex> lock(handle.mutex());
 			update_infos();
 		}
 		if (handle.test(0)) {
@@ -131,7 +131,7 @@ static int run_moc_thread(double interval)
 	if (moc_thread)
 		return 0;
 
-	moc_thread = timed_thread::create(std::bind(update_moc_loop, std::placeholders::_1), interval);
+	moc_thread = timed_thread::create(bind(update_moc_loop, placeholders::_1), interval);
 	if (!moc_thread) {
 		NORM_ERR("Failed to create MOC timed thread");
 		return 1;

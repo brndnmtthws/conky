@@ -717,15 +717,15 @@ static void weather_forecast_process_info(char *p, int p_max_size, char *uri, un
 	if (!curloc->p_timed_thread) {
 		curloc->result = (char*)malloc(sizeof(PWEATHER_FORECAST));
 		memset(curloc->result, 0, sizeof(PWEATHER_FORECAST));
-		curloc->process_function = std::bind(parse_weather_forecast,
-				std::placeholders::_1, std::placeholders::_2);
+		curloc->process_function = bind(parse_weather_forecast,
+				placeholders::_1, placeholders::_2);
 		ccurl_init_thread(curloc, interval);
 		if (!curloc->p_timed_thread) {
 			NORM_ERR("error setting up weather_forecast thread");
 		}
 	}
 
-	std::lock_guard<std::mutex> lock(curloc->p_timed_thread->mutex());
+	lock_guard<mutex> lock(curloc->p_timed_thread->mutex());
 	data = (PWEATHER_FORECAST*)curloc->result;
 	if (strcmp(data_type, "hi") == EQUAL) {
 		temp_print(p, p_max_size, data->hi[day], TEMP_CELSIUS);
@@ -768,15 +768,15 @@ static void weather_process_info(char *p, int p_max_size, char *uri, char *data_
 	if (!curloc->p_timed_thread) {
 		curloc->result = (char*)malloc(sizeof(PWEATHER));
 		memset(curloc->result, 0, sizeof(PWEATHER));
-		curloc->process_function = std::bind(parse_weather,
-				std::placeholders::_1, std::placeholders::_2);
+		curloc->process_function = bind(parse_weather,
+				placeholders::_1, placeholders::_2);
 		ccurl_init_thread(curloc, interval);
 		if (!curloc->p_timed_thread) {
 			NORM_ERR("error setting up weather thread");
 		}
 	}
 
-	std::lock_guard<std::mutex> lock(curloc->p_timed_thread->mutex());
+	lock_guard<mutex> lock(curloc->p_timed_thread->mutex());
 	data = (PWEATHER*)curloc->result;
 	if (strcmp(data_type, "last_update") == EQUAL) {
 		strncpy(p, data->lastupd, p_max_size);
@@ -832,8 +832,8 @@ static void weather_process_info(char *p, int p_max_size, char *uri, char *data_
 #ifdef BUILD_WEATHER_XOAP
 /* xoap suffix for weather from weather.com */
 namespace {
-	std::string xoap_cc;
-	std::string xoap_df;
+	string xoap_cc;
+	string xoap_df;
 }
 #endif /* BUILD_WEATHER_XOAP */
 
@@ -888,11 +888,11 @@ void load_xoap_keys(void)
 	fp = fopen(xoap, "r");
 	if (fp != NULL) {
 		if (fscanf(fp, "%10s %16s", par, key) == 2) {
-			xoap_cc = std::string("?cc=*&link=xoap&prod=xoap&par=")
+			xoap_cc = string("?cc=*&link=xoap&prod=xoap&par=")
 				+ par + "&key=" + key + "&unit=m";
 
 			/* TODO: Use FORECAST_DAYS instead of 5 */
-			xoap_df = std::string("?dayf=5&link=xoap&prod=xoap&par=")
+			xoap_df = string("?dayf=5&link=xoap&prod=xoap&par=")
 				+ par + "&key=" + key + "&unit=m";
 		}
 		fclose(fp);

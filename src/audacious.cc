@@ -75,7 +75,7 @@ void update_audacious(void)
 		}
 	}
 
-	std::lock_guard<std::mutex> lock(info.audacious.p_timed_thread->mutex());
+	lock_guard<mutex> lock(info.audacious.p_timed_thread->mutex());
 	memcpy(&info.audacious.items, audacious_items, sizeof(audacious_items));
 }
 
@@ -88,8 +88,8 @@ int create_audacious_thread(void)
 {
 	if (!info.audacious.p_timed_thread) {
 		info.audacious.p_timed_thread =
-			timed_thread::create(std::bind(audacious_thread_func,
-						std::placeholders::_1), info.music_player_interval *
+			timed_thread::create(bind(audacious_thread_func,
+						placeholders::_1), info.music_player_interval *
 					1000000);
 	}
 
@@ -237,7 +237,7 @@ void audacious_thread_func(thread_handle &handle)
 		} while (0);
 		{
 			/* Deliver the refreshed items array to audacious_items. */
-			std::lock_guard<std::mutex> lock(handle.mutex());
+			lock_guard<mutex> lock(handle.mutex());
 			memcpy(&audacious_items, items, sizeof(items));
 		}
 

@@ -119,7 +119,7 @@ void ccurl_fetch_data(thread_handle &handle, ccurl_location_ptr &curloc)
 				long http_status_code;
 
 				if(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_status_code) == CURLE_OK && http_status_code == 200) {
-					std::lock_guard<std::mutex> lock(handle.mutex());
+					lock_guard<mutex> lock(handle.mutex());
 					curloc->process_function(curloc->result, chunk.memory);
 				} else {
 					NORM_ERR("curl: no data from server");
@@ -142,8 +142,8 @@ void ccurl_init_thread(ccurl_location_ptr curloc, int interval)
 #ifdef DEBUG
 	assert(curloc->result);
 #endif /* DEBUG */
-	curloc->p_timed_thread = timed_thread::create(std::bind(ccurl_thread,
-				std::placeholders::_1, curloc), interval * 1000000);
+	curloc->p_timed_thread = timed_thread::create(bind(ccurl_thread,
+				placeholders::_1, curloc), interval * 1000000);
 
 	if (!curloc->p_timed_thread) {
 		NORM_ERR("curl thread: error creating timed thread");
@@ -194,8 +194,8 @@ void ccurl_process_info(char *p, int p_max_size, char *uri, int interval)
 	if (!curloc->p_timed_thread) {
 		curloc->result = (char*)malloc(max_user_text);
 		memset(curloc->result, 0, max_user_text);
-		curloc->process_function = std::bind(ccurl_parse_data,
-				std::placeholders::_1, std::placeholders::_2);
+		curloc->process_function = bind(ccurl_parse_data,
+				placeholders::_1, placeholders::_2);
 		ccurl_init_thread(curloc, interval);
 		if (!curloc->p_timed_thread) {
 			NORM_ERR("error setting up curl thread");
@@ -203,7 +203,7 @@ void ccurl_process_info(char *p, int p_max_size, char *uri, int interval)
 	}
 
 
-	std::lock_guard<std::mutex> lock(curloc->p_timed_thread->mutex());
+	lock_guard<mutex> lock(curloc->p_timed_thread->mutex());
 	strncpy(p, curloc->result, p_max_size);
 }
 

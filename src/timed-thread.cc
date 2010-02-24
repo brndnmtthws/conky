@@ -41,25 +41,25 @@
 
 /* Abstraction layer for timed threads */
 
-typedef struct std::chrono::system_clock clk;
+typedef struct chrono::system_clock clk;
 
 /* private */
 struct _timed_thread {
-	std::auto_ptr<std::thread> thread;		/* thread itself */
-	std::mutex cs_mutex;					/* critical section mutex */
-	std::mutex runnable_mutex;				/* runnable section mutex */
-	std::condition_variable runnable_cond;	/* signalled to stop the thread */
+	auto_ptr<thread> the_thread;		/* thread itself */
+	mutex cs_mutex;					/* critical section mutex */
+	mutex runnable_mutex;				/* runnable section mutex */
+	condition_variable runnable_cond;	/* signalled to stop the thread */
 	clk::time_point last_time;				/* last time interval */
 	int pipefd[2];
 	int die;
 	_timed_thread() : die(0) {}
 };
 
-typedef std::list<timed_thread_ptr> thread_list_t;
+typedef list<timed_thread_ptr> thread_list_t;
 thread_list_t thread_list;
 
 /* create a timed thread (object creation only) */
-timed_thread::timed_thread(const std::function<void(thread_handle &)> start_routine, unsigned
+timed_thread::timed_thread(const function<void(thread_handle &)> start_routine, unsigned
 		int interval_usecs) :
 	p_timed_thread(new _timed_thread), p_thread_handle(this),
 	interval_usecs(interval_usecs), running(false)
@@ -71,7 +71,7 @@ timed_thread::timed_thread(const std::function<void(thread_handle &)> start_rout
 
 	/* create thread pipe (used to tell threads to die) */
 	if (pipe(p_timed_thread->pipefd)) {
-		throw std::runtime_error("couldn't create pipe");
+		throw runtime_error("couldn't create pipe");
 	}
 
 	/* set initialize to current time */
@@ -81,11 +81,11 @@ timed_thread::timed_thread(const std::function<void(thread_handle &)> start_rout
 	   p_timed_thread->interval_time.tv_sec,
 	   p_timed_thread->interval_time.tv_nsec); */
 
-	p_timed_thread->thread = std::auto_ptr<std::thread>(
-			new std::thread(start_routine, p_thread_handle)
+	p_timed_thread->the_thread = auto_ptr<thread>(
+			new thread(start_routine, p_thread_handle)
 			);
 	
-	DBGP("created thread %ld", (long)p_timed_thread->thread.get());
+	DBGP("created thread %ld", (long)p_timed_thread->the_thread.get());
 
 	running = true;
 }
@@ -93,13 +93,13 @@ timed_thread::timed_thread(const std::function<void(thread_handle &)> start_rout
 /* destroy a timed thread. */
 void timed_thread::destroy(bool deregister_this)
 {
-	DBGP("destroying thread %ld", (long)p_timed_thread->thread.get());
+	DBGP("destroying thread %ld", (long)p_timed_thread->the_thread.get());
 #ifdef DEBUG
-	assert(running && p_timed_thread->thread->joinable());
+	assert(running && p_timed_thread->the_thread->joinable());
 #endif /* DEBUG */
 	{
 		/* signal thread to stop */
-		std::lock_guard<std::mutex> l(p_timed_thread->runnable_mutex);
+		lock_guard<std::mutex> l(p_timed_thread->runnable_mutex);
 		p_timed_thread->runnable_cond.notify_one();
 		p_timed_thread->die = 1;
 	}
@@ -108,7 +108,7 @@ void timed_thread::destroy(bool deregister_this)
 		perror("write()");
 
 	/* join the terminating thread */
-	p_timed_thread->thread->join();
+	p_timed_thread->the_thread->join();
 
 	close(p_timed_thread->pipefd[0]);
 	close(p_timed_thread->pipefd[1]);
@@ -137,7 +137,7 @@ void timed_thread::unlock(void)
 	p_timed_thread->cs_mutex.unlock();
 }
 
-std::mutex &timed_thread::mutex()
+mutex &timed_thread::mutex()
 {
 #ifdef DEBUG
 	assert(running);
@@ -176,7 +176,7 @@ int timed_thread::test(int override_wait_time)
 
 	/* acquire runnable_cond mutex */
 	{
-		std::unique_lock<std::mutex> lock(p_timed_thread->runnable_mutex);
+		unique_lock<std::mutex> lock(p_timed_thread->runnable_mutex);
 
 		if (p_timed_thread->die) {
 			/* if we were kindly asked to die, then die */
@@ -250,7 +250,7 @@ int thread_handle::test(int override_wait_time) {
 	return thread->test(override_wait_time);
 }
 
-std::mutex &thread_handle::mutex()
+mutex &thread_handle::mutex()
 {
 #ifdef DEBUG
 	assert(thread->running);
