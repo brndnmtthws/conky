@@ -28,6 +28,7 @@
 #include <type_traits>
 #include <unordered_map>
 
+#include "logging.h"
 #include "luamm.hh"
 
 namespace conky {
@@ -37,18 +38,15 @@ namespace conky {
 
 	// converts standard lua types to C types
 	template<typename T,
-		bool integral_or_enum = std::is_integral<T>::value or std::is_enum<T>::value,
+		bool integral = std::is_integral<T>::value,
 		bool floating_point = std::is_floating_point<T>::value>
 	struct simple_getter {
-		// integral_or_enum is here to force the compiler to evaluate the assert at instantiation
-		// time
-		static_assert(integral_or_enum && false,
-				"Only specializations for string, integral, enum"
-				"and floating point types are available" );
+		// integral is here to force the compiler to evaluate the assert at instantiation time
+		static_assert(integral && false,
+				"Only specializations for string, integral and floating point types are available");
 	};
 
-	// Specialization for integral type and enums. In case of enums, one should provide a setter
-	// function that makes sure the user sets a sane value
+	// Specialization for integral type.
 	template<typename T>
 	struct simple_getter<T, true, false> {
 		static T do_it_def(lua::state *l, T def)
@@ -56,8 +54,7 @@ namespace conky {
 			if(l->isnil(-1))
 				return def;
 
-			// for enums we need to force a conversion
-			T t = static_cast<T>(l->tointeger(-1));
+			T t = l->tointeger(-1);
 			l->pop();
 			return t;
 		}
@@ -109,6 +106,7 @@ namespace conky {
 			const lua_setter_t lua_setter;
 
 			config_setting_base(const std::string &name_, const lua_setter_t &lua_setter_);
+			virtual ~config_setting_base() {}
 		};
 
 		typedef std::unordered_map<std::string, config_setting_base *> config_settings_t;
@@ -160,12 +158,97 @@ namespace conky {
 		--s; return getter(&l);
 	}
 
+	template<typename T>
+	class enum_config_setting: public config_setting<T> {
+		// In theory, this class may be useful for other types too. If you think think you have a
+		// use for that, remove this assert.
+		static_assert(std::is_enum<T>::value, "Only enum types allowed");
+
+		typedef config_setting<T> Base;
+
+		std::pair<T, bool> convert(lua::state *l, int index);
+		T enum_getter(lua::state *l);
+		void enum_lua_setter(lua::state *l, bool init);
+
+	public:
+		typedef std::initializer_list<std::pair<std::string, T>> Map;
+		enum_config_setting(const std::string &name_, Map map_, bool modifiable_, T default_value_)
+			: Base(name_,
+					std::bind(&enum_config_setting::enum_getter, this, std::placeholders::_1),
+					std::bind(&enum_config_setting::enum_lua_setter, this, std::placeholders::_1,
+									std::placeholders::_2)),
+			  map(map_), modifiable(modifiable_), default_value(default_value_)
+		{}
+	
+	private:
+		Map map;
+		bool modifiable;
+		T default_value;
+	};
+
+	template<typename T>
+	std::pair<T, bool> enum_config_setting<T>::convert(lua::state *l, int index)
+	{
+		if(l->isnil(index))
+			return {default_value, true};
+
+		std::string val = l->tostring(index);
+
+		for(auto i = map.begin(); i != map.end(); ++i) {
+			if(i->first == val)
+				return {i->second, true};
+		}
+
+		std::string msg = "Invalid value '" + val + "' for setting '"
+			+ Base::name + "'. Valid values are: ";
+		for(auto i = map.begin(); i != map.end(); ++i) {
+			if(i != map.begin())
+				msg += ", ";
+			msg += "'" + i->first + "'";
+		}
+		msg += ".";
+		NORM_ERR("%s", msg.c_str());
+		
+		return {default_value, false};
+	}
+
+	template<typename T>
+	T enum_config_setting<T>::enum_getter(lua::state *l)
+	{
+		lua::stack_sentry s(*l, 1);
+		auto ret = convert(l, -1);
+		l->pop(); --s;
+
+		// setter function should make sure the value is valid
+		assert(ret.second);
+
+		return ret.first;
+	}
+
+	template<typename T>
+	void enum_config_setting<T>::enum_lua_setter(lua::state *l, bool init)
+	{
+		lua::stack_sentry s(*l, 2);
+
+		if(!init && !modifiable) {
+			NORM_ERR("Setting '%s' is not modifiable", Base::name.c_str());
+			l->replace(-2);
+		} else {
+			auto ret = convert(l, -2);
+			if(ret.second)
+				l->pop();
+			else
+				l->replace(-2);
+		}
+		s-=2;
+	}
+
 	void check_config_settings(lua::state &l);
 
 /////////// example settings, remove after real settings are available ///////
 	enum foo { bar, baz };
+	extern enum_config_setting<foo>::Map foo_map;
 	extern config_setting<std::string> asdf;
-	extern config_setting<foo> aasf;
 }
 
 #endif /* SETTING_HH */

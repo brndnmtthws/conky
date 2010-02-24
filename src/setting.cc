@@ -25,8 +25,6 @@
 
 #include "setting.hh"
 
-#include "logging.h"
-
 namespace conky {
 	namespace priv {
 		/*
@@ -154,6 +152,7 @@ namespace conky {
 	}
 
 /////////// example settings, remove after real settings are available ///////
+	enum_config_setting<foo>::Map foo_map = { {"bar", bar}, {"baz", baz} };
 	config_setting<std::string> asdf("asdf");
-	config_setting<foo> aasf("aasf");
+	enum_config_setting<foo> foo("foo", foo_map, false, bar);
 }

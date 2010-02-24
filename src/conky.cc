@@ -4300,7 +4300,7 @@ int main(int argc, char **argv)
 				"print(conky.asnumber(conky.variables.zxcv{}));\n"
 				"print(conky.variables.asdf{}.text);\n"
 				"print(conky.variables.asdf{}.xxx);\n"
-				"conky.config = { a='z', asdf=47, [42]=47 };\n"
+				"conky.config = { a='z', asdf=47, [42]=47, foo='bar' };\n"
 				);
 		l.call(0, 0);
 		conky::check_config_settings(l);
@@ -4309,6 +4309,10 @@ int main(int argc, char **argv)
 				"print('config.asdf = ', conky.config.asdf);\n"
 				"conky.config.asdf = 42;\n"
 				"print('config.asdf = ', conky.config.asdf);\n"
+				"conky.config.foo='asdf';\n"
+				"print('config.foo = ', conky.config.foo);\n"
+				"conky.config.foo='baz';\n"
+				"print('config.foo = ', conky.config.foo);\n"
 				);
 		l.call(0, 0);
 	}
