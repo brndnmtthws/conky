@@ -31,8 +31,6 @@
 #include <string.h>
 #include <mutex>
 
-#define xfree(x) if (x) free(x); x = 0
-
 static struct {
 	char *state;
 	char *file;
@@ -52,17 +50,17 @@ static timed_thread_ptr moc_thread;
 void free_moc(struct text_object *obj)
 {
 	(void)obj;
-	xfree(moc.state);
-	xfree(moc.file);
-	xfree(moc.title);
-	xfree(moc.artist);
-	xfree(moc.song);
-	xfree(moc.album);
-	xfree(moc.totaltime);
-	xfree(moc.timeleft);
-	xfree(moc.curtime);
-	xfree(moc.bitrate);
-	xfree(moc.rate);
+	free_and_zero(moc.state);
+	free_and_zero(moc.file);
+	free_and_zero(moc.title);
+	free_and_zero(moc.artist);
+	free_and_zero(moc.song);
+	free_and_zero(moc.album);
+	free_and_zero(moc.totaltime);
+	free_and_zero(moc.timeleft);
+	free_and_zero(moc.curtime);
+	free_and_zero(moc.bitrate);
+	free_and_zero(moc.rate);
 }
 
 static void update_infos(void)

@@ -407,10 +407,8 @@ void free_local_mails(struct text_object *obj)
 	if (!locmail)
 		return;
 
-	if (locmail->mbox)
-		free(locmail->mbox);
-	free(obj->data.opaque);
-	obj->data.opaque = 0;
+	free_and_zero(locmail->mbox);
+	free_and_zero(obj->data.opaque);
 }
 
 #define MAXDATASIZE 1000

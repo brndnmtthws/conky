@@ -313,9 +313,7 @@ void clear_net_stats(void)
 {
 	int i;
 	for (i = 0; i < MAX_NET_INTERFACES; i++) {
-		if (netstats[i].dev) {
-			free(netstats[i].dev);
-		}
+		free_and_zero(netstats[i].dev);
 	}
 	memset(netstats, 0, sizeof(netstats));
 }
@@ -327,10 +325,7 @@ void parse_if_up_arg(struct text_object *obj, const char *arg)
 
 void free_if_up(struct text_object *obj)
 {
-	if (obj->data.opaque) {
-		free(obj->data.opaque);
-		obj->data.opaque = NULL;
-	}
+	free_and_zero(obj->data.opaque);
 }
 
 /* We should check if this is ok with OpenBSD and NetBSD as well. */
