@@ -49,19 +49,20 @@ void free_rss_items(PRSS *data)
 {
 	int i;
 
-	for (i = 0; i < data->item_count; i++) {
-#define CLEAR(a) if (data->items[i].a) { free(data->items[i].a); data->items[i].a = 0; }
-		CLEAR(title);
-		CLEAR(link);
-		CLEAR(description);
-		CLEAR(category);
-		CLEAR(pubDate);
-		CLEAR(guid);
+	if(data->items) {
+		for (i = 0; i < data->item_count; i++) {
+#define CLEAR(a) free_and_zero(data->items[i].a);
+			CLEAR(title);
+			CLEAR(link);
+			CLEAR(description);
+			CLEAR(category);
+			CLEAR(pubDate);
+			CLEAR(guid);
 #undef CLEAR
+		}
+		free_and_zero(data->items);
+		data->item_count = 0;
 	}
-	free(data->items);
-	data->item_count = 0;
-	data->items = 0;
 }
 
 void prss_free(PRSS *data)
@@ -69,16 +70,10 @@ void prss_free(PRSS *data)
 	if (!data) {
 		return;
 	}
-	if (data->version) {
-		free(data->version);
-		data->version = 0;
-	}
-	if (data->items) {
-		free_rss_items(data);
-	}
+	free_and_zero(data->version);
+	free_rss_items(data);
 	data->version = 0;
-	data->items = 0;
-#define CLEAR(a) if (data->a) { free(data->a); data->a = 0; }
+#define CLEAR(a) free_and_zero(data->a);
 	CLEAR(title);
 	CLEAR(link);
 	CLEAR(description);
@@ -116,7 +111,7 @@ static inline void read_item(PRSS_Item *res, xmlNodePtr data)
 		}
 
 #define ASSIGN(a) if (strcasecmp((const char*)data->name, #a) == EQUAL) { \
-			if (res->a) free(res->a); \
+			free_and_zero(res->a); \
 			res->a = strdup((const char*)child->content); \
 			continue; \
 		}
@@ -143,7 +138,7 @@ static inline void read_element(PRSS *res, xmlNodePtr n)
 	}
 
 #define ASSIGN(a) if (strcasecmp((const char*)n->name, #a) == EQUAL) { \
-		if (res->a) free(res->a); \
+		free_and_zero(res->a); \
 		res->a = strdup((const char*)child->content); \
 		return; \
 	}
@@ -188,9 +183,9 @@ static inline int parse_rss_2_0(PRSS *res, xmlNodePtr root)
 		}
 	}
 
-	if (res->version) free(res->version);
+	free_and_zero(res->version);
 	res->version = strndup("2.0", text_buffer_size);
-	if (res->items) free_rss_items(res);
+	free_rss_items(res);
 	res->items = (PRSS_Item*) malloc(items * sizeof(PRSS_Item));
 	res->item_count = 0;
 
@@ -221,9 +216,9 @@ static inline int parse_rss_1_0(PRSS *res, xmlNodePtr root)
 		}
 	}
 
-	if (res->version) free(res->version);
+	free_and_zero(res->version);
 	res->version = strndup("1.0", text_buffer_size);
-	if (res->items) free_rss_items(res);
+	free_rss_items(res);
 	res->items = (PRSS_Item*) malloc(items * sizeof(PRSS_Item));
 	res->item_count = 0;
 
