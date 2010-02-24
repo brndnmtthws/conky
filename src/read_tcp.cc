@@ -109,8 +109,6 @@ void free_read_tcp(struct text_object *obj)
 	if (!rtd)
 		return;
 
-	if (rtd->host)
-		free(rtd->host);
-	free(obj->data.opaque);
-	obj->data.opaque = NULL;
+	free_and_zero(rtd->host);
+	free_and_zero(obj->data.opaque);
 }

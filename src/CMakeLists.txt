@@ -37,7 +37,7 @@ endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build.h)
 set(conky_sources colours.cc combine.cc common.cc conky.cc core.cc
 	diskio.cc entropy.cc exec.cc fs.cc mail.cc mixer.cc net_stat.cc template.cc
 	mboxscan.cc read_tcp.cc scroll.cc specials.cc tailhead.cc
-	temphelper.cc text_object.cc timeinfo.cc top.cc algebra.cc prioqueue.c proc.cc
+	temphelper.cc text_object.cc timeinfo.cc top.cc algebra.cc prioqueue.cc proc.cc
 	user.cc luamm.cc data-source.cc lua-config.cc setting.cc)
 
 # add timed thread library
@@ -166,7 +166,7 @@ if(BUILD_ICONV)
 endif(BUILD_ICONV)
 
 if(BUILD_BUILTIN_CONFIG)
-	 set(optional_sources ${optional_sources} conf_cookie.c)
+	 set(optional_sources ${optional_sources} conf_cookie.cc)
 endif(BUILD_BUILTIN_CONFIG)
 
 add_executable(conky ${conky_sources} ${optional_sources})

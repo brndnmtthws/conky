@@ -105,17 +105,15 @@ void init_mpd(void)
 
 static void clear_mpd(void)
 {
-#define xfree(x) if (x) free(x)
-	xfree(mpd_info.title);
-	xfree(mpd_info.artist);
-	xfree(mpd_info.album);
+	free_and_zero(mpd_info.title);
+	free_and_zero(mpd_info.artist);
+	free_and_zero(mpd_info.album);
 	/* do not free() the const char *status! */
 	/* do not free() the const char *random! */
 	/* do not free() the const char *repeat! */
-	xfree(mpd_info.track);
-	xfree(mpd_info.name);
-	xfree(mpd_info.file);
-#undef xfree
+	free_and_zero(mpd_info.track);
+	free_and_zero(mpd_info.name);
+	free_and_zero(mpd_info.file);
 	memset(&mpd_info, 0, sizeof(mpd_info));
 }
 

@@ -26,6 +26,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+#include "conky.h"
 #include "config.h"
 #include "text_object.h"
 #include "logging.h"
@@ -35,8 +36,7 @@
 
 void gen_free_opaque(struct text_object *obj)
 {
-	if (obj->data.opaque)
-		free(obj->data.opaque);
+	free_and_zero(obj->data.opaque);
 }
 
 int gen_false_iftest(struct text_object *obj)

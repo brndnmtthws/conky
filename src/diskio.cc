@@ -50,8 +50,7 @@ void clear_diskio_stats(void)
 	while (stats.next) {
 		cur = stats.next;
 		stats.next = stats.next->next;
-		if (cur->dev)
-			free(cur->dev);
+		free_and_zero(cur->dev);
 		free(cur);
 	}
 }
@@ -150,8 +149,7 @@ void parse_diskiograph_arg(struct text_object *obj, const char *arg)
 	buf = scan_graph(obj, arg, 0);
 
 	obj->data.opaque = prepare_diskio_stat(dev_name(buf));
-	if (buf)
-		free(buf);
+	free_and_zero(buf);
 }
 
 double diskiographval(struct text_object *obj)

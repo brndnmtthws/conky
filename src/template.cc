@@ -53,10 +53,7 @@ void free_templates(void)
 	}
 
 	for (i = 0; i < MAX_TEMPLATES; i++) {
-		if (_template[i]) {
-			free(_template[i]);
-			_template[i] = NULL;
-		}
+		free_and_zero(_template[i]);
 	}
 }
 
@@ -67,8 +64,7 @@ int set_template(int n, const char *val)
 {
 	if (n < 0 || n >= MAX_TEMPLATES || !val)
 		return 1;
-	if (_template[n])
-		free(_template[n]);
+	free_and_zero(_template[n]);
 	_template[n] = strdup(val);
 	return 0;
 }

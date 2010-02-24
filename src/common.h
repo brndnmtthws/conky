@@ -105,6 +105,7 @@ uint8_t cpu_percentage(struct text_object *);
 double cpu_barval(struct text_object *);
 
 void print_mem(struct text_object *, char *, int);
+void print_memwithbuffers(struct text_object *, char *, int);
 void print_memeasyfree(struct text_object *, char *, int);
 void print_memfree(struct text_object *, char *, int);
 void print_memmax(struct text_object *, char *, int);
@@ -113,6 +114,7 @@ void print_swapfree(struct text_object *, char *, int);
 void print_swapmax(struct text_object *, char *, int);
 uint8_t mem_percentage(struct text_object *);
 double mem_barval(struct text_object *);
+double mem_with_buffers_barval(struct text_object *);
 uint8_t swap_percentage(struct text_object *);
 double swap_barval(struct text_object *);
 

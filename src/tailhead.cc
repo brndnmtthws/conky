@@ -28,6 +28,7 @@
  *
  */
 
+#include "conky.h"
 #include "config.h"
 #include "common.h"
 #include "text_object.h"
@@ -74,12 +75,9 @@ void free_tailhead(struct text_object *obj)
 	struct headtail *ht = (struct headtail *)obj->data.opaque;
 	if (!ht)
 		return;
-	if (ht->logfile)
-		free(ht->logfile);
-	if (ht->buffer)
-		free(ht->buffer);
-	free(obj->data.opaque);
-	obj->data.opaque = NULL;
+	free_and_zero(ht->logfile);
+	free_and_zero(ht->buffer);
+	free_and_zero(obj->data.opaque);
 }
 
 void init_tailhead(const char* type, const char* arg, struct text_object *obj, void* free_at_crash) {
@@ -125,8 +123,7 @@ static void print_tailhead(const char* type, struct text_object *obj, char *p, i
 
 	//empty the buffer and reset the counter if we used it the max number of times
 	if(ht->buffer && ht->current_use >= ht->max_uses - 1) {
-		free(ht->buffer);
-		ht->buffer = NULL;
+		free_and_zero(ht->buffer);
 		ht->current_use = 0;
 	}
 	//use the buffer if possible

@@ -116,9 +116,7 @@ void free_all_processes(void)
 
 	while (pr) {
 		next = pr->next;
-		if (pr->name) {
-			free(pr->name);
-		}
+		free_and_zero(pr->name);
 		free(pr);
 		pr = next;
 	}
@@ -280,9 +278,7 @@ static int process_parse_stat(struct process *process)
 		*q = 0;
 	}
 
-	if (process->name) {
-		free(process->name);
-	}
+	free_and_zero(process->name);
 	process->name = strndup(procname, text_buffer_size);
 	process->rss *= getpagesize();
 
@@ -487,9 +483,7 @@ static void delete_process(struct process *p)
 	else
 		first_process = p->next;
 
-	if (p->name) {
-		free(p->name);
-	}
+	free_and_zero(p->name);
 	/* remove the process from the hash table */
 	unhash_process(p);
 	free(p);
@@ -874,10 +868,8 @@ static void free_top(struct text_object *obj)
 
 	if (!td)
 		return;
-	if (td->s)
-		free(td->s);
-	free(obj->data.opaque);
-	obj->data.opaque = NULL;
+	free_and_zero(td->s);
+	free_and_zero(obj->data.opaque);
 }
 
 int parse_top_args(const char *s, const char *arg, struct text_object *obj)
@@ -914,8 +906,7 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj)
 #else /* BUILD_IOSTATS */
 		NORM_ERR("Must be top, top_mem or top_time");
 #endif /* BUILD_IOSTATS */
-		free(obj->data.opaque);
-		obj->data.opaque = 0;
+		free_and_zero(obj->data.opaque);
 		return 0;
 	}
 

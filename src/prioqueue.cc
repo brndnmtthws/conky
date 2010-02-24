@@ -32,6 +32,7 @@
  *
  */
 
+#include "conky.h"
 #include <limits.h>	/* INT_MAX */
 #include <stdlib.h>
 #include <string.h>
@@ -69,7 +70,7 @@ struct prio_queue *init_prio_queue(void)
 {
 	struct prio_queue *retval;
 
-	retval = malloc(sizeof(struct prio_queue));
+	retval = (struct prio_queue *) malloc(sizeof(struct prio_queue));
 	memset(retval, 0, sizeof(struct prio_queue));
 
 	/* use pq_free_nop by default */
@@ -110,7 +111,7 @@ static struct prio_elem *init_prio_elem(void *data)
 {
 	struct prio_elem *retval;
 
-	retval = malloc(sizeof(struct prio_elem));
+	retval = (struct prio_elem *) malloc(sizeof(struct prio_elem));
 	memset(retval, 0, sizeof(struct prio_elem));
 
 	retval->data = data;
@@ -171,8 +172,7 @@ check_cur_size:
 		queue->cur_size--;
 		queue->tail = queue->tail->prev;
 		(*queue->free)(queue->tail->next->data);
-		free(queue->tail->next);
-		queue->tail->next = NULL;
+		free_and_zero(queue->tail->next);
 	}
 }
 

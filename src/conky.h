@@ -209,7 +209,8 @@ struct information {
 	double uptime;
 
 	/* memory information in kilobytes */
-	unsigned long long mem, memeasyfree, memfree, memmax, swap, swapfree, swapmax;
+	unsigned long long mem, memwithbuffers, memeasyfree, memfree, memmax;
+    unsigned long long swap, swapfree, swapmax;
 	unsigned long long bufmem, buffers, cached;
 
 	unsigned short procs;
@@ -366,5 +367,13 @@ extern enum x_initialiser_state x_initialised;
 /* to get rid of 'unused variable' warnings */
 #define UNUSED(a)  (void)a
 #define UNUSED_ATTR __attribute__ ((unused))
+
+template <class T>
+void free_and_zero(T *&ptr) {
+	if(ptr) {
+		free(ptr);
+		ptr = NULL;
+	}
+}
 
 #endif /* _conky_h_ */

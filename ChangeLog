@@ -1,3 +1,6 @@
+2010-02-18
+	* $memwithbuffers object and bar (sf.net #2954143), thanks kingfishr
+
 2009-12-09
 	* Replaced GHashTable with tr1::unordered_map in tcp_portmon.
 	This means portmon no longer depends on glib.

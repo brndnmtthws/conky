@@ -485,12 +485,8 @@ void mpd_clearError(mpd_Connection *connection)
 void mpd_closeConnection(mpd_Connection *connection)
 {
 	closesocket(connection->sock);
-	if (connection->returnElement) {
-		free(connection->returnElement);
-	}
-	if (connection->request) {
-		free(connection->request);
-	}
+	free_and_zero(connection->returnElement);
+	free_and_zero(connection->request);
 	free(connection);
 	WSACleanup();
 }
@@ -856,9 +852,7 @@ mpd_Status *mpd_getStatus(mpd_Connection *connection)
 
 void mpd_freeStatus(mpd_Status *status)
 {
-	if (status->error) {
-		free(status->error);
-	}
+	free_and_zero(status->error);
 	free(status);
 }
 
@@ -1011,39 +1005,17 @@ static void mpd_initSong(mpd_Song *song)
 
 static void mpd_finishSong(mpd_Song *song)
 {
-	if (song->file) {
-		free(song->file);
-	}
-	if (song->artist) {
-		free(song->artist);
-	}
-	if (song->album) {
-		free(song->album);
-	}
-	if (song->title) {
-		free(song->title);
-	}
-	if (song->track) {
-		free(song->track);
-	}
-	if (song->name) {
-		free(song->name);
-	}
-	if (song->date) {
-		free(song->date);
-	}
-	if (song->genre) {
-		free(song->genre);
-	}
-	if (song->composer) {
-		free(song->composer);
-	}
-	if (song->disc) {
-		free(song->disc);
-	}
-	if (song->comment) {
-		free(song->comment);
-	}
+	free_and_zero(song->file);
+	free_and_zero(song->artist);
+	free_and_zero(song->album);
+	free_and_zero(song->title);
+	free_and_zero(song->track);
+	free_and_zero(song->name);
+	free_and_zero(song->date);
+	free_and_zero(song->genre);
+	free_and_zero(song->composer);
+	free_and_zero(song->disc);
+	free_and_zero(song->comment);
 }
 
 mpd_Song *mpd_newSong(void)
@@ -1112,9 +1084,7 @@ static void mpd_initDirectory(mpd_Directory *directory)
 
 static void mpd_finishDirectory(mpd_Directory *directory)
 {
-	if (directory->path) {
-		free(directory->path);
-	}
+	free_and_zero(directory->path);
 }
 
 mpd_Directory *mpd_newDirectory(void)
@@ -1151,9 +1121,7 @@ static void mpd_initPlaylistFile(mpd_PlaylistFile *playlist)
 
 static void mpd_finishPlaylistFile(mpd_PlaylistFile *playlist)
 {
-	if (playlist->path) {
-		free(playlist->path);
-	}
+	free_and_zero(playlist->path);
 }
 
 mpd_PlaylistFile *mpd_newPlaylistFile(void)
@@ -2084,8 +2052,7 @@ void mpd_commitSearch(mpd_Connection *connection)
 	connection->request[len - 1] = '\0';
 	mpd_sendInfoCommand(connection, connection->request);
 
-	free(connection->request);
-	connection->request = NULL;
+	free_and_zero(connection->request);
 }
 
 /**

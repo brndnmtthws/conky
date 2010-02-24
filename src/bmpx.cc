@@ -86,18 +86,9 @@ void update_bmpx()
 					G_TYPE_INT, current_track, G_TYPE_INVALID,
 					DBUS_TYPE_G_STRING_VALUE_HASHTABLE, &metadata,
 					G_TYPE_INVALID)) {
-			if (current_info->bmpx.title) {
-				free(current_info->bmpx.title);
-				current_info->bmpx.title = 0;
-			}
-			if (current_info->bmpx.artist) {
-				free(current_info->bmpx.artist);
-				current_info->bmpx.artist = 0;
-			}
-			if (current_info->bmpx.album) {
-				free(current_info->bmpx.album);
-				current_info->bmpx.album = 0;
-			}
+			free_and_zero(current_info->bmpx.title);
+			free_and_zero(current_info->bmpx.artist);
+			free_and_zero(current_info->bmpx.album);
 			current_info->bmpx.title =
 				g_value_dup_string(g_hash_table_lookup(metadata, "title"));
 			current_info->bmpx.artist =

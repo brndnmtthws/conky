@@ -204,8 +204,7 @@ static void threaded_exec(thread_handle &handle, struct text_object *obj)
 
 		{
 			std::lock_guard<std::mutex> lock(handle.mutex());
-			if (ed->buffer)
-				free(ed->buffer);
+			free_and_zero(ed->buffer);
 			ed->buffer = buff;
 		}
 		if (handle.test(0)) {
@@ -364,10 +363,7 @@ double execi_barval(struct text_object *obj)
 
 void free_exec(struct text_object *obj)
 {
-	if (obj->data.s) {
-		free(obj->data.s);
-		obj->data.s = NULL;
-	}
+	free_and_zero(obj->data.s);
 }
 
 void free_execi(struct text_object *obj)
@@ -380,10 +376,8 @@ void free_execi(struct text_object *obj)
 	if (ed->p_timed_thread) {
 		ed->p_timed_thread.reset();
 	}
-	if (ed->cmd)
-		free(ed->cmd);
-	if (ed->buffer)
-		free(ed->buffer);
+	free_and_zero(ed->cmd);
+	free_and_zero(ed->buffer);
 	delete ed;
 	obj->data.opaque = NULL;
 }

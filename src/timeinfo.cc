@@ -133,10 +133,7 @@ void print_tztime(struct text_object *obj, char *p, int p_max_size)
 
 void free_time(struct text_object *obj)
 {
-	if (!obj->data.opaque)
-		return;
-	free(obj->data.opaque);
-	obj->data.opaque = NULL;
+	free_and_zero(obj->data.opaque);
 }
 
 void free_tztime(struct text_object *obj)
@@ -146,13 +143,10 @@ void free_tztime(struct text_object *obj)
 	if (!ts)
 		return;
 
-	if (ts->tz)
-		free(ts->tz);
-	if (ts->fmt)
-		free(ts->fmt);
+	free_and_zero(ts->tz);
+	free_and_zero(ts->fmt);
 
-	free(obj->data.opaque);
-	obj->data.opaque = NULL;
+	free_and_zero(obj->data.opaque);
 }
 
 /* a safer asprintf()

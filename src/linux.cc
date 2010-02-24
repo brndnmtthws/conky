@@ -76,7 +76,7 @@
 #define NBD_MAJOR 43
 #endif
 
-#ifdef HAVE_IWLIB
+#ifdef BUILD_WLAN
 #include <iwlib.h>
 #endif
 
@@ -161,8 +161,8 @@ void update_meminfo(void)
 	/* unsigned int a; */
 	char buf[256];
 
-	info.mem = info.memmax = info.swap = info.swapfree = info.swapmax = info.bufmem =
-		info.buffers = info.cached = info.memfree = info.memeasyfree = 0;
+	info.mem = info.memwithbuffers = info.memmax = info.swap = info.swapfree = info.swapmax =
+        info.bufmem = info.buffers = info.cached = info.memfree = info.memeasyfree = 0;
 
 	if (!(meminfo_fp = open_file("/proc/meminfo", &rep))) {
 		return;
@@ -188,7 +188,7 @@ void update_meminfo(void)
 		}
 	}
 
-	info.mem = info.memmax - info.memfree;
+	info.mem = info.memwithbuffers = info.memmax - info.memfree;
 	info.memeasyfree = info.memfree;
 	info.swap = info.swapmax - info.swapfree;
 
@@ -248,7 +248,6 @@ static struct {
 	int count;
 } gw_info;
 
-#define COND_FREE(x) if(x) free(x); x = 0
 #define SAVE_SET_STRING(x, y) \
 	if (x && strcmp((char *)x, (char *)y)) { \
 		free(x); \
@@ -279,8 +278,8 @@ void update_gateway_info(void)
 	unsigned long dest, gate, mask;
 	unsigned int flags;
 
-	COND_FREE(gw_info.iface);
-	COND_FREE(gw_info.ip);
+	free_and_zero(gw_info.iface);
+	free_and_zero(gw_info.ip);
 	gw_info.count = 0;
 
 	if ((fp = fopen("/proc/net/route", "r")) == NULL) {
@@ -315,10 +314,8 @@ void free_gateway_info(struct text_object *obj)
 {
 	(void)obj;
 
-	if (gw_info.iface)
-		free(gw_info.iface);
-	if (gw_info.ip)
-		free(gw_info.ip);
+	free_and_zero(gw_info.iface);
+	free_and_zero(gw_info.ip);
 	memset(&gw_info, 0, sizeof(gw_info));
 }
 
@@ -356,7 +353,7 @@ void update_net_stats(void)
 	char buf[256];
 	double delta;
 
-#ifdef HAVE_IWLIB
+#ifdef BUILD_WLAN
 	// wireless info variables
 	int skfd, has_bitrate = 0;
 	struct wireless_info *winfo;
@@ -496,9 +493,9 @@ void update_net_stats(void)
 			}
 		}
 
-#ifdef HAVE_IWLIB
+#ifdef BUILD_WLAN
 		/* update wireless info */
-		winfo = malloc(sizeof(struct wireless_info));
+		winfo = (struct wireless_info *) malloc(sizeof(struct wireless_info));
 		memset(winfo, 0, sizeof(struct wireless_info));
 
 		skfd = iw_sockets_open();
@@ -1116,8 +1113,7 @@ void free_sysfs_sensor(struct text_object *obj)
 		return;
 
 	close(sf->fd);
-	free(obj->data.opaque);
-	obj->data.opaque = NULL;
+	free_and_zero(obj->data.opaque);
 }
 
 #define CPUFREQ_PREFIX "/sys/devices/system/cpu"

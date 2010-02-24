@@ -66,6 +66,9 @@
 #include <getopt.h>
 #ifdef BUILD_NCURSES
 #include <ncurses.h>
+#ifdef LEAKFREE_NCURSES
+#include "nc.h"
+#endif
 #endif
 #ifdef BUILD_WEATHER_XOAP
 #include <libxml/parser.h>
@@ -686,18 +689,9 @@ struct conftree *currentconffile;
 static void extract_variable_text(const char *p)
 {
 	free_text_objects(&global_root_object);
-	if (tmpstring1) {
-		free(tmpstring1);
-		tmpstring1 = 0;
-	}
-	if (tmpstring2) {
-		free(tmpstring2);
-		tmpstring2 = 0;
-	}
-	if (text_buffer) {
-		free(text_buffer);
-		text_buffer = 0;
-	}
+	free_and_zero(tmpstring1);
+	free_and_zero(tmpstring2);
+	free_and_zero(text_buffer);
 
 	extract_variable_text_internal(&global_root_object, p);
 }
@@ -1497,7 +1491,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 							j++;
 						}
 					}
-					if (tmpcolour) free(tmpcolour);
+					free_and_zero(tmpcolour);
 					if (h > cur_y_add
 							&& h > font_h) {
 						cur_y_add = h;
@@ -2268,19 +2262,11 @@ static void main_loop(void)
 					XFixesDestroyRegion(display, x11_stuff.region2);
 					XFixesDestroyRegion(display, x11_stuff.part);
 #endif /* BUILD_XDAMAGE */
-					if (disp) {
-						free(disp);
-					}
+					free_and_zero(disp);
 				}
 #endif /* BUILD_X11 */
-				if(overwrite_file) {
-					free(overwrite_file);
-					overwrite_file = 0;
-				}
-				if(append_file) {
-					free(append_file);
-					append_file = 0;
-				}
+				free_and_zero(overwrite_file);
+				free_and_zero(append_file);
 				break;
 			default:
 				/* Reaching here means someone set a signal
@@ -2348,7 +2334,7 @@ static void main_loop(void)
 #endif /* BUILD_LUA */
 		g_signal_pending = 0;
 	}
-	clean_up(NULL, NULL);
+	clean_up(current_mail_spool, NULL);
 
 #ifdef HAVE_SYS_INOTIFY_H
 	if (inotify_fd != -1) {
@@ -2387,18 +2373,11 @@ void clean_up(void *memtofree1, void* memtofree2)
 #endif
 	conftree_empty(currentconffile);
 	currentconffile = NULL;
-	if(memtofree1) {
-		free(memtofree1);
-	}
-	if(memtofree2) {
-		free(memtofree2);
-	}
+	free_and_zero(memtofree1);
+	free_and_zero(memtofree2);
 	timed_thread::destroy_registered_threads();
 
-	if (info.cpu_usage) {
-		free(info.cpu_usage);
-		info.cpu_usage = NULL;
-	}
+	free_and_zero(info.cpu_usage);
 #ifdef BUILD_X11
 	if (x_initialised == YES) {
 		if(window_created == 1) {
@@ -2415,14 +2394,8 @@ void clean_up(void *memtofree1, void* memtofree2)
 		}
 		XCloseDisplay(display);
 		display = NULL;
-		if(info.x11.desktop.all_names) {
-			free(info.x11.desktop.all_names);
-			info.x11.desktop.all_names = NULL;
-		}
-		if (info.x11.desktop.name) {
-			free(info.x11.desktop.name);
-			info.x11.desktop.name = NULL;
-		}
+		free_and_zero(info.x11.desktop.all_names);
+		free_and_zero(info.x11.desktop.name);
 		x_initialised = NO;
 	}else{
 		free(fonts);	//in set_default_configurations a font is set but not loaded
@@ -2443,26 +2416,11 @@ void clean_up(void *memtofree1, void* memtofree2)
 #endif /* BUILD_X11 */
 
 	free_text_objects(&global_root_object);
-	if (tmpstring1) {
-		free(tmpstring1);
-		tmpstring1 = 0;
-	}
-	if (tmpstring2) {
-		free(tmpstring2);
-		tmpstring2 = 0;
-	}
-	if (text_buffer) {
-		free(text_buffer);
-		text_buffer = 0;
-	}
-
-	if (global_text) {
-		free(global_text);
-		global_text = 0;
-	}
-
-	free(current_config);
-	current_config = 0;
+	free_and_zero(tmpstring1);
+	free_and_zero(tmpstring2);
+	free_and_zero(text_buffer);
+	free_and_zero(global_text);
+	free_and_zero(current_config);
 
 #ifdef BUILD_PORT_MONITORS
 	tcp_portmon_clear();
@@ -2494,16 +2452,12 @@ void clean_up(void *memtofree1, void* memtofree2)
 				free(specials[i].graph);
 			}
 		}
-		free(specials);
-		specials = NULL;
+		free_and_zero(specials);
 	}
 
 	clear_net_stats();
 	clear_diskio_stats();
-	if(global_cpu != NULL) {
-		free(global_cpu);
-		global_cpu = NULL;
-	}
+	free_and_zero(global_cpu);
 }
 
 static int string_to_bool(const char *s)
@@ -2975,8 +2929,7 @@ char load_config_file(const char *f)
 			if (!value || x_initialised == YES) {
 				CONF_ERR;
 			} else {
-				if (disp)
-					free(disp);
+				free_and_zero(disp);
 				disp = strdup(value);
 			}
 		}
@@ -3222,10 +3175,7 @@ char load_config_file(const char *f)
 		}
 #endif
 		CONF("overwrite_file") {
-			if(overwrite_file) {
-				free(overwrite_file);
-				overwrite_file = 0;
-			}
+			free_and_zero(overwrite_file);
 			if (overwrite_works(value)) {
 				overwrite_file = strdup(value);
 				output_methods |= OVERWRITE_FILE;
@@ -3233,10 +3183,7 @@ char load_config_file(const char *f)
 				NORM_ERR("overwrite_file won't be able to create/overwrite '%s'", value);
 		}
 		CONF("append_file") {
-			if(append_file) {
-				free(append_file);
-				append_file = 0;
-			}
+			free_and_zero(append_file);
 			if(append_works(value)) {
 				append_file = strdup(value);
 				output_methods |= APPEND_FILE;
@@ -3329,9 +3276,7 @@ char load_config_file(const char *f)
 				variable_substitute(value, buffer, 256);
 
 				if (buffer[0] != '\0') {
-					if (current_mail_spool) {
-						free(current_mail_spool);
-					}
+					free_and_zero(current_mail_spool);
 					current_mail_spool = strndup(buffer, text_buffer_size);
 				}
 			} else {
@@ -3559,10 +3504,7 @@ char load_config_file(const char *f)
 			}
 #endif
 
-			if (global_text) {
-				free(global_text);
-				global_text = 0;
-			}
+			free_and_zero(global_text);
 
 			global_text = (char *) malloc(1);
 			global_text[0] = '\0';
@@ -3945,6 +3887,7 @@ static void print_help(const char *prog_name) {
 			"   -x X                      x position\n"
 			"   -y Y                      y position\n"
 #endif /* BUILD_X11 */
+			"   -s, --for-scripts=TEXT    render TEXT on stdout and exit, enclose TEXT by single quotes\n"
 			"   -t, --text=TEXT           text to render, remember single quotes, like -t '$uptime'\n"
 			"   -u, --interval=SECS       update interval\n"
 			"   -i COUNT                  number of times to update "PACKAGE_NAME" (and quit)\n"
@@ -3953,8 +3896,17 @@ static void print_help(const char *prog_name) {
 	);
 }
 
+inline void reset_optind() {
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__OpenBSD__) \
+		|| defined(__NetBSD__)
+	optind = optreset = 1;
+#else
+	optind = 0;
+#endif
+}
+
 /* : means that character before that takes an argument */
-static const char *getopt_string = "vVqdDt:u:i:hc:p:"
+static const char *getopt_string = "vVqdDs:t:u:i:hc:p:"
 #ifdef BUILD_X11
 	"x:y:w:a:f:X:"
 #ifdef OWN_WINDOW
@@ -3993,18 +3945,84 @@ static const struct option longopts[] = {
 #endif
 	{ "window-id", 1, NULL, 'w' },
 #endif /* BUILD_X11 */
+	{ "for-scripts", 1, NULL, 's' },
 	{ "text", 1, NULL, 't' },
 	{ "interval", 0, NULL, 'u' },
 	{ "pause", 0, NULL, 'p' },
 	{ 0, 0, 0, 0 }
 };
 
+void set_current_config() {
+	/* check if specified config file is valid */
+	if (current_config) {
+		struct stat sb;
+		if (stat(current_config, &sb) ||
+				(!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
+			NORM_ERR("invalid configuration file '%s'\n", current_config);
+			free_and_zero(current_config);
+		}
+	}
+
+	/* load current_config, CONFIG_FILE or SYSTEM_CONFIG_FILE */
+
+	if (!current_config) {
+		/* load default config file */
+		char buf[DEFAULT_TEXT_BUFFER_SIZE];
+		FILE *fp;
+
+		/* Try to use personal config file first */
+		to_real_path(buf, CONFIG_FILE);
+		if (buf[0] && (fp = fopen(buf, "r"))) {
+			current_config = strndup(buf, max_user_text);
+			fclose(fp);
+		}
+
+		/* Try to use system config file if personal config not readable */
+		if (!current_config && (fp = fopen(SYSTEM_CONFIG_FILE, "r"))) {
+			current_config = strndup(SYSTEM_CONFIG_FILE, max_user_text);
+			fclose(fp);
+		}
+
+		/* No readable config found */
+		if (!current_config) {
+#define NOCFGFILEFOUND "no readable personal or system-wide config file found"
+#ifdef BUILD_BUILTIN_CONFIG
+			current_config = strdup("==builtin==");
+			NORM_ERR(NOCFGFILEFOUND
+					", using builtin default");
+#else
+			CRIT_ERR(NULL, NULL, NOCFGFILEFOUND);
+#endif /* ! CONF_OUTPUT */
+		}
+	}
+}
+
 void initialisation(int argc, char **argv) {
 	struct sigaction act, oact;
+	bool for_scripts = false;
 
 	set_default_configurations();
-	load_config_file(current_config);
-	currentconffile = conftree_add(currentconffile, current_config);
+
+	reset_optind();
+	while (1) {
+		int c = getopt_long(argc, argv, getopt_string, longopts, NULL);
+
+		if (c == -1) {
+			break;
+		}else if (c == 's') {
+			free_and_zero(global_text);
+			global_text = strndup(optarg, max_user_text);
+			convert_escapes(global_text);
+			total_run_times = 1;
+			output_methods = TO_STDOUT;
+			for_scripts = true;
+		}
+	}
+	if(for_scripts == false) {
+		set_current_config();
+		load_config_file(current_config);
+		currentconffile = conftree_add(currentconffile, current_config);
+	}
 
 	/* init specials array */
 	if ((specials = (special_t*)calloc(sizeof(struct special_t), max_specials)) == 0) {
@@ -4025,12 +4043,7 @@ void initialisation(int argc, char **argv) {
 
 	/* handle other command line arguments */
 
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__OpenBSD__) \
-		|| defined(__NetBSD__)
-	optind = optreset = 1;
-#else
-	optind = 0;
-#endif
+	reset_optind();
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 	if ((kd = kvm_open("/dev/null", "/dev/null", "/dev/null", O_RDONLY,
@@ -4071,10 +4084,7 @@ void initialisation(int argc, char **argv) {
 #endif
 #endif /* BUILD_X11 */
 			case 't':
-				if (global_text) {
-					free(global_text);
-					global_text = 0;
-				}
+				free_and_zero(global_text);
 				global_text = strndup(optarg, max_user_text);
 				convert_escapes(global_text);
 				break;
@@ -4121,11 +4131,7 @@ void initialisation(int argc, char **argv) {
 
 	/* generate text and get initial size */
 	extract_variable_text(global_text);
-	if (global_text) {
-		free(global_text);
-		global_text = 0;
-	}
-	global_text = NULL;
+	free_and_zero(global_text);
 	/* fork */
 	if (fork_to_background && first_pass) {
 		int pid = fork();
@@ -4252,9 +4258,7 @@ int main(int argc, char **argv)
 			case 'V':
 				print_version(); /* doesn't return */
 			case 'c':
-				if (current_config) {
-					free(current_config);
-				}
+				free_and_zero(current_config);
 				current_config = strndup(optarg, max_user_text);
 				break;
 			case 'q':
@@ -4274,8 +4278,7 @@ int main(int argc, char **argv)
 				window.window = strtol(optarg, 0, 0);
 				break;
 			case 'X':
-				if (disp)
-					free(disp);
+				free_and_zero(disp);
 				disp = strdup(optarg);
 				break;
 #endif /* BUILD_X11 */
@@ -4285,49 +4288,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	/* check if specified config file is valid */
-	if (current_config) {
-		struct stat sb;
-		if (stat(current_config, &sb) ||
-				(!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
-			NORM_ERR("invalid configuration file '%s'\n", current_config);
-			free(current_config);
-			current_config = 0;
-		}
-	}
-
-	/* load current_config, CONFIG_FILE or SYSTEM_CONFIG_FILE */
-
-	if (!current_config) {
-		/* load default config file */
-		char buf[DEFAULT_TEXT_BUFFER_SIZE];
-		FILE *fp;
-
-		/* Try to use personal config file first */
-		to_real_path(buf, CONFIG_FILE);
-		if (buf[0] && (fp = fopen(buf, "r"))) {
-			current_config = strndup(buf, max_user_text);
-			fclose(fp);
-		}
-
-		/* Try to use system config file if personal config not readable */
-		if (!current_config && (fp = fopen(SYSTEM_CONFIG_FILE, "r"))) {
-			current_config = strndup(SYSTEM_CONFIG_FILE, max_user_text);
-			fclose(fp);
-		}
-
-		/* No readable config found */
-		if (!current_config) {
-#define NOCFGFILEFOUND "no readable personal or system-wide config file found"
-#ifdef BUILD_BUILTIN_CONFIG
-			current_config = strdup("==builtin==");
-			NORM_ERR(NOCFGFILEFOUND
-					", using builtin default");
-#else
-			CRIT_ERR(NULL, NULL, NOCFGFILEFOUND);
-#endif /* ! CONF_OUTPUT */
-		}
-	}
+	set_current_config();
 
 	//////////// XXX ////////////////////////////////
 	lua::state l;	
@@ -4406,6 +4367,9 @@ int main(int argc, char **argv)
 	kvm_close(kd);
 #endif
 
+#ifdef LEAKFREE_NCURSES
+	_nc_free_and_exit(0);	//hide false memleaks
+#endif
 	return 0;
 
 }

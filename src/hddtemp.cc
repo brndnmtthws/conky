@@ -59,15 +59,13 @@ struct hdd_info hdd_info_head;
 
 void set_hddtemp_host(const char *host)
 {
-	if (hddtemp_host)
-		free(hddtemp_host);
+	free_and_zero(hddtemp_host);
 	hddtemp_host = strdup(host);
 }
 
 void set_hddtemp_port(const char *port)
 {
-	if (hddtemp_port)
-		free(hddtemp_port);
+	free_and_zero(hddtemp_port);
 	hddtemp_port = strdup(port);
 }
 
@@ -237,18 +235,9 @@ void update_hddtemp(void) {
 void free_hddtemp(struct text_object *obj)
 {
 	free_hddtemp_info();
-	if (hddtemp_host) {
-		free(hddtemp_host);
-		hddtemp_host = NULL;
-	}
-	if (hddtemp_port) {
-		free(hddtemp_port);
-		hddtemp_port = NULL;
-	}
-	if (obj->data.s) {
-		free(obj->data.s);
-		obj->data.s = NULL;
-	}
+	free_and_zero(hddtemp_host);
+	free_and_zero(hddtemp_port);
+	free_and_zero(obj->data.s);
 }
 
 static int get_hddtemp_info(const char *dev, short *val, char *unit)

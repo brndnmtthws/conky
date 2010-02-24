@@ -241,7 +241,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 
 #ifdef BUILD_WLAN
 	END OBJ(wireless_essid, &update_net_stats)
-		parse_net_stat_arg(obj, arg, free_at_crash);
+		obj->data.opaque = get_net_stat(arg, obj, free_at_crash);
 		obj->callbacks.print = &print_wireless_essid;
 	END OBJ(wireless_mode, &update_net_stats)
 		parse_net_stat_arg(obj, arg, free_at_crash);
@@ -442,7 +442,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		SCAN_CPU(arg, obj->data.i);
 		buf = scan_graph(obj, arg, 1);
 		DBGP2("Adding $cpugraph for CPU %d", obj->data.i);
-		if (buf) free(buf);
+		free_and_zero(buf);
 		obj->callbacks.graphval = &cpu_barval;
 	END OBJ(loadgraph, &update_load_average)
 		scan_loadgraph_arg(obj, arg);
@@ -839,6 +839,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.free = &free_mboxscan;
 	END OBJ(mem, &update_meminfo)
 		obj->callbacks.print = &print_mem;
+	END OBJ(memwithbuffers, &update_meminfo)
+		obj->callbacks.print = &print_memwithbuffers;
 	END OBJ(memeasyfree, &update_meminfo)
 		obj->callbacks.print = &print_memeasyfree;
 	END OBJ(memfree, &update_meminfo)
@@ -853,12 +855,15 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 	END OBJ(membar, &update_meminfo)
 		scan_bar(obj, arg, 1);
 		obj->callbacks.barval = &mem_barval;
+	END OBJ(memwithbuffersbar, &update_meminfo)
+		scan_bar(obj, arg, 1);
+		obj->callbacks.barval = &mem_with_buffers_barval;
 #ifdef BUILD_X11
 	END OBJ(memgraph, &update_meminfo)
 		char *buf = 0;
 		buf = scan_graph(obj, arg, 1);
 
-		if (buf) free(buf);
+		free_and_zero(buf);
 		obj->callbacks.graphval = &mem_barval;
 #endif /* BUILD_X11*/
 	END OBJ(mixer, 0)
@@ -1607,7 +1612,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 	END OBJ(apcupsd_loadgraph, &update_apcupsd)
 		char* buf = 0;
 		buf = scan_graph(obj, arg, 100);
-		if (buf) free(buf);
+		free_and_zero(buf);
 		obj->callbacks.graphval = &apcupsd_loadbarval;
 #endif /* BUILD_X11 */
 	END OBJ(apcupsd_loadgauge, &update_apcupsd)
@@ -1846,24 +1851,19 @@ void free_text_objects(struct text_object *root)
 {
 	struct text_object *obj;
 
-	if (!root->prev) {
-		return;
-	}
+	if(root && root->prev) {
+		for (obj = root->prev; obj; obj = root->prev) {
+			root->prev = obj->prev;
 
-	for (obj = root->prev; obj; obj = root->prev) {
-		root->prev = obj->prev;
-
-		if (obj->callbacks.free) {
-			(*obj->callbacks.free)(obj);
-		}
-		if(obj->sub) {
+			if (obj->callbacks.free) {
+				(*obj->callbacks.free)(obj);
+			}
 			free_text_objects(obj->sub);
-			free(obj->sub);
-		}
-		if(obj->special_data)
-			free(obj->special_data);
+			free_and_zero(obj->sub);
+			free_and_zero(obj->special_data);
 
-		free(obj);
+			free(obj);
+		}
 	}
 }
 

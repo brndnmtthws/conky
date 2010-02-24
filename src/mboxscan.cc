@@ -411,11 +411,8 @@ void free_mboxscan(struct text_object *obj)
 
 	if (!msd)
 		return;
-	if (msd->args)
-		free(msd->args);
-	if (msd->output)
-		free(msd->output);
-	free(obj->data.opaque);
-	obj->data.opaque = NULL;
+	free_and_zero(msd->args);
+	free_and_zero(msd->output);
+	free_and_zero(obj->data.opaque);
 }
 

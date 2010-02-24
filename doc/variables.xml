@@ -1974,11 +1974,30 @@
     <varlistentry>
         <term>
             <command>
+                <option>memwithbuffers</option>
+            </command>
+        </term>
+        <listitem>Amount of memory in use, including that used by system buffers and caches
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>membar</option>
             </command>
             <option>(height),(width)</option>
         </term>
         <listitem>Bar that shows amount of memory in use 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>memwithbuffersbar</option>
+            </command>
+            <option>(height),(width)</option>
+        </term>
+        <listitem>Bar that shows amount of memory in use (including memory used by system buffers and caches)
         <para /></listitem>
     </varlistentry>
     <varlistentry>

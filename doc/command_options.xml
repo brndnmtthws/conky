@@ -109,6 +109,19 @@
     <varlistentry>
         <term>
             <command>
+                <option>-s | --for-scripts</option>
+            </command>
+            <option>TEXT</option>
+        </term>
+        <listitem>Prints TEXT on the standard output and exits.
+        (This option makes conky useful in scripts)
+        TEXT has to be enclosed by single quotes. Example:
+        conky -s 'Your uptime is: $uptime'
+        <para></para></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>-t | --text=</option>
             </command>
             <option>TEXT</option>
