@@ -39,7 +39,7 @@ void print_uid_name(struct text_object *obj, char *p, int p_max_size) {
 	struct passwd *pw;
 	uid_t uid;
 	char* firstinvalid;
-	unique_ptr<char []> objbuf(new char[max_user_text]);
+	std::unique_ptr<char []> objbuf(new char[max_user_text]);
 
 	generate_text_internal(objbuf.get(), max_user_text, *obj->sub);
 
@@ -61,7 +61,7 @@ void print_gid_name(struct text_object *obj, char *p, int p_max_size) {
 	struct group *grp;
 	gid_t gid;
 	char* firstinvalid;
-	unique_ptr<char []> objbuf(new char[max_user_text]);
+	std::unique_ptr<char []> objbuf(new char[max_user_text]);
 
 	generate_text_internal(objbuf.get(), max_user_text, *obj->sub);
 

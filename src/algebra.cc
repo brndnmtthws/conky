@@ -259,7 +259,7 @@ int compare(const char *expr)
 
 int check_if_match(struct text_object *obj)
 {
-	unique_ptr<char []> expression(new char[max_user_text]);
+	std::unique_ptr<char []> expression(new char[max_user_text]);
 	int val;
 	int result = 1;
 

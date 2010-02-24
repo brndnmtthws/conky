@@ -109,7 +109,7 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size)
 	struct scroll_data *sd = (struct scroll_data *)obj->data.opaque;
 	unsigned int j, colorchanges = 0, frontcolorchanges = 0, visibcolorchanges = 0, strend;
 	char *pwithcolors;
-	vector<char> buf(max_user_text);
+	std::vector<char> buf(max_user_text);
 
 	if (!sd)
 		return;

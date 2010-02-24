@@ -43,11 +43,11 @@ struct ccurl_location_t {
 	/* function to call when data is ready to be processed, the first argument
 	 * will be the result pointer, and the second argument is an internal
 	 * buffer that shouldn't be mangled */
-	function<void(char *, const char *)> process_function;
+	std::function<void(char *, const char *)> process_function;
 };
 
-typedef shared_ptr<ccurl_location_t> ccurl_location_ptr;
-typedef list<ccurl_location_ptr> ccurl_location_list;
+typedef std::shared_ptr<ccurl_location_t> ccurl_location_ptr;
+typedef std::list<ccurl_location_ptr> ccurl_location_list;
 
 /* find an existing location for the uri specified */
 ccurl_location_ptr ccurl_find_location(ccurl_location_list &locations, char *uri);
