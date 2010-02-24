@@ -306,21 +306,6 @@ struct _x11_stuff_s {
 static int text_start_x, text_start_y;	/* text start position in window */
 static int text_width = 1, text_height = 1; /* initially 1 so no zero-sized window is created */
 
-/* alignments */
-enum alignment {
-	ALIGNMENT_ERROR,
-	TOP_LEFT,
-	TOP_RIGHT,
-	TOP_MIDDLE,
-	BOTTOM_LEFT,
-	BOTTOM_RIGHT,
-	BOTTOM_MIDDLE,
-	MIDDLE_LEFT,
-	MIDDLE_MIDDLE,
-	MIDDLE_RIGHT,
-	NONE
-};
-
 /* display to connect to */
 static char *disp = NULL;
 
@@ -358,7 +343,6 @@ static int show_graph_scale;
 static int show_graph_range;
 
 /* Position on the screen */
-static int text_alignment;
 static int gap_x, gap_y;
 
 /* border */
@@ -424,6 +408,8 @@ long global_text_lines;
 
 static int total_updates;
 static int updatereset;
+
+static std::auto_ptr<lua::state> state;
 
 void set_updatereset(int i)
 {
@@ -946,8 +932,9 @@ static void update_text_area(void)
 		}
 	}
 
+	alignment align = text_alignment.get(*state);
 	/* get text position on workarea */
-	switch (text_alignment) {
+	switch (align) {
 		case TOP_LEFT: case TOP_RIGHT: case TOP_MIDDLE:
 			y = gap_y;
 			break;
@@ -960,7 +947,7 @@ static void update_text_area(void)
 			y = workarea[3] / 2 - text_height / 2 - gap_y;
 			break;
 	}
-	switch (text_alignment) {
+	switch (align) {
 		case TOP_LEFT: case BOTTOM_LEFT: case MIDDLE_LEFT: default:
 			x = gap_x;
 			break;
@@ -974,7 +961,7 @@ static void update_text_area(void)
 			break;
 	}
 #ifdef OWN_WINDOW
-	if (text_alignment == NONE) {	// Let the WM manage the window
+	if (align == NONE) {	// Let the WM manage the window
 			x = window.x;
 			y = window.y;
 
@@ -2005,7 +1992,7 @@ static void main_loop(void)
 						fprintf(stderr, PACKAGE_NAME": defining struts\n");
 						fflush(stderr);
 
-						switch (text_alignment) {
+						switch (text_alignment.get(*state)) {
 							case TOP_LEFT:
 							case TOP_RIGHT:
 							case TOP_MIDDLE:
@@ -2030,6 +2017,8 @@ static void main_loop(void)
 									sidenum = 1;
 									break;
 								}
+
+							case NONE: case MIDDLE_MIDDLE: /* XXX What about these? */;
 						}
 
 						set_struts(sidenum);
@@ -2476,52 +2465,6 @@ static int string_to_bool(const char *s)
 }
 
 #ifdef BUILD_X11
-static enum alignment string_to_alignment(const char *s)
-{
-	if (strcasecmp(s, "top_left") == EQUAL) {
-		return TOP_LEFT;
-	} else if (strcasecmp(s, "top_right") == EQUAL) {
-		return TOP_RIGHT;
-	} else if (strcasecmp(s, "top_middle") == EQUAL) {
-		return TOP_MIDDLE;
-	} else if (strcasecmp(s, "bottom_left") == EQUAL) {
-		return BOTTOM_LEFT;
-	} else if (strcasecmp(s, "bottom_right") == EQUAL) {
-		return BOTTOM_RIGHT;
-	} else if (strcasecmp(s, "bottom_middle") == EQUAL) {
-		return BOTTOM_MIDDLE;
-	} else if (strcasecmp(s, "middle_left") == EQUAL) {
-		return MIDDLE_LEFT;
-	} else if (strcasecmp(s, "middle_right") == EQUAL) {
-		return MIDDLE_RIGHT;
-	} else if (strcasecmp(s, "middle_middle") == EQUAL) {
-		return MIDDLE_MIDDLE;
-	} else if (strcasecmp(s, "tl") == EQUAL) {
-		return TOP_LEFT;
-	} else if (strcasecmp(s, "tr") == EQUAL) {
-		return TOP_RIGHT;
-	} else if (strcasecmp(s, "tm") == EQUAL) {
-		return TOP_MIDDLE;
-	} else if (strcasecmp(s, "bl") == EQUAL) {
-		return BOTTOM_LEFT;
-	} else if (strcasecmp(s, "br") == EQUAL) {
-		return BOTTOM_RIGHT;
-	} else if (strcasecmp(s, "bm") == EQUAL) {
-		return BOTTOM_MIDDLE;
-	} else if (strcasecmp(s, "ml") == EQUAL) {
-		return MIDDLE_LEFT;
-	} else if (strcasecmp(s, "mr") == EQUAL) {
-		return MIDDLE_RIGHT;
-	} else if (strcasecmp(s, "mm") == EQUAL) {
-		return MIDDLE_MIDDLE;
-	} else if (strcasecmp(s, "none") == EQUAL) {
-		return NONE;
-	}
-	return ALIGNMENT_ERROR;
-}
-#endif /* BUILD_X11 */
-
-#ifdef BUILD_X11
 static void set_default_configurations_for_x(void)
 {
 	default_fg_color = WhitePixel(display, screen);
@@ -2641,7 +2584,6 @@ static void set_default_configurations(void)
 	window.border_inner_margin = 3;
 	window.border_outer_margin = 1;
 	window.border_width = 1;
-	text_alignment = BOTTOM_LEFT;
 	info.x11.monitor.number = 1;
 	info.x11.monitor.current = 0;
 	info.x11.desktop.current = 1;
@@ -2869,29 +2811,6 @@ static int do_config_step(int *line, FILE *fp, char *buf, char **name, char **va
 	return 0;
 }
 
-#ifdef BUILD_X11
-void setalignment(int* text_alignment, unsigned int windowtype, const char* value, const char *f, int line, bool conffile) {
-#ifdef OWN_WINDOW
-	if (windowtype == TYPE_DOCK) {
-		NORM_ERR("alignment is disabled when own_window_type is dock");
-	} else
-#endif /*OWN_WINDOW */
-	if (value) {
-		int a = string_to_alignment(value);
-
-		if (a <= 0) {
-			if(conffile == true) {
-				CONF_ERR;
-			} else NORM_ERR("'%s' is not a alignment setting", value);
-		} else {
-			*text_alignment = a;
-		}
-	} else if(conffile == true) {
-		CONF_ERR;
-	}
-}
-#endif /* BUILD_X11 */
-
 char load_config_file(const char *f)
 {
 	int line = 0;
@@ -2932,9 +2851,6 @@ char load_config_file(const char *f)
 				free_and_zero(disp);
 				disp = strdup(value);
 			}
-		}
-		CONF("alignment") {
-			setalignment(&text_alignment, window.type, value, f, line, true);
 		}
 		CONF("background") {
 			fork_to_background = string_to_bool(value);
@@ -3400,7 +3316,6 @@ char load_config_file(const char *f)
 					window.type = TYPE_DESKTOP;
 				} else if (strncmp(value, "dock", 4) == EQUAL) {
 					window.type = TYPE_DOCK;
-					text_alignment = TOP_LEFT;
 				} else if (strncmp(value, "panel", 5) == EQUAL) {
 					window.type = TYPE_PANEL;
 				} else if (strncmp(value, "override", 8) == EQUAL) {
@@ -4069,7 +3984,8 @@ void initialisation(int argc, char **argv) {
 				set_first_font(optarg);
 				break;
 			case 'a':
-				setalignment(&text_alignment, window.type, optarg, NULL, 0, false);
+				state->pushstring(optarg);
+				text_alignment.lua_set(*state);
 				break;
 
 #ifdef OWN_WINDOW
@@ -4290,32 +4206,31 @@ int main(int argc, char **argv)
 
 	set_current_config();
 
+	state.reset(new lua::state);
+	conky::export_symbols(*state);
 	//////////// XXX ////////////////////////////////
-	lua::state l;	
+	lua::state &l = *state;	
 	try {
-		conky::export_symbols(l);
 		l.loadstring(
 				"print(conky.asnumber(conky.variables.asdf{}));\n"
 				"print(conky.astext(conky.variables.asdf{}));\n"
 				"print(conky.asnumber(conky.variables.zxcv{}));\n"
 				"print(conky.variables.asdf{}.text);\n"
 				"print(conky.variables.asdf{}.xxx);\n"
-				"conky.config = { a='z', asdf=47, [42]=47, foo='bar' };\n"
+				"conky.config = { alignment='bar', asdf=47, [42]=47};\n"
 				);
 		l.call(0, 0);
 		conky::check_config_settings(l);
-		std::cout << "config.asdf = " << conky::asdf.get(l) << std::endl;
+		std::cout << "config.alignment = " << text_alignment.get(l) << std::endl;
 		l.pushstring("X");
-		conky::asdf.lua_set(l);
-		std::cout << "config.asdf = " << conky::asdf.get(l) << std::endl;
+		text_alignment.lua_set(l);
+		std::cout << "config.alignment = " << text_alignment.get(l) << std::endl;
 		l.loadstring(
 				"print('config.asdf = ', conky.config.asdf);\n"
 				"conky.config.asdf = 42;\n"
 				"print('config.asdf = ', conky.config.asdf);\n"
-				"conky.config.foo='asdf';\n"
-				"print('config.foo = ', conky.config.foo);\n"
-				"conky.config.foo='baz';\n"
-				"print('config.foo = ', conky.config.foo);\n"
+				"conky.config.alignment='asdf';\n"
+				"print('config.alignment = ', conky.config.alignment);\n"
 				);
 		l.call(0, 0);
 	}

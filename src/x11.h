@@ -39,6 +39,8 @@
 #include <X11/extensions/Xdbe.h>
 #endif
 
+#include "setting.hh"
+
 #define ATOM(a) XInternAtom(display, #a, False)
 
 #ifdef OWN_WINDOW
@@ -136,6 +138,23 @@ void free_desktop_info(void);
 #ifdef BUILD_XDBE
 void xdbe_swap_buffers(void);
 #endif /* BUILD_XDBE */
+
+/* alignments */
+enum alignment {
+	TOP_LEFT,
+	TOP_RIGHT,
+	TOP_MIDDLE,
+	BOTTOM_LEFT,
+	BOTTOM_RIGHT,
+	BOTTOM_MIDDLE,
+	MIDDLE_LEFT,
+	MIDDLE_MIDDLE,
+	MIDDLE_RIGHT,
+	NONE
+};
+
+extern conky::enum_config_setting<alignment>::Map text_alignment_map;
+extern conky::enum_config_setting<alignment>      text_alignment;
 
 #endif /*X11_H_*/
 #endif /* BUILD_X11 */

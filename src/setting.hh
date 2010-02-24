@@ -253,8 +253,6 @@ namespace conky {
 	void check_config_settings(lua::state &l);
 
 /////////// example settings, remove after real settings are available ///////
-	enum foo { bar, baz };
-	extern enum_config_setting<foo>::Map foo_map;
 	extern config_setting<std::string> asdf;
 }
 

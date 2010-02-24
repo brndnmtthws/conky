@@ -912,3 +912,17 @@ void xdbe_swap_buffers(void)
 }
 #endif /* BUILD_XDBE */
 
+conky::enum_config_setting<alignment>::Map text_alignment_map = {
+	{ "top_left",      TOP_LEFT },
+	{ "top_right",     TOP_RIGHT },
+	{ "top_middle",    TOP_MIDDLE },
+	{ "bottom_left",   BOTTOM_LEFT },
+	{ "bottom_right",  BOTTOM_RIGHT },
+	{ "bottom_middle", BOTTOM_MIDDLE },
+	{ "middle_left",   MIDDLE_LEFT },
+	{ "middle_middle", MIDDLE_MIDDLE },
+	{ "middle_right",  MIDDLE_RIGHT },
+	{ "none",          NONE }
+};
+conky::enum_config_setting<alignment> text_alignment("alignment", text_alignment_map, false, NONE);
+
