@@ -33,6 +33,8 @@
 #include "conky.h"
 #include "common.h"
 #include "timed-thread.h"
+#include <algorithm>
+#include <string>
 #include <stdarg.h>
 #include <cmath>
 #include <ctime>
@@ -4196,8 +4198,7 @@ void initialisation(int argc, char **argv) {
 int main(int argc, char **argv)
 {
 #ifdef BUILD_X11
-	char *s, *temp;
-	unsigned int x;
+	char *s;
 #endif
 
 	argc_copy = argc;
@@ -4218,19 +4219,11 @@ int main(int argc, char **argv)
 #ifdef BUILD_X11
 	if (((s = getenv("LC_ALL")) && *s) || ((s = getenv("LC_CTYPE")) && *s)
 			|| ((s = getenv("LANG")) && *s)) {
-		temp = (char *) malloc((strlen(s) + 1) * sizeof(char));
-		if (temp == NULL) {
-			NORM_ERR("malloc failed");
-		}
-		for (x = 0; x < strlen(s); x++) {
-			temp[x] = tolower(s[x]);
-		}
-		temp[x] = 0;
-		if (strstr(temp, "utf-8") || strstr(temp, "utf8")) {
+		std::string temp = s;
+		std::transform(temp.begin(), temp.end(), temp.begin(), ::tolower);
+		if( (temp.find("utf-8") != std::string::npos) || (temp.find("utf8") != std::string::npos) ) {
 			utf8_mode = 1;
 		}
-
-		free(temp);
 	}
 	if (!setlocale(LC_CTYPE, "")) {
 		NORM_ERR("Can't set the specified locale!\nCheck LANG, LC_CTYPE, LC_ALL.");
