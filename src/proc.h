@@ -28,13 +28,12 @@
  *
  */
 
+#ifndef CONKY_PROC_H
+#define CONKY_PROC_H
+
 #define PROCDIR	"/proc"
 #define READERR	"Can't read '%s'"
 #define READSIZE 128
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 void print_pid_chroot(struct text_object *obj, char *p, int p_max_size);
 void print_pid_cmdline(struct text_object *obj, char *p, int p_max_size);
@@ -79,7 +78,5 @@ void print_pid_write(struct text_object *obj, char *p, int p_max_size);
 
 void scan_cmdline_to_pid_arg(struct text_object *obj, const char *arg, void* free_at_crash);
 void print_cmdline_to_pid(struct text_object *obj, char *p, int p_max_size);
-#ifdef __cplusplus
-}
-#endif
 
+#endif /* CONKY_PROC_H */

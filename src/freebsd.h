@@ -13,15 +13,7 @@
 #include <machine/apm_bios.h>
 #endif /* i386 || __i386__ */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 int get_entropy_avail(unsigned int *);
 int get_entropy_poolsize(unsigned int *);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /*FREEBSD_H_*/

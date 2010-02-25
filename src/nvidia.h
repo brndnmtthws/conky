@@ -32,16 +32,8 @@
 #ifndef NVIDIA_CONKY_H
 #define NVIDIA_CONKY_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 int set_nvidia_type(struct text_object *, const char *);
 void print_nvidia_value(struct text_object *, char *, int);
 void free_nvidia(struct text_object *);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

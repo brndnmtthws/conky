@@ -86,10 +86,6 @@ struct text_object;
 #include "mpd.h"
 #endif /* BUILD_MPD */
 
-#ifdef __cplusplus
-/* this hack exists only to get around a compilation issue with some files
- * being converted to C++, will need a better solution */
-
 /* C++ headers */
 #ifdef BUILD_CURL
 #include "ccurl_thread.h"
@@ -98,8 +94,6 @@ struct text_object;
 #ifdef BUILD_AUDACIOUS
 #include "audacious.h"
 #endif /* BUILD_AUDACIOUS */
-
-#endif /* __cplusplus */
 
 #ifdef BUILD_RSS
 #include "rss.h"
@@ -196,9 +190,6 @@ enum {
 	BATTERY_TIME
 };
 
-#ifdef __cplusplus
-/* this hack exists only to get around a compilation issue with some files
- * being converted to C++, will need a better solution */
 struct information {
 	unsigned int mask;
 
@@ -255,7 +246,6 @@ struct information {
 
 	short kflags;	/* kernel settings, see enum KFLAG */
 };
-#endif /* __cplusplus */
 
 /* needed by linux.c and top.c -> outsource somewhere */
 enum {
@@ -288,10 +278,6 @@ extern struct information info;
 
 /* defined in conky.c */
 extern double current_update_time, last_update_time, update_interval;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /* if_up strictness selector
  * needed by conky.c and linux.c (and potentially others) */
@@ -331,10 +317,6 @@ void generate_text_internal(char *, int, struct text_object);
 
 int percent_print(char *, int, unsigned);
 void human_readable(long long, char *, int);
-
-#ifdef __cplusplus
-}
-#endif
 
 /* maximum size of config TEXT buffer, i.e. below TEXT line. */
 extern unsigned int max_user_text;

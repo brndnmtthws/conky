@@ -33,6 +33,8 @@
 #include "conky.h"
 #include "common.h"
 #include "timed-thread.h"
+#include <algorithm>
+#include <string>
 #include <stdarg.h>
 #include <cmath>
 #include <ctime>
@@ -389,7 +391,7 @@ unsigned int max_user_text;
 unsigned int text_buffer_size = DEFAULT_TEXT_BUFFER_SIZE;
 
 /* UTF-8 */
-int utf8_mode = 0;
+bool utf8_mode = false;
 
 /* no buffers in used memory? */
 int no_buffers;
@@ -2449,19 +2451,19 @@ void clean_up(void *memtofree1, void* memtofree2)
 	free_and_zero(global_cpu);
 }
 
-static int string_to_bool(const char *s)
+static bool string_to_bool(const char *s)
 {
 	if (!s) {
 		// Assumes an option without a true/false means true
-		return 1;
+		return true;
 	} else if (strcasecmp(s, "yes") == EQUAL) {
-		return 1;
+		return true;
 	} else if (strcasecmp(s, "true") == EQUAL) {
-		return 1;
+		return true;
 	} else if (strcasecmp(s, "1") == EQUAL) {
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
 }
 
 #ifdef BUILD_X11
@@ -4116,13 +4118,22 @@ void initialisation(int argc, char **argv) {
 #endif /* BUILD_LUA */
 }
 
-int main(int argc, char **argv)
-{
 #ifdef BUILD_X11
-	char *s, *temp;
-	unsigned int x;
+bool isutf8(const char* envvar) {
+	char *s = getenv(envvar);
+	if(s) {
+		std::string temp = s;
+		std::transform(temp.begin(), temp.end(), temp.begin(), ::tolower);
+		if( (temp.find("utf-8") != std::string::npos) || (temp.find("utf8") != std::string::npos) ) {
+			return true;
+		}
+	}
+	return false;
+}
 #endif
 
+int main(int argc, char **argv)
+{
 	argc_copy = argc;
 	argv_copy = argv;
 	g_signal_pending = 0;
@@ -4139,21 +4150,8 @@ int main(int argc, char **argv)
 
 	/* handle command line parameters that don't change configs */
 #ifdef BUILD_X11
-	if (((s = getenv("LC_ALL")) && *s) || ((s = getenv("LC_CTYPE")) && *s)
-			|| ((s = getenv("LANG")) && *s)) {
-		temp = (char *) malloc((strlen(s) + 1) * sizeof(char));
-		if (temp == NULL) {
-			NORM_ERR("malloc failed");
-		}
-		for (x = 0; x < strlen(s); x++) {
-			temp[x] = tolower(s[x]);
-		}
-		temp[x] = 0;
-		if (strstr(temp, "utf-8") || strstr(temp, "utf8")) {
-			utf8_mode = 1;
-		}
-
-		free(temp);
+	if(isutf8("LC_ALL") || isutf8("LC_CTYPE") || isutf8("LANG")) {
+		utf8_mode = true;
 	}
 	if (!setlocale(LC_CTYPE, "")) {
 		NORM_ERR("Can't set the specified locale!\nCheck LANG, LC_CTYPE, LC_ALL.");

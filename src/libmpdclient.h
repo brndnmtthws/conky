@@ -72,10 +72,6 @@
 #define MPD_ACK_ERROR_PLAYER_SYNC		55
 #define MPD_ACK_ERROR_EXIST				56
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef enum mpd_TagItems {
 	MPD_TAG_ITEM_ARTIST,
 	MPD_TAG_ITEM_ALBUM,
@@ -631,9 +627,5 @@ void mpd_sendPlaylistMoveCommand(mpd_Connection *connection, char *playlist,
 
 void mpd_sendPlaylistDeleteCommand(mpd_Connection *connection, char *playlist,
 	int pos);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

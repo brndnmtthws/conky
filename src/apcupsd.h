@@ -25,10 +25,6 @@
 #ifndef APCUPSD_H_
 #define APCUPSD_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 int apcupsd_scan_arg(const char *);
 
 /* Service routine for the conky main thread */
@@ -47,9 +43,5 @@ void print_apcupsd_charge(struct text_object *, char *, int);
 void print_apcupsd_timeleft(struct text_object *, char *, int);
 void print_apcupsd_temp(struct text_object *, char *, int);
 void print_apcupsd_lastxfer(struct text_object *, char *, int);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /*APCUPSD_H_*/
