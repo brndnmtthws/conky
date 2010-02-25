@@ -411,7 +411,7 @@ long global_text_lines;
 static int total_updates;
 static int updatereset;
 
-static std::auto_ptr<lua::state> state;
+std::auto_ptr<lua::state> state;
 
 void set_updatereset(int i)
 {
@@ -435,7 +435,7 @@ int calc_text_width(const char *s)
 	size_t slen = strlen(s);
 
 #ifdef BUILD_X11
-	if ((output_methods & TO_X) == 0) {
+	if (not out_to_x.get(*state)) {
 #endif /* BUILD_X11 */
 		return slen;
 #ifdef BUILD_X11
@@ -874,7 +874,7 @@ static int get_string_width_special(char *s, int special_index)
 	if (!s)
 		return 0;
 
-	if ((output_methods & TO_X) == 0)
+	if (not out_to_x.get(*state))
 		return strlen(s);
 
 	p = strndup(s, text_buffer_size);
@@ -914,7 +914,7 @@ static void update_text_area(void)
 {
 	int x = 0, y = 0;
 
-	if ((output_methods & TO_X) == 0)
+	if (not out_to_x.get(*state))
 		return;
 	/* update text size if it isn't fixed */
 #ifdef OWN_WINDOW
@@ -1016,7 +1016,7 @@ static int text_size_updater(char *s, int special_index)
 	int contain_SECRIT_MULTILINE_CHAR = 0;
 	char *p;
 
-	if ((output_methods & TO_X) == 0)
+	if (not out_to_x.get(*state))
 		return 0;
 	/* get string widths and skip specials */
 	p = s;
@@ -1095,7 +1095,7 @@ static int text_size_updater(char *s, int special_index)
 static inline void set_foreground_color(long c)
 {
 #ifdef BUILD_X11
-	if (output_methods & TO_X) {
+	if (out_to_x.get(*state)) {
 #ifdef BUILD_ARGB
 		if (have_argb_visual) {
 			current_color = c | (own_window_argb_value << 24);
@@ -1163,7 +1163,7 @@ static void draw_string(const char *s)
 	added = 0;
 
 #ifdef BUILD_X11
-	if (output_methods & TO_X) {
+	if (out_to_x.get(*state)) {
 		max = ((text_width - width_of_s) / get_string_width(" "));
 	}
 #endif /* BUILD_X11 */
@@ -1186,7 +1186,7 @@ static void draw_string(const char *s)
 		}
 	}
 #ifdef BUILD_X11
-	if (output_methods & TO_X) {
+	if (out_to_x.get(*state)) {
 		if (text_width == maximum_width) {
 			/* this means the text is probably pushing the limit,
 			 * so we'll chop it */
@@ -1199,7 +1199,7 @@ static void draw_string(const char *s)
 #endif /* BUILD_X11 */
 	s = tmpstring2;
 #ifdef BUILD_X11
-	if (output_methods & TO_X) {
+	if (out_to_x.get(*state)) {
 #ifdef BUILD_XFT
 		if (use_xft) {
 			XColor c;
@@ -1245,7 +1245,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 	int orig_special_index = special_index;
 
 #ifdef BUILD_X11
-	if (output_methods & TO_X) {
+	if (out_to_x.get(*state)) {
 		font_h = font_height();
 		cur_y += font_ascent();
 	}
@@ -1687,7 +1687,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 	}
 #endif /* BUILD_NCURSES */
 #ifdef BUILD_X11
-	if (output_methods & TO_X)
+	if (out_to_x.get(*state))
 		cur_y += font_descent();
 #endif /* BUILD_X11 */
 	if (recurse && *recurse) {
@@ -1700,7 +1700,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 static int draw_line(char *s, int special_index)
 {
 #ifdef BUILD_X11
-	if (output_methods & TO_X) {
+	if (out_to_x.get(*state)) {
 		return draw_each_line_inner(s, special_index, -1);
 	}
 #endif /* BUILD_X11 */
@@ -1720,7 +1720,7 @@ static void draw_text(void)
 #ifdef BUILD_LUA
 	llua_draw_pre_hook();
 #endif /* BUILD_LUA */
-	if (output_methods & TO_X) {
+	if (out_to_x.get(*state)) {
 		cur_y = text_start_y;
 
 		/* draw borders */
@@ -1772,7 +1772,7 @@ static void draw_stuff(void)
 			NORM_ERR("Can't append '%s' anymore", append_file);
 	}
 #ifdef BUILD_X11
-	if (output_methods & TO_X) {
+	if (out_to_x.get(*state)) {
 		selected_font = 0;
 		if (draw_shades && !draw_outline) {
 			text_start_x++;
@@ -1810,7 +1810,7 @@ static void draw_stuff(void)
 	draw_mode = FG;
 	draw_text();
 #if defined(BUILD_X11) && defined(BUILD_XDBE)
-	if (output_methods & TO_X) {
+	if (out_to_x.get(*state)) {
 		xdbe_swap_buffers();
 	}
 #endif /* BUILD_X11 && BUILD_XDBE */
@@ -1853,7 +1853,7 @@ static void update_text(void)
 #endif /* BUILD_IMLIB2 */
 	generate_text();
 #ifdef BUILD_X11
-	if (output_methods & TO_X)
+	if (out_to_x.get(*state))
 		clear_text(1);
 #endif /* BUILD_X11 */
 	need_to_update = 1;
@@ -1912,7 +1912,7 @@ static void main_loop(void)
 #endif
 
 #ifdef BUILD_X11
-		if (output_methods & TO_X) {
+		if (out_to_x.get(*state)) {
 			XFlush(display);
 
 			/* wait for X event or timeout */
@@ -2245,7 +2245,7 @@ static void main_loop(void)
 				NORM_ERR("received SIGINT or SIGTERM to terminate. bye!");
 				terminate = 1;
 #ifdef BUILD_X11
-				if (output_methods & TO_X) {
+				if (out_to_x.get(*state)) {
 					XDestroyRegion(x11_stuff.region);
 					x11_stuff.region = NULL;
 #ifdef BUILD_XDAMAGE
@@ -2430,7 +2430,7 @@ void clean_up(void *memtofree1, void* memtofree2)
 	llua_close();
 #endif /* BUILD_LUA */
 #ifdef BUILD_IMLIB2
-	if (output_methods & TO_X)
+	if (out_to_x.get(*state))
 		cimlib_deinit();
 #endif /* BUILD_IMLIB2 */
 #ifdef BUILD_WEATHER_XOAP
@@ -2554,7 +2554,8 @@ static void set_default_configurations(void)
 #endif /* BUILD_XMMS2 */
 	use_spacer = NO_SPACER;
 #ifdef BUILD_X11
-	output_methods = TO_X;
+	state->pushboolean(true);
+	out_to_x.lua_set(*state);
 #else
 	output_methods = TO_STDOUT;
 #endif
@@ -2678,7 +2679,8 @@ int x11_ioerror_handler(Display *d)
 static void X11_initialisation(void)
 {
 	if (x_initialised == YES) return;
-	output_methods |= TO_X;
+	state->pushboolean(true);
+	out_to_x.lua_set(*state);
 	init_X11(disp);
 	set_default_configurations_for_x();
 	x_initialised = YES;
@@ -2695,7 +2697,7 @@ static int xargc = 0;
 
 static void X11_create_window(void)
 {
-	if (output_methods & TO_X) {
+	if (out_to_x.get(*state)) {
 #ifdef OWN_WINDOW
 		init_window(own_window, text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
 				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, set_transparent, background_colour,
@@ -2834,18 +2836,6 @@ char load_config_file(const char *f)
 		}
 
 #ifdef BUILD_X11
-		CONF2("out_to_x") {
-			/* don't listen if X is already initialised or
-			 * if we already know we don't want it */
-			if(x_initialised != YES) {
-				if (string_to_bool(value)) {
-					output_methods &= TO_X;
-				} else {
-					output_methods &= ~TO_X;
-					x_initialised = NEVER;
-				}
-			}
-		}
 		CONF("display") {
 			if (!value || x_initialised == YES) {
 				CONF_ERR;
@@ -3416,7 +3406,7 @@ char load_config_file(const char *f)
 		}
 		CONF("text") {
 #ifdef BUILD_X11
-			if (output_methods & TO_X) {
+			if (out_to_x.get(*state)) {
 				X11_initialisation();
 			}
 #endif
@@ -3576,7 +3566,7 @@ char load_config_file(const char *f)
 	}
 #if defined(BUILD_NCURSES)
 #if defined(BUILD_X11)
-	if ((output_methods & TO_X) && (output_methods & TO_NCURSES)) {
+	if (out_to_x.get(*state) && (output_methods & TO_NCURSES)) {
 		NORM_ERR("out_to_x and out_to_ncurses are incompatible, turning out_to_ncurses off");
 		output_methods &= ~TO_NCURSES;
 		endwin();
@@ -3756,7 +3746,7 @@ static void load_config_file_x11(const char *f)
 #endif
 		CONF("text") {
 			/* initialize BUILD_X11 if nothing BUILD_X11-related is mentioned before TEXT (and if BUILD_X11 is the default outputmethod) */
-			if(output_methods & TO_X) {
+			if (out_to_x.get(*state)) {
 				X11_initialisation();
 			}
 		}
@@ -3837,9 +3827,6 @@ static const char *getopt_string = "vVqdDs:t:u:i:hc:p:"
 	"C"
 #endif
 	;
-
-int printme(lua::state *, const char *str)
-{ fprintf(stderr, str); return 0;}
 
 static const struct option longopts[] = {
 	{ "help", 0, NULL, 'h' },
@@ -4042,7 +4029,7 @@ void initialisation(int argc, char **argv) {
 
 #ifdef BUILD_X11
 	/* load font */
-	if (output_methods & TO_X) {
+	if (out_to_x.get(*state)) {
 		load_config_file_x11(current_config);
 	}
 #endif /* BUILD_X11 */

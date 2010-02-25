@@ -470,7 +470,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 #endif /* BUILD_X11 */
 	END OBJ(color, 0)
 #ifdef BUILD_X11
-		if (output_methods & TO_X) {
+		if (out_to_x.get(*state)) {
 			obj->data.l = arg ? get_x11_color(arg) : default_fg_color;
 			set_current_text_color(obj->data.l);
 		}

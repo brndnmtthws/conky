@@ -456,7 +456,7 @@ void llua_setup_window_table(int text_start_x, int text_start_y, int text_width,
 	if (!lua_L) return;
 	lua_newtable(lua_L);
 
-	if (output_methods & TO_X) {
+	if (out_to_x.get(*state)) {
 #ifdef BUILD_LUA_EXTRAS
 		llua_set_userdata("drawable", "Drawable", (void*)&window.drawable);
 		llua_set_userdata("visual", "Visual", window.visual);

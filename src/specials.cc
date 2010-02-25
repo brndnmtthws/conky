@@ -277,7 +277,7 @@ void new_gauge_in_x11(struct text_object *obj, char *buf, double usage)
 	struct special_t *s = 0;
 	struct gauge *g = (struct gauge *)obj->special_data;
 
-	if ((output_methods & TO_X) == 0)
+	if (not out_to_x.get(*state))
 		return;
 
 	if (!g)
@@ -305,7 +305,7 @@ void new_gauge(struct text_object *obj, char *p, int p_max_size, double usage)
 		usage = MIN(g->scale, usage);
 
 #ifdef BUILD_X11
-	if (output_methods & TO_X)
+	if (out_to_x.get(*state))
 		new_gauge_in_x11(obj, p, usage);
 	else
 #endif /* BUILD_X11 */
@@ -318,7 +318,7 @@ void new_font(struct text_object *obj, char *p, int p_max_size)
 	struct special_t *s;
 	int tmp = selected_font;
 
-	if ((output_methods & TO_X) == 0)
+	if (not out_to_x.get(*state))
 		return;
 
 	if (!p_max_size)
@@ -372,7 +372,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size, double val)
 	struct special_t *s = 0;
 	struct graph *g = (struct graph *)obj->special_data;
 
-	if ((output_methods & TO_X) == 0)
+	if (not out_to_x.get(*state))
 		return;
 
 	if (!g || !buf_max_size)
@@ -418,7 +418,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size, double val)
 
 void new_hr(struct text_object *obj, char *p, int p_max_size)
 {
-	if ((output_methods & TO_X) == 0)
+	if (not out_to_x.get(*state))
 		return;
 
 	if (!p_max_size)
@@ -453,7 +453,7 @@ void new_stippled_hr(struct text_object *obj, char *p, int p_max_size)
 	struct special_t *s = 0;
 	struct stippled_hr *sh = (struct stippled_hr *)obj->special_data;
 
-	if ((output_methods & TO_X) == 0)
+	if (not out_to_x.get(*state))
 		return;
 
 	if (!sh || !p_max_size)
@@ -469,7 +469,7 @@ void new_stippled_hr(struct text_object *obj, char *p, int p_max_size)
 void new_fg(struct text_object *obj, char *p, int p_max_size)
 {
 #ifdef BUILD_X11
-	if (output_methods & TO_X)
+	if (out_to_x.get(*state))
 		new_special(p, FG)->arg = obj->data.l;
 #endif /* BUILD_X11 */
 #ifdef BUILD_NCURSES
@@ -484,7 +484,7 @@ void new_fg(struct text_object *obj, char *p, int p_max_size)
 #ifdef BUILD_X11
 void new_bg(struct text_object *obj, char *p, int p_max_size)
 {
-	if ((output_methods & TO_X) == 0)
+	if (not out_to_x.get(*state))
 		return;
 
 	if (!p_max_size)
@@ -526,7 +526,7 @@ static void new_bar_in_x11(struct text_object *obj, char *buf, double usage)
 	struct special_t *s = 0;
 	struct bar *b = (struct bar *)obj->special_data;
 
-	if ((output_methods & TO_X) == 0)
+	if (not out_to_x.get(*state))
 		return;
 
 	if (!b)
@@ -555,7 +555,7 @@ void new_bar(struct text_object *obj, char *p, int p_max_size, double usage)
 		usage = MIN(b->scale, usage);
 
 #ifdef BUILD_X11
-	if ((output_methods & TO_X))
+	if (out_to_x.get(*state))
 		new_bar_in_x11(obj, p, usage);
 	else
 #endif /* BUILD_X11 */

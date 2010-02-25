@@ -927,3 +927,4 @@ conky::lua_traits<alignment>::Map conky::lua_traits<alignment>::map = {
 };
 conky::config_setting<alignment> text_alignment("alignment", conky::simple_accessors<alignment>(NONE, false));
 
+conky::config_setting<bool> out_to_x("out_to_x", conky::simple_accessors<bool>(false, false));

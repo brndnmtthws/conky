@@ -35,6 +35,8 @@
 #include "common.h"	/* at least for struct dns_data */
 #include <sys/utsname.h> /* struct uname_s */
 #include <arpa/inet.h>
+#include <memory>
+#include "luamm.hh"
 
 #if defined(HAS_MCHECK_H)
 #include <mcheck.h>
@@ -324,9 +326,6 @@ extern unsigned int max_user_text;
 /* path to config file */
 extern char *current_config;
 
-#ifdef BUILD_X11
-#define TO_X 1
-#endif /* BUILD_X11 */
 #define TO_STDOUT 2
 #define TO_STDERR 4
 #define OVERWRITE_FILE 8
@@ -357,5 +356,7 @@ void free_and_zero(T *&ptr) {
 		ptr = NULL;
 	}
 }
+
+extern std::auto_ptr<lua::state> state;
 
 #endif /* _conky_h_ */

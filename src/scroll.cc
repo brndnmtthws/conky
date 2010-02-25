@@ -32,6 +32,7 @@
 #include "logging.h"
 #include "specials.h"
 #include "text_object.h"
+#include "x11.h"
 #include <vector>
 
 #define SCROLL_LEFT true
@@ -180,7 +181,7 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size)
 	}
 #ifdef BUILD_X11
 	//reset color when scroll is finished
-	if (output_methods & TO_X)
+	if (out_to_x.get(*state))
 		new_special(p + strlen(p), FG)->arg = sd->resetcolor;
 #endif
 }

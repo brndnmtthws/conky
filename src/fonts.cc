@@ -48,7 +48,7 @@ void set_font(void)
 
 void setup_fonts(void)
 {
-	if ((output_methods & TO_X) == 0) {
+	if (not out_to_x.get(*state)) {
 		return;
 	}
 #ifdef BUILD_XFT
@@ -66,7 +66,7 @@ void setup_fonts(void)
 
 int add_font(const char *data_in)
 {
-	if ((output_methods & TO_X) == 0) {
+	if (not out_to_x.get(*state)) {
 		return 0;
 	}
 	if (font_count > MAX_FONTS) {
@@ -100,7 +100,7 @@ int add_font(const char *data_in)
 
 void set_first_font(const char *data_in)
 {
-	if ((output_methods & TO_X) == 0) {
+	if (not out_to_x.get(*state)) {
 		return;
 	}
 	if (font_count < 0) {
@@ -123,7 +123,7 @@ void free_fonts(void)
 {
 	int i;
 
-	if ((output_methods & TO_X) == 0) {
+	if (not out_to_x.get(*state)) {
 		return;
 	}
 	for (i = 0; i <= font_count; i++) {
@@ -161,7 +161,7 @@ void load_fonts(void)
 {
 	int i;
 
-	if ((output_methods & TO_X) == 0)
+	if (not out_to_x.get(*state))
 		return;
 	for (i = 0; i <= font_count; i++) {
 #ifdef BUILD_XFT

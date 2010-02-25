@@ -154,6 +154,7 @@ enum alignment {
 };
 
 extern conky::config_setting<alignment> text_alignment;
+extern conky::config_setting<bool>      out_to_x;
 
 #endif /*X11_H_*/
 #endif /* BUILD_X11 */
