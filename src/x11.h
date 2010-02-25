@@ -153,8 +153,7 @@ enum alignment {
 	NONE
 };
 
-extern conky::enum_config_setting<alignment>::Map text_alignment_map;
-extern conky::enum_config_setting<alignment>      text_alignment;
+extern conky::config_setting<alignment> text_alignment;
 
 #endif /*X11_H_*/
 #endif /* BUILD_X11 */

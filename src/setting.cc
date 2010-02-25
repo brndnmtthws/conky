@@ -35,9 +35,8 @@ namespace conky {
 		 */
 		config_settings_t *config_settings;
 
-		config_setting_base::config_setting_base(const std::string &name_,
-									const lua_setter_t &lua_setter_)
-			: name(name_), lua_setter(lua_setter_)
+		config_setting_base::config_setting_base(const std::string &name_)
+			: name(name_)
 		{
 			struct config_settings_constructor {
 				config_settings_constructor() { priv::config_settings = new config_settings_t; }
@@ -66,16 +65,14 @@ namespace conky {
 			l.settable(-3);
 			l.pop();
 		}
-	}
 
-	namespace {
 		/*
 		 * Performs the actual assignment of settings. Calls the setting-specific setter after
 		 * some sanity-checking.
 		 * stack on entry: | ..., new_config_table, key, value, old_value |
 		 * stack on exit:  | ..., new_config_table, key |
 		 */
-		void process_setting(lua::state &l, bool init)
+		void config_setting_base::process_setting(lua::state &l, bool init)
 		{
 			lua::stack_sentry s(l, -2);
 
@@ -92,7 +89,7 @@ namespace conky {
 				return;
 			}
 
-			iter->second->lua_setter(&l, init);
+			iter->second->call_lua_setter(&l, init);
 			l.pushvalue(-2);
 			l.insert(-2);
 			l.rawset(-4);
@@ -103,7 +100,7 @@ namespace conky {
 		 * stack on entry: | config_table, key, value |
 		 * stack on exit:  | |
 		 */
-		int config__newindex(lua::state *l)
+		int config_setting_base::config__newindex(lua::state *l)
 		{
 			lua::stack_sentry s(*l, -3);
 			l->checkstack(1);
@@ -118,9 +115,6 @@ namespace conky {
 			return 0;
 		}
 	}
-
-	void simple_lua_setter(lua::state *l, bool)
-	{ l->pop(); }
 
 	/*
 	 * Called after the initial loading of the config file. Performs the initial assignments.
@@ -143,7 +137,7 @@ namespace conky {
 					l.pushnil();
 					while(l.next(-3)) {
 						l.pushnil();
-						process_setting(l, true);
+						priv::config_setting_base::process_setting(l, true);
 					}
 				} l.replace(-2);
 
@@ -153,7 +147,7 @@ namespace conky {
 				l.pushvalue(-1);
 				l.rawsetfield(-2, "__index");
 
-				l.pushfunction(&config__newindex);
+				l.pushfunction(&priv::config_setting_base::config__newindex);
 				l.rawsetfield(-2, "__newindex");
 
 				// conky.config will not be a table, but a userdata with some metamethods

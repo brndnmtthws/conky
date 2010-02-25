@@ -33,80 +33,159 @@
 
 namespace conky {
 
-	// performs the assignment without any error checking
-	void simple_lua_setter(lua::state *l, bool init);
+	void check_config_settings(lua::state &l);
 
-	// converts standard lua types to C types
 	template<typename T,
-		bool integral = std::is_integral<T>::value,
-		bool floating_point = std::is_floating_point<T>::value>
-	struct simple_getter {
+		bool is_integral = std::is_integral<T>::value,
+		bool floating_point = std::is_floating_point<T>::value,
+		bool is_enum = std::is_enum<T>::value>
+	struct lua_traits
+	{
 		// integral is here to force the compiler to evaluate the assert at instantiation time
-		static_assert(integral && false,
-				"Only specializations for string, integral and floating point types are available");
+		static_assert(is_integral && false,
+			"Only specializations for enum, string, integral and floating point types are available");
 	};
 
-	// Specialization for integral type.
+	// specialization for integral types
 	template<typename T>
-	struct simple_getter<T, true, false> {
-		static T do_it_def(lua::state *l, T def)
-		{
-			if(l->isnil(-1))
-				return def;
+	struct lua_traits<T, true, false, false> {
+		static const lua::Type type = lua::TNUMBER;
 
-			T t = l->tointeger(-1);
-			l->pop();
-			return t;
-		}
-
-		static T do_it(lua::state *l)
-		{ return do_it_def(l, static_cast<T>(0)); }
+		static std::pair<T, bool> convert(lua::state *l, int index, const std::string &)
+		{ return {l->tointeger(index), true}; }
 	};
 
 	// specialization for floating point types
 	template<typename T>
-	struct simple_getter<T, false, true> {
-		static T do_it_def(lua::state *l, T def)
-		{
-			if(l->isnil(-1))
-				return def;
+	struct lua_traits<T, false, true, false> {
+		static const lua::Type type = lua::TNUMBER;
 
-			T t = l->tonumber(-1);
-			l->pop();
-			return t;
-		}
-
-		static T do_it(lua::state *l)
-		{ return do_it_def(l, T(0)); }
+		static std::pair<T, bool> convert(lua::state *l, int index, const std::string &)
+		{ return {l->tonumber(index), true}; }
 	};
 
 	// specialization for std::string
 	template<>
-	struct simple_getter<std::string, false, false> {
-		static std::string do_it_def(lua::state *l, const std::string &def)
-		{
-			if(l->isnil(-1))
-				return def;
+	struct lua_traits<std::string, false, false, false> {
+		static const lua::Type type = lua::TSTRING;
 
-			std::string t = l->tostring(-1);
-			l->pop();
-			return t;
+		static std::pair<std::string, bool> convert(lua::state *l, int index, const std::string &)
+		{ return {l->tostring(index), true}; }
+	};
+
+	// specialization for bool
+	template<>
+	struct lua_traits<bool, true, false, false> {
+		static const lua::Type type = lua::TBOOLEAN;
+
+		static std::pair<bool, bool> convert(lua::state *l, int index, const std::string &)
+		{ return {l->toboolean(index), true}; }
+	};
+
+	// specialization for enums
+	// to use this, one first has to declare string<->value map
+	template<typename T>
+	struct lua_traits<T, false, false, true> {
+		static const lua::Type type = lua::TSTRING;
+
+		typedef std::initializer_list<std::pair<std::string, T>> Map;
+		static Map map;
+
+		static std::pair<T, bool> convert(lua::state *l, int index, const std::string &name)
+		{
+			std::string val = l->tostring(index);
+
+			for(auto i = map.begin(); i != map.end(); ++i) {
+				if(i->first == val)
+					return {i->second, true};
+			}
+
+			std::string msg = "Invalid value '" + val + "' for setting '"
+				+ name + "'. Valid values are: ";
+			for(auto i = map.begin(); i != map.end(); ++i) {
+				if(i != map.begin())
+					msg += ", ";
+				msg += "'" + i->first + "'";
+			}
+			msg += ".";
+			NORM_ERR("%s", msg.c_str());
+			
+			return {T(), false};
+		}
+	};
+
+
+	// standard getters and setters for basic types. They try to do The Right Thing(tm) (accept
+	// only values of correct type and print an error message otherwise). For something more
+	// elaborate, one can always write a new accessor class
+	template<typename T, typename Traits = lua_traits<T>>
+	class simple_accessors {
+		const T default_value;
+		bool modifiable;
+
+		std::pair<T, bool> do_convert(lua::state *l, int index, const std::string &name)
+		{
+			if(l->isnil(index))
+				return {default_value, true};
+
+			if(l->type(index) != Traits::type) {
+				NORM_ERR("Invalid value of type '%s' for setting '%s'. "
+						 "Expected value of type '%s'.", l->type_name(l->type(index)),
+						 name.c_str(), l->type_name(Traits::type) );
+				return {default_value, false};
+			}
+
+			return Traits::convert(l, index, name);
 		}
 
-		static std::string do_it(lua::state *l)
-		{ return do_it_def(l, std::string()); }
+	public:
+		simple_accessors(T default_value_ = T(), bool modifiable_ = false)
+			: default_value(default_value_), modifiable(modifiable_)
+		{}
+
+		T getter(lua::state *l, const std::string &name)
+		{
+			lua::stack_sentry s(*l, -1);
+			auto ret = do_convert(l, -1, name);
+			l->pop();
+
+			// setter function should make sure the value is valid
+			assert(ret.second);
+
+			return ret.first;
+		}
+
+		void lua_setter(lua::state *l, bool init, const std::string &name)
+		{
+			lua::stack_sentry s(*l, -2);
+
+			if(!init && !modifiable) {
+				NORM_ERR("Setting '%s' is not modifiable", name.c_str());
+				l->replace(-2);
+			} else {
+				auto ret = do_convert(l, -2, name);
+				if(ret.second)
+					l->pop();
+				else
+					l->replace(-2);
+			}
+			++s;
+		}
 	};
 
 	namespace priv {
 		class config_setting_base {
+		private:
+			static void process_setting(lua::state &l, bool init);
+			static int config__newindex(lua::state *l);
+
+		protected:
+			virtual void call_lua_setter(lua::state *l, bool init) = 0;
+
 		public:
-			typedef std::function<void (lua::state *l, bool init)> lua_setter_t;
-
 			const std::string name;
-			const lua_setter_t lua_setter;
 
-			config_setting_base(const std::string &name_, const lua_setter_t &lua_setter_);
-			virtual ~config_setting_base() {}
+			config_setting_base(const std::string &name_);
 
 			/*
 			 * Set the setting manually.
@@ -114,6 +193,8 @@ namespace conky {
 			 * stack on exit:  | ... |
 			 */
 			void lua_set(lua::state &l);
+
+			friend void conky::check_config_settings(lua::state &l);
 		};
 
 		typedef std::unordered_map<std::string, config_setting_base *> config_settings_t;
@@ -135,24 +216,25 @@ namespace conky {
 	 * be changed (easily?) when conky is running, but some (e.g. x/y position of the window)
 	 * can.
 	 */
-	template<typename T>
+	template<typename T, typename Accessors = simple_accessors<T>>
 	class config_setting: public priv::config_setting_base {
 	public:
-		typedef std::function<T (lua::state *l)> getter_t;
-
-		config_setting(const std::string &name_,
-				const getter_t &getter_ = &simple_getter<T>::do_it,
-				const lua_setter_t &lua_setter_ = &simple_lua_setter)
-			: config_setting_base(name_, lua_setter_), getter(getter_)
+		config_setting(const std::string &name_, const Accessors &accessors_ = Accessors())
+			: config_setting_base(name_), accessors(accessors_)
 		{}
 
 		T get(lua::state &l);
+
+	protected:
+		virtual void call_lua_setter(lua::state *l, bool init)
+		{ accessors.lua_setter(l, init, name); }
+	
 	private:
-		getter_t getter;
+		Accessors accessors;
 	};
 
-	template<typename T>
-	T config_setting<T>::get(lua::state &l)
+	template<typename T, typename Accessors>
+	T config_setting<T, Accessors>::get(lua::state &l)
 	{
 		lua::stack_sentry s(l);
 		l.checkstack(2);
@@ -164,95 +246,8 @@ namespace conky {
 		l.getfield(-1, name.c_str());
 		l.replace(-2);
 
-		return getter(&l);
+		return accessors.getter(&l, name);
 	}
-
-	template<typename T>
-	class enum_config_setting: public config_setting<T> {
-		// In theory, this class may be useful for other types too. If you think think you have a
-		// use for that, remove this assert.
-		static_assert(std::is_enum<T>::value, "Only enum types allowed");
-
-		typedef config_setting<T> Base;
-
-		std::pair<T, bool> convert(lua::state *l, int index);
-		T enum_getter(lua::state *l);
-		void enum_lua_setter(lua::state *l, bool init);
-
-	public:
-		typedef std::initializer_list<std::pair<std::string, T>> Map;
-		enum_config_setting(const std::string &name_, Map map_, bool modifiable_, T default_value_)
-			: Base(name_,
-					std::bind(&enum_config_setting::enum_getter, this, std::placeholders::_1),
-					std::bind(&enum_config_setting::enum_lua_setter, this, std::placeholders::_1,
-									std::placeholders::_2)),
-			  map(map_), modifiable(modifiable_), default_value(default_value_)
-		{}
-	
-	private:
-		Map map;
-		bool modifiable;
-		T default_value;
-	};
-
-	template<typename T>
-	std::pair<T, bool> enum_config_setting<T>::convert(lua::state *l, int index)
-	{
-		if(l->isnil(index))
-			return {default_value, true};
-
-		std::string val = l->tostring(index);
-
-		for(auto i = map.begin(); i != map.end(); ++i) {
-			if(i->first == val)
-				return {i->second, true};
-		}
-
-		std::string msg = "Invalid value '" + val + "' for setting '"
-			+ Base::name + "'. Valid values are: ";
-		for(auto i = map.begin(); i != map.end(); ++i) {
-			if(i != map.begin())
-				msg += ", ";
-			msg += "'" + i->first + "'";
-		}
-		msg += ".";
-		NORM_ERR("%s", msg.c_str());
-		
-		return {default_value, false};
-	}
-
-	template<typename T>
-	T enum_config_setting<T>::enum_getter(lua::state *l)
-	{
-		lua::stack_sentry s(*l, -1);
-		auto ret = convert(l, -1);
-		l->pop();
-
-		// setter function should make sure the value is valid
-		assert(ret.second);
-
-		return ret.first;
-	}
-
-	template<typename T>
-	void enum_config_setting<T>::enum_lua_setter(lua::state *l, bool init)
-	{
-		lua::stack_sentry s(*l, -2);
-
-		if(!init && !modifiable) {
-			NORM_ERR("Setting '%s' is not modifiable", Base::name.c_str());
-			l->replace(-2);
-		} else {
-			auto ret = convert(l, -2);
-			if(ret.second)
-				l->pop();
-			else
-				l->replace(-2);
-		}
-		++s;
-	}
-
-	void check_config_settings(lua::state &l);
 
 /////////// example settings, remove after real settings are available ///////
 	extern config_setting<std::string> asdf;
