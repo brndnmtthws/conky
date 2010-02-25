@@ -30,17 +30,7 @@
 #ifndef _COLOURS_H
 #define _COLOURS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* this function is used in C code, use C calling conventions */
 unsigned int adjust_colours(unsigned int);
-
-#ifdef __cplusplus
-}
-#endif
-
 unsigned long *do_gradient(int, unsigned long, unsigned long);
 
 long get_x11_color(const char *);

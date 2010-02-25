@@ -31,10 +31,6 @@
 
 #include <xmmsclient/xmmsclient.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 struct xmms2_s {
 	char *artist;
 	char *album;
@@ -82,9 +78,5 @@ void print_xmms2_percent(struct text_object *, char *, int);
 int if_xmms2_connected(struct text_object *);
 
 void free_xmms2(struct text_object *);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /*XMMS2_H_*/

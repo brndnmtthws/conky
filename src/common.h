@@ -32,15 +32,7 @@
 #include <sys/socket.h>
 #include "text_object.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 void print_to_bytes(struct text_object *, char *, int);
-
-#ifdef __cplusplus
-}
-#endif
 
 void add_update_callback(void (*func)(void));
 void free_update_callbacks(void);

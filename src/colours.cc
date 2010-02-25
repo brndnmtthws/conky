@@ -71,12 +71,6 @@ static void set_up_gradient(void)
 	greenmask = greenmask << (colour_depth / 3);
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* this function is used in C code, use C calling conventions */
-
 /* adjust colour values depending on colour depth */
 unsigned int adjust_colours(unsigned int colour)
 {
@@ -95,10 +89,6 @@ unsigned int adjust_colours(unsigned int colour)
 	}
 	return colour;
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 /* this function returns the next colour between two colours for a gradient */
 unsigned long *do_gradient(int width, unsigned long first_colour, unsigned long last_colour)

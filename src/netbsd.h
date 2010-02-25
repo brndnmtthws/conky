@@ -30,15 +30,7 @@
 #include "conky.h"
 #include "common.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 int get_entropy_avail(unsigned int *);
 int get_entropy_poolsize(unsigned int *);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /*NETBSD_H_*/

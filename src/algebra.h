@@ -30,10 +30,6 @@
 #ifndef _ALGEBRA_H
 #define _ALGEBRA_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 enum match_type {
 	OP_LT = 1,	/* < */
 	OP_GT = 2,	/* > */
@@ -52,9 +48,5 @@ enum arg_type {
 
 int compare(const char *);
 int check_if_match(struct text_object *);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* _ALGEBRA_H */

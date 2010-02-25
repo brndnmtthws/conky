@@ -33,10 +33,6 @@
 #include "config.h"		/* for the defines */
 #include "specials.h"		/* enum special_types */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* text object callbacks */
 struct obj_cb {
 	/* text object: print obj's output to p */
@@ -115,9 +111,5 @@ int ifblock_stack_empty(void **opaque);
 
 /* make the given object be a plain text object printing given string */
 void obj_be_plain_text(struct text_object *, const char *);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* _TEXT_OBJECT_H */

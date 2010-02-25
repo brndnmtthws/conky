@@ -1,4 +1,5 @@
 /* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
@@ -24,10 +25,6 @@
 #ifndef _EVE_H
 #define _EVE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define EVEURL_TRAINING "http://api.eve-online.com/char/SkillInTraining.xml.aspx"
 #define EVEURL_SKILLTREE "http://api.eve-online.com/eve/Skilltree.xml.aspx"
 #define EVE_OUTPUT_FORMAT "%s %d in %s"
@@ -35,9 +32,5 @@ extern "C" {
 void scan_eve(struct text_object *, const char *);
 void print_eve(struct text_object *, char *, int);
 void free_eve(struct text_object *);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* _EVE_H */

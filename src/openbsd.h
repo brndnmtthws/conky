@@ -9,10 +9,6 @@
 #include <sys/sensors.h>
 #include <machine/apmvar.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 void parse_obsd_sensor(struct text_object *, const char *);
 void print_obsd_sensors_temp(struct text_object *, char *, int);
 void print_obsd_sensors_fan(struct text_object *, char *, int);
@@ -26,9 +22,5 @@ typedef struct apm_power_info *apm_info_t;
 
 int get_entropy_avail(unsigned int *);
 int get_entropy_poolsize(unsigned int *);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /*OPENBSD_H_*/
