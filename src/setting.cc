@@ -52,17 +52,19 @@ namespace conky {
 
 		void config_setting_base::lua_set(lua::state &l)
 		{
-			lua::stack_sentry s(l, 1);
+			lua::stack_sentry s(l, -1);
 			l.checkstack(2);
 
-			l.getglobal("conky"); ++s;
-			l.rawgetfield(-1, "config"); ++s;
-			--s; l.replace(-2);
+			l.getglobal("conky");
+			l.rawgetfield(-1, "config");
+			l.replace(-2);
 			l.insert(-2);
-			l.pushstring(name.c_str()); ++s;
+
+			l.pushstring(name.c_str());
 			l.insert(-2);
-			s-=2; l.settable(-3);
-			--s; l.pop();
+
+			l.settable(-3);
+			l.pop();
 		}
 	}
 
@@ -75,8 +77,7 @@ namespace conky {
 		 */
 		void process_setting(lua::state &l, bool init)
 		{
-			lua::stack_sentry s(l, 2);
-			l.checkstack(1);
+			lua::stack_sentry s(l, -2);
 
 			int type = l.type(-3);
 			if(type != lua::TSTRING) {
@@ -91,10 +92,10 @@ namespace conky {
 				return;
 			}
 
-			s-=2; iter->second->lua_setter(&l, init); ++s;
-			l.pushvalue(-2); ++s;
+			iter->second->lua_setter(&l, init);
+			l.pushvalue(-2);
 			l.insert(-2);
-			s-=2; l.rawset(-4);
+			l.rawset(-4);
 		}
 
 		/*
@@ -104,15 +105,15 @@ namespace conky {
 		 */
 		int config__newindex(lua::state *l)
 		{
-			lua::stack_sentry s(*l, 3);
+			lua::stack_sentry s(*l, -3);
 			l->checkstack(1);
 
 			l->getmetatable(-3);
 			l->replace(-4);
 
-			l->pushvalue(-2); ++s;
-			--s; l->rawget(-4); ++s;
-			s-=2; process_setting(*l, false);
+			l->pushvalue(-2);
+			l->rawget(-4);
+			process_setting(*l, false);
 
 			return 0;
 		}
@@ -132,19 +133,19 @@ namespace conky {
 		lua::stack_sentry s(l);
 		l.checkstack(6);
 
-		l.getglobal("conky"); ++s; {
-			l.rawgetfield(-1, "config"); ++s; {
+		l.getglobal("conky"); {
+			l.rawgetfield(-1, "config"); {
 				if(l.type(-1) != lua::TTABLE)
 					throw std::runtime_error("conky.config must be a table");
 
 				// new conky.config table, containing only valid settings
-				l.newtable(); ++s; {
-					l.pushnil(); ++s;
-					while(l.next(-3)) { ++s;
-						l.pushnil(); ++s;
-						s-=2; process_setting(l, true);
-					} --s;
-				} --s; l.replace(-2);
+				l.newtable(); {
+					l.pushnil();
+					while(l.next(-3)) {
+						l.pushnil();
+						process_setting(l, true);
+					}
+				} l.replace(-2);
 
 				l.pushboolean(false);
 				l.rawsetfield(-2, "__metatable");
@@ -159,11 +160,11 @@ namespace conky {
 				// we do this because we want to control access to the settings
 				// we use the metatable for storing the settings, that means having a setting
 				// whose name stars with "__" is a bad idea
-				l.newuserdata(1); ++s;
+				l.newuserdata(1);
 				l.insert(-2);
-				--s; l.setmetatable(-2);
-			} --s; l.rawsetfield(-2, "config");
-		} --s; l.pop(1);
+				l.setmetatable(-2);
+			} l.rawsetfield(-2, "config");
+		} l.pop();
 	}
 
 /////////// example settings, remove after real settings are available ///////

@@ -4240,11 +4240,9 @@ int main(int argc, char **argv)
 
 #if 0
     try {
-        lua::stack_sentry s(l);
-		l.pushvalue(lua::GLOBALSINDEX); ++s;
-        l.pushnil();                     ++s;
+		l.pushvalue(lua::GLOBALSINDEX);
+        l.pushnil();
         while(l.next(-2)) {
-            lua::stack_sentry s2(l, 1);
             if(l.isnumber(-2))
                 std::cout << l.tonumber(-2);
 			else if(l.isstring(-2))

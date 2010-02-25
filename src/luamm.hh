@@ -273,11 +273,18 @@ namespace lua {
 
 	/*
 	 * Can be used to automatically pop temporary values off the lua stack on exit from the
-	 * function/block (e.g. via an exception). The constructor parameter indicates the number of
-	 * values to pop(). That can be later changed with the overloaded operators. The idiom is:
-	 * stack_sentry s(L);
-	 * L.an_operation_that_pushes_something(); ++s;
-	 * ...
+	 * function/block (e.g. via an exception). It's destructor makes sure the stack contains
+	 * exactly n items. The constructor initializes n to l.gettop()+n_, but that can be later
+	 * changed with the overloaded operators. It is an error if stack contains less than n
+	 * elements at entry into the destructor.
+	 *
+	 * Proposed stack discipline for functions is this:
+	 * - called function always pops parameters off the stack.
+	 * - if functions returns normally, it's return values are on the stack.
+	 * - if function throws an exception, there are no return values on the stack.
+	 * The last point differs from lua C api, which return an error message on the stack. But
+	 * since we have exception.what() for that, putting the message on the stack is not
+	 * necessary.
 	 */
 	class stack_sentry {
 		state *L;
@@ -287,15 +294,15 @@ namespace lua {
 		const stack_sentry& operator=(const stack_sentry &) = delete;
 	public:
 		explicit stack_sentry(state &l, int n_ = 0) throw()
-			: L(&l), n(n_)
-		{}
+			: L(&l), n(l.gettop()+n_)
+		{ assert(n >= 0); }
 
-		~stack_sentry()			throw() { L->pop(n); }
+		~stack_sentry()			throw() { assert(L->gettop() >= n); L->settop(n); }
 
 		void operator++()		throw() { ++n; }
-		void operator--()		throw() { --n; }
+		void operator--()		throw() { --n; assert(n >= 0); }
 		void operator+=(int n_) throw() { n+=n_; }
-		void operator-=(int n_) throw() { n-=n_; }
+		void operator-=(int n_) throw() { n-=n_; assert(n >= 0); }
 	};
 
 	template<typename T, typename... Args>
@@ -303,8 +310,9 @@ namespace lua {
 	{
 		stack_sentry s(*this);
 
-		void *t = newuserdata(sizeof(T)); ++s;
-		new(t) T(std::forward<Args>(args)...); --s;
+		void *t = newuserdata(sizeof(T));
+		new(t) T(std::forward<Args>(args)...);
+		++s;
 		return static_cast<T *>(t);
 	}
 }

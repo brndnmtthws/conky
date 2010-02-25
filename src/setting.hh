@@ -157,12 +157,14 @@ namespace conky {
 		lua::stack_sentry s(l);
 		l.checkstack(2);
 
-		l.getglobal("conky"); ++s;
-		l.getfield(-1, "config"); ++s;
-		--s; l.replace(-2);
-		l.getfield(-1, name.c_str()); ++s;
-		--s; l.replace(-2);
-		--s; return getter(&l);
+		l.getglobal("conky");
+		l.getfield(-1, "config");
+		l.replace(-2);
+
+		l.getfield(-1, name.c_str());
+		l.replace(-2);
+
+		return getter(&l);
 	}
 
 	template<typename T>
@@ -222,9 +224,9 @@ namespace conky {
 	template<typename T>
 	T enum_config_setting<T>::enum_getter(lua::state *l)
 	{
-		lua::stack_sentry s(*l, 1);
+		lua::stack_sentry s(*l, -1);
 		auto ret = convert(l, -1);
-		l->pop(); --s;
+		l->pop();
 
 		// setter function should make sure the value is valid
 		assert(ret.second);
@@ -235,7 +237,7 @@ namespace conky {
 	template<typename T>
 	void enum_config_setting<T>::enum_lua_setter(lua::state *l, bool init)
 	{
-		lua::stack_sentry s(*l, 2);
+		lua::stack_sentry s(*l, -2);
 
 		if(!init && !modifiable) {
 			NORM_ERR("Setting '%s' is not modifiable", Base::name.c_str());
@@ -247,7 +249,7 @@ namespace conky {
 			else
 				l->replace(-2);
 		}
-		s-=2;
+		++s;
 	}
 
 	void check_config_settings(lua::state &l);

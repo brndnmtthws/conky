@@ -34,11 +34,11 @@ namespace conky {
 		lua::stack_sentry s(l);
 		l.checkstack(3);
 
-		l.newtable(); ++s; {
+		l.newtable(); {
 			export_data_sources(l);
 
 			l.newtable();
 			l.rawsetfield(-2, "config");
-		} --s; l.setglobal("conky");
+		} l.setglobal("conky");
 	}
 }

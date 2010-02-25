@@ -132,29 +132,29 @@ namespace conky {
 		lua::stack_sentry s(l);
 		l.checkstack(2);
 
-		l.newmetatable(priv::data_source_metatable); ++s; {
-			l.pushboolean(false); ++s;
-			l.rawsetfield(-2, "__metatable"); --s;
+		l.newmetatable(priv::data_source_metatable); {
+			l.pushboolean(false);
+			l.rawsetfield(-2, "__metatable");
 
-			l.pushdestructor<data_source_base>(); ++s;
-			l.rawsetfield(-2, "__gc"); --s;
+			l.pushdestructor<data_source_base>();
+			l.rawsetfield(-2, "__gc");
 
-			l.loadstring(data_source__index); ++s;
-			l.rawsetfield(-2, "__index"); --s;
-		} l.pop(); --s;
+			l.loadstring(data_source__index);
+			l.rawsetfield(-2, "__index");
+		} l.pop();
 
-		l.newtable(); ++s; {
+		l.newtable(); {
 			for(auto i = data_sources->begin(); i != data_sources->end(); ++i) {
-				l.pushfunction(i->second); ++s;
-				l.rawsetfield(-2, i->first.c_str()); --s;
+				l.pushfunction(i->second);
+				l.rawsetfield(-2, i->first.c_str());
 			}
-		} l.rawsetfield(-2, "variables"); --s;
+		} l.rawsetfield(-2, "variables");
 
-		l.pushfunction(data_source_asnumber); ++s;
-		l.rawsetfield(-2, "asnumber"); --s;
+		l.pushfunction(data_source_asnumber);
+		l.rawsetfield(-2, "asnumber");
 
-		l.pushfunction(data_source_astext); ++s;
-		l.rawsetfield(-2, "astext"); --s;
+		l.pushfunction(data_source_astext);
+		l.rawsetfield(-2, "astext");
 	}
 }
 
