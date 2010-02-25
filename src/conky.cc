@@ -403,7 +403,7 @@ unsigned int max_user_text;
 unsigned int text_buffer_size = DEFAULT_TEXT_BUFFER_SIZE;
 
 /* UTF-8 */
-int utf8_mode = 0;
+bool utf8_mode = false;
 
 /* no buffers in used memory? */
 int no_buffers;
@@ -2458,19 +2458,19 @@ void clean_up(void *memtofree1, void* memtofree2)
 	free_and_zero(global_cpu);
 }
 
-static int string_to_bool(const char *s)
+static bool string_to_bool(const char *s)
 {
 	if (!s) {
 		// Assumes an option without a true/false means true
-		return 1;
+		return true;
 	} else if (strcasecmp(s, "yes") == EQUAL) {
-		return 1;
+		return true;
 	} else if (strcasecmp(s, "true") == EQUAL) {
-		return 1;
+		return true;
 	} else if (strcasecmp(s, "1") == EQUAL) {
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
 }
 
 #ifdef BUILD_X11
@@ -4195,12 +4195,22 @@ void initialisation(int argc, char **argv) {
 #endif /* BUILD_LUA */
 }
 
-int main(int argc, char **argv)
-{
 #ifdef BUILD_X11
-	char *s;
+bool isutf8(const char* envvar) {
+	char *s = getenv(envvar);
+	if(s) {
+		std::string temp = s;
+		std::transform(temp.begin(), temp.end(), temp.begin(), ::tolower);
+		if( (temp.find("utf-8") != std::string::npos) || (temp.find("utf8") != std::string::npos) ) {
+			return true;
+		}
+	}
+	return false;
+}
 #endif
 
+int main(int argc, char **argv)
+{
 	argc_copy = argc;
 	argv_copy = argv;
 	g_signal_pending = 0;
@@ -4217,13 +4227,8 @@ int main(int argc, char **argv)
 
 	/* handle command line parameters that don't change configs */
 #ifdef BUILD_X11
-	if (((s = getenv("LC_ALL")) && *s) || ((s = getenv("LC_CTYPE")) && *s)
-			|| ((s = getenv("LANG")) && *s)) {
-		std::string temp = s;
-		std::transform(temp.begin(), temp.end(), temp.begin(), ::tolower);
-		if( (temp.find("utf-8") != std::string::npos) || (temp.find("utf8") != std::string::npos) ) {
-			utf8_mode = 1;
-		}
+	if(isutf8("LC_ALL") || isutf8("LC_CTYPE") || isutf8("LANG")) {
+		utf8_mode = true;
 	}
 	if (!setlocale(LC_CTYPE, "")) {
 		NORM_ERR("Can't set the specified locale!\nCheck LANG, LC_CTYPE, LC_ALL.");
