@@ -191,6 +191,7 @@ namespace lua {
 		bool getmetatable(int index) throw() { return lua_getmetatable(cobj.get(), index); }
 		int gettop() throw() { return lua_gettop(cobj.get()); }
 		void insert(int index) throw() { lua_insert(cobj.get(), index); }
+		bool isboolean(int index) throw() { return lua_isboolean(cobj.get(), index); }
 		bool isfunction(int index) throw() { return lua_isfunction(cobj.get(), index); }
 		bool islightuserdata(int index) throw() { return lua_islightuserdata(cobj.get(), index); }
 		bool isnil(int index) throw() { return lua_isnil(cobj.get(), index); }
@@ -211,6 +212,7 @@ namespace lua {
 		// lua_setmetatable returns int, but docs don't specify it's meaning :/
 		int setmetatable(int index) throw() { return lua_setmetatable(cobj.get(), index); }
 		void settop(int index) throw() { return lua_settop(cobj.get(), index); }
+		bool toboolean(int index) throw() { return lua_toboolean(cobj.get(), index); }
 		integer tointeger(int index) throw() { return lua_tointeger(cobj.get(), index); }
 		number tonumber(int index) throw() { return lua_tonumber(cobj.get(), index); }
 		void* touserdata(int index) throw() { return lua_touserdata(cobj.get(), index); }
