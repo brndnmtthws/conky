@@ -79,7 +79,7 @@ namespace conky {
 		{
 			lua::stack_sentry s(l, -2);
 
-			int type = l.type(-3);
+			lua::Type type = l.type(-3);
 			if(type != lua::TSTRING) {
 				NORM_ERR("invalid setting of type '%s'", l.type_name(type));
 				return;

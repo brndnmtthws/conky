@@ -56,7 +56,7 @@ namespace lua {
 		MULTRET = LUA_MULTRET
 	};
 
-	enum {
+	enum Type {
 		TBOOLEAN	   = LUA_TBOOLEAN,
 		TFUNCTION	   = LUA_TFUNCTION,
 		TLIGHTUSERDATA = LUA_TLIGHTUSERDATA,
@@ -214,9 +214,9 @@ namespace lua {
 		integer tointeger(int index) throw() { return lua_tointeger(cobj.get(), index); }
 		number tonumber(int index) throw() { return lua_tonumber(cobj.get(), index); }
 		void* touserdata(int index) throw() { return lua_touserdata(cobj.get(), index); }
-		int type(int index) throw() { return lua_type(cobj.get(), index); }
+		Type type(int index) throw() { return static_cast<Type>(lua_type(cobj.get(), index)); }
 		// typename is a reserved word :/
-		const char* type_name(int tp) throw() { return lua_typename(cobj.get(), tp); }
+		const char* type_name(Type tp) throw() { return lua_typename(cobj.get(), tp); }
 		void unref(int t, int ref) throw() { return luaL_unref(cobj.get(), t, ref); }
 
 		// type b, throw only on memory allocation errors
