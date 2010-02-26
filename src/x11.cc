@@ -378,7 +378,7 @@ void init_window(int w, int h, int set_trans, int back_colour,
 
 			XmbSetWMProperties(display, window.window, NULL, NULL, argv,
 					argc, NULL, &wmHint, &classHint);
-			XStoreName(display, window.window, window.title);
+			XStoreName(display, window.window, own_window_title.get(*state).c_str() );
 
 			/* Sets an empty WM_PROTOCOLS property */
 			XSetWMProtocols(display, window.window, NULL, 0);
@@ -940,4 +940,12 @@ conky::config_setting<bool> out_to_x("out_to_x", conky::simple_accessors<bool>(f
 conky::config_setting<bool> own_window("own_window", conky::simple_accessors<bool>(false, false));
 conky::config_setting<std::string> own_window_class("own_window_class",
 									conky::simple_accessors<std::string>(PACKAGE_NAME, false));
+
+namespace {
+	// used to set the default value for own_window_title
+	std::string gethostnamecxx()
+	{ update_uname(); return info.uname_s.nodename; }
+}
+conky::config_setting<std::string> own_window_title("own_window_title",
+		conky::simple_accessors<std::string>(PACKAGE_NAME " (" + gethostnamecxx()+")", false));
 #endif

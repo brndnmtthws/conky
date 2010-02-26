@@ -83,7 +83,6 @@ struct conky_window {
 	int width;
 	int height;
 #ifdef OWN_WINDOW
-	char title[256];
 	int x;
 	int y;
 	unsigned int type;
@@ -158,6 +157,7 @@ extern conky::config_setting<bool>      out_to_x;
 #ifdef OWN_WINDOW
 extern conky::config_setting<bool>      own_window;
 extern conky::config_setting<std::string> own_window_class;
+extern conky::config_setting<std::string> own_window_title;
 #endif
 
 #endif /*X11_H_*/

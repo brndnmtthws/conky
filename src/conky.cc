@@ -2574,7 +2574,6 @@ static void set_default_configurations(void)
 #ifdef OWN_WINDOW
 	window.type = TYPE_NORMAL;
 	window.hints = 0;
-	sprintf(window.title, PACKAGE_NAME" (%s)", info.uname_s.nodename);
 #ifdef BUILD_ARGB
 	use_argb_visual = 0;
 	own_window_argb_value = 255;
@@ -3242,12 +3241,6 @@ char load_config_file(const char *f)
 		}
 #ifdef BUILD_X11
 #ifdef OWN_WINDOW
-		CONF("own_window_title") {
-			if (value) {
-				memset(window.title, 0, sizeof(window.title));
-				strncpy(window.title, value, sizeof(window.title) - 1);
-			}
-		}
 		CONF("own_window_transparent") {
 			if (value) {
 				set_transparent = string_to_bool(value);
