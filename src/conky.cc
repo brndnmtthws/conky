@@ -365,7 +365,6 @@ long default_fg_color, default_bg_color, default_out_color;
 static int set_transparent = 0;
 
 #ifdef OWN_WINDOW
-static int own_window = 0;
 static int background_colour = 0;
 
 /* fixed size/pos is set if wm/user changes them */
@@ -973,7 +972,7 @@ static void update_text_area(void)
 #endif /* OWN_WINDOW */
 #ifdef OWN_WINDOW
 
-	if (own_window && !fixed_pos) {
+	if (own_window.get(*state) && !fixed_pos) {
 		x += workarea[0];
 		y += workarea[1];
 		text_start_x = window.border_inner_margin + window.border_outer_margin + window.border_width;
@@ -1956,7 +1955,7 @@ static void main_loop(void)
 				selected_font = 0;
 				update_text_area();
 #ifdef OWN_WINDOW
-				if (own_window) {
+				if (own_window.get(*state)) {
 					int changed = 0;
 
 					/* resize window if it isn't right size */
@@ -2071,13 +2070,13 @@ static void main_loop(void)
 #ifdef OWN_WINDOW
 					case ReparentNotify:
 						/* make background transparent */
-						if (own_window) {
+						if (own_window.get(*state)) {
 							set_transparent_background(window.window, own_window_argb_value);
 						}
 						break;
 
 					case ConfigureNotify:
-						if (own_window) {
+						if (own_window.get(*state)) {
 							/* if window size isn't what expected, set fixed size */
 							if (ev.xconfigure.width != window.width
 									|| ev.xconfigure.height != window.height) {
@@ -2121,7 +2120,7 @@ static void main_loop(void)
 						break;
 
 					case ButtonPress:
-						if (own_window) {
+						if (own_window.get(*state)) {
 							/* if an ordinary window with decorations */
 							if ((window.type == TYPE_NORMAL &&
 										(!TEST_HINT(window.hints,
@@ -2144,7 +2143,7 @@ static void main_loop(void)
 						break;
 
 					case ButtonRelease:
-						if (own_window) {
+						if (own_window.get(*state)) {
 							/* if an ordinary window with decorations */
 							if ((window.type == TYPE_NORMAL)
 									&& (!TEST_HINT(window.hints,
@@ -2573,7 +2572,6 @@ static void set_default_configurations(void)
 	minimum_height = 5;
 	maximum_width = 0;
 #ifdef OWN_WINDOW
-	own_window = 0;
 	window.type = TYPE_NORMAL;
 	window.hints = 0;
 	strcpy(window.class_name, PACKAGE_NAME);
@@ -2699,11 +2697,11 @@ static void X11_create_window(void)
 {
 	if (out_to_x.get(*state)) {
 #ifdef OWN_WINDOW
-		init_window(own_window, text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
+		init_window(text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
 				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, set_transparent, background_colour,
 				xargv, xargc);
 #else /* OWN_WINDOW */
-		init_window(0, text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
+		init_window(text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
 				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, set_transparent, 0,
 				xargv, xargc);
 #endif /* OWN_WINDOW */
@@ -2713,10 +2711,10 @@ static void X11_create_window(void)
 		update_text_area();	/* to position text/window on screen */
 
 #ifdef OWN_WINDOW
-		if (own_window && !fixed_pos) {
-			XMoveWindow(display, window.window, window.x, window.y);
-		}
-		if (own_window) {
+		if (own_window.get(*state)) {
+			if (not fixed_pos)
+				XMoveWindow(display, window.window, window.x, window.y);
+
 			set_transparent_background(window.window, own_window_argb_value);
 		}
 #endif
@@ -3245,11 +3243,6 @@ char load_config_file(const char *f)
 		}
 #ifdef BUILD_X11
 #ifdef OWN_WINDOW
-		CONF("own_window") {
-			if (value) {
-				own_window = string_to_bool(value);
-			}
-		}
 		CONF("own_window_class") {
 			if (value) {
 				memset(window.class_name, 0, sizeof(window.class_name));
@@ -3979,7 +3972,8 @@ void initialisation(int argc, char **argv) {
 
 #ifdef OWN_WINDOW
 			case 'o':
-				own_window = 1;
+				state->pushboolean(true);
+				own_window.lua_set(*state);
 				break;
 #endif
 #ifdef BUILD_XDBE

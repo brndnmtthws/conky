@@ -263,7 +263,7 @@ void destroy_window(void)
 	colour_set = -1;
 }
 
-void init_window(int own_window, int w, int h, int set_trans, int back_colour,
+void init_window(int w, int h, int set_trans, int back_colour,
 		char **argv, int argc)
 {
 	/* There seems to be some problems with setting transparent background
@@ -274,7 +274,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 	window_created = 1;
 
 #ifdef OWN_WINDOW
-	if (own_window) {
+	if (own_window.get(*state)) {
 		int depth = 0, flags;
 		Visual *visual = NULL;
 		
@@ -578,7 +578,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 
 	XSelectInput(display, window.window, ExposureMask | PropertyChangeMask
 #ifdef OWN_WINDOW
-			| (own_window ? (StructureNotifyMask |
+			| (own_window.get(*state) ? (StructureNotifyMask |
 					ButtonPressMask | ButtonReleaseMask) : 0)
 #endif
 			);
@@ -928,3 +928,7 @@ conky::lua_traits<alignment>::Map conky::lua_traits<alignment>::map = {
 conky::config_setting<alignment> text_alignment("alignment", conky::simple_accessors<alignment>(NONE, false));
 
 conky::config_setting<bool> out_to_x("out_to_x", conky::simple_accessors<bool>(false, false));
+
+#ifdef OWN_WINDOW
+conky::config_setting<bool> own_window("own_window", conky::simple_accessors<bool>(false, false));
+#endif

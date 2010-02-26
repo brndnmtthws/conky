@@ -120,7 +120,7 @@ extern struct conky_window window;
 extern char window_created;
 
 void init_X11(const char*);
-void init_window(int use_own_window, int width, int height, int set_trans,
+void init_window(int width, int height, int set_trans,
 	int back_colour, char **argv, int argc);
 void destroy_window(void);
 void create_gc(void);
@@ -155,6 +155,10 @@ enum alignment {
 
 extern conky::config_setting<alignment> text_alignment;
 extern conky::config_setting<bool>      out_to_x;
+
+#ifdef OWN_WINDOW
+extern conky::config_setting<bool>      own_window;
+#endif
 
 #endif /*X11_H_*/
 #endif /* BUILD_X11 */
