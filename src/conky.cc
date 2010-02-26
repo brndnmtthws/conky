@@ -361,9 +361,6 @@ static int draw_shades, draw_outline;
 
 long default_fg_color, default_bg_color, default_out_color;
 
-/* create own window or draw stuff to root? */
-static int set_transparent = 0;
-
 #ifdef OWN_WINDOW
 static int background_colour = 0;
 
@@ -2695,11 +2692,11 @@ static void X11_create_window(void)
 	if (out_to_x.get(*state)) {
 #ifdef OWN_WINDOW
 		init_window(text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
-				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, set_transparent, background_colour,
+				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, background_colour,
 				xargv, xargc);
 #else /* OWN_WINDOW */
 		init_window(text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
-				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, set_transparent, 0,
+				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, 0,
 				xargv, xargc);
 #endif /* OWN_WINDOW */
 
@@ -3240,11 +3237,6 @@ char load_config_file(const char *f)
 		}
 #ifdef BUILD_X11
 #ifdef OWN_WINDOW
-		CONF("own_window_transparent") {
-			if (value) {
-				set_transparent = string_to_bool(value);
-			}
-		}
 		CONF("own_window_hints") {
 			if (value) {
 				char *p_hint, *p_save;

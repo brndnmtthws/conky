@@ -61,7 +61,6 @@ Display *display = NULL;
 int display_width;
 int display_height;
 int screen;
-static int set_transparent;
 static int background_colour;
 
 /* workarea from _NET_WORKAREA, this is where window / text is aligned */
@@ -186,7 +185,7 @@ void set_transparent_background(Window win, int alpha)
 #ifdef BUILD_ARGB
 	if (have_argb_visual) {
 		// real transparency
-		if (set_transparent) {
+		if (set_transparent.get(*state)) {
 			XSetWindowBackground(display, win, 0x00);
 		} else if (colour_set != background_colour) {
 			XSetWindowBackground(display, win,
@@ -197,7 +196,7 @@ void set_transparent_background(Window win, int alpha)
 #endif /* BUILD_ARGB */
 	// pseudo transparency
 	
-	if (set_transparent) {
+	if (set_transparent.get(*state)) {
 		Window parent = win;
 		unsigned int i;
 
@@ -262,13 +261,11 @@ void destroy_window(void)
 	colour_set = -1;
 }
 
-void init_window(int w, int h, int set_trans, int back_colour,
-		char **argv, int argc)
+void init_window(int w, int h, int back_colour, char **argv, int argc)
 {
 	/* There seems to be some problems with setting transparent background
 	 * (on fluxbox this time). It doesn't happen always and I don't know why it
 	 * happens but I bet the bug is somewhere here. */
-	set_transparent = set_trans;
 	background_colour = back_colour;
 	window_created = 1;
 
@@ -937,6 +934,8 @@ conky::config_setting<bool> out_to_x("out_to_x", conky::simple_accessors<bool>(f
 
 #ifdef OWN_WINDOW
 conky::config_setting<bool> own_window("own_window", conky::simple_accessors<bool>(false, false));
+conky::config_setting<bool> set_transparent("own_window_transparent",
+									conky::simple_accessors<bool>(false, false));
 conky::config_setting<std::string> own_window_class("own_window_class",
 									conky::simple_accessors<std::string>(PACKAGE_NAME, false));
 
