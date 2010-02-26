@@ -678,7 +678,7 @@
             </command>
         </term>
         <listitem>Manually set the window name. Defaults to
-        "&lt;hostname&gt; - conky". 
+        "conky (&lt;hostname&gt;)". 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
