@@ -44,7 +44,7 @@
 #define ATOM(a) XInternAtom(display, #a, False)
 
 #ifdef OWN_WINDOW
-enum _window_type {
+enum window_type {
 	TYPE_NORMAL = 0,
 	TYPE_DOCK,
 	TYPE_PANEL,
@@ -85,7 +85,6 @@ struct conky_window {
 #ifdef OWN_WINDOW
 	int x;
 	int y;
-	unsigned int type;
 	unsigned long hints;
 #endif
 };
@@ -156,6 +155,7 @@ extern conky::config_setting<bool>      own_window;
 extern conky::config_setting<bool>      set_transparent;
 extern conky::config_setting<std::string> own_window_class;
 extern conky::config_setting<std::string> own_window_title;
+extern conky::config_setting<window_type> own_window_type;
 #ifdef BUILD_ARGB
 extern conky::config_setting<bool>        use_argb_visual;
 #endif

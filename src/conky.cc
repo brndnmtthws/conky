@@ -1984,7 +1984,7 @@ static void main_loop(void)
 					}
 
 					/* update struts */
-					if (changed && window.type == TYPE_PANEL) {
+					if (changed && own_window_type.get(*state) == TYPE_PANEL) {
 						int sidenum = -1;
 
 						fprintf(stderr, PACKAGE_NAME": defining struts\n");
@@ -2119,10 +2119,10 @@ static void main_loop(void)
 					case ButtonPress:
 						if (own_window.get(*state)) {
 							/* if an ordinary window with decorations */
-							if ((window.type == TYPE_NORMAL &&
+							if ((own_window_type.get(*state) == TYPE_NORMAL &&
 										(!TEST_HINT(window.hints,
 													HINT_UNDECORATED))) ||
-									window.type == TYPE_DESKTOP) {
+									own_window_type.get(*state) == TYPE_DESKTOP) {
 								/* allow conky to hold input focus. */
 								break;
 							} else {
@@ -2142,7 +2142,7 @@ static void main_loop(void)
 					case ButtonRelease:
 						if (own_window.get(*state)) {
 							/* if an ordinary window with decorations */
-							if ((window.type == TYPE_NORMAL)
+							if ((own_window_type.get(*state) == TYPE_NORMAL)
 									&& (!TEST_HINT(window.hints,
 									HINT_UNDECORATED))) {
 								/* allow conky to hold input focus. */
@@ -2569,7 +2569,6 @@ static void set_default_configurations(void)
 	minimum_height = 5;
 	maximum_width = 0;
 #ifdef OWN_WINDOW
-	window.type = TYPE_NORMAL;
 	window.hints = 0;
 #ifdef BUILD_ARGB
 	own_window_argb_value = 255;
@@ -3264,25 +3263,6 @@ char load_config_file(const char *f)
 
 						p_hint = strtok_r(NULL, delim, &p_save);
 					} while (p_hint != NULL);
-				}
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("own_window_type") {
-			if (value) {
-				if (strncmp(value, "normal", 6) == EQUAL) {
-					window.type = TYPE_NORMAL;
-				} else if (strncmp(value, "desktop", 7) == EQUAL) {
-					window.type = TYPE_DESKTOP;
-				} else if (strncmp(value, "dock", 4) == EQUAL) {
-					window.type = TYPE_DOCK;
-				} else if (strncmp(value, "panel", 5) == EQUAL) {
-					window.type = TYPE_PANEL;
-				} else if (strncmp(value, "override", 8) == EQUAL) {
-					window.type = TYPE_OVERRIDE;
-				} else {
-					CONF_ERR;
 				}
 			} else {
 				CONF_ERR;

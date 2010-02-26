@@ -294,7 +294,7 @@ void init_window(int w, int h, int back_colour, char **argv, int argc)
 		}
 #endif /* BUILD_ARGB */
 
-		if (window.type == TYPE_OVERRIDE) {
+		if (own_window_type.get(*state) == TYPE_OVERRIDE) {
 
 			/* An override_redirect True window.
 			 * No WM hints or button processing needed. */
@@ -321,7 +321,7 @@ void init_window(int w, int h, int back_colour, char **argv, int argc)
 
 			fprintf(stderr, PACKAGE_NAME": window type - override\n");
 			fflush(stderr);
-		} else { /* window.type != TYPE_OVERRIDE */
+		} else { /* own_window_type.get(*state) != TYPE_OVERRIDE */
 
 			/* A window managed by the window manager.
 			 * Process hints and buttons. */
@@ -344,7 +344,7 @@ void init_window(int w, int h, int back_colour, char **argv, int argc)
 			}
 #endif /* BUILD_ARGB */
 
-			if (window.type == TYPE_DOCK) {
+			if (own_window_type.get(*state) == TYPE_DOCK) {
 				window.x = window.y = 0;
 			}
 			/* Parent is root window so WM can take control */
@@ -366,7 +366,7 @@ void init_window(int w, int h, int back_colour, char **argv, int argc)
 			/* allow decorated windows to be given input focus by WM */
 			wmHint.input =
 				TEST_HINT(window.hints, HINT_UNDECORATED) ? False : True;
-			if (window.type == TYPE_DOCK || window.type == TYPE_PANEL) {
+			if (own_window_type.get(*state) == TYPE_DOCK || own_window_type.get(*state) == TYPE_PANEL) {
 				wmHint.initial_state = WithdrawnState;
 			} else {
 				wmHint.initial_state = NormalState;
@@ -383,7 +383,7 @@ void init_window(int w, int h, int back_colour, char **argv, int argc)
 			if ((xa = ATOM(_NET_WM_WINDOW_TYPE)) != None) {
 				Atom prop;
 
-				switch (window.type) {
+				switch (own_window_type.get(*state)) {
 					case TYPE_DESKTOP:
 						prop = ATOM(_NET_WM_WINDOW_TYPE_DESKTOP);
 						fprintf(stderr, PACKAGE_NAME": window type - desktop\n");
@@ -928,7 +928,8 @@ conky::lua_traits<alignment>::Map conky::lua_traits<alignment>::map = {
 	{ "middle_right",  MIDDLE_RIGHT },
 	{ "none",          NONE }
 };
-conky::config_setting<alignment> text_alignment("alignment", conky::simple_accessors<alignment>(NONE, false));
+conky::config_setting<alignment> text_alignment("alignment",
+									conky::simple_accessors<alignment>(NONE, false));
 
 conky::config_setting<bool> out_to_x("out_to_x", conky::simple_accessors<bool>(false, false));
 
@@ -946,6 +947,18 @@ namespace {
 }
 conky::config_setting<std::string> own_window_title("own_window_title",
 		conky::simple_accessors<std::string>(PACKAGE_NAME " (" + gethostnamecxx()+")", false));
+
+template<>
+conky::lua_traits<window_type>::Map conky::lua_traits<window_type>::map = {
+	{ "normal",   TYPE_NORMAL },
+	{ "dock",     TYPE_DOCK },
+	{ "panel",    TYPE_PANEL },
+	{ "desktop",  TYPE_DESKTOP },
+	{ "override", TYPE_OVERRIDE }
+};
+conky::config_setting<window_type> own_window_type("own_window_type",
+									conky::simple_accessors<window_type>(TYPE_NORMAL, false));
+
 
 #ifdef BUILD_ARGB
 conky::config_setting<bool> use_argb_visual("own_window_argb_visual",
