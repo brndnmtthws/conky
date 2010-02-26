@@ -2574,7 +2574,6 @@ static void set_default_configurations(void)
 #ifdef OWN_WINDOW
 	window.type = TYPE_NORMAL;
 	window.hints = 0;
-	strcpy(window.class_name, PACKAGE_NAME);
 	sprintf(window.title, PACKAGE_NAME" (%s)", info.uname_s.nodename);
 #ifdef BUILD_ARGB
 	use_argb_visual = 0;
@@ -3243,13 +3242,6 @@ char load_config_file(const char *f)
 		}
 #ifdef BUILD_X11
 #ifdef OWN_WINDOW
-		CONF("own_window_class") {
-			if (value) {
-				memset(window.class_name, 0, sizeof(window.class_name));
-				strncpy(window.class_name, value,
-						sizeof(window.class_name) - 1);
-			}
-		}
 		CONF("own_window_title") {
 			if (value) {
 				memset(window.title, 0, sizeof(window.title));

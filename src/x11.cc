@@ -356,7 +356,14 @@ void init_window(int w, int h, int set_trans, int back_colour,
 					window.y, w, h, 0, depth, InputOutput, visual,
 					flags, &attrs);
 
-			classHint.res_name = window.class_name;
+			// class_name must be a named local variable, so that c_str() remains valid until we
+			// call XmbSetWMProperties(). We use const_cast because, for whatever reason,
+			// res_name is not declared as const char *. XmbSetWMProperties hopefully doesn't
+			// modify the value (hell, even their own example app assigns a literal string
+			// constant to the field)
+			const std::string &class_name = own_window_class.get(*state);
+
+			classHint.res_name = const_cast<char *>(class_name.c_str());
 			classHint.res_class = classHint.res_name;
 
 			wmHint.flags = InputHint | StateHint;
@@ -931,4 +938,6 @@ conky::config_setting<bool> out_to_x("out_to_x", conky::simple_accessors<bool>(f
 
 #ifdef OWN_WINDOW
 conky::config_setting<bool> own_window("own_window", conky::simple_accessors<bool>(false, false));
+conky::config_setting<std::string> own_window_class("own_window_class",
+									conky::simple_accessors<std::string>(PACKAGE_NAME, false));
 #endif
