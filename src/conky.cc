@@ -2575,7 +2575,6 @@ static void set_default_configurations(void)
 	window.type = TYPE_NORMAL;
 	window.hints = 0;
 #ifdef BUILD_ARGB
-	use_argb_visual = 0;
 	own_window_argb_value = 255;
 #endif
 #endif
@@ -3298,9 +3297,6 @@ char load_config_file(const char *f)
 			}
 		}
 #ifdef BUILD_ARGB
-		CONF("own_window_argb_visual") {
-			use_argb_visual = string_to_bool(value);
-		}
 		CONF("own_window_argb_value") {
 			own_window_argb_value = strtol(value, 0, 0);
 			if (own_window_argb_value > 255 || own_window_argb_value < 0) {

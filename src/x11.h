@@ -99,10 +99,8 @@ extern int use_xft;
 #endif
 
 #if defined(BUILD_ARGB) && defined(OWN_WINDOW)
-/* 1 if config var set to 1, otherwise 0 */
-extern int use_argb_visual;
-/* 1 if use_argb_visual=1 and argb visual was found, otherwise 0 */
-extern int have_argb_visual;
+/* true if use_argb_visual=true and argb visual was found*/
+extern bool have_argb_visual;
 #endif
 /* range of 0-255 for alpha */
 extern int own_window_argb_value;
@@ -158,7 +156,10 @@ extern conky::config_setting<bool>      out_to_x;
 extern conky::config_setting<bool>      own_window;
 extern conky::config_setting<std::string> own_window_class;
 extern conky::config_setting<std::string> own_window_title;
+#ifdef BUILD_ARGB
+extern conky::config_setting<bool>        use_argb_visual;
 #endif
+#endif /*OWN_WINDOW*/
 
 #endif /*X11_H_*/
 #endif /* BUILD_X11 */

@@ -52,8 +52,7 @@ int use_xdbe;
 #endif
 
 #ifdef BUILD_ARGB
-int use_argb_visual;
-int have_argb_visual;
+bool have_argb_visual;
 #endif /* BUILD_ARGB */
 int own_window_argb_value;
 
@@ -283,8 +282,8 @@ void init_window(int w, int h, int set_trans, int back_colour,
 		}
 		
 #ifdef BUILD_ARGB
-		if (use_argb_visual && get_argb_visual(&visual, &depth)) {
-			have_argb_visual = 1;
+		if (use_argb_visual.get(*state) && get_argb_visual(&visual, &depth)) {
+			have_argb_visual = true;
 			window.visual = visual;
 			window.colourmap = XCreateColormap(display,
 				DefaultRootWindow(display), window.visual, AllocNone);
@@ -948,4 +947,9 @@ namespace {
 }
 conky::config_setting<std::string> own_window_title("own_window_title",
 		conky::simple_accessors<std::string>(PACKAGE_NAME " (" + gethostnamecxx()+")", false));
+
+#ifdef BUILD_ARGB
+conky::config_setting<bool> use_argb_visual("own_window_argb_visual",
+									conky::simple_accessors<bool>(false, false));
 #endif
+#endif /*OWN_WINDOW*/
