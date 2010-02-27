@@ -1094,7 +1094,7 @@ static inline void set_foreground_color(long c)
 	if (out_to_x.get(*state)) {
 #ifdef BUILD_ARGB
 		if (have_argb_visual) {
-			current_color = c | (own_window_argb_value << 24);
+			current_color = c | (own_window_argb_value.get(*state) << 24);
 		} else {
 #endif /* BUILD_ARGB */
 			current_color = c;
@@ -1964,7 +1964,7 @@ static void main_loop(void)
 						draw_stuff(); /* redraw everything in our newly sized window */
 						XResizeWindow(display, window.window, window.width,
 								window.height); /* resize window */
-						set_transparent_background(window.window, own_window_argb_value);
+						set_transparent_background(window.window);
 #ifdef BUILD_XDBE
 						/* swap buffers */
 						xdbe_swap_buffers();
@@ -2068,7 +2068,7 @@ static void main_loop(void)
 					case ReparentNotify:
 						/* make background transparent */
 						if (own_window.get(*state)) {
-							set_transparent_background(window.window, own_window_argb_value);
+							set_transparent_background(window.window);
 						}
 						break;
 
@@ -2570,9 +2570,6 @@ static void set_default_configurations(void)
 	maximum_width = 0;
 #ifdef OWN_WINDOW
 	window.hints = 0;
-#ifdef BUILD_ARGB
-	own_window_argb_value = 255;
-#endif
 #endif
 	stippled_borders = 0;
 	window.border_inner_margin = 3;
@@ -2708,7 +2705,7 @@ static void X11_create_window(void)
 			if (not fixed_pos)
 				XMoveWindow(display, window.window, window.x, window.y);
 
-			set_transparent_background(window.window, own_window_argb_value);
+			set_transparent_background(window.window);
 		}
 #endif
 
@@ -3268,14 +3265,6 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-#ifdef BUILD_ARGB
-		CONF("own_window_argb_value") {
-			own_window_argb_value = strtol(value, 0, 0);
-			if (own_window_argb_value > 255 || own_window_argb_value < 0) {
-				CONF_ERR2("own_window_argb_value must be <= 255 and >= 0");
-			}
-		}
-#endif /* BUILD_ARGB */
 #endif
 		CONF("stippled_borders") {
 			if (value) {

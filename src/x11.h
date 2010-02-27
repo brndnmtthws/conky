@@ -101,8 +101,6 @@ extern int use_xft;
 /* true if use_argb_visual=true and argb visual was found*/
 extern bool have_argb_visual;
 #endif
-/* range of 0-255 for alpha */
-extern int own_window_argb_value;
 
 extern Display *display;
 extern int display_width;
@@ -118,7 +116,7 @@ void init_X11(const char*);
 void init_window(int width, int height, int back_colour, char **argv, int argc);
 void destroy_window(void);
 void create_gc(void);
-void set_transparent_background(Window win, int alpha);
+void set_transparent_background(Window win);
 void get_x11_desktop_info(Display *display, Atom atom);
 void set_struts(int);
 
@@ -158,6 +156,9 @@ extern conky::config_setting<std::string> own_window_title;
 extern conky::config_setting<window_type> own_window_type;
 #ifdef BUILD_ARGB
 extern conky::config_setting<bool>        use_argb_visual;
+
+/* range of 0-255 for alpha */
+extern conky::config_setting<int, conky::range_checking_accessors<int>> own_window_argb_value;
 #endif
 #endif /*OWN_WINDOW*/
 

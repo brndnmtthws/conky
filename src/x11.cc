@@ -54,7 +54,6 @@ int use_xdbe;
 #ifdef BUILD_ARGB
 bool have_argb_visual;
 #endif /* BUILD_ARGB */
-int own_window_argb_value;
 
 /* some basic X11 stuff */
 Display *display = NULL;
@@ -178,10 +177,8 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop)
 static int colour_set = -1;
 /* if no argb visual is configured sets background to ParentRelative for the Window and all parents,
    else real transparency is used */
-void set_transparent_background(Window win, int alpha)
+void set_transparent_background(Window win)
 {
-	(void)alpha; /* disable warnings when unused */
-
 #ifdef BUILD_ARGB
 	if (have_argb_visual) {
 		// real transparency
@@ -189,7 +186,7 @@ void set_transparent_background(Window win, int alpha)
 			XSetWindowBackground(display, win, 0x00);
 		} else if (colour_set != background_colour) {
 			XSetWindowBackground(display, win,
-				background_colour | (alpha << 24));
+				background_colour | (own_window_argb_value.get(*state) << 24));
 			colour_set = background_colour;
 		}
 	} else {
@@ -963,5 +960,9 @@ conky::config_setting<window_type> own_window_type("own_window_type",
 #ifdef BUILD_ARGB
 conky::config_setting<bool> use_argb_visual("own_window_argb_visual",
 									conky::simple_accessors<bool>(false, false));
+conky::config_setting<int, conky::range_checking_accessors<int>>
+	own_window_argb_value("own_window_argb_value",
+									conky::range_checking_accessors<int>(0, 255, 255, false)
+			);
 #endif
 #endif /*OWN_WINDOW*/
