@@ -4159,7 +4159,7 @@ int main(int argc, char **argv)
 		std::cout << "config.alignment = " << text_alignment.get(l) << std::endl;
 		l.loadstring(
 				"print('config.asdf = ', conky.config.asdf);\n"
-				"conky.config.asdf = 42;\n"
+				"conky.config.asdf = -42;\n"
 				"print('config.asdf = ', conky.config.asdf);\n"
 				"conky.config.alignment='asdf';\n"
 				"print('config.alignment = ', conky.config.alignment);\n"

@@ -24,6 +24,7 @@
 #ifndef SETTING_HH
 #define SETTING_HH
 
+#include <limits>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -123,6 +124,7 @@ namespace conky {
 		const T default_value;
 		bool modifiable;
 
+	protected:
 		std::pair<T, bool> do_convert(lua::state *l, int index, const std::string &name)
 		{
 			if(l->isnil(index))
@@ -136,6 +138,15 @@ namespace conky {
 			}
 
 			return Traits::convert(l, index, name);
+		}
+
+		std::pair<T, bool> setter_check(lua::state *l, bool init, const std::string &name)
+		{
+			if(!init && !modifiable) {
+				NORM_ERR("Setting '%s' is not modifiable", name.c_str());
+				return {default_value, false};
+			} else
+				return do_convert(l, -2, name);
 		}
 
 	public:
@@ -159,16 +170,45 @@ namespace conky {
 		{
 			lua::stack_sentry s(*l, -2);
 
-			if(!init && !modifiable) {
-				NORM_ERR("Setting '%s' is not modifiable", name.c_str());
+			auto ret = setter_check(l, init, name);
+			if(ret.second)
+				l->pop();
+			else
 				l->replace(-2);
-			} else {
-				auto ret = do_convert(l, -2, name);
-				if(ret.second)
-					l->pop();
-				else
+			++s;
+		}
+	};
+
+	template<typename T, typename Traits = lua_traits<T>>
+	class range_checking_accessors: private simple_accessors<T, Traits> {
+		typedef simple_accessors<T, Traits> Base;
+
+		T min;
+		T max;
+	public:
+		range_checking_accessors(T min_ = -std::numeric_limits<T>::infinity(),
+								 T max_ =  std::numeric_limits<T>::infinity(),
+								 T default_value_ = T(), bool modifiable_ = false)
+			: Base(default_value_, modifiable_), min(min_), max(max_)
+		{ assert(min_ <= default_value_ && default_value_ <= max_); }
+
+		using Base::getter;
+
+		void lua_setter(lua::state *l, bool init, const std::string &name)
+		{
+			lua::stack_sentry s(*l, -2);
+
+			auto ret = Base::setter_check(l, init, name);
+			if(ret.second) {
+				if(ret.first < min || ret.first > max) {
+					NORM_ERR("Value is out of range for setting '%s'", name.c_str());
+					// we ignore out-of-range values. an alternative would be to clamp them. do
+					// we want to do that?
 					l->replace(-2);
-			}
+				} else
+					l->pop();
+			} else
+				l->replace(-2);
 			++s;
 		}
 	};
@@ -250,7 +290,7 @@ namespace conky {
 	}
 
 /////////// example settings, remove after real settings are available ///////
-	extern config_setting<std::string> asdf;
+	extern config_setting<int, range_checking_accessors<int>> asdf;
 }
 
 #endif /* SETTING_HH */

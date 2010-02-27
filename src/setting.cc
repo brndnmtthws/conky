@@ -162,5 +162,5 @@ namespace conky {
 	}
 
 /////////// example settings, remove after real settings are available ///////
-	config_setting<std::string> asdf("asdf");
+	config_setting<int, range_checking_accessors<int>> asdf("asdf", range_checking_accessors<int>(42, 47, 45, true));
 }
