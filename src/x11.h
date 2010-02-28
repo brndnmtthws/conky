@@ -113,7 +113,7 @@ extern struct conky_window window;
 extern char window_created;
 
 void init_X11(const char*);
-void init_window(int width, int height, int back_colour, char **argv, int argc);
+void init_window(int width, int height, char **argv, int argc);
 void destroy_window(void);
 void create_gc(void);
 void set_transparent_background(Window win);
@@ -154,6 +154,10 @@ extern conky::config_setting<bool>      set_transparent;
 extern conky::config_setting<std::string> own_window_class;
 extern conky::config_setting<std::string> own_window_title;
 extern conky::config_setting<window_type> own_window_type;
+
+// this setting is not checked for validity when set, we leave that to the caller
+// the reason for that is that we need to have X initialised in order to call XParseColor()
+extern conky::config_setting<std::string> background_colour;
 #ifdef BUILD_ARGB
 extern conky::config_setting<bool>        use_argb_visual;
 

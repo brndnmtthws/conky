@@ -32,6 +32,7 @@
 #include "conky.h"
 #include "logging.h"
 #include "common.h"
+#include "colours.h"
 
 #include "x11.h"
 #include <X11/Xlib.h>
@@ -60,7 +61,6 @@ Display *display = NULL;
 int display_width;
 int display_height;
 int screen;
-static int background_colour;
 
 /* workarea from _NET_WORKAREA, this is where window / text is aligned */
 int workarea[4];
@@ -174,7 +174,25 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop)
 	return win;
 }
 
-static int colour_set = -1;
+namespace {
+	unsigned long colour_set = -1;
+	std::string colour_str_set;
+	int argb_set = -1;
+
+	/* helper function for set_transparent_background() */
+	void do_set_background(Window win, int argb)
+	{
+		std::string t = background_colour.get(*state);
+		if(t == colour_str_set && argb_set == argb)
+			return;
+		colour_str_set = t;
+		argb_set = argb;
+
+		colour_set = get_x11_color(colour_str_set) | (argb_set<<24);
+		XSetWindowBackground(display, win, colour_set);
+	}
+}
+
 /* if no argb visual is configured sets background to ParentRelative for the Window and all parents,
    else real transparency is used */
 void set_transparent_background(Window win)
@@ -182,13 +200,8 @@ void set_transparent_background(Window win)
 #ifdef BUILD_ARGB
 	if (have_argb_visual) {
 		// real transparency
-		if (set_transparent.get(*state)) {
-			XSetWindowBackground(display, win, 0x00);
-		} else if (colour_set != background_colour) {
-			XSetWindowBackground(display, win,
-				background_colour | (own_window_argb_value.get(*state) << 24));
-			colour_set = background_colour;
-		}
+		do_set_background(win, set_transparent.get(*state)
+								? 0 : (own_window_argb_value.get(*state) << 24));
 	} else {
 #endif /* BUILD_ARGB */
 	// pseudo transparency
@@ -206,10 +219,8 @@ void set_transparent_background(Window win)
 			XQueryTree(display, parent, &r, &parent, &children, &n);
 			XFree(children);
 		}
-	} else if (colour_set != background_colour) {
-		XSetWindowBackground(display, win, background_colour);
-		colour_set = background_colour;
-	}
+	} else
+		do_set_background(win, 0);
 #ifdef BUILD_ARGB
 	}
 #endif /* BUILD_ARGB */
@@ -258,12 +269,11 @@ void destroy_window(void)
 	colour_set = -1;
 }
 
-void init_window(int w, int h, int back_colour, char **argv, int argc)
+void init_window(int w, int h, char **argv, int argc)
 {
 	/* There seems to be some problems with setting transparent background
 	 * (on fluxbox this time). It doesn't happen always and I don't know why it
 	 * happens but I bet the bug is somewhere here. */
-	background_colour = back_colour;
 	window_created = 1;
 
 #ifdef OWN_WINDOW
@@ -956,6 +966,8 @@ conky::lua_traits<window_type>::Map conky::lua_traits<window_type>::map = {
 conky::config_setting<window_type> own_window_type("own_window_type",
 									conky::simple_accessors<window_type>(TYPE_NORMAL, false));
 
+conky::config_setting<std::string> background_colour("background_colour",
+									conky::simple_accessors<std::string>("black", false));
 
 #ifdef BUILD_ARGB
 conky::config_setting<bool> use_argb_visual("own_window_argb_visual",

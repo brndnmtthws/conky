@@ -362,8 +362,6 @@ static int draw_shades, draw_outline;
 long default_fg_color, default_bg_color, default_out_color;
 
 #ifdef OWN_WINDOW
-static int background_colour = 0;
-
 /* fixed size/pos is set if wm/user changes them */
 static int fixed_size = 0, fixed_pos = 0;
 #endif
@@ -2686,15 +2684,9 @@ static int xargc = 0;
 static void X11_create_window(void)
 {
 	if (out_to_x.get(*state)) {
-#ifdef OWN_WINDOW
 		init_window(text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
-				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, background_colour,
+				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
 				xargv, xargc);
-#else /* OWN_WINDOW */
-		init_window(text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
-				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, 0,
-				xargv, xargc);
-#endif /* OWN_WINDOW */
 
 		setup_fonts();
 		load_fonts();
@@ -3480,7 +3472,6 @@ char load_config_file(const char *f)
 		CONF("default_color"){}
 		CONF3("default_shade_color", "default_shadecolor"){}
 		CONF3("default_outline_color", "default_outlinecolor") {}
-		CONF("own_window_colour") {}
 
 		else {
 			NORM_ERR("%s: %d: no such configuration: '%s'", f, line, name);
@@ -3666,19 +3657,6 @@ static void load_config_file_x11(const char *f)
 				}
 			}
 		}
-#ifdef OWN_WINDOW
-		CONF("own_window_colour") {
-			X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					background_colour = get_x11_color(value);
-				} else {
-					NORM_ERR("Invalid colour for own_window_colour (try omitting the "
-						"'#' for hex colours");
-				}
-			}
-		}
-#endif
 		CONF("text") {
 			/* initialize BUILD_X11 if nothing BUILD_X11-related is mentioned before TEXT (and if BUILD_X11 is the default outputmethod) */
 			if (out_to_x.get(*state)) {
