@@ -214,7 +214,7 @@ void update_diskio_values(struct diskio_stat *ds,
 		ds->last_read = reads;
 		ds->last_write = writes;
 	}
-	/* since the values in /proc/diskstats are absolute, we have to substract
+	/* since the values in /proc/diskstats are absolute, we have to subtract
 	 * our last reading. The numbers stand for "sectors read", and we therefore
 	 * have to divide by two to get KB */
 	ds->sample_read[0] = (reads - ds->last_read) / 2;
