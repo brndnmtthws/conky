@@ -186,8 +186,8 @@ namespace conky {
 		T min;
 		T max;
 	public:
-		range_checking_accessors(T min_ = -std::numeric_limits<T>::infinity(),
-								 T max_ =  std::numeric_limits<T>::infinity(),
+		range_checking_accessors(T min_ = std::numeric_limits<T>::min(),
+								 T max_ = std::numeric_limits<T>::max(),
 								 T default_value_ = T(), bool modifiable_ = false)
 			: Base(default_value_, modifiable_), min(min_), max(max_)
 		{ assert(min_ <= default_value_ && default_value_ <= max_); }
