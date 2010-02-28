@@ -189,4 +189,7 @@ long get_x11_color(const char *name)
 
 	return (long) color.pixel;
 }
+
+long get_x11_color(const std::string &colour)
+{ return get_x11_color(colour.c_str()); }
 #endif
