@@ -559,7 +559,7 @@
                 <option>no_buffers</option>
             </command>
         </term>
-        <listitem>Substract (file system) buffers from used memory?
+        <listitem>Subtract (file system) buffers from used memory?
         
         <para /></listitem>
     </varlistentry>
