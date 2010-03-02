@@ -52,8 +52,8 @@ namespace conky {
 	struct lua_traits<T, true, false, false> {
 		static const lua::Type type = lua::TNUMBER;
 
-		static std::pair<T, bool> convert(lua::state *l, int index, const std::string &)
-		{ return {l->tointeger(index), true}; }
+		static std::pair<T, bool> convert(lua::state &l, int index, const std::string &)
+		{ return {l.tointeger(index), true}; }
 	};
 
 	// specialization for floating point types
@@ -61,8 +61,8 @@ namespace conky {
 	struct lua_traits<T, false, true, false> {
 		static const lua::Type type = lua::TNUMBER;
 
-		static std::pair<T, bool> convert(lua::state *l, int index, const std::string &)
-		{ return {l->tonumber(index), true}; }
+		static std::pair<T, bool> convert(lua::state &l, int index, const std::string &)
+		{ return {l.tonumber(index), true}; }
 	};
 
 	// specialization for std::string
@@ -70,8 +70,8 @@ namespace conky {
 	struct lua_traits<std::string, false, false, false> {
 		static const lua::Type type = lua::TSTRING;
 
-		static std::pair<std::string, bool> convert(lua::state *l, int index, const std::string &)
-		{ return {l->tostring(index), true}; }
+		static std::pair<std::string, bool> convert(lua::state &l, int index, const std::string &)
+		{ return {l.tostring(index), true}; }
 	};
 
 	// specialization for bool
@@ -79,8 +79,8 @@ namespace conky {
 	struct lua_traits<bool, true, false, false> {
 		static const lua::Type type = lua::TBOOLEAN;
 
-		static std::pair<bool, bool> convert(lua::state *l, int index, const std::string &)
-		{ return {l->toboolean(index), true}; }
+		static std::pair<bool, bool> convert(lua::state &l, int index, const std::string &)
+		{ return {l.toboolean(index), true}; }
 	};
 
 	// specialization for enums
@@ -92,9 +92,9 @@ namespace conky {
 		typedef std::initializer_list<std::pair<std::string, T>> Map;
 		static Map map;
 
-		static std::pair<T, bool> convert(lua::state *l, int index, const std::string &name)
+		static std::pair<T, bool> convert(lua::state &l, int index, const std::string &name)
 		{
-			std::string val = l->tostring(index);
+			std::string val = l.tostring(index);
 
 			for(auto i = map.begin(); i != map.end(); ++i) {
 				if(i->first == val)
@@ -115,117 +115,30 @@ namespace conky {
 		}
 	};
 
-
-	// standard getters and setters for basic types. They try to do The Right Thing(tm) (accept
-	// only values of correct type and print an error message otherwise). For something more
-	// elaborate, one can always write a new accessor class
-	template<typename T, typename Traits = lua_traits<T>>
-	class simple_accessors {
-		const T default_value;
-		bool modifiable;
-
-	protected:
-		std::pair<T, bool> do_convert(lua::state *l, int index, const std::string &name)
-		{
-			if(l->isnil(index))
-				return {default_value, true};
-
-			if(l->type(index) != Traits::type) {
-				NORM_ERR("Invalid value of type '%s' for setting '%s'. "
-						 "Expected value of type '%s'.", l->type_name(l->type(index)),
-						 name.c_str(), l->type_name(Traits::type) );
-				return {default_value, false};
-			}
-
-			return Traits::convert(l, index, name);
-		}
-
-		std::pair<T, bool> setter_check(lua::state *l, bool init, const std::string &name)
-		{
-			if(!init && !modifiable) {
-				NORM_ERR("Setting '%s' is not modifiable", name.c_str());
-				return {default_value, false};
-			} else
-				return do_convert(l, -2, name);
-		}
-
-	public:
-		simple_accessors(T default_value_ = T(), bool modifiable_ = false)
-			: default_value(default_value_), modifiable(modifiable_)
-		{}
-
-		T getter(lua::state *l, const std::string &name)
-		{
-			lua::stack_sentry s(*l, -1);
-			auto ret = do_convert(l, -1, name);
-			l->pop();
-
-			// setter function should make sure the value is valid
-			assert(ret.second);
-
-			return ret.first;
-		}
-
-		void lua_setter(lua::state *l, bool init, const std::string &name)
-		{
-			lua::stack_sentry s(*l, -2);
-
-			auto ret = setter_check(l, init, name);
-			if(ret.second)
-				l->pop();
-			else
-				l->replace(-2);
-			++s;
-		}
-	};
-
-	template<typename T, typename Traits = lua_traits<T>>
-	class range_checking_accessors: private simple_accessors<T, Traits> {
-		typedef simple_accessors<T, Traits> Base;
-
-		T min;
-		T max;
-	public:
-		range_checking_accessors(T min_ = std::numeric_limits<T>::min(),
-								 T max_ = std::numeric_limits<T>::max(),
-								 T default_value_ = T(), bool modifiable_ = false)
-			: Base(default_value_, modifiable_), min(min_), max(max_)
-		{ assert(min_ <= default_value_ && default_value_ <= max_); }
-
-		using Base::getter;
-
-		void lua_setter(lua::state *l, bool init, const std::string &name)
-		{
-			lua::stack_sentry s(*l, -2);
-
-			auto ret = Base::setter_check(l, init, name);
-			if(ret.second) {
-				if(ret.first < min || ret.first > max) {
-					NORM_ERR("Value is out of range for setting '%s'", name.c_str());
-					// we ignore out-of-range values. an alternative would be to clamp them. do
-					// we want to do that?
-					l->replace(-2);
-				} else
-					l->pop();
-			} else
-				l->replace(-2);
-			++s;
-		}
-	};
-
 	namespace priv {
 		class config_setting_base {
 		private:
 			static void process_setting(lua::state &l, bool init);
 			static int config__newindex(lua::state *l);
 
+			// copying is a REALLY bad idea
+			config_setting_base(const config_setting_base &) = delete;
+			config_setting_base& operator=(const config_setting_base &) = delete;
+
 		protected:
-			virtual void call_lua_setter(lua::state *l, bool init) = 0;
+			/*
+			 * Set the setting, if the value is sane
+			 * stack on entry: | ... potential_new_value old_value |
+			 * stack on exit:  | ... real_new_value |
+			 * real_new_value can be the old value if the new value doesn't make sense
+			 */
+			virtual void lua_setter(lua::state &l, bool init) = 0;
 
 		public:
 			const std::string name;
 
-			config_setting_base(const std::string &name_);
+			explicit config_setting_base(const std::string &name_);
+			virtual ~config_setting_base() {}
 
 			/*
 			 * Set the setting manually.
@@ -242,39 +155,28 @@ namespace conky {
 		extern config_settings_t *config_settings;
 	}
 
-	/*
-	 * Declares a setting <name> in the conky.config table.
-	 * Getter function is used to translate the lua value into C++. It recieves the value on the
-	 * lua stack. It should pop it and return the C++ value. In case the value is nil, it should
-	 * return a predefined default value. Translation into basic types is provided with the
-	 * default simple_getter::do_it functions.
-	 * The lua_setter function is called when someone tries to set the value.
-	 * It recieves the new and the old value on the stack (old one is on top). It should return
-	 * the new value for the setting. It doesn't have to be the value the user set, if e.g. the
-	 * value doesn't make sense. The second parameter is true if the assignment occurs during the
-	 * initial parsing of the config file, and false afterwards. Some settings obviously cannot
-	 * be changed (easily?) when conky is running, but some (e.g. x/y position of the window)
-	 * can.
-	 */
-	template<typename T, typename Accessors = simple_accessors<T>>
-	class config_setting: public priv::config_setting_base {
+	// If you need some very exotic setting, derive it from this class. Otherwise, scroll down.
+	template<typename T>
+	class config_setting_template: public priv::config_setting_base {
 	public:
-		config_setting(const std::string &name_, const Accessors &accessors_ = Accessors())
-			: config_setting_base(name_), accessors(accessors_)
+		explicit config_setting_template(const std::string &name_)
+			: config_setting_base(name_)
 		{}
 
+		// get the value of the setting as a C++ type
 		T get(lua::state &l);
 
 	protected:
-		virtual void call_lua_setter(lua::state *l, bool init)
-		{ accessors.lua_setter(l, init, name); }
-	
-	private:
-		Accessors accessors;
+		/*
+		 * Convert the value into a C++ type.
+		 * stack on entry: | ... value |
+		 * stack on exit:  | ... |
+		 */
+		virtual T getter(lua::state &l) = 0;
 	};
 
-	template<typename T, typename Accessors>
-	T config_setting<T, Accessors>::get(lua::state &l)
+	template<typename T>
+	T config_setting_template<T>::get(lua::state &l)
 	{
 		lua::stack_sentry s(l);
 		l.checkstack(2);
@@ -286,11 +188,118 @@ namespace conky {
 		l.getfield(-1, name.c_str());
 		l.replace(-2);
 
-		return accessors.getter(&l, name);
+		return getter(l);
 	}
 
+	/*
+	 * Declares a setting <name> in the conky.config table.
+	 * Getter function is used to translate the lua value into C++. It recieves the value on the
+	 * lua stack. It should pop it and return the C++ value. In case the value is nil, it should
+	 * return a predefined default value. Translation into basic types works with the help of
+	 * lua_traits template above
+	 * The lua_setter function is called when someone tries to set the value.  It recieves the
+	 * new and the old value on the stack (old one is on top). It should return the new value for
+	 * the setting. It doesn't have to be the value the user set, if e.g. the value doesn't make
+	 * sense. The second parameter is true if the assignment occurs during the initial parsing of
+	 * the config file, and false afterwards. Some settings obviously cannot be changed (easily?)
+	 * when conky is running, but some (e.g. x/y position of the window) can.
+	 */
+	template<typename T, typename Traits = lua_traits<T>>
+	class simple_config_setting: public config_setting_template<T> {
+		typedef config_setting_template<T> Base;
+
+	public:
+		simple_config_setting(const std::string &name_, const T &default_value_ = T(),
+													bool modifiable_ = false)
+			: Base(name_), default_value(default_value_), modifiable(modifiable_)
+		{}
+
+	protected:
+		const T default_value;
+		const bool modifiable;
+
+		virtual std::pair<T, bool> do_convert(lua::state &l, int index);
+		virtual void lua_setter(lua::state &l, bool init);
+
+		virtual T getter(lua::state &l)
+		{
+			lua::stack_sentry s(l, -1);
+			auto ret = do_convert(l, -1);
+			l.pop();
+
+			// setter function should make sure the value is valid
+			assert(ret.second);
+
+			return ret.first;
+		}
+	};
+
+	template<typename T, typename Traits>
+	std::pair<T, bool> simple_config_setting<T, Traits>::do_convert(lua::state &l, int index)
+	{
+		if(l.isnil(index))
+			return {default_value, true};
+
+		if(l.type(index) != Traits::type) {
+			NORM_ERR("Invalid value of type '%s' for setting '%s'. "
+					 "Expected value of type '%s'.", l.type_name(l.type(index)),
+					 Base::name.c_str(), l.type_name(Traits::type) );
+			return {default_value, false};
+		}
+
+		return Traits::convert(l, index, Base::name);
+	}
+
+	template<typename T, typename Traits>
+	void simple_config_setting<T, Traits>::lua_setter(lua::state &l, bool init)
+	{
+		lua::stack_sentry s(l, -2);
+
+		bool ok = true;
+		if(!init && !modifiable) {
+			NORM_ERR("Setting '%s' is not modifiable", Base::name.c_str());
+			ok = false;
+		}
+
+		if(ok && do_convert(l, -2).second)
+			l.pop();
+		else
+			l.replace(-2);
+		++s;
+	}
+
+	// Just like simple_config_setting, except that in only accepts value in the [min, max] range
+	template<typename T, typename Traits = lua_traits<T>>
+	class range_config_setting: public simple_config_setting<T, Traits> {
+		typedef simple_config_setting<T, Traits> Base;
+
+		const T min;
+		const T max;
+	public:
+		range_config_setting(const std::string &name_,
+						const T &min_ = std::numeric_limits<T>::min(),
+						const T &max_ = std::numeric_limits<T>::max(),
+						const T &default_value_ = T(),
+						bool modifiable_ = false)
+			: Base(name_, default_value_, modifiable_), min(min_), max(max_)
+		{ assert(min <= Base::default_value && Base::default_value <= max); }
+
+	protected:
+		virtual std::pair<T, bool> do_convert(lua::state &l, int index)
+		{
+			auto ret = Base::do_convert(l, index);
+			if(ret.second && (ret.first < min || ret.first > max)) {
+				NORM_ERR("Value is out of range for setting '%s'", Base::name.c_str());
+				// we ignore out-of-range values. an alternative would be to clamp them. do we
+				// want to do that?
+				ret.second = false;
+			}
+			return ret;
+		}
+	};
+
 /////////// example settings, remove after real settings are available ///////
-	extern config_setting<int, range_checking_accessors<int>> asdf;
+	extern range_config_setting<int> asdf;
 }
 
 #endif /* SETTING_HH */

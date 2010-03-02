@@ -89,7 +89,7 @@ namespace conky {
 				return;
 			}
 
-			iter->second->call_lua_setter(&l, init);
+			iter->second->lua_setter(l, init);
 			l.pushvalue(-2);
 			l.insert(-2);
 			l.rawset(-4);
@@ -162,5 +162,5 @@ namespace conky {
 	}
 
 /////////// example settings, remove after real settings are available ///////
-	config_setting<int, range_checking_accessors<int>> asdf("asdf", range_checking_accessors<int>(42, 47, 45, true));
+	range_config_setting<int> asdf("asdf", 42, 47, 45, true);
 }

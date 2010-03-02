@@ -935,25 +935,23 @@ conky::lua_traits<alignment>::Map conky::lua_traits<alignment>::map = {
 	{ "middle_right",  MIDDLE_RIGHT },
 	{ "none",          NONE }
 };
-conky::config_setting<alignment> text_alignment("alignment",
-									conky::simple_accessors<alignment>(NONE, false));
+conky::simple_config_setting<alignment> text_alignment("alignment", NONE, false);
 
-conky::config_setting<bool> out_to_x("out_to_x", conky::simple_accessors<bool>(false, false));
+conky::simple_config_setting<bool> out_to_x("out_to_x", false, false);
 
 #ifdef OWN_WINDOW
-conky::config_setting<bool> own_window("own_window", conky::simple_accessors<bool>(false, false));
-conky::config_setting<bool> set_transparent("own_window_transparent",
-									conky::simple_accessors<bool>(false, false));
-conky::config_setting<std::string> own_window_class("own_window_class",
-									conky::simple_accessors<std::string>(PACKAGE_NAME, false));
+conky::simple_config_setting<bool> own_window("own_window", false, false);
+conky::simple_config_setting<bool> set_transparent("own_window_transparent", false, false);
+conky::simple_config_setting<std::string> own_window_class("own_window_class",
+															PACKAGE_NAME, false);
 
 namespace {
 	// used to set the default value for own_window_title
 	std::string gethostnamecxx()
 	{ update_uname(); return info.uname_s.nodename; }
 }
-conky::config_setting<std::string> own_window_title("own_window_title",
-		conky::simple_accessors<std::string>(PACKAGE_NAME " (" + gethostnamecxx()+")", false));
+conky::simple_config_setting<std::string> own_window_title("own_window_title",
+										PACKAGE_NAME " (" + gethostnamecxx()+")", false);
 
 template<>
 conky::lua_traits<window_type>::Map conky::lua_traits<window_type>::map = {
@@ -963,18 +961,13 @@ conky::lua_traits<window_type>::Map conky::lua_traits<window_type>::map = {
 	{ "desktop",  TYPE_DESKTOP },
 	{ "override", TYPE_OVERRIDE }
 };
-conky::config_setting<window_type> own_window_type("own_window_type",
-									conky::simple_accessors<window_type>(TYPE_NORMAL, false));
+conky::simple_config_setting<window_type> own_window_type("own_window_type", TYPE_NORMAL, false);
 
-conky::config_setting<std::string> background_colour("background_colour",
-									conky::simple_accessors<std::string>("black", false));
+conky::simple_config_setting<std::string> background_colour("background_colour", "black", false);
 
 #ifdef BUILD_ARGB
-conky::config_setting<bool> use_argb_visual("own_window_argb_visual",
-									conky::simple_accessors<bool>(false, false));
-conky::config_setting<int, conky::range_checking_accessors<int>>
-	own_window_argb_value("own_window_argb_value",
-									conky::range_checking_accessors<int>(0, 255, 255, false)
-			);
+conky::simple_config_setting<bool> use_argb_visual("own_window_argb_visual", false, false);
+conky::range_config_setting<int> own_window_argb_value("own_window_argb_value",
+														0, 255, 255, false);
 #endif
 #endif /*OWN_WINDOW*/

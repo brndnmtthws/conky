@@ -145,24 +145,24 @@ enum alignment {
 	NONE
 };
 
-extern conky::config_setting<alignment> text_alignment;
-extern conky::config_setting<bool>      out_to_x;
+extern conky::simple_config_setting<alignment>   text_alignment;
+extern conky::simple_config_setting<bool>        out_to_x;
 
 #ifdef OWN_WINDOW
-extern conky::config_setting<bool>      own_window;
-extern conky::config_setting<bool>      set_transparent;
-extern conky::config_setting<std::string> own_window_class;
-extern conky::config_setting<std::string> own_window_title;
-extern conky::config_setting<window_type> own_window_type;
+extern conky::simple_config_setting<bool>        own_window;
+extern conky::simple_config_setting<bool>        set_transparent;
+extern conky::simple_config_setting<std::string> own_window_class;
+extern conky::simple_config_setting<std::string> own_window_title;
+extern conky::simple_config_setting<window_type> own_window_type;
 
 // this setting is not checked for validity when set, we leave that to the caller
 // the reason for that is that we need to have X initialised in order to call XParseColor()
-extern conky::config_setting<std::string> background_colour;
+extern conky::simple_config_setting<std::string> background_colour;
 #ifdef BUILD_ARGB
-extern conky::config_setting<bool>        use_argb_visual;
+extern conky::simple_config_setting<bool>        use_argb_visual;
 
 /* range of 0-255 for alpha */
-extern conky::config_setting<int, conky::range_checking_accessors<int>> own_window_argb_value;
+extern conky::range_config_setting<int>          own_window_argb_value;
 #endif
 #endif /*OWN_WINDOW*/
 
