@@ -5562,6 +5562,7 @@ static const char *getopt_string = "vVqdDt:u:i:hc:p:"
 static const struct option longopts[] = {
 	{ "help", 0, NULL, 'h' },
 	{ "version", 0, NULL, 'V' },
+	{ "quiet", 0, NULL, 'q' },
 	{ "debug", 0, NULL, 'D' },
 	{ "config", 1, NULL, 'c' },
 #ifdef CONFIG_OUTPUT
@@ -5581,8 +5582,8 @@ static const struct option longopts[] = {
 	{ "window-id", 1, NULL, 'w' },
 #endif /* X11 */
 	{ "text", 1, NULL, 't' },
-	{ "interval", 0, NULL, 'u' },
-	{ "pause", 0, NULL, 'p' },
+	{ "interval", 1, NULL, 'u' },
+	{ "pause", 1, NULL, 'p' },
 	{ 0, 0, 0, 0 }
 };
 
