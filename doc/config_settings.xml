@@ -559,7 +559,7 @@
                 <option>no_buffers</option>
             </command>
         </term>
-        <listitem>Substract (file system) buffers from used memory?
+        <listitem>Subtract (file system) buffers from used memory?
         
         <para /></listitem>
     </varlistentry>
@@ -678,7 +678,7 @@
             </command>
         </term>
         <listitem>Manually set the window name. Defaults to
-        "&lt;hostname&gt; - conky". 
+        "conky (&lt;hostname&gt;)". 
         <para /></listitem>
     </varlistentry>
     <varlistentry>

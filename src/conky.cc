@@ -33,6 +33,7 @@
 #include "conky.h"
 #include "common.h"
 #include "timed-thread.h"
+#include <iostream>
 #include <algorithm>
 #include <string>
 #include <stdarg.h>
@@ -180,108 +181,107 @@ static void reload_config(void);
 
 static void print_version(void)
 {
-	printf(PACKAGE_NAME" "VERSION" compiled "BUILD_DATE" for "BUILD_ARCH"\n");
-
-	printf("\nCompiled in features:\n\n"
-			"System config file: "SYSTEM_CONFIG_FILE"\n"
-			"Package library path: "PACKAGE_LIBDIR"\n\n"
+	std::cout << PACKAGE_NAME" "VERSION" compiled "BUILD_DATE" for "BUILD_ARCH"\n"
+		"\nCompiled in features:\n\n"
+		"System config file: "SYSTEM_CONFIG_FILE"\n"
+		"Package library path: "PACKAGE_LIBDIR"\n\n"
 #ifdef BUILD_X11
-			" X11:\n"
+		" X11:\n"
 # ifdef BUILD_XDAMAGE
-			"  * Xdamage extension\n"
+		"  * Xdamage extension\n"
 # endif /* BUILD_XDAMAGE */
 # ifdef BUILD_XDBE
-			"  * XDBE (double buffer extension)\n"
+		"  * XDBE (double buffer extension)\n"
 # endif /* BUILD_XDBE */
 # ifdef BUILD_XFT
-			"  * Xft\n"
+		"  * Xft\n"
 # endif /* BUILD_XFT */
 # ifdef BUILD_ARGB
-			"  * ARGB visual\n"
+		"  * ARGB visual\n"
 # endif /* BUILD_ARGB */
 #endif /* BUILD_X11 */
-			"\n Music detection:\n"
+		"\n Music detection:\n"
 #ifdef BUILD_AUDACIOUS
-			"  * Audacious\n"
+		"  * Audacious\n"
 #endif /* BUILD_AUDACIOUS */
 #ifdef BUILD_BMPX
-			"  * BMPx\n"
+		"  * BMPx\n"
 #endif /* BUILD_BMPX */
 #ifdef BUILD_MPD
-			"  * MPD\n"
+		"  * MPD\n"
 #endif /* BUILD_MPD */
 #ifdef BUILD_MOC
-			"  * MOC\n"
+		"  * MOC\n"
 #endif /* BUILD_MOC */
 #ifdef BUILD_XMMS2
-			"  * XMMS2\n"
+		"  * XMMS2\n"
 #endif /* BUILD_XMMS2 */
-			"\n General:\n"
+		"\n General:\n"
 #ifdef HAVE_OPENMP
-			"  * OpenMP\n"
+		"  * OpenMP\n"
 #endif /* HAVE_OPENMP */
 #ifdef BUILD_MATH
-			"  * math\n"
+		"  * math\n"
 #endif /* BUILD_MATH */
 #ifdef BUILD_HDDTEMP
-			"  * hddtemp\n"
+		"  * hddtemp\n"
 #endif /* BUILD_HDDTEMP */
 #ifdef BUILD_PORT_MONITORS
-			"  * portmon\n"
+		"  * portmon\n"
 #endif /* BUILD_PORT_MONITORS */
 #ifdef BUILD_CURL
-			"  * Curl\n"
+		"  * Curl\n"
 #endif /* BUILD_CURL */
 #ifdef BUILD_RSS
-			"  * RSS\n"
+		"  * RSS\n"
 #endif /* BUILD_RSS */
 #ifdef BUILD_WEATHER_METAR
-			"  * Weather (METAR)\n"
+		"  * Weather (METAR)\n"
 #ifdef BUILD_WEATHER_XOAP
-			"  * Weather (XOAP)\n"
+		"  * Weather (XOAP)\n"
 #endif /* BUILD_WEATHER_XOAP */
 #endif /* BUILD_WEATHER_METAR */
 #ifdef BUILD_WLAN
-			"  * wireless\n"
+		"  * wireless\n"
 #endif /* BUILD_WLAN */
 #ifdef BUILD_IBM
-			"  * support for IBM/Lenovo notebooks\n"
+		"  * support for IBM/Lenovo notebooks\n"
 #endif /* BUILD_IBM */
 #ifdef BUILD_NVIDIA
-			"  * nvidia\n"
+		"  * nvidia\n"
 #endif /* BUILD_NVIDIA */
 #ifdef BUILD_EVE
-			"  * eve-online\n"
+		"  * eve-online\n"
 #endif /* BUILD_EVE */
 #ifdef BUILD_BUILTIN_CONFIG
-			"  * builtin default configuration\n"
+		"  * builtin default configuration\n"
 #endif /* BUILD_BUILTIN_CONFIG */
 #ifdef BUILD_IMLIB2
-			"  * Imlib2\n"
+		"  * Imlib2\n"
 #endif /* BUILD_IMLIB2 */
 #ifdef BUILD_MIXER_ALSA
-			"  * ALSA mixer support\n"
+		"  * ALSA mixer support\n"
 #endif /* BUILD_MIXER_ALSA */
 #ifdef BUILD_APCUPSD
-			"  * apcupsd\n"
+		"  * apcupsd\n"
 #endif /* BUILD_APCUPSD */
 #ifdef BUILD_IOSTATS
-			"  * iostats\n"
+		"  * iostats\n"
 #endif /* BUILD_IOSTATS */
 #ifdef BUILD_NCURSES
-			"  * ncurses\n"
+		"  * ncurses\n"
 #endif /* BUILD_NCURSES */
 #ifdef BUILD_LUA
-			"  * Lua\n"
-			"\n  Lua bindings:\n"
+		"  * Lua\n"
+		"\n  Lua bindings:\n"
 #ifdef BUILD_LUA_CAIRO
-			"   * Cairo\n"
+		"   * Cairo\n"
 #endif /* BUILD_LUA_CAIRO */
 #ifdef BUILD_LUA_IMLIB2
-			"   * Imlib2\n"
+		"   * Imlib2\n"
 #endif /* BUILD_LUA_IMLIB2 */
 #endif /* BUILD_LUA */
-			);
+	;
 
 	exit(EXIT_SUCCESS);
 }
@@ -3706,6 +3706,7 @@ static const char *getopt_string = "vVqdDs:t:u:i:hc:p:"
 static const struct option longopts[] = {
 	{ "help", 0, NULL, 'h' },
 	{ "version", 0, NULL, 'V' },
+	{ "quiet", 0, NULL, 'q' },
 	{ "debug", 0, NULL, 'D' },
 	{ "config", 1, NULL, 'c' },
 #ifdef BUILD_BUILTIN_CONFIG
@@ -3726,8 +3727,8 @@ static const struct option longopts[] = {
 #endif /* BUILD_X11 */
 	{ "for-scripts", 1, NULL, 's' },
 	{ "text", 1, NULL, 't' },
-	{ "interval", 0, NULL, 'u' },
-	{ "pause", 0, NULL, 'p' },
+	{ "interval", 1, NULL, 'u' },
+	{ "pause", 1, NULL, 'p' },
 	{ 0, 0, 0, 0 }
 };
 
