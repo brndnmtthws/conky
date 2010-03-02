@@ -369,10 +369,12 @@ void init_window(int w, int h, char **argv, int argc)
 			classHint.res_name = const_cast<char *>(class_name.c_str());
 			classHint.res_class = classHint.res_name;
 
+			uint16_t hints = own_window_hints.get(*state);
+
 			wmHint.flags = InputHint | StateHint;
 			/* allow decorated windows to be given input focus by WM */
 			wmHint.input =
-				TEST_HINT(window.hints, HINT_UNDECORATED) ? False : True;
+				TEST_HINT(hints, HINT_UNDECORATED) ? False : True;
 			if (own_window_type.get(*state) == TYPE_DOCK || own_window_type.get(*state) == TYPE_PANEL) {
 				wmHint.initial_state = WithdrawnState;
 			} else {
@@ -420,7 +422,7 @@ void init_window(int w, int h, char **argv, int argc)
 			/* Set desired hints */
 
 			/* Window decorations */
-			if (TEST_HINT(window.hints, HINT_UNDECORATED)) {
+			if (TEST_HINT(hints, HINT_UNDECORATED)) {
 				/* fprintf(stderr, PACKAGE_NAME": hint - undecorated\n");
 				   fflush(stderr); */
 
@@ -433,7 +435,7 @@ void init_window(int w, int h, char **argv, int argc)
 			}
 
 			/* Below other windows */
-			if (TEST_HINT(window.hints, HINT_BELOW)) {
+			if (TEST_HINT(hints, HINT_BELOW)) {
 				/* fprintf(stderr, PACKAGE_NAME": hint - below\n");
 				   fflush(stderr); */
 
@@ -455,7 +457,7 @@ void init_window(int w, int h, char **argv, int argc)
 			}
 
 			/* Above other windows */
-			if (TEST_HINT(window.hints, HINT_ABOVE)) {
+			if (TEST_HINT(hints, HINT_ABOVE)) {
 				/* fprintf(stderr, PACKAGE_NAME": hint - above\n");
 				   fflush(stderr); */
 
@@ -477,7 +479,7 @@ void init_window(int w, int h, char **argv, int argc)
 			}
 
 			/* Sticky */
-			if (TEST_HINT(window.hints, HINT_STICKY)) {
+			if (TEST_HINT(hints, HINT_STICKY)) {
 				/* fprintf(stderr, PACKAGE_NAME": hint - sticky\n");
 				   fflush(stderr); */
 
@@ -499,7 +501,7 @@ void init_window(int w, int h, char **argv, int argc)
 			}
 
 			/* Skip taskbar */
-			if (TEST_HINT(window.hints, HINT_SKIP_TASKBAR)) {
+			if (TEST_HINT(hints, HINT_SKIP_TASKBAR)) {
 				/* fprintf(stderr, PACKAGE_NAME": hint - skip_taskbar\n");
 				   fflush(stderr); */
 
@@ -513,7 +515,7 @@ void init_window(int w, int h, char **argv, int argc)
 			}
 
 			/* Skip pager */
-			if (TEST_HINT(window.hints, HINT_SKIP_PAGER)) {
+			if (TEST_HINT(hints, HINT_SKIP_PAGER)) {
 				/* fprintf(stderr, PACKAGE_NAME": hint - skip_pager\n");
 				   fflush(stderr); */
 
@@ -962,6 +964,47 @@ conky::lua_traits<window_type>::Map conky::lua_traits<window_type>::map = {
 	{ "override", TYPE_OVERRIDE }
 };
 conky::simple_config_setting<window_type> own_window_type("own_window_type", TYPE_NORMAL, false);
+
+template<>
+conky::lua_traits<window_hints>::Map conky::lua_traits<window_hints>::map = {
+	{ "undecorated",  HINT_UNDECORATED },
+	{ "below",        HINT_BELOW },
+	{ "above",        HINT_ABOVE },
+	{ "sticky",       HINT_STICKY },
+	{ "skip_taskbar", HINT_SKIP_TASKBAR },
+	{ "skip_pager",   HINT_SKIP_PAGER }
+};
+
+std::pair<uint16_t, bool>
+window_hints_traits::convert(lua::state &l, int index, const std::string &name)
+{
+	typedef conky::lua_traits<window_hints> Traits;
+
+	lua::stack_sentry s(l);
+	l.checkstack(1);
+
+	std::string hints = l.tostring(index);
+	// add a sentinel to simplify the following loop
+	hints += ',';
+	size_t pos = 0;
+	size_t newpos;
+	uint16_t ret = 0;
+	while((newpos = hints.find_first_of(", ", pos)) != std::string::npos) {
+		if(newpos > pos) {
+			l.pushstring(hints.substr(pos, newpos-pos));
+			auto t = conky::lua_traits<window_hints>::convert(l, -1, name);
+			if(not t.second)
+				return {0, false};
+			SET_HINT(ret, t.first);
+			l.pop();
+		}
+		pos = newpos+1;
+	}
+	return {ret, true};
+}
+
+conky::simple_config_setting<uint16_t, window_hints_traits> own_window_hints("own_window_hints",
+																				0, false);
 
 conky::simple_config_setting<std::string> background_colour("background_colour", "black", false);
 

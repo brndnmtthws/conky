@@ -52,7 +52,7 @@ enum window_type {
 	TYPE_OVERRIDE
 };
 
-enum _window_hints {
+enum window_hints {
 	HINT_UNDECORATED = 0,
 	HINT_BELOW,
 	HINT_ABOVE,
@@ -61,8 +61,8 @@ enum _window_hints {
 	HINT_SKIP_PAGER
 };
 
-#define SET_HINT(mask, hint)	(mask |= (1 << hint))
-#define TEST_HINT(mask, hint)	(mask & (1 << hint))
+#define SET_HINT(mask, hint)	(mask |= (1 << (hint)))
+#define TEST_HINT(mask, hint)	(mask & (1 << (hint)))
 #endif
 
 struct conky_window {
@@ -85,7 +85,6 @@ struct conky_window {
 #ifdef OWN_WINDOW
 	int x;
 	int y;
-	unsigned long hints;
 #endif
 };
 
@@ -154,6 +153,12 @@ extern conky::simple_config_setting<bool>        set_transparent;
 extern conky::simple_config_setting<std::string> own_window_class;
 extern conky::simple_config_setting<std::string> own_window_title;
 extern conky::simple_config_setting<window_type> own_window_type;
+
+struct window_hints_traits {
+	static const lua::Type type = lua::TSTRING;
+	static std::pair<uint16_t, bool> convert(lua::state &l, int index, const std::string &name);
+};
+extern conky::simple_config_setting<uint16_t, window_hints_traits> own_window_hints;
 
 // this setting is not checked for validity when set, we leave that to the caller
 // the reason for that is that we need to have X initialised in order to call XParseColor()

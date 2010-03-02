@@ -2118,8 +2118,8 @@ static void main_loop(void)
 						if (own_window.get(*state)) {
 							/* if an ordinary window with decorations */
 							if ((own_window_type.get(*state) == TYPE_NORMAL &&
-										(!TEST_HINT(window.hints,
-													HINT_UNDECORATED))) ||
+										not TEST_HINT(own_window_hints.get(*state),
+													HINT_UNDECORATED)) ||
 									own_window_type.get(*state) == TYPE_DESKTOP) {
 								/* allow conky to hold input focus. */
 								break;
@@ -2140,9 +2140,8 @@ static void main_loop(void)
 					case ButtonRelease:
 						if (own_window.get(*state)) {
 							/* if an ordinary window with decorations */
-							if ((own_window_type.get(*state) == TYPE_NORMAL)
-									&& (!TEST_HINT(window.hints,
-									HINT_UNDECORATED))) {
+							if ((own_window_type.get(*state) == TYPE_NORMAL) &&
+									not TEST_HINT(own_window_hints.get(*state), HINT_UNDECORATED)) {
 								/* allow conky to hold input focus. */
 								break;
 							} else {
@@ -2566,9 +2565,6 @@ static void set_default_configurations(void)
 	minimum_width = 5;
 	minimum_height = 5;
 	maximum_width = 0;
-#ifdef OWN_WINDOW
-	window.hints = 0;
-#endif
 	stippled_borders = 0;
 	window.border_inner_margin = 3;
 	window.border_outer_margin = 1;
@@ -3224,40 +3220,6 @@ char load_config_file(const char *f)
 			pad_percents = atoi(value);
 		}
 #ifdef BUILD_X11
-#ifdef OWN_WINDOW
-		CONF("own_window_hints") {
-			if (value) {
-				char *p_hint, *p_save;
-				char delim[] = ", ";
-
-				/* tokenize the value into individual hints */
-				if ((p_hint = strtok_r(value, delim, &p_save)) != NULL) {
-					do {
-						/* fprintf(stderr, "hint [%s] parsed\n", p_hint); */
-						if (strncmp(p_hint, "undecorate", 10) == EQUAL) {
-							SET_HINT(window.hints, HINT_UNDECORATED);
-						} else if (strncmp(p_hint, "below", 5) == EQUAL) {
-							SET_HINT(window.hints, HINT_BELOW);
-						} else if (strncmp(p_hint, "above", 5) == EQUAL) {
-							SET_HINT(window.hints, HINT_ABOVE);
-						} else if (strncmp(p_hint, "sticky", 6) == EQUAL) {
-							SET_HINT(window.hints, HINT_STICKY);
-						} else if (strncmp(p_hint, "skip_taskbar", 12) == EQUAL) {
-							SET_HINT(window.hints, HINT_SKIP_TASKBAR);
-						} else if (strncmp(p_hint, "skip_pager", 10) == EQUAL) {
-							SET_HINT(window.hints, HINT_SKIP_PAGER);
-						} else {
-							CONF_ERR;
-						}
-
-						p_hint = strtok_r(NULL, delim, &p_save);
-					} while (p_hint != NULL);
-				}
-			} else {
-				CONF_ERR;
-			}
-		}
-#endif
 		CONF("stippled_borders") {
 			if (value) {
 				stippled_borders = strtol(value, 0, 0);
@@ -4116,7 +4078,8 @@ int main(int argc, char **argv)
 				"print(conky.asnumber(conky.variables.zxcv{}));\n"
 				"print(conky.variables.asdf{}.text);\n"
 				"print(conky.variables.asdf{}.xxx);\n"
-				"conky.config = { alignment='bar', asdf=47, [42]=47};\n"
+				"conky.config = { alignment='bar', asdf=47, [42]=47,\n"
+				"    own_window_hints='above, undecorated,,below'};\n"
 				);
 		l.call(0, 0);
 		conky::check_config_settings(l);
@@ -4124,12 +4087,14 @@ int main(int argc, char **argv)
 		l.pushstring("X");
 		text_alignment.lua_set(l);
 		std::cout << "config.alignment = " << text_alignment.get(l) << std::endl;
+		std::cout << "config.own_window_hints = " << own_window_hints.get(l) << std::endl;
 		l.loadstring(
 				"print('config.asdf = ', conky.config.asdf);\n"
 				"conky.config.asdf = -42;\n"
 				"print('config.asdf = ', conky.config.asdf);\n"
 				"conky.config.alignment='asdf';\n"
 				"print('config.alignment = ', conky.config.alignment);\n"
+				"print('config.own_window_hints = ', conky.config.own_window_hints);\n"
 				);
 		l.call(0, 0);
 	}
