@@ -233,6 +233,7 @@ namespace lua {
 		void pushclosure(const cpp_function &fn, int n);
 		void pushfunction(const cpp_function &fn) { pushclosure(fn, 0); }
 		void pushstring(const char *s) { lua_pushstring(cobj.get(), s); }
+		void pushstring(const std::string &s) { lua_pushlstring(cobj.get(), s.c_str(), s.size()); }
 		void rawgetfield(int index, const char *k) throw(std::bad_alloc);
 		void rawset(int index) { lua_rawset(cobj.get(), index); }
 		void rawsetfield(int index, const char *k) throw(std::bad_alloc);
