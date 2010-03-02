@@ -3922,6 +3922,7 @@ static const char *getopt_string = "vVqdDs:t:u:i:hc:p:"
 static const struct option longopts[] = {
 	{ "help", 0, NULL, 'h' },
 	{ "version", 0, NULL, 'V' },
+	{ "quiet", 0, NULL, 'q' },
 	{ "debug", 0, NULL, 'D' },
 	{ "config", 1, NULL, 'c' },
 #ifdef BUILD_BUILTIN_CONFIG
@@ -3942,8 +3943,8 @@ static const struct option longopts[] = {
 #endif /* BUILD_X11 */
 	{ "for-scripts", 1, NULL, 's' },
 	{ "text", 1, NULL, 't' },
-	{ "interval", 0, NULL, 'u' },
-	{ "pause", 0, NULL, 'p' },
+	{ "interval", 1, NULL, 'u' },
+	{ "pause", 1, NULL, 'p' },
 	{ 0, 0, 0, 0 }
 };
 
