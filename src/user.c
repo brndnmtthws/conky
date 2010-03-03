@@ -28,11 +28,11 @@
  *
  */
 
-#include <logging.h>
 #include <pwd.h>
 #include <grp.h>
 #include <errno.h>
 #include "conky.h"
+#include "logging.h"
 
 void print_uid_name(struct text_object *obj, char *p, int p_max_size) {
 	struct passwd *pw;

@@ -28,8 +28,8 @@
  *
  */
 
-#include <logging.h>
 #include "conky.h"
+#include "logging.h"
 #include "proc.h"
 #include <unistd.h>
 #include <ctype.h>

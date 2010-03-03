@@ -4508,7 +4508,7 @@ static int do_config_step(int *line, FILE *fp, char *buf, char **name, char **va
 }
 
 #ifdef X11
-void setalignment(int* text_alignment, unsigned int windowtype, const char* value, const char *f, int line, char setbyconffile) {
+void setalignment(int* ltext_alignment, unsigned int windowtype, const char* value, const char *f, int line, char setbyconffile) {
 #ifdef OWN_WINDOW
 	if (windowtype == TYPE_DOCK) {
 		NORM_ERR("alignment is disabled when own_window_type is dock");
@@ -4522,7 +4522,7 @@ void setalignment(int* text_alignment, unsigned int windowtype, const char* valu
 				CONF_ERR;
 			} else NORM_ERR("'%s' is not a alignment setting", value);
 		} else {
-			*text_alignment = a;
+			*ltext_alignment = a;
 		}
 	} else if(setbyconffile == true) {
 		CONF_ERR;
@@ -5587,7 +5587,9 @@ static const struct option longopts[] = {
 	{ 0, 0, 0, 0 }
 };
 
-void set_current_config() {
+void set_current_config(void);
+void set_current_config(void)
+{
 	/* check if specified config file is valid */
 	if (current_config) {
 		struct stat sb;
