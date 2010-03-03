@@ -778,7 +778,7 @@ void get_x11_desktop_info(Display *current_display, Atom atom)
 void update_x11info(void)
 {
 	struct information *current_info = &info;
-	if (!x_initialised == YES)
+	if (x_initialised != YES)
 		return;
 	current_info->x11.monitor.number = XScreenCount(display);
 	current_info->x11.monitor.current = XDefaultScreen(display);
