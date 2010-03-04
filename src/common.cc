@@ -272,7 +272,7 @@ struct update_cb {
 
 static struct update_cb update_cb_head;
 
-static void *run_update_callback(void *) __attribute__((noreturn));
+static void *run_update_callback(void *);
 
 static int threading_started = 0;
 
@@ -363,13 +363,13 @@ static void *run_update_callback(void *data)
 {
 	struct update_cb *ucb = static_cast<struct update_cb *>(data);
 
-	if (!ucb || !ucb->func) pthread_exit(NULL);
+	if (!ucb || !ucb->func) return(NULL);
 
 	while (1) {
-		if (sem_wait(&ucb->start_wait)) pthread_exit(NULL);
-		if (ucb->running == 0) pthread_exit(NULL);
+		if (sem_wait(&ucb->start_wait)) return(NULL);
+		if (ucb->running == 0) return(NULL);
 		(*ucb->func)();
-		if (sem_post(&ucb->end_wait)) pthread_exit(NULL);
+		if (sem_post(&ucb->end_wait)) return(NULL);
 	}
 }
 
