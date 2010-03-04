@@ -324,7 +324,7 @@ void human_readable(long long, char *, int);
 extern unsigned int max_user_text;
 
 /* path to config file */
-extern char *current_config;
+extern std::string current_config;
 
 #define TO_STDOUT 2
 #define TO_STDERR 4

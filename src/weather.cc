@@ -882,10 +882,9 @@ void load_xoap_keys(void)
 	FILE *fp;
 	char *par  = (char *) malloc(11 * sizeof(char));
 	char *key  = (char *) malloc(17 * sizeof(char));
-	char *xoap = (char *) malloc(64 * sizeof(char));
 
-	to_real_path(xoap, XOAP_FILE);
-	fp = fopen(xoap, "r");
+	std::string xoap = to_real_path(XOAP_FILE);
+	fp = fopen(xoap.c_str(), "r");
 	if (fp != NULL) {
 		if (fscanf(fp, "%10s %16s", par, key) == 2) {
 			xoap_cc = std::string("?cc=*&link=xoap&prod=xoap&par=")
@@ -899,7 +898,6 @@ void load_xoap_keys(void)
 	}
 	free(par);
 	free(key);
-	free(xoap);
 }
 
 void scan_weather_forecast_arg(struct text_object *obj, const char *arg, void *free_at_crash)

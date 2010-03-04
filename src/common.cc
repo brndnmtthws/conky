@@ -99,31 +99,23 @@ double get_time(void)
 	return tv.tv_sec + (tv.tv_usec / 1000000.0);
 }
 
-/* Converts '~/...' paths to '/home/blah/...' assumes that 'dest' is at least
- * DEFAULT_TEXT_BUFFER_SIZE.  It's similar to variable_substitute, except only
- * cheques for $HOME and ~/ in path */
-void to_real_path(char *dest, const char *source)
+/* Converts '~/...' paths to '/home/blah/...'
+ * It's similar to variable_substitute, except only cheques for $HOME and ~/ in path */
+std::string to_real_path(const std::string &source)
 {
-	char tmp[DEFAULT_TEXT_BUFFER_SIZE];
-	if (sscanf(source, "~/%s", tmp) || sscanf(source, "$HOME/%s", tmp)) {
-		char *homedir = getenv("HOME");
-		if (homedir) {
-			snprintf(dest, DEFAULT_TEXT_BUFFER_SIZE, "%s/%s", homedir, tmp);
-		} else {
-			NORM_ERR("$HOME environment variable doesn't exist");
-			strncpy(dest, source, DEFAULT_TEXT_BUFFER_SIZE);
-		}
-	} else if (dest != source) {	//see changelog 2009-06-29 if you doubt that this check is necessary
-		strncpy(dest, source, DEFAULT_TEXT_BUFFER_SIZE);
-	}
+	const char *homedir = getenv("HOME");
+	if(source.find("~/") == 0)
+		return homedir + source.substr(1);
+	else if(source.find("$HOME/") == 0)
+		return homedir + source.substr(5);
+	else
+		return source;
 }
 
 int open_fifo(const char *file, int *reported)
 {
-	char path[DEFAULT_TEXT_BUFFER_SIZE];
 	int fd = 0;
 
-	to_real_path(path, file);
 	fd = open(file, O_RDONLY | O_NONBLOCK);
 
 	if (fd == -1) {
@@ -141,10 +133,8 @@ int open_fifo(const char *file, int *reported)
 
 FILE *open_file(const char *file, int *reported)
 {
-	char path[DEFAULT_TEXT_BUFFER_SIZE];
 	FILE *fp = 0;
 
-	to_real_path(path, file);
 	fp = fopen(file, "r");
 
 	if (!fp) {
@@ -282,7 +272,7 @@ struct update_cb {
 
 static struct update_cb update_cb_head;
 
-static void *run_update_callback(void *) __attribute__((noreturn));
+static void *run_update_callback(void *);
 
 static int threading_started = 0;
 
@@ -373,13 +363,13 @@ static void *run_update_callback(void *data)
 {
 	struct update_cb *ucb = static_cast<struct update_cb *>(data);
 
-	if (!ucb || !ucb->func) pthread_exit(NULL);
+	if (!ucb || !ucb->func) return(NULL);
 
 	while (1) {
-		if (sem_wait(&ucb->start_wait)) pthread_exit(NULL);
-		if (ucb->running == 0) pthread_exit(NULL);
+		if (sem_wait(&ucb->start_wait)) return(NULL);
+		if (ucb->running == 0) return(NULL);
 		(*ucb->func)();
-		if (sem_post(&ucb->end_wait)) pthread_exit(NULL);
+		if (sem_post(&ucb->end_wait)) return(NULL);
 	}
 }
 

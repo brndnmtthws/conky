@@ -318,7 +318,7 @@ static char *disp = NULL;
 struct information info;
 
 /* path to config file */
-char *current_config;
+std::string current_config;
 
 /* set to 1 if you want all text to be in uppercase */
 static unsigned int stuff_in_uppercase;
@@ -2264,12 +2264,14 @@ static void main_loop(void)
 				break;
 		}
 #ifdef HAVE_SYS_INOTIFY_H
-		if (!disable_auto_reload && inotify_fd != -1 && inotify_config_wd == -1 && current_config != 0) {
+		if (!disable_auto_reload && inotify_fd != -1
+						&& inotify_config_wd == -1 && !current_config.empty()) {
 			inotify_config_wd = inotify_add_watch(inotify_fd,
-					current_config,
+					current_config.c_str(),
 					IN_MODIFY);
 		}
-		if (!disable_auto_reload && inotify_fd != -1 && inotify_config_wd != -1 && current_config != 0) {
+		if (!disable_auto_reload && inotify_fd != -1
+						&& inotify_config_wd != -1 && !current_config.empty()) {
 			int len = 0, idx = 0;
 			fd_set descriptors;
 			struct timeval time_to_wait;
@@ -2287,13 +2289,13 @@ static void main_loop(void)
 					struct inotify_event *ev = (struct inotify_event *) &inotify_buff[idx];
 					if (ev->wd == inotify_config_wd && (ev->mask & IN_MODIFY || ev->mask & IN_IGNORED)) {
 						/* current_config should be reloaded */
-						NORM_ERR("'%s' modified, reloading...", current_config);
+						NORM_ERR("'%s' modified, reloading...", current_config.c_str());
 						reload_config();
 						if (ev->mask & IN_IGNORED) {
 							/* for some reason we get IN_IGNORED here
 							 * sometimes, so we need to re-add the watch */
 							inotify_config_wd = inotify_add_watch(inotify_fd,
-									current_config,
+									current_config.c_str(),
 									IN_MODIFY);
 						}
 						break;
@@ -2337,10 +2339,8 @@ void initialisation(int argc, char** argv);
 	/* reload the config file */
 static void reload_config(void)
 {
-	char *current_config_copy = strdup(current_config);
 	clean_up(NULL, NULL);
 	sleep(1); /* slight pause */
-	current_config = current_config_copy;
 	initialisation(argc_copy, argv_copy);
 }
 
@@ -2404,7 +2404,6 @@ void clean_up(void *memtofree1, void* memtofree2)
 	free_and_zero(tmpstring2);
 	free_and_zero(text_buffer);
 	free_and_zero(global_text);
-	free_and_zero(current_config);
 
 #ifdef BUILD_PORT_MONITORS
 	tcp_portmon_clear();
@@ -3734,40 +3733,39 @@ static const struct option longopts[] = {
 
 void set_current_config() {
 	/* check if specified config file is valid */
-	if (current_config) {
+	if (not current_config.empty()) {
 		struct stat sb;
-		if (stat(current_config, &sb) ||
+		if (stat(current_config.c_str(), &sb) ||
 				(!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
-			NORM_ERR("invalid configuration file '%s'\n", current_config);
-			free_and_zero(current_config);
+			NORM_ERR("invalid configuration file '%s'\n", current_config.c_str());
+			current_config.clear();
 		}
 	}
 
 	/* load current_config, CONFIG_FILE or SYSTEM_CONFIG_FILE */
 
-	if (!current_config) {
+	if (current_config.empty()) {
 		/* load default config file */
-		char buf[DEFAULT_TEXT_BUFFER_SIZE];
 		FILE *fp;
 
 		/* Try to use personal config file first */
-		to_real_path(buf, CONFIG_FILE);
-		if (buf[0] && (fp = fopen(buf, "r"))) {
-			current_config = strndup(buf, max_user_text);
+		std::string buf = to_real_path(CONFIG_FILE);
+		if (!buf.empty() && (fp = fopen(buf.c_str(), "r"))) {
+			current_config = buf;
 			fclose(fp);
 		}
 
 		/* Try to use system config file if personal config not readable */
-		if (!current_config && (fp = fopen(SYSTEM_CONFIG_FILE, "r"))) {
-			current_config = strndup(SYSTEM_CONFIG_FILE, max_user_text);
+		if (current_config.empty() && (fp = fopen(SYSTEM_CONFIG_FILE, "r"))) {
+			current_config = SYSTEM_CONFIG_FILE;
 			fclose(fp);
 		}
 
 		/* No readable config found */
-		if (!current_config) {
+		if (current_config.empty()) {
 #define NOCFGFILEFOUND "no readable personal or system-wide config file found"
 #ifdef BUILD_BUILTIN_CONFIG
-			current_config = strdup("==builtin==");
+			current_config = "==builtin==";
 			NORM_ERR(NOCFGFILEFOUND
 					", using builtin default");
 #else
@@ -3800,8 +3798,8 @@ void initialisation(int argc, char **argv) {
 	}
 	if(for_scripts == false) {
 		set_current_config();
-		load_config_file(current_config);
-		currentconffile = conftree_add(currentconffile, current_config);
+		load_config_file(current_config.c_str());
+		currentconffile = conftree_add(currentconffile, current_config.c_str());
 	}
 
 	/* init specials array */
@@ -3907,7 +3905,7 @@ void initialisation(int argc, char **argv) {
 #ifdef BUILD_X11
 	/* load font */
 	if (out_to_x.get(*state)) {
-		load_config_file_x11(current_config);
+		load_config_file_x11(current_config.c_str());
 	}
 #endif /* BUILD_X11 */
 
@@ -4002,7 +4000,6 @@ int main(int argc, char **argv)
 	argv_copy = argv;
 	g_signal_pending = 0;
 	max_user_text = MAX_USER_TEXT_DEFAULT;
-	current_config = 0;
 	memset(&info, 0, sizeof(info));
 	free_templates();
 	clear_net_stats();
@@ -4036,8 +4033,7 @@ int main(int argc, char **argv)
 			case 'V':
 				print_version(); /* doesn't return */
 			case 'c':
-				free_and_zero(current_config);
-				current_config = strndup(optarg, max_user_text);
+				current_config = optarg;
 				break;
 			case 'q':
 				if (!freopen("/dev/null", "w", stderr))
@@ -4129,7 +4125,6 @@ int main(int argc, char **argv)
         std::cerr << "caught exception: " << e.what() << std::endl;
     }
 #endif
-	free(current_config);
 	return 0;
 	//////////// XXX ////////////////////////////////
 
