@@ -129,7 +129,9 @@ void cimlib_add_image(const char *args)
 		free(cur);
 		return;
 	}
-	to_real_path(cur->name, cur->name);
+	strncpy(cur->name, to_real_path(cur->name).c_str(), 1024);
+	cur->name[1023] = 0;
+	//
 	// now we check for optional args
 	tmp = strstr(args, "-p ");
 	if (tmp) {

@@ -120,7 +120,7 @@ void llua_init(void)
 	lua_pushstring(lua_L, BUILD_ARCH);
 	lua_setglobal(lua_L, "conky_build_arch");
 
-	lua_pushstring(lua_L, current_config);
+	lua_pushstring(lua_L, current_config.c_str());
 	lua_setglobal(lua_L, "conky_config");
 
 	lua_pushcfunction(lua_L, &llua_conky_parse);
@@ -141,18 +141,17 @@ void llua_init(void)
 void llua_load(const char *script)
 {
 	int error;
-	char path[DEFAULT_TEXT_BUFFER_SIZE];
 
 	llua_init();
 
-	to_real_path(path, script);
-	error = luaL_dofile(lua_L, path);
+	std::string path = to_real_path(script);
+	error = luaL_dofile(lua_L, path.c_str());
 	if (error) {
 		NORM_ERR("llua_load: %s", lua_tostring(lua_L, -1));
 		lua_pop(lua_L, 1);
 #ifdef HAVE_SYS_INOTIFY_H
 	} else if (!llua_block_notify && inotify_fd != -1) {
-		llua_append_notify(path);
+		llua_append_notify(path.c_str());
 #endif /* HAVE_SYS_INOTIFY_H */
 	}
 }

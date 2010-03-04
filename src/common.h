@@ -28,6 +28,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 #include <string.h>
 #include <sys/socket.h>
 #include "text_object.h"
@@ -60,10 +61,9 @@ struct process *get_first_process(void);
 void get_cpu_count(void);
 double get_time(void);
 
-/* Converts '~/...' paths to '/home/blah/...' assumes that 'dest' is at least
- * DEFAULT_TEXT_BUFFER_SIZE.  It's similar to variable_substitute, except only
- * cheques for $HOME and ~/ in path */
-void to_real_path(char *dest, const char *source);
+/* Converts '~/...' paths to '/home/blah/...'
+ * It's similar to variable_substitute, except only cheques for $HOME and ~/ in path */
+std::string to_real_path(const std::string &source);
 FILE *open_file(const char *file, int *reported);
 int open_fifo(const char *file, int *reported);
 void variable_substitute(const char *s, char *dest, unsigned int n);

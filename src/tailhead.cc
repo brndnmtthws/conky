@@ -44,11 +44,18 @@
 
 struct headtail {
 	int wantedlines;
-	char *logfile;
+	std::string logfile;
 	char *buffer;
 	int current_use;
 	int max_uses;
 	int reported;
+
+	headtail()
+		: wantedlines(0), buffer(NULL), current_use(0), max_uses(0), reported(0)
+	{}
+
+	~headtail()
+	{ free(buffer); }
 };
 
 static void tailstring(char *string, int endofstring, int wantedlines) {
@@ -73,26 +80,21 @@ static void tailstring(char *string, int endofstring, int wantedlines) {
 void free_tailhead(struct text_object *obj)
 {
 	struct headtail *ht = (struct headtail *)obj->data.opaque;
-	if (!ht)
-		return;
-	free_and_zero(ht->logfile);
-	free_and_zero(ht->buffer);
-	free_and_zero(obj->data.opaque);
+	obj->data.opaque = NULL;
+	delete ht;
 }
 
 void init_tailhead(const char* type, const char* arg, struct text_object *obj, void* free_at_crash) {
 	unsigned int args;
-	struct headtail *ht;
+	struct headtail *ht = new headtail;
 
-	ht = (struct headtail *)malloc(sizeof(struct headtail));
-	memset(ht, 0, sizeof(struct headtail));
-
-	ht->logfile = (char*)malloc(DEFAULT_TEXT_BUFFER_SIZE);
-	memset(ht->logfile, 0, DEFAULT_TEXT_BUFFER_SIZE);
+	std::unique_ptr<char []> tmp(new char[DEFAULT_TEXT_BUFFER_SIZE]);
+	memset(tmp.get(), 0, DEFAULT_TEXT_BUFFER_SIZE);
 
 	ht->max_uses = DEFAULT_MAX_HEADTAIL_USES;
 
-	args = sscanf(arg, "%s %d %d", ht->logfile, &ht->wantedlines, &ht->max_uses);
+	// XXX: Buffer overflow ?
+	args = sscanf(arg, "%s %d %d", tmp.get(), &ht->wantedlines, &ht->max_uses);
 	if (args < 2 || args > 3) {
 		free_tailhead(obj);
 		CRIT_ERR(obj, free_at_crash, "%s needs a file as 1st and a number of lines as 2nd argument", type);
@@ -102,7 +104,7 @@ void init_tailhead(const char* type, const char* arg, struct text_object *obj, v
 		CRIT_ERR(obj, free_at_crash, "invalid arg for %s, next_check must be larger than 0", type);
 	}
 	if (ht->wantedlines > 0 && ht->wantedlines <= MAX_HEADTAIL_LINES) {
-		to_real_path(ht->logfile, ht->logfile);
+		ht->logfile = to_real_path(tmp.get());
 		ht->buffer = NULL;
 		ht->current_use = 0;
 	} else {
@@ -131,9 +133,9 @@ static void print_tailhead(const char* type, struct text_object *obj, char *p, i
 		strcpy(p, ht->buffer);
 		ht->current_use++;
 	}else{	//otherwise find the needed data
-		if(stat(ht->logfile, &st) == 0) {
+		if(stat(ht->logfile.c_str(), &st) == 0) {
 			if (S_ISFIFO(st.st_mode)) {
-				fd = open_fifo(ht->logfile, &ht->reported);
+				fd = open_fifo(ht->logfile.c_str(), &ht->reported);
 				if(fd != -1) {
 					if(strcmp(type, "head") == 0) {
 						for(i = 0; linescounted < ht->wantedlines; i++) {
@@ -153,7 +155,7 @@ static void print_tailhead(const char* type, struct text_object *obj, char *p, i
 				}
 				close(fd);
 			} else {
-				fp = open_file(ht->logfile, &ht->reported);
+				fp = open_file(ht->logfile.c_str(), &ht->reported);
 				if(fp != NULL) {
 					if(strcmp(type, "head") == 0) {
 						for(i = 0; i < ht->wantedlines; i++) {
@@ -173,7 +175,7 @@ static void print_tailhead(const char* type, struct text_object *obj, char *p, i
 			}
 			ht->buffer = strdup(p);
 		} else {
-			CRIT_ERR(NULL, NULL, "$%s can't find information about %s", type, ht->logfile);
+			CRIT_ERR(NULL, NULL, "$%s can't find information about %s", type, ht->logfile.c_str());
 		}
 	}
 	return;
