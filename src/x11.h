@@ -111,7 +111,7 @@ extern int workarea[4];
 extern struct conky_window window;
 extern char window_created;
 
-void init_X11(const char*);
+void init_X11();
 void init_window(int width, int height, char **argv, int argc);
 void destroy_window(void);
 void create_gc(void);
@@ -146,6 +146,7 @@ enum alignment {
 
 extern conky::simple_config_setting<alignment>   text_alignment;
 extern conky::simple_config_setting<bool>        out_to_x;
+extern conky::simple_config_setting<std::string> display_name;
 
 #ifdef OWN_WINDOW
 extern conky::simple_config_setting<bool>        own_window;

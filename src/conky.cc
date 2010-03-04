@@ -308,9 +308,6 @@ struct _x11_stuff_s {
 static int text_start_x, text_start_y;	/* text start position in window */
 static int text_width = 1, text_height = 1; /* initially 1 so no zero-sized window is created */
 
-/* display to connect to */
-static char *disp = NULL;
-
 #endif /* BUILD_X11 */
 
 /* struct that has all info to be shared between
@@ -2246,7 +2243,6 @@ static void main_loop(void)
 					XFixesDestroyRegion(display, x11_stuff.region2);
 					XFixesDestroyRegion(display, x11_stuff.part);
 #endif /* BUILD_XDAMAGE */
-					free_and_zero(disp);
 				}
 #endif /* BUILD_X11 */
 				free_and_zero(overwrite_file);
@@ -2662,7 +2658,7 @@ static void X11_initialisation(void)
 	if (x_initialised == YES) return;
 	state->pushboolean(true);
 	out_to_x.lua_set(*state);
-	init_X11(disp);
+	init_X11();
 	set_default_configurations_for_x();
 	x_initialised = YES;
 #ifdef DEBUG
@@ -2811,14 +2807,6 @@ char load_config_file(const char *f)
 		}
 
 #ifdef BUILD_X11
-		CONF("display") {
-			if (!value || x_initialised == YES) {
-				CONF_ERR;
-			} else {
-				free_and_zero(disp);
-				disp = strdup(value);
-			}
-		}
 		CONF("background") {
 			fork_to_background = string_to_bool(value);
 		}
@@ -3850,6 +3838,10 @@ void initialisation(int argc, char **argv) {
 				state->pushstring(optarg);
 				text_alignment.lua_set(*state);
 				break;
+			case 'X':
+				state->pushstring(optarg);
+				display_name.lua_set(*state);
+				break;
 
 #ifdef OWN_WINDOW
 			case 'o':
@@ -4050,10 +4042,6 @@ int main(int argc, char **argv)
 #ifdef BUILD_X11
 			case 'w':
 				window.window = strtol(optarg, 0, 0);
-				break;
-			case 'X':
-				free_and_zero(disp);
-				disp = strdup(optarg);
 				break;
 #endif /* BUILD_X11 */
 

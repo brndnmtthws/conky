@@ -75,9 +75,12 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop);
 static Window find_subwindow(Window win, int w, int h);
 
 /* X11 initializer */
-void init_X11(const char *disp)
+void init_X11()
 {
 	if (!display) {
+		const std::string &dispstr = display_name.get(*state).c_str();
+		// passing NULL to XOpenDisplay should open the default display
+		const char *disp = dispstr.size() ? dispstr.c_str() : NULL;
 		if ((display = XOpenDisplay(disp)) == NULL) {
 			CRIT_ERR(NULL, NULL, "can't open display: %s", XDisplayName(disp));
 		}
@@ -940,6 +943,8 @@ conky::lua_traits<alignment>::Map conky::lua_traits<alignment>::map = {
 conky::simple_config_setting<alignment> text_alignment("alignment", NONE, false);
 
 conky::simple_config_setting<bool> out_to_x("out_to_x", false, false);
+
+conky::simple_config_setting<std::string> display_name("display", std::string(), false);
 
 #ifdef OWN_WINDOW
 conky::simple_config_setting<bool> own_window("own_window", false, false);
