@@ -337,8 +337,8 @@ char *append_file = NULL; FILE *append_fpointer = NULL;
 
 #ifdef BUILD_X11
 
-static int show_graph_scale;
-static int show_graph_range;
+static conky::simple_config_setting<bool> show_graph_scale("show_graph_scale", false, false);
+static conky::simple_config_setting<bool> show_graph_range("show_graph_range", false, false);
 
 /* Position on the screen */
 static int gap_x, gap_y;
@@ -1482,7 +1482,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					} else {
 						set_foreground_color(default_fg_color);
 					} */
-					if (show_graph_range) {
+					if (show_graph_range.get(*state)) {
 						int tmp_x = cur_x;
 						int tmp_y = cur_y;
 						unsigned short int seconds = update_interval * w;
@@ -1526,7 +1526,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						cur_y = tmp_y;
 					}
 #ifdef MATH
-					if (show_graph_scale && (specials[special_index].show_scale == 1)) {
+					if (show_graph_scale.get(*state) && (specials[special_index].show_scale == 1)) {
 						int tmp_x = cur_x;
 						int tmp_y = cur_y;
 						char *tmp_str;
@@ -2546,8 +2546,6 @@ static void set_default_configurations(void)
 	output_methods = TO_STDOUT;
 #endif
 #ifdef BUILD_X11
-	show_graph_scale = 0;
-	show_graph_range = 0;
 	draw_shades = 1;
 	draw_borders = 0;
 	draw_graph_borders = 1;
@@ -2807,12 +2805,6 @@ char load_config_file(const char *f)
 		// start the whole if-then-else-if cascade
 		if (false) {}
 #ifdef BUILD_X11
-		CONF("show_graph_scale") {
-			show_graph_scale = string_to_bool(value);
-		}
-		CONF("show_graph_range") {
-			show_graph_range = string_to_bool(value);
-		}
 		CONF("border_inner_margin") {
 			if (value) {
 				window.border_inner_margin = strtol(value, 0, 0);
