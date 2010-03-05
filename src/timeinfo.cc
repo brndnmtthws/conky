@@ -28,6 +28,10 @@
  *
  */
 
+#include "config.h"
+
+#include "timeinfo.h"
+
 #include "conky.h"
 #include "text_object.h"
 #include <locale.h>
@@ -38,22 +42,12 @@
 
 #include <memory>
 
-char print_times_in_seconds = 0;
-
 struct tztime_s {
 	char *tz;	/* timezone variable */
 	char *fmt;	/* time display formatting */
 };
 
-void set_times_in_seconds(char val)
-{
-	print_times_in_seconds = val;
-}
-
-char times_in_seconds(void)
-{
-	return print_times_in_seconds;
-}
+conky::simple_config_setting<bool> times_in_seconds("times_in_seconds", false, false);
 
 void scan_time(struct text_object *obj, const char *arg)
 {
@@ -171,7 +165,7 @@ static void do_format_time(struct text_object *obj, char *p, unsigned int p_max_
 	int minutes, hours, days, weeks;
 	char show_minutes = 0, show_hours = 0, show_days = 0, show_weeks = 0, hidestring;
 
-	if (!times_in_seconds()) {
+	if (not times_in_seconds.get(*state)) {
 		NORM_ERR("Enable \"times_in_seconds\" to use $format_time");
 		return;
 	}

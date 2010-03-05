@@ -313,7 +313,7 @@ static inline void format_media_player_time(char *buf, const int size,
 {
 	int days, hours, minutes;
 
-	if (times_in_seconds()) {
+	if (times_in_seconds.get(*state)) {
 		snprintf(buf, size, "%d", seconds);
 		return;
 	}

@@ -2585,8 +2585,6 @@ static void set_default_configurations(void)
 	stuff_in_uppercase = 0;
 	info.users.number = 1;
 
-	set_times_in_seconds(0);
-
 #ifdef BUILD_PORT_MONITORS
 	/* set default connection limit */
 	tcp_portmon_set_max_connections(0);
@@ -2981,9 +2979,6 @@ char load_config_file(const char *f)
 			utf8_mode = string_to_bool(value);
 		}
 #endif /* BUILD_X11 */
-		CONF("times_in_seconds") {
-			set_times_in_seconds(string_to_bool(value));
-		}
 		CONF("max_text_width") {
 			max_text_width = atoi(value);
 		}

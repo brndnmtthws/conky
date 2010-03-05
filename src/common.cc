@@ -211,7 +211,7 @@ void format_seconds(char *buf, unsigned int n, long seconds)
 	long days;
 	int hours, minutes;
 
-	if (times_in_seconds()) {
+	if (times_in_seconds.get(*state)) {
 		snprintf(buf, n, "%ld", seconds);
 		return;
 	}
@@ -235,7 +235,7 @@ void format_seconds_short(char *buf, unsigned int n, long seconds)
 	long days;
 	int hours, minutes;
 
-	if (times_in_seconds()) {
+	if (times_in_seconds.get(*state)) {
 		snprintf(buf, n, "%ld", seconds);
 		return;
 	}
