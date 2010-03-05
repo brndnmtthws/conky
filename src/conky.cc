@@ -155,7 +155,7 @@ int top_io;
 #endif
 int top_running;
 int output_methods;
-static int extra_newline;
+static conky::simple_config_setting<bool> extra_newline("extra_newline", false, false);
 enum x_initialiser_state x_initialised = NO;
 static volatile int g_signal_pending;
 /* Update interval */
@@ -1128,7 +1128,7 @@ static void draw_string(const char *s)
 	}
 	if ((output_methods & TO_STDOUT) && draw_mode == FG) {
 		printf("%s\n", s_with_newlines);
-		if (extra_newline) fputc('\n', stdout);
+		if (extra_newline.get(*state)) fputc('\n', stdout);
 		fflush(stdout);	/* output immediately, don't buffer */
 	}
 	if ((output_methods & TO_STDERR) && draw_mode == FG) {
@@ -2988,9 +2988,6 @@ char load_config_file(const char *f)
 			} else {
 				output_methods &= ~TO_STDOUT;
 			}
-		}
-		CONF("extra_newline") {
-			extra_newline = string_to_bool(value);
 		}
 		CONF("disable_auto_reload") {
 			disable_auto_reload = string_to_bool(value);
