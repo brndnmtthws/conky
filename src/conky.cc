@@ -140,15 +140,23 @@ static conky::simple_config_setting<bool> disable_auto_reload("disable_auto_relo
 /* two strings for internal use */
 static char *tmpstring1, *tmpstring2;
 
-/* variables holding various config settings */
-int short_units;
-int format_human_readable;
-int cpu_separate;
 enum spacer_state {
 	NO_SPACER = 0,
 	LEFT_SPACER,
 	RIGHT_SPACER
-} use_spacer;
+};
+template<>
+conky::lua_traits<spacer_state>::Map conky::lua_traits<spacer_state>::map = {
+	{ "none",  NO_SPACER },
+	{ "left",  LEFT_SPACER },
+	{ "right", RIGHT_SPACER }
+};
+static conky::simple_config_setting<spacer_state> use_spacer("use_spacer", NO_SPACER, false);
+
+/* variables holding various config settings */
+int short_units;
+int format_human_readable;
+int cpu_separate;
 int top_cpu, top_mem, top_time;
 #ifdef BUILD_IOSTATS
 int top_io;
@@ -516,7 +524,7 @@ int spaced_print(char *buf, int size, const char *format, int width, ...)
 	vsnprintf(tempbuf, size, format, argp);
 	va_end(argp);
 
-	switch (use_spacer) {
+	switch (use_spacer.get(*state)) {
 		case NO_SPACER:
 			len = snprintf(buf, size, "%s", tempbuf);
 			break;
@@ -2539,7 +2547,6 @@ static void set_default_configurations(void)
 	info.xmms2.status = NULL;
 	info.xmms2.playlist = NULL;
 #endif /* BUILD_XMMS2 */
-	use_spacer = NO_SPACER;
 #ifdef BUILD_X11
 	state->pushboolean(true);
 	out_to_x.lua_set(*state);
@@ -3017,32 +3024,6 @@ char load_config_file(const char *f)
 				output_methods |= APPEND_FILE;
 			} else
 				NORM_ERR("append_file won't be able to create/append '%s'", value);
-		}
-		CONF("use_spacer") {
-			if (value) {
-				if (strcasecmp(value, "left") == EQUAL) {
-					use_spacer = LEFT_SPACER;
-				} else if (strcasecmp(value, "right") == EQUAL) {
-					use_spacer = RIGHT_SPACER;
-				} else if (strcasecmp(value, "none") == EQUAL) {
-					use_spacer = NO_SPACER;
-				} else {
-					use_spacer = string_to_bool(value) ? RIGHT_SPACER : NO_SPACER;
-					NORM_ERR("use_spacer should have an argument of left, right, or"
-						" none.  '%s' seems to be some form of '%s', so"
-						" defaulting to %s.", value,
-						use_spacer ? "true" : "false",
-						use_spacer ? "right" : "none");
-					if (use_spacer) {
-						use_spacer = RIGHT_SPACER;
-					} else {
-						use_spacer = NO_SPACER;
-					}
-				}
-			} else {
-				NORM_ERR("use_spacer should have an argument. Defaulting to right.");
-				use_spacer = RIGHT_SPACER;
-			}
 		}
 #ifdef BUILD_X11
 #ifdef BUILD_XFT
