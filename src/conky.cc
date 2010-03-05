@@ -100,7 +100,6 @@
 #include "timeinfo.h"
 #include "top.h"
 
-#include <iostream>
 #include "lua-config.hh"
 #include "setting.hh"
 
@@ -324,7 +323,7 @@ static unsigned int stuff_in_uppercase;
 static unsigned long total_run_times;
 
 /* fork? */
-static int fork_to_background;
+static conky::simple_config_setting<bool> fork_to_background("background", false, false);
 
 /* set to 0 after the first time conky is run, so we don't fork again after the
  * first forking */
@@ -2481,7 +2480,6 @@ static void set_default_configurations(void)
 	char *mpd_env_port;
 #endif /* BUILD_MPD */
 	update_uname();
-	fork_to_background = 0;
 	total_run_times = 0;
 	info.cpu_avg_samples = 2;
 	info.net_avg_samples = 2;
@@ -2806,15 +2804,8 @@ char load_config_file(const char *f)
 			continue;
 		}
 
-#ifdef BUILD_X11
-		CONF("background") {
-			fork_to_background = string_to_bool(value);
-		}
-#else
-		CONF2("background") {
-			fork_to_background = string_to_bool(value);
-		}
-#endif /* BUILD_X11 */
+		// start the whole if-then-else-if cascade
+		if (false) {}
 #ifdef BUILD_X11
 		CONF("show_graph_scale") {
 			show_graph_scale = string_to_bool(value);
@@ -3828,7 +3819,8 @@ void initialisation(int argc, char **argv) {
 
 		switch (c) {
 			case 'd':
-				fork_to_background = 1;
+				state->pushboolean(true);
+				fork_to_background.lua_set(*state);
 				break;
 #ifdef BUILD_X11
 			case 'f':
@@ -3905,7 +3897,7 @@ void initialisation(int argc, char **argv) {
 	extract_variable_text(global_text);
 	free_and_zero(global_text);
 	/* fork */
-	if (fork_to_background && first_pass) {
+	if (fork_to_background.get(*state) && first_pass) {
 		int pid = fork();
 
 		switch (pid) {
