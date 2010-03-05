@@ -344,8 +344,8 @@ static conky::simple_config_setting<bool> show_graph_range("show_graph_range", f
 static int gap_x, gap_y;
 
 /* border */
-static int draw_borders;
-static int draw_graph_borders;
+static conky::simple_config_setting<bool> draw_borders("draw_borders", false, false);
+static conky::simple_config_setting<bool> draw_graph_borders("draw_graph_borders", true, false);
 static int stippled_borders;
 
 int get_stippled_borders(void)
@@ -1414,7 +1414,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					if (w < 0) {
 						w = 0;
 					}
-					if (draw_graph_borders) {
+					if (draw_graph_borders.get(*state)) {
 						XSetLineAttributes(display, window.gc, 1, LineSolid,
 							CapButt, JoinMiter);
 						XDrawRectangle(display, window.drawable, window.gc,
@@ -1714,7 +1714,7 @@ static void draw_text(void)
 		cur_y = text_start_y;
 
 		/* draw borders */
-		if (draw_borders && window.border_width > 0) {
+		if (draw_borders.get(*state) && window.border_width > 0) {
 			if (stippled_borders) {
 				char ss[2] = { (char)stippled_borders, (char)stippled_borders };
 				XSetLineAttributes(display, window.gc, window.border_width, LineOnOffDash,
@@ -2547,8 +2547,6 @@ static void set_default_configurations(void)
 #endif
 #ifdef BUILD_X11
 	draw_shades = 1;
-	draw_borders = 0;
-	draw_graph_borders = 1;
 	draw_outline = 0;
 	set_first_font("6x10");
 	gap_x = 5;
@@ -2982,12 +2980,6 @@ char load_config_file(const char *f)
 #ifdef BUILD_X11
 		CONF("override_utf8_locale") {
 			utf8_mode = string_to_bool(value);
-		}
-		CONF("draw_borders") {
-			draw_borders = string_to_bool(value);
-		}
-		CONF("draw_graph_borders") {
-			draw_graph_borders = string_to_bool(value);
 		}
 		CONF("draw_shades") {
 			draw_shades = string_to_bool(value);
