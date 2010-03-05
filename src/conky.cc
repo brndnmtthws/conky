@@ -135,7 +135,7 @@
 int global_debug_level = 0;
 
 /* disable inotify auto reload feature if desired */
-int disable_auto_reload = 0;
+static conky::simple_config_setting<bool> disable_auto_reload("disable_auto_reload", false, false);
 
 /* two strings for internal use */
 static char *tmpstring1, *tmpstring2;
@@ -2260,13 +2260,13 @@ static void main_loop(void)
 				break;
 		}
 #ifdef HAVE_SYS_INOTIFY_H
-		if (!disable_auto_reload && inotify_fd != -1
+		if (!disable_auto_reload.get(*state) && inotify_fd != -1
 						&& inotify_config_wd == -1 && !current_config.empty()) {
 			inotify_config_wd = inotify_add_watch(inotify_fd,
 					current_config.c_str(),
 					IN_MODIFY);
 		}
-		if (!disable_auto_reload && inotify_fd != -1
+		if (!disable_auto_reload.get(*state) && inotify_fd != -1
 						&& inotify_config_wd != -1 && !current_config.empty()) {
 			int len = 0, idx = 0;
 			fd_set descriptors;
@@ -2304,7 +2304,7 @@ static void main_loop(void)
 					idx += INOTIFY_EVENT_SIZE + ev->len;
 				}
 			}
-		} else if (disable_auto_reload && inotify_fd != -1) {
+		} else if (disable_auto_reload.get(*state) && inotify_fd != -1) {
 			inotify_rm_watch(inotify_fd, inotify_config_wd);
 			close(inotify_fd);
 			inotify_fd = inotify_config_wd = 0;
@@ -2988,9 +2988,6 @@ char load_config_file(const char *f)
 			} else {
 				output_methods &= ~TO_STDOUT;
 			}
-		}
-		CONF("disable_auto_reload") {
-			disable_auto_reload = string_to_bool(value);
 		}
 		CONF("out_to_stderr") {
 			if(string_to_bool(value))
