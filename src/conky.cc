@@ -353,7 +353,8 @@ int get_stippled_borders(void)
 	return stippled_borders;
 }
 
-static int draw_shades, draw_outline;
+static conky::simple_config_setting<bool> draw_shades("draw_shades", true, false);
+static conky::simple_config_setting<bool> draw_outline("draw_outline", false, false);
 
 long default_fg_color, default_bg_color, default_out_color;
 
@@ -1764,7 +1765,7 @@ static void draw_stuff(void)
 #ifdef BUILD_X11
 	if (out_to_x.get(*state)) {
 		selected_font = 0;
-		if (draw_shades && !draw_outline) {
+		if (draw_shades.get(*state) && !draw_outline.get(*state)) {
 			text_start_x++;
 			text_start_y++;
 			set_foreground_color(default_bg_color);
@@ -1774,7 +1775,7 @@ static void draw_stuff(void)
 			text_start_y--;
 		}
 
-		if (draw_outline) {
+		if (draw_outline.get(*state)) {
 			int i, j;
 			selected_font = 0;
 
@@ -2546,8 +2547,6 @@ static void set_default_configurations(void)
 	output_methods = TO_STDOUT;
 #endif
 #ifdef BUILD_X11
-	draw_shades = 1;
-	draw_outline = 0;
 	set_first_font("6x10");
 	gap_x = 5;
 	gap_y = 60;
@@ -2980,12 +2979,6 @@ char load_config_file(const char *f)
 #ifdef BUILD_X11
 		CONF("override_utf8_locale") {
 			utf8_mode = string_to_bool(value);
-		}
-		CONF("draw_shades") {
-			draw_shades = string_to_bool(value);
-		}
-		CONF("draw_outline") {
-			draw_outline = string_to_bool(value);
 		}
 #endif /* BUILD_X11 */
 		CONF("times_in_seconds") {
