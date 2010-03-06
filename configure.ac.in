@@ -543,9 +543,10 @@ AC_ARG_ENABLE([wlan],
 
 AM_CONDITIONAL(BUILD_WLAN, test x$want_wlan = xyes)
 if test x$want_wlan = xyes; then
-  AC_CHECK_HEADERS([iwlib.h], [], AC_MSG_ERROR([iwlib.h header not found]))
-  AC_CHECK_LIB([iw], [iw_sockets_open], [conky_LIBS="$conky_LIBS -liw"], AC_MSG_ERROR([iw_sockets_open not found]))
-	AC_DEFINE(HAVE_IWLIB, 1, [Define if you want wireless support])
+  AC_CHECK_HEADERS([wlib.h], [], AC_MSG_ERROR([iwlib.h header not found]))
+  AC_CHECK_LIB([iw], [iw_sockets_open], [conky_LIBS="-liw $conky_LIBS"],
+               AC_MSG_ERROR([iw_sockets_open not found]), [$conky_LIBS])
+  AC_DEFINE(HAVE_IWLIB, 1, [Define if you want wireless support])
 fi
 
 dnl
