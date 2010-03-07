@@ -154,7 +154,7 @@ conky::lua_traits<spacer_state>::Map conky::lua_traits<spacer_state>::map = {
 static conky::simple_config_setting<spacer_state> use_spacer("use_spacer", NO_SPACER, false);
 
 /* variables holding various config settings */
-int short_units;
+static conky::simple_config_setting<bool> short_units("short_units", false, true);
 int format_human_readable;
 int top_cpu, top_mem, top_time;
 #ifdef BUILD_IOSTATS
@@ -569,7 +569,7 @@ void human_readable(long long num, char *buf, int size)
 		spaced_print(buf, size, "%d", 6, round_to_int(num));
 		return;
 	}
-	if (short_units) {
+	if (short_units.get(*state)) {
 		width = 5;
 		format = "%.*f%.1s";
 	} else {
@@ -2491,7 +2491,6 @@ static void set_default_configurations(void)
 	info.diskio_avg_samples = 2;
 	info.memmax = 0;
 	top_cpu = 0;
-	short_units = 0;
 	format_human_readable = 1;
 	top_mem = 0;
 	top_time = 0;
@@ -3115,9 +3114,6 @@ char load_config_file(const char *f)
 				CONF_ERR;
 		}
 #endif /* __linux__ */
-		CONF("short_units") {
-			short_units = string_to_bool(value);
-		}
 		CONF("format_human_readable") {
 			format_human_readable = string_to_bool(value);
 		}
