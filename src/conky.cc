@@ -325,7 +325,7 @@ struct information info;
 std::string current_config;
 
 /* set to 1 if you want all text to be in uppercase */
-static unsigned int stuff_in_uppercase;
+static conky::simple_config_setting<bool> stuff_in_uppercase("uppercase", false, true);
 
 /* Run how many times? */
 static unsigned long total_run_times;
@@ -828,7 +828,7 @@ static void generate_text(void)
 		}
 	}
 
-	if (stuff_in_uppercase) {
+	if (stuff_in_uppercase.get(*state)) {
 		char *tmp_p;
 
 		tmp_p = text_buffer;
@@ -2582,7 +2582,6 @@ static void set_default_configurations(void)
 	set_update_interval(3);
 	update_interval_bat = NOBATTERY;
 	info.music_player_interval = 1.0;
-	stuff_in_uppercase = 0;
 	info.users.number = 1;
 
 #ifdef BUILD_PORT_MONITORS
@@ -3170,9 +3169,6 @@ char load_config_file(const char *f)
 			} else {
 				CONF_ERR;
 			}
-		}
-		CONF("uppercase") {
-			stuff_in_uppercase = string_to_bool(value);
 		}
 		CONF("max_specials") {
 			if (value) {
