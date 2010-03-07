@@ -32,6 +32,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include "text_object.h"
+#include "setting.hh"
 
 void print_to_bytes(struct text_object *, char *, int);
 
@@ -75,7 +76,7 @@ int round_to_int_temp(float);
 
 unsigned int round_to_int(float);
 
-extern int no_buffers;
+extern conky::simple_config_setting<bool> no_buffers;
 
 int open_acpi_temperature(const char *name);
 double get_acpi_temperature(int fd);

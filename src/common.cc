@@ -373,7 +373,7 @@ static void *run_update_callback(void *data)
 	}
 }
 
-extern int no_buffers;
+conky::simple_config_setting<bool> no_buffers("no_buffers", true, false);
 
 void update_stuff(void)
 {
@@ -407,7 +407,7 @@ void update_stuff(void)
 		sem_wait(&uc->end_wait);
 
 	/* XXX: move the following into the update_meminfo() functions? */
-	if (no_buffers) {
+	if (no_buffers.get(*state)) {
 		info.mem -= info.bufmem;
 		info.memeasyfree += info.bufmem;
 	}

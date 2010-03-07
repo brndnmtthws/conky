@@ -392,9 +392,6 @@ unsigned int text_buffer_size = DEFAULT_TEXT_BUFFER_SIZE;
 /* UTF-8 */
 bool utf8_mode = false;
 
-/* no buffers in used memory? */
-int no_buffers;
-
 /* pad percentages to decimals? */
 static int pad_percents = 0;
 
@@ -2585,7 +2582,6 @@ static void set_default_configurations(void)
 		}
 	}
 
-	no_buffers = 1;
 	set_update_interval(3);
 	update_interval_bat = NOBATTERY;
 	info.music_player_interval = 1.0;
@@ -3115,9 +3111,6 @@ char load_config_file(const char *f)
 			}
 		}
 #endif /* BUILD_X11 */
-		CONF("no_buffers") {
-			no_buffers = string_to_bool(value);
-		}
 #ifdef __linux__
 		CONF("top_name_width") {
 			if (set_top_name_width(value))
