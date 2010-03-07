@@ -155,7 +155,8 @@ static conky::simple_config_setting<spacer_state> use_spacer("use_spacer", NO_SP
 
 /* variables holding various config settings */
 static conky::simple_config_setting<bool> short_units("short_units", false, true);
-int format_human_readable;
+static conky::simple_config_setting<bool> format_human_readable("format_human_readable",
+																true, true);
 int top_cpu, top_mem, top_time;
 #ifdef BUILD_IOSTATS
 int top_io;
@@ -565,7 +566,7 @@ void human_readable(long long num, char *buf, int size)
 	const char *format;
 
 	/* Possibly just output as usual, for example for stdout usage */
-	if (!format_human_readable) {
+	if (not format_human_readable.get(*state)) {
 		spaced_print(buf, size, "%d", 6, round_to_int(num));
 		return;
 	}
@@ -2491,7 +2492,6 @@ static void set_default_configurations(void)
 	info.diskio_avg_samples = 2;
 	info.memmax = 0;
 	top_cpu = 0;
-	format_human_readable = 1;
 	top_mem = 0;
 	top_time = 0;
 #ifdef BUILD_IOSTATS
@@ -3114,9 +3114,6 @@ char load_config_file(const char *f)
 				CONF_ERR;
 		}
 #endif /* __linux__ */
-		CONF("format_human_readable") {
-			format_human_readable = string_to_bool(value);
-		}
 #ifdef HDDTEMP
 		CONF("hddtemp_host") {
 			set_hddtemp_host(value);
