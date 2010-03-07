@@ -156,7 +156,6 @@ static conky::simple_config_setting<spacer_state> use_spacer("use_spacer", NO_SP
 /* variables holding various config settings */
 int short_units;
 int format_human_readable;
-int cpu_separate;
 int top_cpu, top_mem, top_time;
 #ifdef BUILD_IOSTATS
 int top_io;
@@ -2492,7 +2491,6 @@ static void set_default_configurations(void)
 	info.diskio_avg_samples = 2;
 	info.memmax = 0;
 	top_cpu = 0;
-	cpu_separate = 0;
 	short_units = 0;
 	format_human_readable = 1;
 	top_mem = 0;
@@ -3117,9 +3115,6 @@ char load_config_file(const char *f)
 				CONF_ERR;
 		}
 #endif /* __linux__ */
-		CONF("top_cpu_separate") {
-			cpu_separate = string_to_bool(value);
-		}
 		CONF("short_units") {
 			short_units = string_to_bool(value);
 		}

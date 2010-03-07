@@ -32,6 +32,7 @@
 #include "prioqueue.h"
 #include "top.h"
 #include "logging.h"
+#include "setting.hh"
 
 /* hash table size - always a power of 2 */
 #define HTABSIZE 256
@@ -39,6 +40,8 @@
 static unsigned long g_time = 0;
 static unsigned long long previous_total = 0;
 static struct process *first_process = 0;
+
+static conky::simple_config_setting<bool> top_cpu_separate("top_cpu_separate", false, true);
 
 /* a simple hash table to speed up find_process() */
 struct proc_hash_entry {
@@ -560,14 +563,12 @@ static unsigned long long calc_cpu_total(void)
 
 inline static void calc_cpu_each(unsigned long long total)
 {
-	struct process *p = first_process;
+	float mul = 100.0;
+	if(top_cpu_separate.get(*state))
+		mul *= info.cpu_count;
 
-	while (p) {
-		p->amount = 100.0 * (cpu_separate ? info.cpu_count : 1) *
-			(p->user_time + p->kernel_time) / (float) total;
-
-		p = p->next;
-	}
+	for(struct process *p = first_process; p; p = p->next)
+		p->amount = mul * (p->user_time + p->kernel_time) / (float) total;
 }
 
 #ifdef BUILD_IOSTATS

@@ -373,7 +373,7 @@ static void *run_update_callback(void *data)
 	}
 }
 
-conky::simple_config_setting<bool> no_buffers("no_buffers", true, false);
+conky::simple_config_setting<bool> no_buffers("no_buffers", true, true);
 
 void update_stuff(void)
 {

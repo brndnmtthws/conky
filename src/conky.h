@@ -271,9 +271,6 @@ extern int top_io;
 #endif /* BUILD_IOSTATS */
 extern int top_running;
 
-/* defined in conky.c, needed by top.c */
-extern int cpu_separate;
-
 /* struct that has all info to be shared between
  * instances of the same text object */
 extern struct information info;
