@@ -111,7 +111,6 @@ extern int workarea[4];
 extern struct conky_window window;
 extern char window_created;
 
-void init_X11();
 void init_window(int width, int height, char **argv, int argc);
 void destroy_window(void);
 void create_gc(void);
@@ -124,7 +123,6 @@ void print_monitor_number(struct text_object *, char *, int);
 void print_desktop(struct text_object *, char *, int);
 void print_desktop_number(struct text_object *, char *, int);
 void print_desktop_name(struct text_object *, char *, int);
-void free_desktop_info(void);
 
 #ifdef BUILD_XDBE
 void xdbe_swap_buffers(void);
@@ -145,7 +143,22 @@ enum alignment {
 };
 
 extern conky::simple_config_setting<alignment>   text_alignment;
-extern conky::simple_config_setting<bool>        out_to_x;
+
+namespace priv {
+	class out_to_x_setting: public conky::simple_config_setting<bool> {
+		typedef conky::simple_config_setting<bool> Base;
+	
+	protected:
+		virtual void lua_setter(lua::state &l, bool init);
+		virtual void cleanup(lua::state &l);
+
+	public:
+		out_to_x_setting()
+			: Base("out_to_x", false, false)
+		{}
+	};
+}
+extern priv::out_to_x_setting                    out_to_x;
 extern conky::simple_config_setting<std::string> display_name;
 
 #ifdef OWN_WINDOW

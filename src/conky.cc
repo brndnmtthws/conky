@@ -299,7 +299,6 @@ static const char *suffixes[] = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "" };
 #ifdef BUILD_X11
 
 static void X11_create_window(void);
-static void X11_initialisation(void);
 
 struct _x11_stuff_s {
 	Region region;
@@ -2377,10 +2376,6 @@ void clean_up(void *memtofree1, void* memtofree2)
 			XDestroyRegion(x11_stuff.region);
 			x11_stuff.region = NULL;
 		}
-		XCloseDisplay(display);
-		display = NULL;
-		free_and_zero(info.x11.desktop.all_names);
-		free_and_zero(info.x11.desktop.name);
 		x_initialised = NO;
 	}else{
 		free(fonts);	//in set_default_configurations a font is set but not loaded
@@ -2395,10 +2390,6 @@ void clean_up(void *memtofree1, void* memtofree2)
 		free_all_processes();
 		info.first_process = NULL;
 	}
-
-#ifdef BUILD_X11
-	free_desktop_info();
-#endif /* BUILD_X11 */
 
 	free_text_objects(&global_root_object);
 	free_and_zero(tmpstring1);
@@ -2442,6 +2433,9 @@ void clean_up(void *memtofree1, void* memtofree2)
 	clear_net_stats();
 	clear_diskio_stats();
 	free_and_zero(global_cpu);
+
+	conky::cleanup_config_settings(*state);
+	state.reset();
 }
 
 static bool string_to_bool(const char *s)
@@ -2460,7 +2454,8 @@ static bool string_to_bool(const char *s)
 }
 
 #ifdef BUILD_X11
-static void set_default_configurations_for_x(void)
+// XXX
+static void __attribute__((unused)) set_default_configurations_for_x(void)
 {
 	default_fg_color = WhitePixel(display, screen);
 	default_bg_color = BlackPixel(display, screen);
@@ -2558,13 +2553,6 @@ static void set_default_configurations(void)
 	window.border_inner_margin = 3;
 	window.border_outer_margin = 1;
 	window.border_width = 1;
-	info.x11.monitor.number = 1;
-	info.x11.monitor.current = 0;
-	info.x11.desktop.current = 1;
-	info.x11.desktop.number = 1;
-	info.x11.desktop.nitems = 0;
-	info.x11.desktop.all_names = NULL;
-	info.x11.desktop.name = NULL;
 #endif /* BUILD_X11 */
 
 	free_templates();
@@ -2613,52 +2601,6 @@ static bool append_works(const char *path)
 }
 
 #ifdef BUILD_X11
-#ifdef DEBUG
-/* WARNING, this type not in Xlib spec */
-int x11_error_handler(Display *d, XErrorEvent *err)
-	__attribute__((noreturn));
-int x11_error_handler(Display *d, XErrorEvent *err)
-{
-	NORM_ERR("X Error: type %i Display %lx XID %li serial %lu error_code %i request_code %i minor_code %i other Display: %lx\n",
-			err->type,
-			(long unsigned)err->display,
-			(long)err->resourceid,
-			err->serial,
-			err->error_code,
-			err->request_code,
-			err->minor_code,
-			(long unsigned)d
-			);
-	abort();
-}
-
-int x11_ioerror_handler(Display *d)
-	__attribute__((noreturn));
-int x11_ioerror_handler(Display *d)
-{
-	NORM_ERR("X Error: Display %lx\n",
-			(long unsigned)d
-			);
-	exit(1);
-}
-#endif /* DEBUG */
-
-static void X11_initialisation(void)
-{
-	if (x_initialised == YES) return;
-	state->pushboolean(true);
-	out_to_x.lua_set(*state);
-	init_X11();
-	set_default_configurations_for_x();
-	x_initialised = YES;
-#ifdef DEBUG
-	_Xdebug = 1;
-	/* WARNING, this type not in Xlib spec */
-	XSetErrorHandler(&x11_error_handler);
-	XSetIOErrorHandler(&x11_ioerror_handler);
-#endif /* DEBUG */
-}
-
 static char **xargv = 0;
 static int xargc = 0;
 
@@ -3196,12 +3138,6 @@ char load_config_file(const char *f)
 			}
 		}
 		CONF("text") {
-#ifdef BUILD_X11
-			if (out_to_x.get(*state)) {
-				X11_initialisation();
-			}
-#endif
-
 			free_and_zero(global_text);
 
 			global_text = (char *) malloc(1);
@@ -3392,7 +3328,7 @@ static void load_config_file_x11(const char *f)
 		}
 
 		CONF2("color0") {
-			X11_initialisation();
+			// XXX X11_initialisation();
 			if (x_initialised == YES) {
 				if (value) {
 					color0 = get_x11_color(value);
@@ -3402,7 +3338,7 @@ static void load_config_file_x11(const char *f)
 			}
 		}
 		CONF("color1") {
-			X11_initialisation();
+			// XXX X11_initialisation();
 			if (x_initialised == YES) {
 				if (value) {
 					color1 = get_x11_color(value);
@@ -3412,7 +3348,7 @@ static void load_config_file_x11(const char *f)
 			}
 		}
 		CONF("color2") {
-			X11_initialisation();
+			// XXX X11_initialisation();
 			if (x_initialised == YES) {
 				if (value) {
 					color2 = get_x11_color(value);
@@ -3422,7 +3358,7 @@ static void load_config_file_x11(const char *f)
 			}
 		}
 		CONF("color3") {
-			X11_initialisation();
+			// XXX X11_initialisation();
 			if (x_initialised == YES) {
 				if (value) {
 					color3 = get_x11_color(value);
@@ -3432,7 +3368,7 @@ static void load_config_file_x11(const char *f)
 			}
 		}
 		CONF("color4") {
-			X11_initialisation();
+			// XXX X11_initialisation();
 			if (x_initialised == YES) {
 				if (value) {
 					color4 = get_x11_color(value);
@@ -3442,7 +3378,7 @@ static void load_config_file_x11(const char *f)
 			}
 		}
 		CONF("color5") {
-			X11_initialisation();
+			// XXX X11_initialisation();
 			if (x_initialised == YES) {
 				if (value) {
 					color5 = get_x11_color(value);
@@ -3452,7 +3388,7 @@ static void load_config_file_x11(const char *f)
 			}
 		}
 		CONF("color6") {
-			X11_initialisation();
+			// XXX X11_initialisation();
 			if (x_initialised == YES) {
 				if (value) {
 					color6 = get_x11_color(value);
@@ -3462,7 +3398,7 @@ static void load_config_file_x11(const char *f)
 			}
 		}
 		CONF("color7") {
-			X11_initialisation();
+			// XXX X11_initialisation();
 			if (x_initialised == YES) {
 				if (value) {
 					color7 = get_x11_color(value);
@@ -3472,7 +3408,7 @@ static void load_config_file_x11(const char *f)
 			}
 		}
 		CONF("color8") {
-			X11_initialisation();
+			// XXX X11_initialisation();
 			if (x_initialised == YES) {
 				if (value) {
 					color8 = get_x11_color(value);
@@ -3482,7 +3418,7 @@ static void load_config_file_x11(const char *f)
 			}
 		}
 		CONF("color9") {
-			X11_initialisation();
+			// XXX X11_initialisation();
 			if (x_initialised == YES) {
 				if (value) {
 					color9 = get_x11_color(value);
@@ -3492,7 +3428,7 @@ static void load_config_file_x11(const char *f)
 			}
 		}
 		CONF("default_color") {
-			X11_initialisation();
+			// XXX X11_initialisation();
 			if (x_initialised == YES) {
 				if (value) {
 					default_fg_color = get_x11_color(value);
@@ -3502,7 +3438,7 @@ static void load_config_file_x11(const char *f)
 			}
 		}
 		CONF3("default_shade_color", "default_shadecolor") {
-			X11_initialisation();
+			// XXX X11_initialisation();
 			if (x_initialised == YES) {
 				if (value) {
 					default_bg_color = get_x11_color(value);
@@ -3512,19 +3448,13 @@ static void load_config_file_x11(const char *f)
 			}
 		}
 		CONF3("default_outline_color", "default_outlinecolor") {
-			X11_initialisation();
+			// XXX X11_initialisation();
 			if (x_initialised == YES) {
 				if (value) {
 					default_out_color = get_x11_color(value);
 				} else {
 					CONF_ERR;
 				}
-			}
-		}
-		CONF("text") {
-			/* initialize BUILD_X11 if nothing BUILD_X11-related is mentioned before TEXT (and if BUILD_X11 is the default outputmethod) */
-			if (out_to_x.get(*state)) {
-				X11_initialisation();
 			}
 		}
 #undef CONF
@@ -3908,7 +3838,6 @@ int main(int argc, char **argv)
 	argv_copy = argv;
 	g_signal_pending = 0;
 	max_user_text = MAX_USER_TEXT_DEFAULT;
-	memset(&info, 0, sizeof(info));
 	free_templates();
 	clear_net_stats();
 
@@ -3979,7 +3908,7 @@ int main(int argc, char **argv)
 				"print(conky.asnumber(conky.variables.zxcv{}));\n"
 				"print(conky.variables.asdf{}.text);\n"
 				"print(conky.variables.asdf{}.xxx);\n"
-				"conky.config = { alignment='bar', asdf=47, [42]=47,\n"
+				"conky.config = { alignment='bar', asdf=47, [42]=47, out_to_x=true,\n"
 				"    own_window_hints='above, undecorated,,below'};\n"
 				);
 		l.call(0, 0);
@@ -3998,6 +3927,9 @@ int main(int argc, char **argv)
 				"print('config.own_window_hints = ', conky.config.own_window_hints);\n"
 				);
 		l.call(0, 0);
+
+		conky::cleanup_config_settings(*state);
+		state.reset();
 	}
 	catch(std::exception &e) {
 		std::cerr << "caught exception: " << e.what() << std::endl;

@@ -74,17 +74,50 @@ static void update_workarea(void);
 static Window find_desktop_window(Window *p_root, Window *p_desktop);
 static Window find_subwindow(Window win, int w, int h);
 
+#ifdef DEBUG
+/* WARNING, this type not in Xlib spec */
+static int __attribute__((noreturn)) x11_error_handler(Display *d, XErrorEvent *err)
+{
+	NORM_ERR("X Error: type %i Display %lx XID %li serial %lu error_code %i request_code %i minor_code %i other Display: %lx\n",
+			err->type,
+			(long unsigned)err->display,
+			(long)err->resourceid,
+			err->serial,
+			err->error_code,
+			err->request_code,
+			err->minor_code,
+			(long unsigned)d
+			);
+	abort();
+}
+
+static int __attribute__((noreturn)) x11_ioerror_handler(Display *d)
+{
+	NORM_ERR("X Error: Display %lx\n",
+			(long unsigned)d
+			);
+	exit(1);
+}
+#endif /* DEBUG */
+
 /* X11 initializer */
-void init_X11()
+static void init_X11()
 {
 	if (!display) {
 		const std::string &dispstr = display_name.get(*state).c_str();
 		// passing NULL to XOpenDisplay should open the default display
 		const char *disp = dispstr.size() ? dispstr.c_str() : NULL;
 		if ((display = XOpenDisplay(disp)) == NULL) {
-			CRIT_ERR(NULL, NULL, "can't open display: %s", XDisplayName(disp));
+			throw std::runtime_error(std::string("can't open display: ") + XDisplayName(disp));
 		}
 	}
+
+	info.x11.monitor.number = 1;
+	info.x11.monitor.current = 0;
+	info.x11.desktop.current = 1;
+	info.x11.desktop.number = 1;
+	info.x11.desktop.all_names.clear();
+	info.x11.desktop.name.clear();
 
 	screen = DefaultScreen(display);
 	display_width = DisplayWidth(display, screen);
@@ -93,6 +126,19 @@ void init_X11()
 	get_x11_desktop_info(display, 0);
 
 	update_workarea();
+
+#ifdef DEBUG
+		_Xdebug = 1;
+		/* WARNING, this type not in Xlib spec */
+		XSetErrorHandler(&x11_error_handler);
+		XSetIOErrorHandler(&x11_ioerror_handler);
+#endif /* DEBUG */
+}
+
+static void deinit_X11()
+{
+	XCloseDisplay(display);
+	display = NULL;
 }
 
 static void update_workarea(void)
@@ -713,10 +759,7 @@ static inline void get_x11_desktop_names(Display *current_display, Window root, 
 			(actual_type == ATOM(UTF8_STRING)) &&
 			(nitems > 0L) && (actual_format == 8) ) {
 
-		free_and_zero(current_info->x11.desktop.all_names);
-		current_info->x11.desktop.all_names = (char*)malloc(nitems*sizeof(char));
-		memcpy(current_info->x11.desktop.all_names, prop, nitems);
-		current_info->x11.desktop.nitems = nitems;
+		current_info->x11.desktop.all_names.assign(reinterpret_cast<const char *>(prop), nitems);
 	}
 	if(prop) {
 		XFree(prop);
@@ -724,19 +767,16 @@ static inline void get_x11_desktop_names(Display *current_display, Window root, 
 }
 
 //Get current desktop name
-static inline void get_x11_desktop_current_name(char *names)
+static inline void get_x11_desktop_current_name(const std::string &names)
 {
 	struct information *current_info = &info;
 	unsigned int i = 0, j = 0;
 	int k = 0;
 
-	while ( i < current_info->x11.desktop.nitems ) {
+	while ( i < names.size() ) {
 		if ( names[i++] == '\0' ) {
 			if ( ++k == current_info->x11.desktop.current ) {
-				free_and_zero(current_info->x11.desktop.name);
-				current_info->x11.desktop.name = (char*)malloc((i-j)*sizeof(char));
-				//desktop names can be empty but should always be not null
-				strcpy( current_info->x11.desktop.name, (char *)&names[j] );
+				current_info->x11.desktop.name.assign(names.c_str()+j);
 				break;
 			}
 			j = i;
@@ -834,17 +874,11 @@ void print_desktop_name(struct text_object *obj, char *p, int p_max_size)
 {
 	(void)obj;
 
-	if(x_initialised != YES) {
+	if(not out_to_x.get(*state)) {
 		strncpy(p, NOT_IN_X, p_max_size);
-	}else if(info.x11.desktop.name != NULL) {
-		strncpy(p, info.x11.desktop.name, p_max_size);
+	} else {
+		strncpy(p, info.x11.desktop.name.c_str(), p_max_size);
 	}
-}
-
-void free_desktop_info(void)
-{
-	free_and_zero(info.x11.desktop.name);
-	free_and_zero(info.x11.desktop.all_names);
 }
 
 #ifdef OWN_WINDOW
@@ -927,6 +961,30 @@ void xdbe_swap_buffers(void)
 }
 #endif /* BUILD_XDBE */
 
+namespace priv {
+	void out_to_x_setting::lua_setter(lua::state &l, bool init)
+	{
+		lua::stack_sentry s(l, -2);
+
+		Base::lua_setter(l, init);
+
+		if(init && do_convert(l, -1).first)
+			init_X11();
+
+		++s;
+	}
+
+	void out_to_x_setting::cleanup(lua::state &l)
+	{
+		lua::stack_sentry s(l, -1);
+
+		if(do_convert(l, -1).first)
+			deinit_X11();
+
+		l.pop();
+	}
+}
+
 template<>
 conky::lua_traits<alignment>::Map conky::lua_traits<alignment>::map = {
 	{ "top_left",      TOP_LEFT },
@@ -942,9 +1000,9 @@ conky::lua_traits<alignment>::Map conky::lua_traits<alignment>::map = {
 };
 conky::simple_config_setting<alignment> text_alignment("alignment", NONE, false);
 
-conky::simple_config_setting<bool> out_to_x("out_to_x", false, false);
-
 conky::simple_config_setting<std::string> display_name("display", std::string(), false);
+
+priv::out_to_x_setting                    out_to_x;
 
 #ifdef OWN_WINDOW
 conky::simple_config_setting<bool> own_window("own_window", false, false);
