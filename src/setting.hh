@@ -65,7 +65,8 @@ namespace conky {
 	struct lua_traits<T, true, false, false> {
 		static const lua::Type type = lua::TNUMBER;
 
-		static std::pair<T, bool> convert(lua::state &l, int index, const std::string &)
+		static inline std::pair<T, bool>
+		convert(lua::state &l, int index, const std::string &)
 		{ return {l.tointeger(index), true}; }
 	};
 
@@ -74,7 +75,8 @@ namespace conky {
 	struct lua_traits<T, false, true, false> {
 		static const lua::Type type = lua::TNUMBER;
 
-		static std::pair<T, bool> convert(lua::state &l, int index, const std::string &)
+		static inline std::pair<T, bool>
+		convert(lua::state &l, int index, const std::string &)
 		{ return {l.tonumber(index), true}; }
 	};
 
@@ -83,7 +85,8 @@ namespace conky {
 	struct lua_traits<std::string, false, false, false> {
 		static const lua::Type type = lua::TSTRING;
 
-		static std::pair<std::string, bool> convert(lua::state &l, int index, const std::string &)
+		static inline std::pair<std::string, bool>
+		convert(lua::state &l, int index, const std::string &)
 		{ return {l.tostring(index), true}; }
 	};
 
@@ -92,7 +95,8 @@ namespace conky {
 	struct lua_traits<bool, true, false, false> {
 		static const lua::Type type = lua::TBOOLEAN;
 
-		static std::pair<bool, bool> convert(lua::state &l, int index, const std::string &)
+		static inline std::pair<bool, bool>
+		convert(lua::state &l, int index, const std::string &)
 		{ return {l.toboolean(index), true}; }
 	};
 
