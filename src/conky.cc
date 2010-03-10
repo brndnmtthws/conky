@@ -3983,7 +3983,7 @@ int main(int argc, char **argv)
 				"    own_window_hints='above, undecorated,,below'};\n"
 				);
 		l.call(0, 0);
-		conky::check_config_settings(l);
+		conky::set_config_settings(l);
 		std::cout << "config.alignment = " << text_alignment.get(l) << std::endl;
 		l.pushstring("X");
 		text_alignment.lua_set(l);

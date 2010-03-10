@@ -27,14 +27,27 @@
 #include <limits>
 #include <string>
 #include <type_traits>
-#include <unordered_map>
 
 #include "logging.h"
 #include "luamm.hh"
 
 namespace conky {
 
-	void check_config_settings(lua::state &l);
+	/*
+	 * Checks settings, and does initial calls to the setters.
+	 * Should be called after reading the user config.
+	 * stack on entry: | ... |
+	 * stack on exit:  | ... |
+	 */
+	void set_config_settings(lua::state &l);
+
+	/*
+	 * Calls cleanup functions.
+	 * Should be called before exit/restart.
+	 * stack on entry: | ... |
+	 * stack on exit:  | ... |
+	 */
+	void cleanup_config_settings(lua::state &l);
 
 	template<typename T,
 		bool is_integral = std::is_integral<T>::value,
@@ -120,6 +133,7 @@ namespace conky {
 		private:
 			static void process_setting(lua::state &l, bool init);
 			static int config__newindex(lua::state *l);
+			static void make_conky_config(lua::state &l);
 
 			// copying is a REALLY bad idea
 			config_setting_base(const config_setting_base &) = delete;
@@ -134,8 +148,19 @@ namespace conky {
 			 */
 			virtual void lua_setter(lua::state &l, bool init) = 0;
 
+			/*
+			 * Called on exit/restart.
+			 * stack on entry: | ... new_value |
+			 * stack on exit:  | ... |
+			 */
+			virtual void cleanup(lua::state &l) { l.pop(); }
+
 		public:
 			const std::string name;
+			const size_t seq_no;
+
+			static bool seq_compare(const config_setting_base *a, const config_setting_base *b)
+			{ return a->seq_no < b->seq_no; }
 
 			explicit config_setting_base(const std::string &name_);
 			virtual ~config_setting_base() {}
@@ -147,12 +172,9 @@ namespace conky {
 			 */
 			void lua_set(lua::state &l);
 
-			friend void conky::check_config_settings(lua::state &l);
+			friend void conky::set_config_settings(lua::state &l);
+			friend void conky::cleanup_config_settings(lua::state &l);
 		};
-
-		typedef std::unordered_map<std::string, config_setting_base *> config_settings_t;
-
-		extern config_settings_t *config_settings;
 	}
 
 	// If you need some very exotic setting, derive it from this class. Otherwise, scroll down.

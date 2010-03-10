@@ -70,7 +70,7 @@ namespace conky {
 		int data_source_astext(lua::state *l)
 		{
 			std::string x = get_data_source(l).get_text();
-			l->pushstring(x.c_str());
+			l->pushstring(x);
 			return 1;
 		}
 
