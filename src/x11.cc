@@ -73,6 +73,166 @@ char window_created = 0;
 static void update_workarea(void);
 static Window find_desktop_window(Window *p_root, Window *p_desktop);
 static Window find_subwindow(Window win, int w, int h);
+static void init_X11();
+static void deinit_X11();
+
+/********************* <SETTINGS> ************************/
+namespace priv {
+	void out_to_x_setting::lua_setter(lua::state &l, bool init)
+	{
+		lua::stack_sentry s(l, -2);
+
+		Base::lua_setter(l, init);
+
+		if(init && do_convert(l, -1).first)
+			init_X11();
+
+		++s;
+	}
+
+	void out_to_x_setting::cleanup(lua::state &l)
+	{
+		lua::stack_sentry s(l, -1);
+
+		if(do_convert(l, -1).first)
+			deinit_X11();
+
+		l.pop();
+	}
+}
+
+namespace {
+	struct colour_traits {
+		static const lua::Type type = lua::TSTRING;
+
+		static std::pair<unsigned long, bool> convert(lua::state &l, int index, const std::string &)
+		{ return {get_x11_color(l.tostring(index)), true}; }
+	};
+
+	class colour_setting: public conky::simple_config_setting<unsigned long, colour_traits> {
+		typedef conky::simple_config_setting<unsigned long, colour_traits> Base;
+	
+	protected:
+		virtual void lua_setter(lua::state &l, bool init)
+		{
+			lua::stack_sentry s(l, -2);
+
+			if(not out_to_x.get(l)) {
+				// ignore if we're not using X
+				l.replace(-2);
+			} else
+				Base::lua_setter(l, init);
+
+			++s;
+		}
+
+	public:
+		colour_setting(const std::string &name_, unsigned long default_value_ = 0)
+			: Base(name_, default_value_, true)
+		{}
+		
+	};
+}
+
+template<>
+conky::lua_traits<alignment>::Map conky::lua_traits<alignment>::map = {
+	{ "top_left",      TOP_LEFT },
+	{ "top_right",     TOP_RIGHT },
+	{ "top_middle",    TOP_MIDDLE },
+	{ "bottom_left",   BOTTOM_LEFT },
+	{ "bottom_right",  BOTTOM_RIGHT },
+	{ "bottom_middle", BOTTOM_MIDDLE },
+	{ "middle_left",   MIDDLE_LEFT },
+	{ "middle_middle", MIDDLE_MIDDLE },
+	{ "middle_right",  MIDDLE_RIGHT },
+	{ "none",          NONE }
+};
+
+template<>
+conky::lua_traits<window_type>::Map conky::lua_traits<window_type>::map = {
+	{ "normal",   TYPE_NORMAL },
+	{ "dock",     TYPE_DOCK },
+	{ "panel",    TYPE_PANEL },
+	{ "desktop",  TYPE_DESKTOP },
+	{ "override", TYPE_OVERRIDE }
+};
+
+template<>
+conky::lua_traits<window_hints>::Map conky::lua_traits<window_hints>::map = {
+	{ "undecorated",  HINT_UNDECORATED },
+	{ "below",        HINT_BELOW },
+	{ "above",        HINT_ABOVE },
+	{ "sticky",       HINT_STICKY },
+	{ "skip_taskbar", HINT_SKIP_TASKBAR },
+	{ "skip_pager",   HINT_SKIP_PAGER }
+};
+
+std::pair<uint16_t, bool>
+window_hints_traits::convert(lua::state &l, int index, const std::string &name)
+{
+	typedef conky::lua_traits<window_hints> Traits;
+
+	lua::stack_sentry s(l);
+	l.checkstack(1);
+
+	std::string hints = l.tostring(index);
+	// add a sentinel to simplify the following loop
+	hints += ',';
+	size_t pos = 0;
+	size_t newpos;
+	uint16_t ret = 0;
+	while((newpos = hints.find_first_of(", ", pos)) != std::string::npos) {
+		if(newpos > pos) {
+			l.pushstring(hints.substr(pos, newpos-pos));
+			auto t = conky::lua_traits<window_hints>::convert(l, -1, name);
+			if(not t.second)
+				return {0, false};
+			SET_HINT(ret, t.first);
+			l.pop();
+		}
+		pos = newpos+1;
+	}
+	return {ret, true};
+}
+
+namespace {
+	// used to set the default value for own_window_title
+	std::string gethostnamecxx()
+	{ update_uname(); return info.uname_s.nodename; }
+}
+
+/*
+ * The order of these settings cannot be completely arbitrary. Some of them depend on others, and
+ * the setters are called in the order of in which they are defined. The ordering should be
+ * display_name -> out_to_x -> everything colour related
+ */
+
+conky::simple_config_setting<alignment>   text_alignment("alignment", NONE, false);
+conky::simple_config_setting<std::string> display_name("display", std::string(), false);
+priv::out_to_x_setting                    out_to_x;
+
+#ifdef OWN_WINDOW
+conky::simple_config_setting<bool>        own_window("own_window", false, false);
+conky::simple_config_setting<bool>        set_transparent("own_window_transparent", false, false);
+conky::simple_config_setting<std::string> own_window_class("own_window_class",
+															PACKAGE_NAME, false);
+
+conky::simple_config_setting<std::string> own_window_title("own_window_title",
+										PACKAGE_NAME " (" + gethostnamecxx()+")", false);
+
+conky::simple_config_setting<window_type> own_window_type("own_window_type", TYPE_NORMAL, false);
+conky::simple_config_setting<uint16_t, window_hints_traits>
+									      own_window_hints("own_window_hints", 0, false);
+
+colour_setting                            background_colour("background_colour", 0);
+
+#ifdef BUILD_ARGB
+conky::simple_config_setting<bool>        use_argb_visual("own_window_argb_visual", false, false);
+conky::range_config_setting<int>          own_window_argb_value("own_window_argb_value",
+																0, 255, 255, false);
+#endif
+#endif /*OWN_WINDOW*/
+/******************** </SETTINGS> ************************/
 
 #ifdef DEBUG
 /* WARNING, this type not in Xlib spec */
@@ -224,21 +384,11 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop)
 }
 
 namespace {
-	unsigned long colour_set = -1;
-	std::string colour_str_set;
-	int argb_set = -1;
-
 	/* helper function for set_transparent_background() */
 	void do_set_background(Window win, int argb)
 	{
-		std::string t = background_colour.get(*state);
-		if(t == colour_str_set && argb_set == argb)
-			return;
-		colour_str_set = t;
-		argb_set = argb;
-
-		colour_set = get_x11_color(colour_str_set) | (argb_set<<24);
-		XSetWindowBackground(display, win, colour_set);
+		unsigned long colour = background_colour.get(*state) | (argb<<24);
+		XSetWindowBackground(display, win, colour);
 	}
 }
 
@@ -249,8 +399,7 @@ void set_transparent_background(Window win)
 #ifdef BUILD_ARGB
 	if (have_argb_visual) {
 		// real transparency
-		do_set_background(win, set_transparent.get(*state)
-								? 0 : (own_window_argb_value.get(*state) << 24));
+		do_set_background(win, set_transparent.get(*state) ? 0 : own_window_argb_value.get(*state));
 	} else {
 #endif /* BUILD_ARGB */
 	// pseudo transparency
@@ -315,7 +464,6 @@ void destroy_window(void)
 		XFreeGC(display, window.gc);
 	}
 	memset(&window, 0, sizeof(struct conky_window));
-	colour_set = -1;
 }
 
 void init_window(int w, int h, char **argv, int argc)
@@ -960,120 +1108,3 @@ void xdbe_swap_buffers(void)
 	}
 }
 #endif /* BUILD_XDBE */
-
-namespace priv {
-	void out_to_x_setting::lua_setter(lua::state &l, bool init)
-	{
-		lua::stack_sentry s(l, -2);
-
-		Base::lua_setter(l, init);
-
-		if(init && do_convert(l, -1).first)
-			init_X11();
-
-		++s;
-	}
-
-	void out_to_x_setting::cleanup(lua::state &l)
-	{
-		lua::stack_sentry s(l, -1);
-
-		if(do_convert(l, -1).first)
-			deinit_X11();
-
-		l.pop();
-	}
-}
-
-template<>
-conky::lua_traits<alignment>::Map conky::lua_traits<alignment>::map = {
-	{ "top_left",      TOP_LEFT },
-	{ "top_right",     TOP_RIGHT },
-	{ "top_middle",    TOP_MIDDLE },
-	{ "bottom_left",   BOTTOM_LEFT },
-	{ "bottom_right",  BOTTOM_RIGHT },
-	{ "bottom_middle", BOTTOM_MIDDLE },
-	{ "middle_left",   MIDDLE_LEFT },
-	{ "middle_middle", MIDDLE_MIDDLE },
-	{ "middle_right",  MIDDLE_RIGHT },
-	{ "none",          NONE }
-};
-conky::simple_config_setting<alignment> text_alignment("alignment", NONE, false);
-
-conky::simple_config_setting<std::string> display_name("display", std::string(), false);
-
-priv::out_to_x_setting                    out_to_x;
-
-#ifdef OWN_WINDOW
-conky::simple_config_setting<bool> own_window("own_window", false, false);
-conky::simple_config_setting<bool> set_transparent("own_window_transparent", false, false);
-conky::simple_config_setting<std::string> own_window_class("own_window_class",
-															PACKAGE_NAME, false);
-
-namespace {
-	// used to set the default value for own_window_title
-	std::string gethostnamecxx()
-	{ update_uname(); return info.uname_s.nodename; }
-}
-conky::simple_config_setting<std::string> own_window_title("own_window_title",
-										PACKAGE_NAME " (" + gethostnamecxx()+")", false);
-
-template<>
-conky::lua_traits<window_type>::Map conky::lua_traits<window_type>::map = {
-	{ "normal",   TYPE_NORMAL },
-	{ "dock",     TYPE_DOCK },
-	{ "panel",    TYPE_PANEL },
-	{ "desktop",  TYPE_DESKTOP },
-	{ "override", TYPE_OVERRIDE }
-};
-conky::simple_config_setting<window_type> own_window_type("own_window_type", TYPE_NORMAL, false);
-
-template<>
-conky::lua_traits<window_hints>::Map conky::lua_traits<window_hints>::map = {
-	{ "undecorated",  HINT_UNDECORATED },
-	{ "below",        HINT_BELOW },
-	{ "above",        HINT_ABOVE },
-	{ "sticky",       HINT_STICKY },
-	{ "skip_taskbar", HINT_SKIP_TASKBAR },
-	{ "skip_pager",   HINT_SKIP_PAGER }
-};
-
-std::pair<uint16_t, bool>
-window_hints_traits::convert(lua::state &l, int index, const std::string &name)
-{
-	typedef conky::lua_traits<window_hints> Traits;
-
-	lua::stack_sentry s(l);
-	l.checkstack(1);
-
-	std::string hints = l.tostring(index);
-	// add a sentinel to simplify the following loop
-	hints += ',';
-	size_t pos = 0;
-	size_t newpos;
-	uint16_t ret = 0;
-	while((newpos = hints.find_first_of(", ", pos)) != std::string::npos) {
-		if(newpos > pos) {
-			l.pushstring(hints.substr(pos, newpos-pos));
-			auto t = conky::lua_traits<window_hints>::convert(l, -1, name);
-			if(not t.second)
-				return {0, false};
-			SET_HINT(ret, t.first);
-			l.pop();
-		}
-		pos = newpos+1;
-	}
-	return {ret, true};
-}
-
-conky::simple_config_setting<uint16_t, window_hints_traits> own_window_hints("own_window_hints",
-																				0, false);
-
-conky::simple_config_setting<std::string> background_colour("background_colour", "black", false);
-
-#ifdef BUILD_ARGB
-conky::simple_config_setting<bool> use_argb_visual("own_window_argb_visual", false, false);
-conky::range_config_setting<int> own_window_argb_value("own_window_argb_value",
-														0, 255, 255, false);
-#endif
-#endif /*OWN_WINDOW*/

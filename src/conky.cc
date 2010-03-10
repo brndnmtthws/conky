@@ -3909,7 +3909,8 @@ int main(int argc, char **argv)
 				"print(conky.variables.asdf{}.text);\n"
 				"print(conky.variables.asdf{}.xxx);\n"
 				"conky.config = { alignment='bar', asdf=47, [42]=47, out_to_x=true,\n"
-				"    own_window_hints='above, undecorated,,below'};\n"
+				"    own_window_hints='above, undecorated,,below',\n"
+				"    background_colour='pink'};\n"
 				);
 		l.call(0, 0);
 		conky::set_config_settings(l);

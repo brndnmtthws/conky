@@ -174,9 +174,6 @@ struct window_hints_traits {
 };
 extern conky::simple_config_setting<uint16_t, window_hints_traits> own_window_hints;
 
-// this setting is not checked for validity when set, we leave that to the caller
-// the reason for that is that we need to have X initialised in order to call XParseColor()
-extern conky::simple_config_setting<std::string> background_colour;
 #ifdef BUILD_ARGB
 extern conky::simple_config_setting<bool>        use_argb_visual;
 
