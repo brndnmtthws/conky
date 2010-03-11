@@ -158,9 +158,6 @@ struct x11_info {
 
 #endif /* BUILD_X11 */
 
-/* defined in conky.c */
-extern long default_fg_color, default_bg_color, default_out_color;
-
 struct conftree {
 	char* string;
 	struct conftree* horz_next;

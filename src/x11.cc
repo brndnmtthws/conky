@@ -202,6 +202,9 @@ priv::colour_setting					  color[10] = {
 	{ "color8", 0xffffff },
 	{ "color9", 0xffffff }
 };
+priv::colour_setting					  default_color("default_color", 0xffffff);
+priv::colour_setting					  default_shade_color("default_shade_color", 0x000000);
+priv::colour_setting					  default_outline_color("default_outline_color", 0x000000);
 
 #ifdef OWN_WINDOW
 conky::simple_config_setting<bool>        own_window("own_window", false, false);

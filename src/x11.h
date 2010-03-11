@@ -184,6 +184,9 @@ namespace priv {
 extern priv::out_to_x_setting                    out_to_x;
 extern conky::simple_config_setting<std::string> display_name;
 extern priv::colour_setting						 color[10];
+extern priv::colour_setting						 default_color;
+extern priv::colour_setting						 default_shade_color;
+extern priv::colour_setting						 default_outline_color;
 
 #ifdef OWN_WINDOW
 extern conky::simple_config_setting<bool>        own_window;

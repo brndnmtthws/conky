@@ -471,7 +471,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 	END OBJ(color, 0)
 #ifdef BUILD_X11
 		if (out_to_x.get(*state)) {
-			obj->data.l = arg ? get_x11_color(arg) : default_fg_color;
+			obj->data.l = arg ? get_x11_color(arg) : default_color.get(*state);
 			set_current_text_color(obj->data.l);
 		}
 #endif /* BUILD_X11 */
@@ -1051,12 +1051,12 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 #endif /* __linux__ */
 	END OBJ(shadecolor, 0)
 #ifdef BUILD_X11
-		obj->data.l = arg ? get_x11_color(arg) : default_bg_color;
+		obj->data.l = arg ? get_x11_color(arg) : default_shade_color.get(*state);
 		obj->callbacks.print = &new_bg;
 #endif /* BUILD_X11 */
 	END OBJ(outlinecolor, 0)
 #ifdef BUILD_X11
-		obj->data.l = arg ? get_x11_color(arg) : default_out_color;
+		obj->data.l = arg ? get_x11_color(arg) : default_outline_color.get(*state);
 		obj->callbacks.print = &new_outline;
 #endif /* BUILD_X11 */
 	END OBJ(stippled_hr, 0)

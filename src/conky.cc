@@ -363,8 +363,6 @@ int get_stippled_borders(void)
 static conky::simple_config_setting<bool> draw_shades("draw_shades", true, false);
 static conky::simple_config_setting<bool> draw_outline("draw_outline", false, false);
 
-long default_fg_color, default_bg_color, default_out_color;
-
 #ifdef OWN_WINDOW
 /* fixed size/pos is set if wm/user changes them */
 static int fixed_size = 0, fixed_pos = 0;
@@ -1477,13 +1475,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 							&& h > font_h) {
 						cur_y_add = h;
 					}
-					/* if (draw_mode == BG) {
-						set_foreground_color(default_bg_color);
-					} else if (draw_mode == OUTLINE) {
-						set_foreground_color(default_out_color);
-					} else {
-						set_foreground_color(default_fg_color);
-					} */
 					if (show_graph_range.get(*state)) {
 						int tmp_x = cur_x;
 						int tmp_y = cur_y;
@@ -1769,7 +1760,7 @@ static void draw_stuff(void)
 		if (draw_shades.get(*state) && !draw_outline.get(*state)) {
 			text_start_x++;
 			text_start_y++;
-			set_foreground_color(default_bg_color);
+			set_foreground_color(default_shade_color.get(*state));
 			draw_mode = BG;
 			draw_text();
 			text_start_x--;
@@ -1787,7 +1778,7 @@ static void draw_stuff(void)
 					}
 					text_start_x += i;
 					text_start_y += j;
-					set_foreground_color(default_out_color);
+					set_foreground_color(default_outline_color.get(*state));
 					draw_mode = OUTLINE;
 					draw_text();
 					text_start_x -= i;
@@ -1796,7 +1787,7 @@ static void draw_stuff(void)
 			}
 		}
 
-		set_foreground_color(default_fg_color);
+		set_foreground_color(default_color.get(*state));
 	}
 #endif /* BUILD_X11 */
 	draw_mode = FG;
@@ -2328,9 +2319,6 @@ static void main_loop(void)
 #endif /* HAVE_SYS_INOTIFY_H */
 }
 
-#ifdef BUILD_X11
-static void load_config_file_x11(const char *);
-#endif /* BUILD_X11 */
 void initialisation(int argc, char** argv);
 
 	/* reload the config file */
@@ -2450,14 +2438,11 @@ static bool string_to_bool(const char *s)
 	return false;
 }
 
-#ifdef BUILD_X11
 // XXX
+#if 0 && BUILD_X11
 static void __attribute__((unused)) set_default_configurations_for_x(void)
 {
-	default_fg_color = WhitePixel(display, screen);
-	default_bg_color = BlackPixel(display, screen);
-	default_out_color = BlackPixel(display, screen);
-	current_text_color = default_fg_color;
+	current_text_color = default_color;
 }
 #endif /* BUILD_X11 */
 
@@ -3246,10 +3231,6 @@ char load_config_file(const char *f)
 #endif /* BUILD_X11 */
 #endif /* BUILD_LUA */
 
-		CONF("default_color"){}
-		CONF3("default_shade_color", "default_shadecolor"){}
-		CONF3("default_outline_color", "default_outlinecolor") {}
-
 		else {
 			NORM_ERR("%s: %d: no such configuration: '%s'", f, line, name);
 		}
@@ -3282,72 +3263,6 @@ char load_config_file(const char *f)
 #endif /* BUILD_NCURSES */
 	return TRUE;
 }
-
-#ifdef BUILD_X11
-static void load_config_file_x11(const char *f)
-{
-	int line = 0;
-	FILE *fp;
-
-	fp = open_config_file(f);
-	if (!fp) {
-		return;
-	}
-	DBGP("reading contents from config file '%s'", f);
-
-	while (!feof(fp)) {
-		char buff[CONF_BUFF_SIZE], *name, *value;
-		int ret = do_config_step(&line, fp, buff, &name, &value);
-		if (ret == CONF_BREAK) {
-			break;
-		} else if (ret == CONF_CONTINUE) {
-			continue;
-		}
-
-		CONF("default_color") {
-			// XXX X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					default_fg_color = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF3("default_shade_color", "default_shadecolor") {
-			// XXX X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					default_bg_color = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF3("default_outline_color", "default_outlinecolor") {
-			// XXX X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					default_out_color = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-#undef CONF
-#undef CONF2
-#undef CONF3
-#undef CONF_ERR
-#undef CONF_ERR2
-#undef CONF_BREAK
-#undef CONF_CONTINUE
-#undef CONF_BUFF_SIZE
-	}
-
-	fclose(fp);
-
-}
-#endif /* BUILD_X11 */
 
 static void print_help(const char *prog_name) {
 	printf("Usage: %s [OPTION]...\n"
@@ -3616,13 +3531,6 @@ void initialisation(int argc, char **argv) {
 				exit(EXIT_FAILURE);
 		}
 	}
-
-#ifdef BUILD_X11
-	/* load font */
-	if (out_to_x.get(*state)) {
-		load_config_file_x11(current_config.c_str());
-	}
-#endif /* BUILD_X11 */
 
 	/* generate text and get initial size */
 	extract_variable_text(global_text);
