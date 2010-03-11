@@ -160,8 +160,6 @@ struct x11_info {
 
 /* defined in conky.c */
 extern long default_fg_color, default_bg_color, default_out_color;
-extern long color0, color1, color2, color3, color4, color5, color6, color7,
-	   color8, color9;
 
 struct conftree {
 	char* string;

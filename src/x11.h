@@ -40,6 +40,7 @@
 #endif
 
 #include "setting.hh"
+#include "colours.h"
 
 #define ATOM(a) XInternAtom(display, #a, False)
 
@@ -157,9 +158,32 @@ namespace priv {
 			: Base("out_to_x", false, false)
 		{}
 	};
+	
+	struct colour_traits {
+		static const lua::Type type = lua::TSTRING;
+
+		static inline std::pair<unsigned long, bool>
+		convert(lua::state &l, int index, const std::string &)
+		{ return {get_x11_color(l.tostring(index)), true}; }
+	};
+
+	class colour_setting: public conky::simple_config_setting<unsigned long, colour_traits> {
+		typedef conky::simple_config_setting<unsigned long, colour_traits> Base;
+	
+	protected:
+		virtual void lua_setter(lua::state &l, bool init);
+
+	public:
+		colour_setting(const std::string &name_, unsigned long default_value_ = 0)
+			: Base(name_, default_value_, true)
+		{}
+		
+	};
 }
+
 extern priv::out_to_x_setting                    out_to_x;
 extern conky::simple_config_setting<std::string> display_name;
+extern priv::colour_setting						 color[10];
 
 #ifdef OWN_WINDOW
 extern conky::simple_config_setting<bool>        own_window;

@@ -379,9 +379,6 @@ static int maximum_width;
 static int sensor_device;
 #endif
 
-long color0, color1, color2, color3, color4, color5, color6, color7, color8,
-	 color9;
-
 /* maximum size of config TEXT buffer, i.e. below TEXT line. */
 unsigned int max_user_text;
 
@@ -2460,16 +2457,6 @@ static void __attribute__((unused)) set_default_configurations_for_x(void)
 	default_fg_color = WhitePixel(display, screen);
 	default_bg_color = BlackPixel(display, screen);
 	default_out_color = BlackPixel(display, screen);
-	color0 = default_fg_color;
-	color1 = default_fg_color;
-	color2 = default_fg_color;
-	color3 = default_fg_color;
-	color4 = default_fg_color;
-	color5 = default_fg_color;
-	color6 = default_fg_color;
-	color7 = default_fg_color;
-	color8 = default_fg_color;
-	color9 = default_fg_color;
 	current_text_color = default_fg_color;
 }
 #endif /* BUILD_X11 */
@@ -3259,16 +3246,6 @@ char load_config_file(const char *f)
 #endif /* BUILD_X11 */
 #endif /* BUILD_LUA */
 
-		CONF("color0"){}
-		CONF("color1"){}
-		CONF("color2"){}
-		CONF("color3"){}
-		CONF("color4"){}
-		CONF("color5"){}
-		CONF("color6"){}
-		CONF("color7"){}
-		CONF("color8"){}
-		CONF("color9"){}
 		CONF("default_color"){}
 		CONF3("default_shade_color", "default_shadecolor"){}
 		CONF3("default_outline_color", "default_outlinecolor") {}
@@ -3327,106 +3304,6 @@ static void load_config_file_x11(const char *f)
 			continue;
 		}
 
-		CONF2("color0") {
-			// XXX X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color0 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color1") {
-			// XXX X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color1 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color2") {
-			// XXX X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color2 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color3") {
-			// XXX X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color3 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color4") {
-			// XXX X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color4 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color5") {
-			// XXX X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color5 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color6") {
-			// XXX X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color6 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color7") {
-			// XXX X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color7 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color8") {
-			// XXX X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color8 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
-		CONF("color9") {
-			// XXX X11_initialisation();
-			if (x_initialised == YES) {
-				if (value) {
-					color9 = get_x11_color(value);
-				} else {
-					CONF_ERR;
-				}
-			}
-		}
 		CONF("default_color") {
 			// XXX X11_initialisation();
 			if (x_initialised == YES) {

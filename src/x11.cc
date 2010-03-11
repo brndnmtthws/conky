@@ -32,7 +32,6 @@
 #include "conky.h"
 #include "logging.h"
 #include "common.h"
-#include "colours.h"
 
 #include "x11.h"
 #include <X11/Xlib.h>
@@ -99,39 +98,19 @@ namespace priv {
 
 		l.pop();
 	}
-}
 
-namespace {
-	struct colour_traits {
-		static const lua::Type type = lua::TSTRING;
+	void colour_setting::lua_setter(lua::state &l, bool init)
+	{
+		lua::stack_sentry s(l, -2);
 
-		static std::pair<unsigned long, bool> convert(lua::state &l, int index, const std::string &)
-		{ return {get_x11_color(l.tostring(index)), true}; }
-	};
+		if(not out_to_x.get(l)) {
+			// ignore if we're not using X
+			l.replace(-2);
+		} else
+			Base::lua_setter(l, init);
 
-	class colour_setting: public conky::simple_config_setting<unsigned long, colour_traits> {
-		typedef conky::simple_config_setting<unsigned long, colour_traits> Base;
-	
-	protected:
-		virtual void lua_setter(lua::state &l, bool init)
-		{
-			lua::stack_sentry s(l, -2);
-
-			if(not out_to_x.get(l)) {
-				// ignore if we're not using X
-				l.replace(-2);
-			} else
-				Base::lua_setter(l, init);
-
-			++s;
-		}
-
-	public:
-		colour_setting(const std::string &name_, unsigned long default_value_ = 0)
-			: Base(name_, default_value_, true)
-		{}
-		
-	};
+		++s;
+	}
 }
 
 template<>
@@ -211,6 +190,19 @@ conky::simple_config_setting<alignment>   text_alignment("alignment", NONE, fals
 conky::simple_config_setting<std::string> display_name("display", std::string(), false);
 priv::out_to_x_setting                    out_to_x;
 
+priv::colour_setting					  color[10] = {
+	{ "color0", 0xffffff },
+	{ "color1", 0xffffff },
+	{ "color2", 0xffffff },
+	{ "color3", 0xffffff },
+	{ "color4", 0xffffff },
+	{ "color5", 0xffffff },
+	{ "color6", 0xffffff },
+	{ "color7", 0xffffff },
+	{ "color8", 0xffffff },
+	{ "color9", 0xffffff }
+};
+
 #ifdef OWN_WINDOW
 conky::simple_config_setting<bool>        own_window("own_window", false, false);
 conky::simple_config_setting<bool>        set_transparent("own_window_transparent", false, false);
@@ -224,7 +216,7 @@ conky::simple_config_setting<window_type> own_window_type("own_window_type", TYP
 conky::simple_config_setting<uint16_t, window_hints_traits>
 									      own_window_hints("own_window_hints", 0, false);
 
-colour_setting                            background_colour("background_colour", 0);
+priv::colour_setting                      background_colour("background_colour", 0);
 
 #ifdef BUILD_ARGB
 conky::simple_config_setting<bool>        use_argb_visual("own_window_argb_visual", false, false);

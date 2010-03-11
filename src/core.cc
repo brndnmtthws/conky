@@ -500,47 +500,47 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		}
 #endif /* BUILD_NCURSES */
 		obj->callbacks.print = &new_fg;
+#ifdef BUILD_X11
 	END OBJ(color0, 0)
-		obj->data.l = color0;
+		obj->data.l = color[0].get(*state);
 		set_current_text_color(obj->data.l);
 		obj->callbacks.print = &new_fg;
 	END OBJ(color1, 0)
-		obj->data.l = color1;
+		obj->data.l = color[1].get(*state);
 		set_current_text_color(obj->data.l);
 		obj->callbacks.print = &new_fg;
 	END OBJ(color2, 0)
-		obj->data.l = color2;
+		obj->data.l = color[2].get(*state);
 		set_current_text_color(obj->data.l);
 		obj->callbacks.print = &new_fg;
 	END OBJ(color3, 0)
-		obj->data.l = color3;
+		obj->data.l = color[3].get(*state);
 		set_current_text_color(obj->data.l);
 		obj->callbacks.print = &new_fg;
 	END OBJ(color4, 0)
-		obj->data.l = color4;
+		obj->data.l = color[4].get(*state);
 		set_current_text_color(obj->data.l);
 		obj->callbacks.print = &new_fg;
 	END OBJ(color5, 0)
-		obj->data.l = color5;
+		obj->data.l = color[5].get(*state);
 		set_current_text_color(obj->data.l);
 		obj->callbacks.print = &new_fg;
 	END OBJ(color6, 0)
-		obj->data.l = color6;
+		obj->data.l = color[6].get(*state);
 		set_current_text_color(obj->data.l);
 		obj->callbacks.print = &new_fg;
 	END OBJ(color7, 0)
-		obj->data.l = color7;
+		obj->data.l = color[7].get(*state);
 		set_current_text_color(obj->data.l);
 		obj->callbacks.print = &new_fg;
 	END OBJ(color8, 0)
-		obj->data.l = color8;
+		obj->data.l = color[8].get(*state);
 		set_current_text_color(obj->data.l);
 		obj->callbacks.print = &new_fg;
 	END OBJ(color9, 0)
-		obj->data.l = color9;
+		obj->data.l = color[9].get(*state);
 		set_current_text_color(obj->data.l);
 		obj->callbacks.print = &new_fg;
-#ifdef BUILD_X11
 	END OBJ(font, 0)
 		scan_font(obj, arg);
 		obj->callbacks.print = &new_font;
