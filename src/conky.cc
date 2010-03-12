@@ -985,10 +985,12 @@ static void update_text_area(void)
 	if (own_window && !fixed_pos) {
 		x += workarea[0];
 		y += workarea[1];
-		text_start_x = window.border_inner_margin + window.border_outer_margin + window.border_width;
-		text_start_y = window.border_inner_margin + window.border_outer_margin + window.border_width;
-		window.x = x - window.border_inner_margin - window.border_outer_margin - window.border_width;
-		window.y = y - window.border_inner_margin - window.border_outer_margin - window.border_width;
+
+		long border_total = window.border_inner_margin
+						+ window.border_outer_margin + window.border_width;
+		text_start_x = text_start_y = border_total;
+		window.x = x - border_total;
+		window.y = y - border_total;
 	} else
 #endif
 	{
@@ -1844,10 +1846,12 @@ static void clear_text(int exposures)
 #endif
 	if (display && window.window) { // make sure these are !null
 		/* there is some extra space for borders and outlines */
-		XClearArea(display, window.window, text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width,
-			text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width,
-			text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
-			text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, exposures ? True : 0);
+		long border_total = window.border_inner_margin
+						+ window.border_outer_margin + window.border_width;
+
+		XClearArea(display, window.window, text_start_x - border_total, 
+			text_start_y - border_total, text_width + 2*border_total,
+			text_height + 2*border_total, exposures ? True : 0);
 	}
 }
 #endif /* BUILD_X11 */
@@ -1964,16 +1968,20 @@ static void main_loop(void)
 				need_to_update = 0;
 				selected_font = 0;
 				update_text_area();
+
+				long border_total = window.border_inner_margin
+							+ window.border_outer_margin + window.border_width;
+
 #ifdef OWN_WINDOW
 				if (own_window) {
 					int changed = 0;
 
 					/* resize window if it isn't right size */
 					if (!fixed_size
-							&& (text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2 != window.width
-								|| text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2 != window.height)) {
-						window.width = text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
-						window.height = text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
+							&& (text_width + 2*border_total != window.width
+								|| text_height + 2*border_total != window.height)) {
+						window.width = text_width + 2*border_total;
+						window.height = text_height + 2*border_total;
 						draw_stuff(); /* redraw everything in our newly sized window */
 						XResizeWindow(display, window.window, window.width,
 								window.height); /* resize window */
@@ -2041,10 +2049,10 @@ static void main_loop(void)
 				if (use_xdbe) {
 					XRectangle r;
 
-					r.x = text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width;
-					r.y = text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width;
-					r.width = text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
-					r.height = text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
+					r.x = text_start_x - border_total;
+					r.y = text_start_y - border_total;
+					r.width = text_width + 2*border_total;
+					r.height = text_height + 2*border_total;
 					XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
 				}
 #endif
@@ -2201,10 +2209,12 @@ static void main_loop(void)
 				if (use_xdbe) {
 					XRectangle r;
 
-					r.x = text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width;
-					r.y = text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width;
-					r.width = text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
-					r.height = text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
+					long border_total = window.border_inner_margin
+									+ window.border_outer_margin + window.border_width;
+					r.x = text_start_x - border_total;
+					r.y = text_start_y - border_total;
+					r.width = text_width + 2*border_total;
+					r.height = text_height + 2*border_total;
 					XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
 				}
 #endif
@@ -2379,10 +2389,11 @@ void clean_up(void *memtofree1, void* memtofree2)
 #ifdef BUILD_X11
 	if (x_initialised == YES) {
 		if(window_created == 1) {
-			XClearArea(display, window.window, text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width,
-				text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width,
-				text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
-				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, 0);
+			long border_total = window.border_inner_margin
+								+ window.border_outer_margin + window.border_width;
+			XClearArea(display, window.window, text_start_x - border_total,
+				text_start_y - border_total, text_width + 2*border_total,
+				text_height + 2*border_total, 0);
 		}
 		destroy_window();
 		free_fonts();
