@@ -2438,14 +2438,6 @@ static bool string_to_bool(const char *s)
 	return false;
 }
 
-// XXX
-#if 0 && BUILD_X11
-static void __attribute__((unused)) set_default_configurations_for_x(void)
-{
-	current_text_color = default_color;
-}
-#endif /* BUILD_X11 */
-
 static void set_default_configurations(void)
 {
 #ifdef BUILD_MPD
@@ -3250,6 +3242,9 @@ char load_config_file(const char *f)
 	}
 #if defined(BUILD_NCURSES)
 #if defined(BUILD_X11)
+	if(out_to_x.get(*state)) {
+		current_text_color = default_color.get(*state);
+	}
 	if (out_to_x.get(*state) && (output_methods & TO_NCURSES)) {
 		NORM_ERR("out_to_x and out_to_ncurses are incompatible, turning out_to_ncurses off");
 		output_methods &= ~TO_NCURSES;
