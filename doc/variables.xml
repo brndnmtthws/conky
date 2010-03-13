@@ -2071,15 +2071,10 @@
             <option>(device)</option>
         </term>
         <listitem>Prints the mixer value as reported by the OS.
-        Default mixer is "vol", but you can specify one of the
-        following optional arguments: "vol", "bass", "treble",
-        "synth", "pcm", "speaker", "line", "mic", "cd", "mix",
-        "pcm2", "rec", "igain", "ogain", "line1", "line2", "line3",
-        "dig1", "dig2", "dig3", "phin", "phout", "video", "radio",
-        "monitor". Refer to the definition of SOUND_DEVICE_NAMES in
-        &lt;linux/soundcard.h&gt; (on Linux), &lt;soundcard.h&gt;
-        (on OpenBSD), or &lt;sys/soundcard.h&gt; to find the exact
-        options available on your system. 
+        Default mixer is "Master", but you can specify one of the
+        available ALSA Simple mixer controls.
+        You can find the list of those available on your system
+        using amixer.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
