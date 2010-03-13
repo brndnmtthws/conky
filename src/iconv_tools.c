@@ -29,8 +29,8 @@
  */
 
 #include "config.h"
-#include "logging.h"
 #include "text_object.h"
+#include "logging.h"
 #include <iconv.h>
 #include <stdio.h>
 #include <stdlib.h>
