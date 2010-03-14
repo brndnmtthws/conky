@@ -266,6 +266,8 @@ void destroy_window(void)
 void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 		char **argv, int argc)
 {
+	// these vars are unused if OWN_WINDOW is not defined
+	(void)own_window; (void)w; (void)h; (void)argv; (void)argc;
 	/* There seems to be some problems with setting transparent background
 	 * (on fluxbox this time). It doesn't happen always and I don't know why it
 	 * happens but I bet the bug is somewhere here. */

@@ -1969,9 +1969,10 @@ static void main_loop(void)
 				selected_font = 0;
 				update_text_area();
 
+#if defined(OWN_WINDOW) || defined(BUILD_XDBE)
 				long border_total = window.border_inner_margin
 							+ window.border_outer_margin + window.border_width;
-
+#endif
 #ifdef OWN_WINDOW
 				if (own_window) {
 					int changed = 0;
@@ -2878,9 +2879,9 @@ static int do_config_step(int *line, FILE *fp, char *buf, char **name, char **va
 }
 
 #ifdef BUILD_X11
-void setalignment(int* text_alignment, unsigned int windowtype, const char* value, const char *f, int line, bool conffile) {
+void setalignment(int* text_alignment, const char* value, const char *f, int line, bool conffile) {
 #ifdef OWN_WINDOW
-	if (windowtype == TYPE_DOCK) {
+	if (window.type == TYPE_DOCK) {
 		NORM_ERR("alignment is disabled when own_window_type is dock");
 	} else
 #endif /*OWN_WINDOW */
@@ -2942,7 +2943,7 @@ char load_config_file(const char *f)
 			}
 		}
 		CONF("alignment") {
-			setalignment(&text_alignment, window.type, value, f, line, true);
+			setalignment(&text_alignment, value, f, line, true);
 		}
 		CONF("background") {
 			fork_to_background = string_to_bool(value);
@@ -4074,7 +4075,7 @@ void initialisation(int argc, char **argv) {
 				set_first_font(optarg);
 				break;
 			case 'a':
-				setalignment(&text_alignment, window.type, optarg, NULL, 0, false);
+				setalignment(&text_alignment, optarg, NULL, 0, false);
 				break;
 
 #ifdef OWN_WINDOW
