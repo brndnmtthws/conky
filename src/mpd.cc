@@ -99,8 +99,6 @@ void init_mpd(void)
 {
 	if (!(refcount++))	/* first client */
 		memset(&mpd_info, 0, sizeof(mpd_info));
-
-	refcount++;
 }
 
 static void clear_mpd(void)
