@@ -304,7 +304,7 @@ bool mpd_process(thread_handle &handle)
 
 static void update_mpd_thread(thread_handle &handle)
 {
-	while (1) if (mpd_process(handle)) return;
+	while (mpd_process(handle)) ;
 	/* never reached */
 }
 
