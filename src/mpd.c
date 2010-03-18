@@ -81,9 +81,7 @@ int mpd_set_port(const char *port)
 void init_mpd(void)
 {
 	if (!(refcount++))	/* first client */
-		memset(&mpd_info, 0, sizeof(struct mpd_s));
-
-	refcount++;
+		memset(&mpd_info, 0, sizeof(mpd_info));
 }
 
 struct mpd_s *mpd_get_info(void)
