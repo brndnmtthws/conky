@@ -2755,20 +2755,17 @@ static void X11_initialisation(void)
 #endif /* DEBUG */
 }
 
-static char **xargv = 0;
-static int xargc = 0;
-
 static void X11_create_window(void)
 {
 	if (output_methods & TO_X) {
 #ifdef OWN_WINDOW
 		init_window(own_window, text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
 				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, set_transparent, background_colour,
-				xargv, xargc);
+				argv_copy, argc_copy);
 #else /* OWN_WINDOW */
 		init_window(0, text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
 				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, set_transparent, 0,
-				xargv, xargc);
+				argv_copy, argc_copy);
 #endif /* OWN_WINDOW */
 
 		setup_fonts();
@@ -4174,8 +4171,6 @@ void initialisation(int argc, char **argv) {
 	memset(tmpstring2, 0, text_buffer_size);
 
 #ifdef BUILD_X11
-	xargc = argc;
-	xargv = argv;
 	X11_create_window();
 #endif /* BUILD_X11 */
 #ifdef BUILD_LUA
