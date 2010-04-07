@@ -463,7 +463,7 @@ int check_contains(char *f, char *s)
 		}
 		fclose(where);
 	} else {
-		NORM_ERR("Could not open the file");
+		NORM_ERR("Could not open the file '%s'", f);
 	}
 	return ret;
 }
@@ -1330,7 +1330,7 @@ void generate_text_internal(char *p, int p_max_size,
 					DO_JUMP;
 				} else if (spc) {
 					*spc = '\0';
-					if (check_contains(obj->data.s, spc + 1))
+					if (!check_contains(obj->data.s, spc + 1))
 						DO_JUMP;
 					*spc = ' ';
 				}
