@@ -372,18 +372,18 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		scan_loadgraph_arg(obj, arg);
 #endif /* X11 */
 	END OBJ(diskio, &update_diskio)
-		parse_diskio_arg(obj, arg);
+		parse_diskio_arg(obj, dev_name(arg));
 	END OBJ(diskio_read, &update_diskio)
-		parse_diskio_arg(obj, arg);
+		parse_diskio_arg(obj, dev_name(arg));
 	END OBJ(diskio_write, &update_diskio)
-		parse_diskio_arg(obj, arg);
+		parse_diskio_arg(obj, dev_name(arg));
 #ifdef X11
 	END OBJ(diskiograph, &update_diskio)
-		parse_diskiograph_arg(obj, arg);
+		parse_diskiograph_arg(obj, dev_name(arg));
 	END OBJ(diskiograph_read, &update_diskio)
-		parse_diskiograph_arg(obj, arg);
+		parse_diskiograph_arg(obj, dev_name(arg));
 	END OBJ(diskiograph_write, &update_diskio)
-		parse_diskiograph_arg(obj, arg);
+		parse_diskiograph_arg(obj, dev_name(arg));
 #endif /* X11 */
 	END OBJ(color, 0)
 #ifdef X11
