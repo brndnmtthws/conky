@@ -1011,6 +1011,7 @@ dnl  OpenMP:           $want_openmp
   ALSA mixer:       $want_alsa
   apcupsd:          $want_apcupsd
   I/O stats:        $want_iostats
+  ncurses:          $want_ncurses
 
  * Lua ($want_lua) bindings:
   Cairo:            $want_lua_cairo

@@ -3119,36 +3119,49 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						if (seconds != 0) {
 							timeunits = seconds / 86400; seconds %= 86400;
 							if (timeunits > 0) {
-								asprintf(&tmp_day_str, "%dd", timeunits);
+								if (asprintf(&tmp_day_str, "%dd", timeunits) < 0) {
+									tmp_day_str = 0;
+								}
 							} else {
 								tmp_day_str = strdup("");
 							}
 							timeunits = seconds / 3600; seconds %= 3600;
 							if (timeunits > 0) {
-								asprintf(&tmp_hour_str, "%dh", timeunits);
+								if (asprintf(&tmp_hour_str, "%dh", timeunits) < 0) {
+									tmp_day_str = 0;
+								}
 							} else {
 								tmp_hour_str = strdup("");
 							}
 							timeunits = seconds / 60; seconds %= 60;
 							if (timeunits > 0) {
-								asprintf(&tmp_min_str, "%dm", timeunits);
+								if (asprintf(&tmp_min_str, "%dm", timeunits) < 0) {
+									tmp_min_str = 0;
+								}
 							} else {
 								tmp_min_str = strdup("");
 							}
 							if (seconds > 0) {
-								asprintf(&tmp_sec_str, "%ds", seconds);
+								if (asprintf(&tmp_sec_str, "%ds", seconds) < 0) {
+									tmp_sec_str = 0;
+								}
 							} else {
 								tmp_sec_str = strdup("");
 							}
-							asprintf(&tmp_str, "%s%s%s%s", tmp_day_str, tmp_hour_str, tmp_min_str, tmp_sec_str);
-							free(tmp_day_str); free(tmp_hour_str); free(tmp_min_str); free(tmp_sec_str);
+							if (asprintf(&tmp_str, "%s%s%s%s", tmp_day_str,
+										tmp_hour_str, tmp_min_str, tmp_sec_str) < 0) {
+								tmp_str = 0;
+							}
+#define FREE(a) if ((a)) free((a));
+							FREE(tmp_day_str); FREE(tmp_hour_str); FREE(tmp_min_str); FREE(tmp_sec_str);
 						} else {
-							asprintf(&tmp_str, "Range not possible"); // should never happen, but better safe then sorry
+							tmp_str = strdup("Range not possible"); /* should never happen, but better safe then sorry */
 						}
 						cur_x += (w / 2) - (font_ascent() * (strlen(tmp_str) / 2));
 						cur_y += font_h / 2;
 						draw_string(tmp_str);
-						free(tmp_str);
+						FREE(tmp_str);
+#undef FREE
 						cur_x = tmp_x;
 						cur_y = tmp_y;
 					}
@@ -4518,13 +4531,13 @@ void setalignment(int* ltext_alignment, unsigned int windowtype, const char* val
 		int a = string_to_alignment(value);
 
 		if (a <= 0) {
-			if(setbyconffile == true) {
+			if (setbyconffile) {
 				CONF_ERR;
 			} else NORM_ERR("'%s' is not a alignment setting", value);
 		} else {
 			*ltext_alignment = a;
 		}
-	} else if(setbyconffile == true) {
+	} else if (setbyconffile) {
 		CONF_ERR;
 	}
 }
@@ -4573,7 +4586,7 @@ char load_config_file(const char *f)
 			}
 		}
 		CONF("alignment") {
-			setalignment(&text_alignment, window.type, value, f, line, true);
+			setalignment(&text_alignment, window.type, value, f, line, 1);
 		}
 		CONF("background") {
 			fork_to_background = string_to_bool(value);
@@ -5696,7 +5709,7 @@ void initialisation(int argc, char **argv) {
 				set_first_font(optarg);
 				break;
 			case 'a':
-				setalignment(&text_alignment, window.type, optarg, NULL, 0, false);
+				setalignment(&text_alignment, window.type, optarg, NULL, 0, 0);
 				break;
 
 #ifdef OWN_WINDOW
@@ -5895,7 +5908,9 @@ int main(int argc, char **argv)
 				current_config = strndup(optarg, max_user_text);
 				break;
 			case 'q':
-				freopen("/dev/null", "w", stderr);
+				if (!freopen("/dev/null", "w", stderr)) {
+					NORM_ERR("unable to redirect stderr to /dev/null");
+				}
 				break;
 			case 'h':
 				print_help(argv[0]);
