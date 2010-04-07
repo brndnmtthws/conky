@@ -336,7 +336,7 @@ void init_window(int own_window, int w, int h, int set_trans, int back_colour,
 			XClassHint classHint;
 			XWMHints wmHint;
 			Atom xa;
-			
+
 #ifdef USE_ARGB
 			if (have_argb_visual) {
 				attrs.colormap = window.colourmap;

@@ -4295,11 +4295,11 @@ static void set_default_configurations(void)
 	text_alignment = BOTTOM_LEFT;
 	info.x11.monitor.number = 1;
 	info.x11.monitor.current = 0;
-	info.x11.desktop.current = 1; 
+	info.x11.desktop.current = 1;
 	info.x11.desktop.number = 1;
 	info.x11.desktop.nitems = 0;
-	info.x11.desktop.all_names = NULL; 
-	info.x11.desktop.name = NULL; 
+	info.x11.desktop.all_names = NULL;
+	info.x11.desktop.name = NULL;
 #endif /* X11 */
 
 	free_templates();
@@ -4622,7 +4622,7 @@ char load_config_file(const char *f)
 		CONF("border_width") {
 			if (value) {
 				window.border_width = strtol(value, 0, 0);
-				if (window.border_width < 0) window.border_width = 0;
+				if (window.border_width < 1) window.border_width = 1;
 			} else {
 				CONF_ERR;
 			}
