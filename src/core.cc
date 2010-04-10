@@ -1819,7 +1819,7 @@ int extract_variable_text_internal(struct text_object *retval, const char *const
 			strfold(p, 1);
 		} else if (*p == '#') {
 			char c;
-			if (remove_comment(p, &c) && p > orig_p && c == '\n') {
+			if (remove_comment(p, &c) && p >= orig_p && c == '\n') {
 				/* if remove_comment removed a newline, we need to 'back up' with p */
 				p--;
 			}
