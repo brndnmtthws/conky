@@ -5944,7 +5944,13 @@ int main(int argc, char **argv)
 #endif /* XOAP */
 
 #ifdef HAVE_SYS_INOTIFY_H
-	inotify_fd = inotify_init1(IN_NONBLOCK);
+	inotify_fd = inotify_init();
+	if(inotify_fd != -1) {
+		int fl;
+
+		fl = fcntl(inotify_fd, F_GETFL);
+		fcntl(inotify_fd, F_SETFL, fl | O_NONBLOCK);
+	}
 #endif /* HAVE_SYS_INOTIFY_H */
 
 	initialisation(argc, argv);
