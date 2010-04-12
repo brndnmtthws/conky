@@ -44,7 +44,7 @@
 
 #ifdef XFT
 #include <X11/Xft/Xft.h>
-int use_xft = 0;
+int use_xft;
 #endif
 
 #ifdef HAVE_XDBE

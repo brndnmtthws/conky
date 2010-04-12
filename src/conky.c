@@ -4265,6 +4265,9 @@ static void set_default_configurations(void)
 	output_methods = TO_STDOUT;
 #endif
 #ifdef X11
+#ifdef BUILD_XFT
+	use_xft = 0;
+#endif
 	show_graph_scale = 0;
 	show_graph_range = 0;
 	draw_shades = 1;
