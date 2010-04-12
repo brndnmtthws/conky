@@ -318,10 +318,10 @@ void scan_mixer_bar(struct text_object *obj, const char *arg)
 
 	if (arg && sscanf(arg, "%63s %n", buf1, &n) >= 1) {
 		obj->data.i = mixer_init(buf1);
-		scan_bar(obj, arg + n, 255);
+		scan_bar(obj, arg + n, 100);
 	} else {
 		obj->data.i = mixer_init(NULL);
-		scan_bar(obj, arg, 255);
+		scan_bar(obj, arg, 100);
 	}
 }
 
