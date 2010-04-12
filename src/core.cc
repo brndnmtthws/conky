@@ -183,9 +183,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 			NORM_ERR("acpiacadapter: arg is only used on linux");
 #endif
 		}
-		if(! obj->data.opaque)
-			obj->data.opaque = strdup("AC");
-		
 		obj->callbacks.print = &print_acpiacadapter;
 		obj->callbacks.free = &gen_free_opaque;
 #endif /* !__OpenBSD__ */
