@@ -149,7 +149,7 @@ AC_ARG_ENABLE([audacious],
 
 AM_CONDITIONAL(BUILD_AUDACIOUS, test x$want_audacious = xyes -o x$want_audacious = xlegacy)
 if test x$want_audacious = xyes; then
-      PKG_CHECK_MODULES([Audacious], [audacious >= 1.4.0 dbus-glib-1 glib-2.0 gobject-2.0])
+      PKG_CHECK_MODULES([Audacious], [audacious >= 1.4.0 audclient dbus-glib-1 glib-2.0 gobject-2.0])
       conky_CFLAGS="$conky_CFLAGS $Audacious_CFLAGS"
       conky_LIBS="$conky_LIBS $Audacious_LIBS"
       save_CPPFLAGS="$CPPFLAGS"
