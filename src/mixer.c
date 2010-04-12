@@ -281,7 +281,7 @@ int mixer_is_mute(int i)
 	return !mixer_get(i);
 }
 
-#define mixer_to_255(i, x) x
+#define mixer_to_255(i, x) x * 2.55
 #endif /* MIXER_IS_ALSA */
 
 void parse_mixer_arg(struct text_object *obj, const char *arg)
