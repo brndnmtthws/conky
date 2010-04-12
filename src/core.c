@@ -171,8 +171,6 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 			NORM_ERR("acpiacadapter: arg is only used on linux");
 #endif
 		}
-		if(! obj->data.opaque)
-			obj->data.opaque = strdup("AC");
 #endif /* !__OpenBSD__ */
 	END OBJ(freq, 0)
 		get_cpu_count();

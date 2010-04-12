@@ -7,8 +7,8 @@
             <option>(adapter)</option>
         </term>
         <listitem>ACPI ac adapter state. On linux, the adapter option specifies the
-        subfolder of /sys/class/power_supply containing the state information (defaults
-        to "AC"). Other systems ignore it.
+        subfolder of /sys/class/power_supply containing the state information (tries "AC"
+        and "ADP1" if there is no argument given). Non-linux systems ignore it.
         <para /></listitem>
     </varlistentry>
     <varlistentry>

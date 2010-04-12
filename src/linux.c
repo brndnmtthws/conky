@@ -1336,6 +1336,8 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
 
    Update: it seems the folder name is hardware-dependent. We add an aditional adapter
    argument, specifying the folder name.
+
+   Update: on some systems it's /sys/class/power_supply/ADP1 instead of /sys/class/power_supply/AC
 */
 
 void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size, const char *adapter)
@@ -1344,14 +1346,20 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size, const
 
 	char buf[256];
 	char buf2[256];
+	struct stat sb;
 	FILE *fp;
 
 	if (!p_client_buffer || client_buffer_size <= 0) {
 		return;
 	}
 
-	snprintf(buf2, sizeof(buf2), "%s/%s/uevent", SYSFS_AC_ADAPTER_DIR, adapter);
-	fp = open_file(buf2, &rep);
+	if(adapter)
+		snprintf(buf2, sizeof(buf2), "%s/%s/uevent", SYSFS_AC_ADAPTER_DIR, adapter);
+	else{
+		snprintf(buf2, sizeof(buf2), "%s/AC/uevent", SYSFS_AC_ADAPTER_DIR);
+		if(stat(buf2, &sb) == -1) snprintf(buf2, sizeof(buf2), "%s/ADP1/uevent", SYSFS_AC_ADAPTER_DIR);
+	}
+	if(stat(buf2, &sb) == 0) fp = open_file(buf2, &rep); else fp = 0;
 	if (fp) {
 		/* sysfs processing */
 		while (!feof(fp)) {
