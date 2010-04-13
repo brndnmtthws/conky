@@ -767,9 +767,6 @@ fi
 if test x$want_alsa = xyes; then
     AC_CHECK_LIB(asound, snd_pcm_open,conky_LIBS="$conky_LIBS -lasound", want_alsa=no)
 fi
-if test x$want_alsa = xyes; then
-AC_DEFINE(MIXER_IS_ALSA, 1, [Define if the mixers use ALSA])
-fi
 dnl
 dnl Some headers
 dnl

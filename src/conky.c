@@ -269,9 +269,6 @@ static void print_version(void)
 #ifdef IMLIB2
 		   "  * Imlib2\n"
 #endif /* IMLIB2 */
-#ifdef MIXER_IS_ALSA
-		   "  * ALSA mixer support\n"
-#endif /* MIXER_IS_ALSA */
 #ifdef APCUPSD
 		   "  * apcupsd\n"
 #endif /* APCUPSD */
