@@ -122,6 +122,15 @@
     <varlistentry>
         <term>
             <command>
+                <option>-S | --stdin-config</option>
+            </command>
+        </term>
+        <listitem>Read configuration from stdin.
+        <para></para></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>-t | --text=</option>
             </command>
             <option>TEXT</option>

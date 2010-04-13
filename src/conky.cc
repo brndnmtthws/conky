@@ -331,6 +331,8 @@ struct information info;
 /* path to config file */
 std::string current_config;
 
+bool stdinconfig = false;
+
 /* set to 1 if you want all text to be in uppercase */
 static unsigned int stuff_in_uppercase;
 
@@ -3897,6 +3899,7 @@ static void print_help(const char *prog_name) {
 			"   -y Y                      y position\n"
 #endif /* BUILD_X11 */
 			"   -s, --for-scripts=TEXT    render TEXT on stdout and exit, enclose TEXT by single quotes\n"
+			"   -S, --stdin-config        read configuration from stdin\n"
 			"   -t, --text=TEXT           text to render, remember single quotes, like -t '$uptime'\n"
 			"   -u, --interval=SECS       update interval\n"
 			"   -i COUNT                  number of times to update "PACKAGE_NAME" (and quit)\n"
@@ -3915,7 +3918,7 @@ inline void reset_optind() {
 }
 
 /* : means that character before that takes an argument */
-static const char *getopt_string = "vVqdDs:t:u:i:hc:p:"
+static const char *getopt_string = "vVqdDSs:t:u:i:hc:p:"
 #ifdef BUILD_X11
 	"x:y:w:a:f:X:"
 #ifdef OWN_WINDOW
@@ -3953,6 +3956,7 @@ static const struct option longopts[] = {
 	{ "window-id", 1, NULL, 'w' },
 #endif /* BUILD_X11 */
 	{ "for-scripts", 1, NULL, 's' },
+	{ "stdin-config", 0, NULL, 'S' },
 	{ "text", 1, NULL, 't' },
 	{ "interval", 1, NULL, 'u' },
 	{ "pause", 1, NULL, 'p' },
@@ -3960,8 +3964,13 @@ static const struct option longopts[] = {
 };
 
 void set_current_config() {
-	/* check if specified config file is valid */
-	if (not current_config.empty()) {
+	/* set configfile to stdin if that's requested or check if specified config file is valid */
+	if(stdinconfig) {
+		char mystdin[32];
+#define CONKYSTDIN "/proc/%u/fd/0"
+		sprintf(mystdin, CONKYSTDIN, getpid());
+		current_config = mystdin;
+	} else if (not current_config.empty()) {
 		struct stat sb;
 		if (stat(current_config.c_str(), &sb) ||
 				(!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
@@ -4258,6 +4267,9 @@ int main(int argc, char **argv)
 				print_version(); /* doesn't return */
 			case 'c':
 				current_config = optarg;
+				break;
+			case 'S':
+				stdinconfig = true;
 				break;
 			case 'q':
 				if (!freopen("/dev/null", "w", stderr))
