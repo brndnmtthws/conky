@@ -655,6 +655,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->sub = malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
 	END OBJ(nodename, 0)
+	END OBJ(nodename_short, 0)
 	END OBJ_ARG(cmdline_to_pid, 0, "cmdline_to_pid needs a command line as argument")
 		scan_cmdline_to_pid_arg(obj, arg, free_at_crash);
 	END OBJ_ARG(pid_chroot, 0, "pid_chroot needs a pid as argument")

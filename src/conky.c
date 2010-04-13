@@ -1500,6 +1500,15 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(nodename) {
 				snprintf(p, p_max_size, "%s", cur->uname_s.nodename);
 			}
+			OBJ(nodename_short) {
+				char *pos;
+				pos = strstr(cur->uname_s.nodename, ".");
+				if(pos != NULL) {
+					snprintf(p, MIN(pos-cur->uname_s.nodename+1, p_max_size), "%s", cur->uname_s.nodename);
+				} else {
+					snprintf(p, p_max_size, "%s", cur->uname_s.nodename);
+				}
+			}
 			OBJ(outlinecolor) {
 				new_outline(p, obj->data.l);
 			}
