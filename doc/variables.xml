@@ -2438,6 +2438,15 @@
     <varlistentry>
         <term>
             <command>
+                <option>nodename_short</option>
+            </command>
+        </term>
+        <listitem>Short hostname (same as 'hostname -s' shell command).
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>nvidia</option>
             </command>
             <option>threshold</option>

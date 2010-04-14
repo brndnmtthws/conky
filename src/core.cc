@@ -902,6 +902,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.print = &print_format_time;
 	END OBJ(nodename, 0)
 		obj->callbacks.print = &print_nodename;
+	END OBJ(nodename_short, 0)
+		obj->callbacks.print = &print_nodename_short;
 	END OBJ_ARG(cmdline_to_pid, 0, "cmdline_to_pid needs a command line as argument")
 		scan_cmdline_to_pid_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_cmdline_to_pid;

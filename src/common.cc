@@ -567,6 +567,18 @@ void print_nodename(struct text_object *obj, char *p, int p_max_size)
 	snprintf(p, p_max_size, "%s", info.uname_s.nodename);
 }
 
+void print_nodename_short(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	snprintf(p, p_max_size, "%s", info.uname_s.nodename);
+	for(int i=0; p[i] != 0; i++) {
+		if(p[i] == '.') {
+			p[i] = 0;
+			break;
+		}
+	}
+}
+
 void print_sysname(struct text_object *obj, char *p, int p_max_size)
 {
 	(void)obj;
