@@ -812,8 +812,6 @@ static void generate_text(void)
 	char *p;
 	unsigned int i, j, k;
 
-	special_count = 0;
-
 	/* update info */
 
 	current_update_time = get_time();
@@ -879,7 +877,7 @@ int get_string_width(const char *s)
 static int get_string_width_special(char *s, int special_index)
 {
 	char *p, *final;
-	int idx = 1;
+	special_t *current = specials;
 	int width = 0;
 	long i;
 
@@ -892,6 +890,9 @@ static int get_string_width_special(char *s, int special_index)
 	p = strndup(s, text_buffer_size);
 	final = p;
 
+	for(i = 0; i < special_index; i++)
+		current = current->next;
+
 	while (*p) {
 		if (*p == SPECIAL_CHAR) {
 			/* shift everything over by 1 so that the special char
@@ -899,12 +900,12 @@ static int get_string_width_special(char *s, int special_index)
 			for (i = 0; i < (long)strlen(p); i++) {
 				*(p + i) = *(p + i + 1);
 			}
-			if (specials[special_index + idx].type == GRAPH
-					|| specials[special_index + idx].type == GAUGE
-					|| specials[special_index + idx].type == BAR) {
-				width += specials[special_index + idx].width;
+			if (current->type == GRAPH
+					|| current->type == GAUGE
+					|| current->type == BAR) {
+				width += current->width;
 			}
-			idx++;
+			current = current->next;
 		} else if (*p == SECRIT_MULTILINE_CHAR) {
 			*p = 0;
 			break;
@@ -1028,6 +1029,10 @@ static int text_size_updater(char *s, int special_index)
 	int lw;
 	int contain_SECRIT_MULTILINE_CHAR = 0;
 	char *p;
+	special_t *current = specials;
+
+	for(int i = 0; i < special_index; i++)
+		current = current->next;
 
 	if ((output_methods & TO_X) == 0)
 		return 0;
@@ -1039,40 +1044,41 @@ static int text_size_updater(char *s, int special_index)
 			w += get_string_width(s);
 			*p = SPECIAL_CHAR;
 
-			if (specials[special_index].type == BAR
-					|| specials[special_index].type == GAUGE
-					|| specials[special_index].type == GRAPH) {
-				w += specials[special_index].width;
-				if (specials[special_index].height > last_font_height) {
-					last_font_height = specials[special_index].height;
+			if (current->type == BAR
+					|| current->type == GAUGE
+					|| current->type == GRAPH) {
+				w += current->width;
+				if (current->height > last_font_height) {
+					last_font_height = current->height;
 					last_font_height += font_height();
 				}
-			} else if (specials[special_index].type == OFFSET) {
-				if (specials[special_index].arg > 0) {
-					w += specials[special_index].arg;
+			} else if (current->type == OFFSET) {
+				if (current->arg > 0) {
+					w += current->arg;
 				}
-			} else if (specials[special_index].type == VOFFSET) {
-				last_font_height += specials[special_index].arg;
-			} else if (specials[special_index].type == GOTO) {
-				if (specials[special_index].arg > cur_x) {
-					w = (int) specials[special_index].arg;
+			} else if (current->type == VOFFSET) {
+				last_font_height += current->arg;
+			} else if (current->type == GOTO) {
+				if (current->arg > cur_x) {
+					w = (int) current->arg;
 				}
-			} else if (specials[special_index].type == TAB) {
-				int start = specials[special_index].arg;
-				int step = specials[special_index].width;
+			} else if (current->type == TAB) {
+				int start = current->arg;
+				int step = current->width;
 
 				if (!step || step < 0) {
 					step = 10;
 				}
 				w += step - (cur_x - text_start_x - start) % step;
-			} else if (specials[special_index].type == FONT) {
-				selected_font = specials[special_index].font_added;
+			} else if (current->type == FONT) {
+				selected_font = current->font_added;
 				if (font_height() > last_font_height) {
 					last_font_height = font_height();
 				}
 			}
 
 			special_index++;
+			current = current->next;
 			s = p + 1;
 		} else if (*p == SECRIT_MULTILINE_CHAR) {
 			contain_SECRIT_MULTILINE_CHAR = 1;
@@ -1288,11 +1294,14 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 				s = p + 1;
 			}
 			/* draw special */
-			switch (specials[special_index].type) {
+			special_t *current = specials;
+			for(int i = 0; i < special_index; i++)
+				current = current->next;
+			switch (current->type) {
 #ifdef BUILD_X11
 				case HORIZONTAL_LINE:
 				{
-					int h = specials[special_index].height;
+					int h = current->height;
 					int mid = font_ascent() / 2;
 
 					w = text_start_x + text_width - cur_x;
@@ -1306,8 +1315,8 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 
 				case STIPPLED_HR:
 				{
-					int h = specials[special_index].height;
-					char tmp_s = specials[special_index].arg;
+					int h = current->height;
+					char tmp_s = current->arg;
 					int mid = font_ascent() / 2;
 					char ss[2] = { tmp_s, tmp_s };
 
@@ -1328,15 +1337,15 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 							&& maximum_width > 0) {
 						break;
 					}
-					h = specials[special_index].height;
-					bar_usage = specials[special_index].arg;
-					scale = specials[special_index].scale;
+					h = current->height;
+					bar_usage = current->arg;
+					scale = current->scale;
 					by = cur_y - (font_ascent() / 2) - 1;
 
 					if (h < font_h) {
 						by -= h / 2 - 1;
 					}
-					w = specials[special_index].width;
+					w = current->width;
 					if (w == 0) {
 						w = text_start_x + text_width - cur_x - 1;
 					}
@@ -1372,13 +1381,13 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						break;
 					}
 
-					h = specials[special_index].height;
+					h = current->height;
 					by = cur_y - (font_ascent() / 2) - 1;
 
 					if (h < font_h) {
 						by -= h / 2 - 1;
 					}
-					w = specials[special_index].width;
+					w = current->width;
 					if (w == 0) {
 						w = text_start_x + text_width - cur_x - 1;
 					}
@@ -1393,8 +1402,8 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 							cur_x, by, w, h * 2, 0, 180*64);
 
 #ifdef MATH
-					usage = specials[special_index].arg;
-					scale = specials[special_index].scale;
+					usage = current->arg;
+					scale = current->scale;
 					angle = M_PI * usage / scale;
 					px = (float)(cur_x+(w/2.))-(float)(w/2.)*cos(angle);
 					py = (float)(by+(h))-(float)(h)*sin(angle);
@@ -1424,13 +1433,13 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 							&& maximum_width > 0) {
 						break;
 					}
-					h = specials[special_index].height;
+					h = current->height;
 					by = cur_y - (font_ascent() / 2) - 1;
 
 					if (h < font_h) {
 						by -= h / 2 - 1;
 					}
-					w = specials[special_index].width;
+					w = current->width;
 					if (w == 0) {
 						w = text_start_x + text_width - cur_x - 1;
 					}
@@ -1446,37 +1455,37 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					XSetLineAttributes(display, window.gc, 1, LineSolid,
 						CapButt, JoinMiter);
 
-					if (specials[special_index].last_colour != 0
-							|| specials[special_index].first_colour != 0) {
-						tmpcolour = do_gradient(w - 1, specials[special_index].last_colour, specials[special_index].first_colour);
+					if (current->last_colour != 0
+							|| current->first_colour != 0) {
+						tmpcolour = do_gradient(w - 1, current->last_colour, current->first_colour);
 					}
 					colour_idx = 0;
 					for (i = w - 2; i > -1; i--) {
-						if (specials[special_index].last_colour != 0
-								|| specials[special_index].first_colour != 0) {
-							if (specials[special_index].tempgrad) {
+						if (current->last_colour != 0
+								|| current->first_colour != 0) {
+							if (current->tempgrad) {
 #ifdef DEBUG_lol
 								assert(
-										(int)((float)(w - 2) - specials[special_index].graph[j] *
-											(w - 2) / (float)specials[special_index].scale)
+										(int)((float)(w - 2) - current->graph[j] *
+											(w - 2) / (float)current->scale)
 										< w - 1
 									  );
 								assert(
-										(int)((float)(w - 2) - specials[special_index].graph[j] *
-											(w - 2) / (float)specials[special_index].scale)
+										(int)((float)(w - 2) - current->graph[j] *
+											(w - 2) / (float)current->scale)
 										> -1
 									  );
-								if (specials[special_index].graph[j] == specials[special_index].scale) {
+								if (current->graph[j] == current->scale) {
 									assert(
-											(int)((float)(w - 2) - specials[special_index].graph[j] *
-												(w - 2) / (float)specials[special_index].scale)
+											(int)((float)(w - 2) - current->graph[j] *
+												(w - 2) / (float)current->scale)
 											== 0
 										  );
 								}
 #endif /* DEBUG_lol */
 								XSetForeground(display, window.gc, tmpcolour[
-										(int)((float)(w - 2) - specials[special_index].graph[j] *
-											(w - 2) / (float)specials[special_index].scale)
+										(int)((float)(w - 2) - current->graph[j] *
+											(w - 2) / (float)current->scale)
 										]);
 							} else {
 								XSetForeground(display, window.gc, tmpcolour[colour_idx++]);
@@ -1485,10 +1494,10 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						/* this is mugfugly, but it works */
 						XDrawLine(display, window.drawable, window.gc,
 								cur_x + i + 1, by + h, cur_x + i + 1,
-								round_to_int((double)by + h - specials[special_index].graph[j] *
-									(h - 1) / specials[special_index].scale));
+								round_to_int((double)by + h - current->graph[j] *
+									(h - 1) / current->scale));
 						if ((w - i) / ((float) (w - 2) /
-									(specials[special_index].graph_width)) > j
+									(current->graph_width)) > j
 								&& j < MAX_GRAPH_DEPTH - 3) {
 							j++;
 						}
@@ -1549,16 +1558,16 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						cur_y = tmp_y;
 					}
 #ifdef MATH
-					if (show_graph_scale && (specials[special_index].show_scale == 1)) {
+					if (show_graph_scale && (current->show_scale == 1)) {
 						int tmp_x = cur_x;
 						int tmp_y = cur_y;
 						char *tmp_str;
 						cur_x += font_ascent() / 2;
 						cur_y += font_h / 2;
 						tmp_str = (char *)
-							calloc(log10(floor(specials[special_index].scale)) + 4,
+							calloc(log10(floor(current->scale)) + 4,
 									sizeof(char));
-						sprintf(tmp_str, "%.1f", specials[special_index].scale);
+						sprintf(tmp_str, "%.1f", current->scale);
 						draw_string(tmp_str);
 						free(tmp_str);
 						cur_x = tmp_x;
@@ -1574,7 +1583,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					int old = font_ascent();
 
 					cur_y -= font_ascent();
-					selected_font = specials[special_index].font_added;
+					selected_font = current->font_added;
 					set_font();
 					if (cur_y + font_ascent() < cur_y + old) {
 						cur_y += old;
@@ -1587,43 +1596,43 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 #endif /* BUILD_X11 */
 				case FG:
 					if (draw_mode == FG) {
-						set_foreground_color(specials[special_index].arg);
+						set_foreground_color(current->arg);
 					}
 					break;
 
 #ifdef BUILD_X11
 				case BG:
 					if (draw_mode == BG) {
-						set_foreground_color(specials[special_index].arg);
+						set_foreground_color(current->arg);
 					}
 					break;
 
 				case OUTLINE:
 					if (draw_mode == OUTLINE) {
-						set_foreground_color(specials[special_index].arg);
+						set_foreground_color(current->arg);
 					}
 					break;
 
 				case OFFSET:
-					w += specials[special_index].arg;
+					w += current->arg;
 					last_special_needed = special_index;
 					break;
 
 				case VOFFSET:
-					cur_y += specials[special_index].arg;
+					cur_y += current->arg;
 					break;
 
 				case GOTO:
-					if (specials[special_index].arg >= 0) {
-						cur_x = (int) specials[special_index].arg;
+					if (current->arg >= 0) {
+						cur_x = (int) current->arg;
 					}
 					last_special_needed = special_index;
 					break;
 
 				case TAB:
 				{
-					int start = specials[special_index].arg;
-					int step = specials[special_index].width;
+					int start = current->arg;
+					int step = current->width;
 
 					if (!step || step < 0) {
 						step = 10;
@@ -1642,13 +1651,13 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 
 					/* printf("pos_x %i text_start_x %i text_width %i cur_x %i "
 						"get_string_width(p) %i gap_x %i "
-						"specials[special_index].arg %i window.border_inner_margin %i "
+						"current->arg %i window.border_inner_margin %i "
 						"window.border_width %i\n", pos_x, text_start_x, text_width,
 						cur_x, get_string_width_special(s), gap_x,
-						specials[special_index].arg, window.border_inner_margin,
+						current->arg, window.border_inner_margin,
 						window.border_width); */
-					if (pos_x > specials[special_index].arg && pos_x > cur_x) {
-						cur_x = pos_x - specials[special_index].arg;
+					if (pos_x > current->arg && pos_x > cur_x) {
+						cur_x = pos_x - current->arg;
 					}
 					last_special_needed = special_index;
 					break;
@@ -1664,11 +1673,11 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 
 					/* printf("pos_x %i text_start_x %i text_width %i cur_x %i "
 						"get_string_width(p) %i gap_x %i "
-						"specials[special_index].arg %i\n", pos_x, text_start_x,
+						"current->arg %i\n", pos_x, text_start_x,
 						text_width, cur_x, get_string_width(s), gap_x,
-						specials[special_index].arg); */
-					if (pos_x > specials[special_index].arg) {
-						w = pos_x - specials[special_index].arg;
+						current->arg); */
+					if (pos_x > current->arg) {
+						w = pos_x - current->arg;
 					}
 					last_special_needed = special_index;
 					break;
@@ -2371,10 +2380,20 @@ static void reload_config(void)
 	initialisation(argc_copy, argv_copy);
 }
 
+void free_specials(special_t *current) {
+	if(current) {
+		free_specials(current->next);
+		if (current->type == GRAPH)
+			free(current->graph);
+		delete current;
+	} else {
+		specials = NULL;
+		last_specials = NULL;
+	}
+}
+
 void clean_up(void *memtofree1, void* memtofree2)
 {
-	int i;
-
 	free_update_callbacks();
 
 #ifdef BUILD_NCURSES
@@ -2457,15 +2476,7 @@ void clean_up(void *memtofree1, void* memtofree2)
 	xmlCleanupParser();
 #endif /* BUILD_WEATHER_XOAP */
 
-	if (specials) {
-		for (i = 0; i < special_count; i++) {
-			if (specials[i].type == GRAPH) {
-				free(specials[i].graph);
-			}
-		}
-		free_and_zero(specials);
-	}
-
+	free_specials(specials);
 	clear_net_stats();
 	clear_diskio_stats();
 	free_and_zero(global_cpu);
@@ -3483,13 +3494,6 @@ char load_config_file(const char *f)
 		CONF("uppercase") {
 			stuff_in_uppercase = string_to_bool(value);
 		}
-		CONF("max_specials") {
-			if (value) {
-				max_specials = atoi(value);
-			} else {
-				CONF_ERR;
-			}
-		}
 		CONF("max_user_text") {
 			if (value) {
 				max_user_text = atoi(value);
@@ -4037,11 +4041,6 @@ void initialisation(int argc, char **argv) {
 		set_current_config();
 		load_config_file(current_config.c_str());
 		currentconffile = conftree_add(currentconffile, current_config.c_str());
-	}
-
-	/* init specials array */
-	if ((specials = (special_t*)calloc(sizeof(struct special_t), max_specials)) == 0) {
-		NORM_ERR("failed to create specials array");
 	}
 
 #ifdef MAIL_FILE
