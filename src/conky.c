@@ -3993,6 +3993,37 @@ static void reload_config(void)
 	initialisation(argc_copy, argv_copy);
 }
 
+#ifdef X11
+void clean_up_x11() {
+	if(window_created == 1) {
+		XClearArea(display, window.window, text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width,
+			text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width,
+			text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
+			text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, 0);
+	}
+	destroy_window();
+	free_fonts();
+	fonts = NULL;
+	if(x11_stuff.region) {
+		XDestroyRegion(x11_stuff.region);
+		x11_stuff.region = NULL;
+	}
+	if(display) {
+		XCloseDisplay(display);
+		display = NULL;
+	}
+	if(info.x11.desktop.all_names) {
+		free(info.x11.desktop.all_names);
+		info.x11.desktop.all_names = NULL;
+	}
+	if (info.x11.desktop.name) {
+		free(info.x11.desktop.name);
+		info.x11.desktop.name = NULL;
+	}
+	x_initialised = NO;
+}
+#endif
+
 void clean_up(void *memtofree1, void* memtofree2)
 {
 	int i;
@@ -4020,29 +4051,7 @@ void clean_up(void *memtofree1, void* memtofree2)
 	}
 #ifdef X11
 	if (x_initialised == YES) {
-		if(window_created == 1) {
-			XClearArea(display, window.window, text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width,
-				text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width,
-				text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
-				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, 0);
-		}
-		destroy_window();
-		free_fonts();
-		if(x11_stuff.region) {
-			XDestroyRegion(x11_stuff.region);
-			x11_stuff.region = NULL;
-		}
-		XCloseDisplay(display);
-		display = NULL;
-		if(info.x11.desktop.all_names) {
-			free(info.x11.desktop.all_names);
-			info.x11.desktop.all_names = NULL;
-		}
-		if (info.x11.desktop.name) {
-			free(info.x11.desktop.name);
-			info.x11.desktop.name = NULL;
-		}
-		x_initialised = NO;
+		clean_up_x11();
 	}else{
 		free(fonts);	//in set_default_configurations a font is set but not loaded
 		font_count = -1;
@@ -4574,15 +4583,12 @@ char load_config_file(const char *f)
 
 #ifdef X11
 		CONF2("out_to_x") {
-			/* don't listen if X is already initialised or
-			 * if we already know we don't want it */
-			if(x_initialised != YES) {
-				if (string_to_bool(value)) {
-					output_methods &= TO_X;
-				} else {
-					output_methods &= ~TO_X;
-					x_initialised = NEVER;
-				}
+			if (string_to_bool(value)) {
+				output_methods &= TO_X;
+			} else {
+				clean_up_x11();
+				output_methods &= ~TO_X;
+				x_initialised = NEVER;
 			}
 		}
 		CONF("display") {
