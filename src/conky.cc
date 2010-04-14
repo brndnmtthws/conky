@@ -2392,6 +2392,31 @@ void free_specials(special_t *current) {
 	}
 }
 
+#ifdef BUILD_X11
+void clean_up_x11() {
+	if(window_created == 1) {
+		long border_total = window.border_inner_margin
+							+ window.border_outer_margin + window.border_width;
+		XClearArea(display, window.window, text_start_x - border_total,
+			text_start_y - border_total, text_width + 2*border_total,
+			text_height + 2*border_total, 0);
+	}
+	destroy_window();
+	free_fonts();
+	if(x11_stuff.region) {
+		XDestroyRegion(x11_stuff.region);
+		x11_stuff.region = NULL;
+	}
+	if(display) {
+		XCloseDisplay(display);
+		display = NULL;
+	}
+	free_and_zero(info.x11.desktop.all_names);
+	free_and_zero(info.x11.desktop.name);
+	x_initialised = NO;
+}
+#endif
+
 void clean_up(void *memtofree1, void* memtofree2)
 {
 	free_update_callbacks();
@@ -2410,30 +2435,13 @@ void clean_up(void *memtofree1, void* memtofree2)
 	free_and_zero(info.cpu_usage);
 #ifdef BUILD_X11
 	if (x_initialised == YES) {
-		if(window_created == 1) {
-			long border_total = window.border_inner_margin
-								+ window.border_outer_margin + window.border_width;
-			XClearArea(display, window.window, text_start_x - border_total,
-				text_start_y - border_total, text_width + 2*border_total,
-				text_height + 2*border_total, 0);
-		}
-		destroy_window();
-		free_fonts();
-		if(x11_stuff.region) {
-			XDestroyRegion(x11_stuff.region);
-			x11_stuff.region = NULL;
-		}
-		XCloseDisplay(display);
-		display = NULL;
-		free_and_zero(info.x11.desktop.all_names);
-		free_and_zero(info.x11.desktop.name);
-		x_initialised = NO;
+		clean_up_x11();
 	}else{
 		free(fonts);	//in set_default_configurations a font is set but not loaded
 		font_count = -1;
 	}
 
-#endif /* BUILD_X11 */
+#endif
 
 	free_templates();
 
@@ -2936,15 +2944,12 @@ char load_config_file(const char *f)
 
 #ifdef BUILD_X11
 		CONF2("out_to_x") {
-			/* don't listen if X is already initialised or
-			 * if we already know we don't want it */
-			if(x_initialised != YES) {
-				if (string_to_bool(value)) {
-					output_methods &= TO_X;
-				} else {
-					output_methods &= ~TO_X;
-					x_initialised = NEVER;
-				}
+			if (string_to_bool(value)) {
+				output_methods &= TO_X;
+			} else {
+				clean_up_x11();
+				output_methods &= ~TO_X;
+				x_initialised = NEVER;
 			}
 		}
 		CONF("display") {
