@@ -890,7 +890,7 @@ static int get_string_width_special(char *s, int special_index)
 	p = strndup(s, text_buffer_size);
 	final = p;
 
-	for(i = 0; i < special_index; i++)
+	for(i = 0; i <= special_index; i++)
 		current = current->next;
 
 	while (*p) {
