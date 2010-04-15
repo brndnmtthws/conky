@@ -1631,7 +1631,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 	END {
 		char *buf = (char *)malloc(text_buffer_size);
 
-		NORM_ERR("unknown variable %s", s);
+		NORM_ERR("unknown variable '$%s'", s);
 		snprintf(buf, text_buffer_size, "${%s}", s);
 		obj_be_plain_text(obj, buf);
 		free(buf);
