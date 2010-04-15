@@ -258,6 +258,7 @@ struct special_t *new_special(char *buf, enum special_types t)
 		specials->prev = NULL;
 		last_specials = specials;
 	}
+	last_specials->graph = NULL;
 	last_specials->next = NULL;
 	last_specials->type = t;
 	return last_specials;
