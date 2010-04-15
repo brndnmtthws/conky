@@ -814,6 +814,22 @@
     <varlistentry>
         <term>
             <command>
+                <option>distribution</option>
+            </command>
+        </term>
+        <listitem>The name of the distribution. It could be that some
+        of the untested distributions will show up wrong or as "unknown",
+        if that's the case post a bug on sourceforge, make sure it
+        contains the name of your distribution, the contents of
+        /proc/version and if there is a file that only exists on your
+        distribution, also add the path of that file in the bug. If there
+        is no such file, please add another way which we can use to identify
+        your distribution.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>downspeed</option>
             </command>
             <option>(net)</option>
