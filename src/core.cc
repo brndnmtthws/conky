@@ -148,7 +148,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 #define __OBJ_HEAD(a, n) if (!strcmp(s, #a)) { \
 	add_update_callback(n);
 #define __OBJ_IF obj_be_ifblock_if(ifblock_opaque, obj)
-#define __OBJ_ARG(...) if (!arg) { CRIT_ERR(obj, free_at_crash, __VA_ARGS__); }
+#define __OBJ_ARG(...) if (!arg) { free(s); CRIT_ERR(obj, free_at_crash, __VA_ARGS__); }
 
 /* defines to be used below */
 #define OBJ(a, n) __OBJ_HEAD(a, n) {
