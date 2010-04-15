@@ -2371,3 +2371,33 @@ void update_diskio(void)
 	update_diskio_values(&stats, total_reads, total_writes);
 	fclose(fp);
 }
+
+void print_distribution(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	int i, bytes_read;
+	char* buf = readfile("/proc/version", &bytes_read, 1);
+
+	snprintf(p, p_max_size, "Unknown");
+	if(buf) {
+		/* I am assuming the distribution name is the first string in /proc/version that:
+		- is preceded by a '('
+		- starts with a capital
+		- is followed by a space and a number
+		but i am not sure if this is always true... */
+		for(i=1; i<bytes_read; i++) {
+			if(buf[i-1] == '(' && buf[i] >= 'A' && buf[i] <= 'Z') break;
+		}
+		if(i < bytes_read) {
+			snprintf(p, p_max_size, &buf[i]);
+			for(i=1; p[i]; i++) {
+				if(p[i-1] == ' ' && p[i] >= '0' && p[i] <= '9') {
+					p[i-1] = 0;
+					break;
+				}
+			}
+		}
+		free(buf);
+	}
+}
+

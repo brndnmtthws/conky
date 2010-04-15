@@ -37,7 +37,7 @@
 #include <dirent.h>
 #include <memory>
 
-char* readfile(char* filename, int* total_read, char showerror) {
+char* readfile(const char* filename, int* total_read, char showerror) {
 	FILE* file;
 	char* buf = NULL;
 	int bytes_read;

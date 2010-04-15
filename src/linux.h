@@ -53,4 +53,6 @@ int get_entropy_poolsize(unsigned int *);
 
 void update_stat(void);
 
+void print_distribution(struct text_object *, char *, int);
+
 #endif /* _LINUX_H */

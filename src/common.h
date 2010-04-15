@@ -33,6 +33,8 @@
 #include <sys/socket.h>
 #include "text_object.h"
 
+char* readfile(const char* filename, int* total_read, char showerror);
+
 void print_to_bytes(struct text_object *, char *, int);
 
 void add_update_callback(void (*func)(void));

@@ -1037,6 +1037,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 	END OBJ(processes, &update_total_processes)
 		obj->callbacks.print = &print_processes;
 #ifdef __linux__
+	END OBJ(distribution, 0)
+		obj->callbacks.print = &print_distribution;
 	END OBJ(running_processes, &update_top)
 		top_running = 1;
 		obj->callbacks.print = &print_running_processes;
