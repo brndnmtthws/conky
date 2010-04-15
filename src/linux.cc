@@ -2376,9 +2376,15 @@ void print_distribution(struct text_object *obj, char *p, int p_max_size)
 {
 	(void)obj;
 	int i, bytes_read;
-	char* buf = readfile("/proc/version", &bytes_read, 1);
+	char* buf;
+	struct stat sb;
 
+	if(stat("/etc/arch-release", &sb) == 0) {
+		snprintf(p, p_max_size, "Arch Linux");
+		return;
+	}
 	snprintf(p, p_max_size, "Unknown");
+	buf = readfile("/proc/version", &bytes_read, 1);
 	if(buf) {
 		/* I am assuming the distribution name is the first string in /proc/version that:
 		- is preceded by a '('
