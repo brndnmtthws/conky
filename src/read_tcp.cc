@@ -57,7 +57,7 @@ void parse_read_tcp_arg(struct text_object *obj, const char *arg, void *free_at_
 		strcpy(rtd->host,"localhost");
 	}
 	if(rtd->port < 1 || rtd->port > 65535)
-		CRIT_ERR(obj, free_at_crash, "read_tcp: Needs \"(host) port\" as argument(s)");
+		CRIT_ERR(obj, free_at_crash, "read_tcp and read_udp need a port from 1 to 65535 as argument");
 
 	rtd->port = htons(rtd->port);
 	obj->data.opaque = rtd;
@@ -79,7 +79,7 @@ void print_read_tcp(struct text_object *obj, char *p, int p_max_size)
 		NORM_ERR("read_tcp: Problem with resolving the hostname");
 		return;
 	}
-	if ((sock = socket(he->h_addrtype, SOCK_STREAM, 0)) == -1) {
+	if ((sock = socket(he->h_addrtype, SOCK_STREAM, IPPROTO_TCP)) == -1) {
 		NORM_ERR("read_tcp: Couldn't create a socket");
 		return;
 	}
@@ -98,6 +98,46 @@ void print_read_tcp(struct text_object *obj, char *p, int p_max_size)
 	if(select(sock + 1, &readfds, NULL, NULL, &tv) > 0){
 		received = recv(sock, p, p_max_size, 0);
 		p[received] = 0;
+	}
+	close(sock);
+}
+
+void print_read_udp(struct text_object *obj, char *p, int p_max_size)
+{
+	int sock, received;
+	struct sockaddr_in addr;
+	struct hostent* he;
+	fd_set readfds;
+	struct timeval tv;
+	struct read_tcp_data *rtd = (struct read_tcp_data *) obj->data.opaque;
+
+	if (!rtd)
+		return;
+
+	if (!(he = gethostbyname(rtd->host))) {
+		NORM_ERR("read_udp: Problem with resolving the hostname");
+		return;
+	}
+	if ((sock = socket(he->h_addrtype, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
+		NORM_ERR("read_udp: Couldn't create a socket");
+		return;
+	}
+	memset(&addr, 0, sizeof(addr));
+	addr.sin_family = AF_INET;
+	addr.sin_port = rtd->port;
+	memcpy(&addr.sin_addr, he->h_addr, he->h_length);
+	if (connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr)) != 0) {
+		NORM_ERR("read_udp: Couldn't create a connection");
+		return;
+	}
+	write(sock, NULL, 0);	//when using UDP i have to start writing to the socket before i can read from it, even if i don't actually write anything
+	FD_ZERO(&readfds);
+	FD_SET(sock, &readfds);
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+	if(select(sock + 1, &readfds, NULL, NULL, &tv) > 0){
+		received = recv(sock, p, p_max_size, 0);
+		if(received != -1) p[received] = 0; else p[0] = 0;
 	}
 	close(sock);
 }

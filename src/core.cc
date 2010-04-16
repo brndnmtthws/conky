@@ -212,6 +212,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		parse_read_tcp_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_read_tcp;
 		obj->callbacks.free = &free_read_tcp;
+	END OBJ_ARG(read_udp, 0, "read_udp: Needs \"(host) port\" as argument(s)")
+		parse_read_tcp_arg(obj, arg, free_at_crash);
+		obj->callbacks.print = &print_read_udp;
+		obj->callbacks.free = &free_read_tcp;
 #if defined(__linux__)
 	END OBJ(voltage_mv, 0)
 		get_cpu_count();

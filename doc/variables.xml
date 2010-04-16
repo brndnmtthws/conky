@@ -3051,7 +3051,19 @@
         </term>
         <listitem>Connects to a tcp port on a host (default is
         localhost), reads every char available at the moment and
-        shows them. 
+        shows them.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>read_udp</option>
+            </command>
+            <option>(host) port</option>
+        </term>
+        <listitem>Connects to a udp port on a host (default is
+        localhost), reads every char available at the moment and
+        shows them.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
