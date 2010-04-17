@@ -2395,7 +2395,7 @@ void print_distribution(struct text_object *obj, char *p, int p_max_size)
 			if(buf[i-1] == '(' && buf[i] >= 'A' && buf[i] <= 'Z') break;
 		}
 		if(i < bytes_read) {
-			snprintf(p, p_max_size, &buf[i]);
+			snprintf(p, p_max_size, "%s", &buf[i]);
 			for(i=1; p[i]; i++) {
 				if(p[i-1] == ' ' && p[i] >= '0' && p[i] <= '9') {
 					p[i-1] = 0;
