@@ -580,6 +580,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.print = &print_image_callback;
 		obj->callbacks.free = &gen_free_opaque;
 #endif /* BUILD_IMLIB2 */
+	END OBJ_ARG(no_update, 0, "no_update needs arguments")
+		scan_no_update(obj, arg);
+		obj->callbacks.print = &print_no_update;
+		obj->callbacks.free = &free_no_update;
 	END OBJ(exec, 0)
 		scan_exec_arg(obj, arg);
 		obj->parse = false;

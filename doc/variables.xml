@@ -2463,6 +2463,19 @@
     <varlistentry>
         <term>
             <command>
+                <option>no_update</option>
+            </command>
+            <option>text</option>
+        </term>
+        <listitem>Shows text and parses the vars in it, but doesn't
+        update them. Use this for things that do not change while conky
+        is running, like $machine, $conky_version,... By not updating
+        this you can save some resources.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>nvidia</option>
             </command>
             <option>threshold</option>

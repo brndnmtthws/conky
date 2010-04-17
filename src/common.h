@@ -88,6 +88,10 @@ int get_battery_perct(const char *bat);
 double get_battery_perct_bar(struct text_object *);
 void get_battery_short_status(char *buf, unsigned int n, const char *bat);
 
+void scan_no_update(struct text_object *, const char *);
+void print_no_update(struct text_object *, char *, int);
+void free_no_update(struct text_object *);
+
 void scan_loadavg_arg(struct text_object *, const char *);
 void print_loadavg(struct text_object *, char *, int);
 #ifdef BUILD_X11
