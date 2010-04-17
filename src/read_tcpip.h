@@ -31,9 +31,9 @@
 #ifndef _READ_TCP_H
 #define _READ_TCP_H
 
-void parse_read_tcp_arg(struct text_object *, const char *, void *);
+void parse_read_tcpip_arg(struct text_object *, const char *, void *);
 void print_read_tcp(struct text_object *, char *, int);
 void print_read_udp(struct text_object *, char *, int);
-void free_read_tcp(struct text_object *);
+void free_read_tcpip(struct text_object *);
 
 #endif /* _READ_TCP_H */

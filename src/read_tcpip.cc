@@ -37,17 +37,17 @@
 #include <unistd.h>
 #include <netinet/in.h>
 
-struct read_tcp_data {
+struct read_tcpip_data {
 	char *host;
 	unsigned int port;
 };
 
-void parse_read_tcp_arg(struct text_object *obj, const char *arg, void *free_at_crash)
+void parse_read_tcpip_arg(struct text_object *obj, const char *arg, void *free_at_crash)
 {
-	struct read_tcp_data *rtd;
+	struct read_tcpip_data *rtd;
 
-	rtd = (struct read_tcp_data *) malloc(sizeof(struct read_tcp_data));
-	memset(rtd, 0, sizeof(struct read_tcp_data));
+	rtd = (struct read_tcpip_data *) malloc(sizeof(struct read_tcpip_data));
+	memset(rtd, 0, sizeof(struct read_tcpip_data));
 
 	rtd->host = (char *) malloc(text_buffer_size);
 	sscanf(arg, "%s", rtd->host);
@@ -63,24 +63,24 @@ void parse_read_tcp_arg(struct text_object *obj, const char *arg, void *free_at_
 	obj->data.opaque = rtd;
 }
 
-void print_read_tcp(struct text_object *obj, char *p, int p_max_size)
+void print_read_tcpip(struct text_object *obj, char *p, int p_max_size, int protocol)
 {
 	int sock, received;
 	struct sockaddr_in addr;
 	struct hostent* he;
 	fd_set readfds;
 	struct timeval tv;
-	struct read_tcp_data *rtd = (struct read_tcp_data *) obj->data.opaque;
+	struct read_tcpip_data *rtd = (struct read_tcpip_data *) obj->data.opaque;
 
 	if (!rtd)
 		return;
 
 	if (!(he = gethostbyname(rtd->host))) {
-		NORM_ERR("read_tcp: Problem with resolving the hostname");
+		NORM_ERR("%s: Problem with resolving the hostname", protocol == IPPROTO_TCP ? "read_tcp" : "read_udp");
 		return;
 	}
-	if ((sock = socket(he->h_addrtype, SOCK_STREAM, IPPROTO_TCP)) == -1) {
-		NORM_ERR("read_tcp: Couldn't create a socket");
+	if ((sock = socket(he->h_addrtype, protocol == IPPROTO_TCP ? SOCK_STREAM : SOCK_DGRAM, protocol)) == -1) {
+		NORM_ERR("%s: Couldn't create a socket", protocol == IPPROTO_TCP ? "read_tcp" : "read_udp");
 		return;
 	}
 	memset(&addr, 0, sizeof(addr));
@@ -88,49 +88,15 @@ void print_read_tcp(struct text_object *obj, char *p, int p_max_size)
 	addr.sin_port = rtd->port;
 	memcpy(&addr.sin_addr, he->h_addr, he->h_length);
 	if (connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr)) != 0) {
-		NORM_ERR("read_tcp: Couldn't create a connection");
+		if(protocol == IPPROTO_TCP) {
+			NORM_ERR("read_tcp: Couldn't create a connection");
+		} else {
+			NORM_ERR("read_udp: Couldn't listen"); //other error because udp is connectionless
+		}
 		return;
 	}
-	FD_ZERO(&readfds);
-	FD_SET(sock, &readfds);
-	tv.tv_sec = 1;
-	tv.tv_usec = 0;
-	if(select(sock + 1, &readfds, NULL, NULL, &tv) > 0){
-		received = recv(sock, p, p_max_size, 0);
-		p[received] = 0;
-	}
-	close(sock);
-}
-
-void print_read_udp(struct text_object *obj, char *p, int p_max_size)
-{
-	int sock, received;
-	struct sockaddr_in addr;
-	struct hostent* he;
-	fd_set readfds;
-	struct timeval tv;
-	struct read_tcp_data *rtd = (struct read_tcp_data *) obj->data.opaque;
-
-	if (!rtd)
-		return;
-
-	if (!(he = gethostbyname(rtd->host))) {
-		NORM_ERR("read_udp: Problem with resolving the hostname");
-		return;
-	}
-	if ((sock = socket(he->h_addrtype, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
-		NORM_ERR("read_udp: Couldn't create a socket");
-		return;
-	}
-	memset(&addr, 0, sizeof(addr));
-	addr.sin_family = AF_INET;
-	addr.sin_port = rtd->port;
-	memcpy(&addr.sin_addr, he->h_addr, he->h_length);
-	if (connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr)) != 0) {
-		NORM_ERR("read_udp: Couldn't create a connection");
-		return;
-	}
-	write(sock, NULL, 0);	//when using UDP i have to start writing to the socket before i can read from it, even if i don't actually write anything
+	if(protocol == IPPROTO_UDP)
+		write(sock, NULL, 0);	//when using udp send a zero-length packet to let the other end know of our existence
 	FD_ZERO(&readfds);
 	FD_SET(sock, &readfds);
 	tv.tv_sec = 1;
@@ -142,9 +108,19 @@ void print_read_udp(struct text_object *obj, char *p, int p_max_size)
 	close(sock);
 }
 
-void free_read_tcp(struct text_object *obj)
+void print_read_tcp(struct text_object *obj, char *p, int p_max_size)
 {
-	struct read_tcp_data *rtd = (struct read_tcp_data *) obj->data.opaque;
+	print_read_tcpip(obj, p, p_max_size, IPPROTO_TCP);
+}
+
+void print_read_udp(struct text_object *obj, char *p, int p_max_size)
+{
+	print_read_tcpip(obj, p, p_max_size, IPPROTO_UDP);
+}
+
+void free_read_tcpip(struct text_object *obj)
+{
+	struct read_tcpip_data *rtd = (struct read_tcpip_data *) obj->data.opaque;
 
 	if (!rtd)
 		return;

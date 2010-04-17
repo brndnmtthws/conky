@@ -64,7 +64,7 @@
 #ifdef BUILD_NVIDIA
 #include "nvidia.h"
 #endif
-#include "read_tcp.h"
+#include "read_tcpip.h"
 #include "scroll.h"
 #include "specials.h"
 #include "temphelper.h"
@@ -209,13 +209,13 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		}
 		obj->callbacks.print = &print_freq_g;
 	END OBJ_ARG(read_tcp, 0, "read_tcp: Needs \"(host) port\" as argument(s)")
-		parse_read_tcp_arg(obj, arg, free_at_crash);
+		parse_read_tcpip_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_read_tcp;
-		obj->callbacks.free = &free_read_tcp;
+		obj->callbacks.free = &free_read_tcpip;
 	END OBJ_ARG(read_udp, 0, "read_udp: Needs \"(host) port\" as argument(s)")
-		parse_read_tcp_arg(obj, arg, free_at_crash);
+		parse_read_tcpip_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_read_udp;
-		obj->callbacks.free = &free_read_tcp;
+		obj->callbacks.free = &free_read_tcpip;
 #if defined(__linux__)
 	END OBJ(voltage_mv, 0)
 		get_cpu_count();
