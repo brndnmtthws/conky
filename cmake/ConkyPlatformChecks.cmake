@@ -81,7 +81,7 @@ if(BUILD_NCURSES)
 endif(BUILD_NCURSES)
 
 if(BUILD_MYSQL)
-	find_path(mysql_INCLUDE_PATH mysql.h ${INCLUDE_SEARCH_PATH})
+	find_path(mysql_INCLUDE_PATH mysql.h ${INCLUDE_SEARCH_PATH} /usr/include/mysql /usr/local/include/mysql)
 	if(NOT mysql_INCLUDE_PATH)
 		message(FATAL_ERROR "Unable to find mysql.h")
 	endif(NOT mysql_INCLUDE_PATH)
