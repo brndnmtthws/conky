@@ -93,6 +93,11 @@ if(BUILD_MPD)
 	set(optional_sources ${optional_sources} ${mpd})
 endif(BUILD_MPD)
 
+if(BUILD_MYSQL)
+	set(mysql mysql.cc)
+	set(optional_sources ${optional_sources} ${mysql})
+endif(BUILD_MYSQL)
+
 if(BUILD_MOC)
 	set(moc moc.cc)
 	set(optional_sources ${optional_sources} ${moc})

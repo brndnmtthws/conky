@@ -86,6 +86,10 @@ struct text_object;
 #include "mpd.h"
 #endif /* BUILD_MPD */
 
+#ifdef BUILD_MYSQL
+#include "mysql.h"
+#endif /* BUILD_MYSQL */
+
 /* C++ headers */
 #ifdef BUILD_CURL
 #include "ccurl_thread.h"

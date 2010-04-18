@@ -126,6 +126,8 @@ option(BUILD_BMPX "Build BMPx (music player) support" false)
 
 option(BUILD_MPD "Enable if you want MPD (music player) support" true)
 
+option(BUILD_MYSQL "Enable if you want MySQL support" true)
+
 option(BUILD_MOC "Enable if you want MOC (music player) support" true)
 
 option(BUILD_XMMS2 "Enable if you want XMMS2 (music player) support" false)

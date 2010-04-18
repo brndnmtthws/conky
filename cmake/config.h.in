@@ -51,6 +51,8 @@
 
 #cmakedefine BUILD_MPD 1
 
+#cmakedefine BUILD_MYSQL 1
+
 #cmakedefine BUILD_MOC 1
 
 #cmakedefine BUILD_NVIDIA 0

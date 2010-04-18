@@ -2421,6 +2421,17 @@
     <varlistentry>
         <term>
             <command>
+                <option>mysql</option>
+            </command>
+            <option>query</option>
+        </term>
+        <listitem>Shows the first field of the first row of the
+        result of the query.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>nameserver</option>
             </command>
             <option>(index)</option>

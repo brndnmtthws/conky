@@ -527,6 +527,52 @@
     <varlistentry>
         <term>
             <command>
+                <option>mysql_host</option>
+            </command>
+        </term>
+        <listitem>Host of MySQL server. Defaults to localhost
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>mysql_port</option>
+            </command>
+        </term>
+        <listitem>Port of MySQL server. Defaults to the default mysql port
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>mysql_user</option>
+            </command>
+        </term>
+        <listitem>MySQL user name to use when connecting to the server. Defaults to your username
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>mysql_password</option>
+            </command>
+        </term>
+        <listitem>Password of the MySQL user. Place it between "-chars. When this is not set there
+        is no password used
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>mysql_db</option>
+            </command>
+        </term>
+        <listitem>MySQL database to use. Defaults to mysql
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>music_player_interval</option>
             </command>
         </term>
