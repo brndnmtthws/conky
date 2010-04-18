@@ -36,6 +36,8 @@ struct mysql_conn mysql_settings;
 void print_mysql(struct text_object *obj, char *p, int p_max_size) {
 	MYSQL *conn = mysql_init(NULL);
 
+	if(mysql_settings.db == NULL)
+		mysql_settings.db = strdup("mysql");
 	if(conn == NULL) {
 		NORM_ERR("Can't initialize MySQL");
 		mysql_library_end();

@@ -2635,7 +2635,7 @@ static void set_default_configurations(void)
 	mysql_settings.port = 0;
 	mysql_settings.user = NULL;
 	mysql_settings.password = NULL;
-	mysql_settings.db = strdup("mysql");
+	mysql_settings.db = NULL;
 #endif /* BUILD_MYSQL */
 #ifdef BUILD_XMMS2
 	info.xmms2.artist = NULL;
