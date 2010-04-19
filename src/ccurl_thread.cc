@@ -72,6 +72,7 @@ void ccurl_free_locations(ccurl_location_list &locations)
 			i != locations.end(); i++) {
 		free_and_zero((*i)->uri);
 		free_and_zero((*i)->result);
+		(*i)->p_timed_thread.reset();
 	}
 	locations.clear();
 }
@@ -222,7 +223,10 @@ void curl_parse_arg(struct text_object *obj, const char *arg)
 		NORM_ERR("wrong number of arguments for $curl");
 		return;
 	}
-	cd->interval = (argc == 2 && interval >= 0) ? interval * 60 : 15*60;
+	if (argc == 1)
+		cd->interval = 15*60;
+	else
+		cd->interval = interval > 0 ? interval * 60 : update_interval;
 	obj->data.opaque = cd;
 }
 
