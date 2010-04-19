@@ -222,7 +222,7 @@ void curl_parse_arg(struct text_object *obj, const char *arg)
 		NORM_ERR("wrong number of arguments for $curl");
 		return;
 	}
-	cd->interval = interval > 0 ? interval * 60 : 15*60;
+	cd->interval = (argc == 2 && interval >= 0) ? interval * 60 : 15*60;
 	obj->data.opaque = cd;
 }
 
