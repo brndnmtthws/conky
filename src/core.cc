@@ -138,6 +138,29 @@ static struct text_object *create_plain_text(const char *s)
 	return obj;
 }
 
+void stock_parse_arg(struct text_object *obj, const char *arg)
+{
+	char stock[8];
+	char data[8];
+
+	obj->data.s = NULL;
+	if(sscanf(arg, "%7s %7s", stock, data) != 2) {
+		NORM_ERR("wrong number of arguments for $stock");
+		return;
+	}
+	if(!strcasecmp("ask", data)) strcpy(data, "a");
+	else if(!strcasecmp("adv", data)) strcpy(data, "a2");
+	else if(!strcasecmp("asksize", data)) strcpy(data, "a5");
+	else if(!strcasecmp("bid", data)) strcpy(data, "b");
+	else {
+		NORM_ERR("\"%s\" is not supported by $stock. Supported: adv,ask,asksize,bid", data);
+		return;
+	}
+#define MAX_FINYAH_URL_LENGTH 64
+	obj->data.s = (char*) malloc(MAX_FINYAH_URL_LENGTH);
+	snprintf(obj->data.s, MAX_FINYAH_URL_LENGTH, "http://download.finance.yahoo.com/d/quotes.csv?s=%s&f=%s", stock, data);
+}
+
 /* construct_text_object() creates a new text_object */
 struct text_object *construct_text_object(char *s, const char *arg, long
 		line, void **ifblock_opaque, void *free_at_crash)
@@ -1583,6 +1606,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->sub = (text_object*)malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
 		obj->callbacks.print = &print_to_bytes;
+	END OBJ_ARG(stock, 0, "stock needs arguments")
+		stock_parse_arg(obj, arg);
+		obj->callbacks.print = &print_stock;
+		obj->callbacks.free = &free_stock;
 	END OBJ(scroll, 0)
 #ifdef BUILD_X11
 		/* allocate a follower to reset any color changes */

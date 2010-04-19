@@ -162,4 +162,6 @@ void print_include(struct text_object *, char *, int);
 void print_updates(struct text_object *, char *, int);
 int updatenr_iftest(struct text_object *);
 
+void print_stock(struct text_object *, char *, int);
+void free_stock(struct text_object *);
 #endif /* _COMMON_H */

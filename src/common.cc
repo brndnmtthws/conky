@@ -819,6 +819,20 @@ void print_include(struct text_object *obj, char *p, int p_max_size)
 	snprintf(p, p_max_size, "%s", &(buf[0]));
 }
 
+void print_stock(struct text_object *obj, char *p, int p_max_size)
+{
+	if( ! obj->data.s) {
+		p[0] = 0;
+		return;
+	}
+	ccurl_process_info(p, p_max_size, obj->data.s, 0);
+}
+
+void free_stock(struct text_object *obj)
+{
+	free(obj->data.s);
+}
+
 void print_to_bytes(struct text_object *obj, char *p, int p_max_size)
 {
 	std::vector<char> buf(max_user_text);

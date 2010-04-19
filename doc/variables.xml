@@ -3276,6 +3276,17 @@
     <varlistentry>
         <term>
             <command>
+                <option>stock</option>
+            </command>
+            <option>symbol data</option>
+        </term>
+        <listitem>Displays the data of a stock symbol. The following data
+        is supported: adv(Average Daily Volume),ask,asksize,bid
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>swap</option>
             </command>
         </term>
