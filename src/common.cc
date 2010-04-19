@@ -819,6 +819,7 @@ void print_include(struct text_object *obj, char *p, int p_max_size)
 	snprintf(p, p_max_size, "%s", &(buf[0]));
 }
 
+#ifdef BUILD_CURL
 void print_stock(struct text_object *obj, char *p, int p_max_size)
 {
 	if( ! obj->data.s) {
@@ -832,6 +833,7 @@ void free_stock(struct text_object *obj)
 {
 	free(obj->data.s);
 }
+#endif /* BUILD_CURL */
 
 void print_to_bytes(struct text_object *obj, char *p, int p_max_size)
 {

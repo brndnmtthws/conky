@@ -138,6 +138,7 @@ static struct text_object *create_plain_text(const char *s)
 	return obj;
 }
 
+#ifdef BUILD_CURL
 void stock_parse_arg(struct text_object *obj, const char *arg)
 {
 	char stock[8];
@@ -160,6 +161,7 @@ void stock_parse_arg(struct text_object *obj, const char *arg)
 	obj->data.s = (char*) malloc(MAX_FINYAH_URL_LENGTH);
 	snprintf(obj->data.s, MAX_FINYAH_URL_LENGTH, "http://download.finance.yahoo.com/d/quotes.csv?s=%s&f=%s", stock, data);
 }
+#endif /* BUILD_CURL */
 
 /* construct_text_object() creates a new text_object */
 struct text_object *construct_text_object(char *s, const char *arg, long
@@ -1606,10 +1608,12 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->sub = (text_object*)malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
 		obj->callbacks.print = &print_to_bytes;
+#ifdef BUILD_CURL
 	END OBJ_ARG(stock, 0, "stock needs arguments")
 		stock_parse_arg(obj, arg);
 		obj->callbacks.print = &print_stock;
 		obj->callbacks.free = &free_stock;
+#endif /* BUILD_CURL */
 	END OBJ(scroll, 0)
 #ifdef BUILD_X11
 		/* allocate a follower to reset any color changes */
