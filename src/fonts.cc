@@ -39,7 +39,7 @@ char fontloaded = 0;
 void set_font(void)
 {
 #ifdef BUILD_XFT
-	if (use_xft) return;
+	if (use_xft.get(*state)) return;
 #endif /* BUILD_XFT */
 	if (font_count > -1 && fonts[selected_font].font) {
 		XSetFont(display, window.gc, fonts[selected_font].font->fid);
@@ -52,7 +52,7 @@ void setup_fonts(void)
 		return;
 	}
 #ifdef BUILD_XFT
-	if (use_xft) {
+	if (use_xft.get(*state)) {
 		if (window.xftdraw) {
 			XftDrawDestroy(window.xftdraw);
 			window.xftdraw = 0;
@@ -128,7 +128,7 @@ void free_fonts(void)
 	}
 	for (i = 0; i <= font_count; i++) {
 #ifdef BUILD_XFT
-		if (use_xft) {
+		if (use_xft.get(*state)) {
 			/*
 			 * Do we not need to close fonts with Xft? Unsure.  Not freeing the
 			 * fonts seems to incur a slight memory leak, but it also prevents
@@ -166,11 +166,10 @@ void load_fonts(void)
 	for (i = 0; i <= font_count; i++) {
 #ifdef BUILD_XFT
 		/* load Xft font */
-		if (use_xft && fonts[i].xftfont) {
-			continue;
-		} else if (use_xft) {
-			fonts[i].xftfont = XftFontOpenName(display, screen,
-					fonts[i].name);
+		if (use_xft.get(*state)) {
+			if(not fonts[i].xftfont)
+				fonts[i].xftfont = XftFontOpenName(display, screen, fonts[i].name);
+
 			if (fonts[i].xftfont) {
 				continue;
 			}
@@ -181,12 +180,7 @@ void load_fonts(void)
 				continue;
 			}
 
-			NORM_ERR("can't load Xft font '%s'", "courier-12");
-
-			if ((fonts[i].font = XLoadQueryFont(display, "fixed")) == NULL) {
-				CRIT_ERR(NULL, NULL, "can't load font '%s'", "fixed");
-			}
-			use_xft = 0;
+			CRIT_ERR(NULL, NULL, "can't load Xft font '%s'", "courier-12");
 
 			continue;
 		}

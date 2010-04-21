@@ -93,10 +93,6 @@ struct conky_window {
 extern int use_xdbe;
 #endif
 
-#ifdef BUILD_XFT
-extern int use_xft;
-#endif
-
 #if defined(BUILD_ARGB) && defined(OWN_WINDOW)
 /* true if use_argb_visual=true and argb visual was found*/
 extern bool have_argb_visual;
@@ -187,6 +183,10 @@ extern priv::colour_setting						 color[10];
 extern priv::colour_setting						 default_color;
 extern priv::colour_setting						 default_shade_color;
 extern priv::colour_setting						 default_outline_color;
+
+#ifdef BUILD_XFT
+extern conky::simple_config_setting<bool>        use_xft;
+#endif
 
 #ifdef OWN_WINDOW
 extern conky::simple_config_setting<bool>        own_window;

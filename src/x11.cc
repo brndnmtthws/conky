@@ -44,7 +44,6 @@
 
 #ifdef BUILD_XFT
 #include <X11/Xft/Xft.h>
-int use_xft = 0;
 #endif
 
 #ifdef BUILD_XDBE
@@ -205,6 +204,10 @@ priv::colour_setting					  color[10] = {
 priv::colour_setting					  default_color("default_color", 0xffffff);
 priv::colour_setting					  default_shade_color("default_shade_color", 0x000000);
 priv::colour_setting					  default_outline_color("default_outline_color", 0x000000);
+
+#ifdef BUILD_XFT
+conky::simple_config_setting<bool>        use_xft("use_xft", false, false);
+#endif
 
 #ifdef OWN_WINDOW
 conky::simple_config_setting<bool>        own_window("own_window", false, false);

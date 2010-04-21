@@ -431,7 +431,7 @@ int calc_text_width(const char *s)
 #ifdef BUILD_X11
 	}
 #ifdef BUILD_XFT
-	if (use_xft) {
+	if (use_xft.get(*state)) {
 		XGlyphInfo gi;
 
 		if (utf8_mode) {
@@ -1191,7 +1191,7 @@ static void draw_string(const char *s)
 #ifdef BUILD_X11
 	if (out_to_x.get(*state)) {
 #ifdef BUILD_XFT
-		if (use_xft) {
+		if (use_xft.get(*state)) {
 			XColor c;
 			XftColor c2;
 
@@ -2185,7 +2185,7 @@ static void main_loop(void)
 #endif
 				XSetRegion(display, window.gc, x11_stuff.region);
 #ifdef BUILD_XFT
-				if (use_xft) {
+				if (use_xft.get(*state)) {
 					XftDrawSetClip(window.xftdraw, x11_stuff.region);
 				}
 #endif
@@ -2925,9 +2925,6 @@ char load_config_file(const char *f)
 		}
 #ifdef BUILD_X11
 #ifdef BUILD_XFT
-		CONF("use_xft") {
-			use_xft = string_to_bool(value);
-		}
 		CONF("font") {
 			if (value) {
 				set_first_font(value);
@@ -2939,13 +2936,8 @@ char load_config_file(const char *f)
 			}
 		}
 		CONF("xftfont") {
-			if (use_xft) {
+			if (use_xft.get(*state)) {
 #else
-		CONF("use_xft") {
-			if (string_to_bool(value)) {
-				NORM_ERR("Xft not enabled at compile time");
-			}
-		}
 		CONF("xftfont") {
 			/* xftfont silently ignored when no Xft */
 		}
