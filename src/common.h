@@ -34,6 +34,8 @@
 #include "text_object.h"
 #include "setting.hh"
 
+char* readfile(const char* filename, int* total_read, char showerror);
+
 void print_to_bytes(struct text_object *, char *, int);
 
 void add_update_callback(void (*func)(void));
@@ -87,6 +89,10 @@ int get_battery_perct(const char *bat);
 double get_battery_perct_bar(struct text_object *);
 void get_battery_short_status(char *buf, unsigned int n, const char *bat);
 
+void scan_no_update(struct text_object *, const char *);
+void print_no_update(struct text_object *, char *, int);
+void free_no_update(struct text_object *);
+
 void scan_loadavg_arg(struct text_object *, const char *);
 void print_loadavg(struct text_object *, char *, int);
 #ifdef BUILD_X11
@@ -114,6 +120,7 @@ double swap_barval(struct text_object *);
 void print_kernel(struct text_object *, char *, int);
 void print_machine(struct text_object *, char *, int);
 void print_nodename(struct text_object *, char *, int);
+void print_nodename_short(struct text_object *, char *, int);
 void print_sysname(struct text_object *, char *, int);
 
 void print_uptime(struct text_object *, char *, int);
@@ -156,4 +163,8 @@ void print_include(struct text_object *, char *, int);
 void print_updates(struct text_object *, char *, int);
 int updatenr_iftest(struct text_object *);
 
+#ifdef BUILD_CURL
+void print_stock(struct text_object *, char *, int);
+void free_stock(struct text_object *);
+#endif /* BUILD_CURL */
 #endif /* _COMMON_H */

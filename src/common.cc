@@ -30,6 +30,7 @@
 
 #include "config.h"
 #include "conky.h"
+#include "core.h"
 #include "fs.h"
 #include "logging.h"
 #include "net_stat.h"
@@ -458,6 +459,25 @@ void print_loadavg(struct text_object *obj, char *p, int p_max_size)
 	}
 }
 
+void scan_no_update(struct text_object *obj, const char *arg)
+{
+	struct text_object subroot;
+
+	obj->data.s = (char*) malloc(text_buffer_size);
+	parse_conky_vars(&subroot, arg, obj->data.s, text_buffer_size);
+	obj->data.s = (char*) realloc(obj->data.s, strlen(obj->data.s) + 1);
+	free_text_objects(&subroot);
+}
+
+void free_no_update(struct text_object *obj) {
+	free(obj->data.s);
+}
+
+void print_no_update(struct text_object *obj, char *p, int p_max_size)
+{
+	snprintf(p, p_max_size, "%s", obj->data.s);
+}
+
 #ifdef BUILD_X11
 void scan_loadgraph_arg(struct text_object *obj, const char *arg)
 {
@@ -565,6 +585,18 @@ void print_nodename(struct text_object *obj, char *p, int p_max_size)
 {
 	(void)obj;
 	snprintf(p, p_max_size, "%s", info.uname_s.nodename);
+}
+
+void print_nodename_short(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	snprintf(p, p_max_size, "%s", info.uname_s.nodename);
+	for(int i=0; p[i] != 0; i++) {
+		if(p[i] == '.') {
+			p[i] = 0;
+			break;
+		}
+	}
 }
 
 void print_sysname(struct text_object *obj, char *p, int p_max_size)
@@ -786,6 +818,22 @@ void print_include(struct text_object *obj, char *p, int p_max_size)
 	generate_text_internal(&(buf[0]), max_user_text, *obj->sub);
 	snprintf(p, p_max_size, "%s", &(buf[0]));
 }
+
+#ifdef BUILD_CURL
+void print_stock(struct text_object *obj, char *p, int p_max_size)
+{
+	if( ! obj->data.s) {
+		p[0] = 0;
+		return;
+	}
+	ccurl_process_info(p, p_max_size, obj->data.s, 0);
+}
+
+void free_stock(struct text_object *obj)
+{
+	free(obj->data.s);
+}
+#endif /* BUILD_CURL */
 
 void print_to_bytes(struct text_object *obj, char *p, int p_max_size)
 {

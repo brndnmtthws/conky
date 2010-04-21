@@ -42,6 +42,9 @@
 #include "i8k.h"
 #include "imlib2.h"
 #include "proc.h"
+#ifdef BUILD_MYSQL
+#include "mysql.h"
+#endif
 #ifdef BUILD_X11
 #include "fonts.h"
 #endif
@@ -64,7 +67,7 @@
 #ifdef BUILD_NVIDIA
 #include "nvidia.h"
 #endif
-#include "read_tcp.h"
+#include "read_tcpip.h"
 #include "scroll.h"
 #include "specials.h"
 #include "temphelper.h"
@@ -135,6 +138,31 @@ static struct text_object *create_plain_text(const char *s)
 	return obj;
 }
 
+#ifdef BUILD_CURL
+void stock_parse_arg(struct text_object *obj, const char *arg)
+{
+	char stock[8];
+	char data[8];
+
+	obj->data.s = NULL;
+	if(sscanf(arg, "%7s %7s", stock, data) != 2) {
+		NORM_ERR("wrong number of arguments for $stock");
+		return;
+	}
+	if(!strcasecmp("ask", data)) strcpy(data, "a");
+	else if(!strcasecmp("adv", data)) strcpy(data, "a2");
+	else if(!strcasecmp("asksize", data)) strcpy(data, "a5");
+	else if(!strcasecmp("bid", data)) strcpy(data, "b");
+	else {
+		NORM_ERR("\"%s\" is not supported by $stock. Supported: adv,ask,asksize,bid", data);
+		return;
+	}
+#define MAX_FINYAH_URL_LENGTH 64
+	obj->data.s = (char*) malloc(MAX_FINYAH_URL_LENGTH);
+	snprintf(obj->data.s, MAX_FINYAH_URL_LENGTH, "http://download.finance.yahoo.com/d/quotes.csv?s=%s&f=%s", stock, data);
+}
+#endif /* BUILD_CURL */
+
 /* construct_text_object() creates a new text_object */
 struct text_object *construct_text_object(char *s, const char *arg, long
 		line, void **ifblock_opaque, void *free_at_crash)
@@ -148,7 +176,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 #define __OBJ_HEAD(a, n) if (!strcmp(s, #a)) { \
 	add_update_callback(n);
 #define __OBJ_IF obj_be_ifblock_if(ifblock_opaque, obj)
-#define __OBJ_ARG(...) if (!arg) { CRIT_ERR(obj, free_at_crash, __VA_ARGS__); }
+#define __OBJ_ARG(...) if (!arg) { free(s); CRIT_ERR(obj, free_at_crash, __VA_ARGS__); }
 
 /* defines to be used below */
 #define OBJ(a, n) __OBJ_HEAD(a, n) {
@@ -183,9 +211,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 			NORM_ERR("acpiacadapter: arg is only used on linux");
 #endif
 		}
-		if(! obj->data.opaque)
-			obj->data.opaque = strdup("AC");
-		
 		obj->callbacks.print = &print_acpiacadapter;
 		obj->callbacks.free = &gen_free_opaque;
 #endif /* !__OpenBSD__ */
@@ -212,9 +237,13 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		}
 		obj->callbacks.print = &print_freq_g;
 	END OBJ_ARG(read_tcp, 0, "read_tcp: Needs \"(host) port\" as argument(s)")
-		parse_read_tcp_arg(obj, arg, free_at_crash);
+		parse_read_tcpip_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_read_tcp;
-		obj->callbacks.free = &free_read_tcp;
+		obj->callbacks.free = &free_read_tcpip;
+	END OBJ_ARG(read_udp, 0, "read_udp: Needs \"(host) port\" as argument(s)")
+		parse_read_tcpip_arg(obj, arg, free_at_crash);
+		obj->callbacks.print = &print_read_udp;
+		obj->callbacks.free = &free_read_tcpip;
 #if defined(__linux__)
 	END OBJ(voltage_mv, 0)
 		get_cpu_count();
@@ -318,11 +347,11 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 	END OBJ(battery_bar, 0)
 		char bat[64];
 		if (arg) {
-			arg = scan_bar(obj, arg, 100);
 			sscanf(arg, "%63s", bat);
 		} else {
 			strcpy(bat, "BAT0");
 		}
+		scan_bar(obj, bat, 100);
 		obj->data.s = strndup(bat, text_buffer_size);
 		obj->callbacks.barval = &get_battery_perct_bar;
 		obj->callbacks.free = &gen_free_opaque;
@@ -579,6 +608,16 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.print = &print_image_callback;
 		obj->callbacks.free = &gen_free_opaque;
 #endif /* BUILD_IMLIB2 */
+#ifdef BUILD_MYSQL
+	END OBJ_ARG(mysql, 0, "mysql needs a query")
+		obj->data.s = strdup(arg);
+		obj->callbacks.print = &print_mysql;
+		obj->callbacks.free = &free_mysql;
+#endif /* BUILD_MYSQL */
+	END OBJ_ARG(no_update, 0, "no_update needs arguments")
+		scan_no_update(obj, arg);
+		obj->callbacks.print = &print_no_update;
+		obj->callbacks.free = &free_no_update;
 	END OBJ(exec, 0)
 		scan_exec_arg(obj, arg);
 		obj->parse = false;
@@ -905,6 +944,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.print = &print_format_time;
 	END OBJ(nodename, 0)
 		obj->callbacks.print = &print_nodename;
+	END OBJ(nodename_short, 0)
+		obj->callbacks.print = &print_nodename_short;
 	END OBJ_ARG(cmdline_to_pid, 0, "cmdline_to_pid needs a command line as argument")
 		scan_cmdline_to_pid_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_cmdline_to_pid;
@@ -1038,6 +1079,8 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 	END OBJ(processes, &update_total_processes)
 		obj->callbacks.print = &print_processes;
 #ifdef __linux__
+	END OBJ(distribution, 0)
+		obj->callbacks.print = &print_distribution;
 	END OBJ(running_processes, &update_top)
 		top_running = 1;
 		obj->callbacks.print = &print_running_processes;
@@ -1565,6 +1608,12 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->sub = (text_object*)malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
 		obj->callbacks.print = &print_to_bytes;
+#ifdef BUILD_CURL
+	END OBJ_ARG(stock, 0, "stock needs arguments")
+		stock_parse_arg(obj, arg);
+		obj->callbacks.print = &print_stock;
+		obj->callbacks.free = &free_stock;
+#endif /* BUILD_CURL */
 	END OBJ(scroll, 0)
 #ifdef BUILD_X11
 		/* allocate a follower to reset any color changes */
@@ -1630,7 +1679,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 	END {
 		char *buf = (char *)malloc(text_buffer_size);
 
-		NORM_ERR("unknown variable %s", s);
+		NORM_ERR("unknown variable '$%s'", s);
 		snprintf(buf, text_buffer_size, "${%s}", s);
 		obj_be_plain_text(obj, buf);
 		free(buf);
@@ -1819,7 +1868,7 @@ int extract_variable_text_internal(struct text_object *retval, const char *const
 			strfold(p, 1);
 		} else if (*p == '#') {
 			char c;
-			if (remove_comment(p, &c) && p > orig_p && c == '\n') {
+			if (remove_comment(p, &c) && p >= orig_p && c == '\n') {
 				/* if remove_comment removed a newline, we need to 'back up' with p */
 				p--;
 			}

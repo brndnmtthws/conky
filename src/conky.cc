@@ -99,6 +99,9 @@
 #include "template.h"
 #include "timeinfo.h"
 #include "top.h"
+#ifdef BUILD_MYSQL
+#include "mysql.h"
+#endif /* BUILD_MYSQL */
 
 #include "lua-config.hh"
 #include "setting.hh"
@@ -322,6 +325,8 @@ struct information info;
 
 /* path to config file */
 std::string current_config;
+
+bool stdinconfig = false;
 
 /* set to 1 if you want all text to be in uppercase */
 static conky::simple_config_setting<bool> stuff_in_uppercase("uppercase", false, true);
@@ -857,6 +862,7 @@ int get_string_width(const char *s)
 static int get_string_width_special(char *s, int special_index)
 {
 	char *p, *final;
+	special_t *current = specials;
 	int idx = 1;
 	int width = 0;
 	long i;
@@ -870,6 +876,11 @@ static int get_string_width_special(char *s, int special_index)
 	p = strndup(s, text_buffer_size);
 	final = p;
 
+	for(i = 0; i < special_index; i++)
+		current = current->next;
+	for(i = 0; i < idx; i++)
+		current = current->next;
+
 	while (*p) {
 		if (*p == SPECIAL_CHAR) {
 			/* shift everything over by 1 so that the special char
@@ -877,12 +888,13 @@ static int get_string_width_special(char *s, int special_index)
 			for (i = 0; i < (long)strlen(p); i++) {
 				*(p + i) = *(p + i + 1);
 			}
-			if (specials[special_index + idx].type == GRAPH
-					|| specials[special_index + idx].type == GAUGE
-					|| specials[special_index + idx].type == BAR) {
-				width += specials[special_index + idx].width;
+			if (current->type == GRAPH
+					|| current->type == GAUGE
+					|| current->type == BAR) {
+				width += current->width;
 			}
 			idx++;
+			current = current->next;
 		} else if (*p == SECRIT_MULTILINE_CHAR) {
 			*p = 0;
 			break;
@@ -966,10 +978,12 @@ static void update_text_area(void)
 	if (own_window.get(*state) && !fixed_pos) {
 		x += workarea[0];
 		y += workarea[1];
-		text_start_x = window.border_inner_margin + window.border_outer_margin + window.border_width;
-		text_start_y = window.border_inner_margin + window.border_outer_margin + window.border_width;
-		window.x = x - window.border_inner_margin - window.border_outer_margin - window.border_width;
-		window.y = y - window.border_inner_margin - window.border_outer_margin - window.border_width;
+
+		long border_total = window.border_inner_margin
+						+ window.border_outer_margin + window.border_width;
+		text_start_x = text_start_y = border_total;
+		window.x = x - border_total;
+		window.y = y - border_total;
 	} else
 #endif
 	{
@@ -1005,6 +1019,10 @@ static int text_size_updater(char *s, int special_index)
 	int lw;
 	int contain_SECRIT_MULTILINE_CHAR = 0;
 	char *p;
+	special_t *current = specials;
+
+	for(int i = 0; i < special_index; i++)
+		current = current->next;
 
 	if (not out_to_x.get(*state))
 		return 0;
@@ -1016,40 +1034,41 @@ static int text_size_updater(char *s, int special_index)
 			w += get_string_width(s);
 			*p = SPECIAL_CHAR;
 
-			if (specials[special_index].type == BAR
-					|| specials[special_index].type == GAUGE
-					|| specials[special_index].type == GRAPH) {
-				w += specials[special_index].width;
-				if (specials[special_index].height > last_font_height) {
-					last_font_height = specials[special_index].height;
+			if (current->type == BAR
+					|| current->type == GAUGE
+					|| current->type == GRAPH) {
+				w += current->width;
+				if (current->height > last_font_height) {
+					last_font_height = current->height;
 					last_font_height += font_height();
 				}
-			} else if (specials[special_index].type == OFFSET) {
-				if (specials[special_index].arg > 0) {
-					w += specials[special_index].arg;
+			} else if (current->type == OFFSET) {
+				if (current->arg > 0) {
+					w += current->arg;
 				}
-			} else if (specials[special_index].type == VOFFSET) {
-				last_font_height += specials[special_index].arg;
-			} else if (specials[special_index].type == GOTO) {
-				if (specials[special_index].arg > cur_x) {
-					w = (int) specials[special_index].arg;
+			} else if (current->type == VOFFSET) {
+				last_font_height += current->arg;
+			} else if (current->type == GOTO) {
+				if (current->arg > cur_x) {
+					w = (int) current->arg;
 				}
-			} else if (specials[special_index].type == TAB) {
-				int start = specials[special_index].arg;
-				int step = specials[special_index].width;
+			} else if (current->type == TAB) {
+				int start = current->arg;
+				int step = current->width;
 
 				if (!step || step < 0) {
 					step = 10;
 				}
 				w += step - (cur_x - text_start_x - start) % step;
-			} else if (specials[special_index].type == FONT) {
-				selected_font = specials[special_index].font_added;
+			} else if (current->type == FONT) {
+				selected_font = current->font_added;
 				if (font_height() > last_font_height) {
 					last_font_height = font_height();
 				}
 			}
 
 			special_index++;
+			current = current->next;
 			s = p + 1;
 		} else if (*p == SECRIT_MULTILINE_CHAR) {
 			contain_SECRIT_MULTILINE_CHAR = 1;
@@ -1265,11 +1284,14 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 				s = p + 1;
 			}
 			/* draw special */
-			switch (specials[special_index].type) {
+			special_t *current = specials;
+			for(int i = 0; i < special_index; i++)
+				current = current->next;
+			switch (current->type) {
 #ifdef BUILD_X11
 				case HORIZONTAL_LINE:
 				{
-					int h = specials[special_index].height;
+					int h = current->height;
 					int mid = font_ascent() / 2;
 
 					w = text_start_x + text_width - cur_x;
@@ -1283,8 +1305,8 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 
 				case STIPPLED_HR:
 				{
-					int h = specials[special_index].height;
-					char tmp_s = specials[special_index].arg;
+					int h = current->height;
+					char tmp_s = current->arg;
 					int mid = font_ascent() / 2;
 					char ss[2] = { tmp_s, tmp_s };
 
@@ -1305,15 +1327,15 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 							&& maximum_width > 0) {
 						break;
 					}
-					h = specials[special_index].height;
-					bar_usage = specials[special_index].arg;
-					scale = specials[special_index].scale;
+					h = current->height;
+					bar_usage = current->arg;
+					scale = current->scale;
 					by = cur_y - (font_ascent() / 2) - 1;
 
 					if (h < font_h) {
 						by -= h / 2 - 1;
 					}
-					w = specials[special_index].width;
+					w = current->width;
 					if (w == 0) {
 						w = text_start_x + text_width - cur_x - 1;
 					}
@@ -1349,13 +1371,13 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						break;
 					}
 
-					h = specials[special_index].height;
+					h = current->height;
 					by = cur_y - (font_ascent() / 2) - 1;
 
 					if (h < font_h) {
 						by -= h / 2 - 1;
 					}
-					w = specials[special_index].width;
+					w = current->width;
 					if (w == 0) {
 						w = text_start_x + text_width - cur_x - 1;
 					}
@@ -1370,8 +1392,8 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 							cur_x, by, w, h * 2, 0, 180*64);
 
 #ifdef MATH
-					usage = specials[special_index].arg;
-					scale = specials[special_index].scale;
+					usage = current->arg;
+					scale = current->scale;
 					angle = M_PI * usage / scale;
 					px = (float)(cur_x+(w/2.))-(float)(w/2.)*cos(angle);
 					py = (float)(by+(h))-(float)(h)*sin(angle);
@@ -1401,13 +1423,13 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 							&& maximum_width > 0) {
 						break;
 					}
-					h = specials[special_index].height;
+					h = current->height;
 					by = cur_y - (font_ascent() / 2) - 1;
 
 					if (h < font_h) {
 						by -= h / 2 - 1;
 					}
-					w = specials[special_index].width;
+					w = current->width;
 					if (w == 0) {
 						w = text_start_x + text_width - cur_x - 1;
 					}
@@ -1423,37 +1445,37 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					XSetLineAttributes(display, window.gc, 1, LineSolid,
 						CapButt, JoinMiter);
 
-					if (specials[special_index].last_colour != 0
-							|| specials[special_index].first_colour != 0) {
-						tmpcolour = do_gradient(w - 1, specials[special_index].last_colour, specials[special_index].first_colour);
+					if (current->last_colour != 0
+							|| current->first_colour != 0) {
+						tmpcolour = do_gradient(w - 1, current->last_colour, current->first_colour);
 					}
 					colour_idx = 0;
 					for (i = w - 2; i > -1; i--) {
-						if (specials[special_index].last_colour != 0
-								|| specials[special_index].first_colour != 0) {
-							if (specials[special_index].tempgrad) {
+						if (current->last_colour != 0
+								|| current->first_colour != 0) {
+							if (current->tempgrad) {
 #ifdef DEBUG_lol
 								assert(
-										(int)((float)(w - 2) - specials[special_index].graph[j] *
-											(w - 2) / (float)specials[special_index].scale)
+										(int)((float)(w - 2) - current->graph[j] *
+											(w - 2) / (float)current->scale)
 										< w - 1
 									  );
 								assert(
-										(int)((float)(w - 2) - specials[special_index].graph[j] *
-											(w - 2) / (float)specials[special_index].scale)
+										(int)((float)(w - 2) - current->graph[j] *
+											(w - 2) / (float)current->scale)
 										> -1
 									  );
-								if (specials[special_index].graph[j] == specials[special_index].scale) {
+								if (current->graph[j] == current->scale) {
 									assert(
-											(int)((float)(w - 2) - specials[special_index].graph[j] *
-												(w - 2) / (float)specials[special_index].scale)
+											(int)((float)(w - 2) - current->graph[j] *
+												(w - 2) / (float)current->scale)
 											== 0
 										  );
 								}
 #endif /* DEBUG_lol */
 								XSetForeground(display, window.gc, tmpcolour[
-										(int)((float)(w - 2) - specials[special_index].graph[j] *
-											(w - 2) / (float)specials[special_index].scale)
+										(int)((float)(w - 2) - current->graph[j] *
+											(w - 2) / (float)current->scale)
 										]);
 							} else {
 								XSetForeground(display, window.gc, tmpcolour[colour_idx++]);
@@ -1462,10 +1484,10 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						/* this is mugfugly, but it works */
 						XDrawLine(display, window.drawable, window.gc,
 								cur_x + i + 1, by + h, cur_x + i + 1,
-								round_to_int((double)by + h - specials[special_index].graph[j] *
-									(h - 1) / specials[special_index].scale));
+								round_to_int((double)by + h - current->graph[j] *
+									(h - 1) / current->scale));
 						if ((w - i) / ((float) (w - 2) /
-									(specials[special_index].graph_width)) > j
+									(current->graph_width)) > j
 								&& j < MAX_GRAPH_DEPTH - 3) {
 							j++;
 						}
@@ -1519,16 +1541,16 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						cur_y = tmp_y;
 					}
 #ifdef MATH
-					if (show_graph_scale.get(*state) && (specials[special_index].show_scale == 1)) {
+					if (show_graph_scale.get(*state) && (current->show_scale == 1)) {
 						int tmp_x = cur_x;
 						int tmp_y = cur_y;
 						char *tmp_str;
 						cur_x += font_ascent() / 2;
 						cur_y += font_h / 2;
 						tmp_str = (char *)
-							calloc(log10(floor(specials[special_index].scale)) + 4,
+							calloc(log10(floor(current->scale)) + 4,
 									sizeof(char));
-						sprintf(tmp_str, "%.1f", specials[special_index].scale);
+						sprintf(tmp_str, "%.1f", current->scale);
 						draw_string(tmp_str);
 						free(tmp_str);
 						cur_x = tmp_x;
@@ -1544,7 +1566,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					int old = font_ascent();
 
 					cur_y -= font_ascent();
-					selected_font = specials[special_index].font_added;
+					selected_font = current->font_added;
 					set_font();
 					if (cur_y + font_ascent() < cur_y + old) {
 						cur_y += old;
@@ -1557,43 +1579,43 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 #endif /* BUILD_X11 */
 				case FG:
 					if (draw_mode == FG) {
-						set_foreground_color(specials[special_index].arg);
+						set_foreground_color(current->arg);
 					}
 					break;
 
 #ifdef BUILD_X11
 				case BG:
 					if (draw_mode == BG) {
-						set_foreground_color(specials[special_index].arg);
+						set_foreground_color(current->arg);
 					}
 					break;
 
 				case OUTLINE:
 					if (draw_mode == OUTLINE) {
-						set_foreground_color(specials[special_index].arg);
+						set_foreground_color(current->arg);
 					}
 					break;
 
 				case OFFSET:
-					w += specials[special_index].arg;
+					w += current->arg;
 					last_special_needed = special_index;
 					break;
 
 				case VOFFSET:
-					cur_y += specials[special_index].arg;
+					cur_y += current->arg;
 					break;
 
 				case GOTO:
-					if (specials[special_index].arg >= 0) {
-						cur_x = (int) specials[special_index].arg;
+					if (current->arg >= 0) {
+						cur_x = (int) current->arg;
 					}
 					last_special_needed = special_index;
 					break;
 
 				case TAB:
 				{
-					int start = specials[special_index].arg;
-					int step = specials[special_index].width;
+					int start = current->arg;
+					int step = current->width;
 
 					if (!step || step < 0) {
 						step = 10;
@@ -1612,13 +1634,13 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 
 					/* printf("pos_x %i text_start_x %i text_width %i cur_x %i "
 						"get_string_width(p) %i gap_x %i "
-						"specials[special_index].arg %i window.border_inner_margin %i "
+						"current->arg %i window.border_inner_margin %i "
 						"window.border_width %i\n", pos_x, text_start_x, text_width,
 						cur_x, get_string_width_special(s), gap_x,
-						specials[special_index].arg, window.border_inner_margin,
+						current->arg, window.border_inner_margin,
 						window.border_width); */
-					if (pos_x > specials[special_index].arg && pos_x > cur_x) {
-						cur_x = pos_x - specials[special_index].arg;
+					if (pos_x > current->arg && pos_x > cur_x) {
+						cur_x = pos_x - current->arg;
 					}
 					last_special_needed = special_index;
 					break;
@@ -1634,11 +1656,11 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 
 					/* printf("pos_x %i text_start_x %i text_width %i cur_x %i "
 						"get_string_width(p) %i gap_x %i "
-						"specials[special_index].arg %i\n", pos_x, text_start_x,
+						"current->arg %i\n", pos_x, text_start_x,
 						text_width, cur_x, get_string_width(s), gap_x,
-						specials[special_index].arg); */
-					if (pos_x > specials[special_index].arg) {
-						w = pos_x - specials[special_index].arg;
+						current->arg); */
+					if (pos_x > current->arg) {
+						w = pos_x - current->arg;
 					}
 					last_special_needed = special_index;
 					break;
@@ -1818,10 +1840,12 @@ static void clear_text(int exposures)
 #endif
 	if (display && window.window) { // make sure these are !null
 		/* there is some extra space for borders and outlines */
-		XClearArea(display, window.window, text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width,
-			text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width,
-			text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
-			text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, exposures ? True : 0);
+		long border_total = window.border_inner_margin
+						+ window.border_outer_margin + window.border_width;
+
+		XClearArea(display, window.window, text_start_x - border_total, 
+			text_start_y - border_total, text_width + 2*border_total,
+			text_height + 2*border_total, exposures ? True : 0);
 	}
 }
 #endif /* BUILD_X11 */
@@ -1938,16 +1962,21 @@ static void main_loop(void)
 				need_to_update = 0;
 				selected_font = 0;
 				update_text_area();
+
+#if defined(OWN_WINDOW) || defined(BUILD_XDBE)
+				long border_total = window.border_inner_margin
+							+ window.border_outer_margin + window.border_width;
+#endif
 #ifdef OWN_WINDOW
 				if (own_window.get(*state)) {
 					int changed = 0;
 
 					/* resize window if it isn't right size */
 					if (!fixed_size
-							&& (text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2 != window.width
-								|| text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2 != window.height)) {
-						window.width = text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
-						window.height = text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
+							&& (text_width + 2*border_total != window.width
+								|| text_height + 2*border_total != window.height)) {
+						window.width = text_width + 2*border_total;
+						window.height = text_height + 2*border_total;
 						draw_stuff(); /* redraw everything in our newly sized window */
 						XResizeWindow(display, window.window, window.width,
 								window.height); /* resize window */
@@ -2017,10 +2046,10 @@ static void main_loop(void)
 				if (use_xdbe) {
 					XRectangle r;
 
-					r.x = text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width;
-					r.y = text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width;
-					r.width = text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
-					r.height = text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
+					r.x = text_start_x - border_total;
+					r.y = text_start_y - border_total;
+					r.width = text_width + 2*border_total;
+					r.height = text_height + 2*border_total;
 					XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
 				}
 #endif
@@ -2176,10 +2205,12 @@ static void main_loop(void)
 				if (use_xdbe) {
 					XRectangle r;
 
-					r.x = text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width;
-					r.y = text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width;
-					r.width = text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
-					r.height = text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2;
+					long border_total = window.border_inner_margin
+									+ window.border_outer_margin + window.border_width;
+					r.x = text_start_x - border_total;
+					r.y = text_start_y - border_total;
+					r.width = text_width + 2*border_total;
+					r.height = text_height + 2*border_total;
 					XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
 				}
 #endif
@@ -2329,10 +2360,41 @@ static void reload_config(void)
 	initialisation(argc_copy, argv_copy);
 }
 
+#ifdef BUILD_X11
+void clean_up_x11() {
+	if(window_created == 1) {
+		long border_total = window.border_inner_margin
+							+ window.border_outer_margin + window.border_width;
+		XClearArea(display, window.window, text_start_x - border_total,
+			text_start_y - border_total, text_width + 2*border_total,
+			text_height + 2*border_total, 0);
+	}
+	destroy_window();
+	free_fonts();
+	if(x11_stuff.region) {
+		XDestroyRegion(x11_stuff.region);
+		x11_stuff.region = NULL;
+	}
+	if(display) {
+		XCloseDisplay(display);
+		display = NULL;
+	}
+	x_initialised = NO;
+}
+#endif
+
+void free_specials(special_t *current) {
+	if (current) {
+		free_specials(current->next);
+		if(current->type == GRAPH)
+			free(current->graph);
+		delete current;
+		current = NULL;
+	}
+}
+
 void clean_up(void *memtofree1, void* memtofree2)
 {
-	int i;
-
 	free_update_callbacks();
 
 #ifdef BUILD_NCURSES
@@ -2349,19 +2411,7 @@ void clean_up(void *memtofree1, void* memtofree2)
 	free_and_zero(info.cpu_usage);
 #ifdef BUILD_X11
 	if (x_initialised == YES) {
-		if(window_created == 1) {
-			XClearArea(display, window.window, text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width,
-				text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width,
-				text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
-				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2, 0);
-		}
-		destroy_window();
-		free_fonts();
-		if(x11_stuff.region) {
-			XDestroyRegion(x11_stuff.region);
-			x11_stuff.region = NULL;
-		}
-		x_initialised = NO;
+		clean_up_x11();
 	}else{
 		free(fonts);	//in set_default_configurations a font is set but not loaded
 		font_count = -1;
@@ -2406,14 +2456,7 @@ void clean_up(void *memtofree1, void* memtofree2)
 	xmlCleanupParser();
 #endif /* BUILD_WEATHER_XOAP */
 
-	if (specials) {
-		for (i = 0; i < special_count; i++) {
-			if (specials[i].type == GRAPH) {
-				free(specials[i].graph);
-			}
-		}
-		free_and_zero(specials);
-	}
+	free_specials(specials);
 
 	clear_net_stats();
 	clear_diskio_stats();
@@ -2490,6 +2533,13 @@ static void set_default_configurations(void)
 		mpd_set_port("6600");
 	}
 #endif /* BUILD_MPD */
+#ifdef BUILD_MYSQL
+	mysql_settings.host = NULL;
+	mysql_settings.port = 0;
+	mysql_settings.user = NULL;
+	mysql_settings.password = NULL;
+	mysql_settings.db = NULL;
+#endif /* BUILD_MYSQL */
 #ifdef BUILD_XMMS2
 	info.xmms2.artist = NULL;
 	info.xmms2.album = NULL;
@@ -2565,16 +2615,12 @@ static bool append_works(const char *path)
 }
 
 #ifdef BUILD_X11
-static char **xargv = 0;
-static int xargc = 0;
-
 static void X11_create_window(void)
 {
 	if (out_to_x.get(*state)) {
 		init_window(text_width + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
 				text_height + window.border_inner_margin * 2 + window.border_outer_margin * 2 + window.border_width * 2,
-				xargv, xargc);
-
+				argv_copy, argc_copy);
 		setup_fonts();
 		load_fonts();
 		update_text_area();	/* to position text/window on screen */
@@ -2821,6 +2867,43 @@ char load_config_file(const char *f)
 			}
 		}
 #endif /* BUILD_MPD */
+#ifdef BUILD_MYSQL
+		CONF("mysql_host") {
+			if (value) {
+				mysql_set_host(value);
+			} else {
+				CONF_ERR;
+			}
+		}
+		CONF("mysql_port") {
+			if (value) {
+				mysql_set_port(value);
+			} else {
+				CONF_ERR;
+			}
+		}
+		CONF("mysql_user") {
+			if (value) {
+				mysql_set_user(value);
+			} else {
+				CONF_ERR;
+			}
+		}
+		CONF("mysql_password") {
+			if (value) {
+				mysql_set_password(value);
+			} else {
+				CONF_ERR;
+			}
+		}
+		CONF("mysql_db") {
+			if (value) {
+				mysql_set_db(value);
+			} else {
+				CONF_ERR;
+			}
+		}
+#endif /* BUILD_MYSQL */
 		CONF("music_player_interval") {
 			if (value) {
 				info.music_player_interval = strtod(value, 0);
@@ -3068,13 +3151,6 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-		CONF("max_specials") {
-			if (value) {
-				max_specials = atoi(value);
-			} else {
-				CONF_ERR;
-			}
-		}
 		CONF("max_user_text") {
 			if (value) {
 				max_user_text = atoi(value);
@@ -3281,6 +3357,7 @@ static void print_help(const char *prog_name) {
 			"   -y Y                      y position\n"
 #endif /* BUILD_X11 */
 			"   -s, --for-scripts=TEXT    render TEXT on stdout and exit, enclose TEXT by single quotes\n"
+			"   -S, --stdin-config        read configuration from stdin\n"
 			"   -t, --text=TEXT           text to render, remember single quotes, like -t '$uptime'\n"
 			"   -u, --interval=SECS       update interval\n"
 			"   -i COUNT                  number of times to update "PACKAGE_NAME" (and quit)\n"
@@ -3299,7 +3376,7 @@ inline void reset_optind() {
 }
 
 /* : means that character before that takes an argument */
-static const char *getopt_string = "vVqdDs:t:u:i:hc:p:"
+static const char *getopt_string = "vVqdDSs:t:u:i:hc:p:"
 #ifdef BUILD_X11
 	"x:y:w:a:f:X:"
 #ifdef OWN_WINDOW
@@ -3337,6 +3414,7 @@ static const struct option longopts[] = {
 	{ "window-id", 1, NULL, 'w' },
 #endif /* BUILD_X11 */
 	{ "for-scripts", 1, NULL, 's' },
+	{ "stdin-config", 0, NULL, 'S' },
 	{ "text", 1, NULL, 't' },
 	{ "interval", 1, NULL, 'u' },
 	{ "pause", 1, NULL, 'p' },
@@ -3344,8 +3422,13 @@ static const struct option longopts[] = {
 };
 
 void set_current_config() {
-	/* check if specified config file is valid */
-	if (not current_config.empty()) {
+	/* set configfile to stdin if that's requested or check if specified config file is valid */
+	if(stdinconfig) {
+		char mystdin[32];
+#define CONKYSTDIN "/proc/%u/fd/0"
+		sprintf(mystdin, CONKYSTDIN, getpid());
+		current_config = mystdin;
+	} else if (not current_config.empty()) {
 		struct stat sb;
 		if (stat(current_config.c_str(), &sb) ||
 				(!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
@@ -3412,11 +3495,6 @@ void initialisation(int argc, char **argv) {
 		set_current_config();
 		load_config_file(current_config.c_str());
 		currentconffile = conftree_add(currentconffile, current_config.c_str());
-	}
-
-	/* init specials array */
-	if ((specials = (special_t*)calloc(sizeof(struct special_t), max_specials)) == 0) {
-		NORM_ERR("failed to create specials array");
 	}
 
 #ifdef MAIL_FILE
@@ -3558,8 +3636,6 @@ void initialisation(int argc, char **argv) {
 	memset(tmpstring2, 0, text_buffer_size);
 
 #ifdef BUILD_X11
-	xargc = argc;
-	xargv = argv;
 	X11_create_window();
 #endif /* BUILD_X11 */
 #ifdef BUILD_LUA
@@ -3643,6 +3719,9 @@ int main(int argc, char **argv)
 				print_version(); /* doesn't return */
 			case 'c':
 				current_config = optarg;
+				break;
+			case 'S':
+				stdinconfig = true;
 				break;
 			case 'q':
 				if (!freopen("/dev/null", "w", stderr))
@@ -3743,7 +3822,13 @@ int main(int argc, char **argv)
 #endif /* BUILD_WEATHER_XOAP */
 
 #ifdef HAVE_SYS_INOTIFY_H
-	inotify_fd = inotify_init1(IN_NONBLOCK);
+	inotify_fd = inotify_init();
+	if(inotify_fd != -1) {
+		int fl;
+
+		fl = fcntl(inotify_fd, F_GETFL);
+		fcntl(inotify_fd, F_SETFL, fl | O_NONBLOCK);
+	}
 #endif /* HAVE_SYS_INOTIFY_H */
 
 	initialisation(argc, argv);

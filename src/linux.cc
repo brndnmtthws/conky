@@ -1353,6 +1353,8 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
 
    Update: it seems the folder name is hardware-dependent. We add an aditional adapter
    argument, specifying the folder name.
+
+   Update: on some systems it's /sys/class/power_supply/ADP1 instead of /sys/class/power_supply/AC
 */
 
 void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size, const char *adapter)
@@ -1361,14 +1363,20 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size, const
 
 	char buf[256];
 	char buf2[256];
+	struct stat sb;
 	FILE *fp;
 
 	if (!p_client_buffer || client_buffer_size <= 0) {
 		return;
 	}
 
-	snprintf(buf2, sizeof(buf2), "%s/%s/uevent", SYSFS_AC_ADAPTER_DIR, adapter);
-	fp = open_file(buf2, &rep);
+	if(adapter)
+		snprintf(buf2, sizeof(buf2), "%s/%s/uevent", SYSFS_AC_ADAPTER_DIR, adapter);
+	else{
+		snprintf(buf2, sizeof(buf2), "%s/AC/uevent", SYSFS_AC_ADAPTER_DIR);
+		if(stat(buf2, &sb) == -1) snprintf(buf2, sizeof(buf2), "%s/ADP1/uevent", SYSFS_AC_ADAPTER_DIR);
+	}
+	if(stat(buf2, &sb) == 0) fp = open_file(buf2, &rep); else fp = 0;
 	if (fp) {
 		/* sysfs processing */
 		while (!feof(fp)) {
@@ -2363,3 +2371,39 @@ void update_diskio(void)
 	update_diskio_values(&stats, total_reads, total_writes);
 	fclose(fp);
 }
+
+void print_distribution(struct text_object *obj, char *p, int p_max_size)
+{
+	(void)obj;
+	int i, bytes_read;
+	char* buf;
+	struct stat sb;
+
+	if(stat("/etc/arch-release", &sb) == 0) {
+		snprintf(p, p_max_size, "Arch Linux");
+		return;
+	}
+	snprintf(p, p_max_size, "Unknown");
+	buf = readfile("/proc/version", &bytes_read, 1);
+	if(buf) {
+		/* I am assuming the distribution name is the first string in /proc/version that:
+		- is preceded by a '('
+		- starts with a capital
+		- is followed by a space and a number
+		but i am not sure if this is always true... */
+		for(i=1; i<bytes_read; i++) {
+			if(buf[i-1] == '(' && buf[i] >= 'A' && buf[i] <= 'Z') break;
+		}
+		if(i < bytes_read) {
+			snprintf(p, p_max_size, "%s", &buf[i]);
+			for(i=1; p[i]; i++) {
+				if(p[i-1] == ' ' && p[i] >= '0' && p[i] <= '9') {
+					p[i-1] = 0;
+					break;
+				}
+			}
+		}
+		free(buf);
+	}
+}
+

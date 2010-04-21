@@ -36,7 +36,7 @@ endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build.h)
 
 set(conky_sources colours.cc combine.cc common.cc conky.cc core.cc
 	diskio.cc entropy.cc exec.cc fs.cc mail.cc mixer.cc net_stat.cc template.cc
-	mboxscan.cc read_tcp.cc scroll.cc specials.cc tailhead.cc
+	mboxscan.cc read_tcpip.cc scroll.cc specials.cc tailhead.cc
 	temphelper.cc text_object.cc timeinfo.cc top.cc algebra.cc prioqueue.cc proc.cc
 	user.cc luamm.cc data-source.cc lua-config.cc setting.cc)
 
@@ -92,6 +92,11 @@ if(BUILD_MPD)
 	set(mpd mpd.cc libmpdclient.cc)
 	set(optional_sources ${optional_sources} ${mpd})
 endif(BUILD_MPD)
+
+if(BUILD_MYSQL)
+	set(mysql mysql.cc)
+	set(optional_sources ${optional_sources} ${mysql})
+endif(BUILD_MYSQL)
 
 if(BUILD_MOC)
 	set(moc moc.cc)

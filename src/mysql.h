@@ -1,15 +1,10 @@
-/* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
- * vim: ts=4 sw=4 noet ai cindent syntax=c
+/* -*- mode: c++; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Conky, a system monitor, based on torsmo
  *
- * Any original torsmo code is licensed under the BSD license
- *
- * All code written since the fork of torsmo is licensed under the GPL
- *
  * Please see COPYING for details
  *
- * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
  * Copyright (c) 2005-2010 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
@@ -28,11 +23,26 @@
  *
  */
 
-#ifndef _READ_TCP_H
-#define _READ_TCP_H
+#ifndef MYSQL_H_
+#define MYSQL_H_
 
-void parse_read_tcp_arg(struct text_object *, const char *, void *);
-void print_read_tcp(struct text_object *, char *, int);
-void free_read_tcp(struct text_object *);
+struct mysql_conn {
+	char *host;
+	int port;
+	char *user;
+	char *password;
+	char *db;
+};
 
-#endif /* _READ_TCP_H */
+extern struct mysql_conn mysql_settings;
+
+void mysql_set_host(const char *);
+void mysql_set_port(const char *);
+void mysql_set_user(const char *);
+void mysql_set_password(const char *);
+void mysql_set_db(const char *);
+
+void print_mysql(struct text_object *, char *, int);
+void free_mysql(struct text_object *);
+
+#endif /*MYSQL_H_*/

@@ -54,7 +54,6 @@ set(SYSTEM_CONFIG_FILE "/etc/conky/conky.conf" CACHE STRING "Default system-wide
 set(PACKAGE_LIBRARY_DIR "${CMAKE_INSTALL_PREFIX}/lib/conky" CACHE STRING "Package library path (where Lua bindings are installed" FORCE)
 set(DEFAULTNETDEV "eth0" CACHE STRING "Default networkdevice")
 set(CONFIG_FILE "$HOME/.conkyrc" CACHE STRING "Configfile of the user")
-set(MAX_SPECIALS_DEFAULT "512" CACHE STRING "Default maximum number of special things, e.g. fonts, offsets, aligns, etc.")
 set(MAX_USER_TEXT_DEFAULT "16384" CACHE STRING "Default maximum size of config TEXT buffer, i.e. below TEXT line.")
 set(DEFAULT_TEXT_BUFFER_SIZE "256" CACHE STRING "Default size used for temporary, static text buffers")
 set(MAX_NET_INTERFACES "16" CACHE STRING "Maximum number of network devices")
@@ -126,6 +125,8 @@ endif(BUILD_AUDACIOUS)
 option(BUILD_BMPX "Build BMPx (music player) support" false)
 
 option(BUILD_MPD "Enable if you want MPD (music player) support" true)
+
+option(BUILD_MYSQL "Enable if you want MySQL support" true)
 
 option(BUILD_MOC "Enable if you want MOC (music player) support" true)
 

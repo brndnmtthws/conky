@@ -38,6 +38,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
+#include <memory>
 
 #define MAX_HEADTAIL_LINES 30
 #define DEFAULT_MAX_HEADTAIL_USES 2
