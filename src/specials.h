@@ -73,6 +73,7 @@ struct special_t {
 	unsigned long last_colour;
 	short font_added;
 	char tempgrad;
+	struct special_t *next;
 };
 
 /* direct access to the registered specials (FIXME: bad encapsulation) */
@@ -90,9 +91,6 @@ extern int default_gauge_height;
 
 /* forward declare to avoid mutual inclusion between specials.h and text_object.h */
 struct text_object;
-
-/* max number of specials allowed (TODO: use linked list instead) */
-extern int max_specials;
 
 /* scanning special arguments */
 const char *scan_bar(struct text_object *, const char *, double);
