@@ -40,8 +40,14 @@
 #endif /* HAVE_SYS_PARAM_H */
 #include <algorithm>
 
+/* maximum number of special things, e.g. fonts, offsets, aligns, etc. */
+int max_specials = 512;
+
+/* create specials array on heap instead of stack with introduction of
+ * max_specials */
 struct special_t *specials = NULL;
-struct special_t *last_specials = NULL;
+
+int special_count;
 
 int default_bar_width = 0, default_bar_height = 6;
 #ifdef BUILD_X11
@@ -247,21 +253,14 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale)
 
 struct special_t *new_special(char *buf, enum special_types t)
 {
+	if (special_count >= max_specials) {
+		CRIT_ERR(NULL, NULL, "too many special things in text");
+	}
+
 	buf[0] = SPECIAL_CHAR;
 	buf[1] = '\0';
-	if(specials) {
-		last_specials->next = new special_t;
-		last_specials->next->prev = last_specials;
-		last_specials = last_specials->next;
-	} else {
-		specials = new special_t;
-		specials->prev = NULL;
-		last_specials = specials;
-	}
-	last_specials->graph = NULL;
-	last_specials->next = NULL;
-	last_specials->type = t;
-	return last_specials;
+	specials[special_count].type = t;
+	return &specials[special_count++];
 }
 
 void new_gauge_in_shell(struct text_object *obj, char *p, int p_max_size, double usage)
