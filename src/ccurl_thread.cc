@@ -135,6 +135,7 @@ void ccurl_fetch_data(thread_handle &handle, ccurl_location_ptr &curloc)
 		}
 		curl_global_cleanup();
 		ENGINE_cleanup();
+		CRYPTO_cleanup_all_ex_data();
 	}
 }
 
