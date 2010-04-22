@@ -209,6 +209,8 @@ conky::range_config_setting<int>          border_inner_margin("border_inner_marg
 													std::numeric_limits<int>::max(), 3, true);
 conky::range_config_setting<int>          border_outer_margin("border_outer_margin", 0,
 													std::numeric_limits<int>::max(), 1, true);
+conky::range_config_setting<int>          border_width("border_width", 0,
+													std::numeric_limits<int>::max(), 1, true);
 
 
 #ifdef BUILD_XFT

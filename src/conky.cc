@@ -859,6 +859,12 @@ int get_string_width(const char *s)
 }
 
 #ifdef BUILD_X11
+static inline int get_border_total()
+{
+	return border_inner_margin.get(*state) + border_outer_margin.get(*state) +
+			border_width.get(*state);
+}
+
 static int get_string_width_special(char *s, int special_index)
 {
 	char *p, *final;
@@ -979,8 +985,7 @@ static void update_text_area(void)
 		x += workarea[0];
 		y += workarea[1];
 
-		long border_total = border_inner_margin.get(*state)
-						+ border_outer_margin.get(*state) + window.border_width;
+		int border_total = get_border_total();
 		text_start_x = text_start_y = border_total;
 		window.x = x - border_total;
 		window.y = y - border_total;
@@ -1727,25 +1732,24 @@ static void draw_text(void)
 #endif /* BUILD_LUA */
 	if (out_to_x.get(*state)) {
 		cur_y = text_start_y;
+		int bw = border_width.get(*state);
 
 		/* draw borders */
-		if (draw_borders.get(*state) && window.border_width > 0) {
+		if (draw_borders.get(*state) && bw > 0) {
 			if (stippled_borders) {
 				char ss[2] = { (char)stippled_borders, (char)stippled_borders };
-				XSetLineAttributes(display, window.gc, window.border_width, LineOnOffDash,
+				XSetLineAttributes(display, window.gc, bw, LineOnOffDash,
 					CapButt, JoinMiter);
 				XSetDashes(display, window.gc, 0, ss, 2);
 			} else {
-				XSetLineAttributes(display, window.gc, window.border_width, LineSolid,
+				XSetLineAttributes(display, window.gc, bw, LineSolid,
 					CapButt, JoinMiter);
 			}
 
-			int inner_margin = border_inner_margin.get(*state);
+			int offset = border_inner_margin.get(*state) + bw;
 			XDrawRectangle(display, window.drawable, window.gc,
-				text_start_x - inner_margin - window.border_width,
-				text_start_y - inner_margin - window.border_width,
-				text_width + inner_margin * 2 + window.border_width * 2,
-				text_height + inner_margin * 2 + window.border_width * 2);
+				text_start_x - offset, text_start_y - offset,
+				text_width + 2*offset, text_height + 2*offset);
 		}
 
 		/* draw text */
@@ -1841,8 +1845,7 @@ static void clear_text(int exposures)
 #endif
 	if (display && window.window) { // make sure these are !null
 		/* there is some extra space for borders and outlines */
-		long border_total = border_inner_margin.get(*state)
-						+ border_outer_margin.get(*state) + window.border_width;
+		int border_total = get_border_total();
 
 		XClearArea(display, window.window, text_start_x - border_total, 
 			text_start_y - border_total, text_width + 2*border_total,
@@ -1964,13 +1967,10 @@ static void main_loop(void)
 				selected_font = 0;
 				update_text_area();
 
-#if defined(OWN_WINDOW) || defined(BUILD_XDBE)
-				long border_total = border_inner_margin.get(*state)
-							+ border_outer_margin.get(*state) + window.border_width;
-#endif
 #ifdef OWN_WINDOW
 				if (own_window.get(*state)) {
 					int changed = 0;
+					int border_total = get_border_total();
 
 					/* resize window if it isn't right size */
 					if (!fixed_size
@@ -2046,6 +2046,7 @@ static void main_loop(void)
 #ifdef BUILD_XDBE
 				if (use_xdbe) {
 					XRectangle r;
+					int border_total = get_border_total();
 
 					r.x = text_start_x - border_total;
 					r.y = text_start_y - border_total;
@@ -2111,8 +2112,8 @@ static void main_loop(void)
 									}
 								}
 
-								long border_total = border_inner_margin.get(*state)
-									+ border_outer_margin.get(*state) + window.border_width;
+								int border_total = get_border_total();
+
 								text_width = window.width - 2*border_total;
 								text_height = window.height - 2*border_total;
 								if (text_width > maximum_width
@@ -2207,9 +2208,8 @@ static void main_loop(void)
 #ifdef BUILD_XDBE
 				if (use_xdbe) {
 					XRectangle r;
+					int border_total = get_border_total();
 
-					long border_total = border_inner_margin.get(*state)
-									+ border_outer_margin.get(*state) + window.border_width;
 					r.x = text_start_x - border_total;
 					r.y = text_start_y - border_total;
 					r.width = text_width + 2*border_total;
@@ -2366,8 +2366,8 @@ static void reload_config(void)
 #ifdef BUILD_X11
 void clean_up_x11() {
 	if(window_created == 1) {
-		long border_total = border_inner_margin.get(*state)
-							+ border_outer_margin.get(*state) + window.border_width;
+		int border_total = get_border_total();
+
 		XClearArea(display, window.window, text_start_x - border_total,
 			text_start_y - border_total, text_width + 2*border_total,
 			text_height + 2*border_total, 0);
@@ -2567,7 +2567,6 @@ static void set_default_configurations(void)
 	minimum_height = 5;
 	maximum_width = 0;
 	stippled_borders = 0;
-	window.border_width = 1;
 #endif /* BUILD_X11 */
 
 	free_templates();
@@ -2619,8 +2618,8 @@ static bool append_works(const char *path)
 static void X11_create_window(void)
 {
 	if (out_to_x.get(*state)) {
-		long border_total = border_inner_margin.get(*state)
-						+ border_outer_margin.get(*state) + window.border_width;
+		int border_total = get_border_total();
+
 		init_window(text_width + 2*border_total, text_height + 2*border_total,
 				argv_copy, argc_copy);
 		setup_fonts();
@@ -2752,16 +2751,6 @@ char load_config_file(const char *f)
 
 		// start the whole if-then-else-if cascade
 		if (false) {}
-#ifdef BUILD_X11
-		CONF("border_width") {
-			if (value) {
-				window.border_width = strtol(value, 0, 0);
-				if (window.border_width < 0) window.border_width = 0;
-			} else {
-				CONF_ERR;
-			}
-		}
-#endif /* BUILD_X11 */
 #define TEMPLATE_CONF(n) \
 		CONF("template"#n) { \
 			if (set_template(n, value)) \
