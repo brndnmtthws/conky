@@ -36,7 +36,6 @@
 #include <curl/curl.h>
 #include <curl/types.h>
 #include <curl/easy.h>
-#include <openssl/engine.h>
 
 /*
  * The following code is the conky curl thread lib, which can be re-used to
@@ -134,8 +133,6 @@ void ccurl_fetch_data(thread_handle &handle, ccurl_location_ptr &curloc)
 			curl_easy_cleanup(curl);
 		}
 		curl_global_cleanup();
-		ENGINE_cleanup();
-		CRYPTO_cleanup_all_ex_data();
 	}
 }
 
