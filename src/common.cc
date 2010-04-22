@@ -826,7 +826,7 @@ void print_stock(struct text_object *obj, char *p, int p_max_size)
 		p[0] = 0;
 		return;
 	}
-	ccurl_process_info(p, p_max_size, obj->data.s, 0);
+	ccurl_process_info(p, p_max_size, obj->data.s, 1);
 }
 
 void free_stock(struct text_object *obj)
