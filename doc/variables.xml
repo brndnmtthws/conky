@@ -3281,7 +3281,7 @@
             <option>symbol data</option>
         </term>
         <listitem>Displays the data of a stock symbol. The following data
-        is supported: adv(Average Daily Volume),ask,asksize,bid
+        is supported: adv(Average Daily Volume),ask,asksize,bid,askrt(ask realtime),bidrt(bid realtime),bookvalue,bidsize,change,commission,changert(change realtime),ahcrt(After Hours Change realtime),ds(dividend/share),ltd(Last Trade Date),tradedate,es(earnings/share),ei(error indication),epsecy(EPS Estimate Current Year),epseny(EPS Estimate Next Year),epsenq(EPS Estimate Next Quarter),floatshares,dayslow,dayshigh,52weeklow,52weekhigh,hgp(Holdings Gain Percent),ag(Annualized Gain),hg(Holdings Gain),hgprt(Holdings Gain Percent realtime),hgrt(Holdings Gain realtime),moreinfo,obrt(Order Book realtime)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
