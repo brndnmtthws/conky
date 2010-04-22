@@ -185,7 +185,7 @@ void ccurl_free_info(void)
 /* straight copy, used by $curl */
 static void ccurl_parse_data(char *result, const char *data)
 {
-	strncpy(result, data, max_user_text);
+	if(result) strncpy(result, data, max_user_text);
 }
 
 /* prints result data to text buffer, used by $curl */
