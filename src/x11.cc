@@ -205,6 +205,12 @@ priv::colour_setting					  default_color("default_color", 0xffffff);
 priv::colour_setting					  default_shade_color("default_shade_color", 0x000000);
 priv::colour_setting					  default_outline_color("default_outline_color", 0x000000);
 
+conky::range_config_setting<int>          border_inner_margin("border_inner_margin", 0,
+													std::numeric_limits<int>::max(), 3, true);
+conky::range_config_setting<int>          border_outer_margin("border_outer_margin", 0,
+													std::numeric_limits<int>::max(), 1, true);
+
+
 #ifdef BUILD_XFT
 conky::simple_config_setting<bool>        use_xft("use_xft", false, false);
 #endif

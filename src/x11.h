@@ -72,7 +72,7 @@ struct conky_window {
 	Visual *visual;
 	Colormap colourmap;
 	GC gc;
-	long border_inner_margin, border_outer_margin, border_width;
+	long border_width;
 
 #ifdef BUILD_XDBE
 	XdbeBackBuffer back_buffer;
@@ -183,6 +183,9 @@ extern priv::colour_setting						 color[10];
 extern priv::colour_setting						 default_color;
 extern priv::colour_setting						 default_shade_color;
 extern priv::colour_setting						 default_outline_color;
+
+extern conky::range_config_setting<int>          border_inner_margin;
+extern conky::range_config_setting<int>          border_outer_margin;
 
 #ifdef BUILD_XFT
 extern conky::simple_config_setting<bool>        use_xft;
