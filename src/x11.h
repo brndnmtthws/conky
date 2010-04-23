@@ -88,10 +88,6 @@ struct conky_window {
 #endif
 };
 
-#ifdef BUILD_XDBE
-extern int use_xdbe;
-#endif
-
 #if defined(BUILD_ARGB) && defined(OWN_WINDOW)
 /* true if use_argb_visual=true and argb visual was found*/
 extern bool have_argb_visual;
@@ -164,6 +160,19 @@ namespace priv {
 			: Base("own_window", false, false)
 		{}
 	};
+
+	class use_xdbe_setting: public conky::simple_config_setting<bool> {
+		typedef conky::simple_config_setting<bool> Base;
+	
+		bool set_up(lua::state &l);
+	protected:
+		virtual void lua_setter(lua::state &l, bool init);
+
+	public:
+		use_xdbe_setting()
+			: Base("double_buffer", false, false)
+		{}
+	};
 	
 	struct colour_traits {
 		static const lua::Type type = lua::TSTRING;
@@ -222,6 +231,10 @@ extern conky::range_config_setting<int>          own_window_argb_value;
 #endif
 #endif /*OWN_WINDOW*/
 extern priv::own_window_setting					 own_window;
+
+#ifdef BUILD_XDBE
+extern priv::use_xdbe_setting					 use_xdbe;
+#endif
 
 #endif /*X11_H_*/
 #endif /* BUILD_X11 */

@@ -46,10 +46,6 @@
 #include <X11/Xft/Xft.h>
 #endif
 
-#ifdef BUILD_XDBE
-int use_xdbe;
-#endif
-
 #ifdef BUILD_ARGB
 bool have_argb_visual;
 #endif /* BUILD_ARGB */
@@ -124,6 +120,56 @@ namespace priv {
 
 		++s;
 	}
+
+#ifdef BUILD_XDBE
+	bool use_xdbe_setting::set_up(lua::state &l)
+	{
+		// double_buffer makes no sense when not drawing to X
+		if(not out_to_x.get(l))
+			return false;
+
+		int major, minor;
+
+		if (not XdbeQueryExtension(display, &major, &minor)) {
+			NORM_ERR("No compatible double buffer extension found");
+			return false;
+		}
+		
+		window.back_buffer = XdbeAllocateBackBufferName(display,
+				window.window, XdbeBackground);
+		if (window.back_buffer != None) {
+			window.drawable = window.back_buffer;
+		} else {
+			NORM_ERR("Failed to allocate back buffer");
+			return false;
+		}
+
+#ifdef BUILD_IMLIB2 // FIXME: move this somewhere else
+		cimlib_init(display, window.drawable, window.visual, window.colourmap);
+#endif /* BUILD_IMLIB2 */
+		XFlush(display);
+		return true;
+	}
+
+	void use_xdbe_setting::lua_setter(lua::state &l, bool init)
+	{
+		lua::stack_sentry s(l, -2);
+
+		Base::lua_setter(l, init);
+
+		if(init && do_convert(l, -1).first) {
+			if(not set_up(l)) {
+				l.pop();
+				l.pushboolean(false);
+			}
+
+			fprintf(stderr, PACKAGE_NAME": drawing to %s buffer\n",
+					do_convert(l, -1).first?"double":"single");
+		}
+
+		++s;
+	}
+#endif
 
 	void colour_setting::lua_setter(lua::state &l, bool init)
 	{
@@ -208,9 +254,9 @@ namespace {
 
 /*
  * The order of these settings cannot be completely arbitrary. Some of them depend on others, and
- * the setters are called in the order of in which they are defined. The ordering should be
+ * the setters are called in the order in which they are defined. The order should be:
  * display_name -> out_to_x -> everything colour related
- *                          -> border_*, own_window_*, etc -> own_window
+ *                          -> border_*, own_window_*, etc -> own_window -> double_buffer
  */
 
 conky::simple_config_setting<alignment>   text_alignment("alignment", NONE, false);
@@ -239,7 +285,6 @@ conky::range_config_setting<int>          border_outer_margin("border_outer_marg
 													std::numeric_limits<int>::max(), 1, true);
 conky::range_config_setting<int>          border_width("border_width", 0,
 													std::numeric_limits<int>::max(), 1, true);
-
 #ifdef BUILD_XFT
 conky::simple_config_setting<bool>        use_xft("use_xft", false, false);
 #endif
@@ -263,8 +308,13 @@ conky::simple_config_setting<bool>        use_argb_visual("own_window_argb_visua
 conky::range_config_setting<int>          own_window_argb_value("own_window_argb_value",
 																0, 255, 255, false);
 #endif
-priv::own_window_setting				  own_window;
 #endif /*OWN_WINDOW*/
+priv::own_window_setting				  own_window;
+
+#ifdef BUILD_XDBE
+priv::use_xdbe_setting			 		  use_xdbe;
+#endif
+
 /******************** </SETTINGS> ************************/
 
 #ifdef DEBUG
@@ -790,35 +840,6 @@ static void init_window(lua::state &l, bool own)
 	/* Drawable is same as window. This may be changed by double buffering. */
 	window.drawable = window.window;
 
-#ifdef BUILD_XDBE
-	if (use_xdbe) {
-		int major, minor;
-
-		if (!XdbeQueryExtension(display, &major, &minor)) {
-			use_xdbe = 0;
-		} else {
-			window.back_buffer = XdbeAllocateBackBufferName(display,
-					window.window, XdbeBackground);
-			if (window.back_buffer != None) {
-				window.drawable = window.back_buffer;
-				fprintf(stderr, PACKAGE_NAME": drawing to double buffer\n");
-			} else {
-				use_xdbe = 0;
-			}
-		}
-		if (!use_xdbe) {
-			NORM_ERR("failed to set up double buffer");
-		}
-	}
-	if (!use_xdbe) {
-		fprintf(stderr, PACKAGE_NAME": drawing to single buffer\n");
-	}
-#endif
-#ifdef BUILD_IMLIB2
-	{
-		cimlib_init(display, window.drawable, window.visual, window.colourmap);
-	}
-#endif /* BUILD_IMLIB2 */
 	XFlush(display);
 
 	XSelectInput(display, window.window, ExposureMask | PropertyChangeMask
@@ -1135,7 +1156,7 @@ void set_struts(int sidenum)
 #ifdef BUILD_XDBE
 void xdbe_swap_buffers(void)
 {
-	if (use_xdbe) {
+	if (use_xdbe.get(*state)) {
 		XdbeSwapInfo swap;
 
 		swap.swap_window = window.window;

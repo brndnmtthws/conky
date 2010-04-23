@@ -1838,7 +1838,7 @@ static void draw_stuff(void)
 static void clear_text(int exposures)
 {
 #ifdef BUILD_XDBE
-	if (use_xdbe) {
+	if (use_xdbe.get(*state)) {
 		/* The swap action is XdbeBackground, which clears */
 		return;
 	} else
@@ -2044,7 +2044,7 @@ static void main_loop(void)
 				clear_text(1);
 
 #ifdef BUILD_XDBE
-				if (use_xdbe) {
+				if (use_xdbe.get(*state)) {
 					XRectangle r;
 					int border_total = get_border_total();
 
@@ -2206,7 +2206,7 @@ static void main_loop(void)
 
 			if (!XEmptyRegion(x11_stuff.region)) {
 #ifdef BUILD_XDBE
-				if (use_xdbe) {
+				if (use_xdbe.get(*state)) {
 					XRectangle r;
 					int border_total = get_border_total();
 
@@ -2927,12 +2927,6 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-
-#ifdef BUILD_XDBE
-		CONF("double_buffer") {
-			use_xdbe = string_to_bool(value);
-		}
-#endif
 #ifdef BUILD_X11
 		CONF("override_utf8_locale") {
 			utf8_mode = string_to_bool(value);
@@ -3525,7 +3519,8 @@ void initialisation(int argc, char **argv) {
 #endif
 #ifdef BUILD_XDBE
 			case 'b':
-				use_xdbe = 1;
+				state->pushboolean(true);
+				use_xdbe.lua_set(*state);
 				break;
 #endif
 #endif /* BUILD_X11 */
@@ -3732,7 +3727,7 @@ int main(int argc, char **argv)
 				"print(conky.variables.asdf{}.xxx);\n"
 				"conky.config = { alignment='top_left', asdf=47, [42]=47, out_to_x=true,\n"
 				"    own_window_hints='above, skip_taskbar',\n"
-				"    background_colour='pink', own_window=true};\n"
+				"    background_colour='pink', own_window=true, double_buffer=true};\n"
 				);
 		l.call(0, 0);
 		conky::set_config_settings(l);
