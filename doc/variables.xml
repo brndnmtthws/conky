@@ -3366,6 +3366,21 @@
     <varlistentry>
         <term>
             <command>
+                <option>tcp_ping</option>
+            </command>
+            <option>host (port)</option>
+        </term>
+        <listitem>Displays the number of microseconds it takes to
+        get a reply on a ping to to tcp 'port' on 'host'. 'port' is optional
+        and has 54321 as default. This works on both open and closed
+        ports, just make sure that the port is not behind a firewall or you
+        will get 'down' as answer. It's best to test a closed port instead
+        of an open port, you will get a quicker response.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>tcp_portmon</option>
             </command>
             <option>port_begin port_end item (index)</option>

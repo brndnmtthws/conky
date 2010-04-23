@@ -272,6 +272,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		parse_read_tcpip_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_read_udp;
 		obj->callbacks.free = &free_read_tcpip;
+	END OBJ_ARG(tcp_ping, 0, "tcp_ping: Needs \"host (port)\" as argument(s)")
+		parse_tcp_ping_arg(obj, arg, free_at_crash);
+		obj->callbacks.print = &print_tcp_ping;
+		obj->callbacks.free = &free_tcp_ping;
 #if defined(__linux__)
 	END OBJ(voltage_mv, 0)
 		get_cpu_count();

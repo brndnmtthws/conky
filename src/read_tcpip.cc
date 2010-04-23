@@ -36,6 +36,7 @@
 #include <string>
 #include <unistd.h>
 #include <netinet/in.h>
+#include <sys/time.h>
 
 struct read_tcpip_data {
 	char *host;
@@ -61,6 +62,79 @@ void parse_read_tcpip_arg(struct text_object *obj, const char *arg, void *free_a
 
 	rtd->port = htons(rtd->port);
 	obj->data.opaque = rtd;
+}
+
+void parse_tcp_ping_arg(struct text_object *obj, const char *arg, void *free_at_crash)
+{
+#define DEFAULT_TCP_PING_PORT 54321
+	struct sockaddr_in *addr;
+	char *hostname;
+	struct hostent* he;
+
+	addr = (struct sockaddr_in *) malloc(sizeof(struct sockaddr_in));
+	obj->data.opaque = addr;
+	memset(addr, 0, sizeof(struct sockaddr_in));
+	hostname = (char *) malloc(strlen(arg)+1);
+	switch( sscanf(arg, "%s %u", hostname, &(addr->sin_port)) ) {
+	case 1:
+		addr->sin_port = DEFAULT_TCP_PING_PORT;
+		break;
+	case 2:
+		break;
+	default:	//this point should never be reached
+		free(hostname);
+		CRIT_ERR(obj, free_at_crash, "tcp_ping: Reading arguments failed");
+	}
+	if(!(he = gethostbyname(hostname))) {
+		NORM_ERR("tcp_ping: Problem with resolving '%s', using 'localhost' instead", hostname);
+		if(!(he = gethostbyname("localhost"))) {
+			free(hostname);
+			CRIT_ERR(obj, free_at_crash, "tcp_ping: Resolving 'localhost' also failed");
+		}
+	}
+	free(hostname);
+	addr->sin_port = htons(addr->sin_port);
+	addr->sin_family = he->h_addrtype;
+	memcpy(&(addr->sin_addr), he->h_addr, he->h_length);
+}
+
+void print_tcp_ping(struct text_object *obj, char *p, int p_max_size)
+{
+	struct timeval tv1, tv2, timeout;
+	struct sockaddr_in *addr = (struct sockaddr_in *) obj->data.opaque;
+	int addrlen = sizeof(struct sockaddr);
+	int sock = socket(addr->sin_family, SOCK_STREAM | SOCK_NONBLOCK, IPPROTO_TCP);
+	unsigned long long usecdiff;
+	fd_set writefds;
+
+	if(sock != -1) {
+		FD_ZERO(&writefds);
+		FD_SET(sock, &writefds);
+#define TCP_PING_TIMEOUT 10
+		timeout.tv_sec = (int) TCP_PING_TIMEOUT;
+		timeout.tv_usec = (TCP_PING_TIMEOUT - timeout.tv_sec) * 1000000;
+		connect(sock, (struct sockaddr*) addr, addrlen);	//this will "fail" because sock is non-blocking
+		if(errno == EINPROGRESS) {	//but EINPROGRESS is only a "false fail"
+			gettimeofday(&tv1, 0);
+			if(select(sock+1, NULL, &writefds, NULL, &timeout) != -1) {
+				gettimeofday(&tv2, 0);
+				usecdiff = ((tv2.tv_sec - tv1.tv_sec) * 1000000) + tv2.tv_usec - tv1.tv_usec;
+				if(usecdiff <= TCP_PING_TIMEOUT * 1000000) {
+					snprintf(p, p_max_size, "%llu", usecdiff);
+				} else {
+#define TCP_PING_FAILED "down"
+					snprintf(p, p_max_size, TCP_PING_FAILED);
+				}
+			} else {
+				NORM_ERR("tcp_ping: Couldn't wait on the 'pong'");
+			}
+		} else {
+			NORM_ERR("tcp_ping: Couldn't start connection");
+		}
+		close(sock);
+	} else {
+		NORM_ERR("tcp_ping: Couldn't create socket");
+	}
 }
 
 void print_read_tcpip(struct text_object *obj, char *p, int p_max_size, int protocol)
@@ -126,5 +200,15 @@ void free_read_tcpip(struct text_object *obj)
 		return;
 
 	free_and_zero(rtd->host);
+	free_and_zero(obj->data.opaque);
+}
+
+void free_tcp_ping(struct text_object *obj)
+{
+	struct sockaddr_in *addr = (struct sockaddr_in *) obj->data.opaque;
+
+	if (!addr)
+		return;
+
 	free_and_zero(obj->data.opaque);
 }
