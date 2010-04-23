@@ -353,7 +353,8 @@ static conky::simple_config_setting<bool> show_graph_scale("show_graph_scale", f
 static conky::simple_config_setting<bool> show_graph_range("show_graph_range", false, false);
 
 /* Position on the screen */
-static int gap_x, gap_y;
+static conky::simple_config_setting<int> gap_x("gap_x", 5, true);
+static conky::simple_config_setting<int> gap_y("gap_y", 60, true);
 
 /* border */
 static conky::simple_config_setting<bool> draw_borders("draw_borders", false, false);
@@ -946,28 +947,28 @@ static void update_text_area(void)
 	/* get text position on workarea */
 	switch (align) {
 		case TOP_LEFT: case TOP_RIGHT: case TOP_MIDDLE:
-			y = gap_y;
+			y = gap_y.get(*state);
 			break;
 
 		case BOTTOM_LEFT: case BOTTOM_RIGHT: case BOTTOM_MIDDLE: default:
-			y = workarea[3] - text_height - gap_y;
+			y = workarea[3] - text_height - gap_y.get(*state);
 			break;
 
 		case MIDDLE_LEFT: case MIDDLE_RIGHT: case MIDDLE_MIDDLE:
-			y = workarea[3] / 2 - text_height / 2 - gap_y;
+			y = workarea[3] / 2 - text_height / 2 - gap_y.get(*state);
 			break;
 	}
 	switch (align) {
 		case TOP_LEFT: case BOTTOM_LEFT: case MIDDLE_LEFT: default:
-			x = gap_x;
+			x = gap_x.get(*state);
 			break;
 
 		case TOP_RIGHT: case BOTTOM_RIGHT: case MIDDLE_RIGHT:
-			x = workarea[2] - text_width - gap_x;
+			x = workarea[2] - text_width - gap_x.get(*state);
 			break;
 
 		case TOP_MIDDLE: case BOTTOM_MIDDLE: case MIDDLE_MIDDLE:
-			x = workarea[2] / 2 - text_width / 2 - gap_x;
+			x = workarea[2] / 2 - text_width / 2 - gap_x.get(*state);
 			break;
 	}
 #ifdef OWN_WINDOW
@@ -2561,8 +2562,6 @@ static void set_default_configurations(void)
 #endif
 #ifdef BUILD_X11
 	set_first_font("6x10");
-	gap_x = 5;
-	gap_y = 60;
 	minimum_width = 5;
 	minimum_height = 5;
 	maximum_width = 0;
@@ -3000,20 +2999,6 @@ char load_config_file(const char *f)
 #ifdef BUILD_XFT
 			}
 #endif
-		}
-		CONF("gap_x") {
-			if (value) {
-				gap_x = atoi(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("gap_y") {
-			if (value) {
-				gap_y = atoi(value);
-			} else {
-				CONF_ERR;
-			}
 		}
 #endif /* BUILD_X11 */
 		CONF("mail_spool") {
@@ -3544,11 +3529,13 @@ void initialisation(int argc, char **argv) {
 				break;
 #ifdef BUILD_X11
 			case 'x':
-				gap_x = atoi(optarg);
+				state->pushstring(optarg);
+				gap_x.lua_set(*state);
 				break;
 
 			case 'y':
-				gap_y = atoi(optarg);
+				state->pushstring(optarg);
+				gap_y.lua_set(*state);
 				break;
 #endif /* BUILD_X11 */
 			case 'p':
