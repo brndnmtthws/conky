@@ -107,7 +107,6 @@ extern int workarea[4];
 extern struct conky_window window;
 extern char window_created;
 
-void init_window(int width, int height, char **argv, int argc);
 void destroy_window(void);
 void create_gc(void);
 void set_transparent_background(Window win);
@@ -154,6 +153,18 @@ namespace priv {
 		{}
 	};
 	
+	class own_window_setting: public conky::simple_config_setting<bool> {
+		typedef conky::simple_config_setting<bool> Base;
+	
+	protected:
+		virtual void lua_setter(lua::state &l, bool init);
+
+	public:
+		own_window_setting()
+			: Base("own_window", false, false)
+		{}
+	};
+	
 	struct colour_traits {
 		static const lua::Type type = lua::TSTRING;
 
@@ -192,7 +203,6 @@ extern conky::simple_config_setting<bool>        use_xft;
 #endif
 
 #ifdef OWN_WINDOW
-extern conky::simple_config_setting<bool>        own_window;
 extern conky::simple_config_setting<bool>        set_transparent;
 extern conky::simple_config_setting<std::string> own_window_class;
 extern conky::simple_config_setting<std::string> own_window_title;
@@ -211,6 +221,7 @@ extern conky::simple_config_setting<bool>        use_argb_visual;
 extern conky::range_config_setting<int>          own_window_argb_value;
 #endif
 #endif /*OWN_WINDOW*/
+extern priv::own_window_setting					 own_window;
 
 #endif /*X11_H_*/
 #endif /* BUILD_X11 */

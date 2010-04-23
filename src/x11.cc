@@ -73,6 +73,7 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop);
 static Window find_subwindow(Window win, int w, int h);
 static void init_X11();
 static void deinit_X11();
+static void init_window(lua::state &l, bool own);
 
 /********************* <SETTINGS> ************************/
 namespace priv {
@@ -96,6 +97,32 @@ namespace priv {
 			deinit_X11();
 
 		l.pop();
+	}
+
+	void own_window_setting::lua_setter(lua::state &l, bool init)
+	{
+		lua::stack_sentry s(l, -2);
+
+		Base::lua_setter(l, init);
+
+		if(init) {
+			if(do_convert(l, -1).first) {
+				if(not out_to_x.get(l)) {
+					// own_window makes no sense when not drawing to X
+					l.pop();
+					l.pushboolean(false);
+				}
+#ifndef OWN_WINDOW
+				std::cerr << "Support for the own_window setting has been "
+							 "disabled during compilation\n";
+				l.pop();
+				l.pushboolean(false);
+#endif
+			}
+			init_window(l, do_convert(l, -1).first);
+		}
+
+		++s;
 	}
 
 	void colour_setting::lua_setter(lua::state &l, bool init)
@@ -183,6 +210,7 @@ namespace {
  * The order of these settings cannot be completely arbitrary. Some of them depend on others, and
  * the setters are called in the order of in which they are defined. The ordering should be
  * display_name -> out_to_x -> everything colour related
+ *                          -> border_*, own_window_*, etc -> own_window
  */
 
 conky::simple_config_setting<alignment>   text_alignment("alignment", NONE, false);
@@ -212,13 +240,11 @@ conky::range_config_setting<int>          border_outer_margin("border_outer_marg
 conky::range_config_setting<int>          border_width("border_width", 0,
 													std::numeric_limits<int>::max(), 1, true);
 
-
 #ifdef BUILD_XFT
 conky::simple_config_setting<bool>        use_xft("use_xft", false, false);
 #endif
 
 #ifdef OWN_WINDOW
-conky::simple_config_setting<bool>        own_window("own_window", false, false);
 conky::simple_config_setting<bool>        set_transparent("own_window_transparent", false, false);
 conky::simple_config_setting<std::string> own_window_class("own_window_class",
 															PACKAGE_NAME, false);
@@ -237,6 +263,7 @@ conky::simple_config_setting<bool>        use_argb_visual("own_window_argb_visua
 conky::range_config_setting<int>          own_window_argb_value("own_window_argb_value",
 																0, 255, 255, false);
 #endif
+priv::own_window_setting				  own_window;
 #endif /*OWN_WINDOW*/
 /******************** </SETTINGS> ************************/
 
@@ -472,17 +499,15 @@ void destroy_window(void)
 	memset(&window, 0, sizeof(struct conky_window));
 }
 
-void init_window(int w, int h, char **argv, int argc)
+static void init_window(lua::state &l, bool own)
 {
-	// these vars are unused if OWN_WINDOW is not defined
-	(void)own_window; (void)w; (void)h; (void)argv; (void)argc;
-	/* There seems to be some problems with setting transparent background
-	 * (on fluxbox this time). It doesn't happen always and I don't know why it
-	 * happens but I bet the bug is somewhere here. */
+	// own is unused if OWN_WINDOW is not defined
+	(void) own;
+
 	window_created = 1;
 
 #ifdef OWN_WINDOW
-	if (own_window.get(*state)) {
+	if (own) {
 		int depth = 0, flags;
 		Visual *visual = NULL;
 		
@@ -491,7 +516,7 @@ void init_window(int w, int h, char **argv, int argc)
 		}
 		
 #ifdef BUILD_ARGB
-		if (use_argb_visual.get(*state) && get_argb_visual(&visual, &depth)) {
+		if (use_argb_visual.get(l) && get_argb_visual(&visual, &depth)) {
 			have_argb_visual = true;
 			window.visual = visual;
 			window.colourmap = XCreateColormap(display,
@@ -506,7 +531,10 @@ void init_window(int w, int h, char **argv, int argc)
 		}
 #endif /* BUILD_ARGB */
 
-		if (own_window_type.get(*state) == TYPE_OVERRIDE) {
+		int b = border_inner_margin.get(l) + border_width.get(l)
+			+ border_outer_margin.get(l);
+
+		if (own_window_type.get(l) == TYPE_OVERRIDE) {
 
 			/* An override_redirect True window.
 			 * No WM hints or button processing needed. */
@@ -526,14 +554,14 @@ void init_window(int w, int h, char **argv, int argc)
 
 			/* Parent is desktop window (which might be a child of root) */
 			window.window = XCreateWindow(display, window.desktop, window.x,
-					window.y, w, h, 0, depth, InputOutput, visual,
+					window.y, b, b, 0, depth, InputOutput, visual,
 					flags, &attrs);
 
 			XLowerWindow(display, window.window);
 
 			fprintf(stderr, PACKAGE_NAME": window type - override\n");
 			fflush(stderr);
-		} else { /* own_window_type.get(*state) != TYPE_OVERRIDE */
+		} else { /* own_window_type.get(l) != TYPE_OVERRIDE */
 
 			/* A window managed by the window manager.
 			 * Process hints and buttons. */
@@ -556,12 +584,12 @@ void init_window(int w, int h, char **argv, int argc)
 			}
 #endif /* BUILD_ARGB */
 
-			if (own_window_type.get(*state) == TYPE_DOCK) {
+			if (own_window_type.get(l) == TYPE_DOCK) {
 				window.x = window.y = 0;
 			}
 			/* Parent is root window so WM can take control */
 			window.window = XCreateWindow(display, window.root, window.x,
-					window.y, w, h, 0, depth, InputOutput, visual,
+					window.y, b, b, 0, depth, InputOutput, visual,
 					flags, &attrs);
 
 			// class_name must be a named local variable, so that c_str() remains valid until we
@@ -569,26 +597,26 @@ void init_window(int w, int h, char **argv, int argc)
 			// res_name is not declared as const char *. XmbSetWMProperties hopefully doesn't
 			// modify the value (hell, even their own example app assigns a literal string
 			// constant to the field)
-			const std::string &class_name = own_window_class.get(*state);
+			const std::string &class_name = own_window_class.get(l);
 
 			classHint.res_name = const_cast<char *>(class_name.c_str());
 			classHint.res_class = classHint.res_name;
 
-			uint16_t hints = own_window_hints.get(*state);
+			uint16_t hints = own_window_hints.get(l);
 
 			wmHint.flags = InputHint | StateHint;
 			/* allow decorated windows to be given input focus by WM */
 			wmHint.input =
 				TEST_HINT(hints, HINT_UNDECORATED) ? False : True;
-			if (own_window_type.get(*state) == TYPE_DOCK || own_window_type.get(*state) == TYPE_PANEL) {
+			if (own_window_type.get(l) == TYPE_DOCK || own_window_type.get(l) == TYPE_PANEL) {
 				wmHint.initial_state = WithdrawnState;
 			} else {
 				wmHint.initial_state = NormalState;
 			}
 
-			XmbSetWMProperties(display, window.window, NULL, NULL, argv,
-					argc, NULL, &wmHint, &classHint);
-			XStoreName(display, window.window, own_window_title.get(*state).c_str() );
+			XmbSetWMProperties(display, window.window, NULL, NULL, argv_copy,
+					argc_copy, NULL, &wmHint, &classHint);
+			XStoreName(display, window.window, own_window_title.get(l).c_str() );
 
 			/* Sets an empty WM_PROTOCOLS property */
 			XSetWMProtocols(display, window.window, NULL, 0);
@@ -597,7 +625,7 @@ void init_window(int w, int h, char **argv, int argc)
 			if ((xa = ATOM(_NET_WM_WINDOW_TYPE)) != None) {
 				Atom prop;
 
-				switch (own_window_type.get(*state)) {
+				switch (own_window_type.get(l)) {
 					case TYPE_DESKTOP:
 						prop = ATOM(_NET_WM_WINDOW_TYPE_DESKTOP);
 						fprintf(stderr, PACKAGE_NAME": window type - desktop\n");
@@ -795,7 +823,7 @@ void init_window(int w, int h, char **argv, int argc)
 
 	XSelectInput(display, window.window, ExposureMask | PropertyChangeMask
 #ifdef OWN_WINDOW
-			| (own_window.get(*state) ? (StructureNotifyMask |
+			| (own_window.get(l) ? (StructureNotifyMask |
 					ButtonPressMask | ButtonReleaseMask) : 0)
 #endif
 			);

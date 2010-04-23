@@ -2618,10 +2618,6 @@ static bool append_works(const char *path)
 static void X11_create_window(void)
 {
 	if (out_to_x.get(*state)) {
-		int border_total = get_border_total();
-
-		init_window(text_width + 2*border_total, text_height + 2*border_total,
-				argv_copy, argc_copy);
 		setup_fonts();
 		load_fonts();
 		update_text_area();	/* to position text/window on screen */
@@ -3734,9 +3730,9 @@ int main(int argc, char **argv)
 				"print(conky.asnumber(conky.variables.zxcv{}));\n"
 				"print(conky.variables.asdf{}.text);\n"
 				"print(conky.variables.asdf{}.xxx);\n"
-				"conky.config = { alignment='bar', asdf=47, [42]=47, out_to_x=true,\n"
-				"    own_window_hints='above, undecorated,,below',\n"
-				"    background_colour='pink'};\n"
+				"conky.config = { alignment='top_left', asdf=47, [42]=47, out_to_x=true,\n"
+				"    own_window_hints='above, skip_taskbar',\n"
+				"    background_colour='pink', own_window=true};\n"
 				);
 		l.call(0, 0);
 		conky::set_config_settings(l);
@@ -3754,6 +3750,8 @@ int main(int argc, char **argv)
 				"print('config.own_window_hints = ', conky.config.own_window_hints);\n"
 				);
 		l.call(0, 0);
+
+		sleep(3);
 
 		conky::cleanup_config_settings(*state);
 		state.reset();
