@@ -3372,7 +3372,7 @@
         </term>
         <listitem>Displays the number of microseconds it takes to
         get a reply on a ping to to tcp 'port' on 'host'. 'port' is optional
-        and has 54321 as default. This works on both open and closed
+        and has 80 as default. This works on both open and closed
         ports, just make sure that the port is not behind a firewall or you
         will get 'down' as answer. It's best to test a closed port instead
         of an open port, you will get a quicker response.

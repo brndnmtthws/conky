@@ -66,7 +66,7 @@ void parse_read_tcpip_arg(struct text_object *obj, const char *arg, void *free_a
 
 void parse_tcp_ping_arg(struct text_object *obj, const char *arg, void *free_at_crash)
 {
-#define DEFAULT_TCP_PING_PORT 54321
+#define DEFAULT_TCP_PING_PORT 80
 	struct sockaddr_in *addr;
 	char *hostname;
 	struct hostent* he;
