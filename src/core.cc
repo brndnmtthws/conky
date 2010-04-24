@@ -142,10 +142,10 @@ static struct text_object *create_plain_text(const char *s)
 void stock_parse_arg(struct text_object *obj, const char *arg)
 {
 	char stock[8];
-	char data[8];
+	char data[16];
 
 	obj->data.s = NULL;
-	if(sscanf(arg, "%7s %7s", stock, data) != 2) {
+	if(sscanf(arg, "%7s %15s", stock, data) != 2) {
 		NORM_ERR("wrong number of arguments for $stock");
 		return;
 	}
