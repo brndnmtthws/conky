@@ -232,7 +232,7 @@ void stock_parse_arg(struct text_object *obj, const char *arg)
 	else if(!strcasecmp("se", data)) strcpy(data, "x");
 	else if(!strcasecmp("dy", data)) strcpy(data, "y");
 	else {
-		NORM_ERR("\"%s\" is not supported by $stock. Supported: adv,ask,asksize,bid", data);
+		NORM_ERR("\"%s\" is not supported by $stock. Supported: 1ytp, 200ma, 50ma, 52weeklow, 52weekhigh, 52weekrange, adv, ag, ahcrt, ask, askrt, asksize, bid, bidrt, bidsize, bookvalue, c200ma, c50ma, c52whigh, c52wlow, change, changert, cip, commission, cprt, dayshigh, dayslow, dpd, dr, drrt, ds, dvc, dvcrt, dy, ebitda, edv, ei, epsecy, epsenq, epseny, es, floatshares, hg, hgp, hgprt, hl, hv, hvrt, ll, ltd, ltp, lts, ltt, mc, mcrt, moreinfo, name, notes, obrt, open, pb, pc, pc200ma, pc50ma, pc52whigh, pc52wlow, pegr, pepsecy, pepseny, per, perrt, pricepaid, ps, se, sharesowned, shortratio, symbol, tradedate, tradelinks, tt, volume", data);
 		return;
 	}
 #define MAX_FINYAH_URL_LENGTH 64
