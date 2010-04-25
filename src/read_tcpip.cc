@@ -75,7 +75,7 @@ void parse_tcp_ping_arg(struct text_object *obj, const char *arg, void *free_at_
 	obj->data.opaque = addr;
 	memset(addr, 0, sizeof(struct sockaddr_in));
 	hostname = (char *) malloc(strlen(arg)+1);
-	switch( sscanf(arg, "%s %u", hostname, &(addr->sin_port)) ) {
+	switch( sscanf(arg, "%s %u", hostname, (unsigned int*) &(addr->sin_port)) ) {
 	case 1:
 		addr->sin_port = DEFAULT_TCP_PING_PORT;
 		break;
@@ -145,6 +145,7 @@ void print_read_tcpip(struct text_object *obj, char *p, int p_max_size, int prot
 	fd_set readfds;
 	struct timeval tv;
 	struct read_tcpip_data *rtd = (struct read_tcpip_data *) obj->data.opaque;
+	ssize_t written;	//only used to to suppress warning (gcc wants the returnvalue of write() in a var)
 
 	if (!rtd)
 		return;
@@ -170,7 +171,7 @@ void print_read_tcpip(struct text_object *obj, char *p, int p_max_size, int prot
 		return;
 	}
 	if(protocol == IPPROTO_UDP)
-		write(sock, NULL, 0);	//when using udp send a zero-length packet to let the other end know of our existence
+		written = write(sock, NULL, 0);	//when using udp send a zero-length packet to let the other end know of our existence
 	FD_ZERO(&readfds);
 	FD_SET(sock, &readfds);
 	tv.tv_sec = 1;
