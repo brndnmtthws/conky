@@ -45,6 +45,9 @@
 #ifdef BUILD_MYSQL
 #include "mysql.h"
 #endif
+#ifdef BUILD_ICAL
+#include "ical.h"
+#endif
 #ifdef BUILD_X11
 #include "fonts.h"
 #endif
@@ -1215,6 +1218,12 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		scan_tztime(obj, arg);
 		obj->callbacks.print = &print_tztime;
 		obj->callbacks.free = &free_tztime;
+#ifdef BUILD_ICAL
+	END OBJ_ARG(ical, 0, "ical requires arguments")
+		parse_ical_args(obj, arg, free_at_crash, s);
+		obj->callbacks.print = &print_ical;
+		obj->callbacks.free = &free_ical;
+#endif
 #ifdef BUILD_ICONV
 	END OBJ_ARG(iconv_start, 0, "Iconv requires arguments")
 		init_iconv_start(obj, free_at_crash, arg);

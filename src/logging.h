@@ -30,6 +30,7 @@
 #ifndef _LOGGING_H
 #define _LOGGING_H
 
+#include "conky.h"
 #include "mail.h"
 
 void clean_up(void *memtofree1, void* memtofree2);

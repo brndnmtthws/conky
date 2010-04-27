@@ -66,6 +66,10 @@ if(BUILD_MATH)
 	set(conky_libs ${conky_libs} -lm)
 endif(BUILD_MATH)
 
+if(BUILD_ICAL)
+	set(conky_libs ${conky_libs} -lical)
+endif(BUILD_ICAL)
+
 if(BUILD_BUILTIN_CONFIG)
 	check_function_exists(fopencookie HAVE_FOPENCOOKIE)
 	check_function_exists(funopen HAVE_FUNOPEN)

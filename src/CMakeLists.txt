@@ -165,6 +165,11 @@ if(BUILD_APCUPSD)
 	set(optional_sources ${optional_sources} ${apcupsd})
 endif(BUILD_APCUPSD)
 
+if(BUILD_ICAL)
+	set(ical ical.cc)
+	set(optional_sources ${optional_sources} ${ical})
+endif(BUILD_ICAL)
+
 if(BUILD_ICONV)
 	set(iconv iconv_tools.cc)
 	set(optional_sources ${optional_sources} ${iconv})

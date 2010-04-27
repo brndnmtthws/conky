@@ -1540,6 +1540,20 @@
     <varlistentry>
         <term>
             <command>
+                <option>ical</option>
+            </command>
+            <option>number file</option>
+        </term>
+        <listitem>Shows title of event number 'number' in the ical (RFC 5545) file
+        'file'. The events are first ordered by starting time, events that started
+        in the past are  ignored. The events that are shown are the VEVENTS, the
+        title that is shown is the SUMMARY and the starting time used for sorting
+        is DTSTART .
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>iconv_start</option>
             </command>
             <option>codeset_from codeset_to</option>
