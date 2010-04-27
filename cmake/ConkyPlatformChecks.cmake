@@ -67,6 +67,10 @@ if(BUILD_MATH)
 endif(BUILD_MATH)
 
 if(BUILD_ICAL)
+	check_include_files(libical/ical.h ICAL_H_)
+	if(NOT ICAL_H_)
+		message(FATAL_ERROR "Unable to find libical")
+	endif(NOT ICAL_H_)
 	set(conky_libs ${conky_libs} -lical)
 endif(BUILD_ICAL)
 
