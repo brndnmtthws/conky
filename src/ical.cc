@@ -83,7 +83,7 @@ void parse_ical_args(struct text_object *obj, const char* arg, void *free_at_cra
 	FILE *file;
 	icalparser *parser;
 	icalcomponent *allc, *curc;
-	struct ical_event *ll_start, *ll_end;
+	struct ical_event *ll_start, *ll_end, *ll_new;
 	struct obj_ical *opaque;
 	unsigned int num;
 
@@ -111,17 +111,18 @@ void parse_ical_args(struct text_object *obj, const char* arg, void *free_at_cra
 		return;
 	}
 	ll_start = add_event(NULL, curc);
-	if(ll_start) {
-		ll_end = ll_start;
-	}
+	ll_end = ll_start;
 	while(1) {
 		curc = icalcomponent_get_next_component(allc, ICAL_VEVENT_COMPONENT);
 		if(!curc) break;
-		ll_end = add_event(ll_end, curc);
+		ll_new = add_event(ll_end, curc);
 		if( ! ll_start) {	//first component was not added
-			ll_start = ll_end;
+			ll_start = ll_new;
+			ll_end = ll_new;
 		}else if( ll_start->prev ) {
 			ll_start = ll_start->prev;
+		}else if( ll_end->next ) {
+			ll_end = ll_end->next;
 		}
 	}
 	opaque = (struct obj_ical *) malloc(sizeof(struct obj_ical));
