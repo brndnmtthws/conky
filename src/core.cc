@@ -63,6 +63,7 @@
 #include "mixer.h"
 #include "mail.h"
 #include "mboxscan.h"
+#include "nc.h"
 #include "net_stat.h"
 #ifdef BUILD_NVIDIA
 #include "nvidia.h"
@@ -77,10 +78,6 @@
 #include "top.h"
 #include "user.h"
 #include "users.h"
-
-#ifdef BUILD_NCURSES
-#include <ncurses.h>
-#endif
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
@@ -505,7 +502,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		}
 #endif /* BUILD_X11 */
 #ifdef BUILD_NCURSES
-		if (output_methods & TO_NCURSES) {
+		if (out_to_ncurses.get(*state)) {
 			obj->data.l = COLOR_WHITE;
 			if(arg) {
 				if(strcasecmp(arg, "red") == 0) {

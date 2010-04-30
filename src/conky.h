@@ -324,9 +324,6 @@ extern std::string current_config;
 #define TO_STDERR 4
 #define OVERWRITE_FILE 8
 #define APPEND_FILE 16
-#ifdef BUILD_NCURSES
-#define TO_NCURSES 32
-#endif /* BUILD_NCURSES */
 enum x_initialiser_state {
 	NO = 0,
 	YES = 1,

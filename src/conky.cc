@@ -67,12 +67,6 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <getopt.h>
-#ifdef BUILD_NCURSES
-#include <ncurses.h>
-#ifdef LEAKFREE_NCURSES
-#include "nc.h"
-#endif
-#endif
 #ifdef BUILD_WEATHER_XOAP
 #include <libxml/parser.h>
 #endif /* BUILD_WEATHER_XOAP */
@@ -94,6 +88,7 @@
 #endif /* BUILD_LUA */
 #include "logging.h"
 #include "mail.h"
+#include "nc.h"
 #include "net_stat.h"
 #include "temphelper.h"
 #include "template.h"
@@ -1141,7 +1136,7 @@ static inline void set_foreground_color(long c)
 	}
 #endif /* BUILD_X11 */
 #ifdef BUILD_NCURSES
-	if (output_methods & TO_NCURSES) {
+	if (out_to_ncurses.get(*state)) {
 		attron(COLOR_PAIR(c));
 	}
 #endif /* BUILD_NCURSES */
@@ -1183,7 +1178,7 @@ static void draw_string(const char *s)
 		fprintf(append_fpointer, "%s\n", s_with_newlines);
 	}
 #ifdef BUILD_NCURSES
-	if ((output_methods & TO_NCURSES) && draw_mode == FG) {
+	if (out_to_ncurses.get(*state) && draw_mode == FG) {
 		printw("%s", s_with_newlines);
 	}
 #endif
@@ -1710,7 +1705,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 #endif /* BUILD_X11 */
 	draw_string(s);
 #ifdef BUILD_NCURSES
-	if (output_methods & TO_NCURSES) {
+	if (out_to_ncurses.get(*state)) {
 		printw("\n");
 	}
 #endif /* BUILD_NCURSES */
@@ -1733,7 +1728,7 @@ static int draw_line(char *s, int special_index)
 	}
 #endif /* BUILD_X11 */
 #ifdef BUILD_NCURSES
-	if (output_methods & TO_NCURSES) {
+	if (out_to_ncurses.get(*state)) {
 		return draw_each_line_inner(s, special_index, -1);
 	}
 #endif /* BUILD_NCURSES */
@@ -2252,7 +2247,7 @@ static void main_loop(void)
 			update_text();
 			draw_stuff();
 #ifdef BUILD_NCURSES
-			if(output_methods & TO_NCURSES) {
+			if(out_to_ncurses.get(*state)) {
 				refresh();
 				clear();
 			}
@@ -2418,11 +2413,6 @@ void clean_up(void *memtofree1, void* memtofree2)
 {
 	free_update_callbacks();
 
-#ifdef BUILD_NCURSES
-	if(output_methods & TO_NCURSES) {
-		endwin();
-	}
-#endif
 	conftree_empty(currentconffile);
 	currentconffile = NULL;
 	free_and_zero(memtofree1);
@@ -2485,21 +2475,6 @@ void clean_up(void *memtofree1, void* memtofree2)
 
 	conky::cleanup_config_settings(*state);
 	state.reset();
-}
-
-static bool string_to_bool(const char *s)
-{
-	if (!s) {
-		// Assumes an option without a true/false means true
-		return true;
-	} else if (strcasecmp(s, "yes") == EQUAL) {
-		return true;
-	} else if (strcasecmp(s, "true") == EQUAL) {
-		return true;
-	} else if (strcasecmp(s, "1") == EQUAL) {
-		return true;
-	}
-	return false;
 }
 
 static void set_default_configurations(void)
@@ -2947,15 +2922,6 @@ char load_config_file(const char *f)
 		CONF("max_text_width") {
 			max_text_width = atoi(value);
 		}
-#ifdef BUILD_NCURSES
-		CONF("out_to_ncurses") {
-			if(string_to_bool(value)) {
-				initscr();
-				start_color();
-				output_methods |= TO_NCURSES;
-			}
-		}
-#endif
 		CONF("overwrite_file") {
 			free_and_zero(overwrite_file);
 			if (overwrite_works(value)) {
@@ -3265,14 +3231,14 @@ char load_config_file(const char *f)
 	if(out_to_x.get(*state)) {
 		current_text_color = default_color.get(*state);
 	}
-	if (out_to_x.get(*state) && (output_methods & TO_NCURSES)) {
+	if (out_to_x.get(*state) && out_to_ncurses.get(*state)) {
 		NORM_ERR("out_to_x and out_to_ncurses are incompatible, turning out_to_ncurses off");
-		output_methods &= ~TO_NCURSES;
-		endwin();
+		state->pushboolean(false);
+		out_to_ncurses.lua_set(*state);
 	}
 #endif /* BUILD_X11 */
 	if ((out_to_stdout.get(*state) || out_to_stderr.get(*state))
-			&& (output_methods & TO_NCURSES)) {
+			&& out_to_ncurses.get(*state)) {
 		NORM_ERR("out_to_ncurses conflicts with out_to_console and out_to_stderr, disabling the later ones");
 		// XXX: this will need some rethinking
 		state->pushboolean(false);

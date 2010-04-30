@@ -33,6 +33,7 @@
 #include "fonts.h"
 #endif /* BUILD_X11 */
 #include "logging.h"
+#include "nc.h"
 #include "specials.h"
 #include <math.h>
 #ifdef HAVE_SYS_PARAM_H
@@ -484,7 +485,7 @@ void new_fg(struct text_object *obj, char *p, int p_max_size)
 		new_special(p, FG)->arg = obj->data.l;
 #endif /* BUILD_X11 */
 #ifdef BUILD_NCURSES
-	if (output_methods & TO_NCURSES)
+	if (out_to_ncurses.get(*state))
 		new_special(p, FG)->arg = obj->data.l;
 #endif /* BUILD_NCURSES */
 	UNUSED(obj);
