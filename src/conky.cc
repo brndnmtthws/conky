@@ -160,6 +160,10 @@ static conky::simple_config_setting<spacer_state> use_spacer("use_spacer", NO_SP
 static conky::simple_config_setting<bool> short_units("short_units", false, true);
 static conky::simple_config_setting<bool> format_human_readable("format_human_readable",
 																true, true);
+
+static conky::simple_config_setting<bool> out_to_stdout("out_to_console", false, false);
+static conky::simple_config_setting<bool> out_to_stderr("out_to_stderr", false, false);
+
 int top_cpu, top_mem, top_time;
 #ifdef BUILD_IOSTATS
 int top_io;
@@ -1163,12 +1167,12 @@ static void draw_string(const char *s)
 			s_with_newlines[i] = '\n';
 		}
 	}
-	if ((output_methods & TO_STDOUT) && draw_mode == FG) {
+	if (out_to_stdout.get(*state) && draw_mode == FG) {
 		printf("%s\n", s_with_newlines);
 		if (extra_newline.get(*state)) fputc('\n', stdout);
 		fflush(stdout);	/* output immediately, don't buffer */
 	}
-	if ((output_methods & TO_STDERR) && draw_mode == FG) {
+	if (out_to_stderr.get(*state) && draw_mode == FG) {
 		fprintf(stderr, "%s\n", s_with_newlines);
 		fflush(stderr);	/* output immediately, don't buffer */
 	}
@@ -2571,7 +2575,8 @@ static void set_default_configurations(void)
 	state->pushboolean(true);
 	out_to_x.lua_set(*state);
 #else
-	output_methods = TO_STDOUT;
+	state->pushboolean(true);
+	out_to_stdout.lua_set(*state);
 #endif
 #ifdef BUILD_X11
 	set_first_font("6x10");
@@ -2942,17 +2947,6 @@ char load_config_file(const char *f)
 		CONF("max_text_width") {
 			max_text_width = atoi(value);
 		}
-		CONF("out_to_console") {
-			if(string_to_bool(value)) {
-				output_methods |= TO_STDOUT;
-			} else {
-				output_methods &= ~TO_STDOUT;
-			}
-		}
-		CONF("out_to_stderr") {
-			if(string_to_bool(value))
-				output_methods |= TO_STDERR;
-		}
 #ifdef BUILD_NCURSES
 		CONF("out_to_ncurses") {
 			if(string_to_bool(value)) {
@@ -3277,9 +3271,14 @@ char load_config_file(const char *f)
 		endwin();
 	}
 #endif /* BUILD_X11 */
-	if ((output_methods & (TO_STDOUT | TO_STDERR)) && (output_methods & TO_NCURSES)) {
+	if ((out_to_stdout.get(*state) || out_to_stderr.get(*state))
+			&& (output_methods & TO_NCURSES)) {
 		NORM_ERR("out_to_ncurses conflicts with out_to_console and out_to_stderr, disabling the later ones");
-		output_methods &= ~(TO_STDOUT | TO_STDERR);
+		// XXX: this will need some rethinking
+		state->pushboolean(false);
+		out_to_stdout.lua_set(*state);
+		state->pushboolean(false);
+		out_to_stderr.lua_set(*state);
 	}
 #endif /* BUILD_NCURSES */
 	return TRUE;
@@ -3445,7 +3444,13 @@ void initialisation(int argc, char **argv) {
 			global_text = strndup(optarg, max_user_text);
 			convert_escapes(global_text);
 			total_run_times = 1;
-			output_methods = TO_STDOUT;
+
+			state->pushboolean(true);
+			out_to_stdout.lua_set(*state);
+#ifdef BUILD_X11
+			state->pushboolean(false);
+			out_to_x.lua_set(*state);
+#endif
 			for_scripts = true;
 		}
 	}

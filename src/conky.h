@@ -321,7 +321,6 @@ extern unsigned int max_user_text;
 /* path to config file */
 extern std::string current_config;
 
-#define TO_STDOUT 2
 #define TO_STDERR 4
 #define OVERWRITE_FILE 8
 #define APPEND_FILE 16
