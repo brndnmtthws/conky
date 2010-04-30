@@ -151,4 +151,6 @@ option(BUILD_APCUPSD "Enable APCUPSD support" true)
 
 option(BUILD_ICAL "Enable if you want iCalendar (RFC 5545) support" false)
 
+option(BUILD_IRC "Enable if you want IRC support" false)
+
 option(BUILD_ICONV "Enable iconv support" false)

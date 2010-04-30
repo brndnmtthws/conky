@@ -228,6 +228,9 @@ static void print_version(void)
 #ifdef BUILD_PORT_MONITORS
 		"  * portmon\n"
 #endif /* BUILD_PORT_MONITORS */
+#ifdef BUILD_IRC
+		"  * IRC\n"
+#endif
 #ifdef BUILD_CURL
 		"  * Curl\n"
 #endif /* BUILD_CURL */

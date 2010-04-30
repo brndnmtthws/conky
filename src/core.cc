@@ -48,6 +48,9 @@
 #ifdef BUILD_ICAL
 #include "ical.h"
 #endif
+#ifdef BUILD_IRC
+#include "irc.h"
+#endif
 #ifdef BUILD_X11
 #include "fonts.h"
 #endif
@@ -1223,6 +1226,12 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		parse_ical_args(obj, arg, free_at_crash, s);
 		obj->callbacks.print = &print_ical;
 		obj->callbacks.free = &free_ical;
+#endif
+#ifdef BUILD_IRC
+	END OBJ_ARG(irc, 0, "irc requires arguments")
+		parse_irc_args(obj, arg);
+		obj->callbacks.print = &print_irc;
+		obj->callbacks.free = &free_irc;
 #endif
 #ifdef BUILD_ICONV
 	END OBJ_ARG(iconv_start, 0, "Iconv requires arguments")

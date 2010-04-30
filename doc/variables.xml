@@ -1554,6 +1554,18 @@
     <varlistentry>
         <term>
             <command>
+                <option>irc</option>
+            </command>
+            <option>server(:port) #channel</option>
+        </term>
+        <listitem>Shows everything that's being told in #channel on IRCserver
+        'server'. TCP-port 6667 is used for the connection unless 'port' is
+        specified.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>iconv_start</option>
             </command>
             <option>codeset_from codeset_to</option>

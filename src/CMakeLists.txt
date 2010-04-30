@@ -170,6 +170,11 @@ if(BUILD_ICAL)
 	set(optional_sources ${optional_sources} ${ical})
 endif(BUILD_ICAL)
 
+if(BUILD_IRC)
+	set(irc irc.cc)
+	set(optional_sources ${optional_sources} ${irc})
+endif(BUILD_IRC)
+
 if(BUILD_ICONV)
 	set(iconv iconv_tools.cc)
 	set(optional_sources ${optional_sources} ${iconv})
