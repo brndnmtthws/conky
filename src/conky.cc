@@ -377,6 +377,22 @@ static int fixed_size = 0, fixed_pos = 0;
 static int minimum_width, minimum_height;
 static int maximum_width;
 
+static bool isutf8(const char* envvar) {
+	char *s = getenv(envvar);
+	if(s) {
+		std::string temp = s;
+		std::transform(temp.begin(), temp.end(), temp.begin(), ::tolower);
+		if( (temp.find("utf-8") != std::string::npos) || (temp.find("utf8") != std::string::npos) ) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/* UTF-8 */
+static conky::simple_config_setting<bool> utf8_mode("override_utf8_locale",
+					isutf8("LC_ALL") || isutf8("LC_CTYPE") || isutf8("LANG"), false);
+
 #endif /* BUILD_X11 */
 
 #ifdef __OpenBSD__
@@ -388,9 +404,6 @@ unsigned int max_user_text;
 
 /* maximum size of individual text buffers, ie $exec buffer size */
 unsigned int text_buffer_size = DEFAULT_TEXT_BUFFER_SIZE;
-
-/* UTF-8 */
-bool utf8_mode = false;
 
 /* pad percentages to decimals? */
 static int pad_percents = 0;
@@ -440,7 +453,7 @@ int calc_text_width(const char *s)
 	if (use_xft.get(*state)) {
 		XGlyphInfo gi;
 
-		if (utf8_mode) {
+		if (utf8_mode.get(*state)) {
 			XftTextExtentsUtf8(display, fonts[selected_font].xftfont,
 					(const FcChar8 *) s, slen, &gi);
 		} else {
@@ -1229,7 +1242,7 @@ static void draw_string(const char *s)
 			c2.color.green = c.green;
 			c2.color.blue = c.blue;
 			c2.color.alpha = fonts[selected_font].font_alpha;
-			if (utf8_mode) {
+			if (utf8_mode.get(*state)) {
 				XftDrawStringUtf8(window.xftdraw, &c2, fonts[selected_font].xftfont,
 					cur_x, cur_y, (const XftChar8 *) s, strlen(s));
 			} else {
@@ -2926,11 +2939,6 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-#ifdef BUILD_X11
-		CONF("override_utf8_locale") {
-			utf8_mode = string_to_bool(value);
-		}
-#endif /* BUILD_X11 */
 		CONF("max_text_width") {
 			max_text_width = atoi(value);
 		}
@@ -3619,20 +3627,6 @@ void initialisation(int argc, char **argv) {
 #endif /* BUILD_LUA */
 }
 
-#ifdef BUILD_X11
-bool isutf8(const char* envvar) {
-	char *s = getenv(envvar);
-	if(s) {
-		std::string temp = s;
-		std::transform(temp.begin(), temp.end(), temp.begin(), ::tolower);
-		if( (temp.find("utf-8") != std::string::npos) || (temp.find("utf8") != std::string::npos) ) {
-			return true;
-		}
-	}
-	return false;
-}
-#endif
-
 int main(int argc, char **argv)
 {
 	argc_copy = argc;
@@ -3649,9 +3643,6 @@ int main(int argc, char **argv)
 
 	/* handle command line parameters that don't change configs */
 #ifdef BUILD_X11
-	if(isutf8("LC_ALL") || isutf8("LC_CTYPE") || isutf8("LANG")) {
-		utf8_mode = true;
-	}
 	if (!setlocale(LC_CTYPE, "")) {
 		NORM_ERR("Can't set the specified locale!\nCheck LANG, LC_CTYPE, LC_ALL.");
 	}
