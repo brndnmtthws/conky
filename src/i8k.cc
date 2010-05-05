@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "conky.h"
 #include "logging.h"
 #include "temphelper.h"
 #include "text_object.h"

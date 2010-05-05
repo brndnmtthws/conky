@@ -23,6 +23,7 @@
  *
  */
 
+#include "conky.h"
 #include "logging.h"
 #include <pthread.h>
 #include <stdlib.h>
