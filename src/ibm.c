@@ -73,7 +73,7 @@ speed:          2944
 commands:       enable, disable
  * Peter Tarjan (ptarjan@citromail.hu) */
 
-void get_ibm_acpi_fan(struct text_object *obj, char *p, int p_max_size)
+int get_ibm_acpi_fan(struct text_object *obj, char *p, int p_max_size)
 {
 	FILE *fp;
 	unsigned int speed = 0;
@@ -82,7 +82,7 @@ void get_ibm_acpi_fan(struct text_object *obj, char *p, int p_max_size)
 	(void)obj;
 
 	if (!p || p_max_size <= 0) {
-		return;
+		return 0;
 	}
 
 	snprintf(fan, 127, "%s/fan", IBM_ACPI_DIR);
@@ -106,6 +106,7 @@ void get_ibm_acpi_fan(struct text_object *obj, char *p, int p_max_size)
 
 	fclose(fp);
 	snprintf(p, p_max_size, "%d", speed);
+	return 0;
 }
 
 /* get the measured temperatures from the temperature sensors

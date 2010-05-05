@@ -509,6 +509,7 @@ static inline void for_each_line(char *b, int f(char *, int))
 	char *ps, *pe;
 	int special_index = 0; /* specials index */
 
+	if(! b) return;
 	for (ps = b, pe = b; *pe; pe++) {
 		if (*pe == '\n') {
 			*pe = '\0';
@@ -761,6 +762,8 @@ void generate_text_internal(char *p, int p_max_size,
 	char buff_in[p_max_size];
 	buff_in[0] = 0;
 #endif /* HAVE_ICONV */
+
+	if(! p) return;
 
 	p[0] = 0;
 	obj = root.next;
@@ -4024,11 +4027,8 @@ void clean_up_x11() {
 }
 #endif
 
-void clean_up(void *memtofree1, void* memtofree2)
-{
+void clean_up_without_threads(void *memtofree1, void* memtofree2) {
 	int i;
-
-	free_update_callbacks();
 
 #ifdef NCURSES
 	if(output_methods & TO_NCURSES) {
@@ -4123,6 +4123,12 @@ void clean_up(void *memtofree1, void* memtofree2)
 		free(global_cpu);
 		global_cpu = NULL;
 	}
+}
+
+void clean_up(void *memtofree1, void* memtofree2)
+{
+	free_update_callbacks();
+	clean_up_without_threads(memtofree1, memtofree2);
 }
 
 static int string_to_bool(const char *s)

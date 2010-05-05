@@ -10,7 +10,7 @@ const char *get_disk_protect_queue(const char *);
 char *get_ioscheduler(char *);
 int get_laptop_mode(void);
 
-void update_gateway_info(void);
+int update_gateway_info(void);
 void free_gateway_info(void);
 int gateway_exists(void);
 void print_gateway_iface(char *, int);
@@ -28,6 +28,6 @@ void free_sysfs_sensor(struct text_object *);
 int get_entropy_avail(unsigned int *);
 int get_entropy_poolsize(unsigned int *);
 
-void update_stat(void);
+int update_stat(void);
 
 #endif /* _LINUX_H */

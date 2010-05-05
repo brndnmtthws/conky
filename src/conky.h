@@ -308,7 +308,7 @@ extern int cpu_separate;
 extern struct information info;
 
 /* defined in users.c */
-void update_users(void);
+int update_users(void);
 void update_user_time(char *tty);
 
 /* defined in conky.c */

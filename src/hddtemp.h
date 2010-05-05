@@ -5,7 +5,7 @@
 
 void set_hddtemp_host(const char *);
 void set_hddtemp_port(const char *);
-void update_hddtemp(void);
+int update_hddtemp(void);
 void free_hddtemp(void);
 int get_hddtemp_info(const char *, short *, char *);
 
