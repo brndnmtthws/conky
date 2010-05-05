@@ -31,7 +31,7 @@
 #ifndef _USERS_H
 #define _USERS_H
 
-void update_users(void);
+int update_users(void);
 
 void print_user_names(struct text_object *, char *, int);
 void print_user_terms(struct text_object *, char *, int);

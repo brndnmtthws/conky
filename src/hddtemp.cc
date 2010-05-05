@@ -207,29 +207,30 @@ out_fail:
 	return 1;
 }
 
-void update_hddtemp(void) {
+int update_hddtemp(void) {
 	char *data, *dev, unit, *saveptr;
 	short val;
 	static double last_hddtemp_update = 0.0;
 
 	/* limit tcp connection overhead */
 	if (current_update_time - last_hddtemp_update < 5)
-		return;
+		return 0;
 	last_hddtemp_update = current_update_time;
 
 	free_hddtemp_info();
 
 	if (!(data = fetch_hddtemp_output()))
-		return;
+		return 0;
 
 	if (read_hdd_val(data, &dev, &val, &unit, &saveptr)) {
 		free(data);
-		return;
+		return 0;
 	}
 	do {
 		add_hddtemp_info(dev, val, unit);
 	} while (!read_hdd_val(NULL, &dev, &val, &unit, &saveptr));
 	free(data);
+	return 0;
 }
 
 void free_hddtemp(struct text_object *obj)

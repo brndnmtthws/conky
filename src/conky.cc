@@ -490,6 +490,7 @@ static inline void for_each_line(char *b, int f(char *, int))
 	char *ps, *pe;
 	int special_index = 0; /* specials index */
 
+	if(! b) return;
 	for (ps = b, pe = b; *pe; pe++) {
 		if (*pe == '\n') {
 			*pe = '\0';
@@ -748,6 +749,9 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root)
 {
 	struct text_object *obj;
 	size_t a;
+
+	if(! p) return;
+
 #ifdef BUILD_ICONV
 	char *buff_in;
 
@@ -2427,9 +2431,7 @@ void free_specials(special_t *current) {
 	}
 }
 
-void clean_up(void *memtofree1, void* memtofree2)
-{
-	free_update_callbacks();
+void clean_up_without_threads(void *memtofree1, void* memtofree2) {
 
 #ifdef BUILD_NCURSES
 	if(output_methods & TO_NCURSES) {
@@ -2499,6 +2501,12 @@ void clean_up(void *memtofree1, void* memtofree2)
 	clear_net_stats();
 	clear_diskio_stats();
 	free_and_zero(global_cpu);
+}
+
+void clean_up(void *memtofree1, void* memtofree2)
+{
+	free_update_callbacks();
+	clean_up_without_threads(memtofree1, memtofree2);
 }
 
 static bool string_to_bool(const char *s)

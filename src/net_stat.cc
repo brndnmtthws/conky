@@ -396,7 +396,7 @@ void free_dns_data(struct text_object *obj)
 	memset(&dns_data, 0, sizeof(dns_data));
 }
 
-void update_dns_data(void)
+int update_dns_data(void)
 {
 	FILE *fp;
 	char line[256];
@@ -404,7 +404,7 @@ void update_dns_data(void)
 
 	/* maybe updating too often causes higher load because of /etc lying on a real FS
 	if (current_update_time - last_dns_update < 10.0)
-		return;
+		return 0;
 
 	last_dns_update = current_update_time;
 	*/
@@ -412,7 +412,7 @@ void update_dns_data(void)
 	free_dns_data(NULL);
 
 	if ((fp = fopen("/etc/resolv.conf", "r")) == NULL)
-		return;
+		return 0;
 	while(!feof(fp)) {
 		if (fgets(line, 255, fp) == NULL) {
 			break;
@@ -425,6 +425,7 @@ void update_dns_data(void)
 		}
 	}
 	fclose(fp);
+	return 0;
 }
 
 void parse_nameserver_arg(struct text_object *obj, const char *arg)

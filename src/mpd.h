@@ -35,7 +35,7 @@ int mpd_set_port(const char *);
 /* text object functions */
 void init_mpd(void);
 void free_mpd(struct text_object *);
-void update_mpd(void);
+int update_mpd(void);
 
 void print_mpd_elapsed(struct text_object *, char *, int);
 void print_mpd_length(struct text_object *, char *, int);

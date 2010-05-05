@@ -33,7 +33,7 @@ void print_disk_protect_queue(struct text_object *, char *, int);
 void print_ioscheduler(struct text_object *, char *, int);
 void print_laptop_mode(struct text_object *, char *, int);
 
-void update_gateway_info(void);
+int update_gateway_info(void);
 void free_gateway_info(struct text_object *obj);
 int gateway_exists(struct text_object *);
 void print_gateway_iface(struct text_object *, char *, int);
@@ -51,7 +51,7 @@ void free_sysfs_sensor(struct text_object *);
 int get_entropy_avail(unsigned int *);
 int get_entropy_poolsize(unsigned int *);
 
-void update_stat(void);
+int update_stat(void);
 
 void print_distribution(struct text_object *, char *, int);
 

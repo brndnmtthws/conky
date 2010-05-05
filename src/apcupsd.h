@@ -28,7 +28,7 @@
 int apcupsd_scan_arg(const char *);
 
 /* Service routine for the conky main thread */
-void update_apcupsd(void);
+int update_apcupsd(void);
 
 double apcupsd_loadbarval(struct text_object *);
 

@@ -101,7 +101,7 @@ void prepare_update(void)
 {
 }
 
-void update_uptime(void)
+int update_uptime(void)
 {
 #ifdef HAVE_SYSINFO
 	if (!prefer_proc) {
@@ -117,12 +117,13 @@ void update_uptime(void)
 
 		if (!(fp = open_file("/proc/uptime", &rep))) {
 			info.uptime = 0.0;
-			return;
+			return 0;
 		}
 		if (fscanf(fp, "%lf", &info.uptime) <= 0)
 			info.uptime = 0;
 		fclose(fp);
 	}
+	return 0;
 }
 
 int check_mount(struct text_object *obj)
@@ -153,7 +154,7 @@ int check_mount(struct text_object *obj)
 /* these things are also in sysinfo except Buffers:
  * (that's why I'm reading them from proc) */
 
-void update_meminfo(void)
+int update_meminfo(void)
 {
 	FILE *meminfo_fp;
 	static int rep = 0;
@@ -165,7 +166,7 @@ void update_meminfo(void)
         info.bufmem = info.buffers = info.cached = info.memfree = info.memeasyfree = 0;
 
 	if (!(meminfo_fp = open_file("/proc/meminfo", &rep))) {
-		return;
+		return 0;
 	}
 
 	while (!feof(meminfo_fp)) {
@@ -195,6 +196,7 @@ void update_meminfo(void)
 	info.bufmem = info.cached + info.buffers;
 
 	fclose(meminfo_fp);
+	return 0;
 }
 
 void print_laptop_mode(struct text_object *obj, char *p, int p_max_size)
@@ -270,7 +272,7 @@ void update_gateway_info_failure(const char *reason)
 /* Iface Destination Gateway Flags RefCnt Use Metric Mask MTU Window IRTT */
 #define RT_ENTRY_FORMAT "%63s %lx %lx %x %*d %*d %*d %lx %*d %*d %*d\n"
 
-void update_gateway_info(void)
+int update_gateway_info(void)
 {
 	FILE *fp;
 	struct in_addr ina;
@@ -284,13 +286,13 @@ void update_gateway_info(void)
 
 	if ((fp = fopen("/proc/net/route", "r")) == NULL) {
 		update_gateway_info_failure("fopen()");
-		return;
+		return 0;
 	}
 
 	/* skip over the table header line, which is always present */
 	if (fscanf(fp, "%*[^\n]\n") < 0) {
 		fclose(fp);
-		return;
+		return 0;
 	}
 
 	while (!feof(fp)) {
@@ -307,7 +309,7 @@ void update_gateway_info(void)
 		}
 	}
 	fclose(fp);
-	return;
+	return 0;
 }
 
 void free_gateway_info(struct text_object *obj)
@@ -339,7 +341,7 @@ void print_gateway_ip(struct text_object *obj, char *p, int p_max_size)
 	snprintf(p, p_max_size, "%s", gw_info.ip);
 }
 
-void update_net_stats(void)
+int update_net_stats(void)
 {
 	FILE *net_dev_fp;
 	static int rep = 0;
@@ -363,19 +365,19 @@ void update_net_stats(void)
 	/* get delta */
 	delta = current_update_time - last_update_time;
 	if (delta <= 0.0001) {
-		return;
+		return 0;
 	}
 
 	/* open file and ignore first two lines */
 	if (!(net_dev_fp = open_file("/proc/net/dev", &rep))) {
 		clear_net_stats();
-		return;
+		return 0;
 	}
 
 	if (!fgets(buf, 255, net_dev_fp) ||  /* garbage */
 	    !fgets(buf, 255, net_dev_fp)) {  /* garbage (field names) */
 		fclose(net_dev_fp);
-		return;
+		return 0;
 	}
 
 	/* read each interface */
@@ -554,11 +556,12 @@ void update_net_stats(void)
 	first = 0;
 
 	fclose(net_dev_fp);
+	return 0;
 }
 
 int result;
 
-void update_total_processes(void)
+int update_total_processes(void)
 {
 	DIR *dir;
 	struct dirent *entry;
@@ -567,23 +570,24 @@ void update_total_processes(void)
 
 	info.procs = 0;
 	if (!(dir = opendir("/proc"))) {
-		return;
+		return 0;
 	}
 	while ((entry = readdir(dir))) {
 		if (!entry) {
 			/* Problem reading list of processes */
 			closedir(dir);
 			info.procs = 0;
-			return;
+			return 0;
 		}
 		if (sscanf(entry->d_name, "%d%c", &ignore1, &ignore2) == 1) {
 			info.procs++;
 		}
 	}
 	closedir(dir);
+	return 0;
 }
 
-void update_threads(void)
+int update_threads(void)
 {
 #ifdef HAVE_SYSINFO
 	if (!prefer_proc) {
@@ -599,12 +603,13 @@ void update_threads(void)
 
 		if (!(fp = open_file("/proc/loadavg", &rep))) {
 			info.threads = 0;
-			return;
+			return 0;
 		}
 		if (fscanf(fp, "%*f %*f %*f %*d/%hu", &info.threads) <= 0)
 			info.threads = 0;
 		fclose(fp);
 	}
+	return 0;
 }
 
 #define CPU_SAMPLE_COUNT 15
@@ -678,7 +683,7 @@ void get_cpu_count(void)
 #define TMPL_LONGSTAT "%*s %llu %llu %llu %llu %llu %llu %llu %llu"
 #define TMPL_SHORTSTAT "%*s %llu %llu %llu %llu"
 
-void update_stat(void)
+int update_stat(void)
 {
 	FILE *stat_fp;
 	static int rep = 0;
@@ -700,7 +705,7 @@ void update_stat(void)
 	pthread_mutex_lock(&last_stat_update_mutex);
 	if (last_stat_update == current_update_time) {
 		pthread_mutex_unlock(&last_stat_update_mutex);
-		return;
+		return 0;
 	}
 	last_stat_update = current_update_time;
 	pthread_mutex_unlock(&last_stat_update_mutex);
@@ -728,7 +733,7 @@ void update_stat(void)
 		if (info.cpu_usage) {
 			memset(info.cpu_usage, 0, info.cpu_count * sizeof(float));
 		}
-		return;
+		return 0;
 	}
 
 	idx = 0;
@@ -799,19 +804,22 @@ void update_stat(void)
 		}
 	}
 	fclose(stat_fp);
+	return 0;
 }
 
-void update_running_processes(void)
+int update_running_processes(void)
 {
 	update_stat();
+	return 0;
 }
 
-void update_cpu_usage(void)
+int update_cpu_usage(void)
 {
 	update_stat();
+	return 0;
 }
 
-void update_load_average(void)
+int update_load_average(void)
 {
 #ifdef HAVE_GETLOADAVG
 	if (!prefer_proc) {
@@ -829,13 +837,14 @@ void update_load_average(void)
 
 		if (!(fp = open_file("/proc/loadavg", &rep))) {
 			info.loadavg[0] = info.loadavg[1] = info.loadavg[2] = 0.0;
-			return;
+			return 0;
 		}
 		if (fscanf(fp, "%f %f %f", &info.loadavg[0], &info.loadavg[1],
 		           &info.loadavg[2]) < 0)
 			info.loadavg[0] = info.loadavg[1] = info.loadavg[2] = 0.0;
 		fclose(fp);
 	}
+	return 0;
 }
 
 /***********************************************************/
@@ -2209,7 +2218,7 @@ void get_powerbook_batt_info(struct text_object *obj, char *buffer, int n)
 	snprintf(buffer, n, "%s", pb_battery_info[obj->data.i]);
 }
 
-void update_top(void)
+int update_top(void)
 {
 	process_find_top(info.cpu, info.memu, info.time
 #ifdef BUILD_IOSTATS
@@ -2217,6 +2226,7 @@ void update_top(void)
 #endif
                 );
 	info.first_process = get_first_process();
+	return 0;
 }
 
 #define ENTROPY_AVAIL_PATH "/proc/sys/kernel/random/entropy_avail"
@@ -2319,7 +2329,7 @@ int is_disk(char *dev)
 	return dev_cur->memoized;
 }
 
-void update_diskio(void)
+int update_diskio(void)
 {
 	FILE *fp;
 	static int rep = 0;
@@ -2335,7 +2345,7 @@ void update_diskio(void)
 	stats.current_write = 0;
 
 	if (!(fp = open_file("/proc/diskstats", &rep))) {
-		return;
+		return 0;
 	}
 
 	/* read reads and writes from all disks (minor = 0), including cd-roms
@@ -2370,6 +2380,7 @@ void update_diskio(void)
 	}
 	update_diskio_values(&stats, total_reads, total_writes);
 	fclose(fp);
+	return 0;
 }
 
 void print_distribution(struct text_object *obj, char *p, int p_max_size)
