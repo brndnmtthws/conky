@@ -714,7 +714,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.free = &free_exec;
 	END OBJ(execp, 0)
 		scan_exec_arg(obj, arg);
-		obj->verbatim_output = 1;
 		obj->parse = true;
 		obj->thread = false;
 		obj->callbacks.print = &print_exec;
@@ -755,7 +754,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.free = &free_execi;
 	END OBJ_ARG(execpi, 0, "execpi needs arguments")
 		scan_execi_arg(obj, arg);
-		obj->verbatim_output = 1;
 		obj->parse = true;
 		obj->thread = false;
 		obj->callbacks.print = &print_execi;
@@ -1624,12 +1622,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 #ifdef BUILD_LUA
 	END OBJ_ARG(lua, 0, "lua needs arguments: <function name> [function parameters]")
 		obj->data.s = strndup(arg, text_buffer_size);
-		obj->verbatim_output = 1;
 		obj->callbacks.print = &print_lua;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(lua_parse, 0, "lua_parse needs arguments: <function name> [function parameters]")
 		obj->data.s = strndup(arg, text_buffer_size);
-		obj->verbatim_output = 1;
 		obj->callbacks.print = &print_lua_parse;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(lua_bar, 0, "lua_bar needs arguments: <height>,<width> <function name> [function parameters]")

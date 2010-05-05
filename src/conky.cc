@@ -788,8 +788,7 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root)
 #ifdef BUILD_ICONV
 		iconv_convert(&a, buff_in, p, p_max_size);
 #endif /* BUILD_ICONV */
-		if (!obj->verbatim_output)
-			substitute_newlines(p, a - 2);
+		substitute_newlines(p, a - 2);
 		p += a;
 		p_max_size -= a;
 		(*p) = 0;
