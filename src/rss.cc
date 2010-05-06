@@ -63,7 +63,7 @@ static void rss_process_info(char *p, int p_max_size, char *uri, char *action, i
 		memset(curloc->result, 0, sizeof(PRSS));
 		curloc->process_function = std::bind(prss_parse_data,
 				std::placeholders::_1, std::placeholders::_2);
-		ccurl_init_thread(curloc, interval);
+		ccurl_init_thread(curloc, interval * 60);
 		if (!curloc->p_timed_thread) {
 			NORM_ERR("error setting up RSS thread");
 		}
