@@ -2480,7 +2480,7 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2) {
 #ifdef RSS
 	rss_free_info();
 #endif
-#ifdef BUILD_WEATHER
+#if defined BUILD_WEATHER_METAR || defined BUILD_WEATHER_XOAP
 	weather_free_info();
 #endif
 #ifdef BUILD_LUA
