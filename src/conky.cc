@@ -73,9 +73,9 @@
 #include "nc.h"
 #endif
 #endif
-#ifdef BUILD_WEATHER_XOAP
+#if defined BUILD_WEATHER_XOAP || defined BUILD_RSS
 #include <libxml/parser.h>
-#endif /* BUILD_WEATHER_XOAP */
+#endif
 
 /* local headers */
 #include "core.h"
@@ -2477,7 +2477,7 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2) {
 #ifdef BUILD_CURL
 	ccurl_free_info();
 #endif
-#ifdef RSS
+#ifdef BUILD_RSS
 	rss_free_info();
 #endif
 #if defined BUILD_WEATHER_METAR || defined BUILD_WEATHER_XOAP
@@ -2491,9 +2491,9 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2) {
 	if (output_methods & TO_X)
 		cimlib_deinit();
 #endif /* BUILD_IMLIB2 */
-#ifdef BUILD_WEATHER_XOAP
+#if defined BUILD_WEATHER_XOAP || defined BUILD_RSS
 	xmlCleanupParser();
-#endif /* BUILD_WEATHER_XOAP */
+#endif
 
 	free_specials(specials);
 
