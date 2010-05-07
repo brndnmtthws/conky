@@ -108,6 +108,7 @@ void parse_ical_args(struct text_object *obj, const char* arg, void *free_at_cra
 	curc = icalcomponent_get_first_component(allc, ICAL_VEVENT_COMPONENT);
 	if(!curc) {
 		icalparser_free(parser);
+		icalcomponent_free(allc);
 		NORM_ERR("No ical events available");
 		return;
 	}
@@ -136,8 +137,10 @@ void parse_ical_args(struct text_object *obj, const char* arg, void *free_at_cra
 
 void print_ical(struct text_object *obj, char *p, int p_max_size) {
 	struct obj_ical *ical_obj = (struct obj_ical *) obj->data.opaque;
-	struct ical_event *ll_current = ical_obj->list;
+	struct ical_event *ll_current;
 
+	if( ! ical_obj) return;
+	ll_current = ical_obj->list;
 	unsigned int i=1;
 	while(1) {
 		if( ! ll_current) return;
@@ -153,6 +156,8 @@ void print_ical(struct text_object *obj, char *p, int p_max_size) {
 
 void free_ical(struct text_object *obj) {
 	struct obj_ical *ical_free_me = (struct obj_ical *) obj->data.opaque;
+
+	if( ! ical_free_me) return;
 	icalcomponent_free(ical_free_me->comps);
 	icalparser_free(ical_free_me->parser);
 	while(ical_free_me->list) {
