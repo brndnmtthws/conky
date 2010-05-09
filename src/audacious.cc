@@ -63,7 +63,7 @@ static audacious_t audacious_items;
 /* -----------------------------------------
  * Conky update function for audacious data.
  * ----------------------------------------- */
-void update_audacious(void)
+int update_audacious(void)
 {
 	/* The worker thread is updating audacious_items array asynchronously
 	 * to the main conky thread.
@@ -77,6 +77,7 @@ void update_audacious(void)
 
 	std::lock_guard<std::mutex> lock(info.audacious.p_timed_thread->mutex());
 	memcpy(&info.audacious.items, audacious_items, sizeof(audacious_items));
+	return 0;
 }
 
 /* ---------------------------------------------------------
