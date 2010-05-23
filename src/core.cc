@@ -434,12 +434,13 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(battery_bar, 0)
 		char bat[64];
-		if (arg) {
+
+		arg = scan_bar(obj, arg, 100);
+		if (arg && strlen(arg)>0) {
 			sscanf(arg, "%63s", bat);
 		} else {
 			strcpy(bat, "BAT0");
 		}
-		scan_bar(obj, bat, 100);
 		obj->data.s = strndup(bat, text_buffer_size);
 		obj->callbacks.barval = &get_battery_perct_bar;
 		obj->callbacks.free = &gen_free_opaque;
