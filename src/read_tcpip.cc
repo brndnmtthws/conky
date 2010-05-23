@@ -35,6 +35,8 @@
 #include <stdlib.h>
 #include <string>
 #include <unistd.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <sys/time.h>
 #include <cinttypes>
@@ -104,11 +106,13 @@ void print_tcp_ping(struct text_object *obj, char *p, int p_max_size)
 	struct timeval tv1, tv2, timeout;
 	struct sockaddr_in *addr = (struct sockaddr_in *) obj->data.opaque;
 	int addrlen = sizeof(struct sockaddr);
-	int sock = socket(addr->sin_family, SOCK_STREAM | SOCK_NONBLOCK, IPPROTO_TCP);
+	int sock = socket(addr->sin_family, SOCK_STREAM, IPPROTO_TCP);
 	unsigned long long usecdiff;
 	fd_set writefds;
 
 	if(sock != -1) {
+		fcntl(sock, F_SETFL, O_NONBLOCK | fcntl(sock, F_GETFL));
+
 		FD_ZERO(&writefds);
 		FD_SET(sock, &writefds);
 #define TCP_PING_TIMEOUT 10

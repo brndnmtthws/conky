@@ -121,7 +121,7 @@ void prepare_update(void)
 {
 }
 
-void update_uptime(void)
+int update_uptime(void)
 {
 	int mib[2] = { CTL_KERN, KERN_BOOTTIME };
 	struct timeval boottime;
@@ -136,6 +136,8 @@ void update_uptime(void)
 		fprintf(stderr, "Could not get uptime\n");
 		info.uptime = 0;
 	}
+
+	return 0;
 }
 
 int check_mount(struct text_object *obj)
@@ -156,7 +158,7 @@ int check_mount(struct text_object *obj)
 	return 0;
 }
 
-void update_meminfo(void)
+int update_meminfo(void)
 {
 	u_int total_pages, inactive_pages, free_pages;
 	unsigned long swap_avail, swap_free;
@@ -189,9 +191,11 @@ void update_meminfo(void)
 		info.swap = 0;
 		info.swapfree = 0;
 	}
+
+	return 0;
 }
 
-void update_net_stats(void)
+int update_net_stats(void)
 {
 	struct net_stat *ns;
 	double delta;
@@ -202,11 +206,11 @@ void update_net_stats(void)
 	/* get delta */
 	delta = current_update_time - last_update_time;
 	if (delta <= 0.0001) {
-		return;
+		return 0;
 	}
 
 	if (getifaddrs(&ifap) < 0) {
-		return;
+		return 0;
 	}
 
 	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
@@ -262,18 +266,20 @@ void update_net_stats(void)
 	}
 
 	freeifaddrs(ifap);
+	return 0;
 }
 
-void update_total_processes(void)
+int update_total_processes(void)
 {
 	int n_processes;
 
 	kvm_getprocs(kd, KERN_PROC_ALL, 0, &n_processes);
 
 	info.procs = n_processes;
+	return 0;
 }
 
-void update_running_processes(void)
+int update_running_processes(void)
 {
 	struct kinfo_proc *p;
 	int n_processes;
@@ -291,6 +297,7 @@ void update_running_processes(void)
 	}
 
 	info.run_procs = cnt;
+	return 0;
 }
 
 void get_cpu_count(void)
@@ -316,7 +323,7 @@ struct cpu_info {
 	long oldused;
 };
 
-void update_cpu_usage(void)
+int update_cpu_usage(void)
 {
 	int i, j = 0;
 	long used, total;
@@ -394,9 +401,10 @@ void update_cpu_usage(void)
 	}
 
 	free(cp_time);
+	return 0;
 }
 
-void update_load_average(void)
+int update_load_average(void)
 {
 	double v[3];
 
@@ -405,6 +413,8 @@ void update_load_average(void)
 	info.loadavg[0] = (double) v[0];
 	info.loadavg[1] = (double) v[1];
 	info.loadavg[2] = (double) v[2];
+
+	return 0;
 }
 
 double get_acpi_temperature(int fd)
@@ -585,9 +595,10 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size, const char *p_fo
 	return 1;
 }
 
-void update_top(void)
+int update_top(void)
 {
 	proc_find_top(info.cpu, info.memu);
+	return 0;
 }
 
 #if 0
@@ -645,7 +656,7 @@ cleanup:
 }
 #endif
 
-void update_diskio(void)
+int update_diskio(void)
 {
 	int devs_count, num_selected, num_selections, dn;
 	struct device_selection *dev_select = NULL;
@@ -663,7 +674,7 @@ void update_diskio(void)
 
 	if (devstat_getdevs(NULL, &statinfo_cur) < 0) {
 		free(statinfo_cur.dinfo);
-		return;
+		return 0;
 	}
 
 	devs_count = statinfo_cur.dinfo->numdevs;
@@ -695,6 +706,7 @@ void update_diskio(void)
 	}
 
 	free(statinfo_cur.dinfo);
+	return 0;
 }
 
 /* While topless is obviously better, top is also not bad. */
