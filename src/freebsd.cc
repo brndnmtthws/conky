@@ -778,6 +778,7 @@ proc_find_top(struct process **cpu, struct process **mem, struct process **time)
 
 		tmp = (process *) malloc(sizeof(struct process));
 		memcpy(tmp, &processes[i], sizeof(struct process));
+		tmp->name = strndup(processes[i].name, text_buffer_size);
 
 		ttmp = mem[i];
 		mem[i] = tmp;
@@ -793,6 +794,7 @@ proc_find_top(struct process **cpu, struct process **mem, struct process **time)
 
 		tmp = (process *) malloc(sizeof(struct process));
 		memcpy(tmp, &processes[i], sizeof(struct process));
+		tmp->name = strndup(processes[i].name, text_buffer_size);
 
 		ttmp = cpu[i];
 		cpu[i] = tmp;
@@ -808,6 +810,7 @@ proc_find_top(struct process **cpu, struct process **mem, struct process **time)
 
 		tmp = (process *) malloc(sizeof(struct process));
 		memcpy(tmp, &processes[i], sizeof(struct process));
+		tmp->name = strndup(processes[i].name, text_buffer_size);
 
 		ttmp = time[i];
 		time[i] = tmp;
