@@ -197,6 +197,7 @@ int ifblock_stack_empty(void **opaque)
 void obj_be_plain_text(struct text_object *obj, const char *text)
 {
 	obj->data.s = strdup(text);
+	obj->verbatim_output = 1;
 
 	memset(&obj->callbacks, 0, sizeof(obj->callbacks));
 	obj->callbacks.print = &gen_print_obj_data_s;
