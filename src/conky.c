@@ -2180,7 +2180,6 @@ void generate_text_internal(char *p, int p_max_size,
 			/* we have four different types of top (top, top_mem,
 			 * top_time and top_io). To avoid having almost-same code four
 			 * times, we have this special handler. */
-#ifdef __linux__
 			break;
 			case OBJ_top:
 			case OBJ_top_mem:
@@ -2189,7 +2188,6 @@ void generate_text_internal(char *p, int p_max_size,
 			case OBJ_top_io:
 #endif
 				print_top(obj, p, p_max_size);
-#endif /* __linux__ */
 			OBJ(tail) {
 				print_tailhead("tail", obj, p, p_max_size);
 			}
@@ -4226,9 +4224,7 @@ static void set_default_configurations(void)
 #ifdef IOSTATS
 	top_io = 0;
 #endif
-#ifdef __linux__
 	top_running = 0;
-#endif
 #ifdef MPD
 	mpd_env_host = getenv("MPD_HOST");
 	mpd_env_port = getenv("MPD_PORT");

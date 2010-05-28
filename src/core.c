@@ -541,6 +541,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		parse_platform_sensor(obj, arg);
 	END OBJ_ARG(hwmon, 0, "hwmon needs argumanets")
 		parse_hwmon_sensor(obj, arg);
+	END OBJ(addr, &update_net_stats)
+		parse_net_stat_arg(obj, arg, free_at_crash);
+	END OBJ(addrs, &update_net_stats)
+		parse_net_stat_arg(obj, arg, free_at_crash);
+#endif /* __linux__ */
 	END
 	/* we have four different types of top (top, top_mem, top_time and top_io). To
 	 * avoid having almost-same code four times, we have this special
@@ -551,12 +556,8 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		if (!parse_top_args(s, arg, obj)) {
 			return NULL;
 		}
-	} else OBJ(addr, &update_net_stats)
-		parse_net_stat_arg(obj, arg, free_at_crash);
-	END OBJ(addrs, &update_net_stats)
-		parse_net_stat_arg(obj, arg, free_at_crash);
-#endif /* __linux__ */
-	END OBJ_ARG(tail, 0, "tail needs arguments")
+	} else
+		OBJ_ARG(tail, 0, "tail needs arguments")
 		init_tailhead("tail", arg, obj, free_at_crash);
 	END OBJ_ARG(head, 0, "head needs arguments")
 		init_tailhead("head", arg, obj, free_at_crash);
@@ -786,9 +787,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 		obj->sub = malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
 	END OBJ(processes, &update_total_processes)
-#ifdef __linux__
 	END OBJ(running_processes, &update_top)
 		top_running = 1;
+#ifdef __linux__
 	END OBJ(threads, &update_threads)
 	END OBJ(running_threads, &update_stat)
 #else

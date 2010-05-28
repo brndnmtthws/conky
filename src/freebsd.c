@@ -67,7 +67,7 @@
 #endif
 
 __attribute__((gnu_inline)) inline void
-proc_find_top(struct process **cpu, struct process **mem);
+proc_find_top(struct process **cpu, struct process **mem, struct process **time);
 
 static short cpu_setup = 0;
 
@@ -590,7 +590,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size, const char *p_fo
 
 int update_top(void)
 {
-	proc_find_top(info.cpu, info.memu);
+	proc_find_top(info.cpu, info.memu, info.time);
 	return 0;
 }
 
@@ -726,8 +726,15 @@ int comparemem(const void *a, const void *b)
 	}
 }
 
+int comparetime(const void *va, const void *vb)
+{
+	struct process *a = (struct process *)va, *b = (struct process *)vb;
+
+	return b->total_cpu_time - a->total_cpu_time;
+}
+
 __attribute__((gnu_inline)) inline void
-proc_find_top(struct process **cpu, struct process **mem)
+proc_find_top(struct process **cpu, struct process **mem, struct process **time)
 {
 	struct kinfo_proc *p;
 	int n_processes;
@@ -751,6 +758,9 @@ proc_find_top(struct process **cpu, struct process **mem)
 			processes[j].amount = 100.0 * p[i].ki_pctcpu / FSCALE;
 			processes[j].vsize = p[i].ki_size;
 			processes[j].rss = (p[i].ki_rssize * getpagesize());
+			/* ki_runtime is in microseconds, total_cpu_time in centiseconds.
+			 * Therefore we divide by 10000. */
+			processes[j].total_cpu_time = p[i].ki_runtime / 10000;
 			j++;
 		}
 	}
@@ -760,11 +770,8 @@ proc_find_top(struct process **cpu, struct process **mem)
 		struct process *tmp, *ttmp;
 
 		tmp = malloc(sizeof(struct process));
-		tmp->pid = processes[i].pid;
-		tmp->amount = processes[i].amount;
+		memcpy(tmp, &processes[i], sizeof(struct process));
 		tmp->name = strndup(processes[i].name, text_buffer_size);
-		tmp->rss = processes[i].rss;
-		tmp->vsize = processes[i].vsize;
 
 		ttmp = mem[i];
 		mem[i] = tmp;
@@ -779,14 +786,27 @@ proc_find_top(struct process **cpu, struct process **mem)
 		struct process *tmp, *ttmp;
 
 		tmp = malloc(sizeof(struct process));
-		tmp->pid = processes[i].pid;
-		tmp->amount = processes[i].amount;
+		memcpy(tmp, &processes[i], sizeof(struct process));
 		tmp->name = strndup(processes[i].name, text_buffer_size);
-		tmp->rss = processes[i].rss;
-		tmp->vsize = processes[i].vsize;
 
 		ttmp = cpu[i];
 		cpu[i] = tmp;
+		if (ttmp != NULL) {
+			free(ttmp->name);
+			free(ttmp);
+		}
+	}
+
+	qsort(processes, j - 1, sizeof(struct process), comparetime);
+	for (i = 0; i < 10 && i < n_processes; i++) {
+		struct process *tmp, *ttmp;
+
+		tmp = malloc(sizeof(struct process));
+		memcpy(tmp, &processes[i], sizeof(struct process));
+		tmp->name = strndup(processes[i].name, text_buffer_size);
+
+		ttmp = time[i];
+		time[i] = tmp;
 		if (ttmp != NULL) {
 			free(ttmp->name);
 			free(ttmp);
