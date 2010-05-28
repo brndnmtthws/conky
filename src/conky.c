@@ -166,9 +166,7 @@ int top_cpu, top_mem, top_time;
 #ifdef IOSTATS
 int top_io;
 #endif
-#ifdef __linux__
 int top_running;
-#endif
 int output_methods;
 static int extra_newline;
 enum x_initialiser_state x_initialised = NO;

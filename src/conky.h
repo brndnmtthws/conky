@@ -296,9 +296,7 @@ extern int top_cpu, top_mem, top_time;
 #ifdef IOSTATS
 extern int top_io;
 #endif
-#ifdef __linux__
 extern int top_running;
-#endif
 
 /* defined in conky.c, needed by top.c */
 extern int cpu_separate;
