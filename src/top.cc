@@ -255,13 +255,7 @@ static int compare_cpu(void *va, void *vb)
 {
 	struct process *a = (struct process *)va, *b = (struct process *)vb;
 
-	if (a->amount < b->amount) {
-		return 1;
-	} else if (a->amount > b->amount) {
-		return -1;
-	} else {
-		return 0;
-	}
+	return b->amount - a->amount;
 }
 
 /* mem comparison function for prio queue */
@@ -269,13 +263,7 @@ static int compare_mem(void *va, void *vb)
 {
 	struct process *a = (struct process *)va, *b = (struct process *)vb;
 
-	if (a->rss < b->rss) {
-		return 1;
-	} else if (a->rss > b->rss) {
-		return -1;
-	} else {
-		return 0;
-	}
+	return b->rss - a->rss;
 }
 
 /* CPU time comparision function for prio queue */
@@ -292,13 +280,7 @@ static int compare_io(void *va, void *vb)
 {
 	struct process *a = (struct process *)va, *b = (struct process *)vb;
 
-	if (a->io_perc < b->io_perc) {
-		return 1;
-	} else if (a->io_perc > b->io_perc) {
-		return -1;
-	} else {
-		return 0;
-	}
+	return b->io_perc - a->io_perc;
 }
 #endif /* BUILD_IOSTATS */
 
