@@ -57,7 +57,6 @@ char get_freq(char *, size_t, const char *, int, unsigned int);
 void print_voltage_mv(struct text_object *, char *, int);
 void print_voltage_v(struct text_object *, char *, int);
 int update_load_average(void);
-int update_top(void);
 void free_all_processes(void);
 struct process *get_first_process(void);
 void get_cpu_count(void);

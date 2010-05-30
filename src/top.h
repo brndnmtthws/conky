@@ -74,10 +74,6 @@
  * and it'll take me a while to write a replacement. */
 #define BUFFER_LEN 1024
 
-#define PROCFS_TEMPLATE "/proc/%d/stat"
-#define PROCFS_TEMPLATE_MEM "/proc/%d/statm"
-#define PROCFS_TEMPLATE_IO "/proc/%d/io"
-#define PROCFS_CMDLINE_TEMPLATE "/proc/%d/cmdline"
 #define MAX_SP 10	// number of elements to sort
 
 enum top_field {
@@ -131,13 +127,6 @@ struct sorted_process {
 	struct process *proc;
 };
 
-/* Pointer to head of process list */
-void process_find_top(struct process **, struct process **, struct process **
-#ifdef BUILD_IOSTATS
-		, struct process **
-#endif
-		);
-
 /* lookup a program by it's name */
 struct process *get_process_by_name(const char *);
 
@@ -145,5 +134,15 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj);
 
 /* return zero on success, non-zero otherwise */
 int set_top_name_width(const char *);
+
+int update_top(void);
+
+void get_top_info(void);
+
+extern struct process *first_process;
+extern unsigned long g_time;
+
+struct process *find_process(pid_t pid);
+struct process *new_process(int p);
 
 #endif /* _top_h_ */

@@ -611,12 +611,6 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
 	return 1;
 }
 
-void update_top()
-{
-	kvm_init();
-	proc_find_top(info.cpu, info.memu);
-}
-
 #if 0
 /* deprecated, will rewrite this soon in update_net_stats() -hifi */
 void update_wifi_stats()
@@ -685,108 +679,30 @@ void update_diskio()
 
 /* While topless is obviously better, top is also not bad. */
 
-int comparecpu(const void *a, const void *b)
-{
-	if (((struct process *) a)->amount > ((struct process *) b)->amount) {
-		return -1;
-	}
-
-	if (((struct process *) a)->amount < ((struct process *) b)->amount) {
-		return 1;
-	}
-
-	return 0;
-}
-
-int comparemem(const void *a, const void *b)
-{
-	if (((struct process *) a)->rss > ((struct process *) b)->rss) {
-		return -1;
-	}
-
-	if (((struct process *) a)->rss < ((struct process *) b)->rss) {
-		return 1;
-	}
-
-	return 0;
-}
-
-inline void proc_find_top(struct process **cpu, struct process **mem)
+void get_top_info(void)
 {
 	struct kinfo_proc2 *p;
+	struct process *proc;
 	int n_processes;
-	int i, j = 0;
-	struct process *processes;
-	int mib[2];
+	int i;
 
-	u_int total_pages;
-	int64_t usermem;
-	int pagesize = getpagesize();
+	kvm_init();
 
-	/* we get total pages count again to be sure it is up to date */
-	mib[0] = CTL_HW;
-	mib[1] = HW_USERMEM64;
-	size_t size = sizeof(usermem);
-
-	if (sysctl(mib, 2, &usermem, &size, NULL, 0) == -1) {
-		NORM_ERR("error reading usermem");
-	}
-
-	/* translate bytes into page count */
-	total_pages = usermem / pagesize;
-
-	int max_size = sizeof(struct kinfo_proc2);
-
-	p = kvm_getproc2(kd, KERN_PROC_ALL, 0, max_size, &n_processes);
-	processes = malloc(n_processes * sizeof(struct process));
+	p = kvm_getproc2(kd, KERN_PROC_ALL, 0, sizeof(struct kinfo_proc2),
+					 &n_processes);
 
 	for (i = 0; i < n_processes; i++) {
 		if (!((p[i].p_flag & P_SYSTEM)) && p[i].p_comm != NULL) {
-			processes[j].pid = p[i].p_pid;
-			processes[j].name = strndup(p[i].p_comm, text_buffer_size);
-			processes[j].amount = 100.0 * p[i].p_pctcpu / FSCALE;
-			j++;
+			proc = find_process(p[i].p_pid);
+			if (!proc)
+				proc = new_process(p[i].p_pid);
+
+			proc->time_stamp = g_time;
+			proc->name = strndup(p[i].p_comm, text_buffer_size);
+			proc->amount = 100.0 * p[i].p_pctcpu / FSCALE;
+			/* TODO: vsize, rss, total_cpu_time */
 		}
 	}
-
-	qsort(processes, j - 1, sizeof(struct process), comparemem);
-	for (i = 0; i < 10; i++) {
-		struct process *tmp, *ttmp;
-
-		tmp = malloc(sizeof(struct process));
-		tmp->pid = processes[i].pid;
-		tmp->amount = processes[i].amount;
-		tmp->name = strndup(processes[i].name, text_buffer_size);
-
-		ttmp = mem[i];
-		mem[i] = tmp;
-		if (ttmp != NULL) {
-			free(ttmp->name);
-			free(ttmp);
-		}
-	}
-
-	qsort(processes, j - 1, sizeof(struct process), comparecpu);
-	for (i = 0; i < 10; i++) {
-		struct process *tmp, *ttmp;
-
-		tmp = malloc(sizeof(struct process));
-		tmp->pid = processes[i].pid;
-		tmp->amount = processes[i].amount;
-		tmp->name = strndup(processes[i].name, text_buffer_size);
-
-		ttmp = cpu[i];
-		cpu[i] = tmp;
-		if (ttmp != NULL) {
-			free(ttmp->name);
-			free(ttmp);
-		}
-	}
-
-	for (i = 0; i < j; i++) {
-		free(processes[i].name);
-	}
-	free(processes);
 }
 
 /* empty stubs so conky links */
