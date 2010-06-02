@@ -483,21 +483,22 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 				if (len > MAXFOLDERSIZE-1) {
 					len = MAXFOLDERSIZE-1;
 				}
+				tmp++;
 			}
 			strncpy(mail->folder, tmp, len);
 		} else {
-			strncpy(mail->folder, "INBOX", MAXFOLDERSIZE);	// default imap inbox
+			strncpy(mail->folder, "INBOX", MAXFOLDERSIZE-1);	// default imap inbox
 		}
 	}
 	tmp = (char*)strstr(arg, "-e ");
 	if (tmp) {
-		int len = MAXFOLDERSIZE-1;
+		int len = 1024;
 		tmp += 3;
 
 		if (tmp[0] == '\'') {
 			len = (char*)strstr(tmp + 1, "'") - tmp - 1;
-			if (len > MAXFOLDERSIZE-1) {
-				len = MAXFOLDERSIZE-1;
+			if (len > 1024) {
+				len = 1024;
 			}
 		}
 		strncpy(mail->command, tmp + 1, len);
