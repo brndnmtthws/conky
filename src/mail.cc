@@ -62,6 +62,8 @@
 #define POP3_TYPE 1
 #define IMAP_TYPE 2
 
+#define MAXFOLDERSIZE 128
+
 struct mail_s {			// for imap and pop3
 	unsigned long unseen;
 	unsigned long messages;
@@ -75,16 +77,16 @@ struct mail_s {			// for imap and pop3
 	char user[128];
 	char pass[128];
 	char command[1024];
-	char folder[128];
 	timed_thread_ptr p_timed_thread;
 	char secure;
+	char folder[MAXFOLDERSIZE];
 	mail_s() : unseen(0), messages(0), used(0), quota(0), port(0), retries(0),
 	interval(0), last_update(0), secure(0) {
 		host[0] = 0;
 		user[0] = 0;
 		pass[0] = 0;
 		command[0] = 0;
-		memset(folder, 0, 128); /* to satisfy valgrind */
+		memset(folder, 0, MAXFOLDERSIZE); /* to satisfy valgrind */
 	}
 };
 
@@ -474,28 +476,28 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 	if (type == IMAP_TYPE) {
 		tmp = (char*)strstr(arg, "-f ");
 		if (tmp) {
-			int len = 1024;
+			int len = MAXFOLDERSIZE-1;
 			tmp += 3;
 			if (tmp[0] == '\'') {
 				len = (char*)strstr(tmp + 1, "'") - tmp - 1;
-				if (len > 1024) {
-					len = 1024;
+				if (len > MAXFOLDERSIZE-1) {
+					len = MAXFOLDERSIZE-1;
 				}
 			}
-			strncpy(mail->folder, tmp + 1, len);
+			strncpy(mail->folder, tmp, len);
 		} else {
-			strncpy(mail->folder, "INBOX", 128);	// default imap inbox
+			strncpy(mail->folder, "INBOX", MAXFOLDERSIZE);	// default imap inbox
 		}
 	}
 	tmp = (char*)strstr(arg, "-e ");
 	if (tmp) {
-		int len = 1024;
+		int len = MAXFOLDERSIZE-1;
 		tmp += 3;
 
 		if (tmp[0] == '\'') {
 			len = (char*)strstr(tmp + 1, "'") - tmp - 1;
-			if (len > 1024) {
-				len = 1024;
+			if (len > MAXFOLDERSIZE-1) {
+				len = MAXFOLDERSIZE-1;
 			}
 		}
 		strncpy(mail->command, tmp + 1, len);
