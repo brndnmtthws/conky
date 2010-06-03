@@ -330,6 +330,12 @@ static void process_find_top(struct process **cpu, struct process **mem,
 	pq_set_max_size(io_queue, MAX_SP);
 #endif
 
+	/* g_time is the time_stamp entry for process.  It is updated when the
+	 * process information is updated to indicate that the process is still
+	 * alive (and must not be removed from the process list in
+	 * process_cleanup()) */
+	++g_time;
+
 	/* OS-specific function updating process list */
 	get_top_info();
 

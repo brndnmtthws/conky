@@ -2711,7 +2711,6 @@ static void update_process_table(void)
 	}
 
 	info.run_procs = 0;
-	++g_time;
 
 	/* Get list of processes from /proc directory */
 	while ((entry = readdir(dir))) {
