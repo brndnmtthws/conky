@@ -611,6 +611,15 @@
     <varlistentry>
         <term>
             <command>
+                <option>out_to_http</option>
+            </command>
+        </term>
+        <listitem>Let conky act as a small http-server serving it's text.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>out_to_ncurses</option>
             </command>
         </term>

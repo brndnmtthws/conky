@@ -18,6 +18,7 @@
 #define MAX_USER_TEXT_DEFAULT @MAX_USER_TEXT_DEFAULT@
 #define DEFAULT_TEXT_BUFFER_SIZE @DEFAULT_TEXT_BUFFER_SIZE@
 #define MAX_NET_INTERFACES @MAX_NET_INTERFACES@
+#define HTTPPORT @HTTPPORT@
 
 #cmakedefine HAVE_SYS_STATFS_H 1
 #cmakedefine HAVE_SYS_PARAM_H 1
@@ -90,6 +91,8 @@
 #cmakedefine BUILD_ICAL 1
 
 #cmakedefine BUILD_IRC 1
+
+#cmakedefine BUILD_HTTP 1
 
 #cmakedefine BUILD_ICONV 1
 

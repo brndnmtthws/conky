@@ -111,6 +111,9 @@
 #elif defined(__OpenBSD__)
 #include "openbsd.h"
 #endif
+#ifdef BUILD_HTTP
+#include <microhttpd.h>
+#endif
 
 #if defined(__FreeBSD_kernel__)
 #include <bsd/bsd.h>
@@ -228,6 +231,9 @@ static void print_version(void)
 #ifdef BUILD_PORT_MONITORS
 		"  * portmon\n"
 #endif /* BUILD_PORT_MONITORS */
+#ifdef BUILD_HTTP
+		"  * HTTP\n"
+#endif
 #ifdef BUILD_IRC
 		"  * IRC\n"
 #endif
@@ -357,6 +363,19 @@ static int cpu_avg_samples, net_avg_samples, diskio_avg_samples;
 /* filenames for output */
 char *overwrite_file = NULL; FILE *overwrite_fpointer = NULL;
 char *append_file = NULL; FILE *append_fpointer = NULL;
+
+#ifdef BUILD_HTTP
+std::string webpage;
+struct MHD_Daemon *httpd;
+
+int sendanswer(void *cls, struct MHD_Connection *connection, const char *url, const char *method, const char *version, const char *upload_data, size_t *upload_data_size, void **con_cls) {
+	struct MHD_Response *response = MHD_create_response_from_data(webpage.length(), (void*) webpage.c_str(), MHD_NO, MHD_NO);
+	int ret = MHD_queue_response (connection, MHD_HTTP_OK, response);
+	MHD_destroy_response(response);
+	if(cls || url || method || version || upload_data || upload_data_size || con_cls) {}	//make compiler happy
+	return ret;
+}
+#endif
 
 #ifdef BUILD_X11
 
@@ -1190,6 +1209,12 @@ static void draw_string(const char *s)
 		printw("%s", s_with_newlines);
 	}
 #endif
+#ifdef BUILD_HTTP
+	if ((output_methods & TO_HTTP) && draw_mode == FG) {
+		webpage.append(s_with_newlines);
+		webpage.append("<br />");
+	}
+#endif
 	free(s_with_newlines);
 	memset(tmpstring1, 0, text_buffer_size);
 	memset(tmpstring2, 0, text_buffer_size);
@@ -1754,6 +1779,13 @@ static int draw_line(char *s, int special_index)
 
 static void draw_text(void)
 {
+#ifdef BUILD_HTTP
+#define WEBPAGE_START "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" /><title>Conky</title></head><body><p>"
+#define WEBPAGE_END "</p></body></html>"
+	if (output_methods & TO_HTTP) {
+		webpage = WEBPAGE_START;
+	}
+#endif
 #ifdef BUILD_X11
 #ifdef BUILD_LUA
 	llua_draw_pre_hook();
@@ -1792,6 +1824,11 @@ static void draw_text(void)
 #if defined(BUILD_LUA) && defined(BUILD_X11)
 	llua_draw_post_hook();
 #endif /* BUILD_LUA */
+#ifdef BUILD_HTTP
+	if (output_methods & TO_HTTP) {
+		webpage.append(WEBPAGE_END);
+	}
+#endif
 }
 
 static void draw_stuff(void)
@@ -2436,6 +2473,11 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2) {
 #ifdef BUILD_NCURSES
 	if(output_methods & TO_NCURSES) {
 		endwin();
+	}
+#endif
+#ifdef BUILD_HTTP
+	if(output_methods & TO_HTTP) {
+		MHD_stop_daemon(httpd);
 	}
 #endif
 	conftree_empty(currentconffile);
@@ -3255,6 +3297,14 @@ char load_config_file(const char *f)
 			if(string_to_bool(value))
 				output_methods |= TO_STDERR;
 		}
+#ifdef BUILD_HTTP
+		CONF("out_to_http") {
+			if(string_to_bool(value)) {
+				output_methods |= TO_HTTP;
+				httpd = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY, HTTPPORT, NULL, NULL, &sendanswer, NULL, MHD_OPTION_END);
+			}
+		}
+#endif
 #ifdef BUILD_NCURSES
 		CONF("out_to_ncurses") {
 			if(string_to_bool(value)) {

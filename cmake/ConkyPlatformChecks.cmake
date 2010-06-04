@@ -82,6 +82,15 @@ if(BUILD_IRC)
 	set(conky_libs ${conky_libs} -lircclient)
 endif(BUILD_IRC)
 
+if(BUILD_HTTP)
+	find_file(HTTP_H_ microhttpd.h)
+	#I'm not using check_include_files because microhttpd.h seems to need a lot of different headers and i'm not sure which...
+	if(NOT HTTP_H_)
+		message(FATAL_ERROR "Unable to find libmicrohttpd")
+	endif(NOT HTTP_H_)
+	set(conky_libs ${conky_libs} -lmicrohttpd)
+endif(BUILD_HTTP)
+
 if(BUILD_BUILTIN_CONFIG)
 	check_function_exists(fopencookie HAVE_FOPENCOOKIE)
 	check_function_exists(funopen HAVE_FUNOPEN)

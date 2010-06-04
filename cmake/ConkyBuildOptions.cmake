@@ -57,6 +57,7 @@ set(CONFIG_FILE "$HOME/.conkyrc" CACHE STRING "Configfile of the user")
 set(MAX_USER_TEXT_DEFAULT "16384" CACHE STRING "Default maximum size of config TEXT buffer, i.e. below TEXT line.")
 set(DEFAULT_TEXT_BUFFER_SIZE "256" CACHE STRING "Default size used for temporary, static text buffers")
 set(MAX_NET_INTERFACES "16" CACHE STRING "Maximum number of network devices")
+set(HTTPPORT "10080" CACHE STRING "Port to use for out_to_http")
 
 
 # Platform specific options
@@ -152,5 +153,7 @@ option(BUILD_APCUPSD "Enable APCUPSD support" true)
 option(BUILD_ICAL "Enable if you want iCalendar (RFC 5545) support" false)
 
 option(BUILD_IRC "Enable if you want IRC support" false)
+
+option(BUILD_HTTP "Enable if you want HTTP support" false)
 
 option(BUILD_ICONV "Enable iconv support" false)

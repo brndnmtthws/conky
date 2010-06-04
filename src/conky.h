@@ -338,6 +338,9 @@ extern std::string current_config;
 #ifdef BUILD_NCURSES
 #define TO_NCURSES 32
 #endif /* BUILD_NCURSES */
+#ifdef BUILD_HTTP
+#define TO_HTTP 64
+#endif
 enum x_initialiser_state {
 	NO = 0,
 	YES = 1,
