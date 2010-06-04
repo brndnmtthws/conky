@@ -35,6 +35,7 @@
 #include "timed-thread.h"
 #include <iostream>
 #include <algorithm>
+#include <sstream>
 #include <string>
 #include <stdarg.h>
 #include <cmath>
@@ -367,6 +368,7 @@ char *append_file = NULL; FILE *append_fpointer = NULL;
 #ifdef BUILD_HTTP
 std::string webpage;
 struct MHD_Daemon *httpd;
+bool http_refresh;
 
 int sendanswer(void *cls, struct MHD_Connection *connection, const char *url, const char *method, const char *version, const char *upload_data, size_t *upload_data_size, void **con_cls) {
 	struct MHD_Response *response = MHD_create_response_from_data(webpage.length(), (void*) webpage.c_str(), MHD_NO, MHD_NO);
@@ -1780,10 +1782,19 @@ static int draw_line(char *s, int special_index)
 static void draw_text(void)
 {
 #ifdef BUILD_HTTP
-#define WEBPAGE_START "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" /><title>Conky</title></head><body><p>"
+#define WEBPAGE_START1 "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />"
+#define WEBPAGE_START2 "<title>Conky</title></head><body><p>"
 #define WEBPAGE_END "</p></body></html>"
 	if (output_methods & TO_HTTP) {
-		webpage = WEBPAGE_START;
+		webpage = WEBPAGE_START1;
+		if(http_refresh) {
+			webpage.append("<meta http-equiv=\"refresh\" content=\"");
+			std::stringstream update_interval_str;
+			update_interval_str << update_interval;
+			webpage.append(update_interval_str.str());
+			webpage.append("\" />");
+		}
+		webpage.append(WEBPAGE_START2);
 	}
 #endif
 #ifdef BUILD_X11
@@ -2651,6 +2662,9 @@ static void set_default_configurations(void)
 	format_human_readable = 1;
 	top_mem = 0;
 	top_time = 0;
+#ifdef BUILD_HTTP
+	http_refresh = false;
+#endif
 #ifdef BUILD_IOSTATS
 	top_io = 0;
 #endif
@@ -3302,6 +3316,11 @@ char load_config_file(const char *f)
 			if(string_to_bool(value)) {
 				output_methods |= TO_HTTP;
 				httpd = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY, HTTPPORT, NULL, NULL, &sendanswer, NULL, MHD_OPTION_END);
+			}
+		}
+		CONF("http_refresh") {
+			if(string_to_bool(value)) {
+				http_refresh = true;
 			}
 		}
 #endif
