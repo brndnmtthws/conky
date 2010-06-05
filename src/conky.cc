@@ -1213,7 +1213,13 @@ static void draw_string(const char *s)
 #endif
 #ifdef BUILD_HTTP
 	if ((output_methods & TO_HTTP) && draw_mode == FG) {
+		std::string::size_type i = webpage.length();
 		webpage.append(s_with_newlines);
+		while(1) {
+			i = webpage.find('\n', i);
+			if(i == std::string::npos) break;
+			webpage.replace(i, 1, "<br />");
+		}
 		webpage.append("<br />");
 	}
 #endif
