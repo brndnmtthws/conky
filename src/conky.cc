@@ -1173,6 +1173,17 @@ static inline void set_foreground_color(long c)
 	return;
 }
 
+std::string string_replace_all(std::string original, std::string oldpart, std::string newpart, std::string::size_type start) {
+	std::string::size_type i = start;
+	int oldpartlen = oldpart.length();
+	while(1) {
+		i = original.find(oldpart, i);
+		if(i == std::string::npos) break;
+		original.replace(i, oldpartlen, newpart);
+	}
+	return original;
+}
+
 static void draw_string(const char *s)
 {
 	int i, i2, pos, width_of_s;
@@ -1213,13 +1224,11 @@ static void draw_string(const char *s)
 #endif
 #ifdef BUILD_HTTP
 	if ((output_methods & TO_HTTP) && draw_mode == FG) {
-		std::string::size_type i = webpage.length();
+		std::string::size_type origlen = webpage.length();
 		webpage.append(s_with_newlines);
-		while(1) {
-			i = webpage.find('\n', i);
-			if(i == std::string::npos) break;
-			webpage.replace(i, 1, "<br />");
-		}
+		webpage = string_replace_all(webpage, "\n", "<br />", origlen);
+		webpage = string_replace_all(webpage, "  ", "&nbsp;&nbsp;", origlen);
+		webpage = string_replace_all(webpage, "&nbsp; ", "&nbsp;&nbsp;", origlen);
 		webpage.append("<br />");
 	}
 #endif
