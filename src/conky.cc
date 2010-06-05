@@ -1798,7 +1798,7 @@ static void draw_text(void)
 {
 #ifdef BUILD_HTTP
 #define WEBPAGE_START1 "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />"
-#define WEBPAGE_START2 "<title>Conky</title></head><body><p>"
+#define WEBPAGE_START2 "<title>Conky</title></head><body style=\"font-family: monospace\"><p>"
 #define WEBPAGE_END "</p></body></html>"
 	if (output_methods & TO_HTTP) {
 		webpage = WEBPAGE_START1;
