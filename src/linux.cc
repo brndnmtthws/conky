@@ -546,12 +546,14 @@ int update_net_stats(void)
 					snprintf(ns->essid, 32, "off/any");
 				}
 			}
-			// get channel
+			// get channel and freq
 			if (winfo->b.has_freq) {
 				if(winfo->has_range == 1) {
 					ns->channel = iw_freq_to_channel(winfo->b.freq, &(winfo->range));
+					iw_print_freq_value(ns->freq, 16, winfo->b.freq);
 				} else {
 					ns->channel = 0;
+					ns->freq[0] = 0;
 				}
 			}
 

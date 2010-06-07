@@ -363,6 +363,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 	END OBJ(wireless_channel, &update_net_stats)
 		parse_net_stat_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_wireless_channel;
+	END OBJ(wireless_freq, &update_net_stats)
+		parse_net_stat_arg(obj, arg, free_at_crash);
+		obj->callbacks.print = &print_wireless_frequency;
 	END OBJ(wireless_mode, &update_net_stats)
 		parse_net_stat_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_wireless_mode;

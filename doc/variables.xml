@@ -4182,6 +4182,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>wireless_freq</option>
+            </command>
+            <option>(net)</option>
+        </term>
+        <listitem>Frequency on which device 'net' is listening (Linux only)
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>wireless_link_bar</option>
             </command>
             <option>(height),(width) (net)</option>
