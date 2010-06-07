@@ -4162,6 +4162,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>wireless_channel</option>
+            </command>
+            <option>(net)</option>
+        </term>
+        <listitem>WLAN channel on which device 'net' is listening (Linux only)
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>wireless_essid</option>
             </command>
             <option>(net)</option>
