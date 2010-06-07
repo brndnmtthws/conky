@@ -247,6 +247,19 @@ void print_wireless_mode(struct text_object *obj, char *p, int p_max_size)
 
 	snprintf(p, p_max_size, "%s", ns->mode);
 }
+void print_wireless_channel(struct text_object *obj, char *p, int p_max_size)
+{
+	struct net_stat *ns = (struct net_stat *)obj->data.opaque;
+
+	if (!ns)
+		return;
+
+	if(ns->channel != 0) {
+		snprintf(p, p_max_size, "%i", ns->channel);
+	} else {
+		snprintf(p, p_max_size, "/");
+	}
+}
 void print_wireless_bitrate(struct text_object *obj, char *p, int p_max_size)
 {
 	struct net_stat *ns = (struct net_stat *)obj->data.opaque;
