@@ -5,7 +5,7 @@
 
 #include <sys/types.h>
 
-void get_ibm_acpi_fan(struct text_object *, char *, int);
+int get_ibm_acpi_fan(struct text_object *, char *, int);
 int get_ibm_acpi_temps(void);
 void get_ibm_acpi_volume(struct text_object *, char *, int);
 void get_ibm_acpi_brightness(struct text_object *, char *, int);
