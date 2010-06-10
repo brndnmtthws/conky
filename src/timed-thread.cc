@@ -39,6 +39,20 @@
 #include "timed-thread.h"
 #include "logging.h"
 
+/*
+ * In gcc-4.5 condition_variable::wait_until returns a (strong) enum cv_status.
+ * In gcc-4.4 it returns bool.
+ * This hack is needed so it can work on both.
+ */
+#if __GNUC__*100 + __GNUC_MINOR__ >= 405
+inline bool cv_status_to_bool(std::cv_status s)
+{ return s == std::cv_status::no_timeout; }
+#else
+inline bool cv_status_to_bool(bool s)
+{ return s; }
+#endif
+
+
 /* Abstraction layer for timed threads */
 
 typedef struct std::chrono::system_clock clk;
@@ -188,7 +202,7 @@ int timed_thread::test(int override_wait_time)
 		}
 
 		/* release mutex and wait until future time for runnable_cond to signal */
-		rc = p_timed_thread->runnable_cond.wait_until(lock, wait_time);
+		rc = cv_status_to_bool( p_timed_thread->runnable_cond.wait_until(lock, wait_time) );
 	}
 
 	p_timed_thread->last_time = clk::now();
