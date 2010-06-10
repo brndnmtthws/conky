@@ -144,7 +144,7 @@ void ccurl_init_thread(ccurl_location_ptr curloc, int interval)
 	assert(curloc->result);
 #endif /* DEBUG */
 	curloc->p_timed_thread = timed_thread::create(std::bind(ccurl_thread,
-				std::placeholders::_1, curloc), interval * 1000000);
+				std::placeholders::_1, curloc), std::chrono::microseconds(long(interval * 1000000)));
 
 	if (!curloc->p_timed_thread) {
 		NORM_ERR("curl thread: error creating timed thread");

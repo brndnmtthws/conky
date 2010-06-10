@@ -89,9 +89,8 @@ int create_audacious_thread(void)
 {
 	if (!info.audacious.p_timed_thread) {
 		info.audacious.p_timed_thread =
-			timed_thread::create(std::bind(audacious_thread_func,
-						std::placeholders::_1), info.music_player_interval *
-					1000000);
+			timed_thread::create(std::bind(audacious_thread_func, std::placeholders::_1),
+					std::chrono::microseconds(long(info.music_player_interval * 1000000)));
 	}
 
 	if (!info.audacious.p_timed_thread) {

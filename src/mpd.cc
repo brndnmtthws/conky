@@ -127,14 +127,13 @@ static void update_mpd_thread(thread_handle &handle);
 
 int update_mpd(void)
 {
-	int interval;
 	static timed_thread_ptr thread;
 
 	if (thread)
 		return 0;
 
-	interval = info.music_player_interval * 1000000;
-	thread = timed_thread::create(std::bind(update_mpd_thread, std::placeholders::_1), interval);
+	thread = timed_thread::create(std::bind(update_mpd_thread, std::placeholders::_1),
+			std::chrono::microseconds(long(info.music_player_interval * 1000000)) );
 	if (!thread) {
 		NORM_ERR("Failed to create MPD timed thread");
 		return 0;

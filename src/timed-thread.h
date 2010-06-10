@@ -26,6 +26,7 @@
 #define _TIMED_THREAD_H_
 
 #include <stdlib.h>
+#include <chrono>
 #include <functional>
 #include <memory>
 
@@ -59,8 +60,8 @@ class thread_handle {
 class timed_thread {
 	public:
 		/* create a timed thread (object creation only) */
-		static timed_thread_ptr create(const std::function<void(thread_handle &)> &start_routine, const unsigned int
-				interval_usecs, bool register_for_destruction = true) {
+		static timed_thread_ptr create(const std::function<void(thread_handle &)> &start_routine, 
+				std::chrono::microseconds interval_usecs, bool register_for_destruction = true) {
 			timed_thread_ptr ptr(new timed_thread(start_routine, interval_usecs));
 			if (register_for_destruction) {
 				register_(ptr);
@@ -92,8 +93,8 @@ class timed_thread {
 
 	private:
 		/* create a timed thread (object creation only) */
-		timed_thread(const std::function<void(thread_handle &)> &start_routine, unsigned int
-				interval_usecs);
+		timed_thread(const std::function<void(thread_handle &)> &start_routine,
+				std::chrono::microseconds interval_usecs);
 
 		/* waits required interval (unless override_wait_time is non-zero) for
 		 * termination signal returns 1 if received, 0 otherwise.  should also return 1
@@ -112,7 +113,7 @@ class timed_thread {
 		/* private internal data */
 		std::auto_ptr<_timed_thread> p_timed_thread;
 		thread_handle p_thread_handle;
-		unsigned int interval_usecs;
+		std::chrono::microseconds interval_usecs;
 		bool running;
 		friend class thread_handle;
 };

@@ -323,7 +323,8 @@ void print_execi(struct text_object *obj, char *p, int p_max_size)
 			 * note that we don't register this thread with the
 			 * timed_thread list, because we destroy it manually
 			 */
-			ed->p_timed_thread = timed_thread::create(std::bind(threaded_exec, std::placeholders::_1, obj), ed->interval * 1000000, false);
+			ed->p_timed_thread = timed_thread::create(std::bind(threaded_exec, std::placeholders::_1, obj),
+					std::chrono::microseconds(long(ed->interval * 1000000)), false);
 			if (!ed->p_timed_thread) {
 				NORM_ERR("Error creating texeci timed thread");
 			}

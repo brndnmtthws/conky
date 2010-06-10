@@ -643,7 +643,8 @@ static void ensure_mail_thread(struct mail_s *mail,
 	if (mail->p_timed_thread)
 		return;
 
-	mail->p_timed_thread = timed_thread::create(std::bind(func, std::placeholders::_1, mail), mail->interval * 1000000);
+	mail->p_timed_thread = timed_thread::create(std::bind(func, std::placeholders::_1, mail),
+			std::chrono::microseconds(long(mail->interval * 1000000)));
 	if (!mail->p_timed_thread) {
 		NORM_ERR("Error creating %s timed thread", text);
 	}
