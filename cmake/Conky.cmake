@@ -26,7 +26,7 @@ try_compile(GCC4_WORKS
 	${CMAKE_MODULE_PATH}/gcc44test.cc
 )
 if(NOT GCC4_WORKS)
-	message(WARNING "Conky 2.x maybe requires GCC 4.4.0 or newer")
+	message(FATAL_ERROR "Conky 2.x requires GCC 4.4.0 or newer")
 endif(NOT GCC4_WORKS)
 
 # Set system vars
