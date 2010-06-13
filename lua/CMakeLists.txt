@@ -30,7 +30,9 @@ set(CMAKE_CXX_FLAGS_DEBUG "-ggdb")
 
 if(BUILD_LUA_CAIRO)
 	include_directories(${luacairo_includes} ${CMAKE_CURRENT_SOURCE_DIR})
-	wrap_tolua(luacairo_src cairo.pkg)
+	# cairo_set_dash() needs this special hack to work properly
+	# if you have a better solution, please let me know
+	wrap_tolua(luacairo_src cairo.pkg libcairo.patch)
 
 	add_library(cairo SHARED ${luacairo_src})
 

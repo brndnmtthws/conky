@@ -240,7 +240,7 @@ typedef enum _cairo_line_join {
 
 void cairo_set_line_join(cairo_t * cr, cairo_line_join_t line_join);
 
-void cairo_set_dash(cairo_t * cr, const double *dashes, int num_dashes, double offset);
+void cairo_set_dash(cairo_t * cr, const double dashes[num_dashes], int num_dashes, double offset);
 
 void cairo_set_miter_limit(cairo_t * cr, double limit);
 
