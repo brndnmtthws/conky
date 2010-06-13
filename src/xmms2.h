@@ -53,6 +53,6 @@ struct xmms2_s {
 	int conn_state;
 };
 
-void update_xmms2(void);
+int update_xmms2(void);
 
 #endif /*XMMS2_H_*/
