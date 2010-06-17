@@ -94,7 +94,7 @@ size_t ccurl_write_memory_callback(void *ptr, size_t size, size_t nmemb, void *d
 
 
 /* fetch our datums */
-void ccurl_fetch_data(thread_handle &handle, ccurl_location_ptr &curloc)
+void ccurl_fetch_data(thread_handle &handle, const ccurl_location_ptr &curloc)
 {
 	CURL *curl = NULL;
 	CURLcode res;
@@ -136,9 +136,9 @@ void ccurl_fetch_data(thread_handle &handle, ccurl_location_ptr &curloc)
 	}
 }
 
-void ccurl_thread(thread_handle &handle, ccurl_location_ptr curloc);
+void ccurl_thread(thread_handle &handle, const ccurl_location_ptr &curloc);
 
-void ccurl_init_thread(ccurl_location_ptr curloc, int interval)
+void ccurl_init_thread(const ccurl_location_ptr &curloc, int interval)
 {
 #ifdef DEBUG
 	assert(curloc->result);
@@ -151,7 +151,7 @@ void ccurl_init_thread(ccurl_location_ptr curloc, int interval)
 	}
 }
 
-void ccurl_thread(thread_handle &handle, ccurl_location_ptr curloc)
+void ccurl_thread(thread_handle &handle, const ccurl_location_ptr &curloc)
 {
 
 	while (1) {
