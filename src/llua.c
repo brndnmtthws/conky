@@ -26,6 +26,8 @@
 #include "logging.h"
 #include "build.h"
 
+#include <ctype.h>
+
 #ifdef LUA_EXTRAS
 #include <tolua++.h>
 #endif /* LUA_EXTRAS */
