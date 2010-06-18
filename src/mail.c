@@ -798,11 +798,13 @@ static void *imap_thread(void *arg)
 					 */
 					fetchtimeout.tv_sec = 600;
 					fetchtimeout.tv_usec = 0;
-					DBGP2("idling...");
+					DBGP("idling...");
 					FD_ZERO(&fdset);
 					FD_SET(sockfd, &fdset);
 					FD_SET(threadfd, &fdset);
-					res = select(MAX(sockfd + 1, threadfd + 1), &fdset, NULL, NULL, &fetchtimeout);
+					res = select(MAX(sockfd + 1, threadfd + 1), &fdset, NULL,
+							NULL, &fetchtimeout);
+					DBGP("done idling");
 					if (timed_thread_test(mail->p_timed_thread, 1) || (res == -1 && errno == EINTR) || FD_ISSET(threadfd, &fdset)) {
 						if ((fstat(sockfd, &stat_buf) == 0) && S_ISSOCK(stat_buf.st_mode)) {
 							/* if a valid socket, close it */
@@ -815,9 +817,6 @@ static void *imap_thread(void *arg)
 							fail++;
 							break;
 						}
-					} else if (fetchtimeout.tv_sec > 0) {
-						fail++;
-						break;
 					}
 					recvbuf[numbytes] = '\0';
 					DBGP2("imap_thread() received: %s", recvbuf);
