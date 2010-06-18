@@ -61,6 +61,8 @@
 #define POP3_TYPE 1
 #define IMAP_TYPE 2
 
+#define MAXSIZE 1024
+
 struct mail_s {			// for imap and pop3
 	unsigned long unseen;
 	unsigned long messages;
@@ -70,11 +72,11 @@ struct mail_s {			// for imap and pop3
 	unsigned int retries;
 	float interval;
 	double last_update;
-	char host[128];
-	char user[128];
-	char pass[128];
-	char command[1024];
-	char folder[128];
+	char host[MAXSIZE];
+	char user[MAXSIZE];
+	char pass[MAXSIZE];
+	char command[MAXSIZE];
+	char folder[MAXSIZE];
 	timed_thread *p_timed_thread;
 	char secure;
 };
@@ -413,7 +415,8 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 	mail = malloc(sizeof(struct mail_s));
 	memset(mail, 0, sizeof(struct mail_s));
 
-	if (sscanf(arg, "%128s %128s %128s", mail->host, mail->user, mail->pass)
+#define lenstr "%1023s"
+	if (sscanf(arg, lenstr " " lenstr " " lenstr, mail->host, mail->user, mail->pass)
 			!= 3) {
 		if (type == POP3_TYPE) {
 			NORM_ERR("Scanning POP3 args failed");
@@ -431,7 +434,8 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 		term.c_lflag &= ~ECHO;
 		tcsetattr(fp, TCSANOW, &term);
 		printf("Enter mailbox password (%s@%s): ", mail->user, mail->host);
-		scanf("%128s", mail->pass);
+		scanf(lenstr, mail->pass);
+#undef lenstr
 		printf("\n");
 		term.c_lflag |= ECHO;
 		tcsetattr(fp, TCSANOW, &term);
@@ -465,34 +469,35 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 	if (type == IMAP_TYPE) {
 		tmp = strstr(arg, "-f ");
 		if (tmp) {
-			int len = 1024;
+			int len = MAXSIZE - 1;
 			tmp += 3;
 			if (tmp[0] == '\'') {
-				len = strstr(tmp + 1, "'") - tmp - 1;
-				if (len > 1024) {
-					len = 1024;
+				len = strstr(tmp + 1, "'") - tmp;
+				if (len > MAXSIZE) {
+					len = MAXSIZE;
 				}
 			}
-			strncpy(mail->folder, tmp + 1, len);
+			strncpy(mail->folder, tmp + 1, len - 1);
 		} else {
-			strncpy(mail->folder, "INBOX", 128);	// default imap inbox
+			strncpy(mail->folder, "INBOX", MAXSIZE - 1);	// default imap inbox
 		}
 	}
 	tmp = strstr(arg, "-e ");
 	if (tmp) {
-		int len = 1024;
+		int len = MAXSIZE - 1;
 		tmp += 3;
 
 		if (tmp[0] == '\'') {
-			len = strstr(tmp + 1, "'") - tmp - 1;
-			if (len > 1024) {
-				len = 1024;
+			len = strstr(tmp + 1, "'") - tmp;
+			if (len > MAXSIZE) {
+				len = MAXSIZE;
 			}
 		}
-		strncpy(mail->command, tmp + 1, len);
+		strncpy(mail->command, tmp + 1, len - 1);
 	} else {
 		mail->command[0] = '\0';
 	}
+	printf("'%s' '%s'\n", mail->folder, mail->command);
 	mail->p_timed_thread = NULL;
 	return mail;
 }
