@@ -497,7 +497,8 @@ struct mail_s *parse_mail_args(char type, const char *arg)
 	} else {
 		mail->command[0] = '\0';
 	}
-	printf("'%s' '%s'\n", mail->folder, mail->command);
+	DBGP("mail args parsed: folder: '%s' command: '%s' user: '%s' host: '%s'\n",
+			mail->folder, mail->command, mail->user, mail->host);
 	mail->p_timed_thread = NULL;
 	return mail;
 }
