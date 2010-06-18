@@ -793,9 +793,9 @@ static void *imap_thread(void *arg)
 				while (1) {
 					/*
 					 * RFC 2177 says we have to re-idle every 29 minutes.
-					 * We'll do it every 20 minutes to be safe.
+					 * We'll do it every 10 minutes to be safe.
 					 */
-					fetchtimeout.tv_sec = 1200;
+					fetchtimeout.tv_sec = 600;
 					fetchtimeout.tv_usec = 0;
 					DBGP2("idling...");
 					FD_ZERO(&fdset);
@@ -814,7 +814,7 @@ static void *imap_thread(void *arg)
 							fail++;
 							break;
 						}
-					} else {
+					} else if (fetchtimeout.tv_sec > 0) {
 						fail++;
 						break;
 					}
@@ -837,7 +837,6 @@ static void *imap_thread(void *arg)
 								timed_thread_lock(mail->p_timed_thread);
 								if (mail->messages != messages) {
 									force_check = 1;
-									mail->messages = messages;
 								}
 								timed_thread_unlock(mail->p_timed_thread);
 							}
