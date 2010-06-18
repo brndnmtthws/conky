@@ -2380,7 +2380,13 @@ void generate_text_internal(char *p, int p_max_size,
 #ifdef HAVE_ICONV
 			iconv_convert(&a, buff_in, p, p_max_size);
 #endif /* HAVE_ICONV */
-			substitute_newlines(p, a - 2);
+			if (obj->type != OBJ_text && obj->type != OBJ_execp && obj->type != OBJ_execpi
+#ifdef HAVE_LUA
+					&& obj->type != OBJ_lua && obj->type != OBJ_lua_parse
+#endif /* HAVE_LUA */
+					) {
+				substitute_newlines(p, a - 2);
+			}
 			p += a;
 			p_max_size -= a;
 			(*p) = 0;
