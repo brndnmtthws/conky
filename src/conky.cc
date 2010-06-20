@@ -2536,8 +2536,6 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2)
 
 #endif /* BUILD_X11 */
 
-	free_templates();
-
 	if (info.first_process) {
 		free_all_processes();
 		info.first_process = NULL;
@@ -2672,8 +2670,6 @@ static void set_default_configurations(void)
 	maximum_width = 0;
 	stippled_borders = 0;
 #endif /* BUILD_X11 */
-
-	free_templates();
 
 	free(current_mail_spool);
 	{
@@ -2851,21 +2847,6 @@ char load_config_file(const char *f)
 
 		// start the whole if-then-else-if cascade
 		if (false) {}
-#define TEMPLATE_CONF(n) \
-		CONF("template"#n) { \
-			if (set_template(n, value)) \
-				CONF_ERR; \
-		}
-		TEMPLATE_CONF(0)
-		TEMPLATE_CONF(1)
-		TEMPLATE_CONF(2)
-		TEMPLATE_CONF(3)
-		TEMPLATE_CONF(4)
-		TEMPLATE_CONF(5)
-		TEMPLATE_CONF(6)
-		TEMPLATE_CONF(7)
-		TEMPLATE_CONF(8)
-		TEMPLATE_CONF(9)
 		CONF("imap") {
 			if (value) {
 				parse_global_imap_mail_args(value);
@@ -3714,7 +3695,6 @@ int main(int argc, char **argv)
 	argv_copy = argv;
 	g_signal_pending = 0;
 	max_user_text = MAX_USER_TEXT_DEFAULT;
-	free_templates();
 	clear_net_stats();
 
 #ifdef BUILD_PORT_MONITORS

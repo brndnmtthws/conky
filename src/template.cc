@@ -32,42 +32,22 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string>
-/* The templates defined by the user.
- *
- * This is a 1 to 1 mapping from templateN config option to template[N] field. */
-static char *_template[MAX_TEMPLATES];	//this is named _template because template is a reserved word in c++
 
-/* free all templates
- *
- * On first invocation, just memset all pointers to zero, so this function can
- * be used when initialising data upon startup. */
-void free_templates(void)
-{
-	int i;
-	static int initialised = 0;
-
-	if (!initialised) {
-		memset(_template, 0, MAX_TEMPLATES * sizeof(char *));
-		initialised = 1;
-		return;
-	}
-
-	for (i = 0; i < MAX_TEMPLATES; i++) {
-		free_and_zero(_template[i]);
-	}
+namespace {
+	conky::simple_config_setting<std::string> _template[10] = {
+		{ "template0", std::string(), true },
+		{ "template1", std::string(), true },
+		{ "template2", std::string(), true },
+		{ "template3", std::string(), true },
+		{ "template4", std::string(), true },
+		{ "template5", std::string(), true },
+		{ "template6", std::string(), true },
+		{ "template7", std::string(), true },
+		{ "template8", std::string(), true },
+		{ "template9", std::string(), true }
+	};
 }
 
-/* set the value of template at index n
- *
- * Returns non-zero on illegal arguments passed, zero otherwise. */
-int set_template(int n, const char *val)
-{
-	if (n < 0 || n >= MAX_TEMPLATES || !val)
-		return 1;
-	free_and_zero(_template[n]);
-	_template[n] = strdup(val);
-	return 0;
-}
 
 /* backslash_escape - do the actual substitution task for template objects
  *
@@ -171,7 +151,7 @@ static char *handle_template(const char *tmpl, const char *args)
 		}
 	}
 
-	eval_text = backslash_escape(_template[template_idx], argsp, argcnt);
+	eval_text = backslash_escape(_template[template_idx].get(*state).c_str(), argsp, argcnt);
 	DBGP("substituted %s, output is '%s'", tmpl, eval_text);
 	free(args_dup);
 	for (i = 0; i < argcnt; i++)
