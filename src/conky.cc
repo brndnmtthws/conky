@@ -359,7 +359,7 @@ char *append_file = NULL; FILE *append_fpointer = NULL;
 #ifdef BUILD_HTTP
 std::string webpage;
 struct MHD_Daemon *httpd;
-bool http_refresh;
+static conky::simple_config_setting<bool> http_refresh("http_refresh", false, true);
 
 int sendanswer(void *cls, struct MHD_Connection *connection, const char *url, const char *method, const char *version, const char *upload_data, size_t *upload_data_size, void **con_cls) {
 	struct MHD_Response *response = MHD_create_response_from_data(webpage.length(), (void*) webpage.c_str(), MHD_NO, MHD_NO);
@@ -1794,7 +1794,7 @@ static void draw_text(void)
 #define WEBPAGE_END "</p></body></html>"
 	if (output_methods & TO_HTTP) {
 		webpage = WEBPAGE_START1;
-		if(http_refresh) {
+		if(http_refresh.get(*state)) {
 			webpage.append("<meta http-equiv=\"refresh\" content=\"");
 			std::stringstream update_interval_str;
 			update_interval_str << update_interval;
@@ -2571,9 +2571,6 @@ static void set_default_configurations(void)
 	top_cpu = 0;
 	top_mem = 0;
 	top_time = 0;
-#ifdef BUILD_HTTP
-	http_refresh = false;
-#endif
 #ifdef BUILD_IOSTATS
 	top_io = 0;
 #endif
@@ -3009,11 +3006,6 @@ char load_config_file(const char *f)
 			if(string_to_bool(value)) {
 				output_methods |= TO_HTTP;
 				httpd = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY, HTTPPORT, NULL, NULL, &sendanswer, NULL, MHD_OPTION_END);
-			}
-		}
-		CONF("http_refresh") {
-			if(string_to_bool(value)) {
-				http_refresh = true;
 			}
 		}
 #endif
