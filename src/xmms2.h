@@ -54,7 +54,7 @@ struct xmms2_s {
 	int conn_state;
 };
 
-void update_xmms2(void);
+int update_xmms2(void);
 
 void print_xmms2_tracknr(struct text_object *, char *, int);
 void print_xmms2_elapsed(struct text_object *, char *, int);

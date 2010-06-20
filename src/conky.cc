@@ -35,6 +35,7 @@
 #include "timed-thread.h"
 #include <iostream>
 #include <algorithm>
+#include <sstream>
 #include <string>
 #include <stdarg.h>
 #include <cmath>
@@ -67,9 +68,9 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <getopt.h>
-#ifdef BUILD_WEATHER_XOAP
+#if defined BUILD_WEATHER_XOAP || defined BUILD_RSS
 #include <libxml/parser.h>
-#endif /* BUILD_WEATHER_XOAP */
+#endif
 
 /* local headers */
 #include "core.h"
@@ -108,6 +109,9 @@
 #include "freebsd.h"
 #elif defined(__OpenBSD__)
 #include "openbsd.h"
+#endif
+#ifdef BUILD_HTTP
+#include <microhttpd.h>
 #endif
 
 #if defined(__FreeBSD_kernel__)
@@ -238,6 +242,12 @@ static void print_version(void)
 #ifdef BUILD_PORT_MONITORS
 		"  * portmon\n"
 #endif /* BUILD_PORT_MONITORS */
+#ifdef BUILD_HTTP
+		"  * HTTP\n"
+#endif
+#ifdef BUILD_IRC
+		"  * IRC\n"
+#endif
 #ifdef BUILD_CURL
 		"  * Curl\n"
 #endif /* BUILD_CURL */
@@ -345,6 +355,20 @@ static int cpu_avg_samples, net_avg_samples, diskio_avg_samples;
 /* filenames for output */
 char *overwrite_file = NULL; FILE *overwrite_fpointer = NULL;
 char *append_file = NULL; FILE *append_fpointer = NULL;
+
+#ifdef BUILD_HTTP
+std::string webpage;
+struct MHD_Daemon *httpd;
+bool http_refresh;
+
+int sendanswer(void *cls, struct MHD_Connection *connection, const char *url, const char *method, const char *version, const char *upload_data, size_t *upload_data_size, void **con_cls) {
+	struct MHD_Response *response = MHD_create_response_from_data(webpage.length(), (void*) webpage.c_str(), MHD_NO, MHD_NO);
+	int ret = MHD_queue_response (connection, MHD_HTTP_OK, response);
+	MHD_destroy_response(response);
+	if(cls || url || method || version || upload_data || upload_data_size || con_cls) {}	//make compiler happy
+	return ret;
+}
+#endif
 
 #ifdef BUILD_X11
 
@@ -480,6 +504,7 @@ static inline void for_each_line(char *b, int f(char *, int))
 	char *ps, *pe;
 	int special_index = 0; /* specials index */
 
+	if(! b) return;
 	for (ps = b, pe = b; *pe; pe++) {
 		if (*pe == '\n') {
 			*pe = '\0';
@@ -738,6 +763,9 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root)
 {
 	struct text_object *obj;
 	size_t a;
+
+	if(! p) return;
+
 #ifdef BUILD_ICONV
 	char *buff_in;
 
@@ -1144,6 +1172,17 @@ static inline void set_foreground_color(long c)
 	return;
 }
 
+std::string string_replace_all(std::string original, std::string oldpart, std::string newpart, std::string::size_type start) {
+	std::string::size_type i = start;
+	int oldpartlen = oldpart.length();
+	while(1) {
+		i = original.find(oldpart, i);
+		if(i == std::string::npos) break;
+		original.replace(i, oldpartlen, newpart);
+	}
+	return original;
+}
+
 static void draw_string(const char *s)
 {
 	int i, i2, pos, width_of_s;
@@ -1180,6 +1219,16 @@ static void draw_string(const char *s)
 #ifdef BUILD_NCURSES
 	if (out_to_ncurses.get(*state) && draw_mode == FG) {
 		printw("%s", s_with_newlines);
+	}
+#endif
+#ifdef BUILD_HTTP
+	if ((output_methods & TO_HTTP) && draw_mode == FG) {
+		std::string::size_type origlen = webpage.length();
+		webpage.append(s_with_newlines);
+		webpage = string_replace_all(webpage, "\n", "<br />", origlen);
+		webpage = string_replace_all(webpage, "  ", "&nbsp;&nbsp;", origlen);
+		webpage = string_replace_all(webpage, "&nbsp; ", "&nbsp;&nbsp;", origlen);
+		webpage.append("<br />");
 	}
 #endif
 	free(s_with_newlines);
@@ -1739,6 +1788,22 @@ static int draw_line(char *s, int special_index)
 
 static void draw_text(void)
 {
+#ifdef BUILD_HTTP
+#define WEBPAGE_START1 "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />"
+#define WEBPAGE_START2 "<title>Conky</title></head><body style=\"font-family: monospace\"><p>"
+#define WEBPAGE_END "</p></body></html>"
+	if (output_methods & TO_HTTP) {
+		webpage = WEBPAGE_START1;
+		if(http_refresh) {
+			webpage.append("<meta http-equiv=\"refresh\" content=\"");
+			std::stringstream update_interval_str;
+			update_interval_str << update_interval;
+			webpage.append(update_interval_str.str());
+			webpage.append("\" />");
+		}
+		webpage.append(WEBPAGE_START2);
+	}
+#endif
 #ifdef BUILD_X11
 #ifdef BUILD_LUA
 	llua_draw_pre_hook();
@@ -1777,6 +1842,11 @@ static void draw_text(void)
 #if defined(BUILD_LUA) && defined(BUILD_X11)
 	llua_draw_post_hook();
 #endif /* BUILD_LUA */
+#ifdef BUILD_HTTP
+	if (output_methods & TO_HTTP) {
+		webpage.append(WEBPAGE_END);
+	}
+#endif
 }
 
 static void draw_stuff(void)
@@ -2409,10 +2479,13 @@ void free_specials(special_t *current) {
 	}
 }
 
-void clean_up(void *memtofree1, void* memtofree2)
+void clean_up_without_threads(void *memtofree1, void* memtofree2)
 {
-	free_update_callbacks();
-
+#ifdef BUILD_HTTP
+	if(output_methods & TO_HTTP) {
+		MHD_stop_daemon(httpd);
+	}
+#endif
 	conftree_empty(currentconffile);
 	currentconffile = NULL;
 	free_and_zero(memtofree1);
@@ -2449,10 +2522,10 @@ void clean_up(void *memtofree1, void* memtofree2)
 #ifdef BUILD_CURL
 	ccurl_free_info();
 #endif
-#ifdef RSS
+#ifdef BUILD_RSS
 	rss_free_info();
 #endif
-#ifdef BUILD_WEATHER
+#if defined BUILD_WEATHER_METAR || defined BUILD_WEATHER_XOAP
 	weather_free_info();
 #endif
 #ifdef BUILD_LUA
@@ -2463,9 +2536,9 @@ void clean_up(void *memtofree1, void* memtofree2)
 	if (out_to_x.get(*state))
 		cimlib_deinit();
 #endif /* BUILD_IMLIB2 */
-#ifdef BUILD_WEATHER_XOAP
+#if defined BUILD_WEATHER_XOAP || defined BUILD_RSS
 	xmlCleanupParser();
-#endif /* BUILD_WEATHER_XOAP */
+#endif
 
 	free_specials(specials);
 
@@ -2475,6 +2548,12 @@ void clean_up(void *memtofree1, void* memtofree2)
 
 	conky::cleanup_config_settings(*state);
 	state.reset();
+}
+
+void clean_up(void *memtofree1, void* memtofree2)
+{
+	free_update_callbacks();
+	clean_up_without_threads(memtofree1, memtofree2);
 }
 
 static void set_default_configurations(void)
@@ -2492,6 +2571,9 @@ static void set_default_configurations(void)
 	top_cpu = 0;
 	top_mem = 0;
 	top_time = 0;
+#ifdef BUILD_HTTP
+	http_refresh = false;
+#endif
 #ifdef BUILD_IOSTATS
 	top_io = 0;
 #endif
@@ -2922,6 +3004,19 @@ char load_config_file(const char *f)
 		CONF("max_text_width") {
 			max_text_width = atoi(value);
 		}
+#ifdef BUILD_HTTP
+		CONF("out_to_http") {
+			if(string_to_bool(value)) {
+				output_methods |= TO_HTTP;
+				httpd = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY, HTTPPORT, NULL, NULL, &sendanswer, NULL, MHD_OPTION_END);
+			}
+		}
+		CONF("http_refresh") {
+			if(string_to_bool(value)) {
+				http_refresh = true;
+			}
+		}
+#endif
 		CONF("overwrite_file") {
 			free_and_zero(overwrite_file);
 			if (overwrite_works(value)) {
@@ -3006,12 +3101,10 @@ char load_config_file(const char *f)
 			}
 		}
 #endif /* BUILD_X11 */
-#ifdef __linux__
 		CONF("top_name_width") {
 			if (set_top_name_width(value))
 				CONF_ERR;
 		}
-#endif /* __linux__ */
 #ifdef HDDTEMP
 		CONF("hddtemp_host") {
 			set_hddtemp_host(value);

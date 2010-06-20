@@ -126,7 +126,7 @@ static void update_moc_loop(thread_handle &handle)
 	/* never reached */
 }
 
-static int run_moc_thread(double interval)
+static int run_moc_thread(std::chrono::microseconds interval)
 {
 	if (moc_thread)
 		return 0;
@@ -139,9 +139,10 @@ static int run_moc_thread(double interval)
 	return 0;
 }
 
-void update_moc(void)
+int update_moc(void)
 {
-	run_moc_thread(info.music_player_interval * 100000);
+	run_moc_thread(std::chrono::microseconds(long(info.music_player_interval * 100000)));
+	return 0;
 }
 
 #define MOC_PRINT_GENERATOR(type, alt) \

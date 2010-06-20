@@ -1,0 +1,16 @@
+--- lua/libcairo.c~	2010-06-11 23:14:43.000000000 +0200
++++ lua/libcairo.c	2010-06-12 10:47:51.000000000 +0200
+@@ -1452,12 +1452,12 @@
+ #endif
+  {
+   struct _cairo* cr = (( struct _cairo*)  tolua_tousertype(tolua_S,1,0));
++  int num_dashes = ((int)  tolua_tonumber(tolua_S,3,0));
+ #ifdef __cplusplus
+   double* dashes = Mtolua_new_dim(double, num_dashes);
+ #else
+   double* dashes = (double*) malloc((num_dashes)*sizeof(double));
+ #endif
+-  int num_dashes = ((int)  tolua_tonumber(tolua_S,3,0));
+   double offset = ((double)  tolua_tonumber(tolua_S,4,0));
+   {
+ #ifndef TOLUA_RELEASE

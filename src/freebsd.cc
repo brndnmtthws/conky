@@ -70,7 +70,7 @@
 kvm_t *kd;
 
 __attribute__((gnu_inline)) inline void
-proc_find_top(struct process **cpu, struct process **mem);
+proc_find_top(struct process **cpu, struct process **mem, struct process **time);
 
 static short cpu_setup = 0;
 
@@ -121,7 +121,7 @@ void prepare_update(void)
 {
 }
 
-void update_uptime(void)
+int update_uptime(void)
 {
 	int mib[2] = { CTL_KERN, KERN_BOOTTIME };
 	struct timeval boottime;
@@ -136,6 +136,8 @@ void update_uptime(void)
 		fprintf(stderr, "Could not get uptime\n");
 		info.uptime = 0;
 	}
+
+	return 0;
 }
 
 int check_mount(struct text_object *obj)
@@ -156,7 +158,7 @@ int check_mount(struct text_object *obj)
 	return 0;
 }
 
-void update_meminfo(void)
+int update_meminfo(void)
 {
 	u_int total_pages, inactive_pages, free_pages;
 	unsigned long swap_avail, swap_free;
@@ -189,9 +191,11 @@ void update_meminfo(void)
 		info.swap = 0;
 		info.swapfree = 0;
 	}
+
+	return 0;
 }
 
-void update_net_stats(void)
+int update_net_stats(void)
 {
 	struct net_stat *ns;
 	double delta;
@@ -202,11 +206,11 @@ void update_net_stats(void)
 	/* get delta */
 	delta = current_update_time - last_update_time;
 	if (delta <= 0.0001) {
-		return;
+		return 0;
 	}
 
 	if (getifaddrs(&ifap) < 0) {
-		return;
+		return 0;
 	}
 
 	for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
@@ -262,18 +266,20 @@ void update_net_stats(void)
 	}
 
 	freeifaddrs(ifap);
+	return 0;
 }
 
-void update_total_processes(void)
+int update_total_processes(void)
 {
 	int n_processes;
 
 	kvm_getprocs(kd, KERN_PROC_ALL, 0, &n_processes);
 
 	info.procs = n_processes;
+	return 0;
 }
 
-void update_running_processes(void)
+int update_running_processes(void)
 {
 	struct kinfo_proc *p;
 	int n_processes;
@@ -291,6 +297,7 @@ void update_running_processes(void)
 	}
 
 	info.run_procs = cnt;
+	return 0;
 }
 
 void get_cpu_count(void)
@@ -316,7 +323,7 @@ struct cpu_info {
 	long oldused;
 };
 
-void update_cpu_usage(void)
+int update_cpu_usage(void)
 {
 	int i, j = 0;
 	long used, total;
@@ -394,9 +401,10 @@ void update_cpu_usage(void)
 	}
 
 	free(cp_time);
+	return 0;
 }
 
-void update_load_average(void)
+int update_load_average(void)
 {
 	double v[3];
 
@@ -405,6 +413,8 @@ void update_load_average(void)
 	info.loadavg[0] = (double) v[0];
 	info.loadavg[1] = (double) v[1];
 	info.loadavg[2] = (double) v[2];
+
+	return 0;
 }
 
 double get_acpi_temperature(int fd)
@@ -585,11 +595,6 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size, const char *p_fo
 	return 1;
 }
 
-void update_top(void)
-{
-	proc_find_top(info.cpu, info.memu);
-}
-
 #if 0
 void update_wifi_stats(void)
 {
@@ -645,7 +650,7 @@ cleanup:
 }
 #endif
 
-void update_diskio(void)
+int update_diskio(void)
 {
 	int devs_count, num_selected, num_selections, dn;
 	struct device_selection *dev_select = NULL;
@@ -663,7 +668,7 @@ void update_diskio(void)
 
 	if (devstat_getdevs(NULL, &statinfo_cur) < 0) {
 		free(statinfo_cur.dinfo);
-		return;
+		return 0;
 	}
 
 	devs_count = statinfo_cur.dinfo->numdevs;
@@ -695,111 +700,36 @@ void update_diskio(void)
 	}
 
 	free(statinfo_cur.dinfo);
+	return 0;
 }
 
 /* While topless is obviously better, top is also not bad. */
 
-int comparecpu(const void *a, const void *b)
-{
-	if (((const struct process *)a)->amount > ((const struct process *)b)->amount) {
-		return -1;
-	} else if (((const struct process *)a)->amount < ((const struct process *)b)->amount) {
-		return 1;
-	} else {
-		return 0;
-	}
-}
-
-int comparemem(const void *a, const void *b)
-{
-	if (((const struct process *)a)->rss > ((const struct process *)b)->rss) {
-		return -1;
-	} else if (((const struct process *)a)->rss < ((const struct process *)b)->rss) {
-		return 1;
-	} else {
-		return 0;
-	}
-}
-
-__attribute__((gnu_inline)) inline void
-proc_find_top(struct process **cpu, struct process **mem)
+void get_top_info(void)
 {
 	struct kinfo_proc *p;
+	struct process *proc;
 	int n_processes;
-	int i, j = 0;
-	struct process *processes;
-
-	int total_pages;
-
-	/* we get total pages count again to be sure it is up to date */
-	if (GETSYSCTL("vm.stats.vm.v_page_count", total_pages) != 0) {
-		CRIT_ERR(NULL, NULL, "Cannot read sysctl \"vm.stats.vm.v_page_count\"");
-	}
+	int i;
 
 	p = kvm_getprocs(kd, KERN_PROC_PROC, 0, &n_processes);
-	processes = (process *) malloc(n_processes * sizeof(struct process));
 
 	for (i = 0; i < n_processes; i++) {
 		if (!((p[i].ki_flag & P_SYSTEM)) && p[i].ki_comm != NULL) {
-			processes[j].pid = p[i].ki_pid;
-			processes[j].name = strndup(p[i].ki_comm, text_buffer_size);
-			processes[j].amount = 100.0 * p[i].ki_pctcpu / FSCALE;
-			processes[j].vsize = p[i].ki_size;
-			processes[j].rss = (p[i].ki_rssize * getpagesize());
-			j++;
+			proc = find_process(p[i].ki_pid);
+			if (!proc)
+				proc = new_process(p[i].ki_pid);
+
+			proc->time_stamp = g_time;
+			proc->name = strndup(p[i].ki_comm, text_buffer_size);
+			proc->amount = 100.0 * p[i].ki_pctcpu / FSCALE;
+			proc->vsize = p[i].ki_size;
+			proc->rss = (p[i].ki_rssize * getpagesize());
+			/* ki_runtime is in microseconds, total_cpu_time in centiseconds.
+			 * Therefore we divide by 10000. */
+			proc->total_cpu_time = p[i].ki_runtime / 10000;
 		}
 	}
-
-	qsort(processes, j - 1, sizeof(struct process), comparemem);
-	for (i = 0; i < 10 && i < n_processes; i++) {
-		struct process *tmp, *ttmp;
-
-		tmp = (process *) malloc(sizeof(struct process));
-		tmp->pid = processes[i].pid;
-		tmp->amount = processes[i].amount;
-		tmp->name = strndup(processes[i].name, text_buffer_size);
-		tmp->rss = processes[i].rss;
-		tmp->vsize = processes[i].vsize;
-
-		ttmp = mem[i];
-		mem[i] = tmp;
-		if (ttmp != NULL) {
-			free(ttmp->name);
-			free(ttmp);
-		}
-	}
-
-	qsort(processes, j - 1, sizeof(struct process), comparecpu);
-	for (i = 0; i < 10 && i < n_processes; i++) {
-		struct process *tmp, *ttmp;
-
-		tmp = (process *) malloc(sizeof(struct process));
-		tmp->pid = processes[i].pid;
-		tmp->amount = processes[i].amount;
-		tmp->name = strndup(processes[i].name, text_buffer_size);
-		tmp->rss = processes[i].rss;
-		tmp->vsize = processes[i].vsize;
-
-		ttmp = cpu[i];
-		cpu[i] = tmp;
-		if (ttmp != NULL) {
-			free(ttmp->name);
-			free(ttmp);
-		}
-	}
-
-#if defined(FREEBSD_DEBUG)
-	printf("=====\nmem\n");
-	for (i = 0; i < 10; i++) {
-		printf("%d: %s(%d) %ld %ld\n", i, mem[i]->name,
-				mem[i]->pid, mem[i]->vsize, mem[i]->rss);
-	}
-#endif
-
-	for (i = 0; i < j; i++) {
-		free(processes[i].name);
-	}
-	free(processes);
 }
 
 void get_battery_short_status(char *buffer, unsigned int n, const char *bat)

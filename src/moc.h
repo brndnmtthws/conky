@@ -24,7 +24,7 @@
 #ifndef MOC_H_
 #define MOC_H_
 
-void update_moc(void);
+int update_moc(void);
 void free_moc(struct text_object *);
 
 void print_moc_state(struct text_object *, char *, int);

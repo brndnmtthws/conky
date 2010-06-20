@@ -45,6 +45,12 @@
 #ifdef BUILD_MYSQL
 #include "mysql.h"
 #endif
+#ifdef BUILD_ICAL
+#include "ical.h"
+#endif
+#ifdef BUILD_IRC
+#include "irc.h"
+#endif
 #ifdef BUILD_X11
 #include "fonts.h"
 #endif
@@ -139,10 +145,10 @@ static struct text_object *create_plain_text(const char *s)
 void stock_parse_arg(struct text_object *obj, const char *arg)
 {
 	char stock[8];
-	char data[8];
+	char data[16];
 
 	obj->data.s = NULL;
-	if(sscanf(arg, "%7s %7s", stock, data) != 2) {
+	if(sscanf(arg, "%7s %15s", stock, data) != 2) {
 		NORM_ERR("wrong number of arguments for $stock");
 		return;
 	}
@@ -150,8 +156,86 @@ void stock_parse_arg(struct text_object *obj, const char *arg)
 	else if(!strcasecmp("adv", data)) strcpy(data, "a2");
 	else if(!strcasecmp("asksize", data)) strcpy(data, "a5");
 	else if(!strcasecmp("bid", data)) strcpy(data, "b");
+	else if(!strcasecmp("askrt", data)) strcpy(data, "b2");
+	else if(!strcasecmp("bidrt", data)) strcpy(data, "b3");
+	else if(!strcasecmp("bookvalue", data)) strcpy(data, "b4");
+	else if(!strcasecmp("bidsize", data)) strcpy(data, "b6");
+	else if(!strcasecmp("change", data)) strcpy(data, "c1");
+	else if(!strcasecmp("commission", data)) strcpy(data, "c3");
+	else if(!strcasecmp("changert", data)) strcpy(data, "c6");
+	else if(!strcasecmp("ahcrt", data)) strcpy(data, "c8");
+	else if(!strcasecmp("ds", data)) strcpy(data, "d");
+	else if(!strcasecmp("ltd", data)) strcpy(data, "d1");
+	else if(!strcasecmp("tradedate", data)) strcpy(data, "d2");
+	else if(!strcasecmp("es", data)) strcpy(data, "e");
+	else if(!strcasecmp("ei", data)) strcpy(data, "e1");
+	else if(!strcasecmp("epsecy", data)) strcpy(data, "e7");
+	else if(!strcasecmp("epseny", data)) strcpy(data, "e8");
+	else if(!strcasecmp("epsenq", data)) strcpy(data, "e9");
+	else if(!strcasecmp("floatshares", data)) strcpy(data, "f6");
+	else if(!strcasecmp("dayslow", data)) strcpy(data, "g");
+	else if(!strcasecmp("dayshigh", data)) strcpy(data, "h");
+	else if(!strcasecmp("52weeklow", data)) strcpy(data, "j");
+	else if(!strcasecmp("52weekhigh", data)) strcpy(data, "k");
+	else if(!strcasecmp("hgp", data)) strcpy(data, "g1");
+	else if(!strcasecmp("ag", data)) strcpy(data, "g3");
+	else if(!strcasecmp("hg", data)) strcpy(data, "g4");
+	else if(!strcasecmp("hgprt", data)) strcpy(data, "g5");
+	else if(!strcasecmp("hgrt", data)) strcpy(data, "g6");
+	else if(!strcasecmp("moreinfo", data)) strcpy(data, "i");
+	else if(!strcasecmp("obrt", data)) strcpy(data, "i5");
+	else if(!strcasecmp("mc", data)) strcpy(data, "j1");
+	else if(!strcasecmp("mcrt", data)) strcpy(data, "j3");
+	else if(!strcasecmp("ebitda", data)) strcpy(data, "j4");
+	else if(!strcasecmp("c52wlow", data)) strcpy(data, "j5");
+	else if(!strcasecmp("pc52wlow", data)) strcpy(data, "j6");
+	else if(!strcasecmp("cprt", data)) strcpy(data, "k2");
+	else if(!strcasecmp("lts", data)) strcpy(data, "k3");
+	else if(!strcasecmp("c52whigh", data)) strcpy(data, "k4");
+	else if(!strcasecmp("pc52whigh", data)) strcpy(data, "k5");
+	else if(!strcasecmp("ltp", data)) strcpy(data, "l1");
+	else if(!strcasecmp("hl", data)) strcpy(data, "l2");
+	else if(!strcasecmp("ll", data)) strcpy(data, "l3");
+	else if(!strcasecmp("dr", data)) strcpy(data, "m");
+	else if(!strcasecmp("drrt", data)) strcpy(data, "m2");
+	else if(!strcasecmp("50ma", data)) strcpy(data, "m3");
+	else if(!strcasecmp("200ma", data)) strcpy(data, "m4");
+	else if(!strcasecmp("c200ma", data)) strcpy(data, "m5");
+	else if(!strcasecmp("pc200ma", data)) strcpy(data, "m6");
+	else if(!strcasecmp("c50ma", data)) strcpy(data, "m7");
+	else if(!strcasecmp("pc50ma", data)) strcpy(data, "m8");
+	else if(!strcasecmp("name", data)) strcpy(data, "n");
+	else if(!strcasecmp("notes", data)) strcpy(data, "n4");
+	else if(!strcasecmp("open", data)) strcpy(data, "o");
+	else if(!strcasecmp("pc", data)) strcpy(data, "p");
+	else if(!strcasecmp("pricepaid", data)) strcpy(data, "p1");
+	else if(!strcasecmp("cip", data)) strcpy(data, "p2");
+	else if(!strcasecmp("ps", data)) strcpy(data, "p5");
+	else if(!strcasecmp("pb", data)) strcpy(data, "p6");
+	else if(!strcasecmp("edv", data)) strcpy(data, "q");
+	else if(!strcasecmp("per", data)) strcpy(data, "r");
+	else if(!strcasecmp("dpd", data)) strcpy(data, "r1");
+	else if(!strcasecmp("perrt", data)) strcpy(data, "r2");
+	else if(!strcasecmp("pegr", data)) strcpy(data, "r5");
+	else if(!strcasecmp("pepsecy", data)) strcpy(data, "r6");
+	else if(!strcasecmp("pepseny", data)) strcpy(data, "r7");
+	else if(!strcasecmp("symbol", data)) strcpy(data, "s");
+	else if(!strcasecmp("sharesowned", data)) strcpy(data, "s1");
+	else if(!strcasecmp("shortratio", data)) strcpy(data, "s7");
+	else if(!strcasecmp("ltt", data)) strcpy(data, "t1");
+	else if(!strcasecmp("tradelinks", data)) strcpy(data, "t6");
+	else if(!strcasecmp("tt", data)) strcpy(data, "t7");
+	else if(!strcasecmp("1ytp", data)) strcpy(data, "t8");
+	else if(!strcasecmp("volume", data)) strcpy(data, "v");
+	else if(!strcasecmp("hv", data)) strcpy(data, "v1");
+	else if(!strcasecmp("hvrt", data)) strcpy(data, "v7");
+	else if(!strcasecmp("52weekrange", data)) strcpy(data, "w");
+	else if(!strcasecmp("dvc", data)) strcpy(data, "w1");
+	else if(!strcasecmp("dvcrt", data)) strcpy(data, "w4");
+	else if(!strcasecmp("se", data)) strcpy(data, "x");
+	else if(!strcasecmp("dy", data)) strcpy(data, "y");
 	else {
-		NORM_ERR("\"%s\" is not supported by $stock. Supported: adv,ask,asksize,bid", data);
+		NORM_ERR("\"%s\" is not supported by $stock. Supported: 1ytp, 200ma, 50ma, 52weeklow, 52weekhigh, 52weekrange, adv, ag, ahcrt, ask, askrt, asksize, bid, bidrt, bidsize, bookvalue, c200ma, c50ma, c52whigh, c52wlow, change, changert, cip, commission, cprt, dayshigh, dayslow, dpd, dr, drrt, ds, dvc, dvcrt, dy, ebitda, edv, ei, epsecy, epsenq, epseny, es, floatshares, hg, hgp, hgprt, hl, hv, hvrt, ll, ltd, ltp, lts, ltt, mc, mcrt, moreinfo, name, notes, obrt, open, pb, pc, pc200ma, pc50ma, pc52whigh, pc52wlow, pegr, pepsecy, pepseny, per, perrt, pricepaid, ps, se, sharesowned, shortratio, symbol, tradedate, tradelinks, tt, volume", data);
 		return;
 	}
 #define MAX_FINYAH_URL_LENGTH 64
@@ -241,6 +325,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		parse_read_tcpip_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_read_udp;
 		obj->callbacks.free = &free_read_tcpip;
+	END OBJ_ARG(tcp_ping, 0, "tcp_ping: Needs \"host (port)\" as argument(s)")
+		parse_tcp_ping_arg(obj, arg, free_at_crash);
+		obj->callbacks.print = &print_tcp_ping;
+		obj->callbacks.free = &free_tcp_ping;
 #if defined(__linux__)
 	END OBJ(voltage_mv, 0)
 		get_cpu_count();
@@ -269,6 +357,12 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 	END OBJ(wireless_essid, &update_net_stats)
 		obj->data.opaque = get_net_stat(arg, obj, free_at_crash);
 		obj->callbacks.print = &print_wireless_essid;
+	END OBJ(wireless_channel, &update_net_stats)
+		parse_net_stat_arg(obj, arg, free_at_crash);
+		obj->callbacks.print = &print_wireless_channel;
+	END OBJ(wireless_freq, &update_net_stats)
+		parse_net_stat_arg(obj, arg, free_at_crash);
+		obj->callbacks.print = &print_wireless_frequency;
 	END OBJ(wireless_mode, &update_net_stats)
 		parse_net_stat_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_wireless_mode;
@@ -343,12 +437,13 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(battery_bar, 0)
 		char bat[64];
-		if (arg) {
+
+		arg = scan_bar(obj, arg, 100);
+		if (arg && strlen(arg)>0) {
 			sscanf(arg, "%63s", bat);
 		} else {
 			strcpy(bat, "BAT0");
 		}
-		scan_bar(obj, bat, 100);
 		obj->data.s = strndup(bat, text_buffer_size);
 		obj->callbacks.barval = &get_battery_perct_bar;
 		obj->callbacks.free = &gen_free_opaque;
@@ -623,7 +718,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.free = &free_exec;
 	END OBJ(execp, 0)
 		scan_exec_arg(obj, arg);
-		obj->verbatim_output = 1;
 		obj->parse = true;
 		obj->thread = false;
 		obj->callbacks.print = &print_exec;
@@ -664,7 +758,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.free = &free_execi;
 	END OBJ_ARG(execpi, 0, "execpi needs arguments")
 		scan_execi_arg(obj, arg);
-		obj->verbatim_output = 1;
 		obj->parse = true;
 		obj->thread = false;
 		obj->callbacks.print = &print_execi;
@@ -1130,6 +1223,18 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		scan_tztime(obj, arg);
 		obj->callbacks.print = &print_tztime;
 		obj->callbacks.free = &free_tztime;
+#ifdef BUILD_ICAL
+	END OBJ_ARG(ical, 0, "ical requires arguments")
+		parse_ical_args(obj, arg, free_at_crash, s);
+		obj->callbacks.print = &print_ical;
+		obj->callbacks.free = &free_ical;
+#endif
+#ifdef BUILD_IRC
+	END OBJ_ARG(irc, 0, "irc requires arguments")
+		parse_irc_args(obj, arg);
+		obj->callbacks.print = &print_irc;
+		obj->callbacks.free = &free_irc;
+#endif
 #ifdef BUILD_ICONV
 	END OBJ_ARG(iconv_start, 0, "Iconv requires arguments")
 		init_iconv_start(obj, free_at_crash, arg);
@@ -1521,12 +1626,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 #ifdef BUILD_LUA
 	END OBJ_ARG(lua, 0, "lua needs arguments: <function name> [function parameters]")
 		obj->data.s = strndup(arg, text_buffer_size);
-		obj->verbatim_output = 1;
 		obj->callbacks.print = &print_lua;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(lua_parse, 0, "lua_parse needs arguments: <function name> [function parameters]")
 		obj->data.s = strndup(arg, text_buffer_size);
-		obj->verbatim_output = 1;
 		obj->callbacks.print = &print_lua_parse;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(lua_bar, 0, "lua_bar needs arguments: <height>,<width> <function name> [function parameters]")

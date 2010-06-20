@@ -56,7 +56,7 @@ ccurl_location_ptr ccurl_find_location(ccurl_location_list &locations, char *uri
 void ccurl_free_locations(ccurl_location_list &locations);
 /* initiates a curl thread at the location specified using the interval in
  * seconds */
-void ccurl_init_thread(ccurl_location_ptr curloc, int interval);
+void ccurl_init_thread(const ccurl_location_ptr &curloc, int interval);
 
 /* curl thread lib exports end */
 

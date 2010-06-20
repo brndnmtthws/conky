@@ -46,6 +46,8 @@ struct net_stat {
         double net_rec[15], net_trans[15];
         // wireless extensions
         char essid[32];
+        int channel;
+        char freq[16];
         char bitrate[16];
         char mode[16];
         int link_qual;
@@ -76,6 +78,8 @@ double upspeedgraphval(struct text_object *);
 #endif /* BUILD_X11 */
 #ifdef BUILD_WLAN
 void print_wireless_essid(struct text_object *, char *, int);
+void print_wireless_channel(struct text_object *, char *, int);
+void print_wireless_frequency(struct text_object *, char *, int);
 void print_wireless_mode(struct text_object *, char *, int);
 void print_wireless_bitrate(struct text_object *, char *, int);
 void print_wireless_ap(struct text_object *, char *, int);
@@ -92,7 +96,7 @@ int interface_up(struct text_object *);
 void free_if_up(struct text_object *);
 
 void free_dns_data(struct text_object *);
-void update_dns_data(void);
+int update_dns_data(void);
 void parse_nameserver_arg(struct text_object *, const char *);
 void print_nameserver(struct text_object *, char *, int);
 

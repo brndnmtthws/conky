@@ -41,11 +41,15 @@ struct rss_data {
 	unsigned int nrspaces;
 };
 
-static ccurl_location_list locations;
+static ccurl_location_list locations_rss;
 
 void rss_free_info(void)
 {
-	ccurl_free_locations(locations);
+	for (ccurl_location_list::iterator i = locations_rss.begin();
+			i != locations_rss.end(); i++) {
+		prss_free((PRSS*) (*i)->result);
+	}
+	ccurl_free_locations(locations_rss);
 }
 
 static void rss_process_info(char *p, int p_max_size, char *uri, char *action, int
@@ -54,7 +58,7 @@ static void rss_process_info(char *p, int p_max_size, char *uri, char *action, i
 	PRSS *data;
 	char *str;
 
-	ccurl_location_ptr curloc = ccurl_find_location(locations, uri);
+	ccurl_location_ptr curloc = ccurl_find_location(locations_rss, uri);
 
 	assert(act_par >= 0 && action);
 
@@ -63,7 +67,7 @@ static void rss_process_info(char *p, int p_max_size, char *uri, char *action, i
 		memset(curloc->result, 0, sizeof(PRSS));
 		curloc->process_function = std::bind(prss_parse_data,
 				std::placeholders::_1, std::placeholders::_2);
-		ccurl_init_thread(curloc, interval);
+		ccurl_init_thread(curloc, interval * 60);
 		if (!curloc->p_timed_thread) {
 			NORM_ERR("error setting up RSS thread");
 		}

@@ -151,7 +151,7 @@ static void update_user_time(char *tty)
 	}
 }
 
-void update_users(void)
+int update_users(void)
 {
 	struct information *current_info = &info;
 	char temp[BUFLEN] = "";
@@ -197,6 +197,7 @@ void update_users(void)
 		current_info->users.times = (char*)malloc(text_buffer_size);
 		strncpy(current_info->users.times, "broken", text_buffer_size);
 	}
+	return 0;
 }
 
 void print_user_names(struct text_object *obj, char *p, int p_max_size)

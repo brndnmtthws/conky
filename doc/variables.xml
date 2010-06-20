@@ -1540,6 +1540,32 @@
     <varlistentry>
         <term>
             <command>
+                <option>ical</option>
+            </command>
+            <option>number file</option>
+        </term>
+        <listitem>Shows title of event number 'number' in the ical (RFC 5545) file
+        'file'. The events are first ordered by starting time, events that started
+        in the past are  ignored. The events that are shown are the VEVENTS, the
+        title that is shown is the SUMMARY and the starting time used for sorting
+        is DTSTART .
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>irc</option>
+            </command>
+            <option>server(:port) #channel</option>
+        </term>
+        <listitem>Shows everything that's being told in #channel on IRCserver
+        'server'. TCP-port 6667 is used for the connection unless 'port' is
+        specified.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>iconv_start</option>
             </command>
             <option>codeset_from codeset_to</option>
@@ -3281,7 +3307,7 @@
             <option>symbol data</option>
         </term>
         <listitem>Displays the data of a stock symbol. The following data
-        is supported: adv(Average Daily Volume),ask,asksize,bid
+        is supported: adv(Average Daily Volume), ask, asksize, bid, askrt(ask realtime), bidrt(bid realtime), bookvalue, bidsize, change, commission, changert(change realtime), ahcrt(After Hours Change realtime), ds(dividend/share), ltd(Last Trade Date), tradedate, es(earnings/share), ei(error indication), epsecy(EPS Estimate Current Year), epseny(EPS Estimate Next Year), epsenq(EPS Estimate Next Quarter), floatshares, dayslow, dayshigh, 52weeklow, 52weekhigh, hgp(Holdings Gain Percent), ag(Annualized Gain), hg(Holdings Gain), hgprt(Holdings Gain Percent realtime), hgrt(Holdings Gain realtime), moreinfo, obrt(Order Book realtime), mc(Market Capitalization), mcrt(Market Cap realtime), ebitda, c52wlow(Change From 52-week Low), pc52wlow(Percent Change From 52-week Low), cprt(change percent realtime), lts(Last Trade Size), c52whigh(Change from 52-week high), pc52whigh(percent change from 52-week high), ltp(last trade price), hl(high limit), ll(low limit), dr(day's range), drrt(day's range realtime), 50ma(50-day Moving Average), 200ma(200-day Moving Average), c200ma(Change From 200-day Moving Average), pc200ma(Percent Change From 200-day Moving Average), c50ma(Change From 50-day Moving Average), pc50ma(Percent Change From 50-day Moving Average), name, notes, open, pc(previous close), pricepaid, cip(change in percent), ps(price/sales), pb(price/book), edv(Ex-Dividend Date), per(P/E Ratio), dpd(Dividend Pay Date), perrt(P/E Ratio realtime), pegr(PEG Ratio), pepsecy(Price/EPS Estimate Current Year), pepseny(Price/EPS Estimate Next Year), symbol, sharesowned, shortratio, ltt(Last Trade Time), tradelinks, tt(Ticker Trend), 1ytp(1 yr Target Price), volume, hv(Holdings Value), hvrt(Holdings Value realtime), 52weekrange, dvc(Day's Value Change), dvcrt(Day's Value Change realtime), se(Stock Exchange), dy(Dividend Yield)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3361,6 +3387,21 @@
         file is checked every 'next_check' update. If next_check is
         not supplied, Conky defaults to 2. Max of 30 lines can be
         displayed, or until the text buffer is filled. 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>tcp_ping</option>
+            </command>
+            <option>host (port)</option>
+        </term>
+        <listitem>Displays the number of microseconds it takes to
+        get a reply on a ping to to tcp 'port' on 'host'. 'port' is optional
+        and has 80 as default. This works on both open and closed
+        ports, just make sure that the port is not behind a firewall or you
+        will get 'down' as answer. It's best to test a closed port instead
+        of an open port, you will get a quicker response.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4121,11 +4162,31 @@
     <varlistentry>
         <term>
             <command>
+                <option>wireless_channel</option>
+            </command>
+            <option>(net)</option>
+        </term>
+        <listitem>WLAN channel on which device 'net' is listening (Linux only)
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>wireless_essid</option>
             </command>
             <option>(net)</option>
         </term>
         <listitem>Wireless access point ESSID (Linux only) 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>wireless_freq</option>
+            </command>
+            <option>(net)</option>
+        </term>
+        <listitem>Frequency on which device 'net' is listening (Linux only)
         <para /></listitem>
     </varlistentry>
     <varlistentry>

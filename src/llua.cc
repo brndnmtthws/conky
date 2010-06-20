@@ -42,6 +42,8 @@ void llua_rm_notifies(void);
 static int llua_block_notify = 0;
 #endif /* HAVE_SYS_INOTIFY_H */
 
+#define MIN(a, b) ( (a) < (b) ? (a) : (b) )
+
 static char *draw_pre_hook = 0;
 static char *draw_post_hook = 0;
 static char *startup_hook = 0;
@@ -157,6 +159,34 @@ void llua_load(const char *script)
 }
 
 /*
+ * Returns the first space-delimited token of the string starting at position *len.
+ * On return *len contains the length of the token. Spaces inside brackets are ignored, so that
+ * eg. '${foo bar}' is treated as a single token. Sets *len to zero and *str points to the end of
+ * the string when there are no more tokens.
+ */
+static const char* tokenize(const char *str, size_t *len)
+{
+	str += *len;
+	*len = 0;
+	while(str && isspace(*str))
+		++str;
+
+	size_t level = 0;
+	while(str[*len] && (level > 0 || !isspace(str[*len]))) {
+		switch(str[*len]) {
+			case '{': ++level; break;
+			case '}': --level; break;
+		}
+		++*len;
+	}
+
+	if(!str[*len] && level > 0)
+		NORM_ERR("tokenize: improperly nested token: %s", str);
+
+	return str;
+}
+
+/*
    llua_do_call does a flexible call to any Lua function
 string: <function> [par1] [par2...]
 retc: the number of return values expected
@@ -166,34 +196,30 @@ static char *llua_do_call(const char *string, int retc)
 	static char func[64];
 	int argc = 0;
 
-	char *tmp = strdup(string);
-	char *ptr = strtok(tmp, " ");
+	size_t len = 0;
+
+	const char *ptr = tokenize(string, &len);
 
 	/* proceed only if the function name is present */
-	if (!ptr) {
-		free(tmp);
+	if (!len) {
 		return NULL;
 	}
 
 	/* call only conky_ prefixed functions */
-	if(strncmp(ptr, LUAPREFIX, strlen(LUAPREFIX)) == 0) {
-		snprintf(func, 64, "%s", ptr);
-	}else{
-		snprintf(func, 64, "%s%s", LUAPREFIX, ptr);
-	}
+	if(strncmp(ptr, LUAPREFIX, strlen(LUAPREFIX)) != 0) {
+		snprintf(func, sizeof func, "%s", LUAPREFIX);
+	} else
+		*func = 0;
+	strncat(func, ptr, MIN(len, sizeof(func) - strlen(func) - 1));
 
 	/* push the function name to stack */
 	lua_getglobal(lua_L, func);
 
 	/* parse all function parameters from args and push them to the stack */
-	ptr = strtok(NULL, " ");
-	while (ptr) {
-		lua_pushstring(lua_L, ptr);
-		ptr = strtok(NULL, " ");
+	while( ptr = tokenize(ptr, &len), len) {
+		lua_pushlstring(lua_L, ptr, len);
 		argc++;
 	}
-
-	free(tmp);
 
 	if(lua_pcall(lua_L, argc, retc, 0) != 0) {
 		NORM_ERR("llua_do_call: function %s execution failed: %s", func, lua_tostring(lua_L, -1));

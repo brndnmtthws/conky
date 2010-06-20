@@ -308,6 +308,17 @@
     <varlistentry>
         <term>
             <command>
+                <option>http_refresh</option>
+            </command>
+        </term>
+        <listitem>When this is set the page generated with
+	out_to_http will automatically refresh each interval. Default
+	value is no.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>if_up_strictness</option>
             </command>
         </term>
@@ -606,6 +617,15 @@
             </command>
         </term>
         <listitem>Print text to stdout. 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>out_to_http</option>
+            </command>
+        </term>
+        <listitem>Let conky act as a small http-server serving it's text.
         <para /></listitem>
     </varlistentry>
     <varlistentry>

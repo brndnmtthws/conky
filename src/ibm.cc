@@ -129,7 +129,7 @@ void get_ibm_acpi_fan(struct text_object *obj, char *p, int p_max_size)
 temperatures:   41 43 31 46 33 -128 29 -128
  * Peter Tarjan (ptarjan@citromail.hu) */
 
-void get_ibm_acpi_temps(void)
+int get_ibm_acpi_temps(void)
 {
 
 	FILE *fp;
@@ -158,6 +158,7 @@ void get_ibm_acpi_temps(void)
 	}
 
 	fclose(fp);
+	return 0;
 }
 
 /* get volume (0-14) on IBM/Lenovo laptops running the ibm acpi.

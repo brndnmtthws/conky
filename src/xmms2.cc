@@ -239,6 +239,7 @@ int handle_playback_state_change(xmmsv_t *value, void *p)
 				break;
 			case XMMS_PLAYBACK_STATUS_STOP:
 				strncpy(ptr->xmms2.status, "Stopped", text_buffer_size - 1);
+				ptr->xmms2.elapsed = ptr->xmms2.progress = ptr->xmms2.percent = 0;
 				break;
 			default:
 				strncpy(ptr->xmms2.status, "Unknown", text_buffer_size - 1);
@@ -268,7 +269,7 @@ int handle_playlist_loaded(xmmsv_t *value, void *p)
 	return TRUE;
 }
 
-void update_xmms2(void)
+int update_xmms2(void)
 {
 	struct information *current_info = &info;
 
@@ -282,7 +283,7 @@ void update_xmms2(void)
 		/* did init fail? */
 		if (xmms2_conn == NULL) {
 			fprintf(stderr,"XMMS2 init failed. %s\n", xmmsc_get_last_error(xmms2_conn));
-			return;
+			return 0;
 		}
 
 		/* init ok but not connected yet.. */
@@ -300,7 +301,7 @@ void update_xmms2(void)
 		if (!xmmsc_connect(xmms2_conn, path)) {
 			fprintf(stderr,"XMMS2 connection failed. %s\n", xmmsc_get_last_error(xmms2_conn));
 			current_info->xmms2.conn_state = CONN_NO;
-			return;
+			return 0;
 		}
 
 		/* set callbacks */
@@ -334,6 +335,7 @@ void update_xmms2(void)
 			xmmsc_io_out_handle(xmms2_conn);
 
 	}
+	return 0;
 }
 
 void print_xmms2_tracknr(struct text_object *obj, char *p, int p_max_size)

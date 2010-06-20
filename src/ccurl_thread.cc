@@ -94,7 +94,7 @@ size_t ccurl_write_memory_callback(void *ptr, size_t size, size_t nmemb, void *d
 
 
 /* fetch our datums */
-void ccurl_fetch_data(thread_handle &handle, ccurl_location_ptr &curloc)
+void ccurl_fetch_data(thread_handle &handle, const ccurl_location_ptr &curloc)
 {
 	CURL *curl = NULL;
 	CURLcode res;
@@ -136,22 +136,22 @@ void ccurl_fetch_data(thread_handle &handle, ccurl_location_ptr &curloc)
 	}
 }
 
-void ccurl_thread(thread_handle &handle, ccurl_location_ptr curloc);
+void ccurl_thread(thread_handle &handle, const ccurl_location_ptr &curloc);
 
-void ccurl_init_thread(ccurl_location_ptr curloc, int interval)
+void ccurl_init_thread(const ccurl_location_ptr &curloc, int interval)
 {
 #ifdef DEBUG
 	assert(curloc->result);
 #endif /* DEBUG */
 	curloc->p_timed_thread = timed_thread::create(std::bind(ccurl_thread,
-				std::placeholders::_1, curloc), interval * 1000000);
+				std::placeholders::_1, curloc), std::chrono::seconds(interval));
 
 	if (!curloc->p_timed_thread) {
 		NORM_ERR("curl thread: error creating timed thread");
 	}
 }
 
-void ccurl_thread(thread_handle &handle, ccurl_location_ptr curloc)
+void ccurl_thread(thread_handle &handle, const ccurl_location_ptr &curloc)
 {
 
 	while (1) {
@@ -185,7 +185,7 @@ void ccurl_free_info(void)
 /* straight copy, used by $curl */
 static void ccurl_parse_data(char *result, const char *data)
 {
-	strncpy(result, data, max_user_text);
+	if(result) strncpy(result, data, max_user_text);
 }
 
 /* prints result data to text buffer, used by $curl */

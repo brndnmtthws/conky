@@ -46,6 +46,7 @@
 #include <unistd.h>
 // #include <assert.h>
 #include <time.h>
+#include "setting.hh"
 #include "top.h"
 
 #include <sys/ioctl.h>
@@ -91,6 +92,8 @@ struct sysfs {
 #define SHORTSTAT_TEMPL "%*s %llu %llu %llu"
 #define LONGSTAT_TEMPL "%*s %llu %llu %llu "
 
+static conky::simple_config_setting<bool> top_cpu_separate("top_cpu_separate", false, true);
+
 /* This flag tells the linux routines to use the /proc system where possible,
  * even if other api's are available, e.g. sysinfo() or getloadavg().
  * the reason for this is to allow for /proc-based distributed monitoring.
@@ -101,7 +104,7 @@ void prepare_update(void)
 {
 }
 
-void update_uptime(void)
+int update_uptime(void)
 {
 #ifdef HAVE_SYSINFO
 	if (!prefer_proc) {
@@ -117,12 +120,13 @@ void update_uptime(void)
 
 		if (!(fp = open_file("/proc/uptime", &rep))) {
 			info.uptime = 0.0;
-			return;
+			return 0;
 		}
 		if (fscanf(fp, "%lf", &info.uptime) <= 0)
 			info.uptime = 0;
 		fclose(fp);
 	}
+	return 0;
 }
 
 int check_mount(struct text_object *obj)
@@ -153,7 +157,7 @@ int check_mount(struct text_object *obj)
 /* these things are also in sysinfo except Buffers:
  * (that's why I'm reading them from proc) */
 
-void update_meminfo(void)
+int update_meminfo(void)
 {
 	FILE *meminfo_fp;
 	static int rep = 0;
@@ -165,7 +169,7 @@ void update_meminfo(void)
         info.bufmem = info.buffers = info.cached = info.memfree = info.memeasyfree = 0;
 
 	if (!(meminfo_fp = open_file("/proc/meminfo", &rep))) {
-		return;
+		return 0;
 	}
 
 	while (!feof(meminfo_fp)) {
@@ -195,6 +199,7 @@ void update_meminfo(void)
 	info.bufmem = info.cached + info.buffers;
 
 	fclose(meminfo_fp);
+	return 0;
 }
 
 void print_laptop_mode(struct text_object *obj, char *p, int p_max_size)
@@ -270,7 +275,7 @@ void update_gateway_info_failure(const char *reason)
 /* Iface Destination Gateway Flags RefCnt Use Metric Mask MTU Window IRTT */
 #define RT_ENTRY_FORMAT "%63s %lx %lx %x %*d %*d %*d %lx %*d %*d %*d\n"
 
-void update_gateway_info(void)
+int update_gateway_info(void)
 {
 	FILE *fp;
 	struct in_addr ina;
@@ -284,13 +289,13 @@ void update_gateway_info(void)
 
 	if ((fp = fopen("/proc/net/route", "r")) == NULL) {
 		update_gateway_info_failure("fopen()");
-		return;
+		return 0;
 	}
 
 	/* skip over the table header line, which is always present */
 	if (fscanf(fp, "%*[^\n]\n") < 0) {
 		fclose(fp);
-		return;
+		return 0;
 	}
 
 	while (!feof(fp)) {
@@ -307,7 +312,7 @@ void update_gateway_info(void)
 		}
 	}
 	fclose(fp);
-	return;
+	return 0;
 }
 
 void free_gateway_info(struct text_object *obj)
@@ -339,7 +344,7 @@ void print_gateway_ip(struct text_object *obj, char *p, int p_max_size)
 	snprintf(p, p_max_size, "%s", gw_info.ip);
 }
 
-void update_net_stats(void)
+int update_net_stats(void)
 {
 	FILE *net_dev_fp;
 	static int rep = 0;
@@ -363,19 +368,19 @@ void update_net_stats(void)
 	/* get delta */
 	delta = current_update_time - last_update_time;
 	if (delta <= 0.0001) {
-		return;
+		return 0;
 	}
 
 	/* open file and ignore first two lines */
 	if (!(net_dev_fp = open_file("/proc/net/dev", &rep))) {
 		clear_net_stats();
-		return;
+		return 0;
 	}
 
 	if (!fgets(buf, 255, net_dev_fp) ||  /* garbage */
 	    !fgets(buf, 255, net_dev_fp)) {  /* garbage (field names) */
 		fclose(net_dev_fp);
-		return;
+		return 0;
 	}
 
 	/* read each interface */
@@ -544,6 +549,16 @@ void update_net_stats(void)
 					snprintf(ns->essid, 32, "off/any");
 				}
 			}
+			// get channel and freq
+			if (winfo->b.has_freq) {
+				if(winfo->has_range == 1) {
+					ns->channel = iw_freq_to_channel(winfo->b.freq, &(winfo->range));
+					iw_print_freq_value(ns->freq, 16, winfo->b.freq);
+				} else {
+					ns->channel = 0;
+					ns->freq[0] = 0;
+				}
+			}
 
 			snprintf(ns->mode, 16, "%s", iw_operation_mode[winfo->b.mode]);
 		}
@@ -554,11 +569,12 @@ void update_net_stats(void)
 	first = 0;
 
 	fclose(net_dev_fp);
+	return 0;
 }
 
 int result;
 
-void update_total_processes(void)
+int update_total_processes(void)
 {
 	DIR *dir;
 	struct dirent *entry;
@@ -567,23 +583,24 @@ void update_total_processes(void)
 
 	info.procs = 0;
 	if (!(dir = opendir("/proc"))) {
-		return;
+		return 0;
 	}
 	while ((entry = readdir(dir))) {
 		if (!entry) {
 			/* Problem reading list of processes */
 			closedir(dir);
 			info.procs = 0;
-			return;
+			return 0;
 		}
 		if (sscanf(entry->d_name, "%d%c", &ignore1, &ignore2) == 1) {
 			info.procs++;
 		}
 	}
 	closedir(dir);
+	return 0;
 }
 
-void update_threads(void)
+int update_threads(void)
 {
 #ifdef HAVE_SYSINFO
 	if (!prefer_proc) {
@@ -599,12 +616,13 @@ void update_threads(void)
 
 		if (!(fp = open_file("/proc/loadavg", &rep))) {
 			info.threads = 0;
-			return;
+			return 0;
 		}
 		if (fscanf(fp, "%*f %*f %*f %*d/%hu", &info.threads) <= 0)
 			info.threads = 0;
 		fclose(fp);
 	}
+	return 0;
 }
 
 #define CPU_SAMPLE_COUNT 15
@@ -678,7 +696,7 @@ void get_cpu_count(void)
 #define TMPL_LONGSTAT "%*s %llu %llu %llu %llu %llu %llu %llu %llu"
 #define TMPL_SHORTSTAT "%*s %llu %llu %llu %llu"
 
-void update_stat(void)
+int update_stat(void)
 {
 	FILE *stat_fp;
 	static int rep = 0;
@@ -700,7 +718,7 @@ void update_stat(void)
 	pthread_mutex_lock(&last_stat_update_mutex);
 	if (last_stat_update == current_update_time) {
 		pthread_mutex_unlock(&last_stat_update_mutex);
-		return;
+		return 0;
 	}
 	last_stat_update = current_update_time;
 	pthread_mutex_unlock(&last_stat_update_mutex);
@@ -728,7 +746,7 @@ void update_stat(void)
 		if (info.cpu_usage) {
 			memset(info.cpu_usage, 0, info.cpu_count * sizeof(float));
 		}
-		return;
+		return 0;
 	}
 
 	idx = 0;
@@ -799,19 +817,22 @@ void update_stat(void)
 		}
 	}
 	fclose(stat_fp);
+	return 0;
 }
 
-void update_running_processes(void)
+int update_running_processes(void)
 {
 	update_stat();
+	return 0;
 }
 
-void update_cpu_usage(void)
+int update_cpu_usage(void)
 {
 	update_stat();
+	return 0;
 }
 
-void update_load_average(void)
+int update_load_average(void)
 {
 #ifdef HAVE_GETLOADAVG
 	if (!prefer_proc) {
@@ -829,13 +850,14 @@ void update_load_average(void)
 
 		if (!(fp = open_file("/proc/loadavg", &rep))) {
 			info.loadavg[0] = info.loadavg[1] = info.loadavg[2] = 0.0;
-			return;
+			return 0;
 		}
 		if (fscanf(fp, "%f %f %f", &info.loadavg[0], &info.loadavg[1],
 		           &info.loadavg[2]) < 0)
 			info.loadavg[0] = info.loadavg[1] = info.loadavg[2] = 0.0;
 		fclose(fp);
 	}
+	return 0;
 }
 
 /***********************************************************/
@@ -2209,16 +2231,6 @@ void get_powerbook_batt_info(struct text_object *obj, char *buffer, int n)
 	snprintf(buffer, n, "%s", pb_battery_info[obj->data.i]);
 }
 
-void update_top(void)
-{
-	process_find_top(info.cpu, info.memu, info.time
-#ifdef BUILD_IOSTATS
-                , info.io
-#endif
-                );
-	info.first_process = get_first_process();
-}
-
 #define ENTROPY_AVAIL_PATH "/proc/sys/kernel/random/entropy_avail"
 
 int get_entropy_avail(unsigned int *val)
@@ -2319,7 +2331,7 @@ int is_disk(char *dev)
 	return dev_cur->memoized;
 }
 
-void update_diskio(void)
+int update_diskio(void)
 {
 	FILE *fp;
 	static int rep = 0;
@@ -2335,7 +2347,7 @@ void update_diskio(void)
 	stats.current_write = 0;
 
 	if (!(fp = open_file("/proc/diskstats", &rep))) {
-		return;
+		return 0;
 	}
 
 	/* read reads and writes from all disks (minor = 0), including cd-roms
@@ -2370,6 +2382,7 @@ void update_diskio(void)
 	}
 	update_diskio_values(&stats, total_reads, total_writes);
 	fclose(fp);
+	return 0;
 }
 
 void print_distribution(struct text_object *obj, char *p, int p_max_size)
@@ -2407,3 +2420,343 @@ void print_distribution(struct text_object *obj, char *p, int p_max_size)
 	}
 }
 
+/******************************************
+ * Calculate cpu total					  *
+ ******************************************/
+#define TMPL_SHORTPROC "%*s %llu %llu %llu %llu"
+#define TMPL_LONGPROC "%*s %llu %llu %llu %llu %llu %llu %llu %llu"
+
+static unsigned long long calc_cpu_total(void)
+{
+	static unsigned long long previous_total = 0;
+	unsigned long long total = 0;
+	unsigned long long t = 0;
+	int rc;
+	int ps;
+	char line[BUFFER_LEN] = { 0 };
+	unsigned long long cpu = 0;
+	unsigned long long niceval = 0;
+	unsigned long long systemval = 0;
+	unsigned long long idle = 0;
+	unsigned long long iowait = 0;
+	unsigned long long irq = 0;
+	unsigned long long softirq = 0;
+	unsigned long long steal = 0;
+	const char *template_ =
+		KFLAG_ISSET(KFLAG_IS_LONGSTAT) ? TMPL_LONGPROC : TMPL_SHORTPROC;
+
+	ps = open("/proc/stat", O_RDONLY);
+	rc = read(ps, line, sizeof(line));
+	close(ps);
+	if (rc < 0) {
+		return 0;
+	}
+
+	sscanf(line, template_, &cpu, &niceval, &systemval, &idle, &iowait, &irq,
+			&softirq, &steal);
+	total = cpu + niceval + systemval + idle + iowait + irq + softirq + steal;
+
+	t = total - previous_total;
+	previous_total = total;
+
+	return t;
+}
+
+/******************************************
+ * Calculate each processes cpu			  *
+ ******************************************/
+
+inline static void calc_cpu_each(unsigned long long total)
+{
+	float mul = 100.0;
+	if(top_cpu_separate.get(*state))
+		mul *= info.cpu_count;
+
+	for(struct process *p = first_process; p; p = p->next)
+		p->amount = mul * (p->user_time + p->kernel_time) / (float) total;
+}
+
+#ifdef BUILD_IOSTATS
+static void calc_io_each(void)
+{
+	struct process *p;
+	unsigned long long sum = 0;
+
+	for (p = first_process; p; p = p->next)
+		sum += p->read_bytes + p->write_bytes;
+
+	if(sum == 0)
+		sum = 1; /* to avoid having NANs if no I/O occured */
+	for (p = first_process; p; p = p->next)
+		p->io_perc = 100.0 * (p->read_bytes + p->write_bytes) / (float) sum;
+}
+#endif /* BUILD_IOSTATS */
+
+/******************************************
+ * Extract information from /proc		  *
+ ******************************************/
+
+#define PROCFS_TEMPLATE "/proc/%d/stat"
+#define PROCFS_CMDLINE_TEMPLATE "/proc/%d/cmdline"
+
+/* These are the guts that extract information out of /proc.
+ * Anyone hoping to port wmtop should look here first. */
+static void process_parse_stat(struct process *process)
+{
+	char line[BUFFER_LEN] = { 0 }, filename[BUFFER_LEN], procname[BUFFER_LEN];
+	char state[4];
+	int ps;
+	unsigned long user_time = 0;
+	unsigned long kernel_time = 0;
+	int rc;
+	char *r, *q;
+	int endl;
+	int nice_val;
+	char *lparen, *rparen;
+
+	snprintf(filename, sizeof(filename), PROCFS_TEMPLATE, process->pid);
+
+	ps = open(filename, O_RDONLY);
+	if (ps < 0) {
+		/* The process must have finished in the last few jiffies! */
+		return;
+	}
+
+	/* Mark process as up-to-date. */
+	process->time_stamp = g_time;
+
+	rc = read(ps, line, sizeof(line));
+	close(ps);
+	if (rc < 0) {
+		return;
+	}
+
+	/* Extract cpu times from data in /proc filesystem */
+	lparen = strchr(line, '(');
+	rparen = strrchr(line, ')');
+	if(!lparen || !rparen || rparen < lparen)
+		return; // this should not happen
+
+	rc = MIN((unsigned)(rparen - lparen - 1), sizeof(procname) - 1);
+	strncpy(procname, lparen + 1, rc);
+	procname[rc] = '\0';
+	rc = sscanf(rparen + 1, "%3s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %lu "
+			"%lu %*s %*s %*s %d %*s %*s %*s %u %u", state, &process->user_time,
+			&process->kernel_time, &nice_val, &process->vsize, &process->rss);
+	if (rc < 6) {
+		NORM_ERR("scaning data for %s failed, got only %d fields", procname, rc);
+		return;
+	}
+
+	if(state[0]=='R')
+		++ info.run_procs;
+
+	/* remove any "kdeinit: " */
+	if (procname == strstr(procname, "kdeinit")) {
+		snprintf(filename, sizeof(filename), PROCFS_CMDLINE_TEMPLATE,
+				process->pid);
+
+		ps = open(filename, O_RDONLY);
+		if (ps < 0) {
+			/* The process must have finished in the last few jiffies! */
+			return;
+		}
+
+		endl = read(ps, line, sizeof(line));
+		close(ps);
+
+		/* null terminate the input */
+		line[endl] = 0;
+		/* account for "kdeinit: " */
+		if ((char *) line == strstr(line, "kdeinit: ")) {
+			r = ((char *) line) + 9;
+		} else {
+			r = (char *) line;
+		}
+
+		q = procname;
+		/* stop at space */
+		while (*r && *r != ' ') {
+			*q++ = *r++;
+		}
+		*q = 0;
+	}
+
+	free_and_zero(process->name);
+	process->name = strndup(procname, text_buffer_size);
+	process->rss *= getpagesize();
+
+	process->total_cpu_time = process->user_time + process->kernel_time;
+	if (process->previous_user_time == ULONG_MAX) {
+		process->previous_user_time = process->user_time;
+	}
+	if (process->previous_kernel_time == ULONG_MAX) {
+		process->previous_kernel_time = process->kernel_time;
+	}
+
+	/* strangely, the values aren't monotonous */
+	if (process->previous_user_time > process->user_time)
+		process->previous_user_time = process->user_time;
+
+	if (process->previous_kernel_time > process->kernel_time)
+		process->previous_kernel_time = process->kernel_time;
+
+	/* store the difference of the user_time */
+	user_time = process->user_time - process->previous_user_time;
+	kernel_time = process->kernel_time - process->previous_kernel_time;
+
+	/* backup the process->user_time for next time around */
+	process->previous_user_time = process->user_time;
+	process->previous_kernel_time = process->kernel_time;
+
+	/* store only the difference of the user_time here... */
+	process->user_time = user_time;
+	process->kernel_time = kernel_time;
+}
+
+#ifdef BUILD_IOSTATS
+#define PROCFS_TEMPLATE_IO "/proc/%d/io"
+static void process_parse_io(struct process *process)
+{
+	static const char *read_bytes_str="read_bytes:";
+	static const char *write_bytes_str="write_bytes:";
+
+	char line[BUFFER_LEN] = { 0 }, filename[BUFFER_LEN];
+	int ps;
+	int rc;
+	char *pos, *endpos;
+	unsigned long long read_bytes, write_bytes;
+
+	snprintf(filename, sizeof(filename), PROCFS_TEMPLATE_IO, process->pid);
+
+	ps = open(filename, O_RDONLY);
+	if (ps < 0) {
+		/* The process must have finished in the last few jiffies!
+		 * Or, the kernel doesn't support I/O accounting.
+		 */
+		return;
+	}
+
+	rc = read(ps, line, sizeof(line));
+	close(ps);
+	if (rc < 0) {
+		return;
+	}
+
+	pos = strstr(line, read_bytes_str);
+	if (pos == NULL) {
+		/* these should not happen (unless the format of the file changes) */
+		return;
+	}
+	pos += strlen(read_bytes_str);
+	process->read_bytes = strtoull(pos, &endpos, 10);
+	if (endpos == pos) {
+		return;
+	}
+
+	pos = strstr(line, write_bytes_str);
+	if (pos == NULL) {
+		return;
+	}
+	pos += strlen(write_bytes_str);
+	process->write_bytes = strtoull(pos, &endpos, 10);
+	if (endpos == pos) {
+		return;
+	}
+
+	if (process->previous_read_bytes == ULLONG_MAX) {
+		process->previous_read_bytes = process->read_bytes;
+	}
+	if (process->previous_write_bytes == ULLONG_MAX) {
+		process->previous_write_bytes = process->write_bytes;
+	}
+
+	/* store the difference of the byte counts */
+	read_bytes = process->read_bytes - process->previous_read_bytes;
+	write_bytes = process->write_bytes - process->previous_write_bytes;
+
+	/* backup the counts for next time around */
+	process->previous_read_bytes = process->read_bytes;
+	process->previous_write_bytes = process->write_bytes;
+
+	/* store only the difference here... */
+	process->read_bytes = read_bytes;
+	process->write_bytes = write_bytes;
+}
+#endif /* BUILD_IOSTATS */
+
+/******************************************
+ * Get process structure for process pid  *
+ ******************************************/
+
+/* This function seems to hog all of the CPU time.
+ * I can't figure out why - it doesn't do much. */
+static void calculate_stats(struct process *process)
+{
+	/* compute each process cpu usage by reading /proc/<proc#>/stat */
+	process_parse_stat(process);
+
+#ifdef BUILD_IOSTATS
+	process_parse_io(process);
+#endif /* BUILD_IOSTATS */
+
+	/*
+	 * Check name against the exclusion list
+	 */
+	/* if (process->counted && exclusion_expression &&
+	 * !regexec(exclusion_expression, process->name, 0, 0, 0))
+	 * process->counted = 0; */
+}
+
+/******************************************
+ * Update process table					  *
+ ******************************************/
+
+static void update_process_table(void)
+{
+	DIR *dir;
+	struct dirent *entry;
+
+	if (!(dir = opendir("/proc"))) {
+		return;
+	}
+
+	info.run_procs = 0;
+
+	/* Get list of processes from /proc directory */
+	while ((entry = readdir(dir))) {
+		pid_t pid;
+
+		if (!entry) {
+			/* Problem reading list of processes */
+			closedir(dir);
+			return;
+		}
+
+		if (sscanf(entry->d_name, "%d", &pid) > 0) {
+			struct process *p;
+
+			p = find_process(pid);
+			if (!p) {
+				p = new_process(pid);
+			}
+
+			/* compute each process cpu usage */
+			calculate_stats(p);
+		}
+	}
+
+	closedir(dir);
+}
+
+void get_top_info(void)
+{
+	unsigned long long total = 0;
+
+	total = calc_cpu_total();	/* calculate the total of the processor */
+	update_process_table();		/* update the table with process list */
+	calc_cpu_each(total);		/* and then the percentage for each task */
+#ifdef BUILD_IOSTATS
+	calc_io_each();			/* percentage of I/O for each task */
+#endif /* BUILD_IOSTATS */
+}

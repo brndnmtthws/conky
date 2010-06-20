@@ -125,20 +125,20 @@ void free_mpd(struct text_object *obj)
 
 static void update_mpd_thread(thread_handle &handle);
 
-void update_mpd(void)
+int update_mpd(void)
 {
-	int interval;
 	static timed_thread_ptr thread;
 
 	if (thread)
-		return;
+		return 0;
 
-	interval = info.music_player_interval * 1000000;
-	thread = timed_thread::create(std::bind(update_mpd_thread, std::placeholders::_1), interval);
+	thread = timed_thread::create(std::bind(update_mpd_thread, std::placeholders::_1),
+			std::chrono::microseconds(long(info.music_player_interval * 1000000)) );
 	if (!thread) {
 		NORM_ERR("Failed to create MPD timed thread");
-		return;
+		return 0;
 	}
+	return 0;
 }
 
 /* stringMAXdup dups at most text_buffer_size bytes */

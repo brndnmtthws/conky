@@ -180,7 +180,7 @@ static int fill_items(int sock, PAPCUPSD_S apc)
 //
 // Conky update function for apcupsd data
 //
-void update_apcupsd(void)
+int update_apcupsd(void)
 {
 	int i;
 	APCUPSD_S apc;
@@ -251,7 +251,7 @@ void update_apcupsd(void)
 	// "atomically" copy the data into working set
 	//
 	memcpy(apcupsd.items, apc.items, sizeof(apcupsd.items));
-	return;
+	return 0;
 }
 
 int apcupsd_scan_arg(const char *arg)

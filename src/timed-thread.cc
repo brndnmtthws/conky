@@ -30,7 +30,6 @@
 
 #include <thread>
 #include <list>
-#include <chrono>
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>
@@ -39,9 +38,23 @@
 #include "timed-thread.h"
 #include "logging.h"
 
+/*
+ * In gcc-4.5 condition_variable::wait_until returns a (strong) enum cv_status.
+ * In gcc-4.4 it returns bool.
+ * This hack is needed so it can work on both.
+ */
+#if __GNUC__*100 + __GNUC_MINOR__ >= 405
+inline bool cv_status_to_bool(std::cv_status s)
+{ return s == std::cv_status::no_timeout; }
+#else
+inline bool cv_status_to_bool(bool s)
+{ return s; }
+#endif
+
 /* Abstraction layer for timed threads */
 
 typedef struct std::chrono::system_clock clk;
+using std::chrono::duration_cast;
 
 /* private */
 struct _timed_thread {
@@ -59,8 +72,8 @@ typedef std::list<timed_thread_ptr> thread_list_t;
 thread_list_t thread_list;
 
 /* create a timed thread (object creation only) */
-timed_thread::timed_thread(const std::function<void(thread_handle &)> start_routine, unsigned
-		int interval_usecs) :
+timed_thread::timed_thread(const std::function<void(thread_handle &)> &start_routine,
+		std::chrono::microseconds interval_usecs) :
 	p_timed_thread(new _timed_thread), p_thread_handle(this),
 	interval_usecs(interval_usecs), running(false)
 {
@@ -163,16 +176,7 @@ int timed_thread::test(int override_wait_time)
 #endif /* DEBUG */
 	bool rc = false;
 	/* determine when to wait until */
-#ifdef _GLIBCXX_USE_CLOCK_REALTIME
-	clk::time_point wait_time = p_timed_thread->last_time +
-		clk::duration(interval_usecs * 1000);
-#elif defined(_GLIBCXX_USE_GETTIMEOFDAY)
-	clk::time_point wait_time = p_timed_thread->last_time +
-		clk::duration(interval_usecs);
-#else
-	clk::time_point wait_time = p_timed_thread->last_time +
-		clk::duration(interval_usecs / 1000000);
-#endif
+	clk::time_point wait_time = p_timed_thread->last_time + duration_cast<clk::duration>(interval_usecs);
 
 	/* acquire runnable_cond mutex */
 	{
@@ -188,26 +192,13 @@ int timed_thread::test(int override_wait_time)
 		}
 
 		/* release mutex and wait until future time for runnable_cond to signal */
-		rc = p_timed_thread->runnable_cond.wait_until(lock, wait_time);
+		rc = cv_status_to_bool( p_timed_thread->runnable_cond.wait_until(lock, wait_time) );
 	}
 
 	p_timed_thread->last_time = clk::now();
-#ifdef _GLIBCXX_USE_CLOCK_REALTIME
-	if (wait_time + clk::duration(interval_usecs * 1000) >
-			p_timed_thread->last_time) {
+	if (wait_time + duration_cast<clk::duration>(interval_usecs) > p_timed_thread->last_time) {
 		p_timed_thread->last_time = wait_time;
 	}
-#elif defined(_GLIBCXX_USE_GETTIMEOFDAY)
-	if (wait_time + clk::duration(interval_usecs) >
-			p_timed_thread->last_time) {
-		p_timed_thread->last_time = wait_time;
-	}
-#else
-	if (wait_time + clk::duration(interval_usecs / 1000000) >
-			p_timed_thread->last_time) {
-		p_timed_thread->last_time = wait_time;
-	}
-#endif
 	
 	/* if runnable_cond was signaled, tell caller to exit thread */
 	return rc;
