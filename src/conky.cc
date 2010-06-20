@@ -163,6 +163,7 @@ static conky::simple_config_setting<bool> format_human_readable("format_human_re
 static conky::simple_config_setting<bool> out_to_stdout("out_to_console", false, false);
 static conky::simple_config_setting<bool> out_to_stderr("out_to_stderr", false, false);
 
+
 int top_cpu, top_mem, top_time;
 #ifdef BUILD_IOSTATS
 int top_io;
@@ -368,6 +369,43 @@ int sendanswer(void *cls, struct MHD_Connection *connection, const char *url, co
 	if(cls || url || method || version || upload_data || upload_data_size || con_cls) {}	//make compiler happy
 	return ret;
 }
+
+class out_to_http_setting: public conky::simple_config_setting<bool> {
+	typedef conky::simple_config_setting<bool> Base;
+
+protected:
+	virtual void lua_setter(lua::state &l, bool init)
+    {
+        lua::stack_sentry s(l, -2);
+
+        Base::lua_setter(l, init);
+
+        if(init && do_convert(l, -1).first) {
+			httpd = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY, HTTPPORT,
+							NULL, NULL, &sendanswer, NULL, MHD_OPTION_END);
+        }
+
+        ++s;
+    }
+
+	virtual void cleanup(lua::state &l)
+	{
+		lua::stack_sentry s(l, -1);
+
+		if(do_convert(l, -1).first) {
+			MHD_stop_daemon(httpd);
+			httpd = NULL;
+		}
+
+		l.pop();
+	}
+
+public:
+	out_to_http_setting()
+		: Base("out_to_http", false, false)
+	{}
+};
+static out_to_http_setting out_to_http;
 #endif
 
 #ifdef BUILD_X11
@@ -1222,7 +1260,7 @@ static void draw_string(const char *s)
 	}
 #endif
 #ifdef BUILD_HTTP
-	if ((output_methods & TO_HTTP) && draw_mode == FG) {
+	if (out_to_http.get(*state) && draw_mode == FG) {
 		std::string::size_type origlen = webpage.length();
 		webpage.append(s_with_newlines);
 		webpage = string_replace_all(webpage, "\n", "<br />", origlen);
@@ -1792,7 +1830,7 @@ static void draw_text(void)
 #define WEBPAGE_START1 "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><meta http-equiv=\"Content-type\" content=\"text/html;charset=UTF-8\" />"
 #define WEBPAGE_START2 "<title>Conky</title></head><body style=\"font-family: monospace\"><p>"
 #define WEBPAGE_END "</p></body></html>"
-	if (output_methods & TO_HTTP) {
+	if (out_to_http.get(*state)) {
 		webpage = WEBPAGE_START1;
 		if(http_refresh.get(*state)) {
 			webpage.append("<meta http-equiv=\"refresh\" content=\"");
@@ -1843,7 +1881,7 @@ static void draw_text(void)
 	llua_draw_post_hook();
 #endif /* BUILD_LUA */
 #ifdef BUILD_HTTP
-	if (output_methods & TO_HTTP) {
+	if (out_to_http.get(*state)) {
 		webpage.append(WEBPAGE_END);
 	}
 #endif
@@ -2481,11 +2519,6 @@ void free_specials(special_t *current) {
 
 void clean_up_without_threads(void *memtofree1, void* memtofree2)
 {
-#ifdef BUILD_HTTP
-	if(output_methods & TO_HTTP) {
-		MHD_stop_daemon(httpd);
-	}
-#endif
 	conftree_empty(currentconffile);
 	currentconffile = NULL;
 	free_and_zero(memtofree1);
@@ -3001,14 +3034,6 @@ char load_config_file(const char *f)
 		CONF("max_text_width") {
 			max_text_width = atoi(value);
 		}
-#ifdef BUILD_HTTP
-		CONF("out_to_http") {
-			if(string_to_bool(value)) {
-				output_methods |= TO_HTTP;
-				httpd = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY, HTTPPORT, NULL, NULL, &sendanswer, NULL, MHD_OPTION_END);
-			}
-		}
-#endif
 		CONF("overwrite_file") {
 			free_and_zero(overwrite_file);
 			if (overwrite_works(value)) {

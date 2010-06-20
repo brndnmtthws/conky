@@ -324,9 +324,7 @@ extern std::string current_config;
 #define TO_STDERR 4
 #define OVERWRITE_FILE 8
 #define APPEND_FILE 16
-#ifdef BUILD_HTTP
-#define TO_HTTP 64
-#endif
+
 enum x_initialiser_state {
 	NO = 0,
 	YES = 1,
