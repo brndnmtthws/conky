@@ -2639,13 +2639,6 @@ static void set_default_configurations(void)
 		mpd_set_port("6600");
 	}
 #endif /* BUILD_MPD */
-#ifdef BUILD_MYSQL
-	mysql_settings.host = NULL;
-	mysql_settings.port = 0;
-	mysql_settings.user = NULL;
-	mysql_settings.password = NULL;
-	mysql_settings.db = NULL;
-#endif /* BUILD_MYSQL */
 #ifdef BUILD_XMMS2
 	info.xmms2.artist = NULL;
 	info.xmms2.album = NULL;
@@ -2923,43 +2916,6 @@ char load_config_file(const char *f)
 			}
 		}
 #endif /* BUILD_MPD */
-#ifdef BUILD_MYSQL
-		CONF("mysql_host") {
-			if (value) {
-				mysql_set_host(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("mysql_port") {
-			if (value) {
-				mysql_set_port(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("mysql_user") {
-			if (value) {
-				mysql_set_user(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("mysql_password") {
-			if (value) {
-				mysql_set_password(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("mysql_db") {
-			if (value) {
-				mysql_set_db(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-#endif /* BUILD_MYSQL */
 		CONF("music_player_interval") {
 			if (value) {
 				info.music_player_interval = strtod(value, 0);

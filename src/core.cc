@@ -704,7 +704,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 	END OBJ_ARG(mysql, 0, "mysql needs a query")
 		obj->data.s = strdup(arg);
 		obj->callbacks.print = &print_mysql;
-		obj->callbacks.free = &free_mysql;
 #endif /* BUILD_MYSQL */
 	END OBJ_ARG(no_update, 0, "no_update needs arguments")
 		scan_no_update(obj, arg);

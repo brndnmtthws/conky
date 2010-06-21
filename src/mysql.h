@@ -26,23 +26,6 @@
 #ifndef MYSQL_H_
 #define MYSQL_H_
 
-struct mysql_conn {
-	char *host;
-	int port;
-	char *user;
-	char *password;
-	char *db;
-};
-
-extern struct mysql_conn mysql_settings;
-
-void mysql_set_host(const char *);
-void mysql_set_port(const char *);
-void mysql_set_user(const char *);
-void mysql_set_password(const char *);
-void mysql_set_db(const char *);
-
 void print_mysql(struct text_object *, char *, int);
-void free_mysql(struct text_object *);
 
 #endif /*MYSQL_H_*/

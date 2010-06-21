@@ -31,19 +31,27 @@
 #include "logging.h"
 #include <mysql.h>
 
-struct mysql_conn mysql_settings;
+#include "setting.hh"
+
+namespace {
+	conky::simple_config_setting<std::string> host("mysql_host", "localhost", false);
+	conky::range_config_setting<int>          port("mysql_port", 0, 0xffff, 0, false);
+	conky::simple_config_setting<std::string> user("mysql_user", "root", false);
+	conky::simple_config_setting<std::string> password("mysql_password", std::string(), false);
+	conky::simple_config_setting<std::string> db("mysql_db", "mysql", false);
+}
 
 void print_mysql(struct text_object *obj, char *p, int p_max_size) {
 	MYSQL *conn = mysql_init(NULL);
 
-	if(mysql_settings.db == NULL)
-		mysql_settings.db = strdup("mysql");
 	if(conn == NULL) {
 		NORM_ERR("Can't initialize MySQL");
 		mysql_library_end();
 		return;
 	}
-	if (!mysql_real_connect(conn, mysql_settings.host, mysql_settings.user, mysql_settings.password, mysql_settings.db, mysql_settings.port, NULL, 0)) {
+	if (!mysql_real_connect(conn, host.get(*state).c_str(), user.get(*state).c_str(),
+				password.get(*state).c_str(), db.get(*state).c_str(),
+				port.get(*state), NULL, 0)) {
 		NORM_ERR("MySQL: %s",  mysql_error(conn));
 		mysql_close(conn);
 		mysql_library_end();
@@ -71,42 +79,4 @@ void print_mysql(struct text_object *obj, char *p, int p_max_size) {
 	mysql_free_result(res);
 	mysql_close(conn);
 	mysql_library_end();
-}
-
-void free_mysql(struct text_object *obj) {
-	free(mysql_settings.host);
-	free(mysql_settings.user);
-	if(mysql_settings.password) free(mysql_settings.password);
-	free(mysql_settings.db);
-	free(obj->data.s);
-}
-
-void mysql_set_host(const char *host) {
-	free(mysql_settings.host);
-	mysql_settings.host = strdup(host);
-}
-
-void mysql_set_port(const char *port) {
-	mysql_settings.port = strtol(port, 0, 0);
-	if(mysql_settings.port < 1 || mysql_settings.port > 0xffff)
-		mysql_settings.port = 0;
-}
-
-void mysql_set_user(const char *user) {
-	free(mysql_settings.user);
-	mysql_settings.user = strdup(user);
-}
-
-void mysql_set_password(const char *password) {
-	free_and_zero(mysql_settings.password);
-	if(password && strlen(password) > 2 && password[0] == '"' && password[strlen(password)-1] == '"') {
-		mysql_settings.password = strdup(password+1);
-		mysql_settings.password[strlen(password)-2] = 0;
-	} else
-		mysql_settings.password = NULL;
-}
-
-void mysql_set_db(const char *db) {
-	free(mysql_settings.db);
-	mysql_settings.db = strdup(db);
 }
