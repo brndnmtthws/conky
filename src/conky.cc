@@ -2563,6 +2563,9 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2) {
 #if defined BUILD_WEATHER_XOAP || defined BUILD_RSS
 	xmlCleanupParser();
 #endif
+#ifdef BUILD_MYSQL
+	free_mysql_global();
+#endif
 
 	free_specials(specials);
 

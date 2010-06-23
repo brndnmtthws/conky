@@ -44,5 +44,6 @@ void mysql_set_db(const char *);
 
 void print_mysql(struct text_object *, char *, int);
 void free_mysql(struct text_object *);
+void free_mysql_global();
 
 #endif /*MYSQL_H_*/

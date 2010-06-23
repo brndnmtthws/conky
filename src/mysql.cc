@@ -29,6 +29,8 @@
 
 #include "conky.h"
 #include "logging.h"
+#include "mysql.h"
+
 #include <mysql.h>
 
 struct mysql_conn mysql_settings;
@@ -74,11 +76,14 @@ void print_mysql(struct text_object *obj, char *p, int p_max_size) {
 }
 
 void free_mysql(struct text_object *obj) {
-	free(mysql_settings.host);
-	free(mysql_settings.user);
-	if(mysql_settings.password) free(mysql_settings.password);
-	free(mysql_settings.db);
 	free(obj->data.s);
+}
+
+void free_mysql_global() {
+	free_and_zero(mysql_settings.host);
+	free_and_zero(mysql_settings.user);
+	free_and_zero(mysql_settings.password);
+	free_and_zero(mysql_settings.db);
 }
 
 void mysql_set_host(const char *host) {
