@@ -349,7 +349,7 @@ void free_and_zero(T *&ptr) {
 	}
 }
 
-extern std::auto_ptr<lua::state> state;
+extern std::unique_ptr<lua::state> state;
 
 extern int argc_copy;
 extern char** argv_copy;

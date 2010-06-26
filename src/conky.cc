@@ -481,7 +481,7 @@ long global_text_lines;
 static int total_updates;
 static int updatereset;
 
-std::auto_ptr<lua::state> state;
+std::unique_ptr<lua::state> state;
 
 void set_updatereset(int i)
 {
