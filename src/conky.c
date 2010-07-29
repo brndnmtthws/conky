@@ -3994,7 +3994,8 @@ static void reload_config(void)
 }
 
 #ifdef X11
-void clean_up_x11() {
+void clean_up_x11(void)
+{
 	if(window_created == 1) {
 		XClearArea(display, window.window, text_start_x - window.border_inner_margin - window.border_outer_margin - window.border_width,
 			text_start_y - window.border_inner_margin - window.border_outer_margin - window.border_width,
