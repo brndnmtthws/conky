@@ -2460,7 +2460,8 @@ static void reload_config(void)
 }
 
 #ifdef BUILD_X11
-void clean_up_x11() {
+void clean_up_x11(void)
+{
 	if(window_created == 1) {
 		long border_total = window.border_inner_margin
 							+ window.border_outer_margin + window.border_width;
