@@ -3084,12 +3084,14 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 										  );
 								}
 #endif /* DEBUG_lol */
-								XSetForeground(display, window.gc, tmpcolour[
-										(int)((float)(w - 2) - specials[special_index].graph[j] *
-											(w - 2) / (float)specials[special_index].graph_scale)
-										]);
+										set_foreground_color(tmpcolour[
+												(int)((float)(w - 2) -
+													specials[special_index].graph[j]
+													* (w - 2) /
+													(float)specials[special_index].graph_scale)
+												]);
 							} else {
-								XSetForeground(display, window.gc, tmpcolour[colour_idx++]);
+								set_foreground_color(tmpcolour[colour_idx++]);
 							}
 						}
 						/* this is mugfugly, but it works */
