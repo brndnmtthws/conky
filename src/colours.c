@@ -119,7 +119,7 @@ unsigned long *do_gradient(int width, unsigned long first_colour, unsigned long 
 	for (i = 0; i < width; i++) {
 		int red3 = 0, green3 = 0, blue3 = 0;	// colour components
 
-		float factor = ((float)(i + 1) / width);
+		float factor = ((float) i / (width - 1));
 
 		/* the '+ 0.5' bit rounds our floats to ints properly */
 		if (red1 >= red2) {
