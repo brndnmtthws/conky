@@ -66,9 +66,9 @@ struct xmlData {
 };
 
 struct eve_data {
-	char apikey[64];
-	char charid[20];
-	char userid[20];
+	char apikey[65];
+	char charid[21];
+	char userid[21];
 };
 
 int num_chars = 0;
