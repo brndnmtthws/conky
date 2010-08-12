@@ -216,31 +216,30 @@ void init_fs_bar(struct text_object *obj, const char *arg)
 	obj->data.opaque = prepare_fs_stat(arg);
 }
 
-static double do_fs_barval(struct text_object *obj, int be_free_bar)
+static double get_fs_perc(struct text_object *obj, bool get_free)
 {
-	double val = 1.0;
-	struct fs_stat *fs = (struct fs_stat *)obj->data.opaque;
+	struct fs_stat *fs = static_cast<struct fs_stat *>(obj->data.opaque);
+	double ret = 0.0;
 
-	if (!fs)
-		return 0;
+	if(fs && fs->size) {
+		if(get_free)
+			ret = fs->avail;
+		else
+			ret = fs->size - fs->free;
+		ret /= fs->size;
+	}
 
-	if (fs->size)
-		val = (double)fs->avail / fs->size;
-
-	if (!be_free_bar)
-		val = 1.0 - val;
-
-	return val;
+	return ret;
 }
 
 double fs_barval(struct text_object *obj)
 {
-	return do_fs_barval(obj, 0);
+	return get_fs_perc(obj, false);
 }
 
 double fs_free_barval(struct text_object *obj)
 {
-	return do_fs_barval(obj, 1);
+	return get_fs_perc(obj, true);
 }
 
 void init_fs(struct text_object *obj, const char *arg)
@@ -248,31 +247,14 @@ void init_fs(struct text_object *obj, const char *arg)
 	obj->data.opaque = prepare_fs_stat(arg ? arg : "/");
 }
 
-static uint8_t fs_percentage(struct text_object *obj, int be_free)
-{
-	struct fs_stat *fs = (struct fs_stat *)obj->data.opaque;
-	int val = 100;
-
-	if (!fs)
-		return 0;
-
-	if (fs->size)
-		val = fs->avail * 100 / fs->size;
-
-	if (!be_free)
-		val = 100 - val;
-
-	return val;
-}
-
 uint8_t fs_free_percentage(struct text_object *obj)
 {
-	return fs_percentage(obj, 1);
+	return get_fs_perc(obj, true) * 100;
 }
 
 uint8_t fs_used_percentage(struct text_object *obj)
 {
-	return fs_percentage(obj, 0);
+	return get_fs_perc(obj, false) * 100;
 }
 
 #define HUMAN_PRINT_FS_GENERATOR(name, expr)                           \
