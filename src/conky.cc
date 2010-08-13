@@ -103,6 +103,9 @@
 #ifdef BUILD_MYSQL
 #include "mysql.h"
 #endif /* BUILD_MYSQL */
+#ifdef BUILD_NVIDIA
+#include "nvidia.h"
+#endif
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
@@ -2522,6 +2525,9 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2) {
 		font_count = -1;
 	}
 
+#ifdef BUILD_NVIDIA
+	set_nvidia_display(NULL);
+#endif
 #endif /* BUILD_X11 */
 
 	free_templates();
@@ -3061,6 +3067,12 @@ char load_config_file(const char *f)
 				disp = strdup(value);
 			}
 		}
+#ifdef BUILD_NVIDIA
+		CONF("nvidia_display") {
+			if(value)
+				set_nvidia_display(value);
+		}
+#endif
 		CONF("alignment") {
 			setalignment(&text_alignment, value, f, line, true);
 		}
