@@ -35,7 +35,8 @@
 #include <X11/Xlib.h>
 
 int set_nvidia_type(struct text_object *, const char *);
-void print_nvidia_value(struct text_object *, Display *, char *, int);
+void print_nvidia_value(struct text_object *, char *, int);
 void free_nvidia(struct text_object *);
+void set_nvidia_display(const char *disp);
 
 #endif

@@ -2300,7 +2300,7 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #ifdef NVIDIA
 			OBJ(nvidia) {
-				print_nvidia_value(obj, display, p, p_max_size);
+				print_nvidia_value(obj, p, p_max_size);
 			}
 #endif /* NVIDIA */
 #ifdef APCUPSD
@@ -4055,6 +4055,9 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2) {
 		font_count = -1;
 	}
 
+#ifdef NVIDIA
+	set_nvidia_display(NULL);
+#endif
 #endif /* X11 */
 
 	free_templates();
@@ -4602,6 +4605,12 @@ char load_config_file(const char *f)
 				disp = strdup(value);
 			}
 		}
+#ifdef NVIDIA
+		CONF("nvidia_display") {
+			if(value)
+				set_nvidia_display(value);
+		}
+#endif
 		CONF("alignment") {
 			setalignment(&text_alignment, window.type, value, f, line, 1);
 		}

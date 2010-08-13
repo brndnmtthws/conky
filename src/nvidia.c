@@ -56,9 +56,12 @@ struct nvidia_s {
 	QUERY_ID type;
 };
 
-static int get_nvidia_value(QUERY_ID qid, Display *dpy){
+static Display *nvdisplay;
+
+static int get_nvidia_value(QUERY_ID qid){
 	int tmp;
-	if(!XNVCTRLQueryAttribute(dpy, 0, 0, nvidia_query_to_attr[qid], &tmp)){
+	Display *dpy = nvdisplay ? nvdisplay : display;
+	if(!dpy || !XNVCTRLQueryAttribute(dpy, 0, 0, nvidia_query_to_attr[qid], &tmp)){
 		return -1;
 	}
 	/* FIXME: when are the low 2 bytes of NV_GPU_FREQ needed? */
@@ -105,13 +108,13 @@ int set_nvidia_type(struct text_object *obj, const char *arg)
 	return 0;
 }
 
-void print_nvidia_value(struct text_object *obj, Display *dpy, char *p, int p_max_size)
+void print_nvidia_value(struct text_object *obj, char *p, int p_max_size)
 {
 	int value;
 	struct nvidia_s *nvs = obj->data.opaque;
 
 	if (!nvs ||
-	    (value = get_nvidia_value(nvs->type, dpy)) == -1) {
+	    (value = get_nvidia_value(nvs->type)) == -1) {
 		snprintf(p, p_max_size, "N/A");
 		return;
 	}
@@ -132,3 +135,15 @@ void free_nvidia(struct text_object *obj)
 	}
 }
 
+void set_nvidia_display(const char *disp)
+{
+	if(nvdisplay) {
+		XCloseDisplay(nvdisplay);
+		nvdisplay = NULL;
+	}
+	if(disp) {
+		if ((nvdisplay = XOpenDisplay(disp)) == NULL) {
+			CRIT_ERR(NULL, NULL, "can't open nvidia display: %s", XDisplayName(disp));
+		}
+	}	
+}
