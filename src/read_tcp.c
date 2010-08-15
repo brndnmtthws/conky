@@ -66,28 +66,38 @@ void parse_read_tcp_arg(struct text_object *obj, const char *arg, void *free_at_
 void print_read_tcp(struct text_object *obj, char *p, int p_max_size)
 {
 	int sock, received;
-	struct sockaddr_in addr;
-	struct hostent* he;
 	fd_set readfds;
 	struct timeval tv;
 	struct read_tcp_data *rtd = obj->data.opaque;
+	struct addrinfo hints;
+	struct addrinfo* airesult, *rp;
+	char portbuf[8];
 
 	if (!rtd)
 		return;
 
-	if (!(he = gethostbyname(rtd->host))) {
+	memset(&hints, 0, sizeof(struct addrinfo));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = 0;
+	hints.ai_protocol = 0;
+	snprintf(portbuf, 8, "%d", rtd->port);
+	if (getaddrinfo(rtd->host, portbuf, &hints, &airesult)) {
 		NORM_ERR("read_tcp: Problem with resolving the hostname");
 		return;
 	}
-	if ((sock = socket(he->h_addrtype, SOCK_STREAM, 0)) == -1) {
-		NORM_ERR("read_tcp: Couldn't create a socket");
-		return;
+	for (rp = airesult; rp != NULL; rp = rp->ai_next) {
+		sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+		if (sock == -1) {
+			continue;
+		}
+		if (connect(sock, rp->ai_addr, rp->ai_addrlen) != -1) {
+			break;
+		}
+		close(sock);
 	}
-	memset(&addr, 0, sizeof(addr));
-	addr.sin_family = AF_INET;
-	addr.sin_port = rtd->port;
-	memcpy(&addr.sin_addr, he->h_addr, he->h_length);
-	if (connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr)) != 0) {
+	freeaddrinfo(airesult);
+	if (rp == NULL) {
 		NORM_ERR("read_tcp: Couldn't create a connection");
 		return;
 	}
