@@ -190,40 +190,37 @@ int update_apcupsd(void)
 		memcpy(apc.items[i], "N/A", 4); // including \0
 
 	do {
-		struct hostent* he = 0;
-		struct sockaddr_in addr;
+		struct addrinfo hints;
+		struct addrinfo *ai, *rp;
+		int res;
 		short sz = 0;
-#ifdef HAVE_GETHOSTBYNAME_R
-		struct hostent he_mem;
-		int he_errno;
-		char hostbuff[2048];
-#endif
+		char portbuf[8];
 		//
 		// connect to apcupsd daemon
 		//
-		sock = socket(AF_INET, SOCK_STREAM, 0);
-		if (sock < 0) {
-			perror("socket");
+		memset(&hints, 0, sizeof(struct addrinfo));
+		hints.ai_family = AF_UNSPEC;
+		hints.ai_socktype = SOCK_STREAM;
+		hints.ai_flags = 0;
+		hints.ai_protocol = 0;
+		snprintf(portbuf, 8, "%d", info.apcupsd.port);
+		res = getaddrinfo(info.apcupsd.host, portbuf, &hints, &ai);
+		if (res != 0) {
+			NORM_ERR("APCUPSD getaddrinfo: %s", gai_strerror(res));
 			break;
 		}
-#ifdef HAVE_GETHOSTBYNAME_R
-		if (gethostbyname_r(apcupsd.host, &he_mem, hostbuff, sizeof(hostbuff), &he, &he_errno) || !he ) {
-			NORM_ERR("APCUPSD gethostbyname_r: %s", hstrerror(h_errno));
-			break;
+		for (rp = ai; rp != NULL; rp = rp->ai_next) {
+			sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+			if (sock == -1) {
+				continue;
+			}
+			if (connect(sock, rp->ai_addr, rp->ai_addrlen) != -1) {
+				break;
+			}
+			close(sock);
 		}
-#else /* HAVE_GETHOSTBYNAME_R */
-		he = gethostbyname(apcupsd.host);
-		if (!he) {
-			herror("gethostbyname");
-			break;
-		}
-#endif /* HAVE_GETHOSTBYNAME_R */
-
-		memset(&addr, 0, sizeof(addr));
-		addr.sin_family = AF_INET;
-		addr.sin_port = apcupsd.port;
-		memcpy(&addr.sin_addr, he->h_addr, he->h_length);
-		if (connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr)) < 0) {
+		freeaddrinfo(ai);
+		if (rp == NULL) {
 			// no error reporting, the daemon is probably not running
 			break;
 		}

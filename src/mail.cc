@@ -659,11 +659,12 @@ static void imap_thread(thread_handle &handle, struct mail_s *mail)
 	unsigned long old_unseen = ULONG_MAX;
 	unsigned long old_messages = ULONG_MAX;
 	struct stat stat_buf;
-	struct hostent *he_res = 0;
-	struct sockaddr_in their_addr;	// connector's address information
 	int has_idle = 0;
 	int threadfd = handle.readfd();
 	char resolved_host = 0;
+	struct addrinfo hints;
+	struct addrinfo *ai, *rp;
+	char portbuf[8];
 
 	while (fail < mail->retries) {
 		struct timeval fetchtimeout;
@@ -671,23 +672,19 @@ static void imap_thread(thread_handle &handle, struct mail_s *mail)
 		fd_set fdset;
 
 		if (!resolved_host) {
-#ifdef HAVE_GETHOSTBYNAME_R
-			int he_errno;
-			struct hostent he;
-			char hostbuff[2048];
+			memset(&hints, 0, sizeof(struct addrinfo));
+			hints.ai_family = AF_UNSPEC;
+			hints.ai_socktype = SOCK_STREAM;
+			hints.ai_flags = 0;
+			hints.ai_protocol = 0;
+			snprintf(portbuf, 8, "%lu", mail->port);
 
-			if (gethostbyname_r(mail->host, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
-				NORM_ERR("IMAP gethostbyname_r: %s", hstrerror(h_errno));
+			res = getaddrinfo(mail->host, portbuf, &hints, &ai);
+			if (res != 0) {
+				NORM_ERR("IMAP getaddrinfo: %s", gai_strerror(res));
 				fail++;
 				break;
 			}
-#else /* HAVE_GETHOSTBYNAME_R */
-			if ((he_res = gethostbyname(mail->host)) == NULL) {	// get the host info
-				herror("gethostbyname");
-				fail++;
-				break;
-			}
-#endif /* HAVE_GETHOSTBYNAME_R */
 			resolved_host = 1;
 		}
 		if (fail > 0) {
@@ -695,22 +692,18 @@ static void imap_thread(thread_handle &handle, struct mail_s *mail)
 					mail->user, mail->host, fail + 1, mail->retries);
 		}
 		do {
-			if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-				perror("socket");
-				fail++;
-				break;
+			for (rp = ai; rp != NULL; rp = rp->ai_next) {
+				sockfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+				if (sockfd == -1) {
+					continue;
+				}
+				if (connect(sockfd, rp->ai_addr, rp->ai_addrlen) != -1) {
+					break;
+				}
+				close(sockfd);
 			}
-
-			// host byte order
-			their_addr.sin_family = AF_INET;
-			// short, network byte order
-			their_addr.sin_port = htons(mail->port);
-			their_addr.sin_addr = *((struct in_addr *) he_res->h_addr);
-			// zero the rest of the struct
-			memset(&(their_addr.sin_zero), '\0', 8);
-
-			if (connect(sockfd, (struct sockaddr *) &their_addr,
-						sizeof(struct sockaddr)) == -1) {
+			freeaddrinfo(ai);
+			if (rp == NULL) {
 				perror("connect");
 				fail++;
 				break;
@@ -1011,32 +1004,29 @@ static void pop3_thread(thread_handle &handle, struct mail_s *mail)
 	unsigned int fail = 0;
 	unsigned long old_unseen = ULONG_MAX;
 	struct stat stat_buf;
-	struct hostent *he_res = 0;
-	struct sockaddr_in their_addr;	// connector's address information
 	char resolved_host = 0;
+	struct addrinfo hints;
+	struct addrinfo *ai, *rp;
+	char portbuf[8];
 
 	while (fail < mail->retries) {
 		struct timeval fetchtimeout;
 		int res;
 		fd_set fdset;
 		if (!resolved_host) {
-#ifdef HAVE_GETHOSTBYNAME_R
-			int he_errno;
-			struct hostent he;
-			char hostbuff[2048];
+			memset(&hints, 0, sizeof(struct addrinfo));
+			hints.ai_family = AF_UNSPEC;
+			hints.ai_socktype = SOCK_STREAM;
+			hints.ai_flags = 0;
+			hints.ai_protocol = 0;
+			snprintf(portbuf, 8, "%lu", mail->port);
 
-			if (gethostbyname_r(mail->host, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
-				NORM_ERR("POP3 gethostbyname_r: %s", hstrerror(h_errno));
+			res = getaddrinfo(mail->host, portbuf, &hints, &ai);
+			if (res != 0) {
+				NORM_ERR("POP3 getaddrinfo: %s", gai_strerror(res));
 				fail++;
 				break;
 			}
-#else /* HAVE_GETHOSTBYNAME_R */
-			if ((he_res = gethostbyname(mail->host)) == NULL) {	// get the host info
-				herror("gethostbyname");
-		fail++;
-		break;
-	}
-#endif /* HAVE_GETHOSTBYNAME_R */
 	resolved_host = 1;
 }
 		if (fail > 0) {
@@ -1044,22 +1034,18 @@ static void pop3_thread(thread_handle &handle, struct mail_s *mail)
 					mail->user, mail->host, fail + 1, mail->retries);
 		}
 		do {
-			if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
-				perror("socket");
-				fail++;
-				break;
+			for (rp = ai; rp != NULL; rp = rp->ai_next) {
+				sockfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+				if (sockfd == -1) {
+					continue;
+				}
+				if (connect(sockfd, rp->ai_addr, rp->ai_addrlen) != -1) {
+					break;
+				}
+				close(sockfd);
 			}
-
-			// host byte order
-			their_addr.sin_family = AF_INET;
-			// short, network byte order
-			their_addr.sin_port = htons(mail->port);
-			their_addr.sin_addr = *((struct in_addr *) he_res->h_addr);
-			// zero the rest of the struct
-			memset(&(their_addr.sin_zero), '\0', 8);
-
-			if (connect(sockfd, (struct sockaddr *) &their_addr,
-						sizeof(struct sockaddr)) == -1) {
+			freeaddrinfo(ai);
+			if (rp == NULL) {
 				perror("connect");
 				fail++;
 				break;
