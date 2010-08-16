@@ -142,7 +142,7 @@ static int uds_connect(mpd_Connection *connection, const char *host,
 	/* connect stuff */
 	if (do_connect_fail(connection, (struct sockaddr *)&addr, SUN_LEN(&addr))) {
 		snprintf(connection->errorStr, MPD_ERRORSTR_MAX_LENGTH,
-				"problems cconnecting socket: %s", strerror(errno));
+				"problems connecting socket: %s", strerror(errno));
 		closesocket(connection->sock);
 		connection->sock = -1;
 		connection->error = MPD_ERROR_SYSTEM;
