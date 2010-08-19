@@ -203,8 +203,8 @@ int update_apcupsd(void)
 		hints.ai_socktype = SOCK_STREAM;
 		hints.ai_flags = 0;
 		hints.ai_protocol = 0;
-		snprintf(portbuf, 8, "%d", info.apcupsd.port);
-		res = getaddrinfo(info.apcupsd.host, portbuf, &hints, &ai);
+		snprintf(portbuf, 8, "%d", apcupsd.port);
+		res = getaddrinfo(apcupsd.host, portbuf, &hints, &ai);
 		if (res != 0) {
 			NORM_ERR("APCUPSD getaddrinfo: %s", gai_strerror(res));
 			break;
