@@ -44,6 +44,8 @@
 
 #include <time.h>
 
+#include "conky.h"
+
 #define MAXCHARS 4
 #define EVE_UPDATE_DELAY 60
 
