@@ -77,6 +77,8 @@ int update_i8k(void)
 
 	fclose(fp);
 
+	DBG("read `%s' from /proc/i8k\n", i8k_procbuf);
+
 	i8k.version = strtok(&i8k_procbuf[0], I8K_DELIM);
 	i8k.bios = strtok(NULL, I8K_DELIM);
 	i8k.serial = strtok(NULL, I8K_DELIM);
@@ -90,21 +92,21 @@ int update_i8k(void)
 	return 0;
 }
 
-static const char *fan_status_to_string(int status)
+static void print_i8k_fan_status(char *p, int p_max_size, const char *status)
 {
-	switch(status) {
-		case 0: return "off";
-		case 1: return "low";
-		case 2: return "high";
-	}
-	return "error";
+	static char *status_arr[] = { "off", "low", "high", "error" };
+
+	int i = status ? atoi(status) : 3;
+	if(i < 0 || i > 3)
+		i = 3;
+
+	snprintf(p, p_max_size, "%s", status_arr[i]);
 }
 
 void print_i8k_left_fan_status(struct text_object *obj, char *p, int p_max_size)
 {
 	(void)obj;
-	snprintf(p, p_max_size, "%s",
-	         fan_status_to_string(atoi(i8k.left_fan_status)));
+	print_i8k_fan_status(p, p_max_size, i8k.left_fan_status);
 }
 
 void print_i8k_cpu_temp(struct text_object *obj, char *p, int p_max_size)
@@ -120,8 +122,7 @@ void print_i8k_cpu_temp(struct text_object *obj, char *p, int p_max_size)
 void print_i8k_right_fan_status(struct text_object *obj, char *p, int p_max_size)
 {
 	(void)obj;
-	snprintf(p, p_max_size, "%s",
-	         fan_status_to_string(atoi(i8k.right_fan_status)));
+	print_i8k_fan_status(p, p_max_size, i8k.right_fan_status);
 }
 
 void print_i8k_ac_status(struct text_object *obj, char *p, int p_max_size)
