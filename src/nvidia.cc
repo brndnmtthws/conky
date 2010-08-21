@@ -59,6 +59,47 @@ struct nvidia_s {
 
 static Display *nvdisplay;
 
+namespace {
+	class nvidia_display_setting: public conky::simple_config_setting<std::string> {
+		typedef conky::simple_config_setting<std::string> Base;
+	
+	protected:
+		virtual void lua_setter(lua::state &l, bool init);
+		virtual void cleanup(lua::state &l);
+
+	public:
+		nvidia_display_setting()
+			: Base("nvidia_display", std::string(), false)
+		{}
+	};
+
+	void nvidia_display_setting::lua_setter(lua::state &l, bool init)
+	{
+		lua::stack_sentry s(l, -2);
+
+		Base::lua_setter(l, init);
+
+		std::string str = do_convert(l, -1).first;
+		if(str.size()) {
+			if ((nvdisplay = XOpenDisplay(str.c_str())) == NULL) {
+				CRIT_ERR(NULL, NULL, "can't open nvidia display: %s", XDisplayName(str.c_str()));
+			}
+		}	
+	}
+
+	void nvidia_display_setting::cleanup(lua::state &l)
+	{
+		lua::stack_sentry s(l, -1);
+
+		if(nvdisplay) {
+			XCloseDisplay(nvdisplay);
+			nvdisplay = NULL;
+		}
+
+		l.pop();
+	}
+}
+
 static int get_nvidia_value(QUERY_ID qid){
 	int tmp;
 	Display *dpy = nvdisplay ? nvdisplay : display;
@@ -132,17 +173,4 @@ void print_nvidia_value(struct text_object *obj, char *p, int p_max_size)
 void free_nvidia(struct text_object *obj)
 {
 	free_and_zero(obj->data.opaque);
-}
-
-void set_nvidia_display(const char *disp)
-{
-	if(nvdisplay) {
-		XCloseDisplay(nvdisplay);
-		nvdisplay = NULL;
-	}
-	if(disp) {
-		if ((nvdisplay = XOpenDisplay(disp)) == NULL) {
-			CRIT_ERR(NULL, NULL, "can't open nvidia display: %s", XDisplayName(disp));
-		}
-	}	
 }
