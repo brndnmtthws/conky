@@ -613,6 +613,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>nvidia_display</option>
+            </command>
+        </term>
+        <listitem>The display that the nvidia variable will use (defaults to the value of the
+            display variable)
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>out_to_console</option>
             </command>
         </term>

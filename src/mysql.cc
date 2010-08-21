@@ -29,6 +29,8 @@
 
 #include "conky.h"
 #include "logging.h"
+#include "mysql.h"
+
 #include <mysql.h>
 
 #include "setting.hh"

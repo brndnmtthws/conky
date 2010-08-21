@@ -145,29 +145,39 @@ void print_tcp_ping(struct text_object *obj, char *p, int p_max_size)
 void print_read_tcpip(struct text_object *obj, char *p, int p_max_size, int protocol)
 {
 	int sock, received;
-	struct sockaddr_in addr;
-	struct hostent* he;
 	fd_set readfds;
 	struct timeval tv;
 	struct read_tcpip_data *rtd = (struct read_tcpip_data *) obj->data.opaque;
-	ssize_t written;	//only used to to suppress warning (gcc wants the returnvalue of write() in a var)
+	struct addrinfo hints;
+	struct addrinfo* airesult, *rp;
+	char portbuf[8];
 
 	if (!rtd)
 		return;
 
-	if (!(he = gethostbyname(rtd->host))) {
+	memset(&hints, 0, sizeof(struct addrinfo));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = protocol==IPPROTO_TCP ? SOCK_STREAM : SOCK_DGRAM;
+	hints.ai_flags = 0;
+	hints.ai_protocol = protocol;
+	snprintf(portbuf, 8, "%d", rtd->port);
+	if (getaddrinfo(rtd->host, portbuf, &hints, &airesult)) {
 		NORM_ERR("%s: Problem with resolving the hostname", protocol == IPPROTO_TCP ? "read_tcp" : "read_udp");
 		return;
 	}
-	if ((sock = socket(he->h_addrtype, protocol == IPPROTO_TCP ? SOCK_STREAM : SOCK_DGRAM, protocol)) == -1) {
-		NORM_ERR("%s: Couldn't create a socket", protocol == IPPROTO_TCP ? "read_tcp" : "read_udp");
+	for (rp = airesult; rp != NULL; rp = rp->ai_next) {
+		sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+		if (sock == -1) {
+			continue;
+		}
+		if (connect(sock, rp->ai_addr, rp->ai_addrlen) != -1) {
+			break;
+		}
+		close(sock);
 		return;
 	}
-	memset(&addr, 0, sizeof(addr));
-	addr.sin_family = AF_INET;
-	addr.sin_port = rtd->port;
-	memcpy(&addr.sin_addr, he->h_addr, he->h_length);
-	if (connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr)) != 0) {
+	freeaddrinfo(airesult);
+	if (rp == NULL) {
 		if(protocol == IPPROTO_TCP) {
 			NORM_ERR("read_tcp: Couldn't create a connection");
 		} else {
@@ -175,8 +185,10 @@ void print_read_tcpip(struct text_object *obj, char *p, int p_max_size, int prot
 		}
 		return;
 	}
-	if(protocol == IPPROTO_UDP)
-		written = write(sock, NULL, 0);	//when using udp send a zero-length packet to let the other end know of our existence
+	if(protocol == IPPROTO_UDP) {
+		//when using udp send a zero-length packet to let the other end know of our existence
+		(void) write(sock, NULL, 0);
+	}
 	FD_ZERO(&readfds);
 	FD_SET(sock, &readfds);
 	tv.tv_sec = 1;

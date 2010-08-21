@@ -98,6 +98,9 @@
 #ifdef BUILD_MYSQL
 #include "mysql.h"
 #endif /* BUILD_MYSQL */
+#ifdef BUILD_NVIDIA
+#include "nvidia.h"
+#endif
 
 #include "lua-config.hh"
 #include "setting.hh"
@@ -2485,7 +2488,8 @@ static void reload_config(void)
 }
 
 #ifdef BUILD_X11
-void clean_up_x11() {
+void clean_up_x11(void)
+{
 	if(window_created == 1) {
 		int border_total = get_border_total();
 
@@ -2534,6 +2538,9 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2)
 		font_count = -1;
 	}
 
+#ifdef BUILD_NVIDIA
+	set_nvidia_display(NULL);
+#endif
 #endif /* BUILD_X11 */
 
 	if (info.first_process) {
@@ -2840,6 +2847,12 @@ char load_config_file(const char *f)
 
 		// start the whole if-then-else-if cascade
 		if (false) {}
+#ifdef BUILD_NVIDIA
+		CONF("nvidia_display") {
+			if(value)
+				set_nvidia_display(value);
+		}
+#endif
 		CONF("imap") {
 			if (value) {
 				parse_global_imap_mail_args(value);
