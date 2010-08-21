@@ -98,11 +98,11 @@ namespace conky {
 	template<typename T>
 	class register_data_source {
 		template<typename... Args>
-		static int factory(lua::state *l, const std::string &name, Args&&... args)
+		static int factory(lua::state *l, const std::string &name, const Args&... args)
 		{
 			T *t = static_cast<T *>(l->newuserdata(sizeof(T)));
 			l->insert(1);
-			new(t) T(l, name, std::forward<Args>(args)...);
+			new(t) T(l, name, args...);
 			l->settop(1);
 			l->rawgetfield(lua::REGISTRYINDEX, priv::data_source_metatable);
 			l->setmetatable(-2);
@@ -114,9 +114,7 @@ namespace conky {
 		register_data_source(const std::string &name, Args&&... args)
 		{
 			priv::do_register_data_source( name, std::bind(&factory<Args...>,
-						std::placeholders::_1,
-						name,
-						std::forward<Args>(args)...
+						std::placeholders::_1, name, args...
 				)); 
 		}
 	};
