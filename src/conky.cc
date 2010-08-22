@@ -354,8 +354,9 @@ static conky::simple_config_setting<bool> fork_to_background("background", false
  * first forking */
 static int first_pass = 1;
 
-static int net_avg_samples, diskio_avg_samples;
+static int diskio_avg_samples;
 conky::range_config_setting<int> cpu_avg_samples("cpu_avg_samples", 1, 14, 2, true);
+conky::range_config_setting<int> net_avg_samples("net_avg_samples", 1, 14, 2, true);
 
 /* filenames for output */
 char *overwrite_file = NULL; FILE *overwrite_fpointer = NULL;
@@ -2595,7 +2596,6 @@ static void set_default_configurations(void)
 {
 	update_uname();
 	total_run_times = 0;
-	info.net_avg_samples = 2;
 	info.diskio_avg_samples = 2;
 	info.memmax = 0;
 	top_cpu = 0;
@@ -2877,18 +2877,6 @@ char load_config_file(const char *f)
 			}
 		}
 #endif
-		CONF("net_avg_samples") {
-			if (value) {
-				net_avg_samples = strtol(value, 0, 0);
-				if (net_avg_samples < 1 || net_avg_samples > 14) {
-					CONF_ERR;
-				} else {
-					info.net_avg_samples = net_avg_samples;
-				}
-			} else {
-				CONF_ERR;
-			}
-		}
 		CONF("diskio_avg_samples") {
 			if (value) {
 				diskio_avg_samples = strtol(value, 0, 0);

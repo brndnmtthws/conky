@@ -479,20 +479,21 @@ int update_net_stats(void)
 		curtmp1 = 0;
 		curtmp2 = 0;
 		// get an average
+		int samples = net_avg_samples.get(*state);
 #ifdef HAVE_OPENMP
 #pragma omp parallel for reduction(+:curtmp1, curtmp2) schedule(dynamic,10)
 #endif /* HAVE_OPENMP */
-		for (i = 0; i < info.net_avg_samples; i++) {
+		for (i = 0; i < samples; i++) {
 			curtmp1 = curtmp1 + ns->net_rec[i];
 			curtmp2 = curtmp2 + ns->net_trans[i];
 		}
-		ns->recv_speed = curtmp1 / (double) info.net_avg_samples;
-		ns->trans_speed = curtmp2 / (double) info.net_avg_samples;
-		if (info.net_avg_samples > 1) {
+		ns->recv_speed = curtmp1 / (double) samples;
+		ns->trans_speed = curtmp2 / (double) samples;
+		if (samples > 1) {
 #ifdef HAVE_OPENMP
 #pragma omp parallel for schedule(dynamic,10)
 #endif /* HAVE_OPENMP */
-			for (i = info.net_avg_samples; i > 1; i--) {
+			for (i = samples; i > 1; i--) {
 				ns->net_rec[i - 1] = ns->net_rec[i - 2];
 				ns->net_trans[i - 1] = ns->net_trans[i - 2];
 			}
