@@ -360,8 +360,12 @@ conky::range_config_setting<int> net_avg_samples("net_avg_samples", 1, 14, 2, tr
 conky::range_config_setting<int> diskio_avg_samples("diskio_avg_samples", 1, 14, 2, true);
 
 /* filenames for output */
-char *overwrite_file = NULL; FILE *overwrite_fpointer = NULL;
-char *append_file = NULL; FILE *append_fpointer = NULL;
+static conky::simple_config_setting<std::string> overwrite_file("overwrite_file",
+																std::string(), true);
+static FILE *overwrite_fpointer = NULL;
+static conky::simple_config_setting<std::string> append_file("append_file",
+																std::string(), true);
+static FILE *append_fpointer = NULL;
 
 #ifdef BUILD_HTTP
 std::string webpage;
@@ -895,7 +899,7 @@ static void generate_text(void)
 	p = text_buffer;
 
 	generate_text_internal(p, max_user_text, global_root_object);
-	int mw = max_text_width.get(*state);
+	unsigned int mw = max_text_width.get(*state);
 	if(mw > 0) {
 		for(i = 0, j = 0; p[i] != 0; i++) {
 			if(p[i] == '\n') j = 0;
@@ -1255,10 +1259,10 @@ static void draw_string(const char *s)
 		fprintf(stderr, "%s\n", s_with_newlines);
 		fflush(stderr);	/* output immediately, don't buffer */
 	}
-	if ((output_methods & OVERWRITE_FILE) && draw_mode == FG && overwrite_fpointer) {
+	if (draw_mode == FG && overwrite_fpointer) {
 		fprintf(overwrite_fpointer, "%s\n", s_with_newlines);
 	}
-	if ((output_methods & APPEND_FILE) && draw_mode == FG && append_fpointer) {
+	if (draw_mode == FG && append_fpointer) {
 		fprintf(append_fpointer, "%s\n", s_with_newlines);
 	}
 #ifdef BUILD_NCURSES
@@ -1899,15 +1903,15 @@ static void draw_stuff(void)
 #ifdef BUILD_IMLIB2
 	cimlib_render(text_start_x, text_start_y, window.width, window.height);
 #endif /* BUILD_IMLIB2 */
-	if (overwrite_file) {
-		overwrite_fpointer = fopen(overwrite_file, "w");
+	if (overwrite_file.get(*state).size()) {
+		overwrite_fpointer = fopen(overwrite_file.get(*state).c_str(), "w");
 		if(!overwrite_fpointer)
-			NORM_ERR("Can't overwrite '%s' anymore", overwrite_file);
+			NORM_ERR("Cannot overwrite '%s'", overwrite_file.get(*state).c_str());
 	}
-	if (append_file) {
-		append_fpointer = fopen(append_file, "a");
+	if (append_file.get(*state).size()) {
+		append_fpointer = fopen(append_file.get(*state).c_str(), "a");
 		if(!append_fpointer)
-			NORM_ERR("Can't append '%s' anymore", append_file);
+			NORM_ERR("Cannot append to '%s'", append_file.get(*state).c_str());
 	}
 #ifdef BUILD_X11
 	if (out_to_x.get(*state)) {
@@ -2399,8 +2403,6 @@ static void main_loop(void)
 #endif /* BUILD_XDAMAGE */
 				}
 #endif /* BUILD_X11 */
-				free_and_zero(overwrite_file);
-				free_and_zero(append_file);
 				break;
 			default:
 				/* Reaching here means someone set a signal
@@ -2652,28 +2654,6 @@ static void set_default_configurations(void)
 #endif
 }
 
-/* returns 1 if you can overwrite or create the file at 'path' */
-static bool overwrite_works(const char *path)
-{
-	FILE *filepointer;
-
-	if (!(filepointer = fopen(path, "w")))
-		return false;
-	fclose(filepointer);
-	return true;
-}
-
-/* returns 1 if you can append or create the file at 'path' */
-static bool append_works(const char *path)
-{
-	FILE *filepointer;
-
-	if (!(filepointer = fopen(path, "a")))
-		return false;
-	fclose(filepointer);
-	return true;
-}
-
 #ifdef BUILD_X11
 static void X11_create_window(void)
 {
@@ -2878,22 +2858,6 @@ char load_config_file(const char *f)
 			}
 		}
 #endif
-		CONF("overwrite_file") {
-			free_and_zero(overwrite_file);
-			if (overwrite_works(value)) {
-				overwrite_file = strdup(value);
-				output_methods |= OVERWRITE_FILE;
-			} else
-				NORM_ERR("overwrite_file won't be able to create/overwrite '%s'", value);
-		}
-		CONF("append_file") {
-			free_and_zero(append_file);
-			if(append_works(value)) {
-				append_file = strdup(value);
-				output_methods |= APPEND_FILE;
-			} else
-				NORM_ERR("append_file won't be able to create/append '%s'", value);
-		}
 #ifdef BUILD_X11
 #ifdef BUILD_XFT
 		CONF("font") {
