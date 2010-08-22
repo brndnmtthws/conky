@@ -181,7 +181,8 @@ double update_interval;
 double update_interval_old;
 double update_interval_bat;
 void *global_cpu = NULL;
-unsigned int max_text_width = 0;
+static conky::range_config_setting<int> max_text_width("max_text_width", 0,
+											std::numeric_limits<int>::max(), 0, true);
 int ifup_strictness = IFUP_UP;
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
@@ -894,10 +895,11 @@ static void generate_text(void)
 	p = text_buffer;
 
 	generate_text_internal(p, max_user_text, global_root_object);
-	if(max_text_width > 0) {
+	int mw = max_text_width.get(*state);
+	if(mw > 0) {
 		for(i = 0, j = 0; p[i] != 0; i++) {
 			if(p[i] == '\n') j = 0;
-			else if(j == max_text_width) {
+			else if(j == mw) {
 				k = i + strlen(p + i) + 1;
 				if(k < text_buffer_size) {
 					while(k != i) {
@@ -2876,9 +2878,6 @@ char load_config_file(const char *f)
 			}
 		}
 #endif
-		CONF("max_text_width") {
-			max_text_width = atoi(value);
-		}
 		CONF("overwrite_file") {
 			free_and_zero(overwrite_file);
 			if (overwrite_works(value)) {
