@@ -26,12 +26,6 @@
 #ifndef MPD_H_
 #define MPD_H_
 
-/* functions for setting the configuration values */
-void mpd_set_host(const char *);
-void mpd_set_password(const char *, int);
-void mpd_clear_password(void);
-int mpd_set_port(const char *);
-
 /* text object functions */
 void init_mpd(void);
 void free_mpd(struct text_object *);

@@ -2592,10 +2592,6 @@ void clean_up(void *memtofree1, void* memtofree2)
 
 static void set_default_configurations(void)
 {
-#ifdef BUILD_MPD
-	char *mpd_env_host;
-	char *mpd_env_port;
-#endif /* BUILD_MPD */
 	update_uname();
 	total_run_times = 0;
 	info.cpu_avg_samples = 2;
@@ -2609,39 +2605,6 @@ static void set_default_configurations(void)
 	top_io = 0;
 #endif
 	top_running = 0;
-#ifdef BUILD_MPD
-	mpd_env_host = getenv("MPD_HOST");
-	mpd_env_port = getenv("MPD_PORT");
-
-	if (!mpd_env_host || !strlen(mpd_env_host)) {
-		mpd_set_host("localhost");
-	} else {
-		/* MPD_HOST environment variable is set */
-		char *mpd_hostpart = strchr(mpd_env_host, '@');
-		if (!mpd_hostpart) {
-			mpd_set_host(mpd_env_host);
-		} else {
-			/* MPD_HOST contains a password */
-			char *mpd_password = (char *)malloc(mpd_hostpart - mpd_env_host + 1);
-			snprintf(mpd_password, mpd_hostpart - mpd_env_host + 1, "%s", mpd_env_host);
-
-			if (!strlen(mpd_hostpart + 1)) {
-				mpd_set_host("localhost");
-			} else {
-				mpd_set_host(mpd_hostpart + 1);
-			}
-
-			mpd_set_password(mpd_password, 1);
-			free(mpd_password);
-		}
-	}
-
-
-	if (!mpd_env_port || mpd_set_port(mpd_env_port)) {
-		/* failed to set port from environment variable */
-		mpd_set_port("6600");
-	}
-#endif /* BUILD_MPD */
 #ifdef BUILD_XMMS2
 	info.xmms2.artist = NULL;
 	info.xmms2.album = NULL;
@@ -2898,27 +2861,6 @@ char load_config_file(const char *f)
 			}
 		}
 #endif
-#ifdef BUILD_MPD
-		CONF("mpd_host") {
-			if (value) {
-				mpd_set_host(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("mpd_port") {
-			if (value && mpd_set_port(value)) {
-				CONF_ERR;
-			}
-		}
-		CONF("mpd_password") {
-			if (value) {
-				mpd_set_password(value, 0);
-			} else {
-				CONF_ERR;
-			}
-		}
-#endif /* BUILD_MPD */
 		CONF("music_player_interval") {
 			if (value) {
 				info.music_player_interval = strtod(value, 0);
@@ -3725,7 +3667,8 @@ int main(int argc, char **argv)
 				"print(conky.variables.asdf{}.xxx);\n"
 				"conky.config = { alignment='top_left', asdf=47, [42]=47, out_to_x=true,\n"
 				"    own_window_hints='above, skip_taskbar',\n"
-				"    background_colour='pink', own_window=true, double_buffer=true};\n"
+				"    background_colour='pink', own_window=true, double_buffer=true,\n"
+				"    mpd_host='asdf'};\n"
 				);
 		l.call(0, 0);
 		conky::set_config_settings(l);
@@ -3741,6 +3684,8 @@ int main(int argc, char **argv)
 				"conky.config.alignment='asdf';\n"
 				"print('config.alignment = ', conky.config.alignment);\n"
 				"print('config.own_window_hints = ', conky.config.own_window_hints);\n"
+				"print('config.mpd_host = ', conky.config.mpd_host);\n"
+				"print('config.mpd_password = ', conky.config.mpd_password);\n"
 				);
 		l.call(0, 0);
 

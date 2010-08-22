@@ -35,13 +35,89 @@
 #include "libmpdclient.h"
 #include "mpd.h"
 
-/* server connection data */
-static char mpd_host[128];
-static char mpd_password[128];
-static int mpd_port;
+namespace {
 
-/* this is >0 if the current password was set from MPD_HOST */
-static int mpd_environment_password = 0;
+	/* this is true if the current host was set from MPD_HOST */
+	bool mpd_environment_host = false;
+
+	class mpd_host_setting: public conky::simple_config_setting<std::string> {
+		typedef conky::simple_config_setting<std::string> Base;
+	
+	protected:
+		virtual void lua_setter(lua::state &l, bool init);
+
+	public:
+		mpd_host_setting()
+			: Base("mpd_host", "localhost", false)
+		{}
+	};
+
+	void mpd_host_setting::lua_setter(lua::state &l, bool init)
+	{
+		lua::stack_sentry s(l, -2);
+
+		if(l.isnil(-2)) {
+			// get the value from environment
+			mpd_environment_host = true;
+			const char *t = getenv("MPD_HOST");
+			if(t) {
+				l.checkstack(1);
+				const char *h = strchr(t, '@');
+				if(h) {
+					if(h[1])
+						l.pushstring(h+1);
+				} else
+					l.pushstring(t);
+				l.replace(-3);
+			}
+
+		}
+
+		Base::lua_setter(l, init);
+
+		++s;
+	}
+
+	class mpd_password_setting: public conky::simple_config_setting<std::string> {
+		typedef conky::simple_config_setting<std::string> Base;
+	
+	protected:
+		virtual void lua_setter(lua::state &l, bool init);
+
+	public:
+		mpd_password_setting()
+			: Base("mpd_password", std::string(), false)
+		{}
+	};
+
+	void mpd_password_setting::lua_setter(lua::state &l, bool init)
+	{
+		lua::stack_sentry s(l, -2);
+
+		/* for security, dont use environment password when user specifies host in config */
+		if(l.isnil(-2) && mpd_environment_host) {
+			// get the value from environment
+			const char *t = getenv("MPD_HOST");
+			if(t) {
+				const char *p = strchr(t, '@');
+				if(p) {
+					l.checkstack(1);
+					l.pushstring(t, p-t);
+					l.replace(-3);
+				}
+			}
+
+		}
+
+		Base::lua_setter(l, init);
+
+		++s;
+	}
+
+	conky::range_config_setting<int> mpd_port("mpd_port", 1, 65535, 6600, false);
+	mpd_host_setting                 mpd_host;
+	mpd_password_setting			 mpd_password;
+}
 
 /* global mpd information */
 static struct {
@@ -64,36 +140,6 @@ static struct {
 
 /* number of users of the above struct */
 static int refcount = 0;
-
-void mpd_set_host(const char *host)
-{
-	snprintf(mpd_host, 128, "%s", host);
-
-	if (mpd_environment_password) {
-		/* for security, dont use environment password when user specifies host in config */
-		mpd_clear_password();
-	}
-}
-void mpd_set_password(const char *password, int from_environment)
-{
-	snprintf(mpd_password, 128, "%s", password);
-	mpd_environment_password = from_environment;
-}
-void mpd_clear_password(void)
-{
-	*mpd_password = '\0';
-	mpd_environment_password = 0;
-}
-int mpd_set_port(const char *port)
-{
-	int val;
-
-	val = strtol(port, 0, 0);
-	if (val < 1 || val > 0xffff)
-		return 1;
-	mpd_port = val;
-	return 0;
-}
 
 void init_mpd(void)
 {
@@ -161,10 +207,10 @@ bool mpd_process(thread_handle &handle)
 
 	do {
 		if (!conn)
-			conn = mpd_newConnection(mpd_host, mpd_port, 10);
+			conn = mpd_newConnection(mpd_host.get(*state).c_str(), mpd_port.get(*state), 10);
 
-		if (*mpd_password) {
-			mpd_sendPasswordCommand(conn, mpd_password);
+		if (mpd_password.get(*state).size()) {
+			mpd_sendPasswordCommand(conn, mpd_password.get(*state).c_str());
 			mpd_finishCommand(conn);
 		}
 
