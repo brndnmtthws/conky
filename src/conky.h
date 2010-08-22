@@ -213,8 +213,6 @@ struct information {
 	/* struct cpu_stat cpu_summed; what the hell is this? */
 	int cpu_count;
 
-	int diskio_avg_samples;
-
 	float loadavg[3];
 
 #ifdef BUILD_XMMS2
@@ -246,6 +244,7 @@ struct information {
 
 extern conky::range_config_setting<int> cpu_avg_samples;
 extern conky::range_config_setting<int> net_avg_samples;
+extern conky::range_config_setting<int> diskio_avg_samples;
 
 /* needed by linux.c and top.c -> outsource somewhere */
 enum {

@@ -194,17 +194,18 @@ void update_diskio_values(struct diskio_stat *ds,
 	ds->sample[0] = ds->sample_read[0] + ds->sample_write[0];
 
 	/* compute averages */
-	for (i = 0; i < (signed) info.diskio_avg_samples; i++) {
+	int samples = diskio_avg_samples.get(*state);
+	for (i = 0; i < samples; i++) {
 		sum += ds->sample[i];
 		sum_r += ds->sample_read[i];
 		sum_w += ds->sample_write[i];
 	}
-	ds->current = sum / (double) info.diskio_avg_samples;
-	ds->current_read = sum_r / (double) info.diskio_avg_samples;
-	ds->current_write = sum_w / (double) info.diskio_avg_samples;
+	ds->current = sum / (double) samples;
+	ds->current_read = sum_r / (double) samples;
+	ds->current_write = sum_w / (double) samples;
 
 	/* shift sample history */
-	for (i = info.diskio_avg_samples-1; i > 0; i--) {
+	for (i = samples-1; i > 0; i--) {
 		ds->sample[i] = ds->sample[i-1];
 		ds->sample_read[i] = ds->sample_read[i-1];
 		ds->sample_write[i] = ds->sample_write[i-1];
