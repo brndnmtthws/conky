@@ -212,7 +212,6 @@ struct information {
 	float *cpu_usage;
 	/* struct cpu_stat cpu_summed; what the hell is this? */
 	int cpu_count;
-	int cpu_avg_samples;
 
 	int net_avg_samples;
 
@@ -246,6 +245,8 @@ struct information {
 
 	short kflags;	/* kernel settings, see enum KFLAG */
 };
+
+extern conky::range_config_setting<int> cpu_avg_samples;
 
 /* needed by linux.c and top.c -> outsource somewhere */
 enum {

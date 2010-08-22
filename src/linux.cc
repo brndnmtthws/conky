@@ -788,30 +788,22 @@ int update_stat(void)
 				cpu[idx].cpu_last_active_total) /
 				(float) (cpu[idx].cpu_total - cpu[idx].cpu_last_total);
 			curtmp = 0;
+
+			int samples = cpu_avg_samples.get(*state);
 #ifdef HAVE_OPENMP
 #pragma omp parallel for reduction(+:curtmp) schedule(dynamic,10)
 #endif /* HAVE_OPENMP */
-			for (i = 0; i < info.cpu_avg_samples; i++) {
+			for (i = 0; i < samples; i++) {
 				curtmp = curtmp + cpu[idx].cpu_val[i];
 			}
-			/* TESTING -- I've removed this, because I don't think it is right.
-			 * You shouldn't divide by the cpu count here ...
-			 * removing for testing */
-			/* if (idx == 0) {
-				info.cpu_usage[idx] = curtmp / info.cpu_avg_samples /
-					info.cpu_count;
-			} else {
-				info.cpu_usage[idx] = curtmp / info.cpu_avg_samples;
-			} */
-			/* TESTING -- this line replaces the prev. "suspect" if/else */
-			info.cpu_usage[idx] = curtmp / info.cpu_avg_samples;
+			info.cpu_usage[idx] = curtmp / samples;
 
 			cpu[idx].cpu_last_total = cpu[idx].cpu_total;
 			cpu[idx].cpu_last_active_total = cpu[idx].cpu_active_total;
 #ifdef HAVE_OPENMP
 #pragma omp parallel for schedule(dynamic,10)
 #endif /* HAVE_OPENMP */
-			for (i = info.cpu_avg_samples - 1; i > 0; i--) {
+			for (i = samples - 1; i > 0; i--) {
 				cpu[idx].cpu_val[i] = cpu[idx].cpu_val[i - 1];
 			}
 		}
