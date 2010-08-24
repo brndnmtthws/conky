@@ -78,7 +78,7 @@ int update_i8k(void)
 
 	fclose(fp);
 
-	DBG("read `%s' from /proc/i8k\n", i8k_procbuf);
+	DBGP("read `%s' from /proc/i8k\n", i8k_procbuf);
 
 	i8k.version = strtok(&i8k_procbuf[0], I8K_DELIM);
 	i8k.bios = strtok(NULL, I8K_DELIM);
@@ -95,7 +95,7 @@ int update_i8k(void)
 
 static void print_i8k_fan_status(char *p, int p_max_size, const char *status)
 {
-	static char *status_arr[] = { "off", "low", "high", "error" };
+	static const char *status_arr[] = { "off", "low", "high", "error" };
 
 	int i = status ? atoi(status) : 3;
 	if(i < 0 || i > 3)
