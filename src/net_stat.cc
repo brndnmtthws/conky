@@ -43,6 +43,22 @@
 
 /* network interface stuff */
 
+enum if_up_strictness_ {
+	IFUP_UP,
+	IFUP_LINK,
+	IFUP_ADDR
+};
+
+template<>
+conky::lua_traits<if_up_strictness_>::Map conky::lua_traits<if_up_strictness_>::map = {
+	{ "up",      IFUP_UP },
+	{ "link",    IFUP_LINK },
+	{ "address", IFUP_ADDR }
+};
+
+static conky::simple_config_setting<if_up_strictness_> if_up_strictness("if_up_strictness",
+																		IFUP_UP, true);
+
 struct net_stat netstats[MAX_NET_INTERFACES];
 
 struct net_stat *get_net_stat(const char *dev, void *free_at_crash1, void *free_at_crash2)
@@ -378,12 +394,12 @@ int interface_up(struct text_object *obj)
 
 	if (!(ifr.ifr_flags & IFF_UP)) /* iface is not up */
 		goto END_FALSE;
-	if (ifup_strictness == IFUP_UP)
+	if (if_up_strictness.get(*state) == IFUP_UP)
 		goto END_TRUE;
 
 	if (!(ifr.ifr_flags & IFF_RUNNING))
 		goto END_FALSE;
-	if (ifup_strictness == IFUP_LINK)
+	if (if_up_strictness.get(*state) == IFUP_LINK)
 		goto END_TRUE;
 
 	if (ioctl(fd, SIOCGIFADDR, &ifr)) {

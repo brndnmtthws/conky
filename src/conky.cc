@@ -183,7 +183,6 @@ double update_interval_bat;
 void *global_cpu = NULL;
 static conky::range_config_setting<unsigned int> max_text_width("max_text_width", 0,
 											std::numeric_limits<unsigned int>::max(), 0, true);
-int ifup_strictness = IFUP_UP;
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 extern kvm_t *kd;
@@ -3023,22 +3022,6 @@ char load_config_file(const char *f)
 			}
 		}
 #endif
-		CONF("if_up_strictness") {
-			if (!value) {
-				NORM_ERR("incorrect if_up_strictness value, defaulting to 'up'");
-				ifup_strictness = IFUP_UP;
-			} else if (strcasecmp(value, "up") == EQUAL) {
-				ifup_strictness = IFUP_UP;
-			} else if (strcasecmp(value, "link") == EQUAL) {
-				ifup_strictness = IFUP_LINK;
-			} else if (strcasecmp(value, "address") == EQUAL) {
-				ifup_strictness = IFUP_ADDR;
-			} else {
-				NORM_ERR("incorrect if_up_strictness value, defaulting to 'up'");
-				ifup_strictness = IFUP_UP;
-			}
-		}
-
 		CONF("temperature_unit") {
 			if (!value) {
 				NORM_ERR("config option 'temperature_unit' needs an argument, either 'celsius' or 'fahrenheit'");

@@ -275,15 +275,6 @@ extern struct information info;
 /* defined in conky.c */
 extern double current_update_time, last_update_time, update_interval;
 
-/* if_up strictness selector
- * needed by conky.c and linux.c (and potentially others) */
-enum _ifup_strictness {
-	IFUP_UP,
-	IFUP_LINK,
-	IFUP_ADDR
-};
-extern int ifup_strictness;
-
 extern conky::range_config_setting<char>  stippled_borders;
 
 void set_current_text_color(long colour);
