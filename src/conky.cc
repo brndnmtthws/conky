@@ -446,7 +446,8 @@ static int fixed_size = 0, fixed_pos = 0;
 #endif
 
 static int minimum_width, minimum_height;
-static int maximum_width;
+static conky::range_config_setting<int> maximum_width("maximum_width", 0,
+											std::numeric_limits<int>::max(), 0, true);
 
 static bool isutf8(const char* envvar) {
 	char *s = getenv(envvar);
@@ -1027,8 +1028,9 @@ static void update_text_area(void)
 		if (text_height < minimum_height) {
 			text_height = minimum_height;
 		}
-		if (text_width > maximum_width && maximum_width > 0) {
-			text_width = maximum_width;
+		int mw = maximum_width.get(*state);
+		if (text_width > mw && mw > 0) {
+			text_width = mw;
 		}
 	}
 
@@ -1186,8 +1188,9 @@ static int text_size_updater(char *s, int special_index)
 	if (w > text_width) {
 		text_width = w;
 	}
-	if (text_width > maximum_width && maximum_width) {
-		text_width = maximum_width;
+	int mw = maximum_width.get(*state);
+	if (text_width > mw && mw > 0) {
+		text_width = mw;
 	}
 
 	text_height += last_font_height;
@@ -1312,11 +1315,12 @@ static void draw_string(const char *s)
 	}
 #ifdef BUILD_X11
 	if (out_to_x.get(*state)) {
-		if (text_width == maximum_width) {
+		int mw = maximum_width.get(*state);
+		if (text_width == mw) {
 			/* this means the text is probably pushing the limit,
 			 * so we'll chop it */
-			while (cur_x + get_string_width(tmpstring2) - text_start_x
-					> maximum_width && strlen(tmpstring2) > 0) {
+			while (cur_x + get_string_width(tmpstring2) - text_start_x > mw
+					&& strlen(tmpstring2) > 0) {
 				tmpstring2[strlen(tmpstring2) - 1] = '\0';
 			}
 		}
@@ -1363,6 +1367,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 #ifdef BUILD_X11
 	int font_h = 0;
 	int cur_y_add = 0;
+	int mw = maximum_width.get(*state);
 #endif /* BUILD_X11 */
 	char *recurse = 0;
 	char *p = s;
@@ -1439,8 +1444,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 				{
 					int h, by;
 					double bar_usage, scale;
-					if (cur_x - text_start_x > maximum_width
-							&& maximum_width > 0) {
+					if (cur_x - text_start_x > mw && mw > 0) {
 						break;
 					}
 					h = current->height;
@@ -1482,8 +1486,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					double usage, scale;
 #endif /* MATH */
 
-					if (cur_x - text_start_x > maximum_width
-							&& maximum_width > 0) {
+					if (cur_x - text_start_x > mw && mw > 0) {
 						break;
 					}
 
@@ -1535,8 +1538,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					int colour_idx = 0;
 					unsigned long last_colour = current_color;
 					unsigned long *tmpcolour = 0;
-					if (cur_x - text_start_x > maximum_width
-							&& maximum_width > 0) {
+					if (cur_x - text_start_x > mw && mw > 0) {
 						break;
 					}
 					h = current->height;
@@ -2248,9 +2250,9 @@ static void main_loop(void)
 
 								text_width = window.width - 2*border_total;
 								text_height = window.height - 2*border_total;
-								if (text_width > maximum_width
-										&& maximum_width > 0) {
-									text_width = maximum_width;
+								int mw = maximum_width.get(*state);
+								if (text_width > mw && mw > 0) {
+									text_width = mw;
 								}
 							}
 
@@ -2629,7 +2631,6 @@ static void set_default_configurations(void)
 	set_first_font("6x10");
 	minimum_width = 5;
 	minimum_height = 5;
-	maximum_width = 0;
 	stippled_borders = 0;
 #endif /* BUILD_X11 */
 
@@ -2911,15 +2912,6 @@ char load_config_file(const char *f)
 					if (sscanf(value, "%d", &minimum_width) != 1) {
 						CONF_ERR;
 					}
-				}
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("maximum_width") {
-			if (value) {
-				if (sscanf(value, "%d", &maximum_width) != 1) {
-					CONF_ERR;
 				}
 			} else {
 				CONF_ERR;
