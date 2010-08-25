@@ -30,8 +30,14 @@
 #include "temphelper.h"
 #include "conky.h"
 
-/* default to output in celsius */
-static enum TEMP_UNIT output_unit = TEMP_CELSIUS;
+template<>
+conky::lua_traits<TEMP_UNIT>::Map conky::lua_traits<TEMP_UNIT>::map = {
+	{ "celsius",    TEMP_CELSIUS },
+	{ "fahrenheit", TEMP_FAHRENHEIT }
+};
+
+static conky::simple_config_setting<TEMP_UNIT> output_unit("temperature_unit",
+															TEMP_CELSIUS, true);
 
 static double fahrenheit_to_celsius(double n)
 {
@@ -43,35 +49,12 @@ static double celsius_to_fahrenheit(double n)
 	return ((n * 9 / 5) + 32);
 }
 
-int set_temp_output_unit(const char *name)
-{
-	long i;
-	int rc = 0;
-	char *buf;
-
-	if (!name)
-		return 1;
-
-	buf = strdup(name);
-	for (i = 0; i < (long)strlen(name); i++)
-		buf[i] = tolower(name[i]);
-
-	if (!strcmp(buf, "celsius"))
-		output_unit = TEMP_CELSIUS;
-	else if (!strcmp(buf, "fahrenheit"))
-		output_unit = TEMP_FAHRENHEIT;
-	else
-		rc = 1;
-	free(buf);
-	return rc;
-}
-
 static double convert_temp_output(double n, enum TEMP_UNIT input_unit)
 {
-	if (input_unit == output_unit)
+	if (input_unit == output_unit.get(*state))
 		return n;
 
-	switch(output_unit) {
+	switch(output_unit.get(*state)) {
 		case TEMP_CELSIUS:
 			return fahrenheit_to_celsius(n);
 		case TEMP_FAHRENHEIT:

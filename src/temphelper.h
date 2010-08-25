@@ -30,7 +30,6 @@ enum TEMP_UNIT {
 	TEMP_FAHRENHEIT
 };
 
-int set_temp_output_unit(const char *);
 int temp_print(char *, size_t, double, enum TEMP_UNIT);
 
 #endif /* TEMPHELPER_H */

@@ -3022,14 +3022,6 @@ char load_config_file(const char *f)
 			}
 		}
 #endif
-		CONF("temperature_unit") {
-			if (!value) {
-				NORM_ERR("config option 'temperature_unit' needs an argument, either 'celsius' or 'fahrenheit'");
-			} else if (set_temp_output_unit(value)) {
-				NORM_ERR("temperature_unit: incorrect argument");
-			}
-		}
-
 #ifdef BUILD_LUA
 		CONF("lua_load") {
 			if (value) {
