@@ -64,8 +64,9 @@ namespace conky {
 	template<typename T>
 	struct lua_traits<T, true, false, false> {
 		static const lua::Type type = lua::TNUMBER;
+		typedef lua::integer Type;
 
-		static inline std::pair<T, bool>
+		static inline std::pair<Type, bool>
 		convert(lua::state &l, int index, const std::string &)
 		{ return {l.tointeger(index), true}; }
 	};
@@ -74,8 +75,9 @@ namespace conky {
 	template<typename T>
 	struct lua_traits<T, false, true, false> {
 		static const lua::Type type = lua::TNUMBER;
+		typedef lua::number Type;
 
-		static inline std::pair<T, bool>
+		static inline std::pair<Type, bool>
 		convert(lua::state &l, int index, const std::string &)
 		{ return {l.tonumber(index), true}; }
 	};
@@ -84,8 +86,9 @@ namespace conky {
 	template<>
 	struct lua_traits<std::string, false, false, false> {
 		static const lua::Type type = lua::TSTRING;
+		typedef std::string Type;
 
-		static inline std::pair<std::string, bool>
+		static inline std::pair<Type, bool>
 		convert(lua::state &l, int index, const std::string &)
 		{ return {l.tostring(index), true}; }
 	};
@@ -94,8 +97,9 @@ namespace conky {
 	template<>
 	struct lua_traits<bool, true, false, false> {
 		static const lua::Type type = lua::TBOOLEAN;
+		typedef bool Type;
 
-		static inline std::pair<bool, bool>
+		static inline std::pair<Type, bool>
 		convert(lua::state &l, int index, const std::string &)
 		{ return {l.toboolean(index), true}; }
 	};
@@ -105,6 +109,7 @@ namespace conky {
 	template<typename T>
 	struct lua_traits<T, false, false, true> {
 		static const lua::Type type = lua::TSTRING;
+		typedef T Type;
 
 		typedef std::initializer_list<std::pair<std::string, T>> Map;
 		static Map map;
@@ -244,7 +249,7 @@ namespace conky {
 		const T default_value;
 		const bool modifiable;
 
-		virtual std::pair<T, bool> do_convert(lua::state &l, int index);
+		virtual std::pair<typename Traits::Type, bool> do_convert(lua::state &l, int index);
 		virtual void lua_setter(lua::state &l, bool init);
 
 		virtual T getter(lua::state &l)
@@ -261,7 +266,8 @@ namespace conky {
 	};
 
 	template<typename T, typename Traits>
-	std::pair<T, bool> simple_config_setting<T, Traits>::do_convert(lua::state &l, int index)
+	std::pair<typename Traits::Type, bool>
+	simple_config_setting<T, Traits>::do_convert(lua::state &l, int index)
 	{
 		if(l.isnil(index))
 			return {default_value, true};
@@ -294,6 +300,16 @@ namespace conky {
 		++s;
 	}
 
+	template<typename Signed1, typename Signed2>
+	bool between(Signed1 value, Signed2 min,
+				typename std::enable_if<std::is_signed<Signed2>::value, Signed2>::type max)
+	{ return value >= min && value <= max; }
+
+	template<typename Signed1, typename Unsigned2>
+	bool between(Signed1 value, Unsigned2 min,
+				typename std::enable_if<std::is_unsigned<Unsigned2>::value, Unsigned2>::type max)
+	{ return value >= 0 && value >= min && value <= max; }
+
 	// Just like simple_config_setting, except that in only accepts value in the [min, max] range
 	template<typename T, typename Traits = lua_traits<T>>
 	class range_config_setting: public simple_config_setting<T, Traits> {
@@ -311,10 +327,10 @@ namespace conky {
 		{ assert(min <= Base::default_value && Base::default_value <= max); }
 
 	protected:
-		virtual std::pair<T, bool> do_convert(lua::state &l, int index)
+		virtual std::pair<typename Traits::Type, bool> do_convert(lua::state &l, int index)
 		{
 			auto ret = Base::do_convert(l, index);
-			if(ret.second && (ret.first < min || ret.first > max)) {
+			if(ret.second && !between(ret.first, min, max)) {
 				NORM_ERR("Value is out of range for setting '%s'", Base::name.c_str());
 				// we ignore out-of-range values. an alternative would be to clamp them. do we
 				// want to do that?

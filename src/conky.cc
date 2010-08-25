@@ -181,8 +181,8 @@ double update_interval;
 double update_interval_old;
 double update_interval_bat;
 void *global_cpu = NULL;
-static conky::range_config_setting<int> max_text_width("max_text_width", 0,
-											std::numeric_limits<int>::max(), 0, true);
+static conky::range_config_setting<unsigned int> max_text_width("max_text_width", 0,
+											std::numeric_limits<unsigned int>::max(), 0, true);
 int ifup_strictness = IFUP_UP;
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
@@ -3594,7 +3594,7 @@ int main(int argc, char **argv)
 				"conky.config = { alignment='top_left', asdf=47, [42]=47, out_to_x=true,\n"
 				"    own_window_hints='above, skip_taskbar',\n"
 				"    background_colour='pink', own_window=true, double_buffer=true,\n"
-				"    mpd_host='asdf'};\n"
+				"    mpd_port=-47};\n"
 				);
 		l.call(0, 0);
 		conky::set_config_settings(l);
@@ -3612,6 +3612,7 @@ int main(int argc, char **argv)
 				"print('config.own_window_hints = ', conky.config.own_window_hints);\n"
 				"print('config.mpd_host = ', conky.config.mpd_host);\n"
 				"print('config.mpd_password = ', conky.config.mpd_password);\n"
+				"print('config.mpd_port = ', conky.config.mpd_port);\n"
 				);
 		l.call(0, 0);
 

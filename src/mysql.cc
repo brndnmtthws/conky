@@ -37,7 +37,7 @@
 
 namespace {
 	conky::simple_config_setting<std::string> host("mysql_host", "localhost", false);
-	conky::range_config_setting<int>          port("mysql_port", 0, 0xffff, 0, false);
+	conky::range_config_setting<in_port_t>    port("mysql_port", 0, 0xffff, 0, false);
 	conky::simple_config_setting<std::string> user("mysql_user", "root", false);
 	conky::simple_config_setting<std::string> password("mysql_password", std::string(), false);
 	conky::simple_config_setting<std::string> db("mysql_db", "mysql", false);

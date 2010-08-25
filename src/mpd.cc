@@ -114,7 +114,7 @@ namespace {
 		++s;
 	}
 
-	conky::range_config_setting<int> mpd_port("mpd_port", 1, 65535, 6600, false);
+	conky::range_config_setting<in_port_t> mpd_port("mpd_port", 1, 65535, 6600, false);
 	mpd_host_setting                 mpd_host;
 	mpd_password_setting			 mpd_password;
 }
