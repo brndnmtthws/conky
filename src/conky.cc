@@ -478,7 +478,7 @@ unsigned int max_user_text;
 unsigned int text_buffer_size = DEFAULT_TEXT_BUFFER_SIZE;
 
 /* pad percentages to decimals? */
-static int pad_percents = 0;
+static conky::simple_config_setting<int> pad_percents("pad_percents", 0, false);
 
 static char *global_text = 0;
 
@@ -628,7 +628,7 @@ int spaced_print(char *buf, int size, const char *format, int width, ...)
  * - respect the value of pad_percents */
 int percent_print(char *buf, int size, unsigned value)
 {
-	return spaced_print(buf, size, "%u", pad_percents, value);
+	return spaced_print(buf, size, "%u", pad_percents.get(*state), value);
 }
 
 #if defined(__FreeBSD__)
@@ -2917,11 +2917,6 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-#endif /* BUILD_X11 */
-		CONF("pad_percents") {
-			pad_percents = atoi(value);
-		}
-#ifdef BUILD_X11
 		CONF("stippled_borders") {
 			if (value) {
 				stippled_borders = strtol(value, 0, 0);
