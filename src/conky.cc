@@ -2918,10 +2918,6 @@ char load_config_file(const char *f)
 			}
 		}
 #endif /* BUILD_X11 */
-		CONF("top_name_width") {
-			if (set_top_name_width(value))
-				CONF_ERR;
-		}
 #ifdef HDDTEMP
 		CONF("hddtemp_host") {
 			set_hddtemp_host(value);

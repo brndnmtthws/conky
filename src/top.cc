@@ -439,15 +439,8 @@ struct top_data {
 	char *s;
 };
 
-static unsigned int top_name_width = 15;
-
-/* return zero on success, non-zero otherwise */
-int set_top_name_width(const char *s)
-{
-	if (!s)
-		return 0;
-	return !(sscanf(s, "%u", &top_name_width) == 1);
-}
+static conky::range_config_setting<unsigned int> top_name_width("top_name_width", 0,
+										std::numeric_limits<unsigned int>::max(), 15, true);
 
 static void print_top_name(struct text_object *obj, char *p, int p_max_size)
 {
@@ -457,7 +450,7 @@ static void print_top_name(struct text_object *obj, char *p, int p_max_size)
 	if (!td || !td->list || !td->list[td->num])
 		return;
 
-	width = MIN(p_max_size, (int)top_name_width + 1);
+	width = MIN(p_max_size, (int)top_name_width.get(*state) + 1);
 	snprintf(p, width + 1, "%-*s", width, td->list[td->num]->name);
 }
 

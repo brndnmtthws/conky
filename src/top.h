@@ -132,9 +132,6 @@ struct process *get_process_by_name(const char *);
 
 int parse_top_args(const char *s, const char *arg, struct text_object *obj);
 
-/* return zero on success, non-zero otherwise */
-int set_top_name_width(const char *);
-
 int update_top(void);
 
 void get_top_info(void);
