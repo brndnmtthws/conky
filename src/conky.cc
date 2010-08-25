@@ -2918,14 +2918,6 @@ char load_config_file(const char *f)
 			}
 		}
 #endif /* BUILD_X11 */
-#ifdef HDDTEMP
-		CONF("hddtemp_host") {
-			set_hddtemp_host(value);
-		}
-		CONF("hddtemp_port") {
-			set_hddtemp_port(value);
-		}
-#endif /* HDDTEMP */
 		CONF("pad_percents") {
 			pad_percents = atoi(value);
 		}

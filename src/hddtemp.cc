@@ -41,11 +41,9 @@
 #include <netinet/in.h>
 
 #define BUFLEN 512
-#define DEFAULT_PORT "7634"
-#define DEFAULT_HOST "127.0.0.1"
 
-static char *hddtemp_host = NULL;
-static char *hddtemp_port = NULL;
+static conky::simple_config_setting<std::string> hddtemp_host("hddtemp_host", "localhost", false);
+static conky::simple_config_setting<std::string> hddtemp_port("hddtemp_port", "7634", false);
 
 struct hdd_info {
 	hdd_info() : next(0) {}
@@ -56,18 +54,6 @@ struct hdd_info {
 };
 
 struct hdd_info hdd_info_head;
-
-void set_hddtemp_host(const char *host)
-{
-	free_and_zero(hddtemp_host);
-	hddtemp_host = strdup(host);
-}
-
-void set_hddtemp_port(const char *port)
-{
-	free_and_zero(hddtemp_port);
-	hddtemp_port = strdup(port);
-}
 
 static void __free_hddtemp_info(struct hdd_info *hdi)
 {
@@ -104,20 +90,17 @@ static void add_hddtemp_info(char *dev, short temp, char unit)
 static char *fetch_hddtemp_output(void)
 {
 	int sockfd;
-	const char *dst_host, *dst_port;
 	char *buf = NULL;
 	int buflen, offset = 0, rlen;
 	struct addrinfo hints, *result, *rp;
 	int i;
 
-	dst_host = hddtemp_host ? hddtemp_host : DEFAULT_HOST;
-	dst_port = hddtemp_port ? hddtemp_port : DEFAULT_PORT;
-
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET;	/* XXX: hddtemp has no ipv6 support (yet?) */
 	hints.ai_socktype = SOCK_STREAM;
 
-	if ((i = getaddrinfo(dst_host, dst_port, &hints, &result))) {
+	if ((i = getaddrinfo(hddtemp_host.get(*state).c_str(),
+							hddtemp_port.get(*state).c_str(), &hints, &result))) {
 		NORM_ERR("getaddrinfo(): %s", gai_strerror(i));
 		return NULL;
 	}
@@ -236,8 +219,6 @@ int update_hddtemp(void) {
 void free_hddtemp(struct text_object *obj)
 {
 	free_hddtemp_info();
-	free_and_zero(hddtemp_host);
-	free_and_zero(hddtemp_port);
 	free_and_zero(obj->data.s);
 }
 
