@@ -430,12 +430,9 @@ static conky::simple_config_setting<int> gap_y("gap_y", 60, true);
 /* border */
 static conky::simple_config_setting<bool> draw_borders("draw_borders", false, false);
 static conky::simple_config_setting<bool> draw_graph_borders("draw_graph_borders", true, false);
-static int stippled_borders;
 
-int get_stippled_borders(void)
-{
-	return stippled_borders;
-}
+conky::range_config_setting<char>  stippled_borders("stippled_borders", 0,
+											std::numeric_limits<char>::max(), 0, true);
 
 static conky::simple_config_setting<bool> draw_shades("draw_shades", true, false);
 static conky::simple_config_setting<bool> draw_outline("draw_outline", false, false);
@@ -1865,8 +1862,8 @@ static void draw_text(void)
 
 		/* draw borders */
 		if (draw_borders.get(*state) && bw > 0) {
-			if (stippled_borders) {
-				char ss[2] = { (char)stippled_borders, (char)stippled_borders };
+			if (stippled_borders.get(*state)) {
+				char ss[2] = { stippled_borders.get(*state), stippled_borders.get(*state) };
 				XSetLineAttributes(display, window.gc, bw, LineOnOffDash,
 					CapButt, JoinMiter);
 				XSetDashes(display, window.gc, 0, ss, 2);
@@ -2631,7 +2628,6 @@ static void set_default_configurations(void)
 	set_first_font("6x10");
 	minimum_width = 5;
 	minimum_height = 5;
-	stippled_borders = 0;
 #endif /* BUILD_X11 */
 
 	free(current_mail_spool);
@@ -2915,13 +2911,6 @@ char load_config_file(const char *f)
 				}
 			} else {
 				CONF_ERR;
-			}
-		}
-		CONF("stippled_borders") {
-			if (value) {
-				stippled_borders = strtol(value, 0, 0);
-			} else {
-				stippled_borders = 4;
 			}
 		}
 #ifdef BUILD_IMLIB2

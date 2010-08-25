@@ -284,7 +284,7 @@ enum _ifup_strictness {
 };
 extern int ifup_strictness;
 
-int get_stippled_borders(void);
+extern conky::range_config_setting<char>  stippled_borders;
 
 void set_current_text_color(long colour);
 long get_current_text_color(void);

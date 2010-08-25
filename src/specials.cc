@@ -446,7 +446,7 @@ void scan_stippled_hr(struct text_object *obj, const char *arg)
 	sh = (struct stippled_hr *)malloc(sizeof(struct stippled_hr));
 	memset(sh, 0, sizeof(struct stippled_hr));
 
-	sh->arg = get_stippled_borders();
+	sh->arg = stippled_borders.get(*state);
 	sh->height = 1;
 
 	if (arg) {
