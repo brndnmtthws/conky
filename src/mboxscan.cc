@@ -149,7 +149,7 @@ static void mbox_scan(char *args, char *output, size_t max_len)
 
 		/* allowing $MAIL in the config */
 		if (!strcmp(mbox_mail_spool, "$MAIL")) {
-			strcpy(mbox_mail_spool, current_mail_spool);
+			strcpy(mbox_mail_spool, current_mail_spool.get(*state).c_str());
 		}
 
 		if (stat(mbox_mail_spool, &statbuf)) {

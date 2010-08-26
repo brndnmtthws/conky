@@ -29,6 +29,9 @@
  */
 
 #include "config.h"
+
+#include "mail.h"
+
 #include "conky.h"
 #include "common.h"
 #include "logging.h"
@@ -109,7 +112,16 @@ struct local_mail_s {
 	double last_update;
 };
 
-char *current_mail_spool;
+std::pair<std::string, bool>
+priv::current_mail_spool_setting::do_convert(lua::state &l, int index)
+{
+	auto ret = Base::do_convert(l, index);
+	if(ret.second)
+		ret.first = variable_substitute(ret.first);
+	return ret;
+}
+
+priv::current_mail_spool_setting current_mail_spool;
 
 static struct mail_s *global_mail;
 static int global_mail_use = 0;
@@ -357,12 +369,7 @@ void parse_local_mail_args(struct text_object *obj, const char *arg)
 
 	if (!arg) {
 		n1 = 9.5;
-		/* Kapil: Changed from MAIL_FILE to
-		   current_mail_spool since the latter
-		   is a copy of the former if undefined
-		   but the latter should take precedence
-		   if defined */
-		strncpy(mbox, current_mail_spool, sizeof(mbox));
+		strncpy(mbox, current_mail_spool.get(*state).c_str(), sizeof(mbox));
 	} else {
 		if (sscanf(arg, "%s %f", mbox, &n1) != 2) {
 			n1 = 9.5;

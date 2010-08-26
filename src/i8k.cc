@@ -67,7 +67,6 @@ int update_i8k(void)
 			"driver is loaded...");*/
 		NORM_ERR("/proc/i8k doesn't exist! use insmod to make sure the kernel driver is loaded...");
 		clean_up_without_threads(NULL, NULL);
-		free(current_mail_spool);
 		return 1;
 	}
 

@@ -130,7 +130,6 @@
 #define S_ISSOCK(x)   ((x & S_IFMT) == S_IFSOCK)
 #endif
 
-#define MAIL_FILE "$MAIL"
 #define MAX_IF_BLOCK_DEPTH 5
 
 //#define SIGNAL_BLOCKING
@@ -2473,7 +2472,7 @@ static void main_loop(void)
 #endif /* BUILD_LUA */
 		g_signal_pending = 0;
 	}
-	clean_up(current_mail_spool, NULL);
+	clean_up(NULL, NULL);
 
 #ifdef HAVE_SYS_INOTIFY_H
 	if (inotify_fd != -1) {
@@ -2629,14 +2628,6 @@ static void set_default_configurations(void)
 #ifdef BUILD_X11
 	set_first_font("6x10");
 #endif /* BUILD_X11 */
-
-	free(current_mail_spool);
-	{
-		std::string buf = variable_substitute(MAIL_FILE);
-		if (not buf.empty()) {
-			current_mail_spool = strndup(buf.c_str(), text_buffer_size);
-		}
-	}
 
 	set_update_interval(3);
 	update_interval_bat = NOBATTERY;
@@ -2843,18 +2834,6 @@ char load_config_file(const char *f)
 #endif
 		}
 #endif /* BUILD_X11 */
-		CONF("mail_spool") {
-			if (value) {
-				std::string buffer = variable_substitute(value);
-
-				if (not buffer.empty()) {
-					free_and_zero(current_mail_spool);
-					current_mail_spool = strndup(buffer.c_str(), text_buffer_size);
-				}
-			} else {
-				CONF_ERR;
-			}
-		}
 #ifdef BUILD_X11
 #ifdef BUILD_IMLIB2
 		CONF("imlib_cache_size") {
@@ -3226,16 +3205,6 @@ void initialisation(int argc, char **argv) {
 		load_config_file(current_config.c_str());
 		currentconffile = conftree_add(currentconffile, current_config.c_str());
 	}
-
-#ifdef MAIL_FILE
-	if (current_mail_spool == NULL) {
-		std::string buf = variable_substitute(MAIL_FILE);
-
-		if (not buf.empty()) {
-			current_mail_spool = strndup(buf.c_str(), text_buffer_size);
-		}
-	}
-#endif
 
 	/* handle other command line arguments */
 
