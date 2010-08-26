@@ -352,7 +352,7 @@ static void update_mail_count(struct local_mail_s *mail)
 void parse_local_mail_args(struct text_object *obj, const char *arg)
 {
 	float n1;
-	char mbox[256], dst[256];
+	char mbox[256];
 	struct local_mail_s *locmail;
 
 	if (!arg) {
@@ -370,11 +370,11 @@ void parse_local_mail_args(struct text_object *obj, const char *arg)
 		}
 	}
 
-	variable_substitute(mbox, dst, sizeof(dst));
+	std::string dst = variable_substitute(mbox);
 
 	locmail = (struct local_mail_s*)malloc(sizeof(struct local_mail_s));
 	memset(locmail, 0, sizeof(struct local_mail_s));
-	locmail->mbox = strndup(dst, text_buffer_size);
+	locmail->mbox = strndup(dst.c_str(), text_buffer_size);
 	locmail->interval = n1;
 	obj->data.opaque = locmail;
 }
@@ -663,7 +663,7 @@ static void imap_thread(thread_handle &handle, struct mail_s *mail)
 	int threadfd = handle.readfd();
 	char resolved_host = 0;
 	struct addrinfo hints;
-	struct addrinfo *ai, *rp;
+	struct addrinfo *ai = 0, *rp;
 	char portbuf[8];
 
 	while (fail < mail->retries) {
@@ -703,6 +703,7 @@ static void imap_thread(thread_handle &handle, struct mail_s *mail)
 				close(sockfd);
 			}
 			freeaddrinfo(ai);
+			ai = 0;
 			if (rp == NULL) {
 				perror("connect");
 				fail++;
@@ -1006,7 +1007,7 @@ static void pop3_thread(thread_handle &handle, struct mail_s *mail)
 	struct stat stat_buf;
 	char resolved_host = 0;
 	struct addrinfo hints;
-	struct addrinfo *ai, *rp;
+	struct addrinfo *ai = 0, *rp;
 	char portbuf[8];
 
 	while (fail < mail->retries) {
@@ -1045,6 +1046,7 @@ static void pop3_thread(thread_handle &handle, struct mail_s *mail)
 				close(sockfd);
 			}
 			freeaddrinfo(ai);
+			ai = 0;
 			if (rp == NULL) {
 				perror("connect");
 				fail++;

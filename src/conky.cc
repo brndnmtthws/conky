@@ -2632,11 +2632,9 @@ static void set_default_configurations(void)
 
 	free(current_mail_spool);
 	{
-		char buf[256];
-
-		variable_substitute(MAIL_FILE, buf, 256);
-		if (buf[0] != '\0') {
-			current_mail_spool = strndup(buf, text_buffer_size);
+		std::string buf = variable_substitute(MAIL_FILE);
+		if (not buf.empty()) {
+			current_mail_spool = strndup(buf.c_str(), text_buffer_size);
 		}
 	}
 
@@ -2847,13 +2845,11 @@ char load_config_file(const char *f)
 #endif /* BUILD_X11 */
 		CONF("mail_spool") {
 			if (value) {
-				char buffer[256];
+				std::string buffer = variable_substitute(value);
 
-				variable_substitute(value, buffer, 256);
-
-				if (buffer[0] != '\0') {
+				if (not buffer.empty()) {
 					free_and_zero(current_mail_spool);
-					current_mail_spool = strndup(buffer, text_buffer_size);
+					current_mail_spool = strndup(buffer.c_str(), text_buffer_size);
 				}
 			} else {
 				CONF_ERR;
@@ -3233,12 +3229,10 @@ void initialisation(int argc, char **argv) {
 
 #ifdef MAIL_FILE
 	if (current_mail_spool == NULL) {
-		char buf[256];
+		std::string buf = variable_substitute(MAIL_FILE);
 
-		variable_substitute(MAIL_FILE, buf, 256);
-
-		if (buf[0] != '\0') {
-			current_mail_spool = strndup(buf, text_buffer_size);
+		if (not buf.empty()) {
+			current_mail_spool = strndup(buf.c_str(), text_buffer_size);
 		}
 	}
 #endif
