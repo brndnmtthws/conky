@@ -663,7 +663,7 @@ static void imap_thread(thread_handle &handle, struct mail_s *mail)
 	int threadfd = handle.readfd();
 	char resolved_host = 0;
 	struct addrinfo hints;
-	struct addrinfo *ai, *rp;
+	struct addrinfo *ai = 0, *rp;
 	char portbuf[8];
 
 	while (fail < mail->retries) {
@@ -703,6 +703,7 @@ static void imap_thread(thread_handle &handle, struct mail_s *mail)
 				close(sockfd);
 			}
 			freeaddrinfo(ai);
+			ai = 0;
 			if (rp == NULL) {
 				perror("connect");
 				fail++;
@@ -1006,7 +1007,7 @@ static void pop3_thread(thread_handle &handle, struct mail_s *mail)
 	struct stat stat_buf;
 	char resolved_host = 0;
 	struct addrinfo hints;
-	struct addrinfo *ai, *rp;
+	struct addrinfo *ai = 0, *rp;
 	char portbuf[8];
 
 	while (fail < mail->retries) {
@@ -1045,6 +1046,7 @@ static void pop3_thread(thread_handle &handle, struct mail_s *mail)
 				close(sockfd);
 			}
 			freeaddrinfo(ai);
+			ai = 0;
 			if (rp == NULL) {
 				perror("connect");
 				fail++;
