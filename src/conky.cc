@@ -441,7 +441,10 @@ static conky::simple_config_setting<bool> draw_outline("draw_outline", false, fa
 static int fixed_size = 0, fixed_pos = 0;
 #endif
 
-static int minimum_width, minimum_height;
+static conky::range_config_setting<int> minimum_height("minimum_height", 0,
+											std::numeric_limits<int>::max(), 5, true);
+static conky::range_config_setting<int> minimum_width("minimum_width", 0,
+											std::numeric_limits<int>::max(), 5, true);
 static conky::range_config_setting<int> maximum_width("maximum_width", 0,
 											std::numeric_limits<int>::max(), 0, true);
 
@@ -1016,13 +1019,13 @@ static void update_text_area(void)
 	if (!fixed_size)
 #endif
 	{
-		text_width = minimum_width;
+		text_width = minimum_width.get(*state);
 		text_height = 0;
 		last_font_height = font_height();
 		for_each_line(text_buffer, text_size_updater);
 		text_width += 1;
-		if (text_height < minimum_height) {
-			text_height = minimum_height;
+		if (text_height < minimum_height.get(*state)) {
+			text_height = minimum_height.get(*state);
 		}
 		int mw = maximum_width.get(*state);
 		if (text_width > mw && mw > 0) {
@@ -2625,8 +2628,6 @@ static void set_default_configurations(void)
 #endif
 #ifdef BUILD_X11
 	set_first_font("6x10");
-	minimum_width = 5;
-	minimum_height = 5;
 #endif /* BUILD_X11 */
 
 	free(current_mail_spool);
@@ -2859,18 +2860,6 @@ char load_config_file(const char *f)
 			}
 		}
 #ifdef BUILD_X11
-		CONF("minimum_size") {
-			if (value) {
-				if (sscanf(value, "%d %d", &minimum_width, &minimum_height)
-						!= 2) {
-					if (sscanf(value, "%d", &minimum_width) != 1) {
-						CONF_ERR;
-					}
-				}
-			} else {
-				CONF_ERR;
-			}
-		}
 #ifdef BUILD_IMLIB2
 		CONF("imlib_cache_size") {
 			if (value) {

@@ -525,11 +525,21 @@
     <varlistentry>
         <term>
             <command>
-                <option>minimum_size</option>
+                <option>minimum_height</option>
             </command>
-            <option>width (height)</option>
+            <option>height</option>
         </term>
-        <listitem>Minimum size of window 
+        <listitem>Minimum height of the window 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>minimum_width</option>
+            </command>
+            <option>width</option>
+        </term>
+        <listitem>Minimum width of window 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
