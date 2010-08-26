@@ -664,7 +664,7 @@ static void *imap_thread(void *arg)
 	int threadfd = timed_thread_readfd(mail->p_timed_thread);
 	char resolved_host = 0;
 	struct addrinfo hints;
-	struct addrinfo *ai, *rp;
+	struct addrinfo *ai = 0, *rp;
 	char portbuf[8];
 
 	while (fail < mail->retries) {
@@ -704,6 +704,7 @@ static void *imap_thread(void *arg)
 				close(sockfd);
 			}
 			freeaddrinfo(ai);
+			ai = 0;
 			if (rp == NULL) {
 				perror("connect");
 				fail++;
@@ -1010,7 +1011,7 @@ static void *pop3_thread(void *arg)
 	struct mail_s *mail = (struct mail_s *)arg;
 	char resolved_host = 0;
 	struct addrinfo hints;
-	struct addrinfo *ai, *rp;
+	struct addrinfo *ai = 0, *rp;
 	char portbuf[8];
 
 	while (fail < mail->retries) {
@@ -1031,8 +1032,8 @@ static void *pop3_thread(void *arg)
 				fail++;
 				break;
 			}
-	resolved_host = 1;
-}
+			resolved_host = 1;
+		}
 		if (fail > 0) {
 			NORM_ERR("Trying POP3 connection again for %s@%s (try %u/%u)",
 					mail->user, mail->host, fail + 1, mail->retries);
@@ -1049,6 +1050,7 @@ static void *pop3_thread(void *arg)
 				close(sockfd);
 			}
 			freeaddrinfo(ai);
+			ai = 0;
 			if (rp == NULL) {
 				perror("connect");
 				fail++;
