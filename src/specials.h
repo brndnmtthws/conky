@@ -81,8 +81,6 @@ extern struct special_t *specials;
 extern int special_count;
 
 #ifdef BUILD_X11
-extern int default_graph_width;
-extern int default_graph_height;
 extern int default_gauge_width;
 extern int default_gauge_height;
 #endif /* BUILD_X11 */

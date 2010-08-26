@@ -138,13 +138,21 @@
     <varlistentry>
         <term>
             <command>
-                <option>default_graph_size</option>
+                <option>default_graph_height</option>
             </command>
         </term>
-        <listitem>Specify a default width and height for graphs.
-        Example: 'default_graph_size 0 25'. This is particularly
-        useful for execgraph and execigraph as they do not take
-        size arguments 
+        <listitem>Specify a default height for graphs.  This is particularly useful for execgraph
+        and execigraph as they do not take size arguments 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>default_graph_width</option>
+            </command>
+        </term>
+        <listitem>Specify a default width for graphs.  This is particularly useful for execgraph
+        and execigraph as they do not take size arguments 
         <para /></listitem>
     </varlistentry>
     <varlistentry>

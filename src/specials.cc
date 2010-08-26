@@ -50,10 +50,14 @@ namespace {
 										std::numeric_limits<int>::max(), 0, false);
 	conky::range_config_setting<int> default_bar_height("default_bar_height", 0,
 										std::numeric_limits<int>::max(), 6, false);
-}
+
 #ifdef BUILD_X11
-int default_graph_width = 0, default_graph_height = 25;
+	conky::range_config_setting<int> default_graph_width("default_graph_width", 0,
+										std::numeric_limits<int>::max(), 0, false);
+	conky::range_config_setting<int> default_graph_height("default_graph_height", 0,
+										std::numeric_limits<int>::max(), 25, false);
 #endif /* BUILD_X11 */
+}
 int default_gauge_width = 40, default_gauge_height = 25;
 
 /* special data types flags */
@@ -176,8 +180,8 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale)
 	obj->special_data = g;
 
 	/* zero width means all space that is available */
-	g->width = default_graph_width;
-	g->height = default_graph_height;
+	g->width = default_graph_width.get(*state);
+	g->height = default_graph_height.get(*state);
 	g->first_colour = 0;
 	g->last_colour = 0;
 	g->scale = defscale;

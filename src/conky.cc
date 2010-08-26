@@ -2798,19 +2798,6 @@ char load_config_file(const char *f)
 			}
 		}
 #ifdef BUILD_X11
-		CONF("default_graph_size") {
-			char err = 0;
-			if (value) {
-				if (sscanf(value, "%d %d", &default_graph_width, &default_graph_height) != 2) {
-					err = 1;
-				}
-			} else {
-				err = 1;
-			}
-			if (err) {
-				CONF_ERR2("default_graph_size takes 2 integer arguments (ie. 'default_graph_size 0 6')")
-			}
-		}
 		CONF("default_gauge_size") {
 			char err = 0;
 			if (value) {
