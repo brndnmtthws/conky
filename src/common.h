@@ -67,7 +67,7 @@ double get_time(void);
 std::string to_real_path(const std::string &source);
 FILE *open_file(const char *file, int *reported);
 int open_fifo(const char *file, int *reported);
-void variable_substitute(const char *s, char *dest, unsigned int n);
+std::string variable_substitute(std::string s);
 
 void format_seconds(char *buf, unsigned int n, long t);
 void format_seconds_short(char *buf, unsigned int n, long t);

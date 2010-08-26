@@ -152,60 +152,47 @@ FILE *open_file(const char *file, int *reported)
 	return fp;
 }
 
-void variable_substitute(const char *s, char *dest, unsigned int n)
+std::string variable_substitute(std::string s)
 {
-	while (*s && n > 1) {
-		if (*s == '$') {
-			s++;
-			if (*s != '$') {
-				char buf[256];
-				const char *a, *var;
-				unsigned int len;
+	std::string::size_type pos = 0;
+	while((pos = s.find('$', pos)) != std::string::npos) {
+		if(pos + 1 >= s.size())
+			break;
 
-				/* variable is either $foo or ${foo} */
-				if (*s == '{') {
-					s++;
-					a = s;
-					while (*s && *s != '}') {
-						s++;
-					}
-				} else {
-					a = s;
-					while (*s && (isalnum((int) *s) || *s == '_')) {
-						s++;
-					}
+		if(s[pos+1] == '$') {
+			s.erase(pos, 1);
+			++pos;
+		} else {
+			std::string var;
+			std::string::size_type l = 0;
+
+			if(isalpha(s[pos+1])) {
+				l = 1;
+				while(pos+l < s.size() && isalnum(s[pos+l]))
+					++l;
+				var = s.substr(pos+1, l-1);
+			} else if(s[pos+1] == '{') {
+				l = s.find('}', pos);
+				if(l == std::string::npos)
+					break;
+				l -= pos - 1;
+				var = s.substr(pos+2, l-3);
+			} else
+				++pos;
+
+			if(l) {
+				s.erase(pos, l);
+				const char *val = getenv(var.c_str());
+				if(val) {
+					s.insert(pos, val);
+					pos += strlen(val);
 				}
 
-				/* copy variable to buffer and look it up */
-				len = (s - a > 255) ? 255 : (s - a);
-				strncpy(buf, a, len);
-				buf[len] = '\0';
-
-				if (*s == '}') {
-					s++;
-				}
-
-				var = getenv(buf);
-
-				if (var) {
-					/* add var to dest */
-					len = strlen(var);
-					if (len >= n) {
-						len = n - 1;
-					}
-					strncpy(dest, var, len);
-					dest += len;
-					n -= len;
-				}
-				continue;
 			}
 		}
-
-		*dest++ = *s++;
-		n--;
 	}
 
-	*dest = '\0';
+	return s;
 }
 
 void format_seconds(char *buf, unsigned int n, long seconds)
