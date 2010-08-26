@@ -2797,21 +2797,6 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-#ifdef BUILD_X11
-		CONF("default_gauge_size") {
-			char err = 0;
-			if (value) {
-				if (sscanf(value, "%d %d", &default_gauge_width, &default_gauge_height) != 2) {
-					err = 1;
-				}
-			} else {
-				err = 1;
-			}
-			if (err) {
-				CONF_ERR2("default_gauge_size takes 2 integer arguments (ie. 'default_gauge_size 0 6')")
-			}
-		}
-#endif
 		CONF("music_player_interval") {
 			if (value) {
 				info.music_player_interval = strtod(value, 0);

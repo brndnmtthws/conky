@@ -80,11 +80,6 @@ struct special_t {
 extern struct special_t *specials;
 extern int special_count;
 
-#ifdef BUILD_X11
-extern int default_gauge_width;
-extern int default_gauge_height;
-#endif /* BUILD_X11 */
-
 /* forward declare to avoid mutual inclusion between specials.h and text_object.h */
 struct text_object;
 

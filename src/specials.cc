@@ -56,9 +56,13 @@ namespace {
 										std::numeric_limits<int>::max(), 0, false);
 	conky::range_config_setting<int> default_graph_height("default_graph_height", 0,
 										std::numeric_limits<int>::max(), 25, false);
+	
+	conky::range_config_setting<int> default_gauge_width("default_gauge_width", 0,
+										std::numeric_limits<int>::max(), 40, false);
+	conky::range_config_setting<int> default_gauge_height("default_gauge_height", 0,
+										std::numeric_limits<int>::max(), 25, false);
 #endif /* BUILD_X11 */
 }
-int default_gauge_width = 40, default_gauge_height = 25;
 
 /* special data types flags */
 #define SF_SCALED	(1 << 0)
@@ -108,8 +112,8 @@ const char *scan_gauge(struct text_object *obj, const char *args, double scale)
 	memset(g, 0, sizeof(struct gauge));
 
 	/*width and height*/
-	g->width = default_gauge_width;
-	g->height = default_gauge_height;
+	g->width = default_gauge_width.get(*state);
+	g->height = default_gauge_height.get(*state);
 
 	if (scale)
 		g->scale = scale;

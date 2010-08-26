@@ -126,13 +126,21 @@
     <varlistentry>
         <term>
             <command>
-                <option>default_gauge_size</option>
+                <option>default_gauge_height</option>
             </command>
         </term>
-        <listitem>Specify a default width and height for gauges.
-        Example: 'default_gauge_size 25 25'. This is particularly
-        useful for execgauge and execigauge as they do not take
-        size arguments 
+        <listitem>Specify a default height for gauges.  This is particularly useful for execgauge
+        and execigauge as they do not take size arguments 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>default_gauge_width</option>
+            </command>
+        </term>
+        <listitem>Specify a default width for gauges.  This is particularly useful for execgauge
+        and execigauge as they do not take size arguments 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
