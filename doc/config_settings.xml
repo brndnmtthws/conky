@@ -97,13 +97,21 @@
     <varlistentry>
         <term>
             <command>
-                <option>default_bar_size</option>
+                <option>default_bar_height</option>
             </command>
         </term>
-        <listitem>Specify a default width and height for bars.
-        Example: 'default_bar_size 0 6'. This is particularly
-        useful for execbar and execibar as they do not take size
-        arguments. 
+        <listitem>Specify a default height for bars.  This is particularly useful for execbar and
+        execibar as they do not take size arguments. 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>default_bar_width</option>
+            </command>
+        </term>
+        <listitem>Specify a default width for bars.  This is particularly useful for execbar and
+        execibar as they do not take size arguments. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>

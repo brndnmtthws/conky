@@ -45,7 +45,12 @@ struct special_t *specials = NULL;
 
 int special_count;
 
-int default_bar_width = 0, default_bar_height = 6;
+namespace {
+	conky::range_config_setting<int> default_bar_width("default_bar_width", 0,
+										std::numeric_limits<int>::max(), 0, false);
+	conky::range_config_setting<int> default_bar_height("default_bar_height", 0,
+										std::numeric_limits<int>::max(), 6, false);
+}
 #ifdef BUILD_X11
 int default_graph_width = 0, default_graph_height = 25;
 #endif /* BUILD_X11 */
@@ -131,8 +136,8 @@ const char *scan_bar(struct text_object *obj, const char *args, double scale)
 	memset(b, 0, sizeof(struct bar));
 
 	/* zero width means all space that is available */
-	b->width = default_bar_width;
-	b->height = default_bar_height;
+	b->width = default_bar_width.get(*state);
+	b->height = default_bar_height.get(*state);
 
 	if (scale)
 		b->scale = scale;

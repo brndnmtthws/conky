@@ -80,8 +80,6 @@ struct special_t {
 extern struct special_t *specials;
 extern int special_count;
 
-extern int default_bar_width;
-extern int default_bar_height;
 #ifdef BUILD_X11
 extern int default_graph_width;
 extern int default_graph_height;
