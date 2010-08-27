@@ -465,10 +465,6 @@ static conky::simple_config_setting<bool> utf8_mode("override_utf8_locale",
 
 #endif /* BUILD_X11 */
 
-#ifdef __OpenBSD__
-static int sensor_device;
-#endif
-
 /* maximum size of config TEXT buffer, i.e. below TEXT line. */
 unsigned int max_user_text;
 
@@ -2794,15 +2790,6 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-#ifdef __OpenBSD__
-		CONF("sensor_device") {
-			if (value) {
-				sensor_device = strtol(value, 0, 0);
-			} else {
-				CONF_ERR;
-			}
-		}
-#endif
 #ifdef BUILD_X11
 #ifdef BUILD_XFT
 		CONF("font") {

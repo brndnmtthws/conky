@@ -449,6 +449,8 @@ static struct obsd_sensors_struct {
        float volt[MAXSENSORDEVICES][OBSD_MAX_SENSORS];
 } obsd_sensors;
 
+static conky::simple_config_setting<int> sensor_device("sensor_device", 0, false);
+
 /* read sensors from sysctl */
 void update_obsd_sensors()
 {
@@ -524,7 +526,7 @@ void parse_obsd_sensor(struct text_object *obj, const char *arg)
 
 void print_obsd_sensors_temp(struct text_object *obj, char *p, int p_max_size)
 {
-	obsd_sensors.device = sensor_device;
+	obsd_sensors.device = sensor_device.get(*state);
 	update_obsd_sensors();
 	temp_print(p, p_max_size,
 			obsd_sensors.temp[obsd_sensors.device][obj->data.l],
@@ -533,7 +535,7 @@ void print_obsd_sensors_temp(struct text_object *obj, char *p, int p_max_size)
 
 void print_obsd_sensors_fan(struct text_object *obj, char *p, int p_max_size)
 {
-	obsd_sensors.device = sensor_device;
+	obsd_sensors.device = sensor_device.get(*state);
 	update_obsd_sensors();
 	snprintf(p, p_max_size, "%d",
 			obsd_sensors.fan[obsd_sensors.device][obj->data.l]);
@@ -541,7 +543,7 @@ void print_obsd_sensors_fan(struct text_object *obj, char *p, int p_max_size)
 
 void print_obsd_sensors_volt(struct text_object *obj, char *p, int p_max_size)
 {
-	obsd_sensors.device = sensor_device;
+	obsd_sensors.device = sensor_device.get(*state);
 	update_obsd_sensors();
 	snprintf(p, p_max_size, "%.2f",
 			obsd_sensors.volt[obsd_sensors.device][obj->data.l]);
