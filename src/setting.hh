@@ -308,7 +308,11 @@ namespace conky {
 	template<typename Signed1, typename Unsigned2>
 	bool between(Signed1 value, Unsigned2 min,
 				typename std::enable_if<std::is_unsigned<Unsigned2>::value, Unsigned2>::type max)
-	{ return value >= 0 && value >= min && value <= max; }
+	{
+		return value >= 0
+			&& static_cast<typename std::make_unsigned<Signed1>::type>(value) >= min
+			&& static_cast<typename std::make_unsigned<Signed1>::type>(value) <= max;
+	}
 
 	// Just like simple_config_setting, except that in only accepts value in the [min, max] range
 	template<typename T, typename Traits = lua_traits<T>>
