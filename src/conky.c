@@ -70,6 +70,9 @@
 #ifdef XOAP
 #include <libxml/parser.h>
 #endif /* XOAP */
+#ifdef HAVE_CURL
+#include <curl/curl.h>
+#endif
 
 /* local headers */
 #include "core.h"
@@ -5894,6 +5897,11 @@ int main(int argc, char **argv)
 	tcp_portmon_set_max_connections(0);
 #endif
 
+#ifdef HAVE_CURL
+	if(curl_global_init(CURL_GLOBAL_ALL))
+		NORM_ERR("curl_global_init() failed, you may not be able to use curl variables");
+#endif
+
 	/* handle command line parameters that don't change configs */
 #ifdef X11
 	if (((s = getenv("LC_ALL")) && *s) || ((s = getenv("LC_CTYPE")) && *s)
@@ -5984,6 +5992,10 @@ int main(int argc, char **argv)
 	first_pass = 0; /* don't ever call fork() again */
 
 	main_loop();
+
+#ifdef HAVE_CURL
+	curl_global_cleanup();
+#endif
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 	kvm_close(kd);
