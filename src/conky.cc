@@ -77,6 +77,9 @@
 #if defined BUILD_WEATHER_XOAP || defined BUILD_RSS
 #include <libxml/parser.h>
 #endif
+#ifdef BUILD_CURL
+#include <curl/curl.h>
+#endif
 
 /* local headers */
 #include "core.h"
@@ -4401,6 +4404,11 @@ int main(int argc, char **argv)
 	tcp_portmon_set_max_connections(0);
 #endif
 
+#ifdef BUILD_CURL
+	if(curl_global_init(CURL_GLOBAL_ALL))
+		NORM_ERR("curl_global_init() failed, you may not be able to use curl variables");
+#endif
+
 	/* handle command line parameters that don't change configs */
 #ifdef BUILD_X11
 	if(isutf8("LC_ALL") || isutf8("LC_CTYPE") || isutf8("LANG")) {
@@ -4479,6 +4487,10 @@ int main(int argc, char **argv)
 	first_pass = 0; /* don't ever call fork() again */
 
 	main_loop();
+
+#ifdef BUILD_CURL
+	curl_global_cleanup();
+#endif
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 	kvm_close(kd);

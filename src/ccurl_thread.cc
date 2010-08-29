@@ -105,34 +105,31 @@ void ccurl_fetch_data(thread_handle &handle, const ccurl_location_ptr &curloc)
 	chunk.memory = NULL;
 	chunk.size = 0;
 
-	if (curl_global_init(CURL_GLOBAL_ALL) == 0) {
-		curl = curl_easy_init();
-		if (curl) {
-			DBGP("reading curl data from '%s'", curloc->uri);
-			curl_easy_setopt(curl, CURLOPT_URL, curloc->uri);
-			curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1);
-			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ccurl_write_memory_callback);
-			curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &chunk);
-			curl_easy_setopt(curl, CURLOPT_USERAGENT, "conky-curl/1.0");
+	curl = curl_easy_init();
+	if (curl) {
+		DBGP("reading curl data from '%s'", curloc->uri);
+		curl_easy_setopt(curl, CURLOPT_URL, curloc->uri);
+		curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ccurl_write_memory_callback);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &chunk);
+		curl_easy_setopt(curl, CURLOPT_USERAGENT, "conky-curl/1.0");
 
-			res = curl_easy_perform(curl);
-			if (res == CURLE_OK && chunk.size) {
-				long http_status_code;
+		res = curl_easy_perform(curl);
+		if (res == CURLE_OK && chunk.size) {
+			long http_status_code;
 
-				if(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_status_code) == CURLE_OK && http_status_code == 200) {
-					std::lock_guard<std::mutex> lock(handle.mutex());
-					curloc->process_function(curloc->result, chunk.memory);
-				} else {
-					NORM_ERR("curl: no data from server");
-				}
-				free(chunk.memory);
+			if(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_status_code) == CURLE_OK && http_status_code == 200) {
+				std::lock_guard<std::mutex> lock(handle.mutex());
+				curloc->process_function(curloc->result, chunk.memory);
 			} else {
 				NORM_ERR("curl: no data from server");
 			}
-
-			curl_easy_cleanup(curl);
+			free(chunk.memory);
+		} else {
+			NORM_ERR("curl: no data from server");
 		}
-		curl_global_cleanup();
+
+		curl_easy_cleanup(curl);
 	}
 }
 
