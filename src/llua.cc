@@ -42,6 +42,8 @@ void llua_rm_notifies(void);
 static int llua_block_notify = 0;
 #endif /* HAVE_SYS_INOTIFY_H */
 
+static void llua_load(const char *script);
+
 #define MIN(a, b) ( (a) < (b) ? (a) : (b) )
 
 static char *draw_pre_hook = 0;
@@ -50,6 +52,57 @@ static char *startup_hook = 0;
 static char *shutdown_hook = 0;
 
 lua_State *lua_L = NULL;
+
+namespace {
+	class lua_load_setting: public conky::simple_config_setting<std::string> {
+		typedef conky::simple_config_setting<std::string> Base;
+
+	protected:
+		void lua_setter(lua::state &l, bool init)
+		{
+			lua::stack_sentry s(l, -2);
+
+			Base::lua_setter(l, init);
+
+			if(init) {
+				std::string files = do_convert(l, -1).first;
+				while(not files.empty()) {
+					std::string::size_type pos = files.find(' ');
+					if(pos > 0) {
+						std::string file(files, 0, pos);
+						llua_load(file.c_str());
+					}
+					files.erase(0, pos==std::string::npos ? pos : pos+1);
+				}
+			}
+
+			++s;
+		}
+
+		void cleanup(lua::state &l)
+		{
+			lua::stack_sentry s(l, -1);
+
+#ifdef HAVE_SYS_INOTIFY_H
+			llua_rm_notifies();
+#endif /* HAVE_SYS_INOTIFY_H */
+			free_and_zero(draw_pre_hook);
+			free_and_zero(draw_post_hook);
+			free_and_zero(startup_hook);
+			free_and_zero(shutdown_hook);
+			if(!lua_L) return;
+			lua_close(lua_L);
+			lua_L = NULL;
+		}
+
+	public:
+		lua_load_setting()
+			: Base("lua_load", std::string(), false)
+		{}
+	};
+
+	lua_load_setting lua_load;
+}
 
 static int llua_conky_parse(lua_State *L)
 {
@@ -317,20 +370,6 @@ static int llua_getnumber(const char *args, double *ret)
 		}
 	}
 	return 0;
-}
-
-void llua_close(void)
-{
-#ifdef HAVE_SYS_INOTIFY_H
-	llua_rm_notifies();
-#endif /* HAVE_SYS_INOTIFY_H */
-	free_and_zero(draw_pre_hook);
-	free_and_zero(draw_post_hook);
-	free_and_zero(startup_hook);
-	free_and_zero(shutdown_hook);
-	if(!lua_L) return;
-	lua_close(lua_L);
-	lua_L = NULL;
 }
 
 #ifdef HAVE_SYS_INOTIFY_H

@@ -2566,7 +2566,6 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2)
 #endif
 #ifdef BUILD_LUA
 	llua_shutdown_hook();
-	llua_close();
 #endif /* BUILD_LUA */
 #if defined BUILD_WEATHER_XOAP || defined BUILD_RSS
 	xmlCleanupParser();
@@ -2897,17 +2896,6 @@ char load_config_file(const char *f)
 			break;
 		}
 #ifdef BUILD_LUA
-		CONF("lua_load") {
-			if (value) {
-				char *ptr = strtok(value, " ");
-				while (ptr) {
-					llua_load(ptr);
-					ptr = strtok(NULL, " ");
-				}
-			} else {
-				CONF_ERR;
-			}
-		}
 #ifdef BUILD_X11
 		CONF("lua_draw_hook_pre") {
 			if (value) {
@@ -3390,7 +3378,7 @@ int main(int argc, char **argv)
 				"conky.config = { alignment='top_left', asdf=47, [42]=47, out_to_x=true,\n"
 				"    own_window_hints='above, skip_taskbar',\n"
 				"    background_colour='pink', own_window=true, double_buffer=true,\n"
-				"    mpd_port=-47};\n"
+				"    lua_load='asdf    qq/q'};\n"
 				);
 		l.call(0, 0);
 		conky::set_config_settings(l);

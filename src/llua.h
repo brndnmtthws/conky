@@ -39,10 +39,6 @@ extern "C" {
 
 #define LUAPREFIX "conky_"
 
-/* load a lua script */
-void llua_load(const char *script);
-/* close lua stuff */
-void llua_close(void);
 #ifdef HAVE_SYS_INOTIFY_H
 /* check our lua inotify status */
 void llua_inotify_query(int wd, int mask);
