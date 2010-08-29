@@ -399,7 +399,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		} else {
 			strcpy(bat, "BAT0");
 		}
-		obj->data.s = strndup(bat, text_buffer_size);
+		obj->data.s = strndup(bat, text_buffer_size.get(*state));
 		obj->callbacks.print = &print_battery;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(battery_short, 0)
@@ -410,7 +410,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		} else {
 			strcpy(bat, "BAT0");
 		}
-		obj->data.s = strndup(bat, text_buffer_size);
+		obj->data.s = strndup(bat, text_buffer_size.get(*state));
 		obj->callbacks.print = &print_battery_short;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(battery_time, 0)
@@ -421,7 +421,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		} else {
 			strcpy(bat, "BAT0");
 		}
-		obj->data.s = strndup(bat, text_buffer_size);
+		obj->data.s = strndup(bat, text_buffer_size.get(*state));
 		obj->callbacks.print = &print_battery_time;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(battery_percent, 0)
@@ -432,7 +432,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		} else {
 			strcpy(bat, "BAT0");
 		}
-		obj->data.s = strndup(bat, text_buffer_size);
+		obj->data.s = strndup(bat, text_buffer_size.get(*state));
 		obj->callbacks.percentage = &battery_percentage;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(battery_bar, 0)
@@ -444,14 +444,14 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		} else {
 			strcpy(bat, "BAT0");
 		}
-		obj->data.s = strndup(bat, text_buffer_size);
+		obj->data.s = strndup(bat, text_buffer_size.get(*state));
 		obj->callbacks.barval = &get_battery_perct_bar;
 		obj->callbacks.free = &gen_free_opaque;
 #endif /* !__OpenBSD__ */
 
 #if defined(__linux__)
 	END OBJ_ARG(disk_protect, 0, "disk_protect needs an argument")
-		obj->data.s = strndup(dev_name(arg), text_buffer_size);
+		obj->data.s = strndup(dev_name(arg), text_buffer_size.get(*state));
 		obj->callbacks.print = &print_disk_protect_queue;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(i8k_version, &update_i8k)
@@ -493,7 +493,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.iftest = &gateway_exists;
 		obj->callbacks.free = &free_gateway_info;
 	END OBJ_ARG(ioscheduler, 0, "get_ioscheduler needs an argument (e.g. hda)")
-		obj->data.s = strndup(dev_name(arg), text_buffer_size);
+		obj->data.s = strndup(dev_name(arg), text_buffer_size.get(*state));
 		obj->callbacks.print = &print_ioscheduler;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(laptop_mode, 0)
@@ -691,12 +691,12 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj_be_ifblock_endif(ifblock_opaque, obj);
 		obj->callbacks.print = &gen_print_nothing;
 	END OBJ(eval, 0)
-		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
+		obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
 		obj->callbacks.print = &print_evaluate;
 		obj->callbacks.free = &gen_free_opaque;
 #if defined(BUILD_IMLIB2) && defined(BUILD_X11)
 	END OBJ(image, 0)
-		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
+		obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
 		obj->callbacks.print = &print_image_callback;
 		obj->callbacks.free = &gen_free_opaque;
 #endif /* BUILD_IMLIB2 */
@@ -868,11 +868,11 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.print = &print_head;
 		obj->callbacks.free = &free_tailhead;
 	END OBJ_ARG(lines, 0, "lines needs an argument")
-		obj->data.s = strndup(arg, text_buffer_size);
+		obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		obj->callbacks.print = &print_lines;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(words, 0, "words needs a argument")
-		obj->data.s = strndup(arg, text_buffer_size);
+		obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		obj->callbacks.print = &print_words;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ(loadavg, &update_load_average)
@@ -887,25 +887,25 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		extract_variable_text_internal(obj->sub, arg);
 		obj->callbacks.iftest = &check_if_match;
 	END OBJ_IF_ARG(if_existing, 0, "if_existing needs an argument or two")
-		obj->data.s = strndup(arg, text_buffer_size);
+		obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		obj->callbacks.iftest = &if_existing_iftest;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_IF_ARG(if_mounted, 0, "if_mounted needs an argument")
-		obj->data.s = strndup(arg, text_buffer_size);
+		obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		obj->callbacks.iftest = &check_mount;
 		obj->callbacks.free = &gen_free_opaque;
 #ifdef __linux__
 	END OBJ_IF_ARG(if_running, &update_top, "if_running needs an argument")
 		top_running = 1;
-		obj->data.s = strndup(arg, text_buffer_size);
+		obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		obj->callbacks.iftest = &if_running_iftest;
 		obj->callbacks.free = &gen_free_opaque;
 #else
 	END OBJ_IF_ARG(if_running, 0, "if_running needs an argument")
-		char buf[text_buffer_size];
+		char buf[text_buffer_size.get(*state)];
 
-		snprintf(buf, text_buffer_size, "pidof %s >/dev/null", arg);
-		obj->data.s = strndup(buf, text_buffer_size);
+		snprintf(buf, text_buffer_size.get(*state), "pidof %s >/dev/null", arg);
+		obj->data.s = strndup(buf, text_buffer_size.get(*state));
 		/* XXX: maybe use a different callback here */
 		obj->callbacks.iftest = &if_running_iftest;
 #endif
@@ -1285,7 +1285,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.print = &print_user_times;
 		obj->callbacks.free = &free_user_times;
 	END OBJ_ARG(user_time, 0, "user time needs a console name as argument")
-		obj->data.s = strndup(arg, text_buffer_size);
+		obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		obj->callbacks.print = &print_user_time;
 		obj->callbacks.free = &free_user_time;
 	END OBJ(user_terms, &update_users)
@@ -1327,23 +1327,23 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.free = &free_mail_obj;
 #ifdef BUILD_IBM
 	END OBJ_ARG(smapi, 0, "smapi needs an argument")
-		obj->data.s = strndup(arg, text_buffer_size);
+		obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		obj->callbacks.print = &print_smapi;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_IF_ARG(if_smapi_bat_installed, 0, "if_smapi_bat_installed needs an argument")
-		obj->data.s = strndup(arg, text_buffer_size);
+		obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		obj->callbacks.iftest = &smapi_bat_installed;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(smapi_bat_perc, 0, "smapi_bat_perc needs an argument")
-		obj->data.s = strndup(arg, text_buffer_size);
+		obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		obj->callbacks.percentage = &smapi_bat_percentage;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(smapi_bat_temp, 0, "smapi_bat_temp needs an argument")
-		obj->data.s = strndup(arg, text_buffer_size);
+		obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		obj->callbacks.print = &print_smapi_bat_temp;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(smapi_bat_power, 0, "smapi_bat_power needs an argument")
-		obj->data.s = strndup(arg, text_buffer_size);
+		obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		obj->callbacks.print = &print_smapi_bat_power;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(smapi_bat_bar, 0, "smapi_bat_bar needs an argument")
@@ -1624,17 +1624,17 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 #endif /* BUILD_WEATHER_XOAP */
 #ifdef BUILD_LUA
 	END OBJ_ARG(lua, 0, "lua needs arguments: <function name> [function parameters]")
-		obj->data.s = strndup(arg, text_buffer_size);
+		obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		obj->callbacks.print = &print_lua;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(lua_parse, 0, "lua_parse needs arguments: <function name> [function parameters]")
-		obj->data.s = strndup(arg, text_buffer_size);
+		obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		obj->callbacks.print = &print_lua_parse;
 		obj->callbacks.free = &gen_free_opaque;
 	END OBJ_ARG(lua_bar, 0, "lua_bar needs arguments: <height>,<width> <function name> [function parameters]")
 		arg = scan_bar(obj, arg, 100);
 		if(arg) {
-			obj->data.s = strndup(arg, text_buffer_size);
+			obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		} else {
 			CRIT_ERR(obj, free_at_crash, "lua_bar needs arguments: <height>,<width> <function name> [function parameters]");
 		}
@@ -1655,7 +1655,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 	END OBJ_ARG(lua_gauge, 0, "lua_gauge needs arguments: <height>,<width> <function name> [function parameters]")
 		arg = scan_gauge(obj, arg, 100);
 		if (arg) {
-			obj->data.s = strndup(arg, text_buffer_size);
+			obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		} else {
 			CRIT_ERR(obj, free_at_crash, "lua_gauge needs arguments: <height>,<width> <function name> [function parameters]");
 		}
@@ -1665,7 +1665,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 #ifdef BUILD_HDDTEMP
 	END OBJ(hddtemp, &update_hddtemp)
 		if (arg)
-			obj->data.s = strndup(arg, text_buffer_size);
+			obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		obj->callbacks.print = &print_hddtemp;
 		obj->callbacks.free = &free_hddtemp;
 #endif /* BUILD_HDDTEMP */
@@ -1776,10 +1776,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.print = &print_apcupsd_lastxfer;
 #endif /* BUILD_APCUPSD */
 	END {
-		char *buf = (char *)malloc(text_buffer_size);
+		char *buf = (char *)malloc(text_buffer_size.get(*state));
 
 		NORM_ERR("unknown variable '$%s'", s);
-		snprintf(buf, text_buffer_size, "${%s}", s);
+		snprintf(buf, text_buffer_size.get(*state), "${%s}", s);
 		obj_be_plain_text(obj, buf);
 		free(buf);
 	}
@@ -1874,7 +1874,7 @@ int extract_variable_text_internal(struct text_object *retval, const char *const
 			s = p;
 
 			if (*p != '$') {
-				char *buf = (char *)malloc(text_buffer_size);
+				char *buf = (char *)malloc(text_buffer_size.get(*state));
 				const char *var;
 
 				/* variable is either $foo or ${foo} */
@@ -1904,7 +1904,7 @@ int extract_variable_text_internal(struct text_object *retval, const char *const
 				}
 
 				/* copy variable to buffer */
-				len = (p - s > (int)text_buffer_size-1) ? (int)text_buffer_size-1 : (p - s);
+				len = (p - s > (int)text_buffer_size.get(*state)-1) ? (int)text_buffer_size.get(*state)-1 : (p - s);
 				strncpy(buf, s, len);
 				buf[len] = '\0';
 

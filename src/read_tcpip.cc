@@ -53,7 +53,7 @@ void parse_read_tcpip_arg(struct text_object *obj, const char *arg, void *free_a
 	rtd = (struct read_tcpip_data *) malloc(sizeof(struct read_tcpip_data));
 	memset(rtd, 0, sizeof(struct read_tcpip_data));
 
-	rtd->host = (char *) malloc(text_buffer_size);
+	rtd->host = (char *) malloc(text_buffer_size.get(*state));
 	sscanf(arg, "%s", rtd->host);
 	sscanf(arg+strlen(rtd->host), "%u", &(rtd->port));
 	if(rtd->port == 0) {

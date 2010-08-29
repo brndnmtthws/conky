@@ -205,11 +205,11 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale)
 			return NULL;
 		}
 		if (sscanf(args, "%1023s %d,%d %x %x %lf", buf, &g->height, &g->width, &g->first_colour, &g->last_colour, &g->scale) == 6) {
-			return strndup(buf, text_buffer_size);
+			return strndup(buf, text_buffer_size.get(*state));
 		}
 		g->scale = defscale;
 		if (sscanf(args, "%1023s %d,%d %x %x", buf, &g->height, &g->width, &g->first_colour, &g->last_colour) == 5) {
-			return strndup(buf, text_buffer_size);
+			return strndup(buf, text_buffer_size.get(*state));
 		}
 		buf[0] = '\0';
 		g->height = 25;
@@ -222,11 +222,11 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale)
 			return NULL;
 		}
 		if (sscanf(args, "%1023s %x %x %lf", buf, &g->first_colour, &g->last_colour, &g->scale) == 4) {
-			return strndup(buf, text_buffer_size);
+			return strndup(buf, text_buffer_size.get(*state));
 		}
 		g->scale = defscale;
 		if (sscanf(args, "%1023s %x %x", buf, &g->first_colour, &g->last_colour) == 3) {
-			return strndup(buf, text_buffer_size);
+			return strndup(buf, text_buffer_size.get(*state));
 		}
 		buf[0] = '\0';
 		g->first_colour = 0;
@@ -245,13 +245,13 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale)
 		}
 #undef g
 
-		return strndup(buf, text_buffer_size);
+		return strndup(buf, text_buffer_size.get(*state));
 	}
 
 	if (buf[0] == '\0') {
 		return NULL;
 	} else {
-		return strndup(buf, text_buffer_size);
+		return strndup(buf, text_buffer_size.get(*state));
 	}
 }
 #endif /* BUILD_X11 */

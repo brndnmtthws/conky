@@ -188,7 +188,7 @@ int update_mpd(void)
 }
 
 /* stringMAXdup dups at most text_buffer_size bytes */
-#define strmdup(x) strndup(x, text_buffer_size - 1)
+#define strmdup(x) strndup(x, text_buffer_size.get(*state) - 1)
 
 #define SONGSET(x) {                            \
 	free(mpd_info.x);                       \

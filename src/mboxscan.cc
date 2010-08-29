@@ -65,7 +65,7 @@ static void mbox_scan(char *args, char *output, size_t max_len)
 {
 	int i, u, flag;
 	int force_rescan = 0;
-	std::unique_ptr<char []> buf_(new char[text_buffer_size]);
+	std::unique_ptr<char []> buf_(new char[text_buffer_size.get(*state)]);
 	char *buf = buf_.get();
 	struct stat statbuf;
 	struct ring_list *curr = 0, *prev = 0, *startlist = 0;
@@ -128,7 +128,7 @@ static void mbox_scan(char *args, char *output, size_t max_len)
 			start[(long) (strrchr(mbox_mail_spool, '"') - start)] = '\0';
 			strncpy(mbox_mail_spool, start, DEFAULT_TEXT_BUFFER_SIZE);
 		} else {
-			char *copy_args = strndup(args, text_buffer_size);
+			char *copy_args = strndup(args, text_buffer_size.get(*state));
 			char *tmp = strtok(copy_args, " ");
 			char *start = tmp;
 
@@ -213,7 +213,7 @@ static void mbox_scan(char *args, char *output, size_t max_len)
 	/* first find a "From " to set it to 0 for header-sarchings */
 	flag = 1;
 	while (!feof(fp)) {
-		if (fgets(buf, text_buffer_size, fp) == NULL) {
+		if (fgets(buf, text_buffer_size.get(*state), fp) == NULL) {
 			break;
 		}
 
@@ -222,7 +222,7 @@ static void mbox_scan(char *args, char *output, size_t max_len)
 
 			/* skip until \n */
 			while (strchr(buf, '\n') == NULL && !feof(fp)) {
-				if (!fgets(buf, text_buffer_size, fp))
+				if (!fgets(buf, text_buffer_size.get(*state), fp))
 					break;
 			}
 
@@ -239,7 +239,7 @@ static void mbox_scan(char *args, char *output, size_t max_len)
 			/* then search for new mail ("From ") */
 
 			while (strchr(buf, '\n') == NULL && !feof(fp)) {
-				if (!fgets(buf, text_buffer_size, fp))
+				if (!fgets(buf, text_buffer_size.get(*state), fp))
 					break;
 			}
 			flag = 1;	/* in the body now */
@@ -257,7 +257,7 @@ static void mbox_scan(char *args, char *output, size_t max_len)
 			curr = curr->previous;
 			/* Skip until \n */
 			while (strchr(buf, '\n') == NULL && !feof(fp)) {
-				if (!fgets(buf, text_buffer_size, fp))
+				if (!fgets(buf, text_buffer_size.get(*state), fp))
 					break;
 			}
 			continue;
@@ -281,7 +281,7 @@ static void mbox_scan(char *args, char *output, size_t max_len)
 					curr->from[i] = '\0';
 					/* skip until \n */
 					while (strchr(buf, '\n') == NULL && !feof(fp)) {
-						if (!fgets(buf, text_buffer_size, fp))
+						if (!fgets(buf, text_buffer_size.get(*state), fp))
 							break;
 					}
 					break;
@@ -301,7 +301,7 @@ static void mbox_scan(char *args, char *output, size_t max_len)
 					curr->from[i] = '\0';
 					/* skip until \n */
 					while (strchr(buf, '\n') == NULL && !feof(fp)) {
-						if (!fgets(buf, text_buffer_size, fp))
+						if (!fgets(buf, text_buffer_size.get(*state), fp))
 							break;
 					}
 					break;
@@ -332,7 +332,7 @@ static void mbox_scan(char *args, char *output, size_t max_len)
 
 					/* skip until \n */
 					while (strchr(buf, '\n') == NULL && !feof(fp)) {
-						if (!fgets(buf, text_buffer_size, fp))
+						if (!fgets(buf, text_buffer_size.get(*state), fp))
 							break;
 					}
 					break;
@@ -353,14 +353,14 @@ static void mbox_scan(char *args, char *output, size_t max_len)
 		struct ring_list *tmp;
 		if (curr->from[0] != '\0') {
 			if (i != print_num_mails) {
-				snprintf(buf, text_buffer_size, "\nF: %-*s S: %-*s", from_width,
+				snprintf(buf, text_buffer_size.get(*state), "\nF: %-*s S: %-*s", from_width,
 					curr->from, subject_width, curr->subject);
 			} else {	/* first time - no \n in front */
-				snprintf(buf, text_buffer_size, "F: %-*s S: %-*s", from_width,
+				snprintf(buf, text_buffer_size.get(*state), "F: %-*s S: %-*s", from_width,
 					curr->from, subject_width, curr->subject);
 			}
 		} else {
-			snprintf(buf, text_buffer_size, "\n");
+			snprintf(buf, text_buffer_size.get(*state), "\n");
 		}
 		strncat(output, buf, max_len - strlen(output));
 
@@ -386,8 +386,8 @@ void parse_mboxscan_arg(struct text_object *obj, const char *arg)
 	msd = (mboxscan_data*) malloc(sizeof(struct mboxscan_data));
 	memset(msd, 0, sizeof(struct mboxscan_data));
 
-	msd->args = strndup(arg, text_buffer_size);
-	msd->output = (char *) malloc(text_buffer_size);
+	msd->args = strndup(arg, text_buffer_size.get(*state));
+	msd->output = (char *) malloc(text_buffer_size.get(*state));
 	/* if '1' (in mboxscan.c) then there was SIGUSR1, hmm */
 	msd->output[0] = 1;
 
@@ -401,7 +401,7 @@ void print_mboxscan(struct text_object *obj, char *p, int p_max_size)
 	if (!msd)
 		return;
 
-	mbox_scan(msd->args, msd->output, text_buffer_size);
+	mbox_scan(msd->args, msd->output, text_buffer_size.get(*state));
 	snprintf(p, p_max_size, "%s", msd->output);
 }
 

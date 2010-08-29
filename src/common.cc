@@ -462,8 +462,8 @@ void scan_no_update(struct text_object *obj, const char *arg)
 {
 	struct text_object subroot;
 
-	obj->data.s = (char*) malloc(text_buffer_size);
-	parse_conky_vars(&subroot, arg, obj->data.s, text_buffer_size);
+	obj->data.s = (char*) malloc(text_buffer_size.get(*state));
+	parse_conky_vars(&subroot, arg, obj->data.s, text_buffer_size.get(*state));
 	obj->data.s = (char*) realloc(obj->data.s, strlen(obj->data.s) + 1);
 	free_text_objects(&subroot);
 }

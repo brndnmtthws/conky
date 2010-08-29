@@ -132,7 +132,7 @@ struct text_object;
 
 /* A size for temporary, static buffers to use when
  * one doesn't know what to choose. Defaults to 256.  */
-extern unsigned int text_buffer_size;
+extern conky::range_config_setting<unsigned int> text_buffer_size;
 
 struct usr_info {
 	char *names;

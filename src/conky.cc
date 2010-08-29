@@ -470,7 +470,9 @@ conky::range_config_setting<unsigned int> max_user_text("max_user_text", 47,
 					std::numeric_limits<unsigned int>::max(), MAX_USER_TEXT_DEFAULT, false);
 
 /* maximum size of individual text buffers, ie $exec buffer size */
-unsigned int text_buffer_size = DEFAULT_TEXT_BUFFER_SIZE;
+conky::range_config_setting<unsigned int> text_buffer_size("text_buffer_size",
+				DEFAULT_TEXT_BUFFER_SIZE, std::numeric_limits<unsigned int>::max(),
+				DEFAULT_TEXT_BUFFER_SIZE, false);
 
 /* pad percentages to decimals? */
 static conky::simple_config_setting<int> pad_percents("pad_percents", 0, false);
@@ -896,12 +898,13 @@ static void generate_text(void)
 
 	generate_text_internal(p, max_user_text.get(*state), global_root_object);
 	unsigned int mw = max_text_width.get(*state);
+	unsigned int tbs = text_buffer_size.get(*state);
 	if(mw > 0) {
 		for(i = 0, j = 0; p[i] != 0; i++) {
 			if(p[i] == '\n') j = 0;
 			else if(j == mw) {
 				k = i + strlen(p + i) + 1;
-				if(k < text_buffer_size) {
+				if(k < tbs) {
 					while(k != i) {
 						p[k] = p[k-1];
 						k--;
@@ -965,7 +968,7 @@ static int get_string_width_special(char *s, int special_index)
 	if (not out_to_x.get(*state))
 		return strlen(s);
 
-	p = strndup(s, text_buffer_size);
+	p = strndup(s, text_buffer_size.get(*state));
 	final = p;
 
 	for(i = 0; i < special_index; i++)
@@ -1279,9 +1282,10 @@ static void draw_string(const char *s)
 	}
 #endif
 	free(s_with_newlines);
-	memset(tmpstring1, 0, text_buffer_size);
-	memset(tmpstring2, 0, text_buffer_size);
-	strncpy(tmpstring1, s, text_buffer_size - 1);
+	int tbs = text_buffer_size.get(*state);
+	memset(tmpstring1, 0, tbs);
+	memset(tmpstring2, 0, tbs);
+	strncpy(tmpstring1, s, tbs - 1);
 	pos = 0;
 	added = 0;
 
@@ -1293,18 +1297,18 @@ static void draw_string(const char *s)
 	/* This code looks for tabs in the text and coverts them to spaces.
 	 * The trick is getting the correct number of spaces, and not going
 	 * over the window's size without forcing the window larger. */
-	for (i = 0; i < (int) text_buffer_size; i++) {
+	for (i = 0; i < tbs; i++) {
 		if (tmpstring1[i] == '\t') {
 			i2 = 0;
 			for (i2 = 0; i2 < (8 - (1 + pos) % 8) && added <= max; i2++) {
 				/* guard against overrun */
-				tmpstring2[MIN(pos + i2, (int)text_buffer_size - 1)] = ' ';
+				tmpstring2[MIN(pos + i2, tbs - 1)] = ' ';
 				added++;
 			}
 			pos += i2;
 		} else {
 			/* guard against overrun */
-			tmpstring2[MIN(pos, (int) text_buffer_size - 1)] = tmpstring1[i];
+			tmpstring2[MIN(pos, tbs - 1)] = tmpstring1[i];
 			pos++;
 		}
 	}
@@ -1354,7 +1358,7 @@ static void draw_string(const char *s)
 		cur_x += width_of_s;
 	}
 #endif /* BUILD_X11 */
-	memcpy(tmpstring1, s, text_buffer_size);
+	memcpy(tmpstring1, s, tbs);
 }
 
 int draw_each_line_inner(char *s, int special_index, int last_special_applied)
@@ -2837,17 +2841,6 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-		CONF("text_buffer_size") {
-			if (value) {
-				text_buffer_size = atoi(value);
-				if (text_buffer_size < DEFAULT_TEXT_BUFFER_SIZE) {
-					NORM_ERR("text_buffer_size must be >=%i bytes", DEFAULT_TEXT_BUFFER_SIZE);
-					text_buffer_size = DEFAULT_TEXT_BUFFER_SIZE;
-				}
-			} else {
-				CONF_ERR;
-			}
-		}
 		CONF("text") {
 			free_and_zero(global_text);
 
@@ -3230,10 +3223,10 @@ void initialisation(int argc, char **argv) {
 
 	text_buffer = (char*)malloc(max_user_text.get(*state));
 	memset(text_buffer, 0, max_user_text.get(*state));
-	tmpstring1 = (char*)malloc(text_buffer_size);
-	memset(tmpstring1, 0, text_buffer_size);
-	tmpstring2 = (char*)malloc(text_buffer_size);
-	memset(tmpstring2, 0, text_buffer_size);
+	tmpstring1 = (char*)malloc(text_buffer_size.get(*state));
+	memset(tmpstring1, 0, text_buffer_size.get(*state));
+	tmpstring2 = (char*)malloc(text_buffer_size.get(*state));
+	memset(tmpstring2, 0, text_buffer_size.get(*state));
 
 #ifdef BUILD_X11
 	X11_create_window();

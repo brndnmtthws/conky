@@ -70,7 +70,7 @@ static void update_infos(void)
 	free_moc(NULL);
 	fp = popen("mocp -i", "r");
 	if (!fp) {
-		moc.state = strndup("Can't run 'mocp -i'", text_buffer_size);
+		moc.state = strndup("Can't run 'mocp -i'", text_buffer_size.get(*state));
 		return;
 	}
 
@@ -86,27 +86,27 @@ static void update_infos(void)
 
 		/* Parse infos. */
 		if (strncmp(line, "State:", 6) == 0)
-			moc.state = strndup(line + 7, text_buffer_size);
+			moc.state = strndup(line + 7, text_buffer_size.get(*state));
 		else if (strncmp(line, "File:", 5) == 0)
-			moc.file = strndup(line + 6, text_buffer_size);
+			moc.file = strndup(line + 6, text_buffer_size.get(*state));
 		else if (strncmp(line, "Title:", 6) == 0)
-			moc.title = strndup(line + 7, text_buffer_size);
+			moc.title = strndup(line + 7, text_buffer_size.get(*state));
 		else if (strncmp(line, "Artist:", 7) == 0)
-			moc.artist = strndup(line + 8, text_buffer_size);
+			moc.artist = strndup(line + 8, text_buffer_size.get(*state));
 		else if (strncmp(line, "SongTitle:", 10) == 0)
-			moc.song = strndup(line + 11, text_buffer_size);
+			moc.song = strndup(line + 11, text_buffer_size.get(*state));
 		else if (strncmp(line, "Album:", 6) == 0)
-			moc.album = strndup(line + 7, text_buffer_size);
+			moc.album = strndup(line + 7, text_buffer_size.get(*state));
 		else if (strncmp(line, "TotalTime:", 10) == 0)
-			moc.totaltime = strndup(line + 11, text_buffer_size);
+			moc.totaltime = strndup(line + 11, text_buffer_size.get(*state));
 		else if (strncmp(line, "TimeLeft:", 9) == 0)
-			moc.timeleft = strndup(line + 10, text_buffer_size);
+			moc.timeleft = strndup(line + 10, text_buffer_size.get(*state));
 		else if (strncmp(line, "CurrentTime:", 12) == 0)
-			moc.curtime = strndup(line + 13, text_buffer_size);
+			moc.curtime = strndup(line + 13, text_buffer_size.get(*state));
 		else if (strncmp(line, "Bitrate:", 8) == 0)
-			moc.bitrate = strndup(line + 9, text_buffer_size);
+			moc.bitrate = strndup(line + 9, text_buffer_size.get(*state));
 		else if (strncmp(line, "Rate:", 5) == 0)
-			moc.rate = strndup(line + 6, text_buffer_size);
+			moc.rate = strndup(line + 6, text_buffer_size.get(*state));
 	}
 
 	pclose(fp);

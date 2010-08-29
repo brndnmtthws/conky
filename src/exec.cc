@@ -177,9 +177,9 @@ static double read_exec_barnum(const char *data)
 	char *buf = NULL;
 	double barnum;
 
-	buf = (char*)malloc(text_buffer_size);
+	buf = (char*)malloc(text_buffer_size.get(*state));
 
-	read_exec(data, buf, text_buffer_size);
+	read_exec(data, buf, text_buffer_size.get(*state));
 	barnum = get_barnum(buf);
 	free(buf);
 
@@ -192,8 +192,8 @@ static void threaded_exec(thread_handle &handle, struct text_object *obj)
 	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
 
 	while (1) {
-		buff = (char*)malloc(text_buffer_size);
-		read_exec(ed->cmd, buff, text_buffer_size);
+		buff = (char*)malloc(text_buffer_size.get(*state));
+		read_exec(ed->cmd, buff, text_buffer_size.get(*state));
 		p2 = buff;
 		while (*p2) {
 			if (*p2 == '\001') {
@@ -228,7 +228,7 @@ void scan_exec_arg(struct text_object *obj, const char *arg)
 {
 	/* XXX: do real bar parsing here */
 	scan_bar(obj, "", 100);
-	obj->data.s = strndup(arg ? arg : "", text_buffer_size);
+	obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
 }
 
 void scan_pre_exec_arg(struct text_object *obj, const char *arg)
@@ -251,7 +251,7 @@ void scan_execi_arg(struct text_object *obj, const char *arg)
 		delete ed;
 		return;
 	}
-	ed->cmd = strndup(arg + n, text_buffer_size);
+	ed->cmd = strndup(arg + n, text_buffer_size.get(*state));
 	obj->data.opaque = ed;
 }
 
@@ -301,10 +301,10 @@ void print_exec(struct text_object *obj, char *p, int p_max_size)
 {
 	char *buf;
 
-	buf = (char*)malloc(text_buffer_size);
-	memset(buf, 0, text_buffer_size);
+	buf = (char*)malloc(text_buffer_size.get(*state));
+	memset(buf, 0, text_buffer_size.get(*state));
 
-	read_exec(obj->data.s, buf, text_buffer_size);
+	read_exec(obj->data.s, buf, text_buffer_size.get(*state));
 	fill_p(buf, obj, p, p_max_size);
 	free(buf);
 }
@@ -335,8 +335,8 @@ void print_execi(struct text_object *obj, char *p, int p_max_size)
 	} else {
 		if (time_to_update(ed)) {
 			if (!ed->buffer)
-				ed->buffer = (char*)malloc(text_buffer_size);
-			read_exec(ed->cmd, ed->buffer, text_buffer_size);
+				ed->buffer = (char*)malloc(text_buffer_size.get(*state));
+			read_exec(ed->cmd, ed->buffer, text_buffer_size.get(*state));
 			ed->last_update = current_update_time;
 		}
 	}

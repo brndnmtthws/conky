@@ -256,9 +256,9 @@ static struct {
 #define SAVE_SET_STRING(x, y) \
 	if (x && strcmp((char *)x, (char *)y)) { \
 		free(x); \
-		x = strndup("multiple", text_buffer_size); \
+		x = strndup("multiple", text_buffer_size.get(*state)); \
 	} else if (!x) { \
-		x = strndup(y, text_buffer_size); \
+		x = strndup(y, text_buffer_size.get(*state)); \
 	}
 
 void update_gateway_info_failure(const char *reason)
@@ -267,8 +267,8 @@ void update_gateway_info_failure(const char *reason)
 		perror(reason);
 	}
 	//2 pointers to 1 location causes a crash when we try to free them both
-	gw_info.iface = strndup("failed", text_buffer_size);
-	gw_info.ip = strndup("failed", text_buffer_size);
+	gw_info.iface = strndup("failed", text_buffer_size.get(*state));
+	gw_info.ip = strndup("failed", text_buffer_size.get(*state));
 }
 
 
@@ -2576,7 +2576,7 @@ static void process_parse_stat(struct process *process)
 	}
 
 	free_and_zero(process->name);
-	process->name = strndup(procname, text_buffer_size);
+	process->name = strndup(procname, text_buffer_size.get(*::state));
 	process->rss *= getpagesize();
 
 	process->total_cpu_time = process->user_time + process->kernel_time;

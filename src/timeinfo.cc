@@ -51,7 +51,7 @@ conky::simple_config_setting<bool> times_in_seconds("times_in_seconds", false, f
 
 void scan_time(struct text_object *obj, const char *arg)
 {
-	obj->data.opaque = strndup(arg ? arg : "%F %T", text_buffer_size);
+	obj->data.opaque = strndup(arg ? arg : "%F %T", text_buffer_size.get(*state));
 }
 
 void scan_tztime(struct text_object *obj, const char *arg)
@@ -73,8 +73,8 @@ void scan_tztime(struct text_object *obj, const char *arg)
 
 	ts = (tztime_s*) malloc(sizeof(struct tztime_s));
 	memset(ts, 0, sizeof(struct tztime_s));
-	ts->fmt = strndup(fmt ? fmt : "%F %T", text_buffer_size);
-	ts->tz = tz ? strndup(tz, text_buffer_size) : NULL;
+	ts->fmt = strndup(fmt ? fmt : "%F %T", text_buffer_size.get(*state));
+	ts->tz = tz ? strndup(tz, text_buffer_size.get(*state)) : NULL;
 	obj->data.opaque = ts;
 }
 

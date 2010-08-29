@@ -58,7 +58,7 @@ void clear_diskio_stats(void)
 struct diskio_stat *prepare_diskio_stat(const char *s)
 {
 	struct stat sb;
-	std::vector<char> stat_name(text_buffer_size), device_name(text_buffer_size);
+	std::vector<char> stat_name(text_buffer_size.get(*state)), device_name(text_buffer_size.get(*state));
 	struct diskio_stat *cur = &stats;
 
 	if (!s)
@@ -67,12 +67,12 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 #if defined(__FreeBSD__)
 	if (strncmp(s, "/dev/", 5) == 0) {
 		// supplied a /dev/device arg, so cut off the /dev part
-		strncpy(&(device_name[0]), s + 5, text_buffer_size);
+		strncpy(&(device_name[0]), s + 5, text_buffer_size.get(*state));
 	} else
 #endif
-	strncpy(&(device_name[0]), s, text_buffer_size);
+	strncpy(&(device_name[0]), s, text_buffer_size.get(*state));
 
-	snprintf(&(stat_name[0]), text_buffer_size, "/dev/%s", &(device_name[0]));
+	snprintf(&(stat_name[0]), text_buffer_size.get(*state), "/dev/%s", &(device_name[0]));
 
 	if (stat(&(stat_name[0]), &sb)) {
 		NORM_ERR("diskio device '%s' does not exist", s);
@@ -89,7 +89,7 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 	/* no existing found, make a new one */
 	cur->next = new diskio_stat;
 	cur = cur->next;
-	cur->dev = strndup(&(device_name[0]), text_buffer_size);
+	cur->dev = strndup(&(device_name[0]), text_buffer_size.get(*state));
 	cur->last = UINT_MAX;
 	cur->last_read = UINT_MAX;
 	cur->last_write = UINT_MAX;

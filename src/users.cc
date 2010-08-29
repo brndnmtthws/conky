@@ -118,14 +118,14 @@ static void tty_user_time(char *ptr, char *tty)
 static void users_alloc(struct information *ptr)
 {
 	if (ptr->users.names == NULL) {
-		ptr->users.names = (char*)malloc(text_buffer_size);
+		ptr->users.names = (char*)malloc(text_buffer_size.get(*state));
 
 	}
 	if (ptr->users.terms == NULL) {
-		ptr->users.terms = (char*)malloc(text_buffer_size);
+		ptr->users.terms = (char*)malloc(text_buffer_size.get(*state));
 	}
 	if (ptr->users.times == NULL) {
-		ptr->users.times = (char*)malloc(text_buffer_size);
+		ptr->users.times = (char*)malloc(text_buffer_size.get(*state));
 	}
 }
 
@@ -135,19 +135,19 @@ static void update_user_time(char *tty)
 	char temp[BUFLEN] = "";
 
 	if (current_info->users.ctime == NULL) {
-		current_info->users.ctime = (char*)malloc(text_buffer_size);
+		current_info->users.ctime = (char*)malloc(text_buffer_size.get(*state));
 	}
 
 	tty_user_time(temp, tty);
 
 	if (temp != NULL) {
 		free_and_zero(current_info->users.ctime);
-		current_info->users.ctime = (char*)malloc(text_buffer_size);
-		strncpy(current_info->users.ctime, temp, text_buffer_size);
+		current_info->users.ctime = (char*)malloc(text_buffer_size.get(*state));
+		strncpy(current_info->users.ctime, temp, text_buffer_size.get(*state));
 	} else {
 		free_and_zero(current_info->users.ctime);
-		current_info->users.ctime = (char*)malloc(text_buffer_size);
-		strncpy(current_info->users.ctime, "broken", text_buffer_size);
+		current_info->users.ctime = (char*)malloc(text_buffer_size.get(*state));
+		strncpy(current_info->users.ctime, "broken", text_buffer_size.get(*state));
 	}
 }
 
@@ -160,12 +160,12 @@ int update_users(void)
 	user_name(temp);
 	if (temp != NULL) {
 		free_and_zero(current_info->users.names);
-		current_info->users.names = (char*)malloc(text_buffer_size);
-		strncpy(current_info->users.names, temp, text_buffer_size);
+		current_info->users.names = (char*)malloc(text_buffer_size.get(*state));
+		strncpy(current_info->users.names, temp, text_buffer_size.get(*state));
 	} else {
 		free_and_zero(current_info->users.names);
-		current_info->users.names = (char*)malloc(text_buffer_size);
-		strncpy(current_info->users.names, "broken", text_buffer_size);
+		current_info->users.names = (char*)malloc(text_buffer_size.get(*state));
+		strncpy(current_info->users.names, "broken", text_buffer_size.get(*state));
 	}
 	user_num(&t);
 	if (t != 0) {
@@ -180,22 +180,22 @@ int update_users(void)
 	user_term(temp);
 	if (temp != NULL) {
 		free_and_zero(current_info->users.terms);
-		current_info->users.terms = (char*)malloc(text_buffer_size);
-		strncpy(current_info->users.terms, temp, text_buffer_size);
+		current_info->users.terms = (char*)malloc(text_buffer_size.get(*state));
+		strncpy(current_info->users.terms, temp, text_buffer_size.get(*state));
 	} else {
 		free_and_zero(current_info->users.terms);
-		current_info->users.terms = (char*)malloc(text_buffer_size);
-		strncpy(current_info->users.terms, "broken", text_buffer_size);
+		current_info->users.terms = (char*)malloc(text_buffer_size.get(*state));
+		strncpy(current_info->users.terms, "broken", text_buffer_size.get(*state));
 	}
 	user_time(temp);
 	if (temp != NULL) {
 		free_and_zero(current_info->users.times);
-		current_info->users.times = (char*)malloc(text_buffer_size);
-		strncpy(current_info->users.times, temp, text_buffer_size);
+		current_info->users.times = (char*)malloc(text_buffer_size.get(*state));
+		strncpy(current_info->users.times, temp, text_buffer_size.get(*state));
 	} else {
 		free_and_zero(current_info->users.times);
-		current_info->users.times = (char*)malloc(text_buffer_size);
-		strncpy(current_info->users.times, "broken", text_buffer_size);
+		current_info->users.times = (char*)malloc(text_buffer_size.get(*state));
+		strncpy(current_info->users.times, "broken", text_buffer_size.get(*state));
 	}
 	return 0;
 }

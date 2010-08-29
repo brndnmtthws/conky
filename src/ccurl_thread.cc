@@ -60,7 +60,7 @@ ccurl_location_ptr ccurl_find_location(ccurl_location_list &locations, char *uri
 	}
 	ccurl_location_ptr next = ccurl_location_ptr(new ccurl_location_t);
 	DBGP("new curl location: '%s'", uri);
-	next->uri = strndup(uri, text_buffer_size);
+	next->uri = strndup(uri, text_buffer_size.get(*state));
 	locations.push_back(next);
 	return next;
 }

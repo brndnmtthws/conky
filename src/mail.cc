@@ -381,7 +381,7 @@ void parse_local_mail_args(struct text_object *obj, const char *arg)
 
 	locmail = (struct local_mail_s*)malloc(sizeof(struct local_mail_s));
 	memset(locmail, 0, sizeof(struct local_mail_s));
-	locmail->mbox = strndup(dst.c_str(), text_buffer_size);
+	locmail->mbox = strndup(dst.c_str(), text_buffer_size.get(*state));
 	locmail->interval = n1;
 	obj->data.opaque = locmail;
 }
