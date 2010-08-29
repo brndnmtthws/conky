@@ -41,7 +41,6 @@ int tcp_portmon_init(struct text_object *, const char *);
 void tcp_portmon_action(struct text_object *, char *, int);
 int tcp_portmon_update(void);
 int tcp_portmon_clear(void);
-int tcp_portmon_set_max_connections(int);
 void tcp_portmon_free(struct text_object *);
 
 #endif /* _TCP_PORTMON_H */

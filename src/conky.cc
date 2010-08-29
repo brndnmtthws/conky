@@ -2625,11 +2625,6 @@ static void set_default_configurations(void)
 	update_interval_bat = NOBATTERY;
 	info.music_player_interval = 1.0;
 	info.users.number = 1;
-
-#ifdef BUILD_PORT_MONITORS
-	/* set default connection limit */
-	tcp_portmon_set_max_connections(0);
-#endif
 }
 
 #ifdef BUILD_X11
@@ -2901,19 +2896,6 @@ char load_config_file(const char *f)
 			global_text_lines = line + 1;
 			break;
 		}
-#ifdef BUILD_PORT_MONITORS
-		CONF("max_port_monitor_connections") {
-			int max;
-			if (!value || (sscanf(value, "%d", &max) != 1)) {
-				/* an error. use default, warn and continue. */
-				tcp_portmon_set_max_connections(0);
-				CONF_ERR;
-			} else if (tcp_portmon_set_max_connections(max)) {
-				/* max is < 0, default has been set*/
-				CONF_ERR;
-			}
-		}
-#endif
 #ifdef BUILD_LUA
 		CONF("lua_load") {
 			if (value) {
@@ -3342,11 +3324,6 @@ int main(int argc, char **argv)
 	g_signal_pending = 0;
 	max_user_text = MAX_USER_TEXT_DEFAULT;
 	clear_net_stats();
-
-#ifdef BUILD_PORT_MONITORS
-	/* set default connection limit */
-	tcp_portmon_set_max_connections(0);
-#endif
 
 	/* handle command line parameters that don't change configs */
 #ifdef BUILD_X11

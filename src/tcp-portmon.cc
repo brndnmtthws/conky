@@ -25,7 +25,9 @@
 #include "libtcp-portmon.h"
 
 static tcp_port_monitor_collection_t *pmc = NULL;
-static tcp_port_monitor_args_t pma;
+
+static conky::range_config_setting<int> max_port_monitor_connections("max_port_monitor_connections",
+				0, std::numeric_limits<int>::max(), MAX_PORT_MONITOR_CONNECTIONS_DEFAULT, false);
 
 int tcp_portmon_init(struct text_object *obj, const char *arg)
 {
@@ -98,6 +100,10 @@ int tcp_portmon_init(struct text_object *obj, const char *arg)
 	/* if a port monitor for this port does not exist,
 	 * create one and add it to the collection */
 	if (find_tcp_port_monitor(pmc, port_begin, port_end) == NULL) {
+		tcp_port_monitor_args_t pma;
+		memset(&pma, 0, sizeof pma);
+		pma.max_port_monitor_connections = max_port_monitor_connections.get(*state);
+
 		/* add the newly created monitor to the collection */
 		if (insert_new_tcp_port_monitor_into_collection(pmc, port_begin, port_end, &pma) != 0) {
 			CRIT_ERR(NULL, NULL, "tcp_portmon: unable to add port monitor to "
@@ -142,17 +148,6 @@ int tcp_portmon_clear(void)
 	destroy_tcp_port_monitor_collection(pmc);
 	pmc = NULL;
 	return 0;
-}
-
-int tcp_portmon_set_max_connections(int max)
-{
-	if (max <= 0) {
-		pma.max_port_monitor_connections =
-			MAX_PORT_MONITOR_CONNECTIONS_DEFAULT;
-	} else {
-		pma.max_port_monitor_connections = max;
-	}
-	return (max < 0) ? 1 : 0;
 }
 
 void tcp_portmon_free(struct text_object *obj)
