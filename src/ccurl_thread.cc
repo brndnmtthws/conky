@@ -185,7 +185,7 @@ void ccurl_free_info(void)
 /* straight copy, used by $curl */
 static void ccurl_parse_data(char *result, const char *data)
 {
-	if(result) strncpy(result, data, max_user_text);
+	if(result) strncpy(result, data, max_user_text.get(*state));
 }
 
 /* prints result data to text buffer, used by $curl */
@@ -193,8 +193,8 @@ void ccurl_process_info(char *p, int p_max_size, char *uri, int interval)
 {
 	ccurl_location_ptr curloc = ccurl_find_location(ccurl_locations, uri);
 	if (!curloc->p_timed_thread) {
-		curloc->result = (char*)malloc(max_user_text);
-		memset(curloc->result, 0, max_user_text);
+		curloc->result = (char*)malloc(max_user_text.get(*state));
+		memset(curloc->result, 0, max_user_text.get(*state));
 		curloc->process_function = std::bind(ccurl_parse_data,
 				std::placeholders::_1, std::placeholders::_2);
 		ccurl_init_thread(curloc, interval);

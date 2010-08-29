@@ -98,8 +98,8 @@ void print_combine(struct text_object *obj, char *p, int p_max_size)
 	struct combine_data *cd = (struct combine_data *)obj->data.opaque;
 	std::vector<std::vector<char>> buf;
 	buf.resize(2);
-	buf[0].resize(max_user_text);
-	buf[1].resize(max_user_text);
+	buf[0].resize(max_user_text.get(*state));
+	buf[1].resize(max_user_text.get(*state));
 	int i, j;
 	long longest=0;
 	int nextstart;
@@ -121,7 +121,7 @@ void print_combine(struct text_object *obj, char *p, int p_max_size)
 		ll_rows[i] = (struct llrows*)malloc(sizeof(struct llrows));
 		current[i] = ll_rows[i];
 		for(j=0; j<i; j++) objsub = objsub->sub;
-		generate_text_internal(&(buf[i][0]), max_user_text, *objsub);
+		generate_text_internal(&(buf[i][0]), max_user_text.get(*state), *objsub);
 		for(j=0; buf[i][j] != 0; j++) {
 			if(buf[i][j] == '\t') buf[i][j] = ' ';
 			if(buf[i][j] == '\n') buf[i][j] = 0;	//the vars inside combine may not have a \n at the end

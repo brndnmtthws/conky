@@ -659,10 +659,10 @@ void print_evaluate(struct text_object *obj, char *p, int p_max_size)
 
 int if_empty_iftest(struct text_object *obj)
 {
-	std::vector<char> buf(max_user_text);
+	std::vector<char> buf(max_user_text.get(*state));
 	int result = 1;
 
-	generate_text_internal(&(buf[0]), max_user_text, *obj->sub);
+	generate_text_internal(&(buf[0]), max_user_text.get(*state), *obj->sub);
 
 	if (strlen(&(buf[0])) != 0) {
 		result = 0;
@@ -790,13 +790,13 @@ void print_battery_short(struct text_object *obj, char *p, int p_max_size)
 void print_blink(struct text_object *obj, char *p, int p_max_size)
 {
 	//blinking like this can look a bit ugly if the chars in the font don't have the same width
-	std::vector<char> buf(max_user_text);
+	std::vector<char> buf(max_user_text.get(*state));
 	static int visible = 1;
 	static int last_len = 0;
 	int i;
 
 	if (visible) {
-		generate_text_internal(&(buf[0]), max_user_text, *obj->sub);
+		generate_text_internal(&(buf[0]), max_user_text.get(*state), *obj->sub);
 		last_len = strlen(&(buf[0]));
 	} else {
 		for (i = 0; i < last_len; i++)
@@ -809,12 +809,12 @@ void print_blink(struct text_object *obj, char *p, int p_max_size)
 
 void print_include(struct text_object *obj, char *p, int p_max_size)
 {
-	std::vector<char> buf(max_user_text);
+	std::vector<char> buf(max_user_text.get(*state));
 
 	if (!obj->sub)
 		return;
 
-	generate_text_internal(&(buf[0]), max_user_text, *obj->sub);
+	generate_text_internal(&(buf[0]), max_user_text.get(*state), *obj->sub);
 	snprintf(p, p_max_size, "%s", &(buf[0]));
 }
 
@@ -836,17 +836,17 @@ void free_stock(struct text_object *obj)
 
 void print_to_bytes(struct text_object *obj, char *p, int p_max_size)
 {
-	std::vector<char> buf(max_user_text);
+	std::vector<char> buf(max_user_text.get(*state));
 	long long bytes;
 	char unit[16];	// 16 because we can also have long names (like mega-bytes)
 
-	generate_text_internal(&(buf[0]), max_user_text, *obj->sub);
+	generate_text_internal(&(buf[0]), max_user_text.get(*state), *obj->sub);
 	if(sscanf(&(buf[0]), "%lli%s", &bytes, unit) == 2 && strlen(unit) < 16){
-		if(strncasecmp("b", unit, 1) == 0) snprintf(&(buf[0]), max_user_text, "%lli", bytes);
-		else if(strncasecmp("k", unit, 1) == 0) snprintf(&(buf[0]), max_user_text, "%lli", bytes * 1024);
-		else if(strncasecmp("m", unit, 1) == 0) snprintf(&(buf[0]), max_user_text, "%lli", bytes * 1024 * 1024);
-		else if(strncasecmp("g", unit, 1) == 0) snprintf(&(buf[0]), max_user_text, "%lli", bytes * 1024 * 1024 * 1024);
-		else if(strncasecmp("t", unit, 1) == 0) snprintf(&(buf[0]), max_user_text, "%lli", bytes * 1024 * 1024 * 1024 * 1024);
+		if(strncasecmp("b", unit, 1) == 0) snprintf(&(buf[0]), max_user_text.get(*state), "%lli", bytes);
+		else if(strncasecmp("k", unit, 1) == 0) snprintf(&(buf[0]), max_user_text.get(*state), "%lli", bytes * 1024);
+		else if(strncasecmp("m", unit, 1) == 0) snprintf(&(buf[0]), max_user_text.get(*state), "%lli", bytes * 1024 * 1024);
+		else if(strncasecmp("g", unit, 1) == 0) snprintf(&(buf[0]), max_user_text.get(*state), "%lli", bytes * 1024 * 1024 * 1024);
+		else if(strncasecmp("t", unit, 1) == 0) snprintf(&(buf[0]), max_user_text.get(*state), "%lli", bytes * 1024 * 1024 * 1024 * 1024);
 	}
 	snprintf(p, p_max_size, "%s", &(buf[0]));
 }

@@ -1840,7 +1840,7 @@ int extract_variable_text_internal(struct text_object *retval, const char *const
 	char *arg = 0;
 	size_t len = 0;
 
-	p = strndup(const_p, max_user_text - 1);
+	p = strndup(const_p, max_user_text.get(*state) - 1);
 	while (text_contains_templates(p)) {
 		char *tmp;
 		tmp = find_and_replace_templates(p);

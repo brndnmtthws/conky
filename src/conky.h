@@ -306,7 +306,7 @@ int percent_print(char *, int, unsigned);
 void human_readable(long long, char *, int);
 
 /* maximum size of config TEXT buffer, i.e. below TEXT line. */
-extern unsigned int max_user_text;
+extern conky::range_config_setting<unsigned int> max_user_text;
 
 /* path to config file */
 extern std::string current_config;

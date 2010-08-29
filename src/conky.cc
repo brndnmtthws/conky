@@ -466,7 +466,8 @@ static conky::simple_config_setting<bool> utf8_mode("override_utf8_locale",
 #endif /* BUILD_X11 */
 
 /* maximum size of config TEXT buffer, i.e. below TEXT line. */
-unsigned int max_user_text;
+conky::range_config_setting<unsigned int> max_user_text("max_user_text", 47,
+					std::numeric_limits<unsigned int>::max(), MAX_USER_TEXT_DEFAULT, false);
 
 /* maximum size of individual text buffers, ie $exec buffer size */
 unsigned int text_buffer_size = DEFAULT_TEXT_BUFFER_SIZE;
@@ -893,7 +894,7 @@ static void generate_text(void)
 
 	p = text_buffer;
 
-	generate_text_internal(p, max_user_text, global_root_object);
+	generate_text_internal(p, max_user_text.get(*state), global_root_object);
 	unsigned int mw = max_text_width.get(*state);
 	if(mw > 0) {
 		for(i = 0, j = 0; p[i] != 0; i++) {
@@ -2836,13 +2837,6 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-		CONF("max_user_text") {
-			if (value) {
-				max_user_text = atoi(value);
-			} else {
-				CONF_ERR;
-			}
-		}
 		CONF("text_buffer_size") {
 			if (value) {
 				text_buffer_size = atoi(value);
@@ -2888,7 +2882,7 @@ char load_config_file(const char *f)
 				global_text = (char *) realloc(global_text, l + bl + 1);
 				strcat(global_text, buf);
 
-				if (strlen(global_text) > max_user_text) {
+				if (strlen(global_text) > max_user_text.get(*state)) {
 					break;
 				}
 			}
@@ -3093,7 +3087,7 @@ void initialisation(int argc, char **argv) {
 			break;
 		}else if (c == 's') {
 			free_and_zero(global_text);
-			global_text = strndup(optarg, max_user_text);
+			global_text = strndup(optarg, max_user_text.get(*state));
 			convert_escapes(global_text);
 			total_run_times = 1;
 
@@ -3164,7 +3158,7 @@ void initialisation(int argc, char **argv) {
 #endif /* BUILD_X11 */
 			case 't':
 				free_and_zero(global_text);
-				global_text = strndup(optarg, max_user_text);
+				global_text = strndup(optarg, max_user_text.get(*state));
 				convert_escapes(global_text);
 				break;
 
@@ -3234,8 +3228,8 @@ void initialisation(int argc, char **argv) {
 
 	start_update_threading();
 
-	text_buffer = (char*)malloc(max_user_text);
-	memset(text_buffer, 0, max_user_text);
+	text_buffer = (char*)malloc(max_user_text.get(*state));
+	memset(text_buffer, 0, max_user_text.get(*state));
 	tmpstring1 = (char*)malloc(text_buffer_size);
 	memset(tmpstring1, 0, text_buffer_size);
 	tmpstring2 = (char*)malloc(text_buffer_size);
@@ -3277,7 +3271,6 @@ int main(int argc, char **argv)
 	argc_copy = argc;
 	argv_copy = argv;
 	g_signal_pending = 0;
-	max_user_text = MAX_USER_TEXT_DEFAULT;
 	clear_net_stats();
 
 	/* handle command line parameters that don't change configs */

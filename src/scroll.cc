@@ -110,12 +110,12 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size)
 	struct scroll_data *sd = (struct scroll_data *)obj->data.opaque;
 	unsigned int j, colorchanges = 0, frontcolorchanges = 0, visibcolorchanges = 0, strend;
 	char *pwithcolors;
-	std::vector<char> buf(max_user_text);
+	std::vector<char> buf(max_user_text.get(*state));
 
 	if (!sd)
 		return;
 
-	generate_text_internal(&(buf[0]), max_user_text, *obj->sub);
+	generate_text_internal(&(buf[0]), max_user_text.get(*state), *obj->sub);
 	for(j = 0; buf[j] != 0; j++) {
 		switch(buf[j]) {
 			case '\n':	//place all the lines behind each other with LINESEPARATOR between them

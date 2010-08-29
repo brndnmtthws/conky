@@ -109,7 +109,7 @@ static int llua_conky_parse(lua_State *L)
 {
 	int n = lua_gettop(L);    /* number of arguments */
 	char *str;
-	char *buf = (char*)calloc(1, max_user_text);
+	char *buf = (char*)calloc(1, max_user_text.get(*state));
 	if (n != 1) {
 		lua_pushstring(L, "incorrect arguments, conky_parse(string) takes exactly 1 argument");
 		lua_error(L);
@@ -119,7 +119,7 @@ static int llua_conky_parse(lua_State *L)
 		lua_error(L);
 	}
 	str = strdup(lua_tostring(L, 1));
-	evaluate(str, buf, max_user_text);
+	evaluate(str, buf, max_user_text.get(*state));
 	lua_pushstring(L, buf);
 	free(str);
 	free(buf);
