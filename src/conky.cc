@@ -2895,39 +2895,6 @@ char load_config_file(const char *f)
 			global_text_lines = line + 1;
 			break;
 		}
-#ifdef BUILD_LUA
-#ifdef BUILD_X11
-		CONF("lua_draw_hook_pre") {
-			if (value) {
-				llua_set_draw_pre_hook(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("lua_draw_hook_post") {
-			if (value) {
-				llua_set_draw_post_hook(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("lua_startup_hook") {
-			if (value) {
-				llua_set_startup_hook(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("lua_shutdown_hook") {
-			if (value) {
-				llua_set_shutdown_hook(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-#endif /* BUILD_X11 */
-#endif /* BUILD_LUA */
-
 		else {
 			NORM_ERR("%s: %d: no such configuration: '%s'", f, line, name);
 		}

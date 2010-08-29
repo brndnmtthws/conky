@@ -46,11 +46,6 @@ static void llua_load(const char *script);
 
 #define MIN(a, b) ( (a) < (b) ? (a) : (b) )
 
-static char *draw_pre_hook = 0;
-static char *draw_post_hook = 0;
-static char *startup_hook = 0;
-static char *shutdown_hook = 0;
-
 lua_State *lua_L = NULL;
 
 namespace {
@@ -86,10 +81,6 @@ namespace {
 #ifdef HAVE_SYS_INOTIFY_H
 			llua_rm_notifies();
 #endif /* HAVE_SYS_INOTIFY_H */
-			free_and_zero(draw_pre_hook);
-			free_and_zero(draw_post_hook);
-			free_and_zero(startup_hook);
-			free_and_zero(shutdown_hook);
 			if(!lua_L) return;
 			lua_close(lua_L);
 			lua_L = NULL;
@@ -102,6 +93,16 @@ namespace {
 	};
 
 	lua_load_setting lua_load;
+	conky::simple_config_setting<std::string> lua_startup_hook("lua_startup_hook",
+																std::string(), true);
+	conky::simple_config_setting<std::string> lua_shutdown_hook("lua_shutdown_hook",
+																std::string(), true);
+#ifdef BUILD_X11
+	conky::simple_config_setting<std::string> lua_draw_hook_pre("lua_draw_hook_pre",
+																std::string(), true);
+	conky::simple_config_setting<std::string> lua_draw_hook_post("lua_draw_hook_post",
+																std::string(), true);
+#endif
 }
 
 static int llua_conky_parse(lua_State *L)
@@ -460,51 +461,29 @@ void llua_set_number(const char *key, double value)
 	lua_setfield(lua_L, -2, key);
 }
 
-void llua_set_startup_hook(const char *args)
-{
-	free_and_zero(startup_hook);
-	startup_hook = strdup(args);
-}
-
-void llua_set_shutdown_hook(const char *args)
-{
-	free_and_zero(shutdown_hook);
-	shutdown_hook = strdup(args);
-}
-
 void llua_startup_hook(void)
 {
-	if (!lua_L || !startup_hook) return;
-	llua_do_call(startup_hook, 0);
+	if (!lua_L || !lua_startup_hook.get(*state).empty()) return;
+	llua_do_call(lua_startup_hook.get(*state).c_str(), 0);
 }
 
 void llua_shutdown_hook(void)
 {
-	if (!lua_L || !shutdown_hook) return;
-	llua_do_call(shutdown_hook, 0);
+	if (!lua_L || !lua_shutdown_hook.get(*state).empty()) return;
+	llua_do_call(lua_shutdown_hook.get(*state).c_str(), 0);
 }
 
 #ifdef BUILD_X11
 void llua_draw_pre_hook(void)
 {
-	if (!lua_L || !draw_pre_hook) return;
-	llua_do_call(draw_pre_hook, 0);
+	if (!lua_L || !lua_draw_hook_pre.get(*state).empty()) return;
+	llua_do_call(lua_draw_hook_pre.get(*state).c_str(), 0);
 }
 
 void llua_draw_post_hook(void)
 {
-	if (!lua_L || !draw_post_hook) return;
-	llua_do_call(draw_post_hook, 0);
-}
-
-void llua_set_draw_pre_hook(const char *args)
-{
-	draw_pre_hook = strdup(args);
-}
-
-void llua_set_draw_post_hook(const char *args)
-{
-	draw_post_hook = strdup(args);
+	if (!lua_L || !lua_draw_hook_post.get(*state).empty()) return;
+	llua_do_call(lua_draw_hook_post.get(*state).c_str(), 0);
 }
 
 #ifdef BUILD_LUA_EXTRAS
