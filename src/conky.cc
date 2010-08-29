@@ -2568,10 +2568,6 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2)
 	llua_shutdown_hook();
 	llua_close();
 #endif /* BUILD_LUA */
-#ifdef BUILD_IMLIB2
-	if (out_to_x.get(*state))
-		cimlib_deinit();
-#endif /* BUILD_IMLIB2 */
 #if defined BUILD_WEATHER_XOAP || defined BUILD_RSS
 	xmlCleanupParser();
 #endif
@@ -2820,20 +2816,6 @@ char load_config_file(const char *f)
 			}
 #endif
 		}
-#endif /* BUILD_X11 */
-#ifdef BUILD_X11
-#ifdef BUILD_IMLIB2
-		CONF("imlib_cache_size") {
-			if (value) {
-				cimlib_set_cache_size(atoi(value));
-			}
-		}
-		CONF("imlib_cache_flush_interval") {
-			if (value) {
-				cimlib_set_cache_flush_interval(atoi(value));
-			}
-		}
-#endif /* BUILD_IMLIB2 */
 #endif /* BUILD_X11 */
 		CONF("update_interval_on_battery") {
 			if (value) {

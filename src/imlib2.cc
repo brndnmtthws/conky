@@ -35,6 +35,8 @@
 #include <string.h>
 #include <time.h>
 
+#include "x11.h"
+
 struct image_list_s {
 	char name[1024];
 	Imlib_Image image;
@@ -52,26 +54,51 @@ Imlib_Updates updates, current_update;
 /* our virtual framebuffer image we draw into */
 Imlib_Image buffer, image;
 
-static int cache_size_set = 0;
+namespace {
+	Imlib_Context context;
 
-/* flush the image cache ever X seconds */
-static int cimlib_cache_flush_interval = 0;
-static int cimlib_cache_flush_last = 0;
+	conky::range_config_setting<unsigned int> imlib_cache_flush_interval(
+			"imlib_cache_flush_interval", 0,
+			std::numeric_limits<unsigned int>::max(), 0, true
+		);
 
-#define DEFAULT_IMLIB2_CACHE_SIZE 4096 * 1024 /* default cache size for loaded images */
-
-void cimlib_set_cache_size(long size)
-{
-	imlib_set_cache_size(size);
-	cache_size_set = 1;
+	int cimlib_cache_flush_last = 0;
 }
 
-void cimlib_set_cache_flush_interval(long interval)
+void imlib_cache_size_setting::lua_setter(lua::state &l, bool init)
 {
-	if (interval >= 0) {
-		cimlib_cache_flush_interval = interval;
-	} else {
-		NORM_ERR("Imlib2: flush interval should be >= 0");
+	lua::stack_sentry s(l, -2);
+
+	Base::lua_setter(l, init);
+	
+	if(init && out_to_x.get(l)) {
+		image_list_start = image_list_end = NULL;
+		context = imlib_context_new();
+		imlib_context_push(context);
+		imlib_set_cache_size(do_convert(l, -1).first);	
+		/* set the maximum number of colors to allocate for 8bpp and less to 256 */
+		imlib_set_color_usage(256);
+		/* dither for depths < 24bpp */
+		imlib_context_set_dither(1);
+		/* set the display , visual, colormap and drawable we are using */
+		imlib_context_set_display(display);
+		imlib_context_set_visual(window.visual);
+		imlib_context_set_colormap(window.colourmap);
+		imlib_context_set_drawable(window.drawable);
+	}
+	
+	++s;
+}
+
+void imlib_cache_size_setting::cleanup(lua::state &l)
+{
+	lua::stack_sentry s(l, -1);
+
+	if(out_to_x.get(l)) {
+		cimlib_cleanup();
+		imlib_context_disconnect_display();
+		imlib_context_pop();
+		imlib_context_free(context);
 	}
 }
 
@@ -84,35 +111,6 @@ void cimlib_cleanup(void)
 		free(last);
 	}
 	image_list_start = image_list_end = NULL;
-}
-
-Imlib_Context context;
-
-void cimlib_init(Display *disp, Window drawable, Visual *visual, Colormap
-		colourmap)
-{
-	image_list_start = image_list_end = NULL;
-	context = imlib_context_new();
-	imlib_context_push(context);
-	if (!cache_size_set) cimlib_set_cache_size(DEFAULT_IMLIB2_CACHE_SIZE);
-	/* set the maximum number of colors to allocate for 8bpp and less to 256 */
-	imlib_set_color_usage(256);
-	/* dither for depths < 24bpp */
-	imlib_context_set_dither(1);
-	/* set the display , visual, colormap and drawable we are using */
-	imlib_context_set_display(disp);
-	imlib_context_set_visual(visual);
-	imlib_context_set_colormap(colourmap);
-	imlib_context_set_drawable(drawable);
-}
-
-void cimlib_deinit(void)
-{
-	cimlib_cleanup();
-	cache_size_set = 0;
-	imlib_context_disconnect_display();
-	imlib_context_pop();
-	imlib_context_free(context);
 }
 
 void cimlib_add_image(const char *args)
@@ -236,7 +234,8 @@ void cimlib_render(int x, int y, int width, int height)
 
 	/* cheque if it's time to flush our cache */
 	now = time(NULL);
-	if (cimlib_cache_flush_interval && now - cimlib_cache_flush_interval > cimlib_cache_flush_last) {
+	if (imlib_cache_flush_interval.get(*state) &&
+			now - imlib_cache_flush_interval.get(*state) > cimlib_cache_flush_last) {
 		int size = imlib_get_cache_size();
 		imlib_set_cache_size(0);
 		imlib_set_cache_size(size);

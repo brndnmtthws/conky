@@ -144,9 +144,6 @@ namespace priv {
 			return false;
 		}
 
-#ifdef BUILD_IMLIB2 // FIXME: move this somewhere else
-		cimlib_init(display, window.drawable, window.visual, window.colourmap);
-#endif /* BUILD_IMLIB2 */
 		XFlush(display);
 		return true;
 	}
@@ -256,7 +253,7 @@ namespace {
  * The order of these settings cannot be completely arbitrary. Some of them depend on others, and
  * the setters are called in the order in which they are defined. The order should be:
  * display_name -> out_to_x -> everything colour related
- *                          -> border_*, own_window_*, etc -> own_window -> double_buffer
+ *                          -> border_*, own_window_*, etc -> own_window -> double_buffer ->  imlib_cache_size
  */
 
 conky::simple_config_setting<alignment>   text_alignment("alignment", NONE, false);
@@ -315,6 +312,13 @@ priv::own_window_setting				  own_window;
 priv::use_xdbe_setting			 		  use_xdbe;
 #endif
 
+#ifdef BUILD_IMLIB2
+/*
+ * the only reason this is not in imlib2.cc is so that we can be sure it's setter executes after
+ * use_xdbe
+ */
+imlib_cache_size_setting imlib_cache_size;
+#endif
 /******************** </SETTINGS> ************************/
 
 #ifdef DEBUG
