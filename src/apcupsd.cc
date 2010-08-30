@@ -258,7 +258,7 @@ int apcupsd_scan_arg(const char *arg)
 		if (sscanf(arg, "%63s %d", host, &port) != 2)
 			return 1;
 
-		apcupsd.port = htons(port);
+		apcupsd.port = port;
 		strncpy(apcupsd.host, host, sizeof(apcupsd.host));
 		return 0;
 }
