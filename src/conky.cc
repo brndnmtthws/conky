@@ -344,7 +344,8 @@ bool stdinconfig = false;
 static conky::simple_config_setting<bool> stuff_in_uppercase("uppercase", false, true);
 
 /* Run how many times? */
-static unsigned long total_run_times;
+static conky::range_config_setting<unsigned long> total_run_times("total_run_times", 0,
+									std::numeric_limits<unsigned long>::max(), 0, true);
 
 /* fork? */
 static conky::simple_config_setting<bool> fork_to_background("background", false, false);
@@ -2035,7 +2036,8 @@ static void main_loop(void)
 	last_update_time = 0.0;
 	next_update_time = get_time();
 	info.looped = 0;
-	while (terminate == 0 && (total_run_times == 0 || info.looped < total_run_times)) {
+	while (terminate == 0
+			&& (total_run_times.get(*state) == 0 || info.looped < total_run_times.get(*state))) {
 		if(update_interval_bat != NOBATTERY && update_interval_bat != update_interval_old) {
 			char buf[64];
 
@@ -2595,7 +2597,6 @@ void clean_up(void *memtofree1, void* memtofree2)
 static void set_default_configurations(void)
 {
 	update_uname();
-	total_run_times = 0;
 	info.memmax = 0;
 	top_cpu = 0;
 	top_mem = 0;
@@ -2832,13 +2833,6 @@ char load_config_file(const char *f)
 			if (info.music_player_interval == 0) {
 				// default to update_interval
 				info.music_player_interval = update_interval;
-			}
-		}
-		CONF("total_run_times") {
-			if (value) {
-				total_run_times = strtod(value, 0);
-			} else {
-				CONF_ERR;
 			}
 		}
 		CONF("text") {
@@ -3082,7 +3076,9 @@ void initialisation(int argc, char **argv) {
 			free_and_zero(global_text);
 			global_text = strndup(optarg, max_user_text.get(*state));
 			convert_escapes(global_text);
-			total_run_times = 1;
+
+			state->pushinteger(1);
+			total_run_times.lua_set(*state);
 
 			state->pushboolean(true);
 			out_to_stdout.lua_set(*state);
@@ -3165,7 +3161,8 @@ void initialisation(int argc, char **argv) {
 				break;
 
 			case 'i':
-				total_run_times = strtod(optarg, 0);
+				state->pushstring(optarg);
+				total_run_times.lua_set(*state);
 				break;
 #ifdef BUILD_X11
 			case 'x':
