@@ -2765,20 +2765,6 @@ char load_config_file(const char *f)
 
 		// start the whole if-then-else-if cascade
 		if (false) {}
-		CONF("imap") {
-			if (value) {
-				parse_global_imap_mail_args(value);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("pop3") {
-			if (value) {
-				parse_global_pop3_mail_args(value);
-			} else {
-				CONF_ERR;
-			}
-		}
 		CONF("music_player_interval") {
 			if (value) {
 				info.music_player_interval = strtod(value, 0);
@@ -3328,7 +3314,7 @@ int main(int argc, char **argv)
 				"conky.config = { alignment='top_left', asdf=47, [42]=47, out_to_x=true,\n"
 				"    own_window_hints='above, skip_taskbar',\n"
 				"    background_colour='pink', own_window=true, double_buffer=true,\n"
-				"    lua_load='asdf    qq/q'};\n"
+				"    pop3='asdf wet xcbv'};\n"
 				);
 		l.call(0, 0);
 		conky::set_config_settings(l);

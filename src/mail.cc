@@ -55,16 +55,6 @@
 #include <errno.h>
 #include <termios.h>
 
-/* MAX() is defined by a header included from conky.h
- * maybe once this is not true anymore, so have an alternative
- * waiting to drop in.
- *
- * #define MAX(a, b)  ((a > b) ? a : b)
- */
-
-#define POP3_TYPE 1
-#define IMAP_TYPE 2
-
 #define MAXFOLDERSIZE 128
 
 struct mail_s {			// for imap and pop3
@@ -124,7 +114,6 @@ priv::current_mail_spool_setting::do_convert(lua::state &l, int index)
 priv::current_mail_spool_setting current_mail_spool;
 
 static struct mail_s *global_mail;
-static int global_mail_use = 0;
 
 static void update_mail_count(struct local_mail_s *mail)
 {
@@ -422,7 +411,13 @@ void free_local_mails(struct text_object *obj)
 
 #define MAXDATASIZE 1000
 
-struct mail_s *parse_mail_args(char type, const char *arg)
+namespace {
+	enum mail_type {
+		POP3_TYPE, IMAP_TYPE
+	};
+}
+
+struct mail_s *parse_mail_args(mail_type type, const char *arg)
 {
 	struct mail_s *mail;
 	char *tmp;
@@ -529,10 +524,9 @@ void parse_imap_mail_args(struct text_object *obj, const char *arg)
 			return;
 		}
 		obj->data.opaque = global_mail;
-		global_mail_use++;
 		return;
 	}
-	// proccss
+	// process
 	obj->data.opaque = parse_mail_args(IMAP_TYPE, arg);
 }
 
@@ -550,21 +544,52 @@ void parse_pop3_mail_args(struct text_object *obj, const char *arg)
 			return;
 		}
 		obj->data.opaque = global_mail;
-		global_mail_use++;
 		return;
 	}
-	// proccss
+	// process
 	obj->data.opaque = parse_mail_args(POP3_TYPE, arg);
 }
 
-void parse_global_imap_mail_args(const char *value)
-{
-	global_mail = parse_mail_args(IMAP_TYPE, value);
-}
+namespace {
+	class mail_setting: public conky::simple_config_setting<std::string> {
+		typedef conky::simple_config_setting<std::string> Base;
 
-void parse_global_pop3_mail_args(const char *value)
-{
-	global_mail = parse_mail_args(POP3_TYPE, value);
+		mail_type type;
+
+	protected:
+		virtual void lua_setter(lua::state &l, bool init)
+		{
+			lua::stack_sentry s(l, -2);
+
+			Base::lua_setter(l, init);
+
+			if(init && !global_mail) {
+				const std::string &t = do_convert(l, -1).first;
+				if(t.size())
+					global_mail = parse_mail_args(type, t.c_str());
+			}
+
+			++s;
+		}
+
+		virtual void cleanup(lua::state &l)
+		{
+			lua::stack_sentry s(l, -1);
+
+			delete global_mail;
+			global_mail = NULL;
+
+			l.pop();
+		}
+
+	public:
+		mail_setting(const std::string &name, mail_type type_)
+			: Base(name), type(type_)
+		{}
+	};
+
+	mail_setting imap("imap", IMAP_TYPE);
+	mail_setting pop3("pop3", POP3_TYPE);
 }
 
 void free_mail_obj(struct text_object *obj)
@@ -572,12 +597,7 @@ void free_mail_obj(struct text_object *obj)
 	if (!obj->data.opaque)
 		return;
 
-	if (obj->data.opaque == global_mail) {
-		if (--global_mail_use == 0) {
-			delete global_mail;
-			global_mail = 0;
-		}
-	} else {
+	if (obj->data.opaque != global_mail) {
 		struct mail_s *mail = (struct mail_s*)obj->data.opaque;
 		delete mail;
 		obj->data.opaque = 0;
