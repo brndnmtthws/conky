@@ -32,16 +32,61 @@
 #include "logging.h"
 
 int selected_font = 0;
-int font_count = -1;
-struct font_list *fonts = NULL;
+std::vector<font_list> fonts;
 char fontloaded = 0;
+
+void font_setting::lua_setter(lua::state &l, bool init)
+{
+	lua::stack_sentry s(l, -2);
+
+	Base::lua_setter(l, init);
+
+	if(init && out_to_x.get(*state)) {
+		if(fonts.size() == 0)
+			fonts.resize(1);
+		fonts[0].name = do_convert(l, -1).first;
+	}
+
+	++s;
+}
+
+font_setting font;
+
+#ifdef BUILD_XFT
+namespace {
+	class xftalpha_setting: public conky::simple_config_setting<float> {
+		typedef conky::simple_config_setting<float> Base;
+
+	protected:
+		virtual void lua_setter(lua::state &l, bool init)
+		{
+			lua::stack_sentry s(l, -2);
+
+			Base::lua_setter(l, init);
+
+			if(init && out_to_x.get(*state)) {
+				fonts[0].font_alpha = do_convert(l, -1).first * 0xffff;
+			}
+
+			++s;
+		}
+
+	public:
+		xftalpha_setting()
+			: Base("xftalpha", 1.0, false)
+		{}
+	};
+
+	xftalpha_setting xftalpha;
+}
+#endif /* BUILD_XFT */
 
 void set_font(void)
 {
 #ifdef BUILD_XFT
 	if (use_xft.get(*state)) return;
 #endif /* BUILD_XFT */
-	if (font_count > -1 && fonts[selected_font].font) {
+	if (fonts[selected_font].font) {
 		XSetFont(display, window.gc, fonts[selected_font].font->fid);
 	}
 }
@@ -69,64 +114,18 @@ int add_font(const char *data_in)
 	if (not out_to_x.get(*state)) {
 		return 0;
 	}
-	if (font_count > MAX_FONTS) {
-		CRIT_ERR(NULL, NULL, "you don't need that many fonts, sorry.");
-	}
-	font_count++;
-	if (font_count == 0) {
-		free_and_zero(fonts);
-		if ((fonts = (struct font_list *) malloc(sizeof(struct font_list)))
-				== NULL) {
-			CRIT_ERR(NULL, NULL, "malloc");
-		}
-		memset(fonts, 0, sizeof(struct font_list));
-	}
-	fonts = (font_list*) realloc(fonts, (sizeof(struct font_list) * (font_count + 1)));
-	memset(&fonts[font_count], 0, sizeof(struct font_list));
-	if (fonts == NULL) {
-		CRIT_ERR(NULL, NULL, "realloc in add_font");
-	}
-	// must account for null terminator
-	if (strlen(data_in) < DEFAULT_TEXT_BUFFER_SIZE) {
-		strncpy(fonts[font_count].name, data_in, DEFAULT_TEXT_BUFFER_SIZE);
-#ifdef BUILD_XFT
-		fonts[font_count].font_alpha = 0xffff;
-#endif
-	} else {
-		CRIT_ERR(NULL, NULL, "Oops...looks like something overflowed in add_font().");
-	}
-	return font_count;
-}
+	fonts.push_back(font_list());
+	fonts.rbegin()->name = data_in;
 
-void set_first_font(const char *data_in)
-{
-	if (not out_to_x.get(*state)) {
-		return;
-	}
-	if (font_count < 0) {
-		if ((fonts = (struct font_list *) malloc(sizeof(struct font_list)))
-				== NULL) {
-			CRIT_ERR(NULL, NULL, "malloc");
-		}
-		memset(fonts, 0, sizeof(struct font_list));
-		font_count++;
-	}
-	if (strlen(data_in) > 1) {
-		strncpy(fonts[0].name, data_in, DEFAULT_TEXT_BUFFER_SIZE);
-#ifdef BUILD_XFT
-		fonts[0].font_alpha = 0xffff;
-#endif
-	}
+	return fonts.size()-1;
 }
 
 void free_fonts(void)
 {
-	int i;
-
 	if (not out_to_x.get(*state)) {
 		return;
 	}
-	for (i = 0; i <= font_count; i++) {
+	for (size_t i = 0; i < fonts.size(); i++) {
 #ifdef BUILD_XFT
 		if (use_xft.get(*state)) {
 			/*
@@ -136,18 +135,15 @@ void free_fonts(void)
 			 *
 			 * XftFontClose(display, fonts[i].xftfont);
 			 */
-			fonts[i].xftfont = 0;
 		} else
 #endif /* BUILD_XFT */
 		{
 			if (fonts[i].font) {
 				XFreeFont(display, fonts[i].font);
-				fonts[i].font = 0;
 			}
 		}
 	}
-	free_and_zero(fonts);
-	font_count = -1;
+	fonts.clear();
 	selected_font = 0;
 #ifdef BUILD_XFT
 	if (window.xftdraw) {
@@ -159,22 +155,20 @@ void free_fonts(void)
 
 void load_fonts(void)
 {
-	int i;
-
 	if (not out_to_x.get(*state))
 		return;
-	for (i = 0; i <= font_count; i++) {
+	for (size_t i = 0; i <= fonts.size(); i++) {
 #ifdef BUILD_XFT
 		/* load Xft font */
 		if (use_xft.get(*state)) {
 			if(not fonts[i].xftfont)
-				fonts[i].xftfont = XftFontOpenName(display, screen, fonts[i].name);
+				fonts[i].xftfont = XftFontOpenName(display, screen, fonts[i].name.c_str());
 
 			if (fonts[i].xftfont) {
 				continue;
 			}
 
-			NORM_ERR("can't load Xft font '%s'", fonts[i].name);
+			NORM_ERR("can't load Xft font '%s'", fonts[i].name.c_str());
 			if ((fonts[i].xftfont = XftFontOpenName(display, screen,
 					"courier-12")) != NULL) {
 				continue;
@@ -186,8 +180,8 @@ void load_fonts(void)
 		}
 #endif
 		/* load normal font */
-		if (!fonts[i].font && (fonts[i].font = XLoadQueryFont(display, fonts[i].name)) == NULL) {
-			NORM_ERR("can't load font '%s'", fonts[i].name);
+		if (!fonts[i].font && (fonts[i].font = XLoadQueryFont(display, fonts[i].name.c_str())) == NULL) {
+			NORM_ERR("can't load font '%s'", fonts[i].name.c_str());
 			if ((fonts[i].font = XLoadQueryFont(display, "fixed")) == NULL) {
 				CRIT_ERR(NULL, NULL, "can't load font '%s'", "fixed");
 			}

@@ -2543,8 +2543,7 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2)
 	if (x_initialised == YES) {
 		clean_up_x11();
 	}else{
-		free(fonts);	//in set_default_configurations a font is set but not loaded
-		font_count = -1;
+		fonts.clear();	//in set_default_configurations a font is set but not loaded
 	}
 #endif /* BUILD_X11 */
 
@@ -2622,9 +2621,6 @@ static void set_default_configurations(void)
 	state->pushboolean(true);
 	out_to_stdout.lua_set(*state);
 #endif
-#ifdef BUILD_X11
-	set_first_font("6x10");
-#endif /* BUILD_X11 */
 
 	set_update_interval(3);
 	update_interval_bat = NOBATTERY;
@@ -2772,37 +2768,6 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-#ifdef BUILD_X11
-#ifdef BUILD_XFT
-		CONF("font") {
-			if (value) {
-				set_first_font(value);
-			}
-		}
-		CONF("xftalpha") {
-			if (value && font_count >= 0) {
-				fonts[0].font_alpha = atof(value) * 65535.0;
-			}
-		}
-		CONF("xftfont") {
-			if (use_xft.get(*state)) {
-#else
-		CONF("xftfont") {
-			/* xftfont silently ignored when no Xft */
-		}
-		CONF("xftalpha") {
-			/* xftalpha is silently ignored when no Xft */
-		}
-		CONF("font") {
-#endif
-			if (value) {
-				set_first_font(value);
-			}
-#ifdef BUILD_XFT
-			}
-#endif
-		}
-#endif /* BUILD_X11 */
 		CONF("update_interval_on_battery") {
 			if (value) {
 				update_interval_bat = strtod(value, 0);
@@ -3107,7 +3072,8 @@ void initialisation(int argc, char **argv) {
 				break;
 #ifdef BUILD_X11
 			case 'f':
-				set_first_font(optarg);
+				state->pushstring(optarg);
+				font.lua_set(*state);
 				break;
 			case 'a':
 				state->pushstring(optarg);

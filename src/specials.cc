@@ -352,7 +352,8 @@ void new_font(struct text_object *obj, char *p, int p_max_size)
 	s = new_special(p, FONT);
 
 	if (obj->data.s) {
-		if (s->font_added > font_count || !s->font_added || (strncmp(obj->data.s, fonts[s->font_added].name, DEFAULT_TEXT_BUFFER_SIZE) != EQUAL) ) {
+		if (s->font_added >= (int)fonts.size() || !s->font_added
+								|| obj->data.s != fonts[s->font_added].name ) {
 			selected_font = s->font_added = add_font(obj->data.s);
 			selected_font = tmp;
 		}

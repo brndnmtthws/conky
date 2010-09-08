@@ -31,19 +31,27 @@
 #ifndef _FONTS_H
 #define _FONTS_H
 
+#include <vector>
+
 #include "x11.h"
 
 /* for fonts */
 struct font_list {
 
-	char name[DEFAULT_TEXT_BUFFER_SIZE];
-	int num;
+	std::string name;
 	XFontStruct *font;
 
 #ifdef BUILD_XFT
 	XftFont *xftfont;
 	int font_alpha;
 #endif
+
+	font_list()
+		: name(), font(NULL)
+#ifdef BUILD_XFT
+		  , xftfont(NULL), font_alpha(0xffff)
+#endif
+	{}
 };
 
 #ifdef BUILD_XFT
@@ -66,19 +74,29 @@ struct font_list {
 
 #endif
 
-#define MAX_FONTS 256
-
 /* direct access to registered fonts (FIXME: bad encapsulation) */
-extern struct font_list *fonts;
+extern std::vector<font_list> fonts;
 extern int selected_font;
-extern int font_count;
 
 void setup_fonts(void);
 void set_font(void);
 int add_font(const char *);
-void set_first_font(const char *);
 void free_fonts(void);
 void load_fonts(void);
+
+class font_setting: public conky::simple_config_setting<std::string> {
+	typedef conky::simple_config_setting<std::string> Base;
+
+protected:
+	virtual void lua_setter(lua::state &l, bool init);
+
+public:
+	font_setting()
+		: Base("font", "6x10", false)
+	{}
+};
+
+extern font_setting font;
 
 #endif /* _FONTS_H */
 #endif /* BUILD_X11 */
