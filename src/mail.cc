@@ -671,6 +671,11 @@ static void imap_thread(thread_handle &handle, struct mail_s *mail)
 		int res;
 		fd_set fdset;
 
+		if (fail > 0) {
+			NORM_ERR("Trying IMAP connection again for %s@%s (try %u/%u)",
+					mail->user, mail->host, fail + 1, mail->retries);
+			resolved_host = 0; /* force us to resolve the hostname again */
+		}
 		if (!resolved_host) {
 			memset(&hints, 0, sizeof(struct addrinfo));
 			hints.ai_family = AF_UNSPEC;
@@ -686,10 +691,6 @@ static void imap_thread(thread_handle &handle, struct mail_s *mail)
 				break;
 			}
 			resolved_host = 1;
-		}
-		if (fail > 0) {
-			NORM_ERR("Trying IMAP connection again for %s@%s (try %u/%u)",
-					mail->user, mail->host, fail + 1, mail->retries);
 		}
 		do {
 			for (rp = ai; rp != NULL; rp = rp->ai_next) {
@@ -1014,6 +1015,12 @@ static void pop3_thread(thread_handle &handle, struct mail_s *mail)
 		struct timeval fetchtimeout;
 		int res;
 		fd_set fdset;
+
+		if (fail > 0) {
+			NORM_ERR("Trying POP3 connection again for %s@%s (try %u/%u)",
+					mail->user, mail->host, fail + 1, mail->retries);
+			resolved_host = 0; /* force us to resolve the hostname again */
+		}
 		if (!resolved_host) {
 			memset(&hints, 0, sizeof(struct addrinfo));
 			hints.ai_family = AF_UNSPEC;
@@ -1028,11 +1035,7 @@ static void pop3_thread(thread_handle &handle, struct mail_s *mail)
 				fail++;
 				break;
 			}
-	resolved_host = 1;
-}
-		if (fail > 0) {
-			NORM_ERR("Trying POP3 connection again for %s@%s (try %u/%u)",
-					mail->user, mail->host, fail + 1, mail->retries);
+			resolved_host = 1;
 		}
 		do {
 			for (rp = ai; rp != NULL; rp = rp->ai_next) {
