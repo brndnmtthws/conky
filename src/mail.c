@@ -676,6 +676,7 @@ static void *imap_thread(void *arg)
 			NORM_ERR("Trying IMAP connection again for %s@%s (try %u/%u)",
 					mail->user, mail->host, fail + 1, mail->retries);
 			resolved_host = 0; /* force us to resolve the hostname again */
+			sleep(fail); /* sleep more for the more failures we have */
 		}
 		if (!resolved_host) {
 			memset(&hints, 0, sizeof(struct addrinfo));
@@ -1024,6 +1025,7 @@ static void *pop3_thread(void *arg)
 			NORM_ERR("Trying POP3 connection again for %s@%s (try %u/%u)",
 					mail->user, mail->host, fail + 1, mail->retries);
 			resolved_host = 0; /* force us to resolve the hostname again */
+			sleep(fail); /* sleep more for the more failures we have */
 		}
 		if (!resolved_host) {
 			memset(&hints, 0, sizeof(struct addrinfo));
