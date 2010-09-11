@@ -153,8 +153,6 @@ static char *getXmlFromAPI(const char *userid, const char *apikey, const char *c
 	chr.data = NULL;
 	chr.size = 0;
 
-
-	curl_global_init(CURL_GLOBAL_ALL);
 	curl_handle = curl_easy_init();
 	curl_easy_setopt(curl_handle, CURLOPT_FAILONERROR, 1);
 	curl_easy_setopt(curl_handle, CURLOPT_URL, url);
