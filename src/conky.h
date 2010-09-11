@@ -233,7 +233,6 @@ struct information {
 #endif /* BUILD_IOSTATS */
 	struct process *first_process;
 	unsigned long looped;
-	double music_player_interval;
 
 #ifdef BUILD_X11
 	struct x11_info x11;
@@ -241,6 +240,19 @@ struct information {
 
 	short kflags;	/* kernel settings, see enum KFLAG */
 };
+
+class music_player_interval_setting: public conky::simple_config_setting<double> {
+	typedef conky::simple_config_setting<double> Base;
+
+protected:
+	virtual void lua_setter(lua::state &l, bool init);
+
+public:
+	music_player_interval_setting()
+		: Base("music_player_interval", 0, true)
+	{}
+};
+extern music_player_interval_setting music_player_interval;
 
 extern conky::range_config_setting<int> cpu_avg_samples;
 extern conky::range_config_setting<int> net_avg_samples;

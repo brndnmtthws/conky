@@ -141,7 +141,7 @@ static int run_moc_thread(std::chrono::microseconds interval)
 
 int update_moc(void)
 {
-	run_moc_thread(std::chrono::microseconds(long(info.music_player_interval * 100000)));
+	run_moc_thread(std::chrono::microseconds(long(music_player_interval.get(*state) * 1000000)));
 	return 0;
 }
 

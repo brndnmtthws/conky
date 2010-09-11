@@ -179,7 +179,7 @@ int update_mpd(void)
 		return 0;
 
 	thread = timed_thread::create(std::bind(update_mpd_thread, std::placeholders::_1),
-			std::chrono::microseconds(long(info.music_player_interval * 1000000)) );
+			std::chrono::microseconds(long(music_player_interval.get(*state) * 1000000)) );
 	if (!thread) {
 		NORM_ERR("Failed to create MPD timed thread");
 		return 0;

@@ -186,6 +186,23 @@ static bool on_battery = false;
 double active_update_interval()
 { return (on_battery?update_interval_on_battery:update_interval).get(*state); }
 
+void music_player_interval_setting::lua_setter(lua::state &l, bool init)
+{
+	lua::stack_sentry s(l, -2);
+
+	if(l.isnil(-2)) {
+		l.checkstack(1);
+		l.pushnumber(update_interval.get(l));
+		l.replace(-3);
+	}
+
+	Base::lua_setter(l, init);
+
+	++s;
+}
+
+music_player_interval_setting music_player_interval;
+
 void *global_cpu = NULL;
 static conky::range_config_setting<unsigned int> max_text_width("max_text_width", 0,
 											std::numeric_limits<unsigned int>::max(), 0, true);
@@ -2616,7 +2633,6 @@ static void set_default_configurations(void)
 	out_to_stdout.lua_set(*state);
 #endif
 
-	info.music_player_interval = 1.0;
 	info.users.number = 1;
 }
 
@@ -2753,13 +2769,6 @@ char load_config_file(const char *f)
 
 		// start the whole if-then-else-if cascade
 		if (false) {}
-		CONF("music_player_interval") {
-			if (value) {
-				info.music_player_interval = strtod(value, 0);
-			} else {
-				CONF_ERR;
-			}
-		}
 		CONF("text") {
 			free_and_zero(global_text);
 
@@ -2808,10 +2817,6 @@ char load_config_file(const char *f)
 
 	fclose(fp);
 
-	if (info.music_player_interval == 0) {
-		// default to update_interval
-		info.music_player_interval = active_update_interval();
-	}
 	if (!global_text) { // didn't supply any text
 		CRIT_ERR(NULL, NULL, "missing text block in configuration; exiting");
 	}
@@ -3250,7 +3255,7 @@ int main(int argc, char **argv)
 				"conky.config = { alignment='top_left', asdf=47, [42]=47, out_to_x=true,\n"
 				"    own_window_hints='above, skip_taskbar',\n"
 				"    background_colour='pink', own_window=true, double_buffer=true,\n"
-				"    pop3='asdf wet xcbv'};\n"
+				"    update_interval=5, update_interval_on_battery=10};\n"
 				);
 		l.call(0, 0);
 		conky::set_config_settings(l);
@@ -3269,6 +3274,7 @@ int main(int argc, char **argv)
 				"print('config.mpd_host = ', conky.config.mpd_host);\n"
 				"print('config.mpd_password = ', conky.config.mpd_password);\n"
 				"print('config.mpd_port = ', conky.config.mpd_port);\n"
+				"print('config.music_player_interval = ', conky.config.music_player_interval);\n"
 				);
 		l.call(0, 0);
 
