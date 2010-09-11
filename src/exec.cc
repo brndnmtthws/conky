@@ -155,7 +155,7 @@ static inline void read_exec(const char *data, char *buf, const int size)
 	if (!data)
 		return;
 
-	alarm(update_interval);
+	alarm(active_update_interval());
 	fp = pid_popen(data, "r", &childpid);
 	if(fp) {
 		int length;

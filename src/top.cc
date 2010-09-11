@@ -504,8 +504,8 @@ PRINT_TOP_GENERATOR(pid, 6, "%5i", pid)
 PRINT_TOP_HR_GENERATOR(mem_res, rss, 1)
 PRINT_TOP_HR_GENERATOR(mem_vsize, vsize, 1)
 #ifdef BUILD_IOSTATS
-PRINT_TOP_HR_GENERATOR(read_bytes, read_bytes, update_interval)
-PRINT_TOP_HR_GENERATOR(write_bytes, write_bytes, update_interval)
+PRINT_TOP_HR_GENERATOR(read_bytes, read_bytes, active_update_interval())
+PRINT_TOP_HR_GENERATOR(write_bytes, write_bytes, active_update_interval())
 PRINT_TOP_GENERATOR(io_perc, 7, "%6.2f", io_perc)
 #endif /* BUILD_IOSTATS */
 

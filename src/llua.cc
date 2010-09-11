@@ -129,7 +129,6 @@ static int llua_conky_parse(lua_State *L)
 static int llua_conky_set_update_interval(lua_State *L)
 {
 	int n = lua_gettop(L);    /* number of arguments */
-	double value;
 	if (n != 1) {
 		lua_pushstring(L, "incorrect arguments, conky_set_update_interval(number) takes exactly 1 argument");
 		lua_error(L);
@@ -138,8 +137,8 @@ static int llua_conky_set_update_interval(lua_State *L)
 		lua_pushstring(L, "incorrect argument (expecting a number)");
 		lua_error(L);
 	}
-	value = lua_tonumber(L, 1);
-	set_update_interval(value);
+	state->pushnumber(lua_tonumber(L, 1));
+	update_interval.lua_set(*state);
 	return 0;                 /* number of results */
 }
 

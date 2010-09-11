@@ -273,7 +273,11 @@ extern int top_running;
 extern struct information info;
 
 /* defined in conky.c */
-extern double current_update_time, last_update_time, update_interval;
+extern double current_update_time, last_update_time;
+
+extern conky::range_config_setting<double> update_interval;
+extern conky::range_config_setting<double> update_interval_on_battery;
+double active_update_interval();
 
 extern conky::range_config_setting<char>  stippled_borders;
 
@@ -293,8 +297,6 @@ extern int inotify_fd;
  * evaluates 'text' and places the result in 'p' of max length 'p_max_size'
  */
 void evaluate(const char *text, char *p, int p_max_size);
-
-void set_update_interval(double interval);
 
 void parse_conky_vars(struct text_object *, const char *, char *, int);
 

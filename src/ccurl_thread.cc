@@ -226,7 +226,7 @@ void curl_parse_arg(struct text_object *obj, const char *arg)
 	if (argc == 1)
 		cd->interval = 15*60;
 	else
-		cd->interval = interval > 0 ? interval * 60 : update_interval;
+		cd->interval = interval > 0 ? interval * 60 : active_update_interval();
 	obj->data.opaque = cd;
 }
 

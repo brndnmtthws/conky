@@ -175,10 +175,17 @@ int output_methods;
 static conky::simple_config_setting<bool> extra_newline("extra_newline", false, false);
 enum x_initialiser_state x_initialised = NO;
 static volatile int g_signal_pending;
+
 /* Update interval */
-double update_interval;
-double update_interval_old;
-double update_interval_bat;
+conky::range_config_setting<double> update_interval("update_interval", 0.0,
+										std::numeric_limits<double>::infinity(), 3.0, true);
+conky::range_config_setting<double> update_interval_on_battery("update_interval_on_battery", 0.0,
+										std::numeric_limits<double>::infinity(), NOBATTERY, true);
+static bool on_battery = false;
+
+double active_update_interval()
+{ return (on_battery?update_interval_on_battery:update_interval).get(*state); }
+
 void *global_cpu = NULL;
 static conky::range_config_setting<unsigned int> max_text_width("max_text_width", 0,
 											std::numeric_limits<unsigned int>::max(), 0, true);
@@ -927,20 +934,15 @@ static void generate_text(void)
 		}
 	}
 
-	next_update_time += update_interval;
+	double ui = active_update_interval();
+	next_update_time += ui;
 	if (next_update_time < get_time()) {
-		next_update_time = get_time() + update_interval;
-	} else if (next_update_time > get_time() + update_interval) {
-		next_update_time = get_time() + update_interval;
+		next_update_time = get_time() + ui;
+	} else if (next_update_time > get_time() + ui) {
+		next_update_time = get_time() + ui;
 	}
 	last_update_time = current_update_time;
 	total_updates++;
-}
-
-void set_update_interval(double interval)
-{
-	update_interval = interval;
-	update_interval_old = interval;
 }
 
 int get_string_width(const char *s)
@@ -1618,7 +1620,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					if (show_graph_range.get(*state)) {
 						int tmp_x = cur_x;
 						int tmp_y = cur_y;
-						unsigned short int seconds = update_interval * w;
+						unsigned short int seconds = active_update_interval() * w;
 						char *tmp_day_str;
 						char *tmp_hour_str;
 						char *tmp_min_str;
@@ -2003,7 +2005,7 @@ static void update_text(void)
 #endif /* BUILD_X11 */
 	need_to_update = 1;
 #ifdef BUILD_LUA
-	llua_update_info(&info, update_interval);
+	llua_update_info(&info, active_update_interval());
 #endif /* BUILD_LUA */
 }
 
@@ -2038,15 +2040,11 @@ static void main_loop(void)
 	info.looped = 0;
 	while (terminate == 0
 			&& (total_run_times.get(*state) == 0 || info.looped < total_run_times.get(*state))) {
-		if(update_interval_bat != NOBATTERY && update_interval_bat != update_interval_old) {
+		if(update_interval_on_battery.get(*state) != NOBATTERY) {
 			char buf[64];
 
 			get_battery_short_status(buf, 64, "BAT0");
-			if(buf[0] == 'D') {
-				update_interval = update_interval_bat;
-			} else {
-				update_interval = update_interval_old;
-			}
+			on_battery = (buf[0] == 'D');
 		}
 		info.looped++;
 
@@ -2069,11 +2067,7 @@ static void main_loop(void)
 				int s;
 				t = next_update_time - get_time();
 
-				if (t < 0) {
-					t = 0;
-				} else if (t > update_interval) {
-					t = update_interval;
-				}
+				t = std::min(std::max(t, 0.0), active_update_interval());
 
 				tv.tv_sec = (long) t;
 				tv.tv_usec = (long) (t * 1000000) % 1000000;
@@ -2471,7 +2465,7 @@ static void main_loop(void)
 #endif /* HAVE_SYS_INOTIFY_H */
 
 #ifdef BUILD_LUA
-		llua_update_info(&info, update_interval);
+		llua_update_info(&info, active_update_interval());
 #endif /* BUILD_LUA */
 		g_signal_pending = 0;
 	}
@@ -2622,8 +2616,6 @@ static void set_default_configurations(void)
 	out_to_stdout.lua_set(*state);
 #endif
 
-	set_update_interval(3);
-	update_interval_bat = NOBATTERY;
 	info.music_player_interval = 1.0;
 	info.users.number = 1;
 }
@@ -2768,24 +2760,6 @@ char load_config_file(const char *f)
 				CONF_ERR;
 			}
 		}
-		CONF("update_interval_on_battery") {
-			if (value) {
-				update_interval_bat = strtod(value, 0);
-			} else {
-				CONF_ERR;
-			}
-		}
-		CONF("update_interval") {
-			if (value) {
-				set_update_interval(strtod(value, 0));
-			} else {
-				CONF_ERR;
-			}
-			if (info.music_player_interval == 0) {
-				// default to update_interval
-				info.music_player_interval = update_interval;
-			}
-		}
 		CONF("text") {
 			free_and_zero(global_text);
 
@@ -2836,7 +2810,7 @@ char load_config_file(const char *f)
 
 	if (info.music_player_interval == 0) {
 		// default to update_interval
-		info.music_player_interval = update_interval;
+		info.music_player_interval = active_update_interval();
 	}
 	if (!global_text) { // didn't supply any text
 		CRIT_ERR(NULL, NULL, "missing text block in configuration; exiting");
@@ -3104,12 +3078,8 @@ void initialisation(int argc, char **argv) {
 				break;
 
 			case 'u':
-				update_interval = strtod(optarg, 0);
-				update_interval_old = update_interval;
-				if (info.music_player_interval == 0) {
-					// default to update_interval
-					info.music_player_interval = update_interval;
-				}
+				state->pushstring(optarg);
+				update_interval.lua_set(*state);
 				break;
 
 			case 'i':
@@ -3181,7 +3151,7 @@ void initialisation(int argc, char **argv) {
 	X11_create_window();
 #endif /* BUILD_X11 */
 #ifdef BUILD_LUA
-	llua_setup_info(&info, update_interval);
+	llua_setup_info(&info, active_update_interval());
 #endif /* BUILD_LUA */
 #ifdef BUILD_WEATHER_XOAP
 	xmlInitParser();
