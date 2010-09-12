@@ -351,6 +351,23 @@ namespace lua {
 		return safe_compare(&safe_compare_trampoline<&lua_lessthan>, index1, index2);
 	}
 
+	void state::loadfile(const char *filename)
+						throw(lua::syntax_error, lua::file_error, std::bad_alloc)
+	{
+		switch(luaL_loadfile(cobj.get(), filename)) {
+			case 0:
+				return;
+			case LUA_ERRSYNTAX:
+				throw lua::syntax_error(this);
+			case LUA_ERRFILE:
+				throw lua::file_error(this);
+			case LUA_ERRMEM:
+				throw std::bad_alloc();
+			default:
+				assert(0);
+		}
+	}
+
 	void state::loadstring(const char *s) throw(lua::syntax_error, std::bad_alloc)
 	{
 		switch(luaL_loadstring(cobj.get(), s)) {

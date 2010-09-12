@@ -124,6 +124,21 @@ namespace lua {
 		{}
 	};
 
+	// loadfile() encountered an error while opening/reading the file
+	class file_error: public lua::exception {
+		file_error(const file_error &) = delete;
+		const file_error& operator=(const file_error &) = delete;
+
+	public:
+		file_error(state *L)
+			: lua::exception(L)
+		{}
+
+		file_error(file_error &&other)
+			: lua::exception(std::move(other))
+		{}
+	};
+
 	// double fault, lua encountered an error while running the error handler function
 	class errfunc_error: public lua::exception {
 		errfunc_error(const errfunc_error &) = delete;
@@ -259,6 +274,7 @@ namespace lua {
 		void gettable(int index);
 		void getglobal(const char *name) { getfield(GLOBALSINDEX, name); }
 		bool lessthan(int index1, int index2);
+		void loadfile(const char *filename) throw(lua::syntax_error, lua::file_error, std::bad_alloc);
 		void loadstring(const char *s) throw(lua::syntax_error, std::bad_alloc);
 		bool next(int index);
 		// register is a reserved word :/
