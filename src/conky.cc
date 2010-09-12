@@ -2942,36 +2942,33 @@ static const struct option longopts[] = {
 
 void set_current_config() {
 	/* load current_config, CONFIG_FILE or SYSTEM_CONFIG_FILE */
+	struct stat s;
 
 	if (current_config.empty()) {
-		/* load default config file */
-		FILE *fp;
-
 		/* Try to use personal config file first */
 		std::string buf = to_real_path(CONFIG_FILE);
-		if (!buf.empty() && (fp = fopen(buf.c_str(), "r"))) {
+		if (stat(buf.c_str(), &s) == 0)
 			current_config = buf;
-			fclose(fp);
-		}
-
-		/* Try to use system config file if personal config not readable */
-		if (current_config.empty() && (fp = fopen(SYSTEM_CONFIG_FILE, "r"))) {
-			current_config = SYSTEM_CONFIG_FILE;
-			fclose(fp);
-		}
-
-		/* No readable config found */
-		if (current_config.empty()) {
-#define NOCFGFILEFOUND "no readable personal or system-wide config file found"
-#ifdef BUILD_BUILTIN_CONFIG
-			current_config = "==builtin==";
-			NORM_ERR(NOCFGFILEFOUND
-					", using builtin default");
-#else
-			CRIT_ERR(NULL, NULL, NOCFGFILEFOUND);
-#endif /* ! CONF_OUTPUT */
-		}
 	}
+
+	/* Try to use system config file if personal config does not exist */
+	if (current_config.empty() && (stat(SYSTEM_CONFIG_FILE, &s)==0))
+		current_config = SYSTEM_CONFIG_FILE;
+
+	/* No readable config found */
+	if (current_config.empty()) {
+#define NOCFGFILEFOUND "no personal or system-wide config file found"
+#ifdef BUILD_BUILTIN_CONFIG
+		current_config = "==builtin==";
+		NORM_ERR(NOCFGFILEFOUND ", using builtin default");
+#else
+		CRIT_ERR(NULL, NULL, NOCFGFILEFOUND);
+#endif
+	}
+
+	// "-" stands for "read from stdin"
+	if(current_config == "-")
+		current_config = "/dev/stdin";
 }
 
 void initialisation(int argc, char **argv) {
