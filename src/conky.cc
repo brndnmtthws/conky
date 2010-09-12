@@ -219,7 +219,6 @@ char** argv_copy;
 
 /* prototypes for internally used functions */
 static void signal_handler(int);
-static void print_version(void) __attribute__((noreturn));
 static void reload_config(void);
 
 static void print_version(void)
@@ -331,8 +330,6 @@ static void print_version(void)
 #endif /* BUILD_LUA_IMLIB2 */
 #endif /* BUILD_LUA */
 	;
-
-	exit(EXIT_SUCCESS);
 }
 
 static const char *suffixes[] = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "" };
@@ -3172,8 +3169,16 @@ int main(int argc, char **argv)
 	clear_net_stats();
 
 #ifdef BUILD_CURL
-	if(curl_global_init(CURL_GLOBAL_ALL))
-		NORM_ERR("curl_global_init() failed, you may not be able to use curl variables");
+	struct curl_global_initializer {
+		curl_global_initializer()
+		{
+			if(curl_global_init(CURL_GLOBAL_ALL))
+				NORM_ERR("curl_global_init() failed, you may not be able to use curl variables");
+		}
+		~curl_global_initializer()
+		{ curl_global_cleanup(); }
+	};
+	curl_global_initializer curl_global;
 #endif
 
 	/* handle command line parameters that don't change configs */
@@ -3195,7 +3200,8 @@ int main(int argc, char **argv)
 				break;
 			case 'v':
 			case 'V':
-				print_version(); /* doesn't return */
+				print_version();
+				return EXIT_SUCCESS;
 			case 'c':
 				current_config = optarg;
 				break;
@@ -3218,7 +3224,7 @@ int main(int argc, char **argv)
 #endif /* BUILD_X11 */
 
 			case '?':
-				exit(EXIT_FAILURE);
+				return EXIT_FAILURE;
 		}
 	}
 
@@ -3286,9 +3292,6 @@ int main(int argc, char **argv)
         std::cerr << "caught exception: " << e.what() << std::endl;
     }
 #endif
-#ifdef BUILD_CURL
-	curl_global_cleanup();
-#endif
 	return 0;
 	//////////// XXX ////////////////////////////////
 
@@ -3312,10 +3315,6 @@ int main(int argc, char **argv)
 	first_pass = 0; /* don't ever call fork() again */
 
 	main_loop();
-
-#ifdef BUILD_CURL
-	curl_global_cleanup();
-#endif
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 	kvm_close(kd);
