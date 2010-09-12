@@ -35,16 +35,6 @@
 outupper="`basename "$2" | tr '[a-z-.]' '[A-Z__]'`"
 
 (
-	printf "#ifndef __%s\n" "$outupper"
-	printf "#define __%s\n" "$outupper"
-	printf "\n#define %s { \\" $3
-	printf "\n"
-	sed -e 's/"/\\"/g' -e 's/^/"/' -e 's/$/\\n", \\/' $1
-	printf "NULL }\n"
-	printf "\n#define print_%s() { \\" $3
-	printf "\n\tconst char **__sp, *__s[] = %s; \\" $3
-	printf "\n\tfor (__sp = __s; *__sp; __sp++) \\"
-	printf "\n\t\tprintf(\"%s\", *__sp); \\" "%s"
-	printf "\n}\n\n"
-	printf "#endif /* __%s */\n" "$outupper"
+	printf "const char %s[] = \n" $3
+	sed -e 's/["\]/\\&/g' -e 's/^/\t"/' -e 's/$/\\n"/' -e '$s/$/;/' $1
 ) > $2

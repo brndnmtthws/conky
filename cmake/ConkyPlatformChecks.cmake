@@ -91,11 +91,6 @@ if(BUILD_HTTP)
 	set(conky_libs ${conky_libs} -lmicrohttpd)
 endif(BUILD_HTTP)
 
-if(BUILD_BUILTIN_CONFIG)
-	check_function_exists(fopencookie HAVE_FOPENCOOKIE)
-	check_function_exists(funopen HAVE_FUNOPEN)
-endif(BUILD_BUILTIN_CONFIG)
-
 if(BUILD_NCURSES)
 	check_include_file(ncurses.h NCURSES_H)
 	find_library(NCURSES_LIB NAMES ncurses)

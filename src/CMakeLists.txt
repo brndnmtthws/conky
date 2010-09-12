@@ -180,10 +180,6 @@ if(BUILD_ICONV)
 	set(optional_sources ${optional_sources} ${iconv})
 endif(BUILD_ICONV)
 
-if(BUILD_BUILTIN_CONFIG)
-	 set(optional_sources ${optional_sources} conf_cookie.cc)
-endif(BUILD_BUILTIN_CONFIG)
-
 if(BUILD_NCURSES)
 	 set(optional_sources ${optional_sources} nc.cc)
 endif(BUILD_NCURSES)

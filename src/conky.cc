@@ -126,7 +126,8 @@
 
 #ifdef BUILD_BUILTIN_CONFIG
 #include "defconfig.h"
-#include "conf_cookie.h"
+
+namespace { const char builtin_config_magic[] = "==builtin=="; }
 #endif
 
 #ifndef S_ISSOCK
@@ -2687,11 +2688,6 @@ static void X11_create_window(void)
 
 static FILE *open_config_file(const char *f)
 {
-#ifdef BUILD_BUILTIN_CONFIG
-	if (!strcmp(f, "==builtin==")) {
-		return conf_cookie_open();
-	} else
-#endif /* BUILD_BUILTIN_CONFIG */
 		return fopen(f, "r");
 }
 
@@ -2956,7 +2952,7 @@ void set_current_config() {
 	if (current_config.empty()) {
 #define NOCFGFILEFOUND "no personal or system-wide config file found"
 #ifdef BUILD_BUILTIN_CONFIG
-		current_config = "==builtin==";
+		current_config = builtin_config_magic;
 		NORM_ERR(NOCFGFILEFOUND ", using builtin default");
 #else
 		CRIT_ERR(NULL, NULL, NOCFGFILEFOUND);
@@ -3214,7 +3210,7 @@ int main(int argc, char **argv)
 				return 0;
 #ifdef BUILD_BUILTIN_CONFIG
 			case 'C':
-				print_defconfig();
+				std::cout << defconfig;
 				return 0;
 #endif
 #ifdef BUILD_X11
@@ -3235,7 +3231,10 @@ int main(int argc, char **argv)
 	//////////// XXX ////////////////////////////////
 	lua::state &l = *state;	
 	try {
-		l.loadfile(argv[1]);
+		if(current_config == builtin_config_magic)
+			l.loadstring(defconfig);
+		else
+			l.loadfile(current_config.c_str());
 		l.call(0, 0);
 		conky::set_config_settings(l);
 		std::cout << "config.alignment = " << text_alignment.get(l) << std::endl;
