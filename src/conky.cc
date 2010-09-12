@@ -2870,7 +2870,6 @@ static void print_help(const char *prog_name) {
 			"   -x X                      x position\n"
 			"   -y Y                      y position\n"
 #endif /* BUILD_X11 */
-			"   -s, --for-scripts=TEXT    render TEXT on stdout and exit, enclose TEXT by single quotes\n"
 			"   -t, --text=TEXT           text to render, remember single quotes, like -t '$uptime'\n"
 			"   -u, --interval=SECS       update interval\n"
 			"   -i COUNT                  number of times to update "PACKAGE_NAME" (and quit)\n"
@@ -2926,7 +2925,6 @@ static const struct option longopts[] = {
 #endif
 	{ "window-id", 1, NULL, 'w' },
 #endif /* BUILD_X11 */
-	{ "for-scripts", 1, NULL, 's' },
 	{ "text", 1, NULL, 't' },
 	{ "interval", 1, NULL, 'u' },
 	{ "pause", 1, NULL, 'p' },
@@ -2966,38 +2964,12 @@ void set_current_config() {
 
 void initialisation(int argc, char **argv) {
 	struct sigaction act, oact;
-	bool for_scripts = false;
 
 	set_default_configurations();
 
-	reset_optind();
-	while (1) {
-		int c = getopt_long(argc, argv, getopt_string, longopts, NULL);
-
-		if (c == -1) {
-			break;
-		}else if (c == 's') {
-			free_and_zero(global_text);
-			global_text = strndup(optarg, max_user_text.get(*state));
-			convert_escapes(global_text);
-
-			state->pushinteger(1);
-			total_run_times.lua_set(*state);
-
-			state->pushboolean(true);
-			out_to_stdout.lua_set(*state);
-#ifdef BUILD_X11
-			state->pushboolean(false);
-			out_to_x.lua_set(*state);
-#endif
-			for_scripts = true;
-		}
-	}
-	if(for_scripts == false) {
-		set_current_config();
-		load_config_file(current_config.c_str());
-		currentconffile = conftree_add(currentconffile, current_config.c_str());
-	}
+	set_current_config();
+	load_config_file(current_config.c_str());
+	currentconffile = conftree_add(currentconffile, current_config.c_str());
 
 	/* handle other command line arguments */
 
