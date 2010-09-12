@@ -103,11 +103,6 @@ namespace priv {
 
 		if(init) {
 			if(do_convert(l, -1).first) {
-				if(not out_to_x.get(l)) {
-					// own_window makes no sense when not drawing to X
-					l.pop();
-					l.pushboolean(false);
-				}
 #ifndef OWN_WINDOW
 				std::cerr << "Support for the own_window setting has been "
 							 "disabled during compilation\n";
@@ -115,7 +110,15 @@ namespace priv {
 				l.pushboolean(false);
 #endif
 			}
-			init_window(l, do_convert(l, -1).first);
+
+			if(not out_to_x.get(l)) {
+				// own_window makes no sense when not drawing to X
+				l.pop();
+				l.pushboolean(false);
+			}
+
+			if(do_convert(l, -1).first)
+				init_window(l, do_convert(l, -1).first);
 		}
 
 		++s;
