@@ -3229,17 +3229,7 @@ int main(int argc, char **argv)
 	//////////// XXX ////////////////////////////////
 	lua::state &l = *state;	
 	try {
-		l.loadstring(
-				"print(conky.asnumber(conky.variables.asdf{}));\n"
-				"print(conky.astext(conky.variables.asdf{}));\n"
-				"print(conky.asnumber(conky.variables.zxcv{}));\n"
-				"print(conky.variables.asdf{}.text);\n"
-				"print(conky.variables.asdf{}.xxx);\n"
-				"conky.config = { alignment='top_left', asdf=47, [42]=47, out_to_x=true,\n"
-				"    own_window_hints='above, skip_taskbar',\n"
-				"    background_colour='pink', own_window=true, double_buffer=true,\n"
-				"    update_interval=5, update_interval_on_battery=10};\n"
-				);
+		l.loadfile(argv[1]);
 		l.call(0, 0);
 		conky::set_config_settings(l);
 		std::cout << "config.alignment = " << text_alignment.get(l) << std::endl;
@@ -3295,6 +3285,9 @@ int main(int argc, char **argv)
     catch(std::exception &e) {
         std::cerr << "caught exception: " << e.what() << std::endl;
     }
+#endif
+#ifdef BUILD_CURL
+	curl_global_cleanup();
 #endif
 	return 0;
 	//////////// XXX ////////////////////////////////
