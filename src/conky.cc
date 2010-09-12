@@ -3291,8 +3291,6 @@ int main(int argc, char **argv)
         std::cerr << "caught exception: " << e.what() << std::endl;
     }
 #endif
-	return 0;
-	//////////// XXX ////////////////////////////////
 
 #ifdef BUILD_WEATHER_XOAP
 	/* Load xoap keys, if existing */
@@ -3300,14 +3298,16 @@ int main(int argc, char **argv)
 #endif /* BUILD_WEATHER_XOAP */
 
 #ifdef HAVE_SYS_INOTIFY_H
+	// the file descriptor will be automatically closed on exit
 	inotify_fd = inotify_init();
 	if(inotify_fd != -1) {
-		int fl;
-
-		fl = fcntl(inotify_fd, F_GETFL);
-		fcntl(inotify_fd, F_SETFL, fl | O_NONBLOCK);
+		fcntl(inotify_fd, F_SETFL, fcntl(inotify_fd, F_GETFL) | O_NONBLOCK);
+		
+		fcntl(inotify_fd, F_SETFD, fcntl(inotify_fd, F_GETFD) | FD_CLOEXEC);
 	}
 #endif /* HAVE_SYS_INOTIFY_H */
+	return 0;
+	//////////// XXX ////////////////////////////////
 
 	initialisation(argc, argv);
 
