@@ -240,6 +240,7 @@ namespace lua {
 		// checkstack correctly throws bad_alloc, because lua_checkstack kindly informs us of
 		// that sitution
 		void checkstack(int extra) throw(std::bad_alloc);
+		const char* gsub(const char *s, const char *p, const char *r) { return luaL_gsub(cobj.get(), s, p, r); }
 		bool newmetatable(const char *tname) { return luaL_newmetatable(cobj.get(), tname); }
 		void newtable() { lua_newtable(cobj.get()); }
 		void *newuserdata(size_t size) { return lua_newuserdata(cobj.get(), size); }
