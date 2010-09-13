@@ -69,7 +69,7 @@ static char *smapi_read_str(const char *path)
 			perror("fscanf()");
 		fclose(fp);
 	}
-	return strndup(str, text_buffer_size);
+	return strndup(str, text_buffer_size.get(*state));
 }
 
 static char *smapi_get_str(const char *fname)
