@@ -169,16 +169,10 @@ struct conftree {
 	struct conftree* back;
 };
 
-char load_config_file(const char *);
+void load_config_file();
 
 char *get_global_text(void);
 extern long global_text_lines;
-
-//adds newstring to to the tree unless you can already see it when travelling back.
-//if it's possible to attach it then it returns a pointer to the leaf, else it returns NULL
-struct conftree* conftree_add(struct conftree* previous, const char* newstring);
-
-extern struct conftree *currentconffile;
 
 #define MAX_TEMPLATES 10
 char **get_templates(void);

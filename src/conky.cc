@@ -739,44 +739,6 @@ long get_current_text_color(void)
 	return current_text_color;
 }
 
-//adds newstring to to the tree unless you can already see it when travelling back.
-//if it's possible to attach it then it returns a pointer to the leaf, else it returns NULL
-struct conftree* conftree_add(struct conftree* previous, const char* newstring) {
-	struct conftree* node;
-	struct conftree* node2;
-
-	for(node = previous; node != NULL; node = node->back) {
-		if(strcmp(node->string, newstring) == 0) {
-			return NULL;
-		}
-	}
-	node = (struct conftree*)malloc(sizeof(struct conftree));
-	if (previous != NULL) {
-		if(previous->vert_next == NULL) {
-			previous->vert_next = node;
-		} else {
-			for(node2 = previous->vert_next; node2->horz_next != NULL; node2 = node2->horz_next ) { }
-			node2->horz_next = node;
-		}
-	}
-	node->string = strdup(newstring);
-	node->horz_next = NULL;
-	node->vert_next = NULL;
-	node->back = previous;
-	return node;
-}
-
-void conftree_empty(struct conftree* tree) {
-	if(tree) {
-		conftree_empty(tree->horz_next);
-		conftree_empty(tree->vert_next);
-		free(tree->string);
-		free(tree);
-	}
-}
-
-struct conftree *currentconffile;
-
 static void extract_variable_text(const char *p)
 {
 	free_text_objects(&global_root_object);
@@ -2542,8 +2504,6 @@ void free_specials(special_t *current) {
 
 void clean_up_without_threads(void *memtofree1, void* memtofree2)
 {
-	conftree_empty(currentconffile);
-	currentconffile = NULL;
 	free_and_zero(memtofree1);
 	free_and_zero(memtofree2);
 	timed_thread::destroy_registered_threads();
@@ -2676,152 +2636,38 @@ static void X11_create_window(void)
 }
 #endif /* BUILD_X11 */
 
-#define CONF_ERR NORM_ERR("%s: %d: config file error", f, line)
-#define CONF_ERR2(a) NORM_ERR("%s: %d: config file error: %s", f, line, a)
-#define CONF2(a) if (strcasecmp(name, a) == 0)
-#define CONF(a) else CONF2(a)
-#define CONF3(a, b) else if (strcasecmp(name, a) == 0 \
-		|| strcasecmp(name, b) == 0)
-#define CONF_CONTINUE 1
-#define CONF_BREAK 2
-#define CONF_BUFF_SIZE 512
-
-static FILE *open_config_file(const char *f)
+void load_config_file()
 {
-		return fopen(f, "r");
-}
+	DBGP("reading contents from config file '%s'", current_config.c_str());
 
-static int do_config_step(int *line, FILE *fp, char *buf, char **name, char **value)
-{
-	char *p, *p2;
-	(*line)++;
-	if (fgets(buf, CONF_BUFF_SIZE, fp) == NULL) {
-		return CONF_BREAK;
-	}
-	remove_comments(buf);
+	lua::state &l = *state;
+	lua::stack_sentry s(l);
+	l.checkstack(2);
 
-	p = buf;
+	if(current_config == builtin_config_magic)
+		l.loadstring(defconfig);
+	else
+		l.loadfile(current_config.c_str());
+	l.call(0, 0);
 
-	/* skip spaces */
-	while (*p && isspace((int) *p)) {
-		p++;
-	}
-	if (*p == '\0') {
-		return CONF_CONTINUE;	/* empty line */
-	}
+	l.getglobal("conky");
+	l.getfield(-1, "text");
+	l.replace(-2);
+	if(l.type(-1) != lua::TSTRING)
+		throw std::runtime_error("missing text block in configuration; exiting");
+	
+	/* Remove \\-\n. */
+	l.gsub(l.tocstring(-1), "\\\n", "");
+	l.replace(-2);
+	global_text = strdup(l.tocstring(-1));
+	l.pop();
 
-	*name = p;
+	// XXX: what does this do?
+	//	global_text_lines = line + 1;
 
-	/* skip name */
-	p2 = p;
-	while (*p2 && !isspace((int) *p2)) {
-		p2++;
-	}
-	if (*p2 != '\0') {
-		*p2 = '\0';	/* break at name's end */
-		p2++;
-	}
-
-	/* get value */
-	if (*p2) {
-		p = p2;
-		while (*p && isspace((int) *p)) {
-			p++;
-		}
-
-		*value = p;
-
-		p2 = *value + strlen(*value);
-		while (isspace((int) *(p2 - 1))) {
-			*--p2 = '\0';
-		}
-	} else {
-		*value = 0;
-	}
-	return 0;
-}
-
-char load_config_file(const char *f)
-{
-	int line = 0;
-	FILE *fp;
-
-	fp = open_config_file(f);
-	if (!fp) {
-		return FALSE;
-	}
-	DBGP("reading contents from config file '%s'", f);
-
-	while (!feof(fp)) {
-		char buff[CONF_BUFF_SIZE], *name, *value;
-		int ret = do_config_step(&line, fp, buff, &name, &value);
-		if (ret == CONF_BREAK) {
-			break;
-		} else if (ret == CONF_CONTINUE) {
-			continue;
-		}
-
-		// start the whole if-then-else-if cascade
-		if (false) {}
-		CONF("text") {
-			free_and_zero(global_text);
-
-			global_text = (char *) malloc(1);
-			global_text[0] = '\0';
-
-			while (!feof(fp)) {
-				unsigned int l = strlen(global_text);
-				unsigned int bl;
-				char buf[CONF_BUFF_SIZE];
-
-				if (fgets(buf, CONF_BUFF_SIZE, fp) == NULL) {
-					break;
-				}
-
-				/* Remove \\-\n. */
-				bl = strlen(buf);
-				if (bl >= 2 && buf[bl-2] == '\\' && buf[bl-1] == '\n') {
-					buf[bl-2] = '\0';
-					bl -= 2;
-					if (bl == 0) {
-						continue;
-					}
-				}
-
-				/* Check for continuation of \\-\n. */
-				if (l > 0 && buf[0] == '\n' && global_text[l-1] == '\\') {
-					global_text[l-1] = '\0';
-					continue;
-				}
-
-				global_text = (char *) realloc(global_text, l + bl + 1);
-				strcat(global_text, buf);
-
-				if (strlen(global_text) > max_user_text.get(*state)) {
-					break;
-				}
-			}
-			global_text_lines = line + 1;
-			break;
-		}
-		else {
-			NORM_ERR("%s: %d: no such configuration: '%s'", f, line, name);
-		}
-	}
-
-	fclose(fp);
-
-	if (!global_text) { // didn't supply any text
-		CRIT_ERR(NULL, NULL, "missing text block in configuration; exiting");
-	}
-	if (!output_methods) {
-		CRIT_ERR(0, 0, "no output_methods have been selected; exiting");
-	}
+#if 0
 #if defined(BUILD_NCURSES)
 #if defined(BUILD_X11)
-	if(out_to_x.get(*state)) {
-		current_text_color = default_color.get(*state);
-	}
 	if (out_to_x.get(*state) && out_to_ncurses.get(*state)) {
 		NORM_ERR("out_to_x and out_to_ncurses are incompatible, turning out_to_ncurses off");
 		state->pushboolean(false);
@@ -2838,7 +2684,11 @@ char load_config_file(const char *f)
 		out_to_stderr.lua_set(*state);
 	}
 #endif /* BUILD_NCURSES */
-	return TRUE;
+#endif
+
+	if(out_to_x.get(*state)) {
+		current_text_color = default_color.get(*state);
+	}
 }
 
 static void print_help(const char *prog_name) {
@@ -2968,8 +2818,7 @@ void initialisation(int argc, char **argv) {
 	set_default_configurations();
 
 	set_current_config();
-	load_config_file(current_config.c_str());
-	currentconffile = conftree_add(currentconffile, current_config.c_str());
+	load_config_file();
 
 	/* handle other command line arguments */
 
@@ -3056,9 +2905,11 @@ void initialisation(int argc, char **argv) {
 				break;
 
 			case '?':
-				exit(EXIT_FAILURE);
+				throw std::runtime_error("Unknown argument");
 		}
 	}
+
+	conky::set_config_settings(*state);
 
 	/* generate text and get initial size */
 	extract_variable_text(global_text);
@@ -3200,15 +3051,14 @@ int main(int argc, char **argv)
 
 	state.reset(new lua::state);
 	conky::export_symbols(*state);
+
+	initialisation(argc, argv);
+
+	first_pass = 0; /* don't ever call fork() again */
+
 	//////////// XXX ////////////////////////////////
 	lua::state &l = *state;	
 	try {
-		if(current_config == builtin_config_magic)
-			l.loadstring(defconfig);
-		else
-			l.loadfile(current_config.c_str());
-		l.call(0, 0);
-		conky::set_config_settings(l);
 		std::cout << "config.alignment = " << text_alignment.get(l) << std::endl;
 		l.pushstring("X");
 		text_alignment.lua_set(l);
@@ -3229,9 +3079,6 @@ int main(int argc, char **argv)
 		l.call(0, 0);
 
 		sleep(3);
-
-		conky::cleanup_config_settings(*state);
-		state.reset();
 	}
 	catch(std::exception &e) {
 		std::cerr << "caught exception: " << e.what() << std::endl;
@@ -3278,12 +3125,9 @@ int main(int argc, char **argv)
 		fcntl(inotify_fd, F_SETFD, fcntl(inotify_fd, F_GETFD) | FD_CLOEXEC);
 	}
 #endif /* HAVE_SYS_INOTIFY_H */
+	clean_up(NULL, NULL);
 	return 0;
 	//////////// XXX ////////////////////////////////
-
-	initialisation(argc, argv);
-
-	first_pass = 0; /* don't ever call fork() again */
 
 	main_loop();
 
