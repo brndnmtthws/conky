@@ -1684,21 +1684,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 	END OBJ(entropy_bar, &update_entropy)
 		scan_bar(obj, arg, 1);
 		obj->callbacks.barval = &entropy_barval;
-	END OBJ_ARG(include, 0, "include needs a argument")
-		struct conftree *leaf = conftree_add(currentconffile, arg);
-		if(leaf) {
-			if (load_config_file(arg) == TRUE) {
-				obj->sub = (text_object*)malloc(sizeof(struct text_object));
-				currentconffile = leaf;
-				extract_variable_text_internal(obj->sub, get_global_text());
-				currentconffile = leaf->back;
-				obj->callbacks.print = &print_include;
-			} else {
-				NORM_ERR("Can't load configfile '%s'.", arg);
-			}
-		} else {
-			NORM_ERR("You are trying to load '%s' recursively, I'm only going to load it once to prevent an infinite loop.", arg);
-		}
 	END OBJ_ARG(blink, 0, "blink needs a argument")
 		obj->sub = (text_object*)malloc(sizeof(struct text_object));
 		extract_variable_text_internal(obj->sub, arg);
