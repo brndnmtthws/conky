@@ -1,0 +1,12 @@
+Import('env')
+
+src = [
+	env.Object('tolua.c'),
+	]
+
+
+toluabind = env.LuaBinding('toluabind.c', 'tolua_scons.pkg', 'tolua', bootstrap = True)
+
+env.bin_target = env.Program('#/bin/'+env['tolua_bin'], src + [toluabind], LIBS = ['$tolua_lib'] + env['LIBS'])
+
+env.bootstrap_target = env.Program('#/bin/'+env['TOLUAPP_BOOTSTRAP'], src + ['toluabind_default.c', env.lib_target_static], LIBS = env['LIBS'])
