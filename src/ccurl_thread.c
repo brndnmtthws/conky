@@ -149,7 +149,7 @@ void ccurl_fetch_data(ccurl_location_t *curloc)
 					case 304:
 						break;
 					default:
-						NORM_ERR("curl: no data from server, got HTTP status %d %s",
+						NORM_ERR("curl: no data from server, got HTTP status %ld",
 								http_status_code);
 						break;
 				}
