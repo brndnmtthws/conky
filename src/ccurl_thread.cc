@@ -133,7 +133,7 @@ void ccurl_fetch_data(thread_handle &handle, const ccurl_location_ptr &curloc)
 					case 304:
 						break;
 					default:
-						NORM_ERR("curl: no data from server, got HTTP status %d %s",
+						NORM_ERR("curl: no data from server, got HTTP status %ld",
 								http_status_code);
 						break;
 				}
