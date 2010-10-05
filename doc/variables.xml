@@ -1016,11 +1016,11 @@
         use a temperature gradient, which makes the gradient values
         change depending on the amplitude of a particular graph
         value (try it and see). If -t or -l is your first argument,
-		you may need to preceed it by a space (' ').  You may also use
-		double-quotes around the exec argument should you need to execute a
-		command with spaces.  For example, ${execgraph "date +'%S'"} to execute
-		`date +'%S'` and graph the result.  Without quotes, it would simply
-		print the result of `date`.
+        you may need to preceed it by a space (' ').  You may also use
+        double-quotes around the exec argument should you need to execute a
+        command with spaces.  For example, ${execgraph "date +'%S'"} to execute
+        `date +'%S'` and graph the result.  Without quotes, it would simply
+        print the result of `date`.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1032,7 +1032,7 @@
         </term>
         <listitem>Same as exec but with specific interval. Interval
         can't be less than update_interval in configuration. See
-        also $texeci 
+        also $texeci
         <para /></listitem>
     </varlistentry>
     <varlistentry>
