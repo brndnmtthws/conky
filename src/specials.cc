@@ -234,7 +234,7 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale)
 		if (*buf == '"') {
 			char *_ptr;
 			size_t _size;
-			if (_ptr = strrchr(args, '"')) {
+			if (_ptr = const_cast<char*>(strrchr(args, '"'))) {
 				_size = _ptr - args - 1;
 			}
 			_size = _size < 1024 ? _size : 1023;
