@@ -606,7 +606,7 @@ void human_readable(long long num, char *buf, int size)
 		spaced_print(buf, size, "%d", 6, round_to_int(num));
 		return;
 	}
-	if (short_units) {
+	if (short_units || llabs(num) < 1000LL) {
 		width = 5;
 		format = "%.*f%.1s";
 	} else {
@@ -633,11 +633,11 @@ void human_readable(long long num, char *buf, int size)
 	 * adjusting the decimal part of the number. Sample output:
 	 *  123MiB
 	 * 23.4GiB
-	 * 5.12B   
+	 * 5.12B
 	 * so the point of alignment resides between number and unit. The
 	 * upside of this is that there is minimal padding necessary, though
 	 * there should be a way to make alignment take place at the decimal
-	 * dot (then with fixed width decimal part). 
+	 * dot (then with fixed width decimal part).
 	 *
 	 * Note the repdigits below: when given a precision value, printf()
 	 * rounds the float to it, not just cuts off the remaining digits. So
