@@ -114,6 +114,8 @@ void ccurl_fetch_data(thread_handle &handle, const ccurl_location_ptr &curloc)
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &chunk);
 		curl_easy_setopt(curl, CURLOPT_USERAGENT, "conky-curl/1.0");
 		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+		curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1000);
+		curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 60);
 
 		res = curl_easy_perform(curl);
 		if (res == CURLE_OK && chunk.size) {
