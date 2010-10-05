@@ -15,6 +15,8 @@ conky.1: command_options.xml config_settings.xml docs.xml variables.xml lua.xml
 	sed -i "s/\xE2//g" README
 	sed -i "s/\x80//g" README
 	sed -i "s/\x90/-/g" README
+	sed -i "s/\x94/-/g" README
+	sed -i "s/\x9f/-/g" README
 	mv README ${top_srcdir}
 	xsltproc ${srcdir}/variables.xsl ${srcdir}/variables.xml > variables.html
 	xsltproc ${srcdir}/config_settings.xsl ${srcdir}/config_settings.xml > config_settings.html

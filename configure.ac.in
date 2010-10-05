@@ -4,7 +4,7 @@ dnl major, minor and micro version macros.
 m4_define([conky_version_major], [1])
 m4_define([conky_version_minor], [8])
 m4_define([conky_version_micro], [1])
-m4_define([conky_version_tag], [pre]) dnl [] for releases
+m4_define([conky_version_tag]) dnl, [pre]) dnl [] for releases
 m4_define([conky_version_revision],[_rc1])
 m4_define([conky_version],
     [conky_version_major().conky_version_minor().conky_version_micro()ifelse(
