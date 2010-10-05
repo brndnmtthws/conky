@@ -214,6 +214,19 @@ char *scan_graph(struct text_object *obj, const char *args, int defscale)
 			//TODO: check the return value and throw an error?
 			sscanf(args, "%1023s %d,%d", buf, &g->height, &g->width);
 		}
+
+		/* escape quotes at end in case of execgraph */
+		if (*buf == '"') {
+			char *_ptr;
+			size_t _size;
+			if (_ptr = strrchr(args, '"')) {
+				_size = _ptr - args - 1;
+			}
+			_size = _size < 1024 ? _size : 1023;
+			strncpy(buf, args + 1, _size);
+			buf[_size] = 0;
+		}
+
 #undef g
 
 		return strndup(buf, text_buffer_size);

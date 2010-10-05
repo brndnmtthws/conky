@@ -1000,7 +1000,11 @@
         use a temperature gradient, which makes the gradient values
         change depending on the amplitude of a particular graph
         value (try it and see). If -t or -l is your first argument,
-        you may need to preceed it by a space (' '). 
+		you may need to preceed it by a space (' ').  You may also use
+		double-quotes around the exec argument should you need to execute a
+		command with spaces.  For example, ${execgraph "date +'%S'"} to execute
+		`date +'%S'` and graph the result.  Without quotes, it would simply
+		print the result of `date`.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
