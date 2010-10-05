@@ -130,17 +130,29 @@ void ccurl_fetch_data(ccurl_location_t *curloc)
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ccurl_write_memory_callback);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &chunk);
 		curl_easy_setopt(curl, CURLOPT_USERAGENT, "conky-curl/1.0");
+		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
 
 		res = curl_easy_perform(curl);
 		if (res == CURLE_OK && chunk.size) {
 			long http_status_code;
 
-			if(curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_status_code) == CURLE_OK && http_status_code == 200) {
-				timed_thread_lock(curloc->p_timed_thread);
-				(*curloc->process_function)(curloc->result, chunk.memory);
-				timed_thread_unlock(curloc->p_timed_thread);
+			if (curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE,
+						&http_status_code) == CURLE_OK) {
+				switch (http_status_code) {
+					case 200:
+						timed_thread_lock(curloc->p_timed_thread);
+						(*curloc->process_function)(curloc->result, chunk.memory);
+						timed_thread_unlock(curloc->p_timed_thread);
+						break;
+					case 304:
+						break;
+					default:
+						NORM_ERR("curl: no data from server, got HTTP status %d %s",
+								http_status_code);
+						break;
+				}
 			} else {
-				NORM_ERR("curl: no data from server");
+				NORM_ERR("curl: no HTTP status from server");
 			}
 			free(chunk.memory);
 		} else {
