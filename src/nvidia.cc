@@ -144,5 +144,6 @@ void set_nvidia_display(const char *disp)
 		if ((nvdisplay = XOpenDisplay(disp)) == NULL) {
 			CRIT_ERR(NULL, NULL, "can't open nvidia display: %s", XDisplayName(disp));
 		}
-	}	
+	}
 }
+
