@@ -32,6 +32,7 @@
 #include "logging.h"
 #include "nvidia.h"
 #include "temphelper.h"
+#include "x11.h"
 #include <NVCtrl/NVCtrlLib.h>
 
 const int nvidia_query_to_attr[] = {NV_CTRL_GPU_CORE_TEMPERATURE,
@@ -145,5 +146,6 @@ void set_nvidia_display(const char *disp)
 		if ((nvdisplay = XOpenDisplay(disp)) == NULL) {
 			CRIT_ERR(NULL, NULL, "can't open nvidia display: %s", XDisplayName(disp));
 		}
-	}	
+	}
 }
+
