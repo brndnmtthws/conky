@@ -223,7 +223,7 @@ int handle_playback_state_change(xmmsv_t *value, void *p)
 				break;
 			case XMMS_PLAYBACK_STATUS_STOP:
 				strncpy(ptr->xmms2.status, "Stopped", text_buffer_size - 1);
-				ptr->xmms2.elapsed = ptr->xmms2.progress = ptr->xmms2.percent = 0;
+ 				ptr->xmms2.elapsed = ptr->xmms2.progress = 0;
 				break;
 			default:
 				strncpy(ptr->xmms2.status, "Unknown", text_buffer_size - 1);
@@ -232,7 +232,7 @@ int handle_playback_state_change(xmmsv_t *value, void *p)
 	return TRUE;
 }
 
-int handle_playlist_loaded(xmmsv_t *value, void *p) 
+int handle_playlist_loaded(xmmsv_t *value, void *p)
 {
 	struct information *ptr = p;
 	const char *c, *errbuf;
