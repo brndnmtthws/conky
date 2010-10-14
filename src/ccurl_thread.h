@@ -33,6 +33,8 @@
 typedef struct _ccurl_location_t {
 	/* uri of location */
 	char *uri;
+	char *last_modified;
+	char *etag;
 	/* a pointer to some arbitrary data, will be freed by ccurl_free_info() if
 	 * non-null */
 	void *result;
