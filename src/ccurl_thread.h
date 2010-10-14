@@ -32,9 +32,11 @@
 /* curl thread lib exports begin */
 
 struct ccurl_location_t {
-	ccurl_location_t() : uri(0), result(0) {}
+	ccurl_location_t() : uri(0), last_modified(0), etag(0), result(0) {}
 	/* uri of location */
 	char *uri;
+	char *last_modified;
+	char *etag;
 	/* a pointer to some arbitrary data, will be freed by ccurl_free_info() if
 	 * non-null */
 	char *result;
