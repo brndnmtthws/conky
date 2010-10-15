@@ -54,18 +54,17 @@ typedef struct _ccurl_headers_t {
 } ccurl_headers_t;
 
 /* finds a location based on uri in the list provided */
-ccurl_location_ptr ccurl_find_location(ccurl_location_list &locations, char *uri)
+ccurl_location_ptr ccurl_find_location(ccurl_location_list &locations, const std::string &uri)
 {
 	for (ccurl_location_list::iterator i = locations.begin();
 			i != locations.end(); i++) {
-		if ((*i)->uri &&
-				strcmp((*i)->uri, uri) == EQUAL) {
+		if ((*i)->uri == std::string(uri)) {
 			return *i;
 		}
 	}
 	ccurl_location_ptr next = ccurl_location_ptr(new ccurl_location_t);
-	DBGP("new curl location: '%s'", uri);
-	next->uri = strndup(uri, text_buffer_size);
+	DBGP("new curl location: '%s'", uri.c_str());
+	next->uri = std::string(uri, text_buffer_size);
 	locations.push_back(next);
 	return next;
 }
@@ -75,9 +74,6 @@ void ccurl_free_locations(ccurl_location_list &locations)
 {
 	for (ccurl_location_list::iterator i = locations.begin();
 			i != locations.end(); i++) {
-		free_and_zero((*i)->uri);
-		free_and_zero((*i)->last_modified);
-		free_and_zero((*i)->etag);
 		free_and_zero((*i)->result);
 		(*i)->p_timed_thread.reset();
 	}
@@ -130,7 +126,7 @@ void ccurl_fetch_data(thread_handle &handle, const ccurl_location_ptr &curloc)
 	CURLcode res;
 	struct curl_slist *headers = NULL;
 
-	// curl temps
+	/* curl temps */
 	ccurl_memory_t chunk;
 	ccurl_headers_t response_headers;
 
@@ -140,8 +136,8 @@ void ccurl_fetch_data(thread_handle &handle, const ccurl_location_ptr &curloc)
 
 	curl = curl_easy_init();
 	if (curl) {
-		DBGP("reading curl data from '%s'", curloc->uri);
-		curl_easy_setopt(curl, CURLOPT_URL, curloc->uri);
+		DBGP("reading curl data from '%s'", curloc->uri.c_str());
+		curl_easy_setopt(curl, CURLOPT_URL, curloc->uri.c_str());
 		curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1);
 		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, ccurl_parse_header_callback);
 		curl_easy_setopt(curl, CURLOPT_HEADERDATA, (void *) &response_headers);
@@ -152,19 +148,19 @@ void ccurl_fetch_data(thread_handle &handle, const ccurl_location_ptr &curloc)
 		curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1000);
 		curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 60);
 
-		if (curloc->last_modified) {
+		if (!curloc->last_modified.empty()) {
 			const char *header = "If-Modified-Since: ";
-			int len = strlen(header) + strlen(curloc->last_modified) + 1;
+			int len = strlen(header) + curloc->last_modified.size() + 1;
 			char *str = (char*) malloc(len);
-			snprintf(str, len, "%s%s", header, curloc->last_modified);
+			snprintf(str, len, "%s%s", header, curloc->last_modified.c_str());
 			headers = curl_slist_append(headers, str);
 			free(str);
 		}
-		if (curloc->etag) {
+		if (!curloc->etag.empty()) {
 			const char *header = "If-None-Match: ";
-			int len = strlen(header) + strlen(curloc->etag) + 1;
+			int len = strlen(header) + curloc->etag.size() + 1;
 			char *str = (char*) malloc(len);
-			snprintf(str, len, "%s%s", header, curloc->etag);
+			snprintf(str, len, "%s%s", header, curloc->etag.c_str());
 			headers = curl_slist_append(headers, str);
 			free(str);
 		}
@@ -182,14 +178,14 @@ void ccurl_fetch_data(thread_handle &handle, const ccurl_location_ptr &curloc)
 					case 200:
 						{
 							std::lock_guard<std::mutex> lock(handle.mutex());
-							free_and_zero(curloc->last_modified);
-							free_and_zero(curloc->etag);
+							curloc->last_modified.clear();
+							curloc->etag.clear();
 							if (response_headers.last_modified) {
 								curloc->last_modified =
-									strdup(response_headers.last_modified);
+									std::string(response_headers.last_modified);
 							}
 							if (response_headers.etag) {
-								curloc->etag = strdup(response_headers.etag);
+								curloc->etag = std::string(response_headers.etag);
 							}
 							curloc->process_function(curloc->result, chunk.memory);
 						}
@@ -269,7 +265,7 @@ static void ccurl_parse_data(char *result, const char *data)
 }
 
 /* prints result data to text buffer, used by $curl */
-void ccurl_process_info(char *p, int p_max_size, char *uri, int interval)
+void ccurl_process_info(char *p, int p_max_size, const std::string &uri, int interval)
 {
 	ccurl_location_ptr curloc = ccurl_find_location(ccurl_locations, uri);
 	if (!curloc->p_timed_thread) {

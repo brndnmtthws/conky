@@ -709,7 +709,8 @@ void wind_deg_to_dir(char *p, int p_max_size, int wind_deg) {
 }
 
 #ifdef BUILD_WEATHER_XOAP
-static void weather_forecast_process_info(char *p, int p_max_size, char *uri, unsigned int day, char *data_type, int interval)
+static void weather_forecast_process_info(char *p, int p_max_size, const
+		std::string &uri, unsigned int day, char *data_type, int interval)
 {
 	PWEATHER_FORECAST *data;
 
@@ -754,7 +755,7 @@ static void weather_forecast_process_info(char *p, int p_max_size, char *uri, un
 }
 #endif /* BUILD_WEATHER_XOAP */
 
-static void weather_process_info(char *p, int p_max_size, char *uri, char *data_type, int interval)
+static void weather_process_info(char *p, int p_max_size, const std::string &uri, char *data_type, int interval)
 {
 	static const char *wc[] = {
 		"", "drizzle", "rain", "hail", "soft hail",

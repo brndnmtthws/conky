@@ -34,9 +34,9 @@
 struct ccurl_location_t {
 	ccurl_location_t() : uri(0), last_modified(0), etag(0), result(0) {}
 	/* uri of location */
-	char *uri;
-	char *last_modified;
-	char *etag;
+	std::string uri;
+	std::string last_modified;
+	std::string etag;
 	/* a pointer to some arbitrary data, will be freed by ccurl_free_info() if
 	 * non-null */
 	char *result;
@@ -52,7 +52,7 @@ typedef std::shared_ptr<ccurl_location_t> ccurl_location_ptr;
 typedef std::list<ccurl_location_ptr> ccurl_location_list;
 
 /* find an existing location for the uri specified */
-ccurl_location_ptr ccurl_find_location(ccurl_location_list &locations, char *uri);
+ccurl_location_ptr ccurl_find_location(ccurl_location_list &locations, const std::string &uri);
 /* free all locations (as well as location->uri and location->result if
  * non-null) */
 void ccurl_free_locations(ccurl_location_list &locations);
@@ -68,7 +68,7 @@ void ccurl_init_thread(const ccurl_location_ptr &curloc, int interval);
 /* for $curl, free internal list pointer */
 void ccurl_free_info(void);
 /* runs instance of $curl */
-void ccurl_process_info(char *p, int p_max_size, char *uri, int interval);
+void ccurl_process_info(char *p, int p_max_size, const std::string &uri, int interval);
 
 void curl_parse_arg(struct text_object *, const char *);
 void curl_print(struct text_object *, char *, int);
