@@ -986,9 +986,11 @@ void print_top(struct text_object *obj, char *p, int p_max_size)
 
 		switch (td->type) {
 			case TOP_NAME:
-				width = MIN(p_max_size, (int)top_name_width + 1);
-				snprintf(p, width + 1, "%-*s", width,
-						needed[td->num]->name);
+				if (needed[td->num]->name) {
+					width = MIN(p_max_size, (int)top_name_width + 1);
+					snprintf(p, width + 1, "%-*s", width,
+							needed[td->num]->name);
+				}
 				break;
 			case TOP_CPU:
 				width = MIN(p_max_size, 7);
