@@ -4155,11 +4155,12 @@ void set_current_config() {
 		FILE *fp;
 
 		/* Try to use personal config file first */
-		std::string buf = to_real_path(CONFIG_FILE);
-		if (!buf.empty() && (fp = fopen(buf.c_str(), "r"))) {
-			current_config = buf;
+		std::string *buf = new std::string(to_real_path(CONFIG_FILE));
+		if (!buf->empty() && (fp = fopen(buf->c_str(), "r"))) {
+			current_config = buf->c_str();
 			fclose(fp);
 		}
+		delete buf;
 
 		/* Try to use system config file if personal config not readable */
 		if (current_config.empty() && (fp = fopen(SYSTEM_CONFIG_FILE, "r"))) {
