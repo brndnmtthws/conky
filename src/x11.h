@@ -28,7 +28,6 @@
 #define X11_H_
 
 #include <X11/Xlib.h>
-#include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
 #ifdef BUILD_XFT
