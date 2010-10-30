@@ -187,7 +187,9 @@ void print_read_tcpip(struct text_object *obj, char *p, int p_max_size, int prot
 	}
 	if(protocol == IPPROTO_UDP) {
 		//when using udp send a zero-length packet to let the other end know of our existence
-		(void) write(sock, NULL, 0);
+		if(write(sock, NULL, 0) < 0) {
+			NORM_ERR("read_udp: Couldn't create a empty package");
+		}
 	}
 	FD_ZERO(&readfds);
 	FD_SET(sock, &readfds);
