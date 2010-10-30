@@ -24,6 +24,7 @@
 
 #include <assert.h>
 #include <memory>
+#include <mutex>
 #include <stdexcept>
 
 #include <lua.hpp>
@@ -155,7 +156,7 @@ namespace lua {
 	};
 
 	// a fancy wrapper around lua_State
-	class state {
+	class state: private std::mutex {
 		std::shared_ptr<lua_State> cobj;
 
 		// destructor for C++ objects stored as lua userdata
@@ -290,6 +291,10 @@ namespace lua {
 		// pushes the userdata on stack and returns the pointer
 		template<typename T, typename... Args>
 		T* createuserdata(Args&&... args);
+
+		using std::mutex::lock;
+		using std::mutex::unlock;
+		using std::mutex::try_lock;
 	};
 
 	/*
