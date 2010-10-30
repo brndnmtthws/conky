@@ -40,7 +40,9 @@
 #include "entropy.h"
 #include "exec.h"
 #include "i8k.h"
+#ifdef BUILD_IMLIB2
 #include "imlib2.h"
+#endif
 #include "proc.h"
 #ifdef BUILD_MYSQL
 #include "mysql.h"
