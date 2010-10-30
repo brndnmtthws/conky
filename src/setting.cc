@@ -107,6 +107,7 @@ namespace conky {
 
 		void config_setting_base::lua_set(lua::state &l)
 		{
+			std::lock_guard<lua::state> guard(l);
 			lua::stack_sentry s(l, -1);
 			l.checkstack(2);
 

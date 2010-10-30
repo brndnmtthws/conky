@@ -209,6 +209,7 @@ namespace conky {
 	template<typename T>
 	T config_setting_template<T>::get(lua::state &l)
 	{
+		std::lock_guard<lua::state> guard(l);
 		lua::stack_sentry s(l);
 		l.checkstack(2);
 
