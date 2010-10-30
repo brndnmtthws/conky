@@ -48,6 +48,8 @@ mark_as_advanced(RELEASE)
 
 option(MAINTAINER_MODE "Enable maintainer mode (builds docs)" false)
 
+set(LOCALE_DIR "${CMAKE_INSTALL_PREFIX}/share/locale" CACHE STRING "Directory containing the locales")
+
 # Some standard options
 set(SYSTEM_CONFIG_FILE "/etc/conky/conky.conf" CACHE STRING "Default system-wide Conky configuration file")
 # use FORCE below to make sure this changes when CMAKE_INSTALL_PREFIX is modified
