@@ -145,7 +145,7 @@ namespace priv {
 
 	public:
 		out_to_x_setting()
-			: Base("out_to_x", false, false)
+			: Base("out_to_x", true, false)
 		{}
 	};
 	

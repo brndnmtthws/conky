@@ -157,7 +157,7 @@ void load_fonts(void)
 {
 	if (not out_to_x.get(*state))
 		return;
-	for (size_t i = 0; i <= fonts.size(); i++) {
+	for (size_t i = 0; i < fonts.size(); i++) {
 #ifdef BUILD_XFT
 		/* load Xft font */
 		if (use_xft.get(*state)) {

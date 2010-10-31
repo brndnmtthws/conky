@@ -166,7 +166,14 @@ static conky::simple_config_setting<bool> short_units("short_units", false, true
 static conky::simple_config_setting<bool> format_human_readable("format_human_readable",
 																true, true);
 
-static conky::simple_config_setting<bool> out_to_stdout("out_to_console", false, false);
+static conky::simple_config_setting<bool> out_to_stdout("out_to_console",
+// Default value is false, unless we are building without X
+#ifdef BUILD_X11
+														false,
+#else
+														true,
+#endif
+														false);
 static conky::simple_config_setting<bool> out_to_stderr("out_to_stderr", false, false);
 
 
@@ -2685,10 +2692,6 @@ void load_config_file()
 	}
 #endif /* BUILD_NCURSES */
 #endif
-
-	if(out_to_x.get(*state)) {
-		current_text_color = default_color.get(*state);
-	}
 }
 
 static void print_help(const char *prog_name) {
@@ -2911,6 +2914,10 @@ void initialisation(int argc, char **argv) {
 
 	conky::set_config_settings(*state);
 
+	if(out_to_x.get(*state)) {
+		current_text_color = default_color.get(*state);
+	}
+
 	/* generate text and get initial size */
 	extract_variable_text(global_text);
 	free_and_zero(global_text);
@@ -3050,66 +3057,17 @@ int main(int argc, char **argv)
 	set_current_config();
 
 	state.reset(new lua::state);
-	conky::export_symbols(*state);
-
-	initialisation(argc, argv);
-
-	first_pass = 0; /* don't ever call fork() again */
-
-	//////////// XXX ////////////////////////////////
-	lua::state &l = *state;	
 	try {
-		std::cout << "config.alignment = " << text_alignment.get(l) << std::endl;
-		l.pushstring("X");
-		text_alignment.lua_set(l);
-		std::cout << "config.alignment = " << text_alignment.get(l) << std::endl;
-		std::cout << "config.own_window_hints = " << own_window_hints.get(l) << std::endl;
-		l.loadstring(
-				"print('config.asdf = ', conky.config.asdf);\n"
-				"conky.config.asdf = -42;\n"
-				"print('config.asdf = ', conky.config.asdf);\n"
-				"conky.config.alignment='asdf';\n"
-				"print('config.alignment = ', conky.config.alignment);\n"
-				"print('config.own_window_hints = ', conky.config.own_window_hints);\n"
-				"print('config.mpd_host = ', conky.config.mpd_host);\n"
-				"print('config.mpd_password = ', conky.config.mpd_password);\n"
-				"print('config.mpd_port = ', conky.config.mpd_port);\n"
-				"print('config.music_player_interval = ', conky.config.music_player_interval);\n"
-				);
-		l.call(0, 0);
+		conky::export_symbols(*state);
 
-		sleep(3);
+		initialisation(argc, argv);
+
+		first_pass = 0; /* don't ever call fork() again */
+
 	}
 	catch(std::exception &e) {
 		std::cerr << "caught exception: " << e.what() << std::endl;
 	}
-
-#if 0
-    try {
-		l.pushvalue(lua::GLOBALSINDEX);
-        l.pushnil();
-        while(l.next(-2)) {
-            if(l.isnumber(-2))
-                std::cout << l.tonumber(-2);
-			else if(l.isstring(-2))
-				std::cout << '"' << l.tostring(-2) << '"';
-            else
-                std::cout << l.type_name(l.type(-2));
-            std::cout << " -> ";
-
-            if(l.isnumber(-1))
-                std::cout << l.tonumber(-1);
-			else if(l.isstring(-1))
-				std::cout << '"' << l.tostring(-1) << '"';
-            else
-                std::cout << l.type_name(l.type(-1));
-            std::cout << std::endl;
-        }
-    }
-    catch(std::exception &e) {
-        std::cerr << "caught exception: " << e.what() << std::endl;
-    }
-#endif
 
 #ifdef BUILD_WEATHER_XOAP
 	/* Load xoap keys, if existing */
@@ -3125,8 +3083,6 @@ int main(int argc, char **argv)
 		fcntl(inotify_fd, F_SETFD, fcntl(inotify_fd, F_GETFD) | FD_CLOEXEC);
 	}
 #endif /* HAVE_SYS_INOTIFY_H */
-	clean_up(NULL, NULL);
-	return 0;
 	//////////// XXX ////////////////////////////////
 
 	main_loop();
