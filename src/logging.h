@@ -30,14 +30,15 @@
 #ifndef _LOGGING_H
 #define _LOGGING_H
 
+#include <libintl.h>
 #include "mail.h"
 
 void clean_up(void *memtofree1, void* memtofree2);
 void clean_up_without_threads(void *memtofree1, void* memtofree2);
 
-#define NORM_ERR(...) { \
+#define NORM_ERR(format, args...) { \
 	fprintf(stderr, PACKAGE_NAME": "); \
-	fprintf(stderr, __VA_ARGS__); \
+	fprintf(stderr, gettext(format), ##args); \
 	fprintf(stderr, "\n"); \
 }
 
@@ -50,10 +51,10 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2);
 
 /* debugging output */
 extern int global_debug_level;
-#define __DBGP(level, ...) \
+#define __DBGP(level, format, args...) \
 	if (global_debug_level > level) { \
 		fprintf(stderr, "DEBUG(%d) [" __FILE__ ":%d]: ", level, __LINE__); \
-		fprintf(stderr, __VA_ARGS__); \
+		fprintf(stderr, gettext(format), ##args); \
 		fprintf(stderr, "\n"); \
 	}
 #define DBGP(...) __DBGP(0, __VA_ARGS__)

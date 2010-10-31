@@ -80,8 +80,8 @@
 #ifdef BUILD_CURL
 #include <curl/curl.h>
 #endif
-#include <libintl.h>
 #define _(string) gettext(string)
+#define _nop(string) string
 
 /* local headers */
 #include "core.h"
@@ -303,7 +303,7 @@ static void print_version(void)
 	exit(EXIT_SUCCESS);
 }
 
-static const char *suffixes[] = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "" };
+static const char *suffixes[] = { _nop("B"), _nop("KiB"), _nop("MiB"), _nop("GiB"), _nop("TiB"), _nop("PiB"), "" };
 
 
 #ifdef BUILD_X11
@@ -631,7 +631,7 @@ void human_readable(long long num, char *buf, int size)
 	}
 
 	if (llabs(num) < 1000LL) {
-		spaced_print(buf, size, format, width, 0, (float)num, *suffix);
+		spaced_print(buf, size, format, width, 0, (float)num, _(*suffix));
 		return;
 	}
 
@@ -666,7 +666,7 @@ void human_readable(long long num, char *buf, int size)
 	if (fnum < 9.995)
 		precision = 2;	/* print 0-9 with two decimal places */
 
-	spaced_print(buf, size, format, width, precision, fnum, *suffix);
+	spaced_print(buf, size, format, width, precision, fnum, _(*suffix));
 }
 
 /* global object list root element */
@@ -1593,28 +1593,28 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						if (seconds != 0) {
 							timeunits = seconds / 86400; seconds %= 86400;
 							if (timeunits <= 0 ||
-									asprintf(&tmp_day_str, "%dd", timeunits) == -1) {
+									asprintf(&tmp_day_str, _("%dd"), timeunits) == -1) {
 								tmp_day_str = strdup("");
 							}
 							timeunits = seconds / 3600; seconds %= 3600;
 							if (timeunits <= 0 ||
-									asprintf(&tmp_hour_str, "%dh", timeunits) == -1) {
+									asprintf(&tmp_hour_str, _("%dh"), timeunits) == -1) {
 								tmp_hour_str = strdup("");
 							}
 							timeunits = seconds / 60; seconds %= 60;
 							if (timeunits <= 0 ||
-									asprintf(&tmp_min_str, "%dm", timeunits) == -1) {
+									asprintf(&tmp_min_str, _("%dm"), timeunits) == -1) {
 								tmp_min_str = strdup("");
 							}
 							if (seconds <= 0 ||
-									asprintf(&tmp_sec_str, "%ds", seconds) == -1) {
+									asprintf(&tmp_sec_str, _("%ds"), seconds) == -1) {
 								tmp_sec_str = strdup("");
 							}
 							if (asprintf(&tmp_str, "%s%s%s%s", tmp_day_str, tmp_hour_str, tmp_min_str, tmp_sec_str) == -1)
 								tmp_str = strdup("");
 							free(tmp_day_str); free(tmp_hour_str); free(tmp_min_str); free(tmp_sec_str);
 						} else {
-							tmp_str = strdup("Range not possible"); // should never happen, but better safe then sorry
+							tmp_str = strdup(_("Range not possible")); // should never happen, but better safe then sorry
 						}
 						cur_x += (w / 2) - (font_ascent() * (strlen(tmp_str) / 2));
 						cur_y += font_h / 2;
@@ -2107,7 +2107,7 @@ static void main_loop(void)
 					if (changed && window.type == TYPE_PANEL) {
 						int sidenum = -1;
 
-						fprintf(stderr, PACKAGE_NAME": defining struts\n");
+						fprintf(stderr, _(PACKAGE_NAME": defining struts\n"));
 						fflush(stderr);
 
 						switch (text_alignment) {
