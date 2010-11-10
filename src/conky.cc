@@ -298,6 +298,9 @@ static void print_version(void)
 		<< "   * Imlib2\n"
 #endif /* BUILD_LUA_IMLIB2 */
 #endif /* BUILD_LUA */
+#ifdef DEBUG
+		<< "   * Debugging extensions\n"
+#endif
 	;
 
 	exit(EXIT_SUCCESS);
@@ -4497,6 +4500,8 @@ int main(int argc, char **argv)
 #ifdef BUILD_CURL
 	curl_global_cleanup();
 #endif
+
+	disk_cleanup();
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 	kvm_close(kd);

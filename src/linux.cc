@@ -2291,12 +2291,25 @@ typedef struct DEV_LIST_TYPE
 
 } DEV_LIST, *DEV_LIST_PTR;
 
+DEV_LIST_PTR dev_head = NULL;
+
+void disk_cleanup() {
+	DEV_LIST_PTR dev_next, dev_cur = dev_head;
+
+	while(dev_cur) {
+		dev_next = dev_cur->next;
+		free(dev_cur->dev_name);
+		free(dev_cur);
+		dev_cur = dev_next;
+	}
+	dev_head = NULL;
+}
+
 /* Same as sf #2942117 but memoized using a linked list */
 int is_disk(char *dev)
 {
 	char syspath[PATH_MAX];
 	char *slash;
-	static DEV_LIST_PTR dev_head = NULL;
 	DEV_LIST_PTR dev_cur, dev_last;
 
 	dev_cur = dev_head;
