@@ -1423,25 +1423,19 @@ critical (S5):           73 C
 passive:                 73 C: tc1=4 tc2=3 tsp=40 devices=0xcdf6e6c0
 */
 
-#define ACPI_THERMAL_DIR "/proc/acpi/thermal_zone/"
-#define ACPI_THERMAL_FORMAT "/proc/acpi/thermal_zone/%s/temperature"
+#define ACPI_THERMAL_ZONE_DEFAULT "thermal_zone0"
+#define ACPI_THERMAL_FORMAT "/sys/class/thermal/%s/temp"
 
 int open_acpi_temperature(const char *name)
 {
 	char path[256];
-	char buf[256];
 	int fd;
 
 	if (name == NULL || strcmp(name, "*") == 0) {
-		static int rep = 0;
-
-		if (!get_first_file_in_a_directory(ACPI_THERMAL_DIR, buf, &rep)) {
-			return -1;
-		}
-		name = buf;
+		snprintf(path, 255, ACPI_THERMAL_FORMAT, ACPI_THERMAL_ZONE_DEFAULT);
+	} else {
+		snprintf(path, 255, ACPI_THERMAL_FORMAT, name);
 	}
-
-	snprintf(path, 255, ACPI_THERMAL_FORMAT, name);
 
 	fd = open(path, O_RDONLY);
 	if (fd < 0) {
@@ -1453,6 +1447,9 @@ int open_acpi_temperature(const char *name)
 
 static double last_acpi_temp;
 static double last_acpi_temp_time;
+
+//the maximum length of the string inside a ACPI_THERMAL_FORMAT file including the ending 0
+#define MAXTHERMZONELEN 6
 
 double get_acpi_temperature(int fd)
 {
@@ -1471,15 +1468,16 @@ double get_acpi_temperature(int fd)
 
 	/* read */
 	{
-		char buf[256];
+		char buf[MAXTHERMZONELEN];
 		int n;
 
-		n = read(fd, buf, 255);
+		n = read(fd, buf, MAXTHERMZONELEN-1);
 		if (n < 0) {
 			NORM_ERR("can't read fd %d: %s", fd, strerror(errno));
 		} else {
 			buf[n] = '\0';
-			sscanf(buf, "temperature: %lf", &last_acpi_temp);
+			sscanf(buf, "%lf", &last_acpi_temp);
+			last_acpi_temp /= 1000;
 		}
 	}
 
