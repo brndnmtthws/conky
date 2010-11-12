@@ -42,8 +42,6 @@ void llua_rm_notifies(void);
 static int llua_block_notify = 0;
 #endif /* HAVE_SYS_INOTIFY_H */
 
-#define MIN(a, b) ( (a) < (b) ? (a) : (b) )
-
 static char *draw_pre_hook = 0;
 static char *draw_post_hook = 0;
 static char *startup_hook = 0;
@@ -210,7 +208,7 @@ static char *llua_do_call(const char *string, int retc)
 		snprintf(func, sizeof func, "%s", LUAPREFIX);
 	} else
 		*func = 0;
-	strncat(func, ptr, MIN(len, sizeof(func) - strlen(func) - 1));
+	strncat(func, ptr, std::min(len, sizeof(func) - strlen(func) - 1));
 
 	/* push the function name to stack */
 	lua_getglobal(lua_L, func);
