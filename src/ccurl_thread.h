@@ -32,7 +32,7 @@
 /* curl thread lib exports begin */
 
 struct ccurl_location_t {
-	ccurl_location_t() : uri(0), last_modified(0), etag(0), result(0) {}
+	ccurl_location_t() : result(0) {}
 	/* uri of location */
 	std::string uri;
 	std::string last_modified;

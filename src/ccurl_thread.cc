@@ -64,7 +64,7 @@ ccurl_location_ptr ccurl_find_location(ccurl_location_list &locations, const std
 	}
 	ccurl_location_ptr next = ccurl_location_ptr(new ccurl_location_t);
 	DBGP("new curl location: '%s'", uri.c_str());
-	next->uri = std::string(uri, text_buffer_size);
+	next->uri = uri;
 	locations.push_back(next);
 	return next;
 }
