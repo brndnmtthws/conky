@@ -49,7 +49,7 @@
 
 #cmakedefine BUILD_AUDACIOUS 1
 
-#cmakedefine BUILD_AUDACIOUS_LEGACY 1
+#cmakedefine NEW_AUDACIOUS_FOUND 1
 
 #cmakedefine BUILD_MPD 1
 

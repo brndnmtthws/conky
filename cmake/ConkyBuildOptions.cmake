@@ -119,11 +119,6 @@ if(BUILD_LUA)
 endif(BUILD_LUA)
 
 option(BUILD_AUDACIOUS "Build audacious (music player) support" false)
-if(BUILD_AUDACIOUS)
-	option(BUILD_AUDACIOUS_LEGACY "Use legacy audacious (music player) support" false)
-else(BUILD_AUDACIOUS)
-	set(BUILD_AUDACIOUS_LEGACY false)
-endif(BUILD_AUDACIOUS)
 
 option(BUILD_BMPX "Build BMPx (music player) support" false)
 
