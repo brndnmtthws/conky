@@ -24,9 +24,7 @@
  *
  */
 
-#ifdef HAVE_CONFIG_H
 #include <config.h>
-#endif
 
 #include <thread>
 #include <list>
@@ -79,7 +77,7 @@ timed_thread::timed_thread(const std::function<void(thread_handle &)> &start_rou
 {
 
 #ifdef DEBUG
-	assert(interval_usecs >= MINIMUM_INTERVAL_USECS);
+	assert(interval_usecs >= std::chrono::microseconds(MINIMUM_INTERVAL_USECS));
 #endif /* DEBUG */
 
 	/* create thread pipe (used to tell threads to die) */

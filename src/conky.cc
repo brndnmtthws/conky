@@ -3161,7 +3161,7 @@ char load_config_file(const char *f)
 				err = 1;
 			}
 			if (err) {
-				CONF_ERR2("default_bar_size takes 2 integer arguments (ie. 'default_bar_size 0 6')")
+				CONF_ERR2("default_bar_size takes 2 integer arguments (ie. 'default_bar_size 0 6')");
 			}
 		}
 #ifdef BUILD_X11
@@ -3175,7 +3175,7 @@ char load_config_file(const char *f)
 				err = 1;
 			}
 			if (err) {
-				CONF_ERR2("default_graph_size takes 2 integer arguments (ie. 'default_graph_size 0 6')")
+				CONF_ERR2("default_graph_size takes 2 integer arguments (ie. 'default_graph_size 0 6')");
 			}
 		}
 		CONF("default_gauge_size") {
@@ -3188,7 +3188,7 @@ char load_config_file(const char *f)
 				err = 1;
 			}
 			if (err) {
-				CONF_ERR2("default_gauge_size takes 2 integer arguments (ie. 'default_gauge_size 0 6')")
+				CONF_ERR2("default_gauge_size takes 2 integer arguments (ie. 'default_gauge_size 0 6')");
 			}
 		}
 #endif
