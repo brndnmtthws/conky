@@ -29,11 +29,11 @@
 #include <mutex>
 
 #include <glib.h>
-#ifndef BUILD_AUDACIOUS_LEGACY
+#ifdef NEW_AUDACIOUS_FOUND
 #include <glib-object.h>
 #include <audacious/audctrl.h>
 #include <audacious/dbus.h>
-#else /* BUILD_AUDACIOUS_LEGACY */
+#else /* NEW_AUDACIOUS_FOUND */
 #include <audacious/beepctrl.h>
 #define audacious_remote_is_running(x)				\
 	xmms_remote_is_running(x)
@@ -55,7 +55,7 @@
 	xmms_remote_get_playlist_file(x, y)
 #define audacious_remote_get_playlist_length(x)		\
 	xmms_remote_get_playlist_length(x)
-#endif /* BUILD_AUDACIOUS_LEGACY */
+#endif /* NEW_AUDACIOUS_FOUND */
 
 /* access to this item array is synchronized */
 static audacious_t audacious_items;
@@ -125,7 +125,7 @@ void audacious_thread_func(thread_handle &handle)
 	gint rate, freq, chans, vol;
 	gchar *psong, *pfilename;
 
-#ifndef BUILD_AUDACIOUS_LEGACY
+#ifdef NEW_AUDACIOUS_FOUND
 	DBusGProxy *session = NULL;
 	DBusGConnection *connection = NULL;
 #else
@@ -136,7 +136,7 @@ void audacious_thread_func(thread_handle &handle)
 	psong = NULL;
 	pfilename = NULL;
 
-#ifndef BUILD_AUDACIOUS_LEGACY
+#ifdef NEW_AUDACIOUS_FOUND
 	g_type_init();
 	connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
 	if (!connection) {
@@ -147,7 +147,7 @@ void audacious_thread_func(thread_handle &handle)
 	if (!session) {
 		CRIT_ERR(NULL, NULL, "unable to create dbus proxy");
 	}
-#endif /* BUILD_AUDACIOUS_LEGACY */
+#endif /* NEW_AUDACIOUS_FOUND */
 
 	/* Loop until the main thread resets the runnable signal. */
 	while (1) {
@@ -242,7 +242,7 @@ void audacious_thread_func(thread_handle &handle)
 		}
 
 		if (handle.test(0)) {
-#ifndef BUILD_AUDACIOUS_LEGACY
+#ifdef NEW_AUDACIOUS_FOUND
 			/* release reference to dbus proxy */
 			g_object_unref(session);
 #endif

@@ -48,6 +48,8 @@ mark_as_advanced(RELEASE)
 
 option(MAINTAINER_MODE "Enable maintainer mode (builds docs)" false)
 
+set(LOCALE_DIR "${CMAKE_INSTALL_PREFIX}/share/locale" CACHE STRING "Directory containing the locales")
+
 # Some standard options
 set(SYSTEM_CONFIG_FILE "/etc/conky/conky2.conf" CACHE STRING "Default system-wide Conky configuration file")
 # use FORCE below to make sure this changes when CMAKE_INSTALL_PREFIX is modified
@@ -117,11 +119,6 @@ if(BUILD_LUA)
 endif(BUILD_LUA)
 
 option(BUILD_AUDACIOUS "Build audacious (music player) support" false)
-if(BUILD_AUDACIOUS)
-	option(BUILD_AUDACIOUS_LEGACY "Use legacy audacious (music player) support" false)
-else(BUILD_AUDACIOUS)
-	set(BUILD_AUDACIOUS_LEGACY false)
-endif(BUILD_AUDACIOUS)
 
 option(BUILD_BMPX "Build BMPx (music player) support" false)
 

@@ -44,8 +44,6 @@ static int llua_block_notify = 0;
 
 static void llua_load(const char *script);
 
-#define MIN(a, b) ( (a) < (b) ? (a) : (b) )
-
 lua_State *lua_L = NULL;
 
 namespace {
@@ -263,7 +261,7 @@ static char *llua_do_call(const char *string, int retc)
 		snprintf(func, sizeof func, "%s", LUAPREFIX);
 	} else
 		*func = 0;
-	strncat(func, ptr, MIN(len, sizeof(func) - strlen(func) - 1));
+	strncat(func, ptr, std::min(len, sizeof(func) - strlen(func) - 1));
 
 	/* push the function name to stack */
 	lua_getglobal(lua_L, func);

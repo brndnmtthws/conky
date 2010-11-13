@@ -31,6 +31,8 @@
 #ifndef _conky_h_
 #define _conky_h_
 
+#define __STDC_FORMAT_MACROS
+
 #include <config.h>	/* defines */
 #include "common.h"	/* at least for struct dns_data */
 #include <sys/utsname.h> /* struct uname_s */

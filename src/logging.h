@@ -30,14 +30,26 @@
 #ifndef _LOGGING_H
 #define _LOGGING_H
 
+#include <cstdio>
+#include <libintl.h>
+
 void clean_up(void *memtofree1, void* memtofree2);
 void clean_up_without_threads(void *memtofree1, void* memtofree2);
 
-#define NORM_ERR(...) { \
+template<typename... Args>
+void gettextize_format(const char *format, Args&&... args)
+{ fprintf(stderr, gettext(format), args...); }
+
+// explicit specialization for no arguments to avoid the 
+// "format not a string literal and no format arguments" warning
+inline void gettextize_format(const char *format)
+{ fputs(gettext(format), stderr); }
+
+#define NORM_ERR(...) do { \
 	fprintf(stderr, PACKAGE_NAME": "); \
-	fprintf(stderr, __VA_ARGS__); \
-	fprintf(stderr, "\n"); \
-}
+        gettextize_format(__VA_ARGS__); \
+	fputs("\n", stderr); \
+} while(0)
 
 /* critical error */
 #define CRIT_ERR(memtofree1, memtofree2, ...) \
@@ -48,12 +60,13 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2);
 
 /* debugging output */
 extern int global_debug_level;
-#define __DBGP(level, ...) \
+#define __DBGP(level, ...) do {\
 	if (global_debug_level > level) { \
 		fprintf(stderr, "DEBUG(%d) [" __FILE__ ":%d]: ", level, __LINE__); \
-		fprintf(stderr, __VA_ARGS__); \
-		fprintf(stderr, "\n"); \
-	}
+                gettextize_format(__VA_ARGS__); \
+                fputs("\n", stderr); \
+	} \
+} while(0)
 #define DBGP(...) __DBGP(0, __VA_ARGS__)
 #define DBGP2(...) __DBGP(1, __VA_ARGS__)
 

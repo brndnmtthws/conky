@@ -52,7 +52,7 @@ void rss_free_info(void)
 	ccurl_free_locations(locations_rss);
 }
 
-static void rss_process_info(char *p, int p_max_size, char *uri, char *action, int
+static void rss_process_info(char *p, int p_max_size, const std::string &uri, char *action, int
 		act_par, int interval, unsigned int nrspaces)
 {
 	PRSS *data;

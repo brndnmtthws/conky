@@ -74,6 +74,8 @@
 #ifdef BUILD_CURL
 #include <curl/curl.h>
 #endif
+#define _(string) gettext(string)
+#define _nop(string) string
 
 /* local headers */
 #include "core.h"
@@ -338,7 +340,9 @@ static void print_version(void)
 	;
 }
 
-static const char *suffixes[] = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "" };
+static const char *suffixes[] = {
+	_nop("B"), _nop("KiB"), _nop("MiB"), _nop("GiB"), _nop("TiB"), _nop("PiB"), ""
+};
 
 
 #ifdef BUILD_X11
@@ -682,7 +686,7 @@ void human_readable(long long num, char *buf, int size)
 		spaced_print(buf, size, "%d", 6, round_to_int(num));
 		return;
 	}
-	if (short_units.get(*state)) {
+	if (short_units.get(*state) || llabs(num) < 1000LL) {
 		width = 5;
 		format = "%.*f%.1s";
 	} else {
@@ -691,7 +695,7 @@ void human_readable(long long num, char *buf, int size)
 	}
 
 	if (llabs(num) < 1000LL) {
-		spaced_print(buf, size, format, width, 0, (float)num, *suffix);
+		spaced_print(buf, size, format, width, 0, (float)num, _(*suffix));
 		return;
 	}
 
@@ -726,7 +730,7 @@ void human_readable(long long num, char *buf, int size)
 	if (fnum < 9.995)
 		precision = 2;	/* print 0-9 with two decimal places */
 
-	spaced_print(buf, size, format, width, precision, fnum, *suffix);
+	spaced_print(buf, size, format, width, precision, fnum, _(*suffix));
 }
 
 /* global object list root element */
@@ -1576,12 +1580,12 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 										  );
 								}
 #endif /* DEBUG_lol */
-								XSetForeground(display, window.gc, tmpcolour[
+										set_foreground_color(tmpcolour[
 										(int)((float)(w - 2) - current->graph[j] *
 											(w - 2) / (float)current->scale)
 										]);
 							} else {
-								XSetForeground(display, window.gc, tmpcolour[colour_idx++]);
+								set_foreground_color(tmpcolour[colour_idx++]);
 							}
 						}
 						/* this is mugfugly, but it works */
@@ -1613,28 +1617,28 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						if (seconds != 0) {
 							timeunits = seconds / 86400; seconds %= 86400;
 							if (timeunits <= 0 ||
-									asprintf(&tmp_day_str, "%dd", timeunits) == -1) {
+									asprintf(&tmp_day_str, _("%dd"), timeunits) == -1) {
 								tmp_day_str = strdup("");
 							}
 							timeunits = seconds / 3600; seconds %= 3600;
 							if (timeunits <= 0 ||
-									asprintf(&tmp_hour_str, "%dh", timeunits) == -1) {
+									asprintf(&tmp_hour_str, _("%dh"), timeunits) == -1) {
 								tmp_hour_str = strdup("");
 							}
 							timeunits = seconds / 60; seconds %= 60;
 							if (timeunits <= 0 ||
-									asprintf(&tmp_min_str, "%dm", timeunits) == -1) {
+									asprintf(&tmp_min_str, _("%dm"), timeunits) == -1) {
 								tmp_min_str = strdup("");
 							}
 							if (seconds <= 0 ||
-									asprintf(&tmp_sec_str, "%ds", seconds) == -1) {
+									asprintf(&tmp_sec_str, _("%ds"), seconds) == -1) {
 								tmp_sec_str = strdup("");
 							}
 							if (asprintf(&tmp_str, "%s%s%s%s", tmp_day_str, tmp_hour_str, tmp_min_str, tmp_sec_str) == -1)
 								tmp_str = strdup("");
 							free(tmp_day_str); free(tmp_hour_str); free(tmp_min_str); free(tmp_sec_str);
 						} else {
-							tmp_str = strdup("Range not possible"); // should never happen, but better safe then sorry
+							tmp_str = strdup(_("Range not possible")); // should never happen, but better safe then sorry
 						}
 						cur_x += (w / 2) - (font_ascent() * (strlen(tmp_str) / 2));
 						cur_y += font_h / 2;
@@ -2116,7 +2120,7 @@ static void main_loop(void)
 					if (changed && own_window_type.get(*state) == TYPE_PANEL) {
 						int sidenum = -1;
 
-						fprintf(stderr, PACKAGE_NAME": defining struts\n");
+						fprintf(stderr, _(PACKAGE_NAME": defining struts\n"));
 						fflush(stderr);
 
 						switch (text_alignment.get(*state)) {
@@ -2506,6 +2510,11 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2)
 {
 	free_and_zero(memtofree1);
 	free_and_zero(memtofree2);
+
+#if defined BUILD_WEATHER_METAR || defined BUILD_WEATHER_XOAP
+	weather_free_info();
+#endif
+
 	timed_thread::destroy_registered_threads();
 
 	free_and_zero(info.cpu_usage);
@@ -2535,9 +2544,6 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2)
 #endif
 #ifdef BUILD_RSS
 	rss_free_info();
-#endif
-#if defined BUILD_WEATHER_METAR || defined BUILD_WEATHER_XOAP
-	weather_free_info();
 #endif
 #ifdef BUILD_LUA
 	llua_shutdown_hook();
@@ -2981,6 +2987,9 @@ void initialisation(int argc, char **argv) {
 
 int main(int argc, char **argv)
 {
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE_NAME, LOCALE_DIR);
+	textdomain(PACKAGE_NAME);
 	argc_copy = argc;
 	argv_copy = argv;
 	g_signal_pending = 0;
@@ -3078,6 +3087,8 @@ int main(int argc, char **argv)
 	//////////// XXX ////////////////////////////////
 
 	main_loop();
+
+	disk_cleanup();
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 	kvm_close(kd);

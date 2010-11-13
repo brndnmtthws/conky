@@ -24,9 +24,7 @@
  *
  */
 
-#ifdef HAVE_CONFIG_H
 #include <config.h>
-#endif
 
 #include <thread>
 #include <list>
@@ -79,7 +77,7 @@ timed_thread::timed_thread(const std::function<void(thread_handle &)> &start_rou
 {
 
 #ifdef DEBUG
-	assert(interval_usecs >= MINIMUM_INTERVAL_USECS);
+	assert(interval_usecs >= std::chrono::microseconds(MINIMUM_INTERVAL_USECS));
 #endif /* DEBUG */
 
 	/* create thread pipe (used to tell threads to die) */
@@ -104,7 +102,7 @@ timed_thread::timed_thread(const std::function<void(thread_handle &)> &start_rou
 }
 
 /* destroy a timed thread. */
-void timed_thread::destroy(bool deregister_this)
+void timed_thread::destroy()
 {
 	DBGP("destroying thread %ld", (long)p_timed_thread->thread.get());
 #ifdef DEBUG
@@ -127,9 +125,6 @@ void timed_thread::destroy(bool deregister_this)
 	close(p_timed_thread->pipefd[1]);
 	
 	running = false;
-
-	if (deregister_this) deregister(this);
-
 }
 
 /* lock a timed thread for critical section activity */
