@@ -80,8 +80,6 @@
 #ifdef BUILD_CURL
 #include <curl/curl.h>
 #endif
-#define _(string) gettext(string)
-#define _nop(string) string
 
 /* local headers */
 #include "core.h"
@@ -298,8 +296,11 @@ static void print_version(void)
 		<< "   * Imlib2\n"
 #endif /* BUILD_LUA_IMLIB2 */
 #endif /* BUILD_LUA */
+#ifdef BUILD_I18N
+		<< "  * Internationalization support\n"
+#endif
 #ifdef DEBUG
-		<< "   * Debugging extensions\n"
+		<< "  * Debugging extensions\n"
 #endif
 	;
 
@@ -4399,9 +4400,11 @@ bool isutf8(const char* envvar) {
 
 int main(int argc, char **argv)
 {
+#ifdef BUILD_I18N
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE_NAME, LOCALE_DIR);
 	textdomain(PACKAGE_NAME);
+#endif
 	argc_copy = argc;
 	argv_copy = argv;
 	g_signal_pending = 0;

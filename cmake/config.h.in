@@ -21,6 +21,8 @@
 #define MAX_NET_INTERFACES @MAX_NET_INTERFACES@
 #define HTTPPORT @HTTPPORT@
 
+#cmakedefine BUILD_I18N 1
+
 #cmakedefine HAVE_SYS_STATFS_H 1
 #cmakedefine HAVE_SYS_PARAM_H 1
 #cmakedefine HAVE_SYS_INOTIFY_H 1

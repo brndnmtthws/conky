@@ -31,7 +31,7 @@
 #define _LOGGING_H
 
 #include <cstdio>
-#include <libintl.h>
+#include "i18n.h"
 #include "mail.h"
 
 void clean_up(void *memtofree1, void* memtofree2);
@@ -39,12 +39,12 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2);
 
 template<typename... Args>
 void gettextize_format(const char *format, Args&&... args)
-{ fprintf(stderr, gettext(format), args...); }
+{ fprintf(stderr, _(format), args...); }
 
 // explicit specialization for no arguments to avoid the 
 // "format not a string literal and no format arguments" warning
 inline void gettextize_format(const char *format)
-{ fputs(gettext(format), stderr); }
+{ fputs(_(format), stderr); }
 
 #define NORM_ERR(...) do { \
 	fprintf(stderr, PACKAGE_NAME": "); \
