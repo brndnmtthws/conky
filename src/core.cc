@@ -549,11 +549,13 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		SCAN_CPU(arg, obj->data.i);
 		obj->callbacks.percentage = &cpu_percentage;
 		DBGP2("Adding $cpu for CPU %d", obj->data.i);
+#ifdef BUILD_X11
 	END OBJ(cpugauge, &update_cpu_usage)
 		SCAN_CPU(arg, obj->data.i);
 		scan_gauge(obj, arg, 1);
 		obj->callbacks.gaugeval = &cpu_barval;
 		DBGP2("Adding $cpugauge for CPU %d", obj->data.i);
+#endif
 	END OBJ(cpubar, &update_cpu_usage)
 		SCAN_CPU(arg, obj->data.i);
 		scan_bar(obj, arg, 1);
@@ -746,11 +748,11 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		scan_execgraph_arg(obj, arg);
 		obj->callbacks.graphval = &execi_barval;
 		obj->callbacks.free = &free_execi;
-#endif /* BUILD_X11 */
 	END OBJ_ARG(execigauge, 0, "execigauge needs arguments")
 		scan_execi_gauge_arg(obj, arg);
 		obj->callbacks.gaugeval = &execi_barval;
 		obj->callbacks.free = &free_execi;
+#endif /* BUILD_X11 */
 	END OBJ_ARG(execi, 0, "execi needs arguments")
 		scan_execi_arg(obj, arg);
 		obj->parse = false;
@@ -979,9 +981,11 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.print = &print_memmax;
 	END OBJ(memperc, &update_meminfo)
 		obj->callbacks.percentage = &mem_percentage;
+#ifdef BUILD_X11
 	END OBJ(memgauge, &update_meminfo)
 		scan_gauge(obj, arg, 1);
 		obj->callbacks.gaugeval = &mem_barval;
+#endif
 	END OBJ(membar, &update_meminfo)
 		scan_bar(obj, arg, 1);
 		obj->callbacks.barval = &mem_barval;
@@ -1653,7 +1657,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		}
 		obj->callbacks.graphval = &lua_barval;
 		obj->callbacks.free = &gen_free_opaque;
-#endif /* BUILD_X11 */
 	END OBJ_ARG(lua_gauge, 0, "lua_gauge needs arguments: <height>,<width> <function name> [function parameters]")
 		arg = scan_gauge(obj, arg, 100);
 		if (arg) {
@@ -1663,6 +1666,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		}
 		obj->callbacks.gaugeval = &lua_barval;
 		obj->callbacks.free = &gen_free_opaque;
+#endif /* BUILD_X11 */
 #endif /* BUILD_LUA */
 #ifdef BUILD_HDDTEMP
 	END OBJ(hddtemp, &update_hddtemp)
@@ -1749,10 +1753,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		buf = scan_graph(obj, arg, 100);
 		free_and_zero(buf);
 		obj->callbacks.graphval = &apcupsd_loadbarval;
-#endif /* BUILD_X11 */
 	END OBJ(apcupsd_loadgauge, &update_apcupsd)
 		scan_gauge(obj, arg, 100);
 		obj->callbacks.gaugeval = &apcupsd_loadbarval;
+#endif /* BUILD_X11 */
 	END OBJ(apcupsd_charge, &update_apcupsd)
 		obj->callbacks.print = &print_apcupsd_charge;
 	END OBJ(apcupsd_timeleft, &update_apcupsd)

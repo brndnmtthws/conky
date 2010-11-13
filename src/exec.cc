@@ -262,6 +262,7 @@ void scan_execi_bar_arg(struct text_object *obj, const char *arg)
 	scan_execi_arg(obj, arg);
 }
 
+#ifdef BUILD_X11
 void scan_execi_gauge_arg(struct text_object *obj, const char *arg)
 {
 	/* XXX: do real gauge parsing here */
@@ -269,7 +270,6 @@ void scan_execi_gauge_arg(struct text_object *obj, const char *arg)
 	scan_execi_arg(obj, arg);
 }
 
-#ifdef BUILD_X11
 void scan_execgraph_arg(struct text_object *obj, const char *arg)
 {
 	struct execi_data *ed;

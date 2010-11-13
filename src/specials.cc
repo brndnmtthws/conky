@@ -104,6 +104,7 @@ struct tab {
  * Scanning arguments to various special text objects
  */
 
+#ifdef BUILD_X11
 const char *scan_gauge(struct text_object *obj, const char *args, double scale)
 {
 	struct gauge *g;
@@ -135,6 +136,7 @@ const char *scan_gauge(struct text_object *obj, const char *args, double scale)
 	obj->special_data = g;
 	return args;
 }
+#endif
 
 const char *scan_bar(struct text_object *obj, const char *args, double scale)
 {

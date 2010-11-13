@@ -2917,9 +2917,11 @@ void initialisation(int argc, char **argv) {
 
 	conky::set_config_settings(*state);
 
+#ifdef BUILD_X11
 	if(out_to_x.get(*state)) {
 		current_text_color = default_color.get(*state);
 	}
+#endif
 
 	/* generate text and get initial size */
 	extract_variable_text(global_text);
