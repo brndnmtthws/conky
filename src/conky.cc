@@ -74,8 +74,6 @@
 #ifdef BUILD_CURL
 #include <curl/curl.h>
 #endif
-#define _(string) gettext(string)
-#define _nop(string) string
 
 /* local headers */
 #include "core.h"
@@ -231,114 +229,121 @@ static void reload_config(void);
 
 static void print_version(void)
 {
-	std::cout << PACKAGE_NAME" "VERSION" compiled "BUILD_DATE" for "BUILD_ARCH"\n"
-		"\nCompiled in features:\n\n"
-		"System config file: "SYSTEM_CONFIG_FILE"\n"
-		"Package library path: "PACKAGE_LIBDIR"\n\n"
+        std::cout << _(PACKAGE_NAME" "VERSION" compiled "BUILD_DATE" for "BUILD_ARCH"\n"
+                "\nCompiled in features:\n\n"
+                "System config file: "SYSTEM_CONFIG_FILE"\n"
+                "Package library path: "PACKAGE_LIBDIR"\n\n")
 #ifdef BUILD_X11
-		" X11:\n"
+                << " X11:\n"
 # ifdef BUILD_XDAMAGE
-		"  * Xdamage extension\n"
+                << _("  * Xdamage extension\n")
 # endif /* BUILD_XDAMAGE */
 # ifdef BUILD_XDBE
-		"  * XDBE (double buffer extension)\n"
+                << _("  * XDBE (double buffer extension)\n")
 # endif /* BUILD_XDBE */
 # ifdef BUILD_XFT
-		"  * Xft\n"
+                << "  * Xft\n"
 # endif /* BUILD_XFT */
 # ifdef BUILD_ARGB
-		"  * ARGB visual\n"
+                << _("  * ARGB visual\n")
 # endif /* BUILD_ARGB */
 #endif /* BUILD_X11 */
-		"\n Music detection:\n"
+                << _("\n Music detection:\n")
 #ifdef BUILD_AUDACIOUS
-		"  * Audacious\n"
+                << "  * Audacious\n"
 #endif /* BUILD_AUDACIOUS */
 #ifdef BUILD_BMPX
-		"  * BMPx\n"
+                << "  * BMPx\n"
 #endif /* BUILD_BMPX */
 #ifdef BUILD_MPD
-		"  * MPD\n"
+                << "  * MPD\n"
 #endif /* BUILD_MPD */
 #ifdef BUILD_MOC
-		"  * MOC\n"
+                << "  * MOC\n"
 #endif /* BUILD_MOC */
 #ifdef BUILD_XMMS2
-		"  * XMMS2\n"
+                << "  * XMMS2\n"
 #endif /* BUILD_XMMS2 */
-		"\n General:\n"
+                << _("\n General:\n")
 #ifdef HAVE_OPENMP
-		"  * OpenMP\n"
+                << "  * OpenMP\n"
 #endif /* HAVE_OPENMP */
 #ifdef BUILD_MATH
-		"  * math\n"
+                << _("  * math\n")
 #endif /* BUILD_MATH */
 #ifdef BUILD_HDDTEMP
-		"  * hddtemp\n"
+                << "  * hddtemp\n"
 #endif /* BUILD_HDDTEMP */
 #ifdef BUILD_PORT_MONITORS
-		"  * portmon\n"
+                << "  * portmon\n"
 #endif /* BUILD_PORT_MONITORS */
 #ifdef BUILD_HTTP
-		"  * HTTP\n"
+                << "  * HTTP\n"
 #endif
 #ifdef BUILD_IRC
-		"  * IRC\n"
+                << "  * IRC\n"
 #endif
 #ifdef BUILD_CURL
-		"  * Curl\n"
+                << "  * Curl\n"
 #endif /* BUILD_CURL */
 #ifdef BUILD_RSS
-		"  * RSS\n"
+                << "  * RSS\n"
 #endif /* BUILD_RSS */
 #ifdef BUILD_WEATHER_METAR
-		"  * Weather (METAR)\n"
+                << _("  * Weather (METAR)\n")
 #ifdef BUILD_WEATHER_XOAP
-		"  * Weather (XOAP)\n"
+                << _("  * Weather (XOAP)\n")
 #endif /* BUILD_WEATHER_XOAP */
 #endif /* BUILD_WEATHER_METAR */
 #ifdef BUILD_WLAN
-		"  * wireless\n"
+                << _("  * wireless\n")
 #endif /* BUILD_WLAN */
 #ifdef BUILD_IBM
-		"  * support for IBM/Lenovo notebooks\n"
+                << _("  * support for IBM/Lenovo notebooks\n")
 #endif /* BUILD_IBM */
 #ifdef BUILD_NVIDIA
-		"  * nvidia\n"
+                << "  * nvidia\n"
 #endif /* BUILD_NVIDIA */
 #ifdef BUILD_EVE
-		"  * eve-online\n"
+                << _("  * eve-online\n")
 #endif /* BUILD_EVE */
 #ifdef BUILD_BUILTIN_CONFIG
-		"  * builtin default configuration\n"
+                << _("  * builtin default configuration\n")
 #endif /* BUILD_BUILTIN_CONFIG */
 #ifdef BUILD_IMLIB2
-		"  * Imlib2\n"
+                << "  * Imlib2\n"
 #endif /* BUILD_IMLIB2 */
 #ifdef BUILD_MIXER_ALSA
-		"  * ALSA mixer support\n"
+                << _("  * ALSA mixer support\n")
 #endif /* BUILD_MIXER_ALSA */
 #ifdef BUILD_APCUPSD
-		"  * apcupsd\n"
+                << "  * apcupsd\n"
 #endif /* BUILD_APCUPSD */
 #ifdef BUILD_IOSTATS
-		"  * iostats\n"
+                << "  * iostats\n"
 #endif /* BUILD_IOSTATS */
 #ifdef BUILD_NCURSES
-		"  * ncurses\n"
+                << "  * ncurses\n"
 #endif /* BUILD_NCURSES */
 #ifdef BUILD_LUA
-		"  * Lua\n"
-		"\n  Lua bindings:\n"
+                << "  * Lua\n"
+                << _("\n  Lua bindings:\n")
 #ifdef BUILD_LUA_CAIRO
-		"   * Cairo\n"
+                << "   * Cairo\n"
 #endif /* BUILD_LUA_CAIRO */
 #ifdef BUILD_LUA_IMLIB2
-		"   * Imlib2\n"
+                << "   * Imlib2\n"
 #endif /* BUILD_LUA_IMLIB2 */
 #endif /* BUILD_LUA */
-	;
+#ifdef BUILD_I18N
+                << "  * Internationalization support\n"
+#endif
+#ifdef DEBUG
+                << "  * Debugging extensions\n"
+#endif
+        ;
 }
+
 
 static const char *suffixes[] = {
 	_nop("B"), _nop("KiB"), _nop("MiB"), _nop("GiB"), _nop("TiB"), _nop("PiB"), ""
@@ -2987,9 +2992,11 @@ void initialisation(int argc, char **argv) {
 
 int main(int argc, char **argv)
 {
+#ifdef BUILD_I18N
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE_NAME, LOCALE_DIR);
 	textdomain(PACKAGE_NAME);
+#endif
 	argc_copy = argc;
 	argv_copy = argv;
 	g_signal_pending = 0;
