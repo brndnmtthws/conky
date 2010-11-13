@@ -2522,6 +2522,11 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2) {
 	currentconffile = NULL;
 	free_and_zero(memtofree1);
 	free_and_zero(memtofree2);
+
+#if defined BUILD_WEATHER_METAR || defined BUILD_WEATHER_XOAP
+	weather_free_info();
+#endif
+
 	timed_thread::destroy_registered_threads();
 
 	free_and_zero(info.cpu_usage);
@@ -2563,9 +2568,6 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2) {
 #endif
 #ifdef BUILD_RSS
 	rss_free_info();
-#endif
-#if defined BUILD_WEATHER_METAR || defined BUILD_WEATHER_XOAP
-	weather_free_info();
 #endif
 #ifdef BUILD_LUA
 	llua_shutdown_hook();

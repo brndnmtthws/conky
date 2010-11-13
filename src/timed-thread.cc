@@ -102,7 +102,7 @@ timed_thread::timed_thread(const std::function<void(thread_handle &)> &start_rou
 }
 
 /* destroy a timed thread. */
-void timed_thread::destroy(bool deregister_this)
+void timed_thread::destroy()
 {
 	DBGP("destroying thread %ld", (long)p_timed_thread->thread.get());
 #ifdef DEBUG
@@ -125,9 +125,6 @@ void timed_thread::destroy(bool deregister_this)
 	close(p_timed_thread->pipefd[1]);
 	
 	running = false;
-
-	if (deregister_this) deregister(this);
-
 }
 
 /* lock a timed thread for critical section activity */
