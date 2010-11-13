@@ -1036,13 +1036,13 @@ void get_x11_desktop_info(Display *current_display, Atom atom)
 	}
 }
 
-#define NOT_IN_X "Not running in X"
+static const char NOT_IN_X[] = "Not running in X";
 
 void print_monitor(struct text_object *obj, char *p, int p_max_size)
 {
 	(void)obj;
 
-	if(x_initialised != YES) {
+	if(not out_to_x.get(*state)) {
 		strncpy(p, NOT_IN_X, p_max_size);
 		return;
 	}
@@ -1053,7 +1053,7 @@ void print_monitor_number(struct text_object *obj, char *p, int p_max_size)
 {
 	(void)obj;
 
-	if(x_initialised != YES) {
+	if(not out_to_x.get(*state)) {
 		strncpy(p, NOT_IN_X, p_max_size);
 		return;
 	}
@@ -1064,7 +1064,7 @@ void print_desktop(struct text_object *obj, char *p, int p_max_size)
 {
 	(void)obj;
 
-	if(x_initialised != YES) {
+	if(not out_to_x.get(*state)) {
 		strncpy(p, NOT_IN_X, p_max_size);
 		return;
 	}
@@ -1075,7 +1075,7 @@ void print_desktop_number(struct text_object *obj, char *p, int p_max_size)
 {
 	(void)obj;
 
-	if(x_initialised != YES) {
+	if(not out_to_x.get(*state)) {
 		strncpy(p, NOT_IN_X, p_max_size);
 		return;
 	}

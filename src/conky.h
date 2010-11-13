@@ -319,16 +319,6 @@ extern conky::range_config_setting<unsigned int> max_user_text;
 /* path to config file */
 extern std::string current_config;
 
-#define TO_STDERR 4
-
-enum x_initialiser_state {
-	NO = 0,
-	YES = 1,
-	NEVER = 2
-};
-extern int output_methods;
-extern enum x_initialiser_state x_initialised;
-
 #define DEFAULT_TEXT_BUFFER_SIZE_S "##DEFAULT_TEXT_BUFFER_SIZE"
 
 #define NOBATTERY 0

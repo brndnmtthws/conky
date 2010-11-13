@@ -182,9 +182,7 @@ int top_cpu, top_mem, top_time;
 int top_io;
 #endif
 int top_running;
-int output_methods;
 static conky::simple_config_setting<bool> extra_newline("extra_newline", false, false);
-enum x_initialiser_state x_initialised = NO;
 static volatile int g_signal_pending;
 
 /* Update interval */
@@ -2491,11 +2489,6 @@ void clean_up_x11(void)
 		XDestroyRegion(x11_stuff.region);
 		x11_stuff.region = NULL;
 	}
-	if(display) {
-		XCloseDisplay(display);
-		display = NULL;
-	}
-	x_initialised = NO;
 }
 #endif
 
@@ -2517,11 +2510,10 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2)
 
 	free_and_zero(info.cpu_usage);
 #ifdef BUILD_X11
-	if (x_initialised == YES) {
+	if(out_to_x.get(*state))
 		clean_up_x11();
-	}else{
+	else
 		fonts.clear();	//in set_default_configurations a font is set but not loaded
-	}
 #endif /* BUILD_X11 */
 
 	if (info.first_process) {
