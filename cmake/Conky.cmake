@@ -97,19 +97,6 @@ endif(NOT RELEASE)
 
 mark_as_advanced(APP_GAWK APP_WC APP_DATE APP_UNAME)
 
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-	set(DEBUG true)
-endif(CMAKE_BUILD_TYPE MATCHES "Debug")
-
-# The version numbers are simply derived from the date and number of commits
-# since start of month
-if(DEBUG)
-	execute_process(COMMAND
-		${APP_GIT} --git-dir=${CMAKE_CURRENT_SOURCE_DIR}/.git log
-		--since=${VERSION_MAJOR}-${VERSION_MINOR}-01 --pretty=oneline COMMAND
-		${APP_WC} -l COMMAND ${APP_GAWK} "{print $1}" RESULT_VARIABLE RETVAL
-		OUTPUT_VARIABLE COMMIT_COUNT OUTPUT_STRIP_TRAILING_WHITESPACE)
-endif(DEBUG)
 #BUILD_DATE=$(LANG=en_US LC_ALL=en_US LOCALE=en_US date)
 #BUILD_ARCH="$(uname -sr) ($(uname -m))"
 execute_process(COMMAND ${APP_DATE} RESULT_VARIABLE RETVAL OUTPUT_VARIABLE
