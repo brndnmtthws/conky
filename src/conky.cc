@@ -2654,9 +2654,11 @@ void load_config_file()
 	lua::stack_sentry s(l);
 	l.checkstack(2);
 
+#ifdef BUILD_BUILTIN_CONFIG
 	if(current_config == builtin_config_magic)
 		l.loadstring(defconfig);
 	else
+#endif
 		l.loadfile(current_config.c_str());
 	l.call(0, 0);
 
