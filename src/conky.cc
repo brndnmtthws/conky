@@ -3055,7 +3055,7 @@ int main(int argc, char **argv)
 	}
 	catch(conky_error &e) {
 		std::cerr << "caught exception: " << e.what() << std::endl;
-		if(e.errortype() == critical) exit(EXIT_FAILURE);
+		if(e.errortype() == critical) return EXIT_FAILURE;
 	}
 
 #ifdef BUILD_WEATHER_XOAP
