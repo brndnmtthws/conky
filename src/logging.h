@@ -31,6 +31,7 @@
 #define _LOGGING_H
 
 #include <cstdio>
+#include <stdexcept>
 #include "i18n.h"
 
 void clean_up(void *memtofree1, void* memtofree2);
@@ -57,6 +58,18 @@ inline void gettextize_format(const char *format)
 
 #define THREAD_CRIT_ERR(memtofree1, memtofree2, ...) \
 	{ NORM_ERR(__VA_ARGS__); clean_up_without_threads(memtofree1, memtofree2); return; }
+
+enum error_type { normal, critical };
+class conky_error : public std::runtime_error {
+	error_type type;
+public:
+	conky_error(error_type newtype, const std::string& error_mesg) : std::runtime_error(error_mesg) {
+		type = newtype;
+	}
+	error_type errortype() {
+		return type;
+	}
+};
 
 /* debugging output */
 extern int global_debug_level;
