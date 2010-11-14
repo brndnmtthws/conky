@@ -2646,7 +2646,7 @@ void load_config_file()
 	l.getfield(-1, "text");
 	l.replace(-2);
 	if(l.type(-1) != lua::TSTRING)
-		throw conky_error(critical, "missing text block in configuration; exiting");
+		throw conky::critical_error(_("missing text block in configuration"));
 	
 	/* Remove \\-\n. */
 	l.gsub(l.tocstring(-1), "\\\n", "");
@@ -3053,9 +3053,12 @@ int main(int argc, char **argv)
 		first_pass = 0; /* don't ever call fork() again */
 
 	}
-	catch(conky_error &e) {
+	catch(conky::critical_error &e) {
+		std::cerr << "caught critical exception: " << e.what() << std::endl;
+		return EXIT_FAILURE;
+	}
+	catch(std::runtime_error &e) {
 		std::cerr << "caught exception: " << e.what() << std::endl;
-		if(e.errortype() == critical) return EXIT_FAILURE;
 	}
 
 #ifdef BUILD_WEATHER_XOAP
