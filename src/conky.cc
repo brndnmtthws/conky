@@ -2485,7 +2485,7 @@ void clean_up_x11(void)
 }
 #endif
 
-void free_specials(special_t *current) {
+void free_specials(special_t *&current) {
 	if (current) {
 		free_specials(current->next);
 		if(current->type == GRAPH)
