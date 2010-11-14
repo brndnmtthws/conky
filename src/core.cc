@@ -64,9 +64,7 @@
 #ifdef BUILD_ICONV
 #include "iconv_tools.h"
 #endif
-#ifdef BUILD_LUA
 #include "llua.h"
-#endif /* BUILD_LUA */
 #include "logging.h"
 #include "mixer.h"
 #include "mail.h"
@@ -1628,7 +1626,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.print = &print_weather_forecast;
 		obj->callbacks.free = &free_weather;
 #endif /* BUILD_WEATHER_XOAP */
-#ifdef BUILD_LUA
 	END OBJ_ARG(lua, 0, "lua needs arguments: <function name> [function parameters]")
 		obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		obj->callbacks.print = &print_lua;
@@ -1667,7 +1664,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.gaugeval = &lua_barval;
 		obj->callbacks.free = &gen_free_opaque;
 #endif /* BUILD_X11 */
-#endif /* BUILD_LUA */
 #ifdef BUILD_HDDTEMP
 	END OBJ(hddtemp, &update_hddtemp)
 		if (arg)

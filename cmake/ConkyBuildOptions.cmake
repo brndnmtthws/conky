@@ -115,11 +115,8 @@ else(BUILD_X11)
 	set(BUILD_IMLIB2 false CACHE BOOL "Enable Imlib2 support" FORCE)
 endif(BUILD_X11)
 
-option(BUILD_LUA "Build Lua support" true)
-if(BUILD_LUA)
-	option(BUILD_LUA_CAIRO "Build cairo bindings for Lua" false)
-	option(BUILD_LUA_IMLIB2 "Build Imlib2 bindings for Lua" false)
-endif(BUILD_LUA)
+option(BUILD_LUA_CAIRO "Build cairo bindings for Lua" false)
+option(BUILD_LUA_IMLIB2 "Build Imlib2 bindings for Lua" false)
 
 option(BUILD_AUDACIOUS "Build audacious (music player) support" false)
 

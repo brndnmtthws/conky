@@ -87,9 +87,7 @@
 #ifdef BUILD_ICONV
 #include "iconv_tools.h"
 #endif
-#ifdef BUILD_LUA
 #include "llua.h"
-#endif /* BUILD_LUA */
 #include "logging.h"
 #include "mail.h"
 #include "nc.h"
@@ -325,7 +323,6 @@ static void print_version(void)
 #ifdef BUILD_NCURSES
                 << "  * ncurses\n"
 #endif /* BUILD_NCURSES */
-#ifdef BUILD_LUA
                 << "  * Lua\n"
                 << _("\n  Lua bindings:\n")
 #ifdef BUILD_LUA_CAIRO
@@ -334,7 +331,6 @@ static void print_version(void)
 #ifdef BUILD_LUA_IMLIB2
                 << "   * Imlib2\n"
 #endif /* BUILD_LUA_IMLIB2 */
-#endif /* BUILD_LUA */
 #ifdef BUILD_I18N
                 << "  * Internationalization support\n"
 #endif
@@ -1088,10 +1084,8 @@ static void update_text_area(void)
 		text_start_x = x;
 		text_start_y = y;
 	}
-#ifdef BUILD_LUA
 	/* update lua window globals */
 	llua_update_window_table(text_start_x, text_start_y, text_width, text_height);
-#endif /* BUILD_LUA */
 }
 
 /* drawing stuff */
@@ -1850,9 +1844,7 @@ static void draw_text(void)
 	}
 #endif
 #ifdef BUILD_X11
-#ifdef BUILD_LUA
 	llua_draw_pre_hook();
-#endif /* BUILD_LUA */
 	if (out_to_x.get(*state)) {
 		cur_y = text_start_y;
 		int bw = border_width.get(*state);
@@ -1884,9 +1876,9 @@ static void draw_text(void)
 	attron(COLOR_PAIR(COLOR_WHITE));
 #endif /* BUILD_NCURSES */
 	for_each_line(text_buffer, draw_line);
-#if defined(BUILD_LUA) && defined(BUILD_X11)
+#ifdef BUILD_X11
 	llua_draw_post_hook();
-#endif /* BUILD_LUA */
+#endif /* BUILD_X11 */
 #ifdef BUILD_HTTP
 	if (out_to_http.get(*state)) {
 		webpage.append(WEBPAGE_END);
@@ -1996,9 +1988,7 @@ static void update_text(void)
 		clear_text(1);
 #endif /* BUILD_X11 */
 	need_to_update = 1;
-#ifdef BUILD_LUA
 	llua_update_info(&info, active_update_interval());
-#endif /* BUILD_LUA */
 }
 
 #ifdef HAVE_SYS_INOTIFY_H
@@ -2109,10 +2099,8 @@ static void main_loop(void)
 #endif
 
 						changed++;
-#ifdef BUILD_LUA
 						/* update lua window globals */
 						llua_update_window_table(text_start_x, text_start_y, text_width, text_height);
-#endif /* BUILD_LUA */
 					}
 
 					/* move window if it isn't in right position */
@@ -2441,11 +2429,9 @@ static void main_loop(void)
 						}
 						break;
 					}
-#ifdef BUILD_LUA
 					else {
 						llua_inotify_query(ev->wd, ev->mask);
 					}
-#endif /* BUILD_LUA */
 					idx += INOTIFY_EVENT_SIZE + ev->len;
 				}
 			}
@@ -2456,9 +2442,7 @@ static void main_loop(void)
 		}
 #endif /* HAVE_SYS_INOTIFY_H */
 
-#ifdef BUILD_LUA
 		llua_update_info(&info, active_update_interval());
-#endif /* BUILD_LUA */
 		g_signal_pending = 0;
 	}
 	clean_up(NULL, NULL);
@@ -2550,9 +2534,7 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2)
 #ifdef BUILD_RSS
 	rss_free_info();
 #endif
-#ifdef BUILD_LUA
 	llua_shutdown_hook();
-#endif /* BUILD_LUA */
 #if defined BUILD_WEATHER_XOAP || defined BUILD_RSS
 	xmlCleanupParser();
 #endif
@@ -2639,10 +2621,8 @@ static void X11_create_window(void)
 		selected_font = 0;
 		update_text_area();	/* to get initial size of the window */
 	}
-#ifdef BUILD_LUA
 	/* setup lua window globals */
 	llua_setup_window_table(text_start_x, text_start_y, text_width, text_height);
-#endif /* BUILD_LUA */
 }
 #endif /* BUILD_X11 */
 
@@ -2966,9 +2946,7 @@ void initialisation(int argc, char **argv) {
 #ifdef BUILD_X11
 	X11_create_window();
 #endif /* BUILD_X11 */
-#ifdef BUILD_LUA
 	llua_setup_info(&info, active_update_interval());
-#endif /* BUILD_LUA */
 #ifdef BUILD_WEATHER_XOAP
 	xmlInitParser();
 #endif /* BUILD_WEATHER_XOAP */
@@ -2989,9 +2967,7 @@ void initialisation(int argc, char **argv) {
 		NORM_ERR("error setting signal handler: %s", strerror(errno));
 	}
 
-#ifdef BUILD_LUA
 	llua_startup_hook();
-#endif /* BUILD_LUA */
 }
 
 int main(int argc, char **argv)

@@ -45,8 +45,6 @@
 
 #cmakedefine BUILD_XDBE 1
 
-#cmakedefine BUILD_LUA 1
-
 #cmakedefine BUILD_PORT_MONITORS 1
 
 #cmakedefine BUILD_AUDACIOUS 1
