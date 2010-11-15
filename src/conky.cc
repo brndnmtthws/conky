@@ -185,7 +185,6 @@ char** argv_copy;
 
 /* prototypes for internally used functions */
 static void signal_handler(int);
-static void print_version(void) __attribute__((noreturn));
 static void reload_config(void);
 
 static void print_version(void)
@@ -303,8 +302,6 @@ static void print_version(void)
 		<< "  * Debugging extensions\n"
 #endif
 	;
-
-	exit(EXIT_SUCCESS);
 }
 
 static const char *suffixes[] = { _nop("B"), _nop("KiB"), _nop("MiB"), _nop("GiB"), _nop("TiB"), _nop("PiB"), "" };
@@ -2873,10 +2870,7 @@ int x11_ioerror_handler(Display *d)
 	__attribute__((noreturn));
 int x11_ioerror_handler(Display *d)
 {
-	NORM_ERR("X Error: Display %lx\n",
-			(long unsigned)d
-			);
-	exit(1);
+	CRIT_ERR(NULL, NULL, "X Error: Display %lx\n", (long unsigned) d );
 }
 #endif /* DEBUG */
 
@@ -4299,7 +4293,7 @@ void initialisation(int argc, char **argv) {
 				break;
 
 			case '?':
-				exit(EXIT_FAILURE);
+				throw unknown_arg_throw();
 		}
 	}
 
@@ -4335,7 +4329,7 @@ void initialisation(int argc, char **argv) {
 				fprintf(stderr, PACKAGE_NAME": forked to background, pid is %d\n",
 					pid);
 				fflush(stderr);
-				exit(EXIT_SUCCESS);
+				throw fork_throw();
 		}
 	}
 
@@ -4440,7 +4434,8 @@ int main(int argc, char **argv)
 				break;
 			case 'v':
 			case 'V':
-				print_version(); /* doesn't return */
+				print_version();
+				return EXIT_SUCCESS;
 			case 'c':
 				current_config = optarg;
 				break;
@@ -4470,7 +4465,7 @@ int main(int argc, char **argv)
 #endif /* BUILD_X11 */
 
 			case '?':
-				exit(EXIT_FAILURE);
+				return EXIT_FAILURE;
 		}
 	}
 
@@ -4491,11 +4486,15 @@ int main(int argc, char **argv)
 	}
 #endif /* HAVE_SYS_INOTIFY_H */
 
-	initialisation(argc, argv);
+	try {
+		initialisation(argc, argv);
 
-	first_pass = 0; /* don't ever call fork() again */
+		first_pass = 0; /* don't ever call fork() again */
 
-	main_loop();
+		main_loop();
+	}
+	catch(fork_throw &e) { return EXIT_SUCCESS; }
+	catch(unknown_arg_throw &e) { return EXIT_FAILURE; }
 
 #ifdef BUILD_CURL
 	curl_global_cleanup();

@@ -34,6 +34,9 @@
 #include "i18n.h"
 #include "mail.h"
 
+class fork_throw {};
+class unknown_arg_throw {};
+
 void clean_up(void *memtofree1, void* memtofree2);
 void clean_up_without_threads(void *memtofree1, void* memtofree2);
 
