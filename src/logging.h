@@ -31,11 +31,19 @@
 #define _LOGGING_H
 
 #include <cstdio>
+#include <stdexcept>
 #include "i18n.h"
 #include "mail.h"
 
-class fork_throw {};
-class unknown_arg_throw {};
+class fork_throw : public std::runtime_error {
+public:
+	fork_throw() : std::runtime_error("Fork happened") {}
+};
+
+class unknown_arg_throw : public std::runtime_error {
+public:
+	unknown_arg_throw() : std::runtime_error("Unknown argumunt given") {}
+};
 
 void clean_up(void *memtofree1, void* memtofree2);
 void clean_up_without_threads(void *memtofree1, void* memtofree2);
