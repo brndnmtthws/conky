@@ -3533,9 +3533,7 @@ char load_config_file(const char *f)
 #ifdef BUILD_X11
 #ifdef OWN_WINDOW
 		CONF("own_window") {
-			if (value) {
-				own_window = string_to_bool(value);
-			}
+			own_window = string_to_bool(value);
 		}
 		CONF("own_window_class") {
 			if (value) {
@@ -3551,9 +3549,7 @@ char load_config_file(const char *f)
 			}
 		}
 		CONF("own_window_transparent") {
-			if (value) {
-				set_transparent = string_to_bool(value);
-			}
+			set_transparent = string_to_bool(value);
 		}
 		CONF("own_window_hints") {
 			if (value) {
