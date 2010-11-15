@@ -38,11 +38,13 @@
 class fork_throw : public std::runtime_error {
 public:
 	fork_throw() : std::runtime_error("Fork happened") {}
+	fork_throw(const std::string &msg) : std::runtime_error(msg) {}
 };
 
 class unknown_arg_throw : public std::runtime_error {
 public:
 	unknown_arg_throw() : std::runtime_error("Unknown argumunt given") {}
+	unknown_arg_throw(const std::string &msg) : std::runtime_error(msg) {}
 };
 
 void clean_up(void *memtofree1, void* memtofree2);
