@@ -2893,7 +2893,7 @@ void initialisation(int argc, char **argv) {
 				break;
 
 			case '?':
-				throw std::runtime_error("Unknown argument");
+				throw unknown_arg_throw();
 		}
 	}
 
@@ -2930,7 +2930,7 @@ void initialisation(int argc, char **argv) {
 				fprintf(stderr, PACKAGE_NAME": forked to background, pid is %d\n",
 					pid);
 				fflush(stderr);
-				exit(EXIT_SUCCESS);
+				throw fork_throw();
 		}
 	}
 
@@ -3048,36 +3048,38 @@ int main(int argc, char **argv)
 	try {
 		conky::export_symbols(*state);
 
+#ifdef BUILD_WEATHER_XOAP
+		/* Load xoap keys, if existing */
+		load_xoap_keys();
+#endif /* BUILD_WEATHER_XOAP */
+
+#ifdef HAVE_SYS_INOTIFY_H
+		// the file descriptor will be automatically closed on exit
+		inotify_fd = inotify_init();
+		if(inotify_fd != -1) {
+			fcntl(inotify_fd, F_SETFL, fcntl(inotify_fd, F_GETFL) | O_NONBLOCK);
+
+			fcntl(inotify_fd, F_SETFD, fcntl(inotify_fd, F_GETFD) | FD_CLOEXEC);
+		}
+#endif /* HAVE_SYS_INOTIFY_H */
+
 		initialisation(argc, argv);
 
 		first_pass = 0; /* don't ever call fork() again */
 
+		main_loop();
 	}
 	catch(conky::critical_error &e) {
 		std::cerr << "caught critical exception: " << e.what() << std::endl;
 		return EXIT_FAILURE;
 	}
-	catch(std::runtime_error &e) {
-		std::cerr << "caught exception: " << e.what() << std::endl;
+	catch(fork_throw &e) { return EXIT_SUCCESS; }
+	catch(unknown_arg_throw &e) { return EXIT_FAILURE; }
+	catch(obj_create_error &e) {
+		std::cerr << e.what() << std::endl;
+		clean_up(NULL, NULL);
+		return EXIT_FAILURE;
 	}
-
-#ifdef BUILD_WEATHER_XOAP
-	/* Load xoap keys, if existing */
-	load_xoap_keys();
-#endif /* BUILD_WEATHER_XOAP */
-
-#ifdef HAVE_SYS_INOTIFY_H
-	// the file descriptor will be automatically closed on exit
-	inotify_fd = inotify_init();
-	if(inotify_fd != -1) {
-		fcntl(inotify_fd, F_SETFL, fcntl(inotify_fd, F_GETFL) | O_NONBLOCK);
-		
-		fcntl(inotify_fd, F_SETFD, fcntl(inotify_fd, F_GETFD) | FD_CLOEXEC);
-	}
-#endif /* HAVE_SYS_INOTIFY_H */
-	//////////// XXX ////////////////////////////////
-
-	main_loop();
 
 	disk_cleanup();
 

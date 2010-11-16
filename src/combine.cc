@@ -40,7 +40,7 @@ struct combine_data {
 	char *right;
 };
 
-void parse_combine_arg(struct text_object *obj, const char *arg, void *free_at_crash)
+void parse_combine_arg(struct text_object *obj, const char *arg)
 {
 	struct combine_data *cd;
 	unsigned int i,j;
@@ -89,7 +89,7 @@ void parse_combine_arg(struct text_object *obj, const char *arg, void *free_at_c
 		extract_variable_text_internal(obj->sub->sub, cd->right);
 		obj->data.opaque = cd;
 	} else {
-		CRIT_ERR(obj, free_at_crash, "combine needs arguments: <text1> <text2>");
+		throw combine_needs_2_args_error();
 	}
 }
 
