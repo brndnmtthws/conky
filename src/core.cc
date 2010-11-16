@@ -1726,8 +1726,14 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		parse_scroll_arg(obj, arg, free_at_crash, s);
 		obj->callbacks.print = &print_scroll;
 		obj->callbacks.free = &free_scroll;
-	END OBJ_ARG(combine, 0, "combine needs arguments: <text1> <text2>")
-		parse_combine_arg(obj, arg, free_at_crash);
+	END OBJ(combine, 0)
+		try {
+			parse_combine_arg(obj, arg);
+		}
+		catch(combine_needs_2_args_error &e) {
+			free(obj);
+			throw obj_create_error(e.what());
+		}
 		obj->callbacks.print = &print_combine;
 		obj->callbacks.free = &free_combine;
 #ifdef BUILD_NVIDIA
@@ -1955,8 +1961,15 @@ int extract_variable_text_internal(struct text_object *retval, const char *const
 					tmp_p++;
 				}
 
-				obj = construct_text_object(buf, arg,
+				try {
+					obj = construct_text_object(buf, arg,
 						line, &ifblock_opaque, orig_p);
+				}
+				catch(obj_create_error &e) {
+					free(buf);
+					free(orig_p);
+					throw e;
+				}
 				if (obj != NULL) {
 					append_object(retval, obj);
 				}

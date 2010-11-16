@@ -47,6 +47,18 @@ public:
 	unknown_arg_throw(const std::string &msg) : std::runtime_error(msg) {}
 };
 
+class combine_needs_2_args_error : public std::runtime_error {
+public:
+	combine_needs_2_args_error() : std::runtime_error("combine needs arguments: <text1> <text2>") {}
+	combine_needs_2_args_error(const std::string &msg) : std::runtime_error(msg) {}
+};
+
+class obj_create_error : public std::runtime_error {
+public:
+	obj_create_error() : std::runtime_error("Failed to create object") {}
+	obj_create_error(const std::string &msg) : std::runtime_error(msg) {}
+};
+
 void clean_up(void *memtofree1, void* memtofree2);
 void clean_up_without_threads(void *memtofree1, void* memtofree2);
 

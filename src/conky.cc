@@ -4495,6 +4495,11 @@ int main(int argc, char **argv)
 	}
 	catch(fork_throw &e) { return EXIT_SUCCESS; }
 	catch(unknown_arg_throw &e) { return EXIT_FAILURE; }
+	catch(obj_create_error &e) {
+		std::cerr << e.what() << std::endl;
+		clean_up(NULL, NULL);
+		return EXIT_FAILURE;
+	}
 
 #ifdef BUILD_CURL
 	curl_global_cleanup();
