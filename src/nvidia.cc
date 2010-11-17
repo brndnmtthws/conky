@@ -85,6 +85,8 @@ namespace {
 				CRIT_ERR(NULL, NULL, "can't open nvidia display: %s", XDisplayName(str.c_str()));
 			}
 		}	
+
+		++s;
 	}
 
 	void nvidia_display_setting::cleanup(lua::state &l)
@@ -98,6 +100,8 @@ namespace {
 
 		l.pop();
 	}
+
+	nvidia_display_setting nvidia_display;
 }
 
 static int get_nvidia_value(QUERY_ID qid){
