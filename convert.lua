@@ -1,6 +1,9 @@
 #! /usr/bin/lua
 
 local function quote(s)
+    if not s:find("[\n']") then
+        return "'" .. s .. "'";
+    end;
     local q = '';
     while s:find(']' .. q .. ']', 1, true) do
         q = q .. '=';
@@ -64,7 +67,7 @@ local function handle(setting, value)
     end;
     if bool_setting[setting] then
         value = value:lower();
-        if value == 'yes' or value == 'true' or value == '1' then
+        if value == 'yes' or value == 'true' or value == '1' or value == '' then
             value = 'true';
         else
             value = 'false';
@@ -99,4 +102,4 @@ local config = input:read('*a');
 local settings, text = config:match('^(.-)TEXT\n(.*)$');
 
 output:write('conky.config = {\n', settings:gsub('.-\n', convert), '};\n\n');
-output:write('conky.text = ', quote(text), ';\n');
+output:write('conky.text = \n', quote(text), ';\n');
