@@ -117,8 +117,7 @@ namespace priv {
 				l.pushboolean(false);
 			}
 
-			if(do_convert(l, -1).first)
-				init_window(l, do_convert(l, -1).first);
+			init_window(l, do_convert(l, -1).first);
 		}
 
 		++s;
