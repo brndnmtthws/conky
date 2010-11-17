@@ -2634,12 +2634,16 @@ void load_config_file()
 	lua::stack_sentry s(l);
 	l.checkstack(2);
 
+	try {
 #ifdef BUILD_BUILTIN_CONFIG
-	if(current_config == builtin_config_magic)
-		l.loadstring(defconfig);
-	else
+		if(current_config == builtin_config_magic)
+			l.loadstring(defconfig);
+		else
 #endif
-		l.loadfile(current_config.c_str());
+			l.loadfile(current_config.c_str());
+	}
+	catch(lua::syntax_error &e) { throw conky::critical_error(_("syntax error in configfile")); }
+	catch(lua::file_error &e) { throw conky::critical_error(_("no configfile given")); }
 	l.call(0, 0);
 
 	l.getglobal("conky");
@@ -3078,6 +3082,10 @@ int main(int argc, char **argv)
 	catch(obj_create_error &e) {
 		std::cerr << e.what() << std::endl;
 		clean_up(NULL, NULL);
+		return EXIT_FAILURE;
+	}
+	catch(std::bad_alloc &e) {
+		std::cerr << e.what() << std::endl;
 		return EXIT_FAILURE;
 	}
 
