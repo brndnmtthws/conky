@@ -1043,13 +1043,4 @@
         1 and 0. 
         <para /></listitem>
     </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
-                <option>xftfont</option>
-            </command>
-        </term>
-        <listitem>Xft font to use. 
-        <para /></listitem>
-    </varlistentry>
 </variablelist>

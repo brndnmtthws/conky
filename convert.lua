@@ -72,9 +72,10 @@ local function handle(setting, value)
     elseif not num_setting[setting] then
         if setting == 'alignment' and value:len() == 2 then
             value = alignment_map(value:sub(1,1)) .. '_' .. alignment_map(value:sub(2,2));
-        end;
-        if colour_setting[setting] and value:match('^[0-9a-fA-F]+$') then
+        elseif colour_setting[setting] and value:match('^[0-9a-fA-F]+$') then
             value = '#' .. value;
+        elseif setting == 'xftfont' then
+            setting = 'font';
         end;
         value = quote(value);
     end;
