@@ -111,13 +111,13 @@ namespace priv {
 #endif
 			}
 
-			if(not out_to_x.get(l)) {
+			if(out_to_x.get(l))
+				init_window(l, do_convert(l, -1).first);
+			else {
 				// own_window makes no sense when not drawing to X
 				l.pop();
 				l.pushboolean(false);
-			}
-
-			init_window(l, do_convert(l, -1).first);
+			} 
 		}
 
 		++s;
