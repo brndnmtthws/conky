@@ -92,7 +92,7 @@ local function convert(s)
     return handle(setting:match('^%s*(%S*)%s*(.-)%s*$')) ..  comment;
 end;
 
-local function convertconfig(oldconfig)
+function convertconfig(oldconfig)
 	local settings, text = oldconfig:match('^(.-)TEXT\n(.*)$');
 	return 'conky.config = {\n' .. settings:gsub('.-\n', convert) .. '};\n\n' .. 'conky.text = \n' .. quote(text) .. ';\n'
 end;
