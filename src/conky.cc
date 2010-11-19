@@ -128,6 +128,10 @@
 namespace { const char builtin_config_magic[] = "==builtin=="; }
 #endif
 
+#ifdef BUILD_OLD_CONFIG
+#include "convertconf.h"
+#endif
+
 #ifndef S_ISSOCK
 #define S_ISSOCK(x)   ((x & S_IFMT) == S_IFSOCK)
 #endif
@@ -308,6 +312,9 @@ static void print_version(void)
 #ifdef BUILD_BUILTIN_CONFIG
                 << _("  * builtin default configuration\n")
 #endif /* BUILD_BUILTIN_CONFIG */
+#ifdef BUILD_OLD_CONFIG
+                << _("  * old configuration syntax\n")
+#endif /* BUILD_OLD_CONFIG */
 #ifdef BUILD_IMLIB2
                 << "  * Imlib2\n"
 #endif /* BUILD_IMLIB2 */
@@ -2642,7 +2649,31 @@ void load_config_file()
 #endif
 			l.loadfile(current_config.c_str());
 	}
-	catch(lua::syntax_error &e) { throw conky::critical_error(_("syntax error in configfile")); }
+	catch(lua::syntax_error &e) {
+#define THROW_CONF_SYNTAX_ERR throw conky::critical_error(_("syntax error in configfile"))
+#ifdef BUILD_OLD_CONFIG
+		l.loadstring(convertconf);
+		l.call(0, 0);
+#ifdef BUILD_BUILTIN_CONFIG
+		if(current_config == builtin_config_magic) {
+			l.getglobal("convertconfig");
+			l.pushstring(defconfig);
+		} else {
+#endif	/* BUILD_BUILTIN_CONFIG */
+			l.getglobal("convertconfigfile");
+			l.pushstring(current_config.c_str());
+#ifdef BUILD_BUILTIN_CONFIG
+		}
+#endif /* BUILD_BUILTIN_CONFIG */
+		l.call(1, 1);
+		try {
+			l.loadstring(l.tostring(-1).c_str());
+		}
+		catch(lua::syntax_error &e) { THROW_CONF_SYNTAX_ERR; }
+#else
+		THROW_CONF_SYNTAX_ERR;
+#endif /* BUILD_OLD_CONFIG */
+	}
 	catch(lua::file_error &e) { throw conky::critical_error(_("no configfile given")); }
 	l.call(0, 0);
 

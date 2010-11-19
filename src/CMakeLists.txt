@@ -21,10 +21,10 @@
 #
 
 include_directories(${conky_includes})
-if(BUILD_BUILTIN_CONFIG)
+if(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
 	# include config output dir
 	include_directories(${CMAKE_BINARY_DIR}/data)
-endif(BUILD_BUILTIN_CONFIG)
+endif(BUILD_BUILTIN_CONFIG OR BUILD_OLD_CONFIG)
 
 # ensure build.h and config.h aren't in the way
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/config.h)

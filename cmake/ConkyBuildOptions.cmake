@@ -89,6 +89,8 @@ endif(OS_LINUX)
 
 option(BUILD_BUILTIN_CONFIG "Enable builtin default configuration" true)
 
+option(BUILD_OLD_CONFIG "Enable support for the old syntax of configurations" true)
+
 option(BUILD_MATH "Enable math support" true)
 
 option(BUILD_NCURSES "Enable ncurses support" true)
