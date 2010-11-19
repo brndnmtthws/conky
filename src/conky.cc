@@ -2650,7 +2650,6 @@ void load_config_file()
 			l.loadfile(current_config.c_str());
 	}
 	catch(lua::syntax_error &e) {
-#define THROW_CONF_SYNTAX_ERR throw conky::critical_error(_("syntax error in configfile"))
 #ifdef BUILD_OLD_CONFIG
 		l.loadstring(convertconf);
 		l.call(0, 0);
@@ -2669,10 +2668,12 @@ void load_config_file()
 		try {
 			l.loadstring(l.tostring(-1).c_str());
 		}
-		catch(lua::syntax_error &e) { THROW_CONF_SYNTAX_ERR; }
-#else
-		THROW_CONF_SYNTAX_ERR;
-#endif /* BUILD_OLD_CONFIG */
+		catch(lua::syntax_error &e) {
+#endif
+			throw conky::critical_error(_("syntax error in configfile"));
+#ifdef BUILD_OLD_CONFIG
+		}
+#endif
 	}
 	catch(lua::file_error &e) { throw conky::critical_error(_("no configfile given")); }
 	l.call(0, 0);
