@@ -2827,7 +2827,7 @@ void set_current_config() {
 		current_config = builtin_config_magic;
 		NORM_ERR(NOCFGFILEFOUND ", using builtin default");
 #else
-		CRIT_ERR(NULL, NULL, NOCFGFILEFOUND);
+		throw std::runtime_error(NOCFGFILEFOUND);
 #endif
 	}
 
@@ -2841,7 +2841,8 @@ void initialisation(int argc, char **argv) {
 
 	set_default_configurations();
 
-	set_current_config();
+	try { set_current_config(); }
+	catch(std::runtime_error &e) { throw e; }
 	load_config_file();
 
 	/* handle other command line arguments */
@@ -3078,7 +3079,11 @@ int main(int argc, char **argv)
 		}
 	}
 
-	set_current_config();
+	try { set_current_config(); }
+	catch(std::runtime_error &e) {
+		std::cerr << e.what() << std::endl;
+		return EXIT_FAILURE;
+	}
 
 	state.reset(new lua::state);
 	try {
@@ -3117,6 +3122,10 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 	catch(std::bad_alloc &e) {
+		std::cerr << e.what() << std::endl;
+		return EXIT_FAILURE;
+	}
+	catch(std::runtime_error &e) {
 		std::cerr << e.what() << std::endl;
 		return EXIT_FAILURE;
 	}
