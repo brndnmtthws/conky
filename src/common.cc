@@ -460,7 +460,7 @@ void print_loadavg(struct text_object *obj, char *p, int p_max_size)
 
 void scan_no_update(struct text_object *obj, const char *arg)
 {
-	obj->data.s = (char*) malloc(text_buffer_size);
+	obj->data.s = (char*) malloc(text_buffer_size.get(*state));
 	evaluate(arg, obj->data.s, text_buffer_size.get(*state));
 	obj->data.s = (char*) realloc(obj->data.s, strlen(obj->data.s) + 1);
 }
