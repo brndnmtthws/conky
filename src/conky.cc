@@ -2827,7 +2827,7 @@ void set_current_config() {
 		current_config = builtin_config_magic;
 		NORM_ERR(NOCFGFILEFOUND ", using builtin default");
 #else
-		throw std::runtime_error(NOCFGFILEFOUND);
+		throw conky::critical_error(NOCFGFILEFOUND);
 #endif
 	}
 
@@ -2842,7 +2842,7 @@ void initialisation(int argc, char **argv) {
 	set_default_configurations();
 
 	try { set_current_config(); }
-	catch(std::runtime_error &e) { throw e; }
+	catch(conky::critical_error &e) { throw e; }
 	load_config_file();
 
 	/* handle other command line arguments */
@@ -3079,14 +3079,11 @@ int main(int argc, char **argv)
 		}
 	}
 
-	try { set_current_config(); }
-	catch(std::runtime_error &e) {
-		std::cerr << e.what() << std::endl;
-		return EXIT_FAILURE;
-	}
-
-	state.reset(new lua::state);
 	try {
+		set_current_config();
+
+		state.reset(new lua::state);
+
 		conky::export_symbols(*state);
 
 #ifdef BUILD_WEATHER_XOAP
@@ -3122,10 +3119,6 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 	catch(std::bad_alloc &e) {
-		std::cerr << e.what() << std::endl;
-		return EXIT_FAILURE;
-	}
-	catch(std::runtime_error &e) {
 		std::cerr << e.what() << std::endl;
 		return EXIT_FAILURE;
 	}
