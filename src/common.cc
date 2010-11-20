@@ -460,12 +460,9 @@ void print_loadavg(struct text_object *obj, char *p, int p_max_size)
 
 void scan_no_update(struct text_object *obj, const char *arg)
 {
-	struct text_object subroot;
-
 	obj->data.s = (char*) malloc(text_buffer_size);
-	parse_conky_vars(&subroot, arg, obj->data.s, text_buffer_size);
+	evaluate(arg, obj->data.s, text_buffer_size);
 	obj->data.s = (char*) realloc(obj->data.s, strlen(obj->data.s) + 1);
-	free_text_objects(&subroot);
 }
 
 void free_no_update(struct text_object *obj) {

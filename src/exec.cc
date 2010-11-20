@@ -290,9 +290,7 @@ void scan_execgraph_arg(struct text_object *obj, const char *arg)
 
 void fill_p(char *buffer, struct text_object *obj, char *p, int p_max_size) {
 	if(obj->parse == true) {
-		struct text_object subroot;
-		parse_conky_vars(&subroot, buffer, p, p_max_size);
-		free_text_objects(&subroot);
+		evaluate(buffer, p, p_max_size);
 	} else snprintf(p, p_max_size, "%s", buffer);
 	remove_deleted_chars(p);
 }
