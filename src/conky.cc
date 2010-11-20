@@ -4173,7 +4173,7 @@ void set_current_config() {
 			NORM_ERR(NOCFGFILEFOUND
 					", using builtin default");
 #else
-			CRIT_ERR(NULL, NULL, NOCFGFILEFOUND);
+			throw std::runtime_error(NOCFGFILEFOUND);
 #endif /* ! CONF_OUTPUT */
 		}
 	}
@@ -4201,7 +4201,8 @@ void initialisation(int argc, char **argv) {
 		}
 	}
 	if(for_scripts == false) {
-		set_current_config();
+		try { set_current_config(); }
+		catch(std::runtime_error &e) { throw e; }
 		load_config_file(current_config.c_str());
 		currentconffile = conftree_add(currentconffile, current_config.c_str());
 	}
@@ -4469,7 +4470,11 @@ int main(int argc, char **argv)
 		}
 	}
 
-	set_current_config();
+	try { set_current_config(); }
+	catch(std::runtime_error &e) {
+		std::cerr << e.what() << std::endl;
+		return EXIT_FAILURE;
+	}
 
 #ifdef BUILD_WEATHER_XOAP
 	/* Load xoap keys, if existing */
@@ -4498,6 +4503,10 @@ int main(int argc, char **argv)
 	catch(obj_create_error &e) {
 		std::cerr << e.what() << std::endl;
 		clean_up(NULL, NULL);
+		return EXIT_FAILURE;
+	}
+	catch(std::runtime_error &e) {
+		std::cerr << e.what() << std::endl;
 		return EXIT_FAILURE;
 	}
 
