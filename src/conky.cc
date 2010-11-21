@@ -2641,7 +2641,7 @@ static void X11_create_window(void)
 
 void load_config_file()
 {
-	DBGP("reading contents from config file '%s'", current_config.c_str());
+	DBGP(_("reading contents from config file '%s'"), current_config.c_str());
 
 	lua::state &l = *state;
 	lua::stack_sentry s(l);
@@ -2657,8 +2657,8 @@ void load_config_file()
 	}
 #ifdef BUILD_OLD_CONFIG
 	catch(lua::syntax_error &e) {
-		NORM_ERR("Syntax error (%s) while reading config file. "
-				"Assuming it's in old syntax and attempting conversion.", e.what());
+		NORM_ERR(_("Syntax error (%s) while reading config file. "
+				"Assuming it's in old syntax and attempting conversion."), e.what());
 		// the strchr thingy skips the first line (#! /usr/bin/lua)
 		l.loadstring(strchr(convertconf, '\n'));
 		l.pushstring(current_config.c_str());
