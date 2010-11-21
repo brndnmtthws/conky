@@ -1,3 +1,19 @@
+#! /usr/bin/lua
+
+local usage = [[
+Usage: convert.lua <old_conkyrc >new_conkyrc
+
+Tries to convert conkyrc from the old v1.x format to the new, lua-based format.
+Reads from stdin, writes to stdout.
+
+Keep in mind that there is no guarantee that the output will work correctly
+with conky, or that it will be able to convert every conkyrc. However, it
+should provide a good starting point.
+
+For more information about the new format, read the wiki page
+<http://wiki.conky.be/index.php?title=conky2rc_format>
+]];
+
 local function quote(s)
     if not s:find("[\n']") then
         return "'" .. s .. "'";
@@ -6,7 +22,7 @@ local function quote(s)
     while s:find(']' .. q .. ']', 1, true) do
         q = q .. '=';
     end;
-    return string.format('[%s[%s]%s]', q, s, q);
+    return string.format('[%s[\n%s]%s]', q, s, q);
 end;
 
 local bool_setting = {
@@ -92,11 +108,33 @@ local function convert(s)
     return handle(setting:match('^%s*(%S*)%s*(.-)%s*$')) ..  comment;
 end;
 
-function convertconfig(oldconfig)
-	local settings, text = oldconfig:match('^(.-)TEXT\n(.*)$');
-	return 'conky.config = {\n' .. settings:gsub('.-\n', convert) .. '};\n\n' .. 'conky.text = \n' .. quote(text) .. ';\n'
+local input;
+local output;
+
+if conky == nil then
+    -- we are run as a standalone program, read from stdin, write to stdout
+    input = io.input();
+    if #arg > 0 then
+        -- if the user provided some arguments, it means he doesn't know how to use us
+        -- -> print usage
+        io.output():write(usage);
+        return;
+    end;
+else
+    -- we are called from conky, the filename is the first argument
+    input = io.open(..., 'r');
 end;
 
-function convertconfigfile(filename)
-	return convertconfig(io.input(filename):read('*a'))
-end
+
+local config = input:read('*a');
+
+local settings, text = config:match('^(.-)TEXT\n(.*)$');
+
+local output = 'conky.config = {\n' .. settings:gsub('.-\n', convert) .. '};\n\nconky.text = ' ..
+                quote(text) .. ';\n';
+
+if conky == nil then
+    io.output():write(output);
+else
+    return assert(loadstring(output, 'converted config'));
+end;

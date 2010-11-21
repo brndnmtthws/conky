@@ -2655,32 +2655,14 @@ void load_config_file()
 #endif
 			l.loadfile(current_config.c_str());
 	}
+#ifdef BUILD_OLD_CONFIG
 	catch(lua::syntax_error &e) {
-#ifdef BUILD_OLD_CONFIG
-		l.loadstring(convertconf);
-		l.call(0, 0);
-#ifdef BUILD_BUILTIN_CONFIG
-		if(current_config == builtin_config_magic) {
-			l.getglobal("convertconfig");
-			l.pushstring(defconfig);
-		} else {
-#endif	/* BUILD_BUILTIN_CONFIG */
-			l.getglobal("convertconfigfile");
-			l.pushstring(current_config.c_str());
-#ifdef BUILD_BUILTIN_CONFIG
-		}
-#endif /* BUILD_BUILTIN_CONFIG */
+		// the strchr thingy skips the first line (#! /usr/bin/lua)
+		l.loadstring(strchr(convertconf, '\n'));
+		l.pushstring(current_config.c_str());
 		l.call(1, 1);
-		try {
-			l.loadstring(l.tostring(-1).c_str());
-		}
-		catch(lua::syntax_error &e) {
-#endif
-			throw conky::critical_error(_("syntax error in configfile"));
-#ifdef BUILD_OLD_CONFIG
-		}
-#endif
 	}
+#endif
 	catch(lua::file_error &e) { throw conky::critical_error(_("no configfile given")); }
 	l.call(0, 0);
 

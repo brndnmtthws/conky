@@ -37,8 +37,8 @@ endif(BUILD_BUILTIN_CONFIG)
 
 if(BUILD_OLD_CONFIG)
 	add_custom_command(OUTPUT convertconf.h COMMAND
-		${CMAKE_SOURCE_DIR}/text2c.sh ${CMAKE_SOURCE_DIR}/convertluafuncs
-		convertconf.h convertconf DEPENDS ${CMAKE_SOURCE_DIR}/convertluafuncs
+		${CMAKE_SOURCE_DIR}/text2c.sh ${CMAKE_SOURCE_DIR}/extras/convert.lua
+		convertconf.h convertconf DEPENDS ${CMAKE_SOURCE_DIR}/extras/convert.lua
 	)
 	add_custom_target(convertconf ALL DEPENDS convertconf.h)
 	set_source_files_properties(convertconf.h PROPERTIES GENERATED TRUE)
