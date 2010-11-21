@@ -2842,8 +2842,7 @@ void initialisation(int argc, char **argv) {
 
 	set_default_configurations();
 
-	try { set_current_config(); }
-	catch(conky::critical_error &e) { throw e; }
+	set_current_config();
 	load_config_file();
 
 	/* handle other command line arguments */
