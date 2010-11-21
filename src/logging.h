@@ -90,13 +90,6 @@ namespace conky {
             : std::runtime_error(msg)
         {}
     };
-
-    class critical_error: public error {
-    public:
-        critical_error(const std::string &msg)
-            : error(msg)
-        {}
-    };
 }
 
 /* debugging output */

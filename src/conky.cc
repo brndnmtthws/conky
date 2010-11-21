@@ -2657,20 +2657,21 @@ void load_config_file()
 	}
 #ifdef BUILD_OLD_CONFIG
 	catch(lua::syntax_error &e) {
+		NORM_ERR("Syntax error (%s) while reading config file. "
+				"Assuming it's in old syntax and attempting conversion.", e.what());
 		// the strchr thingy skips the first line (#! /usr/bin/lua)
 		l.loadstring(strchr(convertconf, '\n'));
 		l.pushstring(current_config.c_str());
 		l.call(1, 1);
 	}
 #endif
-	catch(lua::file_error &e) { throw conky::critical_error(_("no configfile given")); }
 	l.call(0, 0);
 
 	l.getglobal("conky");
 	l.getfield(-1, "text");
 	l.replace(-2);
 	if(l.type(-1) != lua::TSTRING)
-		throw conky::critical_error(_("missing text block in configuration"));
+		throw conky::error(_("missing text block in configuration"));
 	
 	/* Remove \\-\n. */
 	l.gsub(l.tocstring(-1), "\\\n", "");
@@ -2815,7 +2816,7 @@ void set_current_config() {
 		current_config = builtin_config_magic;
 		NORM_ERR(NOCFGFILEFOUND ", using builtin default");
 #else
-		throw conky::critical_error(NOCFGFILEFOUND);
+		throw conky::error(NOCFGFILEFOUND);
 #endif
 	}
 
@@ -3094,10 +3095,6 @@ int main(int argc, char **argv)
 
 		main_loop();
 	}
-	catch(conky::critical_error &e) {
-		std::cerr << "caught critical exception: " << e.what() << std::endl;
-		return EXIT_FAILURE;
-	}
 	catch(fork_throw &e) { return EXIT_SUCCESS; }
 	catch(unknown_arg_throw &e) { return EXIT_FAILURE; }
 	catch(obj_create_error &e) {
@@ -3105,8 +3102,8 @@ int main(int argc, char **argv)
 		clean_up(NULL, NULL);
 		return EXIT_FAILURE;
 	}
-	catch(std::bad_alloc &e) {
-		std::cerr << e.what() << std::endl;
+	catch(std::exception &e) {
+		std::cerr << PACKAGE_NAME": " << e.what() << std::endl;
 		return EXIT_FAILURE;
 	}
 
