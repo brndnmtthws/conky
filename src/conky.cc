@@ -2463,6 +2463,11 @@ void initialisation(int argc, char** argv);
 	/* reload the config file */
 static void reload_config(void)
 {
+	struct stat sb;
+	if (stat(current_config.c_str(), &sb) || (!S_ISREG(sb.st_mode) && !S_ISLNK(sb.st_mode))) {
+		NORM_ERR(_("Config file '%s' is gone, continuing with config from memory.\nIf you recreate this file sent me a SIGUSR1 to tell me about it. ( kill -s USR1 %d )"), current_config.c_str(), getpid());
+		return;
+	}
 	clean_up(NULL, NULL);
 	sleep(1); /* slight pause */
 	initialisation(argc_copy, argv_copy);
