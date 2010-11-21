@@ -2469,6 +2469,8 @@ void initialisation(int argc, char** argv);
 static void reload_config(void)
 {
 	clean_up(NULL, NULL);
+	state.reset(new lua::state);
+	conky::export_symbols(*state);
 	sleep(1); /* slight pause */
 	initialisation(argc_copy, argv_copy);
 }
@@ -2583,11 +2585,10 @@ static void set_default_configurations(void)
 	info.xmms2.status = NULL;
 	info.xmms2.playlist = NULL;
 #endif /* BUILD_XMMS2 */
-#ifdef BUILD_X11
 	state->pushboolean(true);
+#ifdef BUILD_X11
 	out_to_x.lua_set(*state);
 #else
-	state->pushboolean(true);
 	out_to_stdout.lua_set(*state);
 #endif
 
