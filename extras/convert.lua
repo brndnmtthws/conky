@@ -1,14 +1,17 @@
 #! /usr/bin/lua
 
 local usage = [[
-Usage: convert.lua <old_conkyrc >new_conkyrc
+Usage: convert.lua old_conkyrc [new_conkyrc]
 
 Tries to convert conkyrc from the old v1.x format to the new, lua-based format.
-Reads from stdin, writes to stdout.
 
 Keep in mind that there is no guarantee that the output will work correctly
 with conky, or that it will be able to convert every conkyrc. However, it
 should provide a good starting point.
+
+Altough you can use this script with only 1 arg and let it overwrite the old
+config, it's suggested to use 2 args so that the new config is written in a new
+file (so that you have backup if something went wrong).
 
 For more information about the new format, read the wiki page
 <http://wiki.conky.be/index.php?title=conky2rc_format>
@@ -111,13 +114,14 @@ end;
 local input;
 local output;
 
-if conky == nil then
-    -- we are run as a standalone program, read from stdin, write to stdout
-    input = io.input();
-    if #arg > 0 then
-        -- if the user provided some arguments, it means he doesn't know how to use us
-        -- -> print usage
-        io.output():write(usage);
+if conky == nil then --> standalone program
+    -- 1 arg: arg is input and outputfile
+    -- 2 args: 1st is inputfile, 2nd is outputfile
+    -- 0, 3 or more args: print usage to STDERR and quit
+    if #arg == 1 or #arg == 2 then
+        input = io.input(arg[1]);
+    else
+        io.stderr:write(usage);
         return;
     end;
 else
@@ -130,11 +134,18 @@ local config = input:read('*a');
 
 local settings, text = config:match('^(.-)TEXT\n(.*)$');
 
-local output = 'conky.config = {\n' .. settings:gsub('.-\n', convert) .. '};\n\nconky.text = ' ..
+local converted = 'conky.config = {\n' .. settings:gsub('.-\n', convert) .. '};\n\nconky.text = ' ..
                 quote(text) .. ';\n';
 
 if conky == nil then
-    io.output():write(output);
+    input:close();
+    if #arg == 2 then
+        output = io.output(arg[2]);
+    else
+        output = io.output(arg[1]);
+    end
+    output:write(converted);
+    output:close();
 else
-    return assert(loadstring(output, 'converted config'));
+    return assert(loadstring(converted, 'converted config'));
 end;
