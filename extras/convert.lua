@@ -131,6 +131,7 @@ end;
 
 
 local config = input:read('*a');
+input:close();
 
 local settings, text = config:match('^(.-)TEXT\n(.*)$');
 
@@ -138,7 +139,6 @@ local converted = 'conky.config = {\n' .. settings:gsub('.-\n', convert) .. '};\
                 quote(text) .. ';\n';
 
 if conky == nil then
-    input:close();
     if #arg == 2 then
         output = io.output(arg[2]);
     else
