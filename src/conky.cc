@@ -2655,16 +2655,23 @@ void load_config_file()
 #endif
 			l.loadfile(current_config.c_str());
 	}
-#ifdef BUILD_OLD_CONFIG
 	catch(lua::syntax_error &e) {
-		NORM_ERR(_("Syntax error (%s) while reading config file. "
-				"Assuming it's in old syntax and attempting conversion."), e.what());
+#define SYNTAX_ERR_READ_CONF "Syntax error (%s) while reading config file. "
+#ifdef BUILD_OLD_CONFIG
+		NORM_ERR(_(SYNTAX_ERR_READ_CONF));
+		NORM_ERR(_("Assuming it's in old syntax and attempting conversion."), e.what());
 		// the strchr thingy skips the first line (#! /usr/bin/lua)
 		l.loadstring(strchr(convertconf, '\n'));
 		l.pushstring(current_config.c_str());
 		l.call(1, 1);
-	}
+#else
+		char *syntaxerr;
+		asprintf(&syntaxerr, _(SYNTAX_ERR_READ_CONF), e.what());
+		std::string syntaxerrobj(syntaxerr);
+		free(syntaxerr);
+		throw conky::error(syntaxerrobj);
 #endif
+	}
 	l.call(0, 0);
 
 	l.getglobal("conky");
