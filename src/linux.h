@@ -55,4 +55,5 @@ int update_stat(void);
 
 void print_distribution(struct text_object *, char *, int);
 
+void determine_longstat_file(void);
 #endif /* _LINUX_H */
