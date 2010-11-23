@@ -561,7 +561,7 @@ void destroy_window(void)
 	memset(&window, 0, sizeof(struct conky_window));
 }
 
-static void init_window(lua::state &l, bool own)
+static void init_window(lua::state &l __attribute__((unused)), bool own)
 {
 	// own is unused if OWN_WINDOW is not defined
 	(void) own;
@@ -860,7 +860,6 @@ static void init_window(lua::state &l, bool own)
 					ButtonPressMask | ButtonReleaseMask) : 0)
 #endif
 			);
-	if(&l){}//make sure compiler doesn't complain about unused 'l' when compiled without OWN_WINDOW
 }
 
 static Window find_subwindow(Window win, int w, int h)
