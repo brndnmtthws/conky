@@ -2454,7 +2454,7 @@ static unsigned long long calc_cpu_total(void)
 		KFLAG_ISSET(KFLAG_IS_LONGSTAT) ? TMPL_LONGPROC : TMPL_SHORTPROC;
 
 	ps = open("/proc/stat", O_RDONLY);
-	rc = read(ps, line, sizeof(line));
+	rc = read(ps, line, BUFFER_LEN - 1);
 	close(ps);
 	if (rc < 0) {
 		return 0;
@@ -2535,7 +2535,7 @@ static void process_parse_stat(struct process *process)
 	/* Mark process as up-to-date. */
 	process->time_stamp = g_time;
 
-	rc = read(ps, line, sizeof(line));
+	rc = read(ps, line, BUFFER_LEN - 1);
 	close(ps);
 	if (rc < 0) {
 		return;
@@ -2572,11 +2572,9 @@ static void process_parse_stat(struct process *process)
 			return;
 		}
 
-		endl = read(ps, line, sizeof(line));
+		endl = read(ps, line, BUFFER_LEN - 1);
 		close(ps);
 
-		/* null terminate the input */
-		line[endl] = 0;
 		/* account for "kdeinit: " */
 		if ((char *) line == strstr(line, "kdeinit: ")) {
 			r = ((char *) line) + 9;
@@ -2647,7 +2645,7 @@ static void process_parse_io(struct process *process)
 		return;
 	}
 
-	rc = read(ps, line, sizeof(line));
+	rc = read(ps, line, BUFFER_LEN - 1);
 	close(ps);
 	if (rc < 0) {
 		return;

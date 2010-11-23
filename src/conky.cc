@@ -1988,7 +1988,7 @@ static void main_loop(void)
 #ifdef HAVE_SYS_INOTIFY_H
 	int inotify_config_wd = -1;
 #define INOTIFY_EVENT_SIZE  (sizeof(struct inotify_event))
-#define INOTIFY_BUF_LEN     (20 * (INOTIFY_EVENT_SIZE + 16))
+#define INOTIFY_BUF_LEN     (20 * (INOTIFY_EVENT_SIZE + 16)) + 1
 	char inotify_buff[INOTIFY_BUF_LEN];
 #endif /* HAVE_SYS_INOTIFY_H */
 
@@ -2408,7 +2408,7 @@ static void main_loop(void)
 			select(inotify_fd + 1, &descriptors, NULL, NULL, &time_to_wait);
 			if (FD_ISSET(inotify_fd, &descriptors)) {
 				/* process inotify events */
-				len = read(inotify_fd, inotify_buff, INOTIFY_BUF_LEN);
+				len = read(inotify_fd, inotify_buff, INOTIFY_BUF_LEN - 1);
 				while (len > 0 && idx < len) {
 					struct inotify_event *ev = (struct inotify_event *) &inotify_buff[idx];
 					if (ev->wd == inotify_config_wd && (ev->mask & IN_MODIFY || ev->mask & IN_IGNORED)) {
