@@ -41,7 +41,9 @@
 #ifdef BUILD_IMLIB2
 #include "imlib2.h"
 #endif /* BUILD_IMLIB2 */
-
+#ifndef OWN_WINDOW
+#include <iostream>
+#endif
 #ifdef BUILD_XFT
 #include <X11/Xft/Xft.h>
 #endif
@@ -198,6 +200,7 @@ conky::lua_traits<alignment>::Map conky::lua_traits<alignment>::map = {
 	{ "none",          NONE }
 };
 
+#ifdef OWN_WINDOW
 template<>
 conky::lua_traits<window_type>::Map conky::lua_traits<window_type>::map = {
 	{ "normal",   TYPE_NORMAL },
@@ -244,6 +247,7 @@ window_hints_traits::convert(lua::state &l, int index, const std::string &name)
 	}
 	return {ret, true};
 }
+#endif
 
 namespace {
 	// used to set the default value for own_window_title
@@ -472,6 +476,7 @@ static Window find_desktop_window(Window *p_root, Window *p_desktop)
 	return win;
 }
 
+#ifdef OWN_WINDOW
 namespace {
 	/* helper function for set_transparent_background() */
 	void do_set_background(Window win, int argb)
@@ -512,6 +517,7 @@ void set_transparent_background(Window win)
 	}
 #endif /* BUILD_ARGB */
 }
+#endif
 
 #ifdef BUILD_ARGB
 static int get_argb_visual(Visual** visual, int *depth) {
@@ -854,6 +860,7 @@ static void init_window(lua::state &l, bool own)
 					ButtonPressMask | ButtonReleaseMask) : 0)
 #endif
 			);
+	if(&l){}//make sure compiler doesn't complain about unused 'l' when compiled without OWN_WINDOW
 }
 
 static Window find_subwindow(Window win, int w, int h)
