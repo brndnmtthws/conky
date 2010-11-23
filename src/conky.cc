@@ -2409,6 +2409,7 @@ static void main_loop(void)
 			if (FD_ISSET(inotify_fd, &descriptors)) {
 				/* process inotify events */
 				len = read(inotify_fd, inotify_buff, INOTIFY_BUF_LEN - 1);
+				inotify_buff[len] = 0;
 				while (len > 0 && idx < len) {
 					struct inotify_event *ev = (struct inotify_event *) &inotify_buff[idx];
 					if (ev->wd == inotify_config_wd && (ev->mask & IN_MODIFY || ev->mask & IN_IGNORED)) {
