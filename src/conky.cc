@@ -2658,8 +2658,8 @@ void load_config_file()
 	catch(lua::syntax_error &e) {
 #define SYNTAX_ERR_READ_CONF "Syntax error (%s) while reading config file. "
 #ifdef BUILD_OLD_CONFIG
-		NORM_ERR(_(SYNTAX_ERR_READ_CONF));
-		NORM_ERR(_("Assuming it's in old syntax and attempting conversion."), e.what());
+		NORM_ERR(_(SYNTAX_ERR_READ_CONF), e.what());
+		NORM_ERR(_("Assuming it's in old syntax and attempting conversion."));
 		// the strchr thingy skips the first line (#! /usr/bin/lua)
 		l.loadstring(strchr(convertconf, '\n'));
 		l.pushstring(current_config.c_str());
