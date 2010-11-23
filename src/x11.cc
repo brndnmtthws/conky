@@ -304,7 +304,7 @@ conky::simple_config_setting<window_type> own_window_type("own_window_type", TYP
 conky::simple_config_setting<uint16_t, window_hints_traits>
 									      own_window_hints("own_window_hints", 0, false);
 
-priv::colour_setting                      background_colour("background_colour", 0);
+priv::colour_setting                      background_colour("own_window_colour", 0);
 
 #ifdef BUILD_ARGB
 conky::simple_config_setting<bool>        use_argb_visual("own_window_argb_visual", false, false);
