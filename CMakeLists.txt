@@ -56,3 +56,9 @@ install(FILES
 	DESTINATION share/doc/conky
 )
 
+install(FILES
+	extras/convert.lua
+	DESTINATION share/doc/conky
+	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+			    GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+)
