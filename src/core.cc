@@ -849,6 +849,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 	 * nothing else than just that, using an ugly switch(). */
 	if (strncmp(s, "top", 3) == EQUAL) {
 		if (parse_top_args(s, arg, obj)) {
+#ifdef __linux__
+			determine_longstat_file();
+#endif
 			add_update_callback(&update_top);
 		} else {
 			free(obj);
