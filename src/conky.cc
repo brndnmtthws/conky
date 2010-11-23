@@ -235,61 +235,30 @@ static void print_version(void)
                 "\nCompiled in features:\n\n"
                 "System config file: "SYSTEM_CONFIG_FILE"\n"
                 "Package library path: "PACKAGE_LIBDIR"\n\n")
-#ifdef BUILD_X11
-                << " X11:\n"
-# ifdef BUILD_XDAMAGE
-                << _("  * Xdamage extension\n")
-# endif /* BUILD_XDAMAGE */
-# ifdef BUILD_XDBE
-                << _("  * XDBE (double buffer extension)\n")
-# endif /* BUILD_XDBE */
-# ifdef BUILD_XFT
-                << "  * Xft\n"
-# endif /* BUILD_XFT */
-# ifdef BUILD_ARGB
-                << _("  * ARGB visual\n")
-# endif /* BUILD_ARGB */
-#endif /* BUILD_X11 */
-                << _("\n Music detection:\n")
-#ifdef BUILD_AUDACIOUS
-                << "  * Audacious\n"
-#endif /* BUILD_AUDACIOUS */
-#ifdef BUILD_BMPX
-                << "  * BMPx\n"
-#endif /* BUILD_BMPX */
-#ifdef BUILD_MPD
-                << "  * MPD\n"
-#endif /* BUILD_MPD */
-#ifdef BUILD_MOC
-                << "  * MOC\n"
-#endif /* BUILD_MOC */
-#ifdef BUILD_XMMS2
-                << "  * XMMS2\n"
-#endif /* BUILD_XMMS2 */
                 << _("\n General:\n")
 #ifdef HAVE_OPENMP
-                << "  * OpenMP\n"
+                << _("  * OpenMP\n")
 #endif /* HAVE_OPENMP */
 #ifdef BUILD_MATH
                 << _("  * math\n")
 #endif /* BUILD_MATH */
 #ifdef BUILD_HDDTEMP
-                << "  * hddtemp\n"
+                << _("  * hddtemp\n")
 #endif /* BUILD_HDDTEMP */
 #ifdef BUILD_PORT_MONITORS
-                << "  * portmon\n"
+                << _("  * portmon\n")
 #endif /* BUILD_PORT_MONITORS */
 #ifdef BUILD_HTTP
-                << "  * HTTP\n"
+                << _("  * HTTP\n")
 #endif
 #ifdef BUILD_IRC
-                << "  * IRC\n"
+                << _("  * IRC\n")
 #endif
 #ifdef BUILD_CURL
-                << "  * Curl\n"
+                << _("  * Curl\n")
 #endif /* BUILD_CURL */
 #ifdef BUILD_RSS
-                << "  * RSS\n"
+                << _("  * RSS\n")
 #endif /* BUILD_RSS */
 #ifdef BUILD_WEATHER_METAR
                 << _("  * Weather (METAR)\n")
@@ -304,7 +273,7 @@ static void print_version(void)
                 << _("  * support for IBM/Lenovo notebooks\n")
 #endif /* BUILD_IBM */
 #ifdef BUILD_NVIDIA
-                << "  * nvidia\n"
+                << _("  * nvidia\n")
 #endif /* BUILD_NVIDIA */
 #ifdef BUILD_EVE
                 << _("  * eve-online\n")
@@ -316,34 +285,71 @@ static void print_version(void)
                 << _("  * old configuration syntax\n")
 #endif /* BUILD_OLD_CONFIG */
 #ifdef BUILD_IMLIB2
-                << "  * Imlib2\n"
+                << _("  * Imlib2\n")
 #endif /* BUILD_IMLIB2 */
 #ifdef BUILD_MIXER_ALSA
                 << _("  * ALSA mixer support\n")
 #endif /* BUILD_MIXER_ALSA */
 #ifdef BUILD_APCUPSD
-                << "  * apcupsd\n"
+                << _("  * apcupsd\n")
 #endif /* BUILD_APCUPSD */
 #ifdef BUILD_IOSTATS
-                << "  * iostats\n"
+                << _("  * iostats\n")
 #endif /* BUILD_IOSTATS */
 #ifdef BUILD_NCURSES
-                << "  * ncurses\n"
+                << _("  * ncurses\n")
 #endif /* BUILD_NCURSES */
-                << "  * Lua\n"
-                << _("\n  Lua bindings:\n")
-#ifdef BUILD_LUA_CAIRO
-                << "   * Cairo\n"
-#endif /* BUILD_LUA_CAIRO */
-#ifdef BUILD_LUA_IMLIB2
-                << "   * Imlib2\n"
-#endif /* BUILD_LUA_IMLIB2 */
 #ifdef BUILD_I18N
-                << "  * Internationalization support\n"
+                << _("  * Internationalization support\n")
 #endif
 #ifdef DEBUG
-                << "  * Debugging extensions\n"
+                << _("  * Debugging extensions\n")
 #endif
+#if defined BUILD_LUA_CAIRO || defined BUILD_LUA_IMLIB2
+                << _("\n Lua bindings:\n")
+#endif
+#ifdef BUILD_LUA_CAIRO
+                << _("  * Cairo\n")
+#endif /* BUILD_LUA_CAIRO */
+#ifdef BUILD_LUA_IMLIB2
+                << _("  * Imlib2\n")
+#endif /* BUILD_LUA_IMLIB2 */
+#ifdef BUILD_X11
+                << _(" X11:\n")
+# ifdef BUILD_XDAMAGE
+                << _("  * Xdamage extension\n")
+# endif /* BUILD_XDAMAGE */
+# ifdef BUILD_XDBE
+                << _("  * XDBE (double buffer extension)\n")
+# endif /* BUILD_XDBE */
+# ifdef BUILD_XFT
+                << _("  * Xft\n")
+# endif /* BUILD_XFT */
+# ifdef BUILD_ARGB
+                << _("  * ARGB visual\n")
+# endif /* BUILD_ARGB */
+#ifdef OWN_WINDOW
+                << _("  * Own window\n")
+#endif
+#endif /* BUILD_X11 */
+#if defined BUILD_AUDACIOUS || defined BUILD_BMPX || defined BUILD_MPD || defined BUILD_MOC || defined BUILD_XMMS2
+                << _("\n Music detection:\n")
+#endif
+#ifdef BUILD_AUDACIOUS
+                << _("  * Audacious\n")
+#endif /* BUILD_AUDACIOUS */
+#ifdef BUILD_BMPX
+                << _("  * BMPx\n")
+#endif /* BUILD_BMPX */
+#ifdef BUILD_MPD
+                << _("  * MPD\n")
+#endif /* BUILD_MPD */
+#ifdef BUILD_MOC
+                << _("  * MOC\n")
+#endif /* BUILD_MOC */
+#ifdef BUILD_XMMS2
+                << _("  * XMMS2\n")
+#endif /* BUILD_XMMS2 */
         ;
 }
 
