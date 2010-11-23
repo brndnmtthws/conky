@@ -39,31 +39,31 @@ static void xmms_alloc(struct information *ptr)
 {
 
 	if (ptr->xmms2.artist == NULL) {
-		ptr->xmms2.artist = (char*) malloc(text_buffer_size);
+		ptr->xmms2.artist = (char*) malloc(text_buffer_size.get(*state));
 	}
 
 	if (ptr->xmms2.album == NULL) {
-		ptr->xmms2.album = (char*) malloc(text_buffer_size);
+		ptr->xmms2.album = (char*) malloc(text_buffer_size.get(*state));
 	}
 
 	if (ptr->xmms2.title == NULL) {
-		ptr->xmms2.title = (char*) malloc(text_buffer_size);
+		ptr->xmms2.title = (char*) malloc(text_buffer_size.get(*state));
 	}
 
 	if (ptr->xmms2.genre == NULL) {
-		ptr->xmms2.genre = (char*) malloc(text_buffer_size);
+		ptr->xmms2.genre = (char*) malloc(text_buffer_size.get(*state));
 	}
 
 	if (ptr->xmms2.comment == NULL) {
-		ptr->xmms2.comment = (char*) malloc(text_buffer_size);
+		ptr->xmms2.comment = (char*) malloc(text_buffer_size.get(*state));
 	}
 
 	if (ptr->xmms2.url == NULL) {
-		ptr->xmms2.url = (char*) malloc(text_buffer_size);
+		ptr->xmms2.url = (char*) malloc(text_buffer_size.get(*state));
 	}
 
 	if (ptr->xmms2.date == NULL) {
-		ptr->xmms2.date = (char*) malloc(text_buffer_size);
+		ptr->xmms2.date = (char*) malloc(text_buffer_size.get(*state));
 	}
 
 	ptr->xmms2.artist[0] = '\0';
@@ -107,7 +107,7 @@ void connection_lost(void *p)
 	fprintf(stderr,"XMMS2 connection failed. %s\n", xmmsc_get_last_error(xmms2_conn));
 
 	xmms_alloc(ptr);
-	strncpy(ptr->xmms2.status, "Disocnnected", text_buffer_size - 1);
+	strncpy(ptr->xmms2.status, "Disconnected", text_buffer_size.get(*state) - 1);
 	ptr->xmms2.playlist[0] = '\0';
 	ptr->xmms2.id = 0;
 }
@@ -149,25 +149,25 @@ int handle_curent_id(xmmsv_t *value, void *p)
 		infos = xmmsv_propdict_to_dict(val, NULL);
 
 		if (xmmsv_dict_get(infos, "artist", &dict_entry) && xmmsv_get_string(dict_entry, &charval))
-			strncpy(ptr->xmms2.artist, charval, text_buffer_size - 1);
+			strncpy(ptr->xmms2.artist, charval, text_buffer_size.get(*state) - 1);
 
 		if (xmmsv_dict_get(infos, "title", &dict_entry) && xmmsv_get_string(dict_entry, &charval))
-			strncpy(ptr->xmms2.title, charval, text_buffer_size - 1);
+			strncpy(ptr->xmms2.title, charval, text_buffer_size.get(*state) - 1);
 
 		if (xmmsv_dict_get(infos, "album", &dict_entry) && xmmsv_get_string(dict_entry, &charval))
-			strncpy(ptr->xmms2.album, charval, text_buffer_size - 1);
+			strncpy(ptr->xmms2.album, charval, text_buffer_size.get(*state) - 1);
 
 		if (xmmsv_dict_get(infos, "genre", &dict_entry) && xmmsv_get_string(dict_entry, &charval))
-			strncpy(ptr->xmms2.genre, charval, text_buffer_size - 1);
+			strncpy(ptr->xmms2.genre, charval, text_buffer_size.get(*state) - 1);
 
 		if (xmmsv_dict_get(infos, "comment", &dict_entry) && xmmsv_get_string(dict_entry, &charval))
-			strncpy(ptr->xmms2.comment, charval, text_buffer_size - 1);
+			strncpy(ptr->xmms2.comment, charval, text_buffer_size.get(*state) - 1);
 
 		if (xmmsv_dict_get(infos, "url", &dict_entry) && xmmsv_get_string(dict_entry, &charval))
-			strncpy(ptr->xmms2.url, charval, text_buffer_size - 1);
+			strncpy(ptr->xmms2.url, charval, text_buffer_size.get(*state) - 1);
 
 		if (xmmsv_dict_get(infos, "date", &dict_entry) && xmmsv_get_string(dict_entry, &charval))
-			strncpy(ptr->xmms2.date, charval, text_buffer_size - 1);
+			strncpy(ptr->xmms2.date, charval, text_buffer_size.get(*state) - 1);
 
 
 
@@ -225,24 +225,24 @@ int handle_playback_state_change(xmmsv_t *value, void *p)
 	}
 
 	if (ptr->xmms2.status == NULL) {
-		ptr->xmms2.status = (char*) malloc(text_buffer_size);
+		ptr->xmms2.status = (char*) malloc(text_buffer_size.get(*state));
 		ptr->xmms2.status[0] = '\0';
 	}
 
 	if (xmmsv_get_int(value, &pb_state)) {
 		switch (pb_state) {
 			case XMMS_PLAYBACK_STATUS_PLAY:
-				strncpy(ptr->xmms2.status, "Playing", text_buffer_size - 1);
+				strncpy(ptr->xmms2.status, "Playing", text_buffer_size.get(*state) - 1);
 				break;
 			case XMMS_PLAYBACK_STATUS_PAUSE:
-				strncpy(ptr->xmms2.status, "Paused", text_buffer_size - 1);
+				strncpy(ptr->xmms2.status, "Paused", text_buffer_size.get(*state) - 1);
 				break;
 			case XMMS_PLAYBACK_STATUS_STOP:
-				strncpy(ptr->xmms2.status, "Stopped", text_buffer_size - 1);
+				strncpy(ptr->xmms2.status, "Stopped", text_buffer_size.get(*state) - 1);
 				ptr->xmms2.elapsed = ptr->xmms2.progress = ptr->xmms2.percent = 0;
 				break;
 			default:
-				strncpy(ptr->xmms2.status, "Unknown", text_buffer_size - 1);
+				strncpy(ptr->xmms2.status, "Unknown", text_buffer_size.get(*state) - 1);
 		}
 	}
 	return TRUE;
@@ -259,12 +259,12 @@ int handle_playlist_loaded(xmmsv_t *value, void *p)
 	}
 
 	if (ptr->xmms2.playlist == NULL) {
-		ptr->xmms2.playlist = (char*) malloc(text_buffer_size);
+		ptr->xmms2.playlist = (char*) malloc(text_buffer_size.get(*state));
 		ptr->xmms2.playlist[0] = '\0';
 	}
 
 	if (xmmsv_get_string(value, &c))  {
-		strncpy(ptr->xmms2.playlist, c, text_buffer_size - 1);
+		strncpy(ptr->xmms2.playlist, c, text_buffer_size.get(*state) - 1);
 	}
 	return TRUE;
 }
