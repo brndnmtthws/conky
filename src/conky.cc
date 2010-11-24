@@ -350,6 +350,18 @@ static void print_version(void)
 #ifdef BUILD_XMMS2
                 << _("  * XMMS2\n")
 #endif /* BUILD_XMMS2 */
+	<< _("\n Default values:\n")
+	<< "  * Netdevice: "DEFAULTNETDEV"\n"
+	<< "  * Local configfile: "CONFIG_FILE"\n"
+#ifdef BUILD_I18N
+	<< "  * Localedir: "LOCALE_DIR"\n"
+#endif
+#ifdef BUILD_HTTP
+	<< "  * HTTP-port: " << HTTPPORT << "\n"
+#endif
+	<< "  * Maximum netdevices: " << MAX_NET_INTERFACES << "\n"
+	<< "  * Maximum text size: " << MAX_USER_TEXT_DEFAULT << "\n"
+	<< "  * Size text buffer: " << DEFAULT_TEXT_BUFFER_SIZE << "\n"
         ;
 }
 
