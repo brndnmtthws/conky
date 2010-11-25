@@ -2,18 +2,6 @@
     <varlistentry>
         <term>
             <command>
-                <option>TEXT</option>
-            </command>
-        </term>
-        <listitem>After this begins text to be formatted on screen.
-        Backslash (\) escapes newlines in the text section. This
-        can be useful for cleaning up config files where conky is
-        used to pipe input to dzen2. 
-        <para /></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
                 <option>alignment</option>
             </command>
         </term>
@@ -78,7 +66,7 @@
                 <option>colorN</option>
             </command>
         </term>
-        <listitem>Predefine a color for use inside TEXT segments.
+        <listitem>Predefine a color for use inside conky.text segments.
         Substitute N by a digit between 0 and 9, inclusively. When
         specifying the color value in hex, omit the leading hash
         (#). 
@@ -508,8 +496,8 @@
             </command>
             <option>bytes</option>
         </term>
-        <listitem>Maximum size of user text buffer, i.e. layout
-        below TEXT line in config file (default is 16384 bytes) 
+        <listitem>Maximum size of user text buffer, i.e. text inside
+	conky.text section in config file (default is 16384 bytes)
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -909,10 +897,10 @@
                 <option>templateN</option>
             </command>
         </term>
-        <listitem>Define a template for later use inside TEXT
+        <listitem>Define a template for later use inside conky.text
         segments. Substitute N by a digit between 0 and 9,
         inclusively. The value of the variable is being inserted
-        into the stuff below TEXT at the corresponding position,
+        into the stuff inside conky.text at the corresponding position,
         but before some substitutions are applied: 
         <simplelist>
             <member>'\n' -&gt; newline</member>

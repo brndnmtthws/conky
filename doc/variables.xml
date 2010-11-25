@@ -944,7 +944,7 @@
             <option>string</option>
         </term>
         <listitem>Evaluates given string according to the rules of
-        TEXT interpretation, i.e. parsing any contained text object
+        conky.text interpretation, i.e. parsing any contained text object
         specifications into their output, any occuring '$$' into a
         single '$' and so on. The output is then being parsed
         again. 
@@ -1766,7 +1766,7 @@
         pixels. Conky does not make any attempt to adjust the
         position (or any other formatting) of images, they are just
         rendered as per the arguments passed. The only reason
-        $image is part of the TEXT section, is to allow for runtime
+        $image is part of the conky.text section, is to allow for runtime
         modifications, through $execp $lua_parse, or some other
         method. 
         <para /></listitem>
@@ -1949,7 +1949,7 @@
         </term>
         <listitem>Executes a Lua function with given parameters as
         per $lua, then parses and prints the result value as per
-        the syntax for Conky's TEXT section. See also 'lua_load' on
+        the syntax for the conky.text section. See also 'lua_load' on
         how to load scripts. Conky puts 'conky_' in front of
         function_name to prevent accidental calls to the wrong
         function unless you put you place 'conky_' in front of it
