@@ -18,7 +18,7 @@ For more information about the new format, read the wiki page
 ]];
 
 local function quote(s)
-    if not s:find("[\n']") then
+    if not s:find("[\n'\\]") then
         return "'" .. s .. "'";
     end;
     local q = '';
