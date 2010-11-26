@@ -120,8 +120,7 @@ int add_font(const char *data_in)
 	return fonts.size()-1;
 }
 
-void free_fonts(void)
-{
+void free_fonts(bool utf8) {
 	if (not out_to_x.get(*state)) {
 		return;
 	}
@@ -141,6 +140,9 @@ void free_fonts(void)
 			if (fonts[i].font) {
 				XFreeFont(display, fonts[i].font);
 			}
+			if (utf8 && fonts[i].fontset) {
+				XFreeFontSet(display, fonts[i].fontset);
+			}
 		}
 	}
 	fonts.clear();
@@ -153,8 +155,7 @@ void free_fonts(void)
 #endif /* BUILD_XFT */
 }
 
-void load_fonts(void)
-{
+void load_fonts(bool utf8) {
 	if (not out_to_x.get(*state))
 		return;
 	for (size_t i = 0; i < fonts.size(); i++) {
@@ -179,6 +180,20 @@ void load_fonts(void)
 			continue;
 		}
 #endif
+		if(utf8 && fonts[i].fontset == NULL) {
+			char** missing;
+			int missingnum;
+			char* missingdrawn;
+			fonts[i].fontset = XCreateFontSet(display, fonts[i].name.c_str(), &missing, &missingnum, &missingdrawn);
+			XFreeStringList(missing);
+			if(fonts[i].fontset == NULL) {
+				NORM_ERR("can't load font '%s'", fonts[i].name.c_str());
+				fonts[i].fontset = XCreateFontSet(display, "fixed", &missing, &missingnum, &missingdrawn);
+				if(fonts[i].fontset == NULL) {
+					CRIT_ERR(NULL, NULL, "can't load font '%s'", "fixed");
+				}
+			}
+		}
 		/* load normal font */
 		if (!fonts[i].font && (fonts[i].font = XLoadQueryFont(display, fonts[i].name.c_str())) == NULL) {
 			NORM_ERR("can't load font '%s'", fonts[i].name.c_str());

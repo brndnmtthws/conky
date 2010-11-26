@@ -879,7 +879,7 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root)
 	}
 #ifdef BUILD_X11
 	/* load any new fonts we may have had */
-	load_fonts();
+	load_fonts(utf8_mode.get(*state));
 #endif /* BUILD_X11 */
 #ifdef BUILD_ICONV
 	free(buff_in);
@@ -1366,8 +1366,13 @@ static void draw_string(const char *s)
 		} else
 #endif
 		{
-			XDrawString(display, window.drawable, window.gc, cur_x, cur_y, s,
-				strlen(s));
+			if (utf8_mode.get(*state)) {
+				Xutf8DrawString(display, window.drawable, fonts[selected_font].fontset, window.gc, cur_x, cur_y, s,
+					strlen(s));
+			} else {
+				XDrawString(display, window.drawable, window.gc, cur_x, cur_y, s,
+					strlen(s));
+			}
 		}
 		cur_x += width_of_s;
 	}
@@ -2514,7 +2519,7 @@ void clean_up_x11(void)
 			text_height + 2*border_total, 0);
 	}
 	destroy_window();
-	free_fonts();
+	free_fonts(utf8_mode.get(*state));
 	if(x11_stuff.region) {
 		XDestroyRegion(x11_stuff.region);
 		x11_stuff.region = NULL;
@@ -2628,7 +2633,7 @@ static void X11_create_window(void)
 {
 	if (out_to_x.get(*state)) {
 		setup_fonts();
-		load_fonts();
+		load_fonts(utf8_mode.get(*state));
 		update_text_area();	/* to position text/window on screen */
 
 #ifdef OWN_WINDOW

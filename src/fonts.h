@@ -40,6 +40,7 @@ struct font_list {
 
 	std::string name;
 	XFontStruct *font;
+	XFontSet fontset;
 
 #ifdef BUILD_XFT
 	XftFont *xftfont;
@@ -51,7 +52,9 @@ struct font_list {
 #ifdef BUILD_XFT
 		  , xftfont(NULL), font_alpha(0xffff)
 #endif
-	{}
+	{
+		fontset = NULL;
+	}
 };
 
 #ifdef BUILD_XFT
@@ -81,8 +84,8 @@ extern int selected_font;
 void setup_fonts(void);
 void set_font(void);
 int add_font(const char *);
-void free_fonts(void);
-void load_fonts(void);
+void free_fonts(bool utf8);
+void load_fonts(bool utf8);
 
 class font_setting: public conky::simple_config_setting<std::string> {
 	typedef conky::simple_config_setting<std::string> Base;
