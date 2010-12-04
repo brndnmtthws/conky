@@ -1549,6 +1549,12 @@ present voltage:         16608 mV
   On some systems POWER_SUPPLY_ENERGY_* is replaced by POWER_SUPPLY_CHARGE_*
 */
 
+/* Tiago Marques Vale <tiagomarquesvale@gmail.com>
+  Regarding the comment above, since kernel 2.6.36.1 I have
+  POWER_SUPPLY_POWER_NOW instead of POWER_SUPPLY_CURRENT_NOW
+  See http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=532000
+*/
+
 #define SYSFS_BATTERY_BASE_PATH "/sys/class/power_supply"
 #define ACPI_BATTERY_BASE_PATH "/proc/acpi/battery"
 #define APM_PATH "/proc/apm"
@@ -1671,6 +1677,8 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
  			the tradition! */
  			else if (strncmp(buf, "POWER_SUPPLY_CURRENT_NOW=", 25) == 0)
  				sscanf(buf, "POWER_SUPPLY_CURRENT_NOW=%d", &present_rate);
+			else if (strncmp(buf, "POWER_SUPPLY_POWER_NOW=", 23) == 0)
+				sscanf(buf, "POWER_SUPPLY_POWER_NOW=%d", &present_rate);
  			else if (strncmp(buf, "POWER_SUPPLY_ENERGY_NOW=", 24) == 0)
  				sscanf(buf, "POWER_SUPPLY_ENERGY_NOW=%d", &remaining_capacity);
  			else if (strncmp(buf, "POWER_SUPPLY_ENERGY_FULL=", 25) == 0)
