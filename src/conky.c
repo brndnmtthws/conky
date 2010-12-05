@@ -5718,6 +5718,7 @@ void initialisation(int argc, char **argv) {
 			"kvm_open")) == NULL) {
 		CRIT_ERR(NULL, NULL, "cannot read kvm");
 	}
+	pthread_mutex_init(&kvm_proc_mutex, NULL);
 #endif
 
 	while (1) {
@@ -6001,6 +6002,7 @@ int main(int argc, char **argv)
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 	kvm_close(kd);
+	pthread_mutex_destroy(&kvm_proc_mutex);
 #endif
 
 	return 0;
