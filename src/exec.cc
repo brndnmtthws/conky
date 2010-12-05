@@ -95,6 +95,7 @@ static FILE* pid_popen(const char *command, const char *mode, pid_t *child) {
 		} else {
 			close(1);
 		}
+		close(parentend);
 
 		//by dupping childend, the returned fd will have close-on-exec turned off
 		if (dup(childend) == -1)
@@ -161,7 +162,7 @@ static inline void read_exec(const char *data, char *buf, const int size)
 		int length;
 
 		length = fread(buf, 1, size, fp);
-		pclose(fp);
+		fclose(fp);
 		buf[std::min(length, size-1)] = '\0';
 		if (length > 0 && buf[length - 1] == '\n') {
 			buf[length - 1] = '\0';
