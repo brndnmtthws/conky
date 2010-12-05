@@ -967,8 +967,10 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(xmms2_size, &update_xmms2)
 	END OBJ(xmms2_status, &update_xmms2)
 	END OBJ(xmms2_percent, &update_xmms2)
+#ifdef X11
 	END OBJ(xmms2_bar, &update_xmms2)
 		scan_bar(obj, arg);
+#endif
 	END OBJ(xmms2_smart, &update_xmms2)
 	END OBJ(xmms2_playlist, &update_xmms2)
 	END OBJ(xmms2_timesplayed, &update_xmms2)
@@ -994,8 +996,10 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(audacious_playlist_length, &update_audacious)
 	END OBJ(audacious_playlist_position, &update_audacious)
 	END OBJ(audacious_main_volume, &update_audacious)
+#ifdef X11
 	END OBJ(audacious_bar, &update_audacious)
 		scan_bar(obj, arg);
+#endif
 #endif
 #ifdef BMPX
 	END OBJ(bmpx_title, &update_bmpx)
