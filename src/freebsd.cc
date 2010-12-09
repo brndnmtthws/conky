@@ -51,6 +51,8 @@
 #include <dev/wi/if_wavelan_ieee.h>
 #include <dev/acpica/acpiio.h>
 
+#include <mutex>
+
 #include "conky.h"
 #include "freebsd.h"
 #include "logging.h"
@@ -68,6 +70,8 @@
 #endif
 
 kvm_t *kd;
+std::mutex kvm_proc_mutex;
+
 
 __attribute__((gnu_inline)) inline void
 proc_find_top(struct process **cpu, struct process **mem, struct process **time);
@@ -273,6 +277,7 @@ int update_total_processes(void)
 {
 	int n_processes;
 
+	std::lock_guard<std::mutex> guard(kvm_proc_mutex);
 	kvm_getprocs(kd, KERN_PROC_ALL, 0, &n_processes);
 
 	info.procs = n_processes;
@@ -285,6 +290,7 @@ int update_running_processes(void)
 	int n_processes;
 	int i, cnt = 0;
 
+	std::lock_guard<std::mutex> guard(kvm_proc_mutex);
 	p = kvm_getprocs(kd, KERN_PROC_ALL, 0, &n_processes);
 	for (i = 0; i < n_processes; i++) {
 #if (__FreeBSD__ < 5) && (__FreeBSD_kernel__ < 5)
@@ -712,6 +718,7 @@ void get_top_info(void)
 	int n_processes;
 	int i;
 
+	std::lock_guard<std::mutex> guard(kvm_proc_mutex);
 	p = kvm_getprocs(kd, KERN_PROC_PROC, 0, &n_processes);
 
 	for (i = 0; i < n_processes; i++) {
