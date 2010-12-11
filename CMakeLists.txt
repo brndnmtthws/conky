@@ -49,16 +49,24 @@ add_subdirectory(data)
 add_subdirectory(doc)
 add_subdirectory(src)
 
-# Install README into share dir (is this even the right spot? need to revisit
-# this at some point)
-install(FILES
-	README
-	DESTINATION share/doc/conky
-)
+IF(NOT DEFINED DOC_PATH)
+    set(DOC_PATH "share/doc/${CPACK_PACKAGE_NAME}-${VERSION}")
+ENDIF(NOT DEFINED DOC_PATH)
+set(DOC_FILES extras/convert.lua data/conky_no_x11.conf data/conky.conf)
 
-install(FILES
-	extras/convert.lua
-	DESTINATION share/doc/conky
-	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-			    GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-)
+set(HTML_PATH "${DOC_PATH}/html")
+set(HTML_FILES doc/config_settings.html doc/docs.html doc/lua.html doc/variables.html)
+
+set(MAN_PATH "share/man/man1")
+set(MAN_FILES doc/conky.1)
+ 
+install(FILES ${DOC_FILES}
+	DESTINATION ${DOC_PATH})
+
+if(MAINTAINER_MODE)
+	install(FILES ${HTML_FILES}
+		DESTINATION ${HTML_PATH})
+
+	install(FILES ${MAN_FILES}
+		DESTINATION ${MAN_PATH})
+endif(MAINTAINER_MODE)
