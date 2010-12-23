@@ -62,7 +62,7 @@ namespace {
 			std::numeric_limits<unsigned int>::max(), 0, true
 		);
 
-	int cimlib_cache_flush_last = 0;
+	unsigned int cimlib_cache_flush_last = 0;
 }
 
 void imlib_cache_size_setting::lua_setter(lua::state &l, bool init)
