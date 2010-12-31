@@ -94,11 +94,6 @@ struct text_object;
 #include "mysql.h"
 #endif /* BUILD_MYSQL */
 
-/* C++ headers */
-#ifdef BUILD_CURL
-#include "ccurl_thread.h"
-#endif /* BUILD_CURL */
-
 #ifdef BUILD_AUDACIOUS
 #include "audacious.h"
 #endif /* BUILD_AUDACIOUS */

@@ -27,13 +27,13 @@
 #include "logging.h"
 #include "ccurl_thread.h"
 #include "text_object.h"
+#include <cmath>
 #include <mutex>
 
 #ifdef DEBUG
 #include <assert.h>
 #endif /* DEBUG */
 
-#include <curl/curl.h>
 #include <curl/types.h>
 #include <curl/easy.h>
 
@@ -43,152 +43,91 @@
  * implementation of a curl-only object ($curl) which can also be used as an
  * example.
  */
-typedef struct _ccurl_memory_t {
-	char *memory;
-	size_t size;
-} ccurl_memory_t;
 
-typedef struct _ccurl_headers_t {
-	char *last_modified;
-	char *etag;
-} ccurl_headers_t;
+namespace priv {
+	/* callback used by curl for parsing the header data */
+	size_t curl_internal::parse_header_cb(void *ptr, size_t size, size_t nmemb, void *data)
+	{
+		curl_internal *obj = static_cast<curl_internal *>(data);
+		const char *value = static_cast<const char *>(ptr);
+		size_t realsize = size * nmemb;
 
-/* finds a location based on uri in the list provided */
-ccurl_location_ptr ccurl_find_location(ccurl_location_list &locations, const std::string &uri)
-{
-	for (ccurl_location_list::iterator i = locations.begin();
-			i != locations.end(); i++) {
-		if ((*i)->uri == std::string(uri)) {
-			return *i;
+		if(realsize > 0 && (value[realsize-1] == '\r' || value[realsize-1] == 0))
+			--realsize;
+
+		if (strncmp(value, "Last-Modified: ", 15) == EQUAL) {
+			obj->last_modified = std::string(value + 15, realsize - 15);
+		} else if (strncmp(value,"ETag: ", 6) == EQUAL) {
+			obj->etag = std::string(value + 6, realsize - 6);
 		}
-	}
-	ccurl_location_ptr next = ccurl_location_ptr(new ccurl_location_t);
-	DBGP("new curl location: '%s'", uri.c_str());
-	next->uri = uri;
-	locations.push_back(next);
-	return next;
-}
 
-/* iterates over the list provided, frees stuff (list item, uri, result) */
-void ccurl_free_locations(ccurl_location_list &locations)
-{
-	for (ccurl_location_list::iterator i = locations.begin();
-			i != locations.end(); i++) {
-		free_and_zero((*i)->result);
-		(*i)->p_timed_thread.reset();
-	}
-	locations.clear();
-}
-
-/* callback used by curl for parsing the header data */
-size_t ccurl_parse_header_callback(void *ptr, size_t size, size_t nmemb, void *data)
-{
-	size_t realsize = size * nmemb;
-	const char *value = (const char*)ptr;
-	char *end;
-	ccurl_headers_t *headers = (ccurl_headers_t*)data;
-
-	if (strncmp(value, "Last-Modified: ", 15) == EQUAL) {
-		headers->last_modified = strndup(value + 15, realsize - 15);
-		if ((end = strchr(headers->last_modified, '\r')) != NULL) {
-			*end = '\0';
-		}
-	} else if (strncmp(value,"ETag: ", 6) == EQUAL) {
-		headers->etag = strndup(value + 6, realsize - 6);
-		if ((end = strchr(headers->etag, '\r')) != NULL) {
-			*end = '\0';
-		}
+		return size*nmemb;
 	}
 
-	return realsize;
-}
+	/* callback used by curl for writing the received data */
+	size_t curl_internal::write_cb(void *ptr, size_t size, size_t nmemb, void *data)
+	{
+		curl_internal *obj = static_cast<curl_internal *>(data);
+		const char *value = static_cast<const char *>(ptr);
+		size_t realsize = size * nmemb;
 
-/* callback used by curl for writing the received data */
-size_t ccurl_write_memory_callback(void *ptr, size_t size, size_t nmemb, void *data)
-{
-	size_t realsize = size * nmemb;
-	ccurl_memory_t *mem = (ccurl_memory_t*)data;
+		obj->data += std::string(value, realsize);
 
-	mem->memory = (char *) realloc(mem->memory, mem->size + realsize + 1);
-	if (mem->memory) {
-		memcpy(&(mem->memory[mem->size]), ptr, realsize);
-		mem->size += realsize;
-		mem->memory[mem->size] = 0;
+		return realsize;
 	}
-	return realsize;
-}
 
+	curl_internal::curl_internal(const std::string &url)
+		: curl(curl_easy_init())
+	{
+		if(not curl)
+			throw std::runtime_error("curl_easy_init() failed");
 
-/* fetch our datums */
-void ccurl_fetch_data(thread_handle &handle, const ccurl_location_ptr &curloc)
-{
-	CURL *curl = NULL;
-	CURLcode res;
-	struct curl_slist *headers = NULL;
-
-	/* curl temps */
-	ccurl_memory_t chunk;
-	ccurl_headers_t response_headers;
-
-	chunk.memory = NULL;
-	chunk.size = 0;
-	memset(&response_headers, 0, sizeof(ccurl_headers_t));
-
-	curl = curl_easy_init();
-	if (curl) {
-		DBGP("reading curl data from '%s'", curloc->uri.c_str());
-		curl_easy_setopt(curl, CURLOPT_URL, curloc->uri.c_str());
 		curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1);
-		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, ccurl_parse_header_callback);
-		curl_easy_setopt(curl, CURLOPT_HEADERDATA, (void *) &response_headers);
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ccurl_write_memory_callback);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &chunk);
+		curl_easy_setopt(curl, CURLOPT_HEADERDATA, this);
+		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, parse_header_cb);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
+		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 		curl_easy_setopt(curl, CURLOPT_USERAGENT, "conky-curl/1.1");
 		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
 		curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1000);
 		curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 60);
+	}
 
-		if (!curloc->last_modified.empty()) {
-			const char *header = "If-Modified-Since: ";
-			int len = strlen(header) + curloc->last_modified.size() + 1;
-			char *str = (char*) malloc(len);
-			snprintf(str, len, "%s%s", header, curloc->last_modified.c_str());
-			headers = curl_slist_append(headers, str);
-			free(str);
+
+	/* fetch our datums */
+	void curl_internal::do_work()
+	{
+		CURLcode res;
+		struct headers_ {
+			struct curl_slist *h;
+		
+			headers_() : h(NULL) {}
+			~headers_() { curl_slist_free_all(h); }
+		} headers;
+
+		data.clear();
+
+		if (not last_modified.empty()) {
+			headers.h = curl_slist_append(headers.h, ("If-Modified-Since: " + last_modified).c_str());
+			last_modified.clear();
 		}
-		if (!curloc->etag.empty()) {
-			const char *header = "If-None-Match: ";
-			int len = strlen(header) + curloc->etag.size() + 1;
-			char *str = (char*) malloc(len);
-			snprintf(str, len, "%s%s", header, curloc->etag.c_str());
-			headers = curl_slist_append(headers, str);
-			free(str);
+		if (not etag.empty()) {
+			headers.h = curl_slist_append(headers.h, ("If-None-Match: " + etag).c_str());
+			etag.clear();
 		}
-		if (headers) {
-			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+		if (headers.h) {
+			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers.h);
 		}
 
 		res = curl_easy_perform(curl);
 		if (res == CURLE_OK) {
 			long http_status_code;
 
-			if (curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE,
-						&http_status_code) == CURLE_OK) {
+			if (curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_status_code) == CURLE_OK) {
 				switch (http_status_code) {
 					case 200:
-						{
-							std::lock_guard<std::mutex> lock(handle.mutex());
-							curloc->last_modified.clear();
-							curloc->etag.clear();
-							if (response_headers.last_modified) {
-								curloc->last_modified =
-									std::string(response_headers.last_modified);
-							}
-							if (response_headers.etag) {
-								curloc->etag = std::string(response_headers.etag);
-							}
-							curloc->process_function(curloc->result, chunk.memory);
-						}
+						process_data();
 						break;
 					case 304:
 						break;
@@ -200,45 +139,29 @@ void ccurl_fetch_data(thread_handle &handle, const ccurl_location_ptr &curloc)
 			} else {
 				NORM_ERR("curl: no HTTP status from server");
 			}
-			free(chunk.memory);
 		} else {
 			NORM_ERR("curl: could not retrieve data from server");
 		}
-
-		free_and_zero(response_headers.last_modified);
-		free_and_zero(response_headers.etag);
-		curl_slist_free_all(headers);
-		curl_easy_cleanup(curl);
 	}
 }
 
-void ccurl_thread(thread_handle &handle, const ccurl_location_ptr &curloc);
+namespace {
+	class simple_curl_cb: public curl_callback<std::string> {
+		typedef curl_callback<std::string> Base;
 
-void ccurl_init_thread(const ccurl_location_ptr &curloc, int interval)
-{
-#ifdef DEBUG
-	assert(curloc->result);
-#endif /* DEBUG */
-	curloc->p_timed_thread = timed_thread::create(std::bind(ccurl_thread,
-				std::placeholders::_1, curloc), std::chrono::seconds(interval));
-
-	if (!curloc->p_timed_thread) {
-		NORM_ERR("curl thread: error creating timed thread");
-	}
-}
-
-void ccurl_thread(thread_handle &handle, const ccurl_location_ptr &curloc)
-{
-
-	while (1) {
-		ccurl_fetch_data(handle, curloc);
-		if (handle.test(0)) {
-			return;
+	protected:
+		virtual void process_data()
+		{
+			std::lock_guard<std::mutex> lock(result_mutex);
+			result = data;
 		}
-	}
-	/* never reached */
+	
+	public:
+		simple_curl_cb(uint32_t period, const std::string &uri)
+			: Base(period, Tuple(uri))
+		{}
+	};
 }
-
 
 /*
  * This is where the $curl section begins.
@@ -249,39 +172,13 @@ struct curl_data {
 	float interval;
 };
 
-/* internal location pointer for use by $curl, no touchy */
-static ccurl_location_list ccurl_locations;
-
-/* used to free data used by $curl */
-void ccurl_free_info(void)
-{
-	ccurl_free_locations(ccurl_locations);
-}
-
-/* straight copy, used by $curl */
-static void ccurl_parse_data(char *result, const char *data)
-{
-	if(result) strncpy(result, data, max_user_text.get(*state));
-}
-
 /* prints result data to text buffer, used by $curl */
 void ccurl_process_info(char *p, int p_max_size, const std::string &uri, int interval)
 {
-	ccurl_location_ptr curloc = ccurl_find_location(ccurl_locations, uri);
-	if (!curloc->p_timed_thread) {
-		curloc->result = (char*)malloc(max_user_text.get(*state));
-		memset(curloc->result, 0, max_user_text.get(*state));
-		curloc->process_function = std::bind(ccurl_parse_data,
-				std::placeholders::_1, std::placeholders::_2);
-		ccurl_init_thread(curloc, interval);
-		if (!curloc->p_timed_thread) {
-			NORM_ERR("error setting up curl thread");
-		}
-	}
+	uint32_t period = std::max(std::lround(interval/active_update_interval()), 1l);
+	auto cb = conky::register_cb<simple_curl_cb>(period, uri);
 
-
-	std::lock_guard<std::mutex> lock(curloc->p_timed_thread->mutex());
-	strncpy(p, curloc->result, p_max_size);
+	strncpy(p, cb->get_result().c_str(), p_max_size);
 }
 
 void curl_parse_arg(struct text_object *obj, const char *arg)

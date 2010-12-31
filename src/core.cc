@@ -84,6 +84,9 @@
 #include "top.h"
 #include "user.h"
 #include "users.h"
+#ifdef BUILD_CURL
+#include "ccurl_thread.h"
+#endif /* BUILD_CURL */
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)

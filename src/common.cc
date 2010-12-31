@@ -61,6 +61,10 @@
 
 #include "update-cb.hh"
 
+#ifdef BUILD_CURL
+#include "ccurl_thread.h"
+#endif /* BUILD_CURL */
+
 /* folds a string over top of itself, like so:
  *
  * if start is "blah", and you call it with count = 1, the result will be "lah"

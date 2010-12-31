@@ -102,6 +102,9 @@
 #ifdef BUILD_NVIDIA
 #include "nvidia.h"
 #endif
+#ifdef BUILD_CURL
+#include "ccurl_thread.h"
+#endif /* BUILD_CURL */
 
 #include "lua-config.hh"
 #include "setting.hh"
@@ -2569,9 +2572,6 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2)
 
 #ifdef BUILD_PORT_MONITORS
 	tcp_portmon_clear();
-#endif
-#ifdef BUILD_CURL
-	ccurl_free_info();
 #endif
 #ifdef BUILD_RSS
 	rss_free_info();
