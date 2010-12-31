@@ -383,6 +383,9 @@ static void process_find_top(struct process **cpu, struct process **mem,
 
 int update_top(void)
 {
+	// XXX: this was a separate callback. and it should be again, as soon as it's possible
+	update_meminfo();
+
 	process_find_top(info.cpu, info.memu, info.time
 #ifdef BUILD_IOSTATS
 					 , info.io
@@ -568,7 +571,6 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj)
 			obj->callbacks.print = &print_top_pid;
 		} else if (strcmp(buf, "mem") == EQUAL) {
 			obj->callbacks.print = &print_top_mem;
-			add_update_callback(&update_meminfo);
 		} else if (strcmp(buf, "time") == EQUAL) {
 			obj->callbacks.print = &print_top_time;
 		} else if (strcmp(buf, "mem_res") == EQUAL) {

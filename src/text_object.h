@@ -32,6 +32,7 @@
 #include <stdint.h>		/* uint8_t */
 #include "config.h"		/* for the defines */
 #include "specials.h"		/* enum special_types */
+#include "update-cb.hh"
 
 /* text object callbacks */
 struct obj_cb {
@@ -74,6 +75,20 @@ void gen_print_nothing(struct text_object *, char *, int);
  * used by the $text object */
 void gen_print_obj_data_s(struct text_object *, char *, int);
 
+class legacy_cb: public conky::callback<void *, int (*)()> {
+    typedef conky::callback<void *, int (*)()> Base;
+
+protected:
+    virtual void work()
+    { std::get<0>(tuple)(); }
+
+public:
+    legacy_cb(uint32_t period, int (*fn)())
+        : Base(period, true, Base::Tuple(fn))
+    {}
+};
+typedef conky::callback_handle<legacy_cb> legacy_cb_handle;
+
 struct text_object {
 	struct text_object *next, *prev;	/* doubly linked list of text objects */
 	struct text_object *sub;		/* for objects parsing text into objects */
@@ -93,6 +108,8 @@ struct text_object {
 	struct obj_cb callbacks;
 	bool parse;	//if this true then data.s should still be parsed
 	bool thread;	//if this true then data.s should be set by a seperate thread
+
+        legacy_cb_handle *cb_handle;
 };
 
 /* text object list helpers */

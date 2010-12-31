@@ -2593,7 +2593,7 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2)
 
 void clean_up(void *memtofree1, void* memtofree2)
 {
-	free_update_callbacks();
+	/* free_update_callbacks(); XXX: some new equivalent of this? */
 	clean_up_without_threads(memtofree1, memtofree2);
 }
 
@@ -2993,8 +2993,6 @@ void initialisation(int argc, char **argv) {
 				throw fork_throw();
 		}
 	}
-
-	start_update_threading();
 
 	text_buffer = (char*)malloc(max_user_text.get(*state));
 	memset(text_buffer, 0, max_user_text.get(*state));

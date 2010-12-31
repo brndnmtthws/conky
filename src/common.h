@@ -38,10 +38,6 @@ char* readfile(const char* filename, int* total_read, char showerror);
 
 void print_to_bytes(struct text_object *, char *, int);
 
-void add_update_callback(int (*func)(void));
-void free_update_callbacks(void);
-void start_update_threading(void);
-
 void strfold(char *start, int count);
 int check_mount(struct text_object *);
 void prepare_update(void);

@@ -244,6 +244,14 @@ void stock_parse_arg(struct text_object *obj, const char *arg)
 }
 #endif /* BUILD_CURL */
 
+legacy_cb_handle *create_cb_handle(int (*fn)())
+{
+	if(fn)
+		return new legacy_cb_handle(conky::register_cb<legacy_cb>(1, fn));
+	else
+		return NULL;
+}
+
 /* construct_text_object() creates a new text_object */
 struct text_object *construct_text_object(char *s, const char *arg, long
 		line, void **ifblock_opaque, void *free_at_crash)
@@ -255,7 +263,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 
 /* helper defines for internal use only */
 #define __OBJ_HEAD(a, n) if (!strcmp(s, #a)) { \
-	add_update_callback(n);
+	obj->cb_handle = create_cb_handle(n);
 #define __OBJ_IF obj_be_ifblock_if(ifblock_opaque, obj)
 #define __OBJ_ARG(...) if (!arg) { free(s); CRIT_ERR(obj, free_at_crash, __VA_ARGS__); }
 
@@ -852,7 +860,7 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 #ifdef __linux__
 			determine_longstat_file();
 #endif
-			add_update_callback(&update_top);
+			obj->cb_handle = create_cb_handle(update_top);
 		} else {
 			free(obj);
 			return NULL;
@@ -2016,6 +2024,7 @@ void free_text_objects(struct text_object *root)
 			free_text_objects(obj->sub);
 			free_and_zero(obj->sub);
 			free_and_zero(obj->special_data);
+			delete obj->cb_handle;
 
 			free(obj);
 		}

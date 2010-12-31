@@ -59,6 +59,8 @@
 #include "openbsd.h"
 #endif
 
+#include "update-cb.hh"
+
 /* folds a string over top of itself, like so:
  *
  * if start is "blah", and you call it with count = 1, the result will be "lah"
@@ -245,134 +247,11 @@ void format_seconds_short(char *buf, unsigned int n, long seconds)
 	}
 }
 
-/* Linked list containing the functions to call upon each update interval.
- * Populated while initialising text objects in construct_text_object(). */
-struct update_cb {
-	struct update_cb *next;
-	int (*func)(void);
-	pthread_t thread;
-	sem_t start_wait, end_wait;
-	update_cb() : next(NULL), func(NULL) {}
-
-    /* set to 1 when starting the thread
-	 * set to 0 to request thread termination */
-	volatile char running;
-};
-
-static struct update_cb update_cb_head;
-
-static void *run_update_callback(void *);
-
-static int threading_started = 0;
-
-/* Register an update callback. Don't allow duplicates, to minimise side
- * effects and overhead. */
-void add_update_callback(int (*func)(void))
-{
-	struct update_cb *uc = &update_cb_head;
-
-	if (!func)
-		return;
-
-	while (uc->next) {
-		if (uc->next->func == func)
-			return;
-		uc = uc->next;
-	}
-
-	uc->next = new update_cb;
-	uc = uc->next;
-
-	memset(uc, 0, sizeof(struct update_cb));
-	uc->func = func;
-	sem_init(&uc->start_wait, 0, 0);
-	sem_init(&uc->end_wait, 0, 0);
-
-	if (threading_started) {
-		if (!uc->running) {
-			uc->running = 1;
-			pthread_create(&uc->thread, NULL, &run_update_callback, uc);
-		}
-	}
-}
-
-/* Free the list element uc and all decendants recursively. */
-static void __free_update_callbacks(struct update_cb *uc)
-{
-	if (uc->next)
-		__free_update_callbacks(uc->next);
-
-	if (uc->running) {
-		/* send cancellation request, then trigger and join the thread */
-		uc->running = 0;
-		sem_post(&uc->start_wait);
-	}
-	if (uc->thread && pthread_join(uc->thread, NULL)) {
-		NORM_ERR("Error destroying thread");
-	}
-
-	/* finally destroy the semaphores */
-	sem_destroy(&uc->start_wait);
-	sem_destroy(&uc->end_wait);
-
-	delete uc;
-}
-
-/* Free the whole list of update callbacks. */
-void free_update_callbacks(void)
-{
-	if (update_cb_head.next)
-		__free_update_callbacks(update_cb_head.next);
-	update_cb_head.next = NULL;
-}
-
-/* We cannot start threads before we forked to background, because the threads
- * would remain in the wrong process. Because of that, add_update_callback()
- * doesn't create threads before start_update_threading() is called.
- * start_update_threading() starts all threads previously registered, and sets a
- * flag so that future threads are automagically started by
- * add_update_callback().
- * This text is almost longer than the actual code.
- */
-void start_update_threading(void)
-{
-	struct update_cb *uc;
-
-	threading_started = 1;
-
-	for (uc = update_cb_head.next; uc; uc = uc->next) {
-		if (!uc->running) {
-			uc->running = 1;
-			pthread_create(&uc->thread, NULL, &run_update_callback, uc);
-		}
-	}
-}
-
-static void *run_update_callback(void *data)
-{
-	struct update_cb *ucb = static_cast<struct update_cb *>(data);
-
-	if (!ucb || !ucb->func) return(NULL);
-
-	while (1) {
-		if (sem_wait(&ucb->start_wait)) return(NULL);
-		if (ucb->running == 0) return(NULL);
-		if((*ucb->func)()) {
-			ucb->next = ucb;	//this is normally not be possible, so we use it to show that there was a critical error
-			sem_post(&ucb->end_wait);
-			sem_post(&ucb->end_wait);
-			pthread_exit(NULL);
-		}
-		if (sem_post(&ucb->end_wait)) return(NULL);
-	}
-}
-
 conky::simple_config_setting<bool> no_buffers("no_buffers", true, true);
 
 void update_stuff(void)
 {
 	int i;
-	struct update_cb *uc;
 
 	/* clear speeds and up status in case device was removed and doesn't get
 	 * updated */
@@ -390,21 +269,7 @@ void update_stuff(void)
 
 	prepare_update();
 
-	for (uc = update_cb_head.next; uc; uc = uc->next) {
-		if (sem_post(&uc->start_wait)) {
-			NORM_ERR("Semaphore error");
-		}
-	}
-	/* need to synchronise here, otherwise locking is needed (as data
-	 * would be printed with some update callbacks still running) */
-	for (uc = update_cb_head.next; uc; uc = uc->next) {
-		sem_wait(&uc->end_wait);
-		if(uc == uc->next) {
-			pthread_join(uc->thread, NULL);
-			delete uc;
-			exit(EXIT_FAILURE);
-		}
-	}
+	conky::run_all_callbacks();
 
 	/* XXX: move the following into the update_meminfo() functions? */
 	if (no_buffers.get(*state)) {
