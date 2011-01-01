@@ -52,6 +52,7 @@
 
 static int mixer_fd;
 static const char *devs[] = SOUND_DEVICE_NAMES;
+static int stereo_flags;
 
 int mixer_init(const char *name)
 {
@@ -69,6 +70,8 @@ int mixer_init(const char *name)
 			return -1;
 		}
 	}
+
+	ioctl(mixer_fd, SOUND_MIXER_READ_STEREODEVS, &stereo_flags);
 
 	for (i = 0; i < sizeof(devs) / sizeof(const char *); i++) {
 		if (strcasecmp(devs[i], name) == 0) {
@@ -92,6 +95,11 @@ static int mixer_get(int i)
 		return 0;
 	}
 	rep = 0;
+
+	if(!(stereo_flags & (1<<i))) {
+		val &= 0xFF;
+		val |= val << 8;
+	}
 
 	return val;
 }
