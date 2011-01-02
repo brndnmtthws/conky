@@ -178,7 +178,7 @@ void ccurl_process_info(char *p, int p_max_size, const std::string &uri, int int
 	uint32_t period = std::max(std::lround(interval/active_update_interval()), 1l);
 	auto cb = conky::register_cb<simple_curl_cb>(period, uri);
 
-	strncpy(p, cb->get_result().c_str(), p_max_size);
+	strncpy(p, cb->get_result_copy().c_str(), p_max_size);
 }
 
 void curl_parse_arg(struct text_object *obj, const char *arg)
