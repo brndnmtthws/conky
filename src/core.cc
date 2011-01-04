@@ -985,6 +985,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.print = &print_memmax;
 	END OBJ(memperc, &update_meminfo)
 		obj->callbacks.percentage = &mem_percentage;
+#ifdef __linux__
+	END OBJ(memdirty, &update_meminfo)
+		obj->callbacks.print = &print_memdirty;
+#endif
 #ifdef BUILD_X11
 	END OBJ(memgauge, &update_meminfo)
 		scan_gauge(obj, arg, 1);

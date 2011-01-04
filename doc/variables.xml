@@ -2035,6 +2035,15 @@
     <varlistentry>
         <term>
             <command>
+                <option>memdirty</option>
+            </command>
+        </term>
+        <listitem>Amount of "dirty" memory (linux only)
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>memeasyfree</option>
             </command>
         </term>
