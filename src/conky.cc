@@ -105,6 +105,9 @@
 #ifdef BUILD_CURL
 #include "ccurl_thread.h"
 #endif /* BUILD_CURL */
+#ifdef BUILD_WEATHER_METAR
+#include "weather.h"
+#endif /* BUILD_WEATHER_METAR */
 
 #include "lua-config.hh"
 #include "setting.hh"
@@ -2544,10 +2547,6 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2)
 {
 	free_and_zero(memtofree1);
 	free_and_zero(memtofree2);
-
-#if defined BUILD_WEATHER_METAR || defined BUILD_WEATHER_XOAP
-	weather_free_info();
-#endif
 
 	timed_thread::destroy_registered_threads();
 

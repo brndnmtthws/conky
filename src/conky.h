@@ -108,10 +108,6 @@ struct text_object;
 #endif /* BUILD_WEATHER_METAR */
 #endif /* BUILD_WEATHER_XOAP */
 
-#ifdef BUILD_WEATHER_METAR
-#include "weather.h"
-#endif /* BUILD_WEATHER_METAR */
-
 #ifdef BUILD_PORT_MONITORS
 #include "tcp-portmon.h"
 #endif

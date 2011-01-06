@@ -32,22 +32,28 @@
 #include "ccurl_thread.h"
 #include <time.h>
 #include <ctype.h>
+#include <array>
+#include <cmath>
 #include <mutex>
 #include <string>
-#ifdef MATH
-#include <math.h>
-#endif /* MATH */
 #ifdef BUILD_WEATHER_XOAP
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 #endif /* BUILD_WEATHER_XOAP */
 
 /* WEATHER data */
-typedef struct PWEATHER_ {
-	char lastupd[32];
+class weather {
+	void parse_token(const char *token);
 #ifdef BUILD_WEATHER_XOAP
-	char xoap_t[32];
-	char icon[3];
+	void parse_cc(xmlXPathContextPtr xpathCtx);
+	void parse_weather_xml(const std::string &data);
+#endif
+
+public:
+	std::string lastupd;
+#ifdef BUILD_WEATHER_XOAP
+	std::string xoap_t;
+	std::string icon;
 #endif /* BUILD_WEATHER_XOAP */
 	int temp;
 	int dew;
@@ -57,22 +63,42 @@ typedef struct PWEATHER_ {
 	int wind_d;
 	int hmid;
 	int wc;
-} PWEATHER;
+
+	weather()
+		: temp(0), dew(0), cc(0), bar(0), wind_s(0), wind_d(0), hmid(0), wc(0)
+	{}
+
+	weather(const std::string &);
+};
 
 #ifdef BUILD_WEATHER_XOAP
 #define FORECAST_DAYS 5
-typedef struct PWEATHER_FORECAST_ {
-	int hi[FORECAST_DAYS];
-	int low[FORECAST_DAYS];
-	char icon[FORECAST_DAYS][3];
-	char xoap_t[FORECAST_DAYS][32];
-	char day[FORECAST_DAYS][9];
-	char date[FORECAST_DAYS][7];
-	int wind_s[FORECAST_DAYS];
-	int wind_d[FORECAST_DAYS];
-	int hmid[FORECAST_DAYS];
-	int ppcp[FORECAST_DAYS];
-} PWEATHER_FORECAST;
+struct weather_forecast_day {
+	std::string icon;
+	std::string xoap_t;
+	std::string day;
+	std::string date;
+	int hi;
+	int low;
+	int wind_s;
+	int wind_d;
+	int hmid;
+	int ppcp;
+
+	weather_forecast_day()
+		: hi(0), low(0), wind_s(0), wind_d(0), hmid(0), ppcp(0)
+	{}
+};
+
+class weather_forecast: public std::array<weather_forecast_day, FORECAST_DAYS> {
+	void parse_df(xmlXPathContextPtr xpathCtx);
+
+public:
+	weather_forecast() = default;
+
+	weather_forecast(const std::string &);
+};
+
 
 /* Xpath expressions for BUILD_WEATHER_XOAP xml parsing */
 #define NUM_XPATH_EXPRESSIONS_CC 8
@@ -113,11 +139,6 @@ const char *WC_CODES[NUM_WC_CODES] = {
 	"FC", "PO", "SQ", "SS", "DS"
 };
 
-static ccurl_location_list locations_cc;
-#ifdef BUILD_WEATHER_XOAP
-static ccurl_location_list locations_df;
-#endif
-
 struct weather_data {
 	char uri[128];
 	char data_type[32];
@@ -133,14 +154,6 @@ struct weather_forecast_data {
 };
 #endif
 
-void weather_free_info(void)
-{
-	ccurl_free_locations(locations_cc);
-#ifdef BUILD_WEATHER_XOAP
-	ccurl_free_locations(locations_df);
-#endif
-}
-
 int rel_humidity(int dew_point, int air) {
 	const float a = 17.27f;
 	const float b = 237.7f;
@@ -154,7 +167,7 @@ int rel_humidity(int dew_point, int air) {
 }
 
 #ifdef BUILD_WEATHER_XOAP
-static void parse_df(PWEATHER_FORECAST *res, xmlXPathContextPtr xpathCtx)
+void weather_forecast::parse_df(xmlXPathContextPtr xpathCtx)
 {
 	int i, j, k;
 	char *content = NULL;
@@ -181,36 +194,36 @@ static void parse_df(PWEATHER_FORECAST *res, xmlXPathContextPtr xpathCtx)
 					content = (char *)xmlNodeGetContent(nodes->nodeTab[k]);
 					switch(i) {
 					case 0:
-						res->hi[k] = atoi(content);
+						(*this)[k].hi = atoi(content);
 						break;
 					case 1:
-						res->low[k] = atoi(content);
+						(*this)[k].low = atoi(content);
 						break;
 					case 2:
-						strncpy(res->icon[k], content, 2);
+						(*this)[k].icon = content;
 					case 3:
-						strncpy(res->xoap_t[k], content, 31);
+						(*this)[k].xoap_t = content;
 						break;
 					case 4:
-						res->wind_s[k] = atoi(content);
+						(*this)[k].wind_s = atoi(content);
 						break;
 					case 5:
-						res->wind_d[k] = atoi(content);
+						(*this)[k].wind_d = atoi(content);
 						break;
 					case 6:
-						res->ppcp[k] = atoi(content);
+						(*this)[k].ppcp = atoi(content);
 						break;
 					case 7:
-						res->hmid[k] = atoi(content);
+						(*this)[k].hmid = atoi(content);
 					}
 				} else if (nodes->nodeTab[j]->type == XML_ATTRIBUTE_NODE) {
 					content = (char *)xmlNodeGetContent(nodes->nodeTab[k]);
 					switch(i) {
 					case 8:
-						strncpy(res->day[k], content, 8);
+						(*this)[k].day = content;
 						break;
 					case 9:
-						strncpy(res->date[k], content, 6);
+						(*this)[k].date = content;
 					}
 				}
 				xmlFree(content);
@@ -222,12 +235,12 @@ static void parse_df(PWEATHER_FORECAST *res, xmlXPathContextPtr xpathCtx)
 	return;
 }
 
-static void parse_weather_forecast_xml(PWEATHER_FORECAST *res, const char *data)
+weather_forecast::weather_forecast(const std::string &data)
 {
 	xmlDocPtr doc;
 	xmlXPathContextPtr xpathCtx;
 
-	if (!(doc = xmlReadMemory(data, strlen(data), "", NULL, 0))) {
+	if (!(doc = xmlReadMemory(data.c_str(), data.length(), "", NULL, 0))) {
 		NORM_ERR("weather_forecast: can't read xml data");
 		return;
 	}
@@ -239,13 +252,13 @@ static void parse_weather_forecast_xml(PWEATHER_FORECAST *res, const char *data)
 		return;
 	}
 
-	parse_df(res, xpathCtx);
+	parse_df(xpathCtx);
 	xmlXPathFreeContext(xpathCtx);
 	xmlFreeDoc(doc);
 	return;
 }
 
-static void parse_cc(PWEATHER *res, xmlXPathContextPtr xpathCtx)
+void weather::parse_cc(xmlXPathContextPtr xpathCtx)
 {
 	int i;
 	char *content;
@@ -270,28 +283,28 @@ static void parse_cc(PWEATHER *res, xmlXPathContextPtr xpathCtx)
 			content = (char *)xmlNodeGetContent(xpathObj->nodesetval->nodeTab[0]);
 			switch(i) {
 				case 0:
-					strncpy(res->lastupd, content, 31);
+					lastupd = content;
 					break;
 				case 1:
-					res->temp = atoi(content);
+					temp = atoi(content);
 					break;
 				case 2:
-					strncpy(res->xoap_t, content, 31);
+					xoap_t = content;
 					break;
 				case 3:
-					res->bar = atoi(content);
+					bar = atoi(content);
 					break;
 				case 4:
-					res->wind_s = atoi(content);
+					wind_s = atoi(content);
 					break;
 				case 5:
-					res->wind_d = atoi(content);
+					wind_d = atoi(content);
 					break;
 				case 6:
-					res->hmid = atoi(content);
+					hmid = atoi(content);
 					break;
 				case 7:
-					strncpy(res->icon, content, 2);
+					icon = content;
 			}
 			xmlFree(content);
 		}
@@ -300,12 +313,12 @@ static void parse_cc(PWEATHER *res, xmlXPathContextPtr xpathCtx)
 	return;
 }
 
-static void parse_weather_xml(PWEATHER *res, const char *data)
+void weather::parse_weather_xml(const std::string &data)
 {
 	xmlDocPtr doc;
 	xmlXPathContextPtr xpathCtx;
 
-	if (!(doc = xmlReadMemory(data, strlen(data), "", NULL, 0))) {
+	if (!(doc = xmlReadMemory(data.c_str(), data.length(), "", NULL, 0))) {
 		NORM_ERR("weather: can't read xml data");
 		return;
 	}
@@ -317,7 +330,7 @@ static void parse_weather_xml(PWEATHER *res, const char *data)
 		return;
 	}
 
-	parse_cc(res, xpathCtx);
+	parse_cc(xpathCtx);
 	xmlXPathFreeContext(xpathCtx);
 	xmlFreeDoc(doc);
 	return;
@@ -329,7 +342,7 @@ static void parse_weather_xml(PWEATHER *res, const char *data)
  *
  */
 
-static inline void parse_token(PWEATHER *res, char *token) {
+void weather::parse_token(const char *token) {
 
 	int i;
 	char s_tmp[64];
@@ -346,7 +359,7 @@ static inline void parse_token(PWEATHER *res, char *token) {
 			if (i==2) {
 				for(i=0; i<NUM_WC_CODES; i++) {
 					if (!strncmp(token, WC_CODES[i], 2)) {
-						res->wc=i+1;
+						wc=i+1;
 						break;
 					}
 				}
@@ -355,7 +368,7 @@ static inline void parse_token(PWEATHER *res, char *token) {
 
 			//Check for CB
 			if (!strcmp(token, "CB")) {
-				res->cc = 8;
+				cc = 8;
 				return;
 			}
 
@@ -372,7 +385,7 @@ static inline void parse_token(PWEATHER *res, char *token) {
 				if (i==3) {
 					for(i=0; i<NUM_WC_CODES; i++) {
 						if (!strncmp(&token[1], WC_CODES[i], 2)) {
-							res->wc=i+1;
+							wc=i+1;
 							break;
 						}
 					}
@@ -382,13 +395,13 @@ static inline void parse_token(PWEATHER *res, char *token) {
 
 			//Check for NCD or NSC
 			if ((!strcmp(token, "NCD")) || (!strcmp(token, "NSC"))) {
-				res->cc = 1;
+				cc = 1;
 				return;
 			}
 
 			//Check for TCU
 			if (!strcmp(token, "TCU")) {
-				res->cc = 7;
+				cc = 7;
 				return;
 			}
 
@@ -402,7 +415,7 @@ static inline void parse_token(PWEATHER *res, char *token) {
 				if (!strncmp(token, WM_CODES[i], 2)) {
 					for(i=0; i<NUM_WC_CODES; i++) {
 						if (!strncmp(&token[2], WC_CODES[i], 2)) {
-							res->wc=i+1;
+							wc=i+1;
 							return;
 						}
 					}
@@ -417,7 +430,7 @@ static inline void parse_token(PWEATHER *res, char *token) {
 
 			//Check for CAVOK
 			if (!strcmp(token, "CAVOK")) {
-				res->cc = 1;
+				cc = 1;
 				return;
 			}
 
@@ -431,13 +444,13 @@ static inline void parse_token(PWEATHER *res, char *token) {
 				}
 				if (i==5) {
 					//First 2 digits gives the air temperature
-					res->temp=atoi(token);
+					temp=atoi(token);
 
 					//4th and 5th digits gives the dew point temperature
-					res->dew=atoi(&token[3]);
+					dew=atoi(&token[3]);
 
 					//Compute humidity
-					res->hmid = rel_humidity(res->dew, res->temp);
+					hmid = rel_humidity(dew, temp);
 
 					return;
 				}
@@ -451,12 +464,12 @@ static inline void parse_token(PWEATHER *res, char *token) {
 				if (i==5) {
 					if (token[0] == 'A') {
 						//Convert inches of mercury to mbar
-						res->bar = (int)(atoi(&token[1])*0.338637526f);
+						bar = (int)(atoi(&token[1])*0.338637526f);
 						return;
 					}
 
 					//Last 4 digits is pressure im mbar
-					res->bar = atoi(&token[1]);
+					bar = atoi(&token[1]);
 					return;
 				}
 			}
@@ -467,7 +480,7 @@ static inline void parse_token(PWEATHER *res, char *token) {
 					if (!strncmp(&token[1], WM_CODES[i], 2)) {
 						for(i=0; i<NUM_WC_CODES; i++) {
 							if (!strncmp(&token[3], WC_CODES[i], 2)) {
-								res->wc=i+1;
+								wc=i+1;
 								return;
 							}
 						}
@@ -492,7 +505,7 @@ static inline void parse_token(PWEATHER *res, char *token) {
 					//Check if first 3 digits gives the cloud cover condition
 					for(i=0; i<NUM_CC_CODES; i++) {
 						if (!strncmp(token, CC_CODES[i], 3)) {
-							res->cc=i+1;
+							cc=i+1;
 							break;
 						}
 					}
@@ -510,13 +523,13 @@ static inline void parse_token(PWEATHER *res, char *token) {
 				}
 				if (i==6) {
 					//1st and 2nd digits gives the temperature
-					res->temp = atoi(token);
+					temp = atoi(token);
 
 					//5th and 6th digits gives the dew point temperature
-					res->dew = -atoi(&token[4]);
+					dew = -atoi(&token[4]);
 
 					//Compute humidity
-					res->hmid = rel_humidity(res->dew, res->temp);
+					hmid = rel_humidity(dew, temp);
 
 					return;
 				}
@@ -542,10 +555,10 @@ static inline void parse_token(PWEATHER *res, char *token) {
 				//First 3 digits are wind direction
 				strncpy(s_tmp, token, 3);
 				s_tmp[3]='\0';
-				res->wind_d=atoi(s_tmp);
+				wind_d=atoi(s_tmp);
 
 				//4th and 5th digit are wind speed in knots (convert to km/hr)
-				res->wind_s = (int)(atoi(&token[3])*1.852);
+				wind_s = (int)(atoi(&token[3])*1.852);
 
 				return;
 			}
@@ -561,13 +574,13 @@ static inline void parse_token(PWEATHER *res, char *token) {
 					}
 					if (i==7) {
 						//2nd and 3rd digits gives the temperature
-						res->temp = -atoi(&token[1]);
+						temp = -atoi(&token[1]);
 
 						//6th and 7th digits gives the dew point temperature
-						res->dew = -atoi(&token[5]);
+						dew = -atoi(&token[5]);
 
 						//Compute humidity
-						res->hmid = rel_humidity(res->dew, res->temp);
+						hmid = rel_humidity(dew, temp);
 
 						return;
 					}
@@ -599,10 +612,10 @@ static inline void parse_token(PWEATHER *res, char *token) {
 				//First 3 digits are wind direction
 				strncpy(s_tmp, token, 3);
 				s_tmp[3]='\0';
-				res->wind_d=atoi(s_tmp);
+				wind_d=atoi(s_tmp);
 
 				//4th and 5th digit are wind speed in m/s (convert to km/hr)
-				res->wind_s = (int)(atoi(&token[3])*3.6);
+				wind_s = (int)(atoi(&token[3])*3.6);
 
 				return;
 			}
@@ -614,39 +627,24 @@ static inline void parse_token(PWEATHER *res, char *token) {
 	}
 }
 
-#ifdef BUILD_WEATHER_XOAP
-void parse_weather_forecast(void *result, const char *data)
+weather::weather(const std::string &data)
+	: temp(0), dew(0), cc(0), bar(0), wind_s(0), wind_d(0), hmid(0), wc(0)
 {
-	PWEATHER_FORECAST *res = (PWEATHER_FORECAST*)result;
-	/* Reset results */
-	memset(res, 0, sizeof(PWEATHER_FORECAST));
-
-	//Check if it is an xml file
-	if ( strncmp(data, "<?xml ", 6) == 0 ) {
-		parse_weather_forecast_xml(res, data);
-	}
-}
-#endif /* BUILD_WEATHER_XOAP */
-
-void parse_weather(void *result, const char *data)
-{
-	PWEATHER *res = (PWEATHER*)result;
-	/* Reset results */
-	memset(res, 0, sizeof(PWEATHER));
-
 #ifdef BUILD_WEATHER_XOAP
 	//Check if it is an xml file
-	if ( strncmp(data, "<?xml ", 6) == 0 ) {
-		parse_weather_xml(res, data);
+	if ( strncmp(data.c_str(), "<?xml ", 6) == 0 ) {
+		parse_weather_xml(data);
 	} else
 #endif /* BUILD_WEATHER_XOAP */
 	{
 		//We assume its a text file
 		char s_tmp[256];
+		char lastupd_[32];
 		const char delim[] = " ";
 
 		//Divide time stamp and metar data
-		if (sscanf(data, "%[^'\n']\n%[^'\n']", res->lastupd, s_tmp) == 2) {
+		if (sscanf(data.c_str(), "%[^'\n']\n%[^'\n']", lastupd_, s_tmp) == 2) {
+			lastupd = lastupd_;
 
 			//Process all tokens
 			char *p_tok = NULL;
@@ -659,7 +657,7 @@ void parse_weather(void *result, const char *data)
 
 				do {
 
-					parse_token(res, p_tok);
+					parse_token(p_tok);
 					p_tok = strtok_r(NULL, delim, &p_save);
 
 				} while (p_tok != NULL);
@@ -670,6 +668,28 @@ void parse_weather(void *result, const char *data)
 			return;
 		}
 	}
+}
+
+namespace {
+	template<typename Result>
+	class weather_cb: public curl_callback<Result> {
+		typedef curl_callback<Result> Base;
+
+	protected:
+		virtual void process_data()
+		{
+			Result tmp(Base::data);
+
+			std::unique_lock<std::mutex> lock(Base::result_mutex);
+			Base::result = tmp;
+		}
+
+	public:
+		weather_cb(uint32_t period, const std::string &uri)
+			: Base(period, typename Base::Tuple(uri))
+		{}
+
+	};
 }
 
 void wind_deg_to_dir(char *p, int p_max_size, int wind_deg) {
@@ -712,44 +732,34 @@ void wind_deg_to_dir(char *p, int p_max_size, int wind_deg) {
 static void weather_forecast_process_info(char *p, int p_max_size, const
 		std::string &uri, unsigned int day, char *data_type, int interval)
 {
-	PWEATHER_FORECAST *data;
+	uint32_t period = std::max(std::lround(interval/active_update_interval()), 1l);
 
-	ccurl_location_ptr curloc = ccurl_find_location(locations_df, uri);
-	if (!curloc->p_timed_thread) {
-		curloc->result = (char*)malloc(sizeof(PWEATHER_FORECAST));
-		memset(curloc->result, 0, sizeof(PWEATHER_FORECAST));
-		curloc->process_function = std::bind(parse_weather_forecast,
-				std::placeholders::_1, std::placeholders::_2);
-		ccurl_init_thread(curloc, interval);
-		if (!curloc->p_timed_thread) {
-			NORM_ERR("error setting up weather_forecast thread");
-		}
-	}
+	auto cb = conky::register_cb<weather_cb<weather_forecast>>(period, uri);
 
-	std::lock_guard<std::mutex> lock(curloc->p_timed_thread->mutex());
-	data = (PWEATHER_FORECAST*)curloc->result;
+	std::lock_guard<std::mutex> lock(cb->result_mutex);
+	const weather_forecast &data = cb->get_result();
 	if (strcmp(data_type, "hi") == EQUAL) {
-		temp_print(p, p_max_size, data->hi[day], TEMP_CELSIUS);
+		temp_print(p, p_max_size, data[day].hi, TEMP_CELSIUS);
 	} else if (strcmp(data_type, "low") == EQUAL) {
-		temp_print(p, p_max_size, data->low[day], TEMP_CELSIUS);
+		temp_print(p, p_max_size, data[day].low, TEMP_CELSIUS);
 	} else if (strcmp(data_type, "icon") == EQUAL) {
-		strncpy(p, data->icon[day], p_max_size);
+		strncpy(p, data[day].icon.c_str(), p_max_size);
 	} else if (strcmp(data_type, "forecast") == EQUAL) {
-		strncpy(p, data->xoap_t[day], p_max_size);
+		strncpy(p, data[day].xoap_t.c_str(), p_max_size);
 	} else if (strcmp(data_type, "wind_speed") == EQUAL) {
-		snprintf(p, p_max_size, "%d", data->wind_s[day]);
+		snprintf(p, p_max_size, "%d", data[day].wind_s);
 	} else if (strcmp(data_type, "wind_dir") == EQUAL) {
-		wind_deg_to_dir(p, p_max_size, data->wind_d[day]);
+		wind_deg_to_dir(p, p_max_size, data[day].wind_d);
 	} else if (strcmp(data_type, "wind_dir_DEG") == EQUAL) {
-		snprintf(p, p_max_size, "%d", data->wind_d[day]);
+		snprintf(p, p_max_size, "%d", data[day].wind_d);
 	} else if (strcmp(data_type, "humidity") == EQUAL) {
-		snprintf(p, p_max_size, "%d", data->hmid[day]);
+		snprintf(p, p_max_size, "%d", data[day].hmid);
 	} else if (strcmp(data_type, "precipitation") == EQUAL) {
-		snprintf(p, p_max_size, "%d", data->ppcp[day]);
+		snprintf(p, p_max_size, "%d", data[day].ppcp);
 	} else if (strcmp(data_type, "day") == EQUAL) {
-		strncpy(p, data->day[day], p_max_size);
+		strncpy(p, data[day].day.c_str(), p_max_size);
 	} else if (strcmp(data_type, "date") == EQUAL) {
-		strncpy(p, data->date[day], p_max_size);
+		strncpy(p, data[day].date.c_str(), p_max_size);
 	}
 
 }
@@ -763,31 +773,22 @@ static void weather_process_info(char *p, int p_max_size, const std::string &uri
 		"mist", "dust", "sand", "funnel cloud tornado",
 		"dust/sand", "squall", "sand storm", "dust storm"
 	};
-	PWEATHER *data;
 
-	ccurl_location_ptr curloc = ccurl_find_location(locations_cc, uri);
-	if (!curloc->p_timed_thread) {
-		curloc->result = (char*)malloc(sizeof(PWEATHER));
-		memset(curloc->result, 0, sizeof(PWEATHER));
-		curloc->process_function = std::bind(parse_weather,
-				std::placeholders::_1, std::placeholders::_2);
-		ccurl_init_thread(curloc, interval);
-		if (!curloc->p_timed_thread) {
-			NORM_ERR("error setting up weather thread");
-		}
-	}
+	uint32_t period = std::max(std::lround(interval/active_update_interval()), 1l);
 
-	std::lock_guard<std::mutex> lock(curloc->p_timed_thread->mutex());
-	data = (PWEATHER*)curloc->result;
+	auto cb = conky::register_cb<weather_cb<weather>>(period, uri);
+
+	std::lock_guard<std::mutex> lock(cb->result_mutex);
+	const weather *data = &cb->get_result();
 	if (strcmp(data_type, "last_update") == EQUAL) {
-		strncpy(p, data->lastupd, p_max_size);
+		strncpy(p, data->lastupd.c_str(), p_max_size);
 	} else if (strcmp(data_type, "temperature") == EQUAL) {
 		temp_print(p, p_max_size, data->temp, TEMP_CELSIUS);
 	} else if (strcmp(data_type, "cloud_cover") == EQUAL) {
 #ifdef BUILD_WEATHER_XOAP
 		if (data->xoap_t[0] != '\0') {
 			char *s = p;
-			strncpy(p, data->xoap_t, p_max_size);
+			strncpy(p, data->xoap_t.c_str(), p_max_size);
 			while (*s) {
 				*s = tolower(*s);
 				s++;
@@ -811,7 +812,7 @@ static void weather_process_info(char *p, int p_max_size, const std::string &uri
 			}
 #ifdef BUILD_WEATHER_XOAP
 	} else if (strcmp(data_type, "icon") == EQUAL) {
-		strncpy(p, data->icon, p_max_size);
+		strncpy(p, data->icon.c_str(), p_max_size);
 #endif /* BUILD_WEATHER_XOAP */
 	} else if (strcmp(data_type, "pressure") == EQUAL) {
 		snprintf(p, p_max_size, "%d", data->bar);

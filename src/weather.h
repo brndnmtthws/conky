@@ -31,9 +31,6 @@
 #ifndef WEATHER_H_
 #define WEATHER_H_
 
-/* Prototypes */
-void weather_free_info(void);
-
 #ifdef BUILD_WEATHER_XOAP
 void load_xoap_keys(void);
 void scan_weather_forecast_arg(struct text_object *, const char *, void *);
