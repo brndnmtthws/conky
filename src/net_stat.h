@@ -33,6 +33,13 @@
 
 #include <sys/socket.h>	/* struct sockaddr */
 
+#ifdef BUILD_IPV6
+struct v6addr {
+	char addr[32];
+	struct v6addr *next;
+};
+#endif /* BUILD_IPV6 */
+
 struct net_stat {
         char *dev;
         int up;
@@ -40,6 +47,9 @@ struct net_stat {
         long long recv, trans;
         double recv_speed, trans_speed;
         struct sockaddr addr;
+#ifdef BUILD_IPV6
+        struct v6addr *v6addrs;
+#endif /* BUILD_IPV6 */
 #if defined(__linux__)
         char addrs[273];
 #endif /* __linux__ */
@@ -70,6 +80,9 @@ void print_totalup(struct text_object *, char *, int);
 void print_addr(struct text_object *, char *, int);
 #ifdef __linux__
 void print_addrs(struct text_object *, char *, int);
+#ifdef BUILD_IPV6
+void print_v6addrs(struct text_object *, char *, int);
+#endif /* BUILD_IPV6 */
 #endif /* __linux__ */
 #ifdef BUILD_X11
 void parse_net_stat_graph_arg(struct text_object *, const char *, void *);

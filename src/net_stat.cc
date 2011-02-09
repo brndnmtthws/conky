@@ -205,6 +205,36 @@ void print_addrs(struct text_object *obj, char *p, int p_max_size)
 		strncpy(p, "0.0.0.0", p_max_size);
 	}
 }
+
+#ifdef BUILD_IPV6
+void print_v6addrs(struct text_object *obj, char *p, int p_max_size)
+{
+	struct net_stat *ns = (struct net_stat *)obj->data.opaque;
+	char *current_char = p;
+	struct v6addr *current_v6 = ns->v6addrs;
+
+	if (!ns)
+		return;
+
+	if( ! ns->v6addrs) {
+		strncpy(p, "::", p_max_size);
+		return;
+	}
+	while(current_v6) {
+		for(int i=0; i<8; i++) {
+			strncpy(current_char, current_v6->addr+(i*4), 4);
+			*(current_char+4)=':';
+			current_char+=5;
+		}
+		current_v6 = current_v6->next;
+		if(current_v6) {
+			strncpy(current_char-1, ", ", 3);
+			current_char++;
+		} else *(current_char-1)=0;
+	}
+}
+#endif /* BUILD_IPV6 */
+
 #endif /* __linux__ */
 
 #ifdef BUILD_X11
@@ -353,9 +383,19 @@ double wireless_link_barval(struct text_object *obj)
 
 void clear_net_stats(void)
 {
+#ifdef BUILD_IPV6
+	struct v6addr *nextv6;
+#endif /* BUILD_IPV6 */
 	int i;
 	for (i = 0; i < MAX_NET_INTERFACES; i++) {
 		free_and_zero(netstats[i].dev);
+#ifdef BUILD_IPV6
+		while(netstats[i].v6addrs) {
+			nextv6 = netstats[i].v6addrs;
+			netstats[i].v6addrs = netstats[i].v6addrs->next;
+			free_and_zero(nextv6);
+		}
+#endif /* BUILD_IPV6 */
 	}
 	memset(netstats, 0, sizeof(netstats));
 }

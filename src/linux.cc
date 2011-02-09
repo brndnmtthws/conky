@@ -32,6 +32,7 @@
 #include "net_stat.h"
 #include "diskio.h"
 #include "temphelper.h"
+#include "proc.h"
 #include <dirent.h>
 #include <ctype.h>
 #include <errno.h>
@@ -569,6 +570,32 @@ int update_net_stats(void)
 		free(winfo);
 #endif
 	}
+
+#ifdef BUILD_IPV6
+	FILE *file;
+	char v6addr[32];
+	char devname[21];
+	struct net_stat *ns;
+	struct v6addr *lastv6;
+	if ((file = fopen(PROCDIR"/net/if_inet6", "r")) != NULL) {
+		while (fscanf(file, "%32s %*02x %*02x %*02x %*02x %20s\n", v6addr, devname) != EOF) {
+			ns = get_net_stat(devname, NULL, NULL);
+			if(ns->v6addrs == NULL) {
+				lastv6 = (struct v6addr *) malloc(sizeof(struct v6addr));
+				ns->v6addrs = lastv6;
+			} else {
+				lastv6 = ns->v6addrs;
+				while(lastv6->next) lastv6 = lastv6->next;
+				lastv6->next = (struct v6addr *) malloc(sizeof(struct v6addr));
+				lastv6 = lastv6->next;
+			}
+			strncpy(lastv6->addr, v6addr, 32);
+			lastv6->next = NULL;
+		}
+	}
+	fclose(file);
+#endif /* BUILD_IPV6 */
+
 	first = 0;
 
 	fclose(net_dev_fp);

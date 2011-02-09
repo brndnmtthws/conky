@@ -95,6 +95,8 @@
 
 #cmakedefine BUILD_IRC 1
 
+#cmakedefine BUILD_IPV6 1
+
 #cmakedefine BUILD_HTTP 1
 
 #cmakedefine BUILD_ICONV 1
