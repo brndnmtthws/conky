@@ -871,6 +871,26 @@ int update_cpu_usage(void)
 	return 0;
 }
 
+//fscanf() that reads floats with points even if you are using a locale where
+//floats are with commas
+int fscanf_no_i18n(FILE *stream, const char *format, ...) {
+	int returncode;
+	va_list ap;
+
+#ifdef BUILD_I18N
+	const char *oldlocale = setlocale(LC_NUMERIC, NULL);
+
+	setlocale(LC_NUMERIC, "C");
+#endif
+	va_start(ap, format);
+	returncode = vfscanf(stream, format, ap);
+	va_end(ap);
+#ifdef BUILD_I18N
+	setlocale(LC_NUMERIC, oldlocale);
+#endif
+	return returncode;
+}
+
 int update_load_average(void)
 {
 #ifdef HAVE_GETLOADAVG
@@ -891,7 +911,7 @@ int update_load_average(void)
 			info.loadavg[0] = info.loadavg[1] = info.loadavg[2] = 0.0;
 			return 0;
 		}
-		if (fscanf(fp, "%f %f %f", &info.loadavg[0], &info.loadavg[1],
+		if (fscanf_no_i18n(fp, "%f %f %f", &info.loadavg[0], &info.loadavg[1],
 		           &info.loadavg[2]) < 0)
 			info.loadavg[0] = info.loadavg[1] = info.loadavg[2] = 0.0;
 		fclose(fp);
