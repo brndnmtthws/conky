@@ -90,10 +90,24 @@ struct net_stat *get_net_stat(const char *dev, void *free_at_crash1, void *free_
 
 void parse_net_stat_arg(struct text_object *obj, const char *arg, void *free_at_crash)
 {
+	bool shownetmask = false;
+	char dev[21];	//a netdev can only be 20 chars long
+	int i=0;
+
 	if (!arg)
 		arg = DEFAULTNETDEV;
 
-	obj->data.opaque = get_net_stat(arg, obj, free_at_crash);
+	if (*arg == '-') { //there are flags
+		for(i=1; arg[i] != ' ' && arg[i] != 0; i++) {
+			if(arg[i]=='n') shownetmask = true;
+		}
+	}
+	sscanf(arg+i, "%20s", dev);
+	if(*dev==0) strcpy(dev, DEFAULTNETDEV);
+
+	struct net_stat *netstat = get_net_stat(dev, obj, free_at_crash);
+	netstat->v6show_nm = shownetmask;
+	obj->data.opaque = netstat;
 }
 
 void parse_net_stat_bar_arg(struct text_object *obj, const char *arg, void *free_at_crash)
@@ -217,7 +231,7 @@ void print_v6addrs(struct text_object *obj, char *p, int p_max_size)
 		return;
 
 	if( ! ns->v6addrs) {
-		strncpy(p, "::", p_max_size);
+		if(ns->v6show_nm) strncpy(p, "::/128", p_max_size); else strncpy(p, "::", p_max_size);
 		return;
 	}
 	while(current_v6) {
@@ -251,11 +265,20 @@ void print_v6addrs(struct text_object *obj, char *p, int p_max_size)
 			*(current_char+4-j)=':';
 			current_char+=5-j;
 		}
+		current_char--;
+		//netmask
+		if(ns->v6show_nm) {
+			char netmaskstr[5]; //max 5 chars (/128 + null-terminator)
+			sprintf(netmaskstr, "/%u", current_v6->netmask);
+			strcpy(current_char, netmaskstr);
+			current_char += strlen(netmaskstr);
+		}
+		//next (or last) address
 		current_v6 = current_v6->next;
 		if(current_v6) {
-			strncpy(current_char-1, ", ", 3);
-			current_char++;
-		} else *(current_char-1)=0;
+			strcpy(current_char, ", ");
+			current_char+=2;
+		} else *current_char=0;
 	}
 }
 #endif /* BUILD_IPV6 */

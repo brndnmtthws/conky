@@ -575,10 +575,11 @@ int update_net_stats(void)
 	FILE *file;
 	char v6addr[32];
 	char devname[21];
+	unsigned int netmask;
 	struct net_stat *ns;
 	struct v6addr *lastv6;
 	if ((file = fopen(PROCDIR"/net/if_inet6", "r")) != NULL) {
-		while (fscanf(file, "%32s %*02x %*02x %*02x %*02x %20s\n", v6addr, devname) != EOF) {
+		while (fscanf(file, "%32s %*02x %02x %*02x %*02x %20s\n", v6addr, &netmask, devname) != EOF) {
 			ns = get_net_stat(devname, NULL, NULL);
 			if(ns->v6addrs == NULL) {
 				lastv6 = (struct v6addr *) malloc(sizeof(struct v6addr));
@@ -590,6 +591,7 @@ int update_net_stats(void)
 				lastv6 = lastv6->next;
 			}
 			strncpy(lastv6->addr, v6addr, 32);
+			lastv6->netmask = netmask;
 			lastv6->next = NULL;
 		}
 	}
