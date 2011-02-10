@@ -285,7 +285,8 @@ static char *getSkillname(const char *file, int skillid)
 
 	if (!file_exists(file)) {
 		skilltree = getXmlFromAPI(NULL, NULL, NULL, EVEURL_SKILLTREE);
-		writeSkilltree(skilltree, file);
+//2x file_exits() so that someone (malicious?) couldn't create it during during the previous call
+		if (!file_exists(file)) writeSkilltree(skilltree, file);
 		free(skilltree);
 	}
 
