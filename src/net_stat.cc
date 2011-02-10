@@ -221,10 +221,35 @@ void print_v6addrs(struct text_object *obj, char *p, int p_max_size)
 		return;
 	}
 	while(current_v6) {
-		for(int i=0; i<8; i++) {
-			strncpy(current_char, current_v6->addr+(i*4), 4);
-			*(current_char+4)=':';
-			current_char+=5;
+		char extracompress = 0;	//0 until the first '0000', 1 after the first '0000', 2 after the first non-'0000' after a '0000'
+		for(int i=0; i<8; i++) {	//loop trough the 8 parts of the ipv6
+			//skip the zeros in front of each part
+			int j=0;
+			while(j<4) if(*(current_v6->addr+(i*4)+j) == '0') j++; else break;
+			if(j==4) {
+				if(*(current_v6->addr+(i*4)+3) == '0') {	//4 zeros
+					switch(extracompress) {
+					case 0:	//first time this happens, so replace by '::'
+						*current_char = ':';
+						current_char++;
+						if(current_char == p+1) {	//to make sure there is no ':::' when the first '0000' isn't at the beginning
+							*current_char = ':';
+							current_char++;
+						}
+						extracompress=1;
+						continue;
+					case 1:	//again, ignore them, they are included in the '::'
+						continue;
+					default: //again, but only remove the first 3 zero's because extra-compression may no longer be applied
+						j=3; //but if there are 4 zero's, keep the last
+					}
+				} else j=0;	//no zeros to skip
+			}
+			if(extracompress == 1) extracompress = 2;
+			//place each part followed by : in the ip
+			strncpy(current_char, current_v6->addr+(i*4)+j, 4-j);
+			*(current_char+4-j)=':';
+			current_char+=5-j;
 		}
 		current_v6 = current_v6->next;
 		if(current_v6) {
