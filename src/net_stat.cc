@@ -106,7 +106,9 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg, void *free_at_
 	if(*dev==0) strcpy(dev, DEFAULTNETDEV);
 
 	struct net_stat *netstat = get_net_stat(dev, obj, free_at_crash);
+#ifdef BUILD_IPV6
 	netstat->v6show_nm = shownetmask;
+#endif /* BUILD_IPV6 */
 	obj->data.opaque = netstat;
 }
 
