@@ -3932,6 +3932,19 @@
     <varlistentry>
         <term>
             <command>
+                <option>v6addrs</option>
+            </command>
+            <option>(-n) (-s) (interface)</option>
+        </term>
+        <listitem>IPv6 addresses for an interface, followed by
+        netmask if -n is specified and scope with -s. Scopes are
+        Global(G), Host-local(H), Link-local(L), Site-local(S), Compat(C)
+        and Unspecified(/). Linux only.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>voffset</option>
             </command>
             <option>(pixels)</option>

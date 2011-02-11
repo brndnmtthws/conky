@@ -92,22 +92,28 @@ void parse_net_stat_arg(struct text_object *obj, const char *arg, void *free_at_
 {
 	bool shownetmask = false;
 	bool showscope = false;
-	char dev[21];	//a netdev can only be 20 chars long
+	char nextarg[21];	//longest arg possible is a devname (max 20 chars)
 	int i=0;
+	struct net_stat *netstat = NULL;
 
 	if (!arg)
 		arg = DEFAULTNETDEV;
 
-	if (*arg == '-') { //there are flags
-		for(i=1; arg[i] != ' ' && arg[i] != 0; i++) {
-			if(arg[i]=='n') shownetmask = true;
-			if(arg[i]=='s') showscope = true;
+	while(sscanf(arg+i, " %20s", nextarg) == 1) {
+		if(strcmp(nextarg, "-n") == 0 || strcmp(nextarg, "--netmask") == 0) shownetmask = true;
+		else if(strcmp(nextarg, "-s") == 0 || strcmp(nextarg, "--scope") == 0) showscope = true;
+		else if(nextarg[0]=='-') {	//multiple flags in 1 arg
+			for(int j=1; nextarg[j] != 0; j++) {
+				if(nextarg[j]=='n') shownetmask = true;
+				if(nextarg[j]=='s') showscope = true;
+			}
 		}
+		else netstat = get_net_stat(nextarg, obj, free_at_crash);
+		i+=strlen(nextarg);	//skip this arg
+		while( ! (isspace(arg[i]) || arg[i] == 0)) i++; //and skip the spaces in front of it
 	}
-	sscanf(arg+i, "%20s", dev);
-	if(*dev==0) strcpy(dev, DEFAULTNETDEV);
+	if(netstat == NULL) netstat = get_net_stat(DEFAULTNETDEV, obj, free_at_crash);
 
-	struct net_stat *netstat = get_net_stat(dev, obj, free_at_crash);
 #ifdef BUILD_IPV6
 	netstat->v6show_nm = shownetmask;
 	netstat->v6show_sc = showscope;
