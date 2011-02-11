@@ -575,11 +575,11 @@ int update_net_stats(void)
 	FILE *file;
 	char v6addr[32];
 	char devname[21];
-	unsigned int netmask;
+	unsigned int netmask, scope;
 	struct net_stat *ns;
 	struct v6addr *lastv6;
 	if ((file = fopen(PROCDIR"/net/if_inet6", "r")) != NULL) {
-		while (fscanf(file, "%32s %*02x %02x %*02x %*02x %20s\n", v6addr, &netmask, devname) != EOF) {
+		while (fscanf(file, "%32s %*02x %02x %02x %*02x %20s\n", v6addr, &netmask, &scope, devname) != EOF) {
 			ns = get_net_stat(devname, NULL, NULL);
 			if(ns->v6addrs == NULL) {
 				lastv6 = (struct v6addr *) malloc(sizeof(struct v6addr));
@@ -592,6 +592,25 @@ int update_net_stats(void)
 			}
 			strncpy(lastv6->addr, v6addr, 32);
 			lastv6->netmask = netmask;
+			switch(scope) {
+			case 0:	//global
+				lastv6->scope = 'G';
+				break;
+			case 16:	//host-local
+				lastv6->scope = 'H';
+				break;
+			case 32:	//link-local
+				lastv6->scope = 'L';
+				break;
+			case 64:	//site-local
+				lastv6->scope = 'S';
+				break;
+			case 128:	//compat
+				lastv6->scope = 'C';
+				break;
+			default:
+				lastv6->scope = '?';
+			}
 			lastv6->next = NULL;
 		}
 	}

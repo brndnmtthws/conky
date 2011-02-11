@@ -37,6 +37,7 @@
 struct v6addr {
 	char addr[32];
 	unsigned int netmask;
+	char scope;
 	struct v6addr *next;
 };
 #endif /* BUILD_IPV6 */
@@ -51,6 +52,7 @@ struct net_stat {
 #ifdef BUILD_IPV6
         struct v6addr *v6addrs;
 	bool v6show_nm;
+	bool v6show_sc;
 #endif /* BUILD_IPV6 */
 #if defined(__linux__)
         char addrs[273];
