@@ -35,7 +35,7 @@
 
 #ifdef BUILD_IPV6
 struct v6addr {
-	char addr[32];
+	struct in6_addr addr;
 	unsigned int netmask;
 	char scope;
 	struct v6addr *next;
