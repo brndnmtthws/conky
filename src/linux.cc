@@ -591,7 +591,7 @@ int update_net_stats(void)
 				lastv6 = lastv6->next;
 			}
 			for(int i=0; i<16; i++)
-				sscanf(v6addr+2*i, "%2x", (unsigned int*) &(lastv6->addr.s6_addr[i]));
+				sscanf(v6addr+2*i, "%2hhx", &(lastv6->addr.s6_addr[i]));
 			lastv6->netmask = netmask;
 			switch(scope) {
 			case 0:	//global
