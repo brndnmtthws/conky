@@ -235,41 +235,38 @@ void print_addrs(struct text_object *obj, char *p, int p_max_size)
 void print_v6addrs(struct text_object *obj, char *p, int p_max_size)
 {
 	struct net_stat *ns = (struct net_stat *)obj->data.opaque;
-	char *current_char = p;
 	char tempaddress[INET6_ADDRSTRLEN];
 	struct v6addr *current_v6 = ns->v6addrs;
 
 	if (!ns)
 		return;
 
+	if(p_max_size == 0) return;
 	if( ! ns->v6addrs) {
 		strncpy(p, "::", p_max_size);
-		if(ns->v6show_nm) strcat(p, "/128");
-		if(ns->v6show_sc) strcat(p, "(/)");
+		if(ns->v6show_nm) strncat(p, "/128", p_max_size);
+		if(ns->v6show_sc) strncat(p, "(/)", p_max_size);
 		return;
 	}
+	*p=0;
 	while(current_v6) {
 		inet_ntop(AF_INET6, &(current_v6->addr), tempaddress, INET6_ADDRSTRLEN);
-		strcpy(current_char, tempaddress);
-		current_char+=strlen(current_char);
+		strncat(p, tempaddress, p_max_size);
 		//netmask
 		if(ns->v6show_nm) {
 			char netmaskstr[5]; //max 5 chars (/128 + null-terminator)
 			sprintf(netmaskstr, "/%u", current_v6->netmask);
-			strcpy(current_char, netmaskstr);
-			current_char += strlen(netmaskstr);
+			strncat(p, netmaskstr, p_max_size);
 		}
 		//scope
 		if(ns->v6show_sc) {
-			sprintf(current_char, "(%c)", current_v6->scope);
-			current_char += 3;
+			char scopestr[3];
+			sprintf(scopestr, "(%c)", current_v6->scope);
+			strncat(p, scopestr, p_max_size);
 		}
 		//next (or last) address
 		current_v6 = current_v6->next;
-		if(current_v6) {
-			strcpy(current_char, ", ");
-			current_char+=2;
-		} else *current_char=0;
+		if(current_v6) strncat(p, ", ", p_max_size);
 	}
 }
 #endif /* BUILD_IPV6 */
