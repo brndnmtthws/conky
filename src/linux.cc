@@ -347,21 +347,6 @@ void print_gateway_ip(struct text_object *obj, char *p, int p_max_size)
 	snprintf(p, p_max_size, "%s", gw_info.ip);
 }
 
-u_int8_t hextobyte(const char in[2]) {
-	u_int8_t out=0;
-	char currentchar;
-
-	for(int i=0; i<2; i++) {
-		currentchar=in[i];
-		if(currentchar <= '9') currentchar -= '0';
-		else if(currentchar <= 'A') currentchar -= 'A' - 10;
-		else currentchar -= 'a' - 10;
-		out<<=4;
-		out+=currentchar;
-	}
-	return out;
-}
-
 int update_net_stats(void)
 {
 	FILE *net_dev_fp;
@@ -606,7 +591,7 @@ int update_net_stats(void)
 				lastv6 = lastv6->next;
 			}
 			for(int i=0; i<16; i++)
-				lastv6->addr.s6_addr[i]=hextobyte(v6addr+2*i);
+				sscanf(v6addr+2*i, "%2x", (unsigned int*) &(lastv6->addr.s6_addr[i]));
 			lastv6->netmask = netmask;
 			switch(scope) {
 			case 0:	//global
