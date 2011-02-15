@@ -31,6 +31,7 @@
 #include "ccurl_thread.h"
 #include <time.h>
 #include <assert.h>
+#include <cmath>
 #include <mutex>
 
 struct rss_data {
@@ -41,40 +42,45 @@ struct rss_data {
 	unsigned int nrspaces;
 };
 
-static ccurl_location_list locations_rss;
+namespace {
+	class rss_cb: public curl_callback<std::shared_ptr<PRSS>> {
+		typedef curl_callback<std::shared_ptr<PRSS>> Base;
 
-void rss_free_info(void)
-{
-	for (ccurl_location_list::iterator i = locations_rss.begin();
-			i != locations_rss.end(); i++) {
-		prss_free((PRSS*) (*i)->result);
-	}
-	ccurl_free_locations(locations_rss);
+	protected:
+		virtual void process_data()
+		{
+			try {
+				std::shared_ptr<PRSS> tmp(new PRSS(data));
+
+				std::unique_lock<std::mutex> lock(Base::result_mutex);
+				Base::result = tmp;
+			}
+			catch(std::runtime_error &e) {
+				NORM_ERR("%s", e.what());
+			}
+		}
+
+	public:
+		rss_cb(uint32_t period, const std::string &uri)
+			: Base(period, Base::Tuple(uri))
+		{}
+
+	};
 }
+
 
 static void rss_process_info(char *p, int p_max_size, const std::string &uri, char *action, int
 		act_par, int interval, unsigned int nrspaces)
 {
-	PRSS *data;
 	char *str;
 
-	ccurl_location_ptr curloc = ccurl_find_location(locations_rss, uri);
+	uint32_t period = std::max(std::lround(interval/active_update_interval()), 1l);
+
+	auto cb = conky::register_cb<rss_cb>(period, uri);
 
 	assert(act_par >= 0 && action);
 
-	if (!curloc->p_timed_thread) {
-		curloc->result = (char*)malloc(sizeof(PRSS));
-		memset(curloc->result, 0, sizeof(PRSS));
-		curloc->process_function = std::bind(prss_parse_data,
-				std::placeholders::_1, std::placeholders::_2);
-		ccurl_init_thread(curloc, interval * 60);
-		if (!curloc->p_timed_thread) {
-			NORM_ERR("error setting up RSS thread");
-		}
-	}
-
-	std::lock_guard<std::mutex> lock(curloc->p_timed_thread->mutex());
-	data = (PRSS*)curloc->result;
+	std::shared_ptr<PRSS> data = cb->get_result_copy();
 
 	if (data == NULL || data->item_count < 1) {
 		*p = 0;

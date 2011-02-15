@@ -2572,9 +2572,6 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2)
 #ifdef BUILD_PORT_MONITORS
 	tcp_portmon_clear();
 #endif
-#ifdef BUILD_RSS
-	rss_free_info();
-#endif
 	llua_shutdown_hook();
 #if defined BUILD_WEATHER_XOAP || defined BUILD_RSS
 	xmlCleanupParser();

@@ -98,10 +98,6 @@ struct text_object;
 #include "audacious.h"
 #endif /* BUILD_AUDACIOUS */
 
-#ifdef BUILD_RSS
-#include "rss.h"
-#endif /* BUILD_RSS */
-
 #ifdef BUILD_WEATHER_XOAP
 #ifndef BUILD_WEATHER_METAR
 #error "BUILD_WEATHER_METAR needs to be defined if XOAP is defined"

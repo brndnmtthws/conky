@@ -1,4 +1,5 @@
 /* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=cpp
  *
  * Copyright (c) 2007 Mikko Sysikaski <mikko.sysikaski@gmail.com>
  *					  Toni Spets <toni.spets@gmail.com>
@@ -29,7 +30,7 @@ typedef struct PRSS_Item_ {
 	char *guid;
 } PRSS_Item;
 
-typedef struct PRSS_ {
+struct PRSS {
 	char *version;
 
 	char *title;
@@ -47,17 +48,9 @@ typedef struct PRSS_ {
 
 	PRSS_Item *items;
 	int item_count;
-} PRSS;
 
-/* Functions for parsing RSS-data */
-void prss_parse_data(void *result, const char *xml_data);
-
-/* // Works wrong currently when called from application!
-PRSS *prss_parse_doc(xmlDocPtr doc); */
-
-/* Frees the PRSS-stucture returned by prss_parse_*.
- * The memory area pointed by data becomes invalid
- * after call to this function. */
-void prss_free(PRSS *data);
+	PRSS(const std::string &xml_data);
+	~PRSS();
+};
 
 #endif /* PRSS_H */

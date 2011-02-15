@@ -90,6 +90,9 @@
 #ifdef BUILD_WEATHER_METAR
 #include "weather.h"
 #endif /* BUILD_WEATHER_METAR */
+#ifdef BUILD_RSS
+#include "rss.h"
+#endif /* BUILD_RSS */
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)

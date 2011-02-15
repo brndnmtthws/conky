@@ -30,19 +30,19 @@
 
 void prss_parse_doc(PRSS *result, xmlDocPtr doc);
 
-void prss_parse_data(void *result, const char *xml_data)
+PRSS::PRSS(const std::string &xml_data)
+	: version(NULL), title(NULL), link(NULL), description(NULL), language(NULL),
+	  generator(NULL), managingEditor(NULL), webMaster(NULL), docs(NULL), lastBuildDate(NULL),
+	  pubDate(NULL), copyright(NULL), ttl(NULL), items(NULL), item_count(0)
 {
-	PRSS *data = (PRSS*)result;
+	std::unique_ptr<xmlDoc, void (*)(xmlDoc *)> doc(
+			xmlReadMemory(xml_data.c_str(), xml_data.length(), "", NULL, PARSE_OPTIONS),
+			xmlFreeDoc);
 
-	xmlDocPtr doc = xmlReadMemory(xml_data, strlen(xml_data), "", NULL,
-		PARSE_OPTIONS);
+	if (!doc)
+		throw std::runtime_error("Unable to parse rss data");
 
-	if (!doc) {
-		return;
-	}
-
-	prss_parse_doc(data, doc);
-	xmlFreeDoc(doc);
+	prss_parse_doc(this, doc.get());
 }
 
 void free_rss_items(PRSS *data)
@@ -65,28 +65,22 @@ void free_rss_items(PRSS *data)
 	}
 }
 
-void prss_free(PRSS *data)
+PRSS::~PRSS()
 {
-	if (!data) {
-		return;
-	}
-	free_and_zero(data->version);
-	free_rss_items(data);
-	data->version = 0;
-#define CLEAR(a) free_and_zero(data->a);
-	CLEAR(title);
-	CLEAR(link);
-	CLEAR(description);
-	CLEAR(language);
-	CLEAR(pubDate);
-	CLEAR(lastBuildDate);
-	CLEAR(generator);
-	CLEAR(docs);
-	CLEAR(managingEditor);
-	CLEAR(webMaster);
-	CLEAR(copyright);
-	CLEAR(ttl);
-#undef CLEAR
+	free_rss_items(this);
+	free(version);
+	free(title);
+	free(link);
+	free(description);
+	free(language);
+	free(pubDate);
+	free(lastBuildDate);
+	free(generator);
+	free(docs);
+	free(managingEditor);
+	free(webMaster);
+	free(copyright);
+	free(ttl);
 }
 
 static inline void prss_null_item(PRSS_Item *i)
