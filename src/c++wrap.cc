@@ -32,3 +32,12 @@ std::string strerror_r(int errnum)
 	char buf[100];
 	return strerror_r(errnum, buf, sizeof buf);
 }
+
+std::pair<int, int> pipe2(int flags)
+{
+	int fd[2];
+	if(pipe2(fd, flags) == -1)
+		throw errno_error("pipe2");
+	else
+		return std::pair<int, int>(fd[0], fd[1]);
+}

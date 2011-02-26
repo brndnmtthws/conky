@@ -24,10 +24,15 @@
 #ifndef CPPWRAP_HH
 #define CPPWRAP_HH
 
+#include <unistd.h>
+
+#include <cerrno>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 std::string strerror_r(int errnum);
+std::pair<int, int> pipe2(int flags);
 
 class errno_error: public std::runtime_error {
 	typedef std::runtime_error Base;
