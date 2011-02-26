@@ -24,7 +24,7 @@
 #ifndef CPPWRAP_HH
 #define CPPWRAP_HH
 
-#include <unistd.h>
+#include <fcntl.h>
 
 #include <cerrno>
 #include <stdexcept>

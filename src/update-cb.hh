@@ -32,6 +32,7 @@
 
 #include <assert.h>
 
+#include "c++wrap.hh"
 #include "semaphore.hh"
 
 namespace conky {
@@ -55,6 +56,7 @@ namespace conky {
 			const size_t hash;
 			uint32_t period;
 			uint32_t remaining;
+			std::pair<int, int> pipefd;
 			const bool wait;
 			bool done;
 			uint8_t unused;
@@ -83,10 +85,14 @@ namespace conky {
 			friend void conky::run_all_callbacks();
 
 		protected:
-			callback_base(size_t hash_, uint32_t period_, bool wait_)
-				: thread(NULL), hash(hash_), period(period_), remaining(0), wait(wait_),
-				  done(false), unused(0)
+			callback_base(size_t hash_, uint32_t period_, bool wait_, bool use_pipe = false)
+				: thread(NULL), hash(hash_), period(period_), remaining(0),
+				  pipefd(use_pipe ? pipe2(O_CLOEXEC) : std::pair<int, int>(-1, -1)),
+				  wait(wait_), done(false), unused(0)
 			{}
+
+			int donefd()
+			{ return pipefd.first; }
 
 			// to be implemented by descendant classes
 			virtual void work() = 0;

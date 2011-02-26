@@ -39,9 +39,15 @@ namespace conky {
 			if(thread) {
 				done = true;
 				sem_start.post();
+				if(pipefd.second >= 0)
+					write(pipefd.second, "X", 1);
 				thread->join();
 				delete thread;
 			}
+			if(pipefd.first >= 0)
+				close(pipefd.first);
+			if(pipefd.second >= 0)
+				close(pipefd.second);
 		}
 
 		inline size_t callback_base::get_hash(const handle &h)
