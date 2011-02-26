@@ -213,4 +213,4 @@ namespace conky {
 	};
 }
 
-#endif /* LUA_CONFIG_HH */
+#endif /* UPDATE_CB_HH */
