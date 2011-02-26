@@ -795,8 +795,6 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->thread = true;
 		obj->callbacks.print = &print_execi;
 		obj->callbacks.free = &free_execi;
-	END OBJ(pre_exec, 0)
-		scan_pre_exec_arg(obj, arg);
 	END OBJ(fs_bar, &update_fs_stats)
 		init_fs_bar(obj, arg);
 		obj->callbacks.barval = &fs_barval;

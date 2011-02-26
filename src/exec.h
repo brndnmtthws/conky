@@ -31,20 +31,15 @@
 #ifndef _EXEC_H
 #define _EXEC_H
 
-extern pid_t childpid;
+#include "text_object.h"
 
 void scan_exec_arg(struct text_object *, const char *);
-void scan_pre_exec_arg(struct text_object *, const char *);
 void scan_execi_arg(struct text_object *, const char *);
 void scan_execi_bar_arg(struct text_object *, const char *);
 void scan_execi_gauge_arg(struct text_object *, const char *);
 void scan_execgraph_arg(struct text_object *, const char *);
 void print_exec(struct text_object *, char *, int);
-void print_execp(struct text_object *, char *, int);
 void print_execi(struct text_object *, char *, int);
-void print_execpi(struct text_object *, char *, int);
-void print_texeci(struct text_object *, char *, int);
-void print_texecpi(struct text_object *, char *, int);
 double execbarval(struct text_object *);
 double execi_barval(struct text_object *);
 void free_exec(struct text_object *);

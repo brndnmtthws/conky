@@ -3149,21 +3149,11 @@ int main(int argc, char **argv)
 
 }
 
-void alarm_handler(void) {
-	if(childpid > 0) {
-		kill(childpid, SIGTERM);
-	}
-}
-
 static void signal_handler(int sig)
 {
 	/* signal handler is light as a feather, as it should be.
 	 * we will poll g_signal_pending with each loop of conky
-	 * and do any signal processing there, NOT here (except
-	 * SIGALRM because this is caused when conky is hanging) */
-	if(sig == SIGALRM) {
-		alarm_handler();
-	} else {
-		g_signal_pending = sig;
-	}
+	 * and do any signal processing there, NOT here */
+
+	g_signal_pending = sig;
 }

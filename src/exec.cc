@@ -33,28 +33,33 @@
 #include "logging.h"
 #include "specials.h"
 #include "text_object.h"
-#include "timed-thread.h"
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <cmath>
 #include <mutex>
+#include "update-cb.hh"
+
+namespace {
+	class exec_cb: public conky::callback<std::string, std::string> {
+		typedef conky::callback<std::string, std::string> Base;
+
+	protected:
+		virtual void work();
+
+	public:
+		exec_cb(uint32_t period, bool wait, const std::string &cmd)
+			: Base(period, wait, Base::Tuple(cmd))
+		{}
+	};
+}
 
 struct execi_data {
-	double last_update;
 	float interval;
 	char *cmd;
-	char *buffer;
-	double data;
-	timed_thread_ptr p_timed_thread;
-	float barnum;
-	execi_data() : last_update(0), interval(0), cmd(0), buffer(0), data(0), barnum(0) {}
+	execi_data() : interval(0), cmd(0) {}
 };
-
-/* FIXME: this will probably not work, since the variable is being reused
- * between different text objects. So when a process really hangs, it's PID
- * will be overwritten at the next iteration. */
-pid_t childpid = 0;
 
 //our own implementation of popen, the difference : the value of 'childpid' will be filled with
 //the pid of the running 'command'. This is useful if want to kill it when it hangs while reading
@@ -100,6 +105,7 @@ static FILE* pid_popen(const char *command, const char *mode, pid_t *child) {
 		//by dupping childend, the returned fd will have close-on-exec turned off
 		if (dup(childend) == -1)
 			perror("dup()");
+		close(childend);
 
 		execl("/bin/sh", "sh", "-c", command, (char *) NULL);
 		_exit(EXIT_FAILURE); //child should die here, (normally execl will take care of this but it can fail)
@@ -107,6 +113,29 @@ static FILE* pid_popen(const char *command, const char *mode, pid_t *child) {
 	return fdopen(parentend, mode);
 }
 
+void exec_cb::work()
+{
+	pid_t childpid;
+	std::string buf;
+	std::shared_ptr<FILE> fp;
+	char b[0x1000];
+
+	if(FILE *t = pid_popen(std::get<0>(tuple).c_str(), "r", &childpid))
+		fp.reset(t, fclose);
+	else
+		return;
+
+	while(!feof(fp.get()) && !ferror(fp.get())) {
+		int length = fread(b, 1, sizeof b, fp.get());
+		buf.append(b, length);
+	}
+
+	if(*buf.rbegin() == '\n')
+		buf.resize(buf.size()-1);
+
+	std::lock_guard<std::mutex> l(result_mutex);
+	result = buf;
+}
 //remove backspaced chars, example: "dog^H^H^Hcat" becomes "cat"
 //string has to end with \0 and it's length should fit in a int
 #define BACKSPACE 8
@@ -122,19 +151,11 @@ static void remove_deleted_chars(char *string){
 	}
 }
 
-static inline double get_barnum(char *buf)
+static inline double get_barnum(const char *buf)
 {
-	char *c = buf;
 	double barnum;
 
-	while (*c) {
-		if (*c == '\001') {
-			*c = ' ';
-		}
-		c++;
-	}
-
-	if (sscanf(buf, "%lf", &barnum) == 0) {
+	if (sscanf(buf, "%lf", &barnum) != 1) {
 		NORM_ERR("reading exec value failed (perhaps it's not the "
 				"correct format?)");
 		return 0.0;
@@ -147,97 +168,11 @@ static inline double get_barnum(char *buf)
 	return barnum;
 }
 
-static inline void read_exec(const char *data, char *buf, const int size)
-{
-	FILE *fp;
-
-	memset(buf, 0, size);
-
-	if (!data)
-		return;
-
-	alarm(active_update_interval());
-	fp = pid_popen(data, "r", &childpid);
-	if(fp) {
-		int length;
-
-		length = fread(buf, 1, size, fp);
-		fclose(fp);
-		buf[std::min(length, size-1)] = '\0';
-		if (length > 0 && buf[length - 1] == '\n') {
-			buf[length - 1] = '\0';
-		}
-	} else {
-		buf[0] = '\0';
-	}
-	alarm(0);
-}
-
-static double read_exec_barnum(const char *data)
-{
-	char *buf = NULL;
-	double barnum;
-
-	buf = (char*)malloc(text_buffer_size.get(*state));
-
-	read_exec(data, buf, text_buffer_size.get(*state));
-	barnum = get_barnum(buf);
-	free(buf);
-
-	return barnum;
-}
-
-static void threaded_exec(thread_handle &handle, struct text_object *obj)
-{
-	char *buff, *p2;
-	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
-
-	while (1) {
-		buff = (char*)malloc(text_buffer_size.get(*state));
-		read_exec(ed->cmd, buff, text_buffer_size.get(*state));
-		p2 = buff;
-		while (*p2) {
-			if (*p2 == '\001') {
-				*p2 = ' ';
-			}
-			p2++;
-		}
-
-		{
-			std::lock_guard<std::mutex> lock(handle.mutex());
-			free_and_zero(ed->buffer);
-			ed->buffer = buff;
-		}
-		if (handle.test(0)) {
-			return;
-		}
-	}
-	/* never reached */
-}
-
-/* check the execi fields and return true if the given interval has passed */
-static int time_to_update(struct execi_data *ed)
-{
-	if (!ed->interval)
-		return 0;
-	if (current_update_time - ed->last_update >= ed->interval)
-		return 1;
-	return 0;
-}
-
 void scan_exec_arg(struct text_object *obj, const char *arg)
 {
 	/* XXX: do real bar parsing here */
 	scan_bar(obj, "", 100);
 	obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
-}
-
-void scan_pre_exec_arg(struct text_object *obj, const char *arg)
-{
-	char buf[2048];
-
-	read_exec(arg, buf, sizeof(buf));
-	obj_be_plain_text(obj, buf);
 }
 
 void scan_execi_arg(struct text_object *obj, const char *arg)
@@ -289,7 +224,7 @@ void scan_execgraph_arg(struct text_object *obj, const char *arg)
 }
 #endif /* BUILD_X11 */
 
-void fill_p(char *buffer, struct text_object *obj, char *p, int p_max_size) {
+void fill_p(const char *buffer, struct text_object *obj, char *p, int p_max_size) {
 	if(obj->parse == true) {
 		evaluate(buffer, p, p_max_size);
 	} else snprintf(p, p_max_size, "%s", buffer);
@@ -298,53 +233,28 @@ void fill_p(char *buffer, struct text_object *obj, char *p, int p_max_size) {
 
 void print_exec(struct text_object *obj, char *p, int p_max_size)
 {
-	char *buf;
-
-	buf = (char*)malloc(text_buffer_size.get(*state));
-	memset(buf, 0, text_buffer_size.get(*state));
-
-	read_exec(obj->data.s, buf, text_buffer_size.get(*state));
-	fill_p(buf, obj, p, p_max_size);
-	free(buf);
+	auto cb = conky::register_cb<exec_cb>(1, true, obj->data.s);
+	fill_p(cb->get_result_copy().c_str(), obj, p, p_max_size);
 }
 
 void print_execi(struct text_object *obj, char *p, int p_max_size)
 {
 	struct execi_data *ed = (struct execi_data *)obj->data.opaque;
-	bool fillbuffer = true;
 
 	if (!ed)
 		return;
 
-	if(obj->thread == true) {
-		if (!ed->p_timed_thread) {
-			/*
-			 * note that we don't register this thread with the
-			 * timed_thread list, because we destroy it manually
-			 */
-			ed->p_timed_thread = timed_thread::create(std::bind(threaded_exec, std::placeholders::_1, obj),
-					std::chrono::microseconds(long(ed->interval * 1000000)), false);
-			if (!ed->p_timed_thread) {
-				NORM_ERR("Error creating texeci timed thread");
-			}
-			fillbuffer = false;
-		} else {
-			std::lock_guard<std::mutex> lock(ed->p_timed_thread->mutex());
-		}
-	} else {
-		if (time_to_update(ed)) {
-			if (!ed->buffer)
-				ed->buffer = (char*)malloc(text_buffer_size.get(*state));
-			read_exec(ed->cmd, ed->buffer, text_buffer_size.get(*state));
-			ed->last_update = current_update_time;
-		}
-	}
-	if(fillbuffer) fill_p(ed->buffer, obj, p, p_max_size);
+	uint32_t period = std::max(std::lround(ed->interval/active_update_interval()), 1l);
+
+	auto cb = conky::register_cb<exec_cb>(period, !obj->thread, ed->cmd);
+
+	fill_p(cb->get_result_copy().c_str(), obj, p, p_max_size);
 }
 
 double execbarval(struct text_object *obj)
 {
-	return read_exec_barnum(obj->data.s);
+	auto cb = conky::register_cb<exec_cb>(1, true, obj->data.s);
+	return get_barnum(cb->get_result_copy().c_str());
 }
 
 double execi_barval(struct text_object *obj)
@@ -354,11 +264,11 @@ double execi_barval(struct text_object *obj)
 	if (!ed)
 		return 0;
 
-	if (time_to_update(ed)) {
-		ed->barnum = read_exec_barnum(ed->cmd);
-		ed->last_update = current_update_time;
-	}
-	return ed->barnum;
+	uint32_t period = std::max(std::lround(ed->interval/active_update_interval()), 1l);
+
+	auto cb = conky::register_cb<exec_cb>(period, !obj->thread, ed->cmd);
+
+	return get_barnum(cb->get_result_copy().c_str());
 }
 
 void free_exec(struct text_object *obj)
@@ -373,11 +283,7 @@ void free_execi(struct text_object *obj)
 	if (!ed)
 		return;
 
-	if (ed->p_timed_thread) {
-		ed->p_timed_thread.reset();
-	}
 	free_and_zero(ed->cmd);
-	free_and_zero(ed->buffer);
 	delete ed;
 	obj->data.opaque = NULL;
 }

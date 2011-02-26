@@ -3065,17 +3065,6 @@
     <varlistentry>
         <term>
             <command>
-                <option>pre_exec</option>
-            </command>
-            <option>shell command</option>
-        </term>
-        <listitem>Executes a shell command one time before conky
-        displays anything and puts output as text. 
-        <para /></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
                 <option>processes</option>
             </command>
         </term>
