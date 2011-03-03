@@ -82,7 +82,7 @@ static void rss_process_info(char *p, int p_max_size, const std::string &uri, ch
 
 	std::shared_ptr<PRSS> data = cb->get_result_copy();
 
-	if (data == NULL || data->item_count < 1) {
+	if (!data || data->item_count < 1) {
 		*p = 0;
 	} else {
 		/*
