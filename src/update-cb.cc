@@ -64,18 +64,24 @@ namespace conky {
 			return *a == *b;
 		}
 
+		void callback_base::merge(callback_base &&other)
+		{
+			if(other.period < period) {
+				period = other.period;
+				remaining = 0;
+			}
+			assert(wait == other.wait);
+			unused = 0;
+		}
+
 		callback_base::handle callback_base::do_register_cb(const handle &h)
 		{
-			const handle &ret = *callbacks.insert(h).first;
+			const auto &p = callbacks.insert(h);
 
-			if(h->period < ret->period) {
-				ret->period = h->period;
-				ret->remaining = 0;
-			}
-			assert(ret->wait == h->wait);
-			ret->unused = 0;
+			if(not p.second)
+				(*p.first)->merge(*h);
 
-			return ret;
+			return *p.first;
 		}
 
 		void callback_base::run()
