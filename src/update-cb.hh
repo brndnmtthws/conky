@@ -85,7 +85,7 @@ namespace conky {
 			friend void conky::run_all_callbacks();
 
 		protected:
-			callback_base(size_t hash_, uint32_t period_, bool wait_, bool use_pipe = false)
+			callback_base(size_t hash_, uint32_t period_, bool wait_, bool use_pipe)
 				: thread(NULL), hash(hash_), period(period_), remaining(0),
 				  pipefd(use_pipe ? pipe2(O_CLOEXEC) : std::pair<int, int>(-1, -1)),
 				  wait(wait_), done(false), unused(0)
@@ -93,6 +93,9 @@ namespace conky {
 
 			int donefd()
 			{ return pipefd.first; }
+
+			bool is_done()
+			{ return done; }
 
 			// to be implemented by descendant classes
 			virtual void work() = 0;
@@ -200,16 +203,24 @@ namespace conky {
 		virtual bool operator==(const callback_base &other)
 		{ return tuple == dynamic_cast<const callback &>(other).tuple; }
 
-	protected:
+	public:
 		typedef std::tuple<Keys...> Tuple;
 
+	protected:
 		const Tuple tuple;
 		Result result;
 
+		template<size_t i>
+		typename std::add_lvalue_reference<
+					const typename std::tuple_element<i, Tuple>::type
+				>::type
+		get()
+		{ return std::get<i>(tuple); }
+
 	public:
-		callback(uint32_t period_, bool wait_, const Tuple &tuple_)
+		callback(uint32_t period_, bool wait_, const Tuple &tuple_, bool use_pipe = false)
 			: callback_base(priv::hash_tuple<sizeof...(Keys), Keys...>::hash(tuple_),
-						period_, wait_),
+						period_, wait_, use_pipe),
 			  tuple(tuple_)
 		{}
 
