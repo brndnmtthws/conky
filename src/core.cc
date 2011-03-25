@@ -93,6 +93,9 @@
 #ifdef BUILD_RSS
 #include "rss.h"
 #endif /* BUILD_RSS */
+#ifdef BUILD_AUDACIOUS
+#include "audacious.h"
+#endif
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
@@ -1567,39 +1570,39 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.free = &free_xmms2;
 #endif /* BUILD_XMMS2 */
 #ifdef BUILD_AUDACIOUS
-	END OBJ(audacious_status, &update_audacious)
+	END OBJ(audacious_status, 0)
 		obj->callbacks.print = &print_audacious_status;
-	END OBJ_ARG(audacious_title, &update_audacious, "audacious_title needs an argument")
-		sscanf(arg, "%d", &info.audacious.max_title_len);
-		if (info.audacious.max_title_len > 0) {
-			info.audacious.max_title_len++;
+	END OBJ_ARG(audacious_title, 0, "audacious_title needs an argument")
+		sscanf(arg, "%d", &obj->data.i);
+		if (obj->data.i > 0) {
+			++ obj->data.i;
 		} else {
 			CRIT_ERR(obj, free_at_crash, "audacious_title: invalid length argument");
 		}
 		obj->callbacks.print = &print_audacious_title;
-	END OBJ(audacious_length, &update_audacious)
+	END OBJ(audacious_length, 0)
 		obj->callbacks.print = &print_audacious_length;
-	END OBJ(audacious_length_seconds, &update_audacious)
+	END OBJ(audacious_length_seconds, 0)
 		obj->callbacks.print = &print_audacious_length_seconds;
-	END OBJ(audacious_position, &update_audacious)
+	END OBJ(audacious_position, 0)
 		obj->callbacks.print = &print_audacious_position;
-	END OBJ(audacious_position_seconds, &update_audacious)
+	END OBJ(audacious_position_seconds, 0)
 		obj->callbacks.print = &print_audacious_position_seconds;
-	END OBJ(audacious_bitrate, &update_audacious)
+	END OBJ(audacious_bitrate, 0)
 		obj->callbacks.print = &print_audacious_bitrate;
-	END OBJ(audacious_frequency, &update_audacious)
+	END OBJ(audacious_frequency, 0)
 		obj->callbacks.print = &print_audacious_frequency;
-	END OBJ(audacious_channels, &update_audacious)
+	END OBJ(audacious_channels, 0)
 		obj->callbacks.print = &print_audacious_channels;
-	END OBJ(audacious_filename, &update_audacious)
+	END OBJ(audacious_filename, 0)
 		obj->callbacks.print = &print_audacious_filename;
-	END OBJ(audacious_playlist_length, &update_audacious)
+	END OBJ(audacious_playlist_length, 0)
 		obj->callbacks.print = &print_audacious_playlist_length;
-	END OBJ(audacious_playlist_position, &update_audacious)
+	END OBJ(audacious_playlist_position, 0)
 		obj->callbacks.print = &print_audacious_playlist_position;
-	END OBJ(audacious_main_volume, &update_audacious)
+	END OBJ(audacious_main_volume, 0)
 		obj->callbacks.print = &print_audacious_main_volume;
-	END OBJ(audacious_bar, &update_audacious)
+	END OBJ(audacious_bar, 0)
 		scan_bar(obj, arg, 1);
 		obj->callbacks.barval = &audacious_barval;
 #endif /* BUILD_AUDACIOUS */

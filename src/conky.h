@@ -94,10 +94,6 @@ struct text_object;
 #include "mysql.h"
 #endif /* BUILD_MYSQL */
 
-#ifdef BUILD_AUDACIOUS
-#include "audacious.h"
-#endif /* BUILD_AUDACIOUS */
-
 #ifdef BUILD_WEATHER_XOAP
 #ifndef BUILD_WEATHER_METAR
 #error "BUILD_WEATHER_METAR needs to be defined if XOAP is defined"
@@ -201,9 +197,6 @@ struct information {
 #ifdef BUILD_XMMS2
 	struct xmms2_s xmms2;
 #endif /* BUILD_XMMS2 */
-#ifdef BUILD_AUDACIOUS
-	audacious_s audacious;
-#endif
 #ifdef BUILD_BMPX
 	struct bmpx_s bmpx;
 #endif /* BUILD_BMPX */
