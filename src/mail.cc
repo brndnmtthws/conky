@@ -43,7 +43,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <limits.h>
-#include <mutex>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <sys/socket.h>
@@ -52,36 +51,12 @@
 #include <sys/param.h>
 
 #include <dirent.h>
-#include <errno.h>
 #include <termios.h>
 
-#define MAXFOLDERSIZE 128
+#include <cmath>
+#include <mutex>
 
-struct mail_s {			// for imap and pop3
-	unsigned long unseen;
-	unsigned long messages;
-	unsigned long used;
-	unsigned long quota;
-	unsigned long port;
-	unsigned int retries;
-	float interval;
-	double last_update;
-	char host[128];
-	char user[128];
-	char pass[128];
-	char command[1024];
-	timed_thread_ptr p_timed_thread;
-	char secure;
-	char folder[MAXFOLDERSIZE];
-	mail_s() : unseen(0), messages(0), used(0), quota(0), port(0), retries(0),
-	interval(0), last_update(0), secure(0) {
-		host[0] = 0;
-		user[0] = 0;
-		pass[0] = 0;
-		command[0] = 0;
-		memset(folder, 0, MAXFOLDERSIZE); /* to satisfy valgrind */
-	}
-};
+#include "update-cb.hh"
 
 struct local_mail_s {
 	char *mbox;
@@ -113,7 +88,122 @@ priv::current_mail_spool_setting::do_convert(lua::state &l, int index)
 
 priv::current_mail_spool_setting current_mail_spool;
 
-static struct mail_s *global_mail;
+namespace {
+	enum { DEFAULT_MAIL_INTERVAL = 300 /*seconds*/ };
+
+	enum { MP_USER, MP_PASS, MP_FOLDER, MP_COMMAND, MP_HOST, MP_PORT };
+
+	struct mail_result {
+		unsigned long unseen;
+		unsigned long used;
+		unsigned long messages;
+
+		mail_result()
+			: unseen(0), used(0), messages(0)
+		{}
+	};
+
+	class mail_cb: public conky::callback<mail_result, std::string, std::string, std::string,
+											std::string, std::string, in_port_t> {
+		typedef conky::callback<mail_result, std::string, std::string, std::string,
+								std::string, std::string, in_port_t> Base;
+
+	protected:
+		addrinfo *ai;
+
+		uint16_t fail;
+		uint16_t retries;
+
+		void resolve_host()
+		{
+			struct addrinfo hints;
+			char portbuf[8];
+
+			memset(&hints, 0, sizeof(struct addrinfo));
+			hints.ai_family = AF_UNSPEC;
+			hints.ai_socktype = SOCK_STREAM;
+			hints.ai_protocol = IPPROTO_TCP;
+			snprintf(portbuf, 8, "%lu", get<MP_PORT>());
+
+			if(int res = getaddrinfo(get<MP_HOST>().c_str(), portbuf, &hints, &ai))
+				throw std::runtime_error(std::string("IMAP getaddrinfo: ") + gai_strerror(res));
+		}
+
+		int connect()
+		{
+			for (struct addrinfo *rp = ai; rp != NULL; rp = rp->ai_next) {
+				int sockfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+				if (sockfd == -1) {
+					continue;
+				}
+				if (::connect(sockfd, rp->ai_addr, rp->ai_addrlen) != -1) {
+					return sockfd;
+				}
+				close(sockfd);
+			}
+			throw std::runtime_error("Unable to connect to mail server");
+		}
+
+		virtual void merge(callback_base &&other)
+		{
+			Base::merge(other);
+
+			mail_cb &&o = dynamic_cast<mail_cb &&>(other);
+			if(retries < o.retries) {
+				retries = o.retries;
+				fail = 0;
+			}
+		}
+
+		mail_cb(uint32_t period, const Tuple &tuple, uint16_t retries_)
+			: Base(period, false, tuple, true), ai(NULL), fail(0), retries(retries_)
+		{}
+
+		~mail_cb()
+		{
+			if(ai)
+				freeaddrinfo(ai);
+		}
+	};
+
+	struct mail_param_ex: public mail_cb::Tuple {
+		uint16_t retries;
+		uint32_t period;
+
+		mail_param_ex()
+			: retries(0), period(1)
+		{}
+	};
+
+	class imap_cb: public mail_cb {
+		typedef mail_cb Base;
+
+		void check_status(char *recvbuf);
+		void unseen_command(unsigned long old_unseen, unsigned long old_messages);
+
+	protected:
+		virtual void work();
+
+	public:
+		imap_cb(uint32_t period, const Tuple &tuple, uint16_t retries_)
+			: Base(period, tuple, retries_)
+		{}
+	};
+
+	class pop3_cb: public mail_cb {
+		typedef mail_cb Base;
+
+	protected:
+		virtual void work();
+
+	public:
+		pop3_cb(uint32_t period, const Tuple &tuple, uint16_t retries_)
+			: Base(period, tuple, retries_)
+		{}
+	};
+
+	struct mail_param_ex *global_mail;
+}
 
 static void update_mail_count(struct local_mail_s *mail)
 {
@@ -417,38 +507,47 @@ namespace {
 	};
 }
 
-struct mail_s *parse_mail_args(mail_type type, const char *arg)
+std::unique_ptr<mail_param_ex> parse_mail_args(mail_type type, const char *arg)
 {
-	struct mail_s *mail;
+	using std::get;
+
+	std::unique_ptr<mail_param_ex> mail;
 	char *tmp;
+	char host[128];
+	char user[128];
+	char pass[128];
 
-	mail = new mail_s;
-
-	if (sscanf(arg, "%128s %128s %128s", mail->host, mail->user, mail->pass)
+	if (sscanf(arg, "%128s %128s %128s", host, user, pass)
 			!= 3) {
 		if (type == POP3_TYPE) {
 			NORM_ERR("Scanning POP3 args failed");
 		} else if (type == IMAP_TYPE) {
 			NORM_ERR("Scanning IMAP args failed");
 		}
-		delete mail;
-		return 0;
+		return mail;
 	}
+
 	// see if password needs prompting
-	if (mail->pass[0] == '*' && mail->pass[1] == '\0') {
+	if (pass[0] == '*' && pass[1] == '\0') {
 		int fp = fileno(stdin);
 		struct termios term;
 
 		tcgetattr(fp, &term);
 		term.c_lflag &= ~ECHO;
 		tcsetattr(fp, TCSANOW, &term);
-		printf("Enter mailbox password (%s@%s): ", mail->user, mail->host);
-		if (scanf("%128s", mail->pass))
-			mail->pass[0] = 0;
+		printf("Enter mailbox password (%s@%s): ", user, host);
+		if (scanf("%128s", pass))
+			pass[0] = 0;
 		printf("\n");
 		term.c_lflag |= ECHO;
 		tcsetattr(fp, TCSANOW, &term);
 	}
+
+	mail.reset(new mail_param_ex);
+	get<MP_HOST>(*mail) = host;
+	get<MP_USER>(*mail) = user;
+	get<MP_PASS>(*mail) = pass;
+
 	// now we check for optional args
 	tmp = (char*)strstr(arg, "-r ");
 	if (tmp) {
@@ -457,56 +556,51 @@ struct mail_s *parse_mail_args(mail_type type, const char *arg)
 	} else {
 		mail->retries = 5;	// 5 retries after failure
 	}
+
+	float interval = DEFAULT_MAIL_INTERVAL;
 	tmp = (char*)strstr(arg, "-i ");
 	if (tmp) {
 		tmp += 3;
-		sscanf(tmp, "%f", &mail->interval);
-	} else {
-		mail->interval = 300;	// 5 minutes
+		sscanf(tmp, "%f", &interval);
 	}
+	mail->period = std::max(std::lround(interval/active_update_interval()), 1l);
+
 	tmp = (char*)strstr(arg, "-p ");
 	if (tmp) {
 		tmp += 3;
-		sscanf(tmp, "%lu", &mail->port);
+		sscanf(tmp, "%lu", &get<MP_PORT>(*mail));
 	} else {
 		if (type == POP3_TYPE) {
-			mail->port = 110;	// default pop3 port
+			get<MP_PORT>(*mail) = 110;	// default pop3 port
 		} else if (type == IMAP_TYPE) {
-			mail->port = 143;	// default imap port
+			get<MP_PORT>(*mail) = 143;	// default imap port
 		}
 	}
 	if (type == IMAP_TYPE) {
 		tmp = (char*)strstr(arg, "-f ");
 		if (tmp) {
-			int len = MAXFOLDERSIZE-1;
+			int len = 0;
 			tmp += 3;
 			if (tmp[0] == '\'') {
 				len = (char*)strstr(tmp + 1, "'") - tmp - 1;
-				if (len > MAXFOLDERSIZE-1) {
-					len = MAXFOLDERSIZE-1;
-				}
 				tmp++;
 			}
-			strncpy(mail->folder, tmp, len);
+			get<MP_FOLDER>(*mail).assign(tmp, len);
 		} else {
-			strncpy(mail->folder, "INBOX", MAXFOLDERSIZE-1);	// default imap inbox
+			get<MP_FOLDER>(*mail) = "INBOX";	// default imap inbox
 		}
 	}
 	tmp = (char*)strstr(arg, "-e ");
 	if (tmp) {
-		int len = 1024;
+		int len = 0;
 		tmp += 3;
 
 		if (tmp[0] == '\'') {
 			len = (char*)strstr(tmp + 1, "'") - tmp - 1;
-			if (len > 1024) {
-				len = 1024;
-			}
 		}
-		strncpy(mail->command, tmp + 1, len);
-	} else {
-		mail->command[0] = '\0';
+		get<MP_COMMAND>(*mail).assign(tmp + 1, len);
 	}
+
 	return mail;
 }
 
@@ -527,7 +621,7 @@ void parse_imap_mail_args(struct text_object *obj, const char *arg)
 		return;
 	}
 	// process
-	obj->data.opaque = parse_mail_args(IMAP_TYPE, arg);
+	obj->data.opaque = parse_mail_args(IMAP_TYPE, arg).release();
 }
 
 void parse_pop3_mail_args(struct text_object *obj, const char *arg)
@@ -547,7 +641,7 @@ void parse_pop3_mail_args(struct text_object *obj, const char *arg)
 		return;
 	}
 	// process
-	obj->data.opaque = parse_mail_args(POP3_TYPE, arg);
+	obj->data.opaque = parse_mail_args(POP3_TYPE, arg).release();
 }
 
 namespace {
@@ -566,7 +660,7 @@ namespace {
 			if(init && !global_mail) {
 				const std::string &t = do_convert(l, -1).first;
 				if(t.size())
-					global_mail = parse_mail_args(type, t.c_str());
+					global_mail = parse_mail_args(type, t.c_str()).release();
 			}
 
 			++s;
@@ -598,606 +692,321 @@ void free_mail_obj(struct text_object *obj)
 		return;
 
 	if (obj->data.opaque != global_mail) {
-		struct mail_s *mail = (struct mail_s*)obj->data.opaque;
+		mail_param_ex *mail = static_cast<mail_param_ex *>(obj->data.opaque);
 		delete mail;
 		obj->data.opaque = 0;
 	}
 }
 
-int imap_command(int sockfd, const char *command, char *response, const char *verify)
+static void command(int sockfd, const std::string &cmd, char *response, const char *verify)
 {
 	struct timeval fetchtimeout;
 	fd_set fdset;
-	int res, numbytes = 0;
-	if (send(sockfd, command, strlen(command), 0) == -1) {
-		perror("send");
-		return -1;
-	}
+	int numbytes = 0;
+	if (send(sockfd, cmd.c_str(), cmd.length(), 0) == -1)
+		throw std::runtime_error("send: " + strerror_r(errno));
+
 	fetchtimeout.tv_sec = 60;	// 60 second timeout i guess
 	fetchtimeout.tv_usec = 0;
 	FD_ZERO(&fdset);
 	FD_SET(sockfd, &fdset);
-	res = select(sockfd + 1, &fdset, NULL, NULL, &fetchtimeout);
-	if (res > 0) {
-		if ((numbytes = recv(sockfd, response, MAXDATASIZE - 1, 0)) == -1) {
-			perror("recv");
-			return -1;
-		}
-	}
-	DBGP2("imap_command()  command: %s", command);
-	DBGP2("imap_command() received: %s", response);
+
+	if(select(sockfd + 1, &fdset, NULL, NULL, &fetchtimeout) == 0)
+		throw std::runtime_error("select: read timeout");
+
+	if ((numbytes = recv(sockfd, response, MAXDATASIZE - 1, 0)) == -1)
+		throw std::runtime_error("recv: " + strerror_r(errno));
+
+	DBGP2("command()  command: %s", cmd.c_str());
+	DBGP2("command() received: %s", response);
+
 	response[numbytes] = '\0';
-	if (strstr(response, verify) == NULL) {
-		return -1;
-	}
-	return 0;
+	if (strstr(response, verify) == NULL)
+		throw std::runtime_error("Unexpected response from server");
 }
 
-int imap_check_status(char *recvbuf, struct mail_s *mail, thread_handle &handle)
+void imap_cb::check_status(char *recvbuf)
 {
 	char *reply;
 	reply = (char*)strstr(recvbuf, " (MESSAGES ");
-	if (!reply || strlen(reply) < 2) {
-		return -1;
-	}
+	if (!reply || strlen(reply) < 2)
+		std::runtime_error("Unexpected response from server");
+
 	reply += 2;
 	*strchr(reply, ')') = '\0';
-	if (reply == NULL) {
-		NORM_ERR("Error parsing IMAP response: %s", recvbuf);
-		return -1;
-	} else {
-		std::lock_guard<std::mutex> lock(handle.mutex());
-		sscanf(reply, "MESSAGES %lu UNSEEN %lu", &mail->messages,
-				&mail->unseen);
-	}
-	return 0;
+
+	std::lock_guard<std::mutex> lock(result_mutex);
+	if(sscanf(reply, "MESSAGES %lu UNSEEN %lu", &result.messages, &result.unseen) != 2)
+		throw std::runtime_error(std::string("Error parsing response: ") + recvbuf);
 }
 
-void imap_unseen_command(struct mail_s *mail, unsigned long old_unseen, unsigned long old_messages)
+void imap_cb::unseen_command(unsigned long old_unseen, unsigned long old_messages)
 {
-	if (strlen(mail->command) > 1 && (mail->unseen > old_unseen
-				|| (mail->messages > old_messages && mail->unseen > 0))) {
-		// new mail goodie
-		if (system(mail->command) == -1) {
+	if (!get<MP_COMMAND>().empty() && (result.unseen > old_unseen
+				|| (result.messages > old_messages && result.unseen > 0))) {
+		if (system(get<MP_COMMAND>().c_str()) == -1) {
 			perror("system()");
 		}
 	}
 }
 
-static void ensure_mail_thread(struct mail_s *mail,
-		const std::function<void(thread_handle &, struct mail_s *mail)> &func, const char *text)
-{
-	if (mail->p_timed_thread)
-		return;
-
-	mail->p_timed_thread = timed_thread::create(std::bind(func, std::placeholders::_1, mail),
-			std::chrono::microseconds(long(mail->interval * 1000000)));
-	if (!mail->p_timed_thread) {
-		NORM_ERR("Error creating %s timed thread", text);
-	}
-}
-
-static void imap_thread(thread_handle &handle, struct mail_s *mail)
+void imap_cb::work()
 {
 	int sockfd, numbytes;
 	char recvbuf[MAXDATASIZE];
-	char sendbuf[MAXDATASIZE];
-	unsigned int fail = 0;
 	unsigned long old_unseen = ULONG_MAX;
 	unsigned long old_messages = ULONG_MAX;
-	struct stat stat_buf;
-	int has_idle = 0;
-	int threadfd = handle.readfd();
-	char resolved_host = 0;
-	struct addrinfo hints;
-	struct addrinfo *ai = 0, *rp;
-	char portbuf[8];
+	bool has_idle = false;
 
-	while (fail < mail->retries) {
+	while (fail < retries) {
 		struct timeval fetchtimeout;
 		int res;
 		fd_set fdset;
 
-		if (fail > 0) {
-			NORM_ERR("Trying IMAP connection again for %s@%s (try %u/%u)",
-					mail->user, mail->host, fail + 1, mail->retries);
-			resolved_host = 0; /* force us to resolve the hostname again */
-			sleep(fail); /* sleep more for the more failures we have */
-		}
-		if (!resolved_host) {
-			memset(&hints, 0, sizeof(struct addrinfo));
-			hints.ai_family = AF_UNSPEC;
-			hints.ai_socktype = SOCK_STREAM;
-			hints.ai_flags = 0;
-			hints.ai_protocol = 0;
-			snprintf(portbuf, 8, "%lu", mail->port);
+		if(not ai)
+			resolve_host();
 
-			res = getaddrinfo(mail->host, portbuf, &hints, &ai);
-			if (res != 0) {
-				NORM_ERR("IMAP getaddrinfo: %s", gai_strerror(res));
-				fail++;
-				break;
-			}
-			resolved_host = 1;
-		}
-		do {
-			for (rp = ai; rp != NULL; rp = rp->ai_next) {
-				sockfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-				if (sockfd == -1) {
-					continue;
-				}
-				if (connect(sockfd, rp->ai_addr, rp->ai_addrlen) != -1) {
-					break;
-				}
-				close(sockfd);
-			}
-			freeaddrinfo(ai);
-			ai = 0;
-			if (rp == NULL) {
-				perror("connect");
-				fail++;
-				break;
-			}
+		try {
+			sockfd = connect();
 
-			fetchtimeout.tv_sec = 60;	// 60 second timeout i guess
-			fetchtimeout.tv_usec = 0;
-			FD_ZERO(&fdset);
-			FD_SET(sockfd, &fdset);
-			res = select(sockfd + 1, &fdset, NULL, NULL, &fetchtimeout);
-			if (res > 0) {
-				if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
-					perror("recv");
-					fail++;
-					break;
-				}
-			} else {
-				NORM_ERR("IMAP connection failed: timeout");
-				fail++;
-				break;
-			}
-			recvbuf[numbytes] = '\0';
-			DBGP2("imap_thread() received: %s", recvbuf);
-			if (strstr(recvbuf, "* OK") != recvbuf) {
-				NORM_ERR("IMAP connection failed, probably not an IMAP server");
-				fail++;
-				break;
-			}
-			strncpy(sendbuf, "abc CAPABILITY\r\n", MAXDATASIZE);
-			if (imap_command(sockfd, sendbuf, recvbuf, "abc OK")) {
-				fail++;
-				break;
-			}
-			if (strstr(recvbuf, " IDLE ") != NULL) {
-				has_idle = 1;
-			}
+			command(sockfd, "", recvbuf, "* OK");
 
-			strncpy(sendbuf, "a1 login ", MAXDATASIZE);
-			strncat(sendbuf, mail->user, MAXDATASIZE - strlen(sendbuf) - 1);
-			strncat(sendbuf, " ", MAXDATASIZE - strlen(sendbuf) - 1);
-			strncat(sendbuf, mail->pass, MAXDATASIZE - strlen(sendbuf) - 1);
-			strncat(sendbuf, "\r\n", MAXDATASIZE - strlen(sendbuf) - 1);
-			if (imap_command(sockfd, sendbuf, recvbuf, "a1 OK")) {
-				fail++;
-				break;
-			}
+			command(sockfd, "abc CAPABILITY\r\n", recvbuf, "abc OK");
+			if (strstr(recvbuf, " IDLE ") != NULL)
+				has_idle = true;
 
-			strncpy(sendbuf, "a2 STATUS \"", MAXDATASIZE);
-			strncat(sendbuf, mail->folder, MAXDATASIZE - strlen(sendbuf) - 1);
-			strncat(sendbuf, "\" (MESSAGES UNSEEN)\r\n",
-					MAXDATASIZE - strlen(sendbuf) - 1);
-			if (imap_command(sockfd, sendbuf, recvbuf, "a2 OK")) {
-				fail++;
-				break;
-			}
+			command(sockfd, "a1 login " + get<MP_USER>() + " " + get<MP_PASS>() + "\r\n",
+					recvbuf, "a1 OK");
 
-			if (imap_check_status(recvbuf, mail, handle)) {
-				fail++;
-				break;
-			}
-			imap_unseen_command(mail, old_unseen, old_messages);
+			command(sockfd, "a2 STATUS \"" + get<MP_FOLDER>() + "\" (MESSAGES UNSEEN)\r\n",
+					recvbuf, "a2 OK");
+			check_status(recvbuf);
+
+			unseen_command(old_unseen, old_messages);
 			fail = 0;
-			old_unseen = mail->unseen;
-			old_messages = mail->messages;
+			old_unseen = result.unseen;
+			old_messages = result.messages;
 
-			if (has_idle) {
-				strncpy(sendbuf, "a4 SELECT \"", MAXDATASIZE);
-				strncat(sendbuf, mail->folder, MAXDATASIZE - strlen(sendbuf) - 1);
-				strncat(sendbuf, "\"\r\n", MAXDATASIZE - strlen(sendbuf) - 1);
-				if (imap_command(sockfd, sendbuf, recvbuf, "a4 OK")) {
-					fail++;
-					break;
-				}
+			if(not has_idle) {
+				try { command(sockfd, "a3 LOGOUT\r\n", recvbuf, "a3 OK"); }
+				catch(std::runtime_error &) {}
+				close(sockfd);
+				return;
+			}
 
-				strncpy(sendbuf, "a5 IDLE\r\n", MAXDATASIZE);
-				if (imap_command(sockfd, sendbuf, recvbuf, "+ idling")) {
-					fail++;
-					break;
-				}
-				recvbuf[0] = '\0';
+			command(sockfd, "a4 SELECT \"" + get<MP_FOLDER>() + "\"\r\n", recvbuf, "a4 OK");
 
-				while (1) {
-					/*
-					 * RFC 2177 says we have to re-idle every 29 minutes.
-					 * We'll do it every 20 minutes to be safe.
-					 */
-					fetchtimeout.tv_sec = 1200;
-					fetchtimeout.tv_usec = 0;
-					DBGP2("idling...");
-					FD_ZERO(&fdset);
-					FD_SET(sockfd, &fdset);
-					FD_SET(threadfd, &fdset);
-					res = select(MAX(sockfd + 1, threadfd + 1), &fdset, NULL, NULL, &fetchtimeout);
-					if (handle.test(1) || (res == -1 && errno == EINTR) || FD_ISSET(threadfd, &fdset)) {
-						if ((fstat(sockfd, &stat_buf) == 0) && S_ISSOCK(stat_buf.st_mode)) {
-							/* if a valid socket, close it */
-							close(sockfd);
-						}
-						return;
-					} else if (res > 0) {
-						if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
-							perror("recv idling");
-							fail++;
-							break;
-						}
-					} else {
-						fail++;
-						break;
-					}
-					recvbuf[numbytes] = '\0';
-					DBGP2("imap_thread() received: %s", recvbuf);
-					if (strlen(recvbuf) > 2) {
-						unsigned long messages, recent = 0;
-						char *buf = recvbuf;
-						char force_check = 0;
-						buf = (char*)strstr(buf, "EXISTS");
-						while (buf && strlen(buf) > 1 && strstr(buf + 1, "EXISTS")) {
-							buf = (char*)strstr(buf + 1, "EXISTS");
-						}
-						if (buf) {
-							// back up until we reach '*'
-							while (buf >= recvbuf && buf[0] != '*') {
-								buf--;
-							}
-							if (sscanf(buf, "* %lu EXISTS\r\n", &messages) == 1) {
-								std::lock_guard<std::mutex> lock(handle.mutex());
-								if (mail->messages != messages) {
-									force_check = 1;
-									mail->messages = messages;
-								}
-							}
-						}
-						buf = recvbuf;
-						buf = (char*)strstr(buf, "RECENT");
-						while (buf && strlen(buf) > 1 && strstr(buf + 1, "RECENT")) {
-							buf = (char*)strstr(buf + 1, "RECENT");
-						}
-						if (buf) {
-							// back up until we reach '*'
-							while (buf >= recvbuf && buf[0] != '*') {
-								buf--;
-							}
-							if (sscanf(buf, "* %lu RECENT\r\n", &recent) != 1) {
-								recent = 0;
-							}
-						}
-						/*
-						 * check if we got a FETCH from server, recent was
-						 * something other than 0, or we had a timeout
-						 */
-						buf = recvbuf;
-						if (recent > 0 || (buf && strstr(buf, " FETCH ")) || fetchtimeout.tv_sec == 0 || force_check) {
-							// re-check messages and unseen
-							if (imap_command(sockfd, "DONE\r\n", recvbuf, "a5 OK")) {
-								fail++;
-								break;
-							}
-							strncpy(sendbuf, "a2 STATUS \"", MAXDATASIZE);
-							strncat(sendbuf, mail->folder, MAXDATASIZE - strlen(sendbuf) - 1);
-							strncat(sendbuf, "\" (MESSAGES UNSEEN)\r\n",
-									MAXDATASIZE - strlen(sendbuf) - 1);
-							if (imap_command(sockfd, sendbuf, recvbuf, "a2 OK")) {
-								fail++;
-								break;
-							}
-							if (imap_check_status(recvbuf, mail, handle)) {
-								fail++;
-								break;
-							}
-							strncpy(sendbuf, "a5 IDLE\r\n", MAXDATASIZE);
-							if (imap_command(sockfd, sendbuf, recvbuf, "+ idling")) {
-								fail++;
-								break;
-							}
-						}
-						/*
-						 * check if we got a BYE from server
-						 */
-						buf = recvbuf;
-						if (buf && strstr(buf, "* BYE")) {
-							// need to re-connect
-							break;
-						}
-					} else {
-						fail++;
-						break;
-					}
-					imap_unseen_command(mail, old_unseen, old_messages);
-					fail = 0;
-					old_unseen = mail->unseen;
-					old_messages = mail->messages;
-				}
-				if (fail) break;
-			} else {
-				strncpy(sendbuf, "a3 logout\r\n", MAXDATASIZE);
-				if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1) {
-					perror("send a3");
-					fail++;
-					break;
-				}
-				fetchtimeout.tv_sec = 60;	// 60 second timeout i guess
+			command(sockfd, "a5 IDLE\r\n", recvbuf, "+ idling");
+			recvbuf[0] = '\0';
+
+			while (1) {
+				/*
+				 * RFC 2177 says we have to re-idle every 29 minutes.
+				 * We'll do it every 20 minutes to be safe.
+				 */
+				fetchtimeout.tv_sec = 1200;
 				fetchtimeout.tv_usec = 0;
+				DBGP2("idling...");
 				FD_ZERO(&fdset);
 				FD_SET(sockfd, &fdset);
-				res = select(sockfd + 1, &fdset, NULL, NULL, &fetchtimeout);
-				if (res > 0) {
-					if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
-						perror("recv a3");
-						fail++;
-						break;
-					}
-				}
+				FD_SET(donefd(), &fdset);
+				res = select(std::max(sockfd, donefd()) + 1, &fdset, NULL, NULL, &fetchtimeout);
+				if ((res == -1 && errno == EINTR) || FD_ISSET(donefd(), &fdset)) {
+					try { command(sockfd, "a3 LOGOUT\r\n", recvbuf, "a3 OK"); }
+					catch(std::runtime_error &) {}
+					close(sockfd);
+					return;
+				} else if (res > 0) {
+					if((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1)
+						throw std::runtime_error("recv idling");
+				} else
+					throw std::runtime_error("");
+
 				recvbuf[numbytes] = '\0';
 				DBGP2("imap_thread() received: %s", recvbuf);
-				if (strstr(recvbuf, "a3 OK") == NULL) {
-					NORM_ERR("IMAP logout failed: %s", recvbuf);
-					fail++;
-					break;
+				unsigned long messages, recent = 0;
+				bool force_check = 0;
+				if (strlen(recvbuf) > 2) {
+					char *buf = recvbuf;
+					buf = (char*)strstr(buf, "EXISTS");
+					while (buf && strlen(buf) > 1 && strstr(buf + 1, "EXISTS")) {
+						buf = (char*)strstr(buf + 1, "EXISTS");
+					}
+					if (buf) {
+						// back up until we reach '*'
+						while (buf >= recvbuf && buf[0] != '*') {
+							buf--;
+						}
+						if (sscanf(buf, "* %lu EXISTS\r\n", &messages) == 1) {
+							std::lock_guard<std::mutex> lock(result_mutex);
+							if (result.messages != messages) {
+								force_check = 1;
+								result.messages = messages;
+							}
+						}
+					}
+					buf = recvbuf;
+					buf = (char*)strstr(buf, "RECENT");
+					while (buf && strlen(buf) > 1 && strstr(buf + 1, "RECENT")) {
+						buf = (char*)strstr(buf + 1, "RECENT");
+					}
+					if (buf) {
+						// back up until we reach '*'
+						while (buf >= recvbuf && buf[0] != '*') {
+							buf--;
+						}
+						if (sscanf(buf, "* %lu RECENT\r\n", &recent) != 1) {
+							recent = 0;
+						}
+					}
 				}
+				/* check if we got a BYE from server */
+				if (strstr(recvbuf, "* BYE")) {
+					// need to re-connect
+					throw std::runtime_error("");
+				}
+
+				/*
+				 * check if we got a FETCH from server, recent was
+				 * something other than 0, or we had a timeout
+				 */
+				if (recent > 0 || strstr(recvbuf, " FETCH ") || fetchtimeout.tv_sec == 0 || force_check) {
+					// re-check messages and unseen
+					command(sockfd, "DONE\r\n", recvbuf, "a5 OK");
+
+					command(sockfd, "a2 STATUS \"" + get<MP_FOLDER>()
+							+ "\" (MESSAGES UNSEEN)\r\n", recvbuf, "a2 OK");
+
+					check_status(recvbuf);
+
+					command(sockfd, "a5 IDLE\r\n", recvbuf, "+ idling");
+				}
+				unseen_command(old_unseen, old_messages);
+				fail = 0;
+				old_unseen = result.unseen;
+				old_messages = result.messages;
 			}
-		} while (0);
-		if ((fstat(sockfd, &stat_buf) == 0) && S_ISSOCK(stat_buf.st_mode)) {
-			/* if a valid socket, close it */
-			close(sockfd);
 		}
-		if (handle.test(0)) {
+		catch(std::runtime_error &e) {
+			if(sockfd != -1)
+				close(sockfd);
+			freeaddrinfo(ai);
+			ai = NULL;
+
+			++fail;
+			if(*e.what())
+				NORM_ERR("Error while communicating with IMAP server: %s", e.what());
+			NORM_ERR("Trying IMAP connection again for %s@%s (try %u/%u)",
+					get<MP_USER>().c_str(), get<MP_HOST>().c_str(), fail+1, retries);
+			sleep(fail); /* sleep more for the more failures we have */
+		}
+
+		if(is_done())
 			return;
-		}
 	}
-	mail->unseen = 0;
-	mail->messages = 0;
 }
 
 void print_imap_unseen(struct text_object *obj, char *p, int p_max_size)
 {
-	struct mail_s *mail = (struct mail_s*)obj->data.opaque;
+	struct mail_param_ex *mail = (struct mail_param_ex *)obj->data.opaque;
 
 	if (!mail)
 		return;
 
-	ensure_mail_thread(mail, std::bind(imap_thread, std::placeholders::_1, std::placeholders::_2), "imap");
+	auto cb = conky::register_cb<imap_cb>(mail->period, *mail, mail->retries);
 
-	if (mail && mail->p_timed_thread) {
-		std::lock_guard<std::mutex> lock(mail->p_timed_thread->mutex());
-		snprintf(p, p_max_size, "%lu", mail->unseen);
-	}
+	snprintf(p, p_max_size, "%lu", cb->get_result_copy().unseen);
 }
 
 void print_imap_messages(struct text_object *obj, char *p, int p_max_size)
 {
-	struct mail_s *mail = (struct mail_s*)obj->data.opaque;
+	struct mail_param_ex *mail = (struct mail_param_ex *)obj->data.opaque;
 
 	if (!mail)
 		return;
 
-	ensure_mail_thread(mail, std::bind(imap_thread, std::placeholders::_1, std::placeholders::_2), "imap");
+	auto cb = conky::register_cb<imap_cb>(mail->period, *mail, mail->retries);
 
-	if (mail && mail->p_timed_thread) {
-		std::lock_guard<std::mutex> lock(mail->p_timed_thread->mutex());
-		snprintf(p, p_max_size, "%lu", mail->messages);
-	}
+	snprintf(p, p_max_size, "%lu", cb->get_result_copy().messages);
 }
 
-int pop3_command(int sockfd, const char *command, char *response, const char *verify)
+void pop3_cb::work()
 {
-	struct timeval fetchtimeout;
-	fd_set fdset;
-	int res, numbytes = 0;
-	if (send(sockfd, command, strlen(command), 0) == -1) {
-		perror("send");
-		return -1;
-	}
-	fetchtimeout.tv_sec = 60;	// 60 second timeout i guess
-	fetchtimeout.tv_usec = 0;
-	FD_ZERO(&fdset);
-	FD_SET(sockfd, &fdset);
-	res = select(sockfd + 1, &fdset, NULL, NULL, &fetchtimeout);
-	if (res > 0) {
-		if ((numbytes = recv(sockfd, response, MAXDATASIZE - 1, 0)) == -1) {
-			perror("recv");
-			return -1;
-		}
-	}
-	DBGP2("pop3_command() received: %s", response);
-	response[numbytes] = '\0';
-	if (strstr(response, verify) == NULL) {
-		return -1;
-	}
-	return 0;
-}
-
-static void pop3_thread(thread_handle &handle, struct mail_s *mail)
-{
-	int sockfd, numbytes;
+	int sockfd;
 	char recvbuf[MAXDATASIZE];
-	char sendbuf[MAXDATASIZE];
 	char *reply;
-	unsigned int fail = 0;
 	unsigned long old_unseen = ULONG_MAX;
-	struct stat stat_buf;
-	char resolved_host = 0;
-	struct addrinfo hints;
-	struct addrinfo *ai = 0, *rp;
-	char portbuf[8];
 
-	while (fail < mail->retries) {
-		struct timeval fetchtimeout;
-		int res;
-		fd_set fdset;
+	while (fail < retries) {
+		if(not ai)
+			resolve_host();
 
-		if (fail > 0) {
-			NORM_ERR("Trying POP3 connection again for %s@%s (try %u/%u)",
-					mail->user, mail->host, fail + 1, mail->retries);
-			resolved_host = 0; /* force us to resolve the hostname again */
-			sleep(fail); /* sleep more for the more failures we have */
-		}
-		if (!resolved_host) {
-			memset(&hints, 0, sizeof(struct addrinfo));
-			hints.ai_family = AF_UNSPEC;
-			hints.ai_socktype = SOCK_STREAM;
-			hints.ai_flags = 0;
-			hints.ai_protocol = 0;
-			snprintf(portbuf, 8, "%lu", mail->port);
+		try {
+			sockfd = connect();
 
-			res = getaddrinfo(mail->host, portbuf, &hints, &ai);
-			if (res != 0) {
-				NORM_ERR("POP3 getaddrinfo: %s", gai_strerror(res));
-				fail++;
-				break;
-			}
-			resolved_host = 1;
-		}
-		do {
-			for (rp = ai; rp != NULL; rp = rp->ai_next) {
-				sockfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-				if (sockfd == -1) {
-					continue;
-				}
-				if (connect(sockfd, rp->ai_addr, rp->ai_addrlen) != -1) {
-					break;
-				}
-				close(sockfd);
-			}
-			freeaddrinfo(ai);
-			ai = 0;
-			if (rp == NULL) {
-				perror("connect");
-				fail++;
-				break;
-			}
-
-			fetchtimeout.tv_sec = 60;	// 60 second timeout i guess
-			fetchtimeout.tv_usec = 0;
-			FD_ZERO(&fdset);
-			FD_SET(sockfd, &fdset);
-			res = select(sockfd + 1, &fdset, NULL, NULL, &fetchtimeout);
-			if (res > 0) {
-				if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
-					perror("recv");
-					fail++;
-					break;
-				}
-			} else {
-				NORM_ERR("POP3 connection failed: timeout\n");
-				fail++;
-				break;
-			}
-			DBGP2("pop3_thread received: %s", recvbuf);
-			recvbuf[numbytes] = '\0';
-			if (strstr(recvbuf, "+OK ") != recvbuf) {
-				NORM_ERR("POP3 connection failed, probably not a POP3 server");
-				fail++;
-				break;
-			}
-			strncpy(sendbuf, "USER ", MAXDATASIZE);
-			strncat(sendbuf, mail->user, MAXDATASIZE - strlen(sendbuf) - 1);
-			strncat(sendbuf, "\r\n", MAXDATASIZE - strlen(sendbuf) - 1);
-			if (pop3_command(sockfd, sendbuf, recvbuf, "+OK ")) {
-				fail++;
-				break;
-			}
-
-			strncpy(sendbuf, "PASS ", MAXDATASIZE);
-			strncat(sendbuf, mail->pass, MAXDATASIZE - strlen(sendbuf) - 1);
-			strncat(sendbuf, "\r\n", MAXDATASIZE - strlen(sendbuf) - 1);
-			if (pop3_command(sockfd, sendbuf, recvbuf, "+OK ")) {
-				NORM_ERR("POP3 server login failed: %s", recvbuf);
-				fail++;
-				break;
-			}
-
-			strncpy(sendbuf, "STAT\r\n", MAXDATASIZE);
-			if (pop3_command(sockfd, sendbuf, recvbuf, "+OK ")) {
-				perror("send STAT");
-				fail++;
-				break;
-			}
+			command(sockfd, "", recvbuf, "+OK ");
+			command(sockfd, "USER " + get<MP_USER>() + "\r\n", recvbuf, "+OK ");
+			command(sockfd, "PASS " + get<MP_PASS>() + "\r\n", recvbuf, "+OK ");
+			command(sockfd, "STAT\r\n", recvbuf, "+OK ");
 
 			// now we get the data
 			reply = recvbuf + 4;
-			if (reply == NULL) {
-				NORM_ERR("Error parsing POP3 response: %s", recvbuf);
-				fail++;
-				break;
-			} else {
-				std::lock_guard<std::mutex> lock(handle.mutex());
-				sscanf(reply, "%lu %lu", &mail->unseen, &mail->used);
+			{
+				std::lock_guard<std::mutex> lock(result_mutex);
+				sscanf(reply, "%lu %lu", &result.unseen, &result.used);
 			}
 
-			strncpy(sendbuf, "QUIT\r\n", MAXDATASIZE);
-			if (pop3_command(sockfd, sendbuf, recvbuf, "+OK")) {
-				NORM_ERR("POP3 logout failed: %s", recvbuf);
-				fail++;
-				break;
-			}
+			command(sockfd, "QUIT\r\n", recvbuf, "+OK");
 
-			if (strlen(mail->command) > 1 && mail->unseen > old_unseen) {
+			if (get<MP_COMMAND>().length() > 1 && result.unseen > old_unseen) {
 				// new mail goodie
-				if (system(mail->command) == -1) {
+				if (system(get<MP_COMMAND>().c_str()) == -1) {
 					perror("system()");
 				}
 			}
 			fail = 0;
-			old_unseen = mail->unseen;
-		} while (0);
-		if ((fstat(sockfd, &stat_buf) == 0) && S_ISSOCK(stat_buf.st_mode)) {
-			/* if a valid socket, close it */
-			close(sockfd);
-		}
-		if (handle.test(0)) {
+			old_unseen = result.unseen;
 			return;
 		}
+		catch(std::runtime_error &e) {
+			if(sockfd != -1)
+				close(sockfd);
+			freeaddrinfo(ai);
+			ai = NULL;
+
+			++fail;
+			if(*e.what())
+				NORM_ERR("Error while communicating with POP3 server: %s", e.what());
+			NORM_ERR("Trying POP3 connection again for %s@%s (try %u/%u)",
+					get<MP_USER>().c_str(), get<MP_HOST>().c_str(), fail+1, retries);
+			sleep(fail); /* sleep more for the more failures we have */
+		}
+
+		if(is_done())
+			return;
 	}
-	mail->unseen = 0;
-	mail->used = 0;
 }
 
 void print_pop3_unseen(struct text_object *obj, char *p, int p_max_size)
 {
-	struct mail_s *mail = (struct mail_s *)obj->data.opaque;
+	struct mail_param_ex *mail = (struct mail_param_ex *)obj->data.opaque;
 
 	if (!mail)
 		return;
 
-	ensure_mail_thread(mail, std::bind(pop3_thread, std::placeholders::_1, std::placeholders::_2), "pop3");
+	auto cb = conky::register_cb<pop3_cb>(mail->period, *mail, mail->retries);
 
-	if (mail && mail->p_timed_thread) {
-		std::lock_guard<std::mutex> lock(mail->p_timed_thread->mutex());
-		snprintf(p, p_max_size, "%lu", mail->unseen);
-	}
+	snprintf(p, p_max_size, "%lu", cb->get_result_copy().unseen);
 }
 
 void print_pop3_used(struct text_object *obj, char *p, int p_max_size)
 {
-	struct mail_s *mail = (struct mail_s *)obj->data.opaque;
+	struct mail_param_ex *mail = (struct mail_param_ex *)obj->data.opaque;
 
 	if (!mail)
 		return;
 
-	ensure_mail_thread(mail, std::bind(pop3_thread, std::placeholders::_1, std::placeholders::_2), "pop3");
+	auto cb = conky::register_cb<pop3_cb>(mail->period, *mail, mail->retries);
 
-	if (mail && mail->p_timed_thread) {
-		std::lock_guard<std::mutex> lock(mail->p_timed_thread->mutex());
-		snprintf(p, p_max_size, "%.1f",
-				mail->used / 1024.0 / 1024.0);
-	}
+	snprintf(p, p_max_size, "%.1f", cb->get_result_copy().used / 1024.0 / 1024.0);
 }
