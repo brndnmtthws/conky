@@ -31,7 +31,6 @@
 #include <mutex>
 #include "conky.h"
 #include "logging.h"
-#include "timed-thread.h"
 #include "timeinfo.h"
 #include "libmpdclient.h"
 #include "mpd.h"

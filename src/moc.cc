@@ -24,7 +24,6 @@
 #include "conky.h"
 #include "logging.h"
 #include "text_object.h"
-#include "timed-thread.h"
 
 #include <stdio.h>
 #include <stdlib.h>

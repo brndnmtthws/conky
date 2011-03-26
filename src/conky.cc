@@ -32,7 +32,6 @@
 #include "text_object.h"
 #include "conky.h"
 #include "common.h"
-#include "timed-thread.h"
 #include <iostream>
 #include <algorithm>
 #include <sstream>
@@ -2547,8 +2546,6 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2)
 {
 	free_and_zero(memtofree1);
 	free_and_zero(memtofree2);
-
-	timed_thread::destroy_registered_threads();
 
 	free_and_zero(info.cpu_usage);
 #ifdef BUILD_X11

@@ -40,10 +40,6 @@ set(conky_sources c++wrap.cc colours.cc combine.cc common.cc conky.cc core.cc
 	temphelper.cc text_object.cc timeinfo.cc top.cc algebra.cc prioqueue.cc proc.cc
 	user.cc luamm.cc data-source.cc lua-config.cc setting.cc llua.cc update-cb.cc)
 
-# add timed thread library
-add_library(timed-thread timed-thread.cc)
-set(conky_libs ${conky_libs} timed-thread)
-
 # Platform specific sources
 if(OS_LINUX)
 	set(linux linux.cc users.cc sony.cc i8k.cc)

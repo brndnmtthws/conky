@@ -308,9 +308,8 @@
 			the BSD license (see LICENSE.BSD for a copy). All code
 			written since the fork of torsmo is licensed under the GPL
 			(see LICENSE.GPL for a copy), except where noted
-			differently (such as in portmon code, timed thread code,
-			and audacious code which are LGPL, and prss which is an
-			MIT-style license).</para>
+                        differently (such as in portmon and audacious code which are LGPL, and
+                        prss which is an MIT-style license).</para>
 	</refsect1>
 	<refsect1>
 		<title>Authors</title>
