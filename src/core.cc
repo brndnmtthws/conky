@@ -1393,82 +1393,48 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 			else \
 				NORM_ERR(#name ": invalid length argument"); \
 		}
-	END OBJ(mpd_artist, &update_mpd)
+	END OBJ(mpd_artist, 0)
 		mpd_set_maxlen(mpd_artist);
-		init_mpd();
 		obj->callbacks.print = &print_mpd_artist;
-		obj->callbacks.free = &free_mpd;
-	END OBJ(mpd_title, &update_mpd)
+	END OBJ(mpd_title, 0)
 		mpd_set_maxlen(mpd_title);
-		init_mpd();
 		obj->callbacks.print = &print_mpd_title;
-		obj->callbacks.free = &free_mpd;
-	END OBJ(mpd_random, &update_mpd)
-		init_mpd();
+	END OBJ(mpd_random, 0)
 		obj->callbacks.print = &print_mpd_random;
-		obj->callbacks.free = &free_mpd;
-	END OBJ(mpd_repeat, &update_mpd)
-		init_mpd();
+	END OBJ(mpd_repeat, 0)
 		obj->callbacks.print = &print_mpd_repeat;
-		obj->callbacks.free = &free_mpd;
-	END OBJ(mpd_elapsed, &update_mpd)
-		init_mpd();
+	END OBJ(mpd_elapsed, 0)
 		obj->callbacks.print = &print_mpd_elapsed;
-		obj->callbacks.free = &free_mpd;
-	END OBJ(mpd_length, &update_mpd)
-		init_mpd();
+	END OBJ(mpd_length, 0)
 		obj->callbacks.print = &print_mpd_length;
-		obj->callbacks.free = &free_mpd;
-	END OBJ(mpd_track, &update_mpd)
+	END OBJ(mpd_track, 0)
 		mpd_set_maxlen(mpd_track);
-		init_mpd();
 		obj->callbacks.print = &print_mpd_track;
-		obj->callbacks.free = &free_mpd;
-	END OBJ(mpd_name, &update_mpd)
+	END OBJ(mpd_name, 0)
 		mpd_set_maxlen(mpd_name);
-		init_mpd();
 		obj->callbacks.print = &print_mpd_name;
-		obj->callbacks.free = &free_mpd;
-	END OBJ(mpd_file, &update_mpd)
+	END OBJ(mpd_file, 0)
 		mpd_set_maxlen(mpd_file);
-		init_mpd();
 		obj->callbacks.print = &print_mpd_file;
-		obj->callbacks.free = &free_mpd;
-	END OBJ(mpd_percent, &update_mpd)
-		init_mpd();
+	END OBJ(mpd_percent, 0)
 		obj->callbacks.percentage = &mpd_percentage;
-		obj->callbacks.free = &free_mpd;
-	END OBJ(mpd_album, &update_mpd)
+	END OBJ(mpd_album, 0)
 		mpd_set_maxlen(mpd_album);
-		init_mpd();
 		obj->callbacks.print = &print_mpd_album;
-		obj->callbacks.free = &free_mpd;
-	END OBJ(mpd_vol, &update_mpd)
-		init_mpd();
+	END OBJ(mpd_vol, 0)
 		obj->callbacks.print = &print_mpd_vol;
-		obj->callbacks.free = &free_mpd;
-	END OBJ(mpd_bitrate, &update_mpd)
-		init_mpd();
+	END OBJ(mpd_bitrate, 0)
 		obj->callbacks.print = &print_mpd_bitrate;
-		obj->callbacks.free = &free_mpd;
-	END OBJ(mpd_status, &update_mpd)
-		init_mpd();
+	END OBJ(mpd_status, 0)
 		obj->callbacks.print = &print_mpd_status;
-		obj->callbacks.free = &free_mpd;
-	END OBJ(mpd_bar, &update_mpd)
+	END OBJ(mpd_bar, 0)
 		scan_bar(obj, arg, 1);
-		init_mpd();
 		obj->callbacks.barval = &mpd_barval;
-		obj->callbacks.free = &free_mpd;
-	END OBJ(mpd_smart, &update_mpd)
+	END OBJ(mpd_smart, 0)
 		mpd_set_maxlen(mpd_smart);
-		init_mpd();
 		obj->callbacks.print = &print_mpd_smart;
-		obj->callbacks.free = &free_mpd;
-	END OBJ_IF(if_mpd_playing, &update_mpd)
-		init_mpd();
+	END OBJ_IF(if_mpd_playing, 0)
 		obj->callbacks.iftest = &check_mpd_playing;
-		obj->callbacks.free = &free_mpd;
 #undef mpd_set_maxlen
 #endif /* BUILD_MPD */
 #ifdef BUILD_MOC

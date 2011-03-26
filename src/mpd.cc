@@ -27,6 +27,7 @@
  *
  */
 
+#include <cmath>
 #include <mutex>
 #include "conky.h"
 #include "logging.h"
@@ -34,6 +35,7 @@
 #include "timeinfo.h"
 #include "libmpdclient.h"
 #include "mpd.h"
+#include "update-cb.hh"
 
 namespace {
 
@@ -117,111 +119,64 @@ namespace {
 	conky::range_config_setting<in_port_t> mpd_port("mpd_port", 1, 65535, 6600, false);
 	mpd_host_setting                 mpd_host;
 	mpd_password_setting			 mpd_password;
-}
 
-/* global mpd information */
-static struct {
-	char *title;
-	char *artist;
-	char *album;
-	const char *status;
-	const char *random;
-	const char *repeat;
-	char *track;
-	char *name;
-	char *file;
-	int is_playing;
-	int vol;
-	float progress;
-	int bitrate;
-	int length;
-	int elapsed;
-} mpd_info;
+	struct mpd_result {
+		std::string title;
+		std::string artist;
+		std::string album;
+		std::string status;
+		std::string random;
+		std::string repeat;
+		std::string track;
+		std::string name;
+		std::string file;
+		int is_playing;
+		int vol;
+		float progress;
+		int bitrate;
+		int length;
+		int elapsed;
+	};
 
-/* number of users of the above struct */
-static int refcount = 0;
+	class mpd_cb: public conky::callback<mpd_result> {
+		typedef conky::callback<mpd_result> Base;
+	
+		mpd_Connection *conn;
 
-void init_mpd(void)
-{
-	if (!(refcount++))	/* first client */
-		memset(&mpd_info, 0, sizeof(mpd_info));
-}
+	protected:
+		virtual void work();
+	
+	public:
+		mpd_cb(uint32_t period)
+			: Base(period, false, Tuple()), conn(NULL)
+		{}
 
-static void clear_mpd(void)
-{
-	free_and_zero(mpd_info.title);
-	free_and_zero(mpd_info.artist);
-	free_and_zero(mpd_info.album);
-	/* do not free() the const char *status! */
-	/* do not free() the const char *random! */
-	/* do not free() the const char *repeat! */
-	free_and_zero(mpd_info.track);
-	free_and_zero(mpd_info.name);
-	free_and_zero(mpd_info.file);
-	memset(&mpd_info, 0, sizeof(mpd_info));
-}
-
-void free_mpd(struct text_object *obj)
-{
-	(void)obj;
-
-	if (!(--refcount))	/* last client */
-		clear_mpd();
-}
-
-static void update_mpd_thread(thread_handle &handle);
-
-int update_mpd(void)
-{
-	static timed_thread_ptr thread;
-
-	if (thread)
-		return 0;
-
-	thread = timed_thread::create(std::bind(update_mpd_thread, std::placeholders::_1),
-			std::chrono::microseconds(long(music_player_interval.get(*state) * 1000000)) );
-	if (!thread) {
-		NORM_ERR("Failed to create MPD timed thread");
-		return 0;
-	}
-	return 0;
-}
-
-/* stringMAXdup dups at most text_buffer_size bytes */
-#define strmdup(x) strndup(x, text_buffer_size.get(*state) - 1)
-
-#define SONGSET(x) {                            \
-	free(mpd_info.x);                       \
-	if(song->x)                             \
-	mpd_info.x = strmdup(song->x);  \
-	else                                    \
-	mpd_info.x = strmdup(emptystr); \
-}
-
-bool mpd_process(thread_handle &handle)
-{
-	static mpd_Connection *conn = NULL;
-	mpd_Status *status;
-	mpd_InfoEntity *entity;
-	const char *emptystr = "";
-
-	do {
-		if (!conn)
-			conn = mpd_newConnection(mpd_host.get(*state).c_str(), mpd_port.get(*state), 10);
-
-		if (mpd_password.get(*state).size()) {
-			mpd_sendPasswordCommand(conn, mpd_password.get(*state).c_str());
-			mpd_finishCommand(conn);
-		}
-
+		~mpd_cb()
 		{
-			std::lock_guard<std::mutex> lock(handle.mutex());
+			if(conn)
+				mpd_closeConnection(conn);
+		}
+	};
 
-			if (conn->error || conn == NULL) {
+	void mpd_cb::work()
+	{
+		mpd_Status *status;
+		mpd_InfoEntity *entity;
+		mpd_result mpd_info;
+
+		do {
+			if (!conn)
+				conn = mpd_newConnection(mpd_host.get(*state).c_str(), mpd_port.get(*state), 10);
+
+			if (mpd_password.get(*state).size()) {
+				mpd_sendPasswordCommand(conn, mpd_password.get(*state).c_str());
+				mpd_finishCommand(conn);
+			}
+
+			if (conn->error) {
 				NORM_ERR("MPD error: %s\n", conn->errorStr);
 				mpd_closeConnection(conn);
 				conn = 0;
-				clear_mpd();
 
 				mpd_info.status = "MPD not responding";
 				break;
@@ -232,7 +187,6 @@ bool mpd_process(thread_handle &handle)
 				NORM_ERR("MPD error: %s\n", conn->errorStr);
 				mpd_closeConnection(conn);
 				conn = 0;
-				clear_mpd();
 
 				mpd_info.status = "MPD not responding";
 			}
@@ -275,7 +229,6 @@ bool mpd_process(thread_handle &handle)
 					break;
 				default:
 					mpd_info.status = "";
-					clear_mpd();
 					break;
 			}
 
@@ -308,13 +261,12 @@ bool mpd_process(thread_handle &handle)
 					mpd_freeInfoEntity(entity);
 					continue;
 				}
-				SONGSET(artist);
-				SONGSET(album);
-				SONGSET(title);
-				SONGSET(track);
-				SONGSET(name);
-				SONGSET(file);
-#undef SONGSET
+				mpd_info.artist = song->artist;
+				mpd_info.album = song->album;
+				mpd_info.title = song->title;
+				mpd_info.track = song->track;
+				mpd_info.name = song->name;
+				mpd_info.file = song->file;
 				if (entity != NULL) {
 					mpd_freeInfoEntity(entity);
 					entity = NULL;
@@ -328,28 +280,29 @@ bool mpd_process(thread_handle &handle)
 				break;
 			}
 
-		}
 
-		if (conn->error) {
-			// fprintf(stderr, "%s\n", conn->errorStr);
-			mpd_closeConnection(conn);
-			conn = 0;
-			break;
-		}
+			if (conn->error) {
+				// fprintf(stderr, "%s\n", conn->errorStr);
+				mpd_closeConnection(conn);
+				conn = 0;
+				break;
+			}
 
-		mpd_freeStatus(status);
-		/* if (conn) {
-		   mpd_closeConnection(conn);
-		   conn = 0;
-		   } */
-	} while (0);
-	return !handle.test(0);
-}
+			mpd_freeStatus(status);
+			/* if (conn) {
+			   mpd_closeConnection(conn);
+			   conn = 0;
+			   } */
+		} while (0);
+	}
 
-static void update_mpd_thread(thread_handle &handle)
-{
-	while (mpd_process(handle)) ;
-	/* never reached */
+	mpd_result get_mpd()
+	{
+		uint32_t period = std::max(
+					std::lround(music_player_interval.get(*state)/active_update_interval()), 1l
+				);
+		return conky::register_cb<mpd_cb>(period)->get_result_copy();
+	}
 }
 
 static inline void format_media_player_time(char *buf, const int size,
@@ -383,44 +336,43 @@ static inline void format_media_player_time(char *buf, const int size,
 void print_mpd_elapsed(struct text_object *obj, char *p, int p_max_size)
 {
 	(void)obj;
-	format_media_player_time(p, p_max_size, mpd_info.elapsed);
+	format_media_player_time(p, p_max_size, get_mpd().elapsed);
 }
 
 void print_mpd_length(struct text_object *obj, char *p, int p_max_size)
 {
 	(void)obj;
-	format_media_player_time(p, p_max_size, mpd_info.length);
+	format_media_player_time(p, p_max_size, get_mpd().length);
 }
 
 uint8_t mpd_percentage(struct text_object *obj)
 {
 	(void)obj;
-	return round_to_int(mpd_info.progress * 100.0f);
+	return round_to_int(get_mpd().progress * 100.0f);
 }
 
 double mpd_barval(struct text_object *obj)
 {
 	(void)obj;
-	return mpd_info.progress;
+	return get_mpd().progress;
 }
 
 void print_mpd_smart(struct text_object *obj, char *p, int p_max_size)
 {
+	const mpd_result &mpd_info = get_mpd();
 	int len = obj->data.i;
 	if (len == 0 || len > p_max_size)
 		len = p_max_size;
 
 	memset(p, 0, p_max_size);
-	if (mpd_info.artist && *mpd_info.artist &&
-			mpd_info.title && *mpd_info.title) {
-		snprintf(p, len, "%s - %s", mpd_info.artist,
-				mpd_info.title);
-	} else if (mpd_info.title && *mpd_info.title) {
-		snprintf(p, len, "%s", mpd_info.title);
-	} else if (mpd_info.artist && *mpd_info.artist) {
-		snprintf(p, len, "%s", mpd_info.artist);
-	} else if (mpd_info.file && *mpd_info.file) {
-		snprintf(p, len, "%s", mpd_info.file);
+	if (mpd_info.artist.size() && mpd_info.title.size()) {
+		snprintf(p, len, "%s - %s", mpd_info.artist.c_str(), mpd_info.title.c_str());
+	} else if (get_mpd().title.size()) {
+		snprintf(p, len, "%s", mpd_info.title.c_str());
+	} else if (mpd_info.artist.size()) {
+		snprintf(p, len, "%s", mpd_info.artist.c_str());
+	} else if (mpd_info.file.size()) {
+		snprintf(p, len, "%s", mpd_info.file.c_str());
 	} else {
 		*p = 0;
 	}
@@ -429,27 +381,27 @@ void print_mpd_smart(struct text_object *obj, char *p, int p_max_size)
 int check_mpd_playing(struct text_object *obj)
 {
 	(void)obj;
-	return mpd_info.is_playing;
+	return get_mpd().is_playing;
 }
 
-#define MPD_PRINT_GENERATOR(name, fmt) \
+#define MPD_PRINT_GENERATOR(name, fmt, acc) \
 void print_mpd_##name(struct text_object *obj, char *p, int p_max_size) \
 { \
 	if (obj->data.i && obj->data.i < p_max_size) \
 		p_max_size = obj->data.i; \
-	snprintf(p, p_max_size, fmt, mpd_info.name); \
+	snprintf(p, p_max_size, fmt, get_mpd().name acc); \
 }
 
-MPD_PRINT_GENERATOR(title, "%s")
-MPD_PRINT_GENERATOR(artist, "%s")
-MPD_PRINT_GENERATOR(album, "%s")
-MPD_PRINT_GENERATOR(random, "%s")
-MPD_PRINT_GENERATOR(repeat, "%s")
-MPD_PRINT_GENERATOR(track, "%s")
-MPD_PRINT_GENERATOR(name, "%s")
-MPD_PRINT_GENERATOR(file, "%s")
-MPD_PRINT_GENERATOR(vol, "%d")
-MPD_PRINT_GENERATOR(bitrate, "%d")
-MPD_PRINT_GENERATOR(status, "%s")
+MPD_PRINT_GENERATOR(title, "%s", .c_str())
+MPD_PRINT_GENERATOR(artist, "%s", .c_str())
+MPD_PRINT_GENERATOR(album, "%s", .c_str())
+MPD_PRINT_GENERATOR(random, "%s", .c_str())
+MPD_PRINT_GENERATOR(repeat, "%s", .c_str())
+MPD_PRINT_GENERATOR(track, "%s", .c_str())
+MPD_PRINT_GENERATOR(name, "%s", .c_str())
+MPD_PRINT_GENERATOR(file, "%s", .c_str())
+MPD_PRINT_GENERATOR(vol, "%d", )
+MPD_PRINT_GENERATOR(bitrate, "%d", )
+MPD_PRINT_GENERATOR(status, "%s", .c_str())
 
 #undef MPD_PRINT_GENERATOR

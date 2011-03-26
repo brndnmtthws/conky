@@ -27,10 +27,6 @@
 #define MPD_H_
 
 /* text object functions */
-void init_mpd(void);
-void free_mpd(struct text_object *);
-int update_mpd(void);
-
 void print_mpd_elapsed(struct text_object *, char *, int);
 void print_mpd_length(struct text_object *, char *, int);
 uint8_t mpd_percentage(struct text_object *);
