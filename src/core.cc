@@ -883,6 +883,11 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 	END OBJ(addrs, &update_net_stats)
 		parse_net_stat_arg(obj, arg, free_at_crash);
 		obj->callbacks.print = &print_addrs;
+#ifdef BUILD_IPV6
+	END OBJ(v6addrs, &update_net_stats)
+		parse_net_stat_arg(obj, arg, free_at_crash);
+		obj->callbacks.print = &print_v6addrs;
+#endif /* BUILD_IPV6 */
 	END
 #endif /* __linux__ */
 	OBJ_ARG(tail, 0, "tail needs arguments")
@@ -1003,6 +1008,10 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 		obj->callbacks.print = &print_memmax;
 	END OBJ(memperc, &update_meminfo)
 		obj->callbacks.percentage = &mem_percentage;
+#ifdef __linux__
+	END OBJ(memdirty, &update_meminfo)
+		obj->callbacks.print = &print_memdirty;
+#endif
 #ifdef BUILD_X11
 	END OBJ(memgauge, &update_meminfo)
 		scan_gauge(obj, arg, 1);

@@ -254,19 +254,6 @@ static char *formatTime(struct tm *ends)
 	}
 }
 
-static int file_exists(const char *filename)
-{
-	struct stat fi;
-
-	if ((stat(filename, &fi)) == 0) {
-		if (fi.st_size > 0)
-			return 1;
-		else
-			return 0;
-	} else
-		return 0;
-}
-
 static void writeSkilltree(char *content, const char *filename)
 {
 	FILE *fp = fopen(filename, "w");
@@ -283,13 +270,12 @@ static char *getSkillname(const char *file, int skillid)
 	xmlDocPtr doc = 0;
 	xmlNodePtr root = 0;
 
-	if (!file_exists(file)) {
-		skilltree = getXmlFromAPI(NULL, NULL, NULL, EVEURL_SKILLTREE);
-		writeSkilltree(skilltree, file);
-		free(skilltree);
-	}
+	skilltree = getXmlFromAPI(NULL, NULL, NULL, EVEURL_SKILLTREE);
+	writeSkilltree(skilltree, file);
+	free(skilltree);
 
 	doc = xmlReadFile(file, NULL, 0);
+	unlink(file);
 	if (!doc)
 		return NULL;
 
@@ -340,7 +326,7 @@ static char *getSkillname(const char *file, int skillid)
 static char *eve(char *userid, char *apikey, char *charid)
 {
 	Character *chr = NULL;
-	const char *skillfile = "/tmp/.cesf";
+	char skillfile[] = "/tmp/.cesfXXXXXX";
 	int i = 0;
 	char *output = 0;
 	char *timel = 0;
@@ -348,6 +334,7 @@ static char *eve(char *userid, char *apikey, char *charid)
 	char *content = 0;
 	time_t now = 0;
 	char *error = 0;
+	int tmp_fd, old_umask;
 
 
 	for (i = 0; i < MAXCHARS; i++) {
@@ -400,6 +387,14 @@ static char *eve(char *userid, char *apikey, char *charid)
 
 		output = (char *)malloc(200 * sizeof(char));
 		timel = formatTime(&chr->ends);
+		old_umask = umask(0066);
+		tmp_fd = mkstemp(skillfile);
+		umask(old_umask);
+		if (tmp_fd == -1) {
+			error = strdup("Cannot create temporary file");
+			return error;
+		}
+		close(tmp_fd);
 		skill = getSkillname(skillfile, chr->skill);
 
 		chr->skillname = strdup(skill);

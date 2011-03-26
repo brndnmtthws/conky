@@ -32,6 +32,7 @@
 #include "net_stat.h"
 #include "diskio.h"
 #include "temphelper.h"
+#include "proc.h"
 #include <dirent.h>
 #include <ctype.h>
 #include <errno.h>
@@ -165,7 +166,7 @@ int update_meminfo(void)
 	/* unsigned int a; */
 	char buf[256];
 
-	info.mem = info.memwithbuffers = info.memmax = info.swap = info.swapfree = info.swapmax =
+	info.mem = info.memwithbuffers = info.memmax = info.memdirty = info.swap = info.swapfree = info.swapmax =
         info.bufmem = info.buffers = info.cached = info.memfree = info.memeasyfree = 0;
 
 	if (!(meminfo_fp = open_file("/proc/meminfo", &rep))) {
@@ -189,6 +190,8 @@ int update_meminfo(void)
 			sscanf(buf, "%*s %llu", &info.buffers);
 		} else if (strncmp(buf, "Cached:", 7) == 0) {
 			sscanf(buf, "%*s %llu", &info.cached);
+		} else if (strncmp(buf, "Dirty:", 6) == 0) {
+			sscanf(buf, "%*s %llu", &info.memdirty);
 		}
 	}
 
@@ -567,6 +570,54 @@ int update_net_stats(void)
 		free(winfo);
 #endif
 	}
+
+#ifdef BUILD_IPV6
+	FILE *file;
+	char v6addr[32];
+	char devname[21];
+	unsigned int netmask, scope;
+	struct net_stat *ns;
+	struct v6addr *lastv6;
+	if ((file = fopen(PROCDIR"/net/if_inet6", "r")) != NULL) {
+		while (fscanf(file, "%32s %*02x %02x %02x %*02x %20s\n", v6addr, &netmask, &scope, devname) != EOF) {
+			ns = get_net_stat(devname, NULL, NULL);
+			if(ns->v6addrs == NULL) {
+				lastv6 = (struct v6addr *) malloc(sizeof(struct v6addr));
+				ns->v6addrs = lastv6;
+			} else {
+				lastv6 = ns->v6addrs;
+				while(lastv6->next) lastv6 = lastv6->next;
+				lastv6->next = (struct v6addr *) malloc(sizeof(struct v6addr));
+				lastv6 = lastv6->next;
+			}
+			for(int i=0; i<16; i++)
+				sscanf(v6addr+2*i, "%2hhx", &(lastv6->addr.s6_addr[i]));
+			lastv6->netmask = netmask;
+			switch(scope) {
+			case 0:	//global
+				lastv6->scope = 'G';
+				break;
+			case 16:	//host-local
+				lastv6->scope = 'H';
+				break;
+			case 32:	//link-local
+				lastv6->scope = 'L';
+				break;
+			case 64:	//site-local
+				lastv6->scope = 'S';
+				break;
+			case 128:	//compat
+				lastv6->scope = 'C';
+				break;
+			default:
+				lastv6->scope = '?';
+			}
+			lastv6->next = NULL;
+		}
+	}
+	fclose(file);
+#endif /* BUILD_IPV6 */
+
 	first = 0;
 
 	fclose(net_dev_fp);
@@ -842,6 +893,26 @@ int update_cpu_usage(void)
 	return 0;
 }
 
+//fscanf() that reads floats with points even if you are using a locale where
+//floats are with commas
+int fscanf_no_i18n(FILE *stream, const char *format, ...) {
+	int returncode;
+	va_list ap;
+
+#ifdef BUILD_I18N
+	const char *oldlocale = setlocale(LC_NUMERIC, NULL);
+
+	setlocale(LC_NUMERIC, "C");
+#endif
+	va_start(ap, format);
+	returncode = vfscanf(stream, format, ap);
+	va_end(ap);
+#ifdef BUILD_I18N
+	setlocale(LC_NUMERIC, oldlocale);
+#endif
+	return returncode;
+}
+
 int update_load_average(void)
 {
 #ifdef HAVE_GETLOADAVG
@@ -862,7 +933,7 @@ int update_load_average(void)
 			info.loadavg[0] = info.loadavg[1] = info.loadavg[2] = 0.0;
 			return 0;
 		}
-		if (fscanf(fp, "%f %f %f", &info.loadavg[0], &info.loadavg[1],
+		if (fscanf_no_i18n(fp, "%f %f %f", &info.loadavg[0], &info.loadavg[1],
 		           &info.loadavg[2]) < 0)
 			info.loadavg[0] = info.loadavg[1] = info.loadavg[2] = 0.0;
 		fclose(fp);
@@ -1588,6 +1659,12 @@ present voltage:         16608 mV
   On some systems POWER_SUPPLY_ENERGY_* is replaced by POWER_SUPPLY_CHARGE_*
 */
 
+/* Tiago Marques Vale <tiagomarquesvale@gmail.com>
+  Regarding the comment above, since kernel 2.6.36.1 I have
+  POWER_SUPPLY_POWER_NOW instead of POWER_SUPPLY_CURRENT_NOW
+  See http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=532000
+*/
+
 #define SYSFS_BATTERY_BASE_PATH "/sys/class/power_supply"
 #define ACPI_BATTERY_BASE_PATH "/proc/acpi/battery"
 #define APM_PATH "/proc/apm"
@@ -1709,6 +1786,8 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 			 * tradition! */
 			else if (strncmp(buf, "POWER_SUPPLY_CURRENT_NOW=", 25) == 0)
 				sscanf(buf, "POWER_SUPPLY_CURRENT_NOW=%d", &present_rate);
+			else if (strncmp(buf, "POWER_SUPPLY_POWER_NOW=", 23) == 0)
+				sscanf(buf, "POWER_SUPPLY_POWER_NOW=%d", &present_rate);
 			else if (strncmp(buf, "POWER_SUPPLY_ENERGY_NOW=", 24) == 0)
 				sscanf(buf, "POWER_SUPPLY_ENERGY_NOW=%d", &remaining_capacity);
 			else if (strncmp(buf, "POWER_SUPPLY_ENERGY_FULL=", 25) == 0)

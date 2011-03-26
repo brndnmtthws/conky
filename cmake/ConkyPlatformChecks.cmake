@@ -82,6 +82,13 @@ if(BUILD_IRC)
 	set(conky_libs ${conky_libs} -lircclient)
 endif(BUILD_IRC)
 
+if(BUILD_IPV6)
+	find_file(IF_INET6 if_inet6 PATHS /proc/net)
+	if(NOT IF_INET6)
+		message(FATAL_ERROR "/proc/net/if_inet6 unavailable")
+	endif(NOT IF_INET6)
+endif(BUILD_IPV6)
+
 if(BUILD_HTTP)
 	find_file(HTTP_H_ microhttpd.h)
 	#I'm not using check_include_files because microhttpd.h seems to need a lot of different headers and i'm not sure which...

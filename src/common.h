@@ -103,6 +103,7 @@ void print_memwithbuffers(struct text_object *, char *, int);
 void print_memeasyfree(struct text_object *, char *, int);
 void print_memfree(struct text_object *, char *, int);
 void print_memmax(struct text_object *, char *, int);
+void print_memdirty(struct text_object *, char *, int);
 void print_swap(struct text_object *, char *, int);
 void print_swapfree(struct text_object *, char *, int);
 void print_swapmax(struct text_object *, char *, int);

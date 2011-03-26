@@ -90,10 +90,35 @@ struct net_stat *get_net_stat(const char *dev, void *free_at_crash1, void *free_
 
 void parse_net_stat_arg(struct text_object *obj, const char *arg, void *free_at_crash)
 {
+	bool shownetmask = false;
+	bool showscope = false;
+	char nextarg[21];	//longest arg possible is a devname (max 20 chars)
+	int i=0;
+	struct net_stat *netstat = NULL;
+
 	if (!arg)
 		arg = DEFAULTNETDEV;
 
-	obj->data.opaque = get_net_stat(arg, obj, free_at_crash);
+	while(sscanf(arg+i, " %20s", nextarg) == 1) {
+		if(strcmp(nextarg, "-n") == 0 || strcmp(nextarg, "--netmask") == 0) shownetmask = true;
+		else if(strcmp(nextarg, "-s") == 0 || strcmp(nextarg, "--scope") == 0) showscope = true;
+		else if(nextarg[0]=='-') {	//multiple flags in 1 arg
+			for(int j=1; nextarg[j] != 0; j++) {
+				if(nextarg[j]=='n') shownetmask = true;
+				if(nextarg[j]=='s') showscope = true;
+			}
+		}
+		else netstat = get_net_stat(nextarg, obj, free_at_crash);
+		i+=strlen(nextarg);	//skip this arg
+		while( ! (isspace(arg[i]) || arg[i] == 0)) i++; //and skip the spaces in front of it
+	}
+	if(netstat == NULL) netstat = get_net_stat(DEFAULTNETDEV, obj, free_at_crash);
+
+#ifdef BUILD_IPV6
+	netstat->v6show_nm = shownetmask;
+	netstat->v6show_sc = showscope;
+#endif /* BUILD_IPV6 */
+	obj->data.opaque = netstat;
 }
 
 void parse_net_stat_bar_arg(struct text_object *obj, const char *arg, void *free_at_crash)
@@ -205,6 +230,47 @@ void print_addrs(struct text_object *obj, char *p, int p_max_size)
 		strncpy(p, "0.0.0.0", p_max_size);
 	}
 }
+
+#ifdef BUILD_IPV6
+void print_v6addrs(struct text_object *obj, char *p, int p_max_size)
+{
+	struct net_stat *ns = (struct net_stat *)obj->data.opaque;
+	char tempaddress[INET6_ADDRSTRLEN];
+	struct v6addr *current_v6 = ns->v6addrs;
+
+	if (!ns)
+		return;
+
+	if(p_max_size == 0) return;
+	if( ! ns->v6addrs) {
+		strncpy(p, "::", p_max_size);
+		if(ns->v6show_nm) strncat(p, "/128", p_max_size);
+		if(ns->v6show_sc) strncat(p, "(/)", p_max_size);
+		return;
+	}
+	*p=0;
+	while(current_v6) {
+		inet_ntop(AF_INET6, &(current_v6->addr), tempaddress, INET6_ADDRSTRLEN);
+		strncat(p, tempaddress, p_max_size);
+		//netmask
+		if(ns->v6show_nm) {
+			char netmaskstr[5]; //max 5 chars (/128 + null-terminator)
+			sprintf(netmaskstr, "/%u", current_v6->netmask);
+			strncat(p, netmaskstr, p_max_size);
+		}
+		//scope
+		if(ns->v6show_sc) {
+			char scopestr[3];
+			sprintf(scopestr, "(%c)", current_v6->scope);
+			strncat(p, scopestr, p_max_size);
+		}
+		//next (or last) address
+		current_v6 = current_v6->next;
+		if(current_v6) strncat(p, ", ", p_max_size);
+	}
+}
+#endif /* BUILD_IPV6 */
+
 #endif /* __linux__ */
 
 #ifdef BUILD_X11
@@ -353,9 +419,19 @@ double wireless_link_barval(struct text_object *obj)
 
 void clear_net_stats(void)
 {
+#ifdef BUILD_IPV6
+	struct v6addr *nextv6;
+#endif /* BUILD_IPV6 */
 	int i;
 	for (i = 0; i < MAX_NET_INTERFACES; i++) {
 		free_and_zero(netstats[i].dev);
+#ifdef BUILD_IPV6
+		while(netstats[i].v6addrs) {
+			nextv6 = netstats[i].v6addrs;
+			netstats[i].v6addrs = netstats[i].v6addrs->next;
+			free_and_zero(nextv6);
+		}
+#endif /* BUILD_IPV6 */
 	}
 	memset(netstats, 0, sizeof(netstats));
 }

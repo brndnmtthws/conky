@@ -279,8 +279,7 @@ struct special_t *new_special_t_node()
 {
 	special_t *newnode = new special_t;
 
-	newnode->graph = NULL;
-	newnode->next = NULL;
+	memset(newnode, 0, sizeof *newnode);
 	return newnode;
 }
 

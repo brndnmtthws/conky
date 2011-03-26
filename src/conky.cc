@@ -256,6 +256,9 @@ static void print_version(void)
 #ifdef BUILD_HTTP
                 << _("  * HTTP\n")
 #endif
+#ifdef BUILD_IPV6
+                << _("  * IPv6\n")
+#endif /* BUILD_IPV6 */
 #ifdef BUILD_IRC
                 << _("  * IRC\n")
 #endif

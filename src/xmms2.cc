@@ -371,9 +371,12 @@ double xmms2_barval(struct text_object *obj)
 void print_xmms2_smart(struct text_object *obj, char *p, int p_max_size)
 {
 	(void)obj;
-	if (strlen(info.xmms2.title) < 2
-			&& strlen(info.xmms2.title) < 2) {
+	int artist_len = strlen(info.xmms2.artist);
+	int title_len = strlen(info.xmms2.title);
+	if (artist_len < 2 && title_len < 2) {
 		snprintf(p, p_max_size, "%s", info.xmms2.url);
+	} else if (artist_len < 1) {
+		snprintf(p, p_max_size, "%s", info.xmms2.title);
 	} else {
 		snprintf(p, p_max_size, "%s - %s", info.xmms2.artist,
 				info.xmms2.title);

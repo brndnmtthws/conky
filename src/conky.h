@@ -179,7 +179,7 @@ struct information {
 	double uptime;
 
 	/* memory information in kilobytes */
-	unsigned long long mem, memwithbuffers, memeasyfree, memfree, memmax;
+	unsigned long long mem, memwithbuffers, memeasyfree, memfree, memmax, memdirty;
     unsigned long long swap, swapfree, swapmax;
 	unsigned long long bufmem, buffers, cached;
 
