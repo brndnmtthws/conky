@@ -29,127 +29,99 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <cmath>
 #include <mutex>
 
-static struct {
-	char *state;
-	char *file;
-	char *title;
-	char *artist;
-	char *song;
-	char *album;
-	char *totaltime;
-	char *timeleft;
-	char *curtime;
-	char *bitrate;
-	char *rate;
-} moc;
+#include "update-cb.hh"
 
-static timed_thread_ptr moc_thread;
+namespace {
+	struct moc_result {
+		std::string state;
+		std::string file;
+		std::string title;
+		std::string artist;
+		std::string song;
+		std::string album;
+		std::string totaltime;
+		std::string timeleft;
+		std::string curtime;
+		std::string bitrate;
+		std::string rate;
+	};
 
-void free_moc(struct text_object *obj)
-{
-	(void)obj;
-	free_and_zero(moc.state);
-	free_and_zero(moc.file);
-	free_and_zero(moc.title);
-	free_and_zero(moc.artist);
-	free_and_zero(moc.song);
-	free_and_zero(moc.album);
-	free_and_zero(moc.totaltime);
-	free_and_zero(moc.timeleft);
-	free_and_zero(moc.curtime);
-	free_and_zero(moc.bitrate);
-	free_and_zero(moc.rate);
-}
+	class moc_cb: public conky::callback<moc_result> {
+		typedef conky::callback<moc_result> Base;
 
-static void update_infos(void)
-{
-	FILE *fp;
+	protected:
+		virtual void work();
 
-	free_moc(NULL);
-	fp = popen("mocp -i", "r");
-	if (!fp) {
-		moc.state = strndup("Can't run 'mocp -i'", text_buffer_size.get(*state));
-		return;
-	}
+	public:
+		moc_cb(uint32_t period)
+			: Base(period, false, Tuple())
+		{}
+	};
 
-	while (1) {
-		char line[100];
-		char *p;
+	void moc_cb::work()
+	{
+		moc_result moc;
+		FILE *fp;
 
-		/* Read a line from the pipe and strip the possible '\n'. */
-		if (!fgets(line, 100, fp))
-			break;
-		if ((p = strrchr(line, '\n')))
-			*p = '\0';
+		fp = popen("mocp -i", "r");
+		if (!fp) {
+			moc.state = "Can't run 'mocp -i'";
+		} else {
+			while (1) {
+				char line[100];
+				char *p;
 
-		/* Parse infos. */
-		if (strncmp(line, "State:", 6) == 0)
-			moc.state = strndup(line + 7, text_buffer_size.get(*state));
-		else if (strncmp(line, "File:", 5) == 0)
-			moc.file = strndup(line + 6, text_buffer_size.get(*state));
-		else if (strncmp(line, "Title:", 6) == 0)
-			moc.title = strndup(line + 7, text_buffer_size.get(*state));
-		else if (strncmp(line, "Artist:", 7) == 0)
-			moc.artist = strndup(line + 8, text_buffer_size.get(*state));
-		else if (strncmp(line, "SongTitle:", 10) == 0)
-			moc.song = strndup(line + 11, text_buffer_size.get(*state));
-		else if (strncmp(line, "Album:", 6) == 0)
-			moc.album = strndup(line + 7, text_buffer_size.get(*state));
-		else if (strncmp(line, "TotalTime:", 10) == 0)
-			moc.totaltime = strndup(line + 11, text_buffer_size.get(*state));
-		else if (strncmp(line, "TimeLeft:", 9) == 0)
-			moc.timeleft = strndup(line + 10, text_buffer_size.get(*state));
-		else if (strncmp(line, "CurrentTime:", 12) == 0)
-			moc.curtime = strndup(line + 13, text_buffer_size.get(*state));
-		else if (strncmp(line, "Bitrate:", 8) == 0)
-			moc.bitrate = strndup(line + 9, text_buffer_size.get(*state));
-		else if (strncmp(line, "Rate:", 5) == 0)
-			moc.rate = strndup(line + 6, text_buffer_size.get(*state));
-	}
+				/* Read a line from the pipe and strip the possible '\n'. */
+				if (!fgets(line, 100, fp))
+					break;
+				if ((p = strrchr(line, '\n')))
+					*p = '\0';
 
-	pclose(fp);
-}
-
-static void update_moc_loop(thread_handle &handle)
-{
-	while (1) {
-		{
-			std::lock_guard<std::mutex> lock(handle.mutex());
-			update_infos();
+				/* Parse infos. */
+				if (strncmp(line, "State:", 6) == 0)
+					moc.state = line + 7;
+				else if (strncmp(line, "File:", 5) == 0)
+					moc.file = line + 6;
+				else if (strncmp(line, "Title:", 6) == 0)
+					moc.title = line + 7;
+				else if (strncmp(line, "Artist:", 7) == 0)
+					moc.artist = line + 8;
+				else if (strncmp(line, "SongTitle:", 10) == 0)
+					moc.song = line + 11;
+				else if (strncmp(line, "Album:", 6) == 0)
+					moc.album = line + 7;
+				else if (strncmp(line, "TotalTime:", 10) == 0)
+					moc.totaltime = line + 11;
+				else if (strncmp(line, "TimeLeft:", 9) == 0)
+					moc.timeleft = line + 10;
+				else if (strncmp(line, "CurrentTime:", 12) == 0)
+					moc.curtime = line + 13;
+				else if (strncmp(line, "Bitrate:", 8) == 0)
+					moc.bitrate = line + 9;
+				else if (strncmp(line, "Rate:", 5) == 0)
+					moc.rate = line + 6;
+			}
 		}
-		if (handle.test(0)) {
-			return;
-		}
+
+		pclose(fp);
+
+		std::lock_guard<std::mutex> l(result_mutex);
+		result = moc;
 	}
-	/* never reached */
-}
-
-static int run_moc_thread(std::chrono::microseconds interval)
-{
-	if (moc_thread)
-		return 0;
-
-	moc_thread = timed_thread::create(std::bind(update_moc_loop, std::placeholders::_1), interval);
-	if (!moc_thread) {
-		NORM_ERR("Failed to create MOC timed thread");
-		return 1;
-	}
-	return 0;
-}
-
-int update_moc(void)
-{
-	run_moc_thread(std::chrono::microseconds(long(music_player_interval.get(*state) * 1000000)));
-	return 0;
 }
 
 #define MOC_PRINT_GENERATOR(type, alt) \
 void print_moc_##type(struct text_object *obj, char *p, int p_max_size) \
 { \
 	(void)obj; \
-	snprintf(p, p_max_size, "%s", (moc.type ? moc.type : alt)); \
+	uint32_t period = std::max( \
+				std::lround(music_player_interval.get(*state)/active_update_interval()), 1l \
+			); \
+	const moc_result &moc = conky::register_cb<moc_cb>(period)->get_result_copy(); \
+	snprintf(p, p_max_size, "%s", (moc.type.length() ? moc.type.c_str() : alt)); \
 }
 
 MOC_PRINT_GENERATOR(state, "??")

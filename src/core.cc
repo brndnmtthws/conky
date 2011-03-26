@@ -1472,39 +1472,28 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 #undef mpd_set_maxlen
 #endif /* BUILD_MPD */
 #ifdef BUILD_MOC
-	END OBJ(moc_state, &update_moc)
+	END OBJ(moc_state, 0)
 		obj->callbacks.print = &print_moc_state;
-		obj->callbacks.free = &free_moc;
-	END OBJ(moc_file, &update_moc)
+	END OBJ(moc_file, 0)
 		obj->callbacks.print = &print_moc_file;
-		obj->callbacks.free = &free_moc;
-	END OBJ(moc_title, &update_moc)
+	END OBJ(moc_title, 0)
 		obj->callbacks.print = &print_moc_title;
-		obj->callbacks.free = &free_moc;
-	END OBJ(moc_artist, &update_moc)
+	END OBJ(moc_artist, 0)
 		obj->callbacks.print = &print_moc_artist;
-		obj->callbacks.free = &free_moc;
-	END OBJ(moc_song, &update_moc)
+	END OBJ(moc_song, 0)
 		obj->callbacks.print = &print_moc_song;
-		obj->callbacks.free = &free_moc;
-	END OBJ(moc_album, &update_moc)
+	END OBJ(moc_album, 0)
 		obj->callbacks.print = &print_moc_album;
-		obj->callbacks.free = &free_moc;
-	END OBJ(moc_totaltime, &update_moc)
+	END OBJ(moc_totaltime, 0)
 		obj->callbacks.print = &print_moc_totaltime;
-		obj->callbacks.free = &free_moc;
-	END OBJ(moc_timeleft, &update_moc)
+	END OBJ(moc_timeleft, 0)
 		obj->callbacks.print = &print_moc_timeleft;
-		obj->callbacks.free = &free_moc;
-	END OBJ(moc_curtime, &update_moc)
+	END OBJ(moc_curtime, 0)
 		obj->callbacks.print = &print_moc_curtime;
-		obj->callbacks.free = &free_moc;
-	END OBJ(moc_bitrate, &update_moc)
+	END OBJ(moc_bitrate, 0)
 		obj->callbacks.print = &print_moc_bitrate;
-		obj->callbacks.free = &free_moc;
-	END OBJ(moc_rate, &update_moc)
+	END OBJ(moc_rate, 0)
 		obj->callbacks.print = &print_moc_rate;
-		obj->callbacks.free = &free_moc;
 #endif /* BUILD_MOC */
 #ifdef BUILD_XMMS2
 	END OBJ(xmms2_artist, &update_xmms2)
