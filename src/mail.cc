@@ -48,6 +48,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/param.h>
+#include <inttypes.h>
 
 #include <dirent.h>
 #include <termios.h>
@@ -122,7 +123,7 @@ namespace {
 			hints.ai_family = AF_UNSPEC;
 			hints.ai_socktype = SOCK_STREAM;
 			hints.ai_protocol = IPPROTO_TCP;
-			snprintf(portbuf, 8, "%lu", get<MP_PORT>());
+			snprintf(portbuf, 8, "%" SCNu16, get<MP_PORT>());
 
 			if(int res = getaddrinfo(get<MP_HOST>().c_str(), portbuf, &hints, &ai))
 				throw std::runtime_error(std::string("IMAP getaddrinfo: ") + gai_strerror(res));
@@ -551,7 +552,7 @@ std::unique_ptr<mail_param_ex> parse_mail_args(mail_type type, const char *arg)
 	tmp = (char*)strstr(arg, "-r ");
 	if (tmp) {
 		tmp += 3;
-		sscanf(tmp, "%u", &mail->retries);
+		sscanf(tmp, "%" SCNu16, &mail->retries);
 	} else {
 		mail->retries = 5;	// 5 retries after failure
 	}
@@ -567,7 +568,7 @@ std::unique_ptr<mail_param_ex> parse_mail_args(mail_type type, const char *arg)
 	tmp = (char*)strstr(arg, "-p ");
 	if (tmp) {
 		tmp += 3;
-		sscanf(tmp, "%lu", &get<MP_PORT>(*mail));
+		sscanf(tmp, "%" SCNu16, &get<MP_PORT>(*mail));
 	} else {
 		if (type == POP3_TYPE) {
 			get<MP_PORT>(*mail) = 110;	// default pop3 port
