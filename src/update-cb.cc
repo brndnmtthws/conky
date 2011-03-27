@@ -79,7 +79,7 @@ namespace conky {
 			const auto &p = callbacks.insert(h);
 
 			if(not p.second)
-				(*p.first)->merge(*h);
+				(*p.first)->merge(std::move(*h));
 
 			return *p.first;
 		}

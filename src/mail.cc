@@ -145,13 +145,13 @@ namespace {
 
 		virtual void merge(callback_base &&other)
 		{
-			Base::merge(other);
-
 			mail_cb &&o = dynamic_cast<mail_cb &&>(other);
 			if(retries < o.retries) {
 				retries = o.retries;
 				fail = 0;
 			}
+
+			Base::merge(std::move(other));
 		}
 
 		mail_cb(uint32_t period, const Tuple &tuple, uint16_t retries_)
