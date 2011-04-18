@@ -113,7 +113,7 @@ int update_uname(void)
 			strcpy(info.uname_v, strsep(&start, " "));
 		}
 
-		if (errno == ENOMEM) printf("desc_n %lu\n", desc_n);
+		if (errno == ENOMEM) printf("desc_n %zu\n", desc_n);
 	}
 #endif
 

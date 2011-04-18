@@ -61,10 +61,6 @@
 #define	KELVTOC(x)				((x - 2732) / 10.0)
 #define	MAXSHOWDEVS				16
 
-#if 0
-#define	DRAGONFLY_DEBUG
-#endif
-
 static short cpu_setup = 0;
 
 static int getsysctl(const char *name, void *ptr, size_t len)
@@ -78,7 +74,7 @@ static int getsysctl(const char *name, void *ptr, size_t len)
 	}
 
 	if (nlen != len && errno == ENOMEM) {
-		fprintf(stderr, "getsysctl(): %s failed %lu != %lu\n", name, nlen, len);
+		fprintf(stderr, "getsysctl(): %s failed %zu != %zu\n", name, nlen, len);
 		return -1;
 	}
 
@@ -117,8 +113,7 @@ int update_uptime(void)
 	time_t now;
 	size_t size = sizeof(boottime);
 
-	if ((sysctl(mib, 2, &boottime, &size, NULL, 0) != -1)
-			&& (boottime.tv_sec != 0)) {
+	if ((sysctl(mib, 2, &boottime, &size, NULL, 0) != -1) && boottime.tv_sec) {
 		time(&now);
 		info.uptime = now - boottime.tv_sec;
 	} else {
@@ -660,19 +655,6 @@ int update_diskio(void)
 	return 0;
 }
 
-//#define DRAGONFLY_DEBUG
-#ifdef DRAGONFLY_DEBUG
-static void proc_show(struct process **mem, const char *desc)
-{
-	int i; printf("%s\n", desc);
-	for (i = 0; i < 10; i++)
-		if (mem[i])
-			printf("\t%d: %s(%d) %d %d\n", i, mem[i]->name,
-				   mem[i]->pid, mem[i]->vsize, mem[i]->rss);
-	printf("\n");
-}
-#endif
-
 static int proc_rusage(struct kinfo_proc *p)
 {
     struct kinfo_lwp *lwp = &p->kp_lwp;
@@ -705,6 +687,7 @@ static void proc_count(struct kinfo_proc *kp, size_t proc_n)
 static void proc_fill(struct kinfo_proc *kp, size_t proc_n)
 {
 	size_t i, f = getpagesize();
+	static long prev_ticks = 0; /* safe as long as in same thread */
 
 	for (i = 0; i < proc_n; i++) {
 		struct kinfo_proc *p = &kp[i];
@@ -715,6 +698,7 @@ static void proc_fill(struct kinfo_proc *kp, size_t proc_n)
 			!lwp->kl_tid) { /* 'main' lwp, the real process (observed) */
 
 			struct process *my = get_process(p->kp_pid);
+			long ticks = proc_rusage(p);
 
 			my->time_stamp = g_time;
 
@@ -724,11 +708,9 @@ static void proc_fill(struct kinfo_proc *kp, size_t proc_n)
 			my->amount = 100.0 * lwp->kl_pctcpu / FSCALE;
 			my->vsize = p->kp_vm_map_size;
 			my->rss = p->kp_vm_rssize * f;
-			my->total_cpu_time = proc_rusage(p);
 
-			if (my->previous_user_time == ULONG_MAX)
-				my->previous_user_time = my->total_cpu_time;
-			else my->total_cpu_time -= my->previous_user_time;
+			my->total_cpu_time = ticks - prev_ticks;
+			prev_ticks = ticks;
 
 			// printf("\tmy[%p]: %s(%u) %d %d 0x%x 0x%x %f\n", p,
 			//        my->name, my->pid, my->vsize, my->rss,
