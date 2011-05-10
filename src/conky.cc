@@ -340,7 +340,7 @@ static void print_version(void)
                 << _("  * Own window\n")
 #endif
 #endif /* BUILD_X11 */
-#if defined BUILD_AUDACIOUS || defined BUILD_BMPX || defined BUILD_MPD || defined BUILD_MOC || defined BUILD_XMMS2
+#if defined BUILD_AUDACIOUS || defined BUILD_BMPX || defined BUILD_CMUS || defined BUILD_MPD || defined BUILD_MOC || defined BUILD_XMMS2
                 << _("\n Music detection:\n")
 #endif
 #ifdef BUILD_AUDACIOUS
@@ -349,6 +349,9 @@ static void print_version(void)
 #ifdef BUILD_BMPX
                 << _("  * BMPx\n")
 #endif /* BUILD_BMPX */
+#ifdef BUILD_CMUS
+                << _("  * CMUS\n")
+#endif /* BUILD_CMUS */
 #ifdef BUILD_MPD
                 << _("  * MPD\n")
 #endif /* BUILD_MPD */

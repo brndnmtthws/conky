@@ -96,6 +96,9 @@
 #ifdef BUILD_AUDACIOUS
 #include "audacious.h"
 #endif
+#ifdef BUILD_CMUS
+#include "cmus.h"
+#endif
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
@@ -1467,6 +1470,59 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 	END OBJ(moc_rate, 0)
 		obj->callbacks.print = &print_moc_rate;
 #endif /* BUILD_MOC */
+#ifdef BUILD_CMUS
+	END OBJ(cmus_state, 0)
+		obj->callbacks.print = &print_cmus_state;
+	END OBJ(cmus_file, 0)
+		obj->callbacks.print = &print_cmus_file;
+	END OBJ(cmus_title, 0)
+		obj->callbacks.print = &print_cmus_title;
+	END OBJ(cmus_artist, 0)
+		obj->callbacks.print = &print_cmus_artist;
+	END OBJ(cmus_album, 0)
+		obj->callbacks.print = &print_cmus_album;
+	END OBJ(cmus_totaltime, 0)
+		obj->callbacks.print = &print_cmus_totaltime;
+	END OBJ(cmus_timeleft, 0)
+		obj->callbacks.print = &print_cmus_timeleft;
+	END OBJ(cmus_curtime, 0)
+		obj->callbacks.print = &print_cmus_curtime;
+	END OBJ(cmus_random, 0)
+		obj->callbacks.print = &print_cmus_random;
+	END OBJ(cmus_state, 0)
+		obj->callbacks.print = &print_cmus_state;
+	END OBJ(cmus_file, 0)
+		obj->callbacks.print = &print_cmus_file;
+	END OBJ(cmus_title, 0)
+		obj->callbacks.print = &print_cmus_title;
+	END OBJ(cmus_artist, 0)
+		obj->callbacks.print = &print_cmus_artist;
+	END OBJ(cmus_album, 0)
+		obj->callbacks.print = &print_cmus_album;
+	END OBJ(cmus_totaltime, 0)
+		obj->callbacks.print = &print_cmus_totaltime;
+	END OBJ(cmus_timeleft, 0)
+		obj->callbacks.print = &print_cmus_timeleft;
+	END OBJ(cmus_curtime, 0)
+		obj->callbacks.print = &print_cmus_curtime;
+	END OBJ(cmus_random, 0)
+		obj->callbacks.print = &print_cmus_random;
+	END OBJ(cmus_repeat, 0)
+		obj->callbacks.print = &print_cmus_repeat;
+	END OBJ(cmus_aaa, 0)
+		obj->callbacks.print = &print_cmus_aaa;
+	END OBJ(cmus_track, 0)
+		obj->callbacks.print = &print_cmus_track;
+	END OBJ(cmus_genre, 0)
+		obj->callbacks.print = &print_cmus_genre;
+	END OBJ(cmus_date, 0)
+		obj->callbacks.print = &print_cmus_date;
+	END OBJ(cmus_progress, 0)
+		scan_bar(obj, arg, 1);
+		obj->callbacks.barval = &cmus_progress;
+	END OBJ(cmus_percent, 0)
+		obj->callbacks.percentage = &cmus_percent;
+#endif /* BUILD_CMUS */
 #ifdef BUILD_XMMS2
 	END OBJ(xmms2_artist, &update_xmms2)
 		obj->callbacks.print = &print_xmms2_artist;

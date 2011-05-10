@@ -164,3 +164,5 @@ if(BUILD_HTTP)
 endif(BUILD_HTTP)
 
 option(BUILD_ICONV "Enable iconv support" false)
+
+option(BUILD_CMUS "Enable support for cmus music player" false)

@@ -116,4 +116,6 @@
 
 #cmakedefine BUILD_RSS 1
 
+#cmakedefine BUILD_CMUS 1
+
 #endif /* _conky_config_h_ */

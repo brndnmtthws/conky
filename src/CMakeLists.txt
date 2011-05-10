@@ -99,6 +99,11 @@ if(BUILD_MOC)
 	set(optional_sources ${optional_sources} ${moc})
 endif(BUILD_MOC)
 
+if(BUILD_CMUS)
+       set(cmus cmus.cc)
+       set(optional_sources ${optional_sources} ${cmus})
+endif(BUILD_CMUS)
+
 if(BUILD_XMMS2)
 	set(xmms2 xmms2.cc)
 	set(optional_sources ${optional_sources} ${xmms2})

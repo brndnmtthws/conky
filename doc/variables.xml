@@ -550,6 +550,151 @@
     <varlistentry>
         <term>
             <command>
+                <option>cmus_aaa</option>
+            </command>
+        </term>
+       <listitem>Print aaa status of cmus (all/artist/album).
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>cmus_album</option>
+            </command>
+        </term>
+        <listitem>Prints the album of the current cmus song.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>cmus_artist</option>
+            </command>
+        </term>
+        <listitem>Prints the artist of the current cmus song.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>cmus_curtime</option>
+            </command>
+        </term>
+        <listitem>Current time of the current cmus song.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>cmus_file</option>
+            </command>
+        </term>
+        <listitem>Print the file name of the current cmus song
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>cmus_date</option>
+            </command>
+        </term>
+        <listitem>Print the date of the current cmus song
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>cmus_genre</option>
+            </command>
+        </term>
+        <listitem>Print the genre name of the current cmus song
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>cmus_percent</option>
+            </command>
+        </term>
+        <listitem>Percent of song's progress.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>cmus_progress</option>
+            </command>
+            <option>(height),(width)</option>
+        </term>
+        <listitem>cmus' progress bar.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>cmus_random</option>
+            </command>
+        </term>
+       <listitem>Random status of cmus (on/off).
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>cmus_repeat</option>
+            </command>
+        </term>
+       <listitem>Repeat status of cmus (song/all/off).
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>cmus_state</option>
+            </command>
+        </term>
+        <listitem>Current state of cmus (playing, paused, stopped etc).
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>cmus_timeleft</option>
+            </command>
+        </term>
+        <listitem>Time left of the current cmus song.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>cmus_title</option>
+            </command>
+        </term>
+        <listitem>Prints the title of the current cmus song.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>cmus_totaltime</option>
+            </command>
+        </term>
+        <listitem>Total length of the current cmus song.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>cmus_track</option>
+            </command>
+        </term>
+       <listitem>Print track number of current cmus song.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>color</option>
             </command>
             <option>(color)</option>
