@@ -237,7 +237,7 @@ static int process_parse_stat(struct process *process)
 	strncpy(procname, lparen + 1, rc);
 	procname[rc] = '\0';
 	rc = sscanf(rparen + 1, "%3s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %lu "
-			"%lu %*s %*s %*s %d %*s %*s %*s %u %u", state, &process->user_time,
+			"%lu %*s %*s %*s %d %*s %*s %*s %llu %llu", state, &process->user_time,
 			&process->kernel_time, &nice_val, &process->vsize, &process->rss);
 	if (rc < 6) {
 		NORM_ERR("scaning data for %s failed, got only %d fields", procname, rc);
