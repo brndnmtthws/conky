@@ -107,8 +107,8 @@ struct process {
 	unsigned long previous_user_time;
 	unsigned long previous_kernel_time;
 	unsigned long total_cpu_time;
-	unsigned int vsize;
-	unsigned int rss;
+	unsigned long long vsize;
+	unsigned long long rss;
 #ifdef BUILD_IOSTATS
 	unsigned long long read_bytes;
 	unsigned long long previous_read_bytes;
