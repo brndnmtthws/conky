@@ -34,7 +34,6 @@
 #include <assert.h>
 #endif /* DEBUG */
 
-#include <curl/types.h>
 #include <curl/easy.h>
 
 /*
