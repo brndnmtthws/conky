@@ -1660,7 +1660,7 @@
         </term>
         <listitem>If mixer exists, display everything between
         $if_mixer_mute and the matching $endif. If no mixer is
-        specified, "Master" is used. 
+        specified, "Vol" is used. 
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -2112,10 +2112,14 @@
             <option>(device)</option>
         </term>
         <listitem>Prints the mixer value as reported by the OS.
-        Default mixer is "Master", but you can specify one of the
-        available ALSA Simple mixer controls.
-        You can find the list of those available on your system
-        using amixer.
+        On Linux, this variable uses the OSS emulation, so you
+        need the proper kernel module loaded.
+        Default mixer is "Vol", but you can specify one of the
+        available OSS controls: "Vol", "Bass", "Trebl", "Synth",
+        "Pcm", "Spkr", "Line", "Mic", "CD", "Mix", "Pcm2 ", "Rec",
+        "IGain", "OGain", "Line1", "Line2", "Line3", "Digital1",
+        "Digital2", "Digital3", "PhoneIn", "PhoneOut", "Video",
+        "Radio" and "Monitor".
         <para /></listitem>
     </varlistentry>
     <varlistentry>
