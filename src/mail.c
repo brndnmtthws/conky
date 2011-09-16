@@ -745,11 +745,14 @@ static void *imap_thread(void *arg)
 				has_idle = 1;
 			}
 
-			strncpy(sendbuf, "a1 login ", MAXDATASIZE);
-			strncat(sendbuf, mail->user, MAXDATASIZE - strlen(sendbuf) - 1);
-			strncat(sendbuf, " ", MAXDATASIZE - strlen(sendbuf) - 1);
-			strncat(sendbuf, mail->pass, MAXDATASIZE - strlen(sendbuf) - 1);
-			strncat(sendbuf, "\r\n", MAXDATASIZE - strlen(sendbuf) - 1);
+			snprintf(sendbuf, sizeof sendbuf, "a1 login %s {%d}\r\n",
+					mail->user, strlen(mail->pass));
+			if (imap_command(sockfd, sendbuf, recvbuf, "+ OK")) {
+				fail++;
+				break;
+			}
+
+			snprintf(sendbuf, sizeof sendbuf, "%s\r\n", mail->pass);
 			if (imap_command(sockfd, sendbuf, recvbuf, "a1 OK")) {
 				fail++;
 				break;
