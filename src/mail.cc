@@ -55,6 +55,7 @@
 
 #include <cmath>
 #include <mutex>
+#include <sstream>
 
 #include "update-cb.hh"
 
@@ -536,7 +537,7 @@ std::unique_ptr<mail_param_ex> parse_mail_args(mail_type type, const char *arg)
 		term.c_lflag &= ~ECHO;
 		tcsetattr(fp, TCSANOW, &term);
 		printf("Enter mailbox password (%s@%s): ", user, host);
-		if (scanf("%128s", pass))
+		if (scanf("%128s", pass) != 1)
 			pass[0] = 0;
 		printf("\n");
 		term.c_lflag |= ECHO;
@@ -775,8 +776,11 @@ void imap_cb::work()
 			if (strstr(recvbuf, " IDLE ") != NULL)
 				has_idle = true;
 
-			command(sockfd, "a1 login " + get<MP_USER>() + " " + get<MP_PASS>() + "\r\n",
-					recvbuf, "a1 OK");
+			std::ostringstream str;
+			str << "a1 login " << get<MP_USER>() << " {" << get<MP_PASS>().length() << "}\r\n";
+			command(sockfd, str.str(), recvbuf, "+ OK");
+
+			command(sockfd, get<MP_PASS>() + "\r\n", recvbuf, "a1 OK");
 
 			command(sockfd, "a2 STATUS \"" + get<MP_FOLDER>() + "\" (MESSAGES UNSEEN)\r\n",
 					recvbuf, "a2 OK");
