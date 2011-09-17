@@ -37,7 +37,7 @@
 #include "timeinfo.h"
 #include <ctype.h>
 #include <errno.h>
-#include <sys/time.h>
+#include <time.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <netinet/in.h>
@@ -92,10 +92,10 @@ int update_uname(void)
 
 double get_time(void)
 {
-	struct timeval tv;
+	struct timespec tv;
 
-	gettimeofday(&tv, 0);
-	return tv.tv_sec + (tv.tv_usec / 1000000.0);
+	clock_gettime(CLOCK_MONOTONIC, &tv);
+	return tv.tv_sec + (tv.tv_nsec * 1e-9);
 }
 
 /* Converts '~/...' paths to '/home/blah/...' assumes that 'dest' is at least
