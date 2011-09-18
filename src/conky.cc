@@ -720,7 +720,7 @@ void human_readable(long long num, char *buf, int size)
 		spaced_print(buf, size, "%d", 6, round_to_int(num));
 		return;
 	}
-	if (short_units.get(*state) || llabs(num) < 1000LL) {
+	if (short_units.get(*state)) {
 		width = 5;
 		format = "%.*f%.1s";
 	} else {
