@@ -68,6 +68,13 @@ namespace conky {
 
 			void run();
 			void start_routine();
+			void stop();
+
+			static void deleter(callback_base *ptr)
+			{
+				ptr->stop();
+				delete ptr;
+			}
 
 			// a list of registered callbacks
 			static Callbacks callbacks;
@@ -118,7 +125,7 @@ namespace conky {
 		typedef std::shared_ptr<Callback> Base;
 	
 		callback_handle(Callback *ptr)
-			: Base(ptr)
+			: Base(ptr, &priv::callback_base::deleter)
 		{}
 
 		callback_handle(Base &&ptr)

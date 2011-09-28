@@ -36,6 +36,11 @@ namespace conky {
 	namespace priv {
 		callback_base::~callback_base()
 		{
+			stop();
+		}
+
+		void callback_base::stop()
+		{
 			if(thread) {
 				done = true;
 				sem_start.post();
@@ -43,11 +48,16 @@ namespace conky {
 					write(pipefd.second, "X", 1);
 				thread->join();
 				delete thread;
+				thread = NULL;
 			}
-			if(pipefd.first >= 0)
+			if(pipefd.first >= 0) {
 				close(pipefd.first);
-			if(pipefd.second >= 0)
+				pipefd.first = -1;
+			}
+			if(pipefd.second >= 0) {
 				close(pipefd.second);
+				pipefd.second = -1;
+			}
 		}
 
 		inline size_t callback_base::get_hash(const handle &h)
