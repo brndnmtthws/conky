@@ -23,6 +23,7 @@
 include(FindPkgConfig)
 include(CheckFunctionExists)
 include(CheckIncludeFile)
+include(CheckSymbolExists)
 
 # Check for some headers
 check_include_files(sys/statfs.h HAVE_SYS_STATFS_H)
@@ -32,6 +33,12 @@ check_include_files(dirent.h HAVE_DIRENT_H)
 
 # Check for some functions
 check_function_exists(strndup HAVE_STRNDUP)
+
+AC_SEARCH_LIBS(clock_gettime "time.h" CLOCK_GETTIME_LIB "rt")
+if(NOT CLOCK_GETTIME_LIB)
+	message(FATAL_ERROR "clock_gettime not found.")
+endif(NOT CLOCK_GETTIME_LIB)
+set(conky_libs ${conky_libs} ${CLOCK_GETTIME_LIB})
 
 # standard path to search for includes
 set(INCLUDE_SEARCH_PATH /usr/include /usr/local/include)
