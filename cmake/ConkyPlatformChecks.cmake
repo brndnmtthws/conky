@@ -34,6 +34,9 @@ check_include_files(dirent.h HAVE_DIRENT_H)
 # Check for some functions
 check_function_exists(strndup HAVE_STRNDUP)
 
+check_symbol_exists(pipe2 "unistd.h" HAVE_PIPE2)
+check_symbol_exists(O_CLOEXEC "fcntl.h" HAVE_O_CLOEXEC)
+
 AC_SEARCH_LIBS(clock_gettime "time.h" CLOCK_GETTIME_LIB "rt")
 if(NOT CLOCK_GETTIME_LIB)
 	message(FATAL_ERROR "clock_gettime not found.")

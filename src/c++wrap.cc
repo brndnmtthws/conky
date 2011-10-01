@@ -27,6 +27,38 @@
 
 #include <string.h>
 
+#if !defined(HAVE_PIPE2) || !defined(HAVE_O_CLOEXEC)
+#include <fcntl.h>
+
+namespace {
+	int pipe2_emulate(int pipefd[2], int flags)
+	{
+		if(pipe(pipefd) == -1)
+			return -1;
+
+		if(flags & O_CLOEXEC) {
+			// we emulate O_CLOEXEC if the system does not have it
+			// not very thread-safe, but at least it works
+
+			for(int i = 0; i < 2; ++i) {
+				int r = fcntl(pipefd[i], F_GETFD);
+				if(r == -1)
+					return -1;
+
+				if(fcntl(pipefd[i], F_SETFD, r | FD_CLOEXEC) == -1)
+					return -1;
+			}
+		}
+
+		return 0;
+	}
+
+	int (* const pipe2_ptr)(int[2], int) = &pipe2_emulate;
+}
+#else
+	int (* const pipe2_ptr)(int[2], int) = &pipe2;
+#endif
+
 std::string strerror_r(int errnum)
 {
 	char buf[100];
@@ -36,7 +68,7 @@ std::string strerror_r(int errnum)
 std::pair<int, int> pipe2(int flags)
 {
 	int fd[2];
-	if(pipe2(fd, flags) == -1)
+	if(pipe2_ptr(fd, flags) == -1)
 		throw errno_error("pipe2");
 	else
 		return std::pair<int, int>(fd[0], fd[1]);

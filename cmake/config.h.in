@@ -33,6 +33,9 @@
 #cmakedefine HAVE_FOPENCOOKIE 1
 #cmakedefine HAVE_FUNOPEN 1
 
+#cmakedefine HAVE_PIPE2 1
+#cmakedefine HAVE_O_CLOEXEC 1
+
 #cmakedefine BUILD_X11 1
 
 #cmakedefine OWN_WINDOW 1
