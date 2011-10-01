@@ -60,6 +60,7 @@ case $uname in
   FreeBSD*|GNU/kFreeBSD*)
     WANT_KVM=yes
     WANT_DEVSTAT=yes
+    WANT_OPTRESET=yes
     ;;
 #  NetBSD*)
 #    WANT_KVM=yes
@@ -728,6 +729,17 @@ if test x$WANT_KVM = xyes; then
   AC_CHECK_LIB(kvm, kvm_open,
     conky_LIBS="$conky_LIBS -lkvm",
   AC_MSG_ERROR([Could not find kvm_open in -lkvm.])
+  )
+fi
+
+dnl
+dnl optreset
+dnl
+
+if test x$WANT_OPTRESET = xyes; then
+  AC_CHECK_LIB(bsd, optreset,
+    conky_LIBS="$conky_LIBS -lbsd",
+  AC_MSG_ERROR([Could not find optreset in -lbsd.])
   )
 fi
 
