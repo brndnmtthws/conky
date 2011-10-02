@@ -902,12 +902,17 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(cpu) {
 				if (cur->cpu_usage) {
 					if (obj->data.i > info.cpu_count) {
-						NORM_ERR("obj->data.i %i info.cpu_count %i",
-								obj->data.i, info.cpu_count);
-						CRIT_ERR(NULL, NULL, "attempting to use more CPUs than you have!");
-					}
-				    percent_print(p, p_max_size,
+						static bool warned = false;
+						if(!warned) {
+							NORM_ERR("obj->data.i %i info.cpu_count %i",
+									obj->data.i, info.cpu_count);
+							NORM_ERR("attempting to use more CPUs than you have!");
+							warned = true;
+						}
+					} else  {
+						percent_print(p, p_max_size,
 				              round_to_int(cur->cpu_usage[obj->data.i] * 100.0));
+					}
 				}
 			}
 			OBJ(cpugauge)

@@ -927,8 +927,9 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
 		snprintf(path, 255, "%s%s/%s%d_input", dir, dev, type, n);
 		fd = open(path, O_RDONLY);
 		if (fd < 0) {
-			CRIT_ERR(NULL, NULL, "can't open '%s': %s\nplease check your device or remove this "
+			NORM_ERR("can't open '%s': %s\nplease check your device or remove this "
 					 "var from "PACKAGE_NAME, path, strerror(errno));
+			return -1;
 		}
 	}
 
@@ -1080,7 +1081,7 @@ void print_sysfs_sensor(struct text_object *obj, char *p, int p_max_size)
 	double r;
 	struct sysfs *sf = obj->data.opaque;
 
-	if (!sf)
+	if (!sf || sf->fd < 0)
 		return;
 
 	r = get_sysfs_info(&sf->fd, sf->arg,
