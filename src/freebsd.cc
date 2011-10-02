@@ -662,7 +662,7 @@ int update_diskio(void)
 	struct device_selection *dev_select = NULL;
 	long select_generation;
 	static struct statinfo statinfo_cur;
-	char device_name[text_buffer_size];
+	char device_name[text_buffer_size.get(*state)];
 	struct diskio_stat *cur;
 	unsigned int reads, writes;
 	unsigned int total_reads = 0, total_writes = 0;
@@ -688,7 +688,7 @@ int update_diskio(void)
 
 			di = dev_select[dn].position;
 			dev = &statinfo_cur.dinfo->devices[di];
-			snprintf(device_name, text_buffer_size, "%s%d",
+			snprintf(device_name, text_buffer_size.get(*state), "%s%d",
 					dev_select[dn].device_name, dev_select[dn].unit_number);
 
 			total_reads += (reads = dev->bytes[DEVSTAT_READ] / 512);
@@ -728,7 +728,7 @@ void get_top_info(void)
 				proc = new_process(p[i].ki_pid);
 
 			proc->time_stamp = g_time;
-			proc->name = strndup(p[i].ki_comm, text_buffer_size);
+			proc->name = strndup(p[i].ki_comm, text_buffer_size.get(*state));
 			proc->amount = 100.0 * p[i].ki_pctcpu / FSCALE;
 			proc->vsize = p[i].ki_size;
 			proc->rss = (p[i].ki_rssize * getpagesize());
