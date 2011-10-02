@@ -47,6 +47,7 @@
 #include <unistd.h>
 // #include <assert.h>
 #include <time.h>
+#include <unordered_map>
 #include "setting.hh"
 #include "top.h"
 
@@ -2375,60 +2376,24 @@ void print_disk_protect_queue(struct text_object *obj, char *p, int p_max_size)
 	snprintf(p, p_max_size, (state > 0) ? "frozen" : "free  ");
 }
 
-typedef struct DEV_LIST_TYPE
-{
-	char *dev_name;
-	int memoized;
-	struct DEV_LIST_TYPE *next;
-
-} DEV_LIST, *DEV_LIST_PTR;
-
-DEV_LIST_PTR dev_head = NULL;
-
-void disk_cleanup() {
-	DEV_LIST_PTR dev_next, dev_cur = dev_head;
-
-	while(dev_cur) {
-		dev_next = dev_cur->next;
-		free(dev_cur->dev_name);
-		free(dev_cur);
-		dev_cur = dev_next;
-	}
-	dev_head = NULL;
-}
+std::unordered_map<std::string, bool> dev_list;
 
 /* Same as sf #2942117 but memoized using a linked list */
 int is_disk(char *dev)
 {
-	char syspath[PATH_MAX];
+	std::string orig(dev);
+	std::string syspath("/sys/block/");
 	char *slash;
-	DEV_LIST_PTR dev_cur, dev_last;
 
-	dev_cur = dev_head;
-
-	while (dev_cur) {
-		if (strcmp(dev_cur->dev_name, dev) == 0)
-			return dev_cur->memoized;
-		dev_last = dev_cur;
-		dev_cur  = dev_cur->next;
-	}
-
-	dev_cur = (DEV_LIST_PTR)malloc(sizeof(DEV_LIST));
-	dev_cur->dev_name = (char *)malloc((strlen(dev)+1)*sizeof(char));
-	strcpy(dev_cur->dev_name,dev);
-	dev_cur->next = NULL;
+	auto i = dev_list.find(orig);
+	if(i != dev_list.end())
+		return i->second;
 
 	while ((slash = strchr(dev, '/')))
 		*slash = '!';
-	snprintf(syspath, sizeof(syspath), "/sys/block/%s", dev);
-	dev_cur->memoized = !(access(syspath, F_OK));
+	syspath += dev;
 
-	if (dev_head)
-		dev_last->next = dev_cur;
-	else
-		dev_head = dev_cur;
-
-	return dev_cur->memoized;
+	return dev_list[orig] = !(access(syspath.c_str(), F_OK));
 }
 
 int update_diskio(void)

@@ -3136,8 +3136,6 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	disk_cleanup();
-
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 	kvm_close(kd);
 #endif
