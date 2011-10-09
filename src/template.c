@@ -146,7 +146,7 @@ static char *handle_template(const char *tmpl, const char *args)
 	char *eval_text;
 
 	if ((sscanf(tmpl, "template%u", &template_idx) != 1) ||
-	    (template_idx >= MAX_TEMPLATES))
+	    (template_idx >= MAX_TEMPLATES) || !template[template_idx])
 		return NULL;
 
 	if(args) {
