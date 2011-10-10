@@ -210,6 +210,8 @@ static int process_parse_stat(struct process *process)
 	int nice_val;
 	char *lparen, *rparen;
 
+	struct stat process_stat;
+
 	snprintf(filename, sizeof(filename), PROCFS_TEMPLATE, process->pid);
 
 	ps = open(filename, O_RDONLY);
@@ -217,6 +219,11 @@ static int process_parse_stat(struct process *process)
 		/* The process must have finished in the last few jiffies! */
 		return 1;
 	}
+
+	if (fstat(ps, &process_stat) != 0){
+		return 1;
+	}
+	process->uid=process_stat.st_uid;
 
 	/* Mark process as up-to-date. */
 	process->time_stamp = g_time;
@@ -864,6 +871,10 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj)
 			td->type = TOP_MEM_RES;
 		} else if (strcmp(buf, "mem_vsize") == EQUAL) {
 			td->type = TOP_MEM_VSIZE;
+		} else if (strcmp(buf, "uid") == EQUAL) {
+			td->type = TOP_UID;
+		} else if (strcmp(buf, "user") == EQUAL) {
+			td->type = TOP_USER;
 #ifdef IOSTATS
 		} else if (strcmp(buf, "io_read") == EQUAL) {
 			td->type = TOP_READ_BYTES;
@@ -875,10 +886,10 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj)
 		} else {
 			NORM_ERR("invalid type arg for top");
 #ifdef IOSTATS
-			NORM_ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize, "
+			NORM_ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize, uid, user"
 					"io_read, io_write, io_perc");
 #else /* IOSTATS */
-			NORM_ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize");
+			NORM_ERR("must be one of: name, cpu, pid, mem, time, mem_res, mem_vsize, uid, user");
 #endif /* IOSTATS */
 			free(td->s);
 			free(obj->data.opaque);
@@ -1023,6 +1034,14 @@ void print_top(struct text_object *obj, char *p, int p_max_size)
 			case TOP_MEM_VSIZE:
 				human_readable(needed[td->num]->vsize,
 						p, p_max_size);
+				break;
+			case TOP_UID:
+				snprintf(p, p_max_size, "%5d", needed[td->num]->uid);
+				break;
+			case TOP_USER:
+				width = MIN(p_max_size, 9);
+				snprintf(p, width, "%.8s",
+						getpwuid(needed[td->num]->uid)->pw_name);
 				break;
 #ifdef IOSTATS
 			case TOP_READ_BYTES:
