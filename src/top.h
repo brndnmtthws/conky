@@ -77,21 +77,6 @@
 
 #define MAX_SP 10	// number of elements to sort
 
-enum top_field {
-	TOP_CPU,
-	TOP_NAME,
-	TOP_PID,
-	TOP_MEM,
-	TOP_TIME,
-	TOP_MEM_RES,
-	TOP_MEM_VSIZE,
-	TOP_UID,
-	TOP_USER,
-	TOP_READ_BYTES,
-	TOP_WRITE_BYTES,
-	TOP_IO_PERC
-};
-
 /******************************************
  * Process class						  *
  ******************************************/
