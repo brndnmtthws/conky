@@ -484,6 +484,16 @@ static void print_top_time(struct text_object *obj, char *p, int p_max_size)
 	free(timeval);
 }
 
+static void print_top_user(struct text_object *obj, char *p, int p_max_size)
+{
+	struct top_data *td = (struct top_data *)obj->data.opaque;
+
+	if (!td || !td->list || !td->list[td->num])
+		return;
+
+	snprintf(p, p_max_size, "%.8s", getpwuid(td->list[td->num]->uid)->pw_name);
+}
+
 #define PRINT_TOP_GENERATOR(name, width, fmt, field) \
 static void print_top_##name(struct text_object *obj, char *p, int p_max_size) \
 { \
@@ -504,6 +514,7 @@ static void print_top_##name(struct text_object *obj, char *p, int p_max_size) \
 
 PRINT_TOP_GENERATOR(cpu, 7, "%6.2f", amount)
 PRINT_TOP_GENERATOR(pid, 6, "%5i", pid)
+PRINT_TOP_GENERATOR(uid, 6, "%5i", uid)
 PRINT_TOP_HR_GENERATOR(mem_res, rss, 1)
 PRINT_TOP_HR_GENERATOR(mem_vsize, vsize, 1)
 #ifdef BUILD_IOSTATS
@@ -577,6 +588,10 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj)
 			obj->callbacks.print = &print_top_mem_res;
 		} else if (strcmp(buf, "mem_vsize") == EQUAL) {
 			obj->callbacks.print = &print_top_mem_vsize;
+		} else if (strcmp(buf, "uid") == EQUAL) {
+			obj->callbacks.print = &print_top_uid;
+		} else if (strcmp(buf, "user") == EQUAL) {
+			obj->callbacks.print = &print_top_user;
 #ifdef BUILD_IOSTATS
 		} else if (strcmp(buf, "io_read") == EQUAL) {
 			obj->callbacks.print = &print_top_read_bytes;

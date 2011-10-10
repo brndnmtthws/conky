@@ -2578,6 +2578,7 @@ static void process_parse_stat(struct process *process)
 	int endl;
 	int nice_val;
 	char *lparen, *rparen;
+	struct stat process_stat;
 
 	snprintf(filename, sizeof(filename), PROCFS_TEMPLATE, process->pid);
 
@@ -2586,6 +2587,10 @@ static void process_parse_stat(struct process *process)
 		/* The process must have finished in the last few jiffies! */
 		return;
 	}
+
+	if (fstat(ps, &process_stat) != 0)
+		return;
+	process->uid=process_stat.st_uid;
 
 	/* Mark process as up-to-date. */
 	process->time_stamp = g_time;
