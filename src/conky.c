@@ -466,8 +466,6 @@ int check_contains(char *f, char *s)
 	return ret;
 }
 
-#define SECRIT_MULTILINE_CHAR '\x02'
-
 int calc_text_width(const char *s)
 {
 	size_t slen = strlen(s);
@@ -730,22 +728,6 @@ void parse_conky_vars(struct text_object *root, const char *txt,
 {
 	extract_variable_text_internal(root, txt);
 	generate_text_internal(p, p_max_size, *root, cur);
-}
-
-/* substitutes all occurrences of '\n' with SECRIT_MULTILINE_CHAR, which allows
- * multiline objects like $exec work with $align[rc] and friends
- */
-void substitute_newlines(char *p, long l)
-{
-	char *s = p;
-	if (l < 0) return;
-	while (p && *p && p < s + l) {
-		if (*p == '\n') {
-			/* only substitute if it's not the last newline */
-			*p = SECRIT_MULTILINE_CHAR;
-		}
-		p++;
-	}
 }
 
 void generate_text_internal(char *p, int p_max_size,
@@ -2392,14 +2374,6 @@ void generate_text_internal(char *p, int p_max_size,
 #ifdef HAVE_ICONV
 			iconv_convert(&a, buff_in, p, p_max_size);
 #endif /* HAVE_ICONV */
-			if (obj->type == OBJ_execp || obj->type == OBJ_execpi || obj->type
-					== OBJ_exec
-#ifdef HAVE_LUA
-					|| obj->type == OBJ_lua || obj->type == OBJ_lua_parse
-#endif /* HAVE_LUA */
-					) {
-				substitute_newlines(p, a - 2);
-			}
 			p += a;
 			p_max_size -= a;
 			(*p) = 0;
@@ -2529,9 +2503,6 @@ static int get_string_width_special(char *s, int special_index)
 				width += specials[special_index + idx].width;
 			}
 			idx++;
-		} else if (*p == SECRIT_MULTILINE_CHAR) {
-			*p = 0;
-			break;
 		} else {
 			p++;
 		}
@@ -2647,8 +2618,6 @@ static long current_color;
 static int text_size_updater(char *s, int special_index)
 {
 	int w = 0;
-	int lw;
-	int contain_SECRIT_MULTILINE_CHAR = 0;
 	char *p;
 
 	if ((output_methods & TO_X) == 0)
@@ -2696,24 +2665,12 @@ static int text_size_updater(char *s, int special_index)
 
 			special_index++;
 			s = p + 1;
-		} else if (*p == SECRIT_MULTILINE_CHAR) {
-			contain_SECRIT_MULTILINE_CHAR = 1;
-			*p = '\0';
-			lw = get_string_width(s);
-			*p = SECRIT_MULTILINE_CHAR;
-			s = p + 1;
-			w = lw > w ? lw : w;
-			text_height += last_font_height;
 		}
 		p++;
 	}
-	/* Check also last substring if string contains SECRIT_MULTILINE_CHAR */
-	if (contain_SECRIT_MULTILINE_CHAR) {
-		lw = get_string_width(s);
-		w = lw > w ? lw : w;
-	} else {
-		w += get_string_width(s);
-	}
+
+	w += get_string_width(s);
+
 	if (w > text_width) {
 		text_width = w;
 	}
@@ -2757,40 +2714,32 @@ static void draw_string(const char *s)
 	int i, i2, pos, width_of_s;
 	int max = 0;
 	int added;
-	char *s_with_newlines;
 
 	if (s[0] == '\0') {
 		return;
 	}
 
 	width_of_s = get_string_width(s);
-	s_with_newlines = strdup(s);
-	for(i = 0; i < (int) strlen(s_with_newlines); i++) {
-		if(s_with_newlines[i] == SECRIT_MULTILINE_CHAR) {
-			s_with_newlines[i] = '\n';
-		}
-	}
 	if ((output_methods & TO_STDOUT) && draw_mode == FG) {
-		printf("%s\n", s_with_newlines);
+		printf("%s\n", s);
 		if (extra_newline) fputc('\n', stdout);
 		fflush(stdout);	/* output immediately, don't buffer */
 	}
 	if ((output_methods & TO_STDERR) && draw_mode == FG) {
-		fprintf(stderr, "%s\n", s_with_newlines);
+		fprintf(stderr, "%s\n", s);
 		fflush(stderr);	/* output immediately, don't buffer */
 	}
 	if ((output_methods & OVERWRITE_FILE) && draw_mode == FG && overwrite_fpointer) {
-		fprintf(overwrite_fpointer, "%s\n", s_with_newlines);
+		fprintf(overwrite_fpointer, "%s\n", s);
 	}
 	if ((output_methods & APPEND_FILE) && draw_mode == FG && append_fpointer) {
-		fprintf(append_fpointer, "%s\n", s_with_newlines);
+		fprintf(append_fpointer, "%s\n", s);
 	}
 #ifdef NCURSES
 	if ((output_methods & TO_NCURSES) && draw_mode == FG) {
-		printw("%s", s_with_newlines);
+		printw("%s", s);
 	}
 #endif
-	free(s_with_newlines);
 	memset(tmpstring1, 0, text_buffer_size);
 	memset(tmpstring2, 0, text_buffer_size);
 	strncpy(tmpstring1, s, text_buffer_size - 1);
@@ -2874,7 +2823,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 	int font_h;
 	int cur_y_add = 0;
 #endif /* X11 */
-	char *recurse = 0;
 	char *p = s;
 	int last_special_needed = -1;
 	int orig_special_index = special_index;
@@ -2888,12 +2836,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 #endif /* X11 */
 
 	while (*p) {
-		if (*p == SECRIT_MULTILINE_CHAR) {
-			/* special newline marker for multiline objects */
-			recurse = p + 1;
-			*p = '\0';
-			break;
-		}
 		if (*p == SPECIAL_CHAR || last_special_applied > -1) {
 #ifdef X11
 			int w = 0;
@@ -3340,10 +3282,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 	if (output_methods & TO_X)
 		cur_y += font_descent();
 #endif /* X11 */
-	if (recurse && *recurse) {
-		special_index = draw_each_line_inner(recurse, special_index, last_special_needed);
-		*(recurse - 1) = SECRIT_MULTILINE_CHAR;
-	}
 	return special_index;
 }
 
