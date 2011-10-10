@@ -573,8 +573,6 @@ int get_total_updates(void)
 	return total_updates;
 }
 
-#define SECRIT_MULTILINE_CHAR '\x02'
-
 int calc_text_width(const char *s)
 {
 	size_t slen = strlen(s);
@@ -799,23 +797,6 @@ void parse_conky_vars(struct text_object *root, const char *txt,
 	generate_text_internal(p, p_max_size, *root);
 }
 
-/* substitutes all occurrences of '\n' with SECRIT_MULTILINE_CHAR, which allows
- * multiline objects like $exec work with $align[rc] and friends
- */
-void substitute_newlines(char *p, long l)
-{
-	char *s = p;
-	if (l < 0) return;
-	while (p && *p && p < s + l) {
-		if (*p == '\n') {
-			/* only substitute if it's not the last newline */
-			*p = SECRIT_MULTILINE_CHAR;
-		}
-		p++;
-	}
-}
-
-
 /* IFBLOCK jumping algorithm
  *
  * This is easier as it looks like:
@@ -877,8 +858,6 @@ void generate_text_internal(char *p, int p_max_size, struct text_object root)
 #ifdef BUILD_ICONV
 		iconv_convert(&a, buff_in, p, p_max_size);
 #endif /* BUILD_ICONV */
-		if (!obj->verbatim_output)
-			substitute_newlines(p, a - 2);
 		p += a;
 		p_max_size -= a;
 		(*p) = 0;
@@ -1014,9 +993,6 @@ static int get_string_width_special(char *s, int special_index)
 			}
 			idx++;
 			current = current->next;
-		} else if (*p == SECRIT_MULTILINE_CHAR) {
-			*p = 0;
-			break;
 		} else {
 			p++;
 		}
@@ -1133,8 +1109,6 @@ static long current_color;
 static int text_size_updater(char *s, int special_index)
 {
 	int w = 0;
-	int lw;
-	int contain_SECRIT_MULTILINE_CHAR = 0;
 	char *p;
 	special_t *current = specials;
 
@@ -1187,24 +1161,12 @@ static int text_size_updater(char *s, int special_index)
 			special_index++;
 			current = current->next;
 			s = p + 1;
-		} else if (*p == SECRIT_MULTILINE_CHAR) {
-			contain_SECRIT_MULTILINE_CHAR = 1;
-			*p = '\0';
-			lw = get_string_width(s);
-			*p = SECRIT_MULTILINE_CHAR;
-			s = p + 1;
-			w = lw > w ? lw : w;
-			text_height += last_font_height;
 		}
 		p++;
 	}
-	/* Check also last substring if string contains SECRIT_MULTILINE_CHAR */
-	if (contain_SECRIT_MULTILINE_CHAR) {
-		lw = get_string_width(s);
-		w = lw > w ? lw : w;
-	} else {
-		w += get_string_width(s);
-	}
+
+	w += get_string_width(s);
+
 	if (w > text_width) {
 		text_width = w;
 	}
@@ -1260,50 +1222,42 @@ static void draw_string(const char *s)
 	int i, i2, pos, width_of_s;
 	int max = 0;
 	int added;
-	char *s_with_newlines;
 
 	if (s[0] == '\0') {
 		return;
 	}
 
 	width_of_s = get_string_width(s);
-	s_with_newlines = strdup(s);
-	for(i = 0; i < (int) strlen(s_with_newlines); i++) {
-		if(s_with_newlines[i] == SECRIT_MULTILINE_CHAR) {
-			s_with_newlines[i] = '\n';
-		}
-	}
 	if (out_to_stdout.get(*state) && draw_mode == FG) {
-		printf("%s\n", s_with_newlines);
+		printf("%s\n", s);
 		if (extra_newline.get(*state)) fputc('\n', stdout);
 		fflush(stdout);	/* output immediately, don't buffer */
 	}
 	if (out_to_stderr.get(*state) && draw_mode == FG) {
-		fprintf(stderr, "%s\n", s_with_newlines);
+		fprintf(stderr, "%s\n", s);
 		fflush(stderr);	/* output immediately, don't buffer */
 	}
 	if (draw_mode == FG && overwrite_fpointer) {
-		fprintf(overwrite_fpointer, "%s\n", s_with_newlines);
+		fprintf(overwrite_fpointer, "%s\n", s);
 	}
 	if (draw_mode == FG && append_fpointer) {
-		fprintf(append_fpointer, "%s\n", s_with_newlines);
+		fprintf(append_fpointer, "%s\n", s);
 	}
 #ifdef BUILD_NCURSES
 	if (out_to_ncurses.get(*state) && draw_mode == FG) {
-		printw("%s", s_with_newlines);
+		printw("%s", s);
 	}
 #endif
 #ifdef BUILD_HTTP
 	if (out_to_http.get(*state) && draw_mode == FG) {
 		std::string::size_type origlen = webpage.length();
-		webpage.append(s_with_newlines);
+		webpage.append(s);
 		webpage = string_replace_all(webpage, "\n", "<br />", origlen);
 		webpage = string_replace_all(webpage, "  ", "&nbsp;&nbsp;", origlen);
 		webpage = string_replace_all(webpage, "&nbsp; ", "&nbsp;&nbsp;", origlen);
 		webpage.append("<br />");
 	}
 #endif
-	free(s_with_newlines);
 	int tbs = text_buffer_size.get(*state);
 	memset(tmpstring1, 0, tbs);
 	memset(tmpstring2, 0, tbs);
@@ -1395,7 +1349,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 	int cur_y_add = 0;
 	int mw = maximum_width.get(*state);
 #endif /* BUILD_X11 */
-	char *recurse = 0;
 	char *p = s;
 	int last_special_needed = -1;
 	int orig_special_index = special_index;
@@ -1409,12 +1362,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 #endif /* BUILD_X11 */
 
 	while (*p) {
-		if (*p == SECRIT_MULTILINE_CHAR) {
-			/* special newline marker for multiline objects */
-			recurse = p + 1;
-			*p = '\0';
-			break;
-		}
 		if (*p == SPECIAL_CHAR || last_special_applied > -1) {
 #ifdef BUILD_X11
 			int w = 0;
@@ -1843,10 +1790,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 	if (out_to_x.get(*state))
 		cur_y += font_descent();
 #endif /* BUILD_X11 */
-	if (recurse && *recurse) {
-		special_index = draw_each_line_inner(recurse, special_index, last_special_needed);
-		*(recurse - 1) = SECRIT_MULTILINE_CHAR;
-	}
 	return special_index;
 }
 
