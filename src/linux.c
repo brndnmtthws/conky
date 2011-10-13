@@ -1105,7 +1105,8 @@ void free_sysfs_sensor(struct text_object *obj)
 	if (!sf)
 		return;
 
-	close(sf->fd);
+	if(sf->fd >= 0)
+		close(sf->fd);
 	free(obj->data.opaque);
 	obj->data.opaque = NULL;
 }
