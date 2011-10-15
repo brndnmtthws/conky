@@ -35,6 +35,14 @@
 #include <ctype.h>
 #include <dirent.h>
 
+pid_t strtopid(const char *s)
+{
+	long t;
+	if(sscanf(s, "%ld", &t) != 1)
+		return -1;
+	return t;
+}
+
 char* readfile(char* filename, int* total_read, char showerror) {
 	FILE* file;
 	char* buf = NULL;
@@ -105,7 +113,7 @@ int inlist(struct ll_string* front, char* string) {
 void print_pid_chroot(struct text_object *obj, char *p, int p_max_size) {
 	char *buffer;
 
-	asprintf(&buffer, PROCDIR "/%s/root", obj->data.s);
+	asprintf(&buffer, PROCDIR "/%d/root", strtopid(obj->data.s));
 	pid_readlink(buffer, p, p_max_size);
 	free(buffer);
 }
@@ -116,7 +124,7 @@ void print_pid_cmdline(struct text_object *obj, char *p, int p_max_size)
 	int i, bytes_read;
 
 	if(*(obj->data.s) != 0) {
-		asprintf(&buf, PROCDIR "/%s/cmdline", obj->data.s);
+		asprintf(&buf, PROCDIR "/%d/cmdline", strtopid(obj->data.s));
 		strcpy(obj->data.s, buf);
 		free(buf);
 		buf = readfile(obj->data.s, &bytes_read, 1);
@@ -139,7 +147,7 @@ void print_pid_cwd(struct text_object *obj, char *p, int p_max_size)
 	char buf[p_max_size];
 	int bytes_read;
 
-	sprintf(buf, PROCDIR "/%s/cwd", obj->data.s);
+	sprintf(buf, PROCDIR "/%d/cwd", strtopid(obj->data.s));
 	strcpy(obj->data.s, buf);
 	bytes_read = readlink(obj->data.s, buf, p_max_size);
 	if(bytes_read != -1) {
@@ -186,7 +194,7 @@ void print_pid_environ_list(struct text_object *obj, char *p, int p_max_size)
 	int bytes_read, total_read;
 	int i = 0;
 
-	asprintf(&buf, PROCDIR "/%s/environ", obj->data.s);
+	asprintf(&buf, PROCDIR "/%d/environ", strtopid(obj->data.s));
 	strcpy(obj->data.s, buf);
 	free(buf);
 	buf = readfile(obj->data.s, &total_read, 1);
@@ -207,7 +215,7 @@ void print_pid_environ_list(struct text_object *obj, char *p, int p_max_size)
 void print_pid_exe(struct text_object *obj, char *p, int p_max_size) {
 	char *buffer;
 
-	asprintf(&buffer, PROCDIR "/%s/exe", obj->data.s);
+	asprintf(&buffer, PROCDIR "/%d/exe", strtopid(obj->data.s));
 	pid_readlink(buffer, p, p_max_size);
 	free(buffer);
 }
@@ -218,7 +226,7 @@ void print_pid_nice(struct text_object *obj, char *p, int p_max_size) {
 	long int nice_value;
 
 	if(*(obj->data.s) != 0) {
-		asprintf(&buf, PROCDIR "/%s/stat", obj->data.s);
+		asprintf(&buf, PROCDIR "/%d/stat", strtopid(obj->data.s));
 		strcpy(obj->data.s, buf);
 		free(buf);
 		buf = readfile(obj->data.s, &bytes_read, 1);
@@ -244,7 +252,7 @@ void print_pid_openfiles(struct text_object *obj, char *p, int p_max_size) {
 	if(dir != NULL) {
 		while ((entry = readdir(dir))) {
 			if(entry->d_name[0] != '.') {
-				snprintf(buf, p_max_size, "%s/%s", obj->data.s, entry->d_name);
+				snprintf(buf, p_max_size, "%d/%s", strtopid(obj->data.s), entry->d_name);
 				length = readlink(buf, buf, p_max_size);
 				buf[length] = 0;
 				if(inlist(files_front, buf) == 0) {
@@ -271,7 +279,7 @@ void print_pid_parent(struct text_object *obj, char *p, int p_max_size) {
 	char *begin, *end, *buf = NULL;
 	int bytes_read;
 
-	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	asprintf(&buf, PROCDIR "/%d/status", strtopid(obj->data.s));
 	strcpy(obj->data.s, buf);
 	free(buf);
 	buf = readfile(obj->data.s, &bytes_read, 1);
@@ -297,7 +305,7 @@ void print_pid_priority(struct text_object *obj, char *p, int p_max_size) {
 	long int priority;
 
 	if(*(obj->data.s) != 0) {
-		asprintf(&buf, PROCDIR "/%s/stat", obj->data.s);
+		asprintf(&buf, PROCDIR "/%d/stat", strtopid(obj->data.s));
 		strcpy(obj->data.s, buf);
 		free(buf);
 		buf = readfile(obj->data.s, &bytes_read, 1);
@@ -317,7 +325,7 @@ void print_pid_state(struct text_object *obj, char *p, int p_max_size) {
 	char *begin, *end, *buf = NULL;
 	int bytes_read;
 
-	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	asprintf(&buf, PROCDIR "/%d/status", strtopid(obj->data.s));
 	strcpy(obj->data.s, buf);
 	free(buf);
 	buf = readfile(obj->data.s, &bytes_read, 1);
@@ -341,7 +349,7 @@ void print_pid_state_short(struct text_object *obj, char *p, int p_max_size) {
 	char *begin, *buf = NULL;
 	int bytes_read;
 
-	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	asprintf(&buf, PROCDIR "/%d/status", strtopid(obj->data.s));
 	strcpy(obj->data.s, buf);
 	free(buf);
 	buf = readfile(obj->data.s, &bytes_read, 1);
@@ -359,7 +367,7 @@ void print_pid_state_short(struct text_object *obj, char *p, int p_max_size) {
 void print_pid_stderr(struct text_object *obj, char *p, int p_max_size) {
 	char *buffer;
 
-	asprintf(&buffer, PROCDIR "/%s/fd/2", obj->data.s);
+	asprintf(&buffer, PROCDIR "/%d/fd/2", strtopid(obj->data.s));
 	pid_readlink(buffer, p, p_max_size);
 	free(buffer);
 }
@@ -367,7 +375,7 @@ void print_pid_stderr(struct text_object *obj, char *p, int p_max_size) {
 void print_pid_stdin(struct text_object *obj, char *p, int p_max_size) {
 	char *buffer;
 
-	asprintf(&buffer, PROCDIR "/%s/fd/0", obj->data.s);
+	asprintf(&buffer, PROCDIR "/%d/fd/0", strtopid(obj->data.s));
 	pid_readlink(buffer, p, p_max_size);
 	free(buffer);
 }
@@ -375,7 +383,7 @@ void print_pid_stdin(struct text_object *obj, char *p, int p_max_size) {
 void print_pid_stdout(struct text_object *obj, char *p, int p_max_size) {
 	char *buffer;
 
-	asprintf(&buffer, PROCDIR "/%s/fd/1", obj->data.s);
+	asprintf(&buffer, PROCDIR "/%d/fd/1", strtopid(obj->data.s));
 	pid_readlink(buffer, p, p_max_size);
 	free(buffer);
 }
@@ -435,7 +443,7 @@ void print_pid_threads(struct text_object *obj, char *p, int p_max_size) {
 	char *begin, *end, *buf = NULL;
 	int bytes_read;
 
-	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	asprintf(&buf, PROCDIR "/%d/status", strtopid(obj->data.s));
 	strcpy(obj->data.s, buf);
 	free(buf);
 	buf = readfile(obj->data.s, &bytes_read, 1);
@@ -461,7 +469,7 @@ void print_pid_thread_list(struct text_object *obj, char *p, int p_max_size) {
 	struct dirent *entry;
 	int totallength = 0;
 
-	asprintf(&buf, PROCDIR "/%s/task", obj->data.s);
+	asprintf(&buf, PROCDIR "/%d/task", strtopid(obj->data.s));
 	strcpy(obj->data.s, buf);
 	free(buf);
 	dir = opendir(obj->data.s);
@@ -485,7 +493,7 @@ void print_pid_time_kernelmode(struct text_object *obj, char *p, int p_max_size)
 	unsigned long int umtime;
 
 	if(*(obj->data.s) != 0) {
-		asprintf(&buf, PROCDIR "/%s/stat", obj->data.s);
+		asprintf(&buf, PROCDIR "/%d/stat", strtopid(obj->data.s));
 		strcpy(obj->data.s, buf);
 		free(buf);
 		buf = readfile(obj->data.s, &bytes_read, 1);
@@ -505,7 +513,7 @@ void print_pid_time_usermode(struct text_object *obj, char *p, int p_max_size) {
 	unsigned long int kmtime;
 
 	if(*(obj->data.s) != 0) {
-		asprintf(&buf, PROCDIR "/%s/stat", obj->data.s);
+		asprintf(&buf, PROCDIR "/%d/stat", strtopid(obj->data.s));
 		strcpy(obj->data.s, buf);
 		free(buf);
 		buf = readfile(obj->data.s, &bytes_read, 1);
@@ -525,7 +533,7 @@ void print_pid_time(struct text_object *obj, char *p, int p_max_size) {
 	unsigned long int umtime, kmtime;
 
 	if(*(obj->data.s) != 0) {
-		asprintf(&buf, PROCDIR "/%s/stat", obj->data.s);
+		asprintf(&buf, PROCDIR "/%d/stat", strtopid(obj->data.s));
 		strcpy(obj->data.s, buf);
 		free(buf);
 		buf = readfile(obj->data.s, &bytes_read, 1);
@@ -545,7 +553,7 @@ void print_pid_uid(struct text_object *obj, char *p, int p_max_size) {
 	char *begin, *end, *buf = NULL;
 	int bytes_read;
 
-	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	asprintf(&buf, PROCDIR "/%d/status", strtopid(obj->data.s));
 	strcpy(obj->data.s, buf);
 	free(buf);
 	buf = readfile(obj->data.s, &bytes_read, 1);
@@ -570,7 +578,7 @@ void print_pid_euid(struct text_object *obj, char *p, int p_max_size) {
 	char *begin, *end, *buf = NULL;
 	int bytes_read;
 
-	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	asprintf(&buf, PROCDIR "/%d/status", strtopid(obj->data.s));
 	strcpy(obj->data.s, buf);
 	free(buf);
 	buf = readfile(obj->data.s, &bytes_read, 1);
@@ -596,7 +604,7 @@ void print_pid_suid(struct text_object *obj, char *p, int p_max_size) {
 	char *begin, *end, *buf = NULL;
 	int bytes_read;
 
-	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	asprintf(&buf, PROCDIR "/%d/status", strtopid(obj->data.s));
 	strcpy(obj->data.s, buf);
 	free(buf);
 	buf = readfile(obj->data.s, &bytes_read, 1);
@@ -623,7 +631,7 @@ void print_pid_fsuid(struct text_object *obj, char *p, int p_max_size) {
 	char *begin, *end, *buf = NULL;
 	int bytes_read;
 
-	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	asprintf(&buf, PROCDIR "/%d/status", strtopid(obj->data.s));
 	strcpy(obj->data.s, buf);
 	free(buf);
 	buf = readfile(obj->data.s, &bytes_read, 1);
@@ -652,7 +660,7 @@ void print_pid_gid(struct text_object *obj, char *p, int p_max_size) {
 	char *begin, *end, *buf = NULL;
 	int bytes_read;
 
-	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	asprintf(&buf, PROCDIR "/%d/status", strtopid(obj->data.s));
 	strcpy(obj->data.s, buf);
 	free(buf);
 	buf = readfile(obj->data.s, &bytes_read, 1);
@@ -677,7 +685,7 @@ void print_pid_egid(struct text_object *obj, char *p, int p_max_size) {
 	char *begin, *end, *buf = NULL;
 	int bytes_read;
 
-	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	asprintf(&buf, PROCDIR "/%d/status", strtopid(obj->data.s));
 	strcpy(obj->data.s, buf);
 	free(buf);
 	buf = readfile(obj->data.s, &bytes_read, 1);
@@ -703,7 +711,7 @@ void print_pid_sgid(struct text_object *obj, char *p, int p_max_size) {
 	char *begin, *end, *buf = NULL;
 	int bytes_read;
 
-	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	asprintf(&buf, PROCDIR "/%d/status", strtopid(obj->data.s));
 	strcpy(obj->data.s, buf);
 	free(buf);
 	buf = readfile(obj->data.s, &bytes_read, 1);
@@ -730,7 +738,7 @@ void print_pid_fsgid(struct text_object *obj, char *p, int p_max_size) {
 	char *begin, *end, *buf = NULL;
 	int bytes_read;
 
-	asprintf(&buf, PROCDIR "/%s/status", obj->data.s);
+	asprintf(&buf, PROCDIR "/%d/status", strtopid(obj->data.s));
 	strcpy(obj->data.s, buf);
 	free(buf);
 	buf = readfile(obj->data.s, &bytes_read, 1);
@@ -757,7 +765,7 @@ void internal_print_pid_vm(char* pid, char *p, int p_max_size, const char* entry
 	char *begin, *end, *buf = NULL;
 	int bytes_read;
 
-	asprintf(&buf, PROCDIR "/%s/status", pid);
+	asprintf(&buf, PROCDIR "/%d/status", strtopid(pid));
 	strcpy(pid, buf);
 	free(buf);
 	buf = readfile(pid, &bytes_read, 1);
@@ -851,7 +859,7 @@ void print_pid_write(struct text_object *obj, char *p, int p_max_size) {
 	char *begin, *end, *buf = NULL;
 	int bytes_read;
 
-	asprintf(&buf, PROCDIR "/%s/io", obj->data.s);
+	asprintf(&buf, PROCDIR "/%d/io", strtopid(obj->data.s));
 	strcpy(obj->data.s, buf);
 	free(buf);
 	buf = readfile(obj->data.s, &bytes_read, 1);
