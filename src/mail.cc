@@ -703,27 +703,35 @@ static void command(int sockfd, const std::string &cmd, char *response, const ch
 {
 	struct timeval fetchtimeout;
 	fd_set fdset;
+	ssize_t total = 0; 
 	int numbytes = 0;
+
 	if (send(sockfd, cmd.c_str(), cmd.length(), 0) == -1)
 		throw std::runtime_error("send: " + strerror_r(errno));
-
-	fetchtimeout.tv_sec = 60;	// 60 second timeout i guess
-	fetchtimeout.tv_usec = 0;
-	FD_ZERO(&fdset);
-	FD_SET(sockfd, &fdset);
-
-	if(select(sockfd + 1, &fdset, NULL, NULL, &fetchtimeout) == 0)
-		throw std::runtime_error("select: read timeout");
-
-	if ((numbytes = recv(sockfd, response, MAXDATASIZE - 1, 0)) == -1)
-		throw std::runtime_error("recv: " + strerror_r(errno));
-
 	DBGP2("command()  command: %s", cmd.c_str());
-	DBGP2("command() received: %s", response);
 
-	response[numbytes] = '\0';
-	if (strstr(response, verify) == NULL)
-		throw std::runtime_error("Unexpected response from server");
+	while(1) {
+		fetchtimeout.tv_sec = 60;	// 60 second timeout i guess
+		fetchtimeout.tv_usec = 0;
+		FD_ZERO(&fdset);
+		FD_SET(sockfd, &fdset);
+
+		if(select(sockfd + 1, &fdset, NULL, NULL, &fetchtimeout) == 0)
+			throw std::runtime_error("select: read timeout");
+
+		if ((numbytes = recv(sockfd, response + total, MAXDATASIZE - 1 - total, 0)) == -1)
+			throw std::runtime_error("recv: " + strerror_r(errno));
+
+		total += numbytes;
+		response[total] = '\0';
+		DBGP2("command() received: %s", response);
+
+		if (strstr(response, verify) != NULL)
+			return;
+
+		if(numbytes == 0)
+			throw std::runtime_error("Unexpected response from server");
+	}
 }
 
 void imap_cb::check_status(char *recvbuf)
@@ -816,7 +824,10 @@ void imap_cb::work()
 				FD_SET(donefd(), &fdset);
 				res = select(std::max(sockfd, donefd()) + 1, &fdset, NULL, NULL, &fetchtimeout);
 				if ((res == -1 && errno == EINTR) || FD_ISSET(donefd(), &fdset)) {
-					try { command(sockfd, "a3 LOGOUT\r\n", recvbuf, "a3 OK"); }
+					try {
+						command(sockfd, "DONE\r\n", recvbuf, "a5 OK");
+						command(sockfd, "a3 LOGOUT\r\n", recvbuf, "a3 OK");
+					}
 					catch(std::runtime_error &) {}
 					close(sockfd);
 					return;
