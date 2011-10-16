@@ -574,30 +574,37 @@ void free_mail_obj(struct text_object *obj)
 int imap_command(int sockfd, const char *command, char *response, const char *verify)
 {
 	struct timeval fetchtimeout;
+	ssize_t total = 0;
+
 	fd_set fdset;
-	int res, numbytes = 0;
 	if (send(sockfd, command, strlen(command), 0) == -1) {
 		perror("send");
 		return -1;
 	}
-	fetchtimeout.tv_sec = 60;	// 60 second timeout i guess
-	fetchtimeout.tv_usec = 0;
-	FD_ZERO(&fdset);
-	FD_SET(sockfd, &fdset);
-	res = select(sockfd + 1, &fdset, NULL, NULL, &fetchtimeout);
-	if (res > 0) {
-		if ((numbytes = recv(sockfd, response, MAXDATASIZE - 1, 0)) == -1) {
-			perror("recv");
-			return -1;
-		}
-	}
 	DBGP2("imap_command()  command: %s", command);
-	DBGP2("imap_command() received: %s", response);
-	response[numbytes] = '\0';
-	if (strstr(response, verify) == NULL) {
-		return -1;
+
+	while(1) {
+		int res, numbytes = 0;
+
+		fetchtimeout.tv_sec = 60;	// 60 second timeout i guess
+		fetchtimeout.tv_usec = 0;
+		FD_ZERO(&fdset);
+		FD_SET(sockfd, &fdset);
+		res = select(sockfd + 1, &fdset, NULL, NULL, &fetchtimeout);
+		if (res > 0) {
+			if ((numbytes = recv(sockfd, response + total, MAXDATASIZE - 1 - total, 0)) == -1) {
+				perror("recv");
+				return -1;
+			}
+			total += numbytes;
+		}
+		response[total] = '\0';
+		DBGP2("imap_command() received: %s", response);
+		if (strstr(response, verify) != NULL)
+			return 0;
+		if(numbytes == 0)
+			return -1;
 	}
-	return 0;
 }
 
 int imap_check_status(char *recvbuf, struct mail_s *mail)
@@ -713,29 +720,11 @@ static void *imap_thread(void *arg)
 				break;
 			}
 
-			fetchtimeout.tv_sec = 60;	// 60 second timeout i guess
-			fetchtimeout.tv_usec = 0;
-			FD_ZERO(&fdset);
-			FD_SET(sockfd, &fdset);
-			res = select(sockfd + 1, &fdset, NULL, NULL, &fetchtimeout);
-			if (res > 0) {
-				if ((numbytes = recv(sockfd, recvbuf, MAXDATASIZE - 1, 0)) == -1) {
-					perror("recv");
-					fail++;
-					break;
-				}
-			} else {
-				NORM_ERR("IMAP connection failed: timeout");
+			if (imap_command(sockfd, "", recvbuf, "* OK")) {
 				fail++;
 				break;
 			}
-			recvbuf[numbytes] = '\0';
-			DBGP2("imap_thread() received: %s", recvbuf);
-			if (strstr(recvbuf, "* OK") != recvbuf) {
-				NORM_ERR("IMAP connection failed, probably not an IMAP server");
-				fail++;
-				break;
-			}
+
 			strncpy(sendbuf, "abc CAPABILITY\r\n", MAXDATASIZE);
 			if (imap_command(sockfd, sendbuf, recvbuf, "abc OK")) {
 				fail++;
@@ -745,7 +734,7 @@ static void *imap_thread(void *arg)
 				has_idle = 1;
 			}
 
-			snprintf(sendbuf, sizeof sendbuf, "a1 login %s {%d}\r\n",
+			snprintf(sendbuf, sizeof sendbuf, "a1 login %s {%zd}\r\n",
 					mail->user, strlen(mail->pass));
 			if (imap_command(sockfd, sendbuf, recvbuf, "+ OK")) {
 				fail++;
