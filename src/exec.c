@@ -243,18 +243,17 @@ void scan_execi_arg(struct text_object *obj, const char *arg)
 void scan_execgraph_arg(struct text_object *obj, const char *arg)
 {
 	struct execi_data *ed;
-	char *buf;
 
 	ed = malloc(sizeof(struct execi_data));
 	memset(ed, 0, sizeof(struct execi_data));
 
-	buf = scan_graph(obj, arg, 100);
-	if (!buf) {
+	ed->cmd = scan_execgraph(obj, arg);
+	obj->data.opaque = ed;
+
+	if(! ed->cmd) {
 		NORM_ERR("missing command argument to execgraph object");
 		return;
 	}
-	ed->cmd = buf;
-	obj->data.opaque = ed;
 }
 #endif /* X11 */
 
@@ -388,7 +387,7 @@ void print_execgraph(struct text_object *obj, char *p, int p_max_size)
 	read_exec(ed->cmd, p, p_max_size, 1);
 	barnum = get_barnum(p);
 
-	if (barnum > 0) {
+	if (barnum >= 0) {
 		new_graph(obj, p, p_max_size, round_to_int(barnum));
 	}
 }

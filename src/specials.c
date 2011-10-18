@@ -35,6 +35,7 @@
 #include "logging.h"
 #include "specials.h"
 #include <math.h>
+#include <ctype.h>
 
 /* maximum number of special things, e.g. fonts, offsets, aligns, etc. */
 int max_specials = MAX_SPECIALS_DEFAULT;
@@ -215,20 +216,6 @@ char *scan_graph(struct text_object *obj, const char *args, int defscale)
 			sscanf(args, "%1023s %d,%d", buf, &g->height, &g->width);
 		}
 
-		/* escape quotes at end in case of execgraph */
-		if (*buf == '"') {
-			char *_ptr;
-			size_t _size;
-			if (_ptr = strrchr(args, '"')) {
-				_size = _ptr - args - 1;
-			}
-			_size = _size < 1024 ? _size : 1023;
-			strncpy(buf, args + 1, _size);
-			buf[_size] = 0;
-		}
-
-#undef g
-
 		return strndup(buf, text_buffer_size);
 	}
 
@@ -237,6 +224,45 @@ char *scan_graph(struct text_object *obj, const char *args, int defscale)
 	} else {
 		return strndup(buf, text_buffer_size);
 	}
+}
+
+// scan_graph is a mess and it does not work for execgraph, so i'll just rewrite it for this case
+char *scan_execgraph(struct text_object *obj, const char *arg)
+{
+	struct graph *g;
+
+	g = malloc(sizeof(struct graph));
+	memset(g, 0, sizeof(struct graph));
+	obj->special_data = g;
+
+	/* zero width means all space that is available */
+	g->width = default_graph_width;
+	g->height = default_graph_height;
+	g->first_colour = 0;
+	g->last_colour = 0;
+	g->scale = 100;
+	g->tempgrad = FALSE;
+	g->showaslog = FALSE;
+
+	while(arg && *arg) {
+		while(isspace(*arg)) ++arg;
+
+		if(strncmp(arg, TEMPGRAD, strlen(TEMPGRAD)) == 0 && !isalnum(arg[strlen(TEMPGRAD)])) {
+			g->tempgrad = TRUE;
+			arg += strlen(TEMPGRAD);
+			continue;
+		}
+
+		if(strncmp(arg, LOGGRAPH, strlen(LOGGRAPH)) == 0 && !isalnum(arg[strlen(LOGGRAPH)])) {
+			g->showaslog = TRUE;
+			arg += strlen(LOGGRAPH);
+			continue;
+		}
+
+		return strdup(arg);
+	}
+
+	return NULL;
 }
 #endif /* X11 */
 

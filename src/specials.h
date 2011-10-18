@@ -99,6 +99,7 @@ const char *scan_gauge(struct text_object *, const char *);
 #ifdef X11
 char *scan_font(const char *);
 char *scan_graph(struct text_object *, const char *, int);
+char *scan_execgraph(struct text_object *obj, const char *arg);
 void scan_tab(struct text_object *, const char *);
 void scan_stippled_hr(struct text_object *, const char*);
 
