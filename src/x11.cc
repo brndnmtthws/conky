@@ -262,7 +262,7 @@ namespace {
  *                          -> border_*, own_window_*, etc -> own_window -> double_buffer ->  imlib_cache_size
  */
 
-conky::simple_config_setting<alignment>   text_alignment("alignment", NONE, false);
+conky::simple_config_setting<alignment>   text_alignment("alignment", BOTTOM_LEFT, false);
 conky::simple_config_setting<std::string> display_name("display", std::string(), false);
 priv::out_to_x_setting                    out_to_x;
 
