@@ -364,7 +364,7 @@ static void graph_append(struct special_t *graph, double f, char showaslog)
 	}
 
 	/* shift all the data by 1 */
-	for (i = graph->graph_width - 1; i > 0; i--) {
+	for (i = graph->width - 1; i > 0; i--) {
 		graph->graph[i] = graph->graph[i - 1];
 		if (graph->scaled && graph->graph[i - 1] > graph->graph_scale) {
 			/* check if we need to update the scale */
@@ -393,14 +393,8 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size, double val)
 
 	s->width = g->width;
 	if (s->graph == NULL) {
-		if (s->width > 0 && s->width < MAX_GRAPH_DEPTH) {
-			// subtract 2 for the box
-			s->graph_width = s->width /* - 2 */;
-		} else {
-			s->graph_width = MAX_GRAPH_DEPTH - 2;
-		}
-		s->graph = malloc(s->graph_width * sizeof(double));
-		memset(s->graph, 0, s->graph_width * sizeof(double));
+		s->graph = malloc(s->width * sizeof(double));
+		memset(s->graph, 0, s->width * sizeof(double));
 		s->graph_scale = 100;
 	}
 	s->height = g->height;
@@ -416,9 +410,6 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size, double val)
 		s->show_scale = 1;
 	}
 	s->tempgrad = g->tempgrad;
-	/* if (s->width) {
-		s->graph_width = s->width - 2;	// subtract 2 for rectangle around
-	} */
 #ifdef MATH
 	if (g->showaslog) {
 		s->graph_scale = log10(s->graph_scale + 1);

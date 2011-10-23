@@ -33,8 +33,6 @@
 
 #define SPECIAL_CHAR '\x01'
 
-#define MAX_GRAPH_DEPTH 512
-
 // don't use spaces in LOGGRAPH or NORMGRAPH if you change them
 #define LOGGRAPH "-l"
 #define TEMPGRAD "-t"
@@ -66,7 +64,6 @@ struct special_t {
 	double *graph;
 	double graph_scale;
 	short show_scale;
-	int graph_width;
 	int scaled;
 	unsigned long first_colour;	// for graph gradient
 	unsigned long last_colour;
