@@ -1580,11 +1580,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 								cur_x + i + 1, by + h, cur_x + i + 1,
 								round_to_int((double)by + h - current->graph[j] *
 									(h - 1) / current->scale));
-						if ((w - i) / ((float) (w - 2) /
-									(current->graph_width)) > j
-								&& j < MAX_GRAPH_DEPTH - 3) {
-							j++;
-						}
+						j++;
 					}
 					free_and_zero(tmpcolour);
 					if (h > cur_y_add
