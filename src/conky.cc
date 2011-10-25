@@ -1526,6 +1526,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					w = current->width;
 					if (w == 0) {
 						w = text_start_x + text_width - cur_x - 1;
+						current->graph_width = w - 1;
 					}
 					if (w < 0) {
 						w = 0;
@@ -1539,48 +1540,53 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					XSetLineAttributes(display, window.gc, 1, LineSolid,
 						CapButt, JoinMiter);
 
-					if (current->last_colour != 0
-							|| current->first_colour != 0) {
-						tmpcolour = do_gradient(w - 1, current->last_colour, current->first_colour);
-					}
-					colour_idx = 0;
-					for (i = w - 2; i > -1; i--) {
-						if (current->last_colour != 0
-								|| current->first_colour != 0) {
-							if (current->tempgrad) {
+					/* in case we don't have a graph yet */
+					if (current->graph) {
+
+						if (current->last_colour != 0 || current->first_colour != 0) {
+							tmpcolour = do_gradient(w - 1,
+									current->last_colour, current->first_colour);
+						}
+						colour_idx = 0;
+						for (i = w - 2; i > -1; i--) {
+							if (current->last_colour != 0 || current->first_colour != 0) {
+								if (current->tempgrad) {
 #ifdef DEBUG_lol
-								assert(
-										(int)((float)(w - 2) - current->graph[j] *
-											(w - 2) / (float)current->scale)
-										< w - 1
-									  );
-								assert(
-										(int)((float)(w - 2) - current->graph[j] *
-											(w - 2) / (float)current->scale)
-										> -1
-									  );
-								if (current->graph[j] == current->scale) {
 									assert(
 											(int)((float)(w - 2) - current->graph[j] *
 												(w - 2) / (float)current->scale)
-											== 0
+											< w-1
 										  );
-								}
+									assert(
+											(int)((float)(w - 2) - current->graph[j] *
+												(w - 2) / (float)current->scale)
+											> -1
+										  );
+									if (current->graph[j] == current->scale) {
+										assert(
+												(int)((float)(w - 2) - current->graph[j] *
+													(w - 2) / (float)current->scale)
+												== 0
+											  );
+									}
 #endif /* DEBUG_lol */
-										set_foreground_color(tmpcolour[
-										(int)((float)(w - 2) - current->graph[j] *
-											(w - 2) / (float)current->scale)
-										]);
-							} else {
-								set_foreground_color(tmpcolour[colour_idx++]);
+									set_foreground_color(tmpcolour[
+											(int)((float)(w - 2) -
+												current->graph[j] * (w - 2) /
+												(float)current->scale)
+											]);
+								} else {
+									set_foreground_color(tmpcolour[colour_idx++]);
+								}
 							}
+							/* this is mugfugly, but it works */
+							XDrawLine(display, window.drawable, window.gc,
+									cur_x + i + 1, by + h, cur_x + i + 1,
+									round_to_int((double)by + h - current->graph[j] *
+										(h - 1) / current->scale));
+							++j;
 						}
-						/* this is mugfugly, but it works */
-						XDrawLine(display, window.drawable, window.gc,
-								cur_x + i + 1, by + h, cur_x + i + 1,
-								round_to_int((double)by + h - current->graph[j] *
-									(h - 1) / current->scale));
-						j++;
+						if (tmpcolour) free(tmpcolour);
 					}
 					free_and_zero(tmpcolour);
 					if (h > cur_y_add
