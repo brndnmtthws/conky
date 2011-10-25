@@ -2995,6 +2995,9 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					if (w == 0) {
 						w = text_start_x + text_width - cur_x - 1;
 						specials[special_index].graph_width = w - 1;
+						if (specials[special_index].graph_width != specials[special_index].graph_allocated) {
+							w = specials[special_index].graph_allocated + 1;
+						}
 					}
 					if (w < 0) {
 						w = 0;
