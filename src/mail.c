@@ -736,7 +736,7 @@ static void *imap_thread(void *arg)
 
 			snprintf(sendbuf, sizeof sendbuf, "a1 login %s {%zd}\r\n",
 					mail->user, strlen(mail->pass));
-			if (imap_command(sockfd, sendbuf, recvbuf, "+ Ready")) {
+			if (imap_command(sockfd, sendbuf, recvbuf, "+")) {
 				fail++;
 				break;
 			}
