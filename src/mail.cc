@@ -786,7 +786,7 @@ void imap_cb::work()
 
 			std::ostringstream str;
 			str << "a1 login " << get<MP_USER>() << " {" << get<MP_PASS>().length() << "}\r\n";
-			command(sockfd, str.str(), recvbuf, "+ OK");
+			command(sockfd, str.str(), recvbuf, "+");
 
 			command(sockfd, get<MP_PASS>() + "\r\n", recvbuf, "a1 OK");
 
