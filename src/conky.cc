@@ -1527,6 +1527,10 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					if (w == 0) {
 						w = text_start_x + text_width - cur_x - 1;
 						current->graph_width = w - 1;
+						if (current->graph_width != current->graph_allocated) {
+							w = current->graph_allocated + 1;
+						}
+
 					}
 					if (w < 0) {
 						w = 0;
