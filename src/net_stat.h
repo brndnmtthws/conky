@@ -55,7 +55,7 @@ struct net_stat {
 	bool v6show_sc;
 #endif /* BUILD_IPV6 */
 #if defined(__linux__)
-        char addrs[273];
+        char addrs[17 * MAX_NET_INTERFACES + 1];
 #endif /* __linux__ */
         double net_rec[15], net_trans[15];
         // wireless extensions
