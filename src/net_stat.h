@@ -41,7 +41,7 @@ struct net_stat {
         double recv_speed, trans_speed;
         struct sockaddr addr;
 #if defined(__linux__)
-        char addrs[273];
+        char addrs[17 * MAX_NET_INTERFACES + 1];
 #endif /* __linux__ */
         double net_rec[15], net_trans[15];
         // wireless extensions
