@@ -136,6 +136,7 @@ AM_CONDITIONAL(BUILD_NCURSES, test x$want_ncurses = xyes)
 if test x$want_ncurses = xyes; then
       conky_LIBS="$conky_LIBS -lncurses"
       AC_DEFINE(NCURSES, 1, [Define for ncurses support])
+	  AC_CHECK_HEADERS([ncurses.h], [], AC_MSG_ERROR([required header(s) not found]))
 fi
 
 
