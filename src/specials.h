@@ -64,6 +64,8 @@ struct special_t {
 	double *graph;
 	double graph_scale;
 	short show_scale;
+	int graph_width;
+	int graph_allocated;
 	int scaled;
 	unsigned long first_colour;	// for graph gradient
 	unsigned long last_colour;

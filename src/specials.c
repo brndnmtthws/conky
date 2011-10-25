@@ -353,6 +353,9 @@ static void graph_append(struct special_t *graph, double f, char showaslog)
 {
 	int i;
 
+	/* do nothing if we don't even have a graph yet */
+	if (!graph->graph) return;
+
 	if (showaslog) {
 #ifdef MATH
 		f = log10(f + 1);
@@ -364,7 +367,7 @@ static void graph_append(struct special_t *graph, double f, char showaslog)
 	}
 
 	/* shift all the data by 1 */
-	for (i = graph->width - 1; i > 0; i--) {
+	for (i = graph->graph_allocated - 1; i > 0; i--) {
 		graph->graph[i] = graph->graph[i - 1];
 		if (graph->scaled && graph->graph[i - 1] > graph->graph_scale) {
 			/* check if we need to update the scale */
@@ -392,10 +395,25 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size, double val)
 	s = new_special(buf, GRAPH);
 
 	s->width = g->width;
-	if (s->graph == NULL) {
-		s->graph = malloc(s->width * sizeof(double));
-		memset(s->graph, 0, s->width * sizeof(double));
-		s->graph_scale = 100;
+	if (s->width) s->graph_width = s->width;
+
+	if (s->graph_width != s->graph_allocated) {
+		char *graph = realloc(s->graph, s->graph_width * sizeof(double));
+		DBGP("reallocing graph from %d to %d", s->graph_allocated, s->graph_width);
+		if (!s->graph) {
+			/* initialize */
+			memset(graph, 0, s->graph_width * sizeof(double));
+			s->graph_scale = 100;
+		} else {
+			if (s->graph_width > s->graph_allocated) {
+				/* initialize the new region */
+				memset(graph + (s->graph_allocated * sizeof(double)), 0,
+						(s->graph_width - s->graph_allocated) *
+						sizeof(double));
+			}
+		}
+		s->graph = graph;
+		s->graph_allocated = s->graph_width;
 	}
 	s->height = g->height;
 	s->first_colour = adjust_colours(g->first_colour);

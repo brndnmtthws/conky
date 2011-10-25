@@ -2994,6 +2994,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					w = specials[special_index].width;
 					if (w == 0) {
 						w = text_start_x + text_width - cur_x - 1;
+						specials[special_index].graph_width = w - 1;
 					}
 					if (w < 0) {
 						w = 0;
@@ -3007,52 +3008,58 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					XSetLineAttributes(display, window.gc, 1, LineSolid,
 						CapButt, JoinMiter);
 
-					if (specials[special_index].last_colour != 0
-							|| specials[special_index].first_colour != 0) {
-						tmpcolour = do_gradient(w - 1, specials[special_index].last_colour, specials[special_index].first_colour);
-					}
-					colour_idx = 0;
-					for (i = w - 2; i > -1; i--) {
+					/* in case we don't have a graph yet */
+					if (specials[special_index].graph) {
+
 						if (specials[special_index].last_colour != 0
 								|| specials[special_index].first_colour != 0) {
-							if (specials[special_index].tempgrad) {
+							tmpcolour = do_gradient(w - 1,
+									specials[special_index].last_colour,
+									specials[special_index].first_colour);
+						}
+						colour_idx = 0;
+						for (i = w - 2; i > -1; i--) {
+							if (specials[special_index].last_colour != 0
+									|| specials[special_index].first_colour != 0) {
+								if (specials[special_index].tempgrad) {
 #ifdef DEBUG_lol
-								assert(
-										(int)((float)(w - 2) - specials[special_index].graph[j] *
-											(w - 2) / (float)specials[special_index].graph_scale)
-										< w - 1
-									  );
-								assert(
-										(int)((float)(w - 2) - specials[special_index].graph[j] *
-											(w - 2) / (float)specials[special_index].graph_scale)
-										> -1
-									  );
-								if (specials[special_index].graph[j] == specials[special_index].graph_scale) {
 									assert(
 											(int)((float)(w - 2) - specials[special_index].graph[j] *
 												(w - 2) / (float)specials[special_index].graph_scale)
-											== 0
+											< w - 1
 										  );
-								}
+									assert(
+											(int)((float)(w - 2) - specials[special_index].graph[j] *
+												(w - 2) / (float)specials[special_index].graph_scale)
+											> -1
+										  );
+									if (specials[special_index].graph[j] == specials[special_index].graph_scale) {
+										assert(
+												(int)((float)(w - 2) - specials[special_index].graph[j] *
+													(w - 2) / (float)specials[special_index].graph_scale)
+												== 0
+											  );
+									}
 #endif /* DEBUG_lol */
-										set_foreground_color(tmpcolour[
-												(int)((float)(w - 2) -
-													specials[special_index].graph[j]
-													* (w - 2) /
-													(float)specials[special_index].graph_scale)
-												]);
-							} else {
-								set_foreground_color(tmpcolour[colour_idx++]);
+									set_foreground_color(tmpcolour[
+											(int)((float)(w - 2) -
+												specials[special_index].graph[j]
+												* (w - 2) /
+												(float)specials[special_index].graph_scale)
+											]);
+								} else {
+									set_foreground_color(tmpcolour[colour_idx++]);
+								}
 							}
+							/* this is mugfugly, but it works */
+							XDrawLine(display, window.drawable, window.gc,
+									cur_x + i + 1, by + h, cur_x + i + 1,
+									round_to_int((double)by + h - specials[special_index].graph[j] *
+										(h - 1) / specials[special_index].graph_scale));
+							++j;
 						}
-						/* this is mugfugly, but it works */
-						XDrawLine(display, window.drawable, window.gc,
-								cur_x + i + 1, by + h, cur_x + i + 1,
-								round_to_int((double)by + h - specials[special_index].graph[j] *
-									(h - 1) / specials[special_index].graph_scale));
-						++j;
+						if (tmpcolour) free(tmpcolour);
 					}
-					if (tmpcolour) free(tmpcolour);
 					if (h > cur_y_add
 							&& h > font_h) {
 						cur_y_add = h;
