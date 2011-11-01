@@ -1590,7 +1590,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 										(h - 1) / current->scale));
 							++j;
 						}
-						if (tmpcolour) free(tmpcolour);
+						free_and_zero(tmpcolour);
 					}
 					free_and_zero(tmpcolour);
 					if (h > cur_y_add
