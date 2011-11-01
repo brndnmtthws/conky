@@ -118,20 +118,20 @@ struct fs_stat *prepare_fs_stat(const char *s)
 
 static void update_fs_stat(struct fs_stat *fs)
 {
-	struct statfs s;
+	struct statfs64 s;
 
-	if (statfs(fs->path, &s) == 0) {
+	if (statfs64(fs->path, &s) == 0) {
 		fs->size = (long long)s.f_blocks * s.f_bsize;
 		/* bfree (root) or bavail (non-roots) ? */
 		fs->avail = (long long)s.f_bavail * s.f_bsize;
 		fs->free = (long long)s.f_bfree * s.f_bsize;
 		get_fs_type(fs->path, fs->type);
 	} else {
+		NORM_ERR("statfs64 '%s': %s", fs->path, strerror(errno));
 		fs->size = 0;
 		fs->avail = 0;
 		fs->free = 0;
 		strncpy(fs->type, "unknown", DEFAULT_TEXT_BUFFER_SIZE);
-		NORM_ERR("statfs '%s': %s", fs->path, strerror(errno));
 	}
 }
 
