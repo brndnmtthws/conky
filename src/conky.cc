@@ -1513,7 +1513,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					int h, by, i = 0, j = 0;
 					int colour_idx = 0;
 					unsigned long last_colour = current_color;
-					unsigned long *tmpcolour = 0;
 					if (cur_x - text_start_x > mw && mw > 0) {
 						break;
 					}
@@ -1546,6 +1545,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 
 					/* in case we don't have a graph yet */
 					if (current->graph) {
+						unsigned long *tmpcolour = 0;
 
 						if (current->last_colour != 0 || current->first_colour != 0) {
 							tmpcolour = do_gradient(w - 1,
@@ -1592,7 +1592,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						}
 						free_and_zero(tmpcolour);
 					}
-					free_and_zero(tmpcolour);
 					if (h > cur_y_add
 							&& h > font_h) {
 						cur_y_add = h;
