@@ -144,11 +144,11 @@ void get_fs_type(const char *path, char *result)
 
 #if defined(HAVE_STRUCT_STATFS_F_FSTYPENAME) || defined(__FreeBSD__) || defined (__OpenBSD__)
 
-	struct statfs s;
-	if (statfs(path, &s) == 0) {
+	struct statfs64 s;
+	if (statfs64(path, &s) == 0) {
 		strncpy(result, s.f_fstypename, DEFAULT_TEXT_BUFFER_SIZE);
 	} else {
-		NORM_ERR("statfs '%s': %s", path, strerror(errno));
+		NORM_ERR("statfs64 '%s': %s", path, strerror(errno));
 	}
 	return;
 
