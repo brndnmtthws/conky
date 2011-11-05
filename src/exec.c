@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <math.h>
 #include <unistd.h>
 
 struct execi_data {
@@ -229,6 +230,7 @@ void scan_execi_arg(struct text_object *obj, const char *arg)
 
 	ed = malloc(sizeof(struct execi_data));
 	memset(ed, 0, sizeof(struct execi_data));
+	ed->last_update = -INFINITY;
 
 	if (sscanf(arg, "%f %n", &ed->interval, &n) <= 0) {
 		NORM_ERR("${execi* <interval> command}");
