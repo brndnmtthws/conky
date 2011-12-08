@@ -1753,7 +1753,7 @@
         </term>
         <listitem>if FILE exists, display everything between
         if_existing and the matching $endif. The optional second
-        paramater checks for FILE containing the specified string
+        parameter checks for FILE containing the specified string
         and prints everything between $if_existing and the matching
         $endif. 
         <para /></listitem>
