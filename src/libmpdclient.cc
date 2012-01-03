@@ -240,7 +240,7 @@ static int mpd_connect(mpd_Connection *connection, const char *host, int port,
 		return uds_connect(connection, host, timeout);
 
 #ifdef HAVE_GETHOSTBYNAME_R
-		if (gethostbyname_r(rhost, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
+		if (gethostbyname_r(host, &he, hostbuff, sizeof(hostbuff), &he_res, &he_errno)) {	// get the host info
 		snprintf(connection->errorStr, MPD_ERRORSTR_MAX_LENGTH,
 			"%s ('%s')", hstrerror(h_errno), host);
 		connection->error = MPD_ERROR_UNKHOST;
