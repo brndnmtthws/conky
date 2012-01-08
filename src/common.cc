@@ -257,8 +257,8 @@ void update_stuff(void)
 {
 	int i;
 
-	/* clear speeds and up status in case device was removed and doesn't get
-	 * updated */
+	/* clear speeds, addresses and up status in case device was removed and
+	 *  doesn't get updated */
 
 	#ifdef HAVE_OPENMP
 	#pragma omp parallel for schedule(dynamic,10)
@@ -268,6 +268,10 @@ void update_stuff(void)
 			netstats[i].up = 0;
 			netstats[i].recv_speed = 0.0;
 			netstats[i].trans_speed = 0.0;
+			netstats[i].addr.sa_data[2] = 0;
+			netstats[i].addr.sa_data[3] = 0;
+			netstats[i].addr.sa_data[4] = 0;
+			netstats[i].addr.sa_data[5] = 0;
 		}
 	}
 
