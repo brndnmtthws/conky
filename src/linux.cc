@@ -579,6 +579,15 @@ int update_net_stats(void)
 	unsigned int netmask, scope;
 	struct net_stat *ns;
 	struct v6addr *lastv6;
+	//remove the old v6 addresses otherwise they are listed multiple times
+	for (unsigned int i = 0; i < MAX_NET_INTERFACES; i++) {
+		ns = &netstats[i];
+		while(ns->v6addrs != NULL) {
+			lastv6 = ns->v6addrs;
+			ns->v6addrs = ns->v6addrs->next;
+			free(lastv6);
+		}
+	}
 	if ((file = fopen(PROCDIR"/net/if_inet6", "r")) != NULL) {
 		while (fscanf(file, "%32s %*02x %02x %02x %*02x %20s\n", v6addr, &netmask, &scope, devname) != EOF) {
 			ns = get_net_stat(devname, NULL, NULL);
