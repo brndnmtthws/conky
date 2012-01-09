@@ -243,9 +243,7 @@ void print_v6addrs(struct text_object *obj, char *p, int p_max_size)
 
 	if(p_max_size == 0) return;
 	if( ! ns->v6addrs) {
-		strncpy(p, "::", p_max_size);
-		if(ns->v6show_nm) strncat(p, "/128", p_max_size);
-		if(ns->v6show_sc) strncat(p, "(/)", p_max_size);
+		snprintf(p, p_max_size, "No Address");
 		return;
 	}
 	*p=0;
