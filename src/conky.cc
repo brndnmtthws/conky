@@ -994,6 +994,33 @@ static int get_string_width_special(char *s, int special_index)
 					|| current->type == BAR) {
 				width += current->width;
 			}
+			if (current->type == FONT) {
+				//put all following text until the next fontchange/stringend in influenced_by_font but do not include specials
+				char *influenced_by_font=strdup(p);
+				special_t *current_after_font=current;
+				for(i=0; influenced_by_font[i]!=0; i++) {
+					if(influenced_by_font[i] == SPECIAL_CHAR) {
+						//remove specials and stop at fontchange
+						current_after_font=current_after_font->next;
+						if(current_after_font->type == FONT) {
+							influenced_by_font[i]=0;
+							break;
+						} else strcpy(&influenced_by_font[i], &influenced_by_font[i+1]);
+					}
+				}
+				//add the length of influenced_by_font in the new font to width
+				int orig_font = selected_font;
+				selected_font=current->font_added;
+				width += calc_text_width(influenced_by_font);
+				selected_font = orig_font;
+				free(influenced_by_font);
+				//make sure there chars counted in the new font are not again counted in the old font
+				int specials_skipped=0;
+				while(i>0) {
+					if(p[specials_skipped]!=1) strcpy(&p[specials_skipped], &p[specials_skipped+1]); else specials_skipped++;
+					i--;
+				}
+			}
 			idx++;
 			current = current->next;
 		} else {
