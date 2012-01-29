@@ -925,6 +925,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(mpd_album, &update_mpd)
 		mpd_set_maxlen(mpd_album);
 		init_mpd();
+	END OBJ(mpd_date, &update_mpd)
+		mpd_set_maxlen(mpd_date);
+		init_mpd();
 	END OBJ(mpd_vol, &update_mpd) init_mpd();
 	END OBJ(mpd_bitrate, &update_mpd) init_mpd();
 	END OBJ(mpd_status, &update_mpd) init_mpd();
@@ -1737,6 +1740,7 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_mpd_title:
 			case OBJ_mpd_artist:
 			case OBJ_mpd_album:
+			case OBJ_mpd_date:
 			case OBJ_mpd_random:
 			case OBJ_mpd_repeat:
 			case OBJ_mpd_vol:

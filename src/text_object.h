@@ -327,6 +327,7 @@ enum text_object_type {
 	OBJ_mpd_title,
 	OBJ_mpd_artist,
 	OBJ_mpd_album,
+	OBJ_mpd_date,
 	OBJ_mpd_random,
 	OBJ_mpd_repeat,
 	OBJ_mpd_vol,

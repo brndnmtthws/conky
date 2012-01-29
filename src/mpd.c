@@ -95,6 +95,7 @@ static void clear_mpd(void)
 	xfree(mpd_info.title);
 	xfree(mpd_info.artist);
 	xfree(mpd_info.album);
+	xfree(mpd_info.date);
 	/* do not free() the const char *status! */
 	/* do not free() the const char *random! */
 	/* do not free() the const char *repeat! */
@@ -273,6 +274,7 @@ static void *update_mpd_thread(void *arg)
 			SONGSET(artist);
 			SONGSET(album);
 			SONGSET(title);
+			SONGSET(date);
 			SONGSET(track);
 			SONGSET(name);
 			SONGSET(file);
@@ -403,6 +405,7 @@ void print_mpd_##name(struct text_object *obj, char *p, int p_max_size) \
 MPD_PRINT_GENERATOR(title, "%s")
 MPD_PRINT_GENERATOR(artist, "%s")
 MPD_PRINT_GENERATOR(album, "%s")
+MPD_PRINT_GENERATOR(date, "%s")
 MPD_PRINT_GENERATOR(random, "%s")
 MPD_PRINT_GENERATOR(repeat, "%s")
 MPD_PRINT_GENERATOR(track, "%s")

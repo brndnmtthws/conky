@@ -2279,6 +2279,15 @@
     <varlistentry>
         <term>
             <command>
+                <option>mpd_date</option>
+            </command>
+        </term>
+        <listitem>Date of current song
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>mpd_elapsed</option>
             </command>
         </term>
