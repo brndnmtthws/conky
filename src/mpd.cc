@@ -123,6 +123,7 @@ namespace {
 		std::string title;
 		std::string artist;
 		std::string album;
+		std::string date;
 		std::string status;
 		std::string random;
 		std::string repeat;
@@ -162,7 +163,7 @@ namespace {
 		mpd_Status *status;
 		mpd_InfoEntity *entity;
 		mpd_result mpd_info;
-
+		
 		do {
 			if (!conn)
 				conn = mpd_newConnection(mpd_host.get(*state).c_str(), mpd_port.get(*state), 10);
@@ -260,12 +261,15 @@ namespace {
 					mpd_freeInfoEntity(entity);
 					continue;
 				}
-				mpd_info.artist = song->artist;
-				mpd_info.album = song->album;
-				mpd_info.title = song->title;
-				mpd_info.track = song->track;
-				mpd_info.name = song->name;
-				mpd_info.file = song->file;
+#define SETSTRING(a,b) \
+if (b) a=b; else a="";
+				SETSTRING(mpd_info.artist, song->artist);
+				SETSTRING(mpd_info.album, song->album);
+				SETSTRING(mpd_info.title, song->title);
+				SETSTRING(mpd_info.date, song->date);
+				SETSTRING(mpd_info.track, song->track);
+				SETSTRING(mpd_info.name, song->name);
+				SETSTRING(mpd_info.file, song->file);
 				if (entity != NULL) {
 					mpd_freeInfoEntity(entity);
 					entity = NULL;
@@ -293,6 +297,7 @@ namespace {
 			   conn = 0;
 			   } */
 		} while (0);
+		result = mpd_info; // don't forget to save results!
 	}
 
 	mpd_result get_mpd()
@@ -394,6 +399,7 @@ void print_mpd_##name(struct text_object *obj, char *p, int p_max_size) \
 MPD_PRINT_GENERATOR(title, "%s", .c_str())
 MPD_PRINT_GENERATOR(artist, "%s", .c_str())
 MPD_PRINT_GENERATOR(album, "%s", .c_str())
+MPD_PRINT_GENERATOR(date, "%s", .c_str())
 MPD_PRINT_GENERATOR(random, "%s", .c_str())
 MPD_PRINT_GENERATOR(repeat, "%s", .c_str())
 MPD_PRINT_GENERATOR(track, "%s", .c_str())

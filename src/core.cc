@@ -268,8 +268,8 @@ legacy_cb_handle *create_cb_handle(int (*fn)())
 }
 
 /* construct_text_object() creates a new text_object */
-struct text_object *construct_text_object(char *s, const char *arg, long
-		line, void **ifblock_opaque, void *free_at_crash)
+struct text_object *construct_text_object(char *s, const char *arg,
+		long line, void **ifblock_opaque, void *free_at_crash)
 {
 	// struct text_object *obj = new_text_object();
 	struct text_object *obj = new_text_object_internal();
@@ -1408,6 +1408,9 @@ struct text_object *construct_text_object(char *s, const char *arg, long
 	END OBJ(mpd_title, 0)
 		mpd_set_maxlen(mpd_title);
 		obj->callbacks.print = &print_mpd_title;
+	END OBJ(mpd_date, 0)
+		mpd_set_maxlen(mpd_date);
+		obj->callbacks.print = &print_mpd_date;
 	END OBJ(mpd_random, 0)
 		obj->callbacks.print = &print_mpd_random;
 	END OBJ(mpd_repeat, 0)

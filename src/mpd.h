@@ -35,6 +35,7 @@ void print_mpd_smart(struct text_object *, char *, int);
 void print_mpd_title(struct text_object *, char *, int);
 void print_mpd_artist(struct text_object *, char *, int);
 void print_mpd_album(struct text_object *, char *, int);
+void print_mpd_date(struct text_object *, char *, int);
 void print_mpd_random(struct text_object *, char *, int);
 void print_mpd_repeat(struct text_object *, char *, int);
 void print_mpd_track(struct text_object *, char *, int);
