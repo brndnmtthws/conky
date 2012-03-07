@@ -33,12 +33,15 @@ endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build.h)
 	message(FATAL_ERROR "You must remove the autotools generated file '${CMAKE_CURRENT_SOURCE_DIR}/build.h' in order to build with CMake.")
 endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/build.h)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h)
+	message(FATAL_ERROR "You must remove the autotools generated file '${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h' in order to build with CMake.")
+endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h)
 
 set(conky_sources c++wrap.cc colours.cc combine.cc common.cc conky.cc core.cc
 	diskio.cc entropy.cc exec.cc fs.cc mail.cc mixer.cc net_stat.cc template.cc
-	mboxscan.cc read_tcpip.cc scroll.cc specials.cc tailhead.cc
-	temphelper.cc text_object.cc timeinfo.cc top.cc algebra.cc prioqueue.cc proc.cc
-	user.cc luamm.cc data-source.cc lua-config.cc setting.cc llua.cc update-cb.cc)
+	mboxscan.cc read_tcpip.cc scroll.cc specials.cc tailhead.cc temphelper.cc
+	text_object.cc timeinfo.cc top.cc algebra.cc prioqueue.cc proc.cc user.cc
+	luamm.cc data-source.cc lua-config.cc setting.cc llua.cc update-cb.cc)
 
 # Platform specific sources
 if(OS_LINUX)
