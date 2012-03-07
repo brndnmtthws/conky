@@ -145,7 +145,7 @@ void llua_init(void)
 	const char *libs = PACKAGE_LIBDIR"/lib?.so;";
 	char *old_path, *new_path;
 	if (lua_L) return;
-	lua_L = lua_open();
+	lua_L = luaL_newstate();
 
 	/* add our library path to the lua package.cpath global var */
 	luaL_openlibs(lua_L);
