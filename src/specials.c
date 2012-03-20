@@ -68,7 +68,7 @@ struct graph {
 	int width, height;
 	unsigned int first_colour, last_colour;
 	unsigned int scale, showaslog;
-	char tempgrad;
+	char tempgrad, dotgraph;
 };
 
 struct stippled_hr {
@@ -161,10 +161,14 @@ char *scan_graph(struct text_object *obj, const char *args, int defscale)
 	g->last_colour = 0;
 	g->scale = defscale;
 	g->tempgrad = FALSE;
+	g->dotgraph = FALSE;
 	g->showaslog = FALSE;
 	if (args) {
 		if (strstr(args, " "TEMPGRAD) || strncmp(args, TEMPGRAD, strlen(TEMPGRAD)) == 0) {
 			g->tempgrad = TRUE;
+		}
+		if (strstr(args, " "DOTGRAPH) || strncmp(args, DOTGRAPH, strlen(DOTGRAPH)) == 0) {
+			g->dotgraph = TRUE;
 		}
 		if (strstr(args, " "LOGGRAPH) || strncmp(args, LOGGRAPH, strlen(LOGGRAPH)) == 0) {
 			g->showaslog = TRUE;
@@ -428,6 +432,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size, double val)
 		s->show_scale = 1;
 	}
 	s->tempgrad = g->tempgrad;
+	s->dotgraph = g->dotgraph;
 #ifdef MATH
 	if (g->showaslog) {
 		s->graph_scale = log10(s->graph_scale + 1);

@@ -3023,6 +3023,9 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 									specials[special_index].first_colour);
 						}
 						colour_idx = 0;
+
+						int og, g = -1; // dmr's here..
+
 						for (i = w - 2; i > -1; i--) {
 							if (specials[special_index].last_colour != 0
 									|| specials[special_index].first_colour != 0) {
@@ -3056,11 +3059,21 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 									set_foreground_color(tmpcolour[colour_idx++]);
 								}
 							}
+
+							og = g;
+							g = round_to_int((double)by + h - specials[special_index].graph[j] *
+											 (h - 1) / specials[special_index].graph_scale);
+
+							if (!~og) {
+								og = g;
+							}
+
 							/* this is mugfugly, but it works */
 							XDrawLine(display, window.drawable, window.gc,
-									cur_x + i + 1, by + h, cur_x + i + 1,
-									round_to_int((double)by + h - specials[special_index].graph[j] *
-										(h - 1) / specials[special_index].graph_scale));
+									  cur_x + i + 1,
+									  specials[special_index].dotgraph ? og : by + h,
+									  cur_x + i + 1,
+									  g);
 							++j;
 						}
 						if (tmpcolour) free(tmpcolour);
@@ -5974,7 +5987,7 @@ static void signal_handler(int sig)
 {
 	/* signal handler is light as a feather, as it should be.
 	 * we will poll g_signal_pending with each loop of conky
-	 * and do any signal processing there, NOT here (except 
+	 * and do any signal processing there, NOT here (except
 	 * SIGALRM because this is caused when conky is hanging) */
 	if(sig == SIGALRM) {
 		alarm_handler();
