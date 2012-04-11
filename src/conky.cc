@@ -236,7 +236,6 @@ static void reload_config(void);
 
 static void print_version(void)
 {
-//        std::cout << _(PACKAGE_NAME" "VERSION" compiled "BUILD_DATE" for "BUILD_ARCH"\n"
         std::cout << _(PACKAGE_NAME" " VERSION" compiled for " BUILD_ARCH"\n"
                 "\nCompiled in features:\n\n"
                 "System config file: " SYSTEM_CONFIG_FILE"\n"
