@@ -161,7 +161,7 @@ void llua_init(void)
 	free(old_path);
 	free(new_path);
 
-	lua_pushstring(lua_L, PACKAGE_NAME" "VERSION" compiled "BUILD_DATE" for "BUILD_ARCH);
+	lua_pushstring(lua_L, PACKAGE_NAME" " VERSION" compiled " BUILD_DATE" for " BUILD_ARCH);
 	lua_setglobal(lua_L, "conky_build_info");
 
 	lua_pushstring(lua_L, VERSION);

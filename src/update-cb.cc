@@ -25,6 +25,7 @@
 
 #include "update-cb.hh"
 
+#include <unistd.h>
 #include <typeinfo>
 
 namespace conky {

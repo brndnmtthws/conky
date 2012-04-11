@@ -25,6 +25,7 @@
 
 #include "c++wrap.hh"
 
+#include <unistd.h>
 #include <string.h>
 
 #if !defined(HAVE_PIPE2) || !defined(HAVE_O_CLOEXEC)

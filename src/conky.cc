@@ -236,10 +236,11 @@ static void reload_config(void);
 
 static void print_version(void)
 {
-        std::cout << _(PACKAGE_NAME" "VERSION" compiled "BUILD_DATE" for "BUILD_ARCH"\n"
+//        std::cout << _(PACKAGE_NAME" "VERSION" compiled "BUILD_DATE" for "BUILD_ARCH"\n"
+        std::cout << _(PACKAGE_NAME" " VERSION" compiled for " BUILD_ARCH"\n"
                 "\nCompiled in features:\n\n"
-                "System config file: "SYSTEM_CONFIG_FILE"\n"
-                "Package library path: "PACKAGE_LIBDIR"\n\n")
+                "System config file: " SYSTEM_CONFIG_FILE"\n"
+                "Package library path: " PACKAGE_LIBDIR"\n\n")
                 << _("\n General:\n")
 #ifdef HAVE_OPENMP
                 << _("  * OpenMP\n")
@@ -362,10 +363,10 @@ static void print_version(void)
                 << _("  * XMMS2\n")
 #endif /* BUILD_XMMS2 */
 	<< _("\n Default values:\n")
-	<< "  * Netdevice: "DEFAULTNETDEV"\n"
-	<< "  * Local configfile: "CONFIG_FILE"\n"
+	<< "  * Netdevice: " DEFAULTNETDEV"\n"
+	<< "  * Local configfile: " CONFIG_FILE"\n"
 #ifdef BUILD_I18N
-	<< "  * Localedir: "LOCALE_DIR"\n"
+	<< "  * Localedir: " LOCALE_DIR"\n"
 #endif
 #ifdef BUILD_HTTP
 	<< "  * HTTP-port: " << HTTPPORT << "\n"
@@ -1959,10 +1960,16 @@ static void draw_stuff(void)
 #endif /* BUILD_X11 */
 	draw_mode = FG;
 	draw_text();
-#if defined(BUILD_X11) && defined(BUILD_XDBE)
+#if defined(BUILD_X11)
+#if defined(BUILD_XDBE)
 	if (out_to_x.get(*state)) {
 		xdbe_swap_buffers();
 	}
+#else
+	if (out_to_x.get(*state)) {
+		xpmdb_swap_buffers();
+	}
+#endif
 #endif /* BUILD_X11 && BUILD_XDBE */
 	if(overwrite_fpointer) {
 		fclose(overwrite_fpointer);
@@ -1980,6 +1987,10 @@ static void clear_text(int exposures)
 #ifdef BUILD_XDBE
 	if (use_xdbe.get(*state)) {
 		/* The swap action is XdbeBackground, which clears */
+		return;
+	} else
+#else
+	if (use_xpmdb.get(*state)) {
 		return;
 	} else
 #endif
@@ -2116,6 +2127,22 @@ static void main_loop(void)
 #ifdef BUILD_XDBE
 						/* swap buffers */
 						xdbe_swap_buffers();
+#else
+						if (use_xpmdb.get(*state)) {
+
+							XFreePixmap(display, window.back_buffer);
+							window.back_buffer = XCreatePixmap(display,
+								window.window, window.width, window.height, DefaultDepth(display, screen));
+						
+							if (window.back_buffer != None) {
+								window.drawable = window.back_buffer;
+							} else {
+								// this is probably reallllly bad
+								NORM_ERR("Failed to allocate back buffer");
+							}
+							XSetForeground(display, window.gc, 0);
+							XFillRectangle(display, window.drawable, window.gc, 0, 0, window.width, window.height);
+						}
 #endif
 
 						changed++;
@@ -2172,8 +2199,11 @@ static void main_loop(void)
 
 				clear_text(1);
 
-#ifdef BUILD_XDBE
+#if defined(BUILD_XDBE)
 				if (use_xdbe.get(*state)) {
+#else
+				if (use_xpmdb.get(*state)) {
+#endif
 					XRectangle r;
 					int border_total = get_border_total();
 
@@ -2183,7 +2213,6 @@ static void main_loop(void)
 					r.height = text_height + 2*border_total;
 					XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
 				}
-#endif
 			}
 
 			/* handle X events */
@@ -2334,8 +2363,11 @@ static void main_loop(void)
 			 * all, then no swap happens and we can safely do nothing. */
 
 			if (!XEmptyRegion(x11_stuff.region)) {
-#ifdef BUILD_XDBE
+#if defined(BUILD_XDBE)
 				if (use_xdbe.get(*state)) {
+#else
+				if (use_xpmdb.get(*state)) {
+#endif
 					XRectangle r;
 					int border_total = get_border_total();
 
@@ -2345,7 +2377,6 @@ static void main_loop(void)
 					r.height = text_height + 2*border_total;
 					XUnionRectWithRegion(&r, x11_stuff.region, x11_stuff.region);
 				}
-#endif
 				XSetRegion(display, window.gc, x11_stuff.region);
 #ifdef BUILD_XFT
 				if (use_xft.get(*state)) {
@@ -2715,7 +2746,7 @@ void load_config_file()
 
 static void print_help(const char *prog_name) {
 	printf("Usage: %s [OPTION]...\n"
-			PACKAGE_NAME" is a system monitor that renders text on desktop or to own transparent\n"
+			PACKAGE_NAME " is a system monitor that renders text on desktop or to own transparent\n"
 			"window. Command line options will override configurations defined in config\n"
 			"file.\n"
 			"   -v, --version             version\n"
@@ -2735,16 +2766,14 @@ static void print_help(const char *prog_name) {
 #ifdef OWN_WINDOW
 			"   -o, --own-window          create own window to draw\n"
 #endif
-#ifdef BUILD_XDBE
 			"   -b, --double-buffer       double buffer (prevents flickering)\n"
-#endif
 			"   -w, --window-id=WIN_ID    window id to draw\n"
 			"   -x X                      x position\n"
 			"   -y Y                      y position\n"
 #endif /* BUILD_X11 */
 			"   -t, --text=TEXT           text to render, remember single quotes, like -t '$uptime'\n"
 			"   -u, --interval=SECS       update interval\n"
-			"   -i COUNT                  number of times to update "PACKAGE_NAME" (and quit)\n"
+			"   -i COUNT                  number of times to update " PACKAGE_NAME " (and quit)\n"
 			"   -p, --pause=SECS          pause for SECS seconds at startup before doing anything\n",
 			prog_name
 	);
@@ -2766,9 +2795,7 @@ static const char *getopt_string = "vVqdDSs:t:u:i:hc:p:"
 #ifdef OWN_WINDOW
 	"o"
 #endif
-#ifdef BUILD_XDBE
 	"b"
-#endif
 #endif /* BUILD_X11 */
 #ifdef BUILD_BUILTIN_CONFIG
 	"C"
@@ -2792,9 +2819,7 @@ static const struct option longopts[] = {
 #ifdef OWN_WINDOW
 	{ "own-window", 0, NULL, 'o' },
 #endif
-#ifdef BUILD_XDBE
 	{ "double-buffer", 0, NULL, 'b' },
-#endif
 	{ "window-id", 1, NULL, 'w' },
 #endif /* BUILD_X11 */
 	{ "text", 1, NULL, 't' },
@@ -2890,6 +2915,11 @@ void initialisation(int argc, char **argv) {
 			case 'b':
 				state->pushboolean(true);
 				use_xdbe.lua_set(*state);
+				break;
+#else
+			case 'b':
+				state->pushboolean(true);
+				use_xpmdb.lua_set(*state);
 				break;
 #endif
 #endif /* BUILD_X11 */

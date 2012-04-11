@@ -27,8 +27,11 @@
 #include <cstdint>
 #include <memory>
 #include <thread>
+// the following probably requires a is-gcc-4.7.0 check
+#include <mutex>
 #include <tuple>
 #include <unordered_set>
+
 
 #include <assert.h>
 

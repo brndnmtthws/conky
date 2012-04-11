@@ -176,6 +176,11 @@ static void cimlib_draw_image(struct image_list_s *cur, int *clip_x, int
 	time_t now = time(NULL);
 	static int rep = 0;
 
+	if (imlib_context_get_drawable() != window.drawable) {
+		imlib_context_set_drawable(window.drawable);
+	}
+
+
 	image = imlib_load_image(cur->name);
 	if (!image) {
 		if (!rep)

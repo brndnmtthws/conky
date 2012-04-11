@@ -74,6 +74,8 @@ struct conky_window {
 
 #ifdef BUILD_XDBE
 	XdbeBackBuffer back_buffer;
+#else
+	Pixmap back_buffer;
 #endif
 #ifdef BUILD_XFT
 	XftDraw *xftdraw;
@@ -116,6 +118,8 @@ void print_desktop_name(struct text_object *, char *, int);
 
 #ifdef BUILD_XDBE
 void xdbe_swap_buffers(void);
+#else
+void xpmdb_swap_buffers(void);
 #endif /* BUILD_XDBE */
 
 /* alignments */
@@ -172,6 +176,20 @@ namespace priv {
 			: Base("double_buffer", false, false)
 		{}
 	};
+
+	class use_xpmdb_setting: public conky::simple_config_setting<bool> {
+		typedef conky::simple_config_setting<bool> Base;
+	
+		bool set_up(lua::state &l);
+	protected:
+		virtual void lua_setter(lua::state &l, bool init);
+
+	public:
+		use_xpmdb_setting()
+			: Base("double_buffer", false, false)
+		{}
+	};
+
 	
 	struct colour_traits {
 		static const lua::Type type = lua::TSTRING;
@@ -235,6 +253,8 @@ extern priv::own_window_setting					 own_window;
 
 #ifdef BUILD_XDBE
 extern priv::use_xdbe_setting					 use_xdbe;
+#else
+extern priv::use_xpmdb_setting					 use_xpmdb;
 #endif
 
 #endif /*X11_H_*/

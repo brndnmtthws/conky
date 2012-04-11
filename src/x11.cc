@@ -170,6 +170,48 @@ namespace priv {
 
 		++s;
 	}
+
+
+
+#else
+	bool use_xpmdb_setting::set_up(lua::state &l)
+	{
+		// double_buffer makes no sense when not drawing to X
+		if(not out_to_x.get(l))
+			return false;
+
+		window.back_buffer = XCreatePixmap(display,
+				window.window, window.width+1, window.height+1, DefaultDepth(display, screen));
+		if (window.back_buffer != None) {
+			window.drawable = window.back_buffer;
+		} else {
+			NORM_ERR("Failed to allocate back buffer");
+			return false;
+		}
+		
+
+		XFlush(display);
+		return true;
+	}
+
+	void use_xpmdb_setting::lua_setter(lua::state &l, bool init)
+	{
+		lua::stack_sentry s(l, -2);
+
+		Base::lua_setter(l, init);
+
+		if(init && do_convert(l, -1).first) {
+			if(not set_up(l)) {
+				l.pop();
+				l.pushboolean(false);
+			}
+
+			fprintf(stderr, PACKAGE_NAME": drawing to %s buffer\n",
+					do_convert(l, -1).first?"double":"single");
+		}
+
+		++s;
+	}
 #endif
 
 	void colour_setting::lua_setter(lua::state &l, bool init)
@@ -316,6 +358,8 @@ priv::own_window_setting				  own_window;
 
 #ifdef BUILD_XDBE
 priv::use_xdbe_setting			 		  use_xdbe;
+#else
+priv::use_xpmdb_setting			 		  use_xpmdb;
 #endif
 
 #ifdef BUILD_IMLIB2
@@ -1174,6 +1218,16 @@ void xdbe_swap_buffers(void)
 		swap.swap_window = window.window;
 		swap.swap_action = XdbeBackground;
 		XdbeSwapBuffers(display, &swap, 1);
+	}
+}
+#else
+void xpmdb_swap_buffers(void)
+{
+	if (use_xpmdb.get(*state)) {
+		XCopyArea(display, window.back_buffer, window.window, window.gc, 0, 0, window.width, window.height, 0, 0);
+		XSetForeground(display, window.gc, 0);
+		XFillRectangle(display, window.drawable, window.gc, 0, 0, window.width, window.height);
+		XFlush(display);
 	}
 }
 #endif /* BUILD_XDBE */

@@ -1050,7 +1050,7 @@ static int open_sysfs_sensor(const char *dir, const char *dev, const char *type,
 		fd = open(path, O_RDONLY);
 		if (fd < 0) {
 			NORM_ERR("can't open '%s': %s\nplease check your device or remove this "
-					 "var from "PACKAGE_NAME, path, strerror(errno));
+					 "var from " PACKAGE_NAME, path, strerror(errno));
 		}
 	}
 
