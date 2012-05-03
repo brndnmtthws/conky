@@ -739,7 +739,6 @@ void generate_text_internal(char *p, int p_max_size,
 #endif /* X11 */
 
 	/* for the OBJ_top* handler */
-	struct process **needed = 0;
 
 #ifdef HAVE_ICONV
 	char buff_in[p_max_size];
@@ -751,7 +750,6 @@ void generate_text_internal(char *p, int p_max_size,
 	p[0] = 0;
 	obj = root.next;
 	while (obj && p_max_size > 0) {
-		needed = 0; /* reset for top stuff */
 
 /* IFBLOCK jumping algorithm
  *
@@ -2826,7 +2824,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 	int cur_y_add = 0;
 #endif /* X11 */
 	char *p = s;
-	int last_special_needed = -1;
 	int orig_special_index = special_index;
 
 #ifdef X11
@@ -3206,7 +3203,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 
 				case OFFSET:
 					w += specials[special_index].arg;
-					last_special_needed = special_index;
 					break;
 
 				case VOFFSET:
@@ -3217,7 +3213,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					if (specials[special_index].arg >= 0) {
 						cur_x = (int) specials[special_index].arg;
 					}
-					last_special_needed = special_index;
 					break;
 
 				case TAB:
@@ -3229,7 +3224,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						step = 10;
 					}
 					w = step - (cur_x - text_start_x - start) % step;
-					last_special_needed = special_index;
 					break;
 				}
 
@@ -3250,7 +3244,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					if (pos_x > specials[special_index].arg && pos_x > cur_x) {
 						cur_x = pos_x - specials[special_index].arg;
 					}
-					last_special_needed = special_index;
 					break;
 				}
 
@@ -3270,7 +3263,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					if (pos_x > specials[special_index].arg) {
 						w = pos_x - specials[special_index].arg;
 					}
-					last_special_needed = special_index;
 					break;
 				}
 #endif /* X11 */
