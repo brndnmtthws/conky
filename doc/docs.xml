@@ -16,7 +16,7 @@
 			<firstname>Brenden</firstname>
 			<surname>Matthews</surname>
 		</author>
-		<date>2009-08-01</date>
+		<date>2012-05-03</date>
 	</refentryinfo>
 	<refmeta>
 		<refentrytitle>conky</refentrytitle>
@@ -303,7 +303,7 @@
 	</refsect1>
 	<refsect1>
 		<title>Copying</title>
-		<para>Copyright (c) 2005-2010 Brenden Matthews, Philip
+		<para>Copyright (c) 2005-2012 Brenden Matthews, Philip
 			Kovacs, et. al. Any original torsmo code is licensed under
 			the BSD license (see LICENSE.BSD for a copy). All code
 			written since the fork of torsmo is licensed under the GPL
