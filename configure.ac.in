@@ -62,10 +62,10 @@ case $uname in
     WANT_DEVSTAT=yes
     WANT_OPTRESET=yes
     ;;
-#  NetBSD*)
-#    WANT_KVM=yes
-#    WANT_OSSLIB=yes
-#    ;;
+  NetBSD*)
+    WANT_KVM=yes
+    WANT_OSSLIB=yes
+    ;;
 
   OpenBSD*)
     WANT_KVM=yes
@@ -87,7 +87,7 @@ esac
 AM_CONDITIONAL(BUILD_LINUX, test x$uname = xLinux)
 #AM_CONDITIONAL(BUILD_SOLARIS, test x$uname = xSunOS)
 AM_CONDITIONAL(BUILD_FREEBSD, test x$uname = xFreeBSD -o x$uname = xGNU/kFreeBSD)
-#AM_CONDITIONAL(BUILD_NETBSD, test x$uname = xNetBSD)
+AM_CONDITIONAL(BUILD_NETBSD, test x$uname = xNetBSD)
 AM_CONDITIONAL(BUILD_OPENBSD, test x$uname = xOpenBSD)
 
 BUILD_DATE=$(LANG=en_US LC_ALL=en_US LOCALE=en_US date)
@@ -784,7 +784,7 @@ dnl
 dnl Some headers
 dnl
 
-AC_CHECK_HEADERS([signal.h unistd.h sys/utsname.h sys/stat.h linux/soundcard.h alsa/asoundlib.h dirent.h mcheck.h \
+AC_CHECK_HEADERS([signal.h unistd.h sys/utsname.h sys/stat.h linux/soundcard.h alsa/asoundlib.h dirent.h mcheck.h sys/statvfs.h \
       sys/statfs.h sys/param.h pthread.h semaphore.h assert.h errno.h time.h])
 AC_CHECK_HEADERS([sys/mount.h], [], [],
      [#ifdef HAVE_SYS_PARAM_H

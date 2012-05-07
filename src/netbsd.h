@@ -12,6 +12,8 @@
 #include <kvm.h>
 #include <nlist.h>
 
+#include <pthread.h>
+
 #include <sys/time.h>
 #include <sys/sysctl.h>
 #include <sys/types.h>
@@ -32,5 +34,7 @@
 
 int get_entropy_avail(unsigned int *);
 int get_entropy_poolsize(unsigned int *);
+
+kvm_t *kd;
 
 #endif /*NETBSD_H_*/

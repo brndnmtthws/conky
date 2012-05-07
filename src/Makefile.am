@@ -119,9 +119,9 @@ endif
 if BUILD_FREEBSD
 optional_sources += $(freebsd)
 endif
-#if BUILD_NETBSD
-#optional_sources += $(netbsd)
-#endif
+if BUILD_NETBSD
+optional_sources += $(netbsd)
+endif
 if BUILD_OPENBSD
 optional_sources += $(openbsd)
 endif
