@@ -460,26 +460,26 @@ void llua_set_number(const char *key, double value)
 
 void llua_startup_hook(void)
 {
-	if (!lua_L || !lua_startup_hook.get(*state).empty()) return;
+	if (!lua_L || lua_startup_hook.get(*state).empty()) return;
 	llua_do_call(lua_startup_hook.get(*state).c_str(), 0);
 }
 
 void llua_shutdown_hook(void)
 {
-	if (!lua_L || !lua_shutdown_hook.get(*state).empty()) return;
+	if (!lua_L || lua_shutdown_hook.get(*state).empty()) return;
 	llua_do_call(lua_shutdown_hook.get(*state).c_str(), 0);
 }
 
 #ifdef BUILD_X11
 void llua_draw_pre_hook(void)
 {
-	if (!lua_L || !lua_draw_hook_pre.get(*state).empty()) return;
+	if (!lua_L || lua_draw_hook_pre.get(*state).empty()) return;
 	llua_do_call(lua_draw_hook_pre.get(*state).c_str(), 0);
 }
 
 void llua_draw_post_hook(void)
 {
-	if (!lua_L || !lua_draw_hook_post.get(*state).empty()) return;
+	if (!lua_L || lua_draw_hook_post.get(*state).empty()) return;
 	llua_do_call(lua_draw_hook_post.get(*state).c_str(), 0);
 }
 
