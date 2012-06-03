@@ -3321,9 +3321,6 @@ static int draw_line(char *s, int special_index)
 static void draw_text(void)
 {
 #ifdef X11
-#ifdef HAVE_LUA
-	llua_draw_pre_hook();
-#endif /* HAVE_LUA */
 	if (output_methods & TO_X) {
 		cur_y = text_start_y;
 
@@ -3355,9 +3352,6 @@ static void draw_text(void)
 	attron(COLOR_PAIR(COLOR_WHITE));
 #endif /* NCURSES */
 	for_each_line(text_buffer, draw_line);
-#if defined(HAVE_LUA) && defined(X11)
-	llua_draw_post_hook();
-#endif /* HAVE_LUA */
 }
 
 static void draw_stuff(void)
@@ -3375,6 +3369,9 @@ static void draw_stuff(void)
 		if(!append_fpointer)
 			NORM_ERR("Can't append '%s' anymore", append_file);
 	}
+#ifdef HAVE_LUA
+	llua_draw_pre_hook();
+#endif /* HAVE_LUA */
 #ifdef X11
 	if (output_methods & TO_X) {
 		selected_font = 0;
@@ -3413,6 +3410,9 @@ static void draw_stuff(void)
 #endif /* X11 */
 	draw_mode = FG;
 	draw_text();
+#ifdef HAVE_LUA
+	llua_draw_post_hook();
+#endif /* HAVE_LUA */
 #if defined(X11) && defined(HAVE_XDBE)
 	if (output_methods & TO_X) {
 		xdbe_swap_buffers();
