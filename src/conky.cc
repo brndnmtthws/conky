@@ -1864,7 +1864,6 @@ static void draw_text(void)
 	}
 #endif
 #ifdef BUILD_X11
-	llua_draw_pre_hook();
 	if (out_to_x.get(*state)) {
 		cur_y = text_start_y;
 		int bw = border_width.get(*state);
@@ -1896,9 +1895,6 @@ static void draw_text(void)
 	attron(COLOR_PAIR(COLOR_WHITE));
 #endif /* BUILD_NCURSES */
 	for_each_line(text_buffer, draw_line);
-#ifdef BUILD_X11
-	llua_draw_post_hook();
-#endif /* BUILD_X11 */
 #ifdef BUILD_HTTP
 	if (out_to_http.get(*state)) {
 		webpage.append(WEBPAGE_END);
@@ -1921,6 +1917,7 @@ static void draw_stuff(void)
 		if(!append_fpointer)
 			NORM_ERR("Cannot append to '%s'", append_file.get(*state).c_str());
 	}
+	llua_draw_pre_hook();
 #ifdef BUILD_X11
 	if (out_to_x.get(*state)) {
 		selected_font = 0;
@@ -1959,6 +1956,7 @@ static void draw_stuff(void)
 #endif /* BUILD_X11 */
 	draw_mode = FG;
 	draw_text();
+	llua_draw_post_hook();
 #if defined(BUILD_X11)
 #if defined(BUILD_XDBE)
 	if (out_to_x.get(*state)) {
