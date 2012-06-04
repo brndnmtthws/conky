@@ -1856,7 +1856,7 @@ static void draw_text(void)
 		if(http_refresh.get(*state)) {
 			webpage.append("<meta http-equiv=\"refresh\" content=\"");
 			std::stringstream update_interval_str;
-			update_interval_str << update_interval;
+			update_interval_str << update_interval.get(*state);
 			webpage.append(update_interval_str.str());
 			webpage.append("\" />");
 		}
