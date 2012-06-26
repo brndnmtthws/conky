@@ -703,7 +703,7 @@ static int insert_sp_element(struct sorted_process *sp_cur,
 		sp_cur->greater = *p_sp_tail;
 		*p_sp_tail = sp_cur;
 		did_insert = x;
-	} else if (x >= max_elements) {
+	} else if (x > max_elements) {
 		/* We inserted an element and now the list is too big by one.
 		 * Destroy the smallest element */
 		sp_destroy = *p_sp_tail;
