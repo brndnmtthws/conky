@@ -3155,9 +3155,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						char *tmp_str;
 						cur_x += font_ascent() / 2;
 						cur_y += font_h / 2;
-						tmp_str = (char *)
-							calloc(log10(floor(specials[special_index].graph_scale)) + 4,
-									sizeof(char));
+						tmp_str = (char *) calloc(20, sizeof(char));
 						sprintf(tmp_str, "%.1f", specials[special_index].graph_scale);
 						draw_string(tmp_str);
 						free(tmp_str);
