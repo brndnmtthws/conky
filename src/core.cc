@@ -105,6 +105,8 @@
 #include "linux.h"
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 #include "freebsd.h"
+#elif defined(__DragonFly__)
+#include "dragonfly.h"
 #elif defined(__OpenBSD__)
 #include "openbsd.h"
 #endif
@@ -534,7 +536,7 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		}
 		obj->callbacks.print = get_powerbook_batt_info;
 #endif /* __linux__ */
-#if (defined(__FreeBSD__) || defined(__linux__))
+#if (defined(__FreeBSD__) || defined(__linux__) || defined(__DragonFly__))
 	END OBJ_IF_ARG(if_up, 0, "if_up needs an argument")
 		parse_if_up_arg(obj, arg);
 		obj->callbacks.iftest = &interface_up;
@@ -921,11 +923,11 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		obj->callbacks.iftest = &if_existing_iftest;
 		obj->callbacks.free = &gen_free_opaque;
+#ifdef __linux__
 	END OBJ_IF_ARG(if_mounted, 0, "if_mounted needs an argument")
 		obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		obj->callbacks.iftest = &check_mount;
 		obj->callbacks.free = &gen_free_opaque;
-#ifdef __linux__
 	END OBJ_IF_ARG(if_running, &update_top, "if_running needs an argument")
 		top_running = 1;
 		obj->data.s = strndup(arg, text_buffer_size.get(*state));
@@ -944,6 +946,10 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		obj->callbacks.print = &print_kernel;
 	END OBJ(machine, 0)
 		obj->callbacks.print = &print_machine;
+#if defined(__DragonFly__)
+    END OBJ(version, 0)
+		obj->callbacks.print = &print_version;
+#endif
 	END OBJ(mails, 0)
 		parse_local_mail_args(obj, arg);
 		obj->callbacks.print = &print_mails;
@@ -1202,7 +1208,11 @@ struct text_object *construct_text_object(char *s, const char *arg,
 	END OBJ_ARG(pid_write, 0, "pid_write needs a pid as argument")
 		extract_object_args_to_sub(obj, arg);
 		obj->callbacks.print = &print_pid_write;
+#ifdef __DragonFly__
+	END OBJ(processes, &update_tmp_top)
+#else
 	END OBJ(processes, &update_total_processes)
+#endif
 		obj->callbacks.print = &print_processes;
 #ifdef __linux__
 	END OBJ(distribution, 0)
@@ -1215,8 +1225,13 @@ struct text_object *construct_text_object(char *s, const char *arg,
 	END OBJ(running_threads, &update_stat)
 		obj->callbacks.print = &print_running_threads;
 #else
+#if defined(__DragonFly__)
+	END OBJ(running_processes, &update_tmp_top)
+	obj->callbacks.print = &print_running_processes;
+#else
 	END OBJ(running_processes, &update_running_processes)
-		obj->callbacks.print = &print_running_processes;
+	obj->callbacks.print = &print_running_processes;
+#endif
 #endif /* __linux__ */
 	END OBJ(shadecolor, 0)
 #ifdef BUILD_X11
@@ -1338,7 +1353,8 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		obj->callbacks.free = &free_gateway_info;
 #endif /* !__linux__ */
 #if (defined(__FreeBSD__) || defined(__FreeBSD_kernel__) \
-		|| defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
+	|| defined(__DragonFly__) \
+	|| defined(__OpenBSD__)) && (defined(i386) || defined(__i386__))
 	END OBJ(apm_adapter, 0)
 		obj->callbacks.print = &print_apm_adapter;
 	END OBJ(apm_battery_life, 0)

@@ -116,6 +116,8 @@
 #include "linux.h"
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 #include "freebsd.h"
+#elif defined(__DragonFly__)
+#include "dragonfly.h"
 #elif defined(__OpenBSD__)
 #include "openbsd.h"
 #endif
@@ -2778,7 +2780,7 @@ static void print_help(const char *prog_name) {
 
 inline void reset_optind() {
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__OpenBSD__) \
-		|| defined(__NetBSD__)
+	|| defined(__NetBSD__) || defined(__DragonFly__)
 	optind = optreset = 1;
 #else
 	optind = 0;

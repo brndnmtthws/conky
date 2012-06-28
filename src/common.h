@@ -119,6 +119,11 @@ void print_nodename(struct text_object *, char *, int);
 void print_nodename_short(struct text_object *, char *, int);
 void print_sysname(struct text_object *, char *, int);
 
+#if defined(__DragonFly__)
+void print_version(struct text_object *obj, char *p, int p_max_size);
+#endif
+
+
 void print_uptime(struct text_object *, char *, int);
 void print_uptime_short(struct text_object *, char *, int);
 

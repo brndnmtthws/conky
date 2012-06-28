@@ -64,7 +64,7 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 	if (!s)
 		return &stats;
 
-#if defined(__FreeBSD__)
+#if defined(__FreeBSD__) || defined(__DragonFly__)
 	if (strncmp(s, "/dev/", 5) == 0) {
 		// supplied a /dev/device arg, so cut off the /dev part
 		strncpy(&(device_name[0]), s + 5, text_buffer_size.get(*state));

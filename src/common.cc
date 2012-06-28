@@ -42,6 +42,7 @@
 #include <errno.h>
 #include <time.h>
 #include <sys/ioctl.h>
+#include <sys/sysctl.h>
 #include <net/if.h>
 #include <netinet/in.h>
 #include <pthread.h>
@@ -55,6 +56,8 @@
 #include "linux.h"
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 #include "freebsd.h"
+#elif defined(__DragonFly__)
+#include "dragonfly.h"
 #elif defined(__OpenBSD__)
 #include "openbsd.h"
 #endif
@@ -96,6 +99,24 @@ char *strndup(const char *s, size_t n)
 int update_uname(void)
 {
 	uname(&info.uname_s);
+
+#if defined(__DragonFly__)
+	{
+		size_t desc_n; char desc[256];
+
+		if (sysctlbyname("kern.version", NULL, &desc_n, NULL, 0) == -1 ||
+			sysctlbyname("kern.version", desc, &desc_n, NULL, 0) == -1)
+			perror("kern.version");
+		else {
+			char *start = desc;
+			strsep(&start, " ");
+			strcpy(info.uname_v, strsep(&start, " "));
+		}
+
+		if (errno == ENOMEM) printf("desc_n %d\n", desc_n);
+	}
+#endif
+
 	return 0;
 }
 
@@ -474,6 +495,14 @@ void print_sysname(struct text_object *obj, char *p, int p_max_size)
 	(void)obj;
 	snprintf(p, p_max_size, "%s", info.uname_s.sysname);
 }
+
+#if defined(__DragonFly__)
+void print_version(struct text_object *obj, char *p, int p_max_size)
+{
+    (void)obj;
+    snprintf(p, p_max_size, "%s", info.uname_v);
+}
+#endif
 
 void print_uptime(struct text_object *obj, char *p, int p_max_size)
 {

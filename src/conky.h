@@ -173,6 +173,9 @@ struct information {
 	unsigned int mask;
 
 	struct utsname uname_s;
+#if defined(__DragonFly__)
+    char uname_v[256]; /* with git version */
+#endif
 
 	char freq[10];
 

@@ -37,6 +37,8 @@
 #include "linux.h"
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 #include "freebsd.h"
+#elif defined(__DragonFly__)
+#include "dragonfly.h"
 #elif defined(__OpenBSD__)
 #include "openbsd.h"
 #endif

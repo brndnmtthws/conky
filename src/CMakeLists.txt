@@ -54,6 +54,11 @@ if(OS_FREEBSD)
 	set(optional_sources ${optional_sources} ${freebsd})
 endif(OS_FREEBSD)
 
+if(OS_DRAGONFLY)
+    set(dragonfly dragonfly.cc bsdapm.cc)
+    set(optional_sources ${optional_sources} ${dragonfly})
+endif(OS_DRAGONFLY)
+
 if(OS_OPENBSD)
 	set(openbsd openbsd.cc bsdapm.cc)
 	set(optional_sources ${optional_sources} ${openbsd})
