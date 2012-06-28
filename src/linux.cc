@@ -2812,15 +2812,8 @@ static void update_process_table(void)
 		}
 
 		if (sscanf(entry->d_name, "%d", &pid) > 0) {
-			struct process *p;
-
-			p = find_process(pid);
-			if (!p) {
-				p = new_process(pid);
-			}
-
-			/* compute each process cpu usage */
-			calculate_stats(p);
+		/* compute each process cpu usage */
+			calculate_stats(get_process(pid));
 		}
 	}
 

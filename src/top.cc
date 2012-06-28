@@ -75,7 +75,6 @@ static void unhash_process(struct process *p)
 
 	/* get the bucket head */
 	phe = &proc_hash_table[p->pid & (HTABSIZE - 1)];
-
 	/* find the entry pointing to p and drop it */
 	while (phe->next) {
 		if (phe->next->proc == p) {
@@ -138,7 +137,7 @@ struct process *get_process_by_name(const char *name)
 	return 0;
 }
 
-struct process *find_process(pid_t pid)
+static struct process *find_process(pid_t pid)
 {
 	struct proc_hash_entry *phe;
 
@@ -148,43 +147,56 @@ struct process *find_process(pid_t pid)
 			return phe->next->proc;
 		phe = phe->next;
 	}
-	return 0;
+	return NULL;
 }
 
-/* Create a new process object and insert it into the process list */
-struct process *new_process(int p)
+static struct process *new_process(pid_t pid)
 {
-	struct process *process;
-	process = (struct process *) malloc(sizeof(struct process));
-
-	// clean up memory first
-	memset(process, 0, sizeof(struct process));
+	struct process *p = (struct process *) malloc(sizeof(struct process));
 
 	/* Do stitching necessary for doubly linked list */
-	process->name = 0;
-	process->previous = 0;
-	process->next = first_process;
-	if (process->next) {
-		process->next->previous = process;
+	p->previous = NULL;
+	p->next = first_process;
+	if (p->next) {
+		p->next->previous = p;
 	}
-	first_process = process;
+	first_process = p;
 
-	process->pid = p;
-	process->time_stamp = 0;
-	process->previous_user_time = ULONG_MAX;
-	process->previous_kernel_time = ULONG_MAX;
+	p->pid = pid;
+	p->name = 0;
+	p->amount = 0;
+	p->user_time = 0;
+	p->total = 0;
+	p->kernel_time = 0;
+	p->previous_user_time = ULONG_MAX;
+	p->previous_kernel_time = ULONG_MAX;
+	p->total_cpu_time = 0;
+	p->vsize = 0;
+	p->rss = 0;
 #ifdef BUILD_IOSTATS
-	process->previous_read_bytes = ULLONG_MAX;
-	process->previous_write_bytes = ULLONG_MAX;
+	p->read_bytes = 0;
+	p->previous_read_bytes = ULLONG_MAX;
+	p->write_bytes = 0;
+	p->previous_write_bytes = ULLONG_MAX;
+	p->io_perc = 0;
 #endif /* BUILD_IOSTATS */
-	process->counted = 1;
+	p->time_stamp = 0;
+	p->counted = 1;
+	p->changed = 0;
 
-	/* process_find_name(process); */
+	/* process_find_name(p); */
 
 	/* add the process to the hash table */
-	hash_process(process);
+	hash_process(p);
 
-	return process;
+	return p;
+}
+
+/* Get / create a new process object and insert it into the process list */
+struct process *get_process(pid_t pid)
+{
+	struct process *p = find_process(pid);
+	return p ? p : new_process(pid);
 }
 
 /******************************************

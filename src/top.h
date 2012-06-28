@@ -128,7 +128,6 @@ void get_top_info(void);
 extern struct process *first_process;
 extern unsigned long g_time;
 
-struct process *find_process(pid_t pid);
-struct process *new_process(int p);
+struct process *get_process(pid_t pid);
 
 #endif /* _top_h_ */

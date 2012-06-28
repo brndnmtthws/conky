@@ -1209,7 +1209,7 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		extract_object_args_to_sub(obj, arg);
 		obj->callbacks.print = &print_pid_write;
 #ifdef __DragonFly__
-	END OBJ(processes, &update_tmp_top)
+	END OBJ(processes, &update_top)
 #else
 	END OBJ(processes, &update_total_processes)
 #endif
@@ -1226,7 +1226,7 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		obj->callbacks.print = &print_running_threads;
 #else
 #if defined(__DragonFly__)
-	END OBJ(running_processes, &update_tmp_top)
+	END OBJ(running_processes, &update_top)
 	obj->callbacks.print = &print_running_processes;
 #else
 	END OBJ(running_processes, &update_running_processes)
