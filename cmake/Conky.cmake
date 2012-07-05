@@ -67,6 +67,11 @@ set(conky_includes ${CMAKE_BINARY_DIR})
 add_definitions(-D_LARGEFILE64_SOURCE) # Standard definitions
 set(CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS} -D_LARGEFILE64_SOURCE")
 
+if(OS_DRAGONFLY)
+set(conky_libs ${conky_libs} -L/usr/pkg/lib)
+set(conky_includes ${conky_includes} -I/usr/pkg/include)
+endif(OS_DRAGONFLY)
+
 # Do version stuff
 set(VERSION_MAJOR "2")
 set(VERSION_MINOR "0")
