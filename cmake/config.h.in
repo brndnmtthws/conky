@@ -118,4 +118,9 @@
 
 #cmakedefine BUILD_CMUS 1
 
+#cmakedefine HAVE_STATFS64 1
+#ifndef HAVE_STATFS64
+#define statfs64 statfs
+#endif
+
 #endif /* _conky_config_h_ */

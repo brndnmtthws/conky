@@ -27,6 +27,8 @@
  *
  */
 
+#include "config.h"
+
 #include <sys/ioctl.h>
 #include <sys/dkstat.h>
 #include <sys/param.h>
