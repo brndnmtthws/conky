@@ -36,7 +36,7 @@ check_function_exists(strndup HAVE_STRNDUP)
 
 check_symbol_exists(pipe2 "unistd.h" HAVE_PIPE2)
 check_symbol_exists(O_CLOEXEC "fcntl.h" HAVE_O_CLOEXEC)
-check_symbol_exists(statfs64 "sys/statfs.h" HAVE_STATFS64t)
+check_symbol_exists(statfs64 "sys/statfs.h" HAVE_STATFS64)
 
 AC_SEARCH_LIBS(clock_gettime "time.h" CLOCK_GETTIME_LIB "rt")
 if(NOT CLOCK_GETTIME_LIB)
