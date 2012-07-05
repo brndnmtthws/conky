@@ -39,9 +39,11 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
-/* linux */
 #ifdef HAVE_SYS_STATFS_H
 #include <sys/statfs.h>
+#ifndef HAVE_STATFS64
+#define statfs64 statfs
+#endif
 #endif
 
 /* freebsd && netbsd */
