@@ -885,12 +885,12 @@ void generate_text_internal(char *p, int p_max_size,
 			OBJ(cpu) {
 				if (cur->cpu_usage) {
 					if (obj->data.i > info.cpu_count) {
-						static bool warned = false;
+						static int warned = 0;
 						if(!warned) {
 							NORM_ERR("obj->data.i %i info.cpu_count %i",
 									obj->data.i, info.cpu_count);
 							NORM_ERR("attempting to use more CPUs than you have!");
-							warned = true;
+							warned = 1;
 						}
 					} else  {
 						percent_print(p, p_max_size,
