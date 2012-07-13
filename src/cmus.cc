@@ -148,7 +148,7 @@ void print_cmus_##type(struct text_object *obj, char *p, int p_max_size) \
 { \
 	(void)obj; \
 	uint32_t period = std::max( \
-				std::lround(music_player_interval.get(*state)/active_update_interval()), 1l \
+				lround(music_player_interval.get(*state)/active_update_interval()), 1l \
 			); \
 	const cmus_result &cmus = conky::register_cb<cmus_cb>(period)->get_result_copy(); \
 	snprintf(p, p_max_size, "%s", (cmus.type.length() ? cmus.type.c_str() : alt)); \
@@ -170,7 +170,7 @@ uint8_t cmus_percent(struct text_object *obj)
 {
 	(void)obj;
 	uint32_t period = std::max(
-	    std::lround(music_player_interval.get(*state)/active_update_interval()), 1l);
+	    lround(music_player_interval.get(*state)/active_update_interval()), 1l);
 	const cmus_result &cmus = conky::register_cb<cmus_cb>(period)->get_result_copy();
 	return (uint8_t) round(cmus.progress * 100.0f);
 }
@@ -179,7 +179,7 @@ double cmus_progress(struct text_object *obj)
 {
 	(void)obj;
 	uint32_t period = std::max(
-	    std::lround(music_player_interval.get(*state)/active_update_interval()), 1l);
+	    lround(music_player_interval.get(*state)/active_update_interval()), 1l);
 	const cmus_result &cmus = conky::register_cb<cmus_cb>(period)->get_result_copy();
 	return (double) cmus.progress;
 }
@@ -188,7 +188,7 @@ void print_cmus_totaltime(struct text_object *obj, char *p, int p_max_size)
 {
 	(void)obj;
 	uint32_t period = std::max(
-	    std::lround(music_player_interval.get(*state)/active_update_interval()), 1l);
+	    lround(music_player_interval.get(*state)/active_update_interval()), 1l);
 	const cmus_result &cmus = conky::register_cb<cmus_cb>(period)->get_result_copy();
 	format_seconds_short(p, p_max_size, atol(cmus.totaltime.c_str()));
 }
@@ -197,7 +197,7 @@ void print_cmus_timeleft(struct text_object *obj, char *p, int p_max_size)
 {
 	(void)obj;
 	uint32_t period = std::max(
-	    std::lround(music_player_interval.get(*state)/active_update_interval()), 1l);
+	    lround(music_player_interval.get(*state)/active_update_interval()), 1l);
 	const cmus_result &cmus = conky::register_cb<cmus_cb>(period)->get_result_copy();
 	//format_seconds_short(p, p_max_size, atol(cmus.timeleft.c_str()));
 	format_seconds_short(p, p_max_size, (long)cmus.timeleft);
@@ -207,7 +207,7 @@ void print_cmus_curtime(struct text_object *obj, char *p, int p_max_size)
 {
 	(void)obj;
 	uint32_t period = std::max(
-	    std::lround(music_player_interval.get(*state)/active_update_interval()), 1l);
+	    lround(music_player_interval.get(*state)/active_update_interval()), 1l);
 	const cmus_result &cmus = conky::register_cb<cmus_cb>(period)->get_result_copy();
 	format_seconds_short(p, p_max_size, atol(cmus.curtime.c_str()));
 }

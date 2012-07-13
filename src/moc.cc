@@ -117,7 +117,7 @@ void print_moc_##type(struct text_object *obj, char *p, int p_max_size) \
 { \
 	(void)obj; \
 	uint32_t period = std::max( \
-				std::lround(music_player_interval.get(*state)/active_update_interval()), 1l \
+				lround(music_player_interval.get(*state)/active_update_interval()), 1l \
 			); \
 	const moc_result &moc = conky::register_cb<moc_cb>(period)->get_result_copy(); \
 	snprintf(p, p_max_size, "%s", (moc.type.length() ? moc.type.c_str() : alt)); \

@@ -732,7 +732,7 @@ void wind_deg_to_dir(char *p, int p_max_size, int wind_deg) {
 static void weather_forecast_process_info(char *p, int p_max_size, const
 		std::string &uri, unsigned int day, char *data_type, int interval)
 {
-	uint32_t period = std::max(std::lround(interval/active_update_interval()), 1l);
+	uint32_t period = std::max(lround(interval/active_update_interval()), 1l);
 
 	auto cb = conky::register_cb<weather_cb<weather_forecast>>(period, uri);
 
@@ -774,7 +774,7 @@ static void weather_process_info(char *p, int p_max_size, const std::string &uri
 		"dust/sand", "squall", "sand storm", "dust storm"
 	};
 
-	uint32_t period = std::max(std::lround(interval/active_update_interval()), 1l);
+	uint32_t period = std::max(lround(interval/active_update_interval()), 1l);
 
 	auto cb = conky::register_cb<weather_cb<weather>>(period, uri);
 

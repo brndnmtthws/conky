@@ -564,7 +564,7 @@ std::unique_ptr<mail_param_ex> parse_mail_args(mail_type type, const char *arg)
 		tmp += 3;
 		sscanf(tmp, "%f", &interval);
 	}
-	mail->period = std::max(std::lround(interval/active_update_interval()), 1l);
+	mail->period = std::max(lround(interval/active_update_interval()), 1l);
 
 	tmp = (char*)strstr(arg, "-p ");
 	if (tmp) {

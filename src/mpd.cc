@@ -303,7 +303,7 @@ if (b) a=b; else a="";
 	mpd_result get_mpd()
 	{
 		uint32_t period = std::max(
-					std::lround(music_player_interval.get(*state)/active_update_interval()), 1l
+					lround(music_player_interval.get(*state)/active_update_interval()), 1l
 				);
 		return conky::register_cb<mpd_cb>(period)->get_result_copy();
 	}

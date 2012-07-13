@@ -244,7 +244,7 @@ void print_execi(struct text_object *obj, char *p, int p_max_size)
 	if (!ed)
 		return;
 
-	uint32_t period = std::max(std::lround(ed->interval/active_update_interval()), 1l);
+	uint32_t period = std::max(lround(ed->interval/active_update_interval()), 1l);
 
 	auto cb = conky::register_cb<exec_cb>(period, !obj->thread, ed->cmd);
 
@@ -264,7 +264,7 @@ double execi_barval(struct text_object *obj)
 	if (!ed)
 		return 0;
 
-	uint32_t period = std::max(std::lround(ed->interval/active_update_interval()), 1l);
+	uint32_t period = std::max(lround(ed->interval/active_update_interval()), 1l);
 
 	auto cb = conky::register_cb<exec_cb>(period, !obj->thread, ed->cmd);
 

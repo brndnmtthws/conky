@@ -74,7 +74,7 @@ static void rss_process_info(char *p, int p_max_size, const std::string &uri, ch
 {
 	char *str;
 
-	uint32_t period = std::max(std::lround(interval/active_update_interval()), 1l);
+	uint32_t period = std::max(lround(interval/active_update_interval()), 1l);
 
 	auto cb = conky::register_cb<rss_cb>(period, uri);
 
