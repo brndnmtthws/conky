@@ -2880,6 +2880,7 @@ void initialisation(int argc, char **argv) {
 	while (1) {
 		int c = getopt_long(argc, argv, getopt_string, longopts, NULL);
 		int startup_pause;
+		char *conv_end;
 
 		if (c == -1) {
 			break;
@@ -2929,22 +2930,26 @@ void initialisation(int argc, char **argv) {
 				break;
 
 			case 'u':
-				state->pushstring(optarg);
+				state->pushinteger(strtol(optarg, &conv_end, 10));
+				if(*conv_end != 0) { CRIT_ERR(NULL, NULL, "'%s' is a wrong update-interval", optarg); }
 				update_interval.lua_set(*state);
 				break;
 
 			case 'i':
-				state->pushstring(optarg);
+				state->pushinteger(strtol(optarg, &conv_end, 10));
+				if(*conv_end != 0) { CRIT_ERR(NULL, NULL, "'%s' is a wrong number of update-times", optarg); }
 				total_run_times.lua_set(*state);
 				break;
 #ifdef BUILD_X11
 			case 'x':
-				state->pushstring(optarg);
+				state->pushinteger(strtol(optarg, &conv_end, 10));
+				if(*conv_end != 0) { CRIT_ERR(NULL, NULL, "'%s' is a wrong value for the X-position", optarg); }
 				gap_x.lua_set(*state);
 				break;
 
 			case 'y':
-				state->pushstring(optarg);
+				state->pushinteger(strtol(optarg, &conv_end, 10));
+				if(*conv_end != 0) { CRIT_ERR(NULL, NULL, "'%s' is a wrong value for the Y-position", optarg); }
 				gap_y.lua_set(*state);
 				break;
 #endif /* BUILD_X11 */
