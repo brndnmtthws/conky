@@ -25,6 +25,7 @@
 #define SEMAPHORE_HH
 
 #include <cerrno>
+#include <cstdlib>
 #include <cstring>
 #include <stdexcept>
 
