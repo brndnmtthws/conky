@@ -64,8 +64,9 @@ find_package(Threads)
 set(conky_libs ${CMAKE_THREAD_LIBS_INIT})
 set(conky_includes ${CMAKE_BINARY_DIR})
 
-add_definitions(-D_LARGEFILE64_SOURCE) # Standard definitions
-set(CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS} -D_LARGEFILE64_SOURCE")
+add_definitions(-D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L) # Standard definitions
+set(CMAKE_REQUIRED_DEFINITIONS
+	"${CMAKE_REQUIRED_DEFINITIONS} -D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L")
 
 if(OS_DRAGONFLY)
 set(conky_libs ${conky_libs} -L/usr/pkg/lib)
