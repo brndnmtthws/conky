@@ -725,8 +725,11 @@ static void sp_acopy(struct sorted_process *sp_head, struct process **ar, int ma
 	int x;
 
 	sp_cur = sp_head;
-	for (x = 0; x < max_size && sp_cur != NULL; x++) {
+	for (x = 0; x < max_size && sp_cur != NULL; x++, sp_cur = sp_cur->less)
 		ar[x] = sp_cur->proc;
+
+
+	for (sp_cur = sp_head; sp_cur != NULL;) {
 		sp_tmp = sp_cur;
 		sp_cur = sp_cur->less;
 		free_sp(sp_tmp);
