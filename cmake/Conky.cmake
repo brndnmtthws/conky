@@ -64,8 +64,9 @@ find_package(Threads)
 set(conky_libs ${CMAKE_THREAD_LIBS_INIT})
 set(conky_includes ${CMAKE_BINARY_DIR})
 
-add_definitions(-D_LARGEFILE64_SOURCE) # Standard definitions
-set(CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS} -D_LARGEFILE64_SOURCE")
+add_definitions(-D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L) # Standard definitions
+set(CMAKE_REQUIRED_DEFINITIONS
+	"${CMAKE_REQUIRED_DEFINITIONS} -D_LARGEFILE64_SOURCE -D_POSIX_C_SOURCE=200809L")
 
 if(OS_DRAGONFLY)
 set(conky_libs ${conky_libs} -L/usr/pkg/lib)
@@ -128,18 +129,19 @@ macro(AC_SEARCH_LIBS FUNCTION_NAME INCLUDES TARGET_VAR)
 		check_symbol_exists(${FUNCTION_NAME} ${INCLUDES} AC_SEARCH_LIBS_TMP)
 		if(${AC_SEARCH_LIBS_TMP})
 			set(${TARGET_VAR} "" CACHE INTERNAL "Library containing ${FUNCTION_NAME}")
-			return()
+		else(${AC_SEARCH_LIBS_TMP})
+			foreach(LIB ${ARGN})
+				unset(AC_SEARCH_LIBS_TMP CACHE)
+				unset(AC_SEARCH_LIBS_FOUND CACHE)
+				find_library(AC_SEARCH_LIBS_TMP ${LIB})
+				check_library_exists(${LIB} ${FUNCTION_NAME} ${AC_SEARCH_LIBS_TMP}
+									AC_SEARCH_LIBS_FOUND)
+				if(${AC_SEARCH_LIBS_FOUND})
+					set(${TARGET_VAR} ${AC_SEARCH_LIBS_TMP} CACHE INTERNAL
+							"Library containing ${FUNCTION_NAME}")
+					break()
+				endif(${AC_SEARCH_LIBS_FOUND})
+			endforeach(LIB)
 		endif(${AC_SEARCH_LIBS_TMP})
-
-		foreach(LIB ${ARGN})
-			unset(AC_SEARCH_LIBS_TMP CACHE)
-			unset(AC_SEARCH_LIBS_FOUND CACHE)
-			find_library(AC_SEARCH_LIBS_TMP ${LIB})
-			check_library_exists(${LIB} ${FUNCTION_NAME} ${AC_SEARCH_LIBS_TMP} AC_SEARCH_LIBS_FOUND)
-			if(${AC_SEARCH_LIBS_FOUND})
-				set(${TARGET_VAR} ${AC_SEARCH_LIBS_TMP} CACHE INTERNAL "Library containing ${FUNCTION_NAME}")
-				break()
-			endif(${AC_SEARCH_LIBS_FOUND})
-		endforeach(LIB)
 	endif("${TARGET_VAR}" MATCHES "^${TARGET_VAR}$")
 endmacro(AC_SEARCH_LIBS)

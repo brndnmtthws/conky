@@ -39,9 +39,9 @@ check_symbol_exists(O_CLOEXEC "fcntl.h" HAVE_O_CLOEXEC)
 check_symbol_exists(statfs64 "sys/statfs.h" HAVE_STATFS64)
 
 AC_SEARCH_LIBS(clock_gettime "time.h" CLOCK_GETTIME_LIB "rt")
-if(NOT CLOCK_GETTIME_LIB)
+if(NOT DEFINED CLOCK_GETTIME_LIB)
 	message(FATAL_ERROR "clock_gettime not found.")
-endif(NOT CLOCK_GETTIME_LIB)
+endif(NOT DEFINED CLOCK_GETTIME_LIB)
 set(conky_libs ${conky_libs} ${CLOCK_GETTIME_LIB})
 
 # standard path to search for includes
