@@ -401,7 +401,7 @@ static void graph_append(struct special_t *graph, double f, char showaslog)
 	graph->graph[0] = f;	/* add new data */
 	
 	if(graph->scaled) {
-		graph->scale = *std::max_element(graph->graph + 0, graph->graph + graph->width);
+		graph->scale = *std::max_element(graph->graph + 0, graph->graph + graph->graph_width);
 		if(graph->scale < 1e-47) {
 			/* avoid NaN's when the graph is all-zero (e.g. before the first update)
 			 * there is nothing magical about 1e-47 here */
