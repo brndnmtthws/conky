@@ -2,39 +2,40 @@
 # LuaDist Travis-CI Hook
 #
 
-# Since CMake is not directly supported we use erlang VMs
-language: erlang
-
+# We assume C build environments
+language: C
+	
 # Try using multiple Lua Implementations
 env:
-  - LUA=""             # Use automatic dependencies
-  - LUA="luajit"       # Try with LuaJIT
-# - CMAKE="-DCMAKE_VARIABLE=value"
-# - LUA="lua-5.1.5"
+  - TOOL=""                     # Use native compiler (GCC usually)
+  - COMPILER="clang"            # Use clang
+  - TOOL="i686-w64-mingw32"     # 32bit MinGW
+  - TOOL="x86_64-w64-mingw32"   # 64bit MinGW
+  - TOOL="arm-linux-gnueabihf"  # ARM hard-float (hf), linux
 
-# Allow luajit to fail
+# Crosscompile builds may fail
 matrix:
   allow_failures:
-    - env: LUA="luajit"
-
-# We need CMake and LuaDist
+    - env: TOOL="i686-w64-mingw32"
+    - env: TOOL="x86_64-w64-mingw32"
+    - env: TOOL="arm-linux-gnueabihf"
+  
+# Install dependencies
 install:
-  - export MODULE=`basename $PWD`
-  - sudo apt-get install cmake >/dev/null 2>&1
-  - git clone git://github.com/LuaDist/bootstrap.git _luadist >/dev/null 2>&1
-  - cd _luadist
-  - git submodule update --init >/dev/null 2>&1
-  - ./bootstrap >/dev/null 2>&1
-  - export LUADIST=$PWD/_install/bin/luadist
-  - cd $HOME
+  - git clone git://github.com/LuaDist/_util.git ~/_util
+  - ~/_util/travis install
 
-# Use LuaDist to deploy the module
+# Bootstap
+before_script:
+  - ~/_util/travis bootstrap
+
+# Build the module
 script:
-  - $LUADIST _test install $LUA $MODULE-scm $CMAKE -verbose=true -test=true
+  - ~/_util/travis build
 
 # Execute additional tests or commands
 #after_script:
-#  - [run additional test commans]
+#  - ~/_util/travis test
 
 # Only watch the master branch
 branches:
