@@ -8,10 +8,10 @@ project ( toluapp C )
 cmake_minimum_required ( VERSION 2.8 )
 include ( cmake/dist.cmake )
 
-find_library ( Lua REQUIRED )
+find_package ( Lua REQUIRED )
+include_directories ( include src/lib ${LUA_INCLUDE_DIR} )
 
 # Build lib
-include_directories ( include src/lib )
 file ( GLOB SRC_LIBTOLUAPP src/lib/*.c )
 if ( MSVC )
   set ( DEF_FILE libtoluapp.def )
