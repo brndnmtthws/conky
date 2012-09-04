@@ -720,7 +720,7 @@ void human_readable(long long num, char *buf, int size)
 
 	/* Possibly just output as usual, for example for stdout usage */
 	if (not format_human_readable.get(*state)) {
-		spaced_print(buf, size, "%d", 6, round_to_int(num));
+		spaced_print(buf, size, "%lld", 6, num);
 		return;
 	}
 	if (short_units.get(*state)) {
