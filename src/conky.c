@@ -3068,12 +3068,26 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 								og = g;
 							}
 
-							/* this is mugfugly, but it works */
-							XDrawLine(display, window.drawable, window.gc,
-									  cur_x + i + 1,
-									  specials[special_index].dotgraph ? og : by + h,
-									  cur_x + i + 1,
-									  g);
+							if (specials[special_index].dotgraph) {
+								if (og == g) {
+									XDrawPoint(display, window.drawable,
+											   window.gc, cur_x + i + 1, g);
+								} else {
+									XDrawLine(display, window.drawable, window.gc,
+											  cur_x + i + 1,
+											  og,
+											  cur_x + i + 1,
+											  g);
+								}
+							} else {
+								/* this is mugfugly, but it works */
+								XDrawLine(display, window.drawable, window.gc,
+										  cur_x + i + 1,
+										  by + h,
+										  cur_x + i + 1,
+										  g);
+							}
+
 							++j;
 						}
 						if (tmpcolour) free(tmpcolour);
