@@ -1,4 +1,5 @@
 /* -*- mode: c; c-basic-offset: 4; tab-width: 4; indent-tabs-mode: t -*-
+ * vim: ts=4 sw=4 noet ai cindent syntax=c
  *
  * libmpdclient
  * (c)2003-2006 by Warren Dukes (warren.dukes@gmail.com)
@@ -74,6 +75,7 @@
 
 typedef enum mpd_TagItems {
 	MPD_TAG_ITEM_ARTIST,
+	MPD_TAG_ITEM_ALBUMARTIST,
 	MPD_TAG_ITEM_ALBUM,
 	MPD_TAG_ITEM_TITLE,
 	MPD_TAG_ITEM_TRACK,
@@ -241,6 +243,8 @@ typedef struct _mpd_Song {
 	char *file;
 	/* artist, maybe NULL if there is no tag */
 	char *artist;
+	/* albumartist, maybe NULL if there is no tag */
+	char *albumartist;
 	/* title, maybe NULL if there is no tag */
 	char *title;
 	/* album, maybe NULL if there is no tag */

@@ -1421,6 +1421,9 @@ struct text_object *construct_text_object(char *s, const char *arg,
 	END OBJ(mpd_artist, 0)
 		mpd_set_maxlen(mpd_artist);
 		obj->callbacks.print = &print_mpd_artist;
+	END OBJ(mpd_albumartist, 0)
+		mpd_set_maxlen(mpd_albumartist);
+		obj->callbacks.print = &print_mpd_albumartist;
 	END OBJ(mpd_title, 0)
 		mpd_set_maxlen(mpd_title);
 		obj->callbacks.print = &print_mpd_title;

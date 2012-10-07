@@ -2474,6 +2474,15 @@
     <varlistentry>
         <term>
             <command>
+                <option>mpd_albumartist</option>
+            </command>
+        </term>
+        <listitem>Artist of the album of the current MPD song. 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>mpd_bar</option>
             </command>
             <option>(height),(width)</option>
