@@ -907,6 +907,9 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(mpd_artist, &update_mpd)
 		mpd_set_maxlen(mpd_artist);
 		init_mpd();
+	END OBJ(mpd_albumartist, &update_mpd)
+		mpd_set_maxlen(mpd_albumartist);
+		init_mpd();
 	END OBJ(mpd_title, &update_mpd)
 		mpd_set_maxlen(mpd_title);
 		init_mpd();
@@ -1741,6 +1744,7 @@ void free_text_objects(struct text_object *root, int internal)
 #ifdef MPD
 			case OBJ_mpd_title:
 			case OBJ_mpd_artist:
+			case OBJ_mpd_albumartist:
 			case OBJ_mpd_album:
 			case OBJ_mpd_date:
 			case OBJ_mpd_random:

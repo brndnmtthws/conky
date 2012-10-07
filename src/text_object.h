@@ -326,6 +326,7 @@ enum text_object_type {
 #ifdef MPD
 	OBJ_mpd_title,
 	OBJ_mpd_artist,
+	OBJ_mpd_albumartist,
 	OBJ_mpd_album,
 	OBJ_mpd_date,
 	OBJ_mpd_random,

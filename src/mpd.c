@@ -272,6 +272,7 @@ static void *update_mpd_thread(void *arg)
 		mpd_info.x = strmdup(emptystr); \
 }
 			SONGSET(artist);
+			SONGSET(albumartist);
 			SONGSET(album);
 			SONGSET(title);
 			SONGSET(date);
@@ -404,6 +405,7 @@ void print_mpd_##name(struct text_object *obj, char *p, int p_max_size) \
 
 MPD_PRINT_GENERATOR(title, "%s")
 MPD_PRINT_GENERATOR(artist, "%s")
+MPD_PRINT_GENERATOR(albumartist, "%s")
 MPD_PRINT_GENERATOR(album, "%s")
 MPD_PRINT_GENERATOR(date, "%s")
 MPD_PRINT_GENERATOR(random, "%s")

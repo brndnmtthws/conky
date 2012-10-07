@@ -992,6 +992,7 @@ static void mpd_initSong(mpd_Song *song)
 {
 	song->file = NULL;
 	song->artist = NULL;
+	song->albumartist = NULL;
 	song->album = NULL;
 	song->track = NULL;
 	song->title = NULL;
@@ -1016,6 +1017,9 @@ static void mpd_finishSong(mpd_Song *song)
 	}
 	if (song->artist) {
 		free(song->artist);
+	}
+	if (song->albumartist) {
+		free(song->albumartist);
 	}
 	if (song->album) {
 		free(song->album);
@@ -1070,6 +1074,9 @@ mpd_Song *mpd_songDup(mpd_Song *song)
 	}
 	if (song->artist) {
 		ret->artist = strndup(song->artist, text_buffer_size);
+	}
+	if (song->albumartist) {
+		ret->artist = strndup(song->albumartist, text_buffer_size);
 	}
 	if (song->album) {
 		ret->album = strndup(song->album, text_buffer_size);
@@ -1283,6 +1290,9 @@ mpd_InfoEntity *mpd_getNextInfoEntity(mpd_Connection *connection)
 			if (!entity->info.song->artist
 					&& strcmp(re->name, "Artist") == 0) {
 				entity->info.song->artist = strndup(re->value, text_buffer_size);
+			} else if (!entity->info.song->albumartist
+					&& strcmp(re->name, "AlbumArtist") == 0) {
+				entity->info.song->albumartist = strndup(re->value, text_buffer_size);
 			} else if (!entity->info.song->album
 					&& strcmp(re->name, "Album") == 0) {
 				entity->info.song->album = strndup(re->value, text_buffer_size);

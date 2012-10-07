@@ -1931,6 +1931,8 @@ void generate_text_internal(char *p, int p_max_size,
 				print_mpd_title(obj, p, p_max_size);
 			OBJ(mpd_artist)
 				print_mpd_artist(obj, p, p_max_size);
+			OBJ(mpd_albumartist)
+				print_mpd_albumartist(obj, p, p_max_size);
 			OBJ(mpd_album)
 				print_mpd_album(obj, p, p_max_size);
 			OBJ(mpd_date)

@@ -6,6 +6,7 @@
 struct mpd_s {
 	char *title;
 	char *artist;
+	char *albumartist;
 	char *album;
 	char *date;
 	const char *status;
@@ -41,6 +42,7 @@ void print_mpd_bar(struct text_object *, char *, int);
 void print_mpd_smart(struct text_object *, char *, int);
 void print_mpd_title(struct text_object *, char *, int);
 void print_mpd_artist(struct text_object *, char *, int);
+void print_mpd_albumartist(struct text_object *, char *, int);
 void print_mpd_album(struct text_object *, char *, int);
 void print_mpd_date(struct text_object *, char *, int);
 void print_mpd_random(struct text_object *, char *, int);
