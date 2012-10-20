@@ -91,6 +91,10 @@ namespace priv {
 		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
 		curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1000);
 		curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 60);
+
+		// curl's usage of alarm()+longjmp() is a really bad idea for multi-threaded applications
+		curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
+
 	}
 
 
