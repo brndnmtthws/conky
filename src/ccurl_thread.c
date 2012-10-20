@@ -168,6 +168,9 @@ void ccurl_fetch_data(ccurl_location_t *curloc)
 		curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1000);
 		curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 60);
 
+		// curl's usage of alarm()+longjmp() is a really bad idea for multi-threaded applications
+		curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
+
 		if (curloc->last_modified) {
 			const char *header = "If-Modified-Since: ";
 			int len = strlen(header) + strlen(curloc->last_modified) + 1;
