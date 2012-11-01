@@ -512,12 +512,12 @@ int update_net_stats(void)
 		if (iw_get_basic_config(skfd, s, &(winfo->b)) > -1) {
 
 			// set present winfo variables
+			if (iw_get_range_info(skfd, s, &(winfo->range)) >= 0) {
+				winfo->has_range = 1;
+			}
 			if (iw_get_stats(skfd, s, &(winfo->stats),
 					&winfo->range, winfo->has_range) >= 0) {
 				winfo->has_stats = 1;
-			}
-			if (iw_get_range_info(skfd, s, &(winfo->range)) >= 0) {
-				winfo->has_range = 1;
 			}
 			if (iw_get_ext(skfd, s, SIOCGIWAP, &wrq) >= 0) {
 				winfo->has_ap_addr = 1;
