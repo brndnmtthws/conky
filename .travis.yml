@@ -7,7 +7,7 @@ before_install:
 before_script:
   - mkdir build && cd build && cmake ../
 script: 
-  - cd build && make
+  - make
 branches:
   only:
     - master
