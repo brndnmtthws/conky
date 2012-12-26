@@ -1,6 +1,6 @@
 ## Conky
 
-[![Build Status](https://travis-ci.org/gvalkov/conky.png)](https://travis-ci.org/gvalkov/conky)
+[![Build Status](https://travis-ci.org/brndnmtthws/conky.png)](https://travis-ci.org/brndnmtthws/conky)
 
 **Conky** is a free, light-weight system monitor for X, that displays
 any kind of information on your desktop.
@@ -62,9 +62,9 @@ Conky is licensed under the terms of the [GPLv3](conky/blob/master/LICENSE.GPL) 
 [BMPx]: http://bmpx.backtrace.info/site/BMPx_Homepage
 [Audacious]: http://audacious-media-player.org/
 [luawiki]: http://en.wikipedia.org/wiki/Lua_%28programming_language%29
-[stable-src]: https://github.com/gvalkov/conky/archive/1.9.0.tar.gz
-[devel-src]: https://github.com/gvalkov/conky/archive/master.tar.gz
-[wiki]: https://github.com/gvalkov/conky/wiki
+[stable-src]: https://github.com/brndnmtthws/conky/archive/1.9.0.tar.gz
+[devel-src]: https://github.com/brndnmtthws/conky/archive/master.tar.gz
+[wiki]: https://github.com/brndnmtthws/conky/wiki
 [lists]: http://sourceforge.net/mail/?group_id=143975
 [ircconky]: irc://irc.freenode.net/conky
 [Imlib2]: http://docs.enlightenment.org/api/imlib2/html/
