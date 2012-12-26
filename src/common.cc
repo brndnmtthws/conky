@@ -594,13 +594,13 @@ static int check_contains(char *f, char *s)
 int if_existing_iftest(struct text_object *obj)
 {
 	char *spc;
-	int result;
+	int result = 0;
 
 	spc = strchr(obj->data.s, ' ');
 	if(spc != NULL) *spc = 0;
 	if (access(obj->data.s, F_OK) == 0) {
 		if(spc == NULL || check_contains(obj->data.s, spc + 1)) result = 1;
-	} else result = 0;
+	}
 	if(spc != NULL) *spc = ' ';
 	return result;
 }

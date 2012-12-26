@@ -1007,7 +1007,7 @@ static int get_string_width_special(char *s, int special_index)
 						if(current_after_font->type == FONT) {
 							influenced_by_font[i]=0;
 							break;
-						} else strcpy(&influenced_by_font[i], &influenced_by_font[i+1]);
+						} else memmove(&influenced_by_font[i], &influenced_by_font[i+1], strlen(&influenced_by_font[i+1]) + 1);
 					}
 				}
 				//add the length of influenced_by_font in the new font to width
@@ -1019,7 +1019,8 @@ static int get_string_width_special(char *s, int special_index)
 				//make sure there chars counted in the new font are not again counted in the old font
 				int specials_skipped=0;
 				while(i>0) {
-					if(p[specials_skipped]!=1) strcpy(&p[specials_skipped], &p[specials_skipped+1]); else specials_skipped++;
+					if(p[specials_skipped]!=1) memmove(&p[specials_skipped], &p[specials_skipped+1], strlen(&p[specials_skipped+1]) + 1);
+					else specials_skipped++;
 					i--;
 				}
 			}

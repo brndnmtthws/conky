@@ -507,8 +507,7 @@ void free_dns_data(struct text_object *obj)
 
 	for (i = 0; i < dns_data.nscount; i++)
 		free(dns_data.ns_list[i]);
-	if (dns_data.ns_list)
-		free(dns_data.ns_list);
+	free(dns_data.ns_list);
 	memset(&dns_data, 0, sizeof(dns_data));
 }
 

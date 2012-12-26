@@ -291,13 +291,12 @@ static char *getSkillname(const char *file, int skillid)
 					for (r = q->children; r; r = r->next) {
 						xmlElementPtr ele = (xmlElementPtr) r;
 						xmlAttrPtr attr = (xmlAttrPtr) ele->attributes;
-						char *mySkill;
-						int id, assigned = 0;
+						char *mySkill = NULL;
+						int id;
 
 						while (attr != NULL) {
 							if (!strcasecmp((const char *)attr->name, "typeName")) {
 								mySkill = strdup((const char *)attr->children->content);
-								assigned = 1;
 							} else if (!strcasecmp((const char *)attr->name, "typeID")) {
 								id = atoi((const char *)attr->children->content);
 							}
@@ -305,12 +304,11 @@ static char *getSkillname(const char *file, int skillid)
 						}
 
 						if (id == skillid) {
-							skill = strdup(mySkill);
-							/* free(mySkill); */
+							skill = mySkill;
 							goto END;
 						}
-						if (assigned)
-							free(mySkill);
+
+						free(mySkill);
 					}
 				}
 			}
@@ -379,12 +377,10 @@ static char *eve(char *userid, char *apikey, char *charid)
 		}
 
 		if (parseTrainingXml(content, chr)) {
-			output = (char *)malloc(200 * sizeof(char));
-			sprintf(output, "API error");
+			output = strdup("API error");
 			return output;
 		}
 
-		output = (char *)malloc(200 * sizeof(char));
 		timel = formatTime(&chr->ends);
 		old_umask = umask(0066);
 		tmp_fd = mkstemp(skillfile);
@@ -398,6 +394,7 @@ static char *eve(char *userid, char *apikey, char *charid)
 
 		chr->skillname = strdup(skill);
 
+		output = (char *)malloc(200 * sizeof(char));
 		sprintf(output, EVE_OUTPUT_FORMAT, chr->skillname, chr->level, timel);
 		free(skill);
 		return output;

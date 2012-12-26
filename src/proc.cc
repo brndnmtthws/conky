@@ -191,9 +191,9 @@ void print_pid_environ(struct text_object *obj, char *p, int p_max_size)
 			}
 			free(buf);
 		}
-		free(var);
 		*p = 0;
 	}
+	free(var);
 }
 
 void print_pid_environ_list(struct text_object *obj, char *p, int p_max_size)

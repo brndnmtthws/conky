@@ -580,17 +580,17 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size, const char *p_fo
 	int freq;
 	char *freq_sysctl;
 
+	if (!p_client_buffer || client_buffer_size <= 0 || !p_format
+			|| divisor <= 0) {
+		return 0;
+	}
+
 	freq_sysctl = (char *) calloc(16, sizeof(char));
 	if (freq_sysctl == NULL) {
 		exit(-1);
 	}
 
 	snprintf(freq_sysctl, 16, "dev.cpu.%d.freq", (cpu - 1));
-
-	if (!p_client_buffer || client_buffer_size <= 0 || !p_format
-			|| divisor <= 0) {
-		return 0;
-	}
 
 	if (GETSYSCTL(freq_sysctl, freq) == 0) {
 		snprintf(p_client_buffer, client_buffer_size, p_format,
