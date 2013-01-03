@@ -630,8 +630,17 @@ int imap_check_status(char *recvbuf, struct mail_s *mail)
 
 void imap_unseen_command(struct mail_s *mail, unsigned long old_unseen, unsigned long old_messages)
 {
-	if (strlen(mail->command) > 1 && (mail->unseen > old_unseen
-				|| (mail->messages > old_messages && mail->unseen > 0))) {
+	/*
+	 * Georg Hopp (2012-12-23):
+	 * Well, i will read mails from time to time and i want the unseen
+	 * count to be reduced when they are read...so, this seems wrong.
+	 * Try a better one.... :)
+	 */
+	/*if (strlen(mail->command) > 1 && (mail->unseen > old_unseen
+				|| (mail->messages > old_messages && mail->unseen > 0))) {*/
+	if (strlen(mail->command) > 1
+			&& (mail->unseen != old_unseen
+			 || mail->messages != old_messages)) {
 		// new mail goodie
 		if (system(mail->command) == -1) {
 			perror("system()");
@@ -813,7 +822,7 @@ static void *imap_thread(void *arg)
 					if (strlen(recvbuf) > 2) {
 						unsigned long messages, recent = 0;
 						char *buf = recvbuf;
-						char force_check = 0;
+						char force_check = 1; // Booo, this whole thing is crap
 						buf = strstr(buf, "EXISTS");
 						while (buf && strlen(buf) > 1 && strstr(buf + 1, "EXISTS")) {
 							buf = strstr(buf + 1, "EXISTS");
@@ -825,9 +834,9 @@ static void *imap_thread(void *arg)
 							}
 							if (sscanf(buf, "* %lu EXISTS\r\n", &messages) == 1) {
 								timed_thread_lock(mail->p_timed_thread);
-								if (mail->messages != messages) {
+								//if (mail->messages != messages) {
 									force_check = 1;
-								}
+								//}
 								timed_thread_unlock(mail->p_timed_thread);
 							}
 						}
@@ -850,7 +859,10 @@ static void *imap_thread(void *arg)
 						 * something other than 0, or we had a timeout
 						 */
 						buf = recvbuf;
-						if (recent > 0 || (buf && strstr(buf, " FETCH ")) || fetchtimeout.tv_sec == 0 || force_check) {
+						if (recent > 0
+								|| (buf && strstr(buf, " FETCH "))
+								|| (buf && strstr(buf, " EXPUNGE "))
+								|| fetchtimeout.tv_sec == 0 || force_check) {
 							// re-check messages and unseen
 							if (imap_command(sockfd, "DONE\r\n", recvbuf, "a5 OK")) {
 								fail++;
@@ -868,6 +880,9 @@ static void *imap_thread(void *arg)
 								fail++;
 								break;
 							}
+							imap_unseen_command(mail, old_unseen, old_messages);
+							old_unseen = mail->unseen;
+							old_messages = mail->messages;
 							strncpy(sendbuf, "a5 IDLE\r\n", MAXDATASIZE);
 							if (imap_command(sockfd, sendbuf, recvbuf, "+ idling")) {
 								fail++;
@@ -886,10 +901,7 @@ static void *imap_thread(void *arg)
 						fail++;
 						break;
 					}
-					imap_unseen_command(mail, old_unseen, old_messages);
 					fail = 0;
-					old_unseen = mail->unseen;
-					old_messages = mail->messages;
 				}
 				if (fail) break;
 			} else {
