@@ -79,6 +79,10 @@
 #define NBD_MAJOR 43
 #endif
 
+#if !defined(DM_MAJOR)
+#define DM_MAJOR 253
+#endif
+
 #ifdef BUILD_WLAN
 #include <iwlib.h>
 #endif
@@ -2435,7 +2439,8 @@ int update_diskio(void)
 		 *
 		 * XXX: ignore devices which are part of a SW RAID (MD_MAJOR) */
 		if (col_count == 5 && major != LVM_BLK_MAJOR && major != NBD_MAJOR
-				&& major != RAMDISK_MAJOR && major != LOOP_MAJOR) {
+				&& major != RAMDISK_MAJOR && major != LOOP_MAJOR
+				&& major != DM_MAJOR) {
 			/* check needed for kernel >= 2.6.31, see sf #2942117 */
 			if (is_disk(devbuf)) {
 				total_reads += reads;
