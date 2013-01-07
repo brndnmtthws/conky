@@ -636,8 +636,6 @@ void imap_unseen_command(struct mail_s *mail, unsigned long old_unseen, unsigned
 	 * count to be reduced when they are read...so, this seems wrong.
 	 * Try a better one.... :)
 	 */
-	/*if (strlen(mail->command) > 1 && (mail->unseen > old_unseen
-				|| (mail->messages > old_messages && mail->unseen > 0))) {*/
 	if (strlen(mail->command) > 1
 			&& (mail->unseen != old_unseen
 			 || mail->messages != old_messages)) {
@@ -822,7 +820,7 @@ static void *imap_thread(void *arg)
 					if (strlen(recvbuf) > 2) {
 						unsigned long messages, recent = 0;
 						char *buf = recvbuf;
-						char force_check = 1; // Booo, this whole thing is crap
+						char force_check = 1;
 						buf = strstr(buf, "EXISTS");
 						while (buf && strlen(buf) > 1 && strstr(buf + 1, "EXISTS")) {
 							buf = strstr(buf + 1, "EXISTS");
@@ -834,9 +832,7 @@ static void *imap_thread(void *arg)
 							}
 							if (sscanf(buf, "* %lu EXISTS\r\n", &messages) == 1) {
 								timed_thread_lock(mail->p_timed_thread);
-								//if (mail->messages != messages) {
-									force_check = 1;
-								//}
+								force_check = 1;
 								timed_thread_unlock(mail->p_timed_thread);
 							}
 						}
