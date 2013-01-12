@@ -879,7 +879,7 @@ void load_xoap_keys(void)
 	FILE *fp;
 	char *par  = (char *) malloc(11 * sizeof(char));
 	char *key  = (char *) malloc(17 * sizeof(char));
-	char *xoap = (char *) malloc(64 * sizeof(char));
+	char *xoap = (char *) malloc(DEFAULT_TEXT_BUFFER_SIZE * sizeof(char));
 
 	to_real_path(xoap, XOAP_FILE);
 	fp = fopen(xoap, "r");

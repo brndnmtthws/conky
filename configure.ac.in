@@ -13,9 +13,9 @@ m4_define([conky_version],
       [ifelse(conky_version_tag(), [], [], [conky_version_tag()])])])
 
 AC_INIT([Conky], [conky_version()], [brenden1@users.sourceforge.net])
+AM_INIT_AUTOMAKE
 
-AM_INIT_AUTOMAKE(conky, conky_version())
-AM_CONFIG_HEADER(src/config.h)
+AC_CONFIG_HEADERS(src/config.h)
 AC_CONFIG_MACRO_DIR([m4])
 
 dnl prevent libtool setting LTCFLAGS to default of -g -O2 when CFLAGS unset.
@@ -488,7 +488,7 @@ fi
 
 AM_CONDITIONAL(BUILD_LUA, test x$want_lua = xyes)
 if test x$want_lua = xyes; then
-	PKG_CHECK_MODULES(LUA, lua >= 5.1, [ ],[
+	PKG_CHECK_MODULES(LUA, lua == 5.1, [ ],[
 		PKG_CHECK_MODULES(LUA51, lua-5.1 >= 5.1, [ ],[
 			PKG_CHECK_MODULES(LUA51, lua5.1 >= 5.1)
 		])
