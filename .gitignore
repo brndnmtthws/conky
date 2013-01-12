@@ -6,3 +6,16 @@ doc/conky.1
 README
 build*
 doc/*.html
+
+Makefile
+CMakeCache.txt
+CMakeFiles
+*.cmake
+data/convertconf.h
+data/defconfig.h
+lua/libcairo-orig.c
+lua/libcairo.c
+lua/libimlib2.c
+*.so
+*.a
+/config.h
