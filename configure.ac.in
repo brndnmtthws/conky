@@ -13,9 +13,9 @@ m4_define([conky_version],
       [ifelse(conky_version_tag(), [], [], [conky_version_tag()])])])
 
 AC_INIT([Conky], [conky_version()], [brenden1@users.sourceforge.net])
+AM_INIT_AUTOMAKE
 
-AM_INIT_AUTOMAKE(conky, conky_version())
-AM_CONFIG_HEADER(src/config.h)
+AC_CONFIG_HEADERS(src/config.h)
 AC_CONFIG_MACRO_DIR([m4])
 
 dnl prevent libtool setting LTCFLAGS to default of -g -O2 when CFLAGS unset.
