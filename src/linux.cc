@@ -2649,6 +2649,9 @@ static void process_parse_stat(struct process *process)
 
 		endl = read(ps, line, BUFFER_LEN - 1);
 		close(ps);
+		if(endl < 0)
+			return;
+		line[endl] = 0;
 
 		/* account for "kdeinit: " */
 		if ((char *) line == strstr(line, "kdeinit: ")) {
