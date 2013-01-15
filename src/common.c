@@ -110,7 +110,8 @@ void to_real_path(char *dest, const char *source)
 			snprintf(dest, DEFAULT_TEXT_BUFFER_SIZE, "%s/%s", homedir, tmp);
 		} else {
 			NORM_ERR("$HOME environment variable doesn't exist");
-			strncpy(dest, source, DEFAULT_TEXT_BUFFER_SIZE);
+			/*strncpy(dest, source, DEFAULT_TEXT_BUFFER_SIZE);*/
+			strncpy(dest, tmp, DEFAULT_TEXT_BUFFER_SIZE);
 		}
 	} else if (dest != source) {	//see changelog 2009-06-29 if you doubt that this check is necessary 
 		strncpy(dest, source, DEFAULT_TEXT_BUFFER_SIZE);

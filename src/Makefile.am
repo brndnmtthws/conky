@@ -25,7 +25,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-INCLUDES = -DSYSTEM_CONFIG_FILE=\"$(sysconfdir)/conky/conky.conf\" -DPACKAGE_LIBDIR=\"$(pkglibdir)\"
+AM_CPPFLAGS = -DSYSTEM_CONFIG_FILE=\"$(sysconfdir)/conky/conky.conf\" -DPACKAGE_LIBDIR=\"$(pkglibdir)\"
 
 bin_PROGRAMS = conky
 
