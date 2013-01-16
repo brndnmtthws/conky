@@ -469,6 +469,13 @@ enum text_object_type {
 	OBJ_apcupsd_temp,
 	OBJ_apcupsd_lastxfer,
 #endif /* APCUPSD */
+#ifdef JACK
+	OBJ_if_jack_active,
+	OBJ_jack_cpu_load,
+	OBJ_jack_buffer_size,
+	OBJ_jack_sample_rate,
+	OBJ_jack_xruns
+#endif /* JACK */
 };
 
 struct text_object {

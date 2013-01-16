@@ -2368,6 +2368,29 @@ void generate_text_internal(char *p, int p_max_size,
 						 cur->apcupsd.items[APCUPSD_LASTXFER]);
 			}
 #endif /* APCUPSD */
+#ifdef JACK
+			OBJ(if_jack_active) {
+				if (!cur->jack.active) {
+					DO_JUMP;
+				}
+			}
+			OBJ(jack_cpu_load) {
+				snprintf(p, p_max_size, "%2.2f",
+						cur->jack.cpu_load);
+			}
+			OBJ(jack_buffer_size) {
+				snprintf(p, p_max_size, "%u",
+						cur->jack.buffer_size);
+			}
+			OBJ(jack_sample_rate) {
+				snprintf(p, p_max_size, "%u",
+						cur->jack.sample_rate);
+			}
+			OBJ(jack_xruns) {
+				snprintf(p, p_max_size, "%d",
+						cur->jack.xruns);
+			}
+#endif /* JACK */
 			break;
 		}
 #undef DO_JUMP

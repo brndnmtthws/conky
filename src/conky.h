@@ -125,6 +125,10 @@ struct text_object;
 #include "apcupsd.h"
 #endif
 
+#ifdef JACK
+#include "jack.h"
+#endif
+
 /* sony support */
 #include "sony.h"
 
@@ -267,6 +271,10 @@ struct information {
 
 #ifdef APCUPSD
 	APCUPSD_S apcupsd;
+#endif
+
+#ifdef JACK
+    struct jack_s jack;
 #endif
 
 	short kflags;	/* kernel settings, see enum KFLAG */

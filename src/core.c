@@ -1150,6 +1150,13 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(apcupsd_temp, &update_apcupsd)
 	END OBJ(apcupsd_lastxfer, &update_apcupsd)
 #endif /* APCUPSD */
+#ifdef JACK
+	END OBJ_IF(if_jack_active, &update_jack)
+	END OBJ(jack_cpu_load, &update_jack)
+	END OBJ(jack_buffer_size, &update_jack)
+	END OBJ(jack_sample_rate, &update_jack)
+	END OBJ(jack_xruns, &update_jack)
+#endif /* JACK */
 	END {
 		char buf[text_buffer_size];
 
@@ -1832,6 +1839,15 @@ void free_text_objects(struct text_object *root, int internal)
 			        }
 				break;
 #endif /* X11 */
+#ifdef JACK
+			case OBJ_if_jack_active:
+			case OBJ_jack_cpu_load:
+			case OBJ_jack_buffer_size:
+			case OBJ_jack_sample_rate:
+			case OBJ_jack_xruns:
+				jack_close();
+				break;
+#endif /* JACK */
 		}
 		if(obj->special_data)
 			free(obj->special_data);
