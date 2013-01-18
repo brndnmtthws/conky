@@ -4328,4 +4328,121 @@
         that have ocurred.
         <para /></listitem>
     </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>if_jack_rolling</option>
+            </command>
+        </term>
+        <listitem>If the JACK transport mechanism is rolling, display
+        everything between the $if_jack_rolling and the matching $endif.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>jack_frame</option>
+            </command>
+        </term>
+        <listitem>Shows the frame number in the JACK transport timeline.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>jack_hour</option>
+            </command>
+        </term>
+        <listitem>Shows the frame number as hours.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>jack_min</option>
+            </command>
+        </term>
+        <listitem>Shows the frame number as minutes within the hour.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>jack_sec</option>
+            </command>
+        </term>
+        <listitem>Shows the frame number as seconds within the minute.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>if_jack_bbt</option>
+            </command>
+        </term>
+        <listitem>If JACK transport is keeping BBT (bars/beats/ticks)
+        information then display everything between $if_jack_bbt and
+        the corresponding $endif.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>jack_beat_type</option>
+            </command>
+        </term>
+        <listitem>Shows the beat type of the time signature the JACK
+        transport mechanism is using.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>jack_beats_per_bar</option>
+            </command>
+        </term>
+        <listitem>Shows the number of beats per bar the JACK
+        transport mechanism is using.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>jack_bpm</option>
+            </command>
+        </term>
+        <listitem>Shows the beats per minute the JACK transport
+        mechanism is using.
+        <para /></listitem>
+    </varlistentry>
+
+    <varlistentry>
+        <term>
+            <command>
+                <option>jack_bar</option>
+            </command>
+        </term>
+        <listitem>The bar position JACK transport is currently located.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>jack_beat</option>
+            </command>
+        </term>
+        <listitem>The beat within the bar JACK transport is currently
+        located.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>jack_tick</option>
+            </command>
+        </term>
+        <listitem>The tick within the beat JACK transport is currently
+        located.
+        <para /></listitem>
+    </varlistentry>
 </variablelist>

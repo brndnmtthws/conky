@@ -1156,6 +1156,19 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(jack_buffer_size, &update_jack) init_jack();
 	END OBJ(jack_sample_rate, &update_jack) init_jack();
 	END OBJ(jack_xruns, &update_jack) init_jack();
+	/* JACK Transport */
+	END OBJ_IF(if_jack_rolling, &update_jack) init_jack();
+	END OBJ(jack_frame, &update_jack) init_jack();
+	END OBJ(jack_hour, &update_jack) init_jack();
+	END OBJ(jack_min, &update_jack) init_jack();
+	END OBJ(jack_sec, &update_jack) init_jack();
+	END OBJ_IF(if_jack_bbt, &update_jack) init_jack();
+	END OBJ(jack_beat_type, &update_jack) init_jack();
+	END OBJ(jack_beats_per_bar, &update_jack) init_jack();
+	END OBJ(jack_bpm, &update_jack) init_jack();
+	END OBJ(jack_bar, &update_jack) init_jack();
+	END OBJ(jack_beat, &update_jack) init_jack();
+	END OBJ(jack_tick, &update_jack) init_jack();
 #endif /* JACK */
 	END {
 		char buf[text_buffer_size];
@@ -1845,6 +1858,19 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_jack_buffer_size:
 			case OBJ_jack_sample_rate:
 			case OBJ_jack_xruns:
+			/* JACK Transport */
+			case OBJ_if_jack_rolling:
+			case OBJ_jack_frame:
+			case OBJ_jack_hour:
+			case OBJ_jack_min:
+			case OBJ_jack_sec:
+			case OBJ_if_jack_bbt:
+			case OBJ_jack_beat_type:
+			case OBJ_jack_beats_per_bar:
+			case OBJ_jack_bpm:
+			case OBJ_jack_bar:
+			case OBJ_jack_beat:
+			case OBJ_jack_tick:
 				jack_close();
 				break;
 #endif /* JACK */

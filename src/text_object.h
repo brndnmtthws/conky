@@ -474,7 +474,20 @@ enum text_object_type {
 	OBJ_jack_cpu_load,
 	OBJ_jack_buffer_size,
 	OBJ_jack_sample_rate,
-	OBJ_jack_xruns
+	OBJ_jack_xruns,
+	/* JACK Transport */
+	OBJ_if_jack_rolling,
+	OBJ_jack_frame,
+	OBJ_jack_hour,
+	OBJ_jack_min,
+	OBJ_jack_sec,
+	OBJ_if_jack_bbt,
+	OBJ_jack_beat_type,
+	OBJ_jack_beats_per_bar,
+	OBJ_jack_bpm,
+	OBJ_jack_bar,
+	OBJ_jack_beat,
+	OBJ_jack_tick,
 #endif /* JACK */
 };
 

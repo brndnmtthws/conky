@@ -107,8 +107,7 @@ void init_jack(void)
 {
 	struct information *current_info = &info;
 	struct jack_s* jackdata = &current_info->jack;
-	jackdata->active = 0;
-	printf("jack initialized ;-)\n");
+	jackdata->state = 0;
 }
 
 int update_jack(void)
@@ -116,26 +115,68 @@ int update_jack(void)
 	struct information *current_info = &info;
 	struct jack_s* jackdata = &current_info->jack;
 
-	if (!jackdata->active) {
-		jackdata->active = 0;
+	if (!(jackdata->state & JACK_IS_ACTIVE)) {
+		jackdata->state = 0;
 		jackdata->cpu_load = 0;
 		jackdata->buffer_size = 0;
 		jackdata->sample_rate = 0;
 		jackdata->xruns = 0;
+		jackdata->frame = 0;
+		jackdata->hour = 0;
+		jackdata->min = 0;
+		jackdata->sec = 0;
+		jackdata->beat_type = 0;
+		jackdata->beats_per_bar = 0;
+		jackdata->bpm = 0;
+		jackdata->bar = 0;
+		jackdata->beat = 0;
+		jackdata->tick = 0;
 
 		if (connect_jack(jackdata) == 0) {
 			if (jack_activate(client) == 0) {
 				printf("activated jack client\n");
-				jackdata->active = 1;
+				jackdata->state |= JACK_IS_ACTIVE;
 			}
 		}
 	}
 
-	if (jackdata->active) {
+	if (jackdata->state & JACK_IS_ACTIVE) {
+		jack_position_t pos;
+		double secs;
 		#if HAVE_SEMAPHORE_H
 		int z = 0;
 		#endif
 		jackdata->cpu_load = jack_cpu_load(client);
+
+		if (jack_transport_query(client, &pos) == JackTransportRolling)
+			jackdata->state |= JACK_IS_ROLLING;
+		else
+			jackdata->state &= ~JACK_IS_ROLLING;
+
+		jackdata->frame = pos.frame;
+		secs = jackdata->frame / (double)jackdata->sample_rate;
+		jackdata->min = (int)(secs / 60.0f);
+		jackdata->hour = (int)(jackdata->min / 60.0f);
+		jackdata->sec = (int)(secs - jackdata->min * 60.0f);
+
+		if (pos.valid & JackPositionBBT) {
+			jackdata->state |= JACK_IS_BBT;
+			jackdata->beat_type = pos.beat_type;
+			jackdata->beats_per_bar = pos.beats_per_bar;
+			jackdata->bpm = pos.beats_per_minute;
+			jackdata->bar = pos.bar;
+			jackdata->beat = pos.beat;
+			jackdata->tick = pos.tick;
+		}
+		else {
+			jackdata->state &= ~JACK_IS_BBT;
+			jackdata->beat_type = 0;
+			jackdata->beats_per_bar = 0;
+			jackdata->bpm = 0;
+			jackdata->bar = 0;
+			jackdata->beat = 0;
+			jackdata->tick = 0;
+		}
 
 		#if HAVE_SEMAPHORE_H
 		if (sem_getvalue (&zombified, &z) == 0 && z > 0) {
@@ -143,7 +184,7 @@ int update_jack(void)
 		#else
 		if (zombified == zzz) {
 		#endif
-			jackdata->active = 0;
+			jackdata->state = 0;
 			client = 0;
 		}
 	}

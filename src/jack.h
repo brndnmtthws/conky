@@ -31,16 +31,31 @@
 
 #include <jack/jack.h>
 
+enum {	JACK_IS_ACTIVE =	0x01,
+		JACK_IS_ROLLING = 	0x02,
+		JACK_IS_BBT = 		0x04	};
+
 struct jack_s {
-    int             active;
-    float           cpu_load;
-    jack_nframes_t  buffer_size;
-    jack_nframes_t  sample_rate;
-    int             xruns;
+	int				state; /* |'d JACK_IS_* */
+	float			cpu_load;
+	jack_nframes_t	buffer_size;
+	jack_nframes_t	sample_rate;
+	int				xruns;
+	/* transport data: */
+	int32_t			frame;
+	int				hour;
+	int				min;
+	int				sec;
+	float			beat_type;
+	float			beats_per_bar;
+	double			bpm;
+	int32_t			bar;
+	int32_t			beat;
+	int32_t			tick;
 };
 
-void init_jack(void);
-int update_jack(void);
-void jack_close(void);
+void	init_jack(void);
+int		update_jack(void);
+void	jack_close(void);
 
 #endif /*JACK_H_*/
