@@ -39,6 +39,7 @@ struct jack_s {
     int             xruns;
 };
 
+void init_jack(void);
 int update_jack(void);
 void jack_close(void);
 

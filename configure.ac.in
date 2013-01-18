@@ -786,7 +786,7 @@ dnl jack audio connection kit
 dnl
 
 AC_ARG_ENABLE([jack],
-		AC_HELP_STRING([--enable-jack], [enable Jack Audio Connection Kit support @<:@default=no@:>@]),
+		AC_HELP_STRING([--enable-jack], [enable JACK Audio Connection Kit support @<:@default=no@:>@]),
 		[want_jack="$enableval"], [want_jack=no])
 
 if test "x$want_jack" = "xyes"; then

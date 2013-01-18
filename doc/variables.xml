@@ -4281,4 +4281,51 @@
         <listitem>Full path to current song 
         <para /></listitem>
     </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>if_jack_active</option>
+            </command>
+        </term>
+        <listitem>If JACK is active display everything between the
+        $if_jack_active and the matching $endif.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>jack_cpu_load</option>
+            </command>
+        </term>
+        <listitem>Prints the current CPU load as estimated by JACK.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>jack_buffer_size</option>
+            </command>
+        </term>
+        <listitem>Shows the current JACK buffer size as set by user.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>jack_sampler_rate</option>
+            </command>
+        </term>
+        <listitem>Shows the current JACK sample rate as set by user.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>jack_xruns</option>
+            </command>
+        </term>
+        <listitem>Shows a count of xruns (buffer over/under runs)
+        that have ocurred.
+        <para /></listitem>
+    </varlistentry>
 </variablelist>

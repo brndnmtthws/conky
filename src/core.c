@@ -1151,11 +1151,11 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(apcupsd_lastxfer, &update_apcupsd)
 #endif /* APCUPSD */
 #ifdef JACK
-	END OBJ_IF(if_jack_active, &update_jack)
-	END OBJ(jack_cpu_load, &update_jack)
-	END OBJ(jack_buffer_size, &update_jack)
-	END OBJ(jack_sample_rate, &update_jack)
-	END OBJ(jack_xruns, &update_jack)
+	END OBJ_IF(if_jack_active, &update_jack) init_jack();
+	END OBJ(jack_cpu_load, &update_jack) init_jack();
+	END OBJ(jack_buffer_size, &update_jack) init_jack();
+	END OBJ(jack_sample_rate, &update_jack) init_jack();
+	END OBJ(jack_xruns, &update_jack) init_jack();
 #endif /* JACK */
 	END {
 		char buf[text_buffer_size];
