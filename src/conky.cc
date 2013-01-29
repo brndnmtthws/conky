@@ -1383,7 +1383,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 	int mw = maximum_width.get(*state);
 #endif /* BUILD_X11 */
 	char *p = s;
-	int last_special_needed = -1;
 	int orig_special_index = special_index;
 
 #ifdef BUILD_X11
@@ -1727,7 +1726,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 
 				case OFFSET:
 					w += current->arg;
-					last_special_needed = special_index;
 					break;
 
 				case VOFFSET:
@@ -1742,7 +1740,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						if(draw_mode == BG) cur_x++;
 #endif
 					}
-					last_special_needed = special_index;
 					break;
 
 				case TAB:
@@ -1754,7 +1751,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						step = 10;
 					}
 					w = step - (cur_x - text_start_x - start) % step;
-					last_special_needed = special_index;
 					break;
 				}
 
@@ -1775,7 +1771,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					if (pos_x > current->arg && pos_x > cur_x) {
 						cur_x = pos_x - current->arg;
 					}
-					last_special_needed = special_index;
 					break;
 				}
 
@@ -1795,7 +1790,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					if (pos_x > current->arg) {
 						w = pos_x - current->arg;
 					}
-					last_special_needed = special_index;
 					break;
 				}
 #endif /* BUILD_X11 */
