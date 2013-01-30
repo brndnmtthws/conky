@@ -4306,7 +4306,7 @@
                 <option>jack_buffer_size</option>
             </command>
         </term>
-        <listitem>Shows the current JACK buffer size as set by user.
+        <listitem>Shows the current JACK buffer size.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -4315,7 +4315,7 @@
                 <option>jack_sampler_rate</option>
             </command>
         </term>
-        <listitem>Shows the current JACK sample rate as set by user.
+        <listitem>Shows the current JACK sample rate.
         <para /></listitem>
     </varlistentry>
     <varlistentry>

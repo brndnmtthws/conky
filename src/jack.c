@@ -40,12 +40,11 @@ static int* zombified = 0;
 #endif
 
 static jack_client_t* client = 0;
+static int init_done = 0; /* work around repated calls to init_jack in various circumstances */
 
-void jack_shutdown_cb(void* arg)
+static void jack_shutdown_cb(void* arg)
 {
 	/* this is called from JACK's thread */
-	struct jack_s* jackdata = (struct jack_s*)arg;
-
 	#if HAVE_SEMAPHORE_H
 	int z = 0;
 	if (sem_getvalue(&zombified, &z) == 0 && z == 0) {
@@ -56,7 +55,7 @@ void jack_shutdown_cb(void* arg)
 	#endif
 }
 
-int	jack_buffer_size_cb(jack_nframes_t nframes, void* arg)
+static int jack_buffer_size_cb(jack_nframes_t nframes, void* arg)
 {
 	struct jack_s* jackdata = (struct jack_s*)arg;
 	/* XXX fixme: does this need to be made thread safe or not? */
@@ -64,7 +63,7 @@ int	jack_buffer_size_cb(jack_nframes_t nframes, void* arg)
 	return 0;
 }
 
-int jack_sample_rate_cb(jack_nframes_t nframes, void* arg)
+static int jack_sample_rate_cb(jack_nframes_t nframes, void* arg)
 {
 	struct jack_s* jackdata = (struct jack_s*)arg;
 	/* XXX fixme: does this need to be made thread safe or not? */
@@ -72,7 +71,7 @@ int jack_sample_rate_cb(jack_nframes_t nframes, void* arg)
 	return 0;
 }
 
-int	jack_xrun_cb(void* arg)
+static int jack_xrun_cb(void* arg)
 {
 	struct jack_s* jackdata = (struct jack_s*)arg;
 	/* XXX fixme: does this need to be made thread safe or not? */
@@ -107,7 +106,12 @@ void init_jack(void)
 {
 	struct information *current_info = &info;
 	struct jack_s* jackdata = &current_info->jack;
-	jackdata->state = 0;
+
+	/* work around repated calls to init_jack in various circumstances */
+	if (!init_done) {
+		init_done = 1;
+		jackdata->state = 0;
+	}
 }
 
 int update_jack(void)
@@ -134,11 +138,13 @@ int update_jack(void)
 
 		if (connect_jack(jackdata) == 0) {
 			if (jack_activate(client) == 0) {
-				printf("activated jack client\n");
 				jackdata->state |= JACK_IS_ACTIVE;
 			}
 		}
 	}
+
+	if (!client)
+		return;
 
 	if (jackdata->state & JACK_IS_ACTIVE) {
 		jack_position_t pos;
@@ -194,11 +200,11 @@ int update_jack(void)
 void jack_close(void)
 {
 	if (client) {
-		if (jack_client_close(client) == 0) {
-		}
-		else {
-		}
+		struct information *current_info = &info;
+		struct jack_s* jackdata = &current_info->jack;
+		jack_client_close(client);
 		client = 0;
+		jackdata->state = 0;
 	}
 }
 
