@@ -40,7 +40,7 @@ static int* zombified = 0;
 #endif
 
 static jack_client_t* client = 0;
-static int init_done = 0; /* work around repated calls to init_jack in various circumstances */
+static int obj_count = 0;
 
 static void jack_shutdown_cb(void* arg)
 {
@@ -107,11 +107,14 @@ void init_jack(void)
 	struct information *current_info = &info;
 	struct jack_s* jackdata = &current_info->jack;
 
-	/* work around repated calls to init_jack in various circumstances */
-	if (!init_done) {
-		init_done = 1;
+	printf("init_jack...\n");
+
+	if (!obj_count++) {
+		printf("zeroing jackdata->state\n");
 		jackdata->state = 0;
 	}
+
+	printf("%d jack objects now exist\n", obj_count);
 }
 
 int update_jack(void)
@@ -144,7 +147,7 @@ int update_jack(void)
 	}
 
 	if (!client)
-		return;
+		return 0;
 
 	if (jackdata->state & JACK_IS_ACTIVE) {
 		jack_position_t pos;
@@ -190,6 +193,7 @@ int update_jack(void)
 		#else
 		if (zombified == zzz) {
 		#endif
+			printf("zombified...\n");
 			jackdata->state = 0;
 			client = 0;
 		}
@@ -199,12 +203,21 @@ int update_jack(void)
 
 void jack_close(void)
 {
+	printf("jack_close...\n");
+
+	if (obj_count)
+		--obj_count;
+
 	if (client) {
-		struct information *current_info = &info;
-		struct jack_s* jackdata = &current_info->jack;
-		jack_client_close(client);
-		client = 0;
-		jackdata->state = 0;
+		printf("%d jack objects remain\n", obj_count);
+		if (!obj_count) {
+			struct information *current_info = &info;
+			struct jack_s* jackdata = &current_info->jack;
+			printf("calling jack_client_close\n");
+			jack_client_close(client);
+			client = 0;
+			jackdata->state = 0;
+		}
 	}
 }
 
