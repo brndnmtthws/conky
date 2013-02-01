@@ -28,6 +28,7 @@
  */
 
 #include "conky.h"
+#include "logging.h"
 
 #include <jack/jack.h>
 
@@ -87,7 +88,7 @@ static int connect_jack(struct jack_s* jackdata)
 		return -1;
 	}
 
-	printf("Registered JACK client '%s'\n", jack_get_client_name(client));
+	NORM_ERR("Registered JACK client '%s'", jack_get_client_name(client))
 
 	#if HAVE_SEMAPHORE_H
 	sem_init(&zombified, 0, 0);
@@ -190,7 +191,7 @@ int update_jack(void)
 		#else
 		if (zombified == zzz) {
 		#endif
-			printf("JACK client zombified\n");
+			NORM_ERR("JACK client '%s' zombified", jack_get_client_name(client));
 			jackdata->state = 0;
 			client = 0;
 		}
@@ -203,7 +204,7 @@ void jack_close(void)
 	if (client) {
 		struct information *current_info = &info;
 		struct jack_s* jackdata = &current_info->jack;
-		printf("Closing JACK client\n");
+		NORM_ERR("Closing JACK client '%s'", jack_get_client_name(client));
 		jack_client_close(client);
 		client = 0;
 		jackdata->state = 0;
