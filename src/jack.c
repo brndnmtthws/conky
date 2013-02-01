@@ -39,8 +39,8 @@ static int zzz = 0;
 static int* zombified = 0;
 #endif
 
+static int init_done = 0;
 static jack_client_t* client = 0;
-static int obj_count = 0;
 
 static void jack_shutdown_cb(void* arg)
 {
@@ -100,6 +100,7 @@ static int connect_jack(struct jack_s* jackdata)
 	jack_set_buffer_size_callback(client, jack_buffer_size_cb, jackdata);
 	jack_set_sample_rate_callback(client, jack_sample_rate_cb, jackdata);
 	jack_set_xrun_callback(client, jack_xrun_cb, jackdata);
+	return 0;
 }
 
 void init_jack(void)
@@ -107,14 +108,10 @@ void init_jack(void)
 	struct information *current_info = &info;
 	struct jack_s* jackdata = &current_info->jack;
 
-	printf("init_jack...\n");
-
-	if (!obj_count++) {
-		printf("zeroing jackdata->state\n");
+	if (!init_done) {
+		init_done = 1;
 		jackdata->state = 0;
 	}
-
-	printf("%d jack objects now exist\n", obj_count);
 }
 
 int update_jack(void)
@@ -193,7 +190,7 @@ int update_jack(void)
 		#else
 		if (zombified == zzz) {
 		#endif
-			printf("zombified...\n");
+			printf("JACK client zombified\n");
 			jackdata->state = 0;
 			client = 0;
 		}
@@ -203,21 +200,13 @@ int update_jack(void)
 
 void jack_close(void)
 {
-	printf("jack_close...\n");
-
-	if (obj_count)
-		--obj_count;
-
 	if (client) {
-		printf("%d jack objects remain\n", obj_count);
-		if (!obj_count) {
-			struct information *current_info = &info;
-			struct jack_s* jackdata = &current_info->jack;
-			printf("calling jack_client_close\n");
-			jack_client_close(client);
-			client = 0;
-			jackdata->state = 0;
-		}
+		struct information *current_info = &info;
+		struct jack_s* jackdata = &current_info->jack;
+		printf("Closing JACK client\n");
+		jack_client_close(client);
+		client = 0;
+		jackdata->state = 0;
 	}
 }
 

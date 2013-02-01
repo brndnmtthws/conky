@@ -1871,7 +1871,7 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_jack_bar:
 			case OBJ_jack_beat:
 			case OBJ_jack_tick:
-				jack_close();
+				/* don't call jack_close here */
 				break;
 #endif /* JACK */
 		}

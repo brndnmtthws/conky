@@ -6062,6 +6062,10 @@ int main(int argc, char **argv)
 	curl_global_cleanup();
 #endif
 
+#ifdef JACK
+	jack_close();
+#endif
+
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__NetBSD__)
 	kvm_close(kd);
 #ifndef __NetBSD__

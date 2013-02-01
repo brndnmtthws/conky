@@ -56,6 +56,8 @@ struct jack_s {
 
 void	init_jack(void);
 int		update_jack(void);
+
+/* jack_close need only be called once before conky quits */
 void	jack_close(void);
 
 #endif /*JACK_H_*/
