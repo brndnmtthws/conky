@@ -83,12 +83,13 @@ nvidia = nvidia.c nvidia.h
 imlib2 = imlib2.c imlib2.h
 apcupsd = apcupsd.c apcupsd.h
 iconv = iconv_tools.c iconv_tools.h
+jack = jack.c jack.h
 
 # make sure the files from above are always included in the distfile
 EXTRA_DIST = $(audacious) $(bmpx) $(ibm) $(mpd) $(moc) $(xmms2) $(linux) \
              $(solaris) $(freebsd) $(netbsd) $(openbsd) $(port_monitors) \
              $(x11) $(hddtemp) $(eve) $(ccurl_thread) $(rss) $(weather) \
-             $(lua) $(nvidia) $(imlib2) $(apcupsd)
+             $(lua) $(nvidia) $(imlib2) $(apcupsd) $(jack)
 
 # collect all selected optional sources
 optional_sources =
@@ -160,6 +161,9 @@ optional_sources += $(apcupsd)
 endif
 if BUILD_ICONV
 optional_sources += $(iconv)
+endif
+if BUILD_JACK
+optional_sources += $(jack)
 endif
 
 # linux takes the standard to the max
