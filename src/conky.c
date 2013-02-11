@@ -2368,6 +2368,79 @@ void generate_text_internal(char *p, int p_max_size,
 						 cur->apcupsd.items[APCUPSD_LASTXFER]);
 			}
 #endif /* APCUPSD */
+#ifdef JACK
+			OBJ(if_jack_active) {
+				if (!(cur->jack.state & JACK_IS_ACTIVE)) {
+					DO_JUMP;
+				}
+			}
+			OBJ(jack_cpu_load) {
+				snprintf(p, p_max_size, "%2.2f",
+						cur->jack.cpu_load);
+			}
+			OBJ(jack_buffer_size) {
+				snprintf(p, p_max_size, "%u",
+						cur->jack.buffer_size);
+			}
+			OBJ(jack_sample_rate) {
+				snprintf(p, p_max_size, "%u",
+						cur->jack.sample_rate);
+			}
+			OBJ(jack_xruns) {
+				snprintf(p, p_max_size, "%d",
+						cur->jack.xruns);
+			}
+			OBJ(if_jack_rolling) {
+				if (!(cur->jack.state & JACK_IS_ROLLING)) {
+					DO_JUMP;
+				}
+			}
+			OBJ(jack_frame) {
+				snprintf(p, p_max_size, "%d",
+						cur->jack.frame);
+			}
+			OBJ(jack_hour) {
+				snprintf(p, p_max_size, "%2d",
+						cur->jack.hour);
+			}
+			OBJ(jack_min) {
+				snprintf(p, p_max_size, "%02d",
+						cur->jack.min);
+			}
+			OBJ(jack_sec) {
+				snprintf(p, p_max_size, "%02d",
+						cur->jack.sec);
+			}
+			OBJ(if_jack_bbt) {
+				if(!(cur->jack.state & JACK_IS_BBT)) {
+					DO_JUMP;
+				}
+			}
+			OBJ(jack_beat_type) {
+				snprintf(p, p_max_size, "%.0f",
+						cur->jack.beat_type);
+			}
+			OBJ(jack_beats_per_bar) {
+				snprintf(p, p_max_size, "%.0f",
+						cur->jack.beats_per_bar);
+			}
+			OBJ(jack_bpm) {
+				snprintf(p, p_max_size, "%.0lf",
+						cur->jack.bpm);
+			}
+			OBJ(jack_bar) {
+				snprintf(p, p_max_size, "%03d",
+						cur->jack.bar);
+			}
+			OBJ(jack_beat) {
+				snprintf(p, p_max_size, "%02d",
+						cur->jack.beat);
+			}
+			OBJ(jack_tick) {
+				snprintf(p, p_max_size, "%04d",
+						cur->jack.tick);
+			}
+#endif /* JACK */
 			break;
 		}
 #undef DO_JUMP
@@ -5987,6 +6060,10 @@ int main(int argc, char **argv)
 
 #ifdef HAVE_CURL
 	curl_global_cleanup();
+#endif
+
+#ifdef JACK
+	jack_close();
 #endif
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__NetBSD__)
