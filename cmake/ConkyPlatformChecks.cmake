@@ -233,7 +233,7 @@ if(BUILD_X11)
 	endif(X11_FOUND)
 endif(BUILD_X11)
 
-pkg_search_module(LUA REQUIRED lua>=5.1 lua<5.2 lua-5.1>=5.1 lua-5.2<5.2 lua5.1>=5.1 lua5.1<=5.2)
+pkg_search_module(LUA REQUIRED lua5.1 lua-5.1 lua<=5.1.99)
 set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
 set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIRS})
 if(BUILD_LUA_CAIRO)
