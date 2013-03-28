@@ -32,29 +32,29 @@ bars and graph widgets, with different fonts and colours.
 
 ### Screenshots
 
-[![screenshot](conky/wiki/configs/brenden/screenshot-thumb.png)](conky/wiki/configs/brenden/screenshot.png)
-[![screenshot](conky/wiki/configs/ke49/screenshot-thumb.png)](conky/wiki/configs/ke49/screenshot.png)
-[![screenshot](conky/wiki/configs/jc/screenshot-thumb.png)](conky/wiki/configs/jc/screenshot.png)
+[![screenshot](https://github.com/brndnmtthws/conky/wiki/configs/brenden/screenshot-thumb.png)](https://raw.github.com/wiki/brndnmtthws/conky/configs/brenden/screenshot.png)
+[![screenshot](https://github.com/brndnmtthws/conky/wiki/configs/ke49/screenshot-thumb.png)](https://raw.github.com/wiki/brndnmtthws/conky/configs/ke49/screenshot.png)
+[![screenshot](https://github.com/brndnmtthws/conky/wiki/configs/jc/screenshot-thumb.png)](https://raw.github.com/wiki/brndnmtthws/conky/configs/jc/screenshot.png)
 
-See the [User Configs](conky/wiki/User-Configs) section of the wiki for more
+See the [User Configs](https://github.com/brndnmtthws/conky/wiki/User-Configs) section of the wiki for more
 screenshots and their associated conky config files.
 
 
 ### Documentation
 
-The [Github Wiki](conky/wiki) serves as a central hub for all of
+The [Github Wiki](https://github.com/brndnmtthws/conky/wiki) serves as a central hub for all of
 Conky's documentation. Quick links:
 
-* [Install](conky/wiki/Installation)
-* [Configure](conky/wiki/Configure)
-* [User Configs](conky/wiki/User-Configs)
-* [Frequently Asked Questions](conky/wiki/Frequently-Asked-Questions)
+* [Install](https://github.com/brndnmtthws/conky/wiki/Installation)
+* [Configure](https://github.com/brndnmtthws/conky/wiki/Configure)
+* [User Configs](https://github.com/brndnmtthws/conky/wiki/User-Configs)
+* [Frequently Asked Questions](https://github.com/brndnmtthws/conky/wiki/FAQ)
 
 
 ### License
 
-Conky is licensed under the terms of the [GPLv3](conky/blob/master/LICENSE.GPL) and
-[BSD](conky/blob/master/LICENSE.BSD) licenses.
+Conky is licensed under the terms of the [GPLv3](LICENSE.GPL) and
+[BSD](LICENSE.BSD) licenses.
 
 
 [MPD]: http://musicpd.org/
