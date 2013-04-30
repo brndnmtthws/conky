@@ -2088,7 +2088,7 @@ void get_battery_short_status(char *buffer, unsigned int n, const char *bat)
 		memmove(buffer + 1, buffer + 5, n - 5);
 	} else if (0 != strncmp("AC", buffer, 2)) {
 		buffer[0] = 'U';
-		memmove(buffer + 1, buffer + 11, n - 11);
+		memmove(buffer + 1, buffer + 2, n - 2);
 	}
 }
 
