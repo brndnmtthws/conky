@@ -1,0 +1,128 @@
+/* 
+   rsvg.h: SAX-based renderer for SVG files into a GdkPixbuf.
+ 
+   Copyright (C) 2000 Eazel, Inc.
+  
+   This program is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Library General Public License as
+   published by the Free Software Foundation; either version 2 of the
+   License, or (at your option) any later version.
+  
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Library General Public License for more details.
+  
+   You should have received a copy of the GNU Library General Public
+   License along with this program; if not, write to the
+   Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
+  
+   Author: Raph Levien <raph@artofcode.com>
+
+   rsvg-cairo.h: SAX-based renderer for SVG files using cairo
+ 
+   Copyright (C) 2005 Red Hat, Inc.
+  
+   This program is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Library General Public License as
+   published by the Free Software Foundation; either version 2 of the
+   License, or (at your option) any later version.
+  
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Library General Public License for more details.
+  
+   You should have received a copy of the GNU Library General Public
+   License along with this program; if not, write to the
+   Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
+  
+   Author: Carl Worth <cworth@cworth.org>
+*/
+
+$#include <glib>
+$#include <librsvg/rsvg.h>
+
+typedef struct _RsvgHandle RsvgHandle;
+typedef struct RsvgHandlePrivate RsvgHandlePrivate;
+typedef struct _RsvgHandleClass RsvgHandleClass;
+typedef struct _RsvgDimensionData RsvgDimensionData;
+typedef struct _RsvgPositionData RsvgPositionData;
+
+/**
+ * RsvgDimensionData:
+ * @width: SVG's width, in pixels
+ * @height: SVG's height, in pixels
+ * @em: em
+ * @ex: ex
+ */
+struct _RsvgDimensionData {
+    int width;
+    int height;
+    gdouble em;
+    gdouble ex;
+};
+
+/**
+ * RsvgPositionData:
+ * Position of an SVG fragment.
+ */
+struct _RsvgPositionData {
+    int x;
+    int y;
+};
+
+void rsvg_set_default_dpi	(double dpi);
+void rsvg_set_default_dpi_x_y	(double dpi_x, double dpi_y);
+
+void rsvg_handle_set_dpi	(RsvgHandle * handle, double dpi);
+void rsvg_handle_set_dpi_x_y	(RsvgHandle * handle, double dpi_x, double dpi_y);
+
+RsvgHandle  *rsvg_handle_new		(void);
+gboolean     rsvg_handle_write		(RsvgHandle * handle, const guchar * buf, 
+                                     gsize count, GError ** error);
+gboolean     rsvg_handle_close		(RsvgHandle * handle, GError ** error);
+GdkPixbuf   *rsvg_handle_get_pixbuf	(RsvgHandle * handle);
+GdkPixbuf   *rsvg_handle_get_pixbuf_sub (RsvgHandle * handle, const char *id);
+
+const char  *rsvg_handle_get_base_uri (RsvgHandle * handle);
+void         rsvg_handle_set_base_uri (RsvgHandle * handle, const char *base_uri);
+
+void rsvg_handle_get_dimensions (RsvgHandle * handle, RsvgDimensionData * dimension_data);
+
+gboolean rsvg_handle_get_dimensions_sub (RsvgHandle * handle, RsvgDimensionData * dimension_data, const char *id);
+gboolean rsvg_handle_get_position_sub (RsvgHandle * handle, RsvgPositionData * position_data, const char *id);
+
+gboolean rsvg_handle_has_sub (RsvgHandle * handle, const char *id);
+
+RsvgHandle *rsvg_handle_new_with_flags (RsvgHandleFlags flags);
+
+void        rsvg_handle_set_base_gfile (RsvgHandle *handle,
+                                        GFile      *base_file);
+
+gboolean    rsvg_handle_read_stream_sync (RsvgHandle   *handle,
+                                          GInputStream *stream,
+                                          GCancellable *cancellable,
+                                          GError      **error);
+
+RsvgHandle *rsvg_handle_new_from_gfile_sync (GFile          *file,
+                                             RsvgHandleFlags flags,
+                                             GCancellable   *cancellable,
+                                             GError        **error);
+
+RsvgHandle *rsvg_handle_new_from_stream_sync (GInputStream   *input_stream,
+                                              GFile          *base_file,
+                                              RsvgHandleFlags flags,
+                                              GCancellable   *cancellable,
+                                              GError        **error);
+
+RsvgHandle *rsvg_handle_new_from_data (const guint8 * data, gsize data_len, GError ** error);
+RsvgHandle *rsvg_handle_new_from_file (const gchar * file_name, GError ** error);
+
+gboolean    rsvg_handle_render_cairo     (RsvgHandle * handle, cairo_t * cr);
+gboolean    rsvg_handle_render_cairo_sub (RsvgHandle * handle, cairo_t * cr, const char *id);
+
+void g_type_init(void);
+void g_object_unref(gpointer object);
