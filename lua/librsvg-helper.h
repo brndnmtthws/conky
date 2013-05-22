@@ -26,6 +26,7 @@
 #define _LIBRSVG_HELPER_H_
 
 #include <glib>
+#include <stdlib.h>
 #include <librsvg/rsvg.h>
 
 RsvgDimensionData *

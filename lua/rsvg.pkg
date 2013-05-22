@@ -61,6 +61,8 @@ typedef struct _RsvgDimensionData {
     int height;
     double em;
     double ex;
+    static tolua_outside RsvgDimensionData * rsvgDimensionDataCreate @ create();
+    tolua_outside rsvgDimensionDataGet @ get(int width, int height, double em, double ex);
 } RsvgDimensionData;
 
 /**
@@ -70,6 +72,8 @@ typedef struct _RsvgDimensionData {
 typedef struct _RsvgPositionData {
     int x;
     int y;
+    static tolua_outside RsvgPositionData * rsvgPositionDataCreate @ create();
+    tolua_outside rsvgPositionDataGet @ get(int x, int y);
 } RsvgPositionData;
 
 RsvgHandle  *rsvg_handle_new		(void);
