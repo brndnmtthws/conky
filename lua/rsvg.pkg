@@ -42,8 +42,9 @@
    Author: Carl Worth <cworth@cworth.org>
 */
 
-$#include <glib>
+$#include <glib.h>
 $#include <librsvg/rsvg.h>
+$#include "librsvg-helper.h"
 
 typedef struct _RsvgHandle RsvgHandle;
 typedef struct RsvgHandlePrivate RsvgHandlePrivate;
@@ -62,7 +63,8 @@ typedef struct _RsvgDimensionData {
     double em;
     double ex;
     static tolua_outside RsvgDimensionData * rsvgDimensionDataCreate @ create();
-    tolua_outside rsvgDimensionDataGet @ get(int width, int height, double em, double ex);
+    tolua_outside void rsvgDimensionDataGet @ get(int * width, int * height,
+                                                  double * em, double * ex);
 } RsvgDimensionData;
 
 /**
@@ -73,7 +75,7 @@ typedef struct _RsvgPositionData {
     int x;
     int y;
     static tolua_outside RsvgPositionData * rsvgPositionDataCreate @ create();
-    tolua_outside rsvgPositionDataGet @ get(int x, int y);
+    tolua_outside void rsvgPositionDataGet @ get(int * x, int * y);
 } RsvgPositionData;
 
 RsvgHandle  *rsvg_handle_new		(void);
@@ -101,3 +103,6 @@ int         rsvg_handle_render_cairo_sub (RsvgHandle * handle, cairo_t * cr, con
 
 void g_type_init(void);
 void g_object_unref(gpointer object);
+
+RsvgHandle * rsvg_create_handle_from_file(const char *);
+int rsvg_destroy_handle(RsvgHandle *);

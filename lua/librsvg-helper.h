@@ -25,7 +25,7 @@
 #ifndef _LIBRSVG_HELPER_H_
 #define _LIBRSVG_HELPER_H_
 
-#include <glib>
+#include <glib.h>
 #include <stdlib.h>
 #include <librsvg/rsvg.h>
 
