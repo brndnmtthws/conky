@@ -74,18 +74,10 @@ struct _RsvgPositionData {
     int y;
 };
 
-void rsvg_set_default_dpi	(double dpi);
-void rsvg_set_default_dpi_x_y	(double dpi_x, double dpi_y);
-
-void rsvg_handle_set_dpi	(RsvgHandle * handle, double dpi);
-void rsvg_handle_set_dpi_x_y	(RsvgHandle * handle, double dpi_x, double dpi_y);
-
 RsvgHandle  *rsvg_handle_new		(void);
 int          rsvg_handle_write		(RsvgHandle * handle, const unsigned char * buf, 
                                      unsigned long count, GError ** error);
 int          rsvg_handle_close		(RsvgHandle * handle, GError ** error);
-GdkPixbuf   *rsvg_handle_get_pixbuf	(RsvgHandle * handle);
-GdkPixbuf   *rsvg_handle_get_pixbuf_sub (RsvgHandle * handle, const char *id);
 
 const char  *rsvg_handle_get_base_uri (RsvgHandle * handle);
 void         rsvg_handle_set_base_uri (RsvgHandle * handle, const char *base_uri);
@@ -98,25 +90,6 @@ int      rsvg_handle_get_position_sub (RsvgHandle * handle, RsvgPositionData * p
 int      rsvg_handle_has_sub (RsvgHandle * handle, const char *id);
 
 RsvgHandle *rsvg_handle_new_with_flags (RsvgHandleFlags flags);
-
-void        rsvg_handle_set_base_gfile (RsvgHandle *handle,
-                                        GFile      *base_file);
-
-int         rsvg_handle_read_stream_sync (RsvgHandle   *handle,
-                                          GInputStream *stream,
-                                          GCancellable *cancellable,
-                                          GError      **error);
-
-RsvgHandle *rsvg_handle_new_from_gfile_sync (GFile          *file,
-                                             RsvgHandleFlags flags,
-                                             GCancellable   *cancellable,
-                                             GError        **error);
-
-RsvgHandle *rsvg_handle_new_from_stream_sync (GInputStream   *input_stream,
-                                              GFile          *base_file,
-                                              RsvgHandleFlags flags,
-                                              GCancellable   *cancellable,
-                                              GError        **error);
 
 RsvgHandle *rsvg_handle_new_from_data (const unsigned char * data, unsigned long data_len, GError ** error);
 RsvgHandle *rsvg_handle_new_from_file (const char * file_name, GError ** error);
