@@ -48,8 +48,6 @@ $#include <librsvg/rsvg.h>
 typedef struct _RsvgHandle RsvgHandle;
 typedef struct RsvgHandlePrivate RsvgHandlePrivate;
 typedef struct _RsvgHandleClass RsvgHandleClass;
-typedef struct _RsvgDimensionData RsvgDimensionData;
-typedef struct _RsvgPositionData RsvgPositionData;
 
 /**
  * RsvgDimensionData:
@@ -58,21 +56,21 @@ typedef struct _RsvgPositionData RsvgPositionData;
  * @em: em
  * @ex: ex
  */
-struct _RsvgDimensionData {
+typedef struct _RsvgDimensionData {
     int width;
     int height;
     double em;
     double ex;
-};
+} RsvgDimensionData;
 
 /**
  * RsvgPositionData:
  * Position of an SVG fragment.
  */
-struct _RsvgPositionData {
+typedef struct _RsvgPositionData {
     int x;
     int y;
-};
+} RsvgPositionData;
 
 RsvgHandle  *rsvg_handle_new		(void);
 int          rsvg_handle_write		(RsvgHandle * handle, const unsigned char * buf, 
