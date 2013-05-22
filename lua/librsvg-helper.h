@@ -25,18 +25,75 @@
 #ifndef _LIBRSVG_HELPER_H_
 #define _LIBRSVG_HELPER_H_
 
-#include <cairo.h>
+#include <glib>
+#include <librsvg/rsvg.h>
 
-cairo_text_extents_t *create_cairo_text_extents_t(void) {
-	return calloc(1, sizeof(cairo_text_extents_t));
+RsvgDimensionData *
+rsvgDimensionDataCreate(void)
+{
+  return (RsvgDimensionData *)calloc(1, sizeof(RsvgDimensionData));
 }
 
-cairo_font_extents_t *create_cairo_font_extents_t(void) {
-	return calloc(1, sizeof(cairo_font_extents_t));
+void
+rsvgDimensionDataGet(RsvgDimensionData * dd,
+                     int * width, int * height, double * em, double * ex)
+{
+  if (dd) {
+    *width = dd->width;
+    *height = dd->height;
+    *em = dd->em;
+    *ex = dd->ex;
+  }
 }
 
-cairo_matrix_t *create_cairo_matrix_t(void) {
-	return calloc(1, sizeof(cairo_matrix_t));
+RsvgPositionData *
+rsvgPositionDataCreate(void)
+{
+  return (RsvgPositionData *)calloc(1, sizeof(RsvgPositionData));
+}
+
+void
+rsvgPositionDataGet(RsvgPositionData * pd, int * x, int * y)
+{
+  if (pd) {
+    *x = pd->x;
+    *y = pd->y;
+  }
+}
+
+RsvgHandle *
+rsvg_create_handle_from_file(const char * filename)
+{
+  GError * error = NULL;
+  RsvgHandle * handle = rsvg_handle_new_from_file(filename, &error);
+
+  if (error) {
+    g_object_unref(error);
+    if (handle)
+      g_object_unref(handle);
+    handle = NULL;
+  }
+
+  return handle;
+}
+
+int
+rsvg_destroy_handle(RsvgHandle * handle)
+{
+  int status = 0;
+
+  if (handle) {
+    GError * error = NULL;
+    status = rsvg_handle_close(handle, &error);
+
+    if (status)
+      g_object_unref(handle);
+
+    if (error)
+      g_object_unref(error);
+  }
+
+  return status;
 }
 
 #endif /* _LIBRSVG_HELPER_H_ */
