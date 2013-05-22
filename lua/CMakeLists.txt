@@ -52,6 +52,17 @@ if(BUILD_LUA_IMLIB2)
 	set(lua_libs ${lua_libs} conky-imlib2)
 endif(BUILD_LUA_IMLIB2)
 
+if(BUILD_LUA_RSVG)
+	include_directories(${luarsvg_includes} ${CMAKE_CURRENT_SOURCE_DIR})
+	wrap_tolua(luarsvg_src rsvg.pkg)
+
+	add_library(conky-rsvg SHARED ${luarsvg_src})
+	set_target_properties(conky-rsvg PROPERTIES OUTPUT_NAME "rsvg")
+
+	target_link_libraries(conky-rsvg ${luarsvg_libs} ${TOLUA_LIBS})
+	set(lua_libs ${lua_libs} conky-rsvg)
+endif(BUILD_LUA_RSVG)
+
 install(TARGETS
 	${lua_libs}
 	LIBRARY DESTINATION lib/conky
