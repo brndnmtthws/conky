@@ -124,6 +124,7 @@ endif(OWN_WINDOW)
 
 option(BUILD_LUA_CAIRO "Build cairo bindings for Lua" false)
 option(BUILD_LUA_IMLIB2 "Build Imlib2 bindings for Lua" false)
+option(BUILD_LUA_RSVG "Build rsvg bindings for Lua" false)
 
 option(BUILD_AUDACIOUS "Build audacious (music player) support" false)
 
