@@ -484,10 +484,12 @@ void mpd_clearError(mpd_Connection *connection)
 
 void mpd_closeConnection(mpd_Connection *connection)
 {
-	closesocket(connection->sock);
-	free_and_zero(connection->returnElement);
-	free_and_zero(connection->request);
-	free(connection);
+	if (connection) {
+		closesocket(connection->sock);
+		free_and_zero(connection->returnElement);
+		free_and_zero(connection->request);
+		free(connection);
+	}
 	WSACleanup();
 }
 
@@ -699,7 +701,7 @@ static void mpd_getNextReturnElement(mpd_Connection *connection)
 
 void mpd_finishCommand(mpd_Connection *connection)
 {
-	while (!connection->doneProcessing) {
+	while (connection && !connection->doneProcessing) {
 		if (connection->doneListOk) {
 			connection->doneListOk = 0;
 		}
