@@ -1,0 +1,5 @@
+$#include <cairo.h>
+$#include <libcairo_imlib2_helper.h>
+
+void cairo_draw_image(const char *, cairo_surface_t *, int, int, double, double,
+                      double * return_scale_w, double * return_scale_h);
