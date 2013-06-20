@@ -63,8 +63,7 @@ namespace {
 std::string strerror_r(int errnum)
 {
 	char buf[100];
-	strerror_r(errnum, buf, sizeof buf);
-	return buf;
+	return strerror_r(errnum, buf, sizeof buf);
 }
 
 std::pair<int, int> pipe2(int flags)
