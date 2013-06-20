@@ -22,6 +22,7 @@
  */
 
 #include "config.h"
+#include "logging.h"
 
 #include "update-cb.hh"
 
@@ -46,7 +47,8 @@ namespace conky {
 				done = true;
 				sem_start.post();
 				if(pipefd.second >= 0)
-					write(pipefd.second, "X", 1);
+					if(write(pipefd.second, "X", 1) != 1)
+						NORM_ERR("can't write 'X' to pipefd %d: %s", pipefd.second, strerror(errno));
 				thread->join();
 				delete thread;
 				thread = NULL;
