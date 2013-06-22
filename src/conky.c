@@ -3460,10 +3460,10 @@ static void draw_stuff(void)
 		if(!append_fpointer)
 			NORM_ERR("Can't append '%s' anymore", append_file);
 	}
+#ifdef X11
 #ifdef HAVE_LUA
 	llua_draw_pre_hook();
 #endif /* HAVE_LUA */
-#ifdef X11
 	if (output_methods & TO_X) {
 		selected_font = 0;
 		if (draw_shades && !draw_outline) {
@@ -3501,9 +3501,9 @@ static void draw_stuff(void)
 #endif /* X11 */
 	draw_mode = FG;
 	draw_text();
-#ifdef HAVE_LUA
+#if defined(X11) && defined(HAVE_LUA)
 	llua_draw_post_hook();
-#endif /* HAVE_LUA */
+#endif /* X11 & HAVE_LUA */
 #if defined(X11) && defined(HAVE_XDBE)
 	if (output_methods & TO_X) {
 		xdbe_swap_buffers();
