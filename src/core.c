@@ -98,9 +98,14 @@ const char *dev_name(const char *path)
 
 #define DEV_NAME(x) \
   x != NULL && strlen(x) > 5 && strncmp(x, "/dev/", 5) == 0 ? x + 5 : x
-	if ((buflen = readlink(path, buf, 254)) == -1)
+	// realpath is POSIX.1-2008 and does what we need here.
+	char *actualpath = realpath(path, 0);
+	if (actualpath == 0) {
 		return DEV_NAME(path);
-	buf[buflen] = '\0';
+	}
+	strncpy(buf, actualpath, 254);
+	free(actualpath);
+	buf[254] = '\0';
 	return DEV_NAME(buf);
 #undef DEV_NAME
 }
