@@ -127,10 +127,10 @@ static int get_line(int sock, char line[], short linesize)
 	if (!sz) return 0;
 
 	// get the line
-	while (sz > linesize) {
+	while (sz >= linesize) {
 		// this is just a hack (being lazy), this should not happen anyway
 		net_recv(sock, line, linesize);
-		sz -= sizeof(line);
+		sz -= linesize;
 	}
 	if (!net_recv(sock, line, sz)) return 0;
 	line[sz] = 0;
