@@ -20,15 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Conky 2.x requires GCC 4.4 or newer
-try_compile(GCC4_WORKS
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_MODULE_PATH}/gcc44test.cc
-)
-if(NOT GCC4_WORKS)
-	message(FATAL_ERROR "Conky 2.x requires GCC 4.4.0 or newer")
-endif(NOT GCC4_WORKS)
-
 # Set system vars
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(OS_LINUX true)
