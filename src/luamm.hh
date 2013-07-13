@@ -37,8 +37,6 @@ namespace lua {
 	typedef std::function<int(state *)> cpp_function;
 
 	enum {
-		ENVIRONINDEX = LUA_ENVIRONINDEX,
-		GLOBALSINDEX = LUA_GLOBALSINDEX,
 		REGISTRYINDEX = LUA_REGISTRYINDEX
 	};
 
@@ -273,8 +271,8 @@ namespace lua {
 		bool equal(int index1, int index2);
 		int gc(int what, int data);
 		void getfield(int index, const char *k);
+		void getglobal(const char *name);
 		void gettable(int index);
-		void getglobal(const char *name) { getfield(GLOBALSINDEX, name); }
 		bool lessthan(int index1, int index2);
 		void loadfile(const char *filename) throw(lua::syntax_error, lua::file_error, std::bad_alloc);
 		void loadstring(const char *s) throw(lua::syntax_error, std::bad_alloc);
@@ -282,7 +280,7 @@ namespace lua {
 		// register is a reserved word :/
 		void register_fn(const char *name, const cpp_function &f) { pushfunction(f); setglobal(name); }
 		void setfield(int index, const char *k);
-		void setglobal(const char *name) { setfield(GLOBALSINDEX, name); }
+		void setglobal(const char *name);
 		void settable(int index);
 		// lua_tostring uses NULL to indicate conversion error, since there is no such thing as a
 		// NULL std::string, we throw an exception. Returned value may contain '\0'

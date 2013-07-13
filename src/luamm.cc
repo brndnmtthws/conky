@@ -25,6 +25,20 @@
 
 namespace lua {
 	namespace {
+
+#if LUA_VERSION_NUM >= 502
+		// These two functions were deprecated in 5.2. Limited backwards compatibility is
+		// provided by macros. We want them as real functions, because we take their addresses.
+
+#undef lua_equal
+		int lua_equal(lua_State *L, int index1, int index2)
+		{ return lua_compare(L, index1, index2, LUA_OPEQ); }
+
+#undef lua_lessthan
+		int lua_lessthan(lua_State *L, int index1, int index2)
+		{ return lua_compare(L, index1, index2, LUA_OPLT); }
+#endif
+
 		// keys for storing values in lua registry
 		const char cpp_exception_metatable[] = "lua::cpp_exception_metatable";
 		const char cpp_function_metatable [] = "lua::cpp_function_metatable";
@@ -336,6 +350,18 @@ namespace lua {
 		gettable(index);
 	}
 
+	void state::getglobal(const char *name)
+	{
+#if LUA_VERSION_NUM >= 502
+		checkstack(1);
+		pushinteger(LUA_RIDX_GLOBALS);
+		gettable(REGISTRYINDEX);
+		getfield(-1, name);
+#else
+		getfield(LUA_GLOBALSINDEX, name);
+#endif
+	}
+
 	void state::gettable(int index)
 	{
 		checkstack(2);
@@ -444,6 +470,21 @@ namespace lua {
 		pushstring(k);
 		insert(-2);
 		settable(index);
+	}
+
+	void state::setglobal(const char *name)
+	{
+#if LUA_VERSION_NUM >= 502
+		stack_sentry s(*this, -1);
+		checkstack(1);
+		pushinteger(LUA_RIDX_GLOBALS);
+		gettable(REGISTRYINDEX);
+		insert(-2);
+		setfield(-2, name);
+		pop();
+#else
+		setfield(LUA_GLOBALSINDEX, name);
+#endif
 	}
 
 	void state::settable(int index)
