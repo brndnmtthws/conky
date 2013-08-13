@@ -249,7 +249,7 @@ int compare(const char *expr)
 			dbl_a = arg_to_double(expr_dup);
 			dbl_b = arg_to_double(expr_dup + idx + 1);
 			free(expr_dup);
-			return lcompare(dbl_a, mtype, dbl_b);
+			return dcompare(dbl_a, mtype, dbl_b);
 		case ARG_BAD: /* make_gcc_happy() */;
 	}
 	/* not reached */
