@@ -8,7 +8,6 @@ any kind of information on your desktop.
 - Stable version: [**1.9.0**][stable-src]
 - Development version: [**master**][devel-src]
 
-
 ### Features
 
 Conky can display more than 300 built-in objects, including support for:
@@ -29,7 +28,6 @@ Conky can display more than 300 built-in objects, including support for:
 Conky can display information either as text, or using simple progress
 bars and graph widgets, with different fonts and colours.
 
-
 ### Screenshots
 
 [![screenshot](https://github.com/brndnmtthws/conky/wiki/configs/brenden/screenshot-thumb.png)](https://raw.github.com/wiki/brndnmtthws/conky/configs/brenden/screenshot.png)
@@ -37,12 +35,11 @@ bars and graph widgets, with different fonts and colours.
 [![screenshot](https://github.com/brndnmtthws/conky/wiki/configs/jc/screenshot-thumb.png)](https://raw.github.com/wiki/brndnmtthws/conky/configs/jc/screenshot.png)
 
 See the [User Configs](https://github.com/brndnmtthws/conky/wiki/User-Configs) section of the wiki for more
-screenshots and their associated conky config files.
-
+screenshots and their associated Conky config files.
 
 ### Documentation
 
-The [Github Wiki](https://github.com/brndnmtthws/conky/wiki) serves as a central hub for all of
+The [GitHub Wiki](https://github.com/brndnmtthws/conky/wiki) serves as a central hub for all of
 Conky's documentation. Quick links:
 
 * [Install](https://github.com/brndnmtthws/conky/wiki/Installation)
@@ -50,12 +47,10 @@ Conky's documentation. Quick links:
 * [User Configs](https://github.com/brndnmtthws/conky/wiki/User-Configs)
 * [Frequently Asked Questions](https://github.com/brndnmtthws/conky/wiki/FAQ)
 
-
 ### License
 
 Conky is licensed under the terms of the [GPLv3](LICENSE.GPL) and
 [BSD](LICENSE.BSD) licenses.
-
 
 [MPD]: http://musicpd.org/
 [XMMS2]: http://wiki.xmms2.xmms.se/index.php/Main_Page
@@ -69,4 +64,3 @@ Conky is licensed under the terms of the [GPLv3](LICENSE.GPL) and
 [ircconky]: irc://irc.freenode.net/conky
 [Imlib2]: http://docs.enlightenment.org/api/imlib2/html/
 [cairo]: http://www.cairographics.org/
-
