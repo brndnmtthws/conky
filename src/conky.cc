@@ -2017,7 +2017,7 @@ static void update_text(void)
 }
 
 #ifdef HAVE_SYS_INOTIFY_H
-int inotify_fd;
+int inotify_fd = -1;
 #endif
 
 static void main_loop(void)
@@ -2484,7 +2484,7 @@ static void main_loop(void)
 		} else if (disable_auto_reload.get(*state) && inotify_fd != -1) {
 			inotify_rm_watch(inotify_fd, inotify_config_wd);
 			close(inotify_fd);
-			inotify_fd = inotify_config_wd = 0;
+			inotify_fd = inotify_config_wd = -1;
 		}
 #endif /* HAVE_SYS_INOTIFY_H */
 
@@ -2497,7 +2497,7 @@ static void main_loop(void)
 	if (inotify_fd != -1) {
 		inotify_rm_watch(inotify_fd, inotify_config_wd);
 		close(inotify_fd);
-		inotify_fd = inotify_config_wd = 0;
+		inotify_fd = inotify_config_wd = -1;
 	}
 #endif /* HAVE_SYS_INOTIFY_H */
 }
