@@ -105,7 +105,7 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 
 void parse_diskio_arg(struct text_object *obj, const char *arg)
 {
-	obj->data.opaque = prepare_diskio_stat(arg);
+	obj->data.opaque = prepare_diskio_stat(dev_name(arg));
 }
 
 /* dir indicates the direction:
