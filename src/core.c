@@ -553,6 +553,7 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	 * avoid having almost-same code four times, we have this special
 	 * handler. */
 	if (strncmp(s, "top", 3) == EQUAL) {
+		get_cpu_count();
 		add_update_callback(&update_meminfo);
 		add_update_callback(&update_top);
 		if (!parse_top_args(s, arg, obj)) {
