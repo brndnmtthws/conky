@@ -1,0 +1,13 @@
+language: cpp
+compiler:
+  - gcc
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq cmake libxdamage-dev libx11-dev libxft-dev libxdamage-dev libxext-dev libglib2.0-dev libxml2-dev libcurl4-gnutls-dev liblua5.1-0-dev libimlib2-dev libtolua++5.1-dev libcairo2-dev gawk
+before_script:
+  - mkdir build && cd build && cmake ../
+script:
+  - make
+branches:
+  only:
+    - master
