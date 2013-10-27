@@ -188,8 +188,8 @@ char *scan_graph(struct text_object *obj, const char *args, int defscale)
 			return strndup(buf, text_buffer_size);
 		}
 		buf[0] = '\0';
-		g->height = 25;
-		g->width = 0;
+		g->height = default_graph_height;
+		g->width = default_graph_width;
 		if (sscanf(args, "%x %x %u", &g->first_colour, &g->last_colour, &g->scale) == 3) {
 			return NULL;
 		}
