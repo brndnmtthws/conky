@@ -133,7 +133,39 @@ typedef enum _cairo_operator {
 
 	CAIRO_OPERATOR_XOR,
 	CAIRO_OPERATOR_ADD,
-	CAIRO_OPERATOR_SATURATE
+	CAIRO_OPERATOR_SATURATE,
+
+	/* blending modes */
+	/* source and destination layers are multiplied. This causes the result to be at least as dark as the darker inputs. (Since 1.10) */
+	CAIRO_OPERATOR_MULTIPLY,
+	/* source and destination are complemented and multiplied. This causes the result to be at least as light as the lighter inputs. (Since 1.10) */
+	CAIRO_OPERATOR_SCREEN,
+	/* multiplies or screens, depending on the lightness of the destination color. (Since 1.10) */
+	CAIRO_OPERATOR_OVERLAY,
+	/* replaces the destination with the source if it is darker, otherwise keeps the source. (Since 1.10) */
+	CAIRO_OPERATOR_DARKEN,
+	/* replaces the destination with the source if it is lighter, otherwise keeps the source. (Since 1.10) */
+	CAIRO_OPERATOR_LIGHTEN,
+	/* brightens the destination color to reflect the source color. (Since 1.10) */
+	CAIRO_OPERATOR_COLOR_DODGE,
+	/* darkens the destination color to reflect the source color. (Since 1.10) */
+	CAIRO_OPERATOR_COLOR_BURN,
+	/* Multiplies or screens, dependent on source color. (Since 1.10) */
+	CAIRO_OPERATOR_HARD_LIGHT,
+	/* Darkens or lightens, dependent on source color. (Since 1.10) */
+	CAIRO_OPERATOR_SOFT_LIGHT,
+	/* Takes the difference of the source and destination color. (Since 1.10) */
+	CAIRO_OPERATOR_DIFFERENCE,
+	/* Produces an effect similar to difference, but with lower contrast. (Since 1.10) */
+	CAIRO_OPERATOR_EXCLUSION,
+	/* Creates a color with the hue of the source and the saturation and luminosity of the target. (Since 1.10) */
+	CAIRO_OPERATOR_HSL_HUE,
+	/* Creates a color with the saturation of the source and the hue and luminosity of the target. Painting with this mode onto a gray area produces no change. (Since 1.10) */
+	CAIRO_OPERATOR_HSL_SATURATION,
+	/* Creates a color with the hue and saturation of the source and the luminosity of the target. This preserves the gray levels of the target and is useful for coloring monochrome images or tinting color images. (Since 1.10) */
+	CAIRO_OPERATOR_HSL_COLOR,
+	/* Creates a color with the luminosity of the source and the hue and saturation of the target. This produces an inverse effect to CAIRO_OPERATOR_HSL_COLOR. (Since 1.10) */
+	CAIRO_OPERATOR_HSL_LUMINOSITY
 } cairo_operator_t;
 
 typedef enum _cairo_filter {
