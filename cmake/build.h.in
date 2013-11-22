@@ -1,9 +1,0 @@
-#ifndef __BUILD_H
-#define __BUILD_H
-
-/* Conky build info */
-
-#define BUILD_DATE "@BUILD_DATE@"
-#define BUILD_ARCH "@BUILD_ARCH@"
-
-#endif /* __BUILD_H */
