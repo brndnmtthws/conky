@@ -261,6 +261,50 @@ void get_ibm_acpi_brightness(struct text_object *obj, char *p, int p_max_size)
 	snprintf(p, p_max_size, "%d", brightness);
 }
 
+/* get ThinkLight status on IBM/Lenovo laptops running the ibm acpi.
+ * /proc/acpi/ibm/light looks like this (2 lines):
+status:         off
+commands:       on, off
+ * http://ibm-acpi.sourceforge.net/README reports that it's also possible to
+ * get "unknown" for a few models that do not make the status available.
+ * Lluis Esquerda (eskerda@gmail.com) */
+
+void get_ibm_acpi_thinklight(struct text_object *obj, char *p, int p_max_size)
+{
+	FILE *fp;
+	char thinklight[8];
+	char filename[128];
+
+	(void)obj;
+
+	if (!p || p_max_size <= 0) {
+		return;
+	}
+
+	snprintf(filename, 127, "%s/light", IBM_ACPI_DIR);
+
+	fp = fopen(filename, "r");
+	if (fp != NULL) {
+		while (!feof(fp)) {
+			char line[256];
+
+			if (fgets(line, 255, fp) == NULL) {
+				break;
+			}
+			if (sscanf(line, "status: %s", thinklight)) {
+				break;
+			}
+		}
+	} else {
+		CRIT_ERR(NULL, NULL, "can't open '%s': %s\nYou are not using the IBM "
+			"ACPI. Remove ibm* from your " PACKAGE_NAME" config file.",
+			filename, strerror(errno));
+	}
+
+	fclose(fp);
+	snprintf(p, p_max_size, "%s", thinklight);
+}
+
 void parse_ibm_temps_arg(struct text_object *obj, const char *arg)
 {
 	if (!isdigit(arg[0]) || strlen(arg) > 1 || atoi(&arg[0]) >= 8) {

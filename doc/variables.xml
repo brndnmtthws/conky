@@ -1679,6 +1679,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>ibm_thinklight</option>
+            </command>
+        </term>
+        <listitem>If running the IBM ACPI, displays the status of your
+            ThinkLight™. Value is either 'on', 'off' or 'unknown'.
+            <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>ibm_volume</option>
             </command>
         </term>
