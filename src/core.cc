@@ -509,6 +509,8 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		obj->callbacks.print = &get_ibm_acpi_volume;
 	END OBJ(ibm_brightness, 0)
 		obj->callbacks.print = &get_ibm_acpi_brightness;
+	END OBJ(ibm_thinklight, 0)
+		obj->callbacks.print = &get_ibm_acpi_thinklight;
 #endif
 	/* information from sony_laptop kernel module
 	 * /sys/devices/platform/sony-laptop */
