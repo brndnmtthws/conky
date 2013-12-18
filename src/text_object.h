@@ -50,6 +50,8 @@ enum text_object_type {
 #endif /* !__OpenBSD__ */
 	OBJ_buffers,
 	OBJ_cached,
+	OBJ_cat,
+	OBJ_catp,
 	OBJ_color,
 	OBJ_color0,
 	OBJ_color1,
