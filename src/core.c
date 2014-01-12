@@ -483,6 +483,10 @@ struct text_object *construct_text_object(const char *s, const char *arg, long
 	END OBJ(image, 0)
 		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 #endif /* IMLIB2 */
+	END OBJ(cat, 0)
+		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
+	END OBJ(catp, 0)
+		obj->data.s = strndup(arg ? arg : "", text_buffer_size);
 	END OBJ(exec, 0)
 		scan_exec_arg(obj, arg);
 	END OBJ(execp, 0)
@@ -1524,6 +1528,8 @@ void free_text_objects(struct text_object *root, int internal)
 			case OBJ_font:
 			case OBJ_image:
 			case OBJ_eval:
+			case OBJ_cat:
+			case OBJ_catp:
 				free(data.s);
 				break;
 			case OBJ_exec:

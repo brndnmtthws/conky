@@ -49,7 +49,7 @@ $(config_output): ${config_input}
 endif # BUILD_CONFIG_OUTPUT
 
 # source files always needed for compiling
-mandatory_sources = colours.c colours.h combine.c combine.h common.c common.h \
+mandatory_sources = cat.c colours.c colours.h combine.c combine.h common.c common.h \
 		conky.c conky.h core.c core.h diskio.c diskio.h entropy.c entropy.h \
 		exec.c exec.h fs.c fs.h logging.h mail.c mail.h mixer.c mixer.h net_stat.c \
 		net_stat.h template.c template.h timed_thread.c timed_thread.h mboxscan.c \

@@ -82,6 +82,7 @@
 #include "combine.h"
 #include "diskio.h"
 #include "entropy.h"
+#include "cat.h"
 #include "exec.h"
 #include "i8k.h"
 #include "proc.h"
@@ -1107,6 +1108,12 @@ void generate_text_internal(char *p, int p_max_size,
 #endif /* IMLIB2 */
 			OBJ(eval) {
 				evaluate(obj->data.s, p, p_max_size);
+			}
+			OBJ(cat) {
+				print_cat(obj, p, p_max_size);
+			}
+			OBJ(catp) {
+				print_catp(obj, p, p_max_size);
 			}
 			OBJ(exec) {
 				print_exec(obj, p, p_max_size);
