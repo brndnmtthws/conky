@@ -702,7 +702,7 @@ int update_diskio(void)
 		free(dev_select);
 	}
 
-	free(statinfo_cur.dinfo);
+	free(statinfo_cur.dinfo->mem_ptr);
 	return 0;
 }
 
