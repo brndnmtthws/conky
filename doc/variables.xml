@@ -411,7 +411,8 @@
         </term>
         <listitem>Battery percentage remaining of ACPI battery in a
         bar. ACPI battery number can be given as argument (default
-        is BAT0). 
+        is BAT0, use all to get the mean percentage remaining for
+        all batteries).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -423,7 +424,8 @@
         </term>
         <listitem>Battery percentage remaining for ACPI battery.
         ACPI battery number can be given as argument (default is
-        BAT0). 
+        BAT0, use all to get the mean percentage remaining for
+        all batteries).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
