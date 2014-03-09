@@ -2092,35 +2092,16 @@ void get_battery_short_status(char *buffer, unsigned int n, const char *bat)
 	}
 }
 
-int get_battery_perct(const char *bat)
+int _get_battery_perct(const char *bat)
 {
 	static int rep = 0;
-	int idx, n = 0, total_capacity = 0;
-	char battery[8];
+	int idx;
 	char acpi_path[128];
 	char sysfs_path[128];
 	int remaining_capacity = -1;
 
 	snprintf(acpi_path, 127, ACPI_BATTERY_BASE_PATH "/%s/state", bat);
 	snprintf(sysfs_path, 127, SYSFS_BATTERY_BASE_PATH "/%s/uevent", bat);
-
-	init_batteries();
-
-	if (!strncmp(bat, "all", strlen(bat))) {
-		for (idx = 0; idx < MAX_BATTERY_COUNT; idx++) {
-			snprintf(battery, sizeof(battery) - 1, "BAT%d", idx);
-			remaining_capacity = get_battery_perct(battery);
-			if (remaining_capacity > 0) {
-				total_capacity += remaining_capacity;
-				n++;
-			}
-		}
-
-		if (n == 0)
-			return 0;
-		else
-			return total_capacity / n;
-	}
 
 	idx = get_battery_idx(bat);
 
@@ -2210,6 +2191,35 @@ int get_battery_perct(const char *bat)
 		(int) (((float) remaining_capacity / acpi_design_capacity[idx]) * 100);
 	if (last_battery_perct[idx] > 100) last_battery_perct[idx] = 100;
 	return last_battery_perct[idx];
+}
+
+int get_battery_perct(const char *bat)
+{
+	int idx, n = 0, total_capacity = 0, remaining_capacity;;
+#define BATTERY_LEN 8
+	char battery[BATTERY_LEN];
+
+	init_batteries();
+
+	/* Check if user asked for the mean percentage of all batteries. */
+	if (!strcmp(bat, "all")) {
+		for (idx = 0; idx < MAX_BATTERY_COUNT; idx++) {
+			snprintf(battery, BATTERY_LEN - 1, "BAT%d", idx);
+#undef BATTERY_LEN
+			remaining_capacity = _get_battery_perct(battery);
+			if (remaining_capacity > 0) {
+				total_capacity += remaining_capacity;
+				n++;
+			}
+		}
+
+		if (n == 0)
+			return 0;
+		else
+			return total_capacity / n;
+	} else {
+		return _get_battery_perct(bat);
+	}
 }
 
 double get_battery_perct_bar(struct text_object *obj)
