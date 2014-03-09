@@ -2106,7 +2106,7 @@ int get_battery_perct(const char *bat)
 
 	init_batteries();
 
-	if (!strcmp(bat, "all")) {
+	if (!strncmp(bat, "all", strlen(bat))) {
 		for (idx = 0; idx < MAX_BATTERY_COUNT; idx++) {
 			snprintf(battery, sizeof(battery) - 1, "BAT%d", idx);
 			remaining_capacity = get_battery_perct(battery);
