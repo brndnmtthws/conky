@@ -330,6 +330,15 @@ void new_gauge(struct text_object *obj, char *p, int p_max_size, int usage)
 }
 
 #ifdef X11
+int find_font(char *name)
+{
+	int i;
+	for (i = 0; i < font_count; i++)
+		if (strncmp(name, fonts[i].name, DEFAULT_TEXT_BUFFER_SIZE) == EQUAL)
+			return i;
+	return 0;
+}
+
 void new_font(char *buf, char *args)
 {
 	if ((output_methods & TO_X) == 0)
@@ -337,6 +346,12 @@ void new_font(char *buf, char *args)
 
 	if (args) {
 		struct special_t *s = new_special(buf, FONT);
+		int index;
+		if (index = find_font(args))
+		{
+			s->font_added = index;
+			return;
+		}
 
 		if (s->font_added > font_count || !s->font_added || (strncmp(args, fonts[s->font_added].name, DEFAULT_TEXT_BUFFER_SIZE) != EQUAL) ) {
 			int tmp = selected_font;
