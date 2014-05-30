@@ -153,7 +153,7 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size)
 	for(j = 0; j < (unsigned) sd->start; j++) {
 		if(buf[j] == SPECIAL_CHAR) frontcolorchanges++;
 	}
-	pwithcolors=(char*)malloc(strlen(p) + 1 + colorchanges - visibcolorchanges);
+	pwithcolors=(char*)malloc(strlen(p) + 4 + colorchanges - visibcolorchanges);
 	for(j = 0; j < frontcolorchanges; j++) {
 		pwithcolors[j] = SPECIAL_CHAR;
 	}
