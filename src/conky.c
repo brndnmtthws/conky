@@ -2585,9 +2585,7 @@ static int get_string_width_special(char *s, int special_index)
 			p++;
 		}
 	}
-	if (strlen(final) > 1) {
-		width += calc_text_width(final);
-	}
+	width += calc_text_width(final);
 	free(final);
 	return width;
 }
