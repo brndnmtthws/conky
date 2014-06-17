@@ -357,6 +357,19 @@
     <varlistentry>
         <term>
             <command>
+                <option>imlib_image_alpha</option>
+            </command>
+        </term>
+        <listitem>
+            Boolean, use transparency for images? Enabled by
+            default. If own_window_visual_argb is enabled, images
+            appear transparent; disable this option to make images
+            appear opaque.<para/>
+        </listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>lua_draw_hook_post</option>
             </command>
             <option>function_name [function arguments]</option>

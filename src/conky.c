@@ -5196,6 +5196,9 @@ char load_config_file(const char *f)
 				cimlib_set_cache_flush_interval(atoi(value));
 			}
 		}
+		CONF("imlib_image_alpha") {
+			cimlib_set_image_alpha(string_to_bool(value));
+		}
 #endif /* IMLIB2 */
 #endif /* X11 */
 		CONF("update_interval_on_battery") {
