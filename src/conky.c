@@ -2592,9 +2592,7 @@ static int get_string_width_special(char *s, int special_index)
 			p++;
 		}
 	}
-	if (strlen(final) > 1) {
-		width += calc_text_width(final);
-	}
+	width += calc_text_width(final);
 	free(final);
 	return width;
 }
@@ -5414,6 +5412,11 @@ char load_config_file(const char *f)
 	if (!output_methods) {
 		CRIT_ERR(0, 0, "no output_methods have been selected; exiting");
 	}
+#if defined(X11)
+	if (output_methods & TO_X) {
+		load_config_file_x11(f);
+	}
+#endif
 #if defined(NCURSES)
 #if defined(X11)
 	if ((output_methods & TO_X) && (output_methods & TO_NCURSES)) {
