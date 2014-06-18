@@ -6,7 +6,6 @@
 any kind of information on your desktop.
 
 - Stable version: Just grab it from the GitHub!
-- Development version: [**master**][devel-src]
 
 ### Features
 
