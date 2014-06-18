@@ -75,6 +75,17 @@
     <varlistentry>
         <term>
             <command>
+                <option>console_graph_ticks</option>
+            </command>
+        </term>
+        <listitem>A comma-separated list of strings to use as the bars of a graph output
+        to console/shell. The first list item is used for the minimum bar height and the
+        last item is used for the maximum. Example: " ,_,▁,▂,▃,▄,▅,▆,▇,█".
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>cpu_avg_samples</option>
             </command>
         </term>

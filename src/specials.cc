@@ -40,6 +40,7 @@
 #include <sys/param.h>
 #endif /* HAVE_SYS_PARAM_H */
 #include <algorithm>
+#include <sstream>
 
 struct special_t *specials = NULL;
 
@@ -62,6 +63,8 @@ namespace {
 	conky::range_config_setting<int> default_gauge_height("default_gauge_height", 0,
 										std::numeric_limits<int>::max(), 25, false);
 #endif /* BUILD_X11 */
+
+	conky::simple_config_setting<std::string> console_graph_ticks("console_graph_ticks", " ,_,=,#", false);
 }
 
 /* special data types flags */
@@ -410,13 +413,39 @@ static void graph_append(struct special_t *graph, double f, char showaslog)
 	}
 }
 
+void new_graph_in_shell(struct special_t *s, char *buf, int buf_max_size)
+{
+	// Split config string on comma to avoid the hassle of dealing with the
+	// idiosyncrasies of multi-byte unicode on different platforms.
+	// TODO: Parse config string once and cache result.
+	const std::string ticks = console_graph_ticks.get(*state);
+	std::stringstream ss(ticks);
+	std::string tickitem;
+	std::vector<std::string> tickitems;
+	while (std::getline(ss, tickitem, ',')) {
+		tickitems.push_back(tickitem);
+	}
+
+	char *p = buf;
+	char *buf_max = buf + (sizeof(char) * buf_max_size);
+	double scale = (tickitems.size() - 1) / s->scale;
+	for (int i = s->graph_allocated -1; i >= 0; i--) {
+		const unsigned int v = round_to_int(s->graph[i] * scale);
+		const char *tick = tickitems[v].c_str();
+		size_t itemlen = tickitems[v].size();
+		for (unsigned int j = 0; j < itemlen; j++) {
+			*p++ = tick[j];
+			if (p == buf_max) goto graph_buf_end;
+		}
+	}
+graph_buf_end:
+	*p = '\0';
+}
+
 void new_graph(struct text_object *obj, char *buf, int buf_max_size, double val)
 {
 	struct special_t *s = 0;
 	struct graph *g = (struct graph *)obj->special_data;
-
-	if (not out_to_x.get(*state))
-		return;
 
 	if (!g || !buf_max_size)
 		return;
@@ -463,6 +492,9 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size, double val)
 	}
 #endif
 	graph_append(s, val, g->flags & SF_SHOWLOG);
+
+	if (not out_to_x.get(*state))
+		new_graph_in_shell(s, buf, buf_max_size);
 }
 
 void new_hr(struct text_object *obj, char *p, int p_max_size)
