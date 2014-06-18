@@ -56,6 +56,7 @@ static int cache_size_set = 0;
 /* flush the image cache ever X seconds */
 static int cimlib_cache_flush_interval = 0;
 static int cimlib_cache_flush_last = 0;
+static int cimlib_image_alpha = 1;
 
 #define DEFAULT_IMLIB2_CACHE_SIZE 4096 * 1024 /* default cache size for loaded images */
 
@@ -72,6 +73,11 @@ void cimlib_set_cache_flush_interval(long interval)
 	} else {
 		NORM_ERR("Imlib2: flush interval should be >= 0");
 	}
+}
+
+void cimlib_set_image_alpha(int alpha)
+{
+	cimlib_image_alpha = alpha;
 }
 
 void cimlib_cleanup(void)
@@ -191,7 +197,7 @@ static void cimlib_draw_image(struct image_list_s *cur, int *clip_x, int
 
 	imlib_context_set_image(image);
 	/* turn alpha channel on */
-	imlib_image_set_has_alpha(1);
+	imlib_image_set_has_alpha(cimlib_image_alpha);
 	w = imlib_image_get_width();
 	h = imlib_image_get_height();
 	if (!cur->wh_set) {
@@ -250,7 +256,7 @@ void cimlib_render(int x, int y, int width, int height)
 	/* we can blend stuff now */
 	imlib_context_set_blend(1);
 	/* turn alpha channel on */
-	imlib_image_set_has_alpha(1);
+	imlib_image_set_has_alpha(cimlib_image_alpha);
 
 	cimlib_draw_all(&clip_x, &clip_y, &clip_x2, &clip_y2);
 
