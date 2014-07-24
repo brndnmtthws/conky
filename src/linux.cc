@@ -171,6 +171,8 @@ int update_meminfo(void)
 	/* unsigned int a; */
 	char buf[256];
 
+	unsigned long long shmem = 0, sreclaimable = 0;
+
 	info.mem = info.memwithbuffers = info.memmax = info.memdirty = info.swap = info.swapfree = info.swapmax =
         info.bufmem = info.buffers = info.cached = info.memfree = info.memeasyfree = 0;
 
@@ -197,6 +199,10 @@ int update_meminfo(void)
 			sscanf(buf, "%*s %llu", &info.cached);
 		} else if (strncmp(buf, "Dirty:", 6) == 0) {
 			sscanf(buf, "%*s %llu", &info.memdirty);
+		} else if (strncmp(buf, "Shmem:", 6) == 0) {
+			sscanf(buf, "%*s %llu", &shmem);
+		} else if (strncmp(buf, "SReclaimable:", 13) == 0) {
+			sscanf(buf, "%*s %llu", &sreclaimable);
 		}
 	}
 
@@ -204,7 +210,16 @@ int update_meminfo(void)
 	info.memeasyfree = info.memfree;
 	info.swap = info.swapmax - info.swapfree;
 
-	info.bufmem = info.cached + info.buffers;
+	/* Reclaimable memory: does not include shared memory, which is part of cached but unreclaimable.
+	   Includes the reclaimable part of the Slab cache though.
+	   Note: when shared memory is swapped out, shmem decreases and swapfree decreases - we want this.
+	*/
+	info.bufmem = (info.cached - shmem) + info.buffers + sreclaimable;
+
+	/* Now (info.mem - info.bufmem) is the *really used* (aka unreclaimable) memory.
+	   When this value reaches the size of the physical RAM, and swap is full or non-present, OOM happens.
+	   Therefore this is the value users want to monitor, regarding their RAM.
+	*/
 
 	fclose(meminfo_fp);
 	return 0;
