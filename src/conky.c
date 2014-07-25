@@ -1107,7 +1107,10 @@ void generate_text_internal(char *p, int p_max_size,
 			}
 #endif /* IMLIB2 */
 			OBJ(eval) {
-				evaluate(obj->data.s, p, p_max_size);
+				char p2[p_max_size];
+				evaluate(obj->data.s, p2, p_max_size);
+				// Parse the output again
+				evaluate(p2, p, p_max_size);
 			}
 			OBJ(cat) {
 				print_cat(obj, p, p_max_size);
