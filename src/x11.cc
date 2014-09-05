@@ -47,6 +47,10 @@
 #ifdef BUILD_XFT
 #include <X11/Xft/Xft.h>
 #endif
+#ifdef BUILD_XSHAPE
+#include <X11/extensions/shape.h>
+#include <X11/extensions/shapeconst.h>
+#endif
 
 #ifdef BUILD_ARGB
 bool have_argb_visual;
@@ -714,6 +718,24 @@ static void init_window(lua::state &l __attribute__((unused)), bool own)
 			/* allow decorated windows to be given input focus by WM */
 			wmHint.input =
 				TEST_HINT(hints, HINT_UNDECORATED) ? False : True;
+#ifdef BUILD_XSHAPE
+			if (!wmHint.input) {
+				int event_base, error_base;
+				if (XShapeQueryExtension(display, &event_base, &error_base)) {
+					int major_version = 0, minor_version = 0;
+					XShapeQueryVersion(display, &major_version, &minor_version);
+					if ((major_version > 1) || ((major_version == 1) && (minor_version >=1))) {
+						Region empty_region = XCreateRegion();
+						XShapeCombineRegion(display, window.window, ShapeInput, 0, 0, empty_region, ShapeSet);
+						XDestroyRegion(empty_region);
+					} else {
+						NORM_ERR("Input shapes are not supported");
+					}
+				} else {
+					NORM_ERR("No shape extension found");
+				}
+			}
+#endif
 			if (own_window_type.get(l) == TYPE_DOCK || own_window_type.get(l) == TYPE_PANEL) {
 				wmHint.initial_state = WithdrawnState;
 			} else {
