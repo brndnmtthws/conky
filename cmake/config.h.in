@@ -44,6 +44,8 @@
 
 #cmakedefine BUILD_XFT 1
 
+#cmakedefine BUILD_XSHAPE 1
+
 #cmakedefine BUILD_ARGB 1
 
 #cmakedefine BUILD_XDBE 1
