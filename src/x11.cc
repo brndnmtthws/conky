@@ -618,7 +618,7 @@ static void init_window(lua::state &l __attribute__((unused)), bool own)
 
 #ifdef OWN_WINDOW
 	if (own) {
-		int depth = 0, flags = CWOverrideRedirect;
+		int depth = 0, flags = CWOverrideRedirect | CWBackingStore;
 		Visual *visual = NULL;
 		
 		if (!find_desktop_window(&window.root, &window.desktop)) {
