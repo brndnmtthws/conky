@@ -7,7 +7,7 @@
 	<xsl:template match="/">
 		<html>
 			<head>
-				<title>~/.conkyrc settings</title>
+				<title>~/.config/conky/conky.conf settings</title>
 			</head>
 			<body bgcolor="#FFFFFF">
 				<xsl:apply-templates />

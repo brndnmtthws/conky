@@ -94,11 +94,12 @@ Once you have an idea of how Conky looks, you can now move on to configuring it!
 <body>
 
 <p>
-By default, Conky will look for a configuration file in the users home directory located at <path>~/.conkyrc</path>  This file contains all the configuration options, and the static text, colors and other variables which control what data is shown to the user.  Conky also provides a great sample configuration, located at <path>/usr/share/doc/conky-version/Conkyrc.sample.gz</path>  Make sure to replace "version" with the specific version of Conky you have installed.
+By default, Conky will look for a configuration file in the users home directory located at <path>~/.config/conky/conky.conf</path>  This file contains all the configuration options, and the static text, colors and other variables which control what data is shown to the user.  Conky also provides a great sample configuration, located at <path>/usr/share/doc/conky-version/Conkyrc.sample.gz</path>  Make sure to replace "version" with the specific version of Conky you have installed.
 </p>
 
 <pre caption="Copying the sample configuration to your home directory">
-$ <i>zcat /usr/share/conky-1.6.0/conkyrc.sample.gz >> ~/.conkyrc</i>
+$ <i>mkdir -p ~/.config/conky</i>
+$ <i>zcat /usr/share/conky-1.6.0/conkyrc.sample.gz >> ~/.config/conky/conky.conf</i>
 </pre>
 
 <note>

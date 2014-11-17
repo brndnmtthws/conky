@@ -56,7 +56,7 @@
             </command>
             <option>FILE</option>
         </term>
-        <listitem>Config file to load instead of $HOME/.conkyrc 
+        <listitem>Config file to load instead of $HOME/.config/conky/conky.conf 
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
