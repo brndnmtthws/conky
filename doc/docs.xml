@@ -144,7 +144,7 @@
 			the more you try to make Conky do, the more resources it is
 			going to consume.
 		</para>
-		<para>An easy way to force Conky to reload your ~/.conkyrc:
+		<para>An easy way to force Conky to reload your ~/.config/conky/conky.conf:
 			"killall -SIGUSR1 conky". Saves you the trouble of having
 			to kill and then restart. You can now also do the same with
 			SIGHUP.
@@ -159,12 +159,12 @@
 	</refsect1>
 	<refsect1>
 		<title>Configuration Settings</title>
-		<para>Default configuration file location is $HOME/.conkyrc or
+		<para>Default configuration file location is $HOME/.config/conky/conky.conf or
 			${sysconfdir}/conky/conky.conf. On most systems, sysconfdir is
 			/etc, and you can find the sample config file there
 			(/etc/conky/conky.conf).
 		</para>
-		<para>You might want to copy it to $HOME/.conkyrc and then
+		<para>You might want to copy it to $HOME/.config/conky/conky.conf and then
 			start modifying it. Other configs can be found at
 			http://conky.sf.net/
 		</para>
@@ -241,11 +241,11 @@
 			<varlistentry>
 				<term>
 					<varname>conky</varname>
-					<option>-C &gt; ~/.conkyrc</option>
+					<option>-C &gt; ~/.config/conky/conky.conf</option>
 				</term>
 				<listitem>Do not start Conky, but have it output
-					the builtin default config file to ~/.conkyrc for
-					later customising.</listitem>
+					the builtin default config file to
+					~/.config/conky/conky.conf for later customising.</listitem>
 			</varlistentry>
 		</variablelist>
 	</refsect1>
@@ -263,7 +263,7 @@
 			</varlistentry>
 			<varlistentry>
 				<term>
-					<filename>~/.conkyrc</filename>
+					<filename>~/.config/conky/rc</filename>
 				</term>
 				<listitem>Default personal configuration
 					file.</listitem>

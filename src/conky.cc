@@ -2828,6 +2828,13 @@ void set_current_config() {
 
 	if (current_config.empty()) {
 		/* Try to use personal config file first */
+		std::string buf = to_real_path(XDG_CONFIG_FILE);
+		if (stat(buf.c_str(), &s) == 0)
+			current_config = buf;
+	}
+
+	if (current_config.empty()) {
+		/* Try to use personal config file first */
 		std::string buf = to_real_path(CONFIG_FILE);
 		if (stat(buf.c_str(), &s) == 0)
 			current_config = buf;
