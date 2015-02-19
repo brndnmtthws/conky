@@ -58,19 +58,33 @@ void clear_diskio_stats(void)
 struct diskio_stat *prepare_diskio_stat(const char *s)
 {
 	struct stat sb;
-	std::vector<char> stat_name(text_buffer_size.get(*state)), device_name(text_buffer_size.get(*state));
+	std::vector<char> stat_name(text_buffer_size.get(*state)), device_name(text_buffer_size.get(*state)), device_s(text_buffer_size.get(*state));
 	struct diskio_stat *cur = &stats;
 
-	if (!s)
+	if (!s) {
 		return &stats;
+	} else {
+		strncpy(&(device_s[0]), s, text_buffer_size.get(*state));
+	}
 
-#if defined(__FreeBSD__) || defined(__DragonFly__)
-	if (strncmp(s, "/dev/", 5) == 0) {
-		// supplied a /dev/device arg, so cut off the /dev part
-		strncpy(&(device_name[0]), s + 5, text_buffer_size.get(*state));
-	} else
+	if (strncmp(&(device_s[0]), "label:", 6) == 0) {
+		snprintf(&(device_name[0]), text_buffer_size.get(*state), "/dev/disk/by-label/%s", &(device_s[6]));
+
+		char * rpbuf;
+		rpbuf = realpath(&device_name[0], NULL);
+		strncpy(&device_s[0], rpbuf, text_buffer_size.get(*state));
+		free(rpbuf);
+
+	} else {
+		strncpy(&device_s[0], s, text_buffer_size.get(*state));
+	}
+
+#if defined(__FreeBSD__) || defined(__DragonFly__) || defined(__linux__)
+	if (strncmp(&device_s[0], "/dev/", 5) == 0) {
+		device_s.erase(device_s.begin(), device_s.begin()+5);
+	}
 #endif
-	strncpy(&(device_name[0]), s, text_buffer_size.get(*state));
+	strncpy(&(device_name[0]), &device_s[0], text_buffer_size.get(*state));
 
 	snprintf(&(stat_name[0]), text_buffer_size.get(*state), "/dev/%s", &(device_name[0]));
 
@@ -89,7 +103,7 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 	/* no existing found, make a new one */
 	cur->next = new diskio_stat;
 	cur = cur->next;
-	cur->dev = strndup(&(device_name[0]), text_buffer_size.get(*state));
+	cur->dev = strndup(&(device_s[0]), text_buffer_size.get(*state));
 	cur->last = UINT_MAX;
 	cur->last_read = UINT_MAX;
 	cur->last_write = UINT_MAX;
