@@ -881,8 +881,9 @@
             <option>(device)</option>
         </term>
         <listitem>Displays current disk IO. Device is optional, and
-        takes the form of sda for /dev/sda. Individual partitions
-        are allowed. 
+       takes the form of sda for /dev/sda. A block device label can
+       be specified with label:foo. Individual partitions are also
+       allowed.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
