@@ -214,6 +214,7 @@ if(BUILD_X11)
 		if(BUILD_XFT)
 			find_path(freetype_INCLUDE_PATH config/ftconfig.h ${INCLUDE_SEARCH_PATH}
 				/usr/include/freetype2
+				/usr/include/freetype2/freetype
 				/usr/local/include/freetype2
 				/usr/pkg/include/freetype2)
 			if(freetype_INCLUDE_PATH)
