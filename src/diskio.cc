@@ -72,7 +72,9 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 
 		char * rpbuf;
 		rpbuf = realpath(&device_name[0], NULL);
-		strncpy(&device_s[0], rpbuf, text_buffer_size.get(*state));
+		if (rpbuf) {
+			strncpy(&device_s[0], rpbuf, text_buffer_size.get(*state));
+		}
 		free(rpbuf);
 
 	} else {
