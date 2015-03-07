@@ -212,7 +212,7 @@ if(BUILD_X11)
 
 		# check for Xft
 		if(BUILD_XFT)
-			find_path(freetype_INCLUDE_PATH freetype/config/ftconfig.h ${INCLUDE_SEARCH_PATH}
+			find_path(freetype_INCLUDE_PATH config/ftconfig.h ${INCLUDE_SEARCH_PATH}
 				/usr/include/freetype2
 				/usr/local/include/freetype2
 				/usr/pkg/include/freetype2)
@@ -220,7 +220,16 @@ if(BUILD_X11)
 				set(freetype_FOUND true)
 				set(conky_includes ${conky_includes} ${freetype_INCLUDE_PATH})
 			else(freetype_INCLUDE_PATH)
-				message(FATAL_ERROR "Unable to find freetype library")
+				find_path(freetype_INCLUDE_PATH freetype/config/ftconfig.h ${INCLUDE_SEARCH_PATH}
+					/usr/include/freetype2
+					/usr/local/include/freetype2
+					/usr/pkg/include/freetype2)
+				if(freetype_INCLUDE_PATH)
+					set(freetype_FOUND true)
+					set(conky_includes ${conky_includes} ${freetype_INCLUDE_PATH})
+				else(freetype_INCLUDE_PATH)
+					message(FATAL_ERROR "Unable to find freetype library")
+				endif(freetype_INCLUDE_PATH)
 			endif(freetype_INCLUDE_PATH)
 			if(NOT X11_Xft_FOUND)
 				message(FATAL_ERROR "Unable to find Xft library")
