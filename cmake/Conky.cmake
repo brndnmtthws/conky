@@ -20,6 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+set(RELEASE true)
+
 # Set system vars
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(OS_LINUX true)
@@ -112,7 +114,7 @@ else(RELEASE)
 	set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}_pre${COMMIT_COUNT}")
 endif(RELEASE)
 
-set(COPYRIGHT "Copyright Brenden Matthews, et al, 2005-2010")
+set(COPYRIGHT "Copyright Brenden Matthews, et al, 2005-2015")
 
 macro(AC_SEARCH_LIBS FUNCTION_NAME INCLUDES TARGET_VAR)
 	if("${TARGET_VAR}" MATCHES "^${TARGET_VAR}$")

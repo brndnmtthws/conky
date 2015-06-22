@@ -59,7 +59,7 @@ set(HTML_FILES doc/config_settings.html doc/docs.html doc/lua.html doc/variables
 
 set(MAN_PATH "share/man/man1")
 set(MAN_FILES doc/conky.1)
- 
+
 install(FILES ${DOC_FILES}
 	DESTINATION ${DOC_PATH})
 
