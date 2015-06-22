@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-set(RELEASE true)
+#set(RELEASE true)
 
 # Set system vars
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
@@ -69,7 +69,7 @@ endif(OS_DRAGONFLY)
 # Do version stuff
 set(VERSION_MAJOR "1")
 set(VERSION_MINOR "10")
-set(VERSION_PATCH "0")
+set(VERSION_PATCH "1")
 
 find_program(APP_GAWK gawk)
 if(NOT APP_GAWK)
