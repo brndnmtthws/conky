@@ -2101,10 +2101,11 @@ void get_battery_short_status(char *buffer, unsigned int n, const char *bat)
 	} else if (0 == strncmp("empty", buffer, 5)) {
 		buffer[0] = 'E';
 		memmove(buffer + 1, buffer + 5, n - 5);
-	} else if (0 != strncmp("AC", buffer, 2)) {
+	} else if (0 == strncmp("unknown", buffer, 7)) {
 		buffer[0] = 'U';
-		memmove(buffer + 1, buffer + 2, n - 2);
+		memmove(buffer + 1, buffer + 7, n - 7);
 	}
+	// Otherwise, don't shorten.
 }
 
 int _get_battery_perct(const char *bat)
