@@ -2000,7 +2000,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 						(long) ((remaining_capacity * 3600) / present_rate));
 			} else if (present_rate == 0) {	/* Thanks to Nexox for this one */
 				snprintf(last_battery_str[idx],
-						sizeof(last_battery_str[idx]) - 1, "full");
+						sizeof(last_battery_str[idx]) - 1, "charged");
 				snprintf(last_battery_time_str[idx],
 						sizeof(last_battery_time_str[idx]) - 1, "unknown");
 			} else {
@@ -2023,7 +2023,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 			/* unknown, probably full / AC */
 		} else {
 			if (strncmp(charging_state, "Full", 64) == 0) {
-				strncpy(last_battery_str[idx], "full", 64);
+				strncpy(last_battery_str[idx], "charged", 64);
 			} else if (acpi_last_full[idx] != 0
 					&& remaining_capacity != acpi_last_full[idx]) {
 				snprintf(last_battery_str[idx], 64, "unknown %d%%",
