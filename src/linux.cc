@@ -1898,7 +1898,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 				snprintf(last_battery_str[idx], 64, "unknown %d%%",
 					(int) (((float)remaining_capacity / acpi_last_full[idx]) * 100));
 			else
-				strncpy(last_battery_str[idx], "AC", 64);
+				strncpy(last_battery_str[idx], "not present", 64);
 		}
 	} else if (acpi_bat_fp[idx] != NULL) {
 		/* ACPI */
@@ -2029,7 +2029,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 				snprintf(last_battery_str[idx], 64, "unknown %d%%",
 						(int) ((remaining_capacity * 100) / acpi_last_full[idx]));
 			} else {
-				strncpy(last_battery_str[idx], "AC", 64);
+				strncpy(last_battery_str[idx], "not present", 64);
 			}
 		}
 		fclose(acpi_bat_fp[idx]);
@@ -2050,7 +2050,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 
 			if (life == -1) {
 				/* could check now that there is ac */
-				snprintf(last_battery_str[idx], 64, "AC");
+				snprintf(last_battery_str[idx], 64, "not present");
 
 			/* could check that status == 3 here? */
 			} else if (ac && life != 100) {
