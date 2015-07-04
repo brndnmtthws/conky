@@ -165,7 +165,14 @@ namespace lua {
 		}
 
 		template<void (*misc)(lua_State *, int), int nresults>
-		int safe_misc_trampoline(lua_State *l)
+		int safe_misc_trampoline_set(lua_State *l)
+		{
+			misc(l, 1);
+			return nresults;
+		}
+
+		template<int (*misc)(lua_State *, int), int nresults>
+		int safe_misc_trampoline_get(lua_State *l)
 		{
 			misc(l, 1);
 			return nresults;
@@ -326,7 +333,7 @@ namespace lua {
 		if( rawequal(index1, index2) )
 			return true;
 
-		return safe_compare(&safe_compare_trampoline<lua_equal>, index1, index2);
+		return safe_compare(&safe_compare_trampoline<&lua_equal>, index1, index2);
 	}
 
 	int state::gc(int what, int data)
@@ -367,7 +374,7 @@ namespace lua {
 		checkstack(2);
 		pushvalue(index);
 		insert(-2);
-		lua_pushcfunction(cobj.get(), (&safe_misc_trampoline<&lua_gettable, 1>));
+		lua_pushcfunction(cobj.get(), (&safe_misc_trampoline_get<&lua_gettable, 1>));
 		insert(-3);
 		call(2, 1, 0);
 	}
@@ -492,7 +499,7 @@ namespace lua {
 		checkstack(2);
 		pushvalue(index);
 		insert(-3);
-		lua_pushcfunction(cobj.get(), (&safe_misc_trampoline<&lua_settable, 0>));
+		lua_pushcfunction(cobj.get(), (&safe_misc_trampoline_set<&lua_settable, 0>));
 		insert(-4);
 		call(3, 0, 0);
 	}
