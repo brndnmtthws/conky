@@ -643,8 +643,8 @@ int update_net_stats(void)
 			}
 			lastv6->next = NULL;
 		}
+		fclose(file);
 	}
-	fclose(file);
 #endif /* BUILD_IPV6 */
 
 	first = 0;
