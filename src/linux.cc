@@ -1898,7 +1898,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 				snprintf(last_battery_str[idx], 64, "unknown %d%%",
 					(int) (((float)remaining_capacity / acpi_last_full[idx]) * 100));
 			else
-				strncpy(last_battery_str[idx], "AC", 64);
+				strncpy(last_battery_str[idx], "not present", 64);
 		}
 	} else if (acpi_bat_fp[idx] != NULL) {
 		/* ACPI */
@@ -2000,7 +2000,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 						(long) ((remaining_capacity * 3600) / present_rate));
 			} else if (present_rate == 0) {	/* Thanks to Nexox for this one */
 				snprintf(last_battery_str[idx],
-						sizeof(last_battery_str[idx]) - 1, "full");
+						sizeof(last_battery_str[idx]) - 1, "charged");
 				snprintf(last_battery_time_str[idx],
 						sizeof(last_battery_time_str[idx]) - 1, "unknown");
 			} else {
@@ -2023,13 +2023,13 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 			/* unknown, probably full / AC */
 		} else {
 			if (strncmp(charging_state, "Full", 64) == 0) {
-				strncpy(last_battery_str[idx], "full", 64);
+				strncpy(last_battery_str[idx], "charged", 64);
 			} else if (acpi_last_full[idx] != 0
 					&& remaining_capacity != acpi_last_full[idx]) {
 				snprintf(last_battery_str[idx], 64, "unknown %d%%",
 						(int) ((remaining_capacity * 100) / acpi_last_full[idx]));
 			} else {
-				strncpy(last_battery_str[idx], "AC", 64);
+				strncpy(last_battery_str[idx], "not present", 64);
 			}
 		}
 		fclose(acpi_bat_fp[idx]);
@@ -2050,7 +2050,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 
 			if (life == -1) {
 				/* could check now that there is ac */
-				snprintf(last_battery_str[idx], 64, "AC");
+				snprintf(last_battery_str[idx], 64, "not present");
 
 			/* could check that status == 3 here? */
 			} else if (ac && life != 100) {
@@ -2101,10 +2101,11 @@ void get_battery_short_status(char *buffer, unsigned int n, const char *bat)
 	} else if (0 == strncmp("empty", buffer, 5)) {
 		buffer[0] = 'E';
 		memmove(buffer + 1, buffer + 5, n - 5);
-	} else if (0 != strncmp("AC", buffer, 2)) {
+	} else if (0 == strncmp("unknown", buffer, 7)) {
 		buffer[0] = 'U';
-		memmove(buffer + 1, buffer + 2, n - 2);
+		memmove(buffer + 1, buffer + 7, n - 7);
 	}
+	// Otherwise, don't shorten.
 }
 
 int _get_battery_perct(const char *bat)
