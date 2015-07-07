@@ -33,13 +33,13 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 # -std options for all build types
-set(CMAKE_C_FLAGS "-std=c99" CACHE STRING "Flags used by the C compiler during all build types." FORCE)
-set(CMAKE_CXX_FLAGS "-std=c++0x" CACHE STRING "Flags used by the C++ compiler during all build types." FORCE)
+set(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}" CACHE STRING "Flags used by the C compiler during all build types." FORCE)
+set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}" CACHE STRING "Flags used by the C++ compiler during all build types." FORCE)
 
 if(MAINTAINER_MODE)
 	# some extra debug flags when in 'maintainer mode'
-	set(CMAKE_C_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -pedantic -Werror" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
-	set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -pedantic -Werror -Wno-format" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
+	set(CMAKE_C_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -Wdeclaration-after-statement -Wundef -Wendif-labels -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Winline -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls -pedantic -Werror ${CMAKE_C_FLAGS_DEBUG}" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
+	set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -Wall -W -Wextra -Wunused -pedantic -Werror -Wno-format ${CMAKE_CXX_FLAGS_DEBUG}" CACHE STRING "Flags used by the compiler during debug builds." FORCE)
 endif(MAINTAINER_MODE)
 
 

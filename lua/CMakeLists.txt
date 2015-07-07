@@ -23,10 +23,10 @@
 include(ToLua)
 
 add_definitions(-DTOLUA_RELEASE)
-set(CMAKE_C_FLAGS "-O3")
-set(CMAKE_C_FLAGS_DEBUG "-ggdb")
-set(CMAKE_CXX_FLAGS "-O3")
-set(CMAKE_CXX_FLAGS_DEBUG "-ggdb")
+set(CMAKE_C_FLAGS "-O3 ${CMAKE_C_FLAGS}")
+set(CMAKE_C_FLAGS_DEBUG "-ggdb ${CMAKE_C_FLAGS_DEBUG}")
+set(CMAKE_CXX_FLAGS "-O3 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS_DEBUG "-ggdb ${CMAKE_CXX_FLAGS_DEBUG}")
 
 if(BUILD_LUA_CAIRO)
 	include_directories(${luacairo_includes} ${CMAKE_CURRENT_SOURCE_DIR})
