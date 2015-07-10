@@ -571,23 +571,27 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		__var = 0; \
 }
 	END OBJ(cpu, &update_cpu_usage)
+		get_cpu_count();
 		SCAN_CPU(arg, obj->data.i);
 		obj->callbacks.percentage = &cpu_percentage;
 		DBGP2("Adding $cpu for CPU %d", obj->data.i);
 #ifdef BUILD_X11
 	END OBJ(cpugauge, &update_cpu_usage)
+		get_cpu_count();
 		SCAN_CPU(arg, obj->data.i);
 		scan_gauge(obj, arg, 1);
 		obj->callbacks.gaugeval = &cpu_barval;
 		DBGP2("Adding $cpugauge for CPU %d", obj->data.i);
 #endif
 	END OBJ(cpubar, &update_cpu_usage)
+		get_cpu_count();
 		SCAN_CPU(arg, obj->data.i);
 		scan_bar(obj, arg, 1);
 		obj->callbacks.barval = &cpu_barval;
 		DBGP2("Adding $cpubar for CPU %d", obj->data.i);
 #ifdef BUILD_X11
 	END OBJ(cpugraph, &update_cpu_usage)
+		get_cpu_count();
 		char *buf = 0;
 		SCAN_CPU(arg, obj->data.i);
 		buf = scan_graph(obj, arg, 1);
