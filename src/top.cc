@@ -32,6 +32,7 @@
 #include "prioqueue.h"
 #include "top.h"
 #include "logging.h"
+#include <string>
 
 /* hash table size - always a power of 2 */
 #define HTABSIZE 256
@@ -480,6 +481,7 @@ struct top_data {
 
 static conky::range_config_setting<unsigned int> top_name_width("top_name_width", 0,
 										std::numeric_limits<unsigned int>::max(), 15, true);
+static conky::simple_config_setting<bool> top_name_verbose("top_name_verbose", false, false);
 
 static void print_top_name(struct text_object *obj, char *p, int p_max_size)
 {
@@ -489,8 +491,13 @@ static void print_top_name(struct text_object *obj, char *p, int p_max_size)
 	if (!td || !td->list || !td->list[td->num])
 		return;
 
+	std::string top_name = td->list[td->num]->name;
+	if (!top_name_verbose.get(*state)) {
+		top_name = top_name.substr(0, top_name.find_first_of(' '));
+	}
+
 	width = MIN(p_max_size, (int)top_name_width.get(*state) + 1);
-	snprintf(p, width + 1, "%-*s", width, td->list[td->num]->name);
+	snprintf(p, width + 1, "%-*s", width, top_name.c_str());
 }
 
 static void print_top_mem(struct text_object *obj, char *p, int p_max_size)

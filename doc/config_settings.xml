@@ -962,6 +962,17 @@
     <varlistentry>
         <term>
             <command>
+                <option>top_name_verbose</option>
+            </command>
+        </term>
+        <listitem>If true, top name shows the full command line of each
+        process, including arguments (whenever possible). Otherwise,
+        only the basename is displayed. Default value is false.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>top_name_width</option>
             </command>
         </term>
