@@ -357,6 +357,7 @@ namespace lua {
 		pushinteger(LUA_RIDX_GLOBALS);
 		gettable(REGISTRYINDEX);
 		getfield(-1, name);
+		replace(-2);
 #else
 		getfield(LUA_GLOBALSINDEX, name);
 #endif
