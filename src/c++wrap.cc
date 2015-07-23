@@ -33,6 +33,9 @@
 #endif
 #include <string.h>
 
+#if __cplusplus <= 199711L
+#define thread_local __thread
+#endif
 
 #if !defined(HAVE_PIPE2) || !defined(HAVE_O_CLOEXEC)
 #include <fcntl.h>
