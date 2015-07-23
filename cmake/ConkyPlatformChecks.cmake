@@ -105,7 +105,7 @@ endif(BUILD_IRC)
 if(BUILD_IPV6)
 	find_file(IF_INET6 if_inet6 PATHS /proc/net)
 	if(NOT IF_INET6)
-		message(FATAL_ERROR "/proc/net/if_inet6 unavailable")
+		message(WARNING "/proc/net/if_inet6 unavailable")
 	endif(NOT IF_INET6)
 endif(BUILD_IPV6)
 
