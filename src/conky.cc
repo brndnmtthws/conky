@@ -270,12 +270,21 @@ static void print_version(void)
 #ifdef BUILD_RSS
                 << _("  * RSS\n")
 #endif /* BUILD_RSS */
+#ifdef BUILD_ICAL
+                << _("  * ICal\n")
+#endif /* BUILD_ICAL */
+#ifdef BUILD_ICONV
+                << _("  * iconv\n")
+#endif /* BUILD_ICONV */
+#ifdef BUILD_MYSQL
+                << _("  * MySQL\n")
+#endif /* BUILD_MYSQL */
 #ifdef BUILD_WEATHER_METAR
                 << _("  * Weather (METAR)\n")
+#endif /* BUILD_WEATHER_METAR */                
 #ifdef BUILD_WEATHER_XOAP
                 << _("  * Weather (XOAP)\n")
 #endif /* BUILD_WEATHER_XOAP */
-#endif /* BUILD_WEATHER_METAR */
 #ifdef BUILD_WLAN
                 << _("  * wireless\n")
 #endif /* BUILD_WLAN */
@@ -315,7 +324,7 @@ static void print_version(void)
 #ifdef DEBUG
                 << _("  * Debugging extensions\n")
 #endif
-#if defined BUILD_LUA_CAIRO || defined BUILD_LUA_IMLIB2
+#if defined BUILD_LUA_CAIRO || defined BUILD_LUA_IMLIB2 || BUILD_LUA_RSVG
                 << _("\n Lua bindings:\n")
 #endif
 #ifdef BUILD_LUA_CAIRO
@@ -324,11 +333,17 @@ static void print_version(void)
 #ifdef BUILD_LUA_IMLIB2
                 << _("  * Imlib2\n")
 #endif /* BUILD_LUA_IMLIB2 */
+#ifdef BUILD_LUA_RSVG
+                << _("  * RSVG\n")
+#endif /* BUILD_LUA_RSVG */
 #ifdef BUILD_X11
                 << _(" X11:\n")
 # ifdef BUILD_XDAMAGE
                 << _("  * Xdamage extension\n")
 # endif /* BUILD_XDAMAGE */
+# ifdef BUILD_XSHAPE
+                << _("  * Xshape extension (click through)\n")
+# endif /* BUILD_XSHAPE */
 # ifdef BUILD_XDBE
                 << _("  * XDBE (double buffer extension)\n")
 # endif /* BUILD_XDBE */
