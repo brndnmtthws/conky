@@ -917,7 +917,7 @@
             <member>'\n' -&gt; newline</member>
             <member>'\\' -&gt; backslash</member>
             <member>'\ ' -&gt; space</member>
-            <member>'\N' -&gt; template argument N</member>
+            <member>'\N' -&gt; template argument N (starting from 1)</member>
         </simplelist>
         <para /></listitem>
     </varlistentry>
