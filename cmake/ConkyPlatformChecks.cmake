@@ -105,7 +105,7 @@ endif(BUILD_IRC)
 if(BUILD_IPV6)
 	find_file(IF_INET6 if_inet6 PATHS /proc/net)
 	if(NOT IF_INET6)
-		message(FATAL_ERROR "/proc/net/if_inet6 unavailable")
+		message(WARNING "/proc/net/if_inet6 unavailable")
 	endif(NOT IF_INET6)
 endif(BUILD_IPV6)
 
@@ -422,6 +422,6 @@ if(DEBUG)
 	execute_process(COMMAND
 		${APP_GIT} --git-dir=${CMAKE_CURRENT_SOURCE_DIR}/.git log
 		--since=${VERSION_MAJOR}-${VERSION_MINOR}-01 --pretty=oneline COMMAND
-		${APP_WC} -l COMMAND ${APP_GAWK} "{print $1}" RESULT_VARIABLE RETVAL
+		${APP_WC} -l COMMAND ${APP_AWK} "{print $1}" RESULT_VARIABLE RETVAL
 		OUTPUT_VARIABLE COMMIT_COUNT OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif(DEBUG)

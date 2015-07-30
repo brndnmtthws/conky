@@ -71,10 +71,10 @@ set(VERSION_MAJOR "1")
 set(VERSION_MINOR "10")
 set(VERSION_PATCH "1")
 
-find_program(APP_GAWK gawk)
-if(NOT APP_GAWK)
-	message(FATAL_ERROR "Unable to find program 'gawk'")
-endif(NOT APP_GAWK)
+find_program(APP_AWK awk)
+if(NOT APP_AWK)
+	message(FATAL_ERROR "Unable to find program 'awk'")
+endif(NOT APP_AWK)
 
 find_program(APP_WC wc)
 if(NOT APP_WC)
@@ -99,7 +99,7 @@ if(NOT RELEASE)
 	mark_as_advanced(APP_GIT)
 endif(NOT RELEASE)
 
-mark_as_advanced(APP_GAWK APP_WC APP_DATE APP_UNAME)
+mark_as_advanced(APP_AWK APP_WC APP_DATE APP_UNAME)
 
 #BUILD_DATE=$(LANG=en_US LC_ALL=en_US LOCALE=en_US date)
 #BUILD_ARCH="$(uname -sr) ($(uname -m))"

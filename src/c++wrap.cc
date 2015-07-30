@@ -26,7 +26,16 @@
 #include "c++wrap.hh"
 
 #include <unistd.h>
+
+/* force use of  POSIX strerror_r instead of non-portable GNU specific */
+#ifdef _GNU_SOURCE
+#undef _GNU_SOURCE
+#endif
 #include <string.h>
+
+#if __cplusplus <= 199711L
+#define thread_local __thread
+#endif
 
 #if !defined(HAVE_PIPE2) || !defined(HAVE_O_CLOEXEC)
 #include <fcntl.h>
@@ -62,8 +71,10 @@ namespace {
 
 std::string strerror_r(int errnum)
 {
-	char buf[100];
-	return strerror_r(errnum, buf, sizeof buf);
+	static thread_local char buf[100];
+	if (strerror_r(errnum, buf, sizeof buf) != 0)
+		snprintf(buf, sizeof buf, "Unknown error %i", errnum);
+	return buf;
 }
 
 std::pair<int, int> pipe2(int flags)

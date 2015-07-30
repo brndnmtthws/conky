@@ -42,7 +42,6 @@
 #include <errno.h>
 #include <time.h>
 #include <sys/ioctl.h>
-#include <sys/sysctl.h>
 #include <net/if.h>
 #include <netinet/in.h>
 #include <pthread.h>
