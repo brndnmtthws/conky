@@ -643,6 +643,11 @@ static void init_window(lua::state &l __attribute__((unused)), bool own)
 
 		int b = border_inner_margin.get(l) + border_width.get(l)
 			+ border_outer_margin.get(l);
+			
+		/* Sanity check to avoid making an invalid 0x0 window */
+		if (b == 0) {
+			b = 1;
+		}
 
 		if (own_window_type.get(l) == TYPE_OVERRIDE) {
 
