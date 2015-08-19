@@ -165,11 +165,28 @@ namespace lua {
 		}
 
 		template<void (*misc)(lua_State *, int), int nresults>
+#if LUA_VERSION_NUM >= 503
+		// Since Lua 5.3.0, the return type of lua_gettable and similar functions
+		// is int, so we need to handle get and set variants separately.
+		int safe_misc_trampoline_set(lua_State *l)
+		{
+			misc(l, 1);
+			return nresults;
+		}
+
+		template<int (*misc)(lua_State *, int), int nresults>
+		int safe_misc_trampoline_get(lua_State *l)
+		{
+			misc(l, 1);
+			return nresults;
+		}
+#else
 		int safe_misc_trampoline(lua_State *l)
 		{
 			misc(l, 1);
 			return nresults;
 		}
+#endif
 
 		int safe_next_trampoline(lua_State *l)
 		{
@@ -326,7 +343,7 @@ namespace lua {
 		if( rawequal(index1, index2) )
 			return true;
 
-		return safe_compare(&safe_compare_trampoline<lua_equal>, index1, index2);
+		return safe_compare(&safe_compare_trampoline<&lua_equal>, index1, index2);
 	}
 
 	int state::gc(int what, int data)
@@ -368,7 +385,11 @@ namespace lua {
 		checkstack(2);
 		pushvalue(index);
 		insert(-2);
+#if LUA_VERSION_NUM >= 503
+		lua_pushcfunction(cobj.get(), (&safe_misc_trampoline_get<&lua_gettable, 1>));
+#else
 		lua_pushcfunction(cobj.get(), (&safe_misc_trampoline<&lua_gettable, 1>));
+#endif
 		insert(-3);
 		call(2, 1, 0);
 	}
@@ -493,7 +514,11 @@ namespace lua {
 		checkstack(2);
 		pushvalue(index);
 		insert(-3);
+#if LUA_VERSION_NUM >= 503
+		lua_pushcfunction(cobj.get(), (&safe_misc_trampoline_set<&lua_settable, 0>));
+#else
 		lua_pushcfunction(cobj.get(), (&safe_misc_trampoline<&lua_settable, 0>));
+#endif
 		insert(-4);
 		call(3, 0, 0);
 	}
