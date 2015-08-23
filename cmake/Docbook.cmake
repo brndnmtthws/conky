@@ -72,7 +72,7 @@ if(MAINTAINER_MODE)
 			COMMAND ${APP_XSLTPROC} http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl ${CMAKE_CURRENT_SOURCE_DIR}/${FIL}.xml > ${CMAKE_CURRENT_SOURCE_DIR}/${FIL}.html
 
 			COMMAND ${APP_DB2X_XSLTPROC} -s man ${CMAKE_CURRENT_SOURCE_DIR}/${FIL}.xml -o ${FIL}.mxml
-			COMMAND ${APP_DB2X_MANXML} ${FIL}.mxml --output-dir ${CMAKE_CURRENT_SOURCE_DIR}
+			COMMAND ${APP_DB2X_MANXML} --encoding=utf-8 ${FIL}.mxml --output-dir ${CMAKE_CURRENT_SOURCE_DIR}
 			COMMAND ${APP_XSLTPROC} http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl ${CMAKE_CURRENT_SOURCE_DIR}/${FIL}.xml > ${CMAKE_CURRENT_SOURCE_DIR}/${FIL}.html
 			COMMAND ${APP_MAN} -P '${APP_LESS} -is' ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.1 > ${CMAKE_SOURCE_DIR}/README
 			COMMAND ${APP_SED} -i "s/[[:cntrl:]]\\[[0-9]*m//g" ${CMAKE_SOURCE_DIR}/README
