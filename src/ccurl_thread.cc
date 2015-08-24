@@ -119,9 +119,7 @@ namespace priv {
 			headers.h = curl_slist_append(headers.h, ("If-None-Match: " + etag).c_str());
 			etag.clear();
 		}
-		if (headers.h) {
-			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers.h);
-		}
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers.h);
 
 		res = curl_easy_perform(curl);
 		if (res == CURLE_OK) {
