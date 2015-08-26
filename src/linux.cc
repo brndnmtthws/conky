@@ -2739,38 +2739,6 @@ static void process_parse_stat(struct process *process)
 	if (state[0] == 'R')
 		++ info.run_procs;
 
-	/* remove any "kdeinit: " */
-	if (procname == strstr(procname, "kdeinit")) {
-		snprintf(filename, sizeof(filename), PROCFS_CMDLINE_TEMPLATE,
-				process->pid);
-
-		ps = open(filename, O_RDONLY);
-		if (ps < 0) {
-			/* The process must have finished in the last few jiffies! */
-			return;
-		}
-
-		endl = read(ps, line, BUFFER_LEN - 1);
-		close(ps);
-		if(endl < 0)
-			return;
-		line[endl] = 0;
-
-		/* account for "kdeinit: " */
-		if ((char *) line == strstr(line, "kdeinit: ")) {
-			r = ((char *) line) + 9;
-		} else {
-			r = (char *) line;
-		}
-
-		q = procname;
-		/* stop at space */
-		while (*r && *r != ' ') {
-			*q++ = *r++;
-		}
-		*q = 0;
-	}
-
 	free_and_zero(process->name);
 	free_and_zero(process->basename);
 	process->name = strndup(procname, text_buffer_size.get(*::state));
