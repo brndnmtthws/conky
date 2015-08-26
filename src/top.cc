@@ -132,7 +132,10 @@ struct process *get_process_by_name(const char *name)
 	struct process *p = first_process;
 
 	while (p) {
-		if (p->name && !strcmp(p->name, name))
+		/* Try matching against the full command line first. If that fails,
+		 * fall back to the basename.
+		 */
+		if ((p->name && !strcmp(p->name, name)) || (p->basename && !strcmp(p->basename, name)))
 			return p;
 		p = p->next;
 	}
