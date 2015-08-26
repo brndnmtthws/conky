@@ -2628,6 +2628,7 @@ static void process_parse_stat(struct process *process)
 {
 	char line[BUFFER_LEN] = { 0 }, filename[BUFFER_LEN], procname[BUFFER_LEN];
 	char cmdline[BUFFER_LEN] = { 0 }, cmdline_filename[BUFFER_LEN], cmdline_procname[BUFFER_LEN];
+	char basename[BUFFER_LEN] = { 0 };
 	char tmpstr[BUFFER_LEN] = { 0 };
 	char state[4];
 	int ps, cmdline_ps;
@@ -2722,6 +2723,7 @@ static void process_parse_stat(struct process *process)
 	rc = MIN((unsigned)(rparen - lparen - 1), sizeof(procname) - 1);
 	strncpy(procname, lparen + 1, rc);
 	procname[rc] = '\0';
+	strncpy(basename, procname, strlen(procname) + 1);
 
 	if (strlen(procname) < strlen(cmdline_procname))
 		strncpy(procname, cmdline_procname, strlen(cmdline_procname) + 1);
@@ -2770,7 +2772,9 @@ static void process_parse_stat(struct process *process)
 	}
 
 	free_and_zero(process->name);
+	free_and_zero(process->basename);
 	process->name = strndup(procname, text_buffer_size.get(*::state));
+	process->basename = strndup(basename, text_buffer_size.get(*::state));
 	process->rss *= getpagesize();
 
 	process->total_cpu_time = process->user_time + process->kernel_time;

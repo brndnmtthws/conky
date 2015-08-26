@@ -87,6 +87,7 @@ struct process {
 
 	pid_t pid;
 	char *name;
+	char *basename;
 	uid_t uid;
 	float amount;
 	// User and kernel times are in hundredths of seconds

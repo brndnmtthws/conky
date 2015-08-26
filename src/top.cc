@@ -117,6 +117,7 @@ void free_all_processes(void)
 	while (pr) {
 		next = pr->next;
 		free_and_zero(pr->name);
+		free_and_zero(pr->basename);
 		free(pr);
 		pr = next;
 	}
@@ -165,6 +166,7 @@ static struct process *new_process(pid_t pid)
 
 	p->pid = pid;
 	p->name = 0;
+	p->basename = 0;
 	p->amount = 0;
 	p->user_time = 0;
 	p->total = 0;
@@ -230,6 +232,7 @@ static void delete_process(struct process *p)
 		first_process = p->next;
 
 	free_and_zero(p->name);
+	free_and_zero(p->basename);
 	/* remove the process from the hash table */
 	unhash_process(p);
 	free(p);
