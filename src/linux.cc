@@ -2675,10 +2675,18 @@ static void process_parse_stat(struct process *process)
 		return;
 	}
 
-	/* Some processes have null-separated arguments, let's fix it */
-	for(int i = 0; i < endl; i++)
-		if (cmdline[i] == 0)
+	/* Some processes have null-separated arguments (see proc(5)); let's fix it */
+	int i = endl;
+	while (i && cmdline[i-1] == 0) {
+		/* Skip past any trailing null characters */
+		--i;
+	}
+	while (i--) {
+		/* Replace null character between arguments with a space */
+		if (cmdline[i] == 0) {
 			cmdline[i] = ' ';
+		}
+	}
 
 	cmdline[endl] = 0;
 
