@@ -2681,30 +2681,25 @@ static void process_parse_stat(struct process *process)
 			cmdline[i] = ' ';
 
 	cmdline[endl] = 0;
+
 	/* We want to transform for example "/usr/bin/python program.py" to "python program.py"
 	 * 1. search for first space
 	 * 2. search for last / before first space
-	 * 3. copy string from it's position */
-
-	char * space_ptr = strchr(cmdline, ' ');
-	if (space_ptr == NULL)
-	{
+	 * 3. copy string from its position
+	 */
+	char *space_ptr = strchr(cmdline, ' ');
+	if (space_ptr == NULL) {
 		strcpy(tmpstr, cmdline);
-	}
-	else
-	{
+	} else {
 		long int space_pos = space_ptr - cmdline;
 		strncpy(tmpstr, cmdline, space_pos);
 		tmpstr[space_pos] = 0;
 	}
 
-	char * slash_ptr = strrchr(tmpstr, '/');
-	if (slash_ptr == NULL )
-	{
+	char *slash_ptr = strrchr(tmpstr, '/');
+	if (slash_ptr == NULL) {
 		strncpy(cmdline_procname, cmdline, BUFFER_LEN);
-	}
-	else
-	{
+	} else {
 		long int slash_pos = slash_ptr - tmpstr;
 		strncpy(cmdline_procname, cmdline + slash_pos + 1, BUFFER_LEN - slash_pos);
 		cmdline_procname[BUFFER_LEN - slash_pos] = 0;
@@ -2713,7 +2708,7 @@ static void process_parse_stat(struct process *process)
 	/* Extract cpu times from data in /proc filesystem */
 	lparen = strchr(line, '(');
 	rparen = strrchr(line, ')');
-	if(!lparen || !rparen || rparen < lparen)
+	if (!lparen || !rparen || rparen < lparen)
 		return; // this should not happen
 
 	rc = MIN((unsigned)(rparen - lparen - 1), sizeof(procname) - 1);
@@ -2721,7 +2716,7 @@ static void process_parse_stat(struct process *process)
 	procname[rc] = '\0';
 
 	if (strlen(procname) < strlen(cmdline_procname))
-		strncpy(procname, cmdline_procname, strlen(cmdline_procname)+1);
+		strncpy(procname, cmdline_procname, strlen(cmdline_procname) + 1);
 
 	rc = sscanf(rparen + 1, "%3s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %lu "
 			"%lu %*s %*s %*s %d %*s %*s %*s %llu %llu", state, &process->user_time,
@@ -2731,7 +2726,7 @@ static void process_parse_stat(struct process *process)
 		return;
 	}
 
-	if(state[0]=='R')
+	if (state[0] == 'R')
 		++ info.run_procs;
 
 	/* remove any "kdeinit: " */
