@@ -514,9 +514,9 @@ std::unique_ptr<mail_param_ex> parse_mail_args(mail_type type, const char *arg)
 
 	std::unique_ptr<mail_param_ex> mail;
 	char *tmp;
-	char host[128];
-	char user[128];
-	char pass[128];
+	char host[129];
+	char user[129];
+	char pass[129];
 
 	if (sscanf(arg, "%128s %128s %128s", host, user, pass)
 			!= 3) {
