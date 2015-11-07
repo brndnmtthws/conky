@@ -1930,7 +1930,7 @@
         changing the WxH will scale the image. If you specify the
         no-cache flag (-n), the image will not be cached.
         Alternately, you can specify the -f int switch to specify a
-        cache flust interval for a particular image. Example:
+        cache flush interval for a particular image. Example:
         ${image /home/brenden/cheeseburger.jpg -p 20,20 -s 200x200}
         will render 'cheeseburger.jpg' at (20,20) scaled to 200x200
         pixels. Conky does not make any attempt to adjust the
