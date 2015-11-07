@@ -84,6 +84,8 @@ static char *backslash_escape(const char *src, char **templates, unsigned int te
 				if ((sscanf(p + 1, "%u%n", &tmpl_num, &digits) <= 0) ||
 				    (tmpl_num > template_count))
 					break;
+				if (tmpl_num == 0)
+					CRIT_ERR(NULL, NULL, "invalid template argument \\0; arguments must start at \\1");
 				dup_len += strlen(templates[tmpl_num - 1]);
 				src_dup = (char*) realloc(src_dup, dup_len * sizeof(char));
 				sprintf(src_dup + dup_idx, "%s", templates[tmpl_num - 1]);
