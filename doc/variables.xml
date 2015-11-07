@@ -1849,9 +1849,21 @@
             </command>
             <option>(process)</option>
         </term>
-        <listitem>if PROCESS is running, display everything
-        $if_running and the matching $endif. This uses the
-        ``pidof'' command, so the -x switch is also supported. 
+        <listitem>If PROCESS is running, display everything
+        between $if_running and the corresponding $else or $endif.
+        Note that PROCESS may be either a full command line with
+        arguments (without the directory prefix), or simply the name
+        of an executable. For example, either of the following will
+        be true if there is a running process with the command line
+        <command>/usr/bin/conky -u 5</command>:
+        <simplelist>
+            <member>
+                <command>${if_running conky -u 5}</command> or
+                <command>${if_running conky}</command>
+            </member>
+        </simplelist>
+        It is important not to include trailing spaces. For example,
+        <command>${if_running conky }</command> will be false.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
