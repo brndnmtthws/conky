@@ -144,7 +144,7 @@ int check_mount(struct text_object *obj)
 		return 0;
 
 	if ((mtab = fopen("/etc/mtab", "r"))) {
-		char buf1[256], buf2[128];
+		char buf1[256], buf2[129];
 
 		while (fgets(buf1, 256, mtab)) {
 			sscanf(buf1, "%*s %128s", buf2);
@@ -593,7 +593,7 @@ int update_net_stats(void)
 
 #ifdef BUILD_IPV6
 	FILE *file;
-	char v6addr[32];
+	char v6addr[33];
 	char devname[21];
 	unsigned int netmask, scope;
 	struct net_stat *ns;
@@ -1905,7 +1905,7 @@ void get_battery_stuff(char *buffer, unsigned int n, const char *bat, int item)
 		int present_rate = -1;
 		int remaining_capacity = -1;
 		char charging_state[64];
-		char present[4];
+		char present[5];
 
 		/* read last full capacity if it's zero */
 		if (acpi_last_full[idx] == 0) {
