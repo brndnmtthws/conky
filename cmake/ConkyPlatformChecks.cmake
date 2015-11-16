@@ -22,7 +22,7 @@
 
 include(FindPkgConfig)
 include(CheckFunctionExists)
-include(CheckIncludeFile)
+include(CheckIncludeFiles)
 include(CheckSymbolExists)
 
 # Check for some headers
@@ -119,7 +119,7 @@ if(BUILD_HTTP)
 endif(BUILD_HTTP)
 
 if(BUILD_NCURSES)
-	check_include_file(ncurses.h NCURSES_H)
+	check_include_files(ncurses.h NCURSES_H)
 	find_library(NCURSES_LIB NAMES ncurses)
 	if(NOT NCURSES_H OR NOT NCURSES_LIB)
 		message(FATAL_ERROR "Unable to find ncurses library")
@@ -141,7 +141,7 @@ if(BUILD_MYSQL)
 endif(BUILD_MYSQL)
 
 if(BUILD_WLAN)
-	check_include_file(iwlib.h IWLIB_H -D_GNU_SOURCE)
+	check_include_files(iwlib.h IWLIB_H -D_GNU_SOURCE)
 	if(NOT IWLIB_H)
 		message(FATAL_ERROR "Unable to find iwlib.h")
 	endif(NOT IWLIB_H)
@@ -167,7 +167,7 @@ endif(BUILD_PORT_MONITORS)
 
 # Check for iconv
 if(BUILD_ICONV)
-	check_include_file(iconv.h HAVE_ICONV_H)
+	check_include_files(iconv.h HAVE_ICONV_H)
 	find_library(ICONV_LIBRARY NAMES iconv)
 	if(NOT ICONV_LIBRARY)
 		# maybe iconv() is provided by libc
