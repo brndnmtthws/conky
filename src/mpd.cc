@@ -298,6 +298,7 @@ if (b) a=b; else a="";
 			   conn = 0;
 			   } */
 		} while (0);
+		std::lock_guard<std::mutex> lock(Base::result_mutex);
 		result = mpd_info; // don't forget to save results!
 	}
 
