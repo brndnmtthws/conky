@@ -207,7 +207,16 @@
         </term>
         <listitem>Specify an X display to connect to. 
         <para /></listitem>
-    </varlistentry>
+	</varlistentry>
+	<varlistentry>
+        <term>
+            <command>
+                <option>xinerama_head</option>
+            </command>
+        </term>
+        <listitem>Specify a Xinerama head. 
+        <para /></listitem>
+	</varlistentry>
     <varlistentry>
         <term>
             <command>

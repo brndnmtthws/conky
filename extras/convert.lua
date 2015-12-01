@@ -46,7 +46,8 @@ local num_setting = {
     maximum_width = true, mpd_port = true, music_player_interval = true, net_avg_samples = true,
     own_window_argb_value = true, pad_percents = true, stippled_borders = true,
     text_buffer_size = true, top_name_width = true, total_run_times = true,
-    update_interval = true, update_interval_on_battery = true, xftalpha = true
+    update_interval = true, update_interval_on_battery = true, xftalpha = true, 
+    xinerama_head = true, 
 };
 
 local split_setting = {
