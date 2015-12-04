@@ -51,6 +51,9 @@
 #include <X11/extensions/shape.h>
 #include <X11/extensions/shapeconst.h>
 #endif
+#ifdef BUILD_XINERAMA
+#include <X11/extensions/Xinerama.h>
+#endif
 
 #ifdef BUILD_ARGB
 bool have_argb_visual;
@@ -310,6 +313,7 @@ namespace {
 
 conky::simple_config_setting<alignment>   text_alignment("alignment", BOTTOM_LEFT, false);
 conky::simple_config_setting<std::string> display_name("display", std::string(), false);
+static conky::simple_config_setting<int> head_index("xinerama_head", 0, true);
 priv::out_to_x_setting                    out_to_x;
 
 priv::colour_setting					  color[10] = {
@@ -449,6 +453,40 @@ static void update_workarea(void)
 	workarea[1] = 0;
 	workarea[2] = display_width;
 	workarea[3] = display_height;
+
+#ifdef BUILD_XINERAMA
+	/* if xinerama is being used, adjust workarea to the head's area */
+	int useless1, useless2;
+	if (!XineramaQueryExtension(display, &useless1, &useless2)) {
+		return; /* doesn't even have xinerama */
+	}
+
+	if (!XineramaIsActive(display)) {
+		return; /* has xinerama but isn't using it */
+	}
+
+	int heads = 0;
+	XineramaScreenInfo *si = XineramaQueryScreens(display, &heads);
+	if (!si) {
+		NORM_ERR("warning: XineramaQueryScreen returned NULL, ignoring head settings");
+		return; /* queryscreens failed? */
+	}
+
+	int i = head_index.get(*state);
+	if (i < 0 || i >= heads) {
+		NORM_ERR("warning: invalid head index, ignoring head settings");
+		return;
+	}
+
+	XineramaScreenInfo *ps = &si[i];
+	workarea[0] = ps->x_org;
+	workarea[1] = ps->y_org;
+	workarea[2] = workarea[0] + ps->width;
+	workarea[3] = workarea[1] + ps->height;
+
+	DBGP("Fixed xinerama area to: %d %d %d %d", 
+		workarea[0], workarea[1], workarea[2], workarea[3]);
+#endif
 }
 
 /* Find root window and desktop window.

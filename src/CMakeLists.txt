@@ -127,6 +127,11 @@ endif(BUILD_PORT_MONITORS)
 if(BUILD_X11)
 	set(x11 x11.cc fonts.cc)
 	set(optional_sources ${optional_sources} ${x11})
+
+	if(BUILD_XINERAMA)
+		find_package(Xinerama REQUIRED)
+		set(conky_libs ${conky_libs} ${Xinerama_LIBRARIES})
+	endif(BUILD_XINERAMA)
 endif(BUILD_X11)
 
 if(BUILD_HDDTEMP)

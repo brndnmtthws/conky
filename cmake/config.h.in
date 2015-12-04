@@ -43,6 +43,8 @@
 
 #cmakedefine BUILD_XDAMAGE 1
 
+#cmakedefine BUILD_XINERAMA 1
+
 #cmakedefine BUILD_XFT 1
 
 #cmakedefine BUILD_XSHAPE 1
