@@ -281,7 +281,7 @@ static void print_version(void)
 #endif /* BUILD_MYSQL */
 #ifdef BUILD_WEATHER_METAR
                 << _("  * Weather (METAR)\n")
-#endif /* BUILD_WEATHER_METAR */                
+#endif /* BUILD_WEATHER_METAR */
 #ifdef BUILD_WEATHER_XOAP
                 << _("  * Weather (XOAP)\n")
 #endif /* BUILD_WEATHER_XOAP */
@@ -2007,7 +2007,7 @@ static void clear_text(int exposures)
 		/* there is some extra space for borders and outlines */
 		int border_total = get_border_total();
 
-		XClearArea(display, window.window, text_start_x - border_total, 
+		XClearArea(display, window.window, text_start_x - border_total,
 			text_start_y - border_total, text_width + 2*border_total,
 			text_height + 2*border_total, exposures ? True : 0);
 	}
@@ -2142,7 +2142,7 @@ static void main_loop(void)
 							XFreePixmap(display, window.back_buffer);
 							window.back_buffer = XCreatePixmap(display,
 								window.window, window.width, window.height, DefaultDepth(display, screen));
-						
+
 							if (window.back_buffer != None) {
 								window.drawable = window.back_buffer;
 							} else {
@@ -2721,7 +2721,7 @@ void load_config_file()
 	l.replace(-2);
 	if(l.type(-1) != lua::TSTRING)
 		throw conky::error(_("missing text block in configuration"));
-	
+
 	/* Remove \\-\n. */
 	l.gsub(l.tocstring(-1), "\\\n", "");
 	l.replace(-2);
@@ -2878,6 +2878,7 @@ void set_current_config() {
 void initialisation(int argc, char **argv) {
 	struct sigaction act, oact;
 
+	clear_net_stats();
 	set_default_configurations();
 
 	set_current_config();
@@ -3063,7 +3064,6 @@ int main(int argc, char **argv)
 	argc_copy = argc;
 	argv_copy = argv;
 	g_signal_pending = 0;
-	clear_net_stats();
 
 #ifdef BUILD_CURL
 	struct curl_global_initializer {
