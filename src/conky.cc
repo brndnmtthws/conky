@@ -1501,10 +1501,10 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 				{
 					int h, by = 0;
 					unsigned long last_colour = current_color;
-#ifdef MATH
+#ifdef BUILD_MATH
 					float angle, px, py;
 					double usage, scale;
-#endif /* MATH */
+#endif /* BUILD_MATH */
 
 					if (cur_x - text_start_x > mw && mw > 0) {
 						break;
@@ -1530,7 +1530,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					XDrawArc(display, window.drawable, window.gc,
 							cur_x, by, w, h * 2, 0, 180*64);
 
-#ifdef MATH
+#ifdef BUILD_MATH
 					usage = current->arg;
 					scale = current->scale;
 					angle = M_PI * usage / scale;
@@ -1539,7 +1539,7 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 
 					XDrawLine(display, window.drawable, window.gc,
 							cur_x + (w/2.), by+(h), (int)(px), (int)(py));
-#endif /* MATH */
+#endif /* BUILD_MATH */
 
 					if (h > cur_y_add
 							&& h > font_h) {
@@ -1683,16 +1683,15 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						cur_x = tmp_x;
 						cur_y = tmp_y;
 					}
-#ifdef MATH
+#ifdef BUILD_MATH
 					if (show_graph_scale.get(*state) && (current->show_scale == 1)) {
 						int tmp_x = cur_x;
 						int tmp_y = cur_y;
 						char *tmp_str;
 						cur_x += font_ascent() / 2;
 						cur_y += font_h / 2;
-						tmp_str = (char *)
-							calloc(log10(floor(current->scale)) + 4,
-									sizeof(char));
+						const int tmp_str_len = 64;
+						tmp_str = (char *) calloc(tmp_str_len, sizeof(char));
 						sprintf(tmp_str, "%.1f", current->scale);
 						draw_string(tmp_str);
 						free(tmp_str);

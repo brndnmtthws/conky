@@ -286,8 +286,19 @@ void print_v6addrs(struct text_object *obj, char *p, int p_max_size)
 #endif /* __linux__ */
 
 #ifdef BUILD_X11
+
+/**
+ * This function is called periodically to update the download and upload graphs
+ *
+ * - evaluates argument strings like 'eth0 50,120 #FFFFFF #FF0000 0 -l'
+ * - sets the obj->data.opaque pointer to the interface specified
+ *
+ * @param[out] obj  struct which will hold evaluated arguments
+ * @param[in]  arg  argument string to evaluate
+ **/
 void parse_net_stat_graph_arg(struct text_object *obj, const char *arg, void *free_at_crash)
 {
+	/* scan arguments and get interface name back */
 	char *buf = 0;
 	buf = scan_graph(obj, arg, 0);
 
@@ -300,6 +311,12 @@ void parse_net_stat_graph_arg(struct text_object *obj, const char *arg, void *fr
 	obj->data.opaque = get_net_stat(DEFAULTNETDEV, obj, free_at_crash);
 }
 
+/**
+ * returns the download speed in kiB/s for the interface referenced by obj
+ *
+ * @param[in] obj struct containting a member data, which is a struct
+ *                containing a void * to a net_stat struct
+ **/
 double downspeedgraphval(struct text_object *obj)
 {
 	struct net_stat *ns = (struct net_stat *)obj->data.opaque;
