@@ -281,7 +281,7 @@ static void print_version(void)
 #endif /* BUILD_MYSQL */
 #ifdef BUILD_WEATHER_METAR
                 << _("  * Weather (METAR)\n")
-#endif /* BUILD_WEATHER_METAR */                
+#endif /* BUILD_WEATHER_METAR */
 #ifdef BUILD_WEATHER_XOAP
                 << _("  * Weather (XOAP)\n")
 #endif /* BUILD_WEATHER_XOAP */
@@ -1690,9 +1690,8 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 						char *tmp_str;
 						cur_x += font_ascent() / 2;
 						cur_y += font_h / 2;
-						tmp_str = (char *)
-							calloc(log10(floor(current->scale)) + 4,
-									sizeof(char));
+						const int tmp_str_len = 64;
+						tmp_str = (char *) calloc(tmp_str_len, sizeof(char));
 						sprintf(tmp_str, "%.1f", current->scale);
 						draw_string(tmp_str);
 						free(tmp_str);
@@ -2007,7 +2006,7 @@ static void clear_text(int exposures)
 		/* there is some extra space for borders and outlines */
 		int border_total = get_border_total();
 
-		XClearArea(display, window.window, text_start_x - border_total, 
+		XClearArea(display, window.window, text_start_x - border_total,
 			text_start_y - border_total, text_width + 2*border_total,
 			text_height + 2*border_total, exposures ? True : 0);
 	}
@@ -2142,7 +2141,7 @@ static void main_loop(void)
 							XFreePixmap(display, window.back_buffer);
 							window.back_buffer = XCreatePixmap(display,
 								window.window, window.width, window.height, DefaultDepth(display, screen));
-						
+
 							if (window.back_buffer != None) {
 								window.drawable = window.back_buffer;
 							} else {
@@ -2721,7 +2720,7 @@ void load_config_file()
 	l.replace(-2);
 	if(l.type(-1) != lua::TSTRING)
 		throw conky::error(_("missing text block in configuration"));
-	
+
 	/* Remove \\-\n. */
 	l.gsub(l.tocstring(-1), "\\\n", "");
 	l.replace(-2);

@@ -289,8 +289,6 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale)
 			buf[_size] = 0;
 		}
 
-#undef g
-
 		return strndup(buf, text_buffer_size.get(*state));
 	}
 
@@ -417,6 +415,9 @@ void new_font(struct text_object *obj, char *p, int p_max_size)
 	}
 }
 
+/**
+ * Adds value f to graph possibly truncating and scaling the graph
+ **/
 static void graph_append(struct special_t *graph, double f, char showaslog)
 {
 	int i;
@@ -497,7 +498,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size, double val)
 
 	s = new_special(buf, GRAPH);
 
-    /* set graph (special) width to width in obj */
+	/* set graph (special) width to width in obj */
 	s->width = g->width;
 	if (s->width) s->graph_width = s->width;
 
@@ -537,7 +538,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size, double val)
 		s->scale = log10(s->scale + 1);
 	}
 #endif
-	graph_append(s, val, g->flags & SF_SHOWLOG);
+	graph_append(s, val, g->flags);
 
 	if (not out_to_x.get(*state))
 		new_graph_in_shell(s, buf, buf_max_size);
