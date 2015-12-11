@@ -43,30 +43,43 @@ struct v6addr {
 #endif /* BUILD_IPV6 */
 
 struct net_stat {
-        char *dev;
-        int up;
-        long long last_read_recv, last_read_trans;
-        long long recv, trans;
-        double recv_speed, trans_speed;
-        struct sockaddr addr;
+	/* interface name, e.g. wlan0, eth0, ... */
+	char *dev;
+	/* set to 1, if interface is up */
+	int up;
+	/* network traffic read on last call in order to calculate how much
+	 * was received or transmitted since the last call. contains -1 if
+	 * it was never read before. in bytes */
+	long long last_read_recv, last_read_trans;
+	/* total received and transmitted data statistics in bytes */
+	long long recv, trans;
+	/* averaged network speed in bytes / second */
+	double recv_speed, trans_speed;
+	/* struct with at least the member sa_data which is a const * containing
+	 * the socket address.
+	 * @see http://pubs.opengroup.org/onlinepubs/7908799/xns/syssocket.h.html */
+	struct sockaddr addr;
 #ifdef BUILD_IPV6
-        struct v6addr *v6addrs;
+	struct v6addr *v6addrs;
 	bool v6show_nm;
 	bool v6show_sc;
 #endif /* BUILD_IPV6 */
 #if defined(__linux__)
-        char addrs[17 * MAX_NET_INTERFACES + 1];
+	char addrs[17 * MAX_NET_INTERFACES + 1];
 #endif /* __linux__ */
-        double net_rec[15], net_trans[15];
-        // wireless extensions
-        char essid[32];
-        int channel;
-        char freq[16];
-        char bitrate[16];
-        char mode[16];
-        int link_qual;
-        int link_qual_max;
-        char ap[18];
+	/* network speeds between two conky calls in bytes per second.
+	 * An average over these samples is calculated in recv_speed and
+	 * trans_speed */
+	double net_rec[15], net_trans[15];
+	// wireless extensions
+	char essid[32];
+	int channel;
+	char freq[16];
+	char bitrate[16];
+	char mode[16];
+	int link_qual;
+	int link_qual_max;
+	char ap[18];
 };
 
 extern struct net_stat netstats[];

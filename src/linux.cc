@@ -367,10 +367,24 @@ void print_gateway_ip(struct text_object *obj, char *p, int p_max_size)
 	snprintf(p, p_max_size, "%s", gw_info.ip);
 }
 
+
+/**
+ * Parses information from /proc/net/dev and stores them in ???
+ *
+ * For the output format of /proc/net/dev @see http://linux.die.net/man/5/proc
+ *
+ * @return always returns 0. May change in the future, e.g. returning non zero
+ * if some error happened
+ **/
 int update_net_stats(void)
 {
 	FILE *net_dev_fp;
 	static int rep = 0;
+	/* variably to notify the parts averaging the download speed, that this
+	 * is the first call ever to this function. This variable can't be used
+	 * to decide if this is the first time an interface was parsed as there
+	 * are many interfaces, which can be activated and deactivated at arbitrary
+	 * times */
 	static char first = 1;
 
 	// FIXME: arbitrary size chosen to keep code simple.
@@ -394,12 +408,15 @@ int update_net_stats(void)
 		return 0;
 	}
 
-	/* open file and ignore first two lines */
+	/* open file /proc/net/dev. If not something went wrong, clear all
+	 * network statistics */
 	if (!(net_dev_fp = open_file("/proc/net/dev", &rep))) {
 		clear_net_stats();
 		return 0;
 	}
-
+	/* ignore first two header lines in file /proc/net/dev. If somethings
+	 * goes wrong, e.g. end of file reached, quit.
+	 * (Why isn't clear_net_stats called for this case ??? */
 	if (!fgets(buf, 255, net_dev_fp) ||  /* garbage */
 	    !fgets(buf, 255, net_dev_fp)) {  /* garbage (field names) */
 		fclose(net_dev_fp);
@@ -413,48 +430,68 @@ int update_net_stats(void)
 		char temp_addr[18];
 		long long r, t, last_recv, last_trans;
 
+		/* quit only after all non-header lines from /proc/net/dev parsed */
 		if (fgets(buf, 255, net_dev_fp) == NULL) {
 			break;
 		}
 		p = buf;
-		while (isspace((int) *p)) {
+		/* change char * p to first non-space character, which is the beginning
+		 * of the interface name */
+		while (*p != '\0' && isspace((int) *p)) {
 			p++;
 		}
 
 		s = p;
 
-		while (*p && *p != ':') {
+		/* increment p until the end of the interface name has been reached */
+		while (*p != '\0' && *p != ':') {
 			p++;
 		}
 		if (*p == '\0') {
 			continue;
 		}
+		/* replace ':' with '\0' in output of /proc/net/dev */
 		*p = '\0';
 		p++;
 
+		/* get pointer to interface statistics with the interface name in s */
 		ns = get_net_stat(s, NULL, NULL);
 		ns->up = 1;
 		memset(&(ns->addr.sa_data), 0, 14);
 
 		memset(ns->addrs, 0, 17 * MAX_NET_INTERFACES + 1); /* Up to 17 chars per ip, max MAX_NET_INTERFACES interfaces. Nasty memory usage... */
 
-		last_recv = ns->recv;
-		last_trans = ns->trans;
-
 		/* bytes packets errs drop fifo frame compressed multicast|bytes ... */
 		sscanf(p, "%lld  %*d     %*d  %*d  %*d  %*d   %*d        %*d       %lld",
 			&r, &t);
 
-		/* if recv or trans is less than last time, an overflow happened */
+		/* if the interface is parsed the first time, then set recv and trans
+		 * to currently received, meaning the change in network traffic is 0 */
+		if (ns->last_read_recv == -1) {
+			ns->recv = r;
+			first = 1;
+		}
+		if (ns->last_read_trans == -1) {
+			ns->trans = t;
+			first = 1;
+		}
+		/* move current traffic statistic to last thereby obsoleting the
+		 * current statistic */
+		last_recv  = ns->recv;
+		last_trans = ns->trans;
+
+		/* If recv or trans is less than last time, an overflow happened.
+		 * In that case set the last traffic to the current one, don't set
+		 * it to 0, else a spike in the download and upload speed will occur! */
 		if (r < ns->last_read_recv) {
-			last_recv = 0;
+			last_recv = r;
 		} else {
 			ns->recv += (r - ns->last_read_recv);
 		}
 		ns->last_read_recv = r;
 
 		if (t < ns->last_read_trans) {
-			last_trans = 0;
+			last_trans = t;
 		} else {
 			ns->trans += (t - ns->last_read_trans);
 		}
@@ -490,19 +527,19 @@ int update_net_stats(void)
 		close((long) i);
 
 		free(conf.ifc_buf);
-
 		/*** end ip addr patch ***/
 
 		if (!first) {
-			/* calculate speeds */
-			ns->net_rec[0] = (ns->recv - last_recv) / delta;
+			/* calculate instantenous speeds */
+			ns->net_rec  [0] = (ns->recv  - last_recv ) / delta;
 			ns->net_trans[0] = (ns->trans - last_trans) / delta;
 		}
 
 		curtmp1 = 0;
 		curtmp2 = 0;
-		// get an average
+		/* get an average over the last speed samples */
 		int samples = net_avg_samples.get(*state);
+		/* is OpenMP actually useful here? How large is samples? > 1000 ? */
 #ifdef HAVE_OPENMP
 #pragma omp parallel for reduction(+:curtmp1, curtmp2) schedule(dynamic,10)
 #endif /* HAVE_OPENMP */
