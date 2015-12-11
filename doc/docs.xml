@@ -192,15 +192,15 @@
 	<refsect1>
 		<title>Lua API</title>
 		<para>Conky features a Lua Programming API, and also ships with Lua
-			bindings for some useful libraries. Conky defines certain global
-			functions and variables which can be accessed from Lua code running
-			in Conky.
+			bindings for some useful libraries. Note that the bindings require
+			tolua++, which currently only compiles against Lua 5.1.
 		</para>
 		<para>To use Lua Conky, you first need to make sure you have a version of Conky
-			with Lua support enabled (``conky -v'' will report this).  Scripts
-			must first be loaded using the lua_load configuration option.  You
-			then call functions in Lua via Conky's $lua, $lua_read, and Lua
-			hooks.
+			with Lua support enabled (``conky -v'' will report this). Conky defines
+			certain global functions and variables which can be accessed from Lua
+			code running in Conky. Scripts must first be loaded using the lua_load
+			configuration option. You then call functions in Lua via Conky's $lua,
+			$lua_read, and Lua hooks.
 		</para>
 		<para>
 			Be careful when creating threaded objects through the Lua API.  You
@@ -263,7 +263,7 @@
 			</varlistentry>
 			<varlistentry>
 				<term>
-					<filename>~/.config/conky/rc</filename>
+					<filename>~/.config/conky/conky.conf</filename>
 				</term>
 				<listitem>Default personal configuration
 					file.</listitem>
@@ -308,8 +308,8 @@
 			the BSD license (see LICENSE.BSD for a copy). All code
 			written since the fork of torsmo is licensed under the GPL
 			(see LICENSE.GPL for a copy), except where noted
-                        differently (such as in portmon and audacious code which are LGPL, and
-                        prss which is an MIT-style license).</para>
+			differently (such as in portmon and audacious code which are LGPL, and
+			prss which is an MIT-style license).</para>
 	</refsect1>
 	<refsect1>
 		<title>Authors</title>
