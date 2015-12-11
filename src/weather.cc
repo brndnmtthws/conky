@@ -159,11 +159,11 @@ int rel_humidity(int dew_point, int air) {
 	const float b = 237.7f;
 
 	float diff = a*(dew_point/(b+dew_point)-air/(b+air));
-#ifdef MATH
+#ifdef BUILD_MATH
 	return (int)(100.f*expf(diff));
 #else
 	return (int)(16.666667163372f*(6.f+diff*(6.f+diff*(3.f+diff))));
-#endif /* MATH */
+#endif /* BUILD_MATH */
 }
 
 #ifdef BUILD_WEATHER_XOAP
