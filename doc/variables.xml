@@ -2715,45 +2715,119 @@
             <command>
                 <option>nvidia</option>
             </command>
-            <option>threshold</option>
-            <option>temp</option>
-            <option>ambient</option>
-            <option>gpufreq</option>
-            <option>memfreq</option>
-            <option>imagequality</option>
+            <option>metric</option>
         </term>
-        <listitem>Nvidia graficcard support for the XNVCtrl
-        library. Each option can be shortened to the least
-        significant part. Temperatures are printed as float, all
-        other values as integer. 
+        <listitem>Displays metrics for NVIDIA graphics cards using the
+        XNVCtrl library. Please use nvidia-settings to determine metric
+        units (e.g. MHz, °C/°F). Valid metrics are:
         <simplelist>
             <member>
-		<command>threshold</command>
-		<option>The thresholdtemperature at
-			which the gpu slows down</option>
+                <command>gputemp</command>
+                <option>Current GPU temperature</option>
             </member>
             <member>
-		<command>temp</command>
-		<option>Gives the gpu current
-			temperature</option>
+                <command>gputempthreshold</command>
+                <option>Temperature threshold at which the GPU slows down to prevent damage</option>
             </member>
             <member>
-                <command>ambient</command>
-                <option>Gives current air temperature near GPU
-                case</option>
+                <command>ambienttemp</command>
+                <option>Current air temperature near the GPU</option>
             </member>
             <member>
-                <command>gpufreq</command>
-                <option>Gives the current gpu frequency</option>
+                <command>gpufreq, gpufreqcur</command>
+                <option>Current GPU clock</option>
             </member>
             <member>
-                <command>memfreq</command>
-                <option>Gives the current mem frequency</option>
+                <command>gpufreqmin</command>
+                <option>Lowest possible GPU clock</option>
+            </member>
+            <member>
+                <command>gpufreqmax</command>
+                <option>Highest possible GPU clock</option>
+            </member>
+            <member>
+                <command>memfreq, memfreqcur</command>
+                <option>Current memory clock</option>
+            </member>
+            <member>
+                <command>memfreqmin</command>
+                <option>Lowest possible memory clock</option>
+            </member>
+            <member>
+                <command>memfreqmax</command>
+                <option>Highest possible memory clock</option>
+            </member>
+            <member>
+                <command>mtrfreq, mtrfreqcur</command>
+                <option>Current memory transfer rate</option>
+            </member>
+            <member>
+                <command>mtrfreqmin</command>
+                <option>Lowest possible memory transfer rate</option>
+            </member>
+            <member>
+                <command>mtrfreqmax</command>
+                <option>Highest possible memory transfer rate</option>
+            </member>
+            <member>
+                <command>perflevel, perflevelcur</command>
+                <option>Current performance level</option>
+            </member>
+            <member>
+                <command>perflevelmin</command>
+                <option>Lowest possible performance level</option>
+            </member>
+            <member>
+                <command>perflevelmax</command>
+                <option>Highest possible performance level</option>
+            </member>
+            <member>
+                <command>perfmode</command>
+                <option>Current performance mode</option>
+            </member>
+            <member>
+                <command>gpuutil</command>
+                <option>Current GPU utilization</option>
+            </member>
+            <member>
+                <command>membwutil</command>
+                <option>Current memory bandwidth utilization</option>
+            </member>
+            <member>
+                <command>videoutil</command>
+                <option>Current video engine utilization</option>
+            </member>
+            <member>
+                <command>pcieutil</command>
+                <option>Current PCIe bandwidth utilization</option>
+            </member>
+            <member>
+                <command>mem, memused</command>
+                <option>Amount of memory in use</option>
+            </member>
+            <member>
+                <command>memfree, memavail</command>
+                <option>Amount of free memory</option>
+            </member>
+            <member>
+                <command>memmax, memtotal</command>
+                <option>Total amount of memory</option>
+            </member>
+            <member>
+                <command>memutil, memperc</command>
+                <option>Current memory utilization</option>
+            </member>
+            <member>
+                <command>fanspeed</command>
+                <option>Current fan/cooler speed</option>
+            </member>
+            <member>
+                <command>fanlevel, fanutil</command>
+                <option>Current fan/cooler level (as in utilization)</option>
             </member>
             <member>
                 <command>imagequality</command>
-                <option>Which imagequality should be chosen by
-                OpenGL applications</option>
+                <option>Current image quality setting for OpenGL applications</option>
             </member>
         </simplelist>
         <para /></listitem>

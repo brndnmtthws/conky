@@ -1788,7 +1788,7 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		obj->callbacks.free = &free_combine;
 #ifdef BUILD_NVIDIA
 	END OBJ_ARG(nvidia, 0, "nvidia needs an argument")
-		if (set_nvidia_type(obj, arg)) {
+		if (set_nvidia_query(obj, arg)) {
 			CRIT_ERR(obj, free_at_crash, "nvidia: invalid argument"
 				 " specified: '%s'\n", arg);
 		}
@@ -2084,4 +2084,3 @@ void free_text_objects(struct text_object *root)
 		}
 	}
 }
-

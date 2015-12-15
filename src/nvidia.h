@@ -32,7 +32,7 @@
 #ifndef NVIDIA_CONKY_H
 #define NVIDIA_CONKY_H
 
-int set_nvidia_type(struct text_object *, const char *);
+int set_nvidia_query(struct text_object *, const char *);
 void print_nvidia_value(struct text_object *, char *, int);
 void free_nvidia(struct text_object *);
 
