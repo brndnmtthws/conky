@@ -539,6 +539,33 @@
     <varlistentry>
         <term>
             <command>
+                <option>cat</option>
+            </command>
+            <option>file</option>
+        </term>
+        <listitem>Reads a file and displays the contents in conky.
+        This is useful if you have an independent process
+        generating output that you want to include in conky.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>catp</option>
+            </command>
+            <option>file</option>
+        </term>
+        <listitem>Reads a file and displays the contents in conky.
+        This is useful if you have an independent process
+        generating output that you want to include in conky.  This
+        differs from $cat in that it parses the contents of the
+        file, so you can insert things like ${color red}hi!${color}
+        in your file and have it correctly parsed by Conky.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>cmdline_to_pid</option>
             </command>
             <option>string</option>
