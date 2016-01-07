@@ -57,7 +57,7 @@ endif(BUILD_I18N)
 set(SYSTEM_CONFIG_FILE "/etc/conky/conky.conf" CACHE STRING "Default system-wide Conky configuration file")
 # use FORCE below to make sure this changes when CMAKE_INSTALL_PREFIX is modified
 if (NOT LIB_INSTALL_DIR)
-	set (LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+	set (LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
 endif (NOT LIB_INSTALL_DIR)
 set(PACKAGE_LIBRARY_DIR "${LIB_INSTALL_DIR}/conky" CACHE STRING "Package library path (where Lua bindings are installed" FORCE)
 set(DEFAULTNETDEV "eth0" CACHE STRING "Default networkdevice")
