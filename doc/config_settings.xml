@@ -99,8 +99,8 @@
                 <option>default_bar_height</option>
             </command>
         </term>
-        <listitem>Specify a default height for bars.  This is particularly useful for execbar and
-        execibar as they do not take size arguments. 
+        <listitem>Specify a default height for bars. If not specified,
+        the default value is 6.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -109,8 +109,13 @@
                 <option>default_bar_width</option>
             </command>
         </term>
-        <listitem>Specify a default width for bars.  This is particularly useful for execbar and
-        execibar as they do not take size arguments. 
+        <listitem>Specify a default width for bars. If not specified,
+        the default value is 0, which causes the bar to expand to
+        fit the width of your Conky window. If you set
+        out_to_console = true, the text version of the bar will
+        actually have no width and you will need to set a
+        sensible default or set the height and width of each bar
+        individually.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -128,8 +133,8 @@
                 <option>default_gauge_height</option>
             </command>
         </term>
-        <listitem>Specify a default height for gauges.  This is particularly useful for execgauge
-        and execigauge as they do not take size arguments 
+        <listitem>Specify a default height for gauges. If not specified,
+        the default value is 25.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -138,8 +143,8 @@
                 <option>default_gauge_width</option>
             </command>
         </term>
-        <listitem>Specify a default width for gauges.  This is particularly useful for execgauge
-        and execigauge as they do not take size arguments 
+        <listitem>Specify a default width for gauges. If not specified,
+        the default value is 40.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -148,8 +153,8 @@
                 <option>default_graph_height</option>
             </command>
         </term>
-        <listitem>Specify a default height for graphs.  This is particularly useful for execgraph
-        and execigraph as they do not take size arguments 
+        <listitem>Specify a default height for graphs. If not specified,
+        the default value is 25.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -158,8 +163,13 @@
                 <option>default_graph_width</option>
             </command>
         </term>
-        <listitem>Specify a default width for graphs.  This is particularly useful for execgraph
-        and execigraph as they do not take size arguments 
+        <listitem>Specify a default width for graphs. If not specified,
+        the default value is 0, which causes the graph to expand to
+        fit the width of your Conky window. If you set
+        out_to_console = true, the text version of the graph will
+        actually have no width and you will need to set a
+        sensible default or set the height and width of each graph
+        individually.
         <para /></listitem>
     </varlistentry>
     <varlistentry>

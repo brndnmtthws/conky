@@ -1118,9 +1118,9 @@
             <option>command</option>
         </term>
         <listitem>Executes a shell command and displays the output
-        in conky. warning: this takes a lot more resources than
-        other variables. I'd recommend coding wanted behaviour in C
-        and posting a patch. 
+        in conky. Warning: this takes a lot more resources than
+        other variables. I'd recommend coding wanted behaviour in C/C++
+        and posting a patch.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1128,12 +1128,14 @@
             <command>
                 <option>execbar</option>
             </command>
+            <option>(height),(width)</option>
             <option>command</option>
         </term>
-        <listitem>Same as exec, except if the first value return is
-        a value between 0-100, it will use that number for a bar.
-        The size for bars can be controlled via the
-        default_bar_size config setting. 
+        <listitem>Same as exec, except if the first value returned is
+        a value between 0-100, it will use that number to draw a
+        horizontal bar. The height and width parameters are optional,
+        and default to the default_bar_height and default_bar_width
+        config settings, respectively.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1141,12 +1143,15 @@
             <command>
                 <option>execgauge</option>
             </command>
+            <option>(height),(width)</option>
             <option>command</option>
         </term>
-        <listitem>Same as exec, except if the first value returned
-        is a value between 0-100, it will use that number for a
-        gauge. The size for gauges can be controlled via the
-        default_gauge_size config setting. 
+        <listitem>Same as exec, except if the first value returned is
+        a value between 0-100, it will use that number to draw a
+        round gauge (much like a vehicle speedometer). The height and
+        width parameters are optional, and default to the
+        default_gauge_height and default_gauge_width config settings,
+        respectively.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1154,33 +1159,61 @@
             <command>
                 <option>execgraph</option>
             </command>
-            <option>(-t) (-l) command</option>
+            <option>command</option>
+            <option>(height),(width)</option>
+            <option>(gradient color 1)</option>
+            <option>(gradient color 2)</option>
+            <option>(scale)</option>
+            <option>(-t)</option>
+            <option>(-l)</option>
         </term>
-        <listitem>Same as execbar, but graphs values. Uses a
-        logaritmic scale when the log option (-l switch) is given
-        (to see small numbers). Values still have to be between 0
-        and 100. The size for graphs can be controlled via the
-        default_graph_size config setting. Takes the switch '-t' to
-        use a temperature gradient, which makes the gradient values
-        change depending on the amplitude of a particular graph
-        value (try it and see). If -t or -l is your first argument,
-        you may need to preceed it by a space (' ').  You may also use
-        double-quotes around the exec argument should you need to execute a
-        command with spaces.  For example, ${execgraph "date +'%S'"} to execute
-        `date +'%S'` and graph the result.  Without quotes, it would simply
-        print the result of `date`.
-        <para /></listitem>
+        <listitem>
+        <para>Draws a horizontally scrolling graph with values
+        from 0-100 plotted on the vertical axis. All parameters
+        following the command are optional. Gradient colors can
+        be specified as hexadecimal values with no 0x or #
+        prefix. Use the -t switch to enable a temperature
+        gradient, so that small values are "cold" with color 1
+        and large values are "hot" with color 2. Without the -t
+        switch, the colors produce a horizontal gradient
+        spanning the width of the graph. The scale parameter
+        defines the maximum value of the graph. Use the -l
+        switch to enable a logarithmic scale, which helps to see
+        small values. The default size for graphs can be
+        controlled via the default_graph_height and
+        default_graph_width config settings.</para>
+
+        <para>If you need to execute a command with spaces, you
+        have a couple options: 1) put your command into a
+        separate file, such as ~/bin/myscript.sh, and use that
+        as your execgraph command. Remember to make your script
+        executable! 2) Wrap your command in double-quotes. If
+        you go for this option, do not try to pass the extra
+        parameters for height, width, etc., as the results may
+        be unexpected.</para>
+
+        <para>Option 1 is preferred. In the following example, we
+        set up execgraph to display seconds (0-59) on a graph that
+        is 50px high and 200px wide, using a temperature gradient
+        with colors ranging from red for small values (FF0000) to
+        yellow for large values (FFFF00). We set the scale to
+        60.</para>
+
+        <para><command>${execgraph ~/seconds.sh 50,200 FF0000
+        FFFF00 60 -t}</command></para>
+        </listitem>
     </varlistentry>
     <varlistentry>
         <term>
             <command>
                 <option>execi</option>
             </command>
-            <option>interval command</option>
+            <option>interval</option>
+            <option>command</option>
         </term>
-        <listitem>Same as exec but with specific interval. Interval
-        can't be less than update_interval in configuration. See
-        also $texeci
+        <listitem>Same as exec, but with a specific interval in
+        seconds. The interval can't be less than the update_interval
+        in your configuration. See also $texeci.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1188,9 +1221,11 @@
             <command>
                 <option>execibar</option>
             </command>
-            <option>interval command</option>
+            <option>interval</option>
+            <option>(height),(width)</option>
+            <option>command</option>
         </term>
-        <listitem>Same as execbar, except with an interval 
+        <listitem>Same as execbar, but with an interval.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1198,10 +1233,11 @@
             <command>
                 <option>execigauge</option>
             </command>
-            <option>interval command</option>
+            <option>interval</option>
+            <option>(height),(width)</option>
+            <option>command</option>
         </term>
-        <listitem>Same as execgauge, but takes an interval arg and
-        gauges values. 
+        <listitem>Same as execgauge, but with an interval.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1209,11 +1245,16 @@
             <command>
                 <option>execigraph</option>
             </command>
-            <option>interval (-t) (-l) command</option>
+            <option>interval</option>
+            <option>command</option>
+            <option>(height),(width)</option>
+            <option>(gradient color 1)</option>
+            <option>(gradient color 2)</option>
+            <option>(scale)</option>
+            <option>(-t)</option>
+            <option>(-l)</option>
         </term>
-        <listitem>Same as execgraph, but takes an interval arg and
-        graphs values. If -t or -l is your first argument, you may
-        need to preceed it by a space (' '). 
+        <listitem>Same as execgraph, but with an interval.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1224,8 +1265,8 @@
             <option>command</option>
         </term>
         <listitem>Executes a shell command and displays the output
-        in conky. warning: this takes a lot more resources than
-        other variables. I'd recommend coding wanted behaviour in C
+        in conky. Warning: this takes a lot more resources than
+        other variables. I'd recommend coding wanted behaviour in C/C++
         and posting a patch. This differs from $exec in that it
         parses the output of the command, so you can insert things
         like ${color red}hi!${color} in your script and have it
@@ -1235,7 +1276,7 @@
         like $execi within an $execp statement, it will
         functionally run at the same interval that the $execp
         statement runs, as it is created and destroyed at every
-        interval. 
+        interval.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -1243,12 +1284,12 @@
             <command>
                 <option>execpi</option>
             </command>
-            <option>interval command</option>
+            <option>interval</option>
+            <option>command</option>
         </term>
-        <listitem>Same as execp but with specific interval.
-        Interval can't be less than update_interval in
-        configuration. Note that the output from the $execpi
-        command is still parsed and evaluated at every interval. 
+        <listitem>Same as execp, but with an interval. Note that
+        the output from the $execpi command is still parsed
+        and evaluated at every interval.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3769,19 +3810,20 @@
             <command>
                 <option>texeci</option>
             </command>
-            <option>interval command</option>
+            <option>interval</option>
+            <option>command</option>
         </term>
         <listitem>Runs a command at an interval inside a thread and
         displays the output. Same as $execi, except the command is
         run inside a thread. Use this if you have a slow script to
         keep Conky updating. You should make the interval slightly
-        longer then the time it takes your script to execute. For
+        longer than the time it takes your script to execute. For
         example, if you have a script that take 5 seconds to
         execute, you should make the interval at least 6 seconds.
         See also $execi. This object will clean up the thread when
         it is destroyed, so it can safely be used in a nested
         fashion, though it may not produce the desired behaviour if
-        used this way. 
+        used this way.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
@@ -3789,7 +3831,8 @@
             <command>
                 <option>texecpi</option>
             </command>
-            <option>interval command</option>
+            <option>interval</option>
+            <option>command</option>
         </term>
         <listitem>Same as execpi, except the command is run inside
         a thread.
