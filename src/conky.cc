@@ -909,19 +909,17 @@ static void generate_text(void)
 {
 	char *p;
 	unsigned int i, j, k;
-
 	special_count = 0;
-
-	/* update info */
 
 	current_update_time = get_time();
 
+	/* clears netstats info, calls conky::run_all_callbacks(), and changes
+	 * some info.mem entries */
 	update_stuff();
 
-	/* add things to the buffer */
-
-	/* generate text */
-
+	/* populate the text buffer; generate_text_internal() iterates through
+	 * global_root_object (an instance of the text_object struct) and calls
+	 * any callbacks that were set on startup by construct_text_object(). */
 	p = text_buffer;
 
 	generate_text_internal(p, max_user_text.get(*state), global_root_object);

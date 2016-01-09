@@ -56,13 +56,13 @@ namespace conky {
 
 			semaphore sem_start;
 			std::thread *thread;
-			const size_t hash;
-			uint32_t period;
-			uint32_t remaining;
+			const size_t hash;		/* used to determined callback uniqueness */
+			uint32_t period;		/* how often to run a callback */
+			uint32_t remaining;		/* update intervals remaining until we can run a callback */
 			std::pair<int, int> pipefd;
-			const bool wait;
-			bool done;
-			uint8_t unused;
+			const bool wait;		/* whether or not to wait for a callback to finish */
+			bool done;			/* if true, callback is being stopped and destroyed */
+			uint8_t unused;			/* number of update intervals during which no one owns a callback */
 
 			callback_base(const callback_base &) = delete;
 			callback_base& operator=(const callback_base &) = delete;
@@ -159,6 +159,9 @@ namespace conky {
 				));
 	}
 
+	/*
+	 * Callback uniqueness is determined by the hash computed here.
+	 */
 	namespace priv {
 		template<size_t pos, typename... Elements>
 		struct hash_tuple {
