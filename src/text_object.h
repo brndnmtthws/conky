@@ -33,6 +33,7 @@
 #include "config.h"		/* for the defines */
 #include "specials.h"		/* enum special_types */
 #include "update-cb.hh"
+#include "exec.h"
 
 /* text object callbacks */
 struct obj_cb {
@@ -87,12 +88,24 @@ public:
         : Base(period, true, Base::Tuple(fn))
     {}
 };
-typedef conky::callback_handle<legacy_cb> legacy_cb_handle;
 
+typedef conky::callback_handle<legacy_cb> legacy_cb_handle;
+typedef conky::callback_handle<exec_cb> exec_cb_handle;
+
+/**
+ * This is where Conky collects information on the conky.text objects in your config
+ *
+ * During startup and reload, objects are parsed and callbacks are set. Note that
+ * there are currently two types of callback: obj_cb (old style) and
+ * conky::callback (new style). On each update interval, generate_text_internal()
+ * in conky.cc traverses the list of text_objects and calls the old callbacks.
+ * The new style callbacks are run separately by conky::run_all_callbacks().
+ */
 struct text_object {
 	struct text_object *next, *prev;	/* doubly linked list of text objects */
 	struct text_object *sub;		/* for objects parsing text into objects */
 	struct text_object *ifblock_next;	/* jump target for ifblock objects */
+
 	union {
 		void *opaque;		/* new style generic per object data */
 		char *s;		/* some string */
@@ -102,11 +115,16 @@ struct text_object {
 
 	void *special_data;
 	long line;
-	struct obj_cb callbacks;
-	bool parse;	//if this true then data.s should still be parsed
-	bool thread;	//if this true then data.s should be set by a seperate thread
+	bool parse;	/* if true then data.s should still be parsed */
+	bool thread;	/* if true then data.s should be set by a seperate thread */
 
-        legacy_cb_handle *cb_handle;
+	struct obj_cb callbacks;
+
+	/* Each _cb_handle is a std::shared_ptr with very tight restrictions on
+	 * construction. For now, it is necessary to store them here as regular
+	 * pointers so we can instantiate them later. */
+	exec_cb_handle *exec_handle;
+	legacy_cb_handle *cb_handle;
 };
 
 /* text object list helpers */

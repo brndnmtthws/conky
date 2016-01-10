@@ -275,15 +275,13 @@ conky::simple_config_setting<bool> no_buffers("no_buffers", true, true);
 
 void update_stuff(void)
 {
-	int i;
-
 	/* clear speeds, addresses and up status in case device was removed and
 	 *  doesn't get updated */
 
 	#ifdef HAVE_OPENMP
 	#pragma omp parallel for schedule(dynamic,10)
 	#endif /* HAVE_OPENMP */
-	for (i = 0; i < MAX_NET_INTERFACES; i++) {
+	for (int i = 0; i < MAX_NET_INTERFACES; ++i) {
 		if (netstats[i].dev) {
 			netstats[i].up = 0;
 			netstats[i].recv_speed = 0.0;
@@ -295,8 +293,10 @@ void update_stuff(void)
 		}
 	}
 
+	/* this is a stub on all platforms except solaris */
 	prepare_update();
 
+	/* if you registered a callback with conky::register_cb, this will run it */
 	conky::run_all_callbacks();
 
 	/* XXX: move the following into the update_meminfo() functions? */

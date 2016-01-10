@@ -77,6 +77,12 @@ namespace conky {
 			return *a == *b;
 		}
 
+		/*
+		 * If a callback is not successfully inserted into the set, it must have
+		 * the same hash as an existing callback. If this is so, merge the incoming
+		 * callback with the one that prevented insertion. Keep the smaller of the
+		 * two periods.
+		 */
 		void callback_base::merge(callback_base &&other)
 		{
 			if(other.period < period) {
@@ -87,10 +93,14 @@ namespace conky {
 			unused = 0;
 		}
 
+		/*
+		 * Register a callback (i.e. insert it into the callbacks set)
+		 */
 		callback_base::handle callback_base::do_register_cb(const handle &h)
 		{
 			const auto &p = callbacks.insert(h);
 
+			/* insertion failed; callback already exists */
 			if(not p.second)
 				(*p.first)->merge(std::move(*h));
 
@@ -134,7 +144,10 @@ namespace conky {
 		for(auto i = callback_base::callbacks.begin(); i != callback_base::callbacks.end(); ) {
 			callback_base &cb = **i;
 
+			/* check whether enough update intervals have elapsed (up to period) */
 			if(cb.remaining-- == 0) {
+				/* run the callback as long as someone holds a pointer to it;
+				 * if no one owns the callback, run it at most UNUSED_MAX times */
 				if(!i->unique() || ++cb.unused < UNUSED_MAX) {
 					cb.remaining = cb.period-1;
 					cb.run();
