@@ -799,13 +799,14 @@ void get_cpu_count(void)
 {
 	FILE *stat_fp;
 	static int rep = 0;
+	int highest_cpu_index;
 	char buf[256];
 
 	if (info.cpu_usage) {
 		return;
 	}
 
-	if (!(stat_fp = open_file("/proc/stat", &rep))) {
+	if (!(stat_fp = open_file("/sys/devices/system/cpu/present", &rep))) {
 		return;
 	}
 
@@ -816,11 +817,8 @@ void get_cpu_count(void)
 			break;
 		}
 
-		if (strncmp(buf, "cpu", 3) == 0 && isdigit(buf[3])) {
-			if (info.cpu_count == 0) {
-				determine_longstat(buf);
-			}
-			info.cpu_count++;
+		if (sscanf(buf, "%*d-%d", &highest_cpu_index) == 1) {
+			info.cpu_count = highest_cpu_index + 1;
 		}
 	}
 	info.cpu_usage = (float*)malloc((info.cpu_count + 1) * sizeof(float));
