@@ -4,7 +4,7 @@
  * Conky, a system monitor, based on torsmo
  *
  * Copyright (c) 2008 Asbjørn Zweidorff Kjær
- * Copyright (c) 2005-2012 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2016 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *

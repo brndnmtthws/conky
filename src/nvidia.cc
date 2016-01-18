@@ -10,7 +10,7 @@
  * Please see COPYING for details
  *
  * Copyright (c) 2008 Markus Meissner
- * Copyright (c) 2005-2012 Brenden Matthews, Philip Kovacs, et. al.
+ * Copyright (c) 2005-2016 Brenden Matthews, Philip Kovacs, et. al.
  *	(see AUTHORS)
  * All rights reserved.
  *
