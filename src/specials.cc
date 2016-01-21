@@ -62,6 +62,7 @@ namespace {
 										std::numeric_limits<int>::max(), 40, false);
 	conky::range_config_setting<int> default_gauge_height("default_gauge_height", 0,
 										std::numeric_limits<int>::max(), 25, false);
+	conky::simple_config_setting<bool> graph_scale_keep_max("graph_scale_keep_max", false, true);
 #endif /* BUILD_X11 */
 
 	conky::simple_config_setting<std::string> console_graph_ticks("console_graph_ticks", " ,_,=,#", false);
@@ -70,6 +71,7 @@ namespace {
 /* special data types flags */
 #define SF_SCALED	(1 << 0)
 #define SF_SHOWLOG	(1 << 1)
+#define SF_KEEP_MAX_SCALING	(1 << 2)
 
 /*
  * Special data typedefs
@@ -203,6 +205,8 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale)
 	/* zero width means all space that is available */
 	g->width = default_graph_width.get(*state);
 	g->height = default_graph_height.get(*state);
+	if (graph_scale_keep_max.get(*state))
+		g->flags |= SF_KEEP_MAX_SCALING;
 	g->first_colour = 0;
 	g->last_colour = 0;
 	g->scale = defscale;
@@ -418,9 +422,10 @@ void new_font(struct text_object *obj, char *p, int p_max_size)
 /**
  * Adds value f to graph possibly truncating and scaling the graph
  **/
-static void graph_append(struct special_t *graph, double f, char showaslog)
+static void graph_append(struct special_t *graph, double f, char showaslog, char keep_max_scaling)
 {
 	int i;
+	double new_scale;
 
 	/* do nothing if we don't even have a graph yet */
 	if (!graph->graph) return;
@@ -442,7 +447,11 @@ static void graph_append(struct special_t *graph, double f, char showaslog)
 	graph->graph[0] = f;	/* add new data */
 
 	if(graph->scaled) {
-		graph->scale = *std::max_element(graph->graph + 0, graph->graph + graph->graph_width);
+		new_scale = *std::max_element(graph->graph + 0, graph->graph + graph->graph_width);
+		if (keep_max_scaling)
+			graph->scale = std::max(graph->scale, new_scale);
+		else
+			graph->scale = new_scale;
 		if(graph->scale < 1e-47) {
 			/* avoid NaN's when the graph is all-zero (e.g. before the first update)
 			 * there is nothing magical about 1e-47 here */
@@ -529,7 +538,6 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size, double val)
 		s->show_scale = 0;
 	} else {
 		s->scaled = 1;
-		s->scale = 1;
 		s->show_scale = 1;
 	}
 	s->tempgrad = g->tempgrad;
@@ -538,7 +546,7 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size, double val)
 		s->scale = log10(s->scale + 1);
 	}
 #endif
-	graph_append(s, val, g->flags);
+	graph_append(s, val, g->flags & SF_SHOWLOG, g->flags & SF_KEEP_MAX_SCALING);
 
 	if (not out_to_x.get(*state))
 		new_graph_in_shell(s, buf, buf_max_size);
