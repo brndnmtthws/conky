@@ -99,6 +99,9 @@
 #ifdef BUILD_CMUS
 #include "cmus.h"
 #endif
+#ifdef BUILD_JOURNAL
+#include "journal.h"
+#endif
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
@@ -1847,6 +1850,12 @@ struct text_object *construct_text_object(char *s, const char *arg,
 	END OBJ(apcupsd_lastxfer, &update_apcupsd)
 		obj->callbacks.print = &print_apcupsd_lastxfer;
 #endif /* BUILD_APCUPSD */
+#ifdef BUILD_JOURNAL
+	END OBJ_ARG(journal, 0, "journal needs arguments")
+		init_journal("journal", arg, obj, free_at_crash);
+		obj->callbacks.print = &print_journal;
+		obj->callbacks.free = &free_journal;
+#endif /* BUILD_JOURNAL */
 	END {
 		char *buf = (char *)malloc(text_buffer_size.get(*state));
 

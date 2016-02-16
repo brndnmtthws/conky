@@ -112,6 +112,11 @@ if(BUILD_CMUS)
        set(optional_sources ${optional_sources} ${cmus})
 endif(BUILD_CMUS)
 
+if(BUILD_JOURNAL)
+       set(journal journal.cc)
+       set(optional_sources ${optional_sources} ${journal})
+endif(BUILD_JOURNAL)
+
 if(BUILD_XMMS2)
 	set(xmms2 xmms2.cc)
 	set(optional_sources ${optional_sources} ${xmms2})
