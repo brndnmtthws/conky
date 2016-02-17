@@ -331,6 +331,31 @@ namespace {
 	nvidia_display_setting nvidia_display;
 }
 
+// Extract arguments for nvidiabar, etc, and run set_nvidia_type
+int scan_nvidia_args (struct text_object *obj, const char *args, unsigned int special_t) {
+	const char *arg = args;
+
+	switch (special_t) {
+		case BAR:
+			arg = scan_bar(obj, arg, 100);
+			break;
+		case GRAPH:
+			arg = scan_graph(obj, arg, 100);
+			break;
+		case GAUGE:
+			arg = scan_gauge(obj, arg, 100);
+			break;
+		default:
+			return 1;
+	}
+
+	// Return error if no argument
+	// (sometimes scan_graph gets excited and eats the whole string!
+	if (!arg) return 1;
+
+	return set_nvidia_type(obj, arg);
+}
+
 
 // Evaluate module parameters and prepare query
 int set_nvidia_type(struct text_object *obj, const char *arg)
@@ -702,6 +727,13 @@ void print_nvidia_value(struct text_object *obj, char *p, int p_max_size)
 		snprintf(p, p_max_size, "N/A");
 	}
 	
+}
+
+double get_nvidia_barval(struct text_object *obj) {
+	double val;
+	val = 50; //Dummy test value
+
+	return val;
 }
 
 

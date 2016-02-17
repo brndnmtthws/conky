@@ -32,8 +32,10 @@
 #ifndef NVIDIA_CONKY_H
 #define NVIDIA_CONKY_H
 
+int scan_nvidia_args (struct text_object *obj, const char *args, unsigned int special_t);
 int set_nvidia_type(struct text_object *, const char *);
 void print_nvidia_value(struct text_object *, char *, int);
+double get_nvidia_barval(struct text_object *obj);
 void free_nvidia(struct text_object *);
 
 #endif
