@@ -553,7 +553,9 @@ void print_cached(struct text_object *obj, char *p, int p_max_size)
 
 void print_evaluate(struct text_object *obj, char *p, int p_max_size)
 {
-	evaluate(obj->data.s, p, p_max_size);
+	std::vector<char> buf(max_user_text.get(*state));
+	evaluate(obj->data.s, &buf[0], buf.size());
+	evaluate(&buf[0], p, p_max_size);
 }
 
 int if_empty_iftest(struct text_object *obj)
