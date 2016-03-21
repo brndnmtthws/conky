@@ -123,7 +123,7 @@ double get_time(void)
 {
 	struct timespec tv;
 
-	clock_gettime(CLOCK_MONOTONIC, &tv);
+	clock_gettime(CLOCK_REALTIME, &tv);
 	return tv.tv_sec + (tv.tv_nsec * 1e-9);
 }
 

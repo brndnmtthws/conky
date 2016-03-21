@@ -953,12 +953,11 @@ static void generate_text(void)
 	}
 
 	double ui = active_update_interval();
+	double time = get_time();
 	next_update_time += ui;
-	if (next_update_time < get_time()) {
-		next_update_time = get_time() + ui;
-	} else if (next_update_time > get_time() + ui) {
-		next_update_time = get_time() + ui;
-	}
+	if (next_update_time < time ||
+		next_update_time > time + ui)
+		next_update_time = time - fmod(time, ui) + ui;
 	last_update_time = current_update_time;
 	total_updates++;
 }
@@ -2055,7 +2054,7 @@ static void main_loop(void)
 #endif
 
 	last_update_time = 0.0;
-	next_update_time = get_time();
+	next_update_time = get_time() - fmod(get_time(), active_update_interval());
 	info.looped = 0;
 	while (terminate == 0
 			&& (total_run_times.get(*state) == 0 || info.looped < total_run_times.get(*state))) {
