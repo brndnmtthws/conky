@@ -470,10 +470,12 @@ int update_net_stats(void)
 		if (ns->last_read_recv == -1) {
 			ns->recv = r;
 			first = 1;
+			ns->last_read_recv = r;
 		}
 		if (ns->last_read_trans == -1) {
 			ns->trans = t;
 			first = 1;
+			ns->last_read_trans = t;
 		}
 		/* move current traffic statistic to last thereby obsoleting the
 		 * current statistic */
