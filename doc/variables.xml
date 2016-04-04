@@ -1184,20 +1184,17 @@
         default_graph_width config settings.</para>
 
         <para>If you need to execute a command with spaces, you
-        have a couple options: 1) put your command into a
-        separate file, such as ~/bin/myscript.sh, and use that
-        as your execgraph command. Remember to make your script
-        executable! 2) Wrap your command in double-quotes. If
-        you go for this option, do not try to pass the extra
-        parameters for height, width, etc., as the results may
-        be unexpected.</para>
+        have a couple options: 1) wrap your command in
+        double-quotes, or 2) put your command into a separate
+        file, such as ~/bin/myscript.sh, and use that as your
+        execgraph command. Remember to make your script
+        executable!</para>
 
-        <para>Option 1 is preferred. In the following example, we
-        set up execgraph to display seconds (0-59) on a graph that
-        is 50px high and 200px wide, using a temperature gradient
-        with colors ranging from red for small values (FF0000) to
-        yellow for large values (FFFF00). We set the scale to
-        60.</para>
+        <para>In the following example, we set up execgraph to
+        display seconds (0-59) on a graph that is 50px high and 200px
+        wide, using a temperature gradient with colors ranging from red
+        for small values (FF0000) to yellow for large values (FFFF00).
+        We set the scale to 60.</para>
 
         <para><command>${execgraph ~/seconds.sh 50,200 FF0000
         FFFF00 60 -t}</command></para>
