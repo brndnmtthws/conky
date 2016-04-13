@@ -2242,6 +2242,18 @@ static void main_loop(void)
 						if ( ev.xproperty.state == PropertyNewValue ) {
 							get_x11_desktop_info( ev.xproperty.display, ev.xproperty.atom );
 						}
+#ifdef USE_ARGB
+						if (!have_argb_visual) {
+#endif
+							if ( ev.xproperty.atom == ATOM(_XROOTPMAP_ID)
+									|| ev.xproperty.atom == ATOM(_XROOTMAP_ID)) {
+								draw_stuff();
+								next_update_time = get_time();
+								need_to_update = 1;
+							}
+#ifdef USE_ARGB
+						}
+#endif
 						break;
 					}
 
