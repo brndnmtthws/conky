@@ -192,7 +192,7 @@ int top_io;
 #endif
 int top_running;
 static conky::simple_config_setting<bool> extra_newline("extra_newline", false, false);
-static volatile int g_signal_pending;
+static volatile sig_atomic_t g_sigterm_pending, g_sighup_pending;
 
 /* Update interval */
 conky::range_config_setting<double> update_interval("update_interval", 0.0,
@@ -2415,38 +2415,27 @@ static void main_loop(void)
 		}
 #endif
 
-		switch (g_signal_pending) {
-			case SIGHUP:
-			case SIGUSR1:
-				NORM_ERR("received SIGHUP or SIGUSR1. reloading the config file.");
-				reload_config();
-				break;
-			case SIGINT:
-			case SIGTERM:
-				NORM_ERR("received SIGINT or SIGTERM to terminate. bye!");
-				terminate = 1;
+		if (g_sighup_pending) {
+			g_sighup_pending = false;
+			NORM_ERR("received SIGHUP or SIGUSR1. reloading the config file.");
+			reload_config();
+		}
+
+		if (g_sigterm_pending) {
+			g_sigterm_pending = false;
+			NORM_ERR("received SIGINT or SIGTERM to terminate. bye!");
+			terminate = 1;
 #ifdef BUILD_X11
-				if (out_to_x.get(*state)) {
-					XDestroyRegion(x11_stuff.region);
-					x11_stuff.region = NULL;
+			if (out_to_x.get(*state)) {
+				XDestroyRegion(x11_stuff.region);
+				x11_stuff.region = NULL;
 #ifdef BUILD_XDAMAGE
-					XDamageDestroy(display, x11_stuff.damage);
-					XFixesDestroyRegion(display, x11_stuff.region2);
-					XFixesDestroyRegion(display, x11_stuff.part);
+				XDamageDestroy(display, x11_stuff.damage);
+				XFixesDestroyRegion(display, x11_stuff.region2);
+				XFixesDestroyRegion(display, x11_stuff.part);
 #endif /* BUILD_XDAMAGE */
-				}
+			}
 #endif /* BUILD_X11 */
-				break;
-			default:
-				/* Reaching here means someone set a signal
-				 * (SIGXXXX, signal_handler), but didn't write any code
-				 * to deal with it.
-				 * If you don't want to handle a signal, don't set a handler on
-				 * it in the first place. */
-				if (g_signal_pending) {
-					NORM_ERR("ignoring signal (%d)", g_signal_pending);
-				}
-				break;
 		}
 #ifdef HAVE_SYS_INOTIFY_H
 		if (!disable_auto_reload.get(*state) && inotify_fd != -1
@@ -2500,7 +2489,6 @@ static void main_loop(void)
 #endif /* HAVE_SYS_INOTIFY_H */
 
 		llua_update_info(&info, active_update_interval());
-		g_signal_pending = 0;
 	}
 	clean_up(NULL, NULL);
 
@@ -3059,7 +3047,8 @@ int main(int argc, char **argv)
 #endif
 	argc_copy = argc;
 	argv_copy = argv;
-	g_signal_pending = 0;
+	g_sigterm_pending = false;
+	g_sighup_pending = false;
 
 #ifdef BUILD_CURL
 	struct curl_global_initializer {
@@ -3178,5 +3167,23 @@ static void signal_handler(int sig)
 	 * we will poll g_signal_pending with each loop of conky
 	 * and do any signal processing there, NOT here */
 
-	g_signal_pending = sig;
+	switch (sig) {
+		case SIGINT:
+		case SIGTERM:
+			g_sigterm_pending = true;
+			break;
+		case SIGHUP:
+		case SIGUSR1:
+			g_sighup_pending = true;
+			break;
+		default:
+			/* Reaching here means someone set a signal
+			 * (SIGXXXX, signal_handler), but didn't write any code
+			 * to deal with it.
+			 * If you don't want to handle a signal, don't set a handler on
+			 * it in the first place.
+			 * We cannot print debug messages from a sighandler, so simply ignore.
+			 */
+			break;
+	}
 }
