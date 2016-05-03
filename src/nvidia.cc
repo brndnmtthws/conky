@@ -56,6 +56,15 @@
  * TEMP  GPU ${nvidia gputemp}°C (${nvidia gputempthreshold}°C max.), SYS ${nvidia ambienttemp}°C
  * FAN   ${nvidia fanspeed}% RPM (${nvidia fanlevel}%)
  * 
+ * --==| NVIDIA Bars |==--
+ * LOAD ${nvidiabar gpuutil}
+ * VRAM ${nvidiabar memutil}
+ * RAM ${nvidiabar membwutil}
+ * VIDEO ${nvidiabar videoutil}
+ * PCIe ${nvidiabar pcieutil}
+ * Fan ${nvidiabar fanlevel}
+ * TEMP ${nvidiabar gputemp}
+ * 
  */
 
 
@@ -329,6 +338,31 @@ namespace {
 	}
 
 	nvidia_display_setting nvidia_display;
+}
+
+// Extract arguments for nvidiabar, etc, and run set_nvidia_type
+int scan_nvidia_args (struct text_object *obj, const char *args, unsigned int special_t) {
+	const char *arg = args;
+
+	switch (special_t) {
+		case BAR:
+			arg = scan_bar(obj, arg, 100);
+			break;
+		case GRAPH:
+			arg = scan_graph(obj, arg, 100);
+			break;
+		case GAUGE:
+			arg = scan_gauge(obj, arg, 100);
+			break;
+		default:
+			return 1;
+	}
+
+	// Return error if no argument
+	// (sometimes scan_graph gets excited and eats the whole string!
+	if (!arg) return 1;
+
+	return set_nvidia_type(obj, arg);
 }
 
 
@@ -702,6 +736,45 @@ void print_nvidia_value(struct text_object *obj, char *p, int p_max_size)
 		snprintf(p, p_max_size, "N/A");
 	}
 	
+}
+
+double get_nvidia_barval(struct text_object *obj) {
+	struct nvidia_s *nvs = static_cast<nvidia_s *>(obj->data.opaque);
+	int temp1, temp2;
+	double value;
+	
+	// Assume failure
+	value = 0;
+	
+	// Convert query_result to a percentage
+	if (nvs != NULL) {
+		switch (nvs->attribute) {
+			case ATTR_UTILS_STRING: // one of the percentage utils (gpuutil, membwutil, videoutil and pcieutil)
+				value = get_nvidia_string_value(nvs->target, ATTR_UTILS_STRING, nvs->token, nvs->search);
+				break;
+			case ATTR_MEM_UTIL: // memutil
+				temp1 = get_nvidia_value(nvs->target, ATTR_MEM_USED);
+				temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL);
+				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
+				break;
+			case ATTR_FAN_LEVEL: // fanlevel
+			case ATTR_FAN_SPEED: // TODO warn user to use fanlevel if they use fanspeed
+				value = get_nvidia_value(nvs->target, ATTR_FAN_LEVEL);
+				break;
+			case ATTR_GPU_TEMP: // gputemp (calculate out of gputempthreshold)
+				temp1 = get_nvidia_value(nvs->target, ATTR_GPU_TEMP);
+				temp2 = get_nvidia_value(nvs->target, ATTR_GPU_TEMP_THRESHOLD);
+				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
+				break;
+			// TODO: calculate gpufreq, memfreq, etc
+			// can use (val-min)÷(max-min)×100. Perhaps a helper function or macro
+			
+			// TODO: throw errors if unsupported args are used
+		}
+	}
+	
+	// Return the percentage
+	return value;
 }
 
 
