@@ -192,11 +192,11 @@ void scan_font(struct text_object *obj, const char *args)
  **/
 char *scan_graph(struct text_object *obj, const char *args, double defscale)
 {
-	struct graph *g;
-	char buf[1024];
-	memset(buf, 0, 1024);
+	char quoted_cmd[1024] = { '\0' };	/* double-quoted execgraph command */
+	char argstr[1024]     = { '\0' };	/* args minus quoted_cmd */
+	char buf[1024]        = { '\0' };	/* first unquoted string argument in argstr */
 
-	g = (struct graph *)malloc(sizeof(struct graph));
+	struct graph *g = (struct graph *)malloc(sizeof(struct graph));
 	memset(g, 0, sizeof(struct graph));
 	obj->special_data = g;
 
@@ -208,14 +208,38 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale)
 	g->scale = defscale;
 	g->tempgrad = FALSE;
 	if (args) {
+		/* extract double-quoted command in case of execgraph */
+		if (*args == '"') {
+			char *_ptr;
+			size_t _size;
+			if ((_ptr = const_cast<char*>(strrchr(args, '"'))) && _ptr != args) {
+				_size = _ptr - args - 1;
+			} else {
+				NORM_ERR("mismatched double-quote in execgraph object");
+				return NULL;
+			}
+
+			_size = _size < 1024 ? _size : 1023;
+			strncpy(quoted_cmd, args + 1, _size);
+			quoted_cmd[_size] = '\0';
+
+			/* copy everything after the last quote into argstr */
+			if (_size + 2 < strlen(args)) {
+				strncpy(argstr, args + _size + 2, 1023);
+			}
+		} else {
+			/* redundant, but simplifies the code below */
+			strncpy(argstr, args, 1023);
+		}
+
 		/* set tempgrad to true, if '-t' specified.
 		 * It doesn#t matter where the argument is exactly. */
-		if (strstr(args, " " TEMPGRAD) || strncmp(args, TEMPGRAD, strlen(TEMPGRAD)) == 0) {
+		if (strstr(argstr, " " TEMPGRAD) || strncmp(argstr, TEMPGRAD, strlen(TEMPGRAD)) == 0) {
 			g->tempgrad = TRUE;
 		}
 		/* set showlog-flag, if '-l' specified
 		 * It doesn#t matter where the argument is exactly. */
-		if (strstr(args, " " LOGGRAPH) || strncmp(args, LOGGRAPH, strlen(LOGGRAPH)) == 0) {
+		if (strstr(argstr, " " LOGGRAPH) || strncmp(argstr, LOGGRAPH, strlen(LOGGRAPH)) == 0) {
 			g->flags |= SF_SHOWLOG;
 		}
 
@@ -226,77 +250,65 @@ char *scan_graph(struct text_object *obj, const char *args, double defscale)
 		/* interpret the beginning(!) of the argument string as:
 		 * '[height],[width] [color1] [color2] [scale]'
 		 * This means parameters like -t and -l may not be in the beginning */
-		if (sscanf(args, "%d,%d %x %x %lf", &g->height, &g->width, &g->first_colour, &g->last_colour, &g->scale) == 5) {
-			return NULL;
+		if (sscanf(argstr, "%d,%d %x %x %lf", &g->height, &g->width, &g->first_colour, &g->last_colour, &g->scale) == 5) {
+			return *quoted_cmd ? strndup(quoted_cmd, text_buffer_size.get(*state)) : NULL;
 		}
 		/* [height],[width] [color1] [color2] */
 		g->scale = defscale;
-		if (sscanf(args, "%d,%d %x %x", &g->height, &g->width, &g->first_colour, &g->last_colour) == 4) {
-			return NULL;
+		if (sscanf(argstr, "%d,%d %x %x", &g->height, &g->width, &g->first_colour, &g->last_colour) == 4) {
+			return *quoted_cmd ? strndup(quoted_cmd, text_buffer_size.get(*state)) : NULL;
 		}
 		/* [command] [height],[width] [color1] [color2] [scale] */
-		if (sscanf(args, "%1023s %d,%d %x %x %lf", buf, &g->height, &g->width, &g->first_colour, &g->last_colour, &g->scale) == 6) {
+		if (sscanf(argstr, "%1023s %d,%d %x %x %lf", buf, &g->height, &g->width, &g->first_colour, &g->last_colour, &g->scale) == 6) {
 			return strndup(buf, text_buffer_size.get(*state));
 		}
 		g->scale = defscale;
-		if (sscanf(args, "%1023s %d,%d %x %x", buf, &g->height, &g->width, &g->first_colour, &g->last_colour) == 5) {
+		if (sscanf(argstr, "%1023s %d,%d %x %x", buf, &g->height, &g->width, &g->first_colour, &g->last_colour) == 5) {
 			return strndup(buf, text_buffer_size.get(*state));
 		}
 
 		buf[0] = '\0';
-		g->height = 25;
-		g->width = 0;
-		if (sscanf(args, "%x %x %lf", &g->first_colour, &g->last_colour, &g->scale) == 3) {
-			return NULL;
+		g->height = default_graph_height.get(*state);
+		g->width = default_graph_width.get(*state);
+		if (sscanf(argstr, "%x %x %lf", &g->first_colour, &g->last_colour, &g->scale) == 3) {
+			return *quoted_cmd ? strndup(quoted_cmd, text_buffer_size.get(*state)) : NULL;
 		}
 		g->scale = defscale;
-		if (sscanf(args, "%x %x", &g->first_colour, &g->last_colour) == 2) {
-			return NULL;
+		if (sscanf(argstr, "%x %x", &g->first_colour, &g->last_colour) == 2) {
+			return *quoted_cmd ? strndup(quoted_cmd, text_buffer_size.get(*state)) : NULL;
 		}
-		if (sscanf(args, "%1023s %x %x %lf", buf, &g->first_colour, &g->last_colour, &g->scale) == 4) {
+		if (sscanf(argstr, "%1023s %x %x %lf", buf, &g->first_colour, &g->last_colour, &g->scale) == 4) {
 			return strndup(buf, text_buffer_size.get(*state));
 		}
 		g->scale = defscale;
-		if (sscanf(args, "%1023s %x %x", buf, &g->first_colour, &g->last_colour) == 3) {
+		if (sscanf(argstr, "%1023s %x %x", buf, &g->first_colour, &g->last_colour) == 3) {
 			return strndup(buf, text_buffer_size.get(*state));
 		}
 
 		buf[0] = '\0';
 		g->first_colour = 0;
 		g->last_colour = 0;
-		if (sscanf(args, "%d,%d %lf", &g->height, &g->width, &g->scale) == 3) {
-			return NULL;
+		if (sscanf(argstr, "%d,%d %lf", &g->height, &g->width, &g->scale) == 3) {
+			return *quoted_cmd ? strndup(quoted_cmd, text_buffer_size.get(*state)) : NULL;
 		}
 		g->scale = defscale;
-		if (sscanf(args, "%d,%d", &g->height, &g->width) == 2) {
-			return NULL;
+		if (sscanf(argstr, "%d,%d", &g->height, &g->width) == 2) {
+			return *quoted_cmd ? strndup(quoted_cmd, text_buffer_size.get(*state)) : NULL;
 		}
-		if (sscanf(args, "%1023s %d,%d %lf", buf, &g->height, &g->width, &g->scale) < 4) {
+		if (sscanf(argstr, "%1023s %d,%d %lf", buf, &g->height, &g->width, &g->scale) < 4) {
 			g->scale = defscale;
 			//TODO: check the return value and throw an error?
-			sscanf(args, "%1023s %d,%d", buf, &g->height, &g->width);
+			sscanf(argstr, "%1023s %d,%d", buf, &g->height, &g->width);
 		}
 
-		/* escape quotes at end in case of execgraph */
-		if (*buf == '"') {
-			char *_ptr;
-			size_t _size;
-			if ((_ptr = const_cast<char*>(strrchr(args, '"')))) {
-				_size = _ptr - args - 1;
-			}
-			_size = _size < 1024 ? _size : 1023;
-			strncpy(buf, args + 1, _size);
-			buf[_size] = 0;
+		if (!*quoted_cmd && !*buf) {
+			return NULL;
+		} else {
+			return strndup(*quoted_cmd ? quoted_cmd : buf, text_buffer_size.get(*state));
 		}
-
-		return strndup(buf, text_buffer_size.get(*state));
 	}
 
-	if (buf[0] == '\0') {
-		return NULL;
-	} else {
-		return strndup(buf, text_buffer_size.get(*state));
-	}
+	return NULL;
 }
 #endif /* BUILD_X11 */
 
