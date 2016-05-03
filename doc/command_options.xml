@@ -2,34 +2,6 @@
     <varlistentry>
         <term>
             <command>
-                <option>-v | -V | --version</option>
-            </command>
-        </term>
-        <listitem>Prints version and exits 
-        <para></para></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
-                <option>-q | --quiet</option>
-            </command>
-        </term>
-        <listitem>Run Conky in 'quiet mode' (ie. no output) 
-        <para></para></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
-                <option>-D | --debug</option>
-            </command>
-        </term>
-        <listitem>Increase debugging output, ie. -DD for more
-        debugging 
-        <para></para></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
                 <option>-a | --alignment=</option>
             </command>
             <option>ALIGNMENT</option>
@@ -37,7 +9,7 @@
         <listitem>Text alignment on screen,
         {top,bottom,middle}_{left,right,middle} or none. Can also
         be abbreviated with first chars of position, ie. tr for
-        top_right. 
+        top_right. Only available with build flag BUILD_X11 enabled.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -46,7 +18,7 @@
                 <option>-b | --double-buffer</option>
             </command>
         </term>
-        <listitem>Use double buffering (eliminates "flicker") 
+        <listitem>Use double buffering (eliminates "flicker"). Only available with build flag BUILD_X11 enabled.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -66,7 +38,7 @@
             </command>
         </term>
         <listitem>Print builtin default config to stdout. See also
-        the section EXAMPLES for more information. 
+        the section EXAMPLES for more information. Only available with build flag BUILD_BUILTIN_CONFIG enabled.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -75,7 +47,17 @@
                 <option>-d | --daemonize</option>
             </command>
         </term>
-        <listitem>Daemonize Conky, aka fork to background 
+        <listitem>Daemonize Conky, aka fork to background. 
+        <para></para></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>-D | --debug</option>
+            </command>
+        </term>
+        <listitem>Increase debugging output, ie. -DD for more
+        debugging. 
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -85,7 +67,7 @@
             </command>
             <option>FONT</option>
         </term>
-        <listitem>Font to use 
+        <listitem>Font to use. Only available with build flag BUILD_X11 enabled. 
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -94,7 +76,17 @@
                 <option>-h | --help</option>
             </command>
         </term>
-        <listitem>Prints command line help and exits 
+        <listitem>Prints command line help and exits. 
+        <para></para></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>-i</option>
+            </command>
+            <option>COUNT</option>
+        </term>
+        <listitem>Number of times to update Conky (and quit). 
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -103,29 +95,26 @@
                 <option>-o | --own-window</option>
             </command>
         </term>
-        <listitem>Create own window to draw 
+        <listitem>Create own window to draw. Only available with build flag BUILD_X11 enabled.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
         <term>
             <command>
-                <option>-s | --for-scripts</option>
+                <option>-p | --pause=</option>
             </command>
-            <option>TEXT</option>
+            <option>SECONDS</option>
         </term>
-        <listitem>Prints TEXT on the standard output and exits.
-        (This option makes conky useful in scripts)
-        TEXT has to be enclosed by single quotes. Example:
-        conky -s 'Your uptime is: $uptime'
+        <listitem>Time to pause/wait before actually starting Conky.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
         <term>
             <command>
-                <option>-S | --stdin-config</option>
+                <option>-q | --quiet</option>
             </command>
         </term>
-        <listitem>Read configuration from stdin.
+        <listitem>Run Conky in 'quiet mode' (ie. no output). 
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -142,21 +131,21 @@
     <varlistentry>
         <term>
             <command>
-                <option>-p | --pause=</option>
+                <option>-u | --interval=</option>
             </command>
             <option>SECONDS</option>
         </term>
-        <listitem>Time to pause before actually starting Conky
+        <listitem>Update interval. 
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
         <term>
             <command>
-                <option>-u | --interval=</option>
+                <option>-v | -V | --version</option>
             </command>
-            <option>SECONDS</option>
         </term>
-        <listitem>Update interval 
+        <listitem>Prints version, build information and general info.
+        Exits after printing. 
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -166,17 +155,7 @@
             </command>
             <option>WIN_ID</option>
         </term>
-        <listitem>Window id to draw 
-        <para></para></listitem>
-    </varlistentry>
-    <varlistentry>
-        <term>
-            <command>
-                <option>-X | --display=</option>
-            </command>
-            <option>DISPLAY</option>
-        </term>
-        <listitem>X11 display to use 
+        <listitem>Window id to draw. Only available with build flag BUILD_X11 enabled.
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
@@ -192,21 +171,31 @@
     <varlistentry>
         <term>
             <command>
-                <option>-y</option>
+                <option>-x</option>
             </command>
-            <option>Y_COORDINATE</option>
+            <option>X_COORDINATE</option>
         </term>
-        <listitem>Y position 
+        <listitem>X position 
         <para></para></listitem>
     </varlistentry>
     <varlistentry>
         <term>
             <command>
-                <option>-i</option>
+                <option>-X | --display=</option>
             </command>
-            <option>COUNT</option>
+            <option>DISPLAY</option>
         </term>
-        <listitem>Number of times to update Conky (and quit) 
+        <listitem>X11 display to use. Only available with build flag BUILD_X11 enabled. 
+        <para></para></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>-y</option>
+            </command>
+            <option>Y_COORDINATE</option>
+        </term>
+        <listitem>Y position 
         <para></para></listitem>
     </varlistentry>
 </variablelist>
