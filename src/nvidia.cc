@@ -232,7 +232,7 @@ const int translate_nvidia_attribute[] = {
 					0,
 					
 					NV_CTRL_THERMAL_COOLER_SPEED,
-					NV_CTRL_THERMAL_COOLER_CURRENT_LEVEL,		// NOTE: not sure if this should be NV_CTRL_THERMAL_COOLER_LEVEL instead
+					NV_CTRL_THERMAL_COOLER_LEVEL,
 
 					NV_CTRL_GPU_CURRENT_PERFORMANCE_LEVEL,
 					NV_CTRL_IMAGE_SETTINGS,
