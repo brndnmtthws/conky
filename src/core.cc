@@ -122,17 +122,15 @@
  */
 const char *dev_name(const char *path)
 {
-	static char buf[255];	/* should be enough for pathnames */
-	ssize_t buflen;
+	static char buf[PATH_MAX];
 
 	if (!path)
 		return NULL;
 
 #define DEV_NAME(x) \
   x != NULL && strlen(x) > 5 && strncmp(x, "/dev/", 5) == 0 ? x + 5 : x
-	if ((buflen = readlink(path, buf, 254)) == -1)
+	if (realpath(path, buf) == NULL)
 		return DEV_NAME(path);
-	buf[buflen] = '\0';
 	return DEV_NAME(buf);
 #undef DEV_NAME
 }

@@ -60,23 +60,22 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 	struct stat sb;
 	std::vector<char> stat_name(text_buffer_size.get(*state)), device_name(text_buffer_size.get(*state)), device_s(text_buffer_size.get(*state));
 	struct diskio_stat *cur = &stats;
+	char * rpbuf;
 
 	if (!s) {
 		return &stats;
-	} else {
-		strncpy(&(device_s[0]), s, text_buffer_size.get(*state));
 	}
 
-	if (strncmp(&(device_s[0]), "label:", 6) == 0) {
-		snprintf(&(device_name[0]), text_buffer_size.get(*state), "/dev/disk/by-label/%s", &(device_s[6]));
-
-		char * rpbuf;
+	if (strncmp(s, "label:", 6) == 0) {
+		snprintf(&(device_name[0]), text_buffer_size.get(*state), "/dev/disk/by-label/%s", s+6);
 		rpbuf = realpath(&device_name[0], NULL);
-		if (rpbuf) {
-			strncpy(&device_s[0], rpbuf, text_buffer_size.get(*state));
-		}
-		free(rpbuf);
+	} else {
+		rpbuf = realpath(s, NULL);
+	}
 
+	if (rpbuf) {
+		strncpy(&device_s[0], rpbuf, text_buffer_size.get(*state));
+		free(rpbuf);
 	} else {
 		strncpy(&device_s[0], s, text_buffer_size.get(*state));
 	}
@@ -90,8 +89,8 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 
 	snprintf(&(stat_name[0]), text_buffer_size.get(*state), "/dev/%s", &(device_name[0]));
 
-	if (stat(&(stat_name[0]), &sb)) {
-		NORM_ERR("diskio device '%s' does not exist", s);
+	if (stat(&(stat_name[0]), &sb) || !S_ISBLK(sb.st_mode)) {
+		NORM_ERR("diskio device '%s' does not exist", &device_s[0]);
 	}
 
 	/* lookup existing */
