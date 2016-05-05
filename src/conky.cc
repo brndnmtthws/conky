@@ -341,6 +341,9 @@ static void print_version(void)
 # ifdef BUILD_XDAMAGE
                 << _("  * Xdamage extension\n")
 # endif /* BUILD_XDAMAGE */
+# ifdef BUILD_XINERAMA
+                << _("  * Xinerama extension (virtual display)\n")
+# endif /* BUILD_XINERAMA */
 # ifdef BUILD_XSHAPE
                 << _("  * Xshape extension (click through)\n")
 # endif /* BUILD_XSHAPE */
