@@ -83,6 +83,7 @@
 #ifdef BUILD_X11
 #include "fonts.h"
 #endif
+#include "fs.h"
 #ifdef BUILD_ICONV
 #include "iconv_tools.h"
 #endif
@@ -2597,6 +2598,7 @@ void clean_up_without_threads(void *memtofree1, void* memtofree2)
 	free_specials(specials);
 
 	clear_net_stats();
+	clear_fs_stats();
 	clear_diskio_stats();
 	free_and_zero(global_cpu);
 
