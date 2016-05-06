@@ -175,3 +175,5 @@ endif(BUILD_HTTP)
 option(BUILD_ICONV "Enable iconv support" false)
 
 option(BUILD_CMUS "Enable support for cmus music player" false)
+
+option(BUILD_JOURNAL "Enable support for reading from the systemd journal" false)

@@ -306,6 +306,9 @@ Szymon Boniecki
 Thomas Cort
   CPU frequency patch for alpha
 
+Toke Høiland-Jørgensen <toke at toke dot dk>
+  systemd journal support
+
 Toni <bleach at users dot sourceforge dot net>
   exec*/tail/head output evalution
 

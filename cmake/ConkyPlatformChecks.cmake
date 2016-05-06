@@ -360,6 +360,12 @@ if(BUILD_IMLIB2)
 	set(conky_includes ${conky_includes} ${IMLIB2_INCLUDE_PATH})
 endif(BUILD_IMLIB2)
 
+if(BUILD_JOURNAL)
+	pkg_search_module(SYSTEMD REQUIRED libsystemd)
+	set(conky_libs ${conky_libs} ${SYSTEMD_LIB} ${SYSTEMD_LDFLAGS})
+	set(conky_includes ${conky_includes} ${SYSTEMD_INCLUDE_PATH})
+endif(BUILD_JOURNAL)
+
 # Common libraries
 if(WANT_GLIB)
 	pkg_check_modules(GLIB REQUIRED glib-2.0)

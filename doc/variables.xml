@@ -2029,6 +2029,20 @@
     <varlistentry>
         <term>
             <command>
+                <option>journal</option>
+            </command>
+            <option>lines (type)</option>
+        </term>
+        <listitem>Displays last N lines of the systemd journal. The optional
+        type can be 'user' or 'system' which will show only the user or system
+        journal respectively. By default, all journal lines visible to the user
+        are shown. A maximum of 200 lines can be displayed, or until the text
+        buffer is filled.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>kernel</option>
             </command>
         </term>

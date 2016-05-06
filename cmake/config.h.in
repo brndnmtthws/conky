@@ -125,6 +125,8 @@
 
 #cmakedefine BUILD_CMUS 1
 
+#cmakedefine BUILD_JOURNAL 1
+
 #cmakedefine HAVE_STATFS64 1
 #ifndef HAVE_STATFS64
 #define statfs64 statfs
