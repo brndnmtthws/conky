@@ -820,9 +820,10 @@ void get_cpu_count(void)
 		}
 
 		if (sscanf(buf, "%*d-%d", &highest_cpu_index) == 1) {
-			info.cpu_count = highest_cpu_index + 1;
+			info.cpu_count = highest_cpu_index;
 		}
 	}
+	++info.cpu_count;
 	info.cpu_usage = (float*)malloc((info.cpu_count + 1) * sizeof(float));
 
 	fclose(stat_fp);
