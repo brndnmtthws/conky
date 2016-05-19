@@ -3375,14 +3375,13 @@
             <command>
                 <option>rss</option>
             </command>
-            <option>uri interval_in_minutes action (num_par
+            <option>uri interval_in_seconds action (num_par
             (spaces_in_front))</option>
         </term>
         <listitem>
             Download and parse RSS feeds. The interval may be
-            a floating point value greater than 0, otherwise
-            defaults to 15 minutes. Action may be one of the
-            following: feed_title, item_title (with num par),
+            a (floating point) value greater than 0.
+            Action may be one of the following: feed_title, item_title (with num par),
             item_desc (with num par) and item_titles (when using
             this action and spaces_in_front is given conky places
             that many spaces in front of each item). This object is
