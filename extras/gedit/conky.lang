@@ -1,0 +1,761 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language id="conkyrc" _name="Conky" version="2.0" _section="Others"> 
+ <metadata>
+    <!-- This syntax highlighting will apply for any file with the sequence "conky" 
+         in the file name (or extension), I recommend to use you_config_name.conky 
+         for config files or alternatively conky_your_config_name
+         Unfortunately this will also trigger the syntax highlighting for this document, 
+         you can always manually set this one back to XML.
+         If you have a favourite custom format you can change the globs property to your
+         personal preference. -->
+    <property name="globs">*conky*</property>
+    <property name="block-comment-start">--[[</property>
+    <property name="block-comment-end">]]</property>
+  </metadata>
+
+  <styles>
+    <style id="keyword" _name="Config keywords"     map-to="def:keyword"/>
+    <style id="attribute"   _name="Text keywords"       map-to="def:type"/>
+    <style id="comment" _name="Comment"         map-to="def:comment"/>
+    <style id="path"    _name="Paths and URLs"      map-to="def:string"/>
+    <style id="boolean" _name="Boolean"         map-to="def:boolean"/>
+    <style id="argument"    _name="Arguments"       map-to="def:preprocessor"/>
+    <style id="brackets"    _name="Brackets ${ ... }"   map-to="def:identifier"/>
+    <style id="decimal" _name="Decimal"         map-to="def:decimal"/>
+  </styles>
+
+  <definitions>
+   <context id="conkyrc" class="no-spell-check">
+      <include>
+        <context ref="block-comment"/>
+        <context ref="line-comment"/>
+    <context ref="path"/>
+        <context ref="brackets"/>
+        <context ref="colors"/>
+    <context ref="string"/>
+        <context ref="fonts"/>
+        <context ref="template"/>
+        <context ref="date"/>
+    <context ref="number"/>
+        <context ref="keywordsConfig"/>
+    <context ref="keywordsText"/>
+    <context ref="boolean"/>
+        <context ref="predefinedColors"/>
+    <context ref="argumentsWindowType"/>
+    <context ref="argumentsWindowHints"/>
+    <context ref="argumentsAlignment"/>
+    <context ref="argumentsNvidia"/>
+    <context ref="argumentsText"/>
+    <context ref="argumentsConfig"/>
+      </include>
+    </context>
+
+<!-- ======================================================================================= -->
+<!-- Keep in mind gedit does not like < and >, use &lt; and &gt; instead! -->
+
+    <!-- Block comment, lua syntax -->
+    <context id="block-comment" style-ref="comment" class="comment" class-disabled="no-spell-check">
+      <start>--\[(=*)\[</start>
+      <end>]\%{1@start}]</end>
+      <include>
+    <context ref="def:in-comment"/>
+      </include>
+    </context>
+
+    <!-- Line comment, lua syntax -->
+    <!-- <match>(?&lt;!conky\.text)(\-\-.*\n)</match> (works with /g flag) -->
+    <context id="line-comment" style-ref="comment" class-disabled="no-spell-check" end-at-line-end="true">
+    <start>--</start>
+    </context>
+
+    <!-- File paths and URLs, starting with https://, http://, ~/ or / -->
+    <context id="path" style-ref="path" class="string">
+      <match>(?&lt;=\'|\ )(?:\~\/|\/|htt(?:p|ps)\:\/\/){1}[^\s\}\']*</match>
+    </context>
+
+    <!-- Brackets --> 
+    <!-- Note: this will just highlight all brackets, not just those from the conky syntax -->
+    <context id="brackets" style-ref="brackets">
+      <match>(\$\{|(?&lt;!\\)(\{|\})|\[\[|\]\])</match>
+    </context>
+
+    <!-- String --> 
+    <context id="string" end-at-line-end="true" style-ref="path">
+    <start>"</start>
+    <end>"</end>
+    <include>
+        <context id="escape" style-ref="path">
+            <match>\\.</match>
+        </context>
+    </include>
+    </context>
+
+    <!-- Custom colors -->
+    <!-- Note: this will not highlight colors in bars ect -->
+    <context id="colors" style-ref="argument">
+      <match>(?:\'([\da-fA-F]{6})\')|(?&lt;=color)\s+([\da-fA-F]{6})\s*(?=\})</match>
+    </context>
+
+    <!-- Fonts -->
+    <!-- Note: this will not only trigger behind font = '...' or inside ${font ...} -->
+    <context id="fonts" style-ref="argument">
+      <match>(?:\s+|\')(\b(?:[\w_-]\s?)*(?:\:(?:style\=)?([Mm]edium)?(?:[Bb]old|[Ii]talic))?\:(?:pixel)?size=[0-9]+)\'?</match>
+    </context>
+
+    <!-- Date arguments -->
+    <!-- BUG: needs /g + will also trigger with keywords other than time -->
+    <context id="date" style-ref="argument">
+      <match>\%[aAbBcCdDeDgGhHIjmMnprRStTuUVwWxXyYzZ%]{1}(?=(?:(?!\$\{).)*\})</match>
+    </context>
+
+    <!-- Template arguments -->
+    <!-- BUG: will also trigger between [[ ]] other than from template\d{1} -->
+    <!-- BUG: this will only work for SINGLE line templates (need /g flag) -->
+    <context id="template" style-ref="argument">
+      <match>\\[0-9]{1}(?=(?:(?!\[\[).)*\]\])</match>
+    </context>
+
+    <!-- Numbers -->
+    <context id="number" style-ref="decimal">
+      <match>(?&lt;=[\ \=]|\dx)([\+\-]{0,1}\d+)([\.\,]{1}\d+)?</match>
+    </context>
+
+<!-- ======================================================================================= -->
+
+    <!-- Configuration keywords in the conky.config = { ... } section -->
+    <context id="keywordsConfig" style-ref="keyword">
+    <suffix>\s*(?=\=)</suffix>
+
+    <keyword>alignment</keyword>
+    <keyword>append_file</keyword>
+    <keyword>background</keyword>
+    <keyword>border_inner_margin</keyword>
+    <keyword>border_outer_margin</keyword>
+    <keyword>border_width</keyword>
+    <keyword>color[0-9]?</keyword>
+    <keyword>console_graph_ticks</keyword>
+    <keyword>cpu_avg_samples</keyword>
+    <keyword>default_bar_height</keyword>
+    <keyword>default_bar_width</keyword>
+    <keyword>default_color</keyword>
+    <keyword>default_gauge_height</keyword>
+    <keyword>default_gauge_width</keyword>
+    <keyword>default_graph_height</keyword>
+    <keyword>default_graph_width</keyword>
+    <keyword>default_outline_color</keyword>
+    <keyword>default_shade_color</keyword>
+    <keyword>disable_auto_reload</keyword>
+    <keyword>diskio_avg_samples</keyword>
+    <keyword>display</keyword>
+    <keyword>double_buffer</keyword>
+    <keyword>draw_borders</keyword>
+    <keyword>draw_graph_borders</keyword>
+    <keyword>draw_outline</keyword>
+    <keyword>draw_shades</keyword>
+    <keyword>extra_newline</keyword>
+    <keyword>font</keyword>
+    <keyword>format_human_readable</keyword>
+    <keyword>gap_x</keyword>
+    <keyword>gap_y</keyword>
+    <keyword>hddtemp_host</keyword>
+    <keyword>hddtemp_port</keyword>
+    <keyword>if_up_strictness</keyword>
+    <keyword>imap</keyword>
+    <keyword>imlib_cache_flush_interval</keyword>
+    <keyword>imlib_cache_size</keyword>
+    <keyword>lua_draw_hook_post</keyword>
+    <keyword>lua_draw_hook_pre</keyword>
+    <keyword>lua_load</keyword>
+    <keyword>lua_shutdown_hook</keyword>
+    <keyword>lua_startup_hook</keyword>
+    <keyword>mail_spool</keyword>
+    <keyword>max_port_monitor_connections</keyword>
+    <keyword>max_text_width</keyword>
+    <keyword>max_user_text</keyword>
+    <keyword>maximum_width</keyword>
+    <keyword>minimum_height</keyword>
+    <keyword>minimum_width</keyword>
+    <keyword>mpd_host</keyword>
+    <keyword>mpd_password</keyword>
+    <keyword>mpd_port</keyword>
+    <keyword>mysql_host</keyword>
+    <keyword>mysql_port</keyword>
+    <keyword>mysql_user</keyword>
+    <keyword>mysql_password</keyword>
+    <keyword>mysql_db</keyword>
+    <keyword>music_player_interval</keyword>
+    <keyword>net_avg_samples</keyword>
+    <keyword>no_buffers</keyword>
+    <keyword>nvidia_display</keyword>
+    <keyword>out_to_console</keyword>
+    <keyword>out_to_http</keyword>
+    <keyword>out_to_ncurses</keyword>
+    <keyword>out_to_stderr</keyword>
+    <keyword>out_to_x</keyword>
+    <keyword>override_utf8_locale</keyword>
+    <keyword>overwrite_file</keyword>
+    <keyword>own_window</keyword>
+    <keyword>own_window_class</keyword>
+    <keyword>own_window_colour</keyword>
+    <keyword>own_window_hints</keyword>
+    <keyword>own_window_title</keyword>
+    <keyword>own_window_argb_value</keyword>
+    <keyword>own_window_argb_visual</keyword>
+    <keyword>own_window_transparent</keyword>
+    <keyword>own_window_type</keyword>
+    <keyword>pad_percents</keyword>
+    <keyword>pop3</keyword>
+    <keyword>short_units</keyword>
+    <keyword>show_graph_range</keyword>
+    <keyword>show_graph_scale</keyword>
+    <keyword>stippled_borders</keyword>
+    <keyword>temperature_unit</keyword>
+    <keyword>template[0-9]</keyword>
+    <keyword>text_buffer_size</keyword>
+    <keyword>times_in_seconds</keyword>
+    <keyword>top_cpu_separate</keyword>
+    <keyword>top_name_verbose</keyword>
+    <keyword>top_name_width</keyword>
+    <keyword>total_run_times</keyword>
+    <keyword>update_interval</keyword>
+    <keyword>update_interval_on_battery</keyword>
+    <keyword>uppercase</keyword>
+    <keyword>use_spacer</keyword>
+    <keyword>use_xft</keyword>
+    <keyword>xftalpha</keyword>
+    </context>
+
+    <!-- Variable keywords for in conky.text = [[ ]]; section -->
+    <context id="keywordsText" style-ref="attribute">
+    <prefix>(?:(?&lt;=\$\{)\ *|\$)</prefix>
+
+    <keyword>acpiacadapter</keyword>
+    <keyword>acpifan</keyword>
+    <keyword>acpitemp</keyword>
+    <keyword>addr</keyword>
+    <keyword>addrs</keyword>
+    <keyword>adt746xcpu</keyword>
+    <keyword>adt746xfan</keyword>
+    <keyword>alignc</keyword>
+    <keyword>alignr</keyword>
+    <keyword>apcupsd</keyword>
+    <keyword>apcupsd_cable</keyword>
+    <keyword>apcupsd_charge</keyword>
+    <keyword>apcupsd_lastxfer</keyword>
+    <keyword>apcupsd_linev</keyword>
+    <keyword>apcupsd_load</keyword>
+    <keyword>apcupsd_loadbar</keyword>
+    <keyword>apcupsd_loadgauge</keyword>
+    <keyword>apcupsd_loadgraph</keyword>
+    <keyword>apcupsd_model</keyword>
+    <keyword>apcupsd_name</keyword>
+    <keyword>apcupsd_status</keyword>
+    <keyword>apcupsd_temp</keyword>
+    <keyword>apcupsd_timeleft</keyword>
+    <keyword>apcupsd_upsmode</keyword>
+    <keyword>apm_adapter</keyword>
+    <keyword>apm_battery_life</keyword>
+    <keyword>apm_battery_time</keyword>
+    <keyword>audacious_bar</keyword>
+    <keyword>audacious_bitrate</keyword>
+    <keyword>audacious_channels</keyword>
+    <keyword>audacious_filename</keyword>
+    <keyword>audacious_frequency</keyword>
+    <keyword>audacious_length</keyword>
+    <keyword>audacious_length_seconds</keyword>
+    <keyword>audacious_main_volume</keyword>
+    <keyword>audacious_playlist_length</keyword>
+    <keyword>audacious_playlist_position</keyword>
+    <keyword>audacious_position</keyword>
+    <keyword>audacious_position_seconds</keyword>
+    <keyword>audacious_status</keyword>
+    <keyword>audacious_title</keyword>
+    <keyword>battery</keyword>
+    <keyword>battery_bar</keyword>
+    <keyword>battery_percent</keyword>
+    <keyword>battery_short</keyword>
+    <keyword>battery_time</keyword>
+    <keyword>blink</keyword>
+    <keyword>bmpx_album</keyword>
+    <keyword>bmpx_artist</keyword>
+    <keyword>bmpx_bitrate</keyword>
+    <keyword>bmpx_title</keyword>
+    <keyword>bmpx_track</keyword>
+    <keyword>bmpx_uri</keyword>
+    <keyword>buffers</keyword>
+    <keyword>cached</keyword>
+    <keyword>color[0-9]?</keyword>
+    <keyword>cmdline_to_pid</keyword>
+    <keyword>cmus_aaa</keyword>
+    <keyword>cmus_album</keyword>
+    <keyword>cmus_artist</keyword>
+    <keyword>cmus_curtime</keyword>
+    <keyword>cmus_file</keyword>
+    <keyword>cmus_date</keyword>
+    <keyword>cmus_genre</keyword>
+    <keyword>cmus_percent</keyword>
+    <keyword>cmus_progress</keyword>
+    <keyword>cmus_random</keyword>
+    <keyword>cmus_repeat</keyword>
+    <keyword>cmus_state</keyword>
+    <keyword>cmus_timeleft</keyword>
+    <keyword>cmus_title</keyword>
+    <keyword>cmus_totaltime</keyword>
+    <keyword>cmus_track</keyword>
+    <keyword>combine</keyword>
+    <keyword>conky_build_arch</keyword>
+    <keyword>conky_build_date</keyword>
+    <keyword>conky_version</keyword>
+    <keyword>cpu</keyword>
+    <keyword>cpubar</keyword>
+    <keyword>cpugauge</keyword>
+    <keyword>cpugraph</keyword>
+    <keyword>curl</keyword>
+    <keyword>desktop</keyword>
+    <keyword>desktop_name</keyword>
+    <keyword>desktop_number</keyword>
+    <keyword>disk_protect</keyword>
+    <keyword>diskio</keyword>
+    <keyword>diskio_read</keyword>
+    <keyword>diskio_write</keyword>
+    <keyword>diskiograph</keyword>
+    <keyword>diskiograph_read</keyword>
+    <keyword>diskiograph_write</keyword>
+    <keyword>distribution</keyword>
+    <keyword>downspeed</keyword>
+    <keyword>downspeedf</keyword>
+    <keyword>downspeedgraph</keyword>
+    <keyword>draft_mails</keyword>
+    <keyword>else</keyword>
+    <keyword>endif</keyword>
+    <keyword>entropy_avail</keyword>
+    <keyword>entropy_bar</keyword>
+    <keyword>entropy_perc</keyword>
+    <keyword>entropy_poolsize</keyword>
+    <keyword>eval</keyword>
+    <keyword>eve</keyword>
+    <keyword>exec</keyword>
+    <keyword>execbar</keyword>
+    <keyword>execgauge</keyword>
+    <keyword>execgraph</keyword>
+    <keyword>execi</keyword>
+    <keyword>execibar</keyword>
+    <keyword>execigauge</keyword>
+    <keyword>execigraph</keyword>
+    <keyword>execp</keyword>
+    <keyword>execpi</keyword>
+    <keyword>flagged_mails</keyword>
+    <keyword>font</keyword>
+    <keyword>format_time</keyword>
+    <keyword>forwarded_mails</keyword>
+    <keyword>freq</keyword>
+    <keyword>freq_g</keyword>
+    <keyword>fs_bar</keyword>
+    <keyword>fs_bar_free</keyword>
+    <keyword>fs_free</keyword>
+    <keyword>fs_free_perc</keyword>
+    <keyword>fs_size</keyword>
+    <keyword>fs_type</keyword>
+    <keyword>fs_used</keyword>
+    <keyword>fs_used_perc</keyword>
+    <keyword>goto</keyword>
+    <keyword>gw_iface</keyword>
+    <keyword>gw_ip</keyword>
+    <keyword>hddtemp</keyword>
+    <keyword>head</keyword>
+    <keyword>hr</keyword>
+    <keyword>hwmon</keyword>
+    <keyword>i2c</keyword>
+    <keyword>i8k_ac_status</keyword>
+    <keyword>i8k_bios</keyword>
+    <keyword>i8k_buttons_status</keyword>
+    <keyword>i8k_cpu_temp</keyword>
+    <keyword>i8k_left_fan_rpm</keyword>
+    <keyword>i8k_left_fan_status</keyword>
+    <keyword>i8k_right_fan_rpm</keyword>
+    <keyword>i8k_right_fan_status</keyword>
+    <keyword>i8k_serial</keyword>
+    <keyword>i8k_version</keyword>
+    <keyword>ibm_brightness</keyword>
+    <keyword>ibm_fan</keyword>
+    <keyword>ibm_temps</keyword>
+    <keyword>ibm_volume</keyword>
+    <keyword>ical</keyword>
+    <keyword>irc</keyword>
+    <keyword>iconv_start</keyword>
+    <keyword>iconv_stop</keyword>
+    <keyword>if_empty</keyword>
+    <keyword>if_existing</keyword>
+    <keyword>if_gw</keyword>
+    <keyword>if_match</keyword>
+    <keyword>if_mixer_mute</keyword>
+    <keyword>if_mounted</keyword>
+    <keyword>if_mpd_playing</keyword>
+    <keyword>if_running</keyword>
+    <keyword>if_smapi_bat_installed</keyword>
+    <keyword>if_up</keyword>
+    <keyword>if_updatenr</keyword>
+    <keyword>if_xmms2_connected</keyword>
+    <keyword>image</keyword>
+    <keyword>imap_messages</keyword>
+    <keyword>imap_unseen</keyword>
+    <keyword>ioscheduler</keyword>
+    <keyword>journal</keyword>
+    <keyword>kernel</keyword>
+    <keyword>laptop_mode</keyword>
+    <keyword>lines</keyword>
+    <keyword>loadavg</keyword>
+    <keyword>loadgraph</keyword>
+    <keyword>lua</keyword>
+    <keyword>lua_bar</keyword>
+    <keyword>lua_gauge</keyword>
+    <keyword>lua_graph</keyword>
+    <keyword>lua_parse</keyword>
+    <keyword>machine</keyword>
+    <keyword>mails</keyword>
+    <keyword>mboxscan</keyword>
+    <keyword>mem</keyword>
+    <keyword>memwithbuffers</keyword>
+    <keyword>membar</keyword>
+    <keyword>memwithbuffersbar</keyword>
+    <keyword>memdirty</keyword>
+    <keyword>memeasyfree</keyword>
+    <keyword>memfree</keyword>
+    <keyword>memgauge</keyword>
+    <keyword>memgraph</keyword>
+    <keyword>memmax</keyword>
+    <keyword>memperc</keyword>
+    <keyword>mixer</keyword>
+    <keyword>mixerbar</keyword>
+    <keyword>mixerl</keyword>
+    <keyword>mixerlbar</keyword>
+    <keyword>mixerr</keyword>
+    <keyword>mixerrbar</keyword>
+    <keyword>moc_album</keyword>
+    <keyword>moc_artist</keyword>
+    <keyword>moc_bitrate</keyword>
+    <keyword>moc_curtime</keyword>
+    <keyword>moc_file</keyword>
+    <keyword>moc_rate</keyword>
+    <keyword>moc_song</keyword>
+    <keyword>moc_state</keyword>
+    <keyword>moc_timeleft</keyword>
+    <keyword>moc_title</keyword>
+    <keyword>moc_totaltime</keyword>
+    <keyword>monitor</keyword>
+    <keyword>monitor_number</keyword>
+    <keyword>mpd_album</keyword>
+    <keyword>mpd_artist</keyword>
+    <keyword>mpd_albumartist</keyword>
+    <keyword>mpd_bar</keyword>
+    <keyword>mpd_bitrate</keyword>
+    <keyword>mpd_date</keyword>
+    <keyword>mpd_elapsed</keyword>
+    <keyword>mpd_file</keyword>
+    <keyword>mpd_length</keyword>
+    <keyword>mpd_name</keyword>
+    <keyword>mpd_percent</keyword>
+    <keyword>mpd_random</keyword>
+    <keyword>mpd_repeat</keyword>
+    <keyword>mpd_smart</keyword>
+    <keyword>mpd_status</keyword>
+    <keyword>mpd_title</keyword>
+    <keyword>mpd_track</keyword>
+    <keyword>mpd_vol</keyword>
+    <keyword>mysql</keyword>
+    <keyword>nameserver</keyword>
+    <keyword>new_mails</keyword>
+    <keyword>nodename</keyword>
+    <keyword>nodename_short</keyword>
+    <keyword>no_update</keyword>
+    <keyword>nvidia</keyword>
+    <keyword>nvidiabar</keyword>
+    <keyword>nvidiagauge</keyword>
+    <keyword>nvidiagraph</keyword>
+    <keyword>offset</keyword>
+    <keyword>outlinecolor</keyword>
+    <keyword>pb_battery</keyword>
+    <keyword>pid_chroot</keyword>
+    <keyword>pid_cmdline</keyword>
+    <keyword>pid_cwd</keyword>
+    <keyword>pid_environ</keyword>
+    <keyword>pid_environ_list</keyword>
+    <keyword>pid_exe</keyword>
+    <keyword>pid_nice</keyword>
+    <keyword>pid_openfiles</keyword>
+    <keyword>pid_parent</keyword>
+    <keyword>pid_priority</keyword>
+    <keyword>pid_read</keyword>
+    <keyword>pid_state</keyword>
+    <keyword>pid_state_short</keyword>
+    <keyword>pid_stderr</keyword>
+    <keyword>pid_stdin</keyword>
+    <keyword>pid_stdout</keyword>
+    <keyword>pid_threads</keyword>
+    <keyword>pid_thread_list</keyword>
+    <keyword>pid_time_kernelmode</keyword>
+    <keyword>pid_time_usermode</keyword>
+    <keyword>pid_time</keyword>
+    <keyword>pid_uid</keyword>
+    <keyword>pid_euid</keyword>
+    <keyword>pid_suid</keyword>
+    <keyword>pid_fsuid</keyword>
+    <keyword>pid_fsgid</keyword>
+    <keyword>pid_gid</keyword>
+    <keyword>pid_sgid</keyword>
+    <keyword>pid_egid</keyword>
+    <keyword>pid_fsgid</keyword>
+    <keyword>pid_vmpeak</keyword>
+    <keyword>pid_vmsize</keyword>
+    <keyword>pid_vmlck</keyword>
+    <keyword>pid_vmhwm</keyword>
+    <keyword>pid_vmrss</keyword>
+    <keyword>pid_vmdata</keyword>
+    <keyword>pid_vmstk</keyword>
+    <keyword>pid_vmexe</keyword>
+    <keyword>pid_vmlib</keyword>
+    <keyword>pid_vmpte</keyword>
+    <keyword>pid_write</keyword>
+    <keyword>platform</keyword>
+    <keyword>pop3_unseen</keyword>
+    <keyword>pop3_used</keyword>
+    <keyword>processes</keyword>
+    <keyword>read_tcp</keyword>
+    <keyword>read_udp</keyword>
+    <keyword>replied_mails</keyword>
+    <keyword>rss</keyword>
+    <keyword>running_processes</keyword>
+    <keyword>running_threads</keyword>
+    <keyword>scroll</keyword>
+    <keyword>seen_mails</keyword>
+    <keyword>shadecolor</keyword>
+    <keyword>smapi</keyword>
+    <keyword>smapi_bat_bar</keyword>
+    <keyword>smapi_bat_perc</keyword>
+    <keyword>smapi_bat_power</keyword>
+    <keyword>smapi_bat_temp</keyword>
+    <keyword>sony_fanspeed</keyword>
+    <keyword>stippled_hr</keyword>
+    <keyword>stock</keyword>
+    <keyword>swap</keyword>
+    <keyword>swapbar</keyword>
+    <keyword>swapfree</keyword>
+    <keyword>swapmax</keyword>
+    <keyword>swapperc</keyword>
+    <keyword>sysname</keyword>
+    <keyword>tab</keyword>
+    <keyword>tail</keyword>
+    <keyword>tcp_ping</keyword>
+    <keyword>tcp_portmon</keyword>
+    <keyword>TCP</keyword>
+    <keyword>template[0-9]{1}</keyword>
+    <keyword>texeci</keyword>
+    <keyword>texecpi</keyword>
+    <keyword>threads</keyword>
+    <keyword>time</keyword>
+    <keyword>to_bytes</keyword>
+    <keyword>top</keyword>
+    <keyword>top_io</keyword>
+    <keyword>top_mem</keyword>
+    <keyword>top_time</keyword>
+    <keyword>totaldown</keyword>
+    <keyword>totalup</keyword>
+    <keyword>trashed_mails</keyword>
+    <keyword>tztime</keyword>
+    <keyword>gid_name</keyword>
+    <keyword>uid_name</keyword>
+    <keyword>unflagged_mails</keyword>
+    <keyword>unforwarded_mails</keyword>
+    <keyword>unreplied_mails</keyword>
+    <keyword>unseen_mails</keyword>
+    <keyword>updates</keyword>
+    <keyword>upspeed</keyword>
+    <keyword>upspeedf</keyword>
+    <keyword>upspeedgraph</keyword>
+    <keyword>upspeed</keyword>
+    <keyword>uptime</keyword>
+    <keyword>uptime_short</keyword>
+    <keyword>user_names</keyword>
+    <keyword>user_number</keyword>
+    <keyword>user_terms</keyword>
+    <keyword>user_times</keyword>
+    <keyword>utime</keyword>
+    <keyword>v6addrs</keyword>
+    <keyword>voffset</keyword>
+    <keyword>voltage_mv</keyword>
+    <keyword>voltage_v</keyword>
+    <keyword>weather</keyword>
+    <keyword>weather_forecast</keyword>
+    <keyword>wireless_ap</keyword>
+    <keyword>wireless_bitrate</keyword>
+    <keyword>wireless_channel</keyword>
+    <keyword>wireless_essid</keyword>
+    <keyword>wireless_freq</keyword>
+    <keyword>wireless_link_bar</keyword>
+    <keyword>wireless_link_qual</keyword>
+    <keyword>wireless_link_qual_max</keyword>
+    <keyword>wireless_link_qual_perc</keyword>
+    <keyword>wireless_mode</keyword>
+    <keyword>words</keyword>
+    <keyword>xmms2_album</keyword>
+    <keyword>xmms2_artist</keyword>
+    <keyword>xmms2_bar</keyword>
+    <keyword>xmms2_bitrate</keyword>
+    <keyword>xmms2_comment</keyword>
+    <keyword>xmms2_date</keyword>
+    <keyword>xmms2_duration</keyword>
+    <keyword>xmms2_elapsed</keyword>
+    <keyword>xmms2_genre</keyword>
+    <keyword>xmms2_id</keyword>
+    <keyword>xmms2_percent</keyword>
+    <keyword>xmms2_playlist</keyword>
+    <keyword>xmms2_size</keyword>
+    <keyword>xmms2_smart</keyword>
+    <keyword>xmms2_status</keyword>
+    <keyword>xmms2_timesplayed</keyword>
+    <keyword>xmms2_title</keyword>
+    <keyword>xmms2_tracknr</keyword>
+    <keyword>xmms2_url</keyword>
+    </context>
+
+    <!-- Boolean values -->
+    <context id="boolean" style-ref="boolean">
+       <keyword>false</keyword>
+       <keyword>true</keyword>
+       <keyword>yes</keyword>
+       <keyword>no</keyword>
+    </context>
+
+    <!-- Predefined colors -->
+    <context id="predefinedColors" style-ref="argument">
+       <prefix>(?&lt;=\ |\'|\})</prefix>
+       <suffix>(?=\ |\'|\})</suffix>
+
+       <keyword>red</keyword>
+       <keyword>green</keyword>
+       <keyword>yellow</keyword>
+       <keyword>blue</keyword>
+       <keyword>magenta</keyword>
+       <keyword>cyan</keyword>
+       <keyword>black</keyword>
+       <keyword>white</keyword>
+    </context>
+
+    <!-- General arguments for Conky variables in the text section -->
+    <context id="argumentsText" style-ref="argument">
+       <prefix>(?&lt;=\ )</prefix>
+       <suffix>(?=\ |\})</suffix>
+
+       <keyword>cpu[0-9]?</keyword>
+       <keyword>temp</keyword>
+       <keyword>name</keyword>
+       <keyword>pid</keyword>
+       <keyword>mem</keyword>
+       <keyword>mem_res</keyword>
+       <keyword>mem_vsize</keyword>
+       <keyword>time</keyword>
+       <keyword>uid</keyword>
+       <keyword>user</keyword>
+       <keyword>io_perc</keyword>
+       <keyword>io_read</keyword>
+       <keyword>io_write</keyword>
+       <keyword>in</keyword>
+       <keyword>vol</keyword>
+       <keyword>fan</keyword>
+    </context>
+
+   <!-- own_window_type argument keywords in the config section -->
+   <context id="argumentsWindowType" style-ref="argument">
+    <prefix>\'</prefix>
+    <suffix>\'</suffix>
+
+    <keyword>normal</keyword>
+    <keyword>override</keyword>
+    <keyword>desktop</keyword>
+    <keyword>dock</keyword>
+    <keyword>panel</keyword>
+   </context>
+
+   <!-- own_window_hints argument keywords in the config section -->
+   <context id="argumentsWindowHints" style-ref="argument">
+    <prefix>(?:\ *|\'|\,)</prefix>
+
+    <keyword>undecorated</keyword>
+    <keyword>below</keyword>
+    <keyword>above</keyword>
+    <keyword>sticky</keyword>
+    <keyword>skip_taskbar</keyword>
+    <keyword>skip_pager</keyword>
+   </context>
+
+   <!-- alignment argument keywords in the config section -->
+   <context id="argumentsAlignment" style-ref="argument">
+    <prefix>\'</prefix>
+    <suffix>\'</suffix>
+
+    <keyword>none</keyword>
+    <keyword>top</keyword>
+    <keyword>top_left</keyword>
+    <keyword>top_left</keyword>
+    <keyword>top_right</keyword>
+    <keyword>top_middle</keyword>
+    <keyword>bottom_left</keyword>
+    <keyword>bottom_right</keyword>
+    <keyword>bottom_middle</keyword>
+    <keyword>middle_left</keyword>
+    <keyword>middle_middle</keyword>
+    <keyword>middle_right</keyword>
+    <keyword>tl</keyword>
+    <keyword>tr</keyword>
+    <keyword>tm</keyword>
+    <keyword>bl</keyword>
+    <keyword>br</keyword>
+    <keyword>bm</keyword>
+    <keyword>ml</keyword>
+    <keyword>mm</keyword>
+    <keyword>mr</keyword>
+   </context>
+
+   <!-- nvidia, nvidiabar, nvidiagraph and nvidiagauge arguments for the text section -->
+   <context id="argumentsNvidia" style-ref="argument">
+    <prefix>(?&lt;=\ )</prefix>
+    <suffix>(?=\ |\})</suffix>
+
+    <keyword>gpufreq</keyword>
+    <keyword>gpufreqmin</keyword>
+    <keyword>gpufreqmax</keyword>
+    <keyword>memfreq</keyword>
+    <keyword>memfreqmin</keyword>
+    <keyword>memfreqmax</keyword>
+    <keyword>mtrfreq</keyword>
+    <keyword>mtrfreqmin</keyword>
+    <keyword>mtrfreqmax</keyword>
+    <keyword>perflevel</keyword>
+    <keyword>perflevelmin</keyword>
+    <keyword>perflevelmax</keyword>
+    <keyword>perfmode</keyword>
+    <keyword>memutil</keyword>
+    <keyword>memused</keyword>
+    <keyword>memtotal</keyword>
+    <keyword>gpuutil</keyword>
+    <keyword>membwutil</keyword>    
+    <keyword>videoutil</keyword>
+    <keyword>pcieutil</keyword>
+    <keyword>gputemp</keyword>
+    <keyword>gputempthreshold</keyword>
+    <keyword>ambienttemp</keyword>
+    <keyword>fanspeed</keyword>
+    <keyword>fanlevel</keyword>
+   </context>
+
+    <!-- General arguments for the Conky configuration keywords in the config section -->
+   <context id="argumentsConfig" style-ref="argument">
+    <prefix>\'</prefix>
+    <suffix>\'</suffix>
+
+    <keyword>fahrenheit</keyword>
+    <keyword>celsius</keyword>
+   </context>
+
+    </definitions>
+</language>
