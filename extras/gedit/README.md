@@ -1,16 +1,14 @@
 # Gedit syntax highlighting
 
-Note this is purely a highlighting **NOT** a syntax validator, the highlighting may not be 100% correct and not all arguments or keywords may be recognised properly. Feel free to change a regex if you have got a better one.
+Note: this highlights based on syntax and does **NOT** attempt to validate arguments or keywords. The syntax highlighting is unlikely to be 100% accurate and is open to improvement.
 
-The syntax highlighting will automatically be applied to all files with `conky` in their name. eg. `my_config.conky` (unfortunately it also triggers for the conky.lang file itself, you should set it to XML manually)
+The syntax highlighting will automatically be applied to all files with `conky` in their name. eg. `my_config.conky` (unfortunately it also triggers for the `conky.lang` file itself, you should set it to XML manually)
 
- *  [Gedit Syntax Highlight documentation](https://developer.gnome.org/gtksourceview/stable/lang-reference.html)
+ * [`gtksourceview` Syntax Highlight documentation][1]
  * [Regex Tutorial](http://www.rexegg.com/)
  * [Regex Testing](https://regex101.com/)
 
-Developers: if you want to add a new keyword just add it (in order) to the list. In `keywordsConfig` for config keywords and in `keywordsText` for variables. If it has a number at the end, eg `color1` just use `color[0-9]{1}` if the number is mendatory or `color[0-9]?` if it is not.
-
-If you want to add your own group of argument keywords you can look at the current definitions and copy them, should be self explainatory.
+Developers: The main context (`id="conkyrc"`) is where gedit begins. This main context then references other sub-contexts. Each context can apply styles to itself, sub-strings from its regexs, or its contents (in the case of `<start><end>` "container" contexts). If you are ever confused by something, try searching for XML attributes in the [`gtksourceview` docs][1]. If you find a particuarly complex regex, try using the Regex Tester linked above, and bear in mind that `gtksourceview` adds some extra regex syntax (i.e. `\%[ ... ]` and `\%{ ... }`).
 
 ***
 
@@ -29,3 +27,5 @@ If you want to add your own group of argument keywords you can look at the curre
 ` /usr/share/gtksourceview-3.0/language-specs/conky.lang`
  or (for single user)
 ` ~/.local/share/gtksourceview-3.0/language-specs/conky.lang`
+
+[1]: https://developer.gnome.org/gtksourceview/stable/lang-reference.html
