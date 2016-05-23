@@ -2767,47 +2767,249 @@
             <command>
                 <option>nvidia</option>
             </command>
-            <option>threshold</option>
-            <option>temp</option>
-            <option>ambient</option>
-            <option>gpufreq</option>
-            <option>memfreq</option>
-            <option>imagequality</option>
+            <option>argument</option>
         </term>
-        <listitem>Nvidia graficcard support for the XNVCtrl
-        library. Each option can be shortened to the least
-        significant part. Temperatures are printed as float, all
-        other values as integer. 
-        <simplelist>
+        <listitem>Nvidia graphics card information via the XNVCtrl
+        library.  
+        <para />
+        <emphasis>Possible arguments:</emphasis> (Temperatures are
+        printed as float, all other values as integer. Bracketed
+        arguments are aliases)
+        <simplelist type='horiz' columns='2'>
+            <!-- Temperatures -->
             <member>
-		<command>threshold</command>
-		<option>The thresholdtemperature at
-			which the gpu slows down</option>
+                <command>gputemp</command>
+                (<command>temp</command>)
+                <option>GPU temperature</option>
             </member>
             <member>
-		<command>temp</command>
-		<option>Gives the gpu current
-			temperature</option>
+                <command>gputempthreshold</command>
+                (<command>threshold</command>)
+                <option>Temperature threshold where the GPU will reduce it's clock speed</option>
             </member>
             <member>
-                <command>ambient</command>
-                <option>Gives current air temperature near GPU
-                case</option>
+                <command>ambienttemp</command>
+                (<command>ambient</command>)
+                <option>Ambient temperature outside the graphics card</option>
+            </member>
+
+            <!-- GPU frequency -->
+            <member>
+                <command>gpufreqcur</command>
+                (<command>gpufreq</command>)
+                <option>Current GPU clock speed</option>
             </member>
             <member>
-                <command>gpufreq</command>
-                <option>Gives the current gpu frequency</option>
+                <command>gpufreqmin</command>
+                <option>Minimum GPU clock speed</option>
             </member>
             <member>
-                <command>memfreq</command>
-                <option>Gives the current mem frequency</option>
+                <command>gpufreqmax</command>
+                <option>Maximum GPU clock speed</option>
             </member>
+
+            <!-- Memory frequency -->
+            <member>
+                <command>memfreqcur</command>
+                (<command>memfreq</command>)
+                <option>Current memory clock speed</option>
+            </member>
+            <member>
+                <command>memfreqmin</command>
+                <option>Minimum memory clock speed</option>
+            </member>
+            <member>
+                <command>memfreqmax</command>
+                <option>Maximum memory clock speed</option>
+            </member>
+
+            <!-- Memory transfer rate frequency -->
+            <member>
+                <command>mtrfreqcur</command>
+                (<command>mtrfreq</command>)
+                <option>Current memory transfer rate clock speed</option>
+            </member>
+            <member>
+                <command>mtrfreqmin</command>
+                <option>Minimum memory transfer rate clock speed</option>
+            </member>
+            <member>
+                <command>mtrfreqmax</command>
+                <option>Maximum memory transfer rate clock speed</option>
+            </member>
+
+            <!-- Performance levels -->
+            <member>
+                <command>perflevelcur</command>
+                (<command>perflevel</command>)
+                <option>Current performance level</option>
+            </member>
+            <member>
+                <command>perflevelmin</command>
+                <option>Lowest performance level</option>
+            </member>
+            <member>
+                <command>perflevelmax</command>
+                <option>Highest performance level</option>
+            </member>
+            <member>
+                <command>perfmode</command>
+                <option>Performance mode</option>
+            </member>
+
+            <!-- Load/utilization -->
+            <member>
+                <command>gpuutil</command>
+                <option>GPU utilization %</option>
+            </member>
+            <member>
+                <command>membwutil</command>
+                <option>Memory bandwidth utilization %</option>
+            </member>
+            <member>
+                <command>videoutil</command>
+                <option>Video engine utilization %</option><!-- ??? -->
+            </member>
+            <member>
+                <command>pcieutil</command>
+                <option>PCIe bandwidth utilization %</option>
+            </member>
+
+            <!-- RAM statistics -->
+            <member>
+                <command>memused</command>
+                (<command>mem</command>)
+                <option>Amount of used memory</option>
+            </member>
+            <member>
+                <command>memfree</command>
+                (<command>memavail</command>)
+                <option>Amount of free memory</option>
+            </member>
+            <member>
+                <command>memmax</command>
+                (<command>memtotal</command>)
+                <option>Total amount of memory</option>
+            </member>
+            <member>
+                <command>memutil</command>
+                (<command>memperc</command>)
+                <option>Memory utilization %</option>
+            </member>
+
+            <!-- Fan/cooler -->
+            <member>
+                <command>fanspeed</command>
+                <option>Fan speed</option>
+            </member>
+            <member>
+                <command>fanlevel</command>
+                <option>Fan level %</option>
+            </member>
+
+            <!-- Miscellaneous -->
             <member>
                 <command>imagequality</command>
-                <option>Which imagequality should be chosen by
-                OpenGL applications</option>
+                <option>Image quality</option>
             </member>
         </simplelist>
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>nvidiabar</option>
+            </command>
+            <option>(height),(width)</option>
+            <option>argument</option>
+        </term>
+        <listitem>Same as nvidia, except it draws its output in a
+        horizontal bar. The height and width parameters are optional,
+        and default to the default_bar_height and default_bar_width
+        config settings, respectively.
+        <para />
+        <emphasis>Note the following arguments are incompatible:</emphasis>
+        <simplelist type='horiz' columns='3'>
+            <member>
+                <command>gputempthreshold</command>
+                (<command>threshold</command>)
+            </member>
+            <member>
+                <command>gpufreqmin</command>
+            </member>
+            <member>
+                <command>gpufreqmax</command>
+            </member>
+            <member>
+                <command>memfreqmin</command>
+            </member>
+            <member>
+                <command>memfreqmax</command>
+            </member>
+            <member>
+                <command>mtrfreqmin</command>
+            </member>
+            <member>
+                <command>mtrfreqmax</command>
+            </member>
+            <member>
+                <command>perflevelmin</command>
+            </member>
+            <member>
+                <command>perflevelmax</command>
+            </member>
+            <member>
+                <command>perfmode</command>
+            </member>
+            <member>
+                <command>memtotal</command>
+                (<command>memmax</command>)
+            </member>
+            <member>
+                <command>fanspeed</command>
+            </member>
+        </simplelist>
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>nvidiagauge</option>
+            </command>
+            <option>(height),(width)</option>
+            <option>argument</option>
+        </term>
+        <listitem>Same as nvidiabar, except  a round gauge
+        (much like a vehicle speedometer). The height
+        and width parameters are optional, and default to the
+        default_gauge_height and default_gauge_width config
+        settings, respectively.
+        <para />
+        For possible arguments see nvidia and nvidiabar.
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>nvidiagraph</option>
+            </command>
+            <option>argument</option>
+            <option>(height),(width)</option>
+            <option>(gradient color 1)</option>
+            <option>(gradient color 2)</option>
+            <option>(scale)</option>
+            <option>(-t)</option>
+            <option>(-l)</option>
+        </term>
+        <listitem>Same as nvidiabar, except a horizontally
+        scrolling graph with values from 0-100 plotted on the
+        vertical axis. The height and width parameters are
+        optional, and default to the default_graph_height and
+        default_graph_width config settings, respectively.
+        <para />
+        For possible arguments see nvidia and nvidiabar. To learn more
+        about the -t -l and gradient color options,
+        see execgraph.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
