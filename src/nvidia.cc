@@ -746,16 +746,22 @@ double get_nvidia_barval(struct text_object *obj) {
 	// Assume failure
 	value = 0;
 	
-	// Convert query_result to a percentage
+	// Convert query_result to a percentage using ((val-min)÷(max-min)×100)+0.5 if needed.
 	if (nvs != NULL) {
 		switch (nvs->attribute) {
 			case ATTR_UTILS_STRING: // one of the percentage utils (gpuutil, membwutil, videoutil and pcieutil)
 				value = get_nvidia_string_value(nvs->target, ATTR_UTILS_STRING, nvs->token, nvs->search);
 				break;
 			case ATTR_MEM_UTIL: // memutil
+			case ATTR_MEM_USED:
 				temp1 = get_nvidia_value(nvs->target, ATTR_MEM_USED);
 				temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL);
 				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
+				break;
+			case ATTR_MEM_FREE: // memfree
+				temp1 = get_nvidia_value(nvs->target, ATTR_MEM_USED);
+				temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL);
+				value = temp2 - temp1;
 				break;
 			case ATTR_FAN_LEVEL: // fanlevel
 			case ATTR_FAN_SPEED: // TODO warn user to use fanlevel if they use fanspeed
@@ -766,10 +772,36 @@ double get_nvidia_barval(struct text_object *obj) {
 				temp2 = get_nvidia_value(nvs->target, ATTR_GPU_TEMP_THRESHOLD);
 				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
 				break;
-			// TODO: calculate gpufreq, memfreq, etc
-			// can use (val-min)÷(max-min)×100. Perhaps a helper function or macro
+			case ATTR_AMBIENT_TEMP: // ambienttemp (calculate out of gputempthreshold for consistency)
+				temp1 = get_nvidia_value(nvs->target, ATTR_AMBIENT_TEMP);
+				temp2 = get_nvidia_value(nvs->target, ATTR_GPU_TEMP_THRESHOLD);
+				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
+				break;
+			case ATTR_GPU_FREQ: // gpufreq (calculate out of gpufreqmax)
+				temp1 = get_nvidia_value(nvs->target, ATTR_GPU_FREQ);
+				temp2 = get_nvidia_string_value(nvs->target, ATTR_PERFMODES_STRING, (char*) "nvclockmax", SEARCH_MAX);
+				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
+				break;
+			case ATTR_MEM_FREQ: // memfreq (calculate out of memfreqmax)
+				temp1 = get_nvidia_value(nvs->target, ATTR_MEM_FREQ);
+				temp2 = get_nvidia_string_value(nvs->target, ATTR_PERFMODES_STRING, (char*) "memclockmax", SEARCH_MAX);
+				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
+				break;
+			case ATTR_FREQS_STRING: // mtrfreq (calculate out of memfreqmax)
+				if (nvs->token != "memTransferRate") {// Double check (currently unnecessary)
+					// TODO: output error here
+					return 0;
+				}
+				temp1 = get_nvidia_string_value(nvs->target, ATTR_FREQS_STRING, nvs->token, SEARCH_MAX);
+				temp2 = get_nvidia_string_value(nvs->target, ATTR_PERFMODES_STRING, (char*) "memTransferRatemax", SEARCH_MAX);
+				if (temp2 > temp1) temp1 = temp2; // extra safe here
+				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
+				break;
+			case ATTR_IMAGE_QUALITY: // imagequality
+				value = get_nvidia_value(nvs->target, ATTR_IMAGE_QUALITY);
+				break;
 			
-			// TODO: throw errors if unsupported args are used
+			// TODO: Throw errors if unsupported args are used
 		}
 	}
 	
