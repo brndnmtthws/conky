@@ -20,7 +20,7 @@ Conky can display more than 300 built-in objects, including support for:
  * Can be extended using built-in [**Lua**](lua) support, or any of your
    own scripts and programs ([more](Lua Interface)).
  * Built-in [**Imlib2**][Imlib2] and [**Cairo**][cairo] bindings for arbitrary drawing
-   with Lua ([more](wiki/Lua-Interface)).
+   with Lua ([more](wiki/Lua-API)).
 
 ... and much much more.
 
