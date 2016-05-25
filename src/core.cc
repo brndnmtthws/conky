@@ -1802,30 +1802,30 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		obj->callbacks.free = &free_combine;
 #ifdef BUILD_NVIDIA
 	END OBJ_ARG(nvidia, 0, "nvidia needs an argument")
-		if (set_nvidia_type(obj, arg)) {
+		if (set_nvidia_query(obj, arg, NONSPECIAL)) {
 			CRIT_ERR(obj, free_at_crash, "nvidia: invalid argument"
-				 " specified: '%s'\n", arg);
+				 " specified: '%s'", arg);
 		}
 		obj->callbacks.print = &print_nvidia_value;
 		obj->callbacks.free = &free_nvidia;
 	END OBJ_ARG(nvidiabar, 0, "nvidiabar needs an argument")
-		if (scan_nvidia_args(obj, arg, BAR)) {
+		if (set_nvidia_query(obj, arg, BAR)) {
 			CRIT_ERR(obj, free_at_crash, "nvidiabar: invalid argument"
-				 " specified: '%s'\n", arg);
+				 " specified: '%s'", arg);
 		}
 		obj->callbacks.barval = &get_nvidia_barval;
 		obj->callbacks.free = &free_nvidia;
 	END OBJ_ARG(nvidiagraph, 0, "nvidiagraph needs an argument")
-		if (scan_nvidia_args(obj, arg, GRAPH)) {
+		if (set_nvidia_query(obj, arg, GRAPH)) {
 			CRIT_ERR(obj, free_at_crash, "nvidiagraph: invalid argument"
-				 " specified: '%s'\n", arg);
+				 " specified: '%s'", arg);
 		}
 		obj->callbacks.graphval = &get_nvidia_barval;
 		obj->callbacks.free = &free_nvidia;
 	END OBJ_ARG(nvidiagauge, 0, "nvidiagauge needs an argument")
-		if (scan_nvidia_args(obj, arg, GAUGE)) {
+		if (set_nvidia_query(obj, arg, GAUGE)) {
 			CRIT_ERR(obj, free_at_crash, "nvidiagauge: invalid argument"
-				 " specified: '%s'\n", arg);
+				 " specified: '%s'", arg);
 		}
 		obj->callbacks.gaugeval = &get_nvidia_barval;
 		obj->callbacks.free = &free_nvidia;

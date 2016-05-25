@@ -43,7 +43,6 @@
  *   so that all quirks are located there
  * - Implement nvs->print_type to allow control over how the value is printed
  *   (int, float, temperature...)
- * - Rename set_nvidia_type() to set_nvidia_query (requires changes in core.cc)
  * 
  * Showcase (conky.conf):
  * --==| NVIDIA | ==--
@@ -282,9 +281,31 @@ typedef enum _SEARCH_ID {
 	SEARCH_MAX
 } SEARCH_ID;
 
+// Translate special_type into command string
+const char* translate_nvidia_special_type[] = {
+ 	"nvidia", // NONSPECIAL
+ 	"", // HORIZONTAL_LINE
+ 	"", // STIPPLED_HR
+ 	"nvidiabar", // BAR
+ 	"", // FG
+ 	"", // BG
+ 	"", // OUTLINE
+ 	"", // ALIGNR
+ 	"", // ALIGNC
+ 	"nvidiagague", // GAUGE
+ 	"nvidiagraph", // GRAPH
+ 	"", // OFFSET
+ 	"", // VOFFSET
+ 	"", // FONT
+ 	"", // GOTO
+ 	"" // TAB
+};
+
 
 // Global struct to keep track of queries
 struct nvidia_s {
+	const char *command;
+	const char *arg;
 	QUERY_ID query;
 	TARGET_ID target;
 	ATTR_ID attribute;
@@ -340,11 +361,20 @@ namespace {
 	nvidia_display_setting nvidia_display;
 }
 
-// Extract arguments for nvidiabar, etc, and run set_nvidia_type
-int scan_nvidia_args (struct text_object *obj, const char *args, unsigned int special_t) {
-	const char *arg = args;
 
-	switch (special_t) {
+// Evaluate module parameters and prepare query
+int set_nvidia_query(struct text_object *obj, const char *arg, unsigned int special_type)
+{
+	struct nvidia_s *nvs;
+	int aid;
+
+	// Initialize global struct
+	obj->data.opaque = malloc(sizeof(struct nvidia_s));
+	nvs = static_cast<nvidia_s *>(obj->data.opaque);
+	memset(nvs, 0, sizeof(struct nvidia_s));
+
+	// Extract arguments for nvidiabar, etc, and run set_nvidia_query
+	switch (special_type) {
 		case BAR:
 			arg = scan_bar(obj, arg, 100);
 			break;
@@ -354,28 +384,11 @@ int scan_nvidia_args (struct text_object *obj, const char *args, unsigned int sp
 		case GAUGE:
 			arg = scan_gauge(obj, arg, 100);
 			break;
-		default:
-			return 1;
 	}
 
 	// Return error if no argument
 	// (sometimes scan_graph gets excited and eats the whole string!
 	if (!arg) return 1;
-
-	return set_nvidia_type(obj, arg);
-}
-
-
-// Evaluate module parameters and prepare query
-int set_nvidia_type(struct text_object *obj, const char *arg)
-{
-	struct nvidia_s *nvs;
-	int aid;
-
-	// Initialize global struct
-	obj->data.opaque = malloc(sizeof(struct nvidia_s));
-	nvs = static_cast<nvidia_s *>(obj->data.opaque);
-	memset(nvs, 0, sizeof(struct nvidia_s));
 	
 	// Translate parameter to id
 	for (aid=0; aid < ARG_UNKNOWN; aid++) {
@@ -384,6 +397,10 @@ int set_nvidia_type(struct text_object *obj, const char *arg)
 	}
 	//fprintf(stderr, "parameter: %s -> aid: %d\n", arg, aid);
 	
+	// Save pointers to the arg and command strings for dubugging and printing
+	nvs->arg = translate_module_argument[aid];
+	nvs->command = translate_nvidia_special_type[special_type];
+
 	// Evaluate parameter
 	switch(aid) {
 		
@@ -569,6 +586,7 @@ int set_nvidia_type(struct text_object *obj, const char *arg)
 			break;
 			
 		default:						// Unknown/invalid argument
+			// Error printed by core.cc
 			return 1;
 	}
 	return 0;
@@ -583,6 +601,7 @@ static int get_nvidia_value(TARGET_ID tid, ATTR_ID aid)
 
 	// Query nvidia interface
 	if(!dpy || !XNVCTRLQueryTargetAttribute(dpy, translate_nvidia_target[tid], 0, 0, translate_nvidia_attribute[aid], &value)){
+		NORM_ERR("%s: Something went wrong running nvidia query (tid: %d, aid: %d)", __func__, tid, aid);
 		return -1;
 	}
 	
@@ -605,6 +624,7 @@ static char* get_nvidia_string(TARGET_ID tid, ATTR_ID aid)
 	
 	// Query nvidia interface
 	if (!dpy || !XNVCTRLQueryTargetStringAttribute(dpy, translate_nvidia_target[tid], 0, 0, translate_nvidia_attribute[aid], &str)) {
+		NORM_ERR("%s: Something went wrong running nvidia string query (tid: %d, aid: %d)", __func__, tid, aid);
 		return NULL;
 	}
 	//fprintf(stderr, "%s", str);
@@ -763,8 +783,11 @@ double get_nvidia_barval(struct text_object *obj) {
 				temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL);
 				value = temp2 - temp1;
 				break;
+			case ATTR_FAN_SPEED: // fanspeed: Warn user we are using fanlevel
+			NORM_ERR("%s: invalid argument specified: '%s' (using 'fanlevel' instead).",
+								nvs->command, nvs->arg);
+				// No break, continue into fanlevel
 			case ATTR_FAN_LEVEL: // fanlevel
-			case ATTR_FAN_SPEED: // TODO warn user to use fanlevel if they use fanspeed
 				value = get_nvidia_value(nvs->target, ATTR_FAN_LEVEL);
 				break;
 			case ATTR_GPU_TEMP: // gputemp (calculate out of gputempthreshold)
@@ -788,8 +811,10 @@ double get_nvidia_barval(struct text_object *obj) {
 				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
 				break;
 			case ATTR_FREQS_STRING: // mtrfreq (calculate out of memfreqmax)
-				if (nvs->token != "memTransferRate") {// Double check (currently unnecessary)
-					// TODO: output error here
+				if (nvs->token == "memTransferRate") {
+					// Just in case error for silly devs
+					CRIT_ERR(NULL, NULL, "%s: attribute is 'ATTR_FREQS_STRING' but token is not \"memTransferRate\" (arg: '%s')",
+					          nvs->command, nvs->arg);
 					return 0;
 				}
 				temp1 = get_nvidia_string_value(nvs->target, ATTR_FREQS_STRING, nvs->token, SEARCH_MAX);
@@ -800,8 +825,10 @@ double get_nvidia_barval(struct text_object *obj) {
 			case ATTR_IMAGE_QUALITY: // imagequality
 				value = get_nvidia_value(nvs->target, ATTR_IMAGE_QUALITY);
 				break;
-			
-			// TODO: Throw errors if unsupported args are used
+
+			default: // Throw error if unsupported args are used
+				CRIT_ERR(NULL, NULL, "%s: invalid argument specified: '%s'",
+				          nvs->command, nvs->arg);
 		}
 	}
 	
