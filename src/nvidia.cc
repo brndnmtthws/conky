@@ -592,12 +592,40 @@ int set_nvidia_query(struct text_object *obj, const char *arg, unsigned int spec
 	return 0;
 }
 
+// Return the amount of targets present (or -1 on error)
+static inline int get_nvidia_target_count(Display *dpy, TARGET_ID tid)
+{
+	int num_tgts;
+	if (!XNVCTRLQueryTargetCount(dpy, translate_nvidia_target[tid], &num_tgts)) {
+		num_tgts = -1;
+	}
+
+	return num_tgts;
+}
+
+// Exit if we are unable to get targets of type tid on display dpy
+void check_nvidia_target_count(Display *dpy, TARGET_ID tid, ATTR_ID aid)
+{
+	int num_tgts = get_nvidia_target_count(dpy, tid);
+
+	if(num_tgts < 1) {
+		// Print error and exit if there's not enough targets to query
+		CRIT_ERR(NULL, NULL, "%s:"
+		"\n          Trying to query Nvidia target failed (using the propietary drivers)."
+		"\n          Are you sure they are installed correctly and a Nvidia GPU is in use?"
+		"\n          (display: %d, target_id: %d, target_count: %d, attribute_id: %d)"
+		             , __func__, dpy, tid, num_tgts, aid);
+	}
+}
 
 // Retrieve attribute value via nvidia interface
 static int get_nvidia_value(TARGET_ID tid, ATTR_ID aid)
 {
 	Display *dpy = nvdisplay ? nvdisplay : display;
 	int value;
+
+	// Check for issues
+	check_nvidia_target_count(dpy, tid, aid);
 
 	// Query nvidia interface
 	if(!dpy || !XNVCTRLQueryTargetAttribute(dpy, translate_nvidia_target[tid], 0, 0, translate_nvidia_attribute[aid], &value)){
@@ -621,6 +649,9 @@ static char* get_nvidia_string(TARGET_ID tid, ATTR_ID aid)
 {
 	Display *dpy = nvdisplay ? nvdisplay : display;
 	char *str;
+
+	// Check for issues
+	check_nvidia_target_count(dpy, tid, aid);
 	
 	// Query nvidia interface
 	if (!dpy || !XNVCTRLQueryTargetStringAttribute(dpy, translate_nvidia_target[tid], 0, 0, translate_nvidia_attribute[aid], &str)) {
