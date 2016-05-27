@@ -574,15 +574,34 @@ int set_nvidia_type(struct text_object *obj, const char *arg)
 	return 0;
 }
 
+// Check we are able to query tid and return the amount of targets present
+static inline int get_nvidia_target_count(Display *dpy, TARGET_ID tid){
+	int num_tgts;
+	if (!XNVCTRLQueryTargetCount(dpy, translate_nvidia_target[tid], &num_tgts)) {
+		//NORM_ERR("%s: Failed to query number of nvidia targets (dpy: %d, tid: %d)", __func__, dpy, tid);
+		return -1;
+	}
+	return num_tgts;
+}
 
 // Retrieve attribute value via nvidia interface
 static int get_nvidia_value(TARGET_ID tid, ATTR_ID aid)
 {
 	Display *dpy = nvdisplay ? nvdisplay : display;
 	int value;
+	
+	// Check for issues
+	if(get_nvidia_target_count(dpy, tid) < 1) {
+		NORM_ERR("%s:"
+		"\n          Trying to query Nvidia target %d failed using the propietary drivers."
+		"\n          Are you sure they are installed correctly and a Nvidia card is in use?"
+		             , __func__, tid);
+		return -1;
+	}
 
 	// Query nvidia interface
 	if(!dpy || !XNVCTRLQueryTargetAttribute(dpy, translate_nvidia_target[tid], 0, 0, translate_nvidia_attribute[aid], &value)){
+		NORM_ERR("%s: Something went wrong running nvidia query (tid: %d, aid: %d)", __func__, tid, aid);
 		return -1;
 	}
 	
@@ -603,8 +622,18 @@ static char* get_nvidia_string(TARGET_ID tid, ATTR_ID aid)
 	Display *dpy = nvdisplay ? nvdisplay : display;
 	char *str;
 	
+	// Check for issues
+	if(get_nvidia_target_count(dpy, tid) < 1) {
+		NORM_ERR("%s:"
+		"\n          Trying to query Nvidia target %d failed using the propietary drivers."
+		"\n          Are you sure they are installed correctly and a Nvidia card is in use?"
+		             , __func__, tid);
+		return NULL;
+	}
+	
 	// Query nvidia interface
 	if (!dpy || !XNVCTRLQueryTargetStringAttribute(dpy, translate_nvidia_target[tid], 0, 0, translate_nvidia_attribute[aid], &str)) {
+		NORM_ERR("%s: Something went wrong running nvidia string query (tid: %d, aid: %d)", __func__, tid, aid);
 		return NULL;
 	}
 	//fprintf(stderr, "%s", str);
