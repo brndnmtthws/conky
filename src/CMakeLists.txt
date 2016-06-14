@@ -198,6 +198,11 @@ if(BUILD_NCURSES)
 	 set(optional_sources ${optional_sources} nc.cc)
 endif(BUILD_NCURSES)
 
+if(BUILD_PULSEAUDIO)
+	set(pulseaudio pulseaudio.cc)
+	set(optional_sources ${optional_sources} ${pulseaudio})
+endif(BUILD_PULSEAUDIO)
+
 add_executable(conky ${conky_sources} ${optional_sources})
 
 target_link_libraries(conky ${conky_libs})

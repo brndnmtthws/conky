@@ -102,6 +102,9 @@
 #ifdef BUILD_JOURNAL
 #include "journal.h"
 #endif
+#ifdef BUILD_PULSEAUDIO
+#include "pulseaudio.h"
+#endif
 
 /* check for OS and include appropriate headers */
 #if defined(__linux__)
@@ -307,12 +310,12 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		if(arg) {
 #ifdef __linux__
 			if(strpbrk(arg, "/.") != NULL) {
-				/* 
+				/*
 				 * a bit of paranoia. screen out funky paths
 				 * i hope no device will have a '.' in its name
 				 */
 				NORM_ERR("acpiacadapter: arg must not contain '/' or '.'");
-			} else 
+			} else
 				obj->data.opaque = strdup(arg);
 #else
 			NORM_ERR("acpiacadapter: arg is only used on linux");
@@ -1875,6 +1878,21 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		obj->callbacks.print = &print_journal;
 		obj->callbacks.free = &free_journal;
 #endif /* BUILD_JOURNAL */
+#ifdef BUILD_PULSEAUDIO
+	END OBJ_IF(if_pa_sink_muted, 0)
+		obj->callbacks.iftest = &puau_muted;
+	END OBJ(pa_sink_description, 0)
+		obj->callbacks.print = &print_puau_sink_description;
+	END OBJ(pa_sink_volume, 0)
+		obj->callbacks.percentage = &puau_vol;
+	END OBJ(pa_sink_volumebar, 0)
+		scan_bar(obj, arg, 1);
+		obj->callbacks.barval = &puau_volumebarval;
+	END OBJ(pa_card_active_profile, 0)
+		obj->callbacks.print = &print_puau_card_active_profile;
+	END OBJ(pa_card_name, 0)
+		obj->callbacks.print = &print_puau_card_name;
+#endif /* BUILD_PULSEAUDIO */
 	END {
 		char *buf = (char *)malloc(text_buffer_size.get(*state));
 
@@ -2121,4 +2139,3 @@ void free_text_objects(struct text_object *root)
 		}
 	}
 }
-
