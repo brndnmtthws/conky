@@ -246,6 +246,15 @@ conky::lua_traits<alignment>::Map conky::lua_traits<alignment>::map = {
 	{ "middle_left",   MIDDLE_LEFT },
 	{ "middle_middle", MIDDLE_MIDDLE },
 	{ "middle_right",  MIDDLE_RIGHT },
+	{ "tl",            TOP_LEFT },
+	{ "tr",            TOP_RIGHT },
+	{ "tm",            TOP_MIDDLE },
+	{ "bl",            BOTTOM_LEFT },
+	{ "br",            BOTTOM_RIGHT },
+	{ "bm",            BOTTOM_MIDDLE },
+	{ "ml",            MIDDLE_LEFT },
+	{ "mm",            MIDDLE_MIDDLE },
+	{ "mrt",           MIDDLE_RIGHT },
 	{ "none",          NONE }
 };
 
