@@ -1881,17 +1881,29 @@ struct text_object *construct_text_object(char *s, const char *arg,
 #ifdef BUILD_PULSEAUDIO
 	END OBJ_IF(if_pa_sink_muted, 0)
 		obj->callbacks.iftest = &puau_muted;
+        obj->callbacks.free = &free_pulseaudio;
+	    init_pulseaudio(obj);
 	END OBJ(pa_sink_description, 0)
 		obj->callbacks.print = &print_puau_sink_description;
+        obj->callbacks.free = &free_pulseaudio;
+	    init_pulseaudio(obj);
 	END OBJ(pa_sink_volume, 0)
 		obj->callbacks.percentage = &puau_vol;
+        obj->callbacks.free = &free_pulseaudio;
+	    init_pulseaudio(obj);
 	END OBJ(pa_sink_volumebar, 0)
 		scan_bar(obj, arg, 1);
+	    init_pulseaudio(obj);
 		obj->callbacks.barval = &puau_volumebarval;
+        obj->callbacks.free = &free_pulseaudio;
 	END OBJ(pa_card_active_profile, 0)
 		obj->callbacks.print = &print_puau_card_active_profile;
+        obj->callbacks.free = &free_pulseaudio;
+	    init_pulseaudio(obj);
 	END OBJ(pa_card_name, 0)
 		obj->callbacks.print = &print_puau_card_name;
+	    obj->callbacks.free = &free_pulseaudio;
+	    init_pulseaudio(obj);
 #endif /* BUILD_PULSEAUDIO */
 	END {
 		char *buf = (char *)malloc(text_buffer_size.get(*state));

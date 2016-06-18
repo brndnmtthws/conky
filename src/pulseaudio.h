@@ -34,6 +34,8 @@
 #include "text_object.h"
 #include <pulse/pulseaudio.h>
 
+void init_pulseaudio(struct text_object *obj);
+void free_pulseaudio(struct text_object *obj);
 uint8_t puau_vol(struct text_object *); // preserve pa_* for libpulse
 void  print_puau_sink_description(struct text_object *obj, char *p, int p_max_size);
 void  print_puau_card_name(struct text_object *obj, char *p, int p_max_size);
@@ -47,11 +49,13 @@ struct pulseaudio_default_results {
     std::string sink_description;
     uint32_t sink_card;
     int sink_mute;
+	uint32_t sink_index;
     unsigned int sink_volume; // percentage
 
     // default card
     std::string card_active_profile_description;
     std::string card_name;
+	uint32_t card_index;
 };
 
 enum pulseaudio_state {
@@ -60,31 +64,20 @@ enum pulseaudio_state {
 	PULSE_CONTEXT_FINISHED
 };
 
-class pulseaudio_cb: public conky::callback<pulseaudio_default_results> {
-	typedef conky::callback< pulseaudio_default_results> Base;
-	pa_mainloop *pulseaudio_ml = NULL;
-	pa_mainloop_api *pulseaudio_mlapi = NULL;
-
-	pa_context *pulseaudio_context = NULL;
-
-	int ret;
-
-	enum pulseaudio_state pulseaudio_context_state = PULSE_CONTEXT_INITIALIZING;
-
-	protected:
-		virtual void work();
-
-	public:
-		pulseaudio_cb(uint32_t period)
-			: Base(period, false, Base::Tuple())
-		{
-			init_pulseaudio();
-			result={ std::string(), std::string(), 0, 0 , 0, std::string(), std::string()};
-		}
-    	~pulseaudio_cb();
-
-	    void init_pulseaudio();
+class pulseaudio_c {
+  public:
+	pa_threaded_mainloop *mainloop;
+	pa_mainloop_api *mainloop_api;
+	pa_context *context;
+	volatile enum pulseaudio_state cstate;
+	int ninits;
+	struct pulseaudio_default_results result;
+	pulseaudio_c():mainloop(NULL),
+				   mainloop_api(NULL),
+				   context(NULL),
+				   cstate(PULSE_CONTEXT_INITIALIZING),
+				   ninits(0),
+				   result({ std::string(), std::string(), 0, 0, 0, 0, std::string(), std::string(), 0 }){};
 };
-
 
 #endif /* _PULSEAUDIO_H */
