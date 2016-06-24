@@ -42,7 +42,7 @@ The [GitHub Wiki](https://github.com/brndnmtthws/conky/wiki) serves as a central
 Conky's documentation. Quick links:
 
 * [Install](https://github.com/brndnmtthws/conky/wiki/Installation)
-* [Configure](https://github.com/brndnmtthws/conky/wiki/Configure)
+* [Configure](https://github.com/brndnmtthws/conky/wiki/Configuration-Settings)
 * [User Configs](https://github.com/brndnmtthws/conky/wiki/User-Configs)
 * [Frequently Asked Questions](https://github.com/brndnmtthws/conky/wiki/FAQ)
 
