@@ -43,7 +43,6 @@
  *   so that all quirks are located there
  * - Implement nvs->print_type to allow control over how the value is printed
  *   (int, float, temperature...)
- * - Rename set_nvidia_type() to set_nvidia_query (requires changes in core.cc)
  * 
  * Showcase (conky.conf):
  * --==| NVIDIA | ==--
@@ -282,9 +281,31 @@ typedef enum _SEARCH_ID {
 	SEARCH_MAX
 } SEARCH_ID;
 
+// Translate special_type into command string
+const char* translate_nvidia_special_type[] = {
+ 	"nvidia", // NONSPECIAL
+ 	"", // HORIZONTAL_LINE
+ 	"", // STIPPLED_HR
+ 	"nvidiabar", // BAR
+ 	"", // FG
+ 	"", // BG
+ 	"", // OUTLINE
+ 	"", // ALIGNR
+ 	"", // ALIGNC
+ 	"nvidiagague", // GAUGE
+ 	"nvidiagraph", // GRAPH
+ 	"", // OFFSET
+ 	"", // VOFFSET
+ 	"", // FONT
+ 	"", // GOTO
+ 	"" // TAB
+};
+
 
 // Global struct to keep track of queries
 struct nvidia_s {
+	const char *command;
+	const char *arg;
 	QUERY_ID query;
 	TARGET_ID target;
 	ATTR_ID attribute;
@@ -340,11 +361,20 @@ namespace {
 	nvidia_display_setting nvidia_display;
 }
 
-// Extract arguments for nvidiabar, etc, and run set_nvidia_type
-int scan_nvidia_args (struct text_object *obj, const char *args, unsigned int special_t) {
-	const char *arg = args;
 
-	switch (special_t) {
+// Evaluate module parameters and prepare query
+int set_nvidia_query(struct text_object *obj, const char *arg, unsigned int special_type)
+{
+	struct nvidia_s *nvs;
+	int aid;
+
+	// Initialize global struct
+	obj->data.opaque = malloc(sizeof(struct nvidia_s));
+	nvs = static_cast<nvidia_s *>(obj->data.opaque);
+	memset(nvs, 0, sizeof(struct nvidia_s));
+
+	// Extract arguments for nvidiabar, etc, and run set_nvidia_query
+	switch (special_type) {
 		case BAR:
 			arg = scan_bar(obj, arg, 100);
 			break;
@@ -354,28 +384,11 @@ int scan_nvidia_args (struct text_object *obj, const char *args, unsigned int sp
 		case GAUGE:
 			arg = scan_gauge(obj, arg, 100);
 			break;
-		default:
-			return 1;
 	}
 
 	// Return error if no argument
 	// (sometimes scan_graph gets excited and eats the whole string!
 	if (!arg) return 1;
-
-	return set_nvidia_type(obj, arg);
-}
-
-
-// Evaluate module parameters and prepare query
-int set_nvidia_type(struct text_object *obj, const char *arg)
-{
-	struct nvidia_s *nvs;
-	int aid;
-
-	// Initialize global struct
-	obj->data.opaque = malloc(sizeof(struct nvidia_s));
-	nvs = static_cast<nvidia_s *>(obj->data.opaque);
-	memset(nvs, 0, sizeof(struct nvidia_s));
 	
 	// Translate parameter to id
 	for (aid=0; aid < ARG_UNKNOWN; aid++) {
@@ -384,6 +397,10 @@ int set_nvidia_type(struct text_object *obj, const char *arg)
 	}
 	//fprintf(stderr, "parameter: %s -> aid: %d\n", arg, aid);
 	
+	// Save pointers to the arg and command strings for dubugging and printing
+	nvs->arg = translate_module_argument[aid];
+	nvs->command = translate_nvidia_special_type[special_type];
+
 	// Evaluate parameter
 	switch(aid) {
 		
@@ -569,11 +586,37 @@ int set_nvidia_type(struct text_object *obj, const char *arg)
 			break;
 			
 		default:						// Unknown/invalid argument
+			// Error printed by core.cc
 			return 1;
 	}
 	return 0;
 }
 
+// Return the amount of targets present (or -1 on error)
+static inline int get_nvidia_target_count(Display *dpy, TARGET_ID tid)
+{
+	int num_tgts;
+	if (!XNVCTRLQueryTargetCount(dpy, translate_nvidia_target[tid], &num_tgts)) {
+		num_tgts = -1;
+	}
+
+	return num_tgts;
+}
+
+// Exit if we are unable to get targets of type tid on display dpy
+void check_nvidia_target_count(Display *dpy, TARGET_ID tid, ATTR_ID aid)
+{
+	int num_tgts = get_nvidia_target_count(dpy, tid);
+
+	if(num_tgts < 1) {
+		// Print error and exit if there's not enough targets to query
+		CRIT_ERR(NULL, NULL, "%s:"
+		"\n          Trying to query Nvidia target failed (using the propietary drivers)."
+		"\n          Are you sure they are installed correctly and a Nvidia GPU is in use?"
+		"\n          (display: %d, target_id: %d, target_count: %d, attribute_id: %d)"
+		             , __func__, dpy, tid, num_tgts, aid);
+	}
+}
 
 // Retrieve attribute value via nvidia interface
 static int get_nvidia_value(TARGET_ID tid, ATTR_ID aid)
@@ -581,8 +624,12 @@ static int get_nvidia_value(TARGET_ID tid, ATTR_ID aid)
 	Display *dpy = nvdisplay ? nvdisplay : display;
 	int value;
 
+	// Check for issues
+	check_nvidia_target_count(dpy, tid, aid);
+
 	// Query nvidia interface
 	if(!dpy || !XNVCTRLQueryTargetAttribute(dpy, translate_nvidia_target[tid], 0, 0, translate_nvidia_attribute[aid], &value)){
+		NORM_ERR("%s: Something went wrong running nvidia query (tid: %d, aid: %d)", __func__, tid, aid);
 		return -1;
 	}
 	
@@ -602,9 +649,13 @@ static char* get_nvidia_string(TARGET_ID tid, ATTR_ID aid)
 {
 	Display *dpy = nvdisplay ? nvdisplay : display;
 	char *str;
+
+	// Check for issues
+	check_nvidia_target_count(dpy, tid, aid);
 	
 	// Query nvidia interface
 	if (!dpy || !XNVCTRLQueryTargetStringAttribute(dpy, translate_nvidia_target[tid], 0, 0, translate_nvidia_attribute[aid], &str)) {
+		NORM_ERR("%s: Something went wrong running nvidia string query (tid: %d, aid: %d)", __func__, tid, aid);
 		return NULL;
 	}
 	//fprintf(stderr, "%s", str);
@@ -746,19 +797,28 @@ double get_nvidia_barval(struct text_object *obj) {
 	// Assume failure
 	value = 0;
 	
-	// Convert query_result to a percentage
+	// Convert query_result to a percentage using ((val-min)÷(max-min)×100)+0.5 if needed.
 	if (nvs != NULL) {
 		switch (nvs->attribute) {
 			case ATTR_UTILS_STRING: // one of the percentage utils (gpuutil, membwutil, videoutil and pcieutil)
 				value = get_nvidia_string_value(nvs->target, ATTR_UTILS_STRING, nvs->token, nvs->search);
 				break;
 			case ATTR_MEM_UTIL: // memutil
+			case ATTR_MEM_USED:
 				temp1 = get_nvidia_value(nvs->target, ATTR_MEM_USED);
 				temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL);
 				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
 				break;
+			case ATTR_MEM_FREE: // memfree
+				temp1 = get_nvidia_value(nvs->target, ATTR_MEM_USED);
+				temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL);
+				value = temp2 - temp1;
+				break;
+			case ATTR_FAN_SPEED: // fanspeed: Warn user we are using fanlevel
+			NORM_ERR("%s: invalid argument specified: '%s' (using 'fanlevel' instead).",
+								nvs->command, nvs->arg);
+				// No break, continue into fanlevel
 			case ATTR_FAN_LEVEL: // fanlevel
-			case ATTR_FAN_SPEED: // TODO warn user to use fanlevel if they use fanspeed
 				value = get_nvidia_value(nvs->target, ATTR_FAN_LEVEL);
 				break;
 			case ATTR_GPU_TEMP: // gputemp (calculate out of gputempthreshold)
@@ -766,10 +826,40 @@ double get_nvidia_barval(struct text_object *obj) {
 				temp2 = get_nvidia_value(nvs->target, ATTR_GPU_TEMP_THRESHOLD);
 				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
 				break;
-			// TODO: calculate gpufreq, memfreq, etc
-			// can use (val-min)÷(max-min)×100. Perhaps a helper function or macro
-			
-			// TODO: throw errors if unsupported args are used
+			case ATTR_AMBIENT_TEMP: // ambienttemp (calculate out of gputempthreshold for consistency)
+				temp1 = get_nvidia_value(nvs->target, ATTR_AMBIENT_TEMP);
+				temp2 = get_nvidia_value(nvs->target, ATTR_GPU_TEMP_THRESHOLD);
+				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
+				break;
+			case ATTR_GPU_FREQ: // gpufreq (calculate out of gpufreqmax)
+				temp1 = get_nvidia_value(nvs->target, ATTR_GPU_FREQ);
+				temp2 = get_nvidia_string_value(nvs->target, ATTR_PERFMODES_STRING, (char*) "nvclockmax", SEARCH_MAX);
+				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
+				break;
+			case ATTR_MEM_FREQ: // memfreq (calculate out of memfreqmax)
+				temp1 = get_nvidia_value(nvs->target, ATTR_MEM_FREQ);
+				temp2 = get_nvidia_string_value(nvs->target, ATTR_PERFMODES_STRING, (char*) "memclockmax", SEARCH_MAX);
+				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
+				break;
+			case ATTR_FREQS_STRING: // mtrfreq (calculate out of memfreqmax)
+				if (nvs->token == "memTransferRate") {
+					// Just in case error for silly devs
+					CRIT_ERR(NULL, NULL, "%s: attribute is 'ATTR_FREQS_STRING' but token is not \"memTransferRate\" (arg: '%s')",
+					          nvs->command, nvs->arg);
+					return 0;
+				}
+				temp1 = get_nvidia_string_value(nvs->target, ATTR_FREQS_STRING, nvs->token, SEARCH_MAX);
+				temp2 = get_nvidia_string_value(nvs->target, ATTR_PERFMODES_STRING, (char*) "memTransferRatemax", SEARCH_MAX);
+				if (temp2 > temp1) temp1 = temp2; // extra safe here
+				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
+				break;
+			case ATTR_IMAGE_QUALITY: // imagequality
+				value = get_nvidia_value(nvs->target, ATTR_IMAGE_QUALITY);
+				break;
+
+			default: // Throw error if unsupported args are used
+				CRIT_ERR(NULL, NULL, "%s: invalid argument specified: '%s'",
+				          nvs->command, nvs->arg);
 		}
 	}
 	
