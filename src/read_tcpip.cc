@@ -63,7 +63,6 @@ void parse_read_tcpip_arg(struct text_object *obj, const char *arg, void *free_a
 	if(rtd->port < 1 || rtd->port > 65535)
 		CRIT_ERR(obj, free_at_crash, "read_tcp and read_udp need a port from 1 to 65535 as argument");
 
-	rtd->port = htons(rtd->port);
 	obj->data.opaque = rtd;
 }
 
