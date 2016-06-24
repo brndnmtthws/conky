@@ -366,6 +366,12 @@ if(BUILD_JOURNAL)
 	set(conky_includes ${conky_includes} ${SYSTEMD_INCLUDE_PATH})
 endif(BUILD_JOURNAL)
 
+if(BUILD_PULSEAUDIO)
+	pkg_check_modules(PULSEAUDIO REQUIRED libpulse)
+	set(conky_libs ${conky_libs} ${PULSEAUDIO_LIBRARIES})
+	set(conky_includes ${conky_includes} ${PULSEAUDIO_INCLUDE_DIRS})
+endif(BUILD_PULSEAUDIO)
+
 # Common libraries
 if(WANT_GLIB)
 	pkg_check_modules(GLIB REQUIRED glib-2.0)

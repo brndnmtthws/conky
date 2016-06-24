@@ -103,6 +103,8 @@
 
 #cmakedefine BUILD_IRC 1
 
+#cmakedefine BUILD_PULSEAUDIO 1
+
 #cmakedefine BUILD_IPV6 1
 
 #cmakedefine BUILD_HTTP 1

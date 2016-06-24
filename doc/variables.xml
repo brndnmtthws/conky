@@ -1883,6 +1883,16 @@
     <varlistentry>
         <term>
             <command>
+                <option>if_pa_sink_muted</option>
+            </command>
+        </term>
+        <listitem>If Pulseaudio's default sink is muted, display everything
+        between $if_pa_sink_muted and the corresponding $else or $endif. 
+         <para /></listitem>
+     </varlistentry>   
+    <varlistentry>
+        <term>
+            <command>
                 <option>if_running</option>
             </command>
             <option>(process)</option>
@@ -2829,6 +2839,51 @@
         </term>
         <listitem>Change outline color 
         <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pa_sink_volume</option>
+            </command>
+        </term>
+        <listitem>Pulseaudio's default sink volume percentage. 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pa_sink_volumebar</option>
+            </command>
+        </term>
+        <listitem>Pulseaudio's default sink volume bar. 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pa_sink_description</option>
+            </command>
+        </term>
+        <listitem>Pulseaudio's default sink description. 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pa_card_name</option>
+            </command>
+        </term>
+        <listitem>Pulseaudio's default card name. 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pa_card_active_profile</option>
+            </command>
+        </term>
+        <listitem>Pulseaudio's default card active profile. 
+         <para /></listitem>
     </varlistentry>
     <varlistentry>
         <term>
