@@ -121,6 +121,7 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size, struct infor
 	unsigned int visibleChars = 0;
 	char *pwithcolors;
 	char buf[max_user_text];
+	size_t bufLength;
 	char c;
 
 	if (!sd)
@@ -138,13 +139,23 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size, struct infor
 				break;
 		}
 	}
+
+	bufLength = strlen(buf);
+
 	//no scrolling necessary if the length of the text to scroll is too short
-	if (strlen(buf) - colorchanges <= sd->show) {
+	if (bufLength - colorchanges <= sd->show) {
 		snprintf(p, p_max_size, "%s", buf);
 		return;
 	}
+
+	//if length of text changed to shorter so the (sd->start) is already
+	//outside of actual text then reset (sd->start)
+	if (sd->start >= bufLength) {
+		sd->start = 0;
+	}
+
 	//make sure a colorchange at the front is not part of the string we are going to show
-	while(*(buf + sd->start) == SPECIAL_CHAR) {
+	while(buf[sd->start] == SPECIAL_CHAR) {
 		sd->start++;
 	}
 
