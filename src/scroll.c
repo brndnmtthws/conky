@@ -40,9 +40,12 @@ struct scroll_data {
 	long resetcolor;
 };
 
-int utf8_charlen(char c) {
+static int scroll_character_length(char c) {
 	unsigned char uc = (unsigned char) c;
 	int len = 0;
+
+	if (!utf8_mode)
+		return 1;
 
 	if (c == -1)
 		return 1;
@@ -60,8 +63,15 @@ int utf8_charlen(char c) {
 	return len;
 }
 
-int is_utf8_char_tail(char c) {
+/* should the byte be skipped if found in
+   the begining of string to display? */
+static int is_scroll_skip_byte(char c) {
 	unsigned char uc = (unsigned char) c;
+
+	// in single-byte encodings no bytes should be skipped
+	if (!utf8_mode)
+		return 0;
+
 	return (uc & 0xc0) == 0x80;
 }
 
@@ -137,8 +147,8 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size, struct infor
 	while(*(buf + sd->start) == SPECIAL_CHAR) {
 		sd->start++;
 	}
-	//skip parts of UTF-8 character which messes up display
-	while(is_utf8_char_tail(*(buf + sd->start))) {
+
+	while(is_scroll_skip_byte(*(buf + sd->start))) {
 		sd->start++;
 	}
 
@@ -164,7 +174,7 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size, struct infor
 			++visibcolorchanges;
 		} else {
 			// get length of the character
-			k = utf8_charlen(c);
+			k = scroll_character_length(c);
 
 			// copy whole character
 			while (--k) {
@@ -198,7 +208,7 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size, struct infor
 	free(pwithcolors);
 	//scroll
 	for (j = 0; j < sd->step; ++j) {
-		sd->start += utf8_charlen(*(buf + sd->start));
+		sd->start += scroll_character_length(*(buf + sd->start));
 	}
 	if(buf[sd->start] == 0 || sd->start > strlen(buf)){
 		sd->start = 0;
