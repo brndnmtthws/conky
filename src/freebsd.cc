@@ -725,9 +725,7 @@ void get_top_info(void)
 
 	for (i = 0; i < n_processes; i++) {
 		if (!((p[i].ki_flag & P_SYSTEM)) && p[i].ki_comm != NULL) {
-			proc = find_process(p[i].ki_pid);
-			if (!proc)
-				proc = new_process(p[i].ki_pid);
+			proc = get_process(p[i].ki_pid);
 
 			proc->time_stamp = g_time;
 			proc->name = strndup(p[i].ki_comm, text_buffer_size.get(*state));
