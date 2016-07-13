@@ -51,6 +51,18 @@ Conky's documentation. Quick links:
 Conky is licensed under the terms of the [GPLv3](LICENSE.GPL) and
 [BSD](LICENSE.BSD) licenses.
 
+### Contributing
+
+To submit code changes, please open pull requests against [the GitHub repository](https://github.com/brndnmtthws/conky/edit/master/README.md). Patches submitted in issues, email, or elsewhere will likely be ignored. Here's some general guidelines when submitting PRs:
+
+ * In your pull request, please:
+   * Describe the changes, why they were necessary, etc
+   * Describe how the changes affect existing behaviour
+   * Describe how you tested and validated your changes
+   * Include any relevant screenshots/evidence demonstrating that the changes work and have been tested
+ * Any new source files should include a GPLv3 license header
+ * Any contributed code must be GPLv3 licensed
+
 [MPD]: http://musicpd.org/
 [XMMS2]: http://wiki.xmms2.xmms.se/index.php/Main_Page
 [BMPx]: http://bmpx.backtrace.info/site/BMPx_Homepage
