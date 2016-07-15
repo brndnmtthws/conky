@@ -140,7 +140,7 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size, struct infor
 		}
 	}
 
-	bufLength = strlen(buf);
+	bufLength = strnlen(buf, max_user_text);
 
 	//no scrolling necessary if the length of the text to scroll is too short
 	if (bufLength - colorchanges <= sd->show) {
@@ -221,7 +221,7 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size, struct infor
 	for (j = 0; j < sd->step; ++j) {
 		sd->start += scroll_character_length(*(buf + sd->start));
 	}
-	if(buf[sd->start] == 0 || sd->start > strlen(buf)){
+	if(buf[sd->start] == 0 || sd->start > bufLength){
 		sd->start = 0;
 	}
 #ifdef X11
