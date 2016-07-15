@@ -63,18 +63,6 @@ static int scroll_character_length(char c) {
 	return len;
 }
 
-/* should the byte be skipped if found in
-   the begining of string to display? */
-static int is_scroll_skip_byte(char c) {
-	unsigned char uc = (unsigned char) c;
-
-	// in single-byte encodings no bytes should be skipped
-	if (!utf8_mode)
-		return 0;
-
-	return (uc & 0xc0) == 0x80;
-}
-
 void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_crash)
 {
 	struct scroll_data *sd;
@@ -159,10 +147,6 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size, struct infor
 		sd->start++;
 	}
 
-	while(is_scroll_skip_byte(*(buf + sd->start))) {
-		sd->start++;
-	}
-
 	j = 0;
 	while (visibleChars < sd->show) {
 		c = p[j] = buf[sd->start + j];
@@ -218,8 +202,8 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size, struct infor
 	strcpy(p, pwithcolors);
 	free(pwithcolors);
 	//scroll
-	for (j = 0; j < sd->step; ++j) {
-		sd->start += scroll_character_length(*(buf + sd->start));
+	for (j = 0; (j < sd->step) && (buf[sd->start] != '\0'); ++j) {
+		sd->start += scroll_character_length(buf[sd->start]);
 	}
 	if(buf[sd->start] == 0 || sd->start > bufLength){
 		sd->start = 0;
