@@ -35,16 +35,19 @@
 #include "x11.h"
 #include <vector>
 
-#define SCROLL_LEFT true
-#define SCROLL_RIGHT false
+#define SCROLL_LEFT 1
+#define SCROLL_RIGHT 2
+#define SCROLL_WAIT 3
 
 struct scroll_data {
 	char *text;
 	unsigned int show;
 	unsigned int step;
+	int wait;
+	unsigned int wait_arg;
 	signed int start;
 	long resetcolor;
-	bool direction;
+	int direction;
 };
 
 void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_crash, char *free_at_crash2)
@@ -63,6 +66,8 @@ void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_cr
 	if (arg && sscanf(arg, "%5s %n", dirarg, &n1) == 1) {
 		if (strcasecmp(dirarg, "right") == 0 || strcasecmp(dirarg, "r") == 0)
 			sd->direction = SCROLL_RIGHT;
+		else if ( strcasecmp(dirarg, "wait") == 0 || strcasecmp(dirarg, "w") == 0)
+			sd->direction = SCROLL_WAIT;
 		else if ( strcasecmp(dirarg, "left") != 0 && strcasecmp(dirarg, "l") != 0)
 			n1 = 0;
 	}
@@ -73,7 +78,7 @@ void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_cr
 		free(obj->next);
 #endif
 		free(free_at_crash2);
-		CRIT_ERR(obj, free_at_crash, "scroll needs arguments: [left|right] <length> [<step>] <text>");
+		CRIT_ERR(obj, free_at_crash, "scroll needs arguments: [left|right|wait] <length> [<step>] [interval] <text>");
 	}
 	n1 += n2;
 
@@ -82,9 +87,17 @@ void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_cr
 	} else {
 		sd->step = 1;
 	}
+
+	if(sscanf(arg + n1, "%u %n", &sd->wait_arg, &n2) == 1) {
+		n1 += n2;
+		sd->wait = sd->wait_arg;
+	} else {
+		sd->wait_arg = sd->wait = 0;
+	}
+
 	sd->text = (char*)malloc(strlen(arg + n1) + sd->show + 1);
 
-	if (strlen(arg) > sd->show) {
+	if (strlen(arg) > sd->show && sd->direction != SCROLL_WAIT) {
 		for(n2 = 0; (unsigned int) n2 < sd->show; n2++) {
 		    sd->text[n2] = ' ';
 		}
@@ -94,7 +107,7 @@ void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_cr
 	    sd->text[0] = 0;
 
 	strcat(sd->text, arg + n1);
-	sd->start = 0;
+	sd->start = sd->direction == SCROLL_WAIT ? strlen(sd->text) : 0;
 	obj->sub = (struct text_object *)malloc(sizeof(struct text_object));
 	extract_variable_text_internal(obj->sub, sd->text);
 
@@ -172,6 +185,25 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size)
 		sd->start += sd->step;
 		if(buf[sd->start] == 0 || (unsigned) sd->start > strlen(&(buf[0]))) {
 			sd->start = 0;
+		}
+	} else if(sd->direction == SCROLL_WAIT) {
+		size_t len = strlen(&buf[0]);
+
+		if(sd->start >= len || sd->show + sd->start >= len) {
+			if (sd->wait_arg && (--sd->wait <= 0 && sd->wait_arg != 1)) {
+			    sd->wait = sd->wait_arg;
+			} else {
+			    sd->start = 0;
+			}
+		} else {
+		  if(!sd->wait_arg || sd->wait_arg == 1 ||
+			 (sd->wait_arg && sd->wait-- <= 0)) {
+			  sd->wait = 0;
+			  sd->start += sd->step;
+
+			  if (sd->start + sd->show >= len)
+				sd->start = len - sd->show;
+		  }
 		}
 	} else {
 		if(sd->start < 1) {
