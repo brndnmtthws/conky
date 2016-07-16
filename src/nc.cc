@@ -6,6 +6,10 @@
 
 #include "nc.h"
 
+#ifdef BUILD_NCURSES
+WINDOW* ncurses_window;
+#endif
+
 namespace priv {
     void out_to_ncurses_setting::lua_setter(lua::state &l, bool init)
     {
@@ -14,7 +18,7 @@ namespace priv {
         Base::lua_setter(l, init);
 
         if(init && do_convert(l, -1).first) {
-            initscr();
+            ncurses_window = initscr();
             start_color();
         }
 
