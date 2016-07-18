@@ -333,6 +333,9 @@ void evaluate(const char *text, char *p, int p_max_size);
 /* maximum size of config TEXT buffer, i.e. below TEXT line. */
 extern unsigned int max_user_text;
 
+/* defined in conky.c */
+extern int utf8_mode;
+
 /* path to config file */
 extern char *current_config;
 

@@ -40,6 +40,29 @@ struct scroll_data {
 	long resetcolor;
 };
 
+static int scroll_character_length(char c) {
+	unsigned char uc = (unsigned char) c;
+	int len = 0;
+
+	if (!utf8_mode)
+		return 1;
+
+	if (c == -1)
+		return 1;
+
+	if ((uc & 0x80) == 0)
+		return 1;
+
+	for (len = 0; len < 7; ++len)
+	{
+		if ((uc & (0x80 >> len)) == 0) {
+			break;
+		}
+	}
+
+	return len;
+}
+
 void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_crash)
 {
 	struct scroll_data *sd;
@@ -63,12 +86,12 @@ void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_cr
 
 	if (strlen(arg) > sd->show) {
 		for(n2 = 0; (unsigned int) n2 < sd->show; n2++) {
-		    sd->text[n2] = ' ';
+			sd->text[n2] = ' ';
 		}
 		sd->text[n2] = 0;
 	}
 	else
-	    sd->text[0] = 0;
+		sd->text[0] = 0;
 
 	strcat(sd->text, arg + n1);
 	sd->start = 0;
@@ -81,9 +104,13 @@ void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_cr
 void print_scroll(struct text_object *obj, char *p, int p_max_size, struct information *cur)
 {
 	struct scroll_data *sd = obj->data.opaque;
-	unsigned int j, colorchanges = 0, frontcolorchanges = 0, visibcolorchanges = 0, strend;
+	unsigned int j, k, colorchanges = 0, frontcolorchanges = 0, strend;
+	unsigned int visibcolorchanges = 0;
+	unsigned int visibleChars = 0;
 	char *pwithcolors;
 	char buf[max_user_text];
+	size_t bufLength;
+	char c;
 
 	if (!sd)
 		return;
@@ -100,28 +127,62 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size, struct infor
 				break;
 		}
 	}
+
+	bufLength = strnlen(buf, max_user_text);
+
 	//no scrolling necessary if the length of the text to scroll is too short
-	if (strlen(buf) - colorchanges <= sd->show) {
+	if (bufLength - colorchanges <= sd->show) {
 		snprintf(p, p_max_size, "%s", buf);
 		return;
 	}
+
+	//if length of text changed to shorter so the (sd->start) is already
+	//outside of actual text then reset (sd->start)
+	if (sd->start >= bufLength) {
+		sd->start = 0;
+	}
+
 	//make sure a colorchange at the front is not part of the string we are going to show
-	while(*(buf + sd->start) == SPECIAL_CHAR) {
+	while(buf[sd->start] == SPECIAL_CHAR) {
 		sd->start++;
 	}
-	//place all chars that should be visible in p, including colorchanges
-	for(j=0; j < sd->show + visibcolorchanges; j++) {
-		p[j] = *(buf + sd->start + j);
-		if(p[j] == SPECIAL_CHAR) {
-			visibcolorchanges++;
+
+	j = 0;
+	while (visibleChars < sd->show) {
+		c = p[j] = buf[sd->start + j];
+		++j;
+		if (0 == c) {
+			// if end of string reached - fill remaining place with (k) spaces
+			k = sd->show - visibleChars;
+
+			// return back to '\0' in (p)
+			--j;
+
+			// overwrite '\0' and (k-1) following bytes
+			do {
+				p[j++] = ' ';
+			} while (--k);
+
+			// done!
+			break;
+		} else if (SPECIAL_CHAR == c) {
+			++visibcolorchanges;
+		} else {
+			// get length of the character
+			k = scroll_character_length(c);
+
+			// copy whole character
+			while (--k) {
+				p[j] = buf[sd->start + j];
+				++j;
+			}
+
+			++visibleChars;
 		}
-		//if there is still room fill it with spaces
-		if( ! p[j]) break;
 	}
-	for(; j < sd->show + visibcolorchanges; j++) {
-		p[j] = ' ';
-	}
+
 	p[j] = 0;
+
 	//count colorchanges in front of the visible part and place that many colorchanges in front of the visible part
 	for(j = 0; j < sd->start; j++) {
 		if(buf[j] == SPECIAL_CHAR) frontcolorchanges++;
@@ -141,8 +202,10 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size, struct infor
 	strcpy(p, pwithcolors);
 	free(pwithcolors);
 	//scroll
-	sd->start += sd->step;
-	if(buf[sd->start] == 0 || sd->start > strlen(buf)){
+	for (j = 0; (j < sd->step) && (buf[sd->start] != '\0'); ++j) {
+		sd->start += scroll_character_length(buf[sd->start]);
+	}
+	if(buf[sd->start] == 0 || sd->start > bufLength){
 		sd->start = 0;
 	}
 #ifdef X11
