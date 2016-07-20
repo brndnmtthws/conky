@@ -61,6 +61,9 @@
 #include "imlib2.h"
 #endif /* BUILD_IMLIB2 */
 #endif /* BUILD_X11 */
+#ifdef BUILD_NCURSES
+#include <ncurses.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <netinet/in.h>
@@ -157,6 +160,10 @@ static conky::simple_config_setting<bool> disable_auto_reload("disable_auto_relo
 
 /* two strings for internal use */
 static char *tmpstring1, *tmpstring2;
+
+#ifdef BUILD_NCURSES
+extern WINDOW* ncurses_window;
+#endif
 
 enum spacer_state {
 	NO_SPACER = 0,
@@ -1751,16 +1758,6 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					cur_y += current->arg;
 					break;
 
-				case GOTO:
-					if (current->arg >= 0) {
-						cur_x = (int) current->arg;
-#ifdef BUILD_X11
-						//make sure shades are 1 pixel to the right of the text
-						if(draw_mode == BG) cur_x++;
-#endif
-					}
-					break;
-
 				case TAB:
 				{
 					int start = current->arg;
@@ -1812,6 +1809,23 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 					break;
 				}
 #endif /* BUILD_X11 */
+				case GOTO:
+					if (current->arg >= 0) {
+						cur_x = (int) current->arg;
+#ifdef BUILD_X11
+						//make sure shades are 1 pixel to the right of the text
+						if(draw_mode == BG) cur_x++;
+#endif /* BUILD_X11 */
+#ifdef BUILD_NCURSES
+						if (out_to_ncurses.get(*state)){
+							int x, y;
+							getyx(ncurses_window, y, x);
+							move(y, cur_x);
+						}
+#endif /* BUILD_NCURSES */
+					}
+					break;
+
 			}
 
 #ifdef BUILD_X11
