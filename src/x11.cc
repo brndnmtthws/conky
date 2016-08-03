@@ -254,7 +254,7 @@ conky::lua_traits<alignment>::Map conky::lua_traits<alignment>::map = {
 	{ "bm",            BOTTOM_MIDDLE },
 	{ "ml",            MIDDLE_LEFT },
 	{ "mm",            MIDDLE_MIDDLE },
-	{ "mr",           MIDDLE_RIGHT },
+	{ "mr",            MIDDLE_RIGHT },
 	{ "none",          NONE }
 };
 
