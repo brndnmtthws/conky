@@ -75,6 +75,7 @@ struct local_mail_s {
 	int trashed_mail_count;
 	float interval;
 	time_t last_mtime;
+	time_t last_ctime;      /* needed for mutt at least */
 	double last_update;
 };
 
@@ -333,7 +334,7 @@ static void update_mail_count(struct local_mail_s *mail)
 	}
 #endif
 	/* mbox format */
-	if (st.st_mtime != mail->last_mtime) {
+	if (st.st_mtime != mail->last_mtime || st.st_ctime != mail->last_ctime) {
 		/* yippee, modification time has changed, let's read mail count! */
 		static int rep;
 		FILE *fp;
@@ -438,6 +439,7 @@ static void update_mail_count(struct local_mail_s *mail)
 		}
 
 		mail->last_mtime = st.st_mtime;
+		mail->last_ctime = st.st_ctime;
 	}
 }
 
