@@ -1404,6 +1404,9 @@ static void draw_string(const char *s)
 
 int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 {
+#ifndef BUILD_X11
+	static int cur_x, cur_y;	/* current x and y for drawing */
+#endif
 #ifdef BUILD_X11
 	int font_h = 0;
 	int cur_y_add = 0;
@@ -1934,6 +1937,7 @@ static void draw_text(void)
 
 static void draw_stuff(void)
 {
+	static int text_offset_x, text_offset_y; /* offset for start position */
 	text_offset_x = text_offset_y = 0;
 #ifdef BUILD_IMLIB2
 	cimlib_render(text_start_x, text_start_y, window.width, window.height);
