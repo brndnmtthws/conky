@@ -18,9 +18,11 @@ addons:
     - libcairo2-dev
     - gawk
 before_script:
-  - mkdir build && cd build && cmake ../
+  - mkdir build && cd build && cmake .. && cd ..
+  - mkdir build-no-x11 && cd build-no-x11 && cmake -DBUILD_X11=OFF .. && cd ..
 script:
-  - make -j4
+  - cd build && make -j4 && cd ..
+  - cd build-no-x11 && make -j4 && cd ..
 branches:
   only:
     - master
