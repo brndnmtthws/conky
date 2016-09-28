@@ -728,13 +728,6 @@ int percent_print(char *buf, int size, unsigned value)
 	return spaced_print(buf, size, "%u", pad_percents.get(*state), value);
 }
 
-#if defined(__FreeBSD__)
-unsigned long long llabs(long long num) {
-       if(num < 0) return -num;
-       else return num;
-}
-#endif
-
 /* converts from bytes to human readable format (K, M, G, T)
  *
  * The algorithm always divides by 1024, as unit-conversion of byte
