@@ -295,11 +295,7 @@ int update_running_processes(void)
 	std::lock_guard<std::mutex> guard(kvm_proc_mutex);
 	p = kvm_getprocs(kd, KERN_PROC_ALL, 0, &n_processes);
 	for (i = 0; i < n_processes; i++) {
-#if (__FreeBSD__ < 5) && !defined(__FreeBSD_kernel__)
-		if (p[i].kp_proc.p_stat == SRUN) {
-#else
 		if (p[i].ki_stat == SRUN) {
-#endif
 			cnt++;
 		}
 	}
