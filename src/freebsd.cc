@@ -709,6 +709,7 @@ void get_top_info(void)
 
 			proc->time_stamp = g_time;
 			proc->name = strndup(p[i].ki_comm, text_buffer_size.get(*state));
+			proc->basename = strndup(p[i].ki_comm, text_buffer_size.get(*state));
 			proc->amount = 100.0 * p[i].ki_pctcpu / FSCALE;
 			proc->vsize = p[i].ki_size;
 			proc->rss = (p[i].ki_rssize * getpagesize());
