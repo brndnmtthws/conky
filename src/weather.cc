@@ -863,7 +863,7 @@ static int process_weather_uri(char *uri, char *locID, int dayf UNUSED_ATTR)
 		}
 	} else
 #endif /* BUILD_WEATHER_XOAP */
-	if (strstr(uri, "weather.noaa.gov")) {
+	if (strstr(uri, "tgftp.nws.noaa.gov")) {
 		strcat(uri, locID);
 		strcat(uri, ".TXT");
 	} else  if (!strstr(uri, "localhost") && !strstr(uri, "127.0.0.1")) {
