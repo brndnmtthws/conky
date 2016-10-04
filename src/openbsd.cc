@@ -117,6 +117,7 @@ static int swapmode(int *used, int *total)
 
 	rnswap = swapctl(SWAP_STATS, swdev, nswap);
 	if (rnswap == -1) {
+		free(swdev);
 		return 0;
 	}
 
