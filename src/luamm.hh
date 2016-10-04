@@ -25,7 +25,9 @@
 #include <assert.h>
 #include <memory>
 #include <mutex>
+#include <exception>
 #include <stdexcept>
+#include <string>
 
 #include <lua.hpp>
 

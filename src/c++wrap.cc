@@ -26,6 +26,7 @@
 #include "c++wrap.hh"
 
 #include <unistd.h>
+#include <stdio.h>
 
 /* force use of  POSIX strerror_r instead of non-portable GNU specific */
 #ifdef _GNU_SOURCE
