@@ -1814,8 +1814,8 @@ int draw_each_line_inner(char *s, int special_index, int last_special_applied)
 #endif /* BUILD_X11 */
 				case GOTO:
 					if (current->arg >= 0) {
-						cur_x = (int) current->arg;
 #ifdef BUILD_X11
+						cur_x = (int) current->arg;
 						//make sure shades are 1 pixel to the right of the text
 						if(draw_mode == BG) cur_x++;
 #endif /* BUILD_X11 */
