@@ -426,12 +426,13 @@ double get_acpi_temperature(int fd)
 	int temp;
 	(void)fd;
 
-	if (GETSYSCTL("hw.acpi.thermal.tz0.temperature", temp) == 0)
+	if (GETSYSCTL("hw.acpi.thermal.tz0.temperature", temp) == 0) {
 		return KELVTOC(temp);
-	if (GETSYSCTL("dev.cpu.0.temperature", temp) == 0)
+	} else if (GETSYSCTL("dev.cpu.0.temperature", temp) == 0) {
 		return KELVTOC(temp);
-	if (GETSYSCTL("dev.amdtemp.0.core0.sensor0", temp) == 0)
+	} else if (GETSYSCTL("dev.amdtemp.0.core0.sensor0", temp) == 0) {
 		return KELVTOC(temp);
+	}
 	fprintf(stderr, "Cannot get temperature from sysctl\n");
 
 	return 0.0;
