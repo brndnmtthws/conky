@@ -11,7 +11,7 @@
 *
 * Copyright (c) 2004, Hannu Saransaari and Lauri Hakkarainen
 * Copyright (c) 2005-2012 Brenden Matthews, Philip Kovacs, et. al.
-*	(see AUTHORS)
+*   (see AUTHORS)
 * All rights reserved.
 *
 * This program is free software: you can redistribute it and/or modify
@@ -49,35 +49,35 @@ struct pulseaudio_default_results {
     std::string sink_description;
     uint32_t sink_card;
     int sink_mute;
-	uint32_t sink_index;
+    uint32_t sink_index;
     unsigned int sink_volume; // percentage
 
     // default card
     std::string card_active_profile_description;
     std::string card_name;
-	uint32_t card_index;
+    uint32_t card_index;
 };
 
 enum pulseaudio_state {
-	PULSE_CONTEXT_INITIALIZING,
-	PULSE_CONTEXT_READY,
-	PULSE_CONTEXT_FINISHED
+    PULSE_CONTEXT_INITIALIZING,
+    PULSE_CONTEXT_READY,
+    PULSE_CONTEXT_FINISHED
 };
 
 class pulseaudio_c {
   public:
-	pa_threaded_mainloop *mainloop;
-	pa_mainloop_api *mainloop_api;
-	pa_context *context;
-	volatile enum pulseaudio_state cstate;
-	int ninits;
-	struct pulseaudio_default_results result;
-	pulseaudio_c():mainloop(NULL),
-				   mainloop_api(NULL),
-				   context(NULL),
-				   cstate(PULSE_CONTEXT_INITIALIZING),
-				   ninits(0),
-				   result({ std::string(), std::string(), 0, 0, 0, 0, std::string(), std::string(), 0 }){};
+    pa_threaded_mainloop *mainloop;
+    pa_mainloop_api *mainloop_api;
+    pa_context *context;
+    volatile enum pulseaudio_state cstate;
+    int ninits;
+    struct pulseaudio_default_results result;
+    pulseaudio_c():mainloop(NULL),
+                   mainloop_api(NULL),
+                   context(NULL),
+                   cstate(PULSE_CONTEXT_INITIALIZING),
+                   ninits(0),
+                   result({ std::string(), std::string(), 0, 0, 0, 0, std::string(), std::string(), 0 }){};
 };
 
 #endif /* _PULSEAUDIO_H */
