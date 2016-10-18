@@ -217,12 +217,14 @@ void init_pulseaudio(struct text_object *obj) {
     PULSEAUDIO_WAIT(pa_context_get_sink_info_by_name(pulseaudio->context, pulseaudio->result.sink_name.c_str(),
                                                      pa_sink_info_callback, &pulseaudio->result));
 
-    if (pulseaudio->result.sink_name.empty() || pulseaudio->result.sink_card==(uint32_t)-1){
-		NORM_ERR("Incorrect pulseaudio sink information.");
+    if (pulseaudio->result.sink_name.empty()){
+        NORM_ERR("Incorrect pulseaudio sink information.");
         return;
-	}
-    PULSEAUDIO_WAIT(pa_context_get_card_info_by_index(pulseaudio->context, pulseaudio->result.sink_card,
-													  pa_card_info_callback, &pulseaudio->result));
+    }
+
+    if(pulseaudio->result.sink_card!=(uint32_t)-1)
+        PULSEAUDIO_WAIT(pa_context_get_card_info_by_index(pulseaudio->context, pulseaudio->result.sink_card,
+                                                          pa_card_info_callback, &pulseaudio->result));
 
 	// get notification when something changes in PA
     pa_context_set_subscribe_callback(pulseaudio->context, subscribe_cb, &pulseaudio->result);
