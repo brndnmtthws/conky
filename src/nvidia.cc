@@ -707,6 +707,8 @@ static int cache_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token, SE
 	static int memclockmax = -1;
 	static int memTransferRatemin = -1;
 	static int memTransferRatemax = -1;
+	static int perfmin = -1;
+	static int perfmax = -1;
 
 	if (update) {
 		if (strcmp(token, (char*) "nvclockmin") == 0 && nvclockmin < 0){
@@ -724,9 +726,9 @@ static int cache_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token, SE
 
 		} else if (strcmp(token, (char*) "perf") == 0 && memTransferRatemax < 0){
 			if (search == SEARCH_MIN) {
-				memTransferRatemin = *value;
+				perfmin = *value;
 			} else if (search == SEARCH_MAX) {
-				memTransferRatemax = *value;
+				perfmax = *value;
 			}
 		}
 
@@ -746,9 +748,9 @@ static int cache_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token, SE
 
 		} else if (strcmp(token, (char*) "perf") == 0){
 			if (search == SEARCH_MIN) {
-				*value = memTransferRatemin;
+				*value = perfmin;
 			} else if (search == SEARCH_MAX) {
-				*value = memTransferRatemax;
+					*value = perfmax;
 			}
 		}
 	}
