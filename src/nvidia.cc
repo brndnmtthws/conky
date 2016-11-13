@@ -37,8 +37,6 @@
  * TODO:
  * - Add third argument to module to allow querying multiple GPUs/fans etc.,
  *   e.g. ${nvidia gputemp 2}, ${nvidia fanlevel 1}
- * - Implement static flag; static values are only queried once to save CPU time,
- *   e.g. min/max values, temp threshold etc.
  * - Move decoding of GPU/MEM freqs to print_nvidia_value() using QUERY_SPECIAL
  *   so that all quirks are located there
  * - Implement nvs->print_type to allow control over how the value is printed
@@ -53,7 +51,7 @@
  * VRAM  ${nvidia memutil}% (${nvidia memused}MB/${nvidia memtotal}MB)
  * LOAD  GPU ${nvidia gpuutil}%, RAM ${nvidia membwutil}%, VIDEO ${nvidia videoutil}%, PCIe ${nvidia pcieutil}%
  * TEMP  GPU ${nvidia gputemp}°C (${nvidia gputempthreshold}°C max.), SYS ${nvidia ambienttemp}°C
- * FAN   ${nvidia fanspeed}% RPM (${nvidia fanlevel}%)
+ * FAN   ${nvidia fanspeed} RPM (${nvidia fanlevel}%)
  * 
  * --==| NVIDIA Bars |==--
  * LOAD ${nvidiabar gpuutil}
