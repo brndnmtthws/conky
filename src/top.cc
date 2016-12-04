@@ -661,8 +661,8 @@ int parse_top_args(const char *s, const char *arg, struct text_object *obj)
 			free_and_zero(obj->data.opaque);
 			return 0;
 		}
-		if (n < 1 || n > 10) {
-			NORM_ERR("invalid num arg for top. Must be between 1 and 10.");
+		if (n < 1 || n > MAX_SP) {
+			NORM_ERR("invalid num arg for top. Must be between 1 and %d.", MAX_SP);
 			free_and_zero(td->s);
 			free_and_zero(obj->data.opaque);
 			return 0;
