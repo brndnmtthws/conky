@@ -37,8 +37,6 @@
  * TODO:
  * - Add third argument to module to allow querying multiple GPUs/fans etc.,
  *   e.g. ${nvidia gputemp 2}, ${nvidia fanlevel 1}
- * - Implement static flag; static values are only queried once to save CPU time,
- *   e.g. min/max values, temp threshold etc.
  * - Move decoding of GPU/MEM freqs to print_nvidia_value() using QUERY_SPECIAL
  *   so that all quirks are located there
  * - Implement nvs->print_type to allow control over how the value is printed
@@ -53,7 +51,7 @@
  * VRAM  ${nvidia memutil}% (${nvidia memused}MB/${nvidia memtotal}MB)
  * LOAD  GPU ${nvidia gpuutil}%, RAM ${nvidia membwutil}%, VIDEO ${nvidia videoutil}%, PCIe ${nvidia pcieutil}%
  * TEMP  GPU ${nvidia gputemp}°C (${nvidia gputempthreshold}°C max.), SYS ${nvidia ambienttemp}°C
- * FAN   ${nvidia fanspeed}% RPM (${nvidia fanlevel}%)
+ * FAN   ${nvidia fanspeed} RPM (${nvidia fanlevel}%)
  * 
  * --==| NVIDIA Bars |==--
  * LOAD ${nvidiabar gpuutil}
@@ -618,6 +616,36 @@ void check_nvidia_target_count(Display *dpy, TARGET_ID tid, ATTR_ID aid)
 	}
 }
 
+static int cache_nvidia_value(TARGET_ID tid, ATTR_ID aid, Display *dpy, int *value)
+{
+	static int memtotal = -1;
+	static int gputempthreshold = -1;
+
+	if (aid == ATTR_MEM_TOTAL) {
+		if (memtotal < 0) {
+			if(!dpy || !XNVCTRLQueryTargetAttribute(dpy, translate_nvidia_target[tid], 0, 0, translate_nvidia_attribute[aid], value)){
+				NORM_ERR("%s: Something went wrong running nvidia query (tid: %d, aid: %d)", __func__, tid, aid);
+				return -1;
+			}
+			memtotal = *value;
+		} else {
+			*value = memtotal;
+		}
+	} else if (aid == ATTR_GPU_TEMP_THRESHOLD) {
+		if (gputempthreshold < 0) {
+			if(!dpy || !XNVCTRLQueryTargetAttribute(dpy, translate_nvidia_target[tid], 0, 0, translate_nvidia_attribute[aid], value)){
+				NORM_ERR("%s: Something went wrong running nvidia query (tid: %d, aid: %d)", __func__, tid, aid);
+				return -1;
+			}
+			gputempthreshold = *value;
+		} else {
+			*value = gputempthreshold;
+		}
+	}
+
+	return 0;
+}
+
 // Retrieve attribute value via nvidia interface
 static int get_nvidia_value(TARGET_ID tid, ATTR_ID aid)
 {
@@ -627,10 +655,17 @@ static int get_nvidia_value(TARGET_ID tid, ATTR_ID aid)
 	// Check for issues
 	check_nvidia_target_count(dpy, tid, aid);
 
-	// Query nvidia interface
-	if(!dpy || !XNVCTRLQueryTargetAttribute(dpy, translate_nvidia_target[tid], 0, 0, translate_nvidia_attribute[aid], &value)){
-		NORM_ERR("%s: Something went wrong running nvidia query (tid: %d, aid: %d)", __func__, tid, aid);
-		return -1;
+	// Check if the aid is cacheable
+	if (aid == ATTR_MEM_TOTAL || aid == ATTR_GPU_TEMP_THRESHOLD) {
+		if (cache_nvidia_value(tid, aid, dpy, &value)) {
+			return -1;
+		}
+	// If not, then query it
+	} else {
+		if(!dpy || !XNVCTRLQueryTargetAttribute(dpy, translate_nvidia_target[tid], 0, 0, translate_nvidia_attribute[aid], &value)){
+			NORM_ERR("%s: Something went wrong running nvidia query (tid: %d, aid: %d)", __func__, tid, aid);
+			return -1;
+		}
 	}
 	
 	// Unpack clock values (see NVCtrl.h for details)
@@ -662,6 +697,64 @@ static char* get_nvidia_string(TARGET_ID tid, ATTR_ID aid)
 	return str;
 }
 
+static int cache_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token, SEARCH_ID search, int *value, int update)
+{
+	static int nvclockmin = -1;
+	static int nvclockmax = -1;
+	static int memclockmin = -1;
+	static int memclockmax = -1;
+	static int memTransferRatemin = -1;
+	static int memTransferRatemax = -1;
+	static int perfmin = -1;
+	static int perfmax = -1;
+
+	if (update) {
+		if (strcmp(token, (char*) "nvclockmin") == 0 && nvclockmin < 0){
+			nvclockmin = *value;
+		} else if (strcmp(token, (char*) "nvclockmax") == 0 && nvclockmax < 0){
+			nvclockmax = *value;
+		} else if (strcmp(token, (char*) "memclockmin") == 0 && memclockmin < 0){
+			memclockmin = *value;
+		} else if (strcmp(token, (char*) "memclockmax") == 0 && memclockmax < 0){
+			memclockmax = *value;
+		} else if (strcmp(token, (char*) "memTransferRatemin") == 0 && memTransferRatemin < 0){
+			memTransferRatemin = *value;
+		} else if (strcmp(token, (char*) "memTransferRatemax") == 0 && memTransferRatemax < 0){
+			memTransferRatemax = *value;
+
+		} else if (strcmp(token, (char*) "perf") == 0 && memTransferRatemax < 0){
+			if (search == SEARCH_MIN) {
+				perfmin = *value;
+			} else if (search == SEARCH_MAX) {
+				perfmax = *value;
+			}
+		}
+
+	} else {
+		if (strcmp(token, (char*) "nvclockmin") == 0){
+			*value = nvclockmin;
+		} else if (strcmp(token, (char*) "nvclockmax") == 0){
+			*value = nvclockmax;
+		} else if (strcmp(token, (char*) "memclockmin") == 0){
+			*value = memclockmin;
+		} else if (strcmp(token, (char*) "memclockmax") == 0){
+			*value = memclockmax;
+		} else if (strcmp(token, (char*) "memTransferRatemin") == 0){
+			*value = memTransferRatemin;
+		} else if (strcmp(token, (char*) "memTransferRatemax") == 0){
+			*value = memTransferRatemax;
+
+		} else if (strcmp(token, (char*) "perf") == 0){
+			if (search == SEARCH_MIN) {
+				*value = perfmin;
+			} else if (search == SEARCH_MAX) {
+					*value = perfmax;
+			}
+		}
+	}
+
+	return 0;
+}
 
 // Retrieve token value from nvidia string
 static int get_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token, SEARCH_ID search)
@@ -670,7 +763,15 @@ static int get_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token, SEAR
 	char *kvp, *key, *val;
 	char *saveptr1, *saveptr2;
 	int value, temp;
-	
+
+	value = -1;
+
+	// Checks if the value is cacheable and is already loaded
+	cache_nvidia_string_value(tid, aid, token, search, &value, 0);
+	if ( value != -1 ) {
+		return value;
+	}
+
 	// Get string via nvidia interface
 	str = get_nvidia_string(tid, aid);
 
@@ -678,7 +779,6 @@ static int get_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token, SEAR
 	// into key and value, from value, check if token was found,
 	// convert value to int, evaluate value according to specified
 	// token search mode
-	value = -1;
 	kvp = strtok_r(str, NV_KVPAIR_SEPARATORS, &saveptr1);
 	while (kvp) {
 		key = strtok_r(kvp, NV_KEYVAL_SEPARATORS, &saveptr2);
@@ -703,6 +803,9 @@ static int get_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token, SEAR
 		}
 		kvp = strtok_r(NULL, NV_KVPAIR_SEPARATORS, &saveptr1);
 	}
+
+	// This call updated the cache for the cacheable values;
+	cache_nvidia_string_value(tid, aid, token, search, &value, 1);
 	
 	// TESTING - print raw string if token was not found;
 	// string has to be queried again due to strtok_r()
