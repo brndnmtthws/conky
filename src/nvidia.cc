@@ -641,8 +641,6 @@ static int cache_nvidia_value(TARGET_ID tid, ATTR_ID aid, Display *dpy, int *val
 		} else {
 			*value = gputempthreshold;
 		}
-	} else {
-		//CRIT_ERR(NULL, NULL, "TRETA:");
 	}
 
 	return 0;
