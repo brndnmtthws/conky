@@ -151,13 +151,13 @@ void get_fs_type(const char *path, char *result)
 #else				/* HAVE_STRUCT_STATFS_F_FSTYPENAME */
 
 	struct mntent *me;
-	FILE *mtab = setmntent("/etc/mtab", "r");
+	FILE *mtab = setmntent("/proc/mounts", "r");
 	char *search_path;
 	int match;
 	char *slash;
 
 	if (mtab == NULL) {
-		NORM_ERR("setmntent /etc/mtab: %s", strerror(errno));
+		NORM_ERR("setmntent /proc/mounts: %s", strerror(errno));
 		strncpy(result, "unknown", DEFAULT_TEXT_BUFFER_SIZE);
 		return;
 	}
