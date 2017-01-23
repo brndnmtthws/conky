@@ -25,9 +25,11 @@
 #ifndef _EVE_H
 #define _EVE_H
 
-#define EVEURL_TRAINING "http://api.eve-online.com/char/SkillInTraining.xml.aspx"
-#define EVEURL_SKILLTREE "http://api.eve-online.com/eve/Skilltree.xml.aspx"
+#define EVEURL_TRAINING "https://api.eveonline.com/char/SkillInTraining.xml.aspx"
+#define EVEURL_SKILLTREE "https://api.eveonline.com/eve/Skilltree.xml.aspx"
 #define EVE_OUTPUT_FORMAT "%s %d in %s"
+
+#define TRAINING_INACTIVE ""
 
 void scan_eve(struct text_object *, const char *);
 void print_eve(struct text_object *, char *, int);
