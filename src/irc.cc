@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "text_object.h"
-#include <libircclient/libircclient.h>
+#include <libircclient.h>
 
 struct ll_text {
 	char *text;

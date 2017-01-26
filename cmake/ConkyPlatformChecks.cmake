@@ -95,7 +95,7 @@ if(BUILD_ICAL)
 endif(BUILD_ICAL)
 
 if(BUILD_IRC)
-	check_include_files(libircclient/libircclient.h IRC_H_)
+	check_include_files(libircclient.h IRC_H_)
 	if(NOT IRC_H_)
 		message(FATAL_ERROR "Unable to find libircclient")
 	endif(NOT IRC_H_)
