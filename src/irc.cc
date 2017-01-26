@@ -44,6 +44,7 @@ struct obj_irc {
 
 struct ctx {
 	char *chan;
+	int max_msg_lines;
 	struct ll_text *messages;
 };
 
@@ -68,6 +69,22 @@ void addmessage(struct ctx *ctxptr, char *nick, const char *text) {
 			lastmsg = lastmsg->next;
 		}
 		lastmsg->next = newmsg;
+	}
+	if(ctxptr->max_msg_lines>0) {
+		int msgcnt = 0;
+		newmsg = ctxptr->messages;
+		while(newmsg) {
+			newmsg = newmsg->next;
+			msgcnt++;
+		}
+		msgcnt -= ctxptr->max_msg_lines;
+		while(msgcnt>0) {
+			msgcnt--;
+			newmsg = ctxptr->messages->next;
+			free(ctxptr->messages->text);
+			free(ctxptr->messages);
+			ctxptr->messages = newmsg;
+		}
 	}
 }
 
@@ -95,7 +112,7 @@ void ev_num(irc_session_t *session, unsigned int event, const char *origin, cons
 	if(origin || count) {}	//fix gcc warnings
 }
 
-#define IRCSYNTAX "The correct syntax is ${irc server(:port) #channel}"
+#define IRCSYNTAX "The correct syntax is ${irc server(:port) #channel (max_msg_lines)}"
 #define IRCPORT 6667
 #define IRCNICK "conky"
 #define IRCSERVERPASS NULL
@@ -108,6 +125,7 @@ void *ircclient(void *ptr) {
 	irc_callbacks_t callbacks;
 	char *server;
 	char *strport;
+	char *str_max_msg_lines;
 	unsigned int port;
 
 	memset (&callbacks, 0, sizeof(callbacks));
@@ -119,6 +137,10 @@ void *ircclient(void *ptr) {
 	ctxptr->chan = strtok(NULL , " ");
 	if( ! ctxptr->chan) {
 		NORM_ERR("irc: %s", IRCSYNTAX);
+	}
+	str_max_msg_lines = strtok(NULL, " ");
+	if(str_max_msg_lines) {
+		ctxptr->max_msg_lines = strtol(str_max_msg_lines, NULL, 10);
 	}
 	ctxptr->messages = NULL;
 	irc_set_ctx(ircobj->session, ctxptr);
@@ -169,14 +191,18 @@ void print_irc(struct text_object *obj, char *p, int p_max_size) {
 	while(curmsg) {
 		nextmsg = curmsg->next;
 		strncat(p, curmsg->text, p_max_size - strlen(p) - 1);
-		free(curmsg->text);
-		free(curmsg);
+		if(!ctxptr->max_msg_lines) {
+			free(curmsg->text);
+			free(curmsg);
+		}
 		curmsg = nextmsg;
 	}
 	if(p[0] != 0) {
 		p[strlen(p) - 1] = 0;
 	}
-	ctxptr->messages = NULL;
+	if(!ctxptr->max_msg_lines) {
+		ctxptr->messages = NULL;
+	}
 }
 
 void free_irc(struct text_object *obj) {

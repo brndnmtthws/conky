@@ -1756,11 +1756,12 @@
             <command>
                 <option>irc</option>
             </command>
-            <option>server(:port) #channel</option>
+            <option>server(:port) #channel (max_msg_lines)</option>
         </term>
         <listitem>Shows everything that's being told in #channel on IRCserver
         'server'. TCP-port 6667 is used for the connection unless 'port' is
-        specified.
+        specified. Shows everything since the last time or the last
+        'max_msg_lines' entries if specified.
         <para /></listitem>
     </varlistentry>
     <varlistentry>
