@@ -105,11 +105,17 @@ int parseTrainingXml(char *data, Character * s)
 	xmlNodePtr root = 0;
 	struct tm end_tm, cache_tm;
 
+	// initialize the time structs
+	time_t now = time(NULL);
+	localtime_r(&now, &end_tm);
+	localtime_r(&now, &cache_tm);
+
 	if (!data)
 		return 1;
 
-	doc = xmlReadMemory(data, strlen(data), "", NULL, 0);
+	doc = xmlReadMemory(data, strlen(data), "", NULL, XML_PARSE_RECOVER);
 	root = xmlDocGetRootElement(doc);
+
 	for (n = root->children; n; n = n->next) {
 		if (n->type == XML_ELEMENT_NODE) {
 			if (!strcasecmp((const char *)n->name, "error")) {
@@ -206,16 +212,18 @@ static void init_eve(void)
 
 static int isCacheValid(struct tm cached)
 {
-	struct timeval tv;
-	struct timezone tz;
+	//struct timeval tv;
+	//struct timezone tz;
 	double offset = 0;
-	time_t now = 0;
+	time_t now = time(NULL);
 	time_t cache = 0;
 	double diff = 0;
 
-	gettimeofday(&tv, &tz);
-	offset = (double)(tz.tz_minuteswest * 60);
-	now = time(NULL);
+	//gettimeofday(&tv, &tz);
+	//tzset();
+	struct tm * lt = localtime(&now);
+
+	offset = (double)(-lt->tm_gmtoff);
 	cache = mktime(&cached);
 	diff = difftime(cache, now);
 
@@ -227,18 +235,19 @@ static int isCacheValid(struct tm cached)
 
 static char *formatTime(struct tm *ends)
 {
-	struct timeval tv;
-	struct timezone tz;
+	//struct timeval tv;
+	//struct timezone tz;
 	double offset = 0;
-	time_t now = 0;
+	time_t now = time(NULL);
 	time_t tEnds = 0;
 	long lin = 0;
 	long lie = 0;
 	long diff = 0;
 	
-	gettimeofday(&tv, &tz);
-	offset = (double)(tz.tz_minuteswest * 60);
-	now = time(NULL);
+	//gettimeofday(&tv, &tz);
+	struct tm * lt = localtime(&now);
+
+	offset = (double)(-lt->tm_gmtoff);
 	tEnds = mktime(ends);
 	lin = (long)now;
 	lin += (long)offset;
@@ -283,10 +292,13 @@ static char *getSkillname(const char *file, int skillid)
 	xmlNodePtr root = 0;
 
 	skilltree = getXmlFromAPI(NULL, NULL, NULL, EVEURL_SKILLTREE);
-	writeSkilltree(skilltree, file);
-	free(skilltree);
+	if(skilltree)
+	{
+		writeSkilltree(skilltree, file);
+		free(skilltree);
+	}
 
-	doc = xmlReadFile(file, NULL, 0);
+	doc = xmlReadFile(file, NULL, XML_PARSE_RECOVER);
 	unlink(file);
 	if (!doc)
 		return NULL;
