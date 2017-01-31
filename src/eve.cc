@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <utime.h>
@@ -45,7 +46,7 @@
 
 #include "conky.h"
 
-#define MAXCHARS 4
+#define MAXCHARS 64
 #define EVE_UPDATE_DELAY 60
 
 typedef struct {
@@ -59,6 +60,8 @@ typedef struct {
 
 	time_t delay;
 
+	int isTraining;
+
 	int level;
 	int skill;
 } Character;
@@ -69,9 +72,9 @@ struct xmlData {
 };
 
 struct eve_data {
-	char apikey[65];
+	char apiVCode[65];
 	char charid[21];
-	char userid[21];
+	char apiKeyID[21];
 };
 
 int num_chars = 0;
@@ -96,17 +99,23 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
 
 int parseTrainingXml(char *data, Character * s)
 {
-	char *skill, *level, *ends, *cache;
+	char *skill, *level, *ends, *cache, *isTraining;
 	xmlNodePtr n;
 	xmlDocPtr doc = 0;
 	xmlNodePtr root = 0;
 	struct tm end_tm, cache_tm;
 
+	// initialize the time structs
+	time_t now = time(NULL);
+	localtime_r(&now, &end_tm);
+	localtime_r(&now, &cache_tm);
+
 	if (!data)
 		return 1;
 
-	doc = xmlReadMemory(data, strlen(data), "", NULL, 0);
+	doc = xmlReadMemory(data, strlen(data), "", NULL, XML_PARSE_RECOVER);
 	root = xmlDocGetRootElement(doc);
+
 	for (n = root->children; n; n = n->next) {
 		if (n->type == XML_ELEMENT_NODE) {
 			if (!strcasecmp((const char *)n->name, "error")) {
@@ -114,7 +123,9 @@ int parseTrainingXml(char *data, Character * s)
 			} else if (!strcasecmp((const char *)n->name, "result")) {
 				xmlNodePtr c;
 				for (c = n->children; c; c = c->next) {
-					if (!strcasecmp((const char *)c->name, "trainingEndTime")) {
+					if (!strcasecmp((const char *)c->name, "SkillInTraining")) {
+						isTraining = (char *)c->children->content;
+					} else if (!strcasecmp((const char *)c->name, "trainingEndTime")) {
 						ends = (char *)c->children->content;
 					} else if (!strcasecmp((const char *)c->name, "trainingTypeID")) {
 						if (c->children->content)
@@ -129,18 +140,23 @@ int parseTrainingXml(char *data, Character * s)
 		}
 	}
 
-	strptime(ends, "%Y-%m-%d %H:%M:%S", &end_tm);
-	strptime(cache, "%Y-%m-%d %H:%M:%S", &cache_tm);
+	s->isTraining = atoi(isTraining);
 	s->skill = atoi(skill);
 	s->level = atoi(level);
-	s->ends = end_tm;
+
+	strptime(cache, "%Y-%m-%d %H:%M:%S", &cache_tm);
 	s->cache = cache_tm;
+
+	if (s->isTraining) {
+		strptime(ends, "%Y-%m-%d %H:%M:%S", &end_tm);
+		s->ends = end_tm;
+	}
 
 	xmlFreeDoc(doc);
 	return 0;
 }
 
-static char *getXmlFromAPI(const char *userid, const char *apikey, const char *charid, const char *url)
+static char *getXmlFromAPI(const char *apiKeyID, const char *apiVCode, const char *charid, const char *url)
 {
 	struct curl_httppost *post = NULL;
 	struct curl_httppost *last = NULL;
@@ -154,18 +170,21 @@ static char *getXmlFromAPI(const char *userid, const char *apikey, const char *c
 
 	curl_handle = curl_easy_init();
 	curl_easy_setopt(curl_handle, CURLOPT_FAILONERROR, 1);
-	curl_easy_setopt(curl_handle, CURLOPT_URL, url);
 	curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1);
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_data);
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chr);
 
-	if (userid != NULL && apikey != NULL && charid != NULL) {
-		curl_formadd(&post, &last, CURLFORM_COPYNAME, "userID", CURLFORM_COPYCONTENTS, userid, CURLFORM_END);
-		curl_formadd(&post, &last, CURLFORM_COPYNAME, "apiKey", CURLFORM_COPYCONTENTS, apikey, CURLFORM_END);
-		curl_formadd(&post, &last, CURLFORM_COPYNAME, "characterID", CURLFORM_COPYCONTENTS, charid, CURLFORM_END);
-
-		curl_easy_setopt(curl_handle, CURLOPT_HTTPPOST, post);
+	std::string real_url = std::string(url, strlen(url));
+	if (apiKeyID && apiVCode && charid) {
+		real_url += "?keyID=";
+		real_url += curl_easy_escape(curl_handle, apiKeyID, strlen(apiKeyID));
+		real_url += "&vCode=";
+		real_url += curl_easy_escape(curl_handle, apiVCode, strlen(apiVCode));
+		real_url += "&characterID=";
+		real_url += curl_easy_escape(curl_handle, charid, strlen(charid));
 	}
+
+	curl_easy_setopt(curl_handle, CURLOPT_URL, real_url.c_str());
 
 	if ((rc = curl_easy_perform(curl_handle)) != CURLE_OK) {
 		return NULL;
@@ -193,16 +212,18 @@ static void init_eve(void)
 
 static int isCacheValid(struct tm cached)
 {
-	struct timeval tv;
-	struct timezone tz;
+	//struct timeval tv;
+	//struct timezone tz;
 	double offset = 0;
-	time_t now = 0;
+	time_t now = time(NULL);
 	time_t cache = 0;
 	double diff = 0;
 
-	gettimeofday(&tv, &tz);
-	offset = (double)(tz.tz_minuteswest * 60);
-	now = time(NULL);
+	//gettimeofday(&tv, &tz);
+	//tzset();
+	struct tm * lt = localtime(&now);
+
+	offset = (double)(-lt->tm_gmtoff);
 	cache = mktime(&cached);
 	diff = difftime(cache, now);
 
@@ -214,18 +235,19 @@ static int isCacheValid(struct tm cached)
 
 static char *formatTime(struct tm *ends)
 {
-	struct timeval tv;
-	struct timezone tz;
+	//struct timeval tv;
+	//struct timezone tz;
 	double offset = 0;
-	time_t now = 0;
+	time_t now = time(NULL);
 	time_t tEnds = 0;
 	long lin = 0;
 	long lie = 0;
 	long diff = 0;
 	
-	gettimeofday(&tv, &tz);
-	offset = (double)(tz.tz_minuteswest * 60);
-	now = time(NULL);
+	//gettimeofday(&tv, &tz);
+	struct tm * lt = localtime(&now);
+
+	offset = (double)(-lt->tm_gmtoff);
 	tEnds = mktime(ends);
 	lin = (long)now;
 	lin += (long)offset;
@@ -240,11 +262,11 @@ static char *formatTime(struct tm *ends)
 		char *output = (char*) malloc(100 * sizeof(char));
 
 		if (days > 0)
-			sprintf(output, "%dd, %dh, %02dm and %02ds", days, hours, minutes, seconds);
+			sprintf(output, "%dd %dh %02dm %02ds", days, hours, minutes, seconds);
 		else if (hours > 0)
-			sprintf(output, "%dh, %02dm and %02ds", hours, minutes, seconds);
+			sprintf(output, "%dh %02dm %02ds", hours, minutes, seconds);
 		else
-			sprintf(output, "%02dm and %02ds", minutes, seconds);
+			sprintf(output, "%02dm %02ds", minutes, seconds);
 
 		return output;
 	} else {
@@ -270,10 +292,13 @@ static char *getSkillname(const char *file, int skillid)
 	xmlNodePtr root = 0;
 
 	skilltree = getXmlFromAPI(NULL, NULL, NULL, EVEURL_SKILLTREE);
-	writeSkilltree(skilltree, file);
-	free(skilltree);
+	if(skilltree)
+	{
+		writeSkilltree(skilltree, file);
+		free(skilltree);
+	}
 
-	doc = xmlReadFile(file, NULL, 0);
+	doc = xmlReadFile(file, NULL, XML_PARSE_RECOVER);
 	unlink(file);
 	if (!doc)
 		return NULL;
@@ -320,7 +345,7 @@ static char *getSkillname(const char *file, int skillid)
 	return skill;
 }
 
-static char *eve(char *userid, char *apikey, char *charid)
+static char *eve(char *apiKeyID, char *apiVCode, char *charid)
 {
 	Character *chr = NULL;
 	char skillfile[] = "/tmp/.cesfXXXXXX";
@@ -334,7 +359,7 @@ static char *eve(char *userid, char *apikey, char *charid)
 	int tmp_fd, old_umask;
 
 
-	for (i = 0; i < MAXCHARS; i++) {
+	for (i = 0; i < num_chars; i++) {
 		if (eveCharacters[i].charid != NULL) {
 			if (strcasecmp(eveCharacters[i].charid, charid) == 0) {
 				chr = &eveCharacters[i];
@@ -347,6 +372,7 @@ static char *eve(char *userid, char *apikey, char *charid)
 		if (num_chars == MAXCHARS - 1)
 			return NULL;
 		chr = &eveCharacters[num_chars];
+		memset(chr, 0, sizeof(Character));
 		chr->charid = strdup(charid);
 		num_chars++;
 	}
@@ -361,13 +387,17 @@ static char *eve(char *userid, char *apikey, char *charid)
 	}
 
 	if (isCacheValid(chr->cache)) {
-		output = (char *)malloc(200 * sizeof(char));
-		timel = strdup(formatTime(&chr->ends));
-		sprintf(output, EVE_OUTPUT_FORMAT, chr->skillname, chr->level, timel);
-		free(timel);
-		return output;
+		if (chr->isTraining) {
+			output = (char *)malloc(200 * sizeof(char));
+			timel = strdup(formatTime(&chr->ends));
+			sprintf(output, EVE_OUTPUT_FORMAT, chr->skillname, chr->level, timel);
+			free(timel);
+			return output;
+		} else {
+			return strdup(TRAINING_INACTIVE);
+		}
 	} else {
-		content = getXmlFromAPI(userid, apikey, charid, EVEURL_TRAINING);
+		content = getXmlFromAPI(apiKeyID, apiVCode, charid, EVEURL_TRAINING);
 		if (content == NULL) {
 			error = strdup("Server error");
 			now = time(NULL);
@@ -390,14 +420,18 @@ static char *eve(char *userid, char *apikey, char *charid)
 			return error;
 		}
 		close(tmp_fd);
+
 		skill = getSkillname(skillfile, chr->skill);
+		if (skill) {
+			chr->skillname = strdup(skill);
 
-		chr->skillname = strdup(skill);
-
-		output = (char *)malloc(200 * sizeof(char));
-		sprintf(output, EVE_OUTPUT_FORMAT, chr->skillname, chr->level, timel);
-		free(skill);
-		return output;
+			output = (char *)malloc(200 * sizeof(char));
+			sprintf(output, EVE_OUTPUT_FORMAT, chr->skillname, chr->level, timel);
+			free(skill);
+			return output;
+		} else {
+			return strdup(TRAINING_INACTIVE);
+		}
 	}
 
 }
@@ -410,7 +444,7 @@ void scan_eve(struct text_object *obj, const char *arg)
 	ed = (struct eve_data *) malloc(sizeof(struct eve_data));
 	memset(ed, 0, sizeof(struct eve_data));
 
-	argc = sscanf(arg, "%20s %64s %20s", ed->userid, ed->apikey, ed->charid);
+	argc = sscanf(arg, "%20s %64s %20s", ed->apiKeyID, ed->apiVCode, ed->charid);
 
 	init_eve();
 	obj->data.opaque = ed;
@@ -423,10 +457,11 @@ void print_eve(struct text_object *obj, char *p, int p_max_size)
 	if (!ed)
 		return;
 
-	snprintf(p, p_max_size, "%s", eve(ed->userid, ed->apikey, ed->charid));
+	snprintf(p, p_max_size, "%s", eve(ed->apiKeyID, ed->apiVCode, ed->charid));
 }
 
 void free_eve(struct text_object *obj)
 {
 	free_and_zero(obj->data.opaque);
+	num_chars = 0;
 }

@@ -1103,11 +1103,13 @@
             <command>
                 <option>eve</option>
             </command>
-            <option>api_userid api_key character_id</option>
+            <option>api_keyID api_vCode character_id</option>
         </term>
-        <listitem>Fetches your currently training skill from the
-        Eve Online API servers (http://www.eve-online.com/) and
-        displays the skill along with the remaining training time. 
+        <listitem>Fetches a character's currently training skill from
+        the Eve Online API servers (http://www.eveonline.com/) and
+        displays the skill along with the remaining training time.
+        If the character is not actively training a skill then returns
+        the empty string (for use with $if_empty).
         <para /></listitem>
     </varlistentry>
     <varlistentry>
