@@ -143,7 +143,7 @@ int check_mount(struct text_object *obj)
 	if (!obj->data.s)
 		return 0;
 
-	if ((mtab = fopen("/etc/mtab", "r"))) {
+	if ((mtab = fopen("/proc/mounts", "r"))) {
 		char buf1[256], buf2[129];
 
 		while (fgets(buf1, 256, mtab)) {
