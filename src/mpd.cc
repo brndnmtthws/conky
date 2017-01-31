@@ -265,6 +265,7 @@ namespace {
 #define SETSTRING(a,b) \
 if (b) a=b; else a="";
 				SETSTRING(mpd_info.artist, song->artist);
+				SETSTRING(mpd_info.albumartist, song->albumartist);
 				SETSTRING(mpd_info.album, song->album);
 				SETSTRING(mpd_info.title, song->title);
 				SETSTRING(mpd_info.date, song->date);
