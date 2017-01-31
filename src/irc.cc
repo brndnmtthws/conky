@@ -62,23 +62,27 @@ void addmessage(struct ctx *ctxptr, char *nick, const char *text) {
 	newmsg->text = (char*) malloc(strlen(nick) + strlen(text) + 4);	//4 = ": \n"
 	sprintf(newmsg->text, "%s: %s\n", nick, text);
 	newmsg->next = NULL;
+	int msgcnt = 1;
 	if(!lastmsg) {
 		ctxptr->messages = newmsg;
 	} else {
+		msgcnt++;
 		while(lastmsg->next) {
 			lastmsg = lastmsg->next;
+			msgcnt++;
+			if(msgcnt<0) {
+				NORM_ERR("irc: too many messages, discarding the last one.");
+				free(newmsg->text);
+				free(newmsg);
+				return;
+			}
 		}
 		lastmsg->next = newmsg;
 	}
 	if(ctxptr->max_msg_lines>0) {
-		int msgcnt = 0;
 		newmsg = ctxptr->messages;
-		while(newmsg) {
-			newmsg = newmsg->next;
-			msgcnt++;
-		}
 		msgcnt -= ctxptr->max_msg_lines;
-		while(msgcnt>0) {
+		while((msgcnt>0) && (ctxptr->messages)) {
 			msgcnt--;
 			newmsg = ctxptr->messages->next;
 			free(ctxptr->messages->text);
