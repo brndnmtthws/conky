@@ -491,7 +491,8 @@ static void update_workarea(void)
 	workarea[0] = ps->x_org;
 	workarea[1] = ps->y_org;
 	workarea[2] = workarea[0] + ps->width;
-	workarea[3] = workarea[1] + ps->height;
+        workarea[3] = workarea[1] + ps->height;
+        XFree(si);
 
 	DBGP("Fixed xinerama area to: %d %d %d %d", 
 		workarea[0], workarea[1], workarea[2], workarea[3]);
