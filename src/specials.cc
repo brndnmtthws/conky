@@ -521,12 +521,16 @@ void new_graph(struct text_object *obj, char *buf, int buf_max_size, double val)
 			/* initialize */
 			std::fill_n(graph, s->graph_width, 0.0);
 			s->scale = 100;
-		} else {
+                } else if (graph) {
 			if (s->graph_width > s->graph_allocated) {
 				/* initialize the new region */
 				std::fill(graph + s->graph_allocated, graph + s->graph_width, 0.0);
 			}
-		}
+                } else {
+                    DBGP("reallocing FAILED");
+                    graph = s->graph;
+                    s->graph_width = s->graph_allocated;
+                }
 		s->graph = graph;
 		s->graph_allocated = s->graph_width;
 	}

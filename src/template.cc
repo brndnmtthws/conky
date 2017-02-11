@@ -99,8 +99,8 @@ static char *backslash_escape(const char *src, char **templates, unsigned int te
 		}
 		p++;
 	}
-	src_dup[dup_idx] = '\0';
-	src_dup = (char*) realloc(src_dup, (strlen(src_dup) + 1) * sizeof(char));
+	src_dup[dup_idx++] = '\0';
+	src_dup = (char*) realloc(src_dup, dup_idx * sizeof(char));
 	return src_dup;
 }
 
