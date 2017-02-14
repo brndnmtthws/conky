@@ -254,8 +254,9 @@ void cimlib_render(int x, int y, int width, int height)
 	/* clear our buffer */
 	imlib_context_set_image(buffer);
 	imlib_image_clear();
-	/* we can blend stuff now */
-	imlib_context_set_blend(1);
+	/* we should only blend if not using argb visuals to prevent incorrect
+	 * image opacity being drawn */
+	imlib_context_set_blend(!use_argb_visual.get(*state));
 	/* turn alpha channel on */
 	imlib_image_set_has_alpha(1);
 
