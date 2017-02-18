@@ -900,6 +900,9 @@ int update_stat(void)
 			} else {
 				idx = 0;
 			}
+			if (idx >= info.cpu_count) {
+				continue;
+			}
 			sscanf(buf, stat_template, &(cpu[idx].cpu_user),
 				&(cpu[idx].cpu_nice), &(cpu[idx].cpu_system),
 				&(cpu[idx].cpu_idle), &(cpu[idx].cpu_iowait),
