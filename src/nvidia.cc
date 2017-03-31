@@ -50,17 +50,37 @@
  * LOAD   GPU ${nvidia gpuutil [gpu_id]}%, RAM ${nvidia membwutil [gpu_id]}%, VIDEO ${nvidia videoutil [gpu_id]}%, PCIe ${nvidia pcieutil [gpu_id]}%
  * TEMP   GPU ${nvidia gputemp [gpu_id]}°C (${nvidia gputempthreshold [gpu_id]}°C max.), SYS ${nvidia ambienttemp [gpu_id]}°C
  * FAN    ${nvidia fanspeed [gpu_id]} RPM (${nvidia fanlevel [gpu_id]}%)
- * OPENGL ${nvidia imagequality [gpu_id]} 
+ * 
+ * miscelaneas:
+ * OPENGL ${nvidia imagequality [gpu_id]}
+ * GPU    ${nvidia modelname [gpu_id]} 
  * 
  * --==| NVIDIA Bars |==--
- * LOAD ${nvidiabar gpuutil [gpu_id]}
- * VRAM ${nvidiabar memutil [gpu_id]}
- * RAM ${nvidiabar membwutil [gpu_id]}
- * VIDEO ${nvidiabar videoutil [gpu_id]}
- * PCIe ${nvidiabar pcieutil [gpu_id]}
- * Fan ${nvidiabar fanlevel [gpu_id]}
- * TEMP ${nvidiabar gputemp [gpu_id]}
+ * LOAD  ${nvidiabar [height][,width] gpuutil [gpu_id]}
+ * VRAM  ${nvidiabar [height][,width] memutil [gpu_id]}
+ * RAM   ${nvidiabar [height][,width] membwutil [gpu_id]}
+ * VIDEO ${nvidiabar [height][,width] videoutil [gpu_id]}
+ * PCIe  ${nvidiabar [height][,width] pcieutil [gpu_id]}
+ * Fan   ${nvidiabar [height][,width] fanlevel [gpu_id]}
+ * TEMP  ${nvidiabar [height][,width] gputemp [gpu_id]}
  * 
+ * --==| NVIDIA Gauge |==--
+ * LOAD  ${nvidiagauge [height][,width] gpuutil [gpu_id]}
+ * VRAM  ${nvidiagauge [height][,width] memutil [gpu_id]}
+ * RAM   ${nvidiagauge [height][,width] membwutil [gpu_id]}
+ * VIDEO ${nvidiagauge [height][,width] videoutil [gpu_id]}
+ * PCIe  ${nvidiagauge [height][,width] pcieutil [gpu_id]}
+ * Fan   ${nvidiagauge [height][,width] fanlevel [gpu_id]}
+ * TEMP  ${nvidiagauge [height][,width] gputemp [gpu_id]}
+ * 
+ * --==| NVIDIA Graph |==-- (gpu_id is not optional in this case)
+ * LOAD  ${nvidiagraph gpuutil [height][,width] [gradient color 1] [gradient color 2] [scale] [-t] [-l] gpu_id}
+ * VRAM  ${nvidiagraph memutil [height][,width] [gradient color 1] [gradient color 2] [scale] [-t] [-l] gpu_id}
+ * RAM   ${nvidiagraph membwutil [height][,width] [gradient color 1] [gradient color 2] [scale] [-t] [-l] gpu_id}
+ * VIDEO ${nvidiagraph videoutil [height][,width] [gradient color 1] [gradient color 2] [scale] [-t] [-l] gpu_id}
+ * PCIe  ${nvidiagraph pcieutil [height][,width] [gradient color 1] [gradient color 2] [scale] [-t] [-l] gpu_id}
+ * Fan   ${nvidiagraph fanlevel [height][,width] [gradient color 1] [gradient color 2] [scale] [-t] [-l] gpu_id}
+ * TEMP  ${nvidiagraph gputemp [height][,width] [gradient color 1] [gradient color 2] [scale] [-t] [-l] gpu_id}
  */
 
 
@@ -125,7 +145,8 @@ const char* translate_module_argument[] = {
 						"fanspeed",		// Fan/cooler
 						"fanlevel",
 						
-						"imagequality"		// Miscellaneous
+						"imagequality",		// Miscellaneous
+                        "modelname"
 };
 
 // Enum for module arguments
@@ -176,6 +197,8 @@ typedef enum _ARG_ID {
 	ARG_FAN_LEVEL,
 	
 	ARG_IMAGEQUALITY,
+
+	ARG_MODEL_NAME,
 
 	ARG_UNKNOWN
 } ARG_ID;
@@ -258,6 +281,9 @@ typedef enum _ATTR_ID {
 
 	ATTR_PERF_LEVEL,
 	ATTR_IMAGE_QUALITY,
+
+	ATTR_MODEL_NAME,
+
 } ATTR_ID;
 
 
@@ -312,11 +338,6 @@ struct nvidia_s {
     int gpu_id;
 };
 
-//maximum number of GPU connected:
-//for cache: choosed a model of direct access to array instead of list for speed improvement
-//value based on the incoming Naples tech and having 256 PCIe lanes available
-const int MAXNUMGPU=64;
-
 //Cache by value
 struct nvidia_c_value {
     int memtotal = -1;
@@ -336,6 +357,11 @@ struct nvidia_c_string {
 };
 
 static Display *nvdisplay;
+
+// Maximum number of GPU connected:
+// For cache default value: choosed a model of direct access to array instead of list for speed improvement
+// value based on the incoming quad Naples tech having 256 PCIe lanes available
+const int MAXNUMGPU=64;
 
 
 namespace {
@@ -389,8 +415,10 @@ int set_nvidia_query(struct text_object *obj, const char *arg, unsigned int spec
 {
 	struct nvidia_s *nvs;
 	int aid;
-    int argc;
-    char uri[128];
+    int ilen;
+
+
+ 
 
 	// Initialize global struct
 	obj->data.opaque = malloc(sizeof(struct nvidia_s));
@@ -398,14 +426,22 @@ int set_nvidia_query(struct text_object *obj, const char *arg, unsigned int spec
 	memset(nvs, 0, sizeof(struct nvidia_s));
 
     // Added new parameter parsing GPU_ID as 0,1,2,..
-    // if no second parameter then default to 0
+    // if no GPU_ID parameter then default to 0
     nvs->gpu_id = 0;
-    argc = sscanf(arg, "%s %i", uri, &nvs->gpu_id);
-    arg = uri;
-    
-    //nvs->gpu_id = abs( nvs->gpu_id );
+	char *strbuf = strdup(arg);
+	char *p = strrchr(strbuf, ' ');
+	if (p && *(p + 1)) {
+        nvs->gpu_id = atoi(p+1);
+        if( (nvs->gpu_id > 0) || !strcmp(p+1,"0") ) {
+			ilen = strlen(strbuf);
+			ilen = ilen - strlen(p);
+			strbuf[ilen] = 0;
+			arg = strbuf;
+        }
+    }
+
+    // If the value is negative it is set to 0
     if (nvs->gpu_id < 0) nvs->gpu_id = 0;
-      
 
 	// Extract arguments for nvidiabar, etc, and run set_nvidia_query
 	switch (special_type) {
@@ -429,7 +465,9 @@ int set_nvidia_query(struct text_object *obj, const char *arg, unsigned int spec
 		if (strcmp(arg, translate_module_argument[aid]) == 0)
 			break;
 	}
-	//fprintf(stderr, "parameter: %s -> aid: %d\n", arg, aid);
+
+	// free the string buffer after arg is not anymore needed
+	if (strbuf != NULL) free(strbuf);
 	
 	// Save pointers to the arg and command strings for debugging and printing
 	nvs->arg = translate_module_argument[aid];
@@ -618,6 +656,12 @@ int set_nvidia_query(struct text_object *obj, const char *arg, unsigned int spec
 			nvs->target = TARGET_SCREEN;
 			nvs->attribute = ATTR_IMAGE_QUALITY;
 			break;
+
+		case ARG_MODEL_NAME:
+			nvs->query = QUERY_STRING;
+			nvs->target = TARGET_GPU;
+			nvs->attribute = ATTR_MODEL_NAME;
+			break;
 			
 		default:						// Unknown/invalid argument
 			// Error printed by core.cc
@@ -626,7 +670,7 @@ int set_nvidia_query(struct text_object *obj, const char *arg, unsigned int spec
 	return 0;
 }
 
-// Return the amount of targets present (or -1 on error)
+// Return the amount of targets present or raise error)
 static inline int get_nvidia_target_count(Display *dpy, TARGET_ID tid)
 {
 	int num_tgts;
@@ -634,24 +678,16 @@ static inline int get_nvidia_target_count(Display *dpy, TARGET_ID tid)
 		num_tgts = -1;
 	}
 
-	return num_tgts;
-}
-
-// Exit if we are unable to get targets of type tid on display dpy
-void check_nvidia_target_count(Display *dpy, TARGET_ID tid, ATTR_ID aid, int *gid)
-{
-	int num_tgts = get_nvidia_target_count(dpy, tid);
-    
-    if( *gid > ( num_tgts - 1 ) ) *gid = num_tgts - 1;
-
 	if(num_tgts < 1) {
-		// Print error and exit if there's not enough targets to query
+		// Print error and exit if there's no NVIDIA's GPU
 		CRIT_ERR(NULL, NULL, "%s:"
 		"\n          Trying to query Nvidia target failed (using the propietary drivers)."
 		"\n          Are you sure they are installed correctly and a Nvidia GPU is in use?"
-		"\n          (display: %d, target_id: %d, target_count: %d, attribute_id: %d)"
-		             , __func__, dpy, tid, num_tgts, aid);
+		"\n          (display: %d,Nvidia target_count: %d)"
+		             , __func__, dpy, num_tgts );
 	}
+     
+	return num_tgts;
 }
 
 static int cache_nvidia_value(TARGET_ID tid, ATTR_ID aid, Display *dpy, int *value, int gid)
@@ -688,20 +724,15 @@ static int get_nvidia_value(TARGET_ID tid, ATTR_ID aid, int gid)
 {
 	Display *dpy = nvdisplay ? nvdisplay : display;
 	int value;
-    int lgid;
-
-	// Check for issues
-    lgid = gid;
-	check_nvidia_target_count(dpy, tid, aid, &lgid);
 
 	// Check if the aid is cacheable
 	if (aid == ATTR_MEM_TOTAL || aid == ATTR_GPU_TEMP_THRESHOLD) {
-		if (cache_nvidia_value(tid, aid, dpy, &value, lgid)) {
+		if (cache_nvidia_value(tid, aid, dpy, &value, gid)) {
 			return -1;
 		}
 	// If not, then query it
 	} else {
-		if(!dpy || !XNVCTRLQueryTargetAttribute(dpy, translate_nvidia_target[tid], lgid, 0, translate_nvidia_attribute[aid], &value)){
+		if(!dpy || !XNVCTRLQueryTargetAttribute(dpy, translate_nvidia_target[tid], gid, 0, translate_nvidia_attribute[aid], &value)){
 			NORM_ERR("%s: Something went wrong running nvidia query (tid: %d, aid: %d)", __func__, tid, aid);
 			return -1;
 		}
@@ -723,15 +754,10 @@ static char* get_nvidia_string(TARGET_ID tid, ATTR_ID aid, int gid)
 {
 	Display *dpy = nvdisplay ? nvdisplay : display;
 	char *str;
-    int lgid;
 
-	// Check for issues
-    lgid = gid;
-	check_nvidia_target_count(dpy, tid, aid, &lgid);
-	
 	// Query nvidia interface
-	if (!dpy || !XNVCTRLQueryTargetStringAttribute(dpy, translate_nvidia_target[tid], lgid, 0, translate_nvidia_attribute[aid], &str)) {
-		NORM_ERR("%s: Something went wrong running nvidia string query (tid: %d, aid: %d, GPU %d)", __func__, tid, aid, lgid);
+	if (!dpy || !XNVCTRLQueryTargetStringAttribute(dpy, translate_nvidia_target[tid], gid, 0, translate_nvidia_attribute[aid], &str)) {
+		NORM_ERR("%s: Something went wrong running nvidia string query (tid: %d, aid: %d, GPU %d)", __func__, tid, aid, gid);
 		return NULL;
 	}
 	//fprintf(stderr, "checking get_nvidia_string-> '%s'", str);
@@ -862,6 +888,11 @@ void print_nvidia_value(struct text_object *obj, char *p, int p_max_size)
 	struct nvidia_s *nvs = static_cast<nvidia_s *>(obj->data.opaque);
 	int value, temp1, temp2;
 	char* str;
+	
+    Display *dpy = nvdisplay ? nvdisplay : display;
+    
+    //num_GPU calculated only once based on the physical target
+	static int num_GPU = get_nvidia_target_count(dpy, TARGET_GPU) - 1;
 
 	// Assume failure
 	value = -1;
@@ -869,6 +900,11 @@ void print_nvidia_value(struct text_object *obj, char *p, int p_max_size)
 
 	// Perform query
 	if (nvs != NULL) {
+
+        //Reduce overcommitted GPU number to last GPU
+		if( nvs->gpu_id > num_GPU ) nvs->gpu_id = num_GPU;     
+		
+		//Execute switch by query type
 		switch (nvs->query) {
 			case QUERY_VALUE:
 				value = get_nvidia_value(nvs->target, nvs->attribute, nvs->gpu_id);
@@ -915,8 +951,6 @@ void print_nvidia_value(struct text_object *obj, char *p, int p_max_size)
 		}
 	}
 
-//fprintf(stderr, "print_nvidia_value->  value: '%d' str: '%s' GPU: '%i' \n", value, str, nvs->gpu_id);
-	
 	// Print result
 	if (value != -1) {
 		snprintf(p, p_max_size, "%d", value);
