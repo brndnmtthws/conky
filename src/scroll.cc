@@ -51,11 +51,8 @@ inline int scroll_character_length(char c) {
 		if ((uc & 0x80) == 0)
 			return 1;
 
-		for (len = 0; len < 7; ++len) {
-			if ((uc & (0x80 >> len)) == 0) {
-				break;
-			}
-		}
+        while (len < 7 && (uc & (0x80 >> len)) != 0)
+            ++len;
 
 		return len;
 	}
@@ -102,7 +99,7 @@ static unsigned int scroll_count_characters_to_right(struct scroll_data* sd, con
     unsigned int n = 0;
     int offset = sd->start;
 
-    while ('\0' != buf[offset]) {
+    while ('\0' != buf[offset] && offset < buf.size()) {
         offset += scroll_character_length(buf[offset]);
         ++n;
     }
@@ -111,11 +108,11 @@ static unsigned int scroll_count_characters_to_right(struct scroll_data* sd, con
 }
 
 static void scroll_scroll_left(struct scroll_data* sd, const std::vector<char>& buf, unsigned int amount) {
-    for (int j = 0; (j < amount) && (buf[sd->start] != '\0'); ++j) {
+    for (int i = 0; (i < amount) && (buf[sd->start] != '\0') && (sd->start < buf.size()); ++i) {
         sd->start += scroll_character_length(buf[sd->start]);
     }
 
-    if(buf[sd->start] == 0 || (unsigned) sd->start > strlen(&(buf[0]))) {
+    if (buf[sd->start] == 0 || sd->start > strlen(buf.data())) {
         sd->start = 0;
     }
 }
