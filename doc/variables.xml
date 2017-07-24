@@ -3075,6 +3075,24 @@
     <varlistentry>
         <term>
             <command>
+                <option>pa_sink_active_port_name</option>
+            </command>
+        </term>
+        <listitem>Pulseaudio's default sink active port name. 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
+                <option>pa_sink_active_port_description</option>
+            </command>
+        </term>
+        <listitem>Pulseaudio's default sink active port description. 
+        <para /></listitem>
+    </varlistentry>
+    <varlistentry>
+        <term>
+            <command>
                 <option>pa_card_name</option>
             </command>
         </term>
