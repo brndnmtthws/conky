@@ -43,7 +43,7 @@ struct pulseaudio_default_results get_result_copy();
 
 
 const struct pulseaudio_default_results pulseaudio_result0 =
-             { std::string(), std::string(), 0, 0, 0, 0, std::string(), std::string(), 0 };
+             { std::string(), std::string(), std::string(), std::string(), 0, 0, 0, 0, std::string(), std::string(), 0 };
 pulseaudio_c *pulseaudio = NULL;
 
 void pa_sink_info_callback(pa_context *c, const pa_sink_info *i, int eol, void *data) {
@@ -53,6 +53,8 @@ void pa_sink_info_callback(pa_context *c, const pa_sink_info *i, int eol, void *
         pdr->sink_mute = i->mute;
         pdr->sink_card = i->card;
         pdr->sink_index = i->index;
+        pdr->sink_active_port_name.assign(i->active_port->name);
+        pdr->sink_active_port_description.assign(i->active_port->description);
         pdr->sink_volume = round_to_int(100.0f * (float)pa_cvolume_avg(&(i->volume)) / (float)PA_VOLUME_NORM);
         pa_threaded_mainloop_signal(pulseaudio->mainloop, 0);
     }
@@ -282,6 +284,14 @@ int puau_muted(struct text_object *obj) {
 
 void print_puau_sink_description(struct text_object *obj, char *p, int p_max_size) {
     snprintf(p, p_max_size, "%s", get_pulseaudio(obj).sink_description.c_str());
+}
+
+void print_puau_sink_active_port_name(struct text_object *obj, char *p, int p_max_size) {
+	snprintf(p, p_max_size, "%s", get_pulseaudio(obj).sink_active_port_name.c_str());
+}
+
+void print_puau_sink_active_port_description(struct text_object *obj, char *p, int p_max_size) {
+	snprintf(p, p_max_size, "%s", get_pulseaudio(obj).sink_active_port_description.c_str());
 }
 
 void print_puau_card_active_profile(struct text_object *obj, char *p, int p_max_size) {
