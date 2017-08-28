@@ -39,35 +39,36 @@ class semaphore {
 public:
 	semaphore(unsigned int value = 0) throw(std::logic_error)
 	{
-		if(sem_init(&sem, 0, value))
-			throw std::logic_error(strerror(errno));
+		//if(sem_init(&sem, 0, value))
+		//	throw std::logic_error(strerror(errno));
 	}
 
 	~semaphore() throw()
-	{ sem_destroy(&sem); }
+	{ //sem_destroy(&sem);
+    }
 
 	void post() throw(std::overflow_error)
 	{
-		if(sem_post(&sem))
-			throw std::overflow_error(strerror(errno));
+		//if(sem_post(&sem))
+		//	throw std::overflow_error(strerror(errno));
 	}
 
 	void wait() throw()
 	{
-		while(sem_wait(&sem)) {
-			if(errno != EINTR)
-				abort();
-		}
+		//while(sem_wait(&sem)) {
+		//	if(errno != EINTR)
+		//		abort();
+		//}
 	}
 
 	bool trywait() throw()
 	{
-		while(sem_trywait(&sem)) {
-			if(errno == EAGAIN)
-				return false;
-			else if(errno != EINTR)
-				abort();
-		}
+		//while(sem_trywait(&sem)) {
+		//	if(errno == EAGAIN)
+		//		return false;
+		//	else if(errno != EINTR)
+		//		abort();
+		//}
 		return true;
 	}
 };
