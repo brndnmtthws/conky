@@ -7,8 +7,7 @@ any kind of information on your desktop.
 
 ### Version
 
-This is a fork of the latest version of conky ( at the time I'm writing this )
-Also, if this fork is 3166 commits behind the master it means it is up-to-date.  If you see a different number probably the original conky had updates...
+This is a fork of the latest version of conky ( at the time I'm writing this ) ( Tuesday, 29 August 2017 )
 
 ### Features
 
