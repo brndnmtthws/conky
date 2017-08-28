@@ -47,11 +47,13 @@
 #include "freebsd.h"
 #elif defined(__DragonFly__)
 #include "dragonfly.h"
+#elif defined(__APPLE__)
+#include "darwin.h"
 #endif
 
 
 #if !defined(HAVE_STRUCT_STATFS_F_FSTYPENAME) && \
-	!defined (__OpenBSD__) && !defined(__FreeBSD__) && !defined(__DragonFly__)
+	!defined (__OpenBSD__) && !defined(__FreeBSD__) && !defined(__DragonFly__) && !defined(__APPLE__)
 #include <mntent.h>
 #endif
 
@@ -138,7 +140,7 @@ void get_fs_type(const char *path, char *result)
 {
 
 #if defined(HAVE_STRUCT_STATFS_F_FSTYPENAME) || \
-	defined(__FreeBSD__) || defined (__OpenBSD__) || defined(__DragonFly__)
+	defined(__FreeBSD__) || defined (__OpenBSD__) || defined(__DragonFly__) || defined(__APPLE__)
 
 	struct statfs64 s;
 	if (statfs64(path, &s) == 0) {

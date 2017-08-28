@@ -26,7 +26,12 @@ include(CheckIncludeFiles)
 include(CheckSymbolExists)
 
 # Check for some headers
-check_include_files(sys/statfs.h HAVE_SYS_STATFS_H)
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+check_symbol_exists(statfs64 "sys/mount.h" HAVE_STATFS64) 		#	On Darwin, the statfs64 structure relies in  </sys/mount.h>
+else(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+check_symbol_exists(statfs64 "sys/statfs.h" HAVE_STATFS64)
+endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+
 check_include_files(sys/param.h HAVE_SYS_PARAM_H)
 check_include_files(sys/inotify.h HAVE_SYS_INOTIFY_H)
 check_include_files(dirent.h HAVE_DIRENT_H)
