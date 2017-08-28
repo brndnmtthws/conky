@@ -75,6 +75,10 @@ if(OS_NETBSD)
 	set(optional_sources ${optional_sources} ${netbsd})
 endif(OS_NETBSD)
 
+if(OS_DARWIN)
+	set(darwin darwin.cc)
+	set(optional_sources ${optional_sources} ${darwin})
+endif(OS_DARWIN)
 
 # Optional sources
 if(BUILD_AUDACIOUS)
