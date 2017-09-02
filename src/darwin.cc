@@ -39,6 +39,8 @@ static int getsysctl(const char *name, void *ptr, size_t len)
 
 #include <sys/stat.h>
 
+// TODO: fix update_meminfo for getting the same stats as Activity Monitor's
+
 //
 //  ** TODO ** Find a way to add user the option to print stats about the actual swapfile in /private/var/vm
 //
@@ -63,12 +65,12 @@ static int getsysctl(const char *name, void *ptr, size_t len)
 
 int swapmode( int swapfd, unsigned long *retavail, unsigned long *retfree )
 {
-    //  Note: Unlike most Unix-based operating systems, Mac OS X does not use a preallocated swap partition for virtual memory. Instead, it uses all of the available
-    //  space on the machine’s boot partition.
-    //  This is not true! -->So, if you want to know how much virtual memory is still available, you need to get the size of the root partition.<--
+    //  NOTE:
+    //      Unlike most Unix-based operating systems, Mac OS X does not use a preallocated swap partition for virtual memory.
+    //      Instead, it uses all of the available space on the machine’s boot partition.
     //
-    //  macOS can use the whole partition BUT it creates a smaller file ( swapfile ) which theoretically can grow as big as the avaliable partition space.
-    //  Thus retavail= sizeof(swapfile) and retfree= retavail - used
+    //      macOS can use the whole partition BUT it creates smaller files ( swapfiles ) which theoretically can use the whole partition.
+    //      Thus retavail= sizeof(swapfile) and retfree= retavail - used
     //
     
     /*
