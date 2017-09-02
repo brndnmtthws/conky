@@ -37,35 +37,92 @@ static int getsysctl(const char *name, void *ptr, size_t len)
     return 0;
 }
 
-static int swapmode(unsigned long *retavail, unsigned long *retfree)
+#include <sys/stat.h>
+
+//
+//  ** TODO ** Find a way to add user the option to print stats about the actual swapfile in /private/var/vm
+//
+
+// TODO: handle multiple swap files
+// TODO: add code for reading the plist and getting swapfile location (may be custom location, who knows)
+
+
+/*
+ *  MacOSX can be using many swapfiles thus calling swapmode() only for one swapfile is irrational.
+ *
+ *      We need to conform to conky's implementation of swapmode() but also should add the ability to print stats
+ *          for all swapfiles.
+ *      This will require introducing new functions for using in conkyrc file.
+ *
+ *      Internally we could a function like this:
+ *
+ *      int swapmode( int swapfd, unsigned long *retavail, unsigned long *retfree )
+ *
+ *      ( Takes swapfile-descriptor and the usual parameters )
+ */
+
+int swapmode( int swapfd, unsigned long *retavail, unsigned long *retfree )
 {
-    //
-    //  ** TODO ** Find a way to add user the option to print stats about the actual swapfile in /private/var/vm
-    //
-    
     //  Note: Unlike most Unix-based operating systems, Mac OS X does not use a preallocated swap partition for virtual memory. Instead, it uses all of the available
     //  space on the machine’s boot partition.
-    //  So, if you want to know how much virtual memory is still available, you need to get the size of the root partition. You can do that like this:
+    //  This is not true! -->So, if you want to know how much virtual memory is still available, you need to get the size of the root partition.<--
     //
-    //  defined in sys/mount.h:
-    //
-    //  long	f_bsize;		/* fundamental file system block size */
-    //  long	f_blocks;		/* total data blocks in file system */
-    //  long	f_bfree;		/* free blocks in fs */
-    //  long	f_bavail;		/* free blocks avail to non-superuser */
+    //  macOS can use the whole partition BUT it creates a smaller file ( swapfile ) which theoretically can grow as big as the avaliable partition space.
+    //  Thus retavail= sizeof(swapfile) and retfree= retavail - used
     //
     
-    struct statfs stats;
-    if (0 == statfs("/", &stats))
-    {
-        // retavail = whole swap size = whole disk on mac.
-        // retfree = remaining swap size = whole disk minus used on mac.
+    /*
+     *  Currently at macOS Sierra the swapfile location can be determined
+     *  by reading the ProgramArguments from /System/Library/LaunchDaemons/com.apple.dynamic_pager.plist
+     *
+     */
+    
+    // TODO: The sysctl is supposed to work from Tiger to Sierra
+    // TODO: Update for BOTH 'swapfile0' and 'swapfile' names because on my system it used to say swapfile but now it says swapfile0! ( I think )
+    
+    char default_filename[] = "/private/var/vm/swapfile";
+    char actual_filename[strlen(default_filename)+1];
+    
+    strcpy( actual_filename, default_filename);
+    actual_filename[strlen(default_filename)] = swapfd + '0';
+    actual_filename[strlen(default_filename)+1] = '\0';
+    
+    printf( "swapmode: getting swap stat for %s\n", actual_filename );  // dbg
+    
+    int	swapMIB[] = { CTL_VM, 5 };
+    struct xsw_usage swapUsage;
+    size_t swapUsageSize = sizeof(swapUsage);
+    memset(&swapUsage, 0, sizeof(swapUsage));
+    if (sysctl(swapMIB, 2, &swapUsage, &swapUsageSize, NULL, 0) == 0) {
         
-        *retavail = (uint64_t)stats.f_blocks * stats.f_bsize;
-        *retfree = (uint64_t)stats.f_bfree * stats.f_bsize;
+        *retfree = swapUsage.xsu_avail / 1024;
+        *retavail = swapUsage.xsu_total / 1024;
+    } else {
+        perror("sysctl");
+        return (-1);
     }
     
     return 1;
+}
+
+/*
+ *  Returns swapfile stats only for first swapfile (swapfd = 0)
+ *
+ */
+int swapmode_swapfile0(unsigned long *retavail, unsigned long *retfree)
+{
+    return swapmode(0, retavail, retfree);
+}
+
+/*
+ *  Function needed by conky
+ *  We patch this function for now, to return stats only for swapfile0 because conky doesnt
+ *      support multi-swapfile systems such as MacOSX
+ *
+ */
+static int swapmode(unsigned long *retavail, unsigned long *retfree)
+{
+    return swapmode_swapfile0(retavail, retfree);
 }
 
 void prepare_update(void)
