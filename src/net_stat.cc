@@ -43,6 +43,10 @@
 #if defined(__sun)
 #include <sys/sockio.h>
 #endif
+#if defined(__HAIKU__)
+#include <sys/sockio.h>
+#define IFF_RUNNING IFF_LINK
+#endif
 
 /* network interface stuff */
 
@@ -510,8 +514,10 @@ int interface_up(struct text_object *obj)
 	if (if_up_strictness.get(*state) == IFUP_UP)
 		goto END_TRUE;
 
+#ifdef IFF_RUNNING
 	if (!(ifr.ifr_flags & IFF_RUNNING))
 		goto END_FALSE;
+#endif
 	if (if_up_strictness.get(*state) == IFUP_LINK)
 		goto END_TRUE;
 
@@ -519,7 +525,7 @@ int interface_up(struct text_object *obj)
 		perror("SIOCGIFADDR");
 		goto END_FALSE;
 	}
-	if (((struct sockaddr_in *)&(ifr.ifr_ifru.ifru_addr))->sin_addr.s_addr)
+	if (((struct sockaddr_in *)&(ifr.ifr_addr))->sin_addr.s_addr)
 		goto END_TRUE;
 
 END_FALSE:
