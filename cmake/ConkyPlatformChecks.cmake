@@ -75,11 +75,16 @@ if(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
 	set(OS_NETBSD true)
 endif(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
 
+if(CMAKE_SYSTEM_NAME MATCHES "Haiku")
+	set(OS_HAIKU true)
+	set(conky_libs ${conky_libs} -lnetwork -lintl)
+endif(CMAKE_SYSTEM_NAME MATCHES "Haiku")
+
 if(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY 
-  AND NOT OS_SOLARIS)
+  AND NOT OS_SOLARIS AND NOT OS_HAIKU)
 	message(FATAL_ERROR "Your platform, '${CMAKE_SYSTEM_NAME}', is not currently supported.  Patches are welcome.")
 endif(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY
-  AND NOT OS_SOLARIS)
+  AND NOT OS_SOLARIS AND NOT OS_HAIKU)
 
 if(BUILD_I18N AND OS_DRAGONFLY)
 	set(conky_libs ${conky_libs} -lintl)
