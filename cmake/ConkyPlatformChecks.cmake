@@ -30,6 +30,8 @@ check_include_files(sys/statfs.h HAVE_SYS_STATFS_H)
 check_include_files(sys/param.h HAVE_SYS_PARAM_H)
 check_include_files(sys/inotify.h HAVE_SYS_INOTIFY_H)
 check_include_files(dirent.h HAVE_DIRENT_H)
+check_include_files("soundcard.h;sys/soundcard.h;linux/soundcard.h" HAVE_SOME_SOUNDCARD_H)
+check_include_files("linux/soundcard.h" HAVE_LINUX_SOUNDCARD_H)
 
 # Check for some functions
 check_function_exists(strndup HAVE_STRNDUP)

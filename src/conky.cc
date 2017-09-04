@@ -317,6 +317,9 @@ static void print_version(void)
 #ifdef BUILD_IMLIB2
                 << _("  * Imlib2\n")
 #endif /* BUILD_IMLIB2 */
+#ifdef HAVE_SOME_SOUNDCARD_H
+                << _("  * OSS mixer support\n")
+#endif /* HAVE_SOME_SOUNDCARD_H */
 #ifdef BUILD_MIXER_ALSA
                 << _("  * ALSA mixer support\n")
 #endif /* BUILD_MIXER_ALSA */
