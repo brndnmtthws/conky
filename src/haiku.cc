@@ -28,8 +28,13 @@
  *
  */
 
+#include <OS.h>
+
 #include "haiku.h"
+#include "conky.h"
 #include "net_stat.h"
+#include "top.h"
+
 
 void prepare_update()
 {
@@ -50,8 +55,24 @@ int check_mount(struct text_object *obj)
 
 int update_meminfo()
 {
-	// TODO
-	return 1;
+	system_info si;
+
+	if (get_system_info(&si) != B_OK) {
+		fprintf(stderr, "Cannot get_system_info\n");
+		return 1;
+	}
+
+	info.memmax = si.max_pages * (B_PAGE_SIZE >> 10);
+	info.mem = si.used_pages * (B_PAGE_SIZE >> 10);
+	// TODO: we have some more info...
+	info.memwithbuffers = info.mem;
+	info.memeasyfree = info.memfree = info.memmax - info.mem;
+
+	info.swapmax = si.max_swap_pages * (B_PAGE_SIZE >> 10);
+	info.swapfree = si.free_swap_pages * (B_PAGE_SIZE >> 10);
+	info.swap = (info.swapmax - info.swapfree);
+
+	return 0;
 }
 
 int update_net_stats()
@@ -177,7 +198,28 @@ int update_diskio(void)
 
 void get_top_info(void)
 {
-	// TODO
+	int32 tmcookie = 0;
+	team_info tm;
+	struct process *proc;
+
+	while (get_next_team_info(&tmcookie, &tm) == B_NO_ERROR) {
+		team_usage_info ti;
+
+		if (get_team_usage_info(tm.team, B_TEAM_USAGE_SELF, &ti) != B_OK)
+			continue;
+
+		proc = get_process(tm.team);
+
+		proc->time_stamp = g_time;
+		proc->name = strndup(tm.args, sizeof(tm.args));
+		proc->basename = strndup(tm.args, sizeof(tm.args));
+		//proc->amount = 100.0 * p[i].ki_pctcpu / FSCALE;
+		proc->vsize = 0;
+		proc->rss = 0;
+		/* bigtime_t is in microseconds, total_cpu_time in centiseconds.
+		 * Therefore we divide by 10000. */
+		proc->total_cpu_time = (ti.user_time + ti.kernel_time) / 10000;
+	}
 }
 
 void get_battery_short_status(char *buffer, unsigned int n, const char *bat)
