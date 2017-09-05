@@ -38,7 +38,6 @@ static int getsysctl(const char *name, void *ptr, size_t len)
 #include <sys/stat.h>
 
 // TODO: fix update_meminfo for getting the same stats as Activity Monitor's
-// TODO: handle multiple swap files
 
 /*-------------------------------------------------------------------------------------------------------------------------------------------------------------------
  *  macOS Swapfiles Logic...
@@ -66,13 +65,8 @@ static int swapmode(unsigned long *retavail, unsigned long *retfree)
     //      retavail= sizeof(swapfile) and retfree= ( retavail - used )
     //
     
-    //  NOTE:
-    //      Support for
-    //      The following code supports only default-swapfile-location ( /private/var/vm/ )
+    //  NOTE: The following code was only tested on macOS Sierra! -- Should work on any Tiger or later version though...
     //
-    
-#warning This code should work from Tiger and later
-#warning This code supports only default swapfile-location
     
     int	swapMIB[] = { CTL_VM, 5 };
     struct xsw_usage swapUsage;
