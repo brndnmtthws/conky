@@ -22,8 +22,6 @@
 
 static int getsysctl(const char *name, void *ptr, size_t len)
 {
-    //printf( "getsysctl: %s\n", name );
-    
     size_t nlen = len;
     
     if (sysctlbyname(name, ptr, &nlen, NULL, 0) == -1) {
@@ -40,56 +38,41 @@ static int getsysctl(const char *name, void *ptr, size_t len)
 #include <sys/stat.h>
 
 // TODO: fix update_meminfo for getting the same stats as Activity Monitor's
-
-//
-//  ** TODO ** Find a way to add user the option to print stats about the actual swapfile in /private/var/vm
-//
-
 // TODO: handle multiple swap files
-// TODO: add code for reading the plist and getting swapfile location (may be custom location, who knows)
 
-
-/*
- *  MacOSX can be using many swapfiles thus calling swapmode() only for one swapfile is irrational.
+/*-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ *  macOS Swapfiles Logic...
  *
- *      We need to conform to conky's implementation of swapmode() but also should add the ability to print stats
- *          for all swapfiles.
- *      This will require introducing new functions for using in conkyrc file.
+ *  o   There is NO separate partition for swap storage ( unlike most Unix-based OSes ) --- Instead swap memory is stored in the currently used partition inside files
  *
- *      Internally we could a function like this:
+ *  o   macOS can use ALL the available space on the used partition
  *
- *      int swapmode( int swapfd, unsigned long *retavail, unsigned long *retfree )
+ *  o   Swap memory files are called swapfiles, stored inside /private/var/vm/
  *
- *      ( Takes swapfile-descriptor and the usual parameters )
+ *  o   Every swapfile has index number eg. swapfile0, swapfile1, ...
+ *
+ *  o   Anyone can change the location of the swapfiles by editing the plist: /System/Library/LaunchDaemons/com.apple.dynamic_pager.plist
+ *      ( Though it seems like this is not supported by the dynamic_pager application as can be observed from the code: 
+ *          https://github.com/practicalswift/osx/blob/master/src/system_cmds/dynamic_pager.tproj/dynamic_pager.c )
+ *
+ *-------------------------------------------------------------------------------------------------------------------------------------------------------------------
  */
 
-int swapmode( int swapfd, unsigned long *retavail, unsigned long *retfree )
+static int swapmode(unsigned long *retavail, unsigned long *retfree)
 {
     //  NOTE:
-    //      Unlike most Unix-based operating systems, Mac OS X does not use a preallocated swap partition for virtual memory.
-    //      Instead, it uses all of the available space on the machine’s boot partition.
+    //      Based on the theoretical notes written above about swapfiles on macOS
     //
-    //      macOS can use the whole partition BUT it creates smaller files ( swapfiles ) which theoretically can use the whole partition.
-    //      Thus retavail= sizeof(swapfile) and retfree= retavail - used
+    //      retavail= sizeof(swapfile) and retfree= ( retavail - used )
     //
     
-    /*
-     *  Currently at macOS Sierra the swapfile location can be determined
-     *  by reading the ProgramArguments from /System/Library/LaunchDaemons/com.apple.dynamic_pager.plist
-     *
-     */
+    //  NOTE:
+    //      Support for
+    //      The following code supports only default-swapfile-location ( /private/var/vm/ )
+    //
     
-    // TODO: The sysctl is supposed to work from Tiger to Sierra
-    // TODO: Update for BOTH 'swapfile0' and 'swapfile' names because on my system it used to say swapfile but now it says swapfile0! ( I think )
-    
-    char default_filename[] = "/private/var/vm/swapfile";
-    char actual_filename[strlen(default_filename)+1];
-    
-    strcpy( actual_filename, default_filename);
-    actual_filename[strlen(default_filename)] = swapfd + '0';
-    actual_filename[strlen(default_filename)+1] = '\0';
-    
-    printf( "swapmode: getting swap stat for %s\n", actual_filename );  // dbg
+#warning This code should work from Tiger and later
+#warning This code supports only default swapfile-location
     
     int	swapMIB[] = { CTL_VM, 5 };
     struct xsw_usage swapUsage;
@@ -105,26 +88,6 @@ int swapmode( int swapfd, unsigned long *retavail, unsigned long *retfree )
     }
     
     return 1;
-}
-
-/*
- *  Returns swapfile stats only for first swapfile (swapfd = 0)
- *
- */
-int swapmode_swapfile0(unsigned long *retavail, unsigned long *retfree)
-{
-    return swapmode(0, retavail, retfree);
-}
-
-/*
- *  Function needed by conky
- *  We patch this function for now, to return stats only for swapfile0 because conky doesnt
- *      support multi-swapfile systems such as MacOSX
- *
- */
-static int swapmode(unsigned long *retavail, unsigned long *retfree)
-{
-    return swapmode_swapfile0(retavail, retfree);
 }
 
 void prepare_update(void)
