@@ -1,13 +1,24 @@
+//  darwin.cc
+//  Nickolas Pylarinos
 //
 //	This is the equivalent of linux.cc, freebsd.cc, openbsd.cc etc. ( you get the idea )
 //
+//  LICENSED UNDER GPL v3
 
-//
-//  ** TODO ** Probably add MenuMeters support here!
-//
+// TODO: fix update_meminfo for getting the same stats as Activity Monitor's
+// TODO: update getcpucount as needed
+// BUG: update_total_processes: gives different from Activity Monitor
 
 #include "darwin.h"
 #include "conky.h"      // for struct info
+
+/* These will be removed in upcoming versions of conky-for-macOS */
+#define	CP_USER		0
+#define	CP_NICE		1
+#define	CP_SYS		2
+#define	CP_INTR		3
+#define	CP_IDLE		4
+#define	CPUSTATES	5
 
 #include <stdio.h>
 #include <sys/mount.h>      // statfs
@@ -17,6 +28,8 @@
 #include <mach/mach_types.h>
 #include <mach/mach_init.h>
 #include <mach/mach_host.h>
+
+#include <libproc.h>
 
 #define	GETSYSCTL(name, var)	getsysctl(name, &(var), sizeof(var))
 
@@ -34,10 +47,6 @@ static int getsysctl(const char *name, void *ptr, size_t len)
     
     return 0;
 }
-
-#include <sys/stat.h>
-
-// TODO: fix update_meminfo for getting the same stats as Activity Monitor's
 
 /*-------------------------------------------------------------------------------------------------------------------------------------------------------------------
  *  macOS Swapfiles Logic...
@@ -60,13 +69,18 @@ static int getsysctl(const char *name, void *ptr, size_t len)
 static int swapmode(unsigned long *retavail, unsigned long *retfree)
 {
     //  NOTE:
-    //      Based on the theoretical notes written above about swapfiles on macOS
+    //      Code should work on Tiger and later...
+    //      Based on the theoretical notes written above about swapfiles on macOS:
     //
     //      retavail= sizeof(swapfile) and retfree= ( retavail - used )
     //
     
-    //  NOTE: The following code was only tested on macOS Sierra! -- Should work on any Tiger or later version though...
-    //
+    // BUG: swapmode doesnt find correct swap size --- This is probably a problem of the sysctl implementation. ( it happens with htop port for macOS )
+    //          MenuMeters sums the size of all the swapfiles to solve this problem.
+    // **** For now, I will keep the implementation as is, because solving this issue will mean iterating through all files in /private/var/vm/, checking which have the prefix "swapfile"
+    //          and using stat to calculate their size. ( This seems alot. )
+    
+    // TODO: In future release I will add the option for calculating exact size of swap
     
     int	swapMIB[] = { CTL_VM, 5 };
     struct xsw_usage swapUsage;
@@ -190,7 +204,15 @@ int update_net_stats(void)
 
 int update_total_processes(void)
 {
-    printf( "update_total_processes: STUB\n" );
+    // https://stackoverflow.com/questions/8141913/is-there-a-lightweight-way-to-obtain-the-current-number-of-processes-in-linux
+    
+    size_t length = 0;
+    static const int names[] = {CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0};
+    
+    info.procs = sysctl( (int *)names, (sizeof(names)/sizeof(names[0]))-1, NULL, &length, NULL, 0) == 0
+                ? ( length/sizeof(kinfo_proc) )
+                : ( -1 );
+    
     return 0;
 }
 
@@ -237,16 +259,98 @@ struct cpu_info {
     long oldused;
 };
 
+static short cpu_setup = 0;
+
+
 int update_cpu_usage(void)
 {
-    printf( "update_cpu_usage: STUB\n" );
+    /*
+     *  Following implementation copied from FreeBSD.cc.  And it is disabled.  And to be removed.
+     */
+    
+    int i, j = 0;
+    long used, total;
+    long *cp_time = NULL;
+    size_t cp_len;
+    static struct cpu_info *cpu = NULL;
+    unsigned int malloc_cpu_size = 0;
+    extern void* global_cpu;
+    
+    /* add check for !info.cpu_usage since that mem is freed on a SIGUSR1 */
+    if ((cpu_setup == 0) || (!info.cpu_usage)) {
+        get_cpu_count();
+        cpu_setup = 1;
+    }
+    
+    if (!global_cpu) {
+        malloc_cpu_size = (info.cpu_count + 1) * sizeof(struct cpu_info);
+        cpu = (cpu_info *) malloc(malloc_cpu_size);
+        memset(cpu, 0, malloc_cpu_size);
+        global_cpu = cpu;
+    }
+    
+    /* cpu[0] is overall stats, get it from separate sysctl */
+    cp_len = CPUSTATES * sizeof(long);
+    cp_time = (long int *) malloc(cp_len);
+    
+    if (sysctlbyname("kern.cp_time", cp_time, &cp_len, NULL, 0) < 0) {
+        fprintf(stderr, "Cannot get kern.cp_time\n");
+    }
+    
+    total = 0;
+    for (j = 0; j < CPUSTATES; j++)
+        total += cp_time[j];
+    
+    used = total - cp_time[CP_IDLE];
+    
+    if ((total - cpu[0].oldtotal) != 0) {
+        info.cpu_usage[0] = ((double) (used - cpu[0].oldused)) /
+        (double) (total - cpu[0].oldtotal);
+    } else {
+        info.cpu_usage[0] = 0;
+    }
+    
+    cpu[0].oldused = used;
+    cpu[0].oldtotal = total;
+    
+    free(cp_time);
+    
+    /* per-core stats */
+    cp_len = CPUSTATES * sizeof(long) * info.cpu_count;
+    cp_time = (long int *) malloc(cp_len);
+    
+    /* on e.g. i386 SMP we may have more values than actual cpus; this will just drop extra values */
+    if (sysctlbyname("kern.cp_times", cp_time, &cp_len, NULL, 0) < 0 && errno != ENOMEM) {
+        fprintf(stderr, "Cannot get kern.cp_times\n");
+    }
+    
+    for (i = 0; i < info.cpu_count; i++)
+    {
+        total = 0;
+        for (j = 0; j < CPUSTATES; j++)
+            total += cp_time[i*CPUSTATES + j];
+        
+        used = total - cp_time[i*CPUSTATES + CP_IDLE];
+        
+        if ((total - cpu[i+1].oldtotal) != 0) {
+            info.cpu_usage[i+1] = ((double) (used - cpu[i+1].oldused)) /
+            (double) (total - cpu[i+1].oldtotal);
+        } else {
+            info.cpu_usage[i+1] = 0;
+        }
+        
+        cpu[i+1].oldused = used;
+        cpu[i+1].oldtotal = total;
+    }
+    
+    free(cp_time);
     return 0;
 }
 
 int update_load_average(void)
 {
     printf( "update_load_average: STUB\n" );
-    
+
     return 0;
 }
 

@@ -31,6 +31,8 @@
 
 #if defined (__APPLE__)
 
+// TODO(npyl): Add the exceptions used in the Linux version of semaphore class
+
 //
 //  On Darwin, unnamed semaphores are not supported!
 //  The only close equivalent to unnamed semaphores is using
@@ -47,14 +49,15 @@ class semaphore {
 public:
     semaphore(unsigned int value = 0) throw(std::logic_error)
     {
-        printf( "conky: EXPERIMENTAL semaphore implementation is used ( for Darwin ).\nANYONE WHO WANTS TO HELP VISIT THE PORT PROJECT IN GITHUB: https://github.com/npyl/conky \n" );
-        
         sem = dispatch_semaphore_create(value);
+        
+        if (!sem)
+            throw std::logic_error(strerror(errno));
     }
     
     ~semaphore() throw()
     {
-        printf( "conky: ~semaphore: not implemented yet!\n" );
+        dispatch_release(sem);
     }
     void post() throw(std::overflow_error)
     {
