@@ -5,9 +5,24 @@
 //
 //  LICENSED UNDER GPL v3
 
-// TODO: fix update_meminfo for getting the same stats as Activity Monitor's
+// TODO: fix update_meminfo for getting the same stats as Activity Monitor's --- There is small difference though
 // TODO: update getcpucount as needed
-// BUG: update_total_processes: gives different from Activity Monitor
+// FIXED --- BUG: update_total_processes: gives different from Activity Monitor
+
+/*  
+    Take in consideration:
+ 
+    NSProcessInfo can give the following:
+ 
+    processorCount
+    The number of processing cores available on the computer.
+    activeProcessorCount
+    The number of active processing cores available on the computer.
+    physicalMemory
+    The amount of physical memory on the computer in bytes.
+    systemUptime
+    The amount of time the system has been awake since the last time it was restarted.
+ */
 
 #include "darwin.h"
 #include "conky.h"      // for struct info
@@ -202,16 +217,78 @@ int update_net_stats(void)
     return 0;
 }
 
+
+#import <mach-o/arch.h>
+#import <mach/mach.h>
+#import <mach/mach_error.h>
+
+
 int update_total_processes(void)
 {
+    /* FIXME: This block should be happening outside and only ONCE, when conky starts. */
+    host_name_port_t 					machHost;
+    processor_set_name_port_t			processorSet;
+    
+    {
+        // Set up our mach host and default processor set for later calls
+        machHost = mach_host_self();
+        processor_set_default(machHost, &processorSet);
+    }
+        
+    // get count of tasks
+    struct processor_set_load_info loadInfo;
+    mach_msg_type_number_t count = PROCESSOR_SET_LOAD_INFO_COUNT;
+    kern_return_t err = processor_set_statistics(processorSet, PROCESSOR_SET_LOAD_INFO,
+                                                 (processor_set_info_t)&loadInfo, &count);
+
+    if (err == KERN_SUCCESS) {                      // NOTE: Maybe this check could be removed!
+        info.procs = loadInfo.task_count;
+    }
+    
+    return 0;
+    
+    
+    // IMPLEMENTATION WAY NO.2 --- Disabled
     // https://stackoverflow.com/questions/8141913/is-there-a-lightweight-way-to-obtain-the-current-number-of-processes-in-linux
     
-    size_t length = 0;
-    static const int names[] = {CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0};
+    //
+    //  This method doesnt find the correct number of tasks.
+    //
+    //  This is probably because on macOS there is no option for KERN_PROC_KTHREAD like there is in FreeBSD
+    //
+    //  In FreeBSD's sysctl.h we can see the following:
+    //
+    //  KERN_PROC_KTHREAD   all processes (user-level plus kernel threads)
+    //  KERN_PROC_ALL       all user-level processes
+    //  KERN_PROC_PID       processes with process ID arg
+    //  KERN_PROC_PGRP      processes with process group arg
+    //  KERN_PROC_SESSION   processes with session arg
+    //  KERN_PROC_TTY       processes with tty(4) arg
+    //  KERN_PROC_UID       processes with effective user ID arg
+    //  KERN_PROC_RUID      processes with real user ID arg
+    //
+    //  Though in macOS's sysctl.h there are only:
+    //
+    //  KERN_PROC_ALL		everything
+    //  KERN_PROC_PID		by process id
+    //  KERN_PROC_PGRP      by process group id
+    //  KERN_PROC_SESSION	by session of pid
+    //  KERN_PROC_TTY		by controlling tty
+    //  KERN_PROC_UID		by effective uid
+    //  KERN_PROC_RUID      by real uid
+    //  KERN_PROC_LCID      by login context id
+    //
+    //  Probably by saying "everything" they mean that KERN_PROC_ALL gives all processes (user-level plus kernel threads)
+    //  ( So basically this is the problem with the old implementation )
+    //
+
     
-    info.procs = sysctl( (int *)names, (sizeof(names)/sizeof(names[0]))-1, NULL, &length, NULL, 0) == 0
+    size_t length = 0;
+    static const int names[] = {CTL_KERN, KERN_PROC, KERN_PROC_ALL };
+    
+    info.procs = sysctl( (int *)names, 3, NULL, &length, NULL, 0) == 0
                 ? ( length/sizeof(kinfo_proc) )
-                : ( -1 );
+                : ( 0 );
     
     return 0;
 }
@@ -265,7 +342,7 @@ static short cpu_setup = 0;
 int update_cpu_usage(void)
 {
     /*
-     *  Following implementation copied from FreeBSD.cc.  And it is disabled.  And to be removed.
+     *  Following implementation copied from FreeBSD.cc. Still enabled. To be removed.
      */
     
     int i, j = 0;
