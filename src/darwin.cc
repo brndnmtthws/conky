@@ -11,7 +11,7 @@
 
 // Probably FIXED --- TODO: update getcpucount as needed   -- Changed to hw.logicalcpumax
 //
-//  Needs to be tested further... (VM & other computers...)
+//  Needs to be tested further... (Virtual Machine & other computers...)
 //
 
 /*  
@@ -318,10 +318,10 @@ void get_cpu_count(void)
     
     int cpu_count = 0;
     
-    if (GETSYSCTL("hw.logicalcpumax", cpu_count) == 0) {
+    if (GETSYSCTL("hw.logicalcpu_max", cpu_count) == 0) {
         info.cpu_count = cpu_count;
     } else {
-        fprintf(stderr, "Cannot get hw.ncpu\n");
+        fprintf(stderr, "Cannot get hw.logicalcpu_max\n");
         info.cpu_count = 0;
     }
     
