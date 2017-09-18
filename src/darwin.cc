@@ -5,9 +5,14 @@
 //
 //  LICENSED UNDER GPL v3
 
+// TODO, FIXME, BUG
+
 // TODO: fix update_meminfo for getting the same stats as Activity Monitor's --- There is small difference though
-// TODO: update getcpucount as needed
-// FIXED --- BUG: update_total_processes: gives different from Activity Monitor
+
+// Probably FIXED --- TODO: update getcpucount as needed   -- Changed to hw.logicalcpumax
+//
+//  Needs to be tested further... (VM & other computers...)
+//
 
 /*  
     Take in consideration:
@@ -44,6 +49,10 @@
 #include <mach/mach_init.h>
 #include <mach/mach_host.h>
 
+#include <mach/mach.h>       // update_total_processes
+
+
+
 #include <libproc.h>
 
 #define	GETSYSCTL(name, var)	getsysctl(name, &(var), sizeof(var))
@@ -77,6 +86,7 @@ static int getsysctl(const char *name, void *ptr, size_t len)
  *  o   Anyone can change the location of the swapfiles by editing the plist: /System/Library/LaunchDaemons/com.apple.dynamic_pager.plist
  *      ( Though it seems like this is not supported by the dynamic_pager application as can be observed from the code: 
  *          https://github.com/practicalswift/osx/blob/master/src/system_cmds/dynamic_pager.tproj/dynamic_pager.c )
+ *  o   Every swapfile has size of 1GB
  *
  *-------------------------------------------------------------------------------------------------------------------------------------------------------------------
  */
@@ -90,12 +100,9 @@ static int swapmode(unsigned long *retavail, unsigned long *retfree)
     //      retavail= sizeof(swapfile) and retfree= ( retavail - used )
     //
     
-    // BUG: swapmode doesnt find correct swap size --- This is probably a problem of the sysctl implementation. ( it happens with htop port for macOS )
+    // NO, this seems to be normal because probably conky does some kind of rounding to the total swap size value => 2048MB becomes 2.00GB----- BUG: swapmode doesnt find correct swap size --- This is probably a problem of the sysctl implementation. ( it happens with htop port for macOS )
     //          MenuMeters sums the size of all the swapfiles to solve this problem.
-    // **** For now, I will keep the implementation as is, because solving this issue will mean iterating through all files in /private/var/vm/, checking which have the prefix "swapfile"
-    //          and using stat to calculate their size. ( This seems alot. )
-    
-    // TODO: In future release I will add the option for calculating exact size of swap
+    // THUS, there is no need in implementing a more accurate implementation because conky will always round the values...
     
     int	swapMIB[] = { CTL_VM, 5 };
     struct xsw_usage swapUsage;
@@ -169,7 +176,7 @@ int update_meminfo(void)
     
     if( sysctl( mib, 2, &info.memmax, &length, NULL, 0 ) == 0 )
     {
-        info.memmax >>= 10;         // make it GiB
+        info.memmax /= 1024;         // make it GiB
     }
     else {
         info.memmax = 0;
@@ -190,7 +197,7 @@ int update_meminfo(void)
                     (int64_t)vm_stats.inactive_count +
                     (int64_t)vm_stats.wire_count) *  (int64_t)page_size;
         
-        info.mem >>= 10;        // make it GiB
+        info.mem /= 1024;        // make it GiB
     } else {
         info.mem = 0;  // this is to indicate error getting the free mem.
     }
@@ -218,37 +225,43 @@ int update_net_stats(void)
 }
 
 
-#import <mach-o/arch.h>
-#import <mach/mach.h>
-#import <mach/mach_error.h>
-
-
 int update_total_processes(void)
 {
-    /* FIXME: This block should be happening outside and only ONCE, when conky starts. */
-    host_name_port_t 					machHost;
-    processor_set_name_port_t			processorSet;
+    static bool machStuffInitialised = false;                   /*
+                                                                 *  Set this to true when the block that initialises machHost and processorSet has executed ONCE.
+                                                                 *  This way we ensure that upon each update_total_processes() only ONCE the block executes.
+                                                                 */
     
+    static host_name_port_t             machHost;               /* make them static to keep the local and at the same time keep their initial value */
+    static processor_set_name_port_t	processorSet = 0;
+ 
+    
+    /* FIXED but find a better solution ---- FIXME: This block should be happening outside and only ONCE, when conky starts. */
+    
+    if (!machStuffInitialised)
     {
+        printf( "\n\n\nRunning ONLY ONCE the mach--init block\n\n\n" );
+        
         // Set up our mach host and default processor set for later calls
         machHost = mach_host_self();
         processor_set_default(machHost, &processorSet);
-    }
         
-    // get count of tasks
+        machStuffInitialised = true;
+    }
+    
+    // get count of ALL tasks
     struct processor_set_load_info loadInfo;
     mach_msg_type_number_t count = PROCESSOR_SET_LOAD_INFO_COUNT;
     kern_return_t err = processor_set_statistics(processorSet, PROCESSOR_SET_LOAD_INFO,
                                                  (processor_set_info_t)&loadInfo, &count);
-
+    
     if (err == KERN_SUCCESS) {                      // NOTE: Maybe this check could be removed!
         info.procs = loadInfo.task_count;
     }
     
     return 0;
     
-    
-    // IMPLEMENTATION WAY NO.2 --- Disabled
+    // IMPLEMENTATION WAY NO.2 is problematic for **US**
     // https://stackoverflow.com/questions/8141913/is-there-a-lightweight-way-to-obtain-the-current-number-of-processes-in-linux
     
     //
@@ -281,16 +294,6 @@ int update_total_processes(void)
     //  Probably by saying "everything" they mean that KERN_PROC_ALL gives all processes (user-level plus kernel threads)
     //  ( So basically this is the problem with the old implementation )
     //
-
-    
-    size_t length = 0;
-    static const int names[] = {CTL_KERN, KERN_PROC, KERN_PROC_ALL };
-    
-    info.procs = sysctl( (int *)names, 3, NULL, &length, NULL, 0) == 0
-                ? ( length/sizeof(kinfo_proc) )
-                : ( 0 );
-    
-    return 0;
 }
 
 int update_running_processes(void)
@@ -301,22 +304,21 @@ int update_running_processes(void)
 
 
 //
-//  Gets number of .... cpus
+//  Gets number of max logical cpus that could be available at this boot
 //
 void get_cpu_count(void)
 {
     //  Darwin man page for sysctl:
     //
     //  hw.ncpu:
-    //  The number of cpus. This attribute is deprecated and it is recom-
+    //  The number of cpus. This attribute is **DEPRECATED** and it is recom-
     //  mended that hw.logicalcpu, hw.logicalcpu_max, hw.physicalcpu, or
     //  hw.physicalcpu_max be used instead.
     //
     
     int cpu_count = 0;
-    //size_t cpu_count_len = sizeof(cpu_count);
     
-    if (GETSYSCTL("hw.ncpu", cpu_count) == 0) {
+    if (GETSYSCTL("hw.logicalcpumax", cpu_count) == 0) {
         info.cpu_count = cpu_count;
     } else {
         fprintf(stderr, "Cannot get hw.ncpu\n");
@@ -336,14 +338,15 @@ struct cpu_info {
     long oldused;
 };
 
-static short cpu_setup = 0;
-
 
 int update_cpu_usage(void)
 {
     /*
      *  Following implementation copied from FreeBSD.cc. Still enabled. To be removed.
      */
+
+    static short cpu_setup = 0;     // patch
+
     
     int i, j = 0;
     long used, total;
@@ -491,6 +494,7 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size, const char *p_fo
               int divisor, unsigned int cpu)
 {
     printf( "get_freq: STUB!\n" );
+    
     return 1;
 }
 
