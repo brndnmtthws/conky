@@ -38,7 +38,8 @@
 #define	CP_SYS		2
 #define	CP_INTR		3
 #define	CP_IDLE		4
-#define	CPUSTATES	5
+//#define	CPUSTATES	5
+#include <libproc.h>
 
 #include <stdio.h>
 #include <sys/mount.h>      // statfs
@@ -51,14 +52,10 @@
 
 #include <mach/mach.h>       // update_total_processes
 
-
-
-#include <libproc.h>
-
 #define	GETSYSCTL(name, var)	getsysctl(name, &(var), sizeof(var))
 
 static int getsysctl(const char *name, void *ptr, size_t len)
-{
+{    
     size_t nlen = len;
     
     if (sysctlbyname(name, ptr, &nlen, NULL, 0) == -1) {
@@ -339,91 +336,69 @@ struct cpu_info {
 };
 
 
+processor_info_array_t cpuInfo, prevCpuInfo;
+mach_msg_type_number_t numCpuInfo, numPrevCpuInfo;
+unsigned numCPUs;
+
 int update_cpu_usage(void)
 {
-    /*
-     *  Following implementation copied from FreeBSD.cc. Still enabled. To be removed.
-     */
-
-    static short cpu_setup = 0;     // patch
-
+    //
+    //  Help taken from both https://stackoverflow.com/questions/6785069/get-cpu-percent-usage?noredirect=1&lq=1 and FreeBSD.h conky header
+    //
     
-    int i, j = 0;
-    long used, total;
-    long *cp_time = NULL;
-    size_t cp_len;
-    static struct cpu_info *cpu = NULL;
-    unsigned int malloc_cpu_size = 0;
-    extern void* global_cpu;
+    static short cpu_setup = 0;     // in FreeBSD.h this is public
+
     
     /* add check for !info.cpu_usage since that mem is freed on a SIGUSR1 */
     if ((cpu_setup == 0) || (!info.cpu_usage)) {
         get_cpu_count();
-        cpu_setup = 1;
+//        cpu_setup = 1;
     }
     
-    if (!global_cpu) {
-        malloc_cpu_size = (info.cpu_count + 1) * sizeof(struct cpu_info);
-        cpu = (cpu_info *) malloc(malloc_cpu_size);
-        memset(cpu, 0, malloc_cpu_size);
-        global_cpu = cpu;
+    //[CPUUsageLock lock];
+    
+    natural_t numCPUsU = 0U;        // take this from conky variable
+    kern_return_t err = host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO, &numCPUsU, &cpuInfo, &numCpuInfo);
+
+    if (err != ERR_SUCCESS) {
+        printf("update_cpu_usage: error\n");
+        return 0;
     }
     
-    /* cpu[0] is overall stats, get it from separate sysctl */
-    cp_len = CPUSTATES * sizeof(long);
-    cp_time = (long int *) malloc(cp_len);
-    
-    if (sysctlbyname("kern.cp_time", cp_time, &cp_len, NULL, 0) < 0) {
-        fprintf(stderr, "Cannot get kern.cp_time\n");
-    }
-    
-    total = 0;
-    for (j = 0; j < CPUSTATES; j++)
-        total += cp_time[j];
-    
-    used = total - cp_time[CP_IDLE];
-    
-    if ((total - cpu[0].oldtotal) != 0) {
-        info.cpu_usage[0] = ((double) (used - cpu[0].oldused)) /
-        (double) (total - cpu[0].oldtotal);
-    } else {
-        info.cpu_usage[0] = 0;
-    }
-    
-    cpu[0].oldused = used;
-    cpu[0].oldtotal = total;
-    
-    free(cp_time);
-    
-    /* per-core stats */
-    cp_len = CPUSTATES * sizeof(long) * info.cpu_count;
-    cp_time = (long int *) malloc(cp_len);
-    
-    /* on e.g. i386 SMP we may have more values than actual cpus; this will just drop extra values */
-    if (sysctlbyname("kern.cp_times", cp_time, &cp_len, NULL, 0) < 0 && errno != ENOMEM) {
-        fprintf(stderr, "Cannot get kern.cp_times\n");
-    }
-    
-    for (i = 0; i < info.cpu_count; i++)
-    {
-        total = 0;
-        for (j = 0; j < CPUSTATES; j++)
-            total += cp_time[i*CPUSTATES + j];
-        
-        used = total - cp_time[i*CPUSTATES + CP_IDLE];
-        
-        if ((total - cpu[i+1].oldtotal) != 0) {
-            info.cpu_usage[i+1] = ((double) (used - cpu[i+1].oldused)) /
-            (double) (total - cpu[i+1].oldtotal);
+    for(unsigned i = 0U; i < numCPUsU; ++i) {
+        float inUse, total;
+        if(prevCpuInfo) {
+            inUse = (
+                     (cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_USER]   - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_USER])
+                     + (cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_SYSTEM] - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_SYSTEM])
+                     + (cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_NICE]   - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_NICE])
+                     );
+            total = inUse + (cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_IDLE] - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_IDLE]);
         } else {
-            info.cpu_usage[i+1] = 0;
+            inUse = cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_USER] + cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_SYSTEM] + cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_NICE];
+            total = inUse + cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_IDLE];
         }
         
-        cpu[i+1].oldused = used;
-        cpu[i+1].oldtotal = total;
+        //
+        //  Set conky variable
+        //
+        info.cpu_usage[i] = inUse / total;
+        
+        printf( "Core: %u Usage: %f\n",i,inUse / total );
+    }
+    //[CPUUsageLock unlock];
+    
+    if(prevCpuInfo) {
+        size_t prevCpuInfoSize = sizeof(integer_t) * numPrevCpuInfo;
+        vm_deallocate(mach_task_self(), (vm_address_t)prevCpuInfo, prevCpuInfoSize);
     }
     
-    free(cp_time);
+    prevCpuInfo = cpuInfo;
+    numPrevCpuInfo = numCpuInfo;
+    
+    cpuInfo = NULL;
+    numCpuInfo = 0U;
+    
     return 0;
 }
 
@@ -513,9 +488,80 @@ int update_diskio(void)
 
 /* While topless is obviously better, top is also not bad. */
 
+#include <pwd.h>
+#include "top.h"            // really really needed!
+
 void get_top_info(void)
 {
     printf( "get_top_info: STUB\n" );
+    
+    int err = 0;
+    struct kinfo_proc *p = NULL;
+    struct process *proc;
+    size_t length = 0;
+    
+    static const int name[] = { CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0 };
+    
+    // Call sysctl with a NULL buffer to get proper length
+    err = sysctl((int *)name, (sizeof(name) / sizeof(*name)) - 1, NULL, &length, NULL, 0);
+    if (err) {
+        perror(NULL);
+        free(p);
+        return;
+    }
+    
+    // Allocate buffer
+    p = (kinfo_proc*)malloc(length);
+    if (!p) {
+        perror(NULL);
+        free(p);
+        return;
+    }
+    
+    // Get the actual process list
+    err = sysctl((int *)name, (sizeof(name) / sizeof(*name)) - 1, p, &length, NULL, 0);
+    if (err)
+    {
+        perror(NULL);
+        free(p);
+        return;
+    }
+    
+    int proc_count = length / sizeof(struct kinfo_proc);
+    
+    // use getpwuid_r() if you want to be thread-safe
+    
+    /*
+
+    for (int i = 0; i < proc_count; i++) {
+        uid_t uid = p[i].kp_eproc.e_ucred.cr_uid;
+        struct passwd *user = getpwuid(uid);
+        const char* username = user ? user->pw_name : "user name not found";
+        
+        printf("pid=%d, uid=%d, username=%s\n",
+               p[i].kp_proc.p_pid,
+               uid,
+               username);
+     }         
+     */
+    
+    for (int i = 0; i < proc_count; i++) {
+        if (!((p[i].kp_proc.p_flag & P_SYSTEM)) && p[i].kp_proc.p_comm != NULL) {               // TODO: check if this is the right way to do it... I have replaced kp_flag with kp_proc.p_flag though not sure if it is right
+            proc = get_process(p[i].kp_proc.p_pid);
+            
+            proc->time_stamp = g_time;
+            proc->name = strndup(p[i].kp_proc.p_comm, text_buffer_size.get(*state));            // TODO: What does this do?
+            proc->basename = strndup(p[i].kp_proc.p_comm, text_buffer_size.get(*state));
+            proc->amount = 100.0 * p[i].kp_proc.p_pctcpu / FSCALE;
+//            proc->vsize = p[i].ki_size;
+//            proc->rss = (p[i].ki_rssize * getpagesize());
+            // ki_runtime is in microseconds, total_cpu_time in centiseconds.
+            // Therefore we divide by 10000.
+//            proc->total_cpu_time = p[i].kp_proc. / 10000;
+        }
+    }
+    
+    free(p);
 }
 
 void get_battery_short_status(char *buffer, unsigned int n, const char *bat)
