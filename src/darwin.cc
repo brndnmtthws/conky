@@ -8,6 +8,7 @@
 // TODO, FIXME, BUG
 
 // TODO: fix update_meminfo for getting the same stats as Activity Monitor's --- There is small difference though
+// TODO: convert get_cpu_count() to use mib instead of namedsysctl
 
 // Probably FIXED --- TODO: update getcpucount as needed   -- Changed to hw.logicalcpumax
 //
@@ -144,7 +145,6 @@ int update_uptime(void)
 int check_mount(struct text_object *obj)
 {
     printf( "check_mount: STUB\n" );
-    
     return 0;
 }
 
@@ -357,6 +357,8 @@ int update_cpu_usage(void)
     
     //[CPUUsageLock lock];
     
+    /* TODO: Make this be executed only once */
+    
     natural_t numCPUsU = 0U;        // take this from conky variable
     kern_return_t err = host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO, &numCPUsU, &cpuInfo, &numCpuInfo);
 
@@ -491,9 +493,19 @@ int update_diskio(void)
 #include <pwd.h>
 #include "top.h"            // really really needed!
 
+#include <sys/proc.h>
+#include <sys/proc_info.h>
+
+typedef struct proc *proc_t;    /* patch for passing compilation XX: To be removed! */
+
+extern int proc_pidbsdinfo(proc_t p, struct proc_bsdinfo *pbsd, int zombie);
+
+
 void get_top_info(void)
 {
-    printf( "get_top_info: STUB\n" );
+    /*
+     *  Use functionality from <sys/proc.h> and <sys/proc_info.h> that are more obvious!
+     */
     
     int err = 0;
     struct kinfo_proc *p = NULL;
@@ -546,14 +558,14 @@ void get_top_info(void)
      */
     
     for (int i = 0; i < proc_count; i++) {
-        if (!((p[i].kp_proc.p_flag & P_SYSTEM)) && p[i].kp_proc.p_comm != NULL) {               // TODO: check if this is the right way to do it... I have replaced kp_flag with kp_proc.p_flag though not sure if it is right
+        if (!((p[i].kp_proc.p_flag & P_SYSTEM)) && p[i].kp_proc.p_comm[0] != '\0') {               // TODO: check if this is the right way to do it... I have replaced kp_flag with kp_proc.p_flag though not sure if it is right
             proc = get_process(p[i].kp_proc.p_pid);
             
             proc->time_stamp = g_time;
             proc->name = strndup(p[i].kp_proc.p_comm, text_buffer_size.get(*state));            // TODO: What does this do?
             proc->basename = strndup(p[i].kp_proc.p_comm, text_buffer_size.get(*state));
             proc->amount = 100.0 * p[i].kp_proc.p_pctcpu / FSCALE;
-//            proc->vsize = p[i].ki_size;
+            proc->vsize = p[i].kp_proc.p_rtime.tv_sec;
 //            proc->rss = (p[i].ki_rssize * getpagesize());
             // ki_runtime is in microseconds, total_cpu_time in centiseconds.
             // Therefore we divide by 10000.
