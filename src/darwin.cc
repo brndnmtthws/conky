@@ -492,12 +492,12 @@ int update_diskio(void)
 
 /* While topless is obviously better, top is also not bad. */
 
-unsigned int conky_get_rss_for_pid( pid_t pid )
+unsigned long long conky_get_rss_for_pid( pid_t pid )
 {
     struct proc_taskinfo pti;
     
     if(sizeof(pti) == proc_pidinfo(pid, PROC_PIDTASKINFO, 0, &pti, sizeof(pti))) {
-        return pti.pti_resident_size / 1024 /*/ PAGE_SIZE_KB*/;
+        return pti.pti_resident_size;
     }
     
     return 0;
@@ -548,7 +548,7 @@ void get_top_info(void)         /* get_top_info() version 0.06 */
             proc->basename = strndup(p[i].kp_proc.p_comm, text_buffer_size.get(*state));
             proc->amount = 100.0 * p[i].kp_proc.p_pctcpu / FSCALE;
 //            proc->vsize = p[i]. ...;
-            proc->rss = conky_get_rss_for_pid(p[i].kp_proc.p_pid) * 100;
+            proc->rss = 100.0 * conky_get_rss_for_pid(p[i].kp_proc.p_pid);                      // TODO: fix this, doesnt print the same as htop
             
             // ki_runtime is in microseconds, total_cpu_time in centiseconds.
             // Therefore we divide by 10000.
