@@ -53,6 +53,8 @@
 
 #include <mach/mach.h>       // update_total_processes
 
+#include "top.h"            // get_top_info
+
 #define	GETSYSCTL(name, var)	getsysctl(name, &(var), sizeof(var))
 
 static int getsysctl(const char *name, void *ptr, size_t len)
@@ -490,23 +492,19 @@ int update_diskio(void)
 
 /* While topless is obviously better, top is also not bad. */
 
-#include <pwd.h>
-#include "top.h"            // really really needed!
-
-#include <sys/proc.h>
-#include <sys/proc_info.h>
-
-typedef struct proc *proc_t;    /* patch for passing compilation XX: To be removed! */
-
-extern int proc_pidbsdinfo(proc_t p, struct proc_bsdinfo *pbsd, int zombie);
-
-
-void get_top_info(void)
+unsigned int conky_get_rss_for_pid( pid_t pid )
 {
-    /*
-     *  Use functionality from <sys/proc.h> and <sys/proc_info.h> that are more obvious!
-     */
+    struct proc_taskinfo pti;
     
+    if(sizeof(pti) == proc_pidinfo(pid, PROC_PIDTASKINFO, 0, &pti, sizeof(pti))) {
+        return pti.pti_resident_size / 1024 /*/ PAGE_SIZE_KB*/;
+    }
+    
+    return 0;
+}
+
+void get_top_info(void)         /* get_top_info() version 0.06 */
+{
     int err = 0;
     struct kinfo_proc *p = NULL;
     struct process *proc;
@@ -540,23 +538,7 @@ void get_top_info(void)
     }
     
     int proc_count = length / sizeof(struct kinfo_proc);
-    
-    // use getpwuid_r() if you want to be thread-safe
-    
-    /*
-
-    for (int i = 0; i < proc_count; i++) {
-        uid_t uid = p[i].kp_eproc.e_ucred.cr_uid;
-        struct passwd *user = getpwuid(uid);
-        const char* username = user ? user->pw_name : "user name not found";
         
-        printf("pid=%d, uid=%d, username=%s\n",
-               p[i].kp_proc.p_pid,
-               uid,
-               username);
-     }         
-     */
-    
     for (int i = 0; i < proc_count; i++) {
         if (!((p[i].kp_proc.p_flag & P_SYSTEM)) && p[i].kp_proc.p_comm[0] != '\0') {               // TODO: check if this is the right way to do it... I have replaced kp_flag with kp_proc.p_flag though not sure if it is right
             proc = get_process(p[i].kp_proc.p_pid);
@@ -565,8 +547,9 @@ void get_top_info(void)
             proc->name = strndup(p[i].kp_proc.p_comm, text_buffer_size.get(*state));            // TODO: What does this do?
             proc->basename = strndup(p[i].kp_proc.p_comm, text_buffer_size.get(*state));
             proc->amount = 100.0 * p[i].kp_proc.p_pctcpu / FSCALE;
-            proc->vsize = p[i].kp_proc.p_rtime.tv_sec;
-//            proc->rss = (p[i].ki_rssize * getpagesize());
+//            proc->vsize = p[i]. ...;
+            proc->rss = conky_get_rss_for_pid(p[i].kp_proc.p_pid) * 100;
+            
             // ki_runtime is in microseconds, total_cpu_time in centiseconds.
             // Therefore we divide by 10000.
 //            proc->total_cpu_time = p[i].kp_proc. / 10000;
