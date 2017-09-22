@@ -33,15 +33,6 @@
 #include "darwin.h"
 #include "conky.h"      // for struct info
 
-/* These will be removed in upcoming versions of conky-for-macOS */
-#define	CP_USER		0
-#define	CP_NICE		1
-#define	CP_SYS		2
-#define	CP_INTR		3
-#define	CP_IDLE		4
-//#define	CPUSTATES	5
-#include <libproc.h>
-
 #include <stdio.h>
 #include <sys/mount.h>      // statfs
 #include <sys/sysctl.h>
@@ -53,6 +44,7 @@
 
 #include <mach/mach.h>       // update_total_processes
 
+#include <libproc.h>        // get_top_info
 #include "top.h"            // get_top_info
 
 #define	GETSYSCTL(name, var)	getsysctl(name, &(var), sizeof(var))
@@ -338,9 +330,8 @@ struct cpu_info {
 };
 
 
-processor_info_array_t cpuInfo, prevCpuInfo;
-mach_msg_type_number_t numCpuInfo, numPrevCpuInfo;
-unsigned numCPUs;
+processor_info_array_t cpuInfo, prevCpuInfo;                /* FIXME: for some reason we get exception if we put these two lines inside the update_cpu_usage() */
+mach_msg_type_number_t numCpuInfo, numPrevCpuInfo;          /* If we comment out the if-block at the end we dont get exception */
 
 int update_cpu_usage(void)
 {
@@ -349,16 +340,13 @@ int update_cpu_usage(void)
     //
     
     static short cpu_setup = 0;     // in FreeBSD.h this is public
-
     
     /* add check for !info.cpu_usage since that mem is freed on a SIGUSR1 */
     if ((cpu_setup == 0) || (!info.cpu_usage)) {
         get_cpu_count();
-//        cpu_setup = 1;
+        cpu_setup = 1;
     }
-    
-    //[CPUUsageLock lock];
-    
+        
     /* TODO: Make this be executed only once */
     
     natural_t numCPUsU = 0U;        // take this from conky variable
@@ -375,7 +363,7 @@ int update_cpu_usage(void)
             inUse = (
                      (cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_USER]   - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_USER])
                      + (cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_SYSTEM] - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_SYSTEM])
-                     + (cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_NICE]   - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_NICE])
+                     + (cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_NICE]   - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_NICE])            // ** Should we use the thing MenuMeters does for osx 10.4+ ?? */
                      );
             total = inUse + (cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_IDLE] - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_IDLE]);
         } else {
@@ -387,10 +375,7 @@ int update_cpu_usage(void)
         //  Set conky variable
         //
         info.cpu_usage[i] = inUse / total;
-        
-        printf( "Core: %u Usage: %f\n",i,inUse / total );
     }
-    //[CPUUsageLock unlock];
     
     if(prevCpuInfo) {
         size_t prevCpuInfoSize = sizeof(integer_t) * numPrevCpuInfo;
@@ -406,10 +391,16 @@ int update_cpu_usage(void)
     return 0;
 }
 
-int update_load_average(void)
+int update_load_average(void)                   /* TODO: experimental */
 {
-    printf( "update_load_average: STUB\n" );
-
+    double v[3];
+    
+    getloadavg(v, 3);
+    
+    info.loadavg[0] = (double) v[0];
+    info.loadavg[1] = (double) v[1];
+    info.loadavg[2] = (double) v[2];
+    
     return 0;
 }
 
@@ -492,6 +483,9 @@ int update_diskio(void)
 
 /* While topless is obviously better, top is also not bad. */
 
+/*
+ *  TODO: Nick, document me! Thank you!
+ */
 unsigned long long conky_get_rss_for_pid( pid_t pid )
 {
     struct proc_taskinfo pti;
@@ -503,7 +497,7 @@ unsigned long long conky_get_rss_for_pid( pid_t pid )
     return 0;
 }
 
-void get_top_info(void)         /* get_top_info() version 0.06 */
+void get_top_info(void)
 {
     int err = 0;
     struct kinfo_proc *p = NULL;
@@ -538,7 +532,7 @@ void get_top_info(void)         /* get_top_info() version 0.06 */
     }
     
     int proc_count = length / sizeof(struct kinfo_proc);
-        
+    
     for (int i = 0; i < proc_count; i++) {
         if (!((p[i].kp_proc.p_flag & P_SYSTEM)) && p[i].kp_proc.p_comm[0] != '\0') {               // TODO: check if this is the right way to do it... I have replaced kp_flag with kp_proc.p_flag though not sure if it is right
             proc = get_process(p[i].kp_proc.p_pid);
@@ -548,8 +542,7 @@ void get_top_info(void)         /* get_top_info() version 0.06 */
             proc->basename = strndup(p[i].kp_proc.p_comm, text_buffer_size.get(*state));
             proc->amount = 100.0 * p[i].kp_proc.p_pctcpu / FSCALE;
 //            proc->vsize = p[i]. ...;
-            proc->rss = 100.0 * conky_get_rss_for_pid(p[i].kp_proc.p_pid);                      // TODO: fix this, doesnt print the same as htop
-            
+            proc->rss = 100.0 * conky_get_rss_for_pid(p[i].kp_proc.p_pid);                      // TODO: fix??? this, sometimes the values go higher than 100%
             // ki_runtime is in microseconds, total_cpu_time in centiseconds.
             // Therefore we divide by 10000.
 //            proc->total_cpu_time = p[i].kp_proc. / 10000;
