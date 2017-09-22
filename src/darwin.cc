@@ -1,40 +1,40 @@
+/*
+ *  This file is part of conky.
+ *
+ *  conky is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  conky is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with conky.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 //  darwin.cc
 //  Nickolas Pylarinos
 //
 //	This is the equivalent of linux.cc, freebsd.cc, openbsd.cc etc. ( you get the idea )
+//  For implementing functions I took ideas from FreeBSD.cc! Thanks for the great code!
 //
-//  LICENSED UNDER GPL v3
 
-// TODO, FIXME, BUG
+// keywords used are TODO, FIXME, BUG
 
 // TODO: fix update_meminfo for getting the same stats as Activity Monitor's --- There is small difference though
 // TODO: convert get_cpu_count() to use mib instead of namedsysctl
+// TODO: test getcpucount further   -- Changed to hw.logicalcpumax
 
-// Probably FIXED --- TODO: update getcpucount as needed   -- Changed to hw.logicalcpumax
-//
-//  Needs to be tested further... (Virtual Machine & other computers...)
-//
-
-/*  
-    Take in consideration:
- 
-    NSProcessInfo can give the following:
- 
-    processorCount
-    The number of processing cores available on the computer.
-    activeProcessorCount
-    The number of active processing cores available on the computer.
-    physicalMemory
-    The amount of physical memory on the computer in bytes.
-    systemUptime
-    The amount of time the system has been awake since the last time it was restarted.
- */
 
 #include "darwin.h"
-#include "conky.h"      // for struct info
+#include "conky.h"              // for struct info
 
 #include <stdio.h>
-#include <sys/mount.h>      // statfs
+#include <sys/mount.h>          // statfs
 #include <sys/sysctl.h>
 
 #include <mach/vm_statistics.h>
@@ -42,10 +42,10 @@
 #include <mach/mach_init.h>
 #include <mach/mach_host.h>
 
-#include <mach/mach.h>       // update_total_processes
+#include <mach/mach.h>          // update_total_processes
 
-#include <libproc.h>        // get_top_info
-#include "top.h"            // get_top_info
+#include <libproc.h>            // get_top_info
+#include "top.h"                // get_top_info
 
 #define	GETSYSCTL(name, var)	getsysctl(name, &(var), sizeof(var))
 
@@ -486,15 +486,13 @@ int update_diskio(void)
 /*
  *  TODO: Nick, document me! Thank you!
  */
-unsigned long long conky_get_rss_for_pid( pid_t pid )
+void conky_get_rss_for_pid( pid_t pid, unsigned long long * rss )
 {
     struct proc_taskinfo pti;
     
     if(sizeof(pti) == proc_pidinfo(pid, PROC_PIDTASKINFO, 0, &pti, sizeof(pti))) {
-        return pti.pti_resident_size;
+        *rss =  pti.pti_resident_size;
     }
-    
-    return 0;
 }
 
 void get_top_info(void)
@@ -534,18 +532,24 @@ void get_top_info(void)
     int proc_count = length / sizeof(struct kinfo_proc);
     
     for (int i = 0; i < proc_count; i++) {
-        if (!((p[i].kp_proc.p_flag & P_SYSTEM)) && p[i].kp_proc.p_comm[0] != '\0') {               // TODO: check if this is the right way to do it... I have replaced kp_flag with kp_proc.p_flag though not sure if it is right
+        if (!((p[i].kp_proc.p_flag & P_SYSTEM)) && p[i].kp_proc.p_comm[0] != '\0') {            // TODO: check if this is the right way to do it... I have replaced kp_flag with kp_proc.p_flag though not sure if it is right
             proc = get_process(p[i].kp_proc.p_pid);
             
             proc->time_stamp = g_time;
             proc->name = strndup(p[i].kp_proc.p_comm, text_buffer_size.get(*state));            // TODO: What does this do?
             proc->basename = strndup(p[i].kp_proc.p_comm, text_buffer_size.get(*state));
             proc->amount = 100.0 * p[i].kp_proc.p_pctcpu / FSCALE;
-//            proc->vsize = p[i]. ...;
-            proc->rss = 100.0 * conky_get_rss_for_pid(p[i].kp_proc.p_pid);                      // TODO: fix??? this, sometimes the values go higher than 100%
+            
+            //proc->vsize = 0;  // NOT IMPLEMENTED YET
+            
+            // TODO: fix this, doesn't seem to provide conky with the desired values ( though I think the conky_get_rss_for_pid function works fine!!! )
+            //          ALSO, when you start conky you see that the MEM% column is full of 0.00 but IF YOU type on terminal for example top or do anything it fills some values!!! STRANGE...
+            conky_get_rss_for_pid( p[i].kp_proc.p_pid, &proc->rss );
+            proc->rss *= 100.0;
+            
             // ki_runtime is in microseconds, total_cpu_time in centiseconds.
             // Therefore we divide by 10000.
-//            proc->total_cpu_time = p[i].kp_proc. / 10000;
+            //proc->total_cpu_time = 0;   // NOT IMPLEMENTED YET
         }
     }
     
@@ -561,14 +565,12 @@ void get_battery_short_status(char *buffer, unsigned int n, const char *bat)
 int get_entropy_avail(unsigned int * val)
 {
     (void)val;
-    
     printf( "get_entropy_avail: STUB\n!" );
     return 1;
 }
 int get_entropy_poolsize(unsigned int * val)
 {
     (void)val;
-    
     printf( "get_entropy_poolsize: STUB\n!" );
     return 1;
 }
