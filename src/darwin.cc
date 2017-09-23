@@ -28,7 +28,7 @@
 // TODO: fix update_meminfo for getting the same stats as Activity Monitor's --- There is small difference though
 // TODO: convert get_cpu_count() to use mib instead of namedsysctl
 // TODO: test getcpucount further   -- Changed to hw.logicalcpumax
-
+// TODO: see linux.cc for more info into implementation of certain functions
 
 #include "darwin.h"
 #include "conky.h"              // for struct info
@@ -218,6 +218,8 @@ int update_net_stats(void)
 
 int update_total_processes(void)
 {
+    // TODO: add deallocation section for deallocating when conky exits!
+    
     static bool machStuffInitialised = false;                   /*
                                                                  *  Set this to true when the block that initialises machHost and processorSet has executed ONCE.
                                                                  *  This way we ensure that upon each update_total_processes() only ONCE the block executes.
@@ -324,20 +326,34 @@ void get_cpu_count(void)
     printf( "get_cpu_count: %i\n", info.cpu_count );
 }
 
+
+#define CPU_SAMPLE_COUNT 15
 struct cpu_info {
-    long oldtotal;
-    long oldused;
+    unsigned long long cpu_user;
+    unsigned long long cpu_system;
+    unsigned long long cpu_nice;
+    unsigned long long cpu_idle;
+    unsigned long long cpu_iowait;
+    unsigned long long cpu_irq;
+    unsigned long long cpu_softirq;
+    unsigned long long cpu_steal;
+    unsigned long long cpu_total;
+    unsigned long long cpu_active_total;
+    unsigned long long cpu_last_total;
+    unsigned long long cpu_last_active_total;
+    double cpu_val[CPU_SAMPLE_COUNT];
 };
-
-
-processor_info_array_t cpuInfo, prevCpuInfo;                /* FIXME: for some reason we get exception if we put these two lines inside the update_cpu_usage() */
-mach_msg_type_number_t numCpuInfo, numPrevCpuInfo;          /* If we comment out the if-block at the end we dont get exception */
 
 int update_cpu_usage(void)
 {
+    // TODO: add deallocation section for deallocating when conky exits!
+    
     //
     //  Help taken from both https://stackoverflow.com/questions/6785069/get-cpu-percent-usage?noredirect=1&lq=1 and FreeBSD.h conky header
     //
+
+    processor_info_array_t cpuInfo, prevCpuInfo;                /* FIXME: for some reason we get exception if we put these two lines inside the update_cpu_usage() */
+    mach_msg_type_number_t numCpuInfo, numPrevCpuInfo;          /* If we comment out the if-block at the end we dont get exception */
     
     static short cpu_setup = 0;     // in FreeBSD.h this is public
     
@@ -356,31 +372,87 @@ int update_cpu_usage(void)
         printf("update_cpu_usage: error\n");
         return 0;
     }
+
+    int j = 0;
+    extern void* global_cpu;
+    static struct cpu_info *cpu = NULL;
+    double curtmp;
+    double delta;
+    
+    if (!global_cpu) {
+        int malloc_cpu_size = (info.cpu_count + 1) * sizeof(struct cpu_info);
+        cpu = (struct cpu_info *)malloc(malloc_cpu_size);
+        memset(cpu, 0, malloc_cpu_size);
+        global_cpu = cpu;
+    }
     
     for(unsigned i = 0U; i < numCPUsU; ++i) {
-        float inUse, total;
+        //float inUse, total;
         if(prevCpuInfo) {
-            inUse = (
-                     (cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_USER]   - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_USER])
-                     + (cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_SYSTEM] - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_SYSTEM])
-                     + (cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_NICE]   - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_NICE])            // ** Should we use the thing MenuMeters does for osx 10.4+ ?? */
-                     );
-            total = inUse + (cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_IDLE] - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_IDLE]);
+            
+            cpu[i].cpu_user = cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_USER]   - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_USER];
+            cpu[i].cpu_nice = cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_NICE]   - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_NICE];
+            cpu[i].cpu_system = cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_SYSTEM] - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_SYSTEM];
+            cpu[i].cpu_idle = cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_IDLE] - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_IDLE];
+            
+            //inUse = (
+            //         (cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_USER]   - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_USER])
+            //         + (cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_SYSTEM] - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_SYSTEM])
+            //         + (cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_NICE]   - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_NICE])            // ** Should we use the thing MenuMeters does for osx 10.4+ ?? */
+            //         );
+            //total = inUse + (cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_IDLE] - prevCpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_IDLE]);
         } else {
-            inUse = cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_USER] + cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_SYSTEM] + cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_NICE];
-            total = inUse + cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_IDLE];
+            cpu[i].cpu_user = cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_USER];
+            cpu[i].cpu_nice = cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_NICE];
+            cpu[i].cpu_system = cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_SYSTEM];
+            cpu[i].cpu_idle = cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_IDLE];
+            
+            //inUse = cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_USER] + cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_SYSTEM] + cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_NICE];
+            //total = inUse + cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_IDLE];
         }
         
-        //
-        //  Set conky variable
-        //
-        info.cpu_usage[i] = inUse / total;
+        cpu[i].cpu_total = cpu[i].cpu_user + cpu[i].cpu_nice +
+        cpu[i].cpu_system + cpu[i].cpu_idle +
+        cpu[i].cpu_iowait + cpu[i].cpu_irq +
+        cpu[i].cpu_softirq + cpu[i].cpu_steal;
+        
+        cpu[i].cpu_active_total = cpu[i].cpu_total -
+        (cpu[i].cpu_idle + cpu[i].cpu_iowait);
+        
+        delta = current_update_time - last_update_time;
+        
+        if (delta <= 0.001) {
+            break;
+        }
+        
+        cpu[i].cpu_val[0] = (cpu[i].cpu_active_total -
+                               cpu[i].cpu_last_active_total) /
+        (float) (cpu[i].cpu_total - cpu[i].cpu_last_total);
+        curtmp = 0;
+        
+        int samples = cpu_avg_samples.get(*state);
+#ifdef HAVE_OPENMP
+#pragma omp parallel for reduction(+:curtmp) schedule(dynamic,10)
+#endif /* HAVE_OPENMP */
+        for (j = 0; j < samples; j++) {
+            curtmp = curtmp + cpu[i].cpu_val[j];
+        }
+        info.cpu_usage[i] = curtmp / samples;
+        
+        cpu[i].cpu_last_total = cpu[i].cpu_total;
+        cpu[i].cpu_last_active_total = cpu[i].cpu_active_total;
+#ifdef HAVE_OPENMP
+#pragma omp parallel for schedule(dynamic,10)
+#endif /* HAVE_OPENMP */
+        for (j = samples - 1; j > 0; j--) {
+            cpu[i].cpu_val[j] = cpu[i].cpu_val[j - 1];
+        }
     }
     
-    if(prevCpuInfo) {
-        size_t prevCpuInfoSize = sizeof(integer_t) * numPrevCpuInfo;
-        vm_deallocate(mach_task_self(), (vm_address_t)prevCpuInfo, prevCpuInfoSize);
-    }
+    //if(prevCpuInfo) {
+    //    size_t prevCpuInfoSize = sizeof(integer_t) * numPrevCpuInfo;
+    //    vm_deallocate(mach_task_self(), (vm_address_t)prevCpuInfo, prevCpuInfoSize);
+    //}
     
     prevCpuInfo = cpuInfo;
     numPrevCpuInfo = numCpuInfo;
@@ -484,7 +556,8 @@ int update_diskio(void)
 /* While topless is obviously better, top is also not bad. */
 
 /*
- *  TODO: Nick, document me! Thank you!
+ *  get resident memory size of a process with a specific pid
+ *  helper function for get_top_info()
  */
 void conky_get_rss_for_pid( pid_t pid, unsigned long long * rss )
 {
@@ -550,6 +623,10 @@ void get_top_info(void)
             // ki_runtime is in microseconds, total_cpu_time in centiseconds.
             // Therefore we divide by 10000.
             //proc->total_cpu_time = 0;   // NOT IMPLEMENTED YET
+        
+#ifdef BUILD_IOSTATS
+            // TODO: implement iostats stuff
+#endif /* BUILD_IOSTATS */
         }
     }
     
