@@ -46,7 +46,7 @@ check_symbol_exists(statfs64 "sys/statfs.h" HAVE_STATFS64)
 
 # TODO: Fix this:
 #
-#   clock_gettime was implemented in Sierra so we can bypass this if on Sierra
+#   clock_gettime was implemented in Sierra so we can bypass this for now ( I am compiling on Sierra! )
 #
 
 AC_SEARCH_LIBS(clock_gettime "time.h" CLOCK_GETTIME_LIB "rt")
