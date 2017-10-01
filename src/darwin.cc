@@ -215,7 +215,60 @@ int update_net_stats(void)
     return 0;
 }
 
+//
+//  NOTE: This function is disabled for now, conky isnt using it.
+//
+int update_threads(void)
+{
+    // TODO: add deallocation section for deallocating when conky exits!
+    
+    static bool machStuffInitialised = false;                   /*
+                                                                 *  Set this to true when the block that initialises machHost and processorSet has executed ONCE.
+                                                                 *  This way we ensure that upon each update_total_processes() only ONCE the block executes.
+                                                                 */
+    
+    static host_name_port_t             machHost;               /* make them static to keep the local and at the same time keep their initial value */
+    static processor_set_name_port_t	processorSet = 0;
+    
+    
+    /* FIXED but find a better solution ---- FIXME: This block should be happening outside and only ONCE, when conky starts. */
+    
+    if (!machStuffInitialised)
+    {
+        printf( "\n\n\nRunning ONLY ONCE the mach--init block\n\n\n" );
+        
+        // Set up our mach host and default processor set for later calls
+        machHost = mach_host_self();
+        processor_set_default(machHost, &processorSet);
+        
+        machStuffInitialised = true;
+    }
+    
+    // get count of ALL threads!
+    struct processor_set_load_info loadInfo;
+    mach_msg_type_number_t count = PROCESSOR_SET_LOAD_INFO_COUNT;
+    kern_return_t err = processor_set_statistics(processorSet, PROCESSOR_SET_LOAD_INFO,
+                                                 (processor_set_info_t)&loadInfo, &count);
+    
+    if (err == KERN_SUCCESS) {                      // NOTE: Maybe this check could be removed!
+        info.threads = loadInfo.thread_count;
+        printf( "conky: got thread count: %i\n", loadInfo.thread_count );
+    }
+    
+    return 0;
+}
 
+//
+//  NOTE: This function is disabled for now, conky isnt using it.
+//
+int update_running_threads(void)
+{
+    return 0;
+}
+
+//
+//  NOTE: finds thread count, too, for now!
+//
 int update_total_processes(void)
 {
     // TODO: add deallocation section for deallocating when conky exits!
@@ -250,6 +303,7 @@ int update_total_processes(void)
     
     if (err == KERN_SUCCESS) {                      // NOTE: Maybe this check could be removed!
         info.procs = loadInfo.task_count;
+        info.threads = loadInfo.thread_count;       // TODO: This will need to be moved inside update_threads() and core.cc must be tweaked to enable update_threads() for macOS
     }
     
     return 0;
@@ -291,7 +345,50 @@ int update_total_processes(void)
 
 int update_running_processes(void)
 {
-    printf( "update_running_processes: STUB\n" );
+    int err = 0;
+    struct kinfo_proc *p = NULL;
+    size_t length = 0;
+    
+    static const int name[] = { CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0 };
+    
+    // Call sysctl with a NULL buffer to get proper length
+    
+    err = sysctl((int *)name, (sizeof(name) / sizeof(*name)) - 1, NULL, &length, NULL, 0);
+    if (err) {
+        perror(NULL);
+        free(p);
+        return 0;
+    }
+    
+    // Allocate buffer
+    p = (kinfo_proc*)malloc(length);
+    if (!p) {
+        perror(NULL);
+        free(p);
+        return 0;
+    }
+    
+    // Get the actual process list
+    err = sysctl((int *)name, (sizeof(name) / sizeof(*name)) - 1, p, &length, NULL, 0);
+    if (err)
+    {
+        perror(NULL);
+        free(p);
+        return 0;
+    }
+    
+    int proc_count = length / sizeof(struct kinfo_proc);
+    
+    int run_procs = 0;
+    
+    for (int i = 0; i < proc_count; i++) {
+        if (p[i].kp_proc.p_stat == SRUN)
+            run_procs++;
+    }
+    
+    info.run_procs = run_procs;
+    
+    free(p);
     return 0;
 }
 
@@ -351,7 +448,7 @@ int update_cpu_usage(void)
     //
     //  Help taken from https://stackoverflow.com/questions/6785069/get-cpu-percent-usage?noredirect=1&lq=1 and freebsd.h and linux.cc
     //
-
+    
     processor_info_array_t cpuInfo;
     mach_msg_type_number_t numCpuInfo;
     
@@ -363,7 +460,7 @@ int update_cpu_usage(void)
         cpu_setup = 1;
     }
     
-    natural_t numCPUsU = 0U;        // TODO: ? take this from conky variable
+    natural_t numCPUsU = 0U;
     kern_return_t err = host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO, &numCPUsU, &cpuInfo, &numCpuInfo);
 
     if (err != ERR_SUCCESS) {
@@ -400,7 +497,7 @@ int update_cpu_usage(void)
         
         delta = current_update_time - last_update_time;
         
-        if (delta <= 0.001) {
+        if (delta <= 0.001) {   // TODO: should we set the values to 0 here???
             break;
         }
         
@@ -521,7 +618,27 @@ int update_diskio(void)
     return 0;
 }
 
-/* While topless is obviously better, top is also not bad. */
+/******************************************
+ * Calculate each processes cpu			  *
+ ******************************************/
+
+#ifdef BUILD_IOSTATS
+static void calc_io_each(void)
+{
+    //printf("calc_io_each: experimental\n");
+    
+    struct process *p;
+    unsigned long long sum = 0;
+    
+    for (p = first_process; p; p = p->next)
+    sum += p->read_bytes + p->write_bytes;
+    
+    if(sum == 0)
+    sum = 1; /* to avoid having NANs if no I/O occured */
+    for (p = first_process; p; p = p->next)
+    p->io_perc = 100.0 * (p->read_bytes + p->write_bytes) / (float) sum;
+}
+#endif /* BUILD_IOSTATS */
 
 /*
  *  get resident memory size (bytes) of a process with a specific pid
@@ -535,6 +652,8 @@ void conky_get_rss_for_pid( pid_t pid, unsigned long long * rss )
         *rss =  pti.pti_resident_size;
     }
 }
+
+/* While topless is obviously better, top is also not bad. */
 
 void get_top_info(void)
 {
@@ -593,7 +712,7 @@ void get_top_info(void)
             //proc->total_cpu_time = 0;   // NOT IMPLEMENTED YET
         
 #ifdef BUILD_IOSTATS
-            // TODO: implement iostats stuff
+            calc_io_each();			/* percentage of I/O for each task */
 #endif /* BUILD_IOSTATS */
         }
     }
