@@ -30,4 +30,6 @@
 int get_entropy_avail(unsigned int *);
 int get_entropy_poolsize(unsigned int *);
 
+int update_running_threads(void);
+
 #endif /*DARWIN_H*/

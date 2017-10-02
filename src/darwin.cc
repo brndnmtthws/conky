@@ -29,6 +29,7 @@
 // TODO: convert get_cpu_count() to use mib instead of namedsysctl
 // TODO: test getcpucount further   -- Changed to hw.logicalcpumax
 // TODO: see linux.cc for more info into implementation of certain functions
+// TODO: check if run_threads is equal to threads_count on macOS
 
 #include "darwin.h"
 #include "conky.h"              // for struct info
@@ -215,97 +216,92 @@ int update_net_stats(void)
     return 0;
 }
 
-//
-//  NOTE: This function is disabled for now, conky isnt using it.
-//
+enum {
+    DARWIN_CONKY_PROCESSES_COUNT,
+    DARWIN_CONKY_RUNNING_THREADS_COUNT,
+    DARWIN_CONKY_THREADS_COUNT,
+};
+
+/*
+ *  Helper function for update_threads(), update_running_threads() and update_total_processes()
+ *
+ *  Uses mach API to get load info ( task_count, thread_count )
+ *
+ *  Returns 0 if nothing is found, or >0 if successful
+ *
+ */
+int get_from_load_info( int what )
+{
+    // TODO: add deallocation section for deallocating when conky exits!
+    
+    static bool machStuffInitialised = false;                   /*
+                                                                 *  Set this to true when the block that initialises machHost and processorSet has executed ONCE.
+                                                                 *  This way we ensure that upon each update_total_processes() only ONCE the block executes.
+                                                                 */
+    
+    static host_name_port_t             machHost;               /* make them static to keep the local and at the same time keep their initial value */
+    static processor_set_name_port_t	processorSet = 0;
+    
+    
+    /* FIXED but find a better solution ---- FIXME: This block should be happening outside and only ONCE, when conky starts. */
+    
+    if (!machStuffInitialised)
+    {
+        printf( "\n\n\nRunning ONLY ONCE the mach--init block\n\n\n" );
+        
+        // Set up our mach host and default processor set for later calls
+        machHost = mach_host_self();
+        processor_set_default(machHost, &processorSet);
+        
+        machStuffInitialised = true;
+    }
+    
+    // get load info
+    struct processor_set_load_info loadInfo;
+    mach_msg_type_number_t count = PROCESSOR_SET_LOAD_INFO_COUNT;
+    kern_return_t err = processor_set_statistics(processorSet, PROCESSOR_SET_LOAD_INFO,
+                                                 (processor_set_info_t)&loadInfo, &count);
+    
+    if (err != KERN_SUCCESS)
+        return 0;
+    
+    switch (what)
+    {
+        case DARWIN_CONKY_PROCESSES_COUNT:
+            return loadInfo.task_count;
+            break;
+        case DARWIN_CONKY_THREADS_COUNT:
+        case DARWIN_CONKY_RUNNING_THREADS_COUNT:
+            return loadInfo.thread_count;           /* NOTE: running threads count and total threads count is the same on macOS */
+            printf( "conky: got thread count: %i\n", loadInfo.thread_count );
+            break;
+        default:
+            printf( "Error: Unxpected flag passed to get_from_load_info()" );
+            return 0;
+            break;
+    }
+}
+
 int update_threads(void)
 {
-    // TODO: add deallocation section for deallocating when conky exits!
-    
-    static bool machStuffInitialised = false;                   /*
-                                                                 *  Set this to true when the block that initialises machHost and processorSet has executed ONCE.
-                                                                 *  This way we ensure that upon each update_total_processes() only ONCE the block executes.
-                                                                 */
-    
-    static host_name_port_t             machHost;               /* make them static to keep the local and at the same time keep their initial value */
-    static processor_set_name_port_t	processorSet = 0;
-    
-    
-    /* FIXED but find a better solution ---- FIXME: This block should be happening outside and only ONCE, when conky starts. */
-    
-    if (!machStuffInitialised)
-    {
-        printf( "\n\n\nRunning ONLY ONCE the mach--init block\n\n\n" );
-        
-        // Set up our mach host and default processor set for later calls
-        machHost = mach_host_self();
-        processor_set_default(machHost, &processorSet);
-        
-        machStuffInitialised = true;
-    }
-    
-    // get count of ALL threads!
-    struct processor_set_load_info loadInfo;
-    mach_msg_type_number_t count = PROCESSOR_SET_LOAD_INFO_COUNT;
-    kern_return_t err = processor_set_statistics(processorSet, PROCESSOR_SET_LOAD_INFO,
-                                                 (processor_set_info_t)&loadInfo, &count);
-    
-    if (err == KERN_SUCCESS) {                      // NOTE: Maybe this check could be removed!
-        info.threads = loadInfo.thread_count;
-        printf( "conky: got thread count: %i\n", loadInfo.thread_count );
-    }
-    
+    info.threads = get_from_load_info(DARWIN_CONKY_THREADS_COUNT);
     return 0;
 }
 
-//
-//  NOTE: This function is disabled for now, conky isnt using it.
-//
 int update_running_threads(void)
 {
+    /*
+     *  NOTE: I think on mac thread count = running threads count!
+     *
+     */
+    
+    info.run_threads = get_from_load_info(DARWIN_CONKY_RUNNING_THREADS_COUNT);
     return 0;
 }
 
-//
-//  NOTE: finds thread count, too, for now!
-//
 int update_total_processes(void)
 {
-    // TODO: add deallocation section for deallocating when conky exits!
-    
-    static bool machStuffInitialised = false;                   /*
-                                                                 *  Set this to true when the block that initialises machHost and processorSet has executed ONCE.
-                                                                 *  This way we ensure that upon each update_total_processes() only ONCE the block executes.
-                                                                 */
-    
-    static host_name_port_t             machHost;               /* make them static to keep the local and at the same time keep their initial value */
-    static processor_set_name_port_t	processorSet = 0;
- 
-    
-    /* FIXED but find a better solution ---- FIXME: This block should be happening outside and only ONCE, when conky starts. */
-    
-    if (!machStuffInitialised)
-    {
-        printf( "\n\n\nRunning ONLY ONCE the mach--init block\n\n\n" );
-        
-        // Set up our mach host and default processor set for later calls
-        machHost = mach_host_self();
-        processor_set_default(machHost, &processorSet);
-        
-        machStuffInitialised = true;
-    }
-    
-    // get count of ALL tasks
-    struct processor_set_load_info loadInfo;
-    mach_msg_type_number_t count = PROCESSOR_SET_LOAD_INFO_COUNT;
-    kern_return_t err = processor_set_statistics(processorSet, PROCESSOR_SET_LOAD_INFO,
-                                                 (processor_set_info_t)&loadInfo, &count);
-    
-    if (err == KERN_SUCCESS) {                      // NOTE: Maybe this check could be removed!
-        info.procs = loadInfo.task_count;
-        info.threads = loadInfo.thread_count;       // TODO: This will need to be moved inside update_threads() and core.cc must be tweaked to enable update_threads() for macOS
-    }
-    
+    info.procs = get_from_load_info(DARWIN_CONKY_PROCESSES_COUNT);
     return 0;
     
     // IMPLEMENTATION WAY NO.2 is problematic for **US**
@@ -528,7 +524,7 @@ int update_cpu_usage(void)
     return 0;
 }
 
-int update_load_average(void)                   /* TODO: experimental */
+int update_load_average(void)
 {
     double v[3];
     
@@ -619,7 +615,7 @@ int update_diskio(void)
 }
 
 /******************************************
- * Calculate each processes cpu			  *
+ *          get top info                  *
  ******************************************/
 
 #ifdef BUILD_IOSTATS
@@ -631,12 +627,12 @@ static void calc_io_each(void)
     unsigned long long sum = 0;
     
     for (p = first_process; p; p = p->next)
-    sum += p->read_bytes + p->write_bytes;
+        sum += p->read_bytes + p->write_bytes;
     
     if(sum == 0)
-    sum = 1; /* to avoid having NANs if no I/O occured */
+        sum = 1; /* to avoid having NANs if no I/O occured */
     for (p = first_process; p; p = p->next)
-    p->io_perc = 100.0 * (p->read_bytes + p->write_bytes) / (float) sum;
+        p->io_perc = 100.0 * (p->read_bytes + p->write_bytes) / (float) sum;
 }
 #endif /* BUILD_IOSTATS */
 

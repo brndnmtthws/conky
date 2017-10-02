@@ -115,6 +115,8 @@
 #include "dragonfly.h"
 #elif defined(__OpenBSD__)
 #include "openbsd.h"
+#elif defined(__APPLE__) && defined(__MACH__)
+#include "darwin.h"
 #endif
 
 #include <string.h>
@@ -1249,6 +1251,14 @@ struct text_object *construct_text_object(char *s, const char *arg,
 #if defined(__DragonFly__)
 	END OBJ(running_processes, &update_top)
 	obj->callbacks.print = &print_running_processes;
+#elif (defined(__APPLE__) && defined(__MACH__))
+    END OBJ(running_processes, &update_top)
+    top_running = 1;
+    obj->callbacks.print = &print_running_processes;
+    END OBJ(threads, &update_threads)
+    obj->callbacks.print = &print_threads;
+    END OBJ(running_threads, &update_running_threads)
+    obj->callbacks.print = &print_running_threads;
 #else
 	END OBJ(running_processes, &update_running_processes)
 	obj->callbacks.print = &print_running_processes;
