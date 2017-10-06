@@ -29,7 +29,7 @@
 // TODO: convert get_cpu_count() to use mib instead of namedsysctl
 // TODO: test getcpucount further   -- Changed to hw.logicalcpumax
 // TODO: see linux.cc for more info into implementation of certain functions
-// TODO: check if run_threads is equal to threads_count on macOS
+// TODO: check if run_threads is equal to threads_count on macOS -- IT IS!
 
 #include "darwin.h"
 #include "conky.h"              // for struct info
@@ -212,18 +212,24 @@ int update_meminfo(void)
 
 int update_net_stats(void)
 {
+    /*
+     *  NOTE: We could use code from OpenBSD.cc ??
+     */
+    
     printf( "update_net_stats: STUB\n" );
     return 0;
 }
 
+/*
+ *  Flags needed for get_from_load_info()
+ */
 enum {
     DARWIN_CONKY_PROCESSES_COUNT,
-    DARWIN_CONKY_RUNNING_THREADS_COUNT,
     DARWIN_CONKY_THREADS_COUNT,
 };
 
 /*
- *  Helper function for update_threads(), update_running_threads() and update_total_processes()
+ *  Helper function for update_threads() and update_running_threads()
  *
  *  Uses mach API to get load info ( task_count, thread_count )
  *
@@ -271,9 +277,7 @@ int get_from_load_info( int what )
             return loadInfo.task_count;
             break;
         case DARWIN_CONKY_THREADS_COUNT:
-        case DARWIN_CONKY_RUNNING_THREADS_COUNT:
-            return loadInfo.thread_count;           /* NOTE: running threads count and total threads count is the same on macOS */
-            printf( "conky: got thread count: %i\n", loadInfo.thread_count );
+            return loadInfo.thread_count;
             break;
         default:
             printf( "Error: Unxpected flag passed to get_from_load_info()" );
@@ -285,17 +289,19 @@ int get_from_load_info( int what )
 int update_threads(void)
 {
     info.threads = get_from_load_info(DARWIN_CONKY_THREADS_COUNT);
+    printf( "update_threads: got thread count: %i\n", info.threads );
     return 0;
 }
 
 int update_running_threads(void)
 {
     /*
-     *  NOTE: I think on mac thread count = running threads count!
+     *  From looking top-108 source I saw that there is difference between total and running threads!
      *
      */
     
-    info.run_threads = get_from_load_info(DARWIN_CONKY_RUNNING_THREADS_COUNT);
+    // NOT IMPLEMENTED
+    
     return 0;
 }
 
@@ -439,8 +445,6 @@ struct cpu_info {
 
 int update_cpu_usage(void)
 {
-    // TODO: add deallocation section for deallocating when conky exits!
-    
     //
     //  Help taken from https://stackoverflow.com/questions/6785069/get-cpu-percent-usage?noredirect=1&lq=1 and freebsd.h and linux.cc
     //
