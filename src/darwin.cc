@@ -29,7 +29,6 @@
 // TODO: convert get_cpu_count() to use mib instead of namedsysctl
 // TODO: test getcpucount further   -- Changed to hw.logicalcpumax
 // TODO: see linux.cc for more info into implementation of certain functions
-// TODO: check if run_threads is equal to threads_count on macOS -- IT IS!
 
 #include "darwin.h"
 #include "conky.h"              // for struct info
@@ -139,8 +138,36 @@ int update_uptime(void)
 
 int check_mount(struct text_object *obj)
 {
-    printf( "check_mount: STUB\n" );
-    return 0;
+    int             num_mounts = 0,
+                    ret = 0;
+    struct statfs*  mounts;
+    
+    
+    if (!obj->data.s)
+        return ret;
+    
+    num_mounts = getmntinfo(&mounts, MNT_WAIT);
+ 
+    if (num_mounts < 0) {
+        NORM_ERR("Could not get mounts using getmntinfo");
+        return ret;
+    }
+    
+    for (int i = 0; i < num_mounts; i++)
+    {
+        int n = 0;
+        
+        for (int j = 0; (obj->data.s[j] != ' ' && j < 256); j++)
+            n = j;
+        
+        if (strncmp(mounts[i].f_mntonname, obj->data.s, n) == 0)
+        {
+            ret = 1;
+            break;
+        }
+    }
+    
+    return ret;
 }
 
 int update_meminfo(void)
@@ -445,6 +472,8 @@ struct cpu_info {
 
 int update_cpu_usage(void)
 {
+    // TODO: add deallocation section for deallocating when conky exits!
+    
     //
     //  Help taken from https://stackoverflow.com/questions/6785069/get-cpu-percent-usage?noredirect=1&lq=1 and freebsd.h and linux.cc
     //

@@ -956,6 +956,11 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		obj->data.s = strndup(arg, text_buffer_size.get(*state));
 		obj->callbacks.iftest = &if_running_iftest;
 		obj->callbacks.free = &gen_free_opaque;
+#elif defined(__APPLE__) && defined(__MACH__)
+    END OBJ_IF_ARG(if_mounted, 0, "if_mounted needs an argument")
+    obj->data.s = strndup(arg, text_buffer_size.get(*state));
+    obj->callbacks.iftest = &check_mount;
+    obj->callbacks.free = &gen_free_opaque;
 #else
 	END OBJ_IF_ARG(if_running, 0, "if_running needs an argument")
 		char buf[text_buffer_size.get(*state)];
