@@ -85,7 +85,7 @@ screenshots and their associated Conky config files.
 
 #### What you need
 
-* Xcode tools
+* Xcode command-line tools
 * Homebrew
 * Xquartz
 
