@@ -102,7 +102,8 @@ if(BUILD_I18N AND OS_DARWIN)
 endif(BUILD_I18N AND OS_DARWIN)
 
 if(BUILD_NCURSES AND OS_DARWIN)
-    set(conky_libs ${conky_libs} -lncurses)
+    set(conky_libs ${conky_libs} -lncurses -llua)
+    set(DARWINPORT_DISABLE_LUA true)
 endif(BUILD_NCURSES AND OS_DARWIN)
 
 if(BUILD_MATH)
@@ -301,6 +302,8 @@ endif(BUILD_LUA_CAIRO OR BUILD_LUA_IMLIB2 OR BUILD_LUA_RSVG)
 #    pkg_search_module(LUA REQUIRED lua>=5.3 lua5.3 lua-5.3 lua53 lua5.2 lua-5.2 lua52 lua5.1 lua-5.1 lua51 lua>=5.1)
 #endif(WANT_TOLUA)
 
+if(NOT DARWINPORT_DISABLE_LUA)
+
 # The old, not working code for lua:
 if(WANT_TOLUA)
     # If we need tolua++, we must compile against Lua 5.1
@@ -312,6 +315,8 @@ else(WANT_TOLUA)
     # Otherwise, use the most recent Lua version
     pkg_search_module(LUA REQUIRED lua>=5.3 lua5.3 lua-5.3 lua53 lua5.2 lua-5.2 lua52 lua5.1 lua-5.1 lua51 lua>=5.1)
 endif(WANT_TOLUA)
+
+endif(NOT DARWINPORT_DISABLE_LUA)
 
 set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
 set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIRS})
