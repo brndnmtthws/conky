@@ -142,13 +142,17 @@ int check_mount(struct text_object *obj)
                     ret = 0;
     struct statfs*  mounts;
     
-    
+    int 	    data_len = strlen( obj->data.s );    
+
+ printf( "len = %i\n", data_len );
+
     if (!obj->data.s)
         return ret;
     
     num_mounts = getmntinfo(&mounts, MNT_WAIT);
  
-    if (num_mounts < 0) {
+    if (num_mounts < 0)
+    {
         NORM_ERR("Could not get mounts using getmntinfo");
         return ret;
     }
@@ -157,7 +161,7 @@ int check_mount(struct text_object *obj)
     {
         int n = 0;
         
-        for (int j = 0; (obj->data.s[j] != ' ' && j < 256); j++)
+        for (int j = 0; (obj->data.s[j] != ' ' && j < data_len); j++)
             n = j;
         
         if (strncmp(mounts[i].f_mntonname, obj->data.s, n) == 0)
