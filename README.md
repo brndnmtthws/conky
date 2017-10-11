@@ -83,6 +83,22 @@ screenshots and their associated Conky config files.
 
 ### Build on macOS
 
+#### What you need
+
+* Xcode command-line tools
+* Homebrew
+* Xquartz
+
+Once you get these installed please run the following commands as you see them!
+**The last command MUST be run if you want gettext support!**
+
+```
+brew install cmake freetype gettext lua
+brew link --force gettext
+```
+
+#### Actual build process
+
 download/clone project, then cd into project's directory, 
 and... Choose if you want to use Unix Makefiles or Xcode build system.
 
