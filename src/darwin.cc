@@ -30,6 +30,11 @@
 // TODO: test getcpucount further   -- Changed to hw.logicalcpumax
 // TODO: see linux.cc for more info into implementation of certain functions
 
+// SIP STATUS:
+// TODO: not sure if I have added the sip_status END OBJ... code in the correct place ---> macOS specific feature
+// TODO: dont forget to follow the guide for adding new features to conky!! hmmm
+// TODO: patch the print_sip_status function accordingly because I think we shouldnt use multiple lines... Or am I missing something?
+
 #include "darwin.h"
 #include "conky.h"              // for struct info
 
@@ -136,42 +141,56 @@ int update_uptime(void)
     return 0;
 }
 
+/*
+ *  Notes on macOS implementation:
+ *  1)  path mustn't contain a '/' at the end! ( eg. this is not correct /Volumes/MacOS/  but this is correct: /Volumes/MacOS )
+ *
+ */
 int check_mount(struct text_object *obj)
 {
-    int             num_mounts = 0,
-                    ret = 0;
-    struct statfs*  mounts;
-    
-    int 	    data_len = strlen( obj->data.s );    
+	//  TODO: Fix doesn’t show anything even if successful!
+    //  TODO: Check if we need to support checking for multiple file systems...
+	// if MOUNTPOINT is mounted, display everything between $if_mounted and the matching $endif
 
- printf( "len = %i\n", data_len );
+    int             num_mounts = 0;
+    struct statfs*  mounts;
 
     if (!obj->data.s)
-        return ret;
+        return 0;
     
     num_mounts = getmntinfo(&mounts, MNT_WAIT);
  
     if (num_mounts < 0)
     {
         NORM_ERR("Could not get mounts using getmntinfo");
-        return ret;
+        return 0;
     }
+
+    //for (int i = 0; i < num_mounts; i++)
+    //    printf( "%s\n", mounts[i].f_mntonname );
     
     for (int i = 0; i < num_mounts; i++)
-    {
-        int n = 0;
-        
-        for (int j = 0; (obj->data.s[j] != ' ' && j < data_len); j++)
-            n = j;
-        
-        if (strncmp(mounts[i].f_mntonname, obj->data.s, n) == 0)
-        {
-            ret = 1;
-            break;
+        if (strcmp(mounts[i].f_mntonname, obj->data.s) == 0) {
+            printf("YEAH!\n");
+            return 1;
         }
-    }
     
-    return ret;
+    return 0;
+}
+
+#include <vector>
+
+/*
+ *  NOTE: this functionality doesn't exist on Linux implementation and it probably shouldnt be.
+ */
+void print_mount(struct text_object *obj, char *p, int p_max_size)
+{
+    std::vector<char> buf(max_user_text.get(*state));
+    
+    if (!obj->data.s)
+        return;
+    
+    // do stuff here
 }
 
 int update_meminfo(void)
@@ -677,7 +696,7 @@ static void calc_io_each(void)
  *  get resident memory size (bytes) of a process with a specific pid
  *  helper function for get_top_info()
  */
-void conky_get_rss_for_pid( pid_t pid, unsigned long long * rss )
+void get_rss_for_pid( pid_t pid, unsigned long long * rss )
 {
     struct proc_taskinfo pti;
     
@@ -737,7 +756,7 @@ void get_top_info(void)
             
             // TODO: fix this, doesn't seem to provide conky with the desired values ( though I think the conky_get_rss_for_pid function works fine!!! )
             //          ALSO, when you start conky you see that the MEM% column is full of 0.00 but IF YOU type on terminal for example top or do anything it fills some values!!! STRANGE...
-            conky_get_rss_for_pid( p[i].kp_proc.p_pid, &proc->rss );        // NOTE: I noticed a small difference between htop's calculation of rss and our implementation's
+            get_rss_for_pid( p[i].kp_proc.p_pid, &proc->rss );              // NOTE: I noticed a small difference between htop's calculation of rss and our implementation's
                                                                             // What is more, i think that the value as is right now is fine... But we may need some more stuff to implement first!
             
             // ki_runtime is in microseconds, total_cpu_time in centiseconds.
@@ -771,3 +790,129 @@ int get_entropy_poolsize(unsigned int * val)
     printf( "get_entropy_poolsize: STUB\n!" );
     return 1;
 }
+
+//
+//  Code for SIP taken from Pike R. Alpha's csrstat tool https://github.com/Piker-Alpha/csrstat
+//  csrstat version 1.7 ( works for OS up to High Sierra )
+//
+//  My patches:
+//      made csr_get_active_config weak link and added check for finding if it is available.
+//      patched the _csr_check function to return the bool bit instead.
+//
+
+/* Rootless configuration flags */
+#define CSR_ALLOW_UNTRUSTED_KEXTS           (1 << 0)    // 1
+#define CSR_ALLOW_UNRESTRICTED_FS           (1 << 1)    // 2
+#define CSR_ALLOW_TASK_FOR_PID              (1 << 2)    // 4
+#define CSR_ALLOW_KERNEL_DEBUGGER           (1 << 3)    // 8
+#define CSR_ALLOW_APPLE_INTERNAL            (1 << 4)    // 16
+#define CSR_ALLOW_UNRESTRICTED_DTRACE       (1 << 5)    // 32
+#define CSR_ALLOW_UNRESTRICTED_NVRAM        (1 << 6)    // 64
+#define CSR_ALLOW_DEVICE_CONFIGURATION      (1 << 7)    // 128
+#define CSR_ALLOW_ANY_RECOVERY_OS           (1 << 8)    // 256
+#define CSR_ALLOW_USER_APPROVED_KEXTS       (1 << 9)    // 512
+
+#define CSR_VALID_FLAGS (CSR_ALLOW_UNTRUSTED_KEXTS | \
+        CSR_ALLOW_UNRESTRICTED_FS | \
+        CSR_ALLOW_TASK_FOR_PID | \
+        CSR_ALLOW_KERNEL_DEBUGGER | \
+        CSR_ALLOW_APPLE_INTERNAL | \
+        CSR_ALLOW_UNRESTRICTED_DTRACE | \
+        CSR_ALLOW_UNRESTRICTED_NVRAM  | \
+        CSR_ALLOW_DEVICE_CONFIGURATION | \
+        CSR_ALLOW_ANY_RECOVERY_OS | \
+        CSR_ALLOW_USER_APPROVED_KEXTS)
+
+/* Syscalls */
+// mark these symbols as weakly linked, as they may not be available
+// at runtime on older OS X versions.
+extern "C" {
+    int csr_get_active_config(information::csr_config_t* config) __attribute__((weak_import));
+};
+
+bool _csr_check(int aMask, bool aFlipflag)  // TODO: consider/check aFlipFlag
+{
+    bool bit = (info.csr_config & aMask);
+    
+    if (aFlipflag)
+        return !bit;
+    
+    return bit;
+}
+
+void fill_csr_config_flags_struct(void)
+{
+    info.csr_config_flags.csr_allow_apple_internal         = _csr_check(CSR_ALLOW_APPLE_INTERNAL, 0);
+    info.csr_config_flags.csr_allow_untrusted_kexts        = _csr_check(CSR_ALLOW_UNTRUSTED_KEXTS, 1);
+    info.csr_config_flags.csr_allow_task_for_pid           = _csr_check(CSR_ALLOW_TASK_FOR_PID, 1);
+    info.csr_config_flags.csr_allow_unrestricted_fs        = _csr_check(CSR_ALLOW_UNRESTRICTED_FS, 1);
+    info.csr_config_flags.csr_allow_kernel_debugger        = _csr_check(CSR_ALLOW_KERNEL_DEBUGGER, 1);
+    info.csr_config_flags.csr_allow_unrestricted_dtrace    = _csr_check(CSR_ALLOW_UNRESTRICTED_DTRACE, 1);
+    info.csr_config_flags.csr_allow_unrestricted_nvram     = _csr_check(CSR_ALLOW_UNRESTRICTED_NVRAM, 1);
+    info.csr_config_flags.csr_allow_device_configuration   = _csr_check(CSR_ALLOW_DEVICE_CONFIGURATION, 1);
+    info.csr_config_flags.csr_allow_any_recovery_os        = _csr_check(CSR_ALLOW_ANY_RECOVERY_OS, 1);
+    info.csr_config_flags.csr_allow_user_approved_kexts    = _csr_check(CSR_ALLOW_USER_APPROVED_KEXTS, 1);
+}
+
+int get_sip_status(void)
+{
+    if (csr_get_active_config == nullptr)   /*  check if weakly linked symbol exists    */
+    {
+        printf("sip_status will not work on this version of macOS\n");
+        return 0;
+    }
+    
+    csr_get_active_config(&info.csr_config);
+    fill_csr_config_flags_struct();
+    
+    return 0;
+}
+
+void print_sip_status(struct text_object *obj, char *p, int p_max_size)
+{
+    if (csr_get_active_config == nullptr)   /*  check if weakly linked symbol exists    */
+    {
+        printf("sip_status will not work on this version of macOS\n");
+        return;
+    }
+    
+    /* conky window output */
+    const char * format =   "Apple Internal............: %i\n"
+                            "Kext Signing Restrictions.: %i\n"
+                            "Task for PID Restrictions.: %i\n"
+                            "Filesystem Protections....: %i\n"
+                            "Debugging Restrictions....: %i\n"
+                            "DTrace Restrictions.......: %i\n"
+                            "NVRAM Protections.........: %i\n"
+                            "Device Configuration......: %i\n"
+                            "BaseSystem Verification...: %i\n"
+                            "User Approved Kext Loading: %i\n";
+    
+    (void)obj;
+    
+    // TODO: probably support this too, eh...
+    //if (info.csr_config == CSR_VALID_FLAGS)
+    //    printf( "SIP is enabled!\n" );
+    
+    snprintf(p, p_max_size, format,
+             info.csr_config_flags.csr_allow_apple_internal,
+             info.csr_config_flags.csr_allow_untrusted_kexts,
+             info.csr_config_flags.csr_allow_task_for_pid,
+             info.csr_config_flags.csr_allow_unrestricted_fs,
+             info.csr_config_flags.csr_allow_kernel_debugger,
+             info.csr_config_flags.csr_allow_unrestricted_dtrace,
+             info.csr_config_flags.csr_allow_unrestricted_nvram,
+             info.csr_config_flags.csr_allow_device_configuration,
+             info.csr_config_flags.csr_allow_any_recovery_os,
+             info.csr_config_flags.csr_allow_user_approved_kexts
+     );
+    
+    
+    // TODO: support the following line, too!
+    /*
+    if (info.csr_config && (info.csr_config != CSR_ALLOW_APPLE_INTERNAL))
+    {
+        printf("\nThis is an unsupported configuration, likely to break in the future and leave your machine in an unknown state.\n");
+    } */
+}
+

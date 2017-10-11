@@ -27,9 +27,15 @@
 #include <strings.h>
 #include <stdio.h>
 
+void print_mount(struct text_object *obj, char *p, int p_max_size);
+
+int update_running_threads(void);
+
 int get_entropy_avail(unsigned int *);
 int get_entropy_poolsize(unsigned int *);
 
-int update_running_threads(void);
+/* System Integrity Protection */
+int get_sip_status(void);
+void print_sip_status(struct text_object *obj, char *p, int p_max_size);
 
 #endif /*DARWIN_H*/
