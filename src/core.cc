@@ -965,6 +965,7 @@ struct text_object *construct_text_object(char *s, const char *arg,
     
     /* System Integrity Protection */
     END OBJ(sip_status, &get_sip_status)
+        obj->data.s = strndup(arg ? arg : "", text_buffer_size.get(*state));
         obj->callbacks.print = &print_sip_status;
         obj->callbacks.free = &gen_free_opaque;
 #else

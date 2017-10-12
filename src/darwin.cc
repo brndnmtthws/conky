@@ -22,6 +22,13 @@
 //	This is the equivalent of linux.cc, freebsd.cc, openbsd.cc etc. ( you get the idea )
 //  For implementing functions I took ideas from FreeBSD.cc! Thanks for the great code!
 //
+//  Code for SIP taken from Pike R. Alpha's csrstat tool https://github.com/Piker-Alpha/csrstat
+//  csrstat version 1.7 ( works for OS up to High Sierra )
+//
+//  My patches:
+//      made csr_get_active_config weak link and added check for finding if it is available.
+//      patched the _csr_check function to return the bool bit instead.
+//
 
 // keywords used are TODO, FIXME, BUG
 
@@ -33,7 +40,7 @@
 // SIP STATUS:
 // TODO: not sure if I have added the sip_status END OBJ... code in the correct place ---> macOS specific feature
 // TODO: dont forget to follow the guide for adding new features to conky!! hmmm
-// TODO: patch the print_sip_status function accordingly because I think we shouldnt use multiple lines... Or am I missing something?
+// TODO: see if we can have a print_sip_status to show full overview of SIP status ( all flags )
 
 #include "darwin.h"
 #include "conky.h"              // for struct info
@@ -51,6 +58,8 @@
 
 #include <libproc.h>            // get_top_info
 #include "top.h"                // get_top_info
+
+#include "darwin_sip.h"         // sip status
 
 #define	GETSYSCTL(name, var)	getsysctl(name, &(var), sizeof(var))
 
@@ -791,45 +800,14 @@ int get_entropy_poolsize(unsigned int * val)
     return 1;
 }
 
-//
-//  Code for SIP taken from Pike R. Alpha's csrstat tool https://github.com/Piker-Alpha/csrstat
-//  csrstat version 1.7 ( works for OS up to High Sierra )
-//
-//  My patches:
-//      made csr_get_active_config weak link and added check for finding if it is available.
-//      patched the _csr_check function to return the bool bit instead.
-//
+/*********************************************************************************************
+ *                                  System Integrity Protection                              *
+ *********************************************************************************************/
 
-/* Rootless configuration flags */
-#define CSR_ALLOW_UNTRUSTED_KEXTS           (1 << 0)    // 1
-#define CSR_ALLOW_UNRESTRICTED_FS           (1 << 1)    // 2
-#define CSR_ALLOW_TASK_FOR_PID              (1 << 2)    // 4
-#define CSR_ALLOW_KERNEL_DEBUGGER           (1 << 3)    // 8
-#define CSR_ALLOW_APPLE_INTERNAL            (1 << 4)    // 16
-#define CSR_ALLOW_UNRESTRICTED_DTRACE       (1 << 5)    // 32
-#define CSR_ALLOW_UNRESTRICTED_NVRAM        (1 << 6)    // 64
-#define CSR_ALLOW_DEVICE_CONFIGURATION      (1 << 7)    // 128
-#define CSR_ALLOW_ANY_RECOVERY_OS           (1 << 8)    // 256
-#define CSR_ALLOW_USER_APPROVED_KEXTS       (1 << 9)    // 512
-
-#define CSR_VALID_FLAGS (CSR_ALLOW_UNTRUSTED_KEXTS | \
-        CSR_ALLOW_UNRESTRICTED_FS | \
-        CSR_ALLOW_TASK_FOR_PID | \
-        CSR_ALLOW_KERNEL_DEBUGGER | \
-        CSR_ALLOW_APPLE_INTERNAL | \
-        CSR_ALLOW_UNRESTRICTED_DTRACE | \
-        CSR_ALLOW_UNRESTRICTED_NVRAM  | \
-        CSR_ALLOW_DEVICE_CONFIGURATION | \
-        CSR_ALLOW_ANY_RECOVERY_OS | \
-        CSR_ALLOW_USER_APPROVED_KEXTS)
-
-/* Syscalls */
-// mark these symbols as weakly linked, as they may not be available
-// at runtime on older OS X versions.
-extern "C" {
-    int csr_get_active_config(information::csr_config_t* config) __attribute__((weak_import));
-};
-
+/*
+ *  Check if a flag is enabled based on the csr_config variable
+ *  Also, flip the result on occasion
+ */
 bool _csr_check(int aMask, bool aFlipflag)  // TODO: consider/check aFlipFlag
 {
     bool bit = (info.csr_config & aMask);
@@ -840,6 +818,9 @@ bool _csr_check(int aMask, bool aFlipflag)  // TODO: consider/check aFlipFlag
     return bit;
 }
 
+/*
+ *  Extract info from the csr_config variable and set the flags struct
+ */
 void fill_csr_config_flags_struct(void)
 {
     info.csr_config_flags.csr_allow_apple_internal         = _csr_check(CSR_ALLOW_APPLE_INTERNAL, 0);
@@ -854,6 +835,9 @@ void fill_csr_config_flags_struct(void)
     info.csr_config_flags.csr_allow_user_approved_kexts    = _csr_check(CSR_ALLOW_USER_APPROVED_KEXTS, 1);
 }
 
+/*
+ *  Get SIP configuration   ( sets csr_config and csr_config_flags )
+ */
 int get_sip_status(void)
 {
     if (csr_get_active_config == nullptr)   /*  check if weakly linked symbol exists    */
@@ -868,45 +852,87 @@ int get_sip_status(void)
     return 0;
 }
 
+/*
+ *  Prints SIP status or a specific SIP feature status depending on the argument passed
+ *      to $sip_status command
+ *
+ *  Variables that can be passed to $sip_status command
+ *
+ *  nothing --> print enabled / disabled
+ *  0   --> allow_apple_internal
+ *  1   --> allow_untrusted_kexts
+ *  2   --> allow_task_for_pid
+ *  3   --> allow_unrestricted_fs
+ *  4   --> allow_kernel_debugger
+ *  5   --> allow_unrestricted_dtrace
+ *  6   --> allow_unrestricted_nvram
+ *  7   --> allow_device_configuration
+ *  8   --> allow_any_recovery_os
+ *  9   --> allow_user_approved_kexts
+ */
 void print_sip_status(struct text_object *obj, char *p, int p_max_size)
 {
     if (csr_get_active_config == nullptr)   /*  check if weakly linked symbol exists    */
     {
+        snprintf(p, p_max_size, "%s", "unsupported");
         printf("sip_status will not work on this version of macOS\n");
         return;
     }
     
     /* conky window output */
-    const char * format =   "Apple Internal............: %i\n"
-                            "Kext Signing Restrictions.: %i\n"
-                            "Task for PID Restrictions.: %i\n"
-                            "Filesystem Protections....: %i\n"
-                            "Debugging Restrictions....: %i\n"
-                            "DTrace Restrictions.......: %i\n"
-                            "NVRAM Protections.........: %i\n"
-                            "Device Configuration......: %i\n"
-                            "BaseSystem Verification...: %i\n"
-                            "User Approved Kext Loading: %i\n";
-    
     (void)obj;
     
-    // TODO: probably support this too, eh...
-    //if (info.csr_config == CSR_VALID_FLAGS)
-    //    printf( "SIP is enabled!\n" );
+    if (!obj->data.s)
+        return;
     
-    snprintf(p, p_max_size, format,
-             info.csr_config_flags.csr_allow_apple_internal,
-             info.csr_config_flags.csr_allow_untrusted_kexts,
-             info.csr_config_flags.csr_allow_task_for_pid,
-             info.csr_config_flags.csr_allow_unrestricted_fs,
-             info.csr_config_flags.csr_allow_kernel_debugger,
-             info.csr_config_flags.csr_allow_unrestricted_dtrace,
-             info.csr_config_flags.csr_allow_unrestricted_nvram,
-             info.csr_config_flags.csr_allow_device_configuration,
-             info.csr_config_flags.csr_allow_any_recovery_os,
-             info.csr_config_flags.csr_allow_user_approved_kexts
-     );
+//    printf( "Got: %s\n", obj->data.s );
     
+    if (strlen(obj->data.s) == 0) {
+        snprintf(p, p_max_size, "%s", (info.csr_config == CSR_VALID_FLAGS) ? "enabled" : "disabled" );
+    }
+    else if(strlen(obj->data.s) == 1)
+    {
+        switch (obj->data.s[0])
+        {
+            case '0':
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_apple_internal ? "enabled" : "disabled" );
+                break;
+            case '1':
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_untrusted_kexts ? "enabled" : "disabled" );
+                break;
+            case '2':
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_task_for_pid ? "enabled" : "disabled" );
+                break;
+            case '3':
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_unrestricted_fs ? "enabled" : "disabled" );
+                break;
+            case '4':
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_kernel_debugger ? "enabled" : "disabled" );
+                break;
+            case '5':
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_unrestricted_dtrace ? "enabled" : "disabled" );
+                break;
+            case '6':
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_unrestricted_nvram ? "enabled" : "disabled" );
+                break;
+            case '7':
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_device_configuration ? "enabled" : "disabled" );
+                break;
+            case '8':
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_any_recovery_os ? "enabled" : "disabled" );
+                break;
+            case '9':
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_user_approved_kexts ? "enabled" : "disabled" );
+                break;
+            default:
+                snprintf(p, p_max_size, "%s", "unsupported");
+                NORM_ERR("print_sip_status: unsupported argument passed to $sip_status");
+                break;
+        }
+    } else {    /* bad argument */
+        snprintf(p, p_max_size, "%s", "unsupported");
+        NORM_ERR("print_sip_status: unsupported argument passed to $sip_status");
+    }
     
     // TODO: support the following line, too!
     /*

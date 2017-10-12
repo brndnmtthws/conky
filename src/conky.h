@@ -234,9 +234,11 @@ struct information {
         bool csr_allow_user_approved_kexts;
     };
     
+    /* SIP typedefs */
     typedef csr_config_flags csr_config_flags_t;
     typedef uint32_t csr_config_t;
     
+    /* SIP variables */
     csr_config_t csr_config;
     csr_config_flags_t csr_config_flags;
 #endif
