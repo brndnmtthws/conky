@@ -549,6 +549,11 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		parse_if_up_arg(obj, arg);
 		obj->callbacks.iftest = &interface_up;
 		obj->callbacks.free = &free_if_up;
+#elif (defined(__APPLE__) && defined(__MACH__))
+    END OBJ_IF_ARG(if_up, 0, "if_up needs an argument")
+        parse_if_up_arg(obj, arg);
+        obj->callbacks.iftest = &interface_up;
+        obj->callbacks.free = &free_if_up;
 #endif
 #if defined(__OpenBSD__)
 	END OBJ_ARG(obsd_sensors_temp, 0, "obsd_sensors_temp: needs an argument")
@@ -960,7 +965,7 @@ struct text_object *construct_text_object(char *s, const char *arg,
     END OBJ_IF_ARG(if_mounted, 0, "if_mounted needs an argument")
     	obj->data.s = strndup(arg, text_buffer_size.get(*state));
     	obj->callbacks.iftest = &check_mount;
-        obj->callbacks.print = &print_mount;
+        obj->callbacks.print = &print_mount;    /* feature available only on macOS port */
     	obj->callbacks.free = &gen_free_opaque;
     
     /* System Integrity Protection */

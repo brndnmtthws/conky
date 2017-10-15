@@ -36,11 +36,13 @@
 // TODO: convert get_cpu_count() to use mib instead of namedsysctl
 // TODO: test getcpucount further   -- Changed to hw.logicalcpumax
 // TODO: see linux.cc for more info into implementation of certain functions
+// TODO: check if $if_up command works fine ( I enabled it but havent checked yet... )
 
 // SIP STATUS:
 // TODO: not sure if I have added the sip_status END OBJ... code in the correct place ---> macOS specific feature
 // TODO: dont forget to follow the guide for adding new features to conky!! hmmm
 // TODO: see if we can have a print_sip_status to show full overview of SIP status ( all flags )
+// TODO: investigate the unsupported configuration
 
 #include "darwin.h"
 #include "conky.h"              // for struct info
@@ -198,8 +200,6 @@ void print_mount(struct text_object *obj, char *p, int p_max_size)
     
     if (!obj->data.s)
         return;
-    
-    // do stuff here
 }
 
 int update_meminfo(void)
@@ -842,7 +842,7 @@ int get_sip_status(void)
 {
     if (csr_get_active_config == nullptr)   /*  check if weakly linked symbol exists    */
     {
-        printf("sip_status will not work on this version of macOS\n");
+        NORM_ERR("$sip_status will not work on this version of macOS\n");
         return 0;
     }
     
@@ -869,13 +869,21 @@ int get_sip_status(void)
  *  7   --> allow_device_configuration
  *  8   --> allow_any_recovery_os
  *  9   --> allow_user_approved_kexts
+ *  a   --> check if unsupported configuration  ---> this is not an apple SIP flag. This is for us.
+ *
+ *  The print function is designed to show 'YES' if a specific protection measure is ENABLED.
+ *  For example, if SIP is configured to disallow untrusted kexts, then our function will print 'YES'.
+ *      Thus, it doesnt print 'YES' in the case SIP allows untrusted kexts.
+ *
+ *  For this reason, your conkyrc should say for example: Untrusted Kexts Protection: ${sip_status 1}
+ *  You should not write: "Allow Untrusted Kexts", this is wrong.
  */
 void print_sip_status(struct text_object *obj, char *p, int p_max_size)
 {
     if (csr_get_active_config == nullptr)   /*  check if weakly linked symbol exists    */
     {
         snprintf(p, p_max_size, "%s", "unsupported");
-        printf("sip_status will not work on this version of macOS\n");
+        NORM_ERR("$sip_status will not work on this version of macOS\n");
         return;
     }
     
@@ -887,7 +895,8 @@ void print_sip_status(struct text_object *obj, char *p, int p_max_size)
     
 //    printf( "Got: %s\n", obj->data.s );
     
-    if (strlen(obj->data.s) == 0) {
+    if (strlen(obj->data.s) == 0)
+    {
         snprintf(p, p_max_size, "%s", (info.csr_config == CSR_VALID_FLAGS) ? "enabled" : "disabled" );
     }
     else if(strlen(obj->data.s) == 1)
@@ -895,34 +904,37 @@ void print_sip_status(struct text_object *obj, char *p, int p_max_size)
         switch (obj->data.s[0])
         {
             case '0':
-                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_apple_internal ? "enabled" : "disabled" );
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_apple_internal ? "YES" : "NO" );
                 break;
             case '1':
-                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_untrusted_kexts ? "enabled" : "disabled" );
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_untrusted_kexts ? "YES" : "NO" );
                 break;
             case '2':
-                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_task_for_pid ? "enabled" : "disabled" );
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_task_for_pid ? "YES" : "NO" );
                 break;
             case '3':
-                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_unrestricted_fs ? "enabled" : "disabled" );
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_unrestricted_fs ? "YES" : "NO" );
                 break;
             case '4':
-                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_kernel_debugger ? "enabled" : "disabled" );
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_kernel_debugger ? "YES" : "NO" );
                 break;
             case '5':
-                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_unrestricted_dtrace ? "enabled" : "disabled" );
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_unrestricted_dtrace ? "YES" : "NO" );
                 break;
             case '6':
-                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_unrestricted_nvram ? "enabled" : "disabled" );
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_unrestricted_nvram ? "YES" : "NO" );
                 break;
             case '7':
-                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_device_configuration ? "enabled" : "disabled" );
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_device_configuration ? "YES" : "NO" );
                 break;
             case '8':
-                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_any_recovery_os ? "enabled" : "disabled" );
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_any_recovery_os ? "YES" : "NO" );
                 break;
             case '9':
-                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_user_approved_kexts ? "enabled" : "disabled" );
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_user_approved_kexts ? "YES" : "NO" );
+                break;
+            case 'a':
+                snprintf(p, p_max_size, "%s", (info.csr_config && (info.csr_config != CSR_ALLOW_APPLE_INTERNAL)) ? "unsupported configuration, beware!" : "configuration is ok" );
                 break;
             default:
                 snprintf(p, p_max_size, "%s", "unsupported");
@@ -933,12 +945,4 @@ void print_sip_status(struct text_object *obj, char *p, int p_max_size)
         snprintf(p, p_max_size, "%s", "unsupported");
         NORM_ERR("print_sip_status: unsupported argument passed to $sip_status");
     }
-    
-    // TODO: support the following line, too!
-    /*
-    if (info.csr_config && (info.csr_config != CSR_ALLOW_APPLE_INTERNAL))
-    {
-        printf("\nThis is an unsupported configuration, likely to break in the future and leave your machine in an unknown state.\n");
-    } */
 }
-
