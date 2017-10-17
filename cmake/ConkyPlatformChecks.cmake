@@ -90,6 +90,8 @@ set(OS_DARWIN true)
 
 set(DARWINPORT_NOCHECK_LUA true)
 set(DARWINPORT_NOCHECK_NCURSES true)
+
+set(conky_libs ${conky_libs} -llua)
 endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
 if(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY AND NOT OS_DARWIN)
@@ -105,7 +107,7 @@ if(BUILD_I18N AND OS_DARWIN)
 endif(BUILD_I18N AND OS_DARWIN)
 
 if(BUILD_NCURSES AND OS_DARWIN)
-    set(conky_libs ${conky_libs} -lncurses -llua)
+    set(conky_libs ${conky_libs} -lncurses)
 endif(BUILD_NCURSES AND OS_DARWIN)
 
 if(BUILD_MATH)
