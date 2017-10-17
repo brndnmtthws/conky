@@ -87,6 +87,9 @@ endif(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
 
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 set(OS_DARWIN true)
+
+set(DARWINPORT_NOCHECK_LUA true)
+set(DARWINPORT_NOCHECK_NCURSES true)
 endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
 if(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY AND NOT OS_DARWIN)
@@ -103,7 +106,6 @@ endif(BUILD_I18N AND OS_DARWIN)
 
 if(BUILD_NCURSES AND OS_DARWIN)
     set(conky_libs ${conky_libs} -lncurses -llua)
-    set(DARWINPORT_DISABLE_LUA true)
 endif(BUILD_NCURSES AND OS_DARWIN)
 
 if(BUILD_MATH)
@@ -145,7 +147,7 @@ endif(BUILD_HTTP)
 #
 # TODO: Fix this:
 #
-if(NOT DARWINPORT_DISABLE_LUA)
+if(NOT DARWINPORT_NOCHECK_NCURSES)
 
 if(BUILD_NCURSES)
 	pkg_check_modules(NCURSES ncurses)
@@ -156,10 +158,10 @@ if(BUILD_NCURSES)
 	set(conky_includes ${conky_includes} ${NCURSES_INCLUDE_DIRS})
 endif(BUILD_NCURSES)
 
-else(NOT DARWINPORT_DISABLE_LUA)
+else(NOT DARWINPORT_NOCHECK_NCURSES)
 	set(conky_libs ${conky_libs} ${NCURSES_LIBRARIES})
 	set(conky_includes ${conky_includes} ${NCURSES_INCLUDE_DIRS})
-endif(NOT DARWINPORT_DISABLE_LUA)
+endif(NOT DARWINPORT_NOCHECK_NCURSES)
 
 if(BUILD_MYSQL)
 	find_path(mysql_INCLUDE_PATH mysql.h ${INCLUDE_SEARCH_PATH} /usr/include/mysql /usr/local/include/mysql)
@@ -310,7 +312,7 @@ endif(BUILD_LUA_CAIRO OR BUILD_LUA_IMLIB2 OR BUILD_LUA_RSVG)
 #    pkg_search_module(LUA REQUIRED lua>=5.3 lua5.3 lua-5.3 lua53 lua5.2 lua-5.2 lua52 lua5.1 lua-5.1 lua51 lua>=5.1)
 #endif(WANT_TOLUA)
 
-if(NOT DARWINPORT_DISABLE_LUA)
+if(NOT DARWINPORT_NOCHECK_LUA)
 
 # The old, not working code for lua:
 if(WANT_TOLUA)
@@ -324,7 +326,7 @@ else(WANT_TOLUA)
     pkg_search_module(LUA REQUIRED lua>=5.3 lua5.3 lua-5.3 lua53 lua5.2 lua-5.2 lua52 lua5.1 lua-5.1 lua51 lua>=5.1)
 endif(WANT_TOLUA)
 
-endif(NOT DARWINPORT_DISABLE_LUA)
+endif(NOT DARWINPORT_NOCHECK_LUA)
 
 set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
 set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIRS})
