@@ -142,16 +142,24 @@ if(BUILD_HTTP)
 	set(conky_libs ${conky_libs} -lmicrohttpd)
 endif(BUILD_HTTP)
 
+#
 # TODO: Fix this:
+#
+if(NOT DARWINPORT_DISABLE_LUA)
 
-#if(BUILD_NCURSES)
-#	pkg_check_modules(NCURSES ncurses)
-#	if(NOT NCURSES_FOUND)
-#		message(FATAL_ERROR "Unable to find ncurses library")
-#	endif(NOT NCURSES_FOUND)
+if(BUILD_NCURSES)
+	pkg_check_modules(NCURSES ncurses)
+	if(NOT NCURSES_FOUND)
+		message(FATAL_ERROR "Unable to find ncurses library")
+	endif(NOT NCURSES_FOUND)
 	set(conky_libs ${conky_libs} ${NCURSES_LIBRARIES})
 	set(conky_includes ${conky_includes} ${NCURSES_INCLUDE_DIRS})
-#endif(BUILD_NCURSES)
+endif(BUILD_NCURSES)
+
+else(NOT DARWINPORT_DISABLE_LUA)
+	set(conky_libs ${conky_libs} ${NCURSES_LIBRARIES})
+	set(conky_includes ${conky_includes} ${NCURSES_INCLUDE_DIRS})
+endif(NOT DARWINPORT_DISABLE_LUA)
 
 if(BUILD_MYSQL)
 	find_path(mysql_INCLUDE_PATH mysql.h ${INCLUDE_SEARCH_PATH} /usr/include/mysql /usr/local/include/mysql)
