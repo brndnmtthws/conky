@@ -23,7 +23,7 @@
 //  For implementing functions I took ideas from FreeBSD.cc! Thanks for the great code!
 //
 //  Code for SIP taken from Pike R. Alpha's csrstat tool https://github.com/Piker-Alpha/csrstat
-//  csrstat version 1.7 ( works for OS up to High Sierra )
+//  csrstat version 1.8 ( works for OS up to High Sierra )
 //
 //  My patches:
 //      made csr_get_active_config weak link and added check for finding if it is available.
@@ -830,9 +830,9 @@ void fill_csr_config_flags_struct(void)
     info.csr_config_flags.csr_allow_kernel_debugger        = _csr_check(CSR_ALLOW_KERNEL_DEBUGGER, 1);
     info.csr_config_flags.csr_allow_unrestricted_dtrace    = _csr_check(CSR_ALLOW_UNRESTRICTED_DTRACE, 1);
     info.csr_config_flags.csr_allow_unrestricted_nvram     = _csr_check(CSR_ALLOW_UNRESTRICTED_NVRAM, 1);
-    info.csr_config_flags.csr_allow_device_configuration   = _csr_check(CSR_ALLOW_DEVICE_CONFIGURATION, 1);
+    info.csr_config_flags.csr_allow_device_configuration   = _csr_check(CSR_ALLOW_DEVICE_CONFIGURATION, 0);
     info.csr_config_flags.csr_allow_any_recovery_os        = _csr_check(CSR_ALLOW_ANY_RECOVERY_OS, 1);
-    info.csr_config_flags.csr_allow_user_approved_kexts    = _csr_check(CSR_ALLOW_USER_APPROVED_KEXTS, 1);
+    info.csr_config_flags.csr_allow_user_approved_kexts    = _csr_check(CSR_ALLOW_UNAPPROVED_KEXTS, 1);
 }
 
 /*
@@ -897,7 +897,7 @@ void print_sip_status(struct text_object *obj, char *p, int p_max_size)
     
     if (strlen(obj->data.s) == 0)
     {
-        snprintf(p, p_max_size, "%s", (info.csr_config == CSR_VALID_FLAGS) ? "enabled" : "disabled" );
+        snprintf(p, p_max_size, "%s", (info.csr_config == CSR_VALID_FLAGS) ? "disabled" : "enabled" );
     }
     else if(strlen(obj->data.s) == 1)
     {
