@@ -46,7 +46,6 @@ check_symbol_exists(statfs64 "sys/statfs.h" HAVE_STATFS64)
 
 AC_SEARCH_LIBS(clock_gettime "time.h" CLOCK_GETTIME_LIB "rt")
 if(NOT DEFINED CLOCK_GETTIME_LIB)
-	message(FATAL_ERROR "clock_gettime not found.")
 	if(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")	
 		message(FATAL_ERROR "clock_gettime not found.")
 	endif(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")
