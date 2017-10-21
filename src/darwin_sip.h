@@ -20,6 +20,7 @@
 //  Nickolas Pylarinos
 //
 //  Defines for System Integrity Protection monitoring
+//      based on csrstat tool by Pike R. Alpha. https://github.com/Piker-Alpha/csrstat
 //
 
 #ifndef DARWIN_SIP_H

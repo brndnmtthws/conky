@@ -43,6 +43,9 @@
 // TODO: dont forget to follow the guide for adding new features to conky!! hmmm
 // TODO: see if we can have a print_sip_status to show full overview of SIP status ( all flags )
 // TODO: investigate the unsupported configuration
+// TODO: consider/check aFlipFlag
+
+// TODO: finish clock_gettime emulation for versions prior Sierra
 
 #include "darwin.h"
 #include "conky.h"              // for struct info
@@ -63,10 +66,19 @@
 
 #include "darwin_sip.h"         // sip status
 
+/* clock_gettime includes */
+#ifndef HAVE_CLOCK_GETTIME
+#include <mach/mach.h>
+#include <mach/clock.h>
+#include <mach/mach_time.h>
+#include <time.h>
+#include <errno.h>
+#endif
+
 #define	GETSYSCTL(name, var)	getsysctl(name, &(var), sizeof(var))
 
 static int getsysctl(const char *name, void *ptr, size_t len)
-{    
+{
     size_t nlen = len;
     
     if (sysctlbyname(name, ptr, &nlen, NULL, 0) == -1) {
@@ -79,6 +91,42 @@ static int getsysctl(const char *name, void *ptr, size_t len)
     
     return 0;
 }
+
+/*
+ *  clock_gettime is not implemented on versions prior to Sierra!
+ *  code taken from https://github.com/lorrden/darwin-posix-rt/blob/master/clock_gettime.c
+ */
+#ifndef HAVE_CLOCK_GETTIME
+
+int clock_gettime(int clock_id, struct timespec *ts)
+{
+    mach_timespec_t mts;
+    static clock_serv_t rt_clock_serv = 0;
+    static clock_serv_t mono_clock_serv = 0;
+    
+    switch (clock_id) {
+        case CLOCK_REALTIME:
+            if (rt_clock_serv == 0) {
+                (void) host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &rt_clock_serv);
+            }
+            (void) clock_get_time(rt_clock_serv, &mts);
+            ts->tv_sec = mts.tv_sec;
+            ts->tv_nsec = mts.tv_nsec;
+            return 0;
+        case CLOCK_MONOTONIC:
+            if (mono_clock_serv == 0) {
+                (void) host_get_clock_service(mach_host_self(), SYSTEM_CLOCK, &mono_clock_serv);
+            }
+            (void) clock_get_time(mono_clock_serv, &mts);
+            ts->tv_sec = mts.tv_sec;
+            ts->tv_nsec = mts.tv_nsec;
+            return 0;
+        default:
+            errno = EINVAL;
+            return -1;
+    }
+}
+#endif /* ifndef HAVE_CLOCK_GETTIME */
 
 /*-------------------------------------------------------------------------------------------------------------------------------------------------------------------
  *  macOS Swapfiles Logic...
@@ -125,6 +173,10 @@ static int swapmode(unsigned long *retavail, unsigned long *retfree)
         return (-1);
     }
     
+//#ifndef HAVE_CLOCK_GETTIME
+//    printf("DEFINED!\n");
+//#endif
+    
     return 1;
 }
 
@@ -160,9 +212,7 @@ int update_uptime(void)
 int check_mount(struct text_object *obj)
 {
 	//  TODO: Fix doesn’t show anything even if successful!
-    //  TODO: Check if we need to support checking for multiple file systems...
-	// if MOUNTPOINT is mounted, display everything between $if_mounted and the matching $endif
-
+    
     int             num_mounts = 0;
     struct statfs*  mounts;
 
@@ -176,28 +226,21 @@ int check_mount(struct text_object *obj)
         NORM_ERR("Could not get mounts using getmntinfo");
         return 0;
     }
-
-    //for (int i = 0; i < num_mounts; i++)
-    //    printf( "%s\n", mounts[i].f_mntonname );
     
     for (int i = 0; i < num_mounts; i++)
         if (strcmp(mounts[i].f_mntonname, obj->data.s) == 0) {
-            printf("YEAH!\n");
+            printf("mnt point exists!\n");
             return 1;
         }
     
     return 0;
 }
 
-#include <vector>
-
 /*
  *  NOTE: this functionality doesn't exist on Linux implementation and it probably shouldnt be.
  */
 void print_mount(struct text_object *obj, char *p, int p_max_size)
 {
-    std::vector<char> buf(max_user_text.get(*state));
-    
     if (!obj->data.s)
         return;
 }
@@ -808,7 +851,7 @@ int get_entropy_poolsize(unsigned int * val)
  *  Check if a flag is enabled based on the csr_config variable
  *  Also, flip the result on occasion
  */
-bool _csr_check(int aMask, bool aFlipflag)  // TODO: consider/check aFlipFlag
+bool _csr_check(int aMask, bool aFlipflag)
 {
     bool bit = (info.csr_config & aMask);
     
@@ -892,8 +935,6 @@ void print_sip_status(struct text_object *obj, char *p, int p_max_size)
     
     if (!obj->data.s)
         return;
-    
-//    printf( "Got: %s\n", obj->data.s );
     
     if (strlen(obj->data.s) == 0)
     {

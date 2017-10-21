@@ -44,14 +44,14 @@ check_symbol_exists(pipe2 "unistd.h" HAVE_PIPE2)
 check_symbol_exists(O_CLOEXEC "fcntl.h" HAVE_O_CLOEXEC)
 check_symbol_exists(statfs64 "sys/statfs.h" HAVE_STATFS64)
 
-# TODO: Fix this:
-#
-#   clock_gettime was implemented in Sierra so we can bypass this for now ( I am compiling on Sierra! )
-#
-
 AC_SEARCH_LIBS(clock_gettime "time.h" CLOCK_GETTIME_LIB "rt")
 if(NOT DEFINED CLOCK_GETTIME_LIB)
 	message(FATAL_ERROR "clock_gettime not found.")
+	if(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")	
+		message(FATAL_ERROR "clock_gettime not found.")
+	endif(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")
+else(NOT DEFINED CLOCK_GETTIME_LIB)
+	set(HAVE_CLOCK_GETTIME 1)	
 endif(NOT DEFINED CLOCK_GETTIME_LIB)
 set(conky_libs ${conky_libs} ${CLOCK_GETTIME_LIB})
 

@@ -27,6 +27,22 @@
 #include <strings.h>
 #include <stdio.h>
 
+/*
+ *  on versions prior to Sierra clock_gettime is not implemented.
+ */
+#ifndef HAVE_CLOCK_GETTIME
+
+/* only CLOCK_REALTIME and CLOCK_MONOTONIC are emulated */
+#ifndef CLOCK_REALTIME
+# define CLOCK_REALTIME 0
+#endif
+#ifndef CLOCK_MONOTONIC
+# define CLOCK_MONOTONIC 1
+#endif
+
+int clock_gettime(int clock_id, struct timespec *ts);
+#endif /* ifndef HAVE_CLOCK_GETTIME */
+
 void print_mount(struct text_object *obj, char *p, int p_max_size);
 
 int update_running_threads(void);
