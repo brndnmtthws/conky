@@ -43,8 +43,6 @@
 int clock_gettime(int clock_id, struct timespec *ts);
 #endif /* ifndef HAVE_CLOCK_GETTIME */
 
-void print_mount(struct text_object *obj, char *p, int p_max_size);
-
 int update_running_threads(void);
 
 int get_entropy_avail(unsigned int *);

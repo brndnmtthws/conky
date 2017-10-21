@@ -43,7 +43,6 @@
 // TODO: dont forget to follow the guide for adding new features to conky!! hmmm
 // TODO: see if we can have a print_sip_status to show full overview of SIP status ( all flags )
 // TODO: investigate the unsupported configuration
-// TODO: consider/check aFlipFlag
 
 // TODO: finish clock_gettime emulation for versions prior Sierra
 
@@ -173,10 +172,6 @@ static int swapmode(unsigned long *retavail, unsigned long *retfree)
         return (-1);
     }
     
-//#ifndef HAVE_CLOCK_GETTIME
-//    printf("DEFINED!\n");
-//#endif
-    
     return 1;
 }
 
@@ -207,12 +202,9 @@ int update_uptime(void)
 /*
  *  Notes on macOS implementation:
  *  1)  path mustn't contain a '/' at the end! ( eg. this is not correct /Volumes/MacOS/  but this is correct: /Volumes/MacOS )
- *
  */
 int check_mount(struct text_object *obj)
 {
-	//  TODO: Fix doesn’t show anything even if successful!
-    
     int             num_mounts = 0;
     struct statfs*  mounts;
 
@@ -228,21 +220,12 @@ int check_mount(struct text_object *obj)
     }
     
     for (int i = 0; i < num_mounts; i++)
-        if (strcmp(mounts[i].f_mntonname, obj->data.s) == 0) {
-            printf("mnt point exists!\n");
+        if (strcmp(mounts[i].f_mntonname, obj->data.s) == 0)
+        {
             return 1;
         }
     
     return 0;
-}
-
-/*
- *  NOTE: this functionality doesn't exist on Linux implementation and it probably shouldnt be.
- */
-void print_mount(struct text_object *obj, char *p, int p_max_size)
-{
-    if (!obj->data.s)
-        return;
 }
 
 int update_meminfo(void)
@@ -350,8 +333,6 @@ int get_from_load_info( int what )
     static host_name_port_t             machHost;               /* make them static to keep the local and at the same time keep their initial value */
     static processor_set_name_port_t	processorSet = 0;
     
-    
-    /* FIXED but find a better solution ---- FIXME: This block should be happening outside and only ONCE, when conky starts. */
     
     if (!machStuffInitialised)
     {
@@ -497,9 +478,9 @@ int update_running_processes(void)
 }
 
 
-//
-//  Gets number of max logical cpus that could be available at this boot
-//
+/*
+ * Gets number of max logical cpus that could be available at this boot
+ */
 void get_cpu_count(void)
 {
     //  Darwin man page for sysctl:

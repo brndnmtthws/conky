@@ -965,7 +965,6 @@ struct text_object *construct_text_object(char *s, const char *arg,
     END OBJ_IF_ARG(if_mounted, 0, "if_mounted needs an argument")
     	obj->data.s = strndup(arg, text_buffer_size.get(*state));
     	obj->callbacks.iftest = &check_mount;
-        obj->callbacks.print = &print_mount;    /* feature available only on macOS port */
     	obj->callbacks.free = &gen_free_opaque;
     
     /* System Integrity Protection */
