@@ -544,16 +544,11 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		}
 		obj->callbacks.print = get_powerbook_batt_info;
 #endif /* __linux__ */
-#if (defined(__FreeBSD__) || defined(__linux__) || defined(__DragonFly__))
+#if (defined(__FreeBSD__) || defined(__linux__) || defined(__DragonFly__) || (defined(__APPLE__) && defined(__MACH__)))
 	END OBJ_IF_ARG(if_up, 0, "if_up needs an argument")
 		parse_if_up_arg(obj, arg);
 		obj->callbacks.iftest = &interface_up;
 		obj->callbacks.free = &free_if_up;
-#elif (defined(__APPLE__) && defined(__MACH__))
-    END OBJ_IF_ARG(if_up, 0, "if_up needs an argument")
-        parse_if_up_arg(obj, arg);
-        obj->callbacks.iftest = &interface_up;
-        obj->callbacks.free = &free_if_up;
 #endif
 #if defined(__OpenBSD__)
 	END OBJ_ARG(obsd_sensors_temp, 0, "obsd_sensors_temp: needs an argument")

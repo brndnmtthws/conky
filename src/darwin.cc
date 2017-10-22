@@ -36,7 +36,6 @@
 // TODO: convert get_cpu_count() to use mib instead of namedsysctl
 // TODO: test getcpucount further   -- Changed to hw.logicalcpumax
 // TODO: see linux.cc for more info into implementation of certain functions
-// TODO: check if $if_up command works fine ( I enabled it but havent checked yet... )
 
 // SIP STATUS:
 // TODO: not sure if I have added the sip_status END OBJ... code in the correct place ---> macOS specific feature
@@ -192,7 +191,7 @@ int update_uptime(void)
         time(&now);
         info.uptime = now - boottime.tv_sec;
     } else {
-        fprintf(stderr, "Could not get uptime\n");
+        fprintf(stderr, "could not get uptime\n");
         info.uptime = 0;
     }
     
@@ -215,7 +214,7 @@ int check_mount(struct text_object *obj)
  
     if (num_mounts < 0)
     {
-        NORM_ERR("Could not get mounts using getmntinfo");
+        NORM_ERR("could not get mounts using getmntinfo");
         return 0;
     }
     
