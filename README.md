@@ -11,6 +11,8 @@ This is a fork of the latest version of conky ( at the time I'm writing this ) (
 
 ### Features
 
+You can check it for yourself: [conky on macOS](https://www.youtube.com/watch?v=l3tIiDdnC68)
+
 **NOW CONKY LOADS ON MACOS CONFIG FILES BUT SOME FEATURES MAY NOT WORK BECAUSE IT IS AN EARLY STAGE.**
 **For more information check this is the output of the command ```conky --version```**
 
