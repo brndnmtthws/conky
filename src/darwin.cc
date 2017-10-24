@@ -45,8 +45,12 @@
 
 // TODO: finish clock_gettime emulation for versions prior Sierra
 
+// TODO: add code for identifying OSX_TARGET automatically ( reduces user configuration )
+
 #include "darwin.h"
 #include "conky.h"              // for struct info
+
+#include <AvailabilityMacros.h>
 
 #include <stdio.h>
 #include <sys/mount.h>          // statfs
@@ -827,6 +831,8 @@ int get_entropy_poolsize(unsigned int * val)
  *                                  System Integrity Protection                              *
  *********************************************************************************************/
 
+#if (MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_9)
+
 /*
  *  Check if a flag is enabled based on the csr_config variable
  *  Also, flip the result on occasion
@@ -967,3 +973,58 @@ void print_sip_status(struct text_object *obj, char *p, int p_max_size)
         NORM_ERR("print_sip_status: unsupported argument passed to $sip_status");
     }
 }
+
+#else   /* Mavericks and before */
+/*
+ *  Versions prior to Yosemite DONT EVEN DEFINE csr_get_active_config() function.  Thus we must avoid calling this function!
+ */
+
+int get_sip_status(void)
+{
+    /* Does not do anything intentionally */
+    return 0;
+}
+
+void print_sip_status(struct text_object *obj, char *p, int p_max_size)
+{
+    /* conky window output */
+    (void)obj;
+    
+    if (!obj->data.s)
+        return;
+    
+    if (strlen(obj->data.s) == 0)
+    {
+        snprintf(p, p_max_size, "%s", "error unsupported" );
+    }
+    else if(strlen(obj->data.s) == 1)
+    {
+        switch (obj->data.s[0])
+        {
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+            case 'a':
+                snprintf(p, p_max_size, "%s", "error unsupported");        
+                break;
+            default:
+                snprintf(p, p_max_size, "%s", "unsupported");
+                NORM_ERR("print_sip_status: unsupported argument passed to $sip_status");
+                break;
+        }
+    } 
+    else 
+    {    /* bad argument */
+        snprintf(p, p_max_size, "%s", "unsupported");
+        NORM_ERR("print_sip_status: unsupported argument passed to $sip_status");
+    }
+}
+
+#endif
