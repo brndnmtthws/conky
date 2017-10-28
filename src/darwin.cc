@@ -19,6 +19,8 @@
 //  darwin.cc
 //  Nickolas Pylarinos
 //
+//  ~ To my friends mrt and vggol ~
+//
 //	This is the equivalent of linux.cc, freebsd.cc, openbsd.cc etc. ( you get the idea )
 //  For implementing functions I took ideas from FreeBSD.cc! Thanks for the great code!
 //
@@ -33,18 +35,15 @@
 // keywords used are TODO, FIXME, BUG
 
 // TODO: fix update_meminfo for getting the same stats as Activity Monitor's --- There is small difference though
-// TODO: convert get_cpu_count() to use mib instead of namedsysctl
-// TODO: test getcpucount further   -- Changed to hw.logicalcpumax
-// TODO: see linux.cc for more info into implementation of certain functions
-
+//
 // SIP STATUS:
 // TODO: not sure if I have added the sip_status END OBJ... code in the correct place ---> macOS specific feature
 // TODO: dont forget to follow the guide for adding new features to conky!! hmmm
 // TODO: see if we can have a print_sip_status to show full overview of SIP status ( all flags )
 // TODO: investigate the unsupported configuration
-
+//
 // TODO: finish clock_gettime emulation for versions prior Sierra
-
+//
 // TODO: add code for identifying OSX_TARGET automatically ( reduces user configuration )
 
 #include "darwin.h"
@@ -260,7 +259,7 @@ int update_meminfo(void)
     }
     else {
         info.memmax = 0;
-        perror( "sysctl" );
+        perror("sysctl");
     }
     
     //
@@ -304,7 +303,7 @@ int update_net_stats(void)
      *  NOTE: We could use code from OpenBSD.cc ??
      */
     
-    printf( "update_net_stats: STUB\n" );
+    printf("update_net_stats: STUB\n");
     return 0;
 }
 
@@ -339,7 +338,7 @@ int get_from_load_info( int what )
     
     if (!machStuffInitialised)
     {
-        printf( "\n\n\nRunning ONLY ONCE the mach--init block\n\n\n" );
+        printf("\n\n\nRunning ONLY ONCE the mach--init block\n\n\n");
         
         // Set up our mach host and default processor set for later calls
         machHost = mach_host_self();
@@ -366,7 +365,7 @@ int get_from_load_info( int what )
             return loadInfo.thread_count;
             break;
         default:
-            printf( "Error: Unxpected flag passed to get_from_load_info()" );
+            printf("Error: Unxpected flag passed to get_from_load_info()\n");
             return 0;
             break;
     }
@@ -375,7 +374,6 @@ int get_from_load_info( int what )
 int update_threads(void)
 {
     info.threads = get_from_load_info(DARWIN_CONKY_THREADS_COUNT);
-    printf( "update_threads: got thread count: %i\n", info.threads );
     return 0;
 }
 
@@ -440,11 +438,9 @@ int update_running_processes(void)
     static const int name[] = { CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0 };
     
     // Call sysctl with a NULL buffer to get proper length
-    
     err = sysctl((int *)name, (sizeof(name) / sizeof(*name)) - 1, NULL, &length, NULL, 0);
     if (err) {
         perror(NULL);
-        free(p);
         return 0;
     }
     
@@ -452,7 +448,6 @@ int update_running_processes(void)
     p = (kinfo_proc*)malloc(length);
     if (!p) {
         perror(NULL);
-        free(p);
         return 0;
     }
     
@@ -461,7 +456,6 @@ int update_running_processes(void)
     if (err)
     {
         perror(NULL);
-        free(p);
         return 0;
     }
     
@@ -508,7 +502,7 @@ void get_cpu_count(void)
         CRIT_ERR(NULL, NULL, "malloc");
     }
     
-    printf( "get_cpu_count: %i\n", info.cpu_count );
+    printf("get_cpu_count: %i\n", info.cpu_count);
 }
 
 
@@ -756,7 +750,6 @@ void get_top_info(void)
     err = sysctl((int *)name, (sizeof(name) / sizeof(*name)) - 1, NULL, &length, NULL, 0);
     if (err) {
         perror(NULL);
-        free(p);
         return;
     }
     
@@ -764,7 +757,6 @@ void get_top_info(void)
     p = (kinfo_proc*)malloc(length);
     if (!p) {
         perror(NULL);
-        free(p);
         return;
     }
     
@@ -924,44 +916,44 @@ void print_sip_status(struct text_object *obj, char *p, int p_max_size)
     
     if (strlen(obj->data.s) == 0)
     {
-        snprintf(p, p_max_size, "%s", (info.csr_config == CSR_VALID_FLAGS) ? "disabled" : "enabled" );
+        snprintf(p, p_max_size, "%s", (info.csr_config == CSR_VALID_FLAGS) ? "disabled" : "enabled");
     }
     else if(strlen(obj->data.s) == 1)
     {
         switch (obj->data.s[0])
         {
             case '0':
-                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_apple_internal ? "YES" : "NO" );
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_apple_internal ? "YES" : "NO");
                 break;
             case '1':
-                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_untrusted_kexts ? "YES" : "NO" );
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_untrusted_kexts ? "YES" : "NO");
                 break;
             case '2':
-                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_task_for_pid ? "YES" : "NO" );
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_task_for_pid ? "YES" : "NO");
                 break;
             case '3':
-                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_unrestricted_fs ? "YES" : "NO" );
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_unrestricted_fs ? "YES" : "NO");
                 break;
             case '4':
-                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_kernel_debugger ? "YES" : "NO" );
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_kernel_debugger ? "YES" : "NO");
                 break;
             case '5':
-                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_unrestricted_dtrace ? "YES" : "NO" );
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_unrestricted_dtrace ? "YES" : "NO");
                 break;
             case '6':
-                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_unrestricted_nvram ? "YES" : "NO" );
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_unrestricted_nvram ? "YES" : "NO");
                 break;
             case '7':
-                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_device_configuration ? "YES" : "NO" );
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_device_configuration ? "YES" : "NO");
                 break;
             case '8':
-                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_any_recovery_os ? "YES" : "NO" );
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_any_recovery_os ? "YES" : "NO");
                 break;
             case '9':
-                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_user_approved_kexts ? "YES" : "NO" );
+                snprintf(p, p_max_size, "%s", info.csr_config_flags.csr_allow_user_approved_kexts ? "YES" : "NO");
                 break;
             case 'a':
-                snprintf(p, p_max_size, "%s", (info.csr_config && (info.csr_config != CSR_ALLOW_APPLE_INTERNAL)) ? "unsupported configuration, beware!" : "configuration is ok" );
+                snprintf(p, p_max_size, "%s", (info.csr_config && (info.csr_config != CSR_ALLOW_APPLE_INTERNAL)) ? "unsupported configuration, beware!" : "configuration is ok");
                 break;
             default:
                 snprintf(p, p_max_size, "%s", "unsupported");
@@ -995,7 +987,7 @@ void print_sip_status(struct text_object *obj, char *p, int p_max_size)
     
     if (strlen(obj->data.s) == 0)
     {
-        snprintf(p, p_max_size, "%s", "error unsupported" );
+        snprintf(p, p_max_size, "%s", "error unsupported");
     }
     else if(strlen(obj->data.s) == 1)
     {
