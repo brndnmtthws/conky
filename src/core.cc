@@ -609,12 +609,21 @@ struct text_object *construct_text_object(char *s, const char *arg,
 	END OBJ(diskio, &update_diskio)
 		parse_diskio_arg(obj, arg);
 		obj->callbacks.print = &print_diskio;
+	END OBJ(diskiof, &update_diskio)
+		parse_diskio_arg(obj, arg);
+		obj->callbacks.print = &print_diskiof;
 	END OBJ(diskio_read, &update_diskio)
 		parse_diskio_arg(obj, arg);
 		obj->callbacks.print = &print_diskio_read;
+	END OBJ(diskio_readf, &update_diskio)
+		parse_diskio_arg(obj, arg);
+		obj->callbacks.print = &print_diskio_readf;
 	END OBJ(diskio_write, &update_diskio)
 		parse_diskio_arg(obj, arg);
 		obj->callbacks.print = &print_diskio_write;
+	END OBJ(diskio_writef, &update_diskio)
+		parse_diskio_arg(obj, arg);
+		obj->callbacks.print = &print_diskio_writef;
 #ifdef BUILD_X11
 	END OBJ(diskiograph, &update_diskio)
 		parse_diskiograph_arg(obj, arg);
