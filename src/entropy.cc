@@ -41,6 +41,8 @@
 #include "dragonfly.h"
 #elif defined(__OpenBSD__)
 #include "openbsd.h"
+#elif defined(__sun)
+#include "solaris.h"
 #endif
 
 struct _entropy {
