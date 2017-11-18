@@ -847,6 +847,7 @@ int update_stat(void)
 
 	static pthread_mutex_t last_stat_update_mutex = PTHREAD_MUTEX_INITIALIZER;
 	static double last_stat_update = 0.0;
+	float cur_total = 0.0;
 
 	/* since we use wrappers for this function, the update machinery
 	 * can't eliminate double invocations of this function. Check for
@@ -920,9 +921,13 @@ int update_stat(void)
 				break;
 			}
 
-			cpu[idx].cpu_val[0] = (cpu[idx].cpu_active_total -
-				cpu[idx].cpu_last_active_total) /
-				(float) (cpu[idx].cpu_total - cpu[idx].cpu_last_total);
+			cur_total = (float) (cpu[idx].cpu_total - cpu[idx].cpu_last_total);
+			if (cur_total == 0.0) {
+				cpu[idx].cpu_val[0] = 1.0;
+			} else {
+				cpu[idx].cpu_val[0] = (cpu[idx].cpu_active_total -
+					cpu[idx].cpu_last_active_total) / cur_total;
+			}
 			curtmp = 0;
 
 			int samples = cpu_avg_samples.get(*state);
