@@ -51,7 +51,7 @@
 #include "net_stat.h"
 
 static kstat_ctl_t *kstat;
-static int kstat_updated;
+static time_t kstat_updated;
 static int pageshift = INT_MAX;
 
 static int pagetok(int pages)
@@ -68,17 +68,23 @@ static int pagetok(int pages)
 
 static void update_kstat()
 {
+	time_t now = time(NULL);
+
 	if (kstat == NULL) {
-		kstat = kstat_open();
-		if (kstat == NULL) {
+		if ((kstat = kstat_open()) == NULL) {
 			NORM_ERR("can't open kstat: %s", strerror(errno));
+			return;
 		}
+		kstat_updated = 0;
 	}
+	if (now - kstat_updated < 2)		/* Do not update kstats too often */
+		return;
 
 	if (kstat_chain_update(kstat) == -1) {
 		perror("kstat_chain_update");
 		return;
 	}
+	kstat_updated = now;
 }
 
 static kstat_named_t *get_kstat(const char *module, int inst, const char *name,
@@ -90,20 +96,23 @@ static kstat_named_t *get_kstat(const char *module, int inst, const char *name,
 
 	ksp = kstat_lookup(kstat, (char *)module, inst, (char *)name);
 	if (ksp == NULL) {
-		perror("kstat_lookup");
+		NORM_ERR("cannot lookup kstat %s:%d:%s:%s %s", module, inst, name,
+		  stat, strerror(errno));
 		return NULL;
 	}
 
 	if (kstat_read(kstat, ksp, NULL) >= 0) {
 		if (ksp->ks_type == KSTAT_TYPE_NAMED) {
-				kstat_named_t *knp = (kstat_named_t *)kstat_data_lookup(ksp,
-				  (char *)stat);
-				return knp;
+			kstat_named_t *knp = (kstat_named_t *)kstat_data_lookup(ksp,
+			  (char *)stat);
+			return knp;
 		} else {
-			printf("ks: %p has type: %d\n", ksp, ksp->ks_type);
+			NORM_ERR("kstat %s:%d:%s:%s has unexpected type %d",
+			  module, inst, name, stat, ksp->ks_type);
 			assert(0);
 		}
 	}
+	NORM_ERR("cannot read kstat %s:%d:%s:%s", module, inst, name, stat);
 	return NULL; 
 }
 
@@ -123,7 +132,7 @@ int update_meminfo()
 	
 	update_kstat();
 
-	/* RAM */
+	/* RAM stats */
 	knp = get_kstat("unix", -1, "system_pages", "freemem");
 	if (knp != NULL)
 		info.memfree = pagetok(knp->value.ui32);
@@ -133,7 +142,7 @@ int update_meminfo()
 	else
 		info.mem = info.memmax;
 
-	/* swap */
+	/* swap stats */
 	if (nswap < 1)
 		return 0;
 	/* swapctl(2) */
@@ -172,11 +181,17 @@ int check_mount(struct text_object *obj)
 
 double get_battery_perct_bar(struct text_object *obj)
 {
+	/* Not implemented */
+	(void)obj;
+
 	return 100.0;
 }
 
 double get_acpi_temperature(int fd)
 {
+	/* Not implemented */
+	(void)fd;
+
 	return 0.0;
 }
 
@@ -190,10 +205,13 @@ int update_total_processes(void)
 
 void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 {
+	/* Not implemented */
 }
 
 int update_running_processes(void)
 {
+	/* there is no kstat for this, see update_proc_entry() */
+	return 0;
 }
 
 int update_net_stats(void)
@@ -208,18 +226,19 @@ int update_net_stats(void)
 
 	/* Find all active net interfaces. */
 	if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-		perror("socket");
-		return -1;
+		NORM_ERR("cannot create socket: %s", strerror(errno));
+		return 0;
 	}
 	ifc.ifc_buf = buf;
 	ifc.ifc_len = sizeof(buf);
 	if (ioctl(sockfd, SIOCGIFCONF, &ifc) < 0) {
-		perror("ioctl(SIOCGIFCONF)");
+		NORM_ERR("ioctl(SIOCGIFCONF) failed: %s", strerror(errno));
 		close(sockfd);
-		return -1;
+		return 0; 
 	}
-	close(sockfd);
+	(void)close(sockfd);
 
+	/* Collect stats for all active interfaces */
 	for (int i = 0;  i < ifc.ifc_len / sizeof(struct ifreq); i++) {
 		struct net_stat *ns;
 		struct ifreq *ifr = &ifc.ifc_req[i];
@@ -240,7 +259,7 @@ int update_net_stats(void)
 		/* get received bytes */
 		knp = get_kstat("link", -1, ifr->ifr_name, "rbytes");
 		if (knp == NULL) {
-			printf("cannot read rbytes for %s\n", ifr->ifr_name);
+			NORM_ERR("cannot read rbytes for %s\n", ifr->ifr_name);
 			continue;
 		}
 		r = (long long)knp->value.ui32;
@@ -254,7 +273,7 @@ int update_net_stats(void)
 		/* get transceived bytes */
 		knp = get_kstat("link", -1, ifr->ifr_name, "obytes");
 		if (knp == NULL) {
-			printf("cannot read obytes for %s\n", ifr->ifr_name);
+			NORM_ERR("cannot read obytes for %s\n", ifr->ifr_name);
 			continue;
 		}
 		t = (long long)knp->value.ui32;
@@ -309,11 +328,11 @@ int update_cpu_usage(void)
 		if (kstat_read(kstat, ksp, NULL) == -1)
 			continue;
 		cs = (cpu_stat_t *)ksp->ks_data;
-	
+
 		cpu_idle = cs->cpu_sysinfo.cpu[CPU_IDLE];
-	    cpu_user = cs->cpu_sysinfo.cpu[CPU_USER];
-	    cpu_nice = cs->cpu_sysinfo.cpu[CPU_WAIT]; 
-	    cpu_system = cs->cpu_sysinfo.cpu[CPU_KERNEL];
+		cpu_user = cs->cpu_sysinfo.cpu[CPU_USER];
+		cpu_nice = cs->cpu_sysinfo.cpu[CPU_WAIT]; 
+		cpu_system = cs->cpu_sysinfo.cpu[CPU_KERNEL];
 
 		cpu_use = cpu_user + cpu_nice + cpu_system;
 
@@ -383,29 +402,36 @@ void get_top_info(void)
 
 int update_diskio(void)
 {
+	/* TODO */
 	return 0;
 }
 
 void get_battery_short_status(char *buffer, unsigned int n, const char *bat)
 {
-
+	/* Not implemented */
+	(void)bat;
+	if (buffer && n > 0)
+		memset(buffer, 0, n);
 }
 
 void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
 {
+	/* Not implemented */
+	if (p_client_buffer && client_buffer_size > 0)
+		memset(p_client_buffer, 0, client_buffer_size);
 }
 
 void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
     const char *adapter)
 {
 	/* Not implemented */
-	if (p_client_buffer && client_buffer_size > 0) {
+	if (p_client_buffer && client_buffer_size > 0)
 		memset(p_client_buffer, 0, client_buffer_size);
-	}
 }
 
 int get_battery_perct(const char *bat)
 {
+	/* Not implemented */
 	(void)bat;
 	return 1;
 }
@@ -423,6 +449,8 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
 	char stat_name[PATH_MAX];
 	kstat_named_t *knp;
 
+	update_kstat();
+
 	snprintf(stat_name, PATH_MAX, "cpu_info%d", cpu - 1);
 	knp = get_kstat("cpu_info", cpu - 1, stat_name, "current_clock_Hz");
 	if (knp == NULL)
@@ -434,16 +462,22 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
 
 int update_uptime(void)
 {
-	kstat_named_t *knp = get_kstat("unix", -1, "system_misc", "boot_time");
-	if (knp != NULL)
-		info.uptime = time(NULL) - knp->value.ui32;
-	return 0;
+	kstat_named_t *knp;
+
+	update_kstat();
+
+	knp = get_kstat("unix", -1, "system_misc", "boot_time");
+	if (knp == NULL)
+		return 0;
+	info.uptime = time(NULL) - knp->value.ui32;
+	return 1;
 }
 
 int open_acpi_temperature(const char *name)
 {
-	printf("open_acpi_temperature: '%s'\n", name);
-	return 0;
+	/* Not implemented */
+	(void)name;
+	return 1;
 }
 
 int get_entropy_avail(unsigned int *val)
@@ -467,7 +501,11 @@ int update_load_average(void)
 
 void get_cpu_count(void)
 {
-	kstat_named_t *knp = get_kstat("unix", -1, "system_misc", "ncpus");
+	kstat_named_t *knp;
+
+	update_kstat();
+
+	knp = get_kstat("unix", -1, "system_misc", "ncpus");
 	if (knp != NULL)
 		info.cpu_count = knp->value.ui32;
 }
