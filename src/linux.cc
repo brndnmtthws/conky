@@ -900,7 +900,7 @@ int update_stat(void)
 			} else {
 				idx = 0;
 			}
-			if (idx >= info.cpu_count) {
+			if (idx > info.cpu_count) {
 				continue;
 			}
 			sscanf(buf, stat_template, &(cpu[idx].cpu_user),
