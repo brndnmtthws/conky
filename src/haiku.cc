@@ -35,6 +35,7 @@
 #include "net_stat.h"
 #include "top.h"
 
+static short cpu_setup = 0;
 
 void prepare_update()
 {
@@ -104,12 +105,59 @@ void get_cpu_count(void)
 	}
 	info.cpu_count = si.cpu_count;
 
-	//XXX: info.cpu_usage = 
+	info.cpu_usage = (float *) malloc((info.cpu_count + 1) * sizeof(float));
+	if (info.cpu_usage == NULL) {
+		CRIT_ERR(NULL, NULL, "malloc");
+	}
 }
 
 int update_cpu_usage()
 {
 	// TODO
+	static bigtime_t prev = 0;
+	static cpu_info *prev_cpuinfo = NULL;
+	bigtime_t now;
+	cpu_info *cpuinfo;
+
+	/* add check for !info.cpu_usage since that mem is freed on a SIGUSR1 */
+	if ((cpu_setup == 0) || (!info.cpu_usage)) {
+		get_cpu_count();
+		cpu_setup = 1;
+	}
+
+	int malloc_cpu_size = sizeof(cpu_info) * (info.cpu_count + 1);
+
+	if (!prev_cpuinfo) {
+		prev_cpuinfo = (cpu_info *)malloc(malloc_cpu_size);
+		if (prev_cpuinfo == NULL) {
+			CRIT_ERR(NULL, NULL, "malloc");
+		}
+		memset(prev_cpuinfo, 0, malloc_cpu_size);
+	}
+
+	cpuinfo = (cpu_info *)malloc(malloc_cpu_size);
+	memset(cpuinfo, 0, malloc_cpu_size);
+
+	if (cpuinfo == NULL) {
+		CRIT_ERR(NULL, NULL, "malloc");
+	}
+
+	now = system_time();
+	if (get_cpu_info(0, info.cpu_count, &cpuinfo[1]) == B_OK) {
+		for (int i = 1; i <= info.cpu_count; i++)
+			cpuinfo[0].active_time += cpuinfo[i].active_time;
+		cpuinfo[0].active_time /= info.cpu_count;
+		for (int i = 0; i <= info.cpu_count; i++) {
+			double period = (double)(now - prev);
+			info.cpu_usage[i] = ((double)
+					(cpuinfo[i].active_time - prev_cpuinfo[i].active_time)) /
+					period;
+		}
+	}
+
+	memcpy(prev_cpuinfo, cpuinfo, malloc_cpu_size);
+	prev = now;
+	free(cpuinfo);
 	return 1;
 }
 
