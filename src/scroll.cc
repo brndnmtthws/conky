@@ -35,6 +35,48 @@
 #include "x11.h"
 #include <vector>
 
+/**
+ * Length of a character in bytes.
+ * @param c first byte of the character
+ */
+inline int scroll_character_length(char c) {
+#ifdef BUILD_X11
+	if (utf8_mode.get(*state)) {
+		unsigned char uc = (unsigned char) c;
+		int len = 0;
+
+		if (c == -1)
+			return 1;
+
+		if ((uc & 0x80) == 0)
+			return 1;
+
+        while (len < 7 && (uc & (0x80 >> len)) != 0)
+            ++len;
+
+		return len;
+	}
+#endif
+
+	return 1;
+}
+
+/**
+ * Check if a byte should be skipped when counting characters to scroll text to right.
+ */
+inline bool scroll_check_skip_byte(char c) {
+#ifdef BUILD_X11
+    if (utf8_mode.get(*state)) {
+        // Check if byte matches UTF-8 continuation byte pattern (0b10xxxxxx)
+        if ((c & 0xC0) == 0x80) {
+            return true;
+        }
+    }
+#endif
+
+    return SPECIAL_CHAR == c;
+}
+
 #define SCROLL_LEFT 1
 #define SCROLL_RIGHT 2
 #define SCROLL_WAIT 3
@@ -49,6 +91,45 @@ struct scroll_data {
 	long resetcolor;
 	int direction;
 };
+
+/**
+ * Get count of characters to right from (sd->start) position.
+ */
+static unsigned int scroll_count_characters_to_right(struct scroll_data* sd, const std::vector<char>& buf) {
+    unsigned int n = 0;
+    int offset = sd->start;
+
+    while ('\0' != buf[offset] && offset < buf.size()) {
+        offset += scroll_character_length(buf[offset]);
+        ++n;
+    }
+
+    return n;
+}
+
+static void scroll_scroll_left(struct scroll_data* sd, const std::vector<char>& buf, unsigned int amount) {
+    for (int i = 0; (i < amount) && (buf[sd->start] != '\0') && (sd->start < buf.size()); ++i) {
+        sd->start += scroll_character_length(buf[sd->start]);
+    }
+
+    if (buf[sd->start] == 0 || sd->start > strlen(buf.data())) {
+        sd->start = 0;
+    }
+}
+
+static void scroll_scroll_right(struct scroll_data* sd, const std::vector<char>& buf, unsigned int amount) {
+    for (int i = 0; i < amount; ++i) {
+        if (sd->start <= 0) {
+            sd->start = (int) strlen(&(buf[0]));
+        }
+
+        while (--(sd->start) >= 0) {
+            if (!scroll_check_skip_byte(buf[sd->start])) {
+                break;
+            }
+        }
+    }
+}
 
 void parse_scroll_arg(struct text_object *obj, const char *arg, void *free_at_crash, char *free_at_crash2)
 {
@@ -122,8 +203,9 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size)
 {
 	struct scroll_data *sd = (struct scroll_data *)obj->data.opaque;
 	unsigned int j, colorchanges = 0, frontcolorchanges = 0, visibcolorchanges = 0, strend;
+    unsigned int visiblechars = 0;
 	char *pwithcolors;
-	std::vector<char> buf(max_user_text.get(*state));
+	std::vector<char> buf(max_user_text.get(*state), (char) 0);
 
 	if (!sd)
 		return;
@@ -145,20 +227,38 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size)
 		snprintf(p, p_max_size, "%s", &(buf[0]));
 		return;
 	}
+    //if length of text changed to shorter so the (sd->start) is already
+    //outside of actual text then reset (sd->start)
+    if (sd->start >= strlen(&(buf[0]))) {
+        sd->start = 0;
+    }
 	//make sure a colorchange at the front is not part of the string we are going to show
 	while(buf[sd->start] == SPECIAL_CHAR) {
 		sd->start++;
 	}
 	//place all chars that should be visible in p, including colorchanges
-	for(j=0; j < sd->show + visibcolorchanges; j++) {
-		p[j] = buf[sd->start + j];
-		if(p[j] == SPECIAL_CHAR) {
-			visibcolorchanges++;
-		}
-		//if there is still room fill it with spaces
-		if( ! p[j]) break;
+	for(j=0, visiblechars=0; visiblechars < sd->show;) {
+        char c = p[j] = buf[sd->start + j];
+        if (0 == c) {
+            break;
+        }
+
+        ++j;
+
+        if (SPECIAL_CHAR == c) {
+            ++visibcolorchanges;
+        } else {
+            int l = scroll_character_length(c);
+
+            while (--l) {
+                p[j] = buf[sd->start + j];
+                ++j;
+            }
+
+            ++visiblechars;
+        }
 	}
-	for(; j < sd->show + visibcolorchanges; j++) {
+	for(; visiblechars < sd->show; j++, visiblechars++) {
 		p[j] = ' ';
 	}
 	p[j] = 0;
@@ -182,14 +282,11 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size)
 	free(pwithcolors);
 	//scroll
 	if(sd->direction == SCROLL_LEFT) {
-		sd->start += sd->step;
-		if(buf[sd->start] == 0 || (unsigned) sd->start > strlen(&(buf[0]))) {
-			sd->start = 0;
-		}
+        scroll_scroll_left(sd, buf, sd->step);
 	} else if(sd->direction == SCROLL_WAIT) {
-		size_t len = strlen(&buf[0]);
+        unsigned int charsleft = scroll_count_characters_to_right(sd, buf);
 
-		if(sd->start >= len || sd->show + sd->start >= len) {
+		if(sd->show >= charsleft) {
 			if (sd->wait_arg && (--sd->wait <= 0 && sd->wait_arg != 1)) {
 			    sd->wait = sd->wait_arg;
 			} else {
@@ -199,17 +296,16 @@ void print_scroll(struct text_object *obj, char *p, int p_max_size)
 		  if(!sd->wait_arg || sd->wait_arg == 1 ||
 			 (sd->wait_arg && sd->wait-- <= 0)) {
 			  sd->wait = 0;
-			  sd->start += sd->step;
 
-			  if (sd->start + sd->show >= len)
-				sd->start = len - sd->show;
+              if (sd->step < charsleft) {
+                  scroll_scroll_left(sd, buf, sd->step);
+              } else {
+                  scroll_scroll_left(sd, buf, charsleft);
+              }
 		  }
 		}
 	} else {
-		if(sd->start < 1) {
-			sd->start = strlen(&(buf[0]));
-		}
-		sd->start -= sd->step;
+        scroll_scroll_right(sd, buf, sd->step);
 	}
 #ifdef BUILD_X11
 	//reset color when scroll is finished
