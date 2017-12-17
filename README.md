@@ -148,10 +148,8 @@ This should launch Xcode! Once that is ready, you should see your project called
 Select that and basically look at the project options in the middle of your screen where it says: "Resource Tags", "Build Settings" etc.  Also, on top of "Prefetched" it says "ALL_BUILD".  Click that and select "conky" instead.  Select "Build Settings" !!
 
 ```
-Under Linking->Runpath Search Paths-> add /usr/local/opt/gettext/lib
-Under Linking->Other Linker Flags-> add /usr/local/opt/gettext/lib/libintl.dylib
-Under Linking->Other Linker Flags-> remove the -lintl parameter.
-Under Search Paths->Header Search Paths-> add /usr/local/opt/gettext/include
+Under Search Paths->Library Search Paths-> add /usr/local/lib
+Under Search Paths->Header Search Paths-> add /usr/local/include
 ```
 You now need to make sure your build target is "BUILD_ALL".  To do this just click the button next to the one saying "My Mac" on the upper-left and then choose "BUILD_ALL" from the options shown. ( this is important because it builds some files for conky to compile. )
 
