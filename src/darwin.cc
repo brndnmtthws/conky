@@ -71,7 +71,7 @@
 #endif
 
 /* debugging defines */
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 /* (E)nhanced printf */
 #ifdef DEBUG_MODE
@@ -330,14 +330,12 @@ enum {
  */
 int get_from_load_info( int what )
 {
-    // TODO: add deallocation section for deallocating when conky exits!
-    
     static bool machStuffInitialised = false;                   /*
                                                                  *  Set this to true when the block that initialises machHost and processorSet has executed ONCE.
                                                                  *  This way we ensure that upon each update_total_processes() only ONCE the block executes.
                                                                  */
     
-    static host_name_port_t             machHost;               /* make them static to keep the local and at the same time keep their initial value */
+    static host_name_port_t             machHost;
     static processor_set_name_port_t	processorSet = 0;
     
     
@@ -591,7 +589,7 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
 char get_freq(char *p_client_buffer, size_t client_buffer_size, const char *p_format,
               int divisor, unsigned int cpu)
 {
-    eprintf( "get_freq: STUB%i!\n", 100000 );
+    printf( "get_freq: STUB!\n" );
     
     return 1;
 }
