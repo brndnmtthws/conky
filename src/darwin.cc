@@ -16,35 +16,29 @@
  *
  */
 
-//  darwin.cc
-//  Nickolas Pylarinos
-//
-//  ~ To my friends mrt and vggol ~
-//
-//	This is the equivalent of linux.cc, freebsd.cc, openbsd.cc etc. ( you get the idea )
-//  For implementing functions I took ideas from FreeBSD.cc! Thanks for the great code!
-//
-//  Code for SIP taken from Pike R. Alpha's csrstat tool https://github.com/Piker-Alpha/csrstat
-//  csrstat version 1.8 ( works for OS up to High Sierra )
-//
-//  My patches:
-//      made csr_get_active_config weak link and added check for finding if it is available.
-//      patched the _csr_check function to return the bool bit instead.
-//
+/*
+ ***********************************************************************************************
+ *
+ *  darwin.cc
+ *  Nickolas Pylarinos
+ *
+ *  ~ To my friends mrt and vggol ~
+ *
+ ***********************************************************************************************
+ *
+ *  Code for SIP taken from Pike R. Alpha's csrstat tool https://github.com/Piker-Alpha/csrstat
+ *  csrstat version 1.8 ( works for OS up to High Sierra )
+ *
+ *  My patches:
+ *      made csr_get_active_config weak link and added check for finding if it is available.
+ *      patched the _csr_check function to return the bool bit instead.
+ */
 
-// keywords used are TODO, FIXME, BUG
-
-// TODO: fix update_meminfo for getting the same stats as Activity Monitor's --- There is small difference though
-//
-// SIP STATUS:
-// TODO: not sure if I have added the sip_status END OBJ... code in the correct place ---> macOS specific feature
-// TODO: dont forget to follow the guide for adding new features to conky!! hmmm
-// TODO: see if we can have a print_sip_status to show full overview of SIP status ( all flags )
-// TODO: investigate the unsupported configuration
-//
-// TODO: finish clock_gettime emulation for versions prior Sierra
-//
-// TODO: add code for identifying OSX_TARGET automatically ( reduces user configuration )
+/*
+ * Apologies for the code style...
+ * In my eyes it feels better to have
+ * different styles at some specific places... :)
+ */
 
 #include "darwin.h"
 #include "conky.h"              // for struct info
@@ -74,6 +68,23 @@
 #include <mach/mach_time.h>
 #include <time.h>
 #include <errno.h>
+#endif
+
+/* debugging defines */
+//#define DEBUG_MODE
+
+/* (E)nhanced printf */
+#ifdef DEBUG_MODE
+#include <stdarg.h>
+void eprintf(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    vprintf(fmt, args);
+    va_end(args);
+}
+#else
+#define eprintf(...) /* ... */
 #endif
 
 #define	GETSYSCTL(name, var)	getsysctl(name, &(var), sizeof(var))
@@ -150,16 +161,9 @@ int clock_gettime(int clock_id, struct timespec *ts)
 
 static int swapmode(unsigned long *retavail, unsigned long *retfree)
 {
-    //  NOTE:
-    //      Code should work on Tiger and later...
-    //      Based on the theoretical notes written above about swapfiles on macOS:
-    //
-    //      retavail= sizeof(swapfile) and retfree= ( retavail - used )
-    //
-    
-    // NO, this seems to be normal because probably conky does some kind of rounding to the total swap size value => 2048MB becomes 2.00GB----- BUG: swapmode doesnt find correct swap size --- This is probably a problem of the sysctl implementation. ( it happens with htop port for macOS )
-    //          MenuMeters sums the size of all the swapfiles to solve this problem.
-    // THUS, there is no need in implementing a more accurate implementation because conky will always round the values...
+    /*
+     *  COMPATIBILITY:  Tiger+
+     */
     
     int	swapMIB[] = { CTL_VM, 5 };
     struct xsw_usage swapUsage;
@@ -202,8 +206,11 @@ int update_uptime(void)
 }
 
 /*
+ *  check_mount
+ *
  *  Notes on macOS implementation:
- *  1)  path mustn't contain a '/' at the end! ( eg. this is not correct /Volumes/MacOS/  but this is correct: /Volumes/MacOS )
+ *  1.  path mustn't contain a '/' at the end! ( eg. /Volumes/MacOS/ is not correct but this is correct: /Volumes/MacOS )
+ *  2.  it works the same as the FreeBSD function
  */
 int check_mount(struct text_object *obj)
 {
@@ -299,10 +306,6 @@ int update_meminfo(void)
 
 int update_net_stats(void)
 {
-    /*
-     *  NOTE: We could use code from OpenBSD.cc ??
-     */
-    
     printf("update_net_stats: STUB\n");
     return 0;
 }
@@ -316,6 +319,8 @@ enum {
 };
 
 /*
+ *  get_from_load_info
+ *
  *  Helper function for update_threads() and update_running_threads()
  *
  *  Uses mach API to get load info ( task_count, thread_count )
@@ -338,7 +343,7 @@ int get_from_load_info( int what )
     
     if (!machStuffInitialised)
     {
-        printf("\n\n\nRunning ONLY ONCE the mach--init block\n\n\n");
+        eprintf("\n\n\nRunning ONLY ONCE the mach--init block\n\n\n");
         
         // Set up our mach host and default processor set for later calls
         machHost = mach_host_self();
@@ -379,13 +384,6 @@ int update_threads(void)
 
 int update_running_threads(void)
 {
-    /*
-     *  From looking top-108 source I saw that there is difference between total and running threads!
-     *
-     */
-    
-    // NOT IMPLEMENTED
-    
     return 0;
 }
 
@@ -394,39 +392,39 @@ int update_total_processes(void)
     info.procs = get_from_load_info(DARWIN_CONKY_PROCESSES_COUNT);
     return 0;
     
-    // IMPLEMENTATION WAY NO.2 is problematic for **US**
-    // https://stackoverflow.com/questions/8141913/is-there-a-lightweight-way-to-obtain-the-current-number-of-processes-in-linux
-    
-    //
-    //  This method doesnt find the correct number of tasks.
-    //
-    //  This is probably because on macOS there is no option for KERN_PROC_KTHREAD like there is in FreeBSD
-    //
-    //  In FreeBSD's sysctl.h we can see the following:
-    //
-    //  KERN_PROC_KTHREAD   all processes (user-level plus kernel threads)
-    //  KERN_PROC_ALL       all user-level processes
-    //  KERN_PROC_PID       processes with process ID arg
-    //  KERN_PROC_PGRP      processes with process group arg
-    //  KERN_PROC_SESSION   processes with session arg
-    //  KERN_PROC_TTY       processes with tty(4) arg
-    //  KERN_PROC_UID       processes with effective user ID arg
-    //  KERN_PROC_RUID      processes with real user ID arg
-    //
-    //  Though in macOS's sysctl.h there are only:
-    //
-    //  KERN_PROC_ALL		everything
-    //  KERN_PROC_PID		by process id
-    //  KERN_PROC_PGRP      by process group id
-    //  KERN_PROC_SESSION	by session of pid
-    //  KERN_PROC_TTY		by controlling tty
-    //  KERN_PROC_UID		by effective uid
-    //  KERN_PROC_RUID      by real uid
-    //  KERN_PROC_LCID      by login context id
-    //
-    //  Probably by saying "everything" they mean that KERN_PROC_ALL gives all processes (user-level plus kernel threads)
-    //  ( So basically this is the problem with the old implementation )
-    //
+    /*
+     *  WARNING: You may stumble upon this implementation:
+     *  https://stackoverflow.com/questions/8141913/is-there-a-lightweight-way-to-obtain-the-current-number-of-processes-in-linux
+     *
+     *  This method DOESN'T find the correct number of tasks.
+     *
+     *  This is probably (??) because on macOS there is no option for KERN_PROC_KTHREAD like there is in FreeBSD
+     *
+     *  In FreeBSD's sysctl.h we can see the following:
+     *
+     *  KERN_PROC_KTHREAD   all processes (user-level plus kernel threads)
+     *  KERN_PROC_ALL       all user-level processes
+     *  KERN_PROC_PID       processes with process ID arg
+     *  KERN_PROC_PGRP      processes with process group arg
+     *  KERN_PROC_SESSION   processes with session arg
+     *  KERN_PROC_TTY       processes with tty(4) arg
+     *  KERN_PROC_UID       processes with effective user ID arg
+     *  KERN_PROC_RUID      processes with real user ID arg
+     *
+     *  Though in macOS's sysctl.h there are only:
+     *
+     *  KERN_PROC_ALL		everything
+     *  KERN_PROC_PID		by process id
+     *  KERN_PROC_PGRP      by process group id
+     *  KERN_PROC_SESSION	by session of pid
+     *  KERN_PROC_TTY		by controlling tty
+     *  KERN_PROC_UID		by effective uid
+     *  KERN_PROC_RUID      by real uid
+     *  KERN_PROC_LCID      by login context id
+     *
+     *  Probably by saying "everything" they mean that KERN_PROC_ALL gives all processes (user-level plus kernel threads)
+     *  ( So basically this is the problem with the old implementation )
+     */
 }
 
 int update_running_processes(void)
@@ -476,18 +474,13 @@ int update_running_processes(void)
 
 
 /*
- * Gets number of max logical cpus that could be available at this boot
+ * get_cpu_count
+ *
+ * The macOS implementation gets the number of max logical cpus
+ * that could be available at this boot.
  */
 void get_cpu_count(void)
 {
-    //  Darwin man page for sysctl:
-    //
-    //  hw.ncpu:
-    //  The number of cpus. This attribute is **DEPRECATED** and it is recom-
-    //  mended that hw.logicalcpu, hw.logicalcpu_max, hw.physicalcpu, or
-    //  hw.physicalcpu_max be used instead.
-    //
-    
     int cpu_count = 0;
     
     if (GETSYSCTL("hw.logicalcpu_max", cpu_count) == 0) {
@@ -501,8 +494,6 @@ void get_cpu_count(void)
     if (info.cpu_usage == NULL) {
         CRIT_ERR(NULL, NULL, "malloc");
     }
-    
-    printf("get_cpu_count: %i\n", info.cpu_count);
 }
 
 
@@ -600,7 +591,7 @@ void get_acpi_fan(char *p_client_buffer, size_t client_buffer_size)
 char get_freq(char *p_client_buffer, size_t client_buffer_size, const char *p_format,
               int divisor, unsigned int cpu)
 {
-    printf( "get_freq: STUB!\n" );
+    eprintf( "get_freq: STUB%i!\n", 100000 );
     
     return 1;
 }
@@ -625,8 +616,6 @@ int update_diskio(void)
 #ifdef BUILD_IOSTATS
 static void calc_io_each(void)
 {
-    //printf("calc_io_each: experimental\n");
-    
     struct process *p;
     unsigned long long sum = 0;
     
@@ -641,8 +630,10 @@ static void calc_io_each(void)
 #endif /* BUILD_IOSTATS */
 
 /*
- *  get resident memory size (bytes) of a process with a specific pid
- *  helper function for get_top_info()
+ * get_rss_for_pid
+ *
+ * get resident memory size (bytes) of a process with a specific pid
+ * helper function for get_top_info()
  */
 void get_rss_for_pid( pid_t pid, unsigned long long * rss )
 {
@@ -690,24 +681,24 @@ void get_top_info(void)
     int proc_count = length / sizeof(struct kinfo_proc);
     
     for (int i = 0; i < proc_count; i++) {
-        if (!((p[i].kp_proc.p_flag & P_SYSTEM)) && p[i].kp_proc.p_comm[0] != '\0') {            // TODO: check if this is the right way to do it... I have replaced kp_flag with kp_proc.p_flag though not sure if it is right
+        if (!((p[i].kp_proc.p_flag & P_SYSTEM)) && p[i].kp_proc.p_comm[0] != '\0') {
             proc = get_process(p[i].kp_proc.p_pid);
             
             proc->time_stamp = g_time;
-            proc->name = strndup(p[i].kp_proc.p_comm, text_buffer_size.get(*state));            // TODO: What does this do?
+            proc->name = strndup(p[i].kp_proc.p_comm, text_buffer_size.get(*state));
             proc->basename = strndup(p[i].kp_proc.p_comm, text_buffer_size.get(*state));
             proc->amount = 100.0 * p[i].kp_proc.p_pctcpu / FSCALE;
             
-            //proc->vsize = 0;  // NOT IMPLEMENTED YET
+            //proc->vsize = 0;
             
-            // TODO: fix this, doesn't seem to provide conky with the desired values ( though I think the conky_get_rss_for_pid function works fine!!! )
+            // XXX this function doesn't seem to provide conky with the desired values ( though I think the conky_get_rss_for_pid function works fine!!! )
             //          ALSO, when you start conky you see that the MEM% column is full of 0.00 but IF YOU type on terminal for example top or do anything it fills some values!!! STRANGE...
             get_rss_for_pid( p[i].kp_proc.p_pid, &proc->rss );              // NOTE: I noticed a small difference between htop's calculation of rss and our implementation's
                                                                             // What is more, i think that the value as is right now is fine... But we may need some more stuff to implement first!
             
             // ki_runtime is in microseconds, total_cpu_time in centiseconds.
             // Therefore we divide by 10000.
-            //proc->total_cpu_time = 0;   // NOT IMPLEMENTED YET
+            //proc->total_cpu_time = 0;
         
 #ifdef BUILD_IOSTATS
             calc_io_each();			/* percentage of I/O for each task */
