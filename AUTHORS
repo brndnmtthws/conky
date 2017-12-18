@@ -240,6 +240,9 @@ nathanj439 <nathanj439 at users dot sourceforge dot net>
 Nikos Ntarmos <ntarmos at users dot sourceforge dot net>
   FreeBSD total memory patch
 
+Nikos Pylarinos <n dot pylarinos at hotmail dot com>
+  macOS support
+
 norsetto <norsetto at ubuntu dot com>
   fix SIGUSR1/SIGHUP segfault
 
