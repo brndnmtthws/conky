@@ -11,6 +11,8 @@ This is a fork an almost up to date version of conky with patches for macOS supp
 
 You can check out how it operates in a video: [conky on macOS](https://www.youtube.com/watch?v=l3tIiDdnC68)
 
+**Not all features mentioned below work! But with your help we can make this a complete port! :)**
+
 ### Features
 
 Conky can display more than 300 built-in objects, including support for:
