@@ -29,15 +29,13 @@
 #include <cstring>
 #include <stdexcept>
 
-#if defined (__APPLE__)
+#if defined(__APPLE__) && defined(__MACH__)
 
-// TODO(npyl): Add the exceptions used in the Linux version of semaphore class
-
-//
-//  On Darwin, unnamed semaphores are not supported!
-//  The only close equivalent to unnamed semaphores is using
-//      GCD!
-//
+/*
+ *  On Darwin, unnamed semaphores are not supported!
+ *  The only close equivalent to unnamed semaphores is using
+ *      GCD!
+ */
 
 #include <dispatch/dispatch.h>
 

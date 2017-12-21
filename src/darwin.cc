@@ -22,7 +22,7 @@
  *  darwin.cc
  *  Nickolas Pylarinos
  *
- *  ~ To my friends mrt and vggol ~
+ *  ~ To mrt and vggol ~
  *
  ***********************************************************************************************
  *
