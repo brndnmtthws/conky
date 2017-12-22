@@ -608,7 +608,7 @@ int update_diskio(void)
 }
 
 /******************************************
- *          get top info                  *
+ *          get top info section          *
  ******************************************/
 
 #ifdef BUILD_IOSTATS
@@ -628,27 +628,84 @@ static void calc_io_each(void)
 #endif /* BUILD_IOSTATS */
 
 /*
- * get_rss_for_pid
- *
- * get resident memory size (bytes) of a process with a specific pid
- * helper function for get_top_info()
+ * this is used by calc_cpu_each()
  */
-void get_rss_for_pid( pid_t pid, unsigned long long * rss )
+static conky::simple_config_setting<bool> top_cpu_separate("top_cpu_separate", false, true);
+
+/*
+ * get_cpu_time_for_pid
+ *
+ * calculates user_time, kernel_time, previous_user_time, previous_kernel_time for a given pid and
+ * fills the corresponding |process| struct with the information found.
+ */
+static void get_cpu_time_for_pid(struct process *process, pid_t pid)
 {
+    /*
+     * based on process_parse_stat() from linux.cc
+     */
+    
+    unsigned long user_time = 0;
+    unsigned long kernel_time = 0;
+    
     struct proc_taskinfo pti;
     
     if(sizeof(pti) == proc_pidinfo(pid, PROC_PIDTASKINFO, 0, &pti, sizeof(pti))) {
-        *rss =  pti.pti_resident_size;
+        process->user_time = pti.pti_total_user;
+        process->kernel_time = pti.pti_total_system;
+        
+        /* user_time and kernel_time are in nanoseconds, total_cpu_time in centiseconds.
+         * Therefore we divide by 10^7 . */
+        process->user_time /= 10000000;
+        process->kernel_time /= 10000000;
+        
+        eprintf("%lu %lu\n\n", process->user_time, process->kernel_time);
     }
+    
+    process->total_cpu_time = process->user_time + process->kernel_time;
+    if (process->previous_user_time == ULONG_MAX) {
+        process->previous_user_time = process->user_time;
+    }
+    if (process->previous_kernel_time == ULONG_MAX) {
+        process->previous_kernel_time = process->kernel_time;
+    }
+    
+/*  NOTE:
+ *  I think this commented out part causes miscalculations
+ *  If I remove this code then the conky output kind of matches
+ *  the one Activity Monitor shows.
+ *
+ 
+    // strangely, the values aren't monotonous
+    if (process->previous_user_time > process->user_time)
+        process->previous_user_time = process->user_time;
+    
+    if (process->previous_kernel_time > process->kernel_time)
+        process->previous_kernel_time = process->kernel_time;
+ */
+    
+    /* store the difference of the user_time */
+    user_time = process->user_time - process->previous_user_time;
+    kernel_time = process->kernel_time - process->previous_kernel_time;
+    
+    /* backup the process->user_time for next time around */
+    process->previous_user_time = process->user_time;
+    process->previous_kernel_time = process->kernel_time;
+    
+    /* store only the difference of the user_time here... */
+    process->user_time = user_time;
+    process->kernel_time = kernel_time;
 }
 
-/* While topless is obviously better, top is also not bad. */
-
-void get_top_info(void)
+/*
+ * update_process_table
+ *
+ * updates the processes list (contains stats for all processes)
+ */
+static void update_process_table(void)
 {
     int err = 0;
-    struct kinfo_proc *p = NULL;
     struct process *proc;
+    struct kinfo_proc *p = NULL;
     size_t length = 0;
     
     static const int name[] = { CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0 };
@@ -672,39 +729,108 @@ void get_top_info(void)
     if (err)
     {
         perror(NULL);
-        free(p);
         return;
     }
     
     int proc_count = length / sizeof(struct kinfo_proc);
-    
+
+    // XXX effective or real uid?
+    // XXX check for unfilled elements of |process| struct
+    // XXX work on these checks...
     for (int i = 0; i < proc_count; i++) {
-        if (!((p[i].kp_proc.p_flag & P_SYSTEM)) && p[i].kp_proc.p_comm[0] != '\0') {
-            proc = get_process(p[i].kp_proc.p_pid);
+        if (!((p[i].kp_proc.p_flag & P_SYSTEM)) && *p[i].kp_proc.p_comm != '\0') {
             
-            proc->time_stamp = g_time;
+            pid_t pid = p[i].kp_proc.p_pid;
+            proc = get_process(pid);
+            
+            /* process name related */
+            free_and_zero(proc->name);
+            free_and_zero(proc->basename);
             proc->name = strndup(p[i].kp_proc.p_comm, text_buffer_size.get(*state));
             proc->basename = strndup(p[i].kp_proc.p_comm, text_buffer_size.get(*state));
-            proc->amount = 100.0 * p[i].kp_proc.p_pctcpu / FSCALE;
+            proc->uid = p[i].kp_eproc.e_pcred.p_ruid;
+            proc->time_stamp = g_time;
             
-            //proc->vsize = 0;
+            struct proc_taskinfo pti;
             
-            // XXX this function doesn't seem to provide conky with the desired values ( though I think the conky_get_rss_for_pid function works fine!!! )
-            //          ALSO, when you start conky you see that the MEM% column is full of 0.00 but IF YOU type on terminal for example top or do anything it fills some values!!! STRANGE...
-            get_rss_for_pid( p[i].kp_proc.p_pid, &proc->rss );              // NOTE: I noticed a small difference between htop's calculation of rss and our implementation's
-                                                                            // What is more, i think that the value as is right now is fine... But we may need some more stuff to implement first!
+            if(sizeof(pti) == proc_pidinfo(pid, PROC_PIDTASKINFO, 0, &pti, sizeof(pti))) {
+                proc->vsize = pti.pti_virtual_size;
+                proc->rss = pti.pti_resident_size;
+                
+                /* vsize, rss are in bytes thus we dont have to convert */
+                
+                eprintf("(%i) %llu %llu\n", pid, proc->vsize, proc->rss );
+            }
             
-            // ki_runtime is in microseconds, total_cpu_time in centiseconds.
-            // Therefore we divide by 10000.
-            //proc->total_cpu_time = 0;
-        
-#ifdef BUILD_IOSTATS
-            calc_io_each();			/* percentage of I/O for each task */
-#endif /* BUILD_IOSTATS */
+            // GET kernel_time & user_time
+            get_cpu_time_for_pid(proc, pid);
+            
+            
+    #ifdef BUILD_IOSTATS
+            //process_parse_io(process);    // XXX implement me master!
+    #endif /* BUILD_IOSTATS */
+            
+            // XXX what is this?
+            /*
+             * Check name against the exclusion list
+             */
+            /* if (process->counted && exclusion_expression &&
+             * !regexec(exclusion_expression, process->name, 0, 0, 0))
+             * process->counted = 0; */
         }
     }
     
     free(p);
+}
+
+/* calculate cpu total */
+static unsigned long long calc_cpu_total(void)
+{
+    unsigned long long t = 0;
+
+    struct rusage p;
+    int ret = getrusage(RUSAGE_SELF, &p);
+    
+    if (ret == -1)  /* error */
+        return 0;
+    
+    /* total = user + system */
+    t = p.ru_utime.tv_usec + p.ru_stime.tv_usec;
+  
+    /* ru_utime and ru_stime are in microseconds, total_cpu_time in centiseconds.
+     * Therefore we divide by 10000. */
+    t /= 10000;
+    
+    return t;
+}
+
+/* Calculate each process' cpu percentage */
+inline static void calc_cpu_each(unsigned long long total)
+{
+    float mul = 100.0;
+    if(top_cpu_separate.get(*state))
+        mul *= info.cpu_count;                      // XXX Do I have to call get_cpu_count first?
+    
+    for(struct process *p = first_process; p; p = p->next)
+        p->amount = mul * (p->user_time + p->kernel_time) / (float) total;
+}
+
+/* While topless is obviously better, top is also not bad. */
+
+//
+//  GETTOOPINFO v0.5
+//
+void get_top_info(void)
+{
+    unsigned long long total = 0;
+    
+    total = calc_cpu_total();       /* calculate the total of the processor */
+    update_process_table();         /* update the table with process list */
+    calc_cpu_each(total);           /* and then the percentage for each task */
+    
+#ifdef BUILD_IOSTATS
+    calc_io_each();                 /* percentage of I/O for each task */
+#endif /* BUILD_IOSTATS */
 }
 
 void get_battery_short_status(char *buffer, unsigned int n, const char *bat)
