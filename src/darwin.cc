@@ -145,6 +145,45 @@ int clock_gettime(int clock_id, struct timespec *ts)
 }
 #endif /* ifndef HAVE_CLOCK_GETTIME */
 
+/*
+ * holds total ticks in kernel space,
+ * user space, and idle.
+ *
+ * required by get_cpu_sample()
+ */
+struct cpusample {
+    uint64_t totalSystemTime;
+    uint64_t totalUserTime;
+    uint64_t totalIdleTime;
+};
+
+/*
+ * get_cpu_sample()
+ *
+ * Gets systemTime, userTime and idleTime for CPU
+ * plagiarised from https://stackoverflow.com/questions/20471920/how-to-get-total-cpu-idle-time-in-objective-c-c-on-os-x
+ */
+void get_cpu_sample(struct cpusample *sample)
+{
+    kern_return_t kr;
+    mach_msg_type_number_t count;
+    host_cpu_load_info_data_t r_load;
+    
+    count = HOST_CPU_LOAD_INFO_COUNT;
+    kr = host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, (int *)&r_load, &count);
+    if (kr != KERN_SUCCESS) {
+        printf("oops: %s\n", mach_error_string(kr));
+        return;
+    }
+    
+    // XXX check if apple has actually fixed the NICE problem.
+    // Although our code still supports getting the NICE ticks (we dont have a separate variable but thats not problem)
+    
+    sample->totalSystemTime = r_load.cpu_ticks[CPU_STATE_SYSTEM];
+    sample->totalUserTime = r_load.cpu_ticks[CPU_STATE_USER] + r_load.cpu_ticks[CPU_STATE_NICE];
+    sample->totalIdleTime = r_load.cpu_ticks[CPU_STATE_IDLE];
+}
+
 /*-------------------------------------------------------------------------------------------------------------------------------------------------------------------
  *  macOS Swapfiles Logic...
  *
@@ -475,7 +514,6 @@ int update_running_processes(void)
     return 0;
 }
 
-
 /*
  * get_cpu_count
  *
@@ -612,6 +650,25 @@ int update_diskio(void)
     return 0;
 }
 
+void get_battery_short_status(char *buffer, unsigned int n, const char *bat)
+{
+    printf( "get_battery_short_status: STUB\n" );
+}
+
+
+int get_entropy_avail(unsigned int * val)
+{
+    (void)val;
+    printf( "get_entropy_avail: STUB\n!" );
+    return 1;
+}
+int get_entropy_poolsize(unsigned int * val)
+{
+    (void)val;
+    printf( "get_entropy_poolsize: STUB\n!" );
+    return 1;
+}
+
 /******************************************
  *          get top info section          *
  ******************************************/
@@ -633,12 +690,11 @@ static void calc_io_each(void)
 #endif /* BUILD_IOSTATS */
 
 /*
- * get_cpu_time_for_pid
+ * get_cpu_time_for_process
  *
- * calculates user_time, kernel_time, previous_user_time, previous_kernel_time for a given pid and
- * fills the corresponding |process| struct with the information found.
+ * calculates user_time and kernel_time and sets the contents of the |process| struct
  */
-static void get_cpu_time_for_pid(struct process *process, pid_t pid)
+static void get_cpu_time_for_process(struct process *process, struct proc_taskinfo *pti)
 {
     /*
      * based on process_parse_stat() from linux.cc
@@ -647,19 +703,15 @@ static void get_cpu_time_for_pid(struct process *process, pid_t pid)
     unsigned long user_time = 0;
     unsigned long kernel_time = 0;
     
-    struct proc_taskinfo pti;
+    process->user_time = pti->pti_total_user;
+    process->kernel_time = pti->pti_total_system;
     
-    if(sizeof(pti) == proc_pidinfo(pid, PROC_PIDTASKINFO, 0, &pti, sizeof(pti))) {
-        process->user_time = pti.pti_total_user;
-        process->kernel_time = pti.pti_total_system;
-        
-        /* user_time and kernel_time are in nanoseconds, total_cpu_time in centiseconds.
-         * Therefore we divide by 10^7 . */
-        process->user_time /= 10000000;
-        process->kernel_time /= 10000000;
-        
-        eprintf("%lu %lu\n\n", process->user_time, process->kernel_time);
-    }
+    /* user_time and kernel_time are in nanoseconds, total_cpu_time in centiseconds.
+     * Therefore we divide by 10^7 . */
+    process->user_time /= 10000000;
+    process->kernel_time /= 10000000;
+    
+    eprintf("%lu %lu\n\n", process->user_time, process->kernel_time);
     
     process->total_cpu_time = process->user_time + process->kernel_time;
     if (process->previous_user_time == ULONG_MAX) {
@@ -699,7 +751,7 @@ static void get_cpu_time_for_pid(struct process *process, pid_t pid)
 /*
  * update_process_table
  *
- * updates the processes list (contains stats for all processes)
+ * updates the processes list with stats for each
  */
 static void update_process_table(void)
 {
@@ -736,7 +788,6 @@ static void update_process_table(void)
 
     // XXX effective or real uid?
     // XXX check for unfilled elements of |process| struct
-    // XXX work on these checks...
     for (int i = 0; i < proc_count; i++) {
         if (!((p[i].kp_proc.p_flag & P_SYSTEM)) && *p[i].kp_proc.p_comm != '\0') {
             
@@ -754,16 +805,15 @@ static void update_process_table(void)
             struct proc_taskinfo pti;
             
             if(sizeof(pti) == proc_pidinfo(pid, PROC_PIDTASKINFO, 0, &pti, sizeof(pti))) {
+                /* vsize, rss are in bytes thus we dont have to convert */
                 proc->vsize = pti.pti_virtual_size;
                 proc->rss = pti.pti_resident_size;
                 
-                /* vsize, rss are in bytes thus we dont have to convert */
-                
                 eprintf("(%i) %llu %llu\n", pid, proc->vsize, proc->rss );
-            }
             
-            /* GET kernel_time & user_time */
-            get_cpu_time_for_pid(proc, pid);
+                /* GET kernel_time & user_time */
+                get_cpu_time_for_process(proc, &pti);
+            }
             
     #ifdef BUILD_IOSTATS
             //process_parse_io(process);    // XXX implement me master!
@@ -782,39 +832,6 @@ static void update_process_table(void)
     free(p);
 }
 
-/*
- * needed for get_sample()
- */
-struct cpusample {
-    uint64_t totalSystemTime;
-    uint64_t totalUserTime;
-    uint64_t totalIdleTime;
-};
-
-/*
- * plagiarised from https://stackoverflow.com/questions/20471920/how-to-get-total-cpu-idle-time-in-objective-c-c-on-os-x
- */
-void get_sample(struct cpusample *sample)
-{
-    kern_return_t kr;
-    mach_msg_type_number_t count;
-    host_cpu_load_info_data_t r_load;
-    
-    count = HOST_CPU_LOAD_INFO_COUNT;
-    kr = host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, (int *)&r_load, &count);
-    if (kr != KERN_SUCCESS) {
-        printf("oops: %s\n", mach_error_string(kr));
-        return;
-    }
-    
-    // XXX check if apple has actually fixed the NICE problem.
-    // Although our code still supports getting the NICE ticks (we dont have a separate variable but thats not problem)
-    
-    sample->totalSystemTime = r_load.cpu_ticks[CPU_STATE_SYSTEM];
-    sample->totalUserTime = r_load.cpu_ticks[CPU_STATE_USER] + r_load.cpu_ticks[CPU_STATE_NICE];
-    sample->totalIdleTime = r_load.cpu_ticks[CPU_STATE_IDLE];
-}
-
 /* calculate cpu total */
 static unsigned long long calc_cpu_total(void)
 {
@@ -823,7 +840,7 @@ static unsigned long long calc_cpu_total(void)
     unsigned long long t = 0;
     struct cpusample sample;
     
-    get_sample(&sample);
+    get_cpu_sample(&sample);
     total = sample.totalIdleTime + sample.totalSystemTime + sample.totalUserTime;
     
     t = total - previousTotal;
@@ -851,11 +868,10 @@ inline static void calc_cpu_each(unsigned long long total)
 
 /* While topless is obviously better, top is also not bad. */
 
-//
-//  GETTOOPINFO v0.6~1
-//
 void get_top_info(void)
 {
+    /* version 0.7~1 */
+    
     unsigned long long total = 0;
     
     total = calc_cpu_total();       /* calculate the total usage of the processor */
@@ -865,25 +881,6 @@ void get_top_info(void)
 #ifdef BUILD_IOSTATS
     calc_io_each();                 /* percentage of I/O for each task */
 #endif /* BUILD_IOSTATS */
-}
-
-void get_battery_short_status(char *buffer, unsigned int n, const char *bat)
-{
-    printf( "get_battery_short_status: STUB\n" );
-}
-
-
-int get_entropy_avail(unsigned int * val)
-{
-    (void)val;
-    printf( "get_entropy_avail: STUB\n!" );
-    return 1;
-}
-int get_entropy_poolsize(unsigned int * val)
-{
-    (void)val;
-    printf( "get_entropy_poolsize: STUB\n!" );
-    return 1;
 }
 
 /*********************************************************************************************
