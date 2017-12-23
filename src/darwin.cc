@@ -89,6 +89,11 @@ void eprintf(const char *fmt, ...)
 
 #define	GETSYSCTL(name, var)	getsysctl(name, &(var), sizeof(var))
 
+/*
+ * used by calc_cpu_each() for get_top_info()
+ */
+static conky::simple_config_setting<bool> top_cpu_separate("top_cpu_separate", false, true);
+
 static int getsysctl(const char *name, void *ptr, size_t len)
 {
     size_t nlen = len;
@@ -474,17 +479,17 @@ int update_running_processes(void)
 /*
  * get_cpu_count
  *
- * The macOS implementation gets the number of max logical cpus
- * that could be available at this boot.
+ * The macOS implementation gets the number of active cpus
+ * in compliance with linux implementation.
  */
 void get_cpu_count(void)
 {
     int cpu_count = 0;
     
-    if (GETSYSCTL("hw.logicalcpu_max", cpu_count) == 0) {
+    if (GETSYSCTL("hw.activecpu", cpu_count) == 0) {
         info.cpu_count = cpu_count;
     } else {
-        fprintf(stderr, "Cannot get hw.logicalcpu_max\n");
+        fprintf(stderr, "Cannot get hw.activecpu\n");
         info.cpu_count = 0;
     }
     
@@ -628,11 +633,6 @@ static void calc_io_each(void)
 #endif /* BUILD_IOSTATS */
 
 /*
- * this is used by calc_cpu_each()
- */
-static conky::simple_config_setting<bool> top_cpu_separate("top_cpu_separate", false, true);
-
-/*
  * get_cpu_time_for_pid
  *
  * calculates user_time, kernel_time, previous_user_time, previous_kernel_time for a given pid and
@@ -670,9 +670,9 @@ static void get_cpu_time_for_pid(struct process *process, pid_t pid)
     }
     
 /*  NOTE:
- *  I think this commented out part causes miscalculations
- *  If I remove this code then the conky output kind of matches
- *  the one Activity Monitor shows.
+ *  I think this commented-out part causes miscalculations.
+ *  With this removed Activity Monitor shows same thing with conky.
+ *  Probably the "monotonous" problem doesn't exist on Darwin?
  *
  
     // strangely, the values aren't monotonous
@@ -762,9 +762,8 @@ static void update_process_table(void)
                 eprintf("(%i) %llu %llu\n", pid, proc->vsize, proc->rss );
             }
             
-            // GET kernel_time & user_time
+            /* GET kernel_time & user_time */
             get_cpu_time_for_pid(proc, pid);
-            
             
     #ifdef BUILD_IOSTATS
             //process_parse_io(process);    // XXX implement me master!
@@ -783,23 +782,55 @@ static void update_process_table(void)
     free(p);
 }
 
+/*
+ * needed for get_sample()
+ */
+struct cpusample {
+    uint64_t totalSystemTime;
+    uint64_t totalUserTime;
+    uint64_t totalIdleTime;
+};
+
+/*
+ * plagiarised from https://stackoverflow.com/questions/20471920/how-to-get-total-cpu-idle-time-in-objective-c-c-on-os-x
+ */
+void get_sample(struct cpusample *sample)
+{
+    kern_return_t kr;
+    mach_msg_type_number_t count;
+    host_cpu_load_info_data_t r_load;
+    
+    count = HOST_CPU_LOAD_INFO_COUNT;
+    kr = host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, (int *)&r_load, &count);
+    if (kr != KERN_SUCCESS) {
+        printf("oops: %s\n", mach_error_string(kr));
+        return;
+    }
+    
+    // XXX check if apple has actually fixed the NICE problem.
+    // Although our code still supports getting the NICE ticks (we dont have a separate variable but thats not problem)
+    
+    sample->totalSystemTime = r_load.cpu_ticks[CPU_STATE_SYSTEM];
+    sample->totalUserTime = r_load.cpu_ticks[CPU_STATE_USER] + r_load.cpu_ticks[CPU_STATE_NICE];
+    sample->totalIdleTime = r_load.cpu_ticks[CPU_STATE_IDLE];
+}
+
 /* calculate cpu total */
 static unsigned long long calc_cpu_total(void)
 {
+    static unsigned long long previousTotal = 0;
+    unsigned long long total = 0;
     unsigned long long t = 0;
-
-    struct rusage p;
-    int ret = getrusage(RUSAGE_SELF, &p);
+    struct cpusample sample;
     
-    if (ret == -1)  /* error */
-        return 0;
+    get_sample(&sample);
+    total = sample.totalIdleTime + sample.totalSystemTime + sample.totalUserTime;
     
-    /* total = user + system */
-    t = p.ru_utime.tv_usec + p.ru_stime.tv_usec;
-  
-    /* ru_utime and ru_stime are in microseconds, total_cpu_time in centiseconds.
-     * Therefore we divide by 10000. */
-    t /= 10000;
+    t = total - previousTotal;
+    previousTotal = total;
+    
+    /* convert ticks to centiseconds */
+    t = ((t / sysconf(_SC_CLK_TCK)) * 100) / info.cpu_count;
     
     return t;
 }
@@ -809,7 +840,10 @@ inline static void calc_cpu_each(unsigned long long total)
 {
     float mul = 100.0;
     if(top_cpu_separate.get(*state))
-        mul *= info.cpu_count;                      // XXX Do I have to call get_cpu_count first?
+        mul *= info.cpu_count;                      /*  SIDENOTES:
+                                                     *  1. info.cpu_count is set by get_cpu_count() which gets the ACTIVE cpus count
+                                                     *  2. we don't have to call get_cpu_count() because it is called by conky on start!
+                                                     */
     
     for(struct process *p = first_process; p; p = p->next)
         p->amount = mul * (p->user_time + p->kernel_time) / (float) total;
@@ -818,13 +852,13 @@ inline static void calc_cpu_each(unsigned long long total)
 /* While topless is obviously better, top is also not bad. */
 
 //
-//  GETTOOPINFO v0.5
+//  GETTOOPINFO v0.6~1
 //
 void get_top_info(void)
 {
     unsigned long long total = 0;
     
-    total = calc_cpu_total();       /* calculate the total of the processor */
+    total = calc_cpu_total();       /* calculate the total usage of the processor */
     update_process_table();         /* update the table with process list */
     calc_cpu_each(total);           /* and then the percentage for each task */
     
