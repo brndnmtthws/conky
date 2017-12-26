@@ -1264,7 +1264,6 @@ struct text_object *construct_text_object(char *s, const char *arg,
 	obj->callbacks.print = &print_running_processes;
 #elif (defined(__APPLE__) && defined(__MACH__))
     END OBJ(running_processes, &update_running_processes)
-    	top_running = 1;
     	obj->callbacks.print = &print_running_processes;
     END OBJ(threads, &update_threads)
     	obj->callbacks.print = &print_threads;
