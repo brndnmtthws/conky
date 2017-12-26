@@ -1,6 +1,6 @@
 ## Conky for macOS
 
-[![Build Status](https://travis-ci.org/brndnmtthws/conky.png)](https://travis-ci.org/npyl/conky-for-macOS.svg?branch=master)
+[![Build Status](https://travis-ci.org/npyl/conky-for-macOS.svg?branch=master)](https://travis-ci.org/npyl/conky-for-macOS)
 
 **Conky** is a free, light-weight system monitor for X, that displays
 any kind of information on your desktop.
