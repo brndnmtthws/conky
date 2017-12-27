@@ -559,6 +559,7 @@ void get_cpu_count(void)
 
 #define CPU_SAMPLE_COUNT 15
 struct cpu_info {
+    /* Linux implementation */
     unsigned long long cpu_user;
     unsigned long long cpu_system;
     unsigned long long cpu_nice;
@@ -572,6 +573,8 @@ struct cpu_info {
     unsigned long long cpu_last_total;
     unsigned long long cpu_last_active_total;
     double cpu_val[CPU_SAMPLE_COUNT];
+    
+    /* macOS implementation */
 };
 
 int update_cpu_usage(void)
@@ -711,7 +714,7 @@ static void calc_io_each(void)
 /*
  * Calculate a process' cpu usage percentage
  */
-void calc_cpu_usage_for_proc(struct process *p, unsigned long long total)
+static void calc_cpu_usage_for_proc(struct process *p, unsigned long long total)
 {
     float mul = 100.0;
     if(top_cpu_separate.get(*state))
@@ -724,8 +727,35 @@ void calc_cpu_usage_for_proc(struct process *p, unsigned long long total)
     return;
 }
 
-unsigned long long calc_cpu_total(void)
+/*
+ * reentrant re-implementation of the calc_cpu_total function.
+ * fixes a bit the algorithm but it is NOT the final version of the function!
+ */
+static unsigned long long calc_cpu_total_r(struct process *p)
 {
+    unsigned long long total = 0;   /* current total */
+    // proc->total                  /* previous total */
+    unsigned long long t = 0;       /* delta */
+    struct cpusample sample;
+    
+    get_cpu_sample(&sample);
+    total = sample.totalIdleTime + sample.totalSystemTime + sample.totalUserTime;
+    
+    t = total - p->total;
+    p->total = total;
+    
+    /* convert ticks to centiseconds */
+    t = ((t / sysconf(_SC_CLK_TCK)) * 100) / info.cpu_count;
+    
+    return t;
+}
+
+static unsigned long long calc_cpu_total(void)
+{
+    /*
+     * non-reentrant; do not use.
+     */
+    
     static unsigned long long previousTotal = 0;
     unsigned long long total = 0;
     unsigned long long t = 0;
@@ -748,7 +778,7 @@ unsigned long long calc_cpu_total(void)
  *
  * calculates user_time and kernel_time and sets the contents of the |process| struct
  */
-void calc_cpu_time_for_proc(struct process *process, struct proc_taskinfo *pti)
+static void calc_cpu_time_for_proc(struct process *process, struct proc_taskinfo *pti)
 {
     /*
      * based on process_parse_stat() from linux.cc
@@ -792,7 +822,7 @@ void calc_cpu_time_for_proc(struct process *process, struct proc_taskinfo *pti)
  * finds top-information only for one process which is represented by a kinfo_proc struct
  * this function is called mutliple types ( one foreach process ) to implement get_top_info()
  */
-void get_top_info_for_kinfo_proc( struct kinfo_proc *p )
+static void get_top_info_for_kinfo_proc( struct kinfo_proc *p )
 {
     __block struct process *proc = NULL;
     __block struct proc_taskinfo pti;
@@ -828,7 +858,10 @@ void get_top_info_for_kinfo_proc( struct kinfo_proc *p )
         
         dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             /* calculate total CPU time */
-            t = calc_cpu_total();
+            //t = calc_cpu_total();
+            
+            /* calculate total CPU time re-entrant safely */
+            t = calc_cpu_total_r(proc);
             
             printf( "total = %llu\n", t );
             
