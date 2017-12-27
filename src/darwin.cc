@@ -56,6 +56,7 @@
 
 #include <mach/mach.h>          // update_total_processes
 
+#include <dispatch/dispatch.h>  // get_top_info
 #include <libproc.h>            // get_top_info
 #include "top.h"                // get_top_info
 
@@ -182,6 +183,47 @@ void get_cpu_sample(struct cpusample *sample)
     sample->totalSystemTime = r_load.cpu_ticks[CPU_STATE_SYSTEM];
     sample->totalUserTime = r_load.cpu_ticks[CPU_STATE_USER] + r_load.cpu_ticks[CPU_STATE_NICE];
     sample->totalIdleTime = r_load.cpu_ticks[CPU_STATE_IDLE];
+}
+
+/*
+ * helper function that returns the count of processes
+ * and provides a list of kinfo_proc structs representing each.
+ *
+ * ERRORS: returns -1 if something failed
+ *
+ * ATTENTION: Do not forget to free the array once you are done with it,
+ *  it is not freed automatically.
+ */
+int helper_get_proc_list( struct kinfo_proc **p = NULL )
+{
+    int err = 0;
+    size_t length = 0;
+    static const int name[] = { CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0 };
+    
+    /* Call sysctl with a NULL buffer to get proper length */
+    err = sysctl((int *)name, (sizeof(name) / sizeof(*name)) - 1, NULL, &length, NULL, 0);
+    if (err) {
+        perror(NULL);
+        return (-1);
+    }
+    
+    /* Allocate buffer */
+    *p = (kinfo_proc*)malloc(length);
+    if (!p) {
+        perror(NULL);
+        return (-1);
+    }
+    
+    /* Get the actual process list */
+    err = sysctl((int *)name, (sizeof(name) / sizeof(*name)) - 1, *p, &length, NULL, 0);
+    if (err)
+    {
+        perror(NULL);
+        return (-1);
+    }
+    
+    int proc_count = length / sizeof(struct kinfo_proc);
+    return proc_count;
 }
 
 /*-------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -471,37 +513,14 @@ int update_total_processes(void)
 
 int update_running_processes(void)
 {
-    int err = 0;
     struct kinfo_proc *p = NULL;
-    size_t length = 0;
-    
-    static const int name[] = { CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0 };
-    
-    // Call sysctl with a NULL buffer to get proper length
-    err = sysctl((int *)name, (sizeof(name) / sizeof(*name)) - 1, NULL, &length, NULL, 0);
-    if (err) {
-        perror(NULL);
-        return 0;
-    }
-    
-    // Allocate buffer
-    p = (kinfo_proc*)malloc(length);
-    if (!p) {
-        perror(NULL);
-        return 0;
-    }
-    
-    // Get the actual process list
-    err = sysctl((int *)name, (sizeof(name) / sizeof(*name)) - 1, p, &length, NULL, 0);
-    if (err)
-    {
-        perror(NULL);
-        return 0;
-    }
-    
-    int proc_count = length / sizeof(struct kinfo_proc);
-    
+    int proc_count = 0;
     int run_procs = 0;
+    
+    proc_count = helper_get_proc_list(&p);
+    
+    if (proc_count == -1)
+        return 0;
     
     for (int i = 0; i < proc_count; i++) {
         if (p[i].kp_proc.p_stat == SRUN)
@@ -690,150 +709,22 @@ static void calc_io_each(void)
 #endif /* BUILD_IOSTATS */
 
 /*
- * get_cpu_time_for_process
- *
- * calculates user_time and kernel_time and sets the contents of the |process| struct
+ * Calculate a process' cpu usage percentage
  */
-static void get_cpu_time_for_process(struct process *process, struct proc_taskinfo *pti)
+void calc_cpu_usage_for_proc(struct process *p, unsigned long long total)
 {
-    /*
-     * based on process_parse_stat() from linux.cc
-     */
+    float mul = 100.0;
+    if(top_cpu_separate.get(*state))
+        mul *= info.cpu_count;                      /*  SIDENOTES:
+                                                     *  1. info.cpu_count is set by get_cpu_count() which gets the ACTIVE cpus count
+                                                     *  2. we don't have to call get_cpu_count() because it is called by conky on start!
+                                                     */
     
-    unsigned long user_time = 0;
-    unsigned long kernel_time = 0;
-    
-    process->user_time = pti->pti_total_user;
-    process->kernel_time = pti->pti_total_system;
-    
-    /* user_time and kernel_time are in nanoseconds, total_cpu_time in centiseconds.
-     * Therefore we divide by 10^7 . */
-    process->user_time /= 10000000;
-    process->kernel_time /= 10000000;
-    
-    eprintf("%lu %lu\n\n", process->user_time, process->kernel_time);
-    
-    process->total_cpu_time = process->user_time + process->kernel_time;
-    if (process->previous_user_time == ULONG_MAX) {
-        process->previous_user_time = process->user_time;
-    }
-    if (process->previous_kernel_time == ULONG_MAX) {
-        process->previous_kernel_time = process->kernel_time;
-    }
-    
-/*  NOTE:
- *  I think this commented-out part causes miscalculations.
- *  With this removed Activity Monitor shows same thing with conky.
- *  Probably the "monotonous" problem doesn't exist on Darwin?
- *
- 
-    // strangely, the values aren't monotonous
-    if (process->previous_user_time > process->user_time)
-        process->previous_user_time = process->user_time;
-    
-    if (process->previous_kernel_time > process->kernel_time)
-        process->previous_kernel_time = process->kernel_time;
- */
-    
-    /* store the difference of the user_time */
-    user_time = process->user_time - process->previous_user_time;
-    kernel_time = process->kernel_time - process->previous_kernel_time;
-    
-    /* backup the process->user_time for next time around */
-    process->previous_user_time = process->user_time;
-    process->previous_kernel_time = process->kernel_time;
-    
-    /* store only the difference of the user_time here... */
-    process->user_time = user_time;
-    process->kernel_time = kernel_time;
+    p->amount = mul * (p->user_time + p->kernel_time) / (float) total;
+    return;
 }
 
-/*
- * update_process_table
- *
- * updates the processes list with stats for each
- */
-static void update_process_table(void)
-{
-    int err = 0;
-    struct process *proc;
-    struct kinfo_proc *p = NULL;
-    size_t length = 0;
-    
-    static const int name[] = { CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0 };
-    
-    // Call sysctl with a NULL buffer to get proper length
-    err = sysctl((int *)name, (sizeof(name) / sizeof(*name)) - 1, NULL, &length, NULL, 0);
-    if (err) {
-        perror(NULL);
-        return;
-    }
-    
-    // Allocate buffer
-    p = (kinfo_proc*)malloc(length);
-    if (!p) {
-        perror(NULL);
-        return;
-    }
-    
-    // Get the actual process list
-    err = sysctl((int *)name, (sizeof(name) / sizeof(*name)) - 1, p, &length, NULL, 0);
-    if (err)
-    {
-        perror(NULL);
-        return;
-    }
-    
-    int proc_count = length / sizeof(struct kinfo_proc);
-
-    // XXX effective or real uid?
-    // XXX check for unfilled elements of |process| struct
-    for (int i = 0; i < proc_count; i++) {
-        if (!((p[i].kp_proc.p_flag & P_SYSTEM)) && *p[i].kp_proc.p_comm != '\0') {
-            
-            pid_t pid = p[i].kp_proc.p_pid;
-            proc = get_process(pid);
-            
-            /* process name related */
-            free_and_zero(proc->name);
-            free_and_zero(proc->basename);
-            proc->name = strndup(p[i].kp_proc.p_comm, text_buffer_size.get(*state));
-            proc->basename = strndup(p[i].kp_proc.p_comm, text_buffer_size.get(*state));
-            proc->uid = p[i].kp_eproc.e_pcred.p_ruid;
-            proc->time_stamp = g_time;
-            
-            struct proc_taskinfo pti;
-            
-            if(sizeof(pti) == proc_pidinfo(pid, PROC_PIDTASKINFO, 0, &pti, sizeof(pti))) {
-                /* vsize, rss are in bytes thus we dont have to convert */
-                proc->vsize = pti.pti_virtual_size;
-                proc->rss = pti.pti_resident_size;
-                
-                eprintf("(%i) %llu %llu\n", pid, proc->vsize, proc->rss );
-            
-                /* GET kernel_time & user_time */
-                get_cpu_time_for_process(proc, &pti);
-            }
-            
-    #ifdef BUILD_IOSTATS
-            //process_parse_io(process);    // XXX implement me master!
-    #endif /* BUILD_IOSTATS */
-            
-            // XXX what is this?
-            /*
-             * Check name against the exclusion list
-             */
-            /* if (process->counted && exclusion_expression &&
-             * !regexec(exclusion_expression, process->name, 0, 0, 0))
-             * process->counted = 0; */
-        }
-    }
-    
-    free(p);
-}
-
-/* calculate cpu total */
-static unsigned long long calc_cpu_total(void)
+unsigned long long calc_cpu_total(void)
 {
     static unsigned long long previousTotal = 0;
     unsigned long long total = 0;
@@ -852,31 +743,159 @@ static unsigned long long calc_cpu_total(void)
     return t;
 }
 
-/* Calculate each process' cpu percentage */
-inline static void calc_cpu_each(unsigned long long total)
+/*
+ * calc_cpu_time_for_proc
+ *
+ * calculates user_time and kernel_time and sets the contents of the |process| struct
+ */
+void calc_cpu_time_for_proc(struct process *process, struct proc_taskinfo *pti)
 {
-    float mul = 100.0;
-    if(top_cpu_separate.get(*state))
-        mul *= info.cpu_count;                      /*  SIDENOTES:
-                                                     *  1. info.cpu_count is set by get_cpu_count() which gets the ACTIVE cpus count
-                                                     *  2. we don't have to call get_cpu_count() because it is called by conky on start!
-                                                     */
+    /*
+     * based on process_parse_stat() from linux.cc
+     */
     
-    for(struct process *p = first_process; p; p = p->next)
-        p->amount = mul * (p->user_time + p->kernel_time) / (float) total;
+    unsigned long long user_time = 0;
+    unsigned long long kernel_time = 0;
+    
+    process->user_time = pti->pti_total_user;
+    process->kernel_time = pti->pti_total_system;
+    
+    /* user_time and kernel_time are in nanoseconds, total_cpu_time in centiseconds.
+     * Therefore we divide by 10^7 . */
+    process->user_time /= 10000000;
+    process->kernel_time /= 10000000;
+    
+    process->total_cpu_time = process->user_time + process->kernel_time;
+    if (process->previous_user_time == ULONG_MAX) {
+        process->previous_user_time = process->user_time;
+    }
+    if (process->previous_kernel_time == ULONG_MAX) {
+        process->previous_kernel_time = process->kernel_time;
+    }
+    
+    /* XXX monotonous notice here! */
+    
+    /* store the difference of the user_time */
+    user_time = process->user_time - process->previous_user_time;
+    kernel_time = process->kernel_time - process->previous_kernel_time;
+    
+    /* backup the process->user_time for next time around */
+    process->previous_user_time = process->user_time;
+    process->previous_kernel_time = process->kernel_time;
+    
+    /* store only the difference of the user_time here... */
+    process->user_time = user_time;
+    process->kernel_time = kernel_time;
+}
+
+/*
+ * finds top-information only for one process which is represented by a kinfo_proc struct
+ * this function is called mutliple types ( one foreach process ) to implement get_top_info()
+ */
+void get_top_info_for_kinfo_proc( struct kinfo_proc *p )
+{
+    __block struct process *proc = NULL;
+    __block struct proc_taskinfo pti;
+    pid_t pid;
+    
+    __block bool calc_cpu_total_finished = false;
+    __block bool calc_proc_total_finished = false;
+    
+    pid = p->kp_proc.p_pid;
+    proc = get_process(pid);
+    
+    free_and_zero(proc->name);
+    free_and_zero(proc->basename);
+    
+    proc->name = strndup(p->kp_proc.p_comm, text_buffer_size.get(*state));
+    proc->basename = strndup(p->kp_proc.p_comm, text_buffer_size.get(*state));
+    proc->uid = p->kp_eproc.e_pcred.p_ruid;
+    proc->time_stamp = g_time;
+    
+    if(sizeof(pti) == proc_pidinfo(pid, PROC_PIDTASKINFO, 0, &pti, sizeof(pti)))
+    {
+        /* vsize, rss are in bytes thus we dont have to convert */
+        proc->vsize = pti.pti_virtual_size;
+        proc->rss = pti.pti_resident_size;
+        
+        /*
+         * Here we need to calculate the 2 deltas concurrently
+         * Seems like the linux implementation of get_top_info() misses this critical part!
+         * XXX probably issue pull request!
+         */
+        
+        __block unsigned long long t = 0;
+        
+        dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            /* calculate total CPU time */
+            t = calc_cpu_total();
+            
+            printf( "total = %llu\n", t );
+            
+            calc_proc_total_finished = true;
+        });
+        dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            /* calc CPU time for process */
+            calc_cpu_time_for_proc(proc, &pti);
+            
+            printf( "user_time= %lu kernel_time= %lu\n", proc->user_time, proc->kernel_time );
+            
+            calc_cpu_total_finished = true;
+        });
+
+        /*
+         * wait until the functions have finished
+         */
+        while( !(calc_cpu_total_finished && calc_proc_total_finished) )
+            ;
+        
+        /* calc the amount(%) of CPU the process used  */
+        calc_cpu_usage_for_proc(proc, t);
+    }
 }
 
 /* While topless is obviously better, top is also not bad. */
 
 void get_top_info(void)
 {
-    /* version 0.7~1 */
+    /* version 0.8~1
+     * greatly inspired from linux/freebsd implementations
+     *
+     * NOTE: doesn't support I/O stats for processes
+     */
+    // XXX effective or real uid?
+    // XXX check for unfilled elements of |process| struct
     
-    unsigned long long total = 0;
+    // ENHANCEMENTS:
+    // XXX Enhancement for SIP: make everything "signed int"... If SIP is unavailable (e.g. old OS) make everything have the value (-1)
+    // XXX Fix SIP documentation
+    // ΧΧΧ introduce global mach_port feature - reduce code size
+    // XXX make the function get_from_load_info into update_threads_processes() which will
+    //      calculate proc_count and thread_count regardless of the parameter |what|
     
-    total = calc_cpu_total();       /* calculate the total usage of the processor */
-    update_process_table();         /* update the table with process list */
-    calc_cpu_each(total);           /* and then the percentage for each task */
+    struct kinfo_proc *p = NULL;
+    int proc_count = 0;
+    
+    proc_count = helper_get_proc_list(&p);
+    
+    if (proc_count == -1)
+        return;
+    
+    for (int i = 0; i < proc_count; i++)
+    {
+        if (!((p[i].kp_proc.p_flag & P_SYSTEM)) && *p[i].kp_proc.p_comm != '\0')
+        {
+            get_top_info_for_kinfo_proc(&p[i]);
+            
+#ifdef BUILD_IOSTATS
+            //process_parse_io(process);    // XXX implement me master!
+#endif /* BUILD_IOSTATS */
+            
+            // XXX investigate the "exclusion list"-related part...
+        }
+    }
+    
+    free(p);
     
 #ifdef BUILD_IOSTATS
     calc_io_each();                 /* percentage of I/O for each task */
