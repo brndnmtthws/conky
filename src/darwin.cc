@@ -860,7 +860,8 @@ static void get_top_info_for_kinfo_proc( struct kinfo_proc *p )
             /* calculate total CPU time */
             //t = calc_cpu_total();
             
-            /* calculate total CPU time re-entrant safely */
+            /* calculate total CPU time re-entrant safely
+                this way it works better */
             t = calc_cpu_total_r(proc);
             
             printf( "total = %llu\n", t );
