@@ -43,6 +43,7 @@
 #include <dirent.h>
 #include <net/if.h>
 #include <sys/sockio.h>
+#include "diskio.h"
 #include "top.h"
 
 #include <assert.h>
@@ -102,18 +103,19 @@ static kstat_named_t *get_kstat(const char *module, int inst, const char *name,
 	}
 
 	if (kstat_read(kstat, ksp, NULL) >= 0) {
-		if (ksp->ks_type == KSTAT_TYPE_NAMED) {
+		if (ksp->ks_type == KSTAT_TYPE_NAMED ||
+		  ksp->ks_type == KSTAT_TYPE_TIMER) {
 			kstat_named_t *knp = (kstat_named_t *)kstat_data_lookup(ksp,
 			  (char *)stat);
 			return knp;
 		} else {
 			NORM_ERR("kstat %s:%d:%s:%s has unexpected type %d",
 			  module, inst, name, stat, ksp->ks_type);
-			assert(0);
+			return NULL;
 		}
 	}
 	NORM_ERR("cannot read kstat %s:%d:%s:%s", module, inst, name, stat);
-	return NULL; 
+	return NULL;
 }
 
 void prepare_update()
@@ -129,8 +131,6 @@ int update_meminfo()
 	struct swapent *swe;
 	char path[PATH_MAX];
 	unsigned long stp, sfp;
-	
-	update_kstat();
 
 	/* RAM stats */
 	knp = get_kstat("unix", -1, "system_pages", "freemem");
@@ -139,20 +139,20 @@ int update_meminfo()
 	info.memmax = pagetok(sysconf(_SC_PHYS_PAGES));
 	if (info.memmax > info.memfree)
 		info.mem = info.memmax - info.memfree;
-	else
+	else		/* for non-global zones with capped memory */
 		info.mem = info.memmax;
 
-	/* swap stats */
+	/* Swap stats */
 	if (nswap < 1)
 		return 0;
-	/* swapctl(2) */
+	/* for swapctl(2) */
 	swt = (struct swaptable *)malloc(nswap * sizeof (struct swapent) +
 	  sizeof (int));
 	if (swt == NULL)
 		return 0;
 	swt->swt_n = nswap;
 	swe = &(swt->swt_ent[0]);
-	/* We are not interested in ste_path */ 
+	/* We are not interested in ste_path */
 	for (int i = 0; i < nswap; i++)
 		swe[i].ste_path = path;
 	nswap = swapctl(SC_LIST, swt);
@@ -175,14 +175,14 @@ int update_meminfo()
 int check_mount(struct text_object *obj)
 {
 	/* stub */
-	(void)obj;
+	(void) obj;
 	return 0;
 }
 
 double get_battery_perct_bar(struct text_object *obj)
 {
 	/* Not implemented */
-	(void)obj;
+	(void) obj;
 
 	return 100.0;
 }
@@ -190,7 +190,7 @@ double get_battery_perct_bar(struct text_object *obj)
 double get_acpi_temperature(int fd)
 {
 	/* Not implemented */
-	(void)fd;
+	(void) fd;
 
 	return 0.0;
 }
@@ -210,7 +210,7 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 
 int update_running_processes(void)
 {
-	/* there is no kstat for this, see update_proc_entry() */
+	/* There is no kstat for this, see update_proc_entry() */
 	return 0;
 }
 
@@ -224,22 +224,22 @@ int update_net_stats(void)
 	if (d < 0.1)
 		return 0;
 
-	/* Find all active net interfaces. */
+	/* Find all active net interfaces */
 	if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 		NORM_ERR("cannot create socket: %s", strerror(errno));
 		return 0;
 	}
 	ifc.ifc_buf = buf;
-	ifc.ifc_len = sizeof(buf);
+	ifc.ifc_len = sizeof (buf);
 	if (ioctl(sockfd, SIOCGIFCONF, &ifc) < 0) {
 		NORM_ERR("ioctl(SIOCGIFCONF) failed: %s", strerror(errno));
-		close(sockfd);
-		return 0; 
+		(void) close(sockfd);
+		return 0;
 	}
-	(void)close(sockfd);
+	(void) close(sockfd);
 
 	/* Collect stats for all active interfaces */
-	for (int i = 0;  i < ifc.ifc_len / sizeof(struct ifreq); i++) {
+	for (int i = 0;  i < ifc.ifc_len / sizeof (struct ifreq); i++) {
 		struct net_stat *ns;
 		struct ifreq *ifr = &ifc.ifc_req[i];
 		long long last_recv, last_trans;
@@ -248,15 +248,15 @@ int update_net_stats(void)
 
 		ns = get_net_stat((const char *) ifr->ifr_name, NULL, NULL);
 		ns->up = 1;
-		memcpy(&(ns->addr), &ifr->ifr_addr, sizeof(ifr->ifr_addr));
+		memcpy(&(ns->addr), &ifr->ifr_addr, sizeof (ifr->ifr_addr));
 
-		/* loopback interface does not have kstat data */
+		/* Skip the loopback interface, it does not have kstat data */
 		if (ifr->ifr_flags & IFF_LOOPBACK || strcmp(ifr->ifr_name, "lo0") == 0)
 			continue;
 		last_recv = ns->recv;
 		last_trans = ns->trans;
 
-		/* get received bytes */
+		/* Get received bytes */
 		knp = get_kstat("link", -1, ifr->ifr_name, "rbytes");
 		if (knp == NULL) {
 			NORM_ERR("cannot read rbytes for %s\n", ifr->ifr_name);
@@ -270,7 +270,7 @@ int update_net_stats(void)
 		}
 		ns->last_read_recv = r;
 
-		/* get transceived bytes */
+		/* Get transceived bytes */
 		knp = get_kstat("link", -1, ifr->ifr_name, "obytes");
 		if (knp == NULL) {
 			NORM_ERR("cannot read obytes for %s\n", ifr->ifr_name);
@@ -304,7 +304,8 @@ int update_cpu_usage(void)
 
 	info.cpu_count = sysconf(_SC_NPROCESSORS_ONLN);
 
-	if (last_cpu_cnt != info.cpu_count || last_cpu_use == NULL) { 
+	/* (Re)allocate the array with previous values */
+	if (last_cpu_cnt != info.cpu_count || last_cpu_use == NULL) {
 		last_cpu_use = (int *)realloc(last_cpu_use,
 		  info.cpu_count * sizeof (int));
 		last_cpu_cnt = info.cpu_count;
@@ -312,7 +313,7 @@ int update_cpu_usage(void)
 			return 0;
 	}
 
-	info.cpu_usage = (float *)malloc(info.cpu_count * sizeof(float));
+	info.cpu_usage = (float *)malloc(info.cpu_count * sizeof (float));
 
 	for (cpu = 0; cpu < info.cpu_count; cpu++) {
 		char stat_name[PATH_MAX];
@@ -331,7 +332,7 @@ int update_cpu_usage(void)
 
 		cpu_idle = cs->cpu_sysinfo.cpu[CPU_IDLE];
 		cpu_user = cs->cpu_sysinfo.cpu[CPU_USER];
-		cpu_nice = cs->cpu_sysinfo.cpu[CPU_WAIT]; 
+		cpu_nice = cs->cpu_sysinfo.cpu[CPU_WAIT];
 		cpu_system = cs->cpu_sysinfo.cpu[CPU_KERNEL];
 
 		cpu_use = cpu_user + cpu_nice + cpu_system;
@@ -347,16 +348,13 @@ void update_proc_entry(struct process *p)
 {
 	psinfo_t proc;
 	int fd;
-	double prc;
 	char pfn[PATH_MAX];
 
 	snprintf(pfn, PATH_MAX, "/proc/%d/psinfo", p->pid);
-	if ((fd = open(pfn, O_RDONLY)) < 0) {
-		printf("cannot read pid %d, err: %d\n", p->pid, errno);
+	/* Ignore errors here as the process can be gone */
+	if ((fd = open(pfn, O_RDONLY)) < 0)
 		return;
-	}
-	if (pread(fd, &proc, sizeof(psinfo_t), 0) != sizeof(psinfo_t)) {
-		printf("%s has wrong size\n", pfn);
+	if (pread(fd, &proc, sizeof (psinfo_t), 0) != sizeof (psinfo_t)) {
 		(void) close(fd);
 		return;
 	}
@@ -366,15 +364,13 @@ void update_proc_entry(struct process *p)
 	p->name = strndup(proc.pr_fname, text_buffer_size.get(*::state));
 	p->basename = strndup(proc.pr_fname, text_buffer_size.get(*::state));
 	p->uid = proc.pr_uid;
-	/* p->amount = proc.pr_pctcpu; */
-	prc = (double)proc.pr_pctcpu / (double)0x8000 * 100.0;
-	p->amount = prc;
+	/* see proc(4) */
+	p->amount = (double)proc.pr_pctcpu / (double)0x8000 * 100.0;
 	p->rss = proc.pr_rssize * 1024;		/* to bytes */
 	p->vsize = proc.pr_size * 1024;		/* to bytes */
 	p->total_cpu_time = proc.pr_time.tv_sec * 100; /* to hundredths of secs */
 	if (proc.pr_lwp.pr_sname == 'O' || proc.pr_lwp.pr_sname == 'R')
 		info.run_procs++;
-
 	p->time_stamp = g_time;
 }
 
@@ -391,25 +387,55 @@ void get_top_info(void)
 	while ((entry = readdir(dir))) {
 		pid_t pid;
 
-		if (entry == NULL) 
+		if (entry == NULL)
 			break;
-		if (sscanf(entry->d_name, "%d", &pid) != 1)
+		if (sscanf(entry->d_name, "%u", &pid) != 1)
 			continue;
 		update_proc_entry(get_process(pid));
 	}
 	(void) closedir(dir);
 }
 
+/*
+ * Because Solaris systems often have 100s or 1000s of disks, we don't collect
+ * data for all of them but only for those mentioned in conkyrc.
+ * Instead of disk's special file in SVR4 format, we use the driver name and
+ * and the instance number to specify the disk or partition. For example: sd0,
+ * ssd3, or sd5,b.
+ */
 int update_diskio(void)
 {
-	/* TODO */
+	unsigned int tot_read = 0;
+	unsigned int tot_written = 0;
+
+	update_kstat();
+
+	for (struct diskio_stat *cur = &stats; cur; cur = cur->next) {
+		unsigned int read, written;
+		kstat_io_t *ksio;
+		kstat_t *ksp;
+
+		if (cur->dev == NULL)
+			continue;
+		if ((ksp = kstat_lookup(kstat, NULL, -1, cur->dev)) == NULL)
+			continue;
+		if (kstat_read(kstat, ksp, NULL) == -1)
+			continue;
+		ksio = (kstat_io_t *)ksp->ks_data;
+		tot_read += read = (unsigned int)(ksio->nread / 512);
+		tot_written += written = (unsigned int)(ksio->nwritten / 512);
+		update_diskio_values(cur, read, written);
+	}
+
+	update_diskio_values(&stats, tot_read, tot_written);
+
 	return 0;
 }
 
 void get_battery_short_status(char *buffer, unsigned int n, const char *bat)
 {
 	/* Not implemented */
-	(void)bat;
+	(void) bat;
 	if (buffer && n > 0)
 		memset(buffer, 0, n);
 }
@@ -432,14 +458,14 @@ void get_acpi_ac_adapter(char *p_client_buffer, size_t client_buffer_size,
 int get_battery_perct(const char *bat)
 {
 	/* Not implemented */
-	(void)bat;
+	(void) bat;
 	return 1;
 }
 
 int get_entropy_poolsize(unsigned int *val)
 {
 	/* Not implemented */
-	(void)val;
+	(void) val;
 	return 1;
 }
 
@@ -448,8 +474,6 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size,
 {
 	char stat_name[PATH_MAX];
 	kstat_named_t *knp;
-
-	update_kstat();
 
 	snprintf(stat_name, PATH_MAX, "cpu_info%d", cpu - 1);
 	knp = get_kstat("cpu_info", cpu - 1, stat_name, "current_clock_Hz");
@@ -464,8 +488,6 @@ int update_uptime(void)
 {
 	kstat_named_t *knp;
 
-	update_kstat();
-
 	knp = get_kstat("unix", -1, "system_misc", "boot_time");
 	if (knp == NULL)
 		return 0;
@@ -476,14 +498,14 @@ int update_uptime(void)
 int open_acpi_temperature(const char *name)
 {
 	/* Not implemented */
-	(void)name;
+	(void) name;
 	return 1;
 }
 
 int get_entropy_avail(unsigned int *val)
 {
 	/* Not implemented */
-	(void)val;
+	(void) val;
 	return 1;
 }
 
@@ -501,11 +523,7 @@ int update_load_average(void)
 
 void get_cpu_count(void)
 {
-	kstat_named_t *knp;
-
-	update_kstat();
-
-	knp = get_kstat("unix", -1, "system_misc", "ncpus");
+	kstat_named_t *knp = get_kstat("unix", -1, "system_misc", "ncpus");
 	if (knp != NULL)
 		info.cpu_count = knp->value.ui32;
 }
