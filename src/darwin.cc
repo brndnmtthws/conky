@@ -147,6 +147,42 @@ int clock_gettime(int clock_id, struct timespec *ts)
 #endif /* ifndef HAVE_CLOCK_GETTIME */
 
 /*
+ *  helper_update_threads_processes()
+ *
+ *  Helper function for update_threads() and update_running_threads()
+ *  Uses mach API to get load info ( task_count, thread_count )
+ *
+ */
+static void helper_update_threads_processes(void)
+{
+    static host_name_port_t             machHost;
+    static processor_set_name_port_t    processorSet = 0;
+    static bool                         machStuffInitialised = false;
+    
+    /* Set up our mach host and default processor set for later calls */
+    if (!machStuffInitialised)
+    {
+        machHost = mach_host_self();
+        processor_set_default(machHost, &processorSet);
+        
+        /* set this to true so we don't ever initialise stuff again */
+        machStuffInitialised = true;
+    }
+    
+    /* get load info */
+    struct processor_set_load_info loadInfo;
+    mach_msg_type_number_t count = PROCESSOR_SET_LOAD_INFO_COUNT;
+    kern_return_t err = processor_set_statistics(processorSet, PROCESSOR_SET_LOAD_INFO,
+                                                 (processor_set_info_t)&loadInfo, &count);
+    
+    if (err != KERN_SUCCESS)
+        return;
+    
+    info.run_procs = loadInfo.task_count;
+    info.run_threads = loadInfo.thread_count;
+}
+
+/*
  * useful info about the cpu used by functions such as update_cpu_usage() and get_top_info()
  */
 struct cpusample
@@ -171,7 +207,7 @@ struct cpusample
  * Gets systemTime, userTime and idleTime for CPU
  * plagiarised from https://stackoverflow.com/questions/20471920/how-to-get-total-cpu-idle-time-in-objective-c-c-on-os-x
  */
-void get_cpu_sample(struct cpusample *sample)
+static void get_cpu_sample(struct cpusample *sample)
 {
     kern_return_t kr;
     mach_msg_type_number_t count;
@@ -202,7 +238,7 @@ void get_cpu_sample(struct cpusample *sample)
  * ATTENTION: Do not forget to free the array once you are done with it,
  *  it is not freed automatically.
  */
-int helper_get_proc_list( struct kinfo_proc **p = NULL )
+static int helper_get_proc_list( struct kinfo_proc **p = NULL )
 {
     int err = 0;
     size_t length = 0;
@@ -404,73 +440,9 @@ int update_net_stats(void)
     return 0;
 }
 
-/*
- *  Flags needed for get_from_load_info()
- */
-enum {
-    DARWIN_CONKY_PROCESSES_COUNT,
-    DARWIN_CONKY_THREADS_COUNT,
-};
-
-/*
- *  get_from_load_info
- *
- *  Helper function for update_threads() and update_running_threads()
- *
- *  Uses mach API to get load info ( task_count, thread_count )
- *
- *  Returns 0 if nothing is found, or >0 if successful
- *
- */
-int get_from_load_info( int what )
-{
-    static bool machStuffInitialised = false;                   /*
-                                                                 *  Set this to true when the block that initialises machHost and processorSet has executed ONCE.
-                                                                 *  This way we ensure that upon each update_total_processes() only ONCE the block executes.
-                                                                 */
-    
-    static host_name_port_t             machHost;
-    static processor_set_name_port_t	processorSet = 0;
-    
-    
-    if (!machStuffInitialised)
-    {
-        eprintf("\n\n\nRunning ONLY ONCE the mach--init block\n\n\n");
-        
-        // Set up our mach host and default processor set for later calls
-        machHost = mach_host_self();
-        processor_set_default(machHost, &processorSet);
-        
-        machStuffInitialised = true;
-    }
-    
-    // get load info
-    struct processor_set_load_info loadInfo;
-    mach_msg_type_number_t count = PROCESSOR_SET_LOAD_INFO_COUNT;
-    kern_return_t err = processor_set_statistics(processorSet, PROCESSOR_SET_LOAD_INFO,
-                                                 (processor_set_info_t)&loadInfo, &count);
-    
-    if (err != KERN_SUCCESS)
-        return 0;
-    
-    switch (what)
-    {
-        case DARWIN_CONKY_PROCESSES_COUNT:
-            return loadInfo.task_count;
-            break;
-        case DARWIN_CONKY_THREADS_COUNT:
-            return loadInfo.thread_count;
-            break;
-        default:
-            printf("Error: Unxpected flag passed to get_from_load_info()\n");
-            return 0;
-            break;
-    }
-}
-
 int update_threads(void)
 {
-    info.threads = get_from_load_info(DARWIN_CONKY_THREADS_COUNT);
+    helper_update_threads_processes();
     return 0;
 }
 
@@ -481,7 +453,7 @@ int update_running_threads(void)
 
 int update_total_processes(void)
 {
-    info.procs = get_from_load_info(DARWIN_CONKY_PROCESSES_COUNT);
+    helper_update_threads_processes();
     return 0;
     
     /*
@@ -685,13 +657,13 @@ int get_entropy_poolsize(unsigned int * val)
 /*
  * Calculate a process' cpu usage percentage
  */
-static void calc_cpu_usage_for_proc(struct process *p, struct cpusample *sample)
+static void calc_cpu_usage_for_proc(struct process *proc, struct cpusample *sample)
 {
     float mul = 100.0;
     if(top_cpu_separate.get(*state))
         mul *= info.cpu_count;
 
-    p->amount = mul * (p->user_time + p->kernel_time) / (float) sample->total;
+    proc->amount = mul * (proc->user_time + proc->kernel_time) / (float) sample->total;
 }
 
 /*
@@ -717,7 +689,7 @@ static void calc_cpu_total(struct cpusample *sample)
  *
  * calculates user_time and kernel_time and sets the contents of the |process| struct
  */
-static void calc_cpu_time_for_proc(struct process *process, struct proc_taskinfo *pti)
+static void calc_cpu_time_for_proc(struct process *process, const struct proc_taskinfo *pti)
 {
     /*
      * based on process_parse_stat() from linux.cc
@@ -761,10 +733,10 @@ static void calc_cpu_time_for_proc(struct process *process, struct proc_taskinfo
  * finds top-information only for one process which is represented by a kinfo_proc struct
  * this function is called mutliple types ( one foreach process ) to implement get_top_info()
  */
-static void get_top_info_for_kinfo_proc( struct kinfo_proc *p, struct cpusample *sample )
+static void get_top_info_for_kinfo_proc(struct kinfo_proc *p, struct cpusample *sample)
 {
-    __block struct process *proc = NULL;
-    __block struct proc_taskinfo pti;
+    struct process *proc = NULL;
+    struct proc_taskinfo pti;
     pid_t pid;
     
     __block bool calc_cpu_total_finished = false;
