@@ -189,12 +189,7 @@ struct cpusample
 {
     uint64_t totalUserTime;                     /* ticks of CPU in userspace */
     uint64_t totalSystemTime;                   /* ticks of CPU in kernelspace */
-    unsigned long long cpu_nice;
     uint64_t totalIdleTime;                     /* ticks in idleness */
-    unsigned long long cpu_iowait;
-    unsigned long long cpu_irq;
-    unsigned long long cpu_softirq;
-    unsigned long long cpu_steal;
     
     uint64_t total;                             /* delta of current and previous */
     uint64_t current_total;                     /* total CPU usage of current iteration */
@@ -561,20 +556,9 @@ double get_acpi_temperature(int fd)
     return 0.0;
 }
 
-static void get_battery_stats(int *battime, int *batcapacity, int *batstate, int *ac) {
-    printf( "get_battery_stats: STUB\n" );
-}
-
 void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 {
     printf( "get_battery_stuff: STUB\n" );
-}
-
-static int check_bat(const char *bat)
-{
-    printf( "check_bat: STUB\n" );
-    
-    return 1;
 }
 
 int get_battery_perct(const char *bat)
@@ -688,13 +672,10 @@ static void calc_cpu_total(struct cpusample *sample)
  * calc_cpu_time_for_proc
  *
  * calculates user_time and kernel_time and sets the contents of the |process| struct
+ * excessively based on process_parse_stat() from linux.cc
  */
 static void calc_cpu_time_for_proc(struct process *process, const struct proc_taskinfo *pti)
 {
-    /*
-     * based on process_parse_stat() from linux.cc
-     */
-    
     unsigned long long user_time = 0;
     unsigned long long kernel_time = 0;
     
@@ -713,8 +694,6 @@ static void calc_cpu_time_for_proc(struct process *process, const struct proc_ta
     if (process->previous_kernel_time == ULONG_MAX) {
         process->previous_kernel_time = process->kernel_time;
     }
-    
-    /* XXX monotonous notice here! */
     
     /* store the difference of the user_time */
     user_time = process->user_time - process->previous_user_time;
@@ -774,8 +753,6 @@ static void get_top_info_for_kinfo_proc(struct kinfo_proc *p, struct cpusample *
             /* calc CPU time for process */
             calc_cpu_time_for_proc(proc, &pti);
             
-            printf( "user_time= %lu kernel_time= %lu\n", proc->user_time, proc->kernel_time );
-            
             calc_proc_total_finished = true;
         });
 
@@ -805,18 +782,19 @@ void get_top_info(void)
     struct cpusample *sample = NULL;        /* holds data for CPU */
     int proc_count = 0;
     
+    /* get processes count and create the processes list */
     proc_count = helper_get_proc_list(&p);
     
     if (proc_count == -1)
         return;
     
     sample = (struct cpusample *)malloc(sizeof(cpusample));
-    
     if (!sample)
         return;
     
     memset(sample, 0, sizeof(cpusample));
     
+    /* get top info for-each process */
     for (int i = 0; i < proc_count; i++)
     {
         if (!((p[i].kp_proc.p_flag & P_SYSTEM)) && *p[i].kp_proc.p_comm != '\0')
