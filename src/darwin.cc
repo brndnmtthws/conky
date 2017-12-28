@@ -655,16 +655,12 @@ static void calc_cpu_usage_for_proc(struct process *proc, struct cpusample *samp
  */
 static void calc_cpu_total(struct cpusample *sample)
 {
-    unsigned long long total = 0;               /* delta */
-    unsigned long long current_total = 0;       /* current iteration total */
-    
     get_cpu_sample(sample);
-    current_total = sample->totalUserTime + sample->totalIdleTime + sample->totalSystemTime;
+    sample->current_total = sample->totalUserTime + sample->totalIdleTime + sample->totalSystemTime;
     
-    total = current_total - sample->previous_total;
-    sample->previous_total = current_total;
+    sample->total = sample->current_total - sample->previous_total;
+    sample->previous_total = sample->current_total;
     
-    sample->total = total;
     sample->total = ((sample->total / sysconf(_SC_CLK_TCK)) * 100) / info.cpu_count;
 }
 
