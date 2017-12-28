@@ -655,16 +655,12 @@ static void calc_cpu_usage_for_proc(struct process *proc, struct cpusample *samp
  */
 static void calc_cpu_total(struct cpusample *sample)
 {
-    unsigned long long total = 0;               /* delta */
-    unsigned long long current_total = 0;       /* current iteration total */
-    
     get_cpu_sample(sample);
-    current_total = sample->totalUserTime + sample->totalIdleTime + sample->totalSystemTime;
+    sample->current_total = sample->totalUserTime + sample->totalIdleTime + sample->totalSystemTime;
+
+    sample->total = sample->current_total - sample->previous_total;
+    sample->previous_total = sample->current_total;
     
-    total = current_total - sample->previous_total;
-    sample->previous_total = current_total;
-    
-    sample->total = total;
     sample->total = ((sample->total / sysconf(_SC_CLK_TCK)) * 100) / info.cpu_count;
 }
 
@@ -718,9 +714,6 @@ static void get_top_info_for_kinfo_proc(struct kinfo_proc *p, struct cpusample *
     struct proc_taskinfo pti;
     pid_t pid;
     
-    __block bool calc_cpu_total_finished = false;
-    __block bool calc_proc_total_finished = false;
-    
     pid = p->kp_proc.p_pid;
     proc = get_process(pid);
     
@@ -738,29 +731,8 @@ static void get_top_info_for_kinfo_proc(struct kinfo_proc *p, struct cpusample *
         proc->vsize = pti.pti_virtual_size;
         proc->rss = pti.pti_resident_size;
         
-        /*
-         * Here we need to calculate the 2 deltas concurrently
-         * Seems like the linux implementation of get_top_info() misses this critical part!
-         */
-        
-        dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            /* calculate total CPU time */
-            calc_cpu_total(sample);
-            
-            calc_cpu_total_finished = true;
-        });
-        dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            /* calc CPU time for process */
-            calc_cpu_time_for_proc(proc, &pti);
-            
-            calc_proc_total_finished = true;
-        });
-
-        /*
-         * wait until the functions have finished
-         */
-        while( !(calc_cpu_total_finished && calc_proc_total_finished) )
-            ;
+        /* calc CPU time for process */
+        calc_cpu_time_for_proc(proc, &pti);
         
         /* calc the amount(%) of CPU the process used  */
         calc_cpu_usage_for_proc(proc, sample);
@@ -797,6 +769,9 @@ void get_top_info(void)
     /* get top info for-each process */
     for (int i = 0; i < proc_count; i++)
     {
+        /* calculate total CPU time */
+        calc_cpu_total(sample);
+        
         if (!((p[i].kp_proc.p_flag & P_SYSTEM)) && *p[i].kp_proc.p_comm != '\0')
         {
             get_top_info_for_kinfo_proc(&p[i], sample);
