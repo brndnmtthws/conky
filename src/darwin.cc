@@ -147,15 +147,22 @@ int clock_gettime(int clock_id, struct timespec *ts)
 #endif /* ifndef HAVE_CLOCK_GETTIME */
 
 /*
- * holds total ticks in kernel space,
- * user space, and idle.
- *
- * required by get_cpu_sample()
+ * useful info about the cpu used by functions such as update_cpu_usage() and get_top_info()
  */
-struct cpusample {
-    uint64_t totalSystemTime;
-    uint64_t totalUserTime;
-    uint64_t totalIdleTime;
+struct cpusample
+{
+    uint64_t totalUserTime;                     /* ticks of CPU in userspace */
+    uint64_t totalSystemTime;                   /* ticks of CPU in kernelspace */
+    unsigned long long cpu_nice;
+    uint64_t totalIdleTime;                     /* ticks in idleness */
+    unsigned long long cpu_iowait;
+    unsigned long long cpu_irq;
+    unsigned long long cpu_softirq;
+    unsigned long long cpu_steal;
+    
+    uint64_t total;                             /* delta of current and previous */
+    uint64_t current_total;                     /* total CPU usage of current iteration */
+    uint64_t previous_total;                    /* total CPU usage of previous iteration */
 };
 
 /*
@@ -172,13 +179,12 @@ void get_cpu_sample(struct cpusample *sample)
     
     count = HOST_CPU_LOAD_INFO_COUNT;
     kr = host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, (int *)&r_load, &count);
-    if (kr != KERN_SUCCESS) {
-        printf("oops: %s\n", mach_error_string(kr));
+    
+    if (kr != KERN_SUCCESS)
+    {
+        printf("host_statistics: %s\n", mach_error_string(kr));
         return;
     }
-    
-    // XXX check if apple has actually fixed the NICE problem.
-    // Although our code still supports getting the NICE ticks (we dont have a separate variable but thats not problem)
     
     sample->totalSystemTime = r_load.cpu_ticks[CPU_STATE_SYSTEM];
     sample->totalUserTime = r_load.cpu_ticks[CPU_STATE_USER] + r_load.cpu_ticks[CPU_STATE_NICE];
@@ -186,6 +192,8 @@ void get_cpu_sample(struct cpusample *sample)
 }
 
 /*
+ * helper_get_proc_list()
+ *
  * helper function that returns the count of processes
  * and provides a list of kinfo_proc structs representing each.
  *
@@ -556,27 +564,6 @@ void get_cpu_count(void)
     }
 }
 
-
-#define CPU_SAMPLE_COUNT 15
-struct cpu_info {
-    /* Linux implementation */
-    unsigned long long cpu_user;
-    unsigned long long cpu_system;
-    unsigned long long cpu_nice;
-    unsigned long long cpu_idle;
-    unsigned long long cpu_iowait;
-    unsigned long long cpu_irq;
-    unsigned long long cpu_softirq;
-    unsigned long long cpu_steal;
-    unsigned long long cpu_total;
-    unsigned long long cpu_active_total;
-    unsigned long long cpu_last_total;
-    unsigned long long cpu_last_active_total;
-    double cpu_val[CPU_SAMPLE_COUNT];
-    
-    /* macOS implementation */
-};
-
 int update_cpu_usage(void)
 {
     return 0;
@@ -695,82 +682,34 @@ int get_entropy_poolsize(unsigned int * val)
  *          get top info section          *
  ******************************************/
 
-#ifdef BUILD_IOSTATS
-static void calc_io_each(void)
-{
-    struct process *p;
-    unsigned long long sum = 0;
-    
-    for (p = first_process; p; p = p->next)
-        sum += p->read_bytes + p->write_bytes;
-    
-    if(sum == 0)
-        sum = 1; /* to avoid having NANs if no I/O occured */
-    for (p = first_process; p; p = p->next)
-        p->io_perc = 100.0 * (p->read_bytes + p->write_bytes) / (float) sum;
-}
-#endif /* BUILD_IOSTATS */
-
 /*
  * Calculate a process' cpu usage percentage
  */
-static void calc_cpu_usage_for_proc(struct process *p, unsigned long long total)
+static void calc_cpu_usage_for_proc(struct process *p, struct cpusample *sample)
 {
     float mul = 100.0;
     if(top_cpu_separate.get(*state))
-        mul *= info.cpu_count;                      /*  SIDENOTES:
-                                                     *  1. info.cpu_count is set by get_cpu_count() which gets the ACTIVE cpus count
-                                                     *  2. we don't have to call get_cpu_count() because it is called by conky on start!
-                                                     */
-    
-    p->amount = mul * (p->user_time + p->kernel_time) / (float) total;
-    return;
+        mul *= info.cpu_count;
+
+    p->amount = mul * (p->user_time + p->kernel_time) / (float) sample->total;
 }
 
 /*
- * reentrant re-implementation of the calc_cpu_total function.
- * fixes a bit the algorithm but it is NOT the final version of the function!
+ * calculate total CPU usage
  */
-static unsigned long long calc_cpu_total_r(struct process *p)
+static void calc_cpu_total(struct cpusample *sample)
 {
-    unsigned long long total = 0;   /* current total */
-    // proc->total                  /* previous total */
-    unsigned long long t = 0;       /* delta */
-    struct cpusample sample;
+    unsigned long long total = 0;               /* delta */
+    unsigned long long current_total = 0;       /* current iteration total */
     
-    get_cpu_sample(&sample);
-    total = sample.totalIdleTime + sample.totalSystemTime + sample.totalUserTime;
+    get_cpu_sample(sample);
+    current_total = sample->totalUserTime + sample->totalIdleTime + sample->totalSystemTime;
     
-    t = total - p->total;
-    p->total = total;
+    total = current_total - sample->previous_total;
+    sample->previous_total = current_total;
     
-    /* convert ticks to centiseconds */
-    t = ((t / sysconf(_SC_CLK_TCK)) * 100) / info.cpu_count;
-    
-    return t;
-}
-
-static unsigned long long calc_cpu_total(void)
-{
-    /*
-     * non-reentrant; do not use.
-     */
-    
-    static unsigned long long previousTotal = 0;
-    unsigned long long total = 0;
-    unsigned long long t = 0;
-    struct cpusample sample;
-    
-    get_cpu_sample(&sample);
-    total = sample.totalIdleTime + sample.totalSystemTime + sample.totalUserTime;
-    
-    t = total - previousTotal;
-    previousTotal = total;
-    
-    /* convert ticks to centiseconds */
-    t = ((t / sysconf(_SC_CLK_TCK)) * 100) / info.cpu_count;
-    
-    return t;
+    sample->total = total;
+    sample->total = ((sample->total / sysconf(_SC_CLK_TCK)) * 100) / info.cpu_count;
 }
 
 /*
@@ -822,7 +761,7 @@ static void calc_cpu_time_for_proc(struct process *process, struct proc_taskinfo
  * finds top-information only for one process which is represented by a kinfo_proc struct
  * this function is called mutliple types ( one foreach process ) to implement get_top_info()
  */
-static void get_top_info_for_kinfo_proc( struct kinfo_proc *p )
+static void get_top_info_for_kinfo_proc( struct kinfo_proc *p, struct cpusample *sample )
 {
     __block struct process *proc = NULL;
     __block struct proc_taskinfo pti;
@@ -851,21 +790,13 @@ static void get_top_info_for_kinfo_proc( struct kinfo_proc *p )
         /*
          * Here we need to calculate the 2 deltas concurrently
          * Seems like the linux implementation of get_top_info() misses this critical part!
-         * XXX probably issue pull request!
          */
-        
-        __block unsigned long long t = 0;
         
         dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             /* calculate total CPU time */
-            //t = calc_cpu_total();
+            calc_cpu_total(sample);
             
-            /* calculate total CPU time re-entrant safely */
-            t = calc_cpu_total_r(proc);
-            
-            printf( "total = %llu\n", t );
-            
-            calc_proc_total_finished = true;
+            calc_cpu_total_finished = true;
         });
         dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             /* calc CPU time for process */
@@ -873,7 +804,7 @@ static void get_top_info_for_kinfo_proc( struct kinfo_proc *p )
             
             printf( "user_time= %lu kernel_time= %lu\n", proc->user_time, proc->kernel_time );
             
-            calc_cpu_total_finished = true;
+            calc_proc_total_finished = true;
         });
 
         /*
@@ -883,7 +814,7 @@ static void get_top_info_for_kinfo_proc( struct kinfo_proc *p )
             ;
         
         /* calc the amount(%) of CPU the process used  */
-        calc_cpu_usage_for_proc(proc, t);
+        calc_cpu_usage_for_proc(proc, sample);
     }
 }
 
@@ -891,22 +822,15 @@ static void get_top_info_for_kinfo_proc( struct kinfo_proc *p )
 
 void get_top_info(void)
 {
-    /* version 0.8~1
+    /*
+     * version 0.8~1
      * greatly inspired from linux/freebsd implementations
      *
      * NOTE: doesn't support I/O stats for processes
      */
-    // XXX effective or real uid?
-    // XXX check for unfilled elements of |process| struct
-    
-    // ENHANCEMENTS:
-    // XXX Enhancement for SIP: make everything "signed int"... If SIP is unavailable (e.g. old OS) make everything have the value (-1)
-    // XXX Fix SIP documentation
-    // ΧΧΧ introduce global mach_port feature - reduce code size
-    // XXX make the function get_from_load_info into update_threads_processes() which will
-    //      calculate proc_count and thread_count regardless of the parameter |what|
     
     struct kinfo_proc *p = NULL;
+    struct cpusample *sample = NULL;        /* holds data for CPU */
     int proc_count = 0;
     
     proc_count = helper_get_proc_list(&p);
@@ -914,25 +838,23 @@ void get_top_info(void)
     if (proc_count == -1)
         return;
     
+    sample = (struct cpusample *)malloc(sizeof(cpusample));
+    
+    if (!sample)
+        return;
+    
+    memset(sample, 0, sizeof(cpusample));
+    
     for (int i = 0; i < proc_count; i++)
     {
         if (!((p[i].kp_proc.p_flag & P_SYSTEM)) && *p[i].kp_proc.p_comm != '\0')
         {
-            get_top_info_for_kinfo_proc(&p[i]);
-            
-#ifdef BUILD_IOSTATS
-            //process_parse_io(process);    // XXX implement me master!
-#endif /* BUILD_IOSTATS */
-            
-            // XXX investigate the "exclusion list"-related part...
+            get_top_info_for_kinfo_proc(&p[i], sample);
         }
     }
     
+    free(sample);
     free(p);
-    
-#ifdef BUILD_IOSTATS
-    calc_io_each();                 /* percentage of I/O for each task */
-#endif /* BUILD_IOSTATS */
 }
 
 /*********************************************************************************************
