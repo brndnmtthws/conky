@@ -26,7 +26,13 @@ include(CheckIncludeFiles)
 include(CheckSymbolExists)
 
 # Check for some headers
-check_include_files(sys/statfs.h HAVE_SYS_STATFS_H)
+
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    check_symbol_exists(statfs64 "sys/mount.h" HAVE_STATFS64) 		#	On Darwin, the statfs64 structure relies in  </sys/mount.h>
+else(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    check_symbol_exists(statfs64 "sys/statfs.h" HAVE_STATFS64)
+endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+
 check_include_files(sys/param.h HAVE_SYS_PARAM_H)
 check_include_files(sys/inotify.h HAVE_SYS_INOTIFY_H)
 check_include_files(dirent.h HAVE_DIRENT_H)
@@ -40,7 +46,11 @@ check_symbol_exists(statfs64 "sys/statfs.h" HAVE_STATFS64)
 
 AC_SEARCH_LIBS(clock_gettime "time.h" CLOCK_GETTIME_LIB "rt")
 if(NOT DEFINED CLOCK_GETTIME_LIB)
-	message(FATAL_ERROR "clock_gettime not found.")
+	if(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")	
+		message(FATAL_ERROR "clock_gettime not found.")
+	endif(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")
+else(NOT DEFINED CLOCK_GETTIME_LIB)
+	set(HAVE_CLOCK_GETTIME 1)	
 endif(NOT DEFINED CLOCK_GETTIME_LIB)
 set(conky_libs ${conky_libs} ${CLOCK_GETTIME_LIB})
 
@@ -74,13 +84,30 @@ if(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
 	set(OS_NETBSD true)
 endif(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
 
-if(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY)
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+set(OS_DARWIN true)
+
+set(DARWINPORT_NOCHECK_LUA true)
+set(DARWINPORT_NOCHECK_NCURSES true)
+
+set(conky_libs ${conky_libs} -llua)
+endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+
+if(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY AND NOT OS_DARWIN)
 	message(FATAL_ERROR "Your platform, '${CMAKE_SYSTEM_NAME}', is not currently supported.  Patches are welcome.")
-endif(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY)
+endif(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY AND NOT OS_DARWIN)
 
 if(BUILD_I18N AND OS_DRAGONFLY)
 	set(conky_libs ${conky_libs} -lintl)
 endif(BUILD_I18N AND OS_DRAGONFLY)
+
+if(BUILD_I18N AND OS_DARWIN)
+    set(conky_libs ${conky_libs} -lintl)
+endif(BUILD_I18N AND OS_DARWIN)
+
+if(BUILD_NCURSES AND OS_DARWIN)
+    set(conky_libs ${conky_libs} -lncurses)
+endif(BUILD_NCURSES AND OS_DARWIN)
 
 if(BUILD_MATH)
 	set(conky_libs ${conky_libs} -lm)
@@ -118,6 +145,11 @@ if(BUILD_HTTP)
 	set(conky_libs ${conky_libs} -lmicrohttpd)
 endif(BUILD_HTTP)
 
+#
+# TODO: Fix this:
+#
+if(NOT DARWINPORT_NOCHECK_NCURSES)
+
 if(BUILD_NCURSES)
 	pkg_check_modules(NCURSES ncurses)
 	if(NOT NCURSES_FOUND)
@@ -126,6 +158,11 @@ if(BUILD_NCURSES)
 	set(conky_libs ${conky_libs} ${NCURSES_LIBRARIES})
 	set(conky_includes ${conky_includes} ${NCURSES_INCLUDE_DIRS})
 endif(BUILD_NCURSES)
+
+else(NOT DARWINPORT_NOCHECK_NCURSES)
+	set(conky_libs ${conky_libs} ${NCURSES_LIBRARIES})
+	set(conky_includes ${conky_includes} ${NCURSES_INCLUDE_DIRS})
+endif(NOT DARWINPORT_NOCHECK_NCURSES)
 
 if(BUILD_MYSQL)
 	find_path(mysql_INCLUDE_PATH mysql.h ${INCLUDE_SEARCH_PATH} /usr/include/mysql /usr/local/include/mysql)
@@ -256,16 +293,42 @@ if(BUILD_LUA_CAIRO OR BUILD_LUA_IMLIB2 OR BUILD_LUA_RSVG)
 endif(BUILD_LUA_CAIRO OR BUILD_LUA_IMLIB2 OR BUILD_LUA_RSVG)
 
 # Check for Lua itself
+
+# NOTE: Here I changed the way we check for the correct version ( it wouldnt work with the previous code on macOS Sierra ( and probably on any OS with newest cmake ) )
+#
+#   See https://cmake.org/cmake/help/v3.0/module/FindLua.html
+#   There is no LUA_VERSION keyword thus the old code fails.
+#
+#   NOTE: This code now finds lua just fine, though it gives us more configuration overhead when compiling with Xcode! Because, lua support is not ready yeat I disable the patch
+#       and use the old code that doesnt work.
+#
+#if(WANT_TOLUA)
+#   # If we need tolua++, we must compile against Lua 5.1
+#    pkg_search_module(LUA REQUIRED lua5.1 lua-5.1 lua51 lua)
+#    if(NOT LUA_VERSION_MINOR VERSION_LESS 2)
+#       message(FATAL_ERROR "Unable to find Lua 5.1.x")
+#    endif(NOT LUA_VERSION_MINOR VERSION_LESS 2)
+#else(WANT_TOLUA)
+#    # Otherwise, use the most recent Lua version
+#    pkg_search_module(LUA REQUIRED lua>=5.3 lua5.3 lua-5.3 lua53 lua5.2 lua-5.2 lua52 lua5.1 lua-5.1 lua51 lua>=5.1)
+#endif(WANT_TOLUA)
+
+if(NOT DARWINPORT_NOCHECK_LUA)
+
+# The old, not working code for lua:
 if(WANT_TOLUA)
-	# If we need tolua++, we must compile against Lua 5.1
-	pkg_search_module(LUA REQUIRED lua5.1 lua-5.1 lua51 lua)
-	if(NOT LUA_VERSION VERSION_LESS 5.2.0)
-		message(FATAL_ERROR "Unable to find Lua 5.1.x")
-	endif(NOT LUA_VERSION VERSION_LESS 5.2.0)
+    # If we need tolua++, we must compile against Lua 5.1
+    pkg_search_module(LUA REQUIRED lua5.1 lua-5.1 lua51 lua)
+    if(NOT LUA_VERSION VERSION_LESS 5.2.0)
+        message(FATAL_ERROR "Unable to find Lua 5.1.x")
+    endif(NOT LUA_VERSION VERSION_LESS 5.2.0)
 else(WANT_TOLUA)
-	# Otherwise, use the most recent Lua version
-	pkg_search_module(LUA REQUIRED lua>=5.3 lua5.3 lua-5.3 lua53 lua5.2 lua-5.2 lua52 lua5.1 lua-5.1 lua51 lua>=5.1)
+    # Otherwise, use the most recent Lua version
+    pkg_search_module(LUA REQUIRED lua>=5.3 lua5.3 lua-5.3 lua53 lua5.2 lua-5.2 lua52 lua5.1 lua-5.1 lua51 lua>=5.1)
 endif(WANT_TOLUA)
+
+endif(NOT DARWINPORT_NOCHECK_LUA)
+
 set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
 set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIRS})
 link_directories(${LUA_LIBRARY_DIRS})
@@ -273,6 +336,7 @@ link_directories(${LUA_LIBRARY_DIRS})
 # Check for libraries used by Lua bindings
 if(BUILD_LUA_CAIRO)
 	pkg_check_modules(CAIRO REQUIRED cairo cairo-xlib)
+#   include(FindLua51)  -- This patch is probably for later -- When we will have lua support etc.
 	set(luacairo_libs ${CAIRO_LIBRARIES} ${LUA_LIBRARIES})
 	set(luacairo_includes ${CAIRO_INCLUDE_DIRS} ${LUA_INCLUDE_DIRS})
 	find_program(APP_PATCH patch)

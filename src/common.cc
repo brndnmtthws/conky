@@ -59,6 +59,8 @@
 #include "dragonfly.h"
 #elif defined(__OpenBSD__)
 #include "openbsd.h"
+#elif defined(__APPLE__)
+#include "darwin.h"     // strings.h
 #endif
 
 #include "update-cb.hh"

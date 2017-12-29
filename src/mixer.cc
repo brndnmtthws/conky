@@ -43,6 +43,8 @@
 #else
 #ifdef __OpenBSD__
 #include <soundcard.h>
+#elif defined __APPLE__
+#include "darwin_soundcard.h"
 #else
 #include <sys/soundcard.h>
 #endif /* __OpenBSD__ */
