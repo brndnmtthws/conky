@@ -192,8 +192,8 @@ struct cpusample
     uint64_t totalIdleTime;                     /* ticks in idleness */
     
     uint64_t total;                             /* delta of current and previous */
-    uint64_t current_total;                     /* total CPU usage of current iteration */
-    uint64_t previous_total;                    /* total CPU usage of previous iteration */
+    uint64_t current_total;                     /* total CPU ticks of current iteration */
+    uint64_t previous_total;                    /* total CPU tick of previous iteration */
 };
 
 /*
@@ -638,10 +638,148 @@ int get_entropy_poolsize(unsigned int * val)
  *          get top info section          *
  ******************************************/
 
+/*
+ * Calculate a process' cpu usage percentage
+ */
+static void calc_cpu_usage_for_proc(struct process *proc, uint64_t total)
+{
+    float mul = 100.0;
+    if(top_cpu_separate.get(*state))
+        mul *= info.cpu_count;
+    
+    proc->amount = mul * (proc->user_time + proc->kernel_time) / (float) total;
+}
+
+/*
+ * calculate total CPU usage based on total CPU usage
+ * of previous iteration stored inside |process| struct
+ */
+static uint64_t calc_cpu_total(struct process *proc)
+{
+    uint64_t current_total = 0;     /* of current iteration */
+    uint64_t total = 0;             /* delta */
+    struct cpusample sample;
+    
+    get_cpu_sample(&sample);
+    current_total = sample.totalUserTime + sample.totalIdleTime + sample.totalSystemTime;
+    
+    total = current_total - proc->previous_total_cpu_time;
+    proc->previous_total_cpu_time = current_total;
+    
+    total = ((total / sysconf(_SC_CLK_TCK)) * 100) / info.cpu_count;
+    return total;
+}
+
+/*
+ * calc_cpu_time_for_proc
+ *
+ * calculates user_time and kernel_time and sets the contents of the |process| struct
+ * excessively based on process_parse_stat() from linux.cc
+ */
+static void calc_cpu_time_for_proc(struct process *process, const struct proc_taskinfo *pti)
+{
+    unsigned long long user_time = 0;
+    unsigned long long kernel_time = 0;
+    
+    process->user_time = pti->pti_total_user;
+    process->kernel_time = pti->pti_total_system;
+    
+    /* user_time and kernel_time are in nanoseconds, total_cpu_time in centiseconds.
+     * Therefore we divide by 10^7 . */
+    process->user_time /= 10000000;
+    process->kernel_time /= 10000000;
+    
+    process->total_cpu_time = process->user_time + process->kernel_time;
+    if (process->previous_user_time == ULONG_MAX) {
+        process->previous_user_time = process->user_time;
+    }
+    if (process->previous_kernel_time == ULONG_MAX) {
+        process->previous_kernel_time = process->kernel_time;
+    }
+    
+    /* store the difference of the user_time */
+    user_time = process->user_time - process->previous_user_time;
+    kernel_time = process->kernel_time - process->previous_kernel_time;
+    
+    /* backup the process->user_time for next time around */
+    process->previous_user_time = process->user_time;
+    process->previous_kernel_time = process->kernel_time;
+    
+    /* store only the difference of the user_time here... */
+    process->user_time = user_time;
+    process->kernel_time = kernel_time;
+}
+
+/*
+ * finds top-information only for one process which is represented by a kinfo_proc struct
+ * this function is called mutliple types ( one foreach process ) to implement get_top_info()
+ */
+static void get_top_info_for_kinfo_proc(struct kinfo_proc *p)
+{
+    struct process *proc = NULL;
+    struct proc_taskinfo pti;
+    pid_t pid;
+    
+    pid = p->kp_proc.p_pid;
+    proc = get_process(pid);
+    
+    free_and_zero(proc->name);
+    free_and_zero(proc->basename);
+    
+    proc->name = strndup(p->kp_proc.p_comm, text_buffer_size.get(*state));
+    proc->basename = strndup(p->kp_proc.p_comm, text_buffer_size.get(*state));
+    proc->uid = p->kp_eproc.e_pcred.p_ruid;
+    proc->time_stamp = g_time;
+    
+    if(sizeof(pti) == proc_pidinfo(pid, PROC_PIDTASKINFO, 0, &pti, sizeof(pti)))
+    {
+        /* vsize, rss are in bytes thus we dont have to convert */
+        proc->vsize = pti.pti_virtual_size;
+        proc->rss = pti.pti_resident_size;
+        
+        // XXX concurrent
+        
+        uint64_t t = 0;
+        
+        /* calc CPU time for process */
+        calc_cpu_time_for_proc(proc, &pti);
+        
+        /* calc total CPU time (considering current process) */
+        t = calc_cpu_total(proc);
+        
+        /* calc the amount(%) of CPU the process used  */
+        calc_cpu_usage_for_proc(proc, t);
+    }
+}
+
 /* While topless is obviously better, top is also not bad. */
 
 void get_top_info(void)
 {
+    int                 proc_count = 0;
+    struct kinfo_proc   *p = NULL;
+    
+    /*
+     *  get processes count
+     *  and create the processes list
+     */
+    proc_count = helper_get_proc_list(&p);
+    
+    if (proc_count == -1)
+        return;
+    
+    /*
+     *  get top info for-each process
+     */
+    for (int i = 0; i < proc_count; i++)
+    {
+        if (!((p[i].kp_proc.p_flag & P_SYSTEM)) && *p[i].kp_proc.p_comm != '\0')
+        {
+            get_top_info_for_kinfo_proc(&p[i]);
+        }
+    }
+    
+    free(p);
 }
 
 /*********************************************************************************************
