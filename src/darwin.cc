@@ -516,6 +516,14 @@ int update_running_processes(void)
  */
 void get_cpu_count(void)
 {
+    /* XXX
+     * Memory leak existed because of allocating memory for info.cpu_usage
+     * Fixed by adding check to see if memory has been allocated or not.
+     *
+     * Probably move the info.cpu_usage allocation inside the update_cpu_usage() function...
+     * Why is it here anyway?
+     */
+    
     int cpu_count = 0;
     
     if (GETSYSCTL("hw.activecpu", cpu_count) == 0) {
@@ -525,9 +533,12 @@ void get_cpu_count(void)
         info.cpu_count = 0;
     }
     
-    info.cpu_usage = (float *) malloc((info.cpu_count + 1) * sizeof(float));
-    if (info.cpu_usage == NULL) {
-        CRIT_ERR(NULL, NULL, "malloc");
+    if (!info.cpu_usage)
+    {
+        info.cpu_usage = (float *) malloc((info.cpu_count + 1) * sizeof(float));
+        if (info.cpu_usage == NULL) {
+            CRIT_ERR(NULL, NULL, "malloc");
+        }
     }
 }
 
@@ -654,20 +665,19 @@ static void calc_cpu_usage_for_proc(struct process *proc, uint64_t total)
  * calculate total CPU usage based on total CPU usage
  * of previous iteration stored inside |process| struct
  */
-static uint64_t calc_cpu_total(struct process *proc)
+static void calc_cpu_total(struct process *proc, uint64_t *total)
 {
     uint64_t current_total = 0;     /* of current iteration */
-    uint64_t total = 0;             /* delta */
+    //uint64_t total = 0;             /* delta */
     struct cpusample sample;
     
     get_cpu_sample(&sample);
     current_total = sample.totalUserTime + sample.totalIdleTime + sample.totalSystemTime;
     
-    total = current_total - proc->previous_total_cpu_time;
+    *total = current_total - proc->previous_total_cpu_time;
     proc->previous_total_cpu_time = current_total;
     
-    total = ((total / sysconf(_SC_CLK_TCK)) * 100) / info.cpu_count;
-    return total;
+    *total = ((*total / sysconf(_SC_CLK_TCK)) * 100) / info.cpu_count;
 }
 
 /*
@@ -720,6 +730,8 @@ static void get_top_info_for_kinfo_proc(struct kinfo_proc *p)
     struct proc_taskinfo pti;
     pid_t pid;
     
+    uint64_t t = 0;
+    
     pid = p->kp_proc.p_pid;
     proc = get_process(pid);
     
@@ -737,15 +749,14 @@ static void get_top_info_for_kinfo_proc(struct kinfo_proc *p)
         proc->vsize = pti.pti_virtual_size;
         proc->rss = pti.pti_resident_size;
         
-        // XXX concurrent
-        
-        uint64_t t = 0;
+        bool calc_cpu_total_finished = false;
+        bool calc_proc_total_finished = false;
         
         /* calc CPU time for process */
         calc_cpu_time_for_proc(proc, &pti);
         
         /* calc total CPU time (considering current process) */
-        t = calc_cpu_total(proc);
+        calc_cpu_total(proc, &t);
         
         /* calc the amount(%) of CPU the process used  */
         calc_cpu_usage_for_proc(proc, t);
