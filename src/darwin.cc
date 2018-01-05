@@ -88,7 +88,7 @@ void eprintf(const char *fmt, ...)
 #define eprintf(...) /* ... */
 #endif
 
-#define	GETSYSCTL(name, var)	getsysctl(name, &(var), sizeof(var))
+#define    GETSYSCTL(name, var)    getsysctl(name, &(var), sizeof(var))
 
 /*
  * used by calc_cpu_each() for get_top_info()
@@ -192,8 +192,8 @@ struct cpusample
     uint64_t totalIdleTime;                     /* ticks in idleness */
     
     uint64_t total;                             /* delta of current and previous */
-    uint64_t current_total;                     /* total CPU usage of current iteration */
-    uint64_t previous_total;                    /* total CPU usage of previous iteration */
+    uint64_t current_total;                     /* total CPU ticks of current iteration */
+    uint64_t previous_total;                    /* total CPU tick of previous iteration */
 };
 
 /*
@@ -277,7 +277,7 @@ static int helper_get_proc_list( struct kinfo_proc **p = NULL )
  *  o   Every swapfile has index number eg. swapfile0, swapfile1, ...
  *
  *  o   Anyone can change the location of the swapfiles by editing the plist: /System/Library/LaunchDaemons/com.apple.dynamic_pager.plist
- *      ( Though it seems like this is not supported by the dynamic_pager application as can be observed from the code: 
+ *      ( Though it seems like this is not supported by the dynamic_pager application as can be observed from the code:
  *          https://github.com/practicalswift/osx/blob/master/src/system_cmds/dynamic_pager.tproj/dynamic_pager.c )
  *  o   Every swapfile has size of 1GB
  *
@@ -290,7 +290,7 @@ static int swapmode(unsigned long *retavail, unsigned long *retfree)
      *  COMPATIBILITY:  Tiger+
      */
     
-    int	swapMIB[] = { CTL_VM, 5 };
+    int    swapMIB[] = { CTL_VM, 5 };
     struct xsw_usage swapUsage;
     size_t swapUsageSize = sizeof(swapUsage);
     memset(&swapUsage, 0, sizeof(swapUsage));
@@ -341,12 +341,12 @@ int check_mount(struct text_object *obj)
 {
     int             num_mounts = 0;
     struct statfs*  mounts;
-
+    
     if (!obj->data.s)
         return 0;
     
     num_mounts = getmntinfo(&mounts, MNT_WAIT);
- 
+    
     if (num_mounts < 0)
     {
         NORM_ERR("could not get mounts using getmntinfo");
@@ -472,12 +472,12 @@ int update_total_processes(void)
      *
      *  Though in macOS's sysctl.h there are only:
      *
-     *  KERN_PROC_ALL		everything
-     *  KERN_PROC_PID		by process id
+     *  KERN_PROC_ALL        everything
+     *  KERN_PROC_PID        by process id
      *  KERN_PROC_PGRP      by process group id
-     *  KERN_PROC_SESSION	by session of pid
-     *  KERN_PROC_TTY		by controlling tty
-     *  KERN_PROC_UID		by effective uid
+     *  KERN_PROC_SESSION    by session of pid
+     *  KERN_PROC_TTY        by controlling tty
+     *  KERN_PROC_UID        by effective uid
      *  KERN_PROC_RUID      by real uid
      *  KERN_PROC_LCID      by login context id
      *
@@ -516,6 +516,14 @@ int update_running_processes(void)
  */
 void get_cpu_count(void)
 {
+    /* XXX
+     * Memory leak existed because of allocating memory for info.cpu_usage
+     * Fixed by adding check to see if memory has been allocated or not.
+     *
+     * Probably move the info.cpu_usage allocation inside the update_cpu_usage() function...
+     * Why is it here anyway?
+     */
+    
     int cpu_count = 0;
     
     if (GETSYSCTL("hw.activecpu", cpu_count) == 0) {
@@ -525,9 +533,12 @@ void get_cpu_count(void)
         info.cpu_count = 0;
     }
     
-    info.cpu_usage = (float *) malloc((info.cpu_count + 1) * sizeof(float));
-    if (info.cpu_usage == NULL) {
-        CRIT_ERR(NULL, NULL, "malloc");
+    if (!info.cpu_usage)
+    {
+        info.cpu_usage = (float *) malloc((info.cpu_count + 1) * sizeof(float));
+        if (info.cpu_usage == NULL) {
+            CRIT_ERR(NULL, NULL, "malloc");
+        }
     }
 }
 
@@ -641,27 +652,32 @@ int get_entropy_poolsize(unsigned int * val)
 /*
  * Calculate a process' cpu usage percentage
  */
-static void calc_cpu_usage_for_proc(struct process *proc, struct cpusample *sample)
+static void calc_cpu_usage_for_proc(struct process *proc, uint64_t total)
 {
     float mul = 100.0;
     if(top_cpu_separate.get(*state))
         mul *= info.cpu_count;
-
-    proc->amount = mul * (proc->user_time + proc->kernel_time) / (float) sample->total;
+    
+    proc->amount = mul * (proc->user_time + proc->kernel_time) / (float) total;
 }
 
 /*
- * calculate total CPU usage
+ * calculate total CPU usage based on total CPU usage
+ * of previous iteration stored inside |process| struct
  */
-static void calc_cpu_total(struct cpusample *sample)
+static void calc_cpu_total(struct process *proc, uint64_t *total)
 {
-    get_cpu_sample(sample);
-    sample->current_total = sample->totalUserTime + sample->totalIdleTime + sample->totalSystemTime;
-
-    sample->total = sample->current_total - sample->previous_total;
-    sample->previous_total = sample->current_total;
+    uint64_t current_total = 0;     /* of current iteration */
+    //uint64_t total = 0;             /* delta */
+    struct cpusample sample;
     
-    sample->total = ((sample->total / sysconf(_SC_CLK_TCK)) * 100) / info.cpu_count;
+    get_cpu_sample(&sample);
+    current_total = sample.totalUserTime + sample.totalIdleTime + sample.totalSystemTime;
+    
+    *total = current_total - proc->previous_total_cpu_time;
+    proc->previous_total_cpu_time = current_total;
+    
+    *total = ((*total / sysconf(_SC_CLK_TCK)) * 100) / info.cpu_count;
 }
 
 /*
@@ -708,11 +724,13 @@ static void calc_cpu_time_for_proc(struct process *process, const struct proc_ta
  * finds top-information only for one process which is represented by a kinfo_proc struct
  * this function is called mutliple types ( one foreach process ) to implement get_top_info()
  */
-static void get_top_info_for_kinfo_proc(struct kinfo_proc *p, struct cpusample *sample)
+static void get_top_info_for_kinfo_proc(struct kinfo_proc *p)
 {
     struct process *proc = NULL;
     struct proc_taskinfo pti;
     pid_t pid;
+    
+    uint64_t t = 0;
     
     pid = p->kp_proc.p_pid;
     proc = get_process(pid);
@@ -731,11 +749,17 @@ static void get_top_info_for_kinfo_proc(struct kinfo_proc *p, struct cpusample *
         proc->vsize = pti.pti_virtual_size;
         proc->rss = pti.pti_resident_size;
         
+        bool calc_cpu_total_finished = false;
+        bool calc_proc_total_finished = false;
+        
         /* calc CPU time for process */
         calc_cpu_time_for_proc(proc, &pti);
         
+        /* calc total CPU time (considering current process) */
+        calc_cpu_total(proc, &t);
+        
         /* calc the amount(%) of CPU the process used  */
-        calc_cpu_usage_for_proc(proc, sample);
+        calc_cpu_usage_for_proc(proc, t);
     }
 }
 
@@ -743,42 +767,29 @@ static void get_top_info_for_kinfo_proc(struct kinfo_proc *p, struct cpusample *
 
 void get_top_info(void)
 {
+    int                 proc_count = 0;
+    struct kinfo_proc   *p = NULL;
+    
     /*
-     * version 0.8~1
-     * greatly inspired from linux/freebsd implementations
-     *
-     * NOTE: doesn't support I/O stats for processes
+     *  get processes count
+     *  and create the processes list
      */
-    
-    struct kinfo_proc *p = NULL;
-    struct cpusample *sample = NULL;        /* holds data for CPU */
-    int proc_count = 0;
-    
-    /* get processes count and create the processes list */
     proc_count = helper_get_proc_list(&p);
     
     if (proc_count == -1)
         return;
     
-    sample = (struct cpusample *)malloc(sizeof(cpusample));
-    if (!sample)
-        return;
-    
-    memset(sample, 0, sizeof(cpusample));
-    
-    /* get top info for-each process */
+    /*
+     *  get top info for-each process
+     */
     for (int i = 0; i < proc_count; i++)
     {
-        /* calculate total CPU time */
-        calc_cpu_total(sample);
-        
         if (!((p[i].kp_proc.p_flag & P_SYSTEM)) && *p[i].kp_proc.p_comm != '\0')
         {
-            get_top_info_for_kinfo_proc(&p[i], sample);
+            get_top_info_for_kinfo_proc(&p[i]);
         }
     }
     
-    free(sample);
     free(p);
 }
 
@@ -967,15 +978,15 @@ void print_sip_status(struct text_object *obj, char *p, int p_max_size)
             case '8':
             case '9':
             case 'a':
-                snprintf(p, p_max_size, "%s", "error unsupported");        
+                snprintf(p, p_max_size, "%s", "error unsupported");
                 break;
             default:
                 snprintf(p, p_max_size, "%s", "unsupported");
                 NORM_ERR("print_sip_status: unsupported argument passed to $sip_status");
                 break;
         }
-    } 
-    else 
+    }
+    else
     {    /* bad argument */
         snprintf(p, p_max_size, "%s", "unsupported");
         NORM_ERR("print_sip_status: unsupported argument passed to $sip_status");
