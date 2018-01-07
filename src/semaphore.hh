@@ -64,16 +64,26 @@ public:
     
     void wait() throw()
     {
-        dispatch_semaphore_wait( sem, DISPATCH_TIME_FOREVER);
+        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     }
     
     bool trywait() throw()
     {
-        printf( "semaphore: trywait() not implemented!\n" );
-        return false;
+        /* XXX Quick patch */
+#define DISPATCH_EAGAIN 49
+        
+        int ret = dispatch_semaphore_wait(sem, DISPATCH_TIME_NOW);
+        
+        while (ret > 0)
+        {
+            if(ret == DISPATCH_EAGAIN)
+                return false;
+            else if(errno != EINTR)
+                abort();
+                }
+        return true;
     }
 };
-
 
 #else
 
@@ -121,6 +131,7 @@ public:
     }
 };
 
-#endif /* defined (__APPLE__) */
+#endif /* defined(__APPLE__) && defined(__MACH__) */
 
 #endif
+
