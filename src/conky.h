@@ -219,7 +219,7 @@ struct information {
 
 	short kflags;	/* kernel settings, see enum KFLAG */
     
-#if defined(__APPLE__) && (__MACH__)
+#if defined(__APPLE__) && defined(__MACH__)
     /* System Integrity Protection related */
     struct csr_config_flags {
         bool csr_allow_untrusted_kexts;
@@ -241,7 +241,7 @@ struct information {
     /* SIP variables */
     csr_config_t csr_config;
     csr_config_flags_t csr_config_flags;
-#endif
+#endif /* defined(__APPLE__) && defined(__MACH__) */
 };
 
 class music_player_interval_setting: public conky::simple_config_setting<double> {
