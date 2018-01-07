@@ -516,7 +516,8 @@ int update_running_processes(void)
  */
 void get_cpu_count(void)
 {
-    /* XXX BUG
+    /* XXX MEMORY LEAK
+     *
      * In FreeBSD, Linux (and probably other, too) implementations exists the following bug (memory leak)
      *
      * info.cpu_count is allocated every time get_cpu_count() is called without checking if it was allocated again before...
@@ -539,6 +540,19 @@ void get_cpu_count(void)
      * Why is it here anyway?
      *
      * Unless i find some reason for keeping it here it will be moved to update_cpu_usage()
+     *
+     * ΝΟΤΕ: In FreeBSD and Linux implementations info.cpu_usage is allocated everytime we get inside the
+     * get_cpu_count function (???).
+     * Probably there is some deallocation at other points but lets fix the memory leak for now... :D
+     *
+     * In macOS conky calls 4 times the get_cpu_count() function before it loads the config file.... Which means that
+     * info.cpu_usage gets allocated 4 times and deallocated only once!
+     *
+     * Then in the update_cpu_usage() the function checks if info.cpu_usage has been allocated and thus doesn't allocate it again....
+     * Though this doesn't fix the memory leak problem... (4 times allocated already!)
+     *
+     *  ATLEAST this is the case on macOS, don't know if it is in the Linux, too!
+     *
      */
     if (!info.cpu_usage)
     {
@@ -549,8 +563,236 @@ void get_cpu_count(void)
     }
 }
 
+/*
+ * used by update_cpu_usage()
+ *
+ * XXX will be merged into cpusample probably
+ */
+#define CPU_SAMPLE_COUNT 15
+struct cpu_info {
+    /* linux compatibility */
+    unsigned long long cpu_user;
+    unsigned long long cpu_system;
+    unsigned long long cpu_nice;
+    unsigned long long cpu_idle;
+    unsigned long long cpu_iowait;
+    unsigned long long cpu_irq;
+    unsigned long long cpu_softirq;
+    unsigned long long cpu_steal;
+    unsigned long long cpu_total;
+    unsigned long long cpu_active_total;
+    unsigned long long cpu_last_total;
+    unsigned long long cpu_last_active_total;
+    double cpu_val[CPU_SAMPLE_COUNT];
+    
+    /* freebsd compatibility */
+    long oldtotal;
+    long oldused;
+};
+
 int update_cpu_usage(void)
 {
+    static bool
+        cpu_setup = 0;
+    
+    int i, j = 0;
+    long used, total;
+    long *cp_time = NULL;
+    size_t cp_len;
+    static struct cpu_info *cpu = NULL;
+    unsigned int malloc_cpu_size = 0;
+    extern void* global_cpu;
+    
+    /* add check for !info.cpu_usage since that mem is freed on a SIGUSR1 */
+    if ((cpu_setup == 0) || (!info.cpu_usage)) {
+        get_cpu_count();
+        cpu_setup = 1;
+    }
+    
+    if (!global_cpu) {
+        malloc_cpu_size = (info.cpu_count + 1) * sizeof(struct cpu_info);
+        cpu = (cpu_info *) malloc(malloc_cpu_size);
+        memset(cpu, 0, malloc_cpu_size);
+        global_cpu = cpu;
+    }
+    
+    /* cpu[0] is overall stats, get it from separate sysctl */
+    //cp_len = CPUSTATES * sizeof(long);
+    //cp_time = (long int *) malloc(cp_len);
+    //
+    //if (sysctlbyname("kern.cp_time", cp_time, &cp_len, NULL, 0) < 0) {
+    //    fprintf(stderr, "Cannot get kern.cp_time\n");
+    //}
+
+    // XXX for now
+#define CPUSTATES 4
+#define CP_IDLE 0
+    
+    total = 0;
+    for (j = 0; j < CPUSTATES; j++)
+        total += cp_time[j];
+    
+    used = total - cp_time[CP_IDLE];
+    
+    if ((total - cpu[0].oldtotal) != 0) {
+        info.cpu_usage[0] = ((double) (used - cpu[0].oldused)) /
+        (double) (total - cpu[0].oldtotal);
+    } else {
+        info.cpu_usage[0] = 0;
+    }
+    
+    cpu[0].oldused = used;
+    cpu[0].oldtotal = total;
+    
+    free(cp_time);
+    
+    /* per-core stats */
+    cp_len = CPUSTATES * sizeof(long) * info.cpu_count;
+    cp_time = (long int *) malloc(cp_len);
+    
+    /* on e.g. i386 SMP we may have more values than actual cpus; this will just drop extra values */
+    if (sysctlbyname("kern.cp_times", cp_time, &cp_len, NULL, 0) < 0 && errno != ENOMEM) {
+        fprintf(stderr, "Cannot get kern.cp_times\n");
+    }
+    
+    for (i = 0; i < info.cpu_count; i++)
+    {
+        total = 0;
+        for (j = 0; j < CPUSTATES; j++)
+            total += cp_time[i*CPUSTATES + j];
+        
+        used = total - cp_time[i*CPUSTATES + CP_IDLE];
+        
+        if ((total - cpu[i+1].oldtotal) != 0) {
+            info.cpu_usage[i+1] = ((double) (used - cpu[i+1].oldused)) /
+            (double) (total - cpu[i+1].oldtotal);
+        } else {
+            info.cpu_usage[i+1] = 0;
+        }
+        
+        cpu[i+1].oldused = used;
+        cpu[i+1].oldtotal = total;
+    }
+    
+    free(cp_time);
+    return 0;
+}
+
+int update_cpu_usage2(void)
+{
+    /* OPENMP support: NO */
+    
+    static bool
+        cpu_setup = false;
+    
+    int i;
+    unsigned int idx;
+    double curtmp;
+    
+    static struct cpu_info*
+        cpu = NULL;
+    unsigned int
+        malloc_cpu_size = 0;
+    extern void*
+        global_cpu;
+    
+    
+    static pthread_mutex_t last_stat_update_mutex = PTHREAD_MUTEX_INITIALIZER;
+    static double last_stat_update = 0.0;
+    
+    /* since we use wrappers for this function, the update machinery
+     * can't eliminate double invocations of this function. Check for
+     * them here, otherwise cpu_usage counters are freaking out. */
+    pthread_mutex_lock(&last_stat_update_mutex);
+    if (last_stat_update == current_update_time) {
+        pthread_mutex_unlock(&last_stat_update_mutex);
+        return 0;
+    }
+    last_stat_update = current_update_time;
+    pthread_mutex_unlock(&last_stat_update_mutex);
+    
+    
+    /*
+     * add check for !info.cpu_usage since that mem is freed on a SIGUSR1
+     */
+    if (!cpu_setup || !info.cpu_usage) {
+        
+        /*
+         * call get_cpu_count() to calculate number of cpus (ofcourse) and
+         * allocate the info.cpu_usage variable
+         */
+        get_cpu_count();
+        
+        /*
+         * don't come into here again unless SIGUSR1
+         */
+        cpu_setup = true;
+    }
+    
+    if (!global_cpu) {
+        malloc_cpu_size = (info.cpu_count + 1) * sizeof(struct cpu_info);
+        cpu = (struct cpu_info *)malloc(malloc_cpu_size);
+        memset(cpu, 0, malloc_cpu_size);
+        global_cpu = cpu;
+    }
+    
+    double delta;
+
+    /*
+    if (isdigit(buf[3])) {
+        idx = atoi(&buf[3]) + 1;
+    } else {
+        idx = 0;
+    } */
+    
+    /*
+     * get current iteration sample
+     */
+    struct cpusample sample;
+    get_cpu_sample(&sample);
+
+    cpu[idx].cpu_system = sample.totalSystemTime;
+    cpu[idx].cpu_user = sample.totalUserTime;
+    cpu[idx].cpu_idle = sample.totalIdleTime;
+
+    // XXX check for the NICE problem
+    
+    cpu[idx].cpu_total = cpu[idx].cpu_user + cpu[idx].cpu_nice +
+                         cpu[idx].cpu_system + cpu[idx].cpu_idle +
+                         cpu[idx].cpu_iowait + cpu[idx].cpu_irq +
+                         cpu[idx].cpu_softirq + cpu[idx].cpu_steal;
+    
+    cpu[idx].cpu_active_total = cpu[idx].cpu_total - (cpu[idx].cpu_idle + cpu[idx].cpu_iowait);
+    
+    delta = current_update_time - last_update_time;
+    
+    if (delta <= 0.001) {
+        return 0;
+    }
+    
+    cpu[idx].cpu_val[0] = (cpu[idx].cpu_active_total - cpu[idx].cpu_last_active_total) / (float) (cpu[idx].cpu_total - cpu[idx].cpu_last_total);
+    curtmp = 0;
+    
+    int samples = cpu_avg_samples.get(*state);
+#ifdef HAVE_OPENMP
+#pragma omp parallel for reduction(+:curtmp) schedule(dynamic,10)
+#endif /* HAVE_OPENMP */
+    for (i = 0; i < samples; i++)
+    {
+        curtmp = curtmp + cpu[idx].cpu_val[i];
+    }
+    info.cpu_usage[idx] = curtmp / samples;
+    
+    cpu[idx].cpu_last_total = cpu[idx].cpu_total;
+    cpu[idx].cpu_last_active_total = cpu[idx].cpu_active_total;
+#ifdef HAVE_OPENMP
+#pragma omp parallel for schedule(dynamic,10)
+#endif /* HAVE_OPENMP */
+    for (i = samples - 1; i > 0; i--)
+    {
+        cpu[idx].cpu_val[i] = cpu[idx].cpu_val[i - 1];
+    }
+    
     return 0;
 }
 
@@ -570,7 +812,6 @@ int update_load_average(void)
 double get_acpi_temperature(int fd)
 {
     printf( "get_acpi_temperature: STUB\n" );
-    
     return 0.0;
 }
 
@@ -582,14 +823,12 @@ void get_battery_stuff(char *buf, unsigned int n, const char *bat, int item)
 int get_battery_perct(const char *bat)
 {
     printf( "get_battery_perct: STUB\n" );
-    
     return 1;
 }
 
 double get_battery_perct_bar(struct text_object *obj)
 {
     printf( "get_battery_perct_bar: STUB\n" );
-    
     return 0.0;
 }
 
@@ -616,7 +855,6 @@ char get_freq(char *p_client_buffer, size_t client_buffer_size, const char *p_fo
               int divisor, unsigned int cpu)
 {
     printf( "get_freq: STUB!\n" );
-    
     return 1;
 }
 
