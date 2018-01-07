@@ -312,6 +312,12 @@ void generate_text_internal(char *, int, struct text_object);
 int percent_print(char *, int, unsigned);
 void human_readable(long long, char *, int);
 
+#ifdef BUILD_X11
+
+/* UTF-8 */
+extern conky::simple_config_setting<bool> utf8_mode;
+#endif
+
 /* maximum size of config TEXT buffer, i.e. below TEXT line. */
 extern conky::range_config_setting<unsigned int> max_user_text;
 
