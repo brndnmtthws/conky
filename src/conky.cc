@@ -562,7 +562,7 @@ static bool isutf8(const char* envvar) {
 }
 
 /* UTF-8 */
-conky::simple_config_setting<bool> utf8_mode("override_utf8_locale",
+static conky::simple_config_setting<bool> utf8_mode("override_utf8_locale",
 					isutf8("LC_ALL") || isutf8("LC_CTYPE") || isutf8("LANG"), false);
 
 #endif /* BUILD_X11 */

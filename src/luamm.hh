@@ -28,7 +28,6 @@
 #include <exception>
 #include <stdexcept>
 #include <string>
-#include <functional>
 
 #include <lua.hpp>
 
