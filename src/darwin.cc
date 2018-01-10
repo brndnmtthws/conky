@@ -53,6 +53,7 @@
 #include <mach/mach_types.h>
 #include <mach/mach_init.h>
 #include <mach/mach_host.h>
+#include <mach/machine.h>
 
 #include <mach/mach.h>          // update_total_processes
 
@@ -571,23 +572,7 @@ void get_cpu_count(void)
  *
  * XXX will be merged into cpusample probably
  */
-#define CPU_SAMPLE_COUNT 15
 struct cpu_info {
-    /* linux compatibility */
-    unsigned long long cpu_user;
-    unsigned long long cpu_system;
-    unsigned long long cpu_nice;
-    unsigned long long cpu_idle;
-    unsigned long long cpu_iowait;
-    unsigned long long cpu_irq;
-    unsigned long long cpu_softirq;
-    unsigned long long cpu_steal;
-    unsigned long long cpu_total;
-    unsigned long long cpu_active_total;
-    unsigned long long cpu_last_total;
-    unsigned long long cpu_last_active_total;
-    double cpu_val[CPU_SAMPLE_COUNT];
-    
     /* freebsd compatibility */
     long oldtotal;
     long oldused;
@@ -598,13 +583,26 @@ int update_cpu_usage(void)
     static bool
         cpu_setup = 0;
     
-//    int i, j = 0;
     long used, total;
-    long *cp_time = NULL;
-    size_t cp_len;
     static struct cpu_info *cpu = NULL;
     unsigned int malloc_cpu_size = 0;
     extern void* global_cpu;
+    
+    struct cpusample sample;
+
+    static pthread_mutex_t last_stat_update_mutex = PTHREAD_MUTEX_INITIALIZER;
+    static double last_stat_update = 0.0;
+    
+    /* since we use wrappers for this function, the update machinery
+     * can't eliminate double invocations of this function. Check for
+     * them here, otherwise cpu_usage counters are freaking out. */
+    pthread_mutex_lock(&last_stat_update_mutex);
+    if (last_stat_update == current_update_time) {
+        pthread_mutex_unlock(&last_stat_update_mutex);
+        return 0;
+    }
+    last_stat_update = current_update_time;
+    pthread_mutex_unlock(&last_stat_update_mutex);
     
     /* add check for !info.cpu_usage since that mem is freed on a SIGUSR1 */
     if ((cpu_setup == 0) || (!info.cpu_usage))
@@ -623,163 +621,22 @@ int update_cpu_usage(void)
         memset(cpu, 0, malloc_cpu_size);
         global_cpu = cpu;
     }
-
-// XXX for now
-#define CPUSTATES 4
-#define CP_IDLE 0
     
-    /* cpu[0] is overall stats, get it from separate sysctl */
-    cp_len = CPUSTATES * sizeof(long);
-    cp_time = (long int *) malloc(cp_len);
-    //
-    //if (sysctlbyname("kern.cp_time", cp_time, &cp_len, NULL, 0) < 0) {
-    //    fprintf(stderr, "Cannot get kern.cp_time\n");
-    //}
-    
-    //total = 0;
-    //for (j = 0; j < CPUSTATES; j++)
-    //    total += cp_time[j];
-    
-    struct cpusample sample;
     get_cpu_sample(&sample);
     total = sample.totalUserTime + sample.totalIdleTime + sample.totalSystemTime;
-    cp_time[CP_IDLE] = sample.totalIdleTime;
+    used = total - sample.totalIdleTime;
     
-    used = total - cp_time[CP_IDLE];
-    
-    if ((total - cpu[0].oldtotal) != 0) {
-        info.cpu_usage[0] = ((double) (used - cpu[0].oldused)) /
-        (double) (total - cpu[0].oldtotal);
-    } else {
+    if ((total - cpu[0].oldtotal) != 0)
+    {
+        info.cpu_usage[0] = ((double) (used - cpu[0].oldused)) / (double) (total - cpu[0].oldtotal);
+    }
+    else
+    {
         info.cpu_usage[0] = 0;
     }
     
     cpu[0].oldused = used;
     cpu[0].oldtotal = total;
-    
-    free(cp_time);
-    
-    /*
-     * I cut the per-cpu stats from here...
-     */
-    
-    return 0;
-}
-
-int update_cpu_usage2(void)
-{
-    /* OPENMP support: NO */
-    
-    static bool
-        cpu_setup = false;
-    
-    int i;
-    unsigned int idx;
-    double curtmp;
-    
-    static struct cpu_info*
-        cpu = NULL;
-    unsigned int
-        malloc_cpu_size = 0;
-    extern void*
-        global_cpu;
-    
-    
-    static pthread_mutex_t last_stat_update_mutex = PTHREAD_MUTEX_INITIALIZER;
-    static double last_stat_update = 0.0;
-    
-    /* since we use wrappers for this function, the update machinery
-     * can't eliminate double invocations of this function. Check for
-     * them here, otherwise cpu_usage counters are freaking out. */
-    pthread_mutex_lock(&last_stat_update_mutex);
-    if (last_stat_update == current_update_time) {
-        pthread_mutex_unlock(&last_stat_update_mutex);
-        return 0;
-    }
-    last_stat_update = current_update_time;
-    pthread_mutex_unlock(&last_stat_update_mutex);
-    
-    
-    /*
-     * add check for !info.cpu_usage since that mem is freed on a SIGUSR1
-     */
-    if (!cpu_setup || !info.cpu_usage) {
-        
-        /*
-         * call get_cpu_count() to calculate number of cpus (ofcourse) and
-         * allocate the info.cpu_usage variable
-         */
-        get_cpu_count();
-        
-        /*
-         * don't come into here again unless SIGUSR1
-         */
-        cpu_setup = true;
-    }
-    
-    if (!global_cpu) {
-        malloc_cpu_size = (info.cpu_count + 1) * sizeof(struct cpu_info);
-        cpu = (struct cpu_info *)malloc(malloc_cpu_size);
-        memset(cpu, 0, malloc_cpu_size);
-        global_cpu = cpu;
-    }
-    
-    double delta;
-
-    /*
-    if (isdigit(buf[3])) {
-        idx = atoi(&buf[3]) + 1;
-    } else {
-        idx = 0;
-    } */
-    
-    /*
-     * get current iteration sample
-     */
-    struct cpusample sample;
-    get_cpu_sample(&sample);
-
-    cpu[idx].cpu_system = sample.totalSystemTime;
-    cpu[idx].cpu_user = sample.totalUserTime;
-    cpu[idx].cpu_idle = sample.totalIdleTime;
-
-    // XXX check for the NICE problem
-    
-    cpu[idx].cpu_total = cpu[idx].cpu_user + cpu[idx].cpu_nice +
-                         cpu[idx].cpu_system + cpu[idx].cpu_idle +
-                         cpu[idx].cpu_iowait + cpu[idx].cpu_irq +
-                         cpu[idx].cpu_softirq + cpu[idx].cpu_steal;
-    
-    cpu[idx].cpu_active_total = cpu[idx].cpu_total - (cpu[idx].cpu_idle + cpu[idx].cpu_iowait);
-    
-    delta = current_update_time - last_update_time;
-    
-    if (delta <= 0.001) {
-        return 0;
-    }
-    
-    cpu[idx].cpu_val[0] = (cpu[idx].cpu_active_total - cpu[idx].cpu_last_active_total) / (float) (cpu[idx].cpu_total - cpu[idx].cpu_last_total);
-    curtmp = 0;
-    
-    int samples = cpu_avg_samples.get(*state);
-#ifdef HAVE_OPENMP
-#pragma omp parallel for reduction(+:curtmp) schedule(dynamic,10)
-#endif /* HAVE_OPENMP */
-    for (i = 0; i < samples; i++)
-    {
-        curtmp = curtmp + cpu[idx].cpu_val[i];
-    }
-    info.cpu_usage[idx] = curtmp / samples;
-    
-    cpu[idx].cpu_last_total = cpu[idx].cpu_total;
-    cpu[idx].cpu_last_active_total = cpu[idx].cpu_active_total;
-#ifdef HAVE_OPENMP
-#pragma omp parallel for schedule(dynamic,10)
-#endif /* HAVE_OPENMP */
-    for (i = samples - 1; i > 0; i--)
-    {
-        cpu[idx].cpu_val[i] = cpu[idx].cpu_val[i - 1];
-    }
     
     return 0;
 }
