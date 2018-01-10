@@ -517,16 +517,6 @@ int update_running_processes(void)
  */
 void get_cpu_count(void)
 {
-    /* XXX MEMORY LEAK
-     *
-     * In FreeBSD, Linux (and probably other, too) implementations exists the following bug (memory leak)
-     *
-     * info.cpu_count is allocated every time get_cpu_count() is called without checking if it was allocated again before...
-     * thus conky allocates only memory related to one get_cpu_count() call leaving a memory leak.
-     *
-     * Fixed by adding check to see if memory has been allocated or not.
-     */
-    
     int cpu_count = 0;
     
     if (GETSYSCTL("hw.activecpu", cpu_count) == 0) {
@@ -538,7 +528,7 @@ void get_cpu_count(void)
     
     /* XXX
      * Probably move the info.cpu_usage allocation inside the update_cpu_usage() function...
-     * Why is it here anyway?
+     * Why is it here ??
      *
      * Unless i find some reason for keeping it here it will be moved to update_cpu_usage()
      *
@@ -569,11 +559,9 @@ void get_cpu_count(void)
 
 /*
  * used by update_cpu_usage()
- *
- * XXX will be merged into cpusample probably
  */
-struct cpu_info {
-    /* freebsd compatibility */
+struct cpu_info
+{
     long oldtotal;
     long oldused;
 };
