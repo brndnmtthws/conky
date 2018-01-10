@@ -178,8 +178,8 @@ static void helper_update_threads_processes(void)
     if (err != KERN_SUCCESS)
         return;
     
-    info.run_procs = loadInfo.task_count;
-    info.run_threads = loadInfo.thread_count;
+    info.procs = loadInfo.task_count;
+    info.threads = loadInfo.thread_count;
 }
 
 /*
