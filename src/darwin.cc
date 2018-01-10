@@ -556,6 +556,9 @@ void get_cpu_count(void)
      */
     if (!info.cpu_usage)
     {
+        /*
+         * Allocate ncpus+1 slots because cpu_usage[0] is overall usage.
+         */
         info.cpu_usage = (float *) malloc((info.cpu_count + 1) * sizeof(float));
         if (info.cpu_usage == NULL) {
             CRIT_ERR(NULL, NULL, "malloc");
@@ -595,7 +598,7 @@ int update_cpu_usage(void)
     static bool
         cpu_setup = 0;
     
-    int i, j = 0;
+//    int i, j = 0;
     long used, total;
     long *cp_time = NULL;
     size_t cp_len;
@@ -604,33 +607,43 @@ int update_cpu_usage(void)
     extern void* global_cpu;
     
     /* add check for !info.cpu_usage since that mem is freed on a SIGUSR1 */
-    if ((cpu_setup == 0) || (!info.cpu_usage)) {
+    if ((cpu_setup == 0) || (!info.cpu_usage))
+    {
         get_cpu_count();
         cpu_setup = 1;
     }
     
-    if (!global_cpu) {
+    if (!global_cpu)
+    {
+        /*
+         * Allocate ncpus+1 slots because cpu_usage[0] is overall usage.
+         */
         malloc_cpu_size = (info.cpu_count + 1) * sizeof(struct cpu_info);
         cpu = (cpu_info *) malloc(malloc_cpu_size);
         memset(cpu, 0, malloc_cpu_size);
         global_cpu = cpu;
     }
+
+// XXX for now
+#define CPUSTATES 4
+#define CP_IDLE 0
     
     /* cpu[0] is overall stats, get it from separate sysctl */
-    //cp_len = CPUSTATES * sizeof(long);
-    //cp_time = (long int *) malloc(cp_len);
+    cp_len = CPUSTATES * sizeof(long);
+    cp_time = (long int *) malloc(cp_len);
     //
     //if (sysctlbyname("kern.cp_time", cp_time, &cp_len, NULL, 0) < 0) {
     //    fprintf(stderr, "Cannot get kern.cp_time\n");
     //}
-
-    // XXX for now
-#define CPUSTATES 4
-#define CP_IDLE 0
     
-    total = 0;
-    for (j = 0; j < CPUSTATES; j++)
-        total += cp_time[j];
+    //total = 0;
+    //for (j = 0; j < CPUSTATES; j++)
+    //    total += cp_time[j];
+    
+    struct cpusample sample;
+    get_cpu_sample(&sample);
+    total = sample.totalUserTime + sample.totalIdleTime + sample.totalSystemTime;
+    cp_time[CP_IDLE] = sample.totalIdleTime;
     
     used = total - cp_time[CP_IDLE];
     
@@ -646,35 +659,10 @@ int update_cpu_usage(void)
     
     free(cp_time);
     
-    /* per-core stats */
-    cp_len = CPUSTATES * sizeof(long) * info.cpu_count;
-    cp_time = (long int *) malloc(cp_len);
+    /*
+     * I cut the per-cpu stats from here...
+     */
     
-    /* on e.g. i386 SMP we may have more values than actual cpus; this will just drop extra values */
-    if (sysctlbyname("kern.cp_times", cp_time, &cp_len, NULL, 0) < 0 && errno != ENOMEM) {
-        fprintf(stderr, "Cannot get kern.cp_times\n");
-    }
-    
-    for (i = 0; i < info.cpu_count; i++)
-    {
-        total = 0;
-        for (j = 0; j < CPUSTATES; j++)
-            total += cp_time[i*CPUSTATES + j];
-        
-        used = total - cp_time[i*CPUSTATES + CP_IDLE];
-        
-        if ((total - cpu[i+1].oldtotal) != 0) {
-            info.cpu_usage[i+1] = ((double) (used - cpu[i+1].oldused)) /
-            (double) (total - cpu[i+1].oldtotal);
-        } else {
-            info.cpu_usage[i+1] = 0;
-        }
-        
-        cpu[i+1].oldused = used;
-        cpu[i+1].oldtotal = total;
-    }
-    
-    free(cp_time);
     return 0;
 }
 
