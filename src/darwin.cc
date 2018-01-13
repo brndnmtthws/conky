@@ -850,8 +850,6 @@ static void get_top_info_for_kinfo_proc(struct kinfo_proc *p)
     struct proc_taskinfo pti;
     pid_t pid;
     
-    uint64_t t = 0;
-    
     pid = p->kp_proc.p_pid;
     proc = get_process(pid);
     
@@ -869,14 +867,32 @@ static void get_top_info_for_kinfo_proc(struct kinfo_proc *p)
         proc->vsize = pti.pti_virtual_size;
         proc->rss = pti.pti_resident_size;
         
-        bool calc_cpu_total_finished = false;
-        bool calc_proc_total_finished = false;
+        __block uint64_t t = 0;
         
-        /* calc CPU time for process */
-        calc_cpu_time_for_proc(proc, &pti);
+        __block bool calc_cpu_total_finished = false;
+        __block bool calc_proc_total_finished = false;
         
-        /* calc total CPU time (considering current process) */
-        calc_cpu_total(proc, &t);
+        dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+
+            /* calc CPU time for process */
+            calc_cpu_time_for_proc(proc, &pti);
+        
+            calc_proc_total_finished = true;
+        });
+        
+        dispatch_async( dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+
+            /* calc total CPU time (considering current process) */
+            calc_cpu_total(proc, &t);
+           
+            calc_cpu_total_finished = true;
+        });
+        
+        /*
+         * wait until done
+         */
+        while (!(calc_cpu_total_finished && calc_proc_total_finished))
+            ;
         
         /* calc the amount(%) of CPU the process used  */
         calc_cpu_usage_for_proc(proc, t);
