@@ -201,26 +201,66 @@ struct cpusample
  * get_cpu_sample()
  *
  * Gets systemTime, userTime and idleTime for CPU
- * plagiarised from https://stackoverflow.com/questions/20471920/how-to-get-total-cpu-idle-time-in-objective-c-c-on-os-x
+ * MenuMeters has been great inspiration for this function
  */
 static void get_cpu_sample(struct cpusample *sample)
 {
-    kern_return_t kr;
-    mach_msg_type_number_t count;
-    host_cpu_load_info_data_t r_load;
+    host_name_port_t machHost;
+    natural_t processorCount;
+    processor_cpu_load_info_t processorTickInfo;
+    mach_msg_type_number_t processorInfoCount;
+    struct cpusample *samples = NULL;
     
-    count = HOST_CPU_LOAD_INFO_COUNT;
-    kr = host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, (int *)&r_load, &count);
+    machHost = mach_host_self();
     
-    if (kr != KERN_SUCCESS)
+    kern_return_t err = host_processor_info(machHost, PROCESSOR_CPU_LOAD_INFO, &processorCount, (processor_info_array_t *)&processorTickInfo, &processorInfoCount);
+    if (err != KERN_SUCCESS)
     {
-        printf("host_statistics: %s\n", mach_error_string(kr));
+        printf("host_statistics: %s\n", mach_error_string(err));
         return;
     }
+        
+    /*
+     * allocate ncpus+1 cpusample structs (one foreach CPU)
+     * ** samples[0] is overal CPU usage
+     */
+    samples = new struct cpusample[processorCount + 1];
+    memset(samples, 0, sizeof(cpusample)*(processorCount+1));
     
-    sample->totalSystemTime = r_load.cpu_ticks[CPU_STATE_SYSTEM];
-    sample->totalUserTime = r_load.cpu_ticks[CPU_STATE_USER] + r_load.cpu_ticks[CPU_STATE_NICE];
-    sample->totalIdleTime = r_load.cpu_ticks[CPU_STATE_IDLE];
+    /*
+     * start from samples[1] because samples[0] is overall CPU usage
+     */
+    for (natural_t i = 1; i < processorCount + 1; i++)
+    {
+        samples[i].totalSystemTime = processorTickInfo[i-1].cpu_ticks[CPU_STATE_SYSTEM],
+        samples[i].totalUserTime = processorTickInfo[i-1].cpu_ticks[CPU_STATE_USER],
+        samples[i].totalIdleTime = processorTickInfo[i-1].cpu_ticks[CPU_STATE_IDLE];
+    }
+    
+    /*
+     * sum up all totals
+     */
+    for (natural_t i = 1; i < processorCount + 1; i++)
+    {
+        samples[0].totalSystemTime += samples[i].totalSystemTime;
+        samples[0].totalUserTime += samples[i].totalUserTime;
+        samples[0].totalIdleTime += samples[i].totalIdleTime;
+    }
+    
+    /*
+     * set the sample pointer
+     */
+    sample->totalSystemTime = samples[0].totalSystemTime;
+    sample->totalUserTime = samples[0].totalUserTime;
+    sample->totalIdleTime = samples[0].totalIdleTime;
+    
+    /*
+     * Dealloc
+     */
+    vm_deallocate(mach_task_self(), (vm_address_t)processorTickInfo, (vm_size_t)(processorInfoCount * sizeof(natural_t)));
+    delete[] samples;
+    
+    return;
 }
 
 /*
@@ -568,6 +608,8 @@ struct cpu_info
 
 int update_cpu_usage(void)
 {
+    /* XXX add support for multiple cpus (see linux.cc) */
+    
     static bool
         cpu_setup = 0;
     
