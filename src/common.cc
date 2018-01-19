@@ -130,11 +130,12 @@ double get_time(void)
 	return tv.tv_sec + (tv.tv_nsec * 1e-9);
 }
 
-/* Converts '~/...' paths to '/home/blah/...'
- * It's similar to variable_substitute, except only cheques for $HOME and ~/ in path */
+/* Converts '~/...' paths to '/home/blah/...'.  It's similar to
+ * variable_substitute, except only cheques for $HOME and ~/ in
+ * path. If HOME is unset it uses an empty string for substitution */
 std::string to_real_path(const std::string &source)
 {
-	const char *homedir = getenv("HOME");
+	const char *homedir = getenv("HOME") ? : "";
 	if(source.find("~/") == 0)
 		return homedir + source.substr(1);
 	else if(source.find("$HOME/") == 0)
