@@ -252,6 +252,20 @@ enum {
 #define KFLAG_FLIP(a) info.kflags ^= a
 #define KFLAG_ISSET(a) info.kflags & a
 
+#if !defined(MAX)
+#define MAX(x,y) \
+  ({ __typeof__ (x) _x = (x); \
+   __typeof__ (y) _y = (y); \
+   _x > _y ? _x : _y;})
+#endif
+
+#if !defined(MIN)
+#define MIN(x,y) \
+  ({ __typeof__ (x) _x = (x); \
+   __typeof__ (y) _y = (y); \
+   _x < _y ? _x : _y;})
+#endif
+
 /* defined in conky.c, needed by top.c */
 extern int top_cpu, top_mem, top_time;
 #ifdef BUILD_IOSTATS

@@ -87,11 +87,17 @@ struct diskio_stat *prepare_diskio_stat(const char *s)
 #endif
 	strncpy(&(device_name[0]), &device_s[0], text_buffer_size.get(*state));
 
+#if !defined(__sun)
+	/*
+	 * On Solaris we currently don't use the name of disk's special file so  
+	 * this test is useless.
+	 */
 	snprintf(&(stat_name[0]), text_buffer_size.get(*state), "/dev/%s", &(device_name[0]));
 
 	if (stat(&(stat_name[0]), &sb) || !S_ISBLK(sb.st_mode)) {
 		NORM_ERR("diskio device '%s' does not exist", &device_s[0]);
 	}
+#endif
 
 	/* lookup existing */
 	while (cur->next) {

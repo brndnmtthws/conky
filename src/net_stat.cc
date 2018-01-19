@@ -40,6 +40,9 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#if defined(__sun)
+#include <sys/sockio.h>
+#endif
 
 /* network interface stuff */
 
