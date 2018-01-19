@@ -1888,6 +1888,14 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		obj->callbacks.print = &print_puau_sink_description;
         obj->callbacks.free = &free_pulseaudio;
 	    init_pulseaudio(obj);
+	END OBJ(pa_sink_active_port_name, 0)
+		obj->callbacks.print = &print_puau_sink_active_port_name;
+		obj->callbacks.free = &free_pulseaudio;
+		init_pulseaudio(obj);
+	END OBJ(pa_sink_active_port_description, 0)
+		obj->callbacks.print = &print_puau_sink_active_port_description;
+		obj->callbacks.free = &free_pulseaudio;
+		init_pulseaudio(obj);
 	END OBJ(pa_sink_volume, 0)
 		obj->callbacks.percentage = &puau_vol;
         obj->callbacks.free = &free_pulseaudio;

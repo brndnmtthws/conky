@@ -35,8 +35,6 @@
  * Fonic <fonic.maxxim@live.com>
  * 
  * TODO:
- * - Add third argument to module to allow querying multiple GPUs/fans etc.,
- *   e.g. ${nvidia gputemp 2}, ${nvidia fanlevel 1}
  * - Move decoding of GPU/MEM freqs to print_nvidia_value() using QUERY_SPECIAL
  *   so that all quirks are located there
  * - Implement nvs->print_type to allow control over how the value is printed
@@ -44,24 +42,45 @@
  * 
  * Showcase (conky.conf):
  * --==| NVIDIA | ==--
- * GPU   ${nvidia gpufreq}MHz (${nvidia gpufreqmin}-${nvidia gpufreqmax}MHz)
- * MEM   ${nvidia memfreq}MHz (${nvidia memfreqmin}-${nvidia memfreqmax}MHz)
- * MTR   ${nvidia mtrfreq}MHz (${nvidia mtrfreqmin}-${nvidia mtrfreqmax}MHz)
- * PERF  Level ${nvidia perflevel} (${nvidia perflevelmin}-${nvidia perflevelmax}), Mode: ${nvidia perfmode}
- * VRAM  ${nvidia memutil}% (${nvidia memused}MB/${nvidia memtotal}MB)
- * LOAD  GPU ${nvidia gpuutil}%, RAM ${nvidia membwutil}%, VIDEO ${nvidia videoutil}%, PCIe ${nvidia pcieutil}%
- * TEMP  GPU ${nvidia gputemp}°C (${nvidia gputempthreshold}°C max.), SYS ${nvidia ambienttemp}°C
- * FAN   ${nvidia fanspeed} RPM (${nvidia fanlevel}%)
+ * GPU    ${nvidia gpufreq [gpu_id]}MHz (${nvidia gpufreqmin [gpu_id]}-${nvidia gpufreqmax [gpu_id]}MHz)
+ * MEM    ${nvidia memfreq [gpu_id]}MHz (${nvidia memfreqmin [gpu_id]}-${nvidia memfreqmax [gpu_id]}MHz)
+ * MTR    ${nvidia mtrfreq [gpu_id]}MHz (${nvidia mtrfreqmin [gpu_id]}-${nvidia mtrfreqmax [gpu_id]}MHz)
+ * PERF   Level ${nvidia perflevel [gpu_id]} (${nvidia perflevelmin [gpu_id]}-${nvidia perflevelmax [gpu_id]}), Mode: ${nvidia perfmode [gpu_id]}
+ * VRAM   ${nvidia memutil [gpu_id]}% (${nvidia memused [gpu_id]}MB/${nvidia memtotal [gpu_id]}MB)
+ * LOAD   GPU ${nvidia gpuutil [gpu_id]}%, RAM ${nvidia membwutil [gpu_id]}%, VIDEO ${nvidia videoutil [gpu_id]}%, PCIe ${nvidia pcieutil [gpu_id]}%
+ * TEMP   GPU ${nvidia gputemp [gpu_id]}°C (${nvidia gputempthreshold [gpu_id]}°C max.), SYS ${nvidia ambienttemp [gpu_id]}°C
+ * FAN    ${nvidia fanspeed [gpu_id]} RPM (${nvidia fanlevel [gpu_id]}%)
+ * 
+ * miscelaneas:
+ * OPENGL ${nvidia imagequality [gpu_id]}
+ * GPU    ${nvidia modelname [gpu_id]} 
  * 
  * --==| NVIDIA Bars |==--
- * LOAD ${nvidiabar gpuutil}
- * VRAM ${nvidiabar memutil}
- * RAM ${nvidiabar membwutil}
- * VIDEO ${nvidiabar videoutil}
- * PCIe ${nvidiabar pcieutil}
- * Fan ${nvidiabar fanlevel}
- * TEMP ${nvidiabar gputemp}
+ * LOAD  ${nvidiabar [height][,width] gpuutil [gpu_id]}
+ * VRAM  ${nvidiabar [height][,width] memutil [gpu_id]}
+ * RAM   ${nvidiabar [height][,width] membwutil [gpu_id]}
+ * VIDEO ${nvidiabar [height][,width] videoutil [gpu_id]}
+ * PCIe  ${nvidiabar [height][,width] pcieutil [gpu_id]}
+ * Fan   ${nvidiabar [height][,width] fanlevel [gpu_id]}
+ * TEMP  ${nvidiabar [height][,width] gputemp [gpu_id]}
  * 
+ * --==| NVIDIA Gauge |==--
+ * LOAD  ${nvidiagauge [height][,width] gpuutil [gpu_id]}
+ * VRAM  ${nvidiagauge [height][,width] memutil [gpu_id]}
+ * RAM   ${nvidiagauge [height][,width] membwutil [gpu_id]}
+ * VIDEO ${nvidiagauge [height][,width] videoutil [gpu_id]}
+ * PCIe  ${nvidiagauge [height][,width] pcieutil [gpu_id]}
+ * Fan   ${nvidiagauge [height][,width] fanlevel [gpu_id]}
+ * TEMP  ${nvidiagauge [height][,width] gputemp [gpu_id]}
+ * 
+ * --==| NVIDIA Graph |==-- (gpu_id is not optional in this case)
+ * LOAD  ${nvidiagraph gpuutil [height][,width] [gradient color 1] [gradient color 2] [scale] [-t] [-l] gpu_id}
+ * VRAM  ${nvidiagraph memutil [height][,width] [gradient color 1] [gradient color 2] [scale] [-t] [-l] gpu_id}
+ * RAM   ${nvidiagraph membwutil [height][,width] [gradient color 1] [gradient color 2] [scale] [-t] [-l] gpu_id}
+ * VIDEO ${nvidiagraph videoutil [height][,width] [gradient color 1] [gradient color 2] [scale] [-t] [-l] gpu_id}
+ * PCIe  ${nvidiagraph pcieutil [height][,width] [gradient color 1] [gradient color 2] [scale] [-t] [-l] gpu_id}
+ * Fan   ${nvidiagraph fanlevel [height][,width] [gradient color 1] [gradient color 2] [scale] [-t] [-l] gpu_id}
+ * TEMP  ${nvidiagraph gputemp [height][,width] [gradient color 1] [gradient color 2] [scale] [-t] [-l] gpu_id}
  */
 
 
@@ -126,7 +145,8 @@ const char* translate_module_argument[] = {
 						"fanspeed",		// Fan/cooler
 						"fanlevel",
 						
-						"imagequality"		// Miscellaneous
+						"imagequality",		// Miscellaneous
+                        "modelname"
 };
 
 // Enum for module arguments
@@ -177,6 +197,8 @@ typedef enum _ARG_ID {
 	ARG_FAN_LEVEL,
 	
 	ARG_IMAGEQUALITY,
+
+	ARG_MODEL_NAME,
 
 	ARG_UNKNOWN
 } ARG_ID;
@@ -259,6 +281,9 @@ typedef enum _ATTR_ID {
 
 	ATTR_PERF_LEVEL,
 	ATTR_IMAGE_QUALITY,
+
+	ATTR_MODEL_NAME,
+
 } ATTR_ID;
 
 
@@ -309,9 +334,34 @@ struct nvidia_s {
 	ATTR_ID attribute;
 	char *token;
 	SEARCH_ID search;
+//  added new field for GPU id
+    int gpu_id;
+};
+
+//Cache by value
+struct nvidia_c_value {
+    int memtotal = -1;
+	int gputempthreshold = -1;
+};
+
+//Cache by string
+struct nvidia_c_string {
+	int nvclockmin = -1;
+	int nvclockmax = -1;
+	int memclockmin = -1;
+	int memclockmax = -1;
+	int memTransferRatemin = -1;
+	int memTransferRatemax = -1;
+	int perfmin = -1;
+	int perfmax = -1;
 };
 
 static Display *nvdisplay;
+
+// Maximum number of GPU connected:
+// For cache default value: choosed a model of direct access to array instead of list for speed improvement
+// value based on the incoming quad Naples tech having 256 PCIe lanes available
+const int MAXNUMGPU=64;
 
 
 namespace {
@@ -365,11 +415,33 @@ int set_nvidia_query(struct text_object *obj, const char *arg, unsigned int spec
 {
 	struct nvidia_s *nvs;
 	int aid;
+    int ilen;
+
+
+ 
 
 	// Initialize global struct
 	obj->data.opaque = malloc(sizeof(struct nvidia_s));
 	nvs = static_cast<nvidia_s *>(obj->data.opaque);
 	memset(nvs, 0, sizeof(struct nvidia_s));
+
+    // Added new parameter parsing GPU_ID as 0,1,2,..
+    // if no GPU_ID parameter then default to 0
+    nvs->gpu_id = 0;
+	char *strbuf = strdup(arg);
+	char *p = strrchr(strbuf, ' ');
+	if (p && *(p + 1)) {
+        nvs->gpu_id = atoi(p+1);
+        if( (nvs->gpu_id > 0) || !strcmp(p+1,"0") ) {
+			ilen = strlen(strbuf);
+			ilen = ilen - strlen(p);
+			strbuf[ilen] = 0;
+			arg = strbuf;
+        }
+    }
+
+    // If the value is negative it is set to 0
+    if (nvs->gpu_id < 0) nvs->gpu_id = 0;
 
 	// Extract arguments for nvidiabar, etc, and run set_nvidia_query
 	switch (special_type) {
@@ -393,9 +465,11 @@ int set_nvidia_query(struct text_object *obj, const char *arg, unsigned int spec
 		if (strcmp(arg, translate_module_argument[aid]) == 0)
 			break;
 	}
-	//fprintf(stderr, "parameter: %s -> aid: %d\n", arg, aid);
+
+	// free the string buffer after arg is not anymore needed
+	if (strbuf != NULL) free(strbuf);
 	
-	// Save pointers to the arg and command strings for dubugging and printing
+	// Save pointers to the arg and command strings for debugging and printing
 	nvs->arg = translate_module_argument[aid];
 	nvs->command = translate_nvidia_special_type[special_type];
 
@@ -582,6 +656,12 @@ int set_nvidia_query(struct text_object *obj, const char *arg, unsigned int spec
 			nvs->target = TARGET_SCREEN;
 			nvs->attribute = ATTR_IMAGE_QUALITY;
 			break;
+
+		case ARG_MODEL_NAME:
+			nvs->query = QUERY_STRING;
+			nvs->target = TARGET_GPU;
+			nvs->attribute = ATTR_MODEL_NAME;
+			break;
 			
 		default:						// Unknown/invalid argument
 			// Error printed by core.cc
@@ -590,7 +670,7 @@ int set_nvidia_query(struct text_object *obj, const char *arg, unsigned int spec
 	return 0;
 }
 
-// Return the amount of targets present (or -1 on error)
+// Return the amount of targets present or raise error)
 static inline int get_nvidia_target_count(Display *dpy, TARGET_ID tid)
 {
 	int num_tgts;
@@ -598,48 +678,41 @@ static inline int get_nvidia_target_count(Display *dpy, TARGET_ID tid)
 		num_tgts = -1;
 	}
 
-	return num_tgts;
-}
-
-// Exit if we are unable to get targets of type tid on display dpy
-void check_nvidia_target_count(Display *dpy, TARGET_ID tid, ATTR_ID aid)
-{
-	int num_tgts = get_nvidia_target_count(dpy, tid);
-
 	if(num_tgts < 1) {
-		// Print error and exit if there's not enough targets to query
+		// Print error and exit if there's no NVIDIA's GPU
 		CRIT_ERR(NULL, NULL, "%s:"
 		"\n          Trying to query Nvidia target failed (using the propietary drivers)."
 		"\n          Are you sure they are installed correctly and a Nvidia GPU is in use?"
-		"\n          (display: %d, target_id: %d, target_count: %d, attribute_id: %d)"
-		             , __func__, dpy, tid, num_tgts, aid);
+		"\n          (display: %d,Nvidia target_count: %d)"
+		             , __func__, dpy, num_tgts );
 	}
+     
+	return num_tgts;
 }
 
-static int cache_nvidia_value(TARGET_ID tid, ATTR_ID aid, Display *dpy, int *value)
+static int cache_nvidia_value(TARGET_ID tid, ATTR_ID aid, Display *dpy, int *value, int gid)
 {
-	static int memtotal = -1;
-	static int gputempthreshold = -1;
+    static nvidia_c_value ac_value[MAXNUMGPU];
 
 	if (aid == ATTR_MEM_TOTAL) {
-		if (memtotal < 0) {
-			if(!dpy || !XNVCTRLQueryTargetAttribute(dpy, translate_nvidia_target[tid], 0, 0, translate_nvidia_attribute[aid], value)){
+		if (ac_value[gid].memtotal < 0) {
+			if(!dpy || !XNVCTRLQueryTargetAttribute(dpy, translate_nvidia_target[tid], gid, 0, translate_nvidia_attribute[aid], value)){
 				NORM_ERR("%s: Something went wrong running nvidia query (tid: %d, aid: %d)", __func__, tid, aid);
 				return -1;
 			}
-			memtotal = *value;
+			ac_value[gid].memtotal = *value;
 		} else {
-			*value = memtotal;
+			*value = ac_value[gid].memtotal;
 		}
 	} else if (aid == ATTR_GPU_TEMP_THRESHOLD) {
-		if (gputempthreshold < 0) {
-			if(!dpy || !XNVCTRLQueryTargetAttribute(dpy, translate_nvidia_target[tid], 0, 0, translate_nvidia_attribute[aid], value)){
+		if (ac_value[gid].gputempthreshold < 0) {
+			if(!dpy || !XNVCTRLQueryTargetAttribute(dpy, translate_nvidia_target[tid], gid, 0, translate_nvidia_attribute[aid], value)){
 				NORM_ERR("%s: Something went wrong running nvidia query (tid: %d, aid: %d)", __func__, tid, aid);
 				return -1;
 			}
-			gputempthreshold = *value;
+			ac_value[gid].gputempthreshold = *value;
 		} else {
-			*value = gputempthreshold;
+			*value = ac_value[gid].gputempthreshold;
 		}
 	}
 
@@ -647,22 +720,19 @@ static int cache_nvidia_value(TARGET_ID tid, ATTR_ID aid, Display *dpy, int *val
 }
 
 // Retrieve attribute value via nvidia interface
-static int get_nvidia_value(TARGET_ID tid, ATTR_ID aid)
+static int get_nvidia_value(TARGET_ID tid, ATTR_ID aid, int gid)
 {
 	Display *dpy = nvdisplay ? nvdisplay : display;
 	int value;
 
-	// Check for issues
-	check_nvidia_target_count(dpy, tid, aid);
-
 	// Check if the aid is cacheable
 	if (aid == ATTR_MEM_TOTAL || aid == ATTR_GPU_TEMP_THRESHOLD) {
-		if (cache_nvidia_value(tid, aid, dpy, &value)) {
+		if (cache_nvidia_value(tid, aid, dpy, &value, gid)) {
 			return -1;
 		}
 	// If not, then query it
 	} else {
-		if(!dpy || !XNVCTRLQueryTargetAttribute(dpy, translate_nvidia_target[tid], 0, 0, translate_nvidia_attribute[aid], &value)){
+		if(!dpy || !XNVCTRLQueryTargetAttribute(dpy, translate_nvidia_target[tid], gid, 0, translate_nvidia_attribute[aid], &value)){
 			NORM_ERR("%s: Something went wrong running nvidia query (tid: %d, aid: %d)", __func__, tid, aid);
 			return -1;
 		}
@@ -680,84 +750,75 @@ static int get_nvidia_value(TARGET_ID tid, ATTR_ID aid)
 
 
 // Retrieve attribute string via nvidia interface
-static char* get_nvidia_string(TARGET_ID tid, ATTR_ID aid)
+static char* get_nvidia_string(TARGET_ID tid, ATTR_ID aid, int gid)
 {
 	Display *dpy = nvdisplay ? nvdisplay : display;
 	char *str;
 
-	// Check for issues
-	check_nvidia_target_count(dpy, tid, aid);
-	
 	// Query nvidia interface
-	if (!dpy || !XNVCTRLQueryTargetStringAttribute(dpy, translate_nvidia_target[tid], 0, 0, translate_nvidia_attribute[aid], &str)) {
-		NORM_ERR("%s: Something went wrong running nvidia string query (tid: %d, aid: %d)", __func__, tid, aid);
+	if (!dpy || !XNVCTRLQueryTargetStringAttribute(dpy, translate_nvidia_target[tid], gid, 0, translate_nvidia_attribute[aid], &str)) {
+		NORM_ERR("%s: Something went wrong running nvidia string query (tid: %d, aid: %d, GPU %d)", __func__, tid, aid, gid);
 		return NULL;
 	}
-	//fprintf(stderr, "%s", str);
+	//fprintf(stderr, "checking get_nvidia_string-> '%s'", str);
 	return str;
 }
 
-static int cache_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token, SEARCH_ID search, int *value, int update)
-{
-	static int nvclockmin = -1;
-	static int nvclockmax = -1;
-	static int memclockmin = -1;
-	static int memclockmax = -1;
-	static int memTransferRatemin = -1;
-	static int memTransferRatemax = -1;
-	static int perfmin = -1;
-	static int perfmax = -1;
+static int cache_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token, SEARCH_ID search, int *value, int update, int gid)
+{   
+    static nvidia_c_string ac_string[MAXNUMGPU];
 
 	if (update) {
-		if (strcmp(token, (char*) "nvclockmin") == 0 && nvclockmin < 0){
-			nvclockmin = *value;
-		} else if (strcmp(token, (char*) "nvclockmax") == 0 && nvclockmax < 0){
-			nvclockmax = *value;
-		} else if (strcmp(token, (char*) "memclockmin") == 0 && memclockmin < 0){
-			memclockmin = *value;
-		} else if (strcmp(token, (char*) "memclockmax") == 0 && memclockmax < 0){
-			memclockmax = *value;
-		} else if (strcmp(token, (char*) "memTransferRatemin") == 0 && memTransferRatemin < 0){
-			memTransferRatemin = *value;
-		} else if (strcmp(token, (char*) "memTransferRatemax") == 0 && memTransferRatemax < 0){
-			memTransferRatemax = *value;
+		if (strcmp(token, (char*) "nvclockmin") == 0 && ac_string[gid].nvclockmin < 0){
+			ac_string[gid].nvclockmin = *value;
+		} else if (strcmp(token, (char*) "nvclockmax") == 0 && ac_string[gid].nvclockmax < 0){
+			ac_string[gid].nvclockmax = *value;
+		} else if (strcmp(token, (char*) "memclockmin") == 0 && ac_string[gid].memclockmin < 0){
+			ac_string[gid].memclockmin = *value;
+		} else if (strcmp(token, (char*) "memclockmax") == 0 && ac_string[gid].memclockmax < 0){
+			ac_string[gid].memclockmax = *value;
+		} else if (strcmp(token, (char*) "memTransferRatemin") == 0 && ac_string[gid].memTransferRatemin < 0){
+			ac_string[gid].memTransferRatemin = *value;
+		} else if (strcmp(token, (char*) "memTransferRatemax") == 0 && ac_string[gid].memTransferRatemax < 0){
+			ac_string[gid].memTransferRatemax = *value;
 
-		} else if (strcmp(token, (char*) "perf") == 0 && memTransferRatemax < 0){
+		} else if (strcmp(token, (char*) "perf") == 0 && ac_string[gid].memTransferRatemax < 0){
 			if (search == SEARCH_MIN) {
-				perfmin = *value;
+				ac_string[gid].perfmin = *value;
 			} else if (search == SEARCH_MAX) {
-				perfmax = *value;
+				ac_string[gid].perfmax = *value;
 			}
 		}
-
+        
 	} else {
 		if (strcmp(token, (char*) "nvclockmin") == 0){
-			*value = nvclockmin;
+			*value = ac_string[gid].nvclockmin;
 		} else if (strcmp(token, (char*) "nvclockmax") == 0){
-			*value = nvclockmax;
+			*value = ac_string[gid].nvclockmax;
 		} else if (strcmp(token, (char*) "memclockmin") == 0){
-			*value = memclockmin;
+			*value = ac_string[gid].memclockmin;
 		} else if (strcmp(token, (char*) "memclockmax") == 0){
-			*value = memclockmax;
+			*value = ac_string[gid].memclockmax;
 		} else if (strcmp(token, (char*) "memTransferRatemin") == 0){
-			*value = memTransferRatemin;
+			*value = ac_string[gid].memTransferRatemin;
 		} else if (strcmp(token, (char*) "memTransferRatemax") == 0){
-			*value = memTransferRatemax;
+			*value = ac_string[gid].memTransferRatemax;
 
 		} else if (strcmp(token, (char*) "perf") == 0){
 			if (search == SEARCH_MIN) {
-				*value = perfmin;
+				*value = ac_string[gid].perfmin;
 			} else if (search == SEARCH_MAX) {
-					*value = perfmax;
+					*value = ac_string[gid].perfmax;
 			}
 		}
+        
 	}
 
 	return 0;
 }
 
 // Retrieve token value from nvidia string
-static int get_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token, SEARCH_ID search)
+static int get_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token, SEARCH_ID search, int gid)
 {
 	char *str;
 	char *kvp, *key, *val;
@@ -767,13 +828,13 @@ static int get_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token, SEAR
 	value = -1;
 
 	// Checks if the value is cacheable and is already loaded
-	cache_nvidia_string_value(tid, aid, token, search, &value, 0);
+	cache_nvidia_string_value(tid, aid, token, search, &value, 0, gid);
 	if ( value != -1 ) {
 		return value;
 	}
 
 	// Get string via nvidia interface
-	str = get_nvidia_string(tid, aid);
+	str = get_nvidia_string(tid, aid, gid);
 
 	// Split string into 'key=value' substrings, split substring
 	// into key and value, from value, check if token was found,
@@ -805,7 +866,7 @@ static int get_nvidia_string_value(TARGET_ID tid, ATTR_ID aid, char *token, SEAR
 	}
 
 	// This call updated the cache for the cacheable values;
-	cache_nvidia_string_value(tid, aid, token, search, &value, 1);
+	cache_nvidia_string_value(tid, aid, token, search, &value, 1, gid);
 	
 	// TESTING - print raw string if token was not found;
 	// string has to be queried again due to strtok_r()
@@ -827,6 +888,11 @@ void print_nvidia_value(struct text_object *obj, char *p, int p_max_size)
 	struct nvidia_s *nvs = static_cast<nvidia_s *>(obj->data.opaque);
 	int value, temp1, temp2;
 	char* str;
+	
+    Display *dpy = nvdisplay ? nvdisplay : display;
+    
+    //num_GPU calculated only once based on the physical target
+	static int num_GPU = get_nvidia_target_count(dpy, TARGET_GPU) - 1;
 
 	// Assume failure
 	value = -1;
@@ -834,20 +900,25 @@ void print_nvidia_value(struct text_object *obj, char *p, int p_max_size)
 
 	// Perform query
 	if (nvs != NULL) {
+
+        //Reduce overcommitted GPU number to last GPU
+		if( nvs->gpu_id > num_GPU ) nvs->gpu_id = num_GPU;     
+		
+		//Execute switch by query type
 		switch (nvs->query) {
 			case QUERY_VALUE:
-				value = get_nvidia_value(nvs->target, nvs->attribute);
+				value = get_nvidia_value(nvs->target, nvs->attribute, nvs->gpu_id);
 				break;
 			case QUERY_STRING:
-				str = get_nvidia_string(nvs->target, nvs->attribute);
+				str = get_nvidia_string(nvs->target, nvs->attribute, nvs->gpu_id);
 				break;
 			case QUERY_STRING_VALUE:
-				value = get_nvidia_string_value(nvs->target, nvs->attribute, nvs->token, nvs->search);
+				value = get_nvidia_string_value(nvs->target, nvs->attribute, nvs->token, nvs->search, nvs->gpu_id);
 				break;
 			case QUERY_SPECIAL:
 				switch (nvs->attribute) {
 					case ATTR_PERF_MODE:
-						temp1 = get_nvidia_value(nvs->target, nvs->attribute);
+						temp1 = get_nvidia_value(nvs->target, nvs->attribute, nvs->gpu_id);
 						switch (temp1) {
 							case NV_CTRL_GPU_POWER_MIZER_MODE_ADAPTIVE:
 								temp2 = asprintf(&str, "Adaptive");
@@ -866,20 +937,20 @@ void print_nvidia_value(struct text_object *obj, char *p, int p_max_size)
 						}
 						break;
 					case ATTR_MEM_FREE:
-						temp1 = get_nvidia_value(nvs->target, ATTR_MEM_USED);
-						temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL);
+						temp1 = get_nvidia_value(nvs->target, ATTR_MEM_USED, nvs->gpu_id);
+						temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL, nvs->gpu_id);
 						value = temp2 - temp1;
 						break;
 					case ATTR_MEM_UTIL:
-						temp1 = get_nvidia_value(nvs->target, ATTR_MEM_USED);
-						temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL);
+						temp1 = get_nvidia_value(nvs->target, ATTR_MEM_USED, nvs->gpu_id);
+						temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL, nvs->gpu_id);
 						value = ((float)temp1 * 100 / (float)temp2) + 0.5;
 						break;
 				}
 				break;
 		}
 	}
-	
+
 	// Print result
 	if (value != -1) {
 		snprintf(p, p_max_size, "%d", value);
@@ -889,6 +960,7 @@ void print_nvidia_value(struct text_object *obj, char *p, int p_max_size)
 	} else {
 		snprintf(p, p_max_size, "N/A");
 	}
+
 	
 }
 
@@ -904,17 +976,17 @@ double get_nvidia_barval(struct text_object *obj) {
 	if (nvs != NULL) {
 		switch (nvs->attribute) {
 			case ATTR_UTILS_STRING: // one of the percentage utils (gpuutil, membwutil, videoutil and pcieutil)
-				value = get_nvidia_string_value(nvs->target, ATTR_UTILS_STRING, nvs->token, nvs->search);
+				value = get_nvidia_string_value(nvs->target, ATTR_UTILS_STRING, nvs->token, nvs->search, nvs->gpu_id);
 				break;
 			case ATTR_MEM_UTIL: // memutil
 			case ATTR_MEM_USED:
-				temp1 = get_nvidia_value(nvs->target, ATTR_MEM_USED);
-				temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL);
+				temp1 = get_nvidia_value(nvs->target, ATTR_MEM_USED, nvs->gpu_id);
+				temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL, nvs->gpu_id);
 				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
 				break;
 			case ATTR_MEM_FREE: // memfree
-				temp1 = get_nvidia_value(nvs->target, ATTR_MEM_USED);
-				temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL);
+				temp1 = get_nvidia_value(nvs->target, ATTR_MEM_USED, nvs->gpu_id);
+				temp2 = get_nvidia_value(nvs->target, ATTR_MEM_TOTAL, nvs->gpu_id);
 				value = temp2 - temp1;
 				break;
 			case ATTR_FAN_SPEED: // fanspeed: Warn user we are using fanlevel
@@ -922,26 +994,26 @@ double get_nvidia_barval(struct text_object *obj) {
 								nvs->command, nvs->arg);
 				// No break, continue into fanlevel
 			case ATTR_FAN_LEVEL: // fanlevel
-				value = get_nvidia_value(nvs->target, ATTR_FAN_LEVEL);
+				value = get_nvidia_value(nvs->target, ATTR_FAN_LEVEL, nvs->gpu_id);
 				break;
 			case ATTR_GPU_TEMP: // gputemp (calculate out of gputempthreshold)
-				temp1 = get_nvidia_value(nvs->target, ATTR_GPU_TEMP);
-				temp2 = get_nvidia_value(nvs->target, ATTR_GPU_TEMP_THRESHOLD);
+				temp1 = get_nvidia_value(nvs->target, ATTR_GPU_TEMP, nvs->gpu_id);
+				temp2 = get_nvidia_value(nvs->target, ATTR_GPU_TEMP_THRESHOLD, nvs->gpu_id);
 				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
 				break;
 			case ATTR_AMBIENT_TEMP: // ambienttemp (calculate out of gputempthreshold for consistency)
-				temp1 = get_nvidia_value(nvs->target, ATTR_AMBIENT_TEMP);
-				temp2 = get_nvidia_value(nvs->target, ATTR_GPU_TEMP_THRESHOLD);
+				temp1 = get_nvidia_value(nvs->target, ATTR_AMBIENT_TEMP, nvs->gpu_id);
+				temp2 = get_nvidia_value(nvs->target, ATTR_GPU_TEMP_THRESHOLD, nvs->gpu_id);
 				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
 				break;
 			case ATTR_GPU_FREQ: // gpufreq (calculate out of gpufreqmax)
-				temp1 = get_nvidia_value(nvs->target, ATTR_GPU_FREQ);
-				temp2 = get_nvidia_string_value(nvs->target, ATTR_PERFMODES_STRING, (char*) "nvclockmax", SEARCH_MAX);
+				temp1 = get_nvidia_value(nvs->target, ATTR_GPU_FREQ, nvs->gpu_id);
+				temp2 = get_nvidia_string_value(nvs->target, ATTR_PERFMODES_STRING, (char*) "nvclockmax", SEARCH_MAX, nvs->gpu_id);
 				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
 				break;
 			case ATTR_MEM_FREQ: // memfreq (calculate out of memfreqmax)
-				temp1 = get_nvidia_value(nvs->target, ATTR_MEM_FREQ);
-				temp2 = get_nvidia_string_value(nvs->target, ATTR_PERFMODES_STRING, (char*) "memclockmax", SEARCH_MAX);
+				temp1 = get_nvidia_value(nvs->target, ATTR_MEM_FREQ, nvs->gpu_id);
+				temp2 = get_nvidia_string_value(nvs->target, ATTR_PERFMODES_STRING, (char*) "memclockmax", SEARCH_MAX, nvs->gpu_id);
 				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
 				break;
 			case ATTR_FREQS_STRING: // mtrfreq (calculate out of memfreqmax)
@@ -951,13 +1023,13 @@ double get_nvidia_barval(struct text_object *obj) {
 					          nvs->command, nvs->arg);
 					return 0;
 				}
-				temp1 = get_nvidia_string_value(nvs->target, ATTR_FREQS_STRING, nvs->token, SEARCH_MAX);
-				temp2 = get_nvidia_string_value(nvs->target, ATTR_PERFMODES_STRING, (char*) "memTransferRatemax", SEARCH_MAX);
+				temp1 = get_nvidia_string_value(nvs->target, ATTR_FREQS_STRING, nvs->token, SEARCH_MAX, nvs->gpu_id);
+				temp2 = get_nvidia_string_value(nvs->target, ATTR_PERFMODES_STRING, (char*) "memTransferRatemax", SEARCH_MAX, nvs->gpu_id);
 				if (temp2 > temp1) temp1 = temp2; // extra safe here
 				value = ((float)temp1 * 100 / (float)temp2) + 0.5;
 				break;
 			case ATTR_IMAGE_QUALITY: // imagequality
-				value = get_nvidia_value(nvs->target, ATTR_IMAGE_QUALITY);
+				value = get_nvidia_value(nvs->target, ATTR_IMAGE_QUALITY, nvs->gpu_id);
 				break;
 
 			default: // Throw error if unsupported args are used

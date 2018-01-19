@@ -39,17 +39,19 @@ if(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
 	set(OS_OPENBSD true)
 endif(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
 
-if(CMAKE_SYSTEM_NAME MATCHES "Solaris")
+if(CMAKE_SYSTEM_NAME MATCHES "SunOS")
 	set(OS_SOLARIS true)
-endif(CMAKE_SYSTEM_NAME MATCHES "Solaris")
+endif(CMAKE_SYSTEM_NAME MATCHES "SunOS")
 
 if(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
 	set(OS_NETBSD true)
 endif(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
 
-if(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY)
+if(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY
+  AND NOT OS_SOLARIS)
 	message(FATAL_ERROR "Your platform, '${CMAKE_SYSTEM_NAME}', is not currently supported.  Patches are welcome.")
-endif(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY)
+endif(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY
+  AND NOT OS_SOLARIS)
 
 include(FindThreads)
 find_package(Threads)
@@ -65,6 +67,10 @@ if(OS_DRAGONFLY)
 set(conky_libs ${conky_libs} -L/usr/pkg/lib)
 set(conky_includes ${conky_includes} -I/usr/pkg/include)
 endif(OS_DRAGONFLY)
+
+if(OS_SOLARIS)
+set(conky_libs ${conky_libs} -L/usr/local/lib)
+endif(OS_SOLARIS)
 
 # Do version stuff
 set(VERSION_MAJOR "1")

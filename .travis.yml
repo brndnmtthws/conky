@@ -17,6 +17,7 @@ addons:
     - libtolua++5.1-dev
     - libcairo2-dev
     - libimlib2-dev
+    - libxinerama-dev
     - gawk
 before_script:
   - mkdir build && cd build && cmake .. && cd ..
