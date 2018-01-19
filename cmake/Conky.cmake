@@ -75,7 +75,7 @@ endif(OS_SOLARIS)
 # Do version stuff
 set(VERSION_MAJOR "1")
 set(VERSION_MINOR "10")
-set(VERSION_PATCH "7")
+set(VERSION_PATCH "8")
 
 find_program(APP_AWK awk)
 if(NOT APP_AWK)
