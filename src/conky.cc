@@ -200,7 +200,7 @@ int top_io;
 #endif
 int top_running;
 static conky::simple_config_setting<bool> extra_newline("extra_newline", false, false);
-static volatile sig_atomic_t g_sigterm_pending, g_sighup_pending;
+static volatile sig_atomic_t g_sigterm_pending, g_sighup_pending,g_sigusr2_pending;
 
 /* Update interval */
 conky::range_config_setting<double> update_interval("update_interval", 0.0,
@@ -2447,7 +2447,22 @@ static void main_loop(void)
 		if (g_sighup_pending) {
 			g_sighup_pending = false;
 			NORM_ERR("received SIGHUP or SIGUSR1. reloading the config file.");
+
 			reload_config();
+		}
+		
+		if(g_sigusr2_pending){
+			g_sigusr2_pending = false;
+			// refresh view;
+			NORM_ERR("recieved SIGUSR2. refreshing.");
+			update_text();
+			draw_stuff();
+#ifdef BUILD_NCURSES
+			if(out_to_ncurses.get(*state)) {
+				refresh();
+				clear();
+			}
+#endif		
 		}
 
 		if (g_sigterm_pending) {
@@ -3060,6 +3075,7 @@ void initialisation(int argc, char **argv) {
 	if (		sigaction(SIGINT,  &act, &oact) < 0
 			||	sigaction(SIGALRM, &act, &oact) < 0
 			||	sigaction(SIGUSR1, &act, &oact) < 0
+			||	sigaction(SIGUSR2, &act, &oact) < 0
 			||	sigaction(SIGHUP,  &act, &oact) < 0
 			||	sigaction(SIGTERM, &act, &oact) < 0) {
 		NORM_ERR("error setting signal handler: %s", strerror(errno));
@@ -3079,6 +3095,7 @@ int main(int argc, char **argv)
 	argv_copy = argv;
 	g_sigterm_pending = false;
 	g_sighup_pending = false;
+	g_sigusr2_pending = false;
 
 #ifdef BUILD_CURL
 	struct curl_global_initializer {
@@ -3206,6 +3223,8 @@ static void signal_handler(int sig)
 		case SIGUSR1:
 			g_sighup_pending = true;
 			break;
+		case SIGUSR2:
+			g_sigusr2_pending = true;
 		default:
 			/* Reaching here means someone set a signal
 			 * (SIGXXXX, signal_handler), but didn't write any code
