@@ -2781,10 +2781,14 @@
                 <option>nvidia</option>
             </command>
             <option>argument</option>
+            <option>(GPU_ID)</option>
         </term>
         <listitem>Nvidia graphics card information via the XNVCtrl
         library.
-        <para />
+        <para>
+        <emphasis>GPU_ID:</emphasis> Optional parameter to choose the GPU to be used as 0,1,2,3,.. Default parameter is 0
+        </para>
+        <para>
         <emphasis>Possible arguments:</emphasis> (Temperatures are
         printed as float, all other values as integer. Bracketed
         arguments are aliases)
@@ -2925,8 +2929,12 @@
                 <command>imagequality</command>
                 <option>Image quality</option>
             </member>
+            <member>
+                <command>modelname</command>
+                <option>name of the GPU card</option>
+            </member>
         </simplelist>
-        <para /></listitem>
+        </para></listitem>
     </varlistentry>
     <varlistentry>
         <term>
@@ -2935,12 +2943,16 @@
             </command>
             <option>(height),(width)</option>
             <option>argument</option>
+            <option>(GPU_ID)</option>
         </term>
         <listitem>Same as nvidia, except it draws its output in a
         horizontal bar. The height and width parameters are optional,
         and default to the default_bar_height and default_bar_width
         config settings, respectively.
-        <para />
+        <para>
+        <emphasis>GPU_ID:</emphasis> Optional parameter to choose the GPU to be used as 0,1,2,3,.. Default parameter is 0
+        </para>
+        <para>
         <emphasis>Note the following arguments are incompatible:</emphasis>
         <simplelist type='horiz' columns='3'>
             <member>
@@ -2982,7 +2994,7 @@
                 <command>fanspeed</command>
             </member>
         </simplelist>
-        <para /></listitem>
+        </para></listitem>
     </varlistentry>
     <varlistentry>
         <term>
@@ -2991,15 +3003,19 @@
             </command>
             <option>(height),(width)</option>
             <option>argument</option>
+            <option>(GPU_ID)</option>
         </term>
         <listitem>Same as nvidiabar, except  a round gauge
         (much like a vehicle speedometer). The height
         and width parameters are optional, and default to the
         default_gauge_height and default_gauge_width config
         settings, respectively.
-        <para />
+        <para>
+        <emphasis>GPU_ID:</emphasis> Optional parameter to choose the GPU to be used as 0,1,2,3,.. Default parameter is 0
+        </para>
+        <para>
         For possible arguments see nvidia and nvidiabar.
-        <para /></listitem>
+        </para></listitem>
     </varlistentry>
     <varlistentry>
         <term>
@@ -3013,17 +3029,21 @@
             <option>(scale)</option>
             <option>(-t)</option>
             <option>(-l)</option>
+            <option>GPU_ID</option>
         </term>
         <listitem>Same as nvidiabar, except a horizontally
         scrolling graph with values from 0-100 plotted on the
         vertical axis. The height and width parameters are
         optional, and default to the default_graph_height and
         default_graph_width config settings, respectively.
-        <para />
+        <para>
+        <emphasis>GPU_ID:</emphasis> NOT optional. This parameter allows to choose the GPU to be used as 0,1,2,3,..
+        </para>
+        <para>
         For possible arguments see nvidia and nvidiabar. To learn more
         about the -t -l and gradient color options,
         see execgraph.
-        <para /></listitem>
+        </para></listitem>
     </varlistentry>
     <varlistentry>
         <term>
