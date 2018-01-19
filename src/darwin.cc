@@ -907,6 +907,18 @@ void get_top_info(void)
     struct kinfo_proc   *p = NULL;
     
     /*
+     * QUICKFIX for #16
+     * XXX if we run conky -t '${top_mem mem 1}' it will crash because info.cpu_count is not initialised.
+     *
+     *  We can initialise it down here, but it seems like in the linux implementation of get_top_info() there is no
+     *      call to the get_cpu_count() function.  Neither is there in core.cc... If this is the case, when is info.cpu_count
+     *      initialised???
+     *
+     *  Find a proper better place for get_cpu_count() call. (for comformance with linux.cc)
+     */
+    get_cpu_count();
+    
+    /*
      *  get processes count
      *  and create the processes list
      */
