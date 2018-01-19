@@ -1058,6 +1058,7 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		free_and_zero(buf);
 		obj->callbacks.graphval = &mem_barval;
 #endif /* BUILD_X11*/
+#ifdef HAVE_SOME_SOUNDCARD_H
 	END OBJ(mixer, 0)
 		parse_mixer_arg(obj, arg);
 		obj->callbacks.percentage = &mixer_percentage;
@@ -1079,6 +1080,7 @@ struct text_object *construct_text_object(char *s, const char *arg,
 	END OBJ_IF(if_mixer_mute, 0)
 		parse_mixer_arg(obj, arg);
 		obj->callbacks.iftest = &check_mixer_muted;
+#endif
 #ifdef BUILD_X11
 	END OBJ(monitor, 0)
 		obj->callbacks.print = &print_monitor;

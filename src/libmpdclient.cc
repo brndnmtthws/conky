@@ -56,6 +56,10 @@
 #  include <netdb.h>
 #endif
 
+#ifndef SUN_LEN
+#define SUN_LEN(a) sizeof(a)
+#endif
+
 /* (bits + 1) / 3 (plus the sign character) */
 #define INTLEN		((sizeof(int)		* CHAR_BIT + 1) / 3 + 1)
 #define LONGLONGLEN	((sizeof(long long)	* CHAR_BIT + 1) / 3 + 1)
