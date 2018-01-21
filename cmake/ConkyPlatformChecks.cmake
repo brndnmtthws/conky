@@ -87,10 +87,8 @@ endif(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 set(OS_DARWIN true)
 
-set(DARWINPORT_NOCHECK_LUA true)
 set(DARWINPORT_NOCHECK_NCURSES true)
 
-set(conky_libs ${conky_libs} -llua)
 endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
 if(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY AND NOT OS_DARWIN)
@@ -293,42 +291,16 @@ if(BUILD_LUA_CAIRO OR BUILD_LUA_IMLIB2 OR BUILD_LUA_RSVG)
 endif(BUILD_LUA_CAIRO OR BUILD_LUA_IMLIB2 OR BUILD_LUA_RSVG)
 
 # Check for Lua itself
-
-# NOTE: Here I changed the way we check for the correct version ( it wouldnt work with the previous code on macOS Sierra ( and probably on any OS with newest cmake ) )
-#
-#   See https://cmake.org/cmake/help/v3.0/module/FindLua.html
-#   There is no LUA_VERSION keyword thus the old code fails.
-#
-#   NOTE: This code now finds lua just fine, though it gives us more configuration overhead when compiling with Xcode! Because, lua support is not ready yeat I disable the patch
-#       and use the old code that doesnt work.
-#
-#if(WANT_TOLUA)
-#   # If we need tolua++, we must compile against Lua 5.1
-#    pkg_search_module(LUA REQUIRED lua5.1 lua-5.1 lua51 lua)
-#    if(NOT LUA_VERSION_MINOR VERSION_LESS 2)
-#       message(FATAL_ERROR "Unable to find Lua 5.1.x")
-#    endif(NOT LUA_VERSION_MINOR VERSION_LESS 2)
-#else(WANT_TOLUA)
-#    # Otherwise, use the most recent Lua version
-#    pkg_search_module(LUA REQUIRED lua>=5.3 lua5.3 lua-5.3 lua53 lua5.2 lua-5.2 lua52 lua5.1 lua-5.1 lua51 lua>=5.1)
-#endif(WANT_TOLUA)
-
-if(NOT DARWINPORT_NOCHECK_LUA)
-
-# The old, not working code for lua:
 if(WANT_TOLUA)
-    # If we need tolua++, we must compile against Lua 5.1
-    pkg_search_module(LUA REQUIRED lua5.1 lua-5.1 lua51 lua)
-    if(NOT LUA_VERSION VERSION_LESS 5.2.0)
-        message(FATAL_ERROR "Unable to find Lua 5.1.x")
-    endif(NOT LUA_VERSION VERSION_LESS 5.2.0)
+	# If we need tolua++, we must compile against Lua 5.1
+	pkg_search_module(LUA REQUIRED lua5.1 lua-5.1 lua51 lua)
+	if(NOT LUA_VERSION VERSION_LESS 5.2.0)
+		message(FATAL_ERROR "Unable to find Lua 5.1.x")
+	endif(NOT LUA_VERSION VERSION_LESS 5.2.0)
 else(WANT_TOLUA)
-    # Otherwise, use the most recent Lua version
-    pkg_search_module(LUA REQUIRED lua>=5.3 lua5.3 lua-5.3 lua53 lua5.2 lua-5.2 lua52 lua5.1 lua-5.1 lua51 lua>=5.1)
+	# Otherwise, use the most recent Lua version
+	pkg_search_module(LUA REQUIRED lua>=5.3 lua5.3 lua-5.3 lua53 lua5.2 lua-5.2 lua52 lua5.1 lua-5.1 lua51 lua>=5.1)
 endif(WANT_TOLUA)
-
-endif(NOT DARWINPORT_NOCHECK_LUA)
-
 set(conky_libs ${conky_libs} ${LUA_LIBRARIES})
 set(conky_includes ${conky_includes} ${LUA_INCLUDE_DIRS})
 link_directories(${LUA_LIBRARY_DIRS})
