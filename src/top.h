@@ -113,7 +113,7 @@ struct process {
 #if (defined(__APPLE__) && defined(__MACH__))
     /*
      * Temporary solution for using a more optimised algorithm than that
-     *  of linux.cc
+     *  of linux.cc for get_top_info().
      * This is a patch that will be deleted when pull request that adds the following
      *  variable is accepted to upstream.
      *

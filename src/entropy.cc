@@ -41,7 +41,7 @@
 #include "dragonfly.h"
 #elif defined(__OpenBSD__)
 #include "openbsd.h"
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) && defined(__MACH__)
 #include "darwin.h"
 #endif
 
