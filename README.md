@@ -64,6 +64,12 @@ brew link --force gettext
 download/clone project and `cd` into project's directory,
 You can now choose if you want to use **Unix Makefiles** or **Xcode build system**.
 
+**PLEASE beware**: if you are using an old version of cmake, it may not be able to locate lua.
+To solve this, update your cmake. (version 3.10.0 works for me on High Sierra and Mavericks)
+
+You may find useful this doc: [lua-bindings](https://github.com/antonio-malcolm/conky-configs/wiki/How-To-Compile-Conky-And-Its-Lua-Bindings-From-Source)
+Especially the part that says `In the conky project source, we'll edit cmake/ConkyPlatformChecks.cmake, line 254, like so`.
+
 **Using Unix Makefiles**
 
 type the following:
