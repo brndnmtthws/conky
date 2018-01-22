@@ -28,7 +28,8 @@ include(CheckSymbolExists)
 # Check for some headers
 
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-    check_symbol_exists(statfs64 "sys/mount.h" HAVE_STATFS64) 		#	On Darwin, the statfs64 structure relies in  </sys/mount.h>
+    # On Darwin, the statfs64 structure relies in </sys/mount.h>
+    check_symbol_exists(statfs64 "sys/mount.h" HAVE_STATFS64)
 else(CMAKE_SYSTEM_NAME MATCHES "Darwin")
     check_symbol_exists(statfs64 "sys/statfs.h" HAVE_STATFS64)
 endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
@@ -85,10 +86,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
 endif(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
 
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-set(OS_DARWIN true)
-
-set(DARWINPORT_NOCHECK_NCURSES true)
-
+	set(OS_DARWIN true)
 endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
 if(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY AND NOT OS_DARWIN)
@@ -143,24 +141,17 @@ if(BUILD_HTTP)
 	set(conky_libs ${conky_libs} -lmicrohttpd)
 endif(BUILD_HTTP)
 
-#
-# TODO: Fix this:
-#
-if(NOT DARWINPORT_NOCHECK_NCURSES)
-
-if(BUILD_NCURSES)
+if(BUILD_NCURSES AND NOT OS_DARWIN)
 	pkg_check_modules(NCURSES ncurses)
 	if(NOT NCURSES_FOUND)
 		message(FATAL_ERROR "Unable to find ncurses library")
 	endif(NOT NCURSES_FOUND)
 	set(conky_libs ${conky_libs} ${NCURSES_LIBRARIES})
 	set(conky_includes ${conky_includes} ${NCURSES_INCLUDE_DIRS})
-endif(BUILD_NCURSES)
+endif(BUILD_NCURSES AND NOT OS_DARWIN)
 
-else(NOT DARWINPORT_NOCHECK_NCURSES)
 	set(conky_libs ${conky_libs} ${NCURSES_LIBRARIES})
 	set(conky_includes ${conky_includes} ${NCURSES_INCLUDE_DIRS})
-endif(NOT DARWINPORT_NOCHECK_NCURSES)
 
 if(BUILD_MYSQL)
 	find_path(mysql_INCLUDE_PATH mysql.h ${INCLUDE_SEARCH_PATH} /usr/include/mysql /usr/local/include/mysql)
@@ -308,7 +299,6 @@ link_directories(${LUA_LIBRARY_DIRS})
 # Check for libraries used by Lua bindings
 if(BUILD_LUA_CAIRO)
 	pkg_check_modules(CAIRO REQUIRED cairo cairo-xlib)
-#   include(FindLua51)  -- This patch is probably for later -- When we will have lua support etc.
 	set(luacairo_libs ${CAIRO_LIBRARIES} ${LUA_LIBRARIES})
 	set(luacairo_includes ${CAIRO_INCLUDE_DIRS} ${LUA_INCLUDE_DIRS})
 	find_program(APP_PATCH patch)
