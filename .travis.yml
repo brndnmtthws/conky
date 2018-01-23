@@ -8,7 +8,6 @@ addons:
     - libxdamage-dev
     - libx11-dev
     - libxft-dev
-    - libxdamage-dev
     - libxext-dev
     - libglib2.0-dev
     - libxml2-dev
