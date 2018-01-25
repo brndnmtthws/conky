@@ -60,9 +60,9 @@
 
 
 #if !defined(HAVE_STRUCT_STATFS_F_FSTYPENAME) && \
-    !defined (__OpenBSD__) && !defined(__FreeBSD__) && \
-    !defined(__DragonFly__) && !defined(__sun) && !defined(__HAIKU__) && \
-    !(defined(__APPLE__) && defined(__MACH__))
+	!defined (__OpenBSD__) && !defined(__FreeBSD__) && \
+	!defined(__DragonFly__) && !defined(__sun) && !defined(__HAIKU__) && \
+	!(defined(__APPLE__) && defined(__MACH__))
 #include <mntent.h>
 #endif
 

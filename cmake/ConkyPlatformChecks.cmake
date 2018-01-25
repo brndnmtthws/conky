@@ -89,8 +89,8 @@ if(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
 endif(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
 
 if(CMAKE_SYSTEM_NAME MATCHES "Haiku")
-set(OS_HAIKU true)
-set(conky_libs ${conky_libs} -lnetwork -lintl)
+	set(OS_HAIKU true)
+	set(conky_libs ${conky_libs} -lnetwork -lintl)
 endif(CMAKE_SYSTEM_NAME MATCHES "Haiku")
 
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
