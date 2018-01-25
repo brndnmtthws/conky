@@ -37,6 +37,8 @@ endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 check_include_files(sys/param.h HAVE_SYS_PARAM_H)
 check_include_files(sys/inotify.h HAVE_SYS_INOTIFY_H)
 check_include_files(dirent.h HAVE_DIRENT_H)
+check_include_files("soundcard.h;sys/soundcard.h;linux/soundcard.h" HAVE_SOME_SOUNDCARD_H)
+check_include_files("linux/soundcard.h" HAVE_LINUX_SOUNDCARD_H)
 
 # Check for some functions
 check_function_exists(strndup HAVE_STRNDUP)
@@ -77,21 +79,29 @@ if(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
 	set(OS_OPENBSD true)
 endif(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
 
-if(CMAKE_SYSTEM_NAME MATCHES "Solaris")
+if(CMAKE_SYSTEM_NAME MATCHES "SunOS")
 	set(OS_SOLARIS true)
-endif(CMAKE_SYSTEM_NAME MATCHES "Solaris")
+	set(conky_libs ${conky_libs} -lkstat)
+endif(CMAKE_SYSTEM_NAME MATCHES "SunOS")
 
 if(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
 	set(OS_NETBSD true)
 endif(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
 
+if(CMAKE_SYSTEM_NAME MATCHES "Haiku")
+set(OS_HAIKU true)
+set(conky_libs ${conky_libs} -lnetwork -lintl)
+endif(CMAKE_SYSTEM_NAME MATCHES "Haiku")
+
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 	set(OS_DARWIN true)
 endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
-if(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY AND NOT OS_DARWIN)
+if(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY 
+  AND NOT OS_SOLARIS AND NOT OS_HAIKU AND NOT OS_DARWIN)
 	message(FATAL_ERROR "Your platform, '${CMAKE_SYSTEM_NAME}', is not currently supported.  Patches are welcome.")
-endif(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY AND NOT OS_DARWIN)
+endif(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY
+  AND NOT OS_SOLARIS AND NOT OS_HAIKU AND NOT OS_DARWIN)
 
 if(BUILD_I18N AND OS_DRAGONFLY)
 	set(conky_libs ${conky_libs} -lintl)
@@ -141,17 +151,14 @@ if(BUILD_HTTP)
 	set(conky_libs ${conky_libs} -lmicrohttpd)
 endif(BUILD_HTTP)
 
-if(BUILD_NCURSES AND NOT OS_DARWIN)
-	pkg_check_modules(NCURSES ncurses)
-	if(NOT NCURSES_FOUND)
+if(BUILD_NCURSES)
+	include(FindCurses)
+	if(NOT CURSES_FOUND)
 		message(FATAL_ERROR "Unable to find ncurses library")
-	endif(NOT NCURSES_FOUND)
-	set(conky_libs ${conky_libs} ${NCURSES_LIBRARIES})
-	set(conky_includes ${conky_includes} ${NCURSES_INCLUDE_DIRS})
-endif(BUILD_NCURSES AND NOT OS_DARWIN)
-
-	set(conky_libs ${conky_libs} ${NCURSES_LIBRARIES})
-	set(conky_includes ${conky_includes} ${NCURSES_INCLUDE_DIRS})
+	endif(NOT CURSES_FOUND)
+	set(conky_libs ${conky_libs} ${CURSES_LIBRARIES})
+	set(conky_includes ${conky_includes} ${CURSES_INCLUDE_DIR})
+endif(BUILD_NCURSES)
 
 if(BUILD_MYSQL)
 	find_path(mysql_INCLUDE_PATH mysql.h ${INCLUDE_SEARCH_PATH} /usr/include/mysql /usr/local/include/mysql)

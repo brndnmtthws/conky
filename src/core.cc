@@ -1071,6 +1071,7 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		free_and_zero(buf);
 		obj->callbacks.graphval = &mem_barval;
 #endif /* BUILD_X11*/
+#ifdef HAVE_SOME_SOUNDCARD_H
 	END OBJ(mixer, 0)
 		parse_mixer_arg(obj, arg);
 		obj->callbacks.percentage = &mixer_percentage;
@@ -1092,6 +1093,7 @@ struct text_object *construct_text_object(char *s, const char *arg,
 	END OBJ_IF(if_mixer_mute, 0)
 		parse_mixer_arg(obj, arg);
 		obj->callbacks.iftest = &check_mixer_muted;
+#endif
 #ifdef BUILD_X11
 	END OBJ(monitor, 0)
 		obj->callbacks.print = &print_monitor;
@@ -1908,6 +1910,14 @@ struct text_object *construct_text_object(char *s, const char *arg,
 		obj->callbacks.print = &print_puau_sink_description;
         obj->callbacks.free = &free_pulseaudio;
 	    init_pulseaudio(obj);
+	END OBJ(pa_sink_active_port_name, 0)
+		obj->callbacks.print = &print_puau_sink_active_port_name;
+		obj->callbacks.free = &free_pulseaudio;
+		init_pulseaudio(obj);
+	END OBJ(pa_sink_active_port_description, 0)
+		obj->callbacks.print = &print_puau_sink_active_port_description;
+		obj->callbacks.free = &free_pulseaudio;
+		init_pulseaudio(obj);
 	END OBJ(pa_sink_volume, 0)
 		obj->callbacks.percentage = &puau_vol;
         obj->callbacks.free = &free_pulseaudio;

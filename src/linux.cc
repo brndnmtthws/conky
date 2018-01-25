@@ -801,8 +801,11 @@ void get_cpu_count(void)
 {
 	FILE *stat_fp;
 	static int rep = 0;
-	int highest_cpu_index;
 	char buf[256];
+	char *str1, *str2, *token, *subtoken;
+	char *saveptr1, *saveptr2;
+	int subtoken1=-1;
+	int subtoken2=-1;
 
 	if (info.cpu_usage) {
 		return;
@@ -819,11 +822,30 @@ void get_cpu_count(void)
 			break;
 		}
 
-		if (sscanf(buf, "%*d-%d", &highest_cpu_index) == 1) {
-			info.cpu_count = highest_cpu_index;
+		// Do some parsing here to handle skipped cpu numbers.  For example,
+		// for an AMD FX(tm)-6350 Six-Core Processor /sys/.../present reports
+		// "0,3-7".  I assume that chip is really an 8-core die with two cores
+		// disabled...  Presumably you could also get "0,3-4,6", and other
+		// combos too...
+		for (str1 = buf; ; str1 = NULL) {
+			token = strtok_r(str1, ",", &saveptr1);
+			if (token == NULL) break;
+			++info.cpu_count;
+
+			subtoken1=-1;
+			subtoken2=-1;
+			for (str2 = token; ; str2 = NULL) {
+				subtoken = strtok_r(str2, "-", &saveptr2);
+				if (subtoken == NULL) break;
+				if(subtoken1 < 0)
+					subtoken1=atoi(subtoken);
+				else
+					subtoken2=atoi(subtoken);
+			}
+			if(subtoken2 > 0)
+				info.cpu_count += subtoken2 - subtoken1;
 		}
 	}
-	++info.cpu_count;
 	info.cpu_usage = (float*)malloc((info.cpu_count + 1) * sizeof(float));
 
 	fclose(stat_fp);
@@ -847,6 +869,7 @@ int update_stat(void)
 
 	static pthread_mutex_t last_stat_update_mutex = PTHREAD_MUTEX_INITIALIZER;
 	static double last_stat_update = 0.0;
+	float cur_total = 0.0;
 
 	/* since we use wrappers for this function, the update machinery
 	 * can't eliminate double invocations of this function. Check for
@@ -896,9 +919,12 @@ int update_stat(void)
 		} else if (strncmp(buf, "cpu", 3) == 0) {
 			double delta;
 			if (isdigit(buf[3])) {
-				idx = atoi(&buf[3]) + 1;
+				idx++;  //just increment here since the CPU index can skip numbers
 			} else {
 				idx = 0;
+			}
+			if (idx > info.cpu_count) {
+				continue;
 			}
 			sscanf(buf, stat_template, &(cpu[idx].cpu_user),
 				&(cpu[idx].cpu_nice), &(cpu[idx].cpu_system),
@@ -920,9 +946,13 @@ int update_stat(void)
 				break;
 			}
 
-			cpu[idx].cpu_val[0] = (cpu[idx].cpu_active_total -
-				cpu[idx].cpu_last_active_total) /
-				(float) (cpu[idx].cpu_total - cpu[idx].cpu_last_total);
+			cur_total = (float) (cpu[idx].cpu_total - cpu[idx].cpu_last_total);
+			if (cur_total == 0.0) {
+				cpu[idx].cpu_val[0] = 1.0;
+			} else {
+				cpu[idx].cpu_val[0] = (cpu[idx].cpu_active_total -
+					cpu[idx].cpu_last_active_total) / cur_total;
+			}
 			curtmp = 0;
 
 			int samples = cpu_avg_samples.get(*state);

@@ -38,7 +38,7 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h)
 endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/defconfig.h)
 
 set(conky_sources c++wrap.cc colours.cc combine.cc common.cc conky.cc core.cc
-	diskio.cc entropy.cc exec.cc fs.cc mail.cc mixer.cc net_stat.cc template.cc
+	diskio.cc entropy.cc exec.cc fs.cc mail.cc net_stat.cc template.cc
 	mboxscan.cc read_tcpip.cc scroll.cc specials.cc tailhead.cc temphelper.cc
 	text_object.cc timeinfo.cc top.cc algebra.cc prioqueue.cc proc.cc user.cc
 	luamm.cc data-source.cc lua-config.cc setting.cc llua.cc update-cb.cc)
@@ -75,12 +75,22 @@ if(OS_NETBSD)
 	set(optional_sources ${optional_sources} ${netbsd})
 endif(OS_NETBSD)
 
+if(OS_HAIKU)
+	set(haiku haiku.cc)
+	set(optional_sources ${optional_sources} ${haiku})
+endif(OS_HAIKU)
+
 if(OS_DARWIN)
 	set(darwin darwin.cc)
 	set(optional_sources ${optional_sources} ${darwin})
 endif(OS_DARWIN)
 
 # Optional sources
+if(HAVE_SOME_SOUNDCARD_H)
+	set(mixer mixer.cc)
+	set(optional_sources ${optional_sources} ${mixer})
+endif(HAVE_SOME_SOUNDCARD_H)
+
 if(BUILD_AUDACIOUS)
 	set(audacious audacious.cc)
 	set(optional_sources ${optional_sources} ${audacious})

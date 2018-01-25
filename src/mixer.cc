@@ -50,6 +50,11 @@
 #endif /* __OpenBSD__ */
 #endif /* HAVE_LINUX_SOUNDCARD_H */
 
+#if defined(__sun)
+#include <unistd.h>
+#include <stropts.h>
+#endif
+
 #define MIXER_DEV "/dev/mixer"
 
 static int mixer_fd;

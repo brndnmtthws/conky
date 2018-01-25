@@ -39,21 +39,27 @@ if(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
 	set(OS_OPENBSD true)
 endif(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
 
-if(CMAKE_SYSTEM_NAME MATCHES "Solaris")
+if(CMAKE_SYSTEM_NAME MATCHES "SunOS")
 	set(OS_SOLARIS true)
-endif(CMAKE_SYSTEM_NAME MATCHES "Solaris")
+endif(CMAKE_SYSTEM_NAME MATCHES "SunOS")
 
 if(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
 	set(OS_NETBSD true)
 endif(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
 
+if(CMAKE_SYSTEM_NAME MATCHES "Haiku")
+	set(OS_HAIKU true)
+endif(CMAKE_SYSTEM_NAME MATCHES "Haiku")
+
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 	set(OS_DARWIN true)
 endif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
-if(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY AND NOT OS_DARWIN)
+if(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY
+  AND NOT OS_SOLARIS AND NOT OS_HAIKU AND NOT OS_DARWIN)
 	message(FATAL_ERROR "Your platform, '${CMAKE_SYSTEM_NAME}', is not currently supported.  Patches are welcome.")
-endif(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY AND NOT OS_DARWIN)
+endif(NOT OS_LINUX AND NOT OS_FREEBSD AND NOT OS_OPENBSD AND NOT OS_DRAGONFLY
+  AND NOT OS_SOLARIS AND NOT OS_HAIKU AND NOT OS_DARWIN)
 
 include(FindThreads)
 find_package(Threads)
@@ -76,10 +82,14 @@ set(conky_libs ${conky_libs} -L/usr/pkg/lib)
 set(conky_includes ${conky_includes} -I/usr/pkg/include)
 endif(OS_DRAGONFLY)
 
+if(OS_SOLARIS)
+set(conky_libs ${conky_libs} -L/usr/local/lib)
+endif(OS_SOLARIS)
+
 # Do version stuff
 set(VERSION_MAJOR "1")
 set(VERSION_MINOR "10")
-set(VERSION_PATCH "7")
+set(VERSION_PATCH "8")
 
 find_program(APP_AWK awk)
 if(NOT APP_AWK)
