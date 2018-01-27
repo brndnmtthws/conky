@@ -1,0 +1,15 @@
+/Users/np/ConkyX/conky/ConkyX/CMakeFiles/install.dir
+/Users/np/ConkyX/conky/ConkyX/CMakeFiles/package.dir
+/Users/np/ConkyX/conky/ConkyX/CMakeFiles/ALL_BUILD.dir
+/Users/np/ConkyX/conky/ConkyX/CMakeFiles/ZERO_CHECK.dir
+/Users/np/ConkyX/conky/ConkyX/lua/CMakeFiles/install.dir
+/Users/np/ConkyX/conky/ConkyX/lua/CMakeFiles/package.dir
+/Users/np/ConkyX/conky/ConkyX/data/CMakeFiles/install.dir
+/Users/np/ConkyX/conky/ConkyX/data/CMakeFiles/package.dir
+/Users/np/ConkyX/conky/ConkyX/data/CMakeFiles/convertconf.dir
+/Users/np/ConkyX/conky/ConkyX/data/CMakeFiles/defconfig.dir
+/Users/np/ConkyX/conky/ConkyX/doc/CMakeFiles/install.dir
+/Users/np/ConkyX/conky/ConkyX/doc/CMakeFiles/package.dir
+/Users/np/ConkyX/conky/ConkyX/src/CMakeFiles/install.dir
+/Users/np/ConkyX/conky/ConkyX/src/CMakeFiles/package.dir
+/Users/np/ConkyX/conky/ConkyX/src/CMakeFiles/conky.dir
