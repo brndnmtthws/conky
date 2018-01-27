@@ -1,4 +1,4 @@
-# Install script for directory: /Users/np/ConkyX/conky
+# Install script for directory: /Users/np/ConkyX/conky-for-macOS
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -34,18 +34,18 @@ endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/doc/conky-1.10.7_pre" TYPE FILE FILES
-    "/Users/np/ConkyX/conky/extras/convert.lua"
-    "/Users/np/ConkyX/conky/data/conky_no_x11.conf"
-    "/Users/np/ConkyX/conky/data/conky.conf"
+    "/Users/np/ConkyX/conky-for-macOS/extras/convert.lua"
+    "/Users/np/ConkyX/conky-for-macOS/data/conky_no_x11.conf"
+    "/Users/np/ConkyX/conky-for-macOS/data/conky.conf"
     )
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/Users/np/ConkyX/conky/ConkyX/lua/cmake_install.cmake")
-  include("/Users/np/ConkyX/conky/ConkyX/data/cmake_install.cmake")
-  include("/Users/np/ConkyX/conky/ConkyX/doc/cmake_install.cmake")
-  include("/Users/np/ConkyX/conky/ConkyX/src/cmake_install.cmake")
+  include("/Users/np/ConkyX/conky-for-macOS/ConkyX/lua/cmake_install.cmake")
+  include("/Users/np/ConkyX/conky-for-macOS/ConkyX/data/cmake_install.cmake")
+  include("/Users/np/ConkyX/conky-for-macOS/ConkyX/doc/cmake_install.cmake")
+  include("/Users/np/ConkyX/conky-for-macOS/ConkyX/src/cmake_install.cmake")
 
 endif()
 
@@ -57,5 +57,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/Users/np/ConkyX/conky/ConkyX/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/Users/np/ConkyX/conky-for-macOS/ConkyX/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

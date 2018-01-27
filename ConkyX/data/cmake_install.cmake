@@ -1,4 +1,4 @@
-# Install script for directory: /Users/np/ConkyX/conky/data
+# Install script for directory: /Users/np/ConkyX/conky-for-macOS/data
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

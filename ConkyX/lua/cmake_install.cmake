@@ -1,4 +1,4 @@
-# Install script for directory: /Users/np/ConkyX/conky/lua
+# Install script for directory: /Users/np/ConkyX/conky-for-macOS/lua
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

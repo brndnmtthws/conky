@@ -8,7 +8,7 @@ default:
 # link.  This forces Xcode to relink the targets from scratch.  It
 # does not seem to check these dependencies itself.
 PostBuild.conky.Debug:
-/Users/np/ConkyX/conky/ConkyX/src/Debug/conky:\
+/Users/np/ConkyX/conky-for-macOS/ConkyX/src/Debug/conky:\
 	/usr/X11R6/lib/libSM.dylib\
 	/usr/X11R6/lib/libICE.dylib\
 	/usr/X11R6/lib/libX11.dylib\
@@ -17,11 +17,11 @@ PostBuild.conky.Debug:
 	/usr/X11R6/lib/libXfixes.dylib\
 	/usr/X11R6/lib/libXft.dylib\
 	/usr/X11R6/lib/libXinerama.dylib
-	/bin/rm -f /Users/np/ConkyX/conky/ConkyX/src/Debug/conky
+	/bin/rm -f /Users/np/ConkyX/conky-for-macOS/ConkyX/src/Debug/conky
 
 
 PostBuild.conky.Release:
-/Users/np/ConkyX/conky/ConkyX/src/Release/conky:\
+/Users/np/ConkyX/conky-for-macOS/ConkyX/src/Release/conky:\
 	/usr/X11R6/lib/libSM.dylib\
 	/usr/X11R6/lib/libICE.dylib\
 	/usr/X11R6/lib/libX11.dylib\
@@ -30,11 +30,11 @@ PostBuild.conky.Release:
 	/usr/X11R6/lib/libXfixes.dylib\
 	/usr/X11R6/lib/libXft.dylib\
 	/usr/X11R6/lib/libXinerama.dylib
-	/bin/rm -f /Users/np/ConkyX/conky/ConkyX/src/Release/conky
+	/bin/rm -f /Users/np/ConkyX/conky-for-macOS/ConkyX/src/Release/conky
 
 
 PostBuild.conky.MinSizeRel:
-/Users/np/ConkyX/conky/ConkyX/src/MinSizeRel/conky:\
+/Users/np/ConkyX/conky-for-macOS/ConkyX/src/MinSizeRel/conky:\
 	/usr/X11R6/lib/libSM.dylib\
 	/usr/X11R6/lib/libICE.dylib\
 	/usr/X11R6/lib/libX11.dylib\
@@ -43,11 +43,11 @@ PostBuild.conky.MinSizeRel:
 	/usr/X11R6/lib/libXfixes.dylib\
 	/usr/X11R6/lib/libXft.dylib\
 	/usr/X11R6/lib/libXinerama.dylib
-	/bin/rm -f /Users/np/ConkyX/conky/ConkyX/src/MinSizeRel/conky
+	/bin/rm -f /Users/np/ConkyX/conky-for-macOS/ConkyX/src/MinSizeRel/conky
 
 
 PostBuild.conky.RelWithDebInfo:
-/Users/np/ConkyX/conky/ConkyX/src/RelWithDebInfo/conky:\
+/Users/np/ConkyX/conky-for-macOS/ConkyX/src/RelWithDebInfo/conky:\
 	/usr/X11R6/lib/libSM.dylib\
 	/usr/X11R6/lib/libICE.dylib\
 	/usr/X11R6/lib/libX11.dylib\
@@ -56,7 +56,7 @@ PostBuild.conky.RelWithDebInfo:
 	/usr/X11R6/lib/libXfixes.dylib\
 	/usr/X11R6/lib/libXft.dylib\
 	/usr/X11R6/lib/libXinerama.dylib
-	/bin/rm -f /Users/np/ConkyX/conky/ConkyX/src/RelWithDebInfo/conky
+	/bin/rm -f /Users/np/ConkyX/conky-for-macOS/ConkyX/src/RelWithDebInfo/conky
 
 
 

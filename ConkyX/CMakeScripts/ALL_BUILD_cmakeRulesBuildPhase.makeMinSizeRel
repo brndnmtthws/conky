@@ -2,9 +2,9 @@
 # Custom rules for ALL_BUILD
 .SUFFIXES: 
 all: \
-	/Users/np/ConkyX/conky/ConkyX/CMakeFiles/ALL_BUILD
+	/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/ALL_BUILD
 
 
-/Users/np/ConkyX/conky/ConkyX/CMakeFiles/ALL_BUILD: 
+/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/ALL_BUILD: 
 	echo ""
 	echo Build\ all\ projects

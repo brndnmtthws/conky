@@ -2,9 +2,9 @@
 # Custom rules for ZERO_CHECK
 .SUFFIXES: 
 all: \
-	/Users/np/ConkyX/conky/ConkyX/CMakeFiles/ZERO_CHECK
+	/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/ZERO_CHECK
 
 
-/Users/np/ConkyX/conky/ConkyX/CMakeFiles/ZERO_CHECK: 
+/Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/ZERO_CHECK: 
 	echo ""
-	make -f /Users/np/ConkyX/conky/ConkyX/CMakeScripts/ReRunCMake.make
+	make -f /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeScripts/ReRunCMake.make

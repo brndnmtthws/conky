@@ -1,2 +1,2 @@
 dependencies: \
-  /Users/np/ConkyX/conky/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CMakeCXXCompilerId.cpp
+  /Users/np/ConkyX/conky-for-macOS/ConkyX/CMakeFiles/3.10.0/CompilerIdCXX/CMakeCXXCompilerId.cpp

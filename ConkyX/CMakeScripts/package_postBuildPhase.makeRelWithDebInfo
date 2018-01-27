@@ -6,4 +6,4 @@ all: \
 
 
 package_buildpart_0: 
-	cd /Users/np/ConkyX/conky/ConkyX && /usr/local/Cellar/cmake/3.10.0/bin/cpack -C $(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME) --config ./CPackConfig.cmake
+	cd /Users/np/ConkyX/conky-for-macOS/ConkyX && /usr/local/Cellar/cmake/3.10.0/bin/cpack -C $(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME) --config ./CPackConfig.cmake
