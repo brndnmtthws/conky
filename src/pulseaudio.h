@@ -38,6 +38,8 @@ void init_pulseaudio(struct text_object *obj);
 void free_pulseaudio(struct text_object *obj);
 uint8_t puau_vol(struct text_object *); // preserve pa_* for libpulse
 void  print_puau_sink_description(struct text_object *obj, char *p, int p_max_size);
+void  print_puau_sink_active_port_name(struct text_object *obj, char *p, int p_max_size);
+void  print_puau_sink_active_port_description(struct text_object *obj, char *p, int p_max_size);
 void  print_puau_card_name(struct text_object *obj, char *p, int p_max_size);
 void  print_puau_card_active_profile(struct text_object *obj, char *p, int p_max_size);
 double puau_volumebarval(struct text_object *obj);
@@ -47,6 +49,8 @@ struct pulseaudio_default_results {
     // default sink
     std::string sink_name;
     std::string sink_description;
+    std::string sink_active_port_name;
+    std::string sink_active_port_description;
     uint32_t sink_card;
     int sink_mute;
 	uint32_t sink_index;
@@ -77,7 +81,7 @@ class pulseaudio_c {
 				   context(NULL),
 				   cstate(PULSE_CONTEXT_INITIALIZING),
 				   ninits(0),
-				   result({ std::string(), std::string(), 0, 0, 0, 0, std::string(), std::string(), 0 }){};
+				   result({ std::string(), std::string(), std::string(), std::string(), 0, 0, 0, 0, std::string(), std::string(), 0 }){};
 };
 
 #endif /* _PULSEAUDIO_H */

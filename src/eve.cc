@@ -186,7 +186,9 @@ static char *getXmlFromAPI(const char *apiKeyID, const char *apiVCode, const cha
 
 	curl_easy_setopt(curl_handle, CURLOPT_URL, real_url.c_str());
 
-	if ((rc = curl_easy_perform(curl_handle)) != CURLE_OK) {
+	rc = curl_easy_perform(curl_handle);
+
+	if (chr.data == NULL) {
 		return NULL;
 	}
 

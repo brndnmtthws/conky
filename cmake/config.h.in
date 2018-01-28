@@ -29,6 +29,9 @@
 #cmakedefine HAVE_SYS_INOTIFY_H 1
 #cmakedefine HAVE_DIRENT_H 1
 
+#cmakedefine HAVE_SOME_SOUNDCARD_H 1
+#cmakedefine HAVE_LINUX_SOUNDCARD_H 1
+
 #cmakedefine HAVE_STRNDUP 1
 
 #cmakedefine HAVE_FOPENCOOKIE 1

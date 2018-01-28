@@ -43,12 +43,15 @@
 #else
 #ifdef __OpenBSD__
 #include <soundcard.h>
-#elif (defined(__APPLE__) && defined(__MACH__))
-#include "darwin_soundcard.h"
 #else
 #include <sys/soundcard.h>
 #endif /* __OpenBSD__ */
 #endif /* HAVE_LINUX_SOUNDCARD_H */
+
+#if defined(__sun)
+#include <unistd.h>
+#include <stropts.h>
+#endif
 
 #define MIXER_DEV "/dev/mixer"
 

@@ -157,8 +157,20 @@ void *ircclient(void *ptr) {
 	} else {
 		port = IRCPORT;
 	}
-	if(irc_connect(ircobj->session, server, port, IRCSERVERPASS, IRCNICK, IRCUSER, IRCREAL) != 0) {
-		NORM_ERR("irc: %s", irc_strerror(irc_errno(ircobj->session)));
+	int err = irc_connect(ircobj->session, server, port, IRCSERVERPASS, IRCNICK, IRCUSER, IRCREAL);
+	if(err != 0) {
+		err = irc_errno(ircobj->session);
+	}
+#ifdef BUILD_IPV6
+	if(err == LIBIRC_ERR_RESOLV) {
+		err = irc_connect6(ircobj->session, server, port, IRCSERVERPASS, IRCNICK, IRCUSER, IRCREAL);
+		if(err != 0) {
+			err = irc_errno(ircobj->session);
+		}
+	}
+#endif /* BUILD_IPV6 */
+	if(err != 0) {
+		NORM_ERR("irc: %s", irc_strerror(err));
 	}
 	if(irc_run(ircobj->session) != 0) {
 		int ircerror = irc_errno(ircobj->session);
